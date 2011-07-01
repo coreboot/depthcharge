@@ -1,0 +1,3 @@
+Please remove all USB and SD devices to begin recovery.
+$BIG: $URL
+Model: $MODEL
