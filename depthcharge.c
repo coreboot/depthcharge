@@ -131,14 +131,6 @@ static int vboot_select_and_load_kernel(void)
 	if (res != VBERROR_SUCCESS)
 		return 1;
 
-	printf("Disk handle = %p.\n", kparams.disk_handle);
-	printf("Partition number = %d.\n", kparams.partition_number);
-	printf("Bootloader address = %lld.\n", kparams.bootloader_address);
-	printf("Bootloader size = %d.\n", kparams.bootloader_size);
-	printf("Partition guid =");
-	for (int i = 0; i < ARRAY_SIZE(kparams.partition_guid); i++)
-		printf(" %02X", kparams.partition_guid[i]);
-	printf(".\n");
 	return 0;
 }
 
