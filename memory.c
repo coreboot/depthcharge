@@ -36,3 +36,21 @@ void VbExFree(void *ptr)
 	printf("VbExFree called but not implemented.\n");
 	return;
 }
+
+int Memcmp(const void *src1, const void *src2, size_t n)
+{
+	printf("Memcmp called but not implemented.\n");
+	return 0;
+}
+
+void *Memset(void *d, const uint8_t c, uint64_t n)
+{
+	printf("Memset called but not implemented.\n");
+	return NULL;
+}
+
+void *Memcpy(void *dest, const void *src, uint64_t n)
+{
+	printf("Memcpy called but not implemented.\n");
+	return NULL;
+}
