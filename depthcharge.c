@@ -65,21 +65,8 @@ static int vboot_init(void)
 	if (res != VBERROR_SUCCESS)
 		return 1;
 
-	// Figure out what VbInit wants us to do now.
-	if (iparams.out_flags && VB_INIT_OUT_ENABLE_RECOVERY)
-		printf("VB_INIT_OUT_ENABLE_RECOVERY set but ignored.\n");
 	if (iparams.out_flags && VB_INIT_OUT_CLEAR_RAM)
 		printf("VB_INIT_OUT_CLEAR_RAM set but ignored.\n");
-	if (iparams.out_flags && VB_INIT_OUT_ENABLE_DISPLAY)
-		printf("VB_INIT_OUT_ENABLE_DISPLAY set but ignored.\n");
-	if (iparams.out_flags && VB_INIT_OUT_ENABLE_USB_STORAGE)
-		printf("VB_INIT_OUT_ENABLE_USB_STORAGE set but ignored.\n");
-	if (iparams.out_flags && VB_INIT_OUT_S3_DEBUG_BOOT)
-		printf("VB_INIT_OUT_S3_DEBUG_BOOT set but ignored.\n");
-	if (iparams.out_flags && VB_INIT_OUT_ENABLE_OPROM)
-		printf("VB_INIT_OUT_ENABLE_OPROM set but ignored.\n");
-	if (iparams.out_flags && VB_INIT_OUT_ENABLE_ALTERNATE_OS)
-		printf("VB_INIT_OUT_ENABLE_ALTERNATE_OS set but ignored.\n");
 	return 0;
 };
 
