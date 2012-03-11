@@ -148,6 +148,8 @@ int main(void)
 	outb(0xaa, 0x80);
 	printf("\n\nStarting depthcharge...\n");
 
+	get_cpu_speed();
+
 	if (fmap_check_signature(fmap)) {
 		printf("Bad signature on the FMAP.\n");
 		halt();
