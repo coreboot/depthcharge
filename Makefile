@@ -51,7 +51,7 @@ AS = $(LIBPAYLOAD_DIR)/bin/lpas
 STRIP ?= strip
 
 INCLUDES = -Ibuild -I$(src)/include -I$(VB_INC_DIR)
-CFLAGS := -Wall -Werror -Os $(INCLUDES)
+CFLAGS := -Wall -Werror -Os $(INCLUDES) -std=gnu99
 OBJECTS = depthcharge.o
 OBJECTS += debug.o disk.o display.o firmware.o keyboard.o memory.o misc.o \
 	nvstorage.o time.o tpm.o
