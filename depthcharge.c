@@ -22,8 +22,12 @@
 
 #include <libpayload-config.h>
 #include <libpayload.h>
+#include <stdint.h>
 
 #include <vboot_api.h>
+
+#include <config.h>
+#include <fmap.h>
 
 VbCommonParams cparams = {
 	.gbb_data = NULL,
@@ -33,6 +37,8 @@ VbCommonParams cparams = {
 	.vboot_context = NULL,
 	.caller_context = NULL
 };
+
+static uint8_t shared_data_blob[VB_SHARED_DATA_REC_SIZE];
 
 static int vboot_init(void)
 {
@@ -137,6 +143,30 @@ int main(void)
 	// Let the world know we're alive.
 	outb(0xaa, 0x80);
 	printf("\n\nStarting depthcharge...\n");
+
+	// Find the FMAP.
+	Fmap *fmap = (Fmap *)(uintptr_t)CONFIG_FMAP_ADDRESS;
+
+	if (fmap_check_signature(fmap)) {
+		printf("Bad signature on the FMAP.\n");
+		halt();
+	}
+
+	uintptr_t rom_base = (uintptr_t)(-fmap->fmap_size);
+
+	// Set up the common param structure.
+	FmapArea *gbb_area = fmap_find_area(fmap, "GBB");
+	if (!gbb_area) {
+		printf("Couldn't find the GBB.\n");
+		halt();
+	}
+
+	cparams.gbb_data =
+		(void *)(uintptr_t)(gbb_area->area_offset + rom_base);
+	cparams.gbb_size = gbb_area->area_size;
+
+	cparams.shared_data_blob = shared_data_blob;
+	cparams.shared_data_size = sizeof(shared_data_blob);
 
 	if (vboot_init())
 		halt();
