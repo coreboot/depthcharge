@@ -25,14 +25,30 @@
 
 #include <vboot_api.h>
 
-VbError_t VbExNvStorageRead(uint8_t *buf)
+VbError_t VbExNvStorageRead(uint8_t* buf)
 {
-	printf("VbExNvStorageRead called but not implemented.\n");
+	if (lib_sysinfo.vbnv_start == (uint32_t)(-1)) {
+		printf("%s:%d - vbnv address undefined\n",
+		       __FUNCTION__, __LINE__);
+		return VBERROR_INVALID_PARAMETER;
+	}
+
+	for (int i = 0; i < lib_sysinfo.vbnv_size; i++)
+		buf[i] = nvram_read(lib_sysinfo.vbnv_start + i);
+
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExNvStorageWrite(const uint8_t *buf)
+VbError_t VbExNvStorageWrite(const uint8_t* buf)
 {
-	printf("VbExNvStorageWrite called but not implemented.\n");
+	if (lib_sysinfo.vbnv_start == (uint32_t)(-1)) {
+		printf("%s:%d - vbnv address undefined\n",
+		       __FUNCTION__, __LINE__);
+		return VBERROR_INVALID_PARAMETER;
+	}
+
+	for (int i = 0; i < lib_sysinfo.vbnv_size; i++)
+		nvram_write(buf[i], lib_sysinfo.vbnv_start + i);
+
 	return VBERROR_SUCCESS;
 }
