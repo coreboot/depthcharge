@@ -29,6 +29,9 @@
 #include <config.h>
 #include <fmap.h>
 
+static Fmap *fmap = (Fmap *)(uintptr_t)CONFIG_FMAP_ADDRESS;
+static uintptr_t rom_base;
+
 VbCommonParams cparams = {
 	.gbb_data = NULL,
 	.gbb_size = 0,
@@ -57,7 +60,7 @@ static int vboot_init(void)
 		iparams.flags |= VB_INIT_FLAG_S3_RESUME;
 	if (0)
 		iparams.flags |= VB_INIT_FLAG_PREVIOUS_BOOT_FAIL;
-	if (0)
+	if (1)
 		iparams.flags |= VB_INIT_FLAG_RO_NORMAL_SUPPORT;
 
 	printf("Calling VbInit().\n");
@@ -78,6 +81,20 @@ static int vboot_select_firmware(void)
 		.verification_size_A = 0,
 		.verification_size_B = 0
 	};
+
+	// Set up the fparams structure.
+	FmapArea *vblock_a = fmap_find_area(fmap, "VBLOCK_A");
+	FmapArea *vblock_b = fmap_find_area(fmap, "VBLOCK_B");
+	if (!vblock_a || !vblock_b) {
+		printf("Couldn't find one of the vblocks.\n");
+		return 1;
+	}
+	fparams.verification_block_A = \
+		(void *)(vblock_a->area_offset + rom_base);
+	fparams.verification_size_A = vblock_a->area_size;
+	fparams.verification_block_B = \
+		(void *)(vblock_b->area_offset + rom_base);
+	fparams.verification_size_B = vblock_b->area_size;
 
 	printf("Calling VbSelectFirmware().\n");
 	VbError_t res = VbSelectFirmware(&cparams, &fparams);
@@ -131,15 +148,12 @@ int main(void)
 	outb(0xaa, 0x80);
 	printf("\n\nStarting depthcharge...\n");
 
-	// Find the FMAP.
-	Fmap *fmap = (Fmap *)(uintptr_t)CONFIG_FMAP_ADDRESS;
-
 	if (fmap_check_signature(fmap)) {
 		printf("Bad signature on the FMAP.\n");
 		halt();
 	}
 
-	uintptr_t rom_base = (uintptr_t)(-fmap->fmap_size);
+	rom_base = (uintptr_t)(-fmap->fmap_size);
 
 	// Set up the common param structure.
 	FmapArea *gbb_area = fmap_find_area(fmap, "GBB");
