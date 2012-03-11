@@ -23,22 +23,31 @@
 #include <libpayload-config.h>
 #include <libpayload.h>
 
+#include <arch/rdtsc.h>
+#include <hda_codec.h>
 #include <vboot_api.h>
 
 uint64_t VbExGetTimer(void)
 {
-	printf("VbExGetTimer called but not implemented.\n");
-	return 0;
+	return rdtsc();
 }
 
 void VbExSleepMs(uint32_t msec)
 {
-	printf("VbExSleepMs called but not implemented.\n");
-	return;
+	mdelay(msec);
 }
 
 VbError_t VbExBeep(uint32_t msec, uint32_t frequency)
 {
-	printf("VbExBeep called but not implemented.\n");
-	return VBERROR_SUCCESS;
+        if (frequency)
+                enable_beep(frequency);
+        else
+                disable_beep();
+
+        if (msec > 0) {
+                mdelay(msec);
+                disable_beep();
+        }
+
+        return VBERROR_SUCCESS;
 }
