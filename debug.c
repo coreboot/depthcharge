@@ -27,12 +27,17 @@
 
 void VbExError(const char* format, ...)
 {
-	printf("VbExError called but not implemented.\n");
-	return;
+	va_list ap;
+	va_start(ap, format);
+	vprintf(format, ap);
+	va_end(ap);
+	halt();
 }
 
 void VbExDebug(const char* format, ...)
 {
-	printf("VbExDebug called but not implemented.\n");
-	return;
+	va_list ap;
+	va_start(ap, format);
+	vprintf(format, ap);
+	va_end(ap);
 }
