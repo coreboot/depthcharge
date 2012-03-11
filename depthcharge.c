@@ -28,6 +28,7 @@
 
 #include <config.h>
 #include <fmap.h>
+#include <gpio.h>
 
 static Fmap *fmap = (Fmap *)(uintptr_t)CONFIG_FMAP_ADDRESS;
 static uintptr_t rom_base;
@@ -48,20 +49,19 @@ static int vboot_init(void)
 	VbInitParams iparams = {
 		.flags = 0
 	};
+	gpio_t dev_switch, rec_switch, wp_switch;
+	gpio_fetch(GPIO_DEVSW, &dev_switch);
+	gpio_fetch(GPIO_RECSW, &rec_switch);
+	gpio_fetch(GPIO_WPSW, &wp_switch);
 
 	// Decide what flags to pass into VbInit.
-	if (1)
+	if (dev_switch.value)
 		iparams.flags |= VB_INIT_FLAG_DEV_SWITCH_ON;
-	if (0)
+	if (rec_switch.value)
 		iparams.flags |= VB_INIT_FLAG_REC_BUTTON_PRESSED;
-	if (1)
+	if (wp_switch.value)
 		iparams.flags |= VB_INIT_FLAG_WP_ENABLED;
-	if (0)
-		iparams.flags |= VB_INIT_FLAG_S3_RESUME;
-	if (0)
-		iparams.flags |= VB_INIT_FLAG_PREVIOUS_BOOT_FAIL;
-	if (1)
-		iparams.flags |= VB_INIT_FLAG_RO_NORMAL_SUPPORT;
+	iparams.flags |= VB_INIT_FLAG_RO_NORMAL_SUPPORT;
 
 	printf("Calling VbInit().\n");
 	VbError_t res = VbInit(&cparams, &iparams);
