@@ -1,5 +1,6 @@
 #
 # Automatically generated make config: don't edit
 # depthcharge version: 0.1.0
-# Sat Mar 10 18:41:34 2012
+# Sun Mar 11 00:27:58 2012
 #
+CONFIG_FMAP_ADDRESS=0xffe10000
