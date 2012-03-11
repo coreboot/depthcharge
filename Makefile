@@ -50,10 +50,13 @@ XCC := CC=$(CC) $(LIBPAYLOAD_DIR)/bin/lpgcc
 AS = $(LIBPAYLOAD_DIR)/bin/lpas
 STRIP ?= strip
 
-INCLUDES = -Ibuild
+INCLUDES = -Ibuild -I$(src)/include -I$(VB_INC_DIR)
 CFLAGS := -Wall -Werror -Os $(INCLUDES)
 OBJECTS = depthcharge.o
+OBJECTS += debug.o disk.o display.o firmware.o keyboard.o memory.o misc.o \
+	nvstorage.o time.o tpm.o
 OBJS    = $(patsubst %,$(obj)/%,$(OBJECTS))
+OBJS    += $(VB_LD_DIR)/vboot_fw.a
 TARGET  = $(obj)/depthcharge.elf
 
 ifeq ($(strip $(HAVE_DOTCONFIG)),)
