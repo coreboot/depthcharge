@@ -25,9 +25,26 @@
 
 #include <vboot_api.h>
 
+#include <gpio.h>
+
 uint32_t VbExIsShutdownRequested(void)
 {
-	printf("VbExIsShutdownRequested called but not implemented.\n");
+	gpio_t lidsw, pwrsw;
+
+	if (gpio_fetch(GPIO_LIDSW, &lidsw) || gpio_fetch(GPIO_PWRSW, &pwrsw)) {
+		printf("Failed to fetch lid or power switch GPIO.\n");
+		return 1;
+	}
+
+	if (!lidsw.value) {
+		printf("Lid is closed.\n");
+		return 1;
+	}
+	if (pwrsw.value) {
+		printf("Power key pressed.\n");
+		return 1;
+	}
+
 	return 0;
 }
 
