@@ -25,30 +25,53 @@
 
 #include <vboot_api.h>
 
+#include <blockdev.h>
+#include <ahci.h>
+
 VbError_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
 			  uint32_t disk_flags)
 {
-	printf("VbExDiskGetInfo called but not implemented.\n");
-	return VBERROR_SUCCESS;
+	if (disk_flags & VB_DISK_FLAG_FIXED) {
+		VbDiskInfo *disk = malloc(sizeof(VbDiskInfo));
+		disk->handle = (VbExDiskHandle_t)&sata_drive;
+		disk->bytes_per_lba = sata_drive.block_size;
+		disk->lba_count = sata_drive.block_count;
+		disk->flags = VB_DISK_FLAG_FIXED;
+		disk->name = "Sata SSD";
+		*info_ptr = disk;
+		*count = 1;
+		return VBERROR_SUCCESS;
+	} else {
+		*info_ptr = NULL;
+		return VBERROR_UNKNOWN;
+	}
 }
 
 VbError_t VbExDiskFreeInfo(VbDiskInfo *infos,
 			   VbExDiskHandle_t preserve_handle)
 {
-	printf("VbExDiskFreeInfo called but not implemented.\n");
+	free(infos);
 	return VBERROR_SUCCESS;
 }
 
 VbError_t VbExDiskRead(VbExDiskHandle_t handle, uint64_t lba_start,
 		       uint64_t lba_count, void *buffer)
 {
-	printf("VbExDiskRead called but not implemented.\n");
+	BlockDev *dev = (BlockDev *)handle;
+	if (dev->read(dev, lba_start, lba_count, buffer) != lba_count) {
+		printf("Read failed.\n");
+		return VBERROR_UNKNOWN;
+	}
 	return VBERROR_SUCCESS;
 }
 
 VbError_t VbExDiskWrite(VbExDiskHandle_t handle, uint64_t lba_start,
 			uint64_t lba_count, const void *buffer)
 {
-	printf("VbExDiskWrite called but not implemented.\n");
+	BlockDev *dev = (BlockDev *)handle;
+	if (dev->write(dev, lba_start, lba_count, buffer) != lba_count) {
+		printf("Write failed.\n");
+		return VBERROR_UNKNOWN;
+	}
 	return VBERROR_SUCCESS;
 }
