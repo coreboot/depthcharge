@@ -51,12 +51,14 @@ AS = $(LIBPAYLOAD_DIR)/bin/lpas
 STRIP ?= strip
 
 INCLUDES = -Ibuild -I$(src)/include -I$(VB_INC_DIR)
-CFLAGS := -Wall -Werror -Os $(INCLUDES) -std=gnu99 \
-	-mpreferred-stack-boundary=2 -mregparm=3 -ffreestanding -fno-builtin \
-	-fno-stack-protector
+ABI_FLAGS := -mpreferred-stack-boundary=2 -mregparm=3 -ffreestanding \
+	-fno-builtin -fno-stack-protector
+LINK_FLAGS := -Wl,--wrap=__divdi3 -Wl,--wrap=__udivdi3 \
+	-Wl,--wrap=__moddi3 -Wl,--wrap=__umoddi3 $(ABI_FLAGS)
+CFLAGS := -Wall -Werror -Os $(INCLUDES) -std=gnu99 $(ABI_FLAGS)
 OBJECTS = depthcharge.o
-OBJECTS += debug.o disk.o display.o firmware.o fmap.o gpio.o hda_codec.o \
-	keyboard.o memory.o misc.o nvstorage.o time.o tpm.o
+OBJECTS += debug.o disk.o display.o firmware.o fmap.o gcc.o gpio.o \
+	hda_codec.o keyboard.o memory.o misc.o nvstorage.o time.o tpm.o
 OBJS    = $(patsubst %,$(obj)/%,$(OBJECTS))
 OBJS    += $(VB_LD_DIR)/vboot_fw.a
 TARGET  = $(obj)/depthcharge.elf
@@ -73,7 +75,7 @@ all: $(TARGET)
 
 $(TARGET): $(src)/.config $(OBJS) prepare
 	$(Q)printf "  LD      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(XCC) -o $@ $(OBJS)
+	$(Q)$(XCC) $(LINK_FLAGS) -o $@ $(OBJS)
 	$(Q)printf "  STRIP   $(subst $(shell pwd)/,,$(@))\n"
 	$(Q)$(STRIP) -s $@
 
