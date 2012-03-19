@@ -23,8 +23,8 @@
 #include <libpayload-config.h>
 #include <libpayload.h>
 
-#include <arch/endian.h>
 #include <arch/io.h>
+#include <endian.h>
 #include <vboot_api.h>
 
 #ifdef DEBUG
