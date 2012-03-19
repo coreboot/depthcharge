@@ -123,8 +123,8 @@ static int vboot_select_firmware(void)
 static int vboot_select_and_load_kernel(void)
 {
 	VbSelectAndLoadKernelParams kparams = {
-		.kernel_buffer = NULL,
-		.kernel_buffer_size = 0
+		.kernel_buffer = (void *)0x100000,
+		.kernel_buffer_size = 0x800000
 	};
 
 	printf("Calling VbSelectAndLoadKernel().\n");
