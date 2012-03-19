@@ -26,6 +26,7 @@
 
 #include <vboot_api.h>
 
+#include <ahci.h>
 #include <config.h>
 #include <fmap.h>
 #include <gpio.h>
@@ -141,6 +142,8 @@ int main(void)
 	printf("\n\nStarting depthcharge...\n");
 
 	get_cpu_speed();
+
+	ahci_init(PCI_DEV(0, 31, 2));
 
 	if (fmap_check_signature(fmap)) {
 		printf("Bad signature on the FMAP.\n");
