@@ -172,5 +172,7 @@ int main(void)
 		halt();
 	if (vboot_select_and_load_kernel())
 		halt();
+	printf("Got to the end!\n");
+	halt();
 	return 0;
 }
