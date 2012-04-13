@@ -1,5 +1,5 @@
-#ifndef _ASM_X86_IST_H
-#define _ASM_X86_IST_H
+#ifndef __IST_H__
+#define __IST_H__
 
 /*
  * Include file for the interface to IST BIOS
@@ -17,18 +17,13 @@
  */
 
 
-#include <linux/types.h>
+#include <stdint.h>
 
 struct ist_info {
-	__u32 signature;
-	__u32 command;
-	__u32 event;
-	__u32 perf_level;
+	u32 signature;
+	u32 command;
+	u32 event;
+	u32 perf_level;
 };
 
-#ifdef __KERNEL__
-
-extern struct ist_info ist_info;
-
-#endif	/* __KERNEL__ */
-#endif /* _ASM_X86_IST_H */
+#endif /* __IST_H__ */
