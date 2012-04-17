@@ -57,8 +57,9 @@ LINK_FLAGS := -Wl,--wrap=__divdi3 -Wl,--wrap=__udivdi3 \
 	-Wl,--wrap=__moddi3 -Wl,--wrap=__umoddi3 -fuse-ld=bfd $(ABI_FLAGS)
 CFLAGS := -Wall -Werror -Os $(INCLUDES) -std=gnu99 $(ABI_FLAGS)
 OBJECTS = depthcharge.o
-OBJECTS += ahci.o debug.o disk.o display.o firmware.o fmap.o gcc.o gpio.o \
-	hda_codec.o keyboard.o memory.o misc.o nvstorage.o time.o tpm.o
+OBJECTS += ahci.o commandline.o debug.o disk.o display.o firmware.o fmap.o \
+	gcc.o gpio.o hda_codec.o keyboard.o memory.o misc.o nvstorage.o \
+	time.o tpm.o zimage.o
 OBJS    = $(patsubst %,$(obj)/%,$(OBJECTS))
 OBJS    += $(VB_LD_DIR)/vboot_fw.a
 TARGET  = $(obj)/depthcharge.elf
