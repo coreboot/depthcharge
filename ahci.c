@@ -166,6 +166,10 @@ static int ahci_host_init(AhciHost *host)
 	printf("cap %#x  port_map %#x  n_ports %d\n",
 	      host->cap, host->port_map, host->n_ports);
 
+	// Wait another 1ms to be sure communication has been established with
+	// any devices.
+	udelay(1000);
+
 	for (int i = 0; i < host->n_ports; i++) {
 		host->port[i].port_mmio = ahci_port_base(mmio, i);
 		uint8_t *port_mmio = (uint8_t *)host->port[i].port_mmio;
@@ -190,12 +194,10 @@ static int ahci_host_init(AhciHost *host)
 		printf("Spinning up port %d... ", i);
 		writel(PORT_CMD_SPIN_UP, port_mmio + PORT_CMD);
 
-		if (WAIT_UNTIL((readl(port_mmio + PORT_SCR_STAT) & 0xf) == 0x3,
-				1000)) {
+		if ((readl(port_mmio + PORT_SCR_STAT) & 0xf) == 0x3)
 			printf("ok.\n");
-		} else {
-			printf("timeout.\n");
-		}
+		else
+			printf("communication not established.\n");
 
 		uint32_t port_scr_err = readl(port_mmio + PORT_SCR_ERR);
 		printf("PORT_SCR_ERR %#x\n", port_scr_err);
