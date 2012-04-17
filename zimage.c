@@ -34,6 +34,7 @@
 #include <arch/msr.h>
 #include "bootparam.h"
 #include "cpu.h"
+#include "timestamp.h"
 #include "zimage.h"
 
 #define KERNEL_V2_MAGIC		0x53726448
@@ -104,6 +105,8 @@ int zboot(struct boot_params *setup_base, char *cmd_line, void *kernel_entry)
 	puts("\nStarting kernel ...\n\n");
 
 	board_final_cleanup();
+
+	timestamp_add_now(TS_DEPTHCHARGE_START_KERNEL);
 
 	/*
 	 * Set %ebx, %ebp, and %edi to 0, %esi to point to the boot_params

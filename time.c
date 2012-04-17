@@ -27,9 +27,17 @@
 #include <hda_codec.h>
 #include <vboot_api.h>
 
+static uint64_t base_value;
+
 uint64_t VbExGetTimer(void)
 {
-	return rdtsc();
+	uint64_t time_now;
+
+	time_now = rdtsc();
+	if (!base_value)
+		base_value = time_now;
+
+	return time_now - base_value;
 }
 
 void VbExSleepMs(uint32_t msec)
@@ -50,4 +58,9 @@ VbError_t VbExBeep(uint32_t msec, uint32_t frequency)
         }
 
         return VBERROR_SUCCESS;
+}
+
+void set_base_timer_value(uint64_t new_base)
+{
+	base_value = new_base;
 }

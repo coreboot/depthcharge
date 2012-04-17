@@ -31,6 +31,7 @@
 #include <config.h>
 #include <fmap.h>
 #include <gpio.h>
+#include <timestamp.h>
 #include <zimage.h>
 
 static Fmap *fmap = (Fmap *)(uintptr_t)CONFIG_FMAP_ADDRESS;
@@ -166,6 +167,7 @@ int main(void)
 	printf("\n\nStarting depthcharge...\n");
 
 	get_cpu_speed();
+	timestamp_init();
 
 	ahci_init(PCI_DEV(0, 31, 2));
 
