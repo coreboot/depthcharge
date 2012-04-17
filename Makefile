@@ -52,9 +52,9 @@ STRIP ?= strip
 
 INCLUDES = -Ibuild -I$(src)/include -I$(VB_INC_DIR)
 ABI_FLAGS := -mpreferred-stack-boundary=2 -mregparm=3 -ffreestanding \
-	-fno-builtin -fno-stack-protector
+	-fno-builtin -fno-stack-protector -fomit-frame-pointer
 LINK_FLAGS := -Wl,--wrap=__divdi3 -Wl,--wrap=__udivdi3 \
-	-Wl,--wrap=__moddi3 -Wl,--wrap=__umoddi3 $(ABI_FLAGS)
+	-Wl,--wrap=__moddi3 -Wl,--wrap=__umoddi3 -fuse-ld=bfd $(ABI_FLAGS)
 CFLAGS := -Wall -Werror -Os $(INCLUDES) -std=gnu99 $(ABI_FLAGS)
 OBJECTS = depthcharge.o
 OBJECTS += ahci.o debug.o disk.o display.o firmware.o fmap.o gcc.o gpio.o \
