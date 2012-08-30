@@ -104,9 +104,12 @@ typedef struct pci_device_id {
 
 #define PCI_VENDOR_ID_INTEL 0x8086
 #define PCI_DEVICE_ID_INTEL_COUGARPOINT_HDA 0x1c20
+#define PCI_DEVICE_ID_INTEL_PANTHERPOINT_HDA 0x1e20
 
 static struct pci_device_id supported[] = {
 	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_COUGARPOINT_HDA},
+	{PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_PANTHERPOINT_HDA},
+	{}
 };
 
 /* Find the base address to talk tot he HDA codec.
