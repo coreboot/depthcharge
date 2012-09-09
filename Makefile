@@ -50,11 +50,14 @@ XCC := CC=$(CC) $(LIBPAYLOAD_DIR)/bin/lpgcc
 AS = $(LIBPAYLOAD_DIR)/bin/lpas
 STRIP ?= strip
 
+LDSCRIPT := $(src)/depthcharge.ldscript
+
 INCLUDES = -Ibuild -I$(src)/include -I$(VB_INC_DIR)
 ABI_FLAGS := -mpreferred-stack-boundary=2 -mregparm=3 -ffreestanding \
 	-fno-builtin -fno-stack-protector -fomit-frame-pointer
 LINK_FLAGS := -Wl,--wrap=__divdi3 -Wl,--wrap=__udivdi3 \
-	-Wl,--wrap=__moddi3 -Wl,--wrap=__umoddi3 -fuse-ld=bfd $(ABI_FLAGS)
+	-Wl,--wrap=__moddi3 -Wl,--wrap=__umoddi3 -fuse-ld=bfd \
+	-Wl,-T,$(LDSCRIPT) $(ABI_FLAGS)
 CFLAGS := -Wall -Werror -Os $(INCLUDES) -std=gnu99 $(ABI_FLAGS)
 # Where "main" lives.
 OBJECTS = depthcharge.o
