@@ -1,0 +1,41 @@
+##
+## This file is part of the depthcharge project.
+##
+## Copyright (c) 2012 The Chromium OS Authors.
+##
+## This program is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; version 2 of the License.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program; if not, write to the Free Software
+## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+##
+
+# Where "main" lives.
+depthcharge-y += depthcharge.c
+
+depthcharge-y += ahci.c
+depthcharge-y += commandline.c
+depthcharge-y += debug.c
+depthcharge-y += disk.c
+depthcharge-y += display.c
+depthcharge-y += ec.c
+depthcharge-y += firmware.c
+depthcharge-y += fmap.c
+depthcharge-y += gcc.c
+depthcharge-y += gpio.c
+depthcharge-y += hda_codec.c
+depthcharge-y += keyboard.c
+depthcharge-y += memory.c
+depthcharge-y += misc.c
+depthcharge-y += nvstorage.c
+depthcharge-y += time.c
+depthcharge-y += timestamp.c
+depthcharge-y += tpm.c
+depthcharge-y += zimage.c

@@ -19,11 +19,12 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
+.SECONDEXPANSION:
+
 export src := $(shell pwd)
-export srctree := $(src)
 export srck := $(src)/util/kconfig
 export obj := $(src)/build
-export objk := $(src)/build/util/kconfig
+export objk := $(obj)/util/kconfig
 
 export KERNELVERSION      := 0.1.0
 export KCONFIG_AUTOHEADER := $(obj)/config.h
@@ -52,38 +53,106 @@ STRIP ?= strip
 
 LDSCRIPT := $(src)/depthcharge.ldscript
 
-INCLUDES = -Ibuild -I$(src)/include -I$(VB_INC_DIR)
+INCLUDES = -Ibuild -I$(src)/src/include -I$(VB_INC_DIR)
 ABI_FLAGS := -mpreferred-stack-boundary=2 -mregparm=3 -ffreestanding \
 	-fno-builtin -fno-stack-protector -fomit-frame-pointer
 LINK_FLAGS := -Wl,--wrap=__divdi3 -Wl,--wrap=__udivdi3 \
 	-Wl,--wrap=__moddi3 -Wl,--wrap=__umoddi3 -fuse-ld=bfd \
 	-Wl,-T,$(LDSCRIPT) $(ABI_FLAGS)
 CFLAGS := -Wall -Werror -Os $(INCLUDES) -std=gnu99 $(ABI_FLAGS)
-# Where "main" lives.
-OBJECTS = depthcharge.o
-OBJECTS += \
-	ahci.o \
-	commandline.o \
-	debug.o \
-	disk.o \
-	display.o \
-	ec.o \
-	firmware.o \
-	fmap.o \
-	gcc.o \
-	gpio.o \
-	hda_codec.o \
-	keyboard.o \
-	memory.o \
-	misc.o \
-	nvstorage.o \
-	time.o \
-	timestamp.o \
-	tpm.o \
-	zimage.o
-OBJS    = $(patsubst %,$(obj)/%,$(OBJECTS))
-OBJS    += $(VB_LD_DIR)/vboot_fw.a
-TARGET  = $(obj)/depthcharge.elf
+
+all: real-target
+
+# Add a new class of source/object files to the build system
+add-class= \
+	$(eval $(1)-srcs:=) \
+	$(eval $(1)-objs:=) \
+	$(eval classes+=$(1))
+
+# Special classes are managed types with special behaviour
+# On parse time, for each entry in variable $(1)-y
+# a handler $(1)-handler is executed with the arguments:
+# * $(1): directory the parser is in
+# * $(2): current entry
+add-special-class= \
+	$(eval $(1):=) \
+	$(eval special-classes+=$(1))
+
+# Clean -y variables, include Makefile.inc
+# Add paths to files in X-y to X-srcs
+# Add subdirs-y to subdirs
+includemakefiles= \
+	$(foreach class,classes subdirs $(classes) $(special-classes), $(eval $(class)-y:=)) \
+	$(eval -include $(1)) \
+	$(foreach class,$(classes-y), $(call add-class,$(class))) \
+	$(foreach class,$(classes), \
+		$(eval $(class)-srcs+= \
+			$$(subst $(src)/,, \
+			$$(abspath $$(subst $(dir $(1))/,/,$$(addprefix $(dir $(1)),$$($(class)-y))))))) \
+	$(foreach special,$(special-classes), \
+		$(foreach item,$($(special)-y), $(call $(special)-handler,$(dir $(1)),$(item)))) \
+	$(eval subdirs+=$$(subst $(CURDIR)/,,$$(abspath $$(addprefix $(dir $(1)),$$(subdirs-y)))))
+
+# For each path in $(subdirs) call includemakefiles
+# Repeat until subdirs is empty
+evaluate_subdirs= \
+	$(eval cursubdirs:=$(subdirs)) \
+	$(eval subdirs:=) \
+	$(foreach dir,$(cursubdirs), \
+		$(eval $(call includemakefiles,$(dir)/Makefile.inc))) \
+	$(if $(subdirs),$(eval $(call evaluate_subdirs)))
+
+# collect all object files eligible for building
+subdirs:=$(src)
+$(eval $(call evaluate_subdirs))
+
+# Eliminate duplicate mentions of source files in a class
+$(foreach class,$(classes),$(eval $(class)-srcs:=$(sort $($(class)-srcs))))
+
+src-to-obj=$(addsuffix .$(1).o, $(basename $(patsubst src/%, $(obj)/%, $($(1)-srcs))))
+$(foreach class,$(classes),$(eval $(class)-objs:=$(call src-to-obj,$(class))))
+
+allsrcs:=$(foreach var, $(addsuffix -srcs,$(classes)), $($(var)))
+allobjs:=$(foreach var, $(addsuffix -objs,$(classes)), $($(var)))
+alldirs:=$(sort $(abspath $(dir $(allobjs))))
+
+printall:
+	@$(foreach class,$(classes),echo $(class)-objs:=$($(class)-objs); )
+	@echo alldirs:=$(alldirs)
+	@echo allsrcs=$(allsrcs)
+	@echo DEPENDENCIES=$(DEPENDENCIES)
+	@echo LIBGCC_FILE_NAME=$(LIBGCC_FILE_NAME)
+	@$(foreach class,$(special-classes),echo $(class):='$($(class))'; )
+
+ifndef NOMKDIR
+$(shell mkdir -p $(obj) $(objk)/lxdialog $(additional-dirs) $(alldirs))
+endif
+
+# macro to define template macros that are used by use_template macro
+define create_cc_template
+# $1 obj class
+# $2 source suffix (c, S)
+# $3 additional compiler flags
+# $4 additional dependencies
+ifn$(EMPTY)def $(1)-objs_$(2)_template
+de$(EMPTY)fine $(1)-objs_$(2)_template
+$(obj)/$$(1).$(1).o: src/$$(1).$(2) $(obj)/config.h $(4)
+	@printf "    CC         $$$$(subst $$$$(obj)/,,$$$$(@))\n"
+	$(Q)$(XCC) $(3) -MMD $$$$(CFLAGS) -c -o $$$$@ $$$$<
+en$(EMPTY)def
+end$(EMPTY)if
+endef
+
+filetypes-of-class=$(subst .,,$(sort $(suffix $($(1)-srcs))))
+$(foreach class,$(classes), \
+	$(foreach type,$(call filetypes-of-class,$(class)), \
+		$(eval $(call create_cc_template,$(class),$(type),$($(class)-$(type)-ccopts),$($(class)-$(type)-deps)))))
+
+foreach-src=$(foreach file,$($(1)-srcs),$(eval $(call $(1)-objs_$(subst .,,$(suffix $(file)))_template,$(subst src/,,$(basename $(file))))))
+$(eval $(foreach class,$(classes),$(call foreach-src,$(class))))
+
+DEPENDENCIES = $(allobjs:.o=.d)
+-include $(DEPENDENCIES)
 
 ifeq ($(strip $(HAVE_DOTCONFIG)),)
 
@@ -93,21 +162,7 @@ else
 
 include $(src)/.config
 
-all: $(TARGET)
-
-$(TARGET): $(src)/.config $(OBJS) prepare
-	$(Q)printf "  LD      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(XCC) $(LINK_FLAGS) -o $@ $(OBJS)
-	$(Q)printf "  STRIP   $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(STRIP) -s $@
-
-$(obj)/%.S.o: $(src)/%.S
-	$(Q)printf "  AS      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(AS) -o $@ $<
-
-$(obj)/%.o: $(src)/%.c
-	$(Q)printf "  CC      $(subst $(shell pwd)/,,$(@))\n"
-	$(Q)$(XCC) $(CFLAGS) -c -o $@ $<
+all: real-target
 
 endif
 
