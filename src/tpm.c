@@ -22,6 +22,7 @@
 
 #include <libpayload-config.h>
 #include <libpayload.h>
+#include <tpm.h>
 
 #include <arch/io.h>
 #include <endian.h>
@@ -39,73 +40,18 @@
 
 #define PREFIX "lpc_tpm: "
 
-/* Base TPM address standard for x86 systems */
-#define CONFIG_TPM_TIS_BASE_ADDRESS        0xfed40000
-
-/* the macro accepts the locality value, but only locality 0 is operational */
-#define TIS_REG(LOCALITY, REG) \
-    (void *)(CONFIG_TPM_TIS_BASE_ADDRESS + (LOCALITY << 12) + REG)
-
-/* hardware registers' offsets */
-#define TIS_REG_ACCESS                 0x0
-#define TIS_REG_INT_ENABLE             0x8
-#define TIS_REG_INT_VECTOR             0xc
-#define TIS_REG_INT_STATUS             0x10
-#define TIS_REG_INTF_CAPABILITY        0x14
-#define TIS_REG_STS                    0x18
-#define TIS_REG_DATA_FIFO              0x24
-#define TIS_REG_DID_VID                0xf00
-#define TIS_REG_RID                    0xf04
-
-/* Some registers' bit field definitions */
-#define TIS_STS_VALID                  (1 << 7) /* 0x80 */
-#define TIS_STS_COMMAND_READY          (1 << 6) /* 0x40 */
-#define TIS_STS_TPM_GO                 (1 << 5) /* 0x20 */
-#define TIS_STS_DATA_AVAILABLE         (1 << 4) /* 0x10 */
-#define TIS_STS_EXPECT                 (1 << 3) /* 0x08 */
-#define TIS_STS_RESPONSE_RETRY         (1 << 1) /* 0x02 */
-
-#define TIS_ACCESS_TPM_REG_VALID_STS   (1 << 7) /* 0x80 */
-#define TIS_ACCESS_ACTIVE_LOCALITY     (1 << 5) /* 0x20 */
-#define TIS_ACCESS_BEEN_SEIZED         (1 << 4) /* 0x10 */
-#define TIS_ACCESS_SEIZE               (1 << 3) /* 0x08 */
-#define TIS_ACCESS_PENDING_REQUEST     (1 << 2) /* 0x04 */
-#define TIS_ACCESS_REQUEST_USE         (1 << 1) /* 0x02 */
-#define TIS_ACCESS_TPM_ESTABLISHMENT   (1 << 0) /* 0x01 */
-
-#define TIS_STS_BURST_COUNT_MASK       (0xffff)
-#define TIS_STS_BURST_COUNT_SHIFT      (8)
-
-/*
- * Error value returned if a tpm register does not enter the expected state
- * after continuous polling. No actual TPM register reading ever returns ~0,
- * so this value is a safe error indication to be mixed with possible status
- * register values.
- */
-#define TPM_TIMEOUT_ERR			(~0)
-
-/* Error value returned on various TPM driver errors */
-#define TPM_DRIVER_ERR		(~0)
-
- /* 1 second is plenty for anything TPM does.*/
-#define MAX_DELAY_US	(1000 * 1000)
-
-/* Retrieve burst count value out of the status register contents. */
-#define BURST_COUNT(status) ((u16)(((status) >> TIS_STS_BURST_COUNT_SHIFT) & \
-				   TIS_STS_BURST_COUNT_MASK))
-
 /*
  * Structures defined below allow creating descriptions of TPM vendor/device
  * ID information for run time discovery. The only device the system knows
  * about at this time is Infineon slb9635
  */
 struct device_name {
-	u16 dev_id;
+	uint16_t dev_id;
 	const char * const dev_name;
 };
 
 struct vendor_name {
-	u16 vendor_id;
+	uint16_t vendor_id;
 	const char * vendor_name;
 	struct device_name* dev_names;
 };
@@ -123,9 +69,9 @@ static const struct vendor_name vendor_names[] = {
  * Cached vendor/device ID pair to indicate that the device has been already
  * discovered
  */
-static u32 vendor_dev_id;
+static uint32_t vendor_dev_id;
 
-static int is_byte_reg(u32 reg)
+static int is_byte_reg(uint32_t reg)
 {
 	/*
 	 * These TPM registers are 8 bits wide and as such require byte access
@@ -137,9 +83,9 @@ static int is_byte_reg(u32 reg)
 }
 
 /* TPM access functions are carved out to make tracing easier. */
-static u32 tpm_read(int locality, u32 reg)
+uint32_t tpm_read(int locality, uint32_t reg)
 {
-	u32 value;
+	uint32_t value;
 	/*
 	 * Data FIFO register must be read and written in byte access mode,
 	 * otherwise the FIFO values are returned 4 bytes at a time.
@@ -153,7 +99,7 @@ static u32 tpm_read(int locality, u32 reg)
 	return value;
 }
 
-static void tpm_write(u32 value, int locality,  u32 reg)
+void tpm_write(uint32_t value, int locality,  uint32_t reg)
 {
 	TPM_DEBUG("Write reg 0x%x with 0x%x\n", reg, value);
 
@@ -177,11 +123,12 @@ static void tpm_write(u32 value, int locality,  u32 reg)
  * Returns the register contents in case the expected value was found in the
  * appropriate register bits, or TPM_TIMEOUT_ERR on timeout.
  */
-static u32 tis_wait_reg(u8 reg, u8 locality, u8 mask, u8 expected)
+uint32_t tis_wait_reg(uint8_t reg, uint8_t locality, uint8_t mask,
+		      uint8_t expected)
 {
-	u32 time_us = MAX_DELAY_US;
+	uint32_t time_us = MAX_DELAY_US;
 	while (time_us > 0) {
-		u32 value = tpm_read(locality, reg);
+		uint32_t value = tpm_read(locality, reg);
 		if ((value & mask) == expected)
 			return value;
 		udelay(1); /* 1 us */
@@ -196,9 +143,9 @@ static u32 tis_wait_reg(u8 reg, u8 locality, u8 mask, u8 expected)
  * Returns 0 on success (the device is found or was found during an earlier
  * invocation) or TPM_DRIVER_ERR if the device is not found.
  */
-static u32 tis_probe(void)
+uint32_t tis_probe(void)
 {
-	u32 didvid = tpm_read(0, TIS_REG_DID_VID);
+	uint32_t didvid = tpm_read(0, TIS_REG_DID_VID);
 
 	if (vendor_dev_id)
 		return 0;  /* Already probed. */
@@ -214,11 +161,11 @@ static u32 tis_probe(void)
 	int i;
 	const char *device_name = "unknown";
 	const char *vendor_name = device_name;
-	u16 vid = didvid & 0xffff;
-	u16 did = (didvid >> 16) & 0xffff;
+	uint16_t vid = didvid & 0xffff;
+	uint16_t did = (didvid >> 16) & 0xffff;
 	for (i = 0; i < ARRAY_SIZE(vendor_names); i++) {
 		int j = 0;
-		u16 known_did;
+		uint16_t known_did;
 		if (vid == vendor_names[i].vendor_id) {
 			vendor_name = vendor_names[i].vendor_name;
 		}
@@ -249,13 +196,13 @@ static u32 tis_probe(void)
  * Returns 0 on success, TPM_DRIVER_ERR on error (in case the device does
  * not accept the entire command).
  */
-static u32 tis_senddata(const u8 * const data, u32 len)
+uint32_t tis_senddata(const uint8_t *const data, uint32_t len)
 {
-	u32 offset = 0;
-	u16 burst = 0;
-	u32 max_cycles = 0;
-	u8 locality = 0;
-	u32 value;
+	uint32_t offset = 0;
+	uint16_t burst = 0;
+	uint32_t max_cycles = 0;
+	uint8_t locality = 0;
+	uint32_t value;
 
 	value = tis_wait_reg(TIS_REG_STS, locality, TIS_STS_COMMAND_READY,
 			     TIS_STS_COMMAND_READY);
@@ -347,14 +294,14 @@ static u32 tis_senddata(const u8 * const data, u32 len)
  * errors (misformatted TPM data or synchronization problems) returns
  * TPM_DRIVER_ERR.
  */
-static u32 tis_readresponse(u8 *buffer, u32 *len)
+uint32_t tis_readresponse(uint8_t *buffer, uint32_t *len)
 {
-	u16 burst_count;
-	u32 status;
-	u32 offset = 0;
-	u8 locality = 0;
-	const u32 has_data = TIS_STS_DATA_AVAILABLE | TIS_STS_VALID;
-	u32 expected_count = *len;
+	uint16_t burst_count;
+	uint32_t status;
+	uint32_t offset = 0;
+	uint8_t locality = 0;
+	const uint32_t has_data = TIS_STS_DATA_AVAILABLE | TIS_STS_VALID;
+	uint32_t expected_count = *len;
 	int max_cycles = 0;
 
 	/* Wait for the TPM to process the command */
@@ -379,7 +326,7 @@ static u32 tis_readresponse(u8 *buffer, u32 *len)
 		max_cycles = 0;
 
 		while (burst_count-- && (offset < expected_count)) {
-			buffer[offset++] = (u8) tpm_read(locality,
+			buffer[offset++] = (uint8_t) tpm_read(locality,
 							 TIS_REG_DATA_FIFO);
 			if (offset == 6) {
 				/*
@@ -389,7 +336,7 @@ static u32 tis_readresponse(u8 *buffer, u32 *len)
 				 * network order, starting with offset 2 into
 				 * the body of the reply.
 				 */
-				u32 real_length;
+				uint32_t real_length;
 				memcpy(&real_length,
 				       buffer + 2,
 				       sizeof(real_length));
@@ -459,66 +406,4 @@ int tis_sendrecv(const uint8_t *sendbuf, size_t send_size,
 	}
 
 	return tis_readresponse(recvbuf, recv_len);
-}
-
-VbError_t VbExTpmInit(void)
-{
-	if (tis_probe())
-		return VBERROR_UNKNOWN;
-	return VbExTpmOpen();
-}
-
-VbError_t VbExTpmClose(void)
-{
-	u8 locality = 0;
-	if (tpm_read(locality, TIS_REG_ACCESS) &
-	    TIS_ACCESS_ACTIVE_LOCALITY) {
-		tpm_write(TIS_ACCESS_ACTIVE_LOCALITY, locality, TIS_REG_ACCESS);
-
-		if (tis_wait_reg(TIS_REG_ACCESS, locality,
-				 TIS_ACCESS_ACTIVE_LOCALITY, 0) ==
-		    TPM_TIMEOUT_ERR) {
-			printf("%s:%d - failed to release locality %d\n",
-			       __FILE__, __LINE__, locality);
-			return VBERROR_UNKNOWN;
-		}
-	}
-	return VBERROR_SUCCESS;
-}
-
-VbError_t VbExTpmOpen(void)
-{
-	u8 locality = 0; /* we use locality zero for everything */
-
-	if (VbExTpmClose())
-		return VBERROR_UNKNOWN;
-
-	/* now request access to locality */
-	tpm_write(TIS_ACCESS_REQUEST_USE, locality, TIS_REG_ACCESS);
-
-	/* did we get a lock? */
-	if (tis_wait_reg(TIS_REG_ACCESS, locality,
-			 TIS_ACCESS_ACTIVE_LOCALITY,
-			 TIS_ACCESS_ACTIVE_LOCALITY) == TPM_TIMEOUT_ERR) {
-		printf("%s:%d - failed to lock locality %d\n",
-		       __FILE__, __LINE__, locality);
-		return VBERROR_UNKNOWN;
-	}
-
-	tpm_write(TIS_STS_COMMAND_READY, locality, TIS_REG_STS);
-
-	return VBERROR_SUCCESS;
-}
-
-VbError_t VbExTpmSendReceive(const uint8_t *request, uint32_t request_length,
-			     uint8_t *response, uint32_t *response_length)
-{
-	if (tis_senddata(request, request_length)) {
-		printf("%s:%d failed sending data to TPM\n",
-		       __FILE__, __LINE__);
-		return VBERROR_UNKNOWN;
-	}
-	if (tis_readresponse(response, response_length))
-		return VBERROR_UNKNOWN;
-	return VBERROR_SUCCESS;
 }

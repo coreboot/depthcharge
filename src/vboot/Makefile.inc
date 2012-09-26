@@ -17,18 +17,14 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-# Files which implement the callback interface for vboot.
-subdirs-y := vboot
-
-# Where "main" lives.
-depthcharge-y += depthcharge.c
-
-depthcharge-y += ahci.c
-depthcharge-y += commandline.c
-depthcharge-y += fmap.c
-depthcharge-y += gcc.c
-depthcharge-y += gpio.c
-depthcharge-y += hda_codec.c
-depthcharge-y += timestamp.c
+depthcharge-y += debug.c
+depthcharge-y += disk.c
+depthcharge-y += display.c
+depthcharge-y += ec.c
+depthcharge-y += firmware.c
+depthcharge-y += keyboard.c
+depthcharge-y += memory.c
+depthcharge-y += misc.c
+depthcharge-y += nvstorage.c
+depthcharge-y += time.c
 depthcharge-y += tpm.c
-depthcharge-y += zimage.c
