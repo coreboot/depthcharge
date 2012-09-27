@@ -26,7 +26,7 @@
  *
  * The following methods must be called in order:
  *   memory_wipe_init
- *   memory_wipe_exclude
+ *   calls to memory_wipe_add and/or memory_wipe_sub
  *   memory_wipe_execute
  */
 
