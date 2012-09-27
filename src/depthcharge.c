@@ -20,9 +20,11 @@
  * MA 02111-1307 USA
  */
 
+#include <coreboot_tables.h>
 #include <libpayload-config.h>
 #include <libpayload.h>
 #include <stdint.h>
+#include <sysinfo.h>
 
 #include <vboot_api.h>
 
@@ -31,6 +33,7 @@
 #include <config.h>
 #include <fmap.h>
 #include <gpio.h>
+#include <memory_wipe.h>
 #include <timestamp.h>
 #include <zimage.h>
 
@@ -51,6 +54,9 @@ VbCommonParams cparams = {
 };
 
 static uint8_t shared_data_blob[VB_SHARED_DATA_REC_SIZE];
+
+extern const uint8_t _start;
+extern const uint8_t _end;
 
 static int vboot_init(void)
 {
@@ -76,8 +82,40 @@ static int vboot_init(void)
 	if (res != VBERROR_SUCCESS)
 		return 1;
 
-	if (iparams.out_flags && VB_INIT_OUT_CLEAR_RAM)
-		printf("VB_INIT_OUT_CLEAR_RAM set but ignored.\n");
+	if (iparams.out_flags && VB_INIT_OUT_CLEAR_RAM) {
+		memory_wipe_t wipe;
+
+		// Process the memory map from coreboot.
+		memory_wipe_init(&wipe);
+		for (int i = 0; i < lib_sysinfo.n_memranges; i++) {
+			struct memrange *range = &lib_sysinfo.memrange[i];
+			phys_addr_t start = range->base;
+			phys_addr_t end = range->base + range->size;
+			switch (range->type) {
+			case CB_MEM_RAM:
+				memory_wipe_add(&wipe, start, end);
+				break;
+			case CB_MEM_RESERVED:
+			case CB_MEM_ACPI:
+			case CB_MEM_NVS:
+			case CB_MEM_UNUSABLE:
+			case CB_MEM_VENDOR_RSVD:
+			case CB_MEM_TABLE:
+				memory_wipe_sub(&wipe, start, end);
+				break;
+			default:
+				printf("Unrecognized memory type %d!\n",
+					range->type);
+				return 1;
+			}
+		}
+
+		// Exclude memory we're using ourselves.
+		memory_wipe_sub(&wipe, (uintptr_t)&_start, (uintptr_t)&_end);
+
+		// Do the wipe.
+		memory_wipe_execute(&wipe);
+	}
 	return 0;
 };
 
