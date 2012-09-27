@@ -20,16 +20,14 @@
  * MA 02111-1307 USA
  */
 
-#include <coreboot_tables.h>
 #include <libpayload.h>
 #include <stdint.h>
-#include <sysinfo.h>
 #include <vboot_api.h>
 
 #include "base/dc_image.h"
 #include "base/fmap.h"
 #include "base/gpio.h"
-#include "base/memory_wipe.h"
+#include "base/memory.h"
 #include "base/timestamp.h"
 #include "boot/commandline.h"
 #include "boot/zimage.h"
@@ -79,38 +77,8 @@ static int vboot_init(void)
 		return 1;
 
 	if (iparams.out_flags && VB_INIT_OUT_CLEAR_RAM) {
-		memory_wipe_t wipe;
-
-		// Process the memory map from coreboot.
-		memory_wipe_init(&wipe);
-		for (int i = 0; i < lib_sysinfo.n_memranges; i++) {
-			struct memrange *range = &lib_sysinfo.memrange[i];
-			phys_addr_t start = range->base;
-			phys_addr_t end = range->base + range->size;
-			switch (range->type) {
-			case CB_MEM_RAM:
-				memory_wipe_add(&wipe, start, end);
-				break;
-			case CB_MEM_RESERVED:
-			case CB_MEM_ACPI:
-			case CB_MEM_NVS:
-			case CB_MEM_UNUSABLE:
-			case CB_MEM_VENDOR_RSVD:
-			case CB_MEM_TABLE:
-				memory_wipe_sub(&wipe, start, end);
-				break;
-			default:
-				printf("Unrecognized memory type %d!\n",
-					range->type);
-				return 1;
-			}
-		}
-
-		// Exclude memory we're using ourselves.
-		memory_wipe_sub(&wipe, (uintptr_t)&_start, (uintptr_t)&_end);
-
-		// Do the wipe.
-		memory_wipe_execute(&wipe);
+		if (wipe_unused_memory())
+			return 1;
 	}
 	return 0;
 };
