@@ -26,6 +26,7 @@
 #include <sysinfo.h>
 #include <vboot_api.h>
 
+#include "base/dc_image.h"
 #include "base/fmap.h"
 #include "base/gpio.h"
 #include "base/memory_wipe.h"
@@ -52,9 +53,6 @@ VbCommonParams cparams = {
 };
 
 static uint8_t shared_data_blob[VB_SHARED_DATA_REC_SIZE];
-
-extern const uint8_t _start;
-extern const uint8_t _end;
 
 static int vboot_init(void)
 {

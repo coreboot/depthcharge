@@ -24,6 +24,7 @@
 #include <libpayload.h>
 #include <stdint.h>
 
+#include "base/dc_image.h"
 #include "base/physmem.h"
 
 /* Large pages are 2MB. */
@@ -161,8 +162,6 @@ static void x86_phys_exit_paging(void)
 		: "eax"
 	);
 }
-
-extern const uint8_t _start;
 
 /*
  * Set physical memory to a particular value when the whole region fits on one
