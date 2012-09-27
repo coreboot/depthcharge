@@ -20,13 +20,11 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload-config.h>
 #include <libpayload.h>
-
 #include <vboot_api.h>
 
-#include <blockdev.h>
-#include <ahci.h>
+#include "drivers/ahci.h"
+#include "drivers/blockdev.h"
 
 VbError_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
 			  uint32_t disk_flags)

@@ -20,9 +20,7 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload-config.h>
 #include <libpayload.h>
-
 #include <vboot_api.h>
 
 VbError_t VbExNvStorageRead(uint8_t* buf)

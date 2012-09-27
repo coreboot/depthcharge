@@ -20,12 +20,12 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
-#include <vboot_api.h>
+#ifndef __BOOT_COMMANDLINE_H__
+#define __BOOT_COMMANDLINE_H__
 
-VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
-			       uint32_t firmware_index)
-{
-	printf("VbExHashFirmwareBody called but not implemented.\n");
-	return VBERROR_SUCCESS;
-}
+#include <stdint.h>
+
+int commandline_subst(const char *src, int devnum, int partnum, uint8_t *guid,
+		      char *dest, int dest_size);
+
+#endif /* __BOOT_COMMAND_LINE_H__ */

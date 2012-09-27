@@ -53,7 +53,7 @@ STRIP ?= strip
 
 LDSCRIPT := $(src)/depthcharge.ldscript
 
-INCLUDES = -Ibuild -I$(src)/src/include -I$(VB_INC_DIR)
+INCLUDES = -Ibuild -I$(src)/src/ -I$(VB_INC_DIR)
 ABI_FLAGS := -mpreferred-stack-boundary=2 -mregparm=3 -ffreestanding \
 	-fno-builtin -fno-stack-protector -fomit-frame-pointer
 LINK_FLAGS := -Wl,--wrap=__divdi3 -Wl,--wrap=__udivdi3 \

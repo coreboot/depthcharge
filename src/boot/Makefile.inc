@@ -17,8 +17,5 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-# Files which implement the callback interface for vboot.
-subdirs-y := base boot drivers vboot
-
-# Where "main" lives.
-depthcharge-y += depthcharge.c
+depthcharge-y += commandline.c
+depthcharge-y += zimage.c

@@ -20,12 +20,21 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
-#include <vboot_api.h>
+#include <arch/rdtsc.h>
 
-VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
-			       uint32_t firmware_index)
+#include "base/time.h"
+
+static uint64_t base_value;
+
+uint64_t get_timer_value(void)
 {
-	printf("VbExHashFirmwareBody called but not implemented.\n");
-	return VBERROR_SUCCESS;
+	uint64_t time_now = rdtsc();
+	if (!base_value)
+		base_value = time_now;
+	return base_value - base_value;
+}
+
+void set_base_timer_value(uint64_t new_base)
+{
+	base_value = new_base;
 }

@@ -20,9 +20,7 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload-config.h>
 #include <libpayload.h>
-
 #include <vboot_api.h>
 
 static const uint32_t CSI_0 = 0x1B;

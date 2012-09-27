@@ -20,11 +20,10 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload-config.h>
 #include <libpayload.h>
-#include <tpm.h>
-
 #include <vboot_api.h>
+
+#include "drivers/tpm.h"
 
 VbError_t VbExTpmInit(void)
 {

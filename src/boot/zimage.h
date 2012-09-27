@@ -20,12 +20,11 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
-#include <vboot_api.h>
+#ifndef __BASE_ZIMAGE_H__
+#define __BASE_ZIMAGE_H__
 
-VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
-			       uint32_t firmware_index)
-{
-	printf("VbExHashFirmwareBody called but not implemented.\n");
-	return VBERROR_SUCCESS;
-}
+#include "boot/bootparam.h"
+
+int zboot(struct boot_params *setup_base, char *cmd_line, void *kernel_entry);
+
+#endif /* __BASE_ZIMAGE_H__ */

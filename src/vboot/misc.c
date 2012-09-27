@@ -20,12 +20,10 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload-config.h>
 #include <libpayload.h>
-
 #include <vboot_api.h>
 
-#include <gpio.h>
+#include "base/gpio.h"
 
 uint32_t VbExIsShutdownRequested(void)
 {

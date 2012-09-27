@@ -21,11 +21,23 @@
  */
 
 #include <libpayload.h>
-#include <vboot_api.h>
 
-VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
-			       uint32_t firmware_index)
+#include "base/fmap.h"
+
+int fmap_check_signature(Fmap *fmap)
 {
-	printf("VbExHashFirmwareBody called but not implemented.\n");
-	return VBERROR_SUCCESS;
+	return memcmp(fmap->fmap_signature, (uint8_t *)FMAP_SIGNATURE,
+		      sizeof(fmap->fmap_signature));
+}
+
+FmapArea *fmap_find_area(Fmap *fmap, const char *name)
+{
+	for (int i = 0; i < fmap->fmap_nareas; i++) {
+		FmapArea *area = &(fmap->fmap_areas[i]);
+		if (!strncmp(name, (const char *)area->area_name,
+				sizeof(area->area_name))) {
+			return area;
+		}
+	}
+	return NULL;
 }

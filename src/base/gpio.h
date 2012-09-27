@@ -20,12 +20,33 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
-#include <vboot_api.h>
+#ifndef __BASE_GPIO_H__
+#define __BASE_GPIO_H__
 
-VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
-			       uint32_t firmware_index)
-{
-	printf("VbExHashFirmwareBody called but not implemented.\n");
-	return VBERROR_SUCCESS;
-}
+enum gpio_index {
+	GPIO_WPSW = 0,
+	GPIO_RECSW,
+	GPIO_DEVSW,
+	GPIO_LIDSW,
+	GPIO_PWRSW,
+
+	GPIO_MAX_GPIO
+};
+
+enum gpio_polarity {
+	GPIO_ACTIVE_LOW = 0,
+	GPIO_ACTIVE_HIGH = 1
+};
+
+typedef struct {
+	enum gpio_index index;
+	int port;
+	int polarity;
+	int value;
+} gpio_t;
+
+
+int gpio_fetch(enum gpio_index index, gpio_t *gpio);
+int gpio_dump(gpio_t *gpio);
+
+#endif /* __BASE_GPIO_H_ */

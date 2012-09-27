@@ -20,9 +20,7 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload-config.h>
 #include <libpayload.h>
-
 #include <vboot_api.h>
 
 VbError_t VbExDisplayInit(uint32_t *width, uint32_t *height)

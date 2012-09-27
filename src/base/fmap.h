@@ -20,12 +20,33 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
-#include <vboot_api.h>
+#ifndef __BASE_FMAP_H__
+#define __BASE_FMAP_H__
 
-VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
-			       uint32_t firmware_index)
-{
-	printf("VbExHashFirmwareBody called but not implemented.\n");
-	return VBERROR_SUCCESS;
-}
+#include <stdint.h>
+
+typedef struct FmapArea {
+	uint32_t area_offset;
+	uint32_t area_size;
+	uint8_t area_name[32];
+	uint16_t area_flags;
+} __attribute__ ((packed)) FmapArea;
+
+
+typedef struct Fmap {
+	uint8_t fmap_signature[8];
+	uint8_t fmap_ver_major;
+	uint8_t fmap_ver_minor;
+	uint64_t fmap_base;
+	uint32_t fmap_size;
+	uint8_t fmap_name[32];
+	uint16_t fmap_nareas;
+	FmapArea fmap_areas[0];
+} __attribute__ ((packed)) Fmap;
+
+#define FMAP_SIGNATURE "__FMAP__"
+
+int fmap_check_signature(Fmap *fmap);
+FmapArea *fmap_find_area(Fmap *fmap, const char *name);
+
+#endif /* __BASE_FMAP_H__ */

@@ -21,21 +21,19 @@
  */
 
 #include <coreboot_tables.h>
-#include <libpayload-config.h>
 #include <libpayload.h>
 #include <stdint.h>
 #include <sysinfo.h>
-
 #include <vboot_api.h>
 
-#include <ahci.h>
-#include <commandline.h>
-#include <config.h>
-#include <fmap.h>
-#include <gpio.h>
-#include <memory_wipe.h>
-#include <timestamp.h>
-#include <zimage.h>
+#include "base/fmap.h"
+#include "base/gpio.h"
+#include "base/memory_wipe.h"
+#include "base/timestamp.h"
+#include "boot/commandline.h"
+#include "boot/zimage.h"
+#include "config.h"
+#include "drivers/ahci.h"
 
 static Fmap *fmap = (Fmap *)(uintptr_t)CONFIG_FMAP_ADDRESS;
 static uintptr_t rom_base;

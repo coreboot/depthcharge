@@ -20,12 +20,22 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
-#include <vboot_api.h>
+#ifndef __DRIVERS_BLOCKDEV_H__
+#define __DRIVERS_BLOCKDEV_H__
 
-VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
-			       uint32_t firmware_index)
-{
-	printf("VbExHashFirmwareBody called but not implemented.\n");
-	return VBERROR_SUCCESS;
-}
+#include <stdint.h>
+
+typedef uint64_t lba_t;
+
+typedef struct BlockDev {
+	int removable;
+	unsigned block_size;
+	lba_t block_count;
+	lba_t (*read)(struct BlockDev *dev, lba_t start, lba_t count,
+		      void *buffer);
+	lba_t (*write)(struct BlockDev *dev, lba_t start, lba_t count,
+		       const void *buffer);
+	void *dev_data;
+} BlockDev;
+
+#endif /* __DRIVERS_BLOCKDEV_H__ */
