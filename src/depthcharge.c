@@ -31,11 +31,7 @@
 #include "base/timestamp.h"
 #include "boot/commandline.h"
 #include "boot/zimage.h"
-#include "config.h"
 #include "drivers/ahci.h"
-
-static Fmap *fmap = (Fmap *)(uintptr_t)CONFIG_FMAP_ADDRESS;
-static uintptr_t rom_base;
 
 #define CMD_LINE_SIZE 4096
 
@@ -93,17 +89,17 @@ static int vboot_select_firmware(void)
 	};
 
 	// Set up the fparams structure.
-	FmapArea *vblock_a = fmap_find_area(fmap, "VBLOCK_A");
-	FmapArea *vblock_b = fmap_find_area(fmap, "VBLOCK_B");
+	FmapArea *vblock_a = fmap_find_area(main_fmap, "VBLOCK_A");
+	FmapArea *vblock_b = fmap_find_area(main_fmap, "VBLOCK_B");
 	if (!vblock_a || !vblock_b) {
 		printf("Couldn't find one of the vblocks.\n");
 		return 1;
 	}
 	fparams.verification_block_A = \
-		(void *)(vblock_a->area_offset + rom_base);
+		(void *)(vblock_a->area_offset + main_rom_base);
 	fparams.verification_size_A = vblock_a->area_size;
 	fparams.verification_block_B = \
-		(void *)(vblock_b->area_offset + rom_base);
+		(void *)(vblock_b->area_offset + main_rom_base);
 	fparams.verification_size_B = vblock_b->area_size;
 
 	printf("Calling VbSelectFirmware().\n");
@@ -173,22 +169,20 @@ int main(void)
 
 	ahci_init(PCI_DEV(0, 31, 2));
 
-	if (fmap_check_signature(fmap)) {
-		printf("Bad signature on the FMAP.\n");
+	if (fmap_init()) {
+		printf("Problem with the FMAP.\n");
 		halt();
 	}
 
-	rom_base = (uintptr_t)(-fmap->fmap_size);
-
 	// Set up the common param structure.
-	FmapArea *gbb_area = fmap_find_area(fmap, "GBB");
+	FmapArea *gbb_area = fmap_find_area(main_fmap, "GBB");
 	if (!gbb_area) {
 		printf("Couldn't find the GBB.\n");
 		halt();
 	}
 
 	cparams.gbb_data =
-		(void *)(uintptr_t)(gbb_area->area_offset + rom_base);
+		(void *)(uintptr_t)(gbb_area->area_offset + main_rom_base);
 	cparams.gbb_size = gbb_area->area_size;
 
 	cparams.shared_data_blob = shared_data_blob;

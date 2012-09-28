@@ -23,6 +23,19 @@
 #include <libpayload.h>
 
 #include "base/fmap.h"
+#include "config.h"
+
+Fmap * const main_fmap = (Fmap *)(uintptr_t)CONFIG_FMAP_ADDRESS;
+uintptr_t main_rom_base;
+
+int fmap_init(void)
+{
+	if (fmap_check_signature(main_fmap))
+		return 1;
+
+	main_rom_base = (uintptr_t)(-main_fmap->fmap_size);
+	return 0;
+}
 
 int fmap_check_signature(Fmap *fmap)
 {
