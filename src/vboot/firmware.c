@@ -23,9 +23,33 @@
 #include <libpayload.h>
 #include <vboot_api.h>
 
+#include "base/fmap.h"
+
 VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
 			       uint32_t firmware_index)
 {
-	printf("VbExHashFirmwareBody called but not implemented.\n");
+	const char *area_name = NULL;
+
+	switch (firmware_index) {
+	case VB_SELECT_FIRMWARE_A:
+		area_name = "FW_MAIN_A";
+		break;
+	case VB_SELECT_FIRMWARE_B:
+		area_name = "FW_MAIN_B";
+		break;
+	default:
+		printf("Unrecognized firmware index %d.\n", firmware_index);
+		return VBERROR_UNKNOWN;
+	}
+
+	FmapArea *area = fmap_find_area(main_fmap, area_name);
+	if (!area) {
+		printf("Fmap region %s not found.\n", area_name);
+		return VBERROR_UNKNOWN;
+	}
+
+	void *data = (void *)((uintptr_t)area->area_offset + main_rom_base);
+	VbUpdateFirmwareBodyHash(cparams, data, area->area_size);
+
 	return VBERROR_SUCCESS;
 }
