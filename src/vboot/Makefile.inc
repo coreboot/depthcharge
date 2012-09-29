@@ -22,6 +22,7 @@ depthcharge-y += disk.c
 depthcharge-y += display.c
 depthcharge-y += ec.c
 depthcharge-y += keyboard.c
+depthcharge-y += legacy.c
 depthcharge-y += load_firmware.c
 depthcharge-y += memory.c
 depthcharge-y += misc.c
