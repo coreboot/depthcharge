@@ -21,6 +21,7 @@
  */
 
 #include <libpayload.h>
+#include <lzma.h>
 #include <vboot_api.h>
 
 #include "base/gpio.h"
@@ -50,6 +51,25 @@ VbError_t VbExDecompress(void *inbuf, uint32_t in_size,
 			 uint32_t compression_type,
 			 void *outbuf, uint32_t *out_size)
 {
-	printf("VbExDecompress called but not implemented.\n");
+	switch (compression_type) {
+	case COMPRESS_NONE:
+		memcpy(outbuf, inbuf, in_size);
+		*out_size = in_size;
+		break;
+	case COMPRESS_EFIv1:
+		printf("EFIv1 compression not supported.\n");
+		return VBERROR_UNKNOWN;
+	case COMPRESS_LZMA1:
+		*out_size = ulzma(inbuf, outbuf);
+		if (!*out_size) {
+			printf("Error doing LZMA decompression.\n");
+			return VBERROR_UNKNOWN;
+		}
+		break;
+	default:
+		printf("Unrecognized compression type %d.\n",
+		       compression_type);
+		return VBERROR_INVALID_PARAMETER;
+	}
 	return VBERROR_SUCCESS;
 }
