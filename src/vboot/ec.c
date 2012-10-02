@@ -23,10 +23,17 @@
 #include <libpayload.h>
 #include <vboot_api.h>
 
+#include "base/flag.h"
+
 int VbExTrustEC(void)
 {
-	printf("VbExTrustEC not implemented.\n");
-	return 1;
+	int val = flag_fetch(FLAG_ECINRW);
+	if (val < 0) {
+		printf("Couldn't tell if the EC is running RW firmware.\n");
+		return 0;
+	}
+	// Trust the EC if it's NOT in its RW firmware.
+	return !val;
 }
 
 VbError_t VbExEcRunningRW(int *in_rw)
