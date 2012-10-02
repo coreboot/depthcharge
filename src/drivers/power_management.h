@@ -24,9 +24,9 @@
 #define __DRIVERS_POWER_MANAGEMENT_H__
 
 /* Cold reboot the machine */
-void cold_reboot(void);
+void cold_reboot(void) __attribute__ ((noreturn));
 
 /* Power off the machine */
-void power_off(void);
+void power_off(void) __attribute__ ((noreturn));
 
 #endif /* __DRIVERS_POWER_MANAGEMENT_H__ */
