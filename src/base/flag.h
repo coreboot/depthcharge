@@ -29,6 +29,7 @@ enum flag_index {
 	FLAG_DEVSW,
 	FLAG_LIDSW,
 	FLAG_PWRSW,
+	FLAG_OPROM,
 
 	FLAG_MAX_FLAG
 };

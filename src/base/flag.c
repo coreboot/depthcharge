@@ -30,7 +30,8 @@ const char const *cb_gpio_name[FLAG_MAX_FLAG] = {
 	[FLAG_RECSW] = "recovery",
 	[FLAG_DEVSW] = "developer",
 	[FLAG_LIDSW] = "lid",
-	[FLAG_PWRSW] = "power"
+	[FLAG_PWRSW] = "power",
+	[FLAG_OPROM] = "oprom"
 };
 
 int flag_fetch(enum flag_index index)
