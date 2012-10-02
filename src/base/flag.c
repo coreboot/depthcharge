@@ -23,6 +23,7 @@
 #include <libpayload.h>
 
 #include "base/flag.h"
+#include "drivers/gpio/pch.h"
 #include "drivers/gpio/sysinfo.h"
 
 const char const *cb_gpio_name[FLAG_MAX_FLAG] = {
@@ -40,6 +41,11 @@ int flag_fetch(enum flag_index index)
 		printf("Flag index %d larger than max %d.\n",
 			index, FLAG_MAX_FLAG);
 		return -1;
+	}
+
+	if (index == FLAG_ECINRW) {
+		pch_gpio_direction(21, 1);
+		return pch_gpio_get_value(21);
 	}
 
 	const char const *name = cb_gpio_name[index];
