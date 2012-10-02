@@ -32,6 +32,7 @@
 #include "boot/commandline.h"
 #include "boot/zimage.h"
 #include "drivers/ahci.h"
+#include "drivers/power_management.h"
 
 #define CMD_LINE_SIZE 4096
 
@@ -56,7 +57,9 @@ static int vboot_init(void)
 	int dev_switch = flag_fetch(FLAG_DEVSW);
 	int rec_switch = flag_fetch(FLAG_RECSW);
 	int wp_switch = flag_fetch(FLAG_WPSW);
-	if (dev_switch < 0 || rec_switch < 0 || wp_switch < 0)
+	int oprom_loaded = flag_fetch(FLAG_OPROM);
+	if (dev_switch < 0 || rec_switch < 0 ||
+	    wp_switch < 0 || oprom_loaded < 0)
 		return 1;
 
 	// Decide what flags to pass into VbInit.
@@ -66,10 +69,18 @@ static int vboot_init(void)
 		iparams.flags |= VB_INIT_FLAG_REC_BUTTON_PRESSED;
 	if (wp_switch)
 		iparams.flags |= VB_INIT_FLAG_WP_ENABLED;
+	if (oprom_loaded)
+		iparams.flags |= VB_INIT_FLAG_OPROM_LOADED;
+	iparams.flags |= VB_INIT_FLAG_OPROM_MATTERS;
 	iparams.flags |= VB_INIT_FLAG_RO_NORMAL_SUPPORT;
 
 	printf("Calling VbInit().\n");
 	VbError_t res = VbInit(&cparams, &iparams);
+
+	if (res == VBERROR_VGA_OPROM_MISMATCH) {
+		printf("Doing a cold reboot.\n");
+		cold_reboot();
+	}
 	if (res != VBERROR_SUCCESS)
 		return 1;
 
