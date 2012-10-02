@@ -17,9 +17,9 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
+depthcharge-y += flag.c
 depthcharge-y += fmap.c
 depthcharge-y += gcc.c
-depthcharge-y += gpio.c
 depthcharge-y += memory.c
 depthcharge-y += memory_wipe.c
 depthcharge-y += physmem.c

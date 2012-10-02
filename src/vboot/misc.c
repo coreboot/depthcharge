@@ -24,22 +24,24 @@
 #include <lzma.h>
 #include <vboot_api.h>
 
-#include "base/gpio.h"
+#include "base/flag.h"
 
 uint32_t VbExIsShutdownRequested(void)
 {
-	gpio_t lidsw, pwrsw;
+	int lidsw = flag_fetch(FLAG_LIDSW);
+	int pwrsw = flag_fetch(FLAG_PWRSW);
 
-	if (gpio_fetch(GPIO_LIDSW, &lidsw) || gpio_fetch(GPIO_PWRSW, &pwrsw)) {
-		printf("Failed to fetch lid or power switch GPIO.\n");
-		return 1;
+	if (lidsw < 0 || pwrsw < 0) {
+		// There isn't any way to return an error, so just hang.
+		printf("Failed to fetch lid or power switch flag.\n");
+		halt();
 	}
 
-	if (!lidsw.value) {
+	if (!lidsw) {
 		printf("Lid is closed.\n");
 		return 1;
 	}
-	if (pwrsw.value) {
+	if (pwrsw) {
 		printf("Power key pressed.\n");
 		return 1;
 	}

@@ -25,8 +25,8 @@
 #include <vboot_api.h>
 
 #include "base/dc_image.h"
+#include "base/flag.h"
 #include "base/fmap.h"
-#include "base/gpio.h"
 #include "base/memory.h"
 #include "base/timestamp.h"
 #include "boot/commandline.h"
@@ -53,17 +53,18 @@ static int vboot_init(void)
 	VbInitParams iparams = {
 		.flags = 0
 	};
-	gpio_t dev_switch, rec_switch, wp_switch;
-	gpio_fetch(GPIO_DEVSW, &dev_switch);
-	gpio_fetch(GPIO_RECSW, &rec_switch);
-	gpio_fetch(GPIO_WPSW, &wp_switch);
+	int dev_switch = flag_fetch(FLAG_DEVSW);
+	int rec_switch = flag_fetch(FLAG_RECSW);
+	int wp_switch = flag_fetch(FLAG_WPSW);
+	if (dev_switch < 0 || rec_switch < 0 || wp_switch < 0)
+		return 1;
 
 	// Decide what flags to pass into VbInit.
-	if (dev_switch.value)
+	if (dev_switch)
 		iparams.flags |= VB_INIT_FLAG_DEV_SWITCH_ON;
-	if (rec_switch.value)
+	if (rec_switch)
 		iparams.flags |= VB_INIT_FLAG_REC_BUTTON_PRESSED;
-	if (wp_switch.value)
+	if (wp_switch)
 		iparams.flags |= VB_INIT_FLAG_WP_ENABLED;
 	iparams.flags |= VB_INIT_FLAG_RO_NORMAL_SUPPORT;
 

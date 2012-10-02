@@ -17,8 +17,4 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-subdirs-y += gpio
-
-depthcharge-y += ahci.c
-depthcharge-y += hda_codec.c
-depthcharge-y += tpm.c
+depthcharge-y += sysinfo.c

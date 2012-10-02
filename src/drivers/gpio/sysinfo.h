@@ -20,33 +20,10 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __BASE_GPIO_H__
-#define __BASE_GPIO_H__
+#ifndef __DRIVERS_GPIO_SYSINFO_H__
+#define __DRIVERS_GPIO_SYSINFO_H__
 
-enum gpio_index {
-	GPIO_WPSW = 0,
-	GPIO_RECSW,
-	GPIO_DEVSW,
-	GPIO_LIDSW,
-	GPIO_PWRSW,
+struct cb_gpio;
+struct cb_gpio *sysinfo_lookup_gpio(const char *name);
 
-	GPIO_MAX_GPIO
-};
-
-enum gpio_polarity {
-	GPIO_ACTIVE_LOW = 0,
-	GPIO_ACTIVE_HIGH = 1
-};
-
-typedef struct {
-	enum gpio_index index;
-	int port;
-	int polarity;
-	int value;
-} gpio_t;
-
-
-int gpio_fetch(enum gpio_index index, gpio_t *gpio);
-int gpio_dump(gpio_t *gpio);
-
-#endif /* __BASE_GPIO_H_ */
+#endif /* __DRIVERS_GPIO_SYSINFO_H__ */
