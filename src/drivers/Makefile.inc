@@ -20,6 +20,7 @@
 subdirs-y += gpio
 
 depthcharge-y += ahci.c
+depthcharge-y += coreboot_fb.c
 depthcharge-y += hda_codec.c
 depthcharge-y += power_management.c
 depthcharge-y += tpm.c
