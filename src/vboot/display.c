@@ -23,6 +23,8 @@
 #include <libpayload.h>
 #include <vboot_api.h>
 
+#include "drivers/coreboot_fb.h"
+
 VbError_t VbExDisplayInit(uint32_t *width, uint32_t *height)
 {
 	printf("VbExDisplayInit called but not implemented.\n");
@@ -44,7 +46,9 @@ VbError_t VbExDisplayScreen(uint32_t screen_type)
 VbError_t VbExDisplayImage(uint32_t x, uint32_t y,
 			   void *buffer, uint32_t buffersize)
 {
-	printf("VbExDisplayImage called but not implemented.\n");
+	if (dc_corebootfb_draw_bitmap(x, y, buffer))
+		return VBERROR_UNKNOWN;
+
 	return VBERROR_SUCCESS;
 }
 
