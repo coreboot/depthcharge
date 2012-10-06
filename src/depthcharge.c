@@ -174,6 +174,11 @@ int main(void)
 {
 	// Let the world know we're alive.
 	outb(0xaa, 0x80);
+
+	// Initialize some consoles.
+	serial_init();
+	cbmem_console_init();
+
 	printf("\n\nStarting depthcharge...\n");
 
 	get_cpu_speed();
