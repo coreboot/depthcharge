@@ -181,6 +181,10 @@ int main(void)
 
 	printf("\n\nStarting depthcharge...\n");
 
+	// Initialize the video if available.
+	video_init();
+	video_console_cursor_enable(0);
+
 	get_cpu_speed();
 	timestamp_init();
 
