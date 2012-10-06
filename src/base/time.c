@@ -31,7 +31,7 @@ uint64_t get_timer_value(void)
 	uint64_t time_now = rdtsc();
 	if (!base_value)
 		base_value = time_now;
-	return base_value - base_value;
+	return time_now - base_value;
 }
 
 void set_base_timer_value(uint64_t new_base)
