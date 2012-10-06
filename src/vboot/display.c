@@ -23,6 +23,7 @@
 #include <libpayload.h>
 #include <vboot_api.h>
 
+#include "base/fmap.h"
 #include "drivers/coreboot_fb.h"
 
 VbError_t VbExDisplayInit(uint32_t *width, uint32_t *height)
@@ -37,9 +38,63 @@ VbError_t VbExDisplayBacklight(uint8_t enable)
 	return VBERROR_SUCCESS;
 }
 
+static void print_string(const char *str)
+{
+	int str_len = strlen(str);
+	while (str_len--) {
+		if (*str == '\n')
+			video_console_putchar('\r');
+		video_console_putchar(*str++);
+	}
+}
+
+void print_on_center(const char *msg)
+{
+	unsigned int rows, cols;
+	video_get_rows_cols(&rows, &cols);
+	video_console_set_cursor((cols - strlen(msg)) / 2, rows / 2);
+	print_string(msg);
+}
+
 VbError_t VbExDisplayScreen(uint32_t screen_type)
 {
-	printf("VbExDisplayScreen called but not implemented.\n");
+	const char *msg = NULL;
+
+	/*
+	 * Show the debug messages for development. It is a backup method
+	 * when GBB does not contain a full set of bitmaps.
+	 */
+	switch (screen_type) {
+	case VB_SCREEN_BLANK:
+		// clear the screen
+		video_console_clear();
+		break;
+	case VB_SCREEN_DEVELOPER_WARNING:
+		msg = "developer mode warning";
+		break;
+	case VB_SCREEN_DEVELOPER_EGG:
+		msg = "easter egg";
+		break;
+	case VB_SCREEN_RECOVERY_REMOVE:
+		msg = "remove inserted devices";
+		break;
+	case VB_SCREEN_RECOVERY_INSERT:
+		msg = "insert recovery image";
+		break;
+	case VB_SCREEN_RECOVERY_NO_GOOD:
+		msg = "insert image invalid";
+		break;
+	case VB_SCREEN_WAIT:
+		msg = "wait for ec update";
+		break;
+	default:
+		printf("Not a valid screen type: %d.\n", screen_type);
+		return VBERROR_INVALID_SCREEN_INDEX;
+	}
+
+	if (msg)
+		print_on_center(msg);
+
 	return VBERROR_SUCCESS;
 }
 
@@ -54,6 +109,18 @@ VbError_t VbExDisplayImage(uint32_t x, uint32_t y,
 
 VbError_t VbExDisplayDebugInfo(const char *info_str)
 {
-	printf("VbExDisplayDebugInfo called but not implemented.\n");
+	video_console_set_cursor(0, 0);
+	print_string(info_str);
+	print_string("read-only firmware id: ");
+	FmapArea *ro_frid = fmap_find_area(main_fmap, "RO_FRID");
+	if (!ro_frid) {
+		print_string("NOT FOUND");
+	} else {
+		uintptr_t data = main_rom_base + ro_frid->area_offset;
+		print_string((char *)data);
+	}
+	print_string("\nactive firmware id: ");
+	print_string("FIXME: ALWAYS READ ONLY");
+	print_string("\n");
 	return VBERROR_SUCCESS;
 }
