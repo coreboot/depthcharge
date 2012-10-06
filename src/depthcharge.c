@@ -147,8 +147,10 @@ static int vboot_select_and_load_kernel(void)
 	};
 
 	printf("Calling VbSelectAndLoadKernel().\n");
-	if (VbSelectAndLoadKernel(&cparams, &kparams) != VBERROR_SUCCESS)
-		return 1;
+	if (VbSelectAndLoadKernel(&cparams, &kparams) != VBERROR_SUCCESS) {
+		printf("Doing a cold reboot.\n");
+		cold_reboot();
+	}
 
 	uintptr_t params_addr =
 		kparams.bootloader_address - sizeof(struct boot_params);
