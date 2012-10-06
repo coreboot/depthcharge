@@ -49,18 +49,12 @@ VbCommonParams cparams = {
 
 static uint8_t shared_data_blob[VB_SHARED_DATA_REC_SIZE];
 
-static int vboot_init(void)
+static int vboot_init(int dev_switch, int rec_switch,
+		      int wp_switch, int oprom_loaded)
 {
 	VbInitParams iparams = {
 		.flags = 0
 	};
-	int dev_switch = flag_fetch(FLAG_DEVSW);
-	int rec_switch = flag_fetch(FLAG_RECSW);
-	int wp_switch = flag_fetch(FLAG_WPSW);
-	int oprom_loaded = flag_fetch(FLAG_OPROM);
-	if (dev_switch < 0 || rec_switch < 0 ||
-	    wp_switch < 0 || oprom_loaded < 0)
-		return 1;
 
 	// Decide what flags to pass into VbInit.
 	if (dev_switch)
@@ -211,8 +205,25 @@ int main(void)
 	cparams.shared_data_blob = shared_data_blob;
 	cparams.shared_data_size = sizeof(shared_data_blob);
 
-	if (vboot_init())
+	int dev_switch = flag_fetch(FLAG_DEVSW);
+	int rec_switch = flag_fetch(FLAG_RECSW);
+	int wp_switch = flag_fetch(FLAG_WPSW);
+	int oprom_loaded = flag_fetch(FLAG_OPROM);
+	if (dev_switch < 0 || rec_switch < 0 ||
+	    wp_switch < 0 || oprom_loaded < 0) {
+		// An error message should have already been printed.
 		halt();
+	}
+
+	if (vboot_init(dev_switch, rec_switch, wp_switch, oprom_loaded))
+		halt();
+
+	// If we got this far and the option rom is loaded, we can assume
+	// vboot wants to use the display and probably also wants to use the
+	// keyboard.
+	if (oprom_loaded)
+		keyboard_init();
+
 	if (vboot_select_firmware())
 		halt();
 	if (vboot_select_and_load_kernel())
