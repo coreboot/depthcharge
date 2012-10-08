@@ -23,36 +23,41 @@
 #include <libpayload.h>
 #include <vboot_api.h>
 
-static const uint32_t CSI_0 = 0x1B;
-static const uint32_t CSI_1 = 0x5B;
+#define CSI_0 0x1B
+#define CSI_1 0x5B
+
+#define KEY_DOWN 0402
+#define KEY_UP 0403
+#define KEY_LEFT 0404
+#define KEY_RIGHT 0405
 
 uint32_t VbExKeyboardRead(void)
 {
-	uint32_t c;
-
 	// No input, just give up.
 	if (!havechar())
 		return 0;
 
-	c = getchar();
-	// Handle a non-escape character or a standalone escape character.
-	if (c != CSI_0 || !havechar()) {
-		// Translate enter.
-		if (c == '\n')
-			return VB_KEY_CTRL_ENTER;
-		return c;
-	}
+	uint32_t ch = getchar();
+	switch (ch) {
+	case '\n': return VB_KEY_CTRL_ENTER;
+	case KEY_UP: return VB_KEY_UP;
+	case KEY_DOWN: return VB_KEY_DOWN;
+	case KEY_RIGHT: return VB_KEY_RIGHT;
+	case KEY_LEFT: return VB_KEY_LEFT;
+	case CSI_0:
+		// Ignore non escape [ sequences.
+		if (getchar() != CSI_1)
+			return 0;
 
-	// Ignore non escape [ sequences.
-	if (getchar() != CSI_1)
-		return 0;
-
-	// Translate the arrow keys, and ignore everything else.
-	switch (getchar()) {
-	case 'A': return VB_KEY_UP;
-	case 'B': return VB_KEY_DOWN;
-	case 'C': return VB_KEY_RIGHT;
-	case 'D': return VB_KEY_LEFT;
-	default: return 0;
+		// Translate the arrow keys, and ignore everything else.
+		switch (getchar()) {
+		case 'A': return VB_KEY_UP;
+		case 'B': return VB_KEY_DOWN;
+		case 'C': return VB_KEY_RIGHT;
+		case 'D': return VB_KEY_LEFT;
+		default: return 0;
+		}
+	default:
+		return ch;
 	}
 }
