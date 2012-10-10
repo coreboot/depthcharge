@@ -240,7 +240,7 @@ void mkbp_dump_data(const char *name, int cmd, const uint8_t *data, int len);
  * @param size	Size of data block in bytes
  * @return checksum value (0 to 255)
  */
-int mkbp_calc_checksum(const uint8_t *data, int size);
+uint8_t mkbp_calc_checksum(const uint8_t *data, int size);
 
 /**
  * Decode a flash region parameter

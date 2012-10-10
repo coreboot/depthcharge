@@ -45,6 +45,18 @@ static int wait_for_sync(struct mkbp_dev *dev)
 	return 0;
 }
 
+static void outb_range(const uint8_t *data, uint16_t port, int size)
+{
+	while (size--)
+		outb(*data++, port++);
+}
+
+static void inb_range(uint8_t *data, uint16_t port, int size)
+{
+	while (size--)
+		*data++ = inb(port++);
+}
+
 /**
  * Send a command to a LPC MKBP device and return the reply.
  *
@@ -63,8 +75,6 @@ static int old_lpc_command(struct mkbp_dev *dev, uint8_t cmd,
 		     const uint8_t *dout, int dout_len,
 		     uint8_t **dinp, int din_len)
 {
-	int ret, i;
-
 	if (dout_len > EC_OLD_PARAM_SIZE) {
 		printf("%s: Cannot send %d bytes\n", __func__, dout_len);
 		return -1;
@@ -80,31 +90,21 @@ static int old_lpc_command(struct mkbp_dev *dev, uint8_t cmd,
 		return -1;
 	}
 
-	printf("cmd: %02x, ", cmd);
-	for (i = 0; i < dout_len; i++) {
-		printf("%02x ", dout[i]);
-		outb(dout[i], EC_LPC_ADDR_OLD_PARAM + i);
-	}
+	outb_range(dout, EC_LPC_ADDR_OLD_PARAM, dout_len);
 	outb(cmd, EC_LPC_ADDR_HOST_CMD);
-	printf("\n");
 
 	if (wait_for_sync(dev)) {
 		printf("%s: Timeout waiting ready\n", __func__);
 		return -1;
 	}
 
-	ret = inb(EC_LPC_ADDR_HOST_DATA);
+	int ret = inb(EC_LPC_ADDR_HOST_DATA);
 	if (ret) {
 		printf("%s: MKBP result code %d\n", __func__, ret);
 		return -ret;
 	}
 
-	printf("resp: %02x, ", ret);
-	for (i = 0; i < din_len; i++) {
-		dev->din[i] = inb(EC_LPC_ADDR_OLD_PARAM + i);
-		printf("%02x ", dev->din[i]);
-	}
-	printf("\n");
+	inb_range(dev->din, EC_LPC_ADDR_OLD_PARAM, din_len);
 	*dinp = dev->din;
 
 	return din_len;
@@ -114,15 +114,7 @@ int mkbp_lpc_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 		     const uint8_t *dout, int dout_len,
 		     uint8_t **dinp, int din_len)
 {
-	const int cmd_addr = EC_LPC_ADDR_HOST_CMD;
-	const int data_addr = EC_LPC_ADDR_HOST_DATA;
-	const int args_addr = EC_LPC_ADDR_HOST_ARGS;
-	const int param_addr = EC_LPC_ADDR_HOST_PARAM;
-
 	struct ec_lpc_host_args args;
-	uint8_t *d;
-	int csum;
-	int i;
 
 	/* Fall back to old-style command interface if args aren't supported */
 	if (!dev->cmd_version_is_supported)
@@ -140,11 +132,8 @@ int mkbp_lpc_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 	args.data_size = dout_len;
 
 	/* Calculate checksum */
-	csum = cmd + args.flags + args.command_version + args.data_size;
-	for (i = 0, d = (uint8_t *)dout; i < dout_len; i++, d++)
-		csum += *d;
-
-	args.checksum = (uint8_t)csum;
+	args.checksum = cmd + args.flags + args.command_version +
+		args.data_size + mkbp_calc_checksum(dout, dout_len);
 
 	if (wait_for_sync(dev)) {
 		printf("%s: Timeout waiting ready\n", __func__);
@@ -152,18 +141,12 @@ int mkbp_lpc_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 	}
 
 	/* Write args */
-	for (i = 0, d = (uint8_t *)&args; i < sizeof(args); i++, d++)
-		outb(*d, args_addr + i);
+	outb_range((uint8_t *)&args, EC_LPC_ADDR_HOST_ARGS, sizeof(args));
 
 	/* Write data, if any */
-	printf("cmd: %02x, ver: %02x", cmd, cmd_version);
-	for (i = 0, d = (uint8_t *)dout; i < dout_len; i++, d++) {
-		outb(*d, param_addr + i);
-		printf("%02x ", *d);
-	}
+	outb_range(dout, EC_LPC_ADDR_HOST_PARAM, dout_len);
 
-	outb(cmd, cmd_addr);
-	printf("\n");
+	outb(cmd, EC_LPC_ADDR_HOST_CMD);
 
 	if (wait_for_sync(dev)) {
 		printf("%s: Timeout waiting for response\n", __func__);
@@ -171,15 +154,14 @@ int mkbp_lpc_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 	}
 
 	/* Check result */
-	i = inb(data_addr);
-	if (i) {
-		printf("%s: MKBP result code %d\n", __func__, i);
-		return -i;
+	int res = inb(EC_LPC_ADDR_HOST_DATA);
+	if (res) {
+		printf("%s: MKBP result code %d\n", __func__, res);
+		return -res;
 	}
 
 	/* Read back args */
-	for (i = 0, d = (uint8_t *)&args; i < sizeof(args); i++, d++)
-		*d = inb(args_addr + i);
+	inb_range((uint8_t *)&args, EC_LPC_ADDR_HOST_ARGS, sizeof(args));
 
 	/*
 	 * If EC didn't modify args flags, then somehow we sent a new-style
@@ -198,16 +180,11 @@ int mkbp_lpc_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 	}
 
 	/* Read data, if any */
-	for (i = 0, d = (uint8_t *)dev->din; i < args.data_size; i++, d++) {
-		*d = inb(param_addr + i);
-		printf("%02x ", *d);
-	}
-	printf("\n");
+	inb_range((uint8_t *)dev->din, EC_LPC_ADDR_HOST_PARAM, args.data_size);
 
 	/* Verify checksum */
-	csum = cmd + args.flags + args.command_version + args.data_size;
-	for (i = 0, d = (uint8_t *)dev->din; i < args.data_size; i++, d++)
-		csum += *d;
+	uint8_t csum = cmd + args.flags + args.command_version +
+		args.data_size + mkbp_calc_checksum(dev->din, args.data_size);
 
 	if (args.checksum != (uint8_t)csum) {
 		printf("%s: MKBP response has invalid checksum\n", __func__);
