@@ -32,6 +32,7 @@
 #include "boot/commandline.h"
 #include "boot/zimage.h"
 #include "drivers/ahci.h"
+#include "drivers/ec/chromeos/mkbp.h"
 #include "drivers/power_management.h"
 
 #define CMD_LINE_SIZE 4096
@@ -217,6 +218,8 @@ int main(void)
 
 	if (vboot_init(dev_switch, rec_switch, wp_switch, oprom_loaded))
 		halt();
+
+	mkbp_init();
 
 	// If we got this far and the option rom is loaded, we can assume
 	// vboot wants to use the display and probably also wants to use the
