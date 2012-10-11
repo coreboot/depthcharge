@@ -36,6 +36,8 @@
 
 #define min(a, b) (a) < (b) ? a : b
 
+struct mkbp_dev *mkbp_ptr;
+
 /* Timeout waiting for a flash erase command to complete */
 static const int MKBP_CMD_TIMEOUT_MS = 5000;
 
@@ -622,6 +624,8 @@ struct mkbp_dev *mkbp_init(void)
 	}
 
 	printf("Google Chrome EC MKBP driver ready, id '%s'\n", id);
+
+	mkbp_ptr = dev;
 
 	return dev;
 }
