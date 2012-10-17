@@ -168,14 +168,8 @@ int main(void)
 
 	printf("\n\nStarting read-only depthcharge...\n");
 
-	// Initialize the video if available.
-	video_init();
-	video_console_cursor_enable(0);
-
 	get_cpu_speed();
 	timestamp_init();
-
-	ahci_init(PCI_DEV(0, 31, 2));
 
 	if (fmap_init()) {
 		printf("Problem with the FMAP.\n");
@@ -199,6 +193,7 @@ int main(void)
 	cparams.shared_data_blob = shared_data_blob;
 	cparams.shared_data_size = sizeof(shared_data_blob);
 
+	// Initialize vboot.
 	int dev_switch = flag_fetch(FLAG_DEVSW);
 	int rec_switch = flag_fetch(FLAG_RECSW);
 	int wp_switch = flag_fetch(FLAG_WPSW);
@@ -212,18 +207,27 @@ int main(void)
 	if (vboot_init(dev_switch, rec_switch, wp_switch, oprom_loaded))
 		halt();
 
+	// Select firmware.
 	mkbp_init();
+
+	if (vboot_select_firmware())
+		halt();
+
+	// Select a kernel and boot it.
 
 	// If we got this far and the option rom is loaded, we can assume
 	// vboot wants to use the display and probably also wants to use the
 	// keyboard.
-	if (oprom_loaded)
+	if (oprom_loaded) {
 		keyboard_init();
+		video_init();
+		video_console_cursor_enable(0);
+	}
 
-	if (vboot_select_firmware())
-		halt();
+	ahci_init(PCI_DEV(0, 31, 2));
 	if (vboot_select_and_load_kernel())
 		halt();
+
 	printf("Got to the end!\n");
 	halt();
 	return 0;

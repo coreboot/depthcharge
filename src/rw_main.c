@@ -85,14 +85,8 @@ int main(void)
 
 	printf("\n\nStarting read/write depthcharge...\n");
 
-	// Initialize the video if available.
-	video_init();
-	video_console_cursor_enable(0);
-
 	get_cpu_speed();
 	timestamp_init();
-
-	ahci_init(PCI_DEV(0, 31, 2));
 
 	if (fmap_init()) {
 		printf("Problem with the FMAP.\n");
@@ -110,9 +104,13 @@ int main(void)
 	// If we got this far and the option rom is loaded, we can assume
 	// vboot wants to use the display and probably also wants to use the
 	// keyboard.
-	if (oprom_loaded)
+	if (oprom_loaded) {
 		keyboard_init();
+		video_init();
+		video_console_cursor_enable(0);
+	}
 
+	ahci_init(PCI_DEV(0, 31, 2));
 	if (vboot_select_and_load_kernel())
 		halt();
 
