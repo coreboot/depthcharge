@@ -32,5 +32,7 @@ extern const uint8_t _eheap;
 extern const uint8_t _estack;
 extern const uint8_t _stack;
 extern const uint8_t _end;
+extern const uint8_t _tramp_start;
+extern const uint8_t _tramp_end;
 
 #endif /* __BASE_DC_IMAGE_H__ */

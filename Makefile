@@ -49,7 +49,9 @@ HOSTCXXFLAGS := -I$(srck) -I$(objk)
 LIBPAYLOAD_DIR := ../libpayload/install/libpayload
 XCC := CC=$(CC) $(LIBPAYLOAD_DIR)/bin/lpgcc
 AS = $(LIBPAYLOAD_DIR)/bin/lpas
-STRIP ?= strip
+OBJCOPY := objcopy
+LZMA := lzma
+STRIP := strip
 
 LDSCRIPT := $(src)/depthcharge.ldscript
 

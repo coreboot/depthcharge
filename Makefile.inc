@@ -17,15 +17,58 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-DEPTHCHARGE = $(obj)/depthcharge.elf
-LIBRARIES   = $(VB_LD_DIR)/vboot_fw.a
+DEPTHCHARGE_RO_ELF = $(obj)/depthcharge.ro.elf
+DEPTHCHARGE_RW_ELF = $(obj)/depthcharge.rw.elf
+DEPTHCHARGE_RW_BIN = $(obj)/depthcharge.rw.bin
+LIBRARIES = $(VB_LD_DIR)/vboot_fw.a
 
-real-target: $(DEPTHCHARGE)
+LIBGCC = $(shell $(XCC) -print-libgcc-file-name)
+TRAMP_LIBGCC = $(obj)/trampoline_$(notdir $(LIBGCC))
+TRAMP_PREFIX = .tramp
+TRAMPOLINE = $(obj)/trampoline.o
 
-$(DEPTHCHARGE): $(src)/.config $$(depthcharge-objs) $(LIBRARIES) prepare
+
+real-target: $(DEPTHCHARGE_RO_ELF) $(DEPTHCHARGE_RO_BIN) \
+	$(DEPTHCHARGE_RW_ELF) $(DEPTHCHARGE_RW_BIN)
+
+$(TRAMP_LIBGCC): $(LIBGCC)
+	$(Q)printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
+	$(Q)$(OBJCOPY) --prefix-symbols=$(TRAMP_PREFIX) $(<) $(@)
+
+# The trampoline is linked with normal gcc to avoid linking in libpayload.
+$(TRAMPOLINE): $$(trampoline-objs)
+	$(Q)printf "    LD         $(subst $(obj)/,,$(@).tmp)\n"
+	$(Q)$(CC) $(LINK_FLAGS) -Wl,-relocatable -o $(@).tmp \
+		$(trampoline-objs) -nostdinc -nostdlib -static
+	$(Q)printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
+	$(Q)$(OBJCOPY) --prefix-symbols=$(TRAMP_PREFIX) $(@).tmp $(@)
+
+
+#The read-only version
+$(DEPTHCHARGE_RO_ELF): $(src)/.config $$(depthcharge-objs) $(TRAMPOLINE) \
+		$(LIBRARIES) $(TRAMP_LIBGCC) prepare
+	$(Q)printf "    LD         $(subst $(obj)/,,$(@))\n"
+	$(Q)$(XCC) $(LINK_FLAGS) -o $@ $(depthcharge-objs) $(TRAMPOLINE) \
+		$(LIBRARIES) $(TRAMP_LIBGCC)
+
+$(DEPTHCHARGE_RO_BIN): $(DEPTHCHARGE_RW_ELF)
+	$(Q)printf "    STRIP      $(subst $(obj)/,,$(@).tmp)\n"
+	$(Q)$(STRIP) -o $(@).tmp $(<)
+	$(Q)printf "    LZMA       $(subst $(obj)/,,$(@))\n"
+	$(Q)$(LZMA) --stdout $(@).tmp > $(@)
+
+
+#The read/write version
+$(DEPTHCHARGE_RW_ELF): $(src)/.config $$(depthcharge-objs) $(LIBRARIES) prepare
 	$(Q)printf "    LD         $(subst $(obj)/,,$(@))\n"
 	$(Q)$(XCC) $(LINK_FLAGS) -o $@ $(depthcharge-objs) $(LIBRARIES)
 
-classes-y := depthcharge
+$(DEPTHCHARGE_RW_BIN): $(DEPTHCHARGE_RW_ELF)
+	$(Q)printf "    STRIP      $(subst $(obj)/,,$(@).tmp)\n"
+	$(Q)$(STRIP) -o $(@).tmp $(<)
+	$(Q)printf "    LZMA       $(subst $(obj)/,,$(@))\n"
+	$(Q)$(LZMA) --stdout $(@).tmp > $(@)
+
+classes-y := depthcharge trampoline
 
 subdirs-y := src/

@@ -27,6 +27,7 @@
  * SUCH DAMAGE.
  */
 
+KERNEL_BASE  =  0x100000;
 BASE_ADDRESS = 0x2000000;
 
 OUTPUT_FORMAT(elf32-i386)
@@ -39,6 +40,47 @@ STACK_SIZE = 16384;
 
 SECTIONS
 {
+	/*
+	 * The trampoline to RW firmware. It goes where the kernel will go
+	 * eventually since that area has to be kept clear anyway, and we'll
+	 * be done with it by the time we need it for the kernel.
+	 */
+	. = KERNEL_BASE;
+	_kernel_base = KERNEL_BASE;
+
+	. = ALIGN(16);
+	_tramp_start = .;
+	.tramp.text : {
+		*trampoline.o(.text._entry)
+		*trampoline.o(.text)
+		*trampoline.o(.text.*)
+		*(.tramp.text)
+	}
+
+	.tramp.rodata : {
+		*trampoline.o(.rodata)
+		*trampoline.o(.rodata.*)
+		*(.tramp.rodata)
+	}
+
+	.tramp.data : {
+		*trampoline.o(.data)
+		*trampoline.o(.data.*)
+		*(.tramp.data)
+	}
+
+	.tramp.bss : {
+		*trampoline.o(.sbss)
+		*trampoline.o(.sbss.*)
+		*trampoline.o(.bss)
+		*trampoline.o(.bss.*)
+		*trampoline.o(COMMON)
+		*(.tramp.bss)
+	}
+	_tramp_end = .;
+
+
+	/* The main portion of depthcharge. */
 	. = BASE_ADDRESS;
 
 	. = ALIGN(16);
@@ -85,8 +127,10 @@ SECTIONS
 
 	_end = .;
 
+	/* Stuff we don't want in the final image. */
 	/DISCARD/ : {
 		*(.comment)
 		*(.note*)
+		*(.GCC.*)
 	}
 }

@@ -25,3 +25,5 @@ depthcharge-y += memory_wipe.c
 depthcharge-y += physmem.c
 depthcharge-y += time.c
 depthcharge-y += timestamp.c
+
+trampoline-y += gcc.c
