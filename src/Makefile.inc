@@ -21,4 +21,5 @@
 subdirs-y := base boot drivers vboot
 
 # Where "main" lives.
-depthcharge-y += depthcharge.c
+readonly-y += ro_main.c
+readwrite-y += rw_main.c

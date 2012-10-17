@@ -166,7 +166,7 @@ int main(void)
 	serial_init();
 	cbmem_console_init();
 
-	printf("\n\nStarting depthcharge...\n");
+	printf("\n\nStarting read-only depthcharge...\n");
 
 	// Initialize the video if available.
 	video_init();
