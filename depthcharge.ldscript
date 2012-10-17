@@ -51,6 +51,7 @@ SECTIONS
 	. = ALIGN(16);
 	_tramp_start = .;
 	.tramp.text : {
+		trampoline = .;
 		*trampoline.o(.text._entry)
 		*trampoline.o(.text)
 		*trampoline.o(.text.*)

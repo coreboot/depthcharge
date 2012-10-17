@@ -27,4 +27,8 @@ depthcharge-y += physmem.c
 depthcharge-y += time.c
 depthcharge-y += timestamp.c
 
+readonly-y += startrw.c
+
 trampoline-y += gcc.c
+trampoline-y += string.c
+trampoline-y += trampoline.c

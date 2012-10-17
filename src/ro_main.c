@@ -29,6 +29,7 @@
 #include "base/flag.h"
 #include "base/fmap.h"
 #include "base/memory.h"
+#include "base/startrw.h"
 #include "base/timestamp.h"
 #include "boot/commandline.h"
 #include "boot/zimage.h"
@@ -104,20 +105,17 @@ static int vboot_select_firmware(void)
 	if (res != VBERROR_SUCCESS)
 		return 1;
 
-	printf("Selected firmware: ");
-	switch (fparams.selected_firmware) {
-	case VB_SELECT_FIRMWARE_RECOVERY:
-		printf("recovery\n");
-		break;
-	case VB_SELECT_FIRMWARE_A:
-		printf("a\n");
-		break;
-	case VB_SELECT_FIRMWARE_B:
-		printf("b\n");
-		break;
-	case VB_SELECT_FIRMWARE_READONLY:
-		printf("read only\n");
-		break;
+	// If an RW firmware was selected, start it.
+	if (fparams.selected_firmware == VB_SELECT_FIRMWARE_A ||
+	    fparams.selected_firmware == VB_SELECT_FIRMWARE_B) {
+		FmapArea *rw_area;
+		if (fparams.selected_firmware == VB_SELECT_FIRMWARE_A)
+			rw_area = fmap_find_area(main_fmap, "FW_MAIN_A");
+		else
+			rw_area = fmap_find_area(main_fmap, "FW_MAIN_B");
+		uintptr_t rw_addr = rw_area->area_offset + main_rom_base;
+		if (start_rw_firmware((void *)rw_addr))
+			return 1;
 	}
 	return 0;
 }
