@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011-2012 The Chromium OS Authors.
+ * Copyright (c) 2012 The Chromium OS Authors.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -20,22 +20,14 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __BASE_DC_IMAGE_H__
-#define __BASE_DC_IMAGE_H__
+#ifndef __BASE_COMMONPARAMS_H__
+#define __BASE_COMMONPARAMS_H__
 
-// C level variable definitions for symbols defined in the linker script.
+#include <stddef.h>
+#include <stdint.h>
+#include <vboot_api.h>
 
-extern const uint8_t _start;
-extern const uint8_t _edata;
-extern const uint8_t _heap;
-extern const uint8_t _eheap;
-extern const uint8_t _estack;
-extern const uint8_t _stack;
-extern const uint8_t _end;
-extern const uint8_t _tramp_start;
-extern const uint8_t _tramp_end;
+extern VbCommonParams cparams;
+extern uint8_t shared_data_blob[VB_SHARED_DATA_REC_SIZE];
 
-#define CPARAMS __attribute__((section(".cparams")))
-#define SHARED_DATA __attribute__((section(".shared_data")))
-
-#endif /* __BASE_DC_IMAGE_H__ */
+#endif /* __BASE_COMMONPARAMS_H__ */

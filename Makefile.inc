@@ -47,9 +47,12 @@ $(TRAMPOLINE): $$(trampoline-objs)
 #The read-only version
 $(DEPTHCHARGE_RO_ELF): $(src)/.config $$(depthcharge-objs) $(TRAMPOLINE) \
 		$(LIBRARIES) $(TRAMP_LIBGCC) prepare
-	$(Q)printf "    LD         $(subst $(obj)/,,$(@))\n"
-	$(Q)$(XCC) $(LINK_FLAGS) -o $@ $(depthcharge-objs) $(TRAMPOLINE) \
+	$(Q)printf "    LD         $(subst $(obj)/,,$(@).tmp)\n"
+	$(Q)$(XCC) $(LINK_FLAGS) -o $@.tmp $(depthcharge-objs) $(TRAMPOLINE) \
 		$(LIBRARIES) $(TRAMP_LIBGCC)
+	$(Q)printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
+	$(Q)$(OBJCOPY) --remove-section=".shared_data" \
+		--remove-section=".cparams" $@.tmp $@
 
 $(DEPTHCHARGE_RO_BIN): $(DEPTHCHARGE_RW_ELF)
 	$(Q)printf "    STRIP      $(subst $(obj)/,,$(@).tmp)\n"
@@ -60,8 +63,11 @@ $(DEPTHCHARGE_RO_BIN): $(DEPTHCHARGE_RW_ELF)
 
 #The read/write version
 $(DEPTHCHARGE_RW_ELF): $(src)/.config $$(depthcharge-objs) $(LIBRARIES) prepare
-	$(Q)printf "    LD         $(subst $(obj)/,,$(@))\n"
-	$(Q)$(XCC) $(LINK_FLAGS) -o $@ $(depthcharge-objs) $(LIBRARIES)
+	$(Q)printf "    LD         $(subst $(obj)/,,$(@).tmp)\n"
+	$(Q)$(XCC) $(LINK_FLAGS) -o $@.tmp $(depthcharge-objs) $(LIBRARIES)
+	$(Q)printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
+	$(Q)$(OBJCOPY) --remove-section=".shared_data" \
+		--remove-section=".cparams" $@.tmp $@
 
 $(DEPTHCHARGE_RW_BIN): $(DEPTHCHARGE_RW_ELF)
 	$(Q)printf "    STRIP      $(subst $(obj)/,,$(@).tmp)\n"

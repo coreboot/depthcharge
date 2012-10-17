@@ -86,6 +86,13 @@ SECTIONS
 	. = ALIGN(16);
 	_start = .;
 
+	.cparams : {
+		*(.cparams)
+	}
+	.shared_data : {
+		*(.shared_data)
+	}
+
 	.text : {
 		*(.text._entry)
 		*(.text)

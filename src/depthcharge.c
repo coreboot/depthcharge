@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <vboot_api.h>
 
+#include "base/commonparams.h"
 #include "base/dc_image.h"
 #include "base/flag.h"
 #include "base/fmap.h"
@@ -38,17 +39,6 @@
 #define CMD_LINE_SIZE 4096
 
 static char cmd_line_buf[2 * CMD_LINE_SIZE];
-
-VbCommonParams cparams = {
-	.gbb_data = NULL,
-	.gbb_size = 0,
-	.shared_data_blob = NULL,
-	.shared_data_size = 0,
-	.vboot_context = NULL,
-	.caller_context = NULL
-};
-
-static uint8_t shared_data_blob[VB_SHARED_DATA_REC_SIZE];
 
 static int vboot_init(int dev_switch, int rec_switch,
 		      int wp_switch, int oprom_loaded)
@@ -193,6 +183,9 @@ int main(void)
 	}
 
 	// Set up the common param structure.
+	memset(&cparams, 0, sizeof(cparams));
+	memset(shared_data_blob, 0, sizeof(shared_data_blob));
+
 	FmapArea *gbb_area = fmap_find_area(main_fmap, "GBB");
 	if (!gbb_area) {
 		printf("Couldn't find the GBB.\n");
