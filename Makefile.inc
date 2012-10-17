@@ -45,11 +45,11 @@ $(TRAMPOLINE): $$(trampoline-objs)
 
 
 #The read-only version
-$(DEPTHCHARGE_RO_ELF): $(src)/.config $$(depthcharge-objs) $(TRAMPOLINE) \
-		$(LIBRARIES) $(TRAMP_LIBGCC) prepare
+$(DEPTHCHARGE_RO_ELF): $(src)/.config $$(depthcharge-objs) $$(readonly-objs) \
+		$(TRAMPOLINE) $(LIBRARIES) $(TRAMP_LIBGCC) prepare
 	$(Q)printf "    LD         $(subst $(obj)/,,$(@).tmp)\n"
-	$(Q)$(XCC) $(LINK_FLAGS) -o $@.tmp $(depthcharge-objs) $(TRAMPOLINE) \
-		$(LIBRARIES) $(TRAMP_LIBGCC)
+	$(Q)$(XCC) $(LINK_FLAGS) -o $@.tmp $(depthcharge-objs) \
+		$(readonly-objs) $(TRAMPOLINE) $(LIBRARIES) $(TRAMP_LIBGCC)
 	$(Q)printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
 	$(Q)$(OBJCOPY) --remove-section=".shared_data" \
 		--remove-section=".cparams" $@.tmp $@
@@ -62,9 +62,11 @@ $(DEPTHCHARGE_RO_BIN): $(DEPTHCHARGE_RW_ELF)
 
 
 #The read/write version
-$(DEPTHCHARGE_RW_ELF): $(src)/.config $$(depthcharge-objs) $(LIBRARIES) prepare
+$(DEPTHCHARGE_RW_ELF): $(src)/.config $$(depthcharge-objs) $$(readwrite-objs) \
+		$(LIBRARIES) prepare
 	$(Q)printf "    LD         $(subst $(obj)/,,$(@).tmp)\n"
-	$(Q)$(XCC) $(LINK_FLAGS) -o $@.tmp $(depthcharge-objs) $(LIBRARIES)
+	$(Q)$(XCC) $(LINK_FLAGS) -o $@.tmp $(depthcharge-objs) \
+		$(readwrite-objs) $(LIBRARIES)
 	$(Q)printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
 	$(Q)$(OBJCOPY) --remove-section=".shared_data" \
 		--remove-section=".cparams" $@.tmp $@
@@ -75,6 +77,6 @@ $(DEPTHCHARGE_RW_BIN): $(DEPTHCHARGE_RW_ELF)
 	$(Q)printf "    LZMA       $(subst $(obj)/,,$(@))\n"
 	$(Q)$(LZMA) --stdout $(@).tmp > $(@)
 
-classes-y := depthcharge trampoline
+classes-y := depthcharge trampoline readwrite readonly
 
 subdirs-y := src/
