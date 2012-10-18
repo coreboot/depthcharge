@@ -70,6 +70,12 @@ SECTIONS
 		*(.tramp.data)
 	}
 
+	.tramp.got : {
+		*trampoline.o(.got)
+		*trampoline.o(.got.*)
+		*(.tramp.got)
+	}
+
 	.tramp.bss : {
 		*trampoline.o(.sbss)
 		*trampoline.o(.sbss.*)
@@ -108,6 +114,11 @@ SECTIONS
 	.data : {
 		*(.data)
 		*(.data.*)
+	}
+
+	.got : {
+		*(.got)
+		*(.got.*)
 	}
 
 	_edata = .;
