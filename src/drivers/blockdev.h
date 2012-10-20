@@ -36,6 +36,8 @@ typedef struct BlockDev {
 	lba_t (*write)(struct BlockDev *dev, lba_t start, lba_t count,
 		       const void *buffer);
 	void *dev_data;
+
+	struct BlockDev *next;
 } BlockDev;
 
 #endif /* __DRIVERS_BLOCKDEV_H__ */
