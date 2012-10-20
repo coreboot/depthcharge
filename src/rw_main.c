@@ -108,6 +108,7 @@ int main(void)
 		keyboard_init();
 		video_init();
 		video_console_cursor_enable(0);
+		usb_initialize();
 	}
 
 	ahci_init(PCI_DEV(0, 31, 2));
