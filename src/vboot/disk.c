@@ -25,24 +25,39 @@
 
 #include "drivers/ahci.h"
 #include "drivers/blockdev.h"
+#include "drivers/usb.h"
+
+static void setup_vb_disk_info(VbDiskInfo *disk, BlockDev *bdev, char *name)
+{
+	disk->handle = (VbExDiskHandle_t)bdev;
+	disk->bytes_per_lba = bdev->block_size;
+	disk->lba_count = bdev->block_count;
+	disk->flags = bdev->removable ? VB_DISK_FLAG_REMOVABLE :
+					VB_DISK_FLAG_FIXED;
+	disk->name = name;
+}
 
 VbError_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
 			  uint32_t disk_flags)
 {
+	*count = 0;
+
 	if (disk_flags & VB_DISK_FLAG_FIXED) {
 		VbDiskInfo *disk = malloc(sizeof(VbDiskInfo));
-		disk->handle = (VbExDiskHandle_t)&sata_drive;
-		disk->bytes_per_lba = sata_drive.block_size;
-		disk->lba_count = sata_drive.block_count;
-		disk->flags = VB_DISK_FLAG_FIXED;
-		disk->name = "Sata SSD";
 		*info_ptr = disk;
-		*count = 1;
-		return VBERROR_SUCCESS;
+		*count += 1;
+
+		setup_vb_disk_info(disk, &sata_drive, "Sata SSD");
 	} else {
-		*info_ptr = NULL;
-		return VBERROR_UNKNOWN;
+		VbDiskInfo *disk =
+			malloc(sizeof(VbDiskInfo) * num_usb_drives);
+		*info_ptr = disk;
+		*count += num_usb_drives;
+
+		for (BlockDev *bdev = usb_drives; bdev; bdev = bdev->next)
+			setup_vb_disk_info(disk, bdev, "USB disk");
 	}
+	return VBERROR_SUCCESS;
 }
 
 VbError_t VbExDiskFreeInfo(VbDiskInfo *infos,
