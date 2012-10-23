@@ -33,6 +33,7 @@
 #include "image/fmap.h"
 #include "image/startrw.h"
 #include "image/symbols.h"
+#include "vboot/util/acpi.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 #include "vboot/util/memory.h"
@@ -188,8 +189,9 @@ int main(void)
 		(void *)(uintptr_t)(gbb_area->offset + main_rom_base);
 	cparams.gbb_size = gbb_area->size;
 
-	cparams.shared_data_blob = shared_data_blob;
-	cparams.shared_data_size = sizeof(shared_data_blob);
+	chromeos_acpi_t *acpi_table = (chromeos_acpi_t *)lib_sysinfo.vdat_addr;
+	cparams.shared_data_blob = (void *)&acpi_table->vdat;
+	cparams.shared_data_size = sizeof(acpi_table->vdat);
 
 	// Initialize vboot.
 	int dev_switch = flag_fetch(FLAG_DEVSW);
