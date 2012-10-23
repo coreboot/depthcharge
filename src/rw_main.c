@@ -31,6 +31,7 @@
 #include "drivers/power_management.h"
 #include "image/fmap.h"
 #include "image/symbols.h"
+#include "vboot/util/acpi.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 #include "vboot/util/memory.h"
@@ -90,6 +91,19 @@ int main(void)
 
 	if (fmap_init()) {
 		printf("Problem with the FMAP.\n");
+		halt();
+	}
+
+	int dev_switch = flag_fetch(FLAG_DEVSW);
+	if (dev_switch < 0)
+		halt();
+
+	// Since this is the RW firmware, we'll assume we're not in recovery.
+	int firmware_type = FIRMWARE_TYPE_NORMAL;
+	if (dev_switch)
+		firmware_type = FIRMWARE_TYPE_DEVELOPER;
+	if (acpi_update_data(firmware_type)) {
+		printf("Failed to update the ACPI data.\n");
 		halt();
 	}
 

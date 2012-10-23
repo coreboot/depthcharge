@@ -25,25 +25,63 @@
 
 #include <stdint.h>
 
+enum {
+	BOOT_REASON_OTHER = 0,
+	BOOT_REASON_S3DIAG = 9
+};
+
+enum {
+	CHSW_RECOVERY_X86 =     (1 << 1),
+	CHSW_RECOVERY_EC =      (1 << 2),
+	CHSW_DEVELOPER_SWITCH = (1 << 5),
+	CHSW_FIRMWARE_WP_DIS =  (1 << 9)
+};
+
+enum {
+	ACTIVE_MAINFW_RECOVERY = 0,
+	ACTIVE_MAINFW_RW_A =     1,
+	ACTIVE_MAINFW_RW_B =     2
+};
+
+enum {
+	RECOVERY_REASON_NONE = 0,
+	RECOVERY_REASON_ME = 1
+};
+
+enum {
+	ACTIVE_ECFW_RO = 0,
+	ACTIVE_ECFW_RW = 1
+};
+
+enum {
+	FIRMWARE_TYPE_RECOVERY = 0,
+	FIRMWARE_TYPE_NORMAL = 1,
+	FIRMWARE_TYPE_DEVELOPER = 2
+};
+
+#define ACPI_FWID_SIZE 64
+
 /*
  * This structure is also used in coreboot. Any changes to this version have
  * to be made to that version as well.
  */
 typedef struct {
-	uint32_t boot_reason;     // 0x00
-	uint32_t main_fw;         // 0x04
-	uint32_t ec_fw;           // 0x08
-	uint16_t chsw;            // 0x0C
-	uint8_t  hwid[256];       // 0x0e
-	uint8_t  fwid[64];        // 0x10e
-	uint8_t  frid[64];        // 0x14e
-	uint32_t main_fw_type;    // 0x18e
-	uint32_t recovery_reason; // 0x192
-	uint32_t fmap_base;       // 0x196
-	uint8_t  vdat[3072];      // 0x19a
-	uint32_t fwid_ptr;        // 0xd9a
-	uint32_t me_hash[8];      // 0xd9e
-	                          // 0xdbe
+	uint32_t boot_reason;          // 0x00
+	uint32_t main_fw;              // 0x04
+	uint32_t ec_fw;                // 0x08
+	uint16_t chsw;                 // 0x0C
+	uint8_t  hwid[256];            // 0x0e
+	uint8_t  fwid[ACPI_FWID_SIZE]; // 0x10e
+	uint8_t  frid[ACPI_FWID_SIZE]; // 0x14e
+	uint32_t main_fw_type;         // 0x18e
+	uint32_t recovery_reason;      // 0x192
+	uint32_t fmap_base;            // 0x196
+	uint8_t  vdat[3072];           // 0x19a
+	uint32_t fwid_ptr;             // 0xd9a
+	uint32_t me_hash[8];           // 0xd9e
+	                               // 0xdbe
 } __attribute__((packed)) chromeos_acpi_t;
+
+int acpi_update_data(int firmware_type);
 
 #endif /* __VBOOT_UTIL_ACPI_H__ */

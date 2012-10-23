@@ -216,6 +216,16 @@ int main(void)
 			return 1;
 	}
 
+	int firmware_type = FIRMWARE_TYPE_NORMAL;
+	if (select == VB_SELECT_FIRMWARE_RECOVERY)
+		firmware_type = FIRMWARE_TYPE_RECOVERY;
+	else if (dev_switch)
+		firmware_type = FIRMWARE_TYPE_DEVELOPER;
+	if (acpi_update_data(firmware_type)) {
+		printf("Failed to update ACPI data.\n");
+		halt();
+	}
+
 	// Select a kernel and boot it.
 
 	// If we got this far and the option rom is loaded, we can assume
