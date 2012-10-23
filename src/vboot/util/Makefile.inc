@@ -17,8 +17,8 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-subdirs-y := base boot drivers image vboot
-
-# Where "main" lives.
-readonly-y += ro_main.c
-readwrite-y += rw_main.c
+depthcharge-y += commonparams.c
+depthcharge-y += flag.c
+depthcharge-y += memory.c
+depthcharge-y += memory_wipe.c
+depthcharge-y += physmem.c

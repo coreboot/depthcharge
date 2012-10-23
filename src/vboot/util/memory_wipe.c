@@ -23,8 +23,8 @@
 #include <assert.h>
 #include <libpayload.h>
 
-#include "base/memory_wipe.h"
-#include "base/physmem.h"
+#include "vboot/util/memory_wipe.h"
+#include "vboot/util/physmem.h"
 
 /*
  * This implementation tracks regions of memory that need to be wiped by

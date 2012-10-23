@@ -21,39 +21,43 @@
  */
 
 #include <libpayload.h>
-#include <lzma.h>
 
-#include "base/dc_image.h"
-#include "base/elf.h"
-#include "base/startrw.h"
-#include "base/trampoline.h"
+#include "drivers/gpio/pch.h"
+#include "drivers/gpio/sysinfo.h"
+#include "vboot/util/flag.h"
 
-int start_rw_firmware(void *compressed_image)
+const char const *cb_gpio_name[FLAG_MAX_FLAG] = {
+	[FLAG_WPSW] = "write protect",
+	[FLAG_RECSW] = "recovery",
+	[FLAG_DEVSW] = "developer",
+	[FLAG_LIDSW] = "lid",
+	[FLAG_PWRSW] = "power",
+	[FLAG_OPROM] = "oprom"
+};
+
+int flag_fetch(enum flag_index index)
 {
-	// Put the decompressed RW ELF at the end of the trampoline.
-	void *elf_image = (void *)&_tramp_end;
-
-	// Decompress the RW image.
-	uint32_t out_size = ulzma(compressed_image, elf_image);
-	if (!out_size) {
-		printf("Error decompressing RW firmware.\n");
+	if (index < 0 || index >= FLAG_MAX_FLAG) {
+		printf("Flag index %d larger than max %d.\n",
+			index, FLAG_MAX_FLAG);
 		return -1;
 	}
 
-	// Check that it's a reasonable ELF image.
-	unsigned char *e_ident = elf_image;
-	if (e_ident[0] != ElfMag0Val || e_ident[1] != ElfMag1Val ||
-		e_ident[2] != ElfMag2Val || e_ident[3] != ElfMag3Val) {
-		printf("Bad ELF magic value in RW firmware.\n");
-		return -1;
+	if (index == FLAG_ECINRW) {
+		pch_gpio_direction(21, 1);
+		return pch_gpio_get_value(21);
 	}
-	if (e_ident[EI_Class] != ElfClass32) {
-		printf("Only loading of 32 bit RW firmware is supported.\n");
+
+	const char const *name = cb_gpio_name[index];
+	if (name == NULL) {
+		printf("Don't have a gpio name for flag %d.\n", index);
 		return -1;
 	}
 
-	trampoline((Elf32_Ehdr *)elf_image);
+	struct cb_gpio *gpio = sysinfo_lookup_gpio(name);
+	if (gpio == NULL)
+		return -1;
 
-	// We should never actually reach the end of this function.
-	return 0;
+	int p = (gpio->polarity == CB_GPIO_ACTIVE_HIGH) ? 0 : 1;
+	return p ^ gpio->value;
 }

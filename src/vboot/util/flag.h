@@ -20,37 +20,21 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
+#ifndef __VBOOT_UTIL_FLAG_H__
+#define __VBOOT_UTIL_FLAG_H__
 
-#include "base/fmap.h"
-#include "config.h"
+enum flag_index {
+	FLAG_WPSW = 0,
+	FLAG_RECSW,
+	FLAG_DEVSW,
+	FLAG_LIDSW,
+	FLAG_PWRSW,
+	FLAG_ECINRW,
+	FLAG_OPROM,
 
-Fmap * const main_fmap = (Fmap *)(uintptr_t)CONFIG_FMAP_ADDRESS;
-uintptr_t main_rom_base;
+	FLAG_MAX_FLAG
+};
 
-int fmap_init(void)
-{
-	if (fmap_check_signature(main_fmap))
-		return 1;
+int flag_fetch(enum flag_index index);
 
-	main_rom_base = (uintptr_t)(-main_fmap->fmap_size);
-	return 0;
-}
-
-int fmap_check_signature(Fmap *fmap)
-{
-	return memcmp(fmap->fmap_signature, (uint8_t *)FMAP_SIGNATURE,
-		      sizeof(fmap->fmap_signature));
-}
-
-FmapArea *fmap_find_area(Fmap *fmap, const char *name)
-{
-	for (int i = 0; i < fmap->fmap_nareas; i++) {
-		FmapArea *area = &(fmap->fmap_areas[i]);
-		if (!strncmp(name, (const char *)area->area_name,
-				sizeof(area->area_name))) {
-			return area;
-		}
-	}
-	return NULL;
-}
+#endif /* __VBOOT_UTIL_FLAG_H__ */

@@ -22,42 +22,35 @@
 
 #include <libpayload.h>
 
-#include "base/flag.h"
-#include "drivers/gpio/pch.h"
-#include "drivers/gpio/sysinfo.h"
+#include "config.h"
+#include "image/fmap.h"
 
-const char const *cb_gpio_name[FLAG_MAX_FLAG] = {
-	[FLAG_WPSW] = "write protect",
-	[FLAG_RECSW] = "recovery",
-	[FLAG_DEVSW] = "developer",
-	[FLAG_LIDSW] = "lid",
-	[FLAG_PWRSW] = "power",
-	[FLAG_OPROM] = "oprom"
-};
+Fmap * const main_fmap = (Fmap *)(uintptr_t)CONFIG_FMAP_ADDRESS;
+uintptr_t main_rom_base;
 
-int flag_fetch(enum flag_index index)
+int fmap_init(void)
 {
-	if (index < 0 || index >= FLAG_MAX_FLAG) {
-		printf("Flag index %d larger than max %d.\n",
-			index, FLAG_MAX_FLAG);
-		return -1;
+	if (fmap_check_signature(main_fmap))
+		return 1;
+
+	main_rom_base = (uintptr_t)(-main_fmap->fmap_size);
+	return 0;
+}
+
+int fmap_check_signature(Fmap *fmap)
+{
+	return memcmp(fmap->fmap_signature, (uint8_t *)FMAP_SIGNATURE,
+		      sizeof(fmap->fmap_signature));
+}
+
+FmapArea *fmap_find_area(Fmap *fmap, const char *name)
+{
+	for (int i = 0; i < fmap->fmap_nareas; i++) {
+		FmapArea *area = &(fmap->fmap_areas[i]);
+		if (!strncmp(name, (const char *)area->area_name,
+				sizeof(area->area_name))) {
+			return area;
+		}
 	}
-
-	if (index == FLAG_ECINRW) {
-		pch_gpio_direction(21, 1);
-		return pch_gpio_get_value(21);
-	}
-
-	const char const *name = cb_gpio_name[index];
-	if (name == NULL) {
-		printf("Don't have a gpio name for flag %d.\n", index);
-		return -1;
-	}
-
-	struct cb_gpio *gpio = sysinfo_lookup_gpio(name);
-	if (gpio == NULL)
-		return -1;
-
-	int p = (gpio->polarity == CB_GPIO_ACTIVE_HIGH) ? 0 : 1;
-	return p ^ gpio->value;
+	return NULL;
 }

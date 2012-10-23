@@ -25,10 +25,10 @@
 #include <stdint.h>
 #include <sysinfo.h>
 
-#include "base/dc_image.h"
-#include "base/memory.h"
-#include "base/memory_wipe.h"
-#include "base/physmem.h"
+#include "image/symbols.h"
+#include "vboot/util/memory.h"
+#include "vboot/util/memory_wipe.h"
+#include "vboot/util/physmem.h"
 
 int wipe_unused_memory(void)
 {

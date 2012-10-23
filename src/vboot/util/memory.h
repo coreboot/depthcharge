@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 The Chromium OS Authors.
+ * Copyright (c) 2011-2012 The Chromium OS Authors.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -20,37 +20,9 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __BASE_FMAP_H__
-#define __BASE_FMAP_H__
+#ifndef __VBOOT_UTIL_MEMORY_H__
+#define __VBOOT_UTIL_MEMORY_H__
 
-#include <stdint.h>
+int wipe_unused_memory(void);
 
-typedef struct FmapArea {
-	uint32_t area_offset;
-	uint32_t area_size;
-	uint8_t area_name[32];
-	uint16_t area_flags;
-} __attribute__ ((packed)) FmapArea;
-
-
-typedef struct Fmap {
-	uint8_t fmap_signature[8];
-	uint8_t fmap_ver_major;
-	uint8_t fmap_ver_minor;
-	uint64_t fmap_base;
-	uint32_t fmap_size;
-	uint8_t fmap_name[32];
-	uint16_t fmap_nareas;
-	FmapArea fmap_areas[0];
-} __attribute__ ((packed)) Fmap;
-
-#define FMAP_SIGNATURE "__FMAP__"
-
-int fmap_init(void);
-int fmap_check_signature(Fmap *fmap);
-FmapArea *fmap_find_area(Fmap *fmap, const char *name);
-
-extern Fmap * const main_fmap;
-extern uintptr_t main_rom_base;
-
-#endif /* __BASE_FMAP_H__ */
+#endif /* __VBOOT_UTIL_MEMORY_H__ */

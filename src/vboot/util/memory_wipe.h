@@ -30,10 +30,10 @@
  *   memory_wipe_execute
  */
 
-#ifndef __BASE_MEMORY_WIPE_H__
-#define __BASE_MEMORY_WIPE_H__
+#ifndef __VBOOT_UTIL_MEMORY_WIPE_H__
+#define __VBOOT_UTIL_MEMORY_WIPE_H__
 
-#include "base/physmem.h"
+#include "vboot/util/physmem.h"
 
 /* A node in a linked list of edges, each at position "pos". */
 typedef struct memory_wipe_edge_t {
@@ -81,4 +81,4 @@ void memory_wipe_sub(memory_wipe_t *wipe, phys_addr_t start, phys_addr_t end);
  */
 void memory_wipe_execute(memory_wipe_t *wipe);
 
-#endif /* __BASE_MEMORY_WIPE_H__ */
+#endif /* __VBOOT_UTIL_MEMORY_WIPE_H__ */

@@ -20,24 +20,9 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __BASE_PHYSMEM_H__
-#define __BASE_PHYSMEM_H__
+#ifndef __IMAGE_STARTRW_H__
+#define __IMAGE_STARTRW_H__
 
-#include <stdint.h>
+int start_rw_firmware(void *compressed_image);
 
-typedef uint64_t phys_addr_t;
-typedef uint64_t phys_size_t;
-
-/*
- * These functions work like memset but operate on physical memory which may
- * not be accessible directly.
- *
- * @param s	The physical address to start setting memory at.
- * @param c	The character to set each byte of the region to.
- * @param n	The number of bytes to set.
- *
- * @return	The physical address of the memory which was set.
- */
-phys_addr_t arch_phys_memset(phys_addr_t s, int c, phys_size_t n);
-
-#endif /* __BASE_PHYSMEM_H__ */
+#endif /* __IMAGE_STARTRW_H__ */

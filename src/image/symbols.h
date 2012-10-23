@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 The Chromium OS Authors.
+ * Copyright (c) 2011-2012 The Chromium OS Authors.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -20,36 +20,25 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
-#include <vboot_api.h>
+#ifndef __IMAGE_SYMBOLS_H__
+#define __IMAGE_SYMBOLS_H__
 
-#include "base/fmap.h"
+#include <stdint.h>
 
-VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
-			       uint32_t firmware_index)
-{
-	const char *area_name = NULL;
+// C level variable definitions for symbols defined in the linker script.
 
-	switch (firmware_index) {
-	case VB_SELECT_FIRMWARE_A:
-		area_name = "FW_MAIN_A";
-		break;
-	case VB_SELECT_FIRMWARE_B:
-		area_name = "FW_MAIN_B";
-		break;
-	default:
-		printf("Unrecognized firmware index %d.\n", firmware_index);
-		return VBERROR_UNKNOWN;
-	}
+extern const uint8_t _start;
+extern const uint8_t _edata;
+extern const uint8_t _heap;
+extern const uint8_t _eheap;
+extern const uint8_t _estack;
+extern const uint8_t _stack;
+extern const uint8_t _end;
+extern const uint8_t _tramp_start;
+extern const uint8_t _tramp_end;
 
-	FmapArea *area = fmap_find_area(main_fmap, area_name);
-	if (!area) {
-		printf("Fmap region %s not found.\n", area_name);
-		return VBERROR_UNKNOWN;
-	}
+#define ENTRY __attribute__((section(".text._entry")))
+#define CPARAMS __attribute__((section(".cparams")))
+#define SHARED_DATA __attribute__((section(".shared_data")))
 
-	void *data = (void *)((uintptr_t)area->area_offset + main_rom_base);
-	VbUpdateFirmwareBodyHash(cparams, data, area->area_size);
-
-	return VBERROR_SUCCESS;
-}
+#endif /* __IMAGE_SYMBOLS_H__ */

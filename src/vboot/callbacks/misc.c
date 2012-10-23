@@ -24,7 +24,7 @@
 #include <lzma.h>
 #include <vboot_api.h>
 
-#include "base/flag.h"
+#include "vboot/util/flag.h"
 
 uint32_t VbExIsShutdownRequested(void)
 {

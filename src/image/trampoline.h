@@ -20,21 +20,11 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __BASE_FLAG_H__
-#define __BASE_FLAG_H__
+#ifndef __IMAGE_TRAMPOLINE_H__
+#define __IMAGE_TRAMPOLINE_H__
 
-enum flag_index {
-	FLAG_WPSW = 0,
-	FLAG_RECSW,
-	FLAG_DEVSW,
-	FLAG_LIDSW,
-	FLAG_PWRSW,
-	FLAG_ECINRW,
-	FLAG_OPROM,
+#include <stdint.h>
 
-	FLAG_MAX_FLAG
-};
+void trampoline(Elf32_Ehdr *ehdr);
 
-int flag_fetch(enum flag_index index);
-
-#endif /* __BASE_FLAG_H__ */
+#endif /* __IMAGE_TRAMPOLINE_H__ */

@@ -24,8 +24,8 @@
 #include <libpayload.h>
 #include <stdint.h>
 
-#include "base/dc_image.h"
-#include "base/physmem.h"
+#include "image/symbols.h"
+#include "vboot/util/physmem.h"
 
 /* Large pages are 2MB. */
 #define LARGE_PAGE_SIZE ((1 << 20) * 2)

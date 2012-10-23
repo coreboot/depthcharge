@@ -23,8 +23,8 @@
 #include <libpayload.h>
 #include <vboot_api.h>
 
-#include "base/fmap.h"
 #include "drivers/coreboot_fb.h"
+#include "image/fmap.h"
 
 VbError_t VbExDisplayInit(uint32_t *width, uint32_t *height)
 {

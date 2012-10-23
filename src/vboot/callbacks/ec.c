@@ -23,9 +23,9 @@
 #include <libpayload.h>
 #include <vboot_api.h>
 
-#include "base/flag.h"
-#include "base/fmap.h"
 #include "drivers/ec/chromeos/mkbp.h"
+#include "image/fmap.h"
+#include "vboot/util/flag.h"
 
 int VbExTrustEC(void)
 {

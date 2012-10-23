@@ -24,18 +24,18 @@
 #include <stdint.h>
 #include <vboot_api.h>
 
-#include "base/commonparams.h"
-#include "base/dc_image.h"
-#include "base/flag.h"
-#include "base/fmap.h"
-#include "base/memory.h"
-#include "base/startrw.h"
 #include "base/timestamp.h"
 #include "boot/commandline.h"
 #include "boot/zimage.h"
 #include "drivers/ahci.h"
 #include "drivers/ec/chromeos/mkbp.h"
 #include "drivers/power_management.h"
+#include "image/fmap.h"
+#include "image/startrw.h"
+#include "image/symbols.h"
+#include "vboot/util/commonparams.h"
+#include "vboot/util/flag.h"
+#include "vboot/util/memory.h"
 
 #define CMD_LINE_SIZE 4096
 

@@ -20,8 +20,8 @@
  * MA 02111-1307 USA
  */
 
-#include "base/commonparams.h"
-#include "base/dc_image.h"
+#include "image/symbols.h"
+#include "vboot/util/commonparams.h"
 
 VbCommonParams cparams CPARAMS;
 uint8_t shared_data_blob[VB_SHARED_DATA_REC_SIZE] SHARED_DATA;

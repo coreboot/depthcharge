@@ -20,8 +20,8 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __BASE_COMMONPARAMS_H__
-#define __BASE_COMMONPARAMS_H__
+#ifndef __VBOOT_UTIL_COMMONPARAMS_H__
+#define __VBOOT_UTIL_COMMONPARAMS_H__
 
 #include <stddef.h>
 #include <stdint.h>
@@ -30,4 +30,4 @@
 extern VbCommonParams cparams;
 extern uint8_t shared_data_blob[VB_SHARED_DATA_REC_SIZE];
 
-#endif /* __BASE_COMMONPARAMS_H__ */
+#endif /* __VBOOT_UTIL_COMMONPARAMS_H__ */

@@ -23,8 +23,8 @@
 #include <string.h>
 
 #include "base/elf.h"
-#include "base/trampoline.h"
-#include "base/dc_image.h"
+#include "image/symbols.h"
+#include "image/trampoline.h"
 
 uint8_t trampoline_stack[16384] __attribute__((aligned(16)));
 
