@@ -116,7 +116,7 @@ VbError_t VbExDisplayDebugInfo(const char *info_str)
 	if (!ro_frid) {
 		print_string("NOT FOUND");
 	} else {
-		uintptr_t data = main_rom_base + ro_frid->area_offset;
+		uintptr_t data = main_rom_base + ro_frid->offset;
 		print_string((char *)data);
 	}
 	print_string("\nactive firmware id: ");

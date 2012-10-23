@@ -159,8 +159,8 @@ VbError_t VbExEcGetExpectedRW(enum VbSelectFirmware_t select,
 		return VBERROR_UNKNOWN;
 	}
 
-	uint32_t offset = area->area_offset;
-	uint32_t size = area->area_size;
+	uint32_t offset = area->offset;
+	uint32_t size = area->size;
 
 	printf("EC-RW image offset, size are %d, %d.\n", offset, size);
 

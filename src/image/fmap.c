@@ -33,22 +33,22 @@ int fmap_init(void)
 	if (fmap_check_signature(main_fmap))
 		return 1;
 
-	main_rom_base = (uintptr_t)(-main_fmap->fmap_size);
+	main_rom_base = (uintptr_t)(-main_fmap->size);
 	return 0;
 }
 
 int fmap_check_signature(Fmap *fmap)
 {
-	return memcmp(fmap->fmap_signature, (uint8_t *)FMAP_SIGNATURE,
-		      sizeof(fmap->fmap_signature));
+	return memcmp(fmap->signature, (uint8_t *)FMAP_SIGNATURE,
+		      sizeof(fmap->signature));
 }
 
 FmapArea *fmap_find_area(Fmap *fmap, const char *name)
 {
-	for (int i = 0; i < fmap->fmap_nareas; i++) {
-		FmapArea *area = &(fmap->fmap_areas[i]);
-		if (!strncmp(name, (const char *)area->area_name,
-				sizeof(area->area_name))) {
+	for (int i = 0; i < fmap->nareas; i++) {
+		FmapArea *area = &(fmap->areas[i]);
+		if (!strncmp(name, (const char *)area->name,
+				sizeof(area->name))) {
 			return area;
 		}
 	}

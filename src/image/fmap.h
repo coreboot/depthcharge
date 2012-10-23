@@ -26,22 +26,22 @@
 #include <stdint.h>
 
 typedef struct FmapArea {
-	uint32_t area_offset;
-	uint32_t area_size;
-	uint8_t area_name[32];
-	uint16_t area_flags;
+	uint32_t offset;
+	uint32_t size;
+	uint8_t name[32];
+	uint16_t flags;
 } __attribute__ ((packed)) FmapArea;
 
 
 typedef struct Fmap {
-	uint8_t fmap_signature[8];
-	uint8_t fmap_ver_major;
-	uint8_t fmap_ver_minor;
-	uint64_t fmap_base;
-	uint32_t fmap_size;
-	uint8_t fmap_name[32];
-	uint16_t fmap_nareas;
-	FmapArea fmap_areas[0];
+	uint8_t signature[8];
+	uint8_t ver_major;
+	uint8_t ver_minor;
+	uint64_t base;
+	uint32_t size;
+	uint8_t name[32];
+	uint16_t nareas;
+	FmapArea areas[0];
 } __attribute__ ((packed)) Fmap;
 
 #define FMAP_SIGNATURE "__FMAP__"

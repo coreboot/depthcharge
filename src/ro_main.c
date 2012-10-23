@@ -94,11 +94,11 @@ static int vboot_select_firmware(void)
 		return 1;
 	}
 	fparams.verification_block_A = \
-		(void *)(vblock_a->area_offset + main_rom_base);
-	fparams.verification_size_A = vblock_a->area_size;
+		(void *)(vblock_a->offset + main_rom_base);
+	fparams.verification_size_A = vblock_a->size;
 	fparams.verification_block_B = \
-		(void *)(vblock_b->area_offset + main_rom_base);
-	fparams.verification_size_B = vblock_b->area_size;
+		(void *)(vblock_b->offset + main_rom_base);
+	fparams.verification_size_B = vblock_b->size;
 
 	printf("Calling VbSelectFirmware().\n");
 	VbError_t res = VbSelectFirmware(&cparams, &fparams);
@@ -113,7 +113,7 @@ static int vboot_select_firmware(void)
 			rw_area = fmap_find_area(main_fmap, "FW_MAIN_A");
 		else
 			rw_area = fmap_find_area(main_fmap, "FW_MAIN_B");
-		uintptr_t rw_addr = rw_area->area_offset + main_rom_base;
+		uintptr_t rw_addr = rw_area->offset + main_rom_base;
 		if (start_rw_firmware((void *)rw_addr))
 			return 1;
 	}
@@ -185,8 +185,8 @@ int main(void)
 	}
 
 	cparams.gbb_data =
-		(void *)(uintptr_t)(gbb_area->area_offset + main_rom_base);
-	cparams.gbb_size = gbb_area->area_size;
+		(void *)(uintptr_t)(gbb_area->offset + main_rom_base);
+	cparams.gbb_size = gbb_area->size;
 
 	cparams.shared_data_blob = shared_data_blob;
 	cparams.shared_data_size = sizeof(shared_data_blob);

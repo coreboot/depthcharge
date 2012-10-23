@@ -48,8 +48,8 @@ VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
 		return VBERROR_UNKNOWN;
 	}
 
-	void *data = (void *)((uintptr_t)area->area_offset + main_rom_base);
-	VbUpdateFirmwareBodyHash(cparams, data, area->area_size);
+	void *data = (void *)((uintptr_t)area->offset + main_rom_base);
+	VbUpdateFirmwareBodyHash(cparams, data, area->size);
 
 	return VBERROR_SUCCESS;
 }
