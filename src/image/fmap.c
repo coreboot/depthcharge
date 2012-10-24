@@ -20,6 +20,7 @@
  * MA 02111-1307 USA
  */
 
+#include <assert.h>
 #include <libpayload.h>
 
 #include "config.h"
@@ -28,12 +29,39 @@
 Fmap * const main_fmap = (Fmap *)(uintptr_t)CONFIG_FMAP_ADDRESS;
 uintptr_t main_rom_base;
 
+const char *fmap_ro_fwid;
+int fmap_ro_fwid_size;
+const char *fmap_rwa_fwid;
+int fmap_rwa_fwid_size;
+const char *fmap_rwb_fwid;
+int fmap_rwb_fwid_size;
+
+const char *fmap_find_string(Fmap *fmap, const char *name, int *size)
+{
+	assert(size);
+
+	FmapArea *area = fmap_find_area(fmap, name);
+	if (!area) {
+		*size = 0;
+		return NULL;
+	}
+	*size = area->size;
+	return (const char *)(uintptr_t)(main_rom_base + area->offset);
+}
+
 int fmap_init(void)
 {
 	if (fmap_check_signature(main_fmap))
 		return 1;
 
 	main_rom_base = (uintptr_t)(-main_fmap->size);
+
+	fmap_ro_fwid = fmap_find_string(main_fmap, "RO_FRID",
+					&fmap_ro_fwid_size);
+	fmap_rwa_fwid = fmap_find_string(main_fmap, "RW_FWID_A",
+					 &fmap_rwa_fwid_size);
+	fmap_rwb_fwid =	fmap_find_string(main_fmap, "RW_FWID_B",
+					 &fmap_rwb_fwid_size);
 	return 0;
 }
 

@@ -49,8 +49,16 @@ typedef struct Fmap {
 int fmap_init(void);
 int fmap_check_signature(Fmap *fmap);
 FmapArea *fmap_find_area(Fmap *fmap, const char *name);
+const char *fmap_find_string(Fmap *fmap, const char *name, int *size);
 
 extern Fmap * const main_fmap;
 extern uintptr_t main_rom_base;
+
+extern const char *fmap_ro_fwid;
+extern int fmap_ro_fwid_size;
+extern const char *fmap_rwa_fwid;
+extern int fmap_rwa_fwid_size;
+extern const char *fmap_rwb_fwid;
+extern int fmap_rwb_fwid_size;
 
 #endif /* __IMAGE_FMAP_H__ */

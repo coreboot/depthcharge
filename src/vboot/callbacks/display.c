@@ -112,12 +112,10 @@ VbError_t VbExDisplayDebugInfo(const char *info_str)
 	video_console_set_cursor(0, 0);
 	print_string(info_str);
 	print_string("read-only firmware id: ");
-	FmapArea *ro_frid = fmap_find_area(main_fmap, "RO_FRID");
-	if (!ro_frid) {
+	if (!fmap_ro_fwid) {
 		print_string("NOT FOUND");
 	} else {
-		uintptr_t data = main_rom_base + ro_frid->offset;
-		print_string((char *)data);
+		print_string(fmap_ro_fwid);
 	}
 	print_string("\nactive firmware id: ");
 	print_string("FIXME: ALWAYS READ ONLY");
