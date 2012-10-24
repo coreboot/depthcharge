@@ -78,7 +78,7 @@ static int vboot_init(int dev_switch, int rec_switch,
 	return 0;
 };
 
-static int vboot_select_firmware(void)
+static int vboot_select_firmware(enum VbSelectFirmware_t *select)
 {
 	VbSelectFirmwareParams fparams = {
 		.verification_block_A = NULL,
@@ -106,18 +106,8 @@ static int vboot_select_firmware(void)
 	if (res != VBERROR_SUCCESS)
 		return 1;
 
-	// If an RW firmware was selected, start it.
-	if (fparams.selected_firmware == VB_SELECT_FIRMWARE_A ||
-	    fparams.selected_firmware == VB_SELECT_FIRMWARE_B) {
-		FmapArea *rw_area;
-		if (fparams.selected_firmware == VB_SELECT_FIRMWARE_A)
-			rw_area = fmap_find_area(main_fmap, "FW_MAIN_A");
-		else
-			rw_area = fmap_find_area(main_fmap, "FW_MAIN_B");
-		uintptr_t rw_addr = rw_area->offset + main_rom_base;
-		if (start_rw_firmware((void *)rw_addr))
-			return 1;
-	}
+	*select = fparams.selected_firmware;
+
 	return 0;
 }
 
@@ -210,8 +200,21 @@ int main(void)
 	// Select firmware.
 	mkbp_init();
 
-	if (vboot_select_firmware())
+	enum VbSelectFirmware_t select;
+	if (vboot_select_firmware(&select))
 		halt();
+
+	// If an RW firmware was selected, start it.
+	if (select == VB_SELECT_FIRMWARE_A || select == VB_SELECT_FIRMWARE_B) {
+		FmapArea *rw_area;
+		if (select == VB_SELECT_FIRMWARE_A)
+			rw_area = fmap_find_area(main_fmap, "FW_MAIN_A");
+		else
+			rw_area = fmap_find_area(main_fmap, "FW_MAIN_B");
+		uintptr_t rw_addr = rw_area->offset + main_rom_base;
+		if (start_rw_firmware((void *)rw_addr))
+			return 1;
+	}
 
 	// Select a kernel and boot it.
 
