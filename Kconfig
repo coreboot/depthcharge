@@ -21,3 +21,10 @@ config FMAP_ADDRESS
 	  This is the physical address the FMAP in the ROM is mapped to as the
 	  system boots. The FMAP is not searched for, so if the address isn't
 	  correct the system won't boot.
+
+config EC_SOFTWARE_SYNC
+	bool "Enable EC software sync"
+	help
+	  EC software sync is a mechanism where the AP helps the EC verify its
+	  firmware similar to how vboot verifies the main system firmware. This
+	  option selects whether depthcharge should support EC software sync.
