@@ -720,6 +720,7 @@ int conf_write_autoconf(void)
 		case S_TRISTATE:
 			switch (sym_get_tristate_value(sym)) {
 			case no:
+				fprintf(out_h, "#define CONFIG_%s 0\n", sym->name);
 				break;
 			case mod:
 				fprintf(out, "CONFIG_%s=m\n", sym->name);

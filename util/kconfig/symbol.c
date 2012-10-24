@@ -310,8 +310,6 @@ void sym_calc_value(struct symbol *sym)
 					goto calc_newval;
 				}
 			}
-			if (sym->rev_dep.tri != no)
-				sym->flags |= SYMBOL_WRITE;
 			if (!sym_is_choice(sym)) {
 				prop = sym_get_default_prop(sym);
 				if (prop) {
@@ -319,6 +317,8 @@ void sym_calc_value(struct symbol *sym)
 					newval.tri = EXPR_AND(expr_calc_value(prop->expr),
 							      prop->visible.tri);
 				}
+			} else {
+				sym->flags |= SYMBOL_WRITE;
 			}
 		calc_newval:
 			newval.tri = EXPR_OR(newval.tri, sym->rev_dep.tri);
