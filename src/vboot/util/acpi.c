@@ -41,12 +41,6 @@ enum {
 	VDAT_RECOVERY = 0xFF
 };
 
-enum {
-	BINF_RECOVERY = 0,
-	BINF_RW_A = 1,
-	BINF_RW_B = 2
-};
-
 int acpi_update_data(int firmware_type)
 {
 	chromeos_acpi_t *acpi_table = (chromeos_acpi_t *)lib_sysinfo.vdat_addr;
