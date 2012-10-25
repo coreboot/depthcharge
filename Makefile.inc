@@ -20,17 +20,37 @@
 DEPTHCHARGE_RO_ELF = $(obj)/depthcharge.ro.elf
 DEPTHCHARGE_RW_ELF = $(obj)/depthcharge.rw.elf
 DEPTHCHARGE_RW_BIN = $(obj)/depthcharge.rw.bin
-LIBRARIES = $(VB_LD_DIR)/vboot_fw.a
+
+VB_LIB = $(obj)/external/vboot/vboot_fw.a
+VB_FIRMWARE_ARCH=i386
+VB_ARCH=amd64
+VB_CFLAGS = $(filter-out -nostdinc -I%, $(CFLAGS))
+
+LIBRARIES = $(VB_LIB)
 
 LIBGCC = $(shell $(XCC) -print-libgcc-file-name)
 TRAMP_LIBGCC = $(obj)/trampoline_$(notdir $(LIBGCC))
 TRAMP_PREFIX = .tramp
 TRAMPOLINE = $(obj)/trampoline.o
 
-
 real-target: $(DEPTHCHARGE_RO_ELF) $(DEPTHCHARGE_RO_BIN) \
 	$(DEPTHCHARGE_RW_ELF) $(DEPTHCHARGE_RW_BIN)
 
+
+# The vboot library source is external to depthcharge.
+$(VB_LIB):
+ifndef VB_SOURCE
+	$(error Set VB_SOURCE to point to the vboot source directory)
+else
+	FIRMWARE_ARCH=$(VB_FIRMWARE_ARCH) \
+		CFLAGS="$(VB_CFLAGS)" \
+		make -C $(VB_SOURCE) \
+		BUILD=$(dir $(VB_LIB)) \
+		ARCH=$(VB_ARCH)
+endif
+
+
+# Trampoline to go from RO depthcharge to RW.
 $(TRAMP_LIBGCC): $(LIBGCC)
 	$(Q)printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
 	$(Q)$(OBJCOPY) --prefix-symbols=$(TRAMP_PREFIX) $(<) $(@)
