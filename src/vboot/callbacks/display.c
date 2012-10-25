@@ -25,6 +25,7 @@
 
 #include "drivers/coreboot_fb.h"
 #include "image/fmap.h"
+#include "vboot/util/acpi.h"
 
 VbError_t VbExDisplayInit(uint32_t *width, uint32_t *height)
 {
@@ -109,6 +110,8 @@ VbError_t VbExDisplayImage(uint32_t x, uint32_t y,
 
 VbError_t VbExDisplayDebugInfo(const char *info_str)
 {
+	chromeos_acpi_t *acpi_table = (chromeos_acpi_t *)lib_sysinfo.vdat_addr;
+
 	video_console_set_cursor(0, 0);
 	print_string(info_str);
 	print_string("read-only firmware id: ");
@@ -118,7 +121,24 @@ VbError_t VbExDisplayDebugInfo(const char *info_str)
 		print_string(fmap_ro_fwid);
 	}
 	print_string("\nactive firmware id: ");
-	print_string("FIXME: ALWAYS READ ONLY");
+	if (acpi_table->main_fw == BINF_RW_A) {
+		if (fmap_rwa_fwid)
+			print_string(fmap_rwa_fwid);
+		else
+			print_string("RW A: ID NOT FOUND");
+	} else if (acpi_table->main_fw == BINF_RW_B) {
+		if (fmap_rwb_fwid)
+			print_string(fmap_rwb_fwid);
+		else
+			print_string("RW B: ID NOT FOUND");
+	} else if (acpi_table->main_fw == BINF_RECOVERY) {
+		if (fmap_ro_fwid)
+			print_string(fmap_ro_fwid);
+		else
+			print_string("RO: ID NOT FOUND");
+	} else {
+		print_string("NOT FOUND");
+	}
 	print_string("\n");
 	return VBERROR_SUCCESS;
 }
