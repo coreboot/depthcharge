@@ -36,6 +36,8 @@ extern const uint8_t _stack;
 extern const uint8_t _end;
 extern const uint8_t _tramp_start;
 extern const uint8_t _tramp_end;
+extern const uint8_t _kernel_start;
+extern const uint8_t _kernel_end;
 
 #define ENTRY __attribute__((section(".text._entry")))
 #define CPARAMS __attribute__((section(".cparams")))

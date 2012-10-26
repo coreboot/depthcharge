@@ -27,7 +27,8 @@
  * SUCH DAMAGE.
  */
 
-KERNEL_BASE  =  0x100000;
+KERNEL_START =  0x100000;
+KERNEL_SIZE  =  0x800000;
 BASE_ADDRESS = 0x2000000;
 
 OUTPUT_FORMAT(elf32-i386)
@@ -45,8 +46,8 @@ SECTIONS
 	 * eventually since that area has to be kept clear anyway, and we'll
 	 * be done with it by the time we need it for the kernel.
 	 */
-	. = KERNEL_BASE;
-	_kernel_base = KERNEL_BASE;
+	. = KERNEL_START;
+	_kernel_start = KERNEL_START;
 
 	. = ALIGN(16);
 	_tramp_start = .;
@@ -85,6 +86,9 @@ SECTIONS
 		*(.tramp.bss)
 	}
 	_tramp_end = .;
+
+	. = KERNEL_START + KERNEL_SIZE;
+	_kernel_end = .;
 
 
 	/* The main portion of depthcharge. */
