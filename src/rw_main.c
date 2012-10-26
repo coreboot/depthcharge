@@ -42,7 +42,8 @@ static char cmd_line_buf[2 * CMD_LINE_SIZE];
 
 static int vboot_select_and_load_kernel(void)
 {
-	static char cmd_line_temp[CMD_LINE_SIZE];
+	static const char cros_secure[] = "cros_secure ";
+	static char cmd_line_temp[CMD_LINE_SIZE + sizeof(cros_secure)];
 
 	VbSelectAndLoadKernelParams kparams = {
 		.kernel_buffer = (void *)0x100000,
@@ -59,7 +60,7 @@ static int vboot_select_and_load_kernel(void)
 		kparams.bootloader_address - sizeof(struct boot_params);
 	struct boot_params *params = (struct boot_params *)params_addr;
 	uintptr_t cmd_line_addr = params_addr - CMD_LINE_SIZE;
-	strncpy(cmd_line_temp, "cros_secure ", CMD_LINE_SIZE);
+	strcpy(cmd_line_temp, cros_secure);
 	strncat(cmd_line_temp, (char *)cmd_line_addr, CMD_LINE_SIZE);
 
 	if (commandline_subst(cmd_line_temp, 0,
