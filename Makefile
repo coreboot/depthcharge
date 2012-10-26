@@ -63,6 +63,14 @@ LINK_FLAGS := -Wl,--wrap=__divdi3 -Wl,--wrap=__udivdi3 \
 	-Wl,-T,$(LDSCRIPT) $(ABI_FLAGS)
 CFLAGS := -Wall -Werror -Os $(INCLUDES) -std=gnu99 $(ABI_FLAGS)
 
+# These options are passed from .config to the linker script.
+link_config_options := \
+	KERNEL_START \
+	KERNEL_SIZE \
+	BASE_ADDRESS \
+	HEAP_SIZE \
+	STACK_SIZE
+
 all: real-target
 
 # Add a new class of source/object files to the build system
@@ -163,6 +171,9 @@ all: config
 else
 
 include $(src)/.config
+
+$(foreach option,$(link_config_options), \
+	$(eval LINK_FLAGS += -Wl,--defsym=$(option)=$$(CONFIG_$(option))))
 
 all: real-target
 

@@ -28,3 +28,46 @@ config EC_SOFTWARE_SYNC
 	  EC software sync is a mechanism where the AP helps the EC verify its
 	  firmware similar to how vboot verifies the main system firmware. This
 	  option selects whether depthcharge should support EC software sync.
+
+config KERNEL_START
+	hex "Physical address of the region the kernel is loaded into"
+	default 0x100000
+	help
+	  The start of a region of memory the kernel is loaded into before
+	  it's verified or booted. Also, the code which pivots from the
+	  read only firmware to one of the read/write versions is loaded here
+	  when depthcharge starts.
+
+config KERNEL_SIZE
+	hex "The size of the region the kernel is loaded into"
+	default 0x800000
+	help
+	  The size of a region of memroy the kernel is loaded into before
+	  it's verified or booted. Also, the code which pivots from the
+	  read only firmware to one of the read/write versions is loaded here
+	  when depthcharge starts. That code is overwritten when the kernel is
+	  loaded, so this should be set to the size of the larger of the two,
+	  not their sizes added together.
+
+config BASE_ADDRESS
+	hex "The address depthcharge is linked to run at"
+	default 0x2000000
+	help
+	  The address that the main part of depthcharge runs at. That includes
+	  everything except the code which pivots between the read only and
+	  read/write firmware which is linked to run from the region of memory
+	  the kernel is eventually loaded into.
+
+config HEAP_SIZE
+	hex "The size of the heap in bytes"
+	default 0x200000
+	help
+	  The size of the heap in bytes, minus any padding needed to align it
+	  to a 16 byte boundary.
+
+config STACK_SIZE
+	hex "The size of the stack in bytes"
+	default 0x4000
+	help
+	  The size of the stack in bytes, minus any padding needed to align it
+	  to a 16 byte boundary.
