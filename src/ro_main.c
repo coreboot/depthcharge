@@ -117,8 +117,8 @@ static int vboot_select_and_load_kernel(void)
 	static char cmd_line_temp[CMD_LINE_SIZE + sizeof(cros_secure)];
 
 	VbSelectAndLoadKernelParams kparams = {
-		.kernel_buffer = (void *)0x100000,
-		.kernel_buffer_size = 0x800000
+		.kernel_buffer = (void *)&_kernel_start,
+		.kernel_buffer_size = &_kernel_end - &_kernel_start
 	};
 
 	printf("Calling VbSelectAndLoadKernel().\n");
