@@ -61,6 +61,8 @@ int wipe_unused_memory(void)
 
 	// Exclude memory we're using ourselves.
 	memory_wipe_sub(&wipe, (uintptr_t)&_start, (uintptr_t)&_end);
+	memory_wipe_sub(&wipe, (uintptr_t)&_tramp_start,
+			(uintptr_t)&_tramp_end);
 
 	// Do the wipe.
 	memory_wipe_execute(&wipe);
