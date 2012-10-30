@@ -20,8 +20,6 @@
  * MA 02111-1307 USA
  */
 
-// gbb_header.h requires types defined by stdint.h but doesn't include it.
-#include <stdint.h>
 #include <gbb_header.h>
 #include <libpayload.h>
 #include <vboot_api.h>
