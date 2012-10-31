@@ -21,6 +21,7 @@
  */
 
 #include <libpayload.h>
+#include <usb/usb.h>
 #include <vboot_api.h>
 
 #include "drivers/ahci.h"
@@ -49,6 +50,8 @@ VbError_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
 
 		setup_vb_disk_info(disk, &sata_drive, "Sata SSD");
 	} else {
+		usb_poll();
+
 		VbDiskInfo *disk =
 			malloc(sizeof(VbDiskInfo) * num_usb_drives);
 		*info_ptr = disk;
