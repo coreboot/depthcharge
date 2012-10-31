@@ -20,8 +20,34 @@
  * MA 02111-1307 USA
  */
 
+#include <libpayload.h>
+
+#include "image/fmap.h"
 #include "image/symbols.h"
+#include "vboot/util/acpi.h"
 #include "vboot/util/commonparams.h"
 
 VbCommonParams cparams CPARAMS;
 uint8_t shared_data_blob[VB_SHARED_DATA_REC_SIZE] SHARED_DATA;
+
+int common_params_init(void)
+{
+	// Set up the common param structure.
+	memset(&cparams, 0, sizeof(cparams));
+	memset(shared_data_blob, 0, sizeof(shared_data_blob));
+
+	FmapArea *gbb_area = fmap_find_area(main_fmap, "GBB");
+	if (!gbb_area) {
+		printf("Couldn't find the GBB.\n");
+		return 1;
+	}
+
+	cparams.gbb_data =
+		(void *)(uintptr_t)(gbb_area->offset + main_rom_base);
+	cparams.gbb_size = gbb_area->size;
+
+	chromeos_acpi_t *acpi_table = (chromeos_acpi_t *)lib_sysinfo.vdat_addr;
+	cparams.shared_data_blob = (void *)&acpi_table->vdat;
+	cparams.shared_data_size = sizeof(acpi_table->vdat);
+	return 0;
+}

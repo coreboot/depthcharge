@@ -54,22 +54,8 @@ int main(void)
 	}
 
 	// Set up the common param structure.
-	memset(&cparams, 0, sizeof(cparams));
-	memset(shared_data_blob, 0, sizeof(shared_data_blob));
-
-	FmapArea *gbb_area = fmap_find_area(main_fmap, "GBB");
-	if (!gbb_area) {
-		printf("Couldn't find the GBB.\n");
+	if (common_params_init())
 		halt();
-	}
-
-	cparams.gbb_data =
-		(void *)(uintptr_t)(gbb_area->offset + main_rom_base);
-	cparams.gbb_size = gbb_area->size;
-
-	chromeos_acpi_t *acpi_table = (chromeos_acpi_t *)lib_sysinfo.vdat_addr;
-	cparams.shared_data_blob = (void *)&acpi_table->vdat;
-	cparams.shared_data_size = sizeof(acpi_table->vdat);
 
 	// Initialize vboot.
 	int dev_switch = flag_fetch(FLAG_DEVSW);
