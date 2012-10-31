@@ -64,18 +64,15 @@ int main(void)
 		halt();
 	}
 
-	// The common params structure is already set up from the RO firmware.
-
-	int oprom_loaded = flag_fetch(FLAG_OPROM);
-	if (oprom_loaded < 0)
-		halt();
-
 	mkbp_init();
 
 	// If we got this far and the option rom is loaded, we can assume
 	// vboot wants to use the display and probably also wants to use the
 	// keyboard.
-	if (oprom_loaded) {
+	int oprom_loaded = flag_fetch(FLAG_OPROM);
+	if (oprom_loaded < 0) {
+		halt();
+	} else if (oprom_loaded) {
 		keyboard_init();
 		video_init();
 		video_console_cursor_enable(0);
