@@ -24,57 +24,13 @@
 #include <vboot_api.h>
 
 #include "base/timestamp.h"
-#include "boot/commandline.h"
-#include "boot/zimage.h"
 #include "drivers/ahci.h"
 #include "drivers/ec/chromeos/mkbp.h"
-#include "drivers/power_management.h"
 #include "image/fmap.h"
-#include "image/symbols.h"
+#include "vboot/stages.h"
 #include "vboot/util/acpi.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
-#include "vboot/util/memory.h"
-
-#define CMD_LINE_SIZE 4096
-
-static char cmd_line_buf[2 * CMD_LINE_SIZE];
-
-static int vboot_select_and_load_kernel(void)
-{
-	static const char cros_secure[] = "cros_secure ";
-	static char cmd_line_temp[CMD_LINE_SIZE + sizeof(cros_secure)];
-
-	VbSelectAndLoadKernelParams kparams = {
-		.kernel_buffer = (void *)&_kernel_start,
-		.kernel_buffer_size = &_kernel_end - &_kernel_start
-	};
-
-	printf("Calling VbSelectAndLoadKernel().\n");
-	if (VbSelectAndLoadKernel(&cparams, &kparams) != VBERROR_SUCCESS) {
-		printf("Doing a cold reboot.\n");
-		cold_reboot();
-	}
-
-	uintptr_t params_addr =
-		kparams.bootloader_address - sizeof(struct boot_params);
-	struct boot_params *params = (struct boot_params *)params_addr;
-	uintptr_t cmd_line_addr = params_addr - CMD_LINE_SIZE;
-	strcpy(cmd_line_temp, cros_secure);
-	strncat(cmd_line_temp, (char *)cmd_line_addr, CMD_LINE_SIZE);
-
-	if (commandline_subst(cmd_line_temp, 0,
-			      kparams.partition_number + 1,
-			      kparams.partition_guid,
-			      cmd_line_buf,
-			      sizeof(cmd_line_buf)))
-		return 1;
-
-	if (zboot(params, cmd_line_buf, kparams.kernel_buffer))
-		return 1;
-
-	return 0;
-}
 
 int main(void)
 {
