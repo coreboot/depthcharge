@@ -21,6 +21,7 @@
  */
 
 #include <libpayload.h>
+#include <sysinfo.h>
 #include <vboot_api.h>
 
 #include "drivers/coreboot_fb.h"
@@ -29,7 +30,14 @@
 
 VbError_t VbExDisplayInit(uint32_t *width, uint32_t *height)
 {
-	printf("VbExDisplayInit called but not implemented.\n");
+	video_init();
+	video_console_cursor_enable(0);
+	if (lib_sysinfo.framebuffer) {
+		*width = lib_sysinfo.framebuffer->x_resolution;
+		*height = lib_sysinfo.framebuffer->y_resolution;
+	} else {
+		*width = *height = 0;
+	}
 	return VBERROR_SUCCESS;
 }
 

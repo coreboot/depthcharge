@@ -74,8 +74,6 @@ int main(void)
 		halt();
 	} else if (oprom_loaded) {
 		keyboard_init();
-		video_init();
-		video_console_cursor_enable(0);
 		usb_initialize();
 	}
 
