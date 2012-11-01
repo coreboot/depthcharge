@@ -62,6 +62,7 @@ void usbdisk_create(usbdev_t *dev)
 		return;
 	}
 
+	bdev->name = "USB disk";
 	bdev->removable = 1;
 	bdev->block_size = msc->blocksize;
 	bdev->block_count = msc->numblocks;

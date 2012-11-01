@@ -502,6 +502,7 @@ void ahci_init(pcidev_t dev)
 				continue;
 			}
 
+			sata_drive.name = "Sata SSD";
 			sata_drive.read = &ahci_read;
 			sata_drive.write = &ahci_write;
 			sata_drive_data.host = host;

@@ -28,6 +28,7 @@
 typedef uint64_t lba_t;
 
 typedef struct BlockDev {
+	const char *name;
 	int removable;
 	unsigned block_size;
 	lba_t block_count;

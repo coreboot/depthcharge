@@ -28,14 +28,14 @@
 #include "drivers/blockdev.h"
 #include "drivers/usb.h"
 
-static void setup_vb_disk_info(VbDiskInfo *disk, BlockDev *bdev, char *name)
+static void setup_vb_disk_info(VbDiskInfo *disk, BlockDev *bdev)
 {
+	disk->name = bdev->name;
 	disk->handle = (VbExDiskHandle_t)bdev;
 	disk->bytes_per_lba = bdev->block_size;
 	disk->lba_count = bdev->block_count;
 	disk->flags = bdev->removable ? VB_DISK_FLAG_REMOVABLE :
 					VB_DISK_FLAG_FIXED;
-	disk->name = name;
 }
 
 VbError_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
@@ -48,7 +48,7 @@ VbError_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
 		*info_ptr = disk;
 		*count += 1;
 
-		setup_vb_disk_info(disk, &sata_drive, "Sata SSD");
+		setup_vb_disk_info(disk, &sata_drive);
 	} else {
 		usb_poll();
 
@@ -58,7 +58,7 @@ VbError_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
 		*count += num_usb_drives;
 
 		for (BlockDev *bdev = usb_drives; bdev; bdev = bdev->next)
-			setup_vb_disk_info(disk, bdev, "USB disk");
+			setup_vb_disk_info(disk, bdev);
 	}
 	return VBERROR_SUCCESS;
 }
