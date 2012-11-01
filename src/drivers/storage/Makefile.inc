@@ -17,9 +17,5 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-subdirs-y += ec gpio storage
-
-depthcharge-y += coreboot_fb.c
-depthcharge-y += hda_codec.c
-depthcharge-y += power_management.c
-depthcharge-y += tpm.c
+depthcharge-y += ahci.c
+depthcharge-y += usb.c

@@ -25,8 +25,8 @@
 #include <usb/usbdisk.h>
 #include <usb/usbmsc.h>
 
-#include "drivers/blockdev.h"
-#include "drivers/usb.h"
+#include "drivers/storage/blockdev.h"
+#include "drivers/storage/usb.h"
 
 BlockDev *usb_drives;
 int num_usb_drives;

@@ -29,9 +29,9 @@
 #include <libpayload.h>
 #include <stdint.h>
 
-#include "drivers/ahci.h"
-#include "drivers/ata.h"
-#include "drivers/blockdev.h"
+#include "drivers/storage/ahci.h"
+#include "drivers/storage/ata.h"
+#include "drivers/storage/blockdev.h"
 
 typedef struct AhciDevData {
 	AhciHost *host;

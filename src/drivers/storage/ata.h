@@ -20,8 +20,8 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __DRIVERS_ATA_H__
-#define __DRIVERS_ATA_H__
+#ifndef __DRIVERS_STORAGE_ATA_H__
+#define __DRIVERS_STORAGE_ATA_H__
 
 typedef enum AtaCommand {
 	ATA_CMD_NOP = 0x00,
@@ -183,4 +183,4 @@ typedef struct AtaIdentify {
 	uint16_t integrity;
 } AtaIdentify;
 
-#endif /* __DRIVERS_ATA_H__ */
+#endif /* __DRIVERS_STORAGE_ATA_H__ */

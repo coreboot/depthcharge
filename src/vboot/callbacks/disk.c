@@ -24,9 +24,9 @@
 #include <usb/usb.h>
 #include <vboot_api.h>
 
-#include "drivers/ahci.h"
-#include "drivers/blockdev.h"
-#include "drivers/usb.h"
+#include "drivers/storage/ahci.h"
+#include "drivers/storage/blockdev.h"
+#include "drivers/storage/usb.h"
 
 static void setup_vb_disk_info(VbDiskInfo *disk, BlockDev *bdev)
 {

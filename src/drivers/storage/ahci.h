@@ -22,10 +22,10 @@
  * MA 02111-1307 USA
  *
  */
-#ifndef __DRIVERS_AHCI_H__
-#define __DRIVERS_AHCI_H__
+#ifndef __DRIVERS_STORAGE_AHCI_H__
+#define __DRIVERS_STORAGE_AHCI_H__
 
-#include "drivers/blockdev.h"
+#include "drivers/storage/blockdev.h"
 
 #define AHCI_PCI_BAR		0x24
 #define AHCI_MAX_SG		56 /* hardware max is 64K */
@@ -189,4 +189,4 @@ extern BlockDev sata_drive;
 
 void ahci_init(pcidev_t pdev);
 
-#endif /* __DRIVERS_AHCI_H__ */
+#endif /* __DRIVERS_STORAGE_AHCI_H__ */

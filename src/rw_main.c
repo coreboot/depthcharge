@@ -24,8 +24,8 @@
 #include <vboot_api.h>
 
 #include "base/timestamp.h"
-#include "drivers/ahci.h"
 #include "drivers/ec/chromeos/mkbp.h"
+#include "drivers/storage/ahci.h"
 #include "image/fmap.h"
 #include "vboot/stages.h"
 #include "vboot/util/acpi.h"
