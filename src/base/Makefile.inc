@@ -18,6 +18,7 @@
 ##
 
 depthcharge-y += gcc.c
+depthcharge-y += list.c
 depthcharge-y += time.c
 depthcharge-y += timestamp.c
 
