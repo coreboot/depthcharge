@@ -119,8 +119,10 @@ int acpi_update_data(int firmware_type)
 
 	acpi_table->fmap_base = CONFIG_FMAP_ADDRESS;
 
-	size = min(fwid_size, ACPI_FWID_SIZE);
-	memcpy((void *)(uintptr_t)acpi_table->fwid_ptr, fwid, size);
+	size = min(fwid_size, strnlen(fwid, ACPI_FWID_SIZE));
+	uint8_t *dest = (uint8_t *)(uintptr_t)acpi_table->fwid_ptr;
+	memcpy(dest, fwid, size);
+	dest[size] = 0;
 
 	return 0;
 }
