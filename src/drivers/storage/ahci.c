@@ -511,6 +511,8 @@ void ahci_init(pcidev_t dev)
 			sata_drive.block_size = block_size;
 			sata_drive.block_count = cap;
 			sata_drive.removable = 0;
+			sata_drive.list_node.next = NULL;
+			sata_drive.list_node.prev = NULL;
 		}
 	}
 }

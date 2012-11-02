@@ -25,7 +25,7 @@
 
 #include "drivers/storage/blockdev.h"
 
-extern BlockDev *usb_drives;
+extern ListNode usb_drives;
 extern int num_usb_drives;
 
 #endif /* __DRIVERS_STORAGE_USB_H__ */

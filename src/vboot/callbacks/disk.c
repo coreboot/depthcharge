@@ -20,6 +20,7 @@
  * MA 02111-1307 USA
  */
 
+#include <assert.h>
 #include <libpayload.h>
 #include <usb/usb.h>
 #include <vboot_api.h>
@@ -57,8 +58,14 @@ VbError_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
 		*info_ptr = disk;
 		*count += num_usb_drives;
 
-		for (BlockDev *bdev = usb_drives; bdev; bdev = bdev->next)
-			setup_vb_disk_info(disk, bdev);
+		ListNode *node = &usb_drives;
+		for (int i = 0; node->next; i++) {
+			node = node->next;
+			BlockDev *bdev =
+				container_of(node, BlockDev, list_node);
+			assert(i < num_usb_drives);
+			setup_vb_disk_info(&disk[i], bdev);
+		}
 	}
 	return VBERROR_SUCCESS;
 }

@@ -28,7 +28,7 @@
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/usb.h"
 
-BlockDev *usb_drives;
+ListNode usb_drives;
 int num_usb_drives;
 
 static lba_t dc_usb_read(BlockDev *dev, lba_t start, lba_t count, void *buffer)
@@ -70,8 +70,9 @@ void usbdisk_create(usbdev_t *dev)
 	bdev->write = &dc_usb_write;
 	bdev->dev_data = dev;
 
-	bdev->next = usb_drives;
-	usb_drives = bdev;
+	msc->data = bdev;
+
+	list_insert_after(&bdev->list_node, &usb_drives);
 	num_usb_drives++;
 
 	printf("Added usb disk %d.\n", dev->address);
@@ -79,28 +80,13 @@ void usbdisk_create(usbdev_t *dev)
 
 void usbdisk_remove(usbdev_t *dev)
 {
-	BlockDev **bdev_ptr = &usb_drives;
-	BlockDev *bdev = *bdev_ptr;
+	usbmsc_inst_t *msc = MSC_INST(dev);
+	BlockDev *bdev = (BlockDev *)(msc->data);
+	assert(bdev);
 
-	// If we know this device is a USB disk, it must have a device address.
-	assert(dev->address);
-
-	while (bdev) {
-		usbdev_t *udev = (usbdev_t *)bdev->dev_data;
-
-		if (udev->address == dev->address) {
-			bdev_ptr = &bdev->next;
-			free(bdev);
-			assert(num_usb_drives);
-			num_usb_drives--;
-
-			printf("Removed usb disk %d.\n", dev->address);
-			return;
-		}
-
-		bdev_ptr = &bdev->next;
-		bdev = *bdev_ptr;
-	}
-
-	printf("Failed to find usb disk %d.\n", dev->address);
+	list_remove(&bdev->list_node);
+	assert(num_usb_drives);
+	num_usb_drives--;
+	free(bdev);
+	printf("Removed usb disk %d.\n", dev->address);
 }

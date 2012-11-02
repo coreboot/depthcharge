@@ -25,6 +25,8 @@
 
 #include <stdint.h>
 
+#include "base/list.h"
+
 typedef uint64_t lba_t;
 
 typedef struct BlockDev {
@@ -38,7 +40,7 @@ typedef struct BlockDev {
 		       const void *buffer);
 	void *dev_data;
 
-	struct BlockDev *next;
+	ListNode list_node;
 } BlockDev;
 
 #endif /* __DRIVERS_STORAGE_BLOCKDEV_H__ */
