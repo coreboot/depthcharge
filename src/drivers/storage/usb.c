@@ -62,7 +62,10 @@ void usbdisk_create(usbdev_t *dev)
 		return;
 	}
 
-	bdev->name = "USB disk";
+	static const int name_size = 16;
+	char *name = malloc(name_size);
+	snprintf(name, name_size, "USB disk %d", dev->address);
+	bdev->name = name;
 	bdev->removable = 1;
 	bdev->block_size = msc->blocksize;
 	bdev->block_count = msc->numblocks;
@@ -75,7 +78,7 @@ void usbdisk_create(usbdev_t *dev)
 	list_insert_after(&bdev->list_node, &usb_drives);
 	num_usb_drives++;
 
-	printf("Added usb disk %d.\n", dev->address);
+	printf("Added %s.\n", name);
 }
 
 void usbdisk_remove(usbdev_t *dev)
@@ -87,6 +90,7 @@ void usbdisk_remove(usbdev_t *dev)
 	list_remove(&bdev->list_node);
 	assert(num_usb_drives);
 	num_usb_drives--;
+	printf("Removed %s.\n", bdev->name);
+	free((void *)bdev->name);
 	free(bdev);
-	printf("Removed usb disk %d.\n", dev->address);
 }
