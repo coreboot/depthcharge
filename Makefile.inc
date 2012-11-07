@@ -40,6 +40,7 @@ ifndef VB_SOURCE
 	$(error Set VB_SOURCE to point to the vboot source directory)
 else
 	FIRMWARE_ARCH=$(VB_FIRMWARE_ARCH) \
+		CFLAGS="$(CFLAGS) -DVBOOT_DEBUG" \
 		make -C $(VB_SOURCE) \
 		BUILD=$(dir $(VB_LIB)) \
 		ARCH=$(VB_ARCH)
