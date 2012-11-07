@@ -58,13 +58,10 @@ int vboot_init(int dev_switch, int rec_switch,
 
 	printf("Calling VbInit().\n");
 	VbError_t res = VbInit(&cparams, &iparams);
-
-	if (res == VBERROR_VGA_OPROM_MISMATCH) {
-		printf("Doing a cold reboot.\n");
+	if (res != VBERROR_SUCCESS) {
+		printf("VbInit returned %d, Doing a cold reboot.\n", res);
 		cold_reboot();
 	}
-	if (res != VBERROR_SUCCESS)
-		return 1;
 
 	if (iparams.out_flags && VB_INIT_OUT_CLEAR_RAM) {
 		if (wipe_unused_memory())
@@ -98,8 +95,11 @@ int vboot_select_firmware(enum VbSelectFirmware_t *select)
 
 	printf("Calling VbSelectFirmware().\n");
 	VbError_t res = VbSelectFirmware(&cparams, &fparams);
-	if (res != VBERROR_SUCCESS)
-		return 1;
+	if (res != VBERROR_SUCCESS) {
+		printf("VbSelectFirmware returned %d, "
+		       "Doing a cold reboot.\n", res);
+		cold_reboot();
+	}
 
 	*select = fparams.selected_firmware;
 
@@ -117,8 +117,10 @@ int vboot_select_and_load_kernel(void)
 	};
 
 	printf("Calling VbSelectAndLoadKernel().\n");
-	if (VbSelectAndLoadKernel(&cparams, &kparams) != VBERROR_SUCCESS) {
-		printf("Doing a cold reboot.\n");
+	VbError_t res = VbSelectAndLoadKernel(&cparams, &kparams);
+	if (res != VBERROR_SUCCESS) {
+		printf("VbSelectAndLoadKernel returned %d, "
+		       "Doing a cold reboot.\n", res);
 		cold_reboot();
 	}
 
