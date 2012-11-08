@@ -68,11 +68,17 @@ int main(void)
 		halt();
 	}
 
-	if (vboot_init(dev_switch, rec_switch, wp_switch, oprom_loaded))
-		halt();
-
 	// Select firmware.
 	mkbp_init();
+	if (mkbp_ptr) {
+		// Unconditionally clear the EC recovery request.
+		const uint32_t kb_rec_mask =
+			EC_HOST_EVENT_MASK(EC_HOST_EVENT_KEYBOARD_RECOVERY);
+		mkbp_clear_host_events(mkbp_ptr, kb_rec_mask);
+	}
+
+	if (vboot_init(dev_switch, rec_switch, wp_switch, oprom_loaded))
+		halt();
 
 	enum VbSelectFirmware_t select;
 	if (vboot_select_firmware(&select))
