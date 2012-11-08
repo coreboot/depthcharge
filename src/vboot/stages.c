@@ -26,6 +26,7 @@
 
 #include "boot/commandline.h"
 #include "boot/zimage.h"
+#include "config.h"
 #include "drivers/power_management.h"
 #include "image/fmap.h"
 #include "image/symbols.h"
@@ -55,6 +56,8 @@ int vboot_init(int dev_switch, int rec_switch,
 		iparams.flags |= VB_INIT_FLAG_OPROM_LOADED;
 	iparams.flags |= VB_INIT_FLAG_OPROM_MATTERS;
 	iparams.flags |= VB_INIT_FLAG_RO_NORMAL_SUPPORT;
+	if (CONFIG_VIRTUAL_DEV_SWITCH)
+		iparams.flags |= VB_INIT_FLAG_VIRTUAL_DEV_SWITCH;
 
 	printf("Calling VbInit().\n");
 	VbError_t res = VbInit(&cparams, &iparams);
