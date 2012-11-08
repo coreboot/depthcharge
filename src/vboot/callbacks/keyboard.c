@@ -39,7 +39,7 @@ uint32_t VbExKeyboardRead(void)
 
 	uint32_t ch = getchar();
 	switch (ch) {
-	case '\n': return VB_KEY_CTRL_ENTER;
+	case '\n': return '\r';
 	case KEY_UP: return VB_KEY_UP;
 	case KEY_DOWN: return VB_KEY_DOWN;
 	case KEY_RIGHT: return VB_KEY_RIGHT;
