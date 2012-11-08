@@ -35,16 +35,12 @@
 
 #include "drivers/gpio/pch.h"
 
-// IO ports for controlling the banks of GPIOs.
-static struct {
-	uint8_t use_sel;
-	uint8_t io_sel;
-	uint8_t lvl;
-} gpio_bank[] = {
-	{ 0x00, 0x04, 0x0c },		/* Bank 0 */
-	{ 0x30, 0x34, 0x38 },		/* Bank 1 */
-	{ 0x40, 0x44, 0x48 }		/* Bank 2 */
-};
+#define NUM_GPIO_BANKS 3
+// IO ports for controlling the banks of GPIOS.
+//                                    bank:   0     1     2
+static uint8_t gpio_use[NUM_GPIO_BANKS] = { 0x00, 0x30, 0x40 };
+static uint8_t gpio_io[NUM_GPIO_BANKS]  = { 0x04, 0x34, 0x44 };
+static uint8_t gpio_lvl[NUM_GPIO_BANKS] = { 0x0c, 0x38, 0x48 };
 
 static uint32_t pch_gpiobase(void)
 {
@@ -52,7 +48,7 @@ static uint32_t pch_gpiobase(void)
 	static const uint8_t pci_cfg_gpiobase = 0x48;
 
 	static uint32_t base = ~(uint32_t)0;
-	if (base)
+	if (base != ~(uint32_t)0)
 		return base;
 
 	base = pci_read_config32(dev, pci_cfg_gpiobase);
@@ -61,44 +57,49 @@ static uint32_t pch_gpiobase(void)
 	return base;
 }
 
-static void pch_gpio_set(uint16_t addr, int pos, int val)
+static int pch_gpio_set(unsigned num, uint8_t *bases, int val)
 {
+	int bank = num / 32;
+	int bit = num % 32;
+	if (bank >= NUM_GPIO_BANKS) {
+		printf("GPIO bank %d out of bounds.\n", bank);
+		return -1;
+	}
+	uint16_t addr = pch_gpiobase() + bases[bank];
 	uint32_t reg = inl(addr);
-	reg = (reg & ~(1 << pos)) | ((val & 1) << pos);
+	reg = (reg & ~(1 << bit)) | ((val & 1) << bit);
 	outl(addr, reg);
+	return 0;
 }
 
-static int pch_gpio_get(uint16_t addr, int pos)
+static int pch_gpio_get(unsigned num, uint8_t *bases)
 {
-	uint32_t reg = inl(addr);
-	return (reg >> pos) & 1;
+	int bank = num / 32;
+	int bit = num % 32;
+	if (bank >= NUM_GPIO_BANKS) {
+		printf("GPIO bank %d out of bounds.\n", bank);
+		return -1;
+	}
+	uint32_t reg = inl(pch_gpiobase() + bases[bank]);
+	return (reg >> bit) & 1;
+}
+
+int pch_gpio_use(unsigned num, unsigned use)
+{
+	return pch_gpio_set(num, gpio_use, use);
 }
 
 int pch_gpio_direction(unsigned num, unsigned input)
 {
-	if (num > ARRAY_SIZE(gpio_bank))
-		return -1;
-
-	pch_gpio_set(pch_gpiobase() + gpio_bank[num / 32].io_sel,
-		      num % 32, input);
-	return 0;
+	return pch_gpio_set(num, gpio_io, input);
 }
 
 int pch_gpio_get_value(unsigned num)
 {
-	if (num > ARRAY_SIZE(gpio_bank))
-		return -1;
-
-	return pch_gpio_get(pch_gpiobase() + gpio_bank[num / 32].lvl,
-			     num % 32);
+	return pch_gpio_get(num, gpio_lvl);
 }
 
 int pch_gpio_set_value(unsigned num, unsigned value)
 {
-	if (num > ARRAY_SIZE(gpio_bank))
-		return -1;
-
-	pch_gpio_set(pch_gpiobase() + gpio_bank[num / 32].lvl,
-		      num % 32, value);
-	return 0;
+	return pch_gpio_set(num, gpio_lvl, value);
 }
