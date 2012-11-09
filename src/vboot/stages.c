@@ -66,7 +66,7 @@ int vboot_init(int dev_switch, int rec_switch,
 		cold_reboot();
 	}
 
-	if (iparams.out_flags && VB_INIT_OUT_CLEAR_RAM) {
+	if (iparams.out_flags & VB_INIT_OUT_CLEAR_RAM) {
 		if (wipe_unused_memory())
 			return 1;
 	}
