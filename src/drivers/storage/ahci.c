@@ -502,7 +502,10 @@ void ahci_init(pcidev_t dev)
 				continue;
 			}
 
-			sata_drive.name = "Sata SSD";
+			static const int name_size = 18;
+			const char *name = malloc(name_size);
+			snprintf(name, name_size, "Sata port %d", i);
+			sata_drive.name = name;
 			sata_drive.read = &ahci_read;
 			sata_drive.write = &ahci_write;
 			sata_drive_data.host = host;
