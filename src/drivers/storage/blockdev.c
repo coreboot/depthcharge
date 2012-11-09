@@ -20,30 +20,7 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __DRIVERS_STORAGE_BLOCKDEV_H__
-#define __DRIVERS_STORAGE_BLOCKDEV_H__
+#include "drivers/storage/blockdev.h"
 
-#include <stdint.h>
-
-#include "base/list.h"
-
-typedef uint64_t lba_t;
-
-typedef struct BlockDev {
-	const char *name;
-	int removable;
-	unsigned block_size;
-	lba_t block_count;
-	lba_t (*read)(struct BlockDev *dev, lba_t start, lba_t count,
-		      void *buffer);
-	lba_t (*write)(struct BlockDev *dev, lba_t start, lba_t count,
-		       const void *buffer);
-	void *dev_data;
-
-	ListNode list_node;
-} BlockDev;
-
-extern ListNode fixed_block_devices;
-extern ListNode removable_block_devices;
-
-#endif /* __DRIVERS_STORAGE_BLOCKDEV_H__ */
+ListNode fixed_block_devices;
+ListNode removable_block_devices;

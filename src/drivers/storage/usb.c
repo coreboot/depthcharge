@@ -28,9 +28,6 @@
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/usb.h"
 
-ListNode usb_drives;
-int num_usb_drives;
-
 static lba_t dc_usb_read(BlockDev *dev, lba_t start, lba_t count, void *buffer)
 {
 	usbdev_t *udev = (usbdev_t *)(dev->dev_data);
@@ -75,8 +72,7 @@ void usbdisk_create(usbdev_t *dev)
 
 	msc->data = bdev;
 
-	list_insert_after(&bdev->list_node, &usb_drives);
-	num_usb_drives++;
+	list_insert_after(&bdev->list_node, &removable_block_devices);
 
 	printf("Added %s.\n", name);
 }
@@ -88,8 +84,6 @@ void usbdisk_remove(usbdev_t *dev)
 	assert(bdev);
 
 	list_remove(&bdev->list_node);
-	assert(num_usb_drives);
-	num_usb_drives--;
 	printf("Removed %s.\n", bdev->name);
 	free((void *)bdev->name);
 	free(bdev);

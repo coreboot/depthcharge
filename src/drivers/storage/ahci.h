@@ -185,8 +185,6 @@ typedef struct AhciHost {
 	uint32_t link_port_map;	// linkup port map
 } AhciHost;
 
-extern BlockDev sata_drive;
-
 void ahci_init(pcidev_t pdev);
 
 #endif /* __DRIVERS_STORAGE_AHCI_H__ */

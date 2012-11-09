@@ -18,4 +18,5 @@
 ##
 
 depthcharge-y += ahci.c
+depthcharge-y += blockdev.c
 depthcharge-y += usb.c

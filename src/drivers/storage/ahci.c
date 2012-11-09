@@ -463,9 +463,6 @@ static int ahci_read_capacity(AhciIoPorts *port, lba_t *cap,
 	return 0;
 }
 
-BlockDev sata_drive;
-static AhciDevData sata_drive_data;
-
 void ahci_init(pcidev_t dev)
 {
 	AhciHost *host = malloc(sizeof(AhciHost));
@@ -502,20 +499,22 @@ void ahci_init(pcidev_t dev)
 				continue;
 			}
 
+			BlockDev *sata_drive = malloc(sizeof(BlockDev));
 			static const int name_size = 18;
-			const char *name = malloc(name_size);
+			char *name = malloc(name_size);
 			snprintf(name, name_size, "Sata port %d", i);
-			sata_drive.name = name;
-			sata_drive.read = &ahci_read;
-			sata_drive.write = &ahci_write;
-			sata_drive_data.host = host;
-			sata_drive_data.port = port;
-			sata_drive.dev_data = &sata_drive_data;
-			sata_drive.block_size = block_size;
-			sata_drive.block_count = cap;
-			sata_drive.removable = 0;
-			sata_drive.list_node.next = NULL;
-			sata_drive.list_node.prev = NULL;
+			sata_drive->name = name;
+			sata_drive->read = &ahci_read;
+			sata_drive->write = &ahci_write;
+			AhciDevData *drive_data = malloc(sizeof(AhciDevData));
+			drive_data->host = host;
+			drive_data->port = port;
+			sata_drive->dev_data = drive_data;
+			sata_drive->block_size = block_size;
+			sata_drive->block_count = cap;
+			sata_drive->removable = 0;
+			list_insert_after(&sata_drive->list_node,
+					  &fixed_block_devices);
 		}
 	}
 }

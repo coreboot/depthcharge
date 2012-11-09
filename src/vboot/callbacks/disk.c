@@ -25,9 +25,7 @@
 #include <usb/usb.h>
 #include <vboot_api.h>
 
-#include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
-#include "drivers/storage/usb.h"
 
 static void setup_vb_disk_info(VbDiskInfo *disk, BlockDev *bdev)
 {
@@ -43,29 +41,26 @@ VbError_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
 			  uint32_t disk_flags)
 {
 	*count = 0;
+	ListNode *node, *list;
 
 	if (disk_flags & VB_DISK_FLAG_FIXED) {
-		VbDiskInfo *disk = malloc(sizeof(VbDiskInfo));
-		*info_ptr = disk;
-		*count += 1;
-
-		setup_vb_disk_info(disk, &sata_drive);
+		list = &fixed_block_devices;
 	} else {
 		usb_poll();
+		list = &removable_block_devices;
+	}
 
-		VbDiskInfo *disk =
-			malloc(sizeof(VbDiskInfo) * num_usb_drives);
-		*info_ptr = disk;
-		*count += num_usb_drives;
+	// Count the devices.
+	for (node = list->next; node; node = node->next, (*count)++) {}
 
-		ListNode *node = &usb_drives;
-		for (int i = 0; node->next; i++) {
-			node = node->next;
-			BlockDev *bdev =
-				container_of(node, BlockDev, list_node);
-			assert(i < num_usb_drives);
-			setup_vb_disk_info(&disk[i], bdev);
-		}
+	// Allocate enough VbDiskInfo structures.
+	VbDiskInfo *disk = malloc(sizeof(VbDiskInfo) * *count);
+	*info_ptr = disk;
+
+	// Fill them from the BlockDev structures.
+	for (node = list->next; node; node = node->next) {
+		BlockDev *bdev = container_of(node, BlockDev, list_node);
+		setup_vb_disk_info(disk++, bdev);
 	}
 	return VBERROR_SUCCESS;
 }
