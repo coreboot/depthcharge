@@ -28,7 +28,6 @@
 #include "image/fmap.h"
 #include "vboot/stages.h"
 #include "vboot/util/acpi.h"
-#include "vboot/util/commonparams.h"
 
 int main(void)
 {
