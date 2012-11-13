@@ -18,7 +18,6 @@
 ##
 
 depthcharge-y += fmap.c
-
-readonly-y += startrw.c
+depthcharge-y += startrw.c
 
 trampoline-y += trampoline.c
