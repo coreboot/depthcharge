@@ -26,7 +26,6 @@
 
 #include "base/timestamp.h"
 #include "drivers/ec/chromeos/mkbp.h"
-#include "drivers/storage/ahci.h"
 #include "image/fmap.h"
 #include "image/startrw.h"
 #include "vboot/stages.h"
@@ -101,17 +100,15 @@ int main(void)
 		halt();
 	}
 
+	usb_initialize();
 	// Select a kernel and boot it.
 
 	// If we got this far and the option rom is loaded, we can assume
 	// vboot wants to use the display and probably also wants to use the
 	// keyboard.
-	if (oprom_loaded) {
+	if (oprom_loaded)
 		keyboard_init();
-		usb_initialize();
-	}
 
-	ahci_init(PCI_DEV(0, 31, 2));
 	if (vboot_select_and_load_kernel())
 		halt();
 

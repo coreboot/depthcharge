@@ -22,7 +22,6 @@
 
 #include <assert.h>
 #include <libpayload.h>
-#include <usb/usb.h>
 #include <vboot_api.h>
 
 #include "drivers/storage/blockdev.h"
@@ -42,11 +41,17 @@ VbError_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
 {
 	*count = 0;
 	ListNode *node, *list;
+	static int need_init = 1;
+
+	if (need_init) {
+		block_dev_init();
+		need_init = 0;
+	}
 
 	if (disk_flags & VB_DISK_FLAG_FIXED) {
 		list = &fixed_block_devices;
 	} else {
-		usb_poll();
+		block_dev_refresh();
 		list = &removable_block_devices;
 	}
 
