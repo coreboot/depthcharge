@@ -46,4 +46,7 @@ typedef struct BlockDev {
 extern ListNode fixed_block_devices;
 extern ListNode removable_block_devices;
 
+void block_dev_init(void);
+void block_dev_refresh(void);
+
 #endif /* __DRIVERS_STORAGE_BLOCKDEV_H__ */

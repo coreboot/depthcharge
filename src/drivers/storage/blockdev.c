@@ -20,7 +20,20 @@
  * MA 02111-1307 USA
  */
 
+#include <usb/usb.h>
+
+#include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
 
 ListNode fixed_block_devices;
 ListNode removable_block_devices;
+
+void block_dev_init(void)
+{
+	ahci_init(PCI_DEV(0, 31, 2));
+}
+
+void block_dev_refresh(void)
+{
+	usb_poll();
+}
