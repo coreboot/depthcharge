@@ -96,12 +96,7 @@ int main(void)
 			return 1;
 	}
 
-	int firmware_type = FIRMWARE_TYPE_NORMAL;
-	if (select == VB_SELECT_FIRMWARE_RECOVERY)
-		firmware_type = FIRMWARE_TYPE_RECOVERY;
-	else if (dev_switch)
-		firmware_type = FIRMWARE_TYPE_DEVELOPER;
-	if (acpi_update_data(firmware_type)) {
+	if (acpi_update_data()) {
 		printf("Failed to update ACPI data.\n");
 		halt();
 	}

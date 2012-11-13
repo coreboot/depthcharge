@@ -53,15 +53,7 @@ int main(void)
 
 	mkbp_init();
 
-	int dev_switch = flag_fetch(FLAG_DEVSW);
-	if (dev_switch < 0)
-		halt();
-
-	// Since this is the RW firmware, we'll assume we're not in recovery.
-	int firmware_type = FIRMWARE_TYPE_NORMAL;
-	if (dev_switch)
-		firmware_type = FIRMWARE_TYPE_DEVELOPER;
-	if (acpi_update_data(firmware_type)) {
+	if (acpi_update_data()) {
 		printf("Failed to update the ACPI data.\n");
 		halt();
 	}

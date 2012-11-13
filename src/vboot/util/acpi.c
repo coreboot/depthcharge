@@ -39,7 +39,7 @@ enum {
 	VDAT_RECOVERY = 0xFF
 };
 
-int acpi_update_data(int firmware_type)
+int acpi_update_data(void)
 {
 	chromeos_acpi_t *acpi_table = (chromeos_acpi_t *)lib_sysinfo.vdat_addr;
 	VbSharedDataHeader *vdat = (VbSharedDataHeader *)&acpi_table->vdat;
@@ -113,7 +113,12 @@ int acpi_update_data(int firmware_type)
 	size = min(fmap_ro_fwid_size, sizeof(acpi_table->frid));
 	memcpy(acpi_table->frid, fmap_ro_fwid, size);
 
-	acpi_table->main_fw_type = firmware_type;
+	if (main_fw == BINF_RECOVERY)
+		acpi_table->main_fw_type = FIRMWARE_TYPE_RECOVERY;
+	else if (vdat->flags & VBSD_BOOT_DEV_SWITCH_ON)
+		acpi_table->main_fw_type = FIRMWARE_TYPE_DEVELOPER;
+	else
+		acpi_table->main_fw_type = FIRMWARE_TYPE_NORMAL;
 
 	acpi_table->recovery_reason = vdat->recovery_reason;
 
