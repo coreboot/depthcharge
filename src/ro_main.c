@@ -32,7 +32,6 @@
 #include "vboot/stages.h"
 #include "vboot/util/acpi.h"
 #include "vboot/util/commonparams.h"
-#include "vboot/util/flag.h"
 
 int main(void)
 {
@@ -58,18 +57,6 @@ int main(void)
 	if (common_params_init())
 		halt();
 
-	// Initialize vboot.
-	int dev_switch = flag_fetch(FLAG_DEVSW);
-	int rec_switch = flag_fetch(FLAG_RECSW);
-	int wp_switch = flag_fetch(FLAG_WPSW);
-	int oprom_loaded = flag_fetch(FLAG_OPROM);
-	if (dev_switch < 0 || rec_switch < 0 ||
-	    wp_switch < 0 || oprom_loaded < 0) {
-		// An error message should have already been printed.
-		halt();
-	}
-
-	// Select firmware.
 	mkbp_init();
 	if (mkbp_ptr) {
 		// Unconditionally clear the EC recovery request.
@@ -78,9 +65,11 @@ int main(void)
 		mkbp_clear_host_events(mkbp_ptr, kb_rec_mask);
 	}
 
-	if (vboot_init(dev_switch, rec_switch, wp_switch, oprom_loaded))
+	// Initialize vboot.
+	if (vboot_init())
 		halt();
 
+	// Select firmware.
 	enum VbSelectFirmware_t select;
 	if (vboot_select_firmware(&select))
 		halt();

@@ -30,7 +30,6 @@
 #include "vboot/stages.h"
 #include "vboot/util/acpi.h"
 #include "vboot/util/commonparams.h"
-#include "vboot/util/flag.h"
 
 int main(void)
 {

@@ -25,8 +25,7 @@
 
 enum VbSelectFirmware_t;
 
-int vboot_init(int dev_switch, int rec_switch,
-	       int wp_switch, int oprom_loaded);
+int vboot_init(void);
 int vboot_select_firmware(enum VbSelectFirmware_t *select);
 int vboot_select_and_load_kernel(void);
 

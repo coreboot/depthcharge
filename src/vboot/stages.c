@@ -38,12 +38,21 @@
 
 static char cmd_line_buf[2 * CMD_LINE_SIZE];
 
-int vboot_init(int dev_switch, int rec_switch,
-	       int wp_switch, int oprom_loaded)
+int vboot_init(void)
 {
 	VbInitParams iparams = {
 		.flags = 0
 	};
+
+	int dev_switch = flag_fetch(FLAG_DEVSW);
+	int rec_switch = flag_fetch(FLAG_RECSW);
+	int wp_switch = flag_fetch(FLAG_WPSW);
+	int oprom_loaded = flag_fetch(FLAG_OPROM);
+	if (dev_switch < 0 || rec_switch < 0 ||
+	    wp_switch < 0 || oprom_loaded < 0) {
+		// An error message should have already been printed.
+		return 1;
+	}
 
 	// Decide what flags to pass into VbInit.
 	if (dev_switch)
