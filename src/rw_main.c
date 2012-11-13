@@ -51,6 +51,8 @@ int main(void)
 		halt();
 	}
 
+	mkbp_init();
+
 	int dev_switch = flag_fetch(FLAG_DEVSW);
 	if (dev_switch < 0)
 		halt();
@@ -63,8 +65,6 @@ int main(void)
 		printf("Failed to update the ACPI data.\n");
 		halt();
 	}
-
-	mkbp_init();
 
 	// If we got this far and the option rom is loaded, we can assume
 	// vboot wants to use the display and probably also wants to use the
