@@ -23,10 +23,8 @@
 #ifndef __VBOOT_STAGES_H__
 #define __VBOOT_STAGES_H__
 
-enum VbSelectFirmware_t;
-
 int vboot_init(void);
-int vboot_select_firmware(enum VbSelectFirmware_t *select);
+int vboot_select_firmware(void);
 int vboot_select_and_load_kernel(void);
 
 #endif /* __VBOOT_STAGES_H__ */

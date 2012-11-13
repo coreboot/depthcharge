@@ -21,7 +21,6 @@
  */
 
 #include <libpayload.h>
-#include <vboot_api.h>
 
 #include "base/timestamp.h"
 #include "drivers/ec/chromeos/mkbp.h"

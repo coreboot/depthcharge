@@ -21,14 +21,11 @@
  */
 
 #include <libpayload.h>
-#include <stdint.h>
-#include <vboot_api.h>
 
 #include "base/timestamp.h"
 #include "drivers/ec/chromeos/mkbp.h"
 #include "drivers/input/input.h"
 #include "image/fmap.h"
-#include "image/startrw.h"
 #include "vboot/stages.h"
 #include "vboot/util/acpi.h"
 #include "vboot/util/commonparams.h"
@@ -70,21 +67,8 @@ int main(void)
 		halt();
 
 	// Select firmware.
-	enum VbSelectFirmware_t select;
-	if (vboot_select_firmware(&select))
+	if (vboot_select_firmware())
 		halt();
-
-	// If an RW firmware was selected, start it.
-	if (select == VB_SELECT_FIRMWARE_A || select == VB_SELECT_FIRMWARE_B) {
-		FmapArea *rw_area;
-		if (select == VB_SELECT_FIRMWARE_A)
-			rw_area = fmap_find_area(main_fmap, "FW_MAIN_A");
-		else
-			rw_area = fmap_find_area(main_fmap, "FW_MAIN_B");
-		uintptr_t rw_addr = rw_area->offset + main_rom_base;
-		if (start_rw_firmware((void *)rw_addr))
-			return 1;
-	}
 
 	if (acpi_update_data()) {
 		printf("Failed to update ACPI data.\n");

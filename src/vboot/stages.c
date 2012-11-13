@@ -29,6 +29,7 @@
 #include "config.h"
 #include "drivers/power_management.h"
 #include "image/fmap.h"
+#include "image/startrw.h"
 #include "image/symbols.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
@@ -82,7 +83,7 @@ int vboot_init(void)
 	return 0;
 };
 
-int vboot_select_firmware(enum VbSelectFirmware_t *select)
+int vboot_select_firmware(void)
 {
 	VbSelectFirmwareParams fparams = {
 		.verification_block_A = NULL,
@@ -113,7 +114,19 @@ int vboot_select_firmware(enum VbSelectFirmware_t *select)
 		cold_reboot();
 	}
 
-	*select = fparams.selected_firmware;
+	enum VbSelectFirmware_t select = fparams.selected_firmware;
+
+	// If an RW firmware was selected, start it.
+	if (select == VB_SELECT_FIRMWARE_A || select == VB_SELECT_FIRMWARE_B) {
+		FmapArea *rw_area;
+		if (select == VB_SELECT_FIRMWARE_A)
+			rw_area = fmap_find_area(main_fmap, "FW_MAIN_A");
+		else
+			rw_area = fmap_find_area(main_fmap, "FW_MAIN_B");
+		uintptr_t rw_addr = rw_area->offset + main_rom_base;
+		if (start_rw_firmware((void *)rw_addr))
+			return 1;
+	}
 
 	return 0;
 }
