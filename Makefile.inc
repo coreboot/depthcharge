@@ -28,6 +28,7 @@ LIBRARIES = $(VB_LIB)
 LIBGCC = $(shell $(XCC) -print-libgcc-file-name)
 TRAMP_LIBGCC = $(obj)/trampoline_$(notdir $(LIBGCC))
 TRAMP_PREFIX = .tramp
+TRAMP_ENTRY = trampoline
 TRAMPOLINE = $(obj)/trampoline.o
 
 real-target: $(DEPTHCHARGE_RO_ELF) $(DEPTHCHARGE_RO_BIN) \
@@ -56,7 +57,8 @@ $(TRAMP_LIBGCC): $(LIBGCC)
 $(TRAMPOLINE): $$(trampoline-objs)
 	$(Q)printf "    LD         $(subst $(obj)/,,$(@).tmp)\n"
 	$(Q)$(CC) $(LINK_FLAGS) -Wl,-relocatable -o $(@).tmp \
-		$(trampoline-objs) -nostdinc -nostdlib -static
+		$(trampoline-objs) -nostdinc -nostdlib -static \
+		-u $(TRAMP_ENTRY)
 	$(Q)printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
 	$(Q)$(OBJCOPY) --prefix-symbols=$(TRAMP_PREFIX) $(@).tmp $(@)
 
@@ -66,7 +68,8 @@ $(DEPTHCHARGE_RO_ELF): $(src)/.config $$(depthcharge-objs) $$(readonly-objs) \
 		$(TRAMPOLINE) $(LIBRARIES) $(TRAMP_LIBGCC) prepare
 	$(Q)printf "    LD         $(subst $(obj)/,,$(@).tmp)\n"
 	$(Q)$(XCC) $(LINK_FLAGS) -o $@.tmp $(depthcharge-objs) \
-		$(readonly-objs) $(TRAMPOLINE) $(LIBRARIES) $(TRAMP_LIBGCC)
+		$(readonly-objs) $(TRAMPOLINE) $(LIBRARIES) $(TRAMP_LIBGCC) \
+		-u $(TRAMP_PREFIX)$(TRAMP_ENTRY)
 	$(Q)printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
 	$(Q)$(OBJCOPY) --remove-section=".shared_data" \
 		--remove-section=".cparams" $@.tmp $@

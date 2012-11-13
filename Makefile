@@ -64,8 +64,9 @@ ABI_FLAGS := -mpreferred-stack-boundary=2 -mregparm=3 -ffreestanding \
 	-fno-builtin -fno-stack-protector -fomit-frame-pointer
 LINK_FLAGS := -Wl,--wrap=__divdi3 -Wl,--wrap=__udivdi3 \
 	-Wl,--wrap=__moddi3 -Wl,--wrap=__umoddi3 -fuse-ld=bfd \
-	-Wl,-T,$(LDSCRIPT) $(ABI_FLAGS)
-CFLAGS := -Wall -Werror -Os $(INCLUDES) -std=gnu99 $(ABI_FLAGS)
+	-Wl,-T,$(LDSCRIPT) $(ABI_FLAGS) -Wl,--gc-sections
+CFLAGS := -Wall -Werror -Os $(INCLUDES) -std=gnu99 $(ABI_FLAGS) \
+	-ffunction-sections
 
 # These options are passed from .config to the linker script.
 link_config_options := \
