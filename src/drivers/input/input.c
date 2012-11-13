@@ -10,7 +10,7 @@
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but without any warranty; without even the implied warranty of
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -18,53 +18,46 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
+ *
  */
 
 #include <libpayload.h>
-#include <vboot_api.h>
 
-#include "base/timestamp.h"
-#include "drivers/ec/chromeos/mkbp.h"
 #include "drivers/input/input.h"
-#include "image/fmap.h"
-#include "vboot/stages.h"
-#include "vboot/util/acpi.h"
-#include "vboot/util/commonparams.h"
-#include "vboot/util/flag.h"
 
-int main(void)
+static int need_input_init = 1;
+
+static void do_input_init(void)
 {
-	// Let the world know we're alive.
-	outb(0xab, 0x80);
+	keyboard_init();
+}
 
-	// Initialize some consoles.
-	serial_init();
-	cbmem_console_init();
-	input_init();
-
-	printf("\n\nStarting read/write depthcharge...\n");
-
-	get_cpu_speed();
-	timestamp_init();
-
-	if (fmap_init()) {
-		printf("Problem with the FMAP.\n");
-		halt();
+static int fake_havekey(void)
+{
+	if (need_input_init) {
+		do_input_init();
+		need_input_init = 0;
 	}
-
-	mkbp_init();
-
-	if (acpi_update_data()) {
-		printf("Failed to update the ACPI data.\n");
-		halt();
-	}
-
-	usb_initialize();
-
-	if (vboot_select_and_load_kernel())
-		halt();
-
-	printf("Got to the end!\n");
-	halt();
 	return 0;
+}
+
+static int fake_getchar(void)
+{
+	if (need_input_init) {
+		do_input_init();
+		need_input_init = 0;
+	}
+	return 0;
+}
+
+static struct console_input_driver on_demand_input_driver =
+{
+	NULL,
+	&fake_havekey,
+	&fake_getchar
+};
+
+void input_init(void)
+{
+	console_add_input_driver(&on_demand_input_driver);
 }
