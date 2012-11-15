@@ -13,7 +13,8 @@ LOCALEDIR=localized_text
 .txt.png:
 	./text_to_png $<
 
-all: font Url.png hwid_placeholder.png localized_text
+all: Url.png arrow_left.png arrow_right.png hwid_placeholder.png \
+	font localized_text
 
 localized_text:
 	make -C $(LOCALEDIR)

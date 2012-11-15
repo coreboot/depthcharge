@@ -35,6 +35,11 @@ screen in this way also means that we can easily provide localized BIOS
 screens or custom messages. The BIOS rotates through the localizations by
 pressing the arrow keys when any screen is displayed.
 
+* To build new Alex bitmaps, check out "chromeos/autotest-private-x86-alex"
+  on branch "0.11.241.B", and see the tools in
+  client/site_tests/hardware_Components/utils.
+  Reference: https://gerrit-int.chromium.org/#/c/23243/
+
 
 Version 1.1. Used in ZGB / Acer AC700.
 
@@ -95,8 +100,7 @@ On Ubuntu, you need to install following packages:
 
 And you probably want to make sure all required fonts are installed:
 
-  sudo apt-get install fonts-nanum fonts-ipafont-gothic ttf-indic-fonts \
-                       fonts-droid
+  sudo apt-get install fonts-nanum ttf-indic-fonts fonts-droid
 
 If you want to use the "bitmap viewer" utility, add these packages:
 
@@ -118,7 +122,7 @@ Once you've built vboot_reference you'll find the executables in
 Now you should be able to just run "make" and everything will be
 regenerated:
 
-  cd scripts/newbitmaps
+  cd ~/chromiumos/src/platform/bmpblk
   make
 
 This should generate BIOS bmpblock file for all platforms cross all locales,
@@ -126,7 +130,7 @@ which takes a long time.
 
 If you simply want to build a en-US x standard resolution, do:
 
-  cd scripts/newbitmaps
+  cd ~/chromiumos/src/platform/bmpblk
   make strings  # You can do this only one time unless mofidication was made.
   cd images
   make  # Builds only "STD" profile and only few seconds.

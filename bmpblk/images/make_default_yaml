@@ -246,7 +246,7 @@ add_centered() {
 
 add_header() {
   local lc="$1"
-  set_centered_y_percent "white_bg" 17
+  set_centered_y_percent "background" 17
   add_centered_below "divider_top"
   move_pos_left $(($(get_width "divider_top") / 2 ))
   move_pos_up $ypad
@@ -260,7 +260,7 @@ add_header() {
 add_footer_with_url() {
   local lc=$1
   local old_xpad="$xpad"
-  set_centered_y_percent "white_bg" 80
+  set_centered_y_percent "background" 80
   insert_centered_below "divider_btm"
   # Temporarily change padding to zero because both help_*_text and url
   # have margins.
@@ -277,7 +277,7 @@ add_footer_with_url() {
 
 add_footer_without_url() {
   local lc=$1
-  set_centered_y_percent "white_bg" 80
+  set_centered_y_percent "background" 80
   insert_centered_below "divider_btm"
   # For some locales like th, we need to prevent text overlapping divider.
   # Doubling with ypad seems like a good idea.
@@ -315,7 +315,7 @@ EOF1
     define_image chrome_logo            chrome_logo.bmp
     define_image divider_btm            divider_btm.bmp
     define_image divider_top            divider_top.bmp
-    define_image white_bg               Background_white.bmp
+    define_image background             Background.bmp
     define_image asset_BadSD            BadSD.bmp
     define_image asset_BadUSB           BadUSB.bmp
     define_image asset_RemoveDevices    RemoveDevices.bmp
@@ -354,9 +354,9 @@ EOF1
     # Dev Screen
     echo "  ${lc}_devel:" >> "$yaml_file"
     reset_pos
-    add_right_below "white_bg"
+    add_right_below "background"
     add_header ${lc}
-    set_centered_y_percent "white_bg" 30
+    set_centered_y_percent "background" 30
     insert_centered_below "asset_VerificationOff"
     insert_centered_below "${lc}_verif_off_text"
     insert_centered_below "${lc}_devmode_text"
@@ -365,31 +365,31 @@ EOF1
     # Remove Screen
     echo "  ${lc}_remove:" >> "$yaml_file"
     reset_pos
-    add_right_below "white_bg"
+    add_right_below "background"
     add_header ${lc}
-    set_centered_y_percent "white_bg" 25
+    set_centered_y_percent "background" 25
     add_centered_below "${lc}_remove_text"
-    set_centered_y_percent "white_bg" 50
+    set_centered_y_percent "background" 50
     add_centered "asset_RemoveDevices"
     add_footer_with_url ${lc}
 
     # Yuck Screen
     echo "  ${lc}_yuck:" >> "$yaml_file"
     reset_pos
-    add_right_below "white_bg"
+    add_right_below "background"
     add_header ${lc}
-    set_centered_y_percent "white_bg" 25
+    set_centered_y_percent "background" 25
     add_centered_below "${lc}_yuck_text"
-    set_centered_y_percent "white_bg" 50
+    set_centered_y_percent "background" 50
     add_centered "asset_BadSD" "asset_BadUSB"
     add_footer_with_url ${lc}
 
     # Insert Screen
     echo "  ${lc}_insert:" >> "$yaml_file"
     reset_pos
-    add_right_below "white_bg"
+    add_right_below "background"
     add_header ${lc}
-    set_centered_y_percent "white_bg" 30
+    set_centered_y_percent "background" 30
     insert_centered_below "asset_Warning"
     insert_centered_below "${lc}_insert_text"
     add_footer_with_url ${lc}
@@ -397,18 +397,18 @@ EOF1
     # ToDeveloper Screen
     echo "  ${lc}_todev:" >> "$yaml_file"
     reset_pos
-    add_right_below "white_bg"
+    add_right_below "background"
     add_header ${lc}
-    set_centered_y_percent "white_bg" 45
+    set_centered_y_percent "background" 45
     add_centered "${lc}_todev_text"
     add_footer_without_url ${lc}
 
     # ToNormal Screen
     echo "  ${lc}_tonorm:" >> "$yaml_file"
     reset_pos
-    add_right_below "white_bg"
+    add_right_below "background"
     add_header ${lc}
-    set_centered_y_percent "white_bg" 30
+    set_centered_y_percent "background" 30
     insert_centered_below "asset_VerificationOff"
     insert_centered_below "${lc}_verif_off_text"
     insert_centered_below "${lc}_tonorm_text"
@@ -417,20 +417,20 @@ EOF1
     # Update (WAIT) Screen
     echo "  ${lc}_update:" >> "$yaml_file"
     reset_pos
-    add_right_below "white_bg"
+    add_right_below "background"
     # Currently WAIT screen does not accept any keyboard input, so we don't
     # display language on menubar.
     add_header ""
-    set_centered_y_percent "white_bg" 50
+    set_centered_y_percent "background" 50
     add_centered "${lc}_update_text"
     add_footer_without_url ${lc}
 
     # ToNormalConfirm Screen
     echo "  ${lc}_tonorm_confirm:" >> "$yaml_file"
     reset_pos
-    add_right_below "white_bg"
+    add_right_below "background"
     add_header ""
-    set_centered_y_percent "white_bg" 30
+    set_centered_y_percent "background" 30
     insert_centered_below "asset_VerificationOn"
     insert_centered_below "${lc}_verif_on_text"
     insert_centered_below "${lc}_reboot_erase_text"

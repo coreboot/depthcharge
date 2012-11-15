@@ -8,7 +8,7 @@
 SCRIPT="$(readlink -f "$0")"
 SCRIPT_DIR="$(dirname "$SCRIPT")"
 TXT_TO_PNG=$(readlink -f "$SCRIPT_DIR/../text_to_png")
-BACKGROUND="$SCRIPT_DIR/../../images/Background_white.png"
+BACKGROUND="$SCRIPT_DIR/../../images/Background.png"
 
 die() {
   echo "ERROR: $*" >&2

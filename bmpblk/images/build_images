@@ -9,7 +9,7 @@
 BACKGROUND_COLOR=white
 
 # The only file that uses different scaling parameter.
-BACKGROUND_IMAGE=Background_white.png
+BACKGROUND_IMAGE=Background.png
 
 # Output file name.
 BMPBLK_OUTPUT="bmpblock.bin"
@@ -51,72 +51,36 @@ main() {
 
     # Native profiles
 
-    n1366 )
-      # "Native 1366x768" resolution.
-      background_scale_param="-scale 1366x768!"
-      ;;
-
-    n1366usb )
-      # Similar to n1366, and can only boot recovery by USB.
-      background_scale_param="-scale 1366x768!"
-      replace_files="insert=insert_usb BadSD=dummy RemoveDevices=RemoveUSB"
-      ;;
-
-    n1366sdusb2 )
-      # Similar to n1366, and can only boot recovery by SD card or USB2.
+    snow )
+      # 1366x768, and can only boot recovery by SD card or USB2 [not USB3].
       background_scale_param="-scale 1366x768!"
       replace_files="insert=insert_sd_usb2"
       ;;
 
     # Stretched profiles
 
-    s800 )
-      # "Streched 800x600". Designed for x86 UEFI BIOS (and coreboot), which
-      # always puts display into VESA 800x600 16-bit mode (0x0114), and is
-      # stretched to fill the entire screen.
-      scale_param="-scale 59%x78%"
-      background_scale_param="-scale 800x600!"
-      ;;
-
-    s1024 )
-      # Similar to s800, using VESA graphics mode 1024x768 (0x0117).
-      scale_param="-scale 75%x100%"
-      background_scale_param="-scale 1024x768!"
-      ;;
-
-    s1024usb )
-      # Similar to s1024, and can only boot recovery by USB2. (No card reader,
-      # not not able to recover from card reader.)
+    parrot | butterfly )
+      # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
+      # Can only boot recovery by USB. (No card reader, or not able to recover
+      # from card reader.)
       scale_param="-scale 75%x100%"
       background_scale_param="-scale 1024x768!"
       replace_files="insert=insert_usb BadSD=dummy RemoveDevices=RemoveUSB"
       ;;
 
-    s1024usb2 )
-      # Similar to s1024, and can only boot recovery by USB2.
+    stout  )
+      # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
+      # Can only boot recovery by USB2 [not USB3]. (No card reader, or not able
+      # to recover from card reader.)
       scale_param="-scale 75%x100%"
       background_scale_param="-scale 1024x768!"
       replace_files="insert=insert_usb2 BadSD=dummy RemoveDevices=RemoveUSB"
       ;;
 
-    s1024sdusb2 )
-      # Similar to s1024, and can only boot recovery by SD card or USB2.
-      scale_param="-scale 75%x100%"
-      background_scale_param="-scale 1024x768!"
-      replace_files="insert=insert_sd_usb2"
-      ;;
-
-    s1280a8x5 )
-      # Similar to s1024, using VESA graphics mode 1280x1024 (0x011A), and
-      # adjusted for aspect ratio 8x5 panels.
-      background_scale_param="-scale 1280x1024!"
-      scale_param="-scale 94%x119%"  # 119% = 133% * (1.6 / 1.78)
-      ;;
-
-    s1280x850a8x5 )
-      # Similar to s1280a8x5, using graphics mode 1280x850.
-      background_scale_param="-scale 1280x850!"
+    link )
+      # Non-standard Graphics mode 1280x850,aspect ratio 8x5 panels.
       scale_param="-scale 94%x99%" # 99% = 110% * (1.6 / 1.78)
+      background_scale_param="-scale 1280x850!"
       ;;
 
     * )
@@ -128,8 +92,6 @@ main() {
   mkdir -p "$output"
 
   # Prepare images in current folder
-  # TODO(hungte) Deprecate arrow*.bmp by markup &#x25c0; and &#x25b6;, and
-  # Url.bmp by <span foreground="blue">http://</span>.
   for X in *.png assets/*.png; do
     if [ "$X" = "$BACKGROUND_IMAGE" ]; then
       convert_to_bmp3 "$output" "$background_scale_param" "$X"

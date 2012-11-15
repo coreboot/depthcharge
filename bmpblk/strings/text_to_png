@@ -36,6 +36,10 @@ while true ; do
       param="${1##*=}"
       # TODO(hungte) support "+XXX" = add font description (ex, BOLD).
       [ -n "$param" ] && font="$param"
+      if ! fc-list -q "$param"; then
+        echo "ERROR: Missing font $param."
+        exit 1
+      fi
       shift
       ;;
     --align=*)
