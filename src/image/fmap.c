@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <libpayload.h>
 
+#include "base/init_funcs.h"
 #include "config.h"
 #include "image/fmap.h"
 
@@ -51,8 +52,10 @@ const char *fmap_find_string(Fmap *fmap, const char *name, int *size)
 
 int fmap_init(void)
 {
-	if (fmap_check_signature(main_fmap))
+	if (fmap_check_signature(main_fmap)) {
+		printf("Bad signature on the FMAP.\n");
 		return 1;
+	}
 
 	main_rom_base = (uintptr_t)(-main_fmap->size);
 
@@ -64,6 +67,8 @@ int fmap_init(void)
 					 &fmap_rwb_fwid_size);
 	return 0;
 }
+
+INIT_FUNC(fmap_init);
 
 int fmap_check_signature(Fmap *fmap)
 {

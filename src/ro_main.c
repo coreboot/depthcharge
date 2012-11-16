@@ -26,7 +26,6 @@
 #include "base/timestamp.h"
 #include "drivers/ec/chromeos/mkbp.h"
 #include "drivers/input/input.h"
-#include "image/fmap.h"
 #include "vboot/stages.h"
 #include "vboot/util/acpi.h"
 #include "vboot/util/commonparams.h"
@@ -45,11 +44,6 @@ int main(void)
 
 	get_cpu_speed();
 	timestamp_init();
-
-	if (fmap_init()) {
-		printf("Problem with the FMAP.\n");
-		halt();
-	}
 
 	if (run_init_funcs())
 		halt();
