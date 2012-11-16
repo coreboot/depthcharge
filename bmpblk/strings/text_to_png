@@ -15,6 +15,7 @@
 #    --color=COLOR      Override foreground color (in '#ffffff' format)
 #    --align=ALING      Override align settings (default: center)
 #    --markup           Render text as pango-view markup file
+#    --outdir=OUTDIR    Directory for output files
 #
 font="Verdana"
 language=""
@@ -24,6 +25,7 @@ align="center"
 bgcolor="#ffffff"
 color="#000000"
 params=""
+outdir=""
 
 while true ; do
   case "$1" in
@@ -58,6 +60,10 @@ while true ; do
       margin="${1##*=}"
       shift
       ;;
+    --outdir=*)
+      outdir="${1##*=}"
+      shift
+      ;;
     --markup)
       params="$params --markup"
       shift
@@ -85,6 +91,7 @@ for txtfile in $*; do
   # we must create images in PNG format and then post-process it (ex, convert
   # into BMP by ImageMagick).
   pngfile="${txtfile%.*}".png
+  [ -z "$outdir" ] || pngfile="${outdir%/}/$(basename "$pngfile")"
   file_opt=""
   case "$txtfile" in
     *.txt)

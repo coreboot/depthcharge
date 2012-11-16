@@ -1,6 +1,4 @@
+_stage*
 unofficial/*.bmp
 images/out_*
 lib/*.pyc
-strings/font
-strings/*.png
-strings/localized_text/*/*.png

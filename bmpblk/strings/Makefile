@@ -2,27 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-.SUFFIXES: .txt .TXT .png
-.PHONY: clean all font localized_text
+.PHONY: clean all shared_strings font localized_text
 
 LOCALEDIR=localized_text
+OUTDIR=../_stage
+FONTSIZE=18
 
-.TXT.png:
-	./text_to_png $<
+all: shared_strings font $(LOCALEDIR)
 
-.txt.png:
-	./text_to_png $<
+$(LOCALEDIR):
+	make -C $@ OUTDIR="../$(OUTDIR)/locale" FONTSIZE="$(FONTSIZE)"
 
-all: Url.png arrow_left.png arrow_right.png hwid_placeholder.png \
-	font localized_text
-
-localized_text:
-	make -C $(LOCALEDIR)
+shared_strings:
+	mkdir -p "$(OUTDIR)"
+	./text_to_png --point=$(FONTSIZE) --outdir=$(OUTDIR) *.TXT
 
 font:
-	./build_font $@
+	FONTSIZE="$(FONTSIZE)" ./build_font $(OUTDIR)/$@
 
 clean:
-	rm -f *.png
-	rm -rf font
-	make -C $(LOCALEDIR) $@
+	rm -rf $(OUTDIR)

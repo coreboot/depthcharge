@@ -23,16 +23,23 @@ get_width() {
 do_locale() {
   local locale_dir="$1"
   local max_width="$2"
+  local font_size=""
   local locale="$(basename $locale_dir)"
   local file conf entry font
+  local outdir="${OUTDIR:-.}"
+  [ -n "$FONTSIZE" ] && font_size="--point=$FONTSIZE"
 
   font="$(sed -nre "s/^$locale: *(.*) *$/\1/p" $SCRIPT_DIR/font.conf)"
+  mkdir -p "$outdir/$locale"
   for file in $locale_dir/*.txt; do
     entry="$(basename $file)"
     entry="${entry%%.*}"
     conf="$(sed -nre "s/^$entry: *(.*) *$/\1/p" $SCRIPT_DIR/text.conf)"
+    conf="$conf $font_size --outdir=$outdir/$locale"
     $TXT_TO_PNG --lan="$locale" --font="$font" $conf $file
-    if [ "$(get_width ${file%.*}.png)" -gt $max_width ]; then
+    local output_file="$outdir/$locale/$(basename $file)"
+    output_file="${output_file%.*}.png"
+    if [ "$(get_width $output_file)" -gt $max_width ]; then
       die "Error: message to long: $entry"
     fi
   done

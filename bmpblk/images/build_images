@@ -35,11 +35,15 @@ convert_to_bmp3() {
 
 main() {
   local profile="$1"
+  # TODO(hungte) Improve "output" by using git hash, ex:
+  #              out_$1_$(git show -s --format="format:%H" | cut -b 1-6)
   local output="out_$1"
   local scale_param="" background_scale_param="" replace_files=""
+  local stage_dir="../_stage"
   local base locale X
 
   # TODO(hungte) Derive and calculate profile params automatically.
+  # TODO(hungte) Allow overriding stage directory for 2x resolution files.
 
   # Currently we use image resources originally designed for 1366x768, and
   # re-scale to different aspects on demand.
@@ -91,24 +95,24 @@ main() {
   rm -rf "$output"
   mkdir -p "$output"
 
-  # Prepare images in current folder
-  for X in *.png assets/*.png; do
+  # Prepare images in current and assets folder
+  for X in *.png assets$dpi/*.png; do
     if [ "$X" = "$BACKGROUND_IMAGE" ]; then
       convert_to_bmp3 "$output" "$background_scale_param" "$X"
     else
       convert_to_bmp3 "$output" "$scale_param" "$X"
     fi
   done
+  stage_dir="$stage_dir$dpi"
+  [ -d "$stage_dir" ] || die "Missing staging folder: $stage_dir"
 
-  # Prepares strings and localized images. All these images were rendered by
-  # pango-view and should not have transparency, so we specify flatten="" to
-  # speed up.
+  # Prepares strings and localized images.
   echo "Preparing common strings..."
-  base="../strings"
+  base="$stage_dir"
   convert_to_bmp3 "$output" "$scale_param" $base/*.png
 
   echo "Preparing localized messages... $LOCALES"
-  base="../strings/localized_text"
+  base="$stage_dir/locale"
   if [ -z "$LOCALES" ]; then
     # Collect all locales
     for X in $(cd $base; ls); do
@@ -136,7 +140,7 @@ main() {
   fi
 
   echo "Preparing fonts..."
-  base="../strings/font"
+  base="$stage_dir/font"
   convert_to_bmp3 "$output/font" "$scale_param" $base/*.png
   bmpblk_font --outfile "$output/hwid_fonts.bin" "$output"/font/*.bmp
 

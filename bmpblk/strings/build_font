@@ -24,6 +24,7 @@ main() {
 
   local i=1
   local c=''
+  local fontsize=""
   echo "Generating glyph text source..."
   while true; do
     c="$(echo "$GLYPHS" | cut -b $i)"
@@ -33,9 +34,11 @@ main() {
     i=$((i + 1))
   done
 
+  [ -n "$FONTSIZE" ] && fontsize="--point=$FONTSIZE"
+
   echo "Converting glyph images..."
   "$SCRIPT_DIR/text_to_png" --font="$FONT" --color="$COLOR" \
-    --margin="$MARGIN 0" "$output/*.txt"
+    --margin="$MARGIN 0" $fontsize "$output/*.txt"
 }
 
 set -e
