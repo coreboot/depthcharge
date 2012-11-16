@@ -1,0 +1,2 @@
+Chrome OS mangler eller er beskadiget.
+Indsæt en USB-nøgle eller et SD-kort til genoprettelse.

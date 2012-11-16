@@ -1,0 +1,1 @@
+Retira todos los dispositivos externos para iniciar la recuperación.
