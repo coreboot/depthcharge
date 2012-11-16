@@ -610,16 +610,20 @@ struct mkbp_dev *mkbp_init(void)
 		(struct mkbp_dev *)memalign(sizeof(int64_t),
 					    sizeof(struct mkbp_dev));
 
-	if (mkbp_lpc_init(dev))
+	if (mkbp_lpc_init(dev)) {
+		free(dev);
 		return NULL;
+	}
 
 	if (mkbp_check_version(dev)) {
 		printf("%s: Could not detect MKBP version\n", __func__);
+		free(dev);
 		return NULL;
 	}
 
 	if (mkbp_read_id(dev, id, sizeof(id))) {
 		printf("%s: Could not read KBC ID\n", __func__);
+		free(dev);
 		return NULL;
 	}
 
