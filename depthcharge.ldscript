@@ -116,6 +116,10 @@ SECTIONS
 	.data : {
 		*(.data)
 		*(.data.*)
+
+		_init_funcs_start = .;
+		KEEP(*(.init_funcs))
+		_init_funcs_end = .;
 	}
 
 	.got : {

@@ -38,6 +38,8 @@ extern const uint8_t _tramp_start;
 extern const uint8_t _tramp_end;
 extern const uint8_t _kernel_start;
 extern const uint8_t _kernel_end;
+extern const uint8_t _init_funcs_start;
+extern const uint8_t _init_funcs_end;
 
 #define ENTRY __attribute__((section(".text._entry")))
 #define CPARAMS __attribute__((section(".cparams")))
