@@ -24,7 +24,6 @@
 
 #include "base/init_funcs.h"
 #include "base/timestamp.h"
-#include "drivers/ec/chromeos/mkbp.h"
 #include "drivers/input/input.h"
 #include "vboot/stages.h"
 #include "vboot/util/acpi.h"
@@ -46,8 +45,6 @@ int main(void)
 
 	if (run_init_funcs())
 		halt();
-
-	mkbp_init();
 
 	if (acpi_update_data()) {
 		printf("Failed to update the ACPI data.\n");

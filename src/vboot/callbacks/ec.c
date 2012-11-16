@@ -40,7 +40,7 @@ int VbExTrustEC(void)
 
 VbError_t VbExEcRunningRW(int *in_rw)
 {
-	if (!mkbp_ptr) {
+	if (!mkbp_ptr && !mkbp_init()) {
 		printf("No MKBP device.\n");
 		return VBERROR_UNKNOWN;
 	}
@@ -67,7 +67,7 @@ VbError_t VbExEcRunningRW(int *in_rw)
 
 VbError_t VbExEcJumpToRW(void)
 {
-	if (!mkbp_ptr) {
+	if (!mkbp_ptr && !mkbp_init()) {
 		printf("No MKBP device.\n");
 		return VBERROR_UNKNOWN;
 	}
@@ -82,7 +82,7 @@ VbError_t VbExEcJumpToRW(void)
 
 VbError_t VbExEcStayInRO(void)
 {
-	if (!mkbp_ptr) {
+	if (!mkbp_ptr && !mkbp_init()) {
 		printf("No MKBP device.\n");
 		return VBERROR_UNKNOWN;
 	}
@@ -97,7 +97,7 @@ VbError_t VbExEcStayInRO(void)
 
 VbError_t VbExEcHashRW(const uint8_t **hash, int *hash_size)
 {
-	if (!mkbp_ptr) {
+	if (!mkbp_ptr && !mkbp_init()) {
 		printf("No MKBP device.\n");
 		return VBERROR_UNKNOWN;
 	}
@@ -174,7 +174,7 @@ static VbError_t ec_protect_rw(int protect)
 	struct ec_response_flash_protect resp;
 	uint32_t mask = EC_FLASH_PROTECT_RW_NOW | EC_FLASH_PROTECT_RW_AT_BOOT;
 
-	if (!mkbp_ptr) {
+	if (!mkbp_ptr && !mkbp_init()) {
 		printf("No MKBP device.\n");
 		return VBERROR_UNKNOWN;
 	}
@@ -215,7 +215,7 @@ static VbError_t ec_protect_rw(int protect)
 
 VbError_t VbExEcUpdateRW(const uint8_t *image, int image_size)
 {
-	if (!mkbp_ptr) {
+	if (!mkbp_ptr && !mkbp_init()) {
 		printf("No MKBP device.\n");
 		return VBERROR_UNKNOWN;
 	}

@@ -24,7 +24,6 @@
 
 #include "base/init_funcs.h"
 #include "base/timestamp.h"
-#include "drivers/ec/chromeos/mkbp.h"
 #include "drivers/input/input.h"
 #include "vboot/stages.h"
 #include "vboot/util/acpi.h"
@@ -51,8 +50,6 @@ int main(void)
 	// Set up the common param structure.
 	if (common_params_init())
 		halt();
-
-	mkbp_init();
 
 	// Initialize vboot.
 	if (vboot_init())
