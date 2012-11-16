@@ -53,12 +53,6 @@ int main(void)
 		halt();
 
 	mkbp_init();
-	if (mkbp_ptr) {
-		// Unconditionally clear the EC recovery request.
-		const uint32_t kb_rec_mask =
-			EC_HOST_EVENT_MASK(EC_HOST_EVENT_KEYBOARD_RECOVERY);
-		mkbp_clear_host_events(mkbp_ptr, kb_rec_mask);
-	}
 
 	// Initialize vboot.
 	if (vboot_init())

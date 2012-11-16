@@ -625,6 +625,12 @@ struct mkbp_dev *mkbp_init(void)
 
 	printf("Google Chrome EC MKBP driver ready, id '%s'\n", id);
 
+	// Unconditionally clear the EC recovery request.
+	printf("Clearing the recovery request.\n");
+	const uint32_t kb_rec_mask =
+		EC_HOST_EVENT_MASK(EC_HOST_EVENT_KEYBOARD_RECOVERY);
+	mkbp_clear_host_events(dev, kb_rec_mask);
+
 	mkbp_ptr = dev;
 
 	return dev;
