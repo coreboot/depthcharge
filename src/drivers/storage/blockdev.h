@@ -46,6 +46,17 @@ typedef struct BlockDev {
 extern ListNode fixed_block_devices;
 extern ListNode removable_block_devices;
 
+typedef struct BlockDevCtrlr {
+	void (*init)(struct BlockDevCtrlr *ctrlr);
+	void (*refresh)(struct BlockDevCtrlr *ctrlr);
+
+	void *ctrlr_data;
+
+	ListNode list_node;
+} BlockDevCtrlr;
+
+extern ListNode block_dev_controllers;
+
 void block_dev_init(void);
 void block_dev_refresh(void);
 

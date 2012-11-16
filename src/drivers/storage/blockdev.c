@@ -28,12 +28,28 @@
 ListNode fixed_block_devices;
 ListNode removable_block_devices;
 
+ListNode block_dev_controllers;
+
 void block_dev_init(void)
 {
+	for (ListNode *node = block_dev_controllers.next;
+			node; node = node->next) {
+		BlockDevCtrlr *ctrlr = \
+			container_of(node, BlockDevCtrlr, list_node);
+		if (ctrlr->init)
+			ctrlr->init(ctrlr);
+	}
 	ahci_init(PCI_DEV(0, 31, 2));
 }
 
 void block_dev_refresh(void)
 {
+	for (ListNode *node = block_dev_controllers.next;
+			node; node = node->next) {
+		BlockDevCtrlr *ctrlr = \
+			container_of(node, BlockDevCtrlr, list_node);
+		if (ctrlr->refresh)
+			ctrlr->refresh(ctrlr);
+	}
 	usb_poll();
 }
