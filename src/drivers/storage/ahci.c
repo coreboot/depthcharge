@@ -29,6 +29,7 @@
 #include <libpayload.h>
 #include <stdint.h>
 
+#include "base/init_funcs.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/ata.h"
 #include "drivers/storage/blockdev.h"
@@ -518,3 +519,25 @@ void ahci_init(pcidev_t dev)
 		}
 	}
 }
+
+static void ahci_ctrlr_init(BlockDevCtrlr *ctrlr)
+{
+	pcidev_t *dev = (pcidev_t *)ctrlr->ctrlr_data;
+	ahci_init(*dev);
+}
+
+int ahci_ctrlr_register(void)
+{
+	static pcidev_t dev = PCI_DEV(0, 31, 2);
+	static BlockDevCtrlr ahci_ctrlr =
+	{
+		&ahci_ctrlr_init,
+		NULL,
+		&dev
+	};
+
+	list_insert_after(&ahci_ctrlr.list_node, &block_dev_controllers);
+	return 0;
+}
+
+INIT_FUNC(ahci_ctrlr_register);

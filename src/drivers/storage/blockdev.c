@@ -22,7 +22,6 @@
 
 #include <usb/usb.h>
 
-#include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
 
 ListNode fixed_block_devices;
@@ -39,7 +38,6 @@ void block_dev_init(void)
 		if (ctrlr->init)
 			ctrlr->init(ctrlr);
 	}
-	ahci_init(PCI_DEV(0, 31, 2));
 }
 
 void block_dev_refresh(void)
