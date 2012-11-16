@@ -22,9 +22,11 @@
 
 #include <assert.h>
 #include <libpayload.h>
+#include <usb/usb.h>
 #include <usb/usbdisk.h>
 #include <usb/usbmsc.h>
 
+#include "base/init_funcs.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/usb.h"
 
@@ -88,3 +90,23 @@ void usbdisk_remove(usbdev_t *dev)
 	free((void *)bdev->name);
 	free(bdev);
 }
+
+static void usb_ctrlr_refresh(BlockDevCtrlr *ctrlr)
+{
+	usb_poll();
+}
+
+int usb_ctrlr_register(void)
+{
+	static BlockDevCtrlr usb =
+	{
+		NULL,
+		&usb_ctrlr_refresh,
+		NULL
+	};
+
+	list_insert_after(&usb.list_node, &block_dev_controllers);
+	return 0;
+}
+
+INIT_FUNC(usb_ctrlr_register);
