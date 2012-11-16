@@ -22,6 +22,7 @@
 
 #include <libpayload.h>
 
+#include "base/init_funcs.h"
 #include "base/timestamp.h"
 #include "drivers/ec/chromeos/mkbp.h"
 #include "drivers/input/input.h"
@@ -49,6 +50,9 @@ int main(void)
 		printf("Problem with the FMAP.\n");
 		halt();
 	}
+
+	if (run_init_funcs())
+		halt();
 
 	// Set up the common param structure.
 	if (common_params_init())

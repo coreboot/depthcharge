@@ -20,52 +20,17 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
-
 #include "base/init_funcs.h"
-#include "base/timestamp.h"
-#include "drivers/ec/chromeos/mkbp.h"
-#include "drivers/input/input.h"
-#include "image/fmap.h"
-#include "vboot/stages.h"
-#include "vboot/util/acpi.h"
+#include "image/symbols.h"
 
-int main(void)
+int run_init_funcs(void)
 {
-	// Let the world know we're alive.
-	outb(0xab, 0x80);
+	init_func_t *start = (init_func_t *)&_init_funcs_start;
+	init_func_t *end = (init_func_t *)&_init_funcs_end;
 
-	// Initialize some consoles.
-	serial_init();
-	cbmem_console_init();
-	input_init();
+	for (init_func_t *init_func = start; init_func != end; init_func++)
+		if ((*init_func)())
+			return 1;
 
-	printf("\n\nStarting read/write depthcharge...\n");
-
-	get_cpu_speed();
-	timestamp_init();
-
-	if (fmap_init()) {
-		printf("Problem with the FMAP.\n");
-		halt();
-	}
-
-	if (run_init_funcs())
-		halt();
-
-	mkbp_init();
-
-	if (acpi_update_data()) {
-		printf("Failed to update the ACPI data.\n");
-		halt();
-	}
-
-	usb_initialize();
-
-	if (vboot_select_and_load_kernel())
-		halt();
-
-	printf("Got to the end!\n");
-	halt();
 	return 0;
 }
