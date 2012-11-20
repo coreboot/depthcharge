@@ -55,19 +55,6 @@ STRIP := strip
 
 LDSCRIPT := $(src)/depthcharge.ldscript
 
-VB_FIRMWARE_ARCH=i386
-VB_ARCH=amd64
-
-INCLUDES = -Ibuild -I$(src)/src/ -I$(VB_INC_DIR) \
-	-I$(VB_INC_DIR)/arch/$(VB_FIRMWARE_ARCH)/
-ABI_FLAGS := -mpreferred-stack-boundary=2 -mregparm=3 -ffreestanding \
-	-fno-builtin -fno-stack-protector -fomit-frame-pointer
-LINK_FLAGS := -Wl,--wrap=__divdi3 -Wl,--wrap=__udivdi3 \
-	-Wl,--wrap=__moddi3 -Wl,--wrap=__umoddi3 -fuse-ld=bfd \
-	-Wl,-T,$(LDSCRIPT) $(ABI_FLAGS) -Wl,--gc-sections
-CFLAGS := -Wall -Werror -Os $(INCLUDES) -std=gnu99 $(ABI_FLAGS) \
-	-ffunction-sections
-
 # These options are passed from .config to the linker script.
 link_config_options := \
 	KERNEL_START \
@@ -76,7 +63,43 @@ link_config_options := \
 	HEAP_SIZE \
 	STACK_SIZE
 
+
+
+
+ifeq ($(strip $(HAVE_DOTCONFIG)),)
+
+all: config
+
+else
+
+include $(src)/.config
+
+ifeq ($(CONFIG_ARCH_X86),y)
+ARCH_DIR = x86
+endif
+ifeq ($(CONFIG_ARCH_ARM),y)
+ARCH_DIR = arm
+endif
+
+include $(src)/src/arch/$(ARCH_DIR)/build_vars
+
+INCLUDES = -Ibuild -I$(src)/src/ -I$(src)/src/arch/$(ARCH_DIR)/ \
+	-I$(VB_INC_DIR) -I$(VB_INC_DIR)/arch/$(VB_FIRMWARE_ARCH)/
+ABI_FLAGS := $(ARCH_ABI_FLAGS) -ffreestanding -fno-builtin \
+	-fno-stack-protector -fomit-frame-pointer
+LINK_FLAGS := $(ARCH_LINK_FLAGS) $(ABI_FLAGS) -fuse-ld=bfd \
+	-Wl,-T,$(LDSCRIPT) -Wl,--gc-sections
+CFLAGS := $(ARCH_CFLAGS) -Wall -Werror -Os $(INCLUDES) -std=gnu99 \
+	$(ABI_FLAGS) -ffunction-sections
+
+$(foreach option,$(link_config_options), \
+	$(eval LINK_FLAGS += -Wl,--defsym=$(option)=$$(CONFIG_$(option))))
+
 all: real-target
+
+endif
+
+
 
 # Add a new class of source/object files to the build system
 add-class= \
@@ -168,21 +191,6 @@ $(eval $(foreach class,$(classes),$(call foreach-src,$(class))))
 
 DEPENDENCIES = $(allobjs:.o=.d)
 -include $(DEPENDENCIES)
-
-ifeq ($(strip $(HAVE_DOTCONFIG)),)
-
-all: config
-
-else
-
-include $(src)/.config
-
-$(foreach option,$(link_config_options), \
-	$(eval LINK_FLAGS += -Wl,--defsym=$(option)=$$(CONFIG_$(option))))
-
-all: real-target
-
-endif
 
 prepare:
 	$(Q)mkdir -p $(obj)/util/kconfig/lxdialog

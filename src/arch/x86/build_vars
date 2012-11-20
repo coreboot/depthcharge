@@ -17,6 +17,8 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-ifdef ARCH_DIR
-subdirs-y := $(ARCH_DIR)
-endif
+VB_FIRMWARE_ARCH=i386
+VB_ARCH=amd64
+ARCH_ABI_FLAGS += -mpreferred-stack-boundary=2 -mregparm=3
+ARCH_LINK_FLAGS := -Wl,--wrap=__divdi3 -Wl,--wrap=__udivdi3 \
+	-Wl,--wrap=__moddi3 -Wl,--wrap=__umoddi3
