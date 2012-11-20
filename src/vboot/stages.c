@@ -24,8 +24,8 @@
 #include <stdint.h>
 #include <vboot_api.h>
 
-#include "arch/x86/boot/zimage.h"
 #include "base/power_management.h"
+#include "boot/zimage.h"
 #include "boot/commandline.h"
 #include "config.h"
 #include "image/fmap.h"

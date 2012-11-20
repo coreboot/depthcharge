@@ -23,7 +23,7 @@
 #ifndef __BASE_PHYSMEM_H__
 #define __BASE_PHYSMEM_H__
 
-#include "arch/x86/base/types.h"
+#include "base/types.h"
 
 /*
  * These functions work like memset but operate on physical memory which may
