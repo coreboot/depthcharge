@@ -3,6 +3,8 @@
 # depthcharge version: 0.1.0
 # Sun Mar 11 00:27:58 2012
 #
+CONFIG_ARCH_X86=y
+# CONFIG_ARCH_ARM is not set
 CONFIG_FMAP_ADDRESS=0xffe10000
 # CONFIG_EC_SOFTWARE_SYNC is not set
 # CONFIG_VIRTUAL_DEV_SWITCH is not set

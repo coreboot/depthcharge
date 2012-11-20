@@ -15,6 +15,27 @@
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
+choice
+	prompt "Architecture"
+	help
+	  The architecture depthcharge will run on.
+
+config ARCH_X86
+	default n
+	bool "X86"
+
+config ARCH_ARM
+	default n
+	bool "ARM (currently unimplemented)"
+	help
+	  Support for ARM is not currently implemented.
+
+endchoice
+
+config ARCH
+	default ""
+	string
+
 config FMAP_ADDRESS
 	hex "Physical address the FMAP is mapped to on the target system"
 	help
