@@ -20,4 +20,5 @@
 depthcharge-y += fmap.c
 depthcharge-y += startrw.c
 
+trampoline-y += load_elf.c
 trampoline-y += trampoline.c

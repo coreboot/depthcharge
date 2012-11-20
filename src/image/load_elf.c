@@ -20,11 +20,38 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __IMAGE_TRAMPOLINE_H__
-#define __IMAGE_TRAMPOLINE_H__
+#include <string.h>
 
 #include "base/elf.h"
+#include "image/load_elf.h"
 
-void trampoline(Elf32_Ehdr *ehdr);
+void load_elf(Elf32_Ehdr *ehdr)
+{
+	uintptr_t base = (uintptr_t)ehdr;
+	uintptr_t addr = (uintptr_t)ehdr + ehdr->e_phoff;
+	uintptr_t step = ehdr->e_phentsize;
+	int num = ehdr->e_phnum;
 
-#endif /* __IMAGE_TRAMPOLINE_H__ */
+	// Copy over the ELF segments.
+	while (num--) {
+		Elf32_Phdr *phdr = (Elf32_Phdr *)addr;
+		addr += step;
+
+		if (phdr->p_type != ElfPTypeLoad)
+			continue;
+
+		uint8_t *dest = (uint8_t *)(uintptr_t)phdr->p_paddr;
+		uint8_t *src = (uint8_t *)(uintptr_t)(base + phdr->p_offset);
+		uint32_t filesz = phdr->p_filesz;
+		uint32_t memsz = phdr->p_memsz;
+
+		if (filesz)
+			memcpy(dest, src, filesz);
+		if (memsz > filesz)
+			memset(dest + filesz, 0, memsz - filesz);
+	}
+
+	// Go for it!
+	typedef void (*entry_func)(void);
+	((entry_func)ehdr->e_entry)();
+}

@@ -20,7 +20,7 @@
  * MA 02111-1307 USA
  */
 
-#include <string.h>
+#include <stdint.h>
 
 #include "base/elf.h"
 #include "image/symbols.h"
@@ -34,39 +34,8 @@ void ENTRY trampoline(Elf32_Ehdr *ehdr)
 		sizeof(uint32_t);
 	__asm__ __volatile__(
 		"mov %[new_stack], %%esp\n"
-		"call real_trampoline\n"
+		"call load_elf\n"
 		:: [new_stack]"r"(new_stack), [ehdr]"a"(ehdr)
 		: "memory"
 	);
-}
-
-void real_trampoline(Elf32_Ehdr *ehdr)
-{
-	uintptr_t base = (uintptr_t)ehdr;
-	uintptr_t addr = (uintptr_t)ehdr + ehdr->e_phoff;
-	uintptr_t step = ehdr->e_phentsize;
-	int num = ehdr->e_phnum;
-
-	// Copy over the ELF segments.
-	while (num--) {
-		Elf32_Phdr *phdr = (Elf32_Phdr *)addr;
-		addr += step;
-
-		if (phdr->p_type != ElfPTypeLoad)
-			continue;
-
-		uint8_t *dest = (uint8_t *)(uintptr_t)phdr->p_paddr;
-		uint8_t *src = (uint8_t *)(uintptr_t)(base + phdr->p_offset);
-		uint32_t filesz = phdr->p_filesz;
-		uint32_t memsz = phdr->p_memsz;
-
-		if (filesz)
-			memcpy(dest, src, filesz);
-		if (memsz > filesz)
-			memset(dest + filesz, 0, memsz - filesz);
-	}
-
-	// Go for it!
-	typedef void (*entry_func)(void);
-	((entry_func)ehdr->e_entry)();
 }

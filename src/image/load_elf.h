@@ -20,11 +20,11 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __IMAGE_TRAMPOLINE_H__
-#define __IMAGE_TRAMPOLINE_H__
+#ifndef __IMAGE_LOAD_ELF_H__
+#define __IMAGE_LOAD_ELF_H__
 
 #include "base/elf.h"
 
-void trampoline(Elf32_Ehdr *ehdr);
+void load_elf(Elf32_Ehdr *ehdr);
 
-#endif /* __IMAGE_TRAMPOLINE_H__ */
+#endif /* __IMAGE_LOAD_ELF_H__ */
