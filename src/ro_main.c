@@ -41,9 +41,11 @@ int main(void)
 
 	printf("\n\nStarting read-only depthcharge...\n");
 
+	// Set up time keeping.
 	get_cpu_speed();
 	timestamp_init();
 
+	// Run any generic initialization functions that are compiled in.
 	if (run_init_funcs())
 		halt();
 
@@ -59,15 +61,17 @@ int main(void)
 	if (vboot_select_firmware())
 		halt();
 
+	// Update the crossystem data in the ACPI tables.
 	if (acpi_update_data())
 		halt();
 
 	usb_initialize();
-	// Select a kernel and boot it.
 
+	// Select a kernel and boot it.
 	if (vboot_select_and_load_kernel())
 		halt();
 
+	// We should never get here.
 	printf("Got to the end!\n");
 	halt();
 	return 0;
