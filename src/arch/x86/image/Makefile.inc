@@ -17,7 +17,4 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-depthcharge-y += fmap.c
-depthcharge-y += startrw.c
-
-trampoline-y += load_elf.c
+trampoline-y += trampoline.c

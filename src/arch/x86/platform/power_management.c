@@ -22,6 +22,8 @@
 
 #include <libpayload.h>
 
+#include "base/power_management.h"
+
 #define PM1_STS         0x00
 #define   PWRBTN_STS    (1 << 8)
 #define PM1_EN          0x02

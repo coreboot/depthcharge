@@ -17,7 +17,7 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-subdirs-y := base boot drivers image vboot
+subdirs-y := arch base boot drivers image vboot
 
 # Where "main" lives.
 readonly-y += ro_main.c

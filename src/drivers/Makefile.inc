@@ -21,5 +21,4 @@ subdirs-y += ec gpio input storage
 
 depthcharge-y += coreboot_fb.c
 depthcharge-y += hda_codec.c
-depthcharge-y += power_management.c
 depthcharge-y += tpm.c

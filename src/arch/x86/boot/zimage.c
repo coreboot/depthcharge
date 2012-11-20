@@ -32,10 +32,10 @@
 #include <arch/msr.h>
 #include <libpayload.h>
 
-#include "base/cpu.h"
+#include "arch/x86/base/cpu.h"
+#include "arch/x86/boot/bootparam.h"
+#include "arch/x86/boot/zimage.h"
 #include "base/timestamp.h"
-#include "boot/bootparam.h"
-#include "boot/zimage.h"
 
 #define KERNEL_V2_MAGIC		0x53726448
 #define MIN_PROTOCOL		0x0202

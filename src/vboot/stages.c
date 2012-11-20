@@ -24,10 +24,10 @@
 #include <stdint.h>
 #include <vboot_api.h>
 
+#include "arch/x86/boot/zimage.h"
+#include "base/power_management.h"
 #include "boot/commandline.h"
-#include "boot/zimage.h"
 #include "config.h"
-#include "drivers/power_management.h"
 #include "image/fmap.h"
 #include "image/startrw.h"
 #include "image/symbols.h"

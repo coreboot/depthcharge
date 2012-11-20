@@ -18,4 +18,3 @@
 ##
 
 depthcharge-y += commandline.c
-depthcharge-y += zimage.c

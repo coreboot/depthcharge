@@ -20,11 +20,21 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __BASE_ZIMAGE_H__
-#define __BASE_ZIMAGE_H__
+#ifndef __BASE_PHYSMEM_H__
+#define __BASE_PHYSMEM_H__
 
-#include "boot/bootparam.h"
+#include "arch/x86/base/types.h"
 
-int zboot(struct boot_params *setup_base, char *cmd_line, void *kernel_entry);
+/*
+ * These functions work like memset but operate on physical memory which may
+ * not be accessible directly.
+ *
+ * @param s	The physical address to start setting memory at.
+ * @param c	The character to set each byte of the region to.
+ * @param n	The number of bytes to set.
+ *
+ * @return	The physical address of the memory which was set.
+ */
+phys_addr_t arch_phys_memset(phys_addr_t s, int c, phys_size_t n);
 
-#endif /* __BASE_ZIMAGE_H__ */
+#endif /* __BASE_PHYSMEM_H__ */

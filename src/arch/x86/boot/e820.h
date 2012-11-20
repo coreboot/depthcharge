@@ -1,5 +1,5 @@
-#ifndef __BOOT_E820_H__
-#define __BOOT_E820_H__
+#ifndef __ARCH_X86_BOOT_E820_H__
+#define __ARCH_X86_BOOT_E820_H__
 
 #define E820MAP	0x2d0		/* our map */
 #define E820MAX	128		/* number of entries in E820MAP */
@@ -66,4 +66,4 @@ struct e820map {
 #define BIOS_ROM_BASE		0xffe00000
 #define BIOS_ROM_END		0xffffffff
 
-#endif /* __BOOT_E820_H__ */
+#endif /* __ARCH_X86_BOOT_E820_H__ */

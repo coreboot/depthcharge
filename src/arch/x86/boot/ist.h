@@ -1,5 +1,5 @@
-#ifndef __BOOT_IST_H__
-#define __BOOT_IST_H__
+#ifndef __ARCH_X86_BOOT_IST_H__
+#define __ARCH_X86_BOOT_IST_H__
 
 /*
  * Include file for the interface to IST BIOS
@@ -26,4 +26,4 @@ struct ist_info {
 	u32 perf_level;
 };
 
-#endif /* __BOOT_IST_H__ */
+#endif /* __ARCH_X86_BOOT_IST_H__ */

@@ -1,14 +1,14 @@
-#ifndef __BOOT_BOOTPARAM_H__
-#define __BOOT_BOOTPARAM_H__
+#ifndef __ARCH_X86_BOOT_BOOTPARAM_H__
+#define __ARCH_X86_BOOT_BOOTPARAM_H__
 
 #include <stdint.h>
 
-#include "boot/apm_bios.h"
-#include "boot/e820.h"
-#include "boot/edd.h"
-#include "boot/edid.h"
-#include "boot/ist.h"
-#include "boot/screen_info.h"
+#include "arch/x86/boot/apm_bios.h"
+#include "arch/x86/boot/e820.h"
+#include "arch/x86/boot/edd.h"
+#include "arch/x86/boot/edid.h"
+#include "arch/x86/boot/ist.h"
+#include "arch/x86/boot/screen_info.h"
 
 /* setup data types */
 #define SETUP_NONE			0
@@ -132,4 +132,4 @@ enum {
 
 
 
-#endif /* __BOOT_BOOTPARAM_H__ */
+#endif /* __ARCH_X86_BOOT_BOOTPARAM_H__ */

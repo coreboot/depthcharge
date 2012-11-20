@@ -33,7 +33,7 @@
 #ifndef __VBOOT_UTIL_MEMORY_WIPE_H__
 #define __VBOOT_UTIL_MEMORY_WIPE_H__
 
-#include "vboot/util/physmem.h"
+#include "base/physmem.h"
 
 /* A node in a linked list of edges, each at position "pos". */
 typedef struct memory_wipe_edge_t {

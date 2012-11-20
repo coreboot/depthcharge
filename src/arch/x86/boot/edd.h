@@ -27,8 +27,8 @@
  * GNU General Public License for more details.
  *
  */
-#ifndef __BOOT_EDD_H__
-#define __BOOT_EDD_H__
+#ifndef __ARCH_X86_BOOT_EDD_H__
+#define __ARCH_X86_BOOT_EDD_H__
 
 #include <stdint.h>
 
@@ -184,4 +184,4 @@ struct edd {
 	unsigned char edd_info_nr;
 };
 
-#endif /* __BOOT_EDD_H__ */
+#endif /* __ARCH_X86_BOOT_EDD_H__ */

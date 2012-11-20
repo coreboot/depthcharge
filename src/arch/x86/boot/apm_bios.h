@@ -1,5 +1,5 @@
-#ifndef __BOOT_APM_BIOS_H__
-#define __BOOT_APM_BIOS_H__
+#ifndef __ARCH_X86_BOOT_APM_BIOS_H__
+#define __ARCH_X86_BOOT_APM_BIOS_H__
 
 /*
  * Include file for the interface to an APM BIOS
@@ -122,4 +122,4 @@ struct apm_bios_info {
 #define APM_CAP_RESUME_STANDBY_PCMCIA	0x0040 /* Resume on PCMCIA Ring	*/
 #define APM_CAP_RESUME_SUSPEND_PCMCIA	0x0080 /* Resume on PCMCIA Ring	*/
 
-#endif	/* __BOOT_APM_BIOS_H__ */
+#endif	/* __ARCH_X86_BOOT_APM_BIOS_H__ */
