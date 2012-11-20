@@ -55,7 +55,7 @@ OBJCOPY := objcopy
 LZMA := lzma
 STRIP := strip
 
-LDSCRIPT := $(src)/depthcharge.ldscript
+LDSCRIPT := $(src)/src/image/depthcharge.ldscript
 
 # These options are passed from .config to the linker script.
 link_config_options := \
