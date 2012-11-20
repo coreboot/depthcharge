@@ -31,7 +31,9 @@ export KCONFIG_AUTOHEADER := $(obj)/config.h
 export KCONFIG_AUTOCONFIG := $(obj)/auto.conf
 
 CONFIG_SHELL := sh
-KBUILD_DEFCONFIG := configs/defconfig
+ifdef BOARD
+KBUILD_DEFCONFIG := $(src)/board/$(BOARD)/defconfig
+endif
 UNAME_RELEASE := $(shell uname -r)
 HAVE_DOTCONFIG := $(wildcard .config)
 MAKEFLAGS += -rR --no-print-directory
