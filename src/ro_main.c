@@ -59,10 +59,8 @@ int main(void)
 	if (vboot_select_firmware())
 		halt();
 
-	if (acpi_update_data()) {
-		printf("Failed to update ACPI data.\n");
+	if (acpi_update_data())
 		halt();
-	}
 
 	usb_initialize();
 	// Select a kernel and boot it.

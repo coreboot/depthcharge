@@ -46,10 +46,8 @@ int main(void)
 	if (run_init_funcs())
 		halt();
 
-	if (acpi_update_data()) {
-		printf("Failed to update the ACPI data.\n");
+	if (acpi_update_data())
 		halt();
-	}
 
 	usb_initialize();
 
