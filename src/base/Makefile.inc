@@ -20,6 +20,7 @@
 depthcharge-y += gcc.c
 depthcharge-y += init_funcs.c
 depthcharge-y += list.c
+depthcharge-y += ranges.c
 depthcharge-y += timestamp.c
 
 trampoline-y += gcc.c

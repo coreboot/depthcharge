@@ -25,24 +25,30 @@
 #include <stdint.h>
 #include <sysinfo.h>
 
+#include "base/ranges.h"
 #include "base/physmem.h"
 #include "image/symbols.h"
 #include "vboot/util/memory.h"
-#include "vboot/util/memory_wipe.h"
+
+void wipe_unused_memset(uint64_t start, uint64_t end, void *data)
+{
+	printf("\t[%#016llx, %#016llx)\n", start, end);
+	arch_phys_memset(start, 0, end - start);
+}
 
 int wipe_unused_memory(void)
 {
-	memory_wipe_t wipe;
+	Ranges ranges;
 
 	// Process the memory map from coreboot.
-	memory_wipe_init(&wipe);
+	ranges_init(&ranges);
 	for (int i = 0; i < lib_sysinfo.n_memranges; i++) {
 		struct memrange *range = &lib_sysinfo.memrange[i];
 		phys_addr_t start = range->base;
 		phys_addr_t end = range->base + range->size;
 		switch (range->type) {
 		case CB_MEM_RAM:
-			memory_wipe_add(&wipe, start, end);
+			ranges_add(&ranges, start, end);
 			break;
 		case CB_MEM_RESERVED:
 		case CB_MEM_ACPI:
@@ -50,7 +56,7 @@ int wipe_unused_memory(void)
 		case CB_MEM_UNUSABLE:
 		case CB_MEM_VENDOR_RSVD:
 		case CB_MEM_TABLE:
-			memory_wipe_sub(&wipe, start, end);
+			ranges_sub(&ranges, start, end);
 			break;
 		default:
 			printf("Unrecognized memory type %d!\n",
@@ -60,11 +66,11 @@ int wipe_unused_memory(void)
 	}
 
 	// Exclude memory we're using ourselves.
-	memory_wipe_sub(&wipe, (uintptr_t)&_start, (uintptr_t)&_end);
-	memory_wipe_sub(&wipe, (uintptr_t)&_tramp_start,
-			(uintptr_t)&_tramp_end);
+	ranges_sub(&ranges, (uintptr_t)&_start, (uintptr_t)&_end);
+	ranges_sub(&ranges, (uintptr_t)&_tramp_start, (uintptr_t)&_tramp_end);
 
 	// Do the wipe.
-	memory_wipe_execute(&wipe);
+	printf("Wipe memory regions:\n");
+	ranges_for_each(&ranges, &wipe_unused_memset, NULL);
 	return 0;
 }

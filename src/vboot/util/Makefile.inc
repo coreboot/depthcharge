@@ -21,4 +21,3 @@ depthcharge-y += acpi.c
 depthcharge-y += commonparams.c
 depthcharge-y += flag.c
 depthcharge-y += memory.c
-depthcharge-y += memory_wipe.c

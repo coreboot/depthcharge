@@ -24,23 +24,18 @@
 #include <libpayload.h>
 
 #include "base/physmem.h"
-#include "vboot/util/memory_wipe.h"
+#include "base/ranges.h"
 
 /*
- * This implementation tracks regions of memory that need to be wiped by
- * filling them with zeroes. It does that by keeping a linked list of the
- * edges between regions where memory should be wiped and not wiped. New
- * regions take precedence over older regions they overlap with. With
- * increasing addresses, the regions of memory alternate between needing to be
- * wiped and needing to be left alone. Edges similarly alternate between
- * starting a wipe region and starting a not wiped region.
+ * This implementation tracks a collection of ranges by keeping a linked list
+ * of the edges between ranges in the collection and the space between them.
+ * New ranges take precedence over older ranges they overlap with.
  */
 
-static void memory_wipe_insert_between(memory_wipe_edge_t *before,
-	memory_wipe_edge_t *after, phys_addr_t pos)
+static void ranges_insert_between(RangesEdge *before, RangesEdge *after,
+				  uint64_t pos)
 {
-	memory_wipe_edge_t *new_edge =
-		(memory_wipe_edge_t *)malloc(sizeof(*new_edge));
+	RangesEdge *new_edge = (RangesEdge *)malloc(sizeof(*new_edge));
 
 	assert(new_edge);
 	assert(before != after);
@@ -50,23 +45,23 @@ static void memory_wipe_insert_between(memory_wipe_edge_t *before,
 	before->next = new_edge;
 }
 
-void memory_wipe_init(memory_wipe_t *wipe)
+void ranges_init(Ranges *ranges)
 {
-	wipe->head.next = NULL;
-	wipe->head.pos = 0;
+	ranges->head.next = NULL;
+	ranges->head.pos = 0;
 }
 
-static void memory_wipe_set_region_to(memory_wipe_t *wipe_info,
-	phys_addr_t start, phys_addr_t end, int new_wiped)
+static void ranges_set_region_to(Ranges *ranges, uint64_t start,
+				 uint64_t end, int new_included)
 {
-	/* whether the current region was originally going to be wiped. */
-	int wipe = 0;
+	/* whether the current region was originally going to be included. */
+	int included = 0;
 
 	assert(start != end);
 
 	/* prev is never NULL, but cur might be. */
-	memory_wipe_edge_t *prev = &wipe_info->head;
-	memory_wipe_edge_t *cur = prev->next;
+	RangesEdge *prev = &ranges->head;
+	RangesEdge *cur = prev->next;
 
 	/*
 	 * Find the start of the new region. After this loop, prev will be
@@ -77,12 +72,12 @@ static void memory_wipe_set_region_to(memory_wipe_t *wipe_info,
 	while (cur && cur->pos < start) {
 		prev = cur;
 		cur = cur->next;
-		wipe = !wipe;
+		included = !included;
 	}
 
 	/* Add the "start" edge between prev and cur, if needed. */
-	if (new_wiped != wipe) {
-		memory_wipe_insert_between(prev, cur, start);
+	if (new_included != included) {
+		ranges_insert_between(prev, cur, start);
 		prev = prev->next;
 	}
 
@@ -97,45 +92,35 @@ static void memory_wipe_set_region_to(memory_wipe_t *wipe_info,
 		cur = cur->next;
 		free(prev->next);
 		prev->next = cur;
-		wipe = !wipe;
+		included = !included;
 	}
 
 	/* Add the "end" edge between prev and cur, if needed. */
-	if (wipe != new_wiped)
-		memory_wipe_insert_between(prev, cur, end);
+	if (included != new_included)
+		ranges_insert_between(prev, cur, end);
 }
 
-/* Set a region to "wiped". */
-void memory_wipe_add(memory_wipe_t *wipe, phys_addr_t start, phys_addr_t end)
+/* Add a range to a collection of ranges. */
+void ranges_add(Ranges *ranges, uint64_t start, uint64_t end)
 {
-	memory_wipe_set_region_to(wipe, start, end, 1);
+	ranges_set_region_to(ranges, start, end, 1);
 }
 
-/* Set a region to "not wiped". */
-void memory_wipe_sub(memory_wipe_t *wipe, phys_addr_t start, phys_addr_t end)
+/* Subtract a range. */
+void ranges_sub(Ranges *ranges, uint64_t start, uint64_t end)
 {
-	memory_wipe_set_region_to(wipe, start, end, 0);
+	ranges_set_region_to(ranges, start, end, 0);
 }
 
-/* Actually wipe memory. */
-void memory_wipe_execute(memory_wipe_t *wipe)
+/* Run a function on each range in Ranges. */
+void ranges_for_each(Ranges *ranges, RangesForEachFunc func, void *data)
 {
-	memory_wipe_edge_t *cur;
-
-	printf("Wipe memory regions:\n");
-	for (cur = wipe->head.next; cur; cur = cur->next->next) {
-		phys_addr_t start, end;
-
+	for (RangesEdge *cur = ranges->head.next; cur; cur = cur->next->next) {
 		if (!cur->next) {
-			printf("Odd number of region edges!\n");
+			printf("Odd number of range edges!\n");
 			return;
 		}
 
-		start = cur->pos;
-		end = cur->next->pos;
-
-		printf("\t[%#016llx, %#016llx)\n",
-			(uint64_t)start, (uint64_t)end);
-		arch_phys_memset(start, 0, end - start);
+		func(cur->pos, cur->next->pos, data);
 	}
 }
