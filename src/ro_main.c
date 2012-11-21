@@ -42,7 +42,6 @@ int main(void)
 	printf("\n\nStarting read-only depthcharge...\n");
 
 	// Set up time keeping.
-	get_cpu_speed();
 	timestamp_init();
 
 	// Run any generic initialization functions that are compiled in.
