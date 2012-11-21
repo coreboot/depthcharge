@@ -72,5 +72,6 @@ int wipe_unused_memory(void)
 	// Do the wipe.
 	printf("Wipe memory regions:\n");
 	ranges_for_each(&ranges, &wipe_unused_memset, NULL);
+	ranges_teardown(&ranges);
 	return 0;
 }
