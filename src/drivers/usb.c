@@ -22,41 +22,14 @@
 
 #include <libpayload.h>
 
-#include "base/init_funcs.h"
-#include "base/timestamp.h"
-#include "drivers/input/input.h"
-#include "vboot/stages.h"
-#include "vboot/util/acpi.h"
+#include "drivers/usb.h"
 
-int main(void)
+void dc_usb_initialize(void)
 {
-	// Let the world know we're alive.
-	outb(0xab, 0x80);
+	static int need_init = 1;
 
-	// Initialize some consoles.
-	serial_init();
-	cbmem_console_init();
-	input_init();
-
-	printf("\n\nStarting read/write depthcharge...\n");
-
-	// Set up time keeping.
-	timestamp_init();
-
-	// Run any generic initialization functions that are compiled in.
-	if (run_init_funcs())
-		halt();
-
-	// Update the crossystem data in the ACPI tables.
-	if (acpi_update_data())
-		halt();
-
-	// Select a kernel and boot it.
-	if (vboot_select_and_load_kernel())
-		halt();
-
-	// We should never get here.
-	printf("Got to the end!\n");
-	halt();
-	return 0;
+	if (need_init) {
+		usb_initialize();
+		need_init = 0;
+	}
 }

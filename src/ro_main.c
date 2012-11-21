@@ -64,8 +64,6 @@ int main(void)
 	if (acpi_update_data())
 		halt();
 
-	usb_initialize();
-
 	// Select a kernel and boot it.
 	if (vboot_select_and_load_kernel())
 		halt();

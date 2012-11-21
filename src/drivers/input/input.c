@@ -24,11 +24,13 @@
 #include <libpayload.h>
 
 #include "drivers/input/input.h"
+#include "drivers/usb.h"
 
 static int need_input_init = 1;
 
 static void do_input_init(void)
 {
+	dc_usb_initialize();
 	keyboard_init();
 }
 
