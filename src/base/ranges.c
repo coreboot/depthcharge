@@ -51,6 +51,18 @@ void ranges_init(Ranges *ranges)
 	ranges->head.pos = 0;
 }
 
+void ranges_teardown(Ranges *ranges)
+{
+	RangesEdge *edge = ranges->head.next;
+
+	while (edge) {
+		RangesEdge *next = edge->next;
+		free(edge);
+		edge = next;
+	}
+	ranges->head.next = NULL;
+}
+
 static void ranges_set_region_to(Ranges *ranges, uint64_t start,
 				 uint64_t end, int new_included)
 {

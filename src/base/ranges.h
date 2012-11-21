@@ -47,6 +47,14 @@ typedef struct Ranges {
 void ranges_init(Ranges *ranges);
 
 /*
+ * Free memory associated with a Ranges structure, not including the structure
+ * itself.
+ *
+ * @param ranges	Ranges structure to tear down.
+ */
+void ranges_teardown(Ranges *ranges);
+
+/*
  * Adds a range to a collection of ranges.
  *
  * @param ranges	Ranges structure to add the range to.
