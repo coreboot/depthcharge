@@ -48,21 +48,31 @@ int main(void)
 	if (run_init_funcs())
 		halt();
 
+	timestamp_add_now(TS_RO_PARAMS_INIT);
+
 	// Set up the common param structure.
 	if (common_params_init())
 		halt();
+
+	timestamp_add_now(TS_RO_VB_INIT);
 
 	// Initialize vboot.
 	if (vboot_init())
 		halt();
 
+	timestamp_add_now(TS_RO_VB_SELECT_FIRMWARE);
+
 	// Select firmware.
 	if (vboot_select_firmware())
 		halt();
 
+	timestamp_add_now(TS_RO_CROSSYSTEM_DATA);
+
 	// Update the crossystem data in the ACPI tables.
 	if (acpi_update_data())
 		halt();
+
+	timestamp_add_now(TS_RO_VB_SELECT_AND_LOAD_KERNEL);
 
 	// Select a kernel and boot it.
 	if (vboot_select_and_load_kernel())
