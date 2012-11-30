@@ -42,7 +42,7 @@ void timestamp_init(void)
 {
 	ts_table = lib_sysinfo.tstamp_table;
 	set_base_timer_value(ts_table->base_time);
-	timestamp_add_now(TS_DEPTHCHARGE_INITTED);
+	timestamp_add_now(TS_START);
 }
 
 void timestamp_add(enum timestamp_id id, uint64_t ts_time)

@@ -106,7 +106,7 @@ int zboot(struct boot_params *setup_base, char *cmd_line, void *kernel_entry)
 
 	board_final_cleanup();
 
-	timestamp_add_now(TS_DEPTHCHARGE_START_KERNEL);
+	timestamp_add_now(TS_START_KERNEL);
 
 	/*
 	 * Set %ebx, %ebp, and %edi to 0, %esi to point to the boot_params

@@ -23,12 +23,19 @@
 #include <stdint.h>
 
 enum timestamp_id {
-	TS_BEFORE_INITRAM = 1,
-	TS_AFTER_INITRAM = 2,
+	// Depthcharge entry IDs start at 1000.
+	TS_START = 1000,
 
-	/* u-boot entry IDs start at 1000 */
-	TS_DEPTHCHARGE_INITTED = 1000, /* This is where u-boot starts. */
-	TS_DEPTHCHARGE_START_KERNEL = 1100 /* Right before jumping to kernel. */
+	TS_RO_PARAMS_INIT = 1001,
+	TS_RO_VB_INIT = 1002,
+	TS_RO_VB_SELECT_FIRMWARE = 1003,
+	TS_RO_CROSSYSTEM_DATA = 1004,
+	TS_RO_VB_SELECT_AND_LOAD_KERNEL = 1005,
+
+	TS_RW_CROSSYSTEM_DATA = 1010,
+	TS_RW_VB_SELECT_AND_LOAD_KERNEL = 1011,
+
+	TS_START_KERNEL = 1100
 };
 
 void timestamp_init(void);
