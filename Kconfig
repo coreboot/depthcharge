@@ -32,10 +32,6 @@ config ARCH_ARM
 
 endchoice
 
-config ARCH
-	default ""
-	string
-
 config FMAP_ADDRESS
 	hex "Physical address the FMAP is mapped to on the target system"
 	help
