@@ -59,8 +59,10 @@ int vboot_init(void)
 		iparams.flags |= VB_INIT_FLAG_WP_ENABLED;
 	if (oprom_loaded)
 		iparams.flags |= VB_INIT_FLAG_OPROM_LOADED;
-	iparams.flags |= VB_INIT_FLAG_OPROM_MATTERS;
-	iparams.flags |= VB_INIT_FLAG_RO_NORMAL_SUPPORT;
+	if (CONFIG_OPROM_MATTERS)
+		iparams.flags |= VB_INIT_FLAG_OPROM_MATTERS;
+	if (CONFIG_RO_NORMAL_SUPPORT)
+		iparams.flags |= VB_INIT_FLAG_RO_NORMAL_SUPPORT;
 	if (CONFIG_VIRTUAL_DEV_SWITCH)
 		iparams.flags |= VB_INIT_FLAG_VIRTUAL_DEV_SWITCH;
 

@@ -51,6 +51,16 @@ config VIRTUAL_DEV_SWITCH
 	help
 	  Whether this platform has a virtual developer switch.
 
+config OPROM_MATTERS
+	bool "Video option ROM matters"
+	help
+	  If whether the video option ROM has run matters on this platform.
+
+config RO_NORMAL_SUPPORT
+	bool "Booting normal mode with RO firmware"
+	help
+	  Whether booting in normal mode using only RO firmware is supported.
+
 config KERNEL_START
 	hex "Physical address of the region the kernel is loaded into"
 	default 0x100000
