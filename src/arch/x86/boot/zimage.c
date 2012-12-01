@@ -36,9 +36,37 @@
 #include "arch/x86/boot/bootparam.h"
 #include "arch/x86/boot/zimage.h"
 #include "base/timestamp.h"
+#include "boot/boot.h"
+#include "boot/commandline.h"
 
 #define KERNEL_V2_MAGIC		0x53726448
 #define MIN_PROTOCOL		0x0202
+
+#define CMD_LINE_SIZE 4096
+
+int boot(void *kernel, void *loader, uint32_t part_num, uint8_t *part_guid)
+{
+	static const char cros_secure[] = "cros_secure ";
+	// A buffer for the fully formed command line.
+	static char cmd_line_buf[2 * CMD_LINE_SIZE];
+	// A temporary buffer while it's being constructed.
+	static char cmd_line_temp[CMD_LINE_SIZE + sizeof(cros_secure)];
+
+	uintptr_t params_addr = (uintptr_t)loader - sizeof(struct boot_params);
+	struct boot_params *params = (struct boot_params *)params_addr;
+	uintptr_t cmd_line_addr = params_addr - CMD_LINE_SIZE;
+	strcpy(cmd_line_temp, cros_secure);
+	strncat(cmd_line_temp, (char *)cmd_line_addr, CMD_LINE_SIZE);
+
+	if (commandline_subst(cmd_line_temp, 0, part_num + 1, part_guid,
+			      cmd_line_buf, sizeof(cmd_line_buf)))
+		return 1;
+
+	if (zboot(params, cmd_line_buf, kernel))
+		return 1;
+
+	return 0;
+}
 
 int board_final_cleanup(void)
 {

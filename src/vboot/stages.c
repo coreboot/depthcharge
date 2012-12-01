@@ -25,8 +25,7 @@
 #include <vboot_api.h>
 
 #include "base/power_management.h"
-#include "boot/zimage.h"
-#include "boot/commandline.h"
+#include "boot/boot.h"
 #include "config.h"
 #include "image/fmap.h"
 #include "image/startrw.h"
@@ -34,10 +33,6 @@
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 #include "vboot/util/memory.h"
-
-#define CMD_LINE_SIZE 4096
-
-static char cmd_line_buf[2 * CMD_LINE_SIZE];
 
 int vboot_init(void)
 {
@@ -133,9 +128,6 @@ int vboot_select_firmware(void)
 
 int vboot_select_and_load_kernel(void)
 {
-	static const char cros_secure[] = "cros_secure ";
-	static char cmd_line_temp[CMD_LINE_SIZE + sizeof(cros_secure)];
-
 	VbSelectAndLoadKernelParams kparams = {
 		.kernel_buffer = (void *)&_kernel_start,
 		.kernel_buffer_size = &_kernel_end - &_kernel_start
@@ -149,21 +141,9 @@ int vboot_select_and_load_kernel(void)
 		cold_reboot();
 	}
 
-	uintptr_t params_addr =
-		kparams.bootloader_address - sizeof(struct boot_params);
-	struct boot_params *params = (struct boot_params *)params_addr;
-	uintptr_t cmd_line_addr = params_addr - CMD_LINE_SIZE;
-	strcpy(cmd_line_temp, cros_secure);
-	strncat(cmd_line_temp, (char *)cmd_line_addr, CMD_LINE_SIZE);
-
-	if (commandline_subst(cmd_line_temp, 0,
-			      kparams.partition_number + 1,
-			      kparams.partition_guid,
-			      cmd_line_buf,
-			      sizeof(cmd_line_buf)))
-		return 1;
-
-	if (zboot(params, cmd_line_buf, kparams.kernel_buffer))
+	if (boot(kparams.kernel_buffer,
+		 (void *)(uintptr_t)kparams.bootloader_address,
+		 kparams.partition_number, kparams.partition_guid))
 		return 1;
 
 	return 0;
