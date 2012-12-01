@@ -68,6 +68,9 @@ static char *emit_guid(char *dest, uint8_t *guid)
 int commandline_subst(const char *src, int devnum, int partnum, uint8_t *guid,
 		      char *dest, int dest_size)
 {
+	static const char cros_secure[] = "cros_secure ";
+	const int cros_secure_size = sizeof(cros_secure) - 1;
+
 	/* sanity check on inputs */
 	if (devnum < 0 || devnum > 25 ||
 	    partnum < 1 || partnum > 99 ||
@@ -92,6 +95,11 @@ int commandline_subst(const char *src, int devnum, int partnum, uint8_t *guid,
 		printf("update_cmdline: Out of space.\n"); \
 		return 1; \
 	}
+
+	// Prepend "cros_secure " to the command line.
+	CHECK_SPACE(cros_secure_size);
+	memcpy(dest, cros_secure, cros_secure_size);
+	dest += (cros_secure_size);
 
 	int c;
 

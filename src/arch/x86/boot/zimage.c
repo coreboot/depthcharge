@@ -46,20 +46,15 @@
 
 int boot(void *kernel, void *loader, uint32_t part_num, uint8_t *part_guid)
 {
-	static const char cros_secure[] = "cros_secure ";
 	// A buffer for the fully formed command line.
 	static char cmd_line_buf[2 * CMD_LINE_SIZE];
-	// A temporary buffer while it's being constructed.
-	static char cmd_line_temp[CMD_LINE_SIZE + sizeof(cros_secure)];
 
 	uintptr_t params_addr = (uintptr_t)loader - sizeof(struct boot_params);
 	struct boot_params *params = (struct boot_params *)params_addr;
 	uintptr_t cmd_line_addr = params_addr - CMD_LINE_SIZE;
-	strcpy(cmd_line_temp, cros_secure);
-	strncat(cmd_line_temp, (char *)cmd_line_addr, CMD_LINE_SIZE);
 
-	if (commandline_subst(cmd_line_temp, 0, part_num + 1, part_guid,
-			      cmd_line_buf, sizeof(cmd_line_buf)))
+	if (commandline_subst((char *)cmd_line_addr, 0, part_num + 1,
+			      part_guid, cmd_line_buf, sizeof(cmd_line_buf)))
 		return 1;
 
 	if (zboot(params, cmd_line_buf, kernel))
