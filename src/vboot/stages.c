@@ -20,6 +20,7 @@
  * MA 02111-1307 USA
  */
 
+#include <assert.h>
 #include <libpayload.h>
 #include <stdint.h>
 #include <vboot_api.h>
@@ -123,6 +124,19 @@ int vboot_select_firmware(void)
 		else
 			rw_area = fmap_find_area(main_fmap, "FW_MAIN_B");
 		uintptr_t rw_addr = rw_area->offset + main_rom_base;
+
+		/*
+		 * If EC software sync is enabled, the EC RW and system RW
+		 * are bundled together with a small header in the front.
+		 * This pulls out just the system firmware piece.
+		 */
+		if (CONFIG_EC_SOFTWARE_SYNC) {
+			uint32_t *index_ints = (uint32_t *)rw_addr;
+			uint32_t count = index_ints[0];
+			assert(count == 2);
+			rw_addr += index_ints[1];
+		}
+
 		if (start_rw_firmware((void *)rw_addr))
 			return 1;
 	}

@@ -20,9 +20,11 @@
  * MA 02111-1307 USA
  */
 
+#include <assert.h>
 #include <libpayload.h>
 #include <vboot_api.h>
 
+#include "config.h"
 #include "image/fmap.h"
 
 VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
@@ -48,8 +50,28 @@ VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
 		return VBERROR_UNKNOWN;
 	}
 
-	void *data = (void *)((uintptr_t)area->offset + main_rom_base);
-	VbUpdateFirmwareBodyHash(cparams, data, area->size);
+	uintptr_t rw_addr = area->offset + main_rom_base;
+	uint32_t size = area->size;
+
+	if (CONFIG_EC_SOFTWARE_SYNC) {
+		/*
+		 * If EC software sync is enabled, the EC RW and the system RW
+		 * are bundled together with a small header in the front. This
+		 * figures out how big the header and data are so we hash the
+		 * right amount of stuff.
+		 */
+		uint32_t *index_ints = (uint32_t *)rw_addr;
+		uint32_t count = index_ints[0];
+		size = 4;
+		for (int i = 0; i < count; i++) {
+			size += 8;
+			uint32_t blob_size = index_ints[(i + 1) * 2];
+			size += (blob_size + 3) & ~3;
+		}
+	}
+
+	void *data = (void *)rw_addr;
+	VbUpdateFirmwareBodyHash(cparams, data, size);
 
 	return VBERROR_SUCCESS;
 }

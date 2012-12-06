@@ -20,6 +20,7 @@
  * MA 02111-1307 USA
  */
 
+#include <assert.h>
 #include <libpayload.h>
 #include <vboot_api.h>
 
@@ -143,10 +144,10 @@ VbError_t VbExEcGetExpectedRW(enum VbSelectFirmware_t select,
 
 	switch (select) {
 	case VB_SELECT_FIRMWARE_A:
-		name = "EC_MAIN_A";
+		name = "FW_MAIN_A";
 		break;
 	case VB_SELECT_FIRMWARE_B:
-		name = "EC_MAIN_B";
+		name = "FW_MAIN_B";
 		break;
 	default:
 		printf("Unrecognized EC firmware requested.\n");
@@ -159,12 +160,18 @@ VbError_t VbExEcGetExpectedRW(enum VbSelectFirmware_t select,
 		return VBERROR_UNKNOWN;
 	}
 
-	uint32_t offset = area->offset;
-	uint32_t size = area->size;
+	uintptr_t rw_addr = (uintptr_t)(area->offset + main_rom_base);
 
-	printf("EC-RW image offset, size are %d, %d.\n", offset, size);
+	uint32_t *index_ints = (uint32_t *)rw_addr;
+	uint32_t count = index_ints[0];
+	assert(count == 2);
+	rw_addr += index_ints[3];
+	uint32_t size = index_ints[4];
 
-	*image = (uint8_t *)(main_rom_base + offset);
+	printf("EC-RW image address, size are %p, %d.\n",
+		(void *)rw_addr, size);
+
+	*image = (uint8_t *)rw_addr;
 	*image_size = size;
 	return VBERROR_SUCCESS;
 }
