@@ -100,6 +100,17 @@ typedef enum AtaCommand {
 	ATA_CMD_SET_MAX_ADDRESS = 0xf9
 } AtaCommand;
 
+typedef enum AtaStatus {
+	ATA_STAT_BUSY = 0x80,
+	ATA_STAT_READY = 0x40,
+	ATA_STAT_FAULT = 0x20,
+	ATA_STAT_SEEK = 0x10,
+	ATA_STAT_DRQ = 0x08,
+	ATA_STAT_CORR = 0x04,
+	ATA_STAT_INDEX = 0x02,
+	ATA_STAT_ERR = 0x01,
+} AtaStatus;
+
 #include <stdint.h>
 
 typedef struct AtaIdentify {

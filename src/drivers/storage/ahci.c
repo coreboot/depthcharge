@@ -41,6 +41,12 @@ typedef struct AhciDevData {
 
 #define writel_with_flush(a,b)	do { writel(a, b); readl(b); } while (0)
 
+/* Maximum timeouts for each event */
+static const int wait_ms_spinup = 10000;
+static const int wait_ms_flush  = 5000;
+static const int wait_ms_dataio = 5000;
+static const int wait_ms_linkup = 4;
+
 static void *ahci_port_base(void *base, int port)
 {
 	return (uint8_t *)base + 0x100 + (port * 0x80);
@@ -153,12 +159,6 @@ static int ahci_host_init(AhciHost *host)
 	writel(cap_save, mmio + HOST_CAP);
 	writel_with_flush(0xf, mmio + HOST_PORTS_IMPL);
 
-	uint16_t vendor = pci_read_config16(pdev, REG_VENDOR_ID);
-	if (vendor == 0x8086) {
-		pci_write_config16(pdev, 0x92,
-			pci_read_config16(pdev, 0x92) | 0xf);
-	}
-
 	host->cap = readl(mmio + HOST_CAP);
 	host->port_map = readl(mmio + HOST_PORTS_IMPL);
 	host->n_ports = (host->cap & 0x1f) + 1;
@@ -167,6 +167,10 @@ static int ahci_host_init(AhciHost *host)
 	      host->cap, host->port_map, host->n_ports);
 
 	for (int i = 0; i < host->n_ports; i++) {
+		/* Skip ports that are not enabled. */
+		if (!(host->port_map & (1 << i)))
+			continue;
+
 		host->port[i].port_mmio = ahci_port_base(mmio, i);
 		uint8_t *port_mmio = (uint8_t *)host->port[i].port_mmio;
 		ahci_setup_port(&host->port[i], mmio, i);
@@ -187,30 +191,57 @@ static int ahci_host_init(AhciHost *host)
 			mdelay(500);
 		}
 
-		printf("Spinning up port %d... ", i);
-		writel(PORT_CMD_SPIN_UP, port_mmio + PORT_CMD);
-	}
+		/* Bring up SATA link. */
+		port_cmd = PORT_CMD_SPIN_UP | PORT_CMD_FIS_RX;
+		writel_with_flush(port_cmd, port_mmio + PORT_CMD);
 
-	// Wait another 10ms to be sure communication has been established with
-	// any devices.
-	udelay(10000);
+		int j;
+		uint32_t tmp;
+		for (j = 0; j < wait_ms_linkup; j++) {
+			tmp = readl(port_mmio + PORT_SCR_STAT);
+			if ((tmp & 0xf) == 0x3)
+				break;
+			mdelay(1);
+		}
+		if (j == wait_ms_linkup) {
+			printf("SATA link %d timeout.\n", i);
+			continue;
+		} else {
+			printf("SATA link %d ok.\n", i);
+		}
 
-	for (int i = 0; i < host->n_ports; i++) {
-		uint8_t *port_mmio = (uint8_t *)host->port[i].port_mmio;
-		if ((readl(port_mmio + PORT_SCR_STAT) & 0xf) == 0x3)
-			printf("ok.\n");
-		else
-			printf("communication not established.\n");
-
+		/* Clear error status */
 		uint32_t port_scr_err = readl(port_mmio + PORT_SCR_ERR);
-		printf("PORT_SCR_ERR %#x\n", port_scr_err);
-		writel(port_scr_err, port_mmio + PORT_SCR_ERR);
+		if (port_scr_err)
+			writel(port_scr_err, port_mmio + PORT_SCR_ERR);
+
+		/* Wait for SATA device to complete spin-up. */
+		printf("Waiting for device on port %d... ", i);
+
+		for (j = 0; j < wait_ms_spinup; j++) {
+			tmp = readl(port_mmio + PORT_TFDATA);
+			if (!(tmp & (ATA_STAT_BUSY | ATA_STAT_DRQ)))
+				break;
+			mdelay(1);
+		}
+		if (j == wait_ms_spinup)
+			printf("timeout.\n");
+		else
+			printf("ok. Target spinup took %d ms.\n", j);
+
+		/* Clear error status */
+		port_scr_err = readl(port_mmio + PORT_SCR_ERR);
+		if (port_scr_err) {
+			printf("PORT_SCR_ERR %#x\n", port_scr_err);
+			writel(port_scr_err, port_mmio + PORT_SCR_ERR);
+		}
 
 		/* ack any pending irq events for this port */
 		uint32_t port_irq_stat = readl(port_mmio + PORT_IRQ_STAT);
-		printf("PORT_IRQ_STAT 0x%x\n", port_irq_stat);
-		if (port_irq_stat)
+		if (port_irq_stat) {
+			printf("PORT_IRQ_STAT 0x%x\n", port_irq_stat);
 			writel(port_irq_stat, port_mmio + PORT_IRQ_STAT);
+		}
 
 		writel(1 << i, mmio + HOST_IRQ_STAT);
 
@@ -225,7 +256,6 @@ static int ahci_host_init(AhciHost *host)
 	}
 
 	host_ctl = readl(mmio + HOST_CTL);
-	printf("HOST_CTL 0x%x\n", host_ctl);
 	writel(host_ctl | HOST_IRQ_EN, mmio + HOST_CTL);
 	host_ctl = readl(mmio + HOST_CTL);
 	printf("HOST_CTL 0x%x\n", host_ctl);
@@ -323,7 +353,7 @@ static int ahci_port_start(AhciIoPorts *port, int index)
 
 
 static int ahci_device_data_io(AhciIoPorts *port, void *fis, int fis_len,
-				void *buf, int buf_len, int is_write)
+			       void *buf, int buf_len, int is_write, int wait)
 {
 
 	uint8_t *port_mmio = port->port_mmio;
@@ -336,15 +366,43 @@ static int ahci_device_data_io(AhciIoPorts *port, void *fis, int fis_len,
 
 	memcpy(port->cmd_tbl, fis, fis_len);
 
-	int sg_count = ahci_fill_sg(port->cmd_tbl_sg, buf, buf_len);
+	int sg_count = 0;
+	if (buf && buf_len)
+		sg_count = ahci_fill_sg(port->cmd_tbl_sg, buf, buf_len);
 	uint32_t opts = (fis_len >> 2) | (sg_count << 16) | (is_write << 6);
 	ahci_fill_cmd_slot(port, opts);
 
 	writel_with_flush(1, port_mmio + PORT_CMD_ISSUE);
 
 	// Wait for the command to complete.
-	if (WAIT_WHILE((readl(port_mmio + PORT_CMD_ISSUE) & 0x1), 150)) {
-		printf("timeout exit!\n");
+	if (WAIT_WHILE((readl(port_mmio + PORT_CMD_ISSUE) & 0x1), wait)) {
+		printf("AHCI: I/O timeout!\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+/*
+ * In the general case of generic rotating media it makes sense to have a
+ * flush capability. It probably even makes sense in the case of SSDs because
+ * one cannot always know for sure what kind of internal cache/flush mechanism
+ * is embodied therein.  Because writing to the disk in u-boot is very rare,
+ * this flush command will be invoked after every block write.
+ */
+static int ahci_io_flush(AhciIoPorts *port)
+{
+	uint8_t fis[20];
+
+	// Set up the FIS.
+	memset(fis, 0, 20);
+	fis[0] = 0x27;		 // Host to device FIS.
+	fis[1] = 1 << 7;	 // Command FIS.
+	fis[2] = ATA_CMD_FLUSH_CACHE_EXT;
+
+	if (ahci_device_data_io(port, fis, 20, NULL, 0, 1,
+				wait_ms_flush) < 0) {
+		printf("AHCI: Flush command failed.\n");
 		return -1;
 	}
 
@@ -371,7 +429,8 @@ static int ahci_read_write(BlockDev *dev, lba_t start, uint16_t count,
 	fis[0] = 0x27;		 // Host to device FIS.
 	fis[1] = 1 << 7;	 // Command FIS.
 	// Command byte
-	fis[2] = is_write ? ATA_CMD_WRITE_DMA : ATA_CMD_READ_DMA;
+	fis[2] = is_write ? ATA_CMD_WRITE_SECTORS_EXT :
+		ATA_CMD_READ_SECTORS_EXT;
 
 	AhciDevData *data = (AhciDevData *)dev->dev_data;
 	AhciIoPorts *port = data->port;
@@ -380,11 +439,13 @@ static int ahci_read_write(BlockDev *dev, lba_t start, uint16_t count,
 		uint16_t tblocks = MIN(MAX_SATA_BLOCKS_READ_WRITE, count);
 		uintptr_t tsize = tblocks * dev->block_size;
 
-		// LBA: only support LBA28 in this driver.
+		// LBA48 SATA command using 32bit address range.
+		fis[3] = 0xe0; /* features */
 		fis[4] = (start >> 0) & 0xff;
 		fis[5] = (start >> 8) & 0xff;
 		fis[6] = (start >> 16) & 0xff;
-		fis[7] = ((start >> 24) & 0xf) | 0xe0;
+		fis[7] = 1 << 6; /* device reg: set LBA mode */
+		fis[8] = ((start >> 24) & 0xff);
 
 		// Block count.
 		fis[12] = (tblocks >> 0) & 0xff;
@@ -392,11 +453,18 @@ static int ahci_read_write(BlockDev *dev, lba_t start, uint16_t count,
 
 		// Read/write from AHCI.
 		if (ahci_device_data_io(port, fis, sizeof(fis), buf,
-					tsize, is_write)) {
+					tsize, is_write, wait_ms_dataio)) {
 			printf("AHCI: %s command failed.\n",
 			      is_write ? "write" : "read");
 			return -1;
 		}
+
+		// Flush writes.
+		if (is_write) {
+			if (ahci_io_flush(port) < 0)
+				return -1;
+		}
+
 		buf = (uint8_t *)buf + tsize;
 		count -= tblocks;
 		start += tblocks;
@@ -435,7 +503,8 @@ static int ahci_identify(AhciIoPorts *port, AtaIdentify *id)
 	// Command byte.
 	fis[2] = ATA_CMD_IDENTIFY_DEVICE;
 
-	if (ahci_device_data_io(port, fis, 20, id, sizeof(AtaIdentify), 0)) {
+	if (ahci_device_data_io(port, fis, 20, id, sizeof(AtaIdentify), 0,
+				wait_ms_dataio)) {
 		printf("AHCI: Identify command failed.\n");
 		return -1;
 	}
