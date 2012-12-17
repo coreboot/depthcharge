@@ -69,7 +69,11 @@ VbError_t VbExTpmOpen(void)
 		return VBERROR_UNKNOWN;
 	}
 
-	tpm_write(TIS_STS_COMMAND_READY, locality, TIS_REG_STS);
+	/* Certain TPMs seem to need some delay here or they hang... */
+	udelay(50);
+
+	if (tis_command_ready(locality) == TPM_TIMEOUT_ERR)
+		return TPM_DRIVER_ERR;
 
 	return VBERROR_SUCCESS;
 }

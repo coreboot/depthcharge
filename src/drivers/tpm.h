@@ -102,6 +102,26 @@ uint32_t tis_wait_reg(uint8_t reg, uint8_t locality, uint8_t mask,
 		      uint8_t expected);
 
 /*
+ * tis_command_ready()
+ *
+ * PC Client Specific TPM Interface Specification section 11.2.12:
+ *
+ *  Software must be prepared to send two writes of a "1" to command ready
+ *  field: the first to indicate successful read of all the data, thus
+ *  clearing the data from the ReadFIFO and freeing the TPM's resources,
+ *  and the second to indicate to the TPM it is about to send a new command.
+ *
+ * In practice not all TPMs behave the same so it is necessary to be
+ * flexible when trying to set command ready.
+ *
+ * @locality - locality
+ *
+ * Returns 0 on success if the TPM is ready for transactions.
+ * Returns TPM_TIMEOUT_ERR if the command ready bit does not get set.
+ */
+int tis_command_ready(u8 locality);
+
+/*
  * Probe the TPM device and try determining its manufacturer/device name.
  *
  * Returns 0 on success (the device is found or was found during an earlier

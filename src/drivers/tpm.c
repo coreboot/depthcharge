@@ -52,16 +52,34 @@ struct device_name {
 struct vendor_name {
 	uint16_t vendor_id;
 	const char * vendor_name;
-	struct device_name* dev_names;
+	const struct device_name * dev_names;
 };
 
-static struct device_name infineon_devices[] = {
-	{0xb, "SLB9635 TT 1.2"},
-	{0}
+static const struct device_name atmel_devices[] = {
+	{0x3204, "AT97SC3204"},
+	{0xffff}
+};
+
+static const struct device_name infineon_devices[] = {
+	{0x000b, "SLB9635 TT 1.2"},
+	{0xffff}
+};
+
+static const struct device_name nuvoton_devices[] = {
+	{0x00fe, "NPCT420AA V2"},
+	{0xffff}
+};
+
+static const struct device_name stmicro_devices[] = {
+	{0x0000, "ST33ZP24" },
+	{0xffff}
 };
 
 static const struct vendor_name vendor_names[] = {
+	{0x1114, "Atmel", atmel_devices},
 	{0x15d1, "Infineon", infineon_devices},
+	{0x1050, "Nuvoton", nuvoton_devices},
+	{0x104a, "ST Microelectronics", stmicro_devices},
 };
 
 /*
@@ -137,6 +155,44 @@ uint32_t tis_wait_reg(uint8_t reg, uint8_t locality, uint8_t mask,
 }
 
 /*
+ * PC Client Specific TPM Interface Specification section 11.2.12:
+ *
+ *  Software must be prepared to send two writes of a "1" to command ready
+ *  field: the first to indicate successful read of all the data, thus
+ *  clearing the data from the ReadFIFO and freeing the TPM's resources,
+ *  and the second to indicate to the TPM it is about to send a new command.
+ *
+ * In practice not all TPMs behave the same so it is necessary to be
+ * flexible when trying to set command ready.
+ *
+ * Returns 0 on success if the TPM is ready for transactions.
+ * Returns TPM_TIMEOUT_ERR if the command ready bit does not get set.
+ */
+int tis_command_ready(u8 locality)
+{
+	u32 status;
+
+	/* 1st attempt to set command ready */
+	tpm_write(TIS_STS_COMMAND_READY, locality, TIS_REG_STS);
+
+	/* Wait for response */
+	status = tpm_read(locality, TIS_REG_STS);
+
+	/* Check if command ready is set yet */
+	if (status & TIS_STS_COMMAND_READY)
+		return 0;
+
+	/* 2nd attempt to set command ready */
+	tpm_write(TIS_STS_COMMAND_READY, locality, TIS_REG_STS);
+
+	/* Wait for command ready to get set */
+	status = tis_wait_reg(TIS_REG_STS, locality,
+			      TIS_STS_COMMAND_READY, TIS_STS_COMMAND_READY);
+
+	return (status == TPM_TIMEOUT_ERR) ? TPM_TIMEOUT_ERR : 0;
+}
+
+/*
  * Probe the TPM device and try determining its manufacturer/device name.
  *
  * Returns 0 on success (the device is found or was found during an earlier
@@ -160,6 +216,7 @@ uint32_t tis_probe(void)
 	int i;
 	const char *device_name = "unknown";
 	const char *vendor_name = device_name;
+	const struct device_name *dev;
 	uint16_t vid = didvid & 0xffff;
 	uint16_t did = (didvid >> 16) & 0xffff;
 	for (i = 0; i < ARRAY_SIZE(vendor_names); i++) {
@@ -167,11 +224,13 @@ uint32_t tis_probe(void)
 		uint16_t known_did;
 		if (vid == vendor_names[i].vendor_id) {
 			vendor_name = vendor_names[i].vendor_name;
+		} else {
+			continue;
 		}
-		while ((known_did = vendor_names[i].dev_names[j].dev_id) != 0) {
+		dev = &vendor_names[i].dev_names[j];
+		while ((known_did = dev->dev_id) != 0xffff) {
 			if (known_did == did) {
-				device_name =
-					vendor_names[i].dev_names[j].dev_name;
+				device_name = dev->dev_name;
 				break;
 			}
 			j++;
@@ -376,7 +435,8 @@ uint32_t tis_readresponse(uint8_t *buffer, uint32_t *len)
 	}
 
 	/* Tell the TPM that we are done. */
-	tpm_write(TIS_STS_COMMAND_READY, locality, TIS_REG_STS);
+	if (tis_command_ready(locality) == TPM_TIMEOUT_ERR)
+		return TPM_DRIVER_ERR;
 
 	*len = offset;
 	return 0;
