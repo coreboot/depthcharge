@@ -26,7 +26,6 @@
 #include "base/timestamp.h"
 #include "drivers/input/input.h"
 #include "vboot/stages.h"
-#include "vboot/util/acpi.h"
 #include "vboot/util/commonparams.h"
 
 int main(void)
@@ -64,12 +63,6 @@ int main(void)
 
 	// Select firmware.
 	if (vboot_select_firmware())
-		halt();
-
-	timestamp_add_now(TS_RO_CROSSYSTEM_DATA);
-
-	// Update the crossystem data in the ACPI tables.
-	if (acpi_update_data())
 		halt();
 
 	timestamp_add_now(TS_RO_VB_SELECT_AND_LOAD_KERNEL);

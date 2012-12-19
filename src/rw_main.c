@@ -26,7 +26,6 @@
 #include "base/timestamp.h"
 #include "drivers/input/input.h"
 #include "vboot/stages.h"
-#include "vboot/util/acpi.h"
 
 int main(void)
 {
@@ -45,12 +44,6 @@ int main(void)
 
 	// Run any generic initialization functions that are compiled in.
 	if (run_init_funcs())
-		halt();
-
-	timestamp_add_now(TS_RW_CROSSYSTEM_DATA);
-
-	// Update the crossystem data in the ACPI tables.
-	if (acpi_update_data())
 		halt();
 
 	timestamp_add_now(TS_RW_VB_SELECT_AND_LOAD_KERNEL);

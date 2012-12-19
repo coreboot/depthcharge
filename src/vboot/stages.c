@@ -25,11 +25,13 @@
 #include <vboot_api.h>
 
 #include "base/power_management.h"
+#include "base/timestamp.h"
 #include "boot/boot.h"
 #include "config.h"
 #include "image/fmap.h"
 #include "image/startrw.h"
 #include "image/symbols.h"
+#include "vboot/util/acpi.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 #include "vboot/util/memory.h"
@@ -142,6 +144,12 @@ int vboot_select_and_load_kernel(void)
 		       "Doing a cold reboot.\n", res);
 		cold_reboot();
 	}
+
+	timestamp_add_now(TS_CROSSYSTEM_DATA);
+
+	// Update the crossystem data in the ACPI tables.
+	if (acpi_update_data())
+		halt();
 
 	if (boot(kparams.kernel_buffer,
 		 (void *)(uintptr_t)kparams.bootloader_address,
