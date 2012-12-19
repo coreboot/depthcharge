@@ -29,6 +29,7 @@
 #include "base/timestamp.h"
 #include "boot/boot.h"
 #include "config.h"
+#include "drivers/ec/chromeos/mkbp.h"
 #include "image/fmap.h"
 #include "image/startrw.h"
 #include "image/symbols.h"
@@ -36,6 +37,19 @@
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 #include "vboot/util/memory.h"
+
+static void reboot_ec_to_ro()
+{
+	if (!mkbp_ptr && !mkbp_init()) {
+		printf("No MKBP device.\n");
+		halt();
+	}
+	if (mkbp_reboot(mkbp_ptr, EC_REBOOT_COLD,
+			EC_REBOOT_FLAG_ON_AP_SHUTDOWN)) {
+		printf("Failed to reboot EC to RO.\n");
+		halt();
+	}
+}
 
 int vboot_init(void)
 {
@@ -68,6 +82,8 @@ int vboot_init(void)
 		iparams.flags |= VB_INIT_FLAG_RO_NORMAL_SUPPORT;
 	if (CONFIG_VIRTUAL_DEV_SWITCH)
 		iparams.flags |= VB_INIT_FLAG_VIRTUAL_DEV_SWITCH;
+	if (CONFIG_EC_SOFTWARE_SYNC)
+		iparams.flags |= VB_INIT_FLAG_EC_SOFTWARE_SYNC;
 
 	printf("Calling VbInit().\n");
 	VbError_t res = VbInit(&cparams, &iparams);
@@ -153,6 +169,11 @@ int vboot_select_and_load_kernel(void)
 
 	printf("Calling VbSelectAndLoadKernel().\n");
 	VbError_t res = VbSelectAndLoadKernel(&cparams, &kparams);
+	if (res == VBERROR_EC_REBOOT_TO_RO_REQUIRED) {
+		printf("Rebooting the EC to RO.\n");
+		reboot_ec_to_ro();
+		power_off();
+	}
 	if (res != VBERROR_SUCCESS) {
 		printf("VbSelectAndLoadKernel returned %d, "
 		       "Doing a cold reboot.\n", res);
