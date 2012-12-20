@@ -45,6 +45,7 @@ else
 		CFLAGS="$(CFLAGS) -DVBOOT_DEBUG" \
 		make -C $(VB_SOURCE) \
 		BUILD=$(dir $(VB_LIB)) \
+		V=$(V) \
 		ARCH=$(VB_ARCH)
 endif
 
