@@ -271,12 +271,13 @@ int mkbp_reboot(struct mkbp_dev *dev, enum ec_reboot_cmd cmd, uint8_t flags)
 		 * will reboot the AP as well, in which case we won't actually
 		 * get to this point.
 		 */
-		/*
-		 * TODO(rspangler@chromium.org): Would be nice if we had a
-		 * better way to determine when the reboot is complete.  Could
-		 * we poll a memory-mapped LPC value?
-		 */
-		udelay(50000);
+		int timeout = 20;
+		do {
+			mdelay(50);
+		} while (timeout-- && mkbp_test(mkbp_ptr));
+
+		if (!timeout)
+			return -1;
 	}
 
 	return 0;
