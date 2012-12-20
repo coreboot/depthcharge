@@ -40,7 +40,7 @@ $(VB_LIB):
 ifndef VB_SOURCE
 	$(error Set VB_SOURCE to point to the vboot source directory)
 else
-	$(Q)printf "    MAKE       $(subst $(obj)/,,$(@))\n"
+	@printf "    MAKE       $(subst $(obj)/,,$(@))\n"
 	$(Q)FIRMWARE_ARCH=$(VB_FIRMWARE_ARCH) \
 		CFLAGS="$(CFLAGS) -DVBOOT_DEBUG" \
 		make -C $(VB_SOURCE) \
@@ -51,51 +51,51 @@ endif
 
 # Trampoline to go from RO depthcharge to RW.
 $(TRAMP_LIBGCC): $(LIBGCC)
-	$(Q)printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
+	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
 	$(Q)$(OBJCOPY) --prefix-symbols=$(TRAMP_PREFIX) $(<) $(@)
 
 # The trampoline is linked with normal gcc to avoid linking in libpayload.
 $(TRAMPOLINE): $$(trampoline-objs)
-	$(Q)printf "    LD         $(subst $(obj)/,,$(@).tmp)\n"
+	@printf "    LD         $(subst $(obj)/,,$(@).tmp)\n"
 	$(Q)$(CC) $(LINK_FLAGS) -Wl,-relocatable -o $(@).tmp \
 		$(trampoline-objs) -nostdinc -nostdlib -static \
 		-u $(TRAMP_ENTRY)
-	$(Q)printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
+	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
 	$(Q)$(OBJCOPY) --prefix-symbols=$(TRAMP_PREFIX) $(@).tmp $(@)
 
 
 #The read-only version
 $(DEPTHCHARGE_RO_ELF): $(src)/.config $$(depthcharge-objs) $$(readonly-objs) \
 		$(TRAMPOLINE) $(LIBRARIES) $(TRAMP_LIBGCC) prepare
-	$(Q)printf "    LD         $(subst $(obj)/,,$(@).tmp)\n"
+	@printf "    LD         $(subst $(obj)/,,$(@).tmp)\n"
 	$(Q)$(XCC) $(LINK_FLAGS) -o $@.tmp $(depthcharge-objs) \
 		$(readonly-objs) $(TRAMPOLINE) $(LIBRARIES) $(TRAMP_LIBGCC) \
 		-u $(TRAMP_PREFIX)$(TRAMP_ENTRY)
-	$(Q)printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
+	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
 	$(Q)$(OBJCOPY) --remove-section=".shared_data" \
 		--remove-section=".cparams" $@.tmp $@
 
 $(DEPTHCHARGE_RO_BIN): $(DEPTHCHARGE_RW_ELF)
-	$(Q)printf "    STRIP      $(subst $(obj)/,,$(@).tmp)\n"
+	@printf "    STRIP      $(subst $(obj)/,,$(@).tmp)\n"
 	$(Q)$(STRIP) -o $(@).tmp $(<)
-	$(Q)printf "    LZMA       $(subst $(obj)/,,$(@))\n"
+	@printf "    LZMA       $(subst $(obj)/,,$(@))\n"
 	$(Q)$(LZMA) --stdout $(@).tmp > $(@)
 
 
 #The read/write version
 $(DEPTHCHARGE_RW_ELF): $(src)/.config $$(depthcharge-objs) $$(readwrite-objs) \
 		$(LIBRARIES) prepare
-	$(Q)printf "    LD         $(subst $(obj)/,,$(@).tmp)\n"
+	@printf "    LD         $(subst $(obj)/,,$(@).tmp)\n"
 	$(Q)$(XCC) $(LINK_FLAGS) -o $@.tmp $(depthcharge-objs) \
 		$(readwrite-objs) $(LIBRARIES)
-	$(Q)printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
+	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
 	$(Q)$(OBJCOPY) --remove-section=".shared_data" \
 		--remove-section=".cparams" $@.tmp $@
 
 $(DEPTHCHARGE_RW_BIN): $(DEPTHCHARGE_RW_ELF)
-	$(Q)printf "    STRIP      $(subst $(obj)/,,$(@).tmp)\n"
+	@printf "    STRIP      $(subst $(obj)/,,$(@).tmp)\n"
 	$(Q)$(STRIP) -o $(@).tmp $(<)
-	$(Q)printf "    LZMA       $(subst $(obj)/,,$(@))\n"
+	@printf "    LZMA       $(subst $(obj)/,,$(@))\n"
 	$(Q)$(LZMA) --stdout $(@).tmp > $(@)
 
 classes-y := depthcharge trampoline readwrite readonly
