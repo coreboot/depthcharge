@@ -249,8 +249,8 @@ static int ahci_fill_sg(AhciSg *sg, void *buf, int len)
 	for (int i = 0; i < sg_count; i++) {
 		sg->addr = htolel((uintptr_t)buf + i * MAX_DATA_BYTE_COUNT);
 		sg->addr_hi = 0;
-		sg->flags_size =
-			htolel(MIN(len, MAX_DATA_BYTE_COUNT - 1) & 0x3fffff);
+		uint32_t bytes = MIN(len, MAX_DATA_BYTE_COUNT);
+		sg->flags_size = htolel((bytes - 1) & 0x3fffff);
 		sg++;
 		len -= MAX_DATA_BYTE_COUNT;
 	}
