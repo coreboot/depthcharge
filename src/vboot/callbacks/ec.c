@@ -103,7 +103,7 @@ VbError_t VbExEcHashRW(const uint8_t **hash, int *hash_size)
 		return VBERROR_UNKNOWN;
 	}
 
-	struct ec_response_vboot_hash resp;
+	static struct ec_response_vboot_hash resp;
 	if (mkbp_read_hash(mkbp_ptr, &resp) < 0) {
 		printf("Failed to read EC hash.\n");
 		return VBERROR_UNKNOWN;
