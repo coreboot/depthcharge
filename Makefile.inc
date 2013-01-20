@@ -25,7 +25,7 @@ VB_LIB = $(obj)/external/vboot/vboot_fw.a
 
 LIBRARIES = $(VB_LIB)
 
-LIBGCC = $(shell $(XCC) -print-libgcc-file-name)
+LIBGCC := $(shell $(XCC) -print-libgcc-file-name)
 TRAMP_LIBGCC = $(obj)/trampoline_$(notdir $(LIBGCC))
 TRAMP_PREFIX = .tramp
 TRAMP_ENTRY = trampoline
