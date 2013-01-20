@@ -17,7 +17,6 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA, 02110-1301 USA
  */
 
-#include <arch/rdtsc.h>
 #include <libpayload.h>
 #include <stdint.h>
 
@@ -59,5 +58,5 @@ void timestamp_add(enum timestamp_id id, uint64_t ts_time)
 
 void timestamp_add_now(enum timestamp_id id)
 {
-	timestamp_add(id, rdtsc());
+	timestamp_add(id, get_raw_timer_value());
 }

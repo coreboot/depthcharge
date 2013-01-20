@@ -22,6 +22,7 @@
 
 #include <stdint.h>
 
+uint64_t get_raw_timer_value(void);
 uint64_t get_timer_value(void);
 void set_base_timer_value(uint64_t new_base);
 

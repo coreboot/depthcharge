@@ -20,4 +20,5 @@
 depthcharge-y += init_funcs.c
 depthcharge-y += list.c
 depthcharge-y += ranges.c
+depthcharge-y += time.c
 depthcharge-y += timestamp.c
