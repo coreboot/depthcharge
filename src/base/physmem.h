@@ -23,7 +23,7 @@
 #ifndef __BASE_PHYSMEM_H__
 #define __BASE_PHYSMEM_H__
 
-#include "base/types.h"
+#include "arch/dc_types.h"
 
 /*
  * These functions work like memset but operate on physical memory which may

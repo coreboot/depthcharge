@@ -20,12 +20,12 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __ARCH_X86_BASE_TYPES_H__
-#define __ARCH_X86_BASE_TYPES_H__
+#ifndef __ARCH_X86_INCLUDES_ARCH_DC_TYPES_H__
+#define __ARCH_X86_INCLUDES_ARCH_DC_TYPES_H__
 
 #include <stdint.h>
 
 typedef uint64_t phys_addr_t;
 typedef uint64_t phys_size_t;
 
-#endif /* __ARCH_X86_BASE_TYPES_H__ */
+#endif /* __ARCH_X86_INCLUDES_ARCH_DC_TYPES_H__ */
