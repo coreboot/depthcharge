@@ -122,7 +122,7 @@ int acpi_update_data(void)
 
 	acpi_table->recovery_reason = vdat->recovery_reason;
 
-	acpi_table->fmap_base = CONFIG_FMAP_ADDRESS;
+	acpi_table->fmap_base = (uintptr_t)main_fmap;
 
 	size = min(fwid_size, strnlen(fwid, ACPI_FWID_SIZE));
 	uint8_t *dest = (uint8_t *)(uintptr_t)acpi_table->fwid_ptr;
