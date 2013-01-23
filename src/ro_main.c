@@ -22,6 +22,7 @@
 
 #include <libpayload.h>
 
+#include "arch/sign_of_life.h"
 #include "base/init_funcs.h"
 #include "base/timestamp.h"
 #include "drivers/input/input.h"
@@ -31,7 +32,7 @@
 int main(void)
 {
 	// Let the world know we're alive.
-	outb(0xaa, 0x80);
+	sign_of_life(0xaa);
 
 	// Initialize some consoles.
 	serial_init();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 The Chromium OS Authors.
+ * Copyright (c) 2013 The Chromium OS Authors.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -20,41 +20,16 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
+#ifndef __ARCH_ARM_INCLUDES_ARCH_SIGN_OF_LIFE_H__
+#define __ARCH_ARM_INCLUDES_ARCH_SIGN_OF_LIFE_H__
 
-#include "arch/sign_of_life.h"
-#include "base/init_funcs.h"
-#include "base/timestamp.h"
-#include "drivers/input/input.h"
-#include "vboot/stages.h"
+#include <stdint.h>
 
-int main(void)
+#include "base/sign_of_life.h"
+
+static inline void sign_of_life(uint8_t val)
 {
-	// Let the world know we're alive.
-	sign_of_life(0xab);
-
-	// Initialize some consoles.
-	serial_init();
-	cbmem_console_init();
-	input_init();
-
-	printf("\n\nStarting read/write depthcharge...\n");
-
-	// Set up time keeping.
-	timestamp_init();
-
-	// Run any generic initialization functions that are compiled in.
-	if (run_init_funcs())
-		halt();
-
-	timestamp_add_now(TS_RW_VB_SELECT_AND_LOAD_KERNEL);
-
-	// Select a kernel and boot it.
-	if (vboot_select_and_load_kernel())
-		halt();
-
-	// We should never get here.
-	printf("Got to the end!\n");
-	halt();
-	return 0;
+	/* It would be nice to do something here... */
 }
+
+#endif /* __ARCH_ARM_INCLUDES_ARCH_SIGN_OF_LIFE_H__ */
