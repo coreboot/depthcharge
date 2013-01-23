@@ -57,14 +57,6 @@ LZMA := lzma
 
 LDSCRIPT := $(src)/src/image/depthcharge.ldscript
 
-# These options are passed from .config to the linker script.
-link_config_options := \
-	KERNEL_START \
-	KERNEL_SIZE \
-	BASE_ADDRESS \
-	HEAP_SIZE \
-	STACK_SIZE
-
 
 
 
@@ -93,9 +85,6 @@ LINK_FLAGS := $(ARCH_LINK_FLAGS) $(ABI_FLAGS) -fuse-ld=bfd \
 	-Wl,-T,$(LDSCRIPT) -Wl,--gc-sections
 CFLAGS := $(ARCH_CFLAGS) -Wall -Werror -Os $(INCLUDES) -std=gnu99 \
 	$(ABI_FLAGS) -ffunction-sections
-
-$(foreach option,$(link_config_options), \
-	$(eval LINK_FLAGS += -Wl,--defsym=$(option)=$$(CONFIG_$(option))))
 
 all: real-target
 
@@ -190,6 +179,10 @@ $(foreach class,$(classes), \
 
 foreach-src=$(foreach file,$($(1)-srcs),$(eval $(call $(1)-objs_$(subst .,,$(suffix $(file)))_template,$(subst src/,,$(basename $(file))))))
 $(eval $(foreach class,$(classes),$(call foreach-src,$(class))))
+
+# Kconfig options intended for the linker.
+$(foreach option,$(link_config_options), \
+	$(eval LINK_FLAGS += -Wl,--defsym=$(option)=$$(CONFIG_$(option))))
 
 DEPENDENCIES = $(allobjs:.o=.d)
 -include $(DEPENDENCIES)

@@ -1,0 +1,73 @@
+## This file is part of the coreboot project.
+##
+## Copyright (C) 2012 The ChromiumOS Authors.  All rights reserved.
+##
+## This program is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; version 2 of the License.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program; if not, write to the Free Software
+## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+
+# Options which are passed to the linker script. When making changes, update
+# the list of options in Makefile.inc as well.
+
+config KERNEL_START
+	hex "Physical address of the region the kernel is loaded into"
+	default 0x100000
+	help
+	  The start of a region of memory the kernel is loaded into before
+	  it's verified or booted. Also, the code which pivots from the
+	  read only firmware to one of the read/write versions is loaded here
+	  when depthcharge starts.
+
+config KERNEL_SIZE
+	hex "The size of the region the kernel is loaded into"
+	default 0x800000
+	help
+	  The size of a region of memroy the kernel is loaded into before
+	  it's verified or booted. Also, the code which pivots from the
+	  read only firmware to one of the read/write versions is loaded here
+	  when depthcharge starts. That code is overwritten when the kernel is
+	  loaded, so this should be set to the size of the larger of the two,
+	  not their sizes added together.
+
+config BASE_ADDRESS
+	hex "The address depthcharge is linked to run at"
+	default 0x2000000
+	help
+	  The address that the main part of depthcharge runs at. That includes
+	  everything except the code which pivots between the read only and
+	  read/write firmware which is linked to run from the region of memory
+	  the kernel is eventually loaded into.
+
+config HEAP_SIZE
+	hex "The size of the heap in bytes"
+	default 0x200000
+	help
+	  The size of the heap in bytes, minus any padding needed to align it
+	  to a 16 byte boundary.
+
+config STACK_SIZE
+	hex "The size of the stack in bytes"
+	default 0x4000
+	help
+	  The size of the stack in bytes, minus any padding needed to align it
+	  to a 16 byte boundary.
+
+
+# End of options passed to the linker script.
+
+config FMAP_ADDRESS
+	hex "Physical address the FMAP is mapped to on the target system"
+	help
+	  This is the physical address the FMAP in the ROM is mapped to as the
+	  system boots. The FMAP is not searched for, so if the address isn't
+	  correct the system won't boot.

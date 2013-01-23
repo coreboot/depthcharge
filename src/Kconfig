@@ -1,7 +1,6 @@
+## This file is part of the coreboot project.
 ##
-## This file is part of the depthcharge project.
-##
-## Copyright (c) 2012 The Chromium OS Authors.
+## Copyright (C) 2012 The ChromiumOS Authors.  All rights reserved.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -14,19 +13,31 @@
 ##
 ## You should have received a copy of the GNU General Public License
 ## along with this program; if not, write to the Free Software
-## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
-##
+## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
-depthcharge-y += fmap.c
-depthcharge-y += startrw.c
+mainmenu "Depthcharge configuration"
 
-trampoline-y += load_elf.c
+choice
+	prompt "Architecture"
+	help
+	  The architecture depthcharge will run on.
 
-# These options are passed from .config to the linker script. When making
-# changes, update Kconfig as well.
-link_config_options := \
-	KERNEL_START \
-	KERNEL_SIZE \
-	BASE_ADDRESS \
-	HEAP_SIZE \
-	STACK_SIZE
+config ARCH_X86
+	default n
+	bool "X86"
+
+config ARCH_ARM
+	default n
+	bool "ARM (currently unimplemented)"
+	help
+	  Support for ARM is not currently implemented.
+
+endchoice
+
+menu "Image layout"
+source src/image/Kconfig
+endmenu
+
+menu "Vboot"
+source src/vboot/Kconfig
+endmenu
