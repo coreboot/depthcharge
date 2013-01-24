@@ -1,6 +1,6 @@
 ## This file is part of the coreboot project.
 ##
-## Copyright (C) 2012 The ChromiumOS Authors.  All rights reserved.
+## Copyright (C) 2013 The ChromiumOS Authors.  All rights reserved.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -15,33 +15,24 @@
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
-mainmenu "Depthcharge configuration"
+config DRIVER_MKBP
+	bool "Enable support for the ChromeOS EC"
+	default n
 
 choice
-	prompt "Architecture"
+	prompt "ChromeOS EC bus"
+	default DRIVER_MKBP_LPC
+	depends on DRIVER_MKBP
 	help
-	  The architecture depthcharge will run on.
+	  The type of bus the ChromeOS EC is connected with.
 
-config ARCH_X86
-	default n
-	bool "X86"
+config DRIVER_MKBP_LPC
+	bool "LPC"
 
-config ARCH_ARM
-	default n
-	bool "ARM (currently unimplemented)"
-	help
-	  Support for ARM is not currently implemented.
+config DRIVER_MKBP_I2C
+	bool "I2C (currently unimplemented)"
+
+config DRIVER_MKBP_SPI
+	bool "SPI (currently unimplemented)"
 
 endchoice
-
-menu "Image layout"
-source src/image/Kconfig
-endmenu
-
-menu "Vboot"
-source src/vboot/Kconfig
-endmenu
-
-menu "Drivers"
-source src/drivers/Kconfig
-endmenu

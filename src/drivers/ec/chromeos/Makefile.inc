@@ -17,5 +17,5 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-depthcharge-y += mkbp.c
-depthcharge-y += mkbp_lpc.c
+depthcharge-$(CONFIG_DRIVER_MKBP) += mkbp.c
+depthcharge-$(CONFIG_DRIVER_MKBP_LPC) += mkbp_lpc.c
