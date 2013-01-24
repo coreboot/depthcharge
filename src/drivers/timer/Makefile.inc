@@ -18,3 +18,4 @@
 ##
 
 depthcharge-$(CONFIG_DRIVER_TIMER_RDTSC) += rdtsc.c
+depthcharge-$(CONFIG_ARCH_ARM) += dummy.c
