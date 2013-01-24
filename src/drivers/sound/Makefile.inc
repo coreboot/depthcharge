@@ -18,3 +18,5 @@
 ##
 
 depthcharge-$(CONFIG_DRIVER_CODEC_HDA) += hda_codec.c
+# Build in the dummy driver in absence of real sound support.
+depthcharge-$(CONFIG_ARCH_ARM) += dummy.c
