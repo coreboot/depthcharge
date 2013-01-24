@@ -14,7 +14,7 @@
 #include <libpayload.h>
 #include <pci.h>
 
-#include "drivers/hda_codec.h"
+#include "drivers/sound/hda_codec.h"
 
 #define HDA_CMD_REG 0x5C
 #define HDA_ICII_REG 0x64

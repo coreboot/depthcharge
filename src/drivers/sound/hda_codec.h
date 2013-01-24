@@ -10,8 +10,8 @@
 
 /* HDA codec interface for Chrome OS verified boot */
 
-#ifndef __DRIVERS_HDA_CODEC_H__
-#define __DRIVERS_HDA_CODEC_H__
+#ifndef __DRIVERS_SOUND_HDA_CODEC_H__
+#define __DRIVERS_SOUND_HDA_CODEC_H__
 
 #include <stdint.h>
 
@@ -19,4 +19,4 @@
 void enable_beep(uint32_t frequency);
 void disable_beep(void);
 
-#endif /* __DRIVERS_HDA_CODEC_H__ */
+#endif /* __DRIVERS_SOUND_HDA_CODEC_H__ */

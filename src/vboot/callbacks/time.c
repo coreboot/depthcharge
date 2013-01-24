@@ -24,7 +24,7 @@
 #include <vboot_api.h>
 
 #include "base/time.h"
-#include "drivers/hda_codec.h"
+#include "drivers/sound/hda_codec.h"
 
 uint64_t VbExGetTimer(void)
 {

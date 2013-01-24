@@ -17,8 +17,4 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-subdirs-y += ec gpio input sound storage
-
-depthcharge-y += coreboot_fb.c
-depthcharge-y += tpm.c
-depthcharge-y += usb.c
+depthcharge-$(CONFIG_DRIVER_CODEC_HDA) += hda_codec.c
