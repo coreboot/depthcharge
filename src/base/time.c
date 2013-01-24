@@ -21,6 +21,7 @@
  */
 
 #include "base/time.h"
+#include "drivers/timer/timer.h"
 
 static uint64_t base_value;
 

@@ -20,7 +20,6 @@
 depthcharge-y += gcc.c
 depthcharge-y += physmem.c
 depthcharge-y += string.c
-depthcharge-y += time.c
 
 trampoline-y += gcc.c
 trampoline-y += string.c

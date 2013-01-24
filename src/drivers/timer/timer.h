@@ -17,12 +17,11 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA, 02110-1301 USA
  */
 
-#ifndef __BASE_TIME_H__
-#define __BASE_TIME_H__
+#ifndef __DRIVERS_TIMER_TIMER_H__
+#define __DRIVERS_TIMER_TIMER_H__
 
 #include <stdint.h>
 
-uint64_t get_timer_value(void);
-void set_base_timer_value(uint64_t new_base);
+uint64_t get_raw_timer_value(void);
 
-#endif /* __BASE_TIME_H__ */
+#endif /* __DRIVERS_TIMER_TIMER_H__ */

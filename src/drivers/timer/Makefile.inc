@@ -1,7 +1,7 @@
 ##
 ## This file is part of the depthcharge project.
 ##
-## Copyright (c) 2012 The Chromium OS Authors.
+## Copyright (c) 2013 The Chromium OS Authors.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -17,8 +17,4 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-subdirs-y += ec gpio input sound storage timer
-
-depthcharge-y += coreboot_fb.c
-depthcharge-y += tpm.c
-depthcharge-y += usb.c
+depthcharge-$(CONFIG_DRIVER_TIMER_RDTSC) += rdtsc.c

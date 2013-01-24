@@ -22,7 +22,7 @@
 
 #include <arch/rdtsc.h>
 
-#include "base/time.h"
+#include "drivers/timer/timer.h"
 
 uint64_t get_raw_timer_value(void)
 {
