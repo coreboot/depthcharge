@@ -24,16 +24,13 @@
 #define BEEP_FREQ_MAGIC 0x00C70A00
 #define BEEP_FREQ_BASE 12000
 
-/**
+/*
  *  Wait 50usec for the codec to indicate it is ready
  *  no response would imply that the codec is non-operative
  */
 static int wait_for_ready(uint32_t base)
 {
-	/* Use a 50 usec timeout - the Linux kernel uses the
-	 * same duration
-	 */
-
+	// Use a 50 usec timeout - the Linux kernel uses the same duration.
 	int timeout = 50;
 
 	while (timeout--) {
@@ -47,23 +44,21 @@ static int wait_for_ready(uint32_t base)
 	return -1;
 }
 
-/**
+/*
  *  Wait 50usec for the codec to indicate that it accepted
  *  the previous command.  No response would imply that the code
- *  is non-operative
+ *  is non-operative.
  */
 static int wait_for_valid(uint32_t base)
 {
 	uint32_t reg32;
 
-	/* Send the verb to the codec */
+	// Send the verb to the codec.
 	reg32 = readl(base + HDA_ICII_REG);
 	reg32 |= HDA_ICII_BUSY | HDA_ICII_VALID;
 	writel(reg32, base + HDA_ICII_REG);
 
-	/* Use a 50 usec timeout - the Linux kernel uses the
-	 * same duration
-	 */
+	// Use a 50 usec timeout - the Linux kernel uses the same duration.
 
 	int timeout = 50;
 	while (timeout--) {
@@ -77,10 +72,11 @@ static int wait_for_valid(uint32_t base)
 	return -1;
 }
 
-/* Wait for the codec to be ready, write the verb, then wait for the
+/*
+ * Wait for the codec to be ready, write the verb, then wait for the
  * codec to be valid.
  */
-int write_one_verb(uint32_t base, uint32_t val)
+static int write_one_verb(uint32_t base, uint32_t val)
 {
 	if (wait_for_ready(base) == -1)
 		return -1;
@@ -93,9 +89,7 @@ int write_one_verb(uint32_t base, uint32_t val)
 	return 0;
 }
 
-/* Supported sound devices.
- */
-
+/* Supported sound devices. */
 typedef struct pci_device_id {
 	uint16_t vendor;
 	uint16_t device;
@@ -111,9 +105,8 @@ static struct pci_device_id supported[] = {
 	{}
 };
 
-/* Find the base address to talk tot he HDA codec.
- */
-static u32 get_hda_base(void)
+/* Find the base address to talk to the HDA codec. */
+static uint32_t get_hda_base(void)
 {
 	pcidev_t hda_dev;
 
@@ -124,17 +117,17 @@ static u32 get_hda_base(void)
 		}
 	}
 
-	printf("Audio: Controller not found !\n");
+	printf("Audio: Controller not found!\n");
 	return 0;
 }
 
-static const u32 beep_cmd[] = {
-	0x00170500,			/* power up codec */
-	0x00270500,			/* power up DAC */
-	0x00670500,			/* power up speaker */
-	0x00670740,			/* enable speaker output */
-	0x0023B04B,			/* set DAC gain */
-};					/* and follow with BEEP_FREQ_MAGIC */
+static const uint32_t beep_cmd[] = {
+	0x00170500,			// power up codec
+	0x00270500,			// power up DAC
+	0x00670500,			// power up speaker
+	0x00670740,			// enable speaker output
+	0x0023B04B,			// set DAC gain
+};					// and follow with BEEP_FREQ_MAGIC
 
 void enable_beep(uint32_t frequency)
 {
@@ -142,7 +135,7 @@ void enable_beep(uint32_t frequency)
 	uint8_t divider_val;
 	int i;
 
-	if (0 == frequency)
+	if (frequency == 0)
 		divider_val = 0;	/* off */
 	else if (frequency > BEEP_FREQ_BASE)
 		divider_val = 1;
@@ -152,11 +145,11 @@ void enable_beep(uint32_t frequency)
 		divider_val = (uint8_t)(0xFF & (BEEP_FREQ_BASE / frequency));
 
 	base = get_hda_base();
-	for (i = 0; i < sizeof(beep_cmd)/sizeof(beep_cmd[0]); i++) {
+	for (i = 0; i < ARRAY_SIZE(beep_cmd); i++) {
 		if (write_one_verb(base, beep_cmd[i]))
 			return;
 	}
-	write_one_verb(base, BEEP_FREQ_MAGIC|divider_val);
+	write_one_verb(base, BEEP_FREQ_MAGIC | divider_val);
 }
 
 void disable_beep(void)
@@ -164,5 +157,5 @@ void disable_beep(void)
 	uint32_t base;
 
 	base = get_hda_base();
-	write_one_verb(base, 0x00C70A00); /* Disable beep gen */
+	write_one_verb(base, 0x00C70A00); // Disable beep generation.
 }

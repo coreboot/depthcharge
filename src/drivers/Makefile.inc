@@ -20,6 +20,6 @@
 subdirs-y += ec gpio input storage
 
 depthcharge-y += coreboot_fb.c
-depthcharge-y += hda_codec.c
+depthcharge-$(CONFIG_DRIVER_CODEC_HDA) += hda_codec.c
 depthcharge-y += tpm.c
 depthcharge-y += usb.c
