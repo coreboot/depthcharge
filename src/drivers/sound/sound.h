@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+ * Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  *
@@ -8,15 +8,12 @@
  * Software Foundation.
  */
 
-/* HDA codec interface for Chrome OS verified boot */
-
-#ifndef __DRIVERS_SOUND_HDA_CODEC_H__
-#define __DRIVERS_SOUND_HDA_CODEC_H__
+#ifndef __DRIVERS_SOUND_SOUND_H__
+#define __DRIVERS_SOUND_SOUND_H__
 
 #include <stdint.h>
 
-/* Beep control */
 void enable_beep(uint32_t frequency);
 void disable_beep(void);
 
-#endif /* __DRIVERS_SOUND_HDA_CODEC_H__ */
+#endif /* __DRIVERS_SOUND_SOUND_H__ */
