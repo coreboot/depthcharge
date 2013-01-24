@@ -21,3 +21,9 @@ depthcharge-y += acpi.c
 depthcharge-y += commonparams.c
 depthcharge-y += flag.c
 depthcharge-y += memory.c
+
+ifeq ($(CONFIG_EC_SOFTWARE_SYNC),y)
+depthcharge-y += ec.c
+else
+depthcharge-y += ec_stub.c
+endif

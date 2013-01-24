@@ -20,7 +20,6 @@
 depthcharge-y += debug.c
 depthcharge-y += disk.c
 depthcharge-y += display.c
-depthcharge-y += ec.c
 depthcharge-y += keyboard.c
 depthcharge-y += legacy.c
 depthcharge-y += load_firmware.c
@@ -29,3 +28,9 @@ depthcharge-y += misc.c
 depthcharge-y += nvstorage.c
 depthcharge-y += time.c
 depthcharge-y += tpm.c
+
+ifeq ($(CONFIG_EC_SOFTWARE_SYNC),y)
+depthcharge-y += ec.c
+else
+depthcharge-y += ec_stub.c
+endif

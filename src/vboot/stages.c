@@ -29,27 +29,14 @@
 #include "base/timestamp.h"
 #include "boot/boot.h"
 #include "config.h"
-#include "drivers/ec/chromeos/mkbp.h"
 #include "image/fmap.h"
 #include "image/startrw.h"
 #include "image/symbols.h"
 #include "vboot/util/acpi.h"
 #include "vboot/util/commonparams.h"
+#include "vboot/util/ec.h"
 #include "vboot/util/flag.h"
 #include "vboot/util/memory.h"
-
-static void reboot_ec_to_ro()
-{
-	if (!mkbp_ptr && !mkbp_init()) {
-		printf("No MKBP device.\n");
-		halt();
-	}
-	if (mkbp_reboot(mkbp_ptr, EC_REBOOT_COLD,
-			EC_REBOOT_FLAG_ON_AP_SHUTDOWN)) {
-		printf("Failed to reboot EC to RO.\n");
-		halt();
-	}
-}
 
 int vboot_init(void)
 {
