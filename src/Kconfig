@@ -23,11 +23,9 @@ choice
 	  The architecture depthcharge will run on.
 
 config ARCH_X86
-	default n
 	bool "X86"
 
 config ARCH_ARM
-	default n
 	bool "ARM (currently unimplemented)"
 	help
 	  Support for ARM is not currently implemented.
