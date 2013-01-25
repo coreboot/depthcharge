@@ -1,7 +1,7 @@
 ##
 ## This file is part of the depthcharge project.
 ##
-## Copyright (c) 2012 The Chromium OS Authors.
+## Copyright (c) 2013 The Chromium OS Authors.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -17,4 +17,4 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-depthcharge-y += power_management.c
+depthcharge-$(CONFIG_DRIVER_POWER_PCH) += pch.c

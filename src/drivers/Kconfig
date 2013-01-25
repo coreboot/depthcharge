@@ -17,6 +17,7 @@
 
 source src/drivers/ec/chromeos/Kconfig
 source src/drivers/gpio/Kconfig
+source src/drivers/power/Kconfig
 source src/drivers/sound/Kconfig
 source src/drivers/storage/Kconfig
 source src/drivers/timer/Kconfig

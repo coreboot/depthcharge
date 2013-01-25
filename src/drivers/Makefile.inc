@@ -17,7 +17,7 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-subdirs-y += ec gpio input sound storage timer
+subdirs-y += ec gpio input power sound storage timer
 
 depthcharge-y += coreboot_fb.c
 depthcharge-y += tpm.c

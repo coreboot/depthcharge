@@ -22,7 +22,7 @@
 
 #include <libpayload.h>
 
-#include "base/power_management.h"
+#include "drivers/power/power.h"
 
 #define PM1_STS         0x00
 #define   PWRBTN_STS    (1 << 8)

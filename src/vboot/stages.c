@@ -25,10 +25,10 @@
 #include <stdint.h>
 #include <vboot_api.h>
 
-#include "base/power_management.h"
 #include "base/timestamp.h"
 #include "boot/boot.h"
 #include "config.h"
+#include "drivers/power/power.h"
 #include "image/fmap.h"
 #include "image/startrw.h"
 #include "image/symbols.h"

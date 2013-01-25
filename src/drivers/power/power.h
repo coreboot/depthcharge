@@ -20,8 +20,8 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __DRIVERS_POWER_MANAGEMENT_H__
-#define __DRIVERS_POWER_MANAGEMENT_H__
+#ifndef __DRIVERS_POWER_POWER_H__
+#define __DRIVERS_POWER_POWER_H__
 
 /* Cold reboot the machine */
 void cold_reboot(void) __attribute__ ((noreturn));
@@ -29,4 +29,4 @@ void cold_reboot(void) __attribute__ ((noreturn));
 /* Power off the machine */
 void power_off(void) __attribute__ ((noreturn));
 
-#endif /* __DRIVERS_POWER_MANAGEMENT_H__ */
+#endif /* __DRIVERS_POWER_POWER_H__ */
