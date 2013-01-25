@@ -18,5 +18,6 @@
 ##
 
 depthcharge-y += gcc.c
+depthcharge-y += pci_stub.c
 
 trampoline-y += gcc.c
