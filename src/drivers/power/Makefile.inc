@@ -18,3 +18,4 @@
 ##
 
 depthcharge-$(CONFIG_DRIVER_POWER_PCH) += pch.c
+depthcharge-$(CONFIG_ARCH_ARM) += dummy.c
