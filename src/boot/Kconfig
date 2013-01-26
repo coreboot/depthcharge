@@ -23,4 +23,8 @@ choice
 	config KERNEL_ZIMAGE
 	bool "zimage"
 	depends on ARCH_X86
+
+	config KERNEL_DUMMY
+	bool "dummy"
+	depends on ARCH_ARM
 endchoice
