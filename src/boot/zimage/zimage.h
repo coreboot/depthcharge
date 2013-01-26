@@ -20,11 +20,11 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __ARCH_X86_BOOT_ZIMAGE_H__
-#define __ARCH_X86_BOOT_ZIMAGE_H__
+#ifndef __BOOT_ZIMAGE_ZIMAGE_H__
+#define __BOOT_ZIMAGE_ZIMAGE_H__
 
-#include "arch/x86/boot/bootparam.h"
+#include "boot/zimage/bootparam.h"
 
 int zboot(struct boot_params *setup_base, char *cmd_line, void *kernel_entry);
 
-#endif /* __ARCH_X86_BOOT_ZIMAGE_H__ */
+#endif /* __BOOT_ZIMAGE_ZIMAGE_H__ */

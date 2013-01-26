@@ -1,5 +1,5 @@
-#ifndef __ARCH_X86_BOOT_SCREEN_INFO_H__
-#define __ARCH_X86_BOOT_SCREEN_INFO_H__
+#ifndef __BOOT_ZIMAGE_SCREEN_INFO_H__
+#define __BOOT_ZIMAGE_SCREEN_INFO_H__
 
 #include <stdint.h>
 
@@ -68,4 +68,4 @@ struct screen_info {
 
 #define VIDEO_FLAGS_NOCURSOR	(1 << 0) /* The video mode has no cursor set */
 
-#endif /* __ARCH_X86_BOOT_SCREEN_INFO_H__ */
+#endif /* __BOOT_ZIMAGE_SCREEN_INFO_H__ */

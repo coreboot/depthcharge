@@ -33,8 +33,8 @@
 #include <libpayload.h>
 
 #include "arch/x86/base/cpu.h"
-#include "arch/x86/boot/bootparam.h"
-#include "arch/x86/boot/zimage.h"
+#include "boot/zimage/bootparam.h"
+#include "boot/zimage/zimage.h"
 #include "base/timestamp.h"
 #include "boot/boot.h"
 #include "boot/commandline.h"
