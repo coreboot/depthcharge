@@ -15,10 +15,18 @@
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
-source src/drivers/ec/chromeos/Kconfig
-source src/drivers/gpio/Kconfig
-source src/drivers/input/Kconfig
-source src/drivers/power/Kconfig
-source src/drivers/sound/Kconfig
-source src/drivers/storage/Kconfig
-source src/drivers/timer/Kconfig
+config DRIVER_INPUT_PS2
+	bool "PS2 keyboard"
+	default n
+	help
+	  Keyboard input through an i8042/PS2 keyboard controller as found on
+	  traditional PCs. The actual support is provided by libpayload, this
+	  just makes it an input source as far as depthcharge is concerned.
+
+config DRIVER_INPUT_USB
+	bool "USB keyboard"
+	default n
+	help
+	  USB keyboard support. The actual support is provided by libpayload,
+	  this just makes it an input source as far as depthcharge is
+	  concerned.

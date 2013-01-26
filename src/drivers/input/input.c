@@ -21,34 +21,36 @@
  *
  */
 
+#include <assert.h>
 #include <libpayload.h>
 
 #include "drivers/input/input.h"
-#include "drivers/usb.h"
 
-static int need_input_init = 1;
+ListNode on_demand_input_devices;
 
 static void do_input_init(void)
 {
-	dc_usb_initialize();
-	keyboard_init();
+	for (ListNode *node = on_demand_input_devices.next;
+			node; node = node->next) {
+		OnDemandInput *dev =
+			container_of(node, OnDemandInput, list_node);
+		if (dev->need_init) {
+			assert(dev->init);
+			dev->init();
+			dev->need_init = 0;
+		}
+	}
 }
 
 static int fake_havekey(void)
 {
-	if (need_input_init) {
-		do_input_init();
-		need_input_init = 0;
-	}
+	do_input_init();
 	return 0;
 }
 
 static int fake_getchar(void)
 {
-	if (need_input_init) {
-		do_input_init();
-		need_input_init = 0;
-	}
+	do_input_init();
 	return 0;
 }
 
