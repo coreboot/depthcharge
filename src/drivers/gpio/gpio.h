@@ -20,11 +20,12 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __DRIVERS_GPIO_PCH_H__
-#define __DRIVERS_GPIO_PCH_H__
+#ifndef __DRIVERS_GPIO_GPIO_H__
+#define __DRIVERS_GPIO_GPIO_H__
 
-int pch_gpio_direction(unsigned num, unsigned input);
-int pch_gpio_get_value(unsigned num);
-int pch_gpio_set_value(unsigned num, unsigned value);
+int gpio_use(unsigned num, unsigned use);
+int gpio_direction(unsigned num, unsigned input);
+int gpio_get_value(unsigned num);
+int gpio_set_value(unsigned num, unsigned value);
 
-#endif /* __DRIVERS_GPIO_PCH_H__ */
+#endif /* __DRIVERS_GPIO_GPIO_H__ */

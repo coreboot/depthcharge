@@ -33,14 +33,14 @@
 #include <pci.h>
 #include <stdint.h>
 
-#include "drivers/gpio/pch.h"
+#include "drivers/gpio/gpio.h"
 
 #define NUM_GPIO_BANKS 3
 // IO ports for controlling the banks of GPIOS.
 //                                    bank:   0     1     2
-static uint8_t gpio_use[NUM_GPIO_BANKS] = { 0x00, 0x30, 0x40 };
-static uint8_t gpio_io[NUM_GPIO_BANKS]  = { 0x04, 0x34, 0x44 };
-static uint8_t gpio_lvl[NUM_GPIO_BANKS] = { 0x0c, 0x38, 0x48 };
+static uint8_t gpio_use_start[NUM_GPIO_BANKS] = { 0x00, 0x30, 0x40 };
+static uint8_t gpio_io_start[NUM_GPIO_BANKS]  = { 0x04, 0x34, 0x44 };
+static uint8_t gpio_lvl_start[NUM_GPIO_BANKS] = { 0x0c, 0x38, 0x48 };
 
 #define LP_GPIO_CONF0(num)         (0x100 + ((num) * 8))
 #define  LP_GPIO_CONF0_MODE_BIT    0
@@ -118,34 +118,34 @@ static int pch_gpio_get(unsigned num, uint8_t *bases)
 	return (reg >> bit) & 1;
 }
 
-int pch_gpio_use(unsigned num, unsigned use)
+int gpio_use(unsigned num, unsigned use)
 {
 	if (pch_is_lp())
 		return pch_lp_gpio_set(num, LP_GPIO_CONF0_MODE_BIT, use);
 	else
-		return pch_gpio_set(num, gpio_use, use);
+		return pch_gpio_set(num, gpio_use_start, use);
 }
 
-int pch_gpio_direction(unsigned num, unsigned input)
+int gpio_direction(unsigned num, unsigned input)
 {
 	if (pch_is_lp())
 		return pch_lp_gpio_set(num, LP_GPIO_CONF0_DIR_BIT, input);
 	else
-		return pch_gpio_set(num, gpio_io, input);
+		return pch_gpio_set(num, gpio_io_start, input);
 }
 
-int pch_gpio_get_value(unsigned num)
+int gpio_get_value(unsigned num)
 {
 	if (pch_is_lp())
 		return pch_lp_gpio_get(num, LP_GPIO_CONF0_GPI_BIT);
 	else
-		return pch_gpio_get(num, gpio_lvl);
+		return pch_gpio_get(num, gpio_lvl_start);
 }
 
-int pch_gpio_set_value(unsigned num, unsigned value)
+int gpio_set_value(unsigned num, unsigned value)
 {
 	if (pch_is_lp())
 		return pch_lp_gpio_set(num, LP_GPIO_CONF0_GPO_BIT, value);
 	else
-		return pch_gpio_set(num, gpio_lvl, value);
+		return pch_gpio_set(num, gpio_lvl_start, value);
 }
