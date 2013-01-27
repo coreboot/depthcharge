@@ -17,8 +17,4 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-subdirs-y += ec gpio input i2c power sound storage timer
-
-depthcharge-y += coreboot_fb.c
-depthcharge-y += tpm.c
-depthcharge-y += usb.c
+depthcharge-$(CONFIG_ARCH_ARM) += dummy.c
