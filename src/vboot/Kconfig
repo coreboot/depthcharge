@@ -36,3 +36,23 @@ config RO_NORMAL_SUPPORT
 	bool "Booting normal mode with RO firmware"
 	help
 	  Whether booting in normal mode using only RO firmware is supported.
+
+choice
+	prompt "Type of nonvolatile storage"
+	help
+	  Where depthcharge should keep vboot's nonvolatile storage.
+
+config NV_STORAGE_CMOS
+	bool "CMOS"
+	depends on ARCH_X86
+	help
+	  The nonvolatile data is stored in CMOS.
+
+config NV_STORAGE_DISK
+	bool "Fixed disk"
+	help
+	  The nonvolatile storage is stored on a fixed disk. The first fixed
+	  disk will be used. To avoid unexpected behavior, there should only
+	  be one fixed disk in the system.
+
+endchoice
