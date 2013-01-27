@@ -195,10 +195,10 @@ struct mkbp_dev *board_get_mkbp_dev(void);
 
 
 /* Internal interfaces */
-int mkbp_lpc_init(struct mkbp_dev *dev);
+int mkbp_bus_init(struct mkbp_dev *dev);
 
 /**
- * Check whether the LPC interface supports new-style commands.
+ * Check whether the bus interface supports new-style commands.
  *
  * LPC has its own way of doing this, which involves checking LPC values
  * visible to the host. Do this, and update dev->cmd_version_is_supported
@@ -206,10 +206,10 @@ int mkbp_lpc_init(struct mkbp_dev *dev);
  *
  * @param dev		MKBP device to check
  */
-int mkbp_lpc_check_version(struct mkbp_dev *dev);
+int mkbp_bus_check_version(struct mkbp_dev *dev);
 
 /**
- * Send a command to a LPC MKBP device and return the reply.
+ * Send a command to a MKBP device and return the reply.
  *
  * The device's internal input/output buffers are used.
  *
@@ -222,7 +222,7 @@ int mkbp_lpc_check_version(struct mkbp_dev *dev);
  * @param din_len       Maximum size of response in bytes
  * @return number of bytes in response, or -1 on error
  */
-int mkbp_lpc_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
+int mkbp_bus_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 		     const uint8_t *dout, int dout_len,
 		     uint8_t **dinp, int din_len);
 

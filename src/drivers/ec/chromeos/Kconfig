@@ -30,9 +30,21 @@ config DRIVER_MKBP_LPC
 	bool "LPC"
 
 config DRIVER_MKBP_I2C
-	bool "I2C (currently unimplemented)"
+	bool "I2C (currently untested)"
 
 config DRIVER_MKBP_SPI
 	bool "SPI (currently unimplemented)"
 
 endchoice
+
+config DRIVER_MKBP_I2C_BUS
+	int "ChromeOS EC I2C bus"
+	depends on DRIVER_MKBP_I2C
+	help
+	  The number of the I2C bus the ChromeOS EC is on.
+
+config DRIVER_MKBP_I2C_ADDR
+	hex "ChromeOS @C I2C address"
+	depends on DRIVER_MKBP_I2C
+	help
+	  The address of the ChromeOS EC on its I2C bus.

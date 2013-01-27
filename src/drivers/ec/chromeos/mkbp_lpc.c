@@ -110,7 +110,7 @@ static int old_lpc_command(struct mkbp_dev *dev, uint8_t cmd,
 	return din_len;
 }
 
-int mkbp_lpc_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
+int mkbp_bus_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 		     const uint8_t *dout, int dout_len,
 		     uint8_t **dinp, int din_len)
 {
@@ -203,7 +203,7 @@ int mkbp_lpc_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
  * @param blob		Device tree blob
  * @return 0 if ok, -1 on error
  */
-int mkbp_lpc_init(struct mkbp_dev *dev)
+int mkbp_bus_init(struct mkbp_dev *dev)
 {
 	int byte, i;
 
@@ -230,7 +230,7 @@ int mkbp_lpc_init(struct mkbp_dev *dev)
  * seeing whether the EC sets the EC_HOST_ARGS_FLAG_FROM_HOST flag
  * in args when it responds.
  */
-int mkbp_lpc_check_version(struct mkbp_dev *dev)
+int mkbp_bus_check_version(struct mkbp_dev *dev)
 {
 	if (inb(EC_LPC_ADDR_MEMMAP + EC_MEMMAP_ID) == 'E' &&
 			inb(EC_LPC_ADDR_MEMMAP + EC_MEMMAP_ID + 1)

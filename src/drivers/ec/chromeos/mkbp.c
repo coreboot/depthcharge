@@ -74,15 +74,6 @@ uint8_t mkbp_calc_checksum(const uint8_t *data, int size)
 	return csum & 0xff;
 }
 
-static int send_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
-			const void *dout, int dout_len,
-			uint8_t **dinp, int din_len)
-{
-	return mkbp_lpc_command(dev, cmd, cmd_version,
-				(const uint8_t *)dout, dout_len,
-				dinp, din_len);
-}
-
 /**
  * Send a command to the MKBP device and return the reply.
  *
@@ -113,8 +104,8 @@ static int ec_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 		return -1;
 	}
 
-	len = send_command(dev, cmd, cmd_version, dout, dout_len,
-			   &din, din_len);
+	len = mkbp_bus_command(dev, cmd, cmd_version, dout,
+			       dout_len, &din, din_len);
 
 	/* If the command doesn't complete, wait a while */
 	if (len == -EC_RES_IN_PROGRESS) {
@@ -127,9 +118,9 @@ static int ec_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 			int ret;
 
 			mdelay(50);	/* Insert some reasonable delay */
-			ret = send_command(dev, EC_CMD_GET_COMMS_STATUS, 0,
-					NULL, 0,
-					(uint8_t **)&resp, sizeof(*resp));
+			ret = mkbp_bus_command(dev, EC_CMD_GET_COMMS_STATUS,
+					       0, NULL, 0, (uint8_t **)&resp,
+					       sizeof(*resp));
 			if (ret < 0)
 				return ret;
 
@@ -142,8 +133,8 @@ static int ec_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 		} while (resp->flags & EC_COMMS_STATUS_PROCESSING);
 
 		/* OK it completed, so read the status response */
-		len = send_command(dev, EC_CMD_RESEND_RESPONSE, 0,
-				NULL, 0, &din, 0);
+		len = mkbp_bus_command(dev, EC_CMD_RESEND_RESPONSE, 0,
+				       NULL, 0, &din, 0);
 	}
 
 	/*
@@ -353,7 +344,7 @@ int mkbp_flash_protect(struct mkbp_dev *dev,
 
 static int mkbp_check_version(struct mkbp_dev *dev)
 {
-	return mkbp_lpc_check_version(dev);
+	return mkbp_bus_check_version(dev);
 }
 
 int mkbp_test(struct mkbp_dev *dev)
@@ -611,7 +602,7 @@ struct mkbp_dev *mkbp_init(void)
 		(struct mkbp_dev *)memalign(sizeof(int64_t),
 					    sizeof(struct mkbp_dev));
 
-	if (mkbp_lpc_init(dev)) {
+	if (mkbp_bus_init(dev)) {
 		free(dev);
 		return NULL;
 	}
