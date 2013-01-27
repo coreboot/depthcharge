@@ -42,21 +42,6 @@ static uint8_t gpio_use_start[NUM_GPIO_BANKS] = { 0x00, 0x30, 0x40 };
 static uint8_t gpio_io_start[NUM_GPIO_BANKS]  = { 0x04, 0x34, 0x44 };
 static uint8_t gpio_lvl_start[NUM_GPIO_BANKS] = { 0x0c, 0x38, 0x48 };
 
-#define LP_GPIO_CONF0(num)         (0x100 + ((num) * 8))
-#define  LP_GPIO_CONF0_MODE_BIT    0
-#define  LP_GPIO_CONF0_DIR_BIT     2
-#define  LP_GPIO_CONF0_GPI_BIT     30
-#define  LP_GPIO_CONF0_GPO_BIT     31
-
-static int pch_is_lp(void)
-{
-	switch (pci_read_config16(PCI_DEV(0, 0x1f, 0), REG_DEVICE_ID)) {
-	case 0x9c41: /* Haswell ULT Sample */
-		return 1;
-	}
-	return 0;
-}
-
 static uint32_t pch_gpiobase(void)
 {
 	static const uint32_t dev = PCI_DEV(0, 0x1f, 0);
@@ -70,18 +55,6 @@ static uint32_t pch_gpiobase(void)
 	// Drop the IO space bit.
 	base &= ~0x1;
 	return base;
-}
-
-static int pch_lp_gpio_set(unsigned num, int bit, int val)
-{
-	uint16_t addr = pch_gpiobase() + LP_GPIO_CONF0(num);
-	uint32_t conf0 = inl(addr);
-	if (val)
-		conf0 |= (1 << bit);
-	else
-		conf0 &= ~(1 << bit);
-	outl(addr, conf0);
-	return 0;
 }
 
 static int pch_gpio_set(unsigned num, uint8_t *bases, int val)
@@ -99,13 +72,6 @@ static int pch_gpio_set(unsigned num, uint8_t *bases, int val)
 	return 0;
 }
 
-static int pch_lp_gpio_get(unsigned num, int bit)
-{
-	uint16_t addr = pch_gpiobase() + LP_GPIO_CONF0(num);
-	uint32_t conf0 = inl(addr);
-	return !!(conf0 & (1 << bit));
-}
-
 static int pch_gpio_get(unsigned num, uint8_t *bases)
 {
 	int bank = num / 32;
@@ -120,32 +86,20 @@ static int pch_gpio_get(unsigned num, uint8_t *bases)
 
 int gpio_use(unsigned num, unsigned use)
 {
-	if (pch_is_lp())
-		return pch_lp_gpio_set(num, LP_GPIO_CONF0_MODE_BIT, use);
-	else
-		return pch_gpio_set(num, gpio_use_start, use);
+	return pch_gpio_set(num, gpio_use_start, use);
 }
 
 int gpio_direction(unsigned num, unsigned input)
 {
-	if (pch_is_lp())
-		return pch_lp_gpio_set(num, LP_GPIO_CONF0_DIR_BIT, input);
-	else
-		return pch_gpio_set(num, gpio_io_start, input);
+	return pch_gpio_set(num, gpio_io_start, input);
 }
 
 int gpio_get_value(unsigned num)
 {
-	if (pch_is_lp())
-		return pch_lp_gpio_get(num, LP_GPIO_CONF0_GPI_BIT);
-	else
-		return pch_gpio_get(num, gpio_lvl_start);
+	return pch_gpio_get(num, gpio_lvl_start);
 }
 
 int gpio_set_value(unsigned num, unsigned value)
 {
-	if (pch_is_lp())
-		return pch_lp_gpio_set(num, LP_GPIO_CONF0_GPO_BIT, value);
-	else
-		return pch_gpio_set(num, gpio_lvl_start, value);
+	return pch_gpio_set(num, gpio_lvl_start, value);
 }

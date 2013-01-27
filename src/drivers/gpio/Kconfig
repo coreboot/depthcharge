@@ -15,6 +15,17 @@
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
+choice
+	prompt "GPIO driver"
+	help
+	  The driver for GPIOs on this platform.
+
 config DRIVER_GPIO_PCH
-	bool "Intel PCH GPIO driver"
-	default n
+	bool "Intel PCH"
+	depends on ARCH_X86
+
+config DRIVER_GPIO_LYNXPOINT_LP
+	bool "Intel Lynxpoint LP PCH"
+	depends on ARCH_X86
+
+endchoice
