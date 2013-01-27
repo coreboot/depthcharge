@@ -22,6 +22,7 @@
 
 #include <libpayload.h>
 
+#include "config.h"
 #include "drivers/gpio/pch.h"
 #include "drivers/gpio/sysinfo.h"
 #include "vboot/util/flag.h"
@@ -44,8 +45,12 @@ int flag_fetch(enum flag_index index)
 	}
 
 	if (index == FLAG_ECINRW) {
-		pch_gpio_direction(21, 1);
-		return pch_gpio_get_value(21);
+		if (CONFIG_EC_SOFTWARE_SYNC) {
+			pch_gpio_direction(21, 1);
+			return pch_gpio_get_value(21);
+		} else {
+			printf("EC software sync disabled.\n");
+		}
 	}
 
 	const char const *name = cb_gpio_name[index];
