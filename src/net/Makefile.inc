@@ -1,7 +1,7 @@
 ##
 ## This file is part of the depthcharge project.
 ##
-## Copyright 2012 Google Inc.
+## Copyright (c) 2013 Google Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -17,6 +17,10 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-classes-y := depthcharge uip netboot trampoline readwrite readonly
+uip-c-ccopts := -fno-strict-aliasing
 
-subdirs-y := src/
+uip-y += uip_arp.c
+uip-y += uip.c
+uip-y += uip-debug.c
+uip-y += uiplib.c
+uip-y += uip-udp-packet.c
