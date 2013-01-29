@@ -26,6 +26,7 @@
 #include "base/timestamp.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/input/input.h"
+#include "net/uip.h"
 
 int main(void)
 {
@@ -42,6 +43,9 @@ int main(void)
 		halt();
 
 	dc_usb_initialize();
+
+	// Start up the network stack.
+	uip_init();
 
 	/* Do network booting here. */
 
