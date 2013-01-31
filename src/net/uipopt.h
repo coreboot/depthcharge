@@ -61,6 +61,8 @@
 #define CCIF
 #define CCIF
 
+#define UIP_CONF_UDP_CHECKSUMS 1
+
 #include <stdint.h>
 
 #include "netboot/appcall.h"
