@@ -26,6 +26,7 @@
 #include "base/timestamp.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/input/input.h"
+#include "drivers/timer/timer.h"
 #include "net/uip.h"
 
 int main(void)
@@ -43,6 +44,8 @@ int main(void)
 		halt();
 
 	dc_usb_initialize();
+
+	srand(get_raw_timer_value());
 
 	// Start up the network stack.
 	uip_init();
