@@ -28,6 +28,13 @@
 #include "drivers/input/input.h"
 #include "drivers/timer/timer.h"
 #include "net/uip.h"
+#include "netboot/bootp.h"
+
+static void print_ip_addr(const uip_ipaddr_t *ip)
+{
+	printf("%d.%d.%d.%d", uip_ipaddr1(ip), uip_ipaddr2(ip),
+		uip_ipaddr3(ip), uip_ipaddr4(ip));
+}
 
 int main(void)
 {
@@ -50,7 +57,21 @@ int main(void)
 	// Start up the network stack.
 	uip_init();
 
-	/* Do network booting here. */
+	// Find out who we are and what we should boot.
+	uip_ipaddr_t my_ip, server_ip;
+	const char *bootfile;
+	if (bootp(&server_ip, &bootfile)) {
+		printf("Bootp failed.\n");
+		halt();
+	}
+	printf("My ip is ");
+	uip_gethostaddr(&my_ip);
+	print_ip_addr(&my_ip);
+	printf("\nThe server ip is ");
+	print_ip_addr(&server_ip);
+	printf("\nThe boot file is %s\n", bootfile);
+
+	/* Tftp in the boot file. */
 
 	// We should never get here.
 	printf("Got to the end!\n");

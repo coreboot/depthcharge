@@ -18,6 +18,7 @@
 ##
 
 netboot-y += appcall.c
+netboot-y += bootp.c
 netboot-y += main.c
 netboot-y += output.c
 
