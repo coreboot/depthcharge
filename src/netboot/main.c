@@ -24,17 +24,21 @@
 
 #include "base/init_funcs.h"
 #include "base/timestamp.h"
+#include "config.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/input/input.h"
 #include "drivers/timer/timer.h"
 #include "net/uip.h"
 #include "netboot/bootp.h"
+#include "netboot/tftp.h"
 
 static void print_ip_addr(const uip_ipaddr_t *ip)
 {
 	printf("%d.%d.%d.%d", uip_ipaddr1(ip), uip_ipaddr2(ip),
 		uip_ipaddr3(ip), uip_ipaddr4(ip));
 }
+
+static void * const payload = (void *)(uintptr_t)CONFIG_KERNEL_START;
 
 int main(void)
 {
@@ -71,7 +75,12 @@ int main(void)
 	print_ip_addr(&server_ip);
 	printf("\nThe boot file is %s\n", bootfile);
 
-	/* Tftp in the boot file. */
+	if (tftp_read(payload, &server_ip, bootfile)) {
+		printf("Tftp failed.\n");
+		halt();
+	}
+
+	/* Jump into payload. */
 
 	// We should never get here.
 	printf("Got to the end!\n");

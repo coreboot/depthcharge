@@ -21,6 +21,7 @@ netboot-y += appcall.c
 netboot-y += bootp.c
 netboot-y += main.c
 netboot-y += output.c
+netboot-y += tftp.c
 
 NETBOOT_ELF = $(obj)/netboot.elf
 
