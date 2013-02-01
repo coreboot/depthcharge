@@ -106,7 +106,7 @@ static int conf_set_sym_val(struct symbol *sym, int def, int def_flags, char *p)
 			break;
 		}
 		conf_warning("symbol value '%s' invalid for %s", p, sym->name);
-		break;
+		return 1;
 	case S_OTHER:
 		if (*p != '"') {
 			for (p2 = p; *p2 && !isspace(*p2); p2++)
@@ -223,8 +223,11 @@ load:
 			if (def == S_DEF_USER) {
 				sym = sym_find(line + 9);
 				if (!sym) {
-					conf_warning("trying to assign nonexistent symbol %s", line + 9);
-					break;
+					fprintf(stderr, "\n*** Error: "
+						"trying to assign nonexistent "
+						"symbol %s.\n\n", line + 9);
+					fclose(in);
+					return 1;
 				}
 			} else {
 				sym = sym_lookup(line + 9, 0);
@@ -246,12 +249,19 @@ load:
 			break;
 		case 'C':
 			if (memcmp(line, "CONFIG_", 7)) {
-				conf_warning("unexpected data");
-				continue;
+				fprintf(stderr, "\n*** Error: unexpected "
+					"data '%s'\n\n", line);
+				fclose(in);
+				return 1;
 			}
 			p = strchr(line + 7, '=');
-			if (!p)
-				continue;
+			if (!p) {
+				fprintf(stderr, "\n*** Error: Symbol not "
+					"assigned a value '%s'\n\n",
+					line);
+				fclose(in);
+				return 1;
+			}
 			*p++ = 0;
 			p2 = strchr(p, '\n');
 			if (p2) {
@@ -262,8 +272,11 @@ load:
 			if (def == S_DEF_USER) {
 				sym = sym_find(line + 7);
 				if (!sym) {
-					conf_warning("trying to assign nonexistent symbol %s", line + 7);
-					break;
+					fprintf(stderr, "\n*** Error: "
+						"trying to assign nonexistent "
+						"symbol %s.\n\n", line + 7);
+					fclose(in);
+					return 1;
 				}
 			} else {
 				sym = sym_lookup(line + 7, 0);
@@ -274,14 +287,16 @@ load:
 				conf_warning("override: reassigning to symbol %s", sym->name);
 			}
 			if (conf_set_sym_val(sym, def, def_flags, p))
-				continue;
+				return 1;
 			break;
 		case '\r':
 		case '\n':
 			break;
 		default:
-			conf_warning("unexpected data");
-			continue;
+			fprintf(stderr, "\n*** Error: unexpected data "
+				"'%s'\n\n", line);
+			fclose(in);
+			return 1;
 		}
 		if (sym && sym_is_choice_value(sym)) {
 			struct symbol *cs = prop_get_symbol(sym_get_choice_prop(sym));
