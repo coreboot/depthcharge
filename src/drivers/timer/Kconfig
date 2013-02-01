@@ -22,6 +22,7 @@ choice
 
 config DRIVER_TIMER_RDTSC
 	bool "TSC"
+	default n
 	depends on ARCH_X86
 	help
 	  The time stamp counter which is read with the rdtsc instruction.

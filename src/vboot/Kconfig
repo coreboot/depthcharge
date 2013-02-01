@@ -17,6 +17,7 @@
 
 config EC_SOFTWARE_SYNC
 	bool "Enable EC software sync"
+	default n
 	help
 	  EC software sync is a mechanism where the AP helps the EC verify its
 	  firmware similar to how vboot verifies the main system firmware. This
@@ -24,16 +25,19 @@ config EC_SOFTWARE_SYNC
 
 config VIRTUAL_DEV_SWITCH
 	bool "Virtual developer switch support"
+	default n
 	help
 	  Whether this platform has a virtual developer switch.
 
 config OPROM_MATTERS
 	bool "Video option ROM matters"
+	default n
 	help
 	  Whether the video option ROM has run matters on this platform.
 
 config RO_NORMAL_SUPPORT
 	bool "Booting normal mode with RO firmware"
+	default n
 	help
 	  Whether booting in normal mode using only RO firmware is supported.
 

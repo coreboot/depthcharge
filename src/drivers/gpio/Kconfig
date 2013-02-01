@@ -17,6 +17,7 @@
 
 choice
 	prompt "GPIO driver"
+	default DRIVER_GPIO_STUB
 	help
 	  The driver for GPIOs on this platform.
 

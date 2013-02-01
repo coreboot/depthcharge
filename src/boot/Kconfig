@@ -17,6 +17,7 @@
 
 choice
 	prompt "Kernel format"
+	default KERNEL_DUMMY
 	help
 	  The format the kernel is stored in on disk.
 
@@ -26,5 +27,4 @@ choice
 
 	config KERNEL_DUMMY
 	bool "dummy"
-	depends on ARCH_ARM
 endchoice
