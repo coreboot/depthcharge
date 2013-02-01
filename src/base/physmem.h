@@ -23,7 +23,7 @@
 #ifndef __BASE_PHYSMEM_H__
 #define __BASE_PHYSMEM_H__
 
-#include "arch/dc_types.h"
+#include <stdint.h>
 
 /*
  * These functions work like memset but operate on physical memory which may
@@ -35,6 +35,6 @@
  *
  * @return	The physical address of the memory which was set.
  */
-phys_addr_t arch_phys_memset(phys_addr_t s, int c, phys_size_t n);
+uint64_t arch_phys_memset(uint64_t s, int c, uint64_t n);
 
 #endif /* __BASE_PHYSMEM_H__ */

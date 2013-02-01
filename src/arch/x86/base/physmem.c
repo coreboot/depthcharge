@@ -77,7 +77,7 @@ static pdt_t pdts[4] __attribute__((aligned(4096)));
  * @param phys		The physical address to use.
  * @param invlpg	Whether to use invlpg to clear any old mappings.
  */
-static void x86_phys_map_page(uintptr_t virt, phys_addr_t phys, int invlpg)
+static void x86_phys_map_page(uintptr_t virt, uint64_t phys, int invlpg)
 {
 	/* Extract the two bit PDPT index and the 9 bit PDT index. */
 	uintptr_t pdpt_idx = (virt >> 30) & 0x3;
@@ -106,7 +106,7 @@ static void x86_phys_map_page(uintptr_t virt, phys_addr_t phys, int invlpg)
 /* Identity map the lower 4GB and turn on paging with PAE. */
 static void x86_phys_enter_paging(void)
 {
-	phys_addr_t page_addr;
+	uint64_t page_addr;
 	unsigned i;
 
 	/* Zero out the page tables. */
@@ -172,7 +172,7 @@ static void x86_phys_exit_paging(void)
  * @param c		The value to set memory to.
  * @param size		The size in bytes of the area to set.
  */
-static void x86_phys_memset_page(phys_addr_t map_addr, uintptr_t offset, int c,
+static void x86_phys_memset_page(uint64_t map_addr, uintptr_t offset, int c,
 				 unsigned size)
 {
 	/*
@@ -192,20 +192,20 @@ static void x86_phys_memset_page(phys_addr_t map_addr, uintptr_t offset, int c,
  * A physical memory anologue to memset with matching parameters and return
  * value.
  */
-phys_addr_t arch_phys_memset(phys_addr_t start, int c, phys_size_t size)
+uint64_t arch_phys_memset(uint64_t start, int c, uint64_t size)
 {
-	const phys_addr_t max_addr = (phys_addr_t)~(uintptr_t)0;
-	const phys_addr_t orig_start = start;
+	const uint64_t max_addr = (uint64_t)~(uintptr_t)0;
+	const uint64_t orig_start = start;
 
 	if (!size)
 		return orig_start;
 
 	/* Handle memory below 4GB. */
 	if (start <= max_addr) {
-		phys_size_t low_size = min(max_addr + 1 - start, size);
+		uint64_t low_size = min(max_addr + 1 - start, size);
 		void *start_ptr = (void *)(uintptr_t)start;
 
-		assert(((phys_addr_t)(uintptr_t)start) == start);
+		assert(((uint64_t)(uintptr_t)start) == start);
 		memset(start_ptr, c, low_size);
 		start += low_size;
 		size -= low_size;
@@ -213,16 +213,16 @@ phys_addr_t arch_phys_memset(phys_addr_t start, int c, phys_size_t size)
 
 	/* Use paging and PAE to handle memory above 4GB up to 64GB. */
 	if (size) {
-		phys_addr_t map_addr = start & ~(LARGE_PAGE_SIZE - 1);
-		phys_addr_t offset = start - map_addr;
+		uint64_t map_addr = start & ~(LARGE_PAGE_SIZE - 1);
+		uint64_t offset = start - map_addr;
 
 		x86_phys_enter_paging();
 
 		/* Handle the first partial page. */
 		if (offset) {
-			phys_addr_t end =
+			uint64_t end =
 				min(map_addr + LARGE_PAGE_SIZE, start + size);
-			phys_size_t cur_size = end - start;
+			uint64_t cur_size = end - start;
 			x86_phys_memset_page(map_addr, offset, c, cur_size);
 			size -= cur_size;
 			map_addr += LARGE_PAGE_SIZE;

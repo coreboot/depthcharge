@@ -20,11 +20,16 @@
  * MA 02111-1307 USA
  */
 
+#include <assert.h>
 #include <string.h>
 
 #include "base/physmem.h"
 
-phys_addr_t arch_phys_memset(phys_addr_t start, int c, phys_size_t size)
+uint64_t arch_phys_memset(uint64_t start, int c, uint64_t size)
 {
-	return (phys_addr_t)memset((void *)start, c, size);
+	uintptr_t real_start = (uintptr_t)start;
+	size_t real_size = (size_t)size;
+	assert(real_start == start);
+	assert(real_size == size);
+	return (uintptr_t)memset((void *)real_start, c, real_size);
 }

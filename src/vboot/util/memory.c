@@ -44,8 +44,8 @@ int wipe_unused_memory(void)
 	ranges_init(&ranges);
 	for (int i = 0; i < lib_sysinfo.n_memranges; i++) {
 		struct memrange *range = &lib_sysinfo.memrange[i];
-		phys_addr_t start = range->base;
-		phys_addr_t end = range->base + range->size;
+		uint64_t start = range->base;
+		uint64_t end = range->base + range->size;
 		switch (range->type) {
 		case CB_MEM_RAM:
 			ranges_add(&ranges, start, end);
