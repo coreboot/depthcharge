@@ -17,4 +17,10 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-subdirs-y := base image
+depthcharge-y += gcc.c
+depthcharge-y += physmem.c
+depthcharge-y += string.c
+
+trampoline-y += gcc.c
+trampoline-y += string.c
+trampoline-y += trampoline.c

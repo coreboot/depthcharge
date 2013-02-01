@@ -20,8 +20,8 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __ARCH_X86_BASE_CPU_H__
-#define __ARCH_X86_BASE_CPU_H__
+#ifndef __ARCH_X86_CPU_H__
+#define __ARCH_X86_CPU_H__
 
 #define MTRR_TYPE_WP		5
 #define MTRRcap_MSR		0xfe
@@ -73,4 +73,4 @@ static inline void disable_cache(void)
         wbinvd();
 }
 
-#endif /* __ARCH_X86_BASE_CPU_H__ */
+#endif /* __ARCH_X86_CPU_H__ */

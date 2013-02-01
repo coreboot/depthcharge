@@ -32,7 +32,7 @@
 #include <arch/msr.h>
 #include <libpayload.h>
 
-#include "arch/x86/base/cpu.h"
+#include "arch/x86/cpu.h"
 #include "boot/zimage/bootparam.h"
 #include "boot/zimage/zimage.h"
 #include "base/timestamp.h"
