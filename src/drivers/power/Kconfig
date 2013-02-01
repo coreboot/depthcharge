@@ -17,6 +17,7 @@
 
 choice
 	prompt "Power management"
+	default DRIVER_POWER_DUMMY
 	help
 	  The driver for rebooting and powering off.
 
@@ -25,5 +26,8 @@ config DRIVER_POWER_PCH
 	depends on ARCH_X86
 	help
 	  Reboot or power off using registers in the Intel chipset.
+
+config DRIVER_POWER_DUMMY
+	bool "dummy driver"
 
 endchoice
