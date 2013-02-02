@@ -27,9 +27,9 @@
 #include <usb/usbmsc.h>
 
 #include "base/init_funcs.h"
+#include "drivers/bus/usb/usb.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/usb.h"
-#include "drivers/usb.h"
 
 static lba_t dc_usb_read(BlockDev *dev, lba_t start, lba_t count, void *buffer)
 {

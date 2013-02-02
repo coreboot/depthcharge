@@ -20,16 +20,9 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
+#ifndef __DRIVERS_BUS_USB_USB_H__
+#define __DRIVERS_BUS_USB_USB_H__
 
-#include "drivers/usb.h"
+void dc_usb_initialize(void);
 
-void dc_usb_initialize(void)
-{
-	static int need_init = 1;
-
-	if (need_init) {
-		usb_initialize();
-		need_init = 0;
-	}
-}
+#endif /* __DRIVERS_BUS_USB_USB_H__ */

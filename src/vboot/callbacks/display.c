@@ -24,7 +24,7 @@
 #include <sysinfo.h>
 #include <vboot_api.h>
 
-#include "drivers/coreboot_fb.h"
+#include "drivers/video/coreboot_fb.h"
 #include "image/fmap.h"
 #include "vboot/util/acpi.h"
 

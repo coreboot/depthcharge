@@ -20,11 +20,11 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __DRIVERS_COREBOOT_FB_H__
-#define __DRIVERS_COREBOOT_FB_H__
+#ifndef __DRIVERS_VIDEO_COREBOOT_FB_H__
+#define __DRIVERS_VIDEO_COREBOOT_FB_H__
 
 #include <stdint.h>
 
 int dc_corebootfb_draw_bitmap(uint32_t x, uint32_t y, void *bitmap);
 
-#endif /* __DRIVERS_COREBOOT_FB_H__ */
+#endif /* __DRIVERS_VIDEO_COREBOOT_FB_H__ */

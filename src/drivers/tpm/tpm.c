@@ -25,7 +25,7 @@
 #include <libpayload.h>
 #include <vboot_api.h>
 
-#include "drivers/tpm.h"
+#include "drivers/tpm/tpm.h"
 
 #ifdef DEBUG
 #define	TPM_DEBUG(fmt, args...)		\

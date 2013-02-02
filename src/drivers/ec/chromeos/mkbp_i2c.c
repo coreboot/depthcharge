@@ -32,8 +32,8 @@
 #include <libpayload.h>
 
 #include "config.h"
+#include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/chromeos/mkbp.h"
-#include "drivers/i2c/i2c.h"
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 

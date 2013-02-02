@@ -20,8 +20,8 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __DRIVERS_TPM_H__
-#define __DRIVERS_TPM_H__
+#ifndef __DRIVERS_TPM_TPM_H__
+#define __DRIVERS_TPM_TPM_H__
 
 #include <stdint.h>
 
@@ -172,4 +172,4 @@ uint32_t tis_readresponse(uint8_t *buffer, uint32_t *len);
 int tis_sendrecv(const uint8_t *sendbuf, size_t send_size,
 		 uint8_t *recvbuf, size_t *recv_len);
 
-#endif /* __DRIVERS_TPM_H__ */
+#endif /* __DRIVERS_TPM_TPM_H__ */

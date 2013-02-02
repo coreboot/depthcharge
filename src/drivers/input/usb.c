@@ -21,8 +21,8 @@
  */
 
 #include "base/init_funcs.h"
+#include "drivers/bus/usb/usb.h"
 #include "drivers/input/input.h"
-#include "drivers/usb.h"
 
 int dc_usb_install_on_demand_input(void)
 {

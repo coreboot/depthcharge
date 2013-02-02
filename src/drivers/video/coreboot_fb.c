@@ -25,7 +25,7 @@
 #include <sysinfo.h>
 
 #include "base/bitmap.h"
-#include "drivers/coreboot_fb.h"
+#include "drivers/video/coreboot_fb.h"
 
 static inline void dc_corebootfb_draw_pixel(uint32_t x, uint32_t y,
 					    uint32_t red, uint32_t green,

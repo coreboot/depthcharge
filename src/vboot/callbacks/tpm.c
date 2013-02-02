@@ -23,7 +23,7 @@
 #include <libpayload.h>
 #include <vboot_api.h>
 
-#include "drivers/tpm.h"
+#include "drivers/tpm/tpm.h"
 
 VbError_t VbExTpmInit(void)
 {
