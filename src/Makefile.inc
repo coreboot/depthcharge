@@ -18,7 +18,3 @@
 ##
 
 subdirs-y := arch base boot drivers image vboot
-
-# Where "main" lives.
-readonly-y += ro_main.c
-readwrite-y += rw_main.c
