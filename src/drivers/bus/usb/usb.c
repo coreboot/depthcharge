@@ -21,6 +21,7 @@
  */
 
 #include <libpayload.h>
+#include <usb/usb.h>
 
 #include "drivers/bus/usb/usb.h"
 
@@ -32,4 +33,18 @@ void dc_usb_initialize(void)
 		usb_initialize();
 		need_init = 0;
 	}
+}
+
+void usb_generic_create(usbdev_t *dev)
+{
+	device_descriptor_t *dd = (device_descriptor_t *)dev->descriptor;
+	printf("USB device added with ID %04x:%04x\n",
+		dd->idVendor, dd->idProduct);
+}
+
+void usb_generic_remove(usbdev_t *dev)
+{
+	device_descriptor_t *dd = (device_descriptor_t *)dev->descriptor;
+	printf("USB device removed with ID %04x:%04x\n",
+		dd->idVendor, dd->idProduct);
 }
