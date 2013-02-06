@@ -144,10 +144,10 @@ VbError_t VbExEcGetExpectedRW(enum VbSelectFirmware_t select,
 
 	switch (select) {
 	case VB_SELECT_FIRMWARE_A:
-		name = "FW_MAIN_A";
+		name = "EC_MAIN_A";
 		break;
 	case VB_SELECT_FIRMWARE_B:
-		name = "FW_MAIN_B";
+		name = "EC_MAIN_B";
 		break;
 	default:
 		printf("Unrecognized EC firmware requested.\n");
@@ -164,15 +164,18 @@ VbError_t VbExEcGetExpectedRW(enum VbSelectFirmware_t select,
 
 	uint32_t *index_ints = (uint32_t *)rw_addr;
 	uint32_t count = index_ints[0];
-	assert(count == 2);
-	rw_addr += index_ints[3];
-	uint32_t size = index_ints[4];
+	assert(count == 1);
+	assert(index_ints[1] < area->size);
+	assert(index_ints[1] + index_ints[2] <= area->size);
+	rw_addr += index_ints[1];
+	uint32_t size = index_ints[2];
 
-	printf("EC-RW image address, size are %p, %d.\n",
+	printf("EC-RW firmware address, size are %p, %d.\n",
 		(void *)rw_addr, size);
 
 	*image = (uint8_t *)rw_addr;
 	*image_size = size;
+
 	return VBERROR_SUCCESS;
 }
 
@@ -223,7 +226,46 @@ static VbError_t ec_protect_rw(int protect)
 VbError_t VbExEcGetExpectedRWHash(enum VbSelectFirmware_t select,
 				  const uint8_t **hash, int *hash_size)
 {
-	return VBERROR_EC_GET_EXPECTED_HASH_FROM_IMAGE;
+	const char *name;
+
+	switch (select) {
+	case VB_SELECT_FIRMWARE_A:
+		name = "FW_MAIN_A";
+		break;
+	case VB_SELECT_FIRMWARE_B:
+		name = "FW_MAIN_B";
+		break;
+	default:
+		printf("Unrecognized EC hash requested.\n");
+		return VBERROR_UNKNOWN;
+	}
+
+	FmapArea *area = fmap_find_area(main_fmap, name);
+	if (!area) {
+		printf("Didn't find section %s in the fmap.\n", name);
+		return VBERROR_UNKNOWN;
+	}
+
+	uintptr_t rw_addr = (uintptr_t)(area->offset + main_rom_base);
+
+	uint32_t *index_ints = (uint32_t *)rw_addr;
+	uint32_t count = index_ints[0];
+	assert(count == 2);
+	rw_addr += index_ints[3];
+	uint32_t size = index_ints[4];
+
+	printf("EC-RW hash address, size are %p, %d.\n",
+		(void *)rw_addr, size);
+
+	*hash = (uint8_t *)rw_addr;
+	*hash_size = size;
+
+	printf("Hash = ");
+	for (int i = 0; i < *hash_size; i++)
+		printf("%02x", (*hash)[i]);
+	printf("\n");
+
+	return VBERROR_SUCCESS;
 }
 
 VbError_t VbExEcUpdateRW(const uint8_t *image, int image_size)

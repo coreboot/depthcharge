@@ -55,10 +55,10 @@ VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
 
 	if (CONFIG_EC_SOFTWARE_SYNC) {
 		/*
-		 * If EC software sync is enabled, the EC RW and the system RW
-		 * are bundled together with a small header in the front. This
-		 * figures out how big the header and data are so we hash the
-		 * right amount of stuff.
+		 * If EC software sync is enabled, the EC RW hash and the
+		 * system RW are bundled together with a small header in the
+		 * front. This figures out how big the header and data are
+		 * so we hash the right amount of stuff.
 		 */
 		uint32_t *index_ints = (uint32_t *)rw_addr;
 		uint32_t count = index_ints[0];

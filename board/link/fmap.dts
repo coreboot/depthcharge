@@ -67,7 +67,7 @@
 			 * each RW_SECTION.
 			 */
 			reg = <0x00200000 0x00010000>;
-			type = "keyblock boot,ecbin";
+			type = "keyblock boot,ecrwhash";
 			with_index;
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
@@ -78,8 +78,14 @@
 		rw-a-boot {
 			/* Alignment: no requirement (yet). */
 			label = "fw-main-a";
-			reg = <0x00210000 0x000dffc0>;
-			type = "blob boot,ecbin";
+			reg = <0x00210000 0x000c0000>;
+			type = "blob boot,ecrwhash";
+			with_index;
+		};
+		rw-a-ec-boot {
+			label = "ec-main-a";
+			type = "blob ecbin";
+			reg = <0x002d0000 0x0001ffc0>;
 			with_index;
 		};
 		rw-a-firmware-id {
@@ -103,7 +109,7 @@
 			 * each RW_SECTION.
 			 */
 			reg = <0x002f0000 0x00010000>;
-			type = "keyblock boot,ecbin";
+			type = "keyblock boot,ecrwhash";
 			with_index;
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
@@ -114,8 +120,14 @@
 		rw-b-boot {
 			label = "fw-main-b";
 			/* Alignment: no requirement (yet). */
-			reg = <0x00300000 0x000dffc0>;
-			type = "blob boot,ecbin";
+			reg = <0x00300000 0x000c0000>;
+			type = "blob boot,ecrwhash";
+			with_index;
+		};
+		rw-b-ec-boot {
+			label = "ec-main-b";
+			type = "blob ecbin";
+			reg = <0x003c0000 0x0001ffc0>;
 			with_index;
 		};
 		rw-b-firmware-id {
