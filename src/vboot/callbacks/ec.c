@@ -164,11 +164,17 @@ VbError_t VbExEcGetExpectedRW(enum VbSelectFirmware_t select,
 
 	uint32_t *index_ints = (uint32_t *)rw_addr;
 	uint32_t count = index_ints[0];
-	assert(count == 1);
-	assert(index_ints[1] < area->size);
-	assert(index_ints[1] + index_ints[2] <= area->size);
-	rw_addr += index_ints[1];
+	if (count != 1) {
+		printf("Wrong number of items in section %s.\n", name);
+		return VBERROR_UNKNOWN;
+	}
+	uint32_t offset = index_ints[1];
 	uint32_t size = index_ints[2];
+	if (offset >= area->size || offset + size > area->size) {
+		printf("Bad index data in section %s.\n", name);
+		return VBERROR_UNKNOWN;
+	}
+	rw_addr += offset;
 
 	printf("EC-RW firmware address, size are %p, %d.\n",
 		(void *)rw_addr, size);
@@ -250,7 +256,10 @@ VbError_t VbExEcGetExpectedRWHash(enum VbSelectFirmware_t select,
 
 	uint32_t *index_ints = (uint32_t *)rw_addr;
 	uint32_t count = index_ints[0];
-	assert(count == 2);
+	if (count != 2) {
+		printf("Wrong number of items in section %s.\n", name);
+		return VBERROR_UNKNOWN;
+	}
 	rw_addr += index_ints[3];
 	uint32_t size = index_ints[4];
 
