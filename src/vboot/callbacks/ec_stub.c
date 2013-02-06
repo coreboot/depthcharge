@@ -61,6 +61,12 @@ VbError_t VbExEcGetExpectedRW(enum VbSelectFirmware_t select,
 	no_ec_soft_sync();
 }
 
+VbError_t VbExEcGetExpectedRWHash(enum VbSelectFirmware_t select,
+				  const uint8_t **hash, int *hash_size)
+{
+	no_ec_soft_sync();
+}
+
 VbError_t VbExEcUpdateRW(const uint8_t *image, int image_size)
 {
 	no_ec_soft_sync();

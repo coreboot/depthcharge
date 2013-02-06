@@ -220,6 +220,12 @@ static VbError_t ec_protect_rw(int protect)
 	return VBERROR_UNKNOWN;
 }
 
+VbError_t VbExEcGetExpectedRWHash(enum VbSelectFirmware_t select,
+				  const uint8_t **hash, int *hash_size)
+{
+	return VBERROR_EC_GET_EXPECTED_HASH_FROM_IMAGE;
+}
+
 VbError_t VbExEcUpdateRW(const uint8_t *image, int image_size)
 {
 	if (!mkbp_ptr && !mkbp_init()) {
