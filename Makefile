@@ -3,7 +3,7 @@
 ##
 ## Copyright (C) 2008 Advanced Micro Devices, Inc.
 ## Copyright (C) 2008 Uwe Hermann <uwe@hermann-uwe.de>
-## Copyright (c) 2012 The Chromium OS Authors.
+## Copyright 2012 Google Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by

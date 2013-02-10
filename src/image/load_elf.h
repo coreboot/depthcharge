@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012 The Chromium OS Authors.
+ * Copyright 2012 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
