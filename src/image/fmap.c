@@ -27,7 +27,7 @@
 #include "config.h"
 #include "image/fmap.h"
 
-Fmap * const main_fmap = (Fmap *)(uintptr_t)CONFIG_FMAP_ADDRESS;
+static Fmap * const main_fmap = (Fmap *)(uintptr_t)CONFIG_FMAP_ADDRESS;
 uintptr_t main_rom_base;
 
 static const char *fmap_ro_fwid_cache;
@@ -67,11 +67,16 @@ int fmap_rwb_fwid_size(void)
 	return fmap_rwb_fwid_size_cache;
 }
 
-const char *fmap_find_string(Fmap *fmap, const char *name, int *size)
+const Fmap *fmap_base(void)
+{
+	return main_fmap;
+}
+
+const char *fmap_find_string(const char *name, int *size)
 {
 	assert(size);
 
-	FmapArea *area = fmap_find_area(fmap, name);
+	FmapArea *area = fmap_find_area(name);
 	if (!area) {
 		*size = 0;
 		return NULL;
@@ -80,36 +85,36 @@ const char *fmap_find_string(Fmap *fmap, const char *name, int *size)
 	return (const char *)(uintptr_t)(main_rom_base + area->offset);
 }
 
+static int fmap_check_signature(void)
+{
+	return memcmp(main_fmap->signature, (uint8_t *)FMAP_SIGNATURE,
+		      sizeof(main_fmap->signature));
+}
+
 int fmap_init(void)
 {
-	if (fmap_check_signature(main_fmap)) {
+	if (fmap_check_signature()) {
 		printf("Bad signature on the FMAP.\n");
 		return 1;
 	}
 
 	main_rom_base = (uintptr_t)(-main_fmap->size);
 
-	fmap_ro_fwid_cache = fmap_find_string(main_fmap, "RO_FRID",
+	fmap_ro_fwid_cache = fmap_find_string("RO_FRID",
 					      &fmap_ro_fwid_size_cache);
-	fmap_rwa_fwid_cache = fmap_find_string(main_fmap, "RW_FWID_A",
+	fmap_rwa_fwid_cache = fmap_find_string("RW_FWID_A",
 					       &fmap_rwa_fwid_size_cache);
-	fmap_rwb_fwid_cache = fmap_find_string(main_fmap, "RW_FWID_B",
+	fmap_rwb_fwid_cache = fmap_find_string("RW_FWID_B",
 					       &fmap_rwb_fwid_size_cache);
 	return 0;
 }
 
 INIT_FUNC(fmap_init);
 
-int fmap_check_signature(Fmap *fmap)
+FmapArea *fmap_find_area(const char *name)
 {
-	return memcmp(fmap->signature, (uint8_t *)FMAP_SIGNATURE,
-		      sizeof(fmap->signature));
-}
-
-FmapArea *fmap_find_area(Fmap *fmap, const char *name)
-{
-	for (int i = 0; i < fmap->nareas; i++) {
-		FmapArea *area = &(fmap->areas[i]);
+	for (int i = 0; i < main_fmap->nareas; i++) {
+		FmapArea *area = &(main_fmap->areas[i]);
 		if (!strncmp(name, (const char *)area->name,
 				sizeof(area->name))) {
 			return area;

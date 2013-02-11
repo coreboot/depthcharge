@@ -96,8 +96,8 @@ int vboot_select_firmware(void)
 	};
 
 	// Set up the fparams structure.
-	FmapArea *vblock_a = fmap_find_area(main_fmap, "VBLOCK_A");
-	FmapArea *vblock_b = fmap_find_area(main_fmap, "VBLOCK_B");
+	FmapArea *vblock_a = fmap_find_area("VBLOCK_A");
+	FmapArea *vblock_b = fmap_find_area("VBLOCK_B");
 	if (!vblock_a || !vblock_b) {
 		printf("Couldn't find one of the vblocks.\n");
 		return 1;
@@ -123,9 +123,9 @@ int vboot_select_firmware(void)
 	if (select == VB_SELECT_FIRMWARE_A || select == VB_SELECT_FIRMWARE_B) {
 		FmapArea *rw_area;
 		if (select == VB_SELECT_FIRMWARE_A)
-			rw_area = fmap_find_area(main_fmap, "FW_MAIN_A");
+			rw_area = fmap_find_area("FW_MAIN_A");
 		else
-			rw_area = fmap_find_area(main_fmap, "FW_MAIN_B");
+			rw_area = fmap_find_area("FW_MAIN_B");
 		uintptr_t rw_addr = rw_area->offset + main_rom_base;
 
 		/*

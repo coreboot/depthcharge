@@ -44,7 +44,7 @@ VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
 		return VBERROR_UNKNOWN;
 	}
 
-	FmapArea *area = fmap_find_area(main_fmap, area_name);
+	FmapArea *area = fmap_find_area(area_name);
 	if (!area) {
 		printf("Fmap region %s not found.\n", area_name);
 		return VBERROR_UNKNOWN;
