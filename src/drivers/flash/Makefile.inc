@@ -1,6 +1,7 @@
-## This file is part of the coreboot project.
 ##
-## Copyright 2013 Google Inc.  All rights reserved.
+## This file is part of the depthcharge project.
+##
+## Copyright 2013 Google Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -13,13 +14,8 @@
 ##
 ## You should have received a copy of the GNU General Public License
 ## along with this program; if not, write to the Free Software
-## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+##
 
-source src/drivers/ec/chromeos/Kconfig
-source src/drivers/flash/Kconfig
-source src/drivers/gpio/Kconfig
-source src/drivers/input/Kconfig
-source src/drivers/power/Kconfig
-source src/drivers/sound/Kconfig
-source src/drivers/storage/Kconfig
-source src/drivers/timer/Kconfig
+depthcharge-$(CONFIG_DRIVER_FLASH_MEMMAPPED) += memmapped.c
+depthcharge-$(CONFIG_DRIVER_FLASH_DUMMY) += dummy.c

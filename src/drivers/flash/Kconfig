@@ -15,11 +15,29 @@
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
-source src/drivers/ec/chromeos/Kconfig
-source src/drivers/flash/Kconfig
-source src/drivers/gpio/Kconfig
-source src/drivers/input/Kconfig
-source src/drivers/power/Kconfig
-source src/drivers/sound/Kconfig
-source src/drivers/storage/Kconfig
-source src/drivers/timer/Kconfig
+menu "Flash storage"
+
+choice
+	prompt "Flash driver"
+	default DRIVER_FLASH_DUMMY
+	help
+	  The driver to access flash storage holding the system firmware.
+
+config DRIVER_FLASH_MEMMAPPED
+	bool "Memory mapped"
+	depends on ARCH_X86
+
+config DRIVER_FLASH_DUMMY
+	bool "Dummy driver"
+
+endchoice
+
+config DRIVER_FLASH_MEMMAPPED_SIZE
+	hex "Size of memory mapped region"
+	depends on DRIVER_FLASH_MEMMAPPED
+
+config DRIVER_FLASH_MEMMAPPED_BASE
+	hex "Start address of memory mapped region"
+	depends on DRIVER_FLASH_MEMMAPPED
+
+endmenu
