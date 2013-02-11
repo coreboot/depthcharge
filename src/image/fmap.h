@@ -54,11 +54,11 @@ const char *fmap_find_string(Fmap *fmap, const char *name, int *size);
 extern Fmap * const main_fmap;
 extern uintptr_t main_rom_base;
 
-extern const char *fmap_ro_fwid;
-extern int fmap_ro_fwid_size;
-extern const char *fmap_rwa_fwid;
-extern int fmap_rwa_fwid_size;
-extern const char *fmap_rwb_fwid;
-extern int fmap_rwb_fwid_size;
+const char *fmap_ro_fwid(void);
+int fmap_ro_fwid_size(void);
+const char *fmap_rwa_fwid(void);
+int fmap_rwa_fwid_size(void);
+const char *fmap_rwb_fwid(void);
+int fmap_rwb_fwid_size(void);
 
 #endif /* __IMAGE_FMAP_H__ */

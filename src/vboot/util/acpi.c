@@ -58,18 +58,18 @@ int acpi_update_data(void)
 	switch (vdat->firmware_index) {
 	case VDAT_RW_A:
 		main_fw = BINF_RW_A;
-		fwid = fmap_rwa_fwid;
-		fwid_size = fmap_rwa_fwid_size;
+		fwid = fmap_rwa_fwid();
+		fwid_size = fmap_rwa_fwid_size();
 		break;
 	case VDAT_RW_B:
 		main_fw = BINF_RW_B;
-		fwid = fmap_rwb_fwid;
-		fwid_size = fmap_rwb_fwid_size;
+		fwid = fmap_rwb_fwid();
+		fwid_size = fmap_rwb_fwid_size();
 		break;
 	case VDAT_RECOVERY:
 		main_fw = BINF_RECOVERY;
-		fwid = fmap_ro_fwid;
-		fwid_size = fmap_ro_fwid_size;
+		fwid = fmap_ro_fwid();
+		fwid_size = fmap_ro_fwid_size();
 		break;
 	default:
 		printf("Unrecognized firmware index %d.\n",
@@ -110,8 +110,8 @@ int acpi_update_data(void)
 	size = min(fwid_size, sizeof(acpi_table->fwid));
 	memcpy(acpi_table->fwid, fwid, size);
 
-	size = min(fmap_ro_fwid_size, sizeof(acpi_table->frid));
-	memcpy(acpi_table->frid, fmap_ro_fwid, size);
+	size = min(fmap_ro_fwid_size(), sizeof(acpi_table->frid));
+	memcpy(acpi_table->frid, fmap_ro_fwid(), size);
 
 	if (main_fw == BINF_RECOVERY)
 		acpi_table->main_fw_type = FIRMWARE_TYPE_RECOVERY;

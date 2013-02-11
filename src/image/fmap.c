@@ -30,12 +30,42 @@
 Fmap * const main_fmap = (Fmap *)(uintptr_t)CONFIG_FMAP_ADDRESS;
 uintptr_t main_rom_base;
 
-const char *fmap_ro_fwid;
-int fmap_ro_fwid_size;
-const char *fmap_rwa_fwid;
-int fmap_rwa_fwid_size;
-const char *fmap_rwb_fwid;
-int fmap_rwb_fwid_size;
+static const char *fmap_ro_fwid_cache;
+static int fmap_ro_fwid_size_cache;
+static const char *fmap_rwa_fwid_cache;
+static int fmap_rwa_fwid_size_cache;
+static const char *fmap_rwb_fwid_cache;
+static int fmap_rwb_fwid_size_cache;
+
+const char *fmap_ro_fwid(void)
+{
+	return fmap_ro_fwid_cache;
+}
+
+int fmap_ro_fwid_size(void)
+{
+	return fmap_ro_fwid_size_cache;
+}
+
+const char *fmap_rwa_fwid(void)
+{
+	return fmap_rwa_fwid_cache;
+}
+
+int fmap_rwa_fwid_size(void)
+{
+	return fmap_rwa_fwid_size_cache;
+}
+
+const char *fmap_rwb_fwid(void)
+{
+	return fmap_rwb_fwid_cache;
+}
+
+int fmap_rwb_fwid_size(void)
+{
+	return fmap_rwb_fwid_size_cache;
+}
 
 const char *fmap_find_string(Fmap *fmap, const char *name, int *size)
 {
@@ -59,12 +89,12 @@ int fmap_init(void)
 
 	main_rom_base = (uintptr_t)(-main_fmap->size);
 
-	fmap_ro_fwid = fmap_find_string(main_fmap, "RO_FRID",
-					&fmap_ro_fwid_size);
-	fmap_rwa_fwid = fmap_find_string(main_fmap, "RW_FWID_A",
-					 &fmap_rwa_fwid_size);
-	fmap_rwb_fwid =	fmap_find_string(main_fmap, "RW_FWID_B",
-					 &fmap_rwb_fwid_size);
+	fmap_ro_fwid_cache = fmap_find_string(main_fmap, "RO_FRID",
+					      &fmap_ro_fwid_size_cache);
+	fmap_rwa_fwid_cache = fmap_find_string(main_fmap, "RW_FWID_A",
+					       &fmap_rwa_fwid_size_cache);
+	fmap_rwb_fwid_cache = fmap_find_string(main_fmap, "RW_FWID_B",
+					       &fmap_rwb_fwid_size_cache);
 	return 0;
 }
 

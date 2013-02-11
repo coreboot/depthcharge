@@ -123,25 +123,25 @@ VbError_t VbExDisplayDebugInfo(const char *info_str)
 	video_console_set_cursor(0, 0);
 	print_string(info_str);
 	print_string("read-only firmware id: ");
-	if (!fmap_ro_fwid) {
+	if (!fmap_ro_fwid()) {
 		print_string("NOT FOUND");
 	} else {
-		print_string(fmap_ro_fwid);
+		print_string(fmap_ro_fwid());
 	}
 	print_string("\nactive firmware id: ");
 	if (acpi_table->main_fw == BINF_RW_A) {
-		if (fmap_rwa_fwid)
-			print_string(fmap_rwa_fwid);
+		if (fmap_rwa_fwid())
+			print_string(fmap_rwa_fwid());
 		else
 			print_string("RW A: ID NOT FOUND");
 	} else if (acpi_table->main_fw == BINF_RW_B) {
-		if (fmap_rwb_fwid)
-			print_string(fmap_rwb_fwid);
+		if (fmap_rwb_fwid())
+			print_string(fmap_rwb_fwid());
 		else
 			print_string("RW B: ID NOT FOUND");
 	} else if (acpi_table->main_fw == BINF_RECOVERY) {
-		if (fmap_ro_fwid)
-			print_string(fmap_ro_fwid);
+		if (fmap_ro_fwid())
+			print_string(fmap_ro_fwid());
 		else
 			print_string("RO: ID NOT FOUND");
 	} else {
