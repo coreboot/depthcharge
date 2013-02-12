@@ -25,6 +25,7 @@
 #include <vboot_api.h>
 
 #include "config.h"
+#include "drivers/flash/flash.h"
 #include "image/fmap.h"
 
 VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
@@ -50,9 +51,8 @@ VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
 		return VBERROR_UNKNOWN;
 	}
 
-	uintptr_t rw_addr = area->offset + main_rom_base;
-	uint32_t size = area->size;
-
+	void *data;
+	uint32_t size;
 	if (CONFIG_EC_SOFTWARE_SYNC) {
 		/*
 		 * If EC software sync is enabled, the EC RW hash and the
@@ -60,17 +60,39 @@ VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
 		 * front. This figures out how big the header and data are
 		 * so we hash the right amount of stuff.
 		 */
-		uint32_t *index_ints = (uint32_t *)rw_addr;
+
+		if (area->size < sizeof(uint32_t)) {
+			printf("Bad RW index size.\n");
+			return VBERROR_UNKNOWN;
+		}
+		data = flash_read(area->offset, sizeof(uint32_t));
+
+		uint32_t *index_ints = (uint32_t *)data;
 		uint32_t count = index_ints[0];
-		size = 4;
+		uint32_t index_size = (count * 2 + 1) * sizeof(uint32_t);
+		if (area->size < index_size) {
+			printf("Bad RW index size.\n");
+			return VBERROR_UNKNOWN;
+		}
+		data = flash_read(area->offset, index_size);
+
+		index_ints = (uint32_t *)data;
+		size = sizeof(uint32_t);
 		for (int i = 0; i < count; i++) {
-			size += 8;
+			size += 2 * sizeof(uint32_t);
 			uint32_t blob_size = index_ints[(i + 1) * 2];
 			size += (blob_size + 3) & ~3;
 		}
+		if (area->size < size) {
+			printf("Bad RW index size.\n");
+			return VBERROR_UNKNOWN;
+		}
+		data = flash_read(area->offset, size);
+	} else {
+		data = flash_read(area->offset, area->size);
+		size = area->size;
 	}
 
-	void *data = (void *)rw_addr;
 	VbUpdateFirmwareBodyHash(cparams, data, size);
 
 	return VBERROR_SUCCESS;
