@@ -28,8 +28,10 @@
 #include "base/timestamp.h"
 #include "boot/boot.h"
 #include "config.h"
+#include "drivers/flash/flash.h"
 #include "drivers/power/power.h"
 #include "image/fmap.h"
+#include "image/index.h"
 #include "image/startrw.h"
 #include "image/symbols.h"
 #include "vboot/util/acpi.h"
@@ -102,11 +104,11 @@ int vboot_select_firmware(void)
 		printf("Couldn't find one of the vblocks.\n");
 		return 1;
 	}
-	fparams.verification_block_A = \
-		(void *)(vblock_a->offset + main_rom_base);
+	fparams.verification_block_A =
+		flash_read(vblock_a->offset, vblock_a->size);
 	fparams.verification_size_A = vblock_a->size;
-	fparams.verification_block_B = \
-		(void *)(vblock_b->offset + main_rom_base);
+	fparams.verification_block_B =
+		flash_read(vblock_b->offset, vblock_b->size);
 	fparams.verification_size_B = vblock_b->size;
 
 	printf("Calling VbSelectFirmware().\n");
@@ -121,26 +123,23 @@ int vboot_select_firmware(void)
 
 	// If an RW firmware was selected, start it.
 	if (select == VB_SELECT_FIRMWARE_A || select == VB_SELECT_FIRMWARE_B) {
-		FmapArea *rw_area;
+		const char *name;
 		if (select == VB_SELECT_FIRMWARE_A)
-			rw_area = fmap_find_area("FW_MAIN_A");
+			name = "FW_MAIN_A";
 		else
-			rw_area = fmap_find_area("FW_MAIN_B");
-		uintptr_t rw_addr = rw_area->offset + main_rom_base;
+			name = "FW_MAIN_B";
 
-		/*
-		 * If EC software sync is enabled, the EC RW and system RW
-		 * are bundled together with a small header in the front.
-		 * This pulls out just the system firmware piece.
-		 */
-		if (CONFIG_EC_SOFTWARE_SYNC) {
-			uint32_t *index_ints = (uint32_t *)rw_addr;
-			uint32_t count = index_ints[0];
-			assert(count == 2);
-			rw_addr += index_ints[1];
+		FmapArea *rw_area = fmap_find_area(name);
+		if (!rw_area) {
+			printf("Didn't find section %s in the fmap.\n", name);
+			return 1;
 		}
 
-		if (start_rw_firmware((void *)rw_addr))
+		const void *image = index_subsection(rw_area, 0, NULL);
+		if (!image)
+			return 1;
+
+		if (start_rw_firmware(image))
 			return 1;
 	}
 
