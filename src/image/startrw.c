@@ -28,7 +28,7 @@
 #include "image/symbols.h"
 #include "image/trampoline.h"
 
-int start_rw_firmware(void *compressed_image)
+int start_rw_firmware(const void *compressed_image)
 {
 	// Put the decompressed RW ELF at the end of the trampoline.
 	void *elf_image = (void *)&_tramp_end;

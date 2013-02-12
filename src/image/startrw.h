@@ -23,6 +23,6 @@
 #ifndef __IMAGE_STARTRW_H__
 #define __IMAGE_STARTRW_H__
 
-int start_rw_firmware(void *compressed_image);
+int start_rw_firmware(const void *compressed_image);
 
 #endif /* __IMAGE_STARTRW_H__ */
