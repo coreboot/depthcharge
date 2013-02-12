@@ -22,6 +22,7 @@
 
 #include <libpayload.h>
 
+#include "drivers/flash/flash.h"
 #include "image/fmap.h"
 #include "image/symbols.h"
 #include "vboot/util/acpi.h"
@@ -42,8 +43,7 @@ int common_params_init(void)
 		return 1;
 	}
 
-	cparams.gbb_data =
-		(void *)(uintptr_t)(gbb_area->offset + main_rom_base);
+	cparams.gbb_data = flash_read(gbb_area->offset, gbb_area->size);
 	cparams.gbb_size = gbb_area->size;
 
 	chromeos_acpi_t *acpi_table = (chromeos_acpi_t *)lib_sysinfo.vdat_addr;
