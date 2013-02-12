@@ -27,6 +27,7 @@
 #include "config.h"
 #include "drivers/flash/flash.h"
 #include "image/fmap.h"
+#include "image/index.h"
 
 VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
 			       uint32_t firmware_index)
@@ -61,28 +62,15 @@ VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
 		 * so we hash the right amount of stuff.
 		 */
 
-		if (area->size < sizeof(uint32_t)) {
-			printf("Bad RW index size.\n");
+		const SectionIndex *index = index_from_fmap(area);
+		if (!index)
 			return VBERROR_UNKNOWN;
-		}
-		data = flash_read(area->offset, sizeof(uint32_t));
 
-		uint32_t *index_ints = (uint32_t *)data;
-		uint32_t count = index_ints[0];
-		uint32_t index_size = (count * 2 + 1) * sizeof(uint32_t);
-		if (area->size < index_size) {
-			printf("Bad RW index size.\n");
-			return VBERROR_UNKNOWN;
-		}
-		data = flash_read(area->offset, index_size);
+		size = sizeof(SectionIndex) +
+			index->count * sizeof(SectionIndexEntry);
+		for (int i = 0; i < index->count; i++)
+			size += (index->entries[i].size + 3) & ~3;
 
-		index_ints = (uint32_t *)data;
-		size = sizeof(uint32_t);
-		for (int i = 0; i < count; i++) {
-			size += 2 * sizeof(uint32_t);
-			uint32_t blob_size = index_ints[(i + 1) * 2];
-			size += (blob_size + 3) & ~3;
-		}
 		if (area->size < size) {
 			printf("Bad RW index size.\n");
 			return VBERROR_UNKNOWN;
