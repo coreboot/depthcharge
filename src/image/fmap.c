@@ -25,10 +25,40 @@
 
 #include "base/init_funcs.h"
 #include "config.h"
+#include "drivers/flash/flash.h"
 #include "image/fmap.h"
 
-static const Fmap * const main_fmap = (Fmap *)(uintptr_t)CONFIG_FMAP_ADDRESS;
-uintptr_t main_rom_base;
+static const Fmap *main_fmap;
+
+static int fmap_check_signature(void)
+{
+	return memcmp(main_fmap->signature, (uint8_t *)FMAP_SIGNATURE,
+		      sizeof(main_fmap->signature));
+}
+
+static void fmap_init(void)
+{
+	static int init_done = 0;
+
+	if (init_done)
+		return;
+
+	main_fmap = flash_read(CONFIG_FMAP_OFFSET, sizeof(Fmap));
+	if (!main_fmap)
+		halt();
+	if (fmap_check_signature()) {
+		printf("Bad signature on the FMAP.\n");
+		halt();
+	}
+	uint32_t fmap_size = sizeof(Fmap) +
+		main_fmap->nareas * sizeof(FmapArea);
+	main_fmap = flash_read(CONFIG_FMAP_OFFSET, fmap_size);
+	if (!main_fmap)
+		halt();
+
+	init_done = 1;
+	return;
+}
 
 static const char *fmap_ro_fwid_cache;
 static int fmap_ro_fwid_size_cache;
@@ -39,37 +69,81 @@ static int fmap_rwb_fwid_size_cache;
 
 const char *fmap_ro_fwid(void)
 {
+	fmap_init();
+	if (!fmap_ro_fwid_cache) {
+		fmap_ro_fwid_cache = fmap_find_string(
+			"RO_FRID", &fmap_ro_fwid_size_cache);
+	}
 	return fmap_ro_fwid_cache;
 }
 
 int fmap_ro_fwid_size(void)
 {
+	fmap_init();
+	if (!fmap_ro_fwid_cache) {
+		fmap_ro_fwid_cache = fmap_find_string(
+			"RO_FRID", &fmap_ro_fwid_size_cache);
+	}
 	return fmap_ro_fwid_size_cache;
 }
 
 const char *fmap_rwa_fwid(void)
 {
+	fmap_init();
+	if (!fmap_rwa_fwid_cache) {
+		fmap_rwa_fwid_cache = fmap_find_string(
+			"RW_FWID_A", &fmap_rwa_fwid_size_cache);
+	}
 	return fmap_rwa_fwid_cache;
 }
 
 int fmap_rwa_fwid_size(void)
 {
+	fmap_init();
+	if (!fmap_rwa_fwid_cache) {
+		fmap_rwa_fwid_cache = fmap_find_string(
+			"RW_FWID_A", &fmap_rwa_fwid_size_cache);
+	}
 	return fmap_rwa_fwid_size_cache;
 }
 
 const char *fmap_rwb_fwid(void)
 {
+	fmap_init();
+	if (!fmap_rwb_fwid_cache) {
+		fmap_rwb_fwid_cache = fmap_find_string(
+			"RW_FWID_B", &fmap_rwb_fwid_size_cache);
+	}
 	return fmap_rwb_fwid_cache;
 }
 
 int fmap_rwb_fwid_size(void)
 {
+	fmap_init();
+	if (!fmap_rwb_fwid_cache) {
+		fmap_rwb_fwid_cache = fmap_find_string(
+			"RW_FWID_B", &fmap_rwb_fwid_size_cache);
+	}
 	return fmap_rwb_fwid_size_cache;
 }
 
 const Fmap *fmap_base(void)
 {
+	fmap_init();
 	return main_fmap;
+}
+
+const FmapArea *fmap_find_area(const char *name)
+{
+	fmap_init();
+	for (int i = 0; i < main_fmap->nareas; i++) {
+		const FmapArea *area = &(main_fmap->areas[i]);
+		if (!strncmp(name, (const char *)area->name,
+				sizeof(area->name))) {
+			return area;
+		}
+	}
+	return NULL;
 }
 
 const char *fmap_find_string(const char *name, int *size)
@@ -82,43 +156,5 @@ const char *fmap_find_string(const char *name, int *size)
 		return NULL;
 	}
 	*size = area->size;
-	return (const char *)(uintptr_t)(main_rom_base + area->offset);
-}
-
-static int fmap_check_signature(void)
-{
-	return memcmp(main_fmap->signature, (uint8_t *)FMAP_SIGNATURE,
-		      sizeof(main_fmap->signature));
-}
-
-int fmap_init(void)
-{
-	if (fmap_check_signature()) {
-		printf("Bad signature on the FMAP.\n");
-		return 1;
-	}
-
-	main_rom_base = (uintptr_t)(-main_fmap->size);
-
-	fmap_ro_fwid_cache = fmap_find_string("RO_FRID",
-					      &fmap_ro_fwid_size_cache);
-	fmap_rwa_fwid_cache = fmap_find_string("RW_FWID_A",
-					       &fmap_rwa_fwid_size_cache);
-	fmap_rwb_fwid_cache = fmap_find_string("RW_FWID_B",
-					       &fmap_rwb_fwid_size_cache);
-	return 0;
-}
-
-INIT_FUNC(fmap_init);
-
-const FmapArea *fmap_find_area(const char *name)
-{
-	for (int i = 0; i < main_fmap->nareas; i++) {
-		const FmapArea *area = &(main_fmap->areas[i]);
-		if (!strncmp(name, (const char *)area->name,
-				sizeof(area->name))) {
-			return area;
-		}
-	}
-	return NULL;
+	return flash_read(area->offset, area->size);
 }

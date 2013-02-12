@@ -65,9 +65,8 @@ config STACK_SIZE
 
 # End of options passed to the linker script.
 
-config FMAP_ADDRESS
-	hex "Physical address the FMAP is mapped to on the target system"
+config FMAP_OFFSET
+	hex "Offset of the FMAP in the firmware image"
 	help
-	  This is the physical address the FMAP in the ROM is mapped to as the
-	  system boots. The FMAP is not searched for, so if the address isn't
-	  correct the system won't boot.
+	  This is the offset of the FMAP in the ROM. The FMAP is not searched
+	  for, so if the address isn't correct the system won't boot.
