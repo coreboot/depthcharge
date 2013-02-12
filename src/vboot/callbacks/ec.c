@@ -25,6 +25,7 @@
 #include <vboot_api.h>
 
 #include "drivers/ec/chromeos/mkbp.h"
+#include "drivers/flash/flash.h"
 #include "image/fmap.h"
 #include "vboot/util/flag.h"
 
@@ -160,27 +161,37 @@ VbError_t VbExEcGetExpectedRW(enum VbSelectFirmware_t select,
 		return VBERROR_UNKNOWN;
 	}
 
-	uintptr_t rw_addr = (uintptr_t)(area->offset + main_rom_base);
+	if (area->size < sizeof(uint32_t)) {
+		printf("Bad RW index size.\n");
+		return VBERROR_UNKNOWN;
+	}
+	void *data = flash_read(area->offset, sizeof(uint32_t));
 
-	uint32_t *index_ints = (uint32_t *)rw_addr;
+	uint32_t *index_ints = (uint32_t *)data;
 	uint32_t count = index_ints[0];
 	if (count != 1) {
 		printf("Wrong number of items in section %s.\n", name);
 		return VBERROR_UNKNOWN;
 	}
+	uint32_t index_size = (count * 2 + 1) * sizeof(uint32_t);
+	if (area->size < index_size) {
+		printf("Bad RW index size.\n");
+		return VBERROR_UNKNOWN;
+	}
+	data = flash_read(area->offset, index_size);
+
+	index_ints = (uint32_t *)data;
 	uint32_t offset = index_ints[1];
 	uint32_t size = index_ints[2];
 	if (offset >= area->size || offset + size > area->size) {
 		printf("Bad index data in section %s.\n", name);
 		return VBERROR_UNKNOWN;
 	}
-	rw_addr += offset;
+	*image = flash_read(area->offset + offset, size);
+	*image_size = size;
 
 	printf("EC-RW firmware address, size are %p, %d.\n",
-		(void *)rw_addr, size);
-
-	*image = (uint8_t *)rw_addr;
-	*image_size = size;
+		*image, *image_size);
 
 	return VBERROR_SUCCESS;
 }
@@ -252,22 +263,37 @@ VbError_t VbExEcGetExpectedRWHash(enum VbSelectFirmware_t select,
 		return VBERROR_UNKNOWN;
 	}
 
-	uintptr_t rw_addr = (uintptr_t)(area->offset + main_rom_base);
+	if (area->size < sizeof(uint32_t)) {
+		printf("Bad RW index size.\n");
+		return VBERROR_UNKNOWN;
+	}
+	void *data = flash_read(area->offset, sizeof(uint32_t));
 
-	uint32_t *index_ints = (uint32_t *)rw_addr;
+	uint32_t *index_ints = (uint32_t *)data;
 	uint32_t count = index_ints[0];
 	if (count != 2) {
 		printf("Wrong number of items in section %s.\n", name);
 		return VBERROR_UNKNOWN;
 	}
-	rw_addr += index_ints[3];
+	uint32_t index_size = (count * 2 + 1) * sizeof(uint32_t);
+	if (area->size < index_size) {
+		printf("Bad RW index size.\n");
+		return VBERROR_UNKNOWN;
+	}
+	data = flash_read(area->offset, index_size);
+
+	index_ints = (uint32_t *)data;
+	uint32_t offset = index_ints[3];
 	uint32_t size = index_ints[4];
+	if (offset >= area->size || offset + size > area->size) {
+		printf("Bad index data in section %s.\n", name);
+		return VBERROR_UNKNOWN;
+	}
+	*hash = flash_read(area->offset + offset, size);
+	*hash_size = size;
 
 	printf("EC-RW hash address, size are %p, %d.\n",
-		(void *)rw_addr, size);
-
-	*hash = (uint8_t *)rw_addr;
-	*hash_size = size;
+		*hash, *hash_size);
 
 	printf("Hash = ");
 	for (int i = 0; i < *hash_size; i++)
