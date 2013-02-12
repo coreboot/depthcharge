@@ -62,6 +62,13 @@ config STACK_SIZE
 	  The size of the stack in bytes, minus any padding needed to align it
 	  to a 16 byte boundary.
 
+config GBB_COPY_SIZE
+	hex "The size of the area to cache the GBB contents"
+	default 0x100000
+	help
+	  The size of the area the GBB is loaded into during the RO portion of
+	  the boot which is referred to later by vboot in both RO and RW.
+
 
 # End of options passed to the linker script.
 

@@ -28,6 +28,8 @@
 // C level variable definitions for symbols defined in the linker script.
 
 extern const uint8_t _start;
+extern const uint8_t _gbb_copy_start;
+extern const uint8_t _gbb_copy_end;
 extern const uint8_t _edata;
 extern const uint8_t _heap;
 extern const uint8_t _eheap;
@@ -44,5 +46,6 @@ extern const uint8_t _init_funcs_end;
 #define ENTRY __attribute__((section(".text._entry")))
 #define CPARAMS __attribute__((section(".cparams")))
 #define SHARED_DATA __attribute__((section(".shared_data")))
+#define GBB_COPY __attribute__((section(".gbb_copy")))
 
 #endif /* __IMAGE_SYMBOLS_H__ */

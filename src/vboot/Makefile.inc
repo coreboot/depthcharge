@@ -83,7 +83,8 @@ $(DEPTHCHARGE_RO_ELF): $(src)/.config $$(depthcharge-objs) $$(readonly-objs) \
 		-u $(TRAMP_PREFIX)$(TRAMP_ENTRY)
 	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
 	$(Q)$(OBJCOPY) --remove-section=".shared_data" \
-		--remove-section=".cparams" $@.tmp $@
+		--remove-section=".cparams" --remove-section=".gbb_copy" \
+		$@.tmp $@
 
 $(DEPTHCHARGE_RO_BIN): $(DEPTHCHARGE_RW_ELF)
 	@printf "    STRIP      $(subst $(obj)/,,$(@).tmp)\n"
@@ -100,7 +101,8 @@ $(DEPTHCHARGE_RW_ELF): $(src)/.config $$(depthcharge-objs) $$(readwrite-objs) \
 		$(readwrite-objs) $(LIBRARIES)
 	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
 	$(Q)$(OBJCOPY) --remove-section=".shared_data" \
-		--remove-section=".cparams" $@.tmp $@
+		--remove-section=".cparams" --remove-section=".gbb_copy" \
+		$@.tmp $@
 
 $(DEPTHCHARGE_RW_BIN): $(DEPTHCHARGE_RW_ELF)
 	@printf "    STRIP      $(subst $(obj)/,,$(@).tmp)\n"

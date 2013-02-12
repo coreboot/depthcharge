@@ -20,8 +20,10 @@
  * MA 02111-1307 USA
  */
 
+#include <gbb_header.h>
 #include <libpayload.h>
 
+#include "config.h"
 #include "drivers/flash/flash.h"
 #include "image/fmap.h"
 #include "image/symbols.h"
@@ -31,20 +33,90 @@
 VbCommonParams cparams CPARAMS;
 uint8_t shared_data_blob[VB_SHARED_DATA_REC_SIZE] SHARED_DATA;
 
+static void *gbb_copy_in(uint32_t gbb_offset, uint32_t offset, uint32_t size)
+{
+	uint8_t *gbb_copy = cparams.gbb_data;
+
+	if (offset > cparams.gbb_size || offset + size > cparams.gbb_size) {
+		printf("GBB component not inside the GBB.\n");
+		return NULL;
+	}
+
+	void *data;
+	data = flash_read(gbb_offset + offset, size);
+	if (!data)
+		return NULL;
+	memcpy(gbb_copy + offset, data, size);
+	return gbb_copy + offset;
+}
+
+static int gbb_init(void)
+{
+	const FmapArea *area = fmap_find_area("GBB");
+	if (!area) {
+		printf("Couldn't find the GBB.\n");
+		return 1;
+	}
+
+	if (area->size > CONFIG_GBB_COPY_SIZE) {
+		printf("Not enough room for a copy of the GBB.\n");
+		return 1;
+	}
+
+	cparams.gbb_size = area->size;
+	cparams.gbb_data = (void *)&_gbb_copy_start;
+	memset(cparams.gbb_data, 0, cparams.gbb_size);
+
+	uint32_t offset = area->offset;
+
+	GoogleBinaryBlockHeader *header =
+		gbb_copy_in(offset, 0, sizeof(GoogleBinaryBlockHeader));
+	if (!header)
+		return 1;
+	printf("The GBB signature is at %p and is: ", header->signature);
+	for (int i = 0; i < GBB_SIGNATURE_SIZE; i++)
+		printf(" %02x", header->signature[i]);
+	printf("\n");
+
+	if (!gbb_copy_in(offset, header->hwid_offset, header->hwid_size))
+		return 1;
+
+	if (!gbb_copy_in(offset, header->rootkey_offset, header->rootkey_size))
+		return 1;
+
+	if (!gbb_copy_in(offset, header->recovery_key_offset,
+			 header->recovery_key_size))
+		return 1;
+
+	return 0;
+}
+
+int gbb_copy_in_bmp_block(void)
+{
+	const FmapArea *area = fmap_find_area("GBB");
+	if (!area) {
+		printf("Couldn't find the GBB.\n");
+		return 1;
+	}
+
+	GoogleBinaryBlockHeader *header =
+		(GoogleBinaryBlockHeader *)cparams.gbb_data;
+
+	if (!gbb_copy_in(area->offset, header->bmpfv_offset,
+			 header->bmpfv_size))
+		return 1;
+
+	return 0;
+}
+
 int common_params_init(void)
 {
 	// Set up the common param structure.
 	memset(&cparams, 0, sizeof(cparams));
 	memset(shared_data_blob, 0, sizeof(shared_data_blob));
 
-	const FmapArea *gbb_area = fmap_find_area("GBB");
-	if (!gbb_area) {
-		printf("Couldn't find the GBB.\n");
+	if (gbb_init())
 		return 1;
-	}
-
-	cparams.gbb_data = flash_read(gbb_area->offset, gbb_area->size);
-	cparams.gbb_size = gbb_area->size;
 
 	chromeos_acpi_t *acpi_table = (chromeos_acpi_t *)lib_sysinfo.vdat_addr;
 	cparams.shared_data_blob = (void *)&acpi_table->vdat;

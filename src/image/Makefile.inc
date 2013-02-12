@@ -30,4 +30,5 @@ link_config_options := \
 	KERNEL_SIZE \
 	BASE_ADDRESS \
 	HEAP_SIZE \
-	STACK_SIZE
+	STACK_SIZE \
+	GBB_COPY_SIZE

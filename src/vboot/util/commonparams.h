@@ -30,6 +30,7 @@
 extern VbCommonParams cparams;
 extern uint8_t shared_data_blob[VB_SHARED_DATA_REC_SIZE];
 
+int gbb_copy_in_bmp_block();
 int common_params_init(void);
 
 #endif /* __VBOOT_UTIL_COMMONPARAMS_H__ */
