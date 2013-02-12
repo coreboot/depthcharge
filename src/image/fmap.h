@@ -47,7 +47,7 @@ typedef struct Fmap {
 #define FMAP_SIGNATURE "__FMAP__"
 
 int fmap_init(void);
-FmapArea *fmap_find_area(const char *name);
+const FmapArea *fmap_find_area(const char *name);
 const char *fmap_find_string(const char *name, int *size);
 
 const Fmap *fmap_base(void);

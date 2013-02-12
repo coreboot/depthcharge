@@ -156,7 +156,7 @@ VbError_t VbExEcGetExpectedRW(enum VbSelectFirmware_t select,
 		return VBERROR_UNKNOWN;
 	}
 
-	FmapArea *area = fmap_find_area(name);
+	const FmapArea *area = fmap_find_area(name);
 	if (!area) {
 		printf("Didn't find section %s in the fmap.\n", name);
 		return VBERROR_UNKNOWN;
@@ -235,7 +235,7 @@ VbError_t VbExEcGetExpectedRWHash(enum VbSelectFirmware_t select,
 		return VBERROR_UNKNOWN;
 	}
 
-	FmapArea *area = fmap_find_area(name);
+	const FmapArea *area = fmap_find_area(name);
 	if (!area) {
 		printf("Didn't find section %s in the fmap.\n", name);
 		return VBERROR_UNKNOWN;

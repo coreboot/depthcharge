@@ -27,7 +27,7 @@
 #include "config.h"
 #include "image/fmap.h"
 
-static Fmap * const main_fmap = (Fmap *)(uintptr_t)CONFIG_FMAP_ADDRESS;
+static const Fmap * const main_fmap = (Fmap *)(uintptr_t)CONFIG_FMAP_ADDRESS;
 uintptr_t main_rom_base;
 
 static const char *fmap_ro_fwid_cache;
@@ -76,7 +76,7 @@ const char *fmap_find_string(const char *name, int *size)
 {
 	assert(size);
 
-	FmapArea *area = fmap_find_area(name);
+	const FmapArea *area = fmap_find_area(name);
 	if (!area) {
 		*size = 0;
 		return NULL;
@@ -111,10 +111,10 @@ int fmap_init(void)
 
 INIT_FUNC(fmap_init);
 
-FmapArea *fmap_find_area(const char *name)
+const FmapArea *fmap_find_area(const char *name)
 {
 	for (int i = 0; i < main_fmap->nareas; i++) {
-		FmapArea *area = &(main_fmap->areas[i]);
+		const FmapArea *area = &(main_fmap->areas[i]);
 		if (!strncmp(name, (const char *)area->name,
 				sizeof(area->name))) {
 			return area;

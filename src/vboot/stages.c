@@ -98,8 +98,8 @@ int vboot_select_firmware(void)
 	};
 
 	// Set up the fparams structure.
-	FmapArea *vblock_a = fmap_find_area("VBLOCK_A");
-	FmapArea *vblock_b = fmap_find_area("VBLOCK_B");
+	const FmapArea *vblock_a = fmap_find_area("VBLOCK_A");
+	const FmapArea *vblock_b = fmap_find_area("VBLOCK_B");
 	if (!vblock_a || !vblock_b) {
 		printf("Couldn't find one of the vblocks.\n");
 		return 1;
@@ -129,7 +129,7 @@ int vboot_select_firmware(void)
 		else
 			name = "FW_MAIN_B";
 
-		FmapArea *rw_area = fmap_find_area(name);
+		const FmapArea *rw_area = fmap_find_area(name);
 		if (!rw_area) {
 			printf("Didn't find section %s in the fmap.\n", name);
 			return 1;

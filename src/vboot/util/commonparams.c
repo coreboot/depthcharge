@@ -37,7 +37,7 @@ int common_params_init(void)
 	memset(&cparams, 0, sizeof(cparams));
 	memset(shared_data_blob, 0, sizeof(shared_data_blob));
 
-	FmapArea *gbb_area = fmap_find_area("GBB");
+	const FmapArea *gbb_area = fmap_find_area("GBB");
 	if (!gbb_area) {
 		printf("Couldn't find the GBB.\n");
 		return 1;
