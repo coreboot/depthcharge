@@ -27,10 +27,28 @@ config DRIVER_FLASH_MEMMAPPED
 	bool "Memory mapped"
 	depends on ARCH_X86
 
+config DRIVER_FLASH_ICH7
+	bool "Intel I/O Controller Hub 7"
+	depends on ARCH_X86
+	select DRIVER_FLASH_ICH_BASE
+
+config DRIVER_FLASH_ICH9
+	bool "Intel I/O Controller Hub 9"
+	depends on ARCH_X86
+	select DRIVER_FLASH_ICH_BASE
+
 config DRIVER_FLASH_DUMMY
 	bool "Dummy driver"
 
 endchoice
+
+config DRIVER_FLASH_ICH_BASE
+	bool
+	default n
+
+config DRIVER_FLASH_ICH_ROM_SIZE
+	hex "Size of the flash being read by the ICH driver"
+	depends on DRIVER_FLASH_ICH_BASE
 
 config DRIVER_FLASH_MEMMAPPED_SIZE
 	hex "Size of memory mapped region"
