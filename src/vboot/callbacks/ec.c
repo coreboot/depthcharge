@@ -156,14 +156,14 @@ VbError_t VbExEcGetExpectedRW(enum VbSelectFirmware_t select,
 		return VBERROR_UNKNOWN;
 	}
 
-	const FmapArea *area = fmap_find_area(name);
-	if (!area) {
+	FmapArea area;
+	if (fmap_find_area(name, &area)) {
 		printf("Didn't find section %s in the fmap.\n", name);
 		return VBERROR_UNKNOWN;
 	}
 
 	uint32_t size;
-	*image = index_subsection(area, 0, &size);
+	*image = index_subsection(&area, 0, &size);
 	*image_size = size;
 	if (!*image)
 		return VBERROR_UNKNOWN;
@@ -235,14 +235,14 @@ VbError_t VbExEcGetExpectedRWHash(enum VbSelectFirmware_t select,
 		return VBERROR_UNKNOWN;
 	}
 
-	const FmapArea *area = fmap_find_area(name);
-	if (!area) {
+	FmapArea area;
+	if (fmap_find_area(name, &area)) {
 		printf("Didn't find section %s in the fmap.\n", name);
 		return VBERROR_UNKNOWN;
 	}
 
 	uint32_t size;
-	*hash = index_subsection(area, 1, &size);
+	*hash = index_subsection(&area, 1, &size);
 	*hash_size = size;
 	if (!*hash)
 		return VBERROR_UNKNOWN;

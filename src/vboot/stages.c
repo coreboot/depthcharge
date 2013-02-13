@@ -98,18 +98,18 @@ int vboot_select_firmware(void)
 	};
 
 	// Set up the fparams structure.
-	const FmapArea *vblock_a = fmap_find_area("VBLOCK_A");
-	const FmapArea *vblock_b = fmap_find_area("VBLOCK_B");
-	if (!vblock_a || !vblock_b) {
+	FmapArea vblock_a, vblock_b;
+	if (fmap_find_area("VBLOCK_A", &vblock_a) ||
+	    fmap_find_area("VBLOCK_B", &vblock_b)) {
 		printf("Couldn't find one of the vblocks.\n");
 		return 1;
 	}
 	fparams.verification_block_A =
-		flash_read(vblock_a->offset, vblock_a->size);
-	fparams.verification_size_A = vblock_a->size;
+		flash_read(vblock_a.offset, vblock_a.size);
+	fparams.verification_size_A = vblock_a.size;
 	fparams.verification_block_B =
-		flash_read(vblock_b->offset, vblock_b->size);
-	fparams.verification_size_B = vblock_b->size;
+		flash_read(vblock_b.offset, vblock_b.size);
+	fparams.verification_size_B = vblock_b.size;
 
 	printf("Calling VbSelectFirmware().\n");
 	VbError_t res = VbSelectFirmware(&cparams, &fparams);
@@ -129,13 +129,13 @@ int vboot_select_firmware(void)
 		else
 			name = "FW_MAIN_B";
 
-		const FmapArea *rw_area = fmap_find_area(name);
-		if (!rw_area) {
+		FmapArea rw_area;
+		if (fmap_find_area(name, &rw_area)) {
 			printf("Didn't find section %s in the fmap.\n", name);
 			return 1;
 		}
 
-		const void *image = index_subsection(rw_area, 0, NULL);
+		const void *image = index_subsection(&rw_area, 0, NULL);
 		if (!image)
 			return 1;
 

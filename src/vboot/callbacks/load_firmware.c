@@ -46,8 +46,8 @@ VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
 		return VBERROR_UNKNOWN;
 	}
 
-	const FmapArea *area = fmap_find_area(area_name);
-	if (!area) {
+	FmapArea area;
+	if (fmap_find_area(area_name, &area)) {
 		printf("Fmap region %s not found.\n", area_name);
 		return VBERROR_UNKNOWN;
 	}
@@ -62,7 +62,7 @@ VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
 		 * so we hash the right amount of stuff.
 		 */
 
-		const SectionIndex *index = index_from_fmap(area);
+		const SectionIndex *index = index_from_fmap(&area);
 		if (!index)
 			return VBERROR_UNKNOWN;
 
@@ -71,14 +71,14 @@ VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
 		for (int i = 0; i < index->count; i++)
 			size += (index->entries[i].size + 3) & ~3;
 
-		if (area->size < size) {
+		if (area.size < size) {
 			printf("Bad RW index size.\n");
 			return VBERROR_UNKNOWN;
 		}
-		data = flash_read(area->offset, size);
+		data = flash_read(area.offset, size);
 	} else {
-		data = flash_read(area->offset, area->size);
-		size = area->size;
+		data = flash_read(area.offset, area.size);
+		size = area.size;
 	}
 
 	VbUpdateFirmwareBodyHash(cparams, data, size);

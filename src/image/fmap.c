@@ -133,28 +133,29 @@ const Fmap *fmap_base(void)
 	return main_fmap;
 }
 
-const FmapArea *fmap_find_area(const char *name)
+const int fmap_find_area(const char *name, FmapArea *area)
 {
 	fmap_init();
 	for (int i = 0; i < main_fmap->nareas; i++) {
-		const FmapArea *area = &(main_fmap->areas[i]);
-		if (!strncmp(name, (const char *)area->name,
-				sizeof(area->name))) {
-			return area;
+		const FmapArea *cur = &(main_fmap->areas[i]);
+		if (!strncmp(name, (const char *)cur->name,
+				sizeof(cur->name))) {
+			memcpy(area, cur, sizeof(FmapArea));
+			return 0;
 		}
 	}
-	return NULL;
+	return 1;
 }
 
 const char *fmap_find_string(const char *name, int *size)
 {
 	assert(size);
 
-	const FmapArea *area = fmap_find_area(name);
-	if (!area) {
+	FmapArea area;
+	if (fmap_find_area(name, &area)) {
 		*size = 0;
 		return NULL;
 	}
-	*size = area->size;
-	return flash_read(area->offset, area->size);
+	*size = area.size;
+	return flash_read(area.offset, area.size);
 }

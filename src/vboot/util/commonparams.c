@@ -52,22 +52,22 @@ static void *gbb_copy_in(uint32_t gbb_offset, uint32_t offset, uint32_t size)
 
 static int gbb_init(void)
 {
-	const FmapArea *area = fmap_find_area("GBB");
-	if (!area) {
+	FmapArea area;
+	if (fmap_find_area("GBB", &area)) {
 		printf("Couldn't find the GBB.\n");
 		return 1;
 	}
 
-	if (area->size > CONFIG_GBB_COPY_SIZE) {
+	if (area.size > CONFIG_GBB_COPY_SIZE) {
 		printf("Not enough room for a copy of the GBB.\n");
 		return 1;
 	}
 
-	cparams.gbb_size = area->size;
+	cparams.gbb_size = area.size;
 	cparams.gbb_data = (void *)&_gbb_copy_start;
 	memset(cparams.gbb_data, 0, cparams.gbb_size);
 
-	uint32_t offset = area->offset;
+	uint32_t offset = area.offset;
 
 	GoogleBinaryBlockHeader *header =
 		gbb_copy_in(offset, 0, sizeof(GoogleBinaryBlockHeader));
@@ -93,8 +93,8 @@ static int gbb_init(void)
 
 int gbb_copy_in_bmp_block(void)
 {
-	const FmapArea *area = fmap_find_area("GBB");
-	if (!area) {
+	FmapArea area;
+	if (fmap_find_area("GBB", &area)) {
 		printf("Couldn't find the GBB.\n");
 		return 1;
 	}
@@ -102,7 +102,7 @@ int gbb_copy_in_bmp_block(void)
 	GoogleBinaryBlockHeader *header =
 		(GoogleBinaryBlockHeader *)cparams.gbb_data;
 
-	if (!gbb_copy_in(area->offset, header->bmpfv_offset,
+	if (!gbb_copy_in(area.offset, header->bmpfv_offset,
 			 header->bmpfv_size))
 		return 1;
 
