@@ -20,6 +20,7 @@ source src/drivers/flash/Kconfig
 source src/drivers/gpio/Kconfig
 source src/drivers/input/Kconfig
 source src/drivers/power/Kconfig
+source src/drivers/serial/Kconfig
 source src/drivers/sound/Kconfig
 source src/drivers/storage/Kconfig
 source src/drivers/timer/Kconfig
