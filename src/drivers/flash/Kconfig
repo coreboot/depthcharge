@@ -37,6 +37,10 @@ config DRIVER_FLASH_ICH9
 	depends on ARCH_X86
 	select DRIVER_FLASH_ICH_BASE
 
+config DRIVER_FLASH_EXYNOS5_SPI
+	bool "Exynos5 SPI"
+	default n
+
 config DRIVER_FLASH_DUMMY
 	bool "Dummy driver"
 
@@ -49,6 +53,14 @@ config DRIVER_FLASH_ICH_BASE
 config DRIVER_FLASH_ICH_ROM_SIZE
 	hex "Size of the flash being read by the ICH driver"
 	depends on DRIVER_FLASH_ICH_BASE
+
+config DRIVER_FLASH_EXYNOS5_SPI_REGADDR
+	hex "Address of the Exynos5 SPI driver registers"
+	depends on DRIVER_FLASH_EXYNOS5_SPI
+
+config DRIVER_FLASH_EXYNOS5_SPI_ROM_SIZE
+	hex "Size of the flash being read with the Exynos5 SPI driver"
+	depends on DRIVER_FLASH_EXYNOS5_SPI
 
 config DRIVER_FLASH_MEMMAPPED_SIZE
 	hex "Size of memory mapped region"

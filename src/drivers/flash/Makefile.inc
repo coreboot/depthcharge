@@ -18,6 +18,7 @@
 ##
 
 depthcharge-$(CONFIG_DRIVER_FLASH_DUMMY) += dummy.c
+depthcharge-$(CONFIG_DRIVER_FLASH_EXYNOS5_SPI) += exynos5_spi.c
 depthcharge-$(CONFIG_DRIVER_FLASH_ICH_BASE) += ich.c
 depthcharge-$(CONFIG_DRIVER_FLASH_ICH7) += ich7.c
 depthcharge-$(CONFIG_DRIVER_FLASH_ICH9) += ich9.c
