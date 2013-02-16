@@ -21,12 +21,14 @@
  */
 
 #include <libpayload.h>
+#include <usb/usb.h>
 
 #include "base/init_funcs.h"
 #include "base/timestamp.h"
 #include "config.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/input/input.h"
+#include "drivers/net/net.h"
 #include "drivers/timer/timer.h"
 #include "net/uip.h"
 #include "netboot/bootp.h"
@@ -57,6 +59,11 @@ int main(void)
 	dc_usb_initialize();
 
 	srand(get_raw_timer_value());
+
+	printf("Looking for network device... ");
+	while (!net_get_device())
+		usb_poll();
+	printf("done.\n");
 
 	// Start up the network stack.
 	uip_init();
