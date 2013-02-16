@@ -23,6 +23,29 @@
 #ifndef __DRIVERS_BUS_USB_USB_H__
 #define __DRIVERS_BUS_USB_USB_H__
 
+#include <usb/usb.h>
+
+#include "base/list.h"
+
+struct GenericUsbDevice;
+typedef struct GenericUsbDevice GenericUsbDevice;
+
+typedef struct GenericUsbDriver {
+	int (*probe)(GenericUsbDevice *dev);
+	void (*remove)(GenericUsbDevice *dev);
+
+	ListNode list_node;
+} GenericUsbDriver;
+
+extern ListNode generic_usb_drivers;
+
+typedef struct GenericUsbDevice {
+	GenericUsbDriver *driver;
+	usbdev_t *dev;
+	void *dev_data;
+} GenericUsbDevice;
+
+
 void dc_usb_initialize(void);
 
 #endif /* __DRIVERS_BUS_USB_USB_H__ */

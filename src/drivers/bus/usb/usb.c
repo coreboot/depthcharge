@@ -20,10 +20,53 @@
  * MA 02111-1307 USA
  */
 
+#include <assert.h>
 #include <libpayload.h>
-#include <usb/usb.h>
 
 #include "drivers/bus/usb/usb.h"
+
+ListNode generic_usb_drivers;
+
+void usb_generic_create(usbdev_t *dev)
+{
+	// Allocate a structure to keep track of this device.
+	GenericUsbDevice *gdev = malloc(sizeof(GenericUsbDevice));
+	gdev->dev = dev;
+
+	// Check if any generic USB driver wants to claim it.
+	for (ListNode *node = generic_usb_drivers.next;
+			node; node = node->next) {
+		GenericUsbDriver *driver =
+			container_of(node, GenericUsbDriver, list_node);
+		gdev->driver = driver;
+		// If so, attach our info and return.
+		if (driver->probe && driver->probe(gdev)) {
+			dev->data = gdev;
+			return;
+		}
+	}
+
+	// Nobody wanted it so free resources and return.
+	free(gdev);
+}
+
+void usb_generic_remove(usbdev_t *dev)
+{
+	// If this device was never claimed, ignore it.
+	if (!dev->data)
+		return;
+
+	// If the driver for this device has a "remove" function, call it.
+	GenericUsbDevice *gdev = dev->data;
+	assert(gdev->driver);
+	if (gdev->driver->remove)
+		gdev->driver->remove(gdev);
+
+	// Free our bookeeping data structure and return.
+	free(gdev);
+	dev->data = NULL;
+}
+
 
 void dc_usb_initialize(void)
 {
@@ -33,18 +76,4 @@ void dc_usb_initialize(void)
 		usb_initialize();
 		need_init = 0;
 	}
-}
-
-void usb_generic_create(usbdev_t *dev)
-{
-	device_descriptor_t *dd = (device_descriptor_t *)dev->descriptor;
-	printf("USB device added with ID %04x:%04x\n",
-		dd->idVendor, dd->idProduct);
-}
-
-void usb_generic_remove(usbdev_t *dev)
-{
-	device_descriptor_t *dd = (device_descriptor_t *)dev->descriptor;
-	printf("USB device removed with ID %04x:%04x\n",
-		dd->idVendor, dd->idProduct);
 }
