@@ -1,7 +1,7 @@
 ##
 ## This file is part of the depthcharge project.
 ##
-## Copyright 2012 Google Inc.
+## Copyright 2013 Google Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -17,16 +17,4 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-subdirs-y += bus
-subdirs-y += ec
-subdirs-y += flash
-subdirs-y += gpio
-subdirs-y += input
-subdirs-y += net
-subdirs-y += power
-subdirs-y += serial
-subdirs-y += sound
-subdirs-y += storage
-subdirs-y += timer
-subdirs-y += tpm
-subdirs-y += video
+net-y += net.c

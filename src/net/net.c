@@ -22,26 +22,24 @@
 
 #include <libpayload.h>
 
-#include "netboot/output.h"
+#include "net/net.h"
 
-static OutputFunc output_func;
+static NetCallback net_callback_func;
 
-void set_output_func(OutputFunc func)
+void net_set_callback(NetCallback func)
 {
-	output_func = func;
+	net_callback_func = func;
 }
 
-OutputFunc get_output_func(void)
+NetCallback net_get_callback(void)
 {
-	return output_func;
+	return net_callback_func;
 }
 
-uint8_t tcpip_output(void)
+void net_call_callback(void)
 {
-	if (output_func) {
-		return output_func();
-	} else {
-		printf("No output function selected.\n");
-		return 0;
-	}
+	if (net_callback_func)
+		net_callback_func();
+	else
+		printf("No network callback installed.\n");
 }

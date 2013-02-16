@@ -42,8 +42,9 @@
 
 extern uint16_t uip_slen;
 
+#include "drivers/net/net.h"
+#include "net/uip_arp.h"
 #include "net/uip-udp-packet.h"
-#include "netboot/output.h"
 
 #include <string.h>
 
@@ -62,7 +63,8 @@ uip_udp_packet_send(struct uip_udp_conn *c, const void *data, int len)
     tcpip_ipv6_output();
 #else
     if(uip_len > 0) {
-      tcpip_output();
+      uip_arp_out();
+      net_send(uip_buf, uip_len);
     }
 #endif
   }

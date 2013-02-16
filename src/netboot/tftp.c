@@ -25,9 +25,9 @@
 #include <libpayload.h>
 #include <stdint.h>
 
+#include "net/net.h"
 #include "net/uip.h"
 #include "net/uip-udp-packet.h"
-#include "netboot/appcall.h"
 #include "netboot/tftp.h"
 
 typedef enum TftpStatus
@@ -104,7 +104,7 @@ static void tftp_print_error_pkt(void)
 	}
 }
 
-static void tftp_appcall(void)
+static void tftp_callback(void)
 {
 	// If there isn't at least an opcode, ignore the packet.
 	if (!uip_newdata())
@@ -225,7 +225,7 @@ int tftp_read(void *dest, uip_ipaddr_t *server_ip, const char *bootfile)
 
 	// Poll the network driver until the transaction is done.
 
-	set_appcall_func(&tftp_appcall);
+	net_set_callback(&tftp_callback);
 	while (tftp_status == TftpPending && tftp_retries) {
 		while (tftp_status == TftpPending && tftp_timeout--) {
 			udelay(1);
@@ -249,7 +249,7 @@ int tftp_read(void *dest, uip_ipaddr_t *server_ip, const char *bootfile)
 	}
 	uip_udp_remove(conn);
 	free(read_req);
-	set_appcall_func(NULL);
+	net_set_callback(NULL);
 
 	// See what happened.
 	if (tftp_status == TftpFailure) {

@@ -20,16 +20,14 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __NETBOOT_OUTPUT_H__
-#define __NETBOOT_OUTPUT_H__
+#ifndef __NET_NET_H__
+#define __NET_NET_H__
 
-#include <stdint.h>
+typedef void (*NetCallback)(void);
 
-typedef uint8_t (*OutputFunc)(void);
+void net_set_callback(NetCallback func);
+NetCallback net_get_callback(void);
 
-void set_output_func(OutputFunc func);
-OutputFunc get_output_func(void);
+void net_call_callback(void);
 
-uint8_t tcpip_output(void);
-
-#endif /* __NETBOOT_OUTPUT_H__ */
+#endif /* __NET_NET_H__ */

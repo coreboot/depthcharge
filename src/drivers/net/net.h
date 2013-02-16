@@ -20,26 +20,29 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
+#ifndef __DRIVERS_NET_NET_H__
+#define __DRIVERS_NET_NET_H__
 
-#include "netboot/appcall.h"
+#include <stdint.h>
 
-static AppcallFunc appcall_func;
+#include "net/uip.h"
 
-void set_appcall_func(AppcallFunc func)
-{
-	appcall_func = func;
-}
+typedef struct NetDevice {
+	int (*ready)(struct NetDevice *dev, int *ready);
+	int (*recv)(struct NetDevice *dev, void *buf, uint16_t *len,
+		int maxlen);
+	int (*send)(struct NetDevice *dev, void *buf, uint16_t len);
+	const uip_eth_addr *(*get_mac)(struct NetDevice *dev);
+	void *dev_data;
+} NetDevice;
 
-AppcallFunc get_appcall_func(void)
-{
-	return appcall_func;
-}
+void net_set_device(NetDevice *dev);
+NetDevice *net_get_device(void);
+void net_poll(void);
 
-void netboot_appcall(void)
-{
-	if (appcall_func)
-		appcall_func();
-	else
-		printf("No appcall function selected.\n");
-}
+
+int net_ready(int *ready);
+int net_send(void *buf, uint16_t len);
+const uip_eth_addr *net_get_mac(void);
+
+#endif /* __DRIVERS_NET_NET_H__ */

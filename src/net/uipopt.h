@@ -65,7 +65,7 @@
 
 #include <stdint.h>
 
-#include "netboot/appcall.h"
+#include "net/net.h"
 
 typedef uint32_t uip_stats_t;
 
@@ -656,8 +656,8 @@ void uip_log(char *msg);
  *
  */
 
-#define UIP_APPCALL netboot_appcall
-#define UIP_UDP_APPCALL netboot_appcall
+#define UIP_APPCALL net_call_callback
+#define UIP_UDP_APPCALL net_call_callback
 
 /**
  * \var typedef uip_tcp_appstate_t

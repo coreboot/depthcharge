@@ -24,3 +24,5 @@ uip-y += uip.c
 uip-y += uip-debug.c
 uip-y += uiplib.c
 uip-y += uip-udp-packet.c
+
+net-y += net.c

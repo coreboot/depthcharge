@@ -24,17 +24,17 @@
 #include <endian.h>
 #include <libpayload.h>
 
+#include "net/net.h"
 #include "net/uip.h"
 #include "net/uip_arp.h"
 #include "net/uip-udp-packet.h"
-#include "netboot/appcall.h"
 #include "netboot/bootp.h"
 
 static BootpPacket *bootp_reply;
 static int bootp_reply_ready;
 static BootpPacket *bootp_request;
 
-static void bootp_appcall(void)
+static void bootp_callback(void)
 {
 	// Check that it's the right port. If it isn't, some other connection
 	// is open and we got their packet, and that's a bug on our end.
@@ -100,14 +100,14 @@ int bootp(uip_ipaddr_t *server_ip, const char **bootfile)
 	bootp_reply_ready = 0;
 
 	// Poll network driver until we get a reply or time out.
-	set_appcall_func(&bootp_appcall);
+	net_set_callback(&bootp_callback);
 	uint32_t timeout = BootpTimeoutSeconds * 1000;
 	while (!bootp_reply_ready && timeout--) {
 		mdelay(1);
 		// Poke the hardware.
 	}
 	uip_udp_remove(conn);
-	set_appcall_func(NULL);
+	net_set_callback(NULL);
 
 	// See what happened.
 	if (!bootp_reply_ready) {
