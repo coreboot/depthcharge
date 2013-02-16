@@ -1043,12 +1043,12 @@ struct uip_udp_conn *uip_udp_new(const uip_ipaddr_t *ripaddr, uint16_t rport);
  */
 #if !UIP_CONF_IPV6
 #define uip_ipaddr_maskcmp(addr1, addr2, mask)          \
-  (((((uint16_t *)addr1)[0] & ((uint16_t *)mask)[0]) ==       \
-    (((uint16_t *)addr2)[0] & ((uint16_t *)mask)[0])) &&      \
-   ((((uint16_t *)addr1)[1] & ((uint16_t *)mask)[1]) ==       \
-    (((uint16_t *)addr2)[1] & ((uint16_t *)mask)[1])))
+  (((((uint16_t *)(addr1))[0] & ((uint16_t *)(mask))[0]) ==       \
+    (((uint16_t *)(addr2))[0] & ((uint16_t *)(mask))[0])) &&      \
+   ((((uint16_t *)(addr1))[1] & ((uint16_t *)(mask))[1]) ==       \
+    (((uint16_t *)(addr2))[1] & ((uint16_t *)(mask))[1])))
 #else
-#define uip_ipaddr_prefixcmp(addr1, addr2, length) (memcmp(addr1, addr2, length>>3) == 0)
+#define uip_ipaddr_prefixcmp(addr1, addr2, length) (memcmp(addr1, addr2, (length) >> 3) == 0)
 #endif
 
 
@@ -1095,8 +1095,8 @@ struct uip_udp_conn *uip_udp_new(const uip_ipaddr_t *ripaddr, uint16_t rport);
  * \hideinitializer
  */
 #define uip_ipaddr_mask(dest, src, mask) do {                           \
-    ((uint16_t *)dest)[0] = ((uint16_t *)src)[0] & ((uint16_t *)mask)[0];        \
-    ((uint16_t *)dest)[1] = ((uint16_t *)src)[1] & ((uint16_t *)mask)[1];        \
+    ((uint16_t *)(dest))[0] = ((uint16_t *)(src))[0] & ((uint16_t *)(mask))[0];        \
+    ((uint16_t *)(dest))[1] = ((uint16_t *)(src))[1] & ((uint16_t *)(mask))[1];        \
   } while(0)
 
 /**
@@ -1381,7 +1381,7 @@ extern struct uip_icmp6_conn uip_icmp6_conns;
  */
 #if UIP_STATISTICS == 1
 extern struct uip_stats uip_stat;
-#define UIP_STAT(s) s
+#define UIP_STAT(s) (s)
 #else
 #define UIP_STAT(s)
 #endif /* UIP_STATISTICS == 1 */
