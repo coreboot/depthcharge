@@ -31,6 +31,7 @@
 #include "drivers/net/net.h"
 #include "drivers/timer/timer.h"
 #include "net/uip.h"
+#include "net/uip_arp.h"
 #include "netboot/bootp.h"
 #include "netboot/tftp.h"
 
@@ -38,6 +39,12 @@ static void print_ip_addr(const uip_ipaddr_t *ip)
 {
 	printf("%d.%d.%d.%d", uip_ipaddr1(ip), uip_ipaddr2(ip),
 		uip_ipaddr3(ip), uip_ipaddr4(ip));
+}
+
+static void print_mac_addr(const uip_eth_addr *mac)
+{
+	for (int i = 0; i < ARRAY_SIZE(mac->addr); i++)
+		printf("%s%02x", i ? ":" : "", mac->addr[i]);
 }
 
 static void * const payload = (void *)(uintptr_t)CONFIG_KERNEL_START;
@@ -67,6 +74,15 @@ int main(void)
 
 	// Start up the network stack.
 	uip_init();
+
+	// Plug in the MAC address.
+	const uip_eth_addr *mac_addr = net_get_mac();
+	if (!mac_addr)
+		halt();
+	printf("MAC: ");
+	print_mac_addr(mac_addr);
+	printf("\n");
+	uip_setethaddr(*mac_addr);
 
 	// Find out who we are and what we should boot.
 	uip_ipaddr_t my_ip, server_ip;
