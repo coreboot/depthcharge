@@ -72,6 +72,14 @@ int main(void)
 		usb_poll();
 	printf("done.\n");
 
+	printf("Waiting for link... ");
+	int ready = 0;
+	while (!ready) {
+		if (net_ready(&ready))
+			halt();
+	}
+	printf("done.\n");
+
 	// Start up the network stack.
 	uip_init();
 
