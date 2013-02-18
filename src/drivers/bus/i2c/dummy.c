@@ -15,10 +15,12 @@
 int i2c_read(uint8_t bus, uint8_t chip, uint32_t addr, int addr_len,
 	     uint8_t *data, int data_len)
 {
-	return 0;
+	printf("%s not implemented.\n", __func__);
+	return 1;
 }
 int i2c_write(uint8_t bus, uint8_t chip, uint32_t addr, int addr_len,
 	      uint8_t *data, int data_len)
 {
-	return 0;
+	printf("%s not implemented.\n", __func__);
+	return 1;
 }
