@@ -25,6 +25,7 @@
 #include <libpayload.h>
 #include <stdint.h>
 
+#include "drivers/net/net.h"
 #include "net/net.h"
 #include "net/uip.h"
 #include "net/uip-udp-packet.h"
@@ -229,7 +230,7 @@ int tftp_read(void *dest, uip_ipaddr_t *server_ip, const char *bootfile)
 	while (tftp_status == TftpPending && tftp_retries) {
 		while (tftp_status == TftpPending && tftp_timeout--) {
 			udelay(1);
-			// Poke the hardware.
+			net_poll();
 		}
 		// We timed out. Resend our last packet and try again.
 		if (tftp_blocknum == 1) {

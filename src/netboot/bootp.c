@@ -24,6 +24,7 @@
 #include <endian.h>
 #include <libpayload.h>
 
+#include "drivers/net/net.h"
 #include "net/net.h"
 #include "net/uip.h"
 #include "net/uip_arp.h"
@@ -104,7 +105,7 @@ int bootp(uip_ipaddr_t *server_ip, const char **bootfile)
 	uint32_t timeout = BootpTimeoutSeconds * 1000;
 	while (!bootp_reply_ready && timeout--) {
 		mdelay(1);
-		// Poke the hardware.
+		net_poll();
 	}
 	uip_udp_remove(conn);
 	net_set_callback(NULL);
