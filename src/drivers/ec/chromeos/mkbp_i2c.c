@@ -102,13 +102,13 @@ int mkbp_bus_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 			CONFIG_DRIVER_MKBP_I2C_ADDR,
 			0, 0, dev->dout, out_bytes);
 	if (ret)
-		return ret;
+		return -1;
 
 	ret = i2c_read(CONFIG_DRIVER_MKBP_I2C_BUS,
 		       CONFIG_DRIVER_MKBP_I2C_ADDR,
 		       0, 0, in_ptr, in_bytes);
 	if (ret)
-		return ret;
+		return -1;
 
 	if (*in_ptr != EC_RES_SUCCESS) {
 		printf("%s: Received bad result code %d\n", __func__, *in_ptr);
