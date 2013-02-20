@@ -58,27 +58,39 @@ def convert_to_bmp(input_file, scale, outdir, background=BACKGROUND_COLOR):
   target.convert('P', dither=None, palette=Image.ADAPTIVE).save(output_file)
 
 
+def parse_color_param(param):
+  """Parses a color parameter in format rrggbb into color tuple."""
+  if len(param) != 6:
+    exit("Sorry, color param '%s' is not supported." % param)
+  return (int(param[0:2], 16),
+          int(param[2:4], 16),
+          int(param[4:6], 16))
+
 def main(argv):
   scale_param = ''
   outdir = ''
+  background = BACKGROUND_COLOR
   try:
-    opts, args = getopt.getopt(argv[1:], '', ('scale=', 'outdir='))
+    opts, args = getopt.getopt(argv[1:], '',
+                               ('scale=', 'outdir=', 'background='))
     for key, value in opts:
       if key == '--scale':
         scale_param = value
       elif key == '--outdir':
         outdir = value
+      elif key == '--background':
+        background = parse_color_param(value)
     if len(args) < 1:
       raise Exception('need more param')
   except:
-    exit('Usage: ' + argv[0] +
-         ' [--scale WxH!|--scale W%xH%] [--outdir DIR] files(s)...')
+    exit('Usage: ' + argv[0] + '[--scale WxH! | --scale W%xH%] [--outdir DIR] '
+         '[--background rrggbb] files(s)...')
 
   if outdir and not os.path.isdir(outdir):
     os.makedirs(outdir)
 
   for source_file in args:
-    convert_to_bmp(source_file, scale_param, outdir)
+    convert_to_bmp(source_file, scale_param, outdir, background)
 
 
 if __name__ == '__main__':

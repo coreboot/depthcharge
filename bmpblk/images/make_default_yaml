@@ -322,6 +322,9 @@ EOF1
     define_image asset_VerificationOff  VerificationOff.bmp
     define_image asset_VerificationOn   VerificationOn.bmp
     define_image asset_Warning          Warning.bmp
+    define_image asset_charging         reserve_charging.bmp
+    define_image asset_charging_empty   reserve_charging_empty.bmp
+    define_image background_charging    reserve_charging_background.bmp
   } >>"$yaml_file"
 
   # A virtual entry that is not really included in Yaml file.
@@ -436,6 +439,20 @@ EOF1
     insert_centered_below "${lc}_reboot_erase_text"
     add_footer_without_url ${lc}
 
+    # ReserveCharging Screen
+    echo "  ${lc}_charging:" >> "$yaml_file"
+    reset_pos
+    add_right_below "background_charging"
+    set_centered_y_percent "background" 40
+    add_centered "asset_charging"
+
+    # ReserveChargingEmpty Screen
+    echo "  ${lc}_charging_empty:" >> "$yaml_file"
+    reset_pos
+    add_right_below "background_charging"
+    set_centered_y_percent "background" 40
+    add_centered "asset_charging_empty"
+
   done
 
   # Finally list the localizations.
@@ -456,6 +473,7 @@ EOF2
     # todev/tonorm/update are supported only by newer firmware.
     screen_list="${screen_list}, ${lc}_todev, ${lc}_tonorm, ${lc}_update"
     screen_list="${screen_list}, ${lc}_tonorm_confirm"
+    screen_list="${screen_list}, ${lc}_charging, ${lc}_charging_empty"
     echo "  - [ $screen_list ]" >>"$yaml_file"
   done
 

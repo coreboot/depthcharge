@@ -8,8 +8,12 @@
 # Composition settings
 BACKGROUND_COLOR=white
 
-# The only file that uses different scaling parameter.
+# The files that uses different scaling parameter.
 BACKGROUND_IMAGE=Background.png
+CHARGE_BACKGROUND_IMAGE=reserve_charging_background.png
+
+# Files with different background
+CHARGE_ASSETS_PREFIX="reserve_charging"
 
 # Output file name.
 BMPBLK_OUTPUT="bmpblock.bin"
@@ -40,6 +44,7 @@ main() {
   local output="out_$1"
   local scale_param="" background_scale_param="" replace_files=""
   local stage_dir="../_stage"
+  local dpi=""
   local base locale X
 
   # TODO(hungte) Derive and calculate profile params automatically.
@@ -97,11 +102,17 @@ main() {
 
   # Prepare images in current and assets folder
   for X in *.png assets$dpi/*.png; do
-    if [ "$X" = "$BACKGROUND_IMAGE" ]; then
-      convert_to_bmp3 "$output" "$background_scale_param" "$X"
-    else
-      convert_to_bmp3 "$output" "$scale_param" "$X"
-    fi
+    case "${X##*/}" in
+      "$BACKGROUND_IMAGE" | "$CHARGE_BACKGROUND_IMAGE" )
+        convert_to_bmp3 "$output" "$background_scale_param" "$X"
+        ;;
+      "$CHARGE_ASSETS_PREFIX"* )
+        convert_to_bmp3 "$output" "$scale_param" --background 000000 "$X"
+        ;;
+      * )
+        convert_to_bmp3 "$output" "$scale_param" "$X"
+        ;;
+    esac
   done
   stage_dir="$stage_dir$dpi"
   [ -d "$stage_dir" ] || die "Missing staging folder: $stage_dir"
