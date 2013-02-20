@@ -41,8 +41,6 @@ typedef enum BootpHardwareType
 static const uint16_t BootpClientPort = 68;
 static const uint16_t BootpServerPort = 67;
 
-static const int BootpTimeoutSeconds = 5;
-
 typedef struct __attribute__((packed)) BootpPacket
 {
 	uint8_t opcode;

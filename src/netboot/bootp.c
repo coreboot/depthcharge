@@ -100,23 +100,18 @@ int bootp(uip_ipaddr_t *server_ip, const char **bootfile)
 	bootp_request = &request;
 	bootp_reply_ready = 0;
 
-	// Poll network driver until we get a reply or time out.
+	// Poll network driver until we get a reply. Resend periodically.
 	net_set_callback(&bootp_callback);
-	uint32_t timeout = BootpTimeoutSeconds * 1000;
-	while (!bootp_reply_ready && timeout--) {
-		mdelay(1);
+	for (;;) {
 		net_poll();
+		if (bootp_reply_ready)
+			break;
+		// No response, try again.
+		uip_udp_packet_send(conn, &request, sizeof(request));
 	}
 	uip_udp_remove(conn);
 	net_set_callback(NULL);
-
-	// See what happened.
-	if (!bootp_reply_ready) {
-		printf("timeout!\n");
-		return -1;
-	} else {
-		printf("done.\n");
-	}
+	printf("done.\n");
 
 	// Get the stuff we wanted out of the reply.
 	int bootfile_size = sizeof(reply.bootfile_name) + 1;
