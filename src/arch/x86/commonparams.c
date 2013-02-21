@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Google Inc.
+ * Copyright 2013 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -20,19 +20,15 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __VBOOT_UTIL_COMMONPARAMS_H__
-#define __VBOOT_UTIL_COMMONPARAMS_H__
+#include <libpayload.h>
 
-#include <stddef.h>
-#include <stdint.h>
-#include <vboot_api.h>
+#include "vboot/util/acpi.h"
+#include "vboot/util/commonparams.h"
 
-extern VbCommonParams cparams;
-extern uint8_t shared_data_blob[VB_SHARED_DATA_REC_SIZE];
-
-int gbb_copy_in_bmp_block();
-int common_params_init(void);
-// Implemented by each arch.
-int find_common_params(void **blob, int *size);
-
-#endif /* __VBOOT_UTIL_COMMONPARAMS_H__ */
+int find_common_params(void **blob, int *size)
+{
+	chromeos_acpi_t *acpi_table = (chromeos_acpi_t *)lib_sysinfo.vdat_addr;
+	*blob = (void *)&acpi_table->vdat;
+	*size = sizeof(acpi_table->vdat);
+	return 0;
+}

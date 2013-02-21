@@ -17,6 +17,7 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
+depthcharge-y += commonparams.c
 depthcharge-y += gcc.c
 depthcharge-y += physmem.c
 depthcharge-y += string.c

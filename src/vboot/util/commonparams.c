@@ -113,13 +113,18 @@ int common_params_init(void)
 {
 	// Set up the common param structure.
 	memset(&cparams, 0, sizeof(cparams));
-	memset(shared_data_blob, 0, sizeof(shared_data_blob));
 
 	if (gbb_init())
 		return 1;
 
-	chromeos_acpi_t *acpi_table = (chromeos_acpi_t *)lib_sysinfo.vdat_addr;
-	cparams.shared_data_blob = (void *)&acpi_table->vdat;
-	cparams.shared_data_size = sizeof(acpi_table->vdat);
+	void *blob;
+	int size;
+	if (find_common_params(&blob, &size))
+		return 1;
+
+	cparams.shared_data_blob = blob;
+	cparams.shared_data_size = size;
+	memset(blob, 0, size);
+
 	return 0;
 }
