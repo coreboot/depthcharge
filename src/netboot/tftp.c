@@ -41,8 +41,7 @@ typedef enum TftpStatus
 static TftpStatus tftp_status;
 
 static uint8_t *tftp_dest;
-static int tftp_retries;
-static int tftp_timeout;
+static int tftp_got_response;
 static int tftp_blocknum;
 
 typedef struct TftpAckPacket
@@ -178,10 +177,7 @@ static void tftp_callback(void)
 
 	// Give some feedback that something is happening.
 	printf("#");
-
-	// Reset the timeout and try counts and continue.
-	tftp_retries = TftpRetries;
-	tftp_timeout = TftpTimeoutSeconds * 1000 * 1000;
+	tftp_got_response = 1;
 }
 
 int tftp_read(void *dest, uip_ipaddr_t *server_ip, const char *bootfile)
@@ -220,19 +216,18 @@ int tftp_read(void *dest, uip_ipaddr_t *server_ip, const char *bootfile)
 	printf("Waiting for the transfer... ");
 	tftp_status = TftpPending;
 	tftp_dest = dest;
-	tftp_retries = TftpRetries;
-	tftp_timeout = TftpTimeoutSeconds * 1000 * 1000;
 	tftp_blocknum = 1;
 
 	// Poll the network driver until the transaction is done.
 
 	net_set_callback(&tftp_callback);
-	while (tftp_status == TftpPending && tftp_retries) {
-		while (tftp_status == TftpPending && tftp_timeout--) {
-			udelay(1);
-			net_poll();
-		}
-		// We timed out. Resend our last packet and try again.
+	while (tftp_status == TftpPending) {
+		tftp_got_response = 0;
+		net_poll();
+		if (tftp_got_response)
+			continue;
+
+		// No response. Resend our last packet and try again.
 		if (tftp_blocknum == 1) {
 			// Resend the read request.
 			conn->rport = htonw(TftpPort);
@@ -246,7 +241,6 @@ int tftp_read(void *dest, uip_ipaddr_t *server_ip, const char *bootfile)
 			};
 			uip_udp_packet_send(conn, &ack, sizeof(ack));
 		}
-		tftp_retries--;
 	}
 	uip_udp_remove(conn);
 	free(read_req);
@@ -255,9 +249,6 @@ int tftp_read(void *dest, uip_ipaddr_t *server_ip, const char *bootfile)
 	// See what happened.
 	if (tftp_status == TftpFailure) {
 		// The error was printed when it was received.
-		return -1;
-	} else if (tftp_status == TftpPending) {
-		printf(" timeout!\n");
 		return -1;
 	} else {
 		printf(" done.\n");

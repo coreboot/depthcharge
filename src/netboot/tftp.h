@@ -49,9 +49,6 @@ typedef enum TftpErrorCode
 static const uint16_t TftpPort = 69;
 static const int TftpMaxBlockSize = 512;
 
-static const int TftpTimeoutSeconds = 5;
-static const int TftpRetries = 3;
-
 int tftp_read(void *dest, uip_ipaddr_t *server_ip, const char *bootfile);
 
 #endif /* __NETBOOT_TFTP_H__ */
