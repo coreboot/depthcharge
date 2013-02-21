@@ -43,6 +43,12 @@ TRAMPOLINE = $(obj)/trampoline.o
 real-target: $(DEPTHCHARGE_RO_ELF) $(DEPTHCHARGE_RO_BIN) \
 	$(DEPTHCHARGE_RW_ELF) $(DEPTHCHARGE_RW_BIN)
 
+ifeq ($(CONFIG_MOCK_TPM),y)
+VBOOT_MOCK_TPM=1
+else
+VBOOT_MOCK_TPM=
+endif
+
 
 # The vboot library source is external to depthcharge.
 $(VB_LIB):
@@ -53,6 +59,7 @@ else
 	$(Q)FIRMWARE_ARCH=$(VB_FIRMWARE_ARCH) \
 		CFLAGS="$(CFLAGS) -DVBOOT_DEBUG" \
 		make -C $(VB_SOURCE) \
+		MOCK_TPM=$(VBOOT_MOCK_TPM) \
 		BUILD=$(dir $(VB_LIB)) \
 		V=$(V) \
 		ARCH=$(VB_ARCH)

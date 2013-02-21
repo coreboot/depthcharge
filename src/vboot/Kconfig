@@ -41,6 +41,15 @@ config RO_NORMAL_SUPPORT
 	help
 	  Whether booting in normal mode using only RO firmware is supported.
 
+config MOCK_TPM
+	bool "Mock the TPM in vboot (TURN OFF BEFORE RELEASE)"
+	default n
+	help
+	  Make vboot pretend that all TPM accesses and checks are successful
+	  without actually talking to the TPM. This option can be used during
+	  development, or when the current TPM is known to be broken somehow.
+	  THIS SHOULD NOT BE LEFT ON FOR PRODUCTION DEVICES.
+
 choice
 	prompt "Type of nonvolatile storage"
 	help
