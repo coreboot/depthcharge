@@ -156,20 +156,4 @@ uint32_t tis_senddata(const uint8_t *const data, uint32_t len);
  */
 uint32_t tis_readresponse(uint8_t *buffer, uint32_t *len);
 
-/*
- * tis_sendrecv()
- *
- * Send the requested data to the TPM and then try to get its response
- *
- * @sendbuf - buffer of the data to send
- * @send_size size of the data to send
- * @recvbuf - memory to save the response to
- * @recv_len - pointer to the size of the response buffer
- *
- * Returns 0 on success (and places the number of response bytes at recv_len)
- * or TPM_DRIVER_ERR on failure.
- */
-int tis_sendrecv(const uint8_t *sendbuf, size_t send_size,
-		 uint8_t *recvbuf, size_t *recv_len);
-
 #endif /* __DRIVERS_TPM_TPM_H__ */

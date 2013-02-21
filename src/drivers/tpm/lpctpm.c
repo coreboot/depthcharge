@@ -30,14 +30,12 @@
 #ifdef DEBUG
 #define	TPM_DEBUG(fmt, args...)		\
 	if (TPM_DEBUG_ON) {		\
-		printf(PREFIX);		\
+		printf(lpc_tpm);	\
 		printf(fmt , ##args);	\
 	}
 #else
 #define TPM_DEBUG(fmt, args...) if (0) {}
 #endif
-
-#define PREFIX "lpc_tpm: "
 
 /*
  * Structures defined below allow creating descriptions of TPM vendor/device
@@ -440,29 +438,4 @@ uint32_t tis_readresponse(uint8_t *buffer, uint32_t *len)
 
 	*len = offset;
 	return 0;
-}
-
-/*
- * tis_sendrecv()
- *
- * Send the requested data to the TPM and then try to get its response
- *
- * @sendbuf - buffer of the data to send
- * @send_size size of the data to send
- * @recvbuf - memory to save the response to
- * @recv_len - pointer to the size of the response buffer
- *
- * Returns 0 on success (and places the number of response bytes at recv_len)
- * or TPM_DRIVER_ERR on failure.
- */
-int tis_sendrecv(const uint8_t *sendbuf, size_t send_size,
-		 uint8_t *recvbuf, size_t *recv_len)
-{
-	if (tis_senddata(sendbuf, send_size)) {
-		printf("%s:%d failed sending data to TPM\n",
-		       __FILE__, __LINE__);
-		return TPM_DRIVER_ERR;
-	}
-
-	return tis_readresponse(recvbuf, recv_len);
 }

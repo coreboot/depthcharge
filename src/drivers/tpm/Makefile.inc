@@ -17,4 +17,5 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-depthcharge-y += tpm.c
+depthcharge-$(CONFIG_DRIVER_TPM_DUMMY) += dummy.c
+depthcharge-$(CONFIG_DRIVER_TPM_LPC) += lpctpm.c
