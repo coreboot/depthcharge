@@ -26,10 +26,10 @@ NETBOOT_ELF = $(obj)/netboot.elf
 real-target: $(NETBOOT_ELF)
 
 $(NETBOOT_ELF): $(src)/.config $$(depthcharge-objs) $$(netboot-objs) \
-		$$(net-objs) $$(uip-objs) prepare
+		$$(net-objs) $$(uip-objs) prepare $$(VB_LIB)
 	@printf "    LD         $(subst $(obj)/,,$(@).tmp)\n"
 	$(Q)$(XCC) $(LINK_FLAGS) -o $@.tmp $(depthcharge-objs) \
-		$(netboot-objs) $(net-objs) $(uip-objs)
+		$(netboot-objs) $(net-objs) $(uip-objs) $(VB_LIB)
 	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
 	$(Q)$(OBJCOPY) --remove-section=".shared_data" \
 		--remove-section=".cparams" --remove-section=".gbb_copy" \

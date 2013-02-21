@@ -22,6 +22,8 @@
 
 #include <libpayload.h>
 #include <usb/usb.h>
+#include <vboot_nvstorage.h>
+#include <vboot_api.h>
 
 #include "base/init_funcs.h"
 #include "base/timestamp.h"
@@ -30,10 +32,38 @@
 #include "drivers/input/input.h"
 #include "drivers/net/net.h"
 #include "drivers/timer/timer.h"
+#include "drivers/power/power.h"
 #include "net/uip.h"
 #include "net/uip_arp.h"
 #include "netboot/bootp.h"
 #include "netboot/tftp.h"
+#include "vboot/util/flag.h"
+
+static void enable_graphics(void)
+{
+	int oprom_loaded = flag_fetch(FLAG_OPROM);
+
+	// Manipulating vboot's internal data and calling its internal
+	// functions is NOT NICE and will give you athlete's foot and make
+	// you unpopular at parties. Right now it's the only way to ensure
+	// graphics are enabled, though, so it's a necessary evil.
+	if (CONFIG_OPROM_MATTERS && !oprom_loaded) {
+		printf("Enabling graphics.\n");
+
+		VbNvContext context;
+
+		VbExNvStorageRead(context.raw);
+		VbNvSetup(&context);
+
+		VbNvSet(&context, VBNV_OPROM_NEEDED, 1);
+
+		VbNvTeardown(&context);
+		VbExNvStorageWrite(context.raw);
+
+		printf("Rebooting.\n");
+		cold_reboot();
+	}
+}
 
 static void print_ip_addr(const uip_ipaddr_t *ip)
 {
@@ -54,6 +84,7 @@ int main(void)
 	// Initialize some consoles.
 	serial_init();
 	cbmem_console_init();
+	video_console_init();
 	input_init();
 
 	printf("\n\nStarting netboot...\n");
@@ -62,6 +93,9 @@ int main(void)
 
 	if (run_init_funcs())
 		halt();
+
+	// Make sure graphics are available if they aren't already.
+	enable_graphics();
 
 	dc_usb_initialize();
 
