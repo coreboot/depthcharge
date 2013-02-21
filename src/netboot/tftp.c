@@ -43,6 +43,7 @@ static TftpStatus tftp_status;
 static uint8_t *tftp_dest;
 static int tftp_got_response;
 static int tftp_blocknum;
+static uint32_t tftp_total_size;
 
 typedef struct TftpAckPacket
 {
@@ -157,6 +158,7 @@ static void tftp_callback(void)
 		memcpy(tftp_dest, new_data, new_data_len);
 		tftp_dest += new_data_len;
 	}
+	tftp_total_size += new_data_len;
 
 	// If this block was less than the maximum size, the transfer is done.
 	if (new_data_len < TftpMaxBlockSize) {
@@ -180,7 +182,8 @@ static void tftp_callback(void)
 	tftp_got_response = 1;
 }
 
-int tftp_read(void *dest, uip_ipaddr_t *server_ip, const char *bootfile)
+int tftp_read(void *dest, uip_ipaddr_t *server_ip, const char *bootfile,
+	uint32_t *size)
 {
 	// Build the read request packet.
 	uint16_t opcode = htonw(TftpReadReq);
@@ -217,6 +220,7 @@ int tftp_read(void *dest, uip_ipaddr_t *server_ip, const char *bootfile)
 	tftp_status = TftpPending;
 	tftp_dest = dest;
 	tftp_blocknum = 1;
+	tftp_total_size = 0;
 
 	// Poll the network driver until the transaction is done.
 
@@ -251,6 +255,8 @@ int tftp_read(void *dest, uip_ipaddr_t *server_ip, const char *bootfile)
 		// The error was printed when it was received.
 		return -1;
 	} else {
+		if (size)
+			*size = tftp_total_size;
 		printf(" done.\n");
 		return 0;
 	}

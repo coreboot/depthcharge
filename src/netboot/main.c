@@ -106,10 +106,12 @@ int main(void)
 	print_ip_addr(&server_ip);
 	printf("\nThe boot file is %s\n", bootfile);
 
-	if (tftp_read(payload, &server_ip, bootfile)) {
+	uint32_t size;
+	if (tftp_read(payload, &server_ip, bootfile, &size)) {
 		printf("Tftp failed.\n");
 		halt();
 	}
+	printf("The bootfile was %d bytes long.\n", size);
 
 	/* Jump into payload. */
 
