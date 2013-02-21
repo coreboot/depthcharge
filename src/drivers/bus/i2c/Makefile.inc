@@ -17,4 +17,4 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-depthcharge-$(CONFIG_ARCH_ARM) += dummy.c
+depthcharge-$(CONFIG_DRIVER_BUS_I2C_DUMMY) += dummy.c
