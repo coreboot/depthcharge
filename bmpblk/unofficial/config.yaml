@@ -18,6 +18,8 @@ images:
   TONORM: tonorm.bmp
   WAIT: wait.bmp
   TONORM_CONFIRM: tonorm_confirm.bmp
+  CHARGE: charge.bmp
+  CHARGE_EMPTY: charge_empty.bmp
 screens:
   scr_en_dev:
     - [0, 0, UNOFFICIAL]
@@ -63,10 +65,18 @@ screens:
     - [0, 0, UNOFFICIAL]
     - [221, 372, TONORM_CONFIRM]
     - [100, 175, $HWID]
+  scr_charge:
+    - [0, 0, UNOFFICIAL]
+    - [305, 348, CHARGE]
+    - [100, 175, $HWID]
+  scr_charge_empty:
+    - [0, 0, UNOFFICIAL]
+    - [305, 348, CHARGE_EMPTY]
+    - [100, 175, $HWID]
 
 localizations:
-  - [ scr_en_dev, scr_en_remove, scr_en_yuck, scr_en_insert, scr_en_todev, scr_en_tonorm, scr_en_wait, scr_en_tonorm_confirm ]
-  - [ scr_gb_dev, scr_en_remove, scr_en_yuck, scr_gb_insert, scr_en_todev, scr_en_tonorm, scr_en_wait, scr_en_tonorm_confirm ]
+  - [ scr_en_dev, scr_en_remove, scr_en_yuck, scr_en_insert, scr_en_todev, scr_en_tonorm, scr_en_wait, scr_en_tonorm_confirm, scr_charge, scr_charge_empty ]
+  - [ scr_gb_dev, scr_en_remove, scr_en_yuck, scr_gb_insert, scr_en_todev, scr_en_tonorm, scr_en_wait, scr_en_tonorm_confirm, scr_charge, scr_charge_empty ]
 locale_index:
   - en
   - en_GB
