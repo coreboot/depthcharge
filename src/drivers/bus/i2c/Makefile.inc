@@ -18,3 +18,4 @@
 ##
 
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_DUMMY) += dummy.c
+depthcharge-$(CONFIG_DRIVER_BUS_I2C_S3C24X0) += s3c24x0.c

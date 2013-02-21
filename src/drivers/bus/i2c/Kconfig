@@ -18,3 +18,7 @@
 config DRIVER_BUS_I2C_DUMMY
 	bool "Dummy I2C driver"
 	default n
+
+config DRIVER_BUS_I2C_S3C24X0
+	bool "Exynos S3C24X0 I2C driver"
+	default n
