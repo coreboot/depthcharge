@@ -85,7 +85,7 @@ static int i2c_claim_bus(int bus)
 	writel(readl(gpf0dat) & ~0x8, gpf0dat);
 
 	// Wait for the EC to give it to us.
-	int timeout = 200 * 1000; // 200ms.
+	int timeout = 2000 * 100; // 2s.
 	while (timeout--) {
 		if (readl(gpe0dat) & 0x10)
 			return 0;
@@ -136,7 +136,7 @@ static int i2c_got_ack(I2cRegs *regs)
 static int i2c_init(I2cRegs *regs)
 {
 
-	writeb(I2cConIntEn | I2cConIntPending | 0x46, &regs->con);
+	writeb(I2cConIntEn | I2cConIntPending | 0x42, &regs->con);
 
 	// Set gpf0dat[3] to 1 to release the bus.
 	writel(readl(gpf0dat) | 0x8, gpf0dat);
@@ -178,7 +178,7 @@ static I2cRegs *i2c_get_regs(int bus_num)
 
 static int i2c_wait_for_idle(I2cRegs *regs)
 {
-	int timeout = 100 * 1000; // 100ms.
+	int timeout = 1000 * 100; // 1s.
 	while (timeout--) {
 		if (!(readb(&regs->stat) & I2cStatBusy))
 			return 0;
@@ -190,12 +190,14 @@ static int i2c_wait_for_idle(I2cRegs *regs)
 
 static int i2c_wait_for_int(I2cRegs *regs)
 {
-	int timeout = 100 * 1000; // 100ms.
-	while (timeout && !i2c_int_pending(regs))
-		timeout--;
-	if (!timeout)
-		printf("I2C timeout waiting for I2C interrupt.\n");
-	return !timeout;
+	int timeout = 1000 * 100; // 1s.
+	while (timeout--) {
+		if (i2c_int_pending(regs))
+			return 0;
+		udelay(10);
+	}
+	printf("I2C timeout waiting for I2C interrupt.\n");
+	return 1;
 }
 
 static int i2c_send_stop(I2cRegs *regs)
