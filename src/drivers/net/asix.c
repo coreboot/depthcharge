@@ -38,9 +38,9 @@
 
 static int send_control_dev_req(usbdev_t *dev, dev_req_t *req, void *data)
 {
-	return dev->controller->control(
+	return (dev->controller->control(
 		dev, req->data_dir == device_to_host ? IN : OUT,
-		sizeof(dev_req_t), req, req->wLength, (uint8_t *)data);
+		sizeof(dev_req_t), req, req->wLength, (uint8_t *)data) < 0);
 }
 
 static int asix_ctrl_read(usbdev_t *dev, uint8_t request, uint16_t value,
@@ -304,7 +304,7 @@ int asix_send(NetDevice *net_dev, void *buf, uint16_t len)
 		len++;
 
 	if (usb_dev->controller->bulk(asix_dev->bulk_out,
-			(len + sizeof(packet_len)) * 2, msg, 0)) {
+			len + sizeof(packet_len), msg, 0) < 0) {
 		printf("ASIX: Failed to send packet.\n");
 		return 1;
 	}
@@ -318,39 +318,38 @@ int asix_recv(NetDevice *net_dev, void *buf, uint16_t *len, int maxlen)
 	usbdev_t *usb_dev = gen_dev->dev;
 	AsixDev *asix_dev = gen_dev->dev_data;
 
-	static uint32_t packet_len;
+	uint32_t packet_len;
+	static int32_t buf_size = 0;
 	static uint8_t msg[RxUrbSize + sizeof(packet_len)];
 	static int offset;
 
-	assert(maxlen < RxUrbSize);
-
-	if (!packet_len) {
-		memset(msg, 0, RxUrbSize);
-		if (usb_dev->controller->bulk(asix_dev->bulk_in,
-				RxUrbSize, msg, 0)) {
-			*len = 0;
-			return 0;
-		}
+	if (offset >= buf_size) {
 		offset = 0;
-		memcpy(&packet_len, msg, sizeof(packet_len));
+		buf_size = usb_dev->controller->bulk(asix_dev->bulk_in,
+				RxUrbSize, msg, 0);
+		if (buf_size < 0)
+			return 1;
 	}
 
-	if (!packet_len) {
+	if (!buf_size) {
 		*len = 0;
 		return 0;
 	}
+
+	memcpy(&packet_len, msg + offset, sizeof(packet_len));
+
 	*len = (packet_len & 0xffff);
 	packet_len = (packet_len >> 16) ^ 0xffff;
 	if (*len != packet_len) {
-		packet_len = 0;
+		buf_size = 0;
 		offset = 0;
 		printf("ASIX: Malformed packet length.\n");
 		return 1;
 	}
 	if (packet_len & 1)
 		packet_len++;
-	if (packet_len > maxlen || offset + packet_len > RxUrbSize) {
-		packet_len = 0;
+	if (packet_len > maxlen || offset + packet_len > buf_size) {
+		buf_size = 0;
 		offset = 0;
 		printf("ASIX: Packet is too large.\n");
 		return 1;
@@ -358,7 +357,6 @@ int asix_recv(NetDevice *net_dev, void *buf, uint16_t *len, int maxlen)
 
 	memcpy(buf, msg + offset + sizeof(packet_len), packet_len);
 	offset += sizeof(packet_len) + packet_len;
-	memcpy(&packet_len, msg + offset, sizeof(packet_len));
 
 	return 0;
 }
