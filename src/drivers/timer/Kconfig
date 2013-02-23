@@ -19,3 +19,17 @@ config DRIVER_TIMER_DUMMY
 	bool "Dummy timer driver"
 	depends on !ARCH_X86
 	default n
+
+config DRIVER_TIMER_MCT
+	bool "Exynos MCT (multi-core timer) driver"
+	depends on ARCH_ARM
+	default n
+
+config DRIVER_TIMER_MCT_HZ
+	int "Exynos MCT frequency"
+	depends on DRIVER_TIMER_MCT
+	default 24000000
+
+config DRIVER_TIMER_MCT_ADDRESS
+	hex "Exynos MCT base address"
+	depends on DRIVER_TIMER_MCT

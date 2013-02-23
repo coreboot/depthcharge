@@ -18,3 +18,4 @@
 ##
 
 depthcharge-$(CONFIG_DRIVER_TIMER_DUMMY) += dummy.c
+depthcharge-$(CONFIG_DRIVER_TIMER_MCT) += mct.c
