@@ -99,7 +99,7 @@ int main(void)
 
 	dc_usb_initialize();
 
-	srand(get_raw_timer_value());
+	srand(timer_raw_value());
 
 	printf("Looking for network device... ");
 	while (!net_get_device())

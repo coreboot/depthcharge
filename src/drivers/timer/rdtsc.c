@@ -21,10 +21,16 @@
  */
 
 #include <arch/rdtsc.h>
+#include <libpayload.h>
 
 #include "drivers/timer/timer.h"
 
-uint64_t get_raw_timer_value(void)
+uint64_t timer_hz(void)
+{
+	return lib_sysinfo.cpu_khz * 1000;
+}
+
+uint64_t timer_raw_value(void)
 {
 	return rdtsc();
 }

@@ -28,7 +28,7 @@
 
 uint64_t VbExGetTimer(void)
 {
-	return get_timer_value();
+	return timer_value();
 }
 
 void VbExSleepMs(uint32_t msec)

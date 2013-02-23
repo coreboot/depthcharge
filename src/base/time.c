@@ -25,15 +25,15 @@
 
 static uint64_t base_value;
 
-uint64_t get_timer_value(void)
+uint64_t timer_value(void)
 {
-	uint64_t time_now = get_raw_timer_value();
+	uint64_t time_now = timer_raw_value();
 	if (!base_value)
 		base_value = time_now;
 	return time_now - base_value;
 }
 
-void set_base_timer_value(uint64_t new_base)
+void timer_set_base_value(uint64_t new_base)
 {
 	base_value = new_base;
 }

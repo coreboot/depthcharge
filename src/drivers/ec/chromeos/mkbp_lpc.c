@@ -32,12 +32,13 @@
 
 #include "base/time.h"
 #include "drivers/ec/chromeos/mkbp.h"
+#include "drivers/timer/timer.h"
 
 static int wait_for_sync(struct mkbp_dev *dev)
 {
-	uint64_t start = get_timer_value();
+	uint64_t start = timer_value();
 	while (inb(EC_LPC_ADDR_HOST_CMD) & EC_LPC_STATUS_BUSY_MASK) {
-		if (get_timer_value() - start > 1000 * lib_sysinfo.cpu_khz) {
+		if (timer_value() - start > timer_hz()) {
 			printf("%s: Timeout waiting for MKBP sync\n", __func__);
 			return -1;
 		}

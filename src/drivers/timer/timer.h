@@ -22,6 +22,7 @@
 
 #include <stdint.h>
 
-uint64_t get_raw_timer_value(void);
+uint64_t timer_hz(void);
+uint64_t timer_raw_value(void);
 
 #endif /* __DRIVERS_TIMER_TIMER_H__ */

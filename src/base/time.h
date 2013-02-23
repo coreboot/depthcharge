@@ -22,7 +22,7 @@
 
 #include <stdint.h>
 
-uint64_t get_timer_value(void);
-void set_base_timer_value(uint64_t new_base);
+uint64_t timer_value(void);
+void timer_set_base_value(uint64_t new_base);
 
 #endif /* __BASE_TIME_H__ */

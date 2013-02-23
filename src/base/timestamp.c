@@ -41,7 +41,7 @@ static struct timestamp_table *ts_table;
 void timestamp_init(void)
 {
 	ts_table = lib_sysinfo.tstamp_table;
-	set_base_timer_value(ts_table->base_time);
+	timer_set_base_value(ts_table->base_time);
 	timestamp_add_now(TS_START);
 }
 
@@ -59,5 +59,5 @@ void timestamp_add(enum timestamp_id id, uint64_t ts_time)
 
 void timestamp_add_now(enum timestamp_id id)
 {
-	timestamp_add(id, get_raw_timer_value());
+	timestamp_add(id, timer_raw_value());
 }

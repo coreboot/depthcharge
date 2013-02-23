@@ -22,7 +22,7 @@
 
 #include "drivers/timer/timer.h"
 
-uint64_t get_raw_timer_value(void)
+uint64_t timer_raw_value(void)
 {
 	return 0;
 }
