@@ -12,6 +12,8 @@
 #include <libpayload.h>
 
 #include "drivers/bus/i2c/i2c.h"
+#include "drivers/gpio/gpio.h"
+#include "drivers/gpio/s5p.h"
 
 typedef struct __attribute__ ((packed)) I2cRegs
 {
@@ -66,14 +68,6 @@ static I2cBus i2c_busses[] = {
 	{ (I2cRegs *)(uintptr_t)0x12cd0000 }
 };
 
-static const uint32_t *gpa2con = (uint32_t *)(uintptr_t)(0x11400000 + 0x40);
-static const uint32_t *gpa2pud = (uint32_t *)(uintptr_t)(0x11400000 + 0x48);
-static const uint32_t *gpe0con = (uint32_t *)(uintptr_t)(0x13400000 + 0x00);
-static const uint32_t *gpe0dat = (uint32_t *)(uintptr_t)(0x13400000 + 0x04);
-static const uint32_t *gpe0pud = (uint32_t *)(uintptr_t)(0x13400000 + 0x08);
-static const uint32_t *gpf0con = (uint32_t *)(uintptr_t)(0x13400000 + 0x40);
-static const uint32_t *gpf0dat = (uint32_t *)(uintptr_t)(0x13400000 + 0x48);
-static const uint32_t *gpf0pud = (uint32_t *)(uintptr_t)(0x13400000 + 0x48);
 static const uint32_t *i2c_cfg = (uint32_t *)(uintptr_t)(0x10050000 + 0x234);
 
 static int i2c_claim_bus(int bus)
@@ -82,18 +76,24 @@ static int i2c_claim_bus(int bus)
 		return 0;
 
 	// Request the bus.
-	writel(readl(gpf0dat) & ~0x8, gpf0dat);
+	if (gpio_set_value(s5p_gpio_index(GPIO_F, 0, 3), 0) < 0)
+		return 1;
 
 	// Wait for the EC to give it to us.
 	int timeout = 2000 * 100; // 2s.
 	while (timeout--) {
-		if (readl(gpe0dat) & 0x10)
+		int value = gpio_get_value(s5p_gpio_index(GPIO_E, 0, 4));
+		if (value  < 0) {
+			gpio_set_value(s5p_gpio_index(GPIO_F, 0, 3), 1);
+			return 1;
+		}
+		if (value == 1)
 			return 0;
 		udelay(10);
 	}
 
 	// Time out, recind our request.
-	writel(readl(gpf0dat) | 0x8, gpf0dat);
+	gpio_set_value(s5p_gpio_index(GPIO_F, 0, 3), 1);
 
 	return 1;
 }
@@ -103,7 +103,7 @@ static void i2c_release_bus(int bus)
 	if (bus != 4)
 		return;
 
-	writel(readl(gpf0dat) | 0x8, gpf0dat);
+	gpio_set_value(s5p_gpio_index(GPIO_F, 0, 3), 1);
 
 	return;
 }
@@ -138,20 +138,27 @@ static int i2c_init(I2cRegs *regs)
 
 	writeb(I2cConIntEn | I2cConIntPending | 0x42, &regs->con);
 
-	// Set gpf0dat[3] to 1 to release the bus.
-	writel(readl(gpf0dat) | 0x8, gpf0dat);
+	// Release the bus.
+	if (gpio_set_value(s5p_gpio_index(GPIO_F, 0, 3), 1) < 0)
+		return 1;
 
-	// Set gpa2con[0] and [1] set to 3 for I2C.
-	writel((readl(gpa2con) & ~0xff) | 0x33, gpa2con);
-	// Set gpf0con[3] to output.
-	writel((readl(gpf0con) & ~0xf000) | 0x1000, gpf0con);
+	// Set gpa20 and gpa21 to 3 for I2C.
+	if (gpio_use(s5p_gpio_index(GPIO_A, 2, 0), 3) < 0 ||
+			gpio_use(s5p_gpio_index(GPIO_A, 2, 1), 3) < 0)
+		return 1;
+	// Set gpf03 to output.
+	if (gpio_direction(s5p_gpio_index(GPIO_F, 0, 3), 0) < 0)
+		return 1;
 	// Set gpe0con[4] to input.
-	writel(readl(gpe0con) & ~0xf0000, gpe0con);
+	if (gpio_direction(s5p_gpio_index(GPIO_E, 0, 4), 1) < 0)
+		return 1;
 
 	// Turn off pull-ups/downs.
-	writel(readl(gpa2pud) & ~0xf, gpa2pud);
-	writel(readl(gpe0pud) & ~(0x3 << (2 * 4)), gpe0pud);
-	writel(readl(gpf0pud) & ~(0x3 << (2 * 3)), gpf0pud);
+	if (s5p_gpio_set_pud(s5p_gpio_index(GPIO_A, 2, 0), 0) < 0 ||
+		s5p_gpio_set_pud(s5p_gpio_index(GPIO_A, 2, 1), 0) < 0 ||
+		s5p_gpio_set_pud(s5p_gpio_index(GPIO_E, 0, 4), 0) < 0 ||
+		s5p_gpio_set_pud(s5p_gpio_index(GPIO_F, 0, 3), 0) < 0)
+		return 1;
 
 	// Switch from hi speed I2C to the normal one.
 	writel(0x0, i2c_cfg);
