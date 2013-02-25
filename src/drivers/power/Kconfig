@@ -21,6 +21,10 @@ choice
 	help
 	  The driver for rebooting and powering off.
 
+config DRIVER_POWER_EXYNOS
+	bool "Exynos SOC"
+	depends on ARCH_ARM
+
 config DRIVER_POWER_PCH
 	bool "Intel chipsets"
 	depends on ARCH_X86
