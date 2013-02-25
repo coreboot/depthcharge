@@ -29,6 +29,10 @@ config DRIVER_GPIO_LYNXPOINT_LP
 	bool "Intel Lynxpoint LP PCH"
 	depends on ARCH_X86
 
+config DRIVER_GPIO_S5P
+	bool "Exynos S5P"
+	depends on ARCH_ARM
+
 config DRIVER_GPIO_STUB
 	bool "Stub driver"
 

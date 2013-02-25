@@ -19,5 +19,6 @@
 
 depthcharge-$(CONFIG_DRIVER_GPIO_LYNXPOINT_LP) += lynxpoint_lp.c
 depthcharge-$(CONFIG_DRIVER_GPIO_PCH) += pch.c
+depthcharge-$(CONFIG_DRIVER_GPIO_S5P) += s5p.c
 depthcharge-$(CONFIG_DRIVER_GPIO_STUB) += stub.c
 depthcharge-y += sysinfo.c
