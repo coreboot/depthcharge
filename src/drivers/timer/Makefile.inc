@@ -17,5 +17,4 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-depthcharge-$(CONFIG_DRIVER_TIMER_RDTSC) += rdtsc.c
-depthcharge-$(CONFIG_ARCH_ARM) += dummy.c
+depthcharge-$(CONFIG_DRIVER_TIMER_DUMMY) += dummy.c

@@ -15,16 +15,7 @@
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
-choice
-	prompt "System timer"
-	help
-	  The timer which continuously increases to measure system time.
-
-config DRIVER_TIMER_RDTSC
-	bool "TSC"
+config DRIVER_TIMER_DUMMY
+	bool "Dummy timer driver"
+	depends on !ARCH_X86
 	default n
-	depends on ARCH_X86
-	help
-	  The time stamp counter which is read with the rdtsc instruction.
-
-endchoice
