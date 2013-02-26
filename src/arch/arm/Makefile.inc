@@ -21,5 +21,9 @@ depthcharge-y += commonparams.c
 depthcharge-y += gcc.c
 depthcharge-y += pci_stub.c
 depthcharge-y += physmem.c
+depthcharge-y += memcpy.S
+depthcharge-y += memset.S
 
 trampoline-y += gcc.c
+trampoline-y += memcpy.S
+trampoline-y += memset.S
