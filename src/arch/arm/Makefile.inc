@@ -27,3 +27,4 @@ depthcharge-y += memset.S
 trampoline-y += gcc.c
 trampoline-y += memcpy.S
 trampoline-y += memset.S
+trampoline-y += trampoline.c
