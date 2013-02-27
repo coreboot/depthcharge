@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Google Inc.
+ * Copyright 2011 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -20,27 +20,90 @@
  * MA 02111-1307 USA
  */
 
+/*
+ * The code in this file is based on the article "Writing a TPM Device Driver"
+ * published on http://ptgmedia.pearsoncmg.com.
+ *
+ * One principal difference is that in the simplest config the other than 0
+ * TPM localities do not get mapped by some devices (for instance, by Infineon
+ * slb9635), so this driver provides access to locality 0 only.
+ */
+
 #include <arch/io.h>
+#include <config.h>
 #include <endian.h>
 #include <libpayload.h>
-#include <vboot_api.h>
+#include <stdint.h>
 
 #include "drivers/tpm/tpm.h"
 
-#ifdef DEBUG
-#define	TPM_DEBUG(fmt, args...)		\
-	if (TPM_DEBUG_ON) {		\
-		printf(lpc_tpm);	\
-		printf(fmt , ##args);	\
-	}
-#else
-#define TPM_DEBUG(fmt, args...) if (0) {}
-#endif
+struct tpm_locality {
+	uint32_t access;
+	uint8_t padding0[4];
+	uint32_t int_enable;
+	uint8_t vector;
+	uint8_t padding1[3];
+	uint32_t int_status;
+	uint32_t int_capability;
+	uint32_t tpm_status;
+	uint8_t padding2[8];
+	uint8_t data;
+	uint8_t padding3[3803];
+	uint32_t did_vid;
+	uint8_t rid;
+	uint8_t padding4[251];
+};
+
+/*
+ * This pointer refers to the TPM chip, 5 of its localities are mapped as an
+ * array.
+ */
+#define TPM_TOTAL_LOCALITIES	5
+static struct tpm_locality *lpc_tpm_dev = (void *)(uintptr_t)0xfed40000;
+
+/* Some registers' bit field definitions */
+#define TIS_STS_VALID                  (1 << 7) /* 0x80 */
+#define TIS_STS_COMMAND_READY          (1 << 6) /* 0x40 */
+#define TIS_STS_TPM_GO                 (1 << 5) /* 0x20 */
+#define TIS_STS_DATA_AVAILABLE         (1 << 4) /* 0x10 */
+#define TIS_STS_EXPECT                 (1 << 3) /* 0x08 */
+#define TIS_STS_RESPONSE_RETRY         (1 << 1) /* 0x02 */
+
+#define TIS_ACCESS_TPM_REG_VALID_STS   (1 << 7) /* 0x80 */
+#define TIS_ACCESS_ACTIVE_LOCALITY     (1 << 5) /* 0x20 */
+#define TIS_ACCESS_BEEN_SEIZED         (1 << 4) /* 0x10 */
+#define TIS_ACCESS_SEIZE               (1 << 3) /* 0x08 */
+#define TIS_ACCESS_PENDING_REQUEST     (1 << 2) /* 0x04 */
+#define TIS_ACCESS_REQUEST_USE         (1 << 1) /* 0x02 */
+#define TIS_ACCESS_TPM_ESTABLISHMENT   (1 << 0) /* 0x01 */
+
+#define TIS_STS_BURST_COUNT_MASK       (0xffff)
+#define TIS_STS_BURST_COUNT_SHIFT      (8)
+
+/*
+ * Error value returned if a tpm register does not enter the expected state
+ * after continuous polling. No actual TPM register reading ever returns -1,
+ * so this value is a safe error indication to be mixed with possible status
+ * register values.
+ */
+#define TPM_TIMEOUT_ERR			(-1)
+
+/* Error value returned on various TPM driver errors. */
+#define TPM_DRIVER_ERR		(1)
+
+ /* 1 second is plenty for anything TPM does. */
+#define MAX_DELAY_US	(1000 * 1000)
+
+/* Retrieve burst count value out of the status register contents. */
+static uint16_t burst_count(uint32_t status)
+{
+	return (status >> TIS_STS_BURST_COUNT_SHIFT) & TIS_STS_BURST_COUNT_MASK;
+}
 
 /*
  * Structures defined below allow creating descriptions of TPM vendor/device
  * ID information for run time discovery. The only device the system knows
- * about at this time is Infineon slb9635
+ * about at this time is Infineon slb9635.
  */
 struct device_name {
 	uint16_t dev_id;
@@ -49,8 +112,8 @@ struct device_name {
 
 struct vendor_name {
 	uint16_t vendor_id;
-	const char * vendor_name;
-	const struct device_name * dev_names;
+	const char *vendor_name;
+	const struct device_name *dev_names;
 };
 
 static const struct device_name atmel_devices[] = {
@@ -82,46 +145,46 @@ static const struct vendor_name vendor_names[] = {
 
 /*
  * Cached vendor/device ID pair to indicate that the device has been already
- * discovered
+ * discovered.
  */
 static uint32_t vendor_dev_id;
 
-static int is_byte_reg(uint32_t reg)
+/* TPM access wrappers to support tracing */
+static uint8_t tpm_read_byte(const uint8_t *ptr)
 {
-	/*
-	 * These TPM registers are 8 bits wide and as such require byte access
-	 * on writes and truncated value on reads.
-	 */
-	return ((reg == TIS_REG_ACCESS)	||
-		(reg == TIS_REG_INT_VECTOR) ||
-		(reg == TIS_REG_DATA_FIFO));
+	uint8_t ret = readb(ptr);
+	if (0)
+		printf("lpc_tpm: Read reg 0x%4.4x returns 0x%2.2x\n",
+		      (unsigned)((uintptr_t)ptr - (uintptr_t)lpc_tpm_dev), ret);
+	return ret;
 }
 
-/* TPM access functions are carved out to make tracing easier. */
-uint32_t tpm_read(int locality, uint32_t reg)
+static uint32_t tpm_read_word(const uint32_t *ptr)
 {
-	uint32_t value;
-	/*
-	 * Data FIFO register must be read and written in byte access mode,
-	 * otherwise the FIFO values are returned 4 bytes at a time.
-	 */
-	if (is_byte_reg(reg))
-		value = readb(TIS_REG(locality, reg));
-	else
-		value = readl(TIS_REG(locality, reg));
-
-	TPM_DEBUG("Read reg 0x%x returns 0x%x\n", reg, value);
-	return value;
+	uint32_t ret = readl(ptr);
+	if (0)
+		printf("lpc_tpm: Read reg 0x%4.4x returns 0x%8.8x\n",
+			(unsigned)((uintptr_t)ptr - (uintptr_t)lpc_tpm_dev),
+			ret);
+	return ret;
 }
 
-void tpm_write(uint32_t value, int locality,  uint32_t reg)
+static void tpm_write_byte(uint8_t value, uint8_t *ptr)
 {
-	TPM_DEBUG("Write reg 0x%x with 0x%x\n", reg, value);
+	if (0)
+		printf("lpc_tpm: Write reg 0x%4.4x with 0x%2.2x\n",
+			(unsigned)((uintptr_t)ptr - (uintptr_t)lpc_tpm_dev),
+			value);
+	writeb(value, ptr);
+}
 
-	if (is_byte_reg(reg))
-		writeb(value & 0xff, TIS_REG(locality, reg));
-	else
-		writel(value, TIS_REG(locality, reg));
+static void tpm_write_word(uint32_t value, uint32_t *ptr)
+{
+	if (0)
+		printf("lpc_tpm: Write reg 0x%4.4x with 0x%8.8x\n",
+			(unsigned)((uintptr_t)ptr - (uintptr_t)lpc_tpm_dev),
+			value);
+	writel(value, ptr);
 }
 
 /*
@@ -130,26 +193,77 @@ void tpm_write(uint32_t value, int locality,  uint32_t reg)
  * Wait for at least a second for a register to change its state to match the
  * expected state. Normally the transition happens within microseconds.
  *
- * @reg - the TPM register offset
- * @locality - locality
+ * @reg - pointer to the TPM register
  * @mask - bitmask for the bitfield(s) to watch
  * @expected - value the field(s) are supposed to be set to
  *
  * Returns the register contents in case the expected value was found in the
  * appropriate register bits, or TPM_TIMEOUT_ERR on timeout.
  */
-uint32_t tis_wait_reg(uint8_t reg, uint8_t locality, uint8_t mask,
-		      uint8_t expected)
+static uint32_t tis_wait_reg(uint32_t *reg, uint8_t mask, uint8_t expected)
 {
 	uint32_t time_us = MAX_DELAY_US;
+
 	while (time_us > 0) {
-		uint32_t value = tpm_read(locality, reg);
+		uint32_t value = tpm_read_word(reg);
 		if ((value & mask) == expected)
 			return value;
-		udelay(1); /* 1 us */
+		udelay(1);
 		time_us--;
 	}
 	return TPM_TIMEOUT_ERR;
+}
+
+/*
+ * Probe the TPM device and try determining its manufacturer/device name.
+ *
+ * Returns 0 on success (the device is found or was found during an earlier
+ * invocation) or TPM_DRIVER_ERR if the device is not found.
+ */
+int tis_init(void)
+{
+	uint32_t didvid;
+	int i;
+	const char *device_name = "unknown";
+	const char *vendor_name = device_name;
+	const struct device_name *dev;
+	uint16_t vid, did;
+
+	if (vendor_dev_id)
+		return 0;  /* Already probed. */
+
+	didvid = tpm_read_word(&lpc_tpm_dev[0].did_vid);
+	if (!didvid || (didvid == 0xffffffff)) {
+		printf("%s: No TPM device found\n", __func__);
+		return TPM_DRIVER_ERR;
+	}
+
+	vendor_dev_id = didvid;
+
+	vid = didvid & 0xffff;
+	did = (didvid >> 16) & 0xffff;
+	for (i = 0; i < ARRAY_SIZE(vendor_names); i++) {
+		int j = 0;
+		uint16_t known_did;
+
+		if (vid == vendor_names[i].vendor_id)
+			vendor_name = vendor_names[i].vendor_name;
+		else
+			continue;
+
+		dev = &vendor_names[i].dev_names[j];
+		while ((known_did = dev->dev_id) != 0xffff) {
+			if (known_did == did) {
+				device_name = dev->dev_name;
+				break;
+			}
+			j++;
+		}
+		break;
+	}
+
+	printf("Found TPM %s by %s\n", device_name, vendor_name);
+	return 0;
 }
 
 /*
@@ -166,79 +280,30 @@ uint32_t tis_wait_reg(uint8_t reg, uint8_t locality, uint8_t mask,
  * Returns 0 on success if the TPM is ready for transactions.
  * Returns TPM_TIMEOUT_ERR if the command ready bit does not get set.
  */
-int tis_command_ready(u8 locality)
+static int tis_command_ready(uint8_t locality)
 {
-	u32 status;
+	uint32_t status;
 
 	/* 1st attempt to set command ready */
-	tpm_write(TIS_STS_COMMAND_READY, locality, TIS_REG_STS);
+	tpm_write_word(TIS_STS_COMMAND_READY,
+		       &lpc_tpm_dev[locality].tpm_status);
 
 	/* Wait for response */
-	status = tpm_read(locality, TIS_REG_STS);
+	status = tpm_read_word(&lpc_tpm_dev[locality].tpm_status);
 
 	/* Check if command ready is set yet */
 	if (status & TIS_STS_COMMAND_READY)
 		return 0;
 
 	/* 2nd attempt to set command ready */
-	tpm_write(TIS_STS_COMMAND_READY, locality, TIS_REG_STS);
+	tpm_write_word(TIS_STS_COMMAND_READY,
+		       &lpc_tpm_dev[locality].tpm_status);
 
 	/* Wait for command ready to get set */
-	status = tis_wait_reg(TIS_REG_STS, locality,
+	status = tis_wait_reg(&lpc_tpm_dev[locality].tpm_status,
 			      TIS_STS_COMMAND_READY, TIS_STS_COMMAND_READY);
 
 	return (status == TPM_TIMEOUT_ERR) ? TPM_TIMEOUT_ERR : 0;
-}
-
-/*
- * Probe the TPM device and try determining its manufacturer/device name.
- *
- * Returns 0 on success (the device is found or was found during an earlier
- * invocation) or TPM_DRIVER_ERR if the device is not found.
- */
-uint32_t tis_probe(void)
-{
-	uint32_t didvid = tpm_read(0, TIS_REG_DID_VID);
-
-	if (vendor_dev_id)
-		return 0;  /* Already probed. */
-
-	if (!didvid || (didvid == 0xffffffff)) {
-		printf("%s: No TPM device found\n", __FUNCTION__);
-		return TPM_DRIVER_ERR;
-	}
-
-	vendor_dev_id = didvid;
-
-#ifdef DEBUG
-	int i;
-	const char *device_name = "unknown";
-	const char *vendor_name = device_name;
-	const struct device_name *dev;
-	uint16_t vid = didvid & 0xffff;
-	uint16_t did = (didvid >> 16) & 0xffff;
-	for (i = 0; i < ARRAY_SIZE(vendor_names); i++) {
-		int j = 0;
-		uint16_t known_did;
-		if (vid == vendor_names[i].vendor_id) {
-			vendor_name = vendor_names[i].vendor_name;
-		} else {
-			continue;
-		}
-		dev = &vendor_names[i].dev_names[j];
-		while ((known_did = dev->dev_id) != 0xffff) {
-			if (known_did == did) {
-				device_name = dev->dev_name;
-				break;
-			}
-			j++;
-		}
-		break;
-	}
-	/* this will have to be converted into debug printout */
-	TPM_DEBUG("Found TPM %s by %s\n", device_name, vendor_name);
-#endif
-	return 0;
 }
 
 /*
@@ -252,7 +317,7 @@ uint32_t tis_probe(void)
  * Returns 0 on success, TPM_DRIVER_ERR on error (in case the device does
  * not accept the entire command).
  */
-uint32_t tis_senddata(const uint8_t *const data, uint32_t len)
+static uint32_t tis_senddata(const uint8_t * const data, uint32_t len)
 {
 	uint32_t offset = 0;
 	uint16_t burst = 0;
@@ -260,14 +325,14 @@ uint32_t tis_senddata(const uint8_t *const data, uint32_t len)
 	uint8_t locality = 0;
 	uint32_t value;
 
-	value = tis_wait_reg(TIS_REG_STS, locality, TIS_STS_COMMAND_READY,
-			     TIS_STS_COMMAND_READY);
+	value = tis_wait_reg(&lpc_tpm_dev[locality].tpm_status,
+			     TIS_STS_COMMAND_READY, TIS_STS_COMMAND_READY);
 	if (value == TPM_TIMEOUT_ERR) {
 		printf("%s:%d - failed to get 'command_ready' status\n",
 		       __FILE__, __LINE__);
 		return TPM_DRIVER_ERR;
 	}
-	burst = BURST_COUNT(value);
+	burst = burst_count(value);
 
 	while (1) {
 		unsigned count;
@@ -280,7 +345,8 @@ uint32_t tis_senddata(const uint8_t *const data, uint32_t len)
 				return TPM_DRIVER_ERR;
 			}
 			udelay(1);
-			burst = BURST_COUNT(tpm_read(locality, TIS_REG_STS));
+			burst = burst_count(tpm_read_word(&lpc_tpm_dev
+						     [locality].tpm_status));
 		}
 
 		max_cycles = 0;
@@ -296,9 +362,10 @@ uint32_t tis_senddata(const uint8_t *const data, uint32_t len)
 		 */
 		count = MIN(burst, len - offset - 1);
 		while (count--)
-			tpm_write(data[offset++], locality, TIS_REG_DATA_FIFO);
+			tpm_write_byte(data[offset++],
+				  &lpc_tpm_dev[locality].data);
 
-		value = tis_wait_reg(TIS_REG_STS, locality,
+		value = tis_wait_reg(&lpc_tpm_dev[locality].tpm_status,
 				     TIS_STS_VALID, TIS_STS_VALID);
 
 		if ((value == TPM_TIMEOUT_ERR) || !(value & TIS_STS_EXPECT)) {
@@ -307,24 +374,24 @@ uint32_t tis_senddata(const uint8_t *const data, uint32_t len)
 			return TPM_DRIVER_ERR;
 		}
 
-		burst = BURST_COUNT(value);
-		if ((offset == (len - 1)) && burst)
+		burst = burst_count(value);
+		if ((offset == (len - 1)) && burst) {
 			/*
 			 * We need to be able to send the last byte to the
 			 * device, so burst size must be nonzero before we
 			 * break out.
 			 */
 			break;
+		}
 	}
 
 	/* Send the last byte. */
-	tpm_write(data[offset++], locality, TIS_REG_DATA_FIFO);
-
+	tpm_write_byte(data[offset++], &lpc_tpm_dev[locality].data);
 	/*
 	 * Verify that TPM does not expect any more data as part of this
 	 * command.
 	 */
-	value = tis_wait_reg(TIS_REG_STS, locality,
+	value = tis_wait_reg(&lpc_tpm_dev[locality].tpm_status,
 			     TIS_STS_VALID, TIS_STS_VALID);
 	if ((value == TPM_TIMEOUT_ERR) || (value & TIS_STS_EXPECT)) {
 		printf("%s:%d unexpected TPM status 0x%x\n",
@@ -333,8 +400,7 @@ uint32_t tis_senddata(const uint8_t *const data, uint32_t len)
 	}
 
 	/* OK, sitting pretty, let's start the command execution. */
-	tpm_write(TIS_STS_TPM_GO, locality, TIS_REG_STS);
-
+	tpm_write_word(TIS_STS_TPM_GO, &lpc_tpm_dev[locality].tpm_status);
 	return 0;
 }
 
@@ -350,40 +416,43 @@ uint32_t tis_senddata(const uint8_t *const data, uint32_t len)
  * errors (misformatted TPM data or synchronization problems) returns
  * TPM_DRIVER_ERR.
  */
-uint32_t tis_readresponse(uint8_t *buffer, uint32_t *len)
+static uint32_t tis_readresponse(uint8_t *buffer, uint32_t *len)
 {
-	uint16_t burst_count;
-	uint32_t status;
+	uint16_t burst;
+	uint32_t value;
 	uint32_t offset = 0;
 	uint8_t locality = 0;
 	const uint32_t has_data = TIS_STS_DATA_AVAILABLE | TIS_STS_VALID;
 	uint32_t expected_count = *len;
 	int max_cycles = 0;
 
-	/* Wait for the TPM to process the command */
-	status = tis_wait_reg(TIS_REG_STS, locality, has_data, has_data);
-	if (status == TPM_TIMEOUT_ERR) {
+	/* Wait for the TPM to process the command. */
+	value = tis_wait_reg(&lpc_tpm_dev[locality].tpm_status,
+			      has_data, has_data);
+	if (value == TPM_TIMEOUT_ERR) {
 		printf("%s:%d failed processing command\n",
 		       __FILE__, __LINE__);
 		return TPM_DRIVER_ERR;
 	}
 
 	do {
-		while ((burst_count = BURST_COUNT(status)) == 0) {
+		while ((burst = burst_count(value)) == 0) {
 			if (max_cycles++ == MAX_DELAY_US) {
 				printf("%s:%d TPM stuck on read\n",
 				       __FILE__, __LINE__);
 				return TPM_DRIVER_ERR;
 			}
 			udelay(1);
-			status = tpm_read(locality, TIS_REG_STS);
+			value = tpm_read_word(&lpc_tpm_dev
+					      [locality].tpm_status);
 		}
 
 		max_cycles = 0;
 
-		while (burst_count-- && (offset < expected_count)) {
-			buffer[offset++] = (uint8_t) tpm_read(locality,
-							 TIS_REG_DATA_FIFO);
+		while (burst-- && (offset < expected_count)) {
+			buffer[offset++] = tpm_read_byte(&lpc_tpm_dev
+							 [locality].data);
+
 			if (offset == 6) {
 				/*
 				 * We got the first six bytes of the reply,
@@ -396,7 +465,7 @@ uint32_t tis_readresponse(uint8_t *buffer, uint32_t *len)
 				memcpy(&real_length,
 				       buffer + 2,
 				       sizeof(real_length));
-				expected_count = ntohl(real_length);
+				expected_count = betohl(real_length);
 
 				if ((expected_count < offset) ||
 				    (expected_count > *len)) {
@@ -408,27 +477,27 @@ uint32_t tis_readresponse(uint8_t *buffer, uint32_t *len)
 			}
 		}
 
-		/* Wait for the next portion */
-		status = tis_wait_reg(TIS_REG_STS, locality,
-				      TIS_STS_VALID, TIS_STS_VALID);
-		if (status == TPM_TIMEOUT_ERR) {
+		/* Wait for the next portion. */
+		value = tis_wait_reg(&lpc_tpm_dev[locality].tpm_status,
+				     TIS_STS_VALID, TIS_STS_VALID);
+		if (value == TPM_TIMEOUT_ERR) {
 			printf("%s:%d failed to read response\n",
 			       __FILE__, __LINE__);
 			return TPM_DRIVER_ERR;
 		}
 
 		if (offset == expected_count)
-			break;	/* We got all we need */
+			break;	/* We got all we needed. */
 
-	} while ((status & has_data) == has_data);
+	} while ((value & has_data) == has_data);
 
 	/*
 	 * Make sure we indeed read all there was. The TIS_STS_VALID bit is
 	 * known to be set.
 	 */
-	if (status & TIS_STS_DATA_AVAILABLE) {
+	if (value & TIS_STS_DATA_AVAILABLE) {
 		printf("%s:%d wrong receive status %x\n",
-		       __FILE__, __LINE__, status);
+		       __FILE__, __LINE__, value);
 		return TPM_DRIVER_ERR;
 	}
 
@@ -438,4 +507,64 @@ uint32_t tis_readresponse(uint8_t *buffer, uint32_t *len)
 
 	*len = offset;
 	return 0;
+}
+
+int tis_open(void)
+{
+	uint8_t locality = 0; /* we use locality zero for everything. */
+
+	if (tis_close())
+		return TPM_DRIVER_ERR;
+
+	/* now request access to locality. */
+	tpm_write_word(TIS_ACCESS_REQUEST_USE, &lpc_tpm_dev[locality].access);
+
+	/* did we get a lock? */
+	if (tis_wait_reg(&lpc_tpm_dev[locality].access,
+			 TIS_ACCESS_ACTIVE_LOCALITY,
+			 TIS_ACCESS_ACTIVE_LOCALITY) == TPM_TIMEOUT_ERR) {
+		printf("%s:%d - failed to lock locality %d\n",
+		       __FILE__, __LINE__, locality);
+		return TPM_DRIVER_ERR;
+	}
+
+	/* Certain TPMs need some delay here or they hang. */
+	udelay(10);
+
+	if (tis_command_ready(locality) == TPM_TIMEOUT_ERR)
+		return TPM_DRIVER_ERR;
+
+	return 0;
+}
+
+int tis_close(void)
+{
+	uint8_t locality = 0;
+
+	if (tpm_read_word(&lpc_tpm_dev[locality].access) &
+	    TIS_ACCESS_ACTIVE_LOCALITY) {
+		tpm_write_word(TIS_ACCESS_ACTIVE_LOCALITY,
+			       &lpc_tpm_dev[locality].access);
+
+		if (tis_wait_reg(&lpc_tpm_dev[locality].access,
+				 TIS_ACCESS_ACTIVE_LOCALITY, 0) ==
+		    TPM_TIMEOUT_ERR) {
+			printf("%s:%d - failed to release locality %d\n",
+			       __FILE__, __LINE__, locality);
+			return TPM_DRIVER_ERR;
+		}
+	}
+	return 0;
+}
+
+int tis_sendrecv(const uint8_t *sendbuf, size_t send_size,
+		 uint8_t *recvbuf, size_t *recv_len)
+{
+	if (tis_senddata(sendbuf, send_size)) {
+		printf("%s:%d failed sending data to TPM\n",
+		       __FILE__, __LINE__);
+		return TPM_DRIVER_ERR;
+	}
+
+	return tis_readresponse(recvbuf, (uint32_t *)recv_len);
 }

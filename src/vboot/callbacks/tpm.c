@@ -27,66 +27,29 @@
 
 VbError_t VbExTpmInit(void)
 {
-	if (tis_probe())
+	if (tis_init())
 		return VBERROR_UNKNOWN;
 	return VbExTpmOpen();
 }
 
 VbError_t VbExTpmClose(void)
 {
-	u8 locality = 0;
-	if (tpm_read(locality, TIS_REG_ACCESS) &
-	    TIS_ACCESS_ACTIVE_LOCALITY) {
-		tpm_write(TIS_ACCESS_ACTIVE_LOCALITY, locality, TIS_REG_ACCESS);
-
-		if (tis_wait_reg(TIS_REG_ACCESS, locality,
-				 TIS_ACCESS_ACTIVE_LOCALITY, 0) ==
-		    TPM_TIMEOUT_ERR) {
-			printf("%s:%d - failed to release locality %d\n",
-			       __FILE__, __LINE__, locality);
-			return VBERROR_UNKNOWN;
-		}
-	}
+	if (tis_close())
+		return VBERROR_UNKNOWN;
 	return VBERROR_SUCCESS;
 }
 
 VbError_t VbExTpmOpen(void)
 {
-	u8 locality = 0; /* we use locality zero for everything */
-
-	if (VbExTpmClose())
+	if (tis_open())
 		return VBERROR_UNKNOWN;
-
-	/* now request access to locality */
-	tpm_write(TIS_ACCESS_REQUEST_USE, locality, TIS_REG_ACCESS);
-
-	/* did we get a lock? */
-	if (tis_wait_reg(TIS_REG_ACCESS, locality,
-			 TIS_ACCESS_ACTIVE_LOCALITY,
-			 TIS_ACCESS_ACTIVE_LOCALITY) == TPM_TIMEOUT_ERR) {
-		printf("%s:%d - failed to lock locality %d\n",
-		       __FILE__, __LINE__, locality);
-		return VBERROR_UNKNOWN;
-	}
-
-	/* Certain TPMs seem to need some delay here or they hang... */
-	udelay(50);
-
-	if (tis_command_ready(locality) == TPM_TIMEOUT_ERR)
-		return TPM_DRIVER_ERR;
-
 	return VBERROR_SUCCESS;
 }
 
 VbError_t VbExTpmSendReceive(const uint8_t *request, uint32_t request_length,
 			     uint8_t *response, uint32_t *response_length)
 {
-	if (tis_senddata(request, request_length)) {
-		printf("%s:%d failed sending data to TPM\n",
-		       __FILE__, __LINE__);
-		return VBERROR_UNKNOWN;
-	}
-	if (tis_readresponse(response, response_length))
+	if (tis_sendrecv(request, request_length, response, response_length))
 		return VBERROR_UNKNOWN;
 	return VBERROR_SUCCESS;
 }
