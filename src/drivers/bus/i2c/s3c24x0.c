@@ -142,6 +142,10 @@ static int i2c_init(I2cRegs *regs)
 	if (gpio_set_value(s5p_gpio_index(GPIO_F, 0, 3), 1) < 0)
 		return 1;
 
+	// Set gpa12 and gpa13 to 3 for I2C.
+	if (gpio_use(s5p_gpio_index(GPIO_A, 1, 2), 3) < 0 ||
+			gpio_use(s5p_gpio_index(GPIO_A, 1, 3), 3) < 0)
+		return 1;
 	// Set gpa20 and gpa21 to 3 for I2C.
 	if (gpio_use(s5p_gpio_index(GPIO_A, 2, 0), 3) < 0 ||
 			gpio_use(s5p_gpio_index(GPIO_A, 2, 1), 3) < 0)
