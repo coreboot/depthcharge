@@ -54,32 +54,24 @@ VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
 
 	void *data;
 	uint32_t size;
-	if (CONFIG_EC_SOFTWARE_SYNC) {
-		/*
-		 * If EC software sync is enabled, the EC RW hash and the
-		 * system RW are bundled together with a small header in the
-		 * front. This figures out how big the header and data are
-		 * so we hash the right amount of stuff.
-		 */
+	/* The device trees used by depthcharge all contain the 'with_index'
+	 * propery in the RW sections of the flash. That means each RW section
+	 * has a book keeping header which keeps track of the size and offset
+	 * of each firmware component. */
+	const SectionIndex *index = index_from_fmap(&area);
+	if (!index)
+		return VBERROR_UNKNOWN;
 
-		const SectionIndex *index = index_from_fmap(&area);
-		if (!index)
-			return VBERROR_UNKNOWN;
+	size = sizeof(SectionIndex) +
+		index->count * sizeof(SectionIndexEntry);
+	for (int i = 0; i < index->count; i++)
+		size += (index->entries[i].size + 3) & ~3;
 
-		size = sizeof(SectionIndex) +
-			index->count * sizeof(SectionIndexEntry);
-		for (int i = 0; i < index->count; i++)
-			size += (index->entries[i].size + 3) & ~3;
-
-		if (area.size < size) {
-			printf("Bad RW index size.\n");
-			return VBERROR_UNKNOWN;
-		}
-		data = flash_read(area.offset, size);
-	} else {
-		data = flash_read(area.offset, area.size);
-		size = area.size;
+	if (area.size < size) {
+		printf("Bad RW index size.\n");
+		return VBERROR_UNKNOWN;
 	}
+	data = flash_read(area.offset, size);
 
 	VbUpdateFirmwareBodyHash(cparams, data, size);
 
