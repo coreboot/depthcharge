@@ -54,10 +54,12 @@ VbError_t VbExHashFirmwareBody(VbCommonParams *cparams,
 
 	void *data;
 	uint32_t size;
-	/* The device trees used by depthcharge all contain the 'with_index'
+	/*
+	 * The device trees used by depthcharge all contain the 'with_index'
 	 * propery in the RW sections of the flash. That means each RW section
 	 * has a book keeping header which keeps track of the size and offset
-	 * of each firmware component. */
+	 * of each firmware component.
+	 */
 	const SectionIndex *index = index_from_fmap(&area);
 	if (!index)
 		return VBERROR_UNKNOWN;
