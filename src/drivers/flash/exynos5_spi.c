@@ -115,6 +115,14 @@ static void clrbits32(uint32_t *data, uint32_t bits)
 
 #define min(a, b) ((a)<(b)?(a):(b))
 
+static void exynos5_spi_sw_reset(void)
+{
+	clrbits32(&regs->ch_cfg, SPI_RX_CH_ON | SPI_TX_CH_ON);
+	setbits32(&regs->ch_cfg, SPI_CH_RST);
+	clrbits32(&regs->ch_cfg, SPI_CH_RST);
+	setbits32(&regs->ch_cfg, SPI_RX_CH_ON | SPI_TX_CH_ON);
+}
+
 
 static void exynos5_spi_read(uint8_t *buf, uint32_t offset, int bytes)
 {
@@ -126,9 +134,8 @@ static void exynos5_spi_read(uint8_t *buf, uint32_t offset, int bytes)
 	int words = (bytes + sizeof(uint32_t) - 1) / sizeof(uint32_t);
 
 	// Send the command and address.
-	setbits32(&regs->ch_cfg, SPI_CH_RST);
-	clrbits32(&regs->ch_cfg, SPI_CH_RST);
-	writel(sizeof(uint32_t) | SPI_PACKET_CNT_EN, &regs->pkt_cnt);
+	exynos5_spi_sw_reset();
+	writel(1 | SPI_PACKET_CNT_EN, &regs->pkt_cnt);
 	writel((ReadCommand << 24) | offset, &regs->tx_data);
 
 	// Wait for it to be transmitted.
@@ -138,8 +145,7 @@ static void exynos5_spi_read(uint8_t *buf, uint32_t offset, int bytes)
 	readl(&regs->rx_data);
 
 	// Prepare to receive the data.
-	setbits32(&regs->ch_cfg, SPI_CH_RST);
-	clrbits32(&regs->ch_cfg, SPI_CH_RST);
+	exynos5_spi_sw_reset();
 	writel(words | SPI_PACKET_CNT_EN, &regs->pkt_cnt);
 
 	while (bytes) {
@@ -159,6 +165,7 @@ static void exynos5_spi_read(uint8_t *buf, uint32_t offset, int bytes)
 			memcpy(buf, &data, received);
 			bytes -= received;
 			buf += received;
+			words--;
 		}
 	}
 
@@ -186,13 +193,10 @@ static void exynos5_spi_init(void)
 
 	setbits32(&regs->swap_cfg,
 		     SPI_RX_SWAP_EN | SPI_RX_BYTE_SWAP | SPI_RX_HWORD_SWAP);
+	clrbits32(&regs->ch_cfg, SPI_CH_HS_EN);
 
-	// Do a soft reset.
-	setbits32(&regs->ch_cfg, SPI_CH_RST);
-	clrbits32(&regs->ch_cfg, SPI_CH_RST);
-
-	// Now set rx and tx channel ON.
-	setbits32(&regs->ch_cfg, SPI_RX_CH_ON | SPI_TX_CH_ON | SPI_CH_HS_EN);
+	// Do a soft reset, which will also enable both channels.
+	exynos5_spi_sw_reset();
 
 	done = 1;
 }
