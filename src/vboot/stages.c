@@ -159,6 +159,9 @@ int vboot_select_and_load_kernel(void)
 		printf("Rebooting the EC to RO.\n");
 		reboot_ec_to_ro();
 		power_off();
+	} else if (res == VBERROR_SHUTDOWN_REQUESTED) {
+		printf("Powering off.\n");
+		power_off();
 	}
 	if (res != VBERROR_SUCCESS) {
 		printf("VbSelectAndLoadKernel returned %d, "
