@@ -234,7 +234,7 @@ static int i2c_xmit_buf(I2cRegs *regs, int read, int chip, uint8_t *data,
 		return 1;
 
 	if (!i2c_got_ack(regs)) {
-		printf("I2c nacked.\n");
+		// Nobody home, but they may just be asleep.
 		return 1;
 	}
 
