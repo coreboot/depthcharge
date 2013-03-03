@@ -27,4 +27,16 @@ config DRIVER_TPM_LPC
 	bool "LPC"
 	default n
 
+config DRIVER_TPM_I2C
+	bool "I2C"
+	default n
+
 endchoice
+
+config DRIVER_TPM_I2C_BUS
+	int "I2C TPM bus"
+	depends on DRIVER_TPM_I2C
+
+config DRIVER_TPM_I2C_ADDR
+	hex "I2C TPM chip address"
+	depends on DRIVER_TPM_I2C

@@ -19,3 +19,6 @@
 
 depthcharge-$(CONFIG_DRIVER_TPM_DUMMY) += dummy.c
 depthcharge-$(CONFIG_DRIVER_TPM_LPC) += lpctpm.c
+depthcharge-$(CONFIG_DRIVER_TPM_I2C) += tis_i2c.c
+depthcharge-$(CONFIG_DRIVER_TPM_I2C) += slb9635_i2c/tpm.c
+depthcharge-$(CONFIG_DRIVER_TPM_I2C) += slb9635_i2c/tpm_tis_i2c.c
