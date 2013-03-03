@@ -6,6 +6,7 @@
 		hwid = "DAISY TEST A-A 9382";
 	};
 	chromeos-config {
+		gbb-flag-disable-fw-rollback-check;
 	};
 	flash@0 {
 		#address-cells = <1>;
