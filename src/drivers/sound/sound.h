@@ -13,7 +13,8 @@
 
 #include <stdint.h>
 
-void enable_beep(uint32_t frequency);
-void disable_beep(void);
+int sound_start(uint32_t frequency);
+int sound_stop(void);
+int sound_play(uint32_t msec, uint32_t frequency);
 
 #endif /* __DRIVERS_SOUND_SOUND_H__ */

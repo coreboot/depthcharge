@@ -12,12 +12,18 @@
 
 #include "drivers/sound/sound.h"
 
-void enable_beep(uint32_t frequency)
+int sound_start(uint32_t frequency)
 {
-	printf("Enable beep at %d Hz.\n", frequency);
+	return -1;
 }
 
-void disable_beep(void)
+int sound_stop(void)
 {
-	printf("Disable beep.\n");
+	return -1;
+}
+
+int sound_play(uint32_t msec, uint32_t frequency)
+{
+	printf("Beep beep!\n");
+	return 0;
 }

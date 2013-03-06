@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011 The Chromium OS Authors. All rights reserved.
+ * Copyright 2011 Google Inc.  All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  *
@@ -266,7 +266,7 @@ static uint32_t get_hda_beep_nid(uint32_t base)
 }
 
 /* Sets the beep generator with the given divisor. Pass 0 to disable beep. */
-static void set_beep_divisor(uint8_t divider)
+static int set_beep_divisor(uint8_t divider)
 {
 	uint32_t base;
 	uint32_t beep_nid;
@@ -275,13 +275,13 @@ static void set_beep_divisor(uint8_t divider)
 	beep_nid = get_hda_beep_nid(base);
 	if (beep_nid <= 0) {
 		printf("Audio: Failed to find a beep-capable node.\n");
-		return;
+		return -1;
 	}
-	write_one_verb(base,
-		       HDA_VERB(beep_nid, HDA_VERB_SET_BEEP, divider));
+	return write_one_verb(base,
+			      HDA_VERB(beep_nid, HDA_VERB_SET_BEEP, divider));
 }
 
-void enable_beep(uint32_t frequency)
+int sound_start(uint32_t frequency)
 {
 	uint8_t divider_val;
 
@@ -294,10 +294,18 @@ void enable_beep(uint32_t frequency)
 	else
 		divider_val = (uint8_t)(0xFF & (BEEP_FREQ_BASE / frequency));
 
-	set_beep_divisor(divider_val);
+	return set_beep_divisor(divider_val);
 }
 
-void disable_beep(void)
+int sound_stop(void)
 {
-	set_beep_divisor(0);
+	return set_beep_divisor(0);
+}
+
+int sound_play(uint32_t msec, uint32_t frequency)
+{
+	int res = sound_start(frequency);
+	mdelay(msec);
+	res |= sound_stop();
+	return res;
 }
