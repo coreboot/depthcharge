@@ -44,7 +44,7 @@ config DRIVER_MKBP_I2C_BUS
 	  The number of the I2C bus the ChromeOS EC is on.
 
 config DRIVER_MKBP_I2C_ADDR
-	hex "ChromeOS @C I2C address"
+	hex "ChromeOS EC I2C address"
 	depends on DRIVER_MKBP_I2C
 	help
 	  The address of the ChromeOS EC on its I2C bus.
