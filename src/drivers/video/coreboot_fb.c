@@ -63,12 +63,17 @@ static int dc_corebootfb_draw_bitmap_v3(uint32_t x, uint32_t y,
 					struct cb_framebuffer *fbinfo,
 					unsigned char *fbaddr)
 {
-	BitmapFileHeader *file_header = (BitmapFileHeader *)bitmap;
-	BitmapHeaderV3 *header = (BitmapHeaderV3 *)(file_header + 1);
-	int bpp = header->bits_per_pixel;
+	BitmapFileHeader *file_header_ptr = (BitmapFileHeader *)bitmap;
+	uint32_t bitmap_offset;
+	memcpy(&bitmap_offset, &file_header_ptr->bitmap_offset,
+		sizeof(bitmap_offset));
+	BitmapHeaderV3 header;
+	memcpy(&header, (uint8_t *)bitmap + sizeof(BitmapFileHeader),
+		sizeof(header));
+	int bpp = header.bits_per_pixel;
 
 	// Check for things we don't support.
-	if (header->compression != 0 || bpp >= 16) {
+	if (header.compression != 0 || bpp >= 16) {
 		printf("Non-palette bitmaps are not supported.\n");
 		return -1;
 	}
@@ -77,10 +82,17 @@ static int dc_corebootfb_draw_bitmap_v3(uint32_t x, uint32_t y,
 		return -1;
 	}
 
-	BitmapPaletteElementV3 *palette =
-		(BitmapPaletteElementV3 *)(header +1);
+	uintptr_t palette_offset =
+		sizeof(BitmapFileHeader) + sizeof(BitmapHeaderV3);
+	int palette_size = bitmap_offset - palette_offset;
+	BitmapPaletteElementV3 *palette = malloc(palette_size);
+	if (!palette) {
+		printf("Failed to allocate space for the palette.\n");
+		return -1;
+	}
+	memcpy(palette, (uint8_t *)bitmap + palette_offset, palette_size);
 
-	int32_t width = header->width, height = header->height;
+	int32_t width = header.width, height = header.height;
 	int extra = width % 4;
 	const int32_t padding = extra ? (4 - extra) : 0;
 	int32_t ystep = -1;
@@ -90,7 +102,7 @@ static int dc_corebootfb_draw_bitmap_v3(uint32_t x, uint32_t y,
 	} else {
 		y += height;
 	}
-	uint8_t *cur_data = (uint8_t *)bitmap + file_header->bitmap_offset;
+	uint8_t *cur_data = (uint8_t *)bitmap + bitmap_offset;
 	uint32_t x_offset = 0, y_offset = 0;
 	int bit = 0;
 	// Loop over all the pixels in the image.
@@ -132,6 +144,7 @@ static int dc_corebootfb_draw_bitmap_v3(uint32_t x, uint32_t y,
 			cur_data += padding;
 		}
 	}
+	free(palette);
 	return 0;
 }
 
@@ -158,7 +171,8 @@ int dc_corebootfb_draw_bitmap(uint32_t x, uint32_t y, void *bitmap)
 	unsigned char *fbaddr =
 		(unsigned char *)(uintptr_t)(fbinfo->physical_address);
 
-	uint32_t header_size = *(uint32_t *)(file_header + 1);
+	uint32_t header_size;
+	memcpy(&header_size, file_header + 1, sizeof(header_size));
 	switch (header_size) {
 	case 12:
 		return dc_corebootfb_draw_bitmap_v2(x, y, bitmap,
