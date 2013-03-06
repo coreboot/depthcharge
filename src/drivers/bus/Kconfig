@@ -16,3 +16,4 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 source src/drivers/bus/i2c/Kconfig
+source src/drivers/bus/i2s/Kconfig
