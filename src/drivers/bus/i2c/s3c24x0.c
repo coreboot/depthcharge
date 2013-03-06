@@ -150,6 +150,12 @@ static int i2c_init(I2cRegs *regs)
 	if (gpio_use(s5p_gpio_index(GPIO_A, 2, 0), 3) < 0 ||
 			gpio_use(s5p_gpio_index(GPIO_A, 2, 1), 3) < 0)
 		return 1;
+	// Set gpb22 and gpb23 to 3 for I2C.
+	if (gpio_use(s5p_gpio_index(GPIO_B, 2, 2), 3) < 0 ||
+			gpio_use(s5p_gpio_index(GPIO_B, 2, 3), 3) < 0)
+		return 1;
+	//gpio_set_value(s5p_gpio_index(GPIO_B, 2, 2), 1);
+	//gpio_set_value(s5p_gpio_index(GPIO_B, 2, 3), 1);
 	// Set gpf03 to output.
 	if (gpio_direction(s5p_gpio_index(GPIO_F, 0, 3), 0) < 0)
 		return 1;
@@ -158,8 +164,12 @@ static int i2c_init(I2cRegs *regs)
 		return 1;
 
 	// Turn off pull-ups/downs.
-	if (s5p_gpio_set_pud(s5p_gpio_index(GPIO_A, 2, 0), 0) < 0 ||
+	if (s5p_gpio_set_pud(s5p_gpio_index(GPIO_A, 1, 2), 0) < 0 ||
+		s5p_gpio_set_pud(s5p_gpio_index(GPIO_A, 1, 3), 0) < 0 ||
+		s5p_gpio_set_pud(s5p_gpio_index(GPIO_A, 2, 0), 0) < 0 ||
 		s5p_gpio_set_pud(s5p_gpio_index(GPIO_A, 2, 1), 0) < 0 ||
+		s5p_gpio_set_pud(s5p_gpio_index(GPIO_B, 2, 2), 0) < 0 ||
+		s5p_gpio_set_pud(s5p_gpio_index(GPIO_B, 2, 3), 0) < 0 ||
 		s5p_gpio_set_pud(s5p_gpio_index(GPIO_E, 0, 4), 0) < 0 ||
 		s5p_gpio_set_pud(s5p_gpio_index(GPIO_F, 0, 3), 0) < 0)
 		return 1;
@@ -211,6 +221,9 @@ static int i2c_wait_for_int(I2cRegs *regs)
 	return 1;
 }
 
+
+
+
 static int i2c_send_stop(I2cRegs *regs)
 {
 	uint8_t mode = readb(&regs->stat) & (I2cStatModeMask);
@@ -219,16 +232,12 @@ static int i2c_send_stop(I2cRegs *regs)
 	return i2c_wait_for_idle(regs);
 }
 
-
-
-static int i2c_xmit_buf(I2cRegs *regs, int read, int chip, uint8_t *data,
-			int len)
+static int i2c_send_start(I2cRegs *regs, int read, int chip)
 {
-	assert(len);
-
 	writeb(chip << 1, &regs->ds);
 	uint8_t mode = read ? I2cStatMasterRecv : I2cStatMasterXmit;
 	writeb(mode | I2cStatStartStop | I2cStatEnable, &regs->stat);
+	i2c_clear_int(regs);
 
 	if (i2c_wait_for_int(regs))
 		return 1;
@@ -238,28 +247,46 @@ static int i2c_xmit_buf(I2cRegs *regs, int read, int chip, uint8_t *data,
 		return 1;
 	}
 
+	return 0;
+}
+
+static int i2c_xmit_buf(I2cRegs *regs, uint8_t *data, int len)
+{
+	assert(len);
+
 	i2c_ack_enable(regs);
 
 	for (int i = 0; i < len; i++) {
-		if (read) {
-			if (i == len - 1)
-				i2c_ack_disable(regs);
-		} else {
-			writeb(data[i], &regs->ds);
-		}
+		writeb(data[i], &regs->ds);
 
 		i2c_clear_int(regs);
 		if (i2c_wait_for_int(regs))
 			return 1;
 
-		if (read) {
-			data[i] = readb(&regs->ds);
-		} else {
-			if (!i2c_got_ack(regs)) {
-				printf("I2c nacked.\n");
-				return 1;
-			}
+		if (!i2c_got_ack(regs)) {
+			printf("I2c nacked.\n");
+			return 1;
 		}
+	}
+
+	return 0;
+}
+
+static int i2c_recv_buf(I2cRegs *regs, uint8_t *data, int len)
+{
+	assert(len);
+
+	i2c_ack_enable(regs);
+
+	for (int i = 0; i < len; i++) {
+		if (i == len - 1)
+			i2c_ack_disable(regs);
+
+		i2c_clear_int(regs);
+		if (i2c_wait_for_int(regs))
+			return 1;
+
+		data[i] = readb(&regs->ds);
 	}
 
 	return 0;
@@ -285,12 +312,23 @@ static int i2c_readwrite(I2cRegs *regs, int read, uint8_t chip, uint32_t addr,
 			addr_buf[i] = addr >> (byte * 8);
 		}
 
-		if (i2c_xmit_buf(regs, 0, chip, addr_buf, addr_len))
+		if (i2c_send_start(regs, 0, chip) ||
+			i2c_xmit_buf(regs, addr_buf, addr_len))
 			return 1;
 	}
 
-	if (i2c_xmit_buf(regs, read, chip, data, data_len))
-		return 1;
+	// Send a start if we haven't yet, or we need to go from write to read.
+	if (!addr_len || read)
+		if (i2c_send_start(regs, read, chip))
+			return 1;
+
+	if (read) {
+		if (i2c_recv_buf(regs, data, data_len))
+			return 1;
+	} else {
+		if (i2c_xmit_buf(regs, data, data_len))
+			return 1;
+	}
 
 	return 0;
 }
