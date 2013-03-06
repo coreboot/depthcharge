@@ -17,6 +17,7 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-depthcharge-$(CONFIG_DRIVER_CODEC_HDA) += hda_codec.c
-# Build in the dummy driver in absence of real sound support.
-depthcharge-$(CONFIG_ARCH_ARM) += dummy.c
+depthcharge-$(CONFIG_DRIVER_SOUND_DUMMY) += dummy.c
+depthcharge-$(CONFIG_DRIVER_SOUND_HDA) += hda_codec.c
+depthcharge-$(CONFIG_DRIVER_SOUND_I2S) += i2s.c
+depthcharge-$(CONFIG_DRIVER_SOUND_MAX98095) += max98095.c
