@@ -10,7 +10,7 @@
 # ImageMagick is much to complex to bother installing into the chroot just for
 # this occasional need.
 
-TARGETS=std snow link parrot butterfly stout
+TARGETS=std snow link parrot butterfly stout spring
 
 # To generate all locales, make from top level.
 LOCALES=en

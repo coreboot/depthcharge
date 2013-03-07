@@ -66,6 +66,14 @@ main() {
       replace_files="insert=insert_sd_usb2"
       ;;
 
+    spring )
+      # 1366x768.
+      # Can only boot recovery by USB. (No card reader, or not able to recover
+      # from card reader.)
+      background_scale_param="-scale 1366x768!"
+      replace_files="insert=insert_usb BadSD=dummy RemoveDevices=RemoveUSB"
+      ;;
+
     # Stretched profiles
 
     parrot | butterfly )
