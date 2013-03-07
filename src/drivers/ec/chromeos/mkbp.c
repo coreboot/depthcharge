@@ -125,7 +125,7 @@ static int ec_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 				return ret;
 
 			if (timer_value() - start >
-				MKBP_CMD_TIMEOUT_MS * lib_sysinfo.cpu_khz) {
+				MKBP_CMD_TIMEOUT_MS * (timer_hz() / 1000)) {
 				printf("%s: Command %#02x timeout",
 				      __func__, cmd);
 				return -EC_RES_TIMEOUT;
