@@ -33,11 +33,11 @@
 #include <libpayload.h>
 
 #include "arch/x86/cpu.h"
-#include "boot/zimage/bootparam.h"
-#include "boot/zimage/zimage.h"
 #include "base/timestamp.h"
 #include "boot/boot.h"
 #include "boot/commandline.h"
+#include "boot/zimage/bootparam.h"
+#include "boot/zimage/zimage.h"
 
 #define KERNEL_V2_MAGIC		0x53726448
 #define MIN_PROTOCOL		0x0202
