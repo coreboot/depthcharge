@@ -23,6 +23,6 @@
 #ifndef __BOOT_BOOT_H__
 #define __BOOT_BOOT_H__
 
-int boot(void *kernel, void *loader, uint32_t part_num, uint8_t *part_guid);
+int boot(void *kernel, char *cmd_line, void *params, void *loader);
 
 #endif /* __BOOT_BOOT_H__ */

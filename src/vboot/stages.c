@@ -27,6 +27,7 @@
 
 #include "base/timestamp.h"
 #include "boot/boot.h"
+#include "boot/commandline.h"
 #include "config.h"
 #include "drivers/flash/flash.h"
 #include "drivers/power/power.h"
@@ -148,6 +149,12 @@ int vboot_select_firmware(void)
 
 int vboot_select_and_load_kernel(void)
 {
+	enum {
+		CmdLineSize = 4096,
+		CrosParamSize = 4096
+	};
+	static char cmd_line_buf[2 * CmdLineSize];
+
 	VbSelectAndLoadKernelParams kparams = {
 		.kernel_buffer = (void *)&_kernel_start,
 		.kernel_buffer_size = &_kernel_end - &_kernel_start
@@ -175,9 +182,25 @@ int vboot_select_and_load_kernel(void)
 	if (acpi_update_data())
 		halt();
 
-	if (boot(kparams.kernel_buffer,
-		 (void *)(uintptr_t)kparams.bootloader_address,
-		 kparams.partition_number, kparams.partition_guid))
+	// The scripts that packaged the kernel assumed its was going to end
+	// up at 1MB which is frequently not right. The address of the
+	// "loader", which isn't actually used any more, is set based on that
+	// assumption. We have to subtract the 1MB offset from it, and then
+	// add in the actual load address to figure out where it actually is,
+	// or would be if it existed.
+	void *kernel = kparams.kernel_buffer;
+	void *loader = (uint8_t *)kernel +
+		(kparams.bootloader_address - 0x100000);
+	void *params = (uint8_t *)loader - CrosParamSize;
+	void *orig_cmd_line = (uint8_t *)params - CmdLineSize;
+
+	if (commandline_subst((char *)orig_cmd_line, 0,
+			      kparams.partition_number + 1,
+			      kparams.partition_guid,
+			      cmd_line_buf, sizeof(cmd_line_buf)))
+		return 1;
+
+	if (boot(kernel, cmd_line_buf, params, loader))
 		return 1;
 
 	return 0;

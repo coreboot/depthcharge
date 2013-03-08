@@ -35,32 +35,15 @@
 #include "arch/x86/cpu.h"
 #include "base/timestamp.h"
 #include "boot/boot.h"
-#include "boot/commandline.h"
 #include "boot/zimage/bootparam.h"
 #include "boot/zimage/zimage.h"
 
 #define KERNEL_V2_MAGIC		0x53726448
 #define MIN_PROTOCOL		0x0202
 
-#define CMD_LINE_SIZE 4096
-
-int boot(void *kernel, void *loader, uint32_t part_num, uint8_t *part_guid)
+int boot(void *kernel, char *cmd_line, void *params, void *loader)
 {
-	// A buffer for the fully formed command line.
-	static char cmd_line_buf[2 * CMD_LINE_SIZE];
-
-	uintptr_t params_addr = (uintptr_t)loader - sizeof(struct boot_params);
-	struct boot_params *params = (struct boot_params *)params_addr;
-	uintptr_t cmd_line_addr = params_addr - CMD_LINE_SIZE;
-
-	if (commandline_subst((char *)cmd_line_addr, 0, part_num + 1,
-			      part_guid, cmd_line_buf, sizeof(cmd_line_buf)))
-		return 1;
-
-	if (zboot(params, cmd_line_buf, kernel))
-		return 1;
-
-	return 0;
+	return zboot(params, cmd_line, kernel);
 }
 
 int board_final_cleanup(void)
@@ -120,10 +103,6 @@ int zboot(struct boot_params *setup_base, char *cmd_line, void *kernel_entry)
 	hdr->type_of_loader = 0xFF;
 
 	hdr->cmd_line_ptr = (uintptr_t)cmd_line;
-
-	puts("Kernel command line: \"");
-	puts(cmd_line);
-	puts("\"\n");
 
 	puts("\nStarting kernel ...\n\n");
 

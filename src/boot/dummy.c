@@ -24,7 +24,7 @@
 
 #include "boot/boot.h"
 
-int boot(void *kernel, void *loader, uint32_t part_num, uint8_t *part_guid)
+int boot(void *kernel, char *cmd_line, void *params, void *loader)
 {
 	return 0;
 }
