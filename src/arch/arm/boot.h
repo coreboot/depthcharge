@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Google Inc.
+ * Copyright 2013 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -10,7 +10,7 @@
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but without any warranty; without even the implied warranty of
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -20,9 +20,9 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __BOOT_BOOT_H__
-#define __BOOT_BOOT_H__
+#ifndef __ARCH_ARM_BOOT_H__
+#define __ARCH_ARM_BOOT_H__
 
-int boot(void *kernel, char *cmd_line, void *params, void *loader);
+int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry);
 
-#endif /* __BOOT_BOOT_H__ */
+#endif /* __ARCH_ARM_BOOT_H__ */

@@ -26,7 +26,6 @@
 #include <vboot_api.h>
 
 #include "base/timestamp.h"
-#include "boot/boot.h"
 #include "boot/commandline.h"
 #include "config.h"
 #include "drivers/flash/flash.h"
@@ -35,7 +34,7 @@
 #include "image/index.h"
 #include "image/startrw.h"
 #include "image/symbols.h"
-#include "vboot/util/acpi.h"
+#include "vboot/boot.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/ec.h"
 #include "vboot/util/flag.h"
@@ -177,10 +176,6 @@ int vboot_select_and_load_kernel(void)
 	}
 
 	timestamp_add_now(TS_CROSSYSTEM_DATA);
-
-	// Update the crossystem data in the ACPI tables.
-	if (acpi_update_data())
-		halt();
 
 	// The scripts that packaged the kernel assumed its was going to end
 	// up at 1MB which is frequently not right. The address of the

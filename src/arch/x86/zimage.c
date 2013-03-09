@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Google Inc.
+ * Copyright 2013 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -10,7 +10,7 @@
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but without any warranty; without even the implied warranty of
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -20,11 +20,15 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __BOOT_ZIMAGE_ZIMAGE_H__
-#define __BOOT_ZIMAGE_ZIMAGE_H__
+#include "arch/x86/boot.h"
+#include "vboot/boot.h"
+#include "vboot/util/acpi.h"
 
-#include "boot/zimage/bootparam.h"
+int boot(void *kernel, char *cmd_line, void *params, void *loader)
+{
+	// Update the crossystem data in the ACPI tables.
+	if (acpi_update_data())
+		return 1;
 
-int zboot(struct boot_params *setup_base, char *cmd_line, void *kernel_entry);
-
-#endif /* __BOOT_ZIMAGE_ZIMAGE_H__ */
+	return boot_x86_linux(params, cmd_line, kernel);
+}

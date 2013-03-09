@@ -17,6 +17,8 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
+depthcharge-y += boot.c
+depthcharge-y += boot_asm.S
 depthcharge-y += commonparams.c
 depthcharge-y += gcc.c
 depthcharge-y += pci_stub.c

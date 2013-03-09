@@ -10,7 +10,7 @@
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * but without any warranty; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -20,11 +20,10 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
-
-#include "vboot/boot.h"
-
-int boot(void *kernel, char *cmd_line, void *params, void *loader)
-{
-	return 0;
-}
+	.arm
+	.global boot_arm_linux_jump
+	.type boot_arm_linux_jump, function
+boot_arm_linux_jump:
+	mov	r3, r0
+	eor	r0, r0
+	mov	pc, r3

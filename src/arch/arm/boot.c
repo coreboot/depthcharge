@@ -22,9 +22,24 @@
 
 #include <libpayload.h>
 
-#include "vboot/boot.h"
+#include "arch/arm/boot.h"
 
-int boot(void *kernel, char *cmd_line, void *params, void *loader)
+void boot_arm_linux_jump(void *entry, uint32_t machine_type, void *fdt)
+	__attribute__((noreturn));
+
+int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry)
 {
+	/*
+	 * Requirements for entering the kernel:
+	 * 1. Interrupts disabled.
+	 * 2. CPU in SVC mode.
+	 * 3. MMU off.
+	 * 4. Data cache off.
+	 */
+
+	printf("XXX Need to clean up before jumping to the kernel. XXX\n");
+
+	boot_arm_linux_jump(entry, machine_type, fdt);
+
 	return 0;
 }

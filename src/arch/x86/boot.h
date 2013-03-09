@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Google Inc.
+ * Copyright 2012 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -10,7 +10,7 @@
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * but without any warranty; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -20,11 +20,11 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
+#ifndef __ARCH_X86_BOOT_H__
+#define __ARCH_X86_BOOT_H__
 
-#include "vboot/boot.h"
+#include "arch/x86/boot/bootparam.h"
 
-int boot(void *kernel, char *cmd_line, void *params, void *loader)
-{
-	return 0;
-}
+int boot_x86_linux(struct boot_params *boot_base, char *cmd_line, void *entry);
+
+#endif /* __ARCH_X86_BOOT_H__ */

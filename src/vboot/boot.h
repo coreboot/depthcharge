@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Google Inc.
+ * Copyright 2012 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -10,7 +10,7 @@
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * but without any warranty; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -20,11 +20,13 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
+#ifndef __BOOT_BOOT_H__
+#define __BOOT_BOOT_H__
 
-#include "vboot/boot.h"
+// To be implemented by each boot method.
+int boot(void *kernel, char *cmd_line, void *params, void *loader);
 
-int boot(void *kernel, char *cmd_line, void *params, void *loader)
-{
-	return 0;
-}
+// To be implemented for each arch.
+int arch_final_cleanup(void);
+
+#endif /* __BOOT_BOOT_H__ */
