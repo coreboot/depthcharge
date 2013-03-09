@@ -17,6 +17,7 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
+depthcharge-y += device_tree.c
 depthcharge-y += init_funcs.c
 depthcharge-y += list.c
 depthcharge-y += ranges.c
