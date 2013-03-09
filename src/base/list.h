@@ -41,4 +41,10 @@ void list_insert_after(ListNode *node, ListNode *after);
 // Insert ListNode node before ListNode before in a doubly linked list.
 void list_insert_before(ListNode *node, ListNode *before);
 
+#define list_for_each(ptr, head, member)                                \
+	for ((ptr) = container_of((head).next, typeof(*(ptr)), member); \
+		&((ptr)->member);                                       \
+		(ptr) = container_of((ptr)->member.next,                \
+			typeof(*(ptr)), member))
+
 #endif /* __BASE_LIST_H__ */
