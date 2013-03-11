@@ -2,6 +2,8 @@
  * Copyright 2008,2010 Freescale Semiconductor, Inc
  * Andy Fleming
  *
+ * Copyright 2013 Google Inc.  All rights reserved.
+ *
  * Based (loosely) on the Linux code
  *
  * See file CREDITS for list of people who contributed to this
@@ -23,15 +25,15 @@
  * MA 02111-1307 USA
  */
 
-#ifndef _MMC_H_
-#define _MMC_H_
+#ifndef __DRIVERS_STORAGE_MMC_H__
+#define __DRIVERS_STORAGE_MMC_H__
 
-#include <linux/list.h>
+#include "drivers/storage/blockdev.h"
 
-#define SD_VERSION_SD	0x20000
-#define SD_VERSION_2	(SD_VERSION_SD | 0x20)
-#define SD_VERSION_1_0	(SD_VERSION_SD | 0x10)
-#define SD_VERSION_1_10	(SD_VERSION_SD | 0x1a)
+#define SD_VERSION_SD		0x20000
+#define SD_VERSION_2		(SD_VERSION_SD | 0x20)
+#define SD_VERSION_1_0		(SD_VERSION_SD | 0x10)
+#define SD_VERSION_1_10		(SD_VERSION_SD | 0x1a)
 #define MMC_VERSION_MMC		0x10000
 #define MMC_VERSION_UNKNOWN	(MMC_VERSION_MMC)
 #define MMC_VERSION_1_2		(MMC_VERSION_MMC | 0x12)
@@ -47,18 +49,18 @@
 #define MMC_MODE_SPI		0x400
 #define MMC_MODE_HC		0x800
 
-#define SD_DATA_4BIT	0x00040000
+#define SD_DATA_4BIT		0x00040000
 
-#define IS_SD(x) (x->version & SD_VERSION_SD)
+#define IS_SD(x)		(x->version & SD_VERSION_SD)
 
 #define MMC_DATA_READ		1
 #define MMC_DATA_WRITE		2
 
-#define NO_CARD_ERR		-16 /* No SD/MMC card inserted */
-#define UNUSABLE_ERR		-17 /* Unusable Card */
-#define COMM_ERR		-18 /* Communications Error */
-#define TIMEOUT			-19
-#define IN_PROGRESS		-20 /* operation is in progress */
+#define MMC_NO_CARD_ERR		-16 /* No SD/MMC card inserted */
+#define MMC_UNUSABLE_ERR	-17 /* Unusable Card */
+#define MMC_COMM_ERR		-18 /* Communications Error */
+#define MMC_TIMEOUT		-19
+#define MMC_IN_PROGRESS		-20 /* operation is in progress */
 
 #define MMC_CMD_GO_IDLE_STATE		0
 #define MMC_CMD_SEND_OP_COND		1
@@ -191,168 +193,103 @@
 #define MMC_RSP_R6	(MMC_RSP_PRESENT|MMC_RSP_CRC|MMC_RSP_OPCODE)
 #define MMC_RSP_R7	(MMC_RSP_PRESENT|MMC_RSP_CRC|MMC_RSP_OPCODE)
 
-#define MMCPART_NOAVAILABLE	(0xff)
-#define PART_ACCESS_MASK	(0x7)
-#define PART_SUPPORT		(0x1)
+#define MMC_IO_RETRIES	(1000)
+#define MMC_CLOCK_20MHZ (20000000)
+#define MMC_CLOCK_25MHZ (25000000)
+#define MMC_CLOCK_26MHZ (26000000)
+#define MMC_CLOCK_50MHZ (50000000)
+#define MMC_CLOCK_52MHZ (52000000)
+#define MMC_CLOCK_DEFAULT_MHZ	(MMC_CLOCK_20MHZ)
 
-struct mmc_cid {
-	unsigned long psn;
-	unsigned short oid;
-	unsigned char mid;
-	unsigned char prv;
-	unsigned char mdt;
+#define EXT_CSD_SIZE	(512)
+
+struct MmcCardIdentifer {
+	uint32_t psn;
+	uint16_t oid;
+	uint8_t mid;
+	uint8_t prv;
+	uint8_t mdt;
 	char pnm[7];
 };
 
-/*
- * WARNING!
- *
- * This structure is used by atmel_mci.c only.
- * It works for the AVR32 architecture but NOT
- * for ARM/AT91 architectures.
- * Its use is highly depreciated.
- * After the atmel_mci.c driver for AVR32 has
- * been replaced this structure will be removed.
- */
-struct mmc_csd
-{
-	u8	csd_structure:2,
-		spec_vers:4,
-		rsvd1:2;
-	u8	taac;
-	u8	nsac;
-	u8	tran_speed;
-	u16	ccc:12,
-		read_bl_len:4;
-	u64	read_bl_partial:1,
-		write_blk_misalign:1,
-		read_blk_misalign:1,
-		dsr_imp:1,
-		rsvd2:2,
-		c_size:12,
-		vdd_r_curr_min:3,
-		vdd_r_curr_max:3,
-		vdd_w_curr_min:3,
-		vdd_w_curr_max:3,
-		c_size_mult:3,
-		sector_size:5,
-		erase_grp_size:5,
-		wp_grp_size:5,
-		wp_grp_enable:1,
-		default_ecc:2,
-		r2w_factor:3,
-		write_bl_len:4,
-		write_bl_partial:1,
-		rsvd3:5;
-	u8	file_format_grp:1,
-		copy:1,
-		perm_write_protect:1,
-		tmp_write_protect:1,
-		file_format:2,
-		ecc:2;
-	u8	crc:7;
-	u8	one:1;
-};
+typedef struct MmcCommand {
+	uint16_t cmdidx;
+	uint32_t resp_type;
+	uint32_t cmdarg;
+	uint32_t response[4];
+	uint32_t flags;
+} MmcCommand;
 
-struct mmc_cmd {
-	ushort cmdidx;
-	uint resp_type;
-	uint cmdarg;
-	uint response[4];
-	uint flags;
-};
-
-struct mmc_data {
+typedef struct MmcData {
 	union {
 		char *dest;
-		const char *src; /* src buffers don't get written to */
+		const char *src;
 	};
-	uint flags;
-	uint blocks;
-	uint blocksize;
-};
+	uint32_t flags;
+	uint32_t blocks;
+	uint32_t blocksize;
+} MmcData;
 
-struct mmc {
-	struct list_head link;
-	char name[32];
-	void *priv;
-	uint voltages;
-	uint version;
-	uint has_init;
-	uint f_min;
-	uint f_max;
+typedef struct MmcDevice {
+	void *host;
+	uint32_t voltages;
+	uint32_t version;
+	uint32_t has_init;
+	uint32_t f_min;
+	uint32_t f_max;
 	int high_capacity;
-	uint bus_width;
-	uint clock;
-	uint card_caps;
-	uint host_caps;
-	uint ocr;
-	uint scr[2];
-	uint csd[4];
-	uint cid[4];
-	ushort rca;
-	char part_config;
-	char part_num;
-	uint tran_speed;
-	uint read_bl_len;
-	uint write_bl_len;
-	uint erase_grp_size;
-	u64 capacity;
-	block_dev_desc_t block_dev;
-	int (*send_cmd)(struct mmc *mmc,
-			struct mmc_cmd *cmd, struct mmc_data *data);
-	void (*set_ios)(struct mmc *mmc);
-	int (*init)(struct mmc *mmc);
-	int (*getcd)(struct mmc *mmc);
-	uint b_max;
-	char op_cond_pending;	/* 1 if we are waiting on an op_cond command */
-	char init_in_progress;	/* 1 if we have done mmc_start_init() */
-	char preinit;		/* start init as early as possible */
-	uint op_cond_response;	/* the response byte from the last op_cond */
-};
+	uint32_t bus_width;
+	uint32_t clock;
+	uint32_t card_caps;
+	uint32_t host_caps;
+	uint32_t ocr;
+	uint32_t scr[2];
+	uint32_t csd[4];
+	uint32_t cid[4];
+	uint16_t rca;
+	uint32_t tran_speed;
+	uint32_t read_bl_len;
+	uint32_t write_bl_len;
+	uint64_t capacity;
+	uint32_t b_max;
+	lba_t lba;
+	int (*send_cmd)(struct MmcDevice *mmc, MmcCommand *cmd, MmcData *data);
+	void (*set_ios)(struct MmcDevice *mmc);
+	int (*init)(struct MmcDevice *mmc);
+	int (*is_card_present)(struct MmcDevice *mmc);
+	char op_cond_pending;  /* 1 if we are waiting on an op_cond command */
+	char init_in_progress;  /* 1 if we have done mmc_start_init() */
+	uint32_t op_cond_response;  /* the response byte from the last op_cond */
+} MmcDevice;
 
-int mmc_register(struct mmc *mmc);
-int mmc_initialize(bd_t *bis);
-int mmc_init(struct mmc *mmc);
-int mmc_read(struct mmc *mmc, u64 src, uchar *dst, int size);
-void mmc_set_clock(struct mmc *mmc, uint clock);
-struct mmc *find_mmc_device(int dev_num);
-int mmc_set_dev(int dev_num);
-void print_mmc_devices(char separator);
-int get_mmc_num(void);
-int board_mmc_getcd(struct mmc *mmc);
-int mmc_switch_part(int dev_num, unsigned int part_num);
-int mmc_getcd(struct mmc *mmc);
+int mmc_busy_wait_io(volatile uint32_t *address, uint32_t *output,
+		     uint32_t io_mask, uint32_t timeout_ms);
+int mmc_busy_wait_io_until(volatile uint32_t *address, uint32_t *output,
+			   uint32_t io_mask, uint32_t timeout_ms);
 
-/**
- * Start device initialization and return immediately; it does not block on
- * polling OCR (operation condition register) status.  Then you should call
- * mmc_init, which would block on polling OCR status and complete the device
- * initializatin.
- *
- * @param mmc	Pointer to a MMC device struct
- * @return 0 on success, IN_PROGRESS on waiting for OCR status, <0 on error.
- */
-int mmc_start_init(struct mmc *mmc);
+int mmc_register(MmcDevice *mmc);
+int mmc_init(MmcDevice *mmc);
+int mmc_start_init(MmcDevice *mmc);
+int mmc_is_card_present(MmcDevice *mmc);
+int mmc_send_cmd(MmcDevice *mmc, MmcCommand *cmd, MmcData *data);
+void mmc_set_clock(MmcDevice *mmc, uint32_t clock);
+int mmc_read(MmcDevice *mmc, void *dst, uint32_t start, lba_t block_count);
+uint32_t mmc_write(MmcDevice *mmc, uint32_t start, lba_t block_count,
+		   const void *src);
 
-/**
- * Set preinit flag of mmc device.
- *
- * @param mmc		Pointer to a MMC device struct
- * @param preinit	preinit flag value
- */
-void mmc_set_preinit(struct mmc *mmc, int preinit);
+lba_t block_mmc_read(struct BlockDev *dev, lba_t start, lba_t count,
+		     void *buffer);
+lba_t block_mmc_write(struct BlockDev *dev, lba_t start, lba_t count,
+		      const void *buffer);
 
-#ifdef CONFIG_GENERIC_MMC
-int atmel_mci_init(void *regs);
-#define mmc_host_is_spi(mmc)	((mmc)->host_caps & MMC_MODE_SPI)
-struct mmc *mmc_spi_init(uint bus, uint cs, uint speed, uint mode);
-#else
-int mmc_legacy_init(int verbose);
-#endif
+// Helper macros for alignment.
+#define DMA_MINALIGN (64)
+#define ROUND(a,b) (((a) + (b) - 1) & ~((b) - 1))
+#define ALIGN(x,a) __ALIGN_MASK((x),(typeof(x))(a)-1)
+#define __ALIGN_MASK(x,mask) (((x)+(mask))&~(mask))
+#define ALLOC_CACHE_ALIGN_BUFFER(type, name, size)                   \
+	char __##name[ROUND(size * sizeof(type), DMA_MINALIGN) +     \
+                      DMA_MINALIGN - 1];                             \
+        type *name = (type *) ALIGN((uintptr_t)__##name, DMA_MINALIGN)
 
-#if defined(CONFIG_SANDBOX_MMC)
-int sandbox_mmc_init(int verbose);
-#endif
-
-#endif /* _MMC_H_ */
+#endif /* __DRIVERS_STORAGE_MMC_H__ */
