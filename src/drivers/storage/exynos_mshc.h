@@ -2,6 +2,8 @@
  * (C) Copyright 2012 SAMSUNG Electronics
  * Abhilash Kesavan <a.kesavan@samsung.com>
  *
+ * Copyright 2013 Google Inc.  All rights reserved.
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -17,72 +19,9 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#ifndef __ASM_ARCH_COMMON_MSHC_H
-#define __ASM_ARCH_COMMON_MSHC_H
-
-#include <asm/arch/pinmux.h>
-#ifndef __ASSEMBLY__
-struct mshci_host {
-	struct s5p_mshci	*reg;		/* Mapped address */
-	unsigned int		clock;		/* Current clock in MHz */
-	enum periph_id	peripheral;
-};
-
-struct s5p_mshci {
-	unsigned int	ctrl;
-	unsigned int	pwren;
-	unsigned int	clkdiv;
-	unsigned int	clksrc;
-	unsigned int	clkena;
-	unsigned int	tmout;
-	unsigned int	ctype;
-	unsigned int	blksiz;
-	unsigned int	bytcnt;
-	unsigned int	intmask;
-	unsigned int	cmdarg;
-	unsigned int	cmd;
-	unsigned int	resp0;
-	unsigned int	resp1;
-	unsigned int	resp2;
-	unsigned int	resp3;
-	unsigned int	mintsts;
-	unsigned int	rintsts;
-	unsigned int	status;
-	unsigned int	fifoth;
-	unsigned int	cdetect;
-	unsigned int	wrtprt;
-	unsigned int	gpio;
-	unsigned int	tcbcnt;
-	unsigned int	tbbcnt;
-	unsigned int	debnce;
-	unsigned int	usrid;
-	unsigned int	verid;
-	unsigned int	hcon;
-	unsigned int	uhs_reg;
-	unsigned int	rst_n;
-	unsigned char	reserved1[4];
-	unsigned int	bmod;
-	unsigned int	pldmnd;
-	unsigned int	dbaddr;
-	unsigned int	idsts;
-	unsigned int	idinten;
-	unsigned int	dscaddr;
-	unsigned int	bufaddr;
-	unsigned int	clksel;
-	unsigned char	reserved2[460];
-	unsigned int	cardthrctl;
-};
-
-/*
- * Struct idma
- * Holds the descriptor list
- */
-struct mshci_idmac {
-	u32	des0;
-	u32	des1;
-	u32	des2;
-	u32	des3;
-};
+#ifndef __DRIVERS_STORAGE_EXYNOS_MSHC_H__
+#define __DRIVERS_STORAGE_EXYNOS_MSHC_H__
+#include <stdint.h>
 
 /*  Control Register  Register */
 #define CTRL_RESET	(0x1 << 0)
@@ -163,15 +102,73 @@ struct mshci_idmac {
 #define MSHCI_IDMAC_FS		(0x1 << 3)
 #define MSHCI_IDMAC_LD		(0x1 << 2)
 
-int s5p_mshci_init(const void *blob);
-
-/* Exynos5 */
 #define MAX_MSHCI_CLOCK	52000000 /* Max limit for mshc clock is 52MHz */
 #define MIN_MSHCI_CLOCK	400000 /* Lower limit for mshc clock is 400KHz */
-#define COMMAND_TIMEOUT 10000
-#define TIMEOUT_MS	100
 
+#define S5P_MSHC_COMMAND_TIMEOUT 10000
+#define S5P_MSHC_TIMEOUT_MS	100
 
-#endif
-#endif
+typedef struct S5pMshci {
+	uint32_t ctrl;
+	uint32_t pwren;
+	uint32_t clkdiv;
+	uint32_t clksrc;
+	uint32_t clkena;
+	uint32_t tmout;
+	uint32_t ctype;
+	uint32_t blksiz;
+	uint32_t bytcnt;
+	uint32_t intmask;
+	uint32_t cmdarg;
+	uint32_t cmd;
+	uint32_t resp0;
+	uint32_t resp1;
+	uint32_t resp2;
+	uint32_t resp3;
+	uint32_t mintsts;
+	uint32_t rintsts;
+	uint32_t status;
+	uint32_t fifoth;
+	uint32_t cdetect;
+	uint32_t wrtprt;
+	uint32_t gpio;
+	uint32_t tcbcnt;
+	uint32_t tbbcnt;
+	uint32_t debnce;
+	uint32_t usrid;
+	uint32_t verid;
+	uint32_t hcon;
+	uint32_t uhs_reg;
+	uint32_t rst_n;
+	uint8_t	reserved1[4];
+	uint32_t bmod;
+	uint32_t pldmnd;
+	uint32_t dbaddr;
+	uint32_t idsts;
+	uint32_t idinten;
+	uint32_t dscaddr;
+	uint32_t bufaddr;
+	uint32_t clksel;
+	uint8_t	reserved2[460];
+	uint32_t cardthrctl;
+} S5pMshci;
+
+typedef struct MshciHost {
+	S5pMshci *reg;  /* Mapped address */
+	uint32_t clock;  /* Current clock in MHz */
+	int dev_index;  /* Device index */
+} MshciHost;
+
+/*
+ * Struct idma
+ * Holds the descriptor list
+ */
+typedef struct MshciIdmac {
+	uint32_t des0;
+	uint32_t des1;
+	uint32_t des2;
+	uint32_t des3;
+} MshciIdmac;
+
+#endif /* __DRIVERS_STORAGE_EXYNOS_MSHC_H__ */
 
