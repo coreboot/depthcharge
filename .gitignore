@@ -1,0 +1,11 @@
+.config
+.config.old
+.xcompile
+*.o
+*.elf
+*.debug
+*.out
+*.\#
+*.swp
+build/
+vboot_reference
