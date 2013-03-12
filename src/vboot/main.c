@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2012 Google Inc.
  *
@@ -28,6 +29,30 @@
 #include "drivers/input/input.h"
 #include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
+#include "vboot/util/vboot_handoff.h"
+
+static int vboot_init_handoff(void)
+{
+	struct vboot_handoff *vboot_handoff;
+
+	// Set up the common param structure, not clearing shared data.
+	if (common_params_init(0))
+		return 1;
+
+	if (lib_sysinfo.vboot_handoff == NULL) {
+		printf("vboot handoff pointer is NULL\n");
+		return 1;
+	}
+
+	if (lib_sysinfo.vboot_handoff_size != sizeof(struct vboot_handoff)) {
+		printf("Unexpected vboot handoff size: %d\n",
+		       lib_sysinfo.vboot_handoff_size);
+		return 1;
+	}
+
+	vboot_handoff = lib_sysinfo.vboot_handoff;
+	return vboot_do_init_out_flags(vboot_handoff->init_params.out_flags);
+}
 
 int main(void)
 {
@@ -39,7 +64,7 @@ int main(void)
 	cbmem_console_init();
 	input_init();
 
-	printf("\n\nStarting read-only depthcharge...\n");
+	printf("\n\nStarting depthcharge...\n");
 
 	// Set up time keeping.
 	timestamp_init();
@@ -48,25 +73,13 @@ int main(void)
 	if (run_init_funcs())
 		halt();
 
-	timestamp_add_now(TS_RO_PARAMS_INIT);
-
-	// Set up the common param structure, clearing shared data.
-	if (common_params_init(1))
-		halt();
-
 	timestamp_add_now(TS_RO_VB_INIT);
 
-	// Initialize vboot.
-	if (vboot_init())
+	// Set up the common param structure, not clearing shared data.
+	if (vboot_init_handoff())
 		halt();
 
-	timestamp_add_now(TS_RO_VB_SELECT_FIRMWARE);
-
-	// Select firmware.
-	if (vboot_select_firmware())
-		halt();
-
-	timestamp_add_now(TS_RO_VB_SELECT_AND_LOAD_KERNEL);
+	timestamp_add_now(TS_VB_SELECT_AND_LOAD_KERNEL);
 
 	// Select a kernel and boot it.
 	if (vboot_select_and_load_kernel())

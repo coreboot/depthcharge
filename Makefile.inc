@@ -17,6 +17,6 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-classes-y := depthcharge uip net netboot trampoline readwrite readonly
+classes-y := depthcharge uip net netboot trampoline readwrite readonly unified
 
 subdirs-y := src/

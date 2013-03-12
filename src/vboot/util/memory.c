@@ -67,7 +67,10 @@ int wipe_unused_memory(void)
 
 	// Exclude memory we're using ourselves.
 	ranges_sub(&ranges, (uintptr_t)&_start, (uintptr_t)&_end);
-	ranges_sub(&ranges, (uintptr_t)&_tramp_start, (uintptr_t)&_tramp_end);
+	// Remove trampoline area if it is non-zero in size.
+	if (&_tramp_start != &_tramp_end)
+		ranges_sub(&ranges, (uintptr_t)&_tramp_start,
+		           (uintptr_t)&_tramp_end);
 
 	// Do the wipe.
 	printf("Wipe memory regions:\n");

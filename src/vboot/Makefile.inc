@@ -24,11 +24,13 @@ depthcharge-y += stages.c
 # Where "main" lives.
 readonly-y += ro_main.c
 readwrite-y += rw_main.c
+unified-y += main.c
 
 
 DEPTHCHARGE_RO_ELF = $(obj)/depthcharge.ro.elf
 DEPTHCHARGE_RW_ELF = $(obj)/depthcharge.rw.elf
 DEPTHCHARGE_RW_BIN = $(obj)/depthcharge.rw.bin
+DEPTHCHARGE_UNIFIED_ELF = $(obj)/depthcharge.unified.elf
 
 VB_LIB = $(obj)/external/vboot/vboot_fw.a
 
@@ -41,7 +43,8 @@ TRAMP_ENTRY = trampoline
 TRAMPOLINE = $(obj)/trampoline.o
 
 real-target: $(DEPTHCHARGE_RO_ELF) $(DEPTHCHARGE_RO_BIN) \
-	$(DEPTHCHARGE_RW_ELF) $(DEPTHCHARGE_RW_BIN)
+	$(DEPTHCHARGE_RW_ELF) $(DEPTHCHARGE_RW_BIN) \
+	$(DEPTHCHARGE_UNIFIED_ELF)
 
 ifeq ($(CONFIG_MOCK_TPM),y)
 VBOOT_MOCK_TPM=1
@@ -116,3 +119,14 @@ $(DEPTHCHARGE_RW_BIN): $(DEPTHCHARGE_RW_ELF)
 	$(Q)$(STRIP) -o $(@).tmp $(<)
 	@printf "    LZMA       $(subst $(obj)/,,$(@))\n"
 	$(Q)$(LZMA) --stdout $(@).tmp > $(@)
+
+# The unified version
+$(DEPTHCHARGE_UNIFIED_ELF): $(src)/.config $$(depthcharge-objs) \
+		$$(unified-objs) $(LIBRARIES) prepare
+	@printf "    LD         $(subst $(obj)/,,$(@).tmp)\n"
+	$(Q)$(XCC) $(LINK_FLAGS) -o $@.tmp $(depthcharge-objs) \
+		$(unified-objs) $(LIBRARIES)
+	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
+	$(Q)$(OBJCOPY) --remove-section=".shared_data" \
+		--remove-section=".cparams" --remove-section=".gbb_copy" \
+		$@.tmp $@

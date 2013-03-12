@@ -35,6 +35,7 @@
 #include "image/startrw.h"
 #include "image/symbols.h"
 #include "vboot/boot.h"
+#include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/ec.h"
 #include "vboot/util/flag.h"
@@ -81,12 +82,17 @@ int vboot_init(void)
 		cold_reboot();
 	}
 
-	if (iparams.out_flags & VB_INIT_OUT_CLEAR_RAM) {
+	return vboot_do_init_out_flags(iparams.out_flags);
+};
+
+int vboot_do_init_out_flags(uint32_t out_flags)
+{
+	if (out_flags & VB_INIT_OUT_CLEAR_RAM) {
 		if (wipe_unused_memory())
 			return 1;
 	}
 	return 0;
-};
+}
 
 int vboot_select_firmware(void)
 {
