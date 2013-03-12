@@ -31,6 +31,9 @@ DEPTHCHARGE_RO_ELF = $(obj)/depthcharge.ro.elf
 DEPTHCHARGE_RW_ELF = $(obj)/depthcharge.rw.elf
 DEPTHCHARGE_RW_BIN = $(obj)/depthcharge.rw.bin
 DEPTHCHARGE_UNIFIED_ELF = $(obj)/depthcharge.unified.elf
+ifeq ($(CONFIG_ARCH_X86),y)
+DEPTHCHARGE_UNIFIED_PAYLOAD = $(obj)/depthcharge.unified.payload
+endif
 
 VB_LIB = $(obj)/external/vboot/vboot_fw.a
 
@@ -44,7 +47,7 @@ TRAMPOLINE = $(obj)/trampoline.o
 
 real-target: $(DEPTHCHARGE_RO_ELF) $(DEPTHCHARGE_RO_BIN) \
 	$(DEPTHCHARGE_RW_ELF) $(DEPTHCHARGE_RW_BIN) \
-	$(DEPTHCHARGE_UNIFIED_ELF)
+	$(DEPTHCHARGE_UNIFIED_ELF) $(DEPTHCHARGE_UNIFIED_PAYLOAD)
 
 ifeq ($(CONFIG_MOCK_TPM),y)
 VBOOT_MOCK_TPM=1
@@ -130,3 +133,13 @@ $(DEPTHCHARGE_UNIFIED_ELF): $(src)/.config $$(depthcharge-objs) \
 	$(Q)$(OBJCOPY) --remove-section=".shared_data" \
 		--remove-section=".cparams" --remove-section=".gbb_copy" \
 		$@.tmp $@
+
+ifeq ($(CONFIG_ARCH_X86),y)
+# Provide a unified deptcharge boot loader in a payload format.
+$(DEPTHCHARGE_UNIFIED_PAYLOAD): $(DEPTHCHARGE_UNIFIED_ELF)
+	$(Q)dd if=/dev/zero of=temp.bb bs=512 count=1 && \
+	cbfstool temp.rom create -m x86 -s 1024K -B temp.bb -a 64 && \
+	cbfstool temp.rom add-payload -f $< -n dc.elf -c lzma && \
+	cbfstool temp.rom extract -n dc.elf -f $@ && \
+	rm -f temp.rom temp.bb
+endif
