@@ -30,3 +30,11 @@ config DRIVER_INPUT_USB
 	  USB keyboard support. The actual support is provided by libpayload,
 	  this just makes it an input source as far as depthcharge is
 	  concerned.
+
+config DRIVER_INPUT_MKBP
+	bool "ChromeOS EC based keyboard"
+	default n
+	help
+	  A simplified keymatrix keyboard implemented with the ChromeOS EC.
+
+source src/drivers/input/mkbp/Kconfig

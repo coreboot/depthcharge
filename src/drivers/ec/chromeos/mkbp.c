@@ -139,8 +139,10 @@ static int ec_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 	 * If we were asked to put it somewhere, do so, otherwise just
 	 * return a pointer to the data in dinp.
 	 */
+#ifdef DEBUG
 	printf("%s: len=%d, din=%p, dinp=%p, *dinp=%p\n", __func__,
 		len, din, dinp, dinp ? *dinp : NULL);
+#endif
 	if (dinp) {
 		/* If we have any data to return, it must be 64bit-aligned */
 		assert(len <= 0 || !((uintptr_t)din & 7));
