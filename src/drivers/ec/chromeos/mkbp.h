@@ -47,7 +47,7 @@ struct mkbp_dev {
 #define MKBP_KEYSCAN_COLS 13
 
 /* Information returned by a key scan */
-struct mbkp_keyscan {
+struct mkbp_keyscan {
 	uint8_t data[MKBP_KEYSCAN_COLS];
 };
 
@@ -72,7 +72,7 @@ int mkbp_read_id(struct mkbp_dev *dev, char *id, int maxlen);
  * @param scan		Place to put the scan results
  * @return 0 if ok, -1 on error
  */
-int mkbp_scan_keyboard(struct mkbp_dev *dev, struct mbkp_keyscan *scan);
+int mkbp_scan_keyboard(struct mkbp_dev *dev, struct mkbp_keyscan *scan);
 
 /**
  * Read which image is currently running on the MKBP device.

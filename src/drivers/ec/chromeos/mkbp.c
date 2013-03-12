@@ -157,7 +157,7 @@ static int ec_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 	return len;
 }
 
-int mkbp_scan_keyboard(struct mkbp_dev *dev, struct mbkp_keyscan *scan)
+int mkbp_scan_keyboard(struct mkbp_dev *dev, struct mkbp_keyscan *scan)
 {
 	if (ec_command(dev, EC_CMD_MKBP_STATE, 0, NULL, 0, (uint8_t **)&scan,
 		       sizeof(scan->data)) < sizeof(scan->data))
