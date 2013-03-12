@@ -24,20 +24,63 @@
 
 #include "arch/arm/boot.h"
 
+static inline uint32_t get_cpsr(void)
+{
+	uint32_t cpsr;
+	__asm__ __volatile__("mrs %0, cpsr\n" : "=r"(cpsr));
+	return cpsr;
+}
+
+static inline void set_cpsr(uint32_t cpsr)
+{
+	__asm__ __volatile__("msr cpsr, %0\n" :: "r"(cpsr));
+}
+
+static inline uint32_t get_sctlr(void)
+{
+	uint32_t val;
+	asm("mrc p15, 0, %0, c1, c0, 0" : "=r" (val));
+	return val;
+}
+
+static inline void set_sctlr(uint32_t val)
+{
+	asm volatile("mcr p15, 0, %0, c1, c0, 0" :: "r" (val));
+	asm volatile("" ::: "memory");
+}
+
 void boot_arm_linux_jump(void *entry, uint32_t machine_type, void *fdt)
 	__attribute__((noreturn));
 
 int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry)
 {
-	/*
-	 * Requirements for entering the kernel:
-	 * 1. Interrupts disabled.
-	 * 2. CPU in SVC mode.
-	 * 3. MMU off.
-	 * 4. Data cache off.
-	 */
+	static const uint32_t CpsrF = (0x1 << 6);
+	static const uint32_t CpsrI = (0x1 << 7);
+	static const uint32_t CpsrA = (0x1 << 8);
+	static const uint32_t CpsrModeMask = 0x1f;
+	static const uint32_t CpsrModeSvc = 0x13;
 
-	printf("XXX Need to clean up before jumping to the kernel. XXX\n");
+	static const uint32_t SctlrM = (0x1 << 0);
+	static const uint32_t SctlrC = (0x1 << 2);
+
+	uint32_t cpsr = get_cpsr();
+	uint32_t sctlr = get_sctlr();
+
+	// Set the A, I, and F bits to disable interrupts.
+	cpsr |= (CpsrF | CpsrI | CpsrA);
+
+	// Set the mode to SVC.
+	cpsr &= ~CpsrModeMask;
+	cpsr |= CpsrModeSvc;
+
+	// Turn off the MMU.
+	sctlr &= ~SctlrM;
+
+	// Disable the data/unified cache.
+	sctlr &= ~SctlrC;
+
+	set_sctlr(sctlr);
+	set_cpsr(cpsr);
 
 	boot_arm_linux_jump(entry, machine_type, fdt);
 
