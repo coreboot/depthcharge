@@ -8,42 +8,42 @@
  */
 
 struct screen_info {
-	u8  orig_x;		/* 0x00 */
-	u8  orig_y;		/* 0x01 */
-	u16 ext_mem_k;		/* 0x02 */
-	u16 orig_video_page;	/* 0x04 */
-	u8  orig_video_mode;	/* 0x06 */
-	u8  orig_video_cols;	/* 0x07 */
-	u8  flags;		/* 0x08 */
-	u8  unused2;		/* 0x09 */
-	u16 orig_video_ega_bx;	/* 0x0a */
-	u16 unused3;		/* 0x0c */
-	u8  orig_video_lines;	/* 0x0e */
-	u8  orig_video_isVGA;	/* 0x0f */
-	u16 orig_video_points;	/* 0x10 */
+	uint8_t orig_x;			/* 0x00 */
+	uint8_t orig_y;			/* 0x01 */
+	uint16_t ext_mem_k;		/* 0x02 */
+	uint16_t orig_video_page;	/* 0x04 */
+	uint8_t orig_video_mode;	/* 0x06 */
+	uint8_t orig_video_cols;	/* 0x07 */
+	uint8_t flags;			/* 0x08 */
+	uint8_t unused2;		/* 0x09 */
+	uint16_t orig_video_ega_bx;	/* 0x0a */
+	uint16_t unused3;		/* 0x0c */
+	uint8_t orig_video_lines;	/* 0x0e */
+	uint8_t orig_video_isVGA;	/* 0x0f */
+	uint16_t orig_video_points;	/* 0x10 */
 
 	/* VESA graphic mode -- linear frame buffer */
-	u16 lfb_width;		/* 0x12 */
-	u16 lfb_height;		/* 0x14 */
-	u16 lfb_depth;		/* 0x16 */
-	u32 lfb_base;		/* 0x18 */
-	u32 lfb_size;		/* 0x1c */
-	u16 cl_magic, cl_offset; /* 0x20 */
-	u16 lfb_linelength;	/* 0x24 */
-	u8  red_size;		/* 0x26 */
-	u8  red_pos;		/* 0x27 */
-	u8  green_size;		/* 0x28 */
-	u8  green_pos;		/* 0x29 */
-	u8  blue_size;		/* 0x2a */
-	u8  blue_pos;		/* 0x2b */
-	u8  rsvd_size;		/* 0x2c */
-	u8  rsvd_pos;		/* 0x2d */
-	u16 vesapm_seg;		/* 0x2e */
-	u16 vesapm_off;		/* 0x30 */
-	u16 pages;		/* 0x32 */
-	u16 vesa_attributes;	/* 0x34 */
-	u32 capabilities;       /* 0x36 */
-	u8  _reserved[6];	/* 0x3a */
+	uint16_t lfb_width;		/* 0x12 */
+	uint16_t lfb_height;		/* 0x14 */
+	uint16_t lfb_depth;		/* 0x16 */
+	uint32_t lfb_base;		/* 0x18 */
+	uint32_t lfb_size;		/* 0x1c */
+	uint16_t cl_magic, cl_offset;	/* 0x20 */
+	uint16_t lfb_linelength;	/* 0x24 */
+	uint8_t red_size;		/* 0x26 */
+	uint8_t red_pos;		/* 0x27 */
+	uint8_t green_size;		/* 0x28 */
+	uint8_t green_pos;		/* 0x29 */
+	uint8_t blue_size;		/* 0x2a */
+	uint8_t blue_pos;		/* 0x2b */
+	uint8_t rsvd_size;		/* 0x2c */
+	uint8_t rsvd_pos;		/* 0x2d */
+	uint16_t vesapm_seg;		/* 0x2e */
+	uint16_t vesapm_off;		/* 0x30 */
+	uint16_t pages;			/* 0x32 */
+	uint16_t vesa_attributes;	/* 0x34 */
+	uint32_t capabilities;		/* 0x36 */
+	uint8_t _reserved[6];		/* 0x3a */
 } __attribute__((packed));
 
 #define VIDEO_TYPE_MDA		0x10	/* Monochrome Text Display	*/

@@ -31,7 +31,7 @@ uint32_t tis_wait_reg(uint8_t reg, uint8_t locality, uint8_t mask,
 	halt();
 }
 
-int tis_command_ready(u8 locality)
+int tis_command_ready(uint8_t locality)
 {
 	printf("%s not implemented.\n", __func__);
 	halt();

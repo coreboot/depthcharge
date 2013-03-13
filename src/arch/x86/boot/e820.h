@@ -47,13 +47,13 @@
 
 #include <stdint.h>
 struct e820entry {
-	u64 addr;	/* start of memory segment */
-	u64 size;	/* size of memory segment */
-	u32 type;	/* type of memory segment */
+	uint64_t addr;	/* start of memory segment */
+	uint64_t size;	/* size of memory segment */
+	uint32_t type;	/* type of memory segment */
 } __attribute__((packed));
 
 struct e820map {
-	u32 nr_map;
+	uint32_t nr_map;
 	struct e820entry map[E820_X_MAX];
 };
 

@@ -22,15 +22,15 @@ typedef unsigned short	apm_event_t;
 typedef unsigned short	apm_eventinfo_t;
 
 struct apm_bios_info {
-	u16	version;
-	u16	cseg;
-	u32	offset;
-	u16	cseg_16;
-	u16	dseg;
-	u16	flags;
-	u16	cseg_len;
-	u16	cseg_16_len;
-	u16	dseg_len;
+	uint16_t version;
+	uint16_t cseg;
+	uint32_t offset;
+	uint16_t cseg_16;
+	uint16_t dseg;
+	uint16_t flags;
+	uint16_t cseg_len;
+	uint16_t cseg_16_len;
+	uint16_t dseg_len;
 };
 
 /*

@@ -60,7 +60,7 @@ enum tpm_duration {
  * values of the SHORT, MEDIUM, and LONG durations are retrieved
  * from the chip during initialization with a call to tpm_get_timeouts.
  */
-static const u8 tpm_protected_ordinal_duration[TPM_MAX_PROTECTED_ORDINAL] = {
+static const uint8_t tpm_prot_ordinal_duration[TPM_MAX_PROTECTED_ORDINAL] = {
 	TPM_UNDEFINED,		/* 0 */
 	TPM_UNDEFINED,
 	TPM_UNDEFINED,
@@ -75,7 +75,7 @@ static const u8 tpm_protected_ordinal_duration[TPM_MAX_PROTECTED_ORDINAL] = {
 	TPM_SHORT,
 };
 
-static const u8 tpm_ordinal_duration[TPM_MAX_ORDINAL] = {
+static const uint8_t tpm_ordinal_duration[TPM_MAX_ORDINAL] = {
 	TPM_UNDEFINED,		/* 0 */
 	TPM_UNDEFINED,
 	TPM_UNDEFINED,
@@ -334,8 +334,8 @@ unsigned long tpm_calc_ordinal_duration(struct tpm_chip *chip, uint32_t ordinal)
 	else if ((ordinal & TPM_PROTECTED_ORDINAL_MASK) <
 		 TPM_MAX_PROTECTED_ORDINAL)
 		duration_idx =
-		    tpm_protected_ordinal_duration[ordinal &
-						   TPM_PROTECTED_ORDINAL_MASK];
+		    tpm_prot_ordinal_duration[ordinal &
+					      TPM_PROTECTED_ORDINAL_MASK];
 
 	if (duration_idx != TPM_UNDEFINED)
 		duration = chip->vendor.duration[duration_idx];
@@ -370,7 +370,7 @@ ssize_t tpm_transmit(const uint8_t *buf, size_t bufsiz)
 		return -1; //E2BIG;
 	}
 
-	rc = chip->vendor.send(chip, (u8 *) buf, count);
+	rc = chip->vendor.send(chip, (uint8_t *) buf, count);
 	if (rc < 0) {
 		printf("tpm_transmit: tpm_send: error %zd\n", rc);
 		goto out;
@@ -381,7 +381,7 @@ ssize_t tpm_transmit(const uint8_t *buf, size_t bufsiz)
 
 	int timeout = tpm_calc_ordinal_duration(chip, ordinal) / TPM_TIMEOUT;
 	while (timeout) {
-		u8 status = chip->vendor.status(chip);
+		uint8_t status = chip->vendor.status(chip);
 		if ((status & chip->vendor.req_complete_mask) ==
 		    chip->vendor.req_complete_val) {
 			goto out_recv;
@@ -403,7 +403,7 @@ ssize_t tpm_transmit(const uint8_t *buf, size_t bufsiz)
 
 out_recv:
 
-	rc = chip->vendor.recv(chip, (u8 *) buf, TPM_BUFSIZE);
+	rc = chip->vendor.recv(chip, (uint8_t *) buf, TPM_BUFSIZE);
 	if (rc < 0)
 		printf("tpm_transmit: tpm_recv: error %zd\n", rc);
 out:

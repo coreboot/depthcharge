@@ -67,113 +67,113 @@
 #define EDD_INFO_USE_INT13_FN50                (1 << 7)
 
 struct edd_device_params {
-	u16 length;
-	u16 info_flags;
-	u32 num_default_cylinders;
-	u32 num_default_heads;
-	u32 sectors_per_track;
-	u64 number_of_sectors;
-	u16 bytes_per_sector;
-	u32 dpte_ptr;		/* 0xFFFFFFFF for our purposes */
-	u16 key;		/* = 0xBEDD */
-	u8 device_path_info_length;	/* = 44 */
-	u8 reserved2;
-	u16 reserved3;
-	u8 host_bus_type[4];
-	u8 interface_type[8];
+	uint16_t length;
+	uint16_t info_flags;
+	uint32_t num_default_cylinders;
+	uint32_t num_default_heads;
+	uint32_t sectors_per_track;
+	uint64_t number_of_sectors;
+	uint16_t bytes_per_sector;
+	uint32_t dpte_ptr;		/* 0xFFFFFFFF for our purposes */
+	uint16_t key;		/* = 0xBEDD */
+	uint8_t device_path_info_length;	/* = 44 */
+	uint8_t reserved2;
+	uint16_t reserved3;
+	uint8_t host_bus_type[4];
+	uint8_t interface_type[8];
 	union {
 		struct {
-			u16 base_address;
-			u16 reserved1;
-			u32 reserved2;
+			uint16_t base_address;
+			uint16_t reserved1;
+			uint32_t reserved2;
 		} __attribute__ ((packed)) isa;
 		struct {
-			u8 bus;
-			u8 slot;
-			u8 function;
-			u8 channel;
-			u32 reserved;
+			uint8_t bus;
+			uint8_t slot;
+			uint8_t function;
+			uint8_t channel;
+			uint32_t reserved;
 		} __attribute__ ((packed)) pci;
 		/* pcix is same as pci */
 		struct {
-			u64 reserved;
+			uint64_t reserved;
 		} __attribute__ ((packed)) ibnd;
 		struct {
-			u64 reserved;
+			uint64_t reserved;
 		} __attribute__ ((packed)) xprs;
 		struct {
-			u64 reserved;
+			uint64_t reserved;
 		} __attribute__ ((packed)) htpt;
 		struct {
-			u64 reserved;
+			uint64_t reserved;
 		} __attribute__ ((packed)) unknown;
 	} interface_path;
 	union {
 		struct {
-			u8 device;
-			u8 reserved1;
-			u16 reserved2;
-			u32 reserved3;
-			u64 reserved4;
+			uint8_t device;
+			uint8_t reserved1;
+			uint16_t reserved2;
+			uint32_t reserved3;
+			uint64_t reserved4;
 		} __attribute__ ((packed)) ata;
 		struct {
-			u8 device;
-			u8 lun;
-			u8 reserved1;
-			u8 reserved2;
-			u32 reserved3;
-			u64 reserved4;
+			uint8_t device;
+			uint8_t lun;
+			uint8_t reserved1;
+			uint8_t reserved2;
+			uint32_t reserved3;
+			uint64_t reserved4;
 		} __attribute__ ((packed)) atapi;
 		struct {
-			u16 id;
-			u64 lun;
-			u16 reserved1;
-			u32 reserved2;
+			uint16_t id;
+			uint64_t lun;
+			uint16_t reserved1;
+			uint32_t reserved2;
 		} __attribute__ ((packed)) scsi;
 		struct {
-			u64 serial_number;
-			u64 reserved;
+			uint64_t serial_number;
+			uint64_t reserved;
 		} __attribute__ ((packed)) usb;
 		struct {
-			u64 eui;
-			u64 reserved;
+			uint64_t eui;
+			uint64_t reserved;
 		} __attribute__ ((packed)) i1394;
 		struct {
-			u64 wwid;
-			u64 lun;
+			uint64_t wwid;
+			uint64_t lun;
 		} __attribute__ ((packed)) fibre;
 		struct {
-			u64 identity_tag;
-			u64 reserved;
+			uint64_t identity_tag;
+			uint64_t reserved;
 		} __attribute__ ((packed)) i2o;
 		struct {
-			u32 array_number;
-			u32 reserved1;
-			u64 reserved2;
+			uint32_t array_number;
+			uint32_t reserved1;
+			uint64_t reserved2;
 		} __attribute__ ((packed)) raid;
 		struct {
-			u8 device;
-			u8 reserved1;
-			u16 reserved2;
-			u32 reserved3;
-			u64 reserved4;
+			uint8_t device;
+			uint8_t reserved1;
+			uint16_t reserved2;
+			uint32_t reserved3;
+			uint64_t reserved4;
 		} __attribute__ ((packed)) sata;
 		struct {
-			u64 reserved1;
-			u64 reserved2;
+			uint64_t reserved1;
+			uint64_t reserved2;
 		} __attribute__ ((packed)) unknown;
 	} device_path;
-	u8 reserved4;
-	u8 checksum;
+	uint8_t reserved4;
+	uint8_t checksum;
 } __attribute__ ((packed));
 
 struct edd_info {
-	u8 device;
-	u8 version;
-	u16 interface_support;
-	u16 legacy_max_cylinder;
-	u8 legacy_max_head;
-	u8 legacy_sectors_per_track;
+	uint8_t device;
+	uint8_t version;
+	uint16_t interface_support;
+	uint16_t legacy_max_cylinder;
+	uint8_t legacy_max_head;
+	uint8_t legacy_sectors_per_track;
 	struct edd_device_params params;
 } __attribute__ ((packed));
 

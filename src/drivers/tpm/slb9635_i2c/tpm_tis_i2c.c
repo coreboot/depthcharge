@@ -83,7 +83,7 @@ static const char * const chip_name[] = {
 struct tpm_inf_dev {
 	int bus;
 	unsigned int addr;
-	uint8_t buf[TPM_BUFSIZE + sizeof(u8)];	// max. buffer size + addr
+	uint8_t buf[TPM_BUFSIZE + sizeof(uint8_t)]; // max. buffer size + addr
 	enum i2c_chip_type chip_type;
 };
 

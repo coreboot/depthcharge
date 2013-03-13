@@ -20,10 +20,10 @@
 #include <stdint.h>
 
 struct ist_info {
-	u32 signature;
-	u32 command;
-	u32 event;
-	u32 perf_level;
+	uint32_t signature;
+	uint32_t command;
+	uint32_t event;
+	uint32_t perf_level;
 };
 
 #endif /* __ARCH_X86_BOOT_IST_H__ */
