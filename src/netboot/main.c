@@ -37,6 +37,7 @@
 #include "net/uip_arp.h"
 #include "netboot/bootp.h"
 #include "netboot/tftp.h"
+#include "vboot/boot.h"
 #include "vboot/util/flag.h"
 
 static void enable_graphics(void)
@@ -147,7 +148,9 @@ int main(void)
 	}
 	printf("The bootfile was %d bytes long.\n", size);
 
-	/* Jump into payload. */
+	char *cmd_line = CONFIG_NETBOOT_DEFAULT_COMMAND_LINE;
+
+	boot(payload, cmd_line, NULL, NULL);
 
 	// We should never get here.
 	printf("Got to the end!\n");
