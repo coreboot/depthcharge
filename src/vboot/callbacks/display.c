@@ -23,10 +23,10 @@
 #include <libpayload.h>
 #include <sysinfo.h>
 #include <vboot_api.h>
+#include <vboot_struct.h>
 
 #include "drivers/video/coreboot_fb.h"
 #include "image/fmap.h"
-#include "vboot/util/acpi.h"
 #include "vboot/util/commonparams.h"
 
 VbError_t VbExDisplayInit(uint32_t *width, uint32_t *height)
@@ -121,35 +121,52 @@ VbError_t VbExDisplayImage(uint32_t x, uint32_t y,
 	return VBERROR_SUCCESS;
 }
 
+enum {
+	VDAT_RW_A = 0x0,
+	VDAT_RW_B = 0x1,
+	VDAT_RECOVERY = 0xFF,
+	VDAT_UNKNOWN = 0x100
+};
+
 VbError_t VbExDisplayDebugInfo(const char *info_str)
 {
-	chromeos_acpi_t *acpi_table = (chromeos_acpi_t *)lib_sysinfo.vdat_addr;
-
 	video_console_set_cursor(0, 0);
 	print_string(info_str);
+
 	print_string("read-only firmware id: ");
 	if (!fmap_ro_fwid()) {
 		print_string("NOT FOUND");
 	} else {
 		print_string(fmap_ro_fwid());
 	}
+
+	void *blob;
+	int size;
+	int fw_index = VDAT_UNKNOWN;
+	if (find_common_params(&blob, &size) == 0)
+		fw_index = ((VbSharedDataHeader *)blob)->firmware_index;
+
 	print_string("\nactive firmware id: ");
-	if (acpi_table->main_fw == BINF_RW_A) {
+	switch (fw_index) {
+	case VDAT_RW_A:
 		if (fmap_rwa_fwid())
 			print_string(fmap_rwa_fwid());
 		else
 			print_string("RW A: ID NOT FOUND");
-	} else if (acpi_table->main_fw == BINF_RW_B) {
+		break;
+	case VDAT_RW_B:
 		if (fmap_rwb_fwid())
 			print_string(fmap_rwb_fwid());
 		else
 			print_string("RW B: ID NOT FOUND");
-	} else if (acpi_table->main_fw == BINF_RECOVERY) {
+		break;
+	case VDAT_RECOVERY:
 		if (fmap_ro_fwid())
 			print_string(fmap_ro_fwid());
 		else
 			print_string("RO: ID NOT FOUND");
-	} else {
+		break;
+	default:
 		print_string("NOT FOUND");
 	}
 	print_string("\n");
