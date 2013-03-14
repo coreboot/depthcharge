@@ -32,8 +32,6 @@
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 
-#define min(a, b) (a) < (b) ? a : b
-
 enum {
 	VDAT_RW_A = 0,
 	VDAT_RW_B = 1,
@@ -105,13 +103,13 @@ int crossystem_setup(void)
 		return 1;
 	}
 	char *hwid = (char *)((uintptr_t)cparams.gbb_data + gbb->hwid_offset);
-	size = min(gbb->hwid_size, sizeof(acpi_table->hwid));
+	size = MIN(gbb->hwid_size, sizeof(acpi_table->hwid));
 	memcpy(acpi_table->hwid, hwid, size);
 
-	size = min(fwid_size, sizeof(acpi_table->fwid));
+	size = MIN(fwid_size, sizeof(acpi_table->fwid));
 	memcpy(acpi_table->fwid, fwid, size);
 
-	size = min(fmap_ro_fwid_size(), sizeof(acpi_table->frid));
+	size = MIN(fmap_ro_fwid_size(), sizeof(acpi_table->frid));
 	memcpy(acpi_table->frid, fmap_ro_fwid(), size);
 
 	if (main_fw == BINF_RECOVERY)
@@ -125,7 +123,7 @@ int crossystem_setup(void)
 
 	acpi_table->fmap_base = (uintptr_t)fmap_base();
 
-	size = min(fwid_size, strnlen(fwid, ACPI_FWID_SIZE));
+	size = MIN(fwid_size, strnlen(fwid, ACPI_FWID_SIZE));
 	uint8_t *dest = (uint8_t *)(uintptr_t)acpi_table->fwid_ptr;
 	memcpy(dest, fwid, size);
 	dest[size] = 0;

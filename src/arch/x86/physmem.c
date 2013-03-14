@@ -29,7 +29,6 @@
 
 /* Large pages are 2MB. */
 #define LARGE_PAGE_SIZE ((1 << 20) * 2)
-#define min(a, b) (a) < (b) ? a : b
 
 /*
  * Paging data structures.
@@ -202,7 +201,7 @@ uint64_t arch_phys_memset(uint64_t start, int c, uint64_t size)
 
 	/* Handle memory below 4GB. */
 	if (start <= max_addr) {
-		uint64_t low_size = min(max_addr + 1 - start, size);
+		uint64_t low_size = MIN(max_addr + 1 - start, size);
 		void *start_ptr = (void *)(uintptr_t)start;
 
 		assert(((uint64_t)(uintptr_t)start) == start);
@@ -221,7 +220,7 @@ uint64_t arch_phys_memset(uint64_t start, int c, uint64_t size)
 		/* Handle the first partial page. */
 		if (offset) {
 			uint64_t end =
-				min(map_addr + LARGE_PAGE_SIZE, start + size);
+				MIN(map_addr + LARGE_PAGE_SIZE, start + size);
 			uint64_t cur_size = end - start;
 			x86_phys_memset_page(map_addr, offset, c, cur_size);
 			size -= cur_size;

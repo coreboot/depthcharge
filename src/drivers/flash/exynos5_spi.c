@@ -113,8 +113,6 @@ static void clrbits32(uint32_t *data, uint32_t bits)
 	writel(readl(data) & ~bits, data);
 }
 
-#define min(a, b) ((a)<(b)?(a):(b))
-
 static void exynos5_spi_sw_reset(void)
 {
 	clrbits32(&regs->ch_cfg, SPI_RX_CH_ON | SPI_TX_CH_ON);
@@ -160,7 +158,7 @@ static void exynos5_spi_read(uint8_t *buf, uint32_t offset, int bytes)
 			writel(0xffffffff, &regs->tx_data);
 
 		if (rx_lvl >= sizeof(uint32_t)) {
-			int received = min(sizeof(uint32_t), bytes);
+			int received = MIN(sizeof(uint32_t), bytes);
 			uint32_t data = readl(&regs->rx_data);
 			memcpy(buf, &data, received);
 			bytes -= received;
@@ -212,7 +210,7 @@ void *flash_read(uint32_t offset, uint32_t size)
 
 	while (size) {
 		// The packet count field is only 16 bits wide.
-		int todo = min(size, ((1 << 16) - 1) * sizeof(uint32_t));
+		int todo = MIN(size, ((1 << 16) - 1) * sizeof(uint32_t));
 
 		exynos5_spi_read(exynos5_spi_cache + offset, offset, todo);
 		offset += todo;

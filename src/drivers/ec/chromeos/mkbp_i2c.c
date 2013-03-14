@@ -35,8 +35,6 @@
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/chromeos/mkbp.h"
 
-#define min(a, b) ((a) < (b) ? (a) : (b))
-
 int mkbp_bus_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 		     const uint8_t *dout, int dout_len,
 		     uint8_t **dinp, int din_len)
@@ -130,7 +128,7 @@ int mkbp_bus_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 			       __func__, in_ptr[2 + din_len], csum);
 			return -1;
 		}
-		din_len = min(din_len, len);
+		din_len = MIN(din_len, len);
 		mkbp_dump_data("in", -1, in_ptr, din_len + 3);
 	} else {
 		mkbp_dump_data("in (old)", -1, in_ptr, in_bytes);

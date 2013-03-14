@@ -34,8 +34,6 @@
 #include "base/time.h"
 #include "drivers/ec/chromeos/mkbp.h"
 
-#define min(a, b) (a) < (b) ? a : b
-
 struct mkbp_dev *mkbp_ptr;
 
 /* Timeout waiting for a flash erase command to complete */
@@ -475,7 +473,7 @@ int mkbp_flash_write(struct mkbp_dev *dev, const uint8_t *data,
 		uint32_t todo;
 
 		/* If the data is empty, there is no point in programming it */
-		todo = min(end - off, burst);
+		todo = MIN(end - off, burst);
 		if (dev->optimise_flash_write &&
 				mkbp_data_is_erased((uint32_t *)data, todo))
 			continue;
@@ -525,7 +523,7 @@ int mkbp_flash_read(struct mkbp_dev *dev, uint8_t *data, uint32_t offset,
 	end = offset + size;
 	for (off = offset; off < end; off += burst, data += burst) {
 		ret = mkbp_flash_read_block(dev, data, off,
-					    min(end - off, burst));
+					    MIN(end - off, burst));
 		if (ret)
 			return ret;
 	}

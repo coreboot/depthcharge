@@ -24,8 +24,6 @@
 #include <libpayload.h>
 #include <stdint.h>
 
-#define min(a, b) ((a)<(b)?(a):(b))
-
 #include "config.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/ich.h"
@@ -158,7 +156,7 @@ static void *flash_read_op(uint8_t opcode, uint32_t offset, uint32_t size)
 		// SPI addresses are 24 bits long.
 		writel(offset & 0x00FFFFFF, cntlr->addr);
 
-		data_length = min(size, cntlr->databytes);
+		data_length = MIN(size, cntlr->databytes);
 
 		// Set proper control field values.
 		control &= ~((cntlr->databytes - 1) << 8);
