@@ -143,4 +143,24 @@ uint32_t dt_flat_size(DeviceTree *tree);
 void dt_flatten(DeviceTree *tree, void *dest);
 void dt_print_node(DeviceTreeNode *node);
 
+
+
+/*
+ * Fixups to apply to a kernel's device tree before booting it.
+ */
+
+typedef struct DeviceTreeFixup
+{
+	// The function which does the fixing.
+	int (*fixup)(struct DeviceTreeFixup *fixup, DeviceTree *tree);
+	// Some data that can be used by the fixup function.
+	void *data;
+
+	ListNode list_node;
+} DeviceTreeFixup;
+
+extern ListNode device_tree_fixups;
+
+int dt_apply_fixups(DeviceTree *tree);
+
 #endif /* __BASE_DEVICE_TREE_H__ */

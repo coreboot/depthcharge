@@ -28,11 +28,6 @@
 #include "config.h"
 #include "vboot/boot.h"
 
-static int boot_fdt_fixup(DeviceTree *tree)
-{
-	return 0;
-}
-
 int boot(void *image, char *cmd_line, void *params, void *loader)
 {
 	DeviceTree *tree;
@@ -46,9 +41,7 @@ int boot(void *image, char *cmd_line, void *params, void *loader)
 		return 1;
 	}
 
-	// Put the crossystem data in the FDT.
-
-	if (boot_fdt_fixup(tree))
+	if (dt_apply_fixups(tree))
 		return 1;
 
 	// Allocate a spot for the FDT in memory.

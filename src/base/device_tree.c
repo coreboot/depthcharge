@@ -484,3 +484,22 @@ void dt_print_node(DeviceTreeNode *node)
 {
 	print_node(node, 0);
 }
+
+
+
+/*
+ * Fixups to apply to a kernel's device tree before booting it.
+ */
+
+ListNode device_tree_fixups;
+
+int dt_apply_fixups(DeviceTree *tree)
+{
+	DeviceTreeFixup *fixup;
+	list_for_each(fixup, device_tree_fixups, list_node) {
+		assert(fixup->fixup);
+		if (fixup->fixup(fixup, tree))
+			return 1;
+	}
+	return 0;
+}
