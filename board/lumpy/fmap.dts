@@ -1,7 +1,5 @@
 /dts-v1/;
 
-/include/ "flashmap-coreboot-8mb-ec.dtsi"
-
 / {
 	model = "Google Lumpy";
 	config {
@@ -178,28 +176,12 @@
 		};
 
 		/* ---- Section: Rewritable private 16 KB---- */
-		rw-environment {
-			label = "rw-environment";
-			/*
-			 * Alignment: 4k, and must occupy bottom of U-Boot
-			 * firmware -- check CONFIG_ENV_OFFSET
-			 */
-			reg = <0x003f8000 0x00004000>;
-
-			/*
-			 * We could put the dev environment here, but U-Boot has
-			 * a default built in. Devs can 'saveenv' to set this
-			 * up.
-			 */
-			type = "wiped";
-			wipe-value = [00];
-		};
 
 		/* ---- Section: Rewritable VPD 4 KB ---- */
 		rw-vpd {
 			label = "rw-vpd";
 			/* Alignment: 4k (for updating) */
-			reg = <0x003fc000 0x00002000>;
+			reg = <0x003f8000 0x00002000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
@@ -211,7 +193,7 @@
 		 */
 		rw-unused {
 			label = "rw-unused";
-			reg = <0x003fe000 0x00002000>;
+			reg = <0x003fa000 0x00006000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
