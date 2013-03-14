@@ -10,7 +10,7 @@
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * but without any warranty; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -20,11 +20,11 @@
  * MA 02111-1307 USA
  */
 
-#include "arch/x86/boot.h"
-#include "vboot/boot.h"
-#include "vboot/util/acpi.h"
+#ifndef __VBOOT_CROSSYSTEM_CROSSYSTEM_H__
+#define __VBOOT_CROSSYSTEM_CROSSYSTEM_H__
 
-int boot(void *kernel, char *cmd_line, void *params, void *loader)
-{
-	return boot_x86_linux(params, cmd_line, kernel);
-}
+// Setup the crossystem data. This should be done as late as possible to
+// ensure the data used is up to date.
+int crossystem_setup(void);
+
+#endif /* __VBOOT_CROSSYSTEM_CROSSYSTEM_H__ */

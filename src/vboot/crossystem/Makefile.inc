@@ -1,7 +1,7 @@
 ##
 ## This file is part of the depthcharge project.
 ##
-## Copyright 2012 Google Inc.
+## Copyright 2013 Google Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -17,12 +17,6 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-depthcharge-y += commonparams.c
-depthcharge-y += flag.c
-depthcharge-y += memory.c
-
-ifeq ($(CONFIG_EC_SOFTWARE_SYNC),y)
-depthcharge-y += ec.c
-else
-depthcharge-y += ec_stub.c
-endif
+depthcharge-$(CONFIG_CROSSYSTEM_ACPI) += acpi.c
+depthcharge-$(CONFIG_CROSSYSTEM_FDT) += fdt.c
+depthcharge-$(CONFIG_CROSSYSTEM_STUB) += stub.c

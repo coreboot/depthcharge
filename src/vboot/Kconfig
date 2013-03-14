@@ -74,3 +74,20 @@ config NV_STORAGE_MKBP
 	  The nonvolatile data is stored by the ChromeOS EC.
 
 endchoice
+
+choice
+	prompt "Crossystem data mechanism"
+	default CROSSYSTEM_STUB
+	help
+	  The mechanism for passing data to crossystem.
+
+config CROSSYSTEM_STUB
+	bool "stub"
+
+config CROSSYSTEM_ACPI
+	bool "ACPI"
+
+config CROSSYSTEM_FDT
+	bool "FDT"
+
+endchoice

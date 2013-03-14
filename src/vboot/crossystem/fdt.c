@@ -10,7 +10,7 @@
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * but without any warranty; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -20,11 +20,20 @@
  * MA 02111-1307 USA
  */
 
-#include "arch/x86/boot.h"
-#include "vboot/boot.h"
-#include "vboot/util/acpi.h"
+#include "base/device_tree.h"
+#include "vboot/crossystem/crossystem.h"
 
-int boot(void *kernel, char *cmd_line, void *params, void *loader)
+static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *data)
 {
-	return boot_x86_linux(params, cmd_line, kernel);
+	return 0;
+}
+
+static DeviceTreeFixup crossystem_fixup = {
+	&install_crossystem_data
+};
+
+int crossystem_setup(void)
+{
+	list_insert_after(&crossystem_fixup.list_node, &device_tree_fixups);
+	return 0;
 }

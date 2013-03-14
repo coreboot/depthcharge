@@ -10,7 +10,7 @@
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * but without any warranty; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -20,11 +20,13 @@
  * MA 02111-1307 USA
  */
 
-#include "arch/x86/boot.h"
-#include "vboot/boot.h"
-#include "vboot/util/acpi.h"
+#include <libpayload.h>
 
-int boot(void *kernel, char *cmd_line, void *params, void *loader)
+#include "vboot/crossystem/crossystem.h"
+
+int crossystem_setup(void)
 {
-	return boot_x86_linux(params, cmd_line, kernel);
+	printf("%s not implemented.\n", __func__);
+	return 0;
 }
+

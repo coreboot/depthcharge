@@ -17,7 +17,7 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-subdirs-y := callbacks stages util
+subdirs-y := callbacks crossystem stages util
 
 depthcharge-y += stages.c
 

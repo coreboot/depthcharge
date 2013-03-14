@@ -36,6 +36,7 @@
 #include "image/symbols.h"
 #include "vboot/boot.h"
 #include "vboot/stages.h"
+#include "vboot/crossystem/crossystem.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/ec.h"
 #include "vboot/util/flag.h"
@@ -201,8 +202,8 @@ int vboot_select_and_load_kernel(void)
 			      cmd_line_buf, sizeof(cmd_line_buf)))
 		return 1;
 
-	if (boot(kernel, cmd_line_buf, params, loader))
+	if (crossystem_setup())
 		return 1;
 
-	return 0;
+	return boot(kernel, cmd_line_buf, params, loader);
 }

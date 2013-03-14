@@ -88,6 +88,4 @@ typedef struct {
 	                               // 0xdbe
 } __attribute__((packed)) chromeos_acpi_t;
 
-int acpi_update_data(void);
-
 #endif /* __VBOOT_UTIL_ACPI_H__ */

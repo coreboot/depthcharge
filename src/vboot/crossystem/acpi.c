@@ -27,6 +27,7 @@
 
 #include "config.h"
 #include "image/fmap.h"
+#include "vboot/crossystem/crossystem.h"
 #include "vboot/util/acpi.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
@@ -39,7 +40,7 @@ enum {
 	VDAT_RECOVERY = 0xFF
 };
 
-int acpi_update_data(void)
+int crossystem_setup(void)
 {
 	chromeos_acpi_t *acpi_table = (chromeos_acpi_t *)lib_sysinfo.vdat_addr;
 	VbSharedDataHeader *vdat = (VbSharedDataHeader *)&acpi_table->vdat;
