@@ -20,11 +20,40 @@
  * MA 02111-1307 USA
  */
 
+#include <libpayload.h>
+
 #include "arch/x86/boot.h"
 #include "vboot/boot.h"
 #include "vboot/util/acpi.h"
 
 int boot(void *kernel, char *cmd_line, void *params, void *loader)
 {
+	// If nobody's prepared the boot_params structure for us already,
+	// do that now.
+	if (!params) {
+		const int SectSize = 512;
+
+		struct boot_params *bparams = (struct boot_params *)kernel;
+
+		// Find the kernel header.
+		struct setup_header *header = &bparams->hdr;
+		uintptr_t header_start = (uintptr_t)header;
+		uintptr_t header_end = (uintptr_t)&header->jump +
+			((header->jump >> 8) & 0xff);
+		uintptr_t header_size = header_end - header_start;
+
+		// Prepare the boot params (zeropage).
+		static struct boot_params tmp_params;
+		memset(&tmp_params, 0, sizeof(tmp_params));
+		memcpy(&tmp_params.hdr, header, header_size);
+		params = &tmp_params;
+
+		// Move the protected mode part of the kernel into place.
+		uintptr_t pm_offset = (header->setup_sects + 1) * SectSize;
+		uintptr_t pm_size = header->syssize * 16;
+		uintptr_t pm_start = (uintptr_t)kernel + pm_offset;
+		memmove(kernel, (void *)pm_start, pm_size);
+	}
+
 	return boot_x86_linux(params, cmd_line, kernel);
 }
