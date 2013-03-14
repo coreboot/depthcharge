@@ -27,7 +27,6 @@
 #include "drivers/flash/flash.h"
 #include "image/fmap.h"
 #include "image/symbols.h"
-#include "vboot/util/acpi.h"
 #include "vboot/util/commonparams.h"
 
 VbCommonParams cparams CPARAMS;
