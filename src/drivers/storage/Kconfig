@@ -18,3 +18,9 @@
 config DRIVER_AHCI
 	bool "AHCI driver"
 	default n
+
+config DRIVER_STORAGE_MMC
+	bool "Board-specific SD/MMC storage Driver"
+	default n
+        help
+          For platforms with SD/MMC card readers not on USB bus.
