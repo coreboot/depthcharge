@@ -21,17 +21,31 @@
  */
 
 #include <arch/msr.h>
+#include <assert.h>
 #include <libpayload.h>
 
 #include "arch/x86/boot.h"
 #include "arch/x86/cpu.h"
 #include "base/timestamp.h"
 
+static void * const ParamsBuff = (void *)(uintptr_t)0x1000;
+static void * const CmdLineBuff = (void *)(uintptr_t)0x2000;
+
 static const uint32_t KernelV2Magic = 0x53726448;
 static const uint16_t MinProtocol = 0x0202;
 
 int boot_x86_linux(struct boot_params *boot_params, char *cmd_line, void *entry)
 {
+	// Move the boot_params structure and the command line to where Linux
+	// suggests and to where they'll be safe from being trampled by the
+	// kernel as it's decompressed.
+	assert((uint8_t *)CmdLineBuff - (uint8_t *)ParamsBuff >=
+		sizeof(*boot_params));
+	memcpy(ParamsBuff, boot_params, sizeof(*boot_params));
+	boot_params = ParamsBuff;
+	strcpy(CmdLineBuff, cmd_line);
+	cmd_line = CmdLineBuff;
+
 	struct setup_header *hdr = &boot_params->hdr;
 
 	if (hdr->header != KernelV2Magic || hdr->version < MinProtocol) {
