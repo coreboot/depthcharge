@@ -177,8 +177,10 @@ static void tftp_callback(void)
 	// Move on to the next block.
 	tftp_blocknum++;
 
-	// Give some feedback that something is happening.
-	printf("#");
+	if (!(tftp_blocknum % 10)) {
+		// Give some feedback that something is happening.
+		printf("#");
+	}
 	tftp_got_response = 1;
 }
 
