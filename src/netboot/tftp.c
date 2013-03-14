@@ -193,7 +193,7 @@ int tftp_read(void *dest, uip_ipaddr_t *server_ip, const char *bootfile,
 
 	int name_len = strlen(bootfile) + 1;
 
-	const char mode[] = "NetAscii";
+	const char mode[] = "Octet";
 	int mode_len = sizeof(mode);
 
 	int read_req_len = opcode_len + name_len + mode_len;
