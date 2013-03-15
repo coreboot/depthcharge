@@ -933,6 +933,10 @@ int mmc_startup(MmcDevice *mmc)
 	}
 	mmc_set_clock(mmc, clock);
 	mmc->lba = mmc->capacity / mmc->read_bl_len;
+	if (mmc->block_dev) {
+		mmc->block_dev->block_count = mmc->lba;
+		mmc->block_dev->block_size = mmc->read_bl_len;
+	}
 	return 0;
 }
 
@@ -956,13 +960,6 @@ int mmc_send_if_cond(MmcDevice *mmc)
 		return MMC_UNUSABLE_ERR;
 	else
 		mmc->version = SD_VERSION_2;
-	return 0;
-}
-
-int mmc_register(MmcDevice *mmc)
-{
-	if (!mmc->b_max)
-		mmc->b_max = CONFIG_SYS_MMC_MAX_BLK_COUNT;
 	return 0;
 }
 
@@ -1044,10 +1041,46 @@ int mmc_init(MmcDevice *mmc)
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// BlockDevice callbacks
+// BlockDevice utilities and callbacks
 
-lba_t block_mmc_read(struct BlockDev *dev, lba_t start, lba_t count,
-		     void *buffer)
+void block_mmc_refresh(ListNode *block_node, MmcDevice *mmc)
+{
+	assert(mmc && mmc->block_dev);
+	debug("%s: %s\n",mmc->block_dev->name, __func__);
+	if (mmc->has_init) {
+		list_remove(&mmc->block_dev->list_node);
+		mmc->has_init = 0;
+	}
+	if (mmc_init(mmc) == 0) {
+		list_insert_after(&mmc->block_dev->list_node, block_node);
+		printf("%s: %s: Card present.\n", __func__,
+		       mmc->block_dev->name);
+	} else {
+		printf("%s: %s: No card present.\n", __func__,
+		       mmc->block_dev->name);
+	}
+}
+
+int block_mmc_register(BlockDev *dev, MmcDevice *mmc, MmcDevice **root)
+{
+	if (!mmc->b_max)
+		mmc->b_max = CONFIG_SYS_MMC_MAX_BLK_COUNT;
+	mmc->block_dev = dev;
+	dev->dev_data = mmc;
+	dev->read = block_mmc_read;
+	dev->write = block_mmc_write;
+	if (root) {
+		while (*root && (*root)->next)
+			root = &(*root)->next;
+		if (*root)
+			(*root)->next = mmc;
+		else
+			*root = mmc;
+	}
+	return 0;
+}
+
+lba_t block_mmc_read(BlockDev *dev, lba_t start, lba_t count, void *buffer)
 {
 	MmcDevice *mmc = (MmcDevice *)dev->dev_data;
 	lba_t cur, blocks_todo = count;
@@ -1071,7 +1104,7 @@ lba_t block_mmc_read(struct BlockDev *dev, lba_t start, lba_t count,
 	return count;
 }
 
-lba_t block_mmc_write(struct BlockDev *dev, lba_t start, lba_t count,
+lba_t block_mmc_write(BlockDev *dev, lba_t start, lba_t count,
 		      const void *buffer)
 {
 	MmcDevice *mmc = (MmcDevice *)dev->dev_data;

@@ -55,14 +55,21 @@ static inline S5pMshci *s5p_get_base_mshci(int dev_index)
 {
 	switch(dev_index) {
 		case 0:
-			return (S5pMshci *)CONFIG_DRIVER_STORAGE_MSHC_S5P_MMC0_ADDRESS;
+			return ((S5pMshci *)
+				CONFIG_DRIVER_STORAGE_MSHC_S5P_MMC0_ADDRESS);
 		case 1:
-			return (S5pMshci *)CONFIG_DRIVER_STORAGE_MSHC_S5P_MMC1_ADDRESS;
+			return ((S5pMshci *)
+				CONFIG_DRIVER_STORAGE_MSHC_S5P_MMC1_ADDRESS);
 	}
 	error("Unknown device index (%d): Check your Kconfig settings for "
 	      "DRIVER_MSHC_S5P_DEVICES.\n", dev_index);
 	assert(dev_index < CONFIG_DRIVER_STORAGE_MSHC_S5P_DEVICES);
 	return NULL;
+}
+
+static int s5p_mshci_is_card_present(S5pMshci *reg)
+{
+	return !readl(&reg->cdetect);
 }
 
 static int mshci_setbits(MshciHost *host, unsigned int bits)
@@ -462,19 +469,16 @@ static void mshci_fifo_init(MshciHost *host)
 	writel(fifo_val, &host->reg->fifoth);
 }
 
-static int s5p_mshci_is_card_present(MmcDevice *mmc)
+static int mshci_is_card_present(MmcDevice *mmc)
 {
-        int present = 1; /* for ch0 (eMMC) card is always present */
+	BlockDev *block_dev = (BlockDev *)mmc->block_dev;
 	MshciHost *host = (MshciHost *)mmc->host;
+	assert(block_dev);
+
 	debug("%s\n", __func__);
-	switch(host->dev_index) {
-		case 0:  // MMC0 (eMMC) card is always present
-			return present;
-		case 1:  // Also known as PERIPH_ID_SDMMC2
-			return !readl(&host->reg->cdetect);
-	}
-	assert(host->dev_index == 0 || host->dev_index == 1);
-	return 0;
+	if (!block_dev->removable)
+		return 1;
+	return s5p_mshci_is_card_present(host->reg);
 }
 
 static int mshci_init(MshciHost *host)
@@ -533,9 +537,9 @@ static int s5p_mshci_init(MmcDevice *mmc)
 	return 0;
 }
 
-static int s5p_mshc_initialize(int dev_index, S5pMshci *reg)
+static int s5p_mshc_initialize(int dev_index, S5pMshci *reg,
+			       MmcDevice **refresh_list)
 {
-	ListNode *root = NULL;
 	int bus_width = 1;
 	const int name_size = 16;
 	char *name;
@@ -558,7 +562,7 @@ static int s5p_mshc_initialize(int dev_index, S5pMshci *reg)
 	mmc_dev->send_cmd = s5p_mshci_send_command;
 	mmc_dev->set_ios = s5p_mshci_set_ios;
 	mmc_dev->init = s5p_mshci_init;
-	mmc_dev->is_card_present = s5p_mshci_is_card_present;
+	mmc_dev->is_card_present = mshci_is_card_present;
 
 	mmc_dev->voltages = MMC_VDD_32_33 | MMC_VDD_33_34;
 	mmc_dev->host_caps = MMC_MODE_HS_52MHz | MMC_MODE_HS | MMC_MODE_HC;
@@ -566,43 +570,39 @@ static int s5p_mshc_initialize(int dev_index, S5pMshci *reg)
 	mmc_dev->f_max = MAX_MSHCI_CLOCK;
 
 	name = malloc(name_size);
-	snprintf(name, name_size, "s5p_mshc %d", dev_index);
+	snprintf(name, name_size, "s5p_mshc%d", dev_index);
 	mshc_dev->name = name;
-	mshc_dev->dev_data = mmc_dev;
 	mshc_dev->block_size = reg->blksiz;
-	mshc_dev->read = block_mmc_read;
-	mshc_dev->write = block_mmc_write;
 
 	/* TODO(hungte) Get configuration data instead of hard-coded. */
 	if (dev_index == 0) {
 		bus_width = 8;
 		mshc_dev->removable = 0;
-		root = &fixed_block_devices;
 		mmc_dev->host_caps |= MMC_MODE_8BIT;
 	} else {
 		bus_width = 4;
 		mshc_dev->removable = 1;
-		root = &removable_block_devices;
 		mmc_dev->host_caps |= MMC_MODE_4BIT;
 	}
 	mmc_dev->bus_width = bus_width;
-	list_insert_after(&mshc_dev->list_node, root);
 
-	mmc_register(mmc_dev);
-	if (mmc_init(mmc_dev))
-		error("Failed to reset MMC card #%d.\n", dev_index);
-	else
-		debug("MMC%d: init success (reset OK).\n", dev_index);
+	if (mshc_dev->removable) {
+		block_mmc_register(mshc_dev, mmc_dev, refresh_list);
+		debug("%s: removable registered (init on refresh).\n", name);
+	} else {
+		block_mmc_register(mshc_dev, mmc_dev, NULL);
+		if (mmc_init(mmc_dev)) {
+			error("%s: failed to init fixed %s.\n", __func__, name);
+			free(name);
+			free(mmc_dev);
+			free(mshc_dev);
+			free(host);
+			return -1;
+		}
+		list_insert_after(&mshc_dev->list_node, &fixed_block_devices);
+		debug("%s:  init success (reset OK): %s\n", __func__, name);
+	}
 
-	// Update media size when mmc setup is ready.
-	mshc_dev->block_count = mmc_dev->lba;
-	mshc_dev->block_size = mmc_dev->read_bl_len;
-
-	debug("dev_index=%d, width=%d, reg=%p, removable=%d, "
-	      "block_size=%d, block_count=%d\n",
-	      dev_index, bus_width, reg, mshc_dev->removable,
-	      (int)mshc_dev->block_size,
-	      (int)mshc_dev->block_count);
 	return 0;
 }
 
@@ -612,10 +612,22 @@ static int s5p_mshc_initialize(int dev_index, S5pMshci *reg)
 static void s5p_mshc_ctrlr_init(BlockDevCtrlr *ctrlr)
 {
 	int i;
+	MmcDevice **refresh_list = (MmcDevice **)(&ctrlr->ctrlr_data);
 
 	debug("%s started.\n", __func__);
-	for (i = 0; i < CONFIG_DRIVER_STORAGE_MSHC_S5P_DEVICES; i++)
-		s5p_mshc_initialize(i, s5p_get_base_mshci(i));
+	for (i = 0; i < CONFIG_DRIVER_STORAGE_MSHC_S5P_DEVICES; i++) {
+		s5p_mshc_initialize(i, s5p_get_base_mshci(i), refresh_list);
+	}
+}
+
+static void s5p_mshc_ctrlr_refresh(BlockDevCtrlr *ctrlr)
+{
+	MmcDevice *mmc = (MmcDevice *)ctrlr->ctrlr_data;
+	debug("%s: enter (root=%p).\n", __func__, mmc);
+	for (; mmc; mmc = mmc->next) {
+		block_mmc_refresh(&removable_block_devices, mmc);
+	}
+	debug("%s: leave.\n", __func__);
 }
 
 int s5p_mshc_ctrlr_register(void)
@@ -623,7 +635,8 @@ int s5p_mshc_ctrlr_register(void)
 	static BlockDevCtrlr s5p_mshc =
 	{
 		&s5p_mshc_ctrlr_init,
-		// TODO(hungte) Add refresh function.
+		&s5p_mshc_ctrlr_refresh,
+		NULL,
 	};
 	list_insert_after(&s5p_mshc.list_node, &block_dev_controllers);
 	debug("%s: done.\n", __func__);

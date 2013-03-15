@@ -260,6 +260,8 @@ typedef struct MmcDevice {
 	char op_cond_pending;  /* 1 if we are waiting on an op_cond command */
 	char init_in_progress;  /* 1 if we have done mmc_start_init() */
 	uint32_t op_cond_response;  /* the response byte from the last op_cond */
+	BlockDev *block_dev;
+	struct MmcDevice *next;  /* MMC device in same type (for refresh) */
 } MmcDevice;
 
 int mmc_busy_wait_io(volatile uint32_t *address, uint32_t *output,
@@ -267,7 +269,6 @@ int mmc_busy_wait_io(volatile uint32_t *address, uint32_t *output,
 int mmc_busy_wait_io_until(volatile uint32_t *address, uint32_t *output,
 			   uint32_t io_mask, uint32_t timeout_ms);
 
-int mmc_register(MmcDevice *mmc);
 int mmc_init(MmcDevice *mmc);
 int mmc_start_init(MmcDevice *mmc);
 int mmc_is_card_present(MmcDevice *mmc);
@@ -277,9 +278,10 @@ int mmc_read(MmcDevice *mmc, void *dst, uint32_t start, lba_t block_count);
 uint32_t mmc_write(MmcDevice *mmc, uint32_t start, lba_t block_count,
 		   const void *src);
 
-lba_t block_mmc_read(struct BlockDev *dev, lba_t start, lba_t count,
-		     void *buffer);
-lba_t block_mmc_write(struct BlockDev *dev, lba_t start, lba_t count,
+void block_mmc_refresh(ListNode *block_node, MmcDevice *mmc);
+int block_mmc_register(BlockDev *dev, MmcDevice *mmc, MmcDevice **root);
+lba_t block_mmc_read(BlockDev *dev, lba_t start, lba_t count, void *buffer);
+lba_t block_mmc_write(BlockDev *dev, lba_t start, lba_t count,
 		      const void *buffer);
 
 // Helper macros for alignment.
