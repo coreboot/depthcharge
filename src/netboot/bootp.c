@@ -35,6 +35,8 @@ static BootpPacket *bootp_reply;
 static int bootp_reply_ready;
 static BootpPacket *bootp_request;
 
+static void bootp_options(uint8_t *options, int bytes);
+
 static void bootp_callback(void)
 {
 	// Check that it's the right port. If it isn't, some other connection
@@ -67,7 +69,6 @@ static void bootp_callback(void)
 int bootp(uip_ipaddr_t *server_ip, const char **bootfile)
 {
 	BootpPacket request, reply;
-	static const uint8_t EndOfListOption = 0xff;
 
 	// Prepare the bootp request packet.
 	memset(&request, 0, sizeof(request));
@@ -81,7 +82,7 @@ int bootp(uip_ipaddr_t *server_ip, const char **bootfile)
 	memcpy(request.client_hw_addr, &uip_ethaddr, sizeof(uip_ethaddr));
 	memcpy(request.options, BootpCookie, sizeof(BootpCookie));
 	// Truncate the option list.
-	request.options[sizeof(BootpCookie)] = EndOfListOption;
+	request.options[sizeof(BootpCookie)] = BootpTagEndOfList;
 
 	// Set up the UDP connection.
 	uip_ipaddr_t addr;
@@ -137,5 +138,62 @@ int bootp(uip_ipaddr_t *server_ip, const char **bootfile)
 			   reply.your_ip >> 16, reply.your_ip >> 24);
 	uip_sethostaddr(&my_ip);
 
+	bootp_options(reply.options, sizeof(reply.options));
+
 	return 0;
+}
+
+static void bootp_options(uint8_t *options, int bytes)
+{
+	if (bytes < sizeof(BootpCookie) ||
+		memcmp(options, BootpCookie, sizeof(BootpCookie)))
+		return;
+
+	int pos = sizeof(BootpCookie);
+
+	while (pos < bytes) {
+		uint8_t tag = options[pos++];
+		if (pos >= bytes)
+			return;
+		uint8_t length = options[pos++];
+		if (pos >= bytes)
+			return;
+		uint8_t *value = &options[pos];
+		pos += length;
+		if (pos >= bytes)
+			return;
+
+		switch (tag) {
+		case BootpTagPadding:
+		case BootpTagTimeOffset:
+		case BootpTagTimeServers:
+		case BootpTagDnsServers:
+		case BootpTagPrintServers:
+		case BootpTagHostName:
+		case BootpTagFileSize:
+			break;
+		case BootpTagSubnetMask:
+			if (length < 4) {
+				printf("Truncated subnet mask.\n");
+			} else {
+				uip_ipaddr_t netmask;
+				uip_ipaddr(&netmask, value[0], value[1],
+						     value[2], value[3]);
+				uip_setnetmask(&netmask);
+			}
+			break;
+		case BootpTagDefaultRouters:
+			if (length < 4) {
+				printf("Truncated routers.\n");
+			} else {
+				uip_ipaddr_t router;
+				uip_ipaddr(&router, value[0], value[1],
+						    value[2], value[3]);
+				uip_setdraddr(&router);
+			}
+			break;
+		case BootpTagEndOfList:
+			return;
+		}
+	}
 }
