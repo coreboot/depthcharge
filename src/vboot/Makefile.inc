@@ -63,6 +63,7 @@ ifndef VB_SOURCE
 else
 	@printf "    MAKE       $(subst $(obj)/,,$(@))\n"
 	$(Q)FIRMWARE_ARCH=$(VB_FIRMWARE_ARCH) \
+		CC="$(XCC)" \
 		CFLAGS="$(CFLAGS) -DVBOOT_DEBUG" \
 		make -C $(VB_SOURCE) \
 		MOCK_TPM=$(VBOOT_MOCK_TPM) \
