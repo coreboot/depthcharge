@@ -67,6 +67,7 @@ static void bootp_callback(void)
 int bootp(uip_ipaddr_t *server_ip, const char **bootfile)
 {
 	BootpPacket request, reply;
+	static const uint8_t EndOfListOption = 0xff;
 
 	// Prepare the bootp request packet.
 	memset(&request, 0, sizeof(request));
@@ -78,6 +79,9 @@ int bootp(uip_ipaddr_t *server_ip, const char **bootfile)
 	request.seconds = htonw(100);
 	assert(sizeof(uip_ethaddr) < sizeof(request.client_hw_addr));
 	memcpy(request.client_hw_addr, &uip_ethaddr, sizeof(uip_ethaddr));
+	memcpy(request.options, BootpCookie, sizeof(BootpCookie));
+	// Truncate the option list.
+	request.options[sizeof(BootpCookie)] = EndOfListOption;
 
 	// Set up the UDP connection.
 	uip_ipaddr_t addr;

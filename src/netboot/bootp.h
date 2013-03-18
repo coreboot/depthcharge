@@ -60,6 +60,8 @@ typedef struct __attribute__((packed)) BootpPacket
 	uint8_t options[64];
 } BootpPacket;
 
+static const uint8_t BootpCookie[] = { 99, 130, 83, 99 };
+
 int bootp(uip_ipaddr_t *server_ip, const char **bootfile);
 
 #endif /* __NETBOOT_BOOTP_H__ */
