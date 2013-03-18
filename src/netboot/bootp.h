@@ -62,6 +62,19 @@ typedef struct __attribute__((packed)) BootpPacket
 
 static const uint8_t BootpCookie[] = { 99, 130, 83, 99 };
 
+typedef enum BootpTags {
+	BootpTagPadding = 0,
+	BootpTagSubnetMask = 1,
+	BootpTagTimeOffset = 2,
+	BootpTagDefaultRouters = 3,
+	BootpTagTimeServers = 4,
+	BootpTagDnsServers = 6,
+	BootpTagPrintServers = 9,
+	BootpTagHostName = 12,
+	BootpTagFileSize = 13,
+	BootpTagEndOfList = 255
+} BootpTags;
+
 int bootp(uip_ipaddr_t *server_ip, const char **bootfile);
 
 #endif /* __NETBOOT_BOOTP_H__ */
