@@ -17,7 +17,7 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-netboot-y += bootp.c
+netboot-y += dhcp.c
 netboot-y += main.c
 netboot-y += tftp.c
 

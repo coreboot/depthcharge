@@ -35,7 +35,7 @@
 #include "drivers/power/power.h"
 #include "net/uip.h"
 #include "net/uip_arp.h"
-#include "netboot/bootp.h"
+#include "netboot/dhcp.h"
 #include "netboot/tftp.h"
 #include "vboot/boot.h"
 #include "vboot/util/flag.h"
@@ -128,24 +128,33 @@ int main(void)
 	uip_setethaddr(*mac_addr);
 
 	// Find out who we are and what we should boot.
-	uip_ipaddr_t my_ip, server_ip;
+	uip_ipaddr_t my_ip, next_ip, server_ip;
 	const char *bootfile;
-	if (bootp(&server_ip, &bootfile)) {
-		printf("Bootp failed.\n");
-		halt();
-	}
+	while (dhcp_request(&next_ip, &server_ip, &bootfile))
+		printf("Dhcp failed, retrying.\n");
+
 	printf("My ip is ");
 	uip_gethostaddr(&my_ip);
 	print_ip_addr(&my_ip);
-	printf("\nThe server ip is ");
+	printf("\nThe DHCP server ip is ");
 	print_ip_addr(&server_ip);
+	printf("\nThe TFTP server ip is ");
+	print_ip_addr(&next_ip);
 	printf("\nThe boot file is %s\n", bootfile);
 
 	uint32_t size;
-	if (tftp_read(payload, &server_ip, bootfile, &size)) {
+	if (tftp_read(payload, &next_ip, bootfile, &size)) {
 		printf("Tftp failed.\n");
+		if (dhcp_release(server_ip))
+			printf("Dhcp release failed.\n");
 		halt();
 	}
+
+	if (dhcp_release(server_ip)) {
+		printf("Dhcp release failed.\n");
+		halt();
+	}
+
 	printf("The bootfile was %d bytes long.\n", size);
 
 	char *cmd_line = CONFIG_NETBOOT_DEFAULT_COMMAND_LINE;
