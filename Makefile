@@ -78,7 +78,7 @@ endif
 include $(src)/src/arch/$(ARCH_DIR)/build_vars
 
 INCLUDES = -Ibuild -I$(src)/src/ -I$(src)/src/arch/$(ARCH_DIR)/includes/ \
-	-I$(VB_INC_DIR) -I$(VB_INC_DIR)/arch/$(VB_FIRMWARE_ARCH)/
+	-I$(VB_SOURCE)/firmware/include
 ABI_FLAGS := $(ARCH_ABI_FLAGS) -ffreestanding -fno-builtin \
 	-fno-stack-protector -fomit-frame-pointer
 LINK_FLAGS := $(ARCH_LINK_FLAGS) $(ABI_FLAGS) -fuse-ld=bfd \
