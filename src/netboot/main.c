@@ -29,13 +29,16 @@
 #include "base/timestamp.h"
 #include "config.h"
 #include "drivers/bus/usb/usb.h"
+#include "drivers/flash/flash.h"
 #include "drivers/input/input.h"
 #include "drivers/net/net.h"
 #include "drivers/timer/timer.h"
 #include "drivers/power/power.h"
+#include "image/fmap.h"
 #include "net/uip.h"
 #include "net/uip_arp.h"
 #include "netboot/dhcp.h"
+#include "netboot/params.h"
 #include "netboot/tftp.h"
 #include "vboot/boot.h"
 #include "vboot/util/flag.h"
@@ -80,8 +83,14 @@ static void print_mac_addr(const uip_eth_addr *mac)
 
 static void * const payload = (void *)(uintptr_t)CONFIG_KERNEL_START;
 
+static char cmd_line[4096] = CONFIG_NETBOOT_DEFAULT_COMMAND_LINE;
+static const int cmd_line_def_size =
+	sizeof(CONFIG_NETBOOT_DEFAULT_COMMAND_LINE);
+
 int main(void)
 {
+	NetbootParam *param;
+
 	// Initialize some consoles.
 	serial_init();
 	cbmem_console_init();
@@ -127,10 +136,10 @@ int main(void)
 	printf("\n");
 	uip_setethaddr(*mac_addr);
 
-	// Find out who we are and what we should boot.
+	// Find out who we are.
 	uip_ipaddr_t my_ip, next_ip, server_ip;
-	const char *bootfile;
-	while (dhcp_request(&next_ip, &server_ip, &bootfile))
+	const char *dhcp_bootfile;
+	while (dhcp_request(&next_ip, &server_ip, &dhcp_bootfile))
 		printf("Dhcp failed, retrying.\n");
 
 	printf("My ip is ");
@@ -138,18 +147,65 @@ int main(void)
 	print_ip_addr(&my_ip);
 	printf("\nThe DHCP server ip is ");
 	print_ip_addr(&server_ip);
-	printf("\nThe TFTP server ip is ");
-	print_ip_addr(&next_ip);
-	printf("\nThe boot file is %s\n", bootfile);
+	printf("\n");
 
+	// Retrieve settings from the shared data area.
+	FmapArea shared_data;
+	if (fmap_find_area("SHARED_DATA", &shared_data)) {
+		printf("Couldn't find the shared data area.\n");
+		halt();
+	}
+	void *data = flash_read(shared_data.offset, shared_data.size);
+	netboot_params_init(data, shared_data.size);
+
+	uip_ipaddr_t *tftp_ip = NULL;
+	const char *bootfile = NULL;
+	// Use some settings either from DHCP or from shared_data.
+        if (!CONFIG_NETBOOT_DYNAMIC_PARAMS) {
+		param = netboot_params_val(NetbootParamIdTftpServerIp);
+		if (param->size >= sizeof(uip_ipaddr_t))
+			tftp_ip = (uip_ipaddr_t *)param->data;
+
+		param = netboot_params_val(NetbootParamIdBootfile);
+		if (param->data && param->size > 0 &&
+				strnlen((const char *)param->data,
+					param->size) < param->size) {
+			bootfile = (const char *)param->data;
+		}
+	} else {
+		tftp_ip = &next_ip;
+		bootfile = dhcp_bootfile;
+	}
+
+	if (!tftp_ip) {
+		printf("No TFTP server IP.\n");
+		if (dhcp_release(server_ip))
+			printf("Dhcp release failed.\n");
+		halt();
+	} else {
+		printf("The TFTP server ip is ");
+		print_ip_addr(tftp_ip);
+		printf("\n");
+	}
+	if (!bootfile) {
+		printf("No bootfile.\n");
+		if (dhcp_release(server_ip))
+			printf("Dhcp release failed.\n");
+		halt();
+	} else {
+		printf("The boot file is %s\n", bootfile);
+	}
+
+	// Download the bootfile.
 	uint32_t size;
-	if (tftp_read(payload, &next_ip, bootfile, &size)) {
+	if (tftp_read(payload, tftp_ip, bootfile, &size)) {
 		printf("Tftp failed.\n");
 		if (dhcp_release(server_ip))
 			printf("Dhcp release failed.\n");
 		halt();
 	}
 
+	// We're done on the network, so release our IP.
 	if (dhcp_release(server_ip)) {
 		printf("Dhcp release failed.\n");
 		halt();
@@ -157,8 +213,23 @@ int main(void)
 
 	printf("The bootfile was %d bytes long.\n", size);
 
-	char *cmd_line = CONFIG_NETBOOT_DEFAULT_COMMAND_LINE;
+	// Prepare the command line.
+	param = netboot_params_val(NetbootParamIdKernelArgs);
+	cmd_line[cmd_line_def_size - 1] = '\0';
+	if (param->data && param->size > 0) {
+		int args_len = strnlen((const char *)param->data, param->size);
 
+		if (args_len < param->size &&
+				args_len + cmd_line_def_size <
+				sizeof(cmd_line)) {
+			cmd_line[cmd_line_def_size - 1] = ' ';
+			strncpy(&cmd_line[cmd_line_def_size], param->data,
+				sizeof(cmd_line) - cmd_line_def_size);
+		}
+	}
+	printf("The command line is %s.\n", cmd_line);
+
+	// Boot.
 	boot(payload, cmd_line, NULL, NULL);
 
 	// We should never get here.

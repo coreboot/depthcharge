@@ -20,3 +20,11 @@ config NETBOOT_DEFAULT_COMMAND_LINE
 	default "lsm.module_locking=0 cros_netboot_ramfs cros_factory_install cros_secure cros_netboot"
 	help
 	  The default command line to pass to the netboot kernel.
+
+config NETBOOT_DYNAMIC_PARAMS
+	bool "Set the TFTP server and bootfile via DHCP"
+	default n
+	help
+	  When this option is enabled, the TFTP server IP and the bootfile
+	  are configured dynamically using DHCP. Otherwise they're configured
+	  statically by the update_firmware_settings.py utility.

@@ -19,6 +19,7 @@
 
 netboot-y += dhcp.c
 netboot-y += main.c
+netboot-y += params.c
 netboot-y += tftp.c
 
 NETBOOT_ELF = $(obj)/netboot.elf
