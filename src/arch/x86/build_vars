@@ -18,7 +18,6 @@
 ##
 
 VB_FIRMWARE_ARCH=x86
-VB_ARCH=x86_64
 ARCH_ABI_FLAGS += -mpreferred-stack-boundary=2 -mregparm=3
 ARCH_LINK_FLAGS := -Wl,--wrap=__divdi3 -Wl,--wrap=__udivdi3 \
 	-Wl,--wrap=__moddi3 -Wl,--wrap=__umoddi3

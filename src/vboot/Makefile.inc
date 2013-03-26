@@ -69,7 +69,7 @@ else
 		MOCK_TPM=$(VBOOT_MOCK_TPM) \
 		BUILD=$(dir $(VB_LIB)) \
 		V=$(V) \
-		ARCH=$(VB_ARCH)
+		fwlib
 endif
 
 
