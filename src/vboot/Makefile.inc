@@ -31,8 +31,8 @@ DEPTHCHARGE_RO_ELF = $(obj)/depthcharge.ro.elf
 DEPTHCHARGE_RO_BIN = $(obj)/depthcharge.ro.bin
 DEPTHCHARGE_RW_ELF = $(obj)/depthcharge.rw.elf
 DEPTHCHARGE_RW_BIN = $(obj)/depthcharge.rw.bin
-DEPTHCHARGE_UNIFIED_ELF = $(obj)/depthcharge.unified.elf
-DEPTHCHARGE_UNIFIED_PAYLOAD = $(obj)/depthcharge.unified.payload
+DEPTHCHARGE_ELF = $(obj)/depthcharge.elf
+DEPTHCHARGE_PAYLOAD = $(obj)/depthcharge.payload
 
 VB_LIB = $(obj)/external/vboot/vboot_fw.a
 
@@ -46,10 +46,10 @@ TRAMPOLINE = $(obj)/trampoline.o
 
 real-target: $(DEPTHCHARGE_RO_ELF) $(DEPTHCHARGE_RO_BIN) \
 	$(DEPTHCHARGE_RW_ELF) $(DEPTHCHARGE_RW_BIN) \
-	$(DEPTHCHARGE_UNIFIED_ELF)
+	$(DEPTHCHARGE_ELF)
 
 ifeq ($(CONFIG_ARCH_X86),y)
-real-target: $(DEPTHCHARGE_UNIFIED_PAYLOAD)
+real-target: $(DEPTHCHARGE_PAYLOAD)
 endif
 
 ifeq ($(CONFIG_MOCK_TPM),y)
@@ -128,7 +128,7 @@ $(DEPTHCHARGE_RW_BIN): $(DEPTHCHARGE_RW_ELF)
 	$(Q)$(LZMA) --stdout $(@).tmp > $(@)
 
 # The unified version
-$(DEPTHCHARGE_UNIFIED_ELF): $(src)/.config $$(depthcharge-objs) \
+$(DEPTHCHARGE_ELF): $(src)/.config $$(depthcharge-objs) \
 		$$(unified-objs) $(LIBRARIES) prepare
 	@printf "    LD         $(subst $(obj)/,,$(@).tmp)\n"
 	$(Q)$(XCC) $(LINK_FLAGS) -o $@.tmp $(depthcharge-objs) \
@@ -139,7 +139,7 @@ $(DEPTHCHARGE_UNIFIED_ELF): $(src)/.config $$(depthcharge-objs) \
 		$@.tmp $@
 
 # Provide a unified deptcharge boot loader in a payload format.
-$(DEPTHCHARGE_UNIFIED_PAYLOAD): $(DEPTHCHARGE_UNIFIED_ELF)
+$(DEPTHCHARGE_PAYLOAD): $(DEPTHCHARGE_ELF)
 	@printf "    PAYLOAD    $(subst $(obj)/,,$(@))\n"
 	$(Q)-rm -f temp.rom temp.bb
 	$(Q)dd if=/dev/zero of=temp.bb bs=512 count=1
