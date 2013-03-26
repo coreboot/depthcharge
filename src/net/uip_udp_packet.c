@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010, Swedish Institute of Computer Science.
+ * Copyright (c) 2006, Swedish Institute of Computer Science.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,56 +26,73 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
+ * This file is part of the Contiki operating system.
+ *
+ * $Id: uip_udp_packet.c,v 1.7 2009/10/18 22:02:01 adamdunkels Exp $
  */
 
 /**
  * \file
- *         A set of debugging tools
+ *         Module for sending UDP packets through uIP.
  * \author
- *         Nicolas Tsiftes <nvt@sics.se>
- *         Niclas Finne <nfi@sics.se>
- *         Joakim Eriksson <joakime@sics.se>
+ *         Adam Dunkels <adam@sics.se>
  */
 
-#include "net/uip-debug.h"
+#include <stdint.h>
+
+extern uint16_t uip_slen;
+
+#include "drivers/net/net.h"
+#include "net/uip_arp.h"
+#include "net/uip_udp_packet.h"
+
+#include <string.h>
 
 /*---------------------------------------------------------------------------*/
 void
-uip_debug_ipaddr_print(const uip_ipaddr_t *addr)
+uip_udp_packet_send(struct uip_udp_conn *c, const void *data, int len)
 {
+#if UIP_UDP
+  if(data != NULL) {
+    uip_udp_conn = c;
+    uip_slen = len;
+    memcpy(&uip_buf[UIP_LLH_LEN + UIP_IPUDPH_LEN], data,
+           len > UIP_BUFSIZE? UIP_BUFSIZE: len);
+    uip_process(UIP_UDP_SEND_CONN);
 #if UIP_CONF_IPV6
-  uint16_t a;
-  unsigned int i;
-  int f;
-  for(i = 0, f = 0; i < sizeof(uip_ipaddr_t); i += 2) {
-    a = (addr->u8[i] << 8) + addr->u8[i + 1];
-    if(a == 0 && f >= 0) {
-      if(f++ == 0) {
-        PRINTA("::");
-      }
-    } else {
-      if(f > 0) {
-        f = -1;
-      } else if(i > 0) {
-        PRINTA(":");
-      }
-      PRINTA("%x", a);
+    tcpip_ipv6_output();
+#else
+    if(uip_len > 0) {
+      uip_arp_out();
+      net_send(uip_buf, uip_len);
     }
+#endif
   }
-#else /* UIP_CONF_IPV6 */
-  PRINTA("%u.%u.%u.%u", addr->u8[0], addr->u8[1], addr->u8[2], addr->u8[3]);
-#endif /* UIP_CONF_IPV6 */
+  uip_slen = 0;
+#endif /* UIP_UDP */
 }
 /*---------------------------------------------------------------------------*/
 void
-uip_debug_lladdr_print(const uip_lladdr_t *addr)
+uip_udp_packet_sendto(struct uip_udp_conn *c, const void *data, int len,
+		      const uip_ipaddr_t *toaddr, uint16_t toport)
 {
-  unsigned int i;
-  for(i = 0; i < sizeof(uip_lladdr_t); i++) {
-    if(i > 0) {
-      PRINTA(":");
-    }
-    PRINTA("%02x", addr->addr[i]);
+  uip_ipaddr_t curaddr;
+  uint16_t curport;
+
+  if(toaddr != NULL) {
+    /* Save current IP addr/port. */
+    uip_ipaddr_copy(&curaddr, &c->ripaddr);
+    curport = c->rport;
+
+    /* Load new IP addr/port */
+    uip_ipaddr_copy(&c->ripaddr, toaddr);
+    c->rport = toport;
+
+    uip_udp_packet_send(c, data, len);
+
+    /* Restore old IP addr/port */
+    uip_ipaddr_copy(&c->ripaddr, &curaddr);
+    c->rport = curport;
   }
 }
 /*---------------------------------------------------------------------------*/

@@ -21,8 +21,8 @@ uip-c-ccopts := -fno-strict-aliasing
 
 uip-y += uip_arp.c
 uip-y += uip.c
-uip-y += uip-debug.c
+uip-y += uip_debug.c
 uip-y += uiplib.c
-uip-y += uip-udp-packet.c
+uip-y += uip_udp_packet.c
 
 net-y += net.c

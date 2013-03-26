@@ -28,7 +28,7 @@
 #include "net/net.h"
 #include "net/uip.h"
 #include "net/uip_arp.h"
-#include "net/uip-udp-packet.h"
+#include "net/uip_udp_packet.h"
 #include "netboot/dhcp.h"
 
 typedef enum DhcpOpcode

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2006, Swedish Institute of Computer Science.
+ * Copyright (c) 2010, Swedish Institute of Computer Science.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,23 +28,61 @@
  *
  * This file is part of the Contiki operating system.
  *
- * $Id: uip-udp-packet.h,v 1.3 2009/10/18 22:02:01 adamdunkels Exp $
+ * $Id: uip_debug.h,v 1.1 2010/04/30 13:20:57 joxe Exp $
  */
-
 /**
  * \file
- *         Header file for module for sending UDP packets through uIP.
- * \author
- *         Adam Dunkels <adam@sics.se>
+ *         A set of debugging macros.
+ *
+ * \author Nicolas Tsiftes <nvt@sics.se>
+ *         Niclas Finne <nfi@sics.se>
+ *         Joakim Eriksson <joakime@sics.se>
  */
 
-#ifndef __UIP_UDP_PACKET_H__
-#define __UIP_UDP_PACKET_H__
+#ifndef UIP_DEBUG_H
+#define UIP_DEBUG_H
 
 #include "net/uip.h"
+#include <stdio.h>
 
-void uip_udp_packet_send(struct uip_udp_conn *c, const void *data, int len);
-void uip_udp_packet_sendto(struct uip_udp_conn *c, const void *data, int len,
-			   const uip_ipaddr_t *toaddr, uint16_t toport);
+void uip_debug_ipaddr_print(const uip_ipaddr_t *addr);
+void uip_debug_lladdr_print(const uip_lladdr_t *addr);
 
-#endif /* __UIP_UDP_PACKET_H__ */
+#define DEBUG_NONE      0
+#define DEBUG_PRINT     1
+#define DEBUG_ANNOTATE  2
+#define DEBUG_FULL      DEBUG_ANNOTATE | DEBUG_PRINT
+
+/* PRINTA will always print if the debug routines are called directly */
+#ifdef __AVR__
+#include <avr/pgmspace.h>
+#define PRINTA(FORMAT,args...) printf_P(PSTR(FORMAT),##args)
+#else
+#define PRINTA(...) printf(__VA_ARGS__)
+#endif
+
+#if (DEBUG) & DEBUG_ANNOTATE
+#ifdef __AVR__
+#define ANNOTATE(FORMAT,args...) printf_P(PSTR(FORMAT),##args)
+#else
+#define ANNOTATE(...) printf(__VA_ARGS__)
+#endif
+#else
+#define ANNOTATE(...)
+#endif /* (DEBUG) & DEBUG_ANNOTATE */
+
+#if (DEBUG) & DEBUG_PRINT
+#ifdef __AVR__
+#define PRINTF(FORMAT,args...) printf_P(PSTR(FORMAT),##args)
+#else
+#define PRINTF(...) printf(__VA_ARGS__)
+#endif
+#define PRINT6ADDR(addr) uip_debug_ipaddr_print(addr)
+#define PRINTLLADDR(lladdr) uip_debug_lladdr_print(lladdr)
+#else
+#define PRINTF(...)
+#define PRINT6ADDR(addr)
+#define PRINTLLADDR(lladdr)
+#endif /* (DEBUG) & DEBUG_PRINT */
+
+#endif

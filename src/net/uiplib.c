@@ -39,7 +39,7 @@
 #include <string.h>
 
 #define DEBUG DEBUG_NONE
-#include "net/uip-debug.h"
+#include "net/uip_debug.h"
 
 /*---------------------------------------------------------------------------*/
 int uiplib_ipaddrconv(const char *addrstr, uip_ipaddr_t *ipaddr)

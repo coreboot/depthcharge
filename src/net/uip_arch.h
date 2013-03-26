@@ -12,7 +12,7 @@
  *
  * The IP checksum calculation is the most computationally expensive
  * operation in the TCP/IP stack and it therefore pays off to
- * implement this in efficient assembler. The purpose of the uip-arch
+ * implement this in efficient assembler. The purpose of the uip_arch
  * module is to let the checksum functions to be implemented in
  * architecture specific assembler.
  *
