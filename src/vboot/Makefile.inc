@@ -28,6 +28,7 @@ unified-y += main.c
 
 
 DEPTHCHARGE_RO_ELF = $(obj)/depthcharge.ro.elf
+DEPTHCHARGE_RO_BIN = $(obj)/depthcharge.ro.bin
 DEPTHCHARGE_RW_ELF = $(obj)/depthcharge.rw.elf
 DEPTHCHARGE_RW_BIN = $(obj)/depthcharge.rw.bin
 DEPTHCHARGE_UNIFIED_ELF = $(obj)/depthcharge.unified.elf
