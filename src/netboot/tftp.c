@@ -116,7 +116,7 @@ static void tftp_callback(void)
 	if (!uip_udp_conn->rport) {
 		int srcport_offset = offsetof(struct uip_udpip_hdr, srcport);
 		memcpy(&uip_udp_conn->rport,
-			&uip_buf[UIP_LLH_LEN + srcport_offset],
+			&uip_buf[CONFIG_UIP_LLH_LEN + srcport_offset],
 			sizeof(uip_udp_conn->rport));
 	}
 

@@ -293,7 +293,7 @@ int asix_send(NetDevice *net_dev, void *buf, uint16_t len)
 	AsixDev *asix_dev = gen_dev->dev_data;
 
 	uint32_t packet_len;
-	static uint8_t msg[UIP_BUFSIZE + sizeof(packet_len)];
+	static uint8_t msg[CONFIG_UIP_BUFSIZE + sizeof(packet_len)];
 
 	packet_len = ((len << 16) | (len << 0)) ^ 0xffff0000;
 	packet_len = htolel(packet_len);

@@ -93,18 +93,21 @@
 
 
 /* The IP address of this host. If it is defined to be fixed (by
-   setting UIP_FIXEDADDR to 1 in uipopt.h), the address is set
-   here. Otherwise, the address */
-#if UIP_FIXEDADDR > 0
+   setting CONFIG_UIP_FIXEDADDR to 1 in Kconfig), the address is set
+   here. Otherwise, the address is set with the macro uip_sethostaddr(). */
+#if CONFIG_UIP_FIXEDADDR
 const uip_ipaddr_t uip_hostaddr =
-  { UIP_IPADDR0, UIP_IPADDR1, UIP_IPADDR2, UIP_IPADDR3 };
+  { CONFIG_UIP_IPADDR0, CONFIG_UIP_IPADDR1,
+    CONFIG_UIP_IPADDR2, CONFIG_UIP_IPADDR3 };
 const uip_ipaddr_t uip_draddr =
-  { UIP_DRIPADDR0, UIP_DRIPADDR1, UIP_DRIPADDR2, UIP_DRIPADDR3 };
+  { CONFIG_UIP_DRIPADDR0, CONFIG_UIP_DRIPADDR1,
+    CONFIG_UIP_DRIPADDR2, CONFIG_UIP_DRIPADDR3 };
 const uip_ipaddr_t uip_netmask =
-  { UIP_NETMASK0, UIP_NETMASK1, UIP_NETMASK2, UIP_NETMASK3 };
+  { CONFIG_UIP_NETMASK0, CONFIG_UIP_NETMASK1,
+    CONFIG_UIP_NETMASK2, CONFIG_UIP_NETMASK3 };
 #else
 uip_ipaddr_t uip_hostaddr, uip_draddr, uip_netmask;
-#endif /* UIP_FIXEDADDR */
+#endif /* CONFIG_UIP_FIXEDADDR */
 
 const uip_ipaddr_t uip_broadcast_addr =
 #if UIP_CONF_IPV6
@@ -115,13 +118,13 @@ const uip_ipaddr_t uip_broadcast_addr =
 #endif /* UIP_CONF_IPV6 */
 const uip_ipaddr_t uip_all_zeroes_addr = { { 0x0, /* rest is 0 */ } };
 
-#if UIP_FIXEDETHADDR
-const struct uip_eth_addr uip_ethaddr = {{UIP_ETHADDR0,
-					  UIP_ETHADDR1,
-					  UIP_ETHADDR2,
-					  UIP_ETHADDR3,
-					  UIP_ETHADDR4,
-					  UIP_ETHADDR5}};
+#if CONFIG_UIP_FIXEDETHADDR
+const struct uip_eth_addr uip_ethaddr = {{CONFIG_UIP_ETHADDR0,
+					  CONFIG_UIP_ETHADDR1,
+					  CONFIG_UIP_ETHADDR2,
+					  CONFIG_UIP_ETHADDR3,
+					  CONFIG_UIP_ETHADDR4,
+					  CONFIG_UIP_ETHADDR5}};
 #else
 struct uip_eth_addr uip_ethaddr = {{0,0,0,0,0,0}};
 #endif
@@ -134,12 +137,12 @@ void *uip_appdata;               /* The uip_appdata pointer points to
 void *uip_sappdata;              /* The uip_appdata pointer points to
 				    the application data which is to
 				    be sent. */
-#if UIP_URGDATA > 0
+#if CONFIG_UIP_URGDATA
 void *uip_urgdata;               /* The uip_urgdata pointer points to
    				    urgent data (out-of-band data), if
    				    present. */
 uint16_t uip_urglen, uip_surglen;
-#endif /* UIP_URGDATA > 0 */
+#endif /* CONFIG_UIP_URGDATA */
 
 uint16_t uip_len, uip_slen;
                              /* The uip_len is either 8 or 16 bits,
@@ -152,16 +155,16 @@ uint8_t uip_flags;     /* The uip_flags variable is used for
 struct uip_conn *uip_conn;   /* uip_conn always points to the current
 				connection. */
 
-struct uip_conn uip_conns[UIP_CONNS];
+struct uip_conn uip_conns[CONFIG_UIP_CONNS];
                              /* The uip_conns array holds all TCP
 				connections. */
-uint16_t uip_listenports[UIP_LISTENPORTS];
+uint16_t uip_listenports[CONFIG_UIP_LISTENPORTS];
                              /* The uip_listenports list all currently
 				listning ports. */
-#if UIP_UDP
+#if CONFIG_UIP_UDP
 struct uip_udp_conn *uip_udp_conn;
-struct uip_udp_conn uip_udp_conns[UIP_UDP_CONNS];
-#endif /* UIP_UDP */
+struct uip_udp_conn uip_udp_conns[CONFIG_UIP_UDP_CONNS];
+#endif /* CONFIG_UIP_UDP */
 
 static uint16_t ipid;           /* Ths ipid variable is an increasing
 				number that is used for the IP ID
@@ -172,10 +175,10 @@ void uip_setipid(uint16_t id) { ipid = id; }
 static uint8_t iss[4];          /* The iss variable is used for the TCP
 				initial sequence number. */
 
-#if UIP_ACTIVE_OPEN || UIP_UDP
+#if CONFIG_UIP_ACTIVE_OPEN || CONFIG_UIP_UDP
 static uint16_t lastport;       /* Keeps track of the last port used for
 				a new connection. */
-#endif /* UIP_ACTIVE_OPEN || UIP_UDP */
+#endif /* CONFIG_UIP_ACTIVE_OPEN || CONFIG_UIP_UDP */
 
 /* Temporary variables. */
 uint8_t uip_acc32[4];
@@ -215,26 +218,26 @@ static uint16_t tmp16;
 
 
 /* Macros. */
-#define BUF ((struct uip_tcpip_hdr *)&uip_buf[UIP_LLH_LEN])
+#define BUF ((struct uip_tcpip_hdr *)&uip_buf[CONFIG_UIP_LLH_LEN])
 #define FBUF ((struct uip_tcpip_hdr *)&uip_reassbuf[0])
-#define ICMPBUF ((struct uip_icmpip_hdr *)&uip_buf[UIP_LLH_LEN])
-#define UDPBUF ((struct uip_udpip_hdr *)&uip_buf[UIP_LLH_LEN])
+#define ICMPBUF ((struct uip_icmpip_hdr *)&uip_buf[CONFIG_UIP_LLH_LEN])
+#define UDPBUF ((struct uip_udpip_hdr *)&uip_buf[CONFIG_UIP_LLH_LEN])
 
 
-#if UIP_STATISTICS == 1
+#if CONFIG_UIP_STATISTICS
 struct uip_stats uip_stat;
 #define UIP_STAT(s) s
 #else
 #define UIP_STAT(s)
-#endif /* UIP_STATISTICS == 1 */
+#endif /* CONFIG_UIP_STATISTICS */
 
-#if UIP_LOGGING == 1
+#if CONFIG_UIP_LOGGING
 #include <stdio.h>
 void uip_log(char *msg);
 #define UIP_LOG(m) uip_log(m)
 #else
 #define UIP_LOG(m)
-#endif /* UIP_LOGGING == 1 */
+#endif /* CONFIG_UIP_LOGGING */
 
 #if ! UIP_ARCH_ADD32
 void
@@ -311,7 +314,7 @@ uip_ipchksum(void)
 {
   uint16_t sum;
 
-  sum = chksum(0, &uip_buf[UIP_LLH_LEN], UIP_IPH_LEN);
+  sum = chksum(0, &uip_buf[CONFIG_UIP_LLH_LEN], UIP_IPH_LEN);
   DEBUG_PRINTF("uip_ipchksum: sum 0x%04x\n", sum);
   return (sum == 0) ? 0xffff : uip_htons(sum);
 }
@@ -337,7 +340,7 @@ upper_layer_chksum(uint8_t proto)
   sum = chksum(sum, (uint8_t *)&BUF->srcipaddr, 2 * sizeof(uip_ipaddr_t));
 
   /* Sum TCP header and data. */
-  sum = chksum(sum, &uip_buf[UIP_IPH_LEN + UIP_LLH_LEN],
+  sum = chksum(sum, &uip_buf[UIP_IPH_LEN + CONFIG_UIP_LLH_LEN],
 	       upper_layer_len);
     
   return (sum == 0) ? 0xffff : uip_htons(sum);
@@ -358,43 +361,43 @@ uip_tcpchksum(void)
   return upper_layer_chksum(UIP_PROTO_TCP);
 }
 /*---------------------------------------------------------------------------*/
-#if UIP_UDP_CHECKSUMS
+#if CONFIG_UIP_UDP_CHECKSUMS
 uint16_t
 uip_udpchksum(void)
 {
   return upper_layer_chksum(UIP_PROTO_UDP);
 }
-#endif /* UIP_UDP_CHECKSUMS */
+#endif /* CONFIG_UIP_UDP_CHECKSUMS */
 #endif /* UIP_ARCH_CHKSUM */
 /*---------------------------------------------------------------------------*/
 void
 uip_init(void)
 {
-  for(c = 0; c < UIP_LISTENPORTS; ++c) {
+  for(c = 0; c < CONFIG_UIP_LISTENPORTS; ++c) {
     uip_listenports[c] = 0;
   }
-  for(c = 0; c < UIP_CONNS; ++c) {
+  for(c = 0; c < CONFIG_UIP_CONNS; ++c) {
     uip_conns[c].tcpstateflags = UIP_CLOSED;
   }
-#if UIP_ACTIVE_OPEN || UIP_UDP
+#if CONFIG_UIP_ACTIVE_OPEN || CONFIG_UIP_UDP
   lastport = 1024;
-#endif /* UIP_ACTIVE_OPEN || UIP_UDP */
+#endif /* CONFIG_UIP_ACTIVE_OPEN || CONFIG_UIP_UDP */
 
-#if UIP_UDP
-  for(c = 0; c < UIP_UDP_CONNS; ++c) {
+#if CONFIG_UIP_UDP
+  for(c = 0; c < CONFIG_UIP_UDP_CONNS; ++c) {
     uip_udp_conns[c].lport = 0;
   }
-#endif /* UIP_UDP */
+#endif /* CONFIG_UIP_UDP */
   
 
   /* IPv4 initialization. */
-#if UIP_FIXEDADDR == 0
+#if !CONFIG_UIP_FIXEDADDR
   /*  uip_hostaddr[0] = uip_hostaddr[1] = 0;*/
-#endif /* UIP_FIXEDADDR */
+#endif /* CONFIG_UIP_FIXEDADDR */
 
 }
 /*---------------------------------------------------------------------------*/
-#if UIP_ACTIVE_OPEN
+#if CONFIG_UIP_ACTIVE_OPEN
 struct uip_conn *
 uip_connect(uip_ipaddr_t *ripaddr, uint16_t rport)
 {
@@ -410,7 +413,7 @@ uip_connect(uip_ipaddr_t *ripaddr, uint16_t rport)
 
   /* Check if this port is already in use, and if so try to find
      another one. */
-  for(c = 0; c < UIP_CONNS; ++c) {
+  for(c = 0; c < CONFIG_UIP_CONNS; ++c) {
     conn = &uip_conns[c];
     if(conn->tcpstateflags != UIP_CLOSED &&
        conn->lport == uip_htons(lastport)) {
@@ -419,7 +422,7 @@ uip_connect(uip_ipaddr_t *ripaddr, uint16_t rport)
   }
 
   conn = 0;
-  for(c = 0; c < UIP_CONNS; ++c) {
+  for(c = 0; c < CONFIG_UIP_CONNS; ++c) {
     cconn = &uip_conns[c];
     if(cconn->tcpstateflags == UIP_CLOSED) {
       conn = cconn;
@@ -444,12 +447,12 @@ uip_connect(uip_ipaddr_t *ripaddr, uint16_t rport)
   conn->snd_nxt[2] = iss[2];
   conn->snd_nxt[3] = iss[3];
 
-  conn->initialmss = conn->mss = UIP_TCP_MSS;
+  conn->initialmss = conn->mss = CONFIG_UIP_TCP_MSS;
   
   conn->len = 1;   /* TCP length of the SYN is one. */
   conn->nrtx = 0;
   conn->timer = 1; /* Send the SYN next time around. */
-  conn->rto = UIP_RTO;
+  conn->rto = CONFIG_UIP_RTO;
   conn->sa = 0;
   conn->sv = 16;   /* Initial value of the RTT variance. */
   conn->lport = uip_htons(lastport);
@@ -458,9 +461,9 @@ uip_connect(uip_ipaddr_t *ripaddr, uint16_t rport)
   
   return conn;
 }
-#endif /* UIP_ACTIVE_OPEN */
+#endif /* CONFIG_UIP_ACTIVE_OPEN */
 /*---------------------------------------------------------------------------*/
-#if UIP_UDP
+#if CONFIG_UIP_UDP
 struct uip_udp_conn *
 uip_udp_new(const uip_ipaddr_t *ripaddr, uint16_t rport)
 {
@@ -474,7 +477,7 @@ uip_udp_new(const uip_ipaddr_t *ripaddr, uint16_t rport)
     lastport = 4096;
   }
   
-  for(c = 0; c < UIP_UDP_CONNS; ++c) {
+  for(c = 0; c < CONFIG_UIP_UDP_CONNS; ++c) {
     if(uip_udp_conns[c].lport == uip_htons(lastport)) {
       goto again;
     }
@@ -482,7 +485,7 @@ uip_udp_new(const uip_ipaddr_t *ripaddr, uint16_t rport)
 
 
   conn = 0;
-  for(c = 0; c < UIP_UDP_CONNS; ++c) {
+  for(c = 0; c < CONFIG_UIP_UDP_CONNS; ++c) {
     if(uip_udp_conns[c].lport == 0) {
       conn = &uip_udp_conns[c];
       break;
@@ -500,16 +503,16 @@ uip_udp_new(const uip_ipaddr_t *ripaddr, uint16_t rport)
   } else {
     uip_ipaddr_copy(&conn->ripaddr, ripaddr);
   }
-  conn->ttl = UIP_TTL;
+  conn->ttl = CONFIG_UIP_TTL;
   
   return conn;
 }
-#endif /* UIP_UDP */
+#endif /* CONFIG_UIP_UDP */
 /*---------------------------------------------------------------------------*/
 void
 uip_unlisten(uint16_t port)
 {
-  for(c = 0; c < UIP_LISTENPORTS; ++c) {
+  for(c = 0; c < CONFIG_UIP_LISTENPORTS; ++c) {
     if(uip_listenports[c] == port) {
       uip_listenports[c] = 0;
       return;
@@ -520,7 +523,7 @@ uip_unlisten(uint16_t port)
 void
 uip_listen(uint16_t port)
 {
-  for(c = 0; c < UIP_LISTENPORTS; ++c) {
+  for(c = 0; c < CONFIG_UIP_LISTENPORTS; ++c) {
     if(uip_listenports[c] == 0) {
       uip_listenports[c] = port;
       return;
@@ -530,8 +533,8 @@ uip_listen(uint16_t port)
 /*---------------------------------------------------------------------------*/
 /* XXX: IP fragment reassembly: not well-tested. */
 
-#if UIP_REASSEMBLY && !UIP_CONF_IPV6
-#define UIP_REASS_BUFSIZE (UIP_BUFSIZE - UIP_LLH_LEN)
+#if CONFIG_UIP_REASSEMBLY && !UIP_CONF_IPV6
+#define UIP_REASS_BUFSIZE (CONFIG_UIP_BUFSIZE - CONFIG_UIP_LLH_LEN)
 static uint8_t uip_reassbuf[UIP_REASS_BUFSIZE];
 static uint8_t uip_reassbitmap[UIP_REASS_BUFSIZE / (8 * 8)];
 static const uint8_t bitmap_bits[8] = {0xff, 0x7f, 0x3f, 0x1f,
@@ -554,7 +557,7 @@ uip_reass(void)
      buffer. The timer is updated with the maximum age. */
   if(uip_reasstmr == 0) {
     memcpy(uip_reassbuf, &BUF->vhl, UIP_IPH_LEN);
-    uip_reasstmr = UIP_REASS_MAXAGE;
+    uip_reasstmr = CONFIG_UIP_REASS_MAXAGE;
     uip_reassflags = 0;
     /* Clear the bitmap. */
     memset(uip_reassbitmap, 0, sizeof(uip_reassbitmap));
@@ -658,7 +661,7 @@ uip_reass(void)
  nullreturn:
   return 0;
 }
-#endif /* UIP_REASSEMBLY */
+#endif /* CONFIG_UIP_REASSEMBLY */
 /*---------------------------------------------------------------------------*/
 static void
 uip_add_rcv_nxt(uint16_t n)
@@ -675,13 +678,13 @@ uip_process(uint8_t flag)
 {
   register struct uip_conn *uip_connr = uip_conn;
 
-#if UIP_UDP
+#if CONFIG_UIP_UDP
   if(flag == UIP_UDP_SEND_CONN) {
     goto udp_send;
   }
-#endif /* UIP_UDP */
+#endif /* CONFIG_UIP_UDP */
   
-  uip_sappdata = uip_appdata = &uip_buf[UIP_IPTCPH_LEN + UIP_LLH_LEN];
+  uip_sappdata = uip_appdata = &uip_buf[UIP_IPTCPH_LEN + CONFIG_UIP_LLH_LEN];
 
   /* Check if we were invoked because of a poll request for a
      particular connection. */
@@ -691,22 +694,22 @@ uip_process(uint8_t flag)
 	uip_flags = UIP_POLL;
 	UIP_APPCALL();
 	goto appsend;
-#if UIP_ACTIVE_OPEN
+#if CONFIG_UIP_ACTIVE_OPEN
     } else if((uip_connr->tcpstateflags & UIP_TS_MASK) == UIP_SYN_SENT) {
       /* In the SYN_SENT state, we retransmit out SYN. */
       BUF->flags = 0;
       goto tcp_send_syn;
-#endif /* UIP_ACTIVE_OPEN */
+#endif /* CONFIG_UIP_ACTIVE_OPEN */
     }
     goto drop;
     
     /* Check if we were invoked because of the perodic timer fireing. */
   } else if(flag == UIP_TIMER) {
-#if UIP_REASSEMBLY
+#if CONFIG_UIP_REASSEMBLY
     if(uip_reasstmr != 0) {
       --uip_reasstmr;
     }
-#endif /* UIP_REASSEMBLY */
+#endif /* CONFIG_UIP_REASSEMBLY */
     /* Increase the initial sequence number. */
     if(++iss[3] == 0) {
       if(++iss[2] == 0) {
@@ -727,7 +730,7 @@ uip_process(uint8_t flag)
     if(uip_connr->tcpstateflags == UIP_TIME_WAIT ||
        uip_connr->tcpstateflags == UIP_FIN_WAIT_2) {
       ++(uip_connr->timer);
-      if(uip_connr->timer == UIP_TIME_WAIT_TIMEOUT) {
+      if(uip_connr->timer == CONFIG_UIP_TIME_WAIT_TIMEOUT) {
 	uip_connr->tcpstateflags = UIP_CLOSED;
       }
     } else if(uip_connr->tcpstateflags != UIP_CLOSED) {
@@ -737,10 +740,10 @@ uip_process(uint8_t flag)
 
       if(uip_outstanding(uip_connr)) {
 	if(uip_connr->timer-- == 0) {
-	  if(uip_connr->nrtx == UIP_MAXRTX ||
+	  if(uip_connr->nrtx == CONFIG_UIP_MAXRTX ||
 	     ((uip_connr->tcpstateflags == UIP_SYN_SENT ||
 	       uip_connr->tcpstateflags == UIP_SYN_RCVD) &&
-	      uip_connr->nrtx == UIP_MAXSYNRTX)) {
+	      uip_connr->nrtx == CONFIG_UIP_MAXSYNRTX)) {
 	    uip_connr->tcpstateflags = UIP_CLOSED;
 
 	    /* We call UIP_APPCALL() with uip_flags set to
@@ -755,9 +758,9 @@ uip_process(uint8_t flag)
 	  }
 
 	  /* Exponential backoff. */
-	  uip_connr->timer = UIP_RTO << (uip_connr->nrtx > 4?
-					 4:
-					 uip_connr->nrtx);
+	  uip_connr->timer = CONFIG_UIP_RTO << (uip_connr->nrtx > 4?
+						4:
+						uip_connr->nrtx);
 	  ++(uip_connr->nrtx);
 	  
 	  /* Ok, so we need to retransmit. We do this differently
@@ -773,12 +776,12 @@ uip_process(uint8_t flag)
                SYNACK. */
 	    goto tcp_send_synack;
 	    
-#if UIP_ACTIVE_OPEN
+#if CONFIG_UIP_ACTIVE_OPEN
 	  case UIP_SYN_SENT:
 	    /* In the SYN_SENT state, we retransmit out SYN. */
 	    BUF->flags = 0;
 	    goto tcp_send_syn;
-#endif /* UIP_ACTIVE_OPEN */
+#endif /* CONFIG_UIP_ACTIVE_OPEN */
 	    
 	  case UIP_ESTABLISHED:
 	    /* In the ESTABLISHED state, we call upon the application
@@ -807,11 +810,12 @@ uip_process(uint8_t flag)
     }
     goto drop;
   }
-#if UIP_UDP
+#if CONFIG_UIP_UDP
   if(flag == UIP_UDP_TIMER) {
     if(uip_udp_conn->lport != 0) {
       uip_conn = NULL;
-      uip_sappdata = uip_appdata = &uip_buf[UIP_LLH_LEN + UIP_IPUDPH_LEN];
+      uip_sappdata = uip_appdata =
+        &uip_buf[CONFIG_UIP_LLH_LEN + UIP_IPUDPH_LEN];
       uip_len = uip_slen = 0;
       uip_flags = UIP_POLL;
       UIP_UDP_APPCALL();
@@ -874,17 +878,17 @@ uip_process(uint8_t flag)
   /* Check the fragment flag. */
   if((BUF->ipoffset[0] & 0x3f) != 0 ||
      BUF->ipoffset[1] != 0) {
-#if UIP_REASSEMBLY
+#if CONFIG_UIP_REASSEMBLY
     uip_len = uip_reass();
     if(uip_len == 0) {
       goto drop;
     }
-#else /* UIP_REASSEMBLY */
+#else /* CONFIG_UIP_REASSEMBLY */
     UIP_STAT(++uip_stat.ip.drop);
     UIP_STAT(++uip_stat.ip.fragerr);
     UIP_LOG("ip: fragment dropped.");
     goto drop;
-#endif /* UIP_REASSEMBLY */
+#endif /* CONFIG_UIP_REASSEMBLY */
   }
 #endif /* UIP_CONF_IPV6 */
 
@@ -892,7 +896,7 @@ uip_process(uint8_t flag)
     /* If we are configured to use ping IP address configuration and
        hasn't been assigned an IP address yet, we accept all ICMP
        packets. */
-#if UIP_PINGADDRCONF && !UIP_CONF_IPV6
+#if CONFIG_UIP_PINGADDRCONF && !UIP_CONF_IPV6
     if(BUF->proto == UIP_PROTO_ICMP) {
       UIP_LOG("ip: possible ping config packet received.");
       goto icmp_input;
@@ -900,12 +904,12 @@ uip_process(uint8_t flag)
       UIP_LOG("ip: packet dropped since no address assigned.");
       goto drop;
     }
-#endif /* UIP_PINGADDRCONF */
+#endif /* CONFIG_UIP_PINGADDRCONF */
 
   } else {
     /* If IP broadcast support is configured, we check for a broadcast
        UDP packet, which may be destined to us. */
-#if UIP_BROADCAST
+#if CONFIG_UIP_BROADCAST
     DEBUG_PRINTF("UDP IP checksum 0x%04x\n", uip_ipchksum());
     if(BUF->proto == UIP_PROTO_UDP &&
        (uip_ipaddr_cmp(&BUF->destipaddr, &uip_broadcast_addr) ||
@@ -920,7 +924,7 @@ uip_process(uint8_t flag)
 						     prefix. */
       goto udp_input;
     }
-#endif /* UIP_BROADCAST */
+#endif /* CONFIG_UIP_BROADCAST */
     
     /* Check if the packet is destined for our IP address. */
 #if !UIP_CONF_IPV6
@@ -958,11 +962,11 @@ uip_process(uint8_t flag)
     goto tcp_input;
   }
 
-#if UIP_UDP
+#if CONFIG_UIP_UDP
   if(BUF->proto == UIP_PROTO_UDP) {
     goto udp_input;
   }
-#endif /* UIP_UDP */
+#endif /* CONFIG_UIP_UDP */
 
 #if !UIP_CONF_IPV6
   /* ICMPv4 processing code follows. */
@@ -974,9 +978,9 @@ uip_process(uint8_t flag)
     goto drop;
   }
 
-#if UIP_PINGADDRCONF
+#if CONFIG_UIP_PINGADDRCONF
  icmp_input:
-#endif /* UIP_PINGADDRCONF */
+#endif /* CONFIG_UIP_PINGADDRCONF */
   UIP_STAT(++uip_stat.icmp.recv);
 
   /* ICMP echo (i.e., ping) processing. This is simple, we only change
@@ -992,11 +996,11 @@ uip_process(uint8_t flag)
   /* If we are configured to use ping IP address assignment, we use
      the destination IP address of this ping packet and assign it to
      ourself. */
-#if UIP_PINGADDRCONF
+#if CONFIG_UIP_PINGADDRCONF
   if(uip_ipaddr_cmp(&uip_hostaddr, &uip_all_zeroes_addr)) {
     uip_hostaddr = BUF->destipaddr;
   }
-#endif /* UIP_PINGADDRCONF */
+#endif /* CONFIG_UIP_PINGADDRCONF */
 
   ICMPBUF->type = ICMP_ECHO_REPLY;
 
@@ -1011,7 +1015,7 @@ uip_process(uint8_t flag)
   uip_ipaddr_copy(&BUF->srcipaddr, &uip_hostaddr);
 
   UIP_STAT(++uip_stat.icmp.sent);
-  BUF->ttl = UIP_TTL;
+  BUF->ttl = CONFIG_UIP_TTL;
   goto ip_send_nolen;
 
   /* End of IPv4 input header processing code. */
@@ -1085,25 +1089,25 @@ uip_process(uint8_t flag)
   
 #endif /* !UIP_CONF_IPV6 */
 
-#if UIP_UDP
+#if CONFIG_UIP_UDP
   /* UDP input processing. */
  udp_input:
   /* UDP processing is really just a hack. We don't do anything to the
      UDP/IP headers, but let the UDP application do all the hard
      work. If the application sets uip_slen, it has a packet to
      send. */
-#if UIP_UDP_CHECKSUMS
+#if CONFIG_UIP_UDP_CHECKSUMS
   uip_len = uip_len - UIP_IPUDPH_LEN;
-  uip_appdata = &uip_buf[UIP_LLH_LEN + UIP_IPUDPH_LEN];
+  uip_appdata = &uip_buf[CONFIG_UIP_LLH_LEN + UIP_IPUDPH_LEN];
   if(UDPBUF->udpchksum != 0 && uip_udpchksum() != 0xffff) {
     UIP_STAT(++uip_stat.udp.drop);
     UIP_STAT(++uip_stat.udp.chkerr);
     UIP_LOG("udp: bad checksum.");
     goto drop;
   }
-#else /* UIP_UDP_CHECKSUMS */
+#else /* CONFIG_UIP_UDP_CHECKSUMS */
   uip_len = uip_len - UIP_IPUDPH_LEN;
-#endif /* UIP_UDP_CHECKSUMS */
+#endif /* CONFIG_UIP_UDP_CHECKSUMS */
 
   /* Make sure that the UDP destination port number is not zero. */
   if(UDPBUF->destport == 0) {
@@ -1113,7 +1117,7 @@ uip_process(uint8_t flag)
 
   /* Demultiplex this UDP packet between the UDP "connections". */
   for(uip_udp_conn = &uip_udp_conns[0];
-      uip_udp_conn < &uip_udp_conns[UIP_UDP_CONNS];
+      uip_udp_conn < &uip_udp_conns[CONFIG_UIP_UDP_CONNS];
       ++uip_udp_conn) {
     /* If the local UDP port is non-zero, the connection is considered
        to be used. If so, the local port number is checked against the
@@ -1157,7 +1161,7 @@ uip_process(uint8_t flag)
   uip_len = 36 + UIP_IPH_LEN;
   ICMPBUF->len[0] = 0;
   ICMPBUF->len[1] = (uint8_t)uip_len;
-  ICMPBUF->ttl = UIP_TTL;
+  ICMPBUF->ttl = CONFIG_UIP_TTL;
   ICMPBUF->proto = UIP_PROTO_ICMP;
 
   goto ip_send_nolen;
@@ -1168,7 +1172,7 @@ uip_process(uint8_t flag)
  udp_found:
   uip_conn = NULL;
   uip_flags = UIP_NEWDATA;
-  uip_sappdata = uip_appdata = &uip_buf[UIP_LLH_LEN + UIP_IPUDPH_LEN];
+  uip_sappdata = uip_appdata = &uip_buf[CONFIG_UIP_LLH_LEN + UIP_IPUDPH_LEN];
   uip_slen = 0;
   UIP_UDP_APPCALL();
 
@@ -1200,18 +1204,18 @@ uip_process(uint8_t flag)
   uip_ipaddr_copy(&BUF->srcipaddr, &uip_hostaddr);
   uip_ipaddr_copy(&BUF->destipaddr, &uip_udp_conn->ripaddr);
    
-  uip_appdata = &uip_buf[UIP_LLH_LEN + UIP_IPTCPH_LEN];
+  uip_appdata = &uip_buf[CONFIG_UIP_LLH_LEN + UIP_IPTCPH_LEN];
 
-#if UIP_UDP_CHECKSUMS
+#if CONFIG_UIP_UDP_CHECKSUMS
   /* Calculate UDP checksum. */
   UDPBUF->udpchksum = ~(uip_udpchksum());
   if(UDPBUF->udpchksum == 0) {
     UDPBUF->udpchksum = 0xffff;
   }
-#endif /* UIP_UDP_CHECKSUMS */
+#endif /* CONFIG_UIP_UDP_CHECKSUMS */
   
   goto ip_send_nolen;
-#endif /* UIP_UDP */
+#endif /* CONFIG_UIP_UDP */
   
   /* TCP input processing. */
  tcp_input:
@@ -1235,7 +1239,7 @@ uip_process(uint8_t flag)
   
   /* Demultiplex this segment. */
   /* First check any active connections. */
-  for(uip_connr = &uip_conns[0]; uip_connr <= &uip_conns[UIP_CONNS - 1];
+  for(uip_connr = &uip_conns[0]; uip_connr <= &uip_conns[CONFIG_UIP_CONNS - 1];
       ++uip_connr) {
     if(uip_connr->tcpstateflags != UIP_CLOSED &&
        BUF->destport == uip_connr->lport &&
@@ -1255,7 +1259,7 @@ uip_process(uint8_t flag)
   
   tmp16 = BUF->destport;
   /* Next, check listening connections. */
-  for(c = 0; c < UIP_LISTENPORTS; ++c) {
+  for(c = 0; c < CONFIG_UIP_LISTENPORTS; ++c) {
     if(tmp16 == uip_listenports[c]) {
       goto found_listen;
     }
@@ -1327,7 +1331,7 @@ uip_process(uint8_t flag)
      CLOSED connections are found. Thanks to Eddie C. Dost for a very
      nice algorithm for the TIME_WAIT search. */
   uip_connr = 0;
-  for(c = 0; c < UIP_CONNS; ++c) {
+  for(c = 0; c < CONFIG_UIP_CONNS; ++c) {
     if(uip_conns[c].tcpstateflags == UIP_CLOSED) {
       uip_connr = &uip_conns[c];
       break;
@@ -1351,7 +1355,7 @@ uip_process(uint8_t flag)
   uip_conn = uip_connr;
   
   /* Fill in the necessary fields for the new connection. */
-  uip_connr->rto = uip_connr->timer = UIP_RTO;
+  uip_connr->rto = uip_connr->timer = CONFIG_UIP_RTO;
   uip_connr->sa = 0;
   uip_connr->sv = 4;
   uip_connr->nrtx = 0;
@@ -1376,7 +1380,7 @@ uip_process(uint8_t flag)
   /* Parse the TCP MSS option, if present. */
   if((BUF->tcpoffset & 0xf0) > 0x50) {
     for(c = 0; c < ((BUF->tcpoffset >> 4) - 5) << 2 ;) {
-      opt = uip_buf[UIP_TCPIP_HLEN + UIP_LLH_LEN + c];
+      opt = uip_buf[UIP_TCPIP_HLEN + CONFIG_UIP_LLH_LEN + c];
       if(opt == TCP_OPT_END) {
 	/* End of options. */
 	break;
@@ -1384,46 +1388,48 @@ uip_process(uint8_t flag)
 	++c;
 	/* NOP option. */
       } else if(opt == TCP_OPT_MSS &&
-		uip_buf[UIP_TCPIP_HLEN + UIP_LLH_LEN + 1 + c] == TCP_OPT_MSS_LEN) {
+		uip_buf[UIP_TCPIP_HLEN + CONFIG_UIP_LLH_LEN + 1 + c] ==
+                TCP_OPT_MSS_LEN) {
 	/* An MSS option with the right option length. */
-	tmp16 = ((uint16_t)uip_buf[UIP_TCPIP_HLEN + UIP_LLH_LEN + 2 + c] << 8) |
-	  (uint16_t)uip_buf[UIP_IPTCPH_LEN + UIP_LLH_LEN + 3 + c];
+	tmp16 = ((uint16_t)uip_buf[UIP_TCPIP_HLEN +
+                                   CONFIG_UIP_LLH_LEN + 2 + c] << 8) |
+	  (uint16_t)uip_buf[UIP_IPTCPH_LEN + CONFIG_UIP_LLH_LEN + 3 + c];
 	uip_connr->initialmss = uip_connr->mss =
-	  tmp16 > UIP_TCP_MSS? UIP_TCP_MSS: tmp16;
+	  tmp16 > CONFIG_UIP_TCP_MSS? CONFIG_UIP_TCP_MSS: tmp16;
 	
 	/* And we are done processing options. */
 	break;
       } else {
 	/* All other options have a length field, so that we easily
 	   can skip past them. */
-	if(uip_buf[UIP_TCPIP_HLEN + UIP_LLH_LEN + 1 + c] == 0) {
+	if(uip_buf[UIP_TCPIP_HLEN + CONFIG_UIP_LLH_LEN + 1 + c] == 0) {
 	  /* If the length field is zero, the options are malformed
 	     and we don't process them further. */
 	  break;
 	}
-	c += uip_buf[UIP_TCPIP_HLEN + UIP_LLH_LEN + 1 + c];
+	c += uip_buf[UIP_TCPIP_HLEN + CONFIG_UIP_LLH_LEN + 1 + c];
       }
     }
   }
   
   /* Our response will be a SYNACK. */
-#if UIP_ACTIVE_OPEN
+#if CONFIG_UIP_ACTIVE_OPEN
  tcp_send_synack:
   BUF->flags = TCP_ACK;
   
  tcp_send_syn:
   BUF->flags |= TCP_SYN;
-#else /* UIP_ACTIVE_OPEN */
+#else /* CONFIG_UIP_ACTIVE_OPEN */
  tcp_send_synack:
   BUF->flags = TCP_SYN | TCP_ACK;
-#endif /* UIP_ACTIVE_OPEN */
+#endif /* CONFIG_UIP_ACTIVE_OPEN */
   
   /* We send out the TCP Maximum Segment Size option with our
      SYNACK. */
   BUF->optdata[0] = TCP_OPT_MSS;
   BUF->optdata[1] = TCP_OPT_MSS_LEN;
-  BUF->optdata[2] = (UIP_TCP_MSS) / 256;
-  BUF->optdata[3] = (UIP_TCP_MSS) & 255;
+  BUF->optdata[2] = (CONFIG_UIP_TCP_MSS) / 256;
+  BUF->optdata[3] = (CONFIG_UIP_TCP_MSS) & 255;
   uip_len = UIP_IPTCPH_LEN + TCP_OPT_MSS_LEN;
   BUF->tcpoffset = ((UIP_TCPH_LEN + TCP_OPT_MSS_LEN) / 4) << 4;
   goto tcp_send;
@@ -1540,7 +1546,7 @@ uip_process(uint8_t flag)
       goto tcp_send_synack;
     }
     goto drop;
-#if UIP_ACTIVE_OPEN
+#if CONFIG_UIP_ACTIVE_OPEN
   case UIP_SYN_SENT:
     /* In SYN_SENT, we wait for a SYNACK that is sent in response to
        our SYN. The rcv_nxt is set to sequence number in the SYNACK
@@ -1552,7 +1558,7 @@ uip_process(uint8_t flag)
       /* Parse the TCP MSS option, if present. */
       if((BUF->tcpoffset & 0xf0) > 0x50) {
 	for(c = 0; c < ((BUF->tcpoffset >> 4) - 5) << 2 ;) {
-	  opt = uip_buf[UIP_IPTCPH_LEN + UIP_LLH_LEN + c];
+	  opt = uip_buf[UIP_IPTCPH_LEN + CONFIG_UIP_LLH_LEN + c];
 	  if(opt == TCP_OPT_END) {
 	    /* End of options. */
 	    break;
@@ -1560,24 +1566,27 @@ uip_process(uint8_t flag)
 	    ++c;
 	    /* NOP option. */
 	  } else if(opt == TCP_OPT_MSS &&
-		    uip_buf[UIP_TCPIP_HLEN + UIP_LLH_LEN + 1 + c] == TCP_OPT_MSS_LEN) {
+		    uip_buf[UIP_TCPIP_HLEN + CONFIG_UIP_LLH_LEN + 1 + c] ==
+                    TCP_OPT_MSS_LEN) {
 	    /* An MSS option with the right option length. */
-	    tmp16 = (uip_buf[UIP_TCPIP_HLEN + UIP_LLH_LEN + 2 + c] << 8) |
-	      uip_buf[UIP_TCPIP_HLEN + UIP_LLH_LEN + 3 + c];
+	    tmp16 = (uip_buf[UIP_TCPIP_HLEN +
+                             CONFIG_UIP_LLH_LEN + 2 + c] << 8) |
+	      uip_buf[UIP_TCPIP_HLEN + CONFIG_UIP_LLH_LEN + 3 + c];
 	    uip_connr->initialmss =
-	      uip_connr->mss = tmp16 > UIP_TCP_MSS? UIP_TCP_MSS: tmp16;
+	      uip_connr->mss = tmp16 > CONFIG_UIP_TCP_MSS ?
+				CONFIG_UIP_TCP_MSS: tmp16;
 
 	    /* And we are done processing options. */
 	    break;
 	  } else {
 	    /* All other options have a length field, so that we easily
 	       can skip past them. */
-	    if(uip_buf[UIP_TCPIP_HLEN + UIP_LLH_LEN + 1 + c] == 0) {
+	    if(uip_buf[UIP_TCPIP_HLEN + CONFIG_UIP_LLH_LEN + 1 + c] == 0) {
 	      /* If the length field is zero, the options are malformed
 		 and we don't process them further. */
 	      break;
 	    }
-	    c += uip_buf[UIP_TCPIP_HLEN + UIP_LLH_LEN + 1 + c];
+	    c += uip_buf[UIP_TCPIP_HLEN + CONFIG_UIP_LLH_LEN + 1 + c];
 	  }
 	}
       }
@@ -1600,7 +1609,7 @@ uip_process(uint8_t flag)
     /* The connection is closed after we send the RST */
     uip_conn->tcpstateflags = UIP_CLOSED;
     goto reset;
-#endif /* UIP_ACTIVE_OPEN */
+#endif /* CONFIG_UIP_ACTIVE_OPEN */
     
   case UIP_ESTABLISHED:
     /* In the ESTABLISHED state, we call upon the application to feed
@@ -1635,7 +1644,7 @@ uip_process(uint8_t flag)
     /* Check the URG flag. If this is set, the segment carries urgent
        data that we must pass to the application. */
     if((BUF->flags & TCP_URG) != 0) {
-#if UIP_URGDATA > 0
+#if CONFIG_UIP_URGDATA
       uip_urglen = (BUF->urgp[0] << 8) | BUF->urgp[1];
       if(uip_urglen > uip_len) {
 	/* There is more urgent data in the next segment to come. */
@@ -1647,10 +1656,10 @@ uip_process(uint8_t flag)
       uip_appdata += uip_urglen;
     } else {
       uip_urglen = 0;
-#else /* UIP_URGDATA > 0 */
+#else /* CONFIG_UIP_URGDATA */
       uip_appdata = ((char *)uip_appdata) + ((BUF->urgp[0] << 8) | BUF->urgp[1]);
       uip_len -= (BUF->urgp[0] << 8) | BUF->urgp[1];
-#endif /* UIP_URGDATA > 0 */
+#endif /* CONFIG_UIP_URGDATA */
     }
 
     /* If uip_len > 0 we have TCP data in the packet, and we flag this
@@ -1691,7 +1700,7 @@ uip_process(uint8_t flag)
        When the application is called, the global variable uip_len
        contains the length of the incoming data. The application can
        access the incoming data through the global pointer
-       uip_appdata, which usually points UIP_IPTCPH_LEN + UIP_LLH_LEN
+       uip_appdata, which usually points UIP_IPTCPH_LEN + CONFIG_UIP_LLH_LEN
        bytes into the uip_buf array.
 
        If the application wishes to send any data, this data should be
@@ -1881,12 +1890,12 @@ uip_process(uint8_t flag)
        window so that the remote host will stop sending data. */
     BUF->wnd[0] = BUF->wnd[1] = 0;
   } else {
-    BUF->wnd[0] = ((UIP_RECEIVE_WINDOW) >> 8);
-    BUF->wnd[1] = ((UIP_RECEIVE_WINDOW) & 0xff);
+    BUF->wnd[0] = ((CONFIG_UIP_RECEIVE_WINDOW) >> 8);
+    BUF->wnd[1] = ((CONFIG_UIP_RECEIVE_WINDOW) & 0xff);
   }
   
  tcp_send_noconn:
-  BUF->ttl = UIP_TTL;
+  BUF->ttl = CONFIG_UIP_TTL;
 #if UIP_CONF_IPV6
   /* For IPv6, the IP length field does not include the IPv6 IP header
      length. */
@@ -1955,8 +1964,9 @@ uip_send(const void *data, int len)
 {
   int copylen;
 #define MIN(a,b) ((a) < (b)? (a): (b))
-  copylen = MIN(len, UIP_BUFSIZE - UIP_LLH_LEN - UIP_TCPIP_HLEN -
-		(int)((char *)uip_sappdata - (char *)&uip_buf[UIP_LLH_LEN + UIP_TCPIP_HLEN]));
+  copylen = MIN(len, CONFIG_UIP_BUFSIZE - CONFIG_UIP_LLH_LEN - UIP_TCPIP_HLEN -
+		(int)((char *)uip_sappdata -
+                      (char *)&uip_buf[CONFIG_UIP_LLH_LEN + UIP_TCPIP_HLEN]));
   if(copylen > 0) {
     uip_slen = copylen;
     if(data != uip_sappdata) {

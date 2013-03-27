@@ -55,7 +55,8 @@ void net_poll(void)
 	}
 
 	struct uip_eth_hdr *hdr = (struct uip_eth_hdr *)uip_buf;
-	if (net_device->recv(net_device, uip_buf, &uip_len, UIP_BUFSIZE)) {
+	if (net_device->recv(net_device, uip_buf, &uip_len,
+			     CONFIG_UIP_BUFSIZE)) {
 		printf("Receive failed.\n");
 		return;
 	}

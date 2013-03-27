@@ -1,0 +1,402 @@
+## Copyright (c) 2001-2003, Adam Dunkels.
+## Copyright 2013 Google Inc.
+## All rights reserved.
+##
+## Redistribution and use in source and binary forms, with or without
+## modification, are permitted provided that the following conditions
+## are met:
+## 1. Redistributions of source code must retain the above copyright
+##    notice, this list of conditions and the following disclaimer.
+## 2. Redistributions in binary form must reproduce the above copyright
+##    notice, this list of conditions and the following disclaimer in the
+##    documentation and/or other materials provided with the distribution.
+## 3. The name of the author may not be used to endorse or promote
+##    products derived from this software without specific prior
+##    written permission.
+##
+## THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS
+## OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+## WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+## ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+## DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+## DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+## GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+## INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+## WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+## NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+## SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+##
+## This file is part of the uIP TCP/IP stack.
+
+menu "Static configuration options"
+
+config UIP_FIXEDADDR
+	bool "Use static IP configuration options"
+	default n
+	help
+	  If uIP should use a fixed IP address, the settings are set with
+	  Kconfig. If not, the macros uip_sethostaddr(), uip_setdraddr()
+	  and uip_setnetmask() should be used instead.
+
+config UIP_IPADDR0
+	int "Fixed IP octet 0"
+	depends on UIP_FIXEDADDR
+
+config UIP_IPADDR1
+	int "Fixed IP octet 1"
+	depends on UIP_FIXEDADDR
+
+config UIP_IPADDR2
+	int "Fixed IP octet 2"
+	depends on UIP_FIXEDADDR
+
+config UIP_IPADDR3
+	int "Fixed IP octet 3"
+	depends on UIP_FIXEDADDR
+
+config UIP_DRIPADDR0
+	int "Fixed default router IP octet 0"
+	depends on UIP_FIXEDADDR
+
+config UIP_DRIPADDR1
+	int "Fixed default router IP octet 1"
+	depends on UIP_FIXEDADDR
+
+config UIP_DRIPADDR2
+	int "Fixed default router IP octet 2"
+	depends on UIP_FIXEDADDR
+
+config UIP_DRIPADDR3
+	int "Fixed default router IP octet 3"
+	depends on UIP_FIXEDADDR
+
+config UIP_NETMASK0
+	int "Fixed netmask octet 0"
+	depends on UIP_FIXEDADDR
+
+config UIP_NETMASK1
+	int "Fixed netmask octet 1"
+	depends on UIP_FIXEDADDR
+
+config UIP_NETMASK2
+	int "Fixed netmask octet 2"
+	depends on UIP_FIXEDADDR
+
+config UIP_NETMASK3
+	int "Fixed netmask octet 3"
+	depends on UIP_FIXEDADDR
+
+config UIP_PINGADDRCONF
+	bool "Ping IP address assignment"
+	default n
+	help
+	  uIP uses a "ping" packet for setting its own IP address if this
+	  option is set. If so, uIP will start with an empty IP address and
+	  the destination IP address of the first incoming "ping" (ICMP echo)
+	  packet will be used for setting the hosts IP address.
+
+	  This works only if fixed IP configuration is disabled.
+
+config UIP_FIXEDETHADDR
+	bool "Use a static Ethernet MAC address"
+	default n
+	help
+	  Specifies if the uIP ARP module should be compiled with a fixed
+	  Ethernet MAC address or not.
+
+	  If this configuration option is disabled, the macro uip_setethaddr()
+	  can be used to specify the Ethernet address at run-time.
+
+config UIP_ETHADDR0
+	hex "Fixed MAC address octet 0"
+	depends on UIP_FIXEDETHADDR
+
+config UIP_ETHADDR1
+	hex "Fixed MAC address octet 1"
+	depends on UIP_FIXEDETHADDR
+
+config UIP_ETHADDR2
+	hex "Fixed MAC address octet 2"
+	depends on UIP_FIXEDETHADDR
+
+config UIP_ETHADDR3
+	hex "Fixed MAC address octet 3"
+	depends on UIP_FIXEDETHADDR
+
+config UIP_ETHADDR4
+	hex "Fixed MAC address octet 4"
+	depends on UIP_FIXEDETHADDR
+
+config UIP_ETHADDR5
+	hex "Fixed MAC address octet 5"
+	depends on UIP_FIXEDETHADDR
+
+endmenu
+
+menu "IP configuration options"
+
+config UIP_TTL
+	int "IP TTL (time to live)"
+	default 64
+	help
+	  The IP TTL (time to live) of IP packets sent by uIP.
+
+	  This should normally not be changed.
+
+config UIP_REASSEMBLY
+	bool "Support for IP packet reassembly"
+	default n
+	help
+	  Turn on support for IP packet reassembly.
+
+	  uIP supports reassembly of fragmented IP packets. This features
+	  requires an additional amount of RAM to hold the reassembly buffer
+	  and the reassembly code size is approximately 700 bytes.  The
+	  reassembly buffer is of the same size as the uip_buf buffer
+	  (configured by UIP_BUFSIZE).
+
+	  IP packet reassembly is not heavily tested.
+
+config UIP_REASS_MAXAGE
+	int "IP fragment reassembly max age (seconds)"
+	depends on UIP_REASSEMBLY
+	default 60
+	help
+	  The maximum time an IP fragment should wait in the reassembly
+	  buffer before it is dropped.
+
+config UIP_LINK_MTU
+	int "Maximum transmission unit at the IP layer"
+	default 1280
+
+endmenu
+
+menu "UDP configuration options"
+
+config UIP_UDP
+	bool "UDP support"
+	default y
+
+config UIP_UDP_CHECKSUMS
+	bool "UDP checksums"
+	depends on UIP_UDP
+	default y
+	help
+	  Toggles if UDP checksums should be used or not.
+
+	  Support for UDP checksums is currently not included in uIP,
+	  so this option has no function.
+
+config UIP_UDP_CONNS
+	int "Maximum number of concurrent UDP connections"
+	depends on UIP_UDP
+	default 10
+
+endmenu
+
+menu "TCP configuration options"
+
+config UIP_TCP
+	bool "TCP support"
+	default y
+
+config UIP_ACTIVE_OPEN
+	bool "Support for opening connections"
+	depends on UIP_TCP
+	default y
+	help
+	  Determines if support for opening connections from uIP should be
+	  compiled in.
+
+	  If the applications that are running on top of uIP for this project
+	  do not need to open outgoing TCP connections, this configuration
+	  option can be turned off to reduce the code size of uIP.
+
+config UIP_CONNS
+	int "Maximum number of concurrent TCP connections"
+	depends on UIP_TCP
+	default 10
+	help
+	  The maximum number of simultaneously open TCP connections.
+
+	  Since the TCP connections are statically allocated, turning this
+	  configuration knob down results in less RAM used. Each TCP
+	  connection requires approximately 30 bytes of memory.
+
+config UIP_LISTENPORTS
+	int "Maximum number of simultaneously listening TCP ports"
+	depends on UIP_TCP
+	default 20
+	help
+	  The maximum number of simultaneously listening TCP ports.
+
+	  Each listening TCP port requires 2 bytes of memory.
+
+config UIP_URGDATA
+	bool "TCP urgent data notification"
+	depends on UIP_TCP
+	default n
+	help
+	  Determines if support for TCP urgent data notification should be
+	  compiled in.
+
+	  Urgent data (out-of-band data) is a rarely used TCP feature that
+	  very seldom would be required.
+
+config UIP_RTO
+	int "Retransmission time out (timer pulses)"
+	depends on UIP_TCP
+	default 3
+	help
+	  The initial retransmission timeout counted in timer pulses.
+
+	  This should not be changed.
+
+config UIP_MAXRTX
+	int "Max segment retransmissions"
+	depends on UIP_TCP
+	default 8
+	help
+	  The maximum number of times a segment should be retransmitted
+	  before the connection should be aborted.
+
+	  This should not be changed.
+
+config UIP_MAXSYNRTX
+	int "Max SYN retransmissions"
+	depends on UIP_TCP
+	default 5
+	help
+	  The maximum number of times a SYN segment should be retransmitted
+	  before a connection request should be deemed to have been
+	  unsuccessful.
+
+	  This should not need to be changed.
+
+config UIP_MAX_TCP_MSS
+	bool "Use the largest TCP maximum segment size"
+	depends on UIP_TCP
+	default y
+	help
+	  The default is UIP_BUFSIZE - UIP_LLH_LEN - UIP_TCPIP_HLEN
+
+config UIP_TCP_MSS
+	int "TCP maximum segment size"
+	depends on !UIP_MAX_TCP_MSS
+	help
+	  The TCP maximum segment size.
+
+	  This is should not be to set to more than
+	  UIP_BUFSIZE - UIP_LLH_LEN - UIP_TCPIP_HLEN.
+
+config UIP_DEFAULT_RECEIVE_WINDOW
+	bool "Use the default advertised receive window size"
+	depends on UIP_TCP
+	default y
+	help
+	  The default is UIP_TCP_MSS
+
+config UIP_RECEIVE_WINDOW
+	int "Advertised receive window size"
+	depends on !UIP_DEFAULT_RECEIVE_WINDOW
+	help
+	  Should be set low (i.e., to the size of the uip_buf buffer) if the
+	  application is slow to process incoming data, or high (32768 bytes)
+	  if the application processes data quickly.
+
+config UIP_TIME_WAIT_TIMEOUT
+	int "Time to be in the TIME_WAIT state"
+	depends on UIP_TCP
+	default 120
+	help
+	  How long a connection should stay in the TIME_WAIT state.
+
+	  This can be reduced for faster entry into power saving modes.
+
+endmenu
+
+menu "ARP configuration options"
+
+config UIP_ARPTAB_SIZE
+	int "Size of the ARP table"
+	default 8
+	help
+	  The size of the ARP table.
+
+	  This option should be set to a larger value if this uIP node will
+	  have many connections from the local network.
+
+config UIP_ARP_MAXAGE
+	int "Maximum age of ARP table entries in 10s of seconds"
+	default 120
+	help
+	  The maximum age of ARP table entries measured in 10s of seconds.
+
+	  An UIP_ARP_MAXAGE of 120 corresponds to 20 minutes (BSD default).
+
+endmenu
+
+menu "General configuration options"
+
+config UIP_DEFAULT_BUFSIZE
+	bool "Use the default packet buffer size"
+	default y
+	help
+	  The default is UIP_LINK_MTU + UIP_LLH_LEN
+
+config UIP_BUFSIZE
+	int "Size of the packet buffer"
+	depends on !UIP_DEFAULT_BUFSIZE
+	help
+	  The size of the uIP packet buffer.
+
+	  The uIP packet buffer should not be smaller than 60 bytes, and does
+	  not need to be larger than 1514 bytes. Lower size results in lower
+	  TCP throughput, larger size results in higher TCP throughput.
+
+config UIP_STATISTICS
+	bool "Statistics support"
+	default n
+	help
+	  Determines if statistics support should be compiled in.
+
+	  The statistics is useful for debugging and to show the user.
+
+config UIP_LOGGING
+	bool "Log certain events"
+	default n
+	help
+	  Determines if logging of certain events should be compiled in.
+
+	  This is useful mostly for debugging. The function uip_log()
+	  must be implemented to suit the architecture of the project, if
+	  logging is turned on.
+
+config UIP_BROADCAST
+	bool "Broadcast support"
+	default n
+	help
+	  Determines if uIP will pass received broadcast/multicast IPv4 UDP
+	  packets to the application (all multicast addresses are treated as
+	  broadcast in that case, there is no IGMP support). uIP can always
+	  send outgoing broadcast packets regardless of this option.
+
+config UIP_LLH_LEN
+	int "Link level header length"
+	default 14
+	help
+	  The link level header length.
+
+	  This is the offset into the uip_buf where the IP header can be
+	  found. For Ethernet, this should be set to 14. For SLIP, this
+	  should be set to 0.
+
+	  We probably won't use this constant for other link layers than
+	  ethernet as they have variable header length (this is due to
+	  variable number and type of address fields and to optional security
+	  features)
+
+	  E.g.: 802.15.4 -> 2 + (1/2*4/8) + 0/5/6/10/14
+	        802.11 -> 4 + (6*3/4) + 2
+
+endmenu

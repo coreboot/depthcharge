@@ -326,7 +326,7 @@ void uip_setipid(uint16_t id);
  * The usual way of calling the function is through a for() loop like
  * this:
  \code
- for(i = 0; i < UIP_CONNS; ++i) {
+ for(i = 0; i < CONFIG_UIP_CONNS; ++i) {
  uip_periodic(i);
  if(uip_len > 0) {
  devicedriver_send();
@@ -339,7 +339,7 @@ void uip_setipid(uint16_t id);
  * Ethernet, you will need to call the uip_arp_out() function before
  * calling the device driver:
  \code
- for(i = 0; i < UIP_CONNS; ++i) {
+ for(i = 0; i < CONFIG_UIP_CONNS; ++i) {
  uip_periodic(i);
  if(uip_len > 0) {
  uip_arp_out();
@@ -352,7 +352,7 @@ void uip_setipid(uint16_t id);
  *
  * \hideinitializer
  */
-#if UIP_TCP
+#if CONFIG_UIP_TCP
 #define uip_periodic(conn) do { uip_conn = &uip_conns[conn];    \
     uip_process(UIP_TIMER); } while (0)
 
@@ -392,9 +392,9 @@ void uip_setipid(uint16_t id);
 #define uip_poll_conn(conn) do { uip_conn = conn;       \
     uip_process(UIP_POLL_REQUEST); } while (0)
 
-#endif /* UIP_TCP */
+#endif /* CONFIG_UIP_TCP */
 
-#if UIP_UDP
+#if CONFIG_UIP_UDP
 /**
  * Periodic processing for a UDP connection identified by its number.
  *
@@ -402,7 +402,7 @@ void uip_setipid(uint16_t id);
  * UDP connections. It is called in a similar fashion as the
  * uip_periodic() function:
  \code
- for(i = 0; i < UIP_UDP_CONNS; i++) {
+ for(i = 0; i < CONFIG_UIP_UDP_CONNS; i++) {
  uip_udp_periodic(i);
  if(uip_len > 0) {
  devicedriver_send();
@@ -413,7 +413,7 @@ void uip_setipid(uint16_t id);
  * \note As for the uip_periodic() function, special care has to be
  * taken when using uIP together with ARP and Ethernet:
  \code
- for(i = 0; i < UIP_UDP_CONNS; i++) {
+ for(i = 0; i < CONFIG_UIP_UDP_CONNS; i++) {
  uip_udp_periodic(i);
  if(uip_len > 0) {
  uip_arp_out();
@@ -445,7 +445,7 @@ void uip_setipid(uint16_t id);
  */
 #define uip_udp_periodic_conn(conn) do { uip_udp_conn = conn;   \
     uip_process(UIP_UDP_TIMER); } while(0)
-#endif /* UIP_UDP */
+#endif /* CONFIG_UIP_UDP */
 
 /** \brief Abandon the reassembly of the current packet */
 void uip_reass_over(void);
@@ -478,8 +478,8 @@ void uip_reass_over(void);
 */
 
 typedef union {
-  uint32_t u32[(UIP_BUFSIZE + 3) / 4];
-  uint8_t u8[UIP_BUFSIZE];
+  uint32_t u32[(CONFIG_UIP_BUFSIZE + 3) / 4];
+  uint8_t u8[CONFIG_UIP_BUFSIZE];
 } uip_buf_t;
 
 CCIF extern uip_buf_t uip_aligned_buf;
@@ -540,7 +540,7 @@ void uip_unlisten(uint16_t port);
  * uip_connect().
  *
  * \note This function is available only if support for active open
- * has been configured by defining UIP_ACTIVE_OPEN to 1 in uipopt.h.
+ * has been configured in Kconfig.
  *
  * \note Since this function requires the port number to be in network
  * byte order, a conversion using UIP_HTONS() or uip_htons() is necessary.
@@ -618,7 +618,7 @@ CCIF void uip_send(const void *data, int len);
  * The length of any out-of-band data (urgent data) that has arrived
  * on the connection.
  *
- * \note The configuration parameter UIP_URGDATA must be set for this
+ * \note The configuration parameter CONFIG_UIP_URGDATA must be set for this
  * function to be enabled.
  *
  * \hideinitializer
@@ -1232,14 +1232,14 @@ CCIF uint32_t uip_htonl(uint32_t val);
  */
 CCIF extern void *uip_appdata;
 
-#if UIP_URGDATA > 0
+#if CONFIG_UIP_URGDATA
 /* uint8_t *uip_urgdata:
  *
  * This pointer points to any urgent data that has been received. Only
- * present if compiled with support for urgent data (UIP_URGDATA).
+ * present if compiled with support for urgent data (CONFIG_UIP_URGDATA).
  */
 extern void *uip_urgdata;
-#endif /* UIP_URGDATA > 0 */
+#endif /* CONFIG_UIP_URGDATA */
 
 
 /**
@@ -1273,9 +1273,9 @@ CCIF extern uint16_t uip_len;
 extern uint8_t uip_ext_len;
 /** @} */
 
-#if UIP_URGDATA > 0
+#if CONFIG_UIP_URGDATA
 extern uint16_t uip_urglen, uip_surglen;
-#endif /* UIP_URGDATA > 0 */
+#endif /* CONFIG_UIP_URGDATA */
 
 
 /**
@@ -1327,9 +1327,9 @@ struct uip_conn {
  */
 
 CCIF extern struct uip_conn *uip_conn;
-#if UIP_TCP
+#if CONFIG_UIP_TCP
 /* The array containing all uIP connections. */
-CCIF extern struct uip_conn uip_conns[UIP_CONNS];
+CCIF extern struct uip_conn uip_conns[CONFIG_UIP_CONNS];
 #endif
 
 /**
@@ -1360,7 +1360,7 @@ struct uip_udp_conn {
  * The current UDP connection.
  */
 extern struct uip_udp_conn *uip_udp_conn;
-extern struct uip_udp_conn uip_udp_conns[UIP_UDP_CONNS];
+extern struct uip_udp_conn uip_udp_conns[CONFIG_UIP_UDP_CONNS];
 
 struct uip_fallback_interface {
   void (*init)(void);
@@ -1379,16 +1379,16 @@ extern struct uip_icmp6_conn uip_icmp6_conns;
  *
  * This is the variable in which the uIP TCP/IP statistics are gathered.
  */
-#if UIP_STATISTICS == 1
+#if CONFIG_UIP_STATISTICS
 extern struct uip_stats uip_stat;
 #define UIP_STAT(s) (s)
 #else
 #define UIP_STAT(s)
-#endif /* UIP_STATISTICS == 1 */
+#endif /* CONFIG_UIP_STATISTICS */
 
 /**
  * The structure holding the TCP/IP statistics that are gathered if
- * UIP_STATISTICS is set to 1.
+ * CONFIG_UIP_STATISTICS is set to 1.
  *
  */
 struct uip_stats {
@@ -1423,7 +1423,7 @@ struct uip_stats {
     uip_stats_t chkerr;   /**< Number of ICMP packets with a bad
 			     checksum. */
   } icmp;                 /**< ICMP statistics. */
-#if UIP_TCP
+#if CONFIG_UIP_TCP
   struct {
     uip_stats_t recv;     /**< Number of recived TCP segments. */
     uip_stats_t sent;     /**< Number of sent TCP segments. */
@@ -1440,7 +1440,7 @@ struct uip_stats {
 			     triggering a RST. */
   } tcp;                  /**< TCP statistics. */
 #endif
-#if UIP_UDP
+#if CONFIG_UIP_UDP
   struct {
     uip_stats_t drop;     /**< Number of dropped UDP segments. */
     uip_stats_t recv;     /**< Number of recived UDP segments. */
@@ -1448,7 +1448,7 @@ struct uip_stats {
     uip_stats_t chkerr;   /**< Number of UDP segments with a bad
 			     checksum. */
   } udp;                  /**< UDP statistics. */
-#endif /* UIP_UDP */
+#endif /* CONFIG_UIP_UDP */
 #if UIP_CONF_IPV6
   struct {
     uip_stats_t drop;     /**< Number of dropped ND6 packets. */
@@ -1545,9 +1545,9 @@ void uip_process(uint8_t flag);
 #define UIP_UDP_SEND_CONN 4     /* Tells uIP that a UDP datagram
 				   should be constructed in the
 				   uip_buf buffer. */
-#if UIP_UDP
+#if CONFIG_UIP_UDP
 #define UIP_UDP_TIMER     5
-#endif /* UIP_UDP */
+#endif /* CONFIG_UIP_UDP */
 
 /* The TCP states used in the uip_conn->tcpstateflags. */
 #define UIP_CLOSED      0
@@ -1828,7 +1828,7 @@ struct uip_udp_hdr {
  *
  * \hideinitializer
  */
-#define UIP_APPDATA_SIZE (UIP_BUFSIZE - UIP_LLH_LEN - UIP_TCPIP_HLEN)
+#define UIP_APPDATA_SIZE (CONFIG_UIP_BUFSIZE - UIP_LLH_LEN - UIP_TCPIP_HLEN)
 #define UIP_APPDATA_PTR (void *)&uip_buf[UIP_LLH_LEN + UIP_TCPIP_HLEN]
 
 #define UIP_PROTO_ICMP  1
@@ -1917,15 +1917,15 @@ struct uip_udp_hdr {
 #endif /*UIP_CONF_IPV6*/
 
 
-#if UIP_FIXEDADDR
+#if CONFIG_UIP_FIXEDADDR
 CCIF extern const uip_ipaddr_t uip_hostaddr, uip_netmask, uip_draddr;
-#else /* UIP_FIXEDADDR */
+#else /* CONFIG_UIP_FIXEDADDR */
 CCIF extern uip_ipaddr_t uip_hostaddr, uip_netmask, uip_draddr;
-#endif /* UIP_FIXEDADDR */
+#endif /* CONFIG_UIP_FIXEDADDR */
 CCIF extern const uip_ipaddr_t uip_broadcast_addr;
 CCIF extern const uip_ipaddr_t uip_all_zeroes_addr;
 
-#if UIP_FIXEDETHADDR
+#if CONFIG_UIP_FIXEDETHADDR
 CCIF extern const uip_lladdr_t uip_lladdr;
 #else
 CCIF extern uip_lladdr_t uip_lladdr;

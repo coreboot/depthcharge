@@ -105,7 +105,7 @@ static const struct uip_eth_addr broadcast_ethaddr =
   {{0xff,0xff,0xff,0xff,0xff,0xff}};
 static const uint16_t broadcast_ipaddr[2] = {0xffff,0xffff};
 
-static struct arp_entry arp_table[UIP_ARPTAB_SIZE];
+static struct arp_entry arp_table[CONFIG_UIP_ARPTAB_SIZE];
 static uip_ipaddr_t ipaddr;
 static uint8_t i, c;
 
@@ -132,7 +132,7 @@ static uint8_t tmpage;
 void
 uip_arp_init(void)
 {
-  for(i = 0; i < UIP_ARPTAB_SIZE; ++i) {
+  for(i = 0; i < CONFIG_UIP_ARPTAB_SIZE; ++i) {
     memset(&arp_table[i].ipaddr, 0, 4);
   }
 }
@@ -152,10 +152,10 @@ uip_arp_timer(void)
   struct arp_entry *tabptr;
   
   ++arptime;
-  for(i = 0; i < UIP_ARPTAB_SIZE; ++i) {
+  for(i = 0; i < CONFIG_UIP_ARPTAB_SIZE; ++i) {
     tabptr = &arp_table[i];
     if(uip_ipaddr_cmp(&tabptr->ipaddr, &uip_all_zeroes_addr) &&
-       arptime - tabptr->time >= UIP_ARP_MAXAGE) {
+       arptime - tabptr->time >= CONFIG_UIP_ARP_MAXAGE) {
       memset(&tabptr->ipaddr, 0, 4);
     }
   }
@@ -171,7 +171,7 @@ uip_arp_update(uip_ipaddr_t *ipaddr, struct uip_eth_addr *ethaddr)
   /* Walk through the ARP mapping table and try to find an entry to
      update. If none is found, the IP -> MAC address mapping is
      inserted in the ARP table. */
-  for(i = 0; i < UIP_ARPTAB_SIZE; ++i) {
+  for(i = 0; i < CONFIG_UIP_ARPTAB_SIZE; ++i) {
     tabptr = &arp_table[i];
 
     /* Only check those entries that are actually in use. */
@@ -195,7 +195,7 @@ uip_arp_update(uip_ipaddr_t *ipaddr, struct uip_eth_addr *ethaddr)
      create one. */
 
   /* First, we try to find an unused entry in the ARP table. */
-  for(i = 0; i < UIP_ARPTAB_SIZE; ++i) {
+  for(i = 0; i < CONFIG_UIP_ARPTAB_SIZE; ++i) {
     tabptr = &arp_table[i];
     if(uip_ipaddr_cmp(&tabptr->ipaddr, &uip_all_zeroes_addr)) {
       break;
@@ -204,10 +204,10 @@ uip_arp_update(uip_ipaddr_t *ipaddr, struct uip_eth_addr *ethaddr)
 
   /* If no unused entry is found, we try to find the oldest entry and
      throw it away. */
-  if(i == UIP_ARPTAB_SIZE) {
+  if(i == CONFIG_UIP_ARPTAB_SIZE) {
     tmpage = 0;
     c = 0;
-    for(i = 0; i < UIP_ARPTAB_SIZE; ++i) {
+    for(i = 0; i < CONFIG_UIP_ARPTAB_SIZE; ++i) {
       tabptr = &arp_table[i];
       if(arptime - tabptr->time > tmpage) {
 	tmpage = arptime - tabptr->time;
@@ -396,14 +396,14 @@ uip_arp_out(void)
       /* Else, we use the destination IP address. */
       uip_ipaddr_copy(&ipaddr, &IPBUF->destipaddr);
     }
-    for(i = 0; i < UIP_ARPTAB_SIZE; ++i) {
+    for(i = 0; i < CONFIG_UIP_ARPTAB_SIZE; ++i) {
       if(uip_ipaddr_cmp(&ipaddr, &tabptr->ipaddr)) {
 	break;
       }
 	  tabptr++;
     }
 
-    if(i == UIP_ARPTAB_SIZE) {
+    if(i == CONFIG_UIP_ARPTAB_SIZE) {
       /* The destination address was not in our ARP table, so we
 	 overwrite the IP packet with an ARP request. */
 
@@ -421,7 +421,7 @@ uip_arp_out(void)
       BUF->protolen = 4;
       BUF->ethhdr.type = UIP_HTONS(UIP_ETHTYPE_ARP);
 
-      uip_appdata = &uip_buf[UIP_TCPIP_HLEN + UIP_LLH_LEN];
+      uip_appdata = &uip_buf[UIP_TCPIP_HLEN + CONFIG_UIP_LLH_LEN];
     
       uip_len = sizeof(struct arp_hdr);
       return;

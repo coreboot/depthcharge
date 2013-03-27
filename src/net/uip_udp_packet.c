@@ -52,12 +52,12 @@ extern uint16_t uip_slen;
 void
 uip_udp_packet_send(struct uip_udp_conn *c, const void *data, int len)
 {
-#if UIP_UDP
+#if CONFIG_UIP_UDP
   if(data != NULL) {
     uip_udp_conn = c;
     uip_slen = len;
-    memcpy(&uip_buf[UIP_LLH_LEN + UIP_IPUDPH_LEN], data,
-           len > UIP_BUFSIZE? UIP_BUFSIZE: len);
+    memcpy(&uip_buf[CONFIG_UIP_LLH_LEN + UIP_IPUDPH_LEN], data,
+           len > CONFIG_UIP_BUFSIZE? CONFIG_UIP_BUFSIZE: len);
     uip_process(UIP_UDP_SEND_CONN);
 #if UIP_CONF_IPV6
     tcpip_ipv6_output();
@@ -69,7 +69,7 @@ uip_udp_packet_send(struct uip_udp_conn *c, const void *data, int len)
 #endif
   }
   uip_slen = 0;
-#endif /* UIP_UDP */
+#endif /* CONFIG_UIP_UDP */
 }
 /*---------------------------------------------------------------------------*/
 void

@@ -35,6 +35,10 @@ endchoice
 source src/arch/Kconfig
 source src/boot/Kconfig
 
+menu "UIP network stack"
+source src/net/Kconfig
+endmenu
+
 menu "Netboot"
 source src/netboot/Kconfig
 endmenu
