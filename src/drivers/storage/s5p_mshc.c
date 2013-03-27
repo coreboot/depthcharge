@@ -28,6 +28,7 @@
 
 #include "base/init_funcs.h"
 #include "config.h"
+#include "arch/cache.h"
 #include "drivers/storage/exynos_mshc.h"
 #include "drivers/storage/mmc.h"
 
@@ -167,18 +168,14 @@ static int mshci_prepare_data(MshciHost *host, MmcData *data)
 		pdesc_dmac++;
 	}
 
-	// TODO(hungte) Enable following block once we have flush_dcache_range.
-#if 0
-	uint32_t data_start, data_end;
-
-	data_start = (uint32_t)idmac_desc;
-	data_end = (uint32_t)pdesc_dmac;
-	flush_dcache_range(data_start, data_end + DMA_MINALIGN);
+	uint32_t data_start, data_len;
+	data_start = (uintptr_t)idmac_desc;
+	data_len = (uintptr_t)pdesc_dmac - (uintptr_t)idmac_desc + DMA_MINALIGN;
+	dcache_clean_invalidate_by_mva(data_start, data_len);
 
 	data_start = (uint32_t)data->dest;
-	data_end  = (uint32_t)(data->dest + data->blocks * data->blocksize);
-	flush_dcache_range(data_start, data_end);
-#endif // CONFIG_DCACHE_ENABLED
+	data_len  = (uint32_t)(data->blocks * data->blocksize);
+	dcache_clean_invalidate_by_mva(data_start, data_len);
 
 	writel((unsigned int)virt_to_phys(idmac_desc), &host->reg->dbaddr);
 
@@ -322,17 +319,12 @@ static int s5p_mshci_send_command(MmcDevice *mmc, MmcCommand *cmd,
 		debug("%s: writel(mask, rintsts)\n", __func__);
 		writel(mask, &host->reg->rintsts);
 
-		// TODO(hungte) Enable following block once we have
-		// invalidate_dcache_range.
-#if 0
 		if (data->flags & MMC_DATA_READ) {
-			uint32_t start, data_start, data_end;
-			data_start = (uint32_t)data->dest;
-			data_end = (uint32_t)data->dest +
-					data->blocks * data->blocksize;
-			invalidate_dcache_range(data_start, data_end);
+			uint32_t data_base, data_len;
+			data_base = (uint32_t)data->dest;
+			data_len = data->blocks * data->blocksize;
+			dcache_clean_invalidate_by_mva(data_base, data_len);
 		}
-#endif
 		debug("%s: clrbits32(ctrl, +DMA, +IDMAC)\n", __func__);
 		/* make sure disable IDMAC and IDMAC_Interrupts */
 		clrbits32(&host->reg->ctrl, DMA_ENABLE | ENABLE_IDMAC);
