@@ -103,7 +103,7 @@ $(DEPTHCHARGE_RO_ELF): $(src)/.config $$(depthcharge-objs) $$(readonly-objs) \
 		--remove-section=".cparams" --remove-section=".gbb_copy" \
 		$@.tmp $@
 
-$(DEPTHCHARGE_RO_BIN): $(DEPTHCHARGE_RW_ELF)
+$(DEPTHCHARGE_RO_BIN): $(DEPTHCHARGE_RO_ELF)
 	@printf "    STRIP      $(subst $(obj)/,,$(@).tmp)\n"
 	$(Q)$(STRIP) -o $(@).tmp $(<)
 	@printf "    LZMA       $(subst $(obj)/,,$(@))\n"
