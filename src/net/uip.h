@@ -1917,19 +1917,11 @@ struct uip_udp_hdr {
 #endif /*UIP_CONF_IPV6*/
 
 
-#if CONFIG_UIP_FIXEDADDR
-extern const uip_ipaddr_t uip_hostaddr, uip_netmask, uip_draddr;
-#else /* CONFIG_UIP_FIXEDADDR */
 extern uip_ipaddr_t uip_hostaddr, uip_netmask, uip_draddr;
-#endif /* CONFIG_UIP_FIXEDADDR */
 extern const uip_ipaddr_t uip_broadcast_addr;
 extern const uip_ipaddr_t uip_all_zeroes_addr;
 
-#if CONFIG_UIP_FIXEDETHADDR
-extern const uip_lladdr_t uip_lladdr;
-#else
 extern uip_lladdr_t uip_lladdr;
-#endif
 
 
 

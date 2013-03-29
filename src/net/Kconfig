@@ -30,61 +30,53 @@
 
 menu "Static configuration options"
 
-config UIP_FIXEDADDR
-	bool "Use static IP configuration options"
-	default n
-	help
-	  If uIP should use a fixed IP address, the settings are set with
-	  Kconfig. If not, the macros uip_sethostaddr(), uip_setdraddr()
-	  and uip_setnetmask() should be used instead.
-
 config UIP_IPADDR0
-	int "Fixed IP octet 0"
-	depends on UIP_FIXEDADDR
+	int "Default IP octet 0"
+	default 0
 
 config UIP_IPADDR1
-	int "Fixed IP octet 1"
-	depends on UIP_FIXEDADDR
+	int "Default IP octet 1"
+	default 0
 
 config UIP_IPADDR2
-	int "Fixed IP octet 2"
-	depends on UIP_FIXEDADDR
+	int "Default IP octet 2"
+	default 0
 
 config UIP_IPADDR3
-	int "Fixed IP octet 3"
-	depends on UIP_FIXEDADDR
+	int "Default IP octet 3"
+	default 0
 
 config UIP_DRIPADDR0
-	int "Fixed default router IP octet 0"
-	depends on UIP_FIXEDADDR
+	int "Default default router IP octet 0"
+	default 0
 
 config UIP_DRIPADDR1
-	int "Fixed default router IP octet 1"
-	depends on UIP_FIXEDADDR
+	int "Default default router IP octet 1"
+	default 0
 
 config UIP_DRIPADDR2
-	int "Fixed default router IP octet 2"
-	depends on UIP_FIXEDADDR
+	int "Default default router IP octet 2"
+	default 0
 
 config UIP_DRIPADDR3
-	int "Fixed default router IP octet 3"
-	depends on UIP_FIXEDADDR
+	int "Default default router IP octet 3"
+	default 0
 
 config UIP_NETMASK0
-	int "Fixed netmask octet 0"
-	depends on UIP_FIXEDADDR
+	int "Default netmask octet 0"
+	default 0
 
 config UIP_NETMASK1
-	int "Fixed netmask octet 1"
-	depends on UIP_FIXEDADDR
+	int "Default netmask octet 1"
+	default 0
 
 config UIP_NETMASK2
-	int "Fixed netmask octet 2"
-	depends on UIP_FIXEDADDR
+	int "Default netmask octet 2"
+	default 0
 
 config UIP_NETMASK3
-	int "Fixed netmask octet 3"
-	depends on UIP_FIXEDADDR
+	int "Default netmask octet 3"
+	default 0
 
 config UIP_PINGADDRCONF
 	bool "Ping IP address assignment"
@@ -97,39 +89,29 @@ config UIP_PINGADDRCONF
 
 	  This works only if fixed IP configuration is disabled.
 
-config UIP_FIXEDETHADDR
-	bool "Use a static Ethernet MAC address"
-	default n
-	help
-	  Specifies if the uIP ARP module should be compiled with a fixed
-	  Ethernet MAC address or not.
-
-	  If this configuration option is disabled, the macro uip_setethaddr()
-	  can be used to specify the Ethernet address at run-time.
-
 config UIP_ETHADDR0
-	hex "Fixed MAC address octet 0"
-	depends on UIP_FIXEDETHADDR
+	hex "Default MAC address octet 0"
+	default 0
 
 config UIP_ETHADDR1
-	hex "Fixed MAC address octet 1"
-	depends on UIP_FIXEDETHADDR
+	hex "Default MAC address octet 1"
+	default 0
 
 config UIP_ETHADDR2
-	hex "Fixed MAC address octet 2"
-	depends on UIP_FIXEDETHADDR
+	hex "Default MAC address octet 2"
+	default 0
 
 config UIP_ETHADDR3
-	hex "Fixed MAC address octet 3"
-	depends on UIP_FIXEDETHADDR
+	hex "Default MAC address octet 3"
+	default 0
 
 config UIP_ETHADDR4
-	hex "Fixed MAC address octet 4"
-	depends on UIP_FIXEDETHADDR
+	hex "Default MAC address octet 4"
+	default 0
 
 config UIP_ETHADDR5
-	hex "Fixed MAC address octet 5"
-	depends on UIP_FIXEDETHADDR
+	hex "Default MAC address octet 5"
+	default 0
 
 endmenu
 

@@ -82,36 +82,26 @@
 /* Variable definitions. */
 
 
-/* The IP address of this host. If it is defined to be fixed (by
-   setting CONFIG_UIP_FIXEDADDR to 1 in Kconfig), the address is set
-   here. Otherwise, the address is set with the macro uip_sethostaddr(). */
-#if CONFIG_UIP_FIXEDADDR
-const uip_ipaddr_t uip_hostaddr =
-  { CONFIG_UIP_IPADDR0, CONFIG_UIP_IPADDR1,
-    CONFIG_UIP_IPADDR2, CONFIG_UIP_IPADDR3 };
-const uip_ipaddr_t uip_draddr =
-  { CONFIG_UIP_DRIPADDR0, CONFIG_UIP_DRIPADDR1,
-    CONFIG_UIP_DRIPADDR2, CONFIG_UIP_DRIPADDR3 };
-const uip_ipaddr_t uip_netmask =
-  { CONFIG_UIP_NETMASK0, CONFIG_UIP_NETMASK1,
-    CONFIG_UIP_NETMASK2, CONFIG_UIP_NETMASK3 };
-#else
-uip_ipaddr_t uip_hostaddr, uip_draddr, uip_netmask;
-#endif /* CONFIG_UIP_FIXEDADDR */
+/* The IP address of this host. */
+uip_ipaddr_t uip_hostaddr =
+  {{ CONFIG_UIP_IPADDR0, CONFIG_UIP_IPADDR1,
+     CONFIG_UIP_IPADDR2, CONFIG_UIP_IPADDR3 }};
+uip_ipaddr_t uip_draddr =
+  {{ CONFIG_UIP_DRIPADDR0, CONFIG_UIP_DRIPADDR1,
+     CONFIG_UIP_DRIPADDR2, CONFIG_UIP_DRIPADDR3 }};
+uip_ipaddr_t uip_netmask =
+  {{ CONFIG_UIP_NETMASK0, CONFIG_UIP_NETMASK1,
+     CONFIG_UIP_NETMASK2, CONFIG_UIP_NETMASK3 }};
 
 const uip_ipaddr_t uip_broadcast_addr = { { 0xff, 0xff, 0xff, 0xff } };
 const uip_ipaddr_t uip_all_zeroes_addr = { { 0x0, /* rest is 0 */ } };
 
-#if CONFIG_UIP_FIXEDETHADDR
-const struct uip_eth_addr uip_ethaddr = {{CONFIG_UIP_ETHADDR0,
-					  CONFIG_UIP_ETHADDR1,
-					  CONFIG_UIP_ETHADDR2,
-					  CONFIG_UIP_ETHADDR3,
-					  CONFIG_UIP_ETHADDR4,
-					  CONFIG_UIP_ETHADDR5}};
-#else
-struct uip_eth_addr uip_ethaddr = {{0,0,0,0,0,0}};
-#endif
+struct uip_eth_addr uip_ethaddr = {{CONFIG_UIP_ETHADDR0,
+				    CONFIG_UIP_ETHADDR1,
+				    CONFIG_UIP_ETHADDR2,
+				    CONFIG_UIP_ETHADDR3,
+				    CONFIG_UIP_ETHADDR4,
+				    CONFIG_UIP_ETHADDR5}};
 
 /* The packet buffer that contains incoming packets. */
 uip_buf_t uip_aligned_buf;
@@ -360,11 +350,6 @@ uip_init(void)
   }
 #endif /* CONFIG_UIP_UDP */
   
-
-  /* IPv4 initialization. */
-#if !CONFIG_UIP_FIXEDADDR
-  /*  uip_hostaddr[0] = uip_hostaddr[1] = 0;*/
-#endif /* CONFIG_UIP_FIXEDADDR */
 
 }
 /*---------------------------------------------------------------------------*/
