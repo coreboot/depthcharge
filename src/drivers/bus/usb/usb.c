@@ -34,10 +34,8 @@ void usb_generic_create(usbdev_t *dev)
 	gdev->dev = dev;
 
 	// Check if any generic USB driver wants to claim it.
-	for (ListNode *node = generic_usb_drivers.next;
-			node; node = node->next) {
-		GenericUsbDriver *driver =
-			container_of(node, GenericUsbDriver, list_node);
+	GenericUsbDriver *driver;
+	list_for_each(driver, generic_usb_drivers, list_node) {
 		gdev->driver = driver;
 		// If so, attach our info and return.
 		if (driver->probe && driver->probe(gdev)) {

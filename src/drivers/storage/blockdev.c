@@ -29,22 +29,16 @@ ListNode block_dev_controllers;
 
 void block_dev_init(void)
 {
-	for (ListNode *node = block_dev_controllers.next;
-			node; node = node->next) {
-		BlockDevCtrlr *ctrlr = \
-			container_of(node, BlockDevCtrlr, list_node);
+	BlockDevCtrlr *ctrlr;
+	list_for_each(ctrlr, block_dev_controllers, list_node)
 		if (ctrlr->init)
 			ctrlr->init(ctrlr);
-	}
 }
 
 void block_dev_refresh(void)
 {
-	for (ListNode *node = block_dev_controllers.next;
-			node; node = node->next) {
-		BlockDevCtrlr *ctrlr = \
-			container_of(node, BlockDevCtrlr, list_node);
+	BlockDevCtrlr *ctrlr;
+	list_for_each(ctrlr, block_dev_controllers, list_node)
 		if (ctrlr->refresh)
 			ctrlr->refresh(ctrlr);
-	}
 }

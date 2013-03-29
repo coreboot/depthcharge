@@ -30,10 +30,8 @@ ListNode on_demand_input_devices;
 
 static void do_input_init(void)
 {
-	for (ListNode *node = on_demand_input_devices.next;
-			node; node = node->next) {
-		OnDemandInput *dev =
-			container_of(node, OnDemandInput, list_node);
+	OnDemandInput *dev;
+	list_for_each(dev, on_demand_input_devices, list_node) {
 		if (dev->need_init) {
 			assert(dev->init);
 			dev->init();
