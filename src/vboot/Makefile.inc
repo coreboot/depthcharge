@@ -68,7 +68,7 @@ else
 	$(Q)FIRMWARE_ARCH=$(VB_FIRMWARE_ARCH) \
 		CC="$(XCC)" \
 		CFLAGS="$(CFLAGS) -DVBOOT_DEBUG" \
-		make -C $(VB_SOURCE) \
+		$(MAKE) -C $(VB_SOURCE) \
 		MOCK_TPM=$(VBOOT_MOCK_TPM) \
 		BUILD=$(dir $(VB_LIB)) \
 		V=$(V) \
