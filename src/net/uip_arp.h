@@ -55,7 +55,7 @@
 #include "net/uip.h"
 
 
-CCIF extern struct uip_eth_addr uip_ethaddr;
+extern struct uip_eth_addr uip_ethaddr;
 
 /**
  * The Ethernet header.

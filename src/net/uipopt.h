@@ -51,9 +51,6 @@
 #ifndef __UIPOPT_H__
 #define __UIPOPT_H__
 
-#define CCIF
-#define CCIF
-
 #include <config.h>
 #include <libpayload-config.h>
 #include <stdint.h>

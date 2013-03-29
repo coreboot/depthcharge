@@ -67,7 +67,7 @@
  * \retval 0 If the IP address could not be parsed.
  * \retval Non-zero If the IP address was parsed.
  */
-CCIF int uiplib_ipaddrconv(const char *addrstr, uip_ipaddr_t *addr);
+int uiplib_ipaddrconv(const char *addrstr, uip_ipaddr_t *addr);
 
 /** @} */
 
