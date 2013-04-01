@@ -28,6 +28,10 @@ struct symbol symbol_yes = {
 	.name = "",
 	.curr = { "", no },
 	.flags = SYMBOL_VALID,
+}, symbol_zero = {
+	.name = "",
+	.curr = { "0", 0 },
+	.flags = SYMBOL_CONST|SYMBOL_VALID,
 };
 
 struct symbol *sym_defconfig_list;
@@ -272,6 +276,8 @@ void sym_calc_value(struct symbol *sym)
 	switch (sym->type) {
 	case S_INT:
 	case S_HEX:
+		newval = symbol_zero.curr;
+		break;
 	case S_STRING:
 		newval = symbol_empty.curr;
 		break;
@@ -329,8 +335,8 @@ void sym_calc_value(struct symbol *sym)
 	case S_STRING:
 	case S_HEX:
 	case S_INT:
+		sym->flags |= SYMBOL_WRITE;
 		if (sym->visible != no) {
-			sym->flags |= SYMBOL_WRITE;
 			if (sym_has_value(sym)) {
 				newval.val = sym->def[S_DEF_USER].val;
 				break;
