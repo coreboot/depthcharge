@@ -68,7 +68,6 @@ struct uip_eth_hdr {
 
 #define UIP_ETHTYPE_ARP  0x0806
 #define UIP_ETHTYPE_IP   0x0800
-#define UIP_ETHTYPE_IPV6 0x86dd
 
 
 /* The uip_arp_init() function must be called before any of the other

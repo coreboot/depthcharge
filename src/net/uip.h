@@ -60,23 +60,11 @@
  * Representation of an IP address.
  *
  */
-#if UIP_CONF_IPV6
-typedef union uip_ip6addr_t {
-  uint8_t  u8[16];			/* Initializer, must come first!!! */
-  uint16_t u16[8];
-} uip_ip6addr_t;
-
-typedef uip_ip6addr_t uip_ipaddr_t;
-#else /* UIP_CONF_IPV6 */
 typedef union uip_ip4addr_t {
   uint8_t  u8[4];			/* Initializer, must come first!!! */
   uint16_t u16[2];
-#if 0
-  uint32_t u32;
-#endif
 } uip_ip4addr_t;
 typedef uip_ip4addr_t uip_ipaddr_t;
-#endif /* UIP_CONF_IPV6 */
 
 
 /*---------------------------------------------------------------------------*/
@@ -1010,12 +998,8 @@ struct uip_udp_conn *uip_udp_new(const uip_ipaddr_t *ripaddr, uint16_t rport);
  *
  * \hideinitializer
  */
-#if !UIP_CONF_IPV6
 #define uip_ipaddr_cmp(addr1, addr2) ((addr1)->u16[0] == (addr2)->u16[0] && \
 				      (addr1)->u16[1] == (addr2)->u16[1])
-#else /* !UIP_CONF_IPV6 */
-#define uip_ipaddr_cmp(addr1, addr2) (memcmp(addr1, addr2, sizeof(uip_ip6addr_t)) == 0)
-#endif /* !UIP_CONF_IPV6 */
 
 /**
  * Compare two IP addresses with netmasks
@@ -1041,15 +1025,11 @@ struct uip_udp_conn *uip_udp_new(const uip_ipaddr_t *ripaddr, uint16_t rport);
  *
  * \hideinitializer
  */
-#if !UIP_CONF_IPV6
 #define uip_ipaddr_maskcmp(addr1, addr2, mask)          \
   (((((uint16_t *)(addr1))[0] & ((uint16_t *)(mask))[0]) ==       \
     (((uint16_t *)(addr2))[0] & ((uint16_t *)(mask))[0])) &&      \
    ((((uint16_t *)(addr1))[1] & ((uint16_t *)(mask))[1]) ==       \
     (((uint16_t *)(addr2))[1] & ((uint16_t *)(mask))[1])))
-#else
-#define uip_ipaddr_prefixcmp(addr1, addr2, length) (memcmp(addr1, addr2, (length) >> 3) == 0)
-#endif
 
 
 /**
@@ -1449,13 +1429,6 @@ struct uip_stats {
 			     checksum. */
   } udp;                  /**< UDP statistics. */
 #endif /* CONFIG_UIP_UDP */
-#if UIP_CONF_IPV6
-  struct {
-    uip_stats_t drop;     /**< Number of dropped ND6 packets. */
-    uip_stats_t recv;     /**< Number of recived ND6 packets */
-    uip_stats_t sent;     /**< Number of sent ND6 packets */
-  } nd6;
-#endif /*UIP_CONF_IPV6*/
 };
 
 
@@ -1565,15 +1538,6 @@ void uip_process(uint8_t flag);
 
 /* The TCP and IP headers. */
 struct uip_tcpip_hdr {
-#if UIP_CONF_IPV6
-  /* IPv6 header. */
-  uint8_t vtc,
-    tcflow;
-  uint16_t flow;
-  uint8_t len[2];
-  uint8_t proto, ttl;
-  uip_ip6addr_t srcipaddr, destipaddr;
-#else /* UIP_CONF_IPV6 */
   /* IPv4 header. */
   uint8_t vhl,
     tos,
@@ -1584,7 +1548,6 @@ struct uip_tcpip_hdr {
     proto;
   uint16_t ipchksum;
   uip_ipaddr_t srcipaddr, destipaddr;
-#endif /* UIP_CONF_IPV6 */
   
   /* TCP header. */
   uint16_t srcport,
@@ -1601,15 +1564,6 @@ struct uip_tcpip_hdr {
 
 /* The ICMP and IP headers. */
 struct uip_icmpip_hdr {
-#if UIP_CONF_IPV6
-  /* IPv6 header. */
-  uint8_t vtc,
-    tcf;
-  uint16_t flow;
-  uint8_t len[2];
-  uint8_t proto, ttl;
-  uip_ip6addr_t srcipaddr, destipaddr;
-#else /* UIP_CONF_IPV6 */
   /* IPv4 header. */
   uint8_t vhl,
     tos,
@@ -1620,29 +1574,17 @@ struct uip_icmpip_hdr {
     proto;
   uint16_t ipchksum;
   uip_ipaddr_t srcipaddr, destipaddr;
-#endif /* UIP_CONF_IPV6 */
   
   /* ICMP header. */
   uint8_t type, icode;
   uint16_t icmpchksum;
-#if !UIP_CONF_IPV6
   uint16_t id, seqno;
   uint8_t payload[1];
-#endif /* !UIP_CONF_IPV6 */
 };
 
 
 /* The UDP and IP headers. */
 struct uip_udpip_hdr {
-#if UIP_CONF_IPV6
-  /* IPv6 header. */
-  uint8_t vtc,
-    tcf;
-  uint16_t flow;
-  uint8_t len[2];
-  uint8_t proto, ttl;
-  uip_ip6addr_t srcipaddr, destipaddr;
-#else /* UIP_CONF_IPV6 */
   /* IP header. */
   uint8_t vhl,
     tos,
@@ -1653,7 +1595,6 @@ struct uip_udpip_hdr {
     proto;
   uint16_t ipchksum;
   uip_ipaddr_t srcipaddr, destipaddr;
-#endif /* UIP_CONF_IPV6 */
   
   /* UDP header. */
   uint16_t srcport,
@@ -1669,15 +1610,6 @@ struct uip_udpip_hdr {
  */
 /* The IP header */
 struct uip_ip_hdr {
-#if UIP_CONF_IPV6
-  /* IPV6 header */
-  uint8_t vtc;
-  uint8_t tcflow;
-  uint16_t flow;
-  uint8_t len[2];
-  uint8_t proto, ttl;
-  uip_ip6addr_t srcipaddr, destipaddr;
-#else /* UIP_CONF_IPV6 */
   /* IPV4 header */
   uint8_t vhl,
     tos,
@@ -1688,7 +1620,6 @@ struct uip_ip_hdr {
     proto;
   uint16_t ipchksum;
   uip_ipaddr_t srcipaddr, destipaddr;
-#endif /* UIP_CONF_IPV6 */
 };
 
 
@@ -1770,17 +1701,6 @@ typedef struct uip_ext_hdr_opt_padn {
   uint8_t opt_len;
 } uip_ext_hdr_opt_padn;
 
-#if UIP_CONF_IPV6_RPL
-/* RPL option */
-typedef struct uip_ext_hdr_opt_rpl {
-  uint8_t opt_type;
-  uint8_t opt_len;
-  uint8_t flags;
-  uint8_t instance;
-  uint16_t senderrank;
-} uip_ext_hdr_opt_rpl;
-#endif /* UIP_CONF_IPV6_RPL */
-
 /* TCP header */
 struct uip_tcp_hdr {
   uint16_t srcport;
@@ -1799,9 +1719,7 @@ struct uip_tcp_hdr {
 struct uip_icmp_hdr {
   uint8_t type, icode;
   uint16_t icmpchksum;
-#if !UIP_CONF_IPV6
   uint16_t id, seqno;
-#endif /* !UIP_CONF_IPV6 */
 };
 
 
@@ -1837,55 +1755,8 @@ struct uip_udp_hdr {
 #define UIP_PROTO_ICMP6 58
 
 
-#if UIP_CONF_IPV6
-/** @{ */
-/** \brief  extension headers types */
-#define UIP_PROTO_HBHO        0
-#define UIP_PROTO_DESTO       60
-#define UIP_PROTO_ROUTING     43
-#define UIP_PROTO_FRAG        44
-#define UIP_PROTO_NONE        59
-/** @} */
-
-/** @{ */
-/** \brief  Destination and Hop By Hop extension headers option types */
-#define UIP_EXT_HDR_OPT_PAD1  0
-#define UIP_EXT_HDR_OPT_PADN  1
-#if UIP_CONF_IPV6_RPL
-#define UIP_EXT_HDR_OPT_RPL   0x63
-#endif /* UIP_CONF_IPV6_RPL */
-
-/** @} */
-
-/** @{ */
-/**
- * \brief Bitmaps for extension header processing
- *
- * When processing extension headers, we should record somehow which one we
- * see, because you cannot have twice the same header, except for destination
- * We store all this in one uint8_t bitmap one bit for each header expected. The
- * order in the bitmap is the order recommended in RFC2460
- */
-#define UIP_EXT_HDR_BITMAP_HBHO 0x01
-#define UIP_EXT_HDR_BITMAP_DESTO1 0x02
-#define UIP_EXT_HDR_BITMAP_ROUTING 0x04
-#define UIP_EXT_HDR_BITMAP_FRAG 0x08
-#define UIP_EXT_HDR_BITMAP_AH 0x10
-#define UIP_EXT_HDR_BITMAP_ESP 0x20
-#define UIP_EXT_HDR_BITMAP_DESTO2 0x40
-/** @} */
-
-
-#endif /* UIP_CONF_IPV6 */
-
-
 /* Header sizes. */
-#if UIP_CONF_IPV6
-#define UIP_IPH_LEN    40
-#define UIP_FRAGH_LEN  8
-#else /* UIP_CONF_IPV6 */
 #define UIP_IPH_LEN    20    /* Size of IP header */
-#endif /* UIP_CONF_IPV6 */
 
 #define UIP_UDPH_LEN    8    /* Size of UDP header */
 #define UIP_TCPH_LEN   20    /* Size of TCP header */
@@ -1903,19 +1774,6 @@ struct uip_udp_hdr {
                                                          + IP header */
 #define UIP_LLIPH_LEN (UIP_LLH_LEN + UIP_IPH_LEN)    /* size of L2
                                                         + IP header */
-#if UIP_CONF_IPV6
-/**
- * The sums below are quite used in ND. When used for uip_buf, we
- * include link layer length when used for uip_len, we do not, hence
- * we need values with and without LLH_LEN we do not use capital
- * letters as these values are variable
- */
-#define uip_l2_l3_hdr_len (UIP_LLH_LEN + UIP_IPH_LEN + uip_ext_len)
-#define uip_l2_l3_icmp_hdr_len (UIP_LLH_LEN + UIP_IPH_LEN + uip_ext_len + UIP_ICMPH_LEN)
-#define uip_l3_hdr_len (UIP_IPH_LEN + uip_ext_len)
-#define uip_l3_icmp_hdr_len (UIP_IPH_LEN + uip_ext_len + UIP_ICMPH_LEN)
-#endif /*UIP_CONF_IPV6*/
-
 
 extern uip_ipaddr_t uip_hostaddr, uip_netmask, uip_draddr;
 extern const uip_ipaddr_t uip_broadcast_addr;
@@ -1923,206 +1781,6 @@ extern const uip_ipaddr_t uip_all_zeroes_addr;
 
 extern uip_lladdr_t uip_lladdr;
 
-
-
-
-#ifdef UIP_CONF_IPV6
-/** Length of the link local prefix */
-#define UIP_LLPREF_LEN     10
-
-/**
- * \brief Is IPv6 address a the unspecified address
- * a is of type uip_ipaddr_t
- */
-#define uip_is_addr_loopback(a)                  \
-  ((((a)->u16[0]) == 0) &&                       \
-   (((a)->u16[1]) == 0) &&                       \
-   (((a)->u16[2]) == 0) &&                       \
-   (((a)->u16[3]) == 0) &&                       \
-   (((a)->u16[4]) == 0) &&                       \
-   (((a)->u16[5]) == 0) &&                       \
-   (((a)->u16[6]) == 0) &&                       \
-   (((a)->u8[14]) == 0) &&                       \
-   (((a)->u8[15]) == 0x01))
-/**
- * \brief Is IPv6 address a the unspecified address
- * a is of type uip_ipaddr_t
- */
-#define uip_is_addr_unspecified(a)               \
-  ((((a)->u16[0]) == 0) &&                       \
-   (((a)->u16[1]) == 0) &&                       \
-   (((a)->u16[2]) == 0) &&                       \
-   (((a)->u16[3]) == 0) &&                       \
-   (((a)->u16[4]) == 0) &&                       \
-   (((a)->u16[5]) == 0) &&                       \
-   (((a)->u16[6]) == 0) &&                       \
-   (((a)->u16[7]) == 0))
-
-/** \brief Is IPv6 address a the link local all-nodes multicast address */
-#define uip_is_addr_linklocal_allnodes_mcast(a)     \
-  ((((a)->u8[0]) == 0xff) &&                        \
-   (((a)->u8[1]) == 0x02) &&                        \
-   (((a)->u16[1]) == 0) &&                          \
-   (((a)->u16[2]) == 0) &&                          \
-   (((a)->u16[3]) == 0) &&                          \
-   (((a)->u16[4]) == 0) &&                          \
-   (((a)->u16[5]) == 0) &&                          \
-   (((a)->u16[6]) == 0) &&                          \
-   (((a)->u8[14]) == 0) &&                          \
-   (((a)->u8[15]) == 0x01))
-
-/** \brief Is IPv6 address a the link local all-routers multicast address */
-#define uip_is_addr_linklocal_allrouters_mcast(a)     \
-  ((((a)->u8[0]) == 0xff) &&                        \
-   (((a)->u8[1]) == 0x02) &&                        \
-   (((a)->u16[1]) == 0) &&                          \
-   (((a)->u16[2]) == 0) &&                          \
-   (((a)->u16[3]) == 0) &&                          \
-   (((a)->u16[4]) == 0) &&                          \
-   (((a)->u16[5]) == 0) &&                          \
-   (((a)->u16[6]) == 0) &&                          \
-   (((a)->u8[14]) == 0) &&                          \
-   (((a)->u8[15]) == 0x02))
-
-/**
- * \brief Checks whether the address a is link local.
- * a is of type uip_ipaddr_t
- */
-#define uip_is_addr_linklocal(a)                 \
-  ((a)->u8[0] == 0xfe &&                         \
-   (a)->u8[1] == 0x80)
-
-/** \brief set IP address a to unspecified */
-#define uip_create_unspecified(a) uip_ip6addr(a, 0, 0, 0, 0, 0, 0, 0, 0)
-
-/** \brief set IP address a to the link local all-nodes multicast address */
-#define uip_create_linklocal_allnodes_mcast(a) uip_ip6addr(a, 0xff02, 0, 0, 0, 0, 0, 0, 0x0001)
-
-/** \brief set IP address a to the link local all-routers multicast address */
-#define uip_create_linklocal_allrouters_mcast(a) uip_ip6addr(a, 0xff02, 0, 0, 0, 0, 0, 0, 0x0002)
-#define uip_create_linklocal_prefix(addr) do { \
-    (addr)->u16[0] = UIP_HTONS(0xfe80);            \
-    (addr)->u16[1] = 0;                        \
-    (addr)->u16[2] = 0;                        \
-    (addr)->u16[3] = 0;                        \
-  } while(0)
-
-/**
- * \brief  is addr (a) a solicited node multicast address, see RFC3513
- *  a is of type uip_ipaddr_t*
- */
-#define uip_is_addr_solicited_node(a)          \
-  ((((a)->u8[0])  == 0xFF) &&                  \
-   (((a)->u8[1])  == 0x02) &&                  \
-   (((a)->u16[1]) == 0x00) &&                  \
-   (((a)->u16[2]) == 0x00) &&                  \
-   (((a)->u16[3]) == 0x00) &&                  \
-   (((a)->u16[4]) == 0x00) &&                  \
-   (((a)->u8[10]) == 0x00) &&                  \
-   (((a)->u8[11]) == 0x01) &&                  \
-   (((a)->u8[12]) == 0xFF))
-
-/**
- * \briefput in b the solicited node address corresponding to address a
- * both a and b are of type uip_ipaddr_t*
- * */
-#define uip_create_solicited_node(a, b)    \
-  (((b)->u8[0]) = 0xFF);                        \
-  (((b)->u8[1]) = 0x02);                        \
-  (((b)->u16[1]) = 0);                          \
-  (((b)->u16[2]) = 0);                          \
-  (((b)->u16[3]) = 0);                          \
-  (((b)->u16[4]) = 0);                          \
-  (((b)->u8[10]) = 0);                          \
-  (((b)->u8[11]) = 0x01);                       \
-  (((b)->u8[12]) = 0xFF);                       \
-  (((b)->u8[13]) = ((a)->u8[13]));              \
-  (((b)->u16[7]) = ((a)->u16[7]))
-
-/**
- * \brief is addr (a) a link local unicast address, see RFC3513
- *  i.e. is (a) on prefix FE80::/10
- *  a is of type uip_ipaddr_t*
- */
-#define uip_is_addr_link_local(a) \
-  ((((a)->u8[0]) == 0xFE) && \
-  (((a)->u8[1]) == 0x80))
-
-/**
- * \brief was addr (a) forged based on the mac address m
- * a type is uip_ipaddr_t
- * m type is uiplladdr_t
- */
-#if UIP_CONF_LL_802154
-#define uip_is_addr_mac_addr_based(a, m) \
-  ((((a)->u8[8])  == (((m)->addr[0]) ^ 0x02)) &&   \
-   (((a)->u8[9])  == (m)->addr[1]) &&            \
-   (((a)->u8[10]) == (m)->addr[2]) &&            \
-   (((a)->u8[11]) == (m)->addr[3]) &&            \
-   (((a)->u8[12]) == (m)->addr[4]) &&            \
-   (((a)->u8[13]) == (m)->addr[5]) &&            \
-   (((a)->u8[14]) == (m)->addr[6]) &&            \
-   (((a)->u8[15]) == (m)->addr[7]))
-#else
-
-#define uip_is_addr_mac_addr_based(a, m) \
-  ((((a)->u8[8])  == (((m)->addr[0]) | 0x02)) &&   \
-   (((a)->u8[9])  == (m)->addr[1]) &&            \
-   (((a)->u8[10]) == (m)->addr[2]) &&            \
-   (((a)->u8[11]) == 0xff) &&            \
-   (((a)->u8[12]) == 0xfe) &&            \
-   (((a)->u8[13]) == (m)->addr[3]) &&            \
-   (((a)->u8[14]) == (m)->addr[4]) &&            \
-   (((a)->u8[15]) == (m)->addr[5]))
-   
-#endif /*UIP_CONF_LL_802154*/
-
-/**
- * \brief is address a multicast address, see RFC 3513
- * a is of type uip_ipaddr_t*
- * */
-#define uip_is_addr_mcast(a)                    \
-  (((a)->u8[0]) == 0xFF)
-
-/**
- * \brief is group-id of multicast address a
- * the all nodes group-id
- */
-#define uip_is_mcast_group_id_all_nodes(a) \
-  ((((a)->u16[1])  == 0) &&                 \
-   (((a)->u16[2])  == 0) &&                 \
-   (((a)->u16[3])  == 0) &&                 \
-   (((a)->u16[4])  == 0) &&                 \
-   (((a)->u16[5])  == 0) &&                 \
-   (((a)->u16[6])  == 0) &&                 \
-   (((a)->u8[14])  == 0) &&                 \
-   (((a)->u8[15])  == 1))
-
-/**
- * \brief is group-id of multicast address a
- * the all routers group-id
- */
-#define uip_is_mcast_group_id_all_routers(a) \
-  ((((a)->u16[1])  == 0) &&                 \
-   (((a)->u16[2])  == 0) &&                 \
-   (((a)->u16[3])  == 0) &&                 \
-   (((a)->u16[4])  == 0) &&                 \
-   (((a)->u16[5])  == 0) &&                 \
-   (((a)->u16[6])  == 0) &&                 \
-   (((a)->u8[14])  == 0) &&                 \
-   (((a)->u8[15])  == 2))
-
-
-/**
- * \brief are last three bytes of both addresses equal?
- * This is used to compare solicited node multicast addresses
- */
-#define uip_are_solicited_bytes_equal(a, b)             \
-  ((((a)->u8[13])  == ((b)->u8[13])) &&                 \
-   (((a)->u8[14])  == ((b)->u8[14])) &&                 \
-   (((a)->u8[15])  == ((b)->u8[15])))
-
-#endif /*UIP_CONF_IPV6*/
 
 /**
  * Calculate the Internet checksum over a buffer.

@@ -43,28 +43,7 @@
 void
 uip_debug_ipaddr_print(const uip_ipaddr_t *addr)
 {
-#if UIP_CONF_IPV6
-  uint16_t a;
-  unsigned int i;
-  int f;
-  for(i = 0, f = 0; i < sizeof(uip_ipaddr_t); i += 2) {
-    a = (addr->u8[i] << 8) + addr->u8[i + 1];
-    if(a == 0 && f >= 0) {
-      if(f++ == 0) {
-        PRINTA("::");
-      }
-    } else {
-      if(f > 0) {
-        f = -1;
-      } else if(i > 0) {
-        PRINTA(":");
-      }
-      PRINTA("%x", a);
-    }
-  }
-#else /* UIP_CONF_IPV6 */
   PRINTA("%u.%u.%u.%u", addr->u8[0], addr->u8[1], addr->u8[2], addr->u8[3]);
-#endif /* UIP_CONF_IPV6 */
 }
 /*---------------------------------------------------------------------------*/
 void
