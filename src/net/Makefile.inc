@@ -23,6 +23,6 @@ uip-y += uip_arp.c
 uip-y += uip.c
 uip-y += uip_debug.c
 uip-y += uiplib.c
-uip-y += uip_udp_packet.c
+uip-$(CONFIG_UIP_UDP) += uip_udp_packet.c
 
 net-y += net.c

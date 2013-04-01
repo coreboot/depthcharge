@@ -52,7 +52,6 @@ extern uint16_t uip_slen;
 void
 uip_udp_packet_send(struct uip_udp_conn *c, const void *data, int len)
 {
-#if CONFIG_UIP_UDP
   if(data != NULL) {
     uip_udp_conn = c;
     uip_slen = len;
@@ -65,7 +64,6 @@ uip_udp_packet_send(struct uip_udp_conn *c, const void *data, int len)
     }
   }
   uip_slen = 0;
-#endif /* CONFIG_UIP_UDP */
 }
 /*---------------------------------------------------------------------------*/
 void
