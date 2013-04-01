@@ -129,10 +129,8 @@ struct uip_conn uip_conns[CONFIG_UIP_CONNS];
 uint16_t uip_listenports[CONFIG_UIP_LISTENPORTS];
                              /* The uip_listenports list all currently
 				listning ports. */
-#if CONFIG_UIP_UDP
 struct uip_udp_conn *uip_udp_conn;
 struct uip_udp_conn uip_udp_conns[CONFIG_UIP_UDP_CONNS];
-#endif /* CONFIG_UIP_UDP */
 
 static uint16_t ipid;           /* Ths ipid variable is an increasing
 				number that is used for the IP ID
@@ -143,10 +141,8 @@ void uip_setipid(uint16_t id) { ipid = id; }
 static uint8_t iss[4];          /* The iss variable is used for the TCP
 				initial sequence number. */
 
-#if CONFIG_UIP_ACTIVE_OPEN || CONFIG_UIP_UDP
 static uint16_t lastport;       /* Keeps track of the last port used for
 				a new connection. */
-#endif /* CONFIG_UIP_ACTIVE_OPEN || CONFIG_UIP_UDP */
 
 /* Temporary variables. */
 uint8_t uip_acc32[4];
@@ -192,22 +188,16 @@ static uint16_t tmp16;
 #define UDPBUF ((struct uip_udpip_hdr *)&uip_buf[CONFIG_UIP_LLH_LEN])
 
 
-#if CONFIG_UIP_STATISTICS
 struct uip_stats uip_stat;
-#define UIP_STAT(s) s
-#else
-#define UIP_STAT(s)
-#endif /* CONFIG_UIP_STATISTICS */
 
-#if CONFIG_UIP_LOGGING
-#include <stdio.h>
 void uip_log(char *msg);
+#if CONFIG_UIP_LOGGING
 #define UIP_LOG(m) uip_log(m)
 #else
 #define UIP_LOG(m)
 #endif /* CONFIG_UIP_LOGGING */
 
-#if ! UIP_ARCH_ADD32
+#if !UIP_ARCH_ADD32
 void
 uip_add32(uint8_t *op32, uint16_t op16)
 {
@@ -237,7 +227,7 @@ uip_add32(uint8_t *op32, uint16_t op16)
 
 #endif /* UIP_ARCH_ADD32 */
 
-#if ! UIP_ARCH_CHKSUM
+#if !UIP_ARCH_CHKSUM
 /*---------------------------------------------------------------------------*/
 static uint16_t
 chksum(uint16_t sum, const uint8_t *data, uint16_t len)
@@ -316,13 +306,11 @@ uip_tcpchksum(void)
   return upper_layer_chksum(UIP_PROTO_TCP);
 }
 /*---------------------------------------------------------------------------*/
-#if CONFIG_UIP_UDP_CHECKSUMS
 uint16_t
 uip_udpchksum(void)
 {
   return upper_layer_chksum(UIP_PROTO_UDP);
 }
-#endif /* CONFIG_UIP_UDP_CHECKSUMS */
 #endif /* UIP_ARCH_CHKSUM */
 /*---------------------------------------------------------------------------*/
 void
@@ -334,20 +322,15 @@ uip_init(void)
   for(c = 0; c < CONFIG_UIP_CONNS; ++c) {
     uip_conns[c].tcpstateflags = UIP_CLOSED;
   }
-#if CONFIG_UIP_ACTIVE_OPEN || CONFIG_UIP_UDP
-  lastport = 1024;
-#endif /* CONFIG_UIP_ACTIVE_OPEN || CONFIG_UIP_UDP */
+  if(CONFIG_UIP_ACTIVE_OPEN || CONFIG_UIP_UDP)
+    lastport = 1024;
 
-#if CONFIG_UIP_UDP
-  for(c = 0; c < CONFIG_UIP_UDP_CONNS; ++c) {
-    uip_udp_conns[c].lport = 0;
-  }
-#endif /* CONFIG_UIP_UDP */
-  
-
+  if(CONFIG_UIP_UDP)
+    for(c = 0; c < CONFIG_UIP_UDP_CONNS; ++c) {
+      uip_udp_conns[c].lport = 0;
+    }
 }
 /*---------------------------------------------------------------------------*/
-#if CONFIG_UIP_ACTIVE_OPEN
 struct uip_conn *
 uip_connect(uip_ipaddr_t *ripaddr, uint16_t rport)
 {
@@ -411,9 +394,7 @@ uip_connect(uip_ipaddr_t *ripaddr, uint16_t rport)
   
   return conn;
 }
-#endif /* CONFIG_UIP_ACTIVE_OPEN */
 /*---------------------------------------------------------------------------*/
-#if CONFIG_UIP_UDP
 struct uip_udp_conn *
 uip_udp_new(const uip_ipaddr_t *ripaddr, uint16_t rport)
 {
@@ -457,7 +438,6 @@ uip_udp_new(const uip_ipaddr_t *ripaddr, uint16_t rport)
   
   return conn;
 }
-#endif /* CONFIG_UIP_UDP */
 /*---------------------------------------------------------------------------*/
 void
 uip_unlisten(uint16_t port)
@@ -483,7 +463,6 @@ uip_listen(uint16_t port)
 /*---------------------------------------------------------------------------*/
 /* XXX: IP fragment reassembly: not well-tested. */
 
-#if CONFIG_UIP_REASSEMBLY
 #define UIP_REASS_BUFSIZE (CONFIG_UIP_BUFSIZE - CONFIG_UIP_LLH_LEN)
 static uint8_t uip_reassbuf[UIP_REASS_BUFSIZE];
 static uint8_t uip_reassbitmap[UIP_REASS_BUFSIZE / (8 * 8)];
@@ -516,10 +495,10 @@ uip_reass(void)
   /* Check if the incoming fragment matches the one currently present
      in the reasembly buffer. If so, we proceed with copying the
      fragment into the buffer. */
-  if(BUF->srcipaddr[0] == FBUF->srcipaddr[0] &&
-     BUF->srcipaddr[1] == FBUF->srcipaddr[1] &&
-     BUF->destipaddr[0] == FBUF->destipaddr[0] &&
-     BUF->destipaddr[1] == FBUF->destipaddr[1] &&
+  if(BUF->srcipaddr.u16[0] == FBUF->srcipaddr.u16[0] &&
+     BUF->srcipaddr.u16[1] == FBUF->srcipaddr.u16[1] &&
+     BUF->destipaddr.u16[0] == FBUF->destipaddr.u16[0] &&
+     BUF->destipaddr.u16[1] == FBUF->destipaddr.u16[1] &&
      BUF->ipid[0] == FBUF->ipid[0] &&
      BUF->ipid[1] == FBUF->ipid[1]) {
 
@@ -611,7 +590,6 @@ uip_reass(void)
  nullreturn:
   return 0;
 }
-#endif /* CONFIG_UIP_REASSEMBLY */
 /*---------------------------------------------------------------------------*/
 static void
 uip_add_rcv_nxt(uint16_t n)
@@ -628,11 +606,9 @@ uip_process(uint8_t flag)
 {
   register struct uip_conn *uip_connr = uip_conn;
 
-#if CONFIG_UIP_UDP
-  if(flag == UIP_UDP_SEND_CONN) {
+  if(CONFIG_UIP_UDP && flag == UIP_UDP_SEND_CONN) {
     goto udp_send;
   }
-#endif /* CONFIG_UIP_UDP */
   
   uip_sappdata = uip_appdata = &uip_buf[UIP_IPTCPH_LEN + CONFIG_UIP_LLH_LEN];
 
@@ -644,22 +620,19 @@ uip_process(uint8_t flag)
 	uip_flags = UIP_POLL;
 	UIP_APPCALL();
 	goto appsend;
-#if CONFIG_UIP_ACTIVE_OPEN
-    } else if((uip_connr->tcpstateflags & UIP_TS_MASK) == UIP_SYN_SENT) {
+    } else if(CONFIG_UIP_ACTIVE_OPEN &&
+              (uip_connr->tcpstateflags & UIP_TS_MASK) == UIP_SYN_SENT) {
       /* In the SYN_SENT state, we retransmit out SYN. */
       BUF->flags = 0;
       goto tcp_send_syn;
-#endif /* CONFIG_UIP_ACTIVE_OPEN */
     }
     goto drop;
     
     /* Check if we were invoked because of the perodic timer fireing. */
   } else if(flag == UIP_TIMER) {
-#if CONFIG_UIP_REASSEMBLY
-    if(uip_reasstmr != 0) {
+    if (CONFIG_UIP_REASSEMBLY && uip_reasstmr != 0) {
       --uip_reasstmr;
     }
-#endif /* CONFIG_UIP_REASSEMBLY */
     /* Increase the initial sequence number. */
     if(++iss[3] == 0) {
       if(++iss[2] == 0) {
@@ -726,12 +699,10 @@ uip_process(uint8_t flag)
                SYNACK. */
 	    goto tcp_send_synack;
 	    
-#if CONFIG_UIP_ACTIVE_OPEN
 	  case UIP_SYN_SENT:
 	    /* In the SYN_SENT state, we retransmit out SYN. */
 	    BUF->flags = 0;
 	    goto tcp_send_syn;
-#endif /* CONFIG_UIP_ACTIVE_OPEN */
 	    
 	  case UIP_ESTABLISHED:
 	    /* In the ESTABLISHED state, we call upon the application
@@ -760,21 +731,21 @@ uip_process(uint8_t flag)
     }
     goto drop;
   }
-#if CONFIG_UIP_UDP
-  if(flag == UIP_UDP_TIMER) {
-    if(uip_udp_conn->lport != 0) {
-      uip_conn = NULL;
-      uip_sappdata = uip_appdata =
-        &uip_buf[CONFIG_UIP_LLH_LEN + UIP_IPUDPH_LEN];
-      uip_len = uip_slen = 0;
-      uip_flags = UIP_POLL;
-      UIP_UDP_APPCALL();
-      goto udp_send;
-    } else {
-      goto drop;
+  if(CONFIG_UIP_UDP) {
+    if(flag == UIP_UDP_TIMER) {
+      if(uip_udp_conn->lport != 0) {
+        uip_conn = NULL;
+        uip_sappdata = uip_appdata =
+          &uip_buf[CONFIG_UIP_LLH_LEN + UIP_IPUDPH_LEN];
+        uip_len = uip_slen = 0;
+        uip_flags = UIP_POLL;
+        UIP_UDP_APPCALL();
+        goto udp_send;
+      } else {
+        goto drop;
+      }
     }
   }
-#endif
 
   /* This is where the input processing starts. */
   UIP_STAT(++uip_stat.ip.recv);
@@ -806,52 +777,52 @@ uip_process(uint8_t flag)
   /* Check the fragment flag. */
   if((BUF->ipoffset[0] & 0x3f) != 0 ||
      BUF->ipoffset[1] != 0) {
-#if CONFIG_UIP_REASSEMBLY
-    uip_len = uip_reass();
-    if(uip_len == 0) {
+    if(CONFIG_UIP_REASSEMBLY) {
+      uip_len = uip_reass();
+      if(uip_len == 0) {
+        goto drop;
+      }
+    } else {
+      UIP_STAT(++uip_stat.ip.drop);
+      UIP_STAT(++uip_stat.ip.fragerr);
+      UIP_LOG("ip: fragment dropped.");
       goto drop;
     }
-#else /* CONFIG_UIP_REASSEMBLY */
-    UIP_STAT(++uip_stat.ip.drop);
-    UIP_STAT(++uip_stat.ip.fragerr);
-    UIP_LOG("ip: fragment dropped.");
-    goto drop;
-#endif /* CONFIG_UIP_REASSEMBLY */
   }
 
   if(uip_ipaddr_cmp(&uip_hostaddr, &uip_all_zeroes_addr)) {
     /* If we are configured to use ping IP address configuration and
        hasn't been assigned an IP address yet, we accept all ICMP
        packets. */
-#if CONFIG_UIP_PINGADDRCONF
-    if(BUF->proto == UIP_PROTO_ICMP) {
-      UIP_LOG("ip: possible ping config packet received.");
-      goto icmp_input;
-    } else {
-      UIP_LOG("ip: packet dropped since no address assigned.");
-      goto drop;
+    if(CONFIG_UIP_PINGADDRCONF) {
+      if(BUF->proto == UIP_PROTO_ICMP) {
+        UIP_LOG("ip: possible ping config packet received.");
+        goto icmp_input;
+      } else {
+        UIP_LOG("ip: packet dropped since no address assigned.");
+        goto drop;
+      }
     }
-#endif /* CONFIG_UIP_PINGADDRCONF */
 
   } else {
     /* If IP broadcast support is configured, we check for a broadcast
        UDP packet, which may be destined to us. */
-#if CONFIG_UIP_BROADCAST
-    DEBUG_PRINTF("UDP IP checksum 0x%04x\n", uip_ipchksum());
-    if(BUF->proto == UIP_PROTO_UDP &&
-       (uip_ipaddr_cmp(&BUF->destipaddr, &uip_broadcast_addr) ||
-	(BUF->destipaddr.u8[0] & 224) == 224)) {  /* XXX this is a
-						     hack to be able
-						     to receive UDP
-						     multicast
-						     packets. We check
-						     for the bit
-						     pattern of the
-						     multicast
-						     prefix. */
-      goto udp_input;
+    if(CONFIG_UIP_BROADCAST) {
+      DEBUG_PRINTF("UDP IP checksum 0x%04x\n", uip_ipchksum());
+      if(BUF->proto == UIP_PROTO_UDP &&
+         (uip_ipaddr_cmp(&BUF->destipaddr, &uip_broadcast_addr) ||
+	  (BUF->destipaddr.u8[0] & 224) == 224)) {  /* XXX this is a
+						       hack to be able
+						       to receive UDP
+						       multicast
+						       packets. We check
+						       for the bit
+						       pattern of the
+						       multicast
+						       prefix. */
+        goto udp_input;
+      }
     }
-#endif /* CONFIG_UIP_BROADCAST */
     
     /* Check if the packet is destined for our IP address. */
     if(!uip_ipaddr_cmp(&BUF->destipaddr, &uip_hostaddr)) {
@@ -874,11 +845,9 @@ uip_process(uint8_t flag)
     goto tcp_input;
   }
 
-#if CONFIG_UIP_UDP
-  if(BUF->proto == UIP_PROTO_UDP) {
+  if(CONFIG_UIP_UDP && BUF->proto == UIP_PROTO_UDP) {
     goto udp_input;
   }
-#endif /* CONFIG_UIP_UDP */
 
   /* ICMPv4 processing code follows. */
   if(BUF->proto != UIP_PROTO_ICMP) { /* We only allow ICMP packets from
@@ -889,9 +858,7 @@ uip_process(uint8_t flag)
     goto drop;
   }
 
-#if CONFIG_UIP_PINGADDRCONF
  icmp_input:
-#endif /* CONFIG_UIP_PINGADDRCONF */
   UIP_STAT(++uip_stat.icmp.recv);
 
   /* ICMP echo (i.e., ping) processing. This is simple, we only change
@@ -907,11 +874,10 @@ uip_process(uint8_t flag)
   /* If we are configured to use ping IP address assignment, we use
      the destination IP address of this ping packet and assign it to
      ourself. */
-#if CONFIG_UIP_PINGADDRCONF
-  if(uip_ipaddr_cmp(&uip_hostaddr, &uip_all_zeroes_addr)) {
+  if(CONFIG_UIP_PINGADDRCONF &&
+     uip_ipaddr_cmp(&uip_hostaddr, &uip_all_zeroes_addr)) {
     uip_hostaddr = BUF->destipaddr;
   }
-#endif /* CONFIG_UIP_PINGADDRCONF */
 
   ICMPBUF->type = ICMP_ECHO_REPLY;
 
@@ -931,126 +897,96 @@ uip_process(uint8_t flag)
 
   /* End of IPv4 input header processing code. */
 
-#if CONFIG_UIP_UDP
   /* UDP input processing. */
  udp_input:
   /* UDP processing is really just a hack. We don't do anything to the
      UDP/IP headers, but let the UDP application do all the hard
      work. If the application sets uip_slen, it has a packet to
      send. */
-#if CONFIG_UIP_UDP_CHECKSUMS
-  uip_len = uip_len - UIP_IPUDPH_LEN;
-  uip_appdata = &uip_buf[CONFIG_UIP_LLH_LEN + UIP_IPUDPH_LEN];
-  if(UDPBUF->udpchksum != 0 && uip_udpchksum() != 0xffff) {
-    UIP_STAT(++uip_stat.udp.drop);
-    UIP_STAT(++uip_stat.udp.chkerr);
-    UIP_LOG("udp: bad checksum.");
-    goto drop;
-  }
-#else /* CONFIG_UIP_UDP_CHECKSUMS */
-  uip_len = uip_len - UIP_IPUDPH_LEN;
-#endif /* CONFIG_UIP_UDP_CHECKSUMS */
-
-  /* Make sure that the UDP destination port number is not zero. */
-  if(UDPBUF->destport == 0) {
-    UIP_LOG("udp: zero port.");
-    goto drop;
-  }
-
-  /* Demultiplex this UDP packet between the UDP "connections". */
-  for(uip_udp_conn = &uip_udp_conns[0];
-      uip_udp_conn < &uip_udp_conns[CONFIG_UIP_UDP_CONNS];
-      ++uip_udp_conn) {
-    /* If the local UDP port is non-zero, the connection is considered
-       to be used. If so, the local port number is checked against the
-       destination port number in the received packet. If the two port
-       numbers match, the remote port number is checked if the
-       connection is bound to a remote port. Finally, if the
-       connection is bound to a remote IP address, the source IP
-       address of the packet is checked. */
-    if(uip_udp_conn->lport != 0 &&
-       UDPBUF->destport == uip_udp_conn->lport &&
-       (uip_udp_conn->rport == 0 ||
-        UDPBUF->srcport == uip_udp_conn->rport) &&
-       (uip_ipaddr_cmp(&uip_udp_conn->ripaddr, &uip_all_zeroes_addr) ||
-	uip_ipaddr_cmp(&uip_udp_conn->ripaddr, &uip_broadcast_addr) ||
-	uip_ipaddr_cmp(&BUF->srcipaddr, &uip_udp_conn->ripaddr))) {
-      goto udp_found;
+  if(CONFIG_UIP_UDP) {
+    if(CONFIG_UIP_UDP_CHECKSUMS) {
+      uip_len = uip_len - UIP_IPUDPH_LEN;
+      uip_appdata = &uip_buf[CONFIG_UIP_LLH_LEN + UIP_IPUDPH_LEN];
+      if(UDPBUF->udpchksum != 0 && uip_udpchksum() != 0xffff) {
+        UIP_STAT(++uip_stat.udp.drop);
+        UIP_STAT(++uip_stat.udp.chkerr);
+        UIP_LOG("udp: bad checksum.");
+        goto drop;
+      }
+    } else {
+      uip_len = uip_len - UIP_IPUDPH_LEN;
     }
-  }
-  UIP_LOG("udp: no matching connection found");
-#if UIP_CONF_ICMP_DEST_UNREACH
-  /* Copy fields from packet header into payload of this ICMP packet. */
-  memcpy(&(ICMPBUF->payload[0]), ICMPBUF, UIP_IPH_LEN + 8);
 
-  /* Set the ICMP type and code. */
-  ICMPBUF->type = ICMP_DEST_UNREACHABLE;
-  ICMPBUF->icode = ICMP_PORT_UNREACHABLE;
+    /* Make sure that the UDP destination port number is not zero. */
+    if(UDPBUF->destport == 0) {
+      UIP_LOG("udp: zero port.");
+      goto drop;
+    }
 
-  /* Calculate the ICMP checksum. */
-  ICMPBUF->icmpchksum = 0;
-  ICMPBUF->icmpchksum = ~uip_chksum((uint16_t *)&(ICMPBUF->type), 36);
-
-  /* Set the IP destination address to be the source address of the
-     original packet. */
-  uip_ipaddr_copy(&BUF->destipaddr, &BUF->srcipaddr);
-
-  /* Set our IP address as the source address. */
-  uip_ipaddr_copy(&BUF->srcipaddr, &uip_hostaddr);
-
-  /* The size of the ICMP destination unreachable packet is 36 + the
-     size of the IP header (20) = 56. */
-  uip_len = 36 + UIP_IPH_LEN;
-  ICMPBUF->len[0] = 0;
-  ICMPBUF->len[1] = (uint8_t)uip_len;
-  ICMPBUF->ttl = CONFIG_UIP_TTL;
-  ICMPBUF->proto = UIP_PROTO_ICMP;
-
-  goto ip_send_nolen;
-#else /* UIP_CONF_ICMP_DEST_UNREACH */
-  goto drop;
-#endif /* UIP_CONF_ICMP_DEST_UNREACH */
-  
- udp_found:
-  uip_conn = NULL;
-  uip_flags = UIP_NEWDATA;
-  uip_sappdata = uip_appdata = &uip_buf[CONFIG_UIP_LLH_LEN + UIP_IPUDPH_LEN];
-  uip_slen = 0;
-  UIP_UDP_APPCALL();
-
- udp_send:
-  if(uip_slen == 0) {
+    /* Demultiplex this UDP packet between the UDP "connections". */
+    for(uip_udp_conn = &uip_udp_conns[0];
+        uip_udp_conn < &uip_udp_conns[CONFIG_UIP_UDP_CONNS];
+        ++uip_udp_conn) {
+      /* If the local UDP port is non-zero, the connection is considered
+         to be used. If so, the local port number is checked against the
+         destination port number in the received packet. If the two port
+         numbers match, the remote port number is checked if the
+         connection is bound to a remote port. Finally, if the
+         connection is bound to a remote IP address, the source IP
+         address of the packet is checked. */
+      if(uip_udp_conn->lport != 0 &&
+         UDPBUF->destport == uip_udp_conn->lport &&
+         (uip_udp_conn->rport == 0 ||
+          UDPBUF->srcport == uip_udp_conn->rport) &&
+         (uip_ipaddr_cmp(&uip_udp_conn->ripaddr, &uip_all_zeroes_addr) ||
+	  uip_ipaddr_cmp(&uip_udp_conn->ripaddr, &uip_broadcast_addr) ||
+          uip_ipaddr_cmp(&BUF->srcipaddr, &uip_udp_conn->ripaddr))) {
+        goto udp_found;
+      }
+    }
+    UIP_LOG("udp: no matching connection found");
     goto drop;
-  }
-  uip_len = uip_slen + UIP_IPUDPH_LEN;
 
-  BUF->len[0] = (uip_len >> 8);
-  BUF->len[1] = (uip_len & 0xff);
+   udp_found:
+    uip_conn = NULL;
+    uip_flags = UIP_NEWDATA;
+    uip_sappdata = uip_appdata = &uip_buf[CONFIG_UIP_LLH_LEN + UIP_IPUDPH_LEN];
+    uip_slen = 0;
+    UIP_UDP_APPCALL();
 
-  BUF->ttl = uip_udp_conn->ttl;
-  BUF->proto = UIP_PROTO_UDP;
+   udp_send:
+    if(uip_slen == 0) {
+      goto drop;
+    }
+    uip_len = uip_slen + UIP_IPUDPH_LEN;
 
-  UDPBUF->udplen = UIP_HTONS(uip_slen + UIP_UDPH_LEN);
-  UDPBUF->udpchksum = 0;
+    BUF->len[0] = (uip_len >> 8);
+    BUF->len[1] = (uip_len & 0xff);
 
-  BUF->srcport  = uip_udp_conn->lport;
-  BUF->destport = uip_udp_conn->rport;
+    BUF->ttl = uip_udp_conn->ttl;
+    BUF->proto = UIP_PROTO_UDP;
 
-  uip_ipaddr_copy(&BUF->srcipaddr, &uip_hostaddr);
-  uip_ipaddr_copy(&BUF->destipaddr, &uip_udp_conn->ripaddr);
+    UDPBUF->udplen = UIP_HTONS(uip_slen + UIP_UDPH_LEN);
+    UDPBUF->udpchksum = 0;
+
+    BUF->srcport  = uip_udp_conn->lport;
+    BUF->destport = uip_udp_conn->rport;
+
+    uip_ipaddr_copy(&BUF->srcipaddr, &uip_hostaddr);
+    uip_ipaddr_copy(&BUF->destipaddr, &uip_udp_conn->ripaddr);
    
-  uip_appdata = &uip_buf[CONFIG_UIP_LLH_LEN + UIP_IPTCPH_LEN];
+    uip_appdata = &uip_buf[CONFIG_UIP_LLH_LEN + UIP_IPTCPH_LEN];
 
-#if CONFIG_UIP_UDP_CHECKSUMS
-  /* Calculate UDP checksum. */
-  UDPBUF->udpchksum = ~(uip_udpchksum());
-  if(UDPBUF->udpchksum == 0) {
-    UDPBUF->udpchksum = 0xffff;
-  }
-#endif /* CONFIG_UIP_UDP_CHECKSUMS */
+    if(CONFIG_UIP_UDP_CHECKSUMS) {
+      /* Calculate UDP checksum. */
+      UDPBUF->udpchksum = ~(uip_udpchksum());
+      if(UDPBUF->udpchksum == 0) {
+        UDPBUF->udpchksum = 0xffff;
+      }
+    }
   
-  goto ip_send_nolen;
-#endif /* CONFIG_UIP_UDP */
+    goto ip_send_nolen;
+  }
   
   /* TCP input processing. */
  tcp_input:
@@ -1248,16 +1184,11 @@ uip_process(uint8_t flag)
   }
   
   /* Our response will be a SYNACK. */
-#if CONFIG_UIP_ACTIVE_OPEN
  tcp_send_synack:
   BUF->flags = TCP_ACK;
   
  tcp_send_syn:
   BUF->flags |= TCP_SYN;
-#else /* CONFIG_UIP_ACTIVE_OPEN */
- tcp_send_synack:
-  BUF->flags = TCP_SYN | TCP_ACK;
-#endif /* CONFIG_UIP_ACTIVE_OPEN */
   
   /* We send out the TCP Maximum Segment Size option with our
      SYNACK. */
@@ -1381,7 +1312,6 @@ uip_process(uint8_t flag)
       goto tcp_send_synack;
     }
     goto drop;
-#if CONFIG_UIP_ACTIVE_OPEN
   case UIP_SYN_SENT:
     /* In SYN_SENT, we wait for a SYNACK that is sent in response to
        our SYN. The rcv_nxt is set to sequence number in the SYNACK
@@ -1444,7 +1374,6 @@ uip_process(uint8_t flag)
     /* The connection is closed after we send the RST */
     uip_conn->tcpstateflags = UIP_CLOSED;
     goto reset;
-#endif /* CONFIG_UIP_ACTIVE_OPEN */
     
   case UIP_ESTABLISHED:
     /* In the ESTABLISHED state, we call upon the application to feed

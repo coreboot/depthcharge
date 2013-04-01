@@ -340,7 +340,6 @@ void uip_setipid(uint16_t id);
  *
  * \hideinitializer
  */
-#if CONFIG_UIP_TCP
 #define uip_periodic(conn) do { uip_conn = &uip_conns[conn];    \
     uip_process(UIP_TIMER); } while (0)
 
@@ -380,9 +379,6 @@ void uip_setipid(uint16_t id);
 #define uip_poll_conn(conn) do { uip_conn = conn;       \
     uip_process(UIP_POLL_REQUEST); } while (0)
 
-#endif /* CONFIG_UIP_TCP */
-
-#if CONFIG_UIP_UDP
 /**
  * Periodic processing for a UDP connection identified by its number.
  *
@@ -433,7 +429,6 @@ void uip_setipid(uint16_t id);
  */
 #define uip_udp_periodic_conn(conn) do { uip_udp_conn = conn;   \
     uip_process(UIP_UDP_TIMER); } while(0)
-#endif /* CONFIG_UIP_UDP */
 
 /** \brief Abandon the reassembly of the current packet */
 void uip_reass_over(void);
@@ -963,9 +958,7 @@ struct uip_udp_conn *uip_udp_new(const uip_ipaddr_t *ripaddr, uint16_t rport);
  *
  * \hideinitializer
  */
-#ifndef uip_ipaddr_copy
 #define uip_ipaddr_copy(dest, src) (*(dest) = *(src))
-#endif
 
 /**
  * Compare two IP addresses
@@ -1157,17 +1150,13 @@ struct uip_udp_conn *uip_udp_new(const uip_ipaddr_t *ripaddr, uint16_t rport);
  *
  * \hideinitializer
  */
-#ifndef UIP_HTONS
-#   if UIP_BYTE_ORDER == UIP_BIG_ENDIAN
-#      define UIP_HTONS(n) (n)
-#      define UIP_HTONL(n) (n)
-#   else /* UIP_BYTE_ORDER == UIP_BIG_ENDIAN */
-#      define UIP_HTONS(n) (uint16_t)((((uint16_t) (n)) << 8) | (((uint16_t) (n)) >> 8))
-#      define UIP_HTONL(n) (((uint32_t)UIP_HTONS(n) << 16) | UIP_HTONS((uint32_t)(n) >> 16))
-#   endif /* UIP_BYTE_ORDER == UIP_BIG_ENDIAN */
-#else
-#error "UIP_HTONS already defined!"
-#endif /* UIP_HTONS */
+# if UIP_BYTE_ORDER == UIP_BIG_ENDIAN
+#    define UIP_HTONS(n) (n)
+#    define UIP_HTONL(n) (n)
+# else /* UIP_BYTE_ORDER == UIP_BIG_ENDIAN */
+#    define UIP_HTONS(n) (uint16_t)((((uint16_t) (n)) << 8) | (((uint16_t) (n)) >> 8))
+#    define UIP_HTONL(n) (((uint32_t)UIP_HTONS(n) << 16) | UIP_HTONS((uint32_t)(n) >> 16))
+# endif /* UIP_BYTE_ORDER == UIP_BIG_ENDIAN */
 
 /**
  * Convert a 16-bit quantity from host byte order to network byte order.
@@ -1176,19 +1165,11 @@ struct uip_udp_conn *uip_udp_new(const uip_ipaddr_t *ripaddr, uint16_t rport);
  * byte order to network byte order. For converting constants to
  * network byte order, use the UIP_HTONS() macro instead.
  */
-#ifndef uip_htons
 uint16_t uip_htons(uint16_t val);
-#endif /* uip_htons */
-#ifndef uip_ntohs
 #define uip_ntohs uip_htons
-#endif
 
-#ifndef uip_htonl
 uint32_t uip_htonl(uint32_t val);
-#endif /* uip_htonl */
-#ifndef uip_ntohl
 #define uip_ntohl uip_htonl
-#endif
 
 /** @} */
 
@@ -1283,10 +1264,8 @@ struct uip_conn {
  */
 
 extern struct uip_conn *uip_conn;
-#if CONFIG_UIP_TCP
 /* The array containing all uIP connections. */
 extern struct uip_conn uip_conns[CONFIG_UIP_CONNS];
-#endif
 
 /**
  * \addtogroup uiparch
@@ -1335,8 +1314,8 @@ extern struct uip_icmp6_conn uip_icmp6_conns;
  *
  * This is the variable in which the uIP TCP/IP statistics are gathered.
  */
-#if CONFIG_UIP_STATISTICS
 extern struct uip_stats uip_stat;
+#if CONFIG_UIP_STATISTICS
 #define UIP_STAT(s) (s)
 #else
 #define UIP_STAT(s)
@@ -1379,7 +1358,6 @@ struct uip_stats {
     uip_stats_t chkerr;   /**< Number of ICMP packets with a bad
 			     checksum. */
   } icmp;                 /**< ICMP statistics. */
-#if CONFIG_UIP_TCP
   struct {
     uip_stats_t recv;     /**< Number of recived TCP segments. */
     uip_stats_t sent;     /**< Number of sent TCP segments. */
@@ -1395,8 +1373,6 @@ struct uip_stats {
     uip_stats_t synrst;   /**< Number of SYNs for closed ports,
 			     triggering a RST. */
   } tcp;                  /**< TCP statistics. */
-#endif
-#if CONFIG_UIP_UDP
   struct {
     uip_stats_t drop;     /**< Number of dropped UDP segments. */
     uip_stats_t recv;     /**< Number of recived UDP segments. */
@@ -1404,7 +1380,6 @@ struct uip_stats {
     uip_stats_t chkerr;   /**< Number of UDP segments with a bad
 			     checksum. */
   } udp;                  /**< UDP statistics. */
-#endif /* CONFIG_UIP_UDP */
 };
 
 
@@ -1494,9 +1469,7 @@ void uip_process(uint8_t flag);
 #define UIP_UDP_SEND_CONN 4     /* Tells uIP that a UDP datagram
 				   should be constructed in the
 				   uip_buf buffer. */
-#if CONFIG_UIP_UDP
 #define UIP_UDP_TIMER     5
-#endif /* CONFIG_UIP_UDP */
 
 /* The TCP states used in the uip_conn->tcpstateflags. */
 #define UIP_CLOSED      0
