@@ -214,17 +214,6 @@ config UIP_LISTENPORTS
 
 	  Each listening TCP port requires 2 bytes of memory.
 
-config UIP_URGDATA
-	bool "TCP urgent data notification"
-	depends on UIP_TCP
-	default n
-	help
-	  Determines if support for TCP urgent data notification should be
-	  compiled in.
-
-	  Urgent data (out-of-band data) is a rarely used TCP feature that
-	  very seldom would be required.
-
 config UIP_RTO
 	int "Retransmission time out (timer pulses)"
 	depends on UIP_TCP

@@ -111,12 +111,6 @@ void *uip_appdata;               /* The uip_appdata pointer points to
 void *uip_sappdata;              /* The uip_appdata pointer points to
 				    the application data which is to
 				    be sent. */
-#if CONFIG_UIP_URGDATA
-void *uip_urgdata;               /* The uip_urgdata pointer points to
-   				    urgent data (out-of-band data), if
-   				    present. */
-uint16_t uip_urglen, uip_surglen;
-#endif /* CONFIG_UIP_URGDATA */
 
 uint16_t uip_len, uip_slen;
                              /* The uip_len is either 8 or 16 bits,
@@ -1485,22 +1479,8 @@ uip_process(uint8_t flag)
     /* Check the URG flag. If this is set, the segment carries urgent
        data that we must pass to the application. */
     if((BUF->flags & TCP_URG) != 0) {
-#if CONFIG_UIP_URGDATA
-      uip_urglen = (BUF->urgp[0] << 8) | BUF->urgp[1];
-      if(uip_urglen > uip_len) {
-	/* There is more urgent data in the next segment to come. */
-	uip_urglen = uip_len;
-      }
-      uip_add_rcv_nxt(uip_urglen);
-      uip_len -= uip_urglen;
-      uip_urgdata = uip_appdata;
-      uip_appdata += uip_urglen;
-    } else {
-      uip_urglen = 0;
-#else /* CONFIG_UIP_URGDATA */
       uip_appdata = ((char *)uip_appdata) + ((BUF->urgp[0] << 8) | BUF->urgp[1]);
       uip_len -= (BUF->urgp[0] << 8) | BUF->urgp[1];
-#endif /* CONFIG_UIP_URGDATA */
     }
 
     /* If uip_len > 0 we have TCP data in the packet, and we flag this

@@ -603,17 +603,6 @@ void uip_send(const void *data, int len);
 #define uip_datalen()       uip_len
 
 /**
- * The length of any out-of-band data (urgent data) that has arrived
- * on the connection.
- *
- * \note The configuration parameter CONFIG_UIP_URGDATA must be set for this
- * function to be enabled.
- *
- * \hideinitializer
- */
-#define uip_urgdatalen()    uip_urglen
-
-/**
  * Close the current connection.
  *
  * This function will close the current connection in a nice way.
@@ -1212,15 +1201,6 @@ uint32_t uip_htonl(uint32_t val);
  */
 extern void *uip_appdata;
 
-#if CONFIG_UIP_URGDATA
-/* uint8_t *uip_urgdata:
- *
- * This pointer points to any urgent data that has been received. Only
- * present if compiled with support for urgent data (CONFIG_UIP_URGDATA).
- */
-extern void *uip_urgdata;
-#endif /* CONFIG_UIP_URGDATA */
-
 
 /**
  * \defgroup uipdrivervars Variables used in uIP device drivers
@@ -1252,10 +1232,6 @@ extern uint16_t uip_len;
  */
 extern uint8_t uip_ext_len;
 /** @} */
-
-#if CONFIG_UIP_URGDATA
-extern uint16_t uip_urglen, uip_surglen;
-#endif /* CONFIG_UIP_URGDATA */
 
 
 /**
