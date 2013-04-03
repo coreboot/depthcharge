@@ -74,6 +74,9 @@ int boot_x86_linux(struct boot_params *boot_params, char *cmd_line, void *entry)
 	// Loader type is undefined.
 	hdr->type_of_loader = 0xFF;
 
+	// Don't reload the data/code segments.
+	hdr->loadflags |= KEEP_SEGMENTS;
+
 	hdr->cmd_line_ptr = (uintptr_t)cmd_line;
 
 	/*
