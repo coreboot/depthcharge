@@ -33,7 +33,7 @@ static inline uint32_t get_cpsr(void)
 
 static inline void set_cpsr(uint32_t cpsr)
 {
-	__asm__ __volatile__("msr cpsr, %0\n" :: "r"(cpsr));
+	__asm__ __volatile__("msr cpsr_cxsf, %0\n" :: "r"(cpsr));
 }
 
 static inline uint32_t get_sctlr(void)
