@@ -168,8 +168,12 @@ int dc_corebootfb_draw_bitmap(uint32_t x, uint32_t y, void *bitmap)
 	}
 
 	struct cb_framebuffer *fbinfo = lib_sysinfo.framebuffer;
+	if (!fbinfo)
+		return 0;
 	unsigned char *fbaddr =
 		(unsigned char *)(uintptr_t)(fbinfo->physical_address);
+	if (!fbaddr)
+		return -1;
 
 	uint32_t header_size;
 	memcpy(&header_size, file_header + 1, sizeof(header_size));
