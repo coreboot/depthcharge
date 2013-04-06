@@ -107,7 +107,7 @@ int fdt_node_name(void *blob, uint32_t offset, const char **name)
 	ptr += 4;
 	if (name)
 		*name = (char *)ptr;
-	return size32(strlen(*name) + 1) * sizeof(uint32_t) + 4;
+	return size32(strlen((char *)ptr) + 1) * sizeof(uint32_t) + 4;
 }
 
 
