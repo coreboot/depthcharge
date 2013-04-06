@@ -66,8 +66,10 @@ int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry)
 	uint32_t cpsr = get_cpsr();
 	uint32_t sctlr = get_sctlr();
 
-	// Set the A, I, and F bits to disable interrupts.
-	cpsr |= (CpsrF | CpsrI | CpsrA);
+	// Set the I, and F bits to disable interrupts.
+	cpsr |= (CpsrF | CpsrI);
+	// Clear the A bit to enable aborts.
+	cpsr &= ~CpsrA;
 
 	// Set the mode to SVC.
 	cpsr &= ~CpsrModeMask;
