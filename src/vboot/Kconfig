@@ -75,6 +75,18 @@ config NV_STORAGE_MKBP
 
 endchoice
 
+config NV_STORAGE_DISK_LBA
+	int "Disk based nonvolatile storage LBA"
+	depends on NV_STORAGE_DISK
+
+config NV_STORAGE_DISK_OFFSET
+	int "Disk based nonvolatile storage offset"
+	depends on NV_STORAGE_DISK
+
+config NV_STORAGE_DISK_SIZE
+	int "Disk based nonvolatile storage size"
+	depends on NV_STORAGE_DISK
+
 choice
 	prompt "Crossystem data mechanism"
 	default CROSSYSTEM_STUB
