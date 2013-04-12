@@ -198,17 +198,6 @@ struct mkbp_dev *board_get_mkbp_dev(void);
 int mkbp_bus_init(struct mkbp_dev *dev);
 
 /**
- * Check whether the bus interface supports new-style commands.
- *
- * LPC has its own way of doing this, which involves checking LPC values
- * visible to the host. Do this, and update dev->cmd_version_is_supported
- * accordingly.
- *
- * @param dev		MKBP device to check
- */
-int mkbp_bus_check_version(struct mkbp_dev *dev);
-
-/**
  * Send a command to a MKBP device and return the reply.
  *
  * The device's internal input/output buffers are used.

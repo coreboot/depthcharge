@@ -20,6 +20,3 @@
 depthcharge-$(CONFIG_DRIVER_MKBP) += mkbp.c
 depthcharge-$(CONFIG_DRIVER_MKBP_LPC) += mkbp_lpc.c
 depthcharge-$(CONFIG_DRIVER_MKBP_I2C) += mkbp_i2c.c
-
-depthcharge-$(CONFIG_DRIVER_MKBP_I2C) += mkbp_gen_chkver.c
-depthcharge-$(CONFIG_DRIVER_MKBP_SPI) += mkbp_gen_chkver.c

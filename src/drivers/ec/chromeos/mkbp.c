@@ -340,11 +340,6 @@ int mkbp_flash_protect(struct mkbp_dev *dev,
 	return 0;
 }
 
-static int mkbp_check_version(struct mkbp_dev *dev)
-{
-	return mkbp_bus_check_version(dev);
-}
-
 int mkbp_test(struct mkbp_dev *dev)
 {
 	struct ec_params_hello req;
@@ -601,12 +596,6 @@ struct mkbp_dev *mkbp_init(void)
 					    sizeof(struct mkbp_dev));
 
 	if (mkbp_bus_init(dev)) {
-		free(dev);
-		return NULL;
-	}
-
-	if (mkbp_check_version(dev)) {
-		printf("%s: Could not detect MKBP version\n", __func__);
 		free(dev);
 		return NULL;
 	}
