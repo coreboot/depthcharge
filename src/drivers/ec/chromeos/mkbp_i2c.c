@@ -76,23 +76,14 @@ int mkbp_bus_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 	 * will be dword aligned.
 	 */
 	in_ptr = dev->din + sizeof(int64_t);
-	if (!dev->cmd_version_is_supported) {
-		/* Send an old-style command */
-		*ptr++ = cmd;
-		out_bytes = dout_len + 1;
-		in_bytes = din_len + 2;
-		in_ptr--;	/* Expect just a status byte */
-	} else {
-		*ptr++ = EC_CMD_VERSION0 + cmd_version;
-		*ptr++ = cmd;
-		*ptr++ = dout_len;
-		in_ptr -= 2;	/* Expect status, length bytes */
-	}
+	*ptr++ = EC_CMD_VERSION0 + cmd_version;
+	*ptr++ = cmd;
+	*ptr++ = dout_len;
+	in_ptr -= 2;	/* Expect status, length bytes */
 	memcpy(ptr, dout, dout_len);
 	ptr += dout_len;
 
-	if (dev->cmd_version_is_supported)
-		*ptr++ = (uint8_t)mkbp_calc_checksum(dev->dout, dout_len + 3);
+	*ptr++ = (uint8_t)mkbp_calc_checksum(dev->dout, dout_len + 3);
 
 	/* Send output data */
 	mkbp_dump_data("out", -1, dev->dout, out_bytes);
@@ -113,26 +104,22 @@ int mkbp_bus_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 		return -(int)*in_ptr;
 	}
 
-	if (dev->cmd_version_is_supported) {
-		int len, csum;
+	int len, csum;
 
-		len = in_ptr[1];
-		if (len + 3 > sizeof(dev->din)) {
-			printf("%s: Received length %#02x too large\n",
-			       __func__, len);
-			return -1;
-		}
-		csum = mkbp_calc_checksum(in_ptr, 2 + len);
-		if (csum != in_ptr[2 + len]) {
-			printf("%s: Invalid checksum rx %#02x, calced %#02x\n",
-			       __func__, in_ptr[2 + din_len], csum);
-			return -1;
-		}
-		din_len = MIN(din_len, len);
-		mkbp_dump_data("in", -1, in_ptr, din_len + 3);
-	} else {
-		mkbp_dump_data("in (old)", -1, in_ptr, in_bytes);
+	len = in_ptr[1];
+	if (len + 3 > sizeof(dev->din)) {
+		printf("%s: Received length %#02x too large\n",
+		       __func__, len);
+		return -1;
 	}
+	csum = mkbp_calc_checksum(in_ptr, 2 + len);
+	if (csum != in_ptr[2 + len]) {
+		printf("%s: Invalid checksum rx %#02x, calced %#02x\n",
+		       __func__, in_ptr[2 + din_len], csum);
+		return -1;
+	}
+	din_len = MIN(din_len, len);
+	mkbp_dump_data("in", -1, in_ptr, din_len + 3);
 
 	/* Return pointer to dword-aligned input data, if any */
 	*dinp = dev->din + sizeof(int64_t);
@@ -148,7 +135,6 @@ int mkbp_bus_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
  */
 int mkbp_bus_init(struct mkbp_dev *dev)
 {
-	dev->cmd_version_is_supported = 0;
 
 	return 0;
 }

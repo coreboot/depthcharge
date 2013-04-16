@@ -32,7 +32,6 @@ extern struct mkbp_dev *mkbp_ptr;
 
 /* Our configuration information */
 struct mkbp_dev {
-	int cmd_version_is_supported;   /* Device supports command versions */
 	int optimise_flash_write;	/* Don't write erased flash blocks */
 
 	uint8_t din[MSG_BYTES] __attribute__((aligned(sizeof(int64_t))));

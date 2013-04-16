@@ -97,11 +97,6 @@ static int ec_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 	uint8_t *din;
 	int len;
 
-	if (cmd_version != 0 && !dev->cmd_version_is_supported) {
-		printf("%s: Command version >0 unsupported\n", __func__);
-		return -1;
-	}
-
 	len = mkbp_bus_command(dev, cmd, cmd_version, dout,
 			       dout_len, &din, din_len);
 
