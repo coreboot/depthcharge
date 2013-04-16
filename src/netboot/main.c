@@ -45,13 +45,16 @@
 
 static void enable_graphics(void)
 {
+	if (!CONFIG_OPROM_MATTERS)
+		return;
+
 	int oprom_loaded = flag_fetch(FLAG_OPROM);
 
 	// Manipulating vboot's internal data and calling its internal
 	// functions is NOT NICE and will give you athlete's foot and make
 	// you unpopular at parties. Right now it's the only way to ensure
 	// graphics are enabled, though, so it's a necessary evil.
-	if (CONFIG_OPROM_MATTERS && !oprom_loaded) {
+	if (!oprom_loaded) {
 		printf("Enabling graphics.\n");
 
 		VbNvContext context;
