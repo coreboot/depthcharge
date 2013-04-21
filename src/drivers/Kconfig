@@ -27,3 +27,4 @@ source src/drivers/sound/Kconfig
 source src/drivers/storage/Kconfig
 source src/drivers/timer/Kconfig
 source src/drivers/tpm/Kconfig
+source src/drivers/video/Kconfig
