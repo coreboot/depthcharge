@@ -24,6 +24,7 @@
 #define __BASE_LIST_H__
 
 #include <stddef.h>
+#include <stdint.h>
 
 #define container_of(ptr, type, member) ({                         \
 	const typeof(((type *)0)->member) *__mptr = (ptr);         \
