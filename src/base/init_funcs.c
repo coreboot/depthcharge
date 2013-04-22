@@ -27,10 +27,10 @@ int run_init_funcs(void)
 {
 	init_func_t *start = (init_func_t *)&_init_funcs_start;
 	init_func_t *end = (init_func_t *)&_init_funcs_end;
+	int res = 0;
 
 	for (init_func_t *init_func = start; init_func != end; init_func++)
-		if ((*init_func)())
-			return 1;
+		res = (*init_func)() || res;
 
-	return 0;
+	return res;
 }
