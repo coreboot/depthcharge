@@ -236,8 +236,7 @@ static int mkbp_keyboard_havekey(void)
 
 static int mkbp_keyboard_getchar(void)
 {
-	if (!mkbp_keyboard_havekey())
-		return 0;
+	while (!mkbp_keyboard_havekey());
 
 	return key_fifo[fifo_offset++];
 }
