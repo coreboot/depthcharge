@@ -22,6 +22,7 @@
  */
 
 #include <assert.h>
+#include <keycodes.h>
 #include <libpayload.h>
 #include <stdint.h>
 
@@ -143,9 +144,18 @@ enum {
 	KeyFifoSize = 16
 };
 
-uint8_t key_fifo[KeyFifoSize];
+uint16_t key_fifo[KeyFifoSize];
 int fifo_offset;
 int fifo_size;
+
+static void add_key(uint16_t key)
+{
+	// Don't do anything if there isn't enough space.
+	if (fifo_size == ARRAY_SIZE(key_fifo))
+		return;
+
+	key_fifo[fifo_size++] = key;
+}
 
 static void more_keys(struct mkbp_dev *dev)
 {
@@ -174,8 +184,22 @@ static void more_keys(struct mkbp_dev *dev)
 	}
 
 	// Look at all the keys and fill the FIFO.
-	for (int pos = 0, fifo_pos = 0; pos < count; pos++) {
+	for (int pos = 0; pos < count; pos++) {
 		uint8_t code = scancodes[pos];
+
+		// Handle arrow keys.
+		if (code == 0x6c)
+			add_key(KEY_DOWN);
+		else if (code == 0x6a)
+			add_key(KEY_RIGHT);
+		else if (code == 0x67)
+			add_key(KEY_UP);
+		else if (code == 0x69)
+			add_key(KEY_LEFT);
+
+		// Make sure the next check will prevent us from recognizing
+		// this key twice.
+		assert(MkbpLayoutSize < 0x6c);
 
 		// Ignore the scancode if it's a modifier or too big.
 		if (code == 0x1d || code == 0x61 ||
@@ -185,7 +209,7 @@ static void more_keys(struct mkbp_dev *dev)
 			continue;
 
 		// Map it to its ASCII value.
-		uint8_t ascii = mkbp_keyboard_layout[map][code];
+		uint16_t ascii = mkbp_keyboard_layout[map][code];
 
 		// Handle the Ctrl modifier.
 		if ((modifiers & ModifierCtrl) &&
@@ -193,8 +217,7 @@ static void more_keys(struct mkbp_dev *dev)
 				 (ascii >= 'A' && ascii <= 'Z')))
 			ascii &= 0x1f;
 
-		key_fifo[fifo_pos++] = ascii;
-		fifo_size++;
+		add_key(ascii);
 	}
 }
 
