@@ -22,6 +22,7 @@
 
 #include <libpayload.h>
 
+#include "base/cleanup_funcs.h"
 #include "drivers/power/power.h"
 
 #define PM1_STS         0x00
@@ -50,6 +51,8 @@
  */
 void cold_reboot(void)
 {
+	run_cleanup_funcs(CleanupOnReboot);
+
 	printf("Rebooting...\n");
 	outb(SYS_RST | RST_CPU, RST_CNT);
 	halt();
@@ -102,6 +105,8 @@ static void busmaster_disable(void)
  */
 void power_off(void)
 {
+	run_cleanup_funcs(CleanupOnPowerOff);
+
 	// Make sure this is an Intel chipset with the LPC device hard coded
 	// at 0:1f.0.
 	uint16_t id = pci_read_config16(PCI_DEV(0, 0x1f, 0), 0x00);

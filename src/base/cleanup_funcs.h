@@ -20,32 +20,32 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
-#include <stdint.h>
+#ifndef __BASE_CLEANUP_FUNCS_H__
+#define __BASE_CLEANUP_FUNCS_H__
 
-#include "base/cleanup_funcs.h"
-#include "drivers/power/power.h"
+#include "base/list.h"
 
-void cold_reboot(void)
+typedef enum CleanupType
 {
-	run_cleanup_funcs(CleanupOnReboot);
+	CleanupOnReboot = 0x1,
+	CleanupOnPowerOff = 0x2,
+	CleanupOnHandoff = 0x4
+} CleanupType;
 
-	uint32_t *inform1 = (uint32_t *)(uintptr_t)0x10040804;
-	uint32_t *swreset = (uint32_t *)(uintptr_t)0x10040400;
-
-	printf("Rebooting...\n");
-
-	writel(0, inform1);
-	writel(readl(swreset) | 1, swreset);
-
-	halt();
-}
-
-void power_off(void)
+typedef struct CleanupFunc
 {
-	run_cleanup_funcs(CleanupOnPowerOff);
+	// A non-zero return value indicates an error.
+	int (*cleanup)(struct CleanupFunc *cleanup, CleanupType type);
+	// Under what circumstance(s) to call this function.
+	CleanupType types;
+	void *data;
 
-	uint32_t *pshold = (uint32_t *)(uintptr_t)0x1004330c;
-	writel(readl(pshold) & ~(1 << 8), pshold);
-	halt();
-}
+	ListNode list_node;
+} CleanupFunc;
+
+extern ListNode cleanup_funcs;
+
+// Call all cleanup functions and report whether any had an error.
+int run_cleanup_funcs(CleanupType type);
+
+#endif /* __BASE_CLEANUP_FUNCS_H__ */

@@ -26,6 +26,7 @@
 
 #include "arch/x86/boot.h"
 #include "arch/x86/cpu.h"
+#include "base/cleanup_funcs.h"
 #include "base/timestamp.h"
 
 static void * const ParamsBuff = (void *)(uintptr_t)0x1000;
@@ -98,6 +99,8 @@ int boot_x86_linux(struct boot_params *boot_params, char *cmd_line, void *entry)
 	// Issue SMI to Coreboot to lock down ME and registers.
 	printf("Finalizing Coreboot\n");
 	outb(0xcb, 0xb2);
+
+	run_cleanup_funcs(CleanupOnHandoff);
 
 	puts("\nStarting kernel ...\n\n");
 	timestamp_add_now(TS_START_KERNEL);

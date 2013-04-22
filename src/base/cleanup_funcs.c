@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Google Inc.
+ * Copyright 2012 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -20,32 +20,21 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
-#include <stdint.h>
+#include <assert.h>
 
 #include "base/cleanup_funcs.h"
-#include "drivers/power/power.h"
 
-void cold_reboot(void)
+ListNode cleanup_funcs;
+
+int run_cleanup_funcs(CleanupType type)
 {
-	run_cleanup_funcs(CleanupOnReboot);
+	int res = 0;
 
-	uint32_t *inform1 = (uint32_t *)(uintptr_t)0x10040804;
-	uint32_t *swreset = (uint32_t *)(uintptr_t)0x10040400;
-
-	printf("Rebooting...\n");
-
-	writel(0, inform1);
-	writel(readl(swreset) | 1, swreset);
-
-	halt();
-}
-
-void power_off(void)
-{
-	run_cleanup_funcs(CleanupOnPowerOff);
-
-	uint32_t *pshold = (uint32_t *)(uintptr_t)0x1004330c;
-	writel(readl(pshold) & ~(1 << 8), pshold);
-	halt();
+	CleanupFunc *func;
+	list_for_each(func, cleanup_funcs, list_node) {
+		assert(func->cleanup);
+		if ((func->types & type))
+			res = func->cleanup(func, type) || res;
+	}
+	return res;
 }

@@ -23,6 +23,7 @@
 #include <libpayload.h>
 
 #include "arch/arm/boot.h"
+#include "base/cleanup_funcs.h"
 
 static inline uint32_t get_cpsr(void)
 {
@@ -54,6 +55,8 @@ void boot_arm_linux_jump(void *entry, uint32_t machine_type, void *fdt)
 
 int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry)
 {
+	run_cleanup_funcs(CleanupOnHandoff);
+
 	static const uint32_t CpsrF = (0x1 << 6);
 	static const uint32_t CpsrI = (0x1 << 7);
 	static const uint32_t CpsrA = (0x1 << 8);
