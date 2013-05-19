@@ -251,16 +251,6 @@ static int max98095_device_init(void)
 
 int codec_init(int bits_per_sample, int sample_rate, int lr_frame_size)
 {
-	// Set the codec enable line.
-	int gpx17 = s5p_gpio_index(GPIO_X, 1, 7);
-	s5p_gpio_set_pud(gpx17, 0);
-	gpio_set_value(gpx17, 1);
-	gpio_direction(gpx17, 0);
-	int gpx15 = s5p_gpio_index(GPIO_X, 1, 5);
-	s5p_gpio_set_pud(gpx15, 0);
-	gpio_set_value(gpx15, 1);
-	gpio_direction(gpx15, 0);
-
 	if (max98095_device_init())
 		return 1;
 

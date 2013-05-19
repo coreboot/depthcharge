@@ -142,38 +142,6 @@ static int i2c_init(I2cRegs *regs)
 	if (gpio_set_value(s5p_gpio_index(GPIO_F, 0, 3), 1) < 0)
 		return 1;
 
-	// Set gpa12 and gpa13 to 3 for I2C.
-	if (gpio_use(s5p_gpio_index(GPIO_A, 1, 2), 3) < 0 ||
-			gpio_use(s5p_gpio_index(GPIO_A, 1, 3), 3) < 0)
-		return 1;
-	// Set gpa20 and gpa21 to 3 for I2C.
-	if (gpio_use(s5p_gpio_index(GPIO_A, 2, 0), 3) < 0 ||
-			gpio_use(s5p_gpio_index(GPIO_A, 2, 1), 3) < 0)
-		return 1;
-	// Set gpb22 and gpb23 to 3 for I2C.
-	if (gpio_use(s5p_gpio_index(GPIO_B, 2, 2), 3) < 0 ||
-			gpio_use(s5p_gpio_index(GPIO_B, 2, 3), 3) < 0)
-		return 1;
-	//gpio_set_value(s5p_gpio_index(GPIO_B, 2, 2), 1);
-	//gpio_set_value(s5p_gpio_index(GPIO_B, 2, 3), 1);
-	// Set gpf03 to output.
-	if (gpio_direction(s5p_gpio_index(GPIO_F, 0, 3), 0) < 0)
-		return 1;
-	// Set gpe0con[4] to input.
-	if (gpio_direction(s5p_gpio_index(GPIO_E, 0, 4), 1) < 0)
-		return 1;
-
-	// Turn off pull-ups/downs.
-	if (s5p_gpio_set_pud(s5p_gpio_index(GPIO_A, 1, 2), 0) < 0 ||
-		s5p_gpio_set_pud(s5p_gpio_index(GPIO_A, 1, 3), 0) < 0 ||
-		s5p_gpio_set_pud(s5p_gpio_index(GPIO_A, 2, 0), 0) < 0 ||
-		s5p_gpio_set_pud(s5p_gpio_index(GPIO_A, 2, 1), 0) < 0 ||
-		s5p_gpio_set_pud(s5p_gpio_index(GPIO_B, 2, 2), 0) < 0 ||
-		s5p_gpio_set_pud(s5p_gpio_index(GPIO_B, 2, 3), 0) < 0 ||
-		s5p_gpio_set_pud(s5p_gpio_index(GPIO_E, 0, 4), 0) < 0 ||
-		s5p_gpio_set_pud(s5p_gpio_index(GPIO_F, 0, 3), 0) < 0)
-		return 1;
-
 	// Switch from hi speed I2C to the normal one.
 	writel(0x0, i2c_cfg);
 

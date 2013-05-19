@@ -237,13 +237,6 @@ int i2s_send(uint32_t *data, unsigned int length)
 int i2s_transfer_init(int lr_frame_size, int bits_per_sample,
 		      int bit_frame_size)
 {
-	// Configure GPIOs for I2s.
-	for (int i = 0; i < 5; i++) {
-		unsigned index = s5p_gpio_index(GPIO_B, 0, i);
-		s5p_gpio_set_pud(index, 0);
-		gpio_use(index, 0x2);
-	}
-
 	// Configure I2s format.
 	if (i2s_set_clock_format(i2s_regs, (SND_SOC_DAIFMT_I2S |
 					    SND_SOC_DAIFMT_NB_NF |
