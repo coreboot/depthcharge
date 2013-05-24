@@ -24,6 +24,7 @@
 
 #include "arch/arm/boot.h"
 #include "base/cleanup_funcs.h"
+#include "vboot/boot.h"
 
 static inline uint32_t get_cpsr(void)
 {
@@ -55,7 +56,7 @@ void boot_arm_linux_jump(void *entry, uint32_t machine_type, void *fdt)
 
 int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry)
 {
-	run_cleanup_funcs(CleanupOnHandoff);
+	arch_final_cleanup();
 
 	static const uint32_t CpsrF = (0x1 << 6);
 	static const uint32_t CpsrI = (0x1 << 7);
@@ -88,6 +89,14 @@ int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry)
 	set_cpsr(cpsr);
 
 	boot_arm_linux_jump(entry, machine_type, fdt);
+
+	return 0;
+}
+
+
+int arch_final_cleanup(void)
+{
+	run_cleanup_funcs(CleanupOnHandoff);
 
 	return 0;
 }

@@ -28,6 +28,7 @@
 #include "arch/x86/cpu.h"
 #include "base/cleanup_funcs.h"
 #include "base/timestamp.h"
+#include "vboot/boot.h"
 
 static void * const ParamsBuff = (void *)(uintptr_t)0x1000;
 static void * const CmdLineBuff = (void *)(uintptr_t)0x2000;
@@ -80,6 +81,31 @@ int boot_x86_linux(struct boot_params *boot_params, char *cmd_line, void *entry)
 
 	hdr->cmd_line_ptr = (uintptr_t)cmd_line;
 
+	arch_final_cleanup();
+
+	puts("\nStarting kernel ...\n\n");
+	timestamp_add_now(TS_START_KERNEL);
+
+	/*
+	 * Set %ebx, %ebp, and %edi to 0, %esi to point to the boot_params
+	 * structure, and then jump to the kernel. We assume that %cs is
+	 * 0x10, 4GB flat, and read/execute, and the data segments are 0x18,
+	 * 4GB flat, and read/write.
+	 */
+	__asm__ __volatile__ (
+	"movl $0, %%ebp		\n"
+	"cli			\n"
+	"jmp *%[kernel_entry]	\n"
+	:: [kernel_entry]"a"(entry),
+	   [boot_params] "S"(boot_params),
+	   "b"(0), "D"(0)
+	:  "%ebp"
+	);
+	return 0;
+}
+
+int arch_final_cleanup(void)
+{
 	/*
 	 * Un-cache the ROM so the kernel has one more MTRR available.
 	 * Coreboot should have assigned this to the top available variable
@@ -102,23 +128,5 @@ int boot_x86_linux(struct boot_params *boot_params, char *cmd_line, void *entry)
 
 	run_cleanup_funcs(CleanupOnHandoff);
 
-	puts("\nStarting kernel ...\n\n");
-	timestamp_add_now(TS_START_KERNEL);
-
-	/*
-	 * Set %ebx, %ebp, and %edi to 0, %esi to point to the boot_params
-	 * structure, and then jump to the kernel. We assume that %cs is
-	 * 0x10, 4GB flat, and read/execute, and the data segments are 0x18,
-	 * 4GB flat, and read/write.
-	 */
-	__asm__ __volatile__ (
-	"movl $0, %%ebp		\n"
-	"cli			\n"
-	"jmp *%[kernel_entry]	\n"
-	:: [kernel_entry]"a"(entry),
-	   [boot_params] "S"(boot_params),
-	   "b"(0), "D"(0)
-	:  "%ebp"
-	);
 	return 0;
 }
