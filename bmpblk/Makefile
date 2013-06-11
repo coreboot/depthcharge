@@ -20,6 +20,9 @@ LOCALES+= id th
 # More locales (crosbug.com/p/11969)
 LOCALES+= ar ms zh_CN zh_TW
 
+# More locales (crosbug.com/p/17592)
+LOCALES+= fi pl
+
 default: outside_chroot strings images
 
 outside_chroot:
