@@ -109,7 +109,10 @@ If you want to use the "bitmap viewer" utility, add these packages:
 We also need some utilities from ChromiumOS source tree. You need to install
 dependency libraries for them:
 
-  sudo apt-get install libtspi-dev uuid-dev libyaml-dev liblzml-dev
+  sudo apt-get install libtspi-dev uuid-dev libyaml-dev
+
+On older Ubuntu installatins you would also need liblzml-dev, on newer ones -
+liblzma-dev, try installing both, one at a time, at least one must succeed.
 
 Now, time to build the utilities in vboot_reference outside of the chroot:
 
@@ -117,7 +120,9 @@ Now, time to build the utilities in vboot_reference outside of the chroot:
   make
 
 Once you've built vboot_reference you'll find the executables in
-./build/utility/bmpblk*. Put these somewhere in your $PATH.
+./build/utility/bmpblk*. If they were built in the standard place they
+will be found by this tool automatically. If not, their location will
+ahve to be added to your $PATH.
 
 Now you should be able to just run "make" and everything will be
 regenerated:
@@ -131,9 +136,66 @@ which takes a long time.
 If you simply want to build a en-US x standard resolution, do:
 
   cd ~/chromiumos/src/platform/bmpblk
-  make strings  # You can do this only one time unless mofidication was made.
-  cd images
-  make  # Builds only "STD" profile and only few seconds.
+  make LOCALES=en strings  # You can do this only one time unless mofidication was made.
+  make LOCALES=en TARGETS=std images
+
+And find generated files in ./images/out_std
+
+
+-------------------
+Adding a new target:
+
+The following properties of the new target need to be known in
+advance:
+
+
+ - dimensions of display panel in pixels.
+
+  These are dimensions the firmware initializes the panel to. On ARM
+  platforms dimensions usually match the actual panel hardware.
+
+  On X86 things are a little more complicated. To determine actual
+  boot screen dimensions first find the setting for
+  CONFIG_FRAMEBUFFER_VESA_MODE in coreboot/configs/config.YOUR_BOARD
+
+  Then look up the dimension for the found VESA in
+  http://en.wikipedia.org/wiki/VESA_BIOS_Extensions#Modes_defined_by_VESA
+
+
+ - device boot ability
+
+  by default the device should be able to boot into recovery mode from
+  USB and/or SD interfaces. But some devices do not have certain
+  interfaces, some devices can't boot from certain interfaces. That is
+  standard directions for the user shown on the boot screen need to be
+  amended.
+
+
+ - set of locales the device boot screen is required to support
+
+  Country locales can be found in
+  http://git.chromium.org/gitweb/?p=chromium.git;a=blob;f=ui/base/l10n/l10n_util.cc
+  or http://www.science.co.il/language/locale-codes.asp
+
+  The new target's name needs to be added to the 'TARGETS ?=' line in
+  images/Makefile and its description needs to be added to
+  images/build_images. Look at existing targets' cases in build_images
+  to get some ideas how the new one needs to be defined.
+
+Now to build images for the new target run:
+
+  $ make clean
+  $ make LOCALES='list of locales' strings
+  $ make LOCALES='list of locales' TARGETS='<new target>' images
+
+The bitmaps can be found in ./images/out_<target>
+
+Information about integrating new bitmaps into the firmware images can
+be found in http://goo.gl/yXBvz
+
+
+------------------------------------
+Handling generated bitmaps:
 
 You can use the gbb_utility to modify your BIOS to contain this new set of
 bitmaps:
