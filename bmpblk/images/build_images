@@ -103,6 +103,11 @@ main() {
       background_scale_param="-scale 1280x850!"
       ;;
 
+    peach_pit )
+      # 1366x768, and can boot recovery from any SD or USB interface
+      background_scale_param="-scale 1366x768!"
+      ;;
+
     * )
       die "Sorry, unknown profile $profile."
   esac
