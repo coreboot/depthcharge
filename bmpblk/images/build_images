@@ -20,6 +20,9 @@ BMPBLK_OUTPUT="bmpblock.bin"
 
 SCRIPT_BASE="$(dirname $(readlink -f "$0"))"
 
+# Base processing utility, built by vboot_reference
+BMPLKU="bmpblk_utility"
+
 die() {
   echo "ERROR: $*" >&2
   exit 1
@@ -167,9 +170,19 @@ main() {
   (cd "$output" && ../make_default_yaml $LOCALES)
 
   # Compile bitmap block file.
-  (cd "$output" && bmpblk_utility -c DEFAULT.yaml $BMPBLK_OUTPUT)
+  (cd "$output" && ${BMPLKU} -c DEFAULT.yaml $BMPBLK_OUTPUT)
   ls -l "$output/$BMPBLK_OUTPUT"
 }
+
+
+if ! type ${BMPLKU} >/dev/null 2>&1; then
+    util_path="$(readlink -f $(dirname $0)/../../vboot_reference/build/utility)"
+    if [ -x "${util_path}/${BMPLKU}" ]; then
+      PATH+=":${util_path}"
+    else
+      die "${BMPLKU} is not in the path"
+    fi
+fi
 
 set -e
 main "$@"
