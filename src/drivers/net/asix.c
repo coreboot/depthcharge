@@ -392,22 +392,38 @@ static NetDevice asix_network_device = {
 	NULL
 };
 
-static const uint16_t AsixVendorId = 0x0b95;
-static const uint16_t AsixProductId = 0x772a;
+typedef struct AsixUsbId {
+	uint16_t vendor_id;
+	uint16_t product_id;
+} AsixUsbId;
+
+/* Supported usb ethernet dongles. */
+static const AsixUsbId supported_ids[] = {
+	/* Apple USB Ethernet Dongle */
+	{ 0x05ac, 0x1402 },
+	/* ASIX USB Ethernet Dongle */
+	{ 0x0b95, 0x7720 },
+	{ 0x0b95, 0x772a },
+	{ 0x0b95, 0x772b },
+};
 
 int asix_probe(GenericUsbDevice *dev)
 {
+	int i;
 	if (asix_network_device.dev_data)
 		return 0;
 
 	device_descriptor_t *dd = (device_descriptor_t *)dev->dev->descriptor;
-	if (dd->idVendor == AsixVendorId && dd->idProduct == AsixProductId) {
-		asix_network_device.dev_data = dev;
-		if (asix_init(dev)) {
-			return 0;
-		} else {
-			net_set_device(&asix_network_device);
-			return 1;
+	for (i = 0; i < ARRAY_SIZE(supported_ids); i++) {
+		if (dd->idVendor == supported_ids[i].vendor_id &&
+		    dd->idProduct == supported_ids[i].product_id) {
+			asix_network_device.dev_data = dev;
+			if (asix_init(dev)) {
+				return 0;
+			} else {
+				net_set_device(&asix_network_device);
+				return 1;
+			}
 		}
 	}
 	return 0;
