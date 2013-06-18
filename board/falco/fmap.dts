@@ -3,7 +3,7 @@
 / {
 	model = "Google Falco";
 	config {
-		hwid = "X86 FALCO TEST 2323";
+		hwid = "X86 FALCO TEST 0289";
 	};
 	chromeos-config {
 	};
