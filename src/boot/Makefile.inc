@@ -20,3 +20,4 @@
 depthcharge-y += commandline.c
 depthcharge-$(CONFIG_KERNEL_DUMMY) += dummy.c
 depthcharge-$(CONFIG_KERNEL_FIT) += fit.c
+depthcharge-$(CONFIG_ARCH_ARM) += coreboot.c
