@@ -68,7 +68,7 @@ static I2cBus i2c_busses[] = {
 	{ (I2cRegs *)(uintptr_t)0x12cd0000 }
 };
 
-static const uint32_t *i2c_cfg = (uint32_t *)(uintptr_t)(0x10050000 + 0x234);
+static uint32_t *i2c_cfg = (uint32_t *)(uintptr_t)(0x10050000 + 0x234);
 
 static int i2c_claim_bus(int bus)
 {
@@ -120,12 +120,12 @@ static void i2c_clear_int(I2cRegs *regs)
 
 static void i2c_ack_enable(I2cRegs *regs)
 {
-	writeb(readb(&regs->con) |= I2cConAckGen, &regs->con);
+	writeb(readb(&regs->con) | I2cConAckGen, &regs->con);
 }
 
 static void i2c_ack_disable(I2cRegs *regs)
 {
-	writeb(readb(&regs->con) &= ~I2cConAckGen, &regs->con);
+	writeb(readb(&regs->con) & ~I2cConAckGen, &regs->con);
 }
 
 static int i2c_got_ack(I2cRegs *regs)
