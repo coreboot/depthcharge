@@ -260,7 +260,6 @@ static void update_memory(DeviceTree *tree, DeviceTreeNode *memory)
 			ranges_add(&mem, start, end);
 		} else {
 			ranges_add(&reserved, start, end);
-			ranges_add(&mem, start, end);
 		}
 	}
 
