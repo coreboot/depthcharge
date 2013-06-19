@@ -99,7 +99,7 @@ static DeviceTreeNode *dt_find_chromeos_node(DeviceTree *tree)
 	// Make one if it didn't.
 	if (!firmware) {
 		firmware = dt_new_node();
-		node->name = "firmware";
+		firmware->name = "firmware";
 		list_insert_after(&firmware->list_node, &tree->root->children);
 	}
 
@@ -114,7 +114,7 @@ static DeviceTreeNode *dt_find_chromeos_node(DeviceTree *tree)
 	// Make one if it didn't.
 	if (!chromeos) {
 		chromeos = dt_new_node();
-		node->name = "chromeos";
+		chromeos->name = "chromeos";
 		list_insert_after(&chromeos->list_node, &firmware->children);
 	}
 
