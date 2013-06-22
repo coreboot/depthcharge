@@ -23,3 +23,7 @@ config DRIVER_BUS_I2C_S3C24X0
 	bool "Exynos S3C24X0 I2C driver"
 	default n
 	depends on DRIVER_GPIO_S5P
+
+config DRIVER_BUS_I2C_EXYNOS5_USI
+	bool "Exynos USI based I2C driver"
+	default n
