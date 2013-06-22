@@ -23,8 +23,14 @@ netboot-y += params.c
 netboot-y += tftp.c
 
 NETBOOT_ELF = $(obj)/netboot.elf
+NETBOOT_BIN = $(obj)/netboot.bin
+NETBOOT_PAYLOAD = $(obj)/netboot.payload
 
-real-target: $(NETBOOT_ELF)
+real-target: $(NETBOOT_ELF) $(NETBOOT_BIN)
+
+ifeq ($(CONFIG_ARCH_X86),y)
+real-target: $(NETBOOT_PAYLOAD)
+endif
 
 $(NETBOOT_ELF): $(src)/.config $$(depthcharge-objs) $$(netboot-objs) \
 		$$(net-objs) $$(uip-objs) prepare $$(VB_LIB)
@@ -35,3 +41,19 @@ $(NETBOOT_ELF): $(src)/.config $$(depthcharge-objs) $$(netboot-objs) \
 	$(Q)$(OBJCOPY) --remove-section=".shared_data" \
 		--remove-section=".cparams" --remove-section=".gbb_copy" \
 		$@.tmp $@
+
+$(NETBOOT_BIN): $(NETBOOT_ELF)
+	@printf "    STRIP      $(subst $(obj)/,,$(@).tmp)\n"
+	$(Q)$(STRIP) -o $(@).tmp $(<)
+	@printf "    LZMA       $(subst $(obj)/,,$(@))\n"
+	$(Q)$(LZMA) --stdout $(@).tmp > $(@)
+
+# Provide a netboot loader in a payload format.
+$(NETBOOT_PAYLOAD): $(NETBOOT_ELF)
+	@printf "    PAYLOAD    $(subst $(obj)/,,$(@))\n"
+	$(Q)-rm -f temp.nrom temp.bb
+	$(Q)dd if=/dev/zero of=temp.nbb bs=512 count=1
+	$(Q)cbfstool temp.nrom create -m x86 -s 1024K -B temp.nbb -a 64
+	$(Q)cbfstool temp.nrom add-payload -f $< -n nb.elf -c lzma
+	$(Q)cbfstool temp.nrom extract -n nb.elf -f $@
+	$(Q)rm -f temp.nrom temp.nbb
