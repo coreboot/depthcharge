@@ -528,7 +528,6 @@ static struct tpm_vendor_specific tpm_tis_i2c = {
 int tpm_vendor_init(int bus, uint32_t dev_addr)
 {
 	uint32_t vendor;
-	uint32_t expected_did_vid;
 	unsigned int old_addr;
 	int rc = 0;
 	struct tpm_chip *chip;
@@ -564,16 +563,12 @@ int tpm_vendor_init(int bus, uint32_t dev_addr)
 		goto out_release;
 	}
 
-	if (tpm_dev.chip_type == SLB9635) {
-		vendor = betohl(vendor);
-		expected_did_vid = TPM_TIS_I2C_DID_VID_9635;
+	if (vendor == TPM_TIS_I2C_DID_VID_9645) {
+		tpm_dev.chip_type = SLB9645;
+	} else if (betohl(vendor) == TPM_TIS_I2C_DID_VID_9635) {
+		tpm_dev.chip_type = SLB9635;
 	} else {
-		/* device id and byte order has changed for newer i2c tpms */
-		expected_did_vid = TPM_TIS_I2C_DID_VID_9645;
-	}
-
-	if (tpm_dev.chip_type != UNKNOWN && vendor != expected_did_vid) {
-		printf("vendor id did not match! ID was %08x\n", vendor);
+		printf("Vendor ID 0x%08x not recognized.\n", vendor);
 		rc = -1; //ENODEV;
 		goto out_release;
 	}
