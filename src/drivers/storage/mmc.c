@@ -30,8 +30,8 @@
 #include <libpayload.h>
 #include <stdint.h>
 
-#include "config.h"
 #include "base/time.h"
+#include "config.h"
 #include "drivers/storage/mmc.h"
 
 // Uncomment following options if you need detail information.
@@ -57,21 +57,16 @@ inline void mmc_trace(const char *format, ...) {}
 #define CONFIG_SYS_MMC_MAX_BLK_COUNT 65535
 #endif
 
-static inline uint64_t mmc_timer_ms(uint64_t base)
-{
-	return (timer_raw_value() - base) / timer_hz();
-}
-
 int mmc_busy_wait_io(volatile uint32_t *address, uint32_t *output,
 		     uint32_t io_mask, uint32_t timeout_ms)
 {
 	uint32_t value = (uint32_t)-1;
-	uint64_t start = timer_raw_value();
+	uint64_t start = timer_time_in_us(0);
 
 	if (!output)
 		output = &value;
 	for (; *output & io_mask; *output = readl(address)) {
-		if (mmc_timer_ms(start) > timeout_ms)
+		if (timer_time_in_us(start) > timeout_ms * 1000)
 			return -1;
 	}
 	return 0;
@@ -81,12 +76,12 @@ int mmc_busy_wait_io_until(volatile uint32_t *address, uint32_t *output,
 			   uint32_t io_mask, uint32_t timeout_ms)
 {
 	uint32_t value = 0;
-	uint64_t start = timer_raw_value();
+	uint64_t start = timer_time_in_us(0);
 
 	if (!output)
 		output = &value;
 	for (; !(*output & io_mask); *output = readl(address)) {
-		if (mmc_timer_ms(start) > timeout_ms)
+		if (timer_time_in_us(start) > timeout_ms * 1000)
 			return -1;
 	}
 	return 0;
@@ -432,12 +427,12 @@ static int mmc_complete_op_cond(MmcDevice *mmc)
 	int err;
 
 	mmc->op_cond_pending = 0;
-	start= timer_raw_value();
+	start = timer_time_in_us(0);
 	do {
 		err = mmc_send_op_cond_iter(mmc, &cmd, 1);
 		if (err)
 			return err;
-		if (mmc_timer_ms(start) > timeout)
+		if (timer_time_in_us(start) > timeout * 1000)
 			return MMC_UNUSABLE_ERR;
 		udelay(100);
 	} while (!(mmc->op_cond_response & OCR_BUSY));
