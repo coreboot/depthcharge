@@ -33,6 +33,7 @@ config ARCH_ARM
 endchoice
 
 source src/arch/Kconfig
+source src/board/Kconfig
 source src/boot/Kconfig
 
 menu "UIP network stack"

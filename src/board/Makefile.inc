@@ -1,7 +1,7 @@
 ##
 ## This file is part of the depthcharge project.
 ##
-## Copyright 2012 Google Inc.
+## Copyright 2013 Google Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -17,4 +17,13 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-subdirs-y := arch base board boot drivers image net netboot vboot
+subdirs-$(CONFIG_BOARD_BOLT) += bolt
+subdirs-$(CONFIG_BOARD_DAISY) += daisy
+subdirs-$(CONFIG_BOARD_FALCO) += falco
+subdirs-$(CONFIG_BOARD_FOX_BASKINGRIDGE) += fox_baskingridge
+subdirs-$(CONFIG_BOARD_FOX_WTM2) += fox_wtm2
+subdirs-$(CONFIG_BOARD_LINK) += link
+subdirs-$(CONFIG_BOARD_LUMPY) += lumpy
+subdirs-$(CONFIG_BOARD_PEACH_PIT) += peach_pit
+subdirs-$(CONFIG_BOARD_PEPPY) += peppy
+subdirs-$(CONFIG_BOARD_SLIPPY) += slippy

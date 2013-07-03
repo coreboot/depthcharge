@@ -1,0 +1,77 @@
+## This file is part of the coreboot project.
+##
+## Copyright 2013 Google Inc.  All rights reserved.
+##
+## This program is free software; you can redistribute it and/or modify
+## it under the terms of the GNU General Public License as published by
+## the Free Software Foundation; version 2 of the License.
+##
+## This program is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU General Public License for more details.
+##
+## You should have received a copy of the GNU General Public License
+## along with this program; if not, write to the Free Software
+## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+
+menu "Board"
+
+choice
+	prompt "Board name"
+
+config BOARD_BOLT
+	bool "bolt"
+config BOARD_DAISY
+	bool "daisy"
+config BOARD_FALCO
+	bool "falco"
+config BOARD_FOX_BASKINGRIDGE
+	bool "fox baskingridge"
+config BOARD_FOX_WTM2
+	bool "fox wtm2"
+config BOARD_LINK
+	bool "link"
+config BOARD_LUMPY
+	bool "lumpy"
+config BOARD_PEACH_PIT
+	bool "peach pit"
+config BOARD_PEPPY
+	bool "peppy"
+config BOARD_SLIPPY
+	bool "slippy"
+
+endchoice
+
+if BOARD_BOLT
+source src/board/bolt/Kconfig
+endif
+if BOARD_DAISY
+source src/board/daisy/Kconfig
+endif
+if BOARD_FALCO
+source src/board/falco/Kconfig
+endif
+if BOARD_FOX_BASKINGRIDGE
+source src/board/fox_baskingridge/Kconfig
+endif
+if BOARD_FOX_WTM2
+source src/board/fox_wtm2/Kconfig
+endif
+if BOARD_LINK
+source src/board/link/Kconfig
+endif
+if BOARD_LUMPY
+source src/board/lumpy/Kconfig
+endif
+if BOARD_PEACH_PIT
+source src/board/peach_pit/Kconfig
+endif
+if BOARD_PEPPY
+source src/board/peppy/Kconfig
+endif
+if BOARD_SLIPPY
+source src/board/slippy/Kconfig
+endif
+
+endmenu
