@@ -51,7 +51,7 @@ $(NETBOOT_BIN): $(NETBOOT_ELF)
 # Provide a netboot loader in a payload format.
 $(NETBOOT_PAYLOAD): $(NETBOOT_ELF)
 	@printf "    PAYLOAD    $(subst $(obj)/,,$(@))\n"
-	$(Q)-rm -f temp.nrom temp.bb
+	$(Q)-rm -f temp.nrom temp.nbb
 	$(Q)dd if=/dev/zero of=temp.nbb bs=512 count=1
 	$(Q)cbfstool temp.nrom create -m x86 -s 1024K -B temp.nbb -a 64
 	$(Q)cbfstool temp.nrom add-payload -f $< -n nb.elf -c lzma
