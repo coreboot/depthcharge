@@ -202,6 +202,11 @@ static inline uint8_t dwmci_readb(DwmciHost *host, int reg)
 	return readb(host->ioaddr + reg);
 }
 
+static inline void *dwmci_get_ioaddr(DwmciHost *host, int reg)
+{
+	return (void *)((uint8_t *)host->ioaddr + reg);
+}
+
 int add_dwmci(DwmciHost *host, uint32_t max_clk, uint32_t min_clk,
 	      int removable, int pre_init);
 #endif /* __DRIVERS_STORAGE_DW_MMC_H__ */

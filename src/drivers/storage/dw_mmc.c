@@ -31,17 +31,11 @@
 
 static int dwmci_wait_reset(DwmciHost *host, uint32_t value)
 {
-	unsigned long timeout = 1000;
-	uint32_t ctrl;
+	unsigned long timeout_ms = 10;
 
 	dwmci_writel(host, DWMCI_CTRL, value);
-
-	while (timeout--) {
-		ctrl = dwmci_readl(host, DWMCI_CTRL);
-		if (!(ctrl & DWMCI_RESET_ALL))
-			return 1;
-	}
-	return 0;
+	return !mmc_busy_wait_io(dwmci_get_ioaddr(host, DWMCI_CTRL), NULL,
+				 DWMCI_RESET_ALL, timeout_ms);
 }
 
 static void dwmci_set_idma_desc(DwmciIdmac *idmac, uint32_t desc0,
@@ -127,20 +121,15 @@ static int dwmci_set_transfer_mode(DwmciHost *host, MmcData *data)
 static int dwmci_send_cmd(MmcDevice *mmc, MmcCommand *cmd, MmcData *data)
 {
 	DwmciHost *host = (DwmciHost *)mmc->host;
-	int flags = 0, i;
-	// unsigned int timeout = 100000;
-	uint32_t retry = 10000;
+	int flags = 0;
+	unsigned int busy_timeout_ms = 100, send_timeout_ms = 10;
 	uint32_t mask, ctrl;
 
-	// TODO(hungte) Implement busy-loop.
-#if 0
-	while (dwmci_readl(host, DWMCI_STATUS) & DWMCI_BUSY) {
-		if (get_timer(start) > timeout) {
-			printf("Timeout on data busy\n");
-			return MMC_TIMEOUT;
-		}
+	if (mmc_busy_wait_io(dwmci_get_ioaddr(host, DWMCI_STATUS), NULL,
+			     DWMCI_BUSY, busy_timeout_ms) != 0) {
+		printf("Timeout on data busy\n");
+		return MMC_TIMEOUT;
 	}
-#endif
 
 	dwmci_writel(host, DWMCI_RINTSTS, DWMCI_INTMSK_ALL);
 
@@ -175,17 +164,15 @@ static int dwmci_send_cmd(MmcDevice *mmc, MmcCommand *cmd, MmcData *data)
 
 	dwmci_writel(host, DWMCI_CMD, flags);
 
-	for (i = 0; i < retry; i++) {
-		mask = dwmci_readl(host, DWMCI_RINTSTS);
-		if (mask & DWMCI_INTMSK_CDONE) {
-			if (!data)
-				dwmci_writel(host, DWMCI_RINTSTS, mask);
-			break;
-		}
-	}
-
-	if (i == retry)
+	mask = 0;
+	if (mmc_busy_wait_io_until(
+			dwmci_get_ioaddr(host, DWMCI_RINTSTS), &mask,
+			DWMCI_INTMSK_CDONE, send_timeout_ms) != 0) {
+		mmc_error("CMD%d timeout.\n", cmd->cmdidx);
 		return MMC_TIMEOUT;
+	}
+	if (!data)
+		dwmci_writel(host, DWMCI_RINTSTS, mask);
 
 	if (mask & DWMCI_INTMSK_RTO) {
 		mmc_debug("Response Timeout..\n");
@@ -194,7 +181,6 @@ static int dwmci_send_cmd(MmcDevice *mmc, MmcCommand *cmd, MmcData *data)
 		mmc_debug("Response Error..\n");
 		return -1;
 	}
-
 
 	if (cmd->resp_type & MMC_RSP_PRESENT) {
 		if (cmd->resp_type & MMC_RSP_136) {
@@ -208,13 +194,20 @@ static int dwmci_send_cmd(MmcDevice *mmc, MmcCommand *cmd, MmcData *data)
 	}
 
 	if (data) {
-		do {
-			mask = dwmci_readl(host, DWMCI_RINTSTS);
-			if (mask & (DWMCI_DATA_ERR | DWMCI_DATA_TOUT)) {
-				mmc_debug("DATA ERROR!\n");
-				return -1;
-			}
-		} while (!(mask & DWMCI_INTMSK_DTO));
+		uint32_t error_mask = (DWMCI_DATA_ERR | DWMCI_DATA_TOUT),
+			 timeout_ms = 1000;
+		mask = 0;
+		if (mmc_busy_wait_io_until(
+				dwmci_get_ioaddr(host, DWMCI_RINTSTS),
+				&mask, error_mask | DWMCI_INTMSK_DTO,
+				timeout_ms) != 0) {
+			mmc_error("DATA timeout!\n");
+			return MMC_TIMEOUT;
+		}
+		if (mask & error_mask) {
+			mmc_error("DATA ERROR!\n");
+			return -1;
+		}
 
 		dwmci_writel(host, DWMCI_RINTSTS, mask);
 
@@ -238,8 +231,8 @@ static int dwmci_send_cmd(MmcDevice *mmc, MmcCommand *cmd, MmcData *data)
 
 static int dwmci_setup_bus(DwmciHost *host, uint32_t freq)
 {
-	uint32_t div, status;
-	int timeout = 10000;
+	uint32_t div;
+	int timeout_ms = 10;
 	unsigned long sclk;
 
 	if ((freq == host->clock) || (freq == 0))
@@ -268,13 +261,11 @@ static int dwmci_setup_bus(DwmciHost *host, uint32_t freq)
 	dwmci_writel(host, DWMCI_CMD, DWMCI_CMD_PRV_DAT_WAIT |
 			DWMCI_CMD_UPD_CLK | DWMCI_CMD_START);
 
-	do {
-		status = dwmci_readl(host, DWMCI_CMD);
-		if (timeout-- < 0) {
-			printf("TIMEOUT error!!\n");
-			return -1;
-		}
-	} while (status & DWMCI_CMD_START);
+	if (mmc_busy_wait_io(dwmci_get_ioaddr(host, DWMCI_CMD),
+			     NULL, DWMCI_CMD_START, timeout_ms) != 0) {
+		mmc_error("%s: TIMEOUT error!!\n", __func__);
+		return -1;
+	}
 
 	dwmci_writel(host, DWMCI_CLKENA, DWMCI_CLKEN_ENABLE |
 			DWMCI_CLKEN_LOW_PWR);
@@ -282,14 +273,11 @@ static int dwmci_setup_bus(DwmciHost *host, uint32_t freq)
 	dwmci_writel(host, DWMCI_CMD, DWMCI_CMD_PRV_DAT_WAIT |
 			DWMCI_CMD_UPD_CLK | DWMCI_CMD_START);
 
-	timeout = 10000;
-	do {
-		status = dwmci_readl(host, DWMCI_CMD);
-		if (timeout-- < 0) {
-			printf("TIMEOUT error!!\n");
-			return -1;
-		}
-	} while (status & DWMCI_CMD_START);
+	if (mmc_busy_wait_io(dwmci_get_ioaddr(host, DWMCI_CMD),
+			     NULL, DWMCI_CMD_START, timeout_ms) != 0) {
+		mmc_error("%s: TIMEOUT error!!\n", __func__);
+		return -1;
+	}
 
 	host->clock = freq;
 	return 0;
