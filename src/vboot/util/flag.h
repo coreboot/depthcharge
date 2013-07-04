@@ -23,7 +23,10 @@
 #ifndef __VBOOT_UTIL_FLAG_H__
 #define __VBOOT_UTIL_FLAG_H__
 
-enum flag_index {
+struct GpioOps;
+typedef struct GpioOps GpioOps;
+
+typedef enum FlagIndex {
 	FLAG_WPSW = 0,
 	FLAG_RECSW,
 	FLAG_DEVSW,
@@ -33,8 +36,9 @@ enum flag_index {
 	FLAG_OPROM,
 
 	FLAG_MAX_FLAG
-};
+} FlagIndex;
 
-int flag_fetch(enum flag_index index);
+int flag_fetch(FlagIndex index);
+int flag_install(FlagIndex index, GpioOps *gpio);
 
 #endif /* __VBOOT_UTIL_FLAG_H__ */

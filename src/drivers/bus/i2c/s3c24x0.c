@@ -70,21 +70,45 @@ static I2cBus i2c_busses[] = {
 
 static uint32_t *i2c_cfg = (uint32_t *)(uintptr_t)(0x10050000 + 0x234);
 
+static GpioOps *request_gpio;
+static GpioOps *grant_gpio;
+
+static int i2c_alloc_gpios(void)
+{
+	S5pGpio *s5p;
+	if (!request_gpio) {
+		s5p = new_s5p_gpio_output(GPIO_F, 0, 3);
+		if (!s5p)
+			return 1;
+		request_gpio = &s5p->ops;
+	}
+	if (!grant_gpio) {
+		s5p = new_s5p_gpio_input(GPIO_E, 0, 4);
+		if (!s5p)
+			return 1;
+		grant_gpio = &s5p->ops;
+	}
+	return 0;
+}
+
 static int i2c_claim_bus(int bus)
 {
 	if (bus != 4)
 		return 0;
 
+	if (i2c_alloc_gpios())
+		return 1;
+
 	// Request the bus.
-	if (gpio_set_value(s5p_gpio_index(GPIO_F, 0, 3), 0) < 0)
+	if (request_gpio->set(request_gpio, 0) < 0)
 		return 1;
 
 	// Wait for the EC to give it to us.
 	int timeout = 2000 * 100; // 2s.
 	while (timeout--) {
-		int value = gpio_get_value(s5p_gpio_index(GPIO_E, 0, 4));
+		int value = grant_gpio->get(grant_gpio);
 		if (value  < 0) {
-			gpio_set_value(s5p_gpio_index(GPIO_F, 0, 3), 1);
+			request_gpio->set(request_gpio, 1);
 			return 1;
 		}
 		if (value == 1)
@@ -93,7 +117,7 @@ static int i2c_claim_bus(int bus)
 	}
 
 	// Time out, recind our request.
-	gpio_set_value(s5p_gpio_index(GPIO_F, 0, 3), 1);
+	request_gpio->set(request_gpio, 1);
 
 	return 1;
 }
@@ -103,7 +127,10 @@ static void i2c_release_bus(int bus)
 	if (bus != 4)
 		return;
 
-	gpio_set_value(s5p_gpio_index(GPIO_F, 0, 3), 1);
+	if (i2c_alloc_gpios())
+		return;
+
+	request_gpio->set(request_gpio, 1);
 
 	return;
 }
@@ -138,8 +165,11 @@ static int i2c_init(I2cRegs *regs)
 
 	writeb(I2cConIntEn | I2cConIntPending | 0x42, &regs->con);
 
+	if (i2c_alloc_gpios())
+		return 1;
+
 	// Release the bus.
-	if (gpio_set_value(s5p_gpio_index(GPIO_F, 0, 3), 1) < 0)
+	if (request_gpio->set(request_gpio, 1) < 0)
 		return 1;
 
 	// Switch from hi speed I2C to the normal one.

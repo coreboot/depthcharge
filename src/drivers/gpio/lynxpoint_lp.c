@@ -20,17 +20,22 @@
  * MA 02111-1307 USA
  */
 
+#include <assert.h>
 #include <libpayload.h>
 #include <pci.h>
 #include <stdint.h>
 
+#include "base/list.h"
 #include "drivers/gpio/gpio.h"
+#include "drivers/gpio/lynxpoint_lp.h"
 
 #define LP_GPIO_CONF0(num)         (0x100 + ((num) * 8))
 #define  LP_GPIO_CONF0_MODE_BIT    0
 #define  LP_GPIO_CONF0_DIR_BIT     2
 #define  LP_GPIO_CONF0_GPI_BIT     30
 #define  LP_GPIO_CONF0_GPO_BIT     31
+
+/* Functions for manipulating GPIO regs. */
 
 static uint32_t pch_gpiobase(void)
 {
@@ -66,22 +71,71 @@ static int pch_gpio_get(unsigned num, int bit)
 	return !!(conf0 & (1 << bit));
 }
 
-int gpio_use(unsigned num, unsigned use)
+
+/* Interface functions for manipulating a GPIO. */
+
+static int lp_pch_gpio_get_value(GpioOps *me)
 {
-	return pch_gpio_set(num, LP_GPIO_CONF0_MODE_BIT, use);
+	assert(me);
+	LpPchGpio *gpio = container_of(me, LpPchGpio, ops);
+	if (!gpio->dir_set) {
+		if (pch_gpio_set(gpio->num, LP_GPIO_CONF0_DIR_BIT, 1) < 0)
+			return -1;
+		gpio->dir_set = 1;
+	}
+	return pch_gpio_get(gpio->num, LP_GPIO_CONF0_GPI_BIT);
 }
 
-int gpio_direction(unsigned num, unsigned input)
+static int lp_pch_gpio_set_value(GpioOps *me, unsigned value)
 {
-	return pch_gpio_set(num, LP_GPIO_CONF0_DIR_BIT, input);
+	assert(me);
+	LpPchGpio *gpio = container_of(me, LpPchGpio, ops);
+	if (!gpio->dir_set) {
+		if (pch_gpio_set(gpio->num, LP_GPIO_CONF0_DIR_BIT, 0) < 0)
+			return -1;
+		gpio->dir_set = 1;
+	}
+	return pch_gpio_set(gpio->num, LP_GPIO_CONF0_GPO_BIT, value);
 }
 
-int gpio_get_value(unsigned num)
+int lp_pch_gpio_use(LpPchGpio *me, unsigned use)
 {
-	return pch_gpio_get(num, LP_GPIO_CONF0_GPI_BIT);
+	assert(me);
+	return pch_gpio_set(me->num, LP_GPIO_CONF0_MODE_BIT, use);
 }
 
-int gpio_set_value(unsigned num, unsigned value)
+
+/* Functions to allocate and set up a GPIO structure. */
+
+LpPchGpio *new_lp_pch_gpio(unsigned num)
 {
-	return pch_gpio_set(num, LP_GPIO_CONF0_GPO_BIT, value);
+	LpPchGpio *gpio = malloc(sizeof(*gpio));
+	if (!gpio) {
+		printf("Failed to allocate lynxpoint pch gpio object.\n");
+		return NULL;
+	}
+	memset(gpio, 0, sizeof(*gpio));
+	gpio->use = &lp_pch_gpio_use;
+	gpio->num = num;
+	return gpio;
+}
+
+LpPchGpio *new_lp_pch_gpio_input(unsigned num)
+{
+	LpPchGpio *gpio = new_lp_pch_gpio(num);
+	if (!gpio)
+		return NULL;
+
+	gpio->ops.get = &lp_pch_gpio_get_value;
+	return gpio;
+}
+
+LpPchGpio *new_lp_pch_gpio_output(unsigned num)
+{
+	LpPchGpio *gpio = new_lp_pch_gpio(num);
+	if (!gpio)
+		return NULL;
+
+	gpio->ops.set = &lp_pch_gpio_set_value;
+	return gpio;
 }

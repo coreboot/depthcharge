@@ -29,11 +29,14 @@
  * reserved or subject to arcane restrictions.
  */
 
+#include <assert.h>
 #include <libpayload.h>
 #include <pci.h>
 #include <stdint.h>
 
+#include "base/list.h"
 #include "drivers/gpio/gpio.h"
+#include "drivers/gpio/pch.h"
 
 #define NUM_GPIO_BANKS 3
 // IO ports for controlling the banks of GPIOS.
@@ -41,6 +44,8 @@
 static uint8_t gpio_use_start[NUM_GPIO_BANKS] = { 0x00, 0x30, 0x40 };
 static uint8_t gpio_io_start[NUM_GPIO_BANKS]  = { 0x04, 0x34, 0x44 };
 static uint8_t gpio_lvl_start[NUM_GPIO_BANKS] = { 0x0c, 0x38, 0x48 };
+
+/* Functions for manipulating GPIO regs. */
 
 static uint32_t pch_gpiobase(void)
 {
@@ -57,14 +62,8 @@ static uint32_t pch_gpiobase(void)
 	return base;
 }
 
-static int pch_gpio_set(unsigned num, uint8_t *bases, int val)
+static int pch_gpio_set(unsigned bank, unsigned bit, uint8_t *bases, int val)
 {
-	int bank = num / 32;
-	int bit = num % 32;
-	if (bank >= NUM_GPIO_BANKS) {
-		printf("GPIO bank %d out of bounds.\n", bank);
-		return -1;
-	}
 	uint16_t addr = pch_gpiobase() + bases[bank];
 	uint32_t reg = inl(addr);
 	reg = (reg & ~(1 << bit)) | ((val & 1) << bit);
@@ -72,34 +71,83 @@ static int pch_gpio_set(unsigned num, uint8_t *bases, int val)
 	return 0;
 }
 
-static int pch_gpio_get(unsigned num, uint8_t *bases)
+static int pch_gpio_get(unsigned bank, unsigned bit, uint8_t *bases)
 {
-	int bank = num / 32;
-	int bit = num % 32;
-	if (bank >= NUM_GPIO_BANKS) {
-		printf("GPIO bank %d out of bounds.\n", bank);
-		return -1;
-	}
 	uint32_t reg = inl(pch_gpiobase() + bases[bank]);
 	return (reg >> bit) & 1;
 }
 
-int gpio_use(unsigned num, unsigned use)
+
+/* Interface functions for manipulating a GPIO. */
+
+static int pch_gpio_get_value(GpioOps *me)
 {
-	return pch_gpio_set(num, gpio_use_start, use);
+	assert(me);
+	PchGpio *gpio = container_of(me, PchGpio, ops);
+	if (!gpio->dir_set) {
+		if (pch_gpio_set(gpio->bank, gpio->bit, gpio_io_start, 1) < 0)
+			return -1;
+		gpio->dir_set = 1;
+	}
+	return pch_gpio_get(gpio->bank, gpio->bit, gpio_lvl_start);
 }
 
-int gpio_direction(unsigned num, unsigned input)
+static int pch_gpio_set_value(GpioOps *me, unsigned value)
 {
-	return pch_gpio_set(num, gpio_io_start, input);
+	assert(me);
+	PchGpio *gpio = container_of(me, PchGpio, ops);
+	if (!gpio->dir_set) {
+		if (pch_gpio_set(gpio->bank, gpio->bit, gpio_io_start, 0) < 0)
+			return -1;
+		gpio->dir_set = 1;
+	}
+	return pch_gpio_set(gpio->bank, gpio->bit, gpio_lvl_start, value);
 }
 
-int gpio_get_value(unsigned num)
+static int pch_gpio_use(PchGpio *me, unsigned use)
 {
-	return pch_gpio_get(num, gpio_lvl_start);
+	assert(me);
+	return pch_gpio_set(me->bank, me->bit, gpio_use_start, use);
 }
 
-int gpio_set_value(unsigned num, unsigned value)
+
+/* Functions to allocate and set up a GPIO structure. */
+
+PchGpio *new_pch_gpio(unsigned bank, unsigned bit)
 {
-	return pch_gpio_set(num, gpio_lvl_start, value);
+	if (bank >= NUM_GPIO_BANKS || bit >= 32) {
+		printf("GPIO parameters (%d, %d) out of bounds.\n", bank, bit);
+		return NULL;
+	}
+
+	PchGpio *gpio = malloc(sizeof(*gpio));
+	if (!gpio) {
+		printf("Failed to allocate pch gpio object.\n");
+		return NULL;
+	}
+	memset(gpio, 0, sizeof(*gpio));
+	gpio->use = &pch_gpio_use;
+	gpio->bank = bank;
+	gpio->bit = bit;
+	return gpio;
+}
+
+PchGpio *new_pch_gpio_input(unsigned bank, unsigned bit)
+{
+	PchGpio *gpio = new_pch_gpio(bank, bit);
+	if (!gpio)
+		return NULL;
+
+	gpio->ops.get = &pch_gpio_get_value;
+	return gpio;
+}
+
+PchGpio *new_pch_gpio_output(unsigned bank, unsigned bit)
+{
+	PchGpio *gpio = new_pch_gpio(bank, bit);
+	if (!gpio)
+		return NULL;
+
+	gpio->ops.set = &pch_gpio_set_value;
+	return gpio;
 }

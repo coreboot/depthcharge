@@ -21,10 +21,15 @@
  */
 
 #include "base/init_funcs.h"
+#include "drivers/gpio/s5p.h"
+#include "vboot/util/flag.h"
 
 static int board_setup(void)
 {
-	return 0;
+	S5pGpio *ec_in_rw = new_s5p_gpio_input(GPIO_D, 1, 7);
+	if (!ec_in_rw)
+		return 1;
+	return flag_install(FLAG_ECINRW, &ec_in_rw->ops);
 }
 
 INIT_FUNC(board_setup);

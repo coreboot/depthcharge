@@ -21,10 +21,15 @@
  */
 
 #include "base/init_funcs.h"
+#include "drivers/gpio/lynxpoint_lp.h"
+#include "vboot/util/flag.h"
 
 static int board_setup(void)
 {
-	return 0;
+	LpPchGpio *ec_in_rw = new_lp_pch_gpio_input(25);
+	if (!ec_in_rw)
+		return 1;
+	return flag_install(FLAG_ECINRW, &ec_in_rw->ops);
 }
 
 INIT_FUNC(board_setup);

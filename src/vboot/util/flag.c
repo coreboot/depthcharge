@@ -22,21 +22,15 @@
 
 #include <libpayload.h>
 
+#include "base/init_funcs.h"
 #include "config.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "vboot/util/flag.h"
 
-const char const *cb_gpio_name[FLAG_MAX_FLAG] = {
-	[FLAG_WPSW] = "write protect",
-	[FLAG_RECSW] = "recovery",
-	[FLAG_DEVSW] = "developer",
-	[FLAG_LIDSW] = "lid",
-	[FLAG_PWRSW] = "power",
-	[FLAG_OPROM] = "oprom"
-};
+static GpioOps *flag_gpios[FLAG_MAX_FLAG];
 
-int flag_fetch(enum flag_index index)
+int flag_fetch(FlagIndex index)
 {
 	if (index < 0 || index >= FLAG_MAX_FLAG) {
 		printf("Flag index %d larger than max %d.\n",
@@ -44,25 +38,41 @@ int flag_fetch(enum flag_index index)
 		return -1;
 	}
 
-	if (index == FLAG_ECINRW) {
-		if (CONFIG_EC_SOFTWARE_SYNC) {
-			gpio_direction(21, 1);
-			return gpio_get_value(21);
-		} else {
-			printf("EC software sync disabled.\n");
-		}
-	}
+	GpioOps *gpio = flag_gpios[index];
 
-	const char const *name = cb_gpio_name[index];
-	if (name == NULL) {
-		printf("Don't have a gpio name for flag %d.\n", index);
+	if (gpio == NULL) {
+		printf("Don't have a gpio set up for flag %d.\n", index);
 		return -1;
 	}
 
-	struct cb_gpio *gpio = sysinfo_lookup_gpio(name);
-	if (gpio == NULL)
-		return -1;
-
-	int p = (gpio->polarity == CB_GPIO_ACTIVE_HIGH) ? 0 : 1;
-	return p ^ gpio->value;
+	return gpio->get(gpio);
 }
+
+int flag_install(FlagIndex index, GpioOps *gpio)
+{
+	if (index < 0 || index >= FLAG_MAX_FLAG) {
+		printf("Flag index %d larger than max %d.\n",
+			index, FLAG_MAX_FLAG);
+		return -1;
+	}
+
+	if (flag_gpios[index]) {
+		printf("Gpio already set up for flag %d.\n", index);
+		return -1;
+	}
+
+	flag_gpios[index] = gpio;
+	return 0;
+}
+
+static int flag_install_sysinfo_gpios(void)
+{
+	return flag_install(FLAG_WPSW, sysinfo_write_protect) ||
+		flag_install(FLAG_RECSW, sysinfo_recovery) ||
+		flag_install(FLAG_DEVSW, sysinfo_developer) ||
+		flag_install(FLAG_LIDSW, sysinfo_lid) ||
+		flag_install(FLAG_PWRSW, sysinfo_power) ||
+		flag_install(FLAG_OPROM, sysinfo_oprom);
+}
+
+INIT_FUNC(flag_install_sysinfo_gpios);

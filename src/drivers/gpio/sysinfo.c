@@ -20,9 +20,18 @@
  * MA 02111-1307 USA
  */
 
+#include <assert.h>
 #include <libpayload.h>
 
-#include "drivers/gpio/sysinfo.h"
+#include "base/list.h"
+#include "drivers/gpio/gpio.h"
+
+typedef struct SysinfoGpio {
+	GpioOps ops;
+	const char *label;
+	struct cb_gpio *cb_gpio_ptr;
+	int val;
+} SysinfoGpio;
 
 struct cb_gpio *sysinfo_lookup_gpio(const char *name)
 {
@@ -35,3 +44,70 @@ struct cb_gpio *sysinfo_lookup_gpio(const char *name)
 	printf("Failed to find gpio %s\n", name);
 	return NULL;
 }
+
+static int sysinfo_gpio_get(struct GpioOps *me)
+{
+	assert(me);
+	SysinfoGpio *sgpio = container_of(me, SysinfoGpio, ops);
+
+	if (!sgpio->cb_gpio_ptr) {
+		struct cb_gpio *cb_gpio_ptr =
+			sysinfo_lookup_gpio(sgpio->label);
+		if (!cb_gpio_ptr)
+			return -1;
+
+		sgpio->cb_gpio_ptr = cb_gpio_ptr;
+		int p = (cb_gpio_ptr->polarity == CB_GPIO_ACTIVE_HIGH) ? 0 : 1;
+		sgpio->val = p ^ cb_gpio_ptr->value;
+	}
+
+	return sgpio->val;
+}
+
+static SysinfoGpio write_protect = {
+	.ops = {
+		.get = &sysinfo_gpio_get
+	},
+	.label = "write protect"
+};
+GpioOps *sysinfo_write_protect = &write_protect.ops;
+
+static SysinfoGpio recovery = {
+	.ops = {
+		.get = &sysinfo_gpio_get
+	},
+	.label = "recovery"
+};
+GpioOps *sysinfo_recovery = &recovery.ops;
+
+static SysinfoGpio developer = {
+	.ops = {
+		.get = &sysinfo_gpio_get
+	},
+	.label = "developer"
+};
+GpioOps *sysinfo_developer = &developer.ops;
+
+static SysinfoGpio lid = {
+	.ops = {
+		.get = &sysinfo_gpio_get
+	},
+	.label = "lid"
+};
+GpioOps *sysinfo_lid = &lid.ops;
+
+static SysinfoGpio power = {
+	.ops = {
+		.get = &sysinfo_gpio_get
+	},
+	.label = "power"
+};
+GpioOps *sysinfo_power = &power.ops;
+
+static SysinfoGpio oprom = {
+	.ops = {
+		.get = &sysinfo_gpio_get
+	},
+	.label = "oprom"
+};
+GpioOps *sysinfo_oprom = &oprom.ops;

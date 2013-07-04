@@ -23,7 +23,14 @@
 #ifndef __DRIVERS_GPIO_SYSINFO_H__
 #define __DRIVERS_GPIO_SYSINFO_H__
 
-struct cb_gpio;
-struct cb_gpio *sysinfo_lookup_gpio(const char *name);
+struct GpioOps;
+typedef struct GpioOps GpioOps;
+
+GpioOps *sysinfo_write_protect;
+GpioOps *sysinfo_recovery;
+GpioOps *sysinfo_developer;
+GpioOps *sysinfo_lid;
+GpioOps *sysinfo_power;
+GpioOps *sysinfo_oprom;
 
 #endif /* __DRIVERS_GPIO_SYSINFO_H__ */

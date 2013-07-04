@@ -20,30 +20,22 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
+#ifndef __DRIVERS_GPIO_PCH_H__
+#define __DRIVERS_GPIO_PCH_H__
 
 #include "drivers/gpio/gpio.h"
 
-int gpio_use(unsigned num, unsigned use)
+typedef struct PchGpio
 {
-	printf("%s(%d, %d) is unimplemented.\n", __func__, num, use);
-	halt();
-}
+	GpioOps ops;
+	int (*use)(struct PchGpio *me, unsigned use);
+	int bank;
+	int bit;
+	int dir_set;
+} PchGpio;
 
-int gpio_direction(unsigned num, unsigned input)
-{
-	printf("%s(%d, %d) is unimplemented.\n", __func__, num, input);
-	halt();
-}
+PchGpio *new_pch_gpio(unsigned bank, unsigned bit);
+PchGpio *new_pch_gpio_input(unsigned bank, unsigned bit);
+PchGpio *new_pch_gpio_output(unsigned bank, unsigned bit);
 
-int gpio_get_value(unsigned num)
-{
-	printf("%s(%d) is unimplemented.\n", __func__, num);
-	halt();
-}
-
-int gpio_set_value(unsigned num, unsigned value)
-{
-	printf("%s(%d, %d) is unimplemented.\n", __func__, num, value);
-	halt();
-}
+#endif /* __DRIVERS_GPIO_GPIO_H__ */

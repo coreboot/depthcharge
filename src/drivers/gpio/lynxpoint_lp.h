@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Google Inc.
+ * Copyright 2013 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -20,12 +20,21 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __DRIVERS_GPIO_GPIO_H__
-#define __DRIVERS_GPIO_GPIO_H__
+#ifndef __DRIVERS_GPIO_PCH_H__
+#define __DRIVERS_GPIO_PCH_H__
 
-typedef struct GpioOps {
-	int (*get)(struct GpioOps *me);
-	int (*set)(struct GpioOps *me, unsigned value);
-} GpioOps;
+#include "drivers/gpio/gpio.h"
+
+typedef struct LpPchGpio
+{
+	GpioOps ops;
+	int (*use)(struct LpPchGpio *, unsigned use);
+	int num;
+	int dir_set;
+} LpPchGpio;
+
+LpPchGpio *new_lp_pch_gpio(unsigned num);
+LpPchGpio *new_lp_pch_gpio_input(unsigned num);
+LpPchGpio *new_lp_pch_gpio_output(unsigned num);
 
 #endif /* __DRIVERS_GPIO_GPIO_H__ */

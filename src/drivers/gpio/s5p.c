@@ -20,9 +20,11 @@
  * MA 02111-1307 USA
  */
 
+#include <assert.h>
 #include <libpayload.h>
 #include <stdint.h>
 
+#include "base/list.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/s5p.h"
 
@@ -116,86 +118,110 @@ S5pGpioGroup groups[] = {
 	[GPIO_Z] = { 1, { &bank_z }}
 };
 
-static S5pGpioRegs *s5p_get_regs(unsigned num)
+static S5pGpioRegs *s5p_get_regs(S5pGpio *gpio)
 {
-	unsigned group_num = s5p_gpio_group(num);
-	if (group_num >= ARRAY_SIZE(groups))
-		return NULL;
-	S5pGpioGroup *group = &groups[group_num];
-
-	unsigned bank_num = s5p_gpio_bank(num);
-	if (bank_num >= group->num_banks)
-		return NULL;
-	S5pGpioBank *bank = group->banks[bank_num];
-
-	unsigned bit_num = s5p_gpio_bit(num);
-	if (bit_num >= bank->num_bits)
-		return NULL;
-
+	S5pGpioGroup *group = &groups[gpio->group];
+	S5pGpioBank *bank = group->banks[gpio->bank];
 	return bank->regs;
 }
 
-int gpio_use(unsigned num, unsigned use)
+static int s5p_gpio_use(S5pGpio *me, unsigned use)
 {
-	S5pGpioRegs *regs = s5p_get_regs(num);
-	if (!regs)
-		return -1;
-
-	unsigned bit_num = s5p_gpio_bit(num);
+	S5pGpioRegs *regs = s5p_get_regs(me);
 
 	uint32_t con = readl(&regs->con);
-	con &= ~(0xf << (bit_num * 4));
-	con |= ((use & 0xf) << (bit_num * 4));
+	con &= ~(0xf << (me->bit * 4));
+	con |= ((use & 0xf) << (me->bit * 4));
 	writel(con, &regs->con);
 
 	return 0;
 }
 
-int gpio_direction(unsigned num, unsigned input)
+static int s5p_gpio_set_pud(S5pGpio *me, unsigned value)
 {
-	if (input)
-		return gpio_use(num, 0);
-	else
-		return gpio_use(num, 1);
+	S5pGpioRegs *regs = s5p_get_regs(me);
+
+	uint32_t pud = readl(&regs->pud);
+	pud &= ~(0x3 << (me->bit * 2));
+	pud |= ((value & 0x3) << (me->bit * 2));
+	writel(pud, &regs->pud);
+
+	return 0;
 }
 
-int gpio_get_value(unsigned num)
+static int s5p_gpio_get_value(GpioOps *me)
 {
-	S5pGpioRegs *regs = s5p_get_regs(num);
-	if (!regs)
-		return -1;
+	assert(me);
+	S5pGpio *gpio = container_of(me, S5pGpio, ops);
+	S5pGpioRegs *regs = s5p_get_regs(gpio);
 
-	unsigned bit_num = s5p_gpio_bit(num);
-	uint32_t dat = readl(&regs->dat);
-	return (dat >> bit_num) & 0x1;
+	if (!gpio->dir_set) {
+		if (gpio->use(gpio, 0))
+			return -1;
+		gpio->dir_set = 1;
+	}
+
+	return (readl(&regs->dat) >> gpio->bit) & 0x1;
 }
 
-int gpio_set_value(unsigned num, unsigned value)
+static int s5p_gpio_set_value(GpioOps *me, unsigned value)
 {
-	S5pGpioRegs *regs = s5p_get_regs(num);
-	if (!regs)
-		return -1;
+	assert(me);
+	S5pGpio *gpio = container_of(me, S5pGpio, ops);
+	S5pGpioRegs *regs = s5p_get_regs(gpio);
 
-	unsigned bit_num = s5p_gpio_bit(num);
+	if (!gpio->dir_set) {
+		if (gpio->use(gpio, 1))
+			return -1;
+		gpio->dir_set = 1;
+	}
+
 	uint32_t dat = readl(&regs->dat);
-	dat &= ~(0x1 << bit_num);
-	dat |= ((value & 0x1) << bit_num);
+	dat &= ~(0x1 << gpio->bit);
+	dat |= ((value & 0x1) << gpio->bit);
 	writel(dat, &regs->dat);
 	return 0;
 }
 
-int s5p_gpio_set_pud(unsigned num, unsigned value)
+S5pGpio *new_s5p_gpio(unsigned group, unsigned bank, unsigned bit)
 {
-	S5pGpioRegs *regs = s5p_get_regs(num);
-	if (!regs)
-		return -1;
+	if (group >= ARRAY_SIZE(groups) || bank >= groups[group].num_banks ||
+			bit >= groups[group].banks[bank]->num_bits) {
+		printf("GPIO parameters (%d, %d, %d) out of bounds.\n",
+			group, bank, bit);
+		return NULL;
+	}
 
-	unsigned bit_num = s5p_gpio_bit(num);
+	S5pGpio *gpio = malloc(sizeof(*gpio));
+	if (!gpio) {
+		printf("Failed to allocate s5p gpio object.\n");
+		return NULL;
+	}
+	memset(gpio, 0, sizeof(*gpio));
+	gpio->use = &s5p_gpio_use;
+	gpio->pud = &s5p_gpio_set_pud;
+	gpio->group = group;
+	gpio->bank = bank;
+	gpio->bit = bit;
+	return gpio;
+}
 
-	uint32_t pud = readl(&regs->pud);
-	pud &= ~(0x3 << (bit_num * 2));
-	pud |= ((value & 0x3) << (bit_num * 2));
-	writel(pud, &regs->pud);
+S5pGpio *new_s5p_gpio_input(unsigned group, unsigned bank, unsigned bit)
+{
+	S5pGpio *gpio = new_s5p_gpio(group, bank, bit);
+	if (!gpio)
+		return NULL;
 
-	return 0;
+	gpio->ops.get = &s5p_gpio_get_value;
+	return gpio;
+}
+
+S5pGpio *new_s5p_gpio_output(unsigned group, unsigned bank, unsigned bit)
+{
+	S5pGpio *gpio = new_s5p_gpio(group, bank, bit);
+	if (!gpio)
+		return NULL;
+
+	gpio->ops.set = &s5p_gpio_set_value;
+	return gpio;
 }

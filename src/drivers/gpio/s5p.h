@@ -23,6 +23,8 @@
 #ifndef __DRIVERS_GPIO_S5P_H__
 #define __DRIVERS_GPIO_S5P_H__
 
+#include "drivers/gpio/gpio.h"
+
 enum {
 	GPIO_A,
 	GPIO_B,
@@ -38,32 +40,19 @@ enum {
 	GPIO_Z
 };
 
-static inline unsigned s5p_gpio_index(unsigned group, unsigned bank,
-				      unsigned bit) __attribute__((unused));
-static inline unsigned s5p_gpio_index(unsigned group, unsigned bank,
-				      unsigned bit)
+typedef struct S5pGpio
 {
-	return (group << 5) | ((bank & 0x3) << 3) | (bit & 0x7);
-}
+	GpioOps ops;
+	int (*use)(struct S5pGpio *me, unsigned use);
+	int (*pud)(struct S5pGpio *me, unsigned value);
+	int dir_set;
+	unsigned group;
+	unsigned bank;
+	unsigned bit;
+} S5pGpio;
 
-static inline unsigned s5p_gpio_group(unsigned index) __attribute__((unused));
-static inline unsigned s5p_gpio_group(unsigned index)
-{
-	return index >> 5;
-}
-
-static inline unsigned s5p_gpio_bank(unsigned index) __attribute__((unused));
-static inline unsigned s5p_gpio_bank(unsigned index)
-{
-	return (index >> 3) & 0x3;
-}
-
-static inline unsigned s5p_gpio_bit(unsigned index) __attribute__((unused));
-static inline unsigned s5p_gpio_bit(unsigned index)
-{
-	return index & 0x7;
-}
-
-int s5p_gpio_set_pud(unsigned index, unsigned value);
+S5pGpio *new_s5p_gpio(unsigned group, unsigned bank, unsigned bit);
+S5pGpio *new_s5p_gpio_input(unsigned group, unsigned bank, unsigned bit);
+S5pGpio *new_s5p_gpio_output(unsigned group, unsigned bank, unsigned bit);
 
 #endif /* __DRIVERS_GPIO_S5P_H__ */
