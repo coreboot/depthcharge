@@ -19,6 +19,7 @@
  *
  */
 
+#include <assert.h>
 #include <libpayload.h>
 #include <stdint.h>
 
@@ -37,6 +38,7 @@
 
 #define	DWMMC_MAX_FREQ			52000000
 #define	DWMMC_MIN_FREQ			400000
+#define	DWMMC_MAX_DEVICES		2
 
 typedef struct {
 	void *addr;
@@ -45,6 +47,13 @@ typedef struct {
 	int removable;
 	uint32_t timing[3];
 } ExynosDwMmcConfig;
+
+
+// TODO(hungte) Move these configuration to board-specific source file.
+static const ExynosDwMmcConfig exynos_dwmmc_configs[DWMMC_MAX_DEVICES] = {
+	{(void *)0x12200000, 400000000, 8, 0, {1, 3, 3}, },
+	{(void *)0x12220000, 400000000, 4, 1, {1, 2, 3}, },
+};
 
 /*
  * Function used as callback function to initialise the
@@ -98,3 +107,45 @@ int exynos_dwmmc_initialize(int index, const ExynosDwMmcConfig *config,
 	}
 	return 0;
 }
+
+////////////////////////////////////////////////////////////////////////////
+// Depthcharge block device I/O
+
+static void exynos_dwmmc_ctrlr_init(BlockDevCtrlr *ctrlr)
+{
+	int i;
+	MmcDevice **refresh_list = (MmcDevice **)(&ctrlr->ctrlr_data);
+
+	mmc_debug("%s started.\n", __func__);
+	assert(CONFIG_DRIVER_STORAGE_MMC_DW_EXYNOS_DEVICES <= DWMMC_MAX_DEVICES);
+	for (i = 0; i < CONFIG_DRIVER_STORAGE_MMC_DW_EXYNOS_DEVICES; i++) {
+		const ExynosDwMmcConfig *config = &exynos_dwmmc_configs[i];
+		exynos_dwmmc_initialize(i, config, refresh_list);
+	}
+}
+
+// TODO(hungte) Change and move this to a generic function in mmc.c
+static void exynos_dwmmc_ctrlr_refresh(BlockDevCtrlr *ctrlr)
+{
+	MmcDevice *mmc = (MmcDevice *)ctrlr->ctrlr_data;
+	mmc_debug("%s: enter (root=%p).\n", __func__, mmc);
+	for (; mmc; mmc = mmc->next) {
+		block_mmc_refresh(&removable_block_devices, mmc);
+	}
+	mmc_debug("%s: leave.\n", __func__);
+}
+
+int exynos_dwmmc_ctrlr_register(void)
+{
+	static BlockDevCtrlr exynos_dwmmc =
+	{
+		&exynos_dwmmc_ctrlr_init,
+		&exynos_dwmmc_ctrlr_refresh,
+		NULL,
+	};
+	list_insert_after(&exynos_dwmmc.list_node, &block_dev_controllers);
+	mmc_debug("%s: done.\n", __func__);
+	return 0;
+}
+
+INIT_FUNC(exynos_dwmmc_ctrlr_register);
