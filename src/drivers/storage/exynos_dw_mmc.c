@@ -37,8 +37,14 @@
 
 #define	DWMMC_MAX_FREQ			52000000
 #define	DWMMC_MIN_FREQ			400000
-#define	DWMMC_MMC0_CLKSEL_VAL		0x03030001
-#define	DWMMC_MMC2_CLKSEL_VAL		0x03020001
+
+typedef struct {
+	void *addr;
+	uint32_t sclk;  /* sclk is setup by Coreboot. */
+	int bus_width;
+	int removable;
+	uint32_t timing[3];
+} ExynosDwMmcConfig;
 
 /*
  * Function used as callback function to initialise the
@@ -47,13 +53,6 @@
 static void exynos_dwmci_clksel(DwmciHost *host)
 {
 	dwmci_writel(host, DWMCI_CLKSEL, host->clksel_val);
-}
-
-unsigned int exynos_dwmci_get_clk(int dev_index)
-{
-	// TODO(hungte) Implement get_mmc_clk or remove it.
-	// return get_mmc_clk(dev_index);
-	return 0;
 }
 
 static int exynos_dwmci_is_card_present(MmcDevice *mmc)
@@ -65,67 +64,35 @@ static int exynos_dwmci_is_card_present(MmcDevice *mmc)
 	return !dwmci_readl(host, DWMCI_CDETECT);
 }
 
-/*
- * This function adds the mmc channel to be registered with mmc core.
- * index -	mmc channel number.
- * regbase -	register base address of mmc channel specified in 'index'.
- * bus_width -	operating bus width of mmc channel specified in 'index'.
- * clksel -	value to be written into CLKSEL register in case of FDT.
- *		NULL in case od non-FDT.
- * removable - set to True if the device can be removed (like an SD card), to
- *             False if not (like ak eMMC drive)
- * pre_init -	Kick the mmc on startup so that it is ready sooner when we
- *		need it
- */
-int exynos_dwmci_add_port(int index, uint32_t regbase, int bus_width,
-			  uint32_t clksel, int removable, int pre_init)
+int exynos_dwmmc_initialize(int index, const ExynosDwMmcConfig *config,
+			    MmcDevice **refresh_list)
 {
 	DwmciHost *host = NULL;
-	unsigned int div;
-	unsigned long freq, sclk;
+	uint32_t clksel_val;
 	host = malloc(sizeof(*host));
 	if (!host) {
 		printf("dwmci_host malloc fail!\n");
 		return 1;
 	}
-	/* request mmc clock vlaue of 52MHz.  */
-	freq = 52000000;
-	// TODO(hungte) Implement get_mmc_clk or remove it.
-#if 0
-	sclk = get_mmc_clk(index);
-#else
-	sclk = 0;
-#endif
-	div = (sclk + freq - 1) / freq;
-
-	/* set the clock divisor for mmc */
-	// TODO(hungte) Implement set_mmc_clk or remove it.
-#if 0
-	set_mmc_clk(index, div);
-#else
-	printf("%d\n", div);
-#endif
+	memset(host, 0, sizeof(*host));
 
 	host->name = "EXYNOS DWMMC";
-	host->ioaddr = (void *)regbase;
-	host->buswidth = bus_width;
-
-	if (clksel) {
-		host->clksel_val = clksel;
-	} else {
-		if (0 == index)
-			host->clksel_val = DWMMC_MMC0_CLKSEL_VAL;
-		if (2 == index)
-			host->clksel_val = DWMMC_MMC2_CLKSEL_VAL;
-	}
-
-	host->clksel = exynos_dwmci_clksel;
 	host->dev_index = index;
-	host->mmc_clk = exynos_dwmci_get_clk;
+	host->ioaddr = config->addr;
+	host->buswidth = config->bus_width;
+
+	clksel_val = (DWMCI_SET_SAMPLE_CLK(config->timing[0]) |
+		      DWMCI_SET_DRV_CLK(config->timing[1]) |
+		      DWMCI_SET_DIV_RATIO(config->timing[2]));
+	host->clksel_val = clksel_val;
+
+	host->bus_hz = config->sclk;
+	host->clksel = exynos_dwmci_clksel;
 
 	/* Add the mmc channel to be registered with mmc core */
-	if (dw_mmc_register(host, DWMMC_MAX_FREQ, DWMMC_MIN_FREQ, removable,
-			    NULL, exynos_dwmci_is_card_present) != 0) {
+	if (dw_mmc_register(host, DWMMC_MAX_FREQ, DWMMC_MIN_FREQ,
+			    config->removable, refresh_list,
+			    exynos_dwmci_is_card_present) != 0) {
 		mmc_debug("dwmmc%d registration failed\n", index);
 		return -1;
 	}
