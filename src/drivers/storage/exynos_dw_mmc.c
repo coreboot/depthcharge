@@ -124,23 +124,12 @@ static void exynos_dwmmc_ctrlr_init(BlockDevCtrlr *ctrlr)
 	}
 }
 
-// TODO(hungte) Change and move this to a generic function in mmc.c
-static void exynos_dwmmc_ctrlr_refresh(BlockDevCtrlr *ctrlr)
-{
-	MmcDevice *mmc = (MmcDevice *)ctrlr->ctrlr_data;
-	mmc_debug("%s: enter (root=%p).\n", __func__, mmc);
-	for (; mmc; mmc = mmc->next) {
-		block_mmc_refresh(&removable_block_devices, mmc);
-	}
-	mmc_debug("%s: leave.\n", __func__);
-}
-
 int exynos_dwmmc_ctrlr_register(void)
 {
 	static BlockDevCtrlr exynos_dwmmc =
 	{
 		&exynos_dwmmc_ctrlr_init,
-		&exynos_dwmmc_ctrlr_refresh,
+		&block_mmc_ctrlr_refresh,
 		NULL,
 	};
 	list_insert_after(&exynos_dwmmc.list_node, &block_dev_controllers);

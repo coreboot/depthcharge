@@ -279,6 +279,7 @@ uint32_t mmc_write(MmcDevice *mmc, uint32_t start, lba_t block_count,
 		   const void *src);
 
 void block_mmc_refresh(ListNode *block_node, MmcDevice *mmc);
+void block_mmc_ctrlr_refresh(BlockDevCtrlr *ctrlr);
 int block_mmc_register(BlockDev *dev, MmcDevice *mmc, MmcDevice **root);
 lba_t block_mmc_read(BlockDev *dev, lba_t start, lba_t count, void *buffer);
 lba_t block_mmc_write(BlockDev *dev, lba_t start, lba_t count,

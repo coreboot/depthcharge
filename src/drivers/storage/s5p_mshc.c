@@ -604,22 +604,12 @@ static void s5p_mshc_ctrlr_init(BlockDevCtrlr *ctrlr)
 	}
 }
 
-static void s5p_mshc_ctrlr_refresh(BlockDevCtrlr *ctrlr)
-{
-	MmcDevice *mmc = (MmcDevice *)ctrlr->ctrlr_data;
-	mmc_debug("%s: enter (root=%p).\n", __func__, mmc);
-	for (; mmc; mmc = mmc->next) {
-		block_mmc_refresh(&removable_block_devices, mmc);
-	}
-	mmc_debug("%s: leave.\n", __func__);
-}
-
 int s5p_mshc_ctrlr_register(void)
 {
 	static BlockDevCtrlr s5p_mshc =
 	{
 		&s5p_mshc_ctrlr_init,
-		&s5p_mshc_ctrlr_refresh,
+		&block_mmc_ctrlr_refresh,
 		NULL,
 	};
 	list_insert_after(&s5p_mshc.list_node, &block_dev_controllers);

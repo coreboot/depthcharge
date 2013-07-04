@@ -1042,6 +1042,16 @@ void block_mmc_refresh(ListNode *block_node, MmcDevice *mmc)
 	}
 }
 
+void block_mmc_ctrlr_refresh(BlockDevCtrlr *ctrlr)
+{
+	MmcDevice *mmc = (MmcDevice *)ctrlr->ctrlr_data;
+	mmc_debug("%s: enter (root=%p).\n", __func__, mmc);
+	for (; mmc; mmc = mmc->next) {
+		block_mmc_refresh(&removable_block_devices, mmc);
+	}
+	mmc_debug("%s: leave.\n", __func__);
+}
+
 int block_mmc_register(BlockDev *dev, MmcDevice *mmc, MmcDevice **root)
 {
 	if (!mmc->b_max)
