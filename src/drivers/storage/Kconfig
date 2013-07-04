@@ -47,3 +47,17 @@ config DRIVER_STORAGE_MSHC_S5P_MMC0_ADDRESS
 config DRIVER_STORAGE_MSHC_S5P_MMC1_ADDRESS
 	hex "S5P MMC driver I/O address for MMC1"
 	depends on DRIVER_STORAGE_MSHC_S5P
+
+config DRIVER_STORAGE_MMC_DW
+	depends on DRIVER_STORAGE_MMC
+	bool "DesignWare MMC driver"
+	default n
+
+config DRIVER_STORAGE_MMC_DW_EXYNOS
+	depends on DRIVER_STORAGE_MMC_DW
+	bool "DesignWare MMC driver for Exynos"
+	default n
+
+config DRIVER_STORAGE_MMC_DW_EXYNOS_DEVICES
+	depends on DRIVER_STORAGE_MMC_DW_EXYNOS
+	int "Number of DW MMC devices on Exynos boards"
