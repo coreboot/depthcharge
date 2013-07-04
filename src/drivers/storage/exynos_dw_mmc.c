@@ -56,6 +56,17 @@ unsigned int exynos_dwmci_get_clk(int dev_index)
 	return 0;
 }
 
+// TODO(hungte) Make exynos_dwmci_is_card_present a static function.
+int exynos_dwmci_is_card_present(MmcDevice *mmc);
+int exynos_dwmci_is_card_present(MmcDevice *mmc)
+{
+	DwmciHost *host = (DwmciHost *)mmc->host;
+	if (!mmc->block_dev->removable)
+		return 1;
+	/* CDETECT is Low-active. */
+	return !dwmci_readl(host, DWMCI_CDETECT);
+}
+
 /*
  * This function adds the mmc channel to be registered with mmc core.
  * index -	mmc channel number.
@@ -120,18 +131,4 @@ int exynos_dwmci_add_port(int index, uint32_t regbase, int bus_width,
 		return -1;
 	}
 	return 0;
-}
-
-int board_mmc_getcd(MmcDevice *mmc)
-{
-	unsigned cdetect;
-
-	if (mmc->block_dev->removable) {
-		DwmciHost *host = mmc->host;
-
-		cdetect = dwmci_readl(host, DWMCI_CDETECT);
-	} else {
-		cdetect = 0; /* zero means present */
-	}
-	return !cdetect;
 }
