@@ -356,31 +356,29 @@ static int dwmci_init(MmcDevice *mmc)
 	return 0;
 }
 
-int add_dwmci(DwmciHost *host, uint32_t max_clk, uint32_t min_clk,
-	      int removable, int pre_init)
+int dw_mmc_register(DwmciHost *host, uint32_t max_clk, uint32_t min_clk,
+		    int removable, MmcDevice **refresh_list,
+		    int (*is_card_present)(MmcDevice *mmc))
 {
-	MmcDevice *mmc;
-	int err = 0;
+	MmcDevice *mmc = (MmcDevice *)malloc(sizeof(*mmc));
+	BlockDev *block_dev = (BlockDev *)malloc(sizeof(*block_dev));
 
-	mmc = malloc(sizeof(*mmc));
-	if (!mmc) {
-		printf("mmc malloc fail!\n");
-		return -1;
-	}
+	assert(mmc && block_dev && host);
 
 	memset(mmc, 0, sizeof(*mmc));
+	memset(block_dev, 0, sizeof(*block_dev));
 
-	mmc->host = host;
 	host->mmc = mmc;
 
+	mmc->host = host;
 	mmc->send_cmd = dwmci_send_cmd;
 	mmc->set_ios = dwmci_set_ios;
 	mmc->init = dwmci_init;
-	mmc->f_min = min_clk;
-	mmc->f_max = max_clk;
+	mmc->is_card_present = is_card_present;
 
 	mmc->voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
-
+	mmc->f_min = min_clk;
+	mmc->f_max = max_clk;
 	mmc->host_caps = host->caps;
 
 	if (host->buswidth == 8) {
@@ -392,8 +390,29 @@ int add_dwmci(DwmciHost *host, uint32_t max_clk, uint32_t min_clk,
 	}
 	mmc->host_caps |= MMC_MODE_HS | MMC_MODE_HS_52MHz | MMC_MODE_HC;
 
-	// TODO(hungte) Complete block device restration function.
-	// err = mmc_register(mmc);
-	err = 0;
-	return err;
+	const int name_size = 16;
+	char *name = (char *)malloc(name_size);
+	snprintf(name, name_size, "dwmmc%d", host->dev_index);
+
+	block_dev->name = name;
+	block_dev->block_size = 512; // TODO(hungte) Probe correct value.
+	block_dev->removable = removable;
+
+	if (removable) {
+		block_mmc_register(block_dev, mmc, refresh_list);
+		mmc_debug("%s: removable registered (init on refresh)\n", name);
+	} else {
+		block_mmc_register(block_dev, mmc, NULL);
+		if (mmc_init(mmc)) {
+			mmc_error("%s: failed to init %s.\n", __func__, name);
+			free(name);
+			free(mmc);
+			free(block_dev);
+			return -1;
+		}
+		list_insert_after(&block_dev->list_node, &fixed_block_devices);
+		mmc_debug("%s:  init success (reset OK): %s\n", __func__, name);
+	}
+
+	return 0;
 }

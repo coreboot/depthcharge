@@ -207,6 +207,7 @@ static inline void *dwmci_get_ioaddr(DwmciHost *host, int reg)
 	return (void *)((uint8_t *)host->ioaddr + reg);
 }
 
-int add_dwmci(DwmciHost *host, uint32_t max_clk, uint32_t min_clk,
-	      int removable, int pre_init);
+int dw_mmc_register(DwmciHost *host, uint32_t max_clk, uint32_t min_clk,
+		    int removable, MmcDevice **refresh_list,
+		    int (*is_card_present)(MmcDevice *mmc));
 #endif /* __DRIVERS_STORAGE_DW_MMC_H__ */

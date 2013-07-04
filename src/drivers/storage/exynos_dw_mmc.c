@@ -56,9 +56,7 @@ unsigned int exynos_dwmci_get_clk(int dev_index)
 	return 0;
 }
 
-// TODO(hungte) Make exynos_dwmci_is_card_present a static function.
-int exynos_dwmci_is_card_present(MmcDevice *mmc);
-int exynos_dwmci_is_card_present(MmcDevice *mmc)
+static int exynos_dwmci_is_card_present(MmcDevice *mmc)
 {
 	DwmciHost *host = (DwmciHost *)mmc->host;
 	if (!mmc->block_dev->removable)
@@ -124,9 +122,10 @@ int exynos_dwmci_add_port(int index, uint32_t regbase, int bus_width,
 	host->clksel = exynos_dwmci_clksel;
 	host->dev_index = index;
 	host->mmc_clk = exynos_dwmci_get_clk;
+
 	/* Add the mmc channel to be registered with mmc core */
-	if (add_dwmci(host, DWMMC_MAX_FREQ, DWMMC_MIN_FREQ, removable,
-		      pre_init)) {
+	if (dw_mmc_register(host, DWMMC_MAX_FREQ, DWMMC_MIN_FREQ, removable,
+			    NULL, exynos_dwmci_is_card_present) != 0) {
 		mmc_debug("dwmmc%d registration failed\n", index);
 		return -1;
 	}
