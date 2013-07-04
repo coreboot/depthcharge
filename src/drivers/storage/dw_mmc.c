@@ -59,7 +59,8 @@ static void dwmci_prepare_data(DwmciHost *host, MmcData *data)
 {
 	unsigned long ctrl;
 	unsigned int i = 0, flags, cnt, blk_cnt;
-	unsigned long data_start, data_end, start_addr, stop_addr;
+	unsigned long data_start, start_addr;
+	uint32_t data_len;
 	ALLOC_CACHE_ALIGN_BUFFER(DwmciIdmac, cur_idmac, data->blocks);
 
 
@@ -94,19 +95,11 @@ static void dwmci_prepare_data(DwmciHost *host, MmcData *data)
 		i++;
 	} while(1);
 
-	data_end = (unsigned long )cur_idmac;
-	// TODO(hungte) Handle dcache flushing.
-#if 0
-	flush_dcache_range(data_start, data_end + ARCH_DMA_MINALIGN);
-#endif
+	data_len = (uintptr_t)cur_idmac - (uintptr_t)data_start;
+	dcache_clean_invalidate_by_mva(data_start, data_len + DMA_MINALIGN);
 
-	stop_addr = start_addr + (data->blocks * data->blocksize);
-#if 0
-	flush_dcache_range(start_addr, stop_addr);
-#else
-	printf("%lu, %lu, %lu, %lu\n", start_addr, stop_addr, data_start,
-	       data_end);
-#endif
+	dcache_clean_invalidate_by_mva(start_addr,
+				       (data->blocks * data->blocksize));
 
 	ctrl = dwmci_readl(host, DWMCI_CTRL);
 	ctrl |= DWMCI_IDMAC_EN | DWMCI_DMA_EN;
@@ -138,7 +131,6 @@ static int dwmci_send_cmd(MmcDevice *mmc, MmcCommand *cmd, MmcData *data)
 	// unsigned int timeout = 100000;
 	uint32_t retry = 10000;
 	uint32_t mask, ctrl;
-	unsigned long data_start, data_end;
 
 	// TODO(hungte) Implement busy-loop.
 #if 0
@@ -230,21 +222,14 @@ static int dwmci_send_cmd(MmcDevice *mmc, MmcCommand *cmd, MmcData *data)
 		ctrl &= ~(DWMCI_DMA_EN);
 		dwmci_writel(host, DWMCI_CTRL, ctrl);
 		if (data->flags & MMC_DATA_READ) {
-			data_start = (unsigned long)data->dest;
-			data_end = (unsigned long)data->dest +
-				data->blocks * data->blocksize;
-			// TODO(hungte) Handle dcache properly.
-#if 0
+			unsigned long data_len = data->blocks * data->blocksize;
 			/*
-			 * The buffer is supposed to have padding to the
-			 * closest cache line boundary.
+			 * TODO(hungte) The buffer is supposed to have padding
+			 * to the closest cache line boundary, ex:
+			 * data_len = ALIGN(data_end, dcache_get_line_size());
 			 */
-			invalidate_dcache_range(data_start,
-						ALIGN(data_end,
-						      dcache_get_line_size()));
-#else
-			printf("%lu, %lu\n", data_start, data_end);
-#endif
+			dcache_invalidate_by_mva(
+					(unsigned long)data->dest, data_len);
 		}
 	}
 
