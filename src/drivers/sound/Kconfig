@@ -45,10 +45,6 @@ config DRIVER_SOUND_MAX98095
 	default n
 	depends on DRIVER_SOUND_I2S
 
-config DRIVER_SOUND_MAX98095_BUS
-	int "MAX98095 I2C bus"
-	depends on DRIVER_SOUND_MAX98095
-
 config DRIVER_SOUND_MAX98095_ADDR
 	hex "MAX98095 I2C chip address"
 	depends on DRIVER_SOUND_MAX98095

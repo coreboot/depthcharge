@@ -25,10 +25,16 @@
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/tpm/slb9635_i2c/tpm.h"
 
+static I2cOps *bus;
+
+void tis_set_i2c_bus(I2cOps *_bus)
+{
+	bus = _bus;
+}
+
 int tis_open(void)
 {
-	return tpm_open(CONFIG_DRIVER_TPM_I2C_BUS,
-			CONFIG_DRIVER_TPM_I2C_ADDR);
+	return tpm_open(bus, CONFIG_DRIVER_TPM_I2C_ADDR);
 }
 
 int tis_close(void)
@@ -39,7 +45,6 @@ int tis_close(void)
 
 int tis_init(void)
 {
-	int bus = CONFIG_DRIVER_TPM_I2C_BUS;
 	int chip = CONFIG_DRIVER_TPM_I2C_ADDR;
 
 	/*
@@ -47,8 +52,10 @@ int tis_init(void)
 	 * and the probing can wake up TPM.
 	 */
 	uint8_t tmp;
-	if (i2c_read(bus, chip, 0, 0, &tmp, sizeof(tmp)) &&
-			i2c_read(bus, chip, 0, 0, &tmp, sizeof(tmp)))
+	if (!bus)
+		return -1;
+	if (bus->read(bus, chip, 0, 0, &tmp, sizeof(tmp)) &&
+			bus->read(bus, chip, 0, 0, &tmp, sizeof(tmp)))
 		return -1;
 
 	return 0;

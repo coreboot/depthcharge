@@ -37,12 +37,6 @@ config DRIVER_MKBP_SPI
 
 endchoice
 
-config DRIVER_MKBP_I2C_BUS
-	int "ChromeOS EC I2C bus"
-	depends on DRIVER_MKBP_I2C
-	help
-	  The number of the I2C bus the ChromeOS EC is on.
-
 config DRIVER_MKBP_I2C_ADDR
 	hex "ChromeOS EC I2C address"
 	depends on DRIVER_MKBP_I2C

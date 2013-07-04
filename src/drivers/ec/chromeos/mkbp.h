@@ -24,8 +24,13 @@
 #ifndef __DRIVERS_EC_CHROMEOS_MKBP_H__
 #define __DRIVERS_EC_CHROMEOS_MKBP_H__
 
+#include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/chromeos/commands.h"
 #include "drivers/ec/chromeos/message.h"
+
+extern I2cOps *i2c_bus;
+
+void mkbp_set_i2c_bus(I2cOps *bus);
 
 struct mkbp_dev;
 extern struct mkbp_dev *mkbp_ptr;

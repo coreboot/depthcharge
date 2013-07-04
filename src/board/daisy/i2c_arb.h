@@ -1,7 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright 2012 Google Inc.  All rights reserved.
+ * Copyright 2013 Google Inc.  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,19 +17,21 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA, 02110-1301 USA
  */
 
-#ifndef __DRIVERS_BUS_I2C_I2C_H__
-#define __DRIVERS_BUS_I2C_I2C_H__
+#ifndef __BOARD_DAISY_I2C_ARB_H__
+#define __BOARD_DAISY_I2C_ARB_H__
 
-#include <stdint.h>
+#include "drivers/bus/i2c/i2c.h"
+#include "drivers/gpio/gpio.h"
 
-typedef struct I2cOps
+typedef struct SnowI2cArb
 {
-	int (*read)(struct I2cOps *me, uint8_t chip,
-		    uint32_t addr, int addr_len,
-		    uint8_t *data, int data_len);
-	int (*write)(struct I2cOps *me, uint8_t chip,
-		     uint32_t addr, int addr_len,
-		     uint8_t *data, int data_len);
-} I2cOps;
+	I2cOps ops;
+	I2cOps *bus;
+	GpioOps *request;
+	GpioOps *grant;
+	int ready;
+} SnowI2cArb;
 
-#endif /* __DRIVERS_BUS_I2C_I2C_H__ */
+SnowI2cArb *new_snow_i2c_arb(I2cOps *bus, GpioOps *request, GpioOps *grant);
+
+#endif /* __BOARD_DAISY_I2C_ARB_H__ */

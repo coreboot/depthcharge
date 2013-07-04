@@ -424,7 +424,7 @@ struct tpm_chip *tpm_register_hardware(const struct tpm_vendor_specific *entry)
 	return chip;
 }
 
-int tpm_open(int bus, uint32_t dev_addr)
+int tpm_open(I2cOps *bus, uint32_t dev_addr)
 {
 	int rc;
 	if (g_chip.is_open)

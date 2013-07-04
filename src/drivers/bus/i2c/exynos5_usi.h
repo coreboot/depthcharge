@@ -1,7 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright 2012 Google Inc.  All rights reserved.
+ * Copyright 2013 Google Inc.  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,19 +17,19 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA, 02110-1301 USA
  */
 
-#ifndef __DRIVERS_BUS_I2C_I2C_H__
-#define __DRIVERS_BUS_I2C_I2C_H__
+#ifndef __DRIVERS_BUS_I2C_EXYNOS5_USI_H__
+#define __DRIVERS_BUS_I2C_EXYNOS5_USI_H__
 
-#include <stdint.h>
+#include "drivers/bus/i2c/i2c.h"
 
-typedef struct I2cOps
+typedef struct Exynos5UsiI2c
 {
-	int (*read)(struct I2cOps *me, uint8_t chip,
-		    uint32_t addr, int addr_len,
-		    uint8_t *data, int data_len);
-	int (*write)(struct I2cOps *me, uint8_t chip,
-		     uint32_t addr, int addr_len,
-		     uint8_t *data, int data_len);
-} I2cOps;
+	I2cOps ops;
+	void *reg_addr;
+	unsigned frequency;
+	int ready;
+} Exynos5UsiI2c;
 
-#endif /* __DRIVERS_BUS_I2C_I2C_H__ */
+Exynos5UsiI2c *new_exynos5_usi_i2c(void *reg_addr, unsigned frequency);
+
+#endif /* __DRIVERS_BUS_I2C_EXYNOS5_USI_H__ */

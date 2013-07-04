@@ -87,15 +87,15 @@ int mkbp_bus_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 
 	/* Send output data */
 	mkbp_dump_data("out", -1, dev->dout, out_bytes);
-	ret = i2c_write(CONFIG_DRIVER_MKBP_I2C_BUS,
-			CONFIG_DRIVER_MKBP_I2C_ADDR,
-			0, 0, dev->dout, out_bytes);
+	if (!i2c_bus)
+		return -1;
+	ret = i2c_bus->write(i2c_bus, CONFIG_DRIVER_MKBP_I2C_ADDR,
+			     0, 0, dev->dout, out_bytes);
 	if (ret)
 		return -1;
 
-	ret = i2c_read(CONFIG_DRIVER_MKBP_I2C_BUS,
-		       CONFIG_DRIVER_MKBP_I2C_ADDR,
-		       0, 0, in_ptr, in_bytes);
+	ret = i2c_bus->read(i2c_bus, CONFIG_DRIVER_MKBP_I2C_ADDR,
+			    0, 0, in_ptr, in_bytes);
 	if (ret)
 		return -1;
 

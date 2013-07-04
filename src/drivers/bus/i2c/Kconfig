@@ -15,10 +15,6 @@
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
-config DRIVER_BUS_I2C_DUMMY
-	bool "Dummy I2C driver"
-	default n
-
 config DRIVER_BUS_I2C_S3C24X0
 	bool "Exynos S3C24X0 I2C driver"
 	default n

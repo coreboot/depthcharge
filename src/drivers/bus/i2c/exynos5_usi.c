@@ -21,8 +21,9 @@
 
 #include <libpayload.h>
 
+#include "base/list.h"
 #include "base/time.h"
-#include "drivers/bus/i2c/i2c.h"
+#include "drivers/bus/i2c/exynos5_usi.h"
 
 typedef struct __attribute__ ((packed)) UsiI2cRegs {
 	uint32_t usi_ctl;
@@ -55,26 +56,6 @@ typedef struct __attribute__ ((packed)) UsiI2cRegs {
 	uint32_t i2c_timing_sla;
 	uint32_t i2c_addr;
 } UsiI2cRegs;
-
-typedef struct UsiI2cBus
-{
-	UsiI2cRegs *regs;
-	int ready;
-} UsiI2cBus;
-
-static UsiI2cBus usi_i2c_busses[] = {
-	{ (UsiI2cRegs *)(uintptr_t)0x00000000 },
-	{ (UsiI2cRegs *)(uintptr_t)0x00000000 },
-	{ (UsiI2cRegs *)(uintptr_t)0x00000000 },
-	{ (UsiI2cRegs *)(uintptr_t)0x00000000 },
-	{ (UsiI2cRegs *)(uintptr_t)0x12ca0000 },
-	{ (UsiI2cRegs *)(uintptr_t)0x12cb0000 },
-	{ (UsiI2cRegs *)(uintptr_t)0x12cc0000 },
-	{ (UsiI2cRegs *)(uintptr_t)0x12cd0000 },
-	{ (UsiI2cRegs *)(uintptr_t)0x12e00000 },
-	{ (UsiI2cRegs *)(uintptr_t)0x12e10000 },
-	{ (UsiI2cRegs *)(uintptr_t)0x12e20000 }
-};
 
 // I2C_CTL
 enum {
@@ -152,12 +133,11 @@ enum {
 	HSI2C_TIMEOUT = 100
 };
 
-static int usi_i2c_get_clk_details(UsiI2cRegs *regs, int *div, int *cycle)
+static int usi_i2c_get_clk_details(UsiI2cRegs *regs, int *div, int *cycle,
+				   unsigned op_clk)
 {
 	// Assume the input clock is 66MHz for now.
 	unsigned int clkin = 66666666;
-	// Target 400KHz.
-	unsigned int op_clk = 400000;
 
 	/*
 	 * FPCLK / FI2C =
@@ -181,10 +161,11 @@ static int usi_i2c_get_clk_details(UsiI2cRegs *regs, int *div, int *cycle)
 	return -1;
 }
 
-static void usi_i2c_ch_init(UsiI2cRegs *regs)
+static void exynos5_usi_i2c_ch_init(UsiI2cRegs *regs, unsigned frequency)
 {
 	int div, cycle;
-	usi_i2c_get_clk_details(regs, &div, &cycle);
+	if (usi_i2c_get_clk_details(regs, &div, &cycle, frequency))
+		return;
 
 	uint32_t sr_release;
 	sr_release = cycle;
@@ -215,34 +196,13 @@ static void usi_i2c_ch_init(UsiI2cRegs *regs)
 	writel(readl(&regs->i2c_conf) | HSI2C_AUTO_MODE, &regs->i2c_conf);
 }
 
-static void usi_i2c_reset(UsiI2cRegs *regs)
+static void exynos5_usi_i2c_reset(UsiI2cRegs *regs, unsigned frequency)
 {
 	// Set and clear the bit for reset.
 	writel(readl(&regs->usi_ctl) | HSI2C_SW_RST, &regs->usi_ctl);
 	writel(readl(&regs->usi_ctl) & ~HSI2C_SW_RST, &regs->usi_ctl);
 
-	usi_i2c_ch_init(regs);
-}
-
-static UsiI2cRegs *usi_i2c_get_regs(int bus_num)
-{
-	if (bus_num >= ARRAY_SIZE(usi_i2c_busses)) {
-		printf("Requested unknown i2c bus %d.\n", bus_num);
-		return NULL;
-	}
-
-	UsiI2cBus *bus = &usi_i2c_busses[bus_num];
-	if (!bus->regs) {
-		printf("Requested non-USI I2C bus %d.\n", bus_num);
-		return NULL;
-	}
-
-	if (!bus->ready) {
-		usi_i2c_reset(bus->regs);
-		bus->ready = 1;
-	}
-
-	return bus->regs;
+	exynos5_usi_i2c_ch_init(regs, frequency);
 }
 
 /*
@@ -252,7 +212,7 @@ static UsiI2cRegs *usi_i2c_get_regs(int bus_num)
  * 1  - transfer finished successfully
  * -1 - transfer failed
  */
-static int usi_i2c_check_transfer(UsiI2cRegs *regs)
+static int exynos5_usi_i2c_check_transfer(UsiI2cRegs *regs)
 {
 	uint32_t status = readl(&regs->i2c_trans_status);
 	if (status & (HSI2C_TRANS_ABORT | HSI2C_NO_DEV_ACK |
@@ -277,20 +237,20 @@ static int usi_i2c_check_transfer(UsiI2cRegs *regs)
  * 1  - transfer finished successfully
  * -1 - transfer failed
  */
-static int usi_i2c_wait_for_transfer(UsiI2cRegs *regs)
+static int exynos5_usi_i2c_wait_for_transfer(UsiI2cRegs *regs)
 {
 	uint64_t start = timer_time_in_us(0);
 	while (timer_time_in_us(start) < HSI2C_TIMEOUT * 1000) {
-		int ret = usi_i2c_check_transfer(regs);
+		int ret = exynos5_usi_i2c_check_transfer(regs);
 		if (ret)
 			return ret;
 	}
 	return 0;
 }
 
-static int usi_i2c_senddata(UsiI2cRegs *regs, uint8_t *data, int len)
+static int exynos5_usi_i2c_senddata(UsiI2cRegs *regs, uint8_t *data, int len)
 {
-	while (!usi_i2c_check_transfer(regs) && len) {
+	while (!exynos5_usi_i2c_check_transfer(regs) && len) {
 		if (!(readl(&regs->usi_fifo_stat) & HSI2C_TX_FIFO_FULL)) {
 			writel(*data++, &regs->usi_txdata);
 			len--;
@@ -299,9 +259,9 @@ static int usi_i2c_senddata(UsiI2cRegs *regs, uint8_t *data, int len)
 	return len ? -1 : 0;
 }
 
-static int usi_i2c_recvdata(UsiI2cRegs *regs, uint8_t *data, int len)
+static int exynos5_usi_i2c_recvdata(UsiI2cRegs *regs, uint8_t *data, int len)
 {
-	while (!usi_i2c_check_transfer(regs) && len) {
+	while (!exynos5_usi_i2c_check_transfer(regs) && len) {
 		if (!(readl(&regs->usi_fifo_stat) & HSI2C_RX_FIFO_EMPTY)) {
 			*data++ = readl(&regs->usi_rxdata);
 			len--;
@@ -310,13 +270,22 @@ static int usi_i2c_recvdata(UsiI2cRegs *regs, uint8_t *data, int len)
 	return len ? -1 : 0;
 }
 
-int i2c_write(uint8_t bus, uint8_t chip, uint32_t addr, int addr_len,
-	      uint8_t *data, int data_len)
+static int exynos5_usi_i2c_write(I2cOps *me, uint8_t chip,
+				 uint32_t addr, int addr_len,
+				 uint8_t *data, int data_len)
 {
-	UsiI2cRegs *regs = usi_i2c_get_regs(bus);
+	Exynos5UsiI2c *bus = container_of(me, Exynos5UsiI2c, ops);
+	if (!bus)
+		return -1;
+	UsiI2cRegs *regs = bus->reg_addr;
 
-	if (usi_i2c_wait_for_transfer(regs) != 1) {
-		usi_i2c_reset(regs);
+	if (!bus->ready) {
+		exynos5_usi_i2c_reset(regs, bus->frequency);
+		bus->ready = 1;
+	}
+
+	if (exynos5_usi_i2c_wait_for_transfer(regs) != 1) {
+		exynos5_usi_i2c_reset(regs, bus->frequency);
 		return -1;
 	}
 
@@ -334,15 +303,15 @@ int i2c_write(uint8_t bus, uint8_t chip, uint32_t addr, int addr_len,
 			addr_buf[i] = addr >> (byte * 8);
 		}
 
-		if (usi_i2c_senddata(regs, addr_buf, addr_len)) {
-			usi_i2c_reset(regs);
+		if (exynos5_usi_i2c_senddata(regs, addr_buf, addr_len)) {
+			exynos5_usi_i2c_reset(regs, bus->frequency);
 			return -1;
 		}
 	}
 
-	if (usi_i2c_senddata(regs, data, data_len) ||
-	    usi_i2c_wait_for_transfer(regs) != 1) {
-		usi_i2c_reset(regs);
+	if (exynos5_usi_i2c_senddata(regs, data, data_len) ||
+	    exynos5_usi_i2c_wait_for_transfer(regs) != 1) {
+		exynos5_usi_i2c_reset(regs, bus->frequency);
 		return -1;
 	}
 
@@ -350,13 +319,22 @@ int i2c_write(uint8_t bus, uint8_t chip, uint32_t addr, int addr_len,
 	return 0;
 }
 
-int i2c_read(uint8_t bus, uint8_t chip, uint32_t addr, int addr_len,
-	     uint8_t *data, int data_len)
+static int exynos5_usi_i2c_read(I2cOps *me, uint8_t chip,
+				uint32_t addr, int addr_len,
+				uint8_t *data, int data_len)
 {
-	UsiI2cRegs *regs = usi_i2c_get_regs(bus);
+	Exynos5UsiI2c *bus = container_of(me, Exynos5UsiI2c, ops);
+	if (!bus)
+		return -1;
+	UsiI2cRegs *regs = bus->reg_addr;
 
-	if (usi_i2c_wait_for_transfer(regs) != 1) {
-		usi_i2c_reset(regs);
+	if (!bus->ready) {
+		exynos5_usi_i2c_reset(regs, bus->frequency);
+		bus->ready = 1;
+	}
+
+	if (exynos5_usi_i2c_wait_for_transfer(regs) != 1) {
+		exynos5_usi_i2c_reset(regs, bus->frequency);
 		return -1;
 	}
 
@@ -374,9 +352,9 @@ int i2c_read(uint8_t bus, uint8_t chip, uint32_t addr, int addr_len,
 		writel(addr_len | HSI2C_MASTER_RUN | HSI2C_STOP_AFTER_TRANS,
 		       &regs->i2c_auto_conf);
 
-		if (usi_i2c_senddata(regs, addr_buf, addr_len) ||
-		    usi_i2c_wait_for_transfer(regs) != 1) {
-			usi_i2c_reset(regs);
+		if (exynos5_usi_i2c_senddata(regs, addr_buf, addr_len) ||
+		    exynos5_usi_i2c_wait_for_transfer(regs) != 1) {
+			exynos5_usi_i2c_reset(regs, bus->frequency);
 			return -1;
 		}
 	}
@@ -386,12 +364,28 @@ int i2c_read(uint8_t bus, uint8_t chip, uint32_t addr, int addr_len,
 	writel(data_len | HSI2C_STOP_AFTER_TRANS |
 	       HSI2C_READ_WRITE | HSI2C_MASTER_RUN, &regs->i2c_auto_conf);
 
-	if (usi_i2c_recvdata(regs, data, data_len) ||
-	    usi_i2c_wait_for_transfer(regs) != 1) {
-		usi_i2c_reset(regs);
+	if (exynos5_usi_i2c_recvdata(regs, data, data_len) ||
+	    exynos5_usi_i2c_wait_for_transfer(regs) != 1) {
+		exynos5_usi_i2c_reset(regs, bus->frequency);
 		return -1;
 	}
 
 	writel(HSI2C_FUNC_MODE_I2C, &regs->usi_ctl);
 	return 0;
+}
+
+Exynos5UsiI2c *new_exynos5_usi_i2c(void *reg_addr, unsigned frequency)
+{
+	Exynos5UsiI2c *bus = malloc(sizeof(*bus));
+	if (!bus) {
+		printf("Failed to allocate I2C bus structure.\n");
+		return NULL;
+	}
+	memset(bus, 0, sizeof(*bus));
+
+	bus->ops.read = &exynos5_usi_i2c_read;
+	bus->ops.write = &exynos5_usi_i2c_write;
+	bus->reg_addr = reg_addr;
+	bus->frequency = frequency;
+	return bus;
 }

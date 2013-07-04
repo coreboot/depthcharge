@@ -11,7 +11,9 @@
 #include <assert.h>
 #include <libpayload.h>
 
+#include "base/list.h"
 #include "drivers/bus/i2c/i2c.h"
+#include "drivers/bus/i2c/s3c24x0.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/s5p.h"
 
@@ -51,90 +53,6 @@ enum {
 	I2cStatMasterXmit = 0x3 << 6
 };
 
-typedef struct I2cBus
-{
-	I2cRegs *regs;
-	int ready;
-} I2cBus;
-
-static I2cBus i2c_busses[] = {
-	{ (I2cRegs *)(uintptr_t)0x12c60000 },
-	{ (I2cRegs *)(uintptr_t)0x12c70000 },
-	{ (I2cRegs *)(uintptr_t)0x12c80000 },
-	{ (I2cRegs *)(uintptr_t)0x12c90000 },
-	{ (I2cRegs *)(uintptr_t)0x12ca0000 },
-	{ (I2cRegs *)(uintptr_t)0x12cb0000 },
-	{ (I2cRegs *)(uintptr_t)0x12cc0000 },
-	{ (I2cRegs *)(uintptr_t)0x12cd0000 }
-};
-
-static uint32_t *i2c_cfg = (uint32_t *)(uintptr_t)(0x10050000 + 0x234);
-
-static GpioOps *request_gpio;
-static GpioOps *grant_gpio;
-
-static int i2c_alloc_gpios(void)
-{
-	S5pGpio *s5p;
-	if (!request_gpio) {
-		s5p = new_s5p_gpio_output(GPIO_F, 0, 3);
-		if (!s5p)
-			return 1;
-		request_gpio = &s5p->ops;
-	}
-	if (!grant_gpio) {
-		s5p = new_s5p_gpio_input(GPIO_E, 0, 4);
-		if (!s5p)
-			return 1;
-		grant_gpio = &s5p->ops;
-	}
-	return 0;
-}
-
-static int i2c_claim_bus(int bus)
-{
-	if (bus != 4)
-		return 0;
-
-	if (i2c_alloc_gpios())
-		return 1;
-
-	// Request the bus.
-	if (request_gpio->set(request_gpio, 0) < 0)
-		return 1;
-
-	// Wait for the EC to give it to us.
-	int timeout = 2000 * 100; // 2s.
-	while (timeout--) {
-		int value = grant_gpio->get(grant_gpio);
-		if (value  < 0) {
-			request_gpio->set(request_gpio, 1);
-			return 1;
-		}
-		if (value == 1)
-			return 0;
-		udelay(10);
-	}
-
-	// Time out, recind our request.
-	request_gpio->set(request_gpio, 1);
-
-	return 1;
-}
-
-static void i2c_release_bus(int bus)
-{
-	if (bus != 4)
-		return;
-
-	if (i2c_alloc_gpios())
-		return;
-
-	request_gpio->set(request_gpio, 1);
-
-	return;
-}
-
 static int i2c_int_pending(I2cRegs *regs)
 {
 	return readb(&regs->con) & I2cConIntPending;
@@ -162,37 +80,8 @@ static int i2c_got_ack(I2cRegs *regs)
 
 static int i2c_init(I2cRegs *regs)
 {
-
 	writeb(I2cConIntEn | I2cConIntPending | 0x42, &regs->con);
-
-	if (i2c_alloc_gpios())
-		return 1;
-
-	// Release the bus.
-	if (request_gpio->set(request_gpio, 1) < 0)
-		return 1;
-
-	// Switch from hi speed I2C to the normal one.
-	writel(0x0, i2c_cfg);
-
 	return 0;
-}
-
-static I2cRegs *i2c_get_regs(int bus_num)
-{
-
-	if (bus_num >= ARRAY_SIZE(i2c_busses)) {
-		printf("Requested unknown I2C bus %d.\n", bus_num);
-		return NULL;
-	}
-
-	I2cBus *bus = &i2c_busses[bus_num];
-	if (!bus->ready) {
-		if (i2c_init(bus->regs))
-			return NULL;
-	}
-	bus->ready = 1;
-	return bus->regs;
 }
 
 static int i2c_wait_for_idle(I2cRegs *regs)
@@ -331,28 +220,47 @@ static int i2c_readwrite(I2cRegs *regs, int read, uint8_t chip, uint32_t addr,
 	return 0;
 }
 
-int i2c_read(uint8_t bus, uint8_t chip, uint32_t addr, int addr_len,
+int i2c_read(I2cOps *me, uint8_t chip, uint32_t addr, int addr_len,
 	     uint8_t *data, int data_len)
 {
-	if (i2c_claim_bus(bus))
-		return 1;
+	S3c24x0I2c *bus = container_of(me, S3c24x0I2c, ops);
+	I2cRegs *regs = bus->reg_addr;
 
-	I2cRegs *regs = i2c_get_regs(bus);
+	if (!bus->ready) {
+		if (i2c_init(regs))
+			return 1;
+		bus->ready = 1;
+	}
+
 	int res = i2c_readwrite(regs, 1, chip, addr, addr_len, data, data_len);
-	res = i2c_send_stop(regs) || res;
-	i2c_release_bus(bus);
-	return res;
+	return i2c_send_stop(regs) || res;
 }
 
-int i2c_write(uint8_t bus, uint8_t chip, uint32_t addr, int addr_len,
+int i2c_write(I2cOps *me, uint8_t chip, uint32_t addr, int addr_len,
 	      uint8_t *data, int data_len)
 {
-	if (i2c_claim_bus(bus))
-		return 1;
+	S3c24x0I2c *bus = container_of(me, S3c24x0I2c, ops);
+	I2cRegs *regs = bus->reg_addr;
 
-	I2cRegs *regs = i2c_get_regs(bus);
+	if (!bus->ready) {
+		if (i2c_init(regs))
+			return 1;
+		bus->ready = 1;
+	}
+
 	int res = i2c_readwrite(regs, 0, chip, addr, addr_len, data, data_len);
-	res = i2c_send_stop(regs) || res;
-	i2c_release_bus(bus);
-	return res;
+	return i2c_send_stop(regs) || res;
+}
+
+S3c24x0I2c *new_s3c24x0_i2c(void *reg_addr)
+{
+	S3c24x0I2c *bus = malloc(sizeof(*bus));
+	if (!bus)
+		return NULL;
+	memset(bus, 0, sizeof(*bus));
+
+	bus->ops.read = &i2c_read;
+	bus->ops.write = &i2c_write;
+	bus->reg_addr = reg_addr;
+	return bus;
 }

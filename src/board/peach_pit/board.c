@@ -21,9 +21,16 @@
  */
 
 #include "base/init_funcs.h"
+#include "drivers/bus/i2c/exynos5_usi.h"
+#include "drivers/tpm/tpm.h"
 
 static int board_setup(void)
 {
+	Exynos5UsiI2c *i2c9 =
+		new_exynos5_usi_i2c((void *)(uintptr_t)0x12e10000, 400000);
+	if (!i2c9)
+		return 1;
+	tis_set_i2c_bus(&i2c9->ops);
 	return 0;
 }
 

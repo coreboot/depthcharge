@@ -39,6 +39,8 @@
 #include <libpayload.h>
 #include <stdint.h>
 
+#include "drivers/bus/i2c/i2c.h"
+
 enum tpm_timeout {
 	TPM_TIMEOUT = 5,	/* msecs */
 };
@@ -136,7 +138,7 @@ struct tpm_cmd_t {
 
 struct tpm_chip *tpm_register_hardware(const struct tpm_vendor_specific *);
 
-int tpm_vendor_init(int bus, uint32_t dev_addr);
+int tpm_vendor_init(I2cOps *bus, uint32_t dev_addr);
 
 void tpm_vendor_cleanup(struct tpm_chip *chip);
 
@@ -146,7 +148,7 @@ void tpm_vendor_cleanup(struct tpm_chip *chip);
  * if dev_addr != 0 - redefines TPM device address
  * Returns < 0 on error, 0 on success.
  */
-int tpm_open(int bus, uint32_t dev_addr);
+int tpm_open(I2cOps *bus, uint32_t dev_addr);
 
 void tpm_close(void);
 

@@ -21,11 +21,19 @@
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/max98095.h"
 
+static I2cOps *bus;
+
+void max98095_set_i2c_bus(I2cOps *_bus)
+{
+	bus = _bus;
+}
+
 static int max98095_i2c_write(int reg, uint8_t data)
 {
-	if (i2c_write(CONFIG_DRIVER_SOUND_MAX98095_BUS,
-		      CONFIG_DRIVER_SOUND_MAX98095_ADDR,
-		      reg, 1, &data, 1)) {
+	if (!bus)
+		return 1;
+	if (bus->write(bus, CONFIG_DRIVER_SOUND_MAX98095_ADDR,
+		       reg, 1, &data, 1)) {
 		printf("%s: Error while writing register %#04x with %#04x\n",
 			__func__, reg, data);
 		return 1;
@@ -35,9 +43,10 @@ static int max98095_i2c_write(int reg, uint8_t data)
 
 static unsigned int max98095_i2c_read(int reg, uint8_t *data)
 {
-	if (i2c_read(CONFIG_DRIVER_SOUND_MAX98095_BUS,
-		     CONFIG_DRIVER_SOUND_MAX98095_ADDR,
-		     reg, 1, data, 1)) {
+	if (!bus)
+		return 1;
+	if (bus->read(bus, CONFIG_DRIVER_SOUND_MAX98095_ADDR,
+		      reg, 1, data, 1)) {
 		printf("%s: Error while reading register %#04x\n",
 			__func__, reg);
 		return 1;

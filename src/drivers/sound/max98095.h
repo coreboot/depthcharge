@@ -11,6 +11,10 @@
 #ifndef __DRIVERS_SOUND_MAX98095_H__
 #define __DRIVERS_SOUND_MAX98095_H__
 
+#include "drivers/bus/i2c/i2c.h"
+
+void max98095_set_i2c_bus(I2cOps *_bus);
+
 /*
  * MAX98095 Registers Definition
  */

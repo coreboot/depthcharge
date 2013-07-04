@@ -18,3 +18,4 @@
 ##
 
 depthcharge-y += board.c
+depthcharge-y += i2c_arb.c

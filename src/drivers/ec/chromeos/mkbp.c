@@ -34,6 +34,13 @@
 #include "base/time.h"
 #include "drivers/ec/chromeos/mkbp.h"
 
+I2cOps *i2c_bus;
+
+void mkbp_set_i2c_bus(I2cOps *bus)
+{
+	i2c_bus = bus;
+}
+
 struct mkbp_dev *mkbp_ptr;
 
 /* Timeout waiting for a flash erase command to complete */
