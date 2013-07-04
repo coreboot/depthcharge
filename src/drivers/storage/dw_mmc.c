@@ -2,6 +2,7 @@
  * (C) Copyright 2012 SAMSUNG Electronics
  * Jaehoon Chung <jh80.chung@samsung.com>
  * Rajeshawari Shinde <rajeshwari.s@samsung.com>
+ * Copyright 2013 Google Inc.  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -19,19 +20,19 @@
  *
  */
 
-#include <common.h>
-#include <malloc.h>
-#include <mmc.h>
-#include <dwmmc.h>
-#include <asm/arch/clk.h>
-#include <asm-generic/errno.h>
+#include <assert.h>
+#include <libpayload.h>
+#include <stdint.h>
+
+#include "base/time.h"
+#include "drivers/storage/dw_mmc.h"
 
 #define PAGE_SIZE 4096
 
-static int dwmci_wait_reset(struct dwmci_host *host, u32 value)
+static int dwmci_wait_reset(DwmciHost *host, uint32_t value)
 {
 	unsigned long timeout = 1000;
-	u32 ctrl;
+	uint32_t ctrl;
 
 	dwmci_writel(host, DWMCI_CTRL, value);
 
@@ -43,31 +44,30 @@ static int dwmci_wait_reset(struct dwmci_host *host, u32 value)
 	return 0;
 }
 
-static void dwmci_set_idma_desc(struct dwmci_idmac *idmac,
-		u32 desc0, u32 desc1, u32 desc2)
+static void dwmci_set_idma_desc(DwmciIdmac *idmac, uint32_t desc0,
+				uint32_t desc1, uint32_t desc2)
 {
-	struct dwmci_idmac *desc = idmac;
+	DwmciIdmac *desc = idmac;
 
 	desc->flags = desc0;
 	desc->cnt = desc1;
 	desc->addr = desc2;
-	desc->next_addr = (unsigned int)desc + sizeof(struct dwmci_idmac);
+	desc->next_addr = (unsigned int)desc + sizeof(DwmciIdmac);
 }
 
-static void dwmci_prepare_data(struct dwmci_host *host,
-		struct mmc_data *data)
+static void dwmci_prepare_data(DwmciHost *host, MmcData *data)
 {
 	unsigned long ctrl;
 	unsigned int i = 0, flags, cnt, blk_cnt;
-	ulong data_start, data_end, start_addr, stop_addr;
-	ALLOC_CACHE_ALIGN_BUFFER(struct dwmci_idmac, cur_idmac, data->blocks);
+	unsigned long data_start, data_end, start_addr, stop_addr;
+	ALLOC_CACHE_ALIGN_BUFFER(DwmciIdmac, cur_idmac, data->blocks);
 
 
 	blk_cnt = data->blocks;
 
 	dwmci_wait_reset(host, DWMCI_CTRL_FIFO_RESET);
 
-	data_start = (ulong)cur_idmac;
+	data_start = (unsigned long)cur_idmac;
 	dwmci_writel(host, DWMCI_DBADDR, (unsigned int)cur_idmac);
 
 	if (data->flags == MMC_DATA_READ)
@@ -94,7 +94,7 @@ static void dwmci_prepare_data(struct dwmci_host *host,
 		i++;
 	} while(1);
 
-	data_end = (ulong)cur_idmac;
+	data_end = (unsigned long )cur_idmac;
 	flush_dcache_range(data_start, data_end + ARCH_DMA_MINALIGN);
 
 	stop_addr = start_addr + (data->blocks * data->blocksize);
@@ -112,8 +112,7 @@ static void dwmci_prepare_data(struct dwmci_host *host,
 	dwmci_writel(host, DWMCI_BYTCNT, data->blocksize * data->blocks);
 }
 
-static int dwmci_set_transfer_mode(struct dwmci_host *host,
-		struct mmc_data *data)
+static int dwmci_set_transfer_mode(DwmciHost *host, MmcData *data)
 {
 	unsigned long mode;
 
@@ -124,21 +123,20 @@ static int dwmci_set_transfer_mode(struct dwmci_host *host,
 	return mode;
 }
 
-static int dwmci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
-		struct mmc_data *data)
+static int dwmci_send_cmd(MmcDevice *mmc, MmcCommand *cmd, MmcData *data)
 {
-	struct dwmci_host *host = (struct dwmci_host *)mmc->priv;
+	DwmciHost *host = (DwmciHost *)mmc->host;
 	int flags = 0, i;
 	unsigned int timeout = 100000;
-	u32 retry = 10000;
-	u32 mask, ctrl;
-	ulong start = get_timer(0);
-	ulong data_start, data_end;
+	uint32_t retry = 10000;
+	uint32_t mask, ctrl;
+	unsigned long start = get_timer(0);
+	unsigned long data_start, data_end;
 
 	while (dwmci_readl(host, DWMCI_STATUS) & DWMCI_BUSY) {
 		if (get_timer(start) > timeout) {
 			printf("Timeout on data busy\n");
-			return TIMEOUT;
+			return MMC_TIMEOUT;
 		}
 	}
 
@@ -185,11 +183,11 @@ static int dwmci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 	}
 
 	if (i == retry)
-		return TIMEOUT;
+		return MMC_TIMEOUT;
 
 	if (mask & DWMCI_INTMSK_RTO) {
 		debug("Response Timeout..\n");
-		return TIMEOUT;
+		return MMC_TIMEOUT;
 	} else if (mask & DWMCI_INTMSK_RE) {
 		debug("Response Error..\n");
 		return -1;
@@ -222,8 +220,8 @@ static int dwmci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 		ctrl &= ~(DWMCI_DMA_EN);
 		dwmci_writel(host, DWMCI_CTRL, ctrl);
 		if (data->flags & MMC_DATA_READ) {
-			data_start = (ulong)data->dest;
-			data_end = (ulong)data->dest +
+			data_start = (unsigned long)data->dest;
+			data_end = (unsigned long)data->dest +
 				data->blocks * data->blocksize;
 			/*
 			 * The buffer is supposed to have padding to the
@@ -238,9 +236,9 @@ static int dwmci_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd,
 	return 0;
 }
 
-static int dwmci_setup_bus(struct dwmci_host *host, u32 freq)
+static int dwmci_setup_bus(DwmciHost *host, uint32_t freq)
 {
-	u32 div, status;
+	uint32_t div, status;
 	int timeout = 10000;
 	unsigned long sclk;
 
@@ -257,7 +255,7 @@ static int dwmci_setup_bus(struct dwmci_host *host, u32 freq)
 		sclk = host->bus_hz;
 	else {
 		printf("Didn't get source clock value..\n");
-		return -EINVAL;
+		return -1;
 	}
 
 	div = DIV_ROUND_UP(sclk, 2 * freq);
@@ -273,7 +271,7 @@ static int dwmci_setup_bus(struct dwmci_host *host, u32 freq)
 		status = dwmci_readl(host, DWMCI_CMD);
 		if (timeout-- < 0) {
 			printf("TIMEOUT error!!\n");
-			return -ETIMEDOUT;
+			return -1;
 		}
 	} while (status & DWMCI_CMD_START);
 
@@ -288,19 +286,18 @@ static int dwmci_setup_bus(struct dwmci_host *host, u32 freq)
 		status = dwmci_readl(host, DWMCI_CMD);
 		if (timeout-- < 0) {
 			printf("TIMEOUT error!!\n");
-			return -ETIMEDOUT;
+			return -1;
 		}
 	} while (status & DWMCI_CMD_START);
 
 	host->clock = freq;
-
 	return 0;
 }
 
-static void dwmci_set_ios(struct mmc *mmc)
+static void dwmci_set_ios(MmcDevice *mmc)
 {
-	struct dwmci_host *host = (struct dwmci_host *)mmc->priv;
-	u32 ctype;
+	DwmciHost *host = (DwmciHost *)mmc->host;
+	uint32_t ctype;
 
 	debug("Buswidth = %d, clock: %d\n",mmc->bus_width, mmc->clock);
 
@@ -323,10 +320,10 @@ static void dwmci_set_ios(struct mmc *mmc)
 		host->clksel(host);
 }
 
-static int dwmci_init(struct mmc *mmc)
+static int dwmci_init(MmcDevice *mmc)
 {
-	struct dwmci_host *host = (struct dwmci_host *)mmc->priv;
-	u32 fifo_size, fifoth_val;
+	DwmciHost *host = (DwmciHost *)mmc->host;
+	uint32_t fifo_size, fifoth_val;
 
 	dwmci_writel(host, EMMCP_MPSBEGIN0, 0);
 	dwmci_writel(host, EMMCP_SEND0, 0);
@@ -370,13 +367,13 @@ static int dwmci_init(struct mmc *mmc)
 	return 0;
 }
 
-int add_dwmci(struct dwmci_host *host, u32 max_clk, u32 min_clk, int removable,
-	      int pre_init)
+int add_dwmci(DwmciHost *host, uint32_t max_clk, uint32_t min_clk,
+	      int removable, int pre_init)
 {
-	struct mmc *mmc;
+	MmcDevice *mmc;
 	int err = 0;
 
-	mmc = malloc(sizeof(struct mmc));
+	mmc = malloc(sizeof(*mmc));
 	if (!mmc) {
 		printf("mmc malloc fail!\n");
 		return -1;
@@ -384,10 +381,9 @@ int add_dwmci(struct dwmci_host *host, u32 max_clk, u32 min_clk, int removable,
 
 	memset(mmc, 0, sizeof(*mmc));
 
-	mmc->priv = host;
+	mmc->host = host;
 	host->mmc = mmc;
 
-	sprintf(mmc->name, "%s", host->name);
 	mmc->send_cmd = dwmci_send_cmd;
 	mmc->set_ios = dwmci_set_ios;
 	mmc->init = dwmci_init;
@@ -408,12 +404,5 @@ int add_dwmci(struct dwmci_host *host, u32 max_clk, u32 min_clk, int removable,
 	mmc->host_caps |= MMC_MODE_HS | MMC_MODE_HS_52MHz | MMC_MODE_HC;
 
 	err = mmc_register(mmc);
-
-	/*
-	 * Overwrite device 'removable' property, because mmc_register() does
-	 * not yet provide an interface to specify it.
-	 */
-	mmc->block_dev.removable = removable;
-	mmc_set_preinit(mmc, pre_init);
 	return err;
 }

@@ -1,6 +1,7 @@
 /*
  * (C) Copyright 2012 SAMSUNG Electronics
  * Jaehoon Chung <jh80.chung@samsung.com>
+ * Copyright 2013 Google Inc.  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -46,7 +47,7 @@
  * Function used as callback function to initialise the
  * CLKSEL register for every mmc channel.
  */
-static void exynos_dwmci_clksel(struct dwmci_host *host)
+static void exynos_dwmci_clksel(DwmciHost *host)
 {
 	dwmci_writel(host, DWMCI_CLKSEL, host->clksel_val);
 }
@@ -68,13 +69,13 @@ unsigned int exynos_dwmci_get_clk(int dev_index)
  * pre_init -	Kick the mmc on startup so that it is ready sooner when we
  *		need it
  */
-int exynos_dwmci_add_port(int index, u32 regbase, int bus_width,
-			  u32 clksel, int removable, int pre_init)
+int exynos_dwmci_add_port(int index, uint32_t regbase, int bus_width,
+			  uint32_t clksel, int removable, int pre_init)
 {
-	struct dwmci_host *host = NULL;
+	DwmciHost *host = NULL;
 	unsigned int div;
 	unsigned long freq, sclk;
-	host = malloc(sizeof(struct dwmci_host));
+	host = malloc(sizeof(*host));
 	if (!host) {
 		printf("dwmci_host malloc fail!\n");
 		return 1;
@@ -111,12 +112,12 @@ int exynos_dwmci_add_port(int index, u32 regbase, int bus_width,
 	return 0;
 }
 
-int board_mmc_getcd(struct mmc *mmc)
+int board_mmc_getcd(MmcDevice *mmc)
 {
 	unsigned cdetect;
 
-	if (mmc->block_dev.removable) {
-		struct dwmci_host *host = mmc->priv;
+	if (mmc->block_dev->removable) {
+		DwmciHost *host = mmc->host;
 
 		cdetect = dwmci_readl(host, DWMCI_CDETECT);
 	} else {

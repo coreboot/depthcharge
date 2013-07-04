@@ -1,6 +1,7 @@
 /*
  * (C) Copyright 2012 SAMSUNG Electronics
  * Jaehoon Chung <jh80.chung@samsung.com>
+ * Copyright 2013 Google Inc.  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -18,11 +19,10 @@
  *
  */
 
-#ifndef __DWMMC_HW_H
-#define __DWMMC_HW_H
+#ifndef __DRIVERS_STORAGE_DW_MMC_H__
+#define __DRIVERS_STORAGE_DW_MMC_H__
 
-#include <asm/io.h>
-#include <mmc.h>
+#include <drivers/storage/mmc.h>
 
 #define DWMCI_CTRL		0x000
 #define	DWMCI_PWREN		0x004
@@ -148,7 +148,7 @@
 #define MPSCTRL_ENCRYPTION		(0x1<<1)
 #define MPSCTRL_VALID			(0x1<<0)
 
-struct dwmci_host {
+typedef struct DwmciHost {
 	char *name;
 	void *ioaddr;
 	unsigned int quirks;
@@ -158,50 +158,50 @@ struct dwmci_host {
 	unsigned int bus_hz;
 	int dev_index;
 	int buswidth;
-	u32 clksel_val;
-	u32 fifoth_val;
-	struct mmc *mmc;
+	uint32_t clksel_val;
+	uint32_t fifoth_val;
+	MmcDevice *mmc;
 
-	void (*clksel)(struct dwmci_host *host);
+	void (*clksel)(struct DwmciHost *host);
 	unsigned int (*mmc_clk)(int dev_index);
-};
+} DwmciHost;
 
-struct dwmci_idmac {
-	u32 flags;
-	u32 cnt;
-	u32 addr;
-	u32 next_addr;
-};
+typedef struct {
+	uint32_t flags;
+	uint32_t cnt;
+	uint32_t addr;
+	uint32_t next_addr;
+} DwmciIdmac;
 
-static inline void dwmci_writel(struct dwmci_host *host, int reg, u32 val)
+static inline void dwmci_writel(DwmciHost *host, int reg, uint32_t val)
 {
 	writel(val, host->ioaddr + reg);
 }
 
-static inline void dwmci_writew(struct dwmci_host *host, int reg, u16 val)
+static inline void dwmci_writew(DwmciHost *host, int reg, uint16_t val)
 {
 	writew(val, host->ioaddr + reg);
 }
 
-static inline void dwmci_writeb(struct dwmci_host *host, int reg, u8 val)
+static inline void dwmci_writeb(DwmciHost *host, int reg, uint8_t val)
 {
 	writeb(val, host->ioaddr + reg);
 }
-static inline u32 dwmci_readl(struct dwmci_host *host, int reg)
+static inline uint32_t dwmci_readl(DwmciHost *host, int reg)
 {
 	return readl(host->ioaddr + reg);
 }
 
-static inline u16 dwmci_readw(struct dwmci_host *host, int reg)
+static inline uint16_t dwmci_readw(DwmciHost *host, int reg)
 {
 	return readw(host->ioaddr + reg);
 }
 
-static inline u8 dwmci_readb(struct dwmci_host *host, int reg)
+static inline uint8_t dwmci_readb(DwmciHost *host, int reg)
 {
 	return readb(host->ioaddr + reg);
 }
 
-int add_dwmci(struct dwmci_host *host, u32 max_clk, u32 min_clk, int removable,
-	      int pre_init);
-#endif	/* __DWMMC_HW_H */
+int add_dwmci(DwmciHost *host, uint32_t max_clk, uint32_t min_clk,
+	      int removable, int pre_init);
+#endif /* __DRIVERS_STORAGE_DW_MMC_H__ */
