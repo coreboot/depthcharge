@@ -34,28 +34,14 @@
 #include "config.h"
 #include "drivers/storage/mmc.h"
 
-// Uncomment following options if you need detail information.
-// #define DEBUG_MMC
-// #define TRACE_MMC
-
-#ifdef DEBUG_MMC
-# define debug(format...) printf("mmc: " format)
-#else
-inline void debug(const char *format, ...) {}
-#endif
-
-#ifdef TRACE_MMC
-# define mmc_trace(format...) printf("mmc-trace: " format)
-#else
-inline void mmc_trace(const char *format, ...) {}
-#endif
-
-#define error(format...) printf("mmc: ERROR: " format)
-
 /* Set block count limit because of 16 bit register limit on some hardware*/
 #ifndef CONFIG_SYS_MMC_MAX_BLK_COUNT
 #define CONFIG_SYS_MMC_MAX_BLK_COUNT 65535
 #endif
+
+/* Set to 1 to turn on debug messages. */
+int __mmc_debug = 0;
+int __mmc_trace = 0;
 
 int mmc_busy_wait_io(volatile uint32_t *address, uint32_t *output,
 		     uint32_t io_mask, uint32_t timeout_ms)
@@ -164,7 +150,7 @@ int mmc_send_status(MmcDevice *mmc, int timeout)
 
 		mdelay(1);
 		if (cmd.response[0] & MMC_STATUS_MASK) {
-			error("Status Error: %#08X\n", cmd.response[0]);
+			mmc_error("Status Error: %#08X\n", cmd.response[0]);
 			return MMC_COMM_ERR;
 		}
 	} while (timeout--);
@@ -173,7 +159,7 @@ int mmc_send_status(MmcDevice *mmc, int timeout)
 		  (cmd.response[0] & MMC_STATUS_CURR_STATE) >> 9);
 
 	if (!timeout) {
-		error("Timeout waiting card ready\n");
+		mmc_error("Timeout waiting card ready\n");
 		return MMC_TIMEOUT;
 	}
 	return 0;
@@ -198,7 +184,7 @@ uint32_t mmc_write(MmcDevice *mmc, uint32_t start, lba_t block_count,
 	MmcData data;
 
 	if ((start + block_count) > mmc->lba) {
-		error("block number %#x exceeds max(%#x)\n",
+		mmc_error("block number %#x exceeds max(%#x)\n",
 			(int)(start + block_count), (int)mmc->lba);
 		return 0;
 	}
@@ -222,7 +208,7 @@ uint32_t mmc_write(MmcDevice *mmc, uint32_t start, lba_t block_count,
 	data.flags = MMC_DATA_WRITE;
 
 	if (mmc_send_cmd(mmc, &cmd, &data)) {
-		error("mmc write failed\n");
+		mmc_error("mmc write failed\n");
 		return 0;
 	}
 
@@ -235,7 +221,7 @@ uint32_t mmc_write(MmcDevice *mmc, uint32_t start, lba_t block_count,
 		cmd.resp_type = MMC_RSP_R1b;
 		cmd.flags = 0;
 		if (mmc_send_cmd(mmc, &cmd, NULL)) {
-			error("mmc fail to send stop cmd\n");
+			mmc_error("mmc fail to send stop cmd\n");
 			return 0;
 		}
 
@@ -253,7 +239,7 @@ int mmc_read(MmcDevice *mmc, void *dest, uint32_t start, lba_t block_count)
 	MmcData data;
 
 	if ((start + block_count) > mmc->lba) {
-		error("block number %#x exceeds max(%#x)\n",
+		mmc_error("block number %#x exceeds max(%#x)\n",
 		      (int)(start + block_count), (int)mmc->lba);
 		return 0;
 	}
@@ -285,7 +271,7 @@ int mmc_read(MmcDevice *mmc, void *dest, uint32_t start, lba_t block_count)
 		cmd.resp_type = MMC_RSP_R1b;
 		cmd.flags = 0;
 		if (mmc_send_cmd(mmc, &cmd, NULL)) {
-			error("mmc fail to send stop cmd\n");
+			mmc_error("mmc fail to send stop cmd\n");
 			return 0;
 		}
 
@@ -574,7 +560,7 @@ static int sd_change_freq(MmcDevice *mmc)
 	if (err)
 		return err;
 
-	debug("%s: before SD_CMD_APP_SEND_SCR\n", __func__);
+	mmc_debug("%s: before SD_CMD_APP_SEND_SCR\n", __func__);
 	cmd.cmdidx = SD_CMD_APP_SEND_SCR;
 	cmd.resp_type = MMC_RSP_R1;
 	cmd.cmdarg = 0;
@@ -591,10 +577,10 @@ static int sd_change_freq(MmcDevice *mmc)
 			break;
 	}
 	if (err) {
-		error("%s: return err (%d).\n", __func__, err);
+		mmc_error("%s: return err (%d).\n", __func__, err);
 		return err;
 	}
-	debug("%s: end SD_CMD_APP_SEND_SCR\n", __func__);
+	mmc_debug("%s: end SD_CMD_APP_SEND_SCR\n", __func__);
 
 	mmc->scr[0] = betohl(scr[0]);
 	mmc->scr[1] = betohl(scr[1]);
@@ -818,7 +804,7 @@ int mmc_startup(MmcDevice *mmc)
 	if (mmc->write_bl_len > 512)
 		mmc->write_bl_len = 512;
 
-	debug("mmc info: version=%#x, tran_speed=%d\n",
+	mmc_debug("mmc info: version=%#x, tran_speed=%d\n",
 	      mmc->version, (int)mmc->tran_speed);
 
 	/* Select the card, and put it into Transfer Mode */
@@ -964,7 +950,7 @@ int mmc_start_init(MmcDevice *mmc)
 
 	if (mmc_is_card_present(mmc) == 0) {
 		mmc->has_init = 0;
-		debug("No card present\n");
+		mmc_debug("No card present\n");
 		return MMC_NO_CARD_ERR;
 	}
 
@@ -994,7 +980,7 @@ int mmc_start_init(MmcDevice *mmc)
 		err = mmc_send_op_cond(mmc);
 
 		if (err && err != MMC_IN_PROGRESS) {
-			error("Card did not respond to voltage select!\n");
+			mmc_error("Card did not respond to voltage select!\n");
 			return MMC_UNUSABLE_ERR;
 		}
 	}
@@ -1041,7 +1027,7 @@ int mmc_init(MmcDevice *mmc)
 void block_mmc_refresh(ListNode *block_node, MmcDevice *mmc)
 {
 	assert(mmc && mmc->block_dev);
-	debug("%s: %s\n",mmc->block_dev->name, __func__);
+	mmc_debug("%s: %s\n",mmc->block_dev->name, __func__);
 	if (mmc->has_init) {
 		list_remove(&mmc->block_dev->list_node);
 		mmc->has_init = 0;
@@ -1091,8 +1077,8 @@ lba_t block_mmc_read(BlockDev *dev, lba_t start, lba_t count, void *buffer)
 		if(mmc_read(mmc, dest, start, cur) != cur)
 			return 0;
 		blocks_todo -= cur;
-		debug("%s: Got %d blocks, more %d blocks (total %d) to go.\n",
-		      __func__, (int)cur, (int)blocks_todo, (int)count);
+		mmc_debug("%s: Got %d blocks, more %d (total %d) to go.\n",
+			  __func__, (int)cur, (int)blocks_todo, (int)count);
 		start += cur;
 		dest += cur * mmc->read_bl_len;
 	} while (blocks_todo > 0);

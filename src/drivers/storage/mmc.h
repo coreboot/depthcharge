@@ -294,4 +294,12 @@ lba_t block_mmc_write(BlockDev *dev, lba_t start, lba_t count,
                       DMA_MINALIGN - 1];                             \
         type *name = (type *) ALIGN((uintptr_t)__##name, DMA_MINALIGN)
 
+// Debug functions.
+extern int __mmc_debug, __mmc_trace;
+#define mmc_debug(format...) \
+		while (__mmc_debug) { printf("mmc: " format); break; }
+#define mmc_trace(format...) \
+		while (__mmc_trace) { printf("mmc-trace: " format); break; }
+#define mmc_error(format...) printf("mmc: ERROR: " format)
+
 #endif /* __DRIVERS_STORAGE_MMC_H__ */

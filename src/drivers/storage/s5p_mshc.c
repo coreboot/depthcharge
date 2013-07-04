@@ -32,16 +32,6 @@
 #include "drivers/storage/exynos_mshc.h"
 #include "drivers/storage/mmc.h"
 
-// #define DEBUG_S5P_MSHC
-
-#ifndef DEBUG_S5P_MSHC
-inline void debug(const char *format, ...) {}
-#else
-# define debug(format...) printf("s5p_mshc: " format)
-#endif
-
-#define error(format...) printf("s5p_mshc: ERROR: " format)
-
 static void setbits32(uint32_t *data, uint32_t bits)
 {
 	writel(readl(data) | bits, data);
@@ -62,7 +52,7 @@ static inline S5pMshci *s5p_get_base_mshci(int dev_index)
 			return ((S5pMshci *)
 				CONFIG_DRIVER_STORAGE_MSHC_S5P_MMC1_ADDRESS);
 	}
-	error("Unknown device index (%d): Check your Kconfig settings for "
+	mmc_error("Unknown device index (%d): Check your Kconfig settings for "
 	      "DRIVER_MSHC_S5P_DEVICES.\n", dev_index);
 	assert(dev_index < CONFIG_DRIVER_STORAGE_MSHC_S5P_DEVICES);
 	return NULL;
@@ -78,7 +68,7 @@ static int mshci_setbits(MshciHost *host, unsigned int bits)
 	setbits32(&host->reg->ctrl, bits);
 	if (mmc_busy_wait_io(&host->reg->ctrl, NULL, bits,
 			     S5P_MSHC_TIMEOUT_MS)) {
-		error("Set bits failed\n");
+		mmc_error("Set bits failed\n");
 		return -1;
 	}
 
@@ -93,20 +83,20 @@ static int mshci_reset_all(MshciHost *host)
 	*/
 	if (mmc_busy_wait_io(&host->reg->status, NULL, DATA_BUSY,
 			     S5P_MSHC_TIMEOUT_MS)) {
-		error("Controller did not release data0 before ciu reset\n");
+		mmc_error("Controller did not release data0 before ciu reset\n");
 		return -1;
 	}
 
 	if (mshci_setbits(host, CTRL_RESET)) {
-		error("Fail to reset card.\n");
+		mmc_error("Fail to reset card.\n");
 		return -1;
 	}
 	if (mshci_setbits(host, FIFO_RESET)) {
-		error("Fail to reset fifo.\n");
+		mmc_error("Fail to reset fifo.\n");
 		return -1;
 	}
 	if (mshci_setbits(host, DMA_RESET)) {
-		error("Fail to reset dma.\n");
+		mmc_error("Fail to reset dma.\n");
 		return -1;
 	}
 
@@ -137,7 +127,7 @@ static int mshci_prepare_data(MshciHost *host, MmcData *data)
 	MshciIdmac *pdesc_dmac;
 
 	if (mshci_setbits(host, FIFO_RESET)) {
-		error("Fail to reset FIFO\n");
+		mmc_error("Fail to reset FIFO\n");
 		return -1;
 	}
 
@@ -223,14 +213,15 @@ static int s5p_mshci_send_command(MmcDevice *mmc, MmcCommand *cmd,
 	*/
 	if (mmc_busy_wait_io(&host->reg->status, NULL, DATA_BUSY,
 			     S5P_MSHC_COMMAND_TIMEOUT)) {
-		error("timeout on data busy\n");
+		mmc_error("timeout on data busy\n");
 		return -1;
 	}
 
 	if ((readl(&host->reg->rintsts) & (INTMSK_CDONE | INTMSK_ACD)) == 0) {
 		uint32_t rintsts = readl(&host->reg->rintsts);
-		if (rintsts)
-			debug("there are pending interrupts %#x\n", rintsts);
+		if (rintsts) {
+			mmc_debug("there're pending interrupts %#x\n", rintsts);
+		}
 	}
 
 	/* It clears all pending interrupts before sending a command*/
@@ -238,7 +229,7 @@ static int s5p_mshci_send_command(MmcDevice *mmc, MmcCommand *cmd,
 
 	if (data) {
 		if (mshci_prepare_data(host, data)) {
-			error("fail to prepare data\n");
+			mmc_error("fail to prepare data\n");
 			return -1;
 		}
 	}
@@ -250,7 +241,7 @@ static int s5p_mshci_send_command(MmcDevice *mmc, MmcCommand *cmd,
 
 	if ((cmd->resp_type & MMC_RSP_136) && (cmd->resp_type & MMC_RSP_BUSY)) {
 		/* this is out of SD spec */
-		error("wrong response type or response busy for cmd %d\n",
+		mmc_error("wrong response type or response busy for cmd %d\n",
 				cmd->cmdidx);
 		return -1;
 	}
@@ -268,7 +259,7 @@ static int s5p_mshci_send_command(MmcDevice *mmc, MmcCommand *cmd,
 
 	mask = readl(&host->reg->cmd);
 	if (mask & CMD_STRT_BIT) {
-		error("cmd busy, current cmd: %d", cmd->cmdidx);
+		mmc_error("cmd busy, current cmd: %d", cmd->cmdidx);
 		return -1;
 	}
 
@@ -285,14 +276,14 @@ static int s5p_mshci_send_command(MmcDevice *mmc, MmcCommand *cmd,
 
 	/* timeout for command complete. */
 	if (S5P_MSHC_COMMAND_TIMEOUT == i) {
-		error("timeout waiting for status update\n");
+		mmc_error("timeout waiting for status update\n");
 		return MMC_TIMEOUT;
 	}
 
 	if (mask & INTMSK_RTO)
 		return MMC_TIMEOUT;
 	else if (mask & INTMSK_RE) {
-		error("response error: %#x cmd: %d\n", mask, cmd->cmdidx);
+		mmc_error("response mmc_error: %#x cmd: %d\n", mask, cmd->cmdidx);
 		return -1;
 	}
 	if (cmd->resp_type & MMC_RSP_PRESENT) {
@@ -304,7 +295,8 @@ static int s5p_mshci_send_command(MmcDevice *mmc, MmcCommand *cmd,
 			cmd->response[3] = readl(&host->reg->resp0);
 		} else {
 			cmd->response[0] = readl(&host->reg->resp0);
-			debug("\tcmd->response[0]: %#08x\n", cmd->response[0]);
+			mmc_debug("\tcmd->response[0]: %#08x\n",
+				  cmd->response[0]);
 		}
 	}
 
@@ -313,10 +305,10 @@ static int s5p_mshci_send_command(MmcDevice *mmc, MmcCommand *cmd,
 					   &mask,
 					   DATA_ERR | DATA_TOUT | INTMSK_DTO,
 					   S5P_MSHC_COMMAND_TIMEOUT)) {
-			debug("timeout on data error\n");
+			mmc_debug("timeout on data error\n");
 			return -1;
 		}
-		debug("%s: writel(mask, rintsts)\n", __func__);
+		mmc_debug("%s: writel(mask, rintsts)\n", __func__);
 		writel(mask, &host->reg->rintsts);
 
 		if (data->flags & MMC_DATA_READ) {
@@ -325,18 +317,18 @@ static int s5p_mshci_send_command(MmcDevice *mmc, MmcCommand *cmd,
 			data_len = data->blocks * data->blocksize;
 			dcache_clean_invalidate_by_mva(data_base, data_len);
 		}
-		debug("%s: clrbits32(ctrl, +DMA, +IDMAC)\n", __func__);
+		mmc_debug("%s: clrbits32(ctrl, +DMA, +IDMAC)\n", __func__);
 		/* make sure disable IDMAC and IDMAC_Interrupts */
 		clrbits32(&host->reg->ctrl, DMA_ENABLE | ENABLE_IDMAC);
 		if (mask & (DATA_ERR | DATA_TOUT)) {
-			error("error during transfer: %#x\n", mask);
+			mmc_error("error during transfer: %#x\n", mask);
 			/* mask all interrupt source of IDMAC */
 			writel(0, &host->reg->idinten);
 			return -1;
 		} else if (mask & INTMSK_DTO) {
-			debug("mshci dma interrupt end\n");
+			mmc_debug("mshci dma interrupt end\n");
 		} else {
-			error("unexpected condition %#x\n", mask);
+			mmc_error("unexpected condition %#x\n", mask);
 			return -1;
 		}
 		clrbits32(&host->reg->ctrl, DMA_ENABLE | ENABLE_IDMAC);
@@ -364,7 +356,7 @@ static int mshci_clock_onoff(MshciHost *host, int val)
 	 */
 	if (mmc_busy_wait_io(&host->reg->cmd, NULL, CMD_STRT_BIT,
 			     S5P_MSHC_COMMAND_TIMEOUT)) {
-		error("Clock %s has failed.\n ", val ? "ON" : "OFF");
+		mmc_error("Clock %s has failed.\n ", val ? "ON" : "OFF");
 		return -1;
 	}
 
@@ -381,13 +373,13 @@ static int mshci_change_clock(MshciHost *host, uint32_t clock)
 
 	/* If Input clock is higher than maximum mshc clock */
 	if (clock > MAX_MSHCI_CLOCK) {
-		debug("Input clock is too high\n");
+		mmc_debug("Input clock is too high\n");
 		clock = MAX_MSHCI_CLOCK;
 	}
 
 	/* disable the clock before changing it */
 	if (mshci_clock_onoff(host, CLK_DISABLE)) {
-		error("failed to DISABLE clock\n");
+		mmc_error("failed to DISABLE clock\n");
 		return -1;
 	}
 
@@ -411,13 +403,13 @@ static int mshci_change_clock(MshciHost *host, uint32_t clock)
 	 */
 	if (mmc_busy_wait_io(&host->reg->cmd, NULL, CMD_STRT_BIT,
 			     S5P_MSHC_COMMAND_TIMEOUT)) {
-		error("Changing clock has timed out.\n");
+		mmc_error("Changing clock has timed out.\n");
 		return -1;
 	}
 
 	clrbits32(&host->reg->cmd, CMD_SEND_CLK_ONLY);
 	if (mshci_clock_onoff(host, CLK_ENABLE)) {
-		error("failed to ENABLE clock\n");
+		mmc_error("failed to ENABLE clock\n");
 		return -1;
 	}
 
@@ -429,9 +421,9 @@ static void s5p_mshci_set_ios(MmcDevice *mmc)
 {
 	MshciHost *host = (MshciHost *)mmc->host;
 
-	debug("bus_width: %x, clock: %d\n", mmc->bus_width, mmc->clock);
+	mmc_debug("bus_width: %x, clock: %d\n", mmc->bus_width, mmc->clock);
 	if (mmc->clock > 0 && mshci_change_clock(host, mmc->clock))
-		debug("mshci_change_clock failed\n");
+		mmc_debug("mshci_change_clock failed\n");
 
 	if (mmc->bus_width == 8)
 		writel(PORT0_CARD_WIDTH8, &host->reg->ctype);
@@ -467,7 +459,7 @@ static int mshci_is_card_present(MmcDevice *mmc)
 	MshciHost *host = (MshciHost *)mmc->host;
 	assert(block_dev);
 
-	debug("%s\n", __func__);
+	mmc_debug("%s\n", __func__);
 	if (!block_dev->removable)
 		return 1;
 	return s5p_mshci_is_card_present(host->reg);
@@ -478,7 +470,7 @@ static int mshci_init(MshciHost *host)
 	writel(POWER_ENABLE, &host->reg->pwren);
 
 	if (mshci_reset_all(host)) {
-		error("mshci_reset_all() failed\n");
+		mmc_error("mshci_reset_all() failed\n");
 		return -1;
 	}
 
@@ -498,13 +490,13 @@ static int s5p_mshci_init(MmcDevice *mmc)
 	unsigned int ier;
 
 	if (mshci_init(host)) {
-		error("mshci_init() failed\n");
+		mmc_error("mshci_init() failed\n");
 		return -1;
 	}
 
 	/* enumerate at 400KHz */
 	if (mshci_change_clock(host, 400000)) {
-		error("mshci_change_clock failed\n");
+		mmc_error("mshci_change_clock failed\n");
 		return -1;
 	}
 
@@ -540,7 +532,7 @@ static int s5p_mshc_initialize(int dev_index, S5pMshci *reg,
 	MmcDevice *mmc_dev = (MmcDevice *)malloc(sizeof(MmcDevice));
 	BlockDev *mshc_dev = (BlockDev *)malloc(sizeof(BlockDev));
 
-	debug("%s: init device #%d using reg %p\n", __func__, dev_index, reg);
+	mmc_debug("%s: init device #%d using reg %p\n", __func__, dev_index, reg);
 
 	memset(host, 0, sizeof(*host));
 	memset(mmc_dev, 0, sizeof(*mmc_dev));
@@ -580,11 +572,11 @@ static int s5p_mshc_initialize(int dev_index, S5pMshci *reg,
 
 	if (mshc_dev->removable) {
 		block_mmc_register(mshc_dev, mmc_dev, refresh_list);
-		debug("%s: removable registered (init on refresh).\n", name);
+		mmc_debug("%s: removable registered (init on refresh).\n", name);
 	} else {
 		block_mmc_register(mshc_dev, mmc_dev, NULL);
 		if (mmc_init(mmc_dev)) {
-			error("%s: failed to init fixed %s.\n", __func__, name);
+			mmc_error("%s: init failed: %s.\n", __func__, name);
 			free(name);
 			free(mmc_dev);
 			free(mshc_dev);
@@ -592,7 +584,7 @@ static int s5p_mshc_initialize(int dev_index, S5pMshci *reg,
 			return -1;
 		}
 		list_insert_after(&mshc_dev->list_node, &fixed_block_devices);
-		debug("%s:  init success (reset OK): %s\n", __func__, name);
+		mmc_debug("%s:  init success (reset OK): %s\n", __func__, name);
 	}
 
 	return 0;
@@ -606,7 +598,7 @@ static void s5p_mshc_ctrlr_init(BlockDevCtrlr *ctrlr)
 	int i;
 	MmcDevice **refresh_list = (MmcDevice **)(&ctrlr->ctrlr_data);
 
-	debug("%s started.\n", __func__);
+	mmc_debug("%s started.\n", __func__);
 	for (i = 0; i < CONFIG_DRIVER_STORAGE_MSHC_S5P_DEVICES; i++) {
 		s5p_mshc_initialize(i, s5p_get_base_mshci(i), refresh_list);
 	}
@@ -615,11 +607,11 @@ static void s5p_mshc_ctrlr_init(BlockDevCtrlr *ctrlr)
 static void s5p_mshc_ctrlr_refresh(BlockDevCtrlr *ctrlr)
 {
 	MmcDevice *mmc = (MmcDevice *)ctrlr->ctrlr_data;
-	debug("%s: enter (root=%p).\n", __func__, mmc);
+	mmc_debug("%s: enter (root=%p).\n", __func__, mmc);
 	for (; mmc; mmc = mmc->next) {
 		block_mmc_refresh(&removable_block_devices, mmc);
 	}
-	debug("%s: leave.\n", __func__);
+	mmc_debug("%s: leave.\n", __func__);
 }
 
 int s5p_mshc_ctrlr_register(void)
@@ -631,7 +623,7 @@ int s5p_mshc_ctrlr_register(void)
 		NULL,
 	};
 	list_insert_after(&s5p_mshc.list_node, &block_dev_controllers);
-	debug("%s: done.\n", __func__);
+	mmc_debug("%s: done.\n", __func__);
 	return 0;
 }
 
