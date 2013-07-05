@@ -106,7 +106,7 @@ int exynos_dwmci_add_port(int index, uint32_t regbase, int bus_width,
 	/* Add the mmc channel to be registered with mmc core */
 	if (add_dwmci(host, DWMMC_MAX_FREQ, DWMMC_MIN_FREQ, removable,
 		      pre_init)) {
-		debug("dwmmc%d registration failed\n", index);
+		mmc_debug("dwmmc%d registration failed\n", index);
 		return -1;
 	}
 	return 0;

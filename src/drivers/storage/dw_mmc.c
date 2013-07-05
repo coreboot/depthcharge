@@ -169,7 +169,7 @@ static int dwmci_send_cmd(MmcDevice *mmc, MmcCommand *cmd, MmcData *data)
 
 	flags |= (cmd->cmdidx | DWMCI_CMD_START | DWMCI_CMD_USE_HOLD_REG);
 
-	debug("Sending CMD%d\n",cmd->cmdidx);
+	mmc_debug("Sending CMD%d\n",cmd->cmdidx);
 
 	dwmci_writel(host, DWMCI_CMD, flags);
 
@@ -186,10 +186,10 @@ static int dwmci_send_cmd(MmcDevice *mmc, MmcCommand *cmd, MmcData *data)
 		return MMC_TIMEOUT;
 
 	if (mask & DWMCI_INTMSK_RTO) {
-		debug("Response Timeout..\n");
+		mmc_debug("Response Timeout..\n");
 		return MMC_TIMEOUT;
 	} else if (mask & DWMCI_INTMSK_RE) {
-		debug("Response Error..\n");
+		mmc_debug("Response Error..\n");
 		return -1;
 	}
 
@@ -209,7 +209,7 @@ static int dwmci_send_cmd(MmcDevice *mmc, MmcCommand *cmd, MmcData *data)
 		do {
 			mask = dwmci_readl(host, DWMCI_RINTSTS);
 			if (mask & (DWMCI_DATA_ERR | DWMCI_DATA_TOUT)) {
-				debug("DATA ERROR!\n");
+				mmc_debug("DATA ERROR!\n");
 				return -1;
 			}
 		} while (!(mask & DWMCI_INTMSK_DTO));
@@ -299,7 +299,7 @@ static void dwmci_set_ios(MmcDevice *mmc)
 	DwmciHost *host = (DwmciHost *)mmc->host;
 	uint32_t ctype;
 
-	debug("Buswidth = %d, clock: %d\n",mmc->bus_width, mmc->clock);
+	mmc_debug("Buswidth = %d, clock: %d\n",mmc->bus_width, mmc->clock);
 
 	dwmci_setup_bus(host, mmc->clock);
 	switch (mmc->bus_width) {
@@ -335,7 +335,7 @@ static int dwmci_init(MmcDevice *mmc)
 	dwmci_writel(host, DWMCI_PWREN, 1);
 
 	if (!dwmci_wait_reset(host, DWMCI_RESET_ALL)) {
-		debug("%s[%d] Fail-reset!!\n",__func__,__LINE__);
+		mmc_debug("%s[%d] Fail-reset!!\n",__func__,__LINE__);
 		return -1;
 	}
 
