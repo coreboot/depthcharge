@@ -19,15 +19,12 @@
  *
  */
 
-#include <common.h>
-#include <dwmmc.h>
-#include <fdtdec.h>
-#include <libfdt.h>
-#include <malloc.h>
-#include <asm/arch/dwmmc.h>
-#include <asm/arch/clk.h>
-#include <asm/arch/gpio.h>
-#include <asm/arch/pinmux.h>
+#include <libpayload.h>
+#include <stdint.h>
+
+#include "base/init_funcs.h"
+#include "config.h"
+#include "drivers/storage/dw_mmc.h"
 
 #define DWMCI_CLKSEL		0x09C
 #define DWMCI_SHIFT_0		0x0
@@ -54,7 +51,9 @@ static void exynos_dwmci_clksel(DwmciHost *host)
 
 unsigned int exynos_dwmci_get_clk(int dev_index)
 {
-	return get_mmc_clk(dev_index);
+	// TODO(hungte) Implement get_mmc_clk or remove it.
+	// return get_mmc_clk(dev_index);
+	return 0;
 }
 
 /*
@@ -82,10 +81,21 @@ int exynos_dwmci_add_port(int index, uint32_t regbase, int bus_width,
 	}
 	/* request mmc clock vlaue of 52MHz.  */
 	freq = 52000000;
+	// TODO(hungte) Implement get_mmc_clk or remove it.
+#if 0
 	sclk = get_mmc_clk(index);
-	div = DIV_ROUND_UP(sclk, freq);
+#else
+	sclk = 0;
+#endif
+	div = (sclk + freq - 1) / freq;
+
 	/* set the clock divisor for mmc */
+	// TODO(hungte) Implement set_mmc_clk or remove it.
+#if 0
 	set_mmc_clk(index, div);
+#else
+	printf("%d\n", div);
+#endif
 
 	host->name = "EXYNOS DWMMC";
 	host->ioaddr = (void *)regbase;

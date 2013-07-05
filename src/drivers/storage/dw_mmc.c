@@ -95,10 +95,18 @@ static void dwmci_prepare_data(DwmciHost *host, MmcData *data)
 	} while(1);
 
 	data_end = (unsigned long )cur_idmac;
+	// TODO(hungte) Handle dcache flushing.
+#if 0
 	flush_dcache_range(data_start, data_end + ARCH_DMA_MINALIGN);
+#endif
 
 	stop_addr = start_addr + (data->blocks * data->blocksize);
+#if 0
 	flush_dcache_range(start_addr, stop_addr);
+#else
+	printf("%lu, %lu, %lu, %lu\n", start_addr, stop_addr, data_start,
+	       data_end);
+#endif
 
 	ctrl = dwmci_readl(host, DWMCI_CTRL);
 	ctrl |= DWMCI_IDMAC_EN | DWMCI_DMA_EN;
@@ -127,18 +135,20 @@ static int dwmci_send_cmd(MmcDevice *mmc, MmcCommand *cmd, MmcData *data)
 {
 	DwmciHost *host = (DwmciHost *)mmc->host;
 	int flags = 0, i;
-	unsigned int timeout = 100000;
+	// unsigned int timeout = 100000;
 	uint32_t retry = 10000;
 	uint32_t mask, ctrl;
-	unsigned long start = get_timer(0);
 	unsigned long data_start, data_end;
 
+	// TODO(hungte) Implement busy-loop.
+#if 0
 	while (dwmci_readl(host, DWMCI_STATUS) & DWMCI_BUSY) {
 		if (get_timer(start) > timeout) {
 			printf("Timeout on data busy\n");
 			return MMC_TIMEOUT;
 		}
 	}
+#endif
 
 	dwmci_writel(host, DWMCI_RINTSTS, DWMCI_INTMSK_ALL);
 
@@ -223,6 +233,8 @@ static int dwmci_send_cmd(MmcDevice *mmc, MmcCommand *cmd, MmcData *data)
 			data_start = (unsigned long)data->dest;
 			data_end = (unsigned long)data->dest +
 				data->blocks * data->blocksize;
+			// TODO(hungte) Handle dcache properly.
+#if 0
 			/*
 			 * The buffer is supposed to have padding to the
 			 * closest cache line boundary.
@@ -230,6 +242,9 @@ static int dwmci_send_cmd(MmcDevice *mmc, MmcCommand *cmd, MmcData *data)
 			invalidate_dcache_range(data_start,
 						ALIGN(data_end,
 						      dcache_get_line_size()));
+#else
+			printf("%lu, %lu\n", data_start, data_end);
+#endif
 		}
 	}
 
@@ -258,7 +273,8 @@ static int dwmci_setup_bus(DwmciHost *host, uint32_t freq)
 		return -1;
 	}
 
-	div = DIV_ROUND_UP(sclk, 2 * freq);
+	// Round up division.
+	div = (sclk + (2 * freq) - 1) / (2 * freq);
 
 	dwmci_writel(host, DWMCI_CLKENA, 0);
 	dwmci_writel(host, DWMCI_CLKSRC, 0);
@@ -403,6 +419,8 @@ int add_dwmci(DwmciHost *host, uint32_t max_clk, uint32_t min_clk,
 	}
 	mmc->host_caps |= MMC_MODE_HS | MMC_MODE_HS_52MHz | MMC_MODE_HC;
 
-	err = mmc_register(mmc);
+	// TODO(hungte) Complete block device restration function.
+	// err = mmc_register(mmc);
+	err = 0;
 	return err;
 }
