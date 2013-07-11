@@ -375,6 +375,8 @@ int fit_load(void *fit, char *cmd_line, void **kernel, uint32_t *kernel_size,
 		printf("Config %s, kernel %s", config->name, config->kernel);
 		if (config->fdt)
 			printf(", fdt %s", config->fdt);
+		if (config->compat)
+			printf(", compat '%s'", config->compat);
 		if (default_config_name &&
 				!strcmp(config->name, default_config_name)) {
 			printf(" (default)");
