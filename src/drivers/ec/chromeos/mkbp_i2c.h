@@ -1,6 +1,7 @@
 /*
- * Copyright 2012 Google Inc.
+ * Chromium OS mkbp driver - I2C interface
  *
+ * Copyright 2013 Google Inc.
  * See file CREDITS for list of people who contributed to this
  * project.
  *
@@ -10,8 +11,8 @@
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but without any warranty; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -20,33 +21,28 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
-#include <vboot_api.h>
+#ifndef __DRIVERS_EC_CHROMEOS_MKBP_I2C_H__
+#define __DRIVERS_EC_CHROMEOS_MKBP_I2C_H__
 
+#include "drivers/bus/i2c/i2c.h"
+#include "drivers/ec/chromeos/message.h"
 #include "drivers/ec/chromeos/mkbp.h"
 
-VbError_t VbExNvStorageRead(uint8_t* buf)
+struct I2cOps;
+typedef struct I2cOps I2cOps;
+
+typedef struct
 {
-	if (!mkbp_bus) {
-		printf("No MKBP device.\n");
-		return VBERROR_UNKNOWN;
-	}
+	uint8_t din[MSG_BYTES];
+	uint8_t dout[MSG_BYTES];
 
-	if (mkbp_read_vbnvcontext(mkbp_bus, buf))
-		return VBERROR_UNKNOWN;
+	MkbpBusOps ops;
+	I2cOps *bus;
+	uint8_t chip;
 
-	return VBERROR_SUCCESS;
-}
+	int initialized;
+} MkbpI2cBus;
 
-VbError_t VbExNvStorageWrite(const uint8_t* buf)
-{
-	if (!mkbp_bus) {
-		printf("No MKBP device.\n");
-		return VBERROR_UNKNOWN;
-	}
+MkbpI2cBus *new_mkbp_i2c_bus(I2cOps *bus, uint8_t chip);
 
-	if (mkbp_write_vbnvcontext(mkbp_bus, buf))
-		return VBERROR_UNKNOWN;
-
-	return VBERROR_SUCCESS;
-}
+#endif /* __DRIVERS_EC_CHROMEOS_MKBP_I2C_H__ */

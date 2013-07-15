@@ -21,6 +21,7 @@
  */
 
 #include "base/init_funcs.h"
+#include "drivers/ec/chromeos/mkbp_lpc.h"
 #include "drivers/gpio/lynxpoint_lp.h"
 #include "vboot/util/flag.h"
 
@@ -29,7 +30,15 @@ static int board_setup(void)
 	LpPchGpio *ec_in_rw = new_lp_pch_gpio_input(14);
 	if (!ec_in_rw)
 		return 1;
-	return flag_install(FLAG_ECINRW, &ec_in_rw->ops);
+	if (flag_install(FLAG_ECINRW, &ec_in_rw->ops))
+		return 1;
+
+	MkbpLpcBus *mkbp_lpc_bus = new_mkbp_lpc_bus();
+	if (!mkbp_lpc_bus)
+		return 1;
+	mkbp_set_bus(&mkbp_lpc_bus->ops);
+
+	return 0;
 }
 
 INIT_FUNC(board_setup);

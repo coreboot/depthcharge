@@ -1,6 +1,7 @@
 /*
- * Copyright 2013 Google Inc.
+ * Chromium OS mkbp driver - I2C interface
  *
+ * Copyright 2013 Google Inc.
  * See file CREDITS for list of people who contributed to this
  * project.
  *
@@ -10,8 +11,8 @@
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but without any warranty; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
@@ -20,25 +21,22 @@
  * MA 02111-1307 USA
  */
 
-#include "base/init_funcs.h"
-#include "drivers/ec/chromeos/mkbp_lpc.h"
-#include "drivers/gpio/lynxpoint_lp.h"
-#include "vboot/util/flag.h"
+#ifndef __DRIVERS_EC_CHROMEOS_MKBP_LPC_H__
+#define __DRIVERS_EC_CHROMEOS_MKBP_LPC_H__
 
-static int board_setup(void)
+#include "drivers/ec/chromeos/message.h"
+#include "drivers/ec/chromeos/mkbp.h"
+
+typedef struct
 {
-	LpPchGpio *ec_in_rw = new_lp_pch_gpio_input(25);
-	if (!ec_in_rw)
-		return 1;
-	if (flag_install(FLAG_ECINRW, &ec_in_rw->ops))
-		return 1;
+	uint8_t din[MSG_BYTES];
+	uint8_t dout[MSG_BYTES];
 
-	MkbpLpcBus *mkbp_lpc_bus = new_mkbp_lpc_bus();
-	if (!mkbp_lpc_bus)
-		return 1;
-	mkbp_set_bus(&mkbp_lpc_bus->ops);
+	MkbpBusOps ops;
 
-	return 0;
-}
+	int initialized;
+} MkbpLpcBus;
 
-INIT_FUNC(board_setup);
+MkbpLpcBus *new_mkbp_lpc_bus(void);
+
+#endif /* __DRIVERS_EC_CHROMEOS_MKBP_LPC_H__ */

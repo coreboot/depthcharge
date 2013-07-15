@@ -31,14 +31,29 @@
 #include <assert.h>
 #include <libpayload.h>
 
+#include "base/list.h"
 #include "config.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/chromeos/mkbp.h"
+#include "drivers/ec/chromeos/mkbp_i2c.h"
 
-int mkbp_bus_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
-		     const uint8_t *dout, int dout_len,
-		     uint8_t **dinp, int din_len)
+static int send_command(MkbpBusOps *me, uint8_t cmd, int cmd_version,
+			const uint8_t *dout, int dout_len,
+			uint8_t **dinp, int din_len)
 {
+	MkbpI2cBus *bus = container_of(me, MkbpI2cBus, ops);
+
+	if (!bus->bus) {
+		printf("%s: No i2c bus set.\n", __func__);
+		return -1;
+	}
+
+	if (!bus->initialized) {
+		bus->initialized = 1;
+		if (mkbp_init(me))
+			return -1;
+	}
+
 	/* version8, cmd8, arglen8, out8[dout_len], csum8 */
 	int out_bytes = dout_len + 4;
 	/* response8, arglen8, in8[din_len], checksum8 */
@@ -52,11 +67,11 @@ int mkbp_bus_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 	 * Sanity-check I/O sizes given transaction overhead in internal
 	 * buffers.
 	 */
-	if (out_bytes > sizeof(dev->dout)) {
+	if (out_bytes > sizeof(bus->dout)) {
 		printf("%s: Cannot send %d bytes\n", __func__, dout_len);
 		return -1;
 	}
-	if (in_bytes > sizeof(dev->din)) {
+	if (in_bytes > sizeof(bus->din)) {
 		printf("%s: Cannot receive %d bytes\n", __func__, din_len);
 		return -1;
 	}
@@ -67,7 +82,7 @@ int mkbp_bus_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 	 * Copy command and data into output buffer so we can do a single I2C
 	 * burst transaction.
 	 */
-	ptr = dev->dout;
+	ptr = bus->dout;
 
 	/*
 	 * in_ptr starts of pointing to a dword-aligned input data buffer.
@@ -75,7 +90,7 @@ int mkbp_bus_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 	 * receive, so that the first parameter of the resulting input data
 	 * will be dword aligned.
 	 */
-	in_ptr = dev->din + sizeof(int64_t);
+	in_ptr = bus->din + sizeof(int64_t);
 	*ptr++ = EC_CMD_VERSION0 + cmd_version;
 	*ptr++ = cmd;
 	*ptr++ = dout_len;
@@ -83,19 +98,15 @@ int mkbp_bus_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 	memcpy(ptr, dout, dout_len);
 	ptr += dout_len;
 
-	*ptr++ = (uint8_t)mkbp_calc_checksum(dev->dout, dout_len + 3);
+	*ptr++ = (uint8_t)mkbp_calc_checksum(bus->dout, dout_len + 3);
 
 	/* Send output data */
-	mkbp_dump_data("out", -1, dev->dout, out_bytes);
-	if (!i2c_bus)
-		return -1;
-	ret = i2c_bus->write(i2c_bus, CONFIG_DRIVER_MKBP_I2C_ADDR,
-			     0, 0, dev->dout, out_bytes);
+	mkbp_dump_data("out", -1, bus->dout, out_bytes);
+	ret = bus->bus->write(bus->bus, bus->chip, 0, 0, bus->dout, out_bytes);
 	if (ret)
 		return -1;
 
-	ret = i2c_bus->read(i2c_bus, CONFIG_DRIVER_MKBP_I2C_ADDR,
-			    0, 0, in_ptr, in_bytes);
+	ret = bus->bus->read(bus->bus, bus->chip, 0, 0, in_ptr, in_bytes);
 	if (ret)
 		return -1;
 
@@ -107,7 +118,7 @@ int mkbp_bus_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 	int len, csum;
 
 	len = in_ptr[1];
-	if (len + 3 > sizeof(dev->din)) {
+	if (len + 3 > sizeof(bus->din)) {
 		printf("%s: Received length %#02x too large\n",
 		       __func__, len);
 		return -1;
@@ -122,19 +133,22 @@ int mkbp_bus_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 	mkbp_dump_data("in", -1, in_ptr, din_len + 3);
 
 	/* Return pointer to dword-aligned input data, if any */
-	*dinp = dev->din + sizeof(int64_t);
+	*dinp = bus->din + sizeof(int64_t);
 
 	return din_len;
 }
 
-/**
- * Initialize I2C protocol.
- *
- * @param dev		MKBP device
- * @return 0 if ok, -1 on error
- */
-int mkbp_bus_init(struct mkbp_dev *dev)
+MkbpI2cBus *new_mkbp_i2c_bus(I2cOps *i2c_bus, uint8_t chip)
 {
+	MkbpI2cBus *bus = memalign(sizeof(int64_t), sizeof(*bus));
+	if (!bus) {
+		printf("Failed to allocate MKBP I2C object.\n");
+		return NULL;
+	}
+	memset(bus, 0, sizeof(*bus));
+	bus->ops.send_command = &send_command;
+	bus->bus = i2c_bus;
+	bus->chip = chip;
 
-	return 0;
+	return bus;
 }
