@@ -24,6 +24,7 @@
 #include <endian.h>
 #include <libpayload.h>
 
+#include "base/time.h"
 #include "drivers/net/net.h"
 #include "net/net.h"
 #include "net/uip.h"
@@ -44,6 +45,9 @@ typedef enum DhcpHardwareType
 
 static const uint16_t DhcpServerPort = 67;
 static const uint16_t DhcpClientPort = 68;
+
+// Wait for a response for 10 seconds before resending a request.
+static const uint64_t DhcpRespTimeoutUs = 10 * 1000 * 1000;
 
 typedef struct __attribute__((packed)) DhcpPacket
 {
@@ -373,7 +377,11 @@ static void dhcp_send_packet(struct uip_udp_conn *conn, const char *name,
 	// Poll network driver until we get a reply. Resend periodically.
 	net_set_callback(&dhcp_callback);
 	for (;;) {
-		net_poll();
+		uint64_t start = timer_us(0);
+		do {
+			net_poll();
+		} while (!dhcp_in_ready &&
+			 timer_us(start) < DhcpRespTimeoutUs);
 		if (dhcp_in_ready)
 			break;
 		// No response, try again.
