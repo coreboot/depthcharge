@@ -46,6 +46,12 @@ struct mkbp_dev *mkbp_ptr;
 /* Timeout waiting for a flash erase command to complete */
 static const int MKBP_CMD_TIMEOUT_MS = 5000;
 
+/* Timeout waiting for EC hash calculation completion */
+static const int MKBP_EC_HASH_TIMEOUT_MS = 2000;
+
+/* Time to delay between polling status of EC hash calculation */
+static const int MKBP_EC_HASH_CHECK_DELAY_MS = 10;
+
 /* Note: depends on enum ec_current_image */
 static const char * const ec_current_image_name[] = {"unknown", "RO", "RW"};
 
@@ -231,12 +237,53 @@ int mkbp_read_current_image(struct mkbp_dev *dev, enum ec_current_image *image)
 int mkbp_read_hash(struct mkbp_dev *dev, struct ec_response_vboot_hash *hash)
 {
 	struct ec_params_vboot_hash p;
+	uint64_t start;
+	int recalc_requested = 0;
 
-	p.cmd = EC_VBOOT_HASH_GET;
+	start = timer_time_in_us(0);
+	do {
+		/* Get hash if available. */
+		p.cmd = EC_VBOOT_HASH_GET;
+		if (ec_command(dev, EC_CMD_VBOOT_HASH, 0, &p, sizeof(p),
+			       (uint8_t **)&hash, sizeof(*hash)) < 0)
+			return -1;
 
-	if (ec_command(dev, EC_CMD_VBOOT_HASH, 0, &p, sizeof(p),
-		       (uint8_t **)&hash, sizeof(*hash)) < 0)
-		return -1;
+		switch (hash->status) {
+		case EC_VBOOT_HASH_STATUS_NONE:
+			/* We have no valid hash - let's request a recalc
+			 * if we haven't done so yet. */
+			if (recalc_requested != 0)
+				break;
+			printf("%s: No valid hash (status=%d size=%d). "
+			      "Compute one...\n", __func__, hash->status,
+			      hash->size);
+
+			p.cmd = EC_VBOOT_HASH_START;
+			p.hash_type = EC_VBOOT_HASH_TYPE_SHA256;
+			p.nonce_size = 0;
+			p.offset = EC_VBOOT_HASH_OFFSET_RW;
+
+			if (ec_command(dev, EC_CMD_VBOOT_HASH, 0, &p,
+				       sizeof(p), (uint8_t **)&hash,
+				       sizeof(*hash)) < 0)
+				return -1;
+
+			recalc_requested = 1;
+			/* Expect status to be busy (and don't break while)
+			 * since we just sent a recalc request. */
+			hash->status = EC_VBOOT_HASH_STATUS_BUSY;
+			break;
+		case EC_VBOOT_HASH_STATUS_BUSY:
+			/* Hash is still calculating. */
+			mdelay(MKBP_EC_HASH_CHECK_DELAY_MS);
+			break;
+		case EC_VBOOT_HASH_STATUS_DONE:
+		default:
+			/* We have a valid hash. */
+			break;
+		}
+	} while (hash->status == EC_VBOOT_HASH_STATUS_BUSY &&
+		 timer_time_in_us(start) < MKBP_EC_HASH_TIMEOUT_MS * 1000);
 
 	if (hash->status != EC_VBOOT_HASH_STATUS_DONE) {
 		printf("%s: Hash status not done: %d\n", __func__,
