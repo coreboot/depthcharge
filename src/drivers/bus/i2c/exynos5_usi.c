@@ -239,8 +239,8 @@ static int exynos5_usi_i2c_check_transfer(UsiI2cRegs *regs)
  */
 static int exynos5_usi_i2c_wait_for_transfer(UsiI2cRegs *regs)
 {
-	uint64_t start = timer_time_in_us(0);
-	while (timer_time_in_us(start) < HSI2C_TIMEOUT * 1000) {
+	uint64_t start = timer_us(0);
+	while (timer_us(start) < HSI2C_TIMEOUT * 1000) {
 		int ret = exynos5_usi_i2c_check_transfer(regs);
 		if (ret)
 			return ret;

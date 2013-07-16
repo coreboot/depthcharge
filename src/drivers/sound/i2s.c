@@ -68,7 +68,7 @@ int sound_stop(void)
 
 static void finish_delay(uint64_t start, uint32_t msec)
 {
-	uint32_t passed = timer_time_in_us(start) / 1000;
+	uint32_t passed = timer_us(start) / 1000;
 	mdelay(msec - passed);
 }
 
@@ -99,7 +99,7 @@ int sound_play(uint32_t msec, uint32_t frequency)
 
 	i2s_transfer_init(lr_frame_size, bits_per_sample, bit_frame_size);
 
-	uint64_t start = timer_time_in_us(0);
+	uint64_t start = timer_us(0);
 
 	while (msec >= 1000) {
 		if (i2s_send(data, bytes / sizeof(uint32_t))) {

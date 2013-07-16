@@ -47,12 +47,12 @@ int mmc_busy_wait_io(volatile uint32_t *address, uint32_t *output,
 		     uint32_t io_mask, uint32_t timeout_ms)
 {
 	uint32_t value = (uint32_t)-1;
-	uint64_t start = timer_time_in_us(0);
+	uint64_t start = timer_us(0);
 
 	if (!output)
 		output = &value;
 	for (; *output & io_mask; *output = readl(address)) {
-		if (timer_time_in_us(start) > timeout_ms * 1000)
+		if (timer_us(start) > timeout_ms * 1000)
 			return -1;
 	}
 	return 0;
@@ -62,12 +62,12 @@ int mmc_busy_wait_io_until(volatile uint32_t *address, uint32_t *output,
 			   uint32_t io_mask, uint32_t timeout_ms)
 {
 	uint32_t value = 0;
-	uint64_t start = timer_time_in_us(0);
+	uint64_t start = timer_us(0);
 
 	if (!output)
 		output = &value;
 	for (; !(*output & io_mask); *output = readl(address)) {
-		if (timer_time_in_us(start) > timeout_ms * 1000)
+		if (timer_us(start) > timeout_ms * 1000)
 			return -1;
 	}
 	return 0;
@@ -413,12 +413,12 @@ static int mmc_complete_op_cond(MmcDevice *mmc)
 	int err;
 
 	mmc->op_cond_pending = 0;
-	start = timer_time_in_us(0);
+	start = timer_us(0);
 	do {
 		err = mmc_send_op_cond_iter(mmc, &cmd, 1);
 		if (err)
 			return err;
-		if (timer_time_in_us(start) > timeout * 1000)
+		if (timer_us(start) > timeout * 1000)
 			return MMC_UNUSABLE_ERR;
 		udelay(100);
 	} while (!(mmc->op_cond_response & OCR_BUSY));
