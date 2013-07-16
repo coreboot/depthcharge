@@ -54,8 +54,6 @@ typedef struct CrosEcBusOps
 
 int cros_ec_set_bus(CrosEcBusOps *bus);
 
-extern CrosEcBusOps *cros_ec_bus;
-
 /*
  * Hard-code the number of columns we happen to know we have right now.  It
  * would be more correct to call cros_ec_mkbp_info() at startup and determine
@@ -73,53 +71,48 @@ struct cros_ec_keyscan {
  *
  * The ID is a string identifying the ChromeOS EC device.
  *
- * @param bus		ChromeOS EC bus ops
  * @param id		Place to put the ID
  * @param maxlen	Maximum length of the ID field
  * @return 0 if ok, -1 on error
  */
-int cros_ec_read_id(CrosEcBusOps *bus, char *id, int maxlen);
+int cros_ec_read_id(char *id, int maxlen);
 
 /**
  * Read a keyboard scan from the ChromeOS EC device
  *
  * Send a message requesting a keyboard scan and return the result
  *
- * @param bus		ChromeOS EC bus ops
  * @param scan		Place to put the scan results
  * @return 0 if ok, -1 on error
  */
-int cros_ec_scan_keyboard(CrosEcBusOps *bus, struct cros_ec_keyscan *scan);
+int cros_ec_scan_keyboard(struct cros_ec_keyscan *scan);
 
 /**
  * Read which image is currently running on the ChromeOS EC device.
  *
- * @param bus		ChromeOS EC bus ops
  * @param image		Destination for image identifier
  * @return 0 if ok, <0 on error
  */
-int cros_ec_read_current_image(CrosEcBusOps *bus, enum ec_current_image *image);
+int cros_ec_read_current_image(enum ec_current_image *image);
 
 /**
  * Read the hash of the ChromeOS EC device firmware.
  *
- * @param bus		ChromeOS EC bus ops
  * @param hash		Destination for hash information
  * @return 0 if ok, <0 on error
  */
-int cros_ec_read_hash(CrosEcBusOps *bus, struct ec_response_vboot_hash *hash);
+int cros_ec_read_hash(struct ec_response_vboot_hash *hash);
 
 /**
  * Send a reboot command to the ChromeOS EC device.
  *
  * Note that some reboot commands (such as EC_REBOOT_COLD) also reboot the AP.
  *
- * @param bus		ChromeOS EC bus ops
  * @param cmd		Reboot command
  * @param flags         Flags for reboot command (EC_REBOOT_FLAG_*)
  * @return 0 if ok, <0 on error
  */
-int cros_ec_reboot(CrosEcBusOps *bus, enum ec_reboot_cmd cmd, uint8_t flags);
+int cros_ec_reboot(enum ec_reboot_cmd cmd, uint8_t flags);
 
 /**
  * Check if the ChromeOS EC device has an interrupt pending.
@@ -127,49 +120,43 @@ int cros_ec_reboot(CrosEcBusOps *bus, enum ec_reboot_cmd cmd, uint8_t flags);
  * Read the status of the external interrupt connected to the ChromeOS EC
  * device. If no external interrupt is configured, this always returns 1.
  *
- * @param bus		ChromeOS EC bus ops
  * @return 0 if no interrupt is pending
  */
-int cros_ec_interrupt_pending(CrosEcBusOps *bus);
+int cros_ec_interrupt_pending(void);
 
 /**
  * Set up the Chromium OS matrix keyboard protocol
  *
- * @param blob		Device tree blob containing setup information
  * @return 0 if ok, <0 on error
  */
-int cros_ec_init(CrosEcBusOps *bus);
+int cros_ec_init(void);
 
 /**
  * Read information about the keyboard matrix
  *
- * @param bus		ChromeOS EC bus ops
  * @param info		Place to put the info structure
  */
-int cros_ec_mkbp_info(CrosEcBusOps *bus, struct ec_response_mkbp_info *info);
+int cros_ec_mkbp_info(struct ec_response_mkbp_info *info);
 
 /**
  * Read the host event flags
  *
- * @param bus		ChromeOS EC bus ops
  * @param events_ptr	Destination for event flags.  Not changed on error.
  * @return 0 if ok, <0 on error
  */
-int cros_ec_get_host_events(CrosEcBusOps *bus, uint32_t *events_ptr);
+int cros_ec_get_host_events(uint32_t *events_ptr);
 
 /**
  * Clear the specified host event flags
  *
- * @param bus		ChromeOS EC bus ops
  * @param events	Event flags to clear
  * @return 0 if ok, <0 on error
  */
-int cros_ec_clear_host_events(CrosEcBusOps *bus, uint32_t events);
+int cros_ec_clear_host_events(uint32_t events);
 
 /**
  * Get/set flash protection
  *
- * @param bus		ChromeOS EC bus ops
  * @param set_mask	Mask of flags to set; if 0, just retrieves existing
  *                      protection state without changing it.
  * @param set_flags	New flag values; only bits in set_mask are applied;
@@ -177,29 +164,25 @@ int cros_ec_clear_host_events(CrosEcBusOps *bus, uint32_t events);
  * @param prot          Destination for updated protection state from EC.
  * @return 0 if ok, <0 on error
  */
-int cros_ec_flash_protect(CrosEcBusOps *bus,
-			  uint32_t set_mask, uint32_t set_flags,
+int cros_ec_flash_protect(uint32_t set_mask, uint32_t set_flags,
 			  struct ec_response_flash_protect *resp);
 
 
 /**
  * Run internal tests on the ChromeOS EC interface.
  *
- * @param bus		ChromeOS EC bus ops
  * @return 0 if ok, <0 if the test failed
  */
-int cros_ec_test(CrosEcBusOps *bus);
+int cros_ec_test(void);
 
 /**
  * Update the EC RW copy.
  *
- * @param bus		ChromeOS EC bus ops
  * @param image		the content to write
  * @param imafge_size	content length
  * @return 0 if ok, <0 if the test failed
  */
-int cros_ec_flash_update_rw(CrosEcBusOps *bus,
-			    const uint8_t *image, int image_size);
+int cros_ec_flash_update_rw(const uint8_t *image, int image_size);
 
 /* Internal interfaces */
 
@@ -231,7 +214,7 @@ uint8_t cros_ec_calc_checksum(const uint8_t *data, int size);
  */
 int cros_ec_decode_region(int argc, char * const argv[]);
 
-int cros_ec_flash_erase(CrosEcBusOps *bus, uint32_t offset, uint32_t size);
+int cros_ec_flash_erase(uint32_t offset, uint32_t size);
 
 /**
  * Read data from the flash
@@ -242,14 +225,12 @@ int cros_ec_flash_erase(CrosEcBusOps *bus, uint32_t offset, uint32_t size);
  * The offset starts at 0. You can obtain the region information from
  * cros_ec_flash_offset() to find out where to read for a particular region.
  *
- * @param bus		ChromeOS EC bus ops
  * @param data		Pointer to data buffer to read into
  * @param offset	Offset within flash to read from
  * @param size		Number of bytes to read
  * @return 0 if ok, -1 on error
  */
-int cros_ec_flash_read(CrosEcBusOps *bus, uint8_t *data, uint32_t offset,
-		       uint32_t size);
+int cros_ec_flash_read(uint8_t *data, uint32_t offset, uint32_t size);
 
 /**
  * Write data to the flash
@@ -263,54 +244,47 @@ int cros_ec_flash_read(CrosEcBusOps *bus, uint8_t *data, uint32_t offset,
  * Attempting to write to the region where the EC is currently running from
  * will result in an error.
  *
- * @param bus		ChromeOS EC bus ops
  * @param data		Pointer to data buffer to write
  * @param offset	Offset within flash to write to.
  * @param size		Number of bytes to write
  * @return 0 if ok, -1 on error
  */
-int cros_ec_flash_write(CrosEcBusOps *bus, const uint8_t *data,
-			uint32_t offset, uint32_t size);
+int cros_ec_flash_write(const uint8_t *data, uint32_t offset, uint32_t size);
 
 /**
  * Obtain position and size of a flash region
  *
- * @param bus		ChromeOS EC bus ops
  * @param region	Flash region to query
  * @param offset	Returns offset of flash region in EC flash
  * @param size		Returns size of flash region
  * @return 0 if ok, -1 on error
  */
-int cros_ec_flash_offset(CrosEcBusOps *bus, enum ec_flash_region region,
+int cros_ec_flash_offset(enum ec_flash_region region,
 			 uint32_t *offset, uint32_t *size);
 
 /**
  * Read/write VbNvContext from/to a ChromeOS EC device.
  *
- * @param bus		ChromeOS EC bus ops
  * @param block		Buffer of VbNvContext to be read/write
  * @return 0 if ok, -1 on error
  */
-int cros_ec_read_vbnvcontext(CrosEcBusOps *bus, uint8_t *block);
-int cros_ec_write_vbnvcontext(CrosEcBusOps *bus, const uint8_t *block);
+int cros_ec_read_vbnvcontext(uint8_t *block);
+int cros_ec_write_vbnvcontext(const uint8_t *block);
 
 /**
  * Read the version information for the EC images
  *
- * @param bus		ChromeOS EC bus ops
  * @param versionp	This is set to point to the version information
  * @return 0 if ok, -1 on error
  */
-int cros_ec_read_version(CrosEcBusOps *bus,
-			 struct ec_response_get_version **versionp);
+int cros_ec_read_version(struct ec_response_get_version **versionp);
 
 /**
  * Read the build information for the EC
  *
- * @param bus		ChromeOS EC bus ops
  * @param versionp	This is set to point to the build string
  * @return 0 if ok, -1 on error
  */
-int cros_ec_read_build_info(CrosEcBusOps *bus, char **strp);
+int cros_ec_read_build_info(char **strp);
 
 #endif

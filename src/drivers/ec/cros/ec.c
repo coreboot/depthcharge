@@ -35,7 +35,9 @@
 #include "drivers/ec/cros/message.h"
 #include "drivers/ec/cros/ec.h"
 
-CrosEcBusOps *cros_ec_bus;
+static CrosEcBusOps *cros_ec_bus;
+
+static int initialized;
 
 int cros_ec_set_bus(CrosEcBusOps *bus)
 {
@@ -94,7 +96,6 @@ uint8_t cros_ec_calc_checksum(const uint8_t *data, int size)
  *
  * The device's internal input/output buffers are used.
  *
- * @param bus		ChromeOS EC bus ops
  * @param cmd		Command to send (EC_CMD_...)
  * @param cmd_version	Version of command to send (EC_VER_...)
  * @param dout          Output data (may be NULL If dout_len=0)
@@ -107,15 +108,23 @@ uint8_t cros_ec_calc_checksum(const uint8_t *data, int size)
  * @param din_len       Maximum size of response in bytes
  * @return number of bytes in response, or -1 on error
  */
-static int ec_command(CrosEcBusOps *bus, uint8_t cmd, int cmd_version,
+static int ec_command(uint8_t cmd, int cmd_version,
 		      const void *dout, int dout_len,
 		      uint8_t **dinp, int din_len)
 {
 	uint8_t *din;
 	int len;
 
-	len = bus->send_command(bus, cmd, cmd_version, dout,
-				dout_len, &din, din_len);
+	if (!cros_ec_bus) {
+		printf("No ChromeOS EC bus configured.\n");
+		return -1;
+	}
+
+	if (!initialized && cros_ec_init())
+		return -1;
+
+	len = cros_ec_bus->send_command(cros_ec_bus, cmd, cmd_version, dout,
+					dout_len, &din, din_len);
 
 	/* If the command doesn't complete, wait a while */
 	if (len == -EC_RES_IN_PROGRESS) {
@@ -128,9 +137,9 @@ static int ec_command(CrosEcBusOps *bus, uint8_t cmd, int cmd_version,
 			int ret;
 
 			mdelay(50);	/* Insert some reasonable delay */
-			ret = bus->send_command(bus, EC_CMD_GET_COMMS_STATUS,
-						0, NULL, 0, (uint8_t **)&resp,
-						sizeof(*resp));
+			ret = cros_ec_bus->send_command(
+				cros_ec_bus, EC_CMD_GET_COMMS_STATUS,
+				0, NULL, 0, (uint8_t **)&resp, sizeof(*resp));
 			if (ret < 0)
 				return ret;
 
@@ -142,8 +151,9 @@ static int ec_command(CrosEcBusOps *bus, uint8_t cmd, int cmd_version,
 		} while (resp->flags & EC_COMMS_STATUS_PROCESSING);
 
 		/* OK it completed, so read the status response */
-		len = bus->send_command(bus, EC_CMD_RESEND_RESPONSE, 0,
-					NULL, 0, &din, 0);
+		len = cros_ec_bus->send_command(
+			cros_ec_bus, EC_CMD_RESEND_RESPONSE,
+			0, NULL, 0, &din, 0);
 	}
 
 	/*
@@ -168,20 +178,20 @@ static int ec_command(CrosEcBusOps *bus, uint8_t cmd, int cmd_version,
 	return len;
 }
 
-int cros_ec_scan_keyboard(CrosEcBusOps *bus, struct cros_ec_keyscan *scan)
+int cros_ec_scan_keyboard(struct cros_ec_keyscan *scan)
 {
-	if (ec_command(bus, EC_CMD_MKBP_STATE, 0, NULL, 0, (uint8_t **)&scan,
+	if (ec_command(EC_CMD_MKBP_STATE, 0, NULL, 0, (uint8_t **)&scan,
 		       sizeof(scan->data)) < sizeof(scan->data))
 		return -1;
 
 	return 0;
 }
 
-int cros_ec_read_id(CrosEcBusOps *bus, char *id, int maxlen)
+int cros_ec_read_id(char *id, int maxlen)
 {
 	struct ec_response_get_version *r = NULL;
 
-	if (ec_command(bus, EC_CMD_GET_VERSION, 0, NULL, 0, (uint8_t **)&r,
+	if (ec_command(EC_CMD_GET_VERSION, 0, NULL, 0, (uint8_t **)&r,
 		       sizeof(*r)) < sizeof(*r))
 		return -1;
 
@@ -203,33 +213,31 @@ int cros_ec_read_id(CrosEcBusOps *bus, char *id, int maxlen)
 	return 0;
 }
 
-int cros_ec_read_version(CrosEcBusOps *bus,
-			 struct ec_response_get_version **versionp)
+int cros_ec_read_version(struct ec_response_get_version **versionp)
 {
 	*versionp = NULL;
-	if (ec_command(bus, EC_CMD_GET_VERSION, 0, NULL, 0,
-			(uint8_t **)versionp, sizeof(**versionp))
-			< sizeof(**versionp))
+	if (ec_command(EC_CMD_GET_VERSION, 0, NULL, 0, (uint8_t **)versionp,
+			sizeof(**versionp)) < sizeof(**versionp))
 		return -1;
 
 	return 0;
 }
 
-int cros_ec_read_build_info(CrosEcBusOps *bus, char **strp)
+int cros_ec_read_build_info(char **strp)
 {
 	*strp = NULL;
-	if (ec_command(bus, EC_CMD_GET_BUILD_INFO, 0, NULL, 0,
-			(uint8_t **)strp, EC_HOST_PARAM_SIZE) < 0)
+	if (ec_command(EC_CMD_GET_BUILD_INFO, 0, NULL, 0, (uint8_t **)strp,
+			EC_HOST_PARAM_SIZE) < 0)
 		return -1;
 
 	return 0;
 }
 
-int cros_ec_read_current_image(CrosEcBusOps *bus, enum ec_current_image *image)
+int cros_ec_read_current_image(enum ec_current_image *image)
 {
 	struct ec_response_get_version *r = NULL;
 
-	if (ec_command(bus, EC_CMD_GET_VERSION, 0, NULL, 0, (uint8_t **)&r,
+	if (ec_command(EC_CMD_GET_VERSION, 0, NULL, 0, (uint8_t **)&r,
 		       sizeof(*r)) < sizeof(*r))
 		return -1;
 
@@ -237,7 +245,7 @@ int cros_ec_read_current_image(CrosEcBusOps *bus, enum ec_current_image *image)
 	return 0;
 }
 
-int cros_ec_read_hash(CrosEcBusOps *bus, struct ec_response_vboot_hash *hash)
+int cros_ec_read_hash(struct ec_response_vboot_hash *hash)
 {
 	struct ec_params_vboot_hash p;
 	uint64_t start;
@@ -247,7 +255,7 @@ int cros_ec_read_hash(CrosEcBusOps *bus, struct ec_response_vboot_hash *hash)
 	do {
 		/* Get hash if available. */
 		p.cmd = EC_VBOOT_HASH_GET;
-		if (ec_command(bus, EC_CMD_VBOOT_HASH, 0, &p, sizeof(p),
+		if (ec_command(EC_CMD_VBOOT_HASH, 0, &p, sizeof(p),
 			       (uint8_t **)&hash, sizeof(*hash)) < 0)
 			return -1;
 
@@ -266,7 +274,7 @@ int cros_ec_read_hash(CrosEcBusOps *bus, struct ec_response_vboot_hash *hash)
 			p.nonce_size = 0;
 			p.offset = EC_VBOOT_HASH_OFFSET_RW;
 
-			if (ec_command(bus, EC_CMD_VBOOT_HASH, 0, &p,
+			if (ec_command(EC_CMD_VBOOT_HASH, 0, &p,
 				       sizeof(p), (uint8_t **)&hash,
 				       sizeof(*hash)) < 0)
 				return -1;
@@ -297,14 +305,14 @@ int cros_ec_read_hash(CrosEcBusOps *bus, struct ec_response_vboot_hash *hash)
 	return 0;
 }
 
-int cros_ec_reboot(CrosEcBusOps *bus, enum ec_reboot_cmd cmd, uint8_t flags)
+int cros_ec_reboot(enum ec_reboot_cmd cmd, uint8_t flags)
 {
 	struct ec_params_reboot_ec p;
 
 	p.cmd = cmd;
 	p.flags = flags;
 
-	if (ec_command(bus, EC_CMD_REBOOT_EC, 0, &p, sizeof(p), NULL, 0) < 0)
+	if (ec_command(EC_CMD_REBOOT_EC, 0, &p, sizeof(p), NULL, 0) < 0)
 		return -1;
 
 	if (!(flags & EC_REBOOT_FLAG_ON_AP_SHUTDOWN)) {
@@ -317,7 +325,7 @@ int cros_ec_reboot(CrosEcBusOps *bus, enum ec_reboot_cmd cmd, uint8_t flags)
 		int timeout = 20;
 		do {
 			mdelay(50);
-		} while (timeout-- && cros_ec_test(bus));
+		} while (timeout-- && cros_ec_test());
 
 		if (!timeout)
 			return -1;
@@ -326,22 +334,21 @@ int cros_ec_reboot(CrosEcBusOps *bus, enum ec_reboot_cmd cmd, uint8_t flags)
 	return 0;
 }
 
-int cros_ec_interrupt_pending(CrosEcBusOps *bus)
+int cros_ec_interrupt_pending(void)
 {
 	return 0;
 }
 
-int cros_ec_mkbp_info(CrosEcBusOps *bus, struct ec_response_mkbp_info *info)
+int cros_ec_mkbp_info(struct ec_response_mkbp_info *info)
 {
-	if (ec_command(bus, EC_CMD_MKBP_INFO, 0,
-			NULL, 0, (uint8_t **)&info, sizeof(*info))
-				< sizeof(*info))
+	if (ec_command(EC_CMD_MKBP_INFO, 0, NULL, 0, (uint8_t **)&info,
+			sizeof(*info)) < sizeof(*info))
 		return -1;
 
 	return 0;
 }
 
-int cros_ec_get_host_events(CrosEcBusOps *bus, uint32_t *events_ptr)
+int cros_ec_get_host_events(uint32_t *events_ptr)
 {
 	struct ec_response_host_event_mask *resp = NULL;
 
@@ -349,7 +356,7 @@ int cros_ec_get_host_events(CrosEcBusOps *bus, uint32_t *events_ptr)
 	 * Use the B copy of the event flags, because the main copy is already
 	 * used by ACPI/SMI.
 	 */
-	if (ec_command(bus, EC_CMD_HOST_EVENT_GET_B, 0, NULL, 0,
+	if (ec_command(EC_CMD_HOST_EVENT_GET_B, 0, NULL, 0,
 		       (uint8_t **)&resp, sizeof(*resp)) < sizeof(*resp))
 		return -1;
 
@@ -360,7 +367,7 @@ int cros_ec_get_host_events(CrosEcBusOps *bus, uint32_t *events_ptr)
 	return 0;
 }
 
-int cros_ec_clear_host_events(CrosEcBusOps *bus, uint32_t events)
+int cros_ec_clear_host_events(uint32_t events)
 {
 	struct ec_params_host_event_mask params;
 
@@ -370,15 +377,14 @@ int cros_ec_clear_host_events(CrosEcBusOps *bus, uint32_t events)
 	 * Use the B copy of the event flags, so it affects the data returned
 	 * by cros_ec_get_host_events().
 	 */
-	if (ec_command(bus, EC_CMD_HOST_EVENT_CLEAR_B, 0,
+	if (ec_command(EC_CMD_HOST_EVENT_CLEAR_B, 0,
 		       &params, sizeof(params), NULL, 0) < 0)
 		return -1;
 
 	return 0;
 }
 
-int cros_ec_flash_protect(CrosEcBusOps *bus,
-			  uint32_t set_mask, uint32_t set_flags,
+int cros_ec_flash_protect(uint32_t set_mask, uint32_t set_flags,
 			  struct ec_response_flash_protect *resp)
 {
 	struct ec_params_flash_protect params;
@@ -386,7 +392,7 @@ int cros_ec_flash_protect(CrosEcBusOps *bus,
 	params.mask = set_mask;
 	params.flags = set_flags;
 
-	if (ec_command(bus, EC_CMD_FLASH_PROTECT, EC_VER_FLASH_PROTECT,
+	if (ec_command(EC_CMD_FLASH_PROTECT, EC_VER_FLASH_PROTECT,
 		       &params, sizeof(params),
 		       (uint8_t **)&resp, sizeof(*resp)) < sizeof(*resp))
 		return -1;
@@ -394,13 +400,13 @@ int cros_ec_flash_protect(CrosEcBusOps *bus,
 	return 0;
 }
 
-int cros_ec_test(CrosEcBusOps *bus)
+int cros_ec_test(void)
 {
 	struct ec_params_hello req;
 	struct ec_response_hello *resp = NULL;
 
 	req.in_data = 0x12345678;
-	if (ec_command(bus, EC_CMD_HELLO, 0, &req, sizeof(req),
+	if (ec_command(EC_CMD_HELLO, 0, &req, sizeof(req),
 		       (uint8_t **)&resp, sizeof(*resp)) < sizeof(*resp)) {
 		printf("ec_command() returned error\n");
 		return -1;
@@ -413,16 +419,15 @@ int cros_ec_test(CrosEcBusOps *bus)
 	return 0;
 }
 
-int cros_ec_flash_offset(CrosEcBusOps *bus, enum ec_flash_region region,
-			 uint32_t *offset, uint32_t *size)
+int cros_ec_flash_offset(enum ec_flash_region region, uint32_t *offset,
+			 uint32_t *size)
 {
 	struct ec_params_flash_region_info p;
 	struct ec_response_flash_region_info *r = NULL;
 	int ret;
 
 	p.region = region;
-	ret = ec_command(bus, EC_CMD_FLASH_REGION_INFO,
-			 EC_VER_FLASH_REGION_INFO,
+	ret = ec_command(EC_CMD_FLASH_REGION_INFO, EC_VER_FLASH_REGION_INFO,
 			 &p, sizeof(p), (uint8_t **)&r, sizeof(*r));
 	if (ret != sizeof(*r))
 		return -1;
@@ -435,13 +440,13 @@ int cros_ec_flash_offset(CrosEcBusOps *bus, enum ec_flash_region region,
 	return 0;
 }
 
-int cros_ec_flash_erase(CrosEcBusOps *bus, uint32_t offset, uint32_t size)
+int cros_ec_flash_erase(uint32_t offset, uint32_t size)
 {
 	struct ec_params_flash_erase p;
 
 	p.offset = offset;
 	p.size = size;
-	return ec_command(bus, EC_CMD_FLASH_ERASE, 0, &p, sizeof(p), NULL, 0);
+	return ec_command(EC_CMD_FLASH_ERASE, 0, &p, sizeof(p), NULL, 0);
 }
 
 /**
@@ -456,14 +461,13 @@ int cros_ec_flash_erase(CrosEcBusOps *bus, uint32_t offset, uint32_t size)
  * Attempting to write to the region where the EC is currently running from
  * will result in an error.
  *
- * @param bus		ChromeOS EC bus ops
  * @param data		Pointer to data buffer to write
  * @param offset	Offset within flash to write to.
  * @param size		Number of bytes to write
  * @return 0 if ok, -1 on error
  */
-static int cros_ec_flash_write_block(CrosEcBusOps *bus, const uint8_t *data,
-				     uint32_t offset, uint32_t size)
+static int cros_ec_flash_write_block(const uint8_t *data, uint32_t offset,
+				     uint32_t size)
 {
 	struct ec_params_flash_write p;
 
@@ -472,23 +476,22 @@ static int cros_ec_flash_write_block(CrosEcBusOps *bus, const uint8_t *data,
 	assert(data && p.size <= sizeof(p.data));
 	memcpy(p.data, data, p.size);
 
-	return ec_command(bus, EC_CMD_FLASH_WRITE, 0,
+	return ec_command(EC_CMD_FLASH_WRITE, 0,
 			  &p, sizeof(p), NULL, 0) >= 0 ? 0 : -1;
 }
 
 /**
  * Return optimal flash write burst size
  */
-static int cros_ec_flash_write_burst_size(CrosEcBusOps *bus)
+static int cros_ec_flash_write_burst_size(void)
 {
 	struct ec_params_flash_write p;
 	return sizeof(p.data);
 }
 
-int cros_ec_flash_write(CrosEcBusOps *bus, const uint8_t *data,
-			uint32_t offset, uint32_t size)
+int cros_ec_flash_write(const uint8_t *data, uint32_t offset, uint32_t size)
 {
-	uint32_t burst = cros_ec_flash_write_burst_size(bus);
+	uint32_t burst = cros_ec_flash_write_burst_size();
 	uint32_t end, off;
 	int ret;
 
@@ -503,7 +506,7 @@ int cros_ec_flash_write(CrosEcBusOps *bus, const uint8_t *data,
 		/* If the data is empty, there is no point in programming it */
 		todo = MIN(end - off, burst);
 
-		ret = cros_ec_flash_write_block(bus, data, off, todo);
+		ret = cros_ec_flash_write_block(data, off, todo);
 		if (ret)
 			return ret;
 	}
@@ -520,34 +523,32 @@ int cros_ec_flash_write(CrosEcBusOps *bus, const uint8_t *data,
  * The offset starts at 0. You can obtain the region information from
  * cros_ec_flash_offset() to find out where to read for a particular region.
  *
- * @param bus		ChromeOS EC bus ops
  * @param data		Pointer to data buffer to read into
  * @param offset	Offset within flash to read from
  * @param size		Number of bytes to read
  * @return 0 if ok, -1 on error
  */
-static int cros_ec_flash_read_block(CrosEcBusOps *bus, uint8_t *data,
-				    uint32_t offset, uint32_t size)
+static int cros_ec_flash_read_block(uint8_t *data, uint32_t offset,
+				    uint32_t size)
 {
 	struct ec_params_flash_read p;
 
 	p.offset = offset;
 	p.size = size;
 
-	return ec_command(bus, EC_CMD_FLASH_READ, 0,
+	return ec_command(EC_CMD_FLASH_READ, 0,
 			  &p, sizeof(p), &data, size) >= 0 ? 0 : -1;
 }
 
-int cros_ec_flash_read(CrosEcBusOps *bus, uint8_t *data, uint32_t offset,
-		       uint32_t size)
+int cros_ec_flash_read(uint8_t *data, uint32_t offset, uint32_t size)
 {
-	uint32_t burst = cros_ec_flash_write_burst_size(bus);
+	uint32_t burst = cros_ec_flash_write_burst_size();
 	uint32_t end, off;
 	int ret;
 
 	end = offset + size;
 	for (off = offset; off < end; off += burst, data += burst) {
-		ret = cros_ec_flash_read_block(bus, data, off,
+		ret = cros_ec_flash_read_block(data, off,
 					       MIN(end - off, burst));
 		if (ret)
 			return ret;
@@ -556,13 +557,12 @@ int cros_ec_flash_read(CrosEcBusOps *bus, uint8_t *data, uint32_t offset,
 	return 0;
 }
 
-int cros_ec_flash_update_rw(CrosEcBusOps *bus, const uint8_t *image,
-			    int image_size)
+int cros_ec_flash_update_rw(const uint8_t *image, int image_size)
 {
 	uint32_t rw_offset, rw_size;
 	int ret;
 
-	if (cros_ec_flash_offset(bus, EC_FLASH_REGION_RW, &rw_offset, &rw_size))
+	if (cros_ec_flash_offset(EC_FLASH_REGION_RW, &rw_offset, &rw_size))
 		return -1;
 	if (image_size > rw_size)
 		return -1;
@@ -575,26 +575,26 @@ int cros_ec_flash_update_rw(CrosEcBusOps *bus, const uint8_t *image,
 	 * presumably everything past that is 0xff's.  But would still need to
 	 * round up to the nearest multiple of erase size.
 	 */
-	ret = cros_ec_flash_erase(bus, rw_offset, rw_size);
+	ret = cros_ec_flash_erase(rw_offset, rw_size);
 	if (ret)
 		return ret;
 
 	/* Write the image */
-	ret = cros_ec_flash_write(bus, image, rw_offset, image_size);
+	ret = cros_ec_flash_write(image, rw_offset, image_size);
 	if (ret)
 		return ret;
 
 	return 0;
 }
 
-int cros_ec_read_vbnvcontext(CrosEcBusOps *bus, uint8_t *block)
+int cros_ec_read_vbnvcontext(uint8_t *block)
 {
 	struct ec_params_vbnvcontext p;
 	int len;
 
 	p.op = EC_VBNV_CONTEXT_OP_READ;
 
-	len = ec_command(bus, EC_CMD_VBNV_CONTEXT, EC_VER_VBNV_CONTEXT,
+	len = ec_command(EC_CMD_VBNV_CONTEXT, EC_VER_VBNV_CONTEXT,
 			&p, sizeof(p), &block, EC_VBNV_BLOCK_SIZE);
 	if (len < EC_VBNV_BLOCK_SIZE)
 		return -1;
@@ -602,7 +602,7 @@ int cros_ec_read_vbnvcontext(CrosEcBusOps *bus, uint8_t *block)
 	return 0;
 }
 
-int cros_ec_write_vbnvcontext(CrosEcBusOps *bus, const uint8_t *block)
+int cros_ec_write_vbnvcontext(const uint8_t *block)
 {
 	struct ec_params_vbnvcontext p;
 	int len;
@@ -610,7 +610,7 @@ int cros_ec_write_vbnvcontext(CrosEcBusOps *bus, const uint8_t *block)
 	p.op = EC_VBNV_CONTEXT_OP_WRITE;
 	memcpy(p.block, block, sizeof(p.block));
 
-	len = ec_command(bus, EC_CMD_VBNV_CONTEXT, EC_VER_VBNV_CONTEXT,
+	len = ec_command(EC_CMD_VBNV_CONTEXT, EC_VER_VBNV_CONTEXT,
 			&p, sizeof(p), NULL, 0);
 	if (len < 0)
 		return -1;
@@ -618,15 +618,25 @@ int cros_ec_write_vbnvcontext(CrosEcBusOps *bus, const uint8_t *block)
 	return 0;
 }
 
-int cros_ec_init(CrosEcBusOps *bus)
+int cros_ec_init(void)
 {
 	char id[MSG_BYTES];
 
-	if (bus->init && bus->init(bus))
+	if (initialized)
+		return 0;
+
+	if (!cros_ec_bus) {
+		printf("No ChromeOS EC bus configured.\n");
+		return -1;
+	}
+
+	if (cros_ec_bus->init && cros_ec_bus->init(cros_ec_bus))
 		return -1;
 
-	if (cros_ec_read_id(bus, id, sizeof(id))) {
-		printf("%s: Could not read KBC ID\n", __func__);
+	initialized = 1;
+	if (cros_ec_read_id(id, sizeof(id))) {
+		printf("%s: Could not read ChromeOS EC ID\n", __func__);
+		initialized = 0;
 		return -1;
 	}
 
@@ -636,7 +646,7 @@ int cros_ec_init(CrosEcBusOps *bus)
 	printf("Clearing the recovery request.\n");
 	const uint32_t kb_rec_mask =
 		EC_HOST_EVENT_MASK(EC_HOST_EVENT_KEYBOARD_RECOVERY);
-	cros_ec_clear_host_events(bus, kb_rec_mask);
+	cros_ec_clear_host_events(kb_rec_mask);
 
 	return 0;
 }
