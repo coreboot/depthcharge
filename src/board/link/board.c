@@ -21,7 +21,7 @@
  */
 
 #include "base/init_funcs.h"
-#include "drivers/ec/chromeos/mkbp_lpc.h"
+#include "drivers/ec/cros/lpc.h"
 #include "drivers/gpio/pch.h"
 #include "vboot/util/flag.h"
 
@@ -33,10 +33,10 @@ static int board_setup(void)
 	if (flag_install(FLAG_ECINRW, &ec_in_rw->ops))
 		return 1;
 
-	MkbpLpcBus *mkbp_lpc_bus = new_mkbp_lpc_bus();
-	if (!mkbp_lpc_bus)
+	CrosEcLpcBus *cros_ec_lpc_bus = new_cros_ec_lpc_bus();
+	if (!cros_ec_lpc_bus)
 		return 1;
-	mkbp_set_bus(&mkbp_lpc_bus->ops);
+	cros_ec_set_bus(&cros_ec_lpc_bus->ops);
 
 	return 0;
 }

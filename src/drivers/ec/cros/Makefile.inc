@@ -1,6 +1,7 @@
-## This file is part of the coreboot project.
 ##
-## Copyright 2013 Google Inc.  All rights reserved.
+## This file is part of the depthcharge project.
+##
+## Copyright 2012 Google Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -13,23 +14,9 @@
 ##
 ## You should have received a copy of the GNU General Public License
 ## along with this program; if not, write to the Free Software
-## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+##
 
-config DRIVER_MKBP
-	bool "Enable support for the ChromeOS EC"
-	default n
-
-config DRIVER_MKBP_LPC
-	bool "ChromeOS EC LPC interface"
-	default n
-	depends on DRIVER_MKBP
-
-config DRIVER_MKBP_I2C
-	bool "ChromeOS EC I2C interface"
-	default n
-	depends on DRIVER_MKBP
-
-config DRIVER_MKBP_SPI
-	bool "ChromeOS EC SPI interface"
-	default n
-	depends on DRIVER_MKBP
+depthcharge-$(CONFIG_DRIVER_EC_CROS) += ec.c
+depthcharge-$(CONFIG_DRIVER_EC_CROS_LPC) += lpc.c
+depthcharge-$(CONFIG_DRIVER_EC_CROS_I2C) += i2c.c

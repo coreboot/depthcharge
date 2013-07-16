@@ -139,7 +139,7 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 
 	if (CONFIG_NV_STORAGE_CMOS) {
 		string_prop(props, old, "nonvolatile-context-storage", "nvram");
-	} else if (CONFIG_NV_STORAGE_MKBP) {
+	} else if (CONFIG_NV_STORAGE_CROS_EC) {
 		string_prop(props, old, "nonvolatile-context-storage", "mkbp");
 	} else if (CONFIG_NV_STORAGE_DISK) {
 		string_prop(props, old, "nonvolatile-context-storage", "disk");

@@ -24,7 +24,7 @@
 #include <libpayload.h>
 #include <vboot_api.h>
 
-#include "drivers/ec/chromeos/mkbp.h"
+#include "drivers/ec/cros/ec.h"
 #include "drivers/flash/flash.h"
 #include "image/fmap.h"
 #include "image/index.h"
@@ -43,13 +43,13 @@ int VbExTrustEC(void)
 
 VbError_t VbExEcRunningRW(int *in_rw)
 {
-	if (!mkbp_bus) {
-		printf("No MKBP device.\n");
+	if (!cros_ec_bus) {
+		printf("No ChromeOS EC device.\n");
 		return VBERROR_UNKNOWN;
 	}
 
 	enum ec_current_image image;
-	if (mkbp_read_current_image(mkbp_bus, &image) < 0) {
+	if (cros_ec_read_current_image(cros_ec_bus, &image) < 0) {
 		printf("Failed to read current EC image.\n");
 		return VBERROR_UNKNOWN;
 	}
@@ -70,12 +70,12 @@ VbError_t VbExEcRunningRW(int *in_rw)
 
 VbError_t VbExEcJumpToRW(void)
 {
-	if (!mkbp_bus) {
-		printf("No MKBP device.\n");
+	if (!cros_ec_bus) {
+		printf("No ChromeOS EC device.\n");
 		return VBERROR_UNKNOWN;
 	}
 
-	if (mkbp_reboot(mkbp_bus, EC_REBOOT_JUMP_RW, 0) < 0) {
+	if (cros_ec_reboot(cros_ec_bus, EC_REBOOT_JUMP_RW, 0) < 0) {
 		printf("Failed to make the EC jump to RW.\n");
 		return VBERROR_UNKNOWN;
 	}
@@ -85,12 +85,12 @@ VbError_t VbExEcJumpToRW(void)
 
 VbError_t VbExEcStayInRO(void)
 {
-	if (!mkbp_bus) {
-		printf("No MKBP device.\n");
+	if (!cros_ec_bus) {
+		printf("No ChromeOS EC device.\n");
 		return VBERROR_UNKNOWN;
 	}
 
-	if (mkbp_reboot(mkbp_bus, EC_REBOOT_DISABLE_JUMP, 0) < 0) {
+	if (cros_ec_reboot(cros_ec_bus, EC_REBOOT_DISABLE_JUMP, 0) < 0) {
 		printf("Failed to make the EC disable jumping.\n");
 		return VBERROR_UNKNOWN;
 	}
@@ -100,13 +100,13 @@ VbError_t VbExEcStayInRO(void)
 
 VbError_t VbExEcHashRW(const uint8_t **hash, int *hash_size)
 {
-	if (!mkbp_bus) {
-		printf("No MKBP device.\n");
+	if (!cros_ec_bus) {
+		printf("No ChromeOS EC device.\n");
 		return VBERROR_UNKNOWN;
 	}
 
 	static struct ec_response_vboot_hash resp;
-	if (mkbp_read_hash(mkbp_bus, &resp) < 0) {
+	if (cros_ec_read_hash(cros_ec_bus, &resp) < 0) {
 		printf("Failed to read EC hash.\n");
 		return VBERROR_UNKNOWN;
 	}
@@ -179,13 +179,14 @@ static VbError_t ec_protect_rw(int protect)
 	struct ec_response_flash_protect resp;
 	uint32_t mask = EC_FLASH_PROTECT_ALL_NOW | EC_FLASH_PROTECT_ALL_AT_BOOT;
 
-	if (!mkbp_bus) {
-		printf("No MKBP device.\n");
+	if (!cros_ec_bus) {
+		printf("No ChromeOS EC device.\n");
 		return VBERROR_UNKNOWN;
 	}
 
 	/* Update protection */
-	if (mkbp_flash_protect(mkbp_bus, mask, protect ? mask : 0, &resp) < 0) {
+	if (cros_ec_flash_protect(cros_ec_bus, mask, protect ? mask : 0,
+				  &resp) < 0) {
 		printf("Failed to update EC flash protection.\n");
 		return VBERROR_UNKNOWN;
 	}
@@ -260,8 +261,8 @@ VbError_t VbExEcGetExpectedRWHash(enum VbSelectFirmware_t select,
 
 VbError_t VbExEcUpdateRW(const uint8_t *image, int image_size)
 {
-	if (!mkbp_bus) {
-		printf("No MKBP device.\n");
+	if (!cros_ec_bus) {
+		printf("No ChromeOS EC device.\n");
 		return VBERROR_UNKNOWN;
 	}
 
@@ -269,7 +270,7 @@ VbError_t VbExEcUpdateRW(const uint8_t *image, int image_size)
 	if (rv == VBERROR_EC_REBOOT_TO_RO_REQUIRED || rv != VBERROR_SUCCESS)
 		return rv;
 
-	if (mkbp_flash_update_rw(mkbp_bus, image, image_size)) {
+	if (cros_ec_flash_update_rw(cros_ec_bus, image, image_size)) {
 		printf("Failed to update EC RW flash.\n");
 		return VBERROR_UNKNOWN;
 	}

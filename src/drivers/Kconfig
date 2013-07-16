@@ -16,7 +16,7 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 source src/drivers/bus/Kconfig
-source src/drivers/ec/chromeos/Kconfig
+source src/drivers/ec/cros/Kconfig
 source src/drivers/flash/Kconfig
 source src/drivers/gpio/Kconfig
 source src/drivers/input/Kconfig

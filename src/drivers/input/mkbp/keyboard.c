@@ -27,7 +27,7 @@
 #include <stdint.h>
 
 #include "base/init_funcs.h"
-#include "drivers/ec/chromeos/mkbp.h"
+#include "drivers/ec/cros/ec.h"
 #include "drivers/input/input.h"
 #include "drivers/input/mkbp/keymatrix.h"
 #include "drivers/input/mkbp/layout.h"
@@ -39,16 +39,16 @@ typedef enum Modifier {
 	ModifierShift = 0x4
 } Modifier;
 
-static int read_scancodes(MkbpBusOps *bus, Modifier *modifiers,
+static int read_scancodes(CrosEcBusOps *bus, Modifier *modifiers,
 			  uint8_t *codes, int max_codes)
 {
-	static struct mkbp_keyscan last_scan;
-	static struct mkbp_keyscan scan;
+	static struct cros_ec_keyscan last_scan;
+	static struct cros_ec_keyscan scan;
 
 	assert(modifiers);
 	*modifiers = ModifierNone;
 
-	if (mkbp_scan_keyboard(bus, &scan)) {
+	if (cros_ec_scan_keyboard(bus, &scan)) {
 		printf("Key matrix scan failed.\n");
 		return 0;
 	}
@@ -157,7 +157,7 @@ static void add_key(uint16_t key)
 	key_fifo[fifo_size++] = key;
 }
 
-static void more_keys(MkbpBusOps *bus)
+static void more_keys(CrosEcBusOps *bus)
 {
 	// No more keys until you finish the ones you've got.
 	if (fifo_offset != fifo_size)
@@ -223,13 +223,13 @@ static void more_keys(MkbpBusOps *bus)
 
 static int mkbp_keyboard_havekey(void)
 {
-	if (!mkbp_bus) {
+	if (!cros_ec_bus) {
 		printf("No MBKP device.\n");
 		return 0;
 	}
 
 	// Get more keys if we need them.
-	more_keys(mkbp_bus);
+	more_keys(cros_ec_bus);
 
 	return fifo_size;
 }
@@ -250,8 +250,8 @@ static struct console_input_driver mkbp_keyboard =
 
 static void mkbp_keyboard_init(void)
 {
-	if (!mkbp_bus) {
-		printf("No MBKP device.\n");
+	if (!cros_ec_bus) {
+		printf("No ChromeOS EC device.\n");
 		return;
 	}
 
