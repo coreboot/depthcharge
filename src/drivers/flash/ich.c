@@ -24,12 +24,10 @@
 #include <libpayload.h>
 #include <stdint.h>
 
-#include "config.h"
+#include "base/list.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/ich.h"
-
-static int ich_spi_lock = 0;
-static uint8_t ich_spi_cache[CONFIG_DRIVER_FLASH_ICH_ROM_SIZE];
+#include "drivers/flash/ich_shared.h"
 
 static void read_reg(const void *src, void *value, uint32_t size)
 {
@@ -62,36 +60,34 @@ uint8_t *ich_spi_get_rcrb(void)
 	return rcrb;
 }
 
-static int spi_setup_opcode(uint8_t type, uint8_t opcode)
+static int spi_setup_opcode(IchFlash *flash, uint8_t type, uint8_t opcode)
 {
-	IchSpiController *cntlr = ich_spi_get_controller();
-
-	if (!ich_spi_lock) {
+	if (!flash->locked) {
 		// The lock is off, so just use index 0.
-		writeb(opcode, cntlr->opmenu);
-		uint16_t optypes = readw(cntlr->optype);
+		writeb(opcode, flash->opmenu);
+		uint16_t optypes = readw(flash->optype);
 		optypes = (optypes & 0xfffc) | (type & 0x3);
-		writew(optypes, cntlr->optype);
+		writew(optypes, flash->optype);
 		return 0;
 	} else {
 		// The lock is on. See if what we need is on the menu.
 		uint16_t opcode_index;
 
-		uint8_t opmenu[cntlr->menubytes];
-		read_reg(cntlr->opmenu, opmenu, sizeof(opmenu));
-		int menubytes = cntlr->menubytes;
+		uint8_t opmenu[flash->menubytes];
+		read_reg(flash->opmenu, opmenu, sizeof(opmenu));
+		int menubytes = flash->menubytes;
 		for (opcode_index = 0; opcode_index < menubytes;
 				opcode_index++) {
 			if (opmenu[opcode_index] == opcode)
 				break;
 		}
 
-		if (opcode_index == cntlr->menubytes) {
+		if (opcode_index == flash->menubytes) {
 			printf("ICH SPI: Opcode %x not found\n", opcode);
 			return -1;
 		}
 
-		uint16_t optypes = readw(cntlr->optype);
+		uint16_t optypes = readw(flash->optype);
 		uint8_t optype = (optypes >> (opcode_index * 2)) & 0x3;
 		if (optype != type) {
 			printf("ICH SPI: Transaction doesn't fit type %d\n",
@@ -109,18 +105,17 @@ static int spi_setup_opcode(uint8_t type, uint8_t opcode)
  *
  * Return the last read status value on success or -1 on failure.
  */
-static int32_t ich_status_poll(uint16_t bitmask, int wait_til_set)
+static int32_t ich_status_poll(IchFlash *flash, uint16_t bitmask,
+			       int wait_til_set)
 {
-	IchSpiController *cntlr = ich_spi_get_controller();
-
 	int timeout = 60000; // in us
 	uint16_t status = 0;
 
 	while (timeout--) {
-		status = readw(cntlr->status);
+		status = readw(flash->status);
 		if (wait_til_set ^ ((status & bitmask) == 0)) {
 			if (wait_til_set)
-				writew((status & bitmask), cntlr->status);
+				writew((status & bitmask), flash->status);
 			return status;
 		}
 		udelay(1);
@@ -131,20 +126,19 @@ static int32_t ich_status_poll(uint16_t bitmask, int wait_til_set)
 	return -1;
 }
 
-static void *flash_read_op(uint8_t opcode, uint32_t offset, uint32_t size)
+static void *flash_read_op(IchFlash *flash, uint8_t opcode,
+			   uint32_t offset, uint32_t size)
 {
-	IchSpiController *cntlr = ich_spi_get_controller();
+	uint8_t * const data = flash->cache + offset;
 
-	uint8_t * const data = ich_spi_cache + offset;
-
-	if (ich_status_poll(SPIS_SCIP, 0) == -1)
+	if (ich_status_poll(flash, SPIS_SCIP, 0) == -1)
 		return NULL;
 
-	writew(SPIS_CDS | SPIS_FCERR, cntlr->status);
+	writew(SPIS_CDS | SPIS_FCERR, flash->status);
 
 	uint8_t type = SPI_OPCODE_TYPE_READ_WITH_ADDRESS;
 	int16_t opcode_index;
-	if ((opcode_index = spi_setup_opcode(type, opcode)) < 0)
+	if ((opcode_index = spi_setup_opcode(flash, type, opcode)) < 0)
 		return NULL;
 
 	// Prepare control fields.
@@ -154,20 +148,21 @@ static void *flash_read_op(uint8_t opcode, uint32_t offset, uint32_t size)
 		uint32_t data_length;
 
 		// SPI addresses are 24 bits long.
-		writel(offset & 0x00FFFFFF, cntlr->addr);
+		writel(offset & 0x00FFFFFF, flash->addr);
 
-		data_length = MIN(size, cntlr->databytes);
+		data_length = MIN(size, flash->databytes);
 
 		// Set proper control field values.
-		control &= ~((cntlr->databytes - 1) << 8);
+		control &= ~((flash->databytes - 1) << 8);
 		control |= SPIC_DS;
 		control |= (data_length - 1) << 8;
 
 		/* write it */
-		writew(control, cntlr->control);
+		writew(control, flash->control);
 
 		/* Wait for Cycle Done Status or Flash Cycle Error. */
-		int32_t status = ich_status_poll(SPIS_CDS | SPIS_FCERR, 1);
+		int32_t status =
+			ich_status_poll(flash, SPIS_CDS | SPIS_FCERR, 1);
 		if (status == -1)
 			return NULL;
 
@@ -176,7 +171,7 @@ static void *flash_read_op(uint8_t opcode, uint32_t offset, uint32_t size)
 			return NULL;
 		}
 
-		read_reg(cntlr->data, ich_spi_cache + offset, data_length);
+		read_reg(flash->data, flash->cache + offset, data_length);
 
 		offset += data_length;
 		size -= data_length;
@@ -185,14 +180,12 @@ static void *flash_read_op(uint8_t opcode, uint32_t offset, uint32_t size)
 	return data;
 }
 
-static void ich_spi_init(void)
+static void ich_spi_init(IchFlash *flash)
 {
-	static int done = 0;
-	if (done)
+	if (flash->initialized)
 		return;
 
-	IchSpiController *cntlr = ich_spi_get_controller();
-	ich_spi_lock = ich_spi_get_lock();
+	flash->locked = flash->get_lock(flash);
 
 	pcidev_t dev = PCI_DEV(0, 31, 0);
 
@@ -201,31 +194,32 @@ static void ich_spi_init(void)
 
 	uint32_t minaddr = 0;
 	minaddr &= bbar_mask;
-	ichspi_bbar = readl(cntlr->bbar) & ~bbar_mask;
+	ichspi_bbar = readl(flash->bbar) & ~bbar_mask;
 	ichspi_bbar |= minaddr;
-	writel(ichspi_bbar, cntlr->bbar);
+	writel(ichspi_bbar, flash->bbar);
 
 	uint8_t bios_cntl = pci_read_config8(dev, 0xdc);
-	bios_cntl &= ~cntlr->bios_cntl_clear;
-	bios_cntl |= cntlr->bios_cntl_set;
+	bios_cntl &= ~flash->bios_cntl_clear;
+	bios_cntl |= flash->bios_cntl_set;
 	pci_write_config8(dev, 0xdc, bios_cntl);
 
-	done = 1;
+	flash->initialized = 1;
 }
 
-void *flash_read(uint32_t offset, uint32_t size)
+void *ich_spi_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
 {
-	ich_spi_init();
+	IchFlash *flash = container_of(me, IchFlash, ops);
 
-	IchSpiController *cntlr = ich_spi_get_controller();
+	if (!flash->initialized)
+		ich_spi_init(flash);
 
-	uint32_t chunk = cntlr->databytes;
+	uint32_t chunk = flash->databytes;
 	uint32_t mask = ~(chunk - 1);
 
 	uint32_t start = offset & mask;
 	uint32_t end = (offset + size + chunk - 1) & mask;
 
-	uint8_t *data = flash_read_op(0xB, start, end - start);
+	uint8_t *data = flash_read_op(flash, 0xB, start, end - start);
 	if (data)
 		data += (offset - start);
 	return data;

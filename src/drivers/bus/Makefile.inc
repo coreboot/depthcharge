@@ -17,4 +17,4 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-subdirs-y += i2c i2s usb
+subdirs-y += i2c i2s spi usb

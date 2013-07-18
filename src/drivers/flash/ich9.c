@@ -24,7 +24,8 @@
 #include <libpayload.h>
 #include <stdint.h>
 
-#include "drivers/flash/ich.h"
+#include "drivers/flash/ich9.h"
+#include "drivers/flash/ich_shared.h"
 
 typedef struct Ich9SpiRegs {
 	uint32_t bfpr;
@@ -59,40 +60,7 @@ typedef struct Ich9SpiRegs {
 	uint32_t srd;
 } __attribute__((packed)) Ich9SpiRegs;
 
-IchSpiController *ich_spi_get_controller(void)
-{
-	static IchSpiController cntlr;
-	static int done = 0;
-
-	if (done)
-		return &cntlr;
-
-	uint8_t *rcrb = ich_spi_get_rcrb();
-
-	const uint16_t ich9_spibar_offset = 0x3800;
-	Ich9SpiRegs *ich9_spi = (Ich9SpiRegs *)(rcrb + ich9_spibar_offset);
-
-	cntlr.opmenu = ich9_spi->opmenu;
-	cntlr.menubytes = sizeof(ich9_spi->opmenu);
-	cntlr.optype = &ich9_spi->optype;
-	cntlr.addr = &ich9_spi->faddr;
-	cntlr.data = (uint8_t *)ich9_spi->fdata;
-	cntlr.databytes = sizeof(ich9_spi->fdata);
-	cntlr.status = &ich9_spi->ssfs;
-	cntlr.control = (uint16_t *)ich9_spi->ssfc;
-	cntlr.bbar = &ich9_spi->bbar;
-	cntlr.preop = &ich9_spi->preop;
-
-	// Deassert SMM BIOS Write Protect Disable.
-	cntlr.bios_cntl_clear = 0x20;
-	// Disable the BIOS write protect so write commands are allowed.
-	cntlr.bios_cntl_set = 0x1;
-
-	done = 1;
-	return &cntlr;
-}
-
-int ich_spi_get_lock(void)
+static int ich9_spi_get_lock(IchFlash *me)
 {
 	uint8_t *rcrb = ich_spi_get_rcrb();
 
@@ -100,4 +68,41 @@ int ich_spi_get_lock(void)
 	Ich9SpiRegs *ich9_spi = (Ich9SpiRegs *)(rcrb + ich9_spibar_offset);
 
 	return readw(&ich9_spi->hsfs) & HSFS_FLOCKDN;
+}
+
+IchFlash *new_ich9_spi_flash(uint32_t rom_size)
+{
+	IchFlash *flash = malloc(sizeof(*flash) + rom_size);
+	if (!flash) {
+		printf("Failed to allocate ICH9 SPI object.\n");
+		return NULL;
+	}
+	memset(flash, 0, sizeof(*flash));
+
+	uint8_t *rcrb = ich_spi_get_rcrb();
+	const uint16_t ich9_spibar_offset = 0x3800;
+	Ich9SpiRegs *ich9_spi = (Ich9SpiRegs *)(rcrb + ich9_spibar_offset);
+
+	flash->ops.read = &ich_spi_flash_read;
+
+	flash->opmenu = ich9_spi->opmenu;
+	flash->menubytes = sizeof(ich9_spi->opmenu);
+	flash->optype = &ich9_spi->optype;
+	flash->addr = &ich9_spi->faddr;
+	flash->data = (uint8_t *)ich9_spi->fdata;
+	flash->databytes = sizeof(ich9_spi->fdata);
+	flash->status = &ich9_spi->ssfs;
+	flash->control = (uint16_t *)ich9_spi->ssfc;
+	flash->bbar = &ich9_spi->bbar;
+	flash->preop = &ich9_spi->preop;
+	// Deassert SMM BIOS Write Protect Disable.
+	flash->bios_cntl_clear = 0x20;
+	// Disable the BIOS write protect so write commands are allowed.
+	flash->bios_cntl_set = 0x1;
+
+	flash->get_lock = &ich9_spi_get_lock;
+
+	flash->rom_size = rom_size;
+
+	return flash;
 }

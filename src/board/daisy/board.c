@@ -25,7 +25,9 @@
 #include "base/init_funcs.h"
 #include "board/daisy/i2c_arb.h"
 #include "drivers/bus/i2c/s3c24x0.h"
+#include "drivers/bus/spi/exynos5.h"
 #include "drivers/ec/cros/i2c.h"
+#include "drivers/flash/spi.h"
 #include "drivers/gpio/s5p.h"
 #include "drivers/sound/max98095.h"
 #include "drivers/tpm/tpm.h"
@@ -66,6 +68,13 @@ static int board_setup(void)
 
 	tis_set_i2c_bus(&i2c3->ops);
 	max98095_set_i2c_bus(&i2c7->ops);
+
+	Exynos5Spi *spi1 = new_exynos5_spi((void *)(uintptr_t)0x12d30000);
+	if (!spi1)
+		return 1;
+	SpiFlash *flash = new_spi_flash(&spi1->ops, 0x400000);
+	if (!flash || flash_set_ops(&flash->ops))
+		return 1;
 
 	return 0;
 }
