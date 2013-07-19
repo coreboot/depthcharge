@@ -67,7 +67,7 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 	struct ec_lpc_host_args args;
 	CrosEcLpcBus *bus = container_of(me, CrosEcLpcBus, ops);
 
-	if (dout_len > EC_HOST_PARAM_SIZE) {
+	if (dout_len > EC_PROTO2_MAX_PARAM_SIZE) {
 		printf("%s: Cannot send %d bytes\n", __func__, dout_len);
 		return -1;
 	}
@@ -158,7 +158,7 @@ static int cros_ec_lpc_init(CrosEcBusOps *me)
 	byte = 0xff;
 	byte &= inb(EC_LPC_ADDR_HOST_CMD);
 	byte &= inb(EC_LPC_ADDR_HOST_DATA);
-	for (i = 0; i < EC_HOST_PARAM_SIZE && (byte == 0xff); i++)
+	for (i = 0; i < EC_PROTO2_MAX_PARAM_SIZE && (byte == 0xff); i++)
 		byte &= inb(EC_LPC_ADDR_HOST_PARAM + i);
 	if (byte == 0xff) {
 		printf("%s: CrosEC device not found on LPC bus\n",
