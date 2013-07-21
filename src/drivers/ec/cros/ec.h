@@ -48,8 +48,16 @@ typedef struct CrosEcBusOps
 	 */
 	int (*send_command)(struct CrosEcBusOps *me, uint8_t cmd,
 			    int cmd_version,
-			    const uint8_t *dout, int dout_len,
-			    uint8_t **dinp, int din_len);
+			    const void *dout, uint32_t dout_len,
+			    void *din, uint32_t din_len);
+
+	int (*send_packet)(struct CrosEcBusOps *me,
+			   const void *dout, uint32_t dout_len,
+			   void *din, uint32_t din_len);
+
+	int (*set_max_sizes)(struct CrosEcBusOps *me,
+			     uint32_t max_request_size,
+			     uint32_t max_reply_size);
 } CrosEcBusOps;
 
 int cros_ec_set_bus(CrosEcBusOps *bus);
@@ -274,17 +282,17 @@ int cros_ec_write_vbnvcontext(const uint8_t *block);
 /**
  * Read the version information for the EC images
  *
- * @param versionp	This is set to point to the version information
+ * @param versionp	This is the version information
  * @return 0 if ok, -1 on error
  */
-int cros_ec_read_version(struct ec_response_get_version **versionp);
+int cros_ec_read_version(struct ec_response_get_version *versionp);
 
 /**
  * Read the build information for the EC
  *
- * @param versionp	This is set to point to the build string
+ * @param versionp	This is the build string
  * @return 0 if ok, -1 on error
  */
-int cros_ec_read_build_info(char **strp);
+int cros_ec_read_build_info(char *strp);
 
 #endif

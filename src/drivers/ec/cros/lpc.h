@@ -29,9 +29,6 @@
 
 typedef struct
 {
-	uint8_t din[MSG_BYTES];
-	uint8_t dout[MSG_BYTES];
-
 	CrosEcBusOps ops;
 } CrosEcLpcBus;
 

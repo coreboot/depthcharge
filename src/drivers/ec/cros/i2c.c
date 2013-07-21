@@ -38,108 +38,125 @@
 #include "drivers/ec/cros/i2c.h"
 
 static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
-			const uint8_t *dout, int dout_len,
-			uint8_t **dinp, int din_len)
+			const void *dout, uint32_t dout_len,
+			void *din, uint32_t din_len)
 {
 	CrosEcI2cBus *bus = container_of(me, CrosEcI2cBus, ops);
+	uint8_t *bytes;
 
-	/* version8, cmd8, arglen8, out8[dout_len], csum8 */
-	int out_bytes = dout_len + 4;
-	/* response8, arglen8, in8[din_len], checksum8 */
-	int in_bytes = din_len + 3;
-	uint8_t *ptr;
-	/* Receive input data, so that args will be dword aligned */
-	uint8_t *in_ptr;
-	int ret;
+	// Header + data + checksum.
+	int out_bytes = CROS_EC_I2C_OUT_HDR_SIZE + dout_len + 1;
+	int in_bytes = CROS_EC_I2C_IN_HDR_SIZE + din_len + 1;
 
 	/*
 	 * Sanity-check I/O sizes given transaction overhead in internal
 	 * buffers.
 	 */
-	if (out_bytes > sizeof(bus->dout)) {
+	if (out_bytes > bus->out_size) {
 		printf("%s: Cannot send %d bytes\n", __func__, dout_len);
 		return -1;
 	}
-	if (in_bytes > sizeof(bus->din)) {
+	if (in_bytes > bus->in_size) {
 		printf("%s: Cannot receive %d bytes\n", __func__, din_len);
 		return -1;
 	}
 	assert(dout_len >= 0);
-	assert(dinp);
 
 	/*
 	 * Copy command and data into output buffer so we can do a single I2C
 	 * burst transaction.
 	 */
-	ptr = bus->dout;
+	bytes = bus->buf;
+	*bytes++ = EC_CMD_VERSION0 + cmd_version;
+	*bytes++ = cmd;
+	*bytes++ = dout_len;
+	memcpy(bytes, dout, dout_len);
+	bytes += dout_len;
 
-	/*
-	 * in_ptr starts of pointing to a dword-aligned input data buffer.
-	 * We decrement it back by the number of header bytes we expect to
-	 * receive, so that the first parameter of the resulting input data
-	 * will be dword aligned.
-	 */
-	in_ptr = bus->din + sizeof(int64_t);
-	*ptr++ = EC_CMD_VERSION0 + cmd_version;
-	*ptr++ = cmd;
-	*ptr++ = dout_len;
-	in_ptr -= 2;	/* Expect status, length bytes */
-	memcpy(ptr, dout, dout_len);
-	ptr += dout_len;
+	*bytes++ = cros_ec_calc_checksum(bus->buf,
+					 CROS_EC_I2C_OUT_HDR_SIZE + dout_len);
 
-	*ptr++ = (uint8_t)cros_ec_calc_checksum(bus->dout, dout_len + 3);
+	assert(out_bytes == bytes - (uint8_t *)bus->buf);
 
 	/* Send output data */
-	cros_ec_dump_data("out", -1, bus->dout, out_bytes);
-	ret = bus->bus->write(bus->bus, bus->chip, 0, 0, bus->dout, out_bytes);
-	if (ret)
+	cros_ec_dump_data("out", -1, bus->buf, out_bytes);
+	if (bus->bus->write(bus->bus, bus->chip, 0, 0, bus->buf, out_bytes))
 		return -1;
 
-	ret = bus->bus->read(bus->bus, bus->chip, 0, 0, in_ptr, in_bytes);
-	if (ret)
+	if (bus->bus->read(bus->bus, bus->chip, 0, 0, bus->buf, in_bytes))
 		return -1;
 
-	if (*in_ptr != EC_RES_SUCCESS) {
-		printf("%s: Received bad result code %d\n", __func__, *in_ptr);
-		return -(int)*in_ptr;
+	bytes = bus->buf;
+
+	int result = *bytes++;
+	if (result != EC_RES_SUCCESS) {
+		printf("%s: Received bad result code %d\n", __func__, result);
+		return -result;
 	}
 
-	int len, csum;
-
-	len = in_ptr[1];
-	if (len + 3 > sizeof(bus->din)) {
+	int len = *bytes++;
+	if (CROS_EC_I2C_IN_HDR_SIZE + len + 1 > bus->in_size) {
 		printf("%s: Received length %#02x too large\n",
 		       __func__, len);
 		return -1;
 	}
-	csum = cros_ec_calc_checksum(in_ptr, 2 + len);
-	if (csum != in_ptr[2 + len]) {
+
+	int csum = cros_ec_calc_checksum(bus->buf,
+					 CROS_EC_I2C_IN_HDR_SIZE + len);
+	bytes += len;
+
+	int expected = *bytes++;
+	if (csum != expected) {
 		printf("%s: Invalid checksum rx %#02x, calced %#02x\n",
-		       __func__, in_ptr[2 + din_len], csum);
+		       __func__, expected, csum);
 		return -1;
 	}
-	din_len = MIN(din_len, len);
-	cros_ec_dump_data("in", -1, in_ptr, din_len + 3);
+	cros_ec_dump_data("in", -1, bus->buf,
+			  CROS_EC_I2C_IN_HDR_SIZE + din_len + 1);
 
-	/* Return pointer to dword-aligned input data, if any */
-	*dinp = bus->din + sizeof(int64_t);
+	din_len = MIN(din_len, len);
+	if (din) {
+		memcpy(din, (uint8_t *)bus->buf + CROS_EC_I2C_IN_HDR_SIZE,
+			din_len);
+	}
 
 	return din_len;
+}
+
+static int set_size(CrosEcBusOps *me, uint32_t max_request_size,
+		    uint32_t max_reply_size)
+{
+	CrosEcI2cBus *bus = container_of(me, CrosEcI2cBus, ops);
+
+	free(bus->buf);
+	bus->in_size = max_reply_size;
+	bus->out_size = max_request_size;
+	bus->buf = malloc(MAX(bus->in_size, bus->out_size));
+	if (!bus->buf) {
+		printf("Failed to allocate buffer.\n");
+		return -1;
+	}
+
+	return 0;
 }
 
 CrosEcI2cBus *new_cros_ec_i2c_bus(I2cOps *i2c_bus, uint8_t chip)
 {
 	assert(i2c_bus);
 
-	CrosEcI2cBus *bus = memalign(sizeof(int64_t), sizeof(*bus));
+	CrosEcI2cBus *bus = malloc(sizeof(*bus));
 	if (!bus) {
 		printf("Failed to allocate ChromeOS EC I2C object.\n");
 		return NULL;
 	}
 	memset(bus, 0, sizeof(*bus));
 	bus->ops.send_command = &send_command;
+	bus->ops.set_max_sizes = &set_size;
 	bus->bus = i2c_bus;
 	bus->chip = chip;
+	if (set_size(&bus->ops, CROS_EC_I2C_DEFAULT_MAX_SIZE,
+		     CROS_EC_I2C_DEFAULT_MAX_SIZE))
+		return NULL;
 
 	return bus;
 }
