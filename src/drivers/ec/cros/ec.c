@@ -536,18 +536,26 @@ int cros_ec_flash_write(const uint8_t *data, uint32_t offset, uint32_t size)
 	uint32_t end, off;
 	int ret;
 
-	/*
-	 * TODO: round up to the nearest multiple of write size.  Can get away
-	 * without that on link right now because its write size is 4 bytes.
-	 */
+	if (!burst)
+		return -1;
+
 	end = offset + size;
 	for (off = offset; off < end; off += burst, data += burst) {
-		uint32_t todo;
+		uint32_t todo = MIN(end - off, burst);
 
-		/* If the data is empty, there is no point in programming it */
-		todo = MIN(end - off, burst);
-
-		ret = cros_ec_flash_write_block(data, off, todo);
+		if (todo < burst) {
+			uint8_t *buf = malloc(burst);
+			if (!buf)
+				return -1;
+			memcpy(buf, data, todo);
+			// Pad the buffer with a decent guess for erased data
+			// value.
+			memset(buf + todo, 0xff, burst - todo);
+			ret = cros_ec_flash_write_block(buf, off, burst);
+			free(buf);
+		} else {
+			ret = cros_ec_flash_write_block(data, off, burst);
+		}
 		if (ret)
 			return ret;
 	}
