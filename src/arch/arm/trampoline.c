@@ -35,8 +35,10 @@ void ENTRY trampoline(Elf32_Ehdr *ehdr)
 	__asm__ __volatile__(
 		"mov sp, %[new_stack]\n"
 		"mov r0, %[ehdr]\n"
+		// Clear the instruction cache.
+		"mcr p15, 0, %[zero], c7, c5, 0\n"
 		"b load_elf\n"
-		:: [new_stack]"r"(new_stack), [ehdr]"r"(ehdr)
-		: "memory"
+		:: [new_stack]"r"(new_stack), [ehdr]"r"(ehdr), [zero]"r"(0)
+		: "memory", "r0", "sp"
 	);
 }
