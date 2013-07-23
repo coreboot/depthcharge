@@ -21,13 +21,6 @@
  * MA 02111-1307 USA
  */
 
-/*
- * The Matrix Keyboard Protocol driver handles talking to the keyboard
- * controller chip. Mostly this is for keyboard functions, but some other
- * things have slipped in, so we provide generic services to talk to the
- * KBC.
- */
-
 #include <libpayload.h>
 
 #include "base/list.h"
@@ -60,12 +53,20 @@ static void inb_range(uint8_t *data, uint16_t port, int size)
 		*data++ = inb(port++);
 }
 
+static uint8_t inb_range_checksum(uint8_t *data, uint16_t port, int size)
+{
+	uint8_t checksum = 0;
+	while (size--)
+		checksum += inb(port++);
+
+	return checksum;
+}
+
 static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
-			const uint8_t *dout, int dout_len,
-			uint8_t **dinp, int din_len)
+			const void *dout, uint32_t dout_len,
+			void *din, uint32_t din_len)
 {
 	struct ec_lpc_host_args args;
-	CrosEcLpcBus *bus = container_of(me, CrosEcLpcBus, ops);
 
 	if (dout_len > EC_PROTO2_MAX_PARAM_SIZE) {
 		printf("%s: Cannot send %d bytes\n", __func__, dout_len);
@@ -125,19 +126,23 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 		return -EC_RES_INVALID_RESPONSE;
 	}
 
-	/* Read data, if any */
-	inb_range((uint8_t *)bus->din, EC_LPC_ADDR_HOST_PARAM, args.data_size);
+	uint8_t csum = 0;
+	if (din) {
+		/* Read data, if any */
+		inb_range(din, EC_LPC_ADDR_HOST_PARAM, args.data_size);
+		csum = cros_ec_calc_checksum(din, args.data_size);
+	} else {
+		csum = inb_range_checksum(din, EC_LPC_ADDR_HOST_PARAM,
+					  args.data_size);
+	}
 
 	/* Verify checksum */
-	uint8_t csum = cmd + args.flags + args.command_version +
-		args.data_size +
-		cros_ec_calc_checksum(bus->din, args.data_size);
+	csum += cmd + args.flags + args.command_version + args.data_size;
 
-	if (args.checksum != (uint8_t)csum) {
+	if (args.checksum != csum) {
 		printf("%s: CrosEC response has invalid checksum\n", __func__);
 		return -EC_RES_INVALID_CHECKSUM;
 	}
-	*dinp = bus->din;
 
 	/* Return actual amount of data received */
 	return args.data_size;
@@ -171,7 +176,7 @@ static int cros_ec_lpc_init(CrosEcBusOps *me)
 
 CrosEcLpcBus *new_cros_ec_lpc_bus(void)
 {
-	CrosEcLpcBus *bus = memalign(sizeof(int64_t), sizeof(*bus));
+	CrosEcLpcBus *bus = malloc(sizeof(*bus));
 	if (!bus) {
 		printf("Failed to allocate CrosEC LPC object.\n");
 		return NULL;

@@ -92,7 +92,7 @@ uint8_t cros_ec_calc_checksum(const uint8_t *data, int size)
 }
 
 /**
- * Send a command to the ChromeOS EC device and return the reply.
+ * Send a command to the ChromeOS EC device and optionally return the reply.
  *
  * The device's internal input/output buffers are used.
  *
@@ -100,19 +100,14 @@ uint8_t cros_ec_calc_checksum(const uint8_t *data, int size)
  * @param cmd_version	Version of command to send (EC_VER_...)
  * @param dout          Output data (may be NULL If dout_len=0)
  * @param dout_len      Size of output data in bytes
- * @param dinp          Response data (may be NULL If din_len=0).
- *			The value of *dinp is a place for ec_command() to put
- *			the data (it will be copied there). If NULL on entry,
- *			then it will be updated to point to the data (no copy)
- *			and will always be double word aligned (64-bits)
+ * @param din           Response data (may be NULL If din_len=0).
  * @param din_len       Maximum size of response in bytes
  * @return number of bytes in response, or -1 on error
  */
 static int ec_command(uint8_t cmd, int cmd_version,
 		      const void *dout, int dout_len,
-		      uint8_t **dinp, int din_len)
+		      void *din, int din_len)
 {
-	uint8_t *din;
 	int len;
 
 	if (!cros_ec_bus) {
@@ -124,11 +119,11 @@ static int ec_command(uint8_t cmd, int cmd_version,
 		return -1;
 
 	len = cros_ec_bus->send_command(cros_ec_bus, cmd, cmd_version, dout,
-					dout_len, &din, din_len);
+					dout_len, din, din_len);
 
 	/* If the command doesn't complete, wait a while */
 	if (len == -EC_RES_IN_PROGRESS) {
-		struct ec_response_get_comms_status *resp;
+		struct ec_response_get_comms_status resp;
 		uint64_t start;
 
 		/* Wait for command to complete */
@@ -139,7 +134,7 @@ static int ec_command(uint8_t cmd, int cmd_version,
 			mdelay(50);	/* Insert some reasonable delay */
 			ret = cros_ec_bus->send_command(
 				cros_ec_bus, EC_CMD_GET_COMMS_STATUS,
-				0, NULL, 0, (uint8_t **)&resp, sizeof(*resp));
+				0, NULL, 0, &resp, sizeof(resp));
 			if (ret < 0)
 				return ret;
 
@@ -148,32 +143,17 @@ static int ec_command(uint8_t cmd, int cmd_version,
 				      __func__, cmd);
 				return -EC_RES_TIMEOUT;
 			}
-		} while (resp->flags & EC_COMMS_STATUS_PROCESSING);
+		} while (resp.flags & EC_COMMS_STATUS_PROCESSING);
 
 		/* OK it completed, so read the status response */
 		len = cros_ec_bus->send_command(
 			cros_ec_bus, EC_CMD_RESEND_RESPONSE,
-			0, NULL, 0, &din, 0);
+			0, NULL, 0, din, din_len);
 	}
 
-	/*
-	 * If we were asked to put it somewhere, do so, otherwise just
-	 * return a pointer to the data in dinp.
-	 */
 #ifdef DEBUG
-	printf("%s: len=%d, din=%p, dinp=%p, *dinp=%p\n", __func__,
-		len, din, dinp, dinp ? *dinp : NULL);
+	printf("%s: len=%d, din=%p\n", __func__, len, din);
 #endif
-	if (dinp) {
-		/* If we have any data to return, it must be 64bit-aligned */
-		assert(len <= 0 || !((uintptr_t)din & 7));
-		if (len > 0) {
-			if (*dinp)
-				memmove(*dinp, din, len);
-			else
-				*dinp = din;
-		}
-	}
 
 	return len;
 }
@@ -189,17 +169,17 @@ static int ec_command(uint8_t cmd, int cmd_version,
 static int cros_ec_get_cmd_versions(int cmd, uint32_t *pmask)
 {
 	struct ec_params_get_cmd_versions p;
-	struct ec_response_get_cmd_versions *r = NULL;
+	struct ec_response_get_cmd_versions r;
 
 	*pmask = 0;
 
 	p.cmd = cmd;
 
-	if (ec_command(EC_CMD_GET_CMD_VERSIONS, 0, &p, sizeof(p),
-		       (uint8_t **)&r, sizeof(*r)) < sizeof(*r))
+	if (ec_command(EC_CMD_GET_CMD_VERSIONS, 0, &p, sizeof(p), &r,
+		       sizeof(r)) < sizeof(r))
 		return -1;
 
-	*pmask = r->version_mask;
+	*pmask = r.version_mask;
 	return 0;
 }
 
@@ -222,8 +202,8 @@ static int cros_ec_cmd_version_supported(int cmd, int ver)
 
 int cros_ec_scan_keyboard(struct cros_ec_keyscan *scan)
 {
-	if (ec_command(EC_CMD_MKBP_STATE, 0, NULL, 0, (uint8_t **)&scan,
-		       sizeof(scan->data)) < sizeof(scan->data))
+	if (ec_command(EC_CMD_MKBP_STATE, 0, NULL, 0, scan,
+		       sizeof(*scan)) < sizeof(*scan))
 		return -1;
 
 	return 0;
@@ -231,21 +211,21 @@ int cros_ec_scan_keyboard(struct cros_ec_keyscan *scan)
 
 int cros_ec_read_id(char *id, int maxlen)
 {
-	struct ec_response_get_version *r = NULL;
+	struct ec_response_get_version r;
 
-	if (ec_command(EC_CMD_GET_VERSION, 0, NULL, 0, (uint8_t **)&r,
-		       sizeof(*r)) < sizeof(*r))
+	if (ec_command(EC_CMD_GET_VERSION, 0, NULL, 0, &r,
+		       sizeof(r)) < sizeof(r))
 		return -1;
 
-	if (maxlen > sizeof(r->version_string_ro))
-		maxlen = sizeof(r->version_string_ro);
+	if (maxlen > sizeof(r.version_string_ro))
+		maxlen = sizeof(r.version_string_ro);
 
-	switch (r->current_image) {
+	switch (r.current_image) {
 	case EC_IMAGE_RO:
-		memcpy(id, r->version_string_ro, maxlen);
+		memcpy(id, r.version_string_ro, maxlen);
 		break;
 	case EC_IMAGE_RW:
-		memcpy(id, r->version_string_rw, maxlen);
+		memcpy(id, r.version_string_rw, maxlen);
 		break;
 	default:
 		return -1;
@@ -255,20 +235,18 @@ int cros_ec_read_id(char *id, int maxlen)
 	return 0;
 }
 
-int cros_ec_read_version(struct ec_response_get_version **versionp)
+int cros_ec_read_version(struct ec_response_get_version *versionp)
 {
-	*versionp = NULL;
-	if (ec_command(EC_CMD_GET_VERSION, 0, NULL, 0, (uint8_t **)versionp,
-			sizeof(**versionp)) < sizeof(**versionp))
+	if (ec_command(EC_CMD_GET_VERSION, 0, NULL, 0, versionp,
+			sizeof(*versionp)) < sizeof(*versionp))
 		return -1;
 
 	return 0;
 }
 
-int cros_ec_read_build_info(char **strp)
+int cros_ec_read_build_info(char *strp)
 {
-	*strp = NULL;
-	if (ec_command(EC_CMD_GET_BUILD_INFO, 0, NULL, 0, (uint8_t **)strp,
+	if (ec_command(EC_CMD_GET_BUILD_INFO, 0, NULL, 0, strp,
 			EC_PROTO2_MAX_PARAM_SIZE) < 0)
 		return -1;
 
@@ -277,13 +255,13 @@ int cros_ec_read_build_info(char **strp)
 
 int cros_ec_read_current_image(enum ec_current_image *image)
 {
-	struct ec_response_get_version *r = NULL;
+	struct ec_response_get_version r;
 
-	if (ec_command(EC_CMD_GET_VERSION, 0, NULL, 0, (uint8_t **)&r,
-		       sizeof(*r)) < sizeof(*r))
+	if (ec_command(EC_CMD_GET_VERSION, 0, NULL, 0, &r,
+		       sizeof(r)) < sizeof(r))
 		return -1;
 
-	*image = r->current_image;
+	*image = r.current_image;
 	return 0;
 }
 
@@ -298,7 +276,7 @@ int cros_ec_read_hash(struct ec_response_vboot_hash *hash)
 		/* Get hash if available. */
 		p.cmd = EC_VBOOT_HASH_GET;
 		if (ec_command(EC_CMD_VBOOT_HASH, 0, &p, sizeof(p),
-			       (uint8_t **)&hash, sizeof(*hash)) < 0)
+			       hash, sizeof(*hash)) < 0)
 			return -1;
 
 		switch (hash->status) {
@@ -317,8 +295,7 @@ int cros_ec_read_hash(struct ec_response_vboot_hash *hash)
 			p.offset = EC_VBOOT_HASH_OFFSET_RW;
 
 			if (ec_command(EC_CMD_VBOOT_HASH, 0, &p,
-				       sizeof(p), (uint8_t **)&hash,
-				       sizeof(*hash)) < 0)
+				       sizeof(p), hash, sizeof(*hash)) < 0)
 				return -1;
 
 			recalc_requested = 1;
@@ -383,8 +360,8 @@ int cros_ec_interrupt_pending(void)
 
 int cros_ec_mkbp_info(struct ec_response_mkbp_info *info)
 {
-	if (ec_command(EC_CMD_MKBP_INFO, 0, NULL, 0, (uint8_t **)&info,
-			sizeof(*info)) < sizeof(*info))
+	if (ec_command(EC_CMD_MKBP_INFO, 0, NULL, 0, info,
+			sizeof(*info)) < sizeof(info))
 		return -1;
 
 	return 0;
@@ -392,20 +369,20 @@ int cros_ec_mkbp_info(struct ec_response_mkbp_info *info)
 
 int cros_ec_get_host_events(uint32_t *events_ptr)
 {
-	struct ec_response_host_event_mask *resp = NULL;
+	struct ec_response_host_event_mask resp;
 
 	/*
 	 * Use the B copy of the event flags, because the main copy is already
 	 * used by ACPI/SMI.
 	 */
 	if (ec_command(EC_CMD_HOST_EVENT_GET_B, 0, NULL, 0,
-		       (uint8_t **)&resp, sizeof(*resp)) < sizeof(*resp))
+		       &resp, sizeof(resp)) < sizeof(resp))
 		return -1;
 
-	if (resp->mask & EC_HOST_EVENT_MASK(EC_HOST_EVENT_INVALID))
+	if (resp.mask & EC_HOST_EVENT_MASK(EC_HOST_EVENT_INVALID))
 		return -1;
 
-	*events_ptr = resp->mask;
+	*events_ptr = resp.mask;
 	return 0;
 }
 
@@ -436,7 +413,7 @@ int cros_ec_flash_protect(uint32_t set_mask, uint32_t set_flags,
 
 	if (ec_command(EC_CMD_FLASH_PROTECT, EC_VER_FLASH_PROTECT,
 		       &params, sizeof(params),
-		       (uint8_t **)&resp, sizeof(*resp)) < sizeof(*resp))
+		       resp, sizeof(*resp)) < sizeof(*resp))
 		return -1;
 
 	return 0;
@@ -445,16 +422,16 @@ int cros_ec_flash_protect(uint32_t set_mask, uint32_t set_flags,
 int cros_ec_test(void)
 {
 	struct ec_params_hello req;
-	struct ec_response_hello *resp = NULL;
+	struct ec_response_hello resp;
 
 	req.in_data = 0x12345678;
 	if (ec_command(EC_CMD_HELLO, 0, &req, sizeof(req),
-		       (uint8_t **)&resp, sizeof(*resp)) < sizeof(*resp)) {
+		       &resp, sizeof(resp)) < sizeof(resp)) {
 		printf("ec_command() returned error\n");
 		return -1;
 	}
-	if (resp->out_data != req.in_data + 0x01020304) {
-		printf("Received invalid handshake %x\n", resp->out_data);
+	if (resp.out_data != req.in_data + 0x01020304) {
+		printf("Received invalid handshake %x\n", resp.out_data);
 		return -1;
 	}
 
@@ -465,19 +442,19 @@ int cros_ec_flash_offset(enum ec_flash_region region, uint32_t *offset,
 			 uint32_t *size)
 {
 	struct ec_params_flash_region_info p;
-	struct ec_response_flash_region_info *r = NULL;
+	struct ec_response_flash_region_info r;
 	int ret;
 
 	p.region = region;
 	ret = ec_command(EC_CMD_FLASH_REGION_INFO, EC_VER_FLASH_REGION_INFO,
-			 &p, sizeof(p), (uint8_t **)&r, sizeof(*r));
-	if (ret != sizeof(*r))
+			 &p, sizeof(p), &r, sizeof(r));
+	if (ret != sizeof(r))
 		return -1;
 
 	if (offset)
-		*offset = r->offset;
+		*offset = r.offset;
 	if (size)
-		*size = r->size;
+		*size = r.size;
 
 	return 0;
 }
@@ -529,7 +506,7 @@ static int cros_ec_flash_write_block(const uint8_t *data, uint32_t offset,
  */
 static int cros_ec_flash_write_burst_size(void)
 {
-	struct ec_response_flash_info *info;
+	struct ec_response_flash_info info;
 	uint32_t pdata_max_size = EC_PROTO2_MAX_PARAM_SIZE -
 		sizeof(struct ec_params_flash_write);
 
@@ -546,11 +523,11 @@ static int cros_ec_flash_write_burst_size(void)
 	 * size, and must also fit into the host parameter buffer.
 	 */
 	if (ec_command(EC_CMD_FLASH_INFO, 0, NULL, 0,
-		       (uint8_t **)&info, sizeof(*info)) < sizeof(*info))
+		       &info, sizeof(info)) < sizeof(info))
 		return 0;
 
-	return (pdata_max_size / info->write_block_size) *
-		info->write_block_size;
+	return (pdata_max_size / info.write_block_size) *
+		info.write_block_size;
 }
 
 int cros_ec_flash_write(const uint8_t *data, uint32_t offset, uint32_t size)
@@ -601,7 +578,7 @@ static int cros_ec_flash_read_block(uint8_t *data, uint32_t offset,
 	p.size = size;
 
 	return ec_command(EC_CMD_FLASH_READ, 0,
-			  &p, sizeof(p), &data, size) >= 0 ? 0 : -1;
+			  &p, sizeof(p), data, size) >= 0 ? 0 : -1;
 }
 
 int cros_ec_flash_read(uint8_t *data, uint32_t offset, uint32_t size)
@@ -659,7 +636,7 @@ int cros_ec_read_vbnvcontext(uint8_t *block)
 	p.op = EC_VBNV_CONTEXT_OP_READ;
 
 	len = ec_command(EC_CMD_VBNV_CONTEXT, EC_VER_VBNV_CONTEXT,
-			&p, sizeof(p), &block, EC_VBNV_BLOCK_SIZE);
+			&p, sizeof(p), block, EC_VBNV_BLOCK_SIZE);
 	if (len < EC_VBNV_BLOCK_SIZE)
 		return -1;
 
