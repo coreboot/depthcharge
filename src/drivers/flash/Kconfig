@@ -15,59 +15,34 @@
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
-menu "Flash storage"
-
-choice
-	prompt "Flash driver"
-	default DRIVER_FLASH_DUMMY
-	help
-	  The driver to access flash storage holding the system firmware.
-
 config DRIVER_FLASH_MEMMAPPED
-	bool "Memory mapped"
-	depends on ARCH_X86
-
-config DRIVER_FLASH_ICH7
-	bool "Intel I/O Controller Hub 7"
-	depends on ARCH_X86
-	select DRIVER_FLASH_ICH_BASE
-
-config DRIVER_FLASH_ICH9
-	bool "Intel I/O Controller Hub 9"
-	depends on ARCH_X86
-	select DRIVER_FLASH_ICH_BASE
-
-config DRIVER_FLASH_EXYNOS5_SPI
-	bool "Exynos5 SPI"
+	bool "Memory mapped flash"
+	select DRIVER_FLASH
 	default n
 
-config DRIVER_FLASH_DUMMY
-	bool "Dummy driver"
+config DRIVER_FLASH_ICH7
+	bool "Intel I/O Controller Hub 7 flash"
+	depends on ARCH_X86
+	select DRIVER_FLASH
+	select DRIVER_FLASH_ICH_BASE
+	default n
 
-endchoice
+config DRIVER_FLASH_ICH9
+	bool "Intel I/O Controller Hub 9 flash"
+	depends on ARCH_X86
+	select DRIVER_FLASH
+	select DRIVER_FLASH_ICH_BASE
+	default n
+
+config DRIVER_FLASH_SPI
+	bool "SPI based flash"
+	select DRIVER_FLASH
+	default n
 
 config DRIVER_FLASH_ICH_BASE
 	bool
 	default n
 
-config DRIVER_FLASH_ICH_ROM_SIZE
-	hex "Size of the flash being read by the ICH driver"
-	depends on DRIVER_FLASH_ICH_BASE
-
-config DRIVER_FLASH_EXYNOS5_SPI_REGADDR
-	hex "Address of the Exynos5 SPI driver registers"
-	depends on DRIVER_FLASH_EXYNOS5_SPI
-
-config DRIVER_FLASH_EXYNOS5_SPI_ROM_SIZE
-	hex "Size of the flash being read with the Exynos5 SPI driver"
-	depends on DRIVER_FLASH_EXYNOS5_SPI
-
-config DRIVER_FLASH_MEMMAPPED_SIZE
-	hex "Size of memory mapped region"
-	depends on DRIVER_FLASH_MEMMAPPED
-
-config DRIVER_FLASH_MEMMAPPED_BASE
-	hex "Start address of memory mapped region"
-	depends on DRIVER_FLASH_MEMMAPPED
-
-endmenu
+config DRIVER_FLASH
+	bool
+	default n

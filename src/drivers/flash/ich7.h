@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Google Inc.
+ * Copyright 2011 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -20,18 +20,13 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __DRIVERS_FLASH_FLASH_H__
-#define __DRIVERS_FLASH_FLASH_H__
+/* This file is derived from the flashrom project. */
+#ifndef __DRIVERS_FLASH_ICH7_H__
+#define __DRIVERS_FLASH_ICH7_H__
 
-#include <stdint.h>
+#include "drivers/flash/flash.h"
+#include "drivers/flash/ich.h"
 
-typedef struct FlashOps
-{
-	void *(*read)(struct FlashOps *me, uint32_t offset, uint32_t size);
-} FlashOps;
+IchFlash *new_ich7_spi_flash(uint32_t rom_size);
 
-int flash_set_ops(FlashOps *ops);
-
-void *flash_read(uint32_t offset, uint32_t size);
-
-#endif /* __DRIVERS_FLASH_FLASH_H__ */
+#endif /* __DRIVERS_FLASH_ICH7_H__ */

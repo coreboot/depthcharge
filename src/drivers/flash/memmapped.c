@@ -22,18 +22,31 @@
 
 #include <libpayload.h>
 
-#include "config.h"
-#include "drivers/flash/flash.h"
+#include "base/list.h"
+#include "drivers/flash/memmapped.h"
 
-void *flash_read(uint32_t offset, uint32_t size)
+static void *mem_mapped_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
 {
-	const uint32_t flash_size = CONFIG_DRIVER_FLASH_MEMMAPPED_SIZE;
-	const uint32_t flash_base = CONFIG_DRIVER_FLASH_MEMMAPPED_BASE;
+	MemMappedFlash *flash = container_of(me, MemMappedFlash, ops);
 
-	if (offset > flash_size || offset + size > flash_size) {
+	if (offset > flash->size || offset + size > flash->size) {
 		printf("Out of bounds flash access.\n");
 		return NULL;
 	}
 
-	return (void *)(uintptr_t)(offset + flash_base);
+	return (void *)(uintptr_t)(flash->base + offset);
+}
+
+MemMappedFlash *new_mem_mapped_flash(uint32_t base, uint32_t size)
+{
+	MemMappedFlash *flash = malloc(sizeof(*flash));
+	if (!flash) {
+		printf("Failed to allocate memmapped flash object.\n");
+		return NULL;
+	}
+	memset(flash, 0, sizeof(*flash));
+	flash->ops.read = &mem_mapped_flash_read;
+	flash->base = base;
+	flash->size = size;
+	return flash;
 }

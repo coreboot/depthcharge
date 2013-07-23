@@ -20,18 +20,24 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __DRIVERS_FLASH_FLASH_H__
-#define __DRIVERS_FLASH_FLASH_H__
+#include <libpayload.h>
 
-#include <stdint.h>
+#include "drivers/flash/flash.h"
 
-typedef struct FlashOps
+static FlashOps *flash_ops;
+
+int flash_set_ops(FlashOps *ops)
 {
-	void *(*read)(struct FlashOps *me, uint32_t offset, uint32_t size);
-} FlashOps;
+	if (flash_ops) {
+		printf("Flash ops already set.\n");
+		return -1;
+	}
+	flash_ops = ops;
 
-int flash_set_ops(FlashOps *ops);
+	return 0;
+}
 
-void *flash_read(uint32_t offset, uint32_t size);
-
-#endif /* __DRIVERS_FLASH_FLASH_H__ */
+void *flash_read(uint32_t offset, uint32_t size)
+{
+	return flash_ops->read(flash_ops, offset, size);
+}

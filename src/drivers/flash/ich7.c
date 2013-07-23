@@ -24,7 +24,8 @@
 #include <libpayload.h>
 #include <stdint.h>
 
-#include "drivers/flash/ich.h"
+#include "drivers/flash/ich7.h"
+#include "drivers/flash/ich_shared.h"
 
 typedef struct Ich7SpiRegs {
 	uint16_t spis;
@@ -38,42 +39,48 @@ typedef struct Ich7SpiRegs {
 	uint8_t opmenu[8];
 } __attribute__((packed)) Ich7SpiRegs;
 
-IchSpiController *ich_spi_get_controller(void)
+static int ich7_spi_get_lock(IchFlash *me)
 {
-	static IchSpiController cntlr;
-	static int done = 0;
-
-	if (done)
-		return &cntlr;
-
 	uint8_t *rcrb = ich_spi_get_rcrb();
 
 	const uint16_t ich7_spibar_offset = 0x3020;
-	ich7_spi_regs *ich7_spi = (Ich7SpiRegs *)(rcrb + ich7_spibar_offset);
-
-	cntlr.opmenu = ich7_spi->opmenu;
-	cntlr.menubytes = sizeof(ich7_spi->opmenu);
-	cntlr.optype = &ich7_spi->optype;
-	cntlr.addr = &ich7_spi->spia;
-	cntlr.data = (uint8_t *)ich7_spi->spid;
-	cntlr.databytes = sizeof(ich7_spi->spid);
-	cntlr.status = (uint8_t *)&ich7_spi->spis;
-	cntlr.control = &ich7_spi->spic;
-	cntlr.bbar = &ich7_spi->bbar;
-	cntlr.preop = &ich7_spi->preop;
-
-	cntlr.bios_cntl_clear = 0x0;
-	// Disable the BIOS write protect so write commands are allowed.
-	cntlr.bios_cntl_set = 0x1;
-
-	done = 1;
-	return &cntlr;
-}
-
-int ich_spi_get_lock(void)
-{
-	const uint16_t ich7_spibar_offset = 0x3020;
-	ich7_spi_regs *ich7_spi = (Ich7SpiRegs *)(rcrb + ich7_spibar_offset);
+	Ich7SpiRegs *ich7_spi = (Ich7SpiRegs *)(rcrb + ich7_spibar_offset);
 
 	return readw(&ich7_spi->spis) & SPIS_LOCK;
+}
+
+IchFlash *new_ich7_spi_flash(uint32_t rom_size)
+{
+	IchFlash *flash = malloc(sizeof(*flash) + rom_size);
+	if (!flash) {
+		printf("Failed to allocate ICH7 SPI object.\n");
+		return NULL;
+	}
+	memset(flash, 0, sizeof(*flash));
+
+	uint8_t *rcrb = ich_spi_get_rcrb();
+	const uint16_t ich7_spibar_offset = 0x3020;
+	Ich7SpiRegs *ich7_spi = (Ich7SpiRegs *)(rcrb + ich7_spibar_offset);
+
+	flash->ops.read = &ich_spi_flash_read;
+
+	flash->opmenu = ich7_spi->opmenu;
+	flash->menubytes = sizeof(ich7_spi->opmenu);
+	flash->optype = &ich7_spi->optype;
+	flash->addr = &ich7_spi->spia;
+	flash->data = (uint8_t *)ich7_spi->spid;
+	flash->databytes = sizeof(ich7_spi->spid);
+	flash->status = (uint8_t *)&ich7_spi->spis;
+	flash->control = &ich7_spi->spic;
+	flash->bbar = &ich7_spi->bbar;
+	flash->preop = &ich7_spi->preop;
+	flash->bios_cntl_clear = 0x0;
+	// Disable the BIOS write protect so write commands are allowed.
+	flash->bios_cntl_set = 0x1;
+
+	flash->get_lock = &ich7_spi_get_lock;
+
+	flash->rom_size = rom_size;
+
+	return flash;
 }

@@ -20,18 +20,24 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __DRIVERS_FLASH_FLASH_H__
-#define __DRIVERS_FLASH_FLASH_H__
+#ifndef __DRIVERS_FLASH_SPI_H__
+#define __DRIVERS_FLASH_SPI_H__
 
 #include <stdint.h>
 
-typedef struct FlashOps
+#include "drivers/flash/flash.h"
+
+struct SpiOps;
+typedef struct SpiOps SpiOps;
+
+typedef struct
 {
-	void *(*read)(struct FlashOps *me, uint32_t offset, uint32_t size);
-} FlashOps;
+	FlashOps ops;
+	SpiOps *spi;
+	uint32_t rom_size;
+	uint8_t cache[];
+} SpiFlash;
 
-int flash_set_ops(FlashOps *ops);
-
-void *flash_read(uint32_t offset, uint32_t size);
+SpiFlash *new_spi_flash(SpiOps *spi, uint32_t rom_size);
 
 #endif /* __DRIVERS_FLASH_FLASH_H__ */

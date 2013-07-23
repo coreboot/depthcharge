@@ -20,18 +20,20 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __DRIVERS_FLASH_FLASH_H__
-#define __DRIVERS_FLASH_FLASH_H__
+#ifndef __DRIVERS_FLASH_MEMMAPPED_H__
+#define __DRIVERS_FLASH_MEMMAPPED_H__
 
 #include <stdint.h>
 
-typedef struct FlashOps
+#include "drivers/flash/flash.h"
+
+typedef struct MemMappedFlash
 {
-	void *(*read)(struct FlashOps *me, uint32_t offset, uint32_t size);
-} FlashOps;
+	FlashOps ops;
+	uint32_t base;
+	uint32_t size;
+} MemMappedFlash;
 
-int flash_set_ops(FlashOps *ops);
+MemMappedFlash *new_mem_mapped_flash(uint32_t base, uint32_t size);
 
-void *flash_read(uint32_t offset, uint32_t size);
-
-#endif /* __DRIVERS_FLASH_FLASH_H__ */
+#endif /* __DRIVERS_FLASH_MEMMAPPED_H__ */

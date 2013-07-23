@@ -22,6 +22,8 @@
 
 #include "base/init_funcs.h"
 #include "drivers/bus/i2c/exynos5_usi.h"
+#include "drivers/bus/spi/exynos5.h"
+#include "drivers/flash/spi.h"
 #include "drivers/tpm/tpm.h"
 
 static int board_setup(void)
@@ -32,6 +34,13 @@ static int board_setup(void)
 		return 1;
 
 	tis_set_i2c_bus(&i2c9->ops);
+
+	Exynos5Spi *spi1 = new_exynos5_spi((void *)(uintptr_t)0x12d30000);
+	if (!spi1)
+		return 1;
+	SpiFlash *flash = new_spi_flash(&spi1->ops, 0x400000);
+	if (!flash || flash_set_ops(&flash->ops))
+		return 1;
 
 	return 0;
 }
