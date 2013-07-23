@@ -1,5 +1,5 @@
 /*
- * Chromium OS mkbp driver - I2C interface
+ * Chromium OS EC driver - I2C interface
  *
  * Copyright 2012 Google Inc.
  * See file CREDITS for list of people who contributed to this
@@ -34,14 +34,14 @@
 #include "base/list.h"
 #include "config.h"
 #include "drivers/bus/i2c/i2c.h"
-#include "drivers/ec/chromeos/mkbp.h"
-#include "drivers/ec/chromeos/mkbp_i2c.h"
+#include "drivers/ec/cros/ec.h"
+#include "drivers/ec/cros/i2c.h"
 
-static int send_command(MkbpBusOps *me, uint8_t cmd, int cmd_version,
+static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 			const uint8_t *dout, int dout_len,
 			uint8_t **dinp, int din_len)
 {
-	MkbpI2cBus *bus = container_of(me, MkbpI2cBus, ops);
+	CrosEcI2cBus *bus = container_of(me, CrosEcI2cBus, ops);
 
 	if (!bus->bus) {
 		printf("%s: No i2c bus set.\n", __func__);
@@ -50,7 +50,7 @@ static int send_command(MkbpBusOps *me, uint8_t cmd, int cmd_version,
 
 	if (!bus->initialized) {
 		bus->initialized = 1;
-		if (mkbp_init(me))
+		if (cros_ec_init(me))
 			return -1;
 	}
 
@@ -98,10 +98,10 @@ static int send_command(MkbpBusOps *me, uint8_t cmd, int cmd_version,
 	memcpy(ptr, dout, dout_len);
 	ptr += dout_len;
 
-	*ptr++ = (uint8_t)mkbp_calc_checksum(bus->dout, dout_len + 3);
+	*ptr++ = (uint8_t)cros_ec_calc_checksum(bus->dout, dout_len + 3);
 
 	/* Send output data */
-	mkbp_dump_data("out", -1, bus->dout, out_bytes);
+	cros_ec_dump_data("out", -1, bus->dout, out_bytes);
 	ret = bus->bus->write(bus->bus, bus->chip, 0, 0, bus->dout, out_bytes);
 	if (ret)
 		return -1;
@@ -123,14 +123,14 @@ static int send_command(MkbpBusOps *me, uint8_t cmd, int cmd_version,
 		       __func__, len);
 		return -1;
 	}
-	csum = mkbp_calc_checksum(in_ptr, 2 + len);
+	csum = cros_ec_calc_checksum(in_ptr, 2 + len);
 	if (csum != in_ptr[2 + len]) {
 		printf("%s: Invalid checksum rx %#02x, calced %#02x\n",
 		       __func__, in_ptr[2 + din_len], csum);
 		return -1;
 	}
 	din_len = MIN(din_len, len);
-	mkbp_dump_data("in", -1, in_ptr, din_len + 3);
+	cros_ec_dump_data("in", -1, in_ptr, din_len + 3);
 
 	/* Return pointer to dword-aligned input data, if any */
 	*dinp = bus->din + sizeof(int64_t);
@@ -138,11 +138,11 @@ static int send_command(MkbpBusOps *me, uint8_t cmd, int cmd_version,
 	return din_len;
 }
 
-MkbpI2cBus *new_mkbp_i2c_bus(I2cOps *i2c_bus, uint8_t chip)
+CrosEcI2cBus *new_cros_ec_i2c_bus(I2cOps *i2c_bus, uint8_t chip)
 {
-	MkbpI2cBus *bus = memalign(sizeof(int64_t), sizeof(*bus));
+	CrosEcI2cBus *bus = memalign(sizeof(int64_t), sizeof(*bus));
 	if (!bus) {
-		printf("Failed to allocate MKBP I2C object.\n");
+		printf("Failed to allocate ChromeOS EC I2C object.\n");
 		return NULL;
 	}
 	memset(bus, 0, sizeof(*bus));

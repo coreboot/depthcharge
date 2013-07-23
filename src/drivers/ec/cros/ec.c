@@ -1,5 +1,5 @@
 /*
- * Chromium OS mkbp driver
+ * Chromium OS EC driver
  *
  * Copyright 2012 Google Inc.
  * See file CREDITS for list of people who contributed to this
@@ -32,34 +32,34 @@
 #include <libpayload.h>
 
 #include "base/time.h"
-#include "drivers/ec/chromeos/message.h"
-#include "drivers/ec/chromeos/mkbp.h"
+#include "drivers/ec/cros/message.h"
+#include "drivers/ec/cros/ec.h"
 
-MkbpBusOps *mkbp_bus;
+CrosEcBusOps *cros_ec_bus;
 
-int mkbp_set_bus(MkbpBusOps *bus)
+int cros_ec_set_bus(CrosEcBusOps *bus)
 {
-	if (mkbp_bus) {
-		printf("Mkbp bus already configured.\n");
+	if (cros_ec_bus) {
+		printf("ChromeOS EC bus already configured.\n");
 		return -1;
 	}
-	mkbp_bus = bus;
+	cros_ec_bus = bus;
 	return 0;
 }
 
 /* Timeout waiting for a flash erase command to complete */
-static const int MKBP_CMD_TIMEOUT_MS = 5000;
+static const int CROS_EC_CMD_TIMEOUT_MS = 5000;
 
 /* Timeout waiting for EC hash calculation completion */
-static const int MKBP_EC_HASH_TIMEOUT_MS = 2000;
+static const int CROS_EC_HASH_TIMEOUT_MS = 2000;
 
 /* Time to delay between polling status of EC hash calculation */
-static const int MKBP_EC_HASH_CHECK_DELAY_MS = 10;
+static const int CROS_EC_HASH_CHECK_DELAY_MS = 10;
 
 /* Note: depends on enum ec_current_image */
 static const char * const ec_current_image_name[] = {"unknown", "RO", "RW"};
 
-void mkbp_dump_data(const char *name, int cmd, const uint8_t *data, int len)
+void cros_ec_dump_data(const char *name, int cmd, const uint8_t *data, int len)
 {
 #ifdef DEBUG
 	int i;
@@ -80,7 +80,7 @@ void mkbp_dump_data(const char *name, int cmd, const uint8_t *data, int len)
  * @param size	Size of data block in bytes
  * @return checksum value (0 to 255)
  */
-uint8_t mkbp_calc_checksum(const uint8_t *data, int size)
+uint8_t cros_ec_calc_checksum(const uint8_t *data, int size)
 {
 	uint8_t csum, i;
 
@@ -90,11 +90,11 @@ uint8_t mkbp_calc_checksum(const uint8_t *data, int size)
 }
 
 /**
- * Send a command to the MKBP device and return the reply.
+ * Send a command to the ChromeOS EC device and return the reply.
  *
  * The device's internal input/output buffers are used.
  *
- * @param bus		MKBP bus ops
+ * @param bus		ChromeOS EC bus ops
  * @param cmd		Command to send (EC_CMD_...)
  * @param cmd_version	Version of command to send (EC_VER_...)
  * @param dout          Output data (may be NULL If dout_len=0)
@@ -107,7 +107,7 @@ uint8_t mkbp_calc_checksum(const uint8_t *data, int size)
  * @param din_len       Maximum size of response in bytes
  * @return number of bytes in response, or -1 on error
  */
-static int ec_command(MkbpBusOps *bus, uint8_t cmd, int cmd_version,
+static int ec_command(CrosEcBusOps *bus, uint8_t cmd, int cmd_version,
 		      const void *dout, int dout_len,
 		      uint8_t **dinp, int din_len)
 {
@@ -134,7 +134,7 @@ static int ec_command(MkbpBusOps *bus, uint8_t cmd, int cmd_version,
 			if (ret < 0)
 				return ret;
 
-			if (timer_us(start) > MKBP_CMD_TIMEOUT_MS * 1000) {
+			if (timer_us(start) > CROS_EC_CMD_TIMEOUT_MS * 1000) {
 				printf("%s: Command %#02x timeout",
 				      __func__, cmd);
 				return -EC_RES_TIMEOUT;
@@ -168,7 +168,7 @@ static int ec_command(MkbpBusOps *bus, uint8_t cmd, int cmd_version,
 	return len;
 }
 
-int mkbp_scan_keyboard(MkbpBusOps *bus, struct mkbp_keyscan *scan)
+int cros_ec_scan_keyboard(CrosEcBusOps *bus, struct cros_ec_keyscan *scan)
 {
 	if (ec_command(bus, EC_CMD_MKBP_STATE, 0, NULL, 0, (uint8_t **)&scan,
 		       sizeof(scan->data)) < sizeof(scan->data))
@@ -177,7 +177,7 @@ int mkbp_scan_keyboard(MkbpBusOps *bus, struct mkbp_keyscan *scan)
 	return 0;
 }
 
-int mkbp_read_id(MkbpBusOps *bus, char *id, int maxlen)
+int cros_ec_read_id(CrosEcBusOps *bus, char *id, int maxlen)
 {
 	struct ec_response_get_version *r = NULL;
 
@@ -203,8 +203,8 @@ int mkbp_read_id(MkbpBusOps *bus, char *id, int maxlen)
 	return 0;
 }
 
-int mkbp_read_version(MkbpBusOps *bus,
-		      struct ec_response_get_version **versionp)
+int cros_ec_read_version(CrosEcBusOps *bus,
+			 struct ec_response_get_version **versionp)
 {
 	*versionp = NULL;
 	if (ec_command(bus, EC_CMD_GET_VERSION, 0, NULL, 0,
@@ -215,7 +215,7 @@ int mkbp_read_version(MkbpBusOps *bus,
 	return 0;
 }
 
-int mkbp_read_build_info(MkbpBusOps *bus, char **strp)
+int cros_ec_read_build_info(CrosEcBusOps *bus, char **strp)
 {
 	*strp = NULL;
 	if (ec_command(bus, EC_CMD_GET_BUILD_INFO, 0, NULL, 0,
@@ -225,7 +225,7 @@ int mkbp_read_build_info(MkbpBusOps *bus, char **strp)
 	return 0;
 }
 
-int mkbp_read_current_image(MkbpBusOps *bus, enum ec_current_image *image)
+int cros_ec_read_current_image(CrosEcBusOps *bus, enum ec_current_image *image)
 {
 	struct ec_response_get_version *r = NULL;
 
@@ -237,7 +237,7 @@ int mkbp_read_current_image(MkbpBusOps *bus, enum ec_current_image *image)
 	return 0;
 }
 
-int mkbp_read_hash(MkbpBusOps *bus, struct ec_response_vboot_hash *hash)
+int cros_ec_read_hash(CrosEcBusOps *bus, struct ec_response_vboot_hash *hash)
 {
 	struct ec_params_vboot_hash p;
 	uint64_t start;
@@ -278,7 +278,7 @@ int mkbp_read_hash(MkbpBusOps *bus, struct ec_response_vboot_hash *hash)
 			break;
 		case EC_VBOOT_HASH_STATUS_BUSY:
 			/* Hash is still calculating. */
-			mdelay(MKBP_EC_HASH_CHECK_DELAY_MS);
+			mdelay(CROS_EC_HASH_CHECK_DELAY_MS);
 			break;
 		case EC_VBOOT_HASH_STATUS_DONE:
 		default:
@@ -286,7 +286,7 @@ int mkbp_read_hash(MkbpBusOps *bus, struct ec_response_vboot_hash *hash)
 			break;
 		}
 	} while (hash->status == EC_VBOOT_HASH_STATUS_BUSY &&
-		 timer_us(start) < MKBP_EC_HASH_TIMEOUT_MS * 1000);
+		 timer_us(start) < CROS_EC_HASH_TIMEOUT_MS * 1000);
 
 	if (hash->status != EC_VBOOT_HASH_STATUS_DONE) {
 		printf("%s: Hash status not done: %d\n", __func__,
@@ -297,7 +297,7 @@ int mkbp_read_hash(MkbpBusOps *bus, struct ec_response_vboot_hash *hash)
 	return 0;
 }
 
-int mkbp_reboot(MkbpBusOps *bus, enum ec_reboot_cmd cmd, uint8_t flags)
+int cros_ec_reboot(CrosEcBusOps *bus, enum ec_reboot_cmd cmd, uint8_t flags)
 {
 	struct ec_params_reboot_ec p;
 
@@ -317,7 +317,7 @@ int mkbp_reboot(MkbpBusOps *bus, enum ec_reboot_cmd cmd, uint8_t flags)
 		int timeout = 20;
 		do {
 			mdelay(50);
-		} while (timeout-- && mkbp_test(bus));
+		} while (timeout-- && cros_ec_test(bus));
 
 		if (!timeout)
 			return -1;
@@ -326,12 +326,12 @@ int mkbp_reboot(MkbpBusOps *bus, enum ec_reboot_cmd cmd, uint8_t flags)
 	return 0;
 }
 
-int mkbp_interrupt_pending(MkbpBusOps *bus)
+int cros_ec_interrupt_pending(CrosEcBusOps *bus)
 {
 	return 0;
 }
 
-int mkbp_info(MkbpBusOps *bus, struct ec_response_mkbp_info *info)
+int cros_ec_mkbp_info(CrosEcBusOps *bus, struct ec_response_mkbp_info *info)
 {
 	if (ec_command(bus, EC_CMD_MKBP_INFO, 0,
 			NULL, 0, (uint8_t **)&info, sizeof(*info))
@@ -341,7 +341,7 @@ int mkbp_info(MkbpBusOps *bus, struct ec_response_mkbp_info *info)
 	return 0;
 }
 
-int mkbp_get_host_events(MkbpBusOps *bus, uint32_t *events_ptr)
+int cros_ec_get_host_events(CrosEcBusOps *bus, uint32_t *events_ptr)
 {
 	struct ec_response_host_event_mask *resp = NULL;
 
@@ -360,7 +360,7 @@ int mkbp_get_host_events(MkbpBusOps *bus, uint32_t *events_ptr)
 	return 0;
 }
 
-int mkbp_clear_host_events(MkbpBusOps *bus, uint32_t events)
+int cros_ec_clear_host_events(CrosEcBusOps *bus, uint32_t events)
 {
 	struct ec_params_host_event_mask params;
 
@@ -368,7 +368,7 @@ int mkbp_clear_host_events(MkbpBusOps *bus, uint32_t events)
 
 	/*
 	 * Use the B copy of the event flags, so it affects the data returned
-	 * by mkbp_get_host_events().
+	 * by cros_ec_get_host_events().
 	 */
 	if (ec_command(bus, EC_CMD_HOST_EVENT_CLEAR_B, 0,
 		       &params, sizeof(params), NULL, 0) < 0)
@@ -377,9 +377,9 @@ int mkbp_clear_host_events(MkbpBusOps *bus, uint32_t events)
 	return 0;
 }
 
-int mkbp_flash_protect(MkbpBusOps *bus,
-		       uint32_t set_mask, uint32_t set_flags,
-		       struct ec_response_flash_protect *resp)
+int cros_ec_flash_protect(CrosEcBusOps *bus,
+			  uint32_t set_mask, uint32_t set_flags,
+			  struct ec_response_flash_protect *resp)
 {
 	struct ec_params_flash_protect params;
 
@@ -394,7 +394,7 @@ int mkbp_flash_protect(MkbpBusOps *bus,
 	return 0;
 }
 
-int mkbp_test(MkbpBusOps *bus)
+int cros_ec_test(CrosEcBusOps *bus)
 {
 	struct ec_params_hello req;
 	struct ec_response_hello *resp = NULL;
@@ -413,8 +413,8 @@ int mkbp_test(MkbpBusOps *bus)
 	return 0;
 }
 
-int mkbp_flash_offset(MkbpBusOps *bus, enum ec_flash_region region,
-		      uint32_t *offset, uint32_t *size)
+int cros_ec_flash_offset(CrosEcBusOps *bus, enum ec_flash_region region,
+			 uint32_t *offset, uint32_t *size)
 {
 	struct ec_params_flash_region_info p;
 	struct ec_response_flash_region_info *r = NULL;
@@ -435,7 +435,7 @@ int mkbp_flash_offset(MkbpBusOps *bus, enum ec_flash_region region,
 	return 0;
 }
 
-int mkbp_flash_erase(MkbpBusOps *bus, uint32_t offset, uint32_t size)
+int cros_ec_flash_erase(CrosEcBusOps *bus, uint32_t offset, uint32_t size)
 {
 	struct ec_params_flash_erase p;
 
@@ -448,22 +448,22 @@ int mkbp_flash_erase(MkbpBusOps *bus, uint32_t offset, uint32_t size)
  * Write a single block to the flash
  *
  * Write a block of data to the EC flash. The size must not exceed the flash
- * write block size which you can obtain from mkbp_flash_write_burst_size().
+ * write block size which you can obtain from cros_ec_flash_write_burst_size().
  *
  * The offset starts at 0. You can obtain the region information from
- * mkbp_flash_offset() to find out where to write for a particular region.
+ * cros_ec_flash_offset() to find out where to write for a particular region.
  *
  * Attempting to write to the region where the EC is currently running from
  * will result in an error.
  *
- * @param bus		MKBP bus ops
+ * @param bus		ChromeOS EC bus ops
  * @param data		Pointer to data buffer to write
  * @param offset	Offset within flash to write to.
  * @param size		Number of bytes to write
  * @return 0 if ok, -1 on error
  */
-static int mkbp_flash_write_block(MkbpBusOps *bus, const uint8_t *data,
-				  uint32_t offset, uint32_t size)
+static int cros_ec_flash_write_block(CrosEcBusOps *bus, const uint8_t *data,
+				     uint32_t offset, uint32_t size)
 {
 	struct ec_params_flash_write p;
 
@@ -479,16 +479,16 @@ static int mkbp_flash_write_block(MkbpBusOps *bus, const uint8_t *data,
 /**
  * Return optimal flash write burst size
  */
-static int mkbp_flash_write_burst_size(MkbpBusOps *bus)
+static int cros_ec_flash_write_burst_size(CrosEcBusOps *bus)
 {
 	struct ec_params_flash_write p;
 	return sizeof(p.data);
 }
 
-int mkbp_flash_write(MkbpBusOps *bus, const uint8_t *data,
-		     uint32_t offset, uint32_t size)
+int cros_ec_flash_write(CrosEcBusOps *bus, const uint8_t *data,
+			uint32_t offset, uint32_t size)
 {
-	uint32_t burst = mkbp_flash_write_burst_size(bus);
+	uint32_t burst = cros_ec_flash_write_burst_size(bus);
 	uint32_t end, off;
 	int ret;
 
@@ -503,7 +503,7 @@ int mkbp_flash_write(MkbpBusOps *bus, const uint8_t *data,
 		/* If the data is empty, there is no point in programming it */
 		todo = MIN(end - off, burst);
 
-		ret = mkbp_flash_write_block(bus, data, off, todo);
+		ret = cros_ec_flash_write_block(bus, data, off, todo);
 		if (ret)
 			return ret;
 	}
@@ -515,19 +515,19 @@ int mkbp_flash_write(MkbpBusOps *bus, const uint8_t *data,
  * Read a single block from the flash
  *
  * Read a block of data from the EC flash. The size must not exceed the flash
- * write block size which you can obtain from mkbp_flash_write_burst_size().
+ * write block size which you can obtain from cros_ec_flash_write_burst_size().
  *
  * The offset starts at 0. You can obtain the region information from
- * mkbp_flash_offset() to find out where to read for a particular region.
+ * cros_ec_flash_offset() to find out where to read for a particular region.
  *
- * @param bus		MKBP bus ops
+ * @param bus		ChromeOS EC bus ops
  * @param data		Pointer to data buffer to read into
  * @param offset	Offset within flash to read from
  * @param size		Number of bytes to read
  * @return 0 if ok, -1 on error
  */
-static int mkbp_flash_read_block(MkbpBusOps *bus, uint8_t *data,
-				 uint32_t offset, uint32_t size)
+static int cros_ec_flash_read_block(CrosEcBusOps *bus, uint8_t *data,
+				    uint32_t offset, uint32_t size)
 {
 	struct ec_params_flash_read p;
 
@@ -538,17 +538,17 @@ static int mkbp_flash_read_block(MkbpBusOps *bus, uint8_t *data,
 			  &p, sizeof(p), &data, size) >= 0 ? 0 : -1;
 }
 
-int mkbp_flash_read(MkbpBusOps *bus, uint8_t *data, uint32_t offset,
-		    uint32_t size)
+int cros_ec_flash_read(CrosEcBusOps *bus, uint8_t *data, uint32_t offset,
+		       uint32_t size)
 {
-	uint32_t burst = mkbp_flash_write_burst_size(bus);
+	uint32_t burst = cros_ec_flash_write_burst_size(bus);
 	uint32_t end, off;
 	int ret;
 
 	end = offset + size;
 	for (off = offset; off < end; off += burst, data += burst) {
-		ret = mkbp_flash_read_block(bus, data, off,
-					    MIN(end - off, burst));
+		ret = cros_ec_flash_read_block(bus, data, off,
+					       MIN(end - off, burst));
 		if (ret)
 			return ret;
 	}
@@ -556,12 +556,13 @@ int mkbp_flash_read(MkbpBusOps *bus, uint8_t *data, uint32_t offset,
 	return 0;
 }
 
-int mkbp_flash_update_rw(MkbpBusOps *bus, const uint8_t *image, int image_size)
+int cros_ec_flash_update_rw(CrosEcBusOps *bus, const uint8_t *image,
+			    int image_size)
 {
 	uint32_t rw_offset, rw_size;
 	int ret;
 
-	if (mkbp_flash_offset(bus, EC_FLASH_REGION_RW, &rw_offset, &rw_size))
+	if (cros_ec_flash_offset(bus, EC_FLASH_REGION_RW, &rw_offset, &rw_size))
 		return -1;
 	if (image_size > rw_size)
 		return -1;
@@ -574,19 +575,19 @@ int mkbp_flash_update_rw(MkbpBusOps *bus, const uint8_t *image, int image_size)
 	 * presumably everything past that is 0xff's.  But would still need to
 	 * round up to the nearest multiple of erase size.
 	 */
-	ret = mkbp_flash_erase(bus, rw_offset, rw_size);
+	ret = cros_ec_flash_erase(bus, rw_offset, rw_size);
 	if (ret)
 		return ret;
 
 	/* Write the image */
-	ret = mkbp_flash_write(bus, image, rw_offset, image_size);
+	ret = cros_ec_flash_write(bus, image, rw_offset, image_size);
 	if (ret)
 		return ret;
 
 	return 0;
 }
 
-int mkbp_read_vbnvcontext(MkbpBusOps *bus, uint8_t *block)
+int cros_ec_read_vbnvcontext(CrosEcBusOps *bus, uint8_t *block)
 {
 	struct ec_params_vbnvcontext p;
 	int len;
@@ -601,7 +602,7 @@ int mkbp_read_vbnvcontext(MkbpBusOps *bus, uint8_t *block)
 	return 0;
 }
 
-int mkbp_write_vbnvcontext(MkbpBusOps *bus, const uint8_t *block)
+int cros_ec_write_vbnvcontext(CrosEcBusOps *bus, const uint8_t *block)
 {
 	struct ec_params_vbnvcontext p;
 	int len;
@@ -617,25 +618,25 @@ int mkbp_write_vbnvcontext(MkbpBusOps *bus, const uint8_t *block)
 	return 0;
 }
 
-int mkbp_init(MkbpBusOps *bus)
+int cros_ec_init(CrosEcBusOps *bus)
 {
 	char id[MSG_BYTES];
 
 	if (bus->init && bus->init(bus))
 		return -1;
 
-	if (mkbp_read_id(bus, id, sizeof(id))) {
+	if (cros_ec_read_id(bus, id, sizeof(id))) {
 		printf("%s: Could not read KBC ID\n", __func__);
 		return -1;
 	}
 
-	printf("Google Chrome EC MKBP driver ready, id '%s'\n", id);
+	printf("Google ChromeOS EC driver ready, id '%s'\n", id);
 
 	// Unconditionally clear the EC recovery request.
 	printf("Clearing the recovery request.\n");
 	const uint32_t kb_rec_mask =
 		EC_HOST_EVENT_MASK(EC_HOST_EVENT_KEYBOARD_RECOVERY);
-	mkbp_clear_host_events(bus, kb_rec_mask);
+	cros_ec_clear_host_events(bus, kb_rec_mask);
 
 	return 0;
 }

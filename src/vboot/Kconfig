@@ -68,7 +68,7 @@ config NV_STORAGE_DISK
 	  disk will be used. To avoid unexpected behavior, there should only
 	  be one fixed disk in the system.
 
-config NV_STORAGE_MKBP
+config NV_STORAGE_CROS_EC
 	bool "ChromeOS EC"
 	help
 	  The nonvolatile data is stored by the ChromeOS EC.

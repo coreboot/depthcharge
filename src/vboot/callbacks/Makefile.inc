@@ -27,7 +27,7 @@ depthcharge-y += memory.c
 depthcharge-y += misc.c
 depthcharge-$(CONFIG_NV_STORAGE_CMOS) += nvstorage_cmos.c
 depthcharge-$(CONFIG_NV_STORAGE_DISK) += nvstorage_disk.c
-depthcharge-$(CONFIG_NV_STORAGE_MKBP) += nvstorage_mkbp.c
+depthcharge-$(CONFIG_NV_STORAGE_CROS_EC) += nvstorage_cros_ec.c
 depthcharge-y += time.c
 depthcharge-y += tpm.c
 

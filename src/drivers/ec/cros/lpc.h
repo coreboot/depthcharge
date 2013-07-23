@@ -1,7 +1,7 @@
 /*
- * Chromium OS Matrix Keyboard Message Protocol definitions
+ * Chromium OS EC driver - I2C interface
  *
- * Copyright 2012 Google Inc.
+ * Copyright 2013 Google Inc.
  * See file CREDITS for list of people who contributed to this
  * project.
  *
@@ -21,28 +21,21 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __DRIVERS_EC_CHROMEOS_MESSAGE_H__
-#define __DRIVERS_EC_CHROMEOS_MESSAGE_H__
+#ifndef __DRIVERS_EC_CROS_LPC_H__
+#define __DRIVERS_EC_CROS_LPC_H__
 
-#include <stdint.h>
+#include "drivers/ec/cros/message.h"
+#include "drivers/ec/cros/ec.h"
 
-#include "drivers/ec/chromeos/commands.h"
+typedef struct
+{
+	uint8_t din[MSG_BYTES];
+	uint8_t dout[MSG_BYTES];
 
-/*
- * Command interface between EC and AP, for LPC, I2C and SPI interfaces.
- *
- * This is copied from the Chromium OS Open Source Embedded Controller code.
- */
-enum {
-	/* The header byte, which follows the preamble */
-	MSG_HEADER = 0xec,
+	CrosEcBusOps ops;
 
-	MSG_HEADER_BYTES = 3,
-	MSG_TRAILER_BYTES = 2,
-	MSG_PROTO_BYTES = MSG_HEADER_BYTES + MSG_TRAILER_BYTES,
+	int initialized;
+} CrosEcLpcBus;
 
-	/* Max length of messages */
-	MSG_BYTES = EC_HOST_PARAM_SIZE + MSG_PROTO_BYTES,
-};
-
-#endif
+CrosEcLpcBus *new_cros_ec_lpc_bus(void);
+#endif /* __DRIVERS_EC_CROS_LPC_H__ */

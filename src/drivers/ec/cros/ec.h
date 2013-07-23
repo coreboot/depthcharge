@@ -1,5 +1,5 @@
 /*
- * Chromium OS mkbp driver
+ * Chromium OS EC driver
  *
  * Copyright 2012 Google Inc.
  * See file CREDITS for list of people who contributed to this
@@ -21,23 +21,23 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __DRIVERS_EC_CHROMEOS_MKBP_H__
-#define __DRIVERS_EC_CHROMEOS_MKBP_H__
+#ifndef __DRIVERS_EC_CROS_EC_H__
+#define __DRIVERS_EC_CROS_EC_H__
 
 #include <stdint.h>
 
-#include "drivers/ec/chromeos/commands.h"
+#include "drivers/ec/cros/commands.h"
 
-typedef struct MkbpBusOps
+typedef struct CrosEcBusOps
 {
-	int (*init)(struct MkbpBusOps *me);
+	int (*init)(struct CrosEcBusOps *me);
 
 	/**
-	 * Send a command to a MKBP device and return the reply.
+	 * Send a command to a ChromeOS EC device and return the reply.
 	 *
 	 * The device's internal input/output buffers are used.
 	 *
-	 * @param bus		MKBP bus ops
+	 * @param bus		ChromeOS EC bus ops
 	 * @param cmd		Command to send (EC_CMD_...)
 	 * @param cmd_version	Version of command to send (EC_VER_...)
 	 * @param dout          Output data (may be NULL If dout_len=0)
@@ -46,91 +46,91 @@ typedef struct MkbpBusOps
 	 * @param din_len       Maximum size of response in bytes
 	 * @return number of bytes in response, or -1 on error
 	 */
-	int (*send_command)(struct MkbpBusOps *me, uint8_t cmd,
+	int (*send_command)(struct CrosEcBusOps *me, uint8_t cmd,
 			    int cmd_version,
 			    const uint8_t *dout, int dout_len,
 			    uint8_t **dinp, int din_len);
-} MkbpBusOps;
+} CrosEcBusOps;
 
-int mkbp_set_bus(MkbpBusOps *bus);
+int cros_ec_set_bus(CrosEcBusOps *bus);
 
-extern MkbpBusOps *mkbp_bus;
+extern CrosEcBusOps *cros_ec_bus;
 
 /*
  * Hard-code the number of columns we happen to know we have right now.  It
- * would be more correct to call mkbp_info() at startup and determine the
- * actual number of keyboard cols from there.
+ * would be more correct to call cros_ec_mkbp_info() at startup and determine
+ * the actual number of keyboard cols from there.
  */
-#define MKBP_KEYSCAN_COLS 13
+#define CROS_EC_KEYSCAN_COLS 13
 
 /* Information returned by a key scan */
-struct mkbp_keyscan {
-	uint8_t data[MKBP_KEYSCAN_COLS];
+struct cros_ec_keyscan {
+	uint8_t data[CROS_EC_KEYSCAN_COLS];
 };
 
 /**
- * Read the ID of the MKBP device
+ * Read the ID of the ChromeOS EC device
  *
- * The ID is a string identifying the MKBP device.
+ * The ID is a string identifying the ChromeOS EC device.
  *
- * @param bus		MKBP bus ops
+ * @param bus		ChromeOS EC bus ops
  * @param id		Place to put the ID
  * @param maxlen	Maximum length of the ID field
  * @return 0 if ok, -1 on error
  */
-int mkbp_read_id(MkbpBusOps *bus, char *id, int maxlen);
+int cros_ec_read_id(CrosEcBusOps *bus, char *id, int maxlen);
 
 /**
- * Read a keyboard scan from the MKBP device
+ * Read a keyboard scan from the ChromeOS EC device
  *
  * Send a message requesting a keyboard scan and return the result
  *
- * @param bus		MKBP bus ops
+ * @param bus		ChromeOS EC bus ops
  * @param scan		Place to put the scan results
  * @return 0 if ok, -1 on error
  */
-int mkbp_scan_keyboard(MkbpBusOps *bus, struct mkbp_keyscan *scan);
+int cros_ec_scan_keyboard(CrosEcBusOps *bus, struct cros_ec_keyscan *scan);
 
 /**
- * Read which image is currently running on the MKBP device.
+ * Read which image is currently running on the ChromeOS EC device.
  *
- * @param bus		MKBP bus ops
+ * @param bus		ChromeOS EC bus ops
  * @param image		Destination for image identifier
  * @return 0 if ok, <0 on error
  */
-int mkbp_read_current_image(MkbpBusOps *bus, enum ec_current_image *image);
+int cros_ec_read_current_image(CrosEcBusOps *bus, enum ec_current_image *image);
 
 /**
- * Read the hash of the MKBP device firmware.
+ * Read the hash of the ChromeOS EC device firmware.
  *
- * @param bus		MKBP bus ops
+ * @param bus		ChromeOS EC bus ops
  * @param hash		Destination for hash information
  * @return 0 if ok, <0 on error
  */
-int mkbp_read_hash(MkbpBusOps *bus, struct ec_response_vboot_hash *hash);
+int cros_ec_read_hash(CrosEcBusOps *bus, struct ec_response_vboot_hash *hash);
 
 /**
- * Send a reboot command to the MKBP device.
+ * Send a reboot command to the ChromeOS EC device.
  *
  * Note that some reboot commands (such as EC_REBOOT_COLD) also reboot the AP.
  *
- * @param bus		MKBP bus ops
+ * @param bus		ChromeOS EC bus ops
  * @param cmd		Reboot command
  * @param flags         Flags for reboot command (EC_REBOOT_FLAG_*)
  * @return 0 if ok, <0 on error
  */
-int mkbp_reboot(MkbpBusOps *bus, enum ec_reboot_cmd cmd, uint8_t flags);
+int cros_ec_reboot(CrosEcBusOps *bus, enum ec_reboot_cmd cmd, uint8_t flags);
 
 /**
- * Check if the MKBP device has an interrupt pending.
+ * Check if the ChromeOS EC device has an interrupt pending.
  *
- * Read the status of the external interrupt connected to the MKBP device.
- * If no external interrupt is configured, this always returns 1.
+ * Read the status of the external interrupt connected to the ChromeOS EC
+ * device. If no external interrupt is configured, this always returns 1.
  *
- * @param bus		MKBP bus ops
+ * @param bus		ChromeOS EC bus ops
  * @return 0 if no interrupt is pending
  */
-int mkbp_interrupt_pending(MkbpBusOps *bus);
+int cros_ec_interrupt_pending(CrosEcBusOps *bus);
 
 /**
  * Set up the Chromium OS matrix keyboard protocol
@@ -138,38 +138,38 @@ int mkbp_interrupt_pending(MkbpBusOps *bus);
  * @param blob		Device tree blob containing setup information
  * @return 0 if ok, <0 on error
  */
-int mkbp_init(MkbpBusOps *bus);
+int cros_ec_init(CrosEcBusOps *bus);
 
 /**
  * Read information about the keyboard matrix
  *
- * @param bus		MKBP bus ops
+ * @param bus		ChromeOS EC bus ops
  * @param info		Place to put the info structure
  */
-int mkbp_info(MkbpBusOps *bus, struct ec_response_mkbp_info *info);
+int cros_ec_mkbp_info(CrosEcBusOps *bus, struct ec_response_mkbp_info *info);
 
 /**
  * Read the host event flags
  *
- * @param bus		MKBP bus ops
+ * @param bus		ChromeOS EC bus ops
  * @param events_ptr	Destination for event flags.  Not changed on error.
  * @return 0 if ok, <0 on error
  */
-int mkbp_get_host_events(MkbpBusOps *bus, uint32_t *events_ptr);
+int cros_ec_get_host_events(CrosEcBusOps *bus, uint32_t *events_ptr);
 
 /**
  * Clear the specified host event flags
  *
- * @param bus		MKBP bus ops
+ * @param bus		ChromeOS EC bus ops
  * @param events	Event flags to clear
  * @return 0 if ok, <0 on error
  */
-int mkbp_clear_host_events(MkbpBusOps *bus, uint32_t events);
+int cros_ec_clear_host_events(CrosEcBusOps *bus, uint32_t events);
 
 /**
  * Get/set flash protection
  *
- * @param bus		MKBP bus ops
+ * @param bus		ChromeOS EC bus ops
  * @param set_mask	Mask of flags to set; if 0, just retrieves existing
  *                      protection state without changing it.
  * @param set_flags	New flag values; only bits in set_mask are applied;
@@ -177,29 +177,29 @@ int mkbp_clear_host_events(MkbpBusOps *bus, uint32_t events);
  * @param prot          Destination for updated protection state from EC.
  * @return 0 if ok, <0 on error
  */
-int mkbp_flash_protect(MkbpBusOps *bus,
-		       uint32_t set_mask, uint32_t set_flags,
-		       struct ec_response_flash_protect *resp);
+int cros_ec_flash_protect(CrosEcBusOps *bus,
+			  uint32_t set_mask, uint32_t set_flags,
+			  struct ec_response_flash_protect *resp);
 
 
 /**
- * Run internal tests on the mkbp interface.
+ * Run internal tests on the ChromeOS EC interface.
  *
- * @param bus		MKBP bus ops
+ * @param bus		ChromeOS EC bus ops
  * @return 0 if ok, <0 if the test failed
  */
-int mkbp_test(MkbpBusOps *bus);
+int cros_ec_test(CrosEcBusOps *bus);
 
 /**
  * Update the EC RW copy.
  *
- * @param bus		MKBP bus ops
+ * @param bus		ChromeOS EC bus ops
  * @param image		the content to write
  * @param imafge_size	content length
  * @return 0 if ok, <0 if the test failed
  */
-int mkbp_flash_update_rw(MkbpBusOps *bus,
-			 const uint8_t  *image, int image_size);
+int cros_ec_flash_update_rw(CrosEcBusOps *bus,
+			    const uint8_t *image, int image_size);
 
 /* Internal interfaces */
 
@@ -211,7 +211,7 @@ int mkbp_flash_update_rw(MkbpBusOps *bus,
  * @param data	Data block to dump
  * @param len	Length of data block to dump
  */
-void mkbp_dump_data(const char *name, int cmd, const uint8_t *data, int len);
+void cros_ec_dump_data(const char *name, int cmd, const uint8_t *data, int len);
 
 /**
  * Calculate a simple 8-bit checksum of a data block
@@ -220,7 +220,7 @@ void mkbp_dump_data(const char *name, int cmd, const uint8_t *data, int len);
  * @param size	Size of data block in bytes
  * @return checksum value (0 to 255)
  */
-uint8_t mkbp_calc_checksum(const uint8_t *data, int size);
+uint8_t cros_ec_calc_checksum(const uint8_t *data, int size);
 
 /**
  * Decode a flash region parameter
@@ -229,9 +229,9 @@ uint8_t mkbp_calc_checksum(const uint8_t *data, int size);
  * @param argv	List of remaining parameters
  * @return flash region (EC_FLASH_REGION_...) or -1 on error
  */
-int mkbp_decode_region(int argc, char * const argv[]);
+int cros_ec_decode_region(int argc, char * const argv[]);
 
-int mkbp_flash_erase(MkbpBusOps *bus, uint32_t offset, uint32_t size);
+int cros_ec_flash_erase(CrosEcBusOps *bus, uint32_t offset, uint32_t size);
 
 /**
  * Read data from the flash
@@ -240,16 +240,16 @@ int mkbp_flash_erase(MkbpBusOps *bus, uint32_t offset, uint32_t size);
  * small blocks.
  *
  * The offset starts at 0. You can obtain the region information from
- * mkbp_flash_offset() to find out where to read for a particular region.
+ * cros_ec_flash_offset() to find out where to read for a particular region.
  *
- * @param bus		MKBP bus ops
+ * @param bus		ChromeOS EC bus ops
  * @param data		Pointer to data buffer to read into
  * @param offset	Offset within flash to read from
  * @param size		Number of bytes to read
  * @return 0 if ok, -1 on error
  */
-int mkbp_flash_read(MkbpBusOps *bus, uint8_t *data, uint32_t offset,
-		    uint32_t size);
+int cros_ec_flash_read(CrosEcBusOps *bus, uint8_t *data, uint32_t offset,
+		       uint32_t size);
 
 /**
  * Write data to the flash
@@ -258,59 +258,59 @@ int mkbp_flash_read(MkbpBusOps *bus, uint8_t *data, uint32_t offset,
  * small blocks.
  *
  * The offset starts at 0. You can obtain the region information from
- * mkbp_flash_offset() to find out where to write for a particular region.
+ * cros_ec_flash_offset() to find out where to write for a particular region.
  *
  * Attempting to write to the region where the EC is currently running from
  * will result in an error.
  *
- * @param bus		MKBP bus ops
+ * @param bus		ChromeOS EC bus ops
  * @param data		Pointer to data buffer to write
  * @param offset	Offset within flash to write to.
  * @param size		Number of bytes to write
  * @return 0 if ok, -1 on error
  */
-int mkbp_flash_write(MkbpBusOps *bus, const uint8_t *data,
-		     uint32_t offset, uint32_t size);
+int cros_ec_flash_write(CrosEcBusOps *bus, const uint8_t *data,
+			uint32_t offset, uint32_t size);
 
 /**
  * Obtain position and size of a flash region
  *
- * @param bus		MKBP bus ops
+ * @param bus		ChromeOS EC bus ops
  * @param region	Flash region to query
  * @param offset	Returns offset of flash region in EC flash
  * @param size		Returns size of flash region
  * @return 0 if ok, -1 on error
  */
-int mkbp_flash_offset(MkbpBusOps *bus, enum ec_flash_region region,
-		      uint32_t *offset, uint32_t *size);
+int cros_ec_flash_offset(CrosEcBusOps *bus, enum ec_flash_region region,
+			 uint32_t *offset, uint32_t *size);
 
 /**
- * Read/write VbNvContext from/to a MKBP device.
+ * Read/write VbNvContext from/to a ChromeOS EC device.
  *
- * @param bus		MKBP bus ops
+ * @param bus		ChromeOS EC bus ops
  * @param block		Buffer of VbNvContext to be read/write
  * @return 0 if ok, -1 on error
  */
-int mkbp_read_vbnvcontext(MkbpBusOps *bus, uint8_t *block);
-int mkbp_write_vbnvcontext(MkbpBusOps *bus, const uint8_t *block);
+int cros_ec_read_vbnvcontext(CrosEcBusOps *bus, uint8_t *block);
+int cros_ec_write_vbnvcontext(CrosEcBusOps *bus, const uint8_t *block);
 
 /**
  * Read the version information for the EC images
  *
- * @param bus		MKBP bus ops
+ * @param bus		ChromeOS EC bus ops
  * @param versionp	This is set to point to the version information
  * @return 0 if ok, -1 on error
  */
-int mkbp_read_version(MkbpBusOps *bus,
-		       struct ec_response_get_version **versionp);
+int cros_ec_read_version(CrosEcBusOps *bus,
+			 struct ec_response_get_version **versionp);
 
 /**
  * Read the build information for the EC
  *
- * @param bus		MKBP bus ops
+ * @param bus		ChromeOS EC bus ops
  * @param versionp	This is set to point to the build string
  * @return 0 if ok, -1 on error
  */
-int mkbp_read_build_info(MkbpBusOps *bus, char **strp);
+int cros_ec_read_build_info(CrosEcBusOps *bus, char **strp);
 
 #endif

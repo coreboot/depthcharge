@@ -1,5 +1,5 @@
 /*
- * Chromium OS mkbp driver - LPC interface
+ * Chromium OS EC driver - LPC interface
  *
  * Copyright 2012 Google Inc.
  * See file CREDITS for list of people who contributed to this
@@ -32,7 +32,7 @@
 
 #include "base/list.h"
 #include "base/time.h"
-#include "drivers/ec/chromeos/mkbp_lpc.h"
+#include "drivers/ec/cros/lpc.h"
 #include "drivers/timer/timer.h"
 
 static int wait_for_sync(void)
@@ -40,7 +40,8 @@ static int wait_for_sync(void)
 	uint64_t start = timer_us(0);
 	while (inb(EC_LPC_ADDR_HOST_CMD) & EC_LPC_STATUS_BUSY_MASK) {
 		if (timer_us(start) > 1000 * 1000) {
-			printf("%s: Timeout waiting for MKBP sync\n", __func__);
+			printf("%s: Timeout waiting for CrosEC sync\n",
+				__func__);
 			return -1;
 		}
 	}
@@ -59,15 +60,15 @@ static void inb_range(uint8_t *data, uint16_t port, int size)
 		*data++ = inb(port++);
 }
 
-static int send_command(MkbpBusOps *me, uint8_t cmd, int cmd_version,
+static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 			const uint8_t *dout, int dout_len,
 			uint8_t **dinp, int din_len)
 {
 	struct ec_lpc_host_args args;
-	MkbpLpcBus *bus = container_of(me, MkbpLpcBus, ops);
+	CrosEcLpcBus *bus = container_of(me, CrosEcLpcBus, ops);
 
 	if (!bus->initialized) {
-		if (mkbp_init(me))
+		if (cros_ec_init(me))
 			return -1;
 	}
 
@@ -83,7 +84,7 @@ static int send_command(MkbpBusOps *me, uint8_t cmd, int cmd_version,
 
 	/* Calculate checksum */
 	args.checksum = cmd + args.flags + args.command_version +
-		args.data_size + mkbp_calc_checksum(dout, dout_len);
+		args.data_size + cros_ec_calc_checksum(dout, dout_len);
 
 	if (wait_for_sync()) {
 		printf("%s: Timeout waiting ready\n", __func__);
@@ -106,7 +107,7 @@ static int send_command(MkbpBusOps *me, uint8_t cmd, int cmd_version,
 	/* Check result */
 	int res = inb(EC_LPC_ADDR_HOST_DATA);
 	if (res) {
-		printf("%s: MKBP result code %d\n", __func__, res);
+		printf("%s: CrosEC result code %d\n", __func__, res);
 		return -res;
 	}
 
@@ -119,12 +120,12 @@ static int send_command(MkbpBusOps *me, uint8_t cmd, int cmd_version,
 	 * from the wrong place.
 	 */
 	if (!(args.flags & EC_HOST_ARGS_FLAG_TO_HOST)) {
-		printf("%s: MKBP protocol mismatch\n", __func__);
+		printf("%s: CrosEC protocol mismatch\n", __func__);
 		return -EC_RES_INVALID_RESPONSE;
 	}
 
 	if (args.data_size > din_len) {
-		printf("%s: MKBP returned too much data %d > %d\n",
+		printf("%s: CrosEC returned too much data %d > %d\n",
 		      __func__, args.data_size, din_len);
 		return -EC_RES_INVALID_RESPONSE;
 	}
@@ -134,10 +135,11 @@ static int send_command(MkbpBusOps *me, uint8_t cmd, int cmd_version,
 
 	/* Verify checksum */
 	uint8_t csum = cmd + args.flags + args.command_version +
-		args.data_size + mkbp_calc_checksum(bus->din, args.data_size);
+		args.data_size +
+		cros_ec_calc_checksum(bus->din, args.data_size);
 
 	if (args.checksum != (uint8_t)csum) {
-		printf("%s: MKBP response has invalid checksum\n", __func__);
+		printf("%s: CrosEC response has invalid checksum\n", __func__);
 		return -EC_RES_INVALID_CHECKSUM;
 	}
 	*dinp = bus->din;
@@ -149,14 +151,14 @@ static int send_command(MkbpBusOps *me, uint8_t cmd, int cmd_version,
 /**
  * Initialize LPC protocol.
  *
- * @param dev		MKBP device
+ * @param dev		CrosEC device
  * @param blob		Device tree blob
  * @return 0 if ok, -1 on error
  */
-static int mkbp_lpc_init(MkbpBusOps *me)
+static int cros_ec_lpc_init(CrosEcBusOps *me)
 {
 	int byte, i;
-	MkbpLpcBus *bus = container_of(me, MkbpLpcBus, ops);
+	CrosEcLpcBus *bus = container_of(me, CrosEcLpcBus, ops);
 
 	if (bus->initialized)
 		return 0;
@@ -169,7 +171,7 @@ static int mkbp_lpc_init(MkbpBusOps *me)
 	for (i = 0; i < EC_HOST_PARAM_SIZE && (byte == 0xff); i++)
 		byte &= inb(EC_LPC_ADDR_HOST_PARAM + i);
 	if (byte == 0xff) {
-		printf("%s: MKBP device not found on LPC bus\n",
+		printf("%s: CrosEC device not found on LPC bus\n",
 			__func__);
 		return -1;
 	}
@@ -177,15 +179,15 @@ static int mkbp_lpc_init(MkbpBusOps *me)
 	return 0;
 }
 
-MkbpLpcBus *new_mkbp_lpc_bus(void)
+CrosEcLpcBus *new_cros_ec_lpc_bus(void)
 {
-	MkbpLpcBus *bus = memalign(sizeof(int64_t), sizeof(*bus));
+	CrosEcLpcBus *bus = memalign(sizeof(int64_t), sizeof(*bus));
 	if (!bus) {
-		printf("Failed to allocate MKBP LPC object.\n");
+		printf("Failed to allocate CrosEC LPC object.\n");
 		return NULL;
 	}
 	memset(bus, 0, sizeof(*bus));
-	bus->ops.init = &mkbp_lpc_init;
+	bus->ops.init = &cros_ec_lpc_init;
 	bus->ops.send_command = &send_command;
 
 	return bus;

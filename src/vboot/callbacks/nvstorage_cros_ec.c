@@ -23,16 +23,16 @@
 #include <libpayload.h>
 #include <vboot_api.h>
 
-#include "drivers/ec/chromeos/mkbp.h"
+#include "drivers/ec/cros/ec.h"
 
 VbError_t VbExNvStorageRead(uint8_t* buf)
 {
-	if (!mkbp_bus) {
-		printf("No MKBP device.\n");
+	if (!cros_ec_bus) {
+		printf("No ChromeOS EC device.\n");
 		return VBERROR_UNKNOWN;
 	}
 
-	if (mkbp_read_vbnvcontext(mkbp_bus, buf))
+	if (cros_ec_read_vbnvcontext(cros_ec_bus, buf))
 		return VBERROR_UNKNOWN;
 
 	return VBERROR_SUCCESS;
@@ -40,12 +40,12 @@ VbError_t VbExNvStorageRead(uint8_t* buf)
 
 VbError_t VbExNvStorageWrite(const uint8_t* buf)
 {
-	if (!mkbp_bus) {
-		printf("No MKBP device.\n");
+	if (!cros_ec_bus) {
+		printf("No ChromeOS EC device.\n");
 		return VBERROR_UNKNOWN;
 	}
 
-	if (mkbp_write_vbnvcontext(mkbp_bus, buf))
+	if (cros_ec_write_vbnvcontext(cros_ec_bus, buf))
 		return VBERROR_UNKNOWN;
 
 	return VBERROR_SUCCESS;

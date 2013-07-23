@@ -22,17 +22,17 @@
 
 #include <libpayload.h>
 
-#include "drivers/ec/chromeos/mkbp.h"
+#include "drivers/ec/cros/ec.h"
 #include "vboot/util/ec.h"
 
 void reboot_ec_to_ro()
 {
-	if (!mkbp_bus) {
-		printf("No MKBP device.\n");
+	if (!cros_ec_bus) {
+		printf("No ChromeOS EC device.\n");
 		halt();
 	}
-	if (mkbp_reboot(mkbp_bus, EC_REBOOT_COLD,
-			EC_REBOOT_FLAG_ON_AP_SHUTDOWN)) {
+	if (cros_ec_reboot(cros_ec_bus, EC_REBOOT_COLD,
+			   EC_REBOOT_FLAG_ON_AP_SHUTDOWN)) {
 		printf("Failed to reboot EC to RO.\n");
 		halt();
 	}

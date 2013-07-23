@@ -25,7 +25,7 @@
 #include "base/init_funcs.h"
 #include "board/daisy/i2c_arb.h"
 #include "drivers/bus/i2c/s3c24x0.h"
-#include "drivers/ec/chromeos/mkbp_i2c.h"
+#include "drivers/ec/cros/i2c.h"
 #include "drivers/gpio/s5p.h"
 #include "drivers/sound/max98095.h"
 #include "drivers/tpm/tpm.h"
@@ -59,10 +59,10 @@ static int board_setup(void)
 	if (!arb4)
 		return 1;
 
-	MkbpI2cBus *mkbp_i2c_bus = new_mkbp_i2c_bus(&arb4->ops, 0x1e);
-	if (!mkbp_i2c_bus)
+	CrosEcI2cBus *cros_ec_i2c_bus = new_cros_ec_i2c_bus(&arb4->ops, 0x1e);
+	if (!cros_ec_i2c_bus)
 		return 1;
-	mkbp_set_bus(&mkbp_i2c_bus->ops);
+	cros_ec_set_bus(&cros_ec_i2c_bus->ops);
 
 	tis_set_i2c_bus(&i2c3->ops);
 	max98095_set_i2c_bus(&i2c7->ops);
