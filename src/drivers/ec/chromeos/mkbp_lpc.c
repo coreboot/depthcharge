@@ -37,9 +37,9 @@
 
 static int wait_for_sync(void)
 {
-	uint64_t start = timer_value();
+	uint64_t start = timer_time_in_us(0);
 	while (inb(EC_LPC_ADDR_HOST_CMD) & EC_LPC_STATUS_BUSY_MASK) {
-		if (timer_value() - start > timer_hz()) {
+		if (timer_time_in_us(start) > 1000 * 1000) {
 			printf("%s: Timeout waiting for MKBP sync\n", __func__);
 			return -1;
 		}

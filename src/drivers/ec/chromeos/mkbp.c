@@ -123,7 +123,7 @@ static int ec_command(MkbpBusOps *bus, uint8_t cmd, int cmd_version,
 		uint64_t start;
 
 		/* Wait for command to complete */
-		start = timer_value();
+		start = timer_time_in_us(0);
 		do {
 			int ret;
 
@@ -134,8 +134,8 @@ static int ec_command(MkbpBusOps *bus, uint8_t cmd, int cmd_version,
 			if (ret < 0)
 				return ret;
 
-			if (timer_value() - start >
-				MKBP_CMD_TIMEOUT_MS * (timer_hz() / 1000)) {
+			if (timer_time_in_us(start) >
+				MKBP_CMD_TIMEOUT_MS * 1000) {
 				printf("%s: Command %#02x timeout",
 				      __func__, cmd);
 				return -EC_RES_TIMEOUT;
