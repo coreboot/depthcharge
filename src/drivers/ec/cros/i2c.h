@@ -39,8 +39,6 @@ typedef struct
 	CrosEcBusOps ops;
 	I2cOps *bus;
 	uint8_t chip;
-
-	int initialized;
 } CrosEcI2cBus;
 
 CrosEcI2cBus *new_cros_ec_i2c_bus(I2cOps *bus, uint8_t chip);

@@ -33,8 +33,6 @@ typedef struct
 	uint8_t dout[MSG_BYTES];
 
 	CrosEcBusOps ops;
-
-	int initialized;
 } CrosEcLpcBus;
 
 CrosEcLpcBus *new_cros_ec_lpc_bus(void);

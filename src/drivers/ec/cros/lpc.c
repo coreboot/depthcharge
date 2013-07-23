@@ -67,11 +67,6 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 	struct ec_lpc_host_args args;
 	CrosEcLpcBus *bus = container_of(me, CrosEcLpcBus, ops);
 
-	if (!bus->initialized) {
-		if (cros_ec_init(me))
-			return -1;
-	}
-
 	if (dout_len > EC_HOST_PARAM_SIZE) {
 		printf("%s: Cannot send %d bytes\n", __func__, dout_len);
 		return -1;
@@ -158,11 +153,6 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 static int cros_ec_lpc_init(CrosEcBusOps *me)
 {
 	int byte, i;
-	CrosEcLpcBus *bus = container_of(me, CrosEcLpcBus, ops);
-
-	if (bus->initialized)
-		return 0;
-	bus->initialized = 1;
 
 	/* See if we can find an EC at the other end */
 	byte = 0xff;

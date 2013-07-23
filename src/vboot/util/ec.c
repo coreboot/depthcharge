@@ -27,12 +27,7 @@
 
 void reboot_ec_to_ro()
 {
-	if (!cros_ec_bus) {
-		printf("No ChromeOS EC device.\n");
-		halt();
-	}
-	if (cros_ec_reboot(cros_ec_bus, EC_REBOOT_COLD,
-			   EC_REBOOT_FLAG_ON_AP_SHUTDOWN)) {
+	if (cros_ec_reboot(EC_REBOOT_COLD, EC_REBOOT_FLAG_ON_AP_SHUTDOWN)) {
 		printf("Failed to reboot EC to RO.\n");
 		halt();
 	}

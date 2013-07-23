@@ -43,17 +43,6 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 {
 	CrosEcI2cBus *bus = container_of(me, CrosEcI2cBus, ops);
 
-	if (!bus->bus) {
-		printf("%s: No i2c bus set.\n", __func__);
-		return -1;
-	}
-
-	if (!bus->initialized) {
-		bus->initialized = 1;
-		if (cros_ec_init(me))
-			return -1;
-	}
-
 	/* version8, cmd8, arglen8, out8[dout_len], csum8 */
 	int out_bytes = dout_len + 4;
 	/* response8, arglen8, in8[din_len], checksum8 */
@@ -140,6 +129,8 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 
 CrosEcI2cBus *new_cros_ec_i2c_bus(I2cOps *i2c_bus, uint8_t chip)
 {
+	assert(i2c_bus);
+
 	CrosEcI2cBus *bus = memalign(sizeof(int64_t), sizeof(*bus));
 	if (!bus) {
 		printf("Failed to allocate ChromeOS EC I2C object.\n");

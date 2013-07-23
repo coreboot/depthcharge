@@ -27,12 +27,7 @@
 
 VbError_t VbExNvStorageRead(uint8_t* buf)
 {
-	if (!cros_ec_bus) {
-		printf("No ChromeOS EC device.\n");
-		return VBERROR_UNKNOWN;
-	}
-
-	if (cros_ec_read_vbnvcontext(cros_ec_bus, buf))
+	if (cros_ec_read_vbnvcontext(buf))
 		return VBERROR_UNKNOWN;
 
 	return VBERROR_SUCCESS;
@@ -40,12 +35,7 @@ VbError_t VbExNvStorageRead(uint8_t* buf)
 
 VbError_t VbExNvStorageWrite(const uint8_t* buf)
 {
-	if (!cros_ec_bus) {
-		printf("No ChromeOS EC device.\n");
-		return VBERROR_UNKNOWN;
-	}
-
-	if (cros_ec_write_vbnvcontext(cros_ec_bus, buf))
+	if (cros_ec_write_vbnvcontext(buf))
 		return VBERROR_UNKNOWN;
 
 	return VBERROR_SUCCESS;

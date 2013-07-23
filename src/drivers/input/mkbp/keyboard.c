@@ -39,8 +39,7 @@ typedef enum Modifier {
 	ModifierShift = 0x4
 } Modifier;
 
-static int read_scancodes(CrosEcBusOps *bus, Modifier *modifiers,
-			  uint8_t *codes, int max_codes)
+static int read_scancodes(Modifier *modifiers, uint8_t *codes, int max_codes)
 {
 	static struct cros_ec_keyscan last_scan;
 	static struct cros_ec_keyscan scan;
@@ -48,7 +47,7 @@ static int read_scancodes(CrosEcBusOps *bus, Modifier *modifiers,
 	assert(modifiers);
 	*modifiers = ModifierNone;
 
-	if (cros_ec_scan_keyboard(bus, &scan)) {
+	if (cros_ec_scan_keyboard(&scan)) {
 		printf("Key matrix scan failed.\n");
 		return 0;
 	}
@@ -157,7 +156,7 @@ static void add_key(uint16_t key)
 	key_fifo[fifo_size++] = key;
 }
 
-static void more_keys(CrosEcBusOps *bus)
+static void more_keys(void)
 {
 	// No more keys until you finish the ones you've got.
 	if (fifo_offset != fifo_size)
@@ -168,7 +167,7 @@ static void more_keys(CrosEcBusOps *bus)
 	// Get scancodes from the EC.
 	uint8_t scancodes[KeyFifoSize];
 	Modifier modifiers;
-	int count = read_scancodes(bus, &modifiers, scancodes, KeyFifoSize);
+	int count = read_scancodes(&modifiers, scancodes, KeyFifoSize);
 
 	// Figure out which layout to use based on the modifiers.
 	int map;
@@ -223,13 +222,8 @@ static void more_keys(CrosEcBusOps *bus)
 
 static int mkbp_keyboard_havekey(void)
 {
-	if (!cros_ec_bus) {
-		printf("No MBKP device.\n");
-		return 0;
-	}
-
 	// Get more keys if we need them.
-	more_keys(cros_ec_bus);
+	more_keys();
 
 	return fifo_size;
 }
@@ -250,11 +244,6 @@ static struct console_input_driver mkbp_keyboard =
 
 static void mkbp_keyboard_init(void)
 {
-	if (!cros_ec_bus) {
-		printf("No ChromeOS EC device.\n");
-		return;
-	}
-
 	console_add_input_driver(&mkbp_keyboard);
 }
 
