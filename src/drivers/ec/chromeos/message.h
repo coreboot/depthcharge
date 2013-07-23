@@ -24,6 +24,10 @@
 #ifndef __DRIVERS_EC_CHROMEOS_MESSAGE_H__
 #define __DRIVERS_EC_CHROMEOS_MESSAGE_H__
 
+#include <stdint.h>
+
+#include "drivers/ec/chromeos/commands.h"
+
 /*
  * Command interface between EC and AP, for LPC, I2C and SPI interfaces.
  *

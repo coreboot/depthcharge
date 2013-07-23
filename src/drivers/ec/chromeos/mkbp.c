@@ -32,16 +32,20 @@
 #include <libpayload.h>
 
 #include "base/time.h"
+#include "drivers/ec/chromeos/message.h"
 #include "drivers/ec/chromeos/mkbp.h"
 
-I2cOps *i2c_bus;
+MkbpBusOps *mkbp_bus;
 
-void mkbp_set_i2c_bus(I2cOps *bus)
+int mkbp_set_bus(MkbpBusOps *bus)
 {
-	i2c_bus = bus;
+	if (mkbp_bus) {
+		printf("Mkbp bus already configured.\n");
+		return -1;
+	}
+	mkbp_bus = bus;
+	return 0;
 }
-
-struct mkbp_dev *mkbp_ptr;
 
 /* Timeout waiting for a flash erase command to complete */
 static const int MKBP_CMD_TIMEOUT_MS = 5000;
@@ -90,7 +94,7 @@ uint8_t mkbp_calc_checksum(const uint8_t *data, int size)
  *
  * The device's internal input/output buffers are used.
  *
- * @param dev		MKBP device
+ * @param bus		MKBP bus ops
  * @param cmd		Command to send (EC_CMD_...)
  * @param cmd_version	Version of command to send (EC_VER_...)
  * @param dout          Output data (may be NULL If dout_len=0)
@@ -103,15 +107,15 @@ uint8_t mkbp_calc_checksum(const uint8_t *data, int size)
  * @param din_len       Maximum size of response in bytes
  * @return number of bytes in response, or -1 on error
  */
-static int ec_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
+static int ec_command(MkbpBusOps *bus, uint8_t cmd, int cmd_version,
 		      const void *dout, int dout_len,
 		      uint8_t **dinp, int din_len)
 {
 	uint8_t *din;
 	int len;
 
-	len = mkbp_bus_command(dev, cmd, cmd_version, dout,
-			       dout_len, &din, din_len);
+	len = bus->send_command(bus, cmd, cmd_version, dout,
+				dout_len, &din, din_len);
 
 	/* If the command doesn't complete, wait a while */
 	if (len == -EC_RES_IN_PROGRESS) {
@@ -124,9 +128,9 @@ static int ec_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 			int ret;
 
 			mdelay(50);	/* Insert some reasonable delay */
-			ret = mkbp_bus_command(dev, EC_CMD_GET_COMMS_STATUS,
-					       0, NULL, 0, (uint8_t **)&resp,
-					       sizeof(*resp));
+			ret = bus->send_command(bus, EC_CMD_GET_COMMS_STATUS,
+						0, NULL, 0, (uint8_t **)&resp,
+						sizeof(*resp));
 			if (ret < 0)
 				return ret;
 
@@ -139,8 +143,8 @@ static int ec_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 		} while (resp->flags & EC_COMMS_STATUS_PROCESSING);
 
 		/* OK it completed, so read the status response */
-		len = mkbp_bus_command(dev, EC_CMD_RESEND_RESPONSE, 0,
-				       NULL, 0, &din, 0);
+		len = bus->send_command(bus, EC_CMD_RESEND_RESPONSE, 0,
+					NULL, 0, &din, 0);
 	}
 
 	/*
@@ -165,20 +169,20 @@ static int ec_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 	return len;
 }
 
-int mkbp_scan_keyboard(struct mkbp_dev *dev, struct mkbp_keyscan *scan)
+int mkbp_scan_keyboard(MkbpBusOps *bus, struct mkbp_keyscan *scan)
 {
-	if (ec_command(dev, EC_CMD_MKBP_STATE, 0, NULL, 0, (uint8_t **)&scan,
+	if (ec_command(bus, EC_CMD_MKBP_STATE, 0, NULL, 0, (uint8_t **)&scan,
 		       sizeof(scan->data)) < sizeof(scan->data))
 		return -1;
 
 	return 0;
 }
 
-int mkbp_read_id(struct mkbp_dev *dev, char *id, int maxlen)
+int mkbp_read_id(MkbpBusOps *bus, char *id, int maxlen)
 {
 	struct ec_response_get_version *r = NULL;
 
-	if (ec_command(dev, EC_CMD_GET_VERSION, 0, NULL, 0, (uint8_t **)&r,
+	if (ec_command(bus, EC_CMD_GET_VERSION, 0, NULL, 0, (uint8_t **)&r,
 		       sizeof(*r)) < sizeof(*r))
 		return -1;
 
@@ -200,11 +204,11 @@ int mkbp_read_id(struct mkbp_dev *dev, char *id, int maxlen)
 	return 0;
 }
 
-int mkbp_read_version(struct mkbp_dev *dev,
-		       struct ec_response_get_version **versionp)
+int mkbp_read_version(MkbpBusOps *bus,
+		      struct ec_response_get_version **versionp)
 {
 	*versionp = NULL;
-	if (ec_command(dev, EC_CMD_GET_VERSION, 0, NULL, 0,
+	if (ec_command(bus, EC_CMD_GET_VERSION, 0, NULL, 0,
 			(uint8_t **)versionp, sizeof(**versionp))
 			< sizeof(**versionp))
 		return -1;
@@ -212,21 +216,21 @@ int mkbp_read_version(struct mkbp_dev *dev,
 	return 0;
 }
 
-int mkbp_read_build_info(struct mkbp_dev *dev, char **strp)
+int mkbp_read_build_info(MkbpBusOps *bus, char **strp)
 {
 	*strp = NULL;
-	if (ec_command(dev, EC_CMD_GET_BUILD_INFO, 0, NULL, 0,
+	if (ec_command(bus, EC_CMD_GET_BUILD_INFO, 0, NULL, 0,
 			(uint8_t **)strp, EC_HOST_PARAM_SIZE) < 0)
 		return -1;
 
 	return 0;
 }
 
-int mkbp_read_current_image(struct mkbp_dev *dev, enum ec_current_image *image)
+int mkbp_read_current_image(MkbpBusOps *bus, enum ec_current_image *image)
 {
 	struct ec_response_get_version *r = NULL;
 
-	if (ec_command(dev, EC_CMD_GET_VERSION, 0, NULL, 0, (uint8_t **)&r,
+	if (ec_command(bus, EC_CMD_GET_VERSION, 0, NULL, 0, (uint8_t **)&r,
 		       sizeof(*r)) < sizeof(*r))
 		return -1;
 
@@ -234,7 +238,7 @@ int mkbp_read_current_image(struct mkbp_dev *dev, enum ec_current_image *image)
 	return 0;
 }
 
-int mkbp_read_hash(struct mkbp_dev *dev, struct ec_response_vboot_hash *hash)
+int mkbp_read_hash(MkbpBusOps *bus, struct ec_response_vboot_hash *hash)
 {
 	struct ec_params_vboot_hash p;
 	uint64_t start;
@@ -244,7 +248,7 @@ int mkbp_read_hash(struct mkbp_dev *dev, struct ec_response_vboot_hash *hash)
 	do {
 		/* Get hash if available. */
 		p.cmd = EC_VBOOT_HASH_GET;
-		if (ec_command(dev, EC_CMD_VBOOT_HASH, 0, &p, sizeof(p),
+		if (ec_command(bus, EC_CMD_VBOOT_HASH, 0, &p, sizeof(p),
 			       (uint8_t **)&hash, sizeof(*hash)) < 0)
 			return -1;
 
@@ -263,7 +267,7 @@ int mkbp_read_hash(struct mkbp_dev *dev, struct ec_response_vboot_hash *hash)
 			p.nonce_size = 0;
 			p.offset = EC_VBOOT_HASH_OFFSET_RW;
 
-			if (ec_command(dev, EC_CMD_VBOOT_HASH, 0, &p,
+			if (ec_command(bus, EC_CMD_VBOOT_HASH, 0, &p,
 				       sizeof(p), (uint8_t **)&hash,
 				       sizeof(*hash)) < 0)
 				return -1;
@@ -294,14 +298,14 @@ int mkbp_read_hash(struct mkbp_dev *dev, struct ec_response_vboot_hash *hash)
 	return 0;
 }
 
-int mkbp_reboot(struct mkbp_dev *dev, enum ec_reboot_cmd cmd, uint8_t flags)
+int mkbp_reboot(MkbpBusOps *bus, enum ec_reboot_cmd cmd, uint8_t flags)
 {
 	struct ec_params_reboot_ec p;
 
 	p.cmd = cmd;
 	p.flags = flags;
 
-	if (ec_command(dev, EC_CMD_REBOOT_EC, 0, &p, sizeof(p), NULL, 0) < 0)
+	if (ec_command(bus, EC_CMD_REBOOT_EC, 0, &p, sizeof(p), NULL, 0) < 0)
 		return -1;
 
 	if (!(flags & EC_REBOOT_FLAG_ON_AP_SHUTDOWN)) {
@@ -314,7 +318,7 @@ int mkbp_reboot(struct mkbp_dev *dev, enum ec_reboot_cmd cmd, uint8_t flags)
 		int timeout = 20;
 		do {
 			mdelay(50);
-		} while (timeout-- && mkbp_test(mkbp_ptr));
+		} while (timeout-- && mkbp_test(bus));
 
 		if (!timeout)
 			return -1;
@@ -323,14 +327,14 @@ int mkbp_reboot(struct mkbp_dev *dev, enum ec_reboot_cmd cmd, uint8_t flags)
 	return 0;
 }
 
-int mkbp_interrupt_pending(struct mkbp_dev *dev)
+int mkbp_interrupt_pending(MkbpBusOps *bus)
 {
 	return 0;
 }
 
-int mkbp_info(struct mkbp_dev *dev, struct ec_response_mkbp_info *info)
+int mkbp_info(MkbpBusOps *bus, struct ec_response_mkbp_info *info)
 {
-	if (ec_command(dev, EC_CMD_MKBP_INFO, 0,
+	if (ec_command(bus, EC_CMD_MKBP_INFO, 0,
 			NULL, 0, (uint8_t **)&info, sizeof(*info))
 				< sizeof(*info))
 		return -1;
@@ -338,7 +342,7 @@ int mkbp_info(struct mkbp_dev *dev, struct ec_response_mkbp_info *info)
 	return 0;
 }
 
-int mkbp_get_host_events(struct mkbp_dev *dev, uint32_t *events_ptr)
+int mkbp_get_host_events(MkbpBusOps *bus, uint32_t *events_ptr)
 {
 	struct ec_response_host_event_mask *resp = NULL;
 
@@ -346,7 +350,7 @@ int mkbp_get_host_events(struct mkbp_dev *dev, uint32_t *events_ptr)
 	 * Use the B copy of the event flags, because the main copy is already
 	 * used by ACPI/SMI.
 	 */
-	if (ec_command(dev, EC_CMD_HOST_EVENT_GET_B, 0, NULL, 0,
+	if (ec_command(bus, EC_CMD_HOST_EVENT_GET_B, 0, NULL, 0,
 		       (uint8_t **)&resp, sizeof(*resp)) < sizeof(*resp))
 		return -1;
 
@@ -357,7 +361,7 @@ int mkbp_get_host_events(struct mkbp_dev *dev, uint32_t *events_ptr)
 	return 0;
 }
 
-int mkbp_clear_host_events(struct mkbp_dev *dev, uint32_t events)
+int mkbp_clear_host_events(MkbpBusOps *bus, uint32_t events)
 {
 	struct ec_params_host_event_mask params;
 
@@ -367,14 +371,14 @@ int mkbp_clear_host_events(struct mkbp_dev *dev, uint32_t events)
 	 * Use the B copy of the event flags, so it affects the data returned
 	 * by mkbp_get_host_events().
 	 */
-	if (ec_command(dev, EC_CMD_HOST_EVENT_CLEAR_B, 0,
+	if (ec_command(bus, EC_CMD_HOST_EVENT_CLEAR_B, 0,
 		       &params, sizeof(params), NULL, 0) < 0)
 		return -1;
 
 	return 0;
 }
 
-int mkbp_flash_protect(struct mkbp_dev *dev,
+int mkbp_flash_protect(MkbpBusOps *bus,
 		       uint32_t set_mask, uint32_t set_flags,
 		       struct ec_response_flash_protect *resp)
 {
@@ -383,7 +387,7 @@ int mkbp_flash_protect(struct mkbp_dev *dev,
 	params.mask = set_mask;
 	params.flags = set_flags;
 
-	if (ec_command(dev, EC_CMD_FLASH_PROTECT, EC_VER_FLASH_PROTECT,
+	if (ec_command(bus, EC_CMD_FLASH_PROTECT, EC_VER_FLASH_PROTECT,
 		       &params, sizeof(params),
 		       (uint8_t **)&resp, sizeof(*resp)) < sizeof(*resp))
 		return -1;
@@ -391,13 +395,13 @@ int mkbp_flash_protect(struct mkbp_dev *dev,
 	return 0;
 }
 
-int mkbp_test(struct mkbp_dev *dev)
+int mkbp_test(MkbpBusOps *bus)
 {
 	struct ec_params_hello req;
 	struct ec_response_hello *resp = NULL;
 
 	req.in_data = 0x12345678;
-	if (ec_command(dev, EC_CMD_HELLO, 0, &req, sizeof(req),
+	if (ec_command(bus, EC_CMD_HELLO, 0, &req, sizeof(req),
 		       (uint8_t **)&resp, sizeof(*resp)) < sizeof(*resp)) {
 		printf("ec_command() returned error\n");
 		return -1;
@@ -410,7 +414,7 @@ int mkbp_test(struct mkbp_dev *dev)
 	return 0;
 }
 
-int mkbp_flash_offset(struct mkbp_dev *dev, enum ec_flash_region region,
+int mkbp_flash_offset(MkbpBusOps *bus, enum ec_flash_region region,
 		      uint32_t *offset, uint32_t *size)
 {
 	struct ec_params_flash_region_info p;
@@ -418,7 +422,7 @@ int mkbp_flash_offset(struct mkbp_dev *dev, enum ec_flash_region region,
 	int ret;
 
 	p.region = region;
-	ret = ec_command(dev, EC_CMD_FLASH_REGION_INFO,
+	ret = ec_command(bus, EC_CMD_FLASH_REGION_INFO,
 			 EC_VER_FLASH_REGION_INFO,
 			 &p, sizeof(p), (uint8_t **)&r, sizeof(*r));
 	if (ret != sizeof(*r))
@@ -432,13 +436,13 @@ int mkbp_flash_offset(struct mkbp_dev *dev, enum ec_flash_region region,
 	return 0;
 }
 
-int mkbp_flash_erase(struct mkbp_dev *dev, uint32_t offset, uint32_t size)
+int mkbp_flash_erase(MkbpBusOps *bus, uint32_t offset, uint32_t size)
 {
 	struct ec_params_flash_erase p;
 
 	p.offset = offset;
 	p.size = size;
-	return ec_command(dev, EC_CMD_FLASH_ERASE, 0, &p, sizeof(p), NULL, 0);
+	return ec_command(bus, EC_CMD_FLASH_ERASE, 0, &p, sizeof(p), NULL, 0);
 }
 
 /**
@@ -453,13 +457,13 @@ int mkbp_flash_erase(struct mkbp_dev *dev, uint32_t offset, uint32_t size)
  * Attempting to write to the region where the EC is currently running from
  * will result in an error.
  *
- * @param dev		MKBP device
+ * @param bus		MKBP bus ops
  * @param data		Pointer to data buffer to write
  * @param offset	Offset within flash to write to.
  * @param size		Number of bytes to write
  * @return 0 if ok, -1 on error
  */
-static int mkbp_flash_write_block(struct mkbp_dev *dev, const uint8_t *data,
+static int mkbp_flash_write_block(MkbpBusOps *bus, const uint8_t *data,
 				  uint32_t offset, uint32_t size)
 {
 	struct ec_params_flash_write p;
@@ -469,44 +473,23 @@ static int mkbp_flash_write_block(struct mkbp_dev *dev, const uint8_t *data,
 	assert(data && p.size <= sizeof(p.data));
 	memcpy(p.data, data, p.size);
 
-	return ec_command(dev, EC_CMD_FLASH_WRITE, 0,
+	return ec_command(bus, EC_CMD_FLASH_WRITE, 0,
 			  &p, sizeof(p), NULL, 0) >= 0 ? 0 : -1;
 }
 
 /**
  * Return optimal flash write burst size
  */
-static int mkbp_flash_write_burst_size(struct mkbp_dev *dev)
+static int mkbp_flash_write_burst_size(MkbpBusOps *bus)
 {
 	struct ec_params_flash_write p;
 	return sizeof(p.data);
 }
 
-/**
- * Check if a block of data is erased (all 0xff)
- *
- * This function is useful when dealing with flash, for checking whether a
- * data block is erased and thus does not need to be programmed.
- *
- * @param data		Pointer to data to check (must be word-aligned)
- * @param size		Number of bytes to check (must be word-aligned)
- * @return 0 if erased, non-zero if any word is not erased
- */
-static int mkbp_data_is_erased(const uint32_t *data, int size)
-{
-	assert(!(size & 3));
-	size /= sizeof(uint32_t);
-	for (; size > 0; size -= 4, data++)
-		if (*data != -1U)
-			return 0;
-
-	return 1;
-}
-
-int mkbp_flash_write(struct mkbp_dev *dev, const uint8_t *data,
+int mkbp_flash_write(MkbpBusOps *bus, const uint8_t *data,
 		     uint32_t offset, uint32_t size)
 {
-	uint32_t burst = mkbp_flash_write_burst_size(dev);
+	uint32_t burst = mkbp_flash_write_burst_size(bus);
 	uint32_t end, off;
 	int ret;
 
@@ -520,11 +503,8 @@ int mkbp_flash_write(struct mkbp_dev *dev, const uint8_t *data,
 
 		/* If the data is empty, there is no point in programming it */
 		todo = MIN(end - off, burst);
-		if (dev->optimise_flash_write &&
-				mkbp_data_is_erased((uint32_t *)data, todo))
-			continue;
 
-		ret = mkbp_flash_write_block(dev, data, off, todo);
+		ret = mkbp_flash_write_block(bus, data, off, todo);
 		if (ret)
 			return ret;
 	}
@@ -541,13 +521,13 @@ int mkbp_flash_write(struct mkbp_dev *dev, const uint8_t *data,
  * The offset starts at 0. You can obtain the region information from
  * mkbp_flash_offset() to find out where to read for a particular region.
  *
- * @param dev		MKBP device
+ * @param bus		MKBP bus ops
  * @param data		Pointer to data buffer to read into
  * @param offset	Offset within flash to read from
  * @param size		Number of bytes to read
  * @return 0 if ok, -1 on error
  */
-static int mkbp_flash_read_block(struct mkbp_dev *dev, uint8_t *data,
+static int mkbp_flash_read_block(MkbpBusOps *bus, uint8_t *data,
 				 uint32_t offset, uint32_t size)
 {
 	struct ec_params_flash_read p;
@@ -555,20 +535,20 @@ static int mkbp_flash_read_block(struct mkbp_dev *dev, uint8_t *data,
 	p.offset = offset;
 	p.size = size;
 
-	return ec_command(dev, EC_CMD_FLASH_READ, 0,
+	return ec_command(bus, EC_CMD_FLASH_READ, 0,
 			  &p, sizeof(p), &data, size) >= 0 ? 0 : -1;
 }
 
-int mkbp_flash_read(struct mkbp_dev *dev, uint8_t *data, uint32_t offset,
+int mkbp_flash_read(MkbpBusOps *bus, uint8_t *data, uint32_t offset,
 		    uint32_t size)
 {
-	uint32_t burst = mkbp_flash_write_burst_size(dev);
+	uint32_t burst = mkbp_flash_write_burst_size(bus);
 	uint32_t end, off;
 	int ret;
 
 	end = offset + size;
 	for (off = offset; off < end; off += burst, data += burst) {
-		ret = mkbp_flash_read_block(dev, data, off,
+		ret = mkbp_flash_read_block(bus, data, off,
 					    MIN(end - off, burst));
 		if (ret)
 			return ret;
@@ -577,13 +557,12 @@ int mkbp_flash_read(struct mkbp_dev *dev, uint8_t *data, uint32_t offset,
 	return 0;
 }
 
-int mkbp_flash_update_rw(struct mkbp_dev *dev,
-			 const uint8_t *image, int image_size)
+int mkbp_flash_update_rw(MkbpBusOps *bus, const uint8_t *image, int image_size)
 {
 	uint32_t rw_offset, rw_size;
 	int ret;
 
-	if (mkbp_flash_offset(dev, EC_FLASH_REGION_RW, &rw_offset, &rw_size))
+	if (mkbp_flash_offset(bus, EC_FLASH_REGION_RW, &rw_offset, &rw_size))
 		return -1;
 	if (image_size > rw_size)
 		return -1;
@@ -596,26 +575,26 @@ int mkbp_flash_update_rw(struct mkbp_dev *dev,
 	 * presumably everything past that is 0xff's.  But would still need to
 	 * round up to the nearest multiple of erase size.
 	 */
-	ret = mkbp_flash_erase(dev, rw_offset, rw_size);
+	ret = mkbp_flash_erase(bus, rw_offset, rw_size);
 	if (ret)
 		return ret;
 
 	/* Write the image */
-	ret = mkbp_flash_write(dev, image, rw_offset, image_size);
+	ret = mkbp_flash_write(bus, image, rw_offset, image_size);
 	if (ret)
 		return ret;
 
 	return 0;
 }
 
-int mkbp_read_vbnvcontext(struct mkbp_dev *dev, uint8_t *block)
+int mkbp_read_vbnvcontext(MkbpBusOps *bus, uint8_t *block)
 {
 	struct ec_params_vbnvcontext p;
 	int len;
 
 	p.op = EC_VBNV_CONTEXT_OP_READ;
 
-	len = ec_command(dev, EC_CMD_VBNV_CONTEXT, EC_VER_VBNV_CONTEXT,
+	len = ec_command(bus, EC_CMD_VBNV_CONTEXT, EC_VER_VBNV_CONTEXT,
 			&p, sizeof(p), &block, EC_VBNV_BLOCK_SIZE);
 	if (len < EC_VBNV_BLOCK_SIZE)
 		return -1;
@@ -623,7 +602,7 @@ int mkbp_read_vbnvcontext(struct mkbp_dev *dev, uint8_t *block)
 	return 0;
 }
 
-int mkbp_write_vbnvcontext(struct mkbp_dev *dev, const uint8_t *block)
+int mkbp_write_vbnvcontext(MkbpBusOps *bus, const uint8_t *block)
 {
 	struct ec_params_vbnvcontext p;
 	int len;
@@ -631,7 +610,7 @@ int mkbp_write_vbnvcontext(struct mkbp_dev *dev, const uint8_t *block)
 	p.op = EC_VBNV_CONTEXT_OP_WRITE;
 	memcpy(p.block, block, sizeof(p.block));
 
-	len = ec_command(dev, EC_CMD_VBNV_CONTEXT, EC_VER_VBNV_CONTEXT,
+	len = ec_command(bus, EC_CMD_VBNV_CONTEXT, EC_VER_VBNV_CONTEXT,
 			&p, sizeof(p), NULL, 0);
 	if (len < 0)
 		return -1;
@@ -639,22 +618,16 @@ int mkbp_write_vbnvcontext(struct mkbp_dev *dev, const uint8_t *block)
 	return 0;
 }
 
-struct mkbp_dev *mkbp_init(void)
+int mkbp_init(MkbpBusOps *bus)
 {
 	char id[MSG_BYTES];
-	struct mkbp_dev *dev =
-		(struct mkbp_dev *)memalign(sizeof(int64_t),
-					    sizeof(struct mkbp_dev));
 
-	if (mkbp_bus_init(dev)) {
-		free(dev);
-		return NULL;
-	}
+	if (bus->init && bus->init(bus))
+		return -1;
 
-	if (mkbp_read_id(dev, id, sizeof(id))) {
+	if (mkbp_read_id(bus, id, sizeof(id))) {
 		printf("%s: Could not read KBC ID\n", __func__);
-		free(dev);
-		return NULL;
+		return -1;
 	}
 
 	printf("Google Chrome EC MKBP driver ready, id '%s'\n", id);
@@ -663,9 +636,7 @@ struct mkbp_dev *mkbp_init(void)
 	printf("Clearing the recovery request.\n");
 	const uint32_t kb_rec_mask =
 		EC_HOST_EVENT_MASK(EC_HOST_EVENT_KEYBOARD_RECOVERY);
-	mkbp_clear_host_events(dev, kb_rec_mask);
+	mkbp_clear_host_events(bus, kb_rec_mask);
 
-	mkbp_ptr = dev;
-
-	return dev;
+	return 0;
 }

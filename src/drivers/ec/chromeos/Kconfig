@@ -19,26 +19,17 @@ config DRIVER_MKBP
 	bool "Enable support for the ChromeOS EC"
 	default n
 
-choice
-	prompt "ChromeOS EC bus"
-	default DRIVER_MKBP_LPC
-	depends on DRIVER_MKBP
-	help
-	  The type of bus the ChromeOS EC is connected with.
-
 config DRIVER_MKBP_LPC
-	bool "LPC"
+	bool "ChromeOS EC LPC interface"
+	default n
+	depends on DRIVER_MKBP
 
 config DRIVER_MKBP_I2C
-	bool "I2C (currently untested)"
+	bool "ChromeOS EC I2C interface"
+	default n
+	depends on DRIVER_MKBP
 
 config DRIVER_MKBP_SPI
-	bool "SPI (currently unimplemented)"
-
-endchoice
-
-config DRIVER_MKBP_I2C_ADDR
-	hex "ChromeOS EC I2C address"
-	depends on DRIVER_MKBP_I2C
-	help
-	  The address of the ChromeOS EC on its I2C bus.
+	bool "ChromeOS EC SPI interface"
+	default n
+	depends on DRIVER_MKBP

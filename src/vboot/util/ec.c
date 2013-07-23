@@ -27,11 +27,11 @@
 
 void reboot_ec_to_ro()
 {
-	if (!mkbp_ptr && !mkbp_init()) {
+	if (!mkbp_bus) {
 		printf("No MKBP device.\n");
 		halt();
 	}
-	if (mkbp_reboot(mkbp_ptr, EC_REBOOT_COLD,
+	if (mkbp_reboot(mkbp_bus, EC_REBOOT_COLD,
 			EC_REBOOT_FLAG_ON_AP_SHUTDOWN)) {
 		printf("Failed to reboot EC to RO.\n");
 		halt();

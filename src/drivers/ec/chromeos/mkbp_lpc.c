@@ -30,11 +30,12 @@
 
 #include <libpayload.h>
 
+#include "base/list.h"
 #include "base/time.h"
-#include "drivers/ec/chromeos/mkbp.h"
+#include "drivers/ec/chromeos/mkbp_lpc.h"
 #include "drivers/timer/timer.h"
 
-static int wait_for_sync(struct mkbp_dev *dev)
+static int wait_for_sync(void)
 {
 	uint64_t start = timer_value();
 	while (inb(EC_LPC_ADDR_HOST_CMD) & EC_LPC_STATUS_BUSY_MASK) {
@@ -58,11 +59,17 @@ static void inb_range(uint8_t *data, uint16_t port, int size)
 		*data++ = inb(port++);
 }
 
-int mkbp_bus_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
-		     const uint8_t *dout, int dout_len,
-		     uint8_t **dinp, int din_len)
+static int send_command(MkbpBusOps *me, uint8_t cmd, int cmd_version,
+			const uint8_t *dout, int dout_len,
+			uint8_t **dinp, int din_len)
 {
 	struct ec_lpc_host_args args;
+	MkbpLpcBus *bus = container_of(me, MkbpLpcBus, ops);
+
+	if (!bus->initialized) {
+		if (mkbp_init(me))
+			return -1;
+	}
 
 	if (dout_len > EC_HOST_PARAM_SIZE) {
 		printf("%s: Cannot send %d bytes\n", __func__, dout_len);
@@ -78,7 +85,7 @@ int mkbp_bus_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 	args.checksum = cmd + args.flags + args.command_version +
 		args.data_size + mkbp_calc_checksum(dout, dout_len);
 
-	if (wait_for_sync(dev)) {
+	if (wait_for_sync()) {
 		printf("%s: Timeout waiting ready\n", __func__);
 		return -1;
 	}
@@ -91,7 +98,7 @@ int mkbp_bus_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 
 	outb(cmd, EC_LPC_ADDR_HOST_CMD);
 
-	if (wait_for_sync(dev)) {
+	if (wait_for_sync()) {
 		printf("%s: Timeout waiting for response\n", __func__);
 		return -1;
 	}
@@ -123,17 +130,17 @@ int mkbp_bus_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
 	}
 
 	/* Read data, if any */
-	inb_range((uint8_t *)dev->din, EC_LPC_ADDR_HOST_PARAM, args.data_size);
+	inb_range((uint8_t *)bus->din, EC_LPC_ADDR_HOST_PARAM, args.data_size);
 
 	/* Verify checksum */
 	uint8_t csum = cmd + args.flags + args.command_version +
-		args.data_size + mkbp_calc_checksum(dev->din, args.data_size);
+		args.data_size + mkbp_calc_checksum(bus->din, args.data_size);
 
 	if (args.checksum != (uint8_t)csum) {
 		printf("%s: MKBP response has invalid checksum\n", __func__);
 		return -EC_RES_INVALID_CHECKSUM;
 	}
-	*dinp = dev->din;
+	*dinp = bus->din;
 
 	/* Return actual amount of data received */
 	return args.data_size;
@@ -146,9 +153,14 @@ int mkbp_bus_command(struct mkbp_dev *dev, uint8_t cmd, int cmd_version,
  * @param blob		Device tree blob
  * @return 0 if ok, -1 on error
  */
-int mkbp_bus_init(struct mkbp_dev *dev)
+static int mkbp_lpc_init(MkbpBusOps *me)
 {
 	int byte, i;
+	MkbpLpcBus *bus = container_of(me, MkbpLpcBus, ops);
+
+	if (bus->initialized)
+		return 0;
+	bus->initialized = 1;
 
 	/* See if we can find an EC at the other end */
 	byte = 0xff;
@@ -163,4 +175,18 @@ int mkbp_bus_init(struct mkbp_dev *dev)
 	}
 
 	return 0;
+}
+
+MkbpLpcBus *new_mkbp_lpc_bus(void)
+{
+	MkbpLpcBus *bus = memalign(sizeof(int64_t), sizeof(*bus));
+	if (!bus) {
+		printf("Failed to allocate MKBP LPC object.\n");
+		return NULL;
+	}
+	memset(bus, 0, sizeof(*bus));
+	bus->ops.init = &mkbp_lpc_init;
+	bus->ops.send_command = &send_command;
+
+	return bus;
 }
