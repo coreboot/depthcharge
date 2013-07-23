@@ -38,7 +38,7 @@ void timer_set_base_value(uint64_t new_base)
 	base_value = new_base;
 }
 
-uint64_t timer_time_in_us(uint64_t base)
+uint64_t timer_us(uint64_t base)
 {
 	return timer_raw_value() / (timer_hz() / 1000000) - base;
 }

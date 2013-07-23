@@ -123,7 +123,7 @@ static int ec_command(MkbpBusOps *bus, uint8_t cmd, int cmd_version,
 		uint64_t start;
 
 		/* Wait for command to complete */
-		start = timer_time_in_us(0);
+		start = timer_us(0);
 		do {
 			int ret;
 
@@ -134,8 +134,7 @@ static int ec_command(MkbpBusOps *bus, uint8_t cmd, int cmd_version,
 			if (ret < 0)
 				return ret;
 
-			if (timer_time_in_us(start) >
-				MKBP_CMD_TIMEOUT_MS * 1000) {
+			if (timer_us(start) > MKBP_CMD_TIMEOUT_MS * 1000) {
 				printf("%s: Command %#02x timeout",
 				      __func__, cmd);
 				return -EC_RES_TIMEOUT;
@@ -244,7 +243,7 @@ int mkbp_read_hash(MkbpBusOps *bus, struct ec_response_vboot_hash *hash)
 	uint64_t start;
 	int recalc_requested = 0;
 
-	start = timer_time_in_us(0);
+	start = timer_us(0);
 	do {
 		/* Get hash if available. */
 		p.cmd = EC_VBOOT_HASH_GET;
@@ -287,7 +286,7 @@ int mkbp_read_hash(MkbpBusOps *bus, struct ec_response_vboot_hash *hash)
 			break;
 		}
 	} while (hash->status == EC_VBOOT_HASH_STATUS_BUSY &&
-		 timer_time_in_us(start) < MKBP_EC_HASH_TIMEOUT_MS * 1000);
+		 timer_us(start) < MKBP_EC_HASH_TIMEOUT_MS * 1000);
 
 	if (hash->status != EC_VBOOT_HASH_STATUS_DONE) {
 		printf("%s: Hash status not done: %d\n", __func__,
