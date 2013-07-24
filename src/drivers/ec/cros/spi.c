@@ -43,6 +43,46 @@ static const uint64_t CsCooldownUs = 200;
 
 static const uint8_t EcFramingByte = 0xec;
 
+static void stop_bus(CrosEcSpiBus *bus)
+{
+	bus->spi->stop(bus->spi);
+	bus->last_transfer = timer_us(0);
+}
+
+static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
+		       void *din, uint32_t din_len)
+{
+	CrosEcSpiBus *bus = container_of(me, CrosEcSpiBus, ops);
+
+	while (timer_us(bus->last_transfer) < CsCooldownUs)
+		;
+
+	if (bus->spi->start(bus->spi))
+		return -1;
+
+	if (bus->spi->transfer(bus->spi, NULL, dout, dout_len)) {
+		stop_bus(bus);
+		return -1;
+	}
+
+	// Wait until the EC is ready.
+	uint8_t byte;
+	do {
+		if (bus->spi->transfer(bus->spi, &byte, NULL, 1)) {
+			stop_bus(bus);
+			return -1;
+		}
+	} while (byte != EcFramingByte);
+
+	if (bus->spi->transfer(bus->spi, din, NULL, din_len)) {
+		stop_bus(bus);
+		return -1;
+	}
+
+	stop_bus(bus);
+	return 0;
+}
+
 static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 			const void *dout, uint32_t dout_len,
 			void *din, uint32_t din_len)
@@ -99,7 +139,7 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 		return -1;
 
 	if (bus->spi->transfer(bus->spi, NULL, bus->buf, out_bytes)) {
-		bus->spi->stop(bus->spi);
+		stop_bus(bus);
 		return -1;
 	}
 
@@ -107,7 +147,7 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 	uint8_t byte;
 	do {
 		if (bus->spi->transfer(bus->spi, &byte, NULL, 1)) {
-			bus->spi->stop(bus->spi);
+			stop_bus(bus);
 			return -1;
 		}
 	} while (byte != EcFramingByte);
@@ -115,8 +155,7 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 	// Read the response code and the data length.
 	bytes = bus->buf;
 	if (bus->spi->transfer(bus->spi, bytes, NULL, 2)) {
-		bus->spi->stop(bus->spi);
-		bus->last_transfer = timer_us(0);
+		stop_bus(bus);
 		return -1;
 	}
 	uint8_t result = *bytes++;
@@ -126,21 +165,18 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 	if (CROS_EC_SPI_IN_HDR_SIZE + length + 1 > MSG_BYTES) {
 		printf("%s: Received length %#02x too large\n",
 		       __func__, length);
-		bus->spi->stop(bus->spi);
-		bus->last_transfer = timer_us(0);
+		stop_bus(bus);
 		return -1;
 	}
 
 	// Read the data and the checksum, and finish up.
 	if (bus->spi->transfer(bus->spi, bytes, NULL, length + 1)) {
-		bus->spi->stop(bus->spi);
-		bus->last_transfer = timer_us(0);
+		stop_bus(bus);
 		return -1;
 	}
 	bytes += length;
 	int expected = *bytes++;
-	bus->spi->stop(bus->spi);
-	bus->last_transfer = timer_us(0);
+	stop_bus(bus);
 
 	// Check the integrity of the response.
 	if (result != EC_RES_SUCCESS) {
@@ -180,6 +216,7 @@ CrosEcSpiBus *new_cros_ec_spi_bus(SpiOps *spi)
 	}
 	memset(bus, 0, sizeof(*bus));
 	bus->ops.send_command = &send_command;
+	bus->ops.send_packet = &send_packet;
 	bus->spi = spi;
 
 	return bus;
