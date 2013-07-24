@@ -27,6 +27,8 @@
 
 static I2cOps *bus;
 
+static int opened;
+
 void tis_set_i2c_bus(I2cOps *_bus)
 {
 	bus = _bus;
@@ -34,11 +36,17 @@ void tis_set_i2c_bus(I2cOps *_bus)
 
 int tis_open(void)
 {
-	return tpm_open(bus, CONFIG_DRIVER_TPM_I2C_ADDR);
+	opened = 1;
+	if (tpm_open(bus, CONFIG_DRIVER_TPM_I2C_ADDR)) {
+		opened = 0;
+		return -1;
+	}
+	return 0;
 }
 
 int tis_close(void)
 {
+	opened = 0;
 	tpm_close();
 	return 0;
 }
@@ -65,6 +73,9 @@ int tis_sendrecv(const uint8_t *sendbuf, size_t sbuf_size,
 		uint8_t *recvbuf, size_t *rbuf_len)
 {
 	uint8_t buf[TPM_BUFSIZE];
+
+	if (!opened && tis_open())
+		return -1;
 
 	if (sizeof(buf) < sbuf_size)
 		return -1;

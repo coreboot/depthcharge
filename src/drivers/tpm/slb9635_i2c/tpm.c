@@ -32,8 +32,9 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
+#include <assert.h>
 #include <endian.h>
+#include <libpayload.h>
 
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/tpm/slb9635_i2c/tpm.h"
@@ -370,6 +371,7 @@ ssize_t tpm_transmit(const uint8_t *buf, size_t bufsiz)
 		return -1; //E2BIG;
 	}
 
+	assert(chip->vendor.send);
 	rc = chip->vendor.send(chip, (uint8_t *) buf, count);
 	if (rc < 0) {
 		printf("tpm_transmit: tpm_send: error %zd\n", rc);
@@ -381,6 +383,7 @@ ssize_t tpm_transmit(const uint8_t *buf, size_t bufsiz)
 
 	int timeout = tpm_calc_ordinal_duration(chip, ordinal) / TPM_TIMEOUT;
 	while (timeout) {
+		assert(chip->vendor.status);
 		uint8_t status = chip->vendor.status(chip);
 		if ((status & chip->vendor.req_complete_mask) ==
 		    chip->vendor.req_complete_val) {
@@ -396,6 +399,7 @@ ssize_t tpm_transmit(const uint8_t *buf, size_t bufsiz)
 		timeout--;
 	}
 
+	assert(chip->vendor.cancel);
 	chip->vendor.cancel(chip);
 	printf("tpm_transmit: Operation Timed out\n");
 	rc = -1; //ETIME;
