@@ -36,6 +36,7 @@
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/cros/i2c.h"
+#include "drivers/ec/cros/message.h"
 
 static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 			const void *dout, uint32_t dout_len,
@@ -48,15 +49,23 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 	int out_bytes = CROS_EC_I2C_OUT_HDR_SIZE + dout_len + 1;
 	int in_bytes = CROS_EC_I2C_IN_HDR_SIZE + din_len + 1;
 
+	if (!bus->buf) {
+		bus->buf = malloc(MSG_BYTES);
+		if (!bus->buf) {
+			printf("Failed to allocate buffer.\n");
+			return -1;
+		}
+	}
+
 	/*
 	 * Sanity-check I/O sizes given transaction overhead in internal
 	 * buffers.
 	 */
-	if (out_bytes > bus->out_size) {
+	if (out_bytes > MSG_BYTES) {
 		printf("%s: Cannot send %d bytes\n", __func__, dout_len);
 		return -1;
 	}
-	if (in_bytes > bus->in_size) {
+	if (in_bytes > MSG_BYTES) {
 		printf("%s: Cannot receive %d bytes\n", __func__, din_len);
 		return -1;
 	}
@@ -95,7 +104,7 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 	}
 
 	int len = *bytes++;
-	if (CROS_EC_I2C_IN_HDR_SIZE + len + 1 > bus->in_size) {
+	if (CROS_EC_I2C_IN_HDR_SIZE + len + 1 > MSG_BYTES) {
 		printf("%s: Received length %#02x too large\n",
 		       __func__, len);
 		return -1;
@@ -123,23 +132,6 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 	return din_len;
 }
 
-static int set_size(CrosEcBusOps *me, uint32_t max_request_size,
-		    uint32_t max_reply_size)
-{
-	CrosEcI2cBus *bus = container_of(me, CrosEcI2cBus, ops);
-
-	free(bus->buf);
-	bus->in_size = max_reply_size;
-	bus->out_size = max_request_size;
-	bus->buf = malloc(MAX(bus->in_size, bus->out_size));
-	if (!bus->buf) {
-		printf("Failed to allocate buffer.\n");
-		return -1;
-	}
-
-	return 0;
-}
-
 CrosEcI2cBus *new_cros_ec_i2c_bus(I2cOps *i2c_bus, uint8_t chip)
 {
 	assert(i2c_bus);
@@ -151,12 +143,8 @@ CrosEcI2cBus *new_cros_ec_i2c_bus(I2cOps *i2c_bus, uint8_t chip)
 	}
 	memset(bus, 0, sizeof(*bus));
 	bus->ops.send_command = &send_command;
-	bus->ops.set_max_sizes = &set_size;
 	bus->bus = i2c_bus;
 	bus->chip = chip;
-	if (set_size(&bus->ops, CROS_EC_I2C_DEFAULT_MAX_SIZE,
-		     CROS_EC_I2C_DEFAULT_MAX_SIZE))
-		return NULL;
 
 	return bus;
 }

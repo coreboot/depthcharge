@@ -40,8 +40,6 @@ typedef struct
 	uint64_t last_transfer;
 
 	void *buf;
-	int in_size;
-	int out_size;
 } CrosEcSpiBus;
 
 enum {
@@ -49,10 +47,6 @@ enum {
 	CROS_EC_SPI_IN_HDR_SIZE = 2,
 	// version, cmd, arglen
 	CROS_EC_SPI_OUT_HDR_SIZE = 3
-};
-
-enum {
-	CROS_EC_SPI_DEFAULT_MAX_SIZE = 0x100
 };
 
 CrosEcSpiBus *new_cros_ec_spi_bus(SpiOps *spi);

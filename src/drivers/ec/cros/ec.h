@@ -54,10 +54,6 @@ typedef struct CrosEcBusOps
 	int (*send_packet)(struct CrosEcBusOps *me,
 			   const void *dout, uint32_t dout_len,
 			   void *din, uint32_t din_len);
-
-	int (*set_max_sizes)(struct CrosEcBusOps *me,
-			     uint32_t max_request_size,
-			     uint32_t max_reply_size);
 } CrosEcBusOps;
 
 int cros_ec_set_bus(CrosEcBusOps *bus);
@@ -202,7 +198,7 @@ int cros_ec_flash_update_rw(const uint8_t *image, int image_size);
  * @param data	Data block to dump
  * @param len	Length of data block to dump
  */
-void cros_ec_dump_data(const char *name, int cmd, const uint8_t *data, int len);
+void cros_ec_dump_data(const char *name, int cmd, const void *data, int len);
 
 /**
  * Calculate a simple 8-bit checksum of a data block
@@ -211,7 +207,7 @@ void cros_ec_dump_data(const char *name, int cmd, const uint8_t *data, int len);
  * @param size	Size of data block in bytes
  * @return checksum value (0 to 255)
  */
-uint8_t cros_ec_calc_checksum(const uint8_t *data, int size);
+uint8_t cros_ec_calc_checksum(const void *data, int size);
 
 /**
  * Decode a flash region parameter

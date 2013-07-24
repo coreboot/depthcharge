@@ -37,6 +37,17 @@
 
 static CrosEcBusOps *cros_ec_bus;
 
+typedef int (*SendCommandFunc)(uint8_t cmd, int cmd_version, const void *dout,
+			       int dout_len, void *dinp, int din_len);
+
+SendCommandFunc send_command_func;
+
+static struct ec_host_request *proto3_request;
+static int proto3_request_size;
+
+static struct ec_host_response *proto3_response;
+static int proto3_response_size;
+
 static int initialized;
 
 int cros_ec_set_bus(CrosEcBusOps *bus)
@@ -61,16 +72,17 @@ static const int CROS_EC_HASH_CHECK_DELAY_MS = 10;
 /* Note: depends on enum ec_current_image */
 static const char * const ec_current_image_name[] = {"unknown", "RO", "RW"};
 
-void cros_ec_dump_data(const char *name, int cmd, const uint8_t *data, int len)
+void cros_ec_dump_data(const char *name, int cmd, const void *data, int len)
 {
 #ifdef DEBUG
+	const uint8_t *bytes = data;
 	int i;
 
 	printf("%s: ", name);
 	if (cmd != -1)
 		printf("cmd=%#x: ", cmd);
 	for (i = 0; i < len; i++)
-		printf("%02x ", data[i]);
+		printf("%02x ", bytes[i]);
 	printf("\n");
 #endif
 }
@@ -82,13 +94,163 @@ void cros_ec_dump_data(const char *name, int cmd, const uint8_t *data, int len)
  * @param size	Size of data block in bytes
  * @return checksum value (0 to 255)
  */
-uint8_t cros_ec_calc_checksum(const uint8_t *data, int size)
+uint8_t cros_ec_calc_checksum(const void *data, int size)
 {
 	uint8_t csum, i;
+	const uint8_t *bytes = data;
 
 	for (i = csum = 0; i < size; i++)
-		csum += data[i];
+		csum += bytes[i];
 	return csum & 0xff;
+}
+
+/**
+ * Create a request packet for protocol version 3.
+ *
+ * @param rq		Request structure to fill
+ * @param rq_size	Size of request structure, including data
+ * @param cmd		Command to send (EC_CMD_...)
+ * @param cmd_version	Version of command to send (EC_VER_...)
+ * @param dout          Output data (may be NULL If dout_len=0)
+ * @param dout_len      Size of output data in bytes
+ * @return packet size in bytes, or <0 if error.
+ */
+static int create_proto3_request(struct ec_host_request *rq, int rq_size,
+				 int cmd, int cmd_version,
+				 const void *dout, int dout_len)
+{
+	int out_bytes = dout_len + sizeof(*rq);
+
+	/* Fail if output size is too big */
+	if (out_bytes > rq_size) {
+		printf("%s: Cannot send %d bytes\n", __func__, dout_len);
+		return -EC_RES_REQUEST_TRUNCATED;
+	}
+
+	/* Fill in request packet */
+	rq->struct_version = EC_HOST_REQUEST_VERSION;
+	rq->checksum = 0;
+	rq->command = cmd;
+	rq->command_version = cmd_version;
+	rq->reserved = 0;
+	rq->data_len = dout_len;
+
+	/* Copy data after header */
+	memcpy(rq + 1, dout, dout_len);
+
+	/* Write checksum field so the entire packet sums to 0 */
+	rq->checksum = (uint8_t)(-cros_ec_calc_checksum(rq, out_bytes));
+
+	cros_ec_dump_data("out", cmd, rq, out_bytes);
+
+	/* Return size of request packet */
+	return out_bytes;
+}
+
+/**
+ * Prepare the device to receive a protocol version 3 response.
+ *
+ * @param rs_size	Maximum size of response in bytes
+ * @param din_len       Maximum amount of data in the response
+ * @return maximum expected number of bytes in response, or <0 if error.
+ */
+static int prepare_proto3_response_buffer(int rs_size, int din_len)
+{
+	int in_bytes = din_len + sizeof(struct ec_host_response);
+
+	/* Fail if input size is too big */
+	if (in_bytes > rs_size) {
+		printf("%s: Cannot receive %d bytes\n", __func__, din_len);
+		return -EC_RES_RESPONSE_TOO_BIG;
+	}
+
+	/* Return expected size of response packet */
+	return in_bytes;
+}
+
+/**
+ * Process a protocol version 3 response packet.
+ *
+ * @param resp		Response structure to parse
+ * @param dinp          Returns pointer to response data
+ * @param din_len       Maximum size of data in response in bytes
+ * @return number of bytes of response data, or <0 if error
+ */
+static int handle_proto3_response(struct ec_host_response *rs,
+				  uint8_t **dinp, int din_len)
+{
+	int in_bytes;
+	int csum;
+
+	cros_ec_dump_data("in-header", -1, rs, sizeof(*rs));
+
+	/* Check input data */
+	if (rs->struct_version != EC_HOST_RESPONSE_VERSION) {
+		printf("%s: EC response version mismatch\n", __func__);
+		return -EC_RES_INVALID_RESPONSE;
+	}
+
+	if (rs->reserved) {
+		printf("%s: EC response reserved != 0\n", __func__);
+		return -EC_RES_INVALID_RESPONSE;
+	}
+
+	if (rs->data_len > din_len) {
+		printf("%s: EC returned too much data\n", __func__);
+		return -EC_RES_RESPONSE_TOO_BIG;
+	}
+
+	cros_ec_dump_data("in-data", -1, rs + sizeof(*rs), rs->data_len);
+
+	/* Update in_bytes to actual data size */
+	in_bytes = sizeof(*rs) + rs->data_len;
+
+	/* Verify checksum */
+	csum = cros_ec_calc_checksum(rs, in_bytes);
+	if (csum) {
+		printf("%s: EC response checksum invalid: 0x%02x\n", __func__,
+		      csum);
+		return -EC_RES_INVALID_CHECKSUM;
+	}
+
+	/* Return error result, if any */
+	if (rs->result)
+		return -(int)rs->result;
+
+	/* If the caller wants the response data, copy it out */
+	if (dinp)
+		memcpy(dinp, rs + 1, din_len);
+
+	return rs->data_len;
+}
+
+static int send_command_proto3(uint8_t cmd, int cmd_version,
+			       const void *dout, int dout_len,
+			       void *dinp, int din_len)
+{
+	int out_bytes, in_bytes;
+	int rv;
+
+	/* Create request packet */
+	out_bytes = create_proto3_request(proto3_request, proto3_request_size,
+					  cmd, cmd_version, dout, dout_len);
+	if (out_bytes < 0)
+		return out_bytes;
+
+	/* Prepare response buffer */
+	in_bytes = prepare_proto3_response_buffer(proto3_response_size,
+						  din_len);
+	if (in_bytes < 0)
+		return in_bytes;
+
+	rv = cros_ec_bus->send_packet(cros_ec_bus, proto3_request, out_bytes,
+				      proto3_response, in_bytes);
+
+	if (rv < 0)
+		return rv;
+
+	/* Process the response */
+	return handle_proto3_response(proto3_response, dinp, din_len);
 }
 
 /**
@@ -104,9 +266,9 @@ uint8_t cros_ec_calc_checksum(const uint8_t *data, int size)
  * @param din_len       Maximum size of response in bytes
  * @return number of bytes in response, or -1 on error
  */
-static int ec_command(uint8_t cmd, int cmd_version,
-		      const void *dout, int dout_len,
-		      void *din, int din_len)
+static int send_command_proto2(uint8_t cmd, int cmd_version,
+			       const void *dout, int dout_len,
+			       void *din, int din_len)
 {
 	int len;
 
@@ -114,9 +276,6 @@ static int ec_command(uint8_t cmd, int cmd_version,
 		printf("No ChromeOS EC bus configured.\n");
 		return -1;
 	}
-
-	if (!initialized && cros_ec_init())
-		return -1;
 
 	len = cros_ec_bus->send_command(cros_ec_bus, cmd, cmd_version, dout,
 					dout_len, din, din_len);
@@ -156,6 +315,19 @@ static int ec_command(uint8_t cmd, int cmd_version,
 #endif
 
 	return len;
+}
+
+static int ec_command(uint8_t cmd, int cmd_version,
+		      const void *dout, int dout_len,
+		      void *din, int din_len)
+{
+
+	if (!initialized && cros_ec_init())
+		return -1;
+
+	assert(send_command_func);
+	return send_command_func(cmd, cmd_version, dout, dout_len,
+				 din, din_len);
 }
 
 /**
@@ -667,6 +839,33 @@ int cros_ec_write_vbnvcontext(const uint8_t *block)
 	return 0;
 }
 
+static int set_max_proto3_sizes(int request_size, int response_size)
+{
+	free(proto3_request);
+	free(proto3_response);
+
+	if (request_size)
+		proto3_request = malloc(request_size);
+	else
+		proto3_request = NULL;
+	if (response_size)
+		proto3_response = malloc(response_size);
+	else
+		proto3_response = NULL;
+
+	if ((request_size && !proto3_request) ||
+	    (response_size && !proto3_response)) {
+		printf("%s: Failed to allocate proto3 buffers.\n", __func__);
+		set_max_proto3_sizes(0, 0);
+		return -1;
+	}
+
+	proto3_request_size = request_size;
+	proto3_response_size = response_size;
+
+	return 0;
+}
+
 int cros_ec_init(void)
 {
 	char id[MSG_BYTES];
@@ -683,6 +882,28 @@ int cros_ec_init(void)
 		return -1;
 
 	initialized = 1;
+
+	// Figure out what protocol version to use.
+
+	if (cros_ec_bus->send_packet) {
+		send_command_func = &send_command_proto3;
+		if (set_max_proto3_sizes(0x100, 0x100))
+			return -1;
+
+		if (cros_ec_test()) {
+			set_max_proto3_sizes(0, 0);
+			send_command_func = NULL;
+		} else {
+			printf("%s: CrosEC protocol version 3 supported.\n",
+			       __func__);
+		}
+	}
+
+	if (!send_command_func) {
+		// Fall back to protocol version 2.
+		send_command_func = &send_command_proto2;
+	}
+
 	if (cros_ec_read_id(id, sizeof(id))) {
 		printf("%s: Could not read ChromeOS EC ID\n", __func__);
 		initialized = 0;

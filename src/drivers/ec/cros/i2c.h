@@ -38,8 +38,6 @@ typedef struct
 	uint8_t chip;
 
 	void *buf;
-	int in_size;
-	int out_size;
 } CrosEcI2cBus;
 
 enum {
@@ -47,10 +45,6 @@ enum {
 	CROS_EC_I2C_IN_HDR_SIZE = 2,
 	// version, cmd, arglen
 	CROS_EC_I2C_OUT_HDR_SIZE = 3
-};
-
-enum {
-	CROS_EC_I2C_DEFAULT_MAX_SIZE = 0x100
 };
 
 CrosEcI2cBus *new_cros_ec_i2c_bus(I2cOps *bus, uint8_t chip);
