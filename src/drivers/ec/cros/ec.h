@@ -82,6 +82,15 @@ struct cros_ec_keyscan {
 int cros_ec_read_id(char *id, int maxlen);
 
 /**
+ * Read the protocol info structure from the ChromeOS EC device
+ *
+ * @param info		Pointer to the ec_response_get_protocol_info structure
+ *			to fill
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_get_protocol_info(struct ec_response_get_protocol_info *info);
+
+/**
  * Read a keyboard scan from the ChromeOS EC device
  *
  * Send a message requesting a keyboard scan and return the result

@@ -330,6 +330,15 @@ static int ec_command(uint8_t cmd, int cmd_version,
 				 din, din_len);
 }
 
+int cros_ec_get_protocol_info(struct ec_response_get_protocol_info *info)
+{
+	if (ec_command(EC_CMD_GET_PROTOCOL_INFO, 0, NULL, 0, info,
+		       sizeof(*info)) < sizeof(*info))
+		return -1;
+
+	return 0;
+}
+
 /**
  * Get the versions of the command supported by the EC.
  *
@@ -890,12 +899,15 @@ int cros_ec_init(void)
 		if (set_max_proto3_sizes(0x100, 0x100))
 			return -1;
 
-		if (cros_ec_test()) {
+		struct ec_response_get_protocol_info info;
+		if (cros_ec_get_protocol_info(&info)) {
 			set_max_proto3_sizes(0, 0);
 			send_command_func = NULL;
 		} else {
 			printf("%s: CrosEC protocol version 3 supported.\n",
 			       __func__);
+			set_max_proto3_sizes(info.max_request_packet_size,
+					     info.max_response_packet_size);
 		}
 	}
 
