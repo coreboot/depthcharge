@@ -25,7 +25,8 @@
 typedef struct SpiOps
 {
 	int (*start)(struct SpiOps *me);
-	int (*transfer)(struct SpiOps *me, void *in, void *out, uint32_t size);
+	int (*transfer)(struct SpiOps *me, void *in, const void *out,
+			uint32_t size);
 	int (*stop)(struct SpiOps *me);
 } SpiOps;
 

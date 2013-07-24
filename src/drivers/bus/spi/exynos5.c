@@ -194,7 +194,8 @@ static int exynos5_spi_start(SpiOps *me)
 	return 0;
 }
 
-static int exynos5_spi_transfer(SpiOps *me, void *in, void *out, uint32_t size)
+static int exynos5_spi_transfer(SpiOps *me, void *in, const void *out,
+				uint32_t size)
 {
 	Exynos5Spi *bus = container_of(me, Exynos5Spi, ops);
 	ExynosSpiRegs *regs = bus->reg_addr;
@@ -205,7 +206,7 @@ static int exynos5_spi_transfer(SpiOps *me, void *in, void *out, uint32_t size)
 	}
 
 	uint8_t *inb = in;
-	uint8_t *outb = out;
+	const uint8_t *outb = out;
 
 	int width = (size % 4) ? 1 : 4;
 
