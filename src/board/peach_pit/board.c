@@ -25,10 +25,18 @@
 #include "drivers/bus/spi/exynos5.h"
 #include "drivers/ec/cros/spi.h"
 #include "drivers/flash/spi.h"
+#include "drivers/gpio/exynos5420.h"
 #include "drivers/tpm/tpm.h"
+#include "vboot/util/flag.h"
 
 static int board_setup(void)
 {
+	Exynos5420Gpio *ec_in_rw = new_exynos5420_gpio_input(GPIO_X, 2, 3);
+	if (!ec_in_rw)
+		return 1;
+	if (flag_install(FLAG_ECINRW, &ec_in_rw->ops))
+		return 1;
+
 	Exynos5UsiI2c *i2c9 =
 		new_exynos5_usi_i2c((void *)(uintptr_t)0x12e10000, 400000);
 	if (!i2c9)
