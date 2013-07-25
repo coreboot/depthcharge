@@ -210,7 +210,6 @@ static int exynos5_spi_transfer(SpiOps *me, void *in, const void *out,
 
 	int width = (size % 4) ? 1 : 4;
 
-	exynos5_spi_sw_reset(regs, width == 4);
 	while (size) {
 		int packets = size / width;
 		// The packet count field is 16 bits wide.
@@ -219,6 +218,7 @@ static int exynos5_spi_transfer(SpiOps *me, void *in, const void *out,
 		int out_bytes, in_bytes;
 		out_bytes = in_bytes = packets * width;
 
+		exynos5_spi_sw_reset(regs, width == 4);
 		writel(packets | SPI_PACKET_CNT_EN, &regs->pkt_cnt);
 
 		while (out_bytes || in_bytes) {
