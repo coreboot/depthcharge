@@ -17,6 +17,7 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
+depthcharge-$(CONFIG_DRIVER_GPIO_EXYNOS5420) += exynos5420.c
 depthcharge-$(CONFIG_DRIVER_GPIO_LYNXPOINT_LP) += lynxpoint_lp.c
 depthcharge-$(CONFIG_DRIVER_GPIO_PCH) += pch.c
 depthcharge-$(CONFIG_DRIVER_GPIO_S5P) += s5p.c
