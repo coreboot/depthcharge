@@ -21,3 +21,5 @@ depthcharge-$(CONFIG_DRIVER_SOUND_DUMMY) += dummy.c
 depthcharge-$(CONFIG_DRIVER_SOUND_HDA) += hda_codec.c
 depthcharge-$(CONFIG_DRIVER_SOUND_I2S) += i2s.c
 depthcharge-$(CONFIG_DRIVER_SOUND_MAX98095) += max98095.c
+depthcharge-$(CONFIG_DRIVER_SOUND_ROUTE) += route.c
+depthcharge-y += sound.c

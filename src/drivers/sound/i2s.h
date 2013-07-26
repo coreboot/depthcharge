@@ -11,6 +11,20 @@
 #ifndef __DRIVERS_SOUND_I2S_H__
 #define __DRIVERS_SOUND_I2S_H__
 
-int codec_init(int bits_per_sample, int sample_rate, int lr_frame_size);
+#include "drivers/sound/sound.h"
+
+typedef struct
+{
+	SoundOps ops;
+
+	int bits_per_sample;
+	int sample_rate;
+	int channels;
+	int lr_frame_size;
+	uint16_t volume;
+} I2sSource;
+
+I2sSource *new_i2s_source(int bits_per_sample, int sample_rate, int channels,
+			  int lr_frame_size, uint16_t volume);
 
 #endif /* __DRIVERS_SOUND_I2S_H__ */

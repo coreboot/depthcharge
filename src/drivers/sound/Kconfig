@@ -15,10 +15,6 @@
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
-config DRIVER_SOUND_DUMMY
-	bool "Dummy sound driver"
-	default n
-
 config DRIVER_SOUND_HDA
 	bool "HDA codec driver"
 	default n
@@ -27,28 +23,10 @@ config DRIVER_SOUND_I2S
 	bool "Generic I2S sound support"
 	default n
 
-config DRIVER_SOUND_I2S_LR_FRAME_SIZE
-	int "I2S audio lr frame size"
-	depends on DRIVER_SOUND_I2S
-
-config DRIVER_SOUND_I2S_SAMPLE_RATE
-	int "I2S sample rate"
-	depends on DRIVER_SOUND_I2S
-
-config DRIVER_SOUND_I2S_VOLUME
-	int "I2S volume level (between 1 and 32767)"
-	default 16000
-	depends on DRIVER_SOUND_I2S
-
 config DRIVER_SOUND_MAX98095
 	bool "MAX98095 codec driver"
 	default n
-	depends on DRIVER_SOUND_I2S
 
-config DRIVER_SOUND_MAX98095_ADDR
-	hex "MAX98095 I2C chip address"
-	depends on DRIVER_SOUND_MAX98095
-
-config DRIVER_SOUND_MAX98095_MASTER_CLOCK_SEL
-	int "MAX98095 master clock select (1 or 2)"
-	depends on DRIVER_SOUND_MAX98095
+config DRIVER_SOUND_ROUTE
+	bool "Sound route container"
+	default n

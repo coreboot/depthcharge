@@ -12,8 +12,25 @@
 #define __DRIVERS_SOUND_MAX98095_H__
 
 #include "drivers/bus/i2c/i2c.h"
+#include "drivers/sound/route.h"
 
-void max98095_set_i2c_bus(I2cOps *_bus);
+typedef struct
+{
+	SoundRouteComponent component;
+
+	I2cOps *i2c;
+	uint8_t chip;
+
+	int bits_per_sample;
+	int sample_rate;
+	int lr_frame_size;
+
+	uint8_t master_clock;
+} Max98095Codec;
+
+Max98095Codec *new_max98095_codec(I2cOps *i2c, uint8_t chip,
+				  int bits_per_sample, int sample_rate,
+				  int lr_frame_size, uint8_t master_clock);
 
 /*
  * MAX98095 Registers Definition

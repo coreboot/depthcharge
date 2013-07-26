@@ -14,7 +14,7 @@
 #include <libpayload.h>
 #include <pci.h>
 
-#include "drivers/sound/sound.h"
+#include "drivers/sound/hda_codec.h"
 
 #define HDA_ICII_COMMAND_REG 0x5C
 #define HDA_ICII_RESPONSE_REG 0x60
@@ -285,7 +285,7 @@ static int set_beep_divisor(uint8_t divider)
 			      HDA_VERB(beep_nid, HDA_VERB_SET_BEEP, divider));
 }
 
-int sound_start(uint32_t frequency)
+static int hda_codec_start(SoundOps *me, uint32_t frequency)
 {
 	uint8_t divider_val;
 
@@ -301,15 +301,29 @@ int sound_start(uint32_t frequency)
 	return set_beep_divisor(divider_val);
 }
 
-int sound_stop(void)
+static int hda_codec_stop(SoundOps *me)
 {
 	return set_beep_divisor(0);
 }
 
-int sound_play(uint32_t msec, uint32_t frequency)
+static int hda_codec_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 {
 	int res = sound_start(frequency);
 	mdelay(msec);
 	res |= sound_stop();
 	return res;
+}
+
+HdaCodec *new_hda_codec(void)
+{
+	HdaCodec *codec = malloc(sizeof(*codec));
+	if (!codec) {
+		printf("Failed to allocate HDA codec structure.\n");
+		return NULL;
+	}
+	memset(codec, 0, sizeof(*codec));
+	codec->ops.start = &hda_codec_start;
+	codec->ops.stop = &hda_codec_stop;
+	codec->ops.play = &hda_codec_play;
+	return codec;
 }

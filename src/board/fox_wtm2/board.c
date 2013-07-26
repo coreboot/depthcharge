@@ -23,11 +23,17 @@
 #include "base/init_funcs.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
+#include "drivers/sound/hda_codec.h"
+#include "drivers/sound/sound.h"
 
 static int board_setup(void)
 {
 	MemMappedFlash *flash = new_mem_mapped_flash(0xff800000, 0x800000);
 	if (!flash || flash_set_ops(&flash->ops))
+		return 1;
+
+	HdaCodec *codec = new_hda_codec();
+	if (!codec || sound_set_ops(&codec->ops))
 		return 1;
 
 	return 0;

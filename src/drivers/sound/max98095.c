@@ -13,75 +13,48 @@
 
 #include <libpayload.h>
 
-#include "config.h"
 #include "drivers/bus/i2c/i2c.h"
-#include "drivers/bus/i2s/i2s.h"
-#include "drivers/gpio/gpio.h"
-#include "drivers/gpio/s5p.h"
-#include "drivers/sound/i2s.h"
 #include "drivers/sound/max98095.h"
 
-static I2cOps *bus;
-
-void max98095_set_i2c_bus(I2cOps *_bus)
+static int max98095_i2c_write(Max98095Codec *codec, uint8_t reg, uint8_t data)
 {
-	bus = _bus;
+	return codec->i2c->write(codec->i2c, codec->chip, reg, 1, &data, 1);
 }
 
-static int max98095_i2c_write(int reg, uint8_t data)
+static int max98095_i2c_read(Max98095Codec *codec, uint8_t reg, uint8_t *data)
 {
-	if (!bus)
-		return 1;
-	if (bus->write(bus, CONFIG_DRIVER_SOUND_MAX98095_ADDR,
-		       reg, 1, &data, 1)) {
-		printf("%s: Error while writing register %#04x with %#04x\n",
-			__func__, reg, data);
-		return 1;
-	}
-	return 0;
+	return codec->i2c->read(codec->i2c, codec->chip, reg, 1, data, 1);
 }
 
-static unsigned int max98095_i2c_read(int reg, uint8_t *data)
-{
-	if (!bus)
-		return 1;
-	if (bus->read(bus, CONFIG_DRIVER_SOUND_MAX98095_ADDR,
-		      reg, 1, data, 1)) {
-		printf("%s: Error while reading register %#04x\n",
-			__func__, reg);
-		return 1;
-	}
-	return 0;
-}
-
-static int max98095_update_bits(int reg, uint8_t mask, uint8_t value)
+static int max98095_update_bits(Max98095Codec *codec, uint8_t reg,
+				uint8_t mask, uint8_t value)
 {
 	uint8_t old;
-	if (max98095_i2c_read(reg, &old))
+	if (max98095_i2c_read(codec, reg, &old))
 		return 1;
 	uint8_t new = (old & ~mask) | (value & mask);
-	if (old != new && max98095_i2c_write(reg, new))
+	if (old != new && max98095_i2c_write(codec, reg, new))
 		return 1;
 
 	return 0;
 }
 
-static int max98095_hw_params(int rate, int bits_per_sample)
+static int max98095_hw_params(Max98095Codec *codec)
 {
-	switch (bits_per_sample) {
+	switch (codec->bits_per_sample) {
 	case 16:
-		if (max98095_update_bits(M98095_034_DAI2_FORMAT,
+		if (max98095_update_bits(codec, M98095_034_DAI2_FORMAT,
 					 M98095_DAI_WS, 0))
 			return 1;
 		break;
 	case 24:
-		if (max98095_update_bits(M98095_034_DAI2_FORMAT,
+		if (max98095_update_bits(codec, M98095_034_DAI2_FORMAT,
 					 M98095_DAI_WS, M98095_DAI_WS))
 			return 1;
 		break;
 	default:
 		printf("%s: Illegal bits per sample %d.\n", __func__,
-			bits_per_sample);
+			codec->bits_per_sample);
 		return 1;
 	}
 
@@ -94,34 +67,37 @@ static int max98095_hw_params(int rate, int bits_per_sample)
 
 	uint8_t index = table_size;
 	for (int i = 0; i < table_size; i++) {
-		if (rate_table[i] >= rate) {
+		if (rate_table[i] >= codec->sample_rate) {
 			index = i;
 			break;
 		}
 	}
 	if (index == table_size) {
-		printf("%s: Failed to set sample rate %d.\n", __func__, rate);
+		printf("%s: Failed to set sample rate %d.\n", __func__,
+			codec->sample_rate);
 		return 1;
 	}
 
-	if (max98095_update_bits(M98095_031_DAI2_CLKMODE,
+	if (max98095_update_bits(codec, M98095_031_DAI2_CLKMODE,
 				 M98095_CLKMODE_MASK, index))
 		return 1;
 
 	/* Update sample rate mode */
-	if (max98095_update_bits(M98095_038_DAI2_FILTERS,
-			M98095_DAI_DHF, (rate < 50000) ? 0 : M98095_DAI_DHF))
+	int rate = (codec->sample_rate < 50000) ? 0 : M98095_DAI_DHF;
+	if (max98095_update_bits(codec, M98095_038_DAI2_FILTERS,
+				 M98095_DAI_DHF, rate))
 		return 1;
 
 	return 0;
 }
 
 // Configures audio interface system clock for the selected frequency.
-static int max98095_set_sysclk(int freq, uint8_t master_clock)
+static int max98095_set_sysclk(Max98095Codec *codec)
 {
 	enum { MHz = 1000000 };
 
-	uint8_t mclksel = (master_clock == 2) ? 1 : 0;
+	int freq = codec->lr_frame_size * codec->sample_rate;
+	uint8_t mclksel = (codec->master_clock == 2) ? 1 : 0;
 
 	/*
 	 * Setup clocks for slave mode, and using the PLL
@@ -139,139 +115,140 @@ static int max98095_set_sysclk(int freq, uint8_t master_clock)
 		printf("%s: Invalid master clock frequency\n", __func__);
 		return 1;
 	}
-	if (max98095_i2c_write(M98095_026_SYS_CLK, mclksel)) {
-		printf("Failed to set the master clock.\n");
+
+	if (max98095_i2c_write(codec, M98095_026_SYS_CLK, mclksel))
 		return 1;
-	}
 
 	printf("%s: Clock at %uHz on MCLK%d\n", __func__, freq,
-		master_clock);
+		codec->master_clock);
 
 	return 0;
 }
 
 // Sets Max98095 I2S format.
-static int max98095_set_fmt(void)
+static int max98095_set_fmt(Max98095Codec *codec)
 {
 	// Slave mode PLL.
-	if (max98095_i2c_write(M98095_032_DAI2_CLKCFG_HI, 0x80) ||
-		max98095_i2c_write(M98095_033_DAI2_CLKCFG_LO, 0x00))
+	if (max98095_i2c_write(codec, M98095_032_DAI2_CLKCFG_HI, 0x80) ||
+		max98095_i2c_write(codec, M98095_033_DAI2_CLKCFG_LO, 0x00))
 		return 1;
 
-	if (max98095_update_bits(M98095_034_DAI2_FORMAT,
+	if (max98095_update_bits(codec, M98095_034_DAI2_FORMAT,
 			M98095_DAI_MAS | M98095_DAI_DLY | M98095_DAI_BCI |
 			M98095_DAI_WCI, M98095_DAI_DLY))
 		return 1;
 
-	if (max98095_i2c_write(M98095_035_DAI2_CLOCK, M98095_DAI_BSEL64))
+	if (max98095_i2c_write(codec, M98095_035_DAI2_CLOCK, M98095_DAI_BSEL64))
 		return 1;
 
 	return 0;
 }
 
 // Resets the audio codec.
-static int max98095_reset(void)
+static int max98095_reset(Max98095Codec *codec)
 {
 	// Gracefully reset the DSP core and the codec hardware in a proper
 	// sequence.
-	if (max98095_i2c_write(M98095_00F_HOST_CFG, 0)) {
-		printf("%s: Failed to reset DSP\n", __func__);
+	if (max98095_i2c_write(codec, M98095_00F_HOST_CFG, 0) ||
+	    max98095_i2c_write(codec, M98095_097_PWR_SYS, 0))
 		return 1;
-	}
-
-	if (max98095_i2c_write(M98095_097_PWR_SYS, 0)) {
-		printf("%s: Failed to reset codec\n", __func__);
-		return 1;
-	}
 
 	// Reset to hardware default for registers, as there is not a soft
 	// reset hardware control register.
-	for (int i = M98095_010_HOST_INT_CFG; i < M98095_REG_MAX_CACHED; i++) {
-		if (max98095_i2c_write(i, 0)) {
-			printf("%s: Failed to reset\n", __func__);
+	for (int i = M98095_010_HOST_INT_CFG; i < M98095_REG_MAX_CACHED; i++)
+		if (max98095_i2c_write(codec, i, 0))
 			return 1;
-		}
-	}
 
 	return 0;
 }
 
 // Intialize max98095 codec device.
-static int max98095_device_init(void)
+static int max98095_device_init(Max98095Codec *codec)
 {
 	// Reset the codec, the DSP core, and disable all interrupts.
-	if (max98095_reset())
+	if (max98095_reset(codec))
 		return 1;
 
 	uint8_t id;
-	if (max98095_i2c_read(M98095_0FF_REV_ID, &id)) {
-		printf("%s: Failure reading hardware revision: %d\n",
-			__func__, id);
+	if (max98095_i2c_read(codec, M98095_0FF_REV_ID, &id))
 		return 1;
-	}
 	printf("%s: Hardware revision: %c\n", __func__, (id - 0x40) + 'A');
 
 	int res = 0;
-	res |= max98095_i2c_write(M98095_097_PWR_SYS, M98095_PWRSV);
+	res |= max98095_i2c_write(codec, M98095_097_PWR_SYS, M98095_PWRSV);
 
 	// Initialize registers to hardware default configuring audio
 	// interface2 to DAC.
-	res |= max98095_i2c_write(M98095_048_MIX_DAC_LR,
+	res |= max98095_i2c_write(codec, M98095_048_MIX_DAC_LR,
 		M98095_DAI2M_TO_DACL | M98095_DAI2M_TO_DACR);
 
-	res |= max98095_i2c_write(M98095_092_PWR_EN_OUT,
+	res |= max98095_i2c_write(codec, M98095_092_PWR_EN_OUT,
 			M98095_SPK_SPREADSPECTRUM);
-	res |= max98095_i2c_write(M98095_045_CFG_DSP, M98095_DSPNORMAL);
-	res |= max98095_i2c_write(M98095_04E_CFG_HP, M98095_HPNORMAL);
+	res |= max98095_i2c_write(codec, M98095_045_CFG_DSP, M98095_DSPNORMAL);
+	res |= max98095_i2c_write(codec, M98095_04E_CFG_HP, M98095_HPNORMAL);
 
-	res |= max98095_i2c_write(M98095_02C_DAI1_IOCFG,
+	res |= max98095_i2c_write(codec, M98095_02C_DAI1_IOCFG,
 			M98095_S1NORMAL | M98095_SDATA);
 
-	res |= max98095_i2c_write(M98095_036_DAI2_IOCFG,
+	res |= max98095_i2c_write(codec, M98095_036_DAI2_IOCFG,
 			M98095_S2NORMAL | M98095_SDATA);
 
-	res |= max98095_i2c_write(M98095_040_DAI3_IOCFG,
+	res |= max98095_i2c_write(codec, M98095_040_DAI3_IOCFG,
 			M98095_S3NORMAL | M98095_SDATA);
 
 	// Take the codec out of the shut down.
-	res |= max98095_update_bits(M98095_097_PWR_SYS, M98095_SHDNRUN,
+	res |= max98095_update_bits(codec, M98095_097_PWR_SYS, M98095_SHDNRUN,
 			M98095_SHDNRUN);
 	// Route DACL and DACR output to HO and speakers.
-	res |= max98095_i2c_write(M98095_050_MIX_SPK_LEFT, 0x01); // DACL
-	res |= max98095_i2c_write(M98095_051_MIX_SPK_RIGHT, 0x01);// DACR
-	res |= max98095_i2c_write(M98095_04C_MIX_HP_LEFT, 0x01);  // DACL
-	res |= max98095_i2c_write(M98095_04D_MIX_HP_RIGHT, 0x01); // DACR
+	res |= max98095_i2c_write(codec, M98095_050_MIX_SPK_LEFT, 0x01); // DACL
+	res |= max98095_i2c_write(codec, M98095_051_MIX_SPK_RIGHT, 0x01);// DACR
+	res |= max98095_i2c_write(codec, M98095_04C_MIX_HP_LEFT, 0x01);  // DACL
+	res |= max98095_i2c_write(codec, M98095_04D_MIX_HP_RIGHT, 0x01); // DACR
 
 	// Power enable.
-	res |= max98095_i2c_write(M98095_091_PWR_EN_OUT, 0xF3);
+	res |= max98095_i2c_write(codec, M98095_091_PWR_EN_OUT, 0xF3);
 
 	// Set volume.
-	res |= max98095_i2c_write(M98095_064_LVL_HP_L, 15);
-	res |= max98095_i2c_write(M98095_065_LVL_HP_R, 15);
-	res |= max98095_i2c_write(M98095_067_LVL_SPK_L, 16);
-	res |= max98095_i2c_write(M98095_068_LVL_SPK_R, 16);
+	res |= max98095_i2c_write(codec, M98095_064_LVL_HP_L, 15);
+	res |= max98095_i2c_write(codec, M98095_065_LVL_HP_R, 15);
+	res |= max98095_i2c_write(codec, M98095_067_LVL_SPK_L, 16);
+	res |= max98095_i2c_write(codec, M98095_068_LVL_SPK_R, 16);
 
 	// Enable DAIs.
-	res |= max98095_i2c_write(M98095_093_BIAS_CTRL, 0x30);
-	res |= max98095_i2c_write(M98095_096_PWR_DAC_CK, 0x07);
+	res |= max98095_i2c_write(codec, M98095_093_BIAS_CTRL, 0x30);
+	res |= max98095_i2c_write(codec, M98095_096_PWR_DAC_CK, 0x07);
 
 	return res;
 }
 
-int codec_init(int bits_per_sample, int sample_rate, int lr_frame_size)
+static int max98095_enable(SoundRouteComponentOps *me)
 {
-	if (max98095_device_init())
-		return 1;
+	Max98095Codec *codec = container_of(me, Max98095Codec, component.ops);
 
-	uint8_t master_clock = CONFIG_DRIVER_SOUND_MAX98095_MASTER_CLOCK_SEL;
-	if (max98095_set_sysclk(lr_frame_size * sample_rate, master_clock))
-		return 1;
+	return max98095_device_init(codec) || max98095_set_sysclk(codec) ||
+		max98095_hw_params(codec) || max98095_set_fmt(codec);
+}
 
-	if (max98095_hw_params(sample_rate, bits_per_sample))
-		return 1;
+Max98095Codec *new_max98095_codec(I2cOps *i2c, uint8_t chip,
+				  int bits_per_sample, int sample_rate,
+				  int lr_frame_size, uint8_t master_clock)
+{
+	Max98095Codec *codec = malloc(sizeof(*codec));
+	if (!codec) {
+		printf("Failed to allocate max98095 codec structure.\n");
+		return NULL;
+	}
+	memset(codec, 0, sizeof(*codec));
 
-	if (max98095_set_fmt())
-		return 1;
+	codec->component.ops.enable = &max98095_enable;
 
-	return 0;
+	codec->i2c = i2c;
+	codec->chip = chip;
+
+	codec->bits_per_sample = bits_per_sample;
+	codec->sample_rate = sample_rate;
+	codec->lr_frame_size = lr_frame_size;
+
+	codec->master_clock = master_clock;
+	return codec;
 }
