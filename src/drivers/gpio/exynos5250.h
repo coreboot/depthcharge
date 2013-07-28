@@ -48,14 +48,14 @@ typedef struct Exynos5250Gpio
 	int dir_set;
 	unsigned group;
 	unsigned bank;
-	unsigned bit;
+	unsigned index;
 } Exynos5250Gpio;
 
 Exynos5250Gpio *new_exynos5250_gpio(unsigned group, unsigned bank,
-				    unsigned bit);
+				    unsigned index);
 Exynos5250Gpio *new_exynos5250_gpio_input(unsigned group, unsigned bank,
-					  unsigned bit);
+					  unsigned index);
 Exynos5250Gpio *new_exynos5250_gpio_output(unsigned group, unsigned bank,
-					   unsigned bit);
+					   unsigned index);
 
 #endif /* __DRIVERS_GPIO_EXYNOS5250_H__ */

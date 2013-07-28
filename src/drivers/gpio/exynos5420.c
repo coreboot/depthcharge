@@ -40,7 +40,7 @@ typedef struct __attribute__((packed)) GpioRegs
 
 typedef struct GpioBank
 {
-	int num_bits;
+	int num_gpios;
 	GpioRegs *regs;
 } GpioBank;
 
@@ -126,8 +126,8 @@ static int exynos5420_gpio_use(Exynos5420Gpio *me, unsigned use)
 	GpioRegs *regs = exynos5420_get_regs(me);
 
 	uint32_t con = readl(&regs->con);
-	con &= ~(0xf << (me->bit * 4));
-	con |= ((use & 0xf) << (me->bit * 4));
+	con &= ~(0xf << (me->index * 4));
+	con |= ((use & 0xf) << (me->index * 4));
 	writel(con, &regs->con);
 
 	return 0;
@@ -138,8 +138,8 @@ static int exynos5420_gpio_set_pud(Exynos5420Gpio *me, unsigned value)
 	GpioRegs *regs = exynos5420_get_regs(me);
 
 	uint32_t pud = readl(&regs->pud);
-	pud &= ~(0x3 << (me->bit * 2));
-	pud |= ((value & 0x3) << (me->bit * 2));
+	pud &= ~(0x3 << (me->index * 2));
+	pud |= ((value & 0x3) << (me->index * 2));
 	writel(pud, &regs->pud);
 
 	return 0;
@@ -157,7 +157,7 @@ static int exynos5420_gpio_get_value(GpioOps *me)
 		gpio->dir_set = 1;
 	}
 
-	return (readl(&regs->dat) >> gpio->bit) & 0x1;
+	return (readl(&regs->dat) >> gpio->index) & 0x1;
 }
 
 static int exynos5420_gpio_set_value(GpioOps *me, unsigned value)
@@ -173,19 +173,20 @@ static int exynos5420_gpio_set_value(GpioOps *me, unsigned value)
 	}
 
 	uint32_t dat = readl(&regs->dat);
-	dat &= ~(0x1 << gpio->bit);
-	dat |= ((value & 0x1) << gpio->bit);
+	dat &= ~(0x1 << gpio->index);
+	dat |= ((value & 0x1) << gpio->index);
 	writel(dat, &regs->dat);
 	return 0;
 }
 
-Exynos5420Gpio *new_exynos5420_gpio(unsigned group, unsigned bank, unsigned bit)
+Exynos5420Gpio *new_exynos5420_gpio(unsigned group, unsigned bank,
+				    unsigned index)
 {
 	if (group >= ARRAY_SIZE(groups) || bank >= groups[group].num_banks ||
 			groups[group].banks[bank] == NULL ||
-			bit >= groups[group].banks[bank]->num_bits) {
+			index >= groups[group].banks[bank]->num_gpios) {
 		printf("GPIO parameters (%d, %d, %d) out of bounds.\n",
-			group, bank, bit);
+			group, bank, index);
 		return NULL;
 	}
 
@@ -199,14 +200,14 @@ Exynos5420Gpio *new_exynos5420_gpio(unsigned group, unsigned bank, unsigned bit)
 	gpio->pud = &exynos5420_gpio_set_pud;
 	gpio->group = group;
 	gpio->bank = bank;
-	gpio->bit = bit;
+	gpio->index = index;
 	return gpio;
 }
 
 Exynos5420Gpio *new_exynos5420_gpio_input(unsigned group, unsigned bank,
-					  unsigned bit)
+					  unsigned index)
 {
-	Exynos5420Gpio *gpio = new_exynos5420_gpio(group, bank, bit);
+	Exynos5420Gpio *gpio = new_exynos5420_gpio(group, bank, index);
 	if (!gpio)
 		return NULL;
 
@@ -215,9 +216,9 @@ Exynos5420Gpio *new_exynos5420_gpio_input(unsigned group, unsigned bank,
 }
 
 Exynos5420Gpio *new_exynos5420_gpio_output(unsigned group, unsigned bank,
-					   unsigned bit)
+					   unsigned index)
 {
-	Exynos5420Gpio *gpio = new_exynos5420_gpio(group, bank, bit);
+	Exynos5420Gpio *gpio = new_exynos5420_gpio(group, bank, index);
 	if (!gpio)
 		return NULL;
 

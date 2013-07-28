@@ -48,14 +48,14 @@ typedef struct Exynos5420Gpio
 	int dir_set;
 	unsigned group;
 	unsigned bank;
-	unsigned bit;
+	unsigned index;
 } Exynos5420Gpio;
 
 Exynos5420Gpio *new_exynos5420_gpio(unsigned group, unsigned bank,
-				    unsigned bit);
+				    unsigned index);
 Exynos5420Gpio *new_exynos5420_gpio_input(unsigned group, unsigned bank,
-					  unsigned bit);
+					  unsigned index);
 Exynos5420Gpio *new_exynos5420_gpio_output(unsigned group, unsigned bank,
-					   unsigned bit);
+					   unsigned index);
 
 #endif /* __DRIVERS_GPIO_EXYNOS5420_H__ */
