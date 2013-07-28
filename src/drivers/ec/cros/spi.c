@@ -40,6 +40,7 @@
 
 // How long we have to leave CS deasserted between transactions.
 static const uint64_t CsCooldownUs = 200;
+static const uint64_t FramingTimeoutUs = 1000 * 1000;
 
 static const uint8_t EcFramingByte = 0xec;
 
@@ -47,6 +48,22 @@ static void stop_bus(CrosEcSpiBus *bus)
 {
 	bus->spi->stop(bus->spi);
 	bus->last_transfer = timer_us(0);
+}
+
+static int wait_for_frame(CrosEcSpiBus *bus)
+{
+	uint64_t start = timer_us(0);
+	uint8_t byte;
+	do {
+		if (bus->spi->transfer(bus->spi, &byte, NULL, 1))
+			return -1;
+		if (byte != EcFramingByte &&
+				timer_us(start) > FramingTimeoutUs) {
+			printf("Timeout waiting for framing byte.\n");
+			return -1;
+		}
+	} while (byte != EcFramingByte);
+	return 0;
 }
 
 static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
@@ -66,13 +83,10 @@ static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 	}
 
 	// Wait until the EC is ready.
-	uint8_t byte;
-	do {
-		if (bus->spi->transfer(bus->spi, &byte, NULL, 1)) {
-			stop_bus(bus);
-			return -1;
-		}
-	} while (byte != EcFramingByte);
+	if (wait_for_frame(bus)) {
+		stop_bus(bus);
+		return -1;
+	}
 
 	if (bus->spi->transfer(bus->spi, din, NULL, din_len)) {
 		stop_bus(bus);
@@ -144,13 +158,10 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 	}
 
 	// Wait until the EC is ready.
-	uint8_t byte;
-	do {
-		if (bus->spi->transfer(bus->spi, &byte, NULL, 1)) {
-			stop_bus(bus);
-			return -1;
-		}
-	} while (byte != EcFramingByte);
+	if (wait_for_frame(bus)) {
+		stop_bus(bus);
+		return -1;
+	}
 
 	// Read the response code and the data length.
 	bytes = bus->buf;
