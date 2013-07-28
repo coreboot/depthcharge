@@ -28,8 +28,6 @@
 #include "drivers/bus/i2s/exynos5.h"
 #include "drivers/bus/i2s/exynos5-regs.h"
 #include "drivers/bus/i2s/i2s.h"
-#include "drivers/gpio/gpio.h"
-#include "drivers/gpio/s5p.h"
 
 typedef struct __attribute__((packed)) Exynos5I2sRegs {
 	uint32_t control;

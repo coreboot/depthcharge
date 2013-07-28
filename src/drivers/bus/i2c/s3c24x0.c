@@ -14,8 +14,6 @@
 #include "base/list.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/bus/i2c/s3c24x0.h"
-#include "drivers/gpio/gpio.h"
-#include "drivers/gpio/s5p.h"
 
 typedef struct __attribute__ ((packed)) I2cRegs
 {
