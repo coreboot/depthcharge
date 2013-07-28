@@ -20,6 +20,8 @@
 #ifndef __DRIVERS_BUS_I2S_EXYNOS5_H__
 #define __DRIVERS_BUS_I2S_EXYNOS5_H__
 
+#include "drivers/bus/i2s/i2s.h"
+
 /*
  * DAI hardware audio formats.
  *
@@ -68,5 +70,21 @@
 // Master clock directions
 #define SND_SOC_CLOCK_IN		0
 #define SND_SOC_CLOCK_OUT		1
+
+typedef struct
+{
+	I2sOps ops;
+
+	void *regs;
+
+	int initialized;
+
+	int bits_per_sample;
+	int channels;
+	int lr_frame_size;
+} Exynos5I2s;
+
+Exynos5I2s *new_exynos5_i2s(void *regs, int bits_per_sample, int channels,
+			    int lr_frame_size);
 
 #endif /* __DRIVERS_BUS_I2S_EXYNOS5_H__ */

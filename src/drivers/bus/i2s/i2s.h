@@ -17,16 +17,14 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA, 02110-1301 USA
  */
 
-#include <stdint.h>
-
 #ifndef __DRIVERS_BUS_I2S_I2S_H__
 #define __DRIVERS_BUS_I2S_I2S_H__
 
-// Sends the given data through i2s.
-int i2s_send(uint32_t *data, unsigned int length);
+#include <stdint.h>
 
-// Initialise i2s transmiter.
-int i2s_transfer_init(int lr_frame_size, int bits_per_sample,
-		      int bit_frame_size);
+typedef struct I2sOps
+{
+	int (*send)(struct I2sOps *me, uint32_t *data, unsigned int length);
+} I2sOps;
 
 #endif /* __DRIVERS_BUS_I2S_I2S_H__ */

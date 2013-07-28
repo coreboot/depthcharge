@@ -25,6 +25,8 @@
 #include "base/init_funcs.h"
 #include "board/daisy/i2c_arb.h"
 #include "drivers/bus/i2c/s3c24x0.h"
+#include "drivers/bus/i2s/exynos5.h"
+#include "drivers/bus/i2s/i2s.h"
 #include "drivers/bus/spi/exynos5.h"
 #include "drivers/ec/cros/i2c.h"
 #include "drivers/flash/spi.h"
@@ -77,7 +79,9 @@ static int board_setup(void)
 	if (!flash || flash_set_ops(&flash->ops))
 		return 1;
 
-	I2sSource *i2s_source = new_i2s_source(16, 48000, 2, 256, 16000);
+	Exynos5I2s *i2s1 = new_exynos5_i2s((void *)(uintptr_t)0x12d60000,
+					   16, 2, 256);
+	I2sSource *i2s_source = new_i2s_source(&i2s1->ops, 48000, 2, 16000);
 	if (!i2s_source)
 		return 1;
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);

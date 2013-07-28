@@ -66,11 +66,8 @@ static int i2s_source_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 {
 	I2sSource *source = container_of(me, I2sSource, ops);
 
-	const int bits_per_sample = source->bits_per_sample;
 	const int channels = source->channels;
-	const int bit_frame_size = bits_per_sample * channels;
 	const int sample_rate = source->sample_rate;
-	const int lr_frame_size = source->lr_frame_size;
 
 	// Prepare a buffer for 1 second of sound.
 	int bytes = sample_rate * channels * sizeof(uint16_t);
@@ -83,12 +80,11 @@ static int i2s_source_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 	sound_square_wave((uint16_t *)data, channels, sample_rate, frequency,
 			  source->volume);
 
-	i2s_transfer_init(lr_frame_size, bits_per_sample, bit_frame_size);
-
 	uint64_t start = timer_us(0);
 
 	while (msec >= 1000) {
-		if (i2s_send(data, bytes / sizeof(uint32_t))) {
+		if (source->i2s->send(source->i2s, data,
+				      bytes / sizeof(uint32_t))) {
 			finish_delay(start, msec);
 			free(data);
 			return 1;
@@ -97,7 +93,7 @@ static int i2s_source_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 	}
 	if (msec) {
 		int size = (bytes * msec) / (sizeof(uint32_t) * 1000);
-		if (i2s_send(data, size)) {
+		if (source->i2s->send(source->i2s, data, size)) {
 			finish_delay(start, msec);
 			free(data);
 			return 1;
@@ -108,8 +104,8 @@ static int i2s_source_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 	return 0;
 }
 
-I2sSource *new_i2s_source(int bits_per_sample, int sample_rate, int channels,
-			  int lr_frame_size, uint16_t volume)
+I2sSource *new_i2s_source(I2sOps *i2s, int sample_rate, int channels,
+			  uint16_t volume)
 {
 	I2sSource *source = malloc(sizeof(*source));
 	if (!source) {
@@ -120,10 +116,10 @@ I2sSource *new_i2s_source(int bits_per_sample, int sample_rate, int channels,
 
 	source->ops.play = &i2s_source_play;
 
-	source->bits_per_sample = bits_per_sample;
+	source->i2s = i2s;
+
 	source->sample_rate = sample_rate;
 	source->channels = channels;
-	source->lr_frame_size = lr_frame_size;
 	source->volume = volume;
 
 	return source;
