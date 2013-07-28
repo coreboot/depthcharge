@@ -25,8 +25,8 @@ config DRIVER_GPIO_LYNXPOINT_LP
 	default n
 	depends on ARCH_X86
 
-config DRIVER_GPIO_S5P
-	bool "Exynos S5P GPIO driver"
+config DRIVER_GPIO_EXYNOS5250
+	bool "Exynos 5250 GPIO driver"
 	default n
 	depends on ARCH_ARM
 

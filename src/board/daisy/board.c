@@ -28,7 +28,7 @@
 #include "drivers/bus/spi/exynos5.h"
 #include "drivers/ec/cros/i2c.h"
 #include "drivers/flash/spi.h"
-#include "drivers/gpio/s5p.h"
+#include "drivers/gpio/exynos5250.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/max98095.h"
 #include "drivers/sound/route.h"
@@ -39,7 +39,7 @@ static uint32_t *i2c_cfg = (uint32_t *)(uintptr_t)(0x10050000 + 0x234);
 
 static int board_setup(void)
 {
-	S5pGpio *ec_in_rw = new_s5p_gpio_input(GPIO_D, 1, 7);
+	Exynos5250Gpio *ec_in_rw = new_exynos5250_gpio_input(GPIO_D, 1, 7);
 	if (!ec_in_rw)
 		return 1;
 	if (flag_install(FLAG_ECINRW, &ec_in_rw->ops))
@@ -54,8 +54,8 @@ static int board_setup(void)
 	if (!i2c3 || !i2c4 || !i2c7)
 		return 1;
 
-	S5pGpio *request_gpio = new_s5p_gpio_output(GPIO_F, 0, 3);
-	S5pGpio *grant_gpio = new_s5p_gpio_input(GPIO_E, 0, 4);
+	Exynos5250Gpio *request_gpio = new_exynos5250_gpio_output(GPIO_F, 0, 3);
+	Exynos5250Gpio *grant_gpio = new_exynos5250_gpio_input(GPIO_E, 0, 4);
 	if (!request_gpio || !grant_gpio)
 		return 1;
 	SnowI2cArb *arb4 = new_snow_i2c_arb(&i2c4->ops, &request_gpio->ops,

@@ -20,8 +20,8 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __DRIVERS_GPIO_S5P_H__
-#define __DRIVERS_GPIO_S5P_H__
+#ifndef __DRIVERS_GPIO_EXYNOS5250_H__
+#define __DRIVERS_GPIO_EXYNOS5250_H__
 
 #include "drivers/gpio/gpio.h"
 
@@ -40,19 +40,22 @@ enum {
 	GPIO_Z
 };
 
-typedef struct S5pGpio
+typedef struct Exynos5250Gpio
 {
 	GpioOps ops;
-	int (*use)(struct S5pGpio *me, unsigned use);
-	int (*pud)(struct S5pGpio *me, unsigned value);
+	int (*use)(struct Exynos5250Gpio *me, unsigned use);
+	int (*pud)(struct Exynos5250Gpio *me, unsigned value);
 	int dir_set;
 	unsigned group;
 	unsigned bank;
 	unsigned bit;
-} S5pGpio;
+} Exynos5250Gpio;
 
-S5pGpio *new_s5p_gpio(unsigned group, unsigned bank, unsigned bit);
-S5pGpio *new_s5p_gpio_input(unsigned group, unsigned bank, unsigned bit);
-S5pGpio *new_s5p_gpio_output(unsigned group, unsigned bank, unsigned bit);
+Exynos5250Gpio *new_exynos5250_gpio(unsigned group, unsigned bank,
+				    unsigned bit);
+Exynos5250Gpio *new_exynos5250_gpio_input(unsigned group, unsigned bank,
+					  unsigned bit);
+Exynos5250Gpio *new_exynos5250_gpio_output(unsigned group, unsigned bank,
+					   unsigned bit);
 
-#endif /* __DRIVERS_GPIO_S5P_H__ */
+#endif /* __DRIVERS_GPIO_EXYNOS5250_H__ */
