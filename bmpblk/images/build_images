@@ -79,6 +79,13 @@ main() {
 
     # Stretched profiles
 
+    falco )
+      # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
+      # With card reader. USB3 ports will run in USB2 mode for recovery mode.
+      scale_param="-scale 75%x100%"
+      background_scale_param="-scale 1024x768!"
+      ;;
+
     parrot | butterfly )
       # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
       # Can only boot recovery by USB. (No card reader, or not able to recover
