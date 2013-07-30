@@ -44,13 +44,15 @@ convert_to_bmp3() {
 
 main() {
   local profile="$1"
-  # TODO(hungte) Improve "output" by using git hash, ex:
-  #              out_$1_$(git show -s --format="format:%H" | cut -b 1-6)
+  local git_dirty="$(git diff --shortstat)"
+  local git_version="$(git show -s --format="%h")"
   local output="$BUILD_DIR/$1"
   local scale_param="" background_scale_param="" replace_files=""
   local stage_dir="$BUILD_DIR/.stage"
   local dpi=""
-  local base locale X
+  local base locale X archive
+
+  [ -z "$git_dirty" ] || git_version+="_mod"
 
   # TODO(hungte) Derive and calculate profile params automatically.
   # TODO(hungte) Allow overriding stage directory for 2x resolution files.
@@ -184,8 +186,12 @@ main() {
   (cd "$output" && $SCRIPT_BASE/make_default_yaml $LOCALES)
 
   # Compile bitmap block file.
-  (cd "$output" && ${BMPLKU} -c $YAML_OUTPUT $BMPBLK_OUTPUT)
+  archive="chromeos-bmpblk-$profile-${git_version}.tbz2"
+  (cd "$output" && ${BMPLKU} -c $YAML_OUTPUT $BMPBLK_OUTPUT &&
+   tar acf $archive "$BMPBLK_OUTPUT" )
+  echo ""
   echo "Bitmap block file generated in: $output/$BMPBLK_OUTPUT"
+  echo "Archive file to upload: $output/$archive"
   echo "To preview, run ../bitmap_viewer $output/$YAML_OUTPUT"
   ls -l "$output/$BMPBLK_OUTPUT"
 }
