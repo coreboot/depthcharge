@@ -200,7 +200,7 @@ Handling generated bitmaps:
 You can use the gbb_utility to modify your BIOS to contain this new set of
 bitmaps:
 
-  gbb_utility -s -b PATH/TO/YOUR/bmpblock.bin OLDBIOS.bin NEWBIOS.bin
+  gbb_utility -s -b PATH/TO/YOUR/bmpblk.bin OLDBIOS.bin NEWBIOS.bin
 
 
 
@@ -214,7 +214,7 @@ BIOS write-protection is disabled. gbb_utility should be in the rootfs:
   Copy your new bmpblock over:
 
     cd /mnt/stateful_partition
-    scp USER@SOMEHOST:/SOMEPATH/bmpblock.bin .
+    scp USER@SOMEHOST:/SOMEPATH/bmpblk.bin .
 
   Get a copy of the current BIOS:
 
@@ -222,7 +222,7 @@ BIOS write-protection is disabled. gbb_utility should be in the rootfs:
 
   Put the new bmpblock in the copy of the BIOS:
 
-    gbb_utility -s -b bmpblock.bin bios.bin
+    gbb_utility -s -b bmpblk.bin bios.bin
 
   Reflash the BIOS with the new content
 
@@ -236,11 +236,11 @@ BIOS write-protection is disabled. gbb_utility should be in the rootfs:
 If you want to examine a binary bmpblock that you've pulled from a BIOS
 image, the bmpblk_utility has options to display or unpack the binary.
 
-  bmpblk_utility bmpblock.bin
+  bmpblk_utility bmpblk.bin
 
-  bmpblk_utility -y bmpblock.bin
+  bmpblk_utility -y bmpblk.bin
 
-  bmpblk_utility -x -d /SOME/SCRATCH/DIR bmpblock.bin
+  bmpblk_utility -x -d /SOME/SCRATCH/DIR bmpblk.bin
 
 Once you've unpacked it you can use the bitmap_viewer on the unpacked
 config.yaml file to see what it looks like. There's not (yet) a single tool

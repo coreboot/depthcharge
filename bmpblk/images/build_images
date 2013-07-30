@@ -16,7 +16,7 @@ CHARGE_BACKGROUND_IMAGE=reserve_charging_background.png
 CHARGE_ASSETS_PREFIX="reserve_charging"
 
 # Output file name.
-BMPBLK_OUTPUT="bmpblock.bin"
+BMPBLK_OUTPUT="bmpblk.bin"
 
 SCRIPT_BASE="$(dirname $(readlink -f "$0"))"
 
