@@ -40,6 +40,6 @@ $(TARGETS):
 	LOCALES="$(LOCALES)" ./build_images "$@"
 
 clean:
-	rm -rf out_*
+	rm -rf ../build/*
 
 .PHONY: $(TARGETS) clean all default

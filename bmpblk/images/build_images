@@ -17,8 +17,10 @@ CHARGE_ASSETS_PREFIX="reserve_charging"
 
 # Output file name.
 BMPBLK_OUTPUT="bmpblk.bin"
+YAML_OUTPUT="DEFAULT.yaml"
 
 SCRIPT_BASE="$(dirname $(readlink -f "$0"))"
+BUILD_DIR="$(readlink -f "$SCRIPT_BASE/../build")"
 
 # Base processing utility, built by vboot_reference
 BMPLKU="bmpblk_utility"
@@ -44,9 +46,9 @@ main() {
   local profile="$1"
   # TODO(hungte) Improve "output" by using git hash, ex:
   #              out_$1_$(git show -s --format="format:%H" | cut -b 1-6)
-  local output="out_$1"
+  local output="$BUILD_DIR/$1"
   local scale_param="" background_scale_param="" replace_files=""
-  local stage_dir="../_stage"
+  local stage_dir="$BUILD_DIR/.stage"
   local dpi=""
   local base locale X
 
@@ -179,10 +181,12 @@ main() {
   bmpblk_font --outfile "$output/hwid_fonts.font" "$output"/font/*.bmp
 
   # Create YAML file.
-  (cd "$output" && ../make_default_yaml $LOCALES)
+  (cd "$output" && $SCRIPT_BASE/make_default_yaml $LOCALES)
 
   # Compile bitmap block file.
-  (cd "$output" && ${BMPLKU} -c DEFAULT.yaml $BMPBLK_OUTPUT)
+  (cd "$output" && ${BMPLKU} -c $YAML_OUTPUT $BMPBLK_OUTPUT)
+  echo "Bitmap block file generated in: $output/$BMPBLK_OUTPUT"
+  echo "To preview, run ../bitmap_viewer $output/$YAML_OUTPUT"
   ls -l "$output/$BMPBLK_OUTPUT"
 }
 

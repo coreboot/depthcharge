@@ -139,7 +139,7 @@ If you simply want to build a en-US x standard resolution, do:
   make LOCALES=en strings  # You can do this only one time unless mofidication was made.
   make LOCALES=en TARGETS=std images
 
-And find generated files in ./images/out_std
+And find generated files in ./build/std
 
 
 -------------------
@@ -188,7 +188,10 @@ Now to build images for the new target run:
   $ make LOCALES='list of locales' strings
   $ make LOCALES='list of locales' TARGETS='<new target>' images
 
-The bitmaps can be found in ./images/out_<target>
+The bitmaps and output binary (bmpblk.bin) can be found in ./build/<target>.
+
+You can preview the images by running Bitmap Viewer:
+  $ ./bitmap_viewer build/<target>/DEFAULT.yaml
 
 Information about integrating new bitmaps into the firmware images can
 be found in http://goo.gl/yXBvz

@@ -5,7 +5,7 @@
 .PHONY: clean all shared_strings font localized_text
 
 LOCALEDIR=localized_text
-OUTDIR=../_stage
+OUTDIR=../build/.stage
 FONTSIZE=18
 
 all: shared_strings font $(LOCALEDIR)

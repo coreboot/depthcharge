@@ -1,4 +1,3 @@
-_stage*
 unofficial/*.bmp
-images/out_*
 lib/*.pyc
+/build/
