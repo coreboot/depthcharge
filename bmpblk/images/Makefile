@@ -10,9 +10,7 @@
 # ImageMagick is much to complex to bother installing into the chroot just for
 # this occasional need.
 
-TARGETS ?= butterfly falco link parrot peach_pit peppy snow spring std stout \
-  wolf leon panther
-
+TARGETS ?= ALL
 # These are all the known locales, sorted more-or-less geograpically
 ALL_LOCALES=en es_419 pt_BR en_GB fr es pt_PT ca it de \
   el nl da no sv fi et lv lt ru pl cs sk hu sl sr hr bg ro \
@@ -33,12 +31,14 @@ LOCALES+= ar ms zh_CN zh_TW
 LOCALES+= fi pl
 endif
 
-default: std
+default:
+	LOCALES="$(LOCALES)" ./build_images.py std
 
-all: $(TARGETS)
+all:
+	LOCALES="$(LOCALES)" ./build_images.py $(TARGETS)
 
-$(TARGETS):
-	LOCALES="$(LOCALES)" ./build_images "$@"
+%:
+	LOCALES="$(LOCALES)" ./build_images.py $@
 
 clean:
 	rm -rf ../build/*

@@ -1,0 +1,97 @@
+# ChromeOS firmware bitmap block - board configuration.
+#
+# name1,name2,...:
+#   key1: value ...
+#   key2: value ...
+#   ...
+#
+# name: List of board names for this configuration, seperated by comma.
+# keys are as follows:
+# 'res': Firmware graphics resolution (default: [1366, 768])
+# 'panel': Panel Dimension (default: [1366, 768]).
+# 'locales': List of locales to include (default: All in stage folder).
+# 'sdcard': Presence of SD/MMC Card Reader that can boot in recovery mode
+#           (default: True).
+# 'bad_usb3': Presence of USB3 ports that cannot boot recovery (default: False).
+#
+# These are all the known locales, sorted more-or-less geograpically
+#  en es_419 pt_BR en_GB fr es pt_PT ca it de
+#  el nl da 'no' sv fi et lv lt ru pl cs sk hu sl sr hr bg ro
+#  uk tr iw ar fa hi th vi id fil zh_CN zh_TW ko ja
+#
+# Here are the launch locales for Stumpy/Lumpy (crosbug.com/p/6595):
+# [en, es_419, pt_BR, fr, es, it, de, nl, da, 'no', sv, ko, ja]
+#
+# More locales (crosbug.com/p/12846) for Parrot:
+# [en, es_419, pt_BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id, th]
+#
+# More more locales (crosbug.com/p/11969) for Snow:
+# [en, es_419, pt_BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id, th, ar, ms,
+# zh_CN, zh_TW]
+#
+# More more more locales (crosbug.com/p/17592) for Spring:
+# [en, es_419, pt_BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id, th, ar, ms,
+#  zh_CN, zh_TW, fi, pl]
+
+std:
+  # Standard bitmap, for test and development.
+  res:      [1366, 768]
+  panel:    [1366, 768]
+  locales:  [en, ja]
+
+peach_pit:
+  # 1366x768, boots recovery image on any SD card or USB ports.
+  res:      [1366, 768]
+  panel:    [1366, 768]
+  locales:  [en, es_419, pt_BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id,
+             th, ar, ms, zh_CN, zh_TW, fi, pl]
+
+snow:
+  # 1366x768, and can only boot recovery by SD card or USB2 [not USB3].
+  res:      [1366, 768]
+  panel:    [1366, 768]
+  bad_usb3: True
+  locales:  [en, es_419, pt_BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id,
+             th, ar, ms, zh_CN, zh_TW]
+
+spring:
+  # 1366x768, can only boot recovery by USB. (No card reader, or not able to
+  # recover from card reader.)
+  res:       [1366, 768]
+  panel:     [1366, 768]
+  sdcard:    False
+  locales:  [en, es_419, pt_BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id,
+             th, ar, ms, zh_CN, zh_TW, fi, pl]
+
+falco,peppy,wolf,leon,panther:
+  # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
+  # With card reader. USB3 ports will run in USB2 mode for recovery boot.
+  res:      [1024, 768]
+  panel:    [1366, 768]
+  locales: [en, es_419, pt_BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id, th]
+
+parrot,butterfly:
+  # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
+  # Can only boot recovery by USB. (No card reader, or not able to recover
+  # from card reader.)
+  res:      [1024, 768]
+  panel:    [1366, 768]
+  sdcard:   False
+  locales: [en, es_419, pt_BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id, th]
+
+stout:
+  # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
+  # Can only boot recovery by USB2 [not USB3]. (No card reader, or not able
+  # to recover from card reader.)
+  res:      [1024, 768]
+  panel:    [1366, 768]
+  sdcard:   False
+  bad_usb3: True
+  locales: [en, es_419, pt_BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id, th]
+
+link:
+  # Non-standard Graphics mode 1280x850, with 2560x1700 panel.
+  # Can boot recovery by USB and SD card readers.
+  res:      [1280, 850]
+  panel:    [2560, 1700]
+  locales: [en, es_419, pt_BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id, th]
