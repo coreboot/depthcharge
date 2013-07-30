@@ -304,7 +304,7 @@ compression: 2
 images:
 
   # We must specify a font blob to use to render the HWID
-  \$HWID:                  hwid_fonts.bin
+  \$HWID:                  hwid_fonts.font
 EOF1
 
   # Global variables matching the yaml definitions

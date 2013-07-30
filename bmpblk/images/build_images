@@ -169,7 +169,7 @@ main() {
   echo "Preparing fonts..."
   base="$stage_dir/font"
   convert_to_bmp3 "$output/font" "$scale_param" $base/*.png
-  bmpblk_font --outfile "$output/hwid_fonts.bin" "$output"/font/*.bmp
+  bmpblk_font --outfile "$output/hwid_fonts.font" "$output"/font/*.bmp
 
   # Create YAML file.
   (cd "$output" && ../make_default_yaml $LOCALES)
