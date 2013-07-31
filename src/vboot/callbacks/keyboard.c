@@ -47,7 +47,7 @@ uint32_t VbExKeyboardRead(void)
 	case CSI_0:
 		// Ignore non escape [ sequences.
 		if (getchar() != CSI_1)
-			return 0;
+			return CSI_0;
 
 		// Translate the arrow keys, and ignore everything else.
 		switch (getchar()) {
