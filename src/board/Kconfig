@@ -34,6 +34,8 @@ config BOARD_LINK
 	bool "link"
 config BOARD_LUMPY
 	bool "lumpy"
+config BOARD_PEACH_KIRBY
+	bool "peach kirby"
 config BOARD_PEACH_PIT
 	bool "peach pit"
 config BOARD_PEPPY
@@ -63,6 +65,9 @@ source src/board/link/Kconfig
 endif
 if BOARD_LUMPY
 source src/board/lumpy/Kconfig
+endif
+if BOARD_PEACH_KIRBY
+source src/board/peach_kirby/Kconfig
 endif
 if BOARD_PEACH_PIT
 source src/board/peach_pit/Kconfig
