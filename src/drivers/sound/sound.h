@@ -13,6 +13,15 @@
 
 #include <stdint.h>
 
+typedef struct SoundOps
+{
+	int (*start)(struct SoundOps *me, uint32_t frequency);
+	int (*stop)(struct SoundOps *me);
+	int (*play)(struct SoundOps *me, uint32_t msec, uint32_t frequency);
+} SoundOps;
+
+int sound_set_ops(SoundOps *ops);
+
 int sound_start(uint32_t frequency);
 int sound_stop(void);
 int sound_play(uint32_t msec, uint32_t frequency);

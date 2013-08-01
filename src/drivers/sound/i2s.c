@@ -26,6 +26,7 @@
 #include <libpayload.h>
 #include <stdint.h>
 
+#include "base/list.h"
 #include "base/time.h"
 #include "config.h"
 #include "drivers/bus/i2s/i2s.h"
@@ -34,11 +35,10 @@
 
 // Generates square wave sound data for 1 second.
 static void sound_square_wave(uint16_t *data, int channels,
-			      int sample_rate, uint32_t freq)
+			      int sample_rate, uint32_t freq, uint16_t volume)
 {
 	assert(freq);
 
-	const uint16_t amplitude = CONFIG_DRIVER_SOUND_I2S_VOLUME;
 	const int period = sample_rate / freq;
 	const int half = period / 2;
 
@@ -47,23 +47,13 @@ static void sound_square_wave(uint16_t *data, int channels,
 	while (samples) {
 		for (int i = 0; samples && i < half; samples--, i++) {
 			for (int j = 0; j < channels; j++)
-				*data++ = amplitude;
+				*data++ = volume;
 		}
 		for (int i = 0; samples && i < period - half; samples--, i++) {
 			for (int j = 0; j < channels; j++)
-				*data++ = -amplitude;
+				*data++ = -volume;
 		}
 	}
-}
-
-int sound_start(uint32_t frequency)
-{
-	return -1;
-}
-
-int sound_stop(void)
-{
-	return -1;
 }
 
 static void finish_delay(uint64_t start, uint32_t msec)
@@ -72,20 +62,15 @@ static void finish_delay(uint64_t start, uint32_t msec)
 	mdelay(msec - passed);
 }
 
-int sound_play(uint32_t msec, uint32_t frequency)
+static int i2s_source_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 {
-	const int bits_per_sample = 16;
-	const int channels = 2;
-	const int bit_frame_size = bits_per_sample * channels;
-	const int sample_rate = CONFIG_DRIVER_SOUND_I2S_SAMPLE_RATE;
-	const int lr_frame_size = CONFIG_DRIVER_SOUND_I2S_LR_FRAME_SIZE;
+	I2sSource *source = container_of(me, I2sSource, ops);
 
-	static int codec_initialized = 0;
-	if (!codec_initialized) {
-		if (codec_init(bits_per_sample, sample_rate, lr_frame_size))
-			return 1;
-		codec_initialized = 1;
-	}
+	const int bits_per_sample = source->bits_per_sample;
+	const int channels = source->channels;
+	const int bit_frame_size = bits_per_sample * channels;
+	const int sample_rate = source->sample_rate;
+	const int lr_frame_size = source->lr_frame_size;
 
 	// Prepare a buffer for 1 second of sound.
 	int bytes = sample_rate * channels * sizeof(uint16_t);
@@ -95,7 +80,8 @@ int sound_play(uint32_t msec, uint32_t frequency)
 		return 1;
 	}
 
-	sound_square_wave((uint16_t *)data, channels, sample_rate, frequency);
+	sound_square_wave((uint16_t *)data, channels, sample_rate, frequency,
+			  source->volume);
 
 	i2s_transfer_init(lr_frame_size, bits_per_sample, bit_frame_size);
 
@@ -120,4 +106,25 @@ int sound_play(uint32_t msec, uint32_t frequency)
 
 	free(data);
 	return 0;
+}
+
+I2sSource *new_i2s_source(int bits_per_sample, int sample_rate, int channels,
+			  int lr_frame_size, uint16_t volume)
+{
+	I2sSource *source = malloc(sizeof(*source));
+	if (!source) {
+		printf("Failed to allocate I2S source structure.\n");
+		return NULL;
+	}
+	memset(source, 0, sizeof(*source));
+
+	source->ops.play = &i2s_source_play;
+
+	source->bits_per_sample = bits_per_sample;
+	source->sample_rate = sample_rate;
+	source->channels = channels;
+	source->lr_frame_size = lr_frame_size;
+	source->volume = volume;
+
+	return source;
 }

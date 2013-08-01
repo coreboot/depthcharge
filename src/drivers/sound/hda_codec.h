@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Google Inc. All rights reserved.
+ * Copyright 2013 Google Inc. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  *
@@ -8,15 +8,16 @@
  * Software Foundation.
  */
 
-/* HDA codec interface for Chrome OS verified boot */
-
 #ifndef __DRIVERS_SOUND_HDA_CODEC_H__
 #define __DRIVERS_SOUND_HDA_CODEC_H__
 
-#include <stdint.h>
+#include "drivers/sound/sound.h"
 
-/* Beep control */
-void enable_beep(uint32_t frequency);
-void disable_beep(void);
+typedef struct
+{
+	SoundOps ops;
+} HdaCodec;
+
+HdaCodec *new_hda_codec(void);
 
 #endif /* __DRIVERS_SOUND_HDA_CODEC_H__ */
