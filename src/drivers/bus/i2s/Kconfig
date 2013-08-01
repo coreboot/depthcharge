@@ -18,7 +18,3 @@
 config DRIVER_BUS_I2S_EXYNOS5
 	bool "Exynos5 I2S driver"
 	default n
-
-config DRIVER_BUS_I2S_EXYNOS5_REGADDR
-	hex "Address of the Exynos5 I2S driver registers."
-	depends on DRIVER_BUS_I2S_EXYNOS5
