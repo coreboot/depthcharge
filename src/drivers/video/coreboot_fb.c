@@ -100,7 +100,7 @@ static int dc_corebootfb_draw_bitmap_v3(uint32_t x, uint32_t y,
 		height = -height;
 		ystep = -ystep;
 	} else {
-		y += height;
+		y += height - 1;
 	}
 	uint8_t *cur_data = (uint8_t *)bitmap + bitmap_offset;
 	uint32_t x_offset = 0, y_offset = 0;
