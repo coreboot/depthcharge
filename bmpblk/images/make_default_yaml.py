@@ -22,6 +22,7 @@ SCREEN_LIST = []
 
 # Default image names.
 DEFAULT_BACKGROUND = 'Background'
+TONORM_IMAGE_GROUP=[["VerificationOff"], ["@verif_off"], ["@tonorm"]]
 
 
 class ImageInfo(object):
@@ -223,6 +224,56 @@ class Screen(object):
       self.images.append([int(x), int(tmp_y), self.get_image(i).name])
       x += self.get_width(i) + self.xpad
 
+  def calculate_image_groups_size(self, *image_lists):
+    """Calculates the width and height occupied by a list of image groups, with
+    each group aligned horizontally. An input like ([A, B], [C], [D, E, F]) will
+    be positioned as:   A B
+                         C
+                       D E F
+    Use insert_centered_image_groups() to put the image_lists into screen.
+
+    Args:
+      image_lists: A list of image groups.
+
+    Returns:
+      (width, height) of the bounding box.
+    """
+    height = sum((self.get_max_height(*image_list)
+                  for image_list in image_lists))
+    height += self.ypad * (len(image_lists) - 1)
+    width = max((self.total_width(*image_list)
+                 for image_list in image_lists))
+    return (width, height)
+
+  def insert_centered_image_groups(self, *image_lists):
+    """Adds a list of grouped images vertically and centered, with each group
+    aligned horizontally. See calculate_image_groups_size for more details.
+
+    Args:
+      image_lists: A list of image groups.
+    """
+    _, height = self.calculate_image_groups_size(*image_lists)
+    self.move_pos_up(height / 2)
+    for image_list in image_lists:
+      self.insert_centered_below(*image_list)
+
+  def move_top_aligned_with_groups(self, *image_lists):
+    """Move insert position to top-aligned with a list of grouped images.
+    Use insert_centered_below after this to add new images.
+
+    Args:
+      image_lists: A list of image groups that will be inserted by
+      insert_centered_image_groups later.
+    """
+    _, height = self.calculate_image_groups_size(*image_lists)
+    self.move_pos_up(height / 2)
+
+  def insert_centered_vertical(self, *images):
+    """Adds multiple images vertically by using current insert location as
+    center point."""
+    image_lists = [[image] for image in images]
+    self.insert_centered_image_groups(*image_lists)
+
   def add_header(self, do_locale=True):
     """Adds a standard header (with logo, divider bar, and locale indicators).
 
@@ -280,7 +331,9 @@ def NewScreen(f):
 def ScreenDev(locale, image_database):
   s = Screen('devel', locale, image_database)
   s.add_header()
-  s.set_centered_y_percent(30)
+  s.set_centered_y_percent(50)
+  # This screen must be top-aligned with TONORM screen.
+  s.move_top_aligned_with_groups(*TONORM_IMAGE_GROUP)
   s.insert_centered_below("VerificationOff")
   s.insert_centered_below("@verif_off")
   s.insert_centered_below("@devmode")
@@ -292,10 +345,8 @@ def ScreenDev(locale, image_database):
 def ScreenRemove(locale, image_database):
   s = Screen('remove', locale, image_database)
   s.add_header()
-  s.set_centered_y_percent(25)
-  s.add_centered_below("@remove")
   s.set_centered_y_percent(50)
-  s.add_centered("RemoveDevices")
+  s.insert_centered_vertical("@remove", "RemoveDevices")
   s.add_footer(do_url=True)
   return s
 
@@ -304,10 +355,8 @@ def ScreenRemove(locale, image_database):
 def ScreenYuck(locale, image_database):
   s = Screen('yuck', locale, image_database)
   s.add_header()
-  s.set_centered_y_percent(25)
-  s.add_centered_below("@yuck")
   s.set_centered_y_percent(50)
-  s.add_centered("BadSD", "BadUSB")
+  s.insert_centered_image_groups(["@yuck"], ["BadSD", "BadUSB"])
   s.add_footer(do_url=True)
   return s
 
@@ -316,9 +365,8 @@ def ScreenYuck(locale, image_database):
 def ScreenInsert(locale, image_database):
   s = Screen('insert', locale, image_database)
   s.add_header()
-  s.set_centered_y_percent(30)
-  s.insert_centered_below("Warning")
-  s.insert_centered_below("@insert")
+  s.set_centered_y_percent(50)
+  s.insert_centered_vertical("Warning", "@insert")
   s.add_footer(do_url=True)
   return s
 
@@ -327,7 +375,7 @@ def ScreenInsert(locale, image_database):
 def ScreenToDeveloper(locale, image_database):
   s = Screen('todev', locale, image_database)
   s.add_header()
-  s.set_centered_y_percent(45)
+  s.set_centered_y_percent(50)
   s.add_centered("@todev")
   s.add_footer()
   return s
@@ -337,10 +385,8 @@ def ScreenToDeveloper(locale, image_database):
 def ScreenToNormal(locale, image_database):
   s = Screen('tonorm', locale, image_database)
   s.add_header()
-  s.set_centered_y_percent(30)
-  s.insert_centered_below("VerificationOff")
-  s.insert_centered_below("@verif_off")
-  s.insert_centered_below("@tonorm")
+  s.set_centered_y_percent(50)
+  s.insert_centered_image_groups(*TONORM_IMAGE_GROUP)
   s.add_footer()
   return s
 
@@ -362,7 +408,9 @@ def ScreenUpdate(locale, image_database):
 def ScreenToNormalConfirm(locale, image_database):
   s = Screen('tonorm_confirm', locale, image_database)
   s.add_header(do_locale=False)
-  s.set_centered_y_percent(30)
+  s.set_centered_y_percent(50)
+  # This screen must be top-aligned with TONORM screen.
+  s.move_top_aligned_with_groups(*TONORM_IMAGE_GROUP)
   s.insert_centered_below("VerificationOn")
   s.insert_centered_below("@verif_on")
   s.insert_centered_below("@reboot_erase")
