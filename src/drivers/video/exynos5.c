@@ -32,14 +32,24 @@ enum {
 	FIMD_VIDCON0_ENVID_F = 1
 };
 
+enum {
+	FIMD_WINCON_ENWIN_F = 1
+};
+
 int disable_fimd_dma(struct CleanupFunc *cleanup, CleanupType type)
 {
-	// The vidcon0 register is at the start of the register block.
-	uint32_t *fimd_vidcon0 = (uint32_t *)cleanup->data;
+	uint8_t *regs = (uint8_t *)cleanup->data;
 
+	uint32_t *fimd_vidcon0 = (uint32_t *)(regs + 0);
+	uint32_t *fimd_shadowcon = (uint32_t *)(regs + 0x34);
+
+	// Disable video output and control signals.
 	uint32_t vidcon0 = readl(fimd_vidcon0);
 	vidcon0 &= ~(FIMD_VIDCON0_ENVID | FIMD_VIDCON0_ENVID_F);
 	writel(vidcon0, fimd_vidcon0);
+
+	// Disable all channels.
+	writel(0, fimd_shadowcon);
 
 	return 0;
 }
