@@ -1,0 +1,17 @@
+Chrome OS bị thiếu hoặc hỏng.
+Vui lòng cắm thẻ USB hoặc thẻ SD khôi phục.
+Vui lòng cắm thẻ USB khôi phục.
+Vui lòng cắm thẻ SD hoặc thẻ USB khôi phục (lưu ý: cổng USB màu xanh lam KHÔNG sử dụng để khôi phục).
+Vui lòng cắm thẻ USB khôi phục vào một trong 4 cổng ở PHÍA SAU thiết bị.
+Thiết bị bạn đã cắm không chứa Chrome OS.
+Xác minh OS đang TẮT
+Nhấn SPACE để bật lại.
+Nhấn ENTER để xác nhận bạn muốn bật xác minh OS.
+Hệ thống của bạn sẽ khởi động lại và dữ liệu cục bộ sẽ bị xóa.
+Để quay lại, nhấn ESC.
+Xác minh OS đang BẬT.
+Để TẮT xác minh OS, nhấn ENTER.
+Để được trợ giúp, hãy truy cập http://google.com/chromeos/recovery
+Mã lỗi
+Vui lòng tháo tất cả các thiết bị ngoài để bắt đầu khôi phục.
+Mô hình

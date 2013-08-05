@@ -1,0 +1,17 @@
+„Chrome“ OS nėra arba ji pažeista.
+Įkiškite atkūrimo USB atmintuką arba SD kortelę.
+Įkiškite atkūrimo USB atmintuką.
+Įkiškite atkūrimo SD kortelę arba USB atmintuką (pastaba: mėlynos spalvos USB prievadas NEVEIKS atkuriant).
+Įkiškite atkūrimo USB atmintuką į vieną iš 4 prievadų įrenginio GALINĖJE pusėje.
+Įdėtame įrenginyje nėra „Chrome“ OS.
+OS patvirtinimas IŠJUNGTAS
+Kad iš naujo įgalintumėte, paspauskite TARPO klavišą.
+Kad patvirtintumėte, jog norite įjungti OS patvirtinimą, paspauskite ENTER.
+Sistema bus įkelta iš naujo, o vietiniai duomenys išvalyti.
+Jei norite grįžti, paspauskite ESC.
+OS patvirtinimas ĮJUNGTAS.
+Jei norite IŠJUNGTI OS patvirtinimą, paspauskite ENTER.
+Jei reikia pagalbos, apsilankykite šiuo adresu: http://google.com/chromeos/recovery
+Klaidos kodas
+Jei norite pradėti atkūrimą, pašalinkite visus išorinius įrenginius.
+Modelis

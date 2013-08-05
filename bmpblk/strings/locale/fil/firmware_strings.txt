@@ -1,0 +1,17 @@
+Nawawala o sira ang Chrome OS.
+Mangyaring maglagay ng recovery USB stick o SD card.
+Mangyaring maglagay ng recovery USB stick.
+Mangyaring maglagay ng recovery SD card o USB stick (tandaan: HINDI gagana ang asul na USB port para sa pagbawi).
+Mangyaring maglagay ng recovery USB stick sa isa sa 4 na port sa LIKOD ng device.
+Walang Chrome OS ang device na iyong inilagay.
+NAKA-OFF ang pag-verify ng OS
+Pindutin ang SPACE upang paganahing muli.
+Pindutin ang ENTER upang kumpirmahing nais mong i-on ang pag-verify ng OS.
+Magre-reboot ang iyong system at maki-clear ang lokal na data.
+Upang bumalik, pindutin ang ESC.
+NAKA-ON ang pag-verify ng OS.
+Upang I-OFF ang pag-verify ng OS, pindutin ang ENTER.
+Para sa tulong, bisitahin ang http://google.com/chromeos/recovery
+Code ng error
+Paki-alis ang lahat ng panlabas na device upang umpisahan ang pagbawi.
+Modelo

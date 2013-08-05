@@ -1,0 +1,17 @@
+Chrome-käyttöjärjestelmä puuttuu tai on vioittunut.
+Yhdistä palautustiedot sisältävä USB-muisti tai SD-kortti.
+Yhdistä palautustiedot sisältävä USB-muisti.
+Yhdistä palautustiedot sisältävä USB-muisti tai SD-kortti (huomaa: sinistä USB-porttia EI voi käyttää palauttamiseen).
+Yhdistä palautustiedot sisältävä USB-muisti johonkin laitteen TAKAOSAN neljästä USB-portista.
+Yhdistämäsi laite EI sisällä Chrome-käyttöjärjestelmää.
+Käyttöjärjestelmän todentaminen on POIS KÄYTÖSTÄ.
+Ota se käyttöön painamalla välilyöntiä.
+Vahvista käyttöjärjestelmän todentamisen käyttöönotto painamalla ENTER.
+Järjestelmä käynnistyy uudelleen ja paikalliset tiedot poistetaan.
+Paina ESC, jos haluat palata takaisin.
+Käyttöjärjestelmän todentaminen on KÄYTÖSSÄ.
+Poista käyttöjärjestelmän todentaminen käytöstä painamalla ENTER.
+Saat ohjeita osoitteessa http://google.com/chromeos/recovery
+Virhekoodi
+Aloita palautus poistamalla kaikki ulkoiset laitteet.
+Malli

@@ -1,0 +1,17 @@
+OS Chrome nedostaje ili je oštećen.
+Umetnite USB memorijski uređaj ili SD karticu za oporavak.
+Umetnite USB memorijski uređaj za oporavak.
+Umetnite SD karticu ili USB memorijski uređaj za oporavak (napomena: plavi USB priključak NE funkcionira za oporavak).
+Umetnite USB memorijski uređaj za oporavak u jedan od četiri priključka sa STRAŽNJE strane uređaja.
+Uređaj koji ste umetnuli ne sadrži OS Chrome.
+Potvrda OS-a ISKLJUČENA je
+Pritisnite RAZMAKNICU da biste ju ponovo omogućili.
+Pritisnite tipku ENTER kako biste potvrdili da želite uključiti potvrdu OS-a.
+Sustav će se ponovo pokrenuti i lokalni će podaci biti obrisani.
+Za povratak pritisnite ESC.
+Potvrda OS-a UKLJUČENA je.
+Da biste ISKLJUČILI potvrdu OS-a, pritisnite tipku ENTER.
+Pomoć potražite na stranici http://google.com/chromeos/recovery
+Kôd pogreške
+Uklonite sve vanjske uređaje da biste pokrenuli oporavak.
+Model

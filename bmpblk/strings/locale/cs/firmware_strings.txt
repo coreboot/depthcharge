@@ -1,0 +1,17 @@
+Systém Chrome OS chybí nebo je poškozen.
+Vložte jednotku USB nebo kartu SD pro obnovení.
+Vložte jednotku USB pro obnovení.
+Vložte kartu SD nebo jednotku USB pro obnovení. (Poznámka: modrý port USB pro obnovení NELZE použít.)
+Vložte jednotku USB do jednoho ze čtyř portů na ZADNÍ straně zařízení.
+Vložené zařízení neobsahuje systém Chrome OS.
+Ověření operačního systému je VYPNUTO.
+Chcete-li je znovu zapnout, stiskněte MEZERNÍK.
+Stisknutím klávesy ENTER potvrdíte, že chcete zapnout ověření operačního systému.
+Systém se restartuje a smažou se místní data.
+Chcete-li se vrátit zpět, stiskněte klávesu ESC.
+Ověření operačního systému je ZAPNUTO.
+Chcete-li ověření operačního systému VYPNOUT, stiskněte klávesu ENTER.
+Nápovědu naleznete na stránce http://google.com/chromeos/recovery.
+Kód chyby
+Před spuštěním obnovení prosím odeberte všechna externí zařízení.
+Model

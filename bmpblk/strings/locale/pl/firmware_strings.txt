@@ -1,0 +1,17 @@
+Brak systemu operacyjnego Chrome lub jest on uszkodzony.
+Podłącz dysk USB lub włóż kartę SD przywracania.
+Podłącz dysk USB przywracania.
+Włóż kartę SD lub podłącz dysk USB przywracania (uwaga: NIE podłączaj go do niebieskiego portu USB).
+Podłącz dysk USB przywracania do jednego z czterech portów z TYŁU urządzenia.
+Podłączone urządzenie nie zawiera systemu operacyjnego Chrome.
+Sprawdzanie systemu operacyjnego jest WYŁĄCZONE.
+Naciśnij SPACJĘ, by je włączyć.
+Naciśnij ENTER, by potwierdzić, że chcesz włączyć sprawdzanie systemu operacyjnego.
+System uruchomi się ponownie, a dane lokalne zostaną usunięte.
+Aby zrezygnować, naciśnij ESC.
+Sprawdzanie systemu operacyjnego jest WŁĄCZONE.
+Aby WYŁĄCZYĆ sprawdzanie systemu operacyjnego, naciśnij ENTER.
+Pomoc znajdziesz na http://google.com/chromeos/recovery
+Kod błędu
+Aby rozpocząć przywracanie, odłącz wszystkie urządzenia zewnętrzne.
+Model

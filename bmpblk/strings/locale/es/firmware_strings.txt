@@ -1,0 +1,17 @@
+Chrome OS no está instalado o está dañado.
+Inserta una tarjeta SD o una memoria USB de recuperación.
+Inserta una memoria USB de recuperación.
+Inserta una memoria USB o una tarjeta SD de recuperación (nota: el puerto USB azul NO funcionará para la recuperación).
+Inserta una memoria USB de recuperación en uno de los cuatro puertos situados en la PARTE POSTERIOR del dispositivo.
+Chrome OS no aparece en el dispositivo insertado.
+La verificación de Chrome OS está DESACTIVADA.
+Pulsa la BARRA ESPACIADORA para volver a habilitarla.
+Pulsa INTRO para confirmar que quieres ACTIVAR la verificación de Chrome OS.
+Se reiniciará el sistema y se borrarán los datos locales.
+Para volver atrás, pulsa ESC.
+La verificación de Chrome OS está ACTIVADA.
+Para DESACTIVARLA, pulsa INTRO.
+Para obtener ayuda, accede a http://google.com/chromeos/recovery.
+Código de error
+Retira todos los dispositivos externos para iniciar la recuperación.
+Modelo

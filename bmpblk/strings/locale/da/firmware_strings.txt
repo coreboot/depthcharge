@@ -1,0 +1,17 @@
+Chrome OS mangler eller er beskadiget.
+Indsæt en USB-nøgle eller et SD-kort til genoprettelse.
+Indsæt en USB-nøgle til genoprettelse.
+Indsæt et SD-kort eller en USB-nøgle til genoprettelse (bemærk, at den blå USB-port IKKE kan bruges til genoprettelse).
+Indsæt en USB-nøgle til genoprettelse i en af de fire porte på enhedens bagside.
+Den enhed, du har indsat, indeholder ikke Chrome OS.
+Bekræftelse af operativsystemet er slået FRA
+Tryk på MELLEMRUMSTASTEN for at genaktivere.
+Tryk på ENTER for at bekræfte, at du vil slå bekræftelse af operativsystemet til.
+Systemet vil blive genstartet og lokale data ryddet.
+Tryk på ESC for at gå tilbage.
+Bekræftelse af operativsystemet er slået TIL.
+Tryk på ENTER for at slå bekræftelse af operativsystemet FRA.
+Du kan få hjælp på http://google.com/chromeos/recovery
+Fejlkode
+Fjern alle eksterne enheder for at påbegynde genoprettelse.
+Model

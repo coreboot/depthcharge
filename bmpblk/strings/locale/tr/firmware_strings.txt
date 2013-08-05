@@ -1,0 +1,17 @@
+Chrome OS eksik veya hasarlı.
+Lütfen bir kurtarma USB çubuğu veya SD kartı yerleştirin.
+Lütfen bir kurtarma USB çubuğu yerleştirin.
+Lütfen bir kurtarma USB çubuğu veya SD kartı yerleştirin (not: kurtarma işleminde mavi USB bağlantı noktası KULLANILMAZ).
+Lütfen cihazın ARKASINDAKİ 4 bağlantı noktasından birine bir USB çubuk yerleştirin.
+Yerleştirdiğiniz cihazda Chrome OS yok.
+OS doğrulama KAPALI
+Yeniden etkinleştirmek için BOŞLUK çubuğuna basın.
+OS doğrulamayı açmak istediğinizi onaylamak için ENTER tuşuna basın.
+Sisteminiz yeniden açılacak ve yerel veriler temizlenecek.
+Geri gitmek için ESC tuşuna basın.
+OS doğrulama AÇIK.
+OS doğrulamayı KAPATMAK için ENTER tuşuna basın.
+Yardım için: http://google.com/chromeos/recovery
+Hata kodu
+Kurtarma işlemine başlamak için lütfen tüm harici cihazları çıkarın.
+Model

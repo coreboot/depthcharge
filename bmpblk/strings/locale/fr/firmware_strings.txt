@@ -1,0 +1,17 @@
+Google Chrome OS est manquant ou endommagé.
+Veuillez insérer une clé USB ou une carte SD de récupération.
+Veuillez insérer une clé USB de récupération.
+Veuillez insérer une clé USB ou une carte SD de récupération. (Remarque : le port USB bleu ne fonctionne PAS pour la récupération).
+Veuillez insérer une clé USB de récupération dans l'un des quatre ports USB à l'ARRIÈRE de cet appareil.
+Le périphérique inséré ne contient pas Google Chrome OS.
+La vérification du système d'exploitation est DÉSACTIVÉE.
+Appuyez sur ESPACE pour la réactiver.
+Appuyez sur ENTRÉE pour confirmer que vous souhaitez activer la vérification du système d'exploitation.
+Votre système va redémarrer et les données locales vont être effacées.
+Pour annuler, appuyez sur ÉCHAP.
+La vérification du système d'exploitation est ACTIVÉE.
+Pour DÉSACTIVER la vérification du système d'exploitation, appuyez sur ENTRÉE.
+Pour obtenir de l'aide, rendez-vous sur http://google.com/chromeos/recovery
+Code d'erreur
+Veuillez retirer tous les périphériques externes pour lancer la procédure de récupération.
+Modèle

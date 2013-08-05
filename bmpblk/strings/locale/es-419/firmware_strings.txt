@@ -1,0 +1,17 @@
+El Sistema operativo de Chrome no se encuentra o está dañado.
+Inserta una tarjeta SD o un dispositivo de memoria USB de recuperación.
+Inserta un dispositivo de memoria USB de recuperación.
+Inserta un dispositivo de memoria USB o una tarjeta SD de recuperación (ten en cuenta que el puerto USB azul NO funcionará para la recuperación de datos).
+Inserta un dispositivo de memoria USB de recuperación en alguno de los cuatro puertos de la parte de ATRÁS del dispositivo.
+El dispositivo que insertaste no cuenta con el Sistema operativo de Chrome
+La verificación del SO está DESACTIVADA.
+Presiona ESPACIO para volver a activarla.
+Presiona ENTER para confirmar que deseas activar la verificación del SO.
+Tu sistema se reiniciará y se borrarán los datos locales.
+Para volver atrás, presiona ESC.
+La verificación del SO está ACTIVADA.
+Para DESACTIVAR la verificación del SO, presiona ENTER.
+Para obtener ayuda, visita http://google.com/chromeos/recovery.
+Código de error
+Retira todos los dispositivos externos para iniciar la recuperación.
+Modelo

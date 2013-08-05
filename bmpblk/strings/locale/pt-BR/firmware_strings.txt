@@ -1,0 +1,17 @@
+O Chrome OS está ausente ou danificado.
+Insira um cartão SD ou USB de recuperação.
+Insira um cartão USB de recuperação.
+Insira um cartão SD ou USB de recuperação (observação: a porta USB azul NÃO funciona para recuperação).
+Insira um cartão USB de recuperação em uma das quatro portas na PARTE TRASEIRA do dispositivo.
+O dispositivo que você inseriu não contém o Chrome OS.
+A verificação do sistema operacional está DESATIVADA
+Pressione a tecla de espaço para reativá-la.
+Pressione "ENTER" para confirmar que você deseja ativar a verificação do sistema operacional.
+Seu sistema será reiniciado, e os dados locais serão removidos.
+Para voltar, pressione a tecla "ESC".
+A verificação do sistema operacional está ATIVADA.
+Para DESATIVAR a verificação do sistema operacional, pressione "ENTER".
+Para obter ajuda, visite http://google.com/chromeos/recovery
+Código de erro
+Remova todos os dispositivos externos para iniciar a recuperação.
+Modelo

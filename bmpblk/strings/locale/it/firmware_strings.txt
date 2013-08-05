@@ -1,0 +1,17 @@
+Chrome OS mancante o danneggiato.
+Inserisci una scheda SD o una chiavetta USB di ripristino.
+Inserisci una chiavetta USB di ripristino.
+Inserisci una scheda SD o una chiavetta USB di ripristino (Nota. La porta USB blu NON funziona per il ripristino).
+Inserisci una chiavetta USB di ripristino in una delle quattro porte sul RETRO del dispositivo.
+Il dispositivo inserito non contiene Chrome OS.
+Verifica del sistema operativo NON ATTIVA.
+Premi la BARRA SPAZIATRICE per riattivarla.
+Premi INVIO per confermare l'attivazione della verifica del sistema operativo.
+Il sistema verrà riavviato e i dati locali verranno cancellati.
+Per tornare indietro, premi ESC.
+La verifica del sistema operativo è ATTIVA.
+Per DISATTIVARE la verifica del sistema operativo, premi INVIO.
+Per assistenza, visita il sito http://google.com/chromeos/recovery.
+Codice di errore
+Rimuovi tutti i dispositivi esterni per iniziare il ripristino.
+Modello

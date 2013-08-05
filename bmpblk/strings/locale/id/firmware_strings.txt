@@ -1,0 +1,17 @@
+Chrome OS tidak ada atau rusak.
+Masukkan stik USB atau kartu SD pemulihan.
+Masukkan stik USB pemulihan.
+Masukkan kartu SD atau stik USB pemulihan (catatan: port USB biru TIDAK akan berfungsi untuk pemulihan).
+Masukkan stik USB ke salah satu dari 4 port di bagian BELAKANG perangkat.
+Perangkat yang Anda masukkan tidak berisi Chrome OS.
+Verifikasi OS MATI
+Tekan SPASI untuk mengaktifkan kembali.
+Tekan ENTER untuk mengonfirmasi bahwa Anda ingin mengaktifkan verifikasi OS.
+Sistem Anda akan dinyalakan ulang dan data lokal akan dihapus.
+Untuk kembali, tekan ESC.
+Verifikasi OS NYALA.
+Untuk MEMATIKAN verifikasi OS, tekan ENTER.
+Untuk bantuan, kunjungi http://google.com/chromeos/recovery
+Kode kesalahan
+Lepaskan semua perangkat eksternal untuk memulai pemulihan.
+Model

@@ -1,0 +1,17 @@
+Sistemul de operare Chrome lipseşte sau este deteriorat.
+Introduceţi un stick USB sau un card SD de recuperare.
+Introduceţi un stick USB de recuperare.
+Introduceţi un card SD sau un stick USB de recuperare (notă: portul USB albastru NU va funcţiona pentru recuperare).
+Introduceţi un stick USB de recuperare în unul dintre cele 4 porturi din SPATELE dispozitivului.
+Dispozitivul introdus de dvs. nu conţine Sistemul de operare Chrome.
+Verificarea SO este DEZACTIVATĂ
+Apăsaţi pe tasta SPACE pentru a o reactiva.
+Apăsaţi pe ENTER pentru a confirma că doriţi să activaţi verificarea SO.
+Sistemul va reporni şi datele locale vor fi şterse.
+Pentru a reveni, apăsaţi pe ESC.
+Verificarea SO este ACTIVATĂ.
+Pentru a DEZACTIVA verificarea SO, apăsaţi pe ENTER.
+Pentru ajutor, accesaţi http://google.com/chromeos/recovery
+Cod de eroare
+Eliminaţi toate dispozitivele externe pentru a începe recuperarea.
+Model

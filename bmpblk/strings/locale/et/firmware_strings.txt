@@ -1,0 +1,17 @@
+Chrome OS puudub või on kahjustatud.
+Sisestage taastamiseks mõeldud USB-mälupulk või SD-kaart.
+Sisestage taastamiseks mõeldud USB-mälupulk.
+Sisestage taastamiseks mõeldud SD-kaart või USB-mälupulk (märkus: sinine USB-port taastamise puhul EI tööta).
+Sisestage taastamiseks mõeldud USB-mälupulk ühte neljast pordist seadme TAGAKÜLJEL.
+Sisestatud seade ei sisalda Chrome OS-i.
+OS-i kinnitamine on VÄLJAS
+Selle uuesti lubamiseks vajutage TÜHIKUT.
+OS-i kinnitamise sisselülitamise kinnitamiseks vajutage sisestusklahvi ENTER.
+Teie süsteem lähtestatakse ja kohalikud andmed kustutatakse.
+Tagasi minemiseks vajutage paoklahvi ESC.
+OS-i kinnitamine on SEES.
+OS-i kinnitamise VÄLJA lülitamiseks vajutage sisestusklahvi ENTER.
+Abi saamiseks külastage saiti http://google.com/chromeos/recovery
+Veakood
+Taastamise alustamiseks eemaldage kõik välised seadmed.
+Mudel
