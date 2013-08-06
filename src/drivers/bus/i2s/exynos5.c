@@ -38,38 +38,32 @@ typedef struct __attribute__((packed)) Exynos5I2sRegs {
 	uint32_t rx_data;
 } Exynos5I2sRegs;
 
-// Sets the frame size for I2S LR clock.
-static void i2s_set_lr_frame_size(Exynos5I2s *bus)
+typedef struct __attribute__((packed)) Exynos5I2sMultiRegs {
+	uint32_t control;
+	uint32_t mode;
+	uint32_t fifo_control;
+	uint32_t prescaler;
+	uint32_t tx_data;
+	uint32_t rx_data;
+	uint32_t fifo_control_s;
+	uint32_t tx_data_s;
+	uint32_t ahb_dma_control;
+	uint32_t ahb_dma_start_0;
+	uint32_t ahb_dma_size;
+	uint32_t ahb_dma_count;
+	uint32_t ahb_dma_int_0;
+	uint32_t ahb_dma_int_1;
+	uint32_t ahb_dma_int_2;
+	uint32_t ahb_dma_int_3;
+	uint32_t ahb_dma_start_1;
+	uint32_t version;
+	uint32_t tx_data_3_count;
+	uint32_t tdm_mode_control;
+} Exynos5I2sMultiRegs;
+
+static void i2s_transmit_enable(uint32_t *control_ptr, int on)
 {
-	Exynos5I2sRegs *regs = bus->regs;
-	uint32_t mode = readl(&regs->mode);
-
-	mode &= ~MOD_RCLK_MASK;
-
-	switch (bus->lr_frame_size) {
-	case 768:
-		mode |= MOD_RCLK_768FS;
-		break;
-	case 512:
-		mode |= MOD_RCLK_512FS;
-		break;
-	case 384:
-		mode |= MOD_RCLK_384FS;
-		break;
-	default:
-		mode |= MOD_RCLK_256FS;
-		break;
-	}
-
-	writel(mode, &regs->mode);
-}
-
-static void i2s_transmit_enable(Exynos5I2sRegs *regs, int on)
-{
-	// Set transmit only mode.
-	writel(readl(&regs->mode) & ~MOD_MASK, &regs->mode);
-
-	uint32_t control = readl(&regs->control);
+	uint32_t control = readl(control_ptr);
 	if (on) {
 		control |= CON_ACTIVE;
 		control &= ~CON_TXCH_PAUSE;
@@ -77,15 +71,90 @@ static void i2s_transmit_enable(Exynos5I2sRegs *regs, int on)
 		control |=  CON_TXCH_PAUSE;
 		control &= ~CON_ACTIVE;
 	}
-	writel(control, &regs->control);
+	writel(control, control_ptr);
 }
 
-// Set the bit clock frame size (in multiples of LRCLK)
-static void i2s_set_bit_clock_frame_size(Exynos5I2s *bus)
+static void i2s_flush_tx_fifo(uint32_t *fifo_control_ptr)
+{
+	uint32_t fifo_control = readl(fifo_control_ptr);
+	writel(fifo_control | FIC_TXFLUSH, fifo_control_ptr);
+	writel(fifo_control & ~FIC_TXFLUSH, fifo_control_ptr);
+}
+
+static int i2s_send_generic(uint32_t *data, unsigned int length,
+			    uint32_t *tx_data, uint32_t *control)
+{
+	// Prefill the tx fifo
+	for (int i = 0; i < MIN(64, length); i++)
+		writel(*data++, tx_data);
+
+	length -= MIN(64, length);
+	i2s_transmit_enable(control, 1);
+
+	while (length) {
+		if (!(readl(control) & CON_TXFIFO_FULL)) {
+			writel(*data++, tx_data);
+			length--;
+		}
+	}
+	i2s_transmit_enable(control, 0);
+
+	return 0;
+}
+
+
+
+static int i2s_init(Exynos5I2s *bus)
 {
 	Exynos5I2sRegs *regs = bus->regs;
+
 	uint32_t mode = readl(&regs->mode);
 
+	// Set transmit only mode.
+	mode &= ~MOD_MASK;
+
+	mode &= ~(MOD_SDF_MASK | MOD_LR_RLOW | MOD_SLAVE);
+	mode |= MOD_SDF_IIS;
+
+	// Sets the frame size for I2S LR clock.
+	mode &= ~MOD_MULTI_RCLK_MASK;
+	switch (bus->lr_frame_size) {
+	case 768:
+		mode |= MOD_MULTI_RCLK_768FS;
+		break;
+	case 512:
+		mode |= MOD_MULTI_RCLK_512FS;
+		break;
+	case 384:
+		mode |= MOD_MULTI_RCLK_384FS;
+		break;
+	case 256:
+		mode |= MOD_MULTI_RCLK_256FS;
+		break;
+	default:
+		printf("%s: Unrecognized frame size %d.\n", __func__,
+			bus->lr_frame_size);
+		return 1;
+	}
+
+	mode &= ~MOD_BLC_MASK;
+	switch (bus->bits_per_sample) {
+	case 8:
+		mode |= MOD_BLC_8BIT;
+		break;
+	case 16:
+		mode |= MOD_BLC_16BIT;
+		break;
+	case 24:
+		mode |= MOD_BLC_24BIT;
+		break;
+	default:
+		printf("%s: Invalid sample size input %d\n",
+			__func__, bus->bits_per_sample);
+		return 1;
+	}
+
+	// Set the bit clock frame size (in multiples of LRCLK)
 	mode &= ~MOD_BCLK_MASK;
 	switch (bus->bits_per_sample * bus->channels) {
 	case 48:
@@ -101,138 +170,15 @@ static void i2s_set_bit_clock_frame_size(Exynos5I2s *bus)
 		mode |= MOD_BCLK_16FS;
 		break;
 	default:
-		return;
-	}
-
-	writel(mode, &regs->mode);
-}
-
-static void i2s_flush_tx_fifo(Exynos5I2sRegs *regs)
-{
-	uint32_t fifo_control = readl(&regs->fifo_control);
-	writel(fifo_control | FIC_TXFLUSH, &regs->fifo_control);
-	writel(fifo_control & ~FIC_TXFLUSH, &regs->fifo_control);
-}
-
-static void i2s_set_system_clock_dir(Exynos5I2sRegs *regs, int dir)
-{
-	uint32_t mode = readl(&regs->mode);
-
-	if (dir == SND_SOC_CLOCK_IN)
-		mode |= MOD_CDCLKCON;
-	else
-		mode &= ~MOD_CDCLKCON;
-
-	writel(mode, &regs->mode);
-}
-
-static int i2s_set_clock_format(Exynos5I2sRegs *regs, unsigned int format)
-{
-	uint32_t temp = 0;
-
-	/* Format is priority */
-	switch (format & SND_SOC_DAIFMT_FORMAT_MASK) {
-	case SND_SOC_DAIFMT_RIGHT_J:
-		temp |= (MOD_LR_RLOW | MOD_SDF_MSB);
-		break;
-	case SND_SOC_DAIFMT_LEFT_J:
-		temp |= (MOD_LR_RLOW | MOD_SDF_LSB);
-		break;
-	case SND_SOC_DAIFMT_I2S:
-		temp |= MOD_SDF_IIS;
-		break;
-	default:
-		printf("%s: Invalid format priority [0x%x]\n", __func__,
-			(format & SND_SOC_DAIFMT_FORMAT_MASK));
-		return 1;
-	}
-
-	// INV flag is relative to the FORMAT flag - if set it simply
-	// flips the polarity specified by the standard.
-	switch (format & SND_SOC_DAIFMT_INV_MASK) {
-	case SND_SOC_DAIFMT_NB_NF:
-		break;
-	case SND_SOC_DAIFMT_NB_IF:
-		temp ^= MOD_LR_RLOW;
-		break;
-	default:
-		printf("%s: Invalid clock polarity input [0x%x]\n", __func__,
-			(format & SND_SOC_DAIFMT_INV_MASK));
-		return 1;
-	}
-
-	switch (format & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBS_CFS:
-		temp |= MOD_SLAVE;
-		break;
-	case SND_SOC_DAIFMT_CBM_CFM:
-		// Set default source clock in Master mode.
-		i2s_set_system_clock_dir(regs, SND_SOC_CLOCK_OUT);
-		break;
-	default:
-		printf("%s: Invalid master selection [0x%x]\n", __func__,
-			(format & SND_SOC_DAIFMT_MASTER_MASK));
-		return 1;
-	}
-
-	uint32_t mode = readl(&regs->mode);
-	mode &= ~(MOD_SDF_MASK | MOD_LR_RLOW | MOD_SLAVE);
-	writel(mode | temp, &regs->mode);
-
-	return 0;
-}
-
-static int i2s_set_samplesize(Exynos5I2s *bus)
-{
-	Exynos5I2sRegs *regs = bus->regs;
-	uint32_t mode = readl(&regs->mode);
-
-	mode &= ~(MOD_BLCP_MASK | MOD_BLC_MASK);
-	switch (bus->bits_per_sample) {
-	case 8:
-		mode |= MOD_BLCP_8BIT;
-		mode |= MOD_BLC_8BIT;
-		break;
-	case 16:
-		mode |= MOD_BLCP_16BIT;
-		mode |= MOD_BLC_16BIT;
-		break;
-	case 24:
-		mode |= MOD_BLCP_24BIT;
-		mode |= MOD_BLC_24BIT;
-		break;
-	default:
-		printf("%s: Invalid sample size input [0x%x]\n",
-			__func__, bus->bits_per_sample);
+		printf("%s: Unrecognignized clock frame size %d.\n",
+			__func__, bus->bits_per_sample * bus->channels);
 		return 1;
 	}
 
 	writel(mode, &regs->mode);
-	return 0;
-}
 
-static int i2s_transfer_init(Exynos5I2s *bus)
-{
-	Exynos5I2sRegs *regs = bus->regs;
-
-	// Configure I2s format.
-	if (i2s_set_clock_format(regs, SND_SOC_DAIFMT_I2S |
-				       SND_SOC_DAIFMT_NB_NF |
-				       SND_SOC_DAIFMT_CBM_CFM)) {
-		printf("%s: failed.\n", __func__);
-		return 1;
-	}
-
-	i2s_set_lr_frame_size(bus);
-	if (i2s_set_samplesize(bus)) {
-		printf("%s:set sample rate failed\n", __func__);
-		return 1;
-	}
-
-	i2s_set_bit_clock_frame_size(bus);
-
-	i2s_transmit_enable(regs, 0);
-	i2s_flush_tx_fifo(regs);
+	i2s_transmit_enable(&regs->control, 0);
+	i2s_flush_tx_fifo(&regs->fifo_control);
 
 	return 0;
 }
@@ -243,32 +189,19 @@ static int i2s_send(I2sOps *me, uint32_t *data, unsigned int length)
 	Exynos5I2sRegs *regs = bus->regs;
 
 	if (!bus->initialized) {
-		if (i2s_transfer_init(bus))
+		if (i2s_init(bus))
 			return -1;
 		else
 			bus->initialized = 1;
 	}
 
-	// Prefill the tx fifo
-	for (int i = 0; i < MIN(64, length); i++)
-		writel(*data++, &regs->tx_data);
-
-	length -= MIN(64, length);
-	i2s_transmit_enable(regs, 1);
-
-	while (length) {
-		if (!(readl(&regs->control) & CON_TXFIFO_FULL)) {
-			writel(*data++, &regs->tx_data);
-			length--;
-		}
-	}
-	i2s_transmit_enable(regs, 0);
+	i2s_send_generic(data, length, &regs->tx_data, &regs->control);
 
 	return 0;
 }
 
-Exynos5I2s *new_exynos5_i2s(void *regs, int bits_per_sample, int channels,
-			    int lr_frame_size)
+Exynos5I2s *new_exynos5_i2s(void *regs, int bits_per_sample,
+			    int channels, int lr_frame_size)
 {
 	Exynos5I2s *bus = malloc(sizeof(*bus));
 	if (!bus) {
@@ -277,6 +210,125 @@ Exynos5I2s *new_exynos5_i2s(void *regs, int bits_per_sample, int channels,
 	}
 	memset(bus, 0, sizeof(*bus));
 	bus->ops.send = &i2s_send;
+	bus->regs = regs;
+	bus->bits_per_sample = bits_per_sample;
+	bus->channels = channels;
+	bus->lr_frame_size = lr_frame_size;
+	return bus;
+}
+
+
+
+static int i2s_init_multi(Exynos5I2s *bus)
+{
+	Exynos5I2sMultiRegs *regs = bus->regs;
+
+	// Reset the bus.
+	writel(0, &regs->control);
+	writel(CON_MULTI_RSTCLR, &regs->control);
+
+	uint32_t mode = MOD_MULTI_OP_CLK_AUDIO | MOD_MULTI_RCLKSRC;
+
+	unsigned int magic_prescaler = 0x3;
+	writel(PSR_MULTI_PSREN | (magic_prescaler << 8), &regs->prescaler);
+
+	mode |= MOD_MULTI_SDF_IIS;
+
+	// Sets the frame size for I2S LR clock.
+	mode &= ~MOD_MULTI_RCLK_MASK;
+	switch (bus->lr_frame_size) {
+	case 768:
+		mode |= MOD_MULTI_RCLK_768FS;
+		break;
+	case 512:
+		mode |= MOD_MULTI_RCLK_512FS;
+		break;
+	case 384:
+		mode |= MOD_MULTI_RCLK_384FS;
+		break;
+	case 256:
+		mode |= MOD_MULTI_RCLK_256FS;
+		break;
+	default:
+		printf("%s: Unrecognized frame size %d.\n", __func__,
+			bus->lr_frame_size);
+		return 1;
+	}
+
+	switch (bus->bits_per_sample) {
+	case 8:
+		mode |= MOD_MULTI_BLCP_8BIT;
+		mode |= MOD_MULTI_BLC_8BIT;
+		break;
+	case 16:
+		mode |= MOD_MULTI_BLCP_16BIT;
+		mode |= MOD_MULTI_BLC_16BIT;
+		break;
+	case 24:
+		mode |= MOD_MULTI_BLCP_24BIT;
+		mode |= MOD_MULTI_BLC_24BIT;
+		break;
+	default:
+		printf("%s: Invalid sample size input %d\n",
+			__func__, bus->bits_per_sample);
+		return 1;
+	}
+
+	// Set the bit clock frame size (in multiples of LRCLK)
+	switch (bus->bits_per_sample * bus->channels) {
+	case 48:
+		mode |= MOD_MULTI_BCLK_48FS;
+		break;
+	case 32:
+		mode |= MOD_MULTI_BCLK_32FS;
+		break;
+	case 24:
+		mode |= MOD_MULTI_BCLK_24FS;
+		break;
+	case 16:
+		mode |= MOD_MULTI_BCLK_16FS;
+		break;
+	default:
+		printf("%s: Unrecognignized clock frame size %d.\n",
+			__func__, bus->bits_per_sample * bus->channels);
+		return 1;
+	}
+
+	writel(mode, &regs->mode);
+
+	i2s_transmit_enable(&regs->control, 0);
+	i2s_flush_tx_fifo(&regs->fifo_control);
+
+	return 0;
+}
+
+static int i2s_send_multi(I2sOps *me, uint32_t *data, unsigned int length)
+{
+	Exynos5I2s *bus = container_of(me, Exynos5I2s, ops);
+	Exynos5I2sMultiRegs *regs = bus->regs;
+
+	if (!bus->initialized) {
+		if (i2s_init_multi(bus))
+			return -1;
+		else
+			bus->initialized = 1;
+	}
+
+	i2s_send_generic(data, length, &regs->tx_data, &regs->control);
+
+	return 0;
+}
+
+Exynos5I2s *new_exynos5_i2s_multi(void *regs, int bits_per_sample,
+				  int channels, int lr_frame_size)
+{
+	Exynos5I2s *bus = malloc(sizeof(*bus));
+	if (!bus) {
+		printf("Failed to allocate Exynos5 I2S structure.\n");
+		return NULL;
+	}
+	memset(bus, 0, sizeof(*bus));
+	bus->ops.send = &i2s_send_multi;
 	bus->regs = regs;
 	bus->bits_per_sample = bits_per_sample;
 	bus->channels = channels;
