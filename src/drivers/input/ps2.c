@@ -23,7 +23,6 @@
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
-#include "base/cleanup_funcs.h"
 #include "drivers/input/input.h"
 
 int dc_keyboard_install_on_demand_input(void)
@@ -38,24 +37,4 @@ int dc_keyboard_install_on_demand_input(void)
 	return 0;
 }
 
-int disconnect_keyboard_wrapper(struct CleanupFunc *cleanup, CleanupType type)
-{
-	keyboard_disconnect();
-	return 0;
-}
-
-int dc_keyboard_install_cleanup(void)
-{
-	static CleanupFunc dev =
-	{
-		&disconnect_keyboard_wrapper,
-		CleanupOnHandoff,
-		NULL
-	};
-
-	list_insert_after(&dev.list_node, &cleanup_funcs);
-	return 0;
-}
-
 INIT_FUNC(dc_keyboard_install_on_demand_input);
-INIT_FUNC(dc_keyboard_install_cleanup);
