@@ -22,10 +22,14 @@
 
 #include "base/init_funcs.h"
 #include "drivers/bus/i2c/exynos5_usi.h"
+#include "drivers/bus/i2s/exynos5.h"
 #include "drivers/bus/spi/exynos5.h"
 #include "drivers/ec/cros/spi.h"
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/exynos5420.h"
+#include "drivers/sound/i2s.h"
+#include "drivers/sound/route.h"
+#include "drivers/sound/sound.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
 
@@ -56,6 +60,17 @@ static int board_setup(void)
 
 	SpiFlash *flash = new_spi_flash(&spi1->ops, 0x400000);
 	if (!flash || flash_set_ops(&flash->ops))
+		return 1;
+
+	Exynos5I2s *i2s0 = new_exynos5_i2s_multi(
+		(void *)(uintptr_t)0x03830000, 16, 2, 256);
+	I2sSource *i2s_source = new_i2s_source(&i2s0->ops, 48000, 2, 10000);
+	if (!i2s_source)
+		return 1;
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+	if (!sound_route)
+		return 1;
+	if (sound_set_ops(&sound_route->ops))
 		return 1;
 
 	return 0;
