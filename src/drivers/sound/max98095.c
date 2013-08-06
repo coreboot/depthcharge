@@ -43,11 +43,17 @@ static int max98095_hw_params(Max98095Codec *codec)
 {
 	switch (codec->bits_per_sample) {
 	case 16:
+		if (max98095_update_bits(codec, M98095_02A_DAI1_FORMAT,
+					 M98095_DAI_WS, 0))
+			return 1;
 		if (max98095_update_bits(codec, M98095_034_DAI2_FORMAT,
 					 M98095_DAI_WS, 0))
 			return 1;
 		break;
 	case 24:
+		if (max98095_update_bits(codec, M98095_02A_DAI1_FORMAT,
+					 M98095_DAI_WS, M98095_DAI_WS))
+			return 1;
 		if (max98095_update_bits(codec, M98095_034_DAI2_FORMAT,
 					 M98095_DAI_WS, M98095_DAI_WS))
 			return 1;
@@ -78,12 +84,21 @@ static int max98095_hw_params(Max98095Codec *codec)
 		return 1;
 	}
 
+	if (max98095_update_bits(codec, M98095_027_DAI1_CLKMODE,
+				 M98095_CLKMODE_MASK, index))
+		return 1;
+
 	if (max98095_update_bits(codec, M98095_031_DAI2_CLKMODE,
 				 M98095_CLKMODE_MASK, index))
 		return 1;
 
 	/* Update sample rate mode */
 	int rate = (codec->sample_rate < 50000) ? 0 : M98095_DAI_DHF;
+
+	if (max98095_update_bits(codec, M98095_02E_DAI1_FILTERS,
+				 M98095_DAI_DHF, rate))
+		return 1;
+
 	if (max98095_update_bits(codec, M98095_038_DAI2_FILTERS,
 				 M98095_DAI_DHF, rate))
 		return 1;
@@ -129,6 +144,18 @@ static int max98095_set_sysclk(Max98095Codec *codec)
 static int max98095_set_fmt(Max98095Codec *codec)
 {
 	// Slave mode PLL.
+	if (max98095_i2c_write(codec, M98095_028_DAI1_CLKCFG_HI, 0x80) ||
+		max98095_i2c_write(codec, M98095_029_DAI1_CLKCFG_LO, 0x00))
+		return 1;
+
+	if (max98095_update_bits(codec, M98095_02A_DAI1_FORMAT,
+			M98095_DAI_MAS | M98095_DAI_DLY | M98095_DAI_BCI |
+			M98095_DAI_WCI, M98095_DAI_DLY))
+		return 1;
+
+	if (max98095_i2c_write(codec, M98095_02B_DAI1_CLOCK, M98095_DAI_BSEL64))
+		return 1;
+
 	if (max98095_i2c_write(codec, M98095_032_DAI2_CLKCFG_HI, 0x80) ||
 		max98095_i2c_write(codec, M98095_033_DAI2_CLKCFG_LO, 0x00))
 		return 1;
@@ -178,8 +205,9 @@ static int max98095_device_init(Max98095Codec *codec)
 	res |= max98095_i2c_write(codec, M98095_097_PWR_SYS, M98095_PWRSV);
 
 	// Initialize registers to hardware default configuring audio
-	// interface2 to DAC.
+	// interface 1 and 2 to DAC.
 	res |= max98095_i2c_write(codec, M98095_048_MIX_DAC_LR,
+		M98095_DAI1L_TO_DACL | M98095_DAI1R_TO_DACR |
 		M98095_DAI2M_TO_DACL | M98095_DAI2M_TO_DACR);
 
 	res |= max98095_i2c_write(codec, M98095_092_PWR_EN_OUT,
