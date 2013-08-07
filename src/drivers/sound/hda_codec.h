@@ -16,8 +16,10 @@
 typedef struct
 {
 	SoundOps ops;
+	int beep_nid_override;
 } HdaCodec;
 
 HdaCodec *new_hda_codec(void);
+void set_hda_beep_nid_override(HdaCodec *codec, int nid);
 
 #endif /* __DRIVERS_SOUND_HDA_CODEC_H__ */

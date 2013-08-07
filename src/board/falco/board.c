@@ -50,6 +50,9 @@ static int board_setup(void)
 	if (!codec || sound_set_ops(&codec->ops))
 		return 1;
 
+	// The realtek codec doesn't report its beep_nid (NID 1)
+	set_hda_beep_nid_override(codec, 1);
+
 	return 0;
 }
 
