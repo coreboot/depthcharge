@@ -64,7 +64,7 @@ static int board_setup(void)
 
 	Exynos5I2s *i2s0 = new_exynos5_i2s_multi(
 		(void *)(uintptr_t)0x03830000, 16, 2, 256);
-	I2sSource *i2s_source = new_i2s_source(&i2s0->ops, 48000, 2, 10000);
+	I2sSource *i2s_source = new_i2s_source(&i2s0->ops, 48000, 2, 16000);
 	if (!i2s_source)
 		return 1;
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
