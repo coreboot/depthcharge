@@ -10,7 +10,7 @@
 # ImageMagick is much to complex to bother installing into the chroot just for
 # this occasional need.
 
-TARGETS ?= butterfly falco link parrot peach_pit snow spring std stout
+TARGETS ?= butterfly falco link parrot peach_pit peppy snow spring std stout
 
 # These are all the known locales, sorted more-or-less geograpically
 ALL_LOCALES=en es_419 pt_BR en_GB fr es pt_PT ca it de \
