@@ -89,6 +89,11 @@ int tis_sendrecv(const uint8_t *sendbuf, size_t sbuf_size,
 		return -1;
 	}
 
+	if (len > *rbuf_len) {
+		*rbuf_len = len;
+		return -1;
+	}
+
 	memcpy(recvbuf, buf, len);
 	*rbuf_len = len;
 
