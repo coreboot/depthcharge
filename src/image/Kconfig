@@ -30,7 +30,7 @@ config KERNEL_START
 
 config KERNEL_SIZE
 	hex "The size of the region the kernel is loaded into"
-	default 0x800000
+	default 0x1000000
 	help
 	  The size of a region of memroy the kernel is loaded into before
 	  it's verified or booted. Also, the code which pivots from the
