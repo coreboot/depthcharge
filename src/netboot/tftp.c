@@ -44,6 +44,7 @@ static uint8_t *tftp_dest;
 static int tftp_got_response;
 static int tftp_blocknum;
 static uint32_t tftp_total_size;
+static uint32_t tftp_max_size;
 
 typedef struct TftpAckPacket
 {
@@ -153,6 +154,13 @@ static void tftp_callback(void)
 	if (new_data_len > TftpMaxBlockSize)
 		return;
 
+	// If we're out of space give up.
+	if (new_data_len > tftp_max_size - tftp_total_size) {
+		tftp_status = TftpFailure;
+		printf("TFTP transfer too large.\n");
+		return;
+	}
+
 	// If there's any data, copy it in.
 	if (new_data_len) {
 		memcpy(tftp_dest, new_data, new_data_len);
@@ -185,7 +193,7 @@ static void tftp_callback(void)
 }
 
 int tftp_read(void *dest, uip_ipaddr_t *server_ip, const char *bootfile,
-	uint32_t *size)
+	uint32_t *size, uint32_t max_size)
 {
 	// Build the read request packet.
 	uint16_t opcode = htonw(TftpReadReq);
@@ -223,6 +231,7 @@ int tftp_read(void *dest, uip_ipaddr_t *server_ip, const char *bootfile,
 	tftp_dest = dest;
 	tftp_blocknum = 1;
 	tftp_total_size = 0;
+	tftp_max_size = max_size;
 
 	// Poll the network driver until the transaction is done.
 
