@@ -224,9 +224,9 @@ static int handle_proto3_response(struct ec_host_response *rs,
 	return rs->data_len;
 }
 
-static int send_command_proto3(uint8_t cmd, int cmd_version,
-			       const void *dout, int dout_len,
-			       void *dinp, int din_len)
+static int send_command_proto3_work(uint8_t cmd, int cmd_version,
+				    const void *dout, int dout_len,
+				    void *dinp, int din_len)
 {
 	int out_bytes, in_bytes;
 	int rv;
@@ -251,6 +251,46 @@ static int send_command_proto3(uint8_t cmd, int cmd_version,
 
 	/* Process the response */
 	return handle_proto3_response(proto3_response, dinp, din_len);
+}
+
+static int send_command_proto3(uint8_t cmd, int cmd_version,
+			       const void *dout, int dout_len,
+			       void *dinp, int din_len)
+{
+	int rv;
+
+	rv = send_command_proto3_work(cmd, cmd_version, dout, dout_len,
+				      dinp, din_len);
+
+	/* If the command doesn't complete, wait a while */
+	if (rv == -EC_RES_IN_PROGRESS) {
+		struct ec_response_get_comms_status resp;
+		uint64_t start;
+
+		/* Wait for command to complete */
+		start = timer_us(0);
+		do {
+			int ret;
+
+			mdelay(50);	/* Insert some reasonable delay */
+			ret = send_command_proto3_work(EC_CMD_GET_COMMS_STATUS,
+				0, NULL, 0, &resp, sizeof(resp));
+			if (ret < 0)
+				return ret;
+
+			if (timer_us(start) > CROS_EC_CMD_TIMEOUT_MS * 1000) {
+				printf("%s: Command %#02x timeout",
+				      __func__, cmd);
+				return -EC_RES_TIMEOUT;
+			}
+		} while (resp.flags & EC_COMMS_STATUS_PROCESSING);
+
+		/* OK it completed, so read the status response */
+		rv = send_command_proto3_work(EC_CMD_RESEND_RESPONSE,
+			0, NULL, 0, dinp, din_len);
+	}
+
+	return rv;
 }
 
 /**
