@@ -105,8 +105,8 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 	uint8_t *bytes;
 
 	// Header + data + checksum.
-	int out_bytes = CROS_EC_SPI_OUT_HDR_SIZE + dout_len + 1;
-	int in_bytes = CROS_EC_SPI_IN_HDR_SIZE + din_len + 1;
+	uint32_t out_bytes = CROS_EC_SPI_OUT_HDR_SIZE + dout_len + 1;
+	uint32_t in_bytes = CROS_EC_SPI_IN_HDR_SIZE + din_len + 1;
 
 	if (!bus->buf) {
 		bus->buf = malloc(MSG_BYTES);
