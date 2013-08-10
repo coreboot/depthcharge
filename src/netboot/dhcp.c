@@ -321,6 +321,10 @@ static void dhcp_callback(void)
 	if (!uip_newdata())
 		return;
 
+	// If the packet is too big, ignore it.
+	if (uip_datalen() > sizeof(DhcpPacket))
+		return;
+
 	// Copy the packet out to ensure alignment, etc.
 	memset(dhcp_in, 0, sizeof(DhcpPacket));
 	memcpy(dhcp_in, uip_appdata, uip_datalen());
