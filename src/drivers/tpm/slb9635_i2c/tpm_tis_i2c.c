@@ -169,7 +169,7 @@ static int iic_tpm_write_generic(uint8_t addr, uint8_t *buffer, size_t len,
 	int rc = 0;
 	int count;
 
-	if (len > TPM_BUF_SIZE) {
+	if (len > TPM_BUFSIZE) {
 		printf("%s: Length %d is too large\n", __func__, len);
 		return -1;
 	}
