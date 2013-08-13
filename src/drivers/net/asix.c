@@ -298,6 +298,10 @@ int asix_send(NetDevice *net_dev, void *buf, uint16_t len)
 	packet_len = ((len << 16) | (len << 0)) ^ 0xffff0000;
 	packet_len = htolel(packet_len);
 	memcpy(msg, &packet_len, sizeof(packet_len));
+	if (len > sizeof(msg) - sizeof(packet_len)) {
+		printf("ASIX: Packet size %u is too large.\n", len);
+		return 1;
+	}
 	memcpy(msg + sizeof(packet_len), buf, len);
 
 	if (len & 1)
