@@ -40,6 +40,8 @@ config BOARD_PEPPY
 	bool "peppy"
 config BOARD_SLIPPY
 	bool "slippy"
+config BOARD_WOLF
+	bool "wolf"
 
 endchoice
 
@@ -73,5 +75,7 @@ endif
 if BOARD_SLIPPY
 source src/board/slippy/Kconfig
 endif
-
+if BOARD_WOLF
+source src/board/wolf/Kconfig
+endif
 endmenu
