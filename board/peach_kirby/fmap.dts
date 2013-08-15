@@ -160,7 +160,7 @@
 			type = "blobstring fwid";
 		};
 
-		/* ---- Section: Rewritable VPD 4 KB ---- */
+		/* ---- Section: Rewritable VPD 32 KB ---- */
 		rw-vpd {
 			label = "rw-vpd";
 			/* Alignment: 4k (for updating) */
