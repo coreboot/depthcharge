@@ -50,6 +50,6 @@ static const uint16_t TftpPort = 69;
 static const int TftpMaxBlockSize = 512;
 
 int tftp_read(void *dest, uip_ipaddr_t *server_ip, const char *bootfile,
-	uint32_t *size);
+	uint32_t *size, uint32_t max_size);
 
 #endif /* __NETBOOT_TFTP_H__ */

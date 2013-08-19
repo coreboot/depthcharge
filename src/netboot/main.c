@@ -85,6 +85,7 @@ static void print_mac_addr(const uip_eth_addr *mac)
 }
 
 static void * const payload = (void *)(uintptr_t)CONFIG_KERNEL_START;
+static const uint32_t MaxPayloadSize = CONFIG_KERNEL_SIZE;
 
 static char cmd_line[4096] = CONFIG_NETBOOT_DEFAULT_COMMAND_LINE;
 static const int cmd_line_def_size =
@@ -201,7 +202,7 @@ int main(void)
 
 	// Download the bootfile.
 	uint32_t size;
-	if (tftp_read(payload, tftp_ip, bootfile, &size)) {
+	if (tftp_read(payload, tftp_ip, bootfile, &size, MaxPayloadSize)) {
 		printf("Tftp failed.\n");
 		if (dhcp_release(server_ip))
 			printf("Dhcp release failed.\n");
