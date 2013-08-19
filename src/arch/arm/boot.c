@@ -79,6 +79,9 @@ int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry)
 	cpsr &= ~CpsrModeMask;
 	cpsr |= CpsrModeSvc;
 
+	// Flush the data cache.
+	dcache_clean_all();
+
 	// Turn off the MMU.
 	sctlr &= ~SctlrM;
 
@@ -87,6 +90,10 @@ int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry)
 
 	set_sctlr(sctlr);
 	set_cpsr(cpsr);
+
+	// Invalidate the instruction cache and TLB.
+	icache_invalidate_all();
+	tlb_invalidate_all();
 
 	boot_arm_linux_jump(entry, machine_type, fdt);
 
