@@ -154,11 +154,12 @@ int vboot_select_firmware(void)
 			return 1;
 		}
 
-		const void *image = index_subsection(&rw_area, 0, NULL);
+		uint32_t image_size;
+		const void *image = index_subsection(&rw_area, 0, &image_size);
 		if (!image)
 			return 1;
 
-		if (start_rw_firmware(image))
+		if (start_rw_firmware(image, image_size))
 			return 1;
 	}
 

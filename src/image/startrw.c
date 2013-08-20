@@ -28,13 +28,15 @@
 #include "image/symbols.h"
 #include "image/trampoline.h"
 
-int start_rw_firmware(const void *compressed_image)
+int start_rw_firmware(const void *compressed_image, uint32_t size)
 {
 	// Put the decompressed RW ELF at the end of the trampoline.
 	void *elf_image = (void *)&_tramp_end;
 
 	// Decompress the RW image.
-	uint32_t out_size = ulzma(compressed_image, elf_image);
+	uint32_t out_size = ulzman(compressed_image, size, elf_image,
+				   (uint8_t *)&_kernel_end -
+				   (uint8_t *)&_tramp_end);
 	if (!out_size) {
 		printf("Error decompressing RW firmware.\n");
 		return -1;
