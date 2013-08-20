@@ -17,11 +17,11 @@
 #include "base/list.h"
 #include "drivers/sound/hda_codec.h"
 
-#define HDA_ICII_COMMAND_REG 0x5C
-#define HDA_ICII_RESPONSE_REG 0x60
-#define HDA_ICII_REG 0x64
-#define   HDA_ICII_BUSY (1 << 0)
-#define   HDA_ICII_VALID  (1 << 1)
+#define HDA_ICII_COMMAND_REG 0x60
+#define HDA_ICII_RESPONSE_REG 0x64
+#define HDA_ICII_ICS_REG 0x68
+#define   HDA_ICII_ICS_BUSY (1 << 0)
+#define   HDA_ICII_ICS_VALID  (1 << 1)
 
 /* Common node IDs. */
 #define HDA_ROOT_NODE 0x00
@@ -60,9 +60,9 @@ static int wait_for_ready(uint32_t base)
 	int timeout = 50;
 
 	while (timeout--) {
-		uint32_t reg32 = readl(base +  HDA_ICII_REG);
+		uint32_t reg32 = readl(base +  HDA_ICII_ICS_REG);
 		asm("" ::: "memory");
-		if (!(reg32 & HDA_ICII_BUSY))
+		if (!(reg32 & HDA_ICII_ICS_BUSY))
 			return 0;
 		udelay(1);
 	}
@@ -80,18 +80,18 @@ static int wait_for_response(uint32_t base, uint32_t *response)
 	uint32_t reg32;
 
 	// Send the verb to the codec.
-	reg32 = readl(base + HDA_ICII_REG);
-	reg32 |= HDA_ICII_BUSY | HDA_ICII_VALID;
-	writel(reg32, base + HDA_ICII_REG);
+	reg32 = readl(base + HDA_ICII_ICS_REG);
+	reg32 |= HDA_ICII_ICS_BUSY | HDA_ICII_ICS_VALID;
+	writel(reg32, base + HDA_ICII_ICS_REG);
 
 	// Use a 50 usec timeout - the Linux kernel uses the same duration.
 
 	int timeout = 50;
 	while (timeout--) {
-		reg32 = readl(base + HDA_ICII_REG);
+		reg32 = readl(base + HDA_ICII_ICS_REG);
 		asm("" ::: "memory");
-		if ((reg32 & (HDA_ICII_VALID | HDA_ICII_BUSY)) ==
-				HDA_ICII_VALID) {
+		if ((reg32 & (HDA_ICII_ICS_VALID | HDA_ICII_ICS_BUSY)) ==
+				HDA_ICII_ICS_VALID) {
 			if (response != NULL)
 				*response = readl(base + HDA_ICII_RESPONSE_REG);
 			return 0;
@@ -155,7 +155,7 @@ static uint32_t get_hda_base(void)
 	for (int i = 0; i < ARRAY_SIZE(supported); i++) {
 		if (pci_find_device(supported[i].vendor, supported[i].device,
 			            &hda_dev)) {
-			return pci_read_resource(hda_dev, 0);
+			return pci_read_resource(hda_dev, 0) & ~0xf;
 		}
 	}
 
