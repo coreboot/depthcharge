@@ -42,7 +42,7 @@
 #include "drivers/bus/i2c/i2c.h"
 
 enum tpm_timeout {
-	TPM_TIMEOUT = 5,	/* msecs */
+	TPM_TIMEOUT = 1,	/* msecs */
 };
 
 /* Size of external transmit buffer (used in tpm_transmit)*/

@@ -438,10 +438,6 @@ static int tpm_tis_i2c_recv(struct tpm_chip *chip, uint8_t *buf, size_t count)
 
 out:
 	tpm_tis_i2c_ready(chip);
-	/* The TPM needs some time to clean up here,
-	 * so we sleep rather than keeping the bus busy
-	 */
-	mdelay(2);
 	release_locality(chip, chip->vendor.locality, 0);
 
 	return size;
@@ -515,10 +511,6 @@ static int tpm_tis_i2c_send(struct tpm_chip *chip, uint8_t *buf, size_t len)
 	return len;
 out_err:
 	tpm_tis_i2c_ready(chip);
-	/* The TPM needs some time to clean up here,
-	 * so we sleep rather than keeping the bus busy
-	 */
-	mdelay(2);
 	release_locality(chip, chip->vendor.locality, 0);
 
 	return rc;
