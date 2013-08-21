@@ -51,7 +51,7 @@ int dc_keyboard_install_cleanup(void)
 	static CleanupFunc dev =
 	{
 		&disconnect_keyboard_wrapper,
-		CleanupOnHandoff,
+		CleanupOnHandoff | CleanupOnLegacy,
 		NULL
 	};
 
