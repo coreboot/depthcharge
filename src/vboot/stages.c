@@ -29,6 +29,7 @@
 #include "boot/commandline.h"
 #include "config.h"
 #include "drivers/flash/flash.h"
+#include "drivers/input/input.h"
 #include "drivers/power/power.h"
 #include "image/fmap.h"
 #include "image/index.h"
@@ -94,6 +95,15 @@ int vboot_do_init_out_flags(uint32_t out_flags)
 		if (wipe_unused_memory())
 			return 1;
 	}
+	/*
+	 * If in developer mode or recovery mode, assume we're going to need
+	 * input. We'll want it up and responsive by the time we present
+	 * prompts to the user, so get it going ahead of time.
+	 */
+	if (out_flags & (VB_INIT_OUT_ENABLE_DEVELOPER |
+			 VB_INIT_OUT_ENABLE_RECOVERY))
+		input_enable();
+
 	return 0;
 }
 
