@@ -34,6 +34,7 @@ typedef struct OnDemandInput {
 
 extern ListNode on_demand_input_devices;
 
+void input_enable(void);
 void input_init(void);
 
 #endif /* __DRIVERS_INPUT_INPUT_H__ */

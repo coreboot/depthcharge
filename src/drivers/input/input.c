@@ -59,6 +59,11 @@ static struct console_input_driver on_demand_input_driver =
 	&fake_getchar
 };
 
+void input_enable(void)
+{
+	do_input_init();
+}
+
 void input_init(void)
 {
 	console_add_input_driver(&on_demand_input_driver);
