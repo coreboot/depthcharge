@@ -24,11 +24,17 @@
 #include "drivers/bus/usb/usb.h"
 #include "drivers/input/input.h"
 
+static void usb_input_init(void)
+{
+	dc_usb_initialize();
+	usb_poll();
+}
+
 int dc_usb_install_on_demand_input(void)
 {
 	static OnDemandInput dev =
 	{
-		&dc_usb_initialize,
+		&usb_input_init,
 		1
 	};
 
