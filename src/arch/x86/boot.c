@@ -27,6 +27,7 @@
 #include "arch/x86/boot.h"
 #include "arch/x86/cpu.h"
 #include "base/cleanup_funcs.h"
+#include "base/init_funcs.h"
 #include "base/timestamp.h"
 #include "vboot/boot.h"
 
@@ -81,7 +82,7 @@ int boot_x86_linux(struct boot_params *boot_params, char *cmd_line, void *entry)
 
 	hdr->cmd_line_ptr = (uintptr_t)cmd_line;
 
-	arch_final_cleanup();
+	run_cleanup_funcs(CleanupOnHandoff);
 
 	puts("\nStarting kernel ...\n\n");
 	timestamp_add_now(TS_START_KERNEL);
@@ -104,7 +105,7 @@ int boot_x86_linux(struct boot_params *boot_params, char *cmd_line, void *entry)
 	return 0;
 }
 
-int arch_final_cleanup(void)
+static int x86_mtrr_cleanup(struct CleanupFunc *cleanup, CleanupType type)
 {
 	/*
 	 * Un-cache the ROM so the kernel has one more MTRR available.
@@ -121,12 +122,43 @@ int arch_final_cleanup(void)
 		_wrmsr(MTRRphysMask_MSR(top_mtrr), 0);
 		enable_cache();
 	}
+	return 0;
+}
 
+static int x86_mtrr_cleanup_install(void)
+{
+	static CleanupFunc dev =
+	{
+		&x86_mtrr_cleanup,
+		CleanupOnHandoff | CleanupOnLegacy,
+		NULL
+	};
+
+	list_insert_after(&dev.list_node, &cleanup_funcs);
+	return 0;
+}
+
+INIT_FUNC(x86_mtrr_cleanup_install);
+
+static int coreboot_finalize(struct CleanupFunc *cleanup, CleanupType type)
+{
 	// Issue SMI to Coreboot to lock down ME and registers.
 	printf("Finalizing Coreboot\n");
 	outb(0xcb, 0xb2);
-
-	run_cleanup_funcs(CleanupOnHandoff);
-
 	return 0;
 }
+
+static int coreboot_finalize_install(void)
+{
+	static CleanupFunc dev =
+	{
+		&coreboot_finalize,
+		CleanupOnHandoff | CleanupOnLegacy,
+		NULL
+	};
+
+	list_insert_after(&dev.list_node, &cleanup_funcs);
+	return 0;
+}
+
+INIT_FUNC(coreboot_finalize_install);

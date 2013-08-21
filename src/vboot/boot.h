@@ -26,7 +26,4 @@
 // To be implemented by each boot method.
 int boot(void *kernel, char *cmd_line, void *params, void *loader);
 
-// To be implemented for each arch.
-int arch_final_cleanup(void);
-
 #endif /* __BOOT_BOOT_H__ */

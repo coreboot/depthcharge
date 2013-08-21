@@ -29,7 +29,8 @@ typedef enum CleanupType
 {
 	CleanupOnReboot = 0x1,
 	CleanupOnPowerOff = 0x2,
-	CleanupOnHandoff = 0x4
+	CleanupOnHandoff = 0x4,
+	CleanupOnLegacy = 0x8,
 } CleanupType;
 
 typedef struct CleanupFunc

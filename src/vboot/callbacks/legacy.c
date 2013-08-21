@@ -28,6 +28,7 @@
 #include <cbfs.h>
 #include <cbfs_ram.h>
 
+#include "base/cleanup_funcs.h"
 #include "drivers/flash/flash.h"
 #include "image/fmap.h"
 #include "vboot/boot.h"
@@ -121,7 +122,7 @@ static void load_payload_and_run(struct cbfs_payload *payload)
 			printf("PARAMS: skipped\n");
 			break;
 		case PAYLOAD_SEGMENT_ENTRY:
-			arch_final_cleanup();
+			run_cleanup_funcs(CleanupOnLegacy);
 			payload_entry = dst;
 			payload_entry();
 			return;
