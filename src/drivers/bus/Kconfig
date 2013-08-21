@@ -18,3 +18,4 @@
 source src/drivers/bus/i2c/Kconfig
 source src/drivers/bus/i2s/Kconfig
 source src/drivers/bus/spi/Kconfig
+source src/drivers/bus/usb/Kconfig
