@@ -131,7 +131,7 @@ int mmc_send_cmd(MmcDevice *mmc, MmcCommand *cmd, MmcData *data)
 	return ret;
 }
 
-int mmc_send_status(MmcDevice *mmc, int timeout)
+int mmc_send_status(MmcDevice *mmc, int tries)
 {
 	MmcCommand cmd;
 	int err;
@@ -141,24 +141,24 @@ int mmc_send_status(MmcDevice *mmc, int timeout)
 	cmd.cmdarg = mmc->rca << 16;
 	cmd.flags = 0;
 
-	do {
+	while (tries--) {
 		err = mmc_send_cmd(mmc, &cmd, NULL);
 		if (err)
 			return err;
 		else if (cmd.response[0] & MMC_STATUS_RDY_FOR_DATA)
 			break;
-
-		mdelay(1);
-		if (cmd.response[0] & MMC_STATUS_MASK) {
+		else if (cmd.response[0] & MMC_STATUS_MASK) {
 			mmc_error("Status Error: %#08X\n", cmd.response[0]);
 			return MMC_COMM_ERR;
 		}
-	} while (timeout--);
+
+		udelay(100);
+	}
 
 	mmc_trace("CURR STATE:%d\n",
 		  (cmd.response[0] & MMC_STATUS_CURR_STATE) >> 9);
 
-	if (!timeout) {
+	if (tries < 0) {
 		mmc_error("Timeout waiting card ready\n");
 		return MMC_TIMEOUT;
 	}
@@ -287,8 +287,9 @@ int mmc_go_idle(MmcDevice *mmc)
 	MmcCommand cmd;
 	int err;
 
-	// TODO(hungte) Find out if we can get rid of this initial delay.
-	mdelay(1);
+	// Some cards can't accept idle commands without delay.
+	if (mmc->block_dev->removable)
+		mdelay(1);
 
 	cmd.cmdidx = MMC_CMD_GO_IDLE_STATE;
 	cmd.cmdarg = 0;
@@ -300,24 +301,27 @@ int mmc_go_idle(MmcDevice *mmc)
 	if (err)
 		return err;
 
-	udelay(2000);
+	// Some cards need more than half second to respond to next command (ex,
+	// SEND_OP_COND).
+	if (mmc->block_dev->removable)
+		mdelay(2);
+
 	return 0;
 }
 
 static int sd_send_op_cond(MmcDevice *mmc)
 {
-	int timeout = MMC_IO_RETRIES;
+	int tries = MMC_IO_RETRIES;
 	int err;
 	MmcCommand cmd;
 
-	do {
+	while (tries--) {
 		cmd.cmdidx = MMC_CMD_APP_CMD;
 		cmd.resp_type = MMC_RSP_R1;
 		cmd.cmdarg = 0;
 		cmd.flags = 0;
 
 		err = mmc_send_cmd(mmc, &cmd, NULL);
-
 		if (err)
 			return err;
 
@@ -337,14 +341,16 @@ static int sd_send_op_cond(MmcDevice *mmc)
 			cmd.cmdarg |= OCR_HCS;
 
 		err = mmc_send_cmd(mmc, &cmd, NULL);
-
 		if (err)
 			return err;
 
-		udelay(1000);
-	} while ((!(cmd.response[0] & OCR_BUSY)) && timeout--);
+		// OCR_BUSY means "initialization complete".
+		if (cmd.response[0] & OCR_BUSY)
+			break;
 
-	if (timeout <= 0)
+		udelay(100);
+	}
+	if (tries < 0)
 		return MMC_UNUSABLE_ERR;
 
 	if (mmc->version != SD_VERSION_2)
@@ -398,7 +404,7 @@ static int mmc_send_op_cond(MmcDevice *mmc)
 		if (err)
 			return err;
 
-		/* exit if not busy (flag seems to be inverted) */
+		// OCR_BUSY means "initialization complete".
 		if (mmc->op_cond_response & OCR_BUSY)
 			return 0;
 	}
@@ -408,20 +414,24 @@ static int mmc_send_op_cond(MmcDevice *mmc)
 static int mmc_complete_op_cond(MmcDevice *mmc)
 {
 	MmcCommand cmd;
-	int timeout = MMC_IO_RETRIES;
-	uint32_t start;
+	int tries = MMC_IO_RETRIES;
 	int err;
 
 	mmc->op_cond_pending = 0;
-	start = timer_us(0);
-	do {
+
+	while (tries--) {
 		err = mmc_send_op_cond_iter(mmc, &cmd, 1);
 		if (err)
 			return err;
-		if (timer_us(start) > timeout * 1000)
-			return MMC_UNUSABLE_ERR;
+
+		// OCR_BUSY means "initialization complete".
+		if (mmc->op_cond_response & OCR_BUSY)
+			break;
+
 		udelay(100);
-	} while (!(mmc->op_cond_response & OCR_BUSY));
+	}
+	if (tries < 0)
+		return MMC_UNUSABLE_ERR;
 
 	mmc->version = MMC_VERSION_UNKNOWN;
 	mmc->ocr = cmd.response[0];
