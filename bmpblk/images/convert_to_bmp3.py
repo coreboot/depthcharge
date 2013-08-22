@@ -30,11 +30,22 @@ def parse_scale_factor(pattern, original_size):
   raise Exception('Unknown scaling parameter: %s', pattern)
 
 
-def convert_to_bmp(input_file, scale, outdir, background=BACKGROUND_COLOR):
+def convert_to_bmp(input_file, scale, background=BACKGROUND_COLOR,
+                   output_file=None):
+  """Converts any image input files into BMP format.
+
+  Args:
+    input_file: An image file.
+    scale: Scale parameters to apply, in ImageMagick syntax.
+    background: Background color to use when the input file has transparency.
+    output_file: File name to output, or None to output by the name of
+                 input_file with extension ".bmp".
+  Returns:
+    A new image created in outdir. Returns None.
+  """
   source = Image.open(input_file)
-  output_file = os.path.join(
-      outdir,
-      os.path.basename(input_file).rpartition('.')[0] + DEFAULT_OUTPUT_EXT)
+  if output_file is None:
+    output_file = os.path.splitext(input_file)[0] + DEFAULT_OUTPUT_EXT
 
   # Process alpha channel and transparency.
   if source.mode == 'RGBA':
@@ -90,7 +101,9 @@ def main(argv):
     os.makedirs(outdir)
 
   for source_file in args:
-    convert_to_bmp(source_file, scale_param, outdir, background)
+    source_name, _ = os.path.splitext(os.path.basename(source_file))
+    output_file = os.path.join(outdir, source_name) + DEFAULT_OUTPUT_EXT
+    convert_to_bmp(source_file, scale_param, background, output_file)
 
 
 if __name__ == '__main__':
