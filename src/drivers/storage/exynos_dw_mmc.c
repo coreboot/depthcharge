@@ -51,8 +51,8 @@ typedef struct {
 
 // TODO(hungte) Move these configuration to board-specific source file.
 static const ExynosDwMmcConfig exynos_dwmmc_configs[DWMMC_MAX_DEVICES] = {
-	{(void *)0x12200000, 400000000, 8, 0, {1, 3, 3}, },
-	{(void *)0x12220000, 400000000, 4, 1, {1, 2, 3}, },
+	{(void *)0x12200000, 100000000, 8, 0, {1, 3, 3}, },
+	{(void *)0x12220000, 100000000, 4, 1, {1, 2, 3}, },
 };
 
 /*
