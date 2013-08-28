@@ -158,13 +158,12 @@ static int mshci_prepare_data(MshciHost *host, MmcData *data)
 		pdesc_dmac++;
 	}
 
-	uint32_t data_start, data_len;
-	data_start = (uintptr_t)idmac_desc;
-	data_len = (uintptr_t)pdesc_dmac - (uintptr_t)idmac_desc + DMA_MINALIGN;
+	void *data_start = idmac_desc;
+	size_t data_len = (void *)pdesc_dmac - (void *)idmac_desc + DMA_MINALIGN;
 	dcache_clean_invalidate_by_mva(data_start, data_len);
 
-	data_start = (uint32_t)data->dest;
-	data_len  = (uint32_t)(data->blocks * data->blocksize);
+	data_start = data->dest;
+	data_len  = data->blocks * data->blocksize;
 	dcache_clean_invalidate_by_mva(data_start, data_len);
 
 	writel((unsigned int)virt_to_phys(idmac_desc), &host->reg->dbaddr);
@@ -312,10 +311,8 @@ static int s5p_mshci_send_command(MmcDevice *mmc, MmcCommand *cmd,
 		writel(mask, &host->reg->rintsts);
 
 		if (data->flags & MMC_DATA_READ) {
-			uint32_t data_base, data_len;
-			data_base = (uint32_t)data->dest;
-			data_len = data->blocks * data->blocksize;
-			dcache_clean_invalidate_by_mva(data_base, data_len);
+			size_t data_len = data->blocks * data->blocksize;
+			dcache_clean_invalidate_by_mva(data->dest, data_len);
 		}
 		mmc_debug("%s: clrbits32(ctrl, +DMA, +IDMAC)\n", __func__);
 		/* make sure disable IDMAC and IDMAC_Interrupts */

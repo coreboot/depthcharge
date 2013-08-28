@@ -22,6 +22,7 @@
 
 #include <assert.h>
 #include <libpayload.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include "base/time.h"
@@ -53,8 +54,9 @@ static void dwmci_prepare_data(DwmciHost *host, MmcData *data)
 {
 	unsigned long ctrl;
 	unsigned int i = 0, flags, cnt, blk_cnt;
-	unsigned long data_start, start_addr;
-	uint32_t data_len;
+	void *data_start;
+	void const *start_addr;
+	size_t data_len;
 	ALLOC_CACHE_ALIGN_BUFFER(DwmciIdmac, cur_idmac, data->blocks);
 
 
@@ -62,13 +64,13 @@ static void dwmci_prepare_data(DwmciHost *host, MmcData *data)
 
 	dwmci_wait_reset(host, DWMCI_CTRL_FIFO_RESET);
 
-	data_start = (unsigned long)cur_idmac;
-	dwmci_writel(host, DWMCI_DBADDR, (unsigned int)cur_idmac);
+	data_start = cur_idmac;
+	dwmci_writel(host, DWMCI_DBADDR, (uintptr_t)cur_idmac);
 
 	if (data->flags == MMC_DATA_READ)
-		start_addr = (unsigned int)data->dest;
+		start_addr = data->dest;
 	else
-		start_addr = (unsigned int)data->src;
+		start_addr = data->src;
 
 	do {
 		flags = DWMCI_IDMAC_OWN | DWMCI_IDMAC_CH ;
@@ -80,7 +82,7 @@ static void dwmci_prepare_data(DwmciHost *host, MmcData *data)
 			cnt = data->blocksize * 8;
 
 		dwmci_set_idma_desc(cur_idmac, flags, cnt,
-				start_addr + (i * PAGE_SIZE));
+				(uintptr_t)start_addr + (i * PAGE_SIZE));
 
 		if(blk_cnt < 8)
 			break;
@@ -89,7 +91,7 @@ static void dwmci_prepare_data(DwmciHost *host, MmcData *data)
 		i++;
 	} while(1);
 
-	data_len = (uintptr_t)cur_idmac - (uintptr_t)data_start;
+	data_len = (void *)cur_idmac - data_start;
 	dcache_clean_invalidate_by_mva(data_start, data_len + DMA_MINALIGN);
 
 	dcache_clean_invalidate_by_mva(start_addr,
@@ -221,8 +223,7 @@ static int dwmci_send_cmd(MmcDevice *mmc, MmcCommand *cmd, MmcData *data)
 			 * to the closest cache line boundary, ex:
 			 * data_len = ALIGN(data_end, dcache_get_line_size());
 			 */
-			dcache_invalidate_by_mva(
-					(unsigned long)data->dest, data_len);
+			dcache_invalidate_by_mva(data->dest, data_len);
 		}
 	}
 
