@@ -21,7 +21,11 @@
  */
 #ifndef __DRIVERS_STORAGE_EXYNOS_MSHC_H__
 #define __DRIVERS_STORAGE_EXYNOS_MSHC_H__
+
 #include <stdint.h>
+
+#include "drivers/storage/blockdev.h"
+#include "drivers/storage/mmc.h"
 
 /*  Control Register  Register */
 #define CTRL_RESET	(0x1 << 0)
@@ -153,22 +157,27 @@ typedef struct S5pMshci {
 	uint32_t cardthrctl;
 } S5pMshci;
 
-typedef struct MshciHost {
-	S5pMshci *reg;  /* Mapped address */
-	uint32_t clock;  /* Current clock in MHz */
-	int dev_index;  /* Device index */
-} MshciHost;
-
-/*
- * Struct idma
- * Holds the descriptor list
- */
+// Descriptor list for DMA
 typedef struct MshciIdmac {
 	uint32_t des0;
 	uint32_t des1;
 	uint32_t des2;
 	uint32_t des3;
 } MshciIdmac;
+
+typedef struct MshciHost {
+	MmcCtrlr mmc;
+
+	S5pMshci *regs;  // Mapped address
+	uint32_t clock;  // Current clock in MHz
+	uint32_t src_hz; // The frequency of the source clock
+	uint32_t clksel_val;
+
+	int removable;
+} MshciHost;
+
+MshciHost *new_mshci_host(void *ioaddr, uint32_t src_hz, int bus_width,
+			  int removable, uint32_t clksel_val);
 
 #endif /* __DRIVERS_STORAGE_EXYNOS_MSHC_H__ */
 

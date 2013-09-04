@@ -80,8 +80,8 @@ VbError_t VbExDiskFreeInfo(VbDiskInfo *infos,
 VbError_t VbExDiskRead(VbExDiskHandle_t handle, uint64_t lba_start,
 		       uint64_t lba_count, void *buffer)
 {
-	BlockDev *dev = (BlockDev *)handle;
-	if (dev->read(dev, lba_start, lba_count, buffer) != lba_count) {
+	BlockDevOps *ops = &((BlockDev *)handle)->ops;
+	if (ops->read(ops, lba_start, lba_count, buffer) != lba_count) {
 		printf("Read failed.\n");
 		return VBERROR_UNKNOWN;
 	}
@@ -91,8 +91,8 @@ VbError_t VbExDiskRead(VbExDiskHandle_t handle, uint64_t lba_start,
 VbError_t VbExDiskWrite(VbExDiskHandle_t handle, uint64_t lba_start,
 			uint64_t lba_count, const void *buffer)
 {
-	BlockDev *dev = (BlockDev *)handle;
-	if (dev->write(dev, lba_start, lba_count, buffer) != lba_count) {
+	BlockDevOps *ops = &((BlockDev *)handle)->ops;
+	if (ops->write(ops, lba_start, lba_count, buffer) != lba_count) {
 		printf("Write failed.\n");
 		return VBERROR_UNKNOWN;
 	}

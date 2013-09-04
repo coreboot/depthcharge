@@ -30,6 +30,8 @@
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/route.h"
 #include "drivers/sound/sound.h"
+#include "drivers/storage/blockdev.h"
+#include "drivers/storage/dw_mmc.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
 
@@ -72,6 +74,22 @@ static int board_setup(void)
 		return 1;
 	if (sound_set_ops(&sound_route->ops))
 		return 1;
+
+	DwmciHost *emmc = new_dwmci_host((void *)(uintptr_t)0x12200000,
+					 100000000, 8, 0,
+					 DWMCI_SET_SAMPLE_CLK(1) |
+					 DWMCI_SET_DRV_CLK(3) |
+					 DWMCI_SET_DIV_RATIO(3));
+	DwmciHost *sd_card = new_dwmci_host((void *)(uintptr_t)0x12220000,
+					    100000000, 4, 1,
+					    DWMCI_SET_SAMPLE_CLK(1) |
+					    DWMCI_SET_DRV_CLK(2) |
+					    DWMCI_SET_DIV_RATIO(3));
+	if (!emmc || !sd_card)
+		return 1;
+	list_insert_after(&emmc->mmc.ctrlr.list_node, &block_dev_controllers);
+	list_insert_after(&sd_card->mmc.ctrlr.list_node,
+			  &block_dev_controllers);
 
 	return 0;
 }

@@ -28,7 +28,14 @@
 #include "base/time.h"
 #include "drivers/storage/dw_mmc.h"
 
-#define PAGE_SIZE 4096
+enum {
+	DwmmcMaxFreq = 52000000,
+	DwmmcMinFreq = 400000
+};
+
+enum {
+	PageSize = 4096
+};
 
 static int dwmci_wait_reset(DwmciHost *host, uint32_t value)
 {
@@ -82,7 +89,7 @@ static void dwmci_prepare_data(DwmciHost *host, MmcData *data)
 			cnt = data->blocksize * 8;
 
 		dwmci_set_idma_desc(cur_idmac, flags, cnt,
-				(uintptr_t)start_addr + (i * PAGE_SIZE));
+				    (uint32_t)start_addr + (i * PageSize));
 
 		if(blk_cnt < 8)
 			break;
@@ -120,9 +127,9 @@ static int dwmci_set_transfer_mode(DwmciHost *host, MmcData *data)
 	return mode;
 }
 
-static int dwmci_send_cmd(MmcDevice *mmc, MmcCommand *cmd, MmcData *data)
+static int dwmci_send_cmd(MmcCtrlr *ctrlr, MmcCommand *cmd, MmcData *data)
 {
-	DwmciHost *host = (DwmciHost *)mmc->host;
+	DwmciHost *host = container_of(ctrlr, DwmciHost, mmc);
 	int flags = 0;
 	unsigned int busy_timeout_ms = 100, send_timeout_ms = 10;
 	uint32_t mask, ctrl;
@@ -162,7 +169,7 @@ static int dwmci_send_cmd(MmcDevice *mmc, MmcCommand *cmd, MmcData *data)
 
 	flags |= (cmd->cmdidx | DWMCI_CMD_START | DWMCI_CMD_USE_HOLD_REG);
 
-	mmc_debug("Sending CMD%d\n",cmd->cmdidx);
+	mmc_debug("Sending CMD%d\n", cmd->cmdidx);
 
 	dwmci_writel(host, DWMCI_CMD, flags);
 
@@ -238,19 +245,8 @@ static int dwmci_setup_bus(DwmciHost *host, uint32_t freq)
 
 	if ((freq == host->clock) || (freq == 0))
 		return 0;
-	/*
-	 * If host->mmc_clk didn't define,
-	 * then assume that host->bus_hz is source clock value.
-	 * host->bus_hz should be set from user.
-	 */
-	if (host->mmc_clk)
-		sclk = host->mmc_clk(host->dev_index);
-	else if (host->bus_hz)
-		sclk = host->bus_hz;
-	else {
-		printf("Didn't get source clock value..\n");
-		return -1;
-	}
+
+	sclk = host->src_hz / (DWMCI_GET_DIV_RATIO(host->clksel_val) + 1);
 
 	// Round up division.
 	div = (sclk + (2 * freq) - 1) / (2 * freq);
@@ -284,15 +280,16 @@ static int dwmci_setup_bus(DwmciHost *host, uint32_t freq)
 	return 0;
 }
 
-static void dwmci_set_ios(MmcDevice *mmc)
+static void dwmci_set_ios(MmcCtrlr *ctrlr)
 {
-	DwmciHost *host = (DwmciHost *)mmc->host;
+	DwmciHost *host = container_of(ctrlr, DwmciHost, mmc);
 	uint32_t ctype;
 
-	mmc_debug("Buswidth = %d, clock: %d\n",mmc->bus_width, mmc->clock);
+	mmc_debug("Buswidth = %d, clock: %d\n",
+		  ctrlr->bus_width, ctrlr->bus_hz);
 
-	dwmci_setup_bus(host, mmc->clock);
-	switch (mmc->bus_width) {
+	dwmci_setup_bus(host, ctrlr->bus_hz);
+	switch (ctrlr->bus_width) {
 	case 8:
 		ctype = DWMCI_CTYPE_8BIT;
 		break;
@@ -305,14 +302,12 @@ static void dwmci_set_ios(MmcDevice *mmc)
 	}
 
 	dwmci_writel(host, DWMCI_CTYPE, ctype);
-
-	if (host->clksel)
-		host->clksel(host);
+	dwmci_writel(host, DWMCI_CLKSEL, host->clksel_val);
 }
 
-static int dwmci_init(MmcDevice *mmc)
+static int dwmci_init(BlockDevCtrlrOps *me)
 {
-	DwmciHost *host = (DwmciHost *)mmc->host;
+	DwmciHost *host = container_of(me, DwmciHost, mmc.ctrlr.ops);
 	uint32_t fifo_size, fifoth_val;
 
 	dwmci_writel(host, EMMCP_MPSBEGIN0, 0);
@@ -325,12 +320,12 @@ static int dwmci_init(MmcDevice *mmc)
 	dwmci_writel(host, DWMCI_PWREN, 1);
 
 	if (!dwmci_wait_reset(host, DWMCI_RESET_ALL)) {
-		mmc_debug("%s[%d] Fail-reset!!\n",__func__,__LINE__);
+		printf("%s[%d] Reset failed!!\n", __func__, __LINE__);
 		return -1;
 	}
 
 	/* Enumerate at 400KHz */
-	dwmci_setup_bus(host, mmc->f_min);
+	dwmci_setup_bus(host, host->mmc.f_min);
 
 	dwmci_writel(host, DWMCI_RINTSTS, 0xFFFFFFFF);
 	dwmci_writel(host, DWMCI_INTMASK, 0);
@@ -354,66 +349,81 @@ static int dwmci_init(MmcDevice *mmc)
 	dwmci_writel(host, DWMCI_CLKENA, 0);
 	dwmci_writel(host, DWMCI_CLKSRC, 0);
 
+	if (!host->removable) {
+		if (mmc_setup_media(&host->mmc))
+			return -1;
+		host->mmc.media->dev.name = "dwmmc";
+		host->mmc.media->dev.removable = 0;
+		host->mmc.media->dev.ops.read = &block_mmc_read;
+		host->mmc.media->dev.ops.write = &block_mmc_write;
+		list_insert_after(&host->mmc.media->dev.list_node,
+				  &fixed_block_devices);
+	}
+
 	return 0;
 }
 
-int dw_mmc_register(DwmciHost *host, uint32_t max_clk, uint32_t min_clk,
-		    int removable, MmcDevice **refresh_list,
-		    int (*is_card_present)(MmcDevice *mmc))
+static int dwmci_refresh(BlockDevCtrlrOps *me)
 {
-	MmcDevice *mmc = (MmcDevice *)malloc(sizeof(*mmc));
-	BlockDev *block_dev = (BlockDev *)malloc(sizeof(*block_dev));
+	DwmciHost *host = container_of(me, DwmciHost, mmc.ctrlr.ops);
+	// CDETECT is active low
+	int present = !dwmci_readl(host, DWMCI_CDETECT);
 
-	assert(mmc && block_dev && host);
-
-	memset(mmc, 0, sizeof(*mmc));
-	memset(block_dev, 0, sizeof(*block_dev));
-
-	host->mmc = mmc;
-
-	mmc->host = host;
-	mmc->send_cmd = dwmci_send_cmd;
-	mmc->set_ios = dwmci_set_ios;
-	mmc->init = dwmci_init;
-	mmc->is_card_present = is_card_present;
-
-	mmc->voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
-	mmc->f_min = min_clk;
-	mmc->f_max = max_clk;
-	mmc->host_caps = host->caps;
-
-	if (host->buswidth == 8) {
-		mmc->host_caps |= MMC_MODE_8BIT;
-		mmc->host_caps &= ~MMC_MODE_4BIT;
-	} else {
-		mmc->host_caps |= MMC_MODE_4BIT;
-		mmc->host_caps &= ~MMC_MODE_8BIT;
-	}
-	mmc->host_caps |= MMC_MODE_HS | MMC_MODE_HS_52MHz | MMC_MODE_HC;
-
-	const int name_size = 16;
-	char *name = (char *)malloc(name_size);
-	snprintf(name, name_size, "dwmmc%d", host->dev_index);
-
-	block_dev->name = name;
-	block_dev->block_size = 512; // TODO(hungte) Probe correct value.
-	block_dev->removable = removable;
-
-	if (removable) {
-		block_mmc_register(block_dev, mmc, refresh_list);
-		mmc_debug("%s: removable registered (init on refresh)\n", name);
-	} else {
-		block_mmc_register(block_dev, mmc, NULL);
-		if (mmc_init(mmc)) {
-			mmc_error("%s: failed to init %s.\n", __func__, name);
-			free(name);
-			free(mmc);
-			free(block_dev);
+	if (present && !host->mmc.media) {
+		// A card is present and not set up yet. Get it ready.
+		if (mmc_setup_media(&host->mmc))
 			return -1;
-		}
-		list_insert_after(&block_dev->list_node, &fixed_block_devices);
-		mmc_debug("%s:  init success (reset OK): %s\n", __func__, name);
+		host->mmc.media->dev.name = "removable dwmmc";
+		host->mmc.media->dev.removable = 1;
+		host->mmc.media->dev.ops.read = &block_mmc_read;
+		host->mmc.media->dev.ops.write = &block_mmc_write;
+		list_insert_after(&host->mmc.media->dev.list_node,
+				  &removable_block_devices);
+	} else if (!present && host->mmc.media) {
+		// A card was present but isn't any more. Get rid of it.
+		list_remove(&host->mmc.media->dev.list_node);
+		free(host->mmc.media);
+		host->mmc.media = NULL;
 	}
 
 	return 0;
+}
+
+DwmciHost *new_dwmci_host(void *ioaddr, uint32_t src_hz, int bus_width,
+			  int removable, uint32_t clksel_val)
+{
+	DwmciHost *ctrlr = malloc(sizeof(*ctrlr));
+	if (!ctrlr) {
+		printf("Failed to allocate DWMCI host structure.\n");
+		return NULL;
+	}
+	memset(ctrlr, 0, sizeof(*ctrlr));
+
+	ctrlr->mmc.ctrlr.ops.init = &dwmci_init;
+	if (removable)
+		ctrlr->mmc.ctrlr.ops.refresh = &dwmci_refresh;
+
+	ctrlr->mmc.voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
+	ctrlr->mmc.f_min = DwmmcMinFreq;
+	ctrlr->mmc.f_max = DwmmcMaxFreq;
+	ctrlr->mmc.bus_width = bus_width;
+	ctrlr->mmc.bus_hz = ctrlr->mmc.f_min;
+	ctrlr->mmc.b_max = 65535; // Some controllers use 16-bit regs.
+	if (bus_width == 8) {
+		ctrlr->mmc.caps |= MMC_MODE_8BIT;
+		ctrlr->mmc.caps &= ~MMC_MODE_4BIT;
+	} else {
+		ctrlr->mmc.caps |= MMC_MODE_4BIT;
+		ctrlr->mmc.caps &= ~MMC_MODE_8BIT;
+	}
+	ctrlr->mmc.caps |= MMC_MODE_HS | MMC_MODE_HS_52MHz | MMC_MODE_HC;
+	ctrlr->mmc.send_cmd = &dwmci_send_cmd;
+	ctrlr->mmc.set_ios = &dwmci_set_ios;
+
+	ctrlr->ioaddr = ioaddr;
+	ctrlr->src_hz = src_hz;
+	ctrlr->clksel_val = clksel_val;
+	ctrlr->removable = removable;
+
+	return ctrlr;
 }

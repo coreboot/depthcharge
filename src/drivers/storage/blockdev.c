@@ -27,18 +27,22 @@ ListNode removable_block_devices;
 
 ListNode block_dev_controllers;
 
-void block_dev_init(void)
+int block_dev_init(void)
 {
 	BlockDevCtrlr *ctrlr;
+	int res = 0;
 	list_for_each(ctrlr, block_dev_controllers, list_node)
-		if (ctrlr->init)
-			ctrlr->init(ctrlr);
+		if (ctrlr->ops.init)
+			res = ctrlr->ops.init(&ctrlr->ops) | res;
+	return res;
 }
 
-void block_dev_refresh(void)
+int block_dev_refresh(void)
 {
 	BlockDevCtrlr *ctrlr;
+	int res = 0;
 	list_for_each(ctrlr, block_dev_controllers, list_node)
-		if (ctrlr->refresh)
-			ctrlr->refresh(ctrlr);
+		if (ctrlr->ops.refresh)
+			res = ctrlr->ops.refresh(&ctrlr->ops) | res;
+	return res;
 }

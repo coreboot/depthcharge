@@ -34,6 +34,8 @@
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/max98095.h"
 #include "drivers/sound/route.h"
+#include "drivers/storage/blockdev.h"
+#include "drivers/storage/exynos_mshc.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
 
@@ -95,6 +97,16 @@ static int board_setup(void)
 			  &sound_route->components);
 	if (sound_set_ops(&sound_route->ops))
 		return 1;
+
+	MshciHost *emmc = new_mshci_host((void *)(uintptr_t)0x12200000,
+					 400000000, 8, 0, 0x03030001);
+	MshciHost *sd_card = new_mshci_host((void *)(uintptr_t)0x12220000,
+					    400000000, 4, 1, 0x03020001);
+	if (!emmc || !sd_card)
+		return 1;
+	list_insert_after(&emmc->mmc.ctrlr.list_node, &block_dev_controllers);
+	list_insert_after(&sd_card->mmc.ctrlr.list_node,
+			  &block_dev_controllers);
 
 	return 0;
 }

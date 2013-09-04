@@ -30,24 +30,6 @@ config DRIVER_STORAGE_MSHC_S5P
 	bool "S5P MSHC/MMC driver"
 	default n
 
-config DRIVER_STORAGE_MSHC_S5P_DEVICES
-	depends on DRIVER_STORAGE_MSHC_S5P
-	int "Number of S5P MMC devices"
-
-# TODO(hungte) Verify if this default value is simply a special case.
-config DRIVER_STORAGE_MSHC_S5P_CLOCK_RATE
-	depends on DRIVER_STORAGE_MSHC_S5P
-	int "Clock rate of S5P MMC devices"
-        default 400000000
-
-config DRIVER_STORAGE_MSHC_S5P_MMC0_ADDRESS
-	hex "S5P MMC driver I/O address for MMC0"
-	depends on DRIVER_STORAGE_MSHC_S5P
-
-config DRIVER_STORAGE_MSHC_S5P_MMC1_ADDRESS
-	hex "S5P MMC driver I/O address for MMC1"
-	depends on DRIVER_STORAGE_MSHC_S5P
-
 config DRIVER_STORAGE_MMC_DW
 	depends on DRIVER_STORAGE_MMC
 	bool "DesignWare MMC driver"
@@ -57,7 +39,3 @@ config DRIVER_STORAGE_MMC_DW_EXYNOS
 	depends on DRIVER_STORAGE_MMC_DW
 	bool "DesignWare MMC driver for Exynos"
 	default n
-
-config DRIVER_STORAGE_MMC_DW_EXYNOS_DEVICES
-	depends on DRIVER_STORAGE_MMC_DW_EXYNOS
-	int "Number of DW MMC devices on Exynos boards"

@@ -203,15 +203,6 @@
 
 #define EXT_CSD_SIZE	(512)
 
-struct MmcCardIdentifer {
-	uint32_t psn;
-	uint16_t oid;
-	uint8_t mid;
-	uint8_t prv;
-	uint8_t mdt;
-	char pnm[7];
-};
-
 typedef struct MmcCommand {
 	uint16_t cmdidx;
 	uint32_t resp_type;
@@ -230,59 +221,57 @@ typedef struct MmcData {
 	uint32_t blocksize;
 } MmcData;
 
-typedef struct MmcDevice {
-	void *host;
+struct MmcMedia;
+typedef struct MmcMedia MmcMedia;
+
+typedef struct MmcCtrlr {
+	BlockDevCtrlr ctrlr;
+
+	MmcMedia *media;
+
 	uint32_t voltages;
-	uint32_t version;
-	uint32_t has_init;
 	uint32_t f_min;
 	uint32_t f_max;
-	int high_capacity;
 	uint32_t bus_width;
-	uint32_t clock;
-	uint32_t card_caps;
-	uint32_t host_caps;
-	uint32_t ocr;
-	uint32_t scr[2];
-	uint32_t csd[4];
-	uint32_t cid[4];
-	uint16_t rca;
-	uint32_t tran_speed;
+	uint32_t bus_hz;
+	uint32_t caps;
+	uint32_t b_max;
+
+	int (*send_cmd)(struct MmcCtrlr *me, MmcCommand *cmd, MmcData *data);
+	void (*set_ios)(struct MmcCtrlr *me);
+} MmcCtrlr;
+
+typedef struct MmcMedia {
+	BlockDev dev;
+
+	MmcCtrlr *ctrlr;
+
+	uint32_t caps;
+	uint32_t version;
 	uint32_t read_bl_len;
 	uint32_t write_bl_len;
 	uint64_t capacity;
-	uint32_t b_max;
-	lba_t lba;
-	int (*send_cmd)(struct MmcDevice *mmc, MmcCommand *cmd, MmcData *data);
-	void (*set_ios)(struct MmcDevice *mmc);
-	int (*init)(struct MmcDevice *mmc);
-	int (*is_card_present)(struct MmcDevice *mmc);
-	char op_cond_pending;  /* 1 if we are waiting on an op_cond command */
-	char init_in_progress;  /* 1 if we have done mmc_start_init() */
-	uint32_t op_cond_response;  /* the response byte from the last op_cond */
-	BlockDev *block_dev;
-	struct MmcDevice *next;  /* MMC device in same type (for refresh) */
-} MmcDevice;
+	int high_capacity;
+	uint32_t tran_speed;
+
+	uint32_t ocr;
+	uint16_t rca;
+	uint32_t scr[2];
+	uint32_t csd[4];
+	uint32_t cid[4];
+
+	uint32_t op_cond_response; // The response byte from the last op_cond
+} MmcMedia;
 
 int mmc_busy_wait_io(volatile uint32_t *address, uint32_t *output,
 		     uint32_t io_mask, uint32_t timeout_ms);
 int mmc_busy_wait_io_until(volatile uint32_t *address, uint32_t *output,
 			   uint32_t io_mask, uint32_t timeout_ms);
 
-int mmc_init(MmcDevice *mmc);
-int mmc_start_init(MmcDevice *mmc);
-int mmc_is_card_present(MmcDevice *mmc);
-int mmc_send_cmd(MmcDevice *mmc, MmcCommand *cmd, MmcData *data);
-void mmc_set_clock(MmcDevice *mmc, uint32_t clock);
-int mmc_read(MmcDevice *mmc, void *dst, uint32_t start, lba_t block_count);
-uint32_t mmc_write(MmcDevice *mmc, uint32_t start, lba_t block_count,
-		   const void *src);
+int mmc_setup_media(MmcCtrlr *ctrlr);
 
-void block_mmc_refresh(ListNode *block_node, MmcDevice *mmc);
-void block_mmc_ctrlr_refresh(BlockDevCtrlr *ctrlr);
-int block_mmc_register(BlockDev *dev, MmcDevice *mmc, MmcDevice **root);
-lba_t block_mmc_read(BlockDev *dev, lba_t start, lba_t count, void *buffer);
-lba_t block_mmc_write(BlockDev *dev, lba_t start, lba_t count,
+lba_t block_mmc_read(BlockDevOps *me, lba_t start, lba_t count, void *buffer);
+lba_t block_mmc_write(BlockDevOps *me, lba_t start, lba_t count,
 		      const void *buffer);
 
 // Helper macros for alignment.

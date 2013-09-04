@@ -164,7 +164,7 @@ typedef struct AhciSg {
 	uint32_t flags_size;
 } AhciSg;
 
-typedef struct AhciIoPorts {
+typedef struct AhciIoPort {
 	void *cmd_addr;
 	void *scr_addr;
 	void *port_mmio;
@@ -173,18 +173,20 @@ typedef struct AhciIoPorts {
 	void *cmd_tbl;
 	void *rx_fis;
 	int index;
-} AhciIoPorts;
+} AhciIoPort;
 
-typedef struct AhciHost {
+typedef struct AhciCtrlr {
+	BlockDevCtrlr ctrlr;
+
 	pcidev_t dev;
-	AhciIoPorts port[AHCI_MAX_PORTS];
+	AhciIoPort ports[AHCI_MAX_PORTS];
 	uint32_t n_ports;
 	void *mmio_base;
 	uint32_t cap;		// cache of HOST_CAP register
 	uint32_t port_map;	// cache of HOST_PORTS_IMPL reg
 	uint32_t link_port_map;	// linkup port map
-} AhciHost;
+} AhciCtrlr;
 
-void ahci_init(pcidev_t pdev);
+AhciCtrlr *new_ahci_ctrlr(pcidev_t dev);
 
 #endif /* __DRIVERS_STORAGE_AHCI_H__ */

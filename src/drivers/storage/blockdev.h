@@ -29,16 +29,20 @@
 
 typedef uint64_t lba_t;
 
+typedef struct BlockDevOps {
+	lba_t (*read)(struct BlockDevOps *me, lba_t start, lba_t count,
+		      void *buffer);
+	lba_t (*write)(struct BlockDevOps *me, lba_t start, lba_t count,
+		       const void *buffer);
+} BlockDevOps;
+
 typedef struct BlockDev {
+	BlockDevOps ops;
+
 	const char *name;
 	int removable;
 	unsigned block_size;
 	lba_t block_count;
-	lba_t (*read)(struct BlockDev *dev, lba_t start, lba_t count,
-		      void *buffer);
-	lba_t (*write)(struct BlockDev *dev, lba_t start, lba_t count,
-		       const void *buffer);
-	void *dev_data;
 
 	ListNode list_node;
 } BlockDev;
@@ -46,18 +50,20 @@ typedef struct BlockDev {
 extern ListNode fixed_block_devices;
 extern ListNode removable_block_devices;
 
-typedef struct BlockDevCtrlr {
-	void (*init)(struct BlockDevCtrlr *ctrlr);
-	void (*refresh)(struct BlockDevCtrlr *ctrlr);
+typedef struct BlockDevCtrlrOps {
+	int (*init)(struct BlockDevCtrlrOps *me);
+	int (*refresh)(struct BlockDevCtrlrOps *me);
+} BlockDevCtrlrOps;
 
-	void *ctrlr_data;
+typedef struct BlockDevCtrlr {
+	BlockDevCtrlrOps ops;
 
 	ListNode list_node;
 } BlockDevCtrlr;
 
 extern ListNode block_dev_controllers;
 
-void block_dev_init(void);
-void block_dev_refresh(void);
+int block_dev_init(void);
+int block_dev_refresh(void);
 
 #endif /* __DRIVERS_STORAGE_BLOCKDEV_H__ */

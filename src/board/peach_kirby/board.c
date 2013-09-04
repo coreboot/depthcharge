@@ -26,6 +26,8 @@
 #include "drivers/ec/cros/spi.h"
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/exynos5420.h"
+#include "drivers/storage/blockdev.h"
+#include "drivers/storage/dw_mmc.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
 
@@ -57,6 +59,15 @@ static int board_setup(void)
 	SpiFlash *flash = new_spi_flash(&spi1->ops, 0x400000);
 	if (!flash || flash_set_ops(&flash->ops))
 		return 1;
+
+	DwmciHost *emmc = new_dwmci_host((void *)(uintptr_t)0x12200000,
+					 100000000, 8, 0,
+					 DWMCI_SET_SAMPLE_CLK(1) |
+					 DWMCI_SET_DRV_CLK(3) |
+					 DWMCI_SET_DIV_RATIO(3));
+	if (!emmc)
+		return 1;
+	list_insert_after(&emmc->mmc.ctrlr.list_node, &block_dev_controllers);
 
 	return 0;
 }

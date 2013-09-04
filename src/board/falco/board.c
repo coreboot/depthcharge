@@ -20,13 +20,18 @@
  * MA 02111-1307 USA
  */
 
+#include <pci.h>
+
 #include "base/init_funcs.h"
+#include "base/list.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/lynxpoint_lp.h"
 #include "drivers/sound/hda_codec.h"
 #include "drivers/sound/sound.h"
+#include "drivers/storage/ahci.h"
+#include "drivers/storage/blockdev.h"
 #include "vboot/util/flag.h"
 
 static int board_setup(void)
@@ -52,6 +57,11 @@ static int board_setup(void)
 
 	// The realtek codec doesn't report its beep_nid (NID 1)
 	set_hda_beep_nid_override(codec, 1);
+
+	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 31, 2));
+	if (!ahci)
+		return 1;
+	list_insert_after(&ahci->ctrlr.list_node, &block_dev_controllers);
 
 	return 0;
 }

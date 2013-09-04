@@ -31,22 +31,28 @@
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/usb.h"
 
-static lba_t dc_usb_read(BlockDev *dev, lba_t start, lba_t count, void *buffer)
+typedef struct UsbDrive {
+	BlockDev dev;
+	usbdev_t *udev;
+} UsbDrive;
+
+static lba_t dc_usb_read(BlockDevOps *me, lba_t start, lba_t count,
+			 void *buffer)
 {
-	usbdev_t *udev = (usbdev_t *)(dev->dev_data);
-	if (readwrite_blocks_512(udev, start, count, cbw_direction_data_in,
-				 buffer))
+	UsbDrive *drive = container_of(me, UsbDrive, dev.ops);
+	if (readwrite_blocks_512(drive->udev, start, count,
+				 cbw_direction_data_in, buffer))
 		return 0;
 	else
 		return count;
 }
 
-static lba_t dc_usb_write(BlockDev *dev, lba_t start, lba_t count,
+static lba_t dc_usb_write(BlockDevOps *me, lba_t start, lba_t count,
 			  const void *buffer)
 {
-	usbdev_t *udev = (usbdev_t *)(dev->dev_data);
-	if (readwrite_blocks_512(udev, start, count, cbw_direction_data_out,
-				 (void *)buffer))
+	UsbDrive *drive = container_of(me, UsbDrive, dev.ops);
+	if (readwrite_blocks_512(drive->udev, start, count,
+				 cbw_direction_data_out, (void *)buffer))
 		return 0;
 	else
 		return count;
@@ -54,28 +60,31 @@ static lba_t dc_usb_write(BlockDev *dev, lba_t start, lba_t count,
 
 void usbdisk_create(usbdev_t *dev)
 {
-	BlockDev *bdev = (BlockDev *)malloc(sizeof(BlockDev));
 	usbmsc_inst_t *msc = MSC_INST(dev);
-
-	if (!bdev) {
+	UsbDrive *drive = malloc(sizeof(*drive));
+	if (!drive) {
 		printf("Failed to allocate USB block device!\n");
 		return;
 	}
-
+	memset(drive, 0, sizeof(*drive));
 	static const int name_size = 16;
 	char *name = malloc(name_size);
+	if (!name) {
+		printf("Failed to allocate space for the USB device name!\n");
+		return;
+	}
 	snprintf(name, name_size, "USB disk %d", dev->address);
-	bdev->name = name;
-	bdev->removable = 1;
-	bdev->block_size = msc->blocksize;
-	bdev->block_count = msc->numblocks;
-	bdev->read = &dc_usb_read;
-	bdev->write = &dc_usb_write;
-	bdev->dev_data = dev;
+	drive->dev.ops.read = &dc_usb_read;
+	drive->dev.ops.write = &dc_usb_write;
+	drive->dev.name = name;
+	drive->dev.removable = 1;
+	drive->dev.block_size = msc->blocksize;
+	drive->dev.block_count = msc->numblocks;
+	drive->udev = dev;
 
-	msc->data = bdev;
+	msc->data = drive;
 
-	list_insert_after(&bdev->list_node, &removable_block_devices);
+	list_insert_after(&drive->dev.list_node, &removable_block_devices);
 
 	printf("Added %s.\n", name);
 }
@@ -83,28 +92,29 @@ void usbdisk_create(usbdev_t *dev)
 void usbdisk_remove(usbdev_t *dev)
 {
 	usbmsc_inst_t *msc = MSC_INST(dev);
-	BlockDev *bdev = (BlockDev *)(msc->data);
-	assert(bdev);
+	UsbDrive *drive = (UsbDrive *)(msc->data);
+	assert(drive);
 
-	list_remove(&bdev->list_node);
-	printf("Removed %s.\n", bdev->name);
-	free((void *)bdev->name);
-	free(bdev);
+	list_remove(&drive->dev.list_node);
+	printf("Removed %s.\n", drive->dev.name);
+	free((void *)drive->dev.name);
+	free(drive);
 }
 
-static void usb_ctrlr_refresh(BlockDevCtrlr *ctrlr)
+static int usb_ctrlr_refresh(BlockDevCtrlrOps *me)
 {
 	dc_usb_initialize();
 	usb_poll();
+	return 0;
 }
 
 int usb_ctrlr_register(void)
 {
 	static BlockDevCtrlr usb =
 	{
-		NULL,
-		&usb_ctrlr_refresh,
-		NULL
+		.ops = {
+			.refresh = &usb_ctrlr_refresh
+		}
 	};
 
 	list_insert_after(&usb.list_node, &block_dev_controllers);

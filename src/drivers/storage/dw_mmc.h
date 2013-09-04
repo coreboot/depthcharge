@@ -22,7 +22,10 @@
 #ifndef __DRIVERS_STORAGE_DW_MMC_H__
 #define __DRIVERS_STORAGE_DW_MMC_H__
 
-#include <drivers/storage/mmc.h>
+#include <arch/io.h>
+
+#include "drivers/storage/blockdev.h"
+#include "drivers/storage/mmc.h"
 
 #define DWMCI_CTRL		0x000
 #define	DWMCI_PWREN		0x004
@@ -61,6 +64,7 @@
 #define DWMCI_IDINTEN		0x090
 #define DWMCI_DSCADDR		0x094
 #define DWMCI_BUFADDR		0x098
+#define DWMCI_CLKSEL		0x09C
 #define DWMCI_DATA		0x200
 #define EMMCP_MPSBEGIN0		0x1200
 #define EMMCP_SEND0		0x1204
@@ -148,22 +152,22 @@
 #define MPSCTRL_ENCRYPTION		(0x1<<1)
 #define MPSCTRL_VALID			(0x1<<0)
 
+/* CLKSEL register */
+#define DWMCI_SET_SAMPLE_CLK(x)	(x)
+#define DWMCI_SET_DRV_CLK(x)	((x) << 16)
+#define DWMCI_SET_DIV_RATIO(x)	((x) << 24)
+#define DWMCI_GET_DIV_RATIO(x)	(((x) >> 24) & 0x7)
+
 typedef struct DwmciHost {
-	char *name;
+	MmcCtrlr mmc;
+
 	void *ioaddr;
-	unsigned int quirks;
-	unsigned int caps;
-	unsigned int version;
-	unsigned int clock;
-	unsigned int bus_hz;
-	int dev_index;
-	int buswidth;
+	uint32_t clock;
+	uint32_t src_hz;
 	uint32_t clksel_val;
 	uint32_t fifoth_val;
-	MmcDevice *mmc;
 
-	void (*clksel)(struct DwmciHost *host);
-	unsigned int (*mmc_clk)(int dev_index);
+	int removable;
 } DwmciHost;
 
 typedef struct {
@@ -207,7 +211,6 @@ static inline void *dwmci_get_ioaddr(DwmciHost *host, int reg)
 	return (void *)((uint8_t *)host->ioaddr + reg);
 }
 
-int dw_mmc_register(DwmciHost *host, uint32_t max_clk, uint32_t min_clk,
-		    int removable, MmcDevice **refresh_list,
-		    int (*is_card_present)(MmcDevice *mmc));
+DwmciHost *new_dwmci_host(void *ioaddr, uint32_t src_hz, int bus_width,
+			  int removable, uint32_t clksel_val);
 #endif /* __DRIVERS_STORAGE_DW_MMC_H__ */
