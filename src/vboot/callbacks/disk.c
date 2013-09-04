@@ -24,6 +24,7 @@
 #include <libpayload.h>
 #include <vboot_api.h>
 
+#include "base/list.h"
 #include "drivers/storage/blockdev.h"
 
 static void setup_vb_disk_info(VbDiskInfo *disk, BlockDev *bdev)
@@ -40,33 +41,39 @@ VbError_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
 			  uint32_t disk_flags)
 {
 	*count = 0;
-	ListNode *node, *list;
-	static int need_init = 1;
 
-	if (need_init) {
-		block_dev_init();
-		need_init = 0;
+	// Figure out which devices/controllers to operate on.
+	ListNode *ctrlrs, *devs;
+	if (disk_flags & VB_DISK_FLAG_FIXED) {
+		devs = &fixed_block_devices;
+		ctrlrs = &fixed_block_dev_controllers;
+	} else {
+		devs = &removable_block_devices;
+		ctrlrs = &removable_block_dev_controllers;
 	}
 
-	if (disk_flags & VB_DISK_FLAG_FIXED) {
-		list = &fixed_block_devices;
-	} else {
-		block_dev_refresh();
-		list = &removable_block_devices;
+	// Update any controllers that need it.
+	BlockDevCtrlr *ctrlr;
+	list_for_each(ctrlr, *ctrlrs, list_node) {
+		if (ctrlr->ops.update && ctrlr->need_update &&
+		    ctrlr->ops.update(&ctrlr->ops)) {
+			return VBERROR_UNKNOWN;
+		}
 	}
 
 	// Count the devices.
-	for (node = list->next; node; node = node->next, (*count)++) {}
+	for (ListNode *node = devs->next; node; node = node->next, (*count)++)
+		;
 
 	// Allocate enough VbDiskInfo structures.
 	VbDiskInfo *disk = malloc(sizeof(VbDiskInfo) * *count);
 	*info_ptr = disk;
 
 	// Fill them from the BlockDev structures.
-	for (node = list->next; node; node = node->next) {
-		BlockDev *bdev = container_of(node, BlockDev, list_node);
+	BlockDev *bdev;
+	list_for_each(bdev, *devs, list_node)
 		setup_vb_disk_info(disk++, bdev);
-	}
+
 	return VBERROR_SUCCESS;
 }
 

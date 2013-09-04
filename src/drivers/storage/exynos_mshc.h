@@ -173,6 +173,7 @@ typedef struct MshciHost {
 	uint32_t src_hz; // The frequency of the source clock
 	uint32_t clksel_val;
 
+	int initialized;
 	int removable;
 } MshciHost;
 

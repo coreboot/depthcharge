@@ -51,19 +51,17 @@ extern ListNode fixed_block_devices;
 extern ListNode removable_block_devices;
 
 typedef struct BlockDevCtrlrOps {
-	int (*init)(struct BlockDevCtrlrOps *me);
-	int (*refresh)(struct BlockDevCtrlrOps *me);
+	int (*update)(struct BlockDevCtrlrOps *me);
 } BlockDevCtrlrOps;
 
 typedef struct BlockDevCtrlr {
 	BlockDevCtrlrOps ops;
 
+	int need_update;
 	ListNode list_node;
 } BlockDevCtrlr;
 
-extern ListNode block_dev_controllers;
-
-int block_dev_init(void);
-int block_dev_refresh(void);
+extern ListNode fixed_block_dev_controllers;
+extern ListNode removable_block_dev_controllers;
 
 #endif /* __DRIVERS_STORAGE_BLOCKDEV_H__ */

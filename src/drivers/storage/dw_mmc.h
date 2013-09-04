@@ -167,6 +167,7 @@ typedef struct DwmciHost {
 	uint32_t clksel_val;
 	uint32_t fifoth_val;
 
+	int initialized;
 	int removable;
 } DwmciHost;
 

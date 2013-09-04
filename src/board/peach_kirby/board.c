@@ -67,7 +67,8 @@ static int board_setup(void)
 					 DWMCI_SET_DIV_RATIO(3));
 	if (!emmc)
 		return 1;
-	list_insert_after(&emmc->mmc.ctrlr.list_node, &block_dev_controllers);
+	list_insert_after(&emmc->mmc.ctrlr.list_node,
+			  &fixed_block_dev_controllers);
 
 	return 0;
 }

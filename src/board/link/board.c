@@ -58,7 +58,7 @@ static int board_setup(void)
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 31, 2));
 	if (!ahci)
 		return 1;
-	list_insert_after(&ahci->ctrlr.list_node, &block_dev_controllers);
+	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
 
 	return 0;
 }

@@ -349,7 +349,39 @@ static int dwmci_init(BlockDevCtrlrOps *me)
 	dwmci_writel(host, DWMCI_CLKENA, 0);
 	dwmci_writel(host, DWMCI_CLKSRC, 0);
 
-	if (!host->removable) {
+	return 0;
+}
+
+static int dwmci_update(BlockDevCtrlrOps *me)
+{
+	DwmciHost *host = container_of(me, DwmciHost, mmc.ctrlr.ops);
+
+	if (!host->initialized && dwmci_init(me))
+		return -1;
+
+	host->initialized = 1;
+
+	if (host->removable) {
+		// CDETECT is active low
+		int present = !dwmci_readl(host, DWMCI_CDETECT);
+
+		if (present && !host->mmc.media) {
+			// A card is present and not set up yet. Get it ready.
+			if (mmc_setup_media(&host->mmc))
+				return -1;
+			host->mmc.media->dev.name = "removable dwmmc";
+			host->mmc.media->dev.removable = 1;
+			host->mmc.media->dev.ops.read = &block_mmc_read;
+			host->mmc.media->dev.ops.write = &block_mmc_write;
+			list_insert_after(&host->mmc.media->dev.list_node,
+					  &removable_block_devices);
+		} else if (!present && host->mmc.media) {
+			// A card was present but isn't any more. Get rid of it.
+			list_remove(&host->mmc.media->dev.list_node);
+			free(host->mmc.media);
+			host->mmc.media = NULL;
+		}
+	} else {
 		if (mmc_setup_media(&host->mmc))
 			return -1;
 		host->mmc.media->dev.name = "dwmmc";
@@ -358,32 +390,7 @@ static int dwmci_init(BlockDevCtrlrOps *me)
 		host->mmc.media->dev.ops.write = &block_mmc_write;
 		list_insert_after(&host->mmc.media->dev.list_node,
 				  &fixed_block_devices);
-	}
-
-	return 0;
-}
-
-static int dwmci_refresh(BlockDevCtrlrOps *me)
-{
-	DwmciHost *host = container_of(me, DwmciHost, mmc.ctrlr.ops);
-	// CDETECT is active low
-	int present = !dwmci_readl(host, DWMCI_CDETECT);
-
-	if (present && !host->mmc.media) {
-		// A card is present and not set up yet. Get it ready.
-		if (mmc_setup_media(&host->mmc))
-			return -1;
-		host->mmc.media->dev.name = "removable dwmmc";
-		host->mmc.media->dev.removable = 1;
-		host->mmc.media->dev.ops.read = &block_mmc_read;
-		host->mmc.media->dev.ops.write = &block_mmc_write;
-		list_insert_after(&host->mmc.media->dev.list_node,
-				  &removable_block_devices);
-	} else if (!present && host->mmc.media) {
-		// A card was present but isn't any more. Get rid of it.
-		list_remove(&host->mmc.media->dev.list_node);
-		free(host->mmc.media);
-		host->mmc.media = NULL;
+		host->mmc.ctrlr.need_update = 0;
 	}
 
 	return 0;
@@ -399,9 +406,8 @@ DwmciHost *new_dwmci_host(void *ioaddr, uint32_t src_hz, int bus_width,
 	}
 	memset(ctrlr, 0, sizeof(*ctrlr));
 
-	ctrlr->mmc.ctrlr.ops.init = &dwmci_init;
-	if (removable)
-		ctrlr->mmc.ctrlr.ops.refresh = &dwmci_refresh;
+	ctrlr->mmc.ctrlr.ops.update = &dwmci_update;
+	ctrlr->mmc.ctrlr.need_update = 1;
 
 	ctrlr->mmc.voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
 	ctrlr->mmc.f_min = DwmmcMinFreq;

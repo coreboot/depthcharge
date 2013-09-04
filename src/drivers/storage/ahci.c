@@ -586,6 +586,8 @@ static int ahci_ctrlr_init(BlockDevCtrlrOps *me)
 		}
 	}
 
+	ctrlr->ctrlr.need_update = 0;
+
 	return 0;
 }
 
@@ -598,7 +600,8 @@ AhciCtrlr *new_ahci_ctrlr(pcidev_t dev)
 	}
 	memset(ctrlr, 0, sizeof(*ctrlr));
 
-	ctrlr->ctrlr.ops.init = &ahci_ctrlr_init;
+	ctrlr->ctrlr.ops.update = &ahci_ctrlr_init;
+	ctrlr->ctrlr.need_update = 1;
 	ctrlr->dev = dev;
 
 	return ctrlr;

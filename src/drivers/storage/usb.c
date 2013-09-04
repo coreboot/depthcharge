@@ -101,7 +101,7 @@ void usbdisk_remove(usbdev_t *dev)
 	free(drive);
 }
 
-static int usb_ctrlr_refresh(BlockDevCtrlrOps *me)
+static int usb_ctrlr_update(BlockDevCtrlrOps *me)
 {
 	dc_usb_initialize();
 	usb_poll();
@@ -113,11 +113,12 @@ int usb_ctrlr_register(void)
 	static BlockDevCtrlr usb =
 	{
 		.ops = {
-			.refresh = &usb_ctrlr_refresh
-		}
+			.update = &usb_ctrlr_update
+		},
+		.need_update = 1
 	};
 
-	list_insert_after(&usb.list_node, &block_dev_controllers);
+	list_insert_after(&usb.list_node, &removable_block_dev_controllers);
 	return 0;
 }
 
