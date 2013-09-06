@@ -68,8 +68,6 @@ struct tpm_vendor_specific {
 	void (*cancel)(struct tpm_chip *);
 	uint8_t(*status)(struct tpm_chip *);
 	int locality;
-	unsigned long timeout_a, timeout_b, timeout_c, timeout_d; /* msec */
-	unsigned long duration[3];	/* msec */
 };
 
 struct tpm_chip {
