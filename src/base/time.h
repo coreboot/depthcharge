@@ -22,8 +22,6 @@
 
 #include <stdint.h>
 
-uint64_t timer_value(void);
-void timer_set_base_value(uint64_t new_base);
 uint64_t timer_us(uint64_t base);
 
 #endif /* __BASE_TIME_H__ */

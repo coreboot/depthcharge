@@ -42,7 +42,6 @@ static struct timestamp_table *ts_table;
 void timestamp_init(void)
 {
 	ts_table = lib_sysinfo.tstamp_table;
-	timer_set_base_value(ts_table->base_time);
 	timestamp_add_now(TS_START);
 }
 
