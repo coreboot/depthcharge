@@ -22,7 +22,7 @@
 
 #include <libpayload.h>
 
-#include "base/list.h"
+#include "base/container_of.h"
 #include "drivers/flash/memmapped.h"
 
 static void *mem_mapped_flash_read(FlashOps *me, uint32_t offset, uint32_t size)

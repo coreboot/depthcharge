@@ -10,6 +10,7 @@
 
 #include <libpayload.h>
 
+#include "base/container_of.h"
 #include "base/list.h"
 #include "drivers/sound/route.h"
 

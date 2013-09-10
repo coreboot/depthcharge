@@ -11,7 +11,7 @@
 #include <assert.h>
 #include <libpayload.h>
 
-#include "base/list.h"
+#include "base/container_of.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/bus/i2c/s3c24x0.h"
 

@@ -24,7 +24,7 @@
 #include <libpayload.h>
 #include <stdint.h>
 
-#include "base/list.h"
+#include "base/container_of.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/ich.h"
 #include "drivers/flash/ich_shared.h"
