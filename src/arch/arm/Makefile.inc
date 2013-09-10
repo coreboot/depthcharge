@@ -22,7 +22,6 @@ depthcharge-y += boot_asm.S
 depthcharge-y += commonparams.c
 depthcharge-$(CONFIG_KERNEL_FIT) += fit.c
 depthcharge-y += gcc.c
-depthcharge-y += pci_stub.c
 depthcharge-y += physmem.c
 depthcharge-y += memcpy.S
 depthcharge-y += memset.S
