@@ -24,44 +24,26 @@
 
 #include "drivers/tpm/tpm.h"
 
-uint32_t tis_wait_reg(uint8_t reg, uint8_t locality, uint8_t mask,
-		      uint8_t expected)
+int tis_init(void)
 {
 	printf("%s not implemented.\n", __func__);
 	halt();
 }
 
-int tis_command_ready(uint8_t locality)
+int tis_open(void)
 {
 	printf("%s not implemented.\n", __func__);
 	halt();
 }
 
-uint32_t tis_probe(void)
+int tis_close(void)
 {
 	printf("%s not implemented.\n", __func__);
 	halt();
 }
 
-uint32_t tis_senddata(const uint8_t *const data, uint32_t len)
-{
-	printf("%s not implemented.\n", __func__);
-	halt();
-}
-
-uint32_t tis_readresponse(uint8_t *buffer, uint32_t *len)
-{
-	printf("%s not implemented.\n", __func__);
-	halt();
-}
-
-uint32_t tpm_read(int locality, uint32_t reg)
-{
-	printf("%s not implemented.\n", __func__);
-	halt();
-}
-
-void tpm_write(uint32_t value, int locality,  uint32_t reg)
+int tis_sendrecv(const uint8_t *sendbuf, size_t send_size, uint8_t *recvbuf,
+			size_t *recv_len)
 {
 	printf("%s not implemented.\n", __func__);
 	halt();
