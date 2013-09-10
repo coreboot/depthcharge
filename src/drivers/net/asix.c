@@ -271,7 +271,7 @@ static int asix_init(GenericUsbDevice *gen_dev)
 	return 0;
 }
 
-int asix_ready(NetDevice *net_dev, int *ready)
+static int asix_ready(NetDevice *net_dev, int *ready)
 {
 	GenericUsbDevice *gen_dev = (GenericUsbDevice *)net_dev->dev_data;
 	usbdev_t *usb_dev = gen_dev->dev;
@@ -286,7 +286,7 @@ int asix_ready(NetDevice *net_dev, int *ready)
 	return 0;
 }
 
-int asix_send(NetDevice *net_dev, void *buf, uint16_t len)
+static int asix_send(NetDevice *net_dev, void *buf, uint16_t len)
 {
 	GenericUsbDevice *gen_dev = (GenericUsbDevice *)net_dev->dev_data;
 	usbdev_t *usb_dev = gen_dev->dev;
@@ -316,7 +316,7 @@ int asix_send(NetDevice *net_dev, void *buf, uint16_t len)
 	return 0;
 }
 
-int asix_recv(NetDevice *net_dev, void *buf, uint16_t *len, int maxlen)
+static int asix_recv(NetDevice *net_dev, void *buf, uint16_t *len, int maxlen)
 {
 	GenericUsbDevice *gen_dev = (GenericUsbDevice *)net_dev->dev_data;
 	usbdev_t *usb_dev = gen_dev->dev;
@@ -365,7 +365,7 @@ int asix_recv(NetDevice *net_dev, void *buf, uint16_t *len, int maxlen)
 	return 0;
 }
 
-const uip_eth_addr *asix_get_mac(NetDevice *net_dev)
+static const uip_eth_addr *asix_get_mac(NetDevice *net_dev)
 {
 	GenericUsbDevice *gen_dev = (GenericUsbDevice *)net_dev->dev_data;
 	usbdev_t *usb_dev = gen_dev->dev;
@@ -387,11 +387,10 @@ const uip_eth_addr *asix_get_mac(NetDevice *net_dev)
  */
 
 static NetDevice asix_network_device = {
-	&asix_ready,
-	&asix_recv,
-	&asix_send,
-	&asix_get_mac,
-	NULL
+	.ready = &asix_ready,
+	.recv = &asix_recv,
+	.send = &asix_send,
+	.get_mac = &asix_get_mac,
 };
 
 typedef struct AsixUsbId {
@@ -409,7 +408,7 @@ static const AsixUsbId supported_ids[] = {
 	{ 0x0b95, 0x772b },
 };
 
-int asix_probe(GenericUsbDevice *dev)
+static int asix_probe(GenericUsbDevice *dev)
 {
 	int i;
 	if (asix_network_device.dev_data)
@@ -431,7 +430,7 @@ int asix_probe(GenericUsbDevice *dev)
 	return 0;
 }
 
-void asix_remove(GenericUsbDevice *dev)
+static void asix_remove(GenericUsbDevice *dev)
 {
 	if (net_get_device() == &asix_network_device)
 		net_set_device(NULL);
@@ -439,8 +438,8 @@ void asix_remove(GenericUsbDevice *dev)
 }
 
 static GenericUsbDriver asix_usb_driver = {
-	&asix_probe,
-	&asix_remove,
+	.probe = &asix_probe,
+	.remove = &asix_remove,
 };
 
 static int asix_driver_register(void)

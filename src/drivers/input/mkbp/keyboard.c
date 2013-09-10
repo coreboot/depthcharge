@@ -247,7 +247,7 @@ static void mkbp_keyboard_init(void)
 	console_add_input_driver(&mkbp_keyboard);
 }
 
-int dc_mkbp_install_on_demand_input(void)
+static int dc_mkbp_install_on_demand_input(void)
 {
 	static OnDemandInput dev =
 	{

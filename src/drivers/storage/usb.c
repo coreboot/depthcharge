@@ -108,7 +108,7 @@ static int usb_ctrlr_update(BlockDevCtrlrOps *me)
 	return 0;
 }
 
-int usb_ctrlr_register(void)
+static int usb_ctrlr_register(void)
 {
 	static BlockDevCtrlr usb =
 	{

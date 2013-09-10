@@ -98,7 +98,7 @@ static int lp_pch_gpio_set_value(GpioOps *me, unsigned value)
 	return pch_gpio_set(gpio->num, LP_GPIO_CONF0_GPO_BIT, value);
 }
 
-int lp_pch_gpio_use(LpPchGpio *me, unsigned use)
+static int lp_pch_gpio_use(LpPchGpio *me, unsigned use)
 {
 	assert(me);
 	return pch_gpio_set(me->num, LP_GPIO_CONF0_MODE_BIT, use);

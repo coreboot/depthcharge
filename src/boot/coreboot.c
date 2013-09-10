@@ -151,7 +151,7 @@ static DeviceTreeFixup coreboot_fixup = {
 	&install_coreboot_data
 };
 
-int coreboot_setup(void)
+static int coreboot_setup(void)
 {
 	list_insert_after(&coreboot_fixup.list_node, &device_tree_fixups);
 	return 0;

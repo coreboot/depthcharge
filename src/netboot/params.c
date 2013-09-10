@@ -36,7 +36,7 @@ NetbootParam *netboot_params_val(NetbootParamId param)
 	return &netboot_params[param];
 }
 
-uintptr_t size32(uintptr_t size)
+static uintptr_t size32(uintptr_t size)
 {
 	return (size + sizeof(uint32_t) - 1) / sizeof(uint32_t);
 }

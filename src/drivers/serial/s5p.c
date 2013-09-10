@@ -73,15 +73,13 @@ static int s5p_getchar(void)
 
 static struct console_output_driver s5p_serial_output =
 {
-	NULL,
-	&s5p_putchar
+	.putchar = &s5p_putchar
 };
 
 static struct console_input_driver s5p_serial_input =
 {
-	NULL,
-	&s5p_havekey,
-	&s5p_getchar
+	.havekey = &s5p_havekey,
+	.getchar = &s5p_getchar
 };
 
 void serial_init(void)

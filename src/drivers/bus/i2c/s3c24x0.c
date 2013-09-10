@@ -218,8 +218,8 @@ static int i2c_readwrite(I2cRegs *regs, int read, uint8_t chip, uint32_t addr,
 	return 0;
 }
 
-int i2c_read(I2cOps *me, uint8_t chip, uint32_t addr, int addr_len,
-	     uint8_t *data, int data_len)
+static int i2c_read(I2cOps *me, uint8_t chip, uint32_t addr, int addr_len,
+		    uint8_t *data, int data_len)
 {
 	S3c24x0I2c *bus = container_of(me, S3c24x0I2c, ops);
 	I2cRegs *regs = bus->reg_addr;
@@ -234,8 +234,8 @@ int i2c_read(I2cOps *me, uint8_t chip, uint32_t addr, int addr_len,
 	return i2c_send_stop(regs) || res;
 }
 
-int i2c_write(I2cOps *me, uint8_t chip, uint32_t addr, int addr_len,
-	      uint8_t *data, int data_len)
+static int i2c_write(I2cOps *me, uint8_t chip, uint32_t addr, int addr_len,
+		     uint8_t *data, int data_len)
 {
 	S3c24x0I2c *bus = container_of(me, S3c24x0I2c, ops);
 	I2cRegs *regs = bus->reg_addr;

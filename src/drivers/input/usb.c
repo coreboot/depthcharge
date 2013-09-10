@@ -30,7 +30,7 @@ static void usb_input_init(void)
 	usb_poll();
 }
 
-int dc_usb_install_on_demand_input(void)
+static int dc_usb_install_on_demand_input(void)
 {
 	static OnDemandInput dev =
 	{

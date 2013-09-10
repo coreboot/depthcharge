@@ -30,7 +30,7 @@
 
 const uint8_t ReadCommand = 0x3;
 
-void *spi_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
+static void *spi_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
 {
 	SpiFlash *flash = container_of(me, SpiFlash, ops);
 	uint8_t *data = flash->cache + offset;

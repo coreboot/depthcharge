@@ -26,7 +26,7 @@
 #include "base/cleanup_funcs.h"
 #include "drivers/input/input.h"
 
-int dc_keyboard_install_on_demand_input(void)
+static int dc_keyboard_install_on_demand_input(void)
 {
 	static OnDemandInput dev =
 	{
@@ -40,13 +40,14 @@ int dc_keyboard_install_on_demand_input(void)
 
 INIT_FUNC(dc_keyboard_install_on_demand_input);
 
-int disconnect_keyboard_wrapper(struct CleanupFunc *cleanup, CleanupType type)
+static int disconnect_keyboard_wrapper(struct CleanupFunc *cleanup,
+				       CleanupType type)
 {
 	keyboard_disconnect();
 	return 0;
 }
 
-int dc_keyboard_install_cleanup(void)
+static int dc_keyboard_install_cleanup(void)
 {
 	static CleanupFunc dev =
 	{

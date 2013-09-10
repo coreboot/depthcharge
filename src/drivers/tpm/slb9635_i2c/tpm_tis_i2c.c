@@ -106,7 +106,7 @@ static struct tpm_inf_dev tpm_dev = {
  *
  * Return -EIO on error, 0 on success.
  */
-int iic_tpm_read(uint8_t addr, uint8_t *buffer, size_t len)
+static int iic_tpm_read(uint8_t addr, uint8_t *buffer, size_t len)
 {
 	int rc;
 	int count;

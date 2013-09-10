@@ -36,7 +36,7 @@ enum {
 	FIMD_WINCON_ENWIN_F = 1
 };
 
-int disable_fimd_dma(struct CleanupFunc *cleanup, CleanupType type)
+static int disable_fimd_dma(struct CleanupFunc *cleanup, CleanupType type)
 {
 	uint8_t *regs = (uint8_t *)cleanup->data;
 
@@ -60,7 +60,7 @@ CleanupFunc dma_cleanup = {
 	(void *)(uintptr_t)(CONFIG_DRIVER_VIDEO_EXYNOS5_BASE)
 };
 
-int install_dma_cleanup(void)
+static int install_dma_cleanup(void)
 {
 	list_insert_after(&dma_cleanup.list_node, &cleanup_funcs);
 	return 0;
