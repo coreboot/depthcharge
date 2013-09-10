@@ -24,6 +24,7 @@
 
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/tpm/slb9635_i2c/tpm.h"
+#include "drivers/tpm/tis_i2c.h"
 
 static I2cOps *bus;
 

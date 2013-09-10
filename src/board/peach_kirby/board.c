@@ -28,7 +28,7 @@
 #include "drivers/gpio/exynos5420.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/dw_mmc.h"
-#include "drivers/tpm/tpm.h"
+#include "drivers/tpm/tis_i2c.h"
 #include "vboot/util/flag.h"
 
 static int board_setup(void)

@@ -26,11 +26,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-struct I2cOps;
-typedef struct I2cOps I2cOps;
-
-void tis_set_i2c_bus(I2cOps *_bus);
-
 /*
  * tis_init()
  *

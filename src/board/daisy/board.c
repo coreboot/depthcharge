@@ -36,7 +36,7 @@
 #include "drivers/sound/route.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/exynos_mshc.h"
-#include "drivers/tpm/tpm.h"
+#include "drivers/tpm/tis_i2c.h"
 #include "vboot/util/flag.h"
 
 static uint32_t *i2c_cfg = (uint32_t *)(uintptr_t)(0x10050000 + 0x234);
