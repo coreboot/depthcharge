@@ -23,6 +23,7 @@
 #include <libpayload.h>
 
 #include "base/cleanup_funcs.h"
+#include "drivers/power/pch.h"
 #include "drivers/power/power.h"
 
 #define PM1_STS         0x00
@@ -49,9 +50,10 @@
  *
  * This function never returns.
  */
-void cold_reboot(void)
+static int pch_cold_reboot(PowerOps *me)
 {
-	run_cleanup_funcs(CleanupOnReboot);
+	if (run_cleanup_funcs(CleanupOnReboot))
+		return -1;
 
 	printf("Rebooting...\n");
 	outb(SYS_RST | RST_CPU, RST_CNT);
@@ -103,9 +105,10 @@ static void busmaster_disable(void)
  *
  * This function never returns.
  */
-void power_off(void)
+static int pch_power_off(PowerOps *me)
 {
-	run_cleanup_funcs(CleanupOnPowerOff);
+	if (run_cleanup_funcs(CleanupOnPowerOff))
+		return -1;
 
 	// Make sure this is an Intel chipset with the LPC device hard coded
 	// at 0:1f.0.
@@ -113,7 +116,7 @@ void power_off(void)
 	if (id != 0x8086) {
 		printf("Power off is not implemented for this chipset. "
 		       "Halting the CPU.\n");
-		halt();
+		return -1;
 	}
 
 	// Find the base address of the powermanagement registers.
@@ -148,3 +151,8 @@ void power_off(void)
 
 	halt();
 }
+
+PowerOps pch_power_ops = {
+	.cold_reboot = &pch_cold_reboot,
+	.power_off = &pch_power_off
+};

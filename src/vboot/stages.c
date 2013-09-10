@@ -83,7 +83,8 @@ int vboot_init(void)
 	VbError_t res = VbInit(&cparams, &iparams);
 	if (res != VBERROR_SUCCESS) {
 		printf("VbInit returned %d, Doing a cold reboot.\n", res);
-		cold_reboot();
+		if (cold_reboot())
+			return 1;
 	}
 
 	return vboot_do_init_out_flags(iparams.out_flags);
@@ -135,7 +136,8 @@ int vboot_select_firmware(void)
 	if (res != VBERROR_SUCCESS) {
 		printf("VbSelectFirmware returned %d, "
 		       "Doing a cold reboot.\n", res);
-		cold_reboot();
+		if (cold_reboot())
+			return 1;
 	}
 
 	enum VbSelectFirmware_t select = fparams.selected_firmware;
@@ -184,15 +186,18 @@ int vboot_select_and_load_kernel(void)
 	if (res == VBERROR_EC_REBOOT_TO_RO_REQUIRED) {
 		printf("Rebooting the EC to RO.\n");
 		reboot_ec_to_ro();
-		power_off();
+		if (power_off())
+			return 1;
 	} else if (res == VBERROR_SHUTDOWN_REQUESTED) {
 		printf("Powering off.\n");
-		power_off();
+		if (power_off())
+			return 1;
 	}
 	if (res != VBERROR_SUCCESS) {
 		printf("VbSelectAndLoadKernel returned %d, "
 		       "Doing a cold reboot.\n", res);
-		cold_reboot();
+		if (cold_reboot())
+			return 1;
 	}
 
 	timestamp_add_now(TS_CROSSYSTEM_DATA);

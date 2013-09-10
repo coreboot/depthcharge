@@ -19,4 +19,4 @@
 
 depthcharge-$(CONFIG_DRIVER_POWER_EXYNOS) += exynos.c
 depthcharge-$(CONFIG_DRIVER_POWER_PCH) += pch.c
-depthcharge-$(CONFIG_DRIVER_POWER_DUMMY) += dummy.c
+depthcharge-y += power.c

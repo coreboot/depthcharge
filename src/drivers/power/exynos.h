@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Google Inc.
+ * Copyright 2012 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -20,18 +20,11 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
+#ifndef __DRIVERS_POWER_EXYNOS_H__
+#define __DRIVERS_POWER_EXYNOS_H__
 
 #include "drivers/power/power.h"
 
-void cold_reboot(void)
-{
-	printf("Cold reboot not implemented. Hanging.\n");
-	halt();
-}
+PowerOps exynos_power_ops;
 
-void power_off(void)
-{
-	printf("Power off not implemented. Hanging.\n");
-	halt();
-}
+#endif /* __DRIVERS_POWER_EXYNOS_H__ */

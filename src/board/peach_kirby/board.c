@@ -26,6 +26,7 @@
 #include "drivers/ec/cros/spi.h"
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/exynos5420.h"
+#include "drivers/power/exynos.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/dw_mmc.h"
 #include "drivers/tpm/tis_i2c.h"
@@ -69,6 +70,9 @@ static int board_setup(void)
 		return 1;
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
+
+	if (power_set_ops(&exynos_power_ops))
+		return 1;
 
 	return 0;
 }

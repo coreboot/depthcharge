@@ -68,7 +68,8 @@ static void enable_graphics(void)
 		VbExNvStorageWrite(context.raw);
 
 		printf("Rebooting.\n");
-		cold_reboot();
+		if (cold_reboot())
+			halt();
 	}
 }
 

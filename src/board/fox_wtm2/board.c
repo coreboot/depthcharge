@@ -26,6 +26,7 @@
 #include "base/list.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
+#include "drivers/power/pch.h"
 #include "drivers/sound/hda_codec.h"
 #include "drivers/sound/sound.h"
 #include "drivers/storage/ahci.h"
@@ -45,6 +46,9 @@ static int board_setup(void)
 	if (!ahci)
 		return 1;
 	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
+
+	if (power_set_ops(&pch_power_ops))
+		return 1;
 
 	return 0;
 }

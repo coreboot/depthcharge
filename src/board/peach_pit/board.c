@@ -27,6 +27,7 @@
 #include "drivers/ec/cros/spi.h"
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/exynos5420.h"
+#include "drivers/power/exynos.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/route.h"
 #include "drivers/sound/sound.h"
@@ -91,6 +92,9 @@ static int board_setup(void)
 			  &fixed_block_dev_controllers);
 	list_insert_after(&sd_card->mmc.ctrlr.list_node,
 			  &removable_block_dev_controllers);
+
+	if (power_set_ops(&exynos_power_ops))
+		return 1;
 
 	return 0;
 }

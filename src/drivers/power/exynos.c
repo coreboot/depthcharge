@@ -24,11 +24,13 @@
 #include <stdint.h>
 
 #include "base/cleanup_funcs.h"
+#include "drivers/power/exynos.h"
 #include "drivers/power/power.h"
 
-void cold_reboot(void)
+static int exynos_cold_reboot(PowerOps *me)
 {
-	run_cleanup_funcs(CleanupOnReboot);
+	if (run_cleanup_funcs(CleanupOnReboot))
+		return -1;
 
 	uint32_t *inform1 = (uint32_t *)(uintptr_t)0x10040804;
 	uint32_t *swreset = (uint32_t *)(uintptr_t)0x10040400;
@@ -41,11 +43,17 @@ void cold_reboot(void)
 	halt();
 }
 
-void power_off(void)
+static int exynos_power_off(PowerOps *me)
 {
-	run_cleanup_funcs(CleanupOnPowerOff);
+	if (run_cleanup_funcs(CleanupOnPowerOff))
+		return -1;
 
 	uint32_t *pshold = (uint32_t *)(uintptr_t)0x1004330c;
 	writel(readl(pshold) & ~(1 << 8), pshold);
 	halt();
 }
+
+PowerOps exynos_power_ops = {
+	.cold_reboot = &exynos_cold_reboot,
+	.power_off = &exynos_power_off
+};

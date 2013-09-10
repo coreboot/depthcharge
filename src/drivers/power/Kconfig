@@ -15,23 +15,16 @@
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
-choice
-	prompt "Power management"
-	default DRIVER_POWER_DUMMY
-	help
-	  The driver for rebooting and powering off.
-
 config DRIVER_POWER_EXYNOS
-	bool "Exynos SOC"
+	bool "Exynos SOC power management"
+	default n
 	depends on ARCH_ARM
+	help
+	  Reboot or power off using registers in an Exynos SOC.
 
 config DRIVER_POWER_PCH
-	bool "Intel chipsets"
+	bool "Intel chipset power management"
+	default n
 	depends on ARCH_X86
 	help
 	  Reboot or power off using registers in the Intel chipset.
-
-config DRIVER_POWER_DUMMY
-	bool "dummy driver"
-
-endchoice
