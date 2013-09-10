@@ -13,7 +13,7 @@
 #include <arch/io.h>
 #include <libpayload.h>
 #include <pci.h>
-
+#include "base/list.h"
 #include "drivers/sound/hda_codec.h"
 
 #define HDA_ICII_COMMAND_REG 0x5C
@@ -248,12 +248,17 @@ static int audio_group_has_beep_node(uint32_t base, uint32_t nid)
  * the group contains a beep node, polls each node in the group until it is
  * found.
  */
-static uint32_t get_hda_beep_nid(uint32_t base)
+static uint32_t get_hda_beep_nid(HdaCodec *codec, uint32_t base)
 {
 	int rc;
 	uint32_t node_count = 0;
 	uint32_t current_nid = 0;
 	uint32_t end_nid;
+
+	if (codec->beep_nid_override != -1) {
+		rc = codec->beep_nid_override;
+		return rc;
+	}
 
 	rc = get_subnode_info(base, HDA_ROOT_NODE, &node_count, &current_nid);
 	if (rc < 0)
@@ -270,13 +275,13 @@ static uint32_t get_hda_beep_nid(uint32_t base)
 }
 
 /* Sets the beep generator with the given divisor. Pass 0 to disable beep. */
-static int set_beep_divisor(uint8_t divider)
+static int set_beep_divisor(HdaCodec *codec, uint8_t divider)
 {
 	uint32_t base;
 	uint32_t beep_nid;
 
 	base = get_hda_base();
-	beep_nid = get_hda_beep_nid(base);
+	beep_nid = get_hda_beep_nid(codec, base);
 	if (beep_nid <= 0) {
 		printf("Audio: Failed to find a beep-capable node.\n");
 		return -1;
@@ -288,6 +293,7 @@ static int set_beep_divisor(uint8_t divider)
 static int hda_codec_start(SoundOps *me, uint32_t frequency)
 {
 	uint8_t divider_val;
+	HdaCodec *codec = container_of(me, HdaCodec, ops);
 
 	if (frequency == 0)
 		divider_val = 0;	// off
@@ -298,12 +304,13 @@ static int hda_codec_start(SoundOps *me, uint32_t frequency)
 	else
 		divider_val = (uint8_t)(0xFF & (BEEP_FREQ_BASE / frequency));
 
-	return set_beep_divisor(divider_val);
+	return set_beep_divisor(codec, divider_val);
 }
 
 static int hda_codec_stop(SoundOps *me)
 {
-	return set_beep_divisor(0);
+	HdaCodec *codec = container_of(me, HdaCodec, ops);
+	return set_beep_divisor(codec, 0);
 }
 
 static int hda_codec_play(SoundOps *me, uint32_t msec, uint32_t frequency)
@@ -325,5 +332,11 @@ HdaCodec *new_hda_codec(void)
 	codec->ops.start = &hda_codec_start;
 	codec->ops.stop = &hda_codec_stop;
 	codec->ops.play = &hda_codec_play;
+	codec->beep_nid_override = -1;
 	return codec;
+}
+
+void set_hda_beep_nid_override(HdaCodec *codec, int nid)
+{
+	codec->beep_nid_override = nid;
 }
