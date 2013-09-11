@@ -28,6 +28,7 @@
 #include "drivers/bus/i2s/exynos5.h"
 #include "drivers/bus/i2s/i2s.h"
 #include "drivers/bus/spi/exynos5.h"
+#include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/i2c.h"
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/exynos5250.h"
@@ -112,6 +113,17 @@ static int board_setup(void)
 
 	if (power_set_ops(&exynos_power_ops))
 		return 1;
+
+	UsbHostController *usb_drd = new_usb_hc(XHCI,
+		(void *)(uintptr_t)0x12000000);
+	UsbHostController *usb_host = new_usb_hc(EHCI,
+		(void *)(uintptr_t)0x12110000);
+
+	if (!usb_host || !usb_drd)
+		return 1;
+
+	list_insert_after(&usb_drd->list_node, &usb_host_controllers);
+	list_insert_after(&usb_host->list_node, &usb_host_controllers);
 
 	return 0;
 }

@@ -26,6 +26,7 @@
 #include "drivers/bus/usb/usb.h"
 
 ListNode generic_usb_drivers;
+ListNode usb_host_controllers;
 
 void usb_generic_create(usbdev_t *dev)
 {
@@ -65,6 +66,17 @@ void usb_generic_remove(usbdev_t *dev)
 	dev->data = NULL;
 }
 
+UsbHostController *new_usb_hc(hc_type type, void *bar)
+{
+	UsbHostController *hc = malloc(sizeof(*hc));
+	if (!hc) {
+		printf("Failed to allocate USBHostController structure.\n");
+		return NULL;
+	}
+	hc->type = type;
+	hc->bar = (void *)bar;
+	return hc;
+}
 
 void dc_usb_initialize(void)
 {
@@ -73,5 +85,9 @@ void dc_usb_initialize(void)
 	if (need_init) {
 		usb_initialize();
 		need_init = 0;
+
+		UsbHostController *hc;
+		list_for_each(hc, usb_host_controllers, list_node)
+			usb_add_mmio_hc(hc->type, hc->bar);
 	}
 }

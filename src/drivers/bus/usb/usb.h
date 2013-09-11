@@ -45,7 +45,15 @@ typedef struct GenericUsbDevice {
 	void *dev_data;
 } GenericUsbDevice;
 
+typedef struct {
+	hc_type type;
+	void *bar;
+	ListNode list_node;
+} UsbHostController;
 
+extern ListNode usb_host_controllers;
+
+UsbHostController *new_usb_hc(hc_type type, void *bar);
 void dc_usb_initialize(void);
 
 #endif /* __DRIVERS_BUS_USB_USB_H__ */
