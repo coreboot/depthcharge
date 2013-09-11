@@ -30,6 +30,8 @@ config BOARD_FOX_BASKINGRIDGE
 	bool "fox baskingridge"
 config BOARD_FOX_WTM2
 	bool "fox wtm2"
+config BOARD_LEON
+	bool "leon"
 config BOARD_LINK
 	bool "link"
 config BOARD_LUMPY
@@ -57,6 +59,9 @@ source src/board/fox_baskingridge/Kconfig
 endif
 if BOARD_FOX_WTM2
 source src/board/fox_wtm2/Kconfig
+endif
+if BOARD_LEON
+source src/board/leon/Kconfig
 endif
 if BOARD_LINK
 source src/board/link/Kconfig
