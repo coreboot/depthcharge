@@ -20,6 +20,8 @@ menu "Board"
 choice
 	prompt "Board name"
 
+config BOARD_BELTINO
+	bool "beltino"
 config BOARD_BOLT
 	bool "bolt"
 config BOARD_DAISY
@@ -45,6 +47,9 @@ config BOARD_SLIPPY
 
 endchoice
 
+if BOARD_BELTINO
+source src/board/beltino/Kconfig
+endif
 if BOARD_BOLT
 source src/board/bolt/Kconfig
 endif
