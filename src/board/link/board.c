@@ -33,6 +33,8 @@
 #include "drivers/sound/sound.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
+#include "drivers/tpm/lpc.h"
+#include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
 
 static int board_setup(void)
@@ -62,6 +64,10 @@ static int board_setup(void)
 	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
 
 	if (power_set_ops(&pch_power_ops))
+		return 1;
+
+	LpcTpm *tpm = new_lpc_tpm((void *)(uintptr_t)0xfed40000);
+	if (!tpm || tpm_set_ops(&tpm->ops))
 		return 1;
 
 	return 0;

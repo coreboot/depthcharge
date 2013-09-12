@@ -20,12 +20,28 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __DRIVERS_TIS_I2C_H__
-#define __DRIVERS_TIS_I2C_H__
+#include <libpayload.h>
 
-struct I2cOps;
-typedef struct I2cOps I2cOps;
+#include "drivers/tpm/tpm.h"
 
-void tis_set_i2c_bus(I2cOps *_bus);
+static TpmOps *tpm_ops;
 
-#endif /* __DRIVERS_TIS_I2C_H__ */
+int tpm_set_ops(TpmOps *ops)
+{
+	if (tpm_ops) {
+		printf("%s: TPM ops already set.\n", __func__);
+		return -1;
+	}
+	tpm_ops = ops;
+	return 0;
+}
+
+int tpm_xmit(const uint8_t *sendbuf, size_t send_size,
+	     uint8_t *recvbuf, size_t *recv_len)
+{
+	if (!tpm_ops) {
+		printf("%s: No TPM ops set.\n", __func__);
+		return -1;
+	}
+	return tpm_ops->xmit(tpm_ops, sendbuf, send_size, recvbuf, recv_len);
+}

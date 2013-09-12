@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Google Inc.
+ * Copyright 2013 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -20,30 +20,28 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
-#include <vboot_api.h>
+#ifndef __DRIVERS_TPM_SLB9635_I2C_H__
+#define __DRIVERS_TPM_SLB9635_I2C_H__
 
-#include "drivers/tpm/tpm.h"
+#include "drivers/tpm/i2c.h"
 
-VbError_t VbExTpmInit(void)
+enum {
+	MaxTpmBufSize = 1260
+};
+
+enum i2c_chip_type {
+	SLB9635,
+	SLB9645,
+	UNKNOWN,
+};
+
+typedef struct Slb9635I2c
 {
-	return VBERROR_SUCCESS;
-}
+	I2cTpm base;
+	uint8_t buf[sizeof(uint8_t) + MaxTpmBufSize]; // addr + buff size
+	enum i2c_chip_type chip_type;
+} Slb9635I2c;
 
-VbError_t VbExTpmClose(void)
-{
-	return VBERROR_SUCCESS;
-}
+Slb9635I2c *new_slb9635_i2c(I2cOps *bus, uint8_t addr);
 
-VbError_t VbExTpmOpen(void)
-{
-	return VBERROR_SUCCESS;
-}
-
-VbError_t VbExTpmSendReceive(const uint8_t *request, uint32_t request_length,
-			     uint8_t *response, uint32_t *response_length)
-{
-	if (tpm_xmit(request, request_length, response, response_length))
-		return VBERROR_UNKNOWN;
-	return VBERROR_SUCCESS;
-}
+#endif /* __DRIVERS_TPM_SLB9635_I2C_H__ */

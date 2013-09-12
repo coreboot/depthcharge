@@ -38,7 +38,8 @@
 #include "drivers/sound/route.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/exynos_mshc.h"
-#include "drivers/tpm/tis_i2c.h"
+#include "drivers/tpm/slb9635_i2c.h"
+#include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
 
 static uint32_t *i2c_cfg = (uint32_t *)(0x10050000 + 0x234);
@@ -74,7 +75,9 @@ static int board_setup(void)
 		return 1;
 	cros_ec_set_bus(&cros_ec_i2c_bus->ops);
 
-	tis_set_i2c_bus(&i2c3->ops);
+	Slb9635I2c *tpm = new_slb9635_i2c(&i2c3->ops, 0x20);
+	if (!tpm || tpm_set_ops(&tpm->base.ops))
+		return 1;
 
 	Exynos5Spi *spi1 = new_exynos5_spi(0x12d30000);
 	if (!spi1)

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Google Inc.
+ * Copyright 2013 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -20,30 +20,23 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
-#include <vboot_api.h>
+#ifndef __DRIVERS_TPM_LPC_H__
+#define __DRIVERS_TPM_LPC_H__
 
+#include "base/cleanup_funcs.h"
 #include "drivers/tpm/tpm.h"
 
-VbError_t VbExTpmInit(void)
-{
-	return VBERROR_SUCCESS;
-}
+struct TpmRegs;
+typedef struct TpmRegs TpmRegs;
 
-VbError_t VbExTpmClose(void)
-{
-	return VBERROR_SUCCESS;
-}
+typedef struct {
+	TpmOps ops;
 
-VbError_t VbExTpmOpen(void)
-{
-	return VBERROR_SUCCESS;
-}
+	int initialized;
+	TpmRegs *regs;
+	CleanupFunc cleanup;
+} LpcTpm;
 
-VbError_t VbExTpmSendReceive(const uint8_t *request, uint32_t request_length,
-			     uint8_t *response, uint32_t *response_length)
-{
-	if (tpm_xmit(request, request_length, response, response_length))
-		return VBERROR_UNKNOWN;
-	return VBERROR_SUCCESS;
-}
+LpcTpm *new_lpc_tpm(void *addr);
+
+#endif /* __DRIVERS_TPM_LPC_H__ */

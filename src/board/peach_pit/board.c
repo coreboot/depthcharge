@@ -34,7 +34,8 @@
 #include "drivers/sound/sound.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/dw_mmc.h"
-#include "drivers/tpm/tis_i2c.h"
+#include "drivers/tpm/slb9635_i2c.h"
+#include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
 
 static int board_setup(void)
@@ -50,7 +51,9 @@ static int board_setup(void)
 	if (!i2c9)
 		return 1;
 
-	tis_set_i2c_bus(&i2c9->ops);
+	Slb9635I2c *tpm = new_slb9635_i2c(&i2c9->ops, 0x20);
+	if (!tpm || tpm_set_ops(&tpm->base.ops))
+		return 1;
 
 	Exynos5Spi *spi1 = new_exynos5_spi(0x12d30000);
 	Exynos5Spi *spi2 = new_exynos5_spi(0x12d40000);

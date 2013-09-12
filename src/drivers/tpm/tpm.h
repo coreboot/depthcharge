@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 Google Inc.
+ * Copyright 2013 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -26,47 +26,33 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/*
- * tis_init()
- *
- * Initialize the TPM device. Returns 0 on success or -1 on
- * failure (in case device probing did not succeed).
- */
-int tis_init(void);
+enum {
+	TpmCmdCountOffset = 2,
+	TpmCmdOrdinalOffset = 6
+};
+
+typedef struct TpmOps
+{
+	int (*xmit)(struct TpmOps *me, const uint8_t *sendbuf, size_t send_size,
+		    uint8_t *recvbuf, size_t *recv_len);
+} TpmOps;
+
+int tpm_set_ops(TpmOps *ops);
 
 /*
- * tis_open()
- *
- * Requests access to locality 0 for the caller. After all commands have been
- * completed the caller is supposed to call tis_close().
- *
- * Returns 0 on success, -1 on failure.
- */
-int tis_open(void);
-
-/*
- * tis_close()
- *
- * terminate the currect session with the TPM by releasing the locked
- * locality. Returns 0 on success of -1 on failure (in case lock
- * removal did not succeed).
- */
-int tis_close(void);
-
-/*
- * tis_sendrecv()
+ * tpm_xmit()
  *
  * Send the requested data to the TPM and then try to get its response
  *
  * @sendbuf - buffer of the data to send
  * @send_size size of the data to send
  * @recvbuf - memory to save the response to
- * @recv_len - pointer to the size of the response buffer
+ * @recv_len - pointer to the size of the response buffer, set to the number
+ *             of received bytes on completion
  *
- * Returns 0 on success (and places the number of response bytes at recv_len)
- * or -1 on failure.
+ * Returns 0 on success or -1 on failure.
  */
-int tis_sendrecv(const uint8_t *sendbuf, size_t send_size, uint8_t *recvbuf,
-			size_t *recv_len);
+int tpm_xmit(const uint8_t *sendbuf, size_t send_size,
+	     uint8_t *recvbuf, size_t *recv_len);
 
 #endif /* __DRIVERS_TPM_TPM_H__ */
