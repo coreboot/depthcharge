@@ -56,7 +56,8 @@ typedef struct FitConfigNode
 	FitImageNode *kernel_node;
 	const char *fdt;
 	FitImageNode *fdt_node;
-	const char *compat;
+	FdtProperty compat;
+	int compat_rank;
 
 	ListNode list_node;
 } FitConfigNode;
@@ -148,25 +149,40 @@ static FitImageNode *find_image(const char *name)
 	return NULL;
 }
 
-static const char *fdt_compat(void *blob, uint32_t start_offset)
+static int fdt_find_compat(void *blob, uint32_t start_offset, FdtProperty *prop)
 {
 	int offset = start_offset;
 	int size;
 
 	size = fdt_node_name(blob, offset, NULL);
 	if (!size)
-		return NULL;
+		return -1;
 	offset += size;
 
-	FdtProperty prop;
-	while ((size = fdt_next_property(blob, offset, &prop))) {
-		if (!strcmp("compatible", prop.name))
-			return prop.data;
+	while ((size = fdt_next_property(blob, offset, prop))) {
+		if (!strcmp("compatible", prop->name))
+			return 0;
 
 		offset += size;
 	}
 
-	return NULL;
+	prop->name = NULL;
+	return -1;
+}
+
+static int fit_check_compat(FdtProperty *compat_prop, const char *compat_name)
+{
+	int bytes = compat_prop->size;
+	const char *compat_str = compat_prop->data;
+
+	for (int pos = 0; bytes && compat_str[0]; pos++) {
+		if (!strncmp(compat_str, compat_name, bytes))
+			return pos;
+		int len = strlen(compat_str) + 1;
+		compat_str += len;
+		bytes -= len;
+	}
+	return -1;
 }
 
 static void update_chosen(DeviceTreeNode *chosen, char *cmd_line)
@@ -344,6 +360,7 @@ int fit_load(void *fit, char *cmd_line, void **kernel, uint32_t *kernel_size,
 	list_for_each(image, image_nodes, list_node)
 		printf("Image %s has %d bytes.\n", image->name, image->size);
 
+	printf("Compat preference: %s\n", compat_config_name);
 	// Process and list the configs.
 	list_for_each(config, config_nodes, list_node) {
 		if (config->kernel)
@@ -369,41 +386,59 @@ int fit_load(void *fit, char *cmd_line, void **kernel, uint32_t *kernel_size,
 			FdtHeader *fdt_header = (FdtHeader *)fdt_blob;
 			uint32_t fdt_offset =
 				betohl(fdt_header->structure_offset);
-			config->compat = fdt_compat(fdt_blob, fdt_offset);
+			if (fdt_find_compat(fdt_blob, fdt_offset,
+					    &config->compat)) {
+				config->compat_rank = -1;
+				config->compat.name = NULL;
+			} else {
+				config->compat_rank =
+					fit_check_compat(&config->compat,
+							 compat_config_name);
+			}
 		}
 
-		printf("Config %s, kernel %s", config->name, config->kernel);
-		if (config->fdt)
-			printf(", fdt %s", config->fdt);
-		if (config->compat)
-			printf(", compat '%s'", config->compat);
+		printf("Config %s", config->name);
 		if (default_config_name &&
 				!strcmp(config->name, default_config_name)) {
 			printf(" (default)");
 			default_config = config;
 		}
-		if (config->compat &&
-				!strcmp(config->compat, compat_config_name)) {
-			printf(" (compat)");
-			compat_config = config;
+		printf(", kernel %s", config->kernel);
+		if (config->fdt)
+			printf(", fdt %s", config->fdt);
+		if (config->compat.name) {
+			printf(", compat");
+			int bytes = config->compat.size;
+			const char *compat_str = config->compat.data;
+			for (int pos = 0; bytes && compat_str[0]; pos++) {
+				printf(" %s", compat_str);
+				if (pos == config->compat_rank)
+					printf(" (match)");
+				int len = strlen(compat_str) + 1;
+				compat_str += len;
+				bytes -= len;
+			}
+			if (!compat_config ||
+			    config->compat_rank > compat_config->compat_rank) {
+				compat_config = config;
+			}
 		}
 		printf("\n");
 	}
 
 	FitConfigNode *to_boot = NULL;
-	if (default_config)
-		to_boot = default_config;
-	if (compat_config)
+	if (compat_config) {
 		to_boot = compat_config;
-
-	if (!to_boot) {
+		printf("Choosing best match %s.\n", to_boot->name);
+	} else if (default_config) {
+		to_boot = default_config;
+		printf("No match, choosing default %s.\n", to_boot->name);
+	} else {
 		printf("No compatible or default configs. Giving up.\n");
 		// We're leaking memory here, but at this point we're beyond
 		// saving anyway.
 		return 1;
 	}
-
-	printf("Choosing config %s.\n", to_boot->name);
 
 	*kernel = to_boot->kernel_node->data;
 	*kernel_size = to_boot->kernel_node->size;
