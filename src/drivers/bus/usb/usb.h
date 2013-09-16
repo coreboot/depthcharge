@@ -28,7 +28,9 @@
 #include "base/list.h"
 
 struct GenericUsbDevice;
+struct UsbHostController;
 typedef struct GenericUsbDevice GenericUsbDevice;
+typedef void (UsbHcCallback)(struct UsbHostController *);
 
 typedef struct GenericUsbDriver {
 	int (*probe)(GenericUsbDevice *dev);
@@ -45,15 +47,17 @@ typedef struct GenericUsbDevice {
 	void *dev_data;
 } GenericUsbDevice;
 
-typedef struct {
+typedef struct UsbHostController {
 	hc_type type;
 	void *bar;
 	ListNode list_node;
+	UsbHcCallback *init_callback;
 } UsbHostController;
 
 extern ListNode usb_host_controllers;
 
 UsbHostController *new_usb_hc(hc_type type, uintptr_t bar);
+void set_usb_init_callback(UsbHostController *hc, UsbHcCallback *callback);
 void dc_usb_initialize(void);
 
 #endif /* __DRIVERS_BUS_USB_USB_H__ */

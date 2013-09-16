@@ -23,6 +23,7 @@
 #include "base/init_funcs.h"
 #include "drivers/bus/i2c/exynos5_usi.h"
 #include "drivers/bus/spi/exynos5.h"
+#include "drivers/bus/usb/exynos.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/spi.h"
 #include "drivers/flash/spi.h"
@@ -98,6 +99,9 @@ static int board_setup(void)
 
 	if (!usb_drd0 || !usb_drd1)
 		return 1;
+
+	set_usb_init_callback(usb_drd0, exynos5420_usbss_phy_tune);
+	set_usb_init_callback(usb_drd1, exynos5420_usbss_phy_tune);
 
 	list_insert_after(&usb_drd0->list_node, &usb_host_controllers);
 	list_insert_after(&usb_drd1->list_node, &usb_host_controllers);

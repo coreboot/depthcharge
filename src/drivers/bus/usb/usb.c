@@ -75,7 +75,13 @@ UsbHostController *new_usb_hc(hc_type type, uintptr_t bar)
 	}
 	hc->type = type;
 	hc->bar = (void *)bar;
+	hc->init_callback = NULL;
 	return hc;
+}
+
+void set_usb_init_callback(UsbHostController *hc, UsbHcCallback *callback)
+{
+	hc->init_callback = callback;
 }
 
 void dc_usb_initialize(void)
@@ -87,7 +93,10 @@ void dc_usb_initialize(void)
 		need_init = 0;
 
 		UsbHostController *hc;
-		list_for_each(hc, usb_host_controllers, list_node)
+		list_for_each(hc, usb_host_controllers, list_node) {
 			usb_add_mmio_hc(hc->type, hc->bar);
+			if (hc->init_callback)
+				hc->init_callback(hc);
+		}
 	}
 }

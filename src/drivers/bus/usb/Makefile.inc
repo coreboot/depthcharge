@@ -19,3 +19,6 @@
 
 depthcharge-y += usb.c
 depthcharge-$(CONFIG_DRIVER_LYNXPOINT_NO_EHCI) += lynxpoint.c
+
+# Not worth a Kconfig, let's just rely on --gc-sections
+depthcharge-y += exynos.c
