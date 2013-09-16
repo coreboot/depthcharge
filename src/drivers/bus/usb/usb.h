@@ -53,7 +53,7 @@ typedef struct {
 
 extern ListNode usb_host_controllers;
 
-UsbHostController *new_usb_hc(hc_type type, void *bar);
+UsbHostController *new_usb_hc(hc_type type, uintptr_t bar);
 void dc_usb_initialize(void);
 
 #endif /* __DRIVERS_BUS_USB_USB_H__ */

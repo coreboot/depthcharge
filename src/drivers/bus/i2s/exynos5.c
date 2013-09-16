@@ -200,7 +200,7 @@ static int i2s_send(I2sOps *me, uint32_t *data, unsigned int length)
 	return 0;
 }
 
-Exynos5I2s *new_exynos5_i2s(void *regs, int bits_per_sample,
+Exynos5I2s *new_exynos5_i2s(uintptr_t regs, int bits_per_sample,
 			    int channels, int lr_frame_size)
 {
 	Exynos5I2s *bus = malloc(sizeof(*bus));
@@ -210,7 +210,7 @@ Exynos5I2s *new_exynos5_i2s(void *regs, int bits_per_sample,
 	}
 	memset(bus, 0, sizeof(*bus));
 	bus->ops.send = &i2s_send;
-	bus->regs = regs;
+	bus->regs = (void *)regs;
 	bus->bits_per_sample = bits_per_sample;
 	bus->channels = channels;
 	bus->lr_frame_size = lr_frame_size;
@@ -319,7 +319,7 @@ static int i2s_send_multi(I2sOps *me, uint32_t *data, unsigned int length)
 	return 0;
 }
 
-Exynos5I2s *new_exynos5_i2s_multi(void *regs, int bits_per_sample,
+Exynos5I2s *new_exynos5_i2s_multi(uintptr_t regs, int bits_per_sample,
 				  int channels, int lr_frame_size)
 {
 	Exynos5I2s *bus = malloc(sizeof(*bus));
@@ -329,7 +329,7 @@ Exynos5I2s *new_exynos5_i2s_multi(void *regs, int bits_per_sample,
 	}
 	memset(bus, 0, sizeof(*bus));
 	bus->ops.send = &i2s_send_multi;
-	bus->regs = regs;
+	bus->regs = (void *)regs;
 	bus->bits_per_sample = bits_per_sample;
 	bus->channels = channels;
 	bus->lr_frame_size = lr_frame_size;

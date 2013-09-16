@@ -46,14 +46,14 @@ static int board_setup(void)
 		return 1;
 
 	Exynos5UsiI2c *i2c9 =
-		new_exynos5_usi_i2c((void *)(uintptr_t)0x12e10000, 400000);
+		new_exynos5_usi_i2c(0x12e10000, 400000);
 	if (!i2c9)
 		return 1;
 
 	tis_set_i2c_bus(&i2c9->ops);
 
-	Exynos5Spi *spi1 = new_exynos5_spi((void *)(uintptr_t)0x12d30000);
-	Exynos5Spi *spi2 = new_exynos5_spi((void *)(uintptr_t)0x12d40000);
+	Exynos5Spi *spi1 = new_exynos5_spi(0x12d30000);
+	Exynos5Spi *spi2 = new_exynos5_spi(0x12d40000);
 	if (!spi1 || !spi2)
 		return 1;
 
@@ -66,8 +66,7 @@ static int board_setup(void)
 	if (!flash || flash_set_ops(&flash->ops))
 		return 1;
 
-	Exynos5I2s *i2s0 = new_exynos5_i2s_multi(
-		(void *)(uintptr_t)0x03830000, 16, 2, 256);
+	Exynos5I2s *i2s0 = new_exynos5_i2s_multi(0x03830000, 16, 2, 256);
 	I2sSource *i2s_source = new_i2s_source(&i2s0->ops, 48000, 2, 16000);
 	if (!i2s_source)
 		return 1;
@@ -77,13 +76,11 @@ static int board_setup(void)
 	if (sound_set_ops(&sound_route->ops))
 		return 1;
 
-	DwmciHost *emmc = new_dwmci_host((void *)(uintptr_t)0x12200000,
-					 100000000, 8, 0,
+	DwmciHost *emmc = new_dwmci_host(0x12200000, 100000000, 8, 0,
 					 DWMCI_SET_SAMPLE_CLK(1) |
 					 DWMCI_SET_DRV_CLK(3) |
 					 DWMCI_SET_DIV_RATIO(3));
-	DwmciHost *sd_card = new_dwmci_host((void *)(uintptr_t)0x12220000,
-					    100000000, 4, 1,
+	DwmciHost *sd_card = new_dwmci_host(0x12220000, 100000000, 4, 1,
 					    DWMCI_SET_SAMPLE_CLK(1) |
 					    DWMCI_SET_DRV_CLK(2) |
 					    DWMCI_SET_DIV_RATIO(3));
@@ -97,10 +94,8 @@ static int board_setup(void)
 	if (power_set_ops(&exynos_power_ops))
 		return 1;
 
-	UsbHostController *usb_drd0 = new_usb_hc(XHCI,
-		(void *)(uintptr_t)0x12000000);
-	UsbHostController *usb_drd1 = new_usb_hc(XHCI,
-		(void *)(uintptr_t)0x12400000);
+	UsbHostController *usb_drd0 = new_usb_hc(XHCI, 0x12000000);
+	UsbHostController *usb_drd1 = new_usb_hc(XHCI, 0x12400000);
 
 	if (!usb_drd0 || !usb_drd1)
 		return 1;

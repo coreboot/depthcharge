@@ -250,7 +250,7 @@ static int i2c_write(I2cOps *me, uint8_t chip, uint32_t addr, int addr_len,
 	return i2c_send_stop(regs) || res;
 }
 
-S3c24x0I2c *new_s3c24x0_i2c(void *reg_addr)
+S3c24x0I2c *new_s3c24x0_i2c(uintptr_t reg_addr)
 {
 	S3c24x0I2c *bus = malloc(sizeof(*bus));
 	if (!bus)
@@ -259,6 +259,6 @@ S3c24x0I2c *new_s3c24x0_i2c(void *reg_addr)
 
 	bus->ops.read = &i2c_read;
 	bus->ops.write = &i2c_write;
-	bus->reg_addr = reg_addr;
+	bus->reg_addr = (void *)reg_addr;
 	return bus;
 }

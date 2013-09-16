@@ -517,7 +517,7 @@ static int s5p_mshc_update(BlockDevCtrlrOps *me)
 	return 0;
 }
 
-MshciHost *new_mshci_host(void *ioaddr, uint32_t src_hz, int bus_width,
+MshciHost *new_mshci_host(uintptr_t ioaddr, uint32_t src_hz, int bus_width,
 			  int removable, uint32_t clksel_val)
 {
 	MshciHost *ctrlr = malloc(sizeof(*ctrlr));
@@ -547,7 +547,7 @@ MshciHost *new_mshci_host(void *ioaddr, uint32_t src_hz, int bus_width,
 	ctrlr->mmc.send_cmd = &s5p_mshci_send_command;
 	ctrlr->mmc.set_ios = &s5p_mshci_set_ios;
 
-	ctrlr->regs = ioaddr;
+	ctrlr->regs = (void *)ioaddr;
 	ctrlr->src_hz = src_hz;
 	ctrlr->clksel_val = clksel_val;
 	ctrlr->removable = removable;

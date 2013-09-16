@@ -30,6 +30,6 @@ typedef struct Exynos5UsiI2c
 	int ready;
 } Exynos5UsiI2c;
 
-Exynos5UsiI2c *new_exynos5_usi_i2c(void *reg_addr, unsigned frequency);
+Exynos5UsiI2c *new_exynos5_usi_i2c(uintptr_t reg_addr, unsigned frequency);
 
 #endif /* __DRIVERS_BUS_I2C_EXYNOS5_USI_H__ */

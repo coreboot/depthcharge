@@ -177,7 +177,7 @@ typedef struct MshciHost {
 	int removable;
 } MshciHost;
 
-MshciHost *new_mshci_host(void *ioaddr, uint32_t src_hz, int bus_width,
+MshciHost *new_mshci_host(uintptr_t ioaddr, uint32_t src_hz, int bus_width,
 			  int removable, uint32_t clksel_val);
 
 #endif /* __DRIVERS_STORAGE_EXYNOS_MSHC_H__ */

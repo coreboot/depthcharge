@@ -66,7 +66,7 @@ void usb_generic_remove(usbdev_t *dev)
 	dev->data = NULL;
 }
 
-UsbHostController *new_usb_hc(hc_type type, void *bar)
+UsbHostController *new_usb_hc(hc_type type, uintptr_t bar)
 {
 	UsbHostController *hc = malloc(sizeof(*hc));
 	if (!hc) {

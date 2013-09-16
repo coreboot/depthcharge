@@ -41,7 +41,7 @@
 #include "drivers/tpm/tis_i2c.h"
 #include "vboot/util/flag.h"
 
-static uint32_t *i2c_cfg = (uint32_t *)(uintptr_t)(0x10050000 + 0x234);
+static uint32_t *i2c_cfg = (uint32_t *)(0x10050000 + 0x234);
 
 static int board_setup(void)
 {
@@ -54,9 +54,9 @@ static int board_setup(void)
 	// Switch from hi speed I2C to the normal one.
 	writel(0x0, i2c_cfg);
 
-	S3c24x0I2c *i2c3 = new_s3c24x0_i2c((void *)(uintptr_t)0x12c90000);
-	S3c24x0I2c *i2c4 = new_s3c24x0_i2c((void *)(uintptr_t)0x12ca0000);
-	S3c24x0I2c *i2c7 = new_s3c24x0_i2c((void *)(uintptr_t)0x12cd0000);
+	S3c24x0I2c *i2c3 = new_s3c24x0_i2c(0x12c90000);
+	S3c24x0I2c *i2c4 = new_s3c24x0_i2c(0x12ca0000);
+	S3c24x0I2c *i2c7 = new_s3c24x0_i2c(0x12cd0000);
 	if (!i2c3 || !i2c4 || !i2c7)
 		return 1;
 
@@ -76,15 +76,14 @@ static int board_setup(void)
 
 	tis_set_i2c_bus(&i2c3->ops);
 
-	Exynos5Spi *spi1 = new_exynos5_spi((void *)(uintptr_t)0x12d30000);
+	Exynos5Spi *spi1 = new_exynos5_spi(0x12d30000);
 	if (!spi1)
 		return 1;
 	SpiFlash *flash = new_spi_flash(&spi1->ops, 0x400000);
 	if (!flash || flash_set_ops(&flash->ops))
 		return 1;
 
-	Exynos5I2s *i2s1 = new_exynos5_i2s((void *)(uintptr_t)0x12d60000,
-					   16, 2, 256);
+	Exynos5I2s *i2s1 = new_exynos5_i2s(0x12d60000, 16, 2, 256);
 	I2sSource *i2s_source = new_i2s_source(&i2s1->ops, 48000, 2, 16000);
 	if (!i2s_source)
 		return 1;
@@ -100,10 +99,10 @@ static int board_setup(void)
 	if (sound_set_ops(&sound_route->ops))
 		return 1;
 
-	MshciHost *emmc = new_mshci_host((void *)(uintptr_t)0x12200000,
-					 400000000, 8, 0, 0x03030001);
-	MshciHost *sd_card = new_mshci_host((void *)(uintptr_t)0x12220000,
-					    400000000, 4, 1, 0x03020001);
+	MshciHost *emmc = new_mshci_host(0x12200000, 400000000,
+					 8, 0, 0x03030001);
+	MshciHost *sd_card = new_mshci_host(0x12220000, 400000000,
+					    4, 1, 0x03020001);
 	if (!emmc || !sd_card)
 		return 1;
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
@@ -114,10 +113,8 @@ static int board_setup(void)
 	if (power_set_ops(&exynos_power_ops))
 		return 1;
 
-	UsbHostController *usb_drd = new_usb_hc(XHCI,
-		(void *)(uintptr_t)0x12000000);
-	UsbHostController *usb_host = new_usb_hc(EHCI,
-		(void *)(uintptr_t)0x12110000);
+	UsbHostController *usb_drd = new_usb_hc(XHCI, 0x12000000);
+	UsbHostController *usb_host = new_usb_hc(EHCI, 0x12110000);
 
 	if (!usb_host || !usb_drd)
 		return 1;

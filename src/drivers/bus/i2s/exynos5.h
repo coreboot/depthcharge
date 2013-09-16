@@ -35,10 +35,10 @@ typedef struct
 	int lr_frame_size;
 } Exynos5I2s;
 
-Exynos5I2s *new_exynos5_i2s(void *regs, int bits_per_sample,
+Exynos5I2s *new_exynos5_i2s(uintptr_t regs, int bits_per_sample,
 			    int channels, int lr_frame_size);
 
-Exynos5I2s *new_exynos5_i2s_multi(void *regs, int bits_per_sample,
+Exynos5I2s *new_exynos5_i2s_multi(uintptr_t regs, int bits_per_sample,
 				  int channels, int lr_frame_size);
 
 #endif /* __DRIVERS_BUS_I2S_EXYNOS5_H__ */

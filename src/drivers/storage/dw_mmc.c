@@ -396,7 +396,7 @@ static int dwmci_update(BlockDevCtrlrOps *me)
 	return 0;
 }
 
-DwmciHost *new_dwmci_host(void *ioaddr, uint32_t src_hz, int bus_width,
+DwmciHost *new_dwmci_host(uintptr_t ioaddr, uint32_t src_hz, int bus_width,
 			  int removable, uint32_t clksel_val)
 {
 	DwmciHost *ctrlr = malloc(sizeof(*ctrlr));
@@ -426,7 +426,7 @@ DwmciHost *new_dwmci_host(void *ioaddr, uint32_t src_hz, int bus_width,
 	ctrlr->mmc.send_cmd = &dwmci_send_cmd;
 	ctrlr->mmc.set_ios = &dwmci_set_ios;
 
-	ctrlr->ioaddr = ioaddr;
+	ctrlr->ioaddr = (void *)ioaddr;
 	ctrlr->src_hz = src_hz;
 	ctrlr->clksel_val = clksel_val;
 	ctrlr->removable = removable;

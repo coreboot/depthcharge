@@ -273,7 +273,7 @@ static int exynos5_spi_stop(SpiOps *me)
 	return 0;
 }
 
-Exynos5Spi *new_exynos5_spi(void *reg_addr)
+Exynos5Spi *new_exynos5_spi(uintptr_t reg_addr)
 {
 	Exynos5Spi *bus = malloc(sizeof(*bus));
 	if (!bus) {
@@ -284,6 +284,6 @@ Exynos5Spi *new_exynos5_spi(void *reg_addr)
 	bus->ops.start = &exynos5_spi_start;
 	bus->ops.transfer = &exynos5_spi_transfer;
 	bus->ops.stop = &exynos5_spi_stop;
-	bus->reg_addr = reg_addr;
+	bus->reg_addr = (void *)reg_addr;
 	return bus;
 }

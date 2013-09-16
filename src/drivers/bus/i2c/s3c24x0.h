@@ -29,6 +29,6 @@ typedef struct S3c24x0I2c
 	int ready;
 } S3c24x0I2c;
 
-S3c24x0I2c *new_s3c24x0_i2c(void *reg_addr);
+S3c24x0I2c *new_s3c24x0_i2c(uintptr_t reg_addr);
 
 #endif /* __DRIVERS_BUS_I2C_S3C24X0_H__ */

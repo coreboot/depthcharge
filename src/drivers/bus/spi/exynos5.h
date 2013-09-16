@@ -30,6 +30,6 @@ typedef struct Exynos5Spi
 	int started;
 } Exynos5Spi;
 
-Exynos5Spi *new_exynos5_spi(void *reg_addr);
+Exynos5Spi *new_exynos5_spi(uintptr_t reg_addr);
 
 #endif /* __DRIVERS_BUS_SPI_EXYNOS5_H__ */

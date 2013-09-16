@@ -212,6 +212,6 @@ static inline void *dwmci_get_ioaddr(DwmciHost *host, int reg)
 	return (void *)((uint8_t *)host->ioaddr + reg);
 }
 
-DwmciHost *new_dwmci_host(void *ioaddr, uint32_t src_hz, int bus_width,
+DwmciHost *new_dwmci_host(uintptr_t ioaddr, uint32_t src_hz, int bus_width,
 			  int removable, uint32_t clksel_val);
 #endif /* __DRIVERS_STORAGE_DW_MMC_H__ */

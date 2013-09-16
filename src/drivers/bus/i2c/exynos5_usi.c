@@ -374,7 +374,7 @@ static int exynos5_usi_i2c_read(I2cOps *me, uint8_t chip,
 	return 0;
 }
 
-Exynos5UsiI2c *new_exynos5_usi_i2c(void *reg_addr, unsigned frequency)
+Exynos5UsiI2c *new_exynos5_usi_i2c(uintptr_t reg_addr, unsigned frequency)
 {
 	Exynos5UsiI2c *bus = malloc(sizeof(*bus));
 	if (!bus) {
@@ -385,7 +385,7 @@ Exynos5UsiI2c *new_exynos5_usi_i2c(void *reg_addr, unsigned frequency)
 
 	bus->ops.read = &exynos5_usi_i2c_read;
 	bus->ops.write = &exynos5_usi_i2c_write;
-	bus->reg_addr = reg_addr;
+	bus->reg_addr = (void *)reg_addr;
 	bus->frequency = frequency;
 	return bus;
 }
