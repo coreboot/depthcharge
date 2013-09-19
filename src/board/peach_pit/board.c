@@ -28,6 +28,7 @@
 #include "drivers/ec/cros/spi.h"
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/exynos5420.h"
+#include "drivers/gpio/sysinfo.h"
 #include "drivers/power/exynos.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/route.h"
@@ -40,10 +41,11 @@
 
 static int board_setup(void)
 {
-	Exynos5420Gpio *ec_in_rw = new_exynos5420_gpio_input(GPIO_X, 2, 3);
-	if (!ec_in_rw)
+	if (sysinfo_install_flags())
 		return 1;
-	if (flag_install(FLAG_ECINRW, &ec_in_rw->ops))
+
+	Exynos5420Gpio *ec_in_rw = new_exynos5420_gpio_input(GPIO_X, 2, 3);
+	if (!ec_in_rw || flag_install(FLAG_ECINRW, &ec_in_rw->ops))
 		return 1;
 
 	Exynos5UsiI2c *i2c9 =

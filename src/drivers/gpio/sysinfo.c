@@ -25,6 +25,7 @@
 
 #include "base/container_of.h"
 #include "drivers/gpio/gpio.h"
+#include "vboot/util/flag.h"
 
 typedef struct SysinfoGpio {
 	GpioOps ops;
@@ -111,3 +112,13 @@ static SysinfoGpio oprom = {
 	.label = "oprom"
 };
 GpioOps *sysinfo_oprom = &oprom.ops;
+
+int sysinfo_install_flags(void)
+{
+	return flag_install(FLAG_WPSW, sysinfo_write_protect) ||
+		flag_install(FLAG_RECSW, sysinfo_recovery) ||
+		flag_install(FLAG_DEVSW, sysinfo_developer) ||
+		flag_install(FLAG_LIDSW, sysinfo_lid) ||
+		flag_install(FLAG_PWRSW, sysinfo_power) ||
+		flag_install(FLAG_OPROM, sysinfo_oprom);
+}

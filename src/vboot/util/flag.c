@@ -25,7 +25,6 @@
 #include "base/init_funcs.h"
 #include "config.h"
 #include "drivers/gpio/gpio.h"
-#include "drivers/gpio/sysinfo.h"
 #include "vboot/util/flag.h"
 
 static GpioOps *flag_gpios[FLAG_MAX_FLAG];
@@ -48,6 +47,18 @@ int flag_fetch(FlagIndex index)
 	return gpio->get(gpio);
 }
 
+int flag_replace(FlagIndex index, GpioOps *gpio)
+{
+	if (index < 0 || index >= FLAG_MAX_FLAG) {
+		printf("Flag index %d larger than max %d.\n",
+			index, FLAG_MAX_FLAG);
+		return -1;
+	}
+
+	flag_gpios[index] = gpio;
+	return 0;
+}
+
 int flag_install(FlagIndex index, GpioOps *gpio)
 {
 	if (index < 0 || index >= FLAG_MAX_FLAG) {
@@ -64,15 +75,3 @@ int flag_install(FlagIndex index, GpioOps *gpio)
 	flag_gpios[index] = gpio;
 	return 0;
 }
-
-static int flag_install_sysinfo_gpios(void)
-{
-	return flag_install(FLAG_WPSW, sysinfo_write_protect) ||
-		flag_install(FLAG_RECSW, sysinfo_recovery) ||
-		flag_install(FLAG_DEVSW, sysinfo_developer) ||
-		flag_install(FLAG_LIDSW, sysinfo_lid) ||
-		flag_install(FLAG_PWRSW, sysinfo_power) ||
-		flag_install(FLAG_OPROM, sysinfo_oprom);
-}
-
-INIT_FUNC(flag_install_sysinfo_gpios);

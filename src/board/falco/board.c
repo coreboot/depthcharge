@@ -28,6 +28,7 @@
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/lynxpoint_lp.h"
+#include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
 #include "drivers/sound/hda_codec.h"
 #include "drivers/sound/sound.h"
@@ -39,10 +40,11 @@
 
 static int board_setup(void)
 {
-	LpPchGpio *ec_in_rw = new_lp_pch_gpio_input(14);
-	if (!ec_in_rw)
+	if (sysinfo_install_flags())
 		return 1;
-	if (flag_install(FLAG_ECINRW, &ec_in_rw->ops))
+
+	LpPchGpio *ec_in_rw = new_lp_pch_gpio_input(14);
+	if (!ec_in_rw || flag_install(FLAG_ECINRW, &ec_in_rw->ops))
 		return 1;
 
 	CrosEcLpcBus *cros_ec_lpc_bus = new_cros_ec_lpc_bus();

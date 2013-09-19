@@ -27,6 +27,7 @@
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/lynxpoint_lp.h"
+#include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
 #include "drivers/sound/hda_codec.h"
 #include "drivers/sound/sound.h"
@@ -36,6 +37,9 @@
 
 static int board_setup(void)
 {
+	if (sysinfo_install_flags())
+		return 1;
+
 	MemMappedFlash *flash = new_mem_mapped_flash(0xff800000, 0x800000);
 	if (!flash || flash_set_ops(&flash->ops))
 		return 1;

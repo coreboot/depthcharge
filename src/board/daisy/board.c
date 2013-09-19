@@ -32,6 +32,7 @@
 #include "drivers/ec/cros/i2c.h"
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/exynos5250.h"
+#include "drivers/gpio/sysinfo.h"
 #include "drivers/power/exynos.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/max98095.h"
@@ -46,10 +47,11 @@ static uint32_t *i2c_cfg = (uint32_t *)(0x10050000 + 0x234);
 
 static int board_setup(void)
 {
-	Exynos5250Gpio *ec_in_rw = new_exynos5250_gpio_input(GPIO_D, 1, 7);
-	if (!ec_in_rw)
+	if (sysinfo_install_flags())
 		return 1;
-	if (flag_install(FLAG_ECINRW, &ec_in_rw->ops))
+
+	Exynos5250Gpio *ec_in_rw = new_exynos5250_gpio_input(GPIO_D, 1, 7);
+	if (!ec_in_rw || flag_install(FLAG_ECINRW, &ec_in_rw->ops))
 		return 1;
 
 	// Switch from hi speed I2C to the normal one.
