@@ -28,4 +28,8 @@ typedef struct GpioOps {
 	int (*set)(struct GpioOps *me, unsigned value);
 } GpioOps;
 
+GpioOps *new_gpio_not(GpioOps *a);
+GpioOps *new_gpio_and(GpioOps *a, GpioOps *b);
+GpioOps *new_gpio_or(GpioOps *a, GpioOps *b);
+
 #endif /* __DRIVERS_GPIO_GPIO_H__ */
