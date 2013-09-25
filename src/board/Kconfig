@@ -20,6 +20,8 @@ menu "Board"
 choice
 	prompt "Board name"
 
+config BOARD_BAYLEYBAY
+	bool "bayleybay"
 config BOARD_BELTINO
 	bool "beltino"
 config BOARD_BOLT

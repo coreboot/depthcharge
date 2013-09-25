@@ -17,6 +17,7 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
+subdirs-$(CONFIG_BOARD_BAYLEYBAY) += bayleybay
 subdirs-$(CONFIG_BOARD_BELTINO) += beltino
 subdirs-$(CONFIG_BOARD_BOLT) += bolt
 subdirs-$(CONFIG_BOARD_DAISY) += daisy
