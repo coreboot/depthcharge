@@ -4,6 +4,8 @@
  * Jaehoon Chung <jh80.chung@samsung.com>
  * Portions Copyright 2011-2013 NVIDIA Corporation
  *
+ * Copyright 2013 Google Inc.  All rights reserved.
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -19,25 +21,35 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include <bouncebuf.h>
-#include <common.h>
-#include <asm/gpio.h>
-#include <asm/io.h>
-#include <asm/arch/clock.h>
-#include <asm/arch/clk_rst.h>
-#include <asm/arch-tegra/tegra_mmc.h>
-#include <mmc.h>
+#include <assert.h>
+#include <libpayload.h>
+#include <stddef.h>
+#include <stdint.h>
 
-DECLARE_GLOBAL_DATA_PTR;
+#include "base/time.h"
+#include "drivers/storage/tegra_mmc.h"
 
-struct mmc mmc_dev[MAX_HOSTS];
-TegraMmcHost mmc_host[MAX_HOSTS];
+enum {
+	// For card identification, and also the highest low-speed SDOI card
+	// frequency (actually 400Khz).
+	TegraMmcMinFreq = 375000,
 
-#ifndef CONFIG_OF_CONTROL
-#error "Please enable device tree support to use this driver"
-#endif
+	// Highest HS eMMC clock as per the SD/MMC spec (actually 52MHz).
+	TegraMmcMaxFreq = 48000000,
 
-static void mmc_set_power(TegraMmcHost *host, uint16_t power)
+	TegraMmcVoltages = (MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195),
+
+	// MSB of the mmc.voltages. Current value is made by MMC_VDD_33_34.
+	TegraMmcVoltagesMsb = 22,
+};
+
+
+static void tegra_pad_init_mmc(TegraMmcHost *host)
+{
+// TODO(hungte) Implement or move this to Coreboot.
+}
+
+static void tegra_mmc_set_power(TegraMmcHost *host, uint16_t power)
 {
 	uint8_t pwr = 0;
 	mmc_debug("%s: power = %x\n", __func__, power);
@@ -69,11 +81,10 @@ static void mmc_set_power(TegraMmcHost *host, uint16_t power)
 	writeb(pwr, &host->reg->pwrcon);
 }
 
-static void mmc_prepare_data(TegraMmcHost *host, MmcData *data,
-				struct bounce_buffer *bbstate)
+static void tegra_mmc_prepare_data(TegraMmcHost *host, MmcData *data,
+				   struct bounce_buffer *bbstate)
 {
 	uint8_t ctrl;
-
 
 	mmc_debug("buf: %p (%p), data->blocks: %u, data->blocksize: %u\n",
 		bbstate->bounce_buffer, bbstate->user_buffer, data->blocks,
@@ -97,7 +108,7 @@ static void mmc_prepare_data(TegraMmcHost *host, MmcData *data,
 	writew(data->blocks, &host->reg->blkcnt);
 }
 
-static void mmc_set_transfer_mode(TegraMmcHost *host, MmcData *data)
+static void tegra_mmc_set_transfer_mode(TegraMmcHost *host, MmcData *data)
 {
 	uint16_t mode;
 	mmc_debug(" mmc_set_transfer_mode called\n");
@@ -123,10 +134,10 @@ static void mmc_set_transfer_mode(TegraMmcHost *host, MmcData *data)
 	writew(mode, &host->reg->trnmod);
 }
 
-static int mmc_wait_inhibit(TegraMmcHost *host,
-			    MmcCommand *cmd,
-			    MmcData *data,
-			    unsigned int timeout)
+static int tegra_mmc_wait_inhibit(TegraMmcHost *host,
+				  MmcCommand *cmd,
+				  MmcData *data,
+				  unsigned int timeout)
 {
 	/*
 	 * PRNSTS
@@ -154,29 +165,29 @@ static int mmc_wait_inhibit(TegraMmcHost *host,
 	return 0;
 }
 
-static int mmc_send_cmd_bounced(struct mmc *mmc, MmcCommand *cmd,
+static int tegra_mmc_send_cmd_bounced(MmcCtrlr *ctrlr, MmcCommand *cmd,
 			MmcData *data, struct bounce_buffer *bbstate)
 {
-	TegraMmcHost *host = (TegraMmcHost *)mmc->priv;
+	TegraMmcHost *host = container_of(ctrlr, TegraMmcHost, mmc);
 	int flags, i;
 	int result;
 	unsigned int mask = 0;
 	unsigned int retry = 0x100000;
 	mmc_debug(" mmc_send_cmd called\n");
 
-	result = mmc_wait_inhibit(host, cmd, data, 10 /* ms */);
+	result = tegra_mmc_wait_inhibit(host, cmd, data, 10 /* ms */);
 
 	if (result < 0)
 		return result;
 
 	if (data)
-		mmc_prepare_data(host, data, bbstate);
+		tegra_mmc_prepare_data(host, data, bbstate);
 
 	mmc_debug("cmd->arg: %08x\n", cmd->cmdarg);
 	writel(cmd->cmdarg, &host->reg->argument);
 
 	if (data)
-		mmc_set_transfer_mode(host, data);
+		tegra_mmc_set_transfer_mode(host, data);
 
 	if ((cmd->resp_type & MMC_RSP_136) && (cmd->resp_type & MMC_RSP_BUSY))
 		return -1;
@@ -326,7 +337,7 @@ static int mmc_send_cmd_bounced(struct mmc *mmc, MmcCommand *cmd,
 	return 0;
 }
 
-static int mmc_send_cmd(struct mmc *mmc, MmcCommand *cmd, MmcData *data)
+static int tegra_mmc_send_cmd(MmcCtrlr *ctrlr, MmcCommand *cmd, MmcData *data)
 {
 	void *buf;
 	unsigned int bbflags;
@@ -347,7 +358,7 @@ static int mmc_send_cmd(struct mmc *mmc, MmcCommand *cmd, MmcData *data)
 		bounce_buffer_start(&bbstate, buf, len, bbflags);
 	}
 
-	ret = mmc_send_cmd_bounced(mmc, cmd, data, &bbstate);
+	ret = tegra_mmc_send_cmd_bounced(ctrlr, cmd, data, &bbstate);
 
 	if (data)
 		bounce_buffer_stop(&bbstate);
@@ -355,7 +366,7 @@ static int mmc_send_cmd(struct mmc *mmc, MmcCommand *cmd, MmcData *data)
 	return ret;
 }
 
-static void mmc_change_clock(TegraMmcHost *host, uint32_t clock)
+static void tegra_mmc_change_clock(TegraMmcHost *host, uint32_t clock)
 {
 	int div;
 	uint16_t clk;
@@ -407,16 +418,17 @@ out:
 	host->clock = clock;
 }
 
-static void mmc_set_ios(struct mmc *mmc)
+static void tegra_mmc_set_ios(MmcCtrlr *ctrlr)
 {
-	TegraMmcHost *host = mmc->priv;
+	TegraMmcHost *host = container_of(ctrlr, TegraMmcHost, mmc);
 	uint8_t ctrl;
 	mmc_debug(" mmc_set_ios called\n");
 
-	mmc_debug("bus_width: %x, clock: %d\n", mmc->bus_width, mmc->clock);
+	mmc_debug("bus_width: %x, clock: %d\n", host->mmc.bus_width,
+		  host->clock);
 
 	// Change clock first
-	mmc_change_clock(host, mmc->clock);
+	tegra_mmc_change_clock(host, host->clock);
 
 	ctrl = readb(&host->reg->hostctl);
 
@@ -428,9 +440,9 @@ static void mmc_set_ios(struct mmc *mmc)
 	 * 1 = 4-bit mode
 	 * 0 = 1-bit mode
 	 */
-	if (mmc->bus_width == 8)
+	if (host->mmc.bus_width == 8)
 		ctrl |= (1 << 5);
-	else if (mmc->bus_width == 4)
+	else if (host->mmc.bus_width == 4)
 		ctrl |= (1 << 1);
 	else
 		ctrl &= ~(1 << 1);
@@ -439,7 +451,7 @@ static void mmc_set_ios(struct mmc *mmc)
 	mmc_debug("mmc_set_ios: hostctl = %08X\n", ctrl);
 }
 
-static void mmc_reset(TegraMmcHost *host, struct mmc *mmc)
+static void tegra_mmc_reset(TegraMmcHost *host)
 {
 	unsigned int timeout;
 	mmc_debug(" mmc_reset called\n");
@@ -467,24 +479,23 @@ static void mmc_reset(TegraMmcHost *host, struct mmc *mmc)
 	}
 
 	// Set SD bus voltage & enable bus power
-	mmc_set_power(host, fls(mmc->voltages) - 1);
+	tegra_mmc_set_power(host, TegraMmcVoltagesMsb - 1);
 	mmc_debug("%s: power control = %02X, host control = %02X\n", __func__,
 		readb(&host->reg->pwrcon), readb(&host->reg->hostctl));
 
 	// Make sure SDIO pads are set up
-	pad_init_mmc(host);
+	tegra_pad_init_mmc(host);
 }
 
-static int mmc_core_init(struct mmc *mmc)
+static int tegra_mmc_init(BlockDevCtrlrOps *me)
 {
-	TegraMmcHost *host = (TegraMmcHost *)mmc->priv;
+	TegraMmcHost *host = container_of(me, TegraMmcHost, mmc.ctrlr.ops);
 	unsigned int mask;
 	mmc_debug(" mmc_core_init called\n");
 
-	mmc_reset(host, mmc);
+	tegra_mmc_reset(host);
 
-	host->version = readw(&host->reg->hcver);
-	mmc_debug("host version = %x\n", host->version);
+	mmc_debug("host version = %x\n", readw(&host->reg->hcver));
 
 	// mask all
 	writel(0xffffffff, &host->reg->norintstsen);
@@ -575,7 +586,7 @@ static int do_mmc_init(int dev_index)
 	mmc->getcd = tegra_mmc_getcd;
 	mmc->getwp = NULL;
 
-	mmc->voltages = MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195;
+	mmc->voltages = TegraMmcVoltages;
 	mmc->host_caps = 0;
 	if (host->width == 8)
 		mmc->host_caps |= MMC_MODE_8BIT;
