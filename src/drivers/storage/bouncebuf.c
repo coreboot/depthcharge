@@ -2,6 +2,7 @@
  * Generic bounce buffer implementation
  *
  * Copyright (C) 2012 Marek Vasut <marex@denx.de>
+ * Copyright 2013 Google Inc.  All rights reserved.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -22,28 +23,38 @@
  * MA 02111-1307 USA
  */
 
-#include <common.h>
-#include <malloc.h>
 #include <errno.h>
-#include <bouncebuf.h>
+#include <libpayload.h>
+#include <malloc.h>
+
+#include "bouncebuf.h"
+
+// TODO(hungte) Deprecate this file after we've shown the drivers using this
+// file work, and get migrated into better code to handle non-cached and aligned
+// memory.
+
+static int _debug = 0;
 
 static int addr_aligned(struct bounce_buffer *state)
 {
-	const ulong align_mask = ARCH_DMA_MINALIGN - 1;
+	const uint32_t align_mask = ARCH_DMA_MINALIGN - 1;
 
-	/* Check if start is aligned */
-	if ((ulong)state->user_buffer & align_mask) {
-		debug("Unaligned buffer address %p\n", state->user_buffer);
+	// Check if start is aligned
+	if ((uint32_t)state->user_buffer & align_mask) {
+		if (_debug)
+			printf("Unaligned buffer address %p\n",
+			       state->user_buffer);
 		return 0;
 	}
 
-	/* Check if length is aligned */
+	// Check if length is aligned
 	if (state->len != state->len_aligned) {
-		debug("Unaligned buffer length %d\n", state->len);
+		if (_debug)
+			printf("Unaligned buffer length %d\n", state->len);
 		return 0;
 	}
 
-	/* Aligned */
+	// Aligned
 	return 1;
 }
 
@@ -53,14 +64,14 @@ int bounce_buffer_start(struct bounce_buffer *state, void *data,
 	state->user_buffer = data;
 	state->bounce_buffer = data;
 	state->len = len;
-	state->len_aligned = roundup(len, ARCH_DMA_MINALIGN);
+	state->len_aligned = ROUND(len, ARCH_DMA_MINALIGN);
 	state->flags = flags;
 
 	if (!addr_aligned(state)) {
 		state->bounce_buffer = memalign(ARCH_DMA_MINALIGN,
 						state->len_aligned);
 		if (!state->bounce_buffer)
-			return -ENOMEM;
+			return -1;
 
 		if (state->flags & GEN_BB_READ)
 			memcpy(state->bounce_buffer, state->user_buffer,
@@ -71,20 +82,17 @@ int bounce_buffer_start(struct bounce_buffer *state, void *data,
 	 * Flush data to RAM so DMA reads can pick it up,
 	 * and any CPU writebacks don't race with DMA writes
 	 */
-	flush_dcache_range((unsigned long)state->bounce_buffer,
-				(unsigned long)(state->bounce_buffer) +
-					state->len_aligned);
-
+        dcache_clean_invalidate_by_mva(state->bounce_buffer,
+                                       state->len_aligned);
 	return 0;
 }
 
 int bounce_buffer_stop(struct bounce_buffer *state)
 {
 	if (state->flags & GEN_BB_WRITE) {
-		/* Invalidate cache so that CPU can see any newly DMA'd data */
-		invalidate_dcache_range((unsigned long)state->bounce_buffer,
-					(unsigned long)(state->bounce_buffer) +
-						state->len_aligned);
+		// Invalidate cache so that CPU can see any newly DMA'd data
+		dcache_invalidate_by_mva(state->bounce_buffer,
+					 state->len_aligned);
 	}
 
 	if (state->bounce_buffer == state->user_buffer)

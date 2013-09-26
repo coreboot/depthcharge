@@ -29,6 +29,7 @@
 #define __DRIVERS_STORAGE_MMC_H__
 
 #include "drivers/storage/blockdev.h"
+#include "drivers/storage/bouncebuf.h"
 
 #define SD_VERSION_SD		0x20000
 #define SD_VERSION_2		(SD_VERSION_SD | 0x20)
@@ -273,16 +274,6 @@ int mmc_setup_media(MmcCtrlr *ctrlr);
 lba_t block_mmc_read(BlockDevOps *me, lba_t start, lba_t count, void *buffer);
 lba_t block_mmc_write(BlockDevOps *me, lba_t start, lba_t count,
 		      const void *buffer);
-
-// Helper macros for alignment.
-#define DMA_MINALIGN (64)
-#define ROUND(a,b) (((a) + (b) - 1) & ~((b) - 1))
-#define ALIGN(x,a) __ALIGN_MASK((x),(typeof(x))(a)-1)
-#define __ALIGN_MASK(x,mask) (((x)+(mask))&~(mask))
-#define ALLOC_CACHE_ALIGN_BUFFER(type, name, size)                   \
-	char __##name[ROUND(size * sizeof(type), DMA_MINALIGN) +     \
-                      DMA_MINALIGN - 1];                             \
-        type *name = (type *) ALIGN((uintptr_t)__##name, DMA_MINALIGN)
 
 // Debug functions.
 extern int __mmc_debug, __mmc_trace;

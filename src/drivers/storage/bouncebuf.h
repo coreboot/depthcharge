@@ -2,6 +2,7 @@
  * Generic bounce buffer implementation
  *
  * Copyright (C) 2012 Marek Vasut <marex@denx.de>
+ * Copyright 2013 Google Inc.  All rights reserved.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -22,10 +23,11 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __INCLUDE_BOUNCEBUF_H__
-#define __INCLUDE_BOUNCEBUF_H__
+#ifndef __DRIVERS_STORAGE_BOUNCEBUF_H__
+#define __DRIVERS_STORAGE_BOUNCEBUF_H__
 
-#include <linux/types.h>
+#include <stddef.h>
+#include <stdint.h>
 
 /*
  * GEN_BB_READ -- Data are read from the buffer eg. by DMA hardware.
@@ -85,4 +87,19 @@ int bounce_buffer_start(struct bounce_buffer *state, void *data,
  */
 int bounce_buffer_stop(struct bounce_buffer *state);
 
+// TODO(hungte) Eliminate the alignment stuff below and replace them with a
+// better and centralized way to handler non-cache/aligned memory.
+// Helper macros for alignment.
+#define DMA_MINALIGN (64)
+#define ROUND(a,b) (((a) + (b) - 1) & ~((b) - 1))
+#define ALIGN(x,a) __ALIGN_MASK((x),(typeof(x))(a)-1)
+#define __ALIGN_MASK(x,mask) (((x)+(mask))&~(mask))
+#define ALLOC_CACHE_ALIGN_BUFFER(type, name, size)                   \
+	char __##name[ROUND(size * sizeof(type), DMA_MINALIGN) +     \
+                      DMA_MINALIGN - 1];                             \
+        type *name = (type *) ALIGN((uintptr_t)__##name, DMA_MINALIGN)
+#ifndef ARCH_DMA_MINALIGN
+#define ARCH_DMA_MINALIGN (DMA_MINALIGN)
 #endif
+
+#endif // __DRIVERS_STORAGE_BOUNCEBUF_H__
