@@ -160,4 +160,8 @@ typedef struct {
 	int removable;
 } TegraMmcHost;
 
+TegraMmcHost *new_tegra_mmc_host(
+		uintptr_t ioaddr, uint32_t src_hz, int bus_width, int removable,
+		GpioOps *card_detect, GpioOps *power, GpioOps *write_protect);
+
 #endif // __DRIVERS_STORAGE_TEGRA_MMC_H_
