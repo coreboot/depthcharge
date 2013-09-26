@@ -39,3 +39,8 @@ config DRIVER_STORAGE_MMC_DW_EXYNOS
 	depends on DRIVER_STORAGE_MMC_DW
 	bool "DesignWare MMC driver for Exynos"
 	default n
+
+config DRIVER_STORAGE_MMC_TEGRA
+	depends on DRIVER_STORAGE_MMC
+	bool "NVIDIA Tegra MMC driver"
+	default n
