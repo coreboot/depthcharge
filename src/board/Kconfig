@@ -49,6 +49,9 @@ config BOARD_SLIPPY
 
 endchoice
 
+if BOARD_BAYLEYBAY
+source src/board/bayleybay/Kconfig
+endif
 if BOARD_BELTINO
 source src/board/beltino/Kconfig
 endif
