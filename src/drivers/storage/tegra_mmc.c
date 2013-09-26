@@ -376,10 +376,15 @@ static void tegra_mmc_change_clock(TegraMmcHost *host, uint32_t clock)
 	/*
 	 * Change Tegra SDMMCx clock divisor here. Source is PLLP_OUT0
 	 */
-	if (clock == 0)
-		goto out;
-	clock_adjust_periph_pll_div(host->mmc_id, CLOCK_ID_PERIPH, clock,
-				    &div);
+	if (clock == 0) {
+		host->clock = 0;
+		return;
+	}
+
+	// TODO(hungte) FIXME: Rewrite this by src_hz. div=0 won't work. This
+        // should be calculated by clock_adjust_periph_pll_div(host->mmc_id,
+        // CLOCK_ID_PERIPH, clock, &div);
+	div = 0;
 	mmc_debug("div = %d\n", div);
 
 	writew(0, &host->reg->clkcon);
@@ -413,7 +418,6 @@ static void tegra_mmc_change_clock(TegraMmcHost *host, uint32_t clock)
 
 	mmc_debug("mmc_change_clock: clkcon = %08X\n", clk);
 
-out:
 	host->clock = clock;
 }
 
