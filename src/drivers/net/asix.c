@@ -137,7 +137,6 @@ static int asix_mdio_read(usbdev_t *dev, int phy_id, int loc, uint16_t *val)
 		printf("ASIX: MDIO read failed.\n");
 		return 1;
 	}
-	*val = letohw(*val);
 	return 0;
 }
 
@@ -153,18 +152,35 @@ static int asix_mdio_write(usbdev_t *dev, int phy_id, int loc, uint16_t val)
 	return 0;
 }
 
-static int mii_nway_restart(usbdev_t *dev, int phy_id)
+static int asix_wait_for_phy(usbdev_t *dev, int phy_id)
 {
-	uint16_t bmcr;
-	if (asix_mdio_read(dev, phy_id, MiiBmcr, &bmcr))
+	int i;
+	uint16_t bmsr;
+
+	for (i = 0; i < 100; i++) {
+		if (asix_mdio_read(dev, phy_id, MiiBmsr, &bmsr))
+			return 1;
+		if (bmsr)
+			return 0;
+		udelay(50);
+	}
+
+	return 1;
+}
+
+static int asix_restart_autoneg(usbdev_t *dev, int phy_id)
+{
+	uint16_t bmsr;
+	if (asix_mdio_read(dev, phy_id, MiiBmsr, &bmsr))
 		return 1;
 
-	if (bmcr & BmcrAutoNegEnable) {
-		bmcr |= BmcrRestartAutoNeg;
-		asix_mdio_write(dev, phy_id, MiiBmcr, bmcr);
-		return 0;
+	if (!(bmsr & BmsrAnegCapable)) {
+		printf("ASIX: No AutoNeg, falling back to 100baseTX\n");
+		return asix_mdio_write(dev, phy_id, MiiBmcr,
+			BmcrSpeedSel | BmcrDuplexMode);
 	} else {
-		return 1;
+		return asix_mdio_write(dev, phy_id, MiiBmcr,
+			BmcrAutoNegEnable | BmcrRestartAutoNeg);
 	}
 }
 
@@ -211,12 +227,10 @@ static int asix_init(GenericUsbDevice *gen_dev)
 	if (asix_write_gpio(usb_dev, GpioGpo2En | GpioGpo2 | GpioRse))
 		return 1;
 
-	mdelay(5);
-
-	int phy_addr = asix_phy_addr(usb_dev);
-	if (phy_addr < 0)
+	asix_dev.phy_id = asix_phy_addr(usb_dev);
+	if (asix_dev.phy_id < 0)
 		return 1;
-	int embed_phy = (phy_addr & 0x1f) == 0x10 ? 1 : 0;
+	int embed_phy = (asix_dev.phy_id & 0x1f) == 0x10 ? 1 : 0;
 	if (asix_ctrl_write(usb_dev, SoftPhySelRegWrite, embed_phy, 0, 0,
 			NULL)) {
 		printf("ASIX: Failed to select PHY.\n");
@@ -229,15 +243,10 @@ static int asix_init(GenericUsbDevice *gen_dev)
 		return 1;
 	if (asix_sw_reset(usb_dev, embed_phy ? SoftResetIprl : SoftResetPrte))
 		return 1;
+	if (asix_wait_for_phy(usb_dev, asix_dev.phy_id))
+		return 1;
 
 	if (asix_write_rx_ctl(usb_dev, 0))
-		return 1;
-
-	asix_dev.phy_id = asix_phy_addr(usb_dev);
-
-	if (asix_sw_reset(usb_dev, SoftResetPrl))
-		return 1;
-	if (asix_sw_reset(usb_dev, SoftResetIprl | SoftResetPrl))
 		return 1;
 
 	if (asix_mdio_write(usb_dev, asix_dev.phy_id, MiiBmcr, BmcrReset))
@@ -245,7 +254,7 @@ static int asix_init(GenericUsbDevice *gen_dev)
 	if (asix_mdio_write(usb_dev, asix_dev.phy_id, MiiAnar,
 			    AdvertiseAll | AdvertiseCsma))
 		return 1;
-	if (mii_nway_restart(usb_dev, asix_dev.phy_id))
+	if (asix_restart_autoneg(usb_dev, asix_dev.phy_id))
 		return 1;
 
 	if (asix_write_medium_mode(usb_dev, MediumDefault))
