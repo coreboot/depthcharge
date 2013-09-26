@@ -226,14 +226,14 @@ static int mmc_send_cmd_bounced(struct mmc *mmc, MmcCommand *cmd,
 	if (i == retry) {
 		mmc_error("%s: waiting for status update\n", __func__);
 		writel(mask, &host->reg->norintsts);
-		return TIMEOUT;
+		return MMC_TIMEOUT;
 	}
 
 	if (mask & TEGRA_MMC_NORINTSTS_CMD_TIMEOUT) {
 		// Timeout Error
 		mmc_debug("timeout: %08x cmd %d\n", mask, cmd->cmdidx);
 		writel(mask, &host->reg->norintsts);
-		return TIMEOUT;
+		return MMC_TIMEOUT;
 	} else if (mask & TEGRA_MMC_NORINTSTS_ERR_INTERRUPT) {
 		// Error Interrupt
 		mmc_error("%08x cmd %d\n", mask, cmd->cmdidx);
@@ -267,7 +267,7 @@ static int mmc_send_cmd_bounced(struct mmc *mmc, MmcCommand *cmd,
 			if (i == retry) {
 				mmc_error("%s: card is still busy\n", __func__);
 				writel(mask, &host->reg->norintsts);
-				return TIMEOUT;
+				return MMC_TIMEOUT;
 			}
 
 			cmd->response[0] = readl(&host->reg->rspreg0);
