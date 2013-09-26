@@ -40,7 +40,7 @@ TegraMmcHost mmc_host[MAX_HOSTS];
 static void mmc_set_power(TegraMmcHost *host, uint16_t power)
 {
 	uint8_t pwr = 0;
-	debug("%s: power = %x\n", __func__, power);
+	mmc_debug("%s: power = %x\n", __func__, power);
 
 	if (power != (uint16_t)-1) {
 		switch (1 << power) {
@@ -57,7 +57,7 @@ static void mmc_set_power(TegraMmcHost *host, uint16_t power)
 			break;
 		}
 	}
-	debug("%s: pwr = %X\n", __func__, pwr);
+	mmc_debug("%s: pwr = %X\n", __func__, pwr);
 
 	// Set the bus voltage first (if any)
 	writeb(pwr, &host->reg->pwrcon);
@@ -75,7 +75,7 @@ static void mmc_prepare_data(TegraMmcHost *host, MmcData *data,
 	uint8_t ctrl;
 
 
-	debug("buf: %p (%p), data->blocks: %u, data->blocksize: %u\n",
+	mmc_debug("buf: %p (%p), data->blocks: %u, data->blocksize: %u\n",
 		bbstate->bounce_buffer, bbstate->user_buffer, data->blocks,
 		data->blocksize);
 
@@ -100,7 +100,7 @@ static void mmc_prepare_data(TegraMmcHost *host, MmcData *data,
 static void mmc_set_transfer_mode(TegraMmcHost *host, MmcData *data)
 {
 	uint16_t mode;
-	debug(" mmc_set_transfer_mode called\n");
+	mmc_debug(" mmc_set_transfer_mode called\n");
 	/*
 	 * TRNMOD
 	 * MUL1SIN0[5]	: Multi/Single Block Select
@@ -144,7 +144,7 @@ static int mmc_wait_inhibit(TegraMmcHost *host,
 
 	while (readl(&host->reg->prnsts) & mask) {
 		if (timeout == 0) {
-			printf("%s: timeout error\n", __func__);
+			mmc_error("%s: timeout error\n", __func__);
 			return -1;
 		}
 		timeout--;
@@ -162,7 +162,7 @@ static int mmc_send_cmd_bounced(struct mmc *mmc, MmcCommand *cmd,
 	int result;
 	unsigned int mask = 0;
 	unsigned int retry = 0x100000;
-	debug(" mmc_send_cmd called\n");
+	mmc_debug(" mmc_send_cmd called\n");
 
 	result = mmc_wait_inhibit(host, cmd, data, 10 /* ms */);
 
@@ -172,7 +172,7 @@ static int mmc_send_cmd_bounced(struct mmc *mmc, MmcCommand *cmd,
 	if (data)
 		mmc_prepare_data(host, data, bbstate);
 
-	debug("cmd->arg: %08x\n", cmd->cmdarg);
+	mmc_debug("cmd->arg: %08x\n", cmd->cmdarg);
 	writel(cmd->cmdarg, &host->reg->argument);
 
 	if (data)
@@ -209,7 +209,7 @@ static int mmc_send_cmd_bounced(struct mmc *mmc, MmcCommand *cmd,
 	if (data)
 		flags |= TEGRA_MMC_TRNMOD_DATA_PRESENT_SELECT_DATA_TRANSFER;
 
-	debug("cmd: %d\n", cmd->cmdidx);
+	mmc_debug("cmd: %d\n", cmd->cmdidx);
 
 	writew((cmd->cmdidx << 8) | flags, &host->reg->cmdreg);
 
@@ -224,19 +224,19 @@ static int mmc_send_cmd_bounced(struct mmc *mmc, MmcCommand *cmd,
 	}
 
 	if (i == retry) {
-		printf("%s: waiting for status update\n", __func__);
+		mmc_error("%s: waiting for status update\n", __func__);
 		writel(mask, &host->reg->norintsts);
 		return TIMEOUT;
 	}
 
 	if (mask & TEGRA_MMC_NORINTSTS_CMD_TIMEOUT) {
 		// Timeout Error
-		debug("timeout: %08x cmd %d\n", mask, cmd->cmdidx);
+		mmc_debug("timeout: %08x cmd %d\n", mask, cmd->cmdidx);
 		writel(mask, &host->reg->norintsts);
 		return TIMEOUT;
 	} else if (mask & TEGRA_MMC_NORINTSTS_ERR_INTERRUPT) {
 		// Error Interrupt
-		debug("error: %08x cmd %d\n", mask, cmd->cmdidx);
+		mmc_error("%08x cmd %d\n", mask, cmd->cmdidx);
 		writel(mask, &host->reg->norintsts);
 		return -1;
 	}
@@ -253,7 +253,7 @@ static int mmc_send_cmd_bounced(struct mmc *mmc, MmcCommand *cmd,
 					cmd->response[i] |=
 						readb(offset - 1);
 				}
-				debug("cmd->resp[%d]: %08x\n",
+				mmc_debug("cmd->resp[%d]: %08x\n",
 						i, cmd->response[i]);
 			}
 		} else if (cmd->resp_type & MMC_RSP_BUSY) {
@@ -265,16 +265,16 @@ static int mmc_send_cmd_bounced(struct mmc *mmc, MmcCommand *cmd,
 			}
 
 			if (i == retry) {
-				printf("%s: card is still busy\n", __func__);
+				mmc_error("%s: card is still busy\n", __func__);
 				writel(mask, &host->reg->norintsts);
 				return TIMEOUT;
 			}
 
 			cmd->response[0] = readl(&host->reg->rspreg0);
-			debug("cmd->resp[0]: %08x\n", cmd->response[0]);
+			mmc_debug("cmd->resp[0]: %08x\n", cmd->response[0]);
 		} else {
 			cmd->response[0] = readl(&host->reg->rspreg0);
-			debug("cmd->resp[0]: %08x\n", cmd->response[0]);
+			mmc_debug("cmd->resp[0]: %08x\n", cmd->response[0]);
 		}
 	}
 
@@ -287,7 +287,7 @@ static int mmc_send_cmd_bounced(struct mmc *mmc, MmcCommand *cmd,
 			if (mask & TEGRA_MMC_NORINTSTS_ERR_INTERRUPT) {
 				// Error Interrupt
 				writel(mask, &host->reg->norintsts);
-				printf("%s: error during transfer: 0x%08x\n",
+				mmc_error("%s: error during transfer: 0x%08x\n",
 						__func__, mask);
 				return -1;
 			} else if (mask & TEGRA_MMC_NORINTSTS_DMA_INTERRUPT) {
@@ -297,17 +297,17 @@ static int mmc_send_cmd_bounced(struct mmc *mmc, MmcCommand *cmd,
 				 */
 				unsigned int address = readl(&host->reg->sysad);
 
-				debug("DMA end\n");
+				mmc_debug("DMA end\n");
 				writel(TEGRA_MMC_NORINTSTS_DMA_INTERRUPT,
 				       &host->reg->norintsts);
 				writel(address, &host->reg->sysad);
 			} else if (mask & TEGRA_MMC_NORINTSTS_XFER_COMPLETE) {
 				// Transfer Complete
-				debug("r/w is done\n");
+				mmc_debug("r/w is done\n");
 				break;
 			} else if (get_timer(start) > 2000UL) {
 				writel(mask, &host->reg->norintsts);
-				printf("%s: MMC Timeout\n"
+				mmc_error("%s: MMC Timeout\n"
 				       "    Interrupt status        0x%08x\n"
 				       "    Interrupt status enable 0x%08x\n"
 				       "    Interrupt signal enable 0x%08x\n"
@@ -361,7 +361,7 @@ static void mmc_change_clock(TegraMmcHost *host, uint32_t clock)
 	uint16_t clk;
 	unsigned long timeout;
 
-	debug(" mmc_change_clock called\n");
+	mmc_debug(" mmc_change_clock called\n");
 
 	/*
 	 * Change Tegra SDMMCx clock divisor here. Source is PLLP_OUT0
@@ -370,7 +370,7 @@ static void mmc_change_clock(TegraMmcHost *host, uint32_t clock)
 		goto out;
 	clock_adjust_periph_pll_div(host->mmc_id, CLOCK_ID_PERIPH, clock,
 				    &div);
-	debug("div = %d\n", div);
+	mmc_debug("div = %d\n", div);
 
 	writew(0, &host->reg->clkcon);
 
@@ -391,7 +391,7 @@ static void mmc_change_clock(TegraMmcHost *host, uint32_t clock)
 	while (!(readw(&host->reg->clkcon) &
 		 TEGRA_MMC_CLKCON_INTERNAL_CLOCK_STABLE)) {
 		if (timeout == 0) {
-			printf("%s: timeout error\n", __func__);
+			mmc_error("%s: timeout error\n", __func__);
 			return;
 		}
 		timeout--;
@@ -401,7 +401,7 @@ static void mmc_change_clock(TegraMmcHost *host, uint32_t clock)
 	clk |= TEGRA_MMC_CLKCON_SD_CLOCK_ENABLE;
 	writew(clk, &host->reg->clkcon);
 
-	debug("mmc_change_clock: clkcon = %08X\n", clk);
+	mmc_debug("mmc_change_clock: clkcon = %08X\n", clk);
 
 out:
 	host->clock = clock;
@@ -411,9 +411,9 @@ static void mmc_set_ios(struct mmc *mmc)
 {
 	TegraMmcHost *host = mmc->priv;
 	uint8_t ctrl;
-	debug(" mmc_set_ios called\n");
+	mmc_debug(" mmc_set_ios called\n");
 
-	debug("bus_width: %x, clock: %d\n", mmc->bus_width, mmc->clock);
+	mmc_debug("bus_width: %x, clock: %d\n", mmc->bus_width, mmc->clock);
 
 	// Change clock first
 	mmc_change_clock(host, mmc->clock);
@@ -436,13 +436,13 @@ static void mmc_set_ios(struct mmc *mmc)
 		ctrl &= ~(1 << 1);
 
 	writeb(ctrl, &host->reg->hostctl);
-	debug("mmc_set_ios: hostctl = %08X\n", ctrl);
+	mmc_debug("mmc_set_ios: hostctl = %08X\n", ctrl);
 }
 
 static void mmc_reset(TegraMmcHost *host, struct mmc *mmc)
 {
 	unsigned int timeout;
-	debug(" mmc_reset called\n");
+	mmc_debug(" mmc_reset called\n");
 
 	/*
 	 * RSTALL[0] : Software reset for all
@@ -459,7 +459,7 @@ static void mmc_reset(TegraMmcHost *host, struct mmc *mmc)
 	// hw clears the bit when it's done
 	while (readb(&host->reg->swrst) & TEGRA_MMC_SWRST_SW_RESET_FOR_ALL) {
 		if (timeout == 0) {
-			printf("%s: timeout error\n", __func__);
+			mmc_error("%s: timeout error\n", __func__);
 			return;
 		}
 		timeout--;
@@ -468,7 +468,7 @@ static void mmc_reset(TegraMmcHost *host, struct mmc *mmc)
 
 	// Set SD bus voltage & enable bus power
 	mmc_set_power(host, fls(mmc->voltages) - 1);
-	debug("%s: power control = %02X, host control = %02X\n", __func__,
+	mmc_debug("%s: power control = %02X, host control = %02X\n", __func__,
 		readb(&host->reg->pwrcon), readb(&host->reg->hostctl));
 
 	// Make sure SDIO pads are set up
@@ -479,12 +479,12 @@ static int mmc_core_init(struct mmc *mmc)
 {
 	TegraMmcHost *host = (TegraMmcHost *)mmc->priv;
 	unsigned int mask;
-	debug(" mmc_core_init called\n");
+	mmc_debug(" mmc_core_init called\n");
 
 	mmc_reset(host, mmc);
 
 	host->version = readw(&host->reg->hcver);
-	debug("host version = %x\n", host->version);
+	mmc_debug("host version = %x\n", host->version);
 
 	// mask all
 	writel(0xffffffff, &host->reg->norintstsen);
@@ -524,7 +524,7 @@ int tegra_mmc_getcd(struct mmc *mmc)
 {
 	TegraMmcHost *host = (TegraMmcHost *)mmc->priv;
 
-	debug("tegra_mmc_getcd called\n");
+	mmc_debug("tegra_mmc_getcd called\n");
 
 	if (fdt_gpio_isvalid(&host->cd_gpio))
 		return fdtdec_get_gpio(&host->cd_gpio);
@@ -543,7 +543,7 @@ static int do_mmc_init(int dev_index)
 	if (!host->enabled)
 		return -1;
 
-	debug(" do_mmc_init: index %d, bus width %d "
+	mmc_debug(" do_mmc_init: index %d, bus width %d "
 		"pwr_gpio %d cd_gpio %d\n",
 		dev_index, host->width,
 		host->pwr_gpio.gpio, host->cd_gpio.gpio);
@@ -555,14 +555,14 @@ static int do_mmc_init(int dev_index)
 		sprintf(gpusage, "SD/MMC%d PWR", dev_index);
 		gpio_request(host->pwr_gpio.gpio, gpusage);
 		gpio_direction_output(host->pwr_gpio.gpio, 1);
-		debug(" Power GPIO name = %s\n", host->pwr_gpio.name);
+		mmc_debug(" Power GPIO name = %s\n", host->pwr_gpio.name);
 	}
 
 	if (fdt_gpio_isvalid(&host->cd_gpio)) {
 		sprintf(gpusage, "SD/MMC%d CD", dev_index);
 		gpio_request(host->cd_gpio.gpio, gpusage);
 		gpio_direction_input(host->cd_gpio.gpio);
-		debug(" CD GPIO name = %s\n", host->cd_gpio.name);
+		mmc_debug(" CD GPIO name = %s\n", host->cd_gpio.name);
 	}
 
 	mmc = &mmc_dev[dev_index];
@@ -606,19 +606,19 @@ static int do_mmc_init(int dev_index)
  */
 static int mmc_get_config(const void *blob, int node, TegraMmcHost *host)
 {
-	debug("%s: node = %d\n", __func__, node);
+	mmc_debug("%s: node = %d\n", __func__, node);
 
 	host->enabled = fdtdec_get_is_enabled(blob, node);
 
 	host->reg = (struct tegra_mmc *)fdtdec_get_addr(blob, node, "reg");
 	if ((fdt_addr_t)host->reg == FDT_ADDR_T_NONE) {
-		debug("%s: no sdmmc base reg info found\n", __func__);
+		mmc_debug("%s: no sdmmc base reg info found\n", __func__);
 		return -FDT_ERR_NOTFOUND;
 	}
 
 	host->mmc_id = clock_decode_periph_id(blob, node);
 	if (host->mmc_id == PERIPH_ID_NONE) {
-		debug("%s: could not decode periph id\n", __func__);
+		mmc_debug("%s: could not decode periph id\n", __func__);
 		return -FDT_ERR_NOTFOUND;
 	}
 
@@ -628,14 +628,14 @@ static int mmc_get_config(const void *blob, int node, TegraMmcHost *host)
 	 */
 	host->width = fdtdec_get_int(blob, node, "bus-width", 0);
 	if (!host->width)
-		debug("%s: no sdmmc width found\n", __func__);
+		mmc_debug("%s: no sdmmc width found\n", __func__);
 
 	// These GPIOs are optional
 	fdtdec_decode_gpio(blob, node, "cd-gpios", &host->cd_gpio);
 	fdtdec_decode_gpio(blob, node, "wp-gpios", &host->wp_gpio);
 	fdtdec_decode_gpio(blob, node, "power-gpios", &host->pwr_gpio);
 
-	debug("%s: found controller at %p, width = %d, periph_id = %d\n",
+	mmc_debug("%s: found controller at %p, width = %d, periph_id = %d\n",
 		__func__, host->reg, host->width, host->mmc_id);
 	return 0;
 }
@@ -654,7 +654,7 @@ static int process_nodes(const void *blob, int node_list[], int count)
 	int i, node;
 	struct mmc *mmc;
 
-	debug("%s: count = %d\n", __func__, count);
+	mmc_debug("%s: count = %d\n", __func__, count);
 
 	// build mmc_host[] for each controller
 	for (i = 0; i < count; i++) {
@@ -666,7 +666,7 @@ static int process_nodes(const void *blob, int node_list[], int count)
 		host->id = i;
 
 		if (mmc_get_config(blob, node, host)) {
-			printf("%s: failed to decode dev %d\n",	__func__, i);
+			mmc_error("%s: failed to decode dev %d\n",	__func__, i);
 			return -1;
 		}
 		do_mmc_init(i);
@@ -689,23 +689,23 @@ void tegra_mmc_init(void)
 {
 	int node_list[MAX_HOSTS], count;
 	const void *blob = gd->fdt_blob;
-	debug("%s entry\n", __func__);
+	mmc_debug("%s entry\n", __func__);
 
 	// See if any Tegra30 MMC controllers are present
 	count = fdtdec_find_aliases_for_id(blob, "sdhci",
 		COMPAT_NVIDIA_TEGRA30_SDMMC, node_list, MAX_HOSTS);
-	debug("%s: count of T30 sdhci nodes is %d\n", __func__, count);
+	mmc_debug("%s: count of T30 sdhci nodes is %d\n", __func__, count);
 	if (process_nodes(blob, node_list, count)) {
-		printf("%s: Error processing T30 mmc node(s)!\n", __func__);
+		mmc_error("%s: Error processing T30 mmc node(s)!\n", __func__);
 		return;
 	}
 
 	// Now look for any Tegra20 MMC controllers
 	count = fdtdec_find_aliases_for_id(blob, "sdhci",
 		COMPAT_NVIDIA_TEGRA20_SDMMC, node_list, MAX_HOSTS);
-	debug("%s: count of T20 sdhci nodes is %d\n", __func__, count);
+	mmc_debug("%s: count of T20 sdhci nodes is %d\n", __func__, count);
 	if (process_nodes(blob, node_list, count)) {
-		printf("%s: Error processing T20 mmc node(s)!\n", __func__);
+		mmc_error("%s: Error processing T20 mmc node(s)!\n", __func__);
 		return;
 	}
 }
