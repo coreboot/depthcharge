@@ -256,13 +256,12 @@ static int tegra_mmc_send_cmd_bounced(MmcCtrlr *ctrlr, MmcCommand *cmd,
 		if (cmd->resp_type & MMC_RSP_136) {
 			// CRC is stripped so we need to do some shifting.
 			for (i = 0; i < 4; i++) {
-				unsigned int offset =
-					(unsigned int)(&host->reg->rspreg3 - i);
+				uint32_t *offset = &host->reg->rspreg3 - i;
 				cmd->response[i] = readl(offset) << 8;
 
 				if (i != 3) {
 					cmd->response[i] |=
-						readb(offset - 1);
+						readb((uint8_t *)offset - 1);
 				}
 				mmc_debug("cmd->resp[%d]: %08x\n",
 						i, cmd->response[i]);
