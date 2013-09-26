@@ -289,7 +289,7 @@ static int tegra_mmc_send_cmd_bounced(MmcCtrlr *ctrlr, MmcCommand *cmd,
 	}
 
 	if (data) {
-		unsigned long	start = get_timer(0);
+		uint64_t start = timer_us(0);
 
 		while (1) {
 			mask = readl(&host->reg->norintsts);
@@ -315,7 +315,7 @@ static int tegra_mmc_send_cmd_bounced(MmcCtrlr *ctrlr, MmcCommand *cmd,
 				// Transfer Complete
 				mmc_debug("r/w is done\n");
 				break;
-			} else if (get_timer(start) > 2000UL) {
+			} else if (timer_us(start) > 2000) {
 				writel(mask, &host->reg->norintsts);
 				mmc_error("%s: MMC Timeout\n"
 				       "    Interrupt status        0x%08x\n"
