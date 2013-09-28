@@ -38,7 +38,7 @@ pressing the arrow keys when any screen is displayed.
 * To build new Alex bitmaps, check out "chromeos/autotest-private-x86-alex"
   on branch "0.11.241.B", and see the tools in
   client/site_tests/hardware_Components/utils.
-  Reference: https://gerrit-int.chromium.org/#/c/23243/
+  Reference: https://chrome-internal-review.googlesource.com/23243/
 
 
 Version 1.1. Used in ZGB / Acer AC700.
@@ -174,7 +174,7 @@ advance:
  - set of locales the device boot screen is required to support
 
   Country locales can be found in
-  http://git.chromium.org/gitweb/?p=chromium.git;a=blob;f=ui/base/l10n/l10n_util.cc
+  https://chromium.googlesource.com/chromium/src.git/+/master/ui/base/l10n/l10n_util.cc
   or http://www.science.co.il/language/locale-codes.asp
 
   The new target's name needs to be added to the 'TARGETS ?=' line in
