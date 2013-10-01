@@ -342,8 +342,8 @@ int asix_recv(NetDevice *net_dev, void *buf, uint16_t *len, int maxlen)
 
 	memcpy(&packet_len, msg + offset, sizeof(packet_len));
 
-	*len = (packet_len & 0xffff);
-	packet_len = (packet_len >> 16) ^ 0xffff;
+	*len = (packet_len & 0x7ff);
+	packet_len = (~packet_len >> 16) & 0x7ff;
 	if (*len != packet_len) {
 		buf_size = 0;
 		offset = 0;
