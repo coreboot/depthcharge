@@ -46,6 +46,8 @@ config BOARD_PEACH_PIT
 	bool "peach pit"
 config BOARD_PEPPY
 	bool "peppy"
+config BOARD_SAMUS
+	bool "samus"
 config BOARD_SLIPPY
 	bool "slippy"
 
@@ -89,6 +91,9 @@ source src/board/peach_pit/Kconfig
 endif
 if BOARD_PEPPY
 source src/board/peppy/Kconfig
+endif
+if BOARD_SAMUS
+source src/board/samus/Kconfig
 endif
 if BOARD_SLIPPY
 source src/board/slippy/Kconfig
