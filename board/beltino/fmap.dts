@@ -3,7 +3,7 @@
 / {
 	model = "Google Beltino";
 	config {
-		hwid = "X86 BELTINO TEST 0815";
+		hwid = "X86 BELTINO TEST 0754";
 	};
 	chromeos-config {
 		/* Enable factory-friendly features. */
