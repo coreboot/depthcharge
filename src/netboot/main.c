@@ -170,16 +170,17 @@ int main(void)
 		param = netboot_params_val(NetbootParamIdTftpServerIp);
 		if (param->size >= sizeof(uip_ipaddr_t))
 			tftp_ip = (uip_ipaddr_t *)param->data;
-
-		param = netboot_params_val(NetbootParamIdBootfile);
-		if (param->data && param->size > 0 &&
-				strnlen((const char *)param->data,
-					param->size) < param->size) {
-			bootfile = (const char *)param->data;
-		}
 	} else {
 		tftp_ip = &next_ip;
 		bootfile = dhcp_bootfile;
+	}
+
+	// Use bootfile setting from shared data if it's set.
+	param = netboot_params_val(NetbootParamIdBootfile);
+	if (param->data && param->size > 0 &&
+			strnlen((const char *)param->data,
+				param->size) < param->size) {
+		bootfile = (const char *)param->data;
 	}
 
 	if (!tftp_ip) {
