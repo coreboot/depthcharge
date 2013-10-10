@@ -30,5 +30,6 @@ subdirs-$(CONFIG_BOARD_NYAN) += nyan
 subdirs-$(CONFIG_BOARD_PEACH_KIRBY) += peach_kirby
 subdirs-$(CONFIG_BOARD_PEACH_PIT) += peach_pit
 subdirs-$(CONFIG_BOARD_PEPPY) += peppy
+subdirs-$(CONFIG_BOARD_RAMBI) += rambi
 subdirs-$(CONFIG_BOARD_SAMUS) += samus
 subdirs-$(CONFIG_BOARD_SLIPPY) += slippy
