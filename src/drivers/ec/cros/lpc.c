@@ -32,7 +32,7 @@ static int wait_for_sync(void)
 {
 	uint64_t start = timer_us(0);
 	while (inb(EC_LPC_ADDR_HOST_CMD) & EC_LPC_STATUS_BUSY_MASK) {
-		if (timer_us(start) > 1000 * 1000) {
+		if (timer_us(start) > 1500 * 1000) {
 			printf("%s: Timeout waiting for CrosEC sync\n",
 				__func__);
 			return -1;
