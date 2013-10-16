@@ -39,5 +39,10 @@ int flash_set_ops(FlashOps *ops)
 
 void *flash_read(uint32_t offset, uint32_t size)
 {
+	if (!flash_ops) {
+		printf("%s: No flash ops set.\n", __func__);
+		return NULL;
+	}
+
 	return flash_ops->read(flash_ops, offset, size);
 }
