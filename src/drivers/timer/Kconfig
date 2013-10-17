@@ -33,3 +33,11 @@ config DRIVER_TIMER_MCT_HZ
 config DRIVER_TIMER_MCT_ADDRESS
 	hex "Exynos MCT base address"
 	depends on DRIVER_TIMER_MCT
+
+config DRIVER_TIMER_TEGRA_1US
+	bool "Tegra 1us timer driver"
+	default n
+
+config DRIVER_TIMER_TEGRA_1US_ADDRESS
+	hex "Tegra 1us timer base address"
+	depends on DRIVER_TIMER_TEGRA_1US
