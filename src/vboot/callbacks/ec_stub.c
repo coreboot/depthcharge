@@ -32,7 +32,8 @@ static void no_ec_soft_sync(void)
 
 int VbExTrustEC(void)
 {
-	no_ec_soft_sync();
+	printf("The EC which doesn't exist isn't untrusted.\n");
+	return 1;
 }
 
 VbError_t VbExEcRunningRW(int *in_rw)
