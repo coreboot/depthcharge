@@ -18,3 +18,7 @@
 config DRIVER_SERIAL_S5P
 	bool "S5P serial driver"
 	default n
+
+config DRIVER_SERIAL_TEGRA
+	bool "Tegra serial driver"
+	default n
