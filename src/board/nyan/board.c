@@ -20,12 +20,35 @@
  * MA 02111-1307 USA
  */
 
+#include <libpayload.h>
+
 #include "base/init_funcs.h"
+#include "drivers/bus/spi/tegra.h"
+#include "drivers/dma/tegra_apb.h"
+#include "drivers/flash/spi.h"
 #include "drivers/gpio/sysinfo.h"
 
 static int board_setup(void)
 {
 	if (sysinfo_install_flags())
+		return 1;
+
+	void *dma_channel_bases[32];
+	for (int i = 0; i < ARRAY_SIZE(dma_channel_bases); i++)
+		dma_channel_bases[i] = (void *)(0x60021000 + 0x40 * i);
+
+	TegraApbDmaController *dma_controller =
+		new_tegra_apb_dma((void *)0x60020000, dma_channel_bases,
+				  ARRAY_SIZE(dma_channel_bases));
+	if (!dma_controller)
+		return 1;
+
+	TegraSpi *spi4 = new_tegra_spi(0x7000da00, dma_controller);
+	if (!spi4)
+		return 1;
+
+	SpiFlash *flash = new_spi_flash(&spi4->ops, 0x400000);
+	if (!flash || flash_set_ops(&flash->ops))
 		return 1;
 
 	return 0;
