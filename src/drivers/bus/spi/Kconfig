@@ -18,3 +18,8 @@
 config DRIVER_BUS_SPI_EXYNOS5
 	bool "Exynos5 SPI driver"
 	default n
+
+config DRIVER_BUS_SPI_TEGRA
+	bool "Tegra SPI driver"
+	depends on DRIVER_DMA_TEGRA_APB
+	default n
