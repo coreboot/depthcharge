@@ -22,3 +22,7 @@ config DRIVER_BUS_I2C_S3C24X0
 config DRIVER_BUS_I2C_EXYNOS5_USI
 	bool "Exynos USI based I2C driver"
 	default n
+
+config DRIVER_BUS_I2C_TEGRA
+	bool "Tegra I2C driver"
+	default n

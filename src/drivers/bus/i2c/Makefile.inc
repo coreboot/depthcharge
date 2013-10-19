@@ -19,3 +19,4 @@
 
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_S3C24X0) += s3c24x0.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_EXYNOS5_USI) += exynos5_usi.c
+depthcharge-$(CONFIG_DRIVER_BUS_I2C_TEGRA) += tegra.c
