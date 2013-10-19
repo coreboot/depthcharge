@@ -25,6 +25,7 @@
 #include "base/init_funcs.h"
 #include "drivers/bus/i2c/tegra.h"
 #include "drivers/bus/spi/tegra.h"
+#include "drivers/ec/cros/spi.h"
 #include "drivers/dma/tegra_apb.h"
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/sysinfo.h"
@@ -60,6 +61,14 @@ static int board_setup(void)
 
 	Slb9635I2c *tpm = new_slb9635_i2c(&cam_i2c->ops, 0x20);
 	if (!tpm || tpm_set_ops(&tpm->base.ops))
+		return 1;
+
+	TegraSpi *spi1 = new_tegra_spi(0x7000d400, dma_controller);
+	if (!spi1)
+		return 1;
+
+	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spi1->ops);
+	if (!cros_ec_spi_bus || cros_ec_set_bus(&cros_ec_spi_bus->ops))
 		return 1;
 
 	return 0;
