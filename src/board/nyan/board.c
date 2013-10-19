@@ -23,10 +23,13 @@
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
+#include "drivers/bus/i2c/tegra.h"
 #include "drivers/bus/spi/tegra.h"
 #include "drivers/dma/tegra_apb.h"
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/sysinfo.h"
+#include "drivers/tpm/slb9635_i2c.h"
+#include "drivers/tpm/tpm.h"
 
 static int board_setup(void)
 {
@@ -49,6 +52,14 @@ static int board_setup(void)
 
 	SpiFlash *flash = new_spi_flash(&spi4->ops, 0x400000);
 	if (!flash || flash_set_ops(&flash->ops))
+		return 1;
+
+	TegraI2c *cam_i2c = new_tegra_i2c((void *)0x7000c500, 3);
+	if (!cam_i2c)
+		return 1;
+
+	Slb9635I2c *tpm = new_slb9635_i2c(&cam_i2c->ops, 0x20);
+	if (!tpm || tpm_set_ops(&tpm->base.ops))
 		return 1;
 
 	return 0;
