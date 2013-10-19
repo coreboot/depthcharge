@@ -574,9 +574,8 @@ static int tegra_mmc_update(BlockDevCtrlrOps *me)
 	return 0;
 }
 
-TegraMmcHost *new_tegra_mmc_host(
-		uintptr_t ioaddr, uint32_t src_hz, int bus_width, int removable,
-		GpioOps *card_detect, GpioOps *power, GpioOps *write_protect)
+TegraMmcHost *new_tegra_mmc_host(uintptr_t ioaddr, int bus_width,
+				 int removable, GpioOps *card_detect)
 {
 	TegraMmcHost *ctrlr = malloc(sizeof(*ctrlr));
 	if (!ctrlr) {
@@ -607,12 +606,9 @@ TegraMmcHost *new_tegra_mmc_host(
 	ctrlr->mmc.set_ios = tegra_mmc_set_ios;
 
 	ctrlr->reg = (TegraMmcReg *)ioaddr;
-	ctrlr->src_hz = src_hz;
 	ctrlr->removable = removable;
 
 	ctrlr->cd_gpio = card_detect;
-	ctrlr->pwr_gpio = power;
-	ctrlr->wp_gpio = write_protect;
 
 	// TODO(hungte) Set system clock (in coreboot)
 	// clock_start_periph_pll(host->mmc_id, CLOCK_ID_PERIPH, 20000000);
