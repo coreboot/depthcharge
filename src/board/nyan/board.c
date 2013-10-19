@@ -29,6 +29,7 @@
 #include "drivers/dma/tegra_apb.h"
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/sysinfo.h"
+#include "drivers/storage/tegra_mmc.h"
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
 
@@ -71,6 +72,17 @@ static int board_setup(void)
 	if (!cros_ec_spi_bus || cros_ec_set_bus(&cros_ec_spi_bus->ops))
 		return 1;
 
+	// sdmmc4
+	TegraMmcHost *emmc = new_tegra_mmc_host(0x700b0600, 8, 0, NULL);
+	// sdmmc3
+	//FIXME The card detect GPIO is V2.
+	TegraMmcHost *sd_card = new_tegra_mmc_host(0x700b0400, 4, 1, NULL);
+	if (!emmc || !sd_card)
+		return 1;
+	list_insert_after(&emmc->mmc.ctrlr.list_node,
+			  &fixed_block_dev_controllers);
+	list_insert_after(&sd_card->mmc.ctrlr.list_node,
+			  &removable_block_dev_controllers);
 	return 0;
 }
 
