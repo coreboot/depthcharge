@@ -15,6 +15,12 @@
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
+config DRIVER_POWER_AS3722
+	bool "AS3722 PMIC power management"
+	default n
+	help
+	  Reboot or power off using the AS3722 PMIC.
+
 config DRIVER_POWER_EXYNOS
 	bool "Exynos SOC power management"
 	default n
