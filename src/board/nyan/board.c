@@ -29,6 +29,7 @@
 #include "drivers/dma/tegra_apb.h"
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/sysinfo.h"
+#include "drivers/power/as3722.h"
 #include "drivers/storage/tegra_mmc.h"
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
@@ -83,6 +84,14 @@ static int board_setup(void)
 			  &fixed_block_dev_controllers);
 	list_insert_after(&sd_card->mmc.ctrlr.list_node,
 			  &removable_block_dev_controllers);
+
+	TegraI2c *pwr_i2c = new_tegra_i2c((void *)0x7000d000, 5);
+	if (!pwr_i2c)
+		return 1;
+	As3722Pmic *pmic = new_as3722_pmic(&pwr_i2c->ops, 0x40);
+	if (!pmic || power_set_ops(&pmic->ops))
+		return 1;
+
 	return 0;
 }
 
