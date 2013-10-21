@@ -18,6 +18,7 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <arch/cache.h>
 #include <libpayload.h>
 
 #include "base/container_of.h"
@@ -390,10 +391,37 @@ static int tegra_spi_transfer(SpiOps *me, void *in, const void *out,
 			      uint32_t size)
 {
 	TegraSpi *bus = container_of(me, TegraSpi, ops);
+	unsigned int line_size = dcache_line_bytes();
 
-	while (size > SPI_MAX_TRANSFER_BYTES_FIFO) {
-		uint32_t todo = MIN(size, SPI_MAX_TRANSFER_BYTES_DMA);
-		todo -= todo % sizeof(uint32_t);
+	if (!size)
+		return 0;
+
+	uint32_t todo = MIN(line_size, size);
+	if (tegra_spi_pio_transfer(bus, in, out, todo))
+		return -1;
+
+	in = (uint8_t *)in + (in ? todo : 0);
+	out = (uint8_t *)out + (out ? todo : 0);
+	size -= todo;
+
+	// Make sure outbound data is in memory and inbound data
+	// doesn't collide with the contents of the cache.
+	if (size > line_size) {
+		if (out)
+			dcache_clean_by_mva(out, size - line_size);
+		if (in)
+			dcache_clean_invalidate_by_mva(in, size - line_size);
+	}
+
+	while (size > line_size) {
+		// Don't transfer more than the DMA can handle, transfer a
+		// multiple of 4 bytes, and make sure there's at least
+		// line_size bytes left when you're done.
+		uint32_t mask = ~(sizeof(uint32_t) - 1);
+		todo = MIN((size - line_size) & mask,
+			   SPI_MAX_TRANSFER_BYTES_DMA & mask);
+		if (!todo)
+			break;
 
 		if (tegra_spi_dma_transfer(bus, in, out, todo))
 			return -1;
@@ -403,8 +431,15 @@ static int tegra_spi_transfer(SpiOps *me, void *in, const void *out,
 		size -= todo;
 	}
 
-	if (tegra_spi_pio_transfer(bus, in, out, size))
-		return -1;
+	while (size) {
+		todo = MIN(size, SPI_MAX_TRANSFER_BYTES_FIFO);
+		if (tegra_spi_pio_transfer(bus, in, out, todo))
+			return -1;
+
+		in = (uint8_t *)in + (in ? todo : 0);
+		out = (uint8_t *)out + (out ? todo : 0);
+		size -= todo;
+	}
 
 	return 0;
 }
