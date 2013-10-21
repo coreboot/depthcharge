@@ -20,31 +20,23 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __DRIVERS_GPIO_PCH_H__
-#define __DRIVERS_GPIO_PCH_H__
+#ifndef __DRIVERS_GPIO_BAYTRAIL_H__
+#define __DRIVERS_GPIO_BAYTRAIL_H__
 
-#include "drivers/gpio/gpio.h"
+#include "drivers/gpio/pch.h"
 
-/* Platform-specific GPIO configuration */
-typedef struct PchGpioCfg
-{
-	int num_banks;
-	uint8_t *use_start;
-	uint8_t *io_start;
-	uint8_t *lvl_start;
-} PchGpioCfg;
+/* 6 banks: SC[31:0] SC[63:32] SC[95:64] SC[101:96] SSUS[31:0] SSUS[43:32] */
+enum {
+	BAYTRAIL_BANK_SC_31_0 = 0,
+	BAYTRAIL_BANK_SC_64_32,
+	BAYTRAIL_BANK_SC_95_64,
+	BAYTRAIL_BANK_SC_101_96,
+	BAYTRAIL_BANK_SSUS_31_0,
+	BAYTRAIL_BANK_SSUS_43_32,
+	BAYTRAIL_NUM_GPIO_BANKS
+};
 
-typedef struct PchGpio
-{
-	GpioOps ops;
-	PchGpioCfg *cfg;
-	int (*use)(struct PchGpio *me, unsigned use);
-	int bank;
-	int bit;
-	int dir_set;
-} PchGpio;
+PchGpio *new_baytrail_gpio_input(unsigned bank, unsigned bit);
+PchGpio *new_baytrail_gpio_output(unsigned bank, unsigned bit);
 
-PchGpio *new_pch_gpio_input(PchGpioCfg *cfg, unsigned bank, unsigned bit);
-PchGpio *new_pch_gpio_output(PchGpioCfg *cfg, unsigned bank, unsigned bit);
-
-#endif /* __DRIVERS_GPIO_GPIO_H__ */
+#endif /* __DRIVERS_GPIO_BAYTRAIL_H__ */

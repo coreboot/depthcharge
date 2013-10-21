@@ -20,31 +20,30 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __DRIVERS_GPIO_PCH_H__
-#define __DRIVERS_GPIO_PCH_H__
+#include <stdint.h>
 
-#include "drivers/gpio/gpio.h"
+#include "drivers/gpio/pantherpoint.h"
 
-/* Platform-specific GPIO configuration */
-typedef struct PchGpioCfg
+static uint8_t pantherpoint_use_start[PANTHERPOINT_NUM_GPIO_BANKS] =
+	{ 0x00, 0x30, 0x40 };
+static uint8_t pantherpoint_io_start[PANTHERPOINT_NUM_GPIO_BANKS] =
+	{ 0x04, 0x34, 0x44 };
+static uint8_t pantherpoint_lvl_start[PANTHERPOINT_NUM_GPIO_BANKS] =
+	{ 0x0c, 0x38, 0x48 };
+
+static PchGpioCfg pantherpoint_gpio_cfg = {
+	.num_banks = PANTHERPOINT_NUM_GPIO_BANKS,
+	.use_start = pantherpoint_use_start,
+	.io_start =  pantherpoint_io_start,
+	.lvl_start = pantherpoint_lvl_start,
+};
+
+PchGpio *new_pantherpoint_gpio_input(unsigned bank, unsigned bit)
 {
-	int num_banks;
-	uint8_t *use_start;
-	uint8_t *io_start;
-	uint8_t *lvl_start;
-} PchGpioCfg;
+	return new_pch_gpio_input(&pantherpoint_gpio_cfg, bank, bit);
+}
 
-typedef struct PchGpio
+PchGpio *new_pantherpoint_gpio_output(unsigned bank, unsigned bit)
 {
-	GpioOps ops;
-	PchGpioCfg *cfg;
-	int (*use)(struct PchGpio *me, unsigned use);
-	int bank;
-	int bit;
-	int dir_set;
-} PchGpio;
-
-PchGpio *new_pch_gpio_input(PchGpioCfg *cfg, unsigned bank, unsigned bit);
-PchGpio *new_pch_gpio_output(PchGpioCfg *cfg, unsigned bank, unsigned bit);
-
-#endif /* __DRIVERS_GPIO_GPIO_H__ */
+	return new_pch_gpio_output(&pantherpoint_gpio_cfg, bank, bit);
+}

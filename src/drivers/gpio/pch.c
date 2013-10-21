@@ -38,15 +38,7 @@
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/pch.h"
 
-#define NUM_GPIO_BANKS 3
-// IO ports for controlling the banks of GPIOS.
-//                                    bank:   0     1     2
-static uint8_t gpio_use_start[NUM_GPIO_BANKS] = { 0x00, 0x30, 0x40 };
-static uint8_t gpio_io_start[NUM_GPIO_BANKS]  = { 0x04, 0x34, 0x44 };
-static uint8_t gpio_lvl_start[NUM_GPIO_BANKS] = { 0x0c, 0x38, 0x48 };
-
 /* Functions for manipulating GPIO regs. */
-
 static uint32_t pch_gpiobase(void)
 {
 	static const uint32_t dev = PCI_DEV(0, 0x1f, 0);
@@ -57,8 +49,8 @@ static uint32_t pch_gpiobase(void)
 		return base;
 
 	base = pci_read_config32(dev, pci_cfg_gpiobase);
-	// Drop the IO space bit.
-	base &= ~0x1;
+	// Drop the IO space bit + baytrail EN bit (also safe on PantherPoint)
+	base &= ~0x3;
 	return base;
 }
 
@@ -85,11 +77,12 @@ static int pch_gpio_get_value(GpioOps *me)
 	assert(me);
 	PchGpio *gpio = container_of(me, PchGpio, ops);
 	if (!gpio->dir_set) {
-		if (pch_gpio_set(gpio->bank, gpio->bit, gpio_io_start, 1) < 0)
+		if (pch_gpio_set(gpio->bank, gpio->bit,
+				 gpio->cfg->io_start, 1) < 0)
 			return -1;
 		gpio->dir_set = 1;
 	}
-	return pch_gpio_get(gpio->bank, gpio->bit, gpio_lvl_start);
+	return pch_gpio_get(gpio->bank, gpio->bit, gpio->cfg->lvl_start);
 }
 
 static int pch_gpio_set_value(GpioOps *me, unsigned value)
@@ -97,25 +90,27 @@ static int pch_gpio_set_value(GpioOps *me, unsigned value)
 	assert(me);
 	PchGpio *gpio = container_of(me, PchGpio, ops);
 	if (!gpio->dir_set) {
-		if (pch_gpio_set(gpio->bank, gpio->bit, gpio_io_start, 0) < 0)
+		if (pch_gpio_set(gpio->bank, gpio->bit,
+				 gpio->cfg->io_start, 0) < 0)
 			return -1;
 		gpio->dir_set = 1;
 	}
-	return pch_gpio_set(gpio->bank, gpio->bit, gpio_lvl_start, value);
+	return pch_gpio_set(gpio->bank, gpio->bit,
+			    gpio->cfg->lvl_start, value);
 }
 
 static int pch_gpio_use(PchGpio *me, unsigned use)
 {
 	assert(me);
-	return pch_gpio_set(me->bank, me->bit, gpio_use_start, use);
+	return pch_gpio_set(me->bank, me->bit, me->cfg->use_start, use);
 }
 
 
 /* Functions to allocate and set up a GPIO structure. */
 
-PchGpio *new_pch_gpio(unsigned bank, unsigned bit)
+static PchGpio *new_pch_gpio(PchGpioCfg *cfg, unsigned bank, unsigned bit)
 {
-	if (bank >= NUM_GPIO_BANKS || bit >= 32) {
+	if (bank >= cfg->num_banks || bit >= 32) {
 		printf("GPIO parameters (%d, %d) out of bounds.\n", bank, bit);
 		return NULL;
 	}
@@ -126,15 +121,16 @@ PchGpio *new_pch_gpio(unsigned bank, unsigned bit)
 		return NULL;
 	}
 	memset(gpio, 0, sizeof(*gpio));
+	gpio->cfg = cfg;
 	gpio->use = &pch_gpio_use;
 	gpio->bank = bank;
 	gpio->bit = bit;
 	return gpio;
 }
 
-PchGpio *new_pch_gpio_input(unsigned bank, unsigned bit)
+PchGpio *new_pch_gpio_input(PchGpioCfg *cfg, unsigned bank, unsigned bit)
 {
-	PchGpio *gpio = new_pch_gpio(bank, bit);
+	PchGpio *gpio = new_pch_gpio(cfg, bank, bit);
 	if (!gpio)
 		return NULL;
 
@@ -142,9 +138,9 @@ PchGpio *new_pch_gpio_input(unsigned bank, unsigned bit)
 	return gpio;
 }
 
-PchGpio *new_pch_gpio_output(unsigned bank, unsigned bit)
+PchGpio *new_pch_gpio_output(PchGpioCfg *cfg, unsigned bank, unsigned bit)
 {
-	PchGpio *gpio = new_pch_gpio(bank, bit);
+	PchGpio *gpio = new_pch_gpio(cfg, bank, bit);
 	if (!gpio)
 		return NULL;
 

@@ -20,31 +20,19 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __DRIVERS_GPIO_PCH_H__
-#define __DRIVERS_GPIO_PCH_H__
+#ifndef __DRIVERS_GPIO_PANTHERPOINT_H__
+#define __DRIVERS_GPIO_PANTHERPOINT_H__
 
-#include "drivers/gpio/gpio.h"
+#include "drivers/gpio/pch.h"
 
-/* Platform-specific GPIO configuration */
-typedef struct PchGpioCfg
-{
-	int num_banks;
-	uint8_t *use_start;
-	uint8_t *io_start;
-	uint8_t *lvl_start;
-} PchGpioCfg;
+enum {
+	PANTHERPOINT_BANK_GP_31_0,
+	PANTHERPOINT_BANK_GP_63_32,
+	PANTHERPOINT_BANK_GP_95_64,
+	PANTHERPOINT_NUM_GPIO_BANKS
+};
 
-typedef struct PchGpio
-{
-	GpioOps ops;
-	PchGpioCfg *cfg;
-	int (*use)(struct PchGpio *me, unsigned use);
-	int bank;
-	int bit;
-	int dir_set;
-} PchGpio;
+PchGpio *new_pantherpoint_gpio_input(unsigned bank, unsigned bit);
+PchGpio *new_pantherpoint_gpio_output(unsigned bank, unsigned bit);
 
-PchGpio *new_pch_gpio_input(PchGpioCfg *cfg, unsigned bank, unsigned bit);
-PchGpio *new_pch_gpio_output(PchGpioCfg *cfg, unsigned bank, unsigned bit);
-
-#endif /* __DRIVERS_GPIO_GPIO_H__ */
+#endif /* __DRIVERS_GPIO_PANTHERPOINT_H__ */

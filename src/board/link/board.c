@@ -27,7 +27,7 @@
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
-#include "drivers/gpio/pch.h"
+#include "drivers/gpio/pantherpoint.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
 #include "drivers/sound/hda_codec.h"
@@ -43,7 +43,7 @@ static int board_setup(void)
 	if (sysinfo_install_flags())
 		return 1;
 
-	PchGpio *ec_in_rw = new_pch_gpio_input(0, 21);
+	PchGpio *ec_in_rw = new_pantherpoint_gpio_input(0, 21);
 	if (!ec_in_rw || flag_install(FLAG_ECINRW, &ec_in_rw->ops))
 		return 1;
 

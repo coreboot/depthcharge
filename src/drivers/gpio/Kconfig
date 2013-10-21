@@ -16,14 +16,24 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
 config DRIVER_GPIO_PCH
-	bool "Intel PCH GPIO driver"
+	bool
 	default n
 	depends on ARCH_X86
+
+config DRIVER_GPIO_PANTHERPOINT
+	bool "Intel Pantherpoint PCH GPIO driver"
+	default n
+	select DRIVER_GPIO_PCH
 
 config DRIVER_GPIO_LYNXPOINT_LP
 	bool "Intel Lynxpoint LP PCH GPIO driver"
 	default n
 	depends on ARCH_X86
+
+config DRIVER_GPIO_BAYTRAIL
+	bool "Intel Baytrail PCH GPIO driver"
+	default n
+	select DRIVER_GPIO_PCH
 
 config DRIVER_GPIO_EXYNOS5250
 	bool "Exynos 5250 GPIO driver"
