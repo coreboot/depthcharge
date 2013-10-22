@@ -44,11 +44,6 @@ enum {
 };
 
 
-static void tegra_pad_init_mmc(TegraMmcHost *host)
-{
-// TODO(hungte) Implement or move this to Coreboot.
-}
-
 static void tegra_mmc_set_power(TegraMmcHost *host, uint16_t power)
 {
 	uint8_t pwr = 0;
@@ -484,9 +479,6 @@ static void tegra_mmc_reset(TegraMmcHost *host)
 	tegra_mmc_set_power(host, TegraMmcVoltagesMsb - 1);
 	mmc_debug("%s: power control = %02X, host control = %02X\n", __func__,
 		readb(&host->reg->pwrcon), readb(&host->reg->hostctl));
-
-	// Make sure SDIO pads are set up
-	tegra_pad_init_mmc(host);
 }
 
 static int tegra_mmc_init(BlockDevCtrlrOps *me)
