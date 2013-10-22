@@ -28,10 +28,12 @@ typedef struct {
 	void *reg_addr;
 	int started;
 	int initialized;
+	uint32_t dma_slave_id;
 	TegraApbDmaController *dma_controller;
 } TegraSpi;
 
 TegraSpi *new_tegra_spi(uintptr_t reg_addr,
-			TegraApbDmaController *dma_controller);
+			TegraApbDmaController *dma_controller,
+			uint32_t dma_slave_id);
 
 #endif /* __DRIVERS_BUS_SPI_TEGRA_H__ */

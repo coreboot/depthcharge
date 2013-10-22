@@ -33,7 +33,7 @@
 enum {
 	SPI_PACKET_LOG_SIZE_BYTES = 2,
 	SPI_PACKET_SIZE_BYTES = (1 << SPI_PACKET_LOG_SIZE_BYTES),
-	SPI_MAX_TRANSFER_BYTES_DMA = 65536 * SPI_PACKET_SIZE_BYTES,
+	SPI_MAX_TRANSFER_BYTES_DMA = 65535 * SPI_PACKET_SIZE_BYTES,
 	SPI_MAX_TRANSFER_BYTES_FIFO = 64
 };
 
@@ -59,18 +59,18 @@ typedef struct {
 enum {
 	SPI_CMD1_GO = 1 << 31,
 	SPI_CMD1_M_S = 1 << 30,
-	SPI_CMD1_MODE_MASK = 0x3,
 	SPI_CMD1_MODE_SHIFT = 28,
-	SPI_CMD1_CS_SEL_MASK = 0x3,
+	SPI_CMD1_MODE_MASK = 0x3 << SPI_CMD1_MODE_SHIFT,
 	SPI_CMD1_CS_SEL_SHIFT = 26,
+	SPI_CMD1_CS_SEL_MASK = 0x3 << SPI_CMD1_CS_SEL_SHIFT,
 	SPI_CMD1_CS_POL_INACTIVE3 = 1 << 25,
 	SPI_CMD1_CS_POL_INACTIVE2 = 1 << 24,
 	SPI_CMD1_CS_POL_INACTIVE1 = 1 << 23,
 	SPI_CMD1_CS_POL_INACTIVE0 = 1 << 22,
 	SPI_CMD1_CS_SW_HW = 1 << 21,
 	SPI_CMD1_CS_SW_VAL = 1 << 20,
-	SPI_CMD1_IDLE_SDA_MASK = 0x3,
 	SPI_CMD1_IDLE_SDA_SHIFT = 18,
+	SPI_CMD1_IDLE_SDA_MASK = 0x3 << SPI_CMD1_IDLE_SDA_SHIFT,
 	SPI_CMD1_BIDIR = 1 << 17,
 	SPI_CMD1_LSBI_FE = 1 << 16,
 	SPI_CMD1_LSBY_FE = 1 << 15,
@@ -79,17 +79,18 @@ enum {
 	SPI_CMD1_RX_EN = 1 << 12,
 	SPI_CMD1_TX_EN = 1 << 11,
 	SPI_CMD1_PACKED = 1 << 5,
-	SPI_CMD1_BIT_LEN_MASK = 0x1f,
-	SPI_CMD1_BIT_LEN_SHIFT = 0
+	SPI_CMD1_BIT_LEN_SHIFT = 0,
+	SPI_CMD1_BIT_LEN_MASK = 0x1f << SPI_CMD1_BIT_LEN_SHIFT
 };
 
 // SPI_TRANS_STATUS
 enum {
 	SPI_STATUS_RDY = 1 << 30,
-	SPI_STATUS_SLV_IDLE_COUNT_MASK = 0xff,
 	SPI_STATUS_SLV_IDLE_COUNT_SHIFT = 16,
-	SPI_STATUS_BLOCK_COUNT = 0xffff,
-	SPI_STATUS_BLOCK_COUNT_SHIFT = 0
+	SPI_STATUS_SLV_IDLE_COUNT_MASK =
+		0xff << SPI_STATUS_SLV_IDLE_COUNT_SHIFT,
+	SPI_STATUS_BLOCK_COUNT_SHIFT = 0,
+	SPI_STATUS_BLOCK_COUNT = 0xffff << SPI_STATUS_BLOCK_COUNT_SHIFT
 };
 
 // SPI_FIFO_STATUS
@@ -115,10 +116,10 @@ enum {
 	SPI_DMA_CTL_CONT = 1 << 30,
 	SPI_DMA_CTL_IE_RX = 1 << 29,
 	SPI_DMA_CTL_IE_TX = 1 << 28,
-	SPI_DMA_CTL_RX_TRIG_MASK = 0x3,
 	SPI_DMA_CTL_RX_TRIG_SHIFT = 19,
-	SPI_DMA_CTL_TX_TRIG_MASK = 0x3,
-	SPI_DMA_CTL_TX_TRIG_SHIFT = 15
+	SPI_DMA_CTL_RX_TRIG_MASK = 0x3 << SPI_DMA_CTL_RX_TRIG_SHIFT,
+	SPI_DMA_CTL_TX_TRIG_SHIFT = 15,
+	SPI_DMA_CTL_TX_TRIG_MASK = 0x3 << SPI_DMA_CTL_TX_TRIG_SHIFT
 };
 
 static void flush_fifos(TegraSpiRegs *regs)
@@ -173,7 +174,7 @@ static int tegra_spi_start(SpiOps *me)
 	uint32_t command1 = readl(&regs->command1);
 
 	// Select appropriate chip-select line.
-	command1 &= ~(SPI_CMD1_CS_SEL_MASK << SPI_CMD1_CS_SEL_SHIFT);
+	command1 &= ~SPI_CMD1_CS_SEL_MASK;
 	command1 |= (cs << SPI_CMD1_CS_SEL_SHIFT);
 
 	// Drive chip-select low.
@@ -198,7 +199,8 @@ static void clear_fifo_status(TegraSpiRegs *regs)
 }
 
 static int tegra_spi_dma_config(TegraApbDmaChannel *dma, void *ahb_ptr,
-				void *apb_ptr, uint32_t size, int to_apb)
+				void *apb_ptr, uint32_t size, int to_apb,
+				uint32_t slave_id)
 {
 	TegraApbDmaRegs *regs = dma->regs;
 
@@ -208,18 +210,15 @@ static int tegra_spi_dma_config(TegraApbDmaChannel *dma, void *ahb_ptr,
 
 	// Set APB bus width, address wrap for each word.
 	uint32_t new_apb_seq = apb_seq;
-	new_apb_seq &= ~(APBDMACHAN_APB_SEQ_APB_BUS_WIDTH_MASK <<
-			 APBDMACHAN_APB_SEQ_APB_BUS_WIDTH_SHIFT);
-	new_apb_seq |= (SPI_PACKET_LOG_SIZE_BYTES <<
-			APBDMACHAN_APB_SEQ_APB_BUS_WIDTH_SHIFT);
+	new_apb_seq &= ~APBDMACHAN_APB_SEQ_APB_BUS_WIDTH_MASK;
+	new_apb_seq |= SPI_PACKET_LOG_SIZE_BYTES <<
+		       APBDMACHAN_APB_SEQ_APB_BUS_WIDTH_SHIFT;
 
 	// AHB 1 word burst, bus width = 32 bits (fixed in hardware),
 	// no address wrapping.
 	uint32_t new_ahb_seq = ahb_seq;
-	new_ahb_seq &= ~(APBDMACHAN_AHB_SEQ_AHB_BURST_MASK <<
-			 APBDMACHAN_AHB_SEQ_AHB_BURST_SHIFT);
-	new_ahb_seq &= ~(APBDMACHAN_AHB_SEQ_WRAP_MASK <<
-			 APBDMACHAN_AHB_SEQ_WRAP_SHIFT);
+	new_ahb_seq &= ~APBDMACHAN_AHB_SEQ_AHB_BURST_MASK;
+	new_ahb_seq &= ~APBDMACHAN_AHB_SEQ_WRAP_MASK;
 	new_ahb_seq |= (0x4 << APBDMACHAN_AHB_SEQ_AHB_BURST_SHIFT);
 
 	// Set ONCE mode to transfer one "block" at a time (64KB).
@@ -229,6 +228,11 @@ static int tegra_spi_dma_config(TegraApbDmaChannel *dma, void *ahb_ptr,
 		new_csr |= APBDMACHAN_CSR_DIR;
 	else
 		new_csr &= ~APBDMACHAN_CSR_DIR;
+
+	// Set up flow control.
+	new_csr &= ~APBDMACHAN_CSR_REQ_SEL_MASK;
+	new_csr |= slave_id << APBDMACHAN_CSR_REQ_SEL_SHIFT;
+	new_csr |= APBDMACHAN_CSR_FLOW;
 
 	if (apb_seq != new_apb_seq)
 		writel(new_apb_seq, &regs->apb_seq);
@@ -243,6 +247,12 @@ static int tegra_spi_dma_config(TegraApbDmaChannel *dma, void *ahb_ptr,
 	writel(size - 1, &regs->wcount);
 
 	return 0;
+}
+
+static void wait_for_transfer(TegraSpiRegs *regs, uint32_t packets)
+{
+	while ((readl(&regs->trans_status) & SPI_STATUS_BLOCK_COUNT) < packets)
+	{}
 }
 
 static int tegra_spi_dma_transfer(TegraSpi *bus, void *in, const void *out,
@@ -275,7 +285,8 @@ static int tegra_spi_dma_transfer(TegraSpi *bus, void *in, const void *out,
 	if (out) {
 		cout = bus->dma_controller->claim(bus->dma_controller);
 		if (!cout || tegra_spi_dma_config(cout, (void *)out,
-						  &regs->tx_fifo, size, 1))
+						  &regs->tx_fifo, size, 1,
+						  bus->dma_slave_id))
 			return -1;
 
 		command1 |= SPI_CMD1_TX_EN;
@@ -284,7 +295,7 @@ static int tegra_spi_dma_transfer(TegraSpi *bus, void *in, const void *out,
 	if (in) {
 		cin = bus->dma_controller->claim(bus->dma_controller);
 		if (!cin || tegra_spi_dma_config(cin, in, &regs->rx_fifo,
-						 size, 0)) {
+						 size, 0, bus->dma_slave_id)) {
 			cout->stop(cout);
 			bus->dma_controller->release(bus->dma_controller, cout);
 			return -1;
@@ -304,13 +315,16 @@ static int tegra_spi_dma_transfer(TegraSpi *bus, void *in, const void *out,
 	if (cin)
 		cin->start(cin);
 
-	while (dma_ctl & SPI_DMA_CTL_DMA)
-		dma_ctl = readl(&regs->dma_ctl);
+	wait_for_transfer(regs, size >> SPI_PACKET_LOG_SIZE_BYTES);
 
-	if (cout)
+	if (cout) {
 		cout->stop(cout);
-	if (cin)
+		bus->dma_controller->release(bus->dma_controller, cout);
+	}
+	if (cin) {
 		cin->stop(cin);
+		bus->dma_controller->release(bus->dma_controller, cin);
+	}
 
 	command1 &= ~(SPI_CMD1_TX_EN | SPI_CMD1_RX_EN);
 	writel(command1, &regs->command1);
@@ -363,9 +377,7 @@ static int tegra_spi_pio_transfer(TegraSpi *bus, uint8_t *in,
 	}
 
 	writel(command1 | SPI_CMD1_GO, &regs->command1);
-	do {
-		command1 = readl(&regs->command1);
-	} while (command1 & SPI_CMD1_GO);
+	wait_for_transfer(regs, size);
 
 	uint32_t in_bytes = in ? size : 0;
 	while (in_bytes) {
@@ -462,7 +474,8 @@ static int tegra_spi_stop(SpiOps *me)
 }
 
 TegraSpi *new_tegra_spi(uintptr_t reg_addr,
-			TegraApbDmaController *dma_controller)
+			TegraApbDmaController *dma_controller,
+			uint32_t dma_slave_id)
 {
 	TegraSpi *bus = malloc(sizeof(*bus));
 	if (!bus) {
@@ -474,6 +487,7 @@ TegraSpi *new_tegra_spi(uintptr_t reg_addr,
 	bus->ops.transfer = &tegra_spi_transfer;
 	bus->ops.stop = &tegra_spi_stop;
 	bus->reg_addr = (void *)reg_addr;
+	bus->dma_slave_id = dma_slave_id;
 	bus->dma_controller = dma_controller;
 	return bus;
 }

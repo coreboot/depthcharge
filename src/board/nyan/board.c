@@ -65,7 +65,8 @@ static int board_setup(void)
 	if (!dma_controller)
 		return 1;
 
-	TegraSpi *spi4 = new_tegra_spi(0x7000da00, dma_controller);
+	TegraSpi *spi4 = new_tegra_spi(0x7000da00, dma_controller,
+				       APBDMA_SLAVE_SL2B4);
 	if (!spi4)
 		return 1;
 
@@ -81,7 +82,8 @@ static int board_setup(void)
 	if (!tpm || tpm_set_ops(&tpm->base.ops))
 		return 1;
 
-	TegraSpi *spi1 = new_tegra_spi(0x7000d400, dma_controller);
+	TegraSpi *spi1 = new_tegra_spi(0x7000d400, dma_controller,
+				       APBDMA_SLAVE_SL2B1);
 	if (!spi1)
 		return 1;
 
