@@ -37,6 +37,9 @@ enum {
 	// Highest HS eMMC clock as per the SD/MMC spec (actually 52MHz).
 	TegraMmcMaxFreq = 48000000,
 
+	// Source clock configured by loader in previous stage.
+	TegraMmcSourceClock = 48000000,
+
 	TegraMmcVoltages = (MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_165_195),
 
 	// MSB of the mmc.voltages. Current value is made by MMC_VDD_33_34.
@@ -368,21 +371,19 @@ static void tegra_mmc_change_clock(TegraMmcHost *host, uint32_t clock)
 
 	mmc_debug("%s called\n", __func__);
 
-	/*
-	 * Change Tegra SDMMCx clock divisor here. Source is PLLP_OUT0
-	 */
-	if (clock == 0) {
-		host->clock = 0;
+	// Change clock only if necessary.
+	if (clock == 0 || clock == host->clock) {
+		host->clock = clock;
 		return;
 	}
 
-	// TODO(hungte) FIXME: Rewrite this by src_hz. div=0 won't work. This
-        // should be calculated by clock_adjust_periph_pll_div(host->mmc_id,
-        // CLOCK_ID_PERIPH, clock, &div);
-	div = 0;
-	mmc_debug("div = %d\n", div);
-
+	// Clear clock settings and stop SD clock.
 	writew(0, &host->reg->clkcon);
+
+	// Try to change clock by SD clock divisor (base clock is already
+	// specified in src_hz).
+	assert(host->src_hz >= clock);
+	div = host->src_hz / clock;
 
 	/*
 	 * CLKCON
@@ -425,8 +426,7 @@ static void tegra_mmc_set_ios(MmcCtrlr *ctrlr)
 		  ctrlr->bus_width, host->clock, ctrlr->bus_hz);
 
 	// Change clock first
-	tegra_mmc_change_clock(host, host->clock);
-
+	tegra_mmc_change_clock(host, ctrlr->bus_hz);
 	ctrl = readb(&host->reg->hostctl);
 
 	/*
@@ -437,9 +437,9 @@ static void tegra_mmc_set_ios(MmcCtrlr *ctrlr)
 	 * 1 = 4-bit mode
 	 * 0 = 1-bit mode
 	 */
-	if (host->mmc.bus_width == 8)
+	if (ctrlr->bus_width == 8)
 		ctrl |= (1 << 5);
-	else if (host->mmc.bus_width == 4)
+	else if (ctrlr->bus_width == 4)
 		ctrl |= (1 << 1);
 	else
 		ctrl &= ~(1 << 1);
@@ -596,13 +596,11 @@ TegraMmcHost *new_tegra_mmc_host(uintptr_t ioaddr, int bus_width,
 	ctrlr->mmc.send_cmd = tegra_mmc_send_cmd;
 	ctrlr->mmc.set_ios = tegra_mmc_set_ios;
 
+	ctrlr->src_hz = TegraMmcSourceClock;
 	ctrlr->reg = (TegraMmcReg *)ioaddr;
 	ctrlr->removable = removable;
 
 	ctrlr->cd_gpio = card_detect;
-
-	// TODO(hungte) Set system clock (in coreboot)
-	// clock_start_periph_pll(host->mmc_id, CLOCK_ID_PERIPH, 20000000);
 
 	return ctrlr;
 }
