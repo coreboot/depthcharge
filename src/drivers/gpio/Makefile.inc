@@ -23,3 +23,4 @@ depthcharge-y += gpio.c
 depthcharge-$(CONFIG_DRIVER_GPIO_LYNXPOINT_LP) += lynxpoint_lp.c
 depthcharge-$(CONFIG_DRIVER_GPIO_PCH) += pch.c
 depthcharge-y += sysinfo.c
+depthcharge-$(CONFIG_DRIVER_GPIO_TEGRA) += tegra.c

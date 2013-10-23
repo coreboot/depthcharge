@@ -34,3 +34,7 @@ config DRIVER_GPIO_EXYNOS5420
 	bool "Exynos 5420 GPIO driver"
 	default n
 	depends on ARCH_ARM
+
+config DRIVER_GPIO_TEGRA
+	bool "Tegra GPIO driver"
+	default n
