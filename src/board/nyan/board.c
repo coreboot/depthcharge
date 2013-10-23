@@ -29,14 +29,30 @@
 #include "drivers/dma/tegra_apb.h"
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/sysinfo.h"
+#include "drivers/gpio/tegra.h"
 #include "drivers/power/as3722.h"
 #include "drivers/storage/tegra_mmc.h"
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
+#include "vboot/util/flag.h"
 
 static int board_setup(void)
 {
 	if (sysinfo_install_flags())
+		return 1;
+
+	TegraGpio *lid_switch = new_tegra_gpio_input(GPIO_R, 4);
+	TegraGpio *ec_in_rw = new_tegra_gpio_input(GPIO_U, 4);
+	if (!lid_switch || !ec_in_rw ||
+	    flag_replace(FLAG_LIDSW, &lid_switch->ops) ||
+	    flag_install(FLAG_ECINRW, &ec_in_rw->ops))
+		return 1;
+
+	// The power switch is active low and needs to be inverted.
+	TegraGpio *power_switch_l = new_tegra_gpio_input(GPIO_Q, 0);
+	GpioOps *power_switch = new_gpio_not(&power_switch_l->ops);
+	if (!power_switch_l || !power_switch ||
+	    flag_replace(FLAG_PWRSW, power_switch))
 		return 1;
 
 	void *dma_channel_bases[32];
@@ -76,8 +92,9 @@ static int board_setup(void)
 	// sdmmc4
 	TegraMmcHost *emmc = new_tegra_mmc_host(0x700b0600, 8, 0, NULL);
 	// sdmmc3
-	//FIXME The card detect GPIO is V2.
-	TegraMmcHost *sd_card = new_tegra_mmc_host(0x700b0400, 4, 1, NULL);
+	TegraGpio *card_detect = new_tegra_gpio_input(GPIO_V, 2);
+	TegraMmcHost *sd_card = new_tegra_mmc_host(0x700b0400, 4, 1,
+						   &card_detect->ops);
 	if (!emmc || !sd_card)
 		return 1;
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
