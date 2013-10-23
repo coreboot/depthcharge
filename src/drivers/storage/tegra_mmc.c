@@ -86,9 +86,9 @@ static void tegra_mmc_prepare_data(TegraMmcHost *host, MmcData *data,
 {
 	uint8_t ctrl;
 
-	mmc_debug("buf: %p (%p), data->blocks: %u, data->blocksize: %u\n",
-		bbstate->bounce_buffer, bbstate->user_buffer, data->blocks,
-		data->blocksize);
+	mmc_debug("%s: buf: %p (%p), data->blocks: %u, data->blocksize: %u\n",
+		  __func__, bbstate->bounce_buffer, bbstate->user_buffer,
+		  data->blocks, data->blocksize);
 
 	writel((uint32_t)bbstate->bounce_buffer, &host->reg->sysad);
 	/*
@@ -111,7 +111,7 @@ static void tegra_mmc_prepare_data(TegraMmcHost *host, MmcData *data,
 static void tegra_mmc_set_transfer_mode(TegraMmcHost *host, MmcData *data)
 {
 	uint16_t mode;
-	mmc_debug(" mmc_set_transfer_mode called\n");
+	mmc_debug("%s called\n", __func__);
 	/*
 	 * TRNMOD
 	 * MUL1SIN0[5]	: Multi/Single Block Select
@@ -173,7 +173,7 @@ static int tegra_mmc_send_cmd_bounced(MmcCtrlr *ctrlr, MmcCommand *cmd,
 	int result;
 	unsigned int mask = 0;
 	unsigned int retry = 0x100000;
-	mmc_debug(" mmc_send_cmd called\n");
+	mmc_debug("%s called\n", __func__);
 
 	result = tegra_mmc_wait_inhibit(host, cmd, data, 10 /* ms */);
 
@@ -371,7 +371,7 @@ static void tegra_mmc_change_clock(TegraMmcHost *host, uint32_t clock)
 	uint16_t clk;
 	unsigned long timeout;
 
-	mmc_debug(" mmc_change_clock called\n");
+	mmc_debug("%s called\n", __func__);
 
 	/*
 	 * Change Tegra SDMMCx clock divisor here. Source is PLLP_OUT0
@@ -416,7 +416,7 @@ static void tegra_mmc_change_clock(TegraMmcHost *host, uint32_t clock)
 	clk |= TEGRA_MMC_CLKCON_SD_CLOCK_ENABLE;
 	writew(clk, &host->reg->clkcon);
 
-	mmc_debug("mmc_change_clock: clkcon = %08X\n", clk);
+	mmc_debug("%s: clkcon = %08X\n", __func__, clk);
 
 	host->clock = clock;
 }
@@ -425,10 +425,9 @@ static void tegra_mmc_set_ios(MmcCtrlr *ctrlr)
 {
 	TegraMmcHost *host = container_of(ctrlr, TegraMmcHost, mmc);
 	uint8_t ctrl;
-	mmc_debug(" mmc_set_ios called\n");
 
-	mmc_debug("bus_width: %x, clock: %d\n", host->mmc.bus_width,
-		  host->clock);
+	mmc_debug("%s: called, bus_width: %x, clock: %d -> %d\n", __func__,
+		  ctrlr->bus_width, host->clock, ctrlr->bus_hz);
 
 	// Change clock first
 	tegra_mmc_change_clock(host, host->clock);
@@ -451,13 +450,13 @@ static void tegra_mmc_set_ios(MmcCtrlr *ctrlr)
 		ctrl &= ~(1 << 1);
 
 	writeb(ctrl, &host->reg->hostctl);
-	mmc_debug("mmc_set_ios: hostctl = %08X\n", ctrl);
+	mmc_debug("%s: hostctl = %08X\n", __func__, ctrl);
 }
 
 static void tegra_mmc_reset(TegraMmcHost *host)
 {
 	unsigned int timeout;
-	mmc_debug(" mmc_reset called\n");
+	mmc_debug("%s called\n", __func__);
 
 	/*
 	 * RSTALL[0] : Software reset for all
@@ -494,7 +493,7 @@ static int tegra_mmc_init(BlockDevCtrlrOps *me)
 {
 	TegraMmcHost *host = container_of(me, TegraMmcHost, mmc.ctrlr.ops);
 	unsigned int mask;
-	mmc_debug(" mmc_core_init called\n");
+	mmc_debug("%s called\n", __func__);
 
 	tegra_mmc_reset(host);
 
