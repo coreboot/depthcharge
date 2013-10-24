@@ -25,6 +25,7 @@
 #include "base/init_funcs.h"
 #include "drivers/bus/i2c/tegra.h"
 #include "drivers/bus/spi/tegra.h"
+#include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/spi.h"
 #include "drivers/dma/tegra_apb.h"
 #include "drivers/flash/spi.h"
@@ -110,6 +111,17 @@ static int board_setup(void)
 	As3722Pmic *pmic = new_as3722_pmic(&pwr_i2c->ops, 0x40);
 	if (!pmic || power_set_ops(&pmic->ops))
 		return 1;
+
+	/* Careful: the EHCI base is at offset 0x100 from the SoC's IP base */
+	UsbHostController *usbd = new_usb_hc(EHCI, 0x7d000100);
+	/* USB2 is connected to the camera, not needed in firmware */
+	UsbHostController *usb3 = new_usb_hc(EHCI, 0x7d008100);
+
+	if (!usbd || !usb3)
+		return 1;
+
+	list_insert_after(&usbd->list_node, &usb_host_controllers);
+	list_insert_after(&usb3->list_node, &usb_host_controllers);
 
 	return 0;
 }
