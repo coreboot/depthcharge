@@ -27,6 +27,10 @@ config DRIVER_SOUND_MAX98095
 	bool "MAX98095 codec driver"
 	default n
 
+config DRIVER_SOUND_PCAT_BEEP
+	bool "Legacy PC AT beep driver"
+	default n
+
 config DRIVER_SOUND_ROUTE
 	bool "Sound route container"
 	default n
