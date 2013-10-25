@@ -29,7 +29,7 @@
 #include "drivers/gpio/lynxpoint_lp.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
-#include "drivers/sound/hda_codec.h"
+#include "drivers/sound/pcat_beep.h"
 #include "drivers/sound/sound.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
@@ -46,8 +46,8 @@ static int board_setup(void)
 	if (!flash || flash_set_ops(&flash->ops))
 		return 1;
 
-	HdaCodec *codec = new_hda_codec();
-	if (!codec || sound_set_ops(&codec->ops))
+	PcAtBeep *beep = new_pcat_beep();
+	if (!beep || sound_set_ops(&beep->ops))
 		return 1;
 
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 31, 2));
