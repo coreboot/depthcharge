@@ -42,7 +42,9 @@ typedef struct AhciDevData {
 #define writel_with_flush(a,b)	do { writel(a, b); readl(b); } while (0)
 
 /* Maximum timeouts for each event */
-static const int wait_ms_spinup = 10000;
+/* TODO(shawnn): Set timeout back to 10s once we resolve the issue of
+ * slow spinup after power wash on certain SSDs. */
+static const int wait_ms_spinup = 20000;
 static const int wait_ms_flush  = 5000;
 static const int wait_ms_dataio = 5000;
 static const int wait_ms_linkup = 4;
