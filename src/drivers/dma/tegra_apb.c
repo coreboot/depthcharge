@@ -70,9 +70,10 @@ static int tegra_apb_dma_start(TegraApbDmaChannel *me)
 	return 0;
 }
 
-static int tegra_apb_dma_stop(TegraApbDmaChannel *me)
+static int tegra_apb_dma_finish(TegraApbDmaChannel *me)
 {
 	uint32_t csr = readl(&me->regs->csr);
+	writel(csr | APBDMACHAN_CSR_HOLD, &me->regs->csr);
 	writel(csr & ~APBDMACHAN_CSR_ENB, &me->regs->csr);
 	return 0;
 }
@@ -100,7 +101,7 @@ TegraApbDmaController *new_tegra_apb_dma(void *main, void *bases[], int count)
 	for (int i = 0; i < count; i++) {
 		TegraApbDmaChannel *channel = &channels->channels[i];
 		channel->start = &tegra_apb_dma_start;
-		channel->stop = &tegra_apb_dma_stop;
+		channel->finish = &tegra_apb_dma_finish;
 		channel->busy = &tegra_apb_dma_busy;
 
 		channel->regs = bases[i];

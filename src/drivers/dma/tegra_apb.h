@@ -160,7 +160,7 @@ enum {
 
 typedef struct TegraApbDmaChannel {
 	int (*start)(struct TegraApbDmaChannel *me);
-	int (*stop)(struct TegraApbDmaChannel *me);
+	int (*finish)(struct TegraApbDmaChannel *me);
 	int (*busy)(struct TegraApbDmaChannel *me);
 
 	TegraApbDmaRegs *regs;

@@ -296,7 +296,7 @@ static int tegra_spi_dma_transfer(TegraSpi *bus, void *in, const void *out,
 		cin = bus->dma_controller->claim(bus->dma_controller);
 		if (!cin || tegra_spi_dma_config(cin, in, &regs->rx_fifo,
 						 size, 0, bus->dma_slave_id)) {
-			cout->stop(cout);
+			cout->finish(cout);
 			bus->dma_controller->release(bus->dma_controller, cout);
 			return -1;
 		}
@@ -318,11 +318,11 @@ static int tegra_spi_dma_transfer(TegraSpi *bus, void *in, const void *out,
 	wait_for_transfer(regs, size >> SPI_PACKET_LOG_SIZE_BYTES);
 
 	if (cout) {
-		cout->stop(cout);
+		cout->finish(cout);
 		bus->dma_controller->release(bus->dma_controller, cout);
 	}
 	if (cin) {
-		cin->stop(cin);
+		cin->finish(cin);
 		bus->dma_controller->release(bus->dma_controller, cin);
 	}
 
