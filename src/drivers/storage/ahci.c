@@ -44,7 +44,7 @@ typedef struct AhciDevData {
 /* Maximum timeouts for each event */
 /* TODO(shawnn): Set timeout back to 10s once we resolve the issue of
  * slow spinup after power wash on certain SSDs. */
-static const int wait_ms_spinup = 20000;
+static const int wait_ms_spinup = 25000;
 static const int wait_ms_flush  = 5000;
 static const int wait_ms_dataio = 5000;
 static const int wait_ms_linkup = 4;
