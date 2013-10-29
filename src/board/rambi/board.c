@@ -20,17 +20,31 @@
  * MA 02111-1307 USA
  */
 
+#include <pci.h>
+
 #include "base/init_funcs.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
+#include "drivers/gpio/baytrail.h"
+#include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
+#include "drivers/storage/ahci.h"
+#include "drivers/storage/blockdev.h"
 #include "drivers/tpm/lpc.h"
+#include "vboot/util/flag.h"
+
 
 static int board_setup(void)
 {
-	/* TODO(shawnn): Add support here for GPIO FLAG_ECINRW once we have
-	 * the BT GPIO driver up */
+        if (sysinfo_install_flags())
+		return 1;
+
+	/* ECRW GPIO: SCGPIO59 */
+	PchGpio *ec_in_rw = new_baytrail_gpio_input(59 / 32,
+						    59 % 32);
+	if (!ec_in_rw || flag_install(FLAG_ECINRW, &ec_in_rw->ops))
+		return 1;
 
 	CrosEcLpcBus *cros_ec_lpc_bus = new_cros_ec_lpc_bus();
 	if (!cros_ec_lpc_bus)
@@ -42,6 +56,13 @@ static int board_setup(void)
 		return 1;
 
 	/* TODO(shawnn): Init I2S audio codec here for FW beep */
+
+	/* TODO(shawnn): Remove AHCI controller once we have boards
+	 * with SATA removed */
+	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 0x13, 0));
+	if (!ahci)
+		return 1;
+	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
 
 	if (power_set_ops(&pch_power_ops))
 		return 1;
