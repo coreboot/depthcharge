@@ -100,7 +100,6 @@ int boot_x86_linux(struct boot_params *boot_params, char *cmd_line, void *entry)
 	:: [kernel_entry]"a"(entry),
 	   [boot_params] "S"(boot_params),
 	   "b"(0), "D"(0)
-	:  "%ebp"
 	);
 	return 0;
 }
