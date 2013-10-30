@@ -23,11 +23,10 @@
  * Back ported to the 8xx platform (from the 8260 platform) by
  * Murray.Jensen@cmst.csiro.au, 27-Jan-01.
  */
-#ifndef __SDHCI_HW_H
-#define __SDHCI_HW_H
+#ifndef __DRIVER_STORAGE_SDHCI_H__
+#define __DRIVER_STORAGE_SDHCI_H__
 
-#include <asm/io.h>
-#include <mmc.h>
+#include "mmc.h"
 
 /*
  * Controller registers
@@ -150,11 +149,11 @@
 #define  SDHCI_INT_ERROR_MASK	0xFFFF8000
 
 #define  SDHCI_INT_CMD_MASK	(SDHCI_INT_RESPONSE | SDHCI_INT_TIMEOUT | \
-		SDHCI_INT_CRC | SDHCI_INT_END_BIT | SDHCI_INT_INDEX)
+				 SDHCI_INT_CRC | SDHCI_INT_END_BIT | SDHCI_INT_INDEX)
 #define  SDHCI_INT_DATA_MASK	(SDHCI_INT_DATA_END | SDHCI_INT_DMA_END | \
-		SDHCI_INT_DATA_AVAIL | SDHCI_INT_SPACE_AVAIL | \
-		SDHCI_INT_DATA_TIMEOUT | SDHCI_INT_DATA_CRC | \
-		SDHCI_INT_DATA_END_BIT | SDHCI_INT_ADMA_ERROR)
+				 SDHCI_INT_DATA_AVAIL | SDHCI_INT_SPACE_AVAIL | \
+				 SDHCI_INT_DATA_TIMEOUT | SDHCI_INT_DATA_CRC | \
+				 SDHCI_INT_DATA_END_BIT | SDHCI_INT_ADMA_ERROR)
 #define SDHCI_INT_ALL_MASK	((unsigned int)-1)
 
 #define SDHCI_ACMD12_ERR	0x3C
@@ -227,122 +226,69 @@
 #define SDHCI_QUIRK_WAIT_SEND_CMD	(1 << 6)
 #define SDHCI_QUIRK_NO_SIMULT_VDD_AND_POWER (1 << 7)
 
-/* to make gcc happy */
-struct sdhci_host;
-
 /*
  * Host SDMA buffer boundary. Valid values from 4K to 512K in powers of 2.
  */
 #define SDHCI_DEFAULT_BOUNDARY_SIZE	(512 * 1024)
 #define SDHCI_DEFAULT_BOUNDARY_ARG	(7)
 struct sdhci_ops {
-#ifdef CONFIG_MMC_SDHCI_IO_ACCESSORS
-	u32             (*read_l)(struct sdhci_host *host, int reg);
-	u16             (*read_w)(struct sdhci_host *host, int reg);
-	u8              (*read_b)(struct sdhci_host *host, int reg);
-	void            (*write_l)(struct sdhci_host *host, u32 val, int reg);
-	void            (*write_w)(struct sdhci_host *host, u16 val, int reg);
-	void            (*write_b)(struct sdhci_host *host, u8 val, int reg);
-#endif
 };
+
+typedef struct sdhci_host SdhciHost;
 
 struct sdhci_host {
+	MmcCtrlr mmc_ctrlr;
 	char *name;
 	void *ioaddr;
-	unsigned int quirks;
-	unsigned int host_caps;
-	unsigned int version;
-	unsigned int clock;
-	struct mmc *mmc;
-	const struct sdhci_ops *ops;
-	int index;
 
-	void (*set_control_reg)(struct sdhci_host *host);
-	void (*set_clock)(int dev_index, unsigned int div);
-	uint	voltages;
+	int initialized;
+	unsigned quirks;
+	unsigned host_caps;
+	unsigned version;
+	unsigned clock;
+	const struct sdhci_ops *ops;
+	int removable;
+
+	void (*set_control_reg)(SdhciHost *host);
+	void (*set_clock)(SdhciHost *host, unsigned int div);
+	unsigned voltages;
 };
 
-#ifdef CONFIG_MMC_SDHCI_IO_ACCESSORS
 
-static inline void sdhci_writel(struct sdhci_host *host, u32 val, int reg)
-{
-	if (unlikely(host->ops->write_l))
-		host->ops->write_l(host, val, reg);
-	else
-		writel(val, host->ioaddr + reg);
-}
-
-static inline void sdhci_writew(struct sdhci_host *host, u16 val, int reg)
-{
-	if (unlikely(host->ops->write_w))
-		host->ops->write_w(host, val, reg);
-	else
-		writew(val, host->ioaddr + reg);
-}
-
-static inline void sdhci_writeb(struct sdhci_host *host, u8 val, int reg)
-{
-	if (unlikely(host->ops->write_b))
-		host->ops->write_b(host, val, reg);
-	else
-		writeb(val, host->ioaddr + reg);
-}
-
-static inline u32 sdhci_readl(struct sdhci_host *host, int reg)
-{
-	if (unlikely(host->ops->read_l))
-		return host->ops->read_l(host, reg);
-	else
-		return readl(host->ioaddr + reg);
-}
-
-static inline u16 sdhci_readw(struct sdhci_host *host, int reg)
-{
-	if (unlikely(host->ops->read_w))
-		return host->ops->read_w(host, reg);
-	else
-		return readw(host->ioaddr + reg);
-}
-
-static inline u8 sdhci_readb(struct sdhci_host *host, int reg)
-{
-	if (unlikely(host->ops->read_b))
-		return host->ops->read_b(host, reg);
-	else
-		return readb(host->ioaddr + reg);
-}
-
-#else
-
-static inline void sdhci_writel(struct sdhci_host *host, u32 val, int reg)
+static inline void sdhci_writel(SdhciHost *host, u32 val, int reg)
 {
 	writel(val, host->ioaddr + reg);
 }
 
-static inline void sdhci_writew(struct sdhci_host *host, u16 val, int reg)
+static inline void sdhci_writew(SdhciHost *host, u16 val, int reg)
 {
 	writew(val, host->ioaddr + reg);
 }
 
-static inline void sdhci_writeb(struct sdhci_host *host, u8 val, int reg)
+static inline void sdhci_writeb(SdhciHost *host, u8 val, int reg)
 {
 	writeb(val, host->ioaddr + reg);
 }
-static inline u32 sdhci_readl(struct sdhci_host *host, int reg)
+static inline u32 sdhci_readl(SdhciHost *host, int reg)
 {
 	return readl(host->ioaddr + reg);
 }
 
-static inline u16 sdhci_readw(struct sdhci_host *host, int reg)
+static inline u16 sdhci_readw(SdhciHost *host, int reg)
 {
 	return readw(host->ioaddr + reg);
 }
 
-static inline u8 sdhci_readb(struct sdhci_host *host, int reg)
+static inline u8 sdhci_readb(SdhciHost *host, int reg)
 {
 	return readb(host->ioaddr + reg);
 }
-#endif
 
-int add_sdhci(struct sdhci_host *host, u32 max_clk, u32 min_clk);
-#endif /* __SDHCI_HW_H */
+int add_sdhci(SdhciHost *host, u32 max_clk, u32 min_clk);
+
+SdhciHost *new_pci_sdhci_host(pcidev_t dev,
+			      int removable,
+			      int clock_min,
+			      int clock_max);
+
+#endif
