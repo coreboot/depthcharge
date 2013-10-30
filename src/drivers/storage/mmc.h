@@ -238,6 +238,13 @@ typedef struct MmcCtrlr {
 	uint32_t caps;
 	uint32_t b_max;
 
+	/*
+	 * Some eMMC devices do not support iterative OCR setting, they need
+	 * to be programmed with the required/expected value. This field is
+	 * used to set the value for those devices.
+	 */
+	uint32_t hardcoded_voltage;
+
 	int (*send_cmd)(struct MmcCtrlr *me, MmcCommand *cmd, MmcData *data);
 	void (*set_ios)(struct MmcCtrlr *me);
 } MmcCtrlr;

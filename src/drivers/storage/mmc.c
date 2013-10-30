@@ -348,7 +348,6 @@ static int mmc_send_op_cond_iter(MmcMedia *media, MmcCommand *cmd, int use_arg)
 {
 	cmd->cmdidx = MMC_CMD_SEND_OP_COND;
 	cmd->resp_type = MMC_RSP_R3;
-	cmd->cmdarg = 0;
 
 	if (use_arg) {
 		uint32_t mask = media->op_cond_response &
@@ -369,17 +368,24 @@ static int mmc_send_op_cond_iter(MmcMedia *media, MmcCommand *cmd, int use_arg)
 
 static int mmc_send_op_cond(MmcMedia *media)
 {
+	MmcCommand cmd;
+	int max_iters;
+
 	/* Some cards seem to need this */
 	mmc_go_idle(media);
 
-	/* Ask the card for its capabilities */
-	for (int i = 0; i < 2; i++) {
-		MmcCommand cmd;
+	/* Devices with hardcoded voltage do not need second iteration. */
+	cmd.cmdarg = media->ctrlr->hardcoded_voltage;
+	max_iters = cmd.cmdarg ? 1 : 2;
+
+	/* Ask the card for its capabilities unless required to be hardcoded. */
+	for (int i = 0; i < max_iters; i++) {
 		int err = mmc_send_op_cond_iter(media, &cmd, i != 0);
 		if (err)
 			return err;
 
-		// OCR_BUSY means "initialization complete".
+		// OCR_BUSY is active low, this bit set means
+		// "initialization complete".
 		if (media->op_cond_response & OCR_BUSY)
 			return 0;
 	}
