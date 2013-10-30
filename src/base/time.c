@@ -20,10 +20,24 @@
  * MA 02111-1307 USA
  */
 
+#include <libpayload.h>
+
 #include "base/time.h"
 #include "drivers/timer/timer.h"
 
 uint64_t timer_us(uint64_t base)
 {
-	return timer_raw_value() / (timer_hz() / 1000000) - base;
+	static uint64_t hz;
+
+	// Only check timer_hz once. Assume it doesn't change.
+	if (hz == 0) {
+		hz = timer_hz();
+		if (hz < 1000000) {
+			printf("Timer frequency %lld is too low, "
+			       "must be at least 1MHz.\n", hz);
+			halt();
+		}
+	}
+
+	return timer_raw_value() / (hz / 1000000) - base;
 }
