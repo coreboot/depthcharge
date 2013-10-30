@@ -44,3 +44,15 @@ config DRIVER_STORAGE_MMC_TEGRA
 	depends on DRIVER_STORAGE_MMC
 	bool "NVIDIA Tegra MMC driver"
 	default n
+
+config DRIVER_SDHCI
+	depends on DRIVER_STORAGE_MMC
+	bool "SDHCI specification compliant eMMC/SD driver"
+	default n
+
+config DRIVER_STORAGE_SDHCI_PCI
+	depends on ARCH_X86
+	depends on DRIVER_SDHCI
+	bool "PCI SDHCI based eMMC/SD driver"
+	default n
+
