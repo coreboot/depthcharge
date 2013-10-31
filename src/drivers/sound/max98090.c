@@ -2,298 +2,219 @@
  * max98090.c -- MAX98090 ALSA SoC Audio driver
  *
  * Copyright 2011 Maxim Integrated Products
+ * Copyright 2013 Google Inc.  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
-#include <asm/arch/clk.h>
-#include <asm/arch/cpu.h>
-#include <asm/arch/power.h>
-#include <asm/gpio.h>
-#include <asm/io.h>
-#include <common.h>
-#include <div64.h>
-#include <fdtdec.h>
-#include <i2c.h>
-#include <sound.h>
-#include "i2s.h"
-#include "maxim_codec.h"
-#include "max98090.h"
 
-/*
- * Sets hw params for max98090
- *
- * @param max98090	max98090 information pointer
- * @param rate		Sampling rate
- * @param bits_per_sample	Bits per sample
- *
- * @return -1 for error  and 0  Success.
- */
-int max98090_hw_params(struct maxim_codec_priv *max98090,
-			unsigned int rate, unsigned int bits_per_sample)
+#include <libpayload.h>
+
+#include "drivers/bus/i2c/i2c.h"
+#include "drivers/sound/max98090.h"
+
+static int max98090_i2c_write(Max98090Codec *codec, uint8_t reg, uint8_t data)
 {
-	int error;
-	unsigned char value;
+	return codec->i2c->write(codec->i2c, codec->chip, reg, 1, &data, 1);
+}
 
-	switch (bits_per_sample) {
-	case 16:
-		maxim_codec_i2c_read(M98090_REG_INTERFACE_FORMAT, &value);
-		error = maxim_codec_update_bits(M98090_REG_INTERFACE_FORMAT,
-			M98090_WS_MASK, 0);
-		maxim_codec_i2c_read(M98090_REG_INTERFACE_FORMAT, &value);
-		break;
-	default:
-		debug("%s: Illegal bits per sample %d.\n",
-		      __func__, bits_per_sample);
-		return -1;
-	}
+static int max98090_i2c_read(Max98090Codec *codec, uint8_t reg, uint8_t *data)
+{
+	return codec->i2c->read(codec->i2c, codec->chip, reg, 1, data, 1);
+}
 
-	/* Update filter mode */
-	if (rate < 240000)
-		error |= maxim_codec_update_bits(M98090_REG_FILTER_CONFIG,
-			M98090_MODE_MASK, 0);
-	else
-		error |= maxim_codec_update_bits(M98090_REG_FILTER_CONFIG,
-			M98090_MODE_MASK, M98090_MODE_MASK);
-
-	/* Update sample rate mode */
-	if (rate < 50000)
-		error |= maxim_codec_update_bits(M98090_REG_FILTER_CONFIG,
-			M98090_DHF_MASK, 0);
-	else
-		error |= maxim_codec_update_bits(M98090_REG_FILTER_CONFIG,
-			M98090_DHF_MASK, M98090_DHF_MASK);
-
-	if (error < 0) {
-		debug("%s: Error setting hardware params.\n", __func__);
-		return -1;
-	}
+static int max98090_update_bits(Max98090Codec *codec, uint8_t reg,
+				uint8_t mask, uint8_t value)
+{
+	uint8_t old;
+	if (max98090_i2c_read(codec, reg, &old))
+		return 1;
+	uint8_t new_value = (old & ~mask) | (value & mask);
+	if (old != new_value && max98090_i2c_write(codec, reg, new_value))
+		return 1;
 
 	return 0;
 }
 
-/*
- * Configures Audio interface system clock for the given frequency
- *
- * @param max98090	max98090 information
- * @param freq		Sampling frequency in Hz
- *
- * @return -1 for error and 0 success.
- */
-int max98090_set_sysclk(struct maxim_codec_priv *max98090,
-				unsigned int freq)
+static int max98090_hw_params(Max98090Codec *codec)
 {
-	int error = 0;
+	unsigned char value;
+	unsigned int sample_rate = codec->sample_rate;
+	unsigned int bits_per_sample = codec->bits_per_sample;
 
-	/* Requested clock frequency is already setup */
-	if (freq == max98090->sysclk)
-		return 0;
+	switch (bits_per_sample) {
+	case 16:
+		max98090_i2c_read(codec, M98090_REG_INTERFACE_FORMAT, &value);
+		if (max98090_update_bits(codec, M98090_REG_INTERFACE_FORMAT,
+					 M98090_WS_MASK, 0))
+			return 1;
+		max98090_i2c_read(codec, M98090_REG_INTERFACE_FORMAT, &value);
+		break;
+	default:
+		printf("%s: Illegal bits per sample %d.\n",
+		       __func__, bits_per_sample);
+		return 1;
+	}
 
-	/* Setup clocks for slave mode, and using the PLL
+	/* Update filter mode */
+	int mode_mask = (sample_rate < 240000) ? 0 : M98090_MODE_MASK;
+	if (max98090_update_bits(codec, M98090_REG_FILTER_CONFIG,
+				 M98090_MODE_MASK, mode_mask))
+		return 1;
+
+	/* Update sample rate mode */
+	int rate = (sample_rate < 50000) ? 0 : M98090_DHF_MASK;
+	if (max98090_update_bits(codec, M98090_REG_FILTER_CONFIG,
+				 M98090_DHF_MASK, rate))
+		return 1;
+	return 0;
+}
+
+// Configures audio interface system clock for the selected frequency.
+static int max98090_set_sysclk(Max98090Codec *codec)
+{
+	enum { MHz = 1000000 };
+
+	int freq = codec->lr_frame_size * codec->sample_rate;
+	// TODO(hungte) Should we handle codec->master_clock?
+	uint8_t mclksel = 0;
+
+	/*
+	 * Setup clocks for slave mode, and using the PLL
 	 * PSCLK = 0x01 (when master clk is 10MHz to 20MHz)
 	 *	0x02 (when master clk is 20MHz to 40MHz)..
 	 *	0x03 (when master clk is 40MHz to 60MHz)..
 	 */
-	if ((freq >= 10000000) && (freq < 20000000)) {
-		error = maxim_codec_i2c_write(M98090_REG_SYSTEM_CLOCK,
-							M98090_PSCLK_DIV1);
-	} else if ((freq >= 20000000) && (freq < 40000000)) {
-		error = maxim_codec_i2c_write(M98090_REG_SYSTEM_CLOCK,
-							M98090_PSCLK_DIV2);
-	} else if ((freq >= 40000000) && (freq < 60000000)) {
-		error = maxim_codec_i2c_write(M98090_REG_SYSTEM_CLOCK,
-							M98090_PSCLK_DIV4);
+	if ((freq >= 10 * MHz) && (freq < 20 * MHz)) {
+		mclksel |= M98090_PSCLK_DIV1;
+	} else if ((freq >= 20 * MHz) && (freq < 40 * MHz)) {
+		mclksel |= M98090_PSCLK_DIV2;
+	} else if ((freq >= 40 * MHz) && (freq < 60 * MHz)) {
+		mclksel |= M98090_PSCLK_DIV4;
 	} else {
-		debug("%s: Invalid master clock frequency\n", __func__);
-		return -1;
+		printf("%s: Invalid master clock frequency\n", __func__);
+		return 1;
 	}
 
-	debug("%s: Clock at %uHz\n", __func__, freq);
+	if (max98090_i2c_write(codec, M98090_REG_SYSTEM_CLOCK, mclksel))
+		return 1;
 
-	if (error < 0)
-		return -1;
+	printf("%s: Clock at %uHz\n", __func__, freq);
+	return 0;
+}
 
-	max98090->sysclk = freq;
+// Sets Max98090 I2S format.
+static int max98090_set_fmt(Max98090Codec *codec)
+{
+	// Set to slave mode PLL - MAS mode off.
+	if (max98090_i2c_write(codec, M98090_REG_CLOCK_RATIO_NI_MSB, 0x00) ||
+	    max98090_i2c_write(codec, M98090_REG_CLOCK_RATIO_NI_LSB, 0x00))
+		return 1;
+
+	if (max98090_update_bits(codec, M98090_REG_CLOCK_MODE,
+				 M98090_USE_M1_MASK, 0))
+		return 1;
+
+	if (max98090_i2c_write(codec, M98090_REG_MASTER_MODE, 0))
+		return 1;
+
+	// Format: I2S, IB_IF.
+	if (max98090_i2c_write(codec, M98090_REG_INTERFACE_FORMAT,
+			       M98090_DLY_MASK | M98090_BCI_MASK |
+			       M98090_WCI_MASK))
+		return 1;
 
 	return 0;
 }
 
-/*
- * Sets Max98090 I2S format
- *
- * @param max98090	max98090 information
- * @param fmt		i2S format - supports a subset of the options defined
- *			in i2s.h.
- *
- * @return -1 for error and 0  Success.
- */
-int max98090_set_fmt(struct maxim_codec_priv *max98090, int fmt)
+// Resets the audio codec.
+static int max98090_reset(Max98090Codec *codec)
 {
-	u8 regval = 0;
-	int error = 0;
-
-	if (fmt == max98090->fmt)
-		return 0;
-
-	max98090->fmt = fmt;
-
-	switch (fmt & SND_SOC_DAIFMT_MASTER_MASK) {
-	case SND_SOC_DAIFMT_CBS_CFS:
-		/* Set to slave mode PLL - MAS mode off */
-		error |= maxim_codec_i2c_write(M98090_REG_CLOCK_RATIO_NI_MSB,
-						0x00);
-		error |= maxim_codec_i2c_write(M98090_REG_CLOCK_RATIO_NI_LSB,
-						0x00);
-		error |= maxim_codec_update_bits(M98090_REG_CLOCK_MODE,
-			M98090_USE_M1_MASK, 0);
-		break;
-	case SND_SOC_DAIFMT_CBM_CFM:
-		/* Set to master mode */
-		debug("Master mode not supported\n");
-		break;
-	case SND_SOC_DAIFMT_CBS_CFM:
-	case SND_SOC_DAIFMT_CBM_CFS:
-	default:
-		debug("%s: Clock mode unsupported\n", __func__);
-		return -1;
-	}
-
-	error |= maxim_codec_i2c_write(M98090_REG_MASTER_MODE, regval);
-
-	regval = 0;
-	switch (fmt & SND_SOC_DAIFMT_FORMAT_MASK) {
-	case SND_SOC_DAIFMT_I2S:
-		regval |= M98090_DLY_MASK;
-		break;
-	case SND_SOC_DAIFMT_LEFT_J:
-		break;
-	case SND_SOC_DAIFMT_RIGHT_J:
-		regval |= M98090_RJ_MASK;
-		break;
-	case SND_SOC_DAIFMT_DSP_A:
-		/* Not supported mode */
-	default:
-		debug("%s: Unrecognized format.\n", __func__);
-		return -1;
-	}
-
-	switch (fmt & SND_SOC_DAIFMT_INV_MASK) {
-	case SND_SOC_DAIFMT_NB_NF:
-		break;
-	case SND_SOC_DAIFMT_NB_IF:
-		regval |= M98090_WCI_MASK;
-		break;
-	case SND_SOC_DAIFMT_IB_NF:
-		regval |= M98090_BCI_MASK;
-		break;
-	case SND_SOC_DAIFMT_IB_IF:
-		regval |= M98090_BCI_MASK|M98090_WCI_MASK;
-		break;
-	default:
-		debug("%s: Unrecognized inversion settings.\n", __func__);
-		return -1;
-	}
-
-	error |= maxim_codec_i2c_write(M98090_REG_INTERFACE_FORMAT,
-		regval);
-
-	if (error < 0) {
-		debug("%s: Error setting i2s format.\n", __func__);
-		return -1;
-	}
-
-	return 0;
-}
-
-/*
- * resets the audio codec
- *
- * @return -1 for error and 0 success.
- */
-static int max98090_reset(void)
-{
-	int ret;
-
-	/*
-	 * Gracefully reset the DSP core and the codec hardware in a proper
-	 * sequence.
-	 */
-	ret = maxim_codec_i2c_write(M98090_REG_SOFTWARE_RESET,
-					M98090_SWRESET_MASK);
-	if (ret != 0) {
-		debug("%s: Failed to reset DSP: %d\n", __func__, ret);
-		return ret;
-	}
+	// Gracefully reset the DSP core and the codec hardware in a proper
+	// sequence.
+	if (max98090_i2c_write(codec, M98090_REG_SOFTWARE_RESET,
+			       M98090_SWRESET_MASK))
+		return 1;
 
 	mdelay(20);
 	return 0;
 }
 
-/*
- * Intialise max98090 codec device
- *
- * @param max98090	max98090 information
- *
- * @returns -1 for error  and 0 Success.
- */
-int max98090_device_init(struct maxim_codec_priv *max98090)
+// Initialize max98090 codec device.
+int max98090_device_init(Max98090Codec *codec)
 {
-	unsigned char id;
-	int error = 0;
+	// Reset the codec, the DSP core, and disable all interrupts.
+	if (max98090_reset(codec))
+		return 1;
 
-	/* reset the codec, the DSP core, and disable all interrupts */
-	error = max98090_reset();
-	if (error != 0) {
-		debug("Reset\n");
-		return error;
-	}
 
-	/* initialize private data */
-	max98090->sysclk = -1U;
-	max98090->rate = -1U;
-	max98090->fmt = -1U;
+	uint8_t id;
+	if (max98090_i2c_read(codec, M98090_REG_REVISION_ID, &id))
+		return 1;
+	printf("%s: Hardware revision: %c\n", __func__, (id - 0x40) + 'A');
 
-	error = maxim_codec_i2c_read(M98090_REG_REVISION_ID, &id);
-	if (error < 0) {
-		debug("%s: Failure reading hardware revision: %d\n",
-		      __func__, id);
-		return -1;
-	}
 	/* Reading interrupt status to clear them */
-	error = maxim_codec_i2c_read(M98090_REG_DEVICE_STATUS, &id);
+	int res = 0;
+	res = max98090_i2c_read(codec, M98090_REG_DEVICE_STATUS, &id);
 
-	error |= maxim_codec_i2c_write(M98090_REG_DAC_CONTROL,
-							M98090_DACHP_MASK);
-	error |= maxim_codec_i2c_write(M98090_REG_BIAS_CONTROL,
-					M98090_VCM_MODE_MASK);
+	res |= max98090_i2c_write(codec, M98090_REG_DAC_CONTROL,
+				  M98090_DACHP_MASK);
+	res |= max98090_i2c_write(codec, M98090_REG_BIAS_CONTROL,
+				  M98090_VCM_MODE_MASK);
 
-	error |= maxim_codec_i2c_write(M98090_REG_LEFT_SPK_MIXER, 0x1);
-	error |= maxim_codec_i2c_write(M98090_REG_RIGHT_SPK_MIXER, 0x2);
+	res |= max98090_i2c_write(codec, M98090_REG_LEFT_SPK_MIXER, 0x1);
+	res |= max98090_i2c_write(codec, M98090_REG_RIGHT_SPK_MIXER, 0x2);
 
-	error |= maxim_codec_i2c_write(M98090_REG_LEFT_SPK_VOLUME, 0x25);
-	error |= maxim_codec_i2c_write(M98090_REG_RIGHT_SPK_VOLUME, 0x25);
+	res |= max98090_i2c_write(codec, M98090_REG_LEFT_SPK_VOLUME, 0x25);
+	res |= max98090_i2c_write(codec, M98090_REG_RIGHT_SPK_VOLUME, 0x25);
 
-	error |= maxim_codec_i2c_write(M98090_REG_CLOCK_RATIO_NI_MSB, 0x0);
-	error |= maxim_codec_i2c_write(M98090_REG_CLOCK_RATIO_NI_LSB, 0x0);
-	error |= maxim_codec_i2c_write(M98090_REG_MASTER_MODE, 0x0);
-	error |= maxim_codec_i2c_write(M98090_REG_INTERFACE_FORMAT, 0x0);
-	error |= maxim_codec_i2c_write(M98090_REG_IO_CONFIGURATION,
-					M98090_SDIEN_MASK);
-	error |= maxim_codec_i2c_write(M98090_REG_DEVICE_SHUTDOWN,
-					M98090_SHDNN_MASK);
-	error |= maxim_codec_i2c_write(M98090_REG_OUTPUT_ENABLE,
-							M98090_HPREN_MASK |
-							M98090_HPLEN_MASK |
-							M98090_SPREN_MASK |
-							M98090_SPLEN_MASK |
-							M98090_DAREN_MASK |
-							M98090_DALEN_MASK);
-	error |= maxim_codec_i2c_write(M98090_REG_IO_CONFIGURATION,
-					M98090_SDOEN_MASK | M98090_SDIEN_MASK);
+	res |= max98090_i2c_write(codec, M98090_REG_CLOCK_RATIO_NI_MSB, 0x0);
+	res |= max98090_i2c_write(codec, M98090_REG_CLOCK_RATIO_NI_LSB, 0x0);
+	res |= max98090_i2c_write(codec, M98090_REG_MASTER_MODE, 0x0);
+	res |= max98090_i2c_write(codec, M98090_REG_INTERFACE_FORMAT, 0x0);
+	res |= max98090_i2c_write(codec, M98090_REG_IO_CONFIGURATION,
+				  M98090_SDIEN_MASK);
+	res |= max98090_i2c_write(codec, M98090_REG_DEVICE_SHUTDOWN,
+				  M98090_SHDNN_MASK);
+	res |= max98090_i2c_write(codec, M98090_REG_OUTPUT_ENABLE,
+				  M98090_HPREN_MASK | M98090_HPLEN_MASK |
+				  M98090_SPREN_MASK | M98090_SPLEN_MASK |
+				  M98090_DAREN_MASK | M98090_DALEN_MASK);
+	res |= max98090_i2c_write(codec, M98090_REG_IO_CONFIGURATION,
+				  M98090_SDOEN_MASK | M98090_SDIEN_MASK);
 
-	if (error < 0)
-		return -1;
+	return res;
+}
 
-	return 0;
+static int max98090_enable(SoundRouteComponentOps *me)
+{
+	Max98090Codec *codec = container_of(me, Max98090Codec, component.ops);
+
+	return max98090_device_init(codec) || max98090_set_sysclk(codec) ||
+		max98090_hw_params(codec) || max98090_set_fmt(codec);
+}
+
+Max98090Codec *new_max98090_codec(I2cOps *i2c, uint8_t chip,
+				  int bits_per_sample, int sample_rate,
+				  int lr_frame_size, uint8_t master_clock)
+{
+	Max98090Codec *codec = malloc(sizeof(*codec));
+	if (!codec) {
+		printf("Failed to allocate max98090 codec structure.\n");
+		return NULL;
+	}
+	memset(codec, 0, sizeof(*codec));
+
+	codec->component.ops.enable = &max98090_enable;
+
+	codec->i2c = i2c;
+	codec->chip = chip;
+
+	codec->bits_per_sample = bits_per_sample;
+	codec->sample_rate = sample_rate;
+	codec->lr_frame_size = lr_frame_size;
+
+	codec->master_clock = master_clock;
+	return codec;
 }

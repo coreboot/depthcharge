@@ -8,10 +8,29 @@
  * published by the Free Software Foundation.
  */
 
-#ifndef _MAX98090_H
-#define _MAX98090_H
+#ifndef __DRIVERS_SOUND_MAX98090_H__
+#define __DRIVERS_SOUND_MAX98090_H__
 
-#include "maxim_codec.h"
+#include "drivers/bus/i2c/i2c.h"
+#include "drivers/sound/route.h"
+
+typedef struct
+{
+	SoundRouteComponent component;
+
+	I2cOps *i2c;
+	uint8_t chip;
+
+	int bits_per_sample;
+	int sample_rate;
+	int lr_frame_size;
+
+	uint8_t master_clock;
+} Max98090Codec;
+
+Max98090Codec *new_max98090_codec(I2cOps *i2c, uint8_t chip,
+				  int bits_per_sample, int sample_rate,
+				  int lr_frame_size, uint8_t master_clock);
 
 /*
  * MAX98090 Registers Definition
@@ -648,24 +667,4 @@
 #define M98090_REVID_WIDTH              8
 #define M98090_REVID_NUM                (1<<M98090_REVID_WIDTH)
 
-/* function prototype */
-
-/*
- * intialise max98090 sound codec device for the given configuration
- *
- * @param blob			FDT node for codec values
- * @param sampling_rate		Sampling rate (Hz)
- * @param mclk_freq		MCLK Frequency (Hz)
- * @param bits_per_sample	bits per Sample (must be 16 or 24)
- *
- * @returns -1 for error and 0 Success.
- */
-int max98090_init(const void *blob, int sampling_rate, int mclk_freq,
-			int bits_per_sample);
-int max98090_set_sysclk(struct maxim_codec_priv *max98090,
-				unsigned int freq);
-int max98090_hw_params(struct maxim_codec_priv *max98090,
-			unsigned int rate, unsigned int bits_per_sample);
-int max98090_device_init(struct maxim_codec_priv *max98090);
-int max98090_set_fmt(struct maxim_codec_priv *max98090, int fmt);
-#endif
+#endif /* __DRIVERS_SOUND_MAX98090_H__ */

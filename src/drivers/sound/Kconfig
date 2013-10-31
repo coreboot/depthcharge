@@ -23,6 +23,10 @@ config DRIVER_SOUND_I2S
 	bool "Generic I2S sound support"
 	default n
 
+config DRIVER_SOUND_MAX98090
+	bool "MAX98090 codec driver"
+	default n
+
 config DRIVER_SOUND_MAX98095
 	bool "MAX98095 codec driver"
 	default n
