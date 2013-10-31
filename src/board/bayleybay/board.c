@@ -20,10 +20,13 @@
  * MA 02111-1307 USA
  */
 
+#include <libpayload.h>
+
 #include "base/init_funcs.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/power/pch.h"
+#include "drivers/storage/sdhci.h"
 
 static int board_setup(void)
 {
@@ -34,7 +37,20 @@ static int board_setup(void)
 	if (power_set_ops(&pch_power_ops))
 		return 1;
 
-	return 0;
+	/*
+	 * Initting port zero (eMMC) only for now. Device IDs other two ports
+	 * are 0x0F15 and 0x0F16. Clock frequencies for the eMMC port are 400
+	 * KHz min (used during initialization) and 52 MHz max (firmware does
+	 * not use 200 MHz aka HS mode).
+	 */
+	SdhciHost *emmc = new_pci_sdhci_host(PCI_DEV(0, 23, 0), 0,
+					     400 * 1000, 200 * 1000 * 1000);
+
+	if (emmc)
+		list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+				  &fixed_block_dev_controllers);
+
+	return (emmc == NULL);
 }
 
 INIT_FUNC(board_setup);
