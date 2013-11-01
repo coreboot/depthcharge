@@ -127,6 +127,7 @@ int main(void)
 		if (net_ready(&ready))
 			halt();
 	}
+	mdelay(200);	// some dongles need more time than they think
 	printf("done.\n");
 
 	// Start up the network stack.
