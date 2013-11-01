@@ -31,6 +31,7 @@
 #include "drivers/power/pch.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
+#include "drivers/storage/sdhci.h"
 #include "drivers/tpm/lpc.h"
 #include "vboot/util/flag.h"
 
@@ -70,6 +71,21 @@ static int board_setup(void)
 	LpcTpm *tpm = new_lpc_tpm((void *)0xfed40000);
 	if (!tpm || tpm_set_ops(&tpm->ops))
 		return 1;
+
+	/*
+	 * For now initting memory structures for port zero (eMMC) only.
+	 * Device numbers of the other two SCC ports are 17 and 18.
+	 *
+	 * Clock frequencies for the eMMC port are 400 KHz min (used during
+	 * initialization) and 200 MHz max. Firmware does not run at 200 MHz
+	 * (aka HS mode), it is limited to 52 MHz.
+	 */
+	SdhciHost *emmc = new_pci_sdhci_host(PCI_DEV(0, 23, 0), 0,
+					     400 * 1000, 200 * 1000 * 1000);
+
+	if (emmc)
+		list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+				  &fixed_block_dev_controllers);
 
 	return 0;
 }

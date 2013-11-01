@@ -26,6 +26,8 @@
 #ifndef __DRIVER_STORAGE_SDHCI_H__
 #define __DRIVER_STORAGE_SDHCI_H__
 
+#include <libpayload.h>
+
 #include "mmc.h"
 
 /*
