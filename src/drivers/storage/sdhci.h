@@ -247,13 +247,16 @@ struct sdhci_host {
 	unsigned quirks;
 	unsigned host_caps;
 	unsigned version;
-	unsigned clock;
+	unsigned clock; /* current, min and max interface clocks */
+	unsigned clock_f_min;
+	unsigned clock_f_max;
 	const struct sdhci_ops *ops;
 	int removable;
+	unsigned voltages;
 
+	int (*attach)(SdhciHost *host);
 	void (*set_control_reg)(SdhciHost *host);
 	void (*set_clock)(SdhciHost *host, unsigned int div);
-	unsigned voltages;
 };
 
 
@@ -286,7 +289,7 @@ static inline u8 sdhci_readb(SdhciHost *host, int reg)
 	return readb(host->ioaddr + reg);
 }
 
-int add_sdhci(SdhciHost *host, u32 max_clk, u32 min_clk);
+void add_sdhci(SdhciHost *host);
 
 SdhciHost *new_pci_sdhci_host(pcidev_t dev,
 			      int removable,

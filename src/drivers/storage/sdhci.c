@@ -340,7 +340,7 @@ static void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 {
 	u32 ctrl;
 	SdhciHost *host = container_of(mmc_ctrlr,
-					       SdhciHost, mmc_ctrlr);
+				       SdhciHost, mmc_ctrlr);
 
 	if (host->set_control_reg)
 		host->set_control_reg(host);
@@ -374,8 +374,76 @@ static void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 	sdhci_writeb(host, ctrl, SDHCI_HOST_CONTROL);
 }
 
+/* Prepare SDHCI controller to be initialized */
+static int sdhci_pre_init(SdhciHost *host)
+{
+	unsigned int caps;
+
+	if (host->attach) {
+		int rv = host->attach(host);
+		if (rv)
+			return rv;
+	}
+
+	caps = sdhci_readl(host, SDHCI_CAPABILITIES);
+
+	if (host->clock_f_max) {
+		host->mmc_ctrlr.f_max = host->clock_f_max;
+	} else {
+		if ((host->version & SDHCI_SPEC_VER_MASK) >= SDHCI_SPEC_300)
+			host->mmc_ctrlr.f_max = (caps &
+						 SDHCI_CLOCK_V3_BASE_MASK)
+				>> SDHCI_CLOCK_BASE_SHIFT;
+		else
+			host->mmc_ctrlr.f_max = (caps & SDHCI_CLOCK_BASE_MASK)
+				>> SDHCI_CLOCK_BASE_SHIFT;
+
+		if (host->mmc_ctrlr.f_max == 0) {
+			printf("Hardware doesn't specify base clock frequency\n");
+			return -1;
+		}
+		host->mmc_ctrlr.f_max *= 1000000;
+	}
+
+	if (host->clock_f_min) {
+		host->mmc_ctrlr.f_min = host->clock_f_min;
+	} else {
+		if ((host->version & SDHCI_SPEC_VER_MASK) >= SDHCI_SPEC_300)
+			host->mmc_ctrlr.f_min =
+				host->mmc_ctrlr.f_max / SDHCI_MAX_DIV_SPEC_300;
+		else
+			host->mmc_ctrlr.f_min =
+				host->mmc_ctrlr.f_max / SDHCI_MAX_DIV_SPEC_200;
+	}
+
+	if (caps & SDHCI_CAN_VDD_330)
+		host->mmc_ctrlr.voltages |= MMC_VDD_32_33 | MMC_VDD_33_34;
+	if (caps & SDHCI_CAN_VDD_300)
+		host->mmc_ctrlr.voltages |= MMC_VDD_29_30 | MMC_VDD_30_31;
+	if (caps & SDHCI_CAN_VDD_180)
+		host->mmc_ctrlr.voltages |= MMC_VDD_165_195;
+
+	if (host->quirks & SDHCI_QUIRK_BROKEN_VOLTAGE)
+		host->mmc_ctrlr.voltages |= host->voltages;
+
+	host->mmc_ctrlr.caps = MMC_MODE_HS | MMC_MODE_HS_52MHz | MMC_MODE_4BIT;
+	if (caps & SDHCI_CAN_DO_8BIT)
+		host->mmc_ctrlr.caps |= MMC_MODE_8BIT;
+	if (host->mmc_ctrlr.caps)
+		host->mmc_ctrlr.caps |= host->host_caps;
+
+	sdhci_reset(host, SDHCI_RESET_ALL);
+
+	return 0;
+}
+
 static int sdhci_init(SdhciHost *host)
 {
+	int rv = sdhci_pre_init(host);
+
+	if (rv)
+		return rv; /* The error has been already reported */
+
 	sdhci_set_power(host, fls(host->mmc_ctrlr.voltages) - 1);
 
 	if (host->quirks & SDHCI_QUIRK_NO_CD) {
@@ -445,66 +513,14 @@ static int sdhci_update(BlockDevCtrlrOps *me)
 	return 0;
 }
 
-int add_sdhci(SdhciHost *host, u32 max_clk, u32 min_clk)
+void add_sdhci(SdhciHost *host)
 {
-	unsigned int caps;
-
 	host->mmc_ctrlr.send_cmd = sdhci_send_command;
 	host->mmc_ctrlr.set_ios = sdhci_set_ios;
 
 	host->mmc_ctrlr.ctrlr.ops.update = sdhci_update;
 	host->mmc_ctrlr.ctrlr.need_update = 1;
 
-	caps = sdhci_readl(host, SDHCI_CAPABILITIES);
-
-	if (max_clk)
-		host->mmc_ctrlr.f_max = max_clk;
-	else {
-		if ((host->version & SDHCI_SPEC_VER_MASK) >= SDHCI_SPEC_300)
-			host->mmc_ctrlr.f_max = (caps & SDHCI_CLOCK_V3_BASE_MASK)
-				>> SDHCI_CLOCK_BASE_SHIFT;
-		else
-			host->mmc_ctrlr.f_max = (caps & SDHCI_CLOCK_BASE_MASK)
-				>> SDHCI_CLOCK_BASE_SHIFT;
-		host->mmc_ctrlr.f_max *= 1000000;
-	}
-	if (host->mmc_ctrlr.f_max == 0) {
-		printf("Hardware doesn't specify base clock frequency\n");
-		return -1;
-	}
-	if (min_clk)
-		host->mmc_ctrlr.f_min = min_clk;
-	else {
-		if ((host->version & SDHCI_SPEC_VER_MASK) >= SDHCI_SPEC_300)
-			host->mmc_ctrlr.f_min =
-				host->mmc_ctrlr.f_max / SDHCI_MAX_DIV_SPEC_300;
-		else
-			host->mmc_ctrlr.f_min =
-				host->mmc_ctrlr.f_max / SDHCI_MAX_DIV_SPEC_200;
-	}
-
-	host->mmc_ctrlr.voltages = 0;
-
 	/* TODO(vbendeb): check if SDHCI spec allows to retrieve this value. */
 	host->mmc_ctrlr.b_max = 65535;
-
-	if (caps & SDHCI_CAN_VDD_330)
-		host->mmc_ctrlr.voltages |= MMC_VDD_32_33 | MMC_VDD_33_34;
-	if (caps & SDHCI_CAN_VDD_300)
-		host->mmc_ctrlr.voltages |= MMC_VDD_29_30 | MMC_VDD_30_31;
-	if (caps & SDHCI_CAN_VDD_180)
-		host->mmc_ctrlr.voltages |= MMC_VDD_165_195;
-
-	if (host->quirks & SDHCI_QUIRK_BROKEN_VOLTAGE)
-		host->mmc_ctrlr.voltages |= host->voltages;
-
-	host->mmc_ctrlr.caps = MMC_MODE_HS | MMC_MODE_HS_52MHz | MMC_MODE_4BIT;
-	if (caps & SDHCI_CAN_DO_8BIT)
-		host->mmc_ctrlr.caps |= MMC_MODE_8BIT;
-	if (host->mmc_ctrlr.caps)
-		host->mmc_ctrlr.caps |= host->host_caps;
-
-	sdhci_reset(host, SDHCI_RESET_ALL);
-
-	return 0;
 }
