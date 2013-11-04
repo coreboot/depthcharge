@@ -25,6 +25,9 @@
 #ifndef __DRIVERS_STORAGE_AHCI_H__
 #define __DRIVERS_STORAGE_AHCI_H__
 
+#include <pci.h>
+#include <stdint.h>
+
 #include "drivers/storage/blockdev.h"
 
 #define AHCI_PCI_BAR		0x24
