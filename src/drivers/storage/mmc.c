@@ -205,7 +205,7 @@ static uint32_t mmc_write(MmcMedia *media, uint32_t start, lba_t block_count,
 	/* SPI multiblock writes terminate using a special
 	 * token, not a STOP_TRANSMISSION request.
 	 */
-	if (block_count > 1) {
+	if ((block_count > 1) && !(media->ctrlr->caps & MMC_AUTO_CMD12)) {
 		cmd.cmdidx = MMC_CMD_STOP_TRANSMISSION;
 		cmd.cmdarg = 0;
 		cmd.resp_type = MMC_RSP_R1b;
@@ -249,7 +249,7 @@ static int mmc_read(MmcMedia *media, void *dest, uint32_t start,
 	if (mmc_send_cmd(media->ctrlr, &cmd, &data))
 		return 0;
 
-	if (block_count > 1) {
+	if ((block_count > 1) && !(media->ctrlr->caps & MMC_AUTO_CMD12)) {
 		cmd.cmdidx = MMC_CMD_STOP_TRANSMISSION;
 		cmd.cmdarg = 0;
 		cmd.resp_type = MMC_RSP_R1b;

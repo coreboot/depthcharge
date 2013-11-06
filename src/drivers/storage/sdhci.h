@@ -234,6 +234,23 @@
 #define SDHCI_DEFAULT_BOUNDARY_SIZE	(512 * 1024)
 #define SDHCI_DEFAULT_BOUNDARY_ARG	(7)
 
+/* ADMA packet descriptor */
+typedef struct {
+	u16     attributes;
+	u16     length;
+	u32     addr;
+} SdhciAdma;
+
+#define SDHCI_MAX_PER_DESCRIPTOR 0x10000
+
+/* ADMA descriptor attributes */
+#define SDHCI_ADMA_VALID (1 << 0)
+#define SDHCI_ADMA_END (1 << 1)
+#define SDHCI_ADMA_INT (1 << 2)
+#define SDHCI_ACT_NOP (0 << 4)
+#define SDHCI_ACT_TRAN (2 << 4)
+#define SDHCI_ACT_LINK (3 << 4)
+
 typedef struct sdhci_host SdhciHost;
 
 struct sdhci_host {
@@ -251,11 +268,19 @@ struct sdhci_host {
 	int removable;
 	unsigned voltages;
 
+	/*
+	 * Dynamically allocated array of ADMA descriptors to use for data
+	 * transfers
+	 */
+	SdhciAdma *adma_descs;
+
+	/* Number of ADMA descriptors currently in the array. */
+	int adma_desc_count;
+
 	int (*attach)(SdhciHost *host);
 	void (*set_control_reg)(SdhciHost *host);
 	void (*set_clock)(SdhciHost *host, unsigned int div);
 };
-
 
 static inline void sdhci_writel(SdhciHost *host, u32 val, int reg)
 {

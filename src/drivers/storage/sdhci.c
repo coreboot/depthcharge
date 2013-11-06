@@ -77,7 +77,7 @@ static void sdhci_transfer_pio(SdhciHost *host, MmcData *data)
 }
 
 static int sdhci_transfer_data(SdhciHost *host, MmcData *data,
-				unsigned int start_addr)
+			       unsigned int start_addr)
 {
 	unsigned int stat, rdy, mask, timeout, block = 0;
 
@@ -107,6 +107,128 @@ static int sdhci_transfer_data(SdhciHost *host, MmcData *data,
 		}
 	} while (!(stat & SDHCI_INT_DATA_END));
 	return 0;
+}
+
+static int sdhci_setup_adma(SdhciHost *host, MmcData* data)
+{
+	int i, togo, need_descriptors;
+	char *buffer_data;
+	u16 mode = SDHCI_TRNS_DMA;
+
+	togo = data->blocks * data->blocksize;
+	if (!togo) {
+		printf("%s: MmcData corrupted: %d blocks of %d bytes\n",
+		       __func__, data->blocks, data->blocksize);
+		return -1;
+	}
+
+	need_descriptors = 1 +  togo / SDHCI_MAX_PER_DESCRIPTOR;
+
+	if (host->adma_descs) {
+		if (host->adma_desc_count < need_descriptors) {
+			/* Previously allocated array is too small */
+			free(host->adma_descs);
+			host->adma_desc_count = 0;
+			host->adma_descs = NULL;
+		}
+	}
+
+	if (!host->adma_descs) {
+		host->adma_descs = malloc(need_descriptors *
+					  sizeof(*host->adma_descs));
+		if (!host->adma_descs) {
+			printf("%s: failed to allocate %d descriptors\n",
+			       __func__, need_descriptors);
+			return -1;
+		}
+		host->adma_desc_count = need_descriptors;
+	}
+
+	memset(host->adma_descs, 0, sizeof(*host->adma_descs) *
+	       need_descriptors);
+	buffer_data = data->dest;
+
+	/* Now set up the descriptor chain. */
+	for (i = 0; togo; i++) {
+		unsigned desc_length;
+
+		if (togo < SDHCI_MAX_PER_DESCRIPTOR)
+			desc_length = togo;
+		else
+			desc_length = SDHCI_MAX_PER_DESCRIPTOR;
+
+		host->adma_descs[i].addr = (u32) buffer_data;
+		host->adma_descs[i].length = desc_length;
+		host->adma_descs[i].attributes =
+			SDHCI_ADMA_VALID | SDHCI_ACT_TRAN;
+
+		buffer_data += desc_length;
+		togo -= desc_length;
+	}
+	host->adma_descs[i - 1].attributes |= SDHCI_ADMA_END;
+
+	sdhci_writel(host, (u32) host->adma_descs, SDHCI_ADMA_ADDRESS);
+
+	if (data->blocks > 1) {
+		mode |= SDHCI_TRNS_MULTI |
+			SDHCI_TRNS_BLK_CNT_EN |
+			SDHCI_TRNS_ACMD12;
+	}
+	if (data->flags == MMC_DATA_READ)
+		mode |= SDHCI_TRNS_READ;
+
+	sdhci_writew(host, mode, SDHCI_TRANSFER_MODE);
+
+	return 0;
+}
+
+static int sdhci_complete_adma(SdhciHost *host)
+{
+	int retry;
+	u32 stat = 0, mask;
+
+	mask = SDHCI_INT_RESPONSE | SDHCI_INT_ERROR;
+
+	retry = 10000; /* Command should be done in way less than 10 ms. */
+	while (--retry) {
+		stat = sdhci_readl(host, SDHCI_INT_STATUS);
+		if (stat & mask)
+			break;
+		udelay(1);
+	}
+
+	sdhci_writel(host, SDHCI_INT_RESPONSE, SDHCI_INT_STATUS);
+
+	if (retry && !(stat & SDHCI_INT_ERROR)) {
+		/* Command OK, let's wait for data transfer completion. */
+		mask = SDHCI_INT_DATA_END |
+			SDHCI_INT_ERROR | SDHCI_INT_ADMA_ERROR;
+
+		/* Transfer should take 10 seconds tops. */
+		retry = 10 * 1000 * 1000;
+		while (--retry) {
+			stat = sdhci_readl(host, SDHCI_INT_STATUS);
+			if (stat & mask)
+				break;
+			udelay(1);
+		}
+
+		sdhci_writel(host, SDHCI_INT_DATA_END | SDHCI_INT_ADMA_ERROR,
+			     SDHCI_INT_STATUS);
+		if (!(stat & SDHCI_INT_ERROR))
+			return 0;
+	}
+
+	printf("%s: transfer error, stat %#x, adma error %#x\n",
+	       __func__, stat, sdhci_readl(host, SDHCI_ADMA_ERROR));
+
+	sdhci_reset(host, SDHCI_RESET_CMD);
+	sdhci_reset(host, SDHCI_RESET_DATA);
+
+	if (stat & SDHCI_INT_TIMEOUT)
+		return MMC_TIMEOUT;
+	else
+		return MMC_COMM_ERR;
 }
 
 static int sdhci_send_command(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
@@ -158,24 +280,34 @@ static int sdhci_send_command(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
 		flags |= SDHCI_CMD_DATA;
 
 	/*Set Transfer mode regarding to data flag*/
-	if (data != 0) {
-		sdhci_writeb(host, 0xe, SDHCI_TIMEOUT_CONTROL);
-		mode = SDHCI_TRNS_BLK_CNT_EN;
-		if (data->blocks > 1)
-			mode |= SDHCI_TRNS_MULTI;
+	if (data) {
+		if (host->host_caps & MMC_AUTO_CMD12) {
+			if (sdhci_setup_adma(host, data))
+				return -1;
+		} else { /* Set up non dma transfer */
 
-		if (data->flags == MMC_DATA_READ)
-			mode |= SDHCI_TRNS_READ;
+			sdhci_writeb(host, 0xe, SDHCI_TIMEOUT_CONTROL);
+			mode = SDHCI_TRNS_BLK_CNT_EN;
+			if (data->blocks > 1)
+				mode |= SDHCI_TRNS_MULTI;
 
+			if (data->flags == MMC_DATA_READ)
+				mode |= SDHCI_TRNS_READ;
+
+			sdhci_writew(host, mode, SDHCI_TRANSFER_MODE);
+		}
 		sdhci_writew(host, SDHCI_MAKE_BLKSZ(SDHCI_DEFAULT_BOUNDARY_ARG,
-				data->blocksize),
-				SDHCI_BLOCK_SIZE);
+						    data->blocksize),
+			     SDHCI_BLOCK_SIZE);
 		sdhci_writew(host, data->blocks, SDHCI_BLOCK_COUNT);
-		sdhci_writew(host, mode, SDHCI_TRANSFER_MODE);
 	}
 
 	sdhci_writel(host, cmd->cmdarg, SDHCI_ARGUMENT);
 	sdhci_writew(host, SDHCI_MAKE_CMD(cmd->cmdidx, flags), SDHCI_COMMAND);
+
+	if (data && (host->host_caps & MMC_AUTO_CMD12))
+		return sdhci_complete_adma(host);
+
 	do {
 		stat = sdhci_readl(host, SDHCI_INT_STATUS);
 		if (stat & SDHCI_INT_ERROR)
@@ -371,6 +503,11 @@ static void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 	if (host->quirks & SDHCI_QUIRK_NO_HISPD_BIT)
 		ctrl &= ~SDHCI_CTRL_HISPD;
 
+	if (host->host_caps & MMC_AUTO_CMD12) {
+		ctrl &= ~SDHCI_CTRL_DMA_MASK;
+		ctrl |= SDHCI_CTRL_ADMA32;
+	}
+
 	sdhci_writeb(host, ctrl, SDHCI_HOST_CONTROL);
 }
 
@@ -388,6 +525,9 @@ static int sdhci_pre_init(SdhciHost *host)
 	host->version = sdhci_readw(host, SDHCI_HOST_VERSION) & 0xff;
 
 	caps = sdhci_readl(host, SDHCI_CAPABILITIES);
+
+	if (caps & SDHCI_CAN_DO_ADMA2)
+		host->host_caps |= MMC_AUTO_CMD12;
 
 	if (host->clock_f_max) {
 		host->mmc_ctrlr.f_max = host->clock_f_max;
