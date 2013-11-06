@@ -164,43 +164,28 @@ int main(void)
 	void *data = flash_read(shared_data.offset, shared_data.size);
 	netboot_params_init(data, shared_data.size);
 
+	// Get TFTP server IP and file name from params with DHCP as fallback
 	uip_ipaddr_t *tftp_ip = NULL;
-	const char *bootfile = NULL;
-	// Use some settings either from DHCP or from shared_data.
-        if (!CONFIG_NETBOOT_DYNAMIC_PARAMS) {
-		param = netboot_params_val(NetbootParamIdTftpServerIp);
-		if (param->size >= sizeof(uip_ipaddr_t))
-			tftp_ip = (uip_ipaddr_t *)param->data;
+	param = netboot_params_val(NetbootParamIdTftpServerIp);
+	if (param->data && param->size >= sizeof(uip_ipaddr_t)) {
+		tftp_ip = (uip_ipaddr_t *)param->data;
+		printf("TFTP server IP set from firmware parameters: ");
 	} else {
 		tftp_ip = &next_ip;
-		bootfile = dhcp_bootfile;
+		printf("TFTP server IP supplied by DHCP server: ");
 	}
+	print_ip_addr(tftp_ip);
+	printf("\n");
 
-	// Use bootfile setting from shared data if it's set.
+	const char *bootfile = NULL;
 	param = netboot_params_val(NetbootParamIdBootfile);
-	if (param->data && param->size > 0 &&
-			strnlen((const char *)param->data,
-				param->size) < param->size) {
+	if (param->data && param->size > 0 && strnlen((const char *)param->data,
+			param->size) < param->size) {
 		bootfile = (const char *)param->data;
-	}
-
-	if (!tftp_ip) {
-		printf("No TFTP server IP.\n");
-		if (dhcp_release(server_ip))
-			printf("Dhcp release failed.\n");
-		halt();
+		printf("Bootfile set from firmware parameters: %s\n", bootfile);
 	} else {
-		printf("The TFTP server ip is ");
-		print_ip_addr(tftp_ip);
-		printf("\n");
-	}
-	if (!bootfile) {
-		printf("No bootfile.\n");
-		if (dhcp_release(server_ip))
-			printf("Dhcp release failed.\n");
-		halt();
-	} else {
-		printf("The boot file is %s\n", bootfile);
+		bootfile = dhcp_bootfile;
+		printf("Bootfile supplied by DHCP server: %s\n", bootfile);
 	}
 
 	// Download the bootfile.
