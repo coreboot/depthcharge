@@ -233,8 +233,6 @@
  */
 #define SDHCI_DEFAULT_BOUNDARY_SIZE	(512 * 1024)
 #define SDHCI_DEFAULT_BOUNDARY_ARG	(7)
-struct sdhci_ops {
-};
 
 typedef struct sdhci_host SdhciHost;
 
@@ -250,7 +248,6 @@ struct sdhci_host {
 	unsigned clock; /* current, min and max interface clocks */
 	unsigned clock_f_min;
 	unsigned clock_f_max;
-	const struct sdhci_ops *ops;
 	int removable;
 	unsigned voltages;
 

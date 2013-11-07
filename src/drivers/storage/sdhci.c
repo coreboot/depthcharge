@@ -385,6 +385,8 @@ static int sdhci_pre_init(SdhciHost *host)
 			return rv;
 	}
 
+	host->version = sdhci_readw(host, SDHCI_HOST_VERSION) & 0xff;
+
 	caps = sdhci_readl(host, SDHCI_CAPABILITIES);
 
 	if (host->clock_f_max) {
@@ -429,7 +431,7 @@ static int sdhci_pre_init(SdhciHost *host)
 	host->mmc_ctrlr.caps = MMC_MODE_HS | MMC_MODE_HS_52MHz | MMC_MODE_4BIT;
 	if (caps & SDHCI_CAN_DO_8BIT)
 		host->mmc_ctrlr.caps |= MMC_MODE_8BIT;
-	if (host->mmc_ctrlr.caps)
+	if (host->host_caps)
 		host->mmc_ctrlr.caps |= host->host_caps;
 
 	sdhci_reset(host, SDHCI_RESET_ALL);
