@@ -429,6 +429,7 @@ static int mmc_complete_op_cond(MmcMedia *media)
 
 static int mmc_send_ext_csd(MmcCtrlr *ctrlr, unsigned char *ext_csd)
 {
+	int rv;
 	/* Get the Card Status Register */
 	MmcCommand cmd;
 	cmd.cmdidx = MMC_CMD_SEND_EXT_CSD;
@@ -442,7 +443,21 @@ static int mmc_send_ext_csd(MmcCtrlr *ctrlr, unsigned char *ext_csd)
 	data.blocksize = 512;
 	data.flags = MMC_DATA_READ;
 
-	return mmc_send_cmd(ctrlr, &cmd, &data);
+	rv = mmc_send_cmd(ctrlr, &cmd, &data);
+
+	if (!rv && __mmc_trace) {
+		int i, size;
+
+		size = data.blocks * data.blocksize;
+		mmc_trace("\text_csd:");
+		for (i = 0; i < size; i++) {
+			if (!(i % 32))
+			    printf("\n");
+			printf(" %2.2x", ext_csd[i]);
+		}
+		printf("\n");
+	}
+	return rv;
 }
 
 static int mmc_switch(MmcMedia *media, uint8_t set, uint8_t index,
