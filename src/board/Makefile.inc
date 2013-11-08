@@ -17,19 +17,4 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-subdirs-$(CONFIG_BOARD_BAYLEYBAY) += bayleybay
-subdirs-$(CONFIG_BOARD_BELTINO) += beltino
-subdirs-$(CONFIG_BOARD_BOLT) += bolt
-subdirs-$(CONFIG_BOARD_DAISY) += daisy
-subdirs-$(CONFIG_BOARD_FALCO) += falco
-subdirs-$(CONFIG_BOARD_FOX_BASKINGRIDGE) += fox_baskingridge
-subdirs-$(CONFIG_BOARD_FOX_WTM2) += fox_wtm2
-subdirs-$(CONFIG_BOARD_LINK) += link
-subdirs-$(CONFIG_BOARD_LUMPY) += lumpy
-subdirs-$(CONFIG_BOARD_NYAN) += nyan
-subdirs-$(CONFIG_BOARD_PANTHER) += panther
-subdirs-$(CONFIG_BOARD_PEACH_PIT) += peach_pit
-subdirs-$(CONFIG_BOARD_PEPPY) += peppy
-subdirs-$(CONFIG_BOARD_RAMBI) += rambi
-subdirs-$(CONFIG_BOARD_SAMUS) += samus
-subdirs-$(CONFIG_BOARD_SLIPPY) += slippy
+subdirs-y += $(call strip_quotes,$(CONFIG_BOARD))

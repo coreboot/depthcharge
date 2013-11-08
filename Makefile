@@ -92,6 +92,8 @@ endif
 
 
 
+strip_quotes = $(subst ",,$(subst \",,$(1)))
+
 # Add a new class of source/object files to the build system
 add-class= \
 	$(eval $(1)-srcs:=) \

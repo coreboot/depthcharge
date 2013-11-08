@@ -102,7 +102,7 @@ int main(void)
 	video_console_init();
 	input_init();
 
-	printf("\n\nStarting netboot...\n");
+	printf("\n\nStarting netboot on " CONFIG_BOARD "...\n");
 
 	timestamp_init();
 

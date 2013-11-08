@@ -26,6 +26,7 @@
 #include "arch/sign_of_life.h"
 #include "base/init_funcs.h"
 #include "base/timestamp.h"
+#include "config.h"
 #include "drivers/input/input.h"
 #include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
@@ -64,7 +65,7 @@ int main(void)
 	cbmem_console_init();
 	input_init();
 
-	printf("\n\nStarting depthcharge...\n");
+	printf("\n\nStarting depthcharge on " CONFIG_BOARD "...\n");
 
 	// Set up time keeping.
 	timestamp_init();
