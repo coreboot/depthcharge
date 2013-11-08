@@ -87,13 +87,15 @@ static uint64_t extract_uint32_bits(const uint32_t *array, int start, int count)
 
 static int mmc_send_cmd(MmcCtrlr *ctrlr, MmcCommand *cmd, MmcData *data)
 {
-	int ret;
+	int ret = -1, retries = 2;
 	mmc_trace("CMD_SEND:%d\n", cmd->cmdidx);
 	mmc_trace("\tARG\t\t\t %#08X\n", cmd->cmdarg);
 	mmc_trace("\tFLAG\t\t\t %d\n", cmd->flags);
-	ret = ctrlr->send_cmd(ctrlr, cmd, data);
 
-	switch (cmd->resp_type) {
+	while (retries--) {
+		ret = ctrlr->send_cmd(ctrlr, cmd, data);
+
+		switch (cmd->resp_type) {
 		case MMC_RSP_NONE:
 			mmc_trace("\tMMC_RSP_NONE\n");
 			break;
@@ -126,6 +128,12 @@ static int mmc_send_cmd(MmcCtrlr *ctrlr, MmcCommand *cmd, MmcData *data)
 
 		default:
 			mmc_trace("\tERROR MMC rsp not supported\n");
+			break;
+		}
+		mmc_trace("\trv:\t\t\t %d\n", ret);
+
+		/* Retry failed data commands, bail out otherwise.  */
+		if (!data || !ret)
 			break;
 	}
 	return ret;
