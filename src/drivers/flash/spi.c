@@ -49,7 +49,7 @@ static void *spi_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
 	}
 
 	if (flash->spi->transfer(flash->spi, data, NULL, size)) {
-		printf("%s: Failed to send read command.\n", __func__);
+		printf("%s: Failed to receive %u bytes.\n", __func__, size);
 		flash->spi->stop(flash->spi);
 		return NULL;
 	}
