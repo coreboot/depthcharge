@@ -88,9 +88,9 @@ static void print_mac_addr(const uip_eth_addr *mac)
 static void * const payload = (void *)(uintptr_t)CONFIG_KERNEL_START;
 static const uint32_t MaxPayloadSize = CONFIG_KERNEL_SIZE;
 
-static char cmd_line[4096] = CONFIG_NETBOOT_DEFAULT_COMMAND_LINE;
-static const int cmd_line_def_size =
-	sizeof(CONFIG_NETBOOT_DEFAULT_COMMAND_LINE);
+#define def_cmd_line "lsm.module_locking=0 cros_netboot_ramfs" \
+		     "cros_factory_install cros_secure cros_netboot"
+static char cmd_line[4096] = def_cmd_line;
 
 int main(void)
 {
@@ -196,6 +196,30 @@ int main(void)
 			printf("Dhcp release failed.\n");
 		halt();
 	}
+	printf("The bootfile was %d bytes long.\n", size);
+
+	// Use command line from params when present (added to the default).
+	param = netboot_params_val(NetbootParamIdKernelArgs);
+	if (param->data && param->size > 0 && *(char *)param->data != '\0') {
+		cmd_line[sizeof(def_cmd_line) - 1] = ' ';
+		strncpy(&cmd_line[sizeof(def_cmd_line)], param->data,
+			sizeof(cmd_line) - sizeof(def_cmd_line));
+		printf("Command line set from firmware parameters.\n");
+	// Otherwise, try to fetch it dynamically as a TFTP file.
+	} else if (!(tftp_read(cmd_line, tftp_ip, "cmdline." CONFIG_BOARD,
+			       &size, sizeof(cmd_line) - 1))) {
+		while (cmd_line[size - 1] <= ' ')  // strip trailing whitespace
+			if (!--size) break;	   // and control chars (\n, \r)
+		cmd_line[size] = '\0';
+		while (size--)			   // replace inline control
+			if (cmd_line[size] < ' ')  // chars with spaces
+				cmd_line[size] = ' ';
+		printf("Command line loaded dynamically from TFTP server.\n");
+	// If the file doesn't exist, finally fall back to built-in default.
+	} else {
+		printf("No command line from TFTP, falling back to default.\n");
+	}
+	cmd_line[sizeof(cmd_line) - 1] = '\0';
 
 	// We're done on the network, so release our IP.
 	if (dhcp_release(server_ip)) {
@@ -203,35 +227,18 @@ int main(void)
 		halt();
 	}
 
-	printf("The bootfile was %d bytes long.\n", size);
-
-	// Add user supplied parameters to the command line.
-	param = netboot_params_val(NetbootParamIdKernelArgs);
-	cmd_line[cmd_line_def_size - 1] = '\0';
-	if (param->data && param->size > 0) {
-		int args_len = strnlen((const char *)param->data, param->size);
-
-		if (args_len < param->size &&
-				args_len + cmd_line_def_size <
-				sizeof(cmd_line)) {
-			cmd_line[cmd_line_def_size - 1] = ' ';
-			strncpy(&cmd_line[cmd_line_def_size], param->data,
-				sizeof(cmd_line) - cmd_line_def_size);
-		}
-	}
-
 	// Add tftp server IP into command line.
 	static const char def_tftp_cmdline[] = " tftpserverip=xxx.xxx.xxx.xxx";
 	const int tftp_cmdline_def_size = sizeof(def_tftp_cmdline) - 1;
 	int cmd_line_size = strlen(cmd_line);
-	if (cmd_line_size + tftp_cmdline_def_size > sizeof(cmd_line)) {
+	if (cmd_line_size + tftp_cmdline_def_size >= sizeof(cmd_line)) {
 		printf("Out of space adding TFTP server IP to the command line.\n");
 		return 1;
 	}
 	sprintf(&cmd_line[cmd_line_size], " tftpserverip=%d.%d.%d.%d",
 		uip_ipaddr1(tftp_ip), uip_ipaddr2(tftp_ip),
 		uip_ipaddr3(tftp_ip), uip_ipaddr4(tftp_ip));
-	printf("The command line is %s.\n", cmd_line);
+	printf("The command line is: %s\n", cmd_line);
 
 	// Boot.
 	boot(payload, cmd_line, NULL, NULL);
