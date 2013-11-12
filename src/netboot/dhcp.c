@@ -46,8 +46,8 @@ typedef enum DhcpHardwareType
 static const uint16_t DhcpServerPort = 67;
 static const uint16_t DhcpClientPort = 68;
 
-// Wait for a response for 10 seconds before resending a request.
-static const uint64_t DhcpRespTimeoutUs = 10 * 1000 * 1000;
+// Wait for a response for 3 seconds before resending a request.
+static const uint64_t DhcpRespTimeoutUs = 3 * 1000 * 1000;
 
 typedef struct __attribute__((packed)) DhcpPacket
 {
@@ -409,7 +409,7 @@ static void dhcp_prep_packet(DhcpPacket *packet, uint32_t transaction_id)
 	memcpy(&packet->cookie, DhcpCookie, sizeof(DhcpCookie));
 }
 
-static void dhcp_add_option(uint8_t **options, uint8_t tag, uint8_t *value,
+static void dhcp_add_option(uint8_t **options, uint8_t tag, void *value,
 			    uint8_t length, int *remaining)
 {
 	assert(*remaining >= length + 2);
@@ -433,6 +433,9 @@ int dhcp_request(uip_ipaddr_t *next_ip, uip_ipaddr_t *server_ip,
 	uint8_t requested[] = { DhcpTagSubnetMask, DhcpTagDefaultRouter };
 	assert(DhcpMaxPacketSize >= DhcpMinPacketSize);
 	uint16_t max_size = htonw(DhcpMaxPacketSize);
+	uint8_t client_id[1 + sizeof(uip_ethaddr)];
+	client_id[0] = DhcpEthernet;
+	memcpy(client_id + 1, &uip_ethaddr, sizeof(uip_ethaddr));
 
 	// Set up the UDP connection.
 	uip_ipaddr_t addr;
@@ -451,10 +454,12 @@ int dhcp_request(uip_ipaddr_t *next_ip, uip_ipaddr_t *server_ip,
 	byte = DhcpDiscover;
 	dhcp_add_option(&options, DhcpTagMessageType, &byte, sizeof(byte),
 			&remaining);
+	dhcp_add_option(&options, DhcpTagClientIdentifier, client_id,
+			sizeof(client_id), &remaining);
 	dhcp_add_option(&options, DhcpTagParameterRequestList, requested,
 			sizeof(requested), &remaining);
 	dhcp_add_option(&options, DhcpTagMaximumDhcpMessageSize,
-			(uint8_t *)&max_size, sizeof(max_size), &remaining);
+			&max_size, sizeof(max_size), &remaining);
 	dhcp_add_option(&options, DhcpTagEndOfList, NULL, 0, &remaining);
 	dhcp_send_packet(conn, "DHCP discover", &out, &in);
 
@@ -469,18 +474,21 @@ int dhcp_request(uip_ipaddr_t *next_ip, uip_ipaddr_t *server_ip,
 	// We got an offer. Request it.
 	dhcp_state = DhcpRequesting;
 	dhcp_prep_packet(&out, rand());
-	out.client_ip = in.your_ip;
 	options = out.options;
 	remaining = sizeof(out.options);
 	byte = DhcpRequest;
 	dhcp_add_option(&options, DhcpTagMessageType, &byte, sizeof(byte),
 			&remaining);
+	dhcp_add_option(&options, DhcpTagClientIdentifier, client_id,
+			sizeof(client_id), &remaining);
+	dhcp_add_option(&options, DhcpTagRequestedIpAddress, &in.your_ip,
+			sizeof(in.your_ip), &remaining);
 	dhcp_add_option(&options, DhcpTagParameterRequestList, requested,
 			sizeof(requested), &remaining);
 	dhcp_add_option(&options, DhcpTagMaximumDhcpMessageSize,
-			(uint8_t *)&max_size, sizeof(max_size), &remaining);
+			&max_size, sizeof(max_size), &remaining);
 	dhcp_add_option(&options, DhcpTagServerIdentifier,
-			(uint8_t *)&server_id, sizeof(server_id), &remaining);
+			&server_id, sizeof(server_id), &remaining);
 	dhcp_add_option(&options, DhcpTagEndOfList, NULL, 0, &remaining);
 	dhcp_send_packet(conn, "DHCP request", &out, &in);
 
