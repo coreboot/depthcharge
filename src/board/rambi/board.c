@@ -65,7 +65,7 @@ static int board_setup(void)
 		return 1;
 	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
 
-	if (power_set_ops(&pch_power_ops))
+	if (power_set_ops(&baytrail_power_ops))
 		return 1;
 
 	LpcTpm *tpm = new_lpc_tpm((void *)0xfed40000);
