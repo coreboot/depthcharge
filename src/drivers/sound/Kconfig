@@ -38,3 +38,7 @@ config DRIVER_SOUND_PCAT_BEEP
 config DRIVER_SOUND_ROUTE
 	bool "Sound route container"
 	default n
+
+config DRIVER_SOUND_TEGRA_AUDIO_HUB
+	bool "Tegra Audio Hub driver"
+	default n
