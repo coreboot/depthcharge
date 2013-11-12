@@ -18,3 +18,7 @@
 config DRIVER_BUS_I2S_EXYNOS5
 	bool "Exynos5 I2S driver"
 	default n
+
+config DRIVER_BUS_I2S_TEGRA
+	bool "Tegra I2S driver"
+	default n
