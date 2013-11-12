@@ -25,6 +25,7 @@
 #include "base/init_funcs.h"
 #include "config.h"
 #include "drivers/bus/i2c/tegra.h"
+#include "drivers/bus/i2s/tegra.h"
 #include "drivers/bus/spi/tegra.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/spi.h"
@@ -33,6 +34,9 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/gpio/tegra.h"
 #include "drivers/power/as3722.h"
+#include "drivers/sound/i2s.h"
+#include "drivers/sound/max98090.h"
+#include "drivers/sound/tegra_ahub.h"
 #include "drivers/storage/tegra_mmc.h"
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
@@ -87,6 +91,37 @@ static int board_setup(void)
 	TegraSpi *spi1 = new_tegra_spi(0x7000d400, dma_controller,
 				       APBDMA_SLAVE_SL2B1);
 	if (!spi1)
+		return 1;
+
+	TegraAudioHubXbar *xbar = new_tegra_audio_hub_xbar(0x70300800);
+	if (!xbar)
+		return 1;
+	TegraAudioHubApbif *apbif = new_tegra_audio_hub_apbif(0x70300000, 8);
+	if (!apbif)
+		return 1;
+
+	TegraI2s *i2s1 = new_tegra_i2s(0x70301100, &apbif->ops, 1, 16, 2,
+				       4800000, 48000);
+	if (!i2s1)
+		return 1;
+	TegraAudioHub *ahub = new_tegra_audio_hub(xbar, apbif, i2s1);
+	if (!ahub)
+		return 1;
+	I2sSource *i2s_source = new_i2s_source(&i2s1->ops, 48000, 2, 16000);
+	if (!i2s_source)
+		return 1;
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+	if (!sound_route)
+		return 1;
+	TegraI2c *i2c1 = new_tegra_i2c((void *)0x7000c000, 1);
+	Max98090Codec *codec = new_max98090_codec(
+			&i2c1->ops, 0x10, 16, 48000, 256, 1);
+	if (!codec)
+		return 1;
+	list_insert_after(&ahub->component.list_node, &sound_route->components);
+	list_insert_after(&codec->component.list_node,
+			  &sound_route->components);
+	if (sound_set_ops(&sound_route->ops))
 		return 1;
 
 	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spi1->ops);
