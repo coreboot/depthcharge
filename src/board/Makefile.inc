@@ -26,6 +26,7 @@ subdirs-$(CONFIG_BOARD_FOX_BASKINGRIDGE) += fox_baskingridge
 subdirs-$(CONFIG_BOARD_FOX_WTM2) += fox_wtm2
 subdirs-$(CONFIG_BOARD_LINK) += link
 subdirs-$(CONFIG_BOARD_LUMPY) += lumpy
+subdirs-$(CONFIG_BOARD_MONROE) += monroe
 subdirs-$(CONFIG_BOARD_NYAN) += nyan
 subdirs-$(CONFIG_BOARD_PANTHER) += panther
 subdirs-$(CONFIG_BOARD_PEACH_KIRBY) += peach_kirby

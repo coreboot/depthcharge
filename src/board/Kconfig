@@ -38,6 +38,8 @@ config BOARD_LINK
 	bool "link"
 config BOARD_LUMPY
 	bool "lumpy"
+config BOARD_MONROE
+	bool "monroe"
 config BOARD_NYAN
 	bool "nyan"
 config BOARD_PANTHER
