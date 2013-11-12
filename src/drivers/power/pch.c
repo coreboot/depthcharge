@@ -37,7 +37,6 @@
 #define   SLP_TYP_S3    (5 << 10)
 #define   SLP_TYP_S4    (6 << 10)
 #define   SLP_TYP_S5    (7 << 10)
-#define GPE0_EN         0x2c
 
 #define RST_CNT         0xcf9
 #define   SYS_RST       (1 << 1)
@@ -105,7 +104,7 @@ static void busmaster_disable(void)
  *
  * This function never returns.
  */
-static int pch_power_off(PowerOps *me)
+static int pch_power_off_common(uint16_t bar_mask, uint16_t gpe_en_reg)
 {
 	if (run_cleanup_funcs(CleanupOnPowerOff))
 		return -1;
@@ -121,7 +120,7 @@ static int pch_power_off(PowerOps *me)
 
 	// Find the base address of the powermanagement registers.
 	uint16_t pmbase = pci_read_config16(PCI_DEV(0, 0x1f, 0), 0x40);
-	pmbase &= 0xfffe;
+	pmbase &= bar_mask;
 
 	// Mask interrupts or system might stay in a coma (not executing
 	// code anymore, but not powered off either.
@@ -132,7 +131,7 @@ static int pch_power_off(PowerOps *me)
 
 	// Avoid any GPI waking the system from S5 or the system might stay
 	// in a coma.
-	outl(0x00000000, pmbase + GPE0_EN);
+	outl(0x00000000, pmbase + gpe_en_reg);
 
 	// Clear Power Button Status.
 	outw(PWRBTN_STS, pmbase + PM1_STS);
@@ -152,7 +151,22 @@ static int pch_power_off(PowerOps *me)
 	halt();
 }
 
+static int pch_power_off(PowerOps *me)
+{
+	return pch_power_off_common(0xfffe, 0x2c);
+}
+
+static int baytrail_power_off(PowerOps *me)
+{
+	return pch_power_off_common(0xfff8, 0x28);
+}
+
 PowerOps pch_power_ops = {
 	.cold_reboot = &pch_cold_reboot,
 	.power_off = &pch_power_off
+};
+
+PowerOps baytrail_power_ops = {
+	.cold_reboot = &pch_cold_reboot,
+	.power_off = &baytrail_power_off
 };
