@@ -46,11 +46,7 @@ TRAMPOLINE = $(obj)/trampoline.o
 
 real-target: $(DEPTHCHARGE_RO_ELF) $(DEPTHCHARGE_RO_BIN) \
 	$(DEPTHCHARGE_RW_ELF) $(DEPTHCHARGE_RW_BIN) \
-	$(DEPTHCHARGE_ELF)
-
-ifeq ($(CONFIG_ARCH_X86),y)
-real-target: $(DEPTHCHARGE_PAYLOAD)
-endif
+	$(DEPTHCHARGE_ELF) $(DEPTHCHARGE_PAYLOAD)
 
 ifeq ($(CONFIG_MOCK_TPM),y)
 VBOOT_MOCK_TPM=1
@@ -143,7 +139,7 @@ $(DEPTHCHARGE_PAYLOAD): $(DEPTHCHARGE_ELF)
 	@printf "    PAYLOAD    $(subst $(obj)/,,$(@))\n"
 	$(Q)-rm -f temp.rom temp.bb
 	$(Q)dd if=/dev/zero of=temp.bb bs=512 count=1
-	$(Q)cbfstool temp.rom create -m x86 -s 1024K -B temp.bb -a 64
+	$(Q)cbfstool temp.rom create -m $(ARCH) -s 1024K -B temp.bb -a 64
 	$(Q)cbfstool temp.rom add-payload -f $< -n dc.elf -c lzma
 	$(Q)cbfstool temp.rom extract -n dc.elf -f $@
 	$(Q)rm -f temp.rom temp.bb

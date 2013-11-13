@@ -69,11 +69,12 @@ else
 include $(src)/.config
 
 ifeq ($(CONFIG_ARCH_X86),y)
-ARCH_DIR = x86
+ARCH = x86
 endif
 ifeq ($(CONFIG_ARCH_ARM),y)
-ARCH_DIR = arm
+ARCH = arm
 endif
+ARCH_DIR = $(ARCH)
 
 include $(src)/src/arch/$(ARCH_DIR)/build_vars
 

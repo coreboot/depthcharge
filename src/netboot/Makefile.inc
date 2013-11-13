@@ -26,11 +26,7 @@ NETBOOT_ELF = $(obj)/netboot.elf
 NETBOOT_BIN = $(obj)/netboot.bin
 NETBOOT_PAYLOAD = $(obj)/netboot.payload
 
-real-target: $(NETBOOT_ELF) $(NETBOOT_BIN)
-
-ifeq ($(CONFIG_ARCH_X86),y)
-real-target: $(NETBOOT_PAYLOAD)
-endif
+real-target: $(NETBOOT_ELF) $(NETBOOT_BIN) $(NETBOOT_PAYLOAD)
 
 $(NETBOOT_ELF): $(src)/.config $$(depthcharge-objs) $$(netboot-objs) \
 		$$(net-objs) $$(uip-objs) prepare $$(VB_LIB)
@@ -53,7 +49,7 @@ $(NETBOOT_PAYLOAD): $(NETBOOT_ELF)
 	@printf "    PAYLOAD    $(subst $(obj)/,,$(@))\n"
 	$(Q)-rm -f temp.nrom temp.nbb
 	$(Q)dd if=/dev/zero of=temp.nbb bs=512 count=1
-	$(Q)cbfstool temp.nrom create -m x86 -s 1024K -B temp.nbb -a 64
+	$(Q)cbfstool temp.nrom create -m $(ARCH) -s 1024K -B temp.nbb -a 64
 	$(Q)cbfstool temp.nrom add-payload -f $< -n nb.elf -c lzma
 	$(Q)cbfstool temp.nrom extract -n nb.elf -f $@
 	$(Q)rm -f temp.nrom temp.nbb
