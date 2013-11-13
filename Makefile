@@ -85,7 +85,7 @@ ABI_FLAGS := $(ARCH_ABI_FLAGS) -ffreestanding -fno-builtin \
 LINK_FLAGS := $(ARCH_LINK_FLAGS) $(ABI_FLAGS) -fuse-ld=bfd \
 	-Wl,-T,$(LDSCRIPT) -Wl,--gc-sections
 CFLAGS := $(ARCH_CFLAGS) -Wall -Werror -Os $(INCLUDES) -std=gnu99 \
-	$(ABI_FLAGS) -ffunction-sections
+	$(ABI_FLAGS) -ffunction-sections -fdata-sections
 
 all: real-target
 
