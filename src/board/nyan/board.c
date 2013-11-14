@@ -23,6 +23,7 @@
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
+#include "config.h"
 #include "drivers/bus/i2c/tegra.h"
 #include "drivers/bus/spi/tegra.h"
 #include "drivers/bus/usb/usb.h"
@@ -96,8 +97,16 @@ static int board_setup(void)
 	TegraMmcHost *emmc = new_tegra_mmc_host(0x700b0600, 8, 0, NULL);
 	// sdmmc3
 	TegraGpio *card_detect = new_tegra_gpio_input(GPIO_V, 2);
+	if (!card_detect)
+		return 1;
+	GpioOps *card_detect_ops = &card_detect->ops;
+	if (!CONFIG_NYAN_IN_A_PIXEL) {
+		card_detect_ops = new_gpio_not(card_detect_ops);
+		if (!card_detect_ops)
+			return 1;
+	}
 	TegraMmcHost *sd_card = new_tegra_mmc_host(0x700b0400, 4, 1,
-						   &card_detect->ops);
+						   card_detect_ops);
 	if (!emmc || !sd_card)
 		return 1;
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
