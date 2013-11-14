@@ -26,9 +26,7 @@ config ARCH_X86
 	bool "X86"
 
 config ARCH_ARM
-	bool "ARM (currently unimplemented)"
-	help
-	  Support for ARM is not currently implemented.
+	bool "ARM"
 
 endchoice
 
