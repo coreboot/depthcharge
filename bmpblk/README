@@ -177,21 +177,42 @@ advance:
   https://chromium.googlesource.com/chromium/src.git/+/master/ui/base/l10n/l10n_util.cc
   or http://www.science.co.il/language/locale-codes.asp
 
-  The new target's name needs to be added to the 'TARGETS ?=' line in
-  images/Makefile and its description needs to be added to
-  images/build_images. Look at existing targets' cases in build_images
-  to get some ideas how the new one needs to be defined.
 
-Now to build images for the new target run:
+To add a new target (board), edit images/boards.yaml and fill the information:
 
-  $ make clean
-  $ make LOCALES='list of locales' strings
-  $ make LOCALES='list of locales' TARGETS='<new target>' images
+------------------------------------------------------------------------------
+link:
+  # Non-standard Graphics mode 1280x850, with 2560x1700 panel.
+  # Can boot recovery by USB and SD card readers.
+  res:      [1280, 850]
+  panel:    [2560, 1700]
+  locales: [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id, th]
+------------------------------------------------------------------------------
 
-The bitmaps and output binary (bmpblk.bin) can be found in ./build/<target>.
+The locale name <no> will be interpreted as boolean False in YAML, so we need to
+quote it as 'no'.
+
+If your configuration is exactly the same as existing ones, add your new target
+name into the existing entry, ex (4 targets with same configuration: falco,
+peppy, wolf, leon):
+
+------------------------------------------------------------------------------
+falco,peppy,wolf,leon:
+  # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
+  # With card reader. USB3 ports will run in USB2 mode for recovery boot.
+  res:      [1024, 768]
+  panel:    [1366, 768]
+  locales: [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id, th]
+------------------------------------------------------------------------------
+
+Now to build images for the new target (as $BOARD) run:
+
+  $ TARGETS="$BOARD" make
+
+The bitmaps and output binary (bmpblk.bin) can be found in ./build/$BOARD.
 
 You can preview the images by running Bitmap Viewer:
-  $ ./bitmap_viewer build/<target>/DEFAULT.yaml
+  $ ./bitmap_viewer build/$BOARD/DEFAULT.yaml
 
 Information about integrating new bitmaps into the firmware images can
 be found in http://goo.gl/yXBvz
@@ -221,7 +242,7 @@ BIOS write-protection is disabled. gbb_utility should be in the rootfs:
 
   Get a copy of the current BIOS:
 
-    flashrom -p internal:bus=spi -r bios.bin
+    flashrom -p host -r bios.bin
 
   Put the new bmpblock in the copy of the BIOS:
 
@@ -229,7 +250,7 @@ BIOS write-protection is disabled. gbb_utility should be in the rootfs:
 
   Reflash the BIOS with the new content
 
-    flashrom -p internal:bus=spi -w bios.bin
+    flashrom -p host -w bios.bin
 
   Reboot. You should see your new bitmaps appear whenever the BIOS screens
   are displayed. If you have more than one localization, you should be able
