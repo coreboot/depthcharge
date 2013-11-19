@@ -2,16 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-.PHONY: clean all shared_strings font localized_text
+.PHONY: clean all shared_strings font locale
 
-LOCALEDIR=localized_text
+LOCALEDIR=locale
 OUTDIR=../build/.stage
 FONTSIZE=18
 
 all: shared_strings font $(LOCALEDIR)
 
 $(LOCALEDIR):
-	make -C $@ OUTDIR="../$(OUTDIR)/locale" FONTSIZE="$(FONTSIZE)"
+	(cd $@ && FONTSIZE="$(FONTSIZE)" ./build.py)
 
 shared_strings:
 	mkdir -p "$(OUTDIR)"
