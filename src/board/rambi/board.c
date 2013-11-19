@@ -29,7 +29,6 @@
 #include "drivers/gpio/baytrail.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
-#include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
 #include "drivers/tpm/lpc.h"
@@ -57,13 +56,6 @@ static int board_setup(void)
 		return 1;
 
 	/* TODO(shawnn): Init I2S audio codec here for FW beep */
-
-	/* TODO(shawnn): Remove AHCI controller once we have boards
-	 * with SATA removed */
-	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 0x13, 0));
-	if (!ahci)
-		return 1;
-	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
 
 	if (power_set_ops(&baytrail_power_ops))
 		return 1;
