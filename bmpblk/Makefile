@@ -5,6 +5,8 @@
 # This will regenerate the BIOS bitmap images for all platforms. You
 # shouldn't need to do this, though.
 
+STAGE ?= build/.stage
+
 default: outside_chroot strings images
 
 outside_chroot:
@@ -24,5 +26,12 @@ images:
 clean:
 	$(MAKE) -C strings clean
 	$(MAKE) -C images clean
+
+$(STAGE):
+	$(MAKE) -C strings
+
+.DEFAULT:
+	$(MAKE) outside_chroot $(STAGE)
+	$(MAKE) -C images $@
 
 .PHONY: outside_chroot strings images clean

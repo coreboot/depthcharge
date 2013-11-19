@@ -133,13 +133,16 @@ regenerated:
 This should generate BIOS bmpblock file for all platforms cross all locales,
 which takes a long time.
 
-If you simply want to build a en-US x standard resolution, do:
+If you simply want to build image for single target with only English locale, do:
 
   cd ~/chromiumos/src/platform/bmpblk
-  make LOCALES=en strings  # You can do this only one time unless mofidication was made.
-  make LOCALES=en TARGETS=std images
+  make LOCALES=en $BOARD
 
-And find generated files in ./build/std
+Where $BOARD is the board name of your target, ex: "link". There is one simple
+reference target "std" with fewer locales so you can test the building procedure
+faster: "make std".
+
+The generated output files are in ./build/$BOARD.
 
 
 -------------------
@@ -208,6 +211,10 @@ falco,peppy,wolf,leon:
 Now to build images for the new target (as $BOARD) run:
 
   $ TARGETS="$BOARD" make
+
+ or specify the target directly,
+
+  $ make "$BOARD"
 
 The bitmaps and output binary (bmpblk.bin) can be found in ./build/$BOARD.
 
