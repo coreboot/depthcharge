@@ -23,6 +23,7 @@
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
+#include "boot/fit.h"
 #include "config.h"
 #include "drivers/bus/i2c/tegra.h"
 #include "drivers/bus/i2s/tegra.h"
@@ -73,6 +74,18 @@ static int board_setup(void)
 
 	if (id < 0)
 		return 1;
+
+	switch (id) {
+	case BOARD_ID_REV0:
+		fit_override_kernel_compat("google,nyan-rev0");
+		break;
+	case BOARD_ID_REV1:
+		fit_override_kernel_compat("google,nyan-rev1");
+		break;
+	default:
+		printf("Unrecognized board ID %#x.\n", id);
+		return 1;
+	}
 
 	if (sysinfo_install_flags())
 		return 1;
