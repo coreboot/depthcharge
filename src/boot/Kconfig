@@ -35,6 +35,7 @@ endchoice
 
 config KERNEL_FIT_COMPAT
 	string "FIT preferred compatible string"
+	default ""
 	depends on KERNEL_FIT
 	help
 	  When booting a FIT image, if a config is found which has this

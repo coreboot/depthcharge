@@ -65,6 +65,13 @@ typedef struct FitConfigNode
 static ListNode image_nodes;
 static ListNode config_nodes;
 
+static const char *fit_kernel_compat = CONFIG_KERNEL_FIT_COMPAT;
+
+void fit_override_kernel_compat(const char *compat)
+{
+	fit_kernel_compat = compat;
+}
+
 
 
 
@@ -351,7 +358,6 @@ int fit_load(void *fit, char *cmd_line, void **kernel, uint32_t *kernel_size,
 
 	const char *default_config_name = NULL;
 	FitConfigNode *default_config = NULL;
-	const char *compat_config_name = CONFIG_KERNEL_FIT_COMPAT;
 	FitConfigNode *compat_config = NULL;
 
 	fit_unpack(tree, &default_config_name);
@@ -360,7 +366,7 @@ int fit_load(void *fit, char *cmd_line, void **kernel, uint32_t *kernel_size,
 	list_for_each(image, image_nodes, list_node)
 		printf("Image %s has %d bytes.\n", image->name, image->size);
 
-	printf("Compat preference: %s\n", compat_config_name);
+	printf("Compat preference: %s\n", fit_kernel_compat);
 	// Process and list the configs.
 	list_for_each(config, config_nodes, list_node) {
 		if (config->kernel)
@@ -393,7 +399,7 @@ int fit_load(void *fit, char *cmd_line, void **kernel, uint32_t *kernel_size,
 			} else {
 				config->compat_rank =
 					fit_check_compat(&config->compat,
-							 compat_config_name);
+							 fit_kernel_compat);
 			}
 		}
 
