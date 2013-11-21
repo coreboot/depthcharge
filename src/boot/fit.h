@@ -25,6 +25,9 @@
 
 #include <stdint.h>
 
+struct DeviceTree;
+typedef struct DeviceTree DeviceTree;
+
 int fit_load(void *fit, char *cmd_line, void **kernel, uint32_t *kernel_size,
 	     DeviceTree **dt);
 
