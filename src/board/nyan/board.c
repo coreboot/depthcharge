@@ -42,8 +42,38 @@
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
 
+static int board_id(void)
+{
+	static int id = -1;
+
+	if (id < 0) {
+		TegraGpio *q3 = new_tegra_gpio_input(GPIO_Q, 3);
+		TegraGpio *t1 = new_tegra_gpio_input(GPIO_T, 1);
+		TegraGpio *x1 = new_tegra_gpio_input(GPIO_X, 1);
+		TegraGpio *x4 = new_tegra_gpio_input(GPIO_X, 4);
+
+		if (q3 && t1 && x1 && x4) {
+			id = q3->ops.get(&q3->ops) << 0 |
+			     t1->ops.get(&t1->ops) << 1 |
+			     x1->ops.get(&x1->ops) << 2 |
+			     x4->ops.get(&x4->ops) << 3;
+		}
+	}
+	return id;
+}
+
+enum {
+	BOARD_ID_REV0 = 0,
+	BOARD_ID_REV1 = 9
+};
+
 static int board_setup(void)
 {
+	int id = board_id();
+
+	if (id < 0)
+		return 1;
+
 	if (sysinfo_install_flags())
 		return 1;
 
@@ -135,7 +165,7 @@ static int board_setup(void)
 	if (!card_detect)
 		return 1;
 	GpioOps *card_detect_ops = &card_detect->ops;
-	if (!CONFIG_NYAN_IN_A_PIXEL) {
+	if (id != BOARD_ID_REV0) {
 		card_detect_ops = new_gpio_not(card_detect_ops);
 		if (!card_detect_ops)
 			return 1;
