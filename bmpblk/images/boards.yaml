@@ -95,3 +95,18 @@ link:
   res:      [1280, 850]
   panel:    [2560, 1700]
   locales: [en, es_419, pt_BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id, th]
+
+stumpy:
+  # There's no standard panel size for Stumpy -- depends on the monitor user has
+  # attached. Let's assume it's a modern LCD panel with 1920x1080 dimension.
+  res:      [800, 600]
+  panel:    [1920, 1080]
+  locales:  [en, es_419, pt_BR, fr, es, it, de, nl, da, 'no', sv, ko, ja]
+  sdcard:   False
+
+lumpy:
+  # Lumpy was shipped with old firmware bitmaps and caused its resolution to be
+  # 800x600.
+  res:      [800, 600]
+  panel:    [1366, 768]
+  locales:  [en, es_419, pt_BR, fr, es, it, de, nl, da, 'no', sv, ko, ja]
