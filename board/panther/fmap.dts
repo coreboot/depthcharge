@@ -3,7 +3,7 @@
 / {
 	model = "Google Panther";
 	config {
-		hwid = "X86 PANTHER TEST 1024";
+		hwid = "X86 PANTHER TEST 6287";
 	};
 	chromeos-config {
 		/* Enable factory-friendly features. */
