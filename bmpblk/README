@@ -133,10 +133,10 @@ regenerated:
 This should generate BIOS bmpblock file for all platforms cross all locales,
 which takes a long time.
 
-If you simply want to build image for single target with only English locale, do:
+If you simply want to build image for single target with default locales, do:
 
   cd ~/chromiumos/src/platform/bmpblk
-  make LOCALES=en $BOARD
+  make $BOARD
 
 Where $BOARD is the board name of your target, ex: "link". There is one simple
 reference target "std" with fewer locales so you can test the building procedure
@@ -144,6 +144,12 @@ faster: "make std".
 
 The generated output files are in ./build/$BOARD.
 
+Note if you want to override the default locales list defined in boards.yaml
+(ex, to build with only English locale to speed up testing flow, or to try
+with all available locales), add LOCALES="<locale-list>" when running make.
+Ex:
+
+  make LOCALES="en ja es" make link
 
 -------------------
 Adding a new target:
