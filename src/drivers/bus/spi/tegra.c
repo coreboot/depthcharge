@@ -97,6 +97,10 @@ enum {
 enum {
 	SPI_FIFO_STATUS_CS_INACTIVE = 1 << 31,
 	SPI_FIFO_STATUS_FRAME_END = 1 << 30,
+	SPI_FIFO_STATUS_RX_FIFO_FULL_COUNT_MASK = 0x7f,
+	SPI_FIFO_STATUS_RX_FIFO_FULL_COUNT_SHIFT = 23,
+	SPI_FIFO_STATUS_TX_FIFO_EMPTY_COUNT_MASK = 0x7f,
+	SPI_FIFO_STATUS_TX_FIFO_FULL_COUNT_SHIFT = 16,
 	SPI_FIFO_STATUS_RX_FIFO_FLUSH = 1 << 15,
 	SPI_FIFO_STATUS_TX_FIFO_FLUSH = 1 << 14,
 	SPI_FIFO_STATUS_ERR = 1 << 8,
@@ -380,6 +384,16 @@ static int tegra_spi_pio_transfer(TegraSpi *bus, uint8_t *in,
 	wait_for_transfer(regs, size);
 
 	uint32_t in_bytes = in ? size : 0;
+
+	// BLOCK_COUNT does not seem to always reflect the number of packets
+	// available in the FIFO. To avoid an underrun wait until
+	// RX_FIFO_FULL_COUNT shows the value we expect.
+	// See: chrome-os-partner:24215
+	while (((readl(&regs->fifo_status) >>
+		SPI_FIFO_STATUS_RX_FIFO_FULL_COUNT_SHIFT) &
+		SPI_FIFO_STATUS_RX_FIFO_FULL_COUNT_MASK) != in_bytes)
+		;
+
 	while (in_bytes) {
 		uint32_t data = readl(&regs->rx_fifo);
 		*in++ = data;
