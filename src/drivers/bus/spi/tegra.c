@@ -97,10 +97,12 @@ enum {
 enum {
 	SPI_FIFO_STATUS_CS_INACTIVE = 1 << 31,
 	SPI_FIFO_STATUS_FRAME_END = 1 << 30,
-	SPI_FIFO_STATUS_RX_FIFO_FULL_COUNT_MASK = 0x7f,
 	SPI_FIFO_STATUS_RX_FIFO_FULL_COUNT_SHIFT = 23,
-	SPI_FIFO_STATUS_TX_FIFO_EMPTY_COUNT_MASK = 0x7f,
-	SPI_FIFO_STATUS_TX_FIFO_FULL_COUNT_SHIFT = 16,
+	SPI_FIFO_STATUS_RX_FIFO_FULL_COUNT_MASK =
+		0x7f << SPI_FIFO_STATUS_RX_FIFO_FULL_COUNT_SHIFT,
+	SPI_FIFO_STATUS_TX_FIFO_EMPTY_COUNT_SHIFT = 16,
+	SPI_FIFO_STATUS_TX_FIFO_EMPTY_COUNT_MASK =
+		0x7f << SPI_FIFO_STATUS_TX_FIFO_EMPTY_COUNT_SHIFT,
 	SPI_FIFO_STATUS_RX_FIFO_FLUSH = 1 << 15,
 	SPI_FIFO_STATUS_TX_FIFO_FLUSH = 1 << 14,
 	SPI_FIFO_STATUS_ERR = 1 << 8,
@@ -389,9 +391,9 @@ static int tegra_spi_pio_transfer(TegraSpi *bus, uint8_t *in,
 	// available in the FIFO. To avoid an underrun wait until
 	// RX_FIFO_FULL_COUNT shows the value we expect.
 	// See: chrome-os-partner:24215
-	while (((readl(&regs->fifo_status) >>
-		SPI_FIFO_STATUS_RX_FIFO_FULL_COUNT_SHIFT) &
-		SPI_FIFO_STATUS_RX_FIFO_FULL_COUNT_MASK) != in_bytes)
+	while ((readl(&regs->fifo_status) &
+	        SPI_FIFO_STATUS_RX_FIFO_FULL_COUNT_MASK) >>
+	       SPI_FIFO_STATUS_RX_FIFO_FULL_COUNT_SHIFT != in_bytes)
 		;
 
 	while (in_bytes) {
