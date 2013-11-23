@@ -43,16 +43,14 @@ static int board_setup(void)
 	/* ECRW GPIO: SCGPIO59 */
 	PchGpio *ec_in_rw = new_baytrail_gpio_input(59 / 32,
 						    59 % 32);
-	if (!ec_in_rw || flag_install(FLAG_ECINRW, &ec_in_rw->ops))
+	if (flag_install(FLAG_ECINRW, &ec_in_rw->ops))
 		return 1;
 
 	CrosEcLpcBus *cros_ec_lpc_bus = new_cros_ec_lpc_bus();
-	if (!cros_ec_lpc_bus)
-		return 1;
 	cros_ec_set_bus(&cros_ec_lpc_bus->ops);
 
 	MemMappedFlash *flash = new_mem_mapped_flash(0xff800000, 0x800000);
-	if (!flash || flash_set_ops(&flash->ops))
+	if (flash_set_ops(&flash->ops))
 		return 1;
 
 	/* TODO(shawnn): Init I2S audio codec here for FW beep */
@@ -61,7 +59,7 @@ static int board_setup(void)
 		return 1;
 
 	LpcTpm *tpm = new_lpc_tpm((void *)0xfed40000);
-	if (!tpm || tpm_set_ops(&tpm->ops))
+	if (tpm_set_ops(&tpm->ops))
 		return 1;
 
 	/*
@@ -75,9 +73,8 @@ static int board_setup(void)
 	SdhciHost *emmc = new_pci_sdhci_host(PCI_DEV(0, 23, 0), 0,
 					     400 * 1000, 200 * 1000 * 1000);
 
-	if (emmc)
-		list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
-				  &fixed_block_dev_controllers);
+	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+			  &fixed_block_dev_controllers);
 
 	return 0;
 }

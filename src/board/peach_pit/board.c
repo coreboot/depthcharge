@@ -48,9 +48,6 @@ static int board_setup(void)
 	Exynos5420Gpio *lid_switch = new_exynos5420_gpio_input(GPIO_X, 3, 4);
 	Exynos5420Gpio *ec_in_rw = new_exynos5420_gpio_input(GPIO_X, 2, 3);
 
-	if (!lid_switch || !ec_in_rw)
-		return 1;
-
 	if (flag_replace(FLAG_LIDSW, &lid_switch->ops) ||
 	    flag_install(FLAG_ECINRW, &ec_in_rw->ops))
 		return 1;
@@ -59,40 +56,28 @@ static int board_setup(void)
 	Exynos5420Gpio *power_switch_l =
 		new_exynos5420_gpio_input(GPIO_X, 1, 2);
 	GpioOps *power_switch = new_gpio_not(&power_switch_l->ops);
-	if (!power_switch_l || !power_switch ||
-	    flag_replace(FLAG_PWRSW, power_switch))
+	if (flag_replace(FLAG_PWRSW, power_switch))
 		return 1;
 
-	Exynos5UsiI2c *i2c9 =
-		new_exynos5_usi_i2c(0x12e10000, 400000);
-	if (!i2c9)
-		return 1;
+	Exynos5UsiI2c *i2c9 = new_exynos5_usi_i2c(0x12e10000, 400000);
 
 	Slb9635I2c *tpm = new_slb9635_i2c(&i2c9->ops, 0x20);
-	if (!tpm || tpm_set_ops(&tpm->base.ops))
+	if (tpm_set_ops(&tpm->base.ops))
 		return 1;
 
 	Exynos5Spi *spi1 = new_exynos5_spi(0x12d30000);
 	Exynos5Spi *spi2 = new_exynos5_spi(0x12d40000);
-	if (!spi1 || !spi2)
-		return 1;
 
 	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spi2->ops);
-	if (!cros_ec_spi_bus)
-		return 1;
 	cros_ec_set_bus(&cros_ec_spi_bus->ops);
 
 	SpiFlash *flash = new_spi_flash(&spi1->ops, 0x400000);
-	if (!flash || flash_set_ops(&flash->ops))
+	if (flash_set_ops(&flash->ops))
 		return 1;
 
 	Exynos5I2s *i2s0 = new_exynos5_i2s_multi(0x03830000, 16, 2, 256);
 	I2sSource *i2s_source = new_i2s_source(&i2s0->ops, 48000, 2, 16000);
-	if (!i2s_source)
-		return 1;
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
-	if (!sound_route)
-		return 1;
 	if (sound_set_ops(&sound_route->ops))
 		return 1;
 
@@ -104,8 +89,6 @@ static int board_setup(void)
 					    DWMCI_SET_SAMPLE_CLK(1) |
 					    DWMCI_SET_DRV_CLK(2) |
 					    DWMCI_SET_DIV_RATIO(3));
-	if (!emmc || !sd_card)
-		return 1;
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
 	list_insert_after(&sd_card->mmc.ctrlr.list_node,
@@ -116,9 +99,6 @@ static int board_setup(void)
 
 	UsbHostController *usb_drd0 = new_usb_hc(XHCI, 0x12000000);
 	UsbHostController *usb_drd1 = new_usb_hc(XHCI, 0x12400000);
-
-	if (!usb_drd0 || !usb_drd1)
-		return 1;
 
 	set_usb_init_callback(usb_drd0, exynos5420_usbss_phy_tune);
 	/* DRD1 port has no SuperSpeed lines anyway */

@@ -31,7 +31,7 @@
 static int board_setup(void)
 {
 	MemMappedFlash *flash = new_mem_mapped_flash(0xff800000, 0x800000);
-	if (!flash || flash_set_ops(&flash->ops))
+	if (flash_set_ops(&flash->ops))
 		return 1;
 
 	if (power_set_ops(&pch_power_ops))
@@ -46,11 +46,10 @@ static int board_setup(void)
 	SdhciHost *emmc = new_pci_sdhci_host(PCI_DEV(0, 23, 0), 0,
 					     400 * 1000, 200 * 1000 * 1000);
 
-	if (emmc)
-		list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
-				  &fixed_block_dev_controllers);
+	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+			  &fixed_block_dev_controllers);
 
-	return (emmc == NULL);
+	return 0;
 }
 
 INIT_FUNC(board_setup);

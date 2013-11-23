@@ -41,23 +41,21 @@ static int board_setup(void)
 		return 1;
 
 	MemMappedFlash *flash = new_mem_mapped_flash(0xff800000, 0x800000);
-	if (!flash || flash_set_ops(&flash->ops))
+	if (flash_set_ops(&flash->ops))
 		return 1;
 
 	HdaCodec *codec = new_hda_codec();
-	if (!codec || sound_set_ops(&codec->ops))
+	if (sound_set_ops(&codec->ops))
 		return 1;
 
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 31, 2));
-	if (!ahci)
-		return 1;
 	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
 
 	if (power_set_ops(&pch_power_ops))
 		return 1;
 
 	LpcTpm *tpm = new_lpc_tpm((void *)(uintptr_t)0xfed40000);
-	if (!tpm || tpm_set_ops(&tpm->ops))
+	if (tpm_set_ops(&tpm->ops))
 		return 1;
 
 	return 0;

@@ -43,7 +43,7 @@
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
 
-static int board_id(void)
+static uint8_t board_id(void)
 {
 	static int id = -1;
 
@@ -53,12 +53,10 @@ static int board_id(void)
 		TegraGpio *x1 = new_tegra_gpio_input(GPIO_X, 1);
 		TegraGpio *x4 = new_tegra_gpio_input(GPIO_X, 4);
 
-		if (q3 && t1 && x1 && x4) {
-			id = q3->ops.get(&q3->ops) << 0 |
-			     t1->ops.get(&t1->ops) << 1 |
-			     x1->ops.get(&x1->ops) << 2 |
-			     x4->ops.get(&x4->ops) << 3;
-		}
+		id = q3->ops.get(&q3->ops) << 0 |
+		     t1->ops.get(&t1->ops) << 1 |
+		     x1->ops.get(&x1->ops) << 2 |
+		     x4->ops.get(&x4->ops) << 3;
 	}
 	return id;
 }
@@ -70,10 +68,7 @@ enum {
 
 static int board_setup(void)
 {
-	int id = board_id();
-
-	if (id < 0)
-		return 1;
+	uint8_t id = board_id();
 
 	switch (id) {
 	case BOARD_ID_REV0:
@@ -92,16 +87,14 @@ static int board_setup(void)
 
 	TegraGpio *lid_switch = new_tegra_gpio_input(GPIO_R, 4);
 	TegraGpio *ec_in_rw = new_tegra_gpio_input(GPIO_U, 4);
-	if (!lid_switch || !ec_in_rw ||
-	    flag_replace(FLAG_LIDSW, &lid_switch->ops) ||
+	if (flag_replace(FLAG_LIDSW, &lid_switch->ops) ||
 	    flag_install(FLAG_ECINRW, &ec_in_rw->ops))
 		return 1;
 
 	// The power switch is active low and needs to be inverted.
 	TegraGpio *power_switch_l = new_tegra_gpio_input(GPIO_Q, 0);
 	GpioOps *power_switch = new_gpio_not(&power_switch_l->ops);
-	if (!power_switch_l || !power_switch ||
-	    flag_replace(FLAG_PWRSW, power_switch))
+	if (flag_replace(FLAG_PWRSW, power_switch))
 		return 1;
 
 	void *dma_channel_bases[32];
@@ -111,56 +104,34 @@ static int board_setup(void)
 	TegraApbDmaController *dma_controller =
 		new_tegra_apb_dma((void *)0x60020000, dma_channel_bases,
 				  ARRAY_SIZE(dma_channel_bases));
-	if (!dma_controller)
-		return 1;
 
 	TegraSpi *spi4 = new_tegra_spi(0x7000da00, dma_controller,
 				       APBDMA_SLAVE_SL2B4);
-	if (!spi4)
-		return 1;
 
 	SpiFlash *flash = new_spi_flash(&spi4->ops, 0x400000);
-	if (!flash || flash_set_ops(&flash->ops))
+	if (flash_set_ops(&flash->ops))
 		return 1;
 
 	TegraI2c *cam_i2c = new_tegra_i2c((void *)0x7000c500, 3);
-	if (!cam_i2c)
-		return 1;
 
 	Slb9635I2c *tpm = new_slb9635_i2c(&cam_i2c->ops, 0x20);
-	if (!tpm || tpm_set_ops(&tpm->base.ops))
+	if (tpm_set_ops(&tpm->base.ops))
 		return 1;
 
 	TegraSpi *spi1 = new_tegra_spi(0x7000d400, dma_controller,
 				       APBDMA_SLAVE_SL2B1);
-	if (!spi1)
-		return 1;
 
 	TegraAudioHubXbar *xbar = new_tegra_audio_hub_xbar(0x70300800);
-	if (!xbar)
-		return 1;
 	TegraAudioHubApbif *apbif = new_tegra_audio_hub_apbif(0x70300000, 8);
-	if (!apbif)
-		return 1;
 
 	TegraI2s *i2s1 = new_tegra_i2s(0x70301100, &apbif->ops, 1, 16, 2,
 				       4800000, 48000);
-	if (!i2s1)
-		return 1;
 	TegraAudioHub *ahub = new_tegra_audio_hub(xbar, apbif, i2s1);
-	if (!ahub)
-		return 1;
 	I2sSource *i2s_source = new_i2s_source(&i2s1->ops, 48000, 2, 16000);
-	if (!i2s_source)
-		return 1;
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
-	if (!sound_route)
-		return 1;
 	TegraI2c *i2c1 = new_tegra_i2c((void *)0x7000c000, 1);
 	Max98090Codec *codec = new_max98090_codec(
 			&i2c1->ops, 0x10, 16, 48000, 256, 1);
-	if (!codec)
-		return 1;
 	list_insert_after(&ahub->component.list_node, &sound_route->components);
 	list_insert_after(&codec->component.list_node,
 			  &sound_route->components);
@@ -168,49 +139,37 @@ static int board_setup(void)
 		return 1;
 
 	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spi1->ops);
-	if (!cros_ec_spi_bus || cros_ec_set_bus(&cros_ec_spi_bus->ops))
+	if (cros_ec_set_bus(&cros_ec_spi_bus->ops))
 		return 1;
 
 	// sdmmc4
 	TegraMmcHost *emmc = new_tegra_mmc_host(0x700b0600, 8, 0, NULL);
 	// sdmmc3
 	TegraGpio *card_detect = new_tegra_gpio_input(GPIO_V, 2);
-	if (!card_detect)
-		return 1;
 	GpioOps *card_detect_ops = &card_detect->ops;
-	if (id != BOARD_ID_REV0) {
+	if (id != BOARD_ID_REV0)
 		card_detect_ops = new_gpio_not(card_detect_ops);
-		if (!card_detect_ops)
-			return 1;
-	}
 	TegraMmcHost *sd_card = new_tegra_mmc_host(0x700b0400, 4, 1,
 						   card_detect_ops);
-	if (!emmc || !sd_card)
-		return 1;
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
 	list_insert_after(&sd_card->mmc.ctrlr.list_node,
 			  &removable_block_dev_controllers);
 
 	TegraI2c *pwr_i2c = new_tegra_i2c((void *)0x7000d000, 5);
-	if (!pwr_i2c)
-		return 1;
 	As3722Pmic *pmic = new_as3722_pmic(&pwr_i2c->ops, 0x40);
 	TegraGpio *reboot_gpio = new_tegra_gpio_output(GPIO_I, 5);
 	if (!pmic || !reboot_gpio)
 		return 1;
 	NyanPowerOps *power = new_nyan_power_ops(&pmic->ops, &reboot_gpio->ops,
 						 0);
-	if (!power || power_set_ops(&power->ops))
+	if (power_set_ops(&power->ops))
 		return 1;
 
 	/* Careful: the EHCI base is at offset 0x100 from the SoC's IP base */
 	UsbHostController *usbd = new_usb_hc(EHCI, 0x7d000100);
 	/* USB2 is connected to the camera, not needed in firmware */
 	UsbHostController *usb3 = new_usb_hc(EHCI, 0x7d008100);
-
-	if (!usbd || !usb3)
-		return 1;
 
 	list_insert_after(&usbd->list_node, &usb_host_controllers);
 	list_insert_after(&usb3->list_node, &usb_host_controllers);

@@ -53,9 +53,6 @@ static int board_setup(void)
 	Exynos5250Gpio *lid_switch = new_exynos5250_gpio_input(GPIO_X, 3, 5);
 	Exynos5250Gpio *ec_in_rw = new_exynos5250_gpio_input(GPIO_D, 1, 7);
 
-	if (!lid_switch || !ec_in_rw)
-		return 1;
-
 	if (flag_replace(FLAG_LIDSW, &lid_switch->ops) ||
 	    flag_install(FLAG_ECINRW, &ec_in_rw->ops))
 		return 1;
@@ -64,8 +61,7 @@ static int board_setup(void)
 	Exynos5250Gpio *power_switch_l =
 		new_exynos5250_gpio_input(GPIO_X, 1, 3);
 	GpioOps *power_switch = new_gpio_not(&power_switch_l->ops);
-	if (!power_switch_l || !power_switch ||
-	    flag_replace(FLAG_PWRSW, power_switch))
+	if (flag_replace(FLAG_PWRSW, power_switch))
 		return 1;
 
 	// Switch from hi speed I2C to the normal one.
@@ -74,45 +70,29 @@ static int board_setup(void)
 	S3c24x0I2c *i2c3 = new_s3c24x0_i2c(0x12c90000);
 	S3c24x0I2c *i2c4 = new_s3c24x0_i2c(0x12ca0000);
 	S3c24x0I2c *i2c7 = new_s3c24x0_i2c(0x12cd0000);
-	if (!i2c3 || !i2c4 || !i2c7)
-		return 1;
 
 	Exynos5250Gpio *request_gpio = new_exynos5250_gpio_output(GPIO_F, 0, 3);
 	Exynos5250Gpio *grant_gpio = new_exynos5250_gpio_input(GPIO_E, 0, 4);
-	if (!request_gpio || !grant_gpio)
-		return 1;
 	SnowI2cArb *arb4 = new_snow_i2c_arb(&i2c4->ops, &request_gpio->ops,
 					    &grant_gpio->ops);
-	if (!arb4)
-		return 1;
 
 	CrosEcI2cBus *cros_ec_i2c_bus = new_cros_ec_i2c_bus(&arb4->ops, 0x1e);
-	if (!cros_ec_i2c_bus)
-		return 1;
 	cros_ec_set_bus(&cros_ec_i2c_bus->ops);
 
 	Slb9635I2c *tpm = new_slb9635_i2c(&i2c3->ops, 0x20);
-	if (!tpm || tpm_set_ops(&tpm->base.ops))
+	if (tpm_set_ops(&tpm->base.ops))
 		return 1;
 
 	Exynos5Spi *spi1 = new_exynos5_spi(0x12d30000);
-	if (!spi1)
-		return 1;
 	SpiFlash *flash = new_spi_flash(&spi1->ops, 0x400000);
-	if (!flash || flash_set_ops(&flash->ops))
+	if (flash_set_ops(&flash->ops))
 		return 1;
 
 	Exynos5I2s *i2s1 = new_exynos5_i2s(0x12d60000, 16, 2, 256);
 	I2sSource *i2s_source = new_i2s_source(&i2s1->ops, 48000, 2, 16000);
-	if (!i2s_source)
-		return 1;
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
-	if (!sound_route)
-		return 1;
 	Max98095Codec *codec = new_max98095_codec(&i2c7->ops, 0x11, 16, 48000,
 						  256, 1);
-	if (!codec)
-		return 1;
 	list_insert_after(&codec->component.list_node,
 			  &sound_route->components);
 	if (sound_set_ops(&sound_route->ops))
@@ -122,8 +102,6 @@ static int board_setup(void)
 					 8, 0, 0x03030001);
 	MshciHost *sd_card = new_mshci_host(0x12220000, 400000000,
 					    4, 1, 0x03020001);
-	if (!emmc || !sd_card)
-		return 1;
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
 	list_insert_after(&sd_card->mmc.ctrlr.list_node,
@@ -134,9 +112,6 @@ static int board_setup(void)
 
 	UsbHostController *usb_drd = new_usb_hc(XHCI, 0x12000000);
 	UsbHostController *usb_host = new_usb_hc(EHCI, 0x12110000);
-
-	if (!usb_host || !usb_drd)
-		return 1;
 
 	list_insert_after(&usb_drd->list_node, &usb_host_controllers);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
