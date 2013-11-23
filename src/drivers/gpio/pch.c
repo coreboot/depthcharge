@@ -110,10 +110,8 @@ static int pch_gpio_use(PchGpio *me, unsigned use)
 
 static PchGpio *new_pch_gpio(PchGpioCfg *cfg, unsigned bank, unsigned bit)
 {
-	if (bank >= cfg->num_banks || bit >= 32) {
-		printf("GPIO parameters (%d, %d) out of bounds.\n", bank, bit);
-		return NULL;
-	}
+	die_if(bank >= cfg->num_banks || bit >= 32,
+	       "GPIO parameters (%d, %d) out of bounds.\n", bank, bit);
 
 	PchGpio *gpio = xzalloc(sizeof(*gpio));
 	gpio->cfg = cfg;

@@ -85,14 +85,8 @@ static int tegra_gpio_set(GpioOps *me, unsigned value)
 
 static TegraGpio *new_tegra_gpio(TegraGpioPort port, unsigned index)
 {
-	if (port < 0 || port >= GPIO_NUM_PORTS) {
-		printf("Bad GPIO port %d.\n", port);
-		return NULL;
-	}
-	if (index >= GPIO_GPIOS_PER_PORT) {
-		printf("Bad GPIO index %d.\n", index);
-		return NULL;
-	}
+	die_if(port < 0 || port >= GPIO_NUM_PORTS, "Bad GPIO port %d.\n", port);
+	die_if(index >= GPIO_GPIOS_PER_PORT, "Bad GPIO index %d.\n", index);
 
 	TegraGpio *gpio = xzalloc(sizeof(*gpio));
 	gpio->port = port;

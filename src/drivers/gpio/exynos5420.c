@@ -182,13 +182,12 @@ static int exynos5420_gpio_set_value(GpioOps *me, unsigned value)
 Exynos5420Gpio *new_exynos5420_gpio(unsigned group, unsigned bank,
 				    unsigned index)
 {
-	if (group >= ARRAY_SIZE(groups) || bank >= groups[group].num_banks ||
-			groups[group].banks[bank] == NULL ||
-			index >= groups[group].banks[bank]->num_gpios) {
-		printf("GPIO parameters (%d, %d, %d) out of bounds.\n",
-			group, bank, index);
-		return NULL;
-	}
+	die_if(group >= ARRAY_SIZE(groups) ||
+	       bank >= groups[group].num_banks ||
+	       groups[group].banks[bank] == NULL ||
+	       index >= groups[group].banks[bank]->num_gpios,
+	       "GPIO parameters (%d, %d, %d) out of bounds.\n",
+	       group, bank, index);
 
 	Exynos5420Gpio *gpio = xzalloc(sizeof(*gpio));
 	gpio->use = &exynos5420_gpio_use;

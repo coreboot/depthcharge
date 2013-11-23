@@ -186,12 +186,11 @@ static int exynos5250_gpio_set_value(GpioOps *me, unsigned value)
 Exynos5250Gpio *new_exynos5250_gpio(unsigned group, unsigned bank,
 				    unsigned index)
 {
-	if (group >= ARRAY_SIZE(groups) || bank >= groups[group].num_banks ||
-			index >= groups[group].banks[bank]->num_gpios) {
-		printf("GPIO parameters (%d, %d, %d) out of bounds.\n",
-			group, bank, index);
-		return NULL;
-	}
+	die_if(group >= ARRAY_SIZE(groups) ||
+	       bank >= groups[group].num_banks ||
+	       index >= groups[group].banks[bank]->num_gpios,
+	       "GPIO parameters (%d, %d, %d) out of bounds.\n",
+	       group, bank, index);
 
 	Exynos5250Gpio *gpio = xzalloc(sizeof(*gpio));
 	gpio->use = &exynos5250_gpio_use;
