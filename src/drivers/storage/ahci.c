@@ -559,19 +559,9 @@ static int ahci_ctrlr_init(BlockDevCtrlrOps *me)
 				continue;
 			}
 
-			SataDrive *sata_drive = malloc(sizeof(*sata_drive));
-			if (!sata_drive) {
-				printf("Failed to allocate SATA drive "
-					"structure.\n");
-				return -1;
-			}
+			SataDrive *sata_drive = xzalloc(sizeof(*sata_drive));
 			static const int name_size = 18;
-			char *name = malloc(name_size);
-			if (!name) {
-				printf("Failed to allocate name for SATA "
-					"drive.\n");
-				return -1;
-			}
+			char *name = xmalloc(name_size);
 			snprintf(name, name_size, "Sata port %d", i);
 			sata_drive->dev.ops.read = &ahci_read;
 			sata_drive->dev.ops.write = &ahci_write;
@@ -593,16 +583,9 @@ static int ahci_ctrlr_init(BlockDevCtrlrOps *me)
 
 AhciCtrlr *new_ahci_ctrlr(pcidev_t dev)
 {
-	AhciCtrlr *ctrlr = malloc(sizeof(*ctrlr));
-	if (!ctrlr) {
-		printf("Failed to allocate AHCI controller structure.\n");
-		return NULL;
-	}
-	memset(ctrlr, 0, sizeof(*ctrlr));
-
+	AhciCtrlr *ctrlr = xzalloc(sizeof(*ctrlr));
 	ctrlr->ctrlr.ops.update = &ahci_ctrlr_init;
 	ctrlr->ctrlr.need_update = 1;
 	ctrlr->dev = dev;
-
 	return ctrlr;
 }

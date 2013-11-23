@@ -376,12 +376,7 @@ static int exynos5_usi_i2c_read(I2cOps *me, uint8_t chip,
 
 Exynos5UsiI2c *new_exynos5_usi_i2c(uintptr_t reg_addr, unsigned frequency)
 {
-	Exynos5UsiI2c *bus = malloc(sizeof(*bus));
-	if (!bus) {
-		printf("Failed to allocate I2C bus structure.\n");
-		return NULL;
-	}
-	memset(bus, 0, sizeof(*bus));
+	Exynos5UsiI2c *bus = xzalloc(sizeof(*bus));
 
 	bus->ops.read = &exynos5_usi_i2c_read;
 	bus->ops.write = &exynos5_usi_i2c_write;

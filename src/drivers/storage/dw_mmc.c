@@ -399,12 +399,7 @@ static int dwmci_update(BlockDevCtrlrOps *me)
 DwmciHost *new_dwmci_host(uintptr_t ioaddr, uint32_t src_hz, int bus_width,
 			  int removable, uint32_t clksel_val)
 {
-	DwmciHost *ctrlr = malloc(sizeof(*ctrlr));
-	if (!ctrlr) {
-		printf("Failed to allocate DWMCI host structure.\n");
-		return NULL;
-	}
-	memset(ctrlr, 0, sizeof(*ctrlr));
+	DwmciHost *ctrlr = xzalloc(sizeof(*ctrlr));
 
 	ctrlr->mmc.ctrlr.ops.update = &dwmci_update;
 	ctrlr->mmc.ctrlr.need_update = 1;

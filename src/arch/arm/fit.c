@@ -49,7 +49,7 @@ int boot(void *image, char *cmd_line, void *params, void *loader)
 	uint32_t size = dt_flat_size(tree);
 
 	// Reserve the spot the device tree will go.
-	DeviceTreeReserveMapEntry *entry = dt_new_reserve_map_entry();
+	DeviceTreeReserveMapEntry *entry = xzalloc(sizeof(*entry));
 	entry->start = (uintptr_t)fdt;
 	entry->size = size;
 	list_insert_after(&entry->list_node, &tree->reserve_map);

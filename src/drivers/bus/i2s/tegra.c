@@ -112,12 +112,7 @@ TegraI2s *new_tegra_i2s(uintptr_t regs, TxFifoOps *fifo, int id,
 			int bits_per_sample, int channels, uint32_t clock_freq,
 			uint32_t sampling_rate)
 {
-	TegraI2s *bus = malloc(sizeof(*bus));
-	if (!bus) {
-		printf("Failed to allocate Tegra I2S structure.\n");
-		return NULL;
-	}
-	memset(bus, 0, sizeof(*bus));
+	TegraI2s *bus = xzalloc(sizeof(*bus));
 	bus->ops.send = &tegra_i2s_send;
 	bus->regs = (TegraI2sRegs *)regs;
 	bus->fifo = fifo;

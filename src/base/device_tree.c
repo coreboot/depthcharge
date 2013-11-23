@@ -28,43 +28,6 @@
 #include "base/device_tree.h"
 
 /*
- * Convenience functions for allocating and initializing device tree
- * structures.
- */
-
-DeviceTreeProperty *dt_new_property(void)
-{
-	DeviceTreeProperty *prop = malloc(sizeof(*prop));
-	assert(prop);
-	memset(prop, 0, sizeof(*prop));
-	return prop;
-}
-
-DeviceTreeNode *dt_new_node(void)
-{
-	DeviceTreeNode *node = malloc(sizeof(*node));
-	assert(node);
-	memset(node, 0, sizeof(*node));
-	return node;
-}
-
-DeviceTreeReserveMapEntry *dt_new_reserve_map_entry(void)
-{
-	DeviceTreeReserveMapEntry *entry = malloc(sizeof(*entry));
-	assert(entry);
-	memset(entry, 0, sizeof(*entry));
-	return entry;
-}
-
-DeviceTree *dt_new_device_tree(void)
-{
-	DeviceTree *tree = malloc(sizeof(*tree));
-	assert(tree);
-	memset(tree, 0, sizeof(*tree));
-	return tree;
-}
-
-/*
  * Functions for picking apart flattened trees.
  */
 
@@ -212,14 +175,14 @@ static int fdt_unflatten_node(void *blob, uint32_t start_offset,
 		return 0;
 	offset += size;
 
-	DeviceTreeNode *node = dt_new_node();
+	DeviceTreeNode *node = xzalloc(sizeof(*node));
 	*new_node = node;
 	node->name = name;
 
 	FdtProperty fprop;
 	last = &node->properties;
 	while ((size = fdt_next_property(blob, offset, &fprop))) {
-		DeviceTreeProperty *prop = dt_new_property();
+		DeviceTreeProperty *prop = xzalloc(sizeof(*prop));
 		prop->prop = fprop;
 
 		list_insert_after(&prop->list_node, last);
@@ -250,7 +213,7 @@ static int fdt_unflatten_map_entry(void *blob, uint32_t offset,
 	if (!size)
 		return 0;
 
-	DeviceTreeReserveMapEntry *entry = dt_new_reserve_map_entry();
+	DeviceTreeReserveMapEntry *entry = xzalloc(sizeof(*entry));
 	*new_entry = entry;
 	entry->start = start;
 	entry->size = size;
@@ -260,7 +223,7 @@ static int fdt_unflatten_map_entry(void *blob, uint32_t offset,
 
 DeviceTree *fdt_unflatten(void *blob)
 {
-	DeviceTree *tree = dt_new_device_tree();
+	DeviceTree *tree = xzalloc(sizeof(*tree));
 	FdtHeader *header = (FdtHeader *)blob;
 	tree->header = header;
 

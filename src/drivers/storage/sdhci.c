@@ -134,13 +134,8 @@ static int sdhci_setup_adma(SdhciHost *host, MmcData* data)
 	}
 
 	if (!host->adma_descs) {
-		host->adma_descs = malloc(need_descriptors *
-					  sizeof(*host->adma_descs));
-		if (!host->adma_descs) {
-			printf("%s: failed to allocate %d descriptors\n",
-			       __func__, need_descriptors);
-			return -1;
-		}
+		host->adma_descs = xmalloc(need_descriptors *
+					   sizeof(*host->adma_descs));
 		host->adma_desc_count = need_descriptors;
 	}
 

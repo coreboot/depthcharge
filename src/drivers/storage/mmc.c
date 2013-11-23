@@ -927,12 +927,7 @@ int mmc_setup_media(MmcCtrlr *ctrlr)
 {
 	int err;
 
-	MmcMedia *media = malloc(sizeof(*media));
-	if (!media) {
-		printf("Failed to allocate MMC media structure.\n");
-		return -1;
-	}
-	memset(media, 0, sizeof(*media));
+	MmcMedia *media = xzalloc(sizeof(*media));
 	media->ctrlr = ctrlr;
 
 	mmc_set_bus_width(ctrlr, 1);

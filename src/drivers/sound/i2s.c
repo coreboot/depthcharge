@@ -71,11 +71,7 @@ static int i2s_source_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 
 	// Prepare a buffer for 1 second of sound.
 	int bytes = sample_rate * channels * sizeof(uint16_t);
-	uint32_t *data = malloc(bytes);
-	if (data == NULL) {
-		printf("%s: malloc failed\n", __func__);
-		return 1;
-	}
+	uint32_t *data = xmalloc(bytes);
 
 	sound_square_wave((uint16_t *)data, channels, sample_rate, frequency,
 			  source->volume);
@@ -107,12 +103,7 @@ static int i2s_source_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 I2sSource *new_i2s_source(I2sOps *i2s, int sample_rate, int channels,
 			  uint16_t volume)
 {
-	I2sSource *source = malloc(sizeof(*source));
-	if (!source) {
-		printf("Failed to allocate I2S source structure.\n");
-		return NULL;
-	}
-	memset(source, 0, sizeof(*source));
+	I2sSource *source = xzalloc(sizeof(*source));
 
 	source->ops.play = &i2s_source_play;
 

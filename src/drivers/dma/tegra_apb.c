@@ -80,24 +80,13 @@ static int tegra_apb_dma_finish(TegraApbDmaChannel *me)
 
 TegraApbDmaController *new_tegra_apb_dma(void *main, void *bases[], int count)
 {
-	TegraApbDmaController *channels = malloc(sizeof(*channels));
-	if (!channels) {
-		printf("Failed to allocate Tegra APB DMA channels object.\n");
-		return NULL;
-	}
-	memset(channels, 0, sizeof(*channels));
+	TegraApbDmaController *channels = xzalloc(sizeof(*channels));
 
 	channels->claim = &tegra_apb_dma_claim;
 	channels->release = &tegra_apb_dma_release;
 	channels->regs = main;
 
-	channels->channels = malloc(sizeof(TegraApbDmaChannel) * count);
-	if (!channels->channels) {
-		printf("Failed to allocate Tegra APB DMA channel array.\n");
-		free(channels);
-		return NULL;
-	}
-	memset(channels->channels, 0, sizeof(TegraApbDmaChannel) * count);
+	channels->channels = xzalloc(count * sizeof(TegraApbDmaChannel));
 	for (int i = 0; i < count; i++) {
 		TegraApbDmaChannel *channel = &channels->channels[i];
 		channel->start = &tegra_apb_dma_start;

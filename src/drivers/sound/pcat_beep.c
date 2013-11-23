@@ -20,6 +20,7 @@
 
 #include <arch/io.h>
 #include <libpayload.h>
+
 #include "base/container_of.h"
 #include "drivers/sound/pcat_beep.h"
 
@@ -75,12 +76,7 @@ static int pcat_beep_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 
 PcAtBeep *new_pcat_beep(void)
 {
-	PcAtBeep *beep = malloc(sizeof(*beep));
-	if (!beep) {
-		printf("Failed to allocate pcat_beep structure.\n");
-		return NULL;
-	}
-	memset(beep, 0, sizeof(*beep));
+	PcAtBeep *beep = xzalloc(sizeof(*beep));
 	beep->ops.start = &pcat_beep_start;
 	beep->ops.stop = &pcat_beep_stop;
 	beep->ops.play = &pcat_beep_play;

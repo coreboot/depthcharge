@@ -25,12 +25,10 @@
 
 #include "sdhci.h"
 
-#define IF_NAME_SIZE	0x20
-
 typedef struct {
 	SdhciHost sdhci_host;
 	pcidev_t sdhci_dev;
-	char dev_name[IF_NAME_SIZE];
+	char dev_name[0x20];
 } PciSdhciHost;
 
 /* Discover the register file address of the PCI SDHCI device. */
@@ -59,15 +57,7 @@ SdhciHost *new_pci_sdhci_host(pcidev_t dev, int removable,
 {
 	PciSdhciHost *host;
 
-	/* Allow room to store the interface name and and the PCI device ID */
-	host = (PciSdhciHost *)malloc(sizeof(PciSdhciHost));
-
-	if (!host) {
-		printf("%s: malloc failed!\n", __func__);
-		return NULL;
-	}
-
-	memset(host, 0, sizeof(*host));
+	host = xzalloc(sizeof(*host));
 
 	host->sdhci_dev = dev;
 	snprintf(host->dev_name, sizeof(host->dev_name), "PCI SDHCI %d.%d.%d",

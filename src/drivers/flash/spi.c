@@ -64,11 +64,7 @@ static void *spi_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
 
 SpiFlash *new_spi_flash(SpiOps *spi, uint32_t rom_size)
 {
-	SpiFlash *flash = malloc(sizeof(*flash) + rom_size);
-	if (!flash) {
-		printf("Failed to allocate spi flash object.\n");
-		return NULL;
-	}
+	SpiFlash *flash = xmalloc(sizeof(*flash) + rom_size);
 	memset(flash, 0, sizeof(*flash));
 	flash->ops.read = &spi_flash_read;
 	flash->spi = spi;

@@ -496,12 +496,7 @@ int lpctpm_xmit(TpmOps *me, const uint8_t *sendbuf, size_t send_size,
 
 LpcTpm *new_lpc_tpm(void *addr)
 {
-	LpcTpm *tpm = malloc(sizeof(*tpm));
-	if (!tpm) {
-		printf("Failed to allocate LPC TPM structure.\n");
-		return NULL;
-	}
-	memset(tpm, 0, sizeof(*tpm));
+	LpcTpm *tpm = xzalloc(sizeof(*tpm));
 	tpm->ops.xmit = &lpctpm_xmit;
 	tpm->regs = addr;
 	tpm->cleanup.cleanup = &lpctpm_close_cleanup;

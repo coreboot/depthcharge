@@ -24,7 +24,6 @@
 #include <libpayload.h>
 #include <vboot_api.h>
 
-#include "base/list.h"
 #include "drivers/storage/blockdev.h"
 
 static void setup_vb_disk_info(VbDiskInfo *disk, BlockDev *bdev)
@@ -66,7 +65,7 @@ VbError_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
 		;
 
 	// Allocate enough VbDiskInfo structures.
-	VbDiskInfo *disk = malloc(sizeof(VbDiskInfo) * *count);
+	VbDiskInfo *disk = xmalloc(sizeof(VbDiskInfo) * *count);
 	*info_ptr = disk;
 
 	// Fill them from the BlockDev structures.

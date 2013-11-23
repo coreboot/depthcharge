@@ -108,13 +108,8 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 	uint32_t out_bytes = CROS_EC_SPI_OUT_HDR_SIZE + dout_len + 1;
 	uint32_t in_bytes = CROS_EC_SPI_IN_HDR_SIZE + din_len + 1;
 
-	if (!bus->buf) {
-		bus->buf = malloc(MSG_BYTES);
-		if (!bus->buf) {
-			printf("Failed to allocate buffer.\n");
-			return -1;
-		}
-	}
+	if (!bus->buf)
+		bus->buf = xmalloc(MSG_BYTES);
 
 	/*
 	 * Sanity-check I/O sizes given transaction overhead in internal
@@ -220,12 +215,7 @@ CrosEcSpiBus *new_cros_ec_spi_bus(SpiOps *spi)
 {
 	assert(spi);
 
-	CrosEcSpiBus *bus = malloc(sizeof(*bus));
-	if (!bus) {
-		printf("Failed to allocate ChromeOS EC SPI object.\n");
-		return NULL;
-	}
-	memset(bus, 0, sizeof(*bus));
+	CrosEcSpiBus *bus = xzalloc(sizeof(*bus));
 	bus->ops.send_command = &send_command;
 	bus->ops.send_packet = &send_packet;
 	bus->spi = spi;

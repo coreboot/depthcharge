@@ -44,12 +44,7 @@ static int nyan_pass_through_power_off(PowerOps *me)
 NyanPowerOps *new_nyan_power_ops(PowerOps *pass_through,
 				 GpioOps *gpio, int val)
 {
-	NyanPowerOps *power = malloc(sizeof(*power));
-	if (!power) {
-		printf("Failed to allocate Nyan power op structure.\n");
-		return NULL;
-	}
-	memset(power, 0, sizeof(*power));
+	NyanPowerOps *power = xzalloc(sizeof(*power));
 	power->ops.cold_reboot = &nyan_gpio_reboot;
 	power->ops.power_off = &nyan_pass_through_power_off;
 	power->pass_through = pass_through;

@@ -190,12 +190,7 @@ Exynos5420Gpio *new_exynos5420_gpio(unsigned group, unsigned bank,
 		return NULL;
 	}
 
-	Exynos5420Gpio *gpio = malloc(sizeof(*gpio));
-	if (!gpio) {
-		printf("Failed to allocate exynos 5420 gpio object.\n");
-		return NULL;
-	}
-	memset(gpio, 0, sizeof(*gpio));
+	Exynos5420Gpio *gpio = xzalloc(sizeof(*gpio));
 	gpio->use = &exynos5420_gpio_use;
 	gpio->pud = &exynos5420_gpio_set_pud;
 	gpio->group = group;
@@ -208,9 +203,6 @@ Exynos5420Gpio *new_exynos5420_gpio_input(unsigned group, unsigned bank,
 					  unsigned index)
 {
 	Exynos5420Gpio *gpio = new_exynos5420_gpio(group, bank, index);
-	if (!gpio)
-		return NULL;
-
 	gpio->ops.get = &exynos5420_gpio_get_value;
 	return gpio;
 }
@@ -219,9 +211,6 @@ Exynos5420Gpio *new_exynos5420_gpio_output(unsigned group, unsigned bank,
 					   unsigned index)
 {
 	Exynos5420Gpio *gpio = new_exynos5420_gpio(group, bank, index);
-	if (!gpio)
-		return NULL;
-
 	gpio->ops.set = &exynos5420_gpio_set_value;
 	return gpio;
 }

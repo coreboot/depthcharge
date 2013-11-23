@@ -517,13 +517,7 @@ int dhcp_request(uip_ipaddr_t *next_ip, uip_ipaddr_t *server_ip,
 	}
 
 	int bootfile_size = sizeof(in.bootfile_name) + 1;
-	char *file = malloc(bootfile_size);
-	if (!file) {
-		printf("Failed to allocate %d bytes for bootfile name.\n",
-			bootfile_size);
-		dhcp_state = DhcpInit;
-		return 1;
-	}
+	char *file = xmalloc(bootfile_size);
 	file[bootfile_size - 1] = 0;
 	memcpy(file, in.bootfile_name, sizeof(in.bootfile_name));
 	*bootfile = file;

@@ -270,11 +270,7 @@ static int asix_init(GenericUsbDevice *gen_dev)
 		return 1;
 
 
-	gen_dev->dev_data = malloc(sizeof(AsixDev));
-	if (!gen_dev->dev_data) {
-		printf("ASIX: Failed to allocate AsixDev structure.\n");
-		return 1;
-	}
+	gen_dev->dev_data = xmalloc(sizeof(AsixDev));
 	memcpy(gen_dev->dev_data, &asix_dev, sizeof(AsixDev));
 
 	return 0;

@@ -72,11 +72,7 @@ static int ich9_spi_get_lock(IchFlash *me)
 
 IchFlash *new_ich9_spi_flash(uint32_t rom_size)
 {
-	IchFlash *flash = malloc(sizeof(*flash) + rom_size);
-	if (!flash) {
-		printf("Failed to allocate ICH9 SPI object.\n");
-		return NULL;
-	}
+	IchFlash *flash = xmalloc(sizeof(*flash) + rom_size);
 	memset(flash, 0, sizeof(*flash));
 
 	uint8_t *rcrb = ich_spi_get_rcrb();

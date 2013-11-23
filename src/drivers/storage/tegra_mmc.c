@@ -569,12 +569,7 @@ static int tegra_mmc_update(BlockDevCtrlrOps *me)
 TegraMmcHost *new_tegra_mmc_host(uintptr_t ioaddr, int bus_width,
 				 int removable, GpioOps *card_detect)
 {
-	TegraMmcHost *ctrlr = malloc(sizeof(*ctrlr));
-	if (!ctrlr) {
-		printf("Failed to allocate Tegra MMC host structure.\n");
-		return NULL;
-	}
-	memset(ctrlr, 0, sizeof(*ctrlr));
+	TegraMmcHost *ctrlr = xzalloc(sizeof(*ctrlr));
 
 	ctrlr->mmc.ctrlr.ops.update = &tegra_mmc_update;
 	ctrlr->mmc.ctrlr.need_update = 1;

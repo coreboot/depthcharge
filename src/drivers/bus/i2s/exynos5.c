@@ -203,12 +203,7 @@ static int i2s_send(I2sOps *me, uint32_t *data, unsigned int length)
 Exynos5I2s *new_exynos5_i2s(uintptr_t regs, int bits_per_sample,
 			    int channels, int lr_frame_size)
 {
-	Exynos5I2s *bus = malloc(sizeof(*bus));
-	if (!bus) {
-		printf("Failed to allocate Exynos5 I2S structure.\n");
-		return NULL;
-	}
-	memset(bus, 0, sizeof(*bus));
+	Exynos5I2s *bus = xzalloc(sizeof(*bus));
 	bus->ops.send = &i2s_send;
 	bus->regs = (void *)regs;
 	bus->bits_per_sample = bits_per_sample;
@@ -322,12 +317,7 @@ static int i2s_send_multi(I2sOps *me, uint32_t *data, unsigned int length)
 Exynos5I2s *new_exynos5_i2s_multi(uintptr_t regs, int bits_per_sample,
 				  int channels, int lr_frame_size)
 {
-	Exynos5I2s *bus = malloc(sizeof(*bus));
-	if (!bus) {
-		printf("Failed to allocate Exynos5 I2S structure.\n");
-		return NULL;
-	}
-	memset(bus, 0, sizeof(*bus));
+	Exynos5I2s *bus = xzalloc(sizeof(*bus));
 	bus->ops.send = &i2s_send_multi;
 	bus->regs = (void *)regs;
 	bus->bits_per_sample = bits_per_sample;

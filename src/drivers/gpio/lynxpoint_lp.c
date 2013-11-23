@@ -109,12 +109,7 @@ static int lp_pch_gpio_use(LpPchGpio *me, unsigned use)
 
 LpPchGpio *new_lp_pch_gpio(unsigned num)
 {
-	LpPchGpio *gpio = malloc(sizeof(*gpio));
-	if (!gpio) {
-		printf("Failed to allocate lynxpoint pch gpio object.\n");
-		return NULL;
-	}
-	memset(gpio, 0, sizeof(*gpio));
+	LpPchGpio *gpio = xzalloc(sizeof(*gpio));
 	gpio->use = &lp_pch_gpio_use;
 	gpio->num = num;
 	return gpio;
@@ -123,9 +118,6 @@ LpPchGpio *new_lp_pch_gpio(unsigned num)
 LpPchGpio *new_lp_pch_gpio_input(unsigned num)
 {
 	LpPchGpio *gpio = new_lp_pch_gpio(num);
-	if (!gpio)
-		return NULL;
-
 	gpio->ops.get = &lp_pch_gpio_get_value;
 	return gpio;
 }
@@ -133,9 +125,6 @@ LpPchGpio *new_lp_pch_gpio_input(unsigned num)
 LpPchGpio *new_lp_pch_gpio_output(unsigned num)
 {
 	LpPchGpio *gpio = new_lp_pch_gpio(num);
-	if (!gpio)
-		return NULL;
-
 	gpio->ops.set = &lp_pch_gpio_set_value;
 	return gpio;
 }

@@ -94,12 +94,7 @@ static TegraGpio *new_tegra_gpio(TegraGpioPort port, unsigned index)
 		return NULL;
 	}
 
-	TegraGpio *gpio = malloc(sizeof(*gpio));
-	if (!gpio) {
-		printf("Failed to allocate Tegra GPIO structure.\n");
-		return NULL;
-	}
-	memset(gpio, 0, sizeof(*gpio));
+	TegraGpio *gpio = xzalloc(sizeof(*gpio));
 	gpio->port = port;
 	gpio->index = index;
 	return gpio;
@@ -108,8 +103,6 @@ static TegraGpio *new_tegra_gpio(TegraGpioPort port, unsigned index)
 TegraGpio *new_tegra_gpio_input(TegraGpioPort port, unsigned index)
 {
 	TegraGpio *gpio = new_tegra_gpio(port, index);
-	if (!gpio)
-		return NULL;
 	gpio->ops.get = &tegra_gpio_get;
 	return gpio;
 }
@@ -117,8 +110,6 @@ TegraGpio *new_tegra_gpio_input(TegraGpioPort port, unsigned index)
 TegraGpio *new_tegra_gpio_output(TegraGpioPort port, unsigned index)
 {
 	TegraGpio *gpio = new_tegra_gpio(port, index);
-	if (!gpio)
-		return NULL;
 	gpio->ops.set = &tegra_gpio_set;
 	return gpio;
 }

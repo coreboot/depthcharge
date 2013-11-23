@@ -31,7 +31,7 @@ ListNode usb_host_controllers;
 void usb_generic_create(usbdev_t *dev)
 {
 	// Allocate a structure to keep track of this device.
-	GenericUsbDevice *gdev = malloc(sizeof(GenericUsbDevice));
+	GenericUsbDevice *gdev = xmalloc(sizeof(*gdev));
 	gdev->dev = dev;
 
 	// Check if any generic USB driver wants to claim it.
@@ -68,14 +68,9 @@ void usb_generic_remove(usbdev_t *dev)
 
 UsbHostController *new_usb_hc(hc_type type, uintptr_t bar)
 {
-	UsbHostController *hc = malloc(sizeof(*hc));
-	if (!hc) {
-		printf("Failed to allocate USBHostController structure.\n");
-		return NULL;
-	}
+	UsbHostController *hc = xzalloc(sizeof(*hc));
 	hc->type = type;
 	hc->bar = (void *)bar;
-	hc->init_callback = NULL;
 	return hc;
 }
 

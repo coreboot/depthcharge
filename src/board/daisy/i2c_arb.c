@@ -88,13 +88,7 @@ static int i2c_arb_write(struct I2cOps *me, uint8_t chip,
 
 SnowI2cArb *new_snow_i2c_arb(I2cOps *bus, GpioOps *request, GpioOps *grant)
 {
-	SnowI2cArb *arb = malloc(sizeof(*arb));
-	if (!arb) {
-		printf("Failed to allocate I2C arbitration struct.\n");
-		return NULL;
-	}
-	memset(arb, 0, sizeof(*arb));
-
+	SnowI2cArb *arb = xzalloc(sizeof(*arb));
 	arb->ops.read = &i2c_arb_read;
 	arb->ops.write = &i2c_arb_write;
 	arb->bus = bus;

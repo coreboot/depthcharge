@@ -176,12 +176,7 @@ static int cros_ec_lpc_init(CrosEcBusOps *me)
 
 CrosEcLpcBus *new_cros_ec_lpc_bus(void)
 {
-	CrosEcLpcBus *bus = malloc(sizeof(*bus));
-	if (!bus) {
-		printf("Failed to allocate CrosEC LPC object.\n");
-		return NULL;
-	}
-	memset(bus, 0, sizeof(*bus));
+	CrosEcLpcBus *bus = xzalloc(sizeof(*bus));
 	bus->ops.init = &cros_ec_lpc_init;
 	bus->ops.send_command = &send_command;
 

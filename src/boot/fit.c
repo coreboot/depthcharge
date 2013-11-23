@@ -77,9 +77,7 @@ void fit_override_kernel_compat(const char *compat)
 
 static void image_node(DeviceTreeNode *node)
 {
-	FitImageNode *image = malloc(sizeof(FitImageNode));
-	assert(image);
-	memset(image, 0, sizeof(*image));
+	FitImageNode *image = xzalloc(sizeof(*image));
 	image->compression = CompressionNone;
 
 	image->name = node->name;
@@ -102,10 +100,7 @@ static void image_node(DeviceTreeNode *node)
 
 static void config_node(DeviceTreeNode *node)
 {
-	FitConfigNode *config = malloc(sizeof(FitConfigNode));
-	assert(config);
-	memset(config, 0, sizeof(*config));
-
+	FitConfigNode *config = xzalloc(sizeof(*config));
 	config->name = node->name;
 
 	DeviceTreeProperty *prop;
@@ -202,7 +197,7 @@ static void update_chosen(DeviceTreeNode *chosen, char *cmd_line)
 			bootargs = prop;
 
 	if (!bootargs) {
-		bootargs = dt_new_property();
+		bootargs = xzalloc(sizeof(*bootargs));
 		list_insert_after(&bootargs->list_node, &chosen->properties);
 		bootargs->prop.name = "bootargs";
 	}
@@ -215,7 +210,7 @@ static void update_reserve_map(uint64_t start, uint64_t end, void *data)
 {
 	DeviceTree *tree = (DeviceTree *)data;
 
-	DeviceTreeReserveMapEntry *entry = dt_new_reserve_map_entry();
+	DeviceTreeReserveMapEntry *entry = xzalloc(sizeof(*entry));
 	entry->start = start;
 	entry->size = end - start;
 
@@ -294,7 +289,7 @@ static void update_memory(DeviceTree *tree, DeviceTreeNode *memory)
 			reg = prop;
 
 	if (!reg) {
-		reg = dt_new_property();
+		reg = xzalloc(sizeof(*reg));
 		list_insert_after(&reg->list_node, &memory->properties);
 		reg->prop.name = "reg";
 	}
@@ -304,8 +299,7 @@ static void update_memory(DeviceTree *tree, DeviceTreeNode *memory)
 
 	int entry_size = (addr_cells + size_cells) * sizeof(uint32_t);
 	reg->prop.size = entry_size * count;
-	void *data = malloc(reg->prop.size);
-	assert(data);
+	void *data = xmalloc(reg->prop.size);
 	reg->prop.data = data;
 	EntryParams params = { addr_cells, size_cells, data };
 	ranges_for_each(&mem, &update_mem_property, &params);
@@ -325,14 +319,14 @@ static void update_kernel_dt(DeviceTree *tree, char *cmd_line)
 	}
 
 	if (!chosen) {
-		chosen = dt_new_node();
+		chosen = xzalloc(sizeof(*chosen));
 		list_insert_after(&chosen->list_node, &tree->root->children);
 		chosen->name = "chosen";
 	}
 	update_chosen(chosen, cmd_line);
 
 	if (!memory) {
-		memory = dt_new_node();
+		memory = xzalloc(sizeof(*memory));
 		list_insert_after(&memory->list_node, &tree->root->children);
 		memory->name = "memory";
 	}

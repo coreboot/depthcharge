@@ -74,8 +74,6 @@ typedef struct DeviceTreeProperty
 	ListNode list_node;
 } DeviceTreeProperty;
 
-DeviceTreeProperty *dt_new_property(void);
-
 typedef struct DeviceTreeNode
 {
 	const char *name;
@@ -87,8 +85,6 @@ typedef struct DeviceTreeNode
 	ListNode list_node;
 } DeviceTreeNode;
 
-DeviceTreeNode *dt_new_node(void);
-
 typedef struct DeviceTreeReserveMapEntry
 {
 	uint64_t start;
@@ -96,8 +92,6 @@ typedef struct DeviceTreeReserveMapEntry
 
 	ListNode list_node;
 } DeviceTreeReserveMapEntry;
-
-DeviceTreeReserveMapEntry *dt_new_reserve_map_entry(void);
 
 typedef struct DeviceTree
 {
@@ -108,8 +102,6 @@ typedef struct DeviceTree
 
 	DeviceTreeNode *root;
 } DeviceTree;
-
-DeviceTree *dt_new_device_tree(void);
 
 
 

@@ -520,12 +520,7 @@ static int s5p_mshc_update(BlockDevCtrlrOps *me)
 MshciHost *new_mshci_host(uintptr_t ioaddr, uint32_t src_hz, int bus_width,
 			  int removable, uint32_t clksel_val)
 {
-	MshciHost *ctrlr = malloc(sizeof(*ctrlr));
-	if (!ctrlr) {
-		printf("Failed to allocate MSHCI host structure.\n");
-		return NULL;
-	}
-	memset(ctrlr, 0, sizeof(*ctrlr));
+	MshciHost *ctrlr = xzalloc(sizeof(*ctrlr));
 
 	ctrlr->mmc.ctrlr.ops.update = &s5p_mshc_update;
 	ctrlr->mmc.ctrlr.need_update = 1;

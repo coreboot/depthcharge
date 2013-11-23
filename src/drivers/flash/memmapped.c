@@ -39,12 +39,7 @@ static void *mem_mapped_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
 
 MemMappedFlash *new_mem_mapped_flash(uint32_t base, uint32_t size)
 {
-	MemMappedFlash *flash = malloc(sizeof(*flash));
-	if (!flash) {
-		printf("Failed to allocate memmapped flash object.\n");
-		return NULL;
-	}
-	memset(flash, 0, sizeof(*flash));
+	MemMappedFlash *flash = xzalloc(sizeof(*flash));
 	flash->ops.read = &mem_mapped_flash_read;
 	flash->base = base;
 	flash->size = size;

@@ -268,12 +268,7 @@ static int tegra_audio_hub_enable(SoundRouteComponentOps *me)
 
 TegraAudioHubXbar *new_tegra_audio_hub_xbar(uintptr_t regs)
 {
-	TegraAudioHubXbar *xbar = malloc(sizeof(*xbar));
-	if (!xbar) {
-		printf("Failed to allocate Tegra audio hub Crossbar.\n");
-		return NULL;
-	}
-	memset(xbar, 0, sizeof(*xbar));
+	TegraAudioHubXbar *xbar = xzalloc(sizeof(*xbar));
 	xbar->regs = (TegraXbarRegs *)regs;
 	return xbar;
 }
@@ -281,12 +276,7 @@ TegraAudioHubXbar *new_tegra_audio_hub_xbar(uintptr_t regs)
 TegraAudioHubApbif *new_tegra_audio_hub_apbif(uintptr_t regs,
 					      size_t capacity_in_word)
 {
-	TegraAudioHubApbif *apbif = malloc(sizeof(*apbif));
-	if (!apbif) {
-		printf("Failed to allocate Tegra audio hub Crossbar.\n");
-		return NULL;
-	}
-	memset(apbif, 0, sizeof(*apbif));
+	TegraAudioHubApbif *apbif = xzalloc(sizeof(*apbif));
 	apbif->ops.send = tegra_ahub_apbif_send;
 	apbif->ops.is_full = tegra_ahub_apbif_is_full;
 	apbif->ops.capacity = tegra_ahub_apbif_capacity;
@@ -299,12 +289,7 @@ TegraAudioHub *new_tegra_audio_hub(TegraAudioHubXbar *xbar,
 				   TegraAudioHubApbif *apbif,
 				   TegraI2s *i2s)
 {
-	TegraAudioHub *ahub = malloc(sizeof(*ahub));
-	if (!ahub) {
-		printf("Failed to allocate Tegra audio hub structure.\n");
-		return NULL;
-	}
-	memset(ahub, 0, sizeof(*ahub));
+	TegraAudioHub *ahub = xzalloc(sizeof(*ahub));
 	ahub->xbar = xbar;
 	ahub->apbif = apbif;
 	ahub->i2s = i2s;

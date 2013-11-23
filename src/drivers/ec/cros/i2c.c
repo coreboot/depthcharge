@@ -49,13 +49,8 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 	uint32_t out_bytes = CROS_EC_I2C_OUT_HDR_SIZE + dout_len + 1;
 	uint32_t in_bytes = CROS_EC_I2C_IN_HDR_SIZE + din_len + 1;
 
-	if (!bus->buf) {
-		bus->buf = malloc(MSG_BYTES);
-		if (!bus->buf) {
-			printf("Failed to allocate buffer.\n");
-			return -1;
-		}
-	}
+	if (!bus->buf)
+		bus->buf = xmalloc(MSG_BYTES);
 
 	/*
 	 * Sanity-check I/O sizes given transaction overhead in internal
@@ -136,12 +131,7 @@ CrosEcI2cBus *new_cros_ec_i2c_bus(I2cOps *i2c_bus, uint8_t chip)
 {
 	assert(i2c_bus);
 
-	CrosEcI2cBus *bus = malloc(sizeof(*bus));
-	if (!bus) {
-		printf("Failed to allocate ChromeOS EC I2C object.\n");
-		return NULL;
-	}
-	memset(bus, 0, sizeof(*bus));
+	CrosEcI2cBus *bus = xzalloc(sizeof(*bus));
 	bus->ops.send_command = &send_command;
 	bus->bus = i2c_bus;
 	bus->chip = chip;

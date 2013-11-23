@@ -172,12 +172,7 @@ int i2c_write(I2cOps *me, uint8_t chip, uint32_t addr,
 
 TegraI2c *new_tegra_i2c(void *regs, int controller_id)
 {
-	TegraI2c *bus = malloc(sizeof(*bus));
-	if (!bus) {
-		printf("Failed to allocate Tegra I2C bus structure.\n");
-		return NULL;
-	}
-	memset(bus, 0, sizeof(*bus));
+	TegraI2c *bus = xzalloc(sizeof(*bus));
 	bus->ops.read = i2c_read;
 	bus->ops.write = i2c_write;
 	bus->regs = regs;

@@ -275,12 +275,7 @@ static int exynos5_spi_stop(SpiOps *me)
 
 Exynos5Spi *new_exynos5_spi(uintptr_t reg_addr)
 {
-	Exynos5Spi *bus = malloc(sizeof(*bus));
-	if (!bus) {
-		printf("Failed to allocate exynos5 spi object.\n");
-		return NULL;
-	}
-	memset(bus, 0, sizeof(*bus));
+	Exynos5Spi *bus = xzalloc(sizeof(*bus));
 	bus->ops.start = &exynos5_spi_start;
 	bus->ops.transfer = &exynos5_spi_transfer;
 	bus->ops.stop = &exynos5_spi_stop;

@@ -65,12 +65,7 @@ static int route_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 
 SoundRoute *new_sound_route(SoundOps *source)
 {
-	SoundRoute *route = malloc(sizeof(*route));
-	if (!route) {
-		printf("Unable to allocate sound route structure.\n");
-		return NULL;
-	}
-	memset(route, 0, sizeof(*route));
+	SoundRoute *route = xzalloc(sizeof(*route));
 	route->ops.start = &route_start;
 	route->ops.stop = &route_stop;
 	route->ops.play = &route_play;

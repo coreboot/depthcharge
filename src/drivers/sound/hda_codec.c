@@ -324,12 +324,7 @@ static int hda_codec_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 
 HdaCodec *new_hda_codec(void)
 {
-	HdaCodec *codec = malloc(sizeof(*codec));
-	if (!codec) {
-		printf("Failed to allocate HDA codec structure.\n");
-		return NULL;
-	}
-	memset(codec, 0, sizeof(*codec));
+	HdaCodec *codec = xzalloc(sizeof(*codec));
 	codec->ops.start = &hda_codec_start;
 	codec->ops.stop = &hda_codec_stop;
 	codec->ops.play = &hda_codec_play;

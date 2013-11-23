@@ -506,11 +506,7 @@ static int tpm_cleanup(I2cTpmChipOps *me)
 
 Slb9635I2c *new_slb9635_i2c(I2cOps *bus, uint8_t addr)
 {
-	Slb9635I2c *tpm = malloc(sizeof(*tpm));
-	if (!tpm) {
-		printf("Failed to allocate SLB9635 I2C TPM structure.\n");
-		return NULL;
-	}
+	Slb9635I2c *tpm = xmalloc(sizeof(*tpm));
 	i2ctpm_fill_in(&tpm->base, bus, addr, TpmStsDataAvail | TpmStsValid,
 		       TpmStsDataAvail | TpmStsValid, TpmStsCommandReady);
 

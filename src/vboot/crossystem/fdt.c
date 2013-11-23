@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <endian.h>
 #include <gbb_header.h>
+#include <libpayload.h>
 #include <stdlib.h>
 #include <string.h>
 #include <vboot_api.h>
@@ -60,7 +61,7 @@ static void bin_prop(ListNode *props, ListNode *old_props,
 		}
 	}
 
-	prop = dt_new_property();
+	prop = xzalloc(sizeof(*prop));
 	list_insert_after(&prop->list_node, props);
 	prop->prop.name = name;
 	prop->prop.data = data;
@@ -76,8 +77,7 @@ static void string_prop(ListNode *props, ListNode *old_props,
 static void int_prop(ListNode *props, ListNode *old_props,
 		     char *name, uint32_t val)
 {
-	uint32_t *val_ptr = malloc(sizeof(val));
-	assert(val_ptr);
+	uint32_t *val_ptr = xmalloc(sizeof(val));
 	*val_ptr = htobel(val);
 	bin_prop(props, old_props, name, val_ptr, sizeof(*val_ptr));
 }
@@ -98,7 +98,7 @@ static DeviceTreeNode *dt_find_chromeos_node(DeviceTree *tree)
 
 	// Make one if it didn't.
 	if (!firmware) {
-		firmware = dt_new_node();
+		firmware = xzalloc(sizeof(*firmware));
 		firmware->name = "firmware";
 		list_insert_after(&firmware->list_node, &tree->root->children);
 	}
@@ -113,7 +113,7 @@ static DeviceTreeNode *dt_find_chromeos_node(DeviceTree *tree)
 
 	// Make one if it didn't.
 	if (!chromeos) {
-		chromeos = dt_new_node();
+		chromeos = xzalloc(sizeof(*chromeos));
 		chromeos->name = "chromeos";
 		list_insert_after(&chromeos->list_node, &firmware->children);
 	}

@@ -261,12 +261,7 @@ Max98095Codec *new_max98095_codec(I2cOps *i2c, uint8_t chip,
 				  int bits_per_sample, int sample_rate,
 				  int lr_frame_size, uint8_t master_clock)
 {
-	Max98095Codec *codec = malloc(sizeof(*codec));
-	if (!codec) {
-		printf("Failed to allocate max98095 codec structure.\n");
-		return NULL;
-	}
-	memset(codec, 0, sizeof(*codec));
+	Max98095Codec *codec = xzalloc(sizeof(*codec));
 
 	codec->component.ops.enable = &max98095_enable;
 

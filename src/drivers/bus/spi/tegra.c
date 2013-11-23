@@ -493,12 +493,7 @@ TegraSpi *new_tegra_spi(uintptr_t reg_addr,
 			TegraApbDmaController *dma_controller,
 			uint32_t dma_slave_id)
 {
-	TegraSpi *bus = malloc(sizeof(*bus));
-	if (!bus) {
-		printf("Failed to allocate tegra spi object.\n");
-		return NULL;
-	}
-	memset(bus, 0, sizeof(*bus));
+	TegraSpi *bus = xzalloc(sizeof(*bus));
 	bus->ops.start = &tegra_spi_start;
 	bus->ops.transfer = &tegra_spi_transfer;
 	bus->ops.stop = &tegra_spi_stop;

@@ -193,12 +193,7 @@ Exynos5250Gpio *new_exynos5250_gpio(unsigned group, unsigned bank,
 		return NULL;
 	}
 
-	Exynos5250Gpio *gpio = malloc(sizeof(*gpio));
-	if (!gpio) {
-		printf("Failed to allocate s5p gpio object.\n");
-		return NULL;
-	}
-	memset(gpio, 0, sizeof(*gpio));
+	Exynos5250Gpio *gpio = xzalloc(sizeof(*gpio));
 	gpio->use = &exynos5250_gpio_use;
 	gpio->pud = &exynos5250_gpio_set_pud;
 	gpio->group = group;
@@ -211,9 +206,6 @@ Exynos5250Gpio *new_exynos5250_gpio_input(unsigned group, unsigned bank,
 					  unsigned index)
 {
 	Exynos5250Gpio *gpio = new_exynos5250_gpio(group, bank, index);
-	if (!gpio)
-		return NULL;
-
 	gpio->ops.get = &exynos5250_gpio_get_value;
 	return gpio;
 }
@@ -222,9 +214,6 @@ Exynos5250Gpio *new_exynos5250_gpio_output(unsigned group, unsigned bank,
 					   unsigned index)
 {
 	Exynos5250Gpio *gpio = new_exynos5250_gpio(group, bank, index);
-	if (!gpio)
-		return NULL;
-
 	gpio->ops.set = &exynos5250_gpio_set_value;
 	return gpio;
 }

@@ -56,12 +56,7 @@ static int gpio_or_get(GpioOps *me)
 
 GpioOps *new_gpio_not(GpioOps *a)
 {
-	GpioUnaryOp *op = malloc(sizeof(*op));
-	if (!op) {
-		printf("Failed to allocate GPIO \"not\" wrapper struct.\n");
-		return NULL;
-	}
-	memset(op, 0, sizeof(*op));
+	GpioUnaryOp *op = xzalloc(sizeof(*op));
 	op->ops.get = &gpio_not_get;
 	op->a = a;
 	return &op->ops;
@@ -70,12 +65,7 @@ GpioOps *new_gpio_not(GpioOps *a)
 static GpioOps *new_gpio_binary_op(GpioOps *a, GpioOps *b,
 				   int (*get)(GpioOps *me))
 {
-	GpioBinaryOp *op = malloc(sizeof(*op));
-	if (!op) {
-		printf("Failed to allocate GPIO binary op wrapper struct.\n");
-		return NULL;
-	}
-	memset(op, 0, sizeof(*op));
+	GpioBinaryOp *op = xzalloc(sizeof(*op));
 	op->ops.get = get;
 	op->a = a;
 	op->b = b;

@@ -61,18 +61,9 @@ static lba_t dc_usb_write(BlockDevOps *me, lba_t start, lba_t count,
 void usbdisk_create(usbdev_t *dev)
 {
 	usbmsc_inst_t *msc = MSC_INST(dev);
-	UsbDrive *drive = malloc(sizeof(*drive));
-	if (!drive) {
-		printf("Failed to allocate USB block device!\n");
-		return;
-	}
-	memset(drive, 0, sizeof(*drive));
+	UsbDrive *drive = xzalloc(sizeof(*drive));
 	static const int name_size = 16;
-	char *name = malloc(name_size);
-	if (!name) {
-		printf("Failed to allocate space for the USB device name!\n");
-		return;
-	}
+	char *name = xmalloc(name_size);
 	snprintf(name, name_size, "USB disk %d", dev->address);
 	drive->dev.ops.read = &dc_usb_read;
 	drive->dev.ops.write = &dc_usb_write;

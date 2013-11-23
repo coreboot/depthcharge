@@ -115,12 +115,7 @@ static PchGpio *new_pch_gpio(PchGpioCfg *cfg, unsigned bank, unsigned bit)
 		return NULL;
 	}
 
-	PchGpio *gpio = malloc(sizeof(*gpio));
-	if (!gpio) {
-		printf("Failed to allocate pch gpio object.\n");
-		return NULL;
-	}
-	memset(gpio, 0, sizeof(*gpio));
+	PchGpio *gpio = xzalloc(sizeof(*gpio));
 	gpio->cfg = cfg;
 	gpio->use = &pch_gpio_use;
 	gpio->bank = bank;
@@ -131,9 +126,6 @@ static PchGpio *new_pch_gpio(PchGpioCfg *cfg, unsigned bank, unsigned bit)
 PchGpio *new_pch_gpio_input(PchGpioCfg *cfg, unsigned bank, unsigned bit)
 {
 	PchGpio *gpio = new_pch_gpio(cfg, bank, bit);
-	if (!gpio)
-		return NULL;
-
 	gpio->ops.get = &pch_gpio_get_value;
 	return gpio;
 }
@@ -141,9 +133,6 @@ PchGpio *new_pch_gpio_input(PchGpioCfg *cfg, unsigned bank, unsigned bit)
 PchGpio *new_pch_gpio_output(PchGpioCfg *cfg, unsigned bank, unsigned bit)
 {
 	PchGpio *gpio = new_pch_gpio(cfg, bank, bit);
-	if (!gpio)
-		return NULL;
-
 	gpio->ops.set = &pch_gpio_set_value;
 	return gpio;
 }

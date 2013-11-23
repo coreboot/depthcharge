@@ -765,9 +765,7 @@ int cros_ec_flash_write(const uint8_t *data, uint32_t offset, uint32_t size)
 		uint32_t todo = MIN(end - off, burst);
 
 		if (todo < burst) {
-			uint8_t *buf = malloc(burst);
-			if (!buf)
-				return -1;
+			uint8_t *buf = xmalloc(burst);
 			memcpy(buf, data, todo);
 			// Pad the buffer with a decent guess for erased data
 			// value.
@@ -894,20 +892,13 @@ static int set_max_proto3_sizes(int request_size, int response_size)
 	free(proto3_response);
 
 	if (request_size)
-		proto3_request = malloc(request_size);
+		proto3_request = xmalloc(request_size);
 	else
 		proto3_request = NULL;
 	if (response_size)
-		proto3_response = malloc(response_size);
+		proto3_response = xmalloc(response_size);
 	else
 		proto3_response = NULL;
-
-	if ((request_size && !proto3_request) ||
-	    (response_size && !proto3_response)) {
-		printf("%s: Failed to allocate proto3 buffers.\n", __func__);
-		set_max_proto3_sizes(0, 0);
-		return -1;
-	}
 
 	proto3_request_size = request_size;
 	proto3_response_size = response_size;

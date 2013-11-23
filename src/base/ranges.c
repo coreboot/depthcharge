@@ -35,9 +35,8 @@
 static void ranges_insert_between(RangesEdge *before, RangesEdge *after,
 				  uint64_t pos)
 {
-	RangesEdge *new_edge = (RangesEdge *)malloc(sizeof(*new_edge));
+	RangesEdge *new_edge = xmalloc(sizeof(*new_edge));
 
-	assert(new_edge);
 	assert(before != after);
 
 	new_edge->next = after;

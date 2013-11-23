@@ -73,12 +73,7 @@ static int as3722_power_off(PowerOps *me)
 
 As3722Pmic *new_as3722_pmic(I2cOps *bus, uint8_t chip)
 {
-	As3722Pmic *pmic = malloc(sizeof(*pmic));
-	if (!pmic) {
-		printf("Failed to allocate AS3722 PMIC structure.\n");
-		return NULL;
-	}
-	memset(pmic, 0, sizeof(*pmic));
+	As3722Pmic *pmic = xzalloc(sizeof(*pmic));
 	pmic->ops.cold_reboot = &as3722_cold_reboot;
 	pmic->ops.power_off = &as3722_power_off;
 	pmic->bus = bus;

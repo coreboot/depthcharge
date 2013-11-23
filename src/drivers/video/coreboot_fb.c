@@ -85,11 +85,7 @@ static int dc_corebootfb_draw_bitmap_v3(uint32_t x, uint32_t y,
 	uintptr_t palette_offset =
 		sizeof(BitmapFileHeader) + sizeof(BitmapHeaderV3);
 	int palette_size = bitmap_offset - palette_offset;
-	BitmapPaletteElementV3 *palette = malloc(palette_size);
-	if (!palette) {
-		printf("Failed to allocate space for the palette.\n");
-		return -1;
-	}
+	BitmapPaletteElementV3 *palette = xmalloc(palette_size);
 	memcpy(palette, (uint8_t *)bitmap + palette_offset, palette_size);
 
 	int32_t width = header.width, height = header.height;

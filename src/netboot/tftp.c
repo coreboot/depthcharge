@@ -92,12 +92,7 @@ static void tftp_print_error_pkt(void)
 	if (uip_datalen() > 4) {
 		// Copy out the error message so we can null terminate it.
 		int message_len = uip_datalen() - 4 + 1;
-		char *message = malloc(message_len);
-		if (!message) {
-			printf("Failed to allocate %d bytes for "
-				"error message.\n", message_len);
-			return;
-		}
+		char *message = xmalloc(message_len);
 
 		message[message_len - 1] = 0;
 		memcpy(message, uip_appdata, message_len - 1);
@@ -205,7 +200,7 @@ int tftp_read(void *dest, uip_ipaddr_t *server_ip, const char *bootfile,
 	int mode_len = sizeof(mode);
 
 	int read_req_len = opcode_len + name_len + mode_len;
-	uint8_t *read_req = malloc(read_req_len);
+	uint8_t *read_req = xmalloc(read_req_len);
 
 	memcpy(read_req, &opcode, opcode_len);
 	memcpy(read_req + opcode_len, bootfile, name_len);
