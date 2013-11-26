@@ -23,6 +23,7 @@
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
+#include "board/nyan/power_ops.h"
 #include "boot/fit.h"
 #include "config.h"
 #include "drivers/bus/i2c/tegra.h"
@@ -34,7 +35,6 @@
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/gpio/tegra.h"
-#include "drivers/power/as3722.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/max98090.h"
 #include "drivers/sound/tegra_ahub.h"
@@ -196,7 +196,12 @@ static int board_setup(void)
 	if (!pwr_i2c)
 		return 1;
 	As3722Pmic *pmic = new_as3722_pmic(&pwr_i2c->ops, 0x40);
-	if (!pmic || power_set_ops(&pmic->ops))
+	TegraGpio *reboot_gpio = new_tegra_gpio_output(GPIO_I, 5);
+	if (!pmic || !reboot_gpio)
+		return 1;
+	NyanPowerOps *power = new_nyan_power_ops(&pmic->ops, &reboot_gpio->ops,
+						 0);
+	if (!power || power_set_ops(&power->ops))
 		return 1;
 
 	/* Careful: the EHCI base is at offset 0x100 from the SoC's IP base */
