@@ -23,7 +23,7 @@
 #include <libpayload.h>
 #include <pci/pci.h>
 
-#include "sdhci.h"
+#include "drivers/storage/sdhci.h"
 
 typedef struct {
 	SdhciHost sdhci_host;

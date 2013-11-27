@@ -26,8 +26,8 @@
 
 #include <libpayload.h>
 
-#include "blockdev.h"
-#include "sdhci.h"
+#include "drivers/storage/blockdev.h"
+#include "drivers/storage/sdhci.h"
 
 static void sdhci_reset(SdhciHost *host, u8 mask)
 {
