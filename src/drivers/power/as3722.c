@@ -22,7 +22,7 @@
 
 #include <libpayload.h>
 
-#include "base/cleanup_funcs.h"
+#include "base/container_of.h"
 #include "drivers/power/as3722.h"
 
 enum {
@@ -47,27 +47,17 @@ static int as3722_set_bit(I2cOps *bus, uint8_t chip, uint8_t reg, uint8_t bit)
 
 static int as3722_cold_reboot(PowerOps *me)
 {
-	if (run_cleanup_funcs(CleanupOnReboot))
-		return -1;
-
-	printf("Rebooting...\n");
-
 	As3722Pmic *pmic = container_of(me, As3722Pmic, ops);
 	as3722_set_bit(pmic->bus, pmic->chip, AS3722_RESET_CONTROL,
 		       AS3722_RESET_CONTROL_FORCE_RESET);
-
 	halt();
 }
 
 static int as3722_power_off(PowerOps *me)
 {
-	if (run_cleanup_funcs(CleanupOnPowerOff))
-		return -1;
-
 	As3722Pmic *pmic = container_of(me, As3722Pmic, ops);
 	as3722_set_bit(pmic->bus, pmic->chip, AS3722_RESET_CONTROL,
 		       AS3722_RESET_CONTROL_POWER_OFF);
-
 	halt();
 }
 

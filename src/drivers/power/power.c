@@ -22,6 +22,7 @@
 
 #include <libpayload.h>
 
+#include "base/cleanup_funcs.h"
 #include "drivers/power/power.h"
 
 static PowerOps *power_ops;
@@ -44,6 +45,10 @@ int cold_reboot(void)
 	}
 	if (!power_ops->cold_reboot)
 		return -1;
+	if (run_cleanup_funcs(CleanupOnReboot))
+		return -1;
+
+	printf("Rebooting...\n");
 	return power_ops->cold_reboot(power_ops);
 }
 
@@ -55,5 +60,8 @@ int power_off(void)
 	}
 	if (!power_ops->power_off)
 		return -1;
+	if (run_cleanup_funcs(CleanupOnPowerOff))
+		return -1;
+
 	return power_ops->power_off(power_ops);
 }

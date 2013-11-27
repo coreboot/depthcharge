@@ -22,7 +22,6 @@
 
 #include <libpayload.h>
 
-#include "base/cleanup_funcs.h"
 #include "drivers/power/pch.h"
 #include "drivers/power/power.h"
 
@@ -51,10 +50,6 @@
  */
 static int pch_cold_reboot(PowerOps *me)
 {
-	if (run_cleanup_funcs(CleanupOnReboot))
-		return -1;
-
-	printf("Rebooting...\n");
 	outb(SYS_RST | RST_CPU, RST_CNT);
 	halt();
 }
@@ -106,9 +101,6 @@ static void busmaster_disable(void)
  */
 static int pch_power_off_common(uint16_t bar_mask, uint16_t gpe_en_reg)
 {
-	if (run_cleanup_funcs(CleanupOnPowerOff))
-		return -1;
-
 	// Make sure this is an Intel chipset with the LPC device hard coded
 	// at 0:1f.0.
 	uint16_t id = pci_read_config16(PCI_DEV(0, 0x1f, 0), 0x00);

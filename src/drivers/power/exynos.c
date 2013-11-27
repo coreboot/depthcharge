@@ -23,19 +23,13 @@
 #include <libpayload.h>
 #include <stdint.h>
 
-#include "base/cleanup_funcs.h"
 #include "drivers/power/exynos.h"
 #include "drivers/power/power.h"
 
 static int exynos_cold_reboot(PowerOps *me)
 {
-	if (run_cleanup_funcs(CleanupOnReboot))
-		return -1;
-
 	uint32_t *inform1 = (uint32_t *)(uintptr_t)0x10040804;
 	uint32_t *swreset = (uint32_t *)(uintptr_t)0x10040400;
-
-	printf("Rebooting...\n");
 
 	writel(0, inform1);
 	writel(readl(swreset) | 1, swreset);
@@ -45,9 +39,6 @@ static int exynos_cold_reboot(PowerOps *me)
 
 static int exynos_power_off(PowerOps *me)
 {
-	if (run_cleanup_funcs(CleanupOnPowerOff))
-		return -1;
-
 	uint32_t *pshold = (uint32_t *)(uintptr_t)0x1004330c;
 	writel(readl(pshold) & ~(1 << 8), pshold);
 	halt();

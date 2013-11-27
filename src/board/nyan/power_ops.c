@@ -19,19 +19,13 @@
 
 #include <libpayload.h>
 
-#include "base/cleanup_funcs.h"
+#include "base/container_of.h"
 #include "board/nyan/power_ops.h"
 
 static int nyan_gpio_reboot(PowerOps *me)
 {
-	if (run_cleanup_funcs(CleanupOnReboot))
-		return -1;
-
-	printf("Rebooting..\n");
-
 	NyanPowerOps *power = container_of(me, NyanPowerOps, ops);
 	power->gpio->set(power->gpio, power->val);
-
 	halt();
 }
 
