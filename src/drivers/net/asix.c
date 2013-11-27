@@ -270,8 +270,8 @@ static int asix_init(GenericUsbDevice *gen_dev)
 		return 1;
 
 
-	gen_dev->dev_data = xmalloc(sizeof(AsixDev));
-	memcpy(gen_dev->dev_data, &asix_dev, sizeof(AsixDev));
+	gen_dev->dev_data = xmalloc(sizeof(asix_dev));
+	memcpy(gen_dev->dev_data, &asix_dev, sizeof(asix_dev));
 
 	return 0;
 }
