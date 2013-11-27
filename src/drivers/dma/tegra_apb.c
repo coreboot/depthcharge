@@ -80,15 +80,15 @@ static int tegra_apb_dma_finish(TegraApbDmaChannel *me)
 
 TegraApbDmaController *new_tegra_apb_dma(void *main, void *bases[], int count)
 {
-	TegraApbDmaController *channels = xzalloc(sizeof(*channels));
+	TegraApbDmaController *controller = xzalloc(sizeof(*controller));
 
-	channels->claim = &tegra_apb_dma_claim;
-	channels->release = &tegra_apb_dma_release;
-	channels->regs = main;
+	controller->claim = &tegra_apb_dma_claim;
+	controller->release = &tegra_apb_dma_release;
+	controller->regs = main;
 
-	channels->channels = xzalloc(count * sizeof(TegraApbDmaChannel));
+	controller->channels = xzalloc(count * sizeof(TegraApbDmaChannel));
 	for (int i = 0; i < count; i++) {
-		TegraApbDmaChannel *channel = &channels->channels[i];
+		TegraApbDmaChannel *channel = &controller->channels[i];
 		channel->start = &tegra_apb_dma_start;
 		channel->finish = &tegra_apb_dma_finish;
 		channel->busy = &tegra_apb_dma_busy;
@@ -96,7 +96,7 @@ TegraApbDmaController *new_tegra_apb_dma(void *main, void *bases[], int count)
 		channel->regs = bases[i];
 	}
 
-	channels->count = count;
+	controller->count = count;
 
-	return channels;
+	return controller;
 }
