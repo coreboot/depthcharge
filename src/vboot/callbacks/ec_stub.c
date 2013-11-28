@@ -46,7 +46,7 @@ VbError_t VbExEcJumpToRW(void)
 	no_ec_soft_sync();
 }
 
-VbError_t VbExEcStayInRO(void)
+VbError_t VbExEcDisableJump(void)
 {
 	no_ec_soft_sync();
 }

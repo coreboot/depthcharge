@@ -73,7 +73,7 @@ VbError_t VbExEcJumpToRW(void)
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExEcStayInRO(void)
+VbError_t VbExEcDisableJump(void)
 {
 	if (cros_ec_reboot(EC_REBOOT_DISABLE_JUMP, 0) < 0) {
 		printf("Failed to make the EC disable jumping.\n");
