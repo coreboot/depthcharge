@@ -26,3 +26,7 @@ config DRIVER_BUS_I2C_EXYNOS5_USI
 config DRIVER_BUS_I2C_TEGRA
 	bool "Tegra I2C driver"
 	default n
+
+config DRIVER_BUS_I2C_DESIGNWARE
+	bool "Designware I2C driver"
+	default n
