@@ -65,7 +65,10 @@ VbError_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
 		;
 
 	// Allocate enough VbDiskInfo structures.
-	VbDiskInfo *disk = xmalloc(sizeof(VbDiskInfo) * *count);
+	VbDiskInfo *disk = NULL;
+	if (*count)
+		disk = xmalloc(sizeof(VbDiskInfo) * *count);
+
 	*info_ptr = disk;
 
 	// Fill them from the BlockDev structures.
