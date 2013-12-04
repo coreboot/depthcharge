@@ -88,6 +88,12 @@ void serial_init(void)
 		return;
 
 	s5p_uart = (S5pUart *)lib_sysinfo.serial->baseaddr;
+}
+
+void serial_console_init(void)
+{
+	serial_init();
+
 	if (s5p_uart) {
 		console_add_output_driver(&s5p_serial_output);
 		console_add_input_driver(&s5p_serial_input);

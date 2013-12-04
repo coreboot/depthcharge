@@ -88,6 +88,12 @@ void serial_init(void)
 		return;
 
 	tegra_uart = (TegraUart *)lib_sysinfo.serial->baseaddr;
+}
+
+void serial_console_init(void)
+{
+	serial_init();
+
 	if (tegra_uart) {
 		console_add_output_driver(&tegra_serial_output);
 		console_add_input_driver(&tegra_serial_input);

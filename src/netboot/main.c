@@ -97,7 +97,7 @@ int main(void)
 	NetbootParam *param;
 
 	// Initialize some consoles.
-	serial_init();
+	serial_console_init();
 	cbmem_console_init();
 	video_console_init();
 	input_init();

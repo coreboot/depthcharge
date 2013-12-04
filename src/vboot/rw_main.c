@@ -35,7 +35,7 @@ int main(void)
 	sign_of_life(0xab);
 
 	// Initialize some consoles.
-	serial_init();
+	serial_console_init();
 	cbmem_console_init();
 	input_init();
 
