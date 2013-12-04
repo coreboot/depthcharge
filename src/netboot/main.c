@@ -88,7 +88,7 @@ static void print_mac_addr(const uip_eth_addr *mac)
 static void * const payload = (void *)(uintptr_t)CONFIG_KERNEL_START;
 static const uint32_t MaxPayloadSize = CONFIG_KERNEL_SIZE;
 
-#define def_cmd_line "lsm.module_locking=0 cros_netboot_ramfs" \
+#define def_cmd_line "lsm.module_locking=0 cros_netboot_ramfs " \
 		     "cros_factory_install cros_secure cros_netboot"
 static char cmd_line[4096] = def_cmd_line;
 
