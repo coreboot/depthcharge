@@ -51,21 +51,21 @@ enum {
 
 static TegraUart * tegra_uart;
 
-static void tegra_putchar(unsigned int c)
+void serial_putchar(unsigned int c)
 {
 	while (!(readb(&tegra_uart->lsr) & TEGRA_UART_LSR_THRE));
 	writeb(c, &tegra_uart->thr);
 }
 
-static int tegra_havekey(void)
+int serial_havechar(void)
 {
 	uint8_t lsr = readb(&tegra_uart->lsr);
 	return (lsr & TEGRA_UART_LSR_DR) == TEGRA_UART_LSR_DR;
 }
 
-static int tegra_getchar(void)
+int serial_getchar(void)
 {
-	while (!tegra_havekey())
+	while (!serial_havechar())
 	{;}
 
 	return readb(&tegra_uart->rbr);
@@ -73,13 +73,13 @@ static int tegra_getchar(void)
 
 static struct console_output_driver tegra_serial_output =
 {
-	.putchar = &tegra_putchar
+	.putchar = &serial_putchar
 };
 
 static struct console_input_driver tegra_serial_input =
 {
-	.havekey = &tegra_havekey,
-	.getchar = &tegra_getchar
+	.havekey = &serial_havechar,
+	.getchar = &serial_getchar
 };
 
 void serial_init(void)

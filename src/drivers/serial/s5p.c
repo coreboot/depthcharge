@@ -44,7 +44,7 @@ typedef struct S5pUart
 
 static S5pUart *s5p_uart;
 
-static void s5p_putchar(unsigned int c)
+void serial_putchar(unsigned int c)
 {
 	const uint32_t TxFifoFullBit = (0x1 << 24);
 
@@ -53,19 +53,19 @@ static void s5p_putchar(unsigned int c)
 
 	writeb(c, &s5p_uart->utxh);
 	if (c == '\n')
-		s5p_putchar('\r');
+		serial_putchar('\r');
 }
 
-static int s5p_havekey(void)
+int serial_havechar(void)
 {
 	const uint32_t DataReadyMask = (0xf << 0) | (0x1 << 8);
 
 	return (readl(&s5p_uart->ufstat) & DataReadyMask) != 0;
 }
 
-static int s5p_getchar(void)
+int serial_getchar(void)
 {
-	while (!s5p_havekey())
+	while (!serial_havechar())
 	{;}
 
 	return readb(&s5p_uart->urxh);
@@ -73,13 +73,13 @@ static int s5p_getchar(void)
 
 static struct console_output_driver s5p_serial_output =
 {
-	.putchar = &s5p_putchar
+	.putchar = &serial_putchar
 };
 
 static struct console_input_driver s5p_serial_input =
 {
-	.havekey = &s5p_havekey,
-	.getchar = &s5p_getchar
+	.havekey = &serial_havechar,
+	.getchar = &serial_getchar
 };
 
 void serial_init(void)
