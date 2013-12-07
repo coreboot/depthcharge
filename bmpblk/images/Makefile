@@ -11,7 +11,7 @@
 # this occasional need.
 
 TARGETS ?= butterfly falco link parrot peach_pit peppy snow spring std stout \
-  wolf leon
+  wolf leon panther
 
 # These are all the known locales, sorted more-or-less geograpically
 ALL_LOCALES=en es_419 pt_BR en_GB fr es pt_PT ca it de \
