@@ -30,7 +30,6 @@
 #include <libpayload.h>
 #include <stdint.h>
 
-#include "base/time.h"
 #include "config.h"
 #include "drivers/storage/mmc.h"
 

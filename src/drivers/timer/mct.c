@@ -21,10 +21,10 @@
  */
 
 #include <arch/io.h>
+#include <libpayload.h>
 #include <stdint.h>
 
 #include "config.h"
-#include "drivers/timer/timer.h"
 
 typedef struct __attribute__((packed)) MctRegs
 {

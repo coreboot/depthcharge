@@ -27,11 +27,9 @@
 #include <stdint.h>
 
 #include "base/container_of.h"
-#include "base/time.h"
 #include "config.h"
 #include "drivers/bus/i2s/i2s.h"
 #include "drivers/sound/i2s.h"
-#include "drivers/timer/timer.h"
 
 // Generates square wave sound data for 1 second.
 static void sound_square_wave(uint16_t *data, int channels,

@@ -36,7 +36,6 @@
 #include <stdint.h>
 
 #include "base/cleanup_funcs.h"
-#include "base/time.h"
 #include "drivers/tpm/lpc.h"
 
 typedef struct {

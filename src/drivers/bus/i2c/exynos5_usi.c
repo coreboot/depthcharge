@@ -22,7 +22,6 @@
 #include <libpayload.h>
 
 #include "base/container_of.h"
-#include "base/time.h"
 #include "drivers/bus/i2c/exynos5_usi.h"
 
 typedef struct __attribute__ ((packed)) UsiI2cRegs {

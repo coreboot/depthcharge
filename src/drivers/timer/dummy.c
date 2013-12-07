@@ -20,7 +20,7 @@
  * MA 02111-1307 USA
  */
 
-#include "drivers/timer/timer.h"
+#include <libpayload.h>
 
 uint64_t timer_hz(void)
 {

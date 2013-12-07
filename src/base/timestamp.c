@@ -21,9 +21,7 @@
 #include <libpayload.h>
 #include <stdint.h>
 
-#include "base/time.h"
 #include "base/timestamp.h"
-#include "drivers/timer/timer.h"
 
 struct timestamp_entry {
 	uint32_t	entry_id;

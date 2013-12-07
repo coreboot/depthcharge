@@ -32,7 +32,6 @@
 #include "drivers/flash/flash.h"
 #include "drivers/input/input.h"
 #include "drivers/net/net.h"
-#include "drivers/timer/timer.h"
 #include "drivers/power/power.h"
 #include "image/fmap.h"
 #include "net/uip.h"
