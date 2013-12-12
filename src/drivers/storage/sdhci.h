@@ -313,7 +313,14 @@ static inline u8 sdhci_readb(SdhciHost *host, int reg)
 
 void add_sdhci(SdhciHost *host);
 
+/* Add SDHCI controller from PCI */
 SdhciHost *new_pci_sdhci_host(pcidev_t dev,
+			      int removable,
+			      int clock_min,
+			      int clock_max);
+
+/* Add SDHCI controller with memory address */
+SdhciHost *new_mem_sdhci_host(void *ioaddr,
 			      int removable,
 			      int clock_min,
 			      int clock_max);

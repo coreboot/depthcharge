@@ -24,5 +24,5 @@ depthcharge-$(CONFIG_DRIVER_STORAGE_MMC_DW) += dw_mmc.c
 depthcharge-$(CONFIG_DRIVER_STORAGE_MMC_TEGRA) += tegra_mmc.c bouncebuf.c
 depthcharge-$(CONFIG_DRIVER_STORAGE_MSHC_S5P) += s5p_mshc.c
 depthcharge-y += usb.c
-depthcharge-$(CONFIG_DRIVER_SDHCI) += sdhci.c
+depthcharge-$(CONFIG_DRIVER_SDHCI) += sdhci.c mem_sdhci.c
 depthcharge-$(CONFIG_DRIVER_STORAGE_SDHCI_PCI) += pci_sdhci.c
