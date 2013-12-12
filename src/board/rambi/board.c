@@ -23,6 +23,7 @@
 #include <pci.h>
 
 #include "base/init_funcs.h"
+#include "board/rambi/device_nvs.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
@@ -34,6 +35,13 @@
 #include "drivers/tpm/lpc.h"
 #include "vboot/util/flag.h"
 
+/*
+ * Clock frequencies for the eMMC port are 400 KHz min (used during
+ * initialization) and 200 MHz max. Firmware does not run at 200 MHz
+ * (aka HS mode), it is limited to 52 MHz.
+ */
+static const int emmc_clock_min = 400 * 1000;
+static const int emmc_clock_max = 200 * 1000 * 1000;
 
 static int board_setup(void)
 {
@@ -62,16 +70,15 @@ static int board_setup(void)
 	if (tpm_set_ops(&tpm->ops))
 		return 1;
 
-	/*
-	 * For now initting memory structures for port zero (eMMC) only.
-	 * Device numbers of the other two SCC ports are 17 and 18.
-	 *
-	 * Clock frequencies for the eMMC port are 400 KHz min (used during
-	 * initialization) and 200 MHz max. Firmware does not run at 200 MHz
-	 * (aka HS mode), it is limited to 52 MHz.
-	 */
-	SdhciHost *emmc = new_pci_sdhci_host(PCI_DEV(0, 23, 0), 0,
-					     400 * 1000, 200 * 1000 * 1000);
+	/* Initialize eMMC port in ACPI or PCI mode */
+	SdhciHost *emmc;
+	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + DEVICE_NVS_OFFSET;
+	if (nvs->scc_en[SCC_NVS_MMC])
+		emmc = new_mem_sdhci_host((void *)nvs->scc_bar0[SCC_NVS_MMC],
+					  0, emmc_clock_min, emmc_clock_max);
+	else
+		emmc = new_pci_sdhci_host(PCI_DEV(0, 23, 0), 0,
+					  emmc_clock_min, emmc_clock_max);
 
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
