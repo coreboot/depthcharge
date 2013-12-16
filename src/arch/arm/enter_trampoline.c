@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Google Inc.
+ * Copyright 2013 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -24,18 +24,17 @@
 
 #include "base/elf.h"
 #include "image/symbols.h"
-#include "image/trampoline.h"
+#include "image/enter_trampoline.h"
 
-uint8_t trampoline_stack[16384] __attribute__((aligned(16)));
-
-void ENTRY trampoline(Elf32_Ehdr *ehdr)
+void enter_trampoline(Elf32_Ehdr *ehdr)
 {
-	void *new_stack = trampoline_stack + sizeof(trampoline_stack) -
-		sizeof(uint32_t);
 	__asm__ __volatile__(
-		"mov %[new_stack], %%esp\n"
-		"call load_elf\n"
-		:: [new_stack]"r"(new_stack), [ehdr]"a"(ehdr)
-		: "memory"
+		"mov sp, %[new_stack]\n"
+		"mov r0, %[ehdr]\n"
+		// Need register addressing since the call goes too far
+		"bx %[load_elf]\n"
+		:: [new_stack]"r"(&_tramp_estack - 8), [ehdr]"r"(ehdr),
+		   [zero]"r"(0), [load_elf]"r"(&tramp_load_elf)
+		: "memory", "r0", "sp"
 	);
 }

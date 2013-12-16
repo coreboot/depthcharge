@@ -24,9 +24,9 @@
 #include <lzma.h>
 
 #include "base/elf.h"
+#include "image/enter_trampoline.h"
 #include "image/startrw.h"
 #include "image/symbols.h"
-#include "image/trampoline.h"
 
 int start_rw_firmware(const void *compressed_image, uint32_t size)
 {
@@ -54,7 +54,7 @@ int start_rw_firmware(const void *compressed_image, uint32_t size)
 		return -1;
 	}
 
-	trampoline((Elf32_Ehdr *)elf_image);
+	enter_trampoline((Elf32_Ehdr *)elf_image);
 
 	// We should never actually reach the end of this function.
 	return 0;

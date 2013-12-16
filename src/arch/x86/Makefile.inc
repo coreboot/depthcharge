@@ -19,11 +19,7 @@
 
 depthcharge-y += boot.c
 depthcharge-y += commonparams.c
+depthcharge-y += enter_trampoline.c
 depthcharge-y += gcc.c
 depthcharge-y += physmem.c
-depthcharge-y += string.c
 depthcharge-$(CONFIG_KERNEL_ZIMAGE) += zimage.c
-
-trampoline-y += gcc.c
-trampoline-y += string.c
-trampoline-y += trampoline.c

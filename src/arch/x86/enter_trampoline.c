@@ -20,11 +20,18 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __IMAGE_LOAD_ELF_H__
-#define __IMAGE_LOAD_ELF_H__
+#include <stdint.h>
 
 #include "base/elf.h"
+#include "image/symbols.h"
+#include "image/enter_trampoline.h"
 
-void load_elf(Elf32_Ehdr *ehdr);
-
-#endif /* __IMAGE_LOAD_ELF_H__ */
+void enter_trampoline(Elf32_Ehdr *ehdr)
+{
+	__asm__ __volatile__(
+		"mov %[new_stack], %%esp\n"
+		"call tramp_load_elf\n"
+		:: [new_stack]"r"(&_tramp_estack - 8), [ehdr]"a"(ehdr)
+		: "memory"
+	);
+}

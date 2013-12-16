@@ -38,10 +38,9 @@ VB_LIB = $(obj)/external/vboot/vboot_fw.a
 
 LIBRARIES = $(VB_LIB)
 
-LIBGCC := $(shell $(XCC) -print-libgcc-file-name)
-TRAMP_LIBGCC = $(obj)/trampoline_$(notdir $(LIBGCC))
-TRAMP_PREFIX = .tramp
-TRAMP_ENTRY = trampoline
+TRAMP_LP = $(obj)/trampoline_libpayload.a
+TRAMP_PREFIX = tramp
+TRAMP_ENTRY = load_elf
 TRAMPOLINE = $(obj)/trampoline.o
 
 real-target: $(DEPTHCHARGE_RO_ELF) $(DEPTHCHARGE_RO_BIN) \
@@ -72,31 +71,39 @@ else
 endif
 
 
-# Trampoline to go from RO depthcharge to RW.
-$(TRAMP_LIBGCC): $(LIBGCC)
+# Trampoline to go from RO depthcharge to RW. Make our own libpayload where only
+# a few whitelisted symbols are linkable to avoid accidental binary bloat here.
+$(TRAMP_LP): $(LIBPAYLOAD_DIR)/lib/libpayload.a
 	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
-	$(Q)$(OBJCOPY) --prefix-symbols=$(TRAMP_PREFIX) $(<) $(@)
+	$(Q)$(OBJCOPY) --prefix-symbols=$(TRAMP_PREFIX)_ \
+		--keep-global-symbol=$(TRAMP_PREFIX)_memcpy \
+		--keep-global-symbol=$(TRAMP_PREFIX)_memset \
+		--keep-global-symbol=$(TRAMP_PREFIX)_dcache_clean_all \
+		--keep-global-symbol=$(TRAMP_PREFIX)_icache_invalidate_all \
+		--prefix-alloc-sections=.$(TRAMP_PREFIX) $(<) $(@)
 
-# The trampoline is linked with normal gcc to avoid linking in libpayload.
+# The trampoline is linked with normal gcc to avoid linking the full libpayload.
 $(TRAMPOLINE): $$(trampoline-objs)
 	@printf "    LD         $(subst $(obj)/,,$(@).tmp)\n"
 	$(Q)$(CC) $(LINK_FLAGS) -Wl,-relocatable -o $(@).tmp \
 		$(trampoline-objs) -nostdinc -nostdlib -static \
-		-u $(TRAMP_ENTRY)
+		-e $(TRAMP_ENTRY)
 	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
-	$(Q)$(OBJCOPY) --prefix-symbols=$(TRAMP_PREFIX) $(@).tmp $(@)
+	$(Q)$(OBJCOPY) --prefix-symbols=$(TRAMP_PREFIX)_ $(@).tmp $(@)
 
 
 #The read-only version
 $(DEPTHCHARGE_RO_ELF): $(src)/.config $$(depthcharge-objs) $$(readonly-objs) \
-		$(TRAMPOLINE) $(LIBRARIES) $(TRAMP_LIBGCC) prepare
+		$(TRAMPOLINE) $(LIBRARIES) $(TRAMP_LP) prepare
 	@printf "    LD         $(subst $(obj)/,,$(@).tmp)\n"
 	$(Q)$(XCC) $(LINK_FLAGS) -o $@.tmp $(depthcharge-objs) \
-		$(readonly-objs) $(TRAMPOLINE) $(LIBRARIES) $(TRAMP_LIBGCC) \
-		-u $(TRAMP_PREFIX)$(TRAMP_ENTRY)
+		$(readonly-objs) $(TRAMPOLINE) $(LIBRARIES) $(TRAMP_LP)
 	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
 	$(Q)$(OBJCOPY) --remove-section=".shared_data" \
 		--remove-section=".cparams" --remove-section=".gbb_copy" \
+		--redefine-sym $(TRAMP_PREFIX)_\$$a=\$$a \
+		--redefine-sym $(TRAMP_PREFIX)_\$$t=\$$t \
+		--redefine-sym $(TRAMP_PREFIX)_\$$d=\$$d \
 		$@.tmp $@
 
 $(DEPTHCHARGE_RO_BIN): $(DEPTHCHARGE_RO_ELF)

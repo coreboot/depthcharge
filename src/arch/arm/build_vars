@@ -18,5 +18,5 @@
 ##
 
 VB_FIRMWARE_ARCH=arm
-ARCH_ABI_FLAGS += -mfloat-abi=hard -marm -mabi=aapcs-linux
+ARCH_ABI_FLAGS += -mthumb
 ARCH_LINK_FLAGS :=

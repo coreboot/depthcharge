@@ -20,10 +20,10 @@
  * MA 02111-1307 USA
  */
 
+#include <arch/cache.h>
 #include <string.h>
 
 #include "base/elf.h"
-#include "image/load_elf.h"
 
 void load_elf(Elf32_Ehdr *ehdr)
 {
@@ -50,6 +50,10 @@ void load_elf(Elf32_Ehdr *ehdr)
 		if (memsz > filesz)
 			memset(dest + filesz, 0, memsz - filesz);
 	}
+
+	// Ensure icache/dcache are at PoU on ARM (by just flushing everything)
+	dcache_clean_all();
+	icache_invalidate_all();
 
 	// Go for it!
 	typedef void (*entry_func)(void);

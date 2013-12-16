@@ -47,29 +47,31 @@ SECTIONS
 	. = ALIGN(16);
 	_tramp_start = .;
 	.tramp.text : {
-		trampoline = .;
-		*trampoline.o(.text._entry)
 		*trampoline.o(.text)
 		*trampoline.o(.text.*)
 		*(.tramp.text)
+		*(.tramp.text.*)
 	}
 
 	.tramp.rodata : {
 		*trampoline.o(.rodata)
 		*trampoline.o(.rodata.*)
 		*(.tramp.rodata)
+		*(.tramp.rodata.*)
 	}
 
 	.tramp.data : {
 		*trampoline.o(.data)
 		*trampoline.o(.data.*)
 		*(.tramp.data)
+		*(.tramp.data.*)
 	}
 
 	.tramp.got : {
 		*trampoline.o(.got)
 		*trampoline.o(.got.*)
 		*(.tramp.got)
+		*(.tramp.got.*)
 	}
 
 	.tramp.bss : {
@@ -79,7 +81,14 @@ SECTIONS
 		*trampoline.o(.bss.*)
 		*trampoline.o(COMMON)
 		*(.tramp.bss)
+		*(.tramp.bss.*)
 	}
+
+	. = ALIGN(16);
+	_tramp_stack = .;
+	. += 0x200;
+	_tramp_estack = .;
+
 	_tramp_end = .;
 
 	. = KERNEL_START + KERNEL_SIZE;
