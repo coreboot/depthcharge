@@ -131,6 +131,7 @@ SECTIONS
 		_init_funcs_start = .;
 		KEEP(*(.init_funcs))
 		_init_funcs_end = .;
+		 KEEP(*(SORT(.dp_list*)));
 	}
 
 	.got : {
