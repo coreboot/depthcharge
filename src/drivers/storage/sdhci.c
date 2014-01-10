@@ -563,7 +563,8 @@ static int sdhci_pre_init(SdhciHost *host)
 	if (host->quirks & SDHCI_QUIRK_BROKEN_VOLTAGE)
 		host->mmc_ctrlr.voltages |= host->voltages;
 
-	host->mmc_ctrlr.caps = MMC_MODE_HS | MMC_MODE_HS_52MHz | MMC_MODE_4BIT;
+	host->mmc_ctrlr.caps = MMC_MODE_HS | MMC_MODE_HS_52MHz |
+		MMC_MODE_4BIT | MMC_MODE_HC;
 	if (caps & SDHCI_CAN_DO_8BIT)
 		host->mmc_ctrlr.caps |= MMC_MODE_8BIT;
 	if (host->host_caps)
