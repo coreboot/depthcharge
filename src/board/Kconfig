@@ -62,5 +62,8 @@ endif
 if BOARD = "slippy"
 source src/board/slippy/Kconfig
 endif
+if BOARD = "zako"
+source src/board/zako/Kconfig
+endif
 
 endmenu
