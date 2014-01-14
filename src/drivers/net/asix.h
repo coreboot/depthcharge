@@ -149,8 +149,12 @@ static const uint16_t Ipg1Default = 0x0c;
 static const uint16_t Ipg2Default = 0x12;
 
 enum {
-	RxCtrlSo = 0x1 << 15,
-	RxCtrlAb = 0x1 << 7
+	RxCtrlSo = 0x1 << 7,
+	RxCtrlAp = 0x1 << 5,
+	RxCtrlAm = 0x1 << 4,
+	RxCtrlAb = 0x1 << 3,
+	RxCtrlAmall = 0x1 << 1,
+	RxCtrlPro = 0x1 << 0,
 };
 
 static const uint16_t RxCtrlDefault = RxCtrlSo | RxCtrlAb;
