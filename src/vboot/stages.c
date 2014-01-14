@@ -78,6 +78,8 @@ int vboot_init(void)
 		iparams.flags |= VB_INIT_FLAG_VIRTUAL_DEV_SWITCH;
 	if (CONFIG_EC_SOFTWARE_SYNC)
 		iparams.flags |= VB_INIT_FLAG_EC_SOFTWARE_SYNC;
+        if (!CONFIG_PHYSICAL_REC_SWITCH)
+                iparams.flags |= VB_INIT_FLAG_VIRTUAL_REC_SWITCH;
 
 	printf("Calling VbInit().\n");
 	VbError_t res = VbInit(&cparams, &iparams);
