@@ -61,3 +61,17 @@ uint32_t VbExKeyboardRead(void)
 		return ch;
 	}
 }
+
+uint32_t VbExKeyboardReadWithFlags(uint32_t *flags_ptr)
+{
+	uint32_t c = VbExKeyboardRead();
+	if (flags_ptr) {
+		*flags_ptr = 0;
+		// USB keyboards definitely cannot be trusted (assuming they
+		// are even keyboards).  There are other devices that also
+		// cannot be trusted, but this is the best we can do for now.
+		if (last_key_input_type() != CONSOLE_INPUT_TYPE_USB)
+			*flags_ptr |= VB_KEY_FLAG_TRUSTED_KEYBOARD;
+	}
+	return c;
+}
