@@ -29,6 +29,12 @@ config VIRTUAL_DEV_SWITCH
 	help
 	  Whether this platform has a virtual developer switch.
 
+config PHYSICAL_REC_SWITCH
+	bool "Physical recovery switch is present"
+	default n
+	help
+	  Informs vboot that a physical recovery switch is present
+
 config OPROM_MATTERS
 	bool "Video option ROM matters"
 	default n
