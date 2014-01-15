@@ -15,3 +15,4 @@ Ga naar http://google.com/chromeos/recovery voor hulp
 Foutcode
 Verwijder alle externe apparaten om het herstel te starten.
 Model
+Druk op RECOVERY om OS-verificatie uit te schakelen.

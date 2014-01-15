@@ -13,6 +13,8 @@
 # 'sdcard': Presence of SD/MMC Card Reader that can boot in recovery mode
 #           (default: True).
 # 'bad_usb3': Presence of USB3 ports that cannot boot recovery (default: False).
+# 'phy_rec': Presence of physical recovery button (default: False, check
+#            http://crosbug.com/p/24963).
 #
 # These are all the known locales, sorted more-or-less geograpically
 #  en es-419 pt-BR en_GB fr es pt_PT ca it de

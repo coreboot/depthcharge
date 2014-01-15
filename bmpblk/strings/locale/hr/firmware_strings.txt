@@ -15,3 +15,4 @@ Pomoć potražite na stranici http://google.com/chromeos/recovery
 Kôd pogreške
 Uklonite sve vanjske uređaje da biste pokrenuli oporavak.
 Model
+Da biste ISKLJUČILI potvrdu OS-a, pritisnite tipku RECOVERY.

@@ -15,3 +15,4 @@ Pentru ajutor, accesaţi http://google.com/chromeos/recovery
 Cod de eroare
 Eliminaţi toate dispozitivele externe pentru a începe recuperarea.
 Model
+Pentru a DEZACTIVA verificarea SO, apăsaţi pe RECOVERY.

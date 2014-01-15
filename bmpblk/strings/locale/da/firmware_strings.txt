@@ -15,3 +15,4 @@ Du kan få hjælp på http://google.com/chromeos/recovery
 Fejlkode
 Fjern alle eksterne enheder for at påbegynde genoprettelse.
 Model
+Tryk på RECOVERY for at slå bekræftelse af operativsystemet FRA.

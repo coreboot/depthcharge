@@ -30,6 +30,7 @@ inputs:
   - error_code     #15 Error code
   - remove         #16 Please remove all external devices to begin recovery.
   - model          #17 Model
+  - todev_phyrec   #18 To turn OS verification OFF, press the RECOVERY button.
 
 files:
   # Text files to be generated.
@@ -45,6 +46,7 @@ files:
   for_help_left:  ['for_help@s/.http.*//' ]
   for_help_right: ['for_help@s/.*chromeos.recovery ?//']
   todev:          [todev, reboot_erase, '', esc_back]
+  todev_phyrec:   [todev_phyrec, reboot_erase, '', esc_back]
   tonorm:         [tonorm, reboot_erase, '', esc_back]
   verif_off:
   verif_on:

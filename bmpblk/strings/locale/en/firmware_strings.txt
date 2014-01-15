@@ -15,3 +15,4 @@ For help visit http://google.com/chromeos/recovery
 Error code
 Please remove all external devices to begin recovery.
 Model
+To turn OS verification OFF, press RECOVERY.

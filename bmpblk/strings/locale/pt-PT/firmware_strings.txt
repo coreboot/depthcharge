@@ -15,3 +15,4 @@ Para obter ajuda, visite http://google.com/chromeos/recovery
 Código de erro
 Retire todos os dispositivos externos para iniciar a recuperação.
 Modelo
+Para definir a confirmação do SO como DESATIVADA, prima RECOVERY.

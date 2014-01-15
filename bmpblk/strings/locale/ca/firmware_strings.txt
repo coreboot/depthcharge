@@ -15,3 +15,4 @@ Per obtenir ajuda, visiteu http://google.com/chromeos/recovery
 Codi d'error
 Retireu tots els dispositius externs per començar la recuperació.
 Model
+Per DESACTIVAR la verificació d'OS, premeu RECOVERY.

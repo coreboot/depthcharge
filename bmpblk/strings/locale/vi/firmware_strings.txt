@@ -15,3 +15,4 @@ Xác minh OS đang BẬT.
 Mã lỗi
 Vui lòng tháo tất cả các thiết bị ngoài để bắt đầu khôi phục.
 Mô hình
+Để TẮT xác minh OS, nhấn RECOVERY.

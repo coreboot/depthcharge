@@ -15,3 +15,4 @@ Pour obtenir de l'aide, rendez-vous sur http://google.com/chromeos/recovery
 Code d'erreur
 Veuillez retirer tous les périphériques externes pour lancer la procédure de récupération.
 Modèle
+Pour DÉSACTIVER la vérification du système d'exploitation, appuyez sur RECOVERY.

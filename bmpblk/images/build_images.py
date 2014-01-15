@@ -54,10 +54,11 @@ PANEL_SIZE_KEY = 'panel'
 RESOLUTION_KEY = 'res'
 SDCARD_KEY = 'sdcard'
 BAD_USB3_KEY = 'bad_usb3'
+PHY_REC_KEY = 'phy_rec'
 LOCALES_KEY = 'locales'
 
 KNOWN_KEYS = set((PANEL_SIZE_KEY, RESOLUTION_KEY, SDCARD_KEY, BAD_USB3_KEY,
-                  LOCALES_KEY))
+                  PHY_REC_KEY, LOCALES_KEY))
 
 
 class BuildImageError(Exception):
@@ -139,6 +140,7 @@ def build_replace_map(config):
   """
   sdcard = config.get(SDCARD_KEY, True)
   bad_usb3 = config.get(BAD_USB3_KEY, False)
+  physical_recovery = config.get(PHY_REC_KEY, False)
   replace_map = {}
 
   if not sdcard:
@@ -147,6 +149,9 @@ def build_replace_map(config):
     replace_map['insert'] = ('insert_usb2' if bad_usb3 else 'insert_usb')
   elif bad_usb3:
     replace_map['insert'] = 'insert_sd_usb2'
+
+  if physical_recovery:
+    replace_map['todev'] = 'todev_phyrec'
 
   return replace_map
 

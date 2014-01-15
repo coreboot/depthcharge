@@ -15,3 +15,4 @@ Pomoč najdete na http://google.com/chromeos/recovery
 Koda napake
 Če želite začeti obnovitev, odstranite vse zunanje naprave.
 Model
+Če želite IZKLOPITI preverjanje operacijskega sistema, pritisnite RECOVERY.
