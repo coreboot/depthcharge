@@ -7,14 +7,18 @@
 #
 # name: List of board names for this configuration, seperated by comma.
 # keys are as follows:
-# 'res': Firmware graphics resolution (default: [1366, 768])
-# 'panel': Panel Dimension (default: [1366, 768]).
-# 'locales': List of locales to include (default: All in stage folder).
-# 'sdcard': Presence of SD/MMC Card Reader that can boot in recovery mode
-#           (default: True).
+# 'assets_dir': Directory of image resources (icons and diagrams) to be used
+#               (default: 'assets').
+# 'assets_res': Screen resolution that best fits current assets
+#               (default: [1366, 768]).
 # 'bad_usb3': Presence of USB3 ports that cannot boot recovery (default: False).
+# 'locales': List of locales to include (default: All in stage folder).
+# 'panel': Panel Dimension (default: [1366, 768]).
 # 'phy_rec': Presence of physical recovery button (default: False, check
 #            http://crosbug.com/p/24963).
+# 'res': Firmware graphics resolution (default: [1366, 768])
+# 'sdcard': Presence of SD/MMC Card Reader that can boot in recovery mode
+#           (default: True).
 #
 # These are all the known locales, sorted more-or-less geograpically
 #  en es-419 pt-BR en_GB fr es pt_PT ca it de

@@ -170,6 +170,18 @@ advance:
   Then look up the dimension for the found VESA in
   http://en.wikipedia.org/wiki/VESA_BIOS_Extensions#Modes_defined_by_VESA
 
+  Note if the panel is much larger (ex, 1920x1080) than default resolution
+  (1366x768), you may want to use a higher resolution of image resources
+  (icons, diagrams, ... etc). To do that, change the "assets_dir" property.
+
+  Currently we have two directories in images/ containing the image resources
+  in different resolution: "assets" (designed for 1366x768) and "assets2x"
+  (double sized from "assets").
+
+  When using "assets2x", you should also override "assets_res" to specify the
+  dimension that best fits given assets (hint: setting "assets_res" to same
+  value as graphics resolution "res" would not resize anything).
+
 
  - device boot ability
 

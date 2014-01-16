@@ -48,17 +48,21 @@ BMPLKFONT = "bmpblk_font"
 
 DEFAULT_RESOLUTION = (1366.0, 768.0)
 DEFAULT_PANEL_SIZE = DEFAULT_RESOLUTION
+DEFAULT_ASSETS_DIR = 'assets'
 
 # YAML key names.
 PANEL_SIZE_KEY = 'panel'
 RESOLUTION_KEY = 'res'
+ASSETS_DIR_KEY = 'assets_dir'
+ASSETS_RESOLUTION_KEY = 'assets_res'
 SDCARD_KEY = 'sdcard'
 BAD_USB3_KEY = 'bad_usb3'
 PHY_REC_KEY = 'phy_rec'
 LOCALES_KEY = 'locales'
 
 KNOWN_KEYS = set((PANEL_SIZE_KEY, RESOLUTION_KEY, SDCARD_KEY, BAD_USB3_KEY,
-                  PHY_REC_KEY, LOCALES_KEY))
+                  PHY_REC_KEY, ASSETS_DIR_KEY, ASSETS_RESOLUTION_KEY,
+                  LOCALES_KEY))
 
 
 class BuildImageError(Exception):
@@ -122,6 +126,10 @@ def load_boards_config(filename):
         data[PANEL_SIZE_KEY] = DEFAULT_PANEL_SIZE
       if RESOLUTION_KEY not in data:
         data[RESOLUTION_KEY] = DEFAULT_RESOLUTION
+      if ASSETS_DIR_KEY not in data:
+        data[ASSETS_DIR_KEY] = DEFAULT_ASSETS_DIR
+      if ASSETS_RESOLUTION_KEY not in data:
+        data[ASSETS_RESOLUTION_KEY] = DEFAULT_RESOLUTION
       if set(data) - KNOWN_KEYS:
         raise BuildImageError('Unknown entries in config %s: %r' %
                               (board, list(set(data) - KNOWN_KEYS)))
@@ -251,10 +259,11 @@ def build_image(board, config_database):
 
   output_dir = os.path.join('..', 'build', board)
   stage_dir = os.path.join('..', 'build', '.stage')
-  assets_dir = 'assets'
+  assets_dir = config[ASSETS_DIR_KEY]
 
   resolution = config[RESOLUTION_KEY]
   panel_size = config[PANEL_SIZE_KEY]
+  assets_resolution = config[ASSETS_RESOLUTION_KEY]
   replace_map = build_replace_map(config)
   background_colors = (convert_to_bmp3.BACKGROUND_COLOR,
                        CHARGE_BACKGROUND_COLOR)
@@ -275,14 +284,14 @@ def build_image(board, config_database):
   # Resizing text to smaller size makes it really hard to read, and most smaller
   # resolutions, for example 800x600, can still use 100% text, so we only want
   # to resize for larger resolutions.
-  if (resolution[1] > DEFAULT_RESOLUTION[1]):
+  if (resolution[1] > assets_resolution[1]):
     # TODO(hungte) Regenerate text files in different sizes instead of rescale.
-    rescale_factor = resolution[1] / float(DEFAULT_RESOLUTION[1])
+    rescale_factor = resolution[1] / float(assets_resolution[1])
     scale = (scale[0] * rescale_factor, scale[1] * rescale_factor)
 
   scale_params = ('%d%%x%d%%' % (round(scale[0] * 100), round(scale[1] * 100)),
                   '%dx%d!' % (resolution[0], resolution[1]))
-  print "%s: scaling: %s" % (board, ','.join(scale_params))
+  print "%s: %s scaling: %s" % (board, assets_dir, ','.join(scale_params))
 
   # Prepare output folder
   if os.path.exists(output_dir):
