@@ -50,7 +50,7 @@ peach_pit:
   res:      [1366, 768]
   panel:    [1366, 768]
   locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id,
-             th, ar, ms, zh-CN, zh-TW, fi, pl]
+             th, ar, ms, zh-CN, zh-TW, fi, pl, ru]
 
 peach_pi:
   # 1920x1080, boots recovery image on any SD card or USB ports.
