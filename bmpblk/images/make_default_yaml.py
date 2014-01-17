@@ -43,6 +43,7 @@ class ImageInfo(object):
     self.name = os.path.splitext(path)[0].replace('locale/', '')
     if self.name == 'hwid_placeholder':
       self.name = '$HWID'
+      self.path = 'hwid_fonts.font'
 
 
 class ImageDatabase(object):
