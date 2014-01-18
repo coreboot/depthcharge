@@ -46,23 +46,16 @@ static int board_setup(void)
 	LpPchGpio *rec_gpio = new_lp_pch_gpio_input(12);
 	flag_replace(FLAG_RECSW, new_gpio_not(&rec_gpio->ops));
 
-	MemMappedFlash *flash = new_mem_mapped_flash(0xff800000, 0x800000);
-	if (flash_set_ops(&flash->ops))
-		return 1;
+	flash_set_ops(&new_mem_mapped_flash(0xff800000, 0x800000)->ops);
 
-	PcAtBeep *beep = new_pcat_beep();
-	if (sound_set_ops(&beep->ops))
-		return 1;
+	sound_set_ops(&new_pcat_beep()->ops);
 
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 31, 2));
 	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
 
-	if (power_set_ops(&pch_power_ops))
-		return 1;
+	power_set_ops(&pch_power_ops);
 
-	LpcTpm *tpm = new_lpc_tpm((void *)0xfed40000);
-	if (tpm_set_ops(&tpm->ops))
-		return 1;
+	tpm_set_ops(&new_lpc_tpm((void *)0xfed40000)->ops);
 
 	return 0;
 }

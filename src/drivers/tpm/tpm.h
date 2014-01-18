@@ -37,7 +37,7 @@ typedef struct TpmOps
 		    uint8_t *recvbuf, size_t *recv_len);
 } TpmOps;
 
-int tpm_set_ops(TpmOps *ops);
+void tpm_set_ops(TpmOps *ops);
 
 /*
  * tpm_xmit()

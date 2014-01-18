@@ -57,9 +57,7 @@ static int board_setup(void)
 
 	Exynos5UsiI2c *i2c9 = new_exynos5_usi_i2c(0x12e10000, 400000);
 
-	Slb9635I2c *tpm = new_slb9635_i2c(&i2c9->ops, 0x20);
-	if (tpm_set_ops(&tpm->base.ops))
-		return 1;
+	tpm_set_ops(&new_slb9635_i2c(&i2c9->ops, 0x20)->base.ops);
 
 	Exynos5Spi *spi1 = new_exynos5_spi(0x12d30000);
 	Exynos5Spi *spi2 = new_exynos5_spi(0x12d40000);
@@ -67,15 +65,11 @@ static int board_setup(void)
 	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spi2->ops);
 	cros_ec_set_bus(&cros_ec_spi_bus->ops);
 
-	SpiFlash *flash = new_spi_flash(&spi1->ops, 0x400000);
-	if (flash_set_ops(&flash->ops))
-		return 1;
+	flash_set_ops(&new_spi_flash(&spi1->ops, 0x400000)->ops);
 
 	Exynos5I2s *i2s0 = new_exynos5_i2s_multi(0x03830000, 16, 2, 256);
 	I2sSource *i2s_source = new_i2s_source(&i2s0->ops, 48000, 2, 16000);
-	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
-	if (sound_set_ops(&sound_route->ops))
-		return 1;
+	sound_set_ops(&new_sound_route(&i2s_source->ops)->ops);
 
 	DwmciHost *emmc = new_dwmci_host(0x12200000, 100000000, 8, 0,
 					 DWMCI_SET_SAMPLE_CLK(1) |
@@ -90,8 +84,7 @@ static int board_setup(void)
 	list_insert_after(&sd_card->mmc.ctrlr.list_node,
 			  &removable_block_dev_controllers);
 
-	if (power_set_ops(&exynos_power_ops))
-		return 1;
+	power_set_ops(&exynos_power_ops);
 
 	UsbHostController *usb_drd0 = new_usb_hc(XHCI, 0x12000000);
 	UsbHostController *usb_drd1 = new_usb_hc(XHCI, 0x12400000);

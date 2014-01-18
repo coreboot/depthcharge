@@ -55,18 +55,13 @@ static int board_setup(void)
 	CrosEcLpcBus *cros_ec_lpc_bus = new_cros_ec_lpc_bus();
 	cros_ec_set_bus(&cros_ec_lpc_bus->ops);
 
-	MemMappedFlash *flash = new_mem_mapped_flash(0xff800000, 0x800000);
-	if (flash_set_ops(&flash->ops))
-		return 1;
+	flash_set_ops(&new_mem_mapped_flash(0xff800000, 0x800000)->ops);
 
 	/* TODO(shawnn): Init I2S audio codec here for FW beep */
 
-	if (power_set_ops(&baytrail_power_ops))
-		return 1;
+	power_set_ops(&baytrail_power_ops);
 
-	LpcTpm *tpm = new_lpc_tpm((void *)0xfed40000);
-	if (tpm_set_ops(&tpm->ops))
-		return 1;
+	tpm_set_ops(&new_lpc_tpm((void *)0xfed40000)->ops);
 
 	/* Initialize eMMC port in ACPI or PCI mode */
 	SdhciHost *emmc;

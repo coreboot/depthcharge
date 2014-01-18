@@ -30,7 +30,7 @@ typedef struct FlashOps
 	void *(*read)(struct FlashOps *me, uint32_t offset, uint32_t size);
 } FlashOps;
 
-int flash_set_ops(FlashOps *ops);
+void flash_set_ops(FlashOps *ops);
 
 void *flash_read(uint32_t offset, uint32_t size);
 

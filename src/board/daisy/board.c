@@ -75,14 +75,11 @@ static int board_setup(void)
 	CrosEcI2cBus *cros_ec_i2c_bus = new_cros_ec_i2c_bus(&arb4->ops, 0x1e);
 	cros_ec_set_bus(&cros_ec_i2c_bus->ops);
 
-	Slb9635I2c *tpm = new_slb9635_i2c(&i2c3->ops, 0x20);
-	if (tpm_set_ops(&tpm->base.ops))
-		return 1;
+	tpm_set_ops(&new_slb9635_i2c(&i2c3->ops, 0x20)->base.ops);
 
 	Exynos5Spi *spi1 = new_exynos5_spi(0x12d30000);
-	SpiFlash *flash = new_spi_flash(&spi1->ops, 0x400000);
-	if (flash_set_ops(&flash->ops))
-		return 1;
+
+	flash_set_ops(&new_spi_flash(&spi1->ops, 0x400000)->ops);
 
 	Exynos5I2s *i2s1 = new_exynos5_i2s(0x12d60000, 16, 2, 256);
 	I2sSource *i2s_source = new_i2s_source(&i2s1->ops, 48000, 2, 16000);
@@ -91,8 +88,7 @@ static int board_setup(void)
 						  256, 1);
 	list_insert_after(&codec->component.list_node,
 			  &sound_route->components);
-	if (sound_set_ops(&sound_route->ops))
-		return 1;
+	sound_set_ops(&sound_route->ops);
 
 	MshciHost *emmc = new_mshci_host(0x12200000, 400000000,
 					 8, 0, 0x03030001);
@@ -103,8 +99,7 @@ static int board_setup(void)
 	list_insert_after(&sd_card->mmc.ctrlr.list_node,
 			  &removable_block_dev_controllers);
 
-	if (power_set_ops(&exynos_power_ops))
-		return 1;
+	power_set_ops(&exynos_power_ops);
 
 	UsbHostController *usb_drd = new_usb_hc(XHCI, 0x12000000);
 	UsbHostController *usb_host = new_usb_hc(EHCI, 0x12110000);

@@ -20,7 +20,7 @@ typedef struct SoundOps
 	int (*play)(struct SoundOps *me, uint32_t msec, uint32_t frequency);
 } SoundOps;
 
-int sound_set_ops(SoundOps *ops);
+void sound_set_ops(SoundOps *ops);
 
 int sound_start(uint32_t frequency);
 int sound_stop(void);

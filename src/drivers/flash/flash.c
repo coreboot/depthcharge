@@ -26,23 +26,14 @@
 
 static FlashOps *flash_ops;
 
-int flash_set_ops(FlashOps *ops)
+void flash_set_ops(FlashOps *ops)
 {
-	if (flash_ops) {
-		printf("Flash ops already set.\n");
-		return -1;
-	}
+	die_if(flash_ops, "Flash ops already set.\n");
 	flash_ops = ops;
-
-	return 0;
 }
 
 void *flash_read(uint32_t offset, uint32_t size)
 {
-	if (!flash_ops) {
-		printf("%s: No flash ops set.\n", __func__);
-		return NULL;
-	}
-
+	die_if(!flash_ops, "%s: No flash ops set.\n", __func__);
 	return flash_ops->read(flash_ops, offset, size);
 }

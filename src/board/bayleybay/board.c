@@ -30,12 +30,9 @@
 
 static int board_setup(void)
 {
-	MemMappedFlash *flash = new_mem_mapped_flash(0xff800000, 0x800000);
-	if (flash_set_ops(&flash->ops))
-		return 1;
+	flash_set_ops(&new_mem_mapped_flash(0xff800000, 0x800000)->ops);
 
-	if (power_set_ops(&pch_power_ops))
-		return 1;
+	power_set_ops(&pch_power_ops);
 
 	/*
 	 * Initting port zero (eMMC) only for now. Device IDs other two ports

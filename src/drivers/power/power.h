@@ -29,7 +29,7 @@ typedef struct PowerOps
 	int (*power_off)(struct PowerOps *me);
 } PowerOps;
 
-int power_set_ops(PowerOps *ops);
+void power_set_ops(PowerOps *ops);
 
 /* Cold reboot the machine */
 int cold_reboot(void);

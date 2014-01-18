@@ -104,15 +104,11 @@ static int board_setup(void)
 	TegraSpi *spi4 = new_tegra_spi(0x7000da00, dma_controller,
 				       APBDMA_SLAVE_SL2B4);
 
-	SpiFlash *flash = new_spi_flash(&spi4->ops, 0x400000);
-	if (flash_set_ops(&flash->ops))
-		return 1;
+	flash_set_ops(&new_spi_flash(&spi4->ops, 0x400000)->ops);
 
 	TegraI2c *cam_i2c = new_tegra_i2c((void *)0x7000c500, 3);
 
-	Slb9635I2c *tpm = new_slb9635_i2c(&cam_i2c->ops, 0x20);
-	if (tpm_set_ops(&tpm->base.ops))
-		return 1;
+	tpm_set_ops(&new_slb9635_i2c(&cam_i2c->ops, 0x20)->base.ops);
 
 	TegraSpi *spi1 = new_tegra_spi(0x7000d400, dma_controller,
 				       APBDMA_SLAVE_SL2B1);
@@ -131,12 +127,9 @@ static int board_setup(void)
 	list_insert_after(&ahub->component.list_node, &sound_route->components);
 	list_insert_after(&codec->component.list_node,
 			  &sound_route->components);
-	if (sound_set_ops(&sound_route->ops))
-		return 1;
+	sound_set_ops(&sound_route->ops);
 
-	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spi1->ops);
-	if (cros_ec_set_bus(&cros_ec_spi_bus->ops))
-		return 1;
+	cros_ec_set_bus(&new_cros_ec_spi_bus(&spi1->ops)->ops);
 
 	// sdmmc4
 	TegraMmcHost *emmc = new_tegra_mmc_host(0x700b0600, 8, 0, NULL);
@@ -155,12 +148,9 @@ static int board_setup(void)
 	TegraI2c *pwr_i2c = new_tegra_i2c((void *)0x7000d000, 5);
 	As3722Pmic *pmic = new_as3722_pmic(&pwr_i2c->ops, 0x40);
 	TegraGpio *reboot_gpio = new_tegra_gpio_output(GPIO_I, 5);
-	if (!pmic || !reboot_gpio)
-		return 1;
 	NyanPowerOps *power = new_nyan_power_ops(&pmic->ops, &reboot_gpio->ops,
 						 0);
-	if (power_set_ops(&power->ops))
-		return 1;
+	power_set_ops(&power->ops);
 
 	/* Careful: the EHCI base is at offset 0x100 from the SoC's IP base */
 	UsbHostController *usbd = new_usb_hc(EHCI, 0x7d000100);

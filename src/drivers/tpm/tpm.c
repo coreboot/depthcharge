@@ -26,22 +26,15 @@
 
 static TpmOps *tpm_ops;
 
-int tpm_set_ops(TpmOps *ops)
+void tpm_set_ops(TpmOps *ops)
 {
-	if (tpm_ops) {
-		printf("%s: TPM ops already set.\n", __func__);
-		return -1;
-	}
+	die_if(tpm_ops, "%s: TPM ops already set.\n", __func__);
 	tpm_ops = ops;
-	return 0;
 }
 
 int tpm_xmit(const uint8_t *sendbuf, size_t send_size,
 	     uint8_t *recvbuf, size_t *recv_len)
 {
-	if (!tpm_ops) {
-		printf("%s: No TPM ops set.\n", __func__);
-		return -1;
-	}
+	die_if(!tpm_ops, "%s: No TPM ops set.\n", __func__);
 	return tpm_ops->xmit(tpm_ops, sendbuf, send_size, recvbuf, recv_len);
 }

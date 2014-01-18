@@ -48,13 +48,10 @@ static int board_setup(void)
 	CrosEcLpcBus *cros_ec_lpc_bus = new_cros_ec_lpc_bus();
 	cros_ec_set_bus(&cros_ec_lpc_bus->ops);
 
-	MemMappedFlash *flash = new_mem_mapped_flash(0xff800000, 0x800000);
-	if (flash_set_ops(&flash->ops))
-		return 1;
+	flash_set_ops(&new_mem_mapped_flash(0xff800000, 0x800000)->ops);
 
 	HdaCodec *codec = new_hda_codec();
-	if (sound_set_ops(&codec->ops))
-		return 1;
+	sound_set_ops(&codec->ops);
 
 	// The realtek codec doesn't report its beep_nid (NID 1)
 	set_hda_beep_nid_override(codec, 1);
@@ -62,12 +59,9 @@ static int board_setup(void)
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 31, 2));
 	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
 
-	if (power_set_ops(&pch_power_ops))
-		return 1;
+	power_set_ops(&pch_power_ops);
 
-	LpcTpm *tpm = new_lpc_tpm((void *)(uintptr_t)0xfed40000);
-	if (tpm_set_ops(&tpm->ops))
-		return 1;
+	tpm_set_ops(&new_lpc_tpm((void *)(uintptr_t)0xfed40000)->ops);
 
 	return 0;
 }

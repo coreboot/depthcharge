@@ -20,6 +20,7 @@
  * MA 02111-1307 USA
  */
 
+#include <assert.h>
 #include <libpayload.h>
 
 #include "base/cleanup_funcs.h"
@@ -27,24 +28,17 @@
 
 static PowerOps *power_ops;
 
-int power_set_ops(PowerOps *ops)
+void power_set_ops(PowerOps *ops)
 {
-	if (power_ops) {
-		printf("%s: Power ops already set.\n", __func__);
-		return -1;
-	}
+	die_if(power_ops, "%s: Power ops already set.\n", __func__);
 	power_ops = ops;
-	return 0;
 }
 
 int cold_reboot(void)
 {
-	if (!power_ops) {
-		printf("%s: No power ops set.\n", __func__);
-		return -1;
-	}
-	if (!power_ops->cold_reboot)
-		return -1;
+	die_if(!power_ops, "%s: No power ops set.\n", __func__);
+	assert(power_ops->cold_reboot);
+
 	if (run_cleanup_funcs(CleanupOnReboot))
 		return -1;
 
@@ -54,12 +48,9 @@ int cold_reboot(void)
 
 int power_off(void)
 {
-	if (!power_ops) {
-		printf("%s: No power ops set.\n", __func__);
-		return -1;
-	}
-	if (!power_ops->power_off)
-		return -1;
+	die_if(!power_ops, "%s: No power ops set.\n", __func__);
+	assert(power_ops->power_off);
+
 	if (run_cleanup_funcs(CleanupOnPowerOff))
 		return -1;
 
