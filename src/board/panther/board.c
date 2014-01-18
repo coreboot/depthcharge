@@ -44,8 +44,7 @@ static int board_setup(void)
 	// Read the current value of the recovery button instead of the
 	// value passed by coreboot.
 	LpPchGpio *rec_gpio = new_lp_pch_gpio_input(12);
-	if (flag_replace(FLAG_RECSW, new_gpio_not(&rec_gpio->ops)))
-		return 1;
+	flag_replace(FLAG_RECSW, new_gpio_not(&rec_gpio->ops));
 
 	MemMappedFlash *flash = new_mem_mapped_flash(0xff800000, 0x800000);
 	if (flash_set_ops(&flash->ops))
