@@ -39,8 +39,7 @@
 
 static int board_setup(void)
 {
-	if (sysinfo_install_flags())
-		return 1;
+	sysinfo_install_flags();
 
 	// Read the current value of the recovery button instead of the
 	// value passed by coreboot.

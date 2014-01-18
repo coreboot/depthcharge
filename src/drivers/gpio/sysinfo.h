@@ -33,6 +33,6 @@ GpioOps *sysinfo_lid;
 GpioOps *sysinfo_power;
 GpioOps *sysinfo_oprom;
 
-int sysinfo_install_flags(void);
+void sysinfo_install_flags(void);
 
 #endif /* __DRIVERS_GPIO_SYSINFO_H__ */

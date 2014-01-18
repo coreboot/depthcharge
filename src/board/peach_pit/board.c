@@ -42,22 +42,18 @@
 
 static int board_setup(void)
 {
-	if (sysinfo_install_flags())
-		return 1;
+	sysinfo_install_flags();
 
 	Exynos5420Gpio *lid_switch = new_exynos5420_gpio_input(GPIO_X, 3, 4);
 	Exynos5420Gpio *ec_in_rw = new_exynos5420_gpio_input(GPIO_X, 2, 3);
 
-	if (flag_replace(FLAG_LIDSW, &lid_switch->ops) ||
-	    flag_install(FLAG_ECINRW, &ec_in_rw->ops))
-		return 1;
+	flag_replace(FLAG_LIDSW, &lid_switch->ops);
+	flag_install(FLAG_ECINRW, &ec_in_rw->ops);
 
 	// The power switch is active low and needs to be inverted.
 	Exynos5420Gpio *power_switch_l =
 		new_exynos5420_gpio_input(GPIO_X, 1, 2);
-	GpioOps *power_switch = new_gpio_not(&power_switch_l->ops);
-	if (flag_replace(FLAG_PWRSW, power_switch))
-		return 1;
+	flag_replace(FLAG_PWRSW, new_gpio_not(&power_switch_l->ops));
 
 	Exynos5UsiI2c *i2c9 = new_exynos5_usi_i2c(0x12e10000, 400000);
 

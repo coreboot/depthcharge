@@ -39,7 +39,7 @@ typedef enum FlagIndex {
 } FlagIndex;
 
 int flag_fetch(FlagIndex index);
-int flag_install(FlagIndex index, GpioOps *gpio);
-int flag_replace(FlagIndex index, GpioOps *gpio);
+void flag_install(FlagIndex index, GpioOps *gpio);
+void flag_replace(FlagIndex index, GpioOps *gpio);
 
 #endif /* __VBOOT_UTIL_FLAG_H__ */

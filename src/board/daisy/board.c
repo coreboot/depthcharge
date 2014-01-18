@@ -47,22 +47,18 @@ static uint32_t *i2c_cfg = (uint32_t *)(0x10050000 + 0x234);
 
 static int board_setup(void)
 {
-	if (sysinfo_install_flags())
-		return 1;
+	sysinfo_install_flags();
 
 	Exynos5250Gpio *lid_switch = new_exynos5250_gpio_input(GPIO_X, 3, 5);
 	Exynos5250Gpio *ec_in_rw = new_exynos5250_gpio_input(GPIO_D, 1, 7);
 
-	if (flag_replace(FLAG_LIDSW, &lid_switch->ops) ||
-	    flag_install(FLAG_ECINRW, &ec_in_rw->ops))
-		return 1;
+	flag_replace(FLAG_LIDSW, &lid_switch->ops);
+	flag_install(FLAG_ECINRW, &ec_in_rw->ops);
 
 	// The power switch is active low and needs to be inverted.
 	Exynos5250Gpio *power_switch_l =
 		new_exynos5250_gpio_input(GPIO_X, 1, 3);
-	GpioOps *power_switch = new_gpio_not(&power_switch_l->ops);
-	if (flag_replace(FLAG_PWRSW, power_switch))
-		return 1;
+	flag_replace(FLAG_PWRSW, new_gpio_not(&power_switch_l->ops));
 
 	// Switch from hi speed I2C to the normal one.
 	writel(0x0, i2c_cfg);

@@ -37,8 +37,7 @@
 
 static int board_setup(void)
 {
-	if (sysinfo_install_flags())
-		return 1;
+	sysinfo_install_flags();
 
 	MemMappedFlash *flash = new_mem_mapped_flash(0xff800000, 0x800000);
 	if (flash_set_ops(&flash->ops))

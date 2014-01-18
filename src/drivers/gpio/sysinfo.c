@@ -113,12 +113,12 @@ static SysinfoGpio oprom = {
 };
 GpioOps *sysinfo_oprom = &oprom.ops;
 
-int sysinfo_install_flags(void)
+void sysinfo_install_flags(void)
 {
-	return flag_install(FLAG_WPSW, sysinfo_write_protect) ||
-		flag_install(FLAG_RECSW, sysinfo_recovery) ||
-		flag_install(FLAG_DEVSW, sysinfo_developer) ||
-		flag_install(FLAG_LIDSW, sysinfo_lid) ||
-		flag_install(FLAG_PWRSW, sysinfo_power) ||
-		flag_install(FLAG_OPROM, sysinfo_oprom);
+	flag_install(FLAG_WPSW, sysinfo_write_protect);
+	flag_install(FLAG_RECSW, sysinfo_recovery);
+	flag_install(FLAG_DEVSW, sysinfo_developer);
+	flag_install(FLAG_LIDSW, sysinfo_lid);
+	flag_install(FLAG_PWRSW, sysinfo_power);
+	flag_install(FLAG_OPROM, sysinfo_oprom);
 }

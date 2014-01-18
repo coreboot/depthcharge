@@ -82,20 +82,16 @@ static int board_setup(void)
 		return 1;
 	}
 
-	if (sysinfo_install_flags())
-		return 1;
+	sysinfo_install_flags();
 
 	TegraGpio *lid_switch = new_tegra_gpio_input(GPIO_R, 4);
 	TegraGpio *ec_in_rw = new_tegra_gpio_input(GPIO_U, 4);
-	if (flag_replace(FLAG_LIDSW, &lid_switch->ops) ||
-	    flag_install(FLAG_ECINRW, &ec_in_rw->ops))
-		return 1;
+	flag_replace(FLAG_LIDSW, &lid_switch->ops);
+	flag_install(FLAG_ECINRW, &ec_in_rw->ops);
 
 	// The power switch is active low and needs to be inverted.
 	TegraGpio *power_switch_l = new_tegra_gpio_input(GPIO_Q, 0);
-	GpioOps *power_switch = new_gpio_not(&power_switch_l->ops);
-	if (flag_replace(FLAG_PWRSW, power_switch))
-		return 1;
+	flag_replace(FLAG_PWRSW, new_gpio_not(&power_switch_l->ops));
 
 	void *dma_channel_bases[32];
 	for (int i = 0; i < ARRAY_SIZE(dma_channel_bases); i++)

@@ -31,47 +31,28 @@ static GpioOps *flag_gpios[FLAG_MAX_FLAG];
 
 int flag_fetch(FlagIndex index)
 {
-	if (index < 0 || index >= FLAG_MAX_FLAG) {
-		printf("Flag index %d larger than max %d.\n",
-			index, FLAG_MAX_FLAG);
-		return -1;
-	}
+	die_if(index < 0 || index >= FLAG_MAX_FLAG,
+	       "Flag index %d larger than max %d.\n", index, FLAG_MAX_FLAG);
 
 	GpioOps *gpio = flag_gpios[index];
-
-	if (gpio == NULL) {
-		printf("Don't have a gpio set up for flag %d.\n", index);
-		return -1;
-	}
+	die_if(gpio == NULL, "Don't have a gpio set up for flag %d.\n", index);
 
 	return gpio->get(gpio);
 }
 
-int flag_replace(FlagIndex index, GpioOps *gpio)
+void flag_replace(FlagIndex index, GpioOps *gpio)
 {
-	if (index < 0 || index >= FLAG_MAX_FLAG) {
-		printf("Flag index %d larger than max %d.\n",
-			index, FLAG_MAX_FLAG);
-		return -1;
-	}
+	die_if(index < 0 || index >= FLAG_MAX_FLAG,
+	       "Flag index %d larger than max %d.\n", index, FLAG_MAX_FLAG);
 
 	flag_gpios[index] = gpio;
-	return 0;
 }
 
-int flag_install(FlagIndex index, GpioOps *gpio)
+void flag_install(FlagIndex index, GpioOps *gpio)
 {
-	if (index < 0 || index >= FLAG_MAX_FLAG) {
-		printf("Flag index %d larger than max %d.\n",
-			index, FLAG_MAX_FLAG);
-		return -1;
-	}
+	die_if(index < 0 || index >= FLAG_MAX_FLAG,
+	       "Flag index %d larger than max %d.\n", index, FLAG_MAX_FLAG);
 
-	if (flag_gpios[index]) {
-		printf("Gpio already set up for flag %d.\n", index);
-		return -1;
-	}
-
+	die_if(flag_gpios[index], "Gpio already set up for flag %d.\n", index);
 	flag_gpios[index] = gpio;
-	return 0;
 }

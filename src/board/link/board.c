@@ -40,12 +40,10 @@
 
 static int board_setup(void)
 {
-	if (sysinfo_install_flags())
-		return 1;
+	sysinfo_install_flags();
 
 	PchGpio *ec_in_rw = new_pantherpoint_gpio_input(0, 21);
-	if (flag_install(FLAG_ECINRW, &ec_in_rw->ops))
-		return 1;
+	flag_install(FLAG_ECINRW, &ec_in_rw->ops);
 
 	CrosEcLpcBus *cros_ec_lpc_bus = new_cros_ec_lpc_bus();
 	cros_ec_set_bus(&cros_ec_lpc_bus->ops);
