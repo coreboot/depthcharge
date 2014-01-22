@@ -63,7 +63,7 @@ static uint8_t board_id(void)
 
 enum {
 	BOARD_ID_REV0 = 0,
-	BOARD_ID_REV1 = 9
+	BOARD_ID_REV1 = 1,
 };
 
 static int board_setup(void)
@@ -72,10 +72,10 @@ static int board_setup(void)
 
 	switch (id) {
 	case BOARD_ID_REV0:
-		fit_override_kernel_compat("google,nyan-rev0");
+		fit_override_kernel_compat("google,nyan_big-rev0");
 		break;
 	case BOARD_ID_REV1:
-		fit_override_kernel_compat("google,nyan-rev1");
+		fit_override_kernel_compat("google,nyan_big-rev1");
 		break;
 	default:
 		printf("Unrecognized board ID %#x.\n", id);
@@ -136,8 +136,9 @@ static int board_setup(void)
 	// sdmmc3
 	TegraGpio *card_detect = new_tegra_gpio_input(GPIO_V, 2);
 	GpioOps *card_detect_ops = &card_detect->ops;
-	if (id != BOARD_ID_REV0)
-		card_detect_ops = new_gpio_not(card_detect_ops);
+	// invert SD-card CD polarity
+	card_detect_ops = new_gpio_not(card_detect_ops);
+
 	TegraMmcHost *sd_card = new_tegra_mmc_host(0x700b0400, 4, 1,
 						   card_detect_ops);
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
