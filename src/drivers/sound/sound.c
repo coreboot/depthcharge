@@ -17,13 +17,19 @@ static SoundOps *sound_ops;
 
 void sound_set_ops(SoundOps *ops)
 {
-	die_if(sound_ops, "%s: Sound ops already set.\n", __func__);
+	if (sound_ops) {
+		printf("%s: Sound ops already set.\n", __func__);
+		return;
+	}
 	sound_ops = ops;
 }
 
 int sound_start(uint32_t frequency)
 {
-	die_if(!sound_ops, "%s: No sound ops set.\n", __func__);
+	if (!sound_ops) {
+		printf("%s: No sound ops set.\n", __func__);
+		return 1;
+	}
 	assert(sound_ops->start);
 
 	return sound_ops->start(sound_ops, frequency);
@@ -31,7 +37,10 @@ int sound_start(uint32_t frequency)
 
 int sound_stop(void)
 {
-	die_if(!sound_ops, "%s: No sound ops set.\n", __func__);
+	if (!sound_ops) {
+		printf("%s: No sound ops set.\n", __func__);
+		return 1;
+	}
 	assert(sound_ops->stop);
 
 	return sound_ops->stop(sound_ops);
@@ -39,7 +48,10 @@ int sound_stop(void)
 
 int sound_play(uint32_t msec, uint32_t frequency)
 {
-	die_if(!sound_ops, "%s: No sound ops set.\n", __func__);
+	if (!sound_ops) {
+		printf("%s: No sound ops set.\n", __func__);
+		return 1;
+	}
 	assert(sound_ops->play);
 
 	return sound_ops->play(sound_ops, msec, frequency);
