@@ -25,11 +25,54 @@
 
 #include "base/physmem.h"
 
+// arch_phys_memset but with the guarantee that the range doesn't wrap around
+// the end of the address space.
+static uint64_t arch_phys_memset_nowrap(uint64_t start, int c, uint64_t size)
+{
+	uint64_t max_addr = (uint64_t)~(uintptr_t)0;
+	uint64_t orig_start = start;
+
+	// If there's nothing to do, just return.
+	if (!size)
+		return orig_start;
+
+	// Set memory we can address normally using standard memset.
+	if (start <= max_addr) {
+		size_t low_size;
+		// Be careful with this check to avoid overflow.
+		if (size - 1 > max_addr - start) {
+			low_size = 0 - start;
+		} else {
+			low_size = (size_t)size;
+			assert(low_size == size);
+		}
+		memset((void *)(uintptr_t)start, c, low_size);
+		start += low_size;
+		size -= low_size;
+	}
+
+	// If we're done, return.
+	if (!size)
+		return orig_start;
+
+	//TODO Set memory above what we can normally address here.
+	printf("WARNING: Not wiping 0x%llx bytes starting at 0x%llx.\n",
+	       size, start);
+
+	return orig_start;
+}
+
 uint64_t arch_phys_memset(uint64_t start, int c, uint64_t size)
 {
-	uintptr_t real_start = (uintptr_t)start;
-	size_t real_size = (size_t)size;
-	assert(real_start == start);
-	assert(real_size == size);
-	return (uintptr_t)memset((void *)real_start, c, real_size);
+	uint64_t end = start + size;
+
+	if (end && end < start) {
+		// If the range wraps around 0, set the upper and lower parts
+		// separately.
+		arch_phys_memset_nowrap(0, c, end);
+		return arch_phys_memset_nowrap(start, c, 0 - start);
+	} else {
+		// No wrap, set everything at once.
+		return arch_phys_memset_nowrap(start, c, size);
+	}
 }
