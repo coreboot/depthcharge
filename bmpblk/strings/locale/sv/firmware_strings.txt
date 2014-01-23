@@ -15,4 +15,4 @@ Om du behöver hjälp besöker du http://google.com/chromeos/recovery
 Felkod
 Ta bort alla externa enheter och påbörja återställningen.
 Modell
-Inaktivera verifiering av operativsystemet genom att trycka på RECOVERY.
+Om du vill INAKTIVERA OS-verifiering trycker du på ÅTERSTÄLLNINGSKNAPPEN.

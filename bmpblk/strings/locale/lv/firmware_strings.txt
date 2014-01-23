@@ -15,4 +15,4 @@ Lai saņemtu palīdzību, apmeklējiet vietni http://google.com/chromeos/recover
 Kļūdas kods
 Lūdzu, noņemiet visas ārējās ierīces, lai sāktu atkopšanu.
 Modelis
-Lai IZSLĒGTU OS verifikāciju, nospiediet taustiņu RECOVERY.
+Lai IZSLĒGTU OS verifikāciju, nospiediet ATKOPŠANAS pogu.

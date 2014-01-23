@@ -15,4 +15,4 @@ Per assistenza, visita il sito http://google.com/chromeos/recovery.
 Codice di errore
 Rimuovi tutti i dispositivi esterni per iniziare il ripristino.
 Modello
-Per DISATTIVARE la verifica del sistema operativo, premi RECOVERY.
+Per DISATTIVARE la verifica del sistema operativo, premi il pulsante RIPRISTINO.

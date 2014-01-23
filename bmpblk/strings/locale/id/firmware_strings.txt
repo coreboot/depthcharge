@@ -15,4 +15,4 @@ Untuk bantuan, kunjungi http://google.com/chromeos/recovery
 Kode kesalahan
 Lepaskan semua perangkat eksternal untuk memulai pemulihan.
 Model
-Untuk MEMATIKAN verifikasi OS, tekan RECOVERY.
+Untuk MENONAKTIFKAN verifikasi OS, tekan tombol PEMULIHAN.

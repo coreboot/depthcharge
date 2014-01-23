@@ -15,4 +15,4 @@ Saat ohjeita osoitteessa http://google.com/chromeos/recovery
 Virhekoodi
 Aloita palautus poistamalla kaikki ulkoiset laitteet.
 Malli
-Poista käyttöjärjestelmän todentaminen käytöstä painamalla RECOVERY.
+Poista käyttöjärjestelmän vahvistaminen käytöstä painamalla PALAUTUS-painiketta.

@@ -15,4 +15,4 @@ Para obtener ayuda, accede a http://google.com/chromeos/recovery.
 Código de error
 Retira todos los dispositivos externos para iniciar la recuperación.
 Modelo
-Para DESACTIVARLA, pulsa RECOVERY.
+Para desactivar la verificación del SO, pulsa el botón de recuperación.

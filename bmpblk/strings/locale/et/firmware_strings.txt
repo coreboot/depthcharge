@@ -15,4 +15,4 @@ Abi saamiseks külastage saiti http://google.com/chromeos/recovery
 Veakood
 Taastamise alustamiseks eemaldage kõik välised seadmed.
 Mudel
-OS-i kinnitamise VÄLJA lülitamiseks vajutage sisestusklahvi RECOVERY.
+OS-i kinnitamise lülitamiseks asendisse VÄLJAS vajutage nuppu TAASTE.

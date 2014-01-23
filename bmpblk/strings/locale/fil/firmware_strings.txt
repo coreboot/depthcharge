@@ -15,4 +15,4 @@ Para sa tulong, bisitahin ang http://google.com/chromeos/recovery
 Code ng error
 Paki-alis ang lahat ng panlabas na device upang umpisahan ang pagbawi.
 Modelo
-Upang I-OFF ang pag-verify ng OS, pindutin ang RECOVERY.
+Upang I-OFF ang pag-verify ng OS, pindutin ang button na PAGBAWI.

@@ -15,4 +15,4 @@ Untuk mendapatkan bantuan, lawati http://google.com/chromeos/recovery
 Kod ralat
 Sila alih keluar semua peranti luaran untuk memulakan pemulihan.
 Model
-Untuk MEMATIKAN pengesahan OS, tekan RECOVERY.
+Untuk MEMATIKAN pengesahan OS, tekan butang PEMULIHAN.

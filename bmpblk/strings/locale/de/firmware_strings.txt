@@ -15,4 +15,4 @@ Hilfe erhalten Sie unter http://google.com/chromeos/recovery.
 Fehlercode
 Entfernen Sie alle externen Geräte, um mit der Wiederherstellung zu beginnen.
 Modell
-Drücken Sie die RECOVERY, um die OS-Bestätigung auszuschalten.
+Zum Deaktivieren der Betriebssystembestätigung drücken Sie die Wiederherstellungstaste.

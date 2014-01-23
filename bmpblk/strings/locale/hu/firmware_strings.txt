@@ -15,4 +15,4 @@ Ha segítségre van szüksége, keresse fel a http://google.com/chromeos/recover
 Hibakód
 Távolítsa el az összes külső eszközt a helyreállítás megkezdéséhez.
 Modell
-Az OS-ellenőrzés KIKAPCSOLÁSÁHOZ nyomja meg az RECOVERY billentyűt.
+Az operációs rendszer ellenőrzésének kikapcsolásához nyomja meg a VISSZAÁLLÍTÁS gombot.

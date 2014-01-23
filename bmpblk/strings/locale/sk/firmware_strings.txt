@@ -15,4 +15,4 @@ Pomocníka nájdete na stránke http://google.com/chromeos/recovery
 Kód chyby
 Pred spustením obnovenia odpojte všetky externé zariadenia.
 Model
-Ak chcete verifikáciu OS VYPNÚŤ, stlačte kláves RECOVERY.
+Ak chcete vypnúť overenie operačného systému, stlačte tlačidlo RECOVERY (Obnovenie).

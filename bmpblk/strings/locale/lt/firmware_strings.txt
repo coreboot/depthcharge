@@ -15,4 +15,4 @@ Jei reikia pagalbos, apsilankykite šiuo adresu: http://google.com/chromeos/reco
 Klaidos kodas
 Jei norite pradėti atkūrimą, pašalinkite visus išorinius įrenginius.
 Modelis
-Jei norite IŠJUNGTI OS patvirtinimą, paspauskite RECOVERY.
+Jei norite IŠJUNGTI operacinės sistemos patvirtinimą, paspauskite ATKŪRIMO mygtuką.

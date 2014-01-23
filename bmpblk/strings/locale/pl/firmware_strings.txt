@@ -15,4 +15,4 @@ Pomoc znajdziesz na http://google.com/chromeos/recovery
 Kod błędu
 Aby rozpocząć przywracanie, odłącz wszystkie urządzenia zewnętrzne.
 Model
-Aby WYŁĄCZYĆ sprawdzanie systemu operacyjnego, naciśnij RECOVERY.
+Aby wyłączyć weryfikację systemu operacyjnego, naciśnij przycisk RECOVERY.
