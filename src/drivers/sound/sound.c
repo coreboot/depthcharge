@@ -17,10 +17,7 @@ static SoundOps *sound_ops;
 
 void sound_set_ops(SoundOps *ops)
 {
-	if (sound_ops) {
-		printf("%s: Sound ops already set.\n", __func__);
-		return;
-	}
+	die_if(sound_ops, "%s: Sound ops already set.\n", __func__);
 	sound_ops = ops;
 }
 
