@@ -51,9 +51,7 @@ void load_elf(Elf32_Ehdr *ehdr)
 			memset(dest + filesz, 0, memsz - filesz);
 	}
 
-	// Ensure icache/dcache are at PoU on ARM (by just flushing everything)
-	dcache_clean_all();
-	icache_invalidate_all();
+	cache_sync_instructions();
 
 	// Go for it!
 	typedef void (*entry_func)(void);

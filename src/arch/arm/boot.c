@@ -78,9 +78,10 @@ int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry)
 	// Set the mode to SVC.
 	cpsr &= ~CpsrModeMask;
 	cpsr |= CpsrModeSvc;
+	set_cpsr(cpsr);
 
-	// Flush the data cache.
-	dcache_clean_all();
+	// Flush dcache and icache to make loaded code visible.
+	cache_sync_instructions();
 
 	// Turn off the MMU.
 	sctlr &= ~SctlrM;
@@ -89,10 +90,7 @@ int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry)
 	sctlr &= ~SctlrC;
 
 	set_sctlr(sctlr);
-	set_cpsr(cpsr);
 
-	// Invalidate the instruction cache and TLB.
-	icache_invalidate_all();
 	tlb_invalidate_all();
 
 	boot_arm_linux_jump(entry, machine_type, fdt);

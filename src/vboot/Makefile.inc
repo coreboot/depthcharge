@@ -79,7 +79,7 @@ $(TRAMP_LP): $(LIBPAYLOAD_DIR)/lib/libpayload.a
 		--keep-global-symbol=$(TRAMP_PREFIX)_memcpy \
 		--keep-global-symbol=$(TRAMP_PREFIX)_memset \
 		--keep-global-symbol=$(TRAMP_PREFIX)_dcache_clean_all \
-		--keep-global-symbol=$(TRAMP_PREFIX)_icache_invalidate_all \
+		--keep-global-symbol=$(TRAMP_PREFIX)_cache_sync_instructions \
 		--prefix-alloc-sections=.$(TRAMP_PREFIX) $(<) $(@)
 
 # The trampoline is linked with normal gcc to avoid linking the full libpayload.
