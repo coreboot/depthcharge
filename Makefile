@@ -82,8 +82,8 @@ INCLUDES = -Ibuild -I$(src)/src/ -I$(src)/src/arch/$(ARCH_DIR)/includes/ \
 	-I$(VB_SOURCE)/firmware/include
 ABI_FLAGS := $(ARCH_ABI_FLAGS) -ffreestanding -fno-builtin \
 	-fno-stack-protector -fomit-frame-pointer
-LINK_FLAGS := $(ARCH_LINK_FLAGS) $(ABI_FLAGS) -fuse-ld=bfd \
-	-Wl,-T,$(LDSCRIPT) -Wl,--gc-sections
+LINK_FLAGS = $(ARCH_LINK_FLAGS) $(ABI_FLAGS) -fuse-ld=bfd \
+	-Wl,-T,$(LDSCRIPT) -Wl,--gc-sections -Wl,-Map=$@.map
 CFLAGS := $(ARCH_CFLAGS) -Wall -Werror -Os $(INCLUDES) -std=gnu99 \
 	$(ABI_FLAGS) -ffunction-sections -fdata-sections -ggdb3
 
