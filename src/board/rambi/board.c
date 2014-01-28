@@ -40,12 +40,14 @@
 #include "vboot/util/flag.h"
 
 /*
- * Clock frequencies for the eMMC port are 400 KHz min (used during
- * initialization) and 200 MHz max. Firmware does not run at 200 MHz
- * (aka HS mode), it is limited to 52 MHz.
+ * Clock frequencies for the eMMC and SD ports are defined below. The minimum
+ * frequency is the same for both interfaces, the firmware does not run any
+ * interface faster than 52 MHz, but defines maximum eMMC frequency as 200 MHz
+ * for proper divider settings.
  */
-static const int emmc_clock_min = 400 * 1000;
+static const int emmc_sd_clock_min = 400 * 1000;
 static const int emmc_clock_max = 200 * 1000 * 1000;
+static const int sd_clock_max = 52 * 1000 * 1000;
 
 static int board_setup(void)
 {
@@ -82,17 +84,28 @@ static int board_setup(void)
 
 	tpm_set_ops(&new_lpc_tpm((void *)0xfed40000)->ops);
 
-	/* Initialize eMMC port in ACPI or PCI mode */
+	/* Initialize eMMC and SD ports in ACPI or PCI mode */
 	SdhciHost *emmc;
+
 	if (nvs->scc_en[SCC_NVS_MMC])
 		emmc = new_mem_sdhci_host((void *)nvs->scc_bar0[SCC_NVS_MMC],
-					  0, emmc_clock_min, emmc_clock_max);
+					  0, emmc_sd_clock_min, emmc_clock_max);
 	else
 		emmc = new_pci_sdhci_host(PCI_DEV(0, 23, 0), 0,
-					  emmc_clock_min, emmc_clock_max);
+					  emmc_sd_clock_min, emmc_clock_max);
 
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
+
+	if (nvs->scc_en[SCC_NVS_SD])
+		emmc = new_mem_sdhci_host((void *)nvs->scc_bar0[SCC_NVS_SD],
+					  1, emmc_sd_clock_min, sd_clock_max);
+	else
+		emmc = new_pci_sdhci_host(PCI_DEV(0, 18, 0), 1,
+					  emmc_sd_clock_min, sd_clock_max);
+
+	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+			  &removable_block_dev_controllers);
 
 	return 0;
 }
