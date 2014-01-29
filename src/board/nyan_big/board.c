@@ -72,10 +72,10 @@ static int board_setup(void)
 
 	switch (id) {
 	case BOARD_ID_REV0:
-		fit_override_kernel_compat("google,nyan_big-rev0");
+		fit_override_kernel_compat("google,nyan-big-rev0");
 		break;
 	case BOARD_ID_REV1:
-		fit_override_kernel_compat("google,nyan_big-rev1");
+		fit_override_kernel_compat("google,nyan-big-rev1");
 		break;
 	default:
 		printf("Unrecognized board ID %#x.\n", id);
