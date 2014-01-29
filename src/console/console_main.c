@@ -22,6 +22,7 @@
  */
 
 #include "console/common.h"
+#include "console/command.h"
 
 #define DEBUG_PARSER	0
 
@@ -33,11 +34,13 @@ static char console_buffer[MAX_CONSOLE_LINE + 1]; /* console I/O buffer */
 #define ESC 0x1b
 
 /* Cursor movement commands characters. */
-#define CHAR_HOME	1 /* ^A */
-#define CHAR_EOL	5 /* ^E */
-#define CHAR_RIGHT     12 /* ^L */
-#define CHAR_DEL     0x7f
-#define CHAR_LEFT    0x81 /* ficticious */
+#define CHAR_HOME	   1 /* ^A */
+#define CHAR_EOL	   5 /* ^E */
+#define CHAR_RIGHT	  12 /* ^L */
+#define CHAR_DEL	0x7f
+#define CHAR_LEFT	0x81 /* here and below: ficticious */
+#define CHAR_UP		0x82
+#define CHAR_DOWN	0x83
 
 static const char erase_seq[] = "\b \b";
 
@@ -56,6 +59,123 @@ static void move_cursor_right(int positions)
 	while (positions-- > 0)
 		printf("%s", cursor_left);
 }
+
+/***************************************************************************/
+/*vvvvvvvvvvvvvvvvvvvvvvvv  History support vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
+
+typedef struct {
+	char console_string[MAX_CONSOLE_LINE + 1];
+	int  cursor;
+} history_node;
+
+/*
+ * 20 history entries should be enough.
+ *
+ * history_bottom is were the next history item will be added, history_spot is
+ * where the user currently is in the history array.
+ */
+static history_node history[20];
+static int history_bottom, history_spot;
+
+#define HISTORY_NEXT(x) (((x) + 1) % ARRAY_SIZE(history))
+#define HISTORY_PREV(x) ((x) ? ((x) - 1) : ARRAY_SIZE(history) - 1)
+
+static void history_add(const char *string)
+{
+	history_node *hnode;
+
+	if (!strcmp(string,
+		    history[HISTORY_PREV(history_bottom)].console_string))
+		return; /* no need to duplicate strings in history */
+
+	hnode = history + history_bottom;
+
+	strncpy(hnode->console_string,
+		string,
+		sizeof(hnode->console_string));
+
+	/* make sure it is null terminated no matter what */
+	hnode->console_string[sizeof(hnode->console_string) - 1] = '\0';
+	hnode->cursor = strlen(hnode->console_string);
+
+	history_spot = history_bottom = HISTORY_NEXT(history_bottom);
+	history[history_bottom].console_string[0] = '\0';
+}
+
+/* The user hit a history browsing button. */
+static void history_case(u8 c, char *p_buf, int *np, int *cursor_p)
+{
+	int n = *np, cursor = *cursor_p, new_n, tmp;
+
+	if ((c == CHAR_DOWN) && (history_bottom == history_spot))
+		return; /* we are already at the bottom of history */
+
+	if ((c == CHAR_UP) &&
+	    (!history[HISTORY_PREV(history_spot)].console_string[0]))
+		return; /* we are already at the top of history */
+
+	if (history_bottom == history_spot) {
+		/* we are in a new console line, save it into history */
+		if (n)
+			history_add(p_buf);
+	}
+
+	/*
+	 * Just in case user was editing the line and it the cursor is now
+	 * beyond the saved line's length.
+	 */
+	tmp = strlen(history[history_spot].console_string);
+	if (tmp > cursor)
+		tmp = cursor;
+
+	history[history_spot].cursor = tmp;
+	history_spot = (c == CHAR_UP) ? HISTORY_PREV(history_spot) :
+		HISTORY_NEXT(history_spot);
+
+	/* Get to the first column */
+	move_cursor_left(cursor);
+
+	/* Copy new string into the console buffer and print it on the screen */
+	strcpy(p_buf, history[history_spot].console_string);
+	new_n = printf("%s", p_buf);
+
+	/* erase the rest of the line if needed */
+	tmp = n - new_n;
+	while (tmp-- > 0)
+		printf(" ");
+
+	/* come back to the end of the line */
+	move_cursor_left(n - new_n);
+	*np = new_n;
+	*cursor_p = history[history_spot].cursor;
+
+	/* move screen cursor into position */
+	move_cursor_left(new_n - *cursor_p);
+}
+
+#ifdef HISTORY_DEBUG
+static int do_dh(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	int i;
+
+	printf("bottom at %d, spot at %d\n", history_bottom, history_spot);
+	for (i = HISTORY_PREV(history_bottom);
+	     i != history_bottom;
+	     i = HISTORY_PREV(i))
+		if (history[i].console_string[0])
+			printf("%2.2d %s\n", i, history[i].console_string);
+
+	return 0;
+}
+
+U_BOOT_CMD(
+	dh, 1,	1,
+	"commamd to support history debugging", NULL
+);
+#endif
+
+/*^^^^^^^^^^^^^^^^^^^^^^^^  History support ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
+/***************************************************************************/
 
 static void backspace(char *buffer, int *np, int *cp)
 {
@@ -116,8 +236,8 @@ static const escaped_key  escaped_keys [] = {
 	{ "[3~", CHAR_DEL},
 	{ "[5~"}, /* page up */
 	{ "[6~"}, /* page down */
-	{ "[A"}, /* arrow up */
-	{ "[B"}, /* arrow down */
+	{ "[A", CHAR_UP},
+	{ "[B", CHAR_DOWN},
 	{ "[C", CHAR_RIGHT},
 	{ "[D", CHAR_LEFT},
 	{ "zzzz" } /* will never happen */
@@ -296,6 +416,9 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 		case '\n':
 			p_buf[n] = '\0';
 			printf("\r\n");
+
+			/* Reset history browsing. */
+			history_spot = history_bottom;
 			return n;
 
 		case '\0':			/* nul			*/
@@ -364,6 +487,10 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 			}
 			break;
 
+		case CHAR_UP:
+		case CHAR_DOWN:
+			history_case(c, p_buf, &n, &cursor);
+			break;
 
 		default:
 			if ((c != '\t') && (c < ' '))
@@ -420,9 +547,10 @@ void console_loop(void)
 		len = ubreadline_into_buffer(CONFIG_SYS_PROMPT, console_buffer);
 
 		flag = 0;	/* assume no special flags for now */
-		if (len > 0)
+		if (len > 0) {
+			history_add(console_buffer);
 			strcpy(lastcommand, console_buffer);
-		else if (len == 0)
+		} else if (len == 0)
 			flag |= CMD_FLAG_REPEAT;
 
 		if (len == -1)
