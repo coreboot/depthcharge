@@ -57,6 +57,7 @@ typedef struct {
 // If this changes between SOCs but this driver would otherwise work, we'll
 // have to parameterize the address.
 static GpioBank * const gpio_banks = (void *)0x6000d000;
+static uint32_t * const pinmux_regs = (void *)0x70003000;
 
 static int tegra_gpio_get(GpioOps *me)
 {
@@ -83,7 +84,8 @@ static int tegra_gpio_set(GpioOps *me, unsigned value)
 	return 0;
 }
 
-static TegraGpio *new_tegra_gpio(TegraGpioPort port, unsigned index)
+static TegraGpio *new_tegra_gpio(TegraGpioPort port, unsigned index,
+				 unsigned pinmux)
 {
 	die_if(port < 0 || port >= GPIO_NUM_PORTS, "Bad GPIO port %d.\n", port);
 	die_if(index >= GPIO_GPIOS_PER_PORT, "Bad GPIO index %d.\n", index);
@@ -91,19 +93,84 @@ static TegraGpio *new_tegra_gpio(TegraGpioPort port, unsigned index)
 	TegraGpio *gpio = xzalloc(sizeof(*gpio));
 	gpio->port = port;
 	gpio->index = index;
+	gpio->pinmux = pinmux;
+
 	return gpio;
 }
 
-TegraGpio *new_tegra_gpio_input(TegraGpioPort port, unsigned index)
+TegraGpio *new_tegra_gpio_input(TegraGpioPort port, unsigned index,
+				unsigned pinmux)
 {
-	TegraGpio *gpio = new_tegra_gpio(port, index);
+	TegraGpio *gpio = new_tegra_gpio(port, index, pinmux);
 	gpio->ops.get = &tegra_gpio_get;
 	return gpio;
 }
 
-TegraGpio *new_tegra_gpio_output(TegraGpioPort port, unsigned index)
+TegraGpio *new_tegra_gpio_output(TegraGpioPort port, unsigned index,
+				 unsigned pinmux)
 {
-	TegraGpio *gpio = new_tegra_gpio(port, index);
+	TegraGpio *gpio = new_tegra_gpio(port, index, pinmux);
 	gpio->ops.set = &tegra_gpio_set;
 	return gpio;
+}
+
+static void tegra_pinmux_set_pull(int pin_index, uint32_t config)
+{
+	uint32_t reg = readl(&pinmux_regs[pin_index]);
+
+	reg = (reg & ~PINMUX_PULL_MASK) | (config & PINMUX_PULL_MASK);
+	writel(reg, &pinmux_regs[pin_index]);
+}
+
+int tegra_gpio_get_in_tristate_values(TegraGpio *gpio[], int num_gpio,
+				      int value[])
+{
+	/*
+	 * GPIOs which are tied to stronger external pull up or pull down
+	 * will stay there regardless of the internal pull up or pull
+	 * down setting.
+	 *
+	 * GPIOs which are floating will go to whatever level they're
+	 * internally pulled to.
+	 */
+
+	int temp;
+	int index;
+
+	/* Enable internal pull up */
+	for (index = 0; index < num_gpio; ++index)
+		tegra_pinmux_set_pull(gpio[index]->pinmux, PINMUX_PULL_UP);
+
+	/* Wait until signals become stable */
+	udelay(10);
+
+	/* Get gpio values at internal pull up */
+	for (index = 0; index < num_gpio; ++index)
+		value[index] = gpio[index]->ops.get(&gpio[index]->ops);
+
+	/* Enable internal pull down */
+	for (index = 0; index < num_gpio; ++index)
+		tegra_pinmux_set_pull(gpio[index]->pinmux, PINMUX_PULL_DOWN);
+
+	/* Wait until signals become stable */
+	udelay(10);
+
+	/*
+	 * Get gpio values at internal pull down.
+	 * Compare with gpio pull up value and then
+	 * determine a gpio final value/state:
+	 *  0: pull down
+	 *  1: pull up
+	 *  2: floating
+	 */
+	for (index = 0; index < num_gpio; ++index) {
+		temp = gpio[index]->ops.get(&gpio[index]->ops);
+		value[index] = ((value[index] ^ temp) << 1) | temp;
+	}
+
+	/* Disable pull up / pull down to conserve power */
+	for (index = 0; index < num_gpio; ++index)
+		tegra_pinmux_set_pull(gpio[index]->pinmux, PINMUX_PULL_NONE);
+
+	return 0;
 }

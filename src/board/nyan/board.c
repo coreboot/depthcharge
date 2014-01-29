@@ -48,10 +48,10 @@ static uint8_t board_id(void)
 	static int id = -1;
 
 	if (id < 0) {
-		TegraGpio *q3 = new_tegra_gpio_input(GPIO_Q, 3);
-		TegraGpio *t1 = new_tegra_gpio_input(GPIO_T, 1);
-		TegraGpio *x1 = new_tegra_gpio_input(GPIO_X, 1);
-		TegraGpio *x4 = new_tegra_gpio_input(GPIO_X, 4);
+		TegraGpio *q3 = new_tegra_gpio_input(GPIO(Q, 3));
+		TegraGpio *t1 = new_tegra_gpio_input(GPIO(T, 1));
+		TegraGpio *x1 = new_tegra_gpio_input(GPIO(X, 1));
+		TegraGpio *x4 = new_tegra_gpio_input(GPIO(X, 4));
 
 		id = q3->ops.get(&q3->ops) << 0 |
 		     t1->ops.get(&t1->ops) << 1 |
@@ -84,13 +84,13 @@ static int board_setup(void)
 
 	sysinfo_install_flags();
 
-	TegraGpio *lid_switch = new_tegra_gpio_input(GPIO_R, 4);
-	TegraGpio *ec_in_rw = new_tegra_gpio_input(GPIO_U, 4);
+	TegraGpio *lid_switch = new_tegra_gpio_input(GPIO(R, 4));
+	TegraGpio *ec_in_rw = new_tegra_gpio_input(GPIO(U, 4));
 	flag_replace(FLAG_LIDSW, &lid_switch->ops);
 	flag_install(FLAG_ECINRW, &ec_in_rw->ops);
 
 	// The power switch is active low and needs to be inverted.
-	TegraGpio *power_switch_l = new_tegra_gpio_input(GPIO_Q, 0);
+	TegraGpio *power_switch_l = new_tegra_gpio_input(GPIO(Q, 0));
 	flag_replace(FLAG_PWRSW, new_gpio_not(&power_switch_l->ops));
 
 	void *dma_channel_bases[32];
@@ -134,7 +134,7 @@ static int board_setup(void)
 	// sdmmc4
 	TegraMmcHost *emmc = new_tegra_mmc_host(0x700b0600, 8, 0, NULL);
 	// sdmmc3
-	TegraGpio *card_detect = new_tegra_gpio_input(GPIO_V, 2);
+	TegraGpio *card_detect = new_tegra_gpio_input(GPIO(V, 2));
 	GpioOps *card_detect_ops = &card_detect->ops;
 	if (id != BOARD_ID_REV0)
 		card_detect_ops = new_gpio_not(card_detect_ops);
@@ -147,7 +147,7 @@ static int board_setup(void)
 
 	TegraI2c *pwr_i2c = new_tegra_i2c((void *)0x7000d000, 5);
 	As3722Pmic *pmic = new_as3722_pmic(&pwr_i2c->ops, 0x40);
-	TegraGpio *reboot_gpio = new_tegra_gpio_output(GPIO_I, 5);
+	TegraGpio *reboot_gpio = new_tegra_gpio_output(GPIO(I, 5));
 	NyanPowerOps *power = new_nyan_power_ops(&pmic->ops, &reboot_gpio->ops,
 						 0);
 	power_set_ops(&power->ops);

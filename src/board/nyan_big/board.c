@@ -21,6 +21,7 @@
  */
 
 #include <libpayload.h>
+#include <stdlib.h>
 
 #include "base/init_funcs.h"
 #include "board/nyan_big/power_ops.h"
@@ -48,22 +49,31 @@ static uint8_t board_id(void)
 	static int id = -1;
 
 	if (id < 0) {
-		TegraGpio *q3 = new_tegra_gpio_input(GPIO_Q, 3);
-		TegraGpio *t1 = new_tegra_gpio_input(GPIO_T, 1);
-		TegraGpio *x1 = new_tegra_gpio_input(GPIO_X, 1);
-		TegraGpio *x4 = new_tegra_gpio_input(GPIO_X, 4);
+		TegraGpio *q3 = new_tegra_gpio_input(GPIO(Q, 3));
+		TegraGpio *t1 = new_tegra_gpio_input(GPIO(T, 1));
+		TegraGpio *x1 = new_tegra_gpio_input(GPIO(X, 1));
+		TegraGpio *x4 = new_tegra_gpio_input(GPIO(X, 4));
 
-		id = q3->ops.get(&q3->ops) << 0 |
-		     t1->ops.get(&t1->ops) << 1 |
-		     x1->ops.get(&x1->ops) << 2 |
-		     x4->ops.get(&x4->ops) << 3;
+		TegraGpio *gpio[] = {q3, t1, x1, x4};
+		int value[ARRAY_SIZE(gpio)];
+
+		tegra_gpio_get_in_tristate_values(gpio, ARRAY_SIZE(gpio),
+						  value);
+
+		/* A gpio state is encoded in every two-bit */
+		id = value[0] << 0 |
+		     value[1] << 2 |
+		     value[2] << 4 |
+		     value[3] << 6;
 	}
+
 	return id;
 }
 
 enum {
-	BOARD_ID_REV0 = 0,
-	BOARD_ID_REV1 = 1,
+	BOARD_ID_REV0 = 0x00,	/* prototype */
+	BOARD_ID_REV1 = 0x01,	/* EVT */
+	BOARD_ID_REV2 = 0x02,	/* DVT */
 };
 
 static int board_setup(void)
@@ -77,6 +87,9 @@ static int board_setup(void)
 	case BOARD_ID_REV1:
 		fit_override_kernel_compat("google,nyan-big-rev1");
 		break;
+	case BOARD_ID_REV2:
+		fit_override_kernel_compat("google,nyan-big-rev2");
+		break;
 	default:
 		printf("Unrecognized board ID %#x.\n", id);
 		return 1;
@@ -84,13 +97,13 @@ static int board_setup(void)
 
 	sysinfo_install_flags();
 
-	TegraGpio *lid_switch = new_tegra_gpio_input(GPIO_R, 4);
-	TegraGpio *ec_in_rw = new_tegra_gpio_input(GPIO_U, 4);
+	TegraGpio *lid_switch = new_tegra_gpio_input(GPIO(R, 4));
+	TegraGpio *ec_in_rw = new_tegra_gpio_input(GPIO(U, 4));
 	flag_replace(FLAG_LIDSW, &lid_switch->ops);
 	flag_install(FLAG_ECINRW, &ec_in_rw->ops);
 
 	// The power switch is active low and needs to be inverted.
-	TegraGpio *power_switch_l = new_tegra_gpio_input(GPIO_Q, 0);
+	TegraGpio *power_switch_l = new_tegra_gpio_input(GPIO(Q, 0));
 	flag_replace(FLAG_PWRSW, new_gpio_not(&power_switch_l->ops));
 
 	void *dma_channel_bases[32];
@@ -134,7 +147,7 @@ static int board_setup(void)
 	// sdmmc4
 	TegraMmcHost *emmc = new_tegra_mmc_host(0x700b0600, 8, 0, NULL);
 	// sdmmc3
-	TegraGpio *card_detect = new_tegra_gpio_input(GPIO_V, 2);
+	TegraGpio *card_detect = new_tegra_gpio_input(GPIO(V, 2));
 	GpioOps *card_detect_ops = &card_detect->ops;
 	// invert SD-card CD polarity
 	card_detect_ops = new_gpio_not(card_detect_ops);
@@ -148,7 +161,7 @@ static int board_setup(void)
 
 	TegraI2c *pwr_i2c = new_tegra_i2c((void *)0x7000d000, 5);
 	As3722Pmic *pmic = new_as3722_pmic(&pwr_i2c->ops, 0x40);
-	TegraGpio *reboot_gpio = new_tegra_gpio_output(GPIO_I, 5);
+	TegraGpio *reboot_gpio = new_tegra_gpio_output(GPIO(I, 5));
 	NyanPowerOps *power = new_nyan_power_ops(&pmic->ops, &reboot_gpio->ops,
 						 0);
 	power_set_ops(&power->ops);
