@@ -47,13 +47,6 @@ real-target: $(DEPTHCHARGE_RO_ELF) $(DEPTHCHARGE_RO_BIN) \
 	$(DEPTHCHARGE_RW_ELF) $(DEPTHCHARGE_RW_BIN) \
 	$(DEPTHCHARGE_ELF) $(DEPTHCHARGE_PAYLOAD)
 
-ifeq ($(CONFIG_MOCK_TPM),y)
-VBOOT_MOCK_TPM=1
-else
-VBOOT_MOCK_TPM=$(MOCK_TPM)
-endif
-
-
 # The vboot library source is external to depthcharge.
 $(VB_LIB):
 ifndef VB_SOURCE
@@ -64,7 +57,7 @@ else
 		CC="$(XCC)" \
 		CFLAGS="$(CFLAGS) -DVBOOT_DEBUG" \
 		$(MAKE) -C $(VB_SOURCE) \
-		MOCK_TPM=$(VBOOT_MOCK_TPM) \
+		MOCK_TPM=$(CONFIG_MOCK_TPM) \
 		BUILD=$(dir $(VB_LIB)) \
 		V=$(V) \
 		fwlib
