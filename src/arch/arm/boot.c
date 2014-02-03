@@ -26,18 +26,6 @@
 #include "base/cleanup_funcs.h"
 #include "vboot/boot.h"
 
-static inline uint32_t get_cpsr(void)
-{
-	uint32_t cpsr;
-	__asm__ __volatile__("mrs %0, cpsr\n" : "=r"(cpsr));
-	return cpsr;
-}
-
-static inline void set_cpsr(uint32_t cpsr)
-{
-	__asm__ __volatile__("msr cpsr_cxsf, %0\n" :: "r"(cpsr));
-}
-
 static inline uint32_t get_sctlr(void)
 {
 	uint32_t val;
@@ -58,27 +46,10 @@ int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry)
 {
 	run_cleanup_funcs(CleanupOnHandoff);
 
-	static const uint32_t CpsrF = (0x1 << 6);
-	static const uint32_t CpsrI = (0x1 << 7);
-	static const uint32_t CpsrA = (0x1 << 8);
-	static const uint32_t CpsrModeMask = 0x1f;
-	static const uint32_t CpsrModeSvc = 0x13;
-
 	static const uint32_t SctlrM = (0x1 << 0);
 	static const uint32_t SctlrC = (0x1 << 2);
 
-	uint32_t cpsr = get_cpsr();
 	uint32_t sctlr = get_sctlr();
-
-	// Set the I, and F bits to disable interrupts.
-	cpsr |= (CpsrF | CpsrI);
-	// Clear the A bit to enable aborts.
-	cpsr &= ~CpsrA;
-
-	// Set the mode to SVC.
-	cpsr &= ~CpsrModeMask;
-	cpsr |= CpsrModeSvc;
-	set_cpsr(cpsr);
 
 	// Flush dcache and icache to make loaded code visible.
 	cache_sync_instructions();
