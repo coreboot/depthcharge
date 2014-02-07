@@ -22,3 +22,5 @@ config DRIVER_BUS_I2S_EXYNOS5
 config DRIVER_BUS_I2S_TEGRA
 	bool "Tegra I2S driver"
 	default n
+
+source src/drivers/bus/i2s/baytrail/Kconfig
