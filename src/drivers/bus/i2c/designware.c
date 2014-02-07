@@ -161,6 +161,7 @@ static inline void set_speed_regs(DesignwareI2cRegs *regs, uint32_t cntl_mask,
 	writel(CLK_MHZ * low_time / 1000, low_reg);
 
 	cntl = (readl(&regs->control) & (~CONTROL_SPEED_MASK));
+	cntl |= CONTROL_RE;
 	writel(cntl | cntl_mask, &regs->control);
 }
 
