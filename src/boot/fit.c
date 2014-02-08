@@ -217,11 +217,6 @@ static void update_reserve_map(uint64_t start, uint64_t end, void *data)
 	list_insert_after(&entry->list_node, &tree->reserve_map);
 }
 
-static void count_entries(uint64_t start, uint64_t end, void *data)
-{
-	(*(int *)data)++;
-}
-
 typedef struct EntryParams
 {
 	unsigned addr_cells;
@@ -229,20 +224,47 @@ typedef struct EntryParams
 	void *data;
 } EntryParams;
 
+static uint64_t max_range_shift(unsigned size_cells)
+{
+	// Split up ranges who's sizes are too large to fit in #size-cells.
+	// The largest value we can store isn't a power of two, so we'll round
+	// down to make the math easier.
+	return size_cells * 32 - 1;
+}
+
+static void count_entries(uint64_t start, uint64_t end, void *pdata)
+{
+	EntryParams *params = (EntryParams *)pdata;
+	unsigned *count = (unsigned *)params->data;
+	uint64_t size = end - start;
+	*count += 1;
+	*count += size >> max_range_shift(params->size_cells);
+}
+
 static void update_mem_property(uint64_t start, uint64_t end, void *pdata)
 {
 	EntryParams *params = (EntryParams *)pdata;
 	uint8_t *data = (uint8_t *)params->data;
-	if (params->addr_cells == 2)
-		*(uint64_t *)data = htobell(start);
-	else
-		*(uint32_t *)data = htobel(start);
-	data += params->addr_cells * sizeof(uint32_t);
-	if (params->size_cells == 2)
-		*(uint64_t *)data = htobell(end - start);
-	else
-		*(uint32_t *)data = htobel(end - start);
-	data += params->size_cells * sizeof(uint32_t);
+	uint64_t size = end - start;
+	while (size) {
+		const uint64_t max_size =
+			0x1ULL << max_range_shift(params->size_cells);
+		const uint32_t range_size = MIN(max_size, size);
+
+		if (params->addr_cells == 2)
+			*(uint64_t *)data = htobell(start);
+		else
+			*(uint32_t *)data = htobel(start);
+		data += params->addr_cells * sizeof(uint32_t);
+		start += range_size;
+
+		if (params->size_cells == 2)
+			*(uint64_t *)data = htobell(range_size);
+		else
+			*(uint32_t *)data = htobel(range_size);
+		data += params->size_cells * sizeof(uint32_t);
+		size -= range_size;
+	}
 	params->data = data;
 }
 
@@ -294,15 +316,16 @@ static void update_memory(DeviceTree *tree, DeviceTreeNode *memory)
 		reg->prop.name = "reg";
 	}
 
-	int count = 0;
-	ranges_for_each(&mem, &count_entries, &count);
+	unsigned count = 0;
+	EntryParams count_params = { addr_cells, size_cells, &count };
+	ranges_for_each(&mem, &count_entries, &count_params);
 
 	int entry_size = (addr_cells + size_cells) * sizeof(uint32_t);
 	reg->prop.size = entry_size * count;
 	void *data = xmalloc(reg->prop.size);
 	reg->prop.data = data;
-	EntryParams params = { addr_cells, size_cells, data };
-	ranges_for_each(&mem, &update_mem_property, &params);
+	EntryParams add_params = { addr_cells, size_cells, data };
+	ranges_for_each(&mem, &update_mem_property, &add_params);
 }
 
 static void update_kernel_dt(DeviceTree *tree, char *cmd_line)
