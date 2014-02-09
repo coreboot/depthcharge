@@ -25,7 +25,6 @@
 #include <libpayload.h>
 
 #include "base/container_of.h"
-#include "base/time.h"
 #include "drivers/bus/i2c/designware.h"
 
 typedef struct {
