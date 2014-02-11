@@ -49,7 +49,8 @@ static const int emmc_clock_max = 200 * 1000 * 1000;
 
 static int board_setup(void)
 {
-        if (sysinfo_install_flags())
+	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + DEVICE_NVS_OFFSET;
+	if (sysinfo_install_flags())
 		return 1;
 
 	/* ECRW GPIO: SCGPIO59 */
@@ -65,12 +66,16 @@ static int board_setup(void)
 	if (flash_set_ops(&flash->ops))
 		return 1;
 
+	/* Setup sound components */
 	pcidev_t lpe_pcidev = PCI_DEV(0, 0x15, 0);
 	BytI2s *i2s = new_byt_i2s(
 		lpe_pcidev, &baytrail_max98090_settings, 16, 2, 4800000, 48000);
 	I2sSource *i2s_source = new_i2s_source(&i2s->ops, 48000, 2, 16000);
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
-	DesignwareI2c *i2c = new_designware_i2c(0xd0824000, 400000);
+
+	die_if(!nvs->lpss_en[LPSS_NVS_I2C2], "Codec I2C misconfigured\n");
+	DesignwareI2c *i2c = new_designware_i2c(
+		nvs->lpss_bar0[LPSS_NVS_I2C2], 400000);
 	Max98090Codec *codec = new_max98090_codec(
 		&i2c->ops, 0x10, 16, 48000, 400, 1);
 	list_insert_after(&codec->component.list_node,
@@ -86,7 +91,6 @@ static int board_setup(void)
 
 	/* Initialize eMMC port in ACPI or PCI mode */
 	SdhciHost *emmc;
-	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + DEVICE_NVS_OFFSET;
 	if (nvs->scc_en[SCC_NVS_MMC])
 		emmc = new_mem_sdhci_host((void *)nvs->scc_bar0[SCC_NVS_MMC],
 					  0, emmc_clock_min, emmc_clock_max);
