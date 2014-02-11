@@ -39,11 +39,13 @@ SdhciHost *new_mem_sdhci_host(void *ioaddr, int removable,
 	host->removable = removable;
 	host->ioaddr = ioaddr;
 
-	/*
-	 * The value translates to 'block access mode, supporting 1.7..1.95
-	 * and 2.7..3.6 voltage ranges, which is typical for eMMC devices.
-	 */
-	host->mmc_ctrlr.hardcoded_voltage = 0x40ff8080;
+	if (!removable)
+		/*
+		 * The value translates to 'block access mode, supporting
+		 * 1.7..1.95 and 2.7..3.6 voltage ranges, which is typical for
+		 * eMMC devices.
+		 */
+		host->mmc_ctrlr.hardcoded_voltage = 0x40ff8080;
 
 	add_sdhci(host);
 
