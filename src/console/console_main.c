@@ -26,7 +26,7 @@
 
 #define DEBUG_PARSER	0
 
-static char console_buffer[MAX_CONSOLE_LINE + 1]; /* console I/O buffer */
+char console_buffer[MAX_CONSOLE_LINE + 1]; /* console I/O buffer */
 
 #define debug_parser(fmt, args...)		\
 	debug_cond(DEBUG_PARSER, fmt, ##args)
@@ -35,6 +35,7 @@ static char console_buffer[MAX_CONSOLE_LINE + 1]; /* console I/O buffer */
 
 /* Cursor movement commands characters. */
 #define CHAR_HOME	   1 /* ^A */
+#define CHAR_CTL	   3 /* ^C */
 #define CHAR_EOL	   5 /* ^E */
 #define CHAR_RIGHT	  12 /* ^L */
 #define CHAR_DEL	0x7f
@@ -894,4 +895,18 @@ int run_command_list(const char *cmd, int len, int flag)
 		free(buff);
 
 	return rcode;
+}
+
+int ctrlc(void)
+{
+	while (serial_havechar())
+		if (serial_getchar() == CHAR_CTL)
+			return 1;
+
+	return 0;
+}
+
+int read_line (const char *prompt, char *buffer)
+{
+	return ubreadline_into_buffer(prompt, buffer);
 }

@@ -57,7 +57,11 @@ struct cmd_tbl_s {
 
 typedef struct cmd_tbl_s	cmd_tbl_t;
 
+extern char console_buffer[];
+extern int read_line (const char *prompt, char *buffer);
+
 extern int cmd_auto_complete(const char *const prompt, char *buf, int *np);
+extern int cmd_get_data_size(char* arg, int default_size);
 
 /*
  * Error codes that commands return to cmd_process(). We use the standard 0

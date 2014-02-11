@@ -115,9 +115,10 @@
  * Function Prototypes
  */
 
-/* common/main.c */
+/* common/console_main.c */
 void console_loop	(void);
 int run_command(const char *cmd, int flag);
+int ctrlc(void);
 
 /**
  * Run a list of commands separated by ; or even \0
