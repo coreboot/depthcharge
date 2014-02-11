@@ -87,9 +87,17 @@ static uint64_t extract_uint32_bits(const uint32_t *array, int start, int count)
 static int mmc_send_cmd(MmcCtrlr *ctrlr, MmcCommand *cmd, MmcData *data)
 {
 	int ret = -1, retries = 2;
-	mmc_trace("CMD_SEND:%d\n", cmd->cmdidx);
-	mmc_trace("\tARG\t\t\t %#08X\n", cmd->cmdarg);
+
+	mmc_trace("CMD_SEND:%d %p\n", cmd->cmdidx, ctrlr);
+	mmc_trace("\tARG\t\t\t %#8.8x\n", cmd->cmdarg);
 	mmc_trace("\tFLAG\t\t\t %d\n", cmd->flags);
+	if (data) {
+		mmc_trace("\t%s %d block(s) of %d bytes (%p)\n",
+			  data->flags == MMC_DATA_READ ? "READ" : "WRITE",
+			  data->blocks,
+			  data->blocksize,
+			  data->dest);
+	}
 
 	while (retries--) {
 		ret = ctrlr->send_cmd(ctrlr, cmd, data);
@@ -100,28 +108,28 @@ static int mmc_send_cmd(MmcCtrlr *ctrlr, MmcCommand *cmd, MmcData *data)
 			break;
 
 		case MMC_RSP_R1:
-			mmc_trace("\tMMC_RSP_R1,5,6,7 \t %#08X \n",
+			mmc_trace("\tMMC_RSP_R1,5,6,7 \t %#8.8x\n",
 				  cmd->response[0]);
 			break;
 
 		case MMC_RSP_R1b:
-			mmc_trace("\tMMC_RSP_R1b\t\t %#08X \n",
+			mmc_trace("\tMMC_RSP_R1b\t\t %#8.8x\n",
 				  cmd->response[0]);
 			break;
 
 		case MMC_RSP_R2:
-			mmc_trace("\tMMC_RSP_R2\t\t %#08X \n",
+			mmc_trace("\tMMC_RSP_R2\t\t %#8.8x\n",
 				  cmd->response[0]);
-			mmc_trace("\t          \t\t %#08X \n",
+			mmc_trace("\t          \t\t %#8.8x\n",
 				  cmd->response[1]);
-			mmc_trace("\t          \t\t %#08X \n",
+			mmc_trace("\t          \t\t %#8.8x\n",
 				  cmd->response[2]);
-			mmc_trace("\t          \t\t %#08X \n",
+			mmc_trace("\t          \t\t %#8.8x\n",
 				  cmd->response[3]);
 			break;
 
 		case MMC_RSP_R3:
-			mmc_trace("\tMMC_RSP_R3,4\t\t %#08X \n",
+			mmc_trace("\tMMC_RSP_R3,4\t\t %#8.8x\n",
 				  cmd->response[0]);
 			break;
 
@@ -153,7 +161,7 @@ static int mmc_send_status(MmcMedia *media, int tries)
 		else if (cmd.response[0] & MMC_STATUS_RDY_FOR_DATA)
 			break;
 		else if (cmd.response[0] & MMC_STATUS_MASK) {
-			mmc_error("Status Error: %#08X\n", cmd.response[0]);
+			mmc_error("Status Error: %#8.8x\n", cmd.response[0]);
 			return MMC_COMM_ERR;
 		}
 
@@ -448,7 +456,7 @@ static int mmc_send_ext_csd(MmcCtrlr *ctrlr, unsigned char *ext_csd)
 		int i, size;
 
 		size = data.blocks * data.blocksize;
-		mmc_trace("\text_csd:");
+		mmc_trace("\t%p ext_csd:", ctrlr);
 		for (i = 0; i < size; i++) {
 			if (!(i % 32))
 			    printf("\n");
@@ -900,6 +908,19 @@ static int mmc_startup(MmcMedia *media)
 	mmc_set_clock(media->ctrlr, clock);
 	media->dev.block_count = media->capacity / media->read_bl_len;
 	media->dev.block_size = media->read_bl_len;
+
+	printf("Man %06x Snr %u ",
+	       media->cid[0] >> 24,
+	       (((media->cid[2] & 0xffff) << 16) |
+		((media->cid[3] >> 16) & 0xffff)));
+	printf("Product %c%c%c%c", media->cid[0] & 0xff,
+	       (media->cid[1] >> 24), (media->cid[1] >> 16) & 0xff,
+	       (media->cid[1] >> 8) & 0xff);
+	if (!IS_SD(media)) /* eMMC product string is longer */
+		printf("%c%c", media->cid[1] & 0xff,
+		       (media->cid[2] >> 24) & 0xff);
+	printf(" Revision %d.%d\n", (media->cid[2] >> 20) & 0xf,
+	       (media->cid[2] >> 16) & 0xf);
 	return 0;
 }
 
@@ -925,9 +946,10 @@ static int mmc_send_if_cond(MmcMedia *media)
 int mmc_setup_media(MmcCtrlr *ctrlr)
 {
 	int err;
-	MmcMedia *media = xzalloc(sizeof(*media));
 
+	MmcMedia *media = xzalloc(sizeof(*media));
 	media->ctrlr = ctrlr;
+
 	mmc_set_bus_width(ctrlr, 1);
 	mmc_set_clock(ctrlr, 1);
 
@@ -963,15 +985,15 @@ int mmc_setup_media(MmcCtrlr *ctrlr)
 	if (err == MMC_IN_PROGRESS)
 		err = mmc_complete_op_cond(media);
 
-	if (err)
-		return err;
+	if (!err) {
+		err = mmc_startup(media);
+		if (!err) {
+			ctrlr->media = media;
+			return 0;
+		}
+	}
 
-	err = mmc_startup(media);
-	if (err)
-		return err;
-
-	ctrlr->media = media;
-
+	free(media);
 	return err;
 }
 
