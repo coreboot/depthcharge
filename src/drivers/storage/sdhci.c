@@ -612,20 +612,18 @@ static int sdhci_update(BlockDevCtrlrOps *me)
 	SdhciHost *host = container_of
 		(me, SdhciHost, mmc_ctrlr.ctrlr.ops);
 
-	if (!host->initialized && sdhci_init(host))
-		return -1;
-
-	host->initialized = 1;
-
 	if (host->removable) {
-		int present = sdhci_readl(host, SDHCI_PRESENT_STATE) &
-			SDHCI_CARD_PRESENT;
+		int present = !(sdhci_readl(host, SDHCI_PRESENT_STATE) &
+				SDHCI_CARD_PRESENT);
 
 		if (present && !host->mmc_ctrlr.media) {
 			// A card is present and not set up yet. Get it ready.
+			if (sdhci_init(host))
+				return -1;
+
 			if (mmc_setup_media(&host->mmc_ctrlr))
 				return -1;
-			host->mmc_ctrlr.media->dev.name = "removable SDHCI";
+			host->mmc_ctrlr.media->dev.name = "SDHCI card";
 			host->mmc_ctrlr.media->dev.removable = 1;
 			host->mmc_ctrlr.media->dev.ops.read = &block_mmc_read;
 			host->mmc_ctrlr.media->dev.ops.write = &block_mmc_write;
@@ -638,9 +636,14 @@ static int sdhci_update(BlockDevCtrlrOps *me)
 			host->mmc_ctrlr.media = NULL;
 		}
 	} else {
+		if (!host->initialized && sdhci_init(host))
+			return -1;
+
+		host->initialized = 1;
+
 		if (mmc_setup_media(&host->mmc_ctrlr))
 			return -1;
-		host->mmc_ctrlr.media->dev.name = "SDHCI";
+		host->mmc_ctrlr.media->dev.name = "SDHCI fixed";
 		host->mmc_ctrlr.media->dev.removable = 0;
 		host->mmc_ctrlr.media->dev.ops.read = &block_mmc_read;
 		host->mmc_ctrlr.media->dev.ops.write = &block_mmc_write;

@@ -925,10 +925,9 @@ static int mmc_send_if_cond(MmcMedia *media)
 int mmc_setup_media(MmcCtrlr *ctrlr)
 {
 	int err;
-
 	MmcMedia *media = xzalloc(sizeof(*media));
-	media->ctrlr = ctrlr;
 
+	media->ctrlr = ctrlr;
 	mmc_set_bus_width(ctrlr, 1);
 	mmc_set_clock(ctrlr, 1);
 
