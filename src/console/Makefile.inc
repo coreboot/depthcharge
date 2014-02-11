@@ -20,5 +20,4 @@
 depthcharge-$(CONFIG_CONSOLE) += command.c
 depthcharge-$(CONFIG_CONSOLE) += console_main.c
 depthcharge-$(CONFIG_CONSOLE) += memory.c
-
-
+depthcharge-$(CONFIG_CONSOLE) += storage.c
