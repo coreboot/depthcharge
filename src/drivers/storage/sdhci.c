@@ -113,7 +113,6 @@ static int sdhci_setup_adma(SdhciHost *host, MmcData* data)
 {
 	int i, togo, need_descriptors;
 	char *buffer_data;
-	u16 mode = SDHCI_TRNS_DMA;
 
 	togo = data->blocks * data->blocksize;
 	if (!togo) {
@@ -164,20 +163,10 @@ static int sdhci_setup_adma(SdhciHost *host, MmcData* data)
 
 	sdhci_writel(host, (u32) host->adma_descs, SDHCI_ADMA_ADDRESS);
 
-	if (data->blocks > 1) {
-		mode |= SDHCI_TRNS_MULTI |
-			SDHCI_TRNS_BLK_CNT_EN |
-			SDHCI_TRNS_ACMD12;
-	}
-	if (data->flags == MMC_DATA_READ)
-		mode |= SDHCI_TRNS_READ;
-
-	sdhci_writew(host, mode, SDHCI_TRANSFER_MODE);
-
 	return 0;
 }
 
-static int sdhci_complete_adma(SdhciHost *host)
+static int sdhci_complete_adma(SdhciHost *host, MmcCommand *cmd)
 {
 	int retry;
 	u32 stat = 0, mask;
@@ -208,14 +197,15 @@ static int sdhci_complete_adma(SdhciHost *host)
 			udelay(1);
 		}
 
-		sdhci_writel(host, SDHCI_INT_DATA_END | SDHCI_INT_ADMA_ERROR,
-			     SDHCI_INT_STATUS);
-		if (!(stat & SDHCI_INT_ERROR))
+		sdhci_writel(host, stat, SDHCI_INT_STATUS);
+		if (retry && !(stat & SDHCI_INT_ERROR)) {
+			sdhci_cmd_done(host, cmd);
 			return 0;
+		}
 	}
 
-	printf("%s: transfer error, stat %#x, adma error %#x\n",
-	       __func__, stat, sdhci_readl(host, SDHCI_ADMA_ERROR));
+	printf("%s: transfer error, stat %#x, adma error %#x, retry %d\n",
+	       __func__, stat, sdhci_readl(host, SDHCI_ADMA_ERROR), retry);
 
 	sdhci_reset(host, SDHCI_RESET_CMD);
 	sdhci_reset(host, SDHCI_RESET_DATA);
@@ -231,13 +221,13 @@ static int sdhci_send_command(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
 {
 	unsigned int stat = 0;
 	int ret = 0;
-	u32 mask, flags, mode;
+	u32 mask, flags;
 	unsigned int timeout, start_addr = 0;
 	unsigned int retry = 10000;
 	SdhciHost *host = container_of(mmc_ctrl, SdhciHost, mmc_ctrlr);
 
-	/* Wait max 10 ms */
-	timeout = 10;
+	/* Wait max 1 s */
+	timeout = 1000;
 
 	sdhci_writel(host, SDHCI_INT_ALL_MASK, SDHCI_INT_STATUS);
 	mask = SDHCI_CMD_INHIBIT | SDHCI_DATA_INHIBIT;
@@ -249,7 +239,9 @@ static int sdhci_send_command(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
 
 	while (sdhci_readl(host, SDHCI_PRESENT_STATE) & mask) {
 		if (timeout == 0) {
-			printf("Controller never released inhibit bit(s).\n");
+			printf("Controller never released inhibit bit(s), "
+			       "present state %#8.8x.\n",
+			       sdhci_readl(host, SDHCI_PRESENT_STATE));
 			return MMC_COMM_ERR;
 		}
 		timeout--;
@@ -276,32 +268,35 @@ static int sdhci_send_command(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
 
 	/*Set Transfer mode regarding to data flag*/
 	if (data) {
-		if (host->host_caps & MMC_AUTO_CMD12) {
-			if (sdhci_setup_adma(host, data))
-				return -1;
-		} else { /* Set up non dma transfer */
+		u16 mode = 0;
 
-			sdhci_writeb(host, 0xe, SDHCI_TIMEOUT_CONTROL);
-			mode = SDHCI_TRNS_BLK_CNT_EN;
-			if (data->blocks > 1)
-				mode |= SDHCI_TRNS_MULTI;
-
-			if (data->flags == MMC_DATA_READ)
-				mode |= SDHCI_TRNS_READ;
-
-			sdhci_writew(host, mode, SDHCI_TRANSFER_MODE);
-		}
 		sdhci_writew(host, SDHCI_MAKE_BLKSZ(SDHCI_DEFAULT_BOUNDARY_ARG,
 						    data->blocksize),
 			     SDHCI_BLOCK_SIZE);
+
+		if (data->flags == MMC_DATA_READ)
+			mode |= SDHCI_TRNS_READ;
+
+		if (data->blocks > 1)
+			mode |= SDHCI_TRNS_BLK_CNT_EN |
+				SDHCI_TRNS_MULTI | SDHCI_TRNS_ACMD12;
+
 		sdhci_writew(host, data->blocks, SDHCI_BLOCK_COUNT);
+
+		if (host->host_caps & MMC_AUTO_CMD12) {
+			if (sdhci_setup_adma(host, data))
+				return -1;
+
+			mode |= SDHCI_TRNS_DMA;
+		}
+		sdhci_writew(host, mode, SDHCI_TRANSFER_MODE);
 	}
 
 	sdhci_writel(host, cmd->cmdarg, SDHCI_ARGUMENT);
 	sdhci_writew(host, SDHCI_MAKE_CMD(cmd->cmdidx, flags), SDHCI_COMMAND);
 
 	if (data && (host->host_caps & MMC_AUTO_CMD12))
-		return sdhci_complete_adma(host);
+		return sdhci_complete_adma(host, cmd);
 
 	do {
 		stat = sdhci_readl(host, SDHCI_INT_STATUS);
@@ -603,6 +598,9 @@ static int sdhci_init(SdhciHost *host)
 	/* Mask all sdhci interrupt sources */
 	sdhci_writel(host, 0x0, SDHCI_SIGNAL_ENABLE);
 
+	/* Set timeout to maximum, shouldn't happen if everything's right. */
+	sdhci_writeb(host, 0xe, SDHCI_TIMEOUT_CONTROL);
+
 	udelay(10000);
 	return 0;
 }
@@ -613,8 +611,8 @@ static int sdhci_update(BlockDevCtrlrOps *me)
 		(me, SdhciHost, mmc_ctrlr.ctrlr.ops);
 
 	if (host->removable) {
-		int present = !(sdhci_readl(host, SDHCI_PRESENT_STATE) &
-				SDHCI_CARD_PRESENT);
+		int present = (sdhci_readl(host, SDHCI_PRESENT_STATE) &
+			       SDHCI_CARD_PRESENT) != 0;
 
 		if (present && !host->mmc_ctrlr.media) {
 			// A card is present and not set up yet. Get it ready.
@@ -625,8 +623,6 @@ static int sdhci_update(BlockDevCtrlrOps *me)
 				return -1;
 			host->mmc_ctrlr.media->dev.name = "SDHCI card";
 			host->mmc_ctrlr.media->dev.removable = 1;
-			host->mmc_ctrlr.media->dev.ops.read = &block_mmc_read;
-			host->mmc_ctrlr.media->dev.ops.write = &block_mmc_write;
 			list_insert_after(&host->mmc_ctrlr.media->dev.list_node,
 					  &removable_block_devices);
 		} else if (!present && host->mmc_ctrlr.media) {
@@ -645,12 +641,14 @@ static int sdhci_update(BlockDevCtrlrOps *me)
 			return -1;
 		host->mmc_ctrlr.media->dev.name = "SDHCI fixed";
 		host->mmc_ctrlr.media->dev.removable = 0;
-		host->mmc_ctrlr.media->dev.ops.read = &block_mmc_read;
-		host->mmc_ctrlr.media->dev.ops.write = &block_mmc_write;
 		list_insert_after(&host->mmc_ctrlr.media->dev.list_node,
 				  &fixed_block_devices);
 		host->mmc_ctrlr.ctrlr.need_update = 0;
 	}
+
+	host->mmc_ctrlr.media->dev.ops.read = block_mmc_read;
+	host->mmc_ctrlr.media->dev.ops.write = block_mmc_write;
+
 	return 0;
 }
 
