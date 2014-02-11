@@ -175,6 +175,19 @@ U_BOOT_CMD(
 );
 #endif
 
+static int console_done;
+
+static int do_exit(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	console_done = 1;
+	return 0;
+}
+
+U_BOOT_CMD(
+	exit, 1, 1,
+	"exit command console to coninue normal boot", NULL
+);
+
 /*^^^^^^^^^^^^^^^^^^^^^^^^  History support ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^*/
 /***************************************************************************/
 
@@ -544,7 +557,7 @@ void console_loop(void)
 	/*
 	 * Main Loop for Monitor Command Processing
 	 */
-	for (;;) {
+	while (!console_done) {
 		len = ubreadline_into_buffer(CONFIG_SYS_PROMPT, console_buffer);
 
 		flag = 0;	/* assume no special flags for now */
