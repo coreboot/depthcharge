@@ -170,7 +170,7 @@ def main(argv):
   for locale in locales:
     print locale,
     inputs = ParseLocaleInputFile(locale, formats[KEY_INPUTS])
-    output_dir = os.path.join(OUTPUT_DIR, locale)
+    output_dir = os.path.normpath(os.path.join(OUTPUT_DIR, locale))
     if not os.path.exists(output_dir):
       os.makedirs(output_dir)
     BuildTextFiles(inputs, formats[KEY_FILES], output_dir)
