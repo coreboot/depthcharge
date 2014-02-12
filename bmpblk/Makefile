@@ -26,6 +26,8 @@ images:
 clean:
 	$(MAKE) -C strings clean
 	$(MAKE) -C images clean
+	rm -rf ./build
+	find . -type f -name '*.pyc' -delete
 
 $(STAGE):
 	$(MAKE) -C strings
