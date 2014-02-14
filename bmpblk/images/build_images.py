@@ -41,6 +41,7 @@ SCRIPT_BASE = os.path.dirname(os.path.abspath(__file__))
 LOCALE_DIR = 'locale'
 FONT_DIR = 'font'
 PNG_FILES = '*.png'
+SVG_FILES = '*.svg'
 
 # Base processing utilities, built by vboot_reference
 BMPLKU = "bmpblk_utility"
@@ -262,9 +263,6 @@ def build_image(board, config_database):
   stage_dir = os.path.join('..', 'build', '.stage')
   assets_dir = config[ASSETS_DIR_KEY]
 
-  # To reduce output size, 16 is good enough for our text image files.
-  text_max_colors = 16
-
   resolution = config[RESOLUTION_KEY]
   panel_size = config[PANEL_SIZE_KEY]
   assets_resolution = config[ASSETS_RESOLUTION_KEY]
@@ -308,24 +306,37 @@ def build_image(board, config_database):
   convert_to_bmp(os.path.join(assets_dir, PNG_FILES), output_dir, scale_params,
                  background_colors, replace_map)
 
+  # If we need to scale, use vector text images for better quality (which still
+  # looks good with less colors).
+  if scale == (1, 1):
+    text_files = PNG_FILES
+    text_max_colors = 16
+  else:
+    text_files = SVG_FILES
+    text_max_colors = 6
+
   # Prepares strings and localized images.
-  convert_to_bmp(os.path.join(stage_dir, PNG_FILES),
+  convert_to_bmp(os.path.join(stage_dir, text_files),
                  output_dir, scale_params, background_colors,
                  replace_map)
   locale_dir = os.path.join(stage_dir, LOCALE_DIR)
   locales = get_locales(locale_dir, config)
 
+  # Show progress because processing SVG files may take a long time.
+  sys.stderr.write(" > processing: ")
   for locale in locales:
+    sys.stderr.write(locale + " ")
     locale_output_dir = os.path.join(output_dir, LOCALE_DIR, locale)
     os.makedirs(locale_output_dir)
-    convert_to_bmp(os.path.join(locale_dir, locale, PNG_FILES),
+    convert_to_bmp(os.path.join(locale_dir, locale, text_files),
                    locale_output_dir, scale_params, background_colors,
                    replace_map, text_max_colors)
+  sys.stderr.write("\n")
 
   font_dir = os.path.join(stage_dir, FONT_DIR)
   font_output_dir = os.path.join(output_dir, FONT_DIR)
   os.makedirs(font_output_dir)
-  convert_to_bmp(os.path.join(font_dir, PNG_FILES), font_output_dir,
+  convert_to_bmp(os.path.join(font_dir, text_files), font_output_dir,
                  scale_params, background_colors, replace_map, text_max_colors)
 
   # Build font file.
