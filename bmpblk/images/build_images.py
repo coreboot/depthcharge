@@ -193,7 +193,7 @@ def get_locales(locale_dir, config):
 
 
 def convert_to_bmp(source, output_folder, scale_params, background_colors,
-                   replace_map):
+                   replace_map, max_colors=256):
   """Utility function to convert images into BMP format. Creates requested
   files in output directory.
 
@@ -209,6 +209,7 @@ def convert_to_bmp(source, output_folder, scale_params, background_colors,
                   for images in charing mode (usually black).
     replace_map: A dictionary, keys are file names to change and values are
                  new output names.
+    max_colors: Maximum of colors can be used in output image.
   """
   files = glob.glob(source)
   if not files:
@@ -239,7 +240,7 @@ def convert_to_bmp(source, output_folder, scale_params, background_colors,
     # TODO(hungte) Cache results to speed up YAML generation.
     convert_to_bmp3.convert_to_bmp(
         image, scale_param, background=background_color,
-        output_file=output_file)
+        output_file=output_file, max_colors=max_colors)
 
 
 def build_image(board, config_database):
@@ -260,6 +261,9 @@ def build_image(board, config_database):
   output_dir = os.path.join('..', 'build', board)
   stage_dir = os.path.join('..', 'build', '.stage')
   assets_dir = config[ASSETS_DIR_KEY]
+
+  # To reduce output size, 16 is good enough for our text image files.
+  text_max_colors = 16
 
   resolution = config[RESOLUTION_KEY]
   panel_size = config[PANEL_SIZE_KEY]
@@ -316,13 +320,13 @@ def build_image(board, config_database):
     os.makedirs(locale_output_dir)
     convert_to_bmp(os.path.join(locale_dir, locale, PNG_FILES),
                    locale_output_dir, scale_params, background_colors,
-                   replace_map)
+                   replace_map, text_max_colors)
 
   font_dir = os.path.join(stage_dir, FONT_DIR)
   font_output_dir = os.path.join(output_dir, FONT_DIR)
   os.makedirs(font_output_dir)
   convert_to_bmp(os.path.join(font_dir, PNG_FILES), font_output_dir,
-                 scale_params, background_colors, replace_map)
+                 scale_params, background_colors, replace_map, text_max_colors)
 
   # Build font file.
   shell("bmpblk_font --outfile %s/hwid_fonts.font %s/font/*.bmp" %

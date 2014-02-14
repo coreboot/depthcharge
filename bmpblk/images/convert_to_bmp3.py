@@ -31,7 +31,7 @@ def parse_scale_factor(pattern, original_size):
 
 
 def convert_to_bmp(input_file, scale, background=BACKGROUND_COLOR,
-                   output_file=None):
+                   output_file=None, max_colors=256):
   """Converts any image input files into BMP format.
 
   Args:
@@ -40,6 +40,7 @@ def convert_to_bmp(input_file, scale, background=BACKGROUND_COLOR,
     background: Background color to use when the input file has transparency.
     output_file: File name to output, or None to output by the name of
                  input_file with extension ".bmp".
+    max_colors: Maximum of colors can be used in output image.
   Returns:
     A new image created in outdir. Returns None.
   """
@@ -66,7 +67,8 @@ def convert_to_bmp(input_file, scale, background=BACKGROUND_COLOR,
     target = target.resize(new_size, Image.BICUBIC)
 
   # Export and downsample color space.
-  target.convert('P', dither=None, palette=Image.ADAPTIVE).save(output_file)
+  target.convert('P', dither=None, colors=max_colors, palette=Image.ADAPTIVE
+                 ).save(output_file)
 
 
 def parse_color_param(param):
