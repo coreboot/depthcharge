@@ -44,10 +44,25 @@ def convert_to_bmp(input_file, scale, background=BACKGROUND_COLOR,
   Returns:
     A new image created in outdir. Returns None.
   """
-  source = Image.open(input_file)
   if output_file is None:
     output_file = os.path.splitext(input_file)[0] + DEFAULT_OUTPUT_EXT
 
+  if os.path.splitext(input_file)[1] == '.svg':
+    # Assume a PNG file with similar image content (for size calculation) is
+    # already created in source folder, and try to rasterize SVG to a PNG file
+    # in output folder.
+    png_file = os.path.splitext(output_file)[0] + '.png'
+    png_option = "--background-color='#%02x%02x%02x'" % background
+    if scale:
+      ref_file = os.path.splitext(input_file)[0] + '.png'
+      ref_size = Image.open(ref_file).size
+      png_size = parse_scale_factor(scale, ref_size)
+      png_option += " -w %d -h %d" % (png_size[0], png_size[1])
+      scale = None
+    os.system("rsvg-convert %s -o %s %s" % (png_option, png_file, input_file))
+    input_file = png_file
+
+  source = Image.open(input_file)
   # Process alpha channel and transparency.
   if source.mode == 'RGBA':
     target = Image.new('RGB', source.size, background)
