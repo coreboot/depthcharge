@@ -11,11 +11,11 @@ Because the bitmap images and display code is part of the Read-Only BIOS,
 back-porting any new bitmaps to older devices is not possible.
 
 
-Old-style, unversioned bitmaps. Used in Mario / Cr-48.
+Old-style, un-versioned bitmaps. Used in Mario / Cr-48.
 
 In the Cr-48 BIOS there are four BIOS screens that may be presented to the
 user. Each contains a graphic, a URL, and some informative text. The screens
-are single bitmap images, hardcoded in read-only BIOS (because they have to
+are single bitmap images, hard-coded in read-only BIOS (because they have to
 display even when the R/W BIOS and SSD are both completely erased). They can
 be replaced at manufacturing time, but creating the screens is difficult.
 The format is a compressed EFI firmware volume that is generated when the
@@ -111,7 +111,7 @@ dependency libraries for them:
 
   sudo apt-get install libtspi-dev uuid-dev libyaml-dev
 
-On older Ubuntu installatins you would also need liblzml-dev, on newer ones -
+On older Ubuntu installations you would also need liblzml-dev, on newer ones -
 liblzma-dev, try installing both, one at a time, at least one must succeed.
 
 Now, time to build the utilities in vboot_reference outside of the chroot:
@@ -121,8 +121,8 @@ Now, time to build the utilities in vboot_reference outside of the chroot:
 
 Once you've built vboot_reference you'll find the executables in
 ./build/utility/bmpblk*. If they were built in the standard place they
-will be found by this tool automatically. If not, their location will
-ahve to be added to your $PATH.
+will be found by this tool automatically. If not, their location must be added
+to your $PATH.
 
 Now you should be able to just run "make" and everything will be
 regenerated:
