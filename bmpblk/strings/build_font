@@ -37,7 +37,7 @@ main() {
   [ -n "$FONTSIZE" ] && fontsize="--point=$FONTSIZE"
 
   echo "Converting glyph images..."
-  "$SCRIPT_DIR/text_to_png" --font="$FONT" --color="$COLOR" \
+  "$SCRIPT_DIR/text_to_png_svg" --font="$FONT" --color="$COLOR" \
     --margin="$MARGIN 0" $fontsize "$output/*.txt"
 }
 

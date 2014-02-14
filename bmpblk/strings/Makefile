@@ -6,7 +6,7 @@
 
 LOCALEDIR=locale
 OUTDIR=../build/.stage
-FONTSIZE=18
+FONTSIZE=15
 
 all: shared_strings font $(LOCALEDIR)
 
@@ -15,7 +15,7 @@ $(LOCALEDIR):
 
 shared_strings:
 	mkdir -p "$(OUTDIR)"
-	./text_to_png --point=$(FONTSIZE) --outdir=$(OUTDIR) *.TXT
+	./text_to_png_svg --point=$(FONTSIZE) --outdir=$(OUTDIR) *.TXT
 
 font:
 	FONTSIZE="$(FONTSIZE)" ./build_font $(OUTDIR)/$@

@@ -90,13 +90,13 @@ bitmap block structure incompatible with previous versions.
 Instructions for manually rebuilding things:
 
 
-Some libraries and programs (ex, PIL, pango-view) used in generating image files
-need fonts set properly or specific version (ex, PIL is broken inside chroot),
-and simpler to do OUTSIDE of the chroot.
+Some libraries and programs (ex, PIL, pango-view, rsvg) used in generating
+image files need fonts set properly or specific version (ex, PIL is broken
+inside chroot), and simpler to do OUTSIDE of the chroot.
 
 On Ubuntu, you need to install following packages:
 
-  sudo apt-get install libpango1.0-dev python-imaging
+  sudo apt-get install libpango1.0-dev python-imaging librsvg2-bin
 
 And you probably want to make sure all required fonts are installed:
 

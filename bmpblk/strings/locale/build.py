@@ -28,7 +28,7 @@ KEY_STYLES = 'styles'
 
 FIRMWARE_STRINGS_FILE = 'firmware_strings.txt'
 FORMAT_FILE = 'format.yaml'
-TXT_TO_PNG = os.path.join(SCRIPT_BASE, '..', 'text_to_png')
+TXT_TO_PNG_SVG = os.path.join(SCRIPT_BASE, '..', 'text_to_png_svg')
 BACKGROUND_IMAGE = os.path.join(SCRIPT_BASE, '..', '..', 'images',
                                 'Background.png')
 OUTPUT_DIR = os.path.join(SCRIPT_BASE, '..', '..', 'build', '.stage', 'locale')
@@ -136,7 +136,7 @@ def ConvertPngFiles(locale, max_width, files, styles, fonts, output_dir):
   """
   for file_name in files:
     input_file = os.path.join(output_dir, file_name + '.txt')
-    command = [TXT_TO_PNG, "--lan=%s" % locale, "--outdir=%s" % output_dir]
+    command = [TXT_TO_PNG_SVG, "--lan=%s" % locale, "--outdir=%s" % output_dir]
     if file_name in styles:
       command.append(styles[file_name])
     if locale in fonts:
