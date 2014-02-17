@@ -50,6 +50,11 @@ BMPLKFONT = "bmpblk_font"
 DEFAULT_RESOLUTION = (1366.0, 768.0)
 DEFAULT_PANEL_SIZE = DEFAULT_RESOLUTION
 DEFAULT_ASSETS_DIR = 'assets'
+DEFAULT_LOCALES = ['en', 'es-419', 'pt-BR', 'fr', 'es', 'pt-PT', 'ca', 'it',
+                   'de', 'el', 'nl', 'da', 'no', 'sv', 'fi', 'et', 'lv', 'lt',
+                   'ru', 'pl', 'cs', 'sk', 'hu', 'sl', 'sr', 'hr', 'bg', 'ro',
+                   'uk', 'tr', 'iw', 'ar', 'fa', 'hi', 'th', 'vi', 'id', 'fil',
+                   'zh-CN', 'zh-TW', 'ko', 'ja']
 
 # YAML key names.
 PANEL_SIZE_KEY = 'panel'
@@ -165,16 +170,15 @@ def build_replace_map(config):
   return replace_map
 
 
-def get_locales(locale_dir, config):
+def get_locales(config):
   """Gets the locales to include when building for one board.
 
   The locales are decided by following order:
     1. The LOCALES environment variable.
     2. The 'locales' entry, if defined in config.
-    3. The locales found in locale_dir.
+    3. DEFAULT_LOCALES.
 
   Args:
-    locale_dir: a string, directory for generated locale resource.
     config: a dictionary, board configuration to specify default locales.
 
   Returns:
@@ -188,9 +192,7 @@ def get_locales(locale_dir, config):
   if LOCALES_KEY in config:
     return config[LOCALES_KEY]
 
-  # Collect all locales in directory
-  return [os.path.basename(os.path.dirname(locale))
-          for locale in glob.glob(os.path.join(locale_dir, '*', '.'))]
+  return DEFAULT_LOCALES
 
 
 def convert_to_bmp(source, output_folder, scale_params, background_colors,
@@ -320,7 +322,7 @@ def build_image(board, config_database):
                  output_dir, scale_params, background_colors,
                  replace_map)
   locale_dir = os.path.join(stage_dir, LOCALE_DIR)
-  locales = get_locales(locale_dir, config)
+  locales = get_locales(config)
 
   # Show progress because processing SVG files may take a long time.
   sys.stderr.write(" > processing: ")

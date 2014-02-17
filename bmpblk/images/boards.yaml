@@ -12,7 +12,7 @@
 # 'assets_res': Screen resolution that best fits current assets
 #               (default: [1366, 768]).
 # 'bad_usb3': Presence of USB3 ports that cannot boot recovery (default: False).
-# 'locales': List of locales to include (default: All in stage folder).
+# 'locales': List of locales to include (default: All locales).
 # 'panel': Panel Dimension (default: [1366, 768]).
 # 'phy_rec': Presence of physical recovery button (default: False, check
 #            http://crosbug.com/p/24963).
@@ -21,7 +21,7 @@
 #           (default: True).
 #
 # These are all the known locales, sorted more-or-less geograpically
-#  en es-419 pt-BR en_GB fr es pt_PT ca it de
+#  en es-419 pt-BR fr es pt-PT ca it de
 #  el nl da 'no' sv fi et lv lt ru pl cs sk hu sl sr hr bg ro
 #  uk tr iw ar fa hi th vi id fil zh-CN zh-TW ko ja
 #
