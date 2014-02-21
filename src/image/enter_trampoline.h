@@ -26,6 +26,6 @@
 #include "base/elf.h"
 
 void enter_trampoline(Elf32_Ehdr *ehdr);
-void tramp_load_elf(Elf32_Ehdr *ehdr);
+void tramp_load_elf(Elf32_Ehdr *ehdr, void *param);
 
 #endif /* __IMAGE_ENTER_TRAMPOLINE_H__ */

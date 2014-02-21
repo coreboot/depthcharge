@@ -30,8 +30,11 @@ void enter_trampoline(Elf32_Ehdr *ehdr)
 {
 	__asm__ __volatile__(
 		"mov %[new_stack], %%esp\n"
+		"push %[cb_header_ptr]\n"
+		"push %[ehdr]\n"
 		"call tramp_load_elf\n"
-		:: [new_stack]"r"(&_tramp_estack - 8), [ehdr]"a"(ehdr)
+		:: [new_stack]"r"(&_tramp_estack - 8), [ehdr]"a"(ehdr),
+		   [cb_header_ptr]"d"(0)
 		: "memory"
 	);
 }

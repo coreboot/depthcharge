@@ -26,15 +26,19 @@
 #include "image/symbols.h"
 #include "image/enter_trampoline.h"
 
+extern void *cb_header_ptr;
+
 void enter_trampoline(Elf32_Ehdr *ehdr)
 {
 	__asm__ __volatile__(
 		"mov sp, %[new_stack]\n"
 		"mov r0, %[ehdr]\n"
+		"mov r1, %[cb_header_ptr]\n"
 		// Need register addressing since the call goes too far
 		"bx %[load_elf]\n"
 		:: [new_stack]"r"(&_tramp_estack - 8), [ehdr]"r"(ehdr),
-		   [zero]"r"(0), [load_elf]"r"(&tramp_load_elf)
-		: "memory", "r0", "sp"
+		   [zero]"r"(0), [load_elf]"r"(&tramp_load_elf),
+		   [cb_header_ptr]"r"(cb_header_ptr)
+		: "memory", "r0", "r1", "sp"
 	);
 }

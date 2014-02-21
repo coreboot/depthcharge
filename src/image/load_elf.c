@@ -25,7 +25,7 @@
 
 #include "base/elf.h"
 
-void load_elf(Elf32_Ehdr *ehdr)
+void load_elf(Elf32_Ehdr *ehdr, void *param)
 {
 	uintptr_t base = (uintptr_t)ehdr;
 	uintptr_t addr = (uintptr_t)ehdr + ehdr->e_phoff;
@@ -54,6 +54,6 @@ void load_elf(Elf32_Ehdr *ehdr)
 	cache_sync_instructions();
 
 	// Go for it!
-	typedef void (*entry_func)(void);
-	((entry_func)ehdr->e_entry)();
+	typedef void (*entry_func)(void *);
+	((entry_func)ehdr->e_entry)(param);
 }
