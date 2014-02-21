@@ -8,11 +8,12 @@ import wx
 
 class MyPanel(wx.Panel):
 
-  def __init__(self, parent):
+  def __init__(self, parent, size):
     wx.Panel.__init__(self, parent, wx.ID_ANY)
     self.Bind(wx.EVT_PAINT, self.OnPaint)
     self.parent = parent
     self.imglist = ()
+    self._size = size
 
   def OnPaint(self, evt=None):
     if (evt):
@@ -21,21 +22,28 @@ class MyPanel(wx.Panel):
       dc = wx.ClientDC(self)
 
     done_first = False
+    ratio = (1, 1)
     # The first image in the sequence may be used by the BIOS to set the
     # display resolution. Regardless, it should match the desired or default
     # resolution so that any previous screens get cleared.
     for x, y, filename in self.imglist:
       img = wx.Image(filename, wx.BITMAP_TYPE_ANY)
+      img_size = img.GetSize()
       if (not done_first):
-        size = img.GetSize()
+        if self._size:
+          size = self._size
+          ratio = (size[0] / float(img_size[0]), size[1] / float(img_size[1]))
+        else:
+          size = img_size
         self.SetMinSize(size)
         self.SetSize(size)
         self.Fit()
         w,h = self.parent.GetBestSize()
         self.parent.SetDimensions(-1, -1, w, h, wx.SIZE_AUTO)
         done_first = True
-      bmp = img.ConvertToBitmap()
-      dc.DrawBitmap(bmp, x, y)
+      bmp = img.Scale(img_size[0] * ratio[0], img_size[1] * ratio[1],
+                      wx.IMAGE_QUALITY_HIGH).ConvertToBitmap()
+      dc.DrawBitmap(bmp, x * ratio[0], y * ratio[1])
 
   def OnSave(self, name):
     """Draw the current image sequence into a file."""
@@ -58,7 +66,7 @@ class MyPanel(wx.Panel):
 
 class Frame(wx.Frame):
 
-  def __init__(self, bmpblock=None, title=None):
+  def __init__(self, bmpblock=None, title=None, size=None):
     wx.Frame.__init__(self, None, wx.ID_ANY, title=title)
     self.CreateStatusBar()
     self.SetStatusText(title)
@@ -68,7 +76,7 @@ class Frame(wx.Frame):
     if self.bmpblock:
       self.bmpblock.RegisterScreenDisplayObject(self)
 
-    self.p = MyPanel(self)
+    self.p = MyPanel(self, size)
 
 
   def OnQuit(self, event):

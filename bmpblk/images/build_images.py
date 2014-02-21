@@ -254,7 +254,9 @@ def build_image(board, config_database):
     config_database: a dictionary, the configuration from load_boards_config.
 
   Returns:
-    A string, the output folder containing all resources.
+    A list (folder, panel_size), "folder" is a string for the output folder
+    containing all resources, and panel_size is a list (w, h) for the expected
+    size of panel for the output bitmaps.
   """
 
   config = config_database.get(board, None)
@@ -348,17 +350,20 @@ def build_image(board, config_database):
   # Create YAML file.
   shell("cd %s && %s/make_default_yaml.py %s" %
         (output_dir, SCRIPT_BASE, ' '.join(locales)))
-  return output_dir
+  return (output_dir, panel_size)
 
 
-def build_bitmap_block(board, output_dir):
+def build_bitmap_block(board, output_info):
   """Builds the bitmap block output file (and archive files) in output_dir.
 
   Args:
     board: a string, the name of board to use.
-    output_dir: a string, the folder containing all resources and to put the
-                output files.
+    output_info: a list (output_dir, panel_size). output_dir is a string of the
+      folder containing all resources and to put the output files, and
+      panel_size is a list (w, h) for the expected panel size.
   """
+  output_dir = output_info[0]
+  panel_size = output_info[1]
   # Git information.
   git_version = shell('git show -s --format="%h"', capture_stdout=True)
   git_dirty = shell("git diff --shortstat", capture_stdout=True) and "_mod"
@@ -370,8 +375,9 @@ def build_bitmap_block(board, output_dir):
         (output_dir, BMPLKU, BMPBLK_OUTPUT, archive_name, BMPBLK_OUTPUT))
   print ("\nBitmap block file generated in: %s/%s\n"
          "Archive file to upload: %s/%s\n"
-         "To preview, run ../bitmap_viewer %s/DEFAULT.yaml\n" %
-         (output_dir, BMPBLK_OUTPUT, output_dir, archive_name, output_dir))
+         "To preview, run '../bitmap_viewer %s/DEFAULT.yaml %sx%s'\n" %
+         (output_dir, BMPBLK_OUTPUT, output_dir, archive_name, output_dir,
+          panel_size[0], panel_size[1]))
   # TODO(hungte) Check and alert if output binary is too large.
   shell("ls -l %s/%s" % (output_dir, BMPBLK_OUTPUT))
 
@@ -389,8 +395,8 @@ def main(args):
     args = config_database.keys()
     print 'Building all boards: ', args
   for board in args:
-    output_dir = build_image(board, config_database)
-    build_bitmap_block(board, output_dir)
+    output_info = build_image(board, config_database)
+    build_bitmap_block(board, output_info)
 
 
 if __name__ == '__main__':

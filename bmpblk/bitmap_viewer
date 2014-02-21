@@ -5,6 +5,7 @@
 
 """Quick-and-dirty viewer for bmpblock yaml files"""
 import os
+import re
 import sys
 import wx
 
@@ -15,23 +16,39 @@ from lib import pixdisplay
 
 class MyApp(wx.App):
 
+  def __init__(self, prog_path, yaml_path, window_size):
+    self._prog_path = prog_path
+    self._yaml_path = yaml_path
+    self._window_size = window_size
+    wx.App.__init__(self, False)
+
   def OnInit(self):
-    progname = os.path.basename(sys.argv[0])
-    progdir = os.path.abspath(os.path.dirname(sys.argv[0]))
+    progname = os.path.basename(self._prog_path)
+    progdir = os.path.abspath(os.path.dirname(self._prog_path))
     self._bmpblock = bmpblock.BmpBlock(os.path.join(progdir, 'lib'),
-                                       sys.argv[1])
+                                       self._yaml_path)
     self._mainframe = pixcontrol.Frame(self._bmpblock, progname)
     self._mainframe.Show()
     self.SetTopWindow(self._mainframe)
-    self._imgframe = pixdisplay.Frame(self._bmpblock, sys.argv[1])
+    self._imgframe = pixdisplay.Frame(self._bmpblock, self._yaml_path,
+                                      self._window_size)
     self._imgframe.Show()
     return True
 
 def main():
-  if len(sys.argv) != 2:
-    print "You must specify a config.yaml file to view"
-    sys.exit(1)
-  MyApp(False).MainLoop()
+  def parse_window_size(size_arg):
+    matched = re.findall(r'^([0-9]+)x([0-9]+)$', size_arg)
+    if (not matched) or len(matched) != 1:
+      exit("Invalid window size: %s" % size_arg)
+    return map(int, matched[0])
+
+  if len(sys.argv) < 2 or len(sys.argv) > 3:
+    exit("Usage: %s config_yaml [override_window_size]\n\t"
+         "\tExample: %s build/std/DEFAULT.yaml 1366x768" %
+         (sys.argv[0], sys.argv[0]))
+  window_size = parse_window_size(sys.argv[2]) if len(sys.argv) == 3 else None
+
+  MyApp(sys.argv[0], sys.argv[1], window_size).MainLoop()
 
 if __name__ == '__main__':
   main()
