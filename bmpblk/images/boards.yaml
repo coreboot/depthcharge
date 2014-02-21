@@ -95,6 +95,16 @@ panther,zako:
   panel:    [1920, 1080]
   phy_rec:  True
 
+monroe:
+  # Using VESA graphics mode 1024x768 (0x0117).
+  # A chromestation with built-in panel, without built-in keyboard.
+  # Display is a modern 16:9 (1920x1080) monitor.
+  # With physical recovery switch, without card reader.
+  res:      [1024, 768]
+  panel:    [1920, 1080]
+  phy_rec:  True
+  sdcard:   False
+
 parrot,butterfly:
   # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
   # Can only boot recovery by USB. (No card reader, or not able to recover
