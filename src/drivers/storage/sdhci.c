@@ -625,7 +625,7 @@ static int sdhci_update(BlockDevCtrlrOps *me)
 				free(host->mmc_ctrlr.media);
 				host->mmc_ctrlr.media = NULL;
 			}
-			return -1;
+			return 0;
 		}
 
 		if (!host->mmc_ctrlr.media) {
