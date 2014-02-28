@@ -197,26 +197,29 @@ int main(void)
 	}
 	printf("The bootfile was %d bytes long.\n", size);
 
-	// Use command line from params when present (added to the default).
-	param = netboot_params_val(NetbootParamIdKernelArgs);
-	if (param->data && param->size > 0 && *(char *)param->data != '\0') {
-		cmd_line[sizeof(def_cmd_line) - 1] = ' ';
-		strncpy(&cmd_line[sizeof(def_cmd_line)], param->data,
-			sizeof(cmd_line) - sizeof(def_cmd_line));
-		printf("Command line set from firmware parameters.\n");
-	// Otherwise, try to fetch it dynamically as a TFTP file.
-	} else if (!(tftp_read(cmd_line, tftp_ip, "cmdline." CONFIG_BOARD,
-			       &size, sizeof(cmd_line) - 1))) {
+	// Try to download command line file via TFTP if specified in params
+	param = netboot_params_val(NetbootParamIdArgsFile);
+	if (param->data && param->size > 0 &&
+			!(tftp_read(cmd_line, tftp_ip, param->data, &size,
+	        	sizeof(cmd_line) - 1))) {
 		while (cmd_line[size - 1] <= ' ')  // strip trailing whitespace
 			if (!--size) break;	   // and control chars (\n, \r)
 		cmd_line[size] = '\0';
 		while (size--)			   // replace inline control
 			if (cmd_line[size] < ' ')  // chars with spaces
 				cmd_line[size] = ' ';
-		printf("Command line loaded dynamically from TFTP server.\n");
-	// If the file doesn't exist, finally fall back to built-in default.
+		printf("Command line loaded dynamically from TFTP file: %s\n",
+				(char *)param->data);
+	// If that fails or file wasn't specified fall back to built-in default.
 	} else {
-		printf("No command line from TFTP, falling back to default.\n");
+		// Add extra arguments from params to factory default
+		param = netboot_params_val(NetbootParamIdKernelArgs);
+		if (param->data && param->size > 0 && *(char *)param->data) {
+			cmd_line[sizeof(def_cmd_line) - 1] = ' ';
+			strncpy(&cmd_line[sizeof(def_cmd_line)], param->data,
+				sizeof(cmd_line) - sizeof(def_cmd_line));
+		}
+		printf("Command line set from firmware parameters.\n");
 	}
 	cmd_line[sizeof(cmd_line) - 1] = '\0';
 

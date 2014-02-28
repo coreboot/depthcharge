@@ -30,6 +30,7 @@ typedef enum NetbootParamId
 	NetbootParamIdTftpServerIp = 1,
 	NetbootParamIdKernelArgs = 2,
 	NetbootParamIdBootfile = 3,
+	NetbootParamIdArgsFile = 4,
 
 	NetbootParamIdMax
 } NetbootParamId;
