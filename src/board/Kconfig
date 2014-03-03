@@ -37,6 +37,9 @@ endif
 if BOARD = "fox_wtm2"
 source src/board/fox_wtm2/Kconfig
 endif
+if BOARD = "gizmo"
+source src/board/gizmo/Kconfig
+endif
 if BOARD = "link"
 source src/board/link/Kconfig
 endif
