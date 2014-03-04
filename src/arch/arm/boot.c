@@ -24,6 +24,7 @@
 
 #include "arch/arm/boot.h"
 #include "base/cleanup_funcs.h"
+#include "base/timestamp.h"
 #include "vboot/boot.h"
 
 static inline uint32_t get_sctlr(void)
@@ -50,6 +51,8 @@ int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry)
 	static const uint32_t SctlrC = (0x1 << 2);
 
 	uint32_t sctlr = get_sctlr();
+
+	timestamp_add_now(TS_START_KERNEL);
 
 	// Flush dcache and icache to make loaded code visible.
 	cache_sync_instructions();
