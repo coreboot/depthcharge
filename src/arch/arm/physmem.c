@@ -21,8 +21,11 @@
  */
 
 #include <assert.h>
+#include <libpayload.h>
+#include <stddef.h>
 #include <string.h>
 
+#include <arch/cache.h>
 #include "base/physmem.h"
 
 // arch_phys_memset but with the guarantee that the range doesn't wrap around
@@ -55,10 +58,17 @@ static uint64_t arch_phys_memset_nowrap(uint64_t start, int c, uint64_t size)
 	if (!size)
 		return orig_start;
 
-	//TODO Set memory above what we can normally address here.
-	printf("WARNING: Not wiping 0x%llx bytes starting at 0x%llx.\n",
-	       size, start);
+	// memset above 4GB.
+	do {
+		void *buf;
+		int len = MIN(size, 2*MiB);
+		buf = lpae_map_phys_addr(start, DCACHE_WRITETHROUGH);
+		memset(buf, c, len);
+		start += len;
+		size -= len;
+	} while (size > 0);
 
+	lpae_restore_map();
 	return orig_start;
 }
 
