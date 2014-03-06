@@ -19,7 +19,6 @@
  */
 
 #include <libpayload.h>
-#include <pci/pci.h>
 
 #include "base/container_of.h"
 #include "drivers/bus/i2s/i2s.h"
@@ -687,7 +686,7 @@ static int byt_i2s_send(I2sOps *me, unsigned int *data, unsigned int length)
 
 /*
  * new_byt_i2s - Allocate new I2s data structures.
- * @lpe_pcidev: LPE PCI device
+ * @mmio: memory-mapped base address for controller
  * @mode: Implementation-specific driver mode
  * @bps: Bits per sample
  * @channels: Number of channels
@@ -696,17 +695,15 @@ static int byt_i2s_send(I2sOps *me, unsigned int *data, unsigned int length)
  *
  * Allocate new I2s data structures.
  */
-BytI2s *new_byt_i2s(pcidev_t lpe_pcidev, const BytI2sSettings *settings,
+BytI2s *new_byt_i2s(uintptr_t mmio, const BytI2sSettings *settings,
 		    int bps, int channels, uint32_t clock_freq,
 		    uint32_t sampling_rate)
 {
 	BytI2s *bus = xzalloc(sizeof(*bus));
-	uintptr_t bar;
-	bar = pci_read_config32(lpe_pcidev, PCI_BASE_ADDRESS_0);
 
 	bus->ops.send = byt_i2s_send;
-	bus->regs = (BytI2sRegs *)(bar + BYT_SSP2_START_ADDRESS);
-	bus->shim = (BytI2sRegs *)(bar + BYT_SSP2_SHIM_START_ADDRESS);
+	bus->regs = (BytI2sRegs *)(mmio + BYT_SSP2_START_ADDRESS);
+	bus->shim = (BytI2sRegs *)(mmio + BYT_SSP2_SHIM_START_ADDRESS);
 	bus->settings = settings;
 	bus->bits_per_sample = bps;
 	bus->channels = channels;
