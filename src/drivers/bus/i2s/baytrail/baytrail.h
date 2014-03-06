@@ -212,7 +212,7 @@ typedef struct {
 } BytI2s;
 
 
-BytI2s *new_byt_i2s(pcidev_t lpe_pcidev, const BytI2sSettings *settings,
+BytI2s *new_byt_i2s(uintptr_t mmio, const BytI2sSettings *settings,
 		    int bps, int channels, uint32_t clock_freq,
 		    uint32_t sampling_rate);
 

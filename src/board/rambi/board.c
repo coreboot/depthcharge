@@ -20,7 +20,7 @@
  * MA 02111-1307 USA
  */
 
-#include <pci.h>
+#include <pci/pci.h>
 
 #include "base/init_funcs.h"
 #include "board/rambi/device_nvs.h"
@@ -69,9 +69,13 @@ static int board_setup(void)
 		return 1;
 
 	/* Setup sound components */
-	pcidev_t lpe_pcidev = PCI_DEV(0, 0x15, 0);
-	BytI2s *i2s = new_byt_i2s(
-		lpe_pcidev, &baytrail_max98090_settings, 16, 2, 4800000, 48000);
+	uintptr_t lpe_mmio = nvs->lpe_bar0;
+	if (!nvs->lpe_en) {
+		pcidev_t lpe_pcidev = PCI_DEV(0, 0x15, 0);
+		lpe_mmio = pci_read_config32(lpe_pcidev, PCI_BASE_ADDRESS_0);
+	}
+	BytI2s *i2s = new_byt_i2s(lpe_mmio, &baytrail_max98090_settings,
+				16, 2,4800000, 48000);
 	I2sSource *i2s_source = new_i2s_source(&i2s->ops, 48000, 2, 16000);
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
 
