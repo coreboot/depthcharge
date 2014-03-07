@@ -85,6 +85,13 @@ falco,peppy,wolf,leon:
   panel:    [1366, 768]
   locales: [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id, th]
 
+squawks,glimmer,clapper:
+  # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
+  # With card reader. All USB ports can boot in recovery mode.
+  # Use the DEFAULT_LOCALES.
+  res:      [1024, 768]
+  panel:    [1366, 768]
+
 panther,zako:
   # Using VESA graphics mode 1024x768 (0x0117).
   # A chromebox without built-in panel/keyboard.
