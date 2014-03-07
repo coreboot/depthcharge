@@ -24,20 +24,6 @@
 #  en es-419 pt-BR fr es pt-PT ca it de
 #  el nl da 'no' sv fi et lv lt ru pl cs sk hu sl sr hr bg ro
 #  uk tr iw ar fa hi th vi id fil zh-CN zh-TW ko ja
-#
-# Here are the launch locales for Stumpy/Lumpy (crosbug.com/p/6595):
-# [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja]
-#
-# More locales (crosbug.com/p/12846) for Parrot:
-# [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id, th]
-#
-# More more locales (crosbug.com/p/11969) for Snow:
-# [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id, th, ar, ms,
-# zh-CN, zh-TW]
-#
-# More more more locales (crosbug.com/p/17592) for Spring:
-# [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id, th, ar, ms,
-#  zh-CN, zh-TW, fi, pl]
 
 std:
   # Standard bitmap, for test and development.
@@ -49,8 +35,6 @@ peach_pit:
   # 1366x768, boots recovery image on any SD card or USB ports.
   res:      [1366, 768]
   panel:    [1366, 768]
-  locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id,
-             th, ar, ms, zh-CN, zh-TW, fi, pl, ru]
 
 peach_pi:
   # 1920x1080, boots recovery image on any SD card or USB ports.
@@ -58,16 +42,12 @@ peach_pi:
   panel:    [1920, 1080]
   assets_dir: assets2x
   assets_res: [1920, 1080]
-  locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id,
-             th, ar, ms, zh-CN, zh-TW, fi, pl, ru]
 
 snow:
   # 1366x768, and can only boot recovery by SD card or USB2 [not USB3].
   res:      [1366, 768]
   panel:    [1366, 768]
   bad_usb3: True
-  locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id,
-             th, ar, ms, zh-CN, zh-TW]
 
 spring:
   # 1366x768, can only boot recovery by USB. (No card reader, or not able to
@@ -75,20 +55,16 @@ spring:
   res:       [1366, 768]
   panel:     [1366, 768]
   sdcard:    False
-  locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id,
-             th, ar, ms, zh-CN, zh-TW, fi, pl]
 
 falco,peppy,wolf,leon:
   # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
   # With card reader. USB3 ports will run in USB2 mode for recovery boot.
   res:      [1024, 768]
   panel:    [1366, 768]
-  locales: [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id, th]
 
 squawks,glimmer,clapper:
   # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
   # With card reader. All USB ports can boot in recovery mode.
-  # Use the DEFAULT_LOCALES.
   res:      [1024, 768]
   panel:    [1366, 768]
 
@@ -97,7 +73,6 @@ panther,zako:
   # A chromebox without built-in panel/keyboard.
   # Assume the display is a modern 16:9 (1920x1080) monitor.
   # With card reader and physical recovery switch.
-  # Use the DEFAULT_LOCALES.
   res:      [1024, 768]
   panel:    [1920, 1080]
   phy_rec:  True
@@ -119,7 +94,6 @@ parrot,butterfly:
   res:      [1024, 768]
   panel:    [1366, 768]
   sdcard:   False
-  locales: [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id, th]
 
 stout:
   # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
@@ -129,11 +103,12 @@ stout:
   panel:    [1366, 768]
   sdcard:   False
   bad_usb3: True
-  locales: [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id, th]
 
 link:
   # Non-standard Graphics mode 1280x850, with 2560x1700 panel.
   # Can boot recovery by USB and SD card readers.
+  # Note its firmware can not contain all default locales so the shipping locale
+  # list is specified.
   res:      [1280, 850]
   panel:    [2560, 1700]
   locales: [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id, th]
@@ -141,6 +116,8 @@ link:
 stumpy:
   # There's no standard panel size for Stumpy -- depends on the monitor user has
   # attached. Let's assume it's a modern LCD panel with 1920x1080 dimension.
+  # Note its firmware can not contain all default locales so the shipping locale
+  # list is specified.
   res:      [800, 600]
   panel:    [1920, 1080]
   locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja]
@@ -149,6 +126,8 @@ stumpy:
 lumpy:
   # Lumpy was shipped with old firmware bitmaps and caused its resolution to be
   # 800x600.
+  # Note its firmware can not contain all default locales so the shipping locale
+  # list is specified.
   res:      [800, 600]
   panel:    [1366, 768]
   locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja]
