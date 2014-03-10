@@ -62,7 +62,8 @@ static uint64_t arch_phys_memset_nowrap(uint64_t start, int c, uint64_t size)
 	do {
 		void *buf;
 		int len = MIN(size, 2*MiB);
-		buf = lpae_map_phys_addr(start, DCACHE_WRITETHROUGH);
+		/* writeback is ~4 times as fast as writethrough on T124 */
+		buf = lpae_map_phys_addr(start / MiB, DCACHE_WRITEBACK);
 		memset(buf, c, len);
 		start += len;
 		size -= len;
