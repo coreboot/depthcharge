@@ -16,3 +16,6 @@ Código de erro
 Retire todos os dispositivos externos para iniciar a recuperação.
 Modelo
 Para desativar a confirmação do SO, prima o botão RECOVERY.
+A fonte de alimentação ligada não tem energia suficiente para alimentar este dispositivo.
+O SO Chrome será agora encerrado.
+Utilize o carregador correto e tente novamente.

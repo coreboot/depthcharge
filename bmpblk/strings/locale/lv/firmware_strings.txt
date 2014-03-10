@@ -16,3 +16,6 @@ Kļūdas kods
 Lūdzu, noņemiet visas ārējās ierīces, lai sāktu atkopšanu.
 Modelis
 Lai IZSLĒGTU OS verifikāciju, nospiediet ATKOPŠANAS pogu.
+Pievienotajam barošanas avotam nav pietiekami daudz jaudas, lai darbinātu šo ierīci.
+Operētājsistēma Chrome OS tūlīt tiks izslēgta.
+Lūdzu, izmantojiet pareizo adapteri un mēģiniet vēlreiz.

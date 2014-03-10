@@ -16,3 +16,6 @@ Hibakód
 Távolítsa el az összes külső eszközt a helyreállítás megkezdéséhez.
 Modell
 Az operációs rendszer ellenőrzésének kikapcsolásához nyomja meg a VISSZAÁLLÍTÁS gombot.
+A csatlakoztatott áramforrás nem elég nagy teljesítményű az eszköz működtetéséhez.
+A Chrome OS kikapcsol.
+Kérjük, próbálja újra egy megfelelő tápegység használatával.

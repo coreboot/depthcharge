@@ -16,3 +16,6 @@ Kod ralat
 Sila alih keluar semua peranti luaran untuk memulakan pemulihan.
 Model
 Untuk MEMATIKAN pengesahan OS, tekan butang PEMULIHAN.
+Bekalan kuasa yang disambungkan tiada kuasa yang mencukupi untuk menjalankan peranti ini.
+OS Chrome akan ditutup sekarang.
+Sila gunakan penyesuai yang betul dan cuba lagi.

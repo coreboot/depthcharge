@@ -16,3 +16,6 @@ Klaidos kodas
 Jei norite pradėti atkūrimą, pašalinkite visus išorinius įrenginius.
 Modelis
 Jei norite IŠJUNGTI operacinės sistemos patvirtinimą, paspauskite ATKŪRIMO mygtuką.
+Prijungtas maitinimo šaltinis neteikia pakankamai energijos, kad šis įrenginys veiktų.
+„Chrome“ OS dabar bus išjungta.
+Naudokite tinkamą adapterį ir bandykite dar kartą.

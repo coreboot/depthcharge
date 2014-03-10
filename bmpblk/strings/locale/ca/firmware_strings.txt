@@ -16,3 +16,6 @@ Codi d'error
 Retireu tots els dispositius externs per començar la recuperació.
 Model
 Per DESACTIVAR la verificació del SO, premeu el botó RECUPERACIÓ.
+La font d'alimentació que heu connectat no té prou potència per mantenir el dispositiu engegat.
+Chrome OS s'apagarà d'aquí a uns instants.
+Utilitzeu l'adaptador correcte i torneu-ho a provar.

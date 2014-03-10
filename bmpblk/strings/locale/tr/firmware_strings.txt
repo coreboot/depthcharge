@@ -16,3 +16,6 @@ Hata kodu
 Kurtarma işlemine başlamak için lütfen tüm harici cihazları çıkarın.
 Model
 OS doğrulamayı KAPATMAK için KURTARMA düğmesine basın.
+Bağlı güç kaynağı, bu cihazı çalıştırmaya yetecek güce sahip değil.
+Chrome OS şimdi kapatılacak.
+Lütfen doğru adaptörü kullanın ve tekrar deneyin.

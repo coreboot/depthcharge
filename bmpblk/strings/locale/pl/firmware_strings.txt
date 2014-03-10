@@ -16,3 +16,6 @@ Kod błędu
 Aby rozpocząć przywracanie, odłącz wszystkie urządzenia zewnętrzne.
 Model
 Aby wyłączyć weryfikację systemu operacyjnego, naciśnij przycisk RECOVERY.
+Podłączone źródło zasilania nie ma wystarczającej mocy do obsługi tego urządzenia.
+Chrome OS zostanie teraz zamknięty.
+Użyj odpowiedniego zasilacza i spróbuj ponownie.

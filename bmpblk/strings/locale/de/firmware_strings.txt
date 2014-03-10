@@ -16,3 +16,6 @@ Fehlercode
 Entfernen Sie alle externen Geräte, um mit der Wiederherstellung zu beginnen.
 Modell
 Zum Deaktivieren der Betriebssystembestätigung drücken Sie die Wiederherstellungstaste.
+Das angeschlossene Netzteil reicht für die Stromversorgung dieses Geräts nicht aus.
+Chrome OS wird jetzt heruntergefahren.
+Bitte versuchen Sie es mit dem richtigen Netzteil erneut.

@@ -16,3 +16,6 @@ Código de error
 Retira todos los dispositivos externos para iniciar la recuperación.
 Modelo
 Para desactivar la verificación del SO, pulsa el botón de recuperación.
+La fuente de alimentación conectada no tiene suficiente potencia para hacer funcionar este dispositivo.
+Chrome OS se cerrará.
+Utiliza el adaptador correcto y vuelve a intentarlo.

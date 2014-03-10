@@ -16,3 +16,6 @@ Mã lỗi
 Vui lòng tháo tất cả các thiết bị ngoài để bắt đầu khôi phục.
 Mô hình
 Để TẮT xác minh OS, nhấn nút KHÔI PHỤC.
+Nguồn điện được kết nối không có đủ điện để chạy thiết bị này.
+Chrome OS sẽ tắt bây giờ.
+Hãy sử dụng bộ đổi nguồn đúng và thử lại.

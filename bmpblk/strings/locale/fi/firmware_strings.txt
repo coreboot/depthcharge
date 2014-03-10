@@ -16,3 +16,6 @@ Virhekoodi
 Aloita palautus poistamalla kaikki ulkoiset laitteet.
 Malli
 Poista käyttöjärjestelmän vahvistaminen käytöstä painamalla PALAUTUS-painiketta.
+Yhdistetyn virtalähteen teho ei riitä laitteen käynnissä pitämiseen.
+Chrome-käyttöjärjestelmä sammutetaan.
+Yhdistä sopiva virtalähde ja yritä uudelleen.

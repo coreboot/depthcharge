@@ -16,3 +16,6 @@ Kód chyby
 Před spuštěním obnovení prosím odeberte všechna externí zařízení.
 Model
 Chcete-li vypnout ověření operačního systému, stiskněte tlačítko RECOVERY (Obnovení).
+Připojený zdroj napájení nemá pro toto zařízení dostatečný výkon.
+Systém Chrome OS se nyní vypne.
+Použijte prosím správný adaptér a zkuste to znovu.

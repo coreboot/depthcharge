@@ -16,3 +16,6 @@ Koda napake
 Če želite začeti obnovitev, odstranite vse zunanje naprave.
 Model
 Če želite IZKLOPITI preverjanje operacijskega sistema, pritisnite OBNOVITEV.
+Priključeno napajanje je prešibko za to napravo.
+Sistem Chrome OS se bo zaustavil.
+Uporabite ustrezen napajalnik in poskusite znova.

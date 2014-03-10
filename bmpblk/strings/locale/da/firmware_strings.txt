@@ -16,3 +16,6 @@ Fejlkode
 Fjern alle eksterne enheder for at påbegynde genoprettelse.
 Model
 Du kan slå OS-bekræftelse FRA ved at trykke på knappen GENDANNELSE.
+Den tilsluttede strømforsyning leverer ikke strøm nok til at drive denne enhed.
+Chrome OS lukker nu ned.
+Brug den rigtige adapter, og prøv igen.
