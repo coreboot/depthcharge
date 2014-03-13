@@ -1,5 +1,4 @@
 /*
- * This file is part of the depthcharge project.
  * Copyright 2013 Google Inc.  All rights reserved.
  *
  * tegra-regs.h - Definitions for Tegra124 I2S driver.

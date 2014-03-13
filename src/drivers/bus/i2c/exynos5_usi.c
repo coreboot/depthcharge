@@ -1,6 +1,4 @@
 /*
- * This file is part of the depthcharge project.
- *
  * (C) Copyright 2002
  * David Mueller, ELSOFT AG, d.mueller@elsoft.ch
  * Copyright 2013 Google Inc.

@@ -1,6 +1,4 @@
 ##
-## This file is part of the depthcharge project.
-##
 ## Copyright 2014 Google Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
