@@ -27,7 +27,7 @@
  *  Command Processor Table
  */
 
-#include "console/common.h"
+#include "debug/cli/common.h"
 
 static int cmd_usage(const cmd_tbl_t *cmdtp);
 static cmd_tbl_t *find_cmd_tbl (const char *cmd,

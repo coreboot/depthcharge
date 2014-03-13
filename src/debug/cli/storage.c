@@ -3,7 +3,7 @@
  */
 
 #include "base/list.h"
-#include "console/common.h"
+#include "debug/cli/common.h"
 #include "drivers/storage/blockdev.h"
 
 typedef struct {

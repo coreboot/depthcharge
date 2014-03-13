@@ -24,8 +24,8 @@
 /*
  *  Definitions for Command Processor
  */
-#ifndef __CONSOLE_COMMAND_H
-#define __CONSOLE_COMMAND_H
+#ifndef __DEBUG_CLI_COMMAND_H__
+#define __DEBUG_CLI_COMMAND_H__
 
 /* Default to a width of 8 characters for help message command width */
 #ifndef CONFIG_SYS_HELP_CMD_WIDTH
@@ -147,4 +147,4 @@ int cmd_process(int flag, int argc, char * const argv[],
 	U_BOOT_CMD_COMPLETE(_name, _maxargs, _rep, do_##_name, _usage,	\
 			    _help, NULL, 0)
 
-#endif	/* __CONSOLE_COMMAND_H */
+#endif /* __DEBUG_CLI_COMMAND_H__ */

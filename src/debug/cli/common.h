@@ -38,8 +38,8 @@
 #define MAX_CONSOLE_LINE 512
 #define CONFIG_SYS_MAXARGS 32
 
-#include "console/linker_lists.h"
-#include "console/command.h"
+#include "debug/cli/linker_lists.h"
+#include "debug/cli/command.h"
 
 /*
  * Output a debug text when condition "cond" is met. The "cond" should be

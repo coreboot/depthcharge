@@ -95,8 +95,8 @@
  *   %dp_list_2_drivers_3
  */
 
-#ifndef __CONSOLE_LINKER_LISTS_H__
-#define __CONSOLE_LINKER_LISTS_H__
+#ifndef __DEBUG_CLI_LINKER_LISTS_H__
+#define __DEBUG_CLI_LINKER_LISTS_H__
 
 /**
  * ll_entry_declare() - Declare linker-generated array entry
@@ -281,4 +281,4 @@
 	(_type *)&end;							\
 })
 
-#endif	/* __CONSOLE_LINKER_LISTS_H__ */
+#endif /* __DEBUG_CLI_LINKER_LISTS_H__ */

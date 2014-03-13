@@ -21,8 +21,8 @@
  * MA 02111-1307 USA
  */
 
-#include "console/common.h"
-#include "console/command.h"
+#include "debug/cli/common.h"
+#include "debug/cli/command.h"
 
 #define DEBUG_PARSER	0
 

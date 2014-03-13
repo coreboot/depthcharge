@@ -34,7 +34,7 @@ source src/arch/Kconfig
 source src/base/Kconfig
 source src/board/Kconfig
 source src/boot/Kconfig
-source src/console/Kconfig
+source src/debug/Kconfig
 
 menu "UIP network stack"
 source src/net/Kconfig

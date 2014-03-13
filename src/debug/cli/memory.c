@@ -21,7 +21,7 @@
  * MA 02111-1307 USA
  */
 
-#include "console/common.h"
+#include "debug/cli/common.h"
 
 typedef unsigned long ulong;
 
