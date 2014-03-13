@@ -15,7 +15,7 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-depthcharge-$(CONFIG_CONSOLE) += command.c
-depthcharge-$(CONFIG_CONSOLE) += console_main.c
-depthcharge-$(CONFIG_CONSOLE) += memory.c
-depthcharge-$(CONFIG_CONSOLE) += storage.c
+depthcharge-y += command.c
+depthcharge-y += console_main.c
+depthcharge-y += memory.c
+depthcharge-y += storage.c

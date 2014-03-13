@@ -77,7 +77,7 @@ int main(void)
 
 	timestamp_add_now(TS_RO_VB_INIT);
 
-	if (CONFIG_CONSOLE)
+	if (CONFIG_CLI)
 		console_loop();
 
 	// Set up the common param structure, not clearing shared data.
