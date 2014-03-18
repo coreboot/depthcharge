@@ -59,6 +59,9 @@ endif
 if BOARD = "peppy"
 source src/board/peppy/Kconfig
 endif
+if BOARD = "quawks"
+source src/board/quawks/Kconfig
+endif
 if BOARD = "rambi"
 source src/board/rambi/Kconfig
 endif
