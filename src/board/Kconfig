@@ -46,6 +46,9 @@ endif
 if BOARD = "nyan_big"
 source src/board/nyan_big/Kconfig
 endif
+if BOARD = "nyan_blaze"
+source src/board/nyan_blaze/Kconfig
+endif
 if BOARD = "panther"
 source src/board/panther/Kconfig
 endif
