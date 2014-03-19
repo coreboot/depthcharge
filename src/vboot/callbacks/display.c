@@ -101,6 +101,9 @@ VbError_t VbExDisplayScreen(uint32_t screen_type)
 	case VB_SCREEN_WAIT:
 		msg = "wait for ec update";
 		break;
+	case VB_SCREEN_WRONG_ADAPTER:
+		msg = "wrong power adapter";
+		break;
 	default:
 		printf("Not a valid screen type: %d.\n", screen_type);
 		return VBERROR_INVALID_SCREEN_INDEX;

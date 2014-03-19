@@ -20,6 +20,7 @@
  * MA 02111-1307 USA
  */
 
+#include <libpayload.h>
 #include <pci.h>
 
 #include "base/init_funcs.h"
@@ -35,7 +36,34 @@
 #include "drivers/storage/blockdev.h"
 #include "drivers/tpm/lpc.h"
 #include "drivers/tpm/tpm.h"
+#include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
+
+#include <vboot_api.h>
+#include <vboot_nvstorage.h>
+
+VbError_t VbDisplayScreen(VbCommonParams *cparams, uint32_t screen, int force,
+                          VbNvContext *vncptr);
+
+static void check_power_adapter(void)
+{
+	// GPIO48 = ADP_ID:
+	//  0 = 65W or higer, or if the MB does not support probing adapter.
+	//  1 = lower than 65W (ex, 45W, which we should alert and shutdown).
+	LpPchGpio *ad_type = new_lp_pch_gpio_input(48);
+	if (!ad_type->ops.get(&ad_type->ops))
+		return;
+
+	// Minimal setup of vboot environment for displaying GBB screen.
+	common_params_init(0);
+	cparams.gbb = (struct GoogleBinaryBlockHeader *)cparams.gbb_data;
+	VbNvContext vnc;
+	VbExNvStorageRead(vnc.raw);
+	VbNvSetup(&vnc);
+	VbDisplayScreen(&cparams, VB_SCREEN_WRONG_ADAPTER, 0, &vnc);
+	VbExSleepMs(60 * 1000);
+	power_off();
+}
 
 static int board_setup(void)
 {
@@ -66,6 +94,7 @@ static int board_setup(void)
 	if (tpm_set_ops(&tpm->ops))
 		return 1;
 
+	check_power_adapter();
 	return 0;
 }
 
