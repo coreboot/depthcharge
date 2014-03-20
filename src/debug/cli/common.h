@@ -21,8 +21,8 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __CONSOLE_COMMON_H_
-#define __CONSOLE_COMMON_H_	1
+#ifndef __DEBUG_CLI_COMMON_H__
+#define __DEBUG_CLI_COMMON_H__
 
 #include <libpayload.h>
 #include <ctype.h>
@@ -61,7 +61,7 @@
  */
 
 /* common/console_main.c */
-void console_loop	(void);
+void console_loop(void);
 int run_command(const char *cmd, int flag);
 int ctrlc(void);
 
@@ -78,6 +78,6 @@ int ctrlc(void);
  */
 int run_command_list(const char *cmd, int len, int flag);
 
-char	*getenv	     (const char *);
+char *getenv(const char *);
 
-#endif	/* __CONSOLE_COMMON_H_ */
+#endif	/* __DEBUG_CLI_COMMON_H__ */
