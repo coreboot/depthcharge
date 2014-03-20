@@ -55,61 +55,6 @@
 #define debug(fmt, args...)			\
 	debug_cond(_DEBUG, fmt, ##args)
 
-/*
- * General Purpose Utilities
- */
-#define min(X, Y)				\
-	({ typeof(X) __x = (X);			\
-		typeof(Y) __y = (Y);		\
-		(__x < __y) ? __x : __y; })
-
-#define max(X, Y)				\
-	({ typeof(X) __x = (X);			\
-		typeof(Y) __y = (Y);		\
-		(__x > __y) ? __x : __y; })
-
-#define min3(X, Y, Z)				\
-	({ typeof(X) __x = (X);			\
-		typeof(Y) __y = (Y);		\
-		typeof(Z) __z = (Z);		\
-		__x < __y ? (__x < __z ? __x : __z) :	\
-		(__y < __z ? __y : __z); })
-
-#define max3(X, Y, Z)				\
-	({ typeof(X) __x = (X);			\
-		typeof(Y) __y = (Y);		\
-		typeof(Z) __z = (Z);		\
-		__x > __y ? (__x > __z ? __x : __z) :	\
-		(__y > __z ? __y : __z); })
-
-#define MIN3(x, y, z)  min3(x, y, z)
-#define MAX3(x, y, z)  max3(x, y, z)
-
-/*
- * Return the absolute value of a number.
- *
- * This handles unsigned and signed longs, ints, shorts and chars.  For all
- * input types abs() returns a signed long.
- *
- * For 64-bit types, use abs64()
- */
-#define abs(x) ({						\
-		long ret;					\
-		if (sizeof(x) == sizeof(long)) {		\
-			long __x = (x);				\
-			ret = (__x < 0) ? -__x : __x;		\
-		} else {					\
-			int __x = (x);				\
-			ret = (__x < 0) ? -__x : __x;		\
-		}						\
-		ret;						\
-	})
-
-#define abs64(x) ({				\
-		s64 __x = (x);			\
-		(__x < 0) ? -__x : __x;		\
-	})
-
 
 /*
  * Function Prototypes
