@@ -15,6 +15,7 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
+depthcharge-y += i2c.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_S3C24X0) += s3c24x0.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_EXYNOS5_USI) += exynos5_usi.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_TEGRA) += tegra.c
