@@ -62,9 +62,7 @@ static int tegra_i2s_init(TegraI2s *bus)
 	writel(ctrl, &bus->regs->ctrl);
 
 	// Timing in LRCK mode:
-	//   channel_bit_cnt = (freq of bit_clk) / (2 * sample rate) - 1
-	writel(bus->clock_freq / (2 * bus->sampling_rate) - 1,
-	       &bus->regs->timing);
+	writel(bus->bits_per_sample, &bus->regs->timing);
 
 	// I2S mode has [TX/RX]_DATA_OFFSET both set to 1.
 	writel(((1 << I2S_OFFSET_RX_DATA_OFFSET_SHIFT) |

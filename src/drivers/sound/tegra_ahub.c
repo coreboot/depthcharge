@@ -80,7 +80,7 @@ typedef struct TegraApbifRegs {
 	/* ahub_channel1_ctrl/clr/stat/txfifo/rxfifl/ciftx/cifrx ... here */
 	/* ahub_channel2_ctrl/clr/stat/txfifo/rxfifl/ciftx/cifrx ... here */
 	/* ahub_channel3_ctrl/clr/stat/txfifo/rxfifl/ciftx/cifrx ... here */
-	uint32_t reserved123[3*8*4];
+	uint32_t reserved123[3*8];
 	uint32_t config_link_ctrl;	/* APBIF_CONFIG_LINK_CTRL_0, off 0x80 */
 	uint32_t misc_ctrl;		/* APBIF_MISC_CTRL_0, offset 0x84 */
 	uint32_t apbdma_live_stat;	/* APBIF_APBDMA_LIVE_STATUS_0 */
@@ -155,7 +155,15 @@ static size_t tegra_ahub_apbif_capacity(TxFifoOps *me)
 static int tegra_ahub_apbif_is_full(TxFifoOps *me)
 {
 	TegraAudioHubApbif *apbif = container_of(me, TegraAudioHubApbif, ops);
-	return !!(readl(&apbif->regs->i2s_live_stat) & apbif->full_mask);
+	/* FIFO_FULL bit may not be set even when the buffer is full. You may
+	 * consider using _is_empty() instead. */
+	return readl(&apbif->regs->i2s_live_stat) & apbif->full_mask;
+}
+
+static int tegra_ahub_apbif_is_empty(TxFifoOps *me)
+{
+	TegraAudioHubApbif *apbif = container_of(me, TegraAudioHubApbif, ops);
+	return readl(&apbif->regs->i2s_live_stat) & apbif->empty_mask;
 }
 
 static ssize_t tegra_ahub_apbif_send(TxFifoOps *me, const void *buf, size_t len)
@@ -169,7 +177,7 @@ static ssize_t tegra_ahub_apbif_send(TxFifoOps *me, const void *buf, size_t len)
 		return -1;
 	}
 	while (written < len) {
-		while (tegra_ahub_apbif_is_full(me));
+		while (!tegra_ahub_apbif_is_empty(me));
 		writel(*data++, &regs->channel0_txfifo);
 		written += sizeof(*data);
 	}
@@ -184,36 +192,25 @@ static void tegra_ahub_apbif_set_cif(TegraAudioHubApbif *apbif, uint32_t value)
 static void tegra_ahub_apbif_enable_channel0(TegraAudioHubApbif *apbif,
 					    int fifo_threshold)
 {
-	uint32_t ctrl = (TEGRA_AHUB_CHANNEL_CTRL_TX_PACK_EN | TEGRA_PACK_16 |
-			 TEGRA_AHUB_CHANNEL_CTRL_TX_EN);
+	uint32_t ctrl = (TEGRA_AHUB_CHANNEL_CTRL_TX_PACK_EN |
+			TEGRA_AHUB_CHANNEL_CTRL_TX_PACK_16 |
+			TEGRA_AHUB_CHANNEL_CTRL_TX_EN);
 	fifo_threshold--; // fifo_threshold starts from 1.
 	ctrl |= (fifo_threshold << TEGRA_AHUB_CHANNEL_CTRL_TX_THRESHOLD_SHIFT);
 	writel(ctrl, &apbif->regs->channel0_ctrl);
 }
 
-static int tegra_ahub_apbif_set_fifo_full_mask(TegraAudioHubApbif *apbif,
+static int tegra_ahub_apbif_set_fifo_mask(TegraAudioHubApbif *apbif,
 					       int i2s_id)
 {
-	switch (i2s_id) {
-	case 0:
-		apbif->full_mask = TEGRA_AHUB_I2S_LIVE_STATUS_I2S0_TX_FIFO_FULL;
-		break;
-	case 1:
-		apbif->full_mask = TEGRA_AHUB_I2S_LIVE_STATUS_I2S1_TX_FIFO_FULL;
-		break;
-	case 2:
-		apbif->full_mask = TEGRA_AHUB_I2S_LIVE_STATUS_I2S2_TX_FIFO_FULL;
-		break;
-	case 3:
-		apbif->full_mask = TEGRA_AHUB_I2S_LIVE_STATUS_I2S3_TX_FIFO_FULL;
-		break;
-	case 4:
-		apbif->full_mask = TEGRA_AHUB_I2S_LIVE_STATUS_I2S4_TX_FIFO_FULL;
-		break;
-	default:
+	if (i2s_id > 4) {
 		printf("%s: Invalid I2S component id: %d\n", __func__, i2s_id);
 		return 1;
 	}
+	apbif->full_mask = TEGRA_AHUB_I2S_LIVE_STATUS_I2S0_TX_FIFO_FULL <<
+			(2 * i2s_id);
+	apbif->empty_mask = TEGRA_AHUB_I2S_LIVE_STATUS_I2S0_TX_FIFO_EMPTY <<
+			(2 * i2s_id);
 	return 0;
 }
 
@@ -258,7 +255,7 @@ static int tegra_audio_hub_enable(SoundRouteComponentOps *me)
 	tegra_ahub_apbif_set_cif(ahub->apbif, cif_ctrl);
 	tegra_ahub_apbif_enable_channel0(ahub->apbif, fifo_threshold);
 
-	if (tegra_ahub_apbif_set_fifo_full_mask(ahub->apbif, ahub->i2s->id) ||
+	if (tegra_ahub_apbif_set_fifo_mask(ahub->apbif, ahub->i2s->id) ||
 	    tegra_ahub_xbar_enable_i2s(ahub->xbar, ahub->i2s->id))
 		return 1;
 	return 0;
