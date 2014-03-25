@@ -51,6 +51,30 @@ typedef struct I2cOps
 	int (*transfer)(struct I2cOps *me, I2cSeg *segments, int seg_count);
 } I2cOps;
 
+/*
+ * Read a raw chunk of data in one segment and one frame.
+ *
+ * [start][slave addr][r][data][stop]
+ */
+static inline int i2c_read_raw(I2cOps *ops, uint8_t chip, uint8_t *data,
+			       int len)
+{
+	I2cSeg seg = { .read = 1, .chip = chip, .buf = data, .len = len };
+	return ops->transfer(ops, &seg, 1);
+}
+
+/*
+ * Write a raw chunk of data in one segment and one frame.
+ *
+ * [start][slave addr][w][data][stop]
+ */
+static inline int i2c_write_raw(I2cOps *ops, uint8_t chip, uint8_t *data,
+			        int len)
+{
+	I2cSeg seg = { .read = 0, .chip = chip, .buf = data, .len = len };
+	return ops->transfer(ops, &seg, 1);
+}
+
 /**
  * Read a byte by two segments in one frame
  *
