@@ -21,6 +21,7 @@
 
 #include "base/container_of.h"
 #include "drivers/bus/i2c/exynos5_usi.h"
+#include "drivers/bus/i2c/i2c.h"
 
 typedef struct __attribute__ ((packed)) UsiI2cRegs {
 	uint32_t usi_ctl;
@@ -371,12 +372,76 @@ static int exynos5_usi_i2c_read(I2cOps *me, uint8_t chip,
 	return 0;
 }
 
+static int exynos5_usi_i2c_segment(I2cSeg *seg, UsiI2cRegs *regs, int stop)
+{
+	const uint32_t usi_ctl = HSI2C_FUNC_MODE_I2C | HSI2C_MASTER;
+
+	writel(HSI2C_SLV_ADDR_MAS(seg->chip), &regs->i2c_addr);
+
+	/*
+	 * We really only want to stop after this transaction (I think) if the
+	 * "stop" parameter is true. I'm assuming that's supposed to make the
+	 * controller issue a repeated start, but the documentation isn't very
+	 * clear. We may need to switch to manual mode to really get the
+	 * behavior we want.
+	 */
+	uint32_t autoconf =
+		seg->len | HSI2C_MASTER_RUN | HSI2C_STOP_AFTER_TRANS;
+
+	if (seg->read) {
+		writel(usi_ctl | HSI2C_RXCHON, &regs->usi_ctl);
+		writel(autoconf | HSI2C_READ_WRITE, &regs->i2c_auto_conf);
+
+		if (exynos5_usi_i2c_recvdata(regs, seg->buf, seg->len))
+			return -1;
+	} else {
+		writel(usi_ctl | HSI2C_TXCHON, &regs->usi_ctl);
+		writel(autoconf, &regs->i2c_auto_conf);
+
+		if (exynos5_usi_i2c_senddata(regs, seg->buf, seg->len))
+			return -1;
+	}
+
+	if (exynos5_usi_i2c_wait_for_transfer(regs) != 1)
+		return -1;
+
+	writel(HSI2C_FUNC_MODE_I2C, &regs->usi_ctl);
+	return 0;
+}
+
+static int exynos5_usi_i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
+{
+	Exynos5UsiI2c *bus = container_of(me, Exynos5UsiI2c, ops);
+	UsiI2cRegs *regs = bus->reg_addr;
+
+	if (!bus->ready) {
+		exynos5_usi_i2c_reset(regs, bus->frequency);
+		bus->ready = 1;
+	}
+
+	if (exynos5_usi_i2c_wait_for_transfer(regs) != 1) {
+		exynos5_usi_i2c_reset(regs, bus->frequency);
+		return -1;
+	}
+
+	for (int i = 0; i < seg_count; i++) {
+		if (exynos5_usi_i2c_segment(&segments[i], regs,
+					    i == seg_count - 1)) {
+			exynos5_usi_i2c_reset(regs, bus->frequency);
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
 Exynos5UsiI2c *new_exynos5_usi_i2c(uintptr_t reg_addr, unsigned frequency)
 {
 	Exynos5UsiI2c *bus = xzalloc(sizeof(*bus));
 
 	bus->ops.read = &exynos5_usi_i2c_read;
 	bus->ops.write = &exynos5_usi_i2c_write;
+	bus->ops.transfer = &exynos5_usi_i2c_transfer;
 	bus->reg_addr = (void *)reg_addr;
 	bus->frequency = frequency;
 	return bus;

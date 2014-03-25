@@ -250,11 +250,46 @@ static int i2c_write(I2cOps *me, uint8_t chip, uint32_t addr, int addr_len,
 	return i2c_send_stop(regs) || res;
 }
 
+static int i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
+{
+	S3c24x0I2c *bus = container_of(me, S3c24x0I2c, ops);
+	I2cRegs *regs = bus->reg_addr;
+	int res = 0;
+
+	if (!bus->ready) {
+		if (i2c_init(regs))
+			return 1;
+		bus->ready = 1;
+	}
+
+	if (!regs || i2c_wait_for_idle(regs))
+		return 1;
+
+	writeb(I2cStatMasterXmit | I2cStatEnable, &regs->stat);
+
+	for (int i = 0; i < seg_count; i++) {
+		I2cSeg *seg = &segments[i];
+
+		res = i2c_send_start(regs, seg->read, seg->chip);
+		if (res)
+			break;
+		if (seg->read)
+			res = i2c_recv_buf(regs, seg->buf, seg->len);
+		else
+			res = i2c_xmit_buf(regs, seg->buf, seg->len);
+		if (res)
+			break;
+	}
+
+	return i2c_send_stop(regs) || res;
+}
+
 S3c24x0I2c *new_s3c24x0_i2c(uintptr_t reg_addr)
 {
 	S3c24x0I2c *bus = xzalloc(sizeof(*bus));
 	bus->ops.read = &i2c_read;
 	bus->ops.write = &i2c_write;
+	bus->ops.transfer = &i2c_transfer;
 	bus->reg_addr = (void *)reg_addr;
 	return bus;
 }
