@@ -39,15 +39,6 @@ typedef struct I2cSeg
 
 typedef struct I2cOps
 {
-	/*
-	 * read and write will be deprecated. New i2c drivers should implement
-	 * transfer and new slave drivers should use transfer (or utility funcs
-	 * in i2c.c).
-	 */
-	int (*read)(struct I2cOps *me, uint8_t chip,
-		    uint32_t addr, int addr_len, uint8_t *data, int data_len);
-	int (*write)(struct I2cOps *me, uint8_t chip,
-		     uint32_t addr, int addr_len, uint8_t *data, int data_len);
 	int (*transfer)(struct I2cOps *me, I2cSeg *segments, int seg_count);
 } I2cOps;
 

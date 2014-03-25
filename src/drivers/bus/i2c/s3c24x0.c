@@ -177,79 +177,6 @@ static int i2c_recv_buf(I2cRegs *regs, uint8_t *data, int len)
 	return 0;
 }
 
-static int i2c_readwrite(I2cRegs *regs, int read, uint8_t chip, uint32_t addr,
-			 int addr_len, uint8_t *data, int data_len)
-{
-	if (!regs || i2c_wait_for_idle(regs))
-		return 1;
-
-	if (data_len <= 0 || addr_len < 0 || addr_len > sizeof(addr)) {
-		printf("%s: Bad parameters.\n", __func__);
-		return 1;
-	}
-
-	writeb(I2cStatMasterXmit | I2cStatEnable, &regs->stat);
-
-	if (addr_len) {
-		uint8_t addr_buf[sizeof(addr)];
-		for (int i = 0; i < addr_len; i++) {
-			int byte = addr_len - 1 - i;
-			addr_buf[i] = addr >> (byte * 8);
-		}
-
-		if (i2c_send_start(regs, 0, chip) ||
-			i2c_xmit_buf(regs, addr_buf, addr_len))
-			return 1;
-	}
-
-	// Send a start if we haven't yet, or we need to go from write to read.
-	if (!addr_len || read)
-		if (i2c_send_start(regs, read, chip))
-			return 1;
-
-	if (read) {
-		if (i2c_recv_buf(regs, data, data_len))
-			return 1;
-	} else {
-		if (i2c_xmit_buf(regs, data, data_len))
-			return 1;
-	}
-
-	return 0;
-}
-
-static int i2c_read(I2cOps *me, uint8_t chip, uint32_t addr, int addr_len,
-		    uint8_t *data, int data_len)
-{
-	S3c24x0I2c *bus = container_of(me, S3c24x0I2c, ops);
-	I2cRegs *regs = bus->reg_addr;
-
-	if (!bus->ready) {
-		if (i2c_init(regs))
-			return 1;
-		bus->ready = 1;
-	}
-
-	int res = i2c_readwrite(regs, 1, chip, addr, addr_len, data, data_len);
-	return i2c_send_stop(regs) || res;
-}
-
-static int i2c_write(I2cOps *me, uint8_t chip, uint32_t addr, int addr_len,
-		     uint8_t *data, int data_len)
-{
-	S3c24x0I2c *bus = container_of(me, S3c24x0I2c, ops);
-	I2cRegs *regs = bus->reg_addr;
-
-	if (!bus->ready) {
-		if (i2c_init(regs))
-			return 1;
-		bus->ready = 1;
-	}
-
-	int res = i2c_readwrite(regs, 0, chip, addr, addr_len, data, data_len);
-	return i2c_send_stop(regs) || res;
-}
-
 static int i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
 {
 	S3c24x0I2c *bus = container_of(me, S3c24x0I2c, ops);
@@ -287,8 +214,6 @@ static int i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
 S3c24x0I2c *new_s3c24x0_i2c(uintptr_t reg_addr)
 {
 	S3c24x0I2c *bus = xzalloc(sizeof(*bus));
-	bus->ops.read = &i2c_read;
-	bus->ops.write = &i2c_write;
 	bus->ops.transfer = &i2c_transfer;
 	bus->reg_addr = (void *)reg_addr;
 	return bus;

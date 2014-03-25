@@ -264,28 +264,7 @@ static int i2c_wait_for_bus_idle(DesignwareI2cRegs *regs)
 }
 
 /*
- * i2c_xfer_init - Setup an i2c transfer.
- * @regs:	i2c register base address
- * @chip:	target i2c address
- * @addr:	register address
- *
- * Setup an i2c transfer.
- */
-static int i2c_xfer_init(DesignwareI2cRegs *regs, uint8_t chip, uint32_t addr)
-{
-	if (i2c_wait_for_bus_idle(regs))
-		return -1;
-
-	/* Set slave device bus address. */
-	writel(chip, &regs->target_addr);
-	/* Set address on slave device. */
-	writel(addr, &regs->cmd_data);
-
-	return 0;
-}
-
-/*
- * i2c_xfer_init - Complete an i2c transfer.
+ * i2c_xfer_finish - Complete an i2c transfer.
  * @regs:	i2c register base address
  *
  * Complete an i2c transfer.
@@ -397,94 +376,6 @@ static int i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
 }
 
 /*
- * i2c_read - Read from i2c register.
- * @me:		i2c ops structure
- * @chip:	target i2c device bus address
- * @addr:	address to read
- * @addr_len:	address length
- * @data:	buffer for read data
- * @data_len:	no of bytes to read
- *
- * Read from i2c register.
- */
-static int i2c_read(I2cOps *me, uint8_t chip, uint32_t addr, int addr_len,
-		    uint8_t *data, int data_len)
-{
-	DesignwareI2c *bus = container_of(me, DesignwareI2c, ops);
-	DesignwareI2cRegs *regs = bus->regs;
-
-	die_if(data == NULL || addr_len != 1 || addr + data_len > 256,
-	       "Parameters (%p, %d, %d) out of bounds.\n",
-	       data, addr_len, data_len);
-
-	if (!bus->initialized)
-		i2c_init(bus);
-
-	if (i2c_xfer_init(regs, chip, addr))
-		return -1;
-
-	for (int i = 0; i < data_len; ++i) {
-		uint64_t start = timer_us(0);
-		uint32_t cmd_data = CMD_DATA_CMD;
-		if (i == data_len - 1)
-			cmd_data |= CMD_DATA_STOP;
-		writel(cmd_data, &regs->cmd_data);
-
-		while (!(readl(&regs->status) & STATUS_RFNE)) {
-			if (timer_us(start) > 2000)
-				return -1;
-		}
-
-		data[i] = (uint8_t)readl(&regs->cmd_data);
-	}
-
-	return i2c_xfer_finish(regs);
-}
-
-/*
- * i2c_write - Write to i2c register.
- * @me:		i2c ops structure
- * @chip:	target i2c device bus address
- * @addr:	address to write to
- * @addr_len:	address length
- * @data:	buffer for write data
- * @data_len:	no of bytes to write
- *
- * Write to i2c memory.
- */
-static int i2c_write(I2cOps *me, uint8_t chip, uint32_t addr, int addr_len,
-		     uint8_t *data, int data_len)
-{
-	DesignwareI2c *bus = container_of(me, DesignwareI2c, ops);
-	DesignwareI2cRegs *regs = bus->regs;
-
-	die_if(data == NULL || addr_len != 1 || addr + data_len > 256,
-	       "Parameters (%p, %d, %d) out of bounds.\n",
-	       data, addr_len, data_len);
-
-	if (!bus->initialized)
-		i2c_init(bus);
-
-	if (i2c_xfer_init(regs, chip, addr))
-		return -1;
-
-	for (int i = 0; i < data_len; ++i) {
-		uint64_t start = timer_us(0);
-		while (!(readl(&regs->status) & STATUS_TFNF)) {
-			if (timer_us(start) > 2000)
-				return -1;
-		}
-
-		uint32_t cmd_data = data[i];
-		if (i == data_len - 1)
-			cmd_data |= CMD_DATA_STOP;
-		writel(cmd_data, &regs->cmd_data);
-	}
-
-	return i2c_xfer_finish(regs);
-}
-
-/*
  * new_designware_i2c - Allocate new i2c bus.
  * @regs:	i2c register base address
  * @speed:	required i2c speed
@@ -495,8 +386,6 @@ DesignwareI2c *new_designware_i2c(uintptr_t reg_addr, int speed)
 {
 	DesignwareI2c *bus = xzalloc(sizeof(*bus));
 
-	bus->ops.read = i2c_read;
-	bus->ops.write = i2c_write;
 	bus->ops.transfer = i2c_transfer;
 	bus->regs = (void *)reg_addr;
 	bus->speed = speed;

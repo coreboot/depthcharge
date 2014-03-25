@@ -46,46 +46,6 @@ static int i2c_claim_bus(GpioOps *request, GpioOps *grant)
 	return 1;
 }
 
-static int i2c_arb_read(struct I2cOps *me, uint8_t chip,
-			uint32_t addr, int addr_len,
-			uint8_t *data, int data_len)
-{
-	assert(me);
-	SnowI2cArb *arb = container_of(me, SnowI2cArb, ops);
-
-	if (!arb->ready) {
-		i2c_release_bus(arb->request);
-		arb->ready = 1;
-	}
-
-	if (i2c_claim_bus(arb->request, arb->grant))
-		return 1;
-	int res = arb->bus->read(arb->bus, chip, addr, addr_len,
-				 data, data_len);
-	i2c_release_bus(arb->request);
-	return res;
-}
-
-static int i2c_arb_write(struct I2cOps *me, uint8_t chip,
-			 uint32_t addr, int addr_len,
-			 uint8_t *data, int data_len)
-{
-	assert(me);
-	SnowI2cArb *arb = container_of(me, SnowI2cArb, ops);
-
-	if (!arb->ready) {
-		i2c_release_bus(arb->request);
-		arb->ready = 1;
-	}
-
-	if (i2c_claim_bus(arb->request, arb->grant))
-		return 1;
-	int res = arb->bus->write(arb->bus, chip, addr, addr_len,
-				  data, data_len);
-	i2c_release_bus(arb->request);
-	return res;
-}
-
 static int i2c_arb_transfer(struct I2cOps *me, I2cSeg *segments, int seg_count)
 {
 	assert(me);
@@ -106,8 +66,6 @@ static int i2c_arb_transfer(struct I2cOps *me, I2cSeg *segments, int seg_count)
 SnowI2cArb *new_snow_i2c_arb(I2cOps *bus, GpioOps *request, GpioOps *grant)
 {
 	SnowI2cArb *arb = xzalloc(sizeof(*arb));
-	arb->ops.read = &i2c_arb_read;
-	arb->ops.write = &i2c_arb_write;
 	arb->ops.transfer = &i2c_arb_transfer;
 	arb->bus = bus;
 	arb->request = request;

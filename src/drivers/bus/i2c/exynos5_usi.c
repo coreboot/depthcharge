@@ -268,110 +268,6 @@ static int exynos5_usi_i2c_recvdata(UsiI2cRegs *regs, uint8_t *data, int len)
 	return len ? -1 : 0;
 }
 
-static int exynos5_usi_i2c_write(I2cOps *me, uint8_t chip,
-				 uint32_t addr, int addr_len,
-				 uint8_t *data, int data_len)
-{
-	Exynos5UsiI2c *bus = container_of(me, Exynos5UsiI2c, ops);
-	if (!bus)
-		return -1;
-	UsiI2cRegs *regs = bus->reg_addr;
-
-	if (!bus->ready) {
-		exynos5_usi_i2c_reset(regs, bus->frequency);
-		bus->ready = 1;
-	}
-
-	if (exynos5_usi_i2c_wait_for_transfer(regs) != 1) {
-		exynos5_usi_i2c_reset(regs, bus->frequency);
-		return -1;
-	}
-
-	writel(HSI2C_SLV_ADDR_MAS(chip), &regs->i2c_addr);
-	writel(HSI2C_TXCHON | HSI2C_FUNC_MODE_I2C | HSI2C_MASTER,
-	       &regs->usi_ctl);
-	int len = data_len + addr_len;
-	writel(len | HSI2C_STOP_AFTER_TRANS | HSI2C_MASTER_RUN,
-	       &regs->i2c_auto_conf);
-
-	if (addr_len) {
-		uint8_t addr_buf[sizeof(addr)];
-		for (int i = 0; i < addr_len; i++) {
-			int byte = addr_len - 1 - i;
-			addr_buf[i] = addr >> (byte * 8);
-		}
-
-		if (exynos5_usi_i2c_senddata(regs, addr_buf, addr_len)) {
-			exynos5_usi_i2c_reset(regs, bus->frequency);
-			return -1;
-		}
-	}
-
-	if (exynos5_usi_i2c_senddata(regs, data, data_len) ||
-	    exynos5_usi_i2c_wait_for_transfer(regs) != 1) {
-		exynos5_usi_i2c_reset(regs, bus->frequency);
-		return -1;
-	}
-
-	writel(HSI2C_FUNC_MODE_I2C, &regs->usi_ctl);
-	return 0;
-}
-
-static int exynos5_usi_i2c_read(I2cOps *me, uint8_t chip,
-				uint32_t addr, int addr_len,
-				uint8_t *data, int data_len)
-{
-	Exynos5UsiI2c *bus = container_of(me, Exynos5UsiI2c, ops);
-	if (!bus)
-		return -1;
-	UsiI2cRegs *regs = bus->reg_addr;
-
-	if (!bus->ready) {
-		exynos5_usi_i2c_reset(regs, bus->frequency);
-		bus->ready = 1;
-	}
-
-	if (exynos5_usi_i2c_wait_for_transfer(regs) != 1) {
-		exynos5_usi_i2c_reset(regs, bus->frequency);
-		return -1;
-	}
-
-	writel(HSI2C_SLV_ADDR_MAS(chip), &regs->i2c_addr);
-
-	if (addr_len) {
-		uint8_t addr_buf[sizeof(addr)];
-		for (int i = 0; i < addr_len; i++) {
-			int byte = addr_len - 1 - i;
-			addr_buf[i] = addr >> (byte * 8);
-		}
-
-		writel(HSI2C_TXCHON | HSI2C_FUNC_MODE_I2C | HSI2C_MASTER,
-		       &regs->usi_ctl);
-		writel(addr_len | HSI2C_MASTER_RUN | HSI2C_STOP_AFTER_TRANS,
-		       &regs->i2c_auto_conf);
-
-		if (exynos5_usi_i2c_senddata(regs, addr_buf, addr_len) ||
-		    exynos5_usi_i2c_wait_for_transfer(regs) != 1) {
-			exynos5_usi_i2c_reset(regs, bus->frequency);
-			return -1;
-		}
-	}
-
-	writel(HSI2C_RXCHON | HSI2C_FUNC_MODE_I2C | HSI2C_MASTER,
-	       &regs->usi_ctl);
-	writel(data_len | HSI2C_STOP_AFTER_TRANS |
-	       HSI2C_READ_WRITE | HSI2C_MASTER_RUN, &regs->i2c_auto_conf);
-
-	if (exynos5_usi_i2c_recvdata(regs, data, data_len) ||
-	    exynos5_usi_i2c_wait_for_transfer(regs) != 1) {
-		exynos5_usi_i2c_reset(regs, bus->frequency);
-		return -1;
-	}
-
-	writel(HSI2C_FUNC_MODE_I2C, &regs->usi_ctl);
-	return 0;
-}
-
 static int exynos5_usi_i2c_segment(I2cSeg *seg, UsiI2cRegs *regs, int stop)
 {
 	const uint32_t usi_ctl = HSI2C_FUNC_MODE_I2C | HSI2C_MASTER;
@@ -439,8 +335,6 @@ Exynos5UsiI2c *new_exynos5_usi_i2c(uintptr_t reg_addr, unsigned frequency)
 {
 	Exynos5UsiI2c *bus = xzalloc(sizeof(*bus));
 
-	bus->ops.read = &exynos5_usi_i2c_read;
-	bus->ops.write = &exynos5_usi_i2c_write;
 	bus->ops.transfer = &exynos5_usi_i2c_transfer;
 	bus->reg_addr = (void *)reg_addr;
 	bus->frequency = frequency;

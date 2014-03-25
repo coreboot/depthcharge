@@ -146,43 +146,11 @@ static int i2c_transfer_segment(TegraI2c *bus, uint8_t chip,
 	return 0;
 }
 
-static int i2c_readwrite(TegraI2c *bus, uint8_t chip, uint32_t addr,
-			 int alen, uint8_t *buf, int len, int read)
-{
-	uint8_t abuf[sizeof(addr)];
-
-	for (int i = 0; i < alen; i++)
-		abuf[i] = addr >> ((alen - i - 1) * 8);
-
-	if (tegra_i2c_request(bus, chip, !read, 0, 0, abuf, alen))
-		return -1;
-
-	return i2c_transfer_segment(bus, chip, 0, read, buf, len);
-}
-
 static void i2c_init(TegraI2c *bus)
 {
 	TegraI2cRegs *regs = bus->regs;
 	writel(I2C_CNFG_PACKET_MODE_EN, &regs->cnfg);
 	bus->initialized = 1;
-}
-
-static int i2c_read(I2cOps *me, uint8_t chip, uint32_t addr,
-	     int addr_len, uint8_t *data, int data_len)
-{
-	TegraI2c *bus = container_of(me, TegraI2c, ops);
-	if (!bus->initialized)
-		i2c_init(bus);
-	return i2c_readwrite(bus, chip, addr, addr_len, data, data_len, 1);
-}
-
-static int i2c_write(I2cOps *me, uint8_t chip, uint32_t addr,
-	      int addr_len, uint8_t *data, int data_len)
-{
-	TegraI2c *bus = container_of(me, TegraI2c, ops);
-	if (!bus->initialized)
-		i2c_init(bus);
-	return i2c_readwrite(bus, chip, addr, addr_len, data, data_len, 0);
 }
 
 static int i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
@@ -205,8 +173,6 @@ TegraI2c *new_tegra_i2c(void *regs, int controller_id, void *set_reset_reg,
 			void *clear_reset_reg, uint32_t reset_bit)
 {
 	TegraI2c *bus = xzalloc(sizeof(*bus));
-	bus->ops.read = i2c_read;
-	bus->ops.write = i2c_write;
 	bus->ops.transfer = i2c_transfer;
 	bus->regs = regs;
 	bus->controller_id = controller_id;
