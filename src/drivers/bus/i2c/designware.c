@@ -155,7 +155,7 @@ static inline void set_speed_regs(DesignwareI2cRegs *regs, uint32_t cntl_mask,
 				  int high_time, uint32_t *high_reg,
 				  int low_time, uint32_t *low_reg)
 {
-        uint32_t cntl;
+	uint32_t cntl;
 
 	writel(CLK_MHZ * high_time / 1000, high_reg);
 	writel(CLK_MHZ * low_time / 1000, low_reg);
@@ -173,13 +173,13 @@ static inline void set_speed_regs(DesignwareI2cRegs *regs, uint32_t cntl_mask,
  */
 static int i2c_set_bus_speed(DesignwareI2c *bus)
 {
-        DesignwareI2cRegs *regs = bus->regs;
+	DesignwareI2cRegs *regs = bus->regs;
 	uint32_t enable;
 
-        /* Disable controller before setting speed. */
-        enable = readl(&regs->enable);
-        enable &= ~ENABLE_0B;
-        writel(enable, &regs->enable);
+	/* Disable controller before setting speed. */
+	enable = readl(&regs->enable);
+	enable &= ~ENABLE_0B;
+	writel(enable, &regs->enable);
 
 	if (bus->speed >= MAX_SPEED_HZ)
 		set_speed_regs(regs, CONTROL_SPEED_HS,
@@ -318,6 +318,85 @@ static int i2c_xfer_finish(DesignwareI2cRegs *regs)
 }
 
 /*
+ * i2c_transfer_segment - Read / Write single segment.
+ * @regs:	i2c register base address
+ * @segment:	pointer to single segment
+ * @send_stop:	true if stop condition should be sent at conclusion
+ *
+ * Read / Write single segment.
+ */
+static int i2c_transfer_segment(DesignwareI2cRegs *regs,
+				I2cSeg *segment,
+				int send_stop)
+{
+	int i;
+
+	/* Set slave device bus address. */
+	writel(segment->chip, &regs->target_addr);
+
+	/* Read or write each byte in segment. */
+	for (i = 0; i < segment->len; ++i) {
+		uint64_t start = timer_us(0);
+		uint32_t cmd;
+
+		/* Write op only: Wait for FIFO not full. */
+		if (!segment->read) {
+			while (!(readl(&regs->status) & STATUS_TFNF))
+				if (timer_us(start) > 2000)
+					return -1;
+			cmd = segment->buf[i];
+		} else
+			cmd = CMD_DATA_CMD;
+
+		/* Send stop on last byte, if desired. */
+		if (send_stop && i == segment->len - 1)
+			cmd |= CMD_DATA_STOP;
+
+		writel(cmd, &regs->cmd_data);
+
+		/* Read op only: Wait FIFO data and store it. */
+		if (segment->read) {
+			while (!(readl(&regs->status) & STATUS_RFNE))
+				if (timer_us(start) > 2000)
+					return -1;
+			segment->buf[i] = (uint8_t)readl(&regs->cmd_data);
+		}
+	}
+	return 0;
+}
+
+/*
+ * i2c_transfer - Read / Write from I2c registers.
+ * @me:		i2c ops structure
+ * @segments:	series of requested transactions
+ * @seg_count:	no of segments
+ *
+ * Read / Write from i2c registers.
+ */
+static int i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
+{
+	int i;
+	DesignwareI2c *bus = container_of(me, DesignwareI2c, ops);
+	DesignwareI2cRegs *regs = bus->regs;
+
+	if (!bus->initialized)
+		i2c_init(bus);
+
+	if (i2c_wait_for_bus_idle(regs))
+		return -1;
+
+	// Set stop condition on final segment only. Repeated start will
+	// be automatically generated on R->W or W->R switch.
+	for (i = 0; i < seg_count; ++i)
+		if (i2c_transfer_segment(regs,
+					 &segments[i],
+					 i == seg_count - 1))
+			return -1;
+
+	return i2c_xfer_finish(regs);
+}
+
+/*
  * i2c_read - Read from i2c register.
  * @me:		i2c ops structure
  * @chip:	target i2c device bus address
@@ -418,6 +497,7 @@ DesignwareI2c *new_designware_i2c(uintptr_t reg_addr, int speed)
 
 	bus->ops.read = i2c_read;
 	bus->ops.write = i2c_write;
+	bus->ops.transfer = i2c_transfer;
 	bus->regs = (void *)reg_addr;
 	bus->speed = speed;
 
