@@ -84,10 +84,9 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 
 	/* Send output data */
 	cros_ec_dump_data("out", -1, bus->buf, out_bytes);
-	if (bus->bus->write(bus->bus, bus->chip, 0, 0, bus->buf, out_bytes))
-		return -1;
 
-	if (bus->bus->read(bus->bus, bus->chip, 0, 0, bus->buf, in_bytes))
+	if (i2c_write_raw(bus->bus, bus->chip, bus->buf, out_bytes) ||
+	    i2c_read_raw(bus->bus, bus->chip, bus->buf, in_bytes))
 		return -1;
 
 	bytes = bus->buf;
