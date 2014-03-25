@@ -86,9 +86,8 @@ static int iic_tpm_read(Slb9635I2c *tpm, uint8_t addr, uint8_t *buffer,
 	if ((tpm->chip_type == SLB9635) || (tpm->chip_type == UNKNOWN)) {
 		// slb9635 protocol should work in both cases.
 		for (count = 0; count < 50; count++) {
-			rc = tpm->base.bus->write(tpm->base.bus,
-						  tpm->base.addr, 0, 0,
-						  &addr, 1);
+			rc = i2c_write_raw(tpm->base.bus, tpm->base.addr,
+					   &addr, 1);
 			if (rc == 0)
 				break;
 
@@ -105,8 +104,8 @@ static int iic_tpm_read(Slb9635I2c *tpm, uint8_t addr, uint8_t *buffer,
 		 */
 		for (count = 0; count < 50; count++) {
 			udelay(200);
-			rc = tpm->base.bus->read(tpm->base.bus, tpm->base.addr,
-						 0, 0, buffer, len);
+			rc = i2c_read_raw(tpm->base.bus, tpm->base.addr,
+					  buffer, len);
 			if (rc == 0)
 				break;
 		}
@@ -118,9 +117,15 @@ static int iic_tpm_read(Slb9635I2c *tpm, uint8_t addr, uint8_t *buffer,
 		 * retries should usually not be needed, but are kept just to
 		 * be safe on the safe side.
 		 */
+		I2cSeg segs[] = {
+			{ .read = 0, .chip = tpm->base.addr,
+			  .buf = &addr, .len = 1 },
+			{ .read = 1, .chip = tpm->base.addr,
+			  .buf = buffer, .len = len }
+		};
 		for (count = 0; count < 50; count++) {
-			rc = tpm->base.bus->read(tpm->base.bus, tpm->base.addr,
-						 addr, 1, buffer, len);
+			rc = tpm->base.bus->transfer(tpm->base.bus, segs,
+						     ARRAY_SIZE(segs));
 			if (rc == 0)
 				break;
 			udelay(200);
@@ -169,8 +174,8 @@ static int iic_tpm_write(Slb9635I2c *tpm, uint8_t addr, const uint8_t *buffer,
 	if (!tpm->base.bus)
 		return -1;
 	for (count = 0; count < 50; count++) {
-		rc = tpm->base.bus->write(tpm->base.bus, tpm->base.addr, 0, 0,
-					  tpm->buf, len + 1);
+		rc = i2c_write_raw(tpm->base.bus, tpm->base.addr,
+				   tpm->buf, len + 1);
 		if (rc == 0)
 			break;
 
