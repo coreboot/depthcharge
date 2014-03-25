@@ -37,10 +37,8 @@ enum {
 static int as3722_set_bit(I2cOps *bus, uint8_t chip, uint8_t reg, uint8_t bit)
 {
 	uint8_t val;
-	if (bus->read(bus, chip, reg, 1, &val, sizeof(val)))
-		return -1;
-	val |= bit;
-	if (bus->write(bus, chip, reg, 1, &val, sizeof(val)))
+	if (i2c_readb(bus, chip, reg, &val) ||
+	    i2c_writeb(bus, chip, reg, val | bit))
 		return -1;
 	return 0;
 }
