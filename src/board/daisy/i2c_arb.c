@@ -86,11 +86,29 @@ static int i2c_arb_write(struct I2cOps *me, uint8_t chip,
 	return res;
 }
 
+static int i2c_arb_transfer(struct I2cOps *me, I2cSeg *segments, int seg_count)
+{
+	assert(me);
+	SnowI2cArb *arb = container_of(me, SnowI2cArb, ops);
+
+	if (!arb->ready) {
+		i2c_release_bus(arb->request);
+		arb->ready = 1;
+	}
+
+	if (i2c_claim_bus(arb->request, arb->grant))
+		return 1;
+	int res = arb->bus->transfer(arb->bus, segments, seg_count);
+	i2c_release_bus(arb->request);
+	return res;
+}
+
 SnowI2cArb *new_snow_i2c_arb(I2cOps *bus, GpioOps *request, GpioOps *grant)
 {
 	SnowI2cArb *arb = xzalloc(sizeof(*arb));
 	arb->ops.read = &i2c_arb_read;
 	arb->ops.write = &i2c_arb_write;
+	arb->ops.transfer = &i2c_arb_transfer;
 	arb->bus = bus;
 	arb->request = request;
 	arb->grant = grant;
