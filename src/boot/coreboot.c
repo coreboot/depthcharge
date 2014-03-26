@@ -32,7 +32,6 @@
 #include "base/init_funcs.h"
 #include "config.h"
 #include "image/fmap.h"
-#include "vboot/util/commonparams.h"
 
 /* TODO move to common device tree code */
 static void bin_prop(ListNode *props, ListNode *old_props,
@@ -125,13 +124,8 @@ static int install_coreboot_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 
 	string_prop(props, old, "compatible", "coreboot");
 
-	void *blob;
-	int size, i;
-	if (find_common_params(&blob, &size))
-		return 1;
-
 	struct memrange *range = NULL;
-	for (i = lib_sysinfo.n_memranges - 1; i >= 0; i--) {
+	for (int i = lib_sysinfo.n_memranges - 1; i >= 0; i--) {
 		if (lib_sysinfo.memrange[i].type == CB_MEM_TABLE) {
 			range = &lib_sysinfo.memrange[i];
 			break;
