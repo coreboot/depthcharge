@@ -18,6 +18,7 @@
 depthcharge-y += commonparams.c
 depthcharge-y += flag.c
 depthcharge-y += memory.c
+unified-y += commonparams-unified.c
 
 ifeq ($(CONFIG_EC_SOFTWARE_SYNC),y)
 depthcharge-y += ec.c

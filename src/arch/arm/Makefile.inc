@@ -17,7 +17,8 @@
 
 depthcharge-y += boot.c
 depthcharge-y += boot_asm.S
-depthcharge-y += commonparams.c
+readonly-y += commonparams.c
+readwrite-y += commonparams.c
 depthcharge-y += enter_trampoline.c
 depthcharge-$(CONFIG_KERNEL_FIT) += fit.c
 depthcharge-y += gcc.c
