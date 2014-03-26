@@ -93,19 +93,19 @@
 			 * each RW_SECTION.
 			 */
 			reg = <0x00200000 0x00002000>;
-			type = "keyblock boot,ecrwhash,ramstage";
+			type = "keyblock boot,ecrwhash";
 			with_index;
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
 			version = <1>;
 			kernelkey = "kernel_subkey.vbpubk";
-			preamble-flags = <0>;
+			preamble-flags = <1>;
 		};
 		rw-a-boot {
 			/* Alignment: no requirement (yet). */
 			label = "fw-main-a";
 			reg = <0x00202000 0x000ce000>;
-			type = "blob boot,ecrwhash,ramstage";
+			type = "blob boot,ecrwhash";
 			with_index;
 		};
 		rw-a-ec-boot {
@@ -135,19 +135,19 @@
 			 * each RW_SECTION.
 			 */
 			reg = <0x00300000 0x00002000>;
-			type = "keyblock boot,ecrwhash,ramstage";
+			type = "keyblock boot,ecrwhash";
 			with_index;
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
 			version = <1>;
 			kernelkey = "kernel_subkey.vbpubk";
-			preamble-flags = <0>;
+			preamble-flags = <1>;
 		};
 		rw-b-boot {
 			label = "fw-main-b";
 			/* Alignment: no requirement (yet). */
 			reg = <0x00302000 0x000ce000>;
-			type = "blob boot,ecrwhash,ramstage";
+			type = "blob boot,ecrwhash";
 			with_index;
 		};
 		rw-b-ec-boot {
