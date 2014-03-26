@@ -150,10 +150,6 @@ static void exynos5_spi_sw_reset(ExynosSpiRegs *regs, int word)
 // Set up SPI channel.
 static void exynos5_spi_init(ExynosSpiRegs *regs)
 {
-	static int done = 0;
-	if (done)
-		return;
-
 	// Set FB_CLK_SEL.
 	writel(SPI_FB_DELAY_180, &regs->fb_clk);
 	// CPOL: Active high.
@@ -168,8 +164,6 @@ static void exynos5_spi_init(ExynosSpiRegs *regs)
 
 	// Do a soft reset, which will also enable both channels.
 	exynos5_spi_sw_reset(regs, 1);
-
-	done = 1;
 }
 
 static int exynos5_spi_start(SpiOps *me)
