@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 locales: [ ar, bg, ca, cs, da, de, el, en, es, es-419, et, fa, fi, fil, fr,
-           hi, hr, hu, id, it, iw, ja, ko, lt, lv, ms, nl, 'no', pl, pt-BR,
+           he, hi, hr, hu, id, it, ja, ko, lt, lv, ms, nl, nb, pl, pt-BR,
            pt-PT, ro, ru, sk, sl, sr, sv, th, tr, uk, vi, zh-CN, zh-TW]
 
 # Incomplete locales (without 'language') : [ bn, gu, kn, ml, mr, ta, te, ]
@@ -69,8 +69,8 @@ styles:
 
 fonts:
   ar:     'Droid Sans Arabic'
+  he:     'Droid Sans Hebrew'
   hi:     'Lohit Hindi'
-  iw:     'Droid Sans Hebrew'
   ja:     'Droid Sans Fallback'
   ko:     'NanumGothic'
   th:     'Droid Sans Thai'

@@ -17,7 +17,7 @@ import sys
 import yaml
 
 OUTPUT_FILE = "DEFAULT.yaml"
-RTOL_LOCALE_LIST = ('ar', 'fa', 'iw')
+RTOL_LOCALE_LIST = ('ar', 'fa', 'he')
 SCREEN_LIST = []
 
 # Default image names.

@@ -51,9 +51,9 @@ DEFAULT_RESOLUTION = (1366.0, 768.0)
 DEFAULT_PANEL_SIZE = DEFAULT_RESOLUTION
 DEFAULT_ASSETS_DIR = 'assets'
 DEFAULT_LOCALES = ['en', 'es-419', 'pt-BR', 'fr', 'es', 'pt-PT', 'ca', 'it',
-                   'de', 'el', 'nl', 'da', 'no', 'sv', 'fi', 'et', 'lv', 'lt',
+                   'de', 'el', 'nl', 'da', 'nb', 'sv', 'fi', 'et', 'lv', 'lt',
                    'ru', 'pl', 'cs', 'sk', 'hu', 'sl', 'sr', 'hr', 'bg', 'ro',
-                   'uk', 'tr', 'iw', 'ar', 'fa', 'hi', 'th', 'vi', 'id', 'fil',
+                   'uk', 'tr', 'he', 'ar', 'fa', 'hi', 'th', 'vi', 'id', 'fil',
                    'zh-CN', 'zh-TW', 'ko', 'ja']
 
 # YAML key names.

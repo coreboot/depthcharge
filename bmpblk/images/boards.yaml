@@ -22,8 +22,12 @@
 #
 # These are all the known locales, sorted more-or-less geograpically
 #  en es-419 pt-BR fr es pt-PT ca it de
-#  el nl da 'no' sv fi et lv lt ru pl cs sk hu sl sr hr bg ro
-#  uk tr iw ar fa hi th vi id fil zh-CN zh-TW ko ja
+#  el nl da nb(no) sv fi et lv lt ru pl cs sk hu sl sr hr bg ro
+#  uk tr he(iw) ar fa hi th vi id fil zh-CN zh-TW ko ja
+#
+# Note the locale should be supported (and named) by Chrome browser:
+# https://chromium.googlesource.com/chromium/chromium/+/master/ui/base/l10n/l10n_util.cc
+# In other words, iw should be 'he', and no should be 'nb'.
 
 std:
   # Standard bitmap, for test and development.
@@ -111,7 +115,7 @@ link:
   # list is specified.
   res:      [1280, 850]
   panel:    [2560, 1700]
-  locales: [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id, th]
+  locales: [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id, th]
 
 stumpy:
   # There's no standard panel size for Stumpy -- depends on the monitor user has
@@ -120,7 +124,7 @@ stumpy:
   # list is specified.
   res:      [800, 600]
   panel:    [1920, 1080]
-  locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja]
+  locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja]
   sdcard:   False
 
 lumpy:
@@ -130,4 +134,4 @@ lumpy:
   # list is specified.
   res:      [800, 600]
   panel:    [1366, 768]
-  locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja]
+  locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja]
