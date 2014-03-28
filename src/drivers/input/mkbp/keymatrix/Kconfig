@@ -20,7 +20,7 @@ choice
 	help
 	  Maps the keymatrix expressed in columns and rows into scancodes.
 
-config DRIVER_INPUT_MKBP_KEYMATRIX_SNOW
-	bool "Snow"
+config DRIVER_INPUT_MKBP_KEYMATRIX_STANDARD
+	bool "Standard ChromeOS"
 
 endchoice
