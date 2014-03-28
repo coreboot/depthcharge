@@ -588,8 +588,8 @@ TegraMmcHost *new_tegra_mmc_host(uintptr_t ioaddr, int bus_width,
 		ctrlr->mmc.caps &= ~MMC_MODE_8BIT;
 	}
 	ctrlr->mmc.caps |= MMC_MODE_HS | MMC_MODE_HS_52MHz | MMC_MODE_HC;
-	ctrlr->mmc.send_cmd = tegra_mmc_send_cmd;
-	ctrlr->mmc.set_ios = tegra_mmc_set_ios;
+	ctrlr->mmc.send_cmd = &tegra_mmc_send_cmd;
+	ctrlr->mmc.set_ios = &tegra_mmc_set_ios;
 
 	ctrlr->src_hz = TegraMmcSourceClock;
 	ctrlr->reg = (TegraMmcReg *)ioaddr;

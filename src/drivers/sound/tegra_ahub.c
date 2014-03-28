@@ -274,9 +274,9 @@ TegraAudioHubApbif *new_tegra_audio_hub_apbif(uintptr_t regs,
 					      size_t capacity_in_word)
 {
 	TegraAudioHubApbif *apbif = xzalloc(sizeof(*apbif));
-	apbif->ops.send = tegra_ahub_apbif_send;
-	apbif->ops.is_full = tegra_ahub_apbif_is_full;
-	apbif->ops.capacity = tegra_ahub_apbif_capacity;
+	apbif->ops.send = &tegra_ahub_apbif_send;
+	apbif->ops.is_full = &tegra_ahub_apbif_is_full;
+	apbif->ops.capacity = &tegra_ahub_apbif_capacity;
 	apbif->regs = (TegraApbifRegs *)regs;
 	apbif->capacity_in_word = capacity_in_word;
 	return apbif;
@@ -290,6 +290,6 @@ TegraAudioHub *new_tegra_audio_hub(TegraAudioHubXbar *xbar,
 	ahub->xbar = xbar;
 	ahub->apbif = apbif;
 	ahub->i2s = i2s;
-	ahub->component.ops.enable = tegra_audio_hub_enable;
+	ahub->component.ops.enable = &tegra_audio_hub_enable;
 	return ahub;
 }

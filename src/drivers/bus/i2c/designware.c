@@ -386,7 +386,7 @@ DesignwareI2c *new_designware_i2c(uintptr_t reg_addr, int speed)
 {
 	DesignwareI2c *bus = xzalloc(sizeof(*bus));
 
-	bus->ops.transfer = i2c_transfer;
+	bus->ops.transfer = &i2c_transfer;
 	bus->regs = (void *)reg_addr;
 	bus->speed = speed;
 

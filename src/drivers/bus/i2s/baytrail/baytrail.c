@@ -701,7 +701,7 @@ BytI2s *new_byt_i2s(uintptr_t mmio, const BytI2sSettings *settings,
 {
 	BytI2s *bus = xzalloc(sizeof(*bus));
 
-	bus->ops.send = byt_i2s_send;
+	bus->ops.send = &byt_i2s_send;
 	bus->regs = (BytI2sRegs *)(mmio + BYT_SSP2_START_ADDRESS);
 	bus->shim = (BytI2sRegs *)(mmio + BYT_SSP2_SHIM_START_ADDRESS);
 	bus->settings = settings;

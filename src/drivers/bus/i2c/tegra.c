@@ -173,7 +173,7 @@ TegraI2c *new_tegra_i2c(void *regs, int controller_id, void *set_reset_reg,
 			void *clear_reset_reg, uint32_t reset_bit)
 {
 	TegraI2c *bus = xzalloc(sizeof(*bus));
-	bus->ops.transfer = i2c_transfer;
+	bus->ops.transfer = &i2c_transfer;
 	bus->regs = regs;
 	bus->controller_id = controller_id;
 
