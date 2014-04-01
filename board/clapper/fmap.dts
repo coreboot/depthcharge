@@ -213,7 +213,8 @@
 		rw-legacy {
 			label = "rw-legacy";
 			reg = <0x00400000 0x00200000>;
-			type = "blob legacy";
+			type = "wiped";
+			wipe-value = [ff];
 			read-only;
 		};
 
