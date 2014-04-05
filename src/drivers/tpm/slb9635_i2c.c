@@ -117,15 +117,13 @@ static int iic_tpm_read(Slb9635I2c *tpm, uint8_t addr, uint8_t *buffer,
 		 * retries should usually not be needed, but are kept just to
 		 * be safe on the safe side.
 		 */
-		I2cSeg segs[] = {
-			{ .read = 0, .chip = tpm->base.addr,
-			  .buf = &addr, .len = 1 },
-			{ .read = 1, .chip = tpm->base.addr,
-			  .buf = buffer, .len = len }
-		};
+		I2cSeg aseg = { .read = 0, .chip = tpm->base.addr,
+				.buf = &addr, .len = 1 };
+		I2cSeg dseg = { .read = 1, .chip = tpm->base.addr,
+				.buf = buffer, .len = len };
 		for (count = 0; count < 50; count++) {
-			rc = tpm->base.bus->transfer(tpm->base.bus, segs,
-						     ARRAY_SIZE(segs));
+			rc = tpm->base.bus->transfer(tpm->base.bus, &aseg, 1) ||
+			     tpm->base.bus->transfer(tpm->base.bus, &dseg, 1);
 			if (rc == 0)
 				break;
 			udelay(200);
