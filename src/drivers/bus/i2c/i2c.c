@@ -20,7 +20,7 @@
 
 int i2c_readb(I2cOps *ops, uint8_t chip, uint8_t reg, uint8_t *data)
 {
-	struct I2cSeg seg[2];
+	I2cSeg seg[2];
 
 	seg[0].read = 0;
 	seg[0].chip = chip;
@@ -36,7 +36,7 @@ int i2c_readb(I2cOps *ops, uint8_t chip, uint8_t reg, uint8_t *data)
 
 int i2c_writeb(I2cOps *ops, uint8_t chip, uint8_t reg, uint8_t data)
 {
-	struct I2cSeg seg;
+	I2cSeg seg;
 	uint8_t buf[] = {reg, data};
 
 	seg.read = 0;
