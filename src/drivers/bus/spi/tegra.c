@@ -383,6 +383,8 @@ static int tegra_spi_pio_transfer(TegraSpi *bus, uint8_t *in,
 	}
 
 	writel(command1 | SPI_CMD1_GO, &regs->command1);
+	// Make sure the write to command1 completes.
+	readl(&regs->command1);
 	wait_for_transfer(regs, size);
 
 	uint32_t in_bytes = in ? size : 0;
