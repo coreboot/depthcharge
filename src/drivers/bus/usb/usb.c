@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <libpayload.h>
 
+#include "base/cleanup_funcs.h"
 #include "drivers/bus/usb/usb.h"
 
 ListNode generic_usb_drivers;
@@ -79,16 +80,33 @@ void set_usb_init_callback(UsbHostController *hc, UsbHcCallback *callback)
 	hc->init_callback = callback;
 }
 
+static int dc_usb_shutdown(struct CleanupFunc *cleanup, CleanupType type)
+{
+	printf("Shutting down all USB controllers.\n");
+	usb_exit();
+	return 0;
+}
+
 void dc_usb_initialize(void)
 {
+	static const char * hc_types[] = {[UHCI] = "UHCI", [OHCI] = "OHCI",
+					  [EHCI] = "EHCI", [XHCI] = "XHCI"};
 	static int need_init = 1;
+	static CleanupFunc cleanup = {
+		&dc_usb_shutdown,
+		CleanupOnHandoff | CleanupOnLegacy,
+		NULL
+	};
 
 	if (need_init) {
 		usb_initialize();
 		need_init = 0;
+		list_insert_after(&cleanup.list_node, &cleanup_funcs);
 
 		UsbHostController *hc;
 		list_for_each(hc, usb_host_controllers, list_node) {
+			printf("Initializing %s USB controller at %p.\n",
+					hc_types[hc->type], hc->bar);
 			usb_add_mmio_hc(hc->type, hc->bar);
 			if (hc->init_callback)
 				hc->init_callback(hc);
