@@ -23,6 +23,6 @@
 #ifndef __VBOOT_UTIL_MEMORY_H__
 #define __VBOOT_UTIL_MEMORY_H__
 
-int wipe_unused_memory(void);
+int memory_wipe_unused(void);
 
 #endif /* __VBOOT_UTIL_MEMORY_H__ */

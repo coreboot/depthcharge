@@ -30,13 +30,13 @@
 #include "image/symbols.h"
 #include "vboot/util/memory.h"
 
-void wipe_unused_memset(uint64_t start, uint64_t end, void *data)
+static void wipe_unused_memset(uint64_t start, uint64_t end, void *data)
 {
 	printf("\t[%#016llx, %#016llx)\n", start, end);
 	arch_phys_memset(start, 0, end - start);
 }
 
-int wipe_unused_memory(void)
+int memory_wipe_unused(void)
 {
 	Ranges ranges;
 

@@ -95,7 +95,7 @@ int vboot_init(void)
 int vboot_do_init_out_flags(uint32_t out_flags)
 {
 	if (out_flags & VB_INIT_OUT_CLEAR_RAM) {
-		if (wipe_unused_memory())
+		if (memory_wipe_unused())
 			return 1;
 	}
 	/*
