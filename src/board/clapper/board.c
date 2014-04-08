@@ -81,7 +81,7 @@ static int board_setup(void)
 	DesignwareI2c *i2c = new_designware_i2c(
 		nvs->lpss_bar0[LPSS_NVS_I2C2], 400000);
 	Max98090Codec *codec = new_max98090_codec(
-		&i2c->ops, 0x10, 16, 48000, 400, 1);
+		&i2c->ops, 0x10, 16, 48000, 520, 1);
 	list_insert_after(&codec->component.list_node,
 			  &sound_route->components);
 	sound_set_ops(&sound_route->ops);
