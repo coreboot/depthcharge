@@ -30,10 +30,42 @@
 #include "image/symbols.h"
 #include "vboot/util/memory.h"
 
-static void wipe_unused_memset(uint64_t start, uint64_t end, void *data)
+static Ranges used;
+
+static void used_list_initialize(void)
+{
+	static int initialized;
+	if (initialized)
+		return;
+
+	ranges_init(&used);
+
+	// Add regions depthcharge occupies.
+	ranges_add(&used, (uintptr_t)&_start, (uintptr_t)&_end);
+	// Remove trampoline area if it is non-zero in size.
+	if (&_tramp_start != &_tramp_end)
+		ranges_add(&used, (uintptr_t)&_tramp_start,
+		           (uintptr_t)&_tramp_end);
+
+	initialized = 1;
+}
+
+void memory_mark_used(uint64_t start, uint64_t end)
+{
+	used_list_initialize();
+	ranges_add(&used, start, end);
+}
+
+
+static void unused_memset(uint64_t start, uint64_t end, void *data)
 {
 	printf("\t[%#016llx, %#016llx)\n", start, end);
 	arch_phys_memset(start, 0, end - start);
+}
+
+static void remove_range(uint64_t start, uint64_t end, void *data)
+{
+	ranges_sub((Ranges *)data, start, end);
 }
 
 int memory_wipe_unused(void)
@@ -65,16 +97,13 @@ int memory_wipe_unused(void)
 		}
 	}
 
-	// Exclude memory we're using ourselves.
-	ranges_sub(&ranges, (uintptr_t)&_start, (uintptr_t)&_end);
-	// Remove trampoline area if it is non-zero in size.
-	if (&_tramp_start != &_tramp_end)
-		ranges_sub(&ranges, (uintptr_t)&_tramp_start,
-		           (uintptr_t)&_tramp_end);
+	// Exclude memory that's being used.
+	used_list_initialize();
+	ranges_for_each(&used, &remove_range, &ranges);
 
 	// Do the wipe.
 	printf("Wipe memory regions:\n");
-	ranges_for_each(&ranges, &wipe_unused_memset, NULL);
+	ranges_for_each(&ranges, &unused_memset, NULL);
 	ranges_teardown(&ranges);
 	return 0;
 }
