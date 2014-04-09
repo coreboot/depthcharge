@@ -56,7 +56,8 @@ VbError_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
 	list_for_each(ctrlr, *ctrlrs, list_node) {
 		if (ctrlr->ops.update && ctrlr->need_update &&
 		    ctrlr->ops.update(&ctrlr->ops)) {
-			return VBERROR_UNKNOWN;
+			printf("Updating a storage controller failed. "
+			       "Skipping.\n");
 		}
 	}
 
