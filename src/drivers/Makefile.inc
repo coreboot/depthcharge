@@ -23,7 +23,6 @@ subdirs-y += gpio
 subdirs-y += input
 subdirs-y += net
 subdirs-y += power
-subdirs-y += serial
 subdirs-y += sound
 subdirs-y += storage
 subdirs-y += timer
