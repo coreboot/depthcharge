@@ -80,5 +80,8 @@ endif
 if BOARD = "squawks"
 source src/board/squawks/Kconfig
 endif
+if BOARD = "swanky"
+source src/board/swanky/Kconfig
+endif
 
 endmenu
