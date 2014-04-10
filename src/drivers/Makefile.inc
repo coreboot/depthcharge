@@ -25,6 +25,5 @@ subdirs-y += net
 subdirs-y += power
 subdirs-y += sound
 subdirs-y += storage
-subdirs-y += timer
 subdirs-y += tpm
 subdirs-y += video
