@@ -210,7 +210,7 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 }
 
 static DeviceTreeFixup crossystem_fixup = {
-	&install_crossystem_data
+	.fixup = &install_crossystem_data
 };
 
 int crossystem_setup(void)

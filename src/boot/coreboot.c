@@ -141,7 +141,7 @@ static int install_coreboot_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 }
 
 static DeviceTreeFixup coreboot_fixup = {
-	&install_coreboot_data
+	.fixup = &install_coreboot_data
 };
 
 static int coreboot_setup(void)
