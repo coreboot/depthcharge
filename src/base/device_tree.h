@@ -148,8 +148,6 @@ typedef struct DeviceTreeFixup
 {
 	// The function which does the fixing.
 	int (*fixup)(struct DeviceTreeFixup *fixup, DeviceTree *tree);
-	// Some data that can be used by the fixup function.
-	void *data;
 
 	ListNode list_node;
 } DeviceTreeFixup;
