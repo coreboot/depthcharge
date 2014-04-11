@@ -35,7 +35,7 @@ std:
   panel:    [1366, 768]
   locales:  [en, ja]
 
-peach_pit:
+peach_pit,nyan,nyan_big:
   # 1366x768, boots recovery image on any SD card or USB ports.
   res:      [1366, 768]
   panel:    [1366, 768]
