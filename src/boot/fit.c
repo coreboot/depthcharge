@@ -270,16 +270,8 @@ static void update_mem_property(uint64_t start, uint64_t end, void *pdata)
 
 static void update_memory(DeviceTree *tree, DeviceTreeNode *memory)
 {
-	DeviceTreeProperty *prop;
-	unsigned addr_cells = 1;
-	unsigned size_cells = 1;
-
-	list_for_each(prop, tree->root->properties, list_node) {
-		if (!strcmp("#address-cells", prop->prop.name))
-			addr_cells = betohl(*(uint32_t *)prop->prop.data);
-		if (!strcmp("#size-cells", prop->prop.name))
-			size_cells = betohl(*(uint32_t *)prop->prop.data);
-	}
+	unsigned addr_cells = 1, size_cells = 1;
+	dt_node_cell_props(tree->root, &addr_cells, &size_cells);
 
 	if (addr_cells > 2 || size_cells > 2) {
 		printf("Bad cell count.\n");
@@ -306,6 +298,7 @@ static void update_memory(DeviceTree *tree, DeviceTreeNode *memory)
 	ranges_for_each(&reserved, &update_reserve_map, tree);
 
 	DeviceTreeProperty *reg = NULL;
+	DeviceTreeProperty *prop;
 	list_for_each(prop, memory->properties, list_node)
 		if (!strcmp("reg", prop->prop.name))
 			reg = prop;

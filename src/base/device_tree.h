@@ -134,6 +134,9 @@ uint32_t dt_flat_size(DeviceTree *tree);
 // Flatten a device tree into the buffer pointed to by dest.
 void dt_flatten(DeviceTree *tree, void *dest);
 void dt_print_node(DeviceTreeNode *node);
+// Find #address-cells and #size-cells properties of a node, if any. If no
+// such property is found, that argument is left unmodified.
+void dt_node_cell_props(DeviceTreeNode *node, unsigned *addr, unsigned *size);
 
 
 

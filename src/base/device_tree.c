@@ -451,6 +451,24 @@ void dt_print_node(DeviceTreeNode *node)
 
 
 /*
+ * Utility function for finding #address-cells and #size-cells properties
+ * in a node.
+ */
+
+void dt_node_cell_props(DeviceTreeNode *node, unsigned *addr, unsigned *size)
+{
+	DeviceTreeProperty *prop;
+	list_for_each(prop, node->properties, list_node) {
+		if (!strcmp("#address-cells", prop->prop.name))
+			*addr = betohl(*(uint32_t *)prop->prop.data);
+		if (!strcmp("#size-cells", prop->prop.name))
+			*size = betohl(*(uint32_t *)prop->prop.data);
+	}
+}
+
+
+
+/*
  * Fixups to apply to a kernel's device tree before booting it.
  */
 
