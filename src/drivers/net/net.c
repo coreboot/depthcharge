@@ -32,7 +32,7 @@ static NetDevice *net_device;
 
 void net_set_device(NetDevice *dev)
 {
-	if (net_device) {
+	if (dev) {
 		assert(dev->ready);
 		assert(dev->recv);
 		assert(dev->send);
