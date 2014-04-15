@@ -411,6 +411,7 @@ static const AsixUsbId supported_ids[] = {
 	{ 0x0b95, 0x7720 },
 	{ 0x0b95, 0x772a },
 	{ 0x0b95, 0x772b },
+	{ 0x0b95, 0x7e2b },
 };
 
 static int asix_probe(GenericUsbDevice *dev)
