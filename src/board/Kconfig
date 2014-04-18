@@ -70,5 +70,8 @@ endif
 if BOARD = "slippy"
 source src/board/slippy/Kconfig
 endif
+if BOARD = "storm"
+source src/board/storm/Kconfig
+endif
 
 endmenu
