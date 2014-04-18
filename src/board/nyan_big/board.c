@@ -75,6 +75,9 @@ enum {
 	BOARD_ID_REV0 = 0x00,	/* prototype */
 	BOARD_ID_REV1 = 0x01,	/* EVT */
 	BOARD_ID_REV2 = 0x02,	/* DVT */
+	BOARD_ID_REV3 = 0x04,	/* PVT */
+	BOARD_ID_REV4 = 0x05,
+	BOARD_ID_REV5 = 0x06
 };
 
 enum {
@@ -107,6 +110,15 @@ static int board_setup(void)
 		break;
 	case BOARD_ID_REV2:
 		fit_override_kernel_compat("google,nyan-big-rev2");
+		break;
+	case BOARD_ID_REV3:
+		fit_override_kernel_compat("google,nyan-blaze-rev3");
+		break;
+	case BOARD_ID_REV4:
+		fit_override_kernel_compat("google,nyan-blaze-rev4");
+		break;
+	case BOARD_ID_REV5:
+		fit_override_kernel_compat("google,nyan-blaze-rev5");
 		break;
 	default:
 		printf("Unrecognized board ID %#x.\n", id);
