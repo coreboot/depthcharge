@@ -38,6 +38,9 @@ endif
 if BOARD = "enguarde"
 source src/board/enguarde/Kconfig
 endif
+if BOARD = "expresso"
+source src/board/expresso/Kconfig
+endif
 if BOARD = "falco"
 source src/board/falco/Kconfig
 endif
