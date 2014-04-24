@@ -486,6 +486,10 @@ static int tegra_mmc_init(BlockDevCtrlrOps *me)
 	TegraMmcHost *host = container_of(me, TegraMmcHost, mmc.ctrlr.ops);
 	unsigned int mask;
 	mmc_debug("%s called\n", __func__);
+	if (host->power_gpio) {
+		host->power_gpio->set(host->power_gpio, 1);
+		udelay(2000);
+	}
 
 	tegra_mmc_reset(host);
 
@@ -566,7 +570,8 @@ static int tegra_mmc_update(BlockDevCtrlrOps *me)
 }
 
 TegraMmcHost *new_tegra_mmc_host(uintptr_t ioaddr, int bus_width,
-				 int removable, GpioOps *card_detect)
+				 int removable, GpioOps *card_detect,
+				 GpioOps *enable_power)
 {
 	TegraMmcHost *ctrlr = xzalloc(sizeof(*ctrlr));
 
@@ -596,6 +601,7 @@ TegraMmcHost *new_tegra_mmc_host(uintptr_t ioaddr, int bus_width,
 	ctrlr->removable = removable;
 
 	ctrlr->cd_gpio = card_detect;
+	ctrlr->power_gpio = enable_power;
 
 	return ctrlr;
 }

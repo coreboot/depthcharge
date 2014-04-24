@@ -153,12 +153,14 @@ typedef struct {
 	uint32_t src_hz;	// Source clock (hz)
 
 	GpioOps *cd_gpio;	// Change Detect GPIO
+	GpioOps *power_gpio;	// Enable Power GPIO
 
 	int initialized;
 	int removable;
 } TegraMmcHost;
 
 TegraMmcHost *new_tegra_mmc_host(uintptr_t ioaddr, int bus_width,
-				 int removable,	GpioOps *card_detect);
+				 int removable, GpioOps *card_detect,
+				 GpioOps *enable_power);
 
 #endif // __DRIVERS_STORAGE_TEGRA_MMC_H_
