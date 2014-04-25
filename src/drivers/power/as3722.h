@@ -28,9 +28,10 @@
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/power/power.h"
 
-typedef struct As3722Power
+typedef struct As3722Pmic
 {
 	PowerOps ops;
+	int (*set_reg)(struct As3722Pmic *me, uint8_t reg, uint8_t value);
 	I2cOps *bus;
 	uint8_t chip;
 } As3722Pmic;

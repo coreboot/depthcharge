@@ -59,11 +59,17 @@ static int as3722_power_off(PowerOps *me)
 	halt();
 }
 
+static int as3722_set_reg(As3722Pmic *pmic, uint8_t reg, uint8_t value)
+{
+	return i2c_writeb(pmic->bus, pmic->chip, reg, value);
+}
+
 As3722Pmic *new_as3722_pmic(I2cOps *bus, uint8_t chip)
 {
 	As3722Pmic *pmic = xzalloc(sizeof(*pmic));
 	pmic->ops.cold_reboot = &as3722_cold_reboot;
 	pmic->ops.power_off = &as3722_power_off;
+	pmic->set_reg = as3722_set_reg;
 	pmic->bus = bus;
 	pmic->chip = chip;
 	return pmic;
