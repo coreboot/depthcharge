@@ -27,6 +27,9 @@
 #include "base/bitmap.h"
 #include "drivers/video/coreboot_fb.h"
 
+/* Background image size for putting images in center. */
+static int background_width, background_height;
+
 static inline void dc_corebootfb_draw_pixel(uint32_t x, uint32_t y,
 					    uint32_t red, uint32_t green,
 					    uint32_t blue,
@@ -89,6 +92,25 @@ static int dc_corebootfb_draw_bitmap_v3(uint32_t x, uint32_t y,
 	memcpy(palette, (uint8_t *)bitmap + palette_offset, palette_size);
 
 	int32_t width = header.width, height = header.height;
+	if (!background_width && !background_height) {
+		// Currently the first image to display is always the background
+		// image.
+		background_width = width;
+		background_height = height;
+	}
+
+	// Fill whole screen by color of first pixel for background images,
+	// otherwise center all images.
+	int is_background = 0;
+	if (width == background_width && height == background_height) {
+		width = fbinfo->x_resolution;
+		height = fbinfo->y_resolution;
+		is_background = 1;
+	} else {
+		x += (fbinfo->x_resolution - background_width) / 2;
+		y += (fbinfo->y_resolution - background_height) / 2;
+	}
+
 	int extra = width % 4;
 	const int32_t padding = extra ? (4 - extra) : 0;
 	int32_t ystep = -1;
@@ -99,11 +121,16 @@ static int dc_corebootfb_draw_bitmap_v3(uint32_t x, uint32_t y,
 		y += height - 1;
 	}
 	uint8_t *cur_data = (uint8_t *)bitmap + bitmap_offset;
+	uint8_t *base_data = cur_data;
 	uint32_t x_offset = 0, y_offset = 0;
 	int bit = 0;
 	// Loop over all the pixels in the image.
 	for (uint32_t pixel = 0; pixel < width * height; pixel++) {
 		int index = 0;
+		if (is_background) {
+			// Reset and always use first pixel.
+			cur_data = base_data;
+		}
 		// Extract the index value for this pixel.
 		if (bpp >= 8) {
 			// For pixels one byte or larger, glue them together
