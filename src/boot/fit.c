@@ -224,12 +224,12 @@ typedef struct EntryParams
 	void *data;
 } EntryParams;
 
-static uint64_t max_range_shift(unsigned size_cells)
+static uint64_t max_range(unsigned size_cells)
 {
 	// Split up ranges who's sizes are too large to fit in #size-cells.
 	// The largest value we can store isn't a power of two, so we'll round
 	// down to make the math easier.
-	return size_cells * 32 - 1;
+	return 0x1ULL << (size_cells * 32 - 1);
 }
 
 static void count_entries(uint64_t start, uint64_t end, void *pdata)
@@ -237,8 +237,8 @@ static void count_entries(uint64_t start, uint64_t end, void *pdata)
 	EntryParams *params = (EntryParams *)pdata;
 	unsigned *count = (unsigned *)params->data;
 	uint64_t size = end - start;
-	*count += 1;
-	*count += size >> max_range_shift(params->size_cells);
+	uint64_t max_size = max_range(params->size_cells);
+	*count += ALIGN_UP(size, max_size) / max_size;
 }
 
 static void update_mem_property(uint64_t start, uint64_t end, void *pdata)
@@ -247,8 +247,7 @@ static void update_mem_property(uint64_t start, uint64_t end, void *pdata)
 	uint8_t *data = (uint8_t *)params->data;
 	uint64_t size = end - start;
 	while (size) {
-		const uint64_t max_size =
-			0x1ULL << max_range_shift(params->size_cells);
+		const uint64_t max_size = max_range(params->size_cells);
 		const uint32_t range_size = MIN(max_size, size);
 
 		if (params->addr_cells == 2)
