@@ -318,6 +318,8 @@ static void update_memory(DeviceTree *tree, DeviceTreeNode *memory)
 	reg->prop.data = data;
 	EntryParams add_params = { addr_cells, size_cells, data };
 	ranges_for_each(&mem, &update_mem_property, &add_params);
+	assert((uintptr_t)add_params.data - (uintptr_t)reg->prop.data ==
+		reg->prop.size);
 }
 
 static void update_kernel_dt(DeviceTree *tree, char *cmd_line)
