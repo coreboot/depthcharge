@@ -66,7 +66,7 @@ falco,peppy,wolf,leon:
   res:      [1024, 768]
   panel:    [1366, 768]
 
-squawks,glimmer,clapper:
+squawks,glimmer,clapper,enguarde,expresso,kip,gnawty,winky,quawks,swanky:
   # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
   # With card reader. All USB ports can boot in recovery mode.
   res:      [1024, 768]
