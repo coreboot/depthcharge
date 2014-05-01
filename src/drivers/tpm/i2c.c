@@ -131,13 +131,13 @@ static int i2ctpm_xmit(TpmOps *me, const uint8_t *sendbuf, size_t sbuf_size,
 	}
 
 	if (len < 10) {
-		printf("%s: Too few bytes received (%d).\n", __func__, len);
+		printf("%s: Too few bytes received (%zd).\n", __func__, len);
 		*rbuf_len = 0;
 		return -1;
 	}
 
 	if (len > *rbuf_len) {
-		printf("%s: Too many bytes received (%d).\n", __func__, len);
+		printf("%s: Too many bytes received (%zd).\n", __func__, len);
 		*rbuf_len = len;
 		return -1;
 	}

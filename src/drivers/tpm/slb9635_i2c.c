@@ -161,7 +161,7 @@ static int iic_tpm_write(Slb9635I2c *tpm, uint8_t addr, const uint8_t *buffer,
 	int count;
 
 	if (len > MaxTpmBufSize) {
-		printf("%s: Length %d is too large\n", __func__, len);
+		printf("%s: Length %zd is too large\n", __func__, len);
 		return -1;
 	}
 
