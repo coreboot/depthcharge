@@ -411,8 +411,12 @@ static int mmc_complete_op_cond(MmcMedia *media)
 {
 	MmcCommand cmd;
 
-	int tries = MMC_IO_RETRIES;
-	while (tries--) {
+	int timeout = MMC_INIT_TIMEOUT_US;
+	uint64_t start;
+
+	start = timer_us(0);
+	do {
+		// CMD1 queries whether initialization is done.
 		int err = mmc_send_op_cond_iter(media, &cmd, 1);
 		if (err)
 			return err;
@@ -421,10 +425,12 @@ static int mmc_complete_op_cond(MmcMedia *media)
 		if (media->op_cond_response & OCR_BUSY)
 			break;
 
+		// Check if init timeout has expired.
+		if (timer_us(start) > timeout)
+			return MMC_UNUSABLE_ERR;
+
 		udelay(100);
-	}
-	if (tries < 0)
-		return MMC_UNUSABLE_ERR;
+	} while (1);
 
 	media->version = MMC_VERSION_UNKNOWN;
 	media->ocr = cmd.response[0];
