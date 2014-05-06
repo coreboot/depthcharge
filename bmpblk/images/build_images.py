@@ -53,8 +53,8 @@ DEFAULT_ASSETS_DIR = 'assets'
 DEFAULT_LOCALES = ['en', 'es-419', 'pt-BR', 'fr', 'es', 'pt-PT', 'ca', 'it',
                    'de', 'el', 'nl', 'da', 'nb', 'sv', 'fi', 'et', 'lv', 'lt',
                    'ru', 'pl', 'cs', 'sk', 'hu', 'sl', 'sr', 'hr', 'bg', 'ro',
-                   'uk', 'tr', 'he', 'ar', 'fa', 'hi', 'th', 'vi', 'id', 'fil',
-                   'zh-CN', 'zh-TW', 'ko', 'ja']
+                   'uk', 'tr', 'he', 'ar', 'fa', 'hi', 'th', 'ms', 'vi', 'id',
+                   'fil', 'zh-CN', 'zh-TW', 'ko', 'ja']
 
 # YAML key names.
 PANEL_SIZE_KEY = 'panel'
