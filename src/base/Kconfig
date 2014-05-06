@@ -17,3 +17,9 @@
 config TIMESTAMP_RAW
 	bool
 	default ARCH_X86
+
+config HEADLESS
+       bool "Allow headless mode of operation"
+       default n
+       help
+        "Set to 'y' for devices without display screens"
