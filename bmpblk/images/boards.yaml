@@ -72,7 +72,7 @@ squawks,glimmer,clapper,enguarde,expresso,kip,gnawty,winky,quawks,swanky:
   res:      [1024, 768]
   panel:    [1366, 768]
 
-panther,zako:
+panther,zako,tricky:
   # Using VESA graphics mode 1024x768 (0x0117).
   # A chromebox without built-in panel/keyboard.
   # Assume the display is a modern 16:9 (1920x1080) monitor.
