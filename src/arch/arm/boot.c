@@ -25,18 +25,27 @@
 #include "arch/arm/boot.h"
 #include "base/cleanup_funcs.h"
 #include "base/timestamp.h"
+#include "config.h"
 #include "vboot/boot.h"
 
 static inline uint32_t get_sctlr(void)
 {
 	uint32_t val;
+#if CONFIG_ARCH_ARM_V8
+	asm("mrs %0, sctlr_el2" : "=r" (val));
+#else
 	asm("mrc p15, 0, %0, c1, c0, 0" : "=r" (val));
+#endif
 	return val;
 }
 
 static inline void set_sctlr(uint32_t val)
 {
+#if CONFIG_ARCH_ARM_V8
+	asm volatile("msr sctlr_el2, %0" :: "r" (val));
+#else
 	asm volatile("mcr p15, 0, %0, c1, c0, 0" :: "r" (val));
+#endif
 	asm volatile("" ::: "memory");
 }
 

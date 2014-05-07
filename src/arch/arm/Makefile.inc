@@ -16,10 +16,12 @@
 ##
 
 depthcharge-y += boot.c
-depthcharge-y += boot_asm.S
+ifeq ($(CONFIG_ARCH_ARM_V8),y)
+depthcharge-y += boot_asm64.S physmem_arm64.c
+else
+depthcharge-y += boot_asm.S enter_trampoline.c physmem.c
+endif
 readonly-y += commonparams.c
 readwrite-y += commonparams.c
-depthcharge-y += enter_trampoline.c
 depthcharge-$(CONFIG_KERNEL_FIT) += fit.c
 depthcharge-y += gcc.c
-depthcharge-y += physmem.c

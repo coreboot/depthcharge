@@ -1,5 +1,7 @@
 ##
-## Copyright 2012 Google Inc.
+## This file is part of the depthcharge project.
+##
+## Copyright 2014 Google Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -15,18 +17,4 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-depthcharge-y += fmap.c
-depthcharge-y += index.c
-readonly-y += startrw.c
-
-trampoline-y += load_elf.c
-
-# These options are passed from .config to the linker script. When making
-# changes, update Kconfig as well.
-link_config_options := \
-	KERNEL_START \
-	KERNEL_SIZE \
-	BASE_ADDRESS \
-	HEAP_SIZE \
-	STACK_SIZE \
-	GBB_COPY_SIZE
+depthcharge-y += board.c

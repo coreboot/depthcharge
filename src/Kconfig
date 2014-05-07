@@ -29,6 +29,21 @@ config ARCH_ARM
 
 endchoice
 
+choice
+	prompt "ARM Version"
+	depends on ARCH_ARM
+	default ARCH_ARM_V7
+	help
+	  Version for ARM Arch
+
+config ARCH_ARM_V7
+	bool "ARMv7"
+
+config ARCH_ARM_V8
+	bool "ARMv8"
+
+endchoice
+
 source src/arch/Kconfig
 source src/base/Kconfig
 source src/board/Kconfig

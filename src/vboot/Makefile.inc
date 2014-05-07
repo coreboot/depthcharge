@@ -41,9 +41,13 @@ TRAMP_PREFIX = tramp
 TRAMP_ENTRY = load_elf
 TRAMPOLINE = $(obj)/trampoline.o
 
+real-target: $(DEPTHCHARGE_ELF) $(DEPTHCHARGE_PAYLOAD)
+# TODO: Get rid of this once we decide to support only EFS/depthcharge
+# and non-EFS/u-boot.
+ifneq ($(CONFIG_ARCH_ARM_V8),y)
 real-target: $(DEPTHCHARGE_RO_ELF) $(DEPTHCHARGE_RO_BIN) \
-	$(DEPTHCHARGE_RW_ELF) $(DEPTHCHARGE_RW_BIN) \
-	$(DEPTHCHARGE_ELF) $(DEPTHCHARGE_PAYLOAD)
+	$(DEPTHCHARGE_RW_ELF) $(DEPTHCHARGE_RW_BIN)
+endif
 
 # The vboot library source is external to depthcharge.
 $(VB_LIB):
