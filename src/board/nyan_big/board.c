@@ -151,13 +151,13 @@ static int board_setup(void)
 		fit_override_kernel_compat("google,nyan-big-rev2");
 		break;
 	case BOARD_ID_REV3:
-		fit_override_kernel_compat("google,nyan-blaze-rev3");
+		fit_override_kernel_compat("google,nyan-big-rev3");
 		break;
 	case BOARD_ID_REV4:
-		fit_override_kernel_compat("google,nyan-blaze-rev4");
+		fit_override_kernel_compat("google,nyan-big-rev4");
 		break;
 	case BOARD_ID_REV5:
-		fit_override_kernel_compat("google,nyan-blaze-rev5");
+		fit_override_kernel_compat("google,nyan-big-rev5");
 		break;
 	default:
 		printf("Unrecognized board ID %#x.\n", id);
