@@ -121,6 +121,13 @@ VbError_t VbExDisplayImage(uint32_t x, uint32_t y,
 	return VBERROR_SUCCESS;
 }
 
+VbError_t VbExDisplaySetDimension(uint32_t width, uint32_t height)
+{
+	// TODO(hungte) Shift or scale images if width/height is not equal to
+	// lib_sysinfo.framebuffer->{x,y}_resolution.
+	return VBERROR_SUCCESS;
+}
+
 enum {
 	VDAT_RW_A = 0x0,
 	VDAT_RW_B = 0x1,
