@@ -217,7 +217,7 @@ int main(void)
 
 	printf("The bootfile was %d bytes long.\n", size);
 
-	// Add user supplied parameters to the command line.
+	// Prepare the command line.
 	param = netboot_params_val(NetbootParamIdKernelArgs);
 	cmd_line[cmd_line_def_size - 1] = '\0';
 	if (param->data && param->size > 0) {
@@ -231,18 +231,6 @@ int main(void)
 				sizeof(cmd_line) - cmd_line_def_size);
 		}
 	}
-
-	// Add tftp server IP into command line.
-	static const char def_tftp_cmdline[] = " tftpserverip=xxx.xxx.xxx.xxx";
-	const int tftp_cmdline_def_size = sizeof(def_tftp_cmdline) - 1;
-	int cmd_line_size = strlen(cmd_line);
-	if (cmd_line_size + tftp_cmdline_def_size > sizeof(cmd_line)) {
-		printf("Out of space adding TFTP server IP to the command line.\n");
-		return 1;
-	}
-	sprintf(&cmd_line[cmd_line_size], " tftpserverip=%d.%d.%d.%d",
-		uip_ipaddr1(tftp_ip), uip_ipaddr2(tftp_ip),
-		uip_ipaddr3(tftp_ip), uip_ipaddr4(tftp_ip));
 	printf("The command line is %s.\n", cmd_line);
 
 	// Boot.
