@@ -28,10 +28,10 @@
 #include <cbfs.h>
 #include <cbfs_ram.h>
 
+#include "arch/cache.h"
 #include "base/cleanup_funcs.h"
 #include "drivers/flash/flash.h"
 #include "image/fmap.h"
-#include "vboot/boot.h"
 
 static void load_payload_and_run(struct cbfs_payload *payload);
 
@@ -79,7 +79,6 @@ static void load_payload_and_run(struct cbfs_payload *payload)
 	char *base = (void *)seg;
 
 	while (1) {
-		void (*payload_entry)(void);
 		void *src = base + be32toh(seg->offset);
 		void *dst = (void *)(unsigned long)be64toh(seg->load_addr);
 		u32 src_len = be32toh(seg->len);
@@ -123,8 +122,8 @@ static void load_payload_and_run(struct cbfs_payload *payload)
 			break;
 		case PAYLOAD_SEGMENT_ENTRY:
 			run_cleanup_funcs(CleanupOnLegacy);
-			payload_entry = dst;
-			payload_entry();
+			cache_sync_instructions();
+			selfboot(dst);
 			return;
 		default:
 			printf("segment type %x not implemented. Exiting\n",
