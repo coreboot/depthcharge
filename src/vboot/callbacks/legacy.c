@@ -99,12 +99,8 @@ static void load_payload_and_run(struct cbfs_payload *payload)
 				memcpy(dst, src, src_len);
 			} else if (be32toh(seg->compression) ==
 						CBFS_COMPRESS_LZMA) {
-				unsigned long ret;
-				ret = ulzman(src, src_len, dst, dst_len);
-				if (ret != dst_len) {
-					printf("LZMA: Decompression failed. "
-						"ret=%ld, expected %d.\n", ret,
-						dst_len);
+				if (!ulzman(src, src_len, dst, dst_len)) {
+					printf("LZMA: Decompression failed.\n");
 					return;
 				}
 			} else {
