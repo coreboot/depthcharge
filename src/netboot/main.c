@@ -111,13 +111,19 @@ int main(void)
 	// Make sure graphics are available if they aren't already.
 	enable_graphics();
 
-	dc_usb_initialize();
 
 	srand(timer_raw_value());
 
 	printf("Looking for network device... ");
-	while (!net_get_device())
-		usb_poll();
+	if (!CONFIG_DISABLE_USB_SUPPORT) {
+		dc_usb_initialize();
+		while (!net_get_device())
+			usb_poll();
+	} else {
+		printf("No network device available...");
+		while(1)
+			;
+	}
 	printf("done.\n");
 
 	printf("Waiting for link... ");

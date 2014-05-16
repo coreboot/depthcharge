@@ -67,5 +67,16 @@ source src/vboot/Kconfig
 endmenu
 
 menu "Drivers"
+config DISABLE_USB_SUPPORT
+	bool "Disable USB support"
+	default n
+	help
+	  Set this to 'y' to allow buildig depthcharge even before USB support
+	  is available.
+
+config USB_ENABLED
+       bool
+       default !DISABLE_USB_SUPPORT
+
 source src/drivers/Kconfig
 endmenu
