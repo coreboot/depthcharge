@@ -223,7 +223,7 @@ static int sdhci_send_command(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
 	int ret = 0;
 	u32 mask, flags;
 	unsigned int timeout, start_addr = 0;
-	unsigned int retry = 10000;
+	uint64_t start;
 	SdhciHost *host = container_of(mmc_ctrl, SdhciHost, mmc_ctrlr);
 
 	/* Wait max 1 s */
@@ -266,7 +266,7 @@ static int sdhci_send_command(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
 	if (data)
 		flags |= SDHCI_CMD_DATA;
 
-	/*Set Transfer mode regarding to data flag*/
+	/* Set Transfer mode regarding to data flag */
 	if (data) {
 		u16 mode = 0;
 
@@ -298,22 +298,23 @@ static int sdhci_send_command(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
 	if (data && (host->host_caps & MMC_AUTO_CMD12))
 		return sdhci_complete_adma(host, cmd);
 
+	start = timer_us(0);
 	do {
 		stat = sdhci_readl(host, SDHCI_INT_STATUS);
 		if (stat & SDHCI_INT_ERROR)
 			break;
-		if (--retry == 0)
-			break;
-	} while ((stat & mask) != mask);
 
-	if (retry == 0) {
-		if (host->quirks & SDHCI_QUIRK_BROKEN_R1B)
-			return 0;
-		else {
-			printf("Timeout for status update!\n");
-			return MMC_TIMEOUT;
+		/* Apply max timeout for R1b-type CMD defined in eMMC ext_csd
+		   except for erase ones */
+		if (timer_us(start) > 2550000) {
+			if (host->quirks & SDHCI_QUIRK_BROKEN_R1B)
+				return 0;
+			else {
+				printf("Timeout for status update!\n");
+				return MMC_TIMEOUT;
+			}
 		}
-	}
+	} while ((stat & mask) != mask);
 
 	if ((stat & (SDHCI_INT_ERROR | mask)) == mask) {
 		sdhci_cmd_done(host, cmd);
