@@ -251,10 +251,11 @@ static int board_setup(void)
 
 	/* Careful: the EHCI base is at offset 0x100 from the SoC's IP base */
 	UsbHostController *usbd = new_usb_hc(EHCI, 0x7d000100);
-	/* USB2 is connected to the camera, not needed in firmware */
+	UsbHostController *usb2 = new_usb_hc(EHCI, 0x7d004100);
 	UsbHostController *usb3 = new_usb_hc(EHCI, 0x7d008100);
 
 	list_insert_after(&usbd->list_node, &usb_host_controllers);
+	list_insert_after(&usb2->list_node, &usb_host_controllers);
 	list_insert_after(&usb3->list_node, &usb_host_controllers);
 
 	ramoops_buffer(0x87f00000, 0x100000, 0x20000);
