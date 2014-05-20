@@ -27,24 +27,19 @@
 #include "drivers/flash/memmapped.h"
 #include "drivers/power/pch.h"
 #include "drivers/storage/sdhci.h"
-
+#include "drivers/storage/ahci.h"
+#include "drivers/gpio/sysinfo.h"
+#include "drivers/storage/blockdev.h"
 static int board_setup(void)
 {
+	sysinfo_install_flags();
+
 	flash_set_ops(&new_mem_mapped_flash(0xff800000, 0x800000)->ops);
 
-	power_set_ops(&pch_power_ops);
+	power_set_ops(&baytrail_power_ops);
 
-	/*
-	 * Initting port zero (eMMC) only for now. Device IDs other two ports
-	 * are 0x0F15 and 0x0F16. Clock frequencies for the eMMC port are 400
-	 * KHz min (used during initialization) and 52 MHz max (firmware does
-	 * not use 200 MHz aka HS mode).
-	 */
-	SdhciHost *emmc = new_pci_sdhci_host(PCI_DEV(0, 23, 0), 0,
-					     400 * 1000, 200 * 1000 * 1000);
-
-	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
-			  &fixed_block_dev_controllers);
+	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 19, 0));
+	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
 
 	return 0;
 }
