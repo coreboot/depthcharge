@@ -23,19 +23,9 @@
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
-
-static uint8_t board_id(void)
-{
-	static int id = -1;
-
-	return id;
-}
-
 static int board_setup(void)
 {
-	uint8_t id = board_id();
-
-	return id;
+	return 0;
 }
 
 INIT_FUNC(board_setup);
