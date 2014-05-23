@@ -43,6 +43,9 @@ endif
 if BOARD = "link"
 source src/board/link/Kconfig
 endif
+if BOARD = "mccloud"
+source src/board/mccloud/Kconfig
+endif
 if BOARD = "nyan"
 source src/board/nyan/Kconfig
 endif
