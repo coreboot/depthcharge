@@ -24,11 +24,18 @@
 
 #include "base/init_funcs.h"
 #include "drivers/bus/spi/ipq806x.h"
+#include "drivers/bus/usb/usb.h"
 
 static int board_setup(void)
 {
 	SpiController *spi = new_spi(0, 0);
 	flash_set_ops(&new_spi_flash(&spi->ops, 0x400000)->ops);
+
+	UsbHostController *usb_host1 = new_usb_hc(XHCI, 0x11000000);
+	UsbHostController *usb_host2 = new_usb_hc(XHCI, 0x10000000);
+
+	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
+	list_insert_after(&usb_host2->list_node, &usb_host_controllers);
 
 	return 0;
 }
