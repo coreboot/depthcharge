@@ -23,8 +23,13 @@
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
+#include "drivers/bus/spi/ipq806x.h"
+
 static int board_setup(void)
 {
+	SpiController *spi = new_spi(0, 0);
+	flash_set_ops(&new_spi_flash(&spi->ops, 0x400000)->ops);
+
 	return 0;
 }
 
