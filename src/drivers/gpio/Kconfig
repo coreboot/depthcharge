@@ -47,3 +47,8 @@ config DRIVER_GPIO_EXYNOS5420
 config DRIVER_GPIO_TEGRA
 	bool "Tegra GPIO driver"
 	default n
+
+config DRIVER_GPIO_IPQ_806X
+	bool "Qualcomm IPQ806X GPIO driver"
+	default n
+	depends on ARCH_ARM
