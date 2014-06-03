@@ -21,6 +21,7 @@
  */
 
 #include <assert.h>
+#include <libpayload.h>
 
 #include "base/cleanup_funcs.h"
 
@@ -36,5 +37,10 @@ int run_cleanup_funcs(CleanupType type)
 		if ((func->types & type))
 			res = func->cleanup(func, type) || res;
 	}
+
+#if CONFIG_LP_REMOTEGDB
+	gdb_exit(type);
+#endif
+
 	return res;
 }

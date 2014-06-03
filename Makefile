@@ -21,10 +21,10 @@
 
 .SECONDEXPANSION:
 
-export src := $(shell pwd)
-export srck := $(src)/util/kconfig
-export obj := $(src)/build
-export objk := $(obj)/util/kconfig
+export src ?= $(shell pwd)
+export srck ?= $(src)/util/kconfig
+export obj ?= $(src)/build
+export objk ?= $(obj)/util/kconfig
 
 export KERNELVERSION      := 0.1.0
 export KCONFIG_AUTOHEADER := $(obj)/config.h
@@ -48,7 +48,7 @@ HOSTCXX = g++
 HOSTCFLAGS := -I$(srck) -I$(objk)
 HOSTCXXFLAGS := -I$(srck) -I$(objk)
 
-LIBPAYLOAD_DIR := ../libpayload/install/libpayload
+LIBPAYLOAD_DIR ?= ../libpayload/install/libpayload
 XCC := CC=$(CC) $(LIBPAYLOAD_DIR)/bin/lpgcc
 AS = $(LIBPAYLOAD_DIR)/bin/lpas
 OBJCOPY ?= $(CROSS_COMPILE)objcopy
@@ -83,7 +83,7 @@ endif
 
 include $(src)/src/arch/$(ARCH_DIR)/build_vars
 
-INCLUDES = -Ibuild -I$(src)/src/ -I$(src)/src/arch/$(ARCH_DIR)/includes/ \
+INCLUDES = -I$(obj) -I$(src)/src/ -I$(src)/src/arch/$(ARCH_DIR)/includes/ \
 	-I$(VB_SOURCE)/firmware/include
 ABI_FLAGS := $(ARCH_ABI_FLAGS) -ffreestanding -fno-builtin \
 	-fno-stack-protector -fomit-frame-pointer
@@ -205,10 +205,10 @@ prepare:
 	$(Q)mkdir -p $(obj)/util/kconfig/lxdialog
 
 clean:
-	$(Q)rm -rf build/*.elf build/*.o
+	$(Q)rm -rf $(obj)/*.elf $(obj)/*.o
 
 distclean: clean
-	$(Q)rm -rf build
+	$(Q)rm -rf $(obj)
 	$(Q)rm -f .config .config.old ..config.tmp .kconfig.d .tmpconfig*
 
 include util/kconfig/Makefile

@@ -57,6 +57,10 @@ uint32_t VbExKeyboardRead(void)
 		case 'D': return VB_KEY_LEFT;
 		default: return 0;
 		}
+#if CONFIG_LP_REMOTEGDB
+	// CTRL+G enters GDB if it has been enabled (then fall through).
+	case 'G' & 0x1f: gdb_enter();
+#endif
 	default:
 		return ch;
 	}
