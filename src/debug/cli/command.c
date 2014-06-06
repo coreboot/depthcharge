@@ -29,7 +29,7 @@
 
 #include "debug/cli/common.h"
 
-static int cmd_usage(const cmd_tbl_t *cmdtp);
+static void cmd_usage(const cmd_tbl_t *cmdtp);
 static cmd_tbl_t *find_cmd_tbl (const char *cmd,
 				cmd_tbl_t *table, int table_len);
 
@@ -92,7 +92,7 @@ int _do_help (cmd_tbl_t *cmd_start, int cmd_items, cmd_tbl_t * cmdtp, int
 	 */
 	for (i = 1; i < argc; ++i) {
 		if ((cmdtp = find_cmd_tbl (argv[i], cmd_start, cmd_items )) != NULL) {
-			rcode |= cmd_usage(cmdtp);
+			cmd_usage(cmdtp);
 		} else {
 			printf ("Unknown command '%s' - try 'help'"
 				" without arguments for list of all"
@@ -148,18 +148,15 @@ cmd_tbl_t *find_cmd (const char *cmd)
 	return find_cmd_tbl(cmd, start, len);
 }
 
-int cmd_usage(const cmd_tbl_t *cmdtp)
+static void cmd_usage(const cmd_tbl_t *cmdtp)
 {
 	printf("%s - %s\n\n", cmdtp->name, cmdtp->usage);
 	printf("Usage:\n%s ", cmdtp->name);
 
-	if (!cmdtp->help) {
+	if (!cmdtp->help)
 		printf ("- No additional help available.\n");
-		return 1;
-	}
-
-	printf ("%s\n", cmdtp->help);
-	return 1;
+	else
+		printf ("%s\n", cmdtp->help);
 }
 
 static int complete_cmdv(int argc, char * const argv[],
@@ -472,7 +469,7 @@ int cmd_process(int flag, int argc, char * const argv[],
 			*repeatable = 0;
 	}
 	if (rc == CMD_RET_USAGE)
-		rc = cmd_usage(cmdtp);
+		cmd_usage(cmdtp);
 
 	return rc;
 }
