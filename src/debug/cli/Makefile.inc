@@ -18,4 +18,5 @@
 depthcharge-y += command.c
 depthcharge-y += console_main.c
 depthcharge-y += memory.c
+depthcharge-y += printbuf.c
 depthcharge-y += storage.c

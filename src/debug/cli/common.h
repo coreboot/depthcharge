@@ -80,4 +80,21 @@ int run_command_list(const char *cmd, int len, int flag);
 
 char *getenv(const char *);
 
+/*
+ * Print data buffer in hex and ascii form to the terminal.
+ *
+ * data reads are buffered so that each memory address is only read once.
+ * Useful when displaying the contents of volatile registers.
+ *
+ * parameters:
+ *    addr: Starting address to display at start of line
+ *    data: pointer to data buffer
+ *    width: data value width.  May be 1, 2, or 4.
+ *    count: number of values to display
+ *    linelen: Number of values to print per line; specify 0 for default length
+ */
+
+int print_buffer(unsigned long addr, const void *data, unsigned width,
+		 unsigned count, unsigned linelen);
+
 #endif	/* __DEBUG_CLI_COMMON_H__ */
