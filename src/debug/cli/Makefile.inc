@@ -23,3 +23,5 @@ depthcharge-y += printbuf.c
 depthcharge-y += spi.c
 depthcharge-y += timer.c
 depthcharge-y += storage.c
+
+netboot-y += enet.c
