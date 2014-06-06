@@ -25,5 +25,9 @@
 /* argsfile takes precedence before args. All parameters can be NULL. */
 void netboot(uip_ipaddr_t *tftp_ip, char *bootfile, char *argsfile, char *args);
 int netboot_entry(void);
+int try_dhcp(uip_ipaddr_t *my_ip,
+	     uip_ipaddr_t *next_ip,
+	     uip_ipaddr_t *server_ip,
+	     const char **dhcp_bootfile);
 
 #endif /* __NETBOOT_NETBOOT_H__ */
