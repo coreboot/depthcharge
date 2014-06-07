@@ -162,6 +162,29 @@ int fdt_skip_node(void *blob, uint32_t start_offset)
  * Functions to turn a flattened tree into an unflattened one.
  */
 
+static DeviceTreeNode node_cache[1000];
+static int node_counter = 0;
+static DeviceTreeProperty prop_cache[5000];
+static int prop_counter = 0;
+
+/*
+ * Libpayload's malloc() has linear allocation complexity and goes completely
+ * mental after a few thousand small requests. This little hack will absorb
+ * the worst of it to avoid increasing boot time for no reason.
+ */
+static DeviceTreeNode *alloc_node(void)
+{
+	if (node_counter >= ARRAY_SIZE(node_cache))
+		return xzalloc(sizeof(DeviceTreeNode));
+	return &node_cache[node_counter++];
+}
+static DeviceTreeProperty *alloc_prop(void)
+{
+	if (prop_counter >= ARRAY_SIZE(prop_cache))
+		return xzalloc(sizeof(DeviceTreeProperty));
+	return &prop_cache[prop_counter++];
+}
+
 static int fdt_unflatten_node(void *blob, uint32_t start_offset,
 			      DeviceTreeNode **new_node)
 {
@@ -175,14 +198,14 @@ static int fdt_unflatten_node(void *blob, uint32_t start_offset,
 		return 0;
 	offset += size;
 
-	DeviceTreeNode *node = xzalloc(sizeof(*node));
+	DeviceTreeNode *node = alloc_node();
 	*new_node = node;
 	node->name = name;
 
 	FdtProperty fprop;
 	last = &node->properties;
 	while ((size = fdt_next_property(blob, offset, &fprop))) {
-		DeviceTreeProperty *prop = xzalloc(sizeof(*prop));
+		DeviceTreeProperty *prop = alloc_prop();
 		prop->prop = fprop;
 
 		list_insert_after(&prop->list_node, last);
