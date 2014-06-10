@@ -177,7 +177,9 @@ static ssize_t tegra_ahub_apbif_send(TxFifoOps *me, const void *buf, size_t len)
 		return -1;
 	}
 	while (written < len) {
-		while (!tegra_ahub_apbif_is_empty(me));
+		// Workaround for issue 29418
+		// TODO: remove the workaround
+		while (!tegra_ahub_apbif_is_empty(me) && 0);
 		writel(*data++, &regs->channel0_txfifo);
 		written += sizeof(*data);
 	}
