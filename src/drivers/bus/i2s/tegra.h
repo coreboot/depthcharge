@@ -33,13 +33,10 @@ typedef struct {
 	int channels;
 
 	int id;
-	uint32_t clock_freq;
-	uint32_t sampling_rate;
 } TegraI2s;
 
 TegraI2s *new_tegra_i2s(uintptr_t regs, TxFifoOps *fifo, int id,
-			int bits_per_sample, int channels, uint32_t clock_freq,
-			uint32_t sampling_rate);
+			int bits_per_sample, int channels);
 
 // Sets the client interface value when an I2S peripheral is integrated into
 // audio hub.

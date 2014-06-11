@@ -201,8 +201,7 @@ static int board_setup(void)
 	TegraAudioHubXbar *xbar = new_tegra_audio_hub_xbar(0x70300800);
 	TegraAudioHubApbif *apbif = new_tegra_audio_hub_apbif(0x70300000, 8);
 
-	TegraI2s *i2s1 = new_tegra_i2s(0x70301100, &apbif->ops, 1, 16, 2,
-				       4800000, 48000);
+	TegraI2s *i2s1 = new_tegra_i2s(0x70301100, &apbif->ops, 1, 16, 2);
 	TegraAudioHub *ahub = new_tegra_audio_hub(xbar, apbif, i2s1);
 	I2sSource *i2s_source = new_i2s_source(&i2s1->ops, 48000, 2, 16000);
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
