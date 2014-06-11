@@ -155,7 +155,15 @@ static size_t tegra_ahub_apbif_capacity(TxFifoOps *me)
 static int tegra_ahub_apbif_is_full(TxFifoOps *me)
 {
 	TegraAudioHubApbif *apbif = container_of(me, TegraAudioHubApbif, ops);
-	return readl(&apbif->regs->apbdma_live_stat) & apbif->full_mask;
+	/* FIFO_FULL bit may not be set even when the buffer is full. You may
+	 * consider using _is_empty() instead. */
+	return readl(&apbif->regs->i2s_live_stat) & apbif->full_mask;
+}
+
+static int tegra_ahub_apbif_is_empty(TxFifoOps *me)
+{
+	TegraAudioHubApbif *apbif = container_of(me, TegraAudioHubApbif, ops);
+	return readl(&apbif->regs->i2s_live_stat) & apbif->empty_mask;
 }
 
 static ssize_t tegra_ahub_apbif_send(TxFifoOps *me, const void *buf, size_t len)
@@ -169,7 +177,7 @@ static ssize_t tegra_ahub_apbif_send(TxFifoOps *me, const void *buf, size_t len)
 		return -1;
 	}
 	while (written < len) {
-		while (tegra_ahub_apbif_is_full(me));
+		while (!tegra_ahub_apbif_is_empty(me));
 		writel(*data++, &regs->channel0_txfifo);
 		written += sizeof(*data);
 	}
@@ -192,10 +200,17 @@ static void tegra_ahub_apbif_enable_channel0(TegraAudioHubApbif *apbif,
 	writel(ctrl, &apbif->regs->channel0_ctrl);
 }
 
-static int tegra_ahub_apbif_set_fifo_mask(TegraAudioHubApbif *apbif)
+static int tegra_ahub_apbif_set_fifo_mask(TegraAudioHubApbif *apbif,
+					       int i2s_id)
 {
-	// We use APBIF channel0 as a sender
-	apbif->full_mask = TEGRA_AHUB_APBDMA_LIVE_STATUS_CH0_TX_CIF_FIFO_FULL;
+	if (i2s_id > 4) {
+		printf("%s: Invalid I2S component id: %d\n", __func__, i2s_id);
+		return 1;
+	}
+	apbif->full_mask = TEGRA_AHUB_I2S_LIVE_STATUS_I2S0_TX_FIFO_FULL <<
+			(2 * i2s_id);
+	apbif->empty_mask = TEGRA_AHUB_I2S_LIVE_STATUS_I2S0_TX_FIFO_EMPTY <<
+			(2 * i2s_id);
 	return 0;
 }
 
@@ -240,7 +255,7 @@ static int tegra_audio_hub_enable(SoundRouteComponentOps *me)
 	tegra_ahub_apbif_set_cif(ahub->apbif, cif_ctrl);
 	tegra_ahub_apbif_enable_channel0(ahub->apbif, fifo_threshold);
 
-	if (tegra_ahub_apbif_set_fifo_mask(ahub->apbif) ||
+	if (tegra_ahub_apbif_set_fifo_mask(ahub->apbif, ahub->i2s->id) ||
 	    tegra_ahub_xbar_enable_i2s(ahub->xbar, ahub->i2s->id))
 		return 1;
 	return 0;

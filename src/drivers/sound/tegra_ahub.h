@@ -35,6 +35,7 @@ typedef struct TegraAudioHubApbif
 	TxFifoOps ops;
 	struct TegraApbifRegs *regs;
 	uint32_t full_mask;
+	uint32_t empty_mask;
 	size_t capacity_in_word;  // FIFO capacity in words.
 } TegraAudioHubApbif;
 

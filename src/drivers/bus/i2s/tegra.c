@@ -107,7 +107,8 @@ int tegra_i2s_set_cif_tx_ctrl(TegraI2s *i2s, uint32_t value)
 }
 
 TegraI2s *new_tegra_i2s(uintptr_t regs, TxFifoOps *fifo, int id,
-			int bits_per_sample, int channels)
+			int bits_per_sample, int channels, uint32_t clock_freq,
+			uint32_t sampling_rate)
 {
 	TegraI2s *bus = xzalloc(sizeof(*bus));
 	bus->ops.send = &tegra_i2s_send;
@@ -116,5 +117,7 @@ TegraI2s *new_tegra_i2s(uintptr_t regs, TxFifoOps *fifo, int id,
 	bus->id = id;
 	bus->bits_per_sample = bits_per_sample;
 	bus->channels = channels;
+	bus->clock_freq = clock_freq;
+	bus->sampling_rate = sampling_rate;
 	return bus;
 }
