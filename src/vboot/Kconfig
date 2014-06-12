@@ -78,6 +78,12 @@ config NV_STORAGE_CROS_EC
 	help
 	  The nonvolatile data is stored by the ChromeOS EC.
 
+config NV_STORAGE_FAKE
+	bool "Fake"
+	help
+	  Nonvolatile storage is simulated using RAM and is re-initialized
+	  each boot.
+
 endchoice
 
 config NV_STORAGE_DISK_LBA
