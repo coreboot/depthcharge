@@ -21,6 +21,7 @@
  */
 
 #include <assert.h>
+#include <libpayload.h>
 
 #include "base/cleanup_funcs.h"
 
@@ -36,5 +37,9 @@ int run_cleanup_funcs(CleanupType type)
 		if ((func->types & type))
 			res = func->cleanup(func, type) || res;
 	}
+
+	printf("Exiting depthcharge with code %d at timestamp: %llu\n",
+	       type, timer_us(0));
+
 	return res;
 }
