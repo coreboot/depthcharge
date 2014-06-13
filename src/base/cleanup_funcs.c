@@ -42,5 +42,8 @@ int run_cleanup_funcs(CleanupType type)
 	gdb_exit(type);
 #endif
 
+	printf("Exiting depthcharge with code %d at timestamp: %llu\n",
+	       type, timer_us(0));
+
 	return res;
 }
