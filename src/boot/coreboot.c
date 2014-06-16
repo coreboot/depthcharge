@@ -173,7 +173,15 @@ static int install_coreboot_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 {
 	unsigned addr_cells = 1, size_cells = 1;
 	const char *firmware_path[] = { "firmware", NULL };
-	DeviceTreeNode *coreboot = dt_find_node(tree->root, firmware_path,
+	DeviceTreeNode *firmware = dt_find_node(tree->root, firmware_path,
+						&addr_cells, &size_cells, 1);
+
+	// Need to add 'ranges' to the intermediate node to make 'reg' work.
+	bin_prop(&firmware->properties, firmware->properties.next,
+		 "ranges", NULL, 0);
+
+	const char *coreboot_path[] = { "coreboot", NULL };
+	DeviceTreeNode *coreboot = dt_find_node(firmware, coreboot_path,
 						&addr_cells, &size_cells, 1);
 
 	ListNode *props = &coreboot->properties;
