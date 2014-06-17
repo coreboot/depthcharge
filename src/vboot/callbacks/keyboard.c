@@ -31,8 +31,12 @@
 #define KEY_LEFT 0404
 #define KEY_RIGHT 0405
 
+#define TIMEOUT_US (10 * 1000)	// 10ms
+
 uint32_t VbExKeyboardRead(void)
 {
+	uint64_t timer_start;
+
 	// No input, just give up.
 	if (!havechar())
 		return 0;
@@ -45,6 +49,12 @@ uint32_t VbExKeyboardRead(void)
 	case KEY_RIGHT: return VB_KEY_RIGHT;
 	case KEY_LEFT: return VB_KEY_LEFT;
 	case CSI_0:
+		timer_start = timer_us(0);
+		while (!havechar()) {
+			if (timer_us(timer_start) >= TIMEOUT_US)
+				return CSI_0;
+		}
+
 		// Ignore non escape [ sequences.
 		if (getchar() != CSI_1)
 			return CSI_0;
