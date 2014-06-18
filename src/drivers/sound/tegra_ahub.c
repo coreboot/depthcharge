@@ -164,7 +164,7 @@ static ssize_t tegra_ahub_apbif_send(TxFifoOps *me, const void *buf, size_t len)
 	ssize_t written = 0;
 	TegraApbifRegs *regs = container_of(me, TegraAudioHubApbif, ops)->regs;
 	if (len % sizeof(*data)) {
-		printf("%s: Data size (%d) must be aligned to %d.\n", __func__,
+		printf("%s: Data size (%zd) must be aligned to %zd.\n", __func__,
 		       len, sizeof(*data));
 		return -1;
 	}

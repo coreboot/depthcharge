@@ -87,7 +87,7 @@ static void tegra_mmc_prepare_data(TegraMmcHost *host, MmcData *data,
 		  __func__, bbstate->bounce_buffer, bbstate->user_buffer,
 		  data->blocks, data->blocksize);
 
-	writel((uint32_t)bbstate->bounce_buffer, &host->reg->sysad);
+	writel((uintptr_t)bbstate->bounce_buffer, &host->reg->sysad);
 	/*
 	 * DMASEL[4:3]
 	 * 00 = Selects SDMA

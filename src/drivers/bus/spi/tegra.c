@@ -447,7 +447,7 @@ static int tegra_spi_transfer(SpiOps *me, void *in, const void *out,
 		// Don't transfer more than the DMA can handle, transfer a
 		// multiple of 4 bytes, and make sure there's at least
 		// line_size bytes left when you're done.
-		uint32_t mask = ~(sizeof(uint32_t) - 1);
+		uint32_t mask = (uint32_t)~(sizeof(uint32_t) - 1);
 		todo = MIN((size - line_size) & mask,
 			   SPI_MAX_TRANSFER_BYTES_DMA & mask);
 		if (!todo)

@@ -40,7 +40,7 @@ static int addr_aligned(struct bounce_buffer *state)
 	const uint32_t align_mask = ARCH_DMA_MINALIGN - 1;
 
 	// Check if start is aligned
-	if ((uint32_t)state->user_buffer & align_mask) {
+	if ((uintptr_t)state->user_buffer & align_mask) {
 		if (_debug)
 			printf("Unaligned buffer address %p\n",
 			       state->user_buffer);
@@ -50,7 +50,7 @@ static int addr_aligned(struct bounce_buffer *state)
 	// Check if length is aligned
 	if (state->len != state->len_aligned) {
 		if (_debug)
-			printf("Unaligned buffer length %d\n", state->len);
+			printf("Unaligned buffer length %zd\n", state->len);
 		return 0;
 	}
 
