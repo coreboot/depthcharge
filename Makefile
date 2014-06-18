@@ -190,6 +190,13 @@ $(foreach option,$(link_config_options), \
 DEPENDENCIES = $(allobjs:.o=.d)
 -include $(DEPENDENCIES)
 
+DTS_DIR := $(src)/board/$(BOARD)
+DTS_CPPFLAGS := -x assembler-with-cpp
+$(obj)/%.dts : $(DTS_DIR)/%.dts $(KCONFIG_AUTOHEADER)
+	$(HOSTCC) -E -P $(DTS_CPPFLAGS) --include $(KCONFIG_AUTOHEADER) $< -o $@
+
+dts: $(obj)/fmap.dts
+
 prepare:
 	$(Q)mkdir -p $(obj)/util/kconfig/lxdialog
 

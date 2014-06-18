@@ -93,7 +93,11 @@
 			 * each RW_SECTION.
 			 */
 			reg = <0x00200000 0x00002000>;
+#if CONFIG_VBOOT2_VERIFY_FIRMWARE
+			type = "keyblock boot,ecrwhash,romstage,ramstage";
+#else
 			type = "keyblock boot,ecrwhash,ramstage";
+#endif
 			with_index;
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
@@ -105,7 +109,11 @@
 			/* Alignment: no requirement (yet). */
 			label = "fw-main-a";
 			reg = <0x00202000 0x00056000>;
+#if CONFIG_VBOOT2_VERIFY_FIRMWARE
+			type = "blob boot,ecrwhash,romstage,ramstage";
+#else
 			type = "blob boot,ecrwhash,ramstage";
+#endif
 			with_index;
 		};
 		rw-a-ec-boot {
@@ -164,7 +172,11 @@
 			 * each RW_SECTION.
 			 */
 			reg = <0x00280000 0x00002000>;
+#if CONFIG_VBOOT2_VERIFY_FIRMWARE
+			type = "keyblock boot,ecrwhash,romstage,ramstage";
+#else
 			type = "keyblock boot,ecrwhash,ramstage";
+#endif
 			with_index;
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
@@ -176,7 +188,11 @@
 			label = "fw-main-b";
 			/* Alignment: no requirement (yet). */
 			reg = <0x00282000 0x00056000>;
+#if CONFIG_VBOOT2_VERIFY_FIRMWARE
+			type = "blob boot,ecrwhash,romstage,ramstage";
+#else
 			type = "blob boot,ecrwhash,ramstage";
+#endif
 			with_index;
 		};
 		rw-b-ec-boot {
