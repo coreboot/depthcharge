@@ -114,3 +114,7 @@ config CROSSYSTEM_FDT
 	bool "FDT"
 
 endchoice
+
+config VBOOT2_VERIFY_FIRMWARE
+  bool "Verify firmware using vboot2"
+  default n
