@@ -75,7 +75,7 @@ ifeq ($(CONFIG_ARCH_ARM),y)
 ARCH = arm
 endif
 ifeq ($(CONFIG_ARCH_ARM_V8),y)
-ARCH = aarch64
+ARCH = arm64
 ARCH_DIR = arm
 else
 ARCH_DIR = $(ARCH)
