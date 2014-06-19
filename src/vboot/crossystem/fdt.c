@@ -42,113 +42,32 @@ enum {
 	VDAT_RECOVERY = 0xFF
 };
 
-static void bin_prop(ListNode *props, ListNode *old_props,
-		     char *name, void *data, int size)
-{
-	DeviceTreeProperty *prop;
-
-	// Check to see if the kernel already had a property with this name.
-	// To avoid unnecessary overhead, only look through properties that
-	// were already there under the assumption we won't be trying to
-	// overwrite something we just added.
-	if (old_props) {
-		list_for_each(prop, *old_props, list_node) {
-			if (!strcmp(prop->prop.name, name)) {
-				prop->prop.data = data;
-				prop->prop.size = size;
-				return;
-			}
-		}
-	}
-
-	prop = xzalloc(sizeof(*prop));
-	list_insert_after(&prop->list_node, props);
-	prop->prop.name = name;
-	prop->prop.data = data;
-	prop->prop.size = size;
-}
-
-static void string_prop(ListNode *props, ListNode *old_props,
-			char *name, char *str)
-{
-	bin_prop(props, old_props, name, str, strlen(str) + 1);
-}
-
-static void int_prop(ListNode *props, ListNode *old_props,
-		     char *name, uint32_t val)
-{
-	uint32_t *val_ptr = xmalloc(sizeof(val));
-	*val_ptr = htobel(val);
-	bin_prop(props, old_props, name, val_ptr, sizeof(*val_ptr));
-}
-
-static DeviceTreeNode *dt_find_chromeos_node(DeviceTree *tree)
-{
-	DeviceTreeNode *node;
-	DeviceTreeNode *firmware = NULL;
-	DeviceTreeNode *chromeos = NULL;
-
-	// Find the /firmware node, if one exists.
-	list_for_each(node, tree->root->children, list_node) {
-		if (!strcmp(node->name, "firmware")) {
-			firmware = node;
-			break;
-		}
-	}
-
-	// Make one if it didn't.
-	if (!firmware) {
-		firmware = xzalloc(sizeof(*firmware));
-		firmware->name = "firmware";
-		list_insert_after(&firmware->list_node, &tree->root->children);
-	}
-
-	// Find the /firmware/chromeos node, if one exists
-	list_for_each(node, firmware->children, list_node) {
-		if (!strcmp(node->name, "chromeos")) {
-			chromeos = node;
-			break;
-		}
-	}
-
-	// Make one if it didn't.
-	if (!chromeos) {
-		chromeos = xzalloc(sizeof(*chromeos));
-		chromeos->name = "chromeos";
-		list_insert_after(&chromeos->list_node, &firmware->children);
-	}
-
-	return chromeos;
-}
-
 static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 {
-	DeviceTreeNode *chromeos = dt_find_chromeos_node(tree);
+	const char *path[] = { "firmware", "chromeos", NULL };
+	DeviceTreeNode *node = dt_find_node(tree->root, path, NULL, NULL, 1);
 
-	ListNode *props = &chromeos->properties;
-	ListNode *old = chromeos->properties.next;
-
-	string_prop(props, old, "compatible", "chromeos-firmware");
+	dt_add_string_prop(node, "compatible", "chromeos-firmware");
 
 	void *blob;
 	int size;
 	if (find_common_params(&blob, &size))
 		return 1;
-	bin_prop(props, old, "vboot-shared-data", blob, size);
+	dt_add_bin_prop(node, "vboot-shared-data", blob, size);
 	VbSharedDataHeader *vdat = (VbSharedDataHeader *)blob;
 
 	if (CONFIG_NV_STORAGE_CMOS) {
-		string_prop(props, old, "nonvolatile-context-storage", "nvram");
+		dt_add_string_prop(node, "nonvolatile-context-storage","nvram");
 	} else if (CONFIG_NV_STORAGE_CROS_EC) {
-		string_prop(props, old, "nonvolatile-context-storage", "mkbp");
+		dt_add_string_prop(node, "nonvolatile-context-storage", "mkbp");
 	} else if (CONFIG_NV_STORAGE_DISK) {
-		string_prop(props, old, "nonvolatile-context-storage", "disk");
-		int_prop(props, old, "nonvolatile-context-lba",
-			CONFIG_NV_STORAGE_DISK_LBA);
-		int_prop(props, old, "nonvolatile-context-offset",
-			CONFIG_NV_STORAGE_DISK_OFFSET);
-		int_prop(props, old, "nonvolatile-context-size",
-			CONFIG_NV_STORAGE_DISK_SIZE);
+		dt_add_string_prop(node, "nonvolatile-context-storage", "disk");
+		dt_add_u32_prop(node, "nonvolatile-context-lba",
+				CONFIG_NV_STORAGE_DISK_LBA);
+		dt_add_u32_prop(node, "nonvolatile-context-offset",
+				CONFIG_NV_STORAGE_DISK_OFFSET);
+		dt_add_u32_prop(node, "nonvolatile-context-size",
+				CONFIG_NV_STORAGE_DISK_SIZE);
 	}
 
 	int recovery = 0;
@@ -173,18 +92,18 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 		       vdat->firmware_index);
 		return 1;
 	}
-	bin_prop(props, old, "firmware-version", (char *)fwid, fwid_size);
+	dt_add_bin_prop(node, "firmware-version", (char *)fwid, fwid_size);
 
 	if (recovery)
-		string_prop(props, old, "firmware-type", "recovery");
+		dt_add_string_prop(node, "firmware-type", "recovery");
 	else if (vdat->flags & VBSD_BOOT_DEV_SWITCH_ON)
-		string_prop(props, old, "firmware-type", "developer");
+		dt_add_string_prop(node, "firmware-type", "developer");
 	else
-		string_prop(props, old, "firmware-type", "normal");
+		dt_add_string_prop(node, "firmware-type", "normal");
 
-	int_prop(props, old, "fmap-offset", CONFIG_FMAP_OFFSET);
+	dt_add_u32_prop(node, "fmap-offset", CONFIG_FMAP_OFFSET);
 
-	bin_prop(props, old, "readonly-firmware-version",
+	dt_add_bin_prop(node, "readonly-firmware-version",
 		 (char *)fmap_ro_fwid(), fmap_ro_fwid_size());
 
 	GoogleBinaryBlockHeader *gbb = cparams.gbb_data;
@@ -193,7 +112,7 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 		return 1;
 	}
 	char *hwid = (char *)((uintptr_t)cparams.gbb_data + gbb->hwid_offset);
-	bin_prop(props, old, "hardware-id", hwid, gbb->hwid_size);
+	dt_add_bin_prop(node, "hardware-id", hwid, gbb->hwid_size);
 
 	if (CONFIG_EC_SOFTWARE_SYNC) {
 		int in_rw = 0;
@@ -202,7 +121,7 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 			printf("Couldn't tell if the EC firmware is RW.\n");
 			return 1;
 		}
-		string_prop(props, old, "active-ec-firmware",
+		dt_add_string_prop(node, "active-ec-firmware",
 			    in_rw ? "RW" : "RO");
 	}
 

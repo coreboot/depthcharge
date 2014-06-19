@@ -187,23 +187,12 @@ static int fit_check_compat(FdtProperty *compat_prop, const char *compat_name)
 	return -1;
 }
 
-static void update_chosen(DeviceTreeNode *chosen, char *cmd_line)
+static void update_chosen(DeviceTree *tree, char *cmd_line)
 {
-	DeviceTreeProperty *bootargs = NULL;
+	const char *path[] = { "chosen", NULL };
+	DeviceTreeNode *node = dt_find_node(tree->root, path, NULL, NULL, 1);
 
-	DeviceTreeProperty *prop;
-	list_for_each(prop, chosen->properties, list_node)
-		if (!strcmp("bootargs", prop->prop.name))
-			bootargs = prop;
-
-	if (!bootargs) {
-		bootargs = xzalloc(sizeof(*bootargs));
-		list_insert_after(&bootargs->list_node, &chosen->properties);
-		bootargs->prop.name = "bootargs";
-	}
-
-	bootargs->prop.data = cmd_line;
-	bootargs->prop.size = strlen(cmd_line) + 1;
+	dt_add_string_prop(node, "bootargs", cmd_line);
 }
 
 static void update_reserve_map(uint64_t start, uint64_t end, void *data)
@@ -232,51 +221,43 @@ static uint64_t max_range(unsigned size_cells)
 	return 0x1ULL << (size_cells * 32 - 1);
 }
 
-static void count_entries(uint64_t start, uint64_t end, void *pdata)
+static void count_entries(u64 start, u64 end, void *pdata)
 {
 	EntryParams *params = (EntryParams *)pdata;
 	unsigned *count = (unsigned *)params->data;
-	uint64_t size = end - start;
-	uint64_t max_size = max_range(params->size_cells);
+	u64 size = end - start;
+	u64 max_size = max_range(params->size_cells);
 	*count += ALIGN_UP(size, max_size) / max_size;
 }
 
-static void update_mem_property(uint64_t start, uint64_t end, void *pdata)
+static void update_mem_property(u64 start, u64 end, void *pdata)
 {
 	EntryParams *params = (EntryParams *)pdata;
-	uint8_t *data = (uint8_t *)params->data;
-	uint64_t size = end - start;
-	while (size) {
-		const uint64_t max_size = max_range(params->size_cells);
-		const uint32_t range_size = MIN(max_size, size);
+	u8 *data = (u8 *)params->data;
+	u64 full_size = end - start;
+	while (full_size) {
+		const u64 max_size = max_range(params->size_cells);
+		const u32 size = MIN(max_size, full_size);
 
-		if (params->addr_cells == 2)
-			*(uint64_t *)data = htobell(start);
-		else
-			*(uint32_t *)data = htobel(start);
+		dt_write_int(data, start, params->addr_cells * sizeof(u32));
 		data += params->addr_cells * sizeof(uint32_t);
-		start += range_size;
+		start += size;
 
-		if (params->size_cells == 2)
-			*(uint64_t *)data = htobell(range_size);
-		else
-			*(uint32_t *)data = htobel(range_size);
+		dt_write_int(data, size, params->size_cells * sizeof(u32));
 		data += params->size_cells * sizeof(uint32_t);
-		size -= range_size;
+		full_size -= size;
 	}
 	params->data = data;
 }
 
-static void update_memory(DeviceTree *tree, DeviceTreeNode *memory)
+static void update_memory(DeviceTree *tree)
 {
-	unsigned addr_cells = 1, size_cells = 1;
-	dt_node_cell_props(tree->root, &addr_cells, &size_cells);
+	u32 addr_cells = 1, size_cells = 1;
+	const char *path[] = { "memory", NULL };
+	DeviceTreeNode *node = dt_find_node(tree->root, path,
+					    &addr_cells, &size_cells, 1);
 
-	if (addr_cells > 2 || size_cells > 2) {
-		printf("Bad cell count.\n");
-		return;
-	}
-
+	// Read memory info from coreboot (ranges are merged automatically).
 	Ranges mem;
 	Ranges reserved;
 	ranges_init(&mem);
@@ -294,60 +275,23 @@ static void update_memory(DeviceTree *tree, DeviceTreeNode *memory)
 		}
 	}
 
+	// CBMEM regions are both carved out and explicitly reserved.
 	ranges_for_each(&reserved, &update_reserve_map, tree);
 
-	DeviceTreeProperty *reg = NULL;
-	DeviceTreeProperty *prop;
-	list_for_each(prop, memory->properties, list_node)
-		if (!strcmp("reg", prop->prop.name))
-			reg = prop;
-
-	if (!reg) {
-		reg = xzalloc(sizeof(*reg));
-		list_insert_after(&reg->list_node, &memory->properties);
-		reg->prop.name = "reg";
-	}
-
+	// Count the amount of 'reg' entries we need (account for size limits).
 	unsigned count = 0;
 	EntryParams count_params = { addr_cells, size_cells, &count };
 	ranges_for_each(&mem, &count_entries, &count_params);
 
-	int entry_size = (addr_cells + size_cells) * sizeof(uint32_t);
-	reg->prop.size = entry_size * count;
-	void *data = xmalloc(reg->prop.size);
-	reg->prop.data = data;
+	// Allocate the right amount of space and fill up the entries.
+	size_t length = count * (addr_cells + size_cells) * sizeof(u32);
+	void *data = xmalloc(length);
 	EntryParams add_params = { addr_cells, size_cells, data };
 	ranges_for_each(&mem, &update_mem_property, &add_params);
-	assert((uintptr_t)add_params.data - (uintptr_t)reg->prop.data ==
-		reg->prop.size);
-}
+	assert(add_params.data - data == length);
 
-static void update_kernel_dt(DeviceTree *tree, char *cmd_line)
-{
-	DeviceTreeNode *chosen = NULL;
-	DeviceTreeNode *memory = NULL;
-
-	DeviceTreeNode *node;
-	list_for_each(node, tree->root->children, list_node) {
-		if (!strcmp(node->name, "chosen"))
-			chosen = node;
-		else if (!strcmp(node->name, "memory"))
-			memory = node;
-	}
-
-	if (!chosen) {
-		chosen = xzalloc(sizeof(*chosen));
-		list_insert_after(&chosen->list_node, &tree->root->children);
-		chosen->name = "chosen";
-	}
-	update_chosen(chosen, cmd_line);
-
-	if (!memory) {
-		memory = xzalloc(sizeof(*memory));
-		list_insert_after(&memory->list_node, &tree->root->children);
-		memory->name = "memory";
-	}
-	update_memory(tree, memory);
+	// Assemble the final property and add it to the device tree.
+	dt_add_bin_prop(node, "reg", data, length);
 }
 
 int fit_load(void *fit, char *cmd_line, void **kernel, uint32_t *kernel_size,
@@ -467,7 +411,8 @@ int fit_load(void *fit, char *cmd_line, void **kernel, uint32_t *kernel_size,
 			return 1;
 		}
 
-		update_kernel_dt(*dt, cmd_line);
+		update_chosen(*dt, cmd_line);
+		update_memory(*dt);
 	}
 
 	return 0;

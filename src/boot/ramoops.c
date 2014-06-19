@@ -39,62 +39,17 @@ typedef struct
 	DeviceTreeFixup fixup;
 } Ramoops;
 
-static int ramoops_compat(DeviceTreeProperty *prop)
-{
-	int bytes = prop->prop.size;
-	const char *str = prop->prop.data;
-	while (bytes && str[0]) {
-		if (!strncmp("ramoops", str, bytes))
-			return 1;
-		int len = strlen(str) + 1;
-		str += len;
-		bytes -= len;
-	}
-
-	return 0;
-}
-
-static DeviceTreeNode *find_ramoops_node(DeviceTreeNode *node)
-{
-	DeviceTreeProperty *prop;
-	list_for_each(prop, node->properties, list_node) {
-		if (!strcmp("compatible", prop->prop.name)) {
-			if (ramoops_compat(prop))
-				return node;
-			break;
-		}
-	}
-
-	DeviceTreeNode *child;
-	list_for_each(child, node->children, list_node) {
-		DeviceTreeNode *ramoops = find_ramoops_node(child);
-		if (ramoops)
-			return ramoops;
-	}
-
-	return NULL;
-}
-
 static int ramoops_fixup(DeviceTreeFixup *fixup, DeviceTree *tree)
 {
 	Ramoops *ramoops = container_of(fixup, Ramoops, fixup);
 
-	uint64_t start = ramoops->start;
-	uint64_t size = ramoops->size;
-	uint64_t record_size = ramoops->record_size;
-
-	unsigned addr_cells = 1, size_cells = 1;
-	dt_node_cell_props(tree->root, &addr_cells, &size_cells);
-
-	if (addr_cells > 2 || size_cells > 2) {
-		printf("Bad cell count.\n");
-		return -1;
-	}
-
 	// Eliminate any existing ramoops node.
-	DeviceTreeNode *node = find_ramoops_node(tree->root);
+	DeviceTreeNode *node = dt_find_compat(tree->root, "ramoops");
 	if (node)
 		list_remove(&node->list_node);
+
+	u32 addr_cells = 1, size_cells = 1;
+	dt_read_cell_props(tree->root, &addr_cells, &size_cells);
 
 	// Create a ramoops node at the root of the tree.
 	node = xzalloc(sizeof(*node));
@@ -102,50 +57,24 @@ static int ramoops_fixup(DeviceTreeFixup *fixup, DeviceTree *tree)
 	list_insert_after(&node->list_node, &tree->root->children);
 
 	// Add a compatible property.
-	DeviceTreeProperty *compat = xzalloc(sizeof(*compat));
-	compat->prop.name = "compatible";
-	compat->prop.data = "ramoops";
-	compat->prop.size = strlen(compat->prop.data) + 1;
-	list_insert_after(&compat->list_node, &node->properties);
+	dt_add_string_prop(node, "compatible", "ramoops");
 
 	// Add a reg property.
-	DeviceTreeProperty *reg = xzalloc(sizeof(*reg));
-	reg->prop.name = "reg";
-	reg->prop.size = (addr_cells + size_cells) * 4;
-	uint8_t *data = xzalloc(reg->prop.size);
-	reg->prop.data = data;
-	if (addr_cells == 2)
-		*(uint64_t *)data = htobell(start);
-	else
-		*(uint32_t *)data = htobel(start);
-	data += addr_cells * 4;
-	if (size_cells == 2)
-		*(uint64_t *)data = htobell(size);
-	else
-		*(uint32_t *)data = htobel(size);
-	list_insert_after(&reg->list_node, &node->properties);
+	dt_add_reg_prop(node, &ramoops->start, &ramoops->size, 1,
+			addr_cells, size_cells);
 
 	// Add a record-size property.
-	DeviceTreeProperty *rsize = xzalloc(sizeof(*rsize));
-	rsize->prop.name = "record-size";
-	rsize->prop.size = size_cells * 4;
-	data = xzalloc(rsize->prop.size);
-	rsize->prop.data = data;
-	if (size_cells == 2)
-		*(uint64_t *)data = htobell(record_size);
-	else
-		*(uint32_t *)data = htobel(record_size);
-	list_insert_after(&rsize->list_node, &node->properties);
+	u8 *data = xzalloc(size_cells * sizeof(u32));
+	dt_write_int(data, ramoops->record_size, size_cells * sizeof(u32));
+	dt_add_bin_prop(node, "record-size", data, size_cells * sizeof(u32));
 
 	// Add the optional dump-oops property.
-	DeviceTreeProperty *dump = xzalloc(sizeof(*dump));
-	dump->prop.name = "dump-oops";
-	list_insert_after(&dump->list_node, &node->properties);
+	dt_add_bin_prop(node, "dump-oops", NULL, 0);
 
 	// Add a memory reservation for the buffer range.
 	DeviceTreeReserveMapEntry *reserve = xzalloc(sizeof(*reserve));
-	reserve->start = start;
-	reserve->size = size;
+	reserve->start = ramoops->start;
+	reserve->size = ramoops->size;
 	list_insert_after(&reserve->list_node, &tree->reserve_map);
 
 	return 0;

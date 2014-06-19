@@ -474,22 +474,211 @@ void dt_print_node(DeviceTreeNode *node)
 
 
 /*
- * Utility function for finding #address-cells and #size-cells properties
- * in a node.
+ * Functions for reading and manipulating an unflattened device tree.
  */
 
-void dt_node_cell_props(DeviceTreeNode *node, unsigned *addr, unsigned *size)
+/*
+ * Read #address-cells and #size-cells properties from a node.
+ *
+ * @param node		The device tree node to read from.
+ * @param addrcp	Pointer to store #address-cells in, skipped if NULL.
+ * @param sizecp	Pointer to store #size-cells in, skipped if NULL.
+ */
+void dt_read_cell_props(DeviceTreeNode *node, u32 *addrcp, u32 *sizecp)
 {
 	DeviceTreeProperty *prop;
 	list_for_each(prop, node->properties, list_node) {
-		if (!strcmp("#address-cells", prop->prop.name))
-			*addr = betohl(*(uint32_t *)prop->prop.data);
-		if (!strcmp("#size-cells", prop->prop.name))
-			*size = betohl(*(uint32_t *)prop->prop.data);
+		if (addrcp && !strcmp("#address-cells", prop->prop.name))
+			*addrcp = betohl(*(u32 *)prop->prop.data);
+		if (sizecp && !strcmp("#size-cells", prop->prop.name))
+			*sizecp = betohl(*(u32 *)prop->prop.data);
 	}
 }
 
+/*
+ * Find a node from a device tree path, relative to a parent node.
+ *
+ * @param parent	The node from which to start the relative path lookup.
+ * @param path		An array of path component strings that will be looked
+ * 			up in order to find the node. Must be terminated with
+ * 			a NULL pointer. Example: {'firmware', 'coreboot', NULL}
+ * @param addrcp	Pointer that will be updated with any #address-cells
+ * 			value found in the path. May be NULL to ignore.
+ * @param sizecp	Pointer that will be updated with any #size-cells
+ * 			value found in the path. May be NULL to ignore.
+ * @param create	1: Create node(s) if not found. 0: Return NULL instead.
+ * @return		The found/created node, or NULL.
+ */
+DeviceTreeNode *dt_find_node(DeviceTreeNode *parent, const char **path,
+			     u32 *addrcp, u32 *sizecp, int create)
+{
+	DeviceTreeNode *node, *found = NULL;
 
+	// Update #address-cells and #size-cells for this level.
+	dt_read_cell_props(parent, addrcp, sizecp);
+
+	if (!*path)
+		return parent;
+
+	// Find the next node in the path, if it exists.
+	list_for_each(node, parent->children, list_node) {
+		if (!strcmp(node->name, *path)) {
+			found = node;
+			break;
+		}
+	}
+
+	// Otherwise create it or return NULL.
+	if (!found) {
+		if (!create)
+			return NULL;
+
+		/*
+		 * This data structure will be flattened (= deep copy) before
+		 * it is passed to the kernel. Therefore, we can just store a
+		 * pointer to the interned string from 'path' here, even though
+		 * it lives in depthcharge's .rodata section.
+		 */
+		found = alloc_node();
+		found->name = *path;
+		list_insert_after(&found->list_node, &parent->children);
+	}
+
+	return dt_find_node(found, path + 1, addrcp, sizecp, create);
+}
+
+/*
+ * Find a node from a compatible string, in the subtree of a parent node.
+ *
+ * @param parent	The parent node under which to look.
+ * @param compat	The compatible string to find.
+ * @return		The found node, or NULL.
+ */
+DeviceTreeNode *dt_find_compat(DeviceTreeNode *parent, const char *compat)
+{
+	DeviceTreeProperty *prop;
+
+	// Check if the parent node itself is compatible.
+	list_for_each(prop, parent->properties, list_node) {
+		if (!strcmp("compatible", prop->prop.name)) {
+			int bytes = prop->prop.size;
+			const char *str = prop->prop.data;
+			while (bytes > 0) {
+				if (!strncmp(compat, str, bytes))
+					return parent;
+				int len = strnlen(str, bytes) + 1;
+				str += len;
+				bytes -= len;
+			}
+			break;
+		}
+	}
+
+	DeviceTreeNode *child;
+	list_for_each(child, parent->children, list_node) {
+		DeviceTreeNode *found = dt_find_compat(child, compat);
+		if (found)
+			return found;
+	}
+
+	return NULL;
+}
+
+/*
+ * Write an arbitrary sized big-endian integer into a pointer.
+ *
+ * @param dest		Pointer to the DT property data buffer to write.
+ * @param src		The integer to write (in CPU endianess).
+ * @param length	the length of the destination integer in bytes.
+ */
+void dt_write_int(u8 *dest, u64 src, size_t length)
+{
+	while (length--) {
+		dest[length] = (u8)src;
+		src >>= 8;
+	}
+}
+
+/*
+ * Add an arbitrary property to a node, or update it if it already exists.
+ *
+ * @param node		The device tree node to add to.
+ * @param name		The name of the new property.
+ * @param data		The raw data blob to be stored in the property.
+ * @param size		The size of data in bytes.
+ */
+void dt_add_bin_prop(DeviceTreeNode *node, char *name, void *data, size_t size)
+{
+	DeviceTreeProperty *prop;
+
+	list_for_each(prop, node->properties, list_node) {
+		if (!strcmp(prop->prop.name, name)) {
+			prop->prop.data = data;
+			prop->prop.size = size;
+			return;
+		}
+	}
+
+	prop = alloc_prop();
+	list_insert_after(&prop->list_node, &node->properties);
+	prop->prop.name = name;
+	prop->prop.data = data;
+	prop->prop.size = size;
+}
+
+/*
+ * Add a string property to a node, or update it if it already exists.
+ *
+ * @param node		The device tree node to add to.
+ * @param name		The name of the new property.
+ * @param str		The zero-terminated string to be stored in the property.
+ */
+void dt_add_string_prop(DeviceTreeNode *node, char *name, char *str)
+{
+	dt_add_bin_prop(node, name, str, strlen(str) + 1);
+}
+
+/*
+ * Add a 32-bit integer property to a node, or update it if it already exists.
+ *
+ * @param node		The device tree node to add to.
+ * @param name		The name of the new property.
+ * @param val		The integer to be stored in the property.
+ */
+void dt_add_u32_prop(DeviceTreeNode *node, char *name, u32 val)
+{
+	u32 *val_ptr = xmalloc(sizeof(val));
+	*val_ptr = htobel(val);
+	dt_add_bin_prop(node, name, val_ptr, sizeof(*val_ptr));
+}
+
+/*
+ * Add a 'reg' address list property to a node, or update it if it exists.
+ *
+ * @param node		The device tree node to add to.
+ * @param addrs		Array of address values to be stored in the property.
+ * @param sizes		Array of corresponding size values to 'addrs'.
+ * @param count		Number of values in 'addrs' and 'sizes' (must be equal).
+ * @param addr_cells	Value of #address-cells property valid for this node.
+ * @param size_cells	Value of #size-cells property valid for this node.
+ */
+void dt_add_reg_prop(DeviceTreeNode *node, u64 *addrs, u64 *sizes,
+		     int count, u32 addr_cells, u32 size_cells)
+{
+	int i;
+	size_t length = (addr_cells + size_cells) * sizeof(u32) * count;
+	u8 *data = xmalloc(length);
+	u8 *cur = data;
+
+	for (i = 0; i < count; i++) {
+		dt_write_int(cur, addrs[i], addr_cells * sizeof(u32));
+		cur += addr_cells * sizeof(u32);
+		dt_write_int(cur, sizes[i], size_cells * sizeof(u32));
+		cur += size_cells * sizeof(u32);
+	}
+
+	dt_add_bin_prop(node, "reg", data, length);
+}
 
 /*
  * Fixups to apply to a kernel's device tree before booting it.

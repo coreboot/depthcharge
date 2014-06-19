@@ -134,9 +134,21 @@ uint32_t dt_flat_size(DeviceTree *tree);
 // Flatten a device tree into the buffer pointed to by dest.
 void dt_flatten(DeviceTree *tree, void *dest);
 void dt_print_node(DeviceTreeNode *node);
-// Find #address-cells and #size-cells properties of a node, if any. If no
-// such property is found, that argument is left unmodified.
-void dt_node_cell_props(DeviceTreeNode *node, unsigned *addr, unsigned *size);
+// Read #address-cells and #size-cells properties from a node.
+void dt_read_cell_props(DeviceTreeNode *node, u32 *addrcp, u32 *sizecp);
+// Look up or create a node relative to a parent node, through its path.
+DeviceTreeNode *dt_find_node(DeviceTreeNode *parent, const char **path,
+			     u32 *addrcp, u32 *sizecp, int create);
+// Look up a node relative to a parent node, through its compatible string.
+DeviceTreeNode *dt_find_compat(DeviceTreeNode *parent, const char *compatible);
+// Write src into *dest as a 'length'-byte big-endian integer.
+void dt_write_int(u8 *dest, u64 src, size_t length);
+// Add different kinds of properties to a node, or update existing ones.
+void dt_add_bin_prop(DeviceTreeNode *node, char *name, void *data, size_t size);
+void dt_add_string_prop(DeviceTreeNode *node, char *name, char *str);
+void dt_add_u32_prop(DeviceTreeNode *node, char *name, u32 val);
+void dt_add_reg_prop(DeviceTreeNode *node, u64 *addrs, u64 *sizes,
+		     int count, u32 addr_cells, u32 size_cells);
 
 
 
