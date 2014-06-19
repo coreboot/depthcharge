@@ -48,11 +48,10 @@ HOSTCXX = g++
 HOSTCFLAGS := -I$(srck) -I$(objk)
 HOSTCXXFLAGS := -I$(srck) -I$(objk)
 
+ifdef LIBPAYLOAD_DIR
+include $(LIBPAYLOAD_DIR)/libpayload.xcompile
+endif
 LIBPAYLOAD_DIR ?= ../libpayload/install/libpayload
-XCC := CC=$(CC) $(LIBPAYLOAD_DIR)/bin/lpgcc
-AS = $(LIBPAYLOAD_DIR)/bin/lpas
-OBJCOPY ?= $(CROSS_COMPILE)objcopy
-STRIP ?= $(CROSS_COMPILE)strip
 LZMA := lzma
 
 LDSCRIPT := $(src)/src/image/depthcharge.ldscript
@@ -80,6 +79,18 @@ ARCH_DIR = arm
 else
 ARCH_DIR = $(ARCH)
 endif
+
+ARCH_TO_TOOLCHAIN_x86    := i386
+ARCH_TO_TOOLCHAIN_arm    := arm
+ARCH_TO_TOOLCHAIN_arm64  := arm64
+
+toolchain := $(ARCH_TO_TOOLCHAIN_$(ARCH))
+
+CC:=$(firstword $(CC_$(toolchain)))
+XCC := CC=$(CC) $(LIBPAYLOAD_DIR)/bin/lpgcc
+AS = $(LIBPAYLOAD_DIR)/bin/lpas
+OBJCOPY ?= $(OBJCOPY_$(toolchain))
+STRIP ?= $(STRIP_$(toolchain))
 
 include $(src)/src/arch/$(ARCH_DIR)/build_vars
 
