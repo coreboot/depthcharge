@@ -20,3 +20,5 @@ depthcharge-$(CONFIG_KERNEL_DUMMY) += dummy.c
 depthcharge-$(CONFIG_KERNEL_FIT) += fit.c
 depthcharge-$(CONFIG_ARCH_ARM) += coreboot.c
 depthcharge-$(CONFIG_KERNEL_FIT) += ramoops.c
+depthcharge-$(CONFIG_KERNEL_LEGACY) += legacy_boot.c
+depthcharge-$(CONFIG_KERNEL_LEGACY) += crc32.c
