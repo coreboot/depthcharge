@@ -225,5 +225,14 @@ int vboot_select_and_load_kernel(void)
 	if (crossystem_setup())
 		return 1;
 
-	return boot(kernel, cmd_line_buf, params, loader);
+	boot(kernel, cmd_line_buf, params, loader);
+
+	/*
+	 * If the boot succeeded we'd never end up here. If configured, let's
+	 * try booting in alternative way.
+	 */
+	if (CONFIG_KERNEL_LEGACY)
+		legacy_boot(kernel, cmd_line_buf);
+
+	return 1;
 }

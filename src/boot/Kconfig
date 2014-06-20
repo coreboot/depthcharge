@@ -32,6 +32,23 @@ choice
 	bool "dummy"
 endchoice
 
+config KERNEL_LEGACY
+	bool "Allow alternative(legacy) kernels"
+	default n
+
+config MACHID
+       hex "Machine ID to pass to the kernel"
+       depends on KERNEL_LEGACY
+       default 0
+       help
+         On some platforms this value could be discovered at run time.
+
+config ATAG_BASE
+       hex "Address in DRAM where to place ATAGs"
+       depends on KERNEL_LEGACY
+       depends on ARCH_ARM
+       default 0
+
 config KERNEL_FIT_COMPAT
 	string "FIT preferred compatible string"
 	default ""

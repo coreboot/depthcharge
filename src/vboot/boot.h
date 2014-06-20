@@ -26,4 +26,7 @@
 // To be implemented by each boot method.
 int boot(void *kernel, char *cmd_line, void *params, void *loader);
 
+// Alternative boot method, to try is the main method failed.
+int legacy_boot(void *kernel, const char *cmd_line_buf);
+
 #endif /* __BOOT_BOOT_H__ */
