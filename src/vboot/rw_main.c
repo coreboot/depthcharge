@@ -26,6 +26,7 @@
 #include "base/init_funcs.h"
 #include "base/timestamp.h"
 #include "config.h"
+#include "debug/cli/common.h"
 #include "drivers/input/input.h"
 #include "vboot/stages.h"
 
@@ -47,6 +48,9 @@ int main(void)
 	// Run any generic initialization functions that are compiled in.
 	if (run_init_funcs())
 		halt();
+
+	if (CONFIG_CLI)
+		console_loop();
 
 	timestamp_add_now(TS_RW_VB_SELECT_AND_LOAD_KERNEL);
 

@@ -28,6 +28,7 @@
 #include "base/init_funcs.h"
 #include "base/timestamp.h"
 #include "config.h"
+#include "debug/cli/common.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/flash/flash.h"
 #include "drivers/input/input.h"
@@ -111,6 +112,8 @@ int main(void)
 	// Make sure graphics are available if they aren't already.
 	enable_graphics();
 
+	if (CONFIG_CLI)
+		console_loop();
 
 	srand(timer_raw_value());
 

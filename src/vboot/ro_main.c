@@ -26,6 +26,7 @@
 #include "base/init_funcs.h"
 #include "base/timestamp.h"
 #include "config.h"
+#include "debug/cli/common.h"
 #include "drivers/input/input.h"
 #include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
@@ -50,6 +51,9 @@ int main(void)
 		halt();
 
 	timestamp_add_now(TS_RO_PARAMS_INIT);
+
+	if (CONFIG_CLI)
+		console_loop();
 
 	// Set up the common param structure, clearing shared data.
 	if (common_params_init(1))
