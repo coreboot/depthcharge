@@ -218,7 +218,7 @@ static int start_legacy_kernel(bootm_header_t *bm_hdr_p)
 	setup_end_tag(current_tag);
 
 	cache_sync_instructions();
-
+	dcache_mmu_disable();
 	return jump_to_kernel(bm_hdr_p, start_tag);
 }
 
