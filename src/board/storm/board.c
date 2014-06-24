@@ -57,10 +57,8 @@ static int board_setup(void)
 	flash_set_ops(&new_spi_flash(&spi->ops, 0x800000)->ops);
 
 	UsbHostController *usb_host1 = new_usb_hc(XHCI, 0x11000000);
-	UsbHostController *usb_host2 = new_usb_hc(XHCI, 0x10000000);
 
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
-	list_insert_after(&usb_host2->list_node, &usb_host_controllers);
 
 	for (i = 0; i < ARRAY_SIZE(fake_gpios); i++)
 		flag_install(i, &fake_gpios[i].fake_ops);
