@@ -19,6 +19,7 @@ import yaml
 OUTPUT_FILE = "DEFAULT.yaml"
 RTOL_LOCALE_LIST = ('ar', 'fa', 'he')
 SCREEN_LIST = []
+OPTIONAL_SCREENS = {}
 
 # Default image names.
 DEFAULT_BACKGROUND = 'Background'
@@ -328,6 +329,16 @@ def NewScreen(f):
   return f
 
 
+def OptionalScreen(f):
+  """Decorator to register a generation function for optional screen.
+
+  Args:
+    f: A function that returns a Screen object.
+  """
+  OPTIONAL_SCREENS[f.__name__] = f
+  return f
+
+
 @NewScreen
 def ScreenDev(locale, image_database):
   s = Screen('devel', locale, image_database)
@@ -419,7 +430,7 @@ def ScreenToNormalConfirm(locale, image_database):
   return s
 
 
-@NewScreen
+@OptionalScreen
 def ScreenReserveCharging(locale, image_database):
   s = Screen('charging', locale, image_database,
              background='reserve_charging_background')
@@ -428,12 +439,22 @@ def ScreenReserveCharging(locale, image_database):
   return s
 
 
-@NewScreen
+@OptionalScreen
 def ScreenReserveChargingEmpty(locale, image_database):
   s = Screen('charging_empty', locale, image_database,
              background='reserve_charging_background')
   s.set_centered_y_percent(40)
   s.add_centered("reserve_charging_empty")
+  return s
+
+
+@OptionalScreen
+def ScreenWrongPowerSupply(locale, image_database):
+  s = Screen('wrong_power_supply', locale, image_database)
+  s.add_header(do_locale=False)
+  s.set_centered_y_percent(50)
+  s.insert_centered_vertical("Warning", "@wrong_power_supply")
+  s.add_footer()
   return s
 
 # ------------------------------------------------------------------------
@@ -469,16 +490,19 @@ def generate_yaml_output(screens, locales, image_db):
   return yaml.dump(data)
 
 
-def main(locale_list):
+def main(locale_list, optional_list):
   """Entry point when executed from command line.
 
   Args:
     locale_list:  List of locale to build manfest file.
+    optional_list:  List of optional screen names to include.
   """
   image_db = ImageDatabase()
   screens = []
   locales = []
 
+  screen_list = SCREEN_LIST
+  screen_list += [OPTIONAL_SCREENS['Screen' + name] for name in optional_list]
   print "DEFAULT.yaml: ",
   for locale in locale_list:
     print locale,
@@ -492,4 +516,5 @@ def main(locale_list):
 
 
 if __name__ == '__main__':
-  main(sys.argv[1:])
+  optional = os.getenv('OPTIONAL_SCREENS', '').split()
+  main(sys.argv[1:], optional)

@@ -13,6 +13,7 @@
 #               (default: [1366, 768]).
 # 'bad_usb3': Presence of USB3 ports that cannot boot recovery (default: False).
 # 'locales': List of locales to include (default: All locales).
+# 'optional_screens': List of optional screens to include (default: None).
 # 'panel': Panel Dimension (default: [1366, 768]).
 # 'phy_rec': Presence of physical recovery button (default: False, check
 #            http://crosbug.com/p/24963).
@@ -72,7 +73,7 @@ squawks,glimmer,clapper,enguarde,expresso,kip,gnawty,winky,quawks,swanky:
   res:      [1024, 768]
   panel:    [1366, 768]
 
-panther,zako,tricky,mccloud:
+panther,tricky,mccloud:
   # Using VESA graphics mode 1024x768 (0x0117).
   # A chromebox without built-in panel/keyboard.
   # Assume the display is a modern 16:9 (1920x1080) monitor.
@@ -80,6 +81,17 @@ panther,zako,tricky,mccloud:
   res:      [1024, 768]
   panel:    [1920, 1080]
   phy_rec:  True
+
+zako:
+  # Using VESA graphics mode 1024x768 (0x0117).
+  # A chromebox without built-in panel/keyboard.
+  # Assume the display is a modern 16:9 (1920x1080) monitor.
+  # With card reader and physical recovery switch.
+  # Special firmware with WrongPowerSupply screens.
+  res:      [1024, 768]
+  panel:    [1920, 1080]
+  phy_rec:  True
+  optional_screens: [ReserveCharging, ReserveChargingEmpty, WrongPowerSupply]
 
 monroe:
   # Using VESA graphics mode 1024x768 (0x0117).

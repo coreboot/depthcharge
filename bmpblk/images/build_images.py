@@ -55,6 +55,7 @@ DEFAULT_LOCALES = ['en', 'es-419', 'pt-BR', 'fr', 'es', 'pt-PT', 'ca', 'it',
                    'ru', 'pl', 'cs', 'sk', 'hu', 'sl', 'sr', 'hr', 'bg', 'ro',
                    'uk', 'tr', 'he', 'ar', 'fa', 'hi', 'th', 'ms', 'vi', 'id',
                    'fil', 'zh-CN', 'zh-TW', 'ko', 'ja']
+DEFAULT_OPTIONAL_SCREENS = []
 
 # YAML key names.
 PANEL_SIZE_KEY = 'panel'
@@ -65,10 +66,11 @@ SDCARD_KEY = 'sdcard'
 BAD_USB3_KEY = 'bad_usb3'
 PHY_REC_KEY = 'phy_rec'
 LOCALES_KEY = 'locales'
+OPTIONAL_SCREENS_KEY = 'optional_screens'
 
 KNOWN_KEYS = set((PANEL_SIZE_KEY, RESOLUTION_KEY, SDCARD_KEY, BAD_USB3_KEY,
                   PHY_REC_KEY, ASSETS_DIR_KEY, ASSETS_RESOLUTION_KEY,
-                  LOCALES_KEY))
+                  LOCALES_KEY, OPTIONAL_SCREENS_KEY))
 
 
 class BuildImageError(Exception):
@@ -136,6 +138,8 @@ def load_boards_config(filename):
         data[ASSETS_DIR_KEY] = DEFAULT_ASSETS_DIR
       if ASSETS_RESOLUTION_KEY not in data:
         data[ASSETS_RESOLUTION_KEY] = DEFAULT_RESOLUTION
+      if OPTIONAL_SCREENS_KEY not in data:
+        data[OPTIONAL_SCREENS_KEY] = DEFAULT_OPTIONAL_SCREENS
       if set(data) - KNOWN_KEYS:
         raise BuildImageError('Unknown entries in config %s: %r' %
                               (board, list(set(data) - KNOWN_KEYS)))
@@ -271,6 +275,7 @@ def build_image(board, config_database):
   panel_size = config[PANEL_SIZE_KEY]
   assets_resolution = config[ASSETS_RESOLUTION_KEY]
   replace_map = build_replace_map(config)
+  optional_screens = config[OPTIONAL_SCREENS_KEY]
   background_colors = (convert_to_bmp3.BACKGROUND_COLOR,
                        CHARGE_BACKGROUND_COLOR)
 
@@ -348,8 +353,9 @@ def build_image(board, config_database):
         (output_dir, output_dir), capture_stdout=True)
 
   # Create YAML file.
-  shell("cd %s && %s/make_default_yaml.py %s" %
-        (output_dir, SCRIPT_BASE, ' '.join(locales)))
+  shell("cd %s && OPTIONAL_SCREENS='%s' %s/make_default_yaml.py %s" %
+        (output_dir, ' '.join(optional_screens), SCRIPT_BASE,
+         ' '.join(locales)))
   return (output_dir, panel_size)
 
 
