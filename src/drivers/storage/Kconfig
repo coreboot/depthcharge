@@ -39,6 +39,11 @@ config DRIVER_STORAGE_MMC_DW_EXYNOS
 	bool "DesignWare MMC driver for Exynos"
 	default n
 
+config DRIVER_STORAGE_IPQ_806X
+	depends on DRIVER_STORAGE_MMC
+	bool "Qualcomm MMC driver"
+	default n
+
 config DRIVER_STORAGE_MMC_TEGRA
 	depends on DRIVER_STORAGE_MMC
 	bool "NVIDIA Tegra MMC driver"

@@ -63,6 +63,7 @@
 #define MMC_COMM_ERR		-18 /* Communications Error */
 #define MMC_TIMEOUT		-19
 #define MMC_IN_PROGRESS		-20 /* operation is in progress */
+#define MMC_INVALID_ERR		-21 /* A catch all case. */
 
 #define MMC_CMD_GO_IDLE_STATE		0
 #define MMC_CMD_SEND_OP_COND		1
