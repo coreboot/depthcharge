@@ -117,4 +117,6 @@ image_set_hdr_l(hcrc)		/* image_set_hcrc */
 #define BOOTM_ERR_OVERLAP	-2
 #define BOOTM_ERR_UNIMPLEMENTED	-3
 
+int get_mach_id(void);
+
 #endif // __BOOT_LEGACY_IMAGE_H__

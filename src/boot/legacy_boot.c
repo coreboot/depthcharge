@@ -191,9 +191,12 @@ static int jump_to_kernel(bootm_header_t *images, struct tag *start_tag)
 {
 	void (*kernel_entry)(int zero, int arch, unsigned params);
 	unsigned r2 = (unsigned long) start_tag;
+	int mach_id = get_mach_id();
+
+	printf("Using machine ID %d\n", mach_id);
 
 	kernel_entry = (void (*)(int, int, unsigned))images->ep;
-	kernel_entry(0, CONFIG_MACHID, r2);
+	kernel_entry(0, mach_id, r2);
 
 	return -1; /* should never come here */
 }

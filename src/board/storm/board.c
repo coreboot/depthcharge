@@ -21,12 +21,14 @@
  */
 
 #include <libpayload.h>
+#include <config.h>
 
 #include "base/init_funcs.h"
 #include "drivers/bus/spi/ipq806x.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/gpio/gpio.h"
 #include "vboot/util/flag.h"
+#include <sysinfo.h>
 
 typedef struct
 {
@@ -64,6 +66,31 @@ static int board_setup(void)
 		flag_install(i, &fake_gpios[i].fake_ops);
 
 	return 0;
+}
+
+int get_mach_id(void)
+{
+	int i;
+	struct cb_mainboard *mainboard = lib_sysinfo.mainboard;
+	const char *part_number = (const char *)mainboard->strings +
+		mainboard->part_number_idx;
+
+	struct PartDescriptor {
+		const char *part_name;
+		int mach_id;
+	} parts[] = {
+		{"Storm", 4936},
+		{"AP148", CONFIG_MACHID},
+	};
+
+	for (i = 0; i < ARRAY_SIZE(parts); i++) {
+		if (!strncmp(parts[i].part_name,
+			     part_number, strlen(parts[i].part_name))) {
+			return parts[i].mach_id;
+		}
+	}
+
+	return -1;
 }
 
 INIT_FUNC(board_setup);
