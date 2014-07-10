@@ -21,4 +21,5 @@ depthcharge-y += console_main.c
 depthcharge-y += memory.c
 depthcharge-y += printbuf.c
 depthcharge-y += spi.c
+depthcharge-y += timer.c
 depthcharge-y += storage.c
