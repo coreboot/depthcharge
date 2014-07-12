@@ -20,15 +20,19 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
 #include <config.h>
+#include <libpayload.h>
+#include <sysinfo.h>
 
 #include "base/init_funcs.h"
+#include "drivers/bus/i2c/ipq806x_gsbi.h"
+#include "drivers/bus/i2c/ipq806x.h"
 #include "drivers/bus/spi/ipq806x.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/gpio/gpio.h"
+#include "drivers/tpm/slb9635_i2c.h"
+#include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
-#include <sysinfo.h>
 
 typedef struct
 {
@@ -64,6 +68,9 @@ static int board_setup(void)
 
 	for (i = 0; i < ARRAY_SIZE(fake_gpios); i++)
 		flag_install(i, &fake_gpios[i].fake_ops);
+
+	Ipq806xI2c *i2c = new_ipq806x_i2c(GSBI_ID_1);
+	tpm_set_ops(&new_slb9635_i2c(&i2c->ops, 0x20)->base.ops);
 
 	return 0;
 }
