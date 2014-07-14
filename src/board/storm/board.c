@@ -34,6 +34,41 @@
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
+#include "drivers/gpio/ipq806x.h"
+#include "drivers/storage/ipq806x_mmc.h"
+
+#define GPIO_SDCC_FUNC_VAL      2
+
+/* MMC bus GPIO assignments. */
+enum storm_emmc_gpio {
+	SDC1_DATA7 = 38,
+	SDC1_DATA6 = 39,
+	SDC1_DATA3 = 40,
+	SDC1_DATA2 = 41,
+	SDC1_CLK = 42,
+	SDC1_DATA1 = 43,
+	SDC1_DATA0 = 44,
+	SDC1_CMD = 45,
+	SDC1_DATA5 = 46,
+	SDC1_DATA4 = 47,
+};
+
+void board_mmc_gpio_config(void)
+{
+	unsigned i;
+	unsigned char gpio_config_arr[] = {
+		SDC1_DATA7, SDC1_DATA6, SDC1_DATA3,
+		SDC1_DATA2, SDC1_DATA1, SDC1_DATA0,
+		SDC1_CMD, SDC1_DATA5, SDC1_DATA4};
+
+	gpio_tlmm_config_set(SDC1_CLK, GPIO_SDCC_FUNC_VAL,
+		GPIO_PULL_DOWN, GPIO_16MA, 1);
+
+	for (i = 0; i < ARRAY_SIZE(gpio_config_arr); i++) {
+		gpio_tlmm_config_set(gpio_config_arr[i],
+		GPIO_SDCC_FUNC_VAL, GPIO_PULL_UP, GPIO_10MA, 1);
+	}
+}
 
 static int board_setup(void)
 {
