@@ -31,7 +31,7 @@
 		};
 		ro-boot {
 			label = "coreboot";
-			size = <0x00240000>;
+			size = <0x002c0000>;
 			read-only;
 			type = "blob coreboot";
 			required;
