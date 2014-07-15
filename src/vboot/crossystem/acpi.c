@@ -83,7 +83,7 @@ int crossystem_setup(void)
 	if (CONFIG_EC_SOFTWARE_SYNC) {
 		int in_rw = 0;
 
-		if (VbExEcRunningRW(&in_rw)) {
+		if (VbExEcRunningRW(0, &in_rw)) {
 			printf("Couldn't tell if the EC firmware is RW.\n");
 			return 1;
 		}
