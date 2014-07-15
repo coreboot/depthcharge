@@ -30,9 +30,14 @@
 #include "image/index.h"
 #include "vboot/util/flag.h"
 
-int VbExTrustEC(void)
+int VbExTrustEC(int devidx)
 {
-	int val = flag_fetch(FLAG_ECINRW);
+	int val;
+
+	if (devidx != 0)
+		return 0;
+
+	val = flag_fetch(FLAG_ECINRW);
 	if (val < 0) {
 		printf("Couldn't tell if the EC is running RW firmware.\n");
 		return 0;
@@ -41,9 +46,13 @@ int VbExTrustEC(void)
 	return !val;
 }
 
-VbError_t VbExEcRunningRW(int *in_rw)
+VbError_t VbExEcRunningRW(int devidx, int *in_rw)
 {
 	enum ec_current_image image;
+
+	if (devidx != 0)
+		return VBERROR_UNKNOWN;
+
 	if (cros_ec_read_current_image(&image) < 0) {
 		printf("Failed to read current EC image.\n");
 		return VBERROR_UNKNOWN;
@@ -63,8 +72,11 @@ VbError_t VbExEcRunningRW(int *in_rw)
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExEcJumpToRW(void)
+VbError_t VbExEcJumpToRW(int devidx)
 {
+	if (devidx != 0)
+		return VBERROR_UNKNOWN;
+
 	if (cros_ec_reboot(EC_REBOOT_JUMP_RW, 0) < 0) {
 		printf("Failed to make the EC jump to RW.\n");
 		return VBERROR_UNKNOWN;
@@ -73,8 +85,11 @@ VbError_t VbExEcJumpToRW(void)
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExEcDisableJump(void)
+VbError_t VbExEcDisableJump(int devidx)
 {
+	if (devidx != 0)
+		return VBERROR_UNKNOWN;
+
 	if (cros_ec_reboot(EC_REBOOT_DISABLE_JUMP, 0) < 0) {
 		printf("Failed to make the EC disable jumping.\n");
 		return VBERROR_UNKNOWN;
@@ -83,9 +98,13 @@ VbError_t VbExEcDisableJump(void)
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExEcHashRW(const uint8_t **hash, int *hash_size)
+VbError_t VbExEcHashRW(int devidx, const uint8_t **hash, int *hash_size)
 {
 	static struct ec_response_vboot_hash resp;
+
+	if (devidx != 0)
+		return VBERROR_UNKNOWN;
+
 	if (cros_ec_read_hash(&resp) < 0) {
 		printf("Failed to read EC hash.\n");
 		return VBERROR_UNKNOWN;
@@ -119,10 +138,13 @@ VbError_t VbExEcHashRW(const uint8_t **hash, int *hash_size)
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExEcGetExpectedRW(enum VbSelectFirmware_t select,
+VbError_t VbExEcGetExpectedRW(int devidx, enum VbSelectFirmware_t select,
 			      const uint8_t **image, int *image_size)
 {
 	const char *name;
+
+	if (devidx != 0)
+		return VBERROR_UNKNOWN;
 
 	switch (select) {
 	case VB_SELECT_FIRMWARE_A:
@@ -193,10 +215,13 @@ static VbError_t ec_protect_rw(int protect)
 	return VBERROR_UNKNOWN;
 }
 
-VbError_t VbExEcGetExpectedRWHash(enum VbSelectFirmware_t select,
+VbError_t VbExEcGetExpectedRWHash(int devidx, enum VbSelectFirmware_t select,
 				  const uint8_t **hash, int *hash_size)
 {
 	const char *name;
+
+	if (devidx != 0)
+		return VBERROR_UNKNOWN;
 
 	switch (select) {
 	case VB_SELECT_FIRMWARE_A:
@@ -233,9 +258,14 @@ VbError_t VbExEcGetExpectedRWHash(enum VbSelectFirmware_t select,
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExEcUpdateRW(const uint8_t *image, int image_size)
+VbError_t VbExEcUpdateRW(int devidx, const uint8_t *image, int image_size)
 {
-	int rv = ec_protect_rw(0);
+	int rv;
+
+	if (devidx != 0)
+		return VBERROR_UNKNOWN;
+
+	rv = ec_protect_rw(0);
 	if (rv == VBERROR_EC_REBOOT_TO_RO_REQUIRED || rv != VBERROR_SUCCESS)
 		return rv;
 
@@ -247,7 +277,10 @@ VbError_t VbExEcUpdateRW(const uint8_t *image, int image_size)
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExEcProtectRW(void)
+VbError_t VbExEcProtectRW(int devidx)
 {
+	if (devidx != 0)
+		return VBERROR_UNKNOWN;
+
 	return ec_protect_rw(1);
 }
