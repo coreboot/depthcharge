@@ -67,6 +67,9 @@ endif
 if BOARD = "rush"
 source src/board/rush/Kconfig
 endif
+if BOARD = "rush_ryu"
+source src/board/rush_ryu/Kconfig
+endif
 if BOARD = "samus"
 source src/board/samus/Kconfig
 endif
