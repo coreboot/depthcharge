@@ -206,8 +206,6 @@
 #define GSBIn_QUP_APPS_NS_REG(n) (CLK_CTL_REG_BASE      + 0x000029cc + 32 * ((n)-1))
 #define GSBIn_RESET_REG(n)  (CLK_CTL_REG_BASE      + 0x000029dc + 32 * ((n)-1))
 
-#define clrsetbits_le32(addr, clear, set) writel((readl(addr) & ~(clear)) | (set), (addr))
-
 
 struct spi_slave {
         unsigned int    bus;
