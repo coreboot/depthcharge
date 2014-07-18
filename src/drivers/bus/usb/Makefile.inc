@@ -15,7 +15,7 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-depthcharge-$(CONFIG_USB_ENABLED) += usb.c
+depthcharge-y += usb.c
 depthcharge-$(CONFIG_DRIVER_LYNXPOINT_NO_EHCI) += lynxpoint.c
 
 # Not worth a Kconfig, let's just rely on --gc-sections
