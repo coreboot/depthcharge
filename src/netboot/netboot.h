@@ -1,8 +1,5 @@
 /*
- * Copyright 2013 Google Inc.
- *
- * See file CREDITS for list of people who contributed to this
- * project.
+ * Copyright 2014 Google Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -20,32 +17,13 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __NETBOOT_PARAMS_H__
-#define __NETBOOT_PARAMS_H__
-
-#include <stdint.h>
+#ifndef __NETBOOT_NETBOOT_H__
+#define __NETBOOT_NETBOOT_H__
 
 #include "net/uip.h"
 
-typedef enum NetbootParamId
-{
-	NetbootParamIdTftpServerIp = 1,
-	NetbootParamIdKernelArgs = 2,
-	NetbootParamIdBootfile = 3,
-	NetbootParamIdArgsFile = 4,
+/* argsfile takes precedence before args. All parameters can be NULL. */
+void netboot(uip_ipaddr_t *tftp_ip, char *bootfile, char *argsfile, char *args);
+int netboot_entry(void);
 
-	NetbootParamIdMax
-} NetbootParamId;
-
-typedef struct NetbootParam
-{
-	void *data;
-	int size;
-} NetbootParam;
-
-int netboot_params_init(void *data, uintptr_t size);
-int netboot_params_read(uip_ipaddr_t **tftp_ip, char *cmd_line,
-			size_t cmd_line_max, char **bootfile, char **argsfile);
-NetbootParam *netboot_params_val(NetbootParamId paramId);
-
-#endif /* __NETBOOT_PARAMS_H__ */
+#endif /* __NETBOOT_NETBOOT_H__ */

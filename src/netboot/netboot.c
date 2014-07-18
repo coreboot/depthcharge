@@ -30,14 +30,13 @@
 #include "config.h"
 #include "debug/cli/common.h"
 #include "drivers/bus/usb/usb.h"
-#include "drivers/flash/flash.h"
 #include "drivers/input/input.h"
 #include "drivers/net/net.h"
 #include "drivers/power/power.h"
-#include "image/fmap.h"
 #include "net/uip.h"
 #include "net/uip_arp.h"
 #include "netboot/dhcp.h"
+#include "netboot/netboot.h"
 #include "netboot/params.h"
 #include "netboot/tftp.h"
 #include "vboot/boot.h"
@@ -88,35 +87,12 @@ static void print_mac_addr(const uip_eth_addr *mac)
 static void * const payload = (void *)(uintptr_t)CONFIG_KERNEL_START;
 static const uint32_t MaxPayloadSize = CONFIG_KERNEL_SIZE;
 
-#define def_cmd_line "lsm.module_locking=0 cros_netboot_ramfs " \
-		     "cros_factory_install cros_secure cros_netboot"
-static char cmd_line[4096] = def_cmd_line;
+static char cmd_line[4096] = "lsm.module_locking=0 cros_netboot_ramfs "
+			     "cros_factory_install cros_secure cros_netboot";
 
-int main(void)
+void netboot(uip_ipaddr_t *tftp_ip, char *bootfile, char *argsfile, char *args)
 {
-	NetbootParam *param;
-
-	// Initialize some consoles.
-	serial_console_init();
-	cbmem_console_init();
-	video_console_init();
-	input_init();
-
-	printf("\n\nStarting netboot on " CONFIG_BOARD "...\n");
-
-	timestamp_init();
-
-	if (run_init_funcs())
-		halt();
-
-	// Make sure graphics are available if they aren't already.
-	enable_graphics();
 	dc_usb_initialize();
-
-	if (CONFIG_CLI)
-		console_loop();
-
-	srand(timer_raw_value());
 
 	printf("Looking for network device... ");
 	while (!net_get_device())
@@ -157,41 +133,24 @@ int main(void)
 	print_ip_addr(&server_ip);
 	printf("\n");
 
-	// Retrieve settings from the shared data area.
-	FmapArea shared_data;
-	if (fmap_find_area("SHARED_DATA", &shared_data)) {
-		printf("Couldn't find the shared data area.\n");
-		halt();
-	}
-	void *data = flash_read(shared_data.offset, shared_data.size);
-	netboot_params_init(data, shared_data.size);
-
-	// Get TFTP server IP and file name from params with DHCP as fallback
-	uip_ipaddr_t *tftp_ip = NULL;
-	param = netboot_params_val(NetbootParamIdTftpServerIp);
-	if (param->data && param->size >= sizeof(uip_ipaddr_t)) {
-		tftp_ip = (uip_ipaddr_t *)param->data;
-		printf("TFTP server IP set from firmware parameters: ");
-	} else {
+	if (!tftp_ip) {
 		tftp_ip = &next_ip;
 		printf("TFTP server IP supplied by DHCP server: ");
+	} else {
+		printf("TFTP server IP predefined by user: ");
 	}
 	print_ip_addr(tftp_ip);
 	printf("\n");
 
-	const char *bootfile = NULL;
-	param = netboot_params_val(NetbootParamIdBootfile);
-	if (param->data && param->size > 0 && strnlen((const char *)param->data,
-			param->size) < param->size) {
-		bootfile = (const char *)param->data;
-		printf("Bootfile set from firmware parameters: %s\n", bootfile);
-	} else {
-		bootfile = dhcp_bootfile;
-		printf("Bootfile supplied by DHCP server: %s\n", bootfile);
-	}
-
 	// Download the bootfile.
 	uint32_t size;
+	if (!bootfile) {
+		bootfile = (char *)dhcp_bootfile;
+		printf("Bootfile supplied by DHCP server: %s\n", bootfile);
+	} else {
+		printf("Bootfile predefined by user: %s\n", bootfile);
+	}
+
 	if (tftp_read(payload, tftp_ip, bootfile, &size, MaxPayloadSize)) {
 		printf("Tftp failed.\n");
 		if (dhcp_release(server_ip))
@@ -200,11 +159,9 @@ int main(void)
 	}
 	printf("The bootfile was %d bytes long.\n", size);
 
-	// Try to download command line file via TFTP if specified in params
-	param = netboot_params_val(NetbootParamIdArgsFile);
-	if (param->data && param->size > 0 &&
-			!(tftp_read(cmd_line, tftp_ip, param->data, &size,
-	        	sizeof(cmd_line) - 1))) {
+	// Try to download command line file via TFTP if argsfile is specified
+	if (argsfile && !(tftp_read(cmd_line, tftp_ip, argsfile, &size,
+			sizeof(cmd_line) - 1))) {
 		while (cmd_line[size - 1] <= ' ')  // strip trailing whitespace
 			if (!--size) break;	   // and control chars (\n, \r)
 		cmd_line[size] = '\0';
@@ -212,19 +169,13 @@ int main(void)
 			if (cmd_line[size] < ' ')  // chars with spaces
 				cmd_line[size] = ' ';
 		printf("Command line loaded dynamically from TFTP file: %s\n",
-				(char *)param->data);
-	// If that fails or file wasn't specified fall back to built-in default.
-	} else {
-		// Add extra arguments from params to factory default
-		param = netboot_params_val(NetbootParamIdKernelArgs);
-		if (param->data && param->size > 0 && *(char *)param->data) {
-			cmd_line[sizeof(def_cmd_line) - 1] = ' ';
-			strncpy(&cmd_line[sizeof(def_cmd_line)], param->data,
-				sizeof(cmd_line) - sizeof(def_cmd_line));
-		}
-		printf("Command line set from firmware parameters.\n");
+				argsfile);
+	// If that fails or file wasn't specified fall back to args parameter
+	} else if (args) {
+		if (args != cmd_line)
+			strncpy(cmd_line, args, sizeof(cmd_line) - 1);
+		printf("Command line predefined by user.\n");
 	}
-	cmd_line[sizeof(cmd_line) - 1] = '\0';
 
 	// We're done on the network, so release our IP.
 	if (dhcp_release(server_ip)) {
@@ -234,11 +185,10 @@ int main(void)
 
 	// Add tftp server IP into command line.
 	static const char def_tftp_cmdline[] = " tftpserverip=xxx.xxx.xxx.xxx";
-	const int tftp_cmdline_def_size = sizeof(def_tftp_cmdline) - 1;
 	int cmd_line_size = strlen(cmd_line);
-	if (cmd_line_size + tftp_cmdline_def_size >= sizeof(cmd_line)) {
+	if (cmd_line_size + sizeof(def_tftp_cmdline) - 1 >= sizeof(cmd_line)) {
 		printf("Out of space adding TFTP server IP to the command line.\n");
-		return 1;
+		return;
 	}
 	sprintf(&cmd_line[cmd_line_size], " tftpserverip=%d.%d.%d.%d",
 		uip_ipaddr1(tftp_ip), uip_ipaddr2(tftp_ip),
@@ -247,6 +197,39 @@ int main(void)
 
 	// Boot.
 	boot(payload, cmd_line, NULL, NULL);
+}
+
+int main(void) __attribute__((weak, alias("netboot_entry")));
+int netboot_entry(void)
+{
+	// Initialize some consoles.
+	serial_console_init();
+	cbmem_console_init();
+	video_console_init();
+	input_init();
+
+	printf("\n\nStarting netboot on " CONFIG_BOARD "...\n");
+
+	timestamp_init();
+
+	if (run_init_funcs())
+		halt();
+
+	// Make sure graphics are available if they aren't already.
+	enable_graphics();
+
+	if (CONFIG_CLI)
+		console_loop();
+
+	srand(timer_raw_value());
+
+	uip_ipaddr_t *tftp_ip;
+	char *bootfile, *argsfile;
+	if (netboot_params_read(&tftp_ip, cmd_line, sizeof(cmd_line),
+				&bootfile, &argsfile))
+		printf("ERROR: Failed to read netboot parameters from flash\n");
+
+	netboot(tftp_ip, bootfile, argsfile, cmd_line);
 
 	// We should never get here.
 	printf("Got to the end!\n");

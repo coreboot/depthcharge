@@ -19,6 +19,9 @@ subdirs-y := arch base board boot debug drivers image net netboot vboot
 
 DEPTHCHARGE = $(obj)/depthcharge
 NETBOOT = $(obj)/netboot
+DEV = $(obj)/dev
+
+DONT_GC_NETBOOT = -Wl,-u,netboot_entry
 
 # Defines rules to link, strip and compress a binary
 # $1 output file base name (will result in $1.elf and $1.bin)
@@ -90,10 +93,15 @@ $(eval $(call declare_unified,$(DEPTHCHARGE),$$$$(depthcharge-objs) \
 $(eval $(call declare_unified,$(NETBOOT),$$$$(depthcharge-objs) \
 	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs),))
 
-real-target: $(NETBOOT)_unified
-real-target: $(DEPTHCHARGE)_unified
+$(eval $(call declare_ro_rw,$(DEV),$$$$(depthcharge-objs) \
+	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs), \
+	$$$$(readonly-objs),$$$$(readwrite-objs),$(DONT_GC_NETBOOT)))
+$(eval $(call declare_unified,$(DEV),$$$$(depthcharge-objs) $$$$(netboot-objs) \
+	$$$$(net-objs) $$$$(uip-objs) $$$$(unified-objs),$(DONT_GC_NETBOOT)))
+
+real-target: $(DEPTHCHARGE)_unified $(NETBOOT)_unified $(DEV)_unified
 # TODO(dnojiri): Get rid of this once we decide to support only
 # EFS/depthcharge and non-EFS/u-boot.
 ifneq ($(CONFIG_ARCH_ARM_V8),y)
-real-target: $(DEPTHCHARGE)_ro_rw
+real-target: $(DEPTHCHARGE)_ro_rw $(DEV)_ro_rw
 endif

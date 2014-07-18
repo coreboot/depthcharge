@@ -24,6 +24,9 @@
 #include <libpayload.h>
 #include <stdint.h>
 
+#include "drivers/flash/flash.h"
+#include "image/fmap.h"
+#include "net/uip.h"
 #include "netboot/params.h"
 
 static NetbootParam netboot_params[NetbootParamIdMax];
@@ -78,5 +81,56 @@ int netboot_params_init(void *data, uintptr_t size)
 		param->data = val_data;
 		param->size = val_size;
 	}
+	return 0;
+}
+
+int netboot_params_read(uip_ipaddr_t **tftp_ip, char *cmd_line,
+			size_t cmd_line_max, char **bootfile, char **argsfile)
+{
+	NetbootParam *param;
+
+	*tftp_ip = NULL;
+	*bootfile = NULL;
+	*argsfile = NULL;
+
+	// Retrieve settings from the shared data area.
+	FmapArea shared_data;
+	if (fmap_find_area("SHARED_DATA", &shared_data)) {
+		printf("Couldn't find the shared data area.\n");
+		return 1;
+	}
+	void *data = flash_read(shared_data.offset, shared_data.size);
+	if (netboot_params_init(data, shared_data.size))
+		return 1;
+
+	// Get TFTP server IP and file names from params if specified
+	param = netboot_params_val(NetbootParamIdTftpServerIp);
+	if (param->data && param->size >= sizeof(uip_ipaddr_t))
+		*tftp_ip = (uip_ipaddr_t *)param->data;
+
+	param = netboot_params_val(NetbootParamIdBootfile);
+	if (param->data && param->size > 0 && strnlen((char *)param->data,
+			param->size) < param->size)
+		*bootfile = (char *)param->data;
+
+	param = netboot_params_val(NetbootParamIdArgsFile);
+	if (param->data && param->size > 0 && strnlen((char *)param->data,
+			param->size) < param->size)
+		*argsfile = (char *)param->data;
+
+	if (!cmd_line || cmd_line_max == 0)
+		return 0;
+
+	// Add extra arguments from params to factory default command line
+	param = netboot_params_val(NetbootParamIdKernelArgs);
+	if (param->data && param->size > 0 && strnlen((char *)param->data,
+			param->size) < param->size) {
+		int cmd_line_size = strnlen(cmd_line, cmd_line_max - 1) + 1;
+		cmd_line[cmd_line_size - 1] = ' ';
+		strncpy(&cmd_line[cmd_line_size], param->data,
+			cmd_line_max - cmd_line_size);
+	}
+	cmd_line[cmd_line_max - 1] = '\0';
+
 	return 0;
 }

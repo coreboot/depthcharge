@@ -16,6 +16,6 @@
 ##
 
 netboot-y += dhcp.c
-netboot-y += main.c
+netboot-y += netboot.c
 netboot-y += params.c
 netboot-y += tftp.c
