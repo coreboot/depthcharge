@@ -24,30 +24,12 @@ readonly-y += ro_main.c
 readwrite-y += rw_main.c
 unified-y += main.c
 
-
-DEPTHCHARGE_RO_ELF = $(obj)/depthcharge.ro.elf
-DEPTHCHARGE_RO_BIN = $(obj)/depthcharge.ro.bin
-DEPTHCHARGE_RW_ELF = $(obj)/depthcharge.rw.elf
-DEPTHCHARGE_RW_BIN = $(obj)/depthcharge.rw.bin
-DEPTHCHARGE_ELF = $(obj)/depthcharge.elf
-DEPTHCHARGE_PAYLOAD = $(obj)/depthcharge.payload
-
 VB_LIB = $(obj)/external/vboot/vboot_fw.a
-
-LIBRARIES = $(VB_LIB)
 
 TRAMP_LP = $(obj)/trampoline_libpayload.a
 TRAMP_PREFIX = tramp
 TRAMP_ENTRY = load_elf
 TRAMPOLINE = $(obj)/trampoline.o
-
-real-target: $(DEPTHCHARGE_ELF) $(DEPTHCHARGE_PAYLOAD)
-# TODO: Get rid of this once we decide to support only EFS/depthcharge
-# and non-EFS/u-boot.
-ifneq ($(CONFIG_ARCH_ARM_V8),y)
-real-target: $(DEPTHCHARGE_RO_ELF) $(DEPTHCHARGE_RO_BIN) \
-	$(DEPTHCHARGE_RW_ELF) $(DEPTHCHARGE_RW_BIN)
-endif
 
 # The vboot library source is external to depthcharge.
 $(VB_LIB):
@@ -85,63 +67,3 @@ $(TRAMPOLINE): $$(trampoline-objs)
 		-e $(TRAMP_ENTRY)
 	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
 	$(Q)$(OBJCOPY) --prefix-symbols=$(TRAMP_PREFIX)_ $(@).tmp $(@)
-
-
-#The read-only version
-$(DEPTHCHARGE_RO_ELF): $(src)/.config $$(depthcharge-objs) $$(readonly-objs) \
-		$(TRAMPOLINE) $(LIBRARIES) $(TRAMP_LP) prepare
-	@printf "    LD         $(subst $(obj)/,,$(@).tmp)\n"
-	$(Q)$(XCC) $(LINK_FLAGS) -o $@.tmp $(depthcharge-objs) \
-		$(readonly-objs) $(TRAMPOLINE) $(LIBRARIES) $(TRAMP_LP)
-	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
-	$(Q)$(OBJCOPY) --remove-section=".shared_data" \
-		--remove-section=".cparams" --remove-section=".gbb_copy" \
-		--redefine-sym $(TRAMP_PREFIX)_\$$a=\$$a \
-		--redefine-sym $(TRAMP_PREFIX)_\$$t=\$$t \
-		--redefine-sym $(TRAMP_PREFIX)_\$$d=\$$d \
-		$@.tmp $@
-
-$(DEPTHCHARGE_RO_BIN): $(DEPTHCHARGE_RO_ELF)
-	@printf "    STRIP      $(subst $(obj)/,,$(@).tmp)\n"
-	$(Q)$(STRIP) -o $(@).tmp $(<)
-	@printf "    LZMA       $(subst $(obj)/,,$(@))\n"
-	$(Q)$(LZMA) --stdout $(@).tmp > $(@)
-
-
-#The read/write version
-$(DEPTHCHARGE_RW_ELF): $(src)/.config $$(depthcharge-objs) $$(readwrite-objs) \
-		$(LIBRARIES) prepare
-	@printf "    LD         $(subst $(obj)/,,$(@).tmp)\n"
-	$(Q)$(XCC) $(LINK_FLAGS) -o $@.tmp $(depthcharge-objs) \
-		$(readwrite-objs) $(LIBRARIES)
-	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
-	$(Q)$(OBJCOPY) --remove-section=".shared_data" \
-		--remove-section=".cparams" --remove-section=".gbb_copy" \
-		$@.tmp $@
-
-$(DEPTHCHARGE_RW_BIN): $(DEPTHCHARGE_RW_ELF)
-	@printf "    STRIP      $(subst $(obj)/,,$(@).tmp)\n"
-	$(Q)$(STRIP) -o $(@).tmp $(<)
-	@printf "    LZMA       $(subst $(obj)/,,$(@))\n"
-	$(Q)$(LZMA) --stdout $(@).tmp > $(@)
-
-# The unified version
-$(DEPTHCHARGE_ELF): $(src)/.config $$(depthcharge-objs) \
-		$$(unified-objs) $(LIBRARIES) prepare
-	@printf "    LD         $(subst $(obj)/,,$(@).tmp)\n"
-	$(Q)$(XCC) $(LINK_FLAGS) -o $@.tmp $(depthcharge-objs) \
-		$(unified-objs) $(LIBRARIES)
-	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
-	$(Q)$(OBJCOPY) --remove-section=".shared_data" \
-		--remove-section=".cparams" --remove-section=".gbb_copy" \
-		$@.tmp $@
-
-# Provide a unified deptcharge boot loader in a payload format.
-$(DEPTHCHARGE_PAYLOAD): $(DEPTHCHARGE_ELF)
-	@printf "    PAYLOAD    $(subst $(obj)/,,$(@))\n"
-	$(Q)-rm -f temp.rom temp.bb
-	$(Q)dd if=/dev/zero of=temp.bb bs=512 count=1
-	$(Q)cbfstool temp.rom create -m $(ARCH) -s 1024K -B temp.bb -a 64
-	$(Q)cbfstool temp.rom add-payload -f $< -n dc.elf -c lzma
-	$(Q)cbfstool temp.rom extract -n dc.elf -f $@
-	$(Q)rm -f temp.rom temp.bb
