@@ -61,7 +61,7 @@ LDSCRIPT := $(src)/src/image/depthcharge.ldscript
 
 ifeq ($(strip $(HAVE_DOTCONFIG)),)
 
-all: config
+all: help
 
 else
 
@@ -109,7 +109,21 @@ else
 CFLAGS += -Os
 endif
 
-all: real-target
+all:
+	@echo  'You must specify one of the following targets to build:'
+	@echo
+	@echo  '  depthcharge_unified	- Build unified depthcharge (with no'
+	@echo  '  			  firmware selection, for use with EFS)'
+	@echo  '  depthcharge_ro_rw	- Build depthcharge RO and RW (with'
+	@echo  '  			  old trampoline and VbSelectFirmware)'
+	@echo  '  netboot_unified	- Build netboot binary'
+	@echo  '  dev_unified		- Build unified developer binary (with'
+	@echo  '  			  (EFS) vboot, netboot and gdb)'
+	@echo  '  dev_ro_rw		- Build RO/RW developer binary (with
+	@echo  '			  (legacy) vboot, netboot and gdb)'
+	@echo  '  dts                   - Preprocess fmap.dts file'
+	@echo  '  clean			- Delete final output binaries'
+	@echo  '  distclean		- Delete whole build directory'
 
 endif
 
@@ -216,7 +230,6 @@ DTS_DIR := $(src)/board/$(BOARD)
 DTS_CPPFLAGS := -x assembler-with-cpp
 $(obj)/%.dts : $(DTS_DIR)/%.dts $(KCONFIG_AUTOHEADER)
 	$(HOSTCC) -E -P $(DTS_CPPFLAGS) --include $(KCONFIG_AUTOHEADER) $< -o $@
-
 dts: $(obj)/fmap.dts
 
 prepare:

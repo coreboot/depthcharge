@@ -1,8 +1,5 @@
 /*
- * Copyright 2012 Google Inc.
- *
- * See file CREDITS for list of people who contributed to this
- * project.
+ * Copyright 2014 Google Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -20,29 +17,37 @@
  * MA 02111-1307 USA
  */
 
-#include <assert.h>
 #include <libpayload.h>
 
-#include "base/cleanup_funcs.h"
-#include "debug/dev.h"
+#include "netboot/netboot.h"
+#include "netboot/params.h"
+#include "net/uip.h"
 
-ListNode cleanup_funcs;
+/*
+ * These are the real implementations for developer-build features that override
+ * the symbols from stubs.c. They must never be linked into production images!
+ */
 
-int run_cleanup_funcs(CleanupType type)
+void dc_dev_gdb_enter(void)
 {
-	int res = 0;
+	gdb_enter();
+}
 
-	CleanupFunc *func;
-	list_for_each(func, cleanup_funcs, list_node) {
-		assert(func->cleanup);
-		if ((func->types & type))
-			res = func->cleanup(func, type) || res;
-	}
+void dc_dev_gdb_exit(int exit_code)
+{
+	gdb_exit(exit_code);
+}
 
-	dc_dev_gdb_exit(type);
+void dc_dev_netboot(void)
+{
+	uip_ipaddr_t *tftp_ip;
+	char *bootfile, *argsfile;
 
-	printf("Exiting depthcharge with code %d at timestamp: %llu\n",
-	       type, timer_us(0));
+	video_console_init();
 
-	return res;
+	if (netboot_params_read(&tftp_ip, NULL, 0,
+				&bootfile, &argsfile))
+		printf("ERROR: Failed to read netboot parameters from flash\n");
+
+	netboot(tftp_ip, bootfile, argsfile, NULL);
 }

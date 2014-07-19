@@ -16,3 +16,7 @@
 ##
 
 subdirs-$(CONFIG_CLI) += cli
+
+depthcharge-y += stubs.c
+
+dev-y += dev.c

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Google Inc.
+ * Copyright 2014 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -20,29 +20,11 @@
  * MA 02111-1307 USA
  */
 
-#include <assert.h>
-#include <libpayload.h>
+#ifndef __DEBUG_DEV_H__
+#define __DEBUG_DEV_H__
 
-#include "base/cleanup_funcs.h"
-#include "debug/dev.h"
+void dc_dev_gdb_enter(void);
+void dc_dev_gdb_exit(int exit_code);
+void dc_dev_netboot(void);
 
-ListNode cleanup_funcs;
-
-int run_cleanup_funcs(CleanupType type)
-{
-	int res = 0;
-
-	CleanupFunc *func;
-	list_for_each(func, cleanup_funcs, list_node) {
-		assert(func->cleanup);
-		if ((func->types & type))
-			res = func->cleanup(func, type) || res;
-	}
-
-	dc_dev_gdb_exit(type);
-
-	printf("Exiting depthcharge with code %d at timestamp: %llu\n",
-	       type, timer_us(0));
-
-	return res;
-}
+#endif /* __DEBUG_DEV_H__ */

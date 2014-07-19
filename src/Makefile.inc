@@ -59,8 +59,8 @@ $(eval $(call declare_bin,$1.ro,$2 $3 $$$$(VB_LIB) \
 
 $(eval $(call declare_bin,$1.rw,$2 $4 $$$$(VB_LIB),$5))
 
-$1_ro_rw: $1.ro.bin $1.rw.bin
-PHONY += $1_ro_rw
+$(notdir $1)_ro_rw: $1.ro.bin $1.rw.bin
+PHONY += $(notdir $1)_ro_rw
 endef
 
 # Defines rules for a unified (EFS) binary
@@ -80,8 +80,8 @@ $1.payload: $1.elf
 	$$(Q)cbfstool $1.rom extract -n dc.elf -f $$@
 	$$(Q)rm -f $1.rom $1.bb
 
-$1_unified: $1.bin $1.payload
-PHONY += $1_unified
+$(notdir $1)_unified: $1.bin $1.payload
+PHONY += $(notdir $1)_unified
 endef
 
 
@@ -94,14 +94,8 @@ $(eval $(call declare_unified,$(NETBOOT),$$$$(depthcharge-objs) \
 	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs),))
 
 $(eval $(call declare_ro_rw,$(DEV),$$$$(depthcharge-objs) \
-	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs), \
+	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs) $$$$(dev-objs), \
 	$$$$(readonly-objs),$$$$(readwrite-objs),$(DONT_GC_NETBOOT)))
-$(eval $(call declare_unified,$(DEV),$$$$(depthcharge-objs) $$$$(netboot-objs) \
-	$$$$(net-objs) $$$$(uip-objs) $$$$(unified-objs),$(DONT_GC_NETBOOT)))
-
-real-target: $(DEPTHCHARGE)_unified $(NETBOOT)_unified $(DEV)_unified
-# TODO(dnojiri): Get rid of this once we decide to support only
-# EFS/depthcharge and non-EFS/u-boot.
-ifneq ($(CONFIG_ARCH_ARM_V8),y)
-real-target: $(DEPTHCHARGE)_ro_rw $(DEV)_ro_rw
-endif
+$(eval $(call declare_unified,$(DEV),$$$$(depthcharge-objs) \
+	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs) $$$$(dev-objs) \
+	$$$$(unified-objs),$(DONT_GC_NETBOOT)))

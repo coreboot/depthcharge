@@ -1,8 +1,5 @@
 /*
- * Copyright 2012 Google Inc.
- *
- * See file CREDITS for list of people who contributed to this
- * project.
+ * Copyright 2014 Google Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -20,29 +17,17 @@
  * MA 02111-1307 USA
  */
 
-#include <assert.h>
-#include <libpayload.h>
+/*
+ * These stubs are linked for debug-related functions in non-developer builds
+ * to ensure that those features do not work. Developer builds will override
+ * them with the definitions from dev.c.
+ */
 
-#include "base/cleanup_funcs.h"
-#include "debug/dev.h"
+void dc_dev_gdb_enter(void) __attribute__((weak));
+void dc_dev_gdb_enter(void) { /* do nothing */ }
 
-ListNode cleanup_funcs;
+void dc_dev_gdb_exit(int exit_code) __attribute__((weak));
+void dc_dev_gdb_exit(int exit_code) { (void)exit_code; /* do nothing */ }
 
-int run_cleanup_funcs(CleanupType type)
-{
-	int res = 0;
-
-	CleanupFunc *func;
-	list_for_each(func, cleanup_funcs, list_node) {
-		assert(func->cleanup);
-		if ((func->types & type))
-			res = func->cleanup(func, type) || res;
-	}
-
-	dc_dev_gdb_exit(type);
-
-	printf("Exiting depthcharge with code %d at timestamp: %llu\n",
-	       type, timer_us(0));
-
-	return res;
-}
+void dc_dev_netboot(void) __attribute__((weak));
+void dc_dev_netboot(void) { /* do nothing */ }

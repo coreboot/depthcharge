@@ -23,6 +23,8 @@
 #include <libpayload.h>
 #include <vboot_api.h>
 
+#include "debug/dev.h"
+
 #define CSI_0 0x1B
 #define CSI_1 0x5B
 
@@ -67,10 +69,11 @@ uint32_t VbExKeyboardRead(void)
 		case 'D': return VB_KEY_LEFT;
 		default: return 0;
 		}
-#if CONFIG_LP_REMOTEGDB
-	// CTRL+G enters GDB if it has been enabled (then fall through).
-	case 'G' & 0x1f: gdb_enter();
-#endif
+
+	// These two cases only work on developer images (empty stubs otherwise)
+	case 'N' & 0x1f: dc_dev_netboot();	// CTRL+N: netboot
+	case 'G' & 0x1f: dc_dev_gdb_enter();	// CTRL+G: remote GDB mode
+	// fall through for non-developer images as if these didn't exist
 	default:
 		return ch;
 	}
