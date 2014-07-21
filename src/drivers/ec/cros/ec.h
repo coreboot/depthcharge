@@ -103,29 +103,32 @@ int cros_ec_scan_keyboard(struct cros_ec_keyscan *scan);
 /**
  * Read which image is currently running on the ChromeOS EC device.
  *
+ * @param devidx	Index of target device
  * @param image		Destination for image identifier
  * @return 0 if ok, <0 on error
  */
-int cros_ec_read_current_image(enum ec_current_image *image);
+int cros_ec_read_current_image(int devidx, enum ec_current_image *image);
 
 /**
  * Read the hash of the ChromeOS EC device firmware.
  *
+ * @param devidx	Index of target device
  * @param hash		Destination for hash information
  * @return 0 if ok, <0 on error
  */
-int cros_ec_read_hash(struct ec_response_vboot_hash *hash);
+int cros_ec_read_hash(int devidx, struct ec_response_vboot_hash *hash);
 
 /**
  * Send a reboot command to the ChromeOS EC device.
  *
  * Note that some reboot commands (such as EC_REBOOT_COLD) also reboot the AP.
  *
+ * @param devidx	Index of target device
  * @param cmd		Reboot command
  * @param flags         Flags for reboot command (EC_REBOOT_FLAG_*)
  * @return 0 if ok, <0 on error
  */
-int cros_ec_reboot(enum ec_reboot_cmd cmd, uint8_t flags);
+int cros_ec_reboot(int devidx, enum ec_reboot_cmd cmd, uint8_t flags);
 
 /**
  * Check if the ChromeOS EC device has an interrupt pending.
@@ -170,6 +173,7 @@ int cros_ec_clear_host_events(uint32_t events);
 /**
  * Get/set flash protection
  *
+ * @param devidx	Index of target device
  * @param set_mask	Mask of flags to set; if 0, just retrieves existing
  *                      protection state without changing it.
  * @param set_flags	New flag values; only bits in set_mask are applied;
@@ -177,7 +181,7 @@ int cros_ec_clear_host_events(uint32_t events);
  * @param prot          Destination for updated protection state from EC.
  * @return 0 if ok, <0 on error
  */
-int cros_ec_flash_protect(uint32_t set_mask, uint32_t set_flags,
+int cros_ec_flash_protect(int devidx, uint32_t set_mask, uint32_t set_flags,
 			  struct ec_response_flash_protect *resp);
 
 
@@ -191,11 +195,12 @@ int cros_ec_test(void);
 /**
  * Update the EC RW copy.
  *
+ * @param devidx	Index of target device
  * @param image		the content to write
  * @param imafge_size	content length
  * @return 0 if ok, <0 if the test failed
  */
-int cros_ec_flash_update_rw(const uint8_t *image, int image_size);
+int cros_ec_flash_update_rw(int devidx, const uint8_t *image, int image_size);
 
 /* Internal interfaces */
 
@@ -227,7 +232,7 @@ uint8_t cros_ec_calc_checksum(const void *data, int size);
  */
 int cros_ec_decode_region(int argc, char * const argv[]);
 
-int cros_ec_flash_erase(uint32_t offset, uint32_t size);
+int cros_ec_flash_erase(int devidx, uint32_t offset, uint32_t size);
 
 /**
  * Read data from the flash
@@ -238,12 +243,14 @@ int cros_ec_flash_erase(uint32_t offset, uint32_t size);
  * The offset starts at 0. You can obtain the region information from
  * cros_ec_flash_offset() to find out where to read for a particular region.
  *
+ * @param devidx	Index of target device
  * @param data		Pointer to data buffer to read into
  * @param offset	Offset within flash to read from
  * @param size		Number of bytes to read
  * @return 0 if ok, -1 on error
  */
-int cros_ec_flash_read(uint8_t *data, uint32_t offset, uint32_t size);
+int cros_ec_flash_read(int devidx, uint8_t *data, uint32_t offset,
+		       uint32_t size);
 
 /**
  * Write data to the flash
@@ -257,22 +264,25 @@ int cros_ec_flash_read(uint8_t *data, uint32_t offset, uint32_t size);
  * Attempting to write to the region where the EC is currently running from
  * will result in an error.
  *
+ * @param devidx	Index of target device
  * @param data		Pointer to data buffer to write
  * @param offset	Offset within flash to write to.
  * @param size		Number of bytes to write
  * @return 0 if ok, -1 on error
  */
-int cros_ec_flash_write(const uint8_t *data, uint32_t offset, uint32_t size);
+int cros_ec_flash_write(int devidx, const uint8_t *data,
+			uint32_t offset, uint32_t size);
 
 /**
  * Obtain position and size of a flash region
  *
+ * @param devidx	Index of target device
  * @param region	Flash region to query
  * @param offset	Returns offset of flash region in EC flash
  * @param size		Returns size of flash region
  * @return 0 if ok, -1 on error
  */
-int cros_ec_flash_offset(enum ec_flash_region region,
+int cros_ec_flash_offset(int devidx, enum ec_flash_region region,
 			 uint32_t *offset, uint32_t *size);
 
 /**

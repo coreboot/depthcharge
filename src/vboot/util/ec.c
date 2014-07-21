@@ -27,8 +27,10 @@
 
 void reboot_ec_to_ro()
 {
-	if (cros_ec_reboot(EC_REBOOT_COLD, EC_REBOOT_FLAG_ON_AP_SHUTDOWN)) {
+	if (cros_ec_reboot(0, EC_REBOOT_COLD, EC_REBOOT_FLAG_ON_AP_SHUTDOWN)) {
 		printf("Failed to reboot EC to RO.\n");
 		halt();
 	}
+
+	// TODO(rspangler@chromium.org): need to reboot PD chip too, if present
 }
