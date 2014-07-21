@@ -50,10 +50,7 @@ VbError_t VbExEcRunningRW(int devidx, int *in_rw)
 {
 	enum ec_current_image image;
 
-	if (devidx != 0)
-		return VBERROR_UNKNOWN;
-
-	if (cros_ec_read_current_image(&image) < 0) {
+	if (cros_ec_read_current_image(devidx, &image) < 0) {
 		printf("Failed to read current EC image.\n");
 		return VBERROR_UNKNOWN;
 	}
@@ -74,10 +71,7 @@ VbError_t VbExEcRunningRW(int devidx, int *in_rw)
 
 VbError_t VbExEcJumpToRW(int devidx)
 {
-	if (devidx != 0)
-		return VBERROR_UNKNOWN;
-
-	if (cros_ec_reboot(EC_REBOOT_JUMP_RW, 0) < 0) {
+	if (cros_ec_reboot(devidx, EC_REBOOT_JUMP_RW, 0) < 0) {
 		printf("Failed to make the EC jump to RW.\n");
 		return VBERROR_UNKNOWN;
 	}
@@ -87,10 +81,7 @@ VbError_t VbExEcJumpToRW(int devidx)
 
 VbError_t VbExEcDisableJump(int devidx)
 {
-	if (devidx != 0)
-		return VBERROR_UNKNOWN;
-
-	if (cros_ec_reboot(EC_REBOOT_DISABLE_JUMP, 0) < 0) {
+	if (cros_ec_reboot(devidx, EC_REBOOT_DISABLE_JUMP, 0) < 0) {
 		printf("Failed to make the EC disable jumping.\n");
 		return VBERROR_UNKNOWN;
 	}
@@ -102,10 +93,7 @@ VbError_t VbExEcHashRW(int devidx, const uint8_t **hash, int *hash_size)
 {
 	static struct ec_response_vboot_hash resp;
 
-	if (devidx != 0)
-		return VBERROR_UNKNOWN;
-
-	if (cros_ec_read_hash(&resp) < 0) {
+	if (cros_ec_read_hash(devidx, &resp) < 0) {
 		printf("Failed to read EC hash.\n");
 		return VBERROR_UNKNOWN;
 	}
@@ -176,13 +164,14 @@ VbError_t VbExEcGetExpectedRW(int devidx, enum VbSelectFirmware_t select,
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t ec_protect_rw(int protect)
+static VbError_t ec_protect_rw(int devidx, int protect)
 {
 	struct ec_response_flash_protect resp;
 	uint32_t mask = EC_FLASH_PROTECT_ALL_NOW | EC_FLASH_PROTECT_ALL_AT_BOOT;
 
 	/* Update protection */
-	if (cros_ec_flash_protect(mask, protect ? mask : 0, &resp) < 0) {
+	if (cros_ec_flash_protect(devidx, mask,
+				  protect ? mask : 0, &resp) < 0) {
 		printf("Failed to update EC flash protection.\n");
 		return VBERROR_UNKNOWN;
 	}
@@ -262,14 +251,11 @@ VbError_t VbExEcUpdateRW(int devidx, const uint8_t *image, int image_size)
 {
 	int rv;
 
-	if (devidx != 0)
-		return VBERROR_UNKNOWN;
-
-	rv = ec_protect_rw(0);
+	rv = ec_protect_rw(devidx, 0);
 	if (rv == VBERROR_EC_REBOOT_TO_RO_REQUIRED || rv != VBERROR_SUCCESS)
 		return rv;
 
-	if (cros_ec_flash_update_rw(image, image_size)) {
+	if (cros_ec_flash_update_rw(devidx, image, image_size)) {
 		printf("Failed to update EC RW flash.\n");
 		return VBERROR_UNKNOWN;
 	}
@@ -279,10 +265,7 @@ VbError_t VbExEcUpdateRW(int devidx, const uint8_t *image, int image_size)
 
 VbError_t VbExEcProtectRW(int devidx)
 {
-	if (devidx != 0)
-		return VBERROR_UNKNOWN;
-
-	return ec_protect_rw(1);
+	return ec_protect_rw(devidx, 1);
 }
 
 VbError_t VbExEcEnteringMode(int devidx, enum VbEcBootMode_t mode)
