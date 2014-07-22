@@ -149,6 +149,48 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 	return args.data_size;
 }
 
+static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
+		       void *din, uint32_t din_len)
+{
+	if (dout_len > EC_LPC_HOST_PACKET_SIZE) {
+		printf("%s: Cannot send %d bytes\n", __func__, dout_len);
+		return -1;
+	}
+
+	if (din_len > EC_LPC_HOST_PACKET_SIZE) {
+		printf("%s: Cannot receive %d bytes\n", __func__, din_len);
+		return -1;
+	}
+
+	if (wait_for_sync()) {
+		printf("%s: Timeout waiting ready\n", __func__);
+		return -1;
+	}
+
+	/* Copy packet */
+	outb_range(dout, EC_LPC_ADDR_HOST_PACKET, dout_len);
+
+	/* Start the command */
+	outb(EC_COMMAND_PROTOCOL_3, EC_LPC_ADDR_HOST_CMD);
+
+	if (wait_for_sync()) {
+		printf("%s: Timeout waiting ready\n", __func__);
+		return -1;
+	}
+
+	/* Check result */
+	int res = inb(EC_LPC_ADDR_HOST_DATA);
+	if (res) {
+		printf("%s: CrosEC result code %d\n", __func__, res);
+		return -res;
+	}
+
+	/* Read back response packet */
+	inb_range(din, EC_LPC_ADDR_HOST_PACKET, din_len);
+
+	return 0;
+}
+
 /**
  * Initialize LPC protocol.
  *
@@ -180,6 +222,7 @@ CrosEcLpcBus *new_cros_ec_lpc_bus(void)
 	CrosEcLpcBus *bus = xzalloc(sizeof(*bus));
 	bus->ops.init = &cros_ec_lpc_init;
 	bus->ops.send_command = &send_command;
+	bus->ops.send_packet = &send_packet;
 
 	return bus;
 }
