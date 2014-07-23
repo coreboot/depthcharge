@@ -316,6 +316,9 @@ static int tegra_spi_dma_transfer(TegraSpi *bus, void *in, const void *out,
 
 	// Set DMA bit in SPI_DMA_CTL to start.
 	uint32_t dma_ctl = readl(&regs->dma_ctl) | SPI_DMA_CTL_DMA;
+	dma_ctl &= ~(SPI_DMA_CTL_RX_TRIG_MASK | SPI_DMA_CTL_TX_TRIG_MASK);
+	dma_ctl |= (0 << SPI_DMA_CTL_RX_TRIG_SHIFT);
+	dma_ctl |= (0 << SPI_DMA_CTL_TX_TRIG_SHIFT);
 	writel(dma_ctl, &regs->dma_ctl);
 
 	if (cin)
