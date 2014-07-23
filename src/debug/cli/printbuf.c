@@ -7,7 +7,10 @@
 
 #include "common.h"
 
-#define MAX_LINE_LENGTH_BYTES (64)
+/* Max width the dump takes on the screen. */
+#define MAX_LINE_LENGTH (76)
+
+/* Default number of bytes displayed in one dump line. */
 #define DEFAULT_LINE_LENGTH_BYTES (16)
 
 int print_buffer(unsigned long addr, const void *data, unsigned width,
@@ -15,24 +18,34 @@ int print_buffer(unsigned long addr, const void *data, unsigned width,
 {
 	/* linebuf as a union causes proper alignment */
 	union linebuf {
-		u32 ui[MAX_LINE_LENGTH_BYTES/sizeof(u32) + 1];
-		u16 us[MAX_LINE_LENGTH_BYTES/sizeof(u16) + 1];
-		u8  uc[MAX_LINE_LENGTH_BYTES/sizeof(u8) + 1];
+		u32 ui[MAX_LINE_LENGTH/sizeof(u32) + 1];
+		u16 us[MAX_LINE_LENGTH/sizeof(u16) + 1];
+		u8  uc[MAX_LINE_LENGTH/sizeof(u8) + 1];
 	} lb;
-	int i;
+	int i, spaces, overhead;
 
-	if (linelen*width > MAX_LINE_LENGTH_BYTES)
-		linelen = MAX_LINE_LENGTH_BYTES / width;
+	/* How many spaces one number takes on the screen. */
+	spaces = 2 * width + 1;
+
+	/*
+	 * How many spaces the overhead (address, separating whitespace and
+	 * ascii representation) takes on the screen.
+	 */
+	overhead = 8 + width * linelen + 4;
+
 	if (linelen < 1)
 		linelen = DEFAULT_LINE_LENGTH_BYTES / width;
+	else if ((linelen * spaces + overhead) > MAX_LINE_LENGTH)
+		linelen = (MAX_LINE_LENGTH - overhead) / spaces;
 
 	while (count) {
-		unsigned thislinelen = linelen;
+		unsigned thislinelen;
+		int pad_size;
+
 		printf("%08lx:", addr);
 
-		/* check for overflow condition */
-		if (count < thislinelen)
-			thislinelen = count;
+		/* Limit number of elements in the last line of the dump. */
+		thislinelen = count < linelen ? count : linelen;
 
 		/* Copy from memory into linebuf and print hex values */
 		for (i = 0; i < thislinelen; i++) {
@@ -47,12 +60,9 @@ int print_buffer(unsigned long addr, const void *data, unsigned width,
 			data += width;
 		}
 
-		while (thislinelen < linelen) {
-			/* fill line with whitespace for nice ASCII print */
-			for (i=0; i<width*2+1; i++)
-				puts(" ");
-			linelen--;
-		}
+		pad_size = spaces * (linelen - thislinelen);
+		while (pad_size--)
+			printf(" ");
 
 		/* Print data in ASCII characters */
 		for (i = 0; i < thislinelen * width; i++) {
@@ -60,7 +70,7 @@ int print_buffer(unsigned long addr, const void *data, unsigned width,
 				lb.uc[i] = '.';
 		}
 		lb.uc[i] = '\0';
-		printf("    %s\n", lb.uc);
+		printf("    %s\n", lb.uc); /* 4 space separator. */
 
 		/* update references */
 		addr += thislinelen * width;
