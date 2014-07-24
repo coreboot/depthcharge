@@ -131,15 +131,12 @@ VbError_t VbExEcGetExpectedRW(int devidx, enum VbSelectFirmware_t select,
 {
 	const char *name;
 
-	if (devidx != 0)
-		return VBERROR_UNKNOWN;
-
 	switch (select) {
 	case VB_SELECT_FIRMWARE_A:
-		name = "EC_MAIN_A";
+		name = (devidx == 0 ? "EC_MAIN_A" : "PD_MAIN_A");
 		break;
 	case VB_SELECT_FIRMWARE_B:
-		name = "EC_MAIN_B";
+		name = (devidx == 0 ? "EC_MAIN_B" : "PD_MAIN_B");
 		break;
 	default:
 		printf("Unrecognized EC firmware requested.\n");
@@ -209,9 +206,6 @@ VbError_t VbExEcGetExpectedRWHash(int devidx, enum VbSelectFirmware_t select,
 {
 	const char *name;
 
-	if (devidx != 0)
-		return VBERROR_UNKNOWN;
-
 	switch (select) {
 	case VB_SELECT_FIRMWARE_A:
 		name = "FW_MAIN_A";
@@ -231,10 +225,22 @@ VbError_t VbExEcGetExpectedRWHash(int devidx, enum VbSelectFirmware_t select,
 	}
 
 	uint32_t size;
-	*hash = index_subsection(&area, 1, &size);
+
+	/*
+	 * Assume the hash is subsection (devidx+1) in the main firmware.  This
+	 * is currently true (see for example, board/samus/fmap.dts), but
+	 * fragile as all heck.
+	 *
+	 * TODO(rspangler@chromium.org): More robust way of locating the hash.
+	 * Subsections should really have names/tags, not just indices.
+	 */
+	*hash = index_subsection(&area, devidx + 1, &size);
 	*hash_size = size;
-	if (!*hash)
+	if (!*hash) {
+		printf("Didn't find precalculated hash subsection %d.\n",
+		       devidx + 1);
 		return VBERROR_UNKNOWN;
+	}
 
 	printf("EC-RW hash address, size are %p, %d.\n",
 		*hash, *hash_size);
