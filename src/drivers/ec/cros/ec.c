@@ -47,7 +47,10 @@ static int proto3_request_size;
 static struct ec_host_response *proto3_response;
 static int proto3_response_size;
 
+static int max_param_size;
 static int initialized;
+
+#define DEFAULT_BUF_SIZE 0x100
 
 int cros_ec_set_bus(CrosEcBusOps *bus)
 {
@@ -95,8 +98,9 @@ void cros_ec_dump_data(const char *name, int cmd, const void *data, int len)
  */
 uint8_t cros_ec_calc_checksum(const void *data, int size)
 {
-	uint8_t csum, i;
+	uint8_t csum;
 	const uint8_t *bytes = data;
+	int i;
 
 	for (i = csum = 0; i < size; i++)
 		csum += bytes[i];
@@ -239,6 +243,7 @@ static int send_command_proto3_work(int cmd, int cmd_version,
 	/* Prepare response buffer */
 	in_bytes = prepare_proto3_response_buffer(proto3_response_size,
 						  din_len);
+
 	if (in_bytes < 0)
 		return in_bytes;
 
@@ -471,7 +476,7 @@ int cros_ec_read_version(struct ec_response_get_version *versionp)
 int cros_ec_read_build_info(char *strp)
 {
 	if (ec_command(EC_CMD_GET_BUILD_INFO, 0, NULL, 0, strp,
-			EC_PROTO2_MAX_PARAM_SIZE) < 0)
+		       max_param_size) < 0)
 		return -1;
 
 	return 0;
@@ -718,13 +723,13 @@ int cros_ec_flash_erase(int devidx, uint32_t offset, uint32_t size)
 static int cros_ec_flash_write_block(int devidx, const uint8_t *data,
 				     uint32_t offset, uint32_t size)
 {
-	uint8_t buf[EC_PROTO2_MAX_PARAM_SIZE];
+	uint8_t buf[DEFAULT_BUF_SIZE];
 	struct ec_params_flash_write *p = (struct ec_params_flash_write *)buf;
 	uint32_t buf_used = sizeof(*p) + size;
 
 	p->offset = offset;
 	p->size = size;
-	assert(data && buf_used <= sizeof(buf));
+	assert(data && buf_used <= sizeof(buf) && buf_used <= max_param_size);
 	memcpy(p + 1, data, size);
 
 	return ec_command(EC_CMD_PASSTHRU_OFFSET(devidx) + EC_CMD_FLASH_WRITE,
@@ -737,7 +742,7 @@ static int cros_ec_flash_write_block(int devidx, const uint8_t *data,
 static int cros_ec_flash_write_burst_size(int devidx)
 {
 	struct ec_response_flash_info info;
-	uint32_t pdata_max_size = EC_PROTO2_MAX_PARAM_SIZE -
+	uint32_t pdata_max_size = max_param_size -
 		sizeof(struct ec_params_flash_write);
 
 	/*
@@ -917,6 +922,8 @@ static int set_max_proto3_sizes(int request_size, int response_size)
 	proto3_request_size = request_size;
 	proto3_response_size = response_size;
 
+	max_param_size = proto3_request_size - sizeof(struct ec_host_request);
+
 	return 0;
 }
 
@@ -941,7 +948,7 @@ int cros_ec_init(void)
 
 	if (cros_ec_bus->send_packet) {
 		send_command_func = &send_command_proto3;
-		if (set_max_proto3_sizes(0x100, 0x100))
+		if (set_max_proto3_sizes(DEFAULT_BUF_SIZE, DEFAULT_BUF_SIZE))
 			return -1;
 
 		struct ec_response_get_protocol_info info;
@@ -959,6 +966,7 @@ int cros_ec_init(void)
 	if (!send_command_func) {
 		// Fall back to protocol version 2.
 		send_command_func = &send_command_proto2;
+		max_param_size = EC_PROTO2_MAX_PARAM_SIZE;
 	}
 
 	if (cros_ec_read_id(id, sizeof(id))) {
