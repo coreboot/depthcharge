@@ -48,6 +48,7 @@ static struct ec_host_response *proto3_response;
 static int proto3_response_size;
 
 static int max_param_size;
+static int passthru_param_size;
 static int initialized;
 
 #define DEFAULT_BUF_SIZE 0x100
@@ -369,7 +370,6 @@ static int ec_command(int cmd, int cmd_version,
 		      const void *dout, int dout_len,
 		      void *din, int din_len)
 {
-
 	if (!initialized && cros_ec_init())
 		return -1;
 
@@ -378,9 +378,11 @@ static int ec_command(int cmd, int cmd_version,
 				 din, din_len);
 }
 
-int cros_ec_get_protocol_info(struct ec_response_get_protocol_info *info)
+int cros_ec_get_protocol_info(int devidx,
+			      struct ec_response_get_protocol_info *info)
 {
-	if (ec_command(EC_CMD_GET_PROTOCOL_INFO, 0, NULL, 0, info,
+	if (ec_command(EC_CMD_PASSTHRU_OFFSET(devidx) +
+		       EC_CMD_GET_PROTOCOL_INFO, 0, NULL, 0, info,
 		       sizeof(*info)) < sizeof(*info))
 		return -1;
 
@@ -723,17 +725,30 @@ int cros_ec_flash_erase(int devidx, uint32_t offset, uint32_t size)
 static int cros_ec_flash_write_block(int devidx, const uint8_t *data,
 				     uint32_t offset, uint32_t size)
 {
-	uint8_t buf[DEFAULT_BUF_SIZE];
-	struct ec_params_flash_write *p = (struct ec_params_flash_write *)buf;
-	uint32_t buf_used = sizeof(*p) + size;
+	uint8_t *buf;
+	struct ec_params_flash_write *p;
+	uint32_t bufsize = sizeof(*p) + size;
+	int rv;
 
+	assert(data);
+
+	/* Make sure request fits in the allowed packet size */
+	if (bufsize > (devidx == 0 ? max_param_size : passthru_param_size))
+		return -1;
+
+	buf = xmalloc(bufsize);
+
+	p = (struct ec_params_flash_write *)buf;
 	p->offset = offset;
 	p->size = size;
-	assert(data && buf_used <= sizeof(buf) && buf_used <= max_param_size);
 	memcpy(p + 1, data, size);
 
-	return ec_command(EC_CMD_PASSTHRU_OFFSET(devidx) + EC_CMD_FLASH_WRITE,
-			  0, buf, buf_used, NULL, 0) >= 0 ? 0 : -1;
+	rv = ec_command(EC_CMD_PASSTHRU_OFFSET(devidx) + EC_CMD_FLASH_WRITE,
+			0, buf, bufsize, NULL, 0) >= 0 ? 0 : -1;
+
+	free(buf);
+
+	return rv;
 }
 
 /**
@@ -742,7 +757,8 @@ static int cros_ec_flash_write_block(int devidx, const uint8_t *data,
 static int cros_ec_flash_write_burst_size(int devidx)
 {
 	struct ec_response_flash_info info;
-	uint32_t pdata_max_size = max_param_size -
+	uint32_t pdata_max_size =
+		(devidx == 0 ? max_param_size : passthru_param_size) -
 		sizeof(struct ec_params_flash_write);
 
 	/*
@@ -905,7 +921,8 @@ int cros_ec_write_vbnvcontext(const uint8_t *block)
 	return 0;
 }
 
-static int set_max_proto3_sizes(int request_size, int response_size)
+static int set_max_proto3_sizes(int request_size, int response_size,
+				int passthru_size)
 {
 	free(proto3_request);
 	free(proto3_response);
@@ -923,6 +940,10 @@ static int set_max_proto3_sizes(int request_size, int response_size)
 	proto3_response_size = response_size;
 
 	max_param_size = proto3_request_size - sizeof(struct ec_host_request);
+
+	passthru_param_size = passthru_size - sizeof(struct ec_host_request);
+	if (passthru_param_size > max_param_size)
+		passthru_param_size = max_param_size;
 
 	return 0;
 }
@@ -948,18 +969,33 @@ int cros_ec_init(void)
 
 	if (cros_ec_bus->send_packet) {
 		send_command_func = &send_command_proto3;
-		if (set_max_proto3_sizes(DEFAULT_BUF_SIZE, DEFAULT_BUF_SIZE))
+		if (set_max_proto3_sizes(DEFAULT_BUF_SIZE, DEFAULT_BUF_SIZE,
+					 DEFAULT_BUF_SIZE))
 			return -1;
 
-		struct ec_response_get_protocol_info info;
-		if (cros_ec_get_protocol_info(&info)) {
-			set_max_proto3_sizes(0, 0);
+		struct ec_response_get_protocol_info info, infopd;
+		if (cros_ec_get_protocol_info(0, &info)) {
+			set_max_proto3_sizes(0, 0, 0);
 			send_command_func = NULL;
 		} else {
-			printf("%s: CrosEC protocol version 3 supported.\n",
-			       __func__);
+			printf("%s: CrosEC protocol v3 supported (%d, %d)\n",
+			       __func__,
+			       info.max_request_packet_size,
+			       info.max_response_packet_size);
+
+			/* See if a PD chip is present */
+			if (cros_ec_get_protocol_info(1, &infopd)) {
+				infopd.max_request_packet_size = 0;
+			} else {
+				printf("%s: devidx=1 supported (%d, %d)\n",
+				       __func__,
+				       infopd.max_request_packet_size,
+				       infopd.max_response_packet_size);
+			}
+
 			set_max_proto3_sizes(info.max_request_packet_size,
-					     info.max_response_packet_size);
+					     info.max_response_packet_size,
+					     infopd.max_request_packet_size);
 		}
 	}
 

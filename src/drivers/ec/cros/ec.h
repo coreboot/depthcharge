@@ -84,11 +84,13 @@ int cros_ec_read_id(char *id, int maxlen);
 /**
  * Read the protocol info structure from the ChromeOS EC device
  *
+ * @param devidx	Index of target device
  * @param info		Pointer to the ec_response_get_protocol_info structure
  *			to fill
  * @return 0 if ok, -1 on error
  */
-int cros_ec_get_protocol_info(struct ec_response_get_protocol_info *info);
+int cros_ec_get_protocol_info(int devidx,
+			      struct ec_response_get_protocol_info *info);
 
 /**
  * Read a keyboard scan from the ChromeOS EC device
