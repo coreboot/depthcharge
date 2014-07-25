@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2014, Linux Foundation. All rights reserved
  * Copyright 2014 Chromium OS Authors
  */
 
@@ -50,6 +51,26 @@ static int storage_read(int argc, char *const argv[])
 
 	bd = current_devices.known_devices[current_devices.curr_device];
 	i = bd->ops.read(&bd->ops, base_block, num_blocks, dest_addr);
+	return i != num_blocks;
+}
+
+static int storage_write(int argc, char *const argv[])
+{
+	int base_block, num_blocks, *src_addr, i;
+	int *args[] = {&base_block, &num_blocks, (int *) &src_addr};
+	BlockDev *bd;
+
+	for (i = 0; i < ARRAY_SIZE(args); i++)
+		*args[i] = strtoul(argv[i], NULL, 0);
+
+	if ((current_devices.curr_device < 0) ||
+	    (current_devices.curr_device >= current_devices.total)) {
+		printf("Is storage subsystem initialized?");
+		return -1;
+	}
+
+	bd = current_devices.known_devices[current_devices.curr_device];
+	i = bd->ops.write(&bd->ops, base_block, num_blocks, src_addr);
 	return i != num_blocks;
 }
 
@@ -132,6 +153,7 @@ static const cmd_map cmdmap[] = {
 	{ "init", storage_init, 0, 0 },
 	{ "show", storage_show, 0, 0 },
 	{ "read", storage_read, 3, 3 },
+	{ "write", storage_write, 3, 3 },
 };
 
 static int do_storage(cmd_tbl_t *cmdtp, int flag,
@@ -160,5 +182,6 @@ U_BOOT_CMD(
 	" init - initialize storage devices\n"
 	" show - show currently initialized devices\n"
 	" read <base blk> <num blks> <dest addr> - read from default device\n"
+	" write <base blk> <num blks> <src addr> - write from default device\n"
 );
 
