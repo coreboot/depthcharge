@@ -28,10 +28,31 @@
 #include "boot/ramoops.h"
 #include "config.h"
 #include "drivers/bus/spi/tegra.h"
+#include "drivers/bus/i2c/tegra.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/gpio/tegra.h"
 #include "drivers/dma/tegra_apb.h"
 #include "drivers/flash/spi.h"
+#include "drivers/tpm/slb9635_i2c.h"
+#include "drivers/tpm/tpm.h"
+#include "drivers/storage/tegra_mmc.h"
+
+enum {
+	CLK_RST_BASE = 0x60006000,
+
+	CLK_RST_L_RST_SET = CLK_RST_BASE + 0x300,
+	CLK_RST_L_RST_CLR = CLK_RST_BASE + 0x304,
+	CLK_RST_H_RST_SET = CLK_RST_BASE + 0x308,
+	CLK_RST_H_RST_CLR = CLK_RST_BASE + 0x30c,
+	CLK_RST_U_RST_SET = CLK_RST_BASE + 0x310,
+	CLK_RST_U_RST_CLR = CLK_RST_BASE + 0x314
+};
+
+enum {
+	CLK_L_I2C1 = 0x1 << 12,
+	CLK_U_I2C3 = 0x1 << 3,
+	CLK_H_I2C5 = 0x1 << 15
+};
 
 static int board_setup(void)
 {
@@ -49,6 +70,18 @@ static int board_setup(void)
 				       APBDMA_SLAVE_SL2B4);
 
 	flash_set_ops(&new_spi_flash(&spi4->ops, 0x400000)->ops);
+
+	TegraI2c *cam_i2c = new_tegra_i2c((void *)0x7000c500, 3,
+					  (void *)CLK_RST_U_RST_SET,
+					  (void *)CLK_RST_U_RST_CLR,
+					  CLK_U_I2C3);
+
+	tpm_set_ops(&new_slb9635_i2c(&cam_i2c->ops, 0x20)->base.ops);
+
+	// sdmmc4
+	TegraMmcHost *emmc = new_tegra_mmc_host(0x700b0600, 8, 0, NULL, NULL);
+	list_insert_after(&emmc->mmc.ctrlr.list_node,
+			  &fixed_block_dev_controllers);
 
 	ramoops_buffer(0x87f00000, 0x100000, 0x20000);
 
