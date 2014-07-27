@@ -639,6 +639,14 @@ int cros_ec_flash_protect(uint32_t set_mask, uint32_t set_flags,
 	return 0;
 }
 
+int cros_ec_entering_mode(int devidx, int mode)
+{
+	if (ec_command(EC_CMD_PASSTHRU_OFFSET(devidx) + EC_CMD_ENTERING_MODE, 0,
+		       &mode, sizeof(mode), NULL, 0))
+		return -1;
+	return 0;
+}
+
 int cros_ec_test(void)
 {
 	struct ec_params_hello req;

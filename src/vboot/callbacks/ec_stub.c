@@ -77,3 +77,8 @@ VbError_t VbExEcProtectRW(int devidx)
 {
 	no_ec_soft_sync();
 }
+
+VbError_t VbExEcEnteringMode(int devidx, enum VbEcBootMode_t mode)
+{
+	no_ec_soft_sync();
+}
