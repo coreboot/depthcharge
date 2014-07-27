@@ -186,6 +186,14 @@ int cros_ec_clear_host_events(uint32_t events);
 int cros_ec_flash_protect(int devidx, uint32_t set_mask, uint32_t set_flags,
 			  struct ec_response_flash_protect *resp);
 
+/**
+ * Vboot Tell EC to enter a mode (recovery, dev, or normal).
+ *
+ * @param devidx	Index of target device
+ * @param mode          recovery, dev, or normal
+ * @return 0 if ok, <0 on error
+ */
+int cros_ec_entering_mode(int devidx, int mode);
 
 /**
  * Run internal tests on the ChromeOS EC interface.
