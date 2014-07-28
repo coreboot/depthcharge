@@ -29,8 +29,8 @@
 #include "base/init_funcs.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/net/asix.h"
+#include "drivers/net/mii.h"
 #include "drivers/net/net.h"
-
 
 /*
  * Utility functions.
