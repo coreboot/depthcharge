@@ -32,6 +32,9 @@ endif
 if BOARD = "clapper"
 source src/board/clapper/Kconfig
 endif
+if BOARD = "cranky"
+source src/board/cranky/Kconfig
+endif
 if BOARD = "daisy"
 source src/board/daisy/Kconfig
 endif
