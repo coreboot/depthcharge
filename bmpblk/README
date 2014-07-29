@@ -89,20 +89,19 @@ bitmap block structure incompatible with previous versions.
 --------------------------------------------
 Instructions for manually rebuilding things:
 
+It is now easier to build bmpblk INSIDE chroot. Just run "make" and everything
+will be regenerated:
 
-Enter chroot and run "make" so everything will be regenerated:
-
-  (cr) $  cd ~/trunk/src/platform/bmpblk
-  (cr) ~/trunk/src/platform/bmpblk $  make
-
+  (chroot) cd ~/trunk/src/platform/bmpblk
+  (chroot) make
 
 This should generate BIOS bmpblock file for all platforms cross all locales,
 which takes a long time.
 
 If you simply want to build image for single target with default locales, do:
 
-  cd ~/trunk/src/platform/bmpblk
-  make $BOARD
+  (chroot) cd ~/trunk/src/platform/bmpblk
+  (chroot) make $BOARD
 
 Where $BOARD is the board name of your target, ex: "link". There is one simple
 reference target "std" with fewer locales so you can test the building procedure
@@ -112,11 +111,23 @@ The default generated output files are in ./build/$BOARD. To override output
 folder, just specify OUTPUT=/path_to_output in Make variables.
 
 Note if you want to override the default locales list defined in boards.yaml
-(ex, to build with only English locale to speed up testing flow, or to try
-with all available locales), add LOCALES="<locale-list>" when running make.
-Ex:
+(for instance, to build with only English locale to speed up testing flow, or
+to try with all available locales), add LOCALES="<locale-list>" when running
+make.
+Example:
 
   make LOCALES="en ja es" make link
+
+Note if you want to use the "bitmap viewer" utility, since we don't have
+wxWidgets and X environment inside SDK, it's currently only available OUTSIDE
+chroot and you have to install these packages manually.  For example, on
+Ubuntu systems, do:
+
+  sudo apt-get install python-yaml python-wxgtk2.8
+
+And then you can preview the bitmaps by following commands (outside chroot):
+
+  ./bitmapviewer build/$BOARD/DEFAULT.yaml 1366x768
 
 -------------------
 Adding a new target:
@@ -137,9 +148,10 @@ advance:
   Then look up the dimension for the found VESA in
   http://en.wikipedia.org/wiki/VESA_BIOS_Extensions#Modes_defined_by_VESA
 
-  Note if the panel is much larger (ex, 1920x1080) than default resolution
-  (1366x768), you may want to use a higher resolution of image resources
-  (icons, diagrams, ... etc). To do that, change the "assets_dir" property.
+  Note if the panel is much larger (for example, 1920x1080) than default
+  resolution (1366x768), you may want to use a higher resolution of image
+  resources (icons, diagrams, ... etc). To do that, change the "assets_dir"
+  property.
 
   Currently we have two directories in images/ containing the image resources
   in different resolution: "assets" (designed for 1366x768) and "assets2x"
@@ -202,7 +214,7 @@ Now to build images for the new target (as $BOARD) run:
 
 The bitmaps and output binary (bmpblk.bin) can be found in ./build/$BOARD.
 
-You can preview the images by running Bitmap Viewer:
+You can preview the images by running Bitmap Viewer OUTSIDE chroot:
   $ ./bitmap_viewer build/$BOARD/DEFAULT.yaml
 
 Information about integrating new bitmaps into the firmware images can
@@ -264,17 +276,22 @@ that directly displays the raw binary.
 ------------------------------------------------------------------------------
 If you want to build OUTSIDE chroot, here's some information:
 
-Some libraries and programs (ex, PIL, pango-view, rsvg) used in generating
-image files need fonts set properly or specific version (ex, PIL is broken
-inside chroot), and simpler to do OUTSIDE of the chroot.
-
 On Ubuntu, you need to install following packages:
 
   sudo apt-get install libpango1.0-dev python-imaging librsvg2-bin
 
 And you probably want to make sure all required fonts are installed:
 
-  sudo apt-get install fonts-nanum ttf-indic-fonts fonts-droid fonts-noto
+  sudo apt-get install fonts-noto
+
+Currently Ubuntu Trusty (14.04) does not have some of required font files
+(Arabic UI and CJK) so you have to manually install them:
+  mirror=http://commondatastorage.googleapis.com/chromeos-localmirror/distfiles
+  wget "${mirror}/notofonts-20140815.tar.bz2"
+  wget "${mirror}/noto-cjk-20140912.tar.bz2"
+  sudo tar -xvf notofonts-20140815.tar.bz2 -C /usr/share/fonts/truetype
+  sudo tar -xvf noto-cjk-20140912.tar.bz2 -C /usr/share/fonts/truetype
+  sudo fc-cache  # Reload font cache.
 
 If you want to use the "bitmap viewer" utility, add these packages:
 

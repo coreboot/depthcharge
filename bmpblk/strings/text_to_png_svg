@@ -44,7 +44,7 @@ while true ; do
                       fi
                     done)"
       if [ -n "${font_params}" -a -z "${found_font}" ]; then
-        echo "ERROR: Missing font ${font_params}."
+        echo "ERROR: Missing font ${font_params}." >&2
         exit 1
       fi
       font="${found_font}"

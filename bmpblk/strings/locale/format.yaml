@@ -72,11 +72,23 @@ styles:
   model:          '--color=888888'
 
 fonts:
+  # All fonts should be provided and selected by 'ui-sans' family defined in
+  # ChromiumOS SDK (/etc/fonts/local.conf).  The following list is made by
+  #   fc-match 'ui-sans:lang=$locale' for locales we have.
   ar:     'Noto Naskh Arabic UI'
+  bn:     'Noto Sans Bengali UI'
+  en:     'Noto Sans UI'
+  fa:     'Noto Naskh Arabic UI'
+  gu:     'Noto Sans Gujarati UI'
   he:     'Noto Sans Hebrew'
   hi:     'Noto Sans Devanagari UI'
   ja:     'Noto Sans CJK JP'
+  kn:     'Noto Sans Kannada UI'
   ko:     'Noto Sans CJK KR'
+  ml:     'Noto Sans Malayalam UI'
+  mr:     'Noto Sans Devanagari UI'
+  ta:     'Noto Sans Tamil UI'
+  te:     'Noto Sans Telugu UI'
   th:     'Noto Sans Thai UI'
   zh-CN:  'Noto Sans CJK SC'
   zh-TW:  'Noto Sans CJK TC'

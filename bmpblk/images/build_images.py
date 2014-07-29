@@ -401,7 +401,8 @@ def build_bitmap_block(board, output_info):
         (output_dir, BMPLKU, BMPBLK_OUTPUT, archive_name, BMPBLK_OUTPUT))
   print ("\nBitmap block file generated in: %s/%s\n"
          "Archive file to upload: %s/%s\n"
-         "To preview, run '../bitmap_viewer %s/DEFAULT.yaml %sx%s'\n" %
+         "To preview, run following command OUTSIDE chroot:\n"
+         "   ../bitmap_viewer %s/DEFAULT.yaml %sx%s\n" %
          (output_dir, BMPBLK_OUTPUT, output_dir, archive_name, output_dir,
           panel_size[0], panel_size[1]))
   # TODO(hungte) Check and alert if output binary is too large.
