@@ -35,6 +35,13 @@
 
 typedef unsigned int gpio_t;
 
+/* Various GPIO pin functions */
+#define GPIO_FUNC_ENABLE			1
+#define GPIO_FUNC_DISABLE			0
+#define FUNC_SEL_1				1
+#define FUNC_SEL_3				3
+#define FUNC_SEL_GPIO				0
+
 /* GPIO TLMM: Direction */
 #define GPIO_INPUT      0
 #define GPIO_OUTPUT     1
@@ -56,8 +63,8 @@ typedef unsigned int gpio_t;
 #define GPIO_16MA       7
 
 /* GPIO TLMM: Status */
-#define GPIO_ENABLE     0
-#define GPIO_DISABLE    1
+#define GPIO_ENABLE     1
+#define GPIO_DISABLE    0
 
 /* GPIO MAX Valid # */
 #define GPIO_MAX_NUM  68
@@ -89,9 +96,9 @@ void gpio_tlmm_config_set(gpio_t gpio, unsigned int func,
 void gpio_tlmm_config_get(gpio_t gpio, unsigned int *func,
 			  unsigned int *pull, unsigned int *drvstr,
 			  unsigned int *enable);
+int gpio_get_in_value(gpio_t gpio);
+void gpio_set_out_value(gpio_t gpio, unsigned value);
 
-void gpio_io_config_set(gpio_t gpio, unsigned int out);
-void gpio_io_config_get(gpio_t gpio, unsigned int *in, unsigned int *out);
 
 /* Keep this to maintain backwards compatibility with the vendor API. */
 static inline void gpio_tlmm_config(unsigned int gpio, unsigned int func,
