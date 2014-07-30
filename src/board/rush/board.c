@@ -36,6 +36,7 @@
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/storage/tegra_mmc.h"
+#include "drivers/ec/cros/spi.h"
 
 enum {
 	CLK_RST_BASE = 0x60006000,
@@ -77,6 +78,11 @@ static int board_setup(void)
 					  CLK_U_I2C3);
 
 	tpm_set_ops(&new_slb9635_i2c(&cam_i2c->ops, 0x20)->base.ops);
+
+	TegraSpi *spi1 = new_tegra_spi(0x7000d400, dma_controller,
+				       APBDMA_SLAVE_SL2B1);
+
+	cros_ec_set_bus(&new_cros_ec_spi_bus(&spi1->ops)->ops);
 
 	// sdmmc4
 	TegraMmcHost *emmc = new_tegra_mmc_host(0x700b0600, 8, 0, NULL, NULL);
