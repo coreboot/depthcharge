@@ -55,6 +55,44 @@ enum {
 	CLK_H_I2C5 = 0x1 << 15
 };
 
+typedef struct VirtualMmcPowerGpio
+{
+	GpioOps ops;
+
+	GpioOps *gpio;
+	As3722Pmic *as3722;
+	uint8_t reg, enable_val, disable_val;  // Params for as3722.
+} VirtualMmcPowerGpio;
+
+static int virtual_mmc_power_set(GpioOps *me, unsigned value)
+{
+	VirtualMmcPowerGpio *power = container_of(me, VirtualMmcPowerGpio, ops);
+	assert(power->gpio && power->as3722);
+	if (power->gpio->set(power->gpio, value) ||
+	    power->as3722->set_reg(power->as3722, power->reg, value ?
+				   power->enable_val : power->disable_val)) {
+		printf("Failed to enable SD/MMC power.\n");
+		return -1;
+	}
+	return 0;
+}
+
+static VirtualMmcPowerGpio *new_virtual_mmc_power(GpioOps *gpio,
+						  As3722Pmic *as3722,
+						  uint8_t reg,
+						  uint8_t enable_val,
+						  uint8_t disable_val)
+{
+	VirtualMmcPowerGpio *power = xzalloc(sizeof(*power));
+	power->gpio = gpio;
+	power->as3722 = as3722;
+	power->reg = reg;
+	power->enable_val = enable_val;
+	power->disable_val = disable_val;
+	power->ops.set = &virtual_mmc_power_set;
+	return power;
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags();
@@ -86,8 +124,22 @@ static int board_setup(void)
 
 	// sdmmc4
 	TegraMmcHost *emmc = new_tegra_mmc_host(0x700b0600, 8, 0, NULL, NULL);
+	// sdmmc3
+	TegraGpio *enable_vdd_sd = new_tegra_gpio_output(GPIO(R, 0));
+	// The params in mmc_power set AS3722_LDO6 to 3.3V.
+	VirtualMmcPowerGpio *mmc_power = new_virtual_mmc_power(
+			&enable_vdd_sd->ops, pmic, 0x16, 0x3F, 0);
+	TegraGpio *card_detect = new_tegra_gpio_input(GPIO(V, 2));
+	GpioOps *card_detect_ops = &card_detect->ops;
+	card_detect_ops = new_gpio_not(card_detect_ops);
+	TegraMmcHost *sd_card = new_tegra_mmc_host(0x700b0400, 4, 1,
+						   card_detect_ops,
+						   &mmc_power->ops);
+
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
+	list_insert_after(&sd_card->mmc.ctrlr.list_node,
+			  &removable_block_dev_controllers);
 
 	ramoops_buffer(0x87f00000, 0x100000, 0x20000);
 
