@@ -20,6 +20,9 @@
 # 'res': Firmware graphics resolution (default: [1366, 768])
 # 'sdcard': Presence of SD/MMC Card Reader that can boot in recovery mode
 #           (default: True).
+# 'text_colors': Max colors for text images (Default: 6 for scaled images,
+#                otherwise 16. Set to zero for auto-detect). Decrease to reduce
+#                output file size.
 #
 # These are all the known locales, sorted more-or-less geograpically
 #  en es-419 pt-BR fr es pt-PT ca it de
@@ -92,6 +95,7 @@ zako:
   panel:    [1920, 1080]
   phy_rec:  True
   optional_screens: [ReserveCharging, ReserveChargingEmpty, WrongPowerSupply]
+  text_colors:  4
 
 monroe:
   # Using VESA graphics mode 1024x768 (0x0117).

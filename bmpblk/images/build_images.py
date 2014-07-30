@@ -42,6 +42,7 @@ LOCALE_DIR = 'locale'
 FONT_DIR = 'font'
 PNG_FILES = '*.png'
 SVG_FILES = '*.svg'
+TEXT_COLORS_AUTODETECT = 0
 
 # Base processing utilities, built by vboot_reference
 BMPLKU = "bmpblk_utility"
@@ -56,6 +57,7 @@ DEFAULT_LOCALES = ['en', 'es-419', 'pt-BR', 'fr', 'es', 'pt-PT', 'ca', 'it',
                    'uk', 'tr', 'he', 'ar', 'fa', 'hi', 'th', 'ms', 'vi', 'id',
                    'fil', 'zh-CN', 'zh-TW', 'ko', 'ja']
 DEFAULT_OPTIONAL_SCREENS = []
+DEFAULT_TEXT_COLORS = TEXT_COLORS_AUTODETECT
 
 # YAML key names.
 PANEL_SIZE_KEY = 'panel'
@@ -67,10 +69,11 @@ BAD_USB3_KEY = 'bad_usb3'
 PHY_REC_KEY = 'phy_rec'
 LOCALES_KEY = 'locales'
 OPTIONAL_SCREENS_KEY = 'optional_screens'
+TEXT_COLORS_KEY = 'text_colors'
 
 KNOWN_KEYS = set((PANEL_SIZE_KEY, RESOLUTION_KEY, SDCARD_KEY, BAD_USB3_KEY,
                   PHY_REC_KEY, ASSETS_DIR_KEY, ASSETS_RESOLUTION_KEY,
-                  LOCALES_KEY, OPTIONAL_SCREENS_KEY))
+                  LOCALES_KEY, OPTIONAL_SCREENS_KEY, TEXT_COLORS_KEY))
 
 
 class BuildImageError(Exception):
@@ -140,6 +143,8 @@ def load_boards_config(filename):
         data[ASSETS_RESOLUTION_KEY] = DEFAULT_RESOLUTION
       if OPTIONAL_SCREENS_KEY not in data:
         data[OPTIONAL_SCREENS_KEY] = DEFAULT_OPTIONAL_SCREENS
+      if TEXT_COLORS_KEY not in data:
+        data[TEXT_COLORS_KEY] = DEFAULT_TEXT_COLORS
       if set(data) - KNOWN_KEYS:
         raise BuildImageError('Unknown entries in config %s: %r' %
                               (board, list(set(data) - KNOWN_KEYS)))
@@ -323,6 +328,8 @@ def build_image(board, config_database):
   else:
     text_files = SVG_FILES
     text_max_colors = 6
+  if config[TEXT_COLORS_KEY] != TEXT_COLORS_AUTODETECT:
+    text_max_colors = config[TEXT_COLORS_KEY]
 
   # Prepares strings and localized images.
   convert_to_bmp(os.path.join(stage_dir, text_files),
