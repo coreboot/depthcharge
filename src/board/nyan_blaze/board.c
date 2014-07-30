@@ -23,6 +23,7 @@
 #include <assert.h>
 #include <libpayload.h>
 #include <stdlib.h>
+#include <sysinfo.h>
 
 #include "base/init_funcs.h"
 #include "board/nyan_blaze/power_ops.h"
@@ -45,32 +46,6 @@
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
-
-static uint8_t board_id(void)
-{
-	static int id = -1;
-
-	if (id < 0) {
-		TegraGpio *q3 = new_tegra_gpio_input(GPIO(Q, 3));
-		TegraGpio *t1 = new_tegra_gpio_input(GPIO(T, 1));
-		TegraGpio *x1 = new_tegra_gpio_input(GPIO(X, 1));
-		TegraGpio *x4 = new_tegra_gpio_input(GPIO(X, 4));
-
-		TegraGpio *gpio[] = {q3, t1, x1, x4};
-		int value[ARRAY_SIZE(gpio)];
-
-		tegra_gpio_get_in_tristate_values(gpio, ARRAY_SIZE(gpio),
-						  value);
-
-		/* A gpio state is encoded in every two-bit */
-		id = value[0] << 0 |
-		     value[1] << 2 |
-		     value[2] << 4 |
-		     value[3] << 6;
-	}
-
-	return id;
-}
 
 enum {
 	BOARD_ID_REV0 = 0x00,	/* prototype */
@@ -138,7 +113,7 @@ static VirtualMmcPowerGpio *new_virtual_mmc_power(GpioOps *gpio,
 
 static int board_setup(void)
 {
-	uint8_t id = board_id();
+	uint8_t id = lib_sysinfo.board_id;
 
 	switch (id) {
 	case BOARD_ID_REV0:

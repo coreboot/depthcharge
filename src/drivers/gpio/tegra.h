@@ -296,6 +296,4 @@ TegraGpio *new_tegra_gpio_input(TegraGpioPort port, unsigned index,
 				unsigned pinmux);
 TegraGpio *new_tegra_gpio_output(TegraGpioPort port, unsigned index,
 				 unsigned pinmux);
-int tegra_gpio_get_in_tristate_values(TegraGpio *gpio[], int num_gpio,
-				      int value[]);
 #endif /* __DRIVERS_GPIO_TEGRA_H__ */
