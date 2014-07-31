@@ -33,3 +33,9 @@ config DRIVER_POWER_PCH
 	depends on ARCH_X86
 	help
 	  Reboot or power off using registers in the Intel chipset.
+
+config DRIVER_POWER_TPS65913
+	bool "TPS65913 PMIC power management"
+	default n
+	help
+	  Reboot or power off using the TPS65913 PMIC.
