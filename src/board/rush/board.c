@@ -38,6 +38,7 @@
 #include "drivers/tpm/tpm.h"
 #include "drivers/storage/tegra_mmc.h"
 #include "drivers/ec/cros/spi.h"
+#include "drivers/bus/usb/usb.h"
 
 enum {
 	CLK_RST_BASE = 0x60006000,
@@ -151,6 +152,14 @@ static int board_setup(void)
 			  &fixed_block_dev_controllers);
 	list_insert_after(&sd_card->mmc.ctrlr.list_node,
 			  &removable_block_dev_controllers);
+
+	/* Careful: the EHCI base is at offset 0x100 from the SoC's IP base */
+	UsbHostController *usbd = new_usb_hc(EHCI, 0x7d000100);
+	/* USB2 is connected to the camera, not needed in firmware */
+	UsbHostController *usb3 = new_usb_hc(EHCI, 0x7d008100);
+
+	list_insert_after(&usbd->list_node, &usb_host_controllers);
+	list_insert_after(&usb3->list_node, &usb_host_controllers);
 
 	ramoops_buffer(0x87f00000, 0x100000, 0x20000);
 
