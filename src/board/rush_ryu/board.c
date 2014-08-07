@@ -30,6 +30,7 @@
 #include "config.h"
 #include "drivers/bus/spi/tegra.h"
 #include "drivers/bus/i2c/tegra.h"
+#include "drivers/gpio/gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/gpio/tegra.h"
 #include "drivers/dma/tegra_apb.h"
@@ -38,6 +39,7 @@
 #include "drivers/tpm/tpm.h"
 #include "drivers/storage/tegra_mmc.h"
 #include "drivers/ec/cros/i2c.h"
+#include "vboot/util/flag.h"
 
 enum {
 	CLK_RST_BASE = 0x60006000,
@@ -55,6 +57,15 @@ enum {
 	CLK_H_I2C2 = 0x1 << 22,
 	CLK_U_I2C3 = 0x1 << 3,
 	CLK_H_I2C5 = 0x1 << 15
+};
+
+static int lid_get_always_open (struct GpioOps *me)
+{
+	return 1;
+}
+
+static GpioOps always_open_lid = {
+	.get = lid_get_always_open,
 };
 
 static int board_setup(void)
@@ -109,6 +120,9 @@ static int board_setup(void)
 
 	//TODO: Is this the right address for T132/Ryu?
 	ramoops_buffer(0x87f00000, 0x100000, 0x20000);
+
+	/* Lid always open for now. */
+	flag_replace(FLAG_LIDSW, &always_open_lid);
 
 	return 0;
 }
