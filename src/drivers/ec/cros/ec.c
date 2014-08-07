@@ -31,6 +31,7 @@
 #include <assert.h>
 #include <libpayload.h>
 
+#include "config.h"
 #include "drivers/ec/cros/message.h"
 #include "drivers/ec/cros/ec.h"
 
@@ -948,6 +949,26 @@ static int set_max_proto3_sizes(int request_size, int response_size,
 	return 0;
 }
 
+
+static int cros_ec_probe_passthru(void)
+{
+	struct ec_response_get_protocol_info infopd;
+
+	if (!(CONFIG_DRIVER_EC_CROS_PASSTHRU))
+		return 0;
+
+	/* See if a PD chip is present */
+	if (cros_ec_get_protocol_info(1, &infopd)) {
+		infopd.max_request_packet_size = 0;
+	} else {
+		printf("%s: devidx=1 supported (%d, %d)\n",
+		       __func__,
+		       infopd.max_request_packet_size,
+		       infopd.max_response_packet_size);
+	}
+	return infopd.max_request_packet_size;
+}
+
 int cros_ec_init(void)
 {
 	char id[MSG_BYTES];
@@ -973,7 +994,7 @@ int cros_ec_init(void)
 					 DEFAULT_BUF_SIZE))
 			return -1;
 
-		struct ec_response_get_protocol_info info, infopd;
+		struct ec_response_get_protocol_info info;
 		if (cros_ec_get_protocol_info(0, &info)) {
 			set_max_proto3_sizes(0, 0, 0);
 			send_command_func = NULL;
@@ -983,19 +1004,11 @@ int cros_ec_init(void)
 			       info.max_request_packet_size,
 			       info.max_response_packet_size);
 
-			/* See if a PD chip is present */
-			if (cros_ec_get_protocol_info(1, &infopd)) {
-				infopd.max_request_packet_size = 0;
-			} else {
-				printf("%s: devidx=1 supported (%d, %d)\n",
-				       __func__,
-				       infopd.max_request_packet_size,
-				       infopd.max_response_packet_size);
-			}
+			int passthru_size = cros_ec_probe_passthru();
 
 			set_max_proto3_sizes(info.max_request_packet_size,
 					     info.max_response_packet_size,
-					     infopd.max_request_packet_size);
+					     passthru_size);
 		}
 	}
 
