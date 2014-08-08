@@ -27,42 +27,40 @@
 #include "drivers/power/tps65913.h"
 
 enum {
-	TPS65913_RESET_CONTROL = 0xFF
+	TPS65913_DEV_CTRL = 0xA0,
 };
 
 enum {
-	TPS65913_RESET_CONTROL_FORCE_RESET = 0x1 << 0,
-	TPS65913_RESET_CONTROL_POWER_OFF = 0x1 << 1
+	TPS65913_DEV_CTRL_SW_RST = 0x1 << 1,
+	TPS65913_DEV_CTRL_DEV_ON = 0x1 << 0,
 };
 
-static int tps65913_set_bit(I2cOps *bus, uint8_t chip, uint8_t reg, uint8_t bit)
+static int tps65913_set_bit(Tps65913Pmic *pmic, uint8_t reg, uint8_t bit)
 {
 	uint8_t val;
-	if (i2c_readb(bus, chip, reg, &val) ||
-	    i2c_writeb(bus, chip, reg, val | bit))
+	if (i2c_readb(pmic->bus, pmic->chip, reg, &val) ||
+	    i2c_writeb(pmic->bus, pmic->chip, reg, val | bit))
 		return -1;
 	return 0;
+}
+
+static int tps65913_set_reg(Tps65913Pmic *pmic, uint8_t reg, uint8_t value)
+{
+	return i2c_writeb(pmic->bus, pmic->chip, reg, value);
 }
 
 static int tps65913_cold_reboot(PowerOps *me)
 {
 	Tps65913Pmic *pmic = container_of(me, Tps65913Pmic, ops);
-	tps65913_set_bit(pmic->bus, pmic->chip, TPS65913_RESET_CONTROL,
-		       TPS65913_RESET_CONTROL_FORCE_RESET);
+	tps65913_set_bit(pmic, TPS65913_DEV_CTRL, TPS65913_DEV_CTRL_SW_RST);
 	halt();
 }
 
 static int tps65913_power_off(PowerOps *me)
 {
 	Tps65913Pmic *pmic = container_of(me, Tps65913Pmic, ops);
-	tps65913_set_bit(pmic->bus, pmic->chip, TPS65913_RESET_CONTROL,
-		       TPS65913_RESET_CONTROL_POWER_OFF);
+	tps65913_set_reg(pmic, TPS65913_DEV_CTRL, 0);
 	halt();
-}
-
-static int tps65913_set_reg(Tps65913Pmic *pmic, uint8_t reg, uint8_t value)
-{
-	return i2c_writeb(pmic->bus, pmic->chip, reg, value);
 }
 
 Tps65913Pmic *new_tps65913_pmic(I2cOps *bus, uint8_t chip)
