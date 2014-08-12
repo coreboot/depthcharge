@@ -14,10 +14,16 @@
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
+config DRIVER_NET_USB
+	bool "Generic USB-Ethernet controller"
+	default n
+
 config DRIVER_NET_ASIX
+	select DRIVER_NET_USB
 	bool "ASIX USB network dongle"
 	default n
 
 config DRIVER_NET_SMSC95XX
-       bool "SMSC95xx USB ethernet controller"
-       default n
+	select DRIVER_NET_USB
+	bool "SMSC95xx USB ethernet controller"
+	default n

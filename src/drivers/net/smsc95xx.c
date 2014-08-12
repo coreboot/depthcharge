@@ -28,41 +28,22 @@
 #include "drivers/net/smsc95xx.h"
 #include "drivers/net/net.h"
 #include "drivers/net/mii.h"
+#include "drivers/net/usb_eth.h"
 
 /*
  * The lower-level utilities
  */
 
-static int smsc95xx_read_reg(usbdev_t *dev, uint32_t index, uint32_t *data)
+static int smsc95xx_read_reg(usbdev_t *dev, uint16_t index, uint32_t *data)
 {
-	dev_req_t dev_req;
-	dev_req.req_recp = dev_recp;
-	dev_req.req_type = vendor_type;
-	dev_req.data_dir = device_to_host;
-	dev_req.bRequest = UsbVendorReqRead;
-	dev_req.wValue = 0;
-	dev_req.wIndex = index;
-	dev_req.wLength = sizeof(*data);
-
-	return (dev->controller->control(dev, IN, sizeof(dev_req), &dev_req,
-					 dev_req.wLength,
-					 (uint8_t *)data) < 0);
+	return usb_eth_read_reg(dev, UsbVendorReqRead, 0,
+				index, sizeof(*data), data);
 }
 
-static int smsc95xx_write_reg(usbdev_t *dev, uint32_t index, uint32_t data)
+static int smsc95xx_write_reg(usbdev_t *dev, uint16_t index, uint32_t data)
 {
-	dev_req_t dev_req;
-	dev_req.req_recp = dev_recp;
-	dev_req.req_type = vendor_type;
-	dev_req.data_dir = host_to_device;
-	dev_req.bRequest = UsbVendorReqWrite;
-	dev_req.wValue = 0;
-	dev_req.wIndex = index;
-	dev_req.wLength = sizeof(data);
-
-	return (dev->controller->control(dev, OUT, sizeof(dev_req), &dev_req,
-					 dev_req.wLength,
-					 (uint8_t *)&data) < 0);
+	return usb_eth_write_reg(dev, UsbVendorReqWrite, 0,
+				index, sizeof(data), &data);
 }
 
 static int smsc95xx_wait_for_phy(usbdev_t *dev)
@@ -307,14 +288,8 @@ static int smsc95xx_init(GenericUsbDevice *gen_dev)
 
 	printf("SMSC95xx: Initializing\n");
 
-	smsc_dev.bulk_in = &usb_dev->endpoints[1];
-	smsc_dev.bulk_out = &usb_dev->endpoints[2];
-
-	if (usb_dev->num_endp < 3 ||
-	    smsc_dev.bulk_in->type != BULK ||
-	    smsc_dev.bulk_out->type != BULK ||
-	    smsc_dev.bulk_in->direction != IN ||
-	    smsc_dev.bulk_out->direction != OUT) {
+	if (usb_eth_init_endpoints(usb_dev, &smsc_dev.bulk_in, 1,
+				   &smsc_dev.bulk_out, 2)) {
 		printf("SMSC95xx: Problem with the endpoints.\n");
 		return 1;
 	}
@@ -467,61 +442,25 @@ static const uip_eth_addr *smsc95xx_get_mac(NetDevice *net_dev)
  * Connecting to the USB and network stacks
  */
 
-static NetDevice smsc95xx_network_device = {
-	.ready = &smsc95xx_ready,
-	.recv = &smsc95xx_recv,
-	.send = &smsc95xx_send,
-	.get_mac = &smsc95xx_get_mac,
-};
-
-typedef struct Smsc95xxUsbId {
-	uint16_t vendor_id;
-	uint16_t product_id;
-} Smsc95xxUsbId;
-
-static const Smsc95xxUsbId supported_ids[] = {
+static const UsbEthId smsc95xx_supported_ids[] = {
 	/* SMSC 9514 */
 	{ 0x0424, 0xec00 },
 };
 
-static int smsc95xx_probe(GenericUsbDevice *dev)
-{
-	int i;
-	if (smsc95xx_network_device.dev_data)
-		return 0;
-
-	device_descriptor_t *dd = (device_descriptor_t *)dev->dev->descriptor;
-	for (i = 0; i < ARRAY_SIZE(supported_ids); i++) {
-		if (dd->idVendor == supported_ids[i].vendor_id &&
-		    dd->idProduct == supported_ids[i].product_id) {
-			smsc95xx_network_device.dev_data = dev;
-			if (smsc95xx_init(dev)) {
-				return 0;
-			} else {
-				net_set_device(&smsc95xx_network_device);
-				return 1;
-			}
-		}
-	}
-	return 0;
-}
-
-static void smsc95xx_remove(GenericUsbDevice *dev)
-{
-	if (net_get_device() == &smsc95xx_network_device)
-		net_set_device(NULL);
-	free(dev->dev_data);
-}
-
-static GenericUsbDriver smsc95xx_usb_driver = {
-	.probe = &smsc95xx_probe,
-	.remove = &smsc95xx_remove,
+static UsbEthDevice smsc95xx_device = {
+	.init = &smsc95xx_init,
+	.net_dev.ready = &smsc95xx_ready,
+	.net_dev.recv = &smsc95xx_recv,
+	.net_dev.send = &smsc95xx_send,
+	.net_dev.get_mac = &smsc95xx_get_mac,
+	.supported_ids = smsc95xx_supported_ids,
+	.num_supported_ids = ARRAY_SIZE(smsc95xx_supported_ids),
 };
 
 static int smsc95xx_driver_register(void)
 {
-	list_insert_after(&smsc95xx_usb_driver.list_node,
-			  &generic_usb_drivers);
+	list_insert_after(&smsc95xx_device.list_node,
+			  &usb_eth_drivers);
 	return 0;
 }
 
