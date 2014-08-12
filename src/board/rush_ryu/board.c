@@ -30,6 +30,7 @@
 #include "config.h"
 #include "drivers/bus/spi/tegra.h"
 #include "drivers/bus/i2c/tegra.h"
+#include "drivers/bus/usb/usb.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/gpio/tegra.h"
@@ -117,6 +118,11 @@ static int board_setup(void)
 
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
+
+	/* Careful: the EHCI base is at offset 0x100 from the SoC's IP base */
+	UsbHostController *usbd = new_usb_hc(EHCI, 0x7d000100);
+
+	list_insert_after(&usbd->list_node, &usb_host_controllers);
 
 	//TODO: Is this the right address for T132/Ryu?
 	ramoops_buffer(0x87f00000, 0x100000, 0x20000);
