@@ -23,6 +23,7 @@
 #include <config.h>
 #include <libpayload.h>
 #include <sysinfo.h>
+#include <stdio.h>
 
 #include "base/init_funcs.h"
 #include "drivers/bus/i2c/ipq806x_gsbi.h"
@@ -55,6 +56,42 @@ enum storm_emmc_gpio {
 	SDC1_DATA4 = 47,
 };
 
+/* Storm GPIO access wrapper. */
+typedef struct
+{
+	GpioOps gpio_ops;	/* Depthcharge GPIO API wrapper. */
+	struct cb_gpio *cbgpio;	/* GPIO description. */
+
+} StormGpio;
+
+static int get_gpio(struct GpioOps *me)
+{
+	unsigned value;
+	StormGpio *gpio = container_of(me, StormGpio, gpio_ops);
+
+	value = gpio_get_in_value(gpio->cbgpio->port);
+	if (gpio->cbgpio->polarity == CB_GPIO_ACTIVE_LOW)
+		value = !value;
+
+	return value;
+}
+
+static StormGpio phys_presence_flag = {
+	.gpio_ops = { .get = get_gpio }
+};
+
+static void install_phys_presence_flag(void)
+{
+	phys_presence_flag.cbgpio = sysinfo_lookup_gpio("recovery");
+
+	if (!phys_presence_flag.cbgpio) {
+		printf("%s failed retrieving recovery GPIO\n", __func__);
+		return;
+	}
+
+	flag_install(FLAG_PHYS_PRESENCE, &phys_presence_flag.gpio_ops);
+}
+
 void board_mmc_gpio_config(void)
 {
 	unsigned i;
@@ -75,6 +112,8 @@ void board_mmc_gpio_config(void)
 static int board_setup(void)
 {
 	sysinfo_install_flags();
+
+	install_phys_presence_flag();
 
 	SpiController *spi = new_spi(0, 0);
 	flash_set_ops(&new_spi_flash(&spi->ops, 0x800000)->ops);

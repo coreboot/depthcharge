@@ -34,5 +34,6 @@ GpioOps *sysinfo_power;
 GpioOps *sysinfo_oprom;
 
 void sysinfo_install_flags(void);
+struct cb_gpio *sysinfo_lookup_gpio(const char *name);
 
 #endif /* __DRIVERS_GPIO_SYSINFO_H__ */
