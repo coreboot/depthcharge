@@ -34,6 +34,7 @@ typedef enum FlagIndex {
 	FLAG_PWRSW,
 	FLAG_ECINRW,
 	FLAG_OPROM,
+	FLAG_PHYS_PRESENCE,
 
 	FLAG_MAX_FLAG
 } FlagIndex;
