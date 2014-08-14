@@ -29,6 +29,9 @@ endif
 if BOARD = "bolt"
 source src/board/bolt/Kconfig
 endif
+if BOARD = "candy"
+source src/board/candy/Kconfig
+endif
 if BOARD = "clapper"
 source src/board/clapper/Kconfig
 endif
