@@ -31,18 +31,20 @@
 static inline uint32_t get_sctlr(void)
 {
 	uint32_t val;
-	asm("mrc p15, 0, %0, c1, c0, 0" : "=r" (val));
+	asm("mrs %0, sctlr_el2" : "=r" (val));
 	return val;
 }
 
 static inline void set_sctlr(uint32_t val)
 {
-	asm volatile("mcr p15, 0, %0, c1, c0, 0" :: "r" (val));
+	asm volatile("msr sctlr_el2, %0" :: "r" (val));
 	asm volatile("" ::: "memory");
 }
 
-void boot_arm_linux_jump(void *entry, uint32_t machine_type, void *fdt)
+void boot_arm_linux_jump(void *entry, void *fdt)
 	__attribute__((noreturn));
+
+void switch_to_el2(void);
 
 int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry)
 {
@@ -55,20 +57,25 @@ int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry)
 
 	timestamp_add_now(TS_START_KERNEL);
 
-	// Flush dcache and icache to make loaded code visible.
+	/* Flush dcache and icache to make loaded code visible. */
 	cache_sync_instructions();
 
-	// Turn off the MMU.
+	/* Turn off the MMU. */
 	sctlr &= ~SctlrM;
 
-	// Disable the data/unified cache.
+	/* Disable the data/unified cache. */
 	sctlr &= ~SctlrC;
 
 	set_sctlr(sctlr);
 
 	tlb_invalidate_all();
 
-	boot_arm_linux_jump(entry, machine_type, fdt);
+	/* Switch to el2 before jump */
+	switch_to_el2();
+
+	printf("jumping to kernel\n");
+
+	boot_arm_linux_jump(entry, fdt);
 
 	return 0;
 }

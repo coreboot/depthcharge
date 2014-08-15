@@ -23,15 +23,21 @@
 	.global boot_arm_linux_jump
 	.type boot_arm_linux_jump, function
 boot_arm_linux_jump:
-	/* Entered with X0 = entry, X1 = machine_type, X2 = &fdt */
+	/* Entered with X0 = entry, X1 = &fdt */
 
 	/* Linux ABI expects masking of Debug, SError, IRQ and FIQ */
-	mov	x3, #0x3c0
-	msr	daif, x3
-
+	msr     daifset, #0xf
 	mov	x4, x0	/* save entry pointer */
-	mov	x0, x2	/* X0 = physical address of dtb */
+	mov	x0, x1	/* X0 = physical address of dtb */
 	mov	x1, #0	/* X1 = 0 */
 	mov	x2, #0	/* X2 = 0 */
 	mov	x3, #0	/* X3 = 0 */
+
+	mrs     x5, sctlr_el2
+	/* turn off mmu and disable caching */
+	and     x5, x5, #~1
+	and     x5, x5, #~(1<<2)
+	and     x5, x5, #~(1<<12)
+	msr     sctlr_el2, x5
+
 	br	x4		/* jump to entry pointer */

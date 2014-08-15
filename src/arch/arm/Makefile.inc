@@ -15,11 +15,10 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-depthcharge-y += boot.c
 ifeq ($(CONFIG_ARCH_ARM_V8),y)
-depthcharge-y += boot_asm64.S physmem_arm64.c
+depthcharge-y += boot_asm64.S physmem_arm64.c transition.S boot64.c
 else
-depthcharge-y += boot_asm.S enter_trampoline.c physmem.c
+depthcharge-y += boot_asm.S enter_trampoline.c physmem.c boot.c
 endif
 readonly-y += commonparams.c
 readwrite-y += commonparams.c
