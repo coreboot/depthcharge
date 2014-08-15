@@ -16,6 +16,7 @@
 ##
 
 net-$(CONFIG_DRIVER_NET_ASIX) += asix.c
+net-$(CONFIG_DRIVER_NET_MII) += mii.c
 net-$(CONFIG_DRIVER_NET_SMSC95XX) += smsc95xx.c
 net-$(CONFIG_DRIVER_NET_USB) += usb_eth.c
 net-y += net.c

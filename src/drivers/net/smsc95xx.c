@@ -25,10 +25,12 @@
 
 #include "base/init_funcs.h"
 #include "drivers/bus/usb/usb.h"
-#include "drivers/net/smsc95xx.h"
-#include "drivers/net/net.h"
 #include "drivers/net/mii.h"
+#include "drivers/net/net.h"
+#include "drivers/net/smsc95xx.h"
 #include "drivers/net/usb_eth.h"
+
+static Smsc95xxDev smsc_dev;
 
 /*
  * The lower-level utilities
@@ -61,42 +63,48 @@ static int smsc95xx_wait_for_phy(usbdev_t *dev)
 	return 1;
 }
 
-static int smsc95xx_mdio_read(usbdev_t *dev, uint32_t loc, uint32_t *val)
+static int smsc95xx_mdio_read(NetDevice *dev, uint8_t loc, uint16_t *val)
 {
+	GenericUsbDevice *gen_dev = (GenericUsbDevice *)dev->dev_data;
+	usbdev_t *usb_dev = gen_dev->dev;
 	uint32_t addr;
+	uint32_t data;
 
-	if (smsc95xx_wait_for_phy(dev)) {
+	if (smsc95xx_wait_for_phy(usb_dev)) {
 		printf("SMSC95xx: MII is busy.\n");
 		return 1;
 	}
 
 	addr = (Smsc95xxPhyId << 11) | (loc << 6) | MiiRead;
-	smsc95xx_write_reg(dev, MiiAddrReg, addr);
+	smsc95xx_write_reg(usb_dev, MiiAddrReg, addr);
 
-	if (smsc95xx_wait_for_phy(dev)) {
+	if (smsc95xx_wait_for_phy(usb_dev)) {
 		printf("SMSC95xx: Timed out reading MII.\n");
 		return 1;
 	}
 
-	smsc95xx_read_reg(dev, MiiDataReg, val);
+	smsc95xx_read_reg(usb_dev, MiiDataReg, &data);
+	*val = data & 0xFFFF;
 	return 0;
 }
 
-static int smsc95xx_mdio_write(usbdev_t *dev, uint32_t loc, uint32_t val)
+static int smsc95xx_mdio_write(NetDevice *dev, uint8_t loc, uint16_t val)
 {
+	GenericUsbDevice *gen_dev = (GenericUsbDevice *)dev->dev_data;
+	usbdev_t *usb_dev = gen_dev->dev;
 	uint32_t addr;
 
-	if (smsc95xx_wait_for_phy(dev)) {
+	if (smsc95xx_wait_for_phy(usb_dev)) {
 		printf("SMSC95xx: MII is busy.\n");
 		return 1;
 	}
 
-	smsc95xx_write_reg(dev, MiiDataReg, val);
+	smsc95xx_write_reg(usb_dev, MiiDataReg, val);
 
 	addr = (Smsc95xxPhyId << 11) | (loc << 6) | MiiWrite;
-	smsc95xx_write_reg(dev, MiiAddrReg, addr);
+	smsc95xx_write_reg(usb_dev, MiiAddrReg, addr);
 
-	if (smsc95xx_wait_for_phy(dev)) {
+	if (smsc95xx_wait_for_phy(usb_dev)) {
 		printf("SMSC95xx: Timed out writing MII.\n");
 		return 1;
 	}
@@ -213,45 +221,6 @@ static int smsc95xx_set_cfg(usbdev_t *usb_dev)
 	return 0;
 }
 
-static int smsc95xx_restart_autoneg(usbdev_t *dev)
-{
-	uint32_t bmsr;
-
-	if (smsc95xx_mdio_read(dev, MiiBmsr, &bmsr))
-		return 1;
-
-	if (!(bmsr & BmsrAnegCapable)) {
-		printf("SMSC95xx: No AutoNeg, falling back to 100baseTX.\n");
-		return smsc95xx_mdio_write(dev, MiiBmcr,
-					   BmcrSpeedSel | BmcrDuplexMode);
-	} else {
-		return smsc95xx_mdio_write(dev, MiiBmcr,
-					   BmcrAutoNegEnable |
-					   BmcrRestartAutoNeg);
-	}
-}
-
-static int smsc95xx_phy_initialize(usbdev_t *dev)
-{
-	uint32_t read_buf;
-
-	if (smsc95xx_mdio_write(dev, MiiBmcr, BmcrReset))
-		return 1;
-	if (smsc95xx_mdio_write(dev, MiiAnar,
-				AdvertiseAll | AdvertiseCsma |
-				AdvertisePauseCap | AdvertisePauseAsym))
-		return 1;
-
-	if (smsc95xx_mdio_read(dev, PhyIntSrc, &read_buf))
-		return 1;
-	if (smsc95xx_mdio_write(dev, PhyIntMask, PhyIntMaskDefault))
-		return 1;
-	if (smsc95xx_restart_autoneg(dev))
-		return 1;
-	printf("SMSC95xx: Done initializing PHY.\n");
-	return 0;
-}
-
 static int smsc95xx_start(usbdev_t *usb_dev)
 {
 	uint32_t read_buf;
@@ -271,19 +240,12 @@ static int smsc95xx_start(usbdev_t *usb_dev)
 	return 0;
 }
 
-typedef struct Smsc95xxDev {
-	endpoint_t *bulk_in;
-	endpoint_t *bulk_out;
-	uip_eth_addr mac_addr;
-} Smsc95xxDev;
-
 /*
  * The higher-level commands
  */
 
 static int smsc95xx_init(GenericUsbDevice *gen_dev)
 {
-	Smsc95xxDev smsc_dev;
 	usbdev_t *usb_dev = gen_dev->dev;
 
 	printf("SMSC95xx: Initializing\n");
@@ -300,30 +262,13 @@ static int smsc95xx_init(GenericUsbDevice *gen_dev)
 	if (smsc95xx_set_cfg(usb_dev))
 		return 1;
 
-	if (smsc95xx_phy_initialize(usb_dev))
+	if (mii_phy_initialize(&smsc_dev.usb_eth_dev.net_dev))
 		return 1;
 
 	if (smsc95xx_start(usb_dev))
 		return 1;
 
-	gen_dev->dev_data = xmalloc(sizeof(smsc_dev));
-	memcpy(gen_dev->dev_data, &smsc_dev, sizeof(smsc_dev));
-
 	printf("SMSC95xx: Done initializing\n");
-	return 0;
-}
-
-static int smsc95xx_ready(NetDevice *net_dev, int *ready)
-{
-	GenericUsbDevice *gen_dev = (GenericUsbDevice *)net_dev->dev_data;
-	usbdev_t *usb_dev = gen_dev->dev;
-
-	uint32_t link_status = 0;
-	if (smsc95xx_mdio_read(usb_dev, MiiBmsr, &link_status)) {
-		printf("SMSC95xx: Failed to read BMSR.\n");
-		return 1;
-	}
-	*ready = (link_status & BmsrLstatus);
 	return 0;
 }
 
@@ -331,7 +276,6 @@ static int smsc95xx_send(NetDevice *net_dev, void *buf, uint16_t len)
 {
 	GenericUsbDevice *gen_dev = (GenericUsbDevice *)net_dev->dev_data;
 	usbdev_t *usb_dev = gen_dev->dev;
-	Smsc95xxDev *smsc_dev = gen_dev->dev_data;
 
 	uint32_t tx_cmd_a;
 	uint32_t tx_cmd_b;
@@ -350,7 +294,7 @@ static int smsc95xx_send(NetDevice *net_dev, void *buf, uint16_t len)
 	memcpy(msg + sizeof(tx_cmd_a), &tx_cmd_b, sizeof(tx_cmd_b));
 	memcpy(msg + sizeof(tx_cmd_a) + sizeof(tx_cmd_b), buf, len);
 
-	if (usb_dev->controller->bulk(smsc_dev->bulk_out,
+	if (usb_dev->controller->bulk(smsc_dev.bulk_out,
 				     len + sizeof(tx_cmd_a) + sizeof(tx_cmd_b),
 				     msg, 0) < 0) {
 		printf("SMSC95xx: Failed to send packet.\n");
@@ -365,7 +309,6 @@ static int smsc95xx_recv(NetDevice *net_dev, void *buf, uint16_t *len,
 {
 	GenericUsbDevice *gen_dev = (GenericUsbDevice *)net_dev->dev_data;
 	usbdev_t *usb_dev = gen_dev->dev;
-	Smsc95xxDev *smsc_dev = gen_dev->dev_data;
 
 	uint32_t rx_status;
 	uint32_t packet_len;
@@ -375,7 +318,7 @@ static int smsc95xx_recv(NetDevice *net_dev, void *buf, uint16_t *len,
 
 	if (offset >= buf_size) {
 		offset = 0;
-		buf_size = usb_dev->controller->bulk(smsc_dev->bulk_in,
+		buf_size = usb_dev->controller->bulk(smsc_dev.bulk_in,
 						     RxUrbSize, msg, 0);
 		if (buf_size < 0) {
 			printf("SMSC95xx: Bulk read error %#x\n", buf_size);
@@ -416,25 +359,24 @@ static const uip_eth_addr *smsc95xx_get_mac(NetDevice *net_dev)
 {
 	GenericUsbDevice *gen_dev = (GenericUsbDevice *)net_dev->dev_data;
 	usbdev_t *usb_dev = gen_dev->dev;
-	Smsc95xxDev *smsc_dev = gen_dev->dev_data;
 	uint32_t addrh;
 	uint32_t addrl;
 
 	if (smsc95xx_read_eeprom(usb_dev, EepromMacOffset,
 				 sizeof(uip_eth_addr),
-				 (uint8_t *)&smsc_dev->mac_addr)) {
+				 (uint8_t *)&smsc_dev.mac_addr)) {
 		printf("SMSC95xx: Failed to retrieve MAC address.\n");
 		return NULL;
 	} else {
-		addrh = (smsc_dev->mac_addr.addr[5] << 8) |
-			(smsc_dev->mac_addr.addr[4]);
-		addrl = (smsc_dev->mac_addr.addr[3] << 24) |
-			(smsc_dev->mac_addr.addr[2] << 16) |
-			(smsc_dev->mac_addr.addr[1] << 8) |
-			(smsc_dev->mac_addr.addr[0]);
+		addrh = (smsc_dev.mac_addr.addr[5] << 8) |
+			(smsc_dev.mac_addr.addr[4]);
+		addrl = (smsc_dev.mac_addr.addr[3] << 24) |
+			(smsc_dev.mac_addr.addr[2] << 16) |
+			(smsc_dev.mac_addr.addr[1] << 8) |
+			(smsc_dev.mac_addr.addr[0]);
 		smsc95xx_write_reg(usb_dev, AddrHReg, addrh);
 		smsc95xx_write_reg(usb_dev, AddrLReg, addrl);
-		return &smsc_dev->mac_addr;
+		return &smsc_dev.mac_addr;
 	}
 }
 
@@ -447,19 +389,25 @@ static const UsbEthId smsc95xx_supported_ids[] = {
 	{ 0x0424, 0xec00 },
 };
 
-static UsbEthDevice smsc95xx_device = {
-	.init = &smsc95xx_init,
-	.net_dev.ready = &smsc95xx_ready,
-	.net_dev.recv = &smsc95xx_recv,
-	.net_dev.send = &smsc95xx_send,
-	.net_dev.get_mac = &smsc95xx_get_mac,
-	.supported_ids = smsc95xx_supported_ids,
-	.num_supported_ids = ARRAY_SIZE(smsc95xx_supported_ids),
+static Smsc95xxDev smsc_dev = {
+	.usb_eth_dev = {
+		.init = &smsc95xx_init,
+		.net_dev = {
+			.ready = &mii_ready,
+			.recv = &smsc95xx_recv,
+			.send = &smsc95xx_send,
+			.get_mac = &smsc95xx_get_mac,
+			.mdio_read = &smsc95xx_mdio_read,
+			.mdio_write = &smsc95xx_mdio_write,
+		},
+		.supported_ids = smsc95xx_supported_ids,
+		.num_supported_ids = ARRAY_SIZE(smsc95xx_supported_ids),
+	},
 };
 
 static int smsc95xx_driver_register(void)
 {
-	list_insert_after(&smsc95xx_device.list_node,
+	list_insert_after(&smsc_dev.usb_eth_dev.list_node,
 			  &usb_eth_drivers);
 	return 0;
 }

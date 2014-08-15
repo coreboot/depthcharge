@@ -32,6 +32,8 @@ typedef struct NetDevice {
 	int (*recv)(struct NetDevice *dev, void *buf, uint16_t *len,
 		int maxlen);
 	int (*send)(struct NetDevice *dev, void *buf, uint16_t len);
+	int (*mdio_read)(struct NetDevice *dev, uint8_t loc, uint16_t *val);
+	int (*mdio_write)(struct NetDevice *dev, uint8_t loc, uint16_t val);
 	const uip_eth_addr *(*get_mac)(struct NetDevice *dev);
 	void *dev_data;
 } NetDevice;

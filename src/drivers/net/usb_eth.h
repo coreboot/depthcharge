@@ -20,6 +20,8 @@
 #ifndef __DRIVERS_NET_USB_ETH_H__
 #define __DRIVERS_NET_USB_ETH_H__
 
+#include "drivers/net/net.h"
+
 typedef struct UsbEthId {
 	uint16_t vendor;
 	uint16_t product;

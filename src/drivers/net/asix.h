@@ -23,6 +23,8 @@
 #ifndef __DRIVERS_NET_ASIX_H__
 #define __DRIVERS_NET_ASIX_H__
 
+#include "drivers/net/usb_eth.h"
+
 enum {
 	SramRead = 0x2,
 	SramWrite = 0x3,
@@ -111,5 +113,13 @@ static const uint16_t RxCtrlDefault = RxCtrlSo | RxCtrlAb;
 enum {
 	RxUrbSize = 2048
 };
+
+typedef struct AsixDev {
+	UsbEthDevice usb_eth_dev;
+	endpoint_t *bulk_in;
+	endpoint_t *bulk_out;
+	uip_eth_addr mac_addr;
+	int phy_id;
+} AsixDev;
 
 #endif /* __DRIVERS_NET_ASIX_H__ */

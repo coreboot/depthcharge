@@ -20,6 +20,8 @@
 #ifndef __DRIVERS_NET_MII_H__
 #define __DRIVERS_NET_MII_H__
 
+#include "drivers/net/net.h"
+
 enum {
 	MiiBmcr = 0x0,
 	MiiBmsr = 0x1,
@@ -73,5 +75,7 @@ enum {
 	AdvertisePauseAsym = 0x1 << 11
 };
 
+int mii_phy_initialize(NetDevice *dev);
+int mii_ready(NetDevice *dev, int *ready);
 
 #endif /* __DRIVERS_NET_MII_H__ */

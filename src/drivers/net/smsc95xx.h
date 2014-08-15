@@ -20,6 +20,8 @@
 #ifndef __DRIVERS_NET_SMSC95XX_H__
 #define __DRIVERS_NET_SMSC95XX_H__
 
+#include "drivers/net/usb_eth.h"
+
 static const int Smsc95xxPhyId = 1;
 static const int EthP8021Q = 0x8100;
 
@@ -122,5 +124,12 @@ static const int IntEpCtrlPhyInt = 0x00008000;
 enum {
 	RxUrbSize = 2048
 };
+
+typedef struct Smsc95xxDev {
+	UsbEthDevice usb_eth_dev;
+	endpoint_t *bulk_in;
+	endpoint_t *bulk_out;
+	uip_eth_addr mac_addr;
+} Smsc95xxDev;
 
 #endif /* __DRIVERS_NET_SMSC95XX_H__ */
