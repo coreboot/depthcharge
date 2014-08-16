@@ -23,6 +23,6 @@
 #ifndef __ARCH_ARM_BOOT_H__
 #define __ARCH_ARM_BOOT_H__
 
-int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry);
+int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry, uint32_t kernel_size);
 
 #endif /* __ARCH_ARM_BOOT_H__ */

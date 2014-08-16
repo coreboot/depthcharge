@@ -44,7 +44,8 @@ static inline void set_sctlr(uint32_t val)
 void boot_arm_linux_jump(void *entry, uint32_t machine_type, void *fdt)
 	__attribute__((noreturn));
 
-int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry)
+int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry,
+		   uint32_t kernel_size)
 {
 	run_cleanup_funcs(CleanupOnHandoff);
 

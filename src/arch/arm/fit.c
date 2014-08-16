@@ -57,5 +57,6 @@ int boot(void *image, char *cmd_line, void *params, void *loader)
 	// Flatten it.
 	dt_flatten(tree, fdt);
 
-	return boot_arm_linux(CONFIG_ARCH_ARM_MACHINE_TYPE, fdt, kernel);
+	return boot_arm_linux(CONFIG_ARCH_ARM_MACHINE_TYPE, fdt, kernel,
+			      kernel_size);
 }

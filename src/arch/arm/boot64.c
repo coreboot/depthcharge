@@ -20,6 +20,7 @@
  * MA 02111-1307 USA
  */
 
+#include <coreboot_tables.h>
 #include <libpayload.h>
 
 #include "arch/arm/boot.h"
@@ -27,6 +28,9 @@
 #include "base/timestamp.h"
 #include "config.h"
 #include "vboot/boot.h"
+#include "base/ranges.h"
+#include "base/physmem.h"
+#include <stdlib.h>
 
 static inline uint32_t get_sctlr(void)
 {
@@ -46,8 +50,37 @@ void boot_arm_linux_jump(void *entry, void *fdt)
 
 void switch_to_el2(void);
 
-int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry)
+static uintptr_t get_kernel_reloc_addr(uint64_t total_size)
 {
+	int i = 0;
+
+	for (; i < lib_sysinfo.n_memranges; i++) {
+		struct memrange *range = &lib_sysinfo.memrange[i];
+
+		if (range->type == CB_MEM_RAM) {
+			uint64_t start = range->base;
+			uint64_t end = range->base + range->size;
+			uint64_t base = ALIGN_UP(start, 2*MiB);
+
+			if (base + total_size < end) {
+				return base;
+			}
+		}
+	}
+	return 0;
+}
+
+#define KERNEL_HEADER_MAGIC  0x644d5241
+#define KERNEL_TEXT_OFFSET   1
+#define KERNEL_MAGIC_OFFSET  7
+
+int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry,
+		   uint32_t kernel_size)
+{
+	uint64_t *kernel_header = entry;
+	uintptr_t new_base;
+	void *reloc_addr;
+
 	run_cleanup_funcs(CleanupOnHandoff);
 
 	static const uint32_t SctlrM = (0x1 << 0);
@@ -56,6 +89,30 @@ int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry)
 	uint32_t sctlr = get_sctlr();
 
 	timestamp_add_now(TS_START_KERNEL);
+
+	if (*(uint32_t*)(kernel_header + KERNEL_MAGIC_OFFSET) !=
+	    KERNEL_HEADER_MAGIC) {
+		printf("ERROR: Kernel Magic Header Fail!\n");
+		return 1;
+	}
+
+	printf("Kernel Magic Header Match!\n");
+
+	new_base = get_kernel_reloc_addr(kernel_size +
+					 kernel_header[KERNEL_TEXT_OFFSET]);
+
+	if (new_base == 0) {
+		printf("ERROR: Cannot relocate kernel\n");
+		return 1;
+	}
+
+	/* relocate kernel */
+	reloc_addr = (void*)(new_base +
+			     kernel_header[KERNEL_TEXT_OFFSET]);
+
+	printf("Relocating kernel to %p\n", reloc_addr);
+	memmove(reloc_addr, entry, kernel_size);
+	entry = reloc_addr;
 
 	/* Flush dcache and icache to make loaded code visible. */
 	cache_sync_instructions();
