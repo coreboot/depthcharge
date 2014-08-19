@@ -124,9 +124,6 @@ static int board_setup(void)
 
 	list_insert_after(&usbd->list_node, &usb_host_controllers);
 
-	//TODO: Is this the right address for T132/Ryu?
-	ramoops_buffer(0x87f00000, 0x100000, 0x20000);
-
 	/* Lid always open for now. */
 	flag_replace(FLAG_LIDSW, &always_open_lid);
 
