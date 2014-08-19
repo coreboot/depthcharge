@@ -48,8 +48,6 @@ static inline void set_sctlr(uint32_t val)
 void boot_arm_linux_jump(void *entry, void *fdt)
 	__attribute__((noreturn));
 
-void switch_to_el2(void);
-
 static uintptr_t get_kernel_reloc_addr(uint64_t total_size)
 {
 	int i = 0;
@@ -126,9 +124,6 @@ int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry,
 	set_sctlr(sctlr);
 
 	tlb_invalidate_all();
-
-	/* Switch to el2 before jump */
-	switch_to_el2();
 
 	printf("jumping to kernel\n");
 

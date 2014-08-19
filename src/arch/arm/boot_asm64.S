@@ -25,19 +25,44 @@
 boot_arm_linux_jump:
 	/* Entered with X0 = entry, X1 = &fdt */
 
-	/* Linux ABI expects masking of Debug, SError, IRQ and FIQ */
-	msr     daifset, #0xf
-	mov	x4, x0	/* save entry pointer */
-	mov	x0, x1	/* X0 = physical address of dtb */
-	mov	x1, #0	/* X1 = 0 */
-	mov	x2, #0	/* X2 = 0 */
-	mov	x3, #0	/* X3 = 0 */
+	/* Kernel is booted in EL2. Therefore switch to EL2. */
+	mov	x27, x0		/* Kernel entry */
+	mov	x26, x1		/* FDT pointer */
 
-	mrs     x5, sctlr_el2
-	/* turn off mmu and disable caching */
-	and     x5, x5, #~1
-	and     x5, x5, #~(1<<2)
-	and     x5, x5, #~(1<<12)
-	msr     sctlr_el2, x5
+	/* Non-Secure mode in EL1 and EL0, HVC enabled, and EL2 in 64-bit. */
+	mov	 x0, #0x531
+	msr	 scr_el3, x0
 
-	br	x4		/* jump to entry pointer */
+	/* Configure sctlr_el2 to have caches off, etc. */
+	mrs	 x0, SCTLR_EL2
+	ldr	 x1, .SCTLR_MASK
+	and	 x0, x0, x1
+	msr	 SCTLR_EL2, x0
+
+	/*
+	 * debug exceptions masked, async exceptions masked, IRQ masked,
+	 * FIQ masked, 64 bit mode, and returning to EL2t.
+	 */
+	mov	 x0, #0x3c8
+	msr	 spsr_el3, x0
+
+	/* Have EL2 entry continue on the boot path. */
+	adr	x0, 1f
+	msr	elr_el3, x0
+	eret
+1:
+	/* In EL2 */
+	mov	x0, x26		/* X0 = physical address of dtb */
+	mov	x1, #0		/* X1 = 0 */
+	mov	x2, #0		/* X2 = 0 */
+	mov	x3, #0		/* X3 = 0 */
+
+	br	x27		/* jump to entry pointer */
+.align 4
+	 .SCTLR_MASK:
+	/*
+	 * Little endian, XN not enforced, Instruction caches disabled at EL2,
+	 * no stack alignment checking, data and unified cache disabled,
+	 * alignment checking disabled, and MMU disabled.
+	 */
+	 .quad 0x0fdf7eff0
