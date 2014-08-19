@@ -60,3 +60,8 @@ config DRIVER_STORAGE_SDHCI_PCI
 	bool "PCI SDHCI based eMMC/SD driver"
 	default n
 
+config DRIVER_STORAGE_MMC_ROCKCHIP
+        select DRIVER_STORAGE_MMC_DW
+        bool "ROCKCHIP MMC driver"
+        default n
+

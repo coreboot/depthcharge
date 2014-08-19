@@ -181,7 +181,6 @@ static int dwmci_send_cmd(MmcCtrlr *ctrlr, MmcCommand *cmd, MmcData *data)
 	}
 	if (!data)
 		dwmci_writel(host, DWMCI_RINTSTS, mask);
-
 	if (mask & DWMCI_INTMSK_RTO) {
 		mmc_debug("Response Timeout..\n");
 		return MMC_TIMEOUT;
@@ -236,24 +235,26 @@ static int dwmci_send_cmd(MmcCtrlr *ctrlr, MmcCommand *cmd, MmcData *data)
 	return 0;
 }
 
-static int dwmci_setup_bus(DwmciHost *host, uint32_t freq)
+static void dwmci_set_clock(DwmciHost *host, uint32_t freq)
 {
 	uint32_t div;
-	int timeout_ms = 10;
 	unsigned long sclk;
+
+	sclk = host->src_hz / (DWMCI_GET_DIV_RATIO(host->clksel_val) + 1);
+	div = (sclk + (2 * freq) - 1) / (2 * freq);
+	dwmci_writel(host, DWMCI_CLKDIV, div);
+}
+
+static int dwmci_setup_bus(DwmciHost *host, uint32_t freq)
+{
+	int timeout_ms = 10;
 
 	if ((freq == host->clock) || (freq == 0))
 		return 0;
 
-	sclk = host->src_hz / (DWMCI_GET_DIV_RATIO(host->clksel_val) + 1);
-
-	// Round up division.
-	div = (sclk + (2 * freq) - 1) / (2 * freq);
-
 	dwmci_writel(host, DWMCI_CLKENA, 0);
 	dwmci_writel(host, DWMCI_CLKSRC, 0);
-
-	dwmci_writel(host, DWMCI_CLKDIV, div);
+	host->set_clk(host, freq);
 	dwmci_writel(host, DWMCI_CMD, DWMCI_CMD_PRV_DAT_WAIT |
 			DWMCI_CMD_UPD_CLK | DWMCI_CMD_START);
 
@@ -361,9 +362,12 @@ static int dwmci_update(BlockDevCtrlrOps *me)
 	host->initialized = 1;
 
 	if (host->removable) {
-		// CDETECT is active low
-		int present = !dwmci_readl(host, DWMCI_CDETECT);
+		int present = 0;
 
+		if (host->cd_gpio)	//use gpio detect
+			present = host->cd_gpio->get(host->cd_gpio);
+		else
+			present = !dwmci_readl(host, DWMCI_CDETECT);
 		if (present && !host->mmc.media) {
 			// A card is present and not set up yet. Get it ready.
 			if (mmc_setup_media(&host->mmc))
@@ -395,8 +399,9 @@ static int dwmci_update(BlockDevCtrlrOps *me)
 	return 0;
 }
 
-DwmciHost *new_dwmci_host(uintptr_t ioaddr, uint32_t src_hz, int bus_width,
-			  int removable, uint32_t clksel_val)
+DwmciHost *new_dwmci_host(uintptr_t ioaddr, uint32_t src_hz,
+				int bus_width, int removable,
+				GpioOps *card_detect, uint32_t clksel_val)
 {
 	DwmciHost *ctrlr = xzalloc(sizeof(*ctrlr));
 
@@ -425,5 +430,7 @@ DwmciHost *new_dwmci_host(uintptr_t ioaddr, uint32_t src_hz, int bus_width,
 	ctrlr->clksel_val = clksel_val;
 	ctrlr->removable = removable;
 
+	ctrlr->cd_gpio = card_detect;
+	ctrlr->set_clk = dwmci_set_clock;
 	return ctrlr;
 }

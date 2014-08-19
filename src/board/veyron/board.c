@@ -29,12 +29,17 @@
 #include "drivers/tpm/tpm.h"
 #include "board/veyron/power_ops.h"
 #include "drivers/power/rk808.h"
+#include "drivers/storage/dw_mmc.h"
+#include "drivers/storage/rk_mmc.h"
+
 #include "drivers/gpio/sysinfo.h"
 #include "vboot/util/flag.h"
 #include "drivers/bus/i2s/rockchip.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/route.h"
 #include "drivers/sound/max98090.h"
+
+#include "drivers/bus/usb/usb.h"
 
 static int board_setup(void)
 {
@@ -69,12 +74,32 @@ static int board_setup(void)
 
 	RkI2c *i2c0 = new_rockchip_i2c((void *)0xff650000);
 	Rk808Pmic *pmic = new_rk808_pmic(&i2c0->ops, 0x1b);
-	RkGpio *reboot_gpio = new_rk_gpio_output((RkGpioSpec){.port = 0,
-							      .bank = GPIO_B,
-							      .idx = 2});
+	RkGpio *reboot_gpio = new_rk_gpio_output((RkGpioSpec) {.port = 0,
+							       .bank = GPIO_B,
+							       .idx = 2});
 	RkPowerOps *rk_power_ops = new_rk_power_ops(&reboot_gpio->ops,
 		&pmic->ops, 1);
 	power_set_ops(&rk_power_ops->ops);
+
+	DwmciHost *emmc = new_rkdwmci_host(0xff0f0000, 594000000, 8, 0, NULL);
+	list_insert_after(&emmc->mmc.ctrlr.list_node,
+			  &fixed_block_dev_controllers);
+
+	RkGpio *card_detect = new_rk_gpio_input((RkGpioSpec) {.port = 7,
+							      .bank = GPIO_A,
+							      .idx = 5});
+	GpioOps *card_detect_ops = &card_detect->ops;
+	card_detect_ops = new_gpio_not(card_detect_ops);
+	DwmciHost *sd_card = new_rkdwmci_host(0xff0c0000, 594000000, 4, 1,
+					      card_detect_ops);
+	list_insert_after(&sd_card->mmc.ctrlr.list_node,
+			  &removable_block_dev_controllers);
+
+	UsbHostController *usb_host0 = new_usb_hc(DWC2, 0xff580000);
+	list_insert_after(&usb_host0->list_node, &usb_host_controllers);
+
+	UsbHostController *usb_host1 = new_usb_hc(DWC2, 0xff540000);
+	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
 
 	return 0;
 }

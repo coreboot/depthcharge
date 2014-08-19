@@ -71,11 +71,11 @@ static int board_setup(void)
 	I2sSource *i2s_source = new_i2s_source(&i2s0->ops, 48000, 2, 16000);
 	sound_set_ops(&new_sound_route(&i2s_source->ops)->ops);
 
-	DwmciHost *emmc = new_dwmci_host(0x12200000, 100000000, 8, 0,
+	DwmciHost *emmc = new_dwmci_host(0x12200000, 100000000, 8, 0, NULL,
 					 DWMCI_SET_SAMPLE_CLK(1) |
 					 DWMCI_SET_DRV_CLK(3) |
 					 DWMCI_SET_DIV_RATIO(3));
-	DwmciHost *sd_card = new_dwmci_host(0x12220000, 100000000, 4, 1,
+	DwmciHost *sd_card = new_dwmci_host(0x12220000, 100000000, 4, 1, NULL,
 					    DWMCI_SET_SAMPLE_CLK(1) |
 					    DWMCI_SET_DRV_CLK(2) |
 					    DWMCI_SET_DIV_RATIO(3));

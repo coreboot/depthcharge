@@ -89,8 +89,9 @@ static int dc_usb_shutdown(struct CleanupFunc *cleanup, CleanupType type)
 
 void dc_usb_initialize(void)
 {
-	static const char * hc_types[] = {[UHCI] = "UHCI", [OHCI] = "OHCI",
-					  [EHCI] = "EHCI", [XHCI] = "XHCI"};
+	static const char *const hc_types[] = {[UHCI] = "UHCI", [OHCI] = "OHCI",
+		[EHCI] = "EHCI", [XHCI] = "XHCI", [DWC2] = "DWC2"
+	};
 	static int need_init = 1;
 	static CleanupFunc cleanup = {
 		&dc_usb_shutdown,
@@ -106,7 +107,7 @@ void dc_usb_initialize(void)
 		UsbHostController *hc;
 		list_for_each(hc, usb_host_controllers, list_node) {
 			printf("Initializing %s USB controller at %p.\n",
-					hc_types[hc->type], hc->bar);
+			       hc_types[hc->type], hc->bar);
 			usb_add_mmio_hc(hc->type, hc->bar);
 			if (hc->init_callback)
 				hc->init_callback(hc);

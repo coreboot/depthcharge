@@ -24,6 +24,7 @@
 
 #include <arch/io.h>
 
+#include "drivers/gpio/gpio.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/mmc.h"
 
@@ -125,6 +126,7 @@
 
 /* Status Register */
 #define DWMCI_BUSY		(1 << 9)
+#define DWMCI_MC_BUSY		(1 << 10)
 
 /* FIFOTH Register */
 #define MSIZE(x)		((x) << 28)
@@ -143,14 +145,14 @@
 #define DWMCI_BMOD_IDMAC_FB	(1 << 1)
 #define DWMCI_BMOD_IDMAC_EN	(1 << 7)
 
-#define MPSCTRL_SECURE_READ_BIT		(0x1<<7)
-#define MPSCTRL_SECURE_WRITE_BIT	(0x1<<6)
-#define MPSCTRL_NON_SECURE_READ_BIT	(0x1<<5)
-#define MPSCTRL_NON_SECURE_WRITE_BIT	(0x1<<4)
-#define MPSCTRL_USE_FUSE_KEY		(0x1<<3)
-#define MPSCTRL_ECB_MODE		(0x1<<2)
-#define MPSCTRL_ENCRYPTION		(0x1<<1)
-#define MPSCTRL_VALID			(0x1<<0)
+#define MPSCTRL_SECURE_READ_BIT		(0x1 << 7)
+#define MPSCTRL_SECURE_WRITE_BIT	(0x1 << 6)
+#define MPSCTRL_NON_SECURE_READ_BIT	(0x1 << 5)
+#define MPSCTRL_NON_SECURE_WRITE_BIT	(0x1 << 4)
+#define MPSCTRL_USE_FUSE_KEY		(0x1 << 3)
+#define MPSCTRL_ECB_MODE		(0x1 << 2)
+#define MPSCTRL_ENCRYPTION		(0x1 << 1)
+#define MPSCTRL_VALID			(0x1 << 0)
 
 /* CLKSEL register */
 #define DWMCI_SET_SAMPLE_CLK(x)	(x)
@@ -169,6 +171,12 @@ typedef struct DwmciHost {
 
 	int initialized;
 	int removable;
+
+	GpioOps *cd_gpio;/*if NULL,use internal card detect,
+				else use gpio detect*/
+	void (*set_clk)(struct DwmciHost *me, unsigned int freq);
+				/*default use CLKDIV register,and can be
+				overridden by the caller */
 } DwmciHost;
 
 typedef struct {
@@ -212,6 +220,7 @@ static inline void *dwmci_get_ioaddr(DwmciHost *host, int reg)
 	return (void *)((uint8_t *)host->ioaddr + reg);
 }
 
-DwmciHost *new_dwmci_host(uintptr_t ioaddr, uint32_t src_hz, int bus_width,
-			  int removable, uint32_t clksel_val);
+DwmciHost *new_dwmci_host(uintptr_t ioaddr, uint32_t src_hz,
+				int bus_width, int removable,
+				GpioOps *card_detect, uint32_t clksel_val);
 #endif /* __DRIVERS_STORAGE_DW_MMC_H__ */
