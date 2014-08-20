@@ -205,7 +205,6 @@
 		rw-legacy {
 			label = "rw-legacy";
 			reg = <0x00300000 0x00100000>;
-			type = "blob legacy";
 		};
 	};
 };
