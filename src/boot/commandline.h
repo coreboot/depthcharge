@@ -28,4 +28,8 @@
 int commandline_subst(const char *src, int devnum, int partnum, uint8_t *guid,
 		      char *dest, int dest_size);
 
+
+/* Return a string with a trailing space to add to the command line or NULL. */
+const char *mainboard_commandline(void);
+
 #endif /* __BOOT_COMMAND_LINE_H__ */

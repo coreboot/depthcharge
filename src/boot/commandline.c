@@ -64,6 +64,10 @@ static char *emit_guid(char *dest, uint8_t *guid)
 	return dest;
 }
 
+const char * __attribute__((weak)) mainboard_commandline(void)
+{
+	return NULL;
+}
 
 int commandline_subst(const char *src, int devnum, int partnum, uint8_t *guid,
 		      char *dest, int dest_size)
@@ -100,6 +104,17 @@ int commandline_subst(const char *src, int devnum, int partnum, uint8_t *guid,
 	CHECK_SPACE(cros_secure_size);
 	memcpy(dest, cros_secure, cros_secure_size);
 	dest += (cros_secure_size);
+
+	// Add any mainboard options
+	const char *mainboard_cmdline = mainboard_commandline();
+	if (mainboard_cmdline != NULL) {
+		size_t mainboard_cmdline_size = strlen(mainboard_cmdline);
+		if (mainboard_cmdline_size > 0) {
+			CHECK_SPACE(mainboard_cmdline_size)
+			memcpy(dest, mainboard_cmdline, mainboard_cmdline_size);
+			dest += mainboard_cmdline_size;
+		}
+	}
 
 	int c;
 
