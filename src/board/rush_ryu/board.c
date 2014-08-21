@@ -26,6 +26,7 @@
 #include "base/init_funcs.h"
 #include "board/rush_ryu/power_ops.h"
 //#include "boot/fit.h"
+#include "boot/commandline.h"
 #include "boot/ramoops.h"
 #include "config.h"
 #include "drivers/bus/spi/tegra.h"
@@ -68,6 +69,16 @@ static int lid_get_always_open (struct GpioOps *me)
 static GpioOps always_open_lid = {
 	.get = lid_get_always_open,
 };
+
+const char *mainboard_commandline(void)
+{
+	/*
+	 * Clocks are not being marked as used in the kernel as they should be
+	 * so needed clocks are being turned off which bring down the SoC.
+	 * Instruct the kernel to not bring those down.
+	 */
+	return "clk_ignore_unused=1 ";
+}
 
 static int board_setup(void)
 {
