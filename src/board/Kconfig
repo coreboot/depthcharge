@@ -19,6 +19,9 @@ menu "Board"
 config BOARD
 	string "Board name"
 
+if BOARD = "auron"
+source src/board/auron/Kconfig
+endif
 if BOARD = "bayleybay"
 source src/board/bayleybay/Kconfig
 endif
