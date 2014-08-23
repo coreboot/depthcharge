@@ -27,11 +27,16 @@
 
 typedef struct FlashOps
 {
+	/* Return a pointer to the read data in the flash driver cache. */
 	void *(*read)(struct FlashOps *me, uint32_t offset, uint32_t size);
+	/* Return the number of successfully written bytes */
+	int (*write)(struct FlashOps *me, const void *buffer,
+		     uint32_t offset, uint32_t size);
 } FlashOps;
 
 void flash_set_ops(FlashOps *ops);
 
 void *flash_read(uint32_t offset, uint32_t size);
+int flash_write(uint32_t offset, uint32_t size, const void *buffer);
 
 #endif /* __DRIVERS_FLASH_FLASH_H__ */

@@ -37,3 +37,12 @@ void *flash_read(uint32_t offset, uint32_t size)
 	die_if(!flash_ops, "%s: No flash ops set.\n", __func__);
 	return flash_ops->read(flash_ops, offset, size);
 }
+
+int flash_write(uint32_t offset, uint32_t size, const void *buffer)
+{
+	die_if(!flash_ops, "%s: No flash ops set.\n", __func__);
+	if (flash_ops->write)
+		return flash_ops->write(flash_ops, buffer, offset, size);
+
+	return 0;
+}
