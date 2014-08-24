@@ -189,6 +189,15 @@
 			wipe-value = [ff];
 		};
 
+		/* ---- Section: nvram 64KB ---- */
+		rw-nvram {
+			label = "rw-nvram";
+			/* Alignment: 64K (for block erases) */
+			reg = <0x00500000 0x00010000>;
+			type = "wiped";
+			wipe-value = [ff];
+		};
+
 		rw-legacy {
 			label = "rw-legacy";
 			reg = <0x00700000 0x00100000>;
