@@ -34,6 +34,7 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
+#include "vboot/callbacks/nvstorage_flash.h"
 #include "vboot/util/flag.h"
 #include "drivers/gpio/ipq806x.h"
 #include "drivers/storage/ipq806x_mmc.h"
@@ -131,6 +132,8 @@ static int board_setup(void)
 
 	Ipq806xI2c *i2c = new_ipq806x_i2c(GSBI_ID_1);
 	tpm_set_ops(&new_slb9635_i2c(&i2c->ops, 0x20)->base.ops);
+
+	flash_nvram_init();
 
 	return 0;
 }

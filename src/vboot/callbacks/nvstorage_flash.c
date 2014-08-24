@@ -146,3 +146,13 @@ int flash_nvram_init(void)
 	nvram_blob_offset = prev_offset;
 	return 0;
 }
+
+int nvstorage_flash_get_offet(void)
+{
+	return nvram_blob_offset;
+}
+
+int nvstorage_flash_get_blob_size(void)
+{
+	return sizeof(nvram_cache);
+}

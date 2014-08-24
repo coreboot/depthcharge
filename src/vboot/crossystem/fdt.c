@@ -32,6 +32,7 @@
 #include "base/device_tree.h"
 #include "config.h"
 #include "image/fmap.h"
+#include "vboot/callbacks/nvstorage_flash.h"
 #include "vboot/crossystem/crossystem.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
@@ -68,6 +69,12 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 				CONFIG_NV_STORAGE_DISK_OFFSET);
 		dt_add_u32_prop(node, "nonvolatile-context-size",
 				CONFIG_NV_STORAGE_DISK_SIZE);
+	} else if (CONFIG_NV_STORAGE_FLASH) {
+		dt_add_string_prop(node, "nonvolatile-context-storage","flash");
+		dt_add_u32_prop(node, "nonvolatile-context-offset",
+				nvstorage_flash_get_offet());
+		dt_add_u32_prop(node, "nonvolatile-context-size",
+				nvstorage_flash_get_blob_size());
 	}
 
 	int recovery = 0;
