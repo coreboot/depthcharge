@@ -251,3 +251,16 @@ VbError_t VbExEcProtectRW(void)
 {
 	return ec_protect_rw(1);
 }
+
+VbError_t VbExEcEnteringMode(enum VbEcBootMode_t mode)
+{
+	switch(mode) {
+	case VB_EC_RECOVERY:
+		return cros_ec_entering_mode(EC_VBOOT_MODE_RECOVERY);
+	case VB_EC_DEVELOPER:
+		return cros_ec_entering_mode(EC_VBOOT_MODE_DEVELOPER);
+	case VB_EC_NORMAL:
+	default :
+		return cros_ec_entering_mode(EC_VBOOT_MODE_NORMAL);
+	}
+}

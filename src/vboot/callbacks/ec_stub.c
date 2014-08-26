@@ -77,3 +77,8 @@ VbError_t VbExEcProtectRW(void)
 {
 	no_ec_soft_sync();
 }
+
+VbError_t VbExEcEnteringMode(enum VbEcBootMode_t mode)
+{
+	no_ec_soft_sync();
+}

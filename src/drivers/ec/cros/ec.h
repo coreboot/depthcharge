@@ -180,6 +180,13 @@ int cros_ec_clear_host_events(uint32_t events);
 int cros_ec_flash_protect(uint32_t set_mask, uint32_t set_flags,
 			  struct ec_response_flash_protect *resp);
 
+/**
+ * Vboot Tell EC to enter a mode (recovery, dev, or normal).
+ *
+ * @param mode          recovery, dev, or normal
+ * @return 0 if ok, <0 on error
+ */
+int cros_ec_entering_mode(int mode);
 
 /**
  * Run internal tests on the ChromeOS EC interface.
