@@ -54,7 +54,8 @@ static int smsc95xx_wait_for_phy(usbdev_t *dev)
 	int i;
 
 	for (i = 0; i < 100; i++) {
-		smsc95xx_read_reg(dev, MiiAddrReg, &val);
+		if (smsc95xx_read_reg(dev, MiiAddrReg, &val))
+			return 1;
 		if (!(val & MiiBusy))
 			return 0;
 		udelay(100);
@@ -76,14 +77,16 @@ static int smsc95xx_mdio_read(NetDevice *dev, uint8_t loc, uint16_t *val)
 	}
 
 	addr = (Smsc95xxPhyId << 11) | (loc << 6) | MiiRead;
-	smsc95xx_write_reg(usb_dev, MiiAddrReg, addr);
+	if (smsc95xx_write_reg(usb_dev, MiiAddrReg, addr))
+		return 1;
 
 	if (smsc95xx_wait_for_phy(usb_dev)) {
 		printf("SMSC95xx: Timed out reading MII.\n");
 		return 1;
 	}
 
-	smsc95xx_read_reg(usb_dev, MiiDataReg, &data);
+	if (smsc95xx_read_reg(usb_dev, MiiDataReg, &data))
+		return 1;
 	*val = data & 0xFFFF;
 	return 0;
 }
@@ -99,10 +102,12 @@ static int smsc95xx_mdio_write(NetDevice *dev, uint8_t loc, uint16_t val)
 		return 1;
 	}
 
-	smsc95xx_write_reg(usb_dev, MiiDataReg, val);
+	if (smsc95xx_write_reg(usb_dev, MiiDataReg, val))
+		return 1;
 
 	addr = (Smsc95xxPhyId << 11) | (loc << 6) | MiiWrite;
-	smsc95xx_write_reg(usb_dev, MiiAddrReg, addr);
+	if (smsc95xx_write_reg(usb_dev, MiiAddrReg, addr))
+		return 1;
 
 	if (smsc95xx_wait_for_phy(usb_dev)) {
 		printf("SMSC95xx: Timed out writing MII.\n");
@@ -118,7 +123,8 @@ static int smsc95xx_wait_eeprom(usbdev_t *dev)
 	int i;
 
 	for (i = 0; i < 310; i++) {
-		smsc95xx_read_reg(dev, E2PCmdReg, &val);
+		if (smsc95xx_read_reg(dev, E2PCmdReg, &val))
+			return 1;
 		if (!(val & E2PCmdBusy) || (val & E2PCmdTimeout))
 			break;
 		udelay(100);
@@ -126,9 +132,11 @@ static int smsc95xx_wait_eeprom(usbdev_t *dev)
 
 	if (val & (E2PCmdTimeout | E2PCmdBusy)) {
 		printf("SMSC95xx: EEPROM read operation timeout.\n");
-		if (val & E2PCmdTimeout)
+		if (val & E2PCmdTimeout) {
 			/* Clear timeout so next operation doesn't see it */
-			smsc95xx_write_reg(dev, E2PCmdReg, val);
+			if (smsc95xx_write_reg(dev, E2PCmdReg, val))
+				return 1;
+		}
 		return 1;
 	}
 
@@ -146,12 +154,14 @@ static int smsc95xx_read_eeprom(usbdev_t *dev, uint32_t offset,
 
 	for (i = 0; i < length; i++) {
 		val = E2PCmdBusy | E2PCmdRead | (offset & E2PCmdAddr);
-		smsc95xx_write_reg(dev, E2PCmdReg, val);
+		if (smsc95xx_write_reg(dev, E2PCmdReg, val))
+			return 1;
 
 		if (smsc95xx_wait_eeprom(dev))
 			return 1;
 
-		smsc95xx_read_reg(dev, E2PDataReg, &val);
+		if (smsc95xx_read_reg(dev, E2PDataReg, &val))
+			return 1;
 		data[i] = val & 0xFF;
 		offset++;
 	}
@@ -374,8 +384,11 @@ static const uip_eth_addr *smsc95xx_get_mac(NetDevice *net_dev)
 			(smsc_dev.mac_addr.addr[2] << 16) |
 			(smsc_dev.mac_addr.addr[1] << 8) |
 			(smsc_dev.mac_addr.addr[0]);
-		smsc95xx_write_reg(usb_dev, AddrHReg, addrh);
-		smsc95xx_write_reg(usb_dev, AddrLReg, addrl);
+		if (smsc95xx_write_reg(usb_dev, AddrHReg, addrh) ||
+		    smsc95xx_write_reg(usb_dev, AddrLReg, addrl)) {
+			printf("SMSC95xx: Failed to write MAC address.\n");
+			return NULL;
+		}
 		return &smsc_dev.mac_addr;
 	}
 }
