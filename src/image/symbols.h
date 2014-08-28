@@ -35,6 +35,8 @@ extern const uint8_t _heap;
 extern const uint8_t _eheap;
 extern const uint8_t _estack;
 extern const uint8_t _stack;
+extern const uint8_t _exc_estack;
+extern const uint8_t _exc_stack;
 extern const uint8_t _end;
 extern const uint8_t _tramp_start;
 extern const uint8_t _tramp_end;
