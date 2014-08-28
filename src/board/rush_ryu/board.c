@@ -25,7 +25,7 @@
 
 #include "base/init_funcs.h"
 #include "board/rush_ryu/power_ops.h"
-//#include "boot/fit.h"
+#include "boot/fit.h"
 #include "boot/commandline.h"
 #include "boot/ramoops.h"
 #include "config.h"
@@ -42,6 +42,15 @@
 #include "drivers/storage/tegra_mmc.h"
 #include "drivers/ec/cros/i2c.h"
 #include "vboot/util/flag.h"
+
+enum {
+	BOARD_ID_PROTO_0 = 0,
+	BOARD_ID_PROTO_1 = 1,
+	BOARD_ID_EVT = 2,
+	BOARD_ID_DVT = 3,
+	BOARD_ID_PVT = 4,
+	BOARD_ID_MP = 5,
+};
 
 enum {
 	CLK_RST_BASE = 0x60006000,
@@ -80,9 +89,26 @@ const char *mainboard_commandline(void)
 	return "clk_ignore_unused=1 ";
 }
 
+static void choose_devicetree_by_boardid(void)
+{
+	switch(lib_sysinfo.board_id) {
+	case BOARD_ID_PROTO_0:
+		fit_override_kernel_compat("google,ryu-p0");
+		break;
+	case BOARD_ID_PROTO_1:
+		fit_override_kernel_compat("google,ryu-p1");
+		break;
+	default:
+		printf("Unknown board id: %x\n", lib_sysinfo.board_id);
+		break;
+	}
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags();
+
+	choose_devicetree_by_boardid();
 
 	void *dma_channel_bases[32];
 	for (int i = 0; i < ARRAY_SIZE(dma_channel_bases); i++)
