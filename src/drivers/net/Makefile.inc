@@ -15,8 +15,8 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-net-$(CONFIG_DRIVER_NET_ASIX) += asix.c
-net-$(CONFIG_DRIVER_NET_MII) += mii.c
-net-$(CONFIG_DRIVER_NET_SMSC95XX) += smsc95xx.c
-net-$(CONFIG_DRIVER_NET_USB) += usb_eth.c
+net-y += asix.c
+net-y += mii.c
+net-y += smsc95xx.c
+net-y += usb_eth.c
 net-y += net.c
