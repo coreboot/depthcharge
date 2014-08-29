@@ -81,12 +81,7 @@ static GpioOps always_open_lid = {
 
 const char *mainboard_commandline(void)
 {
-	/*
-	 * Clocks are not being marked as used in the kernel as they should be
-	 * so needed clocks are being turned off which bring down the SoC.
-	 * Instruct the kernel to not bring those down.
-	 */
-	return "clk_ignore_unused=1 ";
+	return NULL;
 }
 
 static void choose_devicetree_by_boardid(void)
