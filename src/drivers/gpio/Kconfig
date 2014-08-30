@@ -52,3 +52,8 @@ config DRIVER_GPIO_IPQ_806X
 	bool "Qualcomm IPQ806X GPIO driver"
 	default n
 	depends on ARCH_ARM
+
+config DRIVER_GPIO_ROCKCHIP
+	bool "Rk3288 GPIO driver"
+	default n
+	depends on ARCH_ARM

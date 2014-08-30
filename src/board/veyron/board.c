@@ -20,9 +20,22 @@
 #include <arch/io.h>
 
 #include "base/init_funcs.h"
+#include "drivers/gpio/rockchip.h"
+#include "drivers/gpio/sysinfo.h"
+#include "vboot/util/flag.h"
 
 static int board_setup(void)
 {
+	sysinfo_install_flags();
+	RkGpio *lid_switch = new_rk_gpio_input((RkGpioSpec) {.port = 7,
+							     .bank = GPIO_B,
+							     .idx = 5});
+	RkGpio *ec_in_rw = new_rk_gpio_input((RkGpioSpec) {.port = 0,
+							   .bank = GPIO_A,
+							   .idx = 7});
+	flag_replace(FLAG_LIDSW, &lid_switch->ops);
+	flag_install(FLAG_ECINRW, &ec_in_rw->ops);
+
 	return 0;
 }
 
