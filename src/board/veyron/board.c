@@ -21,6 +21,9 @@
 
 #include "base/init_funcs.h"
 #include "drivers/gpio/rockchip.h"
+#include "drivers/bus/i2c/rockchip.h"
+#include "drivers/tpm/slb9635_i2c.h"
+#include "drivers/tpm/tpm.h"
 #include "drivers/gpio/sysinfo.h"
 #include "vboot/util/flag.h"
 
@@ -35,6 +38,9 @@ static int board_setup(void)
 							   .idx = 7});
 	flag_replace(FLAG_LIDSW, &lid_switch->ops);
 	flag_install(FLAG_ECINRW, &ec_in_rw->ops);
+
+	RkI2c *i2c1 = new_rockchip_i2c((void *)0xff140000);
+	tpm_set_ops(&new_slb9635_i2c(&i2c1->ops, 0x20)->base.ops);
 
 	return 0;
 }
