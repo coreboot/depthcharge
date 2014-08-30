@@ -39,3 +39,9 @@ config DRIVER_POWER_TPS65913
 	default n
 	help
 	  Reboot or power off using the TPS65913 PMIC.
+
+config DRIVER_POWER_RK808
+	bool "RK808 PMIC power management"
+	default n
+	help
+	  power off using the RK808 PMIC.

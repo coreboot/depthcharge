@@ -27,6 +27,8 @@
 #include "drivers/ec/cros/spi.h"
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
+#include "board/veyron/power_ops.h"
+#include "drivers/power/rk808.h"
 #include "drivers/gpio/sysinfo.h"
 #include "vboot/util/flag.h"
 
@@ -50,6 +52,15 @@ static int board_setup(void)
 
 	RkI2c *i2c1 = new_rockchip_i2c((void *)0xff140000);
 	tpm_set_ops(&new_slb9635_i2c(&i2c1->ops, 0x20)->base.ops);
+
+	RkI2c *i2c0 = new_rockchip_i2c((void *)0xff650000);
+	Rk808Pmic *pmic = new_rk808_pmic(&i2c0->ops, 0x1b);
+	RkGpio *reboot_gpio = new_rk_gpio_output((RkGpioSpec){.port = 0,
+							      .bank = GPIO_B,
+							      .idx = 2});
+	RkPowerOps *rk_power_ops = new_rk_power_ops(&reboot_gpio->ops,
+		&pmic->ops, 1);
+	power_set_ops(&rk_power_ops->ops);
 
 	return 0;
 }
