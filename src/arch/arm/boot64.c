@@ -32,19 +32,6 @@
 #include "base/physmem.h"
 #include <stdlib.h>
 
-static inline uint32_t get_sctlr(void)
-{
-	uint32_t val;
-	asm("mrs %0, sctlr_el2" : "=r" (val));
-	return val;
-}
-
-static inline void set_sctlr(uint32_t val)
-{
-	asm volatile("msr sctlr_el2, %0" :: "r" (val));
-	asm volatile("" ::: "memory");
-}
-
 void boot_arm_linux_jump(void *entry, void *fdt)
 	__attribute__((noreturn));
 
@@ -81,11 +68,6 @@ int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry,
 
 	run_cleanup_funcs(CleanupOnHandoff);
 
-	static const uint32_t SctlrM = (0x1 << 0);
-	static const uint32_t SctlrC = (0x1 << 2);
-
-	uint32_t sctlr = get_sctlr();
-
 	timestamp_add_now(TS_START_KERNEL);
 
 	if (*(uint32_t*)(kernel_header + KERNEL_MAGIC_OFFSET) !=
@@ -112,20 +94,12 @@ int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry,
 	memmove(reloc_addr, entry, kernel_size);
 	entry = reloc_addr;
 
+	printf("jumping to kernel\n");
+
 	/* Flush dcache and icache to make loaded code visible. */
 	cache_sync_instructions();
 
-	/* Turn off the MMU. */
-	sctlr &= ~SctlrM;
-
-	/* Disable the data/unified cache. */
-	sctlr &= ~SctlrC;
-
-	set_sctlr(sctlr);
-
 	tlb_invalidate_all();
-
-	printf("jumping to kernel\n");
 
 	boot_arm_linux_jump(entry, fdt);
 
