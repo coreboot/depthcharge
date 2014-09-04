@@ -20,38 +20,27 @@
  * MA 02111-1307 USA
  */
 
+#define __ASSEMBLY__
+#include <arch/lib_helpers.h>
+
 	.global boot_arm_linux_jump
 	.type boot_arm_linux_jump, function
 boot_arm_linux_jump:
 	/* Entered with X0 = entry, X1 = &fdt */
 
-	/* Kernel is booted in EL2. Therefore switch to EL2. */
 	mov	x27, x0		/* Kernel entry */
 	mov	x26, x1		/* FDT pointer */
 
-	/* Non-Secure mode in EL1 and EL0, HVC enabled, and EL2 in 64-bit. */
-	mov	 x0, #0x531
-	msr	 scr_el3, x0
-
-	/* Configure sctlr_el2 to have caches off, etc. */
-	mrs	 x0, SCTLR_EL2
+	/* Configure sctlr to have caches off, etc. */
+	read_current x0, sctlr
 	ldr	 x1, .SCTLR_MASK
 	and	 x0, x0, x1
-	msr	 SCTLR_EL2, x0
+	write_current sctlr, x0, x1
 
-	/*
-	 * debug exceptions masked, async exceptions masked, IRQ masked,
-	 * FIQ masked, 64 bit mode, and returning to EL2t.
-	 */
-	mov	 x0, #0x3c8
-	msr	 spsr_el3, x0
+	isb
 
-	/* Have EL2 entry continue on the boot path. */
-	adr	x0, 1f
-	msr	elr_el3, x0
-	eret
+	msr      DAIFSet, #0xf
 1:
-	/* In EL2 */
 	mov	x0, x26		/* X0 = physical address of dtb */
 	mov	x1, #0		/* X1 = 0 */
 	mov	x2, #0		/* X2 = 0 */
@@ -61,7 +50,7 @@ boot_arm_linux_jump:
 .align 4
 	 .SCTLR_MASK:
 	/*
-	 * Little endian, XN not enforced, Instruction caches disabled at EL2,
+	 * Little endian, XN not enforced, Instruction caches disabled,
 	 * no stack alignment checking, data and unified cache disabled,
 	 * alignment checking disabled, and MMU disabled.
 	 */
