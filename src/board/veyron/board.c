@@ -21,7 +21,10 @@
 
 #include "base/init_funcs.h"
 #include "drivers/gpio/rockchip.h"
+#include "drivers/bus/spi/rockchip.h"
 #include "drivers/bus/i2c/rockchip.h"
+#include "drivers/flash/spi.h"
+#include "drivers/ec/cros/spi.h"
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/gpio/sysinfo.h"
@@ -29,6 +32,12 @@
 
 static int board_setup(void)
 {
+	RkSpi *spi2 = new_rockchip_spi(0xff130000, 0, 0, 0);
+	flash_set_ops(&new_spi_flash(&spi2->ops, 0x400000)->ops);
+
+	RkSpi *spi0 = new_rockchip_spi(0xff110000, 0, 0, 0);
+	cros_ec_set_bus(&new_cros_ec_spi_bus(&spi0->ops)->ops);
+
 	sysinfo_install_flags();
 	RkGpio *lid_switch = new_rk_gpio_input((RkGpioSpec) {.port = 7,
 							     .bank = GPIO_B,
