@@ -27,7 +27,7 @@
 #include "drivers/ec/cros/spi.h"
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
-#include "board/veyron/power_ops.h"
+#include "board/veyron_pinky/power_ops.h"
 #include "drivers/power/rk808.h"
 #include "drivers/storage/dw_mmc.h"
 #include "drivers/storage/rk_mmc.h"

@@ -1,9 +1,9 @@
 /dts-v1/;
 
 / {
-	model = "Google Veyron";
+	model = "Google Veyron_Pinky";
 	config {
-		hwid = "VEYRON TEST A-A 9392";
+		hwid = "PINKY TEST A-A 9392";
 	};
 	chromeos-config {
 		/* Enable factory-friendly features. */

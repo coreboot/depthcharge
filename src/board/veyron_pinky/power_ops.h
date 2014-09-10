@@ -15,8 +15,8 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA, 02110-1301 USA
  */
 
-#ifndef __BOARD_RKSDK_POWER_OPS_H__
-#define __BOARD_RKSDK_POWER_OPS_H__
+#ifndef __BOARD_VEYRON_PINKY_POWER_OPS_H__
+#define __BOARD_VEYRON_PINKY_POWER_OPS_H__
 
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/power/power.h"
@@ -32,4 +32,4 @@ typedef struct {
 
 RkPowerOps *new_rk_power_ops(GpioOps *gpio, PowerOps *pmic, int val);
 
-#endif /* __BOARD_RKSDK_POWER_OPS_H__ */
+#endif /* __BOARD_VEYRON_PINKY_POWER_OPS_H__ */

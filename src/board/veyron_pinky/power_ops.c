@@ -17,7 +17,7 @@
 
 #include <libpayload.h>
 #include "base/container_of.h"
-#include "board/veyron/power_ops.h"
+#include "board/veyron_pinky/power_ops.h"
 
 static int rk_gpio_reboot(PowerOps *me)
 {

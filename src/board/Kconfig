@@ -82,8 +82,8 @@ endif
 if BOARD = "storm"
 source src/board/storm/Kconfig
 endif
-if BOARD = "veyron"
-source src/board/veyron/Kconfig
+if BOARD = "veyron_pinky"
+source src/board/veyron_pinky/Kconfig
 endif
 
 endmenu
