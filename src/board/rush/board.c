@@ -30,6 +30,7 @@
 #include "config.h"
 #include "drivers/bus/spi/tegra.h"
 #include "drivers/bus/i2c/tegra.h"
+#include "drivers/bus/usb/usb.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/gpio/tegra.h"
 #include "drivers/dma/tegra_apb.h"
@@ -38,7 +39,10 @@
 #include "drivers/tpm/tpm.h"
 #include "drivers/storage/tegra_mmc.h"
 #include "drivers/ec/cros/spi.h"
-#include "drivers/bus/usb/usb.h"
+
+enum {
+	BOARD_ID_PROTO_0 = 0x0A,
+};
 
 enum {
 	CLK_RST_BASE = 0x60006000,
@@ -95,9 +99,23 @@ static VirtualMmcPowerGpio *new_virtual_mmc_power(GpioOps *gpio,
 	return power;
 }
 
+static void choose_devicetree_by_boardid(void)
+{
+        switch(lib_sysinfo.board_id) {
+        case BOARD_ID_PROTO_0:
+                fit_override_kernel_compat("nvidia,norrin");
+                break;
+        default:
+                printf("Unknown board id: %x\n", lib_sysinfo.board_id);
+                break;
+        }
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags();
+
+        choose_devicetree_by_boardid();
 
 	void *dma_channel_bases[32];
 	for (int i = 0; i < ARRAY_SIZE(dma_channel_bases); i++)
