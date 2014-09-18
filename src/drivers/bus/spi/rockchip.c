@@ -28,27 +28,27 @@
 #define spi_err(x...)	printf(x)
 #define SPI_TIMEOUT_US  100000
 typedef struct {
-	u32 spi_ctrlr0;
-	u32 spi_ctrlr1;
-	u32 spi_enr;
-	u32 spi_ser;
-	u32 spi_baudr;
-	u32 spi_txftlr;
-	u32 spi_rxftlr;
-	u32 spi_txflr;
-	u32 spi_rxflr;
-	u32 spi_sr;
-	u32 spi_ipr;
-	u32 spi_imr;
-	u32 spi_isr;
-	u32 spi_risr;
-	u32 spi_icr;
-	u32 spi_dmacr;
-	u32 spi_dmatdlr;
-	u32 spi_damrdlr;
+	u32 ctrlr0;
+	u32 ctrlr1;
+	u32 enr;
+	u32 ser;
+	u32 baudr;
+	u32 txftlr;
+	u32 rxftlr;
+	u32 txflr;
+	u32 rxflr;
+	u32 sr;
+	u32 ipr;
+	u32 imr;
+	u32 isr;
+	u32 risr;
+	u32 icr;
+	u32 dmacr;
+	u32 dmatdlr;
+	u32 damrdlr;
 	u32 reserved0[(0x400 - 0x48) / 4];
-	u32 spi_txdr[0x100];
-	u32 spi_rxdr[0x100];
+	u32 txdr[0x100];
+	u32 rxdr[0x100];
 } RkSpiRegs;
 
 #define FIFO_DEPTH			32
@@ -92,7 +92,7 @@ static int rockchip_spi_wait_till_not_busy(RkSpi *bus)
 	RkSpiRegs *regs = bus->reg_addr;
 
 	while (delay--) {
-		if (!(readl(&regs->spi_sr) & 0x01))
+		if (!(readl(&regs->sr) & 0x01))
 			return 0;
 		udelay(1);
 	}
@@ -106,19 +106,19 @@ static int spi_recv(RkSpi *bus, void *in, uint32_t size)
 	int len = size;
 	uint8_t *p = in;
 
-	writel(CONTROLLER_DISABLE, &regs->spi_enr);
-	clrsetbits_le32(&regs->spi_ctrlr0, SPI_TMOD_MASK << SPI_TMOD_OFFSET,
+	writel(CONTROLLER_DISABLE, &regs->enr);
+	clrsetbits_le32(&regs->ctrlr0, SPI_TMOD_MASK << SPI_TMOD_OFFSET,
 					   RXONLY << SPI_TMOD_OFFSET);
 
 	while (len) {
-		writel(CONTROLLER_DISABLE, &regs->spi_enr);
+		writel(CONTROLLER_DISABLE, &regs->enr);
 		bytes_remaining = MIN(len, 0xffff);
-		writel(bytes_remaining - 1, &regs->spi_ctrlr1);
+		writel(bytes_remaining - 1, &regs->ctrlr1);
 		len -= bytes_remaining;
-		writel(CONTROLLER_ENABLE, &regs->spi_enr);
+		writel(CONTROLLER_ENABLE, &regs->enr);
 		while (bytes_remaining) {
-			if (readl(&regs->spi_rxflr) & 0x3f) {
-				*p++ = readl(&regs->spi_rxdr) & 0xff;
+			if (readl(&regs->rxflr) & 0x3f) {
+				*p++ = readl(&regs->rxdr) & 0xff;
 				bytes_remaining--;
 			}
 		}
@@ -139,16 +139,16 @@ static int spi_send(RkSpi *bus, const void *out, uint32_t size)
 	int len;
 
 	len = size - 1;
-	writel(CONTROLLER_DISABLE, &regs->spi_enr);
+	writel(CONTROLLER_DISABLE, &regs->enr);
 
-	clrsetbits_le32(&regs->spi_ctrlr0, SPI_TMOD_MASK << SPI_TMOD_OFFSET,
+	clrsetbits_le32(&regs->ctrlr0, SPI_TMOD_MASK << SPI_TMOD_OFFSET,
 					   TXONLY << SPI_TMOD_OFFSET);
-	writel(len, &regs->spi_ctrlr1);
-	writel(CONTROLLER_ENABLE, &regs->spi_enr);
+	writel(len, &regs->ctrlr1);
+	writel(CONTROLLER_ENABLE, &regs->enr);
 
 	while (bytes_remaining) {
-		if ((readl(&regs->spi_txflr) & 0x3f) < FIFO_DEPTH) {
-			writel(*p++, &regs->spi_txdr);
+		if ((readl(&regs->txflr) & 0x3f) < FIFO_DEPTH) {
+			writel(*p++, &regs->txdr);
 			bytes_remaining--;
 		}
 	}
@@ -186,11 +186,11 @@ static int spi_start(SpiOps *me)
 	cr0 |= (bus->polarity << CR0_CLOCK_POLARITY_BIT);
 	cr0 |= (bus->phase << CR0_CLOCK_PHASE_BIT);
 	cr0 |= FRAME_SIZE_8BIT << CR0_FRAME_SIZE_BIT;
-	writel(cr0, &regs->spi_ctrlr0);
+	writel(cr0, &regs->ctrlr0);
 
-	writel(FIFO_DEPTH / 2 - 1, &regs->spi_txflr);
-	writel(FIFO_DEPTH / 2 - 1, &regs->spi_rxflr);
-	writel(1, &regs->spi_ser);
+	writel(FIFO_DEPTH / 2 - 1, &regs->txflr);
+	writel(FIFO_DEPTH / 2 - 1, &regs->rxflr);
+	writel(1, &regs->ser);
 	return res;
 }
 
@@ -201,7 +201,7 @@ static int spi_stop(SpiOps *me)
 	RkSpiRegs *regs = bus->reg_addr;
 
 	spi_info("spi:: stop\n");
-	writel(0, &regs->spi_ser);
+	writel(0, &regs->ser);
 	return res;
 }
 
