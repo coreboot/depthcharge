@@ -1,4 +1,3 @@
-## This file is part of the coreboot project.
 ##
 ## Copyright 2013 Google Inc.  All rights reserved.
 ##
@@ -18,3 +17,7 @@
 config DRIVER_NET_ASIX
 	bool "ASIX USB network dongle"
 	default n
+
+config DRIVER_NET_SMSC95XX
+       bool "SMSC95xx USB ethernet controller"
+       default n

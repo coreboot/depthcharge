@@ -77,57 +77,6 @@ enum {
 };
 
 enum {
-	MiiBmcr = 0x0,
-	MiiBmsr = 0x1,
-	MiiPhyIdr1 = 0x2,
-	MiiPhyIdr2 = 0x3,
-	MiiAnar = 0x4,
-	MiiAnlpar = 0x5,
-	MiiAner = 0x6
-};
-
-enum {
-	BmcrCollisionTest = 0x1 << 7,
-	BmcrDuplexMode = 0x1 << 8,
-	BmcrRestartAutoNeg = 0x1 << 9,
-	BmcrIsolate = 0x1 << 10,
-	BmcrPowerDown = 0x1 << 11,
-	BmcrAutoNegEnable = 0x1 << 12,
-	BmcrSpeedSel = 0x1 << 13,
-	BmcrLoopback = 0x1 << 14,
-	BmcrReset = 0x1 << 15
-};
-
-enum {
-	BmsrErcap = 0x1 << 0,
-	BmsrJcd = 0x1 << 1,
-	BmsrLstatus = 0x1 << 2,
-	BmsrAnegCapable = 0x1 << 3,
-	BmsrRfault = 0x1 << 4,
-	BmsrAnegComplete = 0x1 << 5,
-	BmsrEstaten = 0x1 << 8,
-	Bmsr100Half2 = 0x1 << 9,
-	Bmsr100Full2 = 0x1 << 10,
-	Bmsr10Half = 0x1 << 11,
-	Bmsr10Full = 0x1 << 12,
-	Bmsr100Half = 0x1<< 13,
-	Bmsr100Full = 0x1 << 14,
-	Bmsr100Base4 = 0x1 << 15
-};
-
-enum {
-	AdvertiseSelect = 0x1f,
-	AdvertiseCsma = 0x1,
-	Advertise10Half = 0x1 << 5,
-	Advertise10Full = 0x1 << 6,
-	Advertise100Half = 0x1 << 7,
-	Advertise100Full = 0x1 << 8,
-
-	AdvertiseAll = Advertise10Half | Advertise10Full |
-		       Advertise100Half | Advertise100Full
-};
-
-enum {
 	MediumFd = 0x1 << 1,
 	MediumAc = 0x1 << 2,
 	MediumRfc = 0x1 << 4,
@@ -149,8 +98,12 @@ static const uint16_t Ipg1Default = 0x0c;
 static const uint16_t Ipg2Default = 0x12;
 
 enum {
-	RxCtrlSo = 0x1 << 15,
-	RxCtrlAb = 0x1 << 7
+	RxCtrlSo = 0x1 << 7,
+	RxCtrlAp = 0x1 << 5,
+	RxCtrlAm = 0x1 << 4,
+	RxCtrlAb = 0x1 << 3,
+	RxCtrlAmall = 0x1 << 1,
+	RxCtrlPro = 0x1 << 0,
 };
 
 static const uint16_t RxCtrlDefault = RxCtrlSo | RxCtrlAb;
