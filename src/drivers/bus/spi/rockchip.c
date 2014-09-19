@@ -63,6 +63,11 @@ enum {
 };
 #define SPI_TMOD_OFFSET			18
 #define SPI_TMOD_MASK			0x3
+#define SPI_TMOD_TR			0x00	// xmit & recv
+#define SPI_TMOD_TO			0x01	// xmit only
+#define SPI_TMOD_RO			0x02	// recv only
+#define SPI_TMOD_RESV			0x03
+
 #define CR0_HALFWORD_TS_BIT		13
 #define CR0_SSN_DELAY_BIT		10
 #define CR0_CLOCK_POLARITY_BIT		7
@@ -83,6 +88,14 @@ enum {
 	CONTROLLER_ENABLE
 };
 
+// Bit fields in SR, 7 bits
+#define SR_MASK	0x7f
+#define SR_BUSY	(1 << 0)
+#define SR_TF_FULL	(1 << 1)
+#define SR_TF_EMPT	(1 << 2)
+#define SR_RF_EMPT	(1 << 3)
+#define SR_RF_FULL	(1 << 4)
+
 //Slave select register
 #define MAX_SLAVE	2
 
@@ -99,62 +112,55 @@ static int rockchip_spi_wait_till_not_busy(RkSpi *bus)
 	return -1;
 }
 
-static int spi_recv(RkSpi *bus, void *in, uint32_t size)
+static void set_tmod(RkSpiRegs *regs, unsigned int tmod)
 {
-	uint32_t bytes_remaining;
-	RkSpiRegs *regs = bus->reg_addr;
-	int len = size;
-	uint8_t *p = in;
-
-	writel(CONTROLLER_DISABLE, &regs->enr);
 	clrsetbits_le32(&regs->ctrlr0, SPI_TMOD_MASK << SPI_TMOD_OFFSET,
-					   RXONLY << SPI_TMOD_OFFSET);
-
-	while (len) {
-		writel(CONTROLLER_DISABLE, &regs->enr);
-		bytes_remaining = MIN(len, 0xffff);
-		writel(bytes_remaining - 1, &regs->ctrlr1);
-		len -= bytes_remaining;
-		writel(CONTROLLER_ENABLE, &regs->enr);
-		while (bytes_remaining) {
-			if (readl(&regs->rxflr) & 0x3f) {
-				*p++ = readl(&regs->rxdr) & 0xff;
-				bytes_remaining--;
-			}
-		}
-
-		if (rockchip_spi_wait_till_not_busy(bus)) {
-			printf("spi wait busy err\n");
-			return -1;
-		}
-	}
-	return 0;
+				      tmod << SPI_TMOD_OFFSET);
 }
 
-static int spi_send(RkSpi *bus, const void *out, uint32_t size)
+static void set_transfer_mode(RkSpiRegs *regs, void *in, const void *out)
 {
-	uint32_t bytes_remaining = size;
+	if (!in && !out)
+		return;
+	else if (in && out)
+		set_tmod(regs, SPI_TMOD_TR);	// tx and rx
+	else if (!in)
+		set_tmod(regs, SPI_TMOD_TO);	// tx only
+	else if (!out)
+		set_tmod(regs, SPI_TMOD_RO);	// rx only
+}
+
+// returns 0 to indicate success, <0 otherwise
+static int do_xfer(RkSpi *bus, void *in, const void *out, uint32_t size)
+{
 	RkSpiRegs *regs = bus->reg_addr;
-	uint8_t *p = (uint8_t *) out;
-	int len;
+	uint8_t *in_buf =in;
+	uint8_t *out_buf = (uint8_t *)out;
 
-	len = size - 1;
-	writel(CONTROLLER_DISABLE, &regs->enr);
+	while (size) {
+		uint32_t sr = readl(&regs->sr);
+		int xferred = 0;	// in either (or both) directions
 
-	clrsetbits_le32(&regs->ctrlr0, SPI_TMOD_MASK << SPI_TMOD_OFFSET,
-					   TXONLY << SPI_TMOD_OFFSET);
-	writel(len, &regs->ctrlr1);
-	writel(CONTROLLER_ENABLE, &regs->enr);
-
-	while (bytes_remaining) {
-		if ((readl(&regs->txflr) & 0x3f) < FIFO_DEPTH) {
-			writel(*p++, &regs->txdr);
-			bytes_remaining--;
+		if (out_buf && !(sr & SR_TF_FULL)) {
+			writel(*out_buf, &regs->txdr);
+			out_buf++;
+			xferred = 1;
 		}
+
+		if (in_buf && !(sr & SR_RF_EMPT)) {
+			*in_buf = readl(&regs->rxdr) & 0xff;
+			in_buf++;
+			xferred = 1;
+		}
+
+		size -= xferred;
 	}
 
-	if (rockchip_spi_wait_till_not_busy(bus))
+	if (rockchip_spi_wait_till_not_busy(bus)) {
+		printf("Timed out waiting on SPI transfer\n");
 		return -1;
+	}
+
 	return 0;
 }
 
@@ -162,15 +168,46 @@ static int spi_transfer(SpiOps *me, void *in, const void *out, uint32_t size)
 {
 	int res = 0;
 	RkSpi *bus = container_of(me, RkSpi, ops);
+	RkSpiRegs *regs = bus->reg_addr;
 
 	spi_info("spi:: transfer\n");
 	assert((in != NULL) ^ (out != NULL));
 
-	if (out != NULL)
-		res = spi_send(bus, out, size);
-	if (in != NULL)
-		res = spi_recv(bus, in, size);
-	return res;
+	// RK3288 SPI controller can transfer up to 65536 data frames (bytes
+	// in our case) continuously. Break apart large requests as necessary.
+	//
+	// FIXME: And by 65536, we really mean 65535. If 0xffff is written to
+	// ctrlr1, all bytes that we see in rxdr end up being 0x00. 0xffff - 1
+	// seems to work fine.
+	while (size) {
+		unsigned int dataframes = MIN(size, 0xffff);
+
+		writel(CONTROLLER_DISABLE, &regs->enr);
+
+		writel(dataframes - 1, &regs->ctrlr1);
+
+		// Disable transmitter and receiver as needed to avoid
+		// sending or reading spurious bits.
+		set_transfer_mode(regs, in, out);
+
+		writel(CONTROLLER_ENABLE, &regs->enr);
+
+		res = do_xfer(bus, in, out, dataframes);
+		if (res < 0)
+			break;
+
+		if (in)
+			in += dataframes;
+
+		if (out)
+			out += dataframes;
+
+		size -= dataframes;
+	}
+
+	writel(CONTROLLER_DISABLE, &regs->enr);
+	return res < 0 ? res : 0;
+
 }
 
 static int spi_start(SpiOps *me)
