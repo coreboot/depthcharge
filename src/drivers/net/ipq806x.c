@@ -1,64 +1,73 @@
 /*
- * Copyright (c) 2012 - 2013 The Linux Foundation. All rights reserved.
+ * Copyright (c) 2012 - 2014 The Linux Foundation. All rights reserved.
  */
 
-#include <common.h>
-#include <net.h>
-#include <asm-generic/errno.h>
-#include <asm/io.h>
-#include <asm/arch-ipq806x/nss/msm_ipq806x_gmac.h>
-#include <asm/arch-ipq806x/gpio.h>
-#include <malloc.h>
-#include <phy.h>
-#include <asm/arch-ipq806x/nss/clock.h>
-#include <asm/arch-ipq806x/nss/nss_reg.h>
-#include <asm/arch-ipq806x/gpio.h>
-#include <asm/arch-ipq806x/clock.h>
-#include "ipq_gmac.h"
+#include <libpayload.h>
+#include <arch/cache.h>
 
+#include "base/init_funcs.h"
+#include "drivers/storage/bouncebuf.h"
+
+#include "ipq806x.h"
+#include "drivers/gpio/ipq806x.h"
+#include "drivers/net/nss/msm_ipq806x_gmac.h"
+#include "drivers/net/athrs17_phy.h"
+
+#define PCS_QSGMII_MAC_STAT	0x74
+#define MAX_FRAME_SIZE		1536
+#define DESC_SIZE	(sizeof(ipq_gmac_desc_t))
+#define DESC_FLUSH_SIZE	ALIGN_UP(sizeof(ipq_gmac_desc_t), get_cache_line_size())
 #define ipq_info	printf
 #define ipq_dbg		printf
 
-struct ipq_eth_dev *ipq_gmac_macs[IPQ_GMAC_NMACS];
+static void *net_rx_packets[NO_OF_RX_DESC];
 
-static void config_auto_neg(struct eth_device *dev)
+static int ipq_eth_start(IpqEthDev *priv);
+
+/* to be instatiated */
+static int get_eth_mac_address(u8 *enetaddr)
 {
-	struct ipq_eth_dev *priv = dev->priv;
-	ipq_mdio_write(priv->phy_address[0],
+	int i;
+
+	for (i = 0; i < 6; i++)
+		enetaddr[i] = 0x10 + i;
+	return 1;
+}
+
+static void config_auto_neg(IpqEthDev *priv)
+{
+	ipq_mdio_write(priv->mdio_addr,
 			PHY_CONTROL_REG,
 			AUTO_NEG_ENABLE);
 }
 
-static int ipq_phy_link_status(struct eth_device *dev)
+static int ipq_phy_check_link(NetDevice *dev, int *ready)
 {
-	struct ipq_eth_dev *priv = dev->priv;
-	int port_status;
-	ushort phy_status;
-	uint i;
+	IpqEthDev *priv = dev->dev_data;
+	u16 phy_status;
 
-	udelay(1000);
-
-	for (i = 0; i < priv->no_of_phys; i++) {
-		ipq_mdio_read(priv->phy_address[i], PHY_SPECIFIC_STATUS_REG,
-				&phy_status);
-		port_status = ((phy_status & Mii_phy_status_link_up) >>
-				(MII_PHY_STAT_SHIFT));
-		if (port_status == 1)
-			return 0;
+	if (!priv->started) {
+		ipq_eth_start(priv);
+		udelay(1000);
 	}
 
-	return -1;
+	if (ipq_mdio_read(priv->mdio_addr, PHY_SPECIFIC_STATUS_REG,
+			  &phy_status))
+		return 1;
+
+	*ready = ((phy_status & Mii_phy_status_link_up) != 0);
+	return 0;
 }
 
-static void get_phy_speed_duplexity(struct eth_device *dev)
+static void get_phy_speed_duplexity(NetDevice *dev)
 {
-	struct ipq_eth_dev *priv = dev->priv;
-	uint phy_status;
-	uint start;
-	const uint timeout = 2000;
+	IpqEthDev *priv = dev->dev_data;
+	unsigned phy_status;
+	u64 start;
+	const u64 timeout = 2000 * 1000; /* in microseconds */
 
-	start = get_timer(0);
-	while (get_timer(start) < timeout) {
+	start = timer_us(0);
+	while (timer_us(start) < timeout) {
 
 		phy_status = readl(QSGMII_REG_BASE +
 				PCS_QSGMII_MAC_STAT);
@@ -88,12 +97,11 @@ static void get_phy_speed_duplexity(struct eth_device *dev)
 	}
 }
 
-static int ipq_eth_wr_macaddr(struct eth_device *dev)
+static int ipq_eth_wr_macaddr(IpqEthDev *eth_dev )
 {
-	struct ipq_eth_dev *priv = dev->priv;
-	struct eth_mac_regs *mac_p = (struct eth_mac_regs *)priv->mac_regs_p;
+	struct eth_mac_regs *mac_p = eth_dev->mac_regs_p;
 	u32 macid_lo, macid_hi;
-	u8 *mac_id = &dev->enetaddr[0];
+	u8 *mac_id = eth_dev->mac_addr.addr;
 
 	macid_lo = mac_id[0] + (mac_id[1] << 8) +
 		   (mac_id[2] << 16) + (mac_id[3] << 24);
@@ -105,10 +113,9 @@ static int ipq_eth_wr_macaddr(struct eth_device *dev)
 	return 0;
 }
 
-static void ipq_mac_reset(struct eth_device *dev)
+static void ipq_mac_reset(IpqEthDev *eth_dev)
 {
-	struct ipq_eth_dev *priv = dev->priv;
-	struct eth_dma_regs *dma_reg = (struct eth_dma_regs *)priv->dma_regs_p;
+	struct eth_dma_regs *dma_reg = eth_dev->dma_regs_p;
 	u32 val;
 
 	writel(DMAMAC_SRST, &dma_reg->busmode);
@@ -119,30 +126,26 @@ static void ipq_mac_reset(struct eth_device *dev)
 
 }
 
-static void ipq_eth_mac_cfg(struct eth_device *dev)
+static void ipq_eth_mac_cfg(IpqEthDev *priv)
 {
-	struct ipq_eth_dev *priv = dev->priv;
-	struct eth_mac_regs *mac_reg = (struct eth_mac_regs *)priv->mac_regs_p;
+	unsigned ipq_mac_cfg;
+	struct eth_mac_regs *mac_reg = priv->mac_regs_p;
 
-	uint ipq_mac_cfg;
-
-	if (priv->mac_unit > GMAC_UNIT1) {
+	if (priv->mac_unit > GMAC_UNIT1)
 		ipq_mac_cfg = (priv->mac_ps | FULL_DUPLEX_ENABLE);
-	} else {
+	else
 		ipq_mac_cfg = (GMII_PORT_SELECT | FULL_DUPLEX_ENABLE);
-	}
 
 	ipq_mac_cfg |= (FRAME_BURST_ENABLE | TX_ENABLE | RX_ENABLE);
 
 	writel(ipq_mac_cfg, &mac_reg->conf);
 }
 
-static void ipq_eth_dma_cfg(struct eth_device *dev)
+static void ipq_eth_dma_cfg(IpqEthDev *priv)
 {
-	struct ipq_eth_dev *priv = dev->priv;
-	struct eth_dma_regs *dma_reg = (struct eth_dma_regs *)priv->dma_regs_p;
-	uint ipq_dma_bus_mode;
-	uint ipq_dma_op_mode;
+	struct eth_dma_regs *dma_reg = priv->dma_regs_p;
+	unsigned ipq_dma_bus_mode;
+	unsigned ipq_dma_op_mode;
 
 	ipq_dma_op_mode = DmaStoreAndForward | DmaRxThreshCtrl128 |
 				DmaTxSecondFrame;
@@ -154,13 +157,12 @@ static void ipq_eth_dma_cfg(struct eth_device *dev)
 	writel(ipq_dma_op_mode, &dma_reg->opmode);
 }
 
-static void ipq_eth_flw_cntl_cfg(struct eth_device *dev)
+static void ipq_eth_flw_cntl_cfg(IpqEthDev *priv)
 {
-	struct ipq_eth_dev *priv = dev->priv;
-	struct eth_mac_regs *mac_reg = (struct eth_mac_regs *)priv->mac_regs_p;
-	struct eth_dma_regs *dma_reg = (struct eth_dma_regs *)priv->dma_regs_p;
-	uint ipq_dma_flw_cntl;
-	uint ipq_mac_flw_cntl;
+	struct eth_mac_regs *mac_reg = priv->mac_regs_p;
+	struct eth_dma_regs *dma_reg = priv->dma_regs_p;
+	unsigned ipq_dma_flw_cntl;
+	unsigned ipq_mac_flw_cntl;
 
 	ipq_dma_flw_cntl = DmaRxFlowCtrlAct3K | DmaRxFlowCtrlDeact4K |
 				DmaEnHwFlowCtrl;
@@ -170,59 +172,62 @@ static void ipq_eth_flw_cntl_cfg(struct eth_device *dev)
 	setbits_le32(&mac_reg->flowcontrol, ipq_mac_flw_cntl);
 }
 
-static void __inline__ *
-plat_alloc_consistent_dmaable_memory(size_t size, dma_addr_t *dma_addr)
-{
-	void *buf = memalign(CACHE_LINE_SIZE, size);
-	*dma_addr = (dma_addr_t)(virt_to_phys(buf));
-	return buf;
-}
-
 static int ipq_gmac_alloc_fifo(int ndesc, ipq_gmac_desc_t **fifo)
 {
 	int i;
-	u32 size;
-	uchar *p = NULL;
-	dma_addr_t dma_addr;
-	size = sizeof(ipq_gmac_desc_t) * ndesc;
+	ipq_gmac_desc_t *p;
 
-	p  = plat_alloc_consistent_dmaable_memory(size, &dma_addr);
-	if (p  == NULL) {
+	p = xmemalign((get_cache_line_size()),
+			(ndesc * DESC_FLUSH_SIZE));
+
+	if (!p) {
 		ipq_info("Cant allocate desc  fifos\n");
 		return -1;
 	}
 
 	for (i = 0; i < ndesc; i++)
-		fifo[i] = (ipq_gmac_desc_t *) p + i;
-
+		fifo[i] = (ipq_gmac_desc_t *)((unsigned long)p +
+					i * DESC_FLUSH_SIZE);
 	return 0;
 }
 
-static int ipq_gmac_rx_desc_setup(struct ipq_eth_dev  *priv)
+static int ipq_gmac_rx_desc_setup(IpqEthDev  *priv)
 {
-	struct eth_dma_regs *dma_reg = (struct eth_dma_regs *)priv->dma_regs_p;
+	struct eth_dma_regs *dma_reg = priv->dma_regs_p;
 	ipq_gmac_desc_t *rxdesc;
 	int i;
 
 	for (i = 0; i < NO_OF_RX_DESC; i++) {
+		void *p = xmemalign(get_cache_line_size(), MAX_FRAME_SIZE);
+
+		if (!p)
+			return -1;
+		net_rx_packets[i] = p;
+
 		rxdesc = priv->desc_rx[i];
 		rxdesc->length |= ((ETH_MAX_FRAME_LEN << DescSize1Shift) &
 					DescSize1Mask);
-		rxdesc->buffer1 = virt_to_phys(NetRxPackets[i]);
-		rxdesc->data1 = (u32)NetRxPackets[i];
+		rxdesc->buffer1 = (u32)p;
+		rxdesc->data1 = (u32)priv->desc_rx[(i + 1) %
+							NO_OF_RX_DESC];
+
 		rxdesc->extstatus = 0;
 		rxdesc->reserved1 = 0;
 		rxdesc->timestamplow = 0;
 		rxdesc->timestamphigh = 0;
 		rxdesc->status = DescOwnByDma;
+
+		dcache_clean_invalidate_by_mva((void const *)rxdesc,
+			DESC_FLUSH_SIZE);
 	}
+
 	/* Assign Descriptor base address to dmadesclist addr reg */
-	writel((uint)priv->desc_rx[0], &dma_reg->rxdesclistaddr);
+	writel((unsigned)priv->desc_rx[0], &dma_reg->rxdesclistaddr);
 
 	return 0;
 }
 
-static int ipq_gmac_tx_rx_desc_ring(struct ipq_eth_dev  *priv)
+static int ipq_gmac_tx_rx_desc_ring(IpqEthDev  *priv)
 {
 	int i;
 	ipq_gmac_desc_t *desc;
@@ -235,6 +240,15 @@ static int ipq_gmac_tx_rx_desc_ring(struct ipq_eth_dev  *priv)
 		memset(desc, 0, sizeof(ipq_gmac_desc_t));
 		desc->status =
 		(i == (NO_OF_TX_DESC - 1)) ? TxDescEndOfRing : 0;
+
+		desc->status |= TxDescChain;
+
+		desc->data1 = (u32)priv->desc_tx[(i + 1) %
+				NO_OF_TX_DESC];
+
+		dcache_clean_invalidate_by_mva((void const *)desc,
+			DESC_FLUSH_SIZE);
+
 	}
 
 	if (ipq_gmac_alloc_fifo(NO_OF_RX_DESC, priv->desc_rx))
@@ -245,6 +259,14 @@ static int ipq_gmac_tx_rx_desc_ring(struct ipq_eth_dev  *priv)
 		memset(desc, 0, sizeof(ipq_gmac_desc_t));
 		desc->length =
 		(i == (NO_OF_RX_DESC - 1)) ? RxDescEndOfRing : 0;
+
+		desc->length |= RxDescChain;
+		desc->data1 = (u32)priv->desc_rx[(i + 1) %
+				NO_OF_RX_DESC];
+
+		dcache_clean_invalidate_by_mva((void const *)desc,
+			DESC_FLUSH_SIZE);
+
 	}
 
 	priv->next_tx = 0;
@@ -260,7 +282,7 @@ static inline void ipq_gmac_give_to_dma(ipq_gmac_desc_t *fr)
 
 static inline u32 ipq_gmac_owned_by_dma(ipq_gmac_desc_t *fr)
 {
-	return (fr->status & DescOwnByDma);
+	return fr->status & DescOwnByDma;
 }
 
 static inline u32 ipq_gmac_is_desc_empty(ipq_gmac_desc_t *fr)
@@ -268,53 +290,51 @@ static inline u32 ipq_gmac_is_desc_empty(ipq_gmac_desc_t *fr)
 	return ((fr->length & DescSize1Mask) == 0);
 }
 
-static int ipq_eth_init(struct eth_device *dev, bd_t *this)
+static int ipq_eth_start(IpqEthDev *priv)
 {
-	struct ipq_eth_dev *priv = dev->priv;
-	struct eth_dma_regs *dma_reg = (struct eth_dma_regs *)priv->dma_regs_p;
 	u32 data;
-
-	if (ipq_phy_link_status(dev) != 0) {
-		ipq_info("Mac%x unit failed\n", priv->mac_unit);
-		return -1;
-	}
+	struct eth_dma_regs *dma_reg = priv->dma_regs_p;
 
 	priv->next_rx = 0;
 	priv->next_tx = 0;
 
-	ipq_mac_reset(dev);
+	ipq_mac_reset(priv);
 
 	if ((priv->mac_unit == GMAC_UNIT2) || (priv->mac_unit == GMAC_UNIT3))
-		config_auto_neg(dev);
+		config_auto_neg(priv);
 
-	ipq_eth_wr_macaddr(dev);
-
+	ipq_eth_wr_macaddr(priv);
 
 	/* DMA, MAC configuration for Synopsys GMAC */
-	ipq_eth_dma_cfg(dev);
-	ipq_eth_mac_cfg(dev);
-	ipq_eth_flw_cntl_cfg(dev);
+	ipq_eth_dma_cfg(priv);
+	ipq_eth_mac_cfg(priv);
+	ipq_eth_flw_cntl_cfg(priv);
 
 	/* clear all pending interrupts if any */
 	data = readl(&dma_reg->status);
 	writel(data, &dma_reg->status);
 
 	/* Setup Rx fifos and assign base address to */
-	ipq_gmac_rx_desc_setup(priv);
+	if (ipq_gmac_rx_desc_setup(priv))
+		return -1;
 
-	writel((uint)priv->desc_tx[0], &dma_reg->txdesclistaddr);
+	writel((unsigned)priv->desc_tx[0], &dma_reg->txdesclistaddr);
 	setbits_le32(&dma_reg->opmode, (RXSTART));
 	setbits_le32(&dma_reg->opmode, (TXSTART));
 
-	return 1;
+	priv->started = 1;
+
+	return 0;
 }
 
-static int ipq_eth_send(struct eth_device *dev, void *packet, int length)
+static int ipq_eth_send(NetDevice *dev, void *packet, u16 length)
 {
-	struct ipq_eth_dev *priv = dev->priv;
-	struct eth_dma_regs *dma_p = (struct eth_dma_regs *)priv->dma_regs_p;
+	IpqEthDev *priv = dev->dev_data;
+	struct eth_dma_regs *dma_p = priv->dma_regs_p;
 	ipq_gmac_desc_t *txdesc = priv->desc_tx[priv->next_tx];
 	int i = 0;
+
+	dcache_invalidate_by_mva((void const *)txdesc, DESC_FLUSH_SIZE);
 
 	/* Check if the dma descriptor is still owned by DMA */
 	if (ipq_gmac_owned_by_dma(txdesc)) {
@@ -325,93 +345,116 @@ static int ipq_eth_send(struct eth_device *dev, void *packet, int length)
 	txdesc->length |= ((length <<DescSize1Shift) & DescSize1Mask);
 	txdesc->status |= (DescTxFirst | DescTxLast | DescTxIntEnable);
 	txdesc->buffer1 = virt_to_phys(packet);
-	txdesc->data1 = (u32)packet;
 	ipq_gmac_give_to_dma(txdesc);
+
+	dcache_clean_invalidate_by_mva((void const *)txdesc, DESC_FLUSH_SIZE);
+
+	dcache_clean_invalidate_by_mva((void const *)(txdesc->buffer1), length);
 
 	/* Start the transmission */
 	writel(POLL_DATA, &dma_p->txpolldemand);
 
 	for (i = 0; i < MAX_WAIT; i++) {
 		udelay(10);
+		dcache_invalidate_by_mva((void const *)txdesc, DESC_FLUSH_SIZE);
 		if (!ipq_gmac_owned_by_dma(txdesc))
 			break;
 	}
-	if (i == MAX_WAIT) {
+	if (i == MAX_WAIT)
 		ipq_info("Tx Timed out\n");
-	}
 
 	/* reset the descriptors */
 	txdesc->status = (priv->next_tx == (NO_OF_RX_DESC - 1)) ?
 	TxDescEndOfRing : 0;
+	txdesc->status |= TxDescChain;
 	txdesc->length = 0;
 	txdesc->buffer1 = 0;
-	txdesc->data1 = 0;
+	priv->next_tx = (priv->next_tx + 1) % NO_OF_TX_DESC;
 
-	if (++priv->next_tx >= NO_OF_TX_DESC)
-		priv->next_tx = 0;
+	txdesc->data1 = (u32)priv->desc_tx[priv->next_tx];
+
+	dcache_clean_invalidate_by_mva((void const *)txdesc, DESC_FLUSH_SIZE);
 
 	return 0;
 }
 
-static int ipq_eth_recv(struct eth_device *dev)
+static int ipq_eth_recv(NetDevice *dev, void *buf, uint16_t *len, int maxlen)
 {
-	struct ipq_eth_dev *priv = dev->priv;
-	struct eth_dma_regs *dma_p = (struct eth_dma_regs *)priv->dma_regs_p;
-	int length = 0;
+	IpqEthDev *priv = dev->dev_data;
+	struct eth_dma_regs *dma_p = priv->dma_regs_p;
+	u16 length = 0;
 	ipq_gmac_desc_t *rxdesc = priv->desc_rx[priv->next_rx];
-	uint status;
-	int i;
+	unsigned status;
+	u8 *p_buf = (u8 *)buf;
+	*len = 0;
+
+	dcache_invalidate_by_mva((void const *)(priv->desc_rx[0]),
+		NO_OF_RX_DESC * DESC_FLUSH_SIZE);
 
 	for (rxdesc = priv->desc_rx[priv->next_rx];
 		!ipq_gmac_owned_by_dma(rxdesc);
 		rxdesc = priv->desc_rx[priv->next_rx]) {
 
 		status = rxdesc->status;
-		length = ((status & DescFrameLengthMask) >> DescFrameLengthShift);
-		NetReceive(NetRxPackets[priv->next_rx], length - 4);
-		i = priv->next_rx;
+		/*
+		 TODO: Status shall be processed to determine error
+		 return (non-zero) if required
+		*/
+		length = ((status & DescFrameLengthMask) >>
+				DescFrameLengthShift);
 
-		if (++priv->next_rx >= NO_OF_RX_DESC)
-		priv->next_rx = 0;
+		if ((*len + length) > maxlen)
+			break;
+
+		dcache_invalidate_by_mva(
+			(void const *)(net_rx_packets[priv->next_rx]), length);
+
+		if (((*len + length) <= maxlen) && length) {
+			memcpy(p_buf,
+				(void *)(net_rx_packets[priv->next_rx]),
+				length);
+			*len += length;
+			p_buf += length;
+		} else {
+			if (!length)
+				printf("received zero length frame.\n");
+			else
+				printf("\n%s:%d received frame too long (%d)\n",
+					__func__, __LINE__, length);
+		}
 
 		rxdesc->length = ((ETH_MAX_FRAME_LEN << DescSize1Shift) &
-				   DescSize1Mask);
-
-		rxdesc->length |= (i == (NO_OF_RX_DESC - 1)) ?
+					DescSize1Mask);
+		rxdesc->length |= (priv->next_rx == (NO_OF_RX_DESC - 1)) ?
 					RxDescEndOfRing : 0;
+		rxdesc->length |= RxDescChain;
+		rxdesc->buffer1 = (u32)net_rx_packets[priv->next_rx];
+		priv->next_rx = (priv->next_rx + 1) % NO_OF_RX_DESC;
+		rxdesc->data1 = (unsigned long)priv->desc_rx[priv->next_rx];
 
-		rxdesc->buffer1 = virt_to_phys(NetRxPackets[i]) ;
-		rxdesc->data1 = (u32)NetRxPackets[i];
 		rxdesc->extstatus = 0;
 		rxdesc->reserved1 = 0;
 		rxdesc->timestamplow = 0;
 		rxdesc->timestamphigh = 0;
 		rxdesc->status = DescOwnByDma;
 
+		dcache_clean_invalidate_by_mva((void const *)rxdesc,
+			DESC_FLUSH_SIZE);
+
 		writel(POLL_DATA, &dma_p->rxpolldemand);
 	}
-
-	return length;
+	return 0;
 }
 
-static void ipq_eth_halt(struct eth_device *dev)
+static void gmac_sgmii_clk_init(unsigned mac_unit, unsigned clk_div,
+	const ipq_gmac_board_cfg_t *gmac_cfg)
 {
-	if (dev->state != ETH_STATE_ACTIVE)
-		return;
-	/* reset the mac */
-	ipq_mac_reset(dev);
-}
-
-static void
-gmac_sgmii_clk_init(uint mac_unit, uint clk_div, ipq_gmac_board_cfg_t *gmac_cfg)
-{
-	uint gmac_ctl_val;
-	uint nss_eth_clk_gate_val;
+	unsigned gmac_ctl_val;
+	unsigned nss_eth_clk_gate_val;
 
 	gmac_ctl_val = (NSS_ETH_GMAC_PHY_INTF_SEL |
 			NSS_ETH_GMAC_PHY_IFG_LIMIT |
 			NSS_ETH_GMAC_PHY_IFG);
-
 
 	nss_eth_clk_gate_val = (GMACn_GMII_RX_CLK(mac_unit) |
 				GMACn_GMII_TX_CLK(mac_unit) |
@@ -482,8 +525,8 @@ gmac_sgmii_clk_init(uint mac_unit, uint clk_div, ipq_gmac_board_cfg_t *gmac_cfg)
 	}
 }
 
-static void ipq_gmac_mii_clk_init(struct ipq_eth_dev *priv, uint clk_div,
-				ipq_gmac_board_cfg_t *gmac_cfg)
+static void ipq_gmac_mii_clk_init(IpqEthDev *priv, unsigned clk_div,
+				  const ipq_gmac_board_cfg_t *gmac_cfg)
 {
 	u32 nss_gmac_ctl_val;
 	u32 nss_eth_clk_gate_ctl_val;
@@ -496,8 +539,8 @@ static void ipq_gmac_mii_clk_init(struct ipq_eth_dev *priv, uint clk_div,
 				GMAC_IFG_LIMIT(GMAC_IFG));
 		nss_eth_clk_gate_ctl_val =
 			(GMACn_RGMII_RX_CLK(gmac_idx) |
-			 GMACn_RGMII_TX_CLK(gmac_idx) |
-			 GMACn_PTP_CLK(gmac_idx));
+			GMACn_RGMII_TX_CLK(gmac_idx) |
+			GMACn_PTP_CLK(gmac_idx));
 		setbits_le32((NSS_REG_BASE + NSS_GMACn_CTL(gmac_idx)),
 				nss_gmac_ctl_val);
 		setbits_le32((NSS_REG_BASE + NSS_ETH_CLK_GATE_CTL),
@@ -511,192 +554,159 @@ static void ipq_gmac_mii_clk_init(struct ipq_eth_dev *priv, uint clk_div,
 		gmac_sgmii_clk_init(gmac_idx, clk_div, gmac_cfg);
 		break;
 	default :
-		ipq_info(" default : no rgmii sgmii for gmac %d  \n", gmac_idx);
+		ipq_info(" default : no rgmii sgmii for gmac %d\n", gmac_idx);
 		return;
 	}
 }
 
-int ipq_gmac_init(ipq_gmac_board_cfg_t *gmac_cfg)
+static NetDevice *ipq_gmac_init(const ipq_gmac_board_cfg_t *gmac_cfg)
 {
 	static int s17_init_done = 0;
-	struct eth_device *dev[IPQ_GMAC_NMACS];
-	uint clk_div_val;
-	uchar enet_addr[IPQ_GMAC_NMACS * 6];
+	NetDevice *dev;
+	IpqEthDev *ipq_dev = 0;
+	unsigned clk_div_val;
 	int i;
-	int ret;
 
-	memset(enet_addr, 0, sizeof(enet_addr));
+	dev = malloc(sizeof(*dev));
+	if (!dev)
+		goto failed;
 
-	/* Getting the MAC address from ART partition */
-	ret = get_eth_mac_address(enet_addr, IPQ_GMAC_NMACS);
+	memset(dev, 0, sizeof(*dev));
 
-	for (i = 0; gmac_cfg_is_valid(gmac_cfg); gmac_cfg++, i++) {
+	dev->dev_data = malloc(sizeof(IpqEthDev));
+	if (!dev->dev_data)
+		goto failed;
 
-		dev[i] = malloc(sizeof(struct eth_device));
-		if (dev[i] == NULL)
-			goto failed;
+	ipq_dev = dev->dev_data;
+	memset(ipq_dev, 0, sizeof(*ipq_dev));
 
-		ipq_gmac_macs[i] = malloc(sizeof(struct ipq_eth_dev));
-		if (ipq_gmac_macs[i] == NULL)
-			goto failed;
+	/* Board is supposed to supply a MAC address. */
+	if (!get_eth_mac_address(ipq_dev->mac_addr.addr))
+		goto failed;
 
-		memset(dev[i], 0, sizeof(struct eth_device));
-		memset(ipq_gmac_macs[i], 0, sizeof(struct ipq_eth_dev));
+	ipq_info("MAC addr");
+	for (i = 0; i < sizeof(ipq_dev->mac_addr.addr); i++)
+		ipq_info("%c%2.2x", i ? ':' : ' ', ipq_dev->mac_addr.addr[i]);
+	ipq_info("\n");
 
-		dev[i]->iobase = gmac_cfg->base;
-		dev[i]->init = ipq_eth_init;
-		dev[i]->halt = ipq_eth_halt;
-		dev[i]->recv = ipq_eth_recv;
-		dev[i]->send = ipq_eth_send;
-		dev[i]->write_hwaddr = ipq_eth_wr_macaddr;
-		dev[i]->priv = (void *) ipq_gmac_macs[i];
-
-		sprintf(dev[i]->name, "eth%d", i);
-
-		/*
-		 * Setting the Default MAC address if the MAC read from ART partition
-		 * is invalid.
-		 */
-		if ((ret < 0) ||
-		    (!is_valid_ether_addr(&enet_addr[gmac_cfg->unit * 6]))) {
-			memcpy(&dev[i]->enetaddr[0], ipq_def_enetaddr, 6);
-			dev[i]->enetaddr[5] = gmac_cfg->unit & 0xff;
-		} else {
-			memcpy(&dev[i]->enetaddr[0],
-			       &enet_addr[gmac_cfg->unit * 6],
-			       6);
-		}
-
-		ipq_info("MAC%x addr:%x:%x:%x:%x:%x:%x\n",
-			gmac_cfg->unit, dev[i]->enetaddr[0],
-			dev[i]->enetaddr[1],
-			dev[i]->enetaddr[2],
-			dev[i]->enetaddr[3],
-			dev[i]->enetaddr[4],
-			dev[i]->enetaddr[5]);
-
-		ipq_gmac_macs[i]->dev = dev[i];
-		ipq_gmac_macs[i]->mac_unit = gmac_cfg->unit;
-		ipq_gmac_macs[i]->mac_regs_p =
-			(struct eth_mac_regs *)(gmac_cfg->base);
-		ipq_gmac_macs[i]->dma_regs_p =
-			(struct eth_dma_regs *)(gmac_cfg->base + DW_DMA_BASE_OFFSET);
-		ipq_gmac_macs[i]->interface = gmac_cfg->phy;
-		ipq_gmac_macs[i]->phy_address = gmac_cfg->phy_addr.addr;
-		ipq_gmac_macs[i]->no_of_phys = gmac_cfg->phy_addr.count;
+	ipq_dev->mac_unit = gmac_cfg->unit;
+	ipq_dev->mac_regs_p = (struct eth_mac_regs *)(gmac_cfg->base);
+	ipq_dev->dma_regs_p =
+		(struct eth_dma_regs *)(gmac_cfg->base + DW_DMA_BASE_OFFSET);
+	ipq_dev->interface = gmac_cfg->phy;
+	ipq_dev->mdio_addr = gmac_cfg->mdio_addr;
 
 		/* tx/rx Descriptor initialization */
-		if (ipq_gmac_tx_rx_desc_ring(dev[i]->priv) == -1)
+	if (ipq_gmac_tx_rx_desc_ring(ipq_dev))
+		goto failed;
+
+	if ((gmac_cfg->unit == GMAC_UNIT2 ||
+		gmac_cfg->unit == GMAC_UNIT3) &&
+		(gmac_cfg->mac_conn_to_phy)) {
+
+		get_phy_speed_duplexity(dev);
+
+		switch (ipq_dev->speed) {
+		case SPEED_1000M:
+			ipq_info("Port:%d speed 1000Mbps\n",
+				 gmac_cfg->unit);
+			ipq_dev->mac_ps = GMII_PORT_SELECT;
+			clk_div_val = (CLK_DIV_SGMII_1000M - 1);
+			break;
+		case SPEED_100M:
+			ipq_info("Port:%d speed 100Mbps\n",
+				 gmac_cfg->unit);
+			ipq_dev->mac_ps = MII_PORT_SELECT;
+			clk_div_val = (CLK_DIV_SGMII_100M - 1);
+			break;
+		case SPEED_10M:
+			ipq_info("Port:%d speed 10Mbps\n",
+				 gmac_cfg->unit);
+			ipq_dev->mac_ps = MII_PORT_SELECT;
+			clk_div_val = (CLK_DIV_SGMII_10M - 1);
+			break;
+		default:
+			ipq_info("Port speed unknown\n");
 			goto failed;
-
-		if ((gmac_cfg->unit == GMAC_UNIT2 ||
-		    gmac_cfg->unit == GMAC_UNIT3) &&
-		    (gmac_cfg->mac_conn_to_phy)) {
-
-			get_phy_speed_duplexity(dev[i]);
-
-			switch (ipq_gmac_macs[i]->speed) {
-			case SPEED_1000M:
-				ipq_info("Port:%d speed 1000Mbps\n",
-					gmac_cfg->unit);
-				ipq_gmac_macs[i]->mac_ps = GMII_PORT_SELECT;
-				clk_div_val = (CLK_DIV_SGMII_1000M - 1);
-				break;
-			case SPEED_100M:
-				ipq_info("Port:%d speed 100Mbps\n",
-					gmac_cfg->unit);
-				ipq_gmac_macs[i]->mac_ps = MII_PORT_SELECT;
-				clk_div_val = (CLK_DIV_SGMII_100M - 1);
-				break;
-			case SPEED_10M:
-				ipq_info("Port:%d speed 10Mbps\n",
-					gmac_cfg->unit);
-				ipq_gmac_macs[i]->mac_ps = MII_PORT_SELECT;
-				clk_div_val = (CLK_DIV_SGMII_10M - 1);
-				break;
-			default:
-				ipq_info("Port speed unknown\n");
-				goto failed;
-			}
-		} else {
-			/* Force it to zero for GMAC 0 & 1 */
-			clk_div_val = 0;
 		}
+	} else {
+			/* Force it to zero for GMAC 0 & 1 */
+		clk_div_val = 0;
+	}
 
-		ipq_gmac_mii_clk_init(ipq_gmac_macs[i], clk_div_val, gmac_cfg);
-
-		eth_register(dev[i]);
+		ipq_gmac_mii_clk_init(ipq_dev, clk_div_val, gmac_cfg);
 
 		if (!s17_init_done) {
 			ipq_switch_init(gmac_cfg);
 			s17_init_done = 1;
 			ipq_info("S17 inits done\n");
 		}
-	}
 
-	return 0;
+	return dev;
 
 failed:
-	for (i = 0; i < IPQ_GMAC_NMACS; i++) {
-		if (dev[i]) {
-			eth_unregister(dev[i]);
-			free(dev[i]);
-		}
-		if (ipq_gmac_macs[i])
-			free(ipq_gmac_macs[i]);
+	if (dev) {
+		if (dev->dev_data)
+			free(dev->dev_data);
+		free(dev);
 	}
 
-	return -ENOMEM;
+	if (ipq_dev)
+		free(ipq_dev);
+
+	return NULL;
 }
 
-
-
-static void ipq_gmac_core_reset(ipq_gmac_board_cfg_t *gmac_cfg)
+static void ipq_gmac_core_reset(const ipq_gmac_board_cfg_t *gmac_cfg)
 {
-	for (; gmac_cfg_is_valid(gmac_cfg); gmac_cfg++) {
-		writel(0, GMAC_CORE_RESET(gmac_cfg->unit));
-		if (gmac_cfg->is_macsec)
-			writel(0, GMACSEC_CORE_RESET(gmac_cfg->unit));
-	}
+	writel(0, GMAC_CORE_RESET(gmac_cfg->unit));
+	if (gmac_cfg->is_macsec)
+		writel(0, GMACSEC_CORE_RESET(gmac_cfg->unit));
 
 	writel(0, (void *)GMAC_AHB_RESET);
 	writel(0, (MSM_TCSR_BASE + TCSR_PXO_SEL));
 }
 
-uint ipq_mdio_read(uint phy_addr, uint reg_offset, ushort *data)
+unsigned ipq_mdio_read(unsigned phy_addr,
+		       unsigned reg_offset, u16 *data)
 {
-	uint reg_base = NSS_GMAC0_BASE;
-	uint timeout = MII_MDIO_TIMEOUT;
-	uint miiaddr;
-	uint start;
-	uint ret_val;
+	u8 *reg_base = NSS_GMAC0_BASE;
+	int poll_period;
+	u32 cycles;
+	unsigned miiaddr;
+	unsigned ret_val;
 
 	miiaddr = (((phy_addr << MIIADDRSHIFT) & MII_ADDRMSK) |
-	((reg_offset << MIIREGSHIFT) & MII_REGMSK));
+				((reg_offset << MIIREGSHIFT) & MII_REGMSK));
 
 	miiaddr |= (MII_BUSY | MII_CLKRANGE_250_300M);
 	writel(miiaddr, (reg_base + MII_ADDR_REG_ADDR));
 	udelay(10);
 
-	start = get_timer(0);
-	while (get_timer(start) < timeout) {
+	/* Convert to microseconds. */
+	poll_period = 1000;
+	cycles = (MII_MDIO_TIMEOUT * 1000) / poll_period;
+
+	while (cycles--) {
 		if (!(readl(reg_base + MII_ADDR_REG_ADDR) & MII_BUSY)) {
 			ret_val = readl(reg_base + MII_DATA_REG_ADDR);
-			if (data != NULL)
-				*data = ret_val;
-			return ret_val;
+			*data = ret_val;
+			return 0;
 		}
-		udelay(1000);
+		udelay(poll_period);
 	}
+
+	printf("%s:%d timeout!\n", __func__, __LINE__);
 	return -1;
 }
 
-uint ipq_mdio_write(uint phy_addr, uint reg_offset, ushort data)
+unsigned ipq_mdio_write(unsigned phy_addr, unsigned reg_offset, u16 data)
 {
-	const uint reg_base = NSS_GMAC0_BASE;
-	const uint timeout = MII_MDIO_TIMEOUT;
-	uint miiaddr;
-	uint start;
+	u8 *reg_base = NSS_GMAC0_BASE;
+
+	unsigned miiaddr;
+	int poll_period;
+	u32 cycles;
 
 	writel(data, (reg_base + MII_DATA_REG_ADDR));
 
@@ -708,20 +718,25 @@ uint ipq_mdio_write(uint phy_addr, uint reg_offset, ushort data)
 	writel(miiaddr, (reg_base + MII_ADDR_REG_ADDR));
 	udelay(10);
 
-	start = get_timer(0);
-	while (get_timer(start) < timeout) {
-		if (!(readl(reg_base + MII_ADDR_REG_ADDR) & MII_BUSY)) {
+	poll_period = 1000;
+	cycles = (MII_MDIO_TIMEOUT * 1000) / poll_period;
+
+	while (cycles--) {
+		if (!(readl(reg_base + MII_ADDR_REG_ADDR) & MII_BUSY))
 			return 0;
-		}
+
 		udelay(1000);
 	}
 	return -1;
 }
 
-void ipq_gmac_common_init(ipq_gmac_board_cfg_t *gmac_cfg)
+void ipq_gmac_common_init(const ipq_gmac_board_cfg_t *gmac_cfg)
 {
-	uint pcs_qsgmii_ctl_val;
-	uint pcs_mode_ctl_val;
+	unsigned pcs_qsgmii_ctl_val;
+	unsigned pcs_mode_ctl_val;
+
+	/* Take the switch out of reset */
+	writel(0, GPIO_IN_OUT_ADDR(gmac_cfg->switch_reset_gpio));
 
 	pcs_mode_ctl_val = (PCS_CHn_ANEG_EN(GMAC_UNIT1) |
 				PCS_CHn_ANEG_EN(GMAC_UNIT2) |
@@ -764,3 +779,97 @@ void ipq_gmac_common_init(ipq_gmac_board_cfg_t *gmac_cfg)
 	 */
 	ipq_gmac_core_reset(gmac_cfg);
 }
+
+void ipq_configure_gpio(const gpio_func_data_t *gpio, unsigned count)
+{
+	int i;
+
+	for (i = 0; i < count; i++) {
+		gpio_tlmm_config(gpio->gpio, gpio->func, gpio->dir,
+				gpio->pull, gpio->drvstr, gpio->enable);
+		gpio++;
+	}
+}
+
+static const uip_eth_addr *ipq_get_mac(NetDevice *dev)
+{
+	IpqEthDev *priv = dev->dev_data;
+
+	return &priv->mac_addr;
+}
+
+static int ipq_eth_init(void)
+{
+	static const ipq_gmac_board_cfg_t gmac_cfg = {
+		.base		 = NSS_GMAC0_BASE,
+		.unit		 = 0,
+		.is_macsec	 = 0,
+		.phy		 = PHY_INTERFACE_MODE_RGMII,
+		/* GMAC0 is in 2.5v RGMII, specify
+		mac_pwr0 and mac_pwr1 values.
+		*/
+		.mac_pwr0	 = 0,
+		.mac_pwr1	 = 0,
+		.mac_conn_to_phy = 0,
+		.mdio_addr	 = 4,
+		.switch_reset_gpio = 26 /* This in fact is board specific. */
+	};
+
+const gpio_func_data_t gmac0_gpio[] = {
+	{
+		.gpio = 0,
+		.func = 1,
+		.dir = GPIO_OUTPUT,
+		.pull = GPIO_NO_PULL,
+		.drvstr = GPIO_8MA,
+		.enable = GPIO_ENABLE
+	},
+	{
+		.gpio = 1,
+		.func = 1,
+		.dir = GPIO_OUTPUT,
+		.pull = GPIO_NO_PULL,
+		.drvstr = GPIO_8MA,
+		.enable = GPIO_DISABLE
+	},
+	{
+		.gpio = 2,
+		.func = 0,
+		.dir = GPIO_OUTPUT,
+		.pull = GPIO_NO_PULL,
+		.drvstr = GPIO_8MA,
+		.enable = GPIO_ENABLE
+	},
+	{
+		.gpio = 66,
+		.func = 0,
+		.dir = GPIO_OUTPUT,
+		.pull = GPIO_NO_PULL,
+		.drvstr = GPIO_16MA,
+		.enable = GPIO_ENABLE
+	}
+};
+
+	ipq_gmac_common_init(&gmac_cfg);
+
+	ipq_configure_gpio(gmac0_gpio, ARRAY_SIZE(gmac0_gpio));
+
+	do {
+		NetDevice *ipq_network_device =	ipq_gmac_init(&gmac_cfg);
+
+		if (!ipq_network_device)
+			break;
+
+		ipq_network_device->ready = ipq_phy_check_link;
+		ipq_network_device->recv = ipq_eth_recv;
+		ipq_network_device->send = ipq_eth_send;
+		ipq_network_device->get_mac = ipq_get_mac;
+
+		net_set_device(ipq_network_device);
+
+		return 0;
+	} while(0);
+	return -1;
+}
+
+INIT_FUNC(ipq_eth_init);

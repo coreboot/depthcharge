@@ -4,8 +4,8 @@
 
 #ifndef _IPQ_GMAC_H
 #define _IPQ_GMAC_H
-#include <common.h>
-#include <net.h>
+
+#include "drivers/net/net.h"
 
 #define CONFIG_MACRESET_TIMEOUT			(3 * CONFIG_SYS_HZ)
 #define CONFIG_MDIO_TIMEOUT			(3 * CONFIG_SYS_HZ)
@@ -34,7 +34,7 @@
 #define MII_MDIO_TIMEOUT			(10000)
 #define MIIADDRSHIFT				(11)
 #define MIIREGSHIFT				(6)
-#define MII_REGMSK	 			(0x1F << 6)
+#define MII_REGMSK				(0x1F << 6)
 #define MII_ADDRMSK				(0x1F << 11)
 #define MII_PHY_STAT_SHIFT			(10)
 #define AUTO_NEG_ENABLE				(1 << 12)
@@ -204,11 +204,8 @@
 #define RX_END_OF_RING				(1 << 15)
 
 #define NO_OF_TX_DESC				8
-#define NO_OF_RX_DESC				PKTBUFSRX
+#define NO_OF_RX_DESC				8
 #define MAX_WAIT				1000
-
-#define CACHE_LINE_SHIFT			5
-#define CACHE_LINE_SIZE				(1 << CACHE_LINE_SHIFT)
 
 #define VLAN_ETH_FRAME_LEN			1518
 #define ETH_ZLEN				60
@@ -217,10 +214,9 @@
 #define VLAN_HLEN				4
 #define NET_IP_ALIGN				2
 
-#define ETHERNET_EXTRA				(NET_IP_ALIGN + 2 * CACHE_LINE_SIZE)
-#define ETH_MAX_FRAME_LEN			(VLAN_ETH_FRAME_LEN + \
-						 ETH_FCS_LEN + \
-						 ((4 - NET_IP_ALIGN) & 0x3))
+#define ETH_MAX_FRAME_LEN		(VLAN_ETH_FRAME_LEN + \
+					 ETH_FCS_LEN + \
+					 ((4 - NET_IP_ALIGN) & 0x3))
 /* QSGMII PHY bit definitions */
 #define QSGMII_PHY_SRDS_PLL_ICP_600UA		(6 << 28)
 #define QSGMII_PHY_SRDS_PLL_AMP			(2 << 24)
@@ -337,12 +333,10 @@
 #define NSS_ETH_GMAC_PHY_IFG			12
 #define MACSEC_BYPASS_EXT_EN			0x7
 
-#define phy_reg_read(base, addr, reg)	\
-	ipq_mdio_read(addr, reg, NULL)
-
-#define phy_reg_write(base, addr, reg, data)	\
-	ipq_mdio_write(addr, reg, data)
-
+unsigned ipq_mdio_write (unsigned int phy_addr, unsigned int reg_offset,
+			 unsigned short int data);
+unsigned ipq_mdio_read(unsigned int phy_addr, unsigned int reg_offset,
+		       unsigned short int *data);
 
 typedef struct
 {
@@ -357,27 +351,25 @@ typedef struct
 	volatile u32 timestamphigh;	/* Higher 32 bits of the 64 bit timestamp value */
 } ipq_gmac_desc_t ;
 
-struct ipq_eth_dev {
-	u8			*phy_address;
-	uint			no_of_phys;
-	uint			interface;
-	uint			speed;
-	uint			duplex;
-	uint			phy_configured;
-	uint			mac_unit;
-	uint			mac_ps;
-	int			link_printed;
+typedef struct {
+	unsigned		interface;
+	unsigned		speed;
+	unsigned		duplex;
+	unsigned		mac_unit;
+	unsigned		mac_ps;
 	u32			padding;
 	ipq_gmac_desc_t		*desc_tx[NO_OF_TX_DESC];
 	ipq_gmac_desc_t		*desc_rx[NO_OF_RX_DESC];
-	uint			next_tx;
-	uint			next_rx;
+	unsigned		next_tx;
+	unsigned		next_rx;
 	int			txdesc_count;
 	int			rxdesc_count;
+	uip_eth_addr		mac_addr;
 	struct eth_mac_regs	*mac_regs_p;
 	struct eth_dma_regs	*dma_regs_p;
-	struct eth_device *dev;
-} __attribute__ ((aligned(8)));
+	u8			started;
+	u8			mdio_addr;
+}  IpqEthDev __attribute__ ((aligned(8)));
 
 struct eth_mac_regs {
 	u32 conf;		/* 0x00 */
@@ -412,90 +404,134 @@ struct eth_dma_regs {
 	u32 currhostrxbuffaddr;	/* 0x54 */
 };
 
-void athrs17_reg_init(ipq_gmac_board_cfg_t *);
-unsigned int ipq_mdio_write (unsigned int phy_addr, unsigned int reg_offset,
-		unsigned short int data);
-unsigned int ipq_mdio_read(unsigned int phy_addr, unsigned int reg_offset,
-		unsigned short int *data);
 void gmac_reset(void);
 void gmacsec_reset(void);
 
 enum DmaDescriptorStatus {	/* status word of DMA descriptor */
-	DescOwnByDma		= 0x80000000,	/* (OWN)Descriptor is owned by DMA engine		31	RW	*/
+	// (OWN)Descriptor is owned by DMA engine		31	RW
+	DescOwnByDma		= 0x80000000,
 
-	DescDAFilterFail	= 0x40000000,	/* (AFM)Rx - DA Filter Fail for the rx frame		30		*/
+	// (AFM)Rx - DA Filter Fail for the rx frame		30
+	DescDAFilterFail	= 0x40000000,
 
-	DescFrameLengthMask	= 0x3FFF0000,	/* (FL)Receive descriptor frame length			29:16		*/
+	// (FL)Receive descriptor frame length			29:16
+	DescFrameLengthMask	= 0x3FFF0000,
 	DescFrameLengthShift	= 16,
 
-	DescError		= 0x00008000,	/* (ES)Error summary bit - OR of the follo. bits:	15		*/
-						/* DE || OE || IPC || LC || RWT || RE || CE */
-	DescRxTruncated		= 0x00004000,	/* (DE)Rx - no more descriptors for receive frame	14		*/
-	DescSAFilterFail	= 0x00002000,	/* (SAF)Rx - SA Filter Fail for the received frame	13		*/
-	DescRxLengthError	= 0x00001000,	/* (LE)Rx - frm size not matching with len field	12		*/
-	DescRxDamaged		= 0x00000800,	/* (OE)Rx - frm was damaged due to buffer overflow	11		*/
-	DescRxVLANTag		= 0x00000400,	/* (VLAN)Rx - received frame is a VLAN frame		10		*/
-	DescRxFirst		= 0x00000200,	/* (FS)Rx - first descriptor of the frame		 9		*/
-	DescRxLast		= 0x00000100,	/* (LS)Rx - last descriptor of the frame		 8		*/
-	DescRxLongFrame		= 0x00000080,	/* (Giant Frame)Rx - frame is longer than 1518/1522	 7		*/
-	DescRxCollision		= 0x00000040,	/* (LC)Rx - late collision occurred during reception	 6		*/
-	DescRxFrameEther	= 0x00000020,	/* (FT)Rx - Frame type - Ethernet, otherwise 802.3	 5		*/
-	DescRxWatchdog		= 0x00000010,	/* (RWT)Rx - watchdog timer expired during reception	 4		*/
-	DescRxMiiError		= 0x00000008,	/* (RE)Rx - error reported by MII interface		 3		*/
-	DescRxDribbling		= 0x00000004,	/* (DE)Rx - frame contains non int multiple of 8 bits	 2		*/
-	DescRxCrc		= 0x00000002,	/* (CE)Rx - CRC error					 1		*/
+	/* (ES)Error summary bit - OR of the follo. bits:	15		*/
+	DescError		= 0x00008000,
+			/* DE || OE || IPC || LC || RWT || RE || CE */
+	// (DE)Rx - no more descriptors for receive frame	14
+	DescRxTruncated		= 0x00004000,
+	// (SAF)Rx - SA Filter Fail for the received frame	13
+	DescSAFilterFail	= 0x00002000,
+	// (LE)Rx - frm size not matching with len field	12
+	DescRxLengthError	= 0x00001000,
+	// (OE)Rx - frm was damaged due to buffer overflow	11
+	DescRxDamaged		= 0x00000800,
+	// (VLAN)Rx - received frame is a VLAN frame		10
+	DescRxVLANTag		= 0x00000400,
+	// (FS)Rx - first descriptor of the frame		 9
+	DescRxFirst		= 0x00000200,
+	// (LS)Rx - last descriptor of the frame		 8
+	DescRxLast		= 0x00000100,
+	// (Giant Frame)Rx - frame is longer than 1518/1522	 7
+	DescRxLongFrame		= 0x00000080,
+	// (LC)Rx - late collision occurred during reception	 6
+	DescRxCollision		= 0x00000040,
+	// (FT)Rx - Frame type - Ethernet, otherwise 802.3	 5
+	DescRxFrameEther	= 0x00000020,
+	// (RWT)Rx - watchdog timer expired during reception	 4
+	DescRxWatchdog		= 0x00000010,
+	// (RE)Rx - error reported by MII interface		 3
+	DescRxMiiError		= 0x00000008,
+	// (DE)Rx - frame contains non int multiple of 8 bits	 2
+	DescRxDribbling		= 0x00000004,
+	// (CE)Rx - CRC error					 1
+	DescRxCrc		= 0x00000002,
 
-	DescRxEXTsts		= 0x00000001,	/* Extended Status Available (RDES4)			 0		*/
+	// Extended Status Available (RDES4)			 0
+	DescRxEXTsts		= 0x00000001,
 
-	DescTxIntEnable		= 0x40000000,	/* (IC)Tx - interrupt on completion			30		*/
-	DescTxLast		= 0x20000000,	/* (LS)Tx - Last segment of the frame			29		*/
-	DescTxFirst		= 0x10000000,	/* (FS)Tx - First segment of the frame			28		*/
-	DescTxDisableCrc	= 0x08000000,	/* (DC)Tx - Add CRC disabled (first segment only)	27		*/
-	DescTxDisablePadd	= 0x04000000,	/* (DP)disable padding, added by - reyaz		26		*/
+	// (IC)Tx - interrupt on completion			30
+	DescTxIntEnable		= 0x40000000,
+	// (LS)Tx - Last segment of the frame			29
+	DescTxLast		= 0x20000000,
+	// (FS)Tx - First segment of the frame			28
+	DescTxFirst		= 0x10000000,
+	// (DC)Tx - Add CRC disabled (first segment only)	27
+	DescTxDisableCrc	= 0x08000000,
+	// (DP)disable padding, added by - reyaz		26
+	DescTxDisablePadd	= 0x04000000,
 
-	DescTxCisMask		= 0x00c00000,	/* Tx checksum offloading control mask			23:22		*/
-	DescTxCisBypass		= 0x00000000,	/* Checksum bypass							*/
-	DescTxCisIpv4HdrCs	= 0x00400000,	/* IPv4 header checksum							*/
-	DescTxCisTcpOnlyCs	= 0x00800000,	/* TCP/UDP/ICMP checksum. Pseudo header checksum is assumed to be present*/
-	DescTxCisTcpPseudoCs	= 0x00c00000,	/* TCP/UDP/ICMP checksum fully in hardware including pseudo header	*/
+	// Tx checksum offloading control mask			23:22
+	DescTxCisMask		= 0x00c00000,
+	// Checksum bypass
+	DescTxCisBypass		= 0x00000000,
+	// IPv4 header checksum
+	DescTxCisIpv4HdrCs	= 0x00400000,
+	// TCP/UDP/ICMP checksum. Pseudo header checksum is assumed to be present
+	DescTxCisTcpOnlyCs	= 0x00800000,
+	// TCP/UDP/ICMP checksum fully in hardware including pseudo header
+	DescTxCisTcpPseudoCs	= 0x00c00000,
 
-	TxDescEndOfRing		= 0x00200000,	/* (TER)End of descriptors ring				21		*/
-	TxDescChain		= 0x00100000,	/* (TCH)Second buffer address is chain address		20		*/
+	// (TER)End of descriptors ring				21
+	TxDescEndOfRing		= 0x00200000,
+	// (TCH)Second buffer address is chain address		20
+	TxDescChain		= 0x00100000,
 
-	DescRxChkBit0		= 0x00000001,	/* () Rx - Rx Payload Checksum Error			 0		*/
-	DescRxChkBit7		= 0x00000080,	/* (IPC CS ERROR)Rx - Ipv4 header checksum error	 7		*/
-	DescRxChkBit5		= 0x00000020,	/* (FT)Rx - Frame type - Ethernet, otherwise 802.3	 5		*/
+	// () Rx - Rx Payload Checksum Error			 0
+	DescRxChkBit0		= 0x00000001,
+	// (IPC CS ERROR)Rx - Ipv4 header checksum error	 7
+	DescRxChkBit7		= 0x00000080,
+	// (FT)Rx - Frame type - Ethernet, otherwise 802.3	 5
+	DescRxChkBit5		= 0x00000020,
 
-	DescRxTSavail		= 0x00000080,	/* Time stamp available					 7		*/
-	DescRxFrameType		= 0x00000020,	/* (FT)Rx - Frame type - Ethernet, otherwise 802.3	 5		*/
+	// Time stamp available					 7
+	DescRxTSavail		= 0x00000080,
+	// (FT)Rx - Frame type - Ethernet, otherwise 802.3	 5
+	DescRxFrameType		= 0x00000020,
 
-	DescTxIpv4ChkError	= 0x00010000,	/* (IHE) Tx Ip header error				16		*/
-	DescTxTimeout		= 0x00004000,	/* (JT)Tx - Transmit jabber timeout			14		*/
-	DescTxFrameFlushed	= 0x00002000,	/* (FF)Tx - DMA/MTL flushed the frame due to SW flush	13		*/
-	DescTxPayChkError	= 0x00001000,	/* (PCE) Tx Payload checksum Error			12		*/
-	DescTxLostCarrier	= 0x00000800,	/* (LC)Tx - carrier lost during tramsmission		11		*/
-	DescTxNoCarrier		= 0x00000400,	/* (NC)Tx - no carrier signal from the tranceiver	10		*/
-	DescTxLateCollision	= 0x00000200,	/* (LC)Tx - transmission aborted due to collision	 9		*/
-	DescTxExcCollisions	= 0x00000100,	/* (EC)Tx - transmission aborted after 16 collisions	 8		*/
-	DescTxVLANFrame		= 0x00000080,	/* (VF)Tx - VLAN-type frame				 7		*/
+	// (IHE) Tx Ip header error				16
+	DescTxIpv4ChkError	= 0x00010000,
+	// (JT)Tx - Transmit jabber timeout			14
+	DescTxTimeout		= 0x00004000,
+	// (FF)Tx - DMA/MTL flushed the frame due to SW flush	13
+	DescTxFrameFlushed	= 0x00002000,
+	// (PCE) Tx Payload checksum Error			12
+	DescTxPayChkError	= 0x00001000,
+	// (LC)Tx - carrier lost during tramsmission		11
+	DescTxLostCarrier	= 0x00000800,
+	// (NC)Tx - no carrier signal from the tranceiver	10
+	DescTxNoCarrier		= 0x00000400,
+	// (LC)Tx - transmission aborted due to collision	 9
+	DescTxLateCollision	= 0x00000200,
+	// (EC)Tx - transmission aborted after 16 collisions	 8
+	DescTxExcCollisions	= 0x00000100,
+	// (VF)Tx - VLAN-type frame				 7
+	DescTxVLANFrame		= 0x00000080,
 
-	DescTxCollMask		= 0x00000078,	/* (CC)Tx - Collision count				6:3		*/
+	// (CC)Tx - Collision count				6:3
+	DescTxCollMask		= 0x00000078,
 	DescTxCollShift		= 3,
 
-	DescTxExcDeferral	= 0x00000004,	/* (ED)Tx - excessive deferral				 2		*/
-	DescTxUnderflow		= 0x00000002,	/* (UF)Tx - late data arrival from the memory		 1		*/
-	DescTxDeferred		= 0x00000001,	/* (DB)Tx - frame transmision deferred			 0		*/
+	// (ED)Tx - excessive deferral				 2
+	DescTxExcDeferral	= 0x00000004,
+	// (UF)Tx - late data arrival from the memory		 1
+	DescTxUnderflow		= 0x00000002,
+	// (DB)Tx - frame transmision deferred			 0
+	DescTxDeferred		= 0x00000001,
 
 	/*
 	 * This explains the RDES1/TDES1 bits layout
-	 * ------------------------------------------------------------------------
-	 * RDES1/TDES1 | Control Bits | Byte Count Buffer 2 | Byte Count Buffer 1 |
-	 * ------------------------------------------------------------------------
+	 * ---------------------------------------------------------------------
+	 * RDES1/TDES1 | Control Bits | Byte Count Buffer 2 | Byte Count Buf 1 |
+	 * ---------------------------------------------------------------------
 	 */
 	// DmaDescriptorLength	length word of DMA descriptor
 
 
-	RxDisIntCompl		= 0x80000000,	/* (Disable Rx int on completion) 			31		*/
+	RxDisIntCompl		= 0x80000000,	/* (Disable Rx int on completion)			31		*/
 	RxDescEndOfRing		= 0x00008000,	/* (TER)End of descriptors ring				15		*/
 	RxDescChain		= 0x00004000,	/* (TCH)Second buffer address is chain address		14		*/
 
@@ -780,4 +816,53 @@ enum Mii_Phy_Status {
 
 	Mii_phy_status_link_up		= 0x0400,
 };
+
+typedef enum {
+        PHY_INTERFACE_MODE_MII,
+        PHY_INTERFACE_MODE_GMII,
+        PHY_INTERFACE_MODE_SGMII,
+        PHY_INTERFACE_MODE_QSGMII,
+        PHY_INTERFACE_MODE_TBI,
+        PHY_INTERFACE_MODE_RMII,
+        PHY_INTERFACE_MODE_RGMII,
+        PHY_INTERFACE_MODE_RGMII_ID,
+        PHY_INTERFACE_MODE_RGMII_RXID,
+        PHY_INTERFACE_MODE_RGMII_TXID,
+        PHY_INTERFACE_MODE_RTBI,
+        PHY_INTERFACE_MODE_XGMII,
+        PHY_INTERFACE_MODE_NONE /* Must be last */
+} phy_interface_t;
+
+typedef struct {
+        u8 *base;
+        int unit;
+        unsigned is_macsec;
+        unsigned mac_pwr0;
+        unsigned mac_pwr1;
+        unsigned mac_conn_to_phy;
+        phy_interface_t phy;
+        u8 mdio_addr;
+	unsigned switch_reset_gpio;
+} ipq_gmac_board_cfg_t;
+
+typedef struct {
+        unsigned gpio;
+        unsigned func;
+        unsigned dir;
+        unsigned pull;
+        unsigned drvstr;
+        unsigned enable;
+} gpio_func_data_t;
+
+static inline int get_cache_line_size(void)
+{
+        return dcache_line_bytes();
+}
+
+#define ETHERNET_EXTRA		(NET_IP_ALIGN + 2 * get_cache_line_size())
+
+#define GMAC_CORE_RESET(n)	((void *)(0x903CBC + ((n) * 0x20)))
+#define GMACSEC_CORE_RESET(n)	((void *)(0x903E28 + ((n - 1) * 4)))
+#define GMAC_AHB_RESET		((u8 *)0x903E24)
+
 #endif	/* _IPQ_GMAC_H */

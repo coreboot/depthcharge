@@ -4,17 +4,17 @@
 #define __ASM_ARCH_MSM_NSS_GMAC_H
 
 /* NSS GMAC Base Addresses */
-#define NSS_GMAC0_BASE                  0x37000000
-#define NSS_GMAC1_BASE                  0x37200000
-#define NSS_GMAC2_BASE                  0x37400000
-#define NSS_GMAC3_BASE                  0x37600000
+#define NSS_GMAC0_BASE                  ((u8 *)0x37000000)
+#define NSS_GMAC1_BASE                  ((u8 *)0x37200000)
+#define NSS_GMAC2_BASE                  ((u8 *)0x37400000)
+#define NSS_GMAC3_BASE                  ((u8 *)0x37600000)
 #define NSS_GMAC_REG_LEN                0x00200000
 
 /* NSS GMAC Specific defines */
-#define NSS_REG_BASE                    0x03000000
+#define NSS_REG_BASE                    ((u8 *)0x03000000)
 #define NSS_REG_LEN                     0x0000FFFF
 
-#define MSM_TCSR_BASE                   0x1A400000
+#define MSM_TCSR_BASE                   ((u8 *)0x1A400000)
 
 /* TCSR offsets */
 #define TCSR_PXO_SEL                    0x00C0
@@ -166,7 +166,7 @@
 #define GMAC_IFG_LIMIT_HALF                     12
 
 /* QSGMII Specific defines */
-#define QSGMII_REG_BASE                         0x1bb00000
+#define QSGMII_REG_BASE                         ((u8 *)0x1bb00000)
 #define QSGMII_REG_LEN                          0x0000FFFF
 
 /* QSGMII Register offsets */
@@ -231,10 +231,5 @@ struct nss_gmac_platform_data {
 
 #define NSS_MAX_GMACS                           4
 
-/* public functions */
-extern uchar ipq_def_enetaddr[];
-void ipq_gmac_common_init(ipq_gmac_board_cfg_t *cfg);
-int ipq_gmac_init(ipq_gmac_board_cfg_t *cfg);
-int get_eth_mac_address(uchar *enetaddr, uint no_of_macs);
-void ipq_switch_init(ipq_gmac_board_cfg_t *cfg);
+void ipq_switch_init(const ipq_gmac_board_cfg_t *cfg);
 #endif /*__ASM_ARCH_MSM_NSS_GMAC_H */
