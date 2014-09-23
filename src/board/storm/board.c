@@ -25,6 +25,7 @@
 #include <sysinfo.h>
 #include <stdio.h>
 
+#include "base/device_tree.h"
 #include "base/init_funcs.h"
 #include "drivers/bus/i2c/ipq806x_gsbi.h"
 #include "drivers/bus/i2c/ipq806x.h"
@@ -42,6 +43,42 @@
 #define GPIO_SDCC_FUNC_VAL      2
 
 #define MSM_SDC1_BASE		0x12400000
+
+/*
+ * MAC address fixup. There might be more addresses in lib_sysinfo than
+ * required. Just two need to be set, at the particular paths in the device
+ * tree listed in the array below.
+ */
+static int set_mac_addresses(DeviceTreeFixup *fixup, DeviceTree *tree)
+{
+	static const char *mac_addr_paths[][3] = {
+		{ "soc", "ethernet@37000000", NULL },
+		{ "soc", "ethernet@37400000", NULL },
+	};
+	int i;
+	DeviceTreeNode *gmac_node;
+
+	for (i = 0; i < ARRAY_SIZE(mac_addr_paths); i++) {
+		if (i >= lib_sysinfo.num_macs)
+			break;
+
+		gmac_node = dt_find_node(tree->root,
+					 mac_addr_paths[i], NULL, NULL, 0);
+		if (!gmac_node) {
+			printf("Failed to find %s in the device tree\n",
+			       mac_addr_paths[i][1]);
+			continue;
+		}
+		dt_add_bin_prop(gmac_node, "local-mac-address",
+				lib_sysinfo.macs[i].mac_addr,
+				sizeof(lib_sysinfo.macs[i].mac_addr));
+	}
+	return 0;
+}
+
+static DeviceTreeFixup ipq_enet_fixup = {
+	.fixup = set_mac_addresses
+};
 
 /* MMC bus GPIO assignments. */
 enum storm_emmc_gpio {
@@ -134,6 +171,8 @@ static int board_setup(void)
 	tpm_set_ops(&new_slb9635_i2c(&i2c->ops, 0x20)->base.ops);
 
 	flash_nvram_init();
+
+	list_insert_after(&ipq_enet_fixup.list_node, &device_tree_fixups);
 
 	return 0;
 }
