@@ -78,7 +78,12 @@ enum {
 	BOARD_ID_REV2 = 0x02,	/* DVT */
 	BOARD_ID_REV3 = 0x04,	/* PVT */
 	BOARD_ID_REV4 = 0x05,
-	BOARD_ID_REV5 = 0x06
+	BOARD_ID_REV5 = 0x06,
+	BOARD_ID_REV6 = 0x08,
+	BOARD_ID_REV7 = 0x09,
+	BOARD_ID_REV8 = 0x0a,
+	BOARD_ID_REV9 = 0x10,
+	BOARD_ID_REV10 = 0x11,
 };
 
 enum {
@@ -158,6 +163,21 @@ static int board_setup(void)
 		break;
 	case BOARD_ID_REV5:
 		fit_override_kernel_compat("google,nyan-blaze-rev5");
+		break;
+	case BOARD_ID_REV6:
+		fit_override_kernel_compat("google,nyan-blaze-rev6");
+		break;
+	case BOARD_ID_REV7:
+		fit_override_kernel_compat("google,nyan-blaze-rev7");
+		break;
+	case BOARD_ID_REV8:
+		fit_override_kernel_compat("google,nyan-blaze-rev8");
+		break;
+	case BOARD_ID_REV9:
+		fit_override_kernel_compat("google,nyan-blaze-rev9");
+		break;
+	case BOARD_ID_REV10:
+		fit_override_kernel_compat("google,nyan-blaze-rev10");
 		break;
 	default:
 		printf("Unrecognized board ID %#x.\n", id);
