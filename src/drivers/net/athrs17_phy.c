@@ -26,9 +26,16 @@
  * All definitions in this file are operating system independent!
  */
 
-#include <common.h>
+#include <libpayload.h>
+
+#include "ipq806x.h"
 #include "athrs17_phy.h"
-#include "../../../drivers/net/ipq/ipq_gmac.h"
+
+
+
+#define phy_reg_read(base, addr, reg)	\
+	ipq_mdio_read(addr, reg, NULL)
+
 /******************************************************************************
  * FUNCTION DESCRIPTION: Read switch internal register.
  *                       Switch internal register is accessed through the
@@ -43,7 +50,7 @@ static uint32_t
 athrs17_reg_read(uint32_t reg_addr)
 {
 	uint32_t reg_word_addr;
-	uint32_t phy_addr, tmp_val, reg_val;
+	uint32_t phy_addr, reg_val;
 	uint16_t phy_val;
 	uint8_t phy_reg;
 
@@ -53,8 +60,9 @@ athrs17_reg_read(uint32_t reg_addr)
 	/* configure register high address */
 	phy_addr = 0x18;
 	phy_reg = 0x0;
-	phy_val = (uint16_t) ((reg_word_addr >> 8) & 0x1ff);  /* bit16-8 of reg address */
-	phy_reg_write(0, phy_addr, phy_reg, phy_val);
+	/* bit16-8 of reg address */
+	phy_val = (uint16_t) ((reg_word_addr >> 8) & 0x1ff);
+	ipq_mdio_write(phy_addr, phy_reg, phy_val);
 
 	/*
 	 * For some registers such as MIBs, since it is read/clear, we should
@@ -62,16 +70,17 @@ athrs17_reg_read(uint32_t reg_addr)
 	 */
 
 	/* read register in lower address */
-	phy_addr = 0x10 | ((reg_word_addr >> 5) & 0x7); /* bit7-5 of reg address */
-	phy_reg = (uint8_t) (reg_word_addr & 0x1f);   /* bit4-0 of reg address */
-	reg_val = (uint32_t) phy_reg_read(0, phy_addr, phy_reg);
+	phy_addr = 0x10 | ((reg_word_addr >> 5) & 0x7);
+	phy_reg = (uint8_t) (reg_word_addr & 0x1f);
+	ipq_mdio_read(phy_addr, phy_reg, &phy_val);
+	reg_val = phy_val;
 
 	/* read register in higher address */
 	reg_word_addr++;
-	phy_addr = 0x10 | ((reg_word_addr >> 5) & 0x7); /* bit7-5 of reg address */
-	phy_reg = (uint8_t) (reg_word_addr & 0x1f);   /* bit4-0 of reg address */
-	tmp_val = (uint32_t) phy_reg_read(0, phy_addr, phy_reg);
-	reg_val |= (tmp_val << 16);
+	phy_addr = 0x10 | ((reg_word_addr >> 5) & 0x7);
+	phy_reg = (uint8_t) (reg_word_addr & 0x1f);
+	ipq_mdio_read(phy_addr, phy_reg, &phy_val);
+	reg_val |= (((uint32_t)phy_val) << 16);
 
 	return reg_val;
 }
@@ -100,8 +109,8 @@ athrs17_reg_write(uint32_t reg_addr, uint32_t reg_val)
 	/* configure register high address */
 	phy_addr = 0x18;
 	phy_reg = 0x0;
-	phy_val = (uint16_t) ((reg_word_addr >> 8) & 0x1ff);  /* bit16-8 of reg address */
-	phy_reg_write(0, phy_addr, phy_reg, phy_val);
+	phy_val = (uint16_t) ((reg_word_addr >> 8) & 0x1ff);
+	ipq_mdio_write(phy_addr, phy_reg, phy_val);
 
 	/*
 	 * For some registers such as ARL and VLAN, since they include BUSY bit
@@ -111,17 +120,17 @@ athrs17_reg_write(uint32_t reg_addr, uint32_t reg_val)
 
 	/* read register in higher address */
 	reg_word_addr++;
-	phy_addr = 0x10 | ((reg_word_addr >> 5) & 0x7); /* bit7-5 of reg address */
-	phy_reg = (uint8_t) (reg_word_addr & 0x1f);   /* bit4-0 of reg address */
+	phy_addr = 0x10 | ((reg_word_addr >> 5) & 0x7);
+	phy_reg = (uint8_t) (reg_word_addr & 0x1f);
 	phy_val = (uint16_t) ((reg_val >> 16) & 0xffff);
-	phy_reg_write(0, phy_addr, phy_reg, phy_val);
+	ipq_mdio_write(phy_addr, phy_reg, phy_val);
 
 	/* write register in lower address */
 	reg_word_addr--;
-	phy_addr = 0x10 | ((reg_word_addr >> 5) & 0x7); /* bit7-5 of reg address */
-	phy_reg = (uint8_t) (reg_word_addr & 0x1f);   /* bit4-0 of reg address */
+	phy_addr = 0x10 | ((reg_word_addr >> 5) & 0x7);
+	phy_reg = (uint8_t) (reg_word_addr & 0x1f);
 	phy_val = (uint16_t) (reg_val & 0xffff);
-	phy_reg_write(0, phy_addr, phy_reg, phy_val);
+	ipq_mdio_write(phy_addr, phy_reg, phy_val);
 }
 
 /*********************************************************************
@@ -177,7 +186,7 @@ void athrs17_reset_switch(void)
  * INPUT : NONE
  * OUTPUT: NONE
  *********************************************************************/
-void athrs17_reg_init(ipq_gmac_board_cfg_t *gmac_cfg)
+static void athrs17_reg_init(const ipq_gmac_board_cfg_t *gmac_cfg)
 {
 	uint32_t data;
 
@@ -194,9 +203,9 @@ void athrs17_reg_init(ipq_gmac_board_cfg_t *gmac_cfg)
 						S17_UNI_FLOOD_DPALL));
 
 	athrs17_reg_write(S17_P5PAD_MODE_REG, S17_MAC0_RGMII_RXCLK_DELAY);
-	athrs17_reg_write(S17_P0PAD_MODE_REG, (S17_MAC0_RGMII_EN | \
-		S17_MAC0_RGMII_TXCLK_DELAY | S17_MAC0_RGMII_RXCLK_DELAY | \
-		(0x1 << S17_MAC0_RGMII_TXCLK_SHIFT) | \
+	athrs17_reg_write(S17_P0PAD_MODE_REG, (S17_MAC0_RGMII_EN |
+		S17_MAC0_RGMII_TXCLK_DELAY | S17_MAC0_RGMII_RXCLK_DELAY |
+		(0x1 << S17_MAC0_RGMII_TXCLK_SHIFT) |
 		(0x3 << S17_MAC0_RGMII_RXCLK_SHIFT)));
 
 	printf("%s: complete\n", __func__);
@@ -207,7 +216,7 @@ void athrs17_reg_init(ipq_gmac_board_cfg_t *gmac_cfg)
  * INPUT : NONE
  * OUTPUT: NONE
  *********************************************************************/
-void athrs17_reg_init_lan(ipq_gmac_board_cfg_t *gmac_cfg)
+static void athrs17_reg_init_lan(const ipq_gmac_board_cfg_t *gmac_cfg)
 {
 	uint32_t reg_val;
 
@@ -222,7 +231,8 @@ void athrs17_reg_init_lan(ipq_gmac_board_cfg_t *gmac_cfg)
 	athrs17_reg_write(S17_P6PAD_MODE_REG, (reg_val | S17_MAC6_SGMII_EN));
 
 	reg_val = athrs17_reg_read(S17_PWS_REG);
-	athrs17_reg_write(S17_PWS_REG, (reg_val | S17c_PWS_SERDES_ANEG_DISABLE));
+	athrs17_reg_write(S17_PWS_REG,
+			  (reg_val | S17c_PWS_SERDES_ANEG_DISABLE));
 
 
 	athrs17_reg_write(S17_SGMII_CTRL_REG,(S17c_SGMII_EN_PLL |
@@ -245,12 +255,12 @@ void athrs17_reg_init_lan(ipq_gmac_board_cfg_t *gmac_cfg)
 /*********************************************************************
  *
  * FUNCTION DESCRIPTION: This function invokes RGMII,
- * 			SGMII switch init routines.
+ *			 SGMII switch init routines.
  * INPUT : ipq_gmac_board_cfg_t *
  * OUTPUT: NONE
  *
 **********************************************************************/
-void ipq_switch_init(ipq_gmac_board_cfg_t *gmac_cfg)
+void ipq_switch_init(const ipq_gmac_board_cfg_t *gmac_cfg)
 {
 	if (gmac_cfg != NULL) {
 
