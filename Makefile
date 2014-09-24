@@ -79,10 +79,15 @@ ARCH_DIR = arm
 else
 ARCH_DIR = $(ARCH)
 endif
+ifeq ($(CONFIG_ARCH_MIPS),y)
+ARCH = mips
+ARCH_DIR = mips
+endif
 
 ARCH_TO_TOOLCHAIN_x86    := i386
 ARCH_TO_TOOLCHAIN_arm    := arm
 ARCH_TO_TOOLCHAIN_arm64  := arm64
+ARCH_TO_TOOLCHAIN_mips   := mipsel
 
 toolchain := $(ARCH_TO_TOOLCHAIN_$(ARCH))
 

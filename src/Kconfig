@@ -27,6 +27,9 @@ config ARCH_X86
 config ARCH_ARM
 	bool "ARM"
 
+config ARCH_MIPS
+	bool "MIPS"
+
 endchoice
 
 choice

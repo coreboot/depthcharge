@@ -53,6 +53,7 @@ endif
 $(TRAMP_LP): $(LIBPAYLOAD_DIR)/lib/libpayload.a
 	@printf "    OBJCOPY    $(subst $(obj)/,,$(@))\n"
 	$(Q)$(OBJCOPY) --prefix-symbols=$(TRAMP_PREFIX)_ \
+		--remove-section=".reginfo" \
 		--keep-global-symbol=$(TRAMP_PREFIX)_memcpy \
 		--keep-global-symbol=$(TRAMP_PREFIX)_memset \
 		--keep-global-symbol=$(TRAMP_PREFIX)_dcache_clean_all \
