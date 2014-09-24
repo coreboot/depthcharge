@@ -141,6 +141,10 @@ INIT_FUNC(x86_mtrr_cleanup_install);
 
 static int coreboot_finalize(struct CleanupFunc *cleanup, CleanupType type)
 {
+	// Indicate legacy mode for coreboot fixups
+	if (type == CleanupOnLegacy)
+		outb(0xcc, 0xb2);
+
 	// Issue SMI to Coreboot to lock down ME and registers.
 	printf("Finalizing Coreboot\n");
 	outb(0xcb, 0xb2);
