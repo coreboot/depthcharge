@@ -48,15 +48,6 @@
 #include "vboot/util/flag.h"
 
 enum {
-	BOARD_ID_REV0 = 0x00,	/* prototype */
-	BOARD_ID_REV1 = 0x01,	/* EVT */
-	BOARD_ID_REV2 = 0x02,	/* DVT */
-	BOARD_ID_REV3 = 0x04,	/* PVT */
-	BOARD_ID_REV4 = 0x05,
-	BOARD_ID_REV5 = 0x06
-};
-
-enum {
 	CLK_RST_BASE = 0x60006000,
 
 	CLK_RST_L_RST_SET = CLK_RST_BASE + 0x300,
@@ -113,31 +104,7 @@ static VirtualMmcPowerGpio *new_virtual_mmc_power(GpioOps *gpio,
 
 static int board_setup(void)
 {
-	uint8_t id = lib_sysinfo.board_id;
-
-	switch (id) {
-	case BOARD_ID_REV0:
-		fit_override_kernel_compat("google,nyan-blaze-rev0");
-		break;
-	case BOARD_ID_REV1:
-		fit_override_kernel_compat("google,nyan-blaze-rev1");
-		break;
-	case BOARD_ID_REV2:
-		fit_override_kernel_compat("google,nyan-blaze-rev2");
-		break;
-	case BOARD_ID_REV3:
-		fit_override_kernel_compat("google,nyan-blaze-rev3");
-		break;
-	case BOARD_ID_REV4:
-		fit_override_kernel_compat("google,nyan-blaze-rev4");
-		break;
-	case BOARD_ID_REV5:
-		fit_override_kernel_compat("google,nyan-blaze-rev5");
-		break;
-	default:
-		printf("Unrecognized board ID %#x.\n", id);
-		return 1;
-	}
+	fit_set_compat_by_rev("google,nyan-blaze-rev%d", lib_sysinfo.board_id);
 
 	sysinfo_install_flags();
 

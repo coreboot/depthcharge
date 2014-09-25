@@ -49,16 +49,6 @@ config ATAG_BASE
        depends on ARCH_ARM
        default 0
 
-config KERNEL_FIT_COMPAT
-	string "FIT preferred compatible string"
-	default ""
-	depends on KERNEL_FIT
-	help
-	  When booting a FIT image, if a config is found which has this
-	  string as the value of the top level compatible property in its
-	  FDT, it will be used to boot. If not, then the "default" config,
-	  if set, will be used. If not, then the boot will fail.
-
 config KERNEL_FIT_FDT_ADDR
 	hex "FIT device tree load address."
 	depends on KERNEL_FIT

@@ -65,11 +65,18 @@ typedef struct FitConfigNode
 static ListNode image_nodes;
 static ListNode config_nodes;
 
-static const char *fit_kernel_compat = CONFIG_KERNEL_FIT_COMPAT;
+static const char *fit_kernel_compat = "uninitialized!";
 
-void fit_override_kernel_compat(const char *compat)
+void fit_set_compat(const char *compat)
 {
 	fit_kernel_compat = compat;
+}
+
+void fit_set_compat_by_rev(const char *pattern, int rev)
+{
+	char *compat = strdup(pattern);
+	sprintf(compat, pattern, rev);
+	fit_set_compat(compat);
 }
 
 

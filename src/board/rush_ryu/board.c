@@ -88,10 +88,10 @@ static void choose_devicetree_by_boardid(void)
 {
 	switch(lib_sysinfo.board_id) {
 	case BOARD_ID_PROTO_0:
-		fit_override_kernel_compat("google,ryu-p0");
+		fit_set_compat("google,ryu-p0");
 		break;
 	case BOARD_ID_PROTO_1:
-		fit_override_kernel_compat("google,ryu-p1");
+		fit_set_compat("google,ryu-p1");
 		break;
 	default:
 		printf("Unknown board id: %x\n", lib_sysinfo.board_id);
