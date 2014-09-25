@@ -27,6 +27,7 @@
 
 #include "base/device_tree.h"
 #include "base/init_funcs.h"
+#include "boot/fit.h"
 #include "drivers/bus/i2c/ipq806x_gsbi.h"
 #include "drivers/bus/i2c/ipq806x.h"
 #include "drivers/bus/spi/ipq806x.h"
@@ -150,6 +151,8 @@ void board_mmc_gpio_config(void)
 static int board_setup(void)
 {
 	sysinfo_install_flags();
+
+	fit_set_compat("google,storm-proto0");
 
 	install_phys_presence_flag();
 

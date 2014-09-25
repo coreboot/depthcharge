@@ -129,10 +129,10 @@ static int board_setup(void)
 
 	switch (id) {
 	case BOARD_ID_REV0:
-		fit_override_kernel_compat("google,nyan-rev0");
+		fit_set_compat("google,nyan-rev0");
 		break;
 	case BOARD_ID_REV1:
-		fit_override_kernel_compat("google,nyan-rev1");
+		fit_set_compat("google,nyan-rev1");
 		break;
 	default:
 		printf("Unrecognized board ID %#x.\n", id);

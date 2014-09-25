@@ -101,14 +101,14 @@ static VirtualMmcPowerGpio *new_virtual_mmc_power(GpioOps *gpio,
 
 static void choose_devicetree_by_boardid(void)
 {
-        switch(lib_sysinfo.board_id) {
-        case BOARD_ID_PROTO_0:
-                fit_override_kernel_compat("nvidia,norrin");
-                break;
-        default:
-                printf("Unknown board id: %x\n", lib_sysinfo.board_id);
-                break;
-        }
+	switch(lib_sysinfo.board_id) {
+	case BOARD_ID_PROTO_0:
+		fit_set_compat("nvidia,norrin");
+		break;
+	default:
+		printf("Unknown board id: %x\n", lib_sysinfo.board_id);
+		break;
+	}
 }
 
 static int board_setup(void)

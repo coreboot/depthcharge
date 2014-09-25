@@ -30,6 +30,18 @@ typedef struct DeviceTree DeviceTree;
 
 int fit_load(void *fit, char *cmd_line, void **kernel, uint32_t *kernel_size,
 	     DeviceTree **dt);
-void fit_override_kernel_compat(const char *compat);
+
+/*
+ * Set compatible string for the preferred kernel DT. |compat| must stay
+ * accessible throughout depthcharge's runtime and thus not be stack-allocated!
+ */
+void fit_set_compat(const char *compat);
+
+/*
+ * Shorthand to set a compatible string from a printf() pattern with %d and a
+ * board revision number. Caller must ensure that |pattern| contains exactly one
+ * format directive and that its replacement takes up no more than 2 characters!
+ */
+void fit_set_compat_by_rev(const char *pattern, int rev);
 
 #endif /* __BOOT_FIT_H__ */

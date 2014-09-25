@@ -42,16 +42,11 @@
 
 #include "drivers/bus/usb/usb.h"
 
-/* Careful: dt_compat gets retained in fit.c, must not be allocated on stack! */
-static const char dt_compat_pattern[] = "google,veyron-pinky-rev%d";
-static char dt_compat[sizeof(dt_compat_pattern)];
-
 static int board_setup(void)
 {
 	/* We started adding board IDs (from 0) with the rev1 board... m( */
-	snprintf(dt_compat, sizeof(dt_compat), dt_compat_pattern,
-		 lib_sysinfo.board_id + 1);
-	fit_override_kernel_compat(dt_compat);
+	fit_set_compat_by_rev("google,veyron-pinky-rev%d",
+			      lib_sysinfo.board_id + 1);
 
 	RkSpi *spi2 = new_rockchip_spi(0xff130000, 0, 0, 0);
 	flash_set_ops(&new_spi_flash(&spi2->ops, 0x400000)->ops);

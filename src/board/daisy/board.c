@@ -24,6 +24,7 @@
 
 #include "base/init_funcs.h"
 #include "board/daisy/i2c_arb.h"
+#include "boot/fit.h"
 #include "drivers/bus/i2c/s3c24x0.h"
 #include "drivers/bus/i2s/exynos5.h"
 #include "drivers/bus/i2s/i2s.h"
@@ -48,6 +49,8 @@ static uint32_t *i2c_cfg = (uint32_t *)(0x10050000 + 0x234);
 static int board_setup(void)
 {
 	sysinfo_install_flags();
+
+	fit_set_compat("google,snow");
 
 	Exynos5250Gpio *lid_switch = new_exynos5250_gpio_input(GPIO_X, 3, 5);
 	Exynos5250Gpio *ec_in_rw = new_exynos5250_gpio_input(GPIO_D, 1, 7);
