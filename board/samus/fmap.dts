@@ -3,7 +3,7 @@
 / {
 	model = "Google Samus";
 	config {
-		hwid = "X86 SAMUS TEST 2567";
+		hwid = "SAMUS TEST 8028";
 	};
 	chromeos-config {
 		/* Enable factory-friendly features. */
