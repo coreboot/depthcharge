@@ -36,4 +36,10 @@ config DRIVER_INPUT_MKBP
 	help
 	  A simplified keymatrix keyboard implemented with the ChromeOS EC.
 
+config DRIVER_INPUT_PSEUDO
+	bool "ChromeOS Pseudo keyboard"
+	default n
+	help
+	  A pseudo keyboard driver for embedded systems with other forms of input.
+
 source src/drivers/input/mkbp/Kconfig
