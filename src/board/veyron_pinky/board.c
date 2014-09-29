@@ -62,8 +62,10 @@ static int board_setup(void)
 	sysinfo_install_flags();
 	RkGpio *lid_switch = new_rk_gpio_input(GPIO(7, B, 5));
 	RkGpio *ec_in_rw = new_rk_gpio_input(GPIO(0, A, 7));
+	RkGpio *pwr_key_h = new_rk_gpio_input(GPIO(0, A, 5));
 	flag_replace(FLAG_LIDSW, &lid_switch->ops);
 	flag_install(FLAG_ECINRW, &ec_in_rw->ops);
+	flag_replace(FLAG_PWRSW, &pwr_key_h->ops);
 
 	RkI2c *i2c1 = new_rockchip_i2c((void *)0xff140000);
 	tpm_set_ops(&new_slb9635_i2c(&i2c1->ops, 0x20)->base.ops);
