@@ -60,12 +60,8 @@ static int board_setup(void)
 	cros_ec_set_bus(&new_cros_ec_spi_bus(&spi0->ops)->ops);
 
 	sysinfo_install_flags();
-	RkGpio *lid_switch = new_rk_gpio_input((RkGpioSpec) {.port = 7,
-							     .bank = GPIO_B,
-							     .idx = 5});
-	RkGpio *ec_in_rw = new_rk_gpio_input((RkGpioSpec) {.port = 0,
-							   .bank = GPIO_A,
-							   .idx = 7});
+	RkGpio *lid_switch = new_rk_gpio_input(GPIO(7, B, 5));
+	RkGpio *ec_in_rw = new_rk_gpio_input(GPIO(0, A, 7));
 	flag_replace(FLAG_LIDSW, &lid_switch->ops);
 	flag_install(FLAG_ECINRW, &ec_in_rw->ops);
 
@@ -84,9 +80,7 @@ static int board_setup(void)
 
 	RkI2c *i2c0 = new_rockchip_i2c((void *)0xff650000);
 	Rk808Pmic *pmic = new_rk808_pmic(&i2c0->ops, 0x1b);
-	RkGpio *reboot_gpio = new_rk_gpio_output((RkGpioSpec) {.port = 0,
-							       .bank = GPIO_B,
-							       .idx = 2});
+	RkGpio *reboot_gpio = new_rk_gpio_output(GPIO(0, B, 2));
 	RkPowerOps *rk_power_ops = new_rk_power_ops(&reboot_gpio->ops,
 		&pmic->ops, 1);
 	power_set_ops(&rk_power_ops->ops);
@@ -95,9 +89,7 @@ static int board_setup(void)
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
 
-	RkGpio *card_detect = new_rk_gpio_input((RkGpioSpec) {.port = 7,
-							      .bank = GPIO_A,
-							      .idx = 5});
+	RkGpio *card_detect = new_rk_gpio_input(GPIO(7, A, 5));
 	GpioOps *card_detect_ops = &card_detect->ops;
 	card_detect_ops = new_gpio_not(card_detect_ops);
 	DwmciHost *sd_card = new_rkdwmci_host(0xff0c0000, 594000000, 4, 1,
