@@ -22,6 +22,8 @@
 
 #include "drivers/gpio/gpio.h"
 
+#define GPIO(p, b, i) ((RkGpioSpec){.port = p, .bank = GPIO_##b, .idx = i})
+
 enum {
 	GPIO_A = 0,
 	GPIO_B,
