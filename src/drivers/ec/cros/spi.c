@@ -76,6 +76,10 @@ static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 	if (bus->spi->start(bus->spi))
 		return -1;
 
+	// Allow EC to ramp up clock after being awaken.
+	// See chrome-os-partner:32223 for more details.
+	udelay(CONFIG_DRIVER_EC_CROS_SPI_WAKEUP_DELAY_US);
+
 	if (bus->spi->transfer(bus->spi, NULL, dout, dout_len)) {
 		stop_bus(bus);
 		return -1;
