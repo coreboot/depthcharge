@@ -19,3 +19,5 @@
 
 depthcharge-y += board.c
 depthcharge-y += power_ops.c
+depthcharge-y += keyboard.c
+depthcharge-y += state_machine.c
