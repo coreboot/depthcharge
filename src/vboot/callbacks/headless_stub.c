@@ -76,9 +76,10 @@ uint32_t VbExKeyboardRead(void)
 {
 	uint32_t rv = flag_fetch(FLAG_PHYS_PRESENCE);
 
-	if (rv)
+	if (rv) {
+		printf("%s:%d phy presense asserted\n", __func__, __LINE__);
 		return 0x15; /* That's ^U, i.e. boot from USB. */
-
+	}
 	return 0;
 }
 

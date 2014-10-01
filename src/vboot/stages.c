@@ -55,6 +55,12 @@ int vboot_init(void)
 	int oprom_loaded = 0;
 	if (CONFIG_OPROM_MATTERS)
 		oprom_loaded = flag_fetch(FLAG_OPROM);
+
+
+	printf("%s:%d dev %d, rec %d, wp %d, oprom %d\n",
+	       __func__, __LINE__, dev_switch, rec_switch,
+	       wp_switch, oprom_loaded);
+
 	if (dev_switch < 0 || rec_switch < 0 ||
 	    wp_switch < 0 || oprom_loaded < 0) {
 		// An error message should have already been printed.
