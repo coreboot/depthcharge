@@ -21,6 +21,7 @@
 
 #include "base/init_funcs.h"
 #include "boot/fit.h"
+#include "boot/ramoops.h"
 #include "drivers/gpio/rockchip.h"
 #include "drivers/bus/i2c/rockchip.h"
 #include "drivers/flash/spi.h"
@@ -104,6 +105,8 @@ static int board_setup(void)
 
 	UsbHostController *usb_host1 = new_usb_hc(DWC2, 0xff540000);
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
+
+	ramoops_buffer(0x31f00000, 0x100000, 0x20000);
 
 	return 0;
 }
