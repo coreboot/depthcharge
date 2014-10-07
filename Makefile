@@ -103,7 +103,7 @@ LINK_FLAGS = $(ARCH_LINK_FLAGS) $(ABI_FLAGS) -fuse-ld=bfd \
 CFLAGS := $(ARCH_CFLAGS) -Wall -Werror $(INCLUDES) -std=gnu99 \
 	$(ABI_FLAGS) -ffunction-sections -fdata-sections -ggdb3
 
-ifneq ($(GDB_DEBUG),)
+ifneq ($(SOURCE_DEBUG),)
 CFLAGS += -O0 -g
 else
 CFLAGS += -Os
