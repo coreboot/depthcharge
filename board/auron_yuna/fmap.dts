@@ -3,7 +3,7 @@
 / {
 	model = "Google Auron_yuna";
 	config {
-		hwid = "AURON_YUNA TEST A-A 1420";
+		hwid = "YUNA TEST A-A 3347";
 	};
 	chromeos-config {
 		/* Enable factory-friendly features. */
