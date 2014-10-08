@@ -660,6 +660,7 @@ static int sdhci_update(BlockDevCtrlrOps *me)
 	host->mmc_ctrlr.media->dev.removable = host->removable;
 	host->mmc_ctrlr.media->dev.ops.read = block_mmc_read;
 	host->mmc_ctrlr.media->dev.ops.write = block_mmc_write;
+	host->mmc_ctrlr.media->dev.ops.new_stream = new_simple_stream;
 
 	return 0;
 }

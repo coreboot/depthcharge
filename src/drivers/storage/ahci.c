@@ -565,6 +565,7 @@ static int ahci_ctrlr_init(BlockDevCtrlrOps *me)
 			snprintf(name, name_size, "Sata port %d", i);
 			sata_drive->dev.ops.read = &ahci_read;
 			sata_drive->dev.ops.write = &ahci_write;
+			sata_drive->dev.ops.new_stream = &new_simple_stream;
 			sata_drive->dev.name = name;
 			sata_drive->dev.removable = 0;
 			sata_drive->dev.block_size = block_size;

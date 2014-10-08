@@ -67,6 +67,7 @@ void usbdisk_create(usbdev_t *dev)
 	snprintf(name, name_size, "USB disk %d", dev->address);
 	drive->dev.ops.read = &dc_usb_read;
 	drive->dev.ops.write = &dc_usb_write;
+	drive->dev.ops.new_stream = &new_simple_stream;
 	drive->dev.name = name;
 	drive->dev.removable = 1;
 	drive->dev.block_size = msc->blocksize;
