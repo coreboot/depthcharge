@@ -4,3 +4,7 @@ config DRIVER_STORAGE_MTD_NAND
 	  This enables support for accessing all type of NAND flash
 	  devices. For further information see
 	  <http://www.linux-mtd.infradead.org/doc/nand.html>.
+
+config DRIVER_STORAGE_MTD_IPQ_NAND
+	bool "IPQ NAND support"
+	select DRIVER_STORAGE_MTD_NAND
