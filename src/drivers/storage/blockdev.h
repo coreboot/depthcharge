@@ -26,6 +26,7 @@
 #include <stdint.h>
 
 #include "base/list.h"
+#include "drivers/storage/stream.h"
 
 typedef uint64_t lba_t;
 
@@ -34,6 +35,8 @@ typedef struct BlockDevOps {
 		      void *buffer);
 	lba_t (*write)(struct BlockDevOps *me, lba_t start, lba_t count,
 		       const void *buffer);
+	StreamOps *(*new_stream)(struct BlockDevOps *me, lba_t start,
+				 lba_t count);
 } BlockDevOps;
 
 typedef struct BlockDev {
@@ -63,5 +66,7 @@ typedef struct BlockDevCtrlr {
 
 extern ListNode fixed_block_dev_controllers;
 extern ListNode removable_block_dev_controllers;
+
+StreamOps *new_simple_stream(BlockDevOps *me, lba_t start, lba_t count);
 
 #endif /* __DRIVERS_STORAGE_BLOCKDEV_H__ */
