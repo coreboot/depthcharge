@@ -1,0 +1,6 @@
+config DRIVER_STORAGE_MTD_NAND
+	bool "NAND Device Support"
+	help
+	  This enables support for accessing all type of NAND flash
+	  devices. For further information see
+	  <http://www.linux-mtd.infradead.org/doc/nand.html>.
