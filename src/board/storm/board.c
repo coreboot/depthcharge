@@ -24,6 +24,7 @@
 #include <libpayload.h>
 #include <sysinfo.h>
 #include <stdio.h>
+#include <stdint.h>
 
 #include "base/init_funcs.h"
 #include "boot/fit.h"
@@ -40,6 +41,10 @@
 #include "vboot/util/flag.h"
 #include "drivers/gpio/ipq806x.h"
 #include "drivers/storage/ipq806x_mmc.h"
+#include "drivers/storage/mtd/mtd.h"
+#include "drivers/storage/mtd/stream.h"
+#include "drivers/storage/spi_gpt.h"
+#include "drivers/storage/mtd/nand/ipq_nand.h"
 
 #include "board.h"
 
@@ -47,29 +52,51 @@
 
 #define MSM_SDC1_BASE		0x12400000
 
+#define EBI2ND_BASE		0x1ac00000
+
 /* Structure describing properties of various Storm based boards. */
 struct board_descriptor {
 	const char *compat_string; // Match the device tree in FIT image.
 	int calibration_needed;	   // Some boards need to populate WiFi
 				   // calibration data.
+	int use_nand;		   // true if NAND, false if eMMC
 };
 
 static struct board_descriptor bdescriptor;
 
 static void fill_board_descriptor(void)
 {
+	int storm_board = 0;
+	bdescriptor.use_nand = 0;
+
 	switch(lib_sysinfo.board_id) {
-	case 2: /* Whirlwind SP3 */
+	case BOARD_ID_WHIRLWIND_SP3:
 		bdescriptor.compat_string = "google,whirlwind-sp3";
 		bdescriptor.calibration_needed = 1;
 		break;
+
+	case BOARD_ID_PROTO_0_2_NAND:
+		bdescriptor.use_nand = 1;
+		storm_board = 1;
+		break;
+
+	case BOARD_ID_PROTO_0:
+	case BOARD_ID_PROTO_0_2:
+		storm_board = 1;
+		break;
+
 	default:
-		bdescriptor.compat_string = "google,storm-proto0";
-		bdescriptor.calibration_needed = 0;
+		printf("Unknown board id %d; assuming like Storm Proto 0.2\n",
+		       lib_sysinfo.board_id);
+		storm_board = 1;
 		break;
 	}
-}
 
+	if (storm_board) {
+		bdescriptor.compat_string = "google,storm-proto0";
+		bdescriptor.calibration_needed = 0;
+	}
+}
 
 /*
  * MAC address fixup. There might be more addresses in lib_sysinfo than
@@ -213,11 +240,11 @@ static void set_ramoops_buffer(void)
 	 * table and assigned to the ramoops cache.
 	 *
 	 * This is fairly brittle, as other parts of depthcharge or libpayload
-	 * could be using this memory for something. But this is no wose than
+	 * could be using this memory for something. But this is no worse than
 	 * hardcoding this area to any particular address.
 	 *
 	 * A proper solution would be to have coreboot assign this memory and
-	 * explixitly describe this in the coreboot memory table.
+	 * explicitly describe this in the coreboot memory table.
 	 */
 	record_size = 0x20000;
 	total_size = 0x100000;
@@ -261,12 +288,20 @@ static int board_setup(void)
 
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
 
-	QcomMmcHost *mmc = new_qcom_mmc_host(1, MSM_SDC1_BASE, 8);
-	if (!mmc)
-		return -1;
+	if (bdescriptor.use_nand) {
+		MtdDevCtrlr *mtd = new_ipq_nand((void *)EBI2ND_BASE);
+		SpiGptCtrlr *virtual_dev = new_spi_gpt("RW_GPT",
+						       new_mtd_stream(mtd));
+		list_insert_after(&virtual_dev->block_ctrlr.list_node,
+				  &fixed_block_dev_controllers);
+	} else {
+		QcomMmcHost *mmc = new_qcom_mmc_host(1, MSM_SDC1_BASE, 8);
+		if (!mmc)
+			return -1;
 
-	list_insert_after(&mmc->mmc.ctrlr.list_node,
-			  &fixed_block_dev_controllers);
+		list_insert_after(&mmc->mmc.ctrlr.list_node,
+				  &fixed_block_dev_controllers);
+	}
 
 	Ipq806xI2c *i2c = new_ipq806x_i2c(GSBI_ID_1);
 	tpm_set_ops(&new_slb9635_i2c(&i2c->ops, 0x20)->base.ops);

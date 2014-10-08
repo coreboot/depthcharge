@@ -205,6 +205,15 @@
 			wipe-value = [ff];
 		};
 
+		/* ---- Section: Rewritable GPT 64 KB ---- */
+		rw-gpt {
+			label = "rw-gpt";
+			/* Alignment: 4k (for updating) */
+			reg = <0x00510000 0x00010000>;
+			type = "wiped";
+			wipe-value = [ff];
+		};
+
 		rw-legacy {
 			label = "rw-legacy";
 			reg = <0x00700000 0x00100000>;
