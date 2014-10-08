@@ -33,8 +33,11 @@ static void setup_vb_disk_info(VbDiskInfo *disk, BlockDev *bdev)
 	disk->handle = (VbExDiskHandle_t)bdev;
 	disk->bytes_per_lba = bdev->block_size;
 	disk->lba_count = bdev->block_count;
+	disk->streaming_lba_count = bdev->stream_block_count;
 	disk->flags = bdev->removable ? VB_DISK_FLAG_REMOVABLE :
 					VB_DISK_FLAG_FIXED;
+	if (bdev->external_gpt)
+		disk->flags |= VB_DISK_FLAG_EXTERNAL_GPT;
 }
 
 VbError_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,

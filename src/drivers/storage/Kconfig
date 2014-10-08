@@ -65,3 +65,8 @@ config DRIVER_STORAGE_MMC_ROCKCHIP
         bool "ROCKCHIP MMC driver"
         default n
 
+config DRIVER_STORAGE_SPI_GPT
+	bool "Look up a kernel partition from a GPT on SPI"
+	default n
+
+source src/drivers/storage/mtd/Kconfig
