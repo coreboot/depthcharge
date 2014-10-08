@@ -22,6 +22,9 @@ config BOARD
 if BOARD = "auron"
 source src/board/auron/Kconfig
 endif
+if BOARD = "auron_paine"
+source src/board/auron_paine/Kconfig
+endif
 if BOARD = "auron_yuna"
 source src/board/auron_yuna/Kconfig
 endif
