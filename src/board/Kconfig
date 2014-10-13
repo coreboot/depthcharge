@@ -71,6 +71,9 @@ endif
 if BOARD = "panther"
 source src/board/panther/Kconfig
 endif
+if BOARD = "parry"
+source src/board/parry/Kconfig
+endif
 if BOARD = "peach_pit"
 source src/board/peach_pit/Kconfig
 endif
