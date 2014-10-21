@@ -34,6 +34,7 @@ typedef struct {
 	BlockDev block_dev;
 	FmapArea area;
 	struct SpiGptCtrlr *ctrlr;
+	DeviceTreeFixup fixup;
 } SpiGptDev;
 
 typedef struct SpiGptCtrlr {
@@ -41,6 +42,7 @@ typedef struct SpiGptCtrlr {
 	const char *fmap_region;
 	SpiGptDev *dev;
 	StreamCtrlr *stream_ctrlr;
+	const char *dt_path;
 } SpiGptCtrlr;
 
 /*
@@ -48,7 +50,11 @@ typedef struct SpiGptCtrlr {
  * region (fmap_region, e.g., "rw_gpt") and a stream (e.g., a NAND device).
  * The address spaces may overlap and users choose which device to address
  * by the command (read/write vs new_stream).
+ * Optionally, a 'dt_path' string addressing a device tree node can be
+ * provided to install the partition table in that node, for communication
+ * to the kernel.
  */
-SpiGptCtrlr *new_spi_gpt(const char *fmap_region, StreamCtrlr *stream_ctrlr);
+SpiGptCtrlr *new_spi_gpt(const char *fmap_region, StreamCtrlr *stream_ctrlr,
+			 const char *dt_path);
 
 #endif /* __DRIVERS_STORAGE_MTD_SPI_GPT_H__ */

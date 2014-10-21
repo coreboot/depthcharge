@@ -289,7 +289,8 @@ static int board_setup(void)
 	if (bdescriptor.use_nand) {
 		MtdDevCtrlr *mtd = new_ipq_nand((void *)EBI2ND_BASE);
 		SpiGptCtrlr *virtual_dev = new_spi_gpt("RW_GPT",
-						       new_mtd_stream(mtd));
+						       new_mtd_stream(mtd),
+						       "soc/nand@0x1ac00000");
 		list_insert_after(&virtual_dev->block_ctrlr.list_node,
 				  &fixed_block_dev_controllers);
 	} else {

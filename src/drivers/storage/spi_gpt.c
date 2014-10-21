@@ -23,14 +23,16 @@
 #include <assert.h>
 #include <libpayload.h>
 #include <stdio.h>
+#include <string.h>
+
+/* Headers from vboot for GPT manipulation */
+#include <gpt.h>
+#include <gpt_misc.h>
 
 #include "base/container_of.h"
 #include "base/device_tree.h"
 #include "drivers/flash/flash.h"
 #include "drivers/storage/spi_gpt.h"
-
-#include "gpt.h"
-#include "gpt_misc.h"
 
 /* Block size is arbitrarily chosen; any size would work once buffering
  * is implemented. Partitions have to be aligned to the size of an
@@ -96,6 +98,98 @@ static StreamOps *new_stream_spi_gpt(struct BlockDevOps *me, lba_t start,
 					      start_byte, count_byte);
 }
 
+static GptData *read_gpt(SpiGptDev *dev)
+{
+	GptData *data = xzalloc(sizeof(*data));
+	data->sector_bytes = BLOCK_SIZE;
+	data->streaming_drive_sectors = dev->block_dev.stream_block_count;
+	data->gpt_drive_sectors = dev->block_dev.block_count;
+	data->flags = GPT_FLAG_EXTERNAL;
+
+	int ret = AllocAndReadGptData(&dev->block_dev, data);
+	if (ret)
+		return NULL;
+
+	if (GPT_SUCCESS != GptInit(data)) {
+		WriteAndFreeGptData(&dev->block_dev, data);
+		return NULL;
+	}
+	return data;
+}
+
+static int spi_gpt_fixup(DeviceTreeFixup *fixup, DeviceTree *tree)
+{
+	SpiGptDev *dev = container_of(fixup, SpiGptDev, fixup);
+
+	uint32_t addrc, sizec;
+	DeviceTreeNode *nand = dt_find_node_by_path(tree->root,
+						    dev->ctrlr->dt_path,
+						    &addrc, &sizec, 0);
+	if (!nand) {
+		printf("device node not found at path %s!\n",
+		       dev->ctrlr->dt_path);
+		return 1;
+	}
+
+	GptData *gpt = read_gpt(dev);
+	if (!gpt) {
+		printf("SPI GPT read failed!\n");
+		return 1;
+	}
+
+	ListNode *prev_child = &nand->children;
+
+	/* Partition 0 goes over the whole device */
+	DeviceTreeNode *partition = xzalloc(sizeof(*partition));
+	partition->name = "device";
+	u64 start = 0;
+	u64 size = dev->block_dev.stream_block_count << BLOCK_SHIFT;
+
+	/* TODO(chromium:436265): If we use 4GB+ NAND, update to support
+	 * two-word addresses for partitions on 32-bit architectures. */
+	if (size >> (32 * addrc) || size >> (32 * sizec)) {
+		printf(
+		       "Multiple word addresses not supported, addrc=%d, sizec=%d",
+		       addrc, sizec);
+		return 1;
+	}
+
+	dt_add_reg_prop(partition, &start, &size, 1, addrc, sizec);
+	list_insert_after(&partition->list_node, prev_child);
+	prev_child = &partition->list_node;
+
+	/* Partitions 1 and beyond are from the GPT */
+	GptHeader *header = (GptHeader *)gpt->primary_header;
+	GptEntry *entries = (GptEntry *)gpt->primary_entries;
+	GptEntry *e;
+	int i;
+	int part_idx = 1;
+	for (i = 0, e = entries; i < header->number_of_entries; i++, e++) {
+		if (IsUnusedEntry(e))
+			continue;
+		DeviceTreeNode *partition = xzalloc(sizeof(*partition));
+		partition->name = utf16le_to_ascii(e->name,
+						   ARRAY_SIZE(e->name));
+		if (part_idx != i + 1) {
+			printf(
+				"Mismatch between GPT ID %d and MTD partition ID %d\n",
+				i + 1, part_idx);
+			WriteAndFreeGptData(dev, gpt);
+			return 1;
+		}
+		part_idx++;
+
+		u64 start = (e->starting_lba << BLOCK_SHIFT);
+		u64 size = (e->ending_lba - e->starting_lba + 1) << BLOCK_SHIFT;
+		dt_add_reg_prop(partition, &start, &size, 1, addrc, sizec);
+		list_insert_after(&partition->list_node, prev_child);
+		prev_child = &partition->list_node;
+	}
+	WriteAndFreeGptData(dev, gpt);
+
+	return 0;
+}
+
 int update_spi_gpt(struct BlockDevCtrlrOps *me)
 {
 	BlockDevCtrlr *blockdevctrlr = container_of(me, BlockDevCtrlr, ops);
@@ -105,6 +199,7 @@ int update_spi_gpt(struct BlockDevCtrlrOps *me)
 	SpiGptDev *dev = xzalloc(sizeof(*dev));
 	dev->ctrlr = ctrlr;
 	ctrlr->dev = dev;
+
 	if (fmap_find_area(ctrlr->fmap_region, &dev->area))
 		return 1;
 	dev->block_dev.name = "virtual_spi_gpt";
@@ -124,15 +219,23 @@ int update_spi_gpt(struct BlockDevCtrlrOps *me)
 	list_insert_after(&dev->block_dev.list_node, &fixed_block_devices);
 
 	ctrlr->block_ctrlr.need_update = 0;
+
+	if (ctrlr->dt_path) {
+		dev->fixup.fixup = spi_gpt_fixup;
+		list_insert_after(&dev->fixup.list_node, &device_tree_fixups);
+	}
+
 	return 0;
 }
 
-SpiGptCtrlr *new_spi_gpt(const char *fmap_region, StreamCtrlr *stream_ctrlr)
+SpiGptCtrlr *new_spi_gpt(const char *fmap_region, StreamCtrlr *stream_ctrlr,
+			 const char *dt_path)
 {
 	SpiGptCtrlr *ctrlr = xzalloc(sizeof(*ctrlr));
 	ctrlr->block_ctrlr.ops.update = update_spi_gpt;
 	ctrlr->block_ctrlr.need_update = 1;
 	ctrlr->fmap_region = fmap_region;
 	ctrlr->stream_ctrlr = stream_ctrlr;
+	ctrlr->dt_path = dt_path;
 	return ctrlr;
 }
