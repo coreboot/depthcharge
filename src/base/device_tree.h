@@ -136,9 +136,14 @@ void dt_flatten(DeviceTree *tree, void *dest);
 void dt_print_node(DeviceTreeNode *node);
 // Read #address-cells and #size-cells properties from a node.
 void dt_read_cell_props(DeviceTreeNode *node, u32 *addrcp, u32 *sizecp);
-// Look up or create a node relative to a parent node, through its path.
+// Look up or create a node relative to a parent node, through its path
+// represented as an array of strings.
 DeviceTreeNode *dt_find_node(DeviceTreeNode *parent, const char **path,
 			     u32 *addrcp, u32 *sizecp, int create);
+// Look up or create a node relative to a parent node, through its path
+// represented as a string of '/' separated node names.
+DeviceTreeNode *dt_find_node_by_path(DeviceTreeNode *parent, const char *path,
+				     u32 *addrcp, u32 *sizecp, int create);
 // Look up a node relative to a parent node, through its compatible string.
 DeviceTreeNode *dt_find_compat(DeviceTreeNode *parent, const char *compatible);
 // Write src into *dest as a 'length'-byte big-endian integer.
