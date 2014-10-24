@@ -533,20 +533,67 @@ DeviceTreeNode *dt_find_node(DeviceTreeNode *parent, const char **path,
 		if (!create)
 			return NULL;
 
-		/*
-		 * This data structure will be flattened (= deep copy) before
-		 * it is passed to the kernel. Therefore, we can just store a
-		 * pointer to the interned string from 'path' here, even though
-		 * it lives in depthcharge's .rodata section.
-		 */
 		found = alloc_node();
-		found->name = *path;
+		found->name = strdup(*path);
+		if (!found->name)
+			return NULL;
+
 		list_insert_after(&found->list_node, &parent->children);
 	}
 
 	return dt_find_node(found, path + 1, addrcp, sizecp, create);
 }
 
+/*
+ * Find a node from a string device tree path, relative to a parent node.
+ *
+ * @param parent	The node from which to start the relative path lookup.
+ * @param path          A string representing a path in the device tree, with
+ *			nodes separated by '/'. Example: "soc/firmware/coreboot"
+ * @param addrcp	Pointer that will be updated with any #address-cells
+ *			value found in the path. May be NULL to ignore.
+ * @param sizecp	Pointer that will be updated with any #size-cells
+ *			value found in the path. May be NULL to ignore.
+ * @param create	1: Create node(s) if not found. 0: Return NULL instead.
+ * @return		The found/created node, or NULL.
+ *
+ * It is the caller responsibility to provide the correct path string, namely
+ * not starting or ending with a '/', and not having "//" anywhere in it.
+ */
+DeviceTreeNode *dt_find_node_by_path(DeviceTreeNode *parent, const char *path,
+				     u32 *addrcp, u32 *sizecp, int create)
+{
+	char *dup_path = strdup(path);
+	/* Hopefully enough depth for any node. */
+	const char *path_array[15];
+	int i;
+	char *next_slash;
+	DeviceTreeNode *node = NULL;
+
+	if (!dup_path)
+		return NULL;
+
+	next_slash = dup_path;
+	path_array[0] = dup_path;
+	for (i = 1; i < (ARRAY_SIZE(path_array) - 1); i++) {
+
+		next_slash = strchr(next_slash, '/');
+		if (!next_slash)
+			break;
+
+		*next_slash++ = '\0';
+		path_array[i] = next_slash;
+	}
+
+	if (!next_slash) {
+		path_array[i] = NULL;
+		node = dt_find_node(parent, path_array,
+				    addrcp, sizecp, create);
+	}
+
+	free(dup_path);
+	return node;
+}
 /*
  * Find a node from a compatible string, in the subtree of a parent node.
  *
