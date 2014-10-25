@@ -16,5 +16,4 @@
 ##
 
 depthcharge-y += board.c
-#TODO Furquan: Add power_ops.c and power_ops.h when required
-
+depthcharge-y += wifi_calibration.c

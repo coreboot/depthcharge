@@ -25,7 +25,6 @@
 #include <sysinfo.h>
 #include <stdio.h>
 
-#include "base/device_tree.h"
 #include "base/init_funcs.h"
 #include "boot/fit.h"
 #include "drivers/bus/i2c/ipq806x_gsbi.h"
@@ -41,6 +40,8 @@
 #include "drivers/gpio/ipq806x.h"
 #include "drivers/storage/ipq806x_mmc.h"
 
+#include "board.h"
+
 #define GPIO_SDCC_FUNC_VAL      2
 
 #define MSM_SDC1_BASE		0x12400000
@@ -50,7 +51,7 @@
  * required. Just two need to be set, at the particular paths in the device
  * tree listed in the array below.
  */
-static int set_mac_addresses(DeviceTreeFixup *fixup, DeviceTree *tree)
+static int set_mac_addresses(DeviceTree *tree)
 {
 	static const char *mac_addr_paths[][3] = {
 		{ "soc", "ethernet@37000000", NULL },
@@ -77,8 +78,18 @@ static int set_mac_addresses(DeviceTreeFixup *fixup, DeviceTree *tree)
 	return 0;
 }
 
+static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
+{
+	int rv;
+
+	rv = set_mac_addresses(tree);
+	rv |= set_wifi_calibration(tree);
+
+	return rv;
+}
+
 static DeviceTreeFixup ipq_enet_fixup = {
-	.fixup = set_mac_addresses
+	.fixup = fix_device_tree
 };
 
 /* MMC bus GPIO assignments. */
