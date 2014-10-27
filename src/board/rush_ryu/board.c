@@ -159,6 +159,10 @@ static int board_setup(void)
 	/* Lid always open for now. */
 	flag_replace(FLAG_LIDSW, &always_open_lid);
 
+	/* Install flag for GPIO EC_IN_RW */
+	TegraGpio *ec_in_rw = new_tegra_gpio_input(GPIO(U, 4));
+	flag_install(FLAG_ECINRW, &ec_in_rw->ops);
+
 	return 0;
 }
 
