@@ -46,6 +46,30 @@
 
 #define MSM_SDC1_BASE		0x12400000
 
+/* Structure describing properties of various Storm based boards. */
+struct board_descriptor {
+	const char *compat_string; // Match the device tree in FIT image.
+	int calibration_needed;	   // Some boards need to populate WiFi
+				   // calibration data.
+};
+
+static struct board_descriptor bdescriptor;
+
+static void fill_board_descriptor(void)
+{
+	switch(lib_sysinfo.board_id) {
+	case 2: /* Whirlwind SP3 */
+		bdescriptor.compat_string = "google,whirlwind-sp3";
+		bdescriptor.calibration_needed = 1;
+		break;
+	default:
+		bdescriptor.compat_string = "google,storm-proto0";
+		bdescriptor.calibration_needed = 0;
+		break;
+	}
+}
+
+
 /*
  * MAC address fixup. There might be more addresses in lib_sysinfo than
  * required. Just two need to be set, at the particular paths in the device
@@ -83,7 +107,9 @@ static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 	int rv;
 
 	rv = set_mac_addresses(tree);
-	rv |= set_wifi_calibration(tree);
+
+	if (bdescriptor.calibration_needed)
+		rv |= set_wifi_calibration(tree);
 
 	return rv;
 }
@@ -163,7 +189,9 @@ static int board_setup(void)
 {
 	sysinfo_install_flags();
 
-	fit_set_compat("google,storm-proto0");
+	fill_board_descriptor();
+
+	fit_set_compat(bdescriptor.compat_string);
 
 	install_phys_presence_flag();
 
