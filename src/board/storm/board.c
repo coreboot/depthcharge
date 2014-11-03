@@ -27,6 +27,7 @@
 
 #include "base/init_funcs.h"
 #include "boot/fit.h"
+#include "boot/ramoops.h"
 #include "drivers/bus/i2c/ipq806x_gsbi.h"
 #include "drivers/bus/i2c/ipq806x.h"
 #include "drivers/bus/spi/ipq806x.h"
@@ -185,6 +186,49 @@ void board_mmc_gpio_config(void)
 	}
 }
 
+static void set_ramoops_buffer(void)
+{
+	uint64_t base, total_size, record_size;
+
+	/*
+	 * Hardcoded record and total sizes could be defined through Kconfig.
+	 *
+	 * The 'total_size' bytes of memory, aligned at 'record_size' boundary
+	 * is found at the top of available memory as defined in the coreboot
+	 * table and assigned to the ramoops cache.
+	 *
+	 * This is fairly brittle, as other parts of depthcharge or libpayload
+	 * could be using this memory for something. But this is no wose than
+	 * hardcoding this area to any particular address.
+	 *
+	 * A proper solution would be to have coreboot assign this memory and
+	 * explixitly describe this in the coreboot memory table.
+	 */
+	record_size = 0x20000;
+	total_size = 0x100000;
+	base = 0;
+
+	/* Let's allocate it as high as possible in the available memory */
+	for (int i = 0; i < lib_sysinfo.n_memranges; i++) {
+		uint64_t new_base, size;
+		struct memrange *range = lib_sysinfo.memrange + i;
+
+		size = range->size;
+		if ((range->type != CB_MEM_RAM) ||
+		    (size < (total_size + record_size)))
+			continue;
+
+		/* Record size aligned area is guaranteed to fit. */
+		new_base = ALIGN_DOWN(range->base + size - total_size,
+				      record_size);
+		if (new_base > base)
+			base = new_base;
+
+	}
+	if (base)
+		ramoops_buffer(base, total_size, record_size);
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags();
@@ -215,6 +259,8 @@ static int board_setup(void)
 	flash_nvram_init();
 
 	list_insert_after(&ipq_enet_fixup.list_node, &device_tree_fixups);
+
+	set_ramoops_buffer();
 
 	return 0;
 }
