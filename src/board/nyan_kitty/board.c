@@ -279,6 +279,10 @@ static int board_setup(void)
 
 	ramoops_buffer(0x87f00000, 0x100000, 0x20000);
 
+	/* Read the current value of the recovery button (active low) */
+	TegraGpio *rec_switch = new_tegra_gpio_input(GPIO(Q, 7));
+	flag_replace(FLAG_RECSW, new_gpio_not(&rec_switch->ops));
+
 	return 0;
 }
 
