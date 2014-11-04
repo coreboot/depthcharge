@@ -68,8 +68,6 @@ static const char * const templates[] = {
  */
 static const char *dt_path = "soc/pci@%8.8x/pcie@0/ath10k@0,0";
 
-static const char *base64_suffix = "-base64";
-
 /* Mapping of interface numbers into the wifi device address on the PCI bus. */
 static const uint32_t if_to_address[] = { 0x1b500000, 0x1b700000, 0x1b900000 };
 
@@ -126,13 +124,6 @@ static void process_blob(DeviceTree *tree,
 			       dt_path, if_to_address[if_index]);
 	if (string_size >= sizeof(path_str))
 		return;
-
-	if (base64) {
-		if ((string_size + strlen(base64_suffix)) >=
-		    (sizeof(path_str) -1))
-			return;
-		strcpy(path_str + string_size, base64_suffix);
-	}
 
 	/*
 	 * Binary nodes are supposed to be present in the device tree, the
