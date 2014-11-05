@@ -44,15 +44,6 @@
 #include "vboot/util/flag.h"
 
 enum {
-	BOARD_ID_PROTO_0 = 0,
-	BOARD_ID_PROTO_1 = 1,
-	BOARD_ID_EVT = 2,
-	BOARD_ID_DVT = 3,
-	BOARD_ID_PVT = 4,
-	BOARD_ID_MP = 5,
-};
-
-enum {
 	CLK_RST_BASE = 0x60006000,
 
 	CLK_RST_L_RST_SET = CLK_RST_BASE + 0x300,
@@ -86,17 +77,7 @@ const char *mainboard_commandline(void)
 
 static void choose_devicetree_by_boardid(void)
 {
-	switch(lib_sysinfo.board_id) {
-	case BOARD_ID_PROTO_0:
-		fit_set_compat("google,ryu-p0");
-		break;
-	case BOARD_ID_PROTO_1:
-		fit_set_compat("google,ryu-p1");
-		break;
-	default:
-		printf("Unknown board id: %x\n", lib_sysinfo.board_id);
-		break;
-	}
+	fit_set_compat_by_rev("google,ryu-rev%d", lib_sysinfo.board_id);
 }
 
 static int board_setup(void)
