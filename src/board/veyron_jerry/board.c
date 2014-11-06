@@ -45,9 +45,8 @@
 
 static int board_setup(void)
 {
-	/* We started adding board IDs (from 0) with the rev1 board... m( */
 	fit_set_compat_by_rev("google,veyron-jerry-rev%d",
-			      lib_sysinfo.board_id + 1);
+			      lib_sysinfo.board_id);
 
 	RkSpi *spi2 = new_rockchip_spi(0xff130000, 0, 0, 0);
 	flash_set_ops(&new_spi_flash(&spi2->ops, 0x400000)->ops);
