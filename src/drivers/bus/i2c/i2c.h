@@ -80,4 +80,18 @@ int i2c_readb(I2cOps *ops, uint8_t chip, uint8_t reg, uint8_t *data);
  */
 int i2c_writeb(I2cOps *ops, uint8_t chip, uint8_t reg, uint8_t data);
 
+/**
+ * Read a word by 2 segments in one frame
+ *
+ * [start][slave addr][w][register addr][start][slave addr][r][data byte high][data byte low][stop]
+ */
+int i2c_readw(I2cOps *ops, uint8_t chip, uint8_t reg, uint16_t *data);
+
+/**
+ * Write a word by one segment in one frame.
+ *
+ * [start][slave addr][w][register addr][data byte high][data byte low][stop]
+ */
+int i2c_writew(I2cOps *ops, uint8_t chip, uint8_t reg, uint16_t data);
+
 #endif /* __DRIVERS_BUS_I2C_I2C_H__ */
