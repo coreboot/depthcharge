@@ -27,7 +27,6 @@
 #include "board/rush_ryu/power_ops.h"
 #include "boot/fit.h"
 #include "boot/commandline.h"
-#include "boot/ramoops.h"
 #include "config.h"
 #include "drivers/bus/spi/tegra.h"
 #include "drivers/bus/i2c/tegra.h"
