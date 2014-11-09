@@ -26,6 +26,7 @@
 #include <string.h>
 
 #include "base/device_tree.h"
+#include "base/init_funcs.h"
 #include "base/list.h"
 #include "boot/ramoops.h"
 #include "vboot/util/memory.h"
@@ -99,3 +100,17 @@ void ramoops_buffer(uint64_t start, uint64_t size, uint64_t record_size)
 
 	memory_mark_used(start, start + size);
 }
+
+static int ramoops_init(void)
+{
+	if ((lib_sysinfo.ramoops_buffer == 0) ||
+	    (lib_sysinfo.ramoops_buffer_size == 0))
+		return 0;
+
+	ramoops_buffer(lib_sysinfo.ramoops_buffer,
+		       lib_sysinfo.ramoops_buffer_size, 0x20000);
+
+	return 0;
+}
+
+INIT_FUNC(ramoops_init);
