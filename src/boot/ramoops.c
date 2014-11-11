@@ -39,6 +39,9 @@ typedef struct
 	DeviceTreeFixup fixup;
 } Ramoops;
 
+/* Undocumented, but linux kernel expects record-size to use only one cell */
+#define RECORD_SIZE_CELLS	1
+
 static int ramoops_fixup(DeviceTreeFixup *fixup, DeviceTree *tree)
 {
 	Ramoops *ramoops = container_of(fixup, Ramoops, fixup);
@@ -65,8 +68,10 @@ static int ramoops_fixup(DeviceTreeFixup *fixup, DeviceTree *tree)
 
 	// Add a record-size property.
 	u8 *data = xzalloc(size_cells * sizeof(u32));
-	dt_write_int(data, ramoops->record_size, size_cells * sizeof(u32));
-	dt_add_bin_prop(node, "record-size", data, size_cells * sizeof(u32));
+	dt_write_int(data, ramoops->record_size,
+		     RECORD_SIZE_CELLS * sizeof(u32));
+	dt_add_bin_prop(node, "record-size", data,
+			RECORD_SIZE_CELLS * sizeof(u32));
 
 	// Add the optional dump-oops property.
 	dt_add_bin_prop(node, "dump-oops", NULL, 0);
