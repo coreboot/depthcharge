@@ -56,12 +56,16 @@ static int board_setup(void)
 	cros_ec_set_bus(&new_cros_ec_spi_bus(&spi0->ops)->ops);
 
 	sysinfo_install_flags();
-	RkGpio *lid_switch = new_rk_gpio_input(GPIO(7, B, 5));
+	RkGpio *lid_switch = new_rk_gpio_input(
+		lib_sysinfo.board_id > 0 ? GPIO(0, A, 6) : GPIO(7, B, 5));
 	RkGpio *ec_in_rw = new_rk_gpio_input(GPIO(0, A, 7));
-	RkGpio *pwr_key_h = new_rk_gpio_input(GPIO(0, A, 5));
+	RkGpio *pwr_key = new_rk_gpio_input(GPIO(0, A, 5));
 	flag_replace(FLAG_LIDSW, &lid_switch->ops);
 	flag_install(FLAG_ECINRW, &ec_in_rw->ops);
-	flag_replace(FLAG_PWRSW, &pwr_key_h->ops);
+	if (lib_sysinfo.board_id > 1)
+		flag_replace(FLAG_PWRSW, new_gpio_not(&pwr_key->ops));
+	else
+		flag_replace(FLAG_PWRSW, &pwr_key->ops);
 
 	RkI2c *i2c1 = new_rockchip_i2c((void *)0xff140000);
 	tpm_set_ops(&new_slb9635_i2c(&i2c1->ops, 0x20)->base.ops);
@@ -78,7 +82,8 @@ static int board_setup(void)
 
 	RkI2c *i2c0 = new_rockchip_i2c((void *)0xff650000);
 	Rk808Pmic *pmic = new_rk808_pmic(&i2c0->ops, 0x1b);
-	RkGpio *reboot_gpio = new_rk_gpio_output(GPIO(0, B, 2));
+	RkGpio *reboot_gpio = new_rk_gpio_output(
+		lib_sysinfo.board_id > 0 ? GPIO(0, B, 5) : GPIO(0, B, 2));
 	RkPowerOps *rk_power_ops = new_rk_power_ops(&reboot_gpio->ops,
 		&pmic->ops, 1);
 	power_set_ops(&rk_power_ops->ops);
