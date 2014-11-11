@@ -26,6 +26,7 @@
 
 #include "base/init_funcs.h"
 #include "board/rush_ryu/state_machine.h"
+#include "drivers/gpio/sysinfo.h"
 #include "drivers/gpio/tegra.h"
 #include "drivers/input/pseudo/keyboard.h"
 
@@ -167,6 +168,32 @@ static int ryu_keyboard_init(void)
 }
 INIT_FUNC(ryu_keyboard_init);
 
+static uint8_t active_mask(uint8_t input)
+{
+	static uint8_t mask = 0;
+
+	/*
+	 * Inputs volup and voldown are active low. Thus, use ACTIVE_MASK to
+	 * normalize them to active high.
+	 * Pwr btn can be active high/low. So read the gpio polarity to identify
+	 * if active mask is required for pwr btn as well.
+	 */
+	if (mask == 0) {
+		struct cb_gpio *pwr_gpio = sysinfo_lookup_gpio("power");
+
+		die_if((pwr_gpio == NULL), "No GPIO for power!!\n");
+
+		if (pwr_gpio->polarity == CB_GPIO_ACTIVE_LOW)
+			mask = PWR_BTN;
+
+		mask |= ACTIVE_MASK;
+	}
+
+	input ^= mask;
+
+	return input;
+}
+
 static uint8_t read_input(void)
 {
 	uint8_t input;
@@ -175,11 +202,7 @@ static uint8_t read_input(void)
 		(vol_up_gpio->ops.get(&vol_up_gpio->ops) << VOL_UP_SHIFT) |
 		(vol_down_gpio->ops.get(&vol_down_gpio->ops) << VOL_DOWN_SHIFT);
 
-	/*
-	 * Inputs volup and voldown are active low. Thus, use ACTIVE_MASK to
-	 * normalize them to active high.
-	 */
-	input ^= ACTIVE_MASK;
+	input = active_mask(input);
 
 	return input;
 }
