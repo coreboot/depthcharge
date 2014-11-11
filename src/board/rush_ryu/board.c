@@ -41,6 +41,7 @@
 #include "drivers/storage/tegra_mmc.h"
 #include "drivers/ec/cros/i2c.h"
 #include "vboot/util/flag.h"
+#include "vboot/util/display.h"
 
 enum {
 	CLK_RST_BASE = 0x60006000,
@@ -50,14 +51,17 @@ enum {
 	CLK_RST_H_RST_SET = CLK_RST_BASE + 0x308,
 	CLK_RST_H_RST_CLR = CLK_RST_BASE + 0x30c,
 	CLK_RST_U_RST_SET = CLK_RST_BASE + 0x310,
-	CLK_RST_U_RST_CLR = CLK_RST_BASE + 0x314
+	CLK_RST_U_RST_CLR = CLK_RST_BASE + 0x314,
+	CLK_RST_X_RST_SET = CLK_RST_BASE + 0x290,
+	CLK_RST_X_RST_CLR = CLK_RST_BASE + 0x294
 };
 
 enum {
 	CLK_L_I2C1 = 0x1 << 12,
 	CLK_H_I2C2 = 0x1 << 22,
 	CLK_U_I2C3 = 0x1 << 3,
-	CLK_H_I2C5 = 0x1 << 15
+	CLK_H_I2C5 = 0x1 << 15,
+	CLK_X_I2C6 = 0x1 << 6
 };
 
 static int lid_get_always_open (struct GpioOps *me)
@@ -147,3 +151,99 @@ static int board_setup(void)
 }
 
 INIT_FUNC(board_setup);
+
+static TegraI2c *get_backlight_i2c(void)
+{
+	static TegraI2c *backlight_i2c;
+
+	if (backlight_i2c == NULL)
+		backlight_i2c = new_tegra_i2c((void *)0x7000d100, 6,
+					(void *)CLK_RST_X_RST_SET,
+					(void *)CLK_RST_X_RST_CLR,
+					CLK_X_I2C6);
+	return backlight_i2c;
+}
+
+/* Turn on or turn off the backlight */
+static VbError_t backlight_update(uint8_t enable)
+{
+	struct bl_reg {
+		uint8_t reg;
+		uint8_t val;
+	};
+
+	static const struct bl_reg bl_on_list[] = {
+		{0x10, 0x01},	/* Brightness mode: BRTHI/BRTLO */
+		{0x11, 0x05},	/* maxcurrent: 20ma */
+		{0x14, 0x7f},	/* ov: 2v, all 6 current sinks enabled */
+		{0x00, 0x01},	/* backlight on */
+		{0x04, 0x55},	/* brightness: BRT[11:4] */
+				/*             0x000: 0%, 0xFFF: 100% */
+	};
+
+	static const struct bl_reg bl_off_list[] = {
+		{0x00, 0x00},	/* backlight off */
+	};
+
+	TegraI2c *backlight_i2c = get_backlight_i2c();
+	const struct bl_reg *current;
+	size_t size, i;
+
+	if (enable) {
+		current = bl_on_list;
+		size = ARRAY_SIZE(bl_on_list);
+	} else {
+		current = bl_off_list;
+		size = ARRAY_SIZE(bl_off_list);
+	}
+
+	for (i = 0; i < size; ++i) {
+		i2c_writeb(&backlight_i2c->ops, 0x2c, current->reg,
+				current->val);
+		++current;
+	}
+
+	return VBERROR_SUCCESS;
+}
+
+/* Coreboot currently sets up the T window for display support. */
+#define WIN_ENABLE	(1 << 30)
+static void * const winbuf_t_start_addr = (void *)(uintptr_t)0x54202000;
+static void * const win_t_win_options = (void *)(uintptr_t)0x54201c00;
+
+static VbError_t display_init(void)
+{
+	uintptr_t phys_addr = lib_sysinfo.framebuffer->physical_address;
+
+	/* Set the framebuffer address and enable the T window. */
+	writel(phys_addr, winbuf_t_start_addr);
+	writel(readl(win_t_win_options) | WIN_ENABLE, win_t_win_options);
+
+	return VBERROR_SUCCESS;
+}
+
+static int display_stop(void)
+{
+	/* Disable the T Window. */
+	writel(readl(win_t_win_options) & ~WIN_ENABLE, win_t_win_options);
+	return 0;
+}
+
+static VbootDisplayOps ryu_display_ops = {
+	.init = &display_init,
+	.backlight_update = &backlight_update,
+	.stop = &display_stop,
+};
+
+static int display_setup(void)
+{
+	if (lib_sysinfo.framebuffer == NULL ||
+		lib_sysinfo.framebuffer->physical_address == 0)
+		return 0;
+
+	display_set_ops(&ryu_display_ops);
+
+	return 0;
+}
+
+INIT_FUNC(display_setup);
