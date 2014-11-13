@@ -70,7 +70,13 @@ falco,peppy,wolf,leon:
   res:      [1024, 768]
   panel:    [1366, 768]
 
-squawks,glimmer,clapper,enguarde,expresso,kip,gnawty,winky,quawks,swanky:
+squawks,glimmer,clapper,enguarde,expresso,kip,gnawty,winky,quawks,swanky,candy:
+  # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
+  # With card reader. All USB ports can boot in recovery mode.
+  res:      [1024, 768]
+  panel:    [1366, 768]
+
+auron_paine,auron_yuna,cid:
   # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
   # With card reader. All USB ports can boot in recovery mode.
   res:      [1024, 768]
@@ -106,6 +112,15 @@ monroe:
   panel:    [1920, 1080]
   phy_rec:  True
   sdcard:   False
+
+cranky:
+  # Using VESA graphics mode 1024x768 (0x0117).
+  # A chromestation with built-in panel, without built-in keyboard.
+  # Display is a modern 16:9 (1920x1080) monitor.
+  # With physical recovery switch, with card reader.
+  res:      [1024, 768]
+  panel:    [1920, 1080]
+  phy_rec:  True
 
 parrot,butterfly:
   # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
