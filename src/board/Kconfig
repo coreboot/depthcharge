@@ -88,6 +88,9 @@ endif
 if BOARD = "veyron_jerry"
 source src/board/veyron_jerry/Kconfig
 endif
+if BOARD = "veyron_mighty"
+source src/board/veyron_mighty/Kconfig
+endif
 if BOARD = "veyron_pinky"
 source src/board/veyron_pinky/Kconfig
 endif
