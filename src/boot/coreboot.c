@@ -68,6 +68,12 @@ static int install_coreboot_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 	dt_add_reg_prop(coreboot_node, reg_addrs, reg_sizes, 2,
 			addr_cells, size_cells);
 
+	// Expose RAM code exported from coreboot to userspace.
+	if (lib_sysinfo.ram_code) {
+		dt_add_u32_prop(coreboot_node,
+				"ram-code", lib_sysinfo.ram_code);
+	}
+
 	return 0;
 }
 
