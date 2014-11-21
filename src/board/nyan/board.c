@@ -24,7 +24,6 @@
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
-#include "board/nyan/power_ops.h"
 #include "boot/fit.h"
 #include "boot/ramoops.h"
 #include "config.h"
@@ -41,6 +40,8 @@
 #include "drivers/sound/max98090.h"
 #include "drivers/sound/tegra_ahub.h"
 #include "drivers/storage/tegra_mmc.h"
+#include "drivers/power/as3722.h"
+#include "drivers/power/sysinfo.h"
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
@@ -190,9 +191,8 @@ static int board_setup(void)
 					  (void *)CLK_RST_H_RST_CLR,
 					  CLK_H_I2C5);
 	As3722Pmic *pmic = new_as3722_pmic(&pwr_i2c->ops, 0x40);
-	TegraGpio *reboot_gpio = new_tegra_gpio_output(GPIO(I, 5));
-	NyanPowerOps *power = new_nyan_power_ops(&pmic->ops, &reboot_gpio->ops,
-						 0);
+	SysinfoResetPowerOps *power = new_sysinfo_reset_power_ops(&pmic->ops,
+			new_tegra_gpio_output_from_coreboot);
 	power_set_ops(&power->ops);
 
 	// sdmmc4

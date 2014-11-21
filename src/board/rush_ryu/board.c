@@ -24,7 +24,6 @@
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
-#include "board/rush_ryu/power_ops.h"
 #include "boot/fit.h"
 #include "boot/commandline.h"
 #include "config.h"
@@ -36,6 +35,8 @@
 #include "drivers/gpio/tegra.h"
 #include "drivers/dma/tegra_apb.h"
 #include "drivers/flash/spi.h"
+#include "drivers/power/sysinfo.h"
+#include "drivers/power/tps65913.h"
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/storage/tegra_mmc.h"
@@ -114,10 +115,8 @@ static int board_setup(void)
 					  CLK_H_I2C5);
 
 	Tps65913Pmic *pmic = new_tps65913_pmic(&pwr_i2c->ops, 0x58);
-
-	TegraGpio *reboot_gpio = new_tegra_gpio_output(GPIO(I, 5));
-	RyuPowerOps *power = new_ryu_power_ops(&pmic->ops, &reboot_gpio->ops,
-						 0);
+	SysinfoResetPowerOps *power = new_sysinfo_reset_power_ops(&pmic->ops,
+			new_tegra_gpio_output_from_coreboot);
 	power_set_ops(&power->ops);
 
 	/* sdmmc4 */

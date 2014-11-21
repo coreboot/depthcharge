@@ -42,6 +42,12 @@ static int gpio_not_get(GpioOps *me)
 	return !op->a->get(op->a);
 }
 
+static int gpio_not_set(GpioOps *me, unsigned value)
+{
+	GpioUnaryOp *op = container_of(me, GpioUnaryOp, ops);
+	return op->a->set(op->a, !value);
+}
+
 static int gpio_and_get(GpioOps *me)
 {
 	GpioBinaryOp *op = container_of(me, GpioBinaryOp, ops);
@@ -58,6 +64,7 @@ GpioOps *new_gpio_not(GpioOps *a)
 {
 	GpioUnaryOp *op = xzalloc(sizeof(*op));
 	op->ops.get = &gpio_not_get;
+	op->ops.set = &gpio_not_set;
 	op->a = a;
 	return &op->ops;
 }

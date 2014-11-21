@@ -29,8 +29,8 @@
 #include "drivers/ec/cros/spi.h"
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
-#include "board/veyron_mighty/power_ops.h"
 #include "drivers/power/rk808.h"
+#include "drivers/power/sysinfo.h"
 #include "drivers/storage/dw_mmc.h"
 #include "drivers/storage/rk_mmc.h"
 
@@ -71,10 +71,9 @@ static int board_setup(void)
 
 	RkI2c *i2c0 = new_rockchip_i2c((void *)0xff650000);
 	Rk808Pmic *pmic = new_rk808_pmic(&i2c0->ops, 0x1b);
-	RkGpio *reboot_gpio = new_rk_gpio_output(GPIO(0, B, 2));
-	RkPowerOps *rk_power_ops = new_rk_power_ops(&reboot_gpio->ops,
-		&pmic->ops, 1);
-	power_set_ops(&rk_power_ops->ops);
+	SysinfoResetPowerOps *power = new_sysinfo_reset_power_ops(&pmic->ops,
+			new_rk_gpio_output_from_coreboot);
+	power_set_ops(&power->ops);
 
 	DwmciHost *emmc = new_rkdwmci_host(0xff0f0000, 594000000, 8, 0, NULL);
 	list_insert_after(&emmc->mmc.ctrlr.list_node,

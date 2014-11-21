@@ -17,4 +17,3 @@
 ##
 
 depthcharge-y += board.c
-depthcharge-y += power_ops.c
