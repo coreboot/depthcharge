@@ -35,13 +35,19 @@ while true ; do
       ;;
     --font=*)
       # Allows empty string = default font.
-      param="${1##*=}"
+      font_params="${1##*=}"
       # TODO(hungte) support "+XXX" = add font description (ex, BOLD).
-      [ -n "$param" ] && font="$param"
-      if ! fc-list -q "$param"; then
-        echo "ERROR: Missing font $param."
+      found_font="$(IFS=','; for param in ${font_params}; do
+                      if fc-list -q "${param}"; then
+                        echo "${param}"
+                        break
+                      fi
+                    done)"
+      if [ -n "${font_params}" -a -z "${found_font}" ]; then
+        echo "ERROR: Missing font ${font_params}."
         exit 1
       fi
+      font="${found_font}"
       shift
       ;;
     --align=*)

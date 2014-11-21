@@ -72,9 +72,9 @@ styles:
   model:          '--color=888888'
 
 fonts:
-  ar:     'Droid Sans Arabic'
+  ar:     'Droid Arabic Naskh,Droid Sans Arabic'
   he:     'Droid Sans Hebrew'
-  hi:     'Lohit Hindi'
+  hi:     'Noto Sans Devanagari UI,Lohit Hindi'
   ja:     'Droid Sans Fallback'
   ko:     'NanumGothic'
   th:     'Droid Sans Thai'

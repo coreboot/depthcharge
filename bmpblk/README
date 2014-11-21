@@ -100,7 +100,7 @@ On Ubuntu, you need to install following packages:
 
 And you probably want to make sure all required fonts are installed:
 
-  sudo apt-get install fonts-nanum ttf-indic-fonts fonts-droid
+  sudo apt-get install fonts-nanum ttf-indic-fonts fonts-droid fonts-noto
 
 If you want to use the "bitmap viewer" utility, add these packages:
 
