@@ -112,7 +112,7 @@ static void choose_devicetree_by_boardid(void)
 
 static int board_setup(void)
 {
-	sysinfo_install_flags();
+	sysinfo_install_flags(new_tegra_gpio_input_from_coreboot);
 
         choose_devicetree_by_boardid();
 

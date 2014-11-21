@@ -64,15 +64,6 @@ enum {
 	CLK_X_I2C6 = 0x1 << 6
 };
 
-static int lid_get_always_open (struct GpioOps *me)
-{
-	return 1;
-}
-
-static GpioOps always_open_lid = {
-	.get = lid_get_always_open,
-};
-
 const char *mainboard_commandline(void)
 {
 	return NULL;
@@ -85,7 +76,7 @@ static void choose_devicetree_by_boardid(void)
 
 static int board_setup(void)
 {
-	sysinfo_install_flags();
+	sysinfo_install_flags(new_tegra_gpio_input_from_coreboot);
 
 	choose_devicetree_by_boardid();
 
@@ -141,7 +132,7 @@ static int board_setup(void)
 	list_insert_after(&usbd->list_node, &usb_host_controllers);
 
 	/* Lid always open for now. */
-	flag_replace(FLAG_LIDSW, &always_open_lid);
+	flag_replace(FLAG_LIDSW, new_gpio_high());
 
 	/* Install flag for GPIO EC_IN_RW */
 	TegraGpio *ec_in_rw = new_tegra_gpio_input(GPIO(U, 4));

@@ -23,102 +23,56 @@
 #include <assert.h>
 #include <libpayload.h>
 
-#include "base/container_of.h"
-#include "drivers/gpio/gpio.h"
+#include "drivers/gpio/sysinfo.h"
 #include "vboot/util/flag.h"
 
-typedef struct SysinfoGpio {
-	GpioOps ops;
-	const char *label;
-	struct cb_gpio *cb_gpio_ptr;
-	int val;
-} SysinfoGpio;
-
-struct cb_gpio *sysinfo_lookup_gpio(const char *name)
+GpioOps *sysinfo_lookup_gpio(const char *name_to_find, int resample_at_runtime,
+			     new_gpio_from_coreboot_t new_gpio_from_cb)
 {
-	for (int i = 0; i < lib_sysinfo.num_gpios; i++) {
-		if (!strncmp((char *)lib_sysinfo.gpios[i].name, name,
-				CB_GPIO_MAX_NAME_LENGTH))
-			return &lib_sysinfo.gpios[i];
+	struct cb_gpio *cb = lib_sysinfo.gpios;
+	for (; cb - lib_sysinfo.gpios < lib_sysinfo.num_gpios; cb++) {
+		if (strncmp((char *)cb->name, name_to_find,
+			     CB_GPIO_MAX_NAME_LENGTH))
+			continue;
+
+		if (resample_at_runtime) {
+			if (new_gpio_from_cb) {
+				die_if((int)cb->port == -1,
+				       "GPIO '%s' not specified", cb->name);
+				GpioOps *dc_gpio = new_gpio_from_cb(cb->port);
+				if (cb->polarity == CB_GPIO_ACTIVE_LOW)
+					dc_gpio = new_gpio_not(dc_gpio);
+				return dc_gpio;
+			}
+
+			printf("WARNING: can't convert coreboot GPIOs, '%s' won't be resampled at runtime!\n",
+			       cb->name);
+		}
+
+		uint32_t value = cb->value;
+		die_if((int)value == -1, "coreboot did not sample '%s' GPIO!\n",
+		       cb->name);
+		if (cb->polarity == CB_GPIO_ACTIVE_LOW)
+			value = !value;
+		if (value)
+			return new_gpio_high();
+		else
+			return new_gpio_low();
 	}
 
-	printf("Failed to find gpio %s\n", name);
 	return NULL;
 }
 
-static int sysinfo_gpio_get(struct GpioOps *me)
+void sysinfo_install_flags(new_gpio_from_coreboot_t ngfc)
 {
-	assert(me);
-	SysinfoGpio *sgpio = container_of(me, SysinfoGpio, ops);
+	/* If a GPIO is not defined, we will just flag_install() a NULL, which
+	 * will only hit a die_if() if that flag is actually flag_fetch()ed. */
+	flag_install(FLAG_WPSW, sysinfo_lookup_gpio("write protect", 0, ngfc));
+	flag_install(FLAG_RECSW, sysinfo_lookup_gpio("recovery", 0, ngfc));
+	flag_install(FLAG_DEVSW, sysinfo_lookup_gpio("developer", 0, ngfc));
+	flag_install(FLAG_OPROM, sysinfo_lookup_gpio("oprom", 0, ngfc));
 
-	if (!sgpio->cb_gpio_ptr) {
-		struct cb_gpio *cb_gpio_ptr =
-			sysinfo_lookup_gpio(sgpio->label);
-		if (!cb_gpio_ptr)
-			return -1;
-
-		sgpio->cb_gpio_ptr = cb_gpio_ptr;
-		int p = (cb_gpio_ptr->polarity == CB_GPIO_ACTIVE_HIGH) ? 0 : 1;
-		sgpio->val = p ^ cb_gpio_ptr->value;
-	}
-
-	return sgpio->val;
-}
-
-static SysinfoGpio write_protect = {
-	.ops = {
-		.get = &sysinfo_gpio_get
-	},
-	.label = "write protect"
-};
-GpioOps *sysinfo_write_protect = &write_protect.ops;
-
-static SysinfoGpio recovery = {
-	.ops = {
-		.get = &sysinfo_gpio_get
-	},
-	.label = "recovery"
-};
-GpioOps *sysinfo_recovery = &recovery.ops;
-
-static SysinfoGpio developer = {
-	.ops = {
-		.get = &sysinfo_gpio_get
-	},
-	.label = "developer"
-};
-GpioOps *sysinfo_developer = &developer.ops;
-
-static SysinfoGpio lid = {
-	.ops = {
-		.get = &sysinfo_gpio_get
-	},
-	.label = "lid"
-};
-GpioOps *sysinfo_lid = &lid.ops;
-
-static SysinfoGpio power = {
-	.ops = {
-		.get = &sysinfo_gpio_get
-	},
-	.label = "power"
-};
-GpioOps *sysinfo_power = &power.ops;
-
-static SysinfoGpio oprom = {
-	.ops = {
-		.get = &sysinfo_gpio_get
-	},
-	.label = "oprom"
-};
-GpioOps *sysinfo_oprom = &oprom.ops;
-
-void sysinfo_install_flags(void)
-{
-	flag_install(FLAG_WPSW, sysinfo_write_protect);
-	flag_install(FLAG_RECSW, sysinfo_recovery);
-	flag_install(FLAG_DEVSW, sysinfo_developer);
-	flag_install(FLAG_LIDSW, sysinfo_lid);
-	flag_install(FLAG_PWRSW, sysinfo_power);
-	flag_install(FLAG_OPROM, sysinfo_oprom);
+	flag_install(FLAG_LIDSW, sysinfo_lookup_gpio("lid", 1, ngfc));
+	flag_install(FLAG_PWRSW, sysinfo_lookup_gpio("power", 1, ngfc));
+	flag_install(FLAG_ECINRW, sysinfo_lookup_gpio("EC in RW", 1, ngfc));
 }

@@ -52,7 +52,7 @@ static const int sd_clock_max = 52 * 1000 * 1000;
 static int board_setup(void)
 {
 	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + DEVICE_NVS_OFFSET;
-	sysinfo_install_flags();
+	sysinfo_install_flags(NULL);
 
 	/* ECRW GPIO: SCGPIO59 */
 	PchGpio *ec_in_rw = new_baytrail_gpio_input(59 / 32,

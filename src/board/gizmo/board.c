@@ -30,7 +30,7 @@
 
 static int board_setup(void)
 {
-	sysinfo_install_flags();
+	sysinfo_install_flags(NULL);
 
 	flash_set_ops(&new_mem_mapped_flash(0xffe00000, 0x200000)->ops);
 

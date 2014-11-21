@@ -55,17 +55,7 @@ static int board_setup(void)
 	RkSpi *spi0 = new_rockchip_spi(0xff110000, 0, 0, 0);
 	cros_ec_set_bus(&new_cros_ec_spi_bus(&spi0->ops)->ops);
 
-	sysinfo_install_flags();
-	RkGpio *lid_switch = new_rk_gpio_input(
-		lib_sysinfo.board_id > 0 ? GPIO(0, A, 6) : GPIO(7, B, 5));
-	RkGpio *ec_in_rw = new_rk_gpio_input(GPIO(0, A, 7));
-	RkGpio *pwr_key = new_rk_gpio_input(GPIO(0, A, 5));
-	flag_replace(FLAG_LIDSW, &lid_switch->ops);
-	flag_install(FLAG_ECINRW, &ec_in_rw->ops);
-	if (lib_sysinfo.board_id > 1)
-		flag_replace(FLAG_PWRSW, new_gpio_not(&pwr_key->ops));
-	else
-		flag_replace(FLAG_PWRSW, &pwr_key->ops);
+	sysinfo_install_flags(new_rk_gpio_input_from_coreboot);
 
 	RkI2c *i2c1 = new_rockchip_i2c((void *)0xff140000);
 	tpm_set_ops(&new_slb9635_i2c(&i2c1->ops, 0x20)->base.ops);

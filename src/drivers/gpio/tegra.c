@@ -98,6 +98,22 @@ static TegraGpio *new_tegra_gpio(TegraGpioPort port, unsigned index,
 	return gpio;
 }
 
+/* TODO: align coreboot and depthcharge formats to avoid this atrocity */
+#define CB_GPIO_TO_DC(port) \
+	(port & ((1 << 16) - 1)) / 8, \
+	(port & ((1 << 16) - 1)) % 8, \
+	port >> 16
+
+GpioOps *new_tegra_gpio_input_from_coreboot(uint32_t port)
+{
+	return &new_tegra_gpio_input(CB_GPIO_TO_DC(port))->ops;
+}
+
+GpioOps *new_tegra_gpio_output_from_coreboot(uint32_t port)
+{
+	return &new_tegra_gpio_output(CB_GPIO_TO_DC(port))->ops;
+}
+
 TegraGpio *new_tegra_gpio_input(TegraGpioPort port, unsigned index,
 				unsigned pinmux)
 {

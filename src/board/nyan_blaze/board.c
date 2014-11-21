@@ -106,16 +106,7 @@ static int board_setup(void)
 {
 	fit_set_compat_by_rev("google,nyan-blaze-rev%d", lib_sysinfo.board_id);
 
-	sysinfo_install_flags();
-
-	TegraGpio *lid_switch = new_tegra_gpio_input(GPIO(R, 4));
-	TegraGpio *ec_in_rw = new_tegra_gpio_input(GPIO(U, 4));
-	flag_replace(FLAG_LIDSW, &lid_switch->ops);
-	flag_install(FLAG_ECINRW, &ec_in_rw->ops);
-
-	// The power switch is active low and needs to be inverted.
-	TegraGpio *power_switch_l = new_tegra_gpio_input(GPIO(Q, 0));
-	flag_replace(FLAG_PWRSW, new_gpio_not(&power_switch_l->ops));
+	sysinfo_install_flags(new_tegra_gpio_input_from_coreboot);
 
 	void *dma_channel_bases[32];
 	for (int i = 0; i < ARRAY_SIZE(dma_channel_bases); i++)

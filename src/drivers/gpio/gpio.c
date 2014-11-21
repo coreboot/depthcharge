@@ -72,6 +72,23 @@ static GpioOps *new_gpio_binary_op(GpioOps *a, GpioOps *b,
 	return &op->ops;
 }
 
+static int return_high(GpioOps *me)
+{
+	return 1;
+}
+
+GpioOps *new_gpio_high(void)
+{
+	GpioOps *ops = xzalloc(sizeof(*ops));
+	ops->get = return_high;
+	return ops;
+}
+
+GpioOps *new_gpio_low(void)
+{
+	return new_gpio_not(new_gpio_high());
+}
+
 GpioOps *new_gpio_and(GpioOps *a, GpioOps *b)
 {
 	return new_gpio_binary_op(a, b, &gpio_and_get);

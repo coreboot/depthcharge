@@ -40,7 +40,7 @@
 
 static int board_setup(void)
 {
-	sysinfo_install_flags();
+	sysinfo_install_flags(NULL);
 
 	LpPchGpio *ec_in_rw = new_lp_pch_gpio_input(14);
 	flag_install(FLAG_ECINRW, &ec_in_rw->ops);

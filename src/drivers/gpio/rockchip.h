@@ -48,6 +48,7 @@ typedef struct {
 	u32 ls_sync;
 } RkGpioRegs;
 
+// This structure must be kept in sync with coreboot's GPIO implementation!
 typedef union {
 	u32 raw;
 	struct {
@@ -71,6 +72,8 @@ typedef struct RkGpio {
 	RkGpioSpec gpioindex;
 } RkGpio;
 
+GpioOps *new_rk_gpio_input_from_coreboot(uint32_t port);
+GpioOps *new_rk_gpio_output_from_coreboot(uint32_t port);
 RkGpio *new_rk_gpio_output(RkGpioSpec gpioindex);
 RkGpio *new_rk_gpio_input(RkGpioSpec gpioindex);
 

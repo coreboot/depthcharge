@@ -31,7 +31,7 @@
 #include "drivers/input/pseudo/keyboard.h"
 
 /* GPIOs for reading status of buttons */
-static TegraGpio *pwr_btn_gpio, *vol_down_gpio, *vol_up_gpio;
+static GpioOps *pwr_btn_gpio, *vol_down_gpio, *vol_up_gpio;
 
 /* State machine data for ryu keyboard */
 struct sm_data *sm;
@@ -106,8 +106,6 @@ enum {
 	VOL_UP = (1 << VOL_UP_SHIFT),
 	PWR_BTN = (1 << PWR_BTN_SHIFT),
 	NO_BTN_PRESSED = KEYSET(0,0,0),
-	/* Mask for active low buttons -- vol up and vol down */
-	ACTIVE_MASK = (VOL_UP | VOL_DOWN),
 };
 
 /*
@@ -159,50 +157,26 @@ static void ryu_state_machine_setup(void)
 
 static int ryu_keyboard_init(void)
 {
-	pwr_btn_gpio = new_tegra_gpio_input(GPIO(Q, 0));
-	vol_down_gpio = new_tegra_gpio_input(GPIO(Q, 6));
-	vol_up_gpio = new_tegra_gpio_input(GPIO(Q, 7));
+	pwr_btn_gpio = sysinfo_lookup_gpio("power", 1,
+					   new_tegra_gpio_input_from_coreboot);
+	die_if(!pwr_btn_gpio, "No GPIO for power!!\n");
+
+	/* Inputs volup and voldown are active low. */
+	vol_down_gpio = new_gpio_not(&new_tegra_gpio_input(GPIO(Q, 6))->ops);
+	vol_up_gpio = new_gpio_not(&new_tegra_gpio_input(GPIO(Q, 7))->ops);
 
 	ryu_state_machine_setup();
 	return 0;
 }
 INIT_FUNC(ryu_keyboard_init);
 
-static uint8_t active_mask(uint8_t input)
-{
-	static uint8_t mask = 0;
-
-	/*
-	 * Inputs volup and voldown are active low. Thus, use ACTIVE_MASK to
-	 * normalize them to active high.
-	 * Pwr btn can be active high/low. So read the gpio polarity to identify
-	 * if active mask is required for pwr btn as well.
-	 */
-	if (mask == 0) {
-		struct cb_gpio *pwr_gpio = sysinfo_lookup_gpio("power");
-
-		die_if((pwr_gpio == NULL), "No GPIO for power!!\n");
-
-		if (pwr_gpio->polarity == CB_GPIO_ACTIVE_LOW)
-			mask = PWR_BTN;
-
-		mask |= ACTIVE_MASK;
-	}
-
-	input ^= mask;
-
-	return input;
-}
-
 static uint8_t read_input(void)
 {
 	uint8_t input;
 
-	input = (pwr_btn_gpio->ops.get(&pwr_btn_gpio->ops) << PWR_BTN_SHIFT) |
-		(vol_up_gpio->ops.get(&vol_up_gpio->ops) << VOL_UP_SHIFT) |
-		(vol_down_gpio->ops.get(&vol_down_gpio->ops) << VOL_DOWN_SHIFT);
-
-	input = active_mask(input);
+	input = (pwr_btn_gpio->get(pwr_btn_gpio) << PWR_BTN_SHIFT) |
+		(vol_up_gpio->get(vol_up_gpio) << VOL_UP_SHIFT) |
+		(vol_down_gpio->get(vol_down_gpio) << VOL_DOWN_SHIFT);
 
 	return input;
 }

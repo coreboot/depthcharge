@@ -23,17 +23,14 @@
 #ifndef __DRIVERS_GPIO_SYSINFO_H__
 #define __DRIVERS_GPIO_SYSINFO_H__
 
-struct GpioOps;
-typedef struct GpioOps GpioOps;
+#include <libpayload.h>
 
-GpioOps *sysinfo_write_protect;
-GpioOps *sysinfo_recovery;
-GpioOps *sysinfo_developer;
-GpioOps *sysinfo_lid;
-GpioOps *sysinfo_power;
-GpioOps *sysinfo_oprom;
+#include "drivers/gpio/gpio.h"
 
-void sysinfo_install_flags(void);
-struct cb_gpio *sysinfo_lookup_gpio(const char *name);
+typedef GpioOps *(*new_gpio_from_coreboot_t)(uint32_t port);
+
+GpioOps *sysinfo_lookup_gpio(const char *name, int resample_at_runtime,
+			      new_gpio_from_coreboot_t new_gpio_from_coreboot);
+void sysinfo_install_flags(new_gpio_from_coreboot_t new_gpio_input_from_cb);
 
 #endif /* __DRIVERS_GPIO_SYSINFO_H__ */

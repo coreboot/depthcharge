@@ -48,7 +48,7 @@ static uint32_t *i2c_cfg = (uint32_t *)(0x10050000 + 0x234);
 
 static int board_setup(void)
 {
-	sysinfo_install_flags();
+	sysinfo_install_flags(NULL);
 
 	fit_set_compat("google,snow");
 

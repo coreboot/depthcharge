@@ -43,7 +43,7 @@
 
 static int board_setup(void)
 {
-	sysinfo_install_flags();
+	sysinfo_install_flags(NULL);
 
 	fit_set_compat("google,pit-rev3");
 

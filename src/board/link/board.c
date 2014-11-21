@@ -40,7 +40,7 @@
 
 static int board_setup(void)
 {
-	sysinfo_install_flags();
+	sysinfo_install_flags(NULL);
 
 	PchGpio *ec_in_rw = new_pantherpoint_gpio_input(0, 21);
 	flag_install(FLAG_ECINRW, &ec_in_rw->ops);

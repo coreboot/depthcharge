@@ -137,36 +137,34 @@ enum storm_emmc_gpio {
 typedef struct
 {
 	GpioOps gpio_ops;	/* Depthcharge GPIO API wrapper. */
-	struct cb_gpio *cbgpio;	/* GPIO description. */
-
+	gpio_t desc;		/* GPIO description. */
 } StormGpio;
 
 static int get_gpio(struct GpioOps *me)
 {
-	unsigned value;
 	StormGpio *gpio = container_of(me, StormGpio, gpio_ops);
-
-	value = gpio_get_in_value(gpio->cbgpio->port);
-	if (gpio->cbgpio->polarity == CB_GPIO_ACTIVE_LOW)
-		value = !value;
-
-	return value;
+	return gpio_get_in_value(gpio->desc);
 }
 
-static StormGpio phys_presence_flag = {
-	.gpio_ops = { .get = get_gpio }
-};
+static GpioOps *new_storm_gpio_input_from_coreboot(uint32_t port)
+{
+	StormGpio *gpio = xzalloc(sizeof(*gpio));
+	gpio->gpio_ops.get = get_gpio;
+	gpio->desc = (gpio_t)port;
+	return &gpio->gpio_ops;
+}
 
 static void install_phys_presence_flag(void)
 {
-	phys_presence_flag.cbgpio = sysinfo_lookup_gpio("recovery");
+	GpioOps *phys_presence = sysinfo_lookup_gpio("recovery", 1,
+					new_storm_gpio_input_from_coreboot);
 
-	if (!phys_presence_flag.cbgpio) {
+	if (!phys_presence) {
 		printf("%s failed retrieving recovery GPIO\n", __func__);
 		return;
 	}
 
-	flag_install(FLAG_PHYS_PRESENCE, &phys_presence_flag.gpio_ops);
+	flag_install(FLAG_PHYS_PRESENCE, phys_presence);
 }
 
 void board_mmc_gpio_config(void)
@@ -231,7 +229,7 @@ static void set_ramoops_buffer(void)
 
 static int board_setup(void)
 {
-	sysinfo_install_flags();
+	sysinfo_install_flags(NULL);
 
 	fill_board_descriptor();
 
