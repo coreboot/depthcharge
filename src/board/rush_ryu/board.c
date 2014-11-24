@@ -211,7 +211,7 @@ static VbError_t backlight_update(uint8_t enable)
 static void * const winbuf_t_start_addr = (void *)(uintptr_t)0x54202000;
 static void * const win_t_win_options = (void *)(uintptr_t)0x54201c00;
 
-static VbError_t display_init(void)
+static VbError_t ryu_display_init(void)
 {
 	uintptr_t phys_addr = lib_sysinfo.framebuffer->physical_address;
 
@@ -230,7 +230,7 @@ static int display_stop(void)
 }
 
 static VbootDisplayOps ryu_display_ops = {
-	.init = &display_init,
+	.init = &ryu_display_init,
 	.backlight_update = &backlight_update,
 	.stop = &display_stop,
 };

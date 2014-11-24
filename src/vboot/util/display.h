@@ -35,5 +35,6 @@ typedef struct VbootDisplayOps {
 } VbootDisplayOps;
 
 void display_set_ops(VbootDisplayOps *ops);
+VbError_t display_init(void);
 
 #endif /* __VBOOT_UTIL_DISPLAY_H__ */

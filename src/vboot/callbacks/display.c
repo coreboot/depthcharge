@@ -55,7 +55,7 @@ void display_set_ops(VbootDisplayOps *ops)
 	list_insert_after(&display_cleanup_func.list_node, &cleanup_funcs);
 }
 
-static VbError_t display_init(void)
+VbError_t display_init(void)
 {
 	if (display_ops != NULL && display_ops->init != NULL)
 		return display_ops->init();

@@ -40,10 +40,14 @@
 #include "netboot/params.h"
 #include "netboot/tftp.h"
 #include "vboot/boot.h"
+#include "vboot/util/display.h"
 #include "vboot/util/flag.h"
 
 static void enable_graphics(void)
 {
+	display_init();
+	VbExDisplayBacklight(1);
+
 	if (!CONFIG_OPROM_MATTERS)
 		return;
 
