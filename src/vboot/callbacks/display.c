@@ -28,56 +28,14 @@
 
 #include "base/cleanup_funcs.h"
 #include "drivers/video/coreboot_fb.h"
+#include "drivers/video/display.h"
 #include "image/fmap.h"
 #include "vboot/util/commonparams.h"
-#include "vboot/util/display.h"
-
-static VbootDisplayOps *display_ops;
-
-static int display_cleanup(struct CleanupFunc *cleanup, CleanupType type)
-{
-	if (display_ops != NULL && display_ops->stop != NULL)
-		return display_ops->stop();
-	return 0;
-}
-
-static CleanupFunc display_cleanup_func = {
-	.cleanup = &display_cleanup,
-	.types = CleanupOnHandoff,
-};
-
-void display_set_ops(VbootDisplayOps *ops)
-{
-	die_if(display_ops, "%s: Display ops already set.\n", __func__);
-	display_ops = ops;
-
-	/* Call stop() when exiting depthcharge. */
-	list_insert_after(&display_cleanup_func.list_node, &cleanup_funcs);
-}
-
-static VbError_t display_init(void)
-{
-	if (display_ops != NULL && display_ops->init != NULL)
-		return display_ops->init();
-
-	return VBERROR_SUCCESS;
-}
-
-static VbError_t backlight_update(uint8_t enable)
-{
-	if (display_ops != NULL && display_ops->backlight_update != NULL)
-		return display_ops->backlight_update(enable);
-
-	printf("VbExDisplayBacklight called but not implemented.\n");
-	return VBERROR_SUCCESS;
-}
 
 VbError_t VbExDisplayInit(uint32_t *width, uint32_t *height)
 {
-	VbError_t ret = display_init();
-
-	if (ret != VBERROR_SUCCESS)
-		return ret;
+	if (display_init())
+		return VBERROR_UNKNOWN;
 
 	video_init();
 	video_console_cursor_enable(0);
@@ -96,7 +54,10 @@ VbError_t VbExDisplayInit(uint32_t *width, uint32_t *height)
 
 VbError_t VbExDisplayBacklight(uint8_t enable)
 {
-	return backlight_update(enable);
+	if (backlight_update(enable))
+		return VBERROR_UNKNOWN;
+
+	return VBERROR_SUCCESS;
 }
 
 static void print_string(const char *str)

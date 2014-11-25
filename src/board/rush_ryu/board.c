@@ -39,9 +39,9 @@
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/storage/tegra_mmc.h"
+#include "drivers/video/display.h"
 #include "drivers/ec/cros/i2c.h"
 #include "vboot/util/flag.h"
-#include "vboot/util/display.h"
 
 enum {
 	CLK_RST_BASE = 0x60006000,
@@ -165,7 +165,7 @@ static TegraI2c *get_backlight_i2c(void)
 }
 
 /* Turn on or turn off the backlight */
-static VbError_t backlight_update(uint8_t enable)
+static int ryu_backlight_update(uint8_t enable)
 {
 	struct bl_reg {
 		uint8_t reg;
@@ -203,7 +203,7 @@ static VbError_t backlight_update(uint8_t enable)
 		++current;
 	}
 
-	return VBERROR_SUCCESS;
+	return 0;
 }
 
 /* Coreboot currently sets up the T window for display support. */
@@ -211,7 +211,7 @@ static VbError_t backlight_update(uint8_t enable)
 static void * const winbuf_t_start_addr = (void *)(uintptr_t)0x54202000;
 static void * const win_t_win_options = (void *)(uintptr_t)0x54201c00;
 
-static VbError_t display_init(void)
+static int ryu_display_init(void)
 {
 	uintptr_t phys_addr = lib_sysinfo.framebuffer->physical_address;
 
@@ -219,20 +219,20 @@ static VbError_t display_init(void)
 	writel(phys_addr, winbuf_t_start_addr);
 	writel(readl(win_t_win_options) | WIN_ENABLE, win_t_win_options);
 
-	return VBERROR_SUCCESS;
+	return 0;
 }
 
-static int display_stop(void)
+static int ryu_display_stop(void)
 {
 	/* Disable the T Window. */
 	writel(readl(win_t_win_options) & ~WIN_ENABLE, win_t_win_options);
 	return 0;
 }
 
-static VbootDisplayOps ryu_display_ops = {
-	.init = &display_init,
-	.backlight_update = &backlight_update,
-	.stop = &display_stop,
+static DisplayOps ryu_display_ops = {
+	.init = &ryu_display_init,
+	.backlight_update = &ryu_backlight_update,
+	.stop = &ryu_display_stop,
 };
 
 static int display_setup(void)

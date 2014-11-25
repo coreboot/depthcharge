@@ -20,20 +20,20 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __VBOOT_UTIL_DISPLAY_H__
-#define __VBOOT_UTIL_DISPLAY_H__
+#ifndef __DRIVERS_VIDEO_DISPLAY_H__
+#define __DRIVERS_VIDEO_DISPLAY_H__
 
-#include <vboot_api.h>
-
-typedef struct VbootDisplayOps {
+typedef struct DisplayOps {
 	/* Perform any work required for initializing the display. */
-	VbError_t (*init)(void);
+	int (*init)(void);
 	/* Update the backlight according to the enable parameter. */
-	VbError_t (*backlight_update)(uint8_t enable);
+	int (*backlight_update)(uint8_t enable);
 	/* Stop the display as kernel boot is taking place. */
 	int (*stop)(void);
-} VbootDisplayOps;
+} DisplayOps;
 
-void display_set_ops(VbootDisplayOps *ops);
+int display_init(void);
+int backlight_update(uint8_t enable);
+void display_set_ops(DisplayOps *ops);
 
-#endif /* __VBOOT_UTIL_DISPLAY_H__ */
+#endif
