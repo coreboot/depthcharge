@@ -33,6 +33,7 @@
 #include "drivers/input/input.h"
 #include "drivers/net/net.h"
 #include "drivers/power/power.h"
+#include "drivers/video/display.h"
 #include "net/uip.h"
 #include "net/uip_arp.h"
 #include "netboot/dhcp.h"
@@ -44,6 +45,9 @@
 
 static void enable_graphics(void)
 {
+	display_init();
+	backlight_update(1);
+
 	if (!CONFIG_OPROM_MATTERS)
 		return;
 
