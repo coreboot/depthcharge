@@ -17,7 +17,6 @@
  * MA 02111-1307 USA
  */
 
-
 #include <libpayload.h>
 
 #include "base/container_of.h"
@@ -98,7 +97,7 @@ static int i2s_send_data(uint32_t *data, unsigned int length,
 
 	setbits_le32(&regs->xfer, I2S_TRAN_MASK);//enable both tx and rx
 	while (length) {
-		if ((readl(&regs->fifolr) & 0x3f) < 0x3f) {
+		if ((readl(&regs->fifolr) & 0x3f) < 0x20) {
 			writel(*data++, &regs->txdr);
 			length--;
 		}
