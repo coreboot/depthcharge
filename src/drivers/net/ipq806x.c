@@ -4,6 +4,7 @@
 
 #include <libpayload.h>
 #include <arch/cache.h>
+#include <sysinfo.h>
 
 #include "base/init_funcs.h"
 #include "drivers/storage/bouncebuf.h"
@@ -30,7 +31,7 @@ static int get_eth_mac_address(u8 *enetaddr)
 	int i;
 
 	for (i = 0; i < 6; i++)
-		enetaddr[i] = 0x10 + i;
+		enetaddr[i] = lib_sysinfo.macs[0].mac_addr[i];
 	return 1;
 }
 
