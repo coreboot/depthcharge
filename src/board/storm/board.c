@@ -78,22 +78,37 @@ static void fill_board_descriptor(void)
  */
 static int set_mac_addresses(DeviceTree *tree)
 {
-	static const char *mac_addr_paths[][3] = {
-		{ "soc", "ethernet@37000000", NULL },
-		{ "soc", "ethernet@37400000", NULL },
+	/*
+	 * Map MAC addresses found in the coreboot table into the device tree
+	 * locations.
+	 * Some locations need to be forced to create, some locations are
+	 * skipped if not present in the existing device tree.
+	 */
+	static const struct mac_addr_map {
+		char *dt_path;
+		int force_create;
+	} maps[] = {
+		{ "soc/ethernet@37000000", 0 },
+		{ "soc/ethernet@37400000", 0 },
+		{ "chosen/bluetooth", 1 }
 	};
 	int i;
-	DeviceTreeNode *gmac_node;
 
-	for (i = 0; i < ARRAY_SIZE(mac_addr_paths); i++) {
+	for (i = 0; i < ARRAY_SIZE(maps); i++) {
+		DeviceTreeNode *gmac_node;
+		const struct mac_addr_map *map;
+
 		if (i >= lib_sysinfo.num_macs)
 			break;
 
-		gmac_node = dt_find_node(tree->root,
-					 mac_addr_paths[i], NULL, NULL, 0);
+		map = maps + i;
+		gmac_node = dt_find_node_by_path(tree->root, map->dt_path,
+						 NULL, NULL,
+						 map->force_create);
 		if (!gmac_node) {
-			printf("Failed to find %s in the device tree\n",
-			       mac_addr_paths[i][1]);
+			printf("Failed to %s %s in the device tree\n",
+			       map->force_create ? "create" : "find",
+			       map->dt_path);
 			continue;
 		}
 		dt_add_bin_prop(gmac_node, "local-mac-address",
