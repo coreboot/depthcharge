@@ -40,12 +40,6 @@ config OPROM_MATTERS
 	help
 	  Whether the video option ROM has run matters on this platform.
 
-config RO_NORMAL_SUPPORT
-	bool "Booting normal mode with RO firmware"
-	default n
-	help
-	  Whether booting in normal mode using only RO firmware is supported.
-
 config MOCK_TPM
 	bool "Mock the TPM in vboot (TURN OFF BEFORE RELEASE)"
 	default n

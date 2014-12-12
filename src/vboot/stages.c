@@ -62,6 +62,7 @@ int vboot_init(void)
 	}
 
 	// Decide what flags to pass into VbInit.
+	iparams.flags |= VB_INIT_FLAG_RO_NORMAL_SUPPORT;
 	if (dev_switch)
 		iparams.flags |= VB_INIT_FLAG_DEV_SWITCH_ON;
 	if (rec_switch)
@@ -72,8 +73,6 @@ int vboot_init(void)
 		iparams.flags |= VB_INIT_FLAG_OPROM_LOADED;
 	if (CONFIG_OPROM_MATTERS)
 		iparams.flags |= VB_INIT_FLAG_OPROM_MATTERS;
-	if (CONFIG_RO_NORMAL_SUPPORT)
-		iparams.flags |= VB_INIT_FLAG_RO_NORMAL_SUPPORT;
 	if (CONFIG_VIRTUAL_DEV_SWITCH)
 		iparams.flags |= VB_INIT_FLAG_VIRTUAL_DEV_SWITCH;
 	if (CONFIG_EC_SOFTWARE_SYNC)
