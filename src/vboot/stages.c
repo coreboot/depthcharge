@@ -31,6 +31,7 @@
 #include "drivers/flash/flash.h"
 #include "drivers/input/input.h"
 #include "drivers/power/power.h"
+#include "drivers/storage/blockdev.h"
 #include "image/fmap.h"
 #include "image/index.h"
 #include "image/startrw.h"
@@ -220,11 +221,13 @@ int vboot_select_and_load_kernel(void)
 		(kparams.bootloader_address - 0x100000);
 	void *params = (uint8_t *)loader - CrosParamSize;
 	void *orig_cmd_line = (uint8_t *)params - CmdLineSize;
+	BlockDev *bdev = (BlockDev *)kparams.disk_handle;
 
 	if (commandline_subst((char *)orig_cmd_line, 0,
 			      kparams.partition_number + 1,
 			      kparams.partition_guid,
-			      cmd_line_buf, sizeof(cmd_line_buf)))
+			      cmd_line_buf, sizeof(cmd_line_buf),
+			      bdev->external_gpt))
 		return 1;
 
 	if (crossystem_setup())
