@@ -26,7 +26,7 @@
 #include <stdint.h>
 
 int commandline_subst(const char *src, int devnum, int partnum, uint8_t *guid,
-		      char *dest, int dest_size);
+		      char *dest, int dest_size, int external_gpt);
 
 
 /* Return a string with a trailing space to add to the command line or NULL. */

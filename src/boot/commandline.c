@@ -70,7 +70,7 @@ const char * __attribute__((weak)) mainboard_commandline(void)
 }
 
 int commandline_subst(const char *src, int devnum, int partnum, uint8_t *guid,
-		      char *dest, int dest_size)
+		      char *dest, int dest_size, int external_gpt)
 {
 	static const char cros_secure[] = "cros_secure ";
 	const int cros_secure_size = sizeof(cros_secure) - 1;
@@ -152,6 +152,34 @@ int commandline_subst(const char *src, int devnum, int partnum, uint8_t *guid,
 			/* GUID replacement needs 36 bytes */
 			CHECK_SPACE(36 + 1);
 			dest = emit_guid(dest, guid);
+			break;
+		case 'R':
+			/*
+			 * If booting from NAND, /dev/ubiblock%P_0
+			 * If booting from disk, PARTUUID=%U/PARTNROFF=1
+			 */
+			if (external_gpt) {
+				char start[] = "/dev/ubiblock", end[] = "_0";
+				size_t start_size = sizeof(start) - 1,
+					end_size = sizeof(end) - 1;
+				CHECK_SPACE(start_size + 3 + end_size);
+				memcpy(dest, start, start_size);
+				dest += start_size;
+				dest = itoa(dest, partnum);
+				memcpy(dest, end, end_size);
+				dest += end_size;
+			} else {
+				char start[] = "PARTUUID=",
+					end[] = "/PARTNROFF=1";
+				size_t start_size = sizeof(start) - 1,
+					end_size = sizeof(end) - 1;
+				CHECK_SPACE(start_size + 36 + 1 + end_size);
+				memcpy(dest, start, start_size);
+				dest += start_size;
+				dest = emit_guid(dest, guid);
+				memcpy(dest, end, end_size);
+				dest += end_size;
+			}
 			break;
 		default:
 			CHECK_SPACE(3);
