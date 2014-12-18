@@ -74,7 +74,14 @@ int video_console_init(void)
  */
 uint32_t VbExKeyboardRead(void)
 {
+	static uint32_t prev_rv;
 	uint32_t rv = flag_fetch(FLAG_PHYS_PRESENCE);
+
+	if (prev_rv != rv) {
+		printf("%s:%d phy presense %sasserted\n",
+		       __func__, __LINE__, rv ? "" : "de");
+		prev_rv = rv;
+	}
 
 	if (rv)
 		return 0x15; /* That's ^U, i.e. boot from USB. */
