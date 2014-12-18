@@ -259,24 +259,40 @@ static void update_mem_property(u64 start, u64 end, void *pdata)
 
 static void update_memory(DeviceTree *tree)
 {
+	Ranges mem;
+	Ranges reserved;
 	u32 addr_cells = 1, size_cells = 1;
 	const char *path[] = { "memory", NULL };
 	DeviceTreeNode *node = dt_find_node(tree->root, path,
 					    &addr_cells, &size_cells, 1);
 
 	// Read memory info from coreboot (ranges are merged automatically).
-	Ranges mem;
-	Ranges reserved;
 	ranges_init(&mem);
 	ranges_init(&reserved);
 
+#define MEMORY_ALIGNMENT (1 << 20)
 	for (int i = 0; i < lib_sysinfo.n_memranges; i++) {
 		struct memrange *range = &lib_sysinfo.memrange[i];
 		uint64_t start = range->base;
 		uint64_t end = range->base + range->size;
 
+		/*
+		 * Kernel likes its availabe memory areas at least 1MB
+		 * aligned, let's trim the regions such that unaligned padding
+		 * is added to reserved memory.
+		 */
 		if (range->type == CB_MEM_RAM) {
-			ranges_add(&mem, start, end);
+			uint64_t new_start = ALIGN_UP(start, MEMORY_ALIGNMENT);
+			uint64_t new_end = ALIGN_DOWN(end, MEMORY_ALIGNMENT);
+
+			if (new_start != start)
+				ranges_add(&reserved, start, new_start);
+
+			if (new_start != new_end)
+				ranges_add(&mem, new_start, new_end);
+
+			if (new_end != end)
+				ranges_add(&reserved, new_end, end);
 		} else {
 			ranges_add(&reserved, start, end);
 		}
