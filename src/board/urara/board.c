@@ -26,6 +26,8 @@
 #include "drivers/storage/mtd/stream.h"
 #include "drivers/storage/spi_gpt.h"
 #include "drivers/storage/mtd/nand/spi_nand.h"
+#include "drivers/gpio/gpio.h"
+#include "vboot/util/flag.h"
 
 #define IMG_SPIM0_BASE_ADDRESS	0xB8100F00
 #define IMG_SPIM1_BASE_ADDRESS	0xB8101000
@@ -37,6 +39,13 @@ static int board_setup(void)
 	MtdDevCtrlr *mtd;
 	SpiGptCtrlr *virtual_dev;
 	UsbHostController *usb_host;
+
+	flag_install(FLAG_DEVSW, new_gpio_low());
+	flag_install(FLAG_LIDSW, new_gpio_high());
+	flag_install(FLAG_PHYS_PRESENCE, new_gpio_high());
+	flag_install(FLAG_RECSW, new_gpio_high());
+	flag_install(FLAG_PWRSW, new_gpio_low());
+	flag_install(FLAG_WPSW, new_gpio_low());
 
 	usb_host = new_usb_hc(DWC2, 0xB8120000);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
