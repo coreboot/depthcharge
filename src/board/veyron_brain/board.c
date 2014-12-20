@@ -26,7 +26,6 @@
 #include "drivers/bus/i2c/rockchip.h"
 #include "drivers/flash/spi.h"
 #include "drivers/bus/spi/rockchip.h"
-#include "drivers/ec/cros/spi.h"
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/power/rk808.h"
@@ -45,14 +44,11 @@
 
 static int board_setup(void)
 {
-	fit_set_compat_by_rev("google,veyron-jerry-rev%d",
+	fit_set_compat_by_rev("google,veyron-brain-rev%d",
 			      lib_sysinfo.board_id);
 
 	RkSpi *spi2 = new_rockchip_spi(0xff130000, 0, 0, 0);
 	flash_set_ops(&new_spi_flash(&spi2->ops, 0x400000)->ops);
-
-	RkSpi *spi0 = new_rockchip_spi(0xff110000, 0, 0, 0);
-	cros_ec_set_bus(&new_cros_ec_spi_bus(&spi0->ops)->ops);
 
 	sysinfo_install_flags(new_rk_gpio_input_from_coreboot);
 
@@ -79,19 +75,14 @@ static int board_setup(void)
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
 
-	RkGpio *card_detect = new_rk_gpio_input(GPIO(7, A, 5));
-	GpioOps *card_detect_ops = &card_detect->ops;
-	card_detect_ops = new_gpio_not(card_detect_ops);
-	DwmciHost *sd_card = new_rkdwmci_host(0xff0c0000, 594000000, 4, 1,
-					      card_detect_ops);
-	list_insert_after(&sd_card->mmc.ctrlr.list_node,
-			  &removable_block_dev_controllers);
-
 	UsbHostController *usb_host0 = new_usb_hc(DWC2, 0xff580000);
 	list_insert_after(&usb_host0->list_node, &usb_host_controllers);
 
 	UsbHostController *usb_host1 = new_usb_hc(DWC2, 0xff540000);
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
+
+	/* Lid always open for now. */
+	flag_replace(FLAG_LIDSW, new_gpio_high());
 
 	ramoops_buffer(0x31f00000, 0x100000, 0x20000);
 

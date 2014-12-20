@@ -1,9 +1,9 @@
 /dts-v1/;
 
 / {
-	model = "Google Veyron_Jerry";
+	model = "Google Veyron_Brain";
 	config {
-		hwid = "JERRY TEST A-A 1250";
+		hwid = "BRAIN TEST A-A 1234";
 	};
 	chromeos-config {
 		/* Enable factory-friendly features. */
@@ -204,5 +204,7 @@
 			type = "wiped";
 			wipe-value = [ff];
 		};
+
+		/* TODO(dhendrix): VBNV stuff */
 	};
 };
