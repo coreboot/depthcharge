@@ -119,22 +119,24 @@ static GptData *read_gpt(SpiGptDev *dev)
 
 static int spi_gpt_fixup(DeviceTreeFixup *fixup, DeviceTree *tree)
 {
-	SpiGptDev *dev = container_of(fixup, SpiGptDev, fixup);
+	SpiGptCtrlr *ctrlr = container_of(fixup, SpiGptCtrlr, fixup);
+	ctrlr->block_ctrlr.ops.update(&ctrlr->block_ctrlr.ops);
+	SpiGptDev *dev = ctrlr->dev;
 
 	uint32_t addrc, sizec;
 	DeviceTreeNode *nand = dt_find_node_by_path(tree->root,
-						    dev->ctrlr->dt_path,
+						    ctrlr->dt_path,
 						    &addrc, &sizec, 0);
 	if (!nand) {
 		printf("device node not found at path %s!\n",
-		       dev->ctrlr->dt_path);
-		return 1;
+		       ctrlr->dt_path);
+		return 0;
 	}
 
 	GptData *gpt = read_gpt(dev);
 	if (!gpt) {
 		printf("SPI GPT read failed!\n");
-		return 1;
+		return 0;
 	}
 
 	ListNode *prev_child = &nand->children;
@@ -220,11 +222,6 @@ int update_spi_gpt(struct BlockDevCtrlrOps *me)
 
 	ctrlr->block_ctrlr.need_update = 0;
 
-	if (ctrlr->dt_path) {
-		dev->fixup.fixup = spi_gpt_fixup;
-		list_insert_after(&dev->fixup.list_node, &device_tree_fixups);
-	}
-
 	return 0;
 }
 
@@ -236,6 +233,10 @@ SpiGptCtrlr *new_spi_gpt(const char *fmap_region, StreamCtrlr *stream_ctrlr,
 	ctrlr->block_ctrlr.need_update = 1;
 	ctrlr->fmap_region = fmap_region;
 	ctrlr->stream_ctrlr = stream_ctrlr;
-	ctrlr->dt_path = dt_path;
+	if (dt_path) {
+		ctrlr->dt_path = dt_path;
+		ctrlr->fixup.fixup = spi_gpt_fixup;
+		list_insert_after(&ctrlr->fixup.list_node, &device_tree_fixups);
+	}
 	return ctrlr;
 }

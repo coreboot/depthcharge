@@ -34,7 +34,6 @@ typedef struct {
 	BlockDev block_dev;
 	FmapArea area;
 	struct SpiGptCtrlr *ctrlr;
-	DeviceTreeFixup fixup;
 } SpiGptDev;
 
 typedef struct SpiGptCtrlr {
@@ -43,6 +42,7 @@ typedef struct SpiGptCtrlr {
 	SpiGptDev *dev;
 	StreamCtrlr *stream_ctrlr;
 	const char *dt_path;
+	DeviceTreeFixup fixup;
 } SpiGptCtrlr;
 
 /*
