@@ -165,24 +165,37 @@ static int spi_gpt_fixup(DeviceTreeFixup *fixup, DeviceTree *tree)
 	GptEntry *entries = (GptEntry *)gpt->primary_entries;
 	GptEntry *e;
 	int i;
-	int part_idx = 1;
-	for (i = 0, e = entries; i < header->number_of_entries; i++, e++) {
-		if (IsUnusedEntry(e))
-			continue;
-		DeviceTreeNode *partition = xzalloc(sizeof(*partition));
-		partition->name = utf16le_to_ascii(e->name,
-						   ARRAY_SIZE(e->name));
-		if (part_idx != i + 1) {
-			printf(
-				"Mismatch between GPT ID %d and MTD partition ID %d\n",
-				i + 1, part_idx);
-			WriteAndFreeGptData(dev, gpt);
-			return 1;
+	/* Empty partitions are inserted between used partitions in
+	 * the device tree in order to preserve the partition numbering.
+	 * The first loop calculates the maximum used partition
+	 * to determine how long to continue placing empty partitions. */
+	int max_idx = 0;
+	for (i = header->number_of_entries - 1; i >= 0; i--) {
+		e = entries + i;
+		if (!IsUnusedEntry(e)) {
+			max_idx = i;
+			break;
 		}
-		part_idx++;
-
-		u64 start = (e->starting_lba << BLOCK_SHIFT);
-		u64 size = (e->ending_lba - e->starting_lba + 1) << BLOCK_SHIFT;
+	}
+	for (i = 0, e = entries; i <= max_idx; i++, e++) {
+		DeviceTreeNode *partition = xzalloc(sizeof(*partition));
+		u64 start, size;
+		if (IsUnusedEntry(e)) {
+			/* To make an empty partition, start has to be at
+			 * the logical end of the device, since size = 0
+			 * is interpreted by the kernel to mean the whole
+			 * device. */
+			partition->name = "blank";
+			start = dev->block_dev.stream_block_count
+				<< BLOCK_SHIFT;
+			size = 0;
+		} else {
+			partition->name = utf16le_to_ascii(e->name,
+							   ARRAY_SIZE(e->name));
+			start = e->starting_lba << BLOCK_SHIFT;
+			size = (e->ending_lba - e->starting_lba + 1)
+					<< BLOCK_SHIFT;
+		}
 		dt_add_reg_prop(partition, &start, &size, 1, addrc, sizec);
 		list_insert_after(&partition->list_node, prev_child);
 		prev_child = &partition->list_node;
