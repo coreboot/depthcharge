@@ -82,7 +82,7 @@ static int board_setup(void)
 
 	Exynos5Spi *spi1 = new_exynos5_spi(0x12d30000);
 
-	flash_set_ops(&new_spi_flash(&spi1->ops, 0x400000)->ops);
+	flash_set_ops(&new_spi_flash(&spi1->ops)->ops);
 
 	Exynos5I2s *i2s1 = new_exynos5_i2s(0x12d60000, 16, 2, 256);
 	I2sSource *i2s_source = new_i2s_source(&i2s1->ops, 48000, 2, 16000);

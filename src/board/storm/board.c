@@ -280,7 +280,7 @@ static int board_setup(void)
 	install_phys_presence_flag();
 
 	SpiController *spi = new_spi(0, 0);
-	flash_set_ops(&new_spi_flash(&spi->ops, 0x800000)->ops);
+	flash_set_ops(&new_spi_flash(&spi->ops)->ops);
 
 	UsbHostController *usb_host1 = new_usb_hc(XHCI, 0x11000000);
 

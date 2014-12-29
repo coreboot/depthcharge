@@ -134,7 +134,7 @@ static int board_setup(void)
 	TegraSpi *spi4 = new_tegra_spi(0x7000da00, dma_controller,
 				       APBDMA_SLAVE_SL2B4);
 
-	flash_set_ops(&new_spi_flash(&spi4->ops, 0x400000)->ops);
+	flash_set_ops(&new_spi_flash(&spi4->ops)->ops);
 
 	TegraI2c *cam_i2c = new_tegra_i2c((void *)0x7000c500, 3,
 					  (void *)CLK_RST_U_RST_SET,

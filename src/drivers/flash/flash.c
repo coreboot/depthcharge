@@ -46,3 +46,17 @@ int flash_write(uint32_t offset, uint32_t size, const void *buffer)
 
 	return 0;
 }
+
+int flash_erase(uint32_t offset, uint32_t size)
+{
+	die_if(!flash_ops, "%s: No flash ops set.\n", __func__);
+	if (flash_ops->erase)
+		return flash_ops->erase(flash_ops, offset, size);
+
+	return 0;
+}
+
+uint32_t flash_sector_size(void)
+{
+	return flash_ops->sector_size;
+}
