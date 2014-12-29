@@ -21,15 +21,15 @@
 
 #include "base/init_funcs.h"
 #include "boot/fit.h"
+#include "boot/ramoops.h"
 #include "drivers/gpio/rockchip.h"
 #include "drivers/bus/i2c/rockchip.h"
 #include "drivers/flash/spi.h"
 #include "drivers/bus/spi/rockchip.h"
-#include "drivers/ec/cros/spi.h"
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
-#include "board/veyron_pinky/power_ops.h"
 #include "drivers/power/rk808.h"
+#include "drivers/power/sysinfo.h"
 #include "drivers/storage/dw_mmc.h"
 #include "drivers/storage/rk_mmc.h"
 
@@ -44,25 +44,13 @@
 
 static int board_setup(void)
 {
-	/* We started adding board IDs (from 0) with the rev1 board... m( */
-	fit_set_compat_by_rev("google,veyron-pinky-rev%d",
-			      lib_sysinfo.board_id + 1);
+	fit_set_compat_by_rev("google,veyron-brain-rev%d",
+			      lib_sysinfo.board_id);
 
 	RkSpi *spi2 = new_rockchip_spi(0xff130000, 0, 0, 0);
 	flash_set_ops(&new_spi_flash(&spi2->ops)->ops);
 
-	RkSpi *spi0 = new_rockchip_spi(0xff110000, 0, 0, 0);
-	cros_ec_set_bus(&new_cros_ec_spi_bus(&spi0->ops)->ops);
-
-	sysinfo_install_flags();
-	RkGpio *lid_switch = new_rk_gpio_input((RkGpioSpec) {.port = 7,
-							     .bank = GPIO_B,
-							     .idx = 5});
-	RkGpio *ec_in_rw = new_rk_gpio_input((RkGpioSpec) {.port = 0,
-							   .bank = GPIO_A,
-							   .idx = 7});
-	flag_replace(FLAG_LIDSW, &lid_switch->ops);
-	flag_install(FLAG_ECINRW, &ec_in_rw->ops);
+	sysinfo_install_flags(new_rk_gpio_input_from_coreboot);
 
 	RkI2c *i2c1 = new_rockchip_i2c((void *)0xff140000);
 	tpm_set_ops(&new_slb9635_i2c(&i2c1->ops, 0x20)->base.ops);
@@ -79,32 +67,24 @@ static int board_setup(void)
 
 	RkI2c *i2c0 = new_rockchip_i2c((void *)0xff650000);
 	Rk808Pmic *pmic = new_rk808_pmic(&i2c0->ops, 0x1b);
-	RkGpio *reboot_gpio = new_rk_gpio_output((RkGpioSpec) {.port = 0,
-							       .bank = GPIO_B,
-							       .idx = 2});
-	RkPowerOps *rk_power_ops = new_rk_power_ops(&reboot_gpio->ops,
-		&pmic->ops, 1);
-	power_set_ops(&rk_power_ops->ops);
+	SysinfoResetPowerOps *power = new_sysinfo_reset_power_ops(&pmic->ops,
+			new_rk_gpio_output_from_coreboot);
+	power_set_ops(&power->ops);
 
 	DwmciHost *emmc = new_rkdwmci_host(0xff0f0000, 594000000, 8, 0, NULL);
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
-
-	RkGpio *card_detect = new_rk_gpio_input((RkGpioSpec) {.port = 7,
-							      .bank = GPIO_A,
-							      .idx = 5});
-	GpioOps *card_detect_ops = &card_detect->ops;
-	card_detect_ops = new_gpio_not(card_detect_ops);
-	DwmciHost *sd_card = new_rkdwmci_host(0xff0c0000, 594000000, 4, 1,
-					      card_detect_ops);
-	list_insert_after(&sd_card->mmc.ctrlr.list_node,
-			  &removable_block_dev_controllers);
 
 	UsbHostController *usb_host0 = new_usb_hc(DWC2, 0xff580000);
 	list_insert_after(&usb_host0->list_node, &usb_host_controllers);
 
 	UsbHostController *usb_host1 = new_usb_hc(DWC2, 0xff540000);
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
+
+	/* Lid always open for now. */
+	flag_replace(FLAG_LIDSW, new_gpio_high());
+
+	ramoops_buffer(0x31f00000, 0x100000, 0x20000);
 
 	return 0;
 }
