@@ -81,7 +81,7 @@ static lba_t write_spi_gpt(struct BlockDevOps *me, lba_t start, lba_t count,
 		return -1;
 	}
 
-	return flash_write(start_byte + dev->area.offset, count_byte, buffer)
+	return flash_rewrite(start_byte + dev->area.offset, count_byte, buffer)
 			>> BLOCK_SHIFT;
 }
 
@@ -217,6 +217,15 @@ int update_spi_gpt(struct BlockDevCtrlrOps *me)
 
 	if (fmap_find_area(ctrlr->fmap_region, &dev->area))
 		return 1;
+
+	uint32_t sector_size = flash_sector_size();
+	if (!sector_size || dev->area.size < sector_size * 2) {
+		printf(
+			"GPT on SPI requires two NOR erase blocks. fmap size=%d, erase block size=%d\n",
+			dev->area.size, sector_size);
+		return 1;
+	}
+
 	dev->block_dev.name = "virtual_spi_gpt";
 	dev->block_dev.removable = 0;
 	dev->block_dev.block_size = BLOCK_SIZE;

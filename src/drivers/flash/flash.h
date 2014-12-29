@@ -45,5 +45,6 @@ void *flash_read(uint32_t offset, uint32_t size);
 int flash_write(uint32_t offset, uint32_t size, const void *buffer);
 int flash_erase(uint32_t offset, uint32_t size);
 uint32_t flash_sector_size(void);
+int flash_rewrite(uint32_t start, uint32_t length, const void *buffer);
 
 #endif /* __DRIVERS_FLASH_FLASH_H__ */

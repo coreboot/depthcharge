@@ -60,3 +60,29 @@ uint32_t flash_sector_size(void)
 {
 	return flash_ops->sector_size;
 }
+
+int flash_rewrite(uint32_t start, uint32_t length, const void *buffer)
+{
+	uint32_t sector_size = flash_sector_size();
+	uint32_t initial_start = ALIGN_DOWN(start, sector_size);
+	uint32_t final_end = ALIGN_UP(start + length, sector_size);
+	uint32_t full_length = final_end - initial_start;
+	if (initial_start != start || final_end != full_length) {
+		char *dev_buffer = flash_read(initial_start, full_length);
+		memcpy(dev_buffer + (start - initial_start), buffer, length);
+		buffer = dev_buffer;
+	}
+	int ret = flash_erase(initial_start, full_length);
+	if (ret != full_length) {
+		printf("rewriting SPI GPT failed in erase ret=%d\n", ret);
+		return ret;
+	}
+	ret = flash_write(initial_start, full_length, buffer);
+	if (ret != full_length) {
+		printf("rewriting failed in write ret=%d\n", ret);
+		/* Can't return ret directly because it might equal length
+		 * and be interpreted as success. */
+		return ret == length ? -1 : ret;
+	}
+	return length;
+}
