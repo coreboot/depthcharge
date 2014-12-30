@@ -492,6 +492,12 @@ static int mmc_switch(MmcMedia *media, uint8_t set, uint8_t index,
 
 }
 
+static void mmc_set_bus_width(MmcCtrlr *ctrlr, uint32_t width)
+{
+	ctrlr->bus_width = width;
+	ctrlr->set_ios(ctrlr);
+}
+
 static int mmc_change_freq(MmcMedia *media)
 {
 	char cardtype;
@@ -508,9 +514,28 @@ static int mmc_change_freq(MmcMedia *media)
 	if (err)
 		return err;
 
-	cardtype = ext_csd[EXT_CSD_CARD_TYPE] & 0xf;
-	err = mmc_switch(media, EXT_CSD_CMD_SET_NORMAL,
+	cardtype = ext_csd[EXT_CSD_CARD_TYPE] & 0x1f;
+	if (cardtype & MMC_HS_200MHZ) {
+		/* Switch to 8-bit since HS200 only support 8-bit bus width */
+		err = mmc_switch(media, EXT_CSD_CMD_SET_NORMAL,
+			 EXT_CSD_BUS_WIDTH, EXT_CSD_BUS_WIDTH_8);
+		if (err)
+			return err;
+
+		/* Switch to HS200 */
+		err = mmc_switch(media, EXT_CSD_CMD_SET_NORMAL,
+			 EXT_CSD_HS_TIMING, 0x2);
+		if (err)
+			return err;
+
+		/* Adjust Host Bus Wisth to 8-bit */
+		mmc_set_bus_width(media->ctrlr, 8);
+		media->caps |= EXT_CSD_BUS_WIDTH_8;
+	} else {
+		err = mmc_switch(media, EXT_CSD_CMD_SET_NORMAL,
 			 EXT_CSD_HS_TIMING, 1);
+	}
+
 	if (err)
 		return err;
 
@@ -523,8 +548,11 @@ static int mmc_change_freq(MmcMedia *media)
 	if (!ext_csd[EXT_CSD_HS_TIMING])
 		return 0;
 
-	/* High Speed is set, there are two types: 52MHz and 26MHz */
-	if (cardtype & MMC_HS_52MHZ)
+	/* High Speed is set, there are types: HS200, 52MHz, 26MHz */
+	if (cardtype & MMC_HS_200MHZ)
+		media->caps |= (MMC_MODE_HS_200MHz
+			| MMC_MODE_HS_52MHz | MMC_MODE_HS);
+	else if (cardtype & MMC_HS_52MHZ)
 		media->caps |= MMC_MODE_HS_52MHz | MMC_MODE_HS;
 	else
 		media->caps |= MMC_MODE_HS;
@@ -660,12 +688,6 @@ static void mmc_set_clock(MmcCtrlr *ctrlr, uint32_t clock)
 	clock = MAX(clock, ctrlr->f_min);
 
 	ctrlr->bus_hz = clock;
-	ctrlr->set_ios(ctrlr);
-}
-
-static void mmc_set_bus_width(MmcCtrlr *ctrlr, uint32_t width)
-{
-	ctrlr->bus_width = width;
 	ctrlr->set_ios(ctrlr);
 }
 
@@ -876,6 +898,10 @@ static int mmc_startup(MmcMedia *media)
 			clock = MMC_CLOCK_25MHZ;
 	} else {
 		for (width = EXT_CSD_BUS_WIDTH_8; width >= 0; width--) {
+			/* If HS200 is switched, Bus Width has been 8-bit */
+			if (media->caps & MMC_MODE_HS_200MHz)
+				break;
+
 			/* Set the card to use 4 bit*/
 			err = mmc_switch(media, EXT_CSD_CMD_SET_NORMAL,
 					 EXT_CSD_BUS_WIDTH, width);
@@ -906,7 +932,9 @@ static int mmc_startup(MmcMedia *media)
 		}
 
 		if (media->caps & MMC_MODE_HS) {
-			if (media->caps & MMC_MODE_HS_52MHz)
+			if (media->caps & MMC_MODE_HS_200MHz)
+				clock = MMC_CLOCK_200MHZ;
+			else if (media->caps & MMC_MODE_HS_52MHz)
 				clock = MMC_CLOCK_52MHZ;
 			else
 				clock = MMC_CLOCK_26MHZ;
