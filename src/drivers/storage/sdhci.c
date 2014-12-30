@@ -373,6 +373,11 @@ static int sdhci_set_clock(SdhciHost *host, unsigned int clock)
 	if (host->set_clock)
 		host->set_clock(host, div);
 
+	if (clock == MMC_CLOCK_200MHZ) {
+		sdhci_writew(host, SDHCI_CTRL_UHS_SDR104
+			| SDHCI_CTRL_VDD_180 | SDHCI_CTRL_DRV_TYPE_A
+			, SDHCI_HOST_CONTROL2);
+	}
 	clk = (div & SDHCI_DIV_MASK) << SDHCI_DIVIDER_SHIFT;
 	clk |= ((div & SDHCI_DIV_HI_MASK) >> SDHCI_DIV_MASK_LEN)
 		<< SDHCI_DIVIDER_HI_SHIFT;
@@ -471,6 +476,10 @@ static void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 	if (mmc_ctrlr->bus_hz != host->clock)
 		sdhci_set_clock(host, mmc_ctrlr->bus_hz);
 
+	/* Switch to 1.8 volt for HS200 */
+	if (mmc_ctrlr->bus_hz == MMC_CLOCK_200MHZ)
+		sdhci_set_power(host, MMC_VDD_165_195_SHIFT);
+
 	/* Set bus width */
 	ctrl = sdhci_readb(host, SDHCI_HOST_CONTROL);
 	if (mmc_ctrlr->bus_width == 8) {
@@ -560,7 +569,7 @@ static int sdhci_pre_init(SdhciHost *host)
 		host->mmc_ctrlr.voltages |= host->voltages;
 
 	host->mmc_ctrlr.caps = MMC_MODE_HS | MMC_MODE_HS_52MHz |
-		MMC_MODE_4BIT | MMC_MODE_HC;
+		MMC_MODE_4BIT | MMC_MODE_HC | MMC_MODE_HS_200MHz;
 	if (caps & SDHCI_CAN_DO_8BIT)
 		host->mmc_ctrlr.caps |= MMC_MODE_8BIT;
 	if (host->host_caps)

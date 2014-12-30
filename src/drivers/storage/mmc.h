@@ -45,6 +45,7 @@
 
 #define MMC_MODE_HS		0x001
 #define MMC_MODE_HS_52MHz	0x010
+#define MMC_MODE_HS_200MHz	0x020
 #define MMC_MODE_4BIT		0x100
 #define MMC_MODE_8BIT		0x200
 #define MMC_MODE_SPI		0x400
@@ -105,6 +106,7 @@
 
 #define MMC_HS_TIMING		0x00000100
 #define MMC_HS_52MHZ		0x2
+#define MMC_HS_200MHZ		0x10
 
 #define OCR_BUSY		0x80000000
 #define OCR_HCS			0x40000000
@@ -135,6 +137,8 @@
 #define MMC_VDD_33_34		0x00200000	/* VDD voltage 3.3 ~ 3.4 */
 #define MMC_VDD_34_35		0x00400000	/* VDD voltage 3.4 ~ 3.5 */
 #define MMC_VDD_35_36		0x00800000	/* VDD voltage 3.5 ~ 3.6 */
+
+#define MMC_VDD_165_195_SHIFT   7
 
 #define MMC_SWITCH_MODE_CMD_SET		0x00 /* Change the command set */
 #define MMC_SWITCH_MODE_SET_BITS	0x01 /* Set bits in EXT_CSD byte
@@ -203,6 +207,7 @@
 #define MMC_CLOCK_26MHZ (26000000)
 #define MMC_CLOCK_50MHZ (50000000)
 #define MMC_CLOCK_52MHZ (52000000)
+#define MMC_CLOCK_200MHZ (200000000)
 #define MMC_CLOCK_DEFAULT_MHZ	(MMC_CLOCK_20MHZ)
 
 #define EXT_CSD_SIZE	(512)
