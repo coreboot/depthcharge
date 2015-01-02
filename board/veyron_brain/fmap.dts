@@ -84,7 +84,7 @@
 		rw-a {
 			label = "rw-section-a";
 			/* Alignment: 4k (for updating) */
-			reg = <0x00200000 0x000f0000>;
+			reg = <0x00200000 0x00078000>;
 		};
 		rw-a-vblock {
 			label = "vblock-a";
@@ -104,29 +104,60 @@
 		rw-a-boot {
 			/* Alignment: no requirement (yet). */
 			label = "fw-main-a";
-			reg = <0x00202000 0x000ce000>;
+			reg = <0x00202000 0x00056000>;
 			type = "blob boot,ecrwhash,romstage,ramstage";
 			with_index;
 		};
 		rw-a-ec-boot {
 			label = "ec-main-a";
 			type = "blob ecbin";
-			reg = <0x002d0000 0x0001ff00>;
+			reg = <0x00258000 0x0001ff00>;
 			with_index;
 		};
 		rw-a-firmware-id {
 			/* Alignment: no requirement. */
 			label = "rw-fwid-a";
-			reg = <0x002eff00 0x00000100>;
+			reg = <0x00277f00 0x00000100>;
 			read-only;
 			type = "blobstring fwid";
 		};
+
+		/* ---- Section: Rewritable shared 16 KB---- */
+		shared-section {
+			/*
+			 * Alignment: 4k (for updating).
+			 * Anything in this range may be updated in recovery.
+			 */
+			label = "rw-shared";
+			reg = <0x00278000 0x00004000>;
+		};
+		shared-data {
+			label = "shared-data";
+			/*
+			 * Alignment: 4k (for random read/write).
+			 * RW firmware can put calibration data here.
+			 */
+			reg = <0x00278000 0x00004000>;
+			type = "wiped";
+			wipe-value = [00];
+		};
+
+		/* ---- Section: Rewritable Event Log 16KB ---- */
+		rw-elog {
+			label = "rw-elog";
+			/* Alignment: 4K (for updating) */
+			reg = <0x0027c000 0x00004000>;
+			type = "wiped";
+			wipe-value = [ff];
+		};
+
+		/* TODO(dhendrix): VBNV stuff */
 
 		/* ---- Section: Rewritable slot B ---- */
 		rw-b {
 			label = "rw-section-b";
 			/* Alignment: 4k (for updating) */
-			reg = <0x00300000 0x000f0000>;
+			reg = <0x00280000 0x00078000>;
 		};
 		rw-b-vblock {
 			label = "vblock-b";
@@ -134,7 +165,7 @@
 			 * Alignment: 4k (for updating) and must be in start of
 			 * each RW_SECTION.
 			 */
-			reg = <0x00300000 0x00002000>;
+			reg = <0x00280000 0x00002000>;
 			type = "keyblock boot,ecrwhash,romstage,ramstage";
 			with_index;
 			keyblock = "firmware.keyblock";
@@ -146,20 +177,20 @@
 		rw-b-boot {
 			label = "fw-main-b";
 			/* Alignment: no requirement (yet). */
-			reg = <0x00302000 0x000ce000>;
+			reg = <0x00282000 0x00056000>;
 			type = "blob boot,ecrwhash,romstage,ramstage";
 			with_index;
 		};
 		rw-b-ec-boot {
 			label = "ec-main-b";
 			type = "blob ecbin";
-			reg = <0x003d0000 0x0001ff00>;
+			reg = <0x002d8000 0x0001ff00>;
 			with_index;
 		};
 		rw-b-firmware-id {
 			label = "rw-fwid-b";
 			/* Alignment: no requirement. */
-			reg = <0x003eff00 0x00000100>;
+			reg = <0x002f7f00 0x00000100>;
 			read-only;
 			type = "blobstring fwid";
 		};
@@ -168,43 +199,16 @@
 		rw-vpd {
 			label = "rw-vpd";
 			/* Alignment: 4k (for updating) */
-			reg = <0x003f0000 0x00008000>;
+			reg = <0x002f8000 0x00008000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
 
-		/* ---- Section: Rewritable shared 16 KB---- */
-		shared-section {
-			/*
-			 * Alignment: 4k (for updating).
-			 * Anything in this range may be updated in recovery.
-			 */
-			label = "rw-shared";
-			reg = <0x003f8000 0x00004000>;
-		};
-		shared-data {
-			label = "shared-data";
-			/*
-			 * Alignment: 4k (for random read/write).
-			 * RW firmware can put calibration data here.
-			 */
-			reg = <0x003f8000 0x00004000>;
-			type = "wiped";
-			wipe-value = [00];
-		};
-
-		/*
-		 * This space is currently unused and reserved for future
-		 * extensions. cros_bundle_firmware dislikes holes in the
-		 * FMAP, so we cover all empty space here.
-		 */
-		rw-unused {
-			label = "rw-unused";
-			reg = <0x003fc000 0x00004000>;
+		rw-legacy {
+			label = "rw-legacy";
+			reg = <0x00300000 0x00100000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
-
-		/* TODO(dhendrix): VBNV stuff */
 	};
 };
