@@ -43,6 +43,7 @@
 #include "drivers/video/display.h"
 #include "drivers/ec/cros/i2c.h"
 #include "vboot/util/flag.h"
+#include "drivers/video/tegra132.h"
 
 enum {
 	CLK_RST_BASE = 0x60006000,
@@ -192,33 +193,10 @@ static int ryu_backlight_update(uint8_t enable)
 	return 0;
 }
 
-/* Coreboot currently sets up the T window for display support. */
-#define WIN_ENABLE	(1 << 30)
-static void * const winbuf_t_start_addr = (void *)(uintptr_t)0x54202000;
-static void * const win_t_win_options = (void *)(uintptr_t)0x54201c00;
-
-static int ryu_display_init(void)
-{
-	uintptr_t phys_addr = lib_sysinfo.framebuffer->physical_address;
-
-	/* Set the framebuffer address and enable the T window. */
-	writel(phys_addr, winbuf_t_start_addr);
-	writel(readl(win_t_win_options) | WIN_ENABLE, win_t_win_options);
-
-	return 0;
-}
-
-static int ryu_display_stop(void)
-{
-	/* Disable the T Window. */
-	writel(readl(win_t_win_options) & ~WIN_ENABLE, win_t_win_options);
-	return 0;
-}
-
 static DisplayOps ryu_display_ops = {
-	.init = &ryu_display_init,
+	.init = &tegra132_display_init,
 	.backlight_update = &ryu_backlight_update,
-	.stop = &ryu_display_stop,
+	.stop = &tegra132_display_stop,
 };
 
 static int display_setup(void)
