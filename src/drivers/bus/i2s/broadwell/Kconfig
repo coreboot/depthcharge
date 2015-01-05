@@ -17,3 +17,8 @@
 config DRIVER_BUS_I2S_BROADWELL
 	bool "Broadwell I2S driver"
 	default n
+
+config DRIVER_BUS_I2S_BROADWELL_ALC5677
+	bool "Broadwell I2S configuration for ALC5677 Codec"
+	depends on DRIVER_BUS_I2S_BROADWELL
+	default n

@@ -16,3 +16,4 @@
 ##
 
 depthcharge-$(CONFIG_DRIVER_BUS_I2S_BROADWELL) += broadwell.c
+depthcharge-$(CONFIG_DRIVER_BUS_I2S_BROADWELL_ALC5677) += broadwell-alc5677.c
