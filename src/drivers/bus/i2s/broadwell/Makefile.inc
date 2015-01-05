@@ -1,5 +1,5 @@
 ##
-## Copyright 2013 Google Inc.  All rights reserved.
+## Copyright 2015 Google Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -12,19 +12,7 @@
 ##
 ## You should have received a copy of the GNU General Public License
 ## along with this program; if not, write to the Free Software
-## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+##
 
-config DRIVER_BUS_I2S_EXYNOS5
-	bool "Exynos5 I2S driver"
-	default n
-
-config DRIVER_BUS_I2S_TEGRA
-	bool "Tegra I2S driver"
-	default n
-
-config DRIVER_BUS_I2S_ROCKCHIP
-	bool "Rockchip I2S driver"
-	default n
-
-source src/drivers/bus/i2s/baytrail/Kconfig
-source src/drivers/bus/i2s/broadwell/Kconfig
+depthcharge-$(CONFIG_DRIVER_BUS_I2S_BROADWELL) += broadwell.c
