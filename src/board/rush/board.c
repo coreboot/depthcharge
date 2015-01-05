@@ -29,6 +29,7 @@
 #include "drivers/bus/spi/tegra.h"
 #include "drivers/bus/i2c/tegra.h"
 #include "drivers/bus/usb/usb.h"
+#include "drivers/gpio/gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/gpio/tegra.h"
 #include "drivers/dma/tegra_apb.h"
@@ -42,6 +43,8 @@
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/max98090.h"
 #include "drivers/sound/tegra_ahub.h"
+#include "drivers/video/display.h"
+#include "drivers/video/tegra132.h"
 
 enum {
 	BOARD_ID_PROTO_0 = 0x0A,
@@ -203,3 +206,35 @@ static int board_setup(void)
 }
 
 INIT_FUNC(board_setup);
+
+/* Turn on or turn off the backlight */
+static int rush_backlight_update(uint8_t enable)
+{
+	TegraGpio *backlight_vdd_enable = new_tegra_gpio_output(GPIO(P, 2));
+	TegraGpio *backlight_enable = new_tegra_gpio_output(GPIO(H, 2));
+
+	backlight_vdd_enable->ops.set(&backlight_vdd_enable->ops, enable);
+	mdelay(10);
+	backlight_enable->ops.set(&backlight_enable->ops, enable);
+
+	return 0;
+}
+
+static DisplayOps rush_display_ops = {
+	.init = &tegra132_display_init,
+	.backlight_update = &rush_backlight_update,
+	.stop = &tegra132_display_stop,
+};
+
+static int display_setup(void)
+{
+	if (lib_sysinfo.framebuffer == NULL ||
+		lib_sysinfo.framebuffer->physical_address == 0)
+		return 0;
+
+	display_set_ops(&rush_display_ops);
+
+	return 0;
+}
+
+INIT_FUNC(display_setup);
