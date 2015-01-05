@@ -38,6 +38,10 @@ config DRIVER_SOUND_ROUTE
 	bool "Sound route container"
 	default n
 
+config DRIVER_SOUND_RT5677
+	bool "Realtek RT5677 codec driver"
+	default n
+
 config DRIVER_SOUND_TEGRA_AUDIO_HUB
 	bool "Tegra Audio Hub driver"
 	default n
