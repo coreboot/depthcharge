@@ -120,7 +120,7 @@ static int operation_failed(SpiFlash *flash)
 			       __func__, i);
 			return -1;
 		}
-		if (!value & SPI_FLASH_STATUS_WIP) {
+		if (!(value & SPI_FLASH_STATUS_WIP)) {
 			if (value & SPI_FLASH_STATUS_ERR) {
 				printf("%s: status %#x after %d cycles.\n",
 				       __func__, value, i);
