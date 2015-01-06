@@ -138,6 +138,19 @@
 			label = "rw-gpt";
 			/* Alignment: 64k (for updating) */
 			reg = <0x00560000 0x00020000>;
+		};
+		rw-gpt-primary {
+			label = "rw-gpt-primary";
+			/* Alignment: 64k (for updating) */
+			reg = <0x00560000 0x00010000>;
+			type = "wiped";
+			wipe-value = [ff];
+		};
+
+		rw-gpt-secondary {
+			label = "rw-gpt-secondary";
+			/* Alignment: 64k (for updating) */
+			reg = <0x00570000 0x00010000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
