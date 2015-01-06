@@ -30,6 +30,7 @@ uint32_t VbExIsShutdownRequested(void)
 {
 	int lidsw = flag_fetch(FLAG_LIDSW);
 	int pwrsw = flag_fetch(FLAG_PWRSW);
+	uint32_t shutdown_request = 0;
 
 	if (lidsw < 0 || pwrsw < 0) {
 		// There isn't any way to return an error, so just hang.
@@ -39,14 +40,14 @@ uint32_t VbExIsShutdownRequested(void)
 
 	if (!lidsw) {
 		printf("Lid is closed.\n");
-		return 1;
+		shutdown_request |= VB_SHUTDOWN_REQUEST_LID_CLOSED;
 	}
 	if (pwrsw) {
 		printf("Power key pressed.\n");
-		return 1;
+		shutdown_request |= VB_SHUTDOWN_REQUEST_POWER_BUTTON;
 	}
 
-	return 0;
+	return shutdown_request;
 }
 
 VbError_t VbExDecompress(void *inbuf, uint32_t in_size,
