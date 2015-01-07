@@ -106,6 +106,9 @@ endif
 if BOARD = "veyron_pinky"
 source src/board/veyron_pinky/Kconfig
 endif
+if BOARD = "veyron_rialto"
+source src/board/veyron_rialto/Kconfig
+endif
 if BOARD = "veyron_speedy"
 source src/board/veyron_speedy/Kconfig
 endif
