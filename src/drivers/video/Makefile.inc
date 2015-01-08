@@ -18,3 +18,4 @@
 depthcharge-y += display.c
 depthcharge-y += coreboot_fb.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_EXYNOS5) += exynos5.c
+depthcharge-$(CONFIG_DRIVER_VIDEO_ROCKCHIP) += rockchip.c

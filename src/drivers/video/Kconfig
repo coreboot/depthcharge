@@ -21,3 +21,7 @@ config DRIVER_VIDEO_EXYNOS5
 config DRIVER_VIDEO_EXYNOS5_BASE
 	hex "Exynos5 video base address"
 	depends on DRIVER_VIDEO_EXYNOS5
+
+config DRIVER_VIDEO_ROCKCHIP
+	bool "rockchip video settings"
+	default n
