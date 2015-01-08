@@ -22,26 +22,26 @@
 #include "base/init_funcs.h"
 #include "boot/fit.h"
 #include "boot/ramoops.h"
-#include "drivers/gpio/rockchip.h"
 #include "drivers/bus/i2c/rockchip.h"
-#include "drivers/flash/spi.h"
+#include "drivers/bus/i2s/rockchip.h"
 #include "drivers/bus/spi/rockchip.h"
+#include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/spi.h"
-#include "drivers/tpm/slb9635_i2c.h"
-#include "drivers/tpm/tpm.h"
+#include "drivers/flash/spi.h"
+#include "drivers/gpio/rockchip.h"
+#include "drivers/gpio/sysinfo.h"
 #include "drivers/power/rk808.h"
 #include "drivers/power/sysinfo.h"
 #include "drivers/storage/dw_mmc.h"
 #include "drivers/storage/rk_mmc.h"
-
-#include "drivers/gpio/sysinfo.h"
-#include "vboot/util/flag.h"
-#include "drivers/bus/i2s/rockchip.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/route.h"
 #include "drivers/sound/max98090.h"
-
-#include "drivers/bus/usb/usb.h"
+#include "drivers/tpm/slb9635_i2c.h"
+#include "drivers/tpm/tpm.h"
+#include "drivers/video/display.h"
+#include "drivers/video/rockchip.h"
+#include "vboot/util/flag.h"
 
 static int board_setup(void)
 {
@@ -95,6 +95,9 @@ static int board_setup(void)
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
 
 	ramoops_buffer(0x31f00000, 0x100000, 0x20000);
+
+	if (lib_sysinfo.framebuffer != NULL)
+		display_set_ops(new_rockchip_display());
 
 	return 0;
 }

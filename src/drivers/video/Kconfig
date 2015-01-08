@@ -30,3 +30,8 @@ config DRIVER_VIDEO_TEGRA132
 	bool "tegra132 video settings"
 	default n
 
+config DRIVER_VIDEO_ROCKCHIP
+	bool "rockchip video settings"
+	default n
+
+
