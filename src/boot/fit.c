@@ -56,6 +56,8 @@ typedef struct FitConfigNode
 	FitImageNode *kernel_node;
 	const char *fdt;
 	FitImageNode *fdt_node;
+	const char *ramdisk;
+	FitImageNode *ramdisk_node;
 	FdtProperty compat;
 	int compat_rank;
 
@@ -116,6 +118,8 @@ static void config_node(DeviceTreeNode *node)
 			config->kernel = prop->prop.data;
 		else if (!strcmp("fdt", prop->prop.name))
 			config->fdt = prop->prop.data;
+		else if (!strcmp("ramdisk", prop->prop.name))
+			config->ramdisk = prop->prop.data;
 	}
 
 	list_insert_after(&config->list_node, &config_nodes);
@@ -200,6 +204,19 @@ static void update_chosen(DeviceTree *tree, char *cmd_line)
 	DeviceTreeNode *node = dt_find_node(tree->root, path, NULL, NULL, 1);
 
 	dt_add_string_prop(node, "bootargs", cmd_line);
+}
+
+static void update_ramdisk(DeviceTree *tree, FitImageNode *ramdisk_node)
+{
+	const char *path[] = { "chosen", NULL };
+	DeviceTreeNode *node = dt_find_node(tree->root, path, NULL, NULL, 1);
+
+	/* Warning: this assumes the ramdisk is currently located below 4GiB. */
+	u32 start = (uintptr_t)ramdisk_node->data;
+	u32 end = start + ramdisk_node->size;
+
+	dt_add_u32_prop(node, "linux,initrd-start", start);
+	dt_add_u32_prop(node, "linux,initrd-end", end);
 }
 
 static void update_reserve_map(uint64_t start, uint64_t end, void *data)
@@ -351,6 +368,8 @@ int fit_load(void *fit, char *cmd_line, void **kernel, uint32_t *kernel_size,
 			config->kernel_node = find_image(config->kernel);
 		if (config->fdt)
 			config->fdt_node = find_image(config->fdt);
+		if (config->ramdisk)
+			config->ramdisk_node = find_image(config->ramdisk);
 
 		if (!config->kernel_node ||
 				(config->fdt && !config->fdt_node)) {
@@ -390,6 +409,8 @@ int fit_load(void *fit, char *cmd_line, void **kernel, uint32_t *kernel_size,
 		printf(", kernel %s", config->kernel);
 		if (config->fdt)
 			printf(", fdt %s", config->fdt);
+		if (config->ramdisk)
+			printf(", ramdisk %s", config->ramdisk);
 		if (config->compat.name) {
 			printf(", compat");
 			int bytes = config->compat.size;
@@ -436,6 +457,8 @@ int fit_load(void *fit, char *cmd_line, void **kernel, uint32_t *kernel_size,
 
 		update_chosen(*dt, cmd_line);
 		update_memory(*dt);
+		if (to_boot->ramdisk_node)
+			update_ramdisk(*dt, to_boot->ramdisk_node);
 	}
 
 	return 0;
