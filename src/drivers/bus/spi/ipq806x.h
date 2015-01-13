@@ -32,24 +32,12 @@
 #define GSBI5_BASE      ((unsigned char *)0x1a200000)
 #define GSBI6_BASE      ((unsigned char *)0x16500000)
 #define GSBI7_BASE      ((unsigned char *)0x16600000)
-#define TLMM_BASE_ADDR  ((unsigned char *)0x00800000)
 
 #define BIOS_ERR        3   /* error conditions                     */
 #define CLK_ALWAYS_ON                           (0 << 9)
 #define CLK_ROOT_DIS                            (0 << 11)
 #define CLK_ROOT_ENA                            (1 << 11)
 #define CLK_ROOT_ENA_MSK                        (1 << 11)
-#define FUNC_SEL_1                              1
-#define FUNC_SEL_3                              3
-#define FUNC_SEL_GPIO                           0
-#define GPIO_DRV_STR_10MA                       0x4
-#define GPIO_DRV_STR_11MA                       0x7
-#define GPIO_FUNC_DISABLE                       0
-#define GPIO_FUNC_ENABLE                        1
-#define GPIO_INPUT      0
-#define GPIO_OUTPUT     1
-#define GPIO_PULL_DOWN  1
-#define GPIO_PULL_UP    3
 #define GSBI1_RESET                             (1 << 0)
 #define GSBI1_RESET_MSK                         0x1
 #define GSBI5_GSBI_CTRL_REG_REG         (GSBI5_REG_BASE + 0x00000000)
@@ -193,8 +181,6 @@
 #define CLK_CTL_REG_BASE                ((unsigned char *)0x00900000)
 #define CLK_HALT_CFPB_STATEB_REG               (CLK_CTL_REG_BASE      + 0x00002fd0)
 
-#define GPIO_CONFIG_ADDR(x) (TLMM_BASE_ADDR + 0x1000 + (x)*0x10)
-#define GPIO_IN_OUT_ADDR(x) (TLMM_BASE_ADDR + 0x1004 + (x)*0x10)
 #define GSBI5_QUP_INPUT_FIFOc_REG(c)  (GSBI5_QUP5_REG_BASE + 0x00000218 + 4 * (c))
 #define GSBI5_QUP_OUTPUT_FIFOc_REG(c) (GSBI5_QUP5_REG_BASE + 0x00000110 + 4 * (c))
 #define GSBI6_QUP_INPUT_FIFOc_REG(c)  (GSBI6_QUP6_REG_BASE + 0x00000218 + 4 * (c))

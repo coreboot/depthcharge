@@ -35,6 +35,10 @@
 
 typedef unsigned int gpio_t;
 
+#define TLMM_BASE_ADDR  ((unsigned char *)0x00800000)
+#define GPIO_CONFIG_ADDR(x) (TLMM_BASE_ADDR + 0x1000 + (x)*0x10)
+#define GPIO_IN_OUT_ADDR(x) (TLMM_BASE_ADDR + 0x1004 + (x)*0x10)
+
 /* Various GPIO pin functions */
 #define GPIO_FUNC_ENABLE			1
 #define GPIO_FUNC_DISABLE			0
