@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2015, The Linux Foundation. All rights reserved.
  * Copyright 2014 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
@@ -34,14 +35,16 @@
 #include "drivers/bus/spi/ipq806x.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/gpio/gpio.h"
+#include "drivers/gpio/ipq806x.h"
 #include "drivers/gpio/sysinfo.h"
+#include "drivers/power/ipq806x.h"
+#include "drivers/sound/ipq806x.h"
+#include "drivers/sound/route.h"
+#include "drivers/storage/ipq806x_mmc.h"
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/callbacks/nvstorage_flash.h"
 #include "vboot/util/flag.h"
-#include "drivers/gpio/ipq806x.h"
-#include "drivers/power/ipq806x.h"
-#include "drivers/storage/ipq806x_mmc.h"
 #include "drivers/storage/mtd/mtd.h"
 #include "drivers/storage/mtd/stream.h"
 #include "drivers/storage/spi_gpt.h"
@@ -50,6 +53,7 @@
 #include "board.h"
 
 #define GPIO_SDCC_FUNC_VAL      2
+#define GPIO_I2S_FUNC_VAL       1
 
 #define MSM_SDC1_BASE		0x12400000
 
@@ -167,6 +171,18 @@ static DeviceTreeFixup ipq_enet_fixup = {
 	.fixup = fix_device_tree
 };
 
+/* DAC GPIO assignment. */
+enum storm_dac_gpio {
+	DAC_SDMODE = 25,
+};
+
+/* I2S bus GPIO assignments. */
+enum storm_i2s_gpio {
+	I2S_SYNC = 27,
+	I2S_CLK = 28,
+	I2S_DOUT = 32,
+};
+
 /* MMC bus GPIO assignments. */
 enum storm_emmc_gpio {
 	SDC1_DATA7 = 38,
@@ -192,6 +208,21 @@ static int get_gpio(struct GpioOps *me)
 {
 	StormGpio *gpio = container_of(me, StormGpio, gpio_ops);
 	return gpio_get_in_value(gpio->desc);
+}
+
+static int set_gpio(struct GpioOps *me, unsigned value)
+{
+	StormGpio *gpio = container_of(me, StormGpio, gpio_ops);
+	gpio_set_out_value(gpio->desc, value);
+	return 0;
+}
+
+static GpioOps *new_storm_dac_gpio_output()
+{
+	StormGpio *gpio = xzalloc(sizeof(*gpio));
+	gpio->gpio_ops.set = set_gpio;
+	gpio->desc = (gpio_t)DAC_SDMODE;
+	return &gpio->gpio_ops;
 }
 
 static GpioOps *new_storm_gpio_input_from_coreboot(uint32_t port)
@@ -230,6 +261,23 @@ void board_mmc_gpio_config(void)
 		gpio_tlmm_config_set(gpio_config_arr[i],
 		GPIO_SDCC_FUNC_VAL, GPIO_PULL_UP, GPIO_10MA, 1);
 	}
+}
+
+void board_i2s_gpio_config(void)
+{
+	unsigned i;
+	unsigned char gpio_config_arr[] = {I2S_SYNC, I2S_CLK, I2S_DOUT};
+
+	for (i = 0; i < ARRAY_SIZE(gpio_config_arr); i++) {
+		gpio_tlmm_config_set(gpio_config_arr[i], GPIO_I2S_FUNC_VAL,
+				GPIO_NO_PULL, GPIO_16MA, 1);
+	}
+}
+
+void board_dac_gpio_config(void)
+{
+	gpio_tlmm_config_set(DAC_SDMODE, FUNC_SEL_GPIO, GPIO_NO_PULL,
+			GPIO_16MA, 1);
 }
 
 static void set_ramoops_buffer(void)
@@ -315,6 +363,11 @@ static int board_setup(void)
 
 	if (lib_sysinfo.board_id >= BOARD_ID_WHIRLWIND_SP5)
 		new_ipq806x_i2c(GSBI_ID_7); /* for the LED daughtercard. */
+
+	Ipq806xSound *sound = new_ipq806x_sound(new_storm_dac_gpio_output(),
+			48000, 2, 16, 16000);
+	SoundRoute *sound_route = new_sound_route(&sound->ops);
+	sound_set_ops(&sound_route->ops);
 
 	flash_nvram_init();
 
