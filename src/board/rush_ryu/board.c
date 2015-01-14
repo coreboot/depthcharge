@@ -26,6 +26,7 @@
 #include "base/init_funcs.h"
 #include "boot/fit.h"
 #include "boot/commandline.h"
+#include "board/rush_ryu/fastboot.h"
 #include "config.h"
 #include "drivers/bus/spi/tegra.h"
 #include "drivers/bus/i2c/tegra.h"
@@ -128,6 +129,10 @@ static int board_setup(void)
 
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
+
+#if CONFIG_FASTBOOT_MODE
+	fb_fill_bdev_list(MMC_BDEV, &emmc->mmc.ctrlr);
+#endif
 
 	/* Careful: the EHCI base is at offset 0x100 from the SoC's IP base */
 	UsbHostController *usbd = new_usb_hc(EHCI, 0x7d000100);
