@@ -73,4 +73,11 @@ extern ListNode removable_block_dev_controllers;
 
 StreamOps *new_simple_stream(BlockDevOps *me, lba_t start, lba_t count);
 
+typedef enum {
+	BLOCKDEV_FIXED,
+	BLOCKDEV_REMOVABLE,
+} blockdev_type_t;
+
+int get_all_bdevs(blockdev_type_t type, ListNode **bdevs);
+
 #endif /* __DRIVERS_STORAGE_BLOCKDEV_H__ */

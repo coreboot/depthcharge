@@ -88,3 +88,32 @@ StreamOps *new_simple_stream(BlockDevOps *me, lba_t start, lba_t count)
 	assert((blockdev->block_size & (blockdev->block_size - 1)) == 0);
 	return &stream->stream;
 }
+
+int get_all_bdevs(blockdev_type_t type, ListNode **bdevs)
+{
+	ListNode *ctrlrs, *devs;
+	int count = 0;
+
+	if (type == BLOCKDEV_FIXED) {
+		devs = &fixed_block_devices;
+		ctrlrs = &fixed_block_dev_controllers;
+	} else {
+		devs = &removable_block_devices;
+		ctrlrs = &removable_block_dev_controllers;
+	}
+
+	/* Update any controllers that need it. */
+	BlockDevCtrlr *ctrlr;
+	list_for_each(ctrlr, *ctrlrs, list_node) {
+		if (ctrlr->ops.update && ctrlr->need_update &&
+		    ctrlr->ops.update(&ctrlr->ops))
+			printf("Updating storage controller failed.\n");
+	}
+
+	/* Count the devices. */
+	for (ListNode *node = devs->next; node; node = node->next, count++)
+		;
+
+	*bdevs = devs;
+	return count;
+}
