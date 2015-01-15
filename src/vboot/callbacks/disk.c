@@ -45,29 +45,15 @@ VbError_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
 {
 	*count = 0;
 
-	// Figure out which devices/controllers to operate on.
-	ListNode *ctrlrs, *devs;
-	if (disk_flags & VB_DISK_FLAG_FIXED) {
-		devs = &fixed_block_devices;
-		ctrlrs = &fixed_block_dev_controllers;
-	} else {
-		devs = &removable_block_devices;
-		ctrlrs = &removable_block_dev_controllers;
-	}
+	blockdev_type_t bd_type;
+	ListNode *devs;
 
-	// Update any controllers that need it.
-	BlockDevCtrlr *ctrlr;
-	list_for_each(ctrlr, *ctrlrs, list_node) {
-		if (ctrlr->ops.update && ctrlr->need_update &&
-		    ctrlr->ops.update(&ctrlr->ops)) {
-			printf("Updating a storage controller failed. "
-			       "Skipping.\n");
-		}
-	}
+	if (disk_flags & VB_DISK_FLAG_FIXED)
+		bd_type = BLOCKDEV_FIXED;
+	else
+		bd_type = BLOCKDEV_REMOVABLE;
 
-	// Count the devices.
-	for (ListNode *node = devs->next; node; node = node->next, (*count)++)
-		;
+	*count = get_all_bdevs(bd_type, &devs);
 
 	// Allocate enough VbDiskInfo structures.
 	VbDiskInfo *disk = NULL;
