@@ -29,5 +29,6 @@ int vboot_init(void);
 int vboot_select_firmware(void);
 int vboot_select_and_load_kernel(void);
 int vboot_do_init_out_flags(uint32_t out_flags);
+int vboot_in_recovery(void);
 
 #endif /* __VBOOT_STAGES_H__ */

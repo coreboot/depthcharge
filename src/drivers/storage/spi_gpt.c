@@ -33,6 +33,7 @@
 #include "base/device_tree.h"
 #include "drivers/flash/flash.h"
 #include "drivers/storage/spi_gpt.h"
+#include "vboot/stages.h"
 
 /* Block size is arbitrarily chosen; any size would work once buffering
  * is implemented. Partitions have to be aligned to the size of an
@@ -122,6 +123,12 @@ static int spi_gpt_fixup(DeviceTreeFixup *fixup, DeviceTree *tree)
 	SpiGptCtrlr *ctrlr = container_of(fixup, SpiGptCtrlr, fixup);
 	ctrlr->block_ctrlr.ops.update(&ctrlr->block_ctrlr.ops);
 	SpiGptDev *dev = ctrlr->dev;
+
+	/* If in recovery mode, don't add the GPT from SPI to the dt
+	 * because this would violate the requirement that recovery
+	 * doesn't read internal storage from RW. */
+	if (vboot_in_recovery())
+		return 0;
 
 	uint32_t addrc, sizec;
 	DeviceTreeNode *nand = dt_find_node_by_path(tree->root,
