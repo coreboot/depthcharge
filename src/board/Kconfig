@@ -85,6 +85,9 @@ endif
 if BOARD = "storm"
 source src/board/storm/Kconfig
 endif
+if BOARD = "strago"
+source src/board/strago/Kconfig
+endif
 if BOARD = "veyron_jerry"
 source src/board/veyron_jerry/Kconfig
 endif
