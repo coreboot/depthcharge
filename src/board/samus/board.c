@@ -21,6 +21,7 @@
  */
 
 #include <pci.h>
+#include <pci/pci.h>
 #include <libpayload.h>
 #include <sysinfo.h>
 
@@ -45,6 +46,8 @@
 #include "drivers/storage/blockdev.h"
 #include "drivers/tpm/lpc.h"
 #include "drivers/tpm/tpm.h"
+#include "drivers/video/display.h"
+#include "drivers/video/intel_i915.h"
 #include "vboot/util/flag.h"
 
 enum {
@@ -126,6 +129,12 @@ static int board_setup(void)
 	list_insert_after(&codec->component.list_node,
 			  &sound_route->components);
 	sound_set_ops(&sound_route->ops);
+
+	if (lib_sysinfo.framebuffer != NULL) {
+		uintptr_t i915_base = pci_read_config32(PCI_DEV(0, 2, 0),
+						PCI_BASE_ADDRESS_0) & ~0xf;
+		display_set_ops(new_intel_i915_display(i915_base));
+	}
 
 	return 0;
 }
