@@ -18,4 +18,5 @@
 depthcharge-y += display.c
 depthcharge-y += coreboot_fb.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_EXYNOS5) += exynos5.c
+depthcharge-$(CONFIG_DRIVER_VIDEO_INTEL_I915) += intel_i915.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_TEGRA132) += tegra132.c
