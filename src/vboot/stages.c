@@ -43,6 +43,8 @@
 #include "vboot/util/flag.h"
 #include "vboot/util/memory.h"
 
+static uint32_t vboot_out_flags;
+
 int vboot_init(void)
 {
 	VbInitParams iparams = {
@@ -91,6 +93,11 @@ int vboot_init(void)
 	return vboot_do_init_out_flags(iparams.out_flags);
 };
 
+int vboot_in_recovery(void)
+{
+	return vboot_out_flags & VB_INIT_OUT_ENABLE_RECOVERY;
+}
+
 int vboot_do_init_out_flags(uint32_t out_flags)
 {
 	if (out_flags & VB_INIT_OUT_CLEAR_RAM) {
@@ -105,6 +112,8 @@ int vboot_do_init_out_flags(uint32_t out_flags)
 	if (out_flags & (VB_INIT_OUT_ENABLE_DEVELOPER |
 			 VB_INIT_OUT_ENABLE_RECOVERY))
 		input_enable();
+
+	vboot_out_flags = out_flags;
 
 	return 0;
 }
