@@ -1,9 +1,9 @@
 /dts-v1/;
 
 / {
-	model = "Google Veyron_Brain";
+	model = "Google Veyron_Danger";
 	config {
-		hwid = "BRAIN TEST A-A 1234";
+		hwid = "DANGER TEST A-A 2785";
 	};
 	chromeos-config {
 		/* Enable factory-friendly features. */

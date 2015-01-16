@@ -44,7 +44,7 @@
 
 static int board_setup(void)
 {
-	fit_set_compat_by_rev("google,veyron-brain-rev%d",
+	fit_set_compat_by_rev("google,veyron-danger-rev%d",
 			      lib_sysinfo.board_id);
 
 	RkSpi *spi2 = new_rockchip_spi(0xff130000);
@@ -74,6 +74,14 @@ static int board_setup(void)
 	DwmciHost *emmc = new_rkdwmci_host(0xff0f0000, 594000000, 8, 0, NULL);
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
+
+	RkGpio *card_detect = new_rk_gpio_input(GPIO(7, A, 5));
+	GpioOps *card_detect_ops = &card_detect->ops;
+	card_detect_ops = new_gpio_not(card_detect_ops);
+	DwmciHost *sd_card = new_rkdwmci_host(0xff0c0000, 594000000, 4, 1,
+					      card_detect_ops);
+	list_insert_after(&sd_card->mmc.ctrlr.list_node,
+			  &removable_block_dev_controllers);
 
 	UsbHostController *usb_host0 = new_usb_hc(DWC2, 0xff580000);
 	list_insert_after(&usb_host0->list_node, &usb_host_controllers);
