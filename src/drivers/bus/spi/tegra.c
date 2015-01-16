@@ -19,6 +19,7 @@
  */
 
 #include <arch/cache.h>
+#include <assert.h>
 #include <libpayload.h>
 
 #include "base/container_of.h"
@@ -33,8 +34,8 @@
 enum {
 	SPI_PACKET_LOG_SIZE_BYTES = 2,
 	SPI_PACKET_SIZE_BYTES = (1 << SPI_PACKET_LOG_SIZE_BYTES),
-	SPI_MAX_TRANSFER_BYTES_DMA = 65535 * SPI_PACKET_SIZE_BYTES,
-	SPI_MAX_TRANSFER_BYTES_FIFO = 64
+	SPI_MAX_XFER_BYTES_DMA = 65535 * SPI_PACKET_SIZE_BYTES,
+	SPI_MAX_XFER_BYTES_FIFO = 64
 };
 
 typedef struct {
@@ -289,6 +290,7 @@ static int tegra_spi_dma_transfer(TegraSpi *bus, void *in, const void *out,
 	writel(trans_status | SPI_STATUS_RDY, &regs->trans_status);
 
 	if (out) {
+		assert(((SPI_PACKET_SIZE_BYTES - 1) & (uintptr_t)out) == 0);
 		cout = bus->dma_controller->claim(bus->dma_controller);
 		if (!cout || tegra_spi_dma_config(cout, (void *)out,
 						  &regs->tx_fifo, size, 1,
@@ -299,6 +301,7 @@ static int tegra_spi_dma_transfer(TegraSpi *bus, void *in, const void *out,
 		writel(command1, &regs->command1);
 	}
 	if (in) {
+		assert(((SPI_PACKET_SIZE_BYTES - 1) & (uintptr_t)in) == 0);
 		cin = bus->dma_controller->claim(bus->dma_controller);
 		if (!cin || tegra_spi_dma_config(cin, in, &regs->rx_fifo,
 						 size, 0, bus->dma_slave_id)) {
@@ -421,57 +424,80 @@ static int tegra_spi_pio_transfer(TegraSpi *bus, uint8_t *in,
 }
 
 static int tegra_spi_transfer(SpiOps *me, void *in, const void *out,
-			      uint32_t size)
+			      uint32_t req_size)
 {
+	uintptr_t start;
 	TegraSpi *bus = container_of(me, TegraSpi, ops);
-	unsigned int line_size = dcache_line_bytes();
+	const size_t line_size = dcache_line_bytes();
+	size_t size = req_size;
 
-	if (!size)
-		return 0;
+	/* Can only handly one direction at a time. */
+	assert(!(in != NULL && out != NULL));
+	/*
+	 * DMA transfers are done only on cacheline aligned pointers, however
+	 * the DMA engine expects pointers to be aligned to
+	 * SPI_PACKET_SIZE_BYTES. Therefore, validate our assumptions.
+	 */
+	assert(line_size >= SPI_PACKET_SIZE_BYTES);
 
-	uint32_t todo = MIN(line_size, size);
-	if (tegra_spi_pio_transfer(bus, in, out, todo))
-		return -1;
-
-	in = (uint8_t *)in + (in ? todo : 0);
-	out = (uint8_t *)out + (out ? todo : 0);
-	size -= todo;
-
-	// Make sure outbound data is in memory and inbound data
-	// doesn't collide with the contents of the cache.
-	if (size > line_size) {
-		if (out)
-			dcache_clean_by_mva(out, size - line_size);
-		if (in)
-			dcache_clean_invalidate_by_mva(in, size - line_size);
-	}
-
-	while (size > line_size) {
-		// Don't transfer more than the DMA can handle, transfer a
-		// multiple of 4 bytes, and make sure there's at least
-		// line_size bytes left when you're done.
-		uint32_t mask = (uint32_t)~(sizeof(uint32_t) - 1);
-		todo = MIN((size - line_size) & mask,
-			   SPI_MAX_TRANSFER_BYTES_DMA & mask);
-		if (!todo)
-			break;
-
-		if (tegra_spi_dma_transfer(bus, in, out, todo))
-			return -1;
-
-		in = (uint8_t *)in + (in ? todo : 0);
-		out = (uint8_t *)out + (out ? todo : 0);
-		size -= todo;
-	}
+	start = in ? (uintptr_t)in : (uintptr_t)out;
 
 	while (size) {
-		todo = MIN(size, SPI_MAX_TRANSFER_BYTES_FIFO);
-		if (tegra_spi_pio_transfer(bus, in, out, todo))
-			return -1;
+		size_t xfer_size;
+		void *sin;
+		const void *sout;
+		int pio = 0;
 
-		in = (uint8_t *)in + (in ? todo : 0);
-		out = (uint8_t *)out + (out ? todo : 0);
-		size -= todo;
+		/*
+		 * PIO mode for non-cacheline aligned pointers as well as
+		 * requests with size < line_size.
+		 */
+		if (ALIGN_DOWN(start, line_size) != start || size < line_size) {
+			pio = 1;
+
+			/*
+			 * Determine how many bytes to transfer to align
+			 * start to a cacheline. Watch out for start already
+			 * beign aligned to a cacheline.
+			 */
+			xfer_size = ALIGN_UP(start, line_size) - start;
+			/* Catch smaller transfers */
+			xfer_size = MIN(xfer_size, size);
+
+			if (xfer_size == 0)
+				xfer_size = size;
+
+			/* PIO fifo lengths need to be enforced. */
+			xfer_size = MIN(xfer_size, SPI_MAX_XFER_BYTES_FIFO);
+		} else { /* start is aligned and size >= line_size */
+			xfer_size = MIN(size, SPI_MAX_XFER_BYTES_DMA);
+			/* Ensure DMA packet sizes are aligned. */
+			xfer_size = ALIGN_DOWN(xfer_size, line_size);
+		}
+
+		if (in) {
+			sin = (void *)start;
+			sout = NULL;
+			if (!pio)
+				dcache_invalidate_by_mva((void *)start,
+							xfer_size);
+		} else {
+			sout = (void *)start;
+			sin = NULL;
+			if (!pio)
+				dcache_clean_by_mva((void *)start, xfer_size);
+		}
+
+		if (pio) {
+			if (tegra_spi_pio_transfer(bus, sin, sout, xfer_size))
+				return -1;
+		} else {
+			if (tegra_spi_dma_transfer(bus, sin, sout, xfer_size))
+				return -1;
+		}
+
+		size -= xfer_size;
+		start += xfer_size;
 	}
 
 	return 0;
