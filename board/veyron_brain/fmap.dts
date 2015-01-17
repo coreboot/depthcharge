@@ -3,7 +3,7 @@
 / {
 	model = "Google Veyron_Brain";
 	config {
-		hwid = "BRAIN TEST A-A 1234";
+		hwid = "BRAIN TEST A-A 7204";
 	};
 	chromeos-config {
 		/* Enable factory-friendly features. */
