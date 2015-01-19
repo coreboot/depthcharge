@@ -28,17 +28,32 @@
 #include "drivers/storage/mtd/nand/spi_nand.h"
 #include "drivers/gpio/gpio.h"
 #include "vboot/util/flag.h"
+#include "drivers/gpio/imgtec_pistachio.h"
 
 #define IMG_SPIM0_BASE_ADDRESS	0xB8100F00
 #define IMG_SPIM1_BASE_ADDRESS	0xB8101000
 
+#define IMG_SPIM1_BASE_ADDRESS_CS0	0
+#define IMG_SPIM1_BASE_ADDRESS_CS1	58
+#define IMG_SPIM1_BASE_ADDRESS_CS2	31
+#define IMG_SPIM1_BASE_ADDRESS_CS3	56
+#define IMG_SPIM1_BASE_ADDRESS_CS4	57
+
+#define IMG_SPIM0_BASE_ADDRESS_CS0	2
+#define IMG_SPIM0_BASE_ADDRESS_CS1	1
+#define IMG_SPIM0_BASE_ADDRESS_CS2	55
+#define IMG_SPIM0_BASE_ADDRESS_CS3	56
+#define IMG_SPIM0_BASE_ADDRESS_CS4	57
+
+#define SPIM_MFIO(base,cs)	base##_CS##cs
 
 static int board_setup(void)
 {
-	struct imgtec_spi *spfi;
+	ImgSpi *spfi;
 	MtdDevCtrlr *mtd;
 	SpiGptCtrlr *virtual_dev;
 	UsbHostController *usb_host;
+	ImgGpio *img_gpio;
 
 	flag_install(FLAG_DEVSW, new_gpio_low());
 	flag_install(FLAG_LIDSW, new_gpio_high());
@@ -50,10 +65,13 @@ static int board_setup(void)
 	usb_host = new_usb_hc(DWC2, 0xB8120000);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
 
-	spfi = new_imgtec_spi(IMG_SPIM1_BASE_ADDRESS, 0);
+	img_gpio = new_imgtec_gpio_output(SPIM_MFIO(IMG_SPIM1_BASE_ADDRESS, 0));
+	spfi = new_imgtec_spi(IMG_SPIM1_BASE_ADDRESS, 0, &(img_gpio->ops));
 	flash_set_ops(&new_spi_flash(&spfi->ops)->ops);
 
-	spfi = new_imgtec_spi(IMG_SPIM1_BASE_ADDRESS, 1);
+	img_gpio = new_imgtec_gpio_output(SPIM_MFIO(IMG_SPIM1_BASE_ADDRESS, 1));
+	spfi = new_imgtec_spi(IMG_SPIM1_BASE_ADDRESS, 1, &(img_gpio->ops));
+
 	mtd = new_spi_nand(&spfi->ops);
 	virtual_dev = new_spi_gpt("RW_GPT", new_mtd_stream(mtd), NULL);
 	list_insert_after(&virtual_dev->block_ctrlr.list_node,

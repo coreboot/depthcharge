@@ -208,7 +208,10 @@ static int spim_io(SpiOps *spi_ops, void *din, const void *dout,
 	return SPIM_OK;
 }
 
-static void cs_change(int cs_num, int enable) {
+static void cs_change(SpiOps *spi_ops, int enable) {
+	ImgSpi *bus = container_of(spi_ops, ImgSpi, ops);
+	GpioOps *gpio_ops = bus->img_gpio;
+	int cs_num = bus->cs;
 
 	if (IMG_PLATFORM_ID() != IMG_PLATFORM_ID_SILICON) {
 		/*
@@ -223,9 +226,9 @@ static void cs_change(int cs_num, int enable) {
 			printf("%s: Error: Unsuppored control of CS line.\n",
 				__func__);
 		}
-	} /* else {
-		TODO: add GPIO control for CS line
-	} */
+	} else {
+		gpio_ops->set(gpio_ops, !((unsigned int)enable));
+	}
 }
 
 
@@ -273,7 +276,7 @@ static int spi_claim_bus(SpiOps *spi_ops)
 	bus->initialised = IMG_TRUE;
 
 	/* Assert CS */
-	cs_change(bus->cs, 1);
+	cs_change(spi_ops, 1);
 
 	return SPIM_OK;
 }
@@ -292,7 +295,7 @@ static int spi_release_bus(SpiOps *spi_ops)
 	bus->initialised = IMG_FALSE;
 
 	/* De-assert CS */
-	cs_change(bus->cs, 0);
+	cs_change(spi_ops, 0);
 	/* Soft reset peripheral internals */
 	write32(SPIM_SOFT_RESET_MASK, bus->base +
 		SPFI_CONTROL_REG_OFFSET);
@@ -340,7 +343,8 @@ static int spi_xfer(SpiOps *spi_ops, void *din, const void *dout,
 }
 
 /* Initialize SPI slave */
-ImgSpi *new_imgtec_spi(uintptr_t reg_addr, unsigned int cs)
+ImgSpi *new_imgtec_spi(uintptr_t reg_addr, unsigned int cs,
+					GpioOps *img_gpio)
 {
 	ImgSpi *bus = NULL;
 	struct spim_device_parameters *device_parameters;
@@ -365,6 +369,8 @@ ImgSpi *new_imgtec_spi(uintptr_t reg_addr, unsigned int cs)
 	bus->ops.start = &spi_claim_bus;
 	bus->ops.stop = &spi_release_bus;
 	bus->ops.transfer = &spi_xfer;
+
+	bus->img_gpio = img_gpio;
 
 	return bus;
 }

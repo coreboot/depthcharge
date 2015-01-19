@@ -17,6 +17,7 @@
 #define __DRIVERS_BUS_SPI_IMGTEC_H__
 
 #include "drivers/bus/spi/spi.h"
+#include "drivers/gpio/gpio.h"
 #include <arch/types.h>
 
 /* SPIM initialisation function return value.*/
@@ -126,8 +127,11 @@ typedef struct ImgSpi {
 	unsigned int cs;
 	/* Boolean property that is TRUE if API has been initialised */
 	int initialised;
+	/* GPIO instance */
+	GpioOps *img_gpio;
 } ImgSpi;
 
-ImgSpi *new_imgtec_spi(uintptr_t reg_addr, unsigned int cs);
+ImgSpi *new_imgtec_spi(uintptr_t reg_addr, unsigned int cs,
+					GpioOps *img_gpio);
 
 #endif /* __DRIVERS_BUS_SPI_IMGTEC_H__ */
