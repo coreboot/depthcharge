@@ -82,6 +82,9 @@ endif
 if BOARD = "rambi"
 source src/board/rambi/Kconfig
 endif
+if BOARD = "rikku"
+source src/board/rikku/Kconfig
+endif
 if BOARD = "rush"
 source src/board/rush/Kconfig
 endif
