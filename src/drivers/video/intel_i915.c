@@ -27,59 +27,22 @@
 #include "drivers/video/intel_i915.h"
 
 enum {
-	/* Panel Power Control */
-	PP_CONTROL_REG               = 0xc7204,
-	PP_CONTROL_PANEL_UNLOCK_MASK = 0xffff0000,
-	PP_CONTROL_PANEL_UNLOCK_REGS = 0xabcd0000,
-	PP_CONTROL_POWER_TARGET_ON   = (1 << 0),
-	PP_CONTROL_PANEL_POWER_RESET = (1 << 1),
-	PP_CONTROL_EDP_BLC_ENABLE    = (1 << 2),
-	PP_CONTROL_EDP_FORCE_VDD     = (1 << 3),
-
-	/* Panel Power Off Delays */
-	PP_OFF_DELAYS_REG            = 0xc720c,
-	PP_OFF_DELAYS_BL_OFF_MASK    = 0x1fff,
+	/* Backlight control */
+	BLC_PCH_PWM_CTL1   = 0xc8250,
+	BLC_PCH_PWM_ENABLE = (1 << 31),
 };
 
 static uintptr_t reg_base;
 
 int intel_i915_display_stop(void)
 {
-	uint32_t pp_ctrl, bl_off_delay;
+	uint32_t blc = readl(reg_base + BLC_PCH_PWM_CTL1);
 
-	pp_ctrl = readl(reg_base + PP_CONTROL_REG);
-
-	/* Check if backlight is enabled */
-	if (!(pp_ctrl & PP_CONTROL_EDP_BLC_ENABLE))
-		return 0;
-
-	/* Enable writes to this register */
-	pp_ctrl &= ~PP_CONTROL_PANEL_UNLOCK_MASK;
-	pp_ctrl |= PP_CONTROL_PANEL_UNLOCK_REGS;
-
-	/* Switch off panel power and force VDD */
-	pp_ctrl &= ~PP_CONTROL_EDP_BLC_ENABLE;
-
-	writel(pp_ctrl, reg_base + PP_CONTROL_REG);
-	readl(reg_base + PP_CONTROL_REG);
-
-	/* Read backlight off delay in 100us units */
-	bl_off_delay = readl(reg_base + PP_OFF_DELAYS_REG);
-	bl_off_delay &= PP_OFF_DELAYS_BL_OFF_MASK;
-	bl_off_delay *= 100;
-
-	/* Wait for backlight to turn off */
-	udelay(bl_off_delay);
-
-	/* Switch off panel power and force VDD */
-	pp_ctrl &= ~PP_CONTROL_POWER_TARGET_ON;
-	pp_ctrl &= ~PP_CONTROL_PANEL_POWER_RESET;
-	pp_ctrl &= ~PP_CONTROL_EDP_FORCE_VDD;
-
-	writel(pp_ctrl, reg_base + PP_CONTROL_REG);
-	readl(reg_base + PP_CONTROL_REG);
-
-	printf("Panel turned off\n");
+	/* Turn off backlight if enabled */
+	if (blc & BLC_PCH_PWM_ENABLE) {
+		blc &= ~BLC_PCH_PWM_ENABLE;
+		writel(blc, reg_base + BLC_PCH_PWM_CTL1);
+	}
 
 	return 0;
 }
