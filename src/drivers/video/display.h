@@ -25,11 +25,11 @@
 
 typedef struct DisplayOps {
 	/* Perform any work required for initializing the display. */
-	int (*init)(void);
+	int (*init)(struct DisplayOps *me);
 	/* Update the backlight according to the enable parameter. */
-	int (*backlight_update)(uint8_t enable);
+	int (*backlight_update)(struct DisplayOps *me, uint8_t enable);
 	/* Stop the display as kernel boot is taking place. */
-	int (*stop)(void);
+	int (*stop)(struct DisplayOps *me);
 } DisplayOps;
 
 int display_init(void);

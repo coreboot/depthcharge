@@ -31,7 +31,7 @@
 static uint32_t *vop0_sys_ctrl = (uint32_t *)0xff930008;
 static uint32_t *vop1_sys_ctrl = (uint32_t *)0xff940008;
 
-static int rockchip_display_stop(void)
+static int rockchip_display_stop(DisplayOps *me)
 {
 	/* set vop0 to standby */
 	writel(RK_SETBITS(1 << VOP_STANDBY_EN), vop0_sys_ctrl);

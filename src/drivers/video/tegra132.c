@@ -25,7 +25,7 @@
 static void * const winbuf_t_start_addr = (void *)(uintptr_t)0x54202000;
 static void * const win_t_win_options = (void *)(uintptr_t)0x54201c00;
 
-int tegra132_display_init(void)
+int tegra132_display_init(DisplayOps *me)
 {
 	uintptr_t phys_addr = lib_sysinfo.framebuffer->physical_address;
 
@@ -36,7 +36,7 @@ int tegra132_display_init(void)
 	return 0;
 }
 
-int tegra132_display_stop(void)
+int tegra132_display_stop(DisplayOps *me)
 {
 	/* Disable the T Window. */
 	writel(readl(win_t_win_options) & ~WIN_ENABLE, win_t_win_options);

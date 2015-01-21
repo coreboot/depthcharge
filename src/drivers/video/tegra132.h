@@ -23,8 +23,10 @@
 #ifndef __DRIVERS_VIDEO_TEGRA132_H__
 #define __DRIVERS_VIDEO_TEGRA132_H__
 
+#include "drivers/video/display.h"
+
 #define WIN_ENABLE	(1 << 30)
 
-int tegra132_display_init(void);
-int tegra132_display_stop(void);
+int tegra132_display_init(DisplayOps *me);
+int tegra132_display_stop(DisplayOps *me);
 #endif /* __DRIVERS_VIDEO_TEGRA132_H__ */

@@ -34,7 +34,7 @@ enum {
 
 static uintptr_t reg_base;
 
-int intel_i915_display_stop(void)
+static int intel_i915_display_stop(DisplayOps *me)
 {
 	uint32_t blc = readl(reg_base + BLC_PCH_PWM_CTL1);
 

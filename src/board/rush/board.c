@@ -208,7 +208,7 @@ static int board_setup(void)
 INIT_FUNC(board_setup);
 
 /* Turn on or turn off the backlight */
-static int rush_backlight_update(uint8_t enable)
+static int rush_backlight_update(DisplayOps *me, uint8_t enable)
 {
 	TegraGpio *backlight_vdd_enable = new_tegra_gpio_output(GPIO(P, 2));
 	TegraGpio *backlight_enable = new_tegra_gpio_output(GPIO(H, 2));
