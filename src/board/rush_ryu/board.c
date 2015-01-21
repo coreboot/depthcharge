@@ -151,7 +151,7 @@ static TegraI2c *get_backlight_i2c(void)
 }
 
 /* Turn on or turn off the backlight */
-static int ryu_backlight_update(uint8_t enable)
+static int ryu_backlight_update(DisplayOps *me, uint8_t enable)
 {
 	struct bl_reg {
 		uint8_t reg;
@@ -197,7 +197,7 @@ static int ryu_backlight_update(uint8_t enable)
 static void * const winbuf_t_start_addr = (void *)(uintptr_t)0x54202000;
 static void * const win_t_win_options = (void *)(uintptr_t)0x54201c00;
 
-static int ryu_display_init(void)
+static int ryu_display_init(DisplayOps *me)
 {
 	uintptr_t phys_addr = lib_sysinfo.framebuffer->physical_address;
 
@@ -208,7 +208,7 @@ static int ryu_display_init(void)
 	return 0;
 }
 
-static int ryu_display_stop(void)
+static int ryu_display_stop(DisplayOps *me)
 {
 	/* Disable the T Window. */
 	writel(readl(win_t_win_options) & ~WIN_ENABLE, win_t_win_options);
