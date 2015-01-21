@@ -18,6 +18,7 @@
 depthcharge-$(CONFIG_DRIVER_SOUND_RT5677) += rt5677.c
 depthcharge-$(CONFIG_DRIVER_SOUND_HDA) += hda_codec.c
 depthcharge-$(CONFIG_DRIVER_SOUND_I2S) += i2s.c
+depthcharge-$(CONFIG_DRIVER_SOUND_IPQ806X) += ipq806x.c
 depthcharge-$(CONFIG_DRIVER_SOUND_MAX98090) += max98090.c
 depthcharge-$(CONFIG_DRIVER_SOUND_MAX98095) += max98095.c
 depthcharge-$(CONFIG_DRIVER_SOUND_PCAT_BEEP) += pcat_beep.c

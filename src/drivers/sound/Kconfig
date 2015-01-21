@@ -22,6 +22,10 @@ config DRIVER_SOUND_I2S
 	bool "Generic I2S sound support"
 	default n
 
+config DRIVER_SOUND_IPQ806X
+	bool "IPQ806x sound driver"
+	default n
+
 config DRIVER_SOUND_MAX98090
 	bool "MAX98090 codec driver"
 	default n
