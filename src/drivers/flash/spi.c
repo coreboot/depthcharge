@@ -265,7 +265,7 @@ SpiFlash *new_spi_flash(SpiOps *spi)
 	uint32_t sector_size = lib_sysinfo.spi_flash.sector_size;
 	uint8_t erase_cmd = lib_sysinfo.spi_flash.erase_cmd;
 
-	SpiFlash *flash = xmalloc(sizeof(*flash) + rom_size);
+	SpiFlash *flash = xmalloc(sizeof(*flash));
 	memset(flash, 0, sizeof(*flash));
 	flash->ops.read = spi_flash_read;
 	flash->ops.write = spi_flash_write;
@@ -274,5 +274,8 @@ SpiFlash *new_spi_flash(SpiOps *spi)
 	flash->spi = spi;
 	flash->rom_size = rom_size;
 	flash->erase_cmd = erase_cmd;
+	/* Provide sufficient alignment on the cache buffer so that the
+	 * underlying SPI controllers can perform optimal DMA transfers. */
+	flash->cache = xmemalign(1*KiB, rom_size);
 	return flash;
 }
