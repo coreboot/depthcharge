@@ -95,8 +95,11 @@ static int board_setup(void)
 
 	ramoops_buffer(0x31f00000, 0x100000, 0x20000);
 
-	if (lib_sysinfo.framebuffer != NULL)
-		display_set_ops(new_rockchip_display());
+	if (lib_sysinfo.framebuffer != NULL) {
+		GpioOps *backlight_gpio = sysinfo_lookup_gpio("backlight", 1,
+			new_rk_gpio_output_from_coreboot);
+		display_set_ops(new_rockchip_display(backlight_gpio));
+	}
 
 	return 0;
 }

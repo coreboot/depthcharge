@@ -20,7 +20,13 @@
 #include <arch/io.h>
 #include <libpayload.h>
 
-#include "drivers/video/display.h"
+#include "base/container_of.h"
+#include "drivers/video/rockchip.h"
+
+typedef struct {
+	DisplayOps ops;
+	GpioOps *backlight_gpio;
+} RkDisplay;
 
 #define RK_CLRSETBITS(clr, set) ((((clr) | (set)) << 16) | set)
 #define RK_SETBITS(set) RK_CLRSETBITS(0, set)
@@ -30,6 +36,13 @@
 
 static uint32_t *vop0_sys_ctrl = (uint32_t *)0xff930008;
 static uint32_t *vop1_sys_ctrl = (uint32_t *)0xff940008;
+
+static int rockchip_backlight_update(DisplayOps *me, uint8_t enable)
+{
+	RkDisplay *display = container_of(me, RkDisplay, ops);
+	display->backlight_gpio->set(display->backlight_gpio, enable);
+	return 0;
+}
 
 static int rockchip_display_stop(DisplayOps *me)
 {
@@ -45,11 +58,14 @@ static int rockchip_display_stop(DisplayOps *me)
 	return 0;
 }
 
-static DisplayOps rockchip_display_ops = {
-	.stop = &rockchip_display_stop,
-};
-
-DisplayOps *new_rockchip_display(void)
+DisplayOps *new_rockchip_display(GpioOps *backlight)
 {
-	return &rockchip_display_ops;
+	RkDisplay *display = xzalloc(sizeof(*display));
+	display->ops.stop = rockchip_display_stop;
+	if (backlight) {
+		display->backlight_gpio = backlight;
+		display->ops.backlight_update = rockchip_backlight_update;
+	}
+
+	return &display->ops;
 }
