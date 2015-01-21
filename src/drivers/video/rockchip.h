@@ -20,6 +20,9 @@
 #ifndef __RK3288_VIDEO_H
 #define __RK3288_VIDEO_H
 
-DisplayOps *new_rockchip_display(void);
+#include "drivers/gpio/gpio.h"
+#include "drivers/video/display.h"
+
+DisplayOps *new_rockchip_display(GpioOps *backlight);
 
 #endif
