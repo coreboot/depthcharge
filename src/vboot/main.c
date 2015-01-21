@@ -29,11 +29,12 @@
 #include "config.h"
 #include "debug/cli/common.h"
 #include "drivers/input/input.h"
+#include "vboot/fastboot.h"
 #include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/vboot_handoff.h"
 
-static int vboot_init_handoff(void)
+static int vboot_init_handoff(int *is_recovery)
 {
 	struct vboot_handoff *vboot_handoff;
 
@@ -53,11 +54,18 @@ static int vboot_init_handoff(void)
 	}
 
 	vboot_handoff = lib_sysinfo.vboot_handoff;
+
+	*is_recovery = ((vboot_handoff->init_params.out_flags
+			 & VB_INIT_OUT_ENABLE_RECOVERY) ==
+			VB_INIT_OUT_ENABLE_RECOVERY);
+
 	return vboot_do_init_out_flags(vboot_handoff->init_params.out_flags);
 }
 
 int main(void)
 {
+	int is_recovery = 0;
+
 	// Let the world know we're alive.
 	sign_of_life(0xaa);
 
@@ -81,8 +89,10 @@ int main(void)
 		console_loop();
 
 	// Set up the common param structure, not clearing shared data.
-	if (vboot_init_handoff())
+	if (vboot_init_handoff(&is_recovery))
 		halt();
+
+	vboot_try_fastboot(is_recovery);
 
 	timestamp_add_now(TS_VB_SELECT_AND_LOAD_KERNEL);
 
