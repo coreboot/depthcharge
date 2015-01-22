@@ -54,11 +54,6 @@ endif
 LIBPAYLOAD_DIR ?= ../libpayload/install/libpayload
 LZMA := lzma
 
-LDSCRIPT := $(src)/src/image/depthcharge.ldscript
-
-
-
-
 ifeq ($(strip $(HAVE_DOTCONFIG)),)
 
 all: help
@@ -82,6 +77,15 @@ endif
 ifeq ($(CONFIG_ARCH_MIPS),y)
 ARCH = mips
 ARCH_DIR = mips
+endif
+
+ifeq ($(CONFIG_LDSCRIPT_ARCH),y)
+LDSCRIPT := $(src)/src/arch/$(ARCH_DIR)/depthcharge.ldscript
+ifeq ("$(wildcard $(LDSCRIPT))","")
+$(error $(LDSCRIPT): no such file.)
+endif
+else
+LDSCRIPT := $(src)/src/image/depthcharge.ldscript
 endif
 
 ARCH_TO_TOOLCHAIN_x86    := i386
