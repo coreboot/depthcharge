@@ -3,7 +3,7 @@
 / {
 	model = "Google Veyron_Speedy";
 	config {
-		hwid = "SPEEDY TEST A-A 9244";
+		hwid = "SPEEDY TEST A-A 8421";
 	};
 	chromeos-config {
 		/* Enable factory-friendly features. */
