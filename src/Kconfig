@@ -52,6 +52,7 @@ source src/base/Kconfig
 source src/board/Kconfig
 source src/boot/Kconfig
 source src/debug/Kconfig
+source src/fastboot/Kconfig
 
 menu "UIP network stack"
 source src/net/Kconfig
