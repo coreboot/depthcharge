@@ -61,6 +61,9 @@ endif
 if BOARD = "link"
 source src/board/link/Kconfig
 endif
+if BOARD = "lulu"
+source src/board/lulu/Kconfig
+endif
 if BOARD = "nyan"
 source src/board/nyan/Kconfig
 endif
