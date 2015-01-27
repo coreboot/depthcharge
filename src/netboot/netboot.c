@@ -214,7 +214,12 @@ void netboot(uip_ipaddr_t *tftp_ip, char *bootfile, char *argsfile, char *args)
 	printf("The command line is: %s\n", cmd_line);
 
 	// Boot.
-	boot(payload, cmd_line, NULL, NULL);
+	struct boot_info bi = {
+		.kernel = payload,
+		.cmd_line = cmd_line,
+	};
+
+	boot(&bi);
 }
 
 int main(void) __attribute__((weak, alias("netboot_entry")));

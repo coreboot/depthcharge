@@ -28,12 +28,13 @@
 #include "config.h"
 #include "vboot/boot.h"
 
-int boot(void *image, char *cmd_line, void *params, void *loader)
+int boot(struct boot_info *bi)
 {
 	DeviceTree *tree;
 	void *kernel;
 	uint32_t kernel_size;
-	if (fit_load(image, cmd_line, &kernel, &kernel_size, &tree))
+
+	if (fit_load(bi->kernel, bi->cmd_line, &kernel, &kernel_size, &tree))
 		return 1;
 
 	if (!tree) {

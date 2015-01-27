@@ -24,7 +24,7 @@
 
 #include "vboot/boot.h"
 
-int boot(void *kernel, char *cmd_line, void *params, void *loader)
+int boot(struct boot_info *bi)
 {
 	return 0;
 }

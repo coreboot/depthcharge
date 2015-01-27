@@ -23,8 +23,15 @@
 #ifndef __BOOT_BOOT_H__
 #define __BOOT_BOOT_H__
 
+struct boot_info {
+	void *kernel;
+	char *cmd_line;
+	void *params;
+	void *loader;
+};
+
 // To be implemented by each boot method.
-int boot(void *kernel, char *cmd_line, void *params, void *loader);
+int boot(struct boot_info *bi);
 
 // Alternative boot method, to try is the main method failed.
 int legacy_boot(void *kernel, const char *cmd_line_buf);

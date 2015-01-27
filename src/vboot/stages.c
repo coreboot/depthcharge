@@ -219,20 +219,28 @@ int vboot_select_and_load_kernel(void)
 
 	timestamp_add_now(TS_CROSSYSTEM_DATA);
 
-	// The scripts that packaged the kernel assumed its was going to end
-	// up at 1MB which is frequently not right. The address of the
-	// "loader", which isn't actually used any more, is set based on that
-	// assumption. We have to subtract the 1MB offset from it, and then
-	// add in the actual load address to figure out where it actually is,
-	// or would be if it existed.
-	void *kernel = kparams.kernel_buffer;
-	void *loader = (uint8_t *)kernel +
+	struct boot_info bi;
+
+	memset(&bi, 0, sizeof(bi));
+
+	/*
+	 * The scripts that packaged the kernel assumed its was going to
+	 * end up at 1MB which is frequently not right. The address of
+	 * the "loader", which isn't actually used any more, is set
+	 * based on that assumption. We have to subtract the 1MB offset
+	 * from it, and then add in the actual load address to figure
+	 * out where it actually is, or would be if it existed.
+	 */
+	bi.kernel = kparams.kernel_buffer;
+
+	bi.loader = (uint8_t *)bi.kernel +
 		(kparams.bootloader_address - 0x100000);
-	void *params = (uint8_t *)loader - CrosParamSize;
-	void *orig_cmd_line = (uint8_t *)params - CmdLineSize;
+	bi.params = (uint8_t *)bi.loader - CrosParamSize;
+	bi.cmd_line = (char *)bi.params - CmdLineSize;
+
 	BlockDev *bdev = (BlockDev *)kparams.disk_handle;
 
-	if (commandline_subst((char *)orig_cmd_line, 0,
+	if (commandline_subst(bi.cmd_line, 0,
 			      kparams.partition_number + 1,
 			      kparams.partition_guid,
 			      cmd_line_buf, sizeof(cmd_line_buf),
@@ -242,14 +250,16 @@ int vboot_select_and_load_kernel(void)
 	if (crossystem_setup())
 		return 1;
 
-	boot(kernel, cmd_line_buf, params, loader);
+	bi.cmd_line = cmd_line_buf;
+
+	boot(&bi);
 
 	/*
 	 * If the boot succeeded we'd never end up here. If configured, let's
 	 * try booting in alternative way.
 	 */
 	if (CONFIG_KERNEL_LEGACY)
-		legacy_boot(kernel, cmd_line_buf);
+		legacy_boot(bi.kernel, cmd_line_buf);
 
 	return 1;
 }
