@@ -43,6 +43,7 @@ typedef enum {
 } backend_ret_t;
 
 #define MAX_NAME_LENGTH	64
+#define MAX_FS_LENGTH		4
 
 struct bdev_info {
 	/* Name of block device */
@@ -56,6 +57,8 @@ struct bdev_info {
 struct part_info {
 	/* Name of partition */
 	char part_name[MAX_NAME_LENGTH];
+	/* Filesystem type of partition */
+	char part_fs_type[MAX_FS_LENGTH];
 	/* Name of block device on which the partition exists */
 	char *bdev_name;
 	/* Boolean - Is the partition GPT dependent? 1-yes, 0-no */
@@ -83,6 +86,9 @@ extern struct part_info fb_part_list[];
 backend_ret_t backend_erase_partition(const char *name);
 backend_ret_t backend_write_partition(const char *name, void *image_addr,
 				      size_t image_size);
+uint64_t backend_get_part_size_bytes(const char *name);
+size_t backend_get_part_fs_type(const char *name, char *output,
+				size_t len);
 
 static inline int fb_fill_bdev_list(int index, BlockDevCtrlr *bdev_ctrlr)
 {
@@ -93,10 +99,10 @@ static inline int fb_fill_bdev_list(int index, BlockDevCtrlr *bdev_ctrlr)
 	return 0;
 }
 
-#define PART_GPT(part_name, bdev_name, g, inst)		\
-	{part_name, bdev_name, 1, .guid = g, .instance = inst}
-#define PART_NONGPT(part_name, bdev_name, start, len)		\
-	{part_name, bdev_name, 0, .base = start, .size = len}
+#define PART_GPT(part_name, part_fs, bdev_name, g, inst)		\
+	{part_name, part_fs, bdev_name, 1, .guid = g, .instance = inst}
+#define PART_NONGPT(part_name, part_fs, bdev_name, start, len)		\
+	{part_name, part_fs, bdev_name, 0, .base = start, .size = len}
 
 #define BDEV_NAME(bdev)	(fb_bdev_list[bdev].name)
 #define GPT_TYPE(type)		GPT_ENT_TYPE_##type

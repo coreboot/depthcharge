@@ -554,3 +554,40 @@ backend_ret_t backend_erase_partition(const char *name)
 
 	return BE_SUCCESS;
 }
+
+uint64_t backend_get_part_size_bytes(const char *name)
+{
+	uint64_t ret = 0;
+	struct image_part_details img;
+
+	if (backend_do_init() != BE_SUCCESS)
+		return ret;
+
+	if (fill_img_part_info(&img, name) != BE_SUCCESS)
+		return ret;
+
+	ret = (uint64_t)img.part_size_lba * img.bdev_entry->bdev->block_size;
+
+	clean_img_part_info(&img);
+
+	return ret;
+}
+
+size_t backend_get_part_fs_type(const char *name, char *output,
+				size_t len)
+{
+	struct part_info *part_entry;
+
+	if (backend_do_init() != BE_SUCCESS)
+		return 0;
+
+	/* Get partition info from board-specific partition table */
+	part_entry = get_part_info(name);
+	if (part_entry == NULL)
+		return 0;
+
+	len = MIN(len, strlen(part_entry->part_fs_type));
+	strncpy(output, part_entry->part_fs_type, len);
+
+	return len;
+}
