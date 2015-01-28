@@ -106,6 +106,15 @@ int __attribute__((weak)) get_board_var(fb_getvar_t var, const char *input,
 	return -1;
 }
 
+static char *get_name(const char *input, size_t len)
+{
+	char *partition = xmalloc(len + 1);
+	memcpy(partition, input, len);
+	partition[len] = '\0';
+
+	return partition;
+}
+
 static void fb_read_var(fb_getvar_t var, const char *input, size_t input_len)
 {
 	char str[MAX_COMMAND_LENGTH];
@@ -170,11 +179,9 @@ static fb_ret_type fb_getvar(const char *input, size_t len)
 		char *name = xmalloc(len+1);
 		memcpy(name, input, len);
 		name[len] = '\0';
-		FB_LOG("%s\n", name);
 		free(name);
 		fb_send_fail("nonexistent");
 	} else {
-		FB_LOG("%s\n",getvar_table[match_index].name);
 		fb_read_var(getvar_table[match_index].var, input + match_len,
 			    len - match_len);
 	}
@@ -214,7 +221,6 @@ static fb_ret_type fb_download(const char *input, size_t len)
 
 	/* num of bytes are passed in hex(0x) format */
 	size_t bytes = strtoul(str, NULL, 16);
-	FB_LOG("%zx\n", bytes);
 
 	alloc_image_space(bytes);
 
@@ -233,15 +239,6 @@ static fb_ret_type fb_verify(const char *input, size_t len)
 {
 	fb_send_fail("unsupported command");
 	return FB_SUCCESS;
-}
-
-static char *get_name(const char *input, size_t len)
-{
-	char *partition = xmalloc(len + 1);
-	memcpy(partition, input, len);
-	partition[len] = '\0';
-
-	return partition;
 }
 
 static fb_ret_type fb_erase(const char *input, size_t len)
@@ -386,8 +383,6 @@ static fb_ret_type fastboot_proto_handler(const char *input, size_t len)
 		return FB_SUCCESS;
 	}
 
-	FB_LOG("Received command: %s", fb_func_table[match_index].name);
-
 	return fb_func_table[match_index].fn(input + match_len,
 					     len - match_len);
 }
@@ -414,6 +409,20 @@ static fb_ret_type fastboot_recv_data(void)
 	fb_send_okay("");
 
 	return FB_SUCCESS;
+}
+
+static void print_input(const char *pkt, size_t len)
+{
+#ifdef FASTBOOT_DEBUG
+	int i;
+
+	printf("Received:");
+
+	for (i = 0; i < len; i++)
+		printf("%c", pkt[i]);
+
+	printf("\n");
+#endif
 }
 
 /*
@@ -445,6 +454,8 @@ fb_ret_type device_mode_enter(void)
 
 		/* Receive a packet from the host */
 		len = usb_gadget_recv(pkt, MAX_COMMAND_LENGTH);
+
+		print_input(pkt, len);
 
 		/* Process the packet as per fastboot protocol */
 		ret = fastboot_proto_handler(pkt, len);
