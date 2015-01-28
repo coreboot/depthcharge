@@ -19,6 +19,7 @@ subdirs-y := callbacks crossystem stages util
 
 depthcharge-y += stages.c
 depthcharge-$(CONFIG_FASTBOOT_MODE) += fastboot.c
+depthcharge-y += bootimg.c
 
 # Where "main" lives.
 readonly-y += ro_main.c
