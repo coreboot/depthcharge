@@ -32,6 +32,8 @@ typedef enum {
 	FB_SERIAL_NO,
 	FB_SECURE,
 	FB_DWNLD_SIZE,
+	FB_PART_TYPE,
+	FB_PART_SIZE,
 } fb_getvar_t;
 
 typedef enum fb_ret {

@@ -123,6 +123,48 @@ static void fb_read_var(fb_getvar_t var, const char *input, size_t input_len)
 	case FB_VERSION:
 		fb_send_okay("0.3");
 		break;
+	case FB_PART_SIZE: {
+		if (input_len == 0) {
+			fb_send_fail("invalid partition");
+			return;
+		}
+
+		char *part_name = get_name(input, input_len);
+		unsigned long long part_size;
+
+		part_size = backend_get_part_size_bytes(part_name);
+		free(part_name);
+
+		if (part_size == 0) {
+			fb_send_fail("invalid partition");
+			return;
+		}
+
+		snprintf(str, MAX_COMMAND_LENGTH, "0x%llx", part_size);
+		fb_send_okay(str);
+		break;
+	}
+	case FB_PART_TYPE: {
+		if (input_len == 0) {
+			fb_send_fail("invalid partition");
+			return;
+		}
+
+		char *part_name = get_name(input, input_len);
+		size_t str_len;
+
+		str_len = backend_get_part_fs_type(part_name, str,
+						   MAX_COMMAND_LENGTH);
+		free(part_name);
+
+		if (str_len == 0) {
+			fb_send_fail("invalid partition");
+			return;
+		}
+
+		fb_send_okay(str);
+		break;
+	}
 	default:
 		goto board_read;
 	}
@@ -155,6 +197,8 @@ static fb_ret_type fb_getvar(const char *input, size_t len)
 		{"serialno", FB_SERIAL_NO},
 		{"secure", FB_SECURE},
 		{"max-download-size", FB_DWNLD_SIZE},
+		{"partition-type:", FB_PART_TYPE},
+		{"partition-size:", FB_PART_SIZE},
 	};
 
 	int i;
