@@ -29,6 +29,7 @@
 #include "drivers/gpio/gpio.h"
 #include "vboot/util/flag.h"
 #include "drivers/gpio/imgtec_pistachio.h"
+#include "boot/fit.h"
 
 #define IMG_SPIM0_BASE_ADDRESS	0xB8100F00
 #define IMG_SPIM1_BASE_ADDRESS	0xB8101000
@@ -76,6 +77,7 @@ static int board_setup(void)
 	virtual_dev = new_spi_gpt("RW_GPT", new_mtd_stream(mtd), NULL);
 	list_insert_after(&virtual_dev->block_ctrlr.list_node,
 				&fixed_block_dev_controllers);
+	fit_set_compat("img,pistachio-bub");
 	return 0;
 }
 
