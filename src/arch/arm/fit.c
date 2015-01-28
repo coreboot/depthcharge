@@ -42,6 +42,9 @@ int boot(struct boot_info *bi)
 		return 1;
 	}
 
+	if (bi->ramdisk_addr && bi->ramdisk_size)
+		fit_add_ramdisk(tree, bi->ramdisk_addr, bi->ramdisk_size);
+
 	if (dt_apply_fixups(tree))
 		return 1;
 

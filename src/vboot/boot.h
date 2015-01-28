@@ -28,6 +28,8 @@ struct boot_info {
 	char *cmd_line;
 	void *params;
 	void *loader;
+	void *ramdisk_addr;
+	size_t ramdisk_size;
 };
 
 // To be implemented by each boot method.

@@ -206,17 +206,22 @@ static void update_chosen(DeviceTree *tree, char *cmd_line)
 	dt_add_string_prop(node, "bootargs", cmd_line);
 }
 
-static void update_ramdisk(DeviceTree *tree, FitImageNode *ramdisk_node)
+void fit_add_ramdisk(DeviceTree *tree, void *ramdisk_addr, size_t ramdisk_size)
 {
 	const char *path[] = { "chosen", NULL };
 	DeviceTreeNode *node = dt_find_node(tree->root, path, NULL, NULL, 1);
 
 	/* Warning: this assumes the ramdisk is currently located below 4GiB. */
-	u32 start = (uintptr_t)ramdisk_node->data;
-	u32 end = start + ramdisk_node->size;
+	u32 start = (uintptr_t)ramdisk_addr;
+	u32 end = start + ramdisk_size;
 
 	dt_add_u32_prop(node, "linux,initrd-start", start);
 	dt_add_u32_prop(node, "linux,initrd-end", end);
+}
+
+static void update_ramdisk(DeviceTree *tree, FitImageNode *ramdisk_node)
+{
+	fit_add_ramdisk(tree, ramdisk_node->data, ramdisk_node->size);
 }
 
 static void update_reserve_map(uint64_t start, uint64_t end, void *data)
