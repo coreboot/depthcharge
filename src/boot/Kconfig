@@ -26,7 +26,7 @@ choice
 
 	config KERNEL_FIT
 	bool "FIT"
-	depends on ARCH_ARM
+	default n
 
 	config KERNEL_DUMMY
 	bool "dummy"
