@@ -591,3 +591,21 @@ size_t backend_get_part_fs_type(const char *name, char *output,
 
 	return len;
 }
+
+uint64_t backend_get_bdev_size_bytes(const char *name)
+{
+	if (backend_do_init() != BE_SUCCESS)
+		return 0;
+
+	struct bdev_info *bdev_entry;
+
+	/* Get bdev info from board-specific bdev table */
+	bdev_entry = get_bdev_info(name);
+	if (bdev_entry == NULL)
+		return 0;
+
+	BlockDev *bdev = bdev_entry->bdev;
+	uint64_t size = (uint64_t)bdev->block_count * bdev->block_size;
+
+	return size;
+}
