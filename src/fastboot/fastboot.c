@@ -165,6 +165,26 @@ static void fb_read_var(fb_getvar_t var, const char *input, size_t input_len)
 		fb_send_okay(str);
 		break;
 	}
+	case FB_BDEV_SIZE: {
+		if (input_len == 0) {
+			fb_send_fail("invalid bdev");
+			return;
+		}
+
+		char *bdev_name = get_name(input, input_len);
+		unsigned long long bdev_size;
+		bdev_size = backend_get_bdev_size_bytes(bdev_name);
+		free(bdev_name);
+
+		if (bdev_size == 0) {
+			fb_send_fail("invalid bdev");
+			return;
+		}
+
+		snprintf(str, MAX_COMMAND_LENGTH, "%llu", bdev_size);
+		fb_send_okay(str);
+		break;
+	}
 	default:
 		goto board_read;
 	}
@@ -199,6 +219,11 @@ static fb_ret_type fb_getvar(const char *input, size_t len)
 		{"max-download-size", FB_DWNLD_SIZE},
 		{"partition-type:", FB_PART_TYPE},
 		{"partition-size:", FB_PART_SIZE},
+		/*
+		 * OEM specific :
+		 * Spec says names starting with lowercase letter are reserved.
+		 */
+		{"Bdev-size:", FB_BDEV_SIZE},
 	};
 
 	int i;

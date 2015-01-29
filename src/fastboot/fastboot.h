@@ -34,6 +34,7 @@ typedef enum {
 	FB_DWNLD_SIZE,
 	FB_PART_TYPE,
 	FB_PART_SIZE,
+	FB_BDEV_SIZE,
 } fb_getvar_t;
 
 typedef enum fb_ret {
