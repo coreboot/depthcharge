@@ -25,9 +25,15 @@
 
 #include <stdint.h>
 
-int commandline_subst(const char *src, int devnum, int partnum, uint8_t *guid,
-		      char *dest, int dest_size, int external_gpt);
+struct commandline_info {
+	int devnum;
+	int partnum;
+	uint8_t *guid;
+	int external_gpt;
+};
 
+int commandline_subst(const char *src, char *dest, size_t dest_size,
+		      const struct commandline_info *info);
 
 /* Return a string with a trailing space to add to the command line or NULL. */
 const char *mainboard_commandline(void);

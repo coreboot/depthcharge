@@ -460,7 +460,10 @@ int fit_load(void *fit, char *cmd_line, void **kernel, uint32_t *kernel_size,
 			return 1;
 		}
 
-		update_chosen(*dt, cmd_line);
+		/* Update only if non-NULL cmd line */
+		if (cmd_line)
+			update_chosen(*dt, cmd_line);
+
 		update_memory(*dt);
 		if (to_boot->ramdisk_node)
 			update_ramdisk(*dt, to_boot->ramdisk_node);

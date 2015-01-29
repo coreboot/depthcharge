@@ -69,18 +69,17 @@ const char * __attribute__((weak)) mainboard_commandline(void)
 	return NULL;
 }
 
-int commandline_subst(const char *src, int devnum, int partnum, uint8_t *guid,
-		      char *dest, int dest_size, int external_gpt)
+int commandline_subst(const char *src, char *dest, size_t dest_size,
+		      const struct commandline_info *info)
 {
 	static const char cros_secure[] = "cros_secure ";
 	const int cros_secure_size = sizeof(cros_secure) - 1;
+	int devnum = info->devnum;
+	int partnum = info->partnum;
 
-	/* sanity check on inputs */
-	if (devnum < 0 || devnum > 25 ||
-	    partnum < 1 || partnum > 99 ||
-	    dest_size < 0 || dest_size > 10000) {
+	/* sanity check on dest size */
+	if (dest_size > 10000)
 		return 1;
-	}
 
 	/*
 	 * Condition "dst + X <= dst_end" checks if there is at least X bytes
@@ -130,6 +129,9 @@ int commandline_subst(const char *src, int devnum, int partnum, uint8_t *guid,
 			printf("update_cmdline: Input ended with '%%'\n");
 			return 1;
 		case 'D':
+			/* Sanity check */
+			if (devnum < 0 || devnum > 25)
+				return 1;
 			/*
 			 * TODO: Do we have any better way to know whether %D
 			 * is replaced by a letter or digits? So far, this is
@@ -145,20 +147,26 @@ int commandline_subst(const char *src, int devnum, int partnum, uint8_t *guid,
 			}
 			break;
 		case 'P':
+			/* Sanity check */
+			if (partnum < 1 || partnum > 99)
+				return 1;
 			CHECK_SPACE(3);
 			dest = itoa(dest, partnum);
 			break;
 		case 'U':
 			/* GUID replacement needs 36 bytes */
 			CHECK_SPACE(36 + 1);
-			dest = emit_guid(dest, guid);
+			dest = emit_guid(dest, info->guid);
 			break;
 		case 'R':
 			/*
 			 * If booting from NAND, /dev/ubiblock%P_0
 			 * If booting from disk, PARTUUID=%U/PARTNROFF=1
 			 */
-			if (external_gpt) {
+			if (info->external_gpt) {
+				/* Sanity check */
+				if (partnum < 1 || partnum > 99)
+					return 1;
 				char start[] = "/dev/ubiblock", end[] = "_0";
 				size_t start_size = sizeof(start) - 1,
 					end_size = sizeof(end) - 1;
@@ -176,7 +184,7 @@ int commandline_subst(const char *src, int devnum, int partnum, uint8_t *guid,
 				CHECK_SPACE(start_size + 36 + 1 + end_size);
 				memcpy(dest, start, start_size);
 				dest += start_size;
-				dest = emit_guid(dest, guid);
+				dest = emit_guid(dest, info->guid);
 				memcpy(dest, end, end_size);
 				dest += end_size;
 			}

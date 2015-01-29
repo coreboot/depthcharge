@@ -37,7 +37,7 @@
 #include "image/startrw.h"
 #include "image/symbols.h"
 #include "vboot/boot.h"
-#include "vboot/bootimg.h"
+#include "vboot/boot_policy.h"
 #include "vboot/stages.h"
 #include "vboot/crossystem/crossystem.h"
 #include "vboot/util/commonparams.h"
@@ -186,28 +186,8 @@ int vboot_select_firmware(void)
 	return 0;
 }
 
-/*
- * Flags field in vboot kernel preamble is defined as:
- * [31:2] - Reserved (for future use)
- * [1:0]  - Image type (0x0 = CrOS, 0x1 = Bootimg)
- */
-#define KERNEL_IMG_TYPE_MASK	(0x3)
-#define KERNEL_IMG_TYPE_SHIFT	(0x0)
-
-#define GET_KERNEL_IMG_TYPE(x)					\
-	(((x) >> KERNEL_IMG_TYPE_SHIFT) & KERNEL_IMG_TYPE_MASK)
-
-typedef enum {
-	KERNEL_IMAGE_CROS = 0 << KERNEL_IMG_TYPE_SHIFT,
-	KERNEL_IMAGE_BOOTIMG = 1 << KERNEL_IMG_TYPE_SHIFT,
-} kernel_img_type_t;
-
 int vboot_select_and_load_kernel(void)
 {
-	enum {
-		CmdLineSize = 4096,
-		CrosParamSize = 4096
-	};
 	static char cmd_line_buf[2 * CmdLineSize];
 
 	VbSelectAndLoadKernelParams kparams = {
@@ -240,38 +220,29 @@ int vboot_select_and_load_kernel(void)
 
 	memset(&bi, 0, sizeof(bi));
 
-	if (GET_KERNEL_IMG_TYPE(kparams.flags) == KERNEL_IMAGE_BOOTIMG) {
-		if (bootimg_get_info(&bi, kparams.kernel_buffer))
-			goto fail;
-	} else {
-		/*
-		 * The scripts that packaged the kernel assumed its was going to
-		 * end up at 1MB which is frequently not right. The address of
-		 * the "loader", which isn't actually used any more, is set
-		 * based on that assumption. We have to subtract the 1MB offset
-		 * from it, and then add in the actual load address to figure
-		 * out where it actually is, or would be if it existed.
-		 */
-		bi.kernel = kparams.kernel_buffer;
-		bi.loader = (uint8_t *)bi.kernel +
-			(kparams.bootloader_address - 0x100000);
-		bi.params = (uint8_t *)bi.loader - CrosParamSize;
-		bi.cmd_line = (char *)bi.params - CmdLineSize;
+	if (fill_boot_info(&bi, &kparams) == -1) {
+		printf("ERROR!!! Unable to parse boot info\n");
+		goto fail;
 	}
 
 	BlockDev *bdev = (BlockDev *)kparams.disk_handle;
 
-	if (commandline_subst((char *)bi.cmd_line, 0,
-			      kparams.partition_number + 1,
-			      kparams.partition_guid,
-			      cmd_line_buf, sizeof(cmd_line_buf),
-			      bdev->external_gpt))
-		return 1;
+	struct commandline_info info = {
+		.devnum = 0,
+		.partnum = kparams.partition_number + 1,
+		.guid = kparams.partition_guid,
+		.external_gpt = bdev->external_gpt,
+	};
+
+	if (bi.cmd_line) {
+		if (commandline_subst(bi.cmd_line, cmd_line_buf,
+				      sizeof(cmd_line_buf), &info))
+			return 1;
+		bi.cmd_line = cmd_line_buf;
+	}
 
 	if (crossystem_setup())
 		return 1;
-
-	bi.cmd_line = cmd_line_buf;
 
 	boot(&bi);
 
