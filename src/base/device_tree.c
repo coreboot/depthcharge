@@ -674,6 +674,31 @@ void dt_add_bin_prop(DeviceTreeNode *node, char *name, void *data, size_t size)
 }
 
 /*
+ * Find given property in a node.
+ *
+ * @param node		The device tree node to search.
+ * @param name		The name of the property.
+ * @param data		Pointer to return raw data blob in the property.
+ * @param size		Pointer to return the size of data in bytes.
+ */
+void dt_find_bin_prop(DeviceTreeNode *node, const char *name, void **data,
+		      size_t *size)
+{
+	DeviceTreeProperty *prop;
+
+	*data = NULL;
+	*size = 0;
+
+	list_for_each(prop, node->properties, list_node) {
+		if (!strcmp(prop->prop.name, name)) {
+			*data = prop->prop.data;
+			*size = prop->prop.size;
+			return;
+		}
+	}
+}
+
+/*
  * Add a string property to a node, or update it if it already exists.
  *
  * @param node		The device tree node to add to.

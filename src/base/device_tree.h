@@ -155,7 +155,8 @@ void dt_add_u32_prop(DeviceTreeNode *node, char *name, u32 val);
 void dt_add_reg_prop(DeviceTreeNode *node, u64 *addrs, u64 *sizes,
 		     int count, u32 addr_cells, u32 size_cells);
 
-
+void dt_find_bin_prop(DeviceTreeNode *node, const char *name, void **data,
+		      size_t *size);
 
 /*
  * Fixups to apply to a kernel's device tree before booting it.
