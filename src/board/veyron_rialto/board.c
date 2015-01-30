@@ -42,6 +42,18 @@
 
 #include "drivers/bus/usb/usb.h"
 
+static void install_phys_presence_flag(void)
+{
+	GpioOps *phys_presence = sysinfo_lookup_gpio(
+			"recovery", 1, new_rk_gpio_input_from_coreboot);
+
+	if (!phys_presence) {
+		printf("%s failed retrieving recovery GPIO\n", __func__);
+		return;
+	}
+	flag_install(FLAG_PHYS_PRESENCE, phys_presence);
+}
+
 static int board_setup(void)
 {
 	fit_set_compat_by_rev("google,veyron-rialto-rev%d",
@@ -83,6 +95,9 @@ static int board_setup(void)
 
 	/* Lid always open for now. */
 	flag_replace(FLAG_LIDSW, new_gpio_high());
+
+	/* Follow Storm to use recovery button as Ctrl-U. */
+	install_phys_presence_flag();
 
 	ramoops_buffer(0x31f00000, 0x100000, 0x20000);
 
