@@ -3,7 +3,7 @@
 / {
 	model = "Google Veyron_Minnie";
 	config {
-		hwid = "Minnie TEST A-A 9244";
+		hwid = "MINNIE TEST A-A 5151";
 	};
 	chromeos-config {
 		/* Enable factory-friendly features. */
