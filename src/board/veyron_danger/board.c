@@ -89,6 +89,9 @@ static int board_setup(void)
 	UsbHostController *usb_host1 = new_usb_hc(DWC2, 0xff540000);
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
 
+	UsbHostController *usb_host2 = new_usb_hc(EHCI, 0xff500000);
+	list_insert_after(&usb_host2->list_node, &usb_host_controllers);
+
 	/* Lid always open for now. */
 	flag_replace(FLAG_LIDSW, new_gpio_high());
 
