@@ -43,6 +43,7 @@
 #include "drivers/storage/tegra_mmc.h"
 #include "drivers/video/display.h"
 #include "drivers/ec/cros/i2c.h"
+#include "vboot/boot_policy.h"
 #include "vboot/util/flag.h"
 #include "drivers/video/tegra132.h"
 #include "drivers/sound/i2s.h"
@@ -85,6 +86,14 @@ static int board_setup(void)
 	sysinfo_install_flags(new_tegra_gpio_input_from_coreboot);
 
 	choose_devicetree_by_boardid();
+
+	static const struct boot_policy policy[] = {
+		{KERNEL_IMAGE_BOOTIMG, CMD_LINE_DTB},
+		{KERNEL_IMAGE_CROS, CMD_LINE_SIGNER},
+	};
+
+	if (set_boot_policy(policy, ARRAY_SIZE(policy)) == -1)
+		halt();
 
 	void *dma_channel_bases[32];
 	for (int i = 0; i < ARRAY_SIZE(dma_channel_bases); i++)
