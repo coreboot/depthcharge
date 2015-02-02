@@ -29,7 +29,7 @@
 int boot(void *image, char *cmd_line, void *params, void *loader)
 {
 	DeviceTree *tree;
-	void (*kernel)(int, unsigned, DeviceTree *tree);
+	void (*kernel)(int, unsigned, unsigned);
 	uint32_t kernel_size;
 
 	if (fit_load(image, cmd_line, (void **)(&kernel), &kernel_size, &tree))
@@ -64,7 +64,7 @@ int boot(void *image, char *cmd_line, void *params, void *loader)
 	printf("Starting kernel..\n");
 
 	cache_sync_instructions();
-	kernel(0, 0xffffffff, tree);
+	kernel(0, 0xffffffff, virt_to_phys(fdt));
 	printf("Kernel returned!\n");
 
 	return 0;
