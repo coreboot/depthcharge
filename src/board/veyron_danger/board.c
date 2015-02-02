@@ -83,14 +83,14 @@ static int board_setup(void)
 	list_insert_after(&sd_card->mmc.ctrlr.list_node,
 			  &removable_block_dev_controllers);
 
-	UsbHostController *usb_host0 = new_usb_hc(DWC2, 0xff580000);
-	list_insert_after(&usb_host0->list_node, &usb_host_controllers);
+	UsbHostController *usb_host0_ehci = new_usb_hc(EHCI, 0xff500000);
+	list_insert_after(&usb_host0_ehci->list_node, &usb_host_controllers);
 
 	UsbHostController *usb_host1 = new_usb_hc(DWC2, 0xff540000);
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
 
-	UsbHostController *usb_host2 = new_usb_hc(EHCI, 0xff500000);
-	list_insert_after(&usb_host2->list_node, &usb_host_controllers);
+	UsbHostController *usb_otg = new_usb_hc(DWC2, 0xff580000);
+	list_insert_after(&usb_otg->list_node, &usb_host_controllers);
 
 	/* Lid always open for now. */
 	flag_replace(FLAG_LIDSW, new_gpio_high());

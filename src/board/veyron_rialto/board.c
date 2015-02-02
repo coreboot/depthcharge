@@ -75,11 +75,11 @@ static int board_setup(void)
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
 
-	UsbHostController *usb_host0 = new_usb_hc(DWC2, 0xff580000);
-	list_insert_after(&usb_host0->list_node, &usb_host_controllers);
-
 	UsbHostController *usb_host1 = new_usb_hc(DWC2, 0xff540000);
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
+
+	UsbHostController *usb_otg = new_usb_hc(DWC2, 0xff580000);
+	list_insert_after(&usb_otg->list_node, &usb_host_controllers);
 
 	/* Lid always open for now. */
 	flag_replace(FLAG_LIDSW, new_gpio_high());
