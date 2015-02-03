@@ -20,6 +20,9 @@ menu "Board"
 config BOARD
 	string "Board name"
 
+if BOARD = "banjo"
+source src/board/banjo/Kconfig
+endif
 if BOARD = "bayleybay"
 source src/board/bayleybay/Kconfig
 endif
