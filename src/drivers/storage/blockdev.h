@@ -35,6 +35,8 @@ typedef struct BlockDevOps {
 		      void *buffer);
 	lba_t (*write)(struct BlockDevOps *me, lba_t start, lba_t count,
 		       const void *buffer);
+	lba_t (*fill_write)(struct BlockDevOps *me, lba_t start, lba_t count,
+			    uint8_t fill_byte);
 	StreamOps *(*new_stream)(struct BlockDevOps *me, lba_t start,
 				 lba_t count);
 } BlockDevOps;
