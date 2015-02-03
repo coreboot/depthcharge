@@ -289,6 +289,8 @@ int mmc_setup_media(MmcCtrlr *ctrlr);
 lba_t block_mmc_read(BlockDevOps *me, lba_t start, lba_t count, void *buffer);
 lba_t block_mmc_write(BlockDevOps *me, lba_t start, lba_t count,
 		      const void *buffer);
+lba_t block_mmc_fill_write(BlockDevOps *me, lba_t start, lba_t count,
+			   uint8_t fill_byte);
 
 // Debug functions.
 extern int __mmc_debug, __mmc_trace;
