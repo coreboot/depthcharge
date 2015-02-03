@@ -1034,11 +1034,21 @@ int mmc_setup_media(MmcCtrlr *ctrlr)
 /////////////////////////////////////////////////////////////////////////////
 // BlockDevice utilities and callbacks
 
-lba_t block_mmc_read(BlockDevOps *me, lba_t start, lba_t count, void *buffer)
+static inline MmcMedia *mmc_media(BlockDevOps *me)
 {
-	MmcMedia *media = container_of(me, MmcMedia, dev.ops);
-	MmcCtrlr *ctrlr = media->ctrlr;
-	uint8_t *dest = (uint8_t *)buffer;
+	return container_of(me, MmcMedia, dev.ops);
+}
+
+static inline MmcCtrlr *mmc_ctrlr(MmcMedia *media)
+{
+	return media->ctrlr;
+}
+
+static int block_mmc_setup(BlockDevOps *me, lba_t start, lba_t count,
+			   int is_read)
+{
+	MmcMedia *media = mmc_media(me);
+	MmcCtrlr *ctrlr = mmc_ctrlr(media);
 
 	if (count == 0)
 		return 0;
@@ -1047,10 +1057,25 @@ lba_t block_mmc_read(BlockDevOps *me, lba_t start, lba_t count, void *buffer)
 	    start + count > media->dev.block_count)
 		return 0;
 
-	if (mmc_set_blocklen(ctrlr, media->read_bl_len))
+	uint32_t bl_len = is_read ? media->read_bl_len :
+		media->write_bl_len;
+
+	if (mmc_set_blocklen(ctrlr, bl_len))
+		return 0;
+
+	return 1;
+}
+
+lba_t block_mmc_read(BlockDevOps *me, lba_t start, lba_t count, void *buffer)
+{
+	uint8_t *dest = (uint8_t *)buffer;
+
+	if (block_mmc_setup(me, start, count, 1) == 0)
 		return 0;
 
 	lba_t todo = count;
+	MmcMedia *media = mmc_media(me);
+	MmcCtrlr *ctrlr = mmc_ctrlr(media);
 	do {
 		lba_t cur = MIN(todo, ctrlr->b_max);
 		if (mmc_read(media, dest, start, cur) != cur)
@@ -1067,21 +1092,14 @@ lba_t block_mmc_read(BlockDevOps *me, lba_t start, lba_t count, void *buffer)
 lba_t block_mmc_write(BlockDevOps *me, lba_t start, lba_t count,
 		      const void *buffer)
 {
-	MmcMedia *media = container_of(me, MmcMedia, dev.ops);
-	MmcCtrlr *ctrlr = media->ctrlr;
 	const uint8_t *src = (const uint8_t *)buffer;
 
-	if (count == 0)
-		return 0;
-
-	if (start > media->dev.block_count ||
-	    start + count > media->dev.block_count)
-		return 0;
-
-	if (mmc_set_blocklen(ctrlr, media->write_bl_len))
+	if (block_mmc_setup(me, start, count, 0) == 0)
 		return 0;
 
 	lba_t todo = count;
+	MmcMedia *media = mmc_media(me);
+	MmcCtrlr *ctrlr = mmc_ctrlr(media);
 	do {
 		lba_t cur = MIN(todo, ctrlr->b_max);
 		if (mmc_write(media, start, cur, src) != cur)
