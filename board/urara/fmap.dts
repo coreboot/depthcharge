@@ -137,6 +137,16 @@
 			label = "rw-gpt";
 			/* Large enough for two GPT instances. */
 			reg = <0x00172000 0x00002000>;
+		};
+		rw-gpt-primary {
+			label = "rw-gpt-primary";
+			reg = <0x00172000 0x00001000>;
+			type = "wiped";
+			wipe-value = [ff];
+		};
+		rw-gpt-secondary {
+			label = "rw-gpt-secondary";
+			reg = <0x00173000 0x00001000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
