@@ -74,7 +74,8 @@ static int board_setup(void)
 	spfi = new_imgtec_spi(IMG_SPIM1_BASE_ADDRESS, 1, &(img_gpio->ops));
 
 	mtd = new_spi_nand(&spfi->ops);
-	virtual_dev = new_spi_gpt("RW_GPT", new_mtd_stream(mtd), NULL);
+	virtual_dev = new_spi_gpt("RW_GPT", new_mtd_stream(mtd),
+				  "spi@18101000/flash@1");
 	list_insert_after(&virtual_dev->block_ctrlr.list_node,
 				&fixed_block_dev_controllers);
 	fit_set_compat("img,pistachio-bub");
