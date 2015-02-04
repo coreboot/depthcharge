@@ -204,27 +204,13 @@ static backend_ret_t write_sparse_image(struct image_part_details *img,
 				return BE_CHUNK_HDR_ERR;
 			}
 
-			/* Allocate a buffer of bdev block size */
-			uint8_t *buff = malloc(bdev_block_size);
-			if (buff == NULL)
+
+			/* Perform fill_write operation */
+			if (ops->fill_write(ops, part_addr, chunk_size_lba,
+					    *(uint32_t *)data_ptr)
+			    != chunk_size_lba)
 				return BE_WRITE_ERR;
 
-			/* Set the buffer with provided fill pattern */
-			memset(buff, *(uint32_t *)data_ptr, bdev_block_size);
-
-			/* Write one block at a time to the partition */
-			int count = 0;
-			while (count < chunk_size_lba) {
-				/* Do not write past partition size */
-				if ((part_size_lba - count) == 0)
-					return BE_IMAGE_OVERFLOW_ERR;
-
-				if (ops->write(ops, part_addr + count, 1, buff)
-				    != 1)
-					return BE_WRITE_ERR;
-				count++;
-			}
-			free(buff);
 			/* Data present in chunk sparse image is 4 bytes */
 			data_ptr += sizeof(uint32_t);
 
@@ -545,14 +531,24 @@ backend_ret_t backend_erase_partition(const char *name)
 	if (ret != BE_SUCCESS)
 		return ret;
 
-	if (img.gpt)
+	struct bdev_info *bdev_entry = img.bdev_entry;
+
+	BlockDevOps *ops = &bdev_entry->bdev->ops;
+	size_t part_size_lba = img.part_size_lba;
+	size_t part_addr = img.part_addr;
+
+	/* Perform fill_write operation on the partition */
+	if (ops->fill_write(ops, part_addr, part_size_lba, 0xFF)
+	    != part_size_lba)
+		ret = BE_WRITE_ERR;
+	/* If operation was successful, update GPT entry if required */
+	else if (img.gpt)
 		GptUpdateKernelWithEntry(img.gpt, img.gpt_entry,
 					 GPT_UPDATE_ENTRY_INVALID);
 
-	/* TODO(furquan) : How to perform erase operation? */
 	clean_img_part_info(&img);
 
-	return BE_SUCCESS;
+	return ret;
 }
 
 uint64_t backend_get_part_size_bytes(const char *name)
