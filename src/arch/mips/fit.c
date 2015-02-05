@@ -62,7 +62,7 @@ int boot(struct boot_info *bi)
 	printf("Relocating kernel from %p to %#x\n", kernel,
 			CONFIG_KERNEL_START);
 	memmove((void *)CONFIG_KERNEL_START, kernel, kernel_size);
-	kernel = (void *)CONFIG_KERNEL_START;
+	kernel = phys_to_kseg0(CONFIG_KERNEL_START);
 	printf("Starting kernel..\n");
 
 	cache_sync_instructions();
