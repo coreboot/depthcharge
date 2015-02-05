@@ -93,12 +93,12 @@ static uint64_t read_mtd_stream(StreamOps *dev, uint64_t count,
 		unsigned int retlen;
 		int ret = mtd->read(mtd, mtd_stream->offset, length, &retlen,
 				    cur_buffer);
-		if (ret < 0) {
-			printf("Read failure!! ret=%d", ret);
+		if (ret < 0 && ret != -EUCLEAN) {
+			printf("Read failure!! ret=%d\n", ret);
 			return ret;
 		}
 		if (retlen != length) {
-			printf("Read failure!! retlen=%d", retlen);
+			printf("Read failure!! retlen=%d\n", retlen);
 			return count - remaining + retlen;
 		}
 		mtd_stream->offset += length;
