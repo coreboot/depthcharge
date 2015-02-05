@@ -81,11 +81,18 @@ struct spi_nand_flash_dev {
 };
 
 struct spi_nand_cmd {
-	uint8_t cmd;
-	uint32_t n_addr;
-	uint8_t addr[3];
+	/* Command and address. I/O errors have been observed if a
+	 * separate spi_transfer is used for command and address,
+	 * so keep them together
+	 */
+	uint32_t n_cmd;
+	uint8_t cmd[4];
+
+	/* Tx data */
 	uint32_t n_tx;
 	uint8_t *tx_buf;
+
+	/* Rx data */
 	uint32_t n_rx;
 	uint8_t *rx_buf;
 };
@@ -136,19 +143,24 @@ static void spi_nand_debug_poison_buf(uint8_t *buf, unsigned int len)
 static int spi_nand_transfer(SpiOps *spi, struct spi_nand_cmd *cmd)
 {
 	if (spi->start(spi)) {
-		printf("%s: Failed to start flash transaction.\n", __func__);
+		printf("%s: failed to start flash transaction.\n", __func__);
 		return -EIO;
 	}
 
-	if (spi->transfer(spi, NULL, &cmd->cmd, 1)) {
-		printf("%s: failed to send command\n", __func__);
-		spi->stop(spi);
-		return -EIO;
+	if (!cmd->n_cmd) {
+		printf("%s: failed to send empty command\n", __func__);
+			return -EINVAL;
 	}
 
-	/* Address */
-	if (cmd->n_addr && spi->transfer(spi, NULL, cmd->addr, cmd->n_addr)) {
-		printf("%s: failed to send address\n", __func__);
+	if (cmd->n_tx && cmd->n_rx) {
+		printf("%s: cannot send and receive data at the same time\n",
+			__func__);
+		return -EINVAL;
+	}
+
+	/* Command and address */
+	if (spi->transfer(spi, NULL, cmd->cmd, cmd->n_cmd)) {
+		printf("%s: failed to send command and address\n", __func__);
 		spi->stop(spi);
 		return -EIO;
 	}
@@ -180,7 +192,8 @@ static int spi_nand_write_enable(struct spi_nand_dev *dev)
 	struct spi_nand_cmd *cmd = &dev->cmd;
 
 	memset(cmd, 0, sizeof(struct spi_nand_cmd));
-	cmd->cmd = SPI_NAND_WRITE_ENABLE;
+	cmd->n_cmd = 1;
+	cmd->cmd[0] = SPI_NAND_WRITE_ENABLE;
 
 	return spi_nand_transfer(dev->spi, cmd);
 }
@@ -191,9 +204,9 @@ static int spi_nand_read_reg(struct spi_nand_dev *dev, uint8_t opcode,
 	struct spi_nand_cmd *cmd = &dev->cmd;
 
 	memset(cmd, 0, sizeof(struct spi_nand_cmd));
-	cmd->cmd = SPI_NAND_GET_FEATURE;
-	cmd->n_addr = 1;
-	cmd->addr[0] = opcode;
+	cmd->n_cmd = 2;
+	cmd->cmd[0] = SPI_NAND_GET_FEATURE;
+	cmd->cmd[1] = opcode;
 	cmd->n_rx = 1;
 	cmd->rx_buf = buf;
 
@@ -208,9 +221,9 @@ static int spi_nand_write_reg(struct spi_nand_dev *dev, uint8_t opcode,
 	struct spi_nand_cmd *cmd = &dev->cmd;
 
 	memset(cmd, 0, sizeof(struct spi_nand_cmd));
-	cmd->cmd = SPI_NAND_SET_FEATURE;
-	cmd->n_addr = 1;
-	cmd->addr[0] = opcode;
+	cmd->n_cmd = 2;
+	cmd->cmd[0] = SPI_NAND_SET_FEATURE;
+	cmd->cmd[1] = opcode;
 	cmd->n_tx = 1;
 	cmd->tx_buf = buf;
 
@@ -224,11 +237,11 @@ static int spi_nand_load_page(struct spi_nand_dev *dev, unsigned int page_addr)
 	struct spi_nand_cmd *cmd = &dev->cmd;
 
 	memset(cmd, 0, sizeof(struct spi_nand_cmd));
-	cmd->cmd = SPI_NAND_PAGE_READ;
-	cmd->n_addr = 3;
-	cmd->addr[0] = (uint8_t)((page_addr & 0xff0000) >> 16);
-	cmd->addr[1] = (uint8_t)((page_addr & 0xff00) >> 8);
-	cmd->addr[2] = (uint8_t)(page_addr & 0xff);
+	cmd->n_cmd = 4;
+	cmd->cmd[0] = SPI_NAND_PAGE_READ;
+	cmd->cmd[1] = (uint8_t)((page_addr & 0xff0000) >> 16);
+	cmd->cmd[2] = (uint8_t)((page_addr & 0xff00) >> 8);
+	cmd->cmd[3] = (uint8_t)(page_addr & 0xff);
 
 	snand_debug("%s: page 0x%x\n", __func__, page_addr);
 
@@ -242,11 +255,11 @@ static int spi_nand_read_cache(struct spi_nand_dev *dev,
 	struct spi_nand_cmd *cmd = &dev->cmd;
 
 	memset(cmd, 0, sizeof(struct spi_nand_cmd));
-	cmd->cmd = SPI_NAND_READ_CACHE;
-	cmd->n_addr = 3;
-	cmd->addr[0] = 0;
-	cmd->addr[1] = (uint8_t)((page_offset & 0xff00) >> 8);
-	cmd->addr[2] = (uint8_t)(page_offset & 0xff);
+	cmd->n_cmd = 4;
+	cmd->cmd[0] = SPI_NAND_READ_CACHE;
+	cmd->cmd[1] = 0;
+	cmd->cmd[2] = (uint8_t)((page_offset & 0xff00) >> 8);
+	cmd->cmd[3] = (uint8_t)(page_offset & 0xff);
 	cmd->n_rx = length;
 	cmd->rx_buf = read_buf;
 
@@ -261,11 +274,11 @@ static int spi_nand_write_from_cache(struct spi_nand_dev *dev,
 	struct spi_nand_cmd *cmd = &dev->cmd;
 
 	memset(cmd, 0, sizeof(struct spi_nand_cmd));
-	cmd->cmd = SPI_NAND_PROGRAM_EXEC;
-	cmd->n_addr = 3;
-	cmd->addr[0] = (uint8_t)((page_addr & 0xff0000) >> 16);
-	cmd->addr[1] = (uint8_t)((page_addr & 0xff00) >> 8);
-	cmd->addr[2] = (uint8_t)(page_addr & 0xff);
+	cmd->n_cmd = 4;
+	cmd->cmd[0] = SPI_NAND_PROGRAM_EXEC;
+	cmd->cmd[1] = (uint8_t)((page_addr & 0xff0000) >> 16);
+	cmd->cmd[2] = (uint8_t)((page_addr & 0xff00) >> 8);
+	cmd->cmd[3] = (uint8_t)(page_addr & 0xff);
 
 	snand_debug("%s: page 0x%x\n", __func__, page_addr);
 
@@ -284,10 +297,10 @@ static int spi_nand_store_cache(struct spi_nand_dev *dev, unsigned int length,
 	struct spi_nand_cmd *cmd = &dev->cmd;
 
 	memset(cmd, 0, sizeof(struct spi_nand_cmd));
-	cmd->cmd = SPI_NAND_PROGRAM_LOAD;
-	cmd->n_addr = 2;
-	cmd->addr[0] = 0;
-	cmd->addr[1] = 0;
+	cmd->n_cmd = 3;
+	cmd->cmd[0] = SPI_NAND_PROGRAM_LOAD;
+	cmd->cmd[1] = 0;
+	cmd->cmd[2] = 0;
 	cmd->n_tx = length;
 	cmd->tx_buf = write_buf;
 
@@ -799,11 +812,11 @@ static int spi_nand_erase_block(MtdDev *mtd, int blockno)
 	snand_debug("erasing block %d (page 0x%x)\n", blockno, page_addr);
 
 	memset(cmd, 0, sizeof(struct spi_nand_cmd));
-	cmd->cmd = SPI_NAND_BLOCK_ERASE;
-	cmd->n_addr = 3;
-	cmd->addr[0] = (uint8_t)((page_addr & 0xff0000) >> 16);
-	cmd->addr[1] = (uint8_t)((page_addr & 0xff00) >> 8);
-	cmd->addr[2] = (uint8_t)(page_addr & 0xff);
+	cmd->n_cmd = 4;
+	cmd->cmd[0] = SPI_NAND_BLOCK_ERASE;
+	cmd->cmd[1] = (uint8_t)((page_addr & 0xff0000) >> 16);
+	cmd->cmd[2] = (uint8_t)((page_addr & 0xff00) >> 8);
+	cmd->cmd[3] = (uint8_t)(page_addr & 0xff);
 
 	ret = spi_nand_transfer(dev->spi, cmd);
 	if (ret < 0)
@@ -873,7 +886,8 @@ static int spi_nand_readid(struct spi_nand_dev *dev, uint32_t *id)
 	struct spi_nand_cmd *cmd = &dev->cmd;
 
 	memset(cmd, 0, sizeof(struct spi_nand_cmd));
-	cmd->cmd = SPI_NAND_READ_ID;
+	cmd->n_cmd = 1;
+	cmd->cmd[0] = SPI_NAND_READ_ID;
 	cmd->n_rx = SPI_NAND_READID_LEN;
 	cmd->rx_buf = (uint8_t *)id;
 
@@ -1024,7 +1038,8 @@ static int spi_nand_reset(struct spi_nand_dev *dev)
 	int ret;
 
 	memset(cmd, 0, sizeof(struct spi_nand_cmd));
-	cmd->cmd = SPI_NAND_RESET;
+	cmd->n_cmd = 1;
+	cmd->cmd[0] = SPI_NAND_RESET;
 
 	ret = spi_nand_transfer(dev->spi, cmd);
 	if (ret < 0)
