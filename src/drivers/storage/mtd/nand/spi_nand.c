@@ -403,10 +403,6 @@ static int spi_nand_write_page(MtdDev *mtd, int pageno, unsigned int length,
 		return ret;
 	}
 
-	ret = spi_nand_wait_till_ready(dev);
-	if (ret < 0)
-		return ret;
-
 	ret = spi_nand_write_enable(dev);
 	if (ret < 0) {
 		printf("spi_nand: write enable on page program failed\n");
