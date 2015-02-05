@@ -801,7 +801,7 @@ static int spi_nand_erase_block(MtdDev *mtd, int blockno)
 	memset(cmd, 0, sizeof(struct spi_nand_cmd));
 	cmd->cmd = SPI_NAND_BLOCK_ERASE;
 	cmd->n_addr = 3;
-	cmd->addr[0] = 0;
+	cmd->addr[0] = (uint8_t)((page_addr & 0xff0000) >> 16);
 	cmd->addr[1] = (uint8_t)((page_addr & 0xff00) >> 8);
 	cmd->addr[2] = (uint8_t)(page_addr & 0xff);
 
