@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Google Inc.
+ * Copyright 2015 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -23,40 +23,30 @@
 #include <libpayload.h>
 
 #include "arch/mips/boot.h"
-#include "base/device_tree.h"
-#include "boot/fit.h"
+#include "base/cleanup_funcs.h"
+#include "base/timestamp.h"
 #include "config.h"
-#include "vboot/boot.h"
 
-int boot(struct boot_info *bi)
+int boot_mips_linux(void *fdt, void *kernel, uint32_t kernel_size)
 {
-	DeviceTree *tree;
-	void *kernel;
-	uint32_t kernel_size;
+	void (*entry)(unsigned, unsigned, unsigned);
 
-	if (fit_load(bi->kernel, bi->cmd_line, &kernel, &kernel_size, &tree))
-		return 1;
+	run_cleanup_funcs(CleanupOnHandoff);
 
-	if (!tree) {
-		printf("A device tree is required to boot on MIPS.\n");
-		return 1;
-	}
+	// MIPS kernel is non-PIC - it must start at KERNEL_START.
+	printf("Relocating kernel from %p to %#x\n", kernel,
+	       CONFIG_KERNEL_START);
+	memmove((void *)CONFIG_KERNEL_START, kernel, kernel_size);
 
-	if (dt_apply_fixups(tree))
-		return 1;
+	// Kernel expects to start in KSEG0
+	entry = phys_to_kseg0(CONFIG_KERNEL_START);
+	printf("Starting kernel..\n");
 
-	// Allocate a spot for the FDT in memory.
-	void *fdt = (void *)(uintptr_t)CONFIG_KERNEL_FIT_FDT_ADDR;
-	uint32_t size = dt_flat_size(tree);
+	timestamp_add_now(TS_START_KERNEL);
 
-	// Reserve the spot the device tree will go.
-	DeviceTreeReserveMapEntry *entry = xzalloc(sizeof(*entry));
-	entry->start = (uintptr_t)fdt;
-	entry->size = size;
-	list_insert_after(&entry->list_node, &tree->reserve_map);
+	cache_sync_instructions();
+	entry(0, 0xffffffff, virt_to_phys(fdt));
+	printf("Kernel returned!\n");
 
-	// Flatten it.
-	dt_flatten(tree, fdt);
-
-	return boot_mips_linux(fdt, kernel, kernel_size);
+	return 0;
 }
