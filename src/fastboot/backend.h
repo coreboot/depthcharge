@@ -87,8 +87,7 @@ backend_ret_t backend_erase_partition(const char *name);
 backend_ret_t backend_write_partition(const char *name, void *image_addr,
 				      size_t image_size);
 uint64_t backend_get_part_size_bytes(const char *name);
-size_t backend_get_part_fs_type(const char *name, char *output,
-				size_t len);
+const char *backend_get_part_fs_type(const char *name);
 uint64_t backend_get_bdev_size_bytes(const char *name);
 
 static inline int fb_fill_bdev_list(int index, BlockDevCtrlr *bdev_ctrlr)

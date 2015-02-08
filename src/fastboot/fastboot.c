@@ -43,17 +43,6 @@
 static void *image_addr;
 static size_t image_size;
 
-const char *backend_error_string[] = {
-	[BE_PART_NOT_FOUND] = "partition not found",
-	[BE_BDEV_NOT_FOUND] = "block device not found",
-	[BE_IMAGE_SIZE_MULTIPLE_ERR] = "image not multiple of block size",
-	[BE_IMAGE_OVERFLOW_ERR] = "image greater than partition size",
-	[BE_WRITE_ERR] = "image write failed",
-	[BE_SPARSE_HDR_ERR] = "sparse header error",
-	[BE_CHUNK_HDR_ERR] = "sparse chunk header error",
-	[BE_GPT_ERR] = "GPT error",
-};
-
 /********************* Stubs *************************/
 
 int  __attribute__((weak)) board_should_enter_device_mode(void)
@@ -62,38 +51,51 @@ int  __attribute__((weak)) board_should_enter_device_mode(void)
 }
 
 /************* Responses to Host **********************/
-static void fb_send(const char *msg, const char *add)
+/*
+ * Func: fb_send
+ * Desc: Send message from output buffer after attaching the prefix. It also
+ * resets the output buffer.
+ *
+ * This function expects that the output buffer has first 4 bytes unused so that
+ * it can prepend the message type (INFO, DATA, FAIL, OKAY). Also, the output
+ * buffer is expected to be in the following state:
+ * head = 0, tail = pointing to end of data
+ * Thus, length = tail - head (So, length = PREFIX_LEN + output str len).
+ *
+ * On return, buffer state is: head = 0, tail = PREFIX_LEN.
+ */
+static void fb_send(struct fb_buffer *output, const char *prefix)
 {
-	char resp[MAX_RESPONSE_LENGTH] = "";
+	const size_t prefix_size = PREFIX_LEN;
+	size_t response_length = fb_buffer_length(output);
 
-	strncat(resp, msg, MAX_RESPONSE_LENGTH - 1);
-	strncat(resp, add, MAX_RESPONSE_LENGTH - 1);
+	fb_buffer_rewind(output);
 
-	usb_gadget_send(resp, strlen(resp));
+	char *resp = fb_buffer_tail(output);
+	memcpy(resp, prefix, prefix_size);
+
+	FB_LOG("Response: %.*s\n", (int)response_length, resp);
+
+	usb_gadget_send(resp, response_length);
+
+	fb_buffer_push(output, PREFIX_LEN);
 }
 
-static void fb_send_info(const char *str)
+/*
+ * Func: fb_execute_send
+ * Desc: Execute send command based on the cmd response type. It also performs
+ * rewind operation on the output buffer.
+ */
+static void fb_execute_send(struct fb_cmd *cmd)
 {
-	FB_LOG("Response:INFO%s\n", str);
-	fb_send("INFO", str);
-}
+	static const char prefix[][PREFIX_LEN + 1] = {
+		[FB_DATA] = "DATA",
+		[FB_FAIL] = "FAIL",
+		[FB_INFO] = "INFO",
+		[FB_OKAY] = "OKAY",
+	};
 
-static void fb_send_fail(const char *str)
-{
-	FB_LOG("Response:FAIL%s\n", str);
-	fb_send("FAIL", str);
-}
-
-static void fb_send_okay(const char *str)
-{
-	FB_LOG("Response:OKAY%s\n", str);
-	fb_send("OKAY", str);
-}
-
-static void fb_send_data(const char *str)
-{
-	FB_LOG("Response:DATA%s\n", str);
-	fb_send("DATA", str);
+	fb_send(&cmd->output, prefix[cmd->type]);
 }
 
 /************** Command Handlers ***********************/
@@ -101,164 +103,401 @@ static void fb_send_data(const char *str)
  * Default weak implementation returning -1. Board should implement this
  * function.
  */
-int __attribute__((weak)) get_board_var(fb_getvar_t var, const char *input,
-					size_t input_len, char *str,
-					size_t str_len)
+int __attribute__((weak)) get_board_var(struct fb_cmd *cmd, fb_getvar_t var)
 {
 	return -1;
 }
 
-static char *get_name(const char *input, size_t len)
+void fb_add_string(struct fb_buffer *buff, const char *str, const char *args)
 {
-	char *partition = xmalloc(len + 1);
-	memcpy(partition, input, len);
-	partition[len] = '\0';
+	if (str == NULL)
+		return;
 
-	return partition;
+	char *data = fb_buffer_tail(buff);
+	size_t rem_len = fb_buffer_remaining(buff);
+	int ret;
+
+	ret = snprintf(data, rem_len, str, args);
+
+	if (ret > rem_len)
+		ret = rem_len;
+	else if (ret < 0)
+		ret = 0;
+
+	fb_buffer_push(buff, ret);
 }
 
-static void fb_read_var(fb_getvar_t var, const char *input, size_t input_len)
+void fb_add_number(struct fb_buffer *buff, const char *format,
+		   unsigned long long num)
 {
-	char str[MAX_COMMAND_LENGTH];
+	if (format == NULL)
+		return;
+
+	char *data = fb_buffer_tail(buff);
+	size_t rem_len = fb_buffer_remaining(buff);
+
+	int ret = snprintf(data, rem_len, format, num);
+
+	if (ret > rem_len)
+		ret = rem_len;
+	else if (ret < 0)
+		ret = 0;
+
+	fb_buffer_push(buff, ret);
+}
+
+static void fb_copy_buffer_bytes(struct fb_buffer *out, const char *src,
+				size_t len)
+{
+	char *dst = fb_buffer_tail(out);
+	memcpy(dst, src, len);
+	fb_buffer_push(out, len);
+}
+
+static void fb_copy_buffer_data(struct fb_buffer *out, struct fb_buffer *in)
+{
+	const char *src = fb_buffer_head(in);
+	size_t len = fb_buffer_length(in);
+	fb_copy_buffer_bytes(out, src, len);
+}
+
+static char *fb_get_string(const char *src, size_t len)
+{
+	char *dst = xmalloc(len + 1);
+	memcpy(dst, src, len);
+	dst[len] = '\0';
+	return dst;
+}
+
+static inline void fb_free_string(char *dst)
+{
+	free(dst);
+}
+
+static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
+{
+	size_t input_len = fb_buffer_length(&cmd->input);
+
+	struct fb_buffer *output = &cmd->output;
 
 	switch (var) {
 	case FB_VERSION:
-		fb_send_okay("0.3");
+		fb_add_string(output, FB_VERSION_STRING, NULL);
 		break;
+
 	case FB_PART_SIZE: {
 		if (input_len == 0) {
-			fb_send_fail("invalid partition");
-			return;
+			fb_add_string(output, "invalid partition", NULL);
+			return -1;
 		}
 
-		char *part_name = get_name(input, input_len);
+		char *data = fb_buffer_pull(&cmd->input, input_len);
+		char *part_name = fb_get_string(data, input_len);
 		unsigned long long part_size;
 
 		part_size = backend_get_part_size_bytes(part_name);
-		free(part_name);
+		fb_free_string(part_name);
 
 		if (part_size == 0) {
-			fb_send_fail("invalid partition");
-			return;
+			fb_add_string(output, "invalid partition", NULL);
+			return -1;
 		}
 
-		snprintf(str, MAX_COMMAND_LENGTH, "0x%llx", part_size);
-		fb_send_okay(str);
+		fb_add_number(output, "0x%llx", part_size);
 		break;
 	}
 	case FB_PART_TYPE: {
 		if (input_len == 0) {
-			fb_send_fail("invalid partition");
-			return;
+			fb_add_string(output, "invalid partition", NULL);
+			return -1;
 		}
 
-		char *part_name = get_name(input, input_len);
-		size_t str_len;
+		char *data = fb_buffer_pull(&cmd->input, input_len);
 
-		str_len = backend_get_part_fs_type(part_name, str,
-						   MAX_COMMAND_LENGTH);
-		free(part_name);
+		char *part_name = fb_get_string(data, input_len);
+		const char *str = backend_get_part_fs_type(part_name);
+		fb_free_string(part_name);
 
-		if (str_len == 0) {
-			fb_send_fail("invalid partition");
-			return;
+		if (str == NULL) {
+			fb_add_string(output, "invalid partition", NULL);
+			return -1;
 		}
 
-		fb_send_okay(str);
+		fb_add_string(output, str, NULL);
 		break;
 	}
 	case FB_BDEV_SIZE: {
 		if (input_len == 0) {
-			fb_send_fail("invalid bdev");
-			return;
+			fb_add_string(output, "invalid bdev", NULL);
+			return -1;
 		}
 
-		char *bdev_name = get_name(input, input_len);
+		char *data = fb_buffer_pull(&cmd->input, input_len);
+		char *bdev_name = fb_get_string(data, input_len);
 		unsigned long long bdev_size;
+
 		bdev_size = backend_get_bdev_size_bytes(bdev_name);
-		free(bdev_name);
+		fb_free_string(bdev_name);
 
 		if (bdev_size == 0) {
-			fb_send_fail("invalid bdev");
-			return;
+			fb_add_string(output, "invalid bdev", NULL);
+			return -1;
 		}
 
-		snprintf(str, MAX_COMMAND_LENGTH, "%llu", bdev_size);
-		fb_send_okay(str);
+		fb_add_number(output, "%llu", bdev_size);
 		break;
 	}
 	default:
 		goto board_read;
 	}
 
-	return;
+	return 0;
 
 board_read:
-	if (get_board_var(var, input, input_len, str, MAX_COMMAND_LENGTH) == -1)
-		fb_send_fail("nonexistent");
-	else
-		fb_send_okay(str);
+	return get_board_var(cmd, var);
 }
 
-static fb_ret_type fb_getvar(const char *input, size_t len)
-{
+struct name_string {
+	const char *str;
+	int expects_args;
+	char delim;
+};
 
-	if (len == 0) {
-		fb_send_fail("nonexistent");
+#define NAME_NO_ARGS(s)	{.str = s, .expects_args = 0}
+#define NAME_ARGS(s, d)	{.str = s, .expects_args = 1, .delim = d}
+
+static size_t name_check_match(const char *str, size_t len,
+			       const struct name_string *name)
+{
+	size_t str_len = strlen(name->str);
+
+	/* If name len is greater than input, return 0. */
+	if (str_len > len)
+		return 0;
+
+	/* If name str does not match input string, return 0. */
+	if (memcmp(name->str, str, str_len))
+		return 0;
+
+	if (name->expects_args) {
+		/* string should have space for delim */
+		if (len == str_len)
+			return 0;
+
+		/* Check delim match */
+		if (name->delim != str[str_len])
+			return 0;
+	} else {
+		/* Name str len should match input len */
+		if (str_len != len)
+			return 0;
+	}
+
+	return str_len + name->expects_args;
+}
+
+static const struct {
+	struct name_string name;
+	fb_getvar_t var;
+} getvar_table[] = {
+	{ NAME_NO_ARGS("version"), FB_VERSION},
+	{ NAME_NO_ARGS("version-bootloader"), FB_BOOTLOADER_VERSION},
+	{ NAME_NO_ARGS("version-baseband"), FB_BASEBAND_VERSION},
+	{ NAME_NO_ARGS("product"), FB_PRODUCT},
+	{ NAME_NO_ARGS("serialno"), FB_SERIAL_NO},
+	{ NAME_NO_ARGS("secure"), FB_SECURE},
+	{ NAME_NO_ARGS("max-download-size"), FB_DWNLD_SIZE},
+	{ NAME_ARGS("partition-type", ':'), FB_PART_TYPE},
+	{ NAME_ARGS("partition-size", ':'), FB_PART_SIZE},
+	/*
+	 * OEM specific :
+	 * Spec says names starting with lowercase letter are reserved.
+	 */
+	{ NAME_ARGS("Bdev-size", ':'), FB_BDEV_SIZE},
+};
+
+/*
+ * Func: fb_getvar_single
+ * Desc: Returns value of a single variable requested by host.
+ */
+static fb_ret_type fb_getvar_single(struct fb_cmd *cmd)
+{
+	int i;
+	size_t match_len = 0;
+	const char *input = fb_buffer_head(&cmd->input);
+	size_t len = fb_buffer_length(&cmd->input);
+	size_t out_len = fb_buffer_length(&cmd->output);
+
+	for (i = 0; i < ARRAY_SIZE(getvar_table); i++) {
+		match_len = name_check_match(input, len, &getvar_table[i].name);
+		if (match_len)
+			break;
+	}
+
+	if (match_len == 0) {
+		fb_add_string(&cmd->output, "nonexistent", NULL);
+		cmd->type = FB_FAIL;
 		return FB_SUCCESS;
 	}
 
-	static const struct {
-		char name[MAX_COMMAND_LENGTH];
-		fb_getvar_t var;
-	}getvar_table[] = {
-		{"version", FB_VERSION},
-		{"version-bootloader", FB_BOOTLOADER_VERSION},
-		{"version-baseband", FB_BASEBAND_VERSION},
-		{"product", FB_PRODUCT},
-		{"serialno", FB_SERIAL_NO},
-		{"secure", FB_SECURE},
-		{"max-download-size", FB_DWNLD_SIZE},
-		{"partition-type:", FB_PART_TYPE},
-		{"partition-size:", FB_PART_SIZE},
-		/*
-		 * OEM specific :
-		 * Spec says names starting with lowercase letter are reserved.
-		 */
-		{"Bdev-size:", FB_BDEV_SIZE},
-	};
+	fb_buffer_pull(&cmd->input, match_len);
 
-	int i;
-	int match_index = -1, match_len = 0;
+	if (fb_read_var(cmd, getvar_table[i].var) == 0)
+		return FB_SUCCESS;
 
-	for (i = 0; i < ARRAY_SIZE(getvar_table); i++) {
-		size_t str_len = strlen(getvar_table[i].name);
-
-		if (str_len > len)
-			continue;
-
-		if (memcmp(getvar_table[i].name, input, str_len))
-			continue;
-
-		if (str_len > match_len) {
-			match_index = i;
-			match_len = str_len;
-		}
-	}
-
-	if (match_index == -1) {
-		char *name = xmalloc(len+1);
-		memcpy(name, input, len);
-		name[len] = '\0';
-		free(name);
-		fb_send_fail("nonexistent");
-	} else {
-		fb_read_var(getvar_table[match_index].var, input + match_len,
-			    len - match_len);
+	/*
+	 * If no new information was added by board about the failure, put in
+	 * nonexistent string.
+	 */
+	if (fb_buffer_length(&cmd->output) == out_len) {
+		fb_add_string(&cmd->output, "nonexistent", NULL);
+		cmd->type = FB_FAIL;
 	}
 
 	return FB_SUCCESS;
+}
 
+/*
+ * Func: fb_getvar_all
+ * Desc: Send to host values of all possible variables.
+ */
+static fb_ret_type fb_getvar_all(struct fb_cmd *host_cmd)
+{
+	int i;
+
+	char pkt[MAX_COMMAND_LENGTH];
+	char rsp[MAX_RESPONSE_LENGTH];
+
+	struct fb_cmd cmd = {
+		.input = {.data = pkt, .capacity = MAX_COMMAND_LENGTH},
+		.output = {.data = rsp, .capacity = MAX_RESPONSE_LENGTH},
+	};
+
+	struct fb_buffer *cmd_in = &cmd.input;
+	struct fb_buffer *cmd_out = &cmd.output;
+
+	for (i = 0; i < ARRAY_SIZE(getvar_table); i++) {
+
+		fb_getvar_t var = getvar_table[i].var;
+
+		/* Leave space for prefix. */
+		fb_buffer_push(cmd_out, PREFIX_LEN);
+
+		const struct name_string *vname = &getvar_table[i].name;
+
+		/*
+		 * Add variable name to input string to mimic a real host
+		 * command.
+		 */
+		fb_add_string(cmd_in, "%s", vname->str);
+		if (vname->expects_args)
+			fb_copy_buffer_bytes(cmd_in, &vname->delim, 1);
+
+		/*
+		 * For the getvar all command from host, we need to send back
+		 * multiple INFO packets, with each INFO describing a variable
+		 * and its value. We mimic a host command in the input buffer
+		 * here.
+		 *
+		 * However, for variables that require additional argument, we
+		 * need to ensure that it is filled in properly in the input
+		 * buffer. Thus, we check for the variables that we know have an
+		 * extra argument and handle them accordingly. Since, the
+		 * argument can have different values, we run a loop to append
+		 * different arguments one at a time to the input buffer. Then,
+		 * we call getvar_single with our own host command.
+		 * e.g.
+		 * var:a
+		 * var:b
+		 * var:c
+		 *
+		 * The output buffer needs to contain the input string in
+		 * addition to the variable value. Thus, we use
+		 * fb_copy_buffer_data to copy data from input buffer to eoutput
+		 * buffer and append ": " and the value of the variable. Then,
+		 * the output buffer is sent back to the host as INFO message.
+		 * e.g.
+		 * INFOvar:a: x
+		 * INFOvar:b: y
+		 * INFOvar:c: z
+		 */
+
+		switch(var) {
+		case FB_PART_TYPE:
+		case FB_PART_SIZE:
+		case FB_BDEV_SIZE: {
+			int j;
+
+			struct fb_cmd curr_cmd;
+
+			struct fb_buffer *input = &curr_cmd.input;
+			struct fb_buffer *output = &curr_cmd.output;
+
+			int count = (var == FB_BDEV_SIZE)? fb_bdev_count:
+				fb_part_count;
+
+			for (j = 0; j < count; j++) {
+				const char *pname;
+				if (var == FB_BDEV_SIZE)
+					pname = fb_bdev_list[j].name;
+				else
+					pname = fb_part_list[j].part_name;
+
+				fb_buffer_clone(cmd_in, input);
+				fb_buffer_clone(cmd_out, output);
+
+				fb_add_string(input, pname, NULL);
+				fb_copy_buffer_data(output, input);
+				fb_add_string(output, ": ", NULL);
+
+				curr_cmd.type = FB_INFO;
+				fb_getvar_single(&curr_cmd);
+
+				if (curr_cmd.type == FB_INFO)
+					fb_execute_send(&curr_cmd);
+			}
+			break;
+		}
+		default:
+			fb_copy_buffer_data(cmd_out, cmd_in);
+			fb_add_string(cmd_out, ": ", NULL);
+			cmd.type = FB_INFO;
+			fb_getvar_single(&cmd);
+			if (cmd.type == FB_INFO)
+				fb_execute_send(&cmd);
+		}
+
+		/* Reset cmd buffers */
+		fb_buffer_rewind(cmd_out);
+		fb_buffer_rewind(cmd_in);
+	}
+
+	fb_add_string(&host_cmd->output, "Done!", NULL);
+	host_cmd->type = FB_OKAY;
+
+	return FB_SUCCESS;
+}
+
+static fb_ret_type fb_getvar(struct fb_cmd *cmd)
+{
+	const char *input = fb_buffer_head(&cmd->input);
+	size_t len = fb_buffer_length(&cmd->input);
+
+	if (len == 0) {
+		fb_add_string(&cmd->output, "invalid length", NULL);
+		cmd->type = FB_FAIL;
+		return FB_SUCCESS;
+	}
+
+	const char *str_read_all = "all";
+
+	if ((len == strlen(str_read_all)) &&
+	    (strncmp(input, str_read_all, len) == 0))
+		return fb_getvar_all(cmd);
+	else {
+		cmd->type = FB_OKAY;
+		return fb_getvar_single(cmd);
+	}
 }
 
 static void free_image_space(void)
@@ -278,139 +517,200 @@ static void alloc_image_space(size_t bytes)
 		image_size = bytes;
 }
 
-static fb_ret_type fb_download(const char *input, size_t len)
+/*
+ * Func: fb_recv_data
+ * Desc: Download data from host and store it in image_addr
+ *
+ */
+static void fb_recv_data(struct fb_cmd *cmd)
 {
+	size_t curr_len = 0;
+
+	while (curr_len < image_size) {
+		void *curr = (uint8_t *)image_addr + curr_len;
+		curr_len += usb_gadget_recv(curr, image_size - curr_len);
+	}
+
+	cmd->type = FB_OKAY;
+}
+
+/*
+ * Func: fb_download
+ * Desc: Allocate space for downloading image and receive image from host.
+ */
+static fb_ret_type fb_download(struct fb_cmd *cmd)
+{
+	const char *input = fb_buffer_head(&cmd->input);
+	size_t len = fb_buffer_length(&cmd->input);
+	struct fb_buffer *output = &cmd->output;
+
+	cmd->type = FB_FAIL;
+
 	/* Length should be 8 bytes */
 	if (len != 8) {
-		fb_send_fail("invalid length argument");
+		fb_add_string(output, "invalid length", NULL);
 		return FB_SUCCESS;
 	}
 
-	char str[9];
-	memcpy(str, input, len);
-	str[len] = '\0';
+	char *num = fb_get_string(input, len);
 
 	/* num of bytes are passed in hex(0x) format */
-	size_t bytes = strtoul(str, NULL, 16);
+	unsigned long bytes = strtoul(num, NULL, 16);
+
+	fb_free_string(num);
 
 	alloc_image_space(bytes);
 
-	if (image_addr == NULL) {
-		fb_send_fail("couldn't allocate memory");
+	if ((image_addr == NULL) || (image_size == 0)) {
+		fb_add_string(output, "not sufficient memory", NULL);
 		return FB_SUCCESS;
 	}
 
-	fb_send_data(input);
+	cmd->type = FB_DATA;
+	fb_add_number(output, "%08lx", bytes);
+	fb_execute_send(cmd);
 
-	return FB_RECV_DATA;
-}
+	fb_recv_data(cmd);
 
-/* TODO(furquan): Do we need this? */
-static fb_ret_type fb_verify(const char *input, size_t len)
-{
-	fb_send_fail("unsupported command");
 	return FB_SUCCESS;
 }
 
-static fb_ret_type fb_erase(const char *input, size_t len)
+/* TODO(furquan): Do we need this? */
+static fb_ret_type fb_verify(struct fb_cmd *cmd)
+{
+	fb_add_string(&cmd->output, "unsupported command", NULL);
+	cmd->type = FB_FAIL;
+
+	return FB_SUCCESS;
+}
+
+const char *backend_error_string[] = {
+	[BE_PART_NOT_FOUND] = "partition not found",
+	[BE_BDEV_NOT_FOUND] = "block device not found",
+	[BE_IMAGE_SIZE_MULTIPLE_ERR] = "image not multiple of block size",
+	[BE_IMAGE_OVERFLOW_ERR] = "image greater than partition size",
+	[BE_WRITE_ERR] = "image write failed",
+	[BE_SPARSE_HDR_ERR] = "sparse header error",
+	[BE_CHUNK_HDR_ERR] = "sparse chunk header error",
+	[BE_GPT_ERR] = "GPT error",
+};
+
+static fb_ret_type fb_erase(struct fb_cmd *cmd)
 {
 	backend_ret_t ret;
-	char *partition = get_name(input, len);
+	struct fb_buffer *input = &cmd->input;
+	size_t len = fb_buffer_length(input);
+	char *data = fb_buffer_pull(input, len);
 
 	FB_LOG("erasing flash\n");
-	fb_send_info("erasing flash");
+	cmd->type = FB_INFO;
+	fb_add_string(&cmd->output, "erasing flash", NULL);
+	fb_execute_send(cmd);
 
+	cmd->type = FB_OKAY;
+
+	char *partition = fb_get_string(data, len);
 	ret = backend_erase_partition(partition);
+	fb_free_string(partition);
 
-	if (ret != BE_SUCCESS)
-		fb_send_fail(backend_error_string[ret]);
-	else
-		fb_send_okay("");
+	if (ret != BE_SUCCESS) {
+		cmd->type = FB_FAIL;
+		fb_add_string(&cmd->output, backend_error_string[ret], NULL);
+	}
 
 	free(partition);
 
 	return FB_SUCCESS;
 }
 
-static fb_ret_type fb_flash(const char *input, size_t len)
+static fb_ret_type fb_flash(struct fb_cmd *cmd)
 {
 	backend_ret_t ret;
-	char *partition = get_name(input, len);
 
 	if (image_addr == NULL) {
-		fb_send_fail("no image downloaded");
+		fb_add_string(&cmd->output, "no image downloaded", NULL);
+		cmd->type = FB_FAIL;
 		return FB_SUCCESS;
 	}
 
 	FB_LOG("writing flash\n");
-	fb_send_info("writing flash");
-	/* TODO(furquan): Check if the image has a bootimg header */
+	cmd->type = FB_INFO;
+	fb_add_string(&cmd->output, "writing flash", NULL);
+	fb_execute_send(cmd);
+
+	struct fb_buffer *input = &cmd->input;
+	size_t len = fb_buffer_length(input);
+	char *data = fb_buffer_pull(input, len);
+
+	cmd->type = FB_OKAY;
+
+	char *partition = fb_get_string(data, len);
 	ret = backend_write_partition(partition, image_addr, image_size);
+	fb_free_string(partition);
+
 	if (ret != BE_SUCCESS) {
-		fb_send_fail(backend_error_string[ret]);
-		goto fail;
+		cmd->type = FB_FAIL;
+		fb_add_string(&cmd->output, backend_error_string[ret], NULL);
 	}
 
-	fb_send_okay("");
-
-fail:
 	free(partition);
 
 	return FB_SUCCESS;
 }
 
 /* TODO(furquan): How do we boot from memory? */
-static fb_ret_type fb_boot(const char *input, size_t len)
+static fb_ret_type fb_boot(struct fb_cmd *cmd)
 {
-	fb_send_fail("unsupported command");
+	fb_add_string(&cmd->output, "unsupported command", NULL);
+	cmd->type = FB_FAIL;
 	return FB_SUCCESS;
 }
 
-static fb_ret_type fb_continue(const char *input, size_t len)
+static fb_ret_type fb_continue(struct fb_cmd *cmd)
 {
-	fb_send_okay("");
 	FB_LOG("Continue booting\n");
+	cmd->type = FB_OKAY;
 	return FB_NORMAL_BOOT;
 }
 
-static fb_ret_type fb_reboot(const char *input, size_t len)
+static fb_ret_type fb_reboot(struct fb_cmd *cmd)
 {
-	fb_send_okay("");
 	FB_LOG("Rebooting device into normal mode\n");
+	cmd->type = FB_OKAY;
 	return FB_REBOOT;
 }
 
-static fb_ret_type fb_reboot_bootloader(const char *input, size_t len)
+static fb_ret_type fb_reboot_bootloader(struct fb_cmd *cmd)
 {
-	fb_send_okay("");
 	FB_LOG("Rebooting into bootloader\n");
+	cmd->type = FB_OKAY;
 	return FB_REBOOT_BOOTLOADER;
 }
 
-static fb_ret_type fb_powerdown(const char *input, size_t len)
+static fb_ret_type fb_powerdown(struct fb_cmd *cmd)
 {
-	fb_send_okay("");
 	FB_LOG("Powering off device\n");
+	cmd->type = FB_OKAY;
 	return FB_POWEROFF;
 }
 
 /************** Command Function Table *****************/
 struct fastboot_func {
-	char name[MAX_COMMAND_LENGTH];
-	fb_ret_type (*fn)(const char *input, size_t len);
+	struct name_string name;
+	fb_ret_type (*fn)(struct fb_cmd *cmd);
 };
 
 const struct fastboot_func fb_func_table[] = {
-	{"getvar:", fb_getvar},
-	{"download:", fb_download},
-	{"verify:", fb_verify},
-	{"flash:", fb_flash},
-	{"erase:", fb_erase},
-	{"boot", fb_boot},
-	{"continue", fb_continue},
-	{"reboot", fb_reboot},
-	{"reboot-bootloader", fb_reboot_bootloader},
-	{"powerdown", fb_powerdown},
+	{ NAME_ARGS("getvar", ':'), fb_getvar},
+	{ NAME_ARGS("download", ':'), fb_download},
+	{ NAME_ARGS("verify", ':'), fb_verify},
+	{ NAME_ARGS("flash", ':'), fb_flash},
+	{ NAME_ARGS("erase", ':'), fb_erase},
+	{ NAME_NO_ARGS("boot"), fb_boot},
+	{ NAME_NO_ARGS("continue"), fb_continue},
+	{ NAME_NO_ARGS("reboot"), fb_reboot},
+	{ NAME_NO_ARGS("reboot-bootloader"), fb_reboot_bootloader},
+	{ NAME_NO_ARGS("powerdown"), fb_powerdown},
 };
 
 /************** Protocol Handler ************************/
@@ -421,78 +721,49 @@ const struct fastboot_func fb_func_table[] = {
  * (if required) and sends back response packets to host
  * Input is an ascii string without a trailing 0 byte. Max len is 64 bytes.
  */
-static fb_ret_type fastboot_proto_handler(const char *input, size_t len)
+static fb_ret_type fastboot_proto_handler(struct fb_cmd *cmd)
 {
+	struct fb_buffer *in_buff = &cmd->input;
+	struct fb_buffer *out_buff = &cmd->output;
+
+	size_t len = fb_buffer_length(in_buff);
+
 	/* Ignore zero-size packets */
 	if (len == 0) {
 		FB_LOG("Ignoring zero-size packets\n");
+		cmd->type = FB_OKAY;
 		return FB_SUCCESS;
 	}
 
 	int i;
-	int match_index = -1, match_len = 0;
+	size_t match_len = 0;
+	const char *input = fb_buffer_head(in_buff);
 
 	for (i = 0; i < ARRAY_SIZE(fb_func_table); i++) {
-
-		size_t str_len = strlen(fb_func_table[i].name);
-
-		if (str_len > len)
-			continue;
-
-		if (memcmp(fb_func_table[i].name, input, str_len))
-			continue;
-
-		if (str_len > match_len) {
-			match_index = i;
-			match_len = str_len;
-		}
+		match_len = name_check_match(input, len,
+					     &fb_func_table[i].name);
+		if (match_len)
+			break;
 	}
 
-	if (match_index == -1) {
+	if (match_len == 0) {
 		FB_LOG("Unknown command\n");
-		fb_send_fail("unknown command");
+		fb_add_string(out_buff, "unknown command", NULL);
+		cmd->type = FB_FAIL;
 		return FB_SUCCESS;
 	}
 
-	return fb_func_table[match_index].fn(input + match_len,
-					     len - match_len);
+	fb_buffer_pull(in_buff, match_len);
+
+	return fb_func_table[i].fn(cmd);
 }
 
-/*
- * Func: fastboot_recv_data
- * Desc: Download data from host and store it in image_addr
- *
- */
-static fb_ret_type fastboot_recv_data(void)
-{
-	size_t curr_len = 0;
-
-	if ((image_addr == NULL) || (image_size == 0)) {
-		FB_LOG("No space to recv data\n");
-		return FB_SUCCESS;
-	}
-
-	while (curr_len < image_size) {
-		void *curr = (uint8_t *)image_addr + curr_len;
-		curr_len += usb_gadget_recv(curr, image_size - curr_len);
-	}
-
-	fb_send_okay("");
-
-	return FB_SUCCESS;
-}
-
-static void print_input(const char *pkt, size_t len)
+static void print_input(struct fb_cmd *cmd)
 {
 #ifdef FASTBOOT_DEBUG
-	int i;
-
-	printf("Received:");
-
-	for (i = 0; i < len; i++)
-		printf("%c", pkt[i]);
-
-	printf("\n");
+	const char *pkt = fb_buffer_head(&cmd->input);
+	size_t len = fb_buffer_length(&cmd->input);
+	printf("Received: %.*s\n", (int)len, pkt);
 #endif
 }
 
@@ -540,13 +811,28 @@ static void fb_print_on_screen()
  */
 fb_ret_type device_mode_enter(void)
 {
-	fb_ret_type ret = FB_SUCCESS;
+	fb_ret_type ret = FB_CONTINUE_RECOVERY;
 
 	/* Initialize USB gadget driver */
 	if (!usb_gadget_init()) {
 		FB_LOG("Gadget not initialized\n");
-		return FB_SUCCESS;
+		return ret;
 	}
+
+	/*
+	 * Extra +1 is to store the '\0' character to ease string
+	 * operations. Host never ends a string with '\0'.
+	 */
+	char pkt[MAX_COMMAND_LENGTH];
+	char rsp[MAX_RESPONSE_LENGTH];
+
+	struct fb_cmd cmd = {
+		.input = {.data = pkt, .capacity = MAX_COMMAND_LENGTH},
+		.output = {.data = rsp, .capacity = MAX_RESPONSE_LENGTH},
+	};
+
+	/* Leave space for prefix */
+	fb_buffer_push(&cmd.output, PREFIX_LEN);
 
 	FB_LOG("********** Entered fastboot mode *****************\n");
 	fb_print_on_screen();
@@ -555,23 +841,21 @@ fb_ret_type device_mode_enter(void)
 	 * Keep looping until we get boot, reboot or poweroff command from host.
 	 */
 	do {
-		char pkt[MAX_COMMAND_LENGTH];
 		size_t len;
 
 		/* Receive a packet from the host */
 		len = usb_gadget_recv(pkt, MAX_COMMAND_LENGTH);
 
-		print_input(pkt, len);
+		fb_buffer_push(&cmd.input, len);
+
+		print_input(&cmd);
 
 		/* Process the packet as per fastboot protocol */
-		ret = fastboot_proto_handler(pkt, len);
+		ret = fastboot_proto_handler(&cmd);
 
-		if (ret == FB_RECV_DATA) {
-			FB_LOG("Going to recv data\n");
-			ret = fastboot_recv_data();
-			FB_LOG("Recv data done\n");
-		}
+		fb_execute_send(&cmd);
 
+		fb_buffer_rewind(&cmd.input);
 	} while (ret == FB_SUCCESS);
 
 	/* Done with usb gadget driver - Stop it */

@@ -569,23 +569,19 @@ uint64_t backend_get_part_size_bytes(const char *name)
 	return ret;
 }
 
-size_t backend_get_part_fs_type(const char *name, char *output,
-				size_t len)
+const char *backend_get_part_fs_type(const char *name)
 {
 	struct part_info *part_entry;
 
 	if (backend_do_init() != BE_SUCCESS)
-		return 0;
+		return NULL;
 
 	/* Get partition info from board-specific partition table */
 	part_entry = get_part_info(name);
 	if (part_entry == NULL)
-		return 0;
+		return NULL;
 
-	len = MIN(len, strlen(part_entry->part_fs_type));
-	strncpy(output, part_entry->part_fs_type, len);
-
-	return len;
+	return part_entry->part_fs_type;
 }
 
 uint64_t backend_get_bdev_size_bytes(const char *name)

@@ -63,22 +63,21 @@ struct part_info fb_part_list[] = {
 
 size_t fb_part_count = ARRAY_SIZE(fb_part_list);
 
-int get_board_var(fb_getvar_t var, const char *input, size_t input_len,
-		  char *str, size_t str_len)
+int get_board_var(struct fb_cmd *cmd, fb_getvar_t var)
 {
 	int ret = 0;
+	struct fb_buffer *output = &cmd->output;
 
 	switch(var) {
 	case FB_BOOTLOADER_VERSION:
-		snprintf(str, str_len, "coreboot-%s", lib_sysinfo.cb_version);
+		fb_add_string(output, "coreboot-%s", lib_sysinfo.cb_version);
 		break;
 	case FB_PRODUCT:
-		snprintf(str, str_len, "google,ryu-rev%d",
-			 lib_sysinfo.board_id);
+		fb_add_number(output, "google,ryu-rev%d", lib_sysinfo.board_id);
 		break;
 	case FB_DWNLD_SIZE:
 		/* Max download size set to half of heap size */
-		snprintf(str, str_len, "0x%x", CONFIG_HEAP_SIZE/2);
+		fb_add_number(output, "0x%x", CONFIG_HEAP_SIZE/2);
 		break;
 	default:
 		ret = -1;
