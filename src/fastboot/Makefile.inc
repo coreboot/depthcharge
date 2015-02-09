@@ -18,3 +18,4 @@
 ##
 
 depthcharge-$(CONFIG_FASTBOOT_MODE) += backend.c
+depthcharge-$(CONFIG_FASTBOOT_MODE) += udc.c

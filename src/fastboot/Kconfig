@@ -21,3 +21,13 @@ config FASTBOOT_MODE
 	  Fastboot mode is enabled by this config option. It allows a board to
 	  use fastboot protocol to communicate with a host and flash images onto
 	  the device.
+
+config FASTBOOT_USBVID
+	hex "Fastboot USB Vendor ID"
+	default 0x0
+	depends on FASTBOOT_MODE
+
+config FASTBOOT_USBDID
+	hex "Fastboot USB Vendor ID"
+	default 0x0
+	depends on FASTBOOT_MODE
