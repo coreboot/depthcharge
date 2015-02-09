@@ -24,6 +24,7 @@
 #include "drivers/storage/mtd/stream.h"
 #include "drivers/storage/spi_gpt.h"
 #include "drivers/storage/mtd/nand/bcm_nand.h"
+#include "drivers/bus/usb/usb.h"
 
 static int board_setup(void)
 {
@@ -38,6 +39,11 @@ static int board_setup(void)
 					       "nand");
 	list_insert_after(&virtual_dev->block_ctrlr.list_node,
 			  &fixed_block_dev_controllers);
+
+	UsbHostController *usb_host20 = new_usb_hc(EHCI, 0x18048000);
+	UsbHostController *usb_host11 = new_usb_hc(OHCI, 0x18048800);
+	list_insert_after(&usb_host20->list_node, &usb_host_controllers);
+	list_insert_after(&usb_host11->list_node, &usb_host_controllers);
 
 	return 0;
 }
