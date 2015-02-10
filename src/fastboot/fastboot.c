@@ -27,6 +27,8 @@
 #include "fastboot/backend.h"
 #include "fastboot/fastboot.h"
 #include "fastboot/udc.h"
+#include "vboot/boot.h"
+#include "vboot/boot_policy.h"
 
 #define FASTBOOT_DEBUG
 
@@ -658,11 +660,40 @@ static fb_ret_type fb_flash(struct fb_cmd *cmd)
 	return FB_SUCCESS;
 }
 
-/* TODO(furquan): How do we boot from memory? */
+/*
+ * TODO(furquan): Change this function once verified boot stuff is
+ * resolved. Currently, we boot unsigned kernel bootimg from memory. However, we
+ * will have to update this so that we check the signature on the image using
+ * recovery key. Also, need to ensure that fastboot boot command is not enabled
+ * by default on entering recovery mode. It should be enabled only after some
+ * flag VB_ALLOW_FB_BOOT is set by user.
+ */
 static fb_ret_type fb_boot(struct fb_cmd *cmd)
 {
-	fb_add_string(&cmd->output, "unsupported command", NULL);
+	VbSelectAndLoadKernelParams kparams;
+	struct boot_info bi;
+
 	cmd->type = FB_FAIL;
+
+	if (image_addr == NULL) {
+		fb_add_string(&cmd->output, "no image downloaded", NULL);
+		return FB_SUCCESS;
+	}
+
+	kparams.kernel_buffer = image_addr;
+	kparams.flags = KERNEL_IMAGE_BOOTIMG;
+
+	if (fill_boot_info(&bi, &kparams)) {
+		fb_add_string(&cmd->output, "bootimg parse failed", NULL);
+		return FB_SUCCESS;
+	}
+
+	cmd->type = FB_OKAY;
+	fb_execute_send(cmd);
+
+	boot(&bi);
+
+	/* We should never reach here, if boot successful. */
 	return FB_SUCCESS;
 }
 
