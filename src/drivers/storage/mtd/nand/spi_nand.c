@@ -438,7 +438,7 @@ static int spi_nand_read_page(MtdDev *mtd, int pageno,
 	int ret;
 
 	/* Load a page into the cache register */
-	ret = spi_nand_load_page(dev, pageno << dev->page_shift);
+	ret = spi_nand_load_page(dev, pageno);
 	if (ret < 0) {
 		printf("spi_nand: error %d loading page %d to cache\n",
 		       ret, pageno);
