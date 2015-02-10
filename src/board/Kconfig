@@ -43,6 +43,9 @@ endif
 if BOARD = "gizmo"
 source src/board/gizmo/Kconfig
 endif
+if BOARD = "glados"
+source src/board/glados/Kconfig
+endif
 if BOARD = "jecht"
 source src/board/jecht/Kconfig
 endif
