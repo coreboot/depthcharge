@@ -107,8 +107,6 @@ struct spi_nand_dev {
 	unsigned char *zero_page;
 	unsigned char *zero_oob;
 
-	unsigned int oob_per_page;
-
 	/* Fields from nand_chip */
 	unsigned page_shift;
 	unsigned phys_erase_shift;
@@ -486,11 +484,11 @@ static int spi_nand_get_read_page_count(MtdDev *mtd, struct mtd_oob_ops *ops)
 	if (ops->datbuf != NULL) {
 		return (ops->len + mtd->writesize - 1) >> dev->page_shift;
 	} else {
-		if (dev->oob_per_page == 0)
+		if (mtd->oobsize == 0)
 			return 0;
 
-		return (ops->ooblen + dev->oob_per_page - 1)
-			/ dev->oob_per_page;
+		return (ops->ooblen + mtd->oobsize - 1)
+			/ mtd->oobsize;
 	}
 }
 
@@ -507,7 +505,7 @@ static void spi_nand_read_oobcopy(MtdDev *mtd, struct mtd_oob_ops *ops)
 		return;
 
 	read_ooblen = ops->ooblen - ops->oobretlen;
-	ooblen = MIN(read_ooblen, dev->oob_per_page);
+	ooblen = MIN(read_ooblen, mtd->oobsize);
 	memcpy(ops->oobbuf + ops->oobretlen, dev->pad_oob, ooblen);
 
 	ops->oobretlen += ooblen;
@@ -566,7 +564,7 @@ static int spi_nand_read_oob(MtdDev *mtd, uint64_t from,
 	if (ops->datbuf)
 		read_len += mtd->writesize;
 	if (ops->oobbuf)
-		read_len += dev->oob_per_page;
+		read_len += mtd->oobsize;
 
 	if (ops->datbuf) {
 		read_buf = dev->pad_dat;
@@ -682,7 +680,7 @@ static int spi_nand_write_oob(MtdDev *mtd, uint64_t to, struct mtd_oob_ops *ops)
 	write_buf = ops->datbuf;
 	write_len = mtd->writesize;
 	if (ops->oobbuf)
-		write_len += dev->oob_per_page;
+		write_len += mtd->oobsize;
 	ops->retlen = 0;
 	ops->oobretlen = 0;
 
@@ -699,8 +697,8 @@ static int spi_nand_write_oob(MtdDev *mtd, uint64_t to, struct mtd_oob_ops *ops)
 		write_buf += mtd->writesize;
 
 		if (ops->oobbuf) {
-			ops->oobretlen += dev->oob_per_page;
-			write_buf += dev->oob_per_page;
+			ops->oobretlen += mtd->oobsize;
+			write_buf += mtd->oobsize;
 		}
 	}
 
