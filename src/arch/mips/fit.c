@@ -25,6 +25,7 @@
 #include "base/device_tree.h"
 #include "boot/fit.h"
 #include "config.h"
+#include "vboot/boot.h"
 
 int boot(struct boot_info *bi)
 {
