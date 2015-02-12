@@ -30,6 +30,7 @@
 #include <assert.h>
 #include <libpayload.h>
 
+#include "config.h"
 #include "base/container_of.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/bus/i2c/ipq806x_qup.h"
@@ -138,6 +139,11 @@ Ipq806xI2c *new_ipq806x_i2c(unsigned gsbi_id)
 		bus->gsbi_id = gsbi_id;
 		bus->initialized = 1;
 		bus->ops.transfer = &i2c_transfer;
+
+		if (CONFIG_CLI)
+			add_i2c_controller_to_list(&bus->ops,
+						   "gsbi%d", gsbi_id);
+
 	}
 	return bus;
 }
