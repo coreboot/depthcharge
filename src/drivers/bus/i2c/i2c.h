@@ -94,4 +94,12 @@ int i2c_readw(I2cOps *ops, uint8_t chip, uint8_t reg, uint16_t *data);
  */
 int i2c_writew(I2cOps *ops, uint8_t chip, uint8_t reg, uint16_t data);
 
+/*
+ * Add I2C node to the list of nodes known to the system.
+ *
+ * The list object includes the address of ops structure of the i2c node.
+ * Format allows to assing the list object an arbitrary name.
+ */
+void add_i2c_controller_to_list(I2cOps *ops, const char *fmt, ...);
+
 #endif /* __DRIVERS_BUS_I2C_I2C_H__ */
