@@ -22,6 +22,8 @@
 
 #include <libpayload.h>
 
+#include "drivers/video/coreboot_fb.h"
+#include "drivers/video/display.h"
 #include "fastboot/backend.h"
 #include "fastboot/fastboot.h"
 #include "fastboot/udc.h"
@@ -494,6 +496,40 @@ static void print_input(const char *pkt, size_t len)
 #endif
 }
 
+static void print_string(const char *str)
+{
+	int str_len = strlen(str);
+	while (str_len--) {
+		if (*str == '\n')
+			video_console_putchar('\r');
+		video_console_putchar(*str++);
+	}
+}
+
+/*
+ * TODO(furquan): Get rid of this once the vboot flows and fastboot interactions
+ * are finalized.
+ */
+static void fb_print_on_screen()
+{
+	const char *msg = "Entered fastboot mode";
+	unsigned int rows, cols;
+
+	if (display_init())
+		return;
+
+	if (backlight_update(1))
+		return;
+
+	video_init();
+	video_console_cursor_enable(0);
+
+	video_get_rows_cols(&rows, &cols);
+	video_console_set_cursor((cols - strlen(msg)) / 2, rows / 2);
+
+	print_string(msg);
+}
+
 /*
  * Func: device_mode_enter
  * Desc: This function handles the entry into the device mode. It is responsible
@@ -506,13 +542,14 @@ fb_ret_type device_mode_enter(void)
 {
 	fb_ret_type ret = FB_SUCCESS;
 
-	FB_LOG("********** Entered fastboot mode *****************\n");
-
 	/* Initialize USB gadget driver */
 	if (!usb_gadget_init()) {
 		FB_LOG("Gadget not initialized\n");
 		return FB_SUCCESS;
 	}
+
+	FB_LOG("********** Entered fastboot mode *****************\n");
+	fb_print_on_screen();
 
 	/*
 	 * Keep looping until we get boot, reboot or poweroff command from host.
