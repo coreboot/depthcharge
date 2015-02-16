@@ -30,6 +30,10 @@ config DRIVER_BUS_I2C_DESIGNWARE
 	bool "Designware I2C driver"
 	default n
 
+config DRIVER_BUS_I2C_IMGTEC
+	bool "IMG I2C driver"
+	default n
+
 config DRIVER_BUS_I2C_IPQ806X
 	bool "Qualcomm IPQ806x I2C driver"
 	default n
