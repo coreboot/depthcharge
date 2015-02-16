@@ -22,4 +22,4 @@ depthcharge-$(CONFIG_DRIVER_FLASH_ICH9) += ich9.c
 depthcharge-$(CONFIG_DRIVER_FLASH_MEMMAPPED) += memmapped.c
 depthcharge-$(CONFIG_DRIVER_FLASH_SPI) += spi.c
 depthcharge-$(CONFIG_DRIVER_CBFS_FLASH) += cbfs.c
-
+depthcharge-$(CONFIG_DRIVER_FLASH_NOR_MT8173) += mtk_nor_flash.c
