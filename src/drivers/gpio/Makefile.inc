@@ -28,3 +28,4 @@ depthcharge-$(CONFIG_DRIVER_GPIO_TEGRA) += tegra.c
 depthcharge-$(CONFIG_DRIVER_GPIO_IPQ_806X) += ipq806x.c
 depthcharge-$(CONFIG_DRIVER_GPIO_ROCKCHIP) += rockchip.c
 depthcharge-$(CONFIG_DRIVER_GPIO_BRASWELL) += braswell.c
+depthcharge-$(CONFIG_DRIVER_GPIO_MT8173) += mtk_gpio.c
