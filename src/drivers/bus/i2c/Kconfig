@@ -36,3 +36,7 @@ config DRIVER_BUS_I2C_IPQ806X
 
 config DRIVER_BUS_I2C_ROCKCHIP
 	bool "Rockchip I2C driver"
+
+config DRIVER_BUS_I2C_MT8173
+        bool "MediaTek MT8173 I2C driver"
+        default n
