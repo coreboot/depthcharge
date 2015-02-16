@@ -57,3 +57,9 @@ config DRIVER_POWER_IPQ806X
 	default n
 	help
 	  Reboot or power off using the IPQ806X internals.
+
+config DRIVER_POWER_MT6397
+	bool "MT6397 PMIC power management"
+	default n
+	help
+	  Reboot or power off using the MT6397 PMIC.
