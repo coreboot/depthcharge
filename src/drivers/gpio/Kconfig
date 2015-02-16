@@ -66,3 +66,8 @@ config DRIVER_GPIO_ROCKCHIP
 config DRIVER_GPIO_BRASWELL
 	bool "Intel Braswell GPIO driver"
 	default	n
+
+config DRIVER_GPIO_MT8173
+	bool "MediaTek MT8173 GPIO driver"
+	default n
+	depends on ARCH_ARM
