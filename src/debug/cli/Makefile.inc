@@ -15,7 +15,7 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-depthcharge-y += boot.c
+depthcharge-$(CONFIG_KERNEL_LEGACY) += boot.c
 depthcharge-y += command.c
 depthcharge-y += console_main.c
 depthcharge-y += memory.c
