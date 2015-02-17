@@ -23,3 +23,6 @@
 # MIPS specific options
 ###############################################################################
 
+depthcharge-y += enter_trampoline.c
+depthcharge-y += physmem.c
+depthcharge-$(CONFIG_KERNEL_FIT) += fit.c
