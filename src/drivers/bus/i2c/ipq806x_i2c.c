@@ -1,7 +1,7 @@
 /*
  * This file is part of the depthcharge project.
  *
- * Copyright (C) 2014 The Linux Foundation. All rights reserved.
+ * Copyright (C) 2014 - 2015 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -37,22 +37,53 @@
 #include "drivers/bus/i2c/ipq806x_gsbi.h"
 #include "drivers/bus/i2c/ipq806x.h"
 
+static qup_config_t gsbi1_qup_config = {
+		QUP_MINICORE_I2C_MASTER,
+		100000,
+		24000000,
+		QUP_MODE_FIFO,
+	};
+
+static qup_config_t gsbi4_qup_config = {
+		QUP_MINICORE_I2C_MASTER,
+		100000,
+		24000000,
+		QUP_MODE_FIFO,
+	};
+
+static qup_config_t gsbi7_qup_config = {
+		QUP_MINICORE_I2C_MASTER,
+		100000,
+		24000000,
+		QUP_MODE_FIFO,
+	};
+
 static int i2c_init(unsigned gsbi_id)
 {
 	gsbi_return_t gsbi_ret = 0;
 	qup_return_t qup_ret = 0;
-	qup_config_t gsbi4_qup_config = {
-		QUP_MINICORE_I2C_MASTER,
-		100000,
-		24000000,
-		QUP_MODE_FIFO
-	};
+	qup_config_t *qup_config;
+
+	switch (gsbi_id) {
+	case 1:
+		qup_config = &gsbi1_qup_config;
+		break;
+	case 4:
+		qup_config = &gsbi4_qup_config;
+		break;
+	case 7:
+		qup_config = &gsbi7_qup_config;
+		break;
+	default:
+		printf("QUP configuration not defined for GSBI%d\n", gsbi_id);
+		return 1;
+	}
 
 	gsbi_ret = gsbi_init(gsbi_id, GSBI_PROTO_I2C_ONLY);
 	if (GSBI_SUCCESS != gsbi_ret)
 		return 1;
 
-	qup_ret = qup_init(gsbi_id, &gsbi4_qup_config);
+	qup_ret = qup_init(gsbi_id, qup_config);
 	if (QUP_SUCCESS != qup_ret)
 		return 1;
 
@@ -107,9 +138,12 @@ static int i2c_transfer(struct I2cOps *me, I2cSeg *segments, int seg_count)
 	I2cSeg *seg = segments;
 	int ret = 0;
 
-	if (!bus->initialized)
+	if (!bus->initialized) {
 		if (0 != i2c_init(bus->gsbi_id))
 			return 1;
+		else
+			bus->initialized = 1;
+	}
 
 	while (seg_count--) {
 		if (seg->read)
