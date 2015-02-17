@@ -24,9 +24,7 @@
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
-#include "boot/fit.h"
 #include "boot/ramoops.h"
-#include "config.h"
 #include "drivers/bus/i2c/mtk_i2c.h"
 #include "drivers/bus/spi/mt8173.h"
 #include "drivers/bus/usb/usb.h"
@@ -46,8 +44,6 @@
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_mtk_gpio_input);
-
-	fit_set_compat("mediatek,mt8173-crosnb");
 
 	MTKI2c *i2c2 = new_mtk_i2c(0x11009000, 0x11000200, 2, 0, 0x20,
 				   ST_MODE, 100, 0);
