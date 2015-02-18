@@ -426,8 +426,8 @@ static backend_ret_t fill_img_part_info(struct image_part_details *img,
 	if (part_entry == NULL)
 		return BE_PART_NOT_FOUND;
 
-	/* Get bdev info from board-specific bdev table */
-	bdev_entry = get_bdev_info(part_entry->bdev_name);
+	/* Get bdev info from part_entry */
+	bdev_entry = part_entry->bdev_info;
 	if (bdev_entry == NULL)
 		return BE_BDEV_NOT_FOUND;
 

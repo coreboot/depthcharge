@@ -42,12 +42,9 @@ typedef enum {
 	BE_GPT_ERR,
 } backend_ret_t;
 
-#define MAX_NAME_LENGTH	64
-#define MAX_FS_LENGTH		4
-
 struct bdev_info {
 	/* Name of block device */
-	char name[MAX_NAME_LENGTH];
+	const char *name;
 	/* Pointer to BlockDevCtrlr structure */
 	BlockDevCtrlr *bdev_ctrlr;
 	/* Pointer to BlockDev structure */
@@ -56,11 +53,11 @@ struct bdev_info {
 
 struct part_info {
 	/* Name of partition */
-	char part_name[MAX_NAME_LENGTH];
+	const char *part_name;
 	/* Filesystem type of partition */
-	char part_fs_type[MAX_FS_LENGTH];
-	/* Name of block device on which the partition exists */
-	char *bdev_name;
+	const char *part_fs_type;
+	/* Pointer to bdev_info structure */
+	struct bdev_info *bdev_info;
 	/* Boolean - Is the partition GPT dependent? 1-yes, 0-no */
 	int gpt_based;
 	/* Union for MMC v/s Flash properties */
@@ -104,7 +101,7 @@ static inline int fb_fill_bdev_list(int index, BlockDevCtrlr *bdev_ctrlr)
 #define PART_NONGPT(part_name, part_fs, bdev_name, start, len)		\
 	{part_name, part_fs, bdev_name, 0, .base = start, .size = len}
 
-#define BDEV_NAME(bdev)	(fb_bdev_list[bdev].name)
+#define BDEV_ENTRY(bdev)	(&fb_bdev_list[(bdev)])
 #define GPT_TYPE(type)		GPT_ENT_TYPE_##type
 
 #endif /* __FASTBOOT_BACKEND_H__ */
