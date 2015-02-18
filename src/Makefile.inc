@@ -20,6 +20,7 @@ subdirs-y := arch base board boot debug drivers fastboot image net netboot vboot
 DEPTHCHARGE = $(obj)/depthcharge
 NETBOOT = $(obj)/netboot
 DEV = $(obj)/dev
+FASTBOOT = $(obj)/fastboot
 
 DONT_GC_NETBOOT = -Wl,-u,netboot_entry
 
@@ -84,7 +85,6 @@ $(notdir $1)_unified: $1.bin $1.payload
 PHONY += $(notdir $1)_unified
 endef
 
-
 $(eval $(call declare_ro_rw,$(DEPTHCHARGE),$$$$(depthcharge-objs), \
 	$$$$(readonly-objs),$$$$(readwrite-objs),))
 $(eval $(call declare_unified,$(DEPTHCHARGE),$$$$(depthcharge-objs) \
@@ -99,3 +99,8 @@ $(eval $(call declare_ro_rw,$(DEV),$$$$(depthcharge-objs) \
 $(eval $(call declare_unified,$(DEV),$$$$(depthcharge-objs) \
 	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs) $$$$(dev-objs) \
 	$$$$(unified-objs),$(DONT_GC_NETBOOT)))
+
+# Rules for creating fastboot-capable depthcharge binary
+
+$(eval $(call declare_unified,$(FASTBOOT),$$$$(depthcharge-objs) \
+	$$$$(unified-objs),))
