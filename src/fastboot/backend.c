@@ -601,3 +601,16 @@ uint64_t backend_get_bdev_size_bytes(const char *name)
 
 	return size;
 }
+
+int fb_fill_part_list(const char *name, size_t base, size_t size)
+{
+	struct part_info *part_entry = get_part_info(name);
+
+	if (part_entry == NULL)
+		return -1;
+
+	part_entry->base = base;
+	part_entry->size = size;
+
+	return 0;
+}

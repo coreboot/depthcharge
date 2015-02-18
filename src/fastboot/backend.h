@@ -96,6 +96,8 @@ static inline int fb_fill_bdev_list(int index, BlockDevCtrlr *bdev_ctrlr)
 	return 0;
 }
 
+int fb_fill_part_list(const char *name, size_t base, size_t size);
+
 #define PART_GPT(part_name, part_fs, bdev_name, g, inst)		\
 	{part_name, part_fs, bdev_name, 1, .guid = g, .instance = inst}
 #define PART_NONGPT(part_name, part_fs, bdev_name, start, len)		\
