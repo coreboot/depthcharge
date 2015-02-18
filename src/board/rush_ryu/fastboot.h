@@ -24,6 +24,13 @@
 #define __BOARD_RUSH_RYU_FASTBOOT_H__
 
 #include "config.h"
+#include "drivers/storage/blockdev.h"
+
+typedef enum {
+	MMC_BDEV,
+	FLASH_BDEV,
+	BDEV_COUNT,
+}bdev_t;
 
 #if CONFIG_FASTBOOT_MODE
 
@@ -31,12 +38,12 @@
 #include "fastboot/fastboot.h"
 #include "fastboot/udc.h"
 
-typedef enum {
-	MMC_BDEV,
-	/* FLASH_BDEV, */
-	BDEV_COUNT,
-}bdev_t;
+void fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT]);
 
-#endif
+#else
+
+static inline void fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT]) {}
+
+#endif /* CONFIG_FASTBOOT_MODE */
 
 #endif /* __BOARD_RUSH_RYU_FASTBOOT_H__ */

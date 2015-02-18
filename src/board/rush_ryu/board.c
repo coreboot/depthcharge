@@ -35,6 +35,7 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/gpio/tegra.h"
 #include "drivers/dma/tegra_apb.h"
+#include "drivers/flash/block_flash.h"
 #include "drivers/flash/spi.h"
 #include "drivers/power/sysinfo.h"
 #include "drivers/power/tps65913.h"
@@ -106,7 +107,11 @@ static int board_setup(void)
 	TegraSpi *spi4 = new_tegra_spi(0x7000da00, dma_controller,
 				       APBDMA_SLAVE_SL2B4);
 
-	flash_set_ops(&new_spi_flash(&spi4->ops)->ops);
+	SpiFlash *flash = new_spi_flash(&spi4->ops);
+
+	flash_set_ops(&flash->ops);
+
+	FlashBlockDev *fbdev = block_flash_register_nor(&flash->ops);
 
 	TegraI2c *cam_i2c = new_tegra_i2c((void *)0x7000c500, 3,
 					  (void *)CLK_RST_U_RST_SET,
@@ -139,9 +144,12 @@ static int board_setup(void)
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
 
-#if CONFIG_FASTBOOT_MODE
-	fb_fill_bdev_list(MMC_BDEV, &emmc->mmc.ctrlr);
-#endif
+	/* Fill in fastboot related information */
+	BlockDevCtrlr *bdev_arr[BDEV_COUNT] = {
+		[FLASH_BDEV] = &fbdev->ctrlr,
+		[MMC_BDEV] = &emmc->mmc.ctrlr,
+	};
+	fill_fb_info(bdev_arr);
 
 	/* Careful: the EHCI base is at offset 0x100 from the SoC's IP base */
 	UsbHostController *usbd = new_usb_hc(EHCI, 0x7d000100);

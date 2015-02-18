@@ -30,7 +30,7 @@
 
 struct bdev_info fb_bdev_list[BDEV_COUNT] = {
 	[MMC_BDEV] = {"mmc", NULL, NULL},
-	/* [FLASH_BDEV] = {"flash", NULL, NULL}, */
+	[FLASH_BDEV] = {"flash", NULL, NULL},
 };
 
 size_t fb_bdev_count = ARRAY_SIZE(fb_bdev_list);
@@ -59,6 +59,7 @@ struct part_info fb_part_list[] = {
 	PART_GPT("persistent", "ext4", BDEV_ENTRY(MMC_BDEV), GPT_TYPE(LINUX_FS),
 		 9),
 	PART_NONGPT("gpt", "ext4", BDEV_ENTRY(MMC_BDEV), 1, 33),
+	PART_NONGPT("firmware", NULL, BDEV_ENTRY(FLASH_BDEV), 0, 0),
 };
 
 size_t fb_part_count = ARRAY_SIZE(fb_part_list);
@@ -96,4 +97,14 @@ void fastboot_chipset_init(struct usbdev_ctrl **udc, device_descriptor_t *dd)
 {
 	dc_usb_initialize();
 	*udc = chipidea_init(dd);
+}
+
+void fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT])
+{
+	int i;
+
+	for (i = 0; i < BDEV_COUNT; i++)
+		fb_fill_bdev_list(i, bdev_ctrlr_arr[i]);
+	fb_fill_part_list("firmware", 0, lib_sysinfo.spi_flash.size /
+			  lib_sysinfo.spi_flash.sector_size);
 }
