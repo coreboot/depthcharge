@@ -271,6 +271,8 @@ SpiFlash *new_spi_flash(SpiOps *spi)
 	flash->ops.write = spi_flash_write;
 	flash->ops.erase = spi_flash_erase;
 	flash->ops.sector_size = sector_size;
+	assert(rom_size == ALIGN_DOWN(rom_size, sector_size));
+	flash->ops.sector_count = rom_size / sector_size;
 	flash->spi = spi;
 	flash->rom_size = rom_size;
 	flash->erase_cmd = erase_cmd;
