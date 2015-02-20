@@ -59,6 +59,9 @@ endif
 if BOARD = "glimmer"
 source src/board/glimmer/Kconfig
 endif
+if BOARD = "glower"
+source src/board/glower/Kconfig
+endif
 if BOARD = "gnawty"
 source src/board/gnawty/Kconfig
 endif
