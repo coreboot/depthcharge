@@ -27,6 +27,7 @@
 #include "board/rush_ryu/fastboot.h"
 #include "config.h"
 #include "drivers/bus/usb/usb.h"
+#include "vboot/firmware_id.h"
 
 struct bdev_info fb_bdev_list[BDEV_COUNT] = {
 	[MMC_BDEV] = {"mmc", NULL, NULL},
@@ -70,9 +71,14 @@ int get_board_var(struct fb_cmd *cmd, fb_getvar_t var)
 	struct fb_buffer *output = &cmd->output;
 
 	switch(var) {
-	case FB_BOOTLOADER_VERSION:
-		fb_add_string(output, "coreboot-%s", lib_sysinfo.cb_version);
+	case FB_BOOTLOADER_VERSION: {
+		const char *version = get_active_fw_id();
+		if (version == NULL)
+			ret = -1;
+		else
+			fb_add_string(output, "%s", version);
 		break;
+	}
 	case FB_PRODUCT:
 		fb_add_number(output, "google,ryu-rev%d", lib_sysinfo.board_id);
 		break;
