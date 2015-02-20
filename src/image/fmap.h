@@ -51,11 +51,4 @@ const char *fmap_find_string(const char *name, int *size);
 
 const Fmap *fmap_base(void);
 
-const char *fmap_ro_fwid(void);
-int fmap_ro_fwid_size(void);
-const char *fmap_rwa_fwid(void);
-int fmap_rwa_fwid_size(void);
-const char *fmap_rwb_fwid(void);
-int fmap_rwb_fwid_size(void);
-
 #endif /* __IMAGE_FMAP_H__ */

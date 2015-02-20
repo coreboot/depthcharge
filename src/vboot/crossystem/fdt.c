@@ -34,14 +34,9 @@
 #include "image/fmap.h"
 #include "vboot/callbacks/nvstorage_flash.h"
 #include "vboot/crossystem/crossystem.h"
+#include "vboot/firmware_id.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
-
-enum {
-	VDAT_RW_A = 0,
-	VDAT_RW_B = 1,
-	VDAT_RECOVERY = 0xFF
-};
 
 static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 {
@@ -78,27 +73,20 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 	}
 
 	int recovery = 0;
+
+	int fw_index = vdat->firmware_index;
 	const char *fwid;
 	int fwid_size;
-	switch (vdat->firmware_index) {
-	case VDAT_RW_A:
-		fwid = fmap_rwa_fwid();
-		fwid_size = fmap_rwa_fwid_size();
-		break;
-	case VDAT_RW_B:
-		fwid = fmap_rwb_fwid();
-		fwid_size = fmap_rwb_fwid_size();
-		break;
-	case VDAT_RECOVERY:
-		recovery = 1;
-		fwid = fmap_ro_fwid();
-		fwid_size = fmap_ro_fwid_size();
-		break;
-	default:
-		printf("Unrecognized firmware index %d.\n",
-		       vdat->firmware_index);
+
+	fwid = get_fw_id(fw_index);
+
+	if (fwid == NULL) {
+		printf("Unrecognized firmware index %d.\n", fw_index);
 		return 1;
 	}
+
+	fwid_size = get_fw_size(fw_index);
+
 	dt_add_bin_prop(node, "firmware-version", (char *)fwid, fwid_size);
 
 	if (recovery)
@@ -110,8 +98,11 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 
 	dt_add_u32_prop(node, "fmap-offset", CONFIG_FMAP_OFFSET);
 
-	dt_add_bin_prop(node, "readonly-firmware-version",
-		 (char *)fmap_ro_fwid(), fmap_ro_fwid_size());
+	int ro_fw_size = get_ro_fw_size();
+
+	if (ro_fw_size)
+		dt_add_bin_prop(node, "readonly-firmware-version",
+				(char *)get_ro_fw_id(), ro_fw_size);
 
 	GoogleBinaryBlockHeader *gbb = cparams.gbb_data;
 	if (memcmp(gbb->signature, GBB_SIGNATURE, GBB_SIGNATURE_SIZE)) {
