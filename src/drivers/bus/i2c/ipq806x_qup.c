@@ -201,7 +201,13 @@ static qup_return_t qup_i2c_write(gsbi_id_t gsbi_id, uint8_t mode,
 bailout:
 	if (QUP_SUCCESS != ret) {
 		qup_set_state(gsbi_id, QUP_STATE_RESET);
-		printf("%s() returns %s\n", __func__, get_error_string(ret));
+		/*
+		 * Do not report transfer fail - this is likely to be an the
+		 * i2c bus scan attempt.
+		 */
+		if (ret != QUP_ERR_XFER_FAIL)
+			printf("%s() returns %s(%d)\n", __func__,
+			       get_error_string(ret), ret);
 	}
 
 	return ret;

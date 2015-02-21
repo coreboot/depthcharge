@@ -80,16 +80,23 @@ static int i2c_init(unsigned gsbi_id)
 	}
 
 	gsbi_ret = gsbi_init(gsbi_id, GSBI_PROTO_I2C_ONLY);
-	if (GSBI_SUCCESS != gsbi_ret)
+	if (GSBI_SUCCESS != gsbi_ret) {
+		printf("%s: gsbi_init failed\n", __func__);
 		return 1;
+	}
 
 	qup_ret = qup_init(gsbi_id, qup_config);
-	if (QUP_SUCCESS != qup_ret)
+	if (QUP_SUCCESS != qup_ret) {
+		printf("%s: qup_init failed\n", __func__);
 		return 1;
+	}
+
 
 	qup_ret = qup_reset_i2c_master_status(gsbi_id);
-	if (QUP_SUCCESS != qup_ret)
+	if (QUP_SUCCESS != qup_ret) {
+		printf("%s: qup_reset failed\n", __func__);
 		return 1;
+	}
 
 	return 0;
 }

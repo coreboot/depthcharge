@@ -59,10 +59,12 @@ static int gsbi_init_board(gsbi_id_t gsbi_id)
 					     GPIO_NO_PULL, GPIO_2MA, 1);
 		break;
 	default:
-		return 1;
+		printf("%s: attempt to set up usupported GSBI (%d)\n",
+		       __func__, gsbi_id);
+		return GSBI_UNSUPPORTED;
 	}
 
-	return 0;
+	return GSBI_SUCCESS;
 }
 
 static inline void *gsbi_ctl_reg_addr(gsbi_id_t gsbi_id)
