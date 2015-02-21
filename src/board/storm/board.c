@@ -75,6 +75,11 @@ static void fill_board_descriptor(void)
 		bdescriptor.calibration_needed = 1;
 		break;
 
+	case BOARD_ID_WHIRLWIND_SP5:
+		bdescriptor.compat_string = "google,whirlwind-sp5";
+		bdescriptor.calibration_needed = 1;
+		break;
+
 	case BOARD_ID_PROTO_0_2_NAND:
 		bdescriptor.use_nand = 1;
 		storm_board = 1;
@@ -304,6 +309,9 @@ static int board_setup(void)
 
 	Ipq806xI2c *i2c = new_ipq806x_i2c(GSBI_ID_1);
 	tpm_set_ops(&new_slb9635_i2c(&i2c->ops, 0x20)->base.ops);
+
+	if (lib_sysinfo.board_id >= BOARD_ID_WHIRLWIND_SP5)
+		new_ipq806x_i2c(GSBI_ID_7); /* for the LED daughtercard. */
 
 	flash_nvram_init();
 
