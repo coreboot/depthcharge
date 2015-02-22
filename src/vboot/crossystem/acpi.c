@@ -20,6 +20,7 @@
  * MA 02111-1307 USA
  */
 
+#include <assert.h>
 #include <gbb_header.h>
 #include <libpayload.h>
 #include <vboot_api.h>
@@ -28,16 +29,11 @@
 #include "config.h"
 #include "image/fmap.h"
 #include "vboot/crossystem/crossystem.h"
+#include "vboot/firmware_id.h"
 #include "vboot/util/acpi.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 #include "vboot/util/vboot_handoff.h"
-
-enum {
-	VDAT_RW_A = 0,
-	VDAT_RW_B = 1,
-	VDAT_RECOVERY = 0xFF
-};
 
 int crossystem_setup(void)
 {
@@ -56,27 +52,35 @@ int crossystem_setup(void)
 	int main_fw;
 	const char *fwid;
 	int fwid_size;
-	switch (vdat->firmware_index) {
-	case VDAT_RW_A:
-		main_fw = BINF_RW_A;
-		fwid = fmap_rwa_fwid();
-		fwid_size = fmap_rwa_fwid_size();
-		break;
-	case VDAT_RW_B:
-		main_fw = BINF_RW_B;
-		fwid = fmap_rwb_fwid();
-		fwid_size = fmap_rwb_fwid_size();
-		break;
-	case VDAT_RECOVERY:
-		main_fw = BINF_RECOVERY;
-		fwid = fmap_ro_fwid();
-		fwid_size = fmap_ro_fwid_size();
-		break;
-	default:
-		printf("Unrecognized firmware index %d.\n",
-		       vdat->firmware_index);
+	int fw_index = vdat->firmware_index;
+
+	fwid = get_fw_id(fw_index);
+
+	if (fwid == NULL) {
+		printf("Unrecognized firmware index %d.\n", fw_index);
 		return 1;
 	}
+
+	fwid_size = get_fw_size(fw_index);
+
+	const struct {
+		int vdat_fw_index;
+		int main_fw_index;
+	} main_fw_arr[] = {
+		{ VDAT_RW_A, BINF_RW_A },
+		{ VDAT_RW_B, BINF_RW_B },
+		{ VDAT_RECOVERY, BINF_RECOVERY },
+	};
+
+	int i;
+	for (i = 0; i < ARRAY_SIZE(main_fw_arr); i++) {
+		if (fw_index == main_fw_arr[i].vdat_fw_index) {
+			main_fw = main_fw_arr[i].main_fw_index;
+			break;
+		}
+	}
+	assert(i < ARRAY_SIZE(main_fw_arr));
+
 	acpi_table->main_fw = main_fw;
 
 	// Use the value set by coreboot if we don't want to change it.
@@ -111,8 +115,12 @@ int crossystem_setup(void)
 	size = MIN(fwid_size, sizeof(acpi_table->fwid));
 	memcpy(acpi_table->fwid, fwid, size);
 
-	size = MIN(fmap_ro_fwid_size(), sizeof(acpi_table->frid));
-	memcpy(acpi_table->frid, fmap_ro_fwid(), size);
+	size = get_ro_fw_size();
+
+	if (size) {
+		size = MIN(size, sizeof(acpi_table->frid));
+		memcpy(acpi_table->frid, get_ro_fw_id(), size);
+	}
 
 	if (main_fw == BINF_RECOVERY)
 		acpi_table->main_fw_type = FIRMWARE_TYPE_RECOVERY;

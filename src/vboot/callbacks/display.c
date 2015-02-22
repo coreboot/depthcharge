@@ -20,17 +20,23 @@
  * MA 02111-1307 USA
  */
 
+#include <assert.h>
 #include <libpayload.h>
 #include <sysinfo.h>
 #include <vboot_api.h>
 #include <vboot_struct.h>
 
+#include "base/cleanup_funcs.h"
 #include "drivers/video/coreboot_fb.h"
-#include "image/fmap.h"
+#include "drivers/video/display.h"
+#include "vboot/firmware_id.h"
 #include "vboot/util/commonparams.h"
 
 VbError_t VbExDisplayInit(uint32_t *width, uint32_t *height)
 {
+	if (display_init())
+		return VBERROR_UNKNOWN;
+
 	video_init();
 	video_console_cursor_enable(0);
 
@@ -48,7 +54,9 @@ VbError_t VbExDisplayInit(uint32_t *width, uint32_t *height)
 
 VbError_t VbExDisplayBacklight(uint8_t enable)
 {
-	printf("VbExDisplayBacklight called but not implemented.\n");
+	if (backlight_update(enable))
+		return VBERROR_UNKNOWN;
+
 	return VBERROR_SUCCESS;
 }
 
@@ -60,6 +68,12 @@ static void print_string(const char *str)
 			video_console_putchar('\r');
 		video_console_putchar(*str++);
 	}
+}
+
+static void print_string_newline(const char *str)
+{
+	print_string(str);
+	print_string("\n");
 }
 
 void print_on_center(const char *msg)
@@ -128,54 +142,19 @@ VbError_t VbExDisplaySetDimension(uint32_t width, uint32_t height)
 	return VBERROR_SUCCESS;
 }
 
-enum {
-	VDAT_RW_A = 0x0,
-	VDAT_RW_B = 0x1,
-	VDAT_RECOVERY = 0xFF,
-	VDAT_UNKNOWN = 0x100
-};
-
 VbError_t VbExDisplayDebugInfo(const char *info_str)
 {
 	video_console_set_cursor(0, 0);
 	print_string(info_str);
 
 	print_string("read-only firmware id: ");
-	if (!fmap_ro_fwid()) {
-		print_string("NOT FOUND");
-	} else {
-		print_string(fmap_ro_fwid());
-	}
+	print_string_newline(get_ro_fw_id());
 
-	void *blob;
-	int size;
-	int fw_index = VDAT_UNKNOWN;
-	if (find_common_params(&blob, &size) == 0)
-		fw_index = ((VbSharedDataHeader *)blob)->firmware_index;
+	print_string("active firmware id: ");
+	const char *id = get_active_fw_id();
+	if (id == NULL)
+		id = "NOT FOUND";
+	print_string_newline(id);
 
-	print_string("\nactive firmware id: ");
-	switch (fw_index) {
-	case VDAT_RW_A:
-		if (fmap_rwa_fwid())
-			print_string(fmap_rwa_fwid());
-		else
-			print_string("RW A: ID NOT FOUND");
-		break;
-	case VDAT_RW_B:
-		if (fmap_rwb_fwid())
-			print_string(fmap_rwb_fwid());
-		else
-			print_string("RW B: ID NOT FOUND");
-		break;
-	case VDAT_RECOVERY:
-		if (fmap_ro_fwid())
-			print_string(fmap_ro_fwid());
-		else
-			print_string("RO: ID NOT FOUND");
-		break;
-	default:
-		print_string("NOT FOUND");
-	}
-	print_string("\n");
 	return VBERROR_SUCCESS;
 }
