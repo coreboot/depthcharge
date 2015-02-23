@@ -181,10 +181,10 @@ static StormGpio phys_presence_flag = {
 
 static void install_phys_presence_flag(void)
 {
-	phys_presence_flag.cbgpio = sysinfo_lookup_gpio("recovery");
+	phys_presence_flag.cbgpio = sysinfo_lookup_gpio("developer");
 
 	if (!phys_presence_flag.cbgpio) {
-		printf("%s failed retrieving recovery GPIO\n", __func__);
+		printf("%s failed retrieving phys presence GPIO\n", __func__);
 		return;
 	}
 
