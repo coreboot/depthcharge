@@ -204,11 +204,11 @@ static GpioOps *new_storm_gpio_input_from_coreboot(uint32_t port)
 
 static void install_phys_presence_flag(void)
 {
-	GpioOps *phys_presence = sysinfo_lookup_gpio("recovery", 1,
-					new_storm_gpio_input_from_coreboot);
+	GpioOps *phys_presence = sysinfo_lookup_gpio
+		("developer", 1, new_storm_gpio_input_from_coreboot);
 
 	if (!phys_presence) {
-		printf("%s failed retrieving recovery GPIO\n", __func__);
+		printf("%s failed retrieving phys presence GPIO\n", __func__);
 		return;
 	}
 
