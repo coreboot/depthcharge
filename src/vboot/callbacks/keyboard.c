@@ -21,7 +21,9 @@
  */
 
 #include <libpayload.h>
+#include <config.h>
 #include <vboot_api.h>
+#include <vboot/util/flag.h>
 
 #include "debug/dev.h"
 
@@ -38,6 +40,25 @@
 uint32_t VbExKeyboardRead(void)
 {
 	uint64_t timer_start;
+
+	if (CONFIG_HEADLESS) {
+		/*
+		 * We want to react to the button press only, i.e. we need to
+		 * catch the "unpressed -> pressed" transition.
+		 */
+		static uint32_t prev_rv;
+		uint32_t rv = flag_fetch(FLAG_PHYS_PRESENCE);
+
+		if (prev_rv != rv) {
+			prev_rv = rv;
+			if (rv) {
+				/* This was the actual button press. */
+				printf("%s:%d phy presense asserted\n",
+				       __func__, __LINE__);
+				return 0x15; /* That's ^U, boot from USB. */
+			}
+		}
+	}
 
 	// No input, just give up.
 	if (!havechar())

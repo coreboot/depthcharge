@@ -19,10 +19,10 @@ depthcharge-y += debug.c
 depthcharge-y += disk.c
 ifneq ($(CONFIG_HEADLESS),y)
 depthcharge-y += display.c
-depthcharge-y += keyboard.c
 else
 depthcharge-y += headless_stub.c
 endif
+depthcharge-y += keyboard.c
 depthcharge-y += legacy.c
 depthcharge-y += load_firmware.c
 depthcharge-y += memory.c

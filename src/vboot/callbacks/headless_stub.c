@@ -22,7 +22,6 @@
 
 #include <libpayload.h>
 #include <vboot_api.h>
-#include <vboot/util/flag.h>
 
 VbError_t VbExDisplayInit(uint32_t *width, uint32_t *height)
 {
@@ -65,33 +64,4 @@ int video_console_init(void)
 {
 	printf("%s:%d invoked\n", __func__, __LINE__);
 	return 0;
-}
-
-/*
- * This is a shortcut to get the storm design going, a different solution
- * might be required, tracked under crosbug.com/p/30705 and
- * crosbug.com/p/31325.
- */
-uint32_t VbExKeyboardRead(void)
-{
-	static uint32_t prev_rv;
-	uint32_t rv = flag_fetch(FLAG_PHYS_PRESENCE);
-
-	if (prev_rv != rv) {
-		printf("%s:%d phy presense %sasserted\n",
-		       __func__, __LINE__, rv ? "" : "de");
-		prev_rv = rv;
-	}
-
-	if (rv) {
-		return 0x15; /* That's ^U, i.e. boot from USB. */
-	}
-	return 0;
-}
-
-uint32_t VbExKeyboardReadWithFlags(uint32_t *flags_ptr)
-{
-	uint32_t c = VbExKeyboardRead();
-
-	return c;
 }
