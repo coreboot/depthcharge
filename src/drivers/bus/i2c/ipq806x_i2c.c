@@ -145,7 +145,7 @@ static int i2c_transfer(struct I2cOps *me, I2cSeg *segments, int seg_count)
 			bus->initialized = 1;
 	}
 
-	while (seg_count--) {
+	while (!ret && seg_count--) {
 		if (seg->read)
 			ret = i2c_read(bus->gsbi_id, seg->chip,
 				       seg->buf, seg->len);
