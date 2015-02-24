@@ -34,3 +34,7 @@ config DRIVER_BUS_SPI_TEGRA
 	bool "Tegra SPI driver"
 	depends on DRIVER_DMA_TEGRA_APB
 	default n
+
+config DRIVER_BUS_SPI_BCM_QSPI
+	bool "BCM58305 SPI driver"
+	default n

@@ -18,9 +18,13 @@
  */
 
 #include "base/init_funcs.h"
+#include "drivers/flash/spi.h"
+#include "drivers/bus/spi/bcm_qspi.h"
 
 static int board_setup(void)
 {
+	bcm_qspi *qspi = new_bcm_qspi(BCM_QSPI_BASE, SPI_MODE_3, 50000000);
+	flash_set_ops(&new_spi_flash(&qspi->ops)->ops);
 	return 0;
 }
 
