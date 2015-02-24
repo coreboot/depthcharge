@@ -45,3 +45,9 @@ config DRIVER_POWER_RK808
 	default n
 	help
 	  power off using the RK808 PMIC.
+
+config DRIVER_POWER_IPQ806X
+	bool "IPQ806X PMIC power management"
+	default n
+	help
+	  Reboot or power off using the IPQ806X internals.
