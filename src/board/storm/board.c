@@ -40,6 +40,7 @@
 #include "vboot/callbacks/nvstorage_flash.h"
 #include "vboot/util/flag.h"
 #include "drivers/gpio/ipq806x.h"
+#include "drivers/power/ipq806x.h"
 #include "drivers/storage/ipq806x_mmc.h"
 #include "drivers/storage/mtd/mtd.h"
 #include "drivers/storage/mtd/stream.h"
@@ -283,6 +284,8 @@ static int board_setup(void)
 	fit_set_compat(bdescriptor.compat_string);
 
 	install_phys_presence_flag();
+
+	power_set_ops(new_ipq806x_power_ops());
 
 	SpiController *spi = new_spi(0, 0);
 	flash_set_ops(&new_spi_flash(&spi->ops)->ops);
