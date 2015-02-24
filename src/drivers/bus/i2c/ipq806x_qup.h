@@ -1,7 +1,7 @@
 /*
  * This file is part of the depthcharge project.
  *
- * Copyright (C) 2014 The Linux Foundation. All rights reserved.
+ * Copyright (C) 2014 - 2015 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -108,7 +108,9 @@
 #define QUP_I2C_INVALID_READ_ADDR	(1 << 24)
 #define QUP_I2C_INVALID_TAG		(1 << 23)
 #define QUP_I2C_FAILED_MASK		(0x3 << 6)
+#define QUP_I2C_INVALID_WRITE		(1 << 5)
 #define QUP_I2C_ARB_LOST		(1 << 4)
+#define QUP_I2C_PACKET_NACK		(1 << 3)
 #define QUP_I2C_BUS_ERROR		(1 << 2)
 
 typedef enum {
@@ -119,8 +121,16 @@ typedef enum {
 	QUP_ERR_UNSUPPORTED,
 	QUP_ERR_I2C_INVALID_SLAVE_ADDR,
 	QUP_ERR_XFER_FAIL,
+	QUP_ERR_I2C_INVALID_WRITE,
+	QUP_ERR_I2C_NACK,
 	QUP_ERR_UNDEFINED,
 } qup_return_t;
+
+#define QUP_I2C_XFER_FAIL_BITS		(QUP_I2C_FAILED_MASK | \
+					 QUP_I2C_ARB_LOST | \
+					 QUP_I2C_BUS_ERROR | \
+					 QUP_I2C_INVALID_READ_SEQ | \
+					 QUP_I2C_INVALID_TAG)
 
 typedef enum {
 	QUP_MINICORE_SPI = 1,
