@@ -1,7 +1,7 @@
 /*
  * This file is part of the depthcharge project.
  *
- * Copyright (C) 2014 The Linux Foundation. All rights reserved.
+ * Copyright (C) 2014 - 2015 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -84,9 +84,11 @@ static qup_return_t qup_i2c_master_status(gsbi_id_t gsbi_id)
 		ret = QUP_ERR_XFER_FAIL;
 	else if (reg_val & QUP_I2C_INVALID_READ_ADDR)
 		ret = QUP_ERR_I2C_INVALID_SLAVE_ADDR;
-	else if (reg_val & (QUP_I2C_FAILED_MASK |
-			    QUP_I2C_ARB_LOST |
-			    QUP_I2C_BUS_ERROR))
+	else if (reg_val & QUP_I2C_PACKET_NACK)
+		ret = QUP_ERR_I2C_NACK;
+	else if (reg_val & QUP_I2C_INVALID_WRITE)
+		ret = QUP_ERR_I2C_INVALID_WRITE;
+	else if (reg_val & QUP_I2C_XFER_FAIL_BITS)
 		ret = QUP_ERR_XFER_FAIL;
 
 	return ret;
@@ -190,7 +192,7 @@ static qup_return_t qup_i2c_write(gsbi_id_t gsbi_id, uint8_t mode,
 		}
 
 		qup_set_state(gsbi_id, QUP_STATE_PAUSE);
-		ret = QUP_SUCCESS;
+		ret = qup_i2c_master_status(gsbi_id);
 	}
 	break;
 
