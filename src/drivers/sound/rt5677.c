@@ -32,7 +32,7 @@ static struct rt5677_init_reg init_list[] = {
 	{RT5677_PWR_ANLG2,	  0x2CC0},
 	{RT5677_PWR_DSP2,	  0x0C00},
 	{RT5677_I2S2_SDP,	  0x0000},
-	{RT5677_CLK_TREE_CTRL1,	  0x0011},
+	{RT5677_CLK_TREE_CTRL1,	  0x1111},
 	{RT5677_PLL1_CTRL1,	  0x0000},
 	{RT5677_PLL1_CTRL2,	  0x0000},
 	{RT5677_DIG_MISC,	  0x0029},
@@ -40,6 +40,7 @@ static struct rt5677_init_reg init_list[] = {
 	{RT5677_GPIO_CTRL2,	  0x0020},
 	{RT5677_PWR_DIG2,	  0x9024}, /* Power on ADC Stereo Filters */
 	{RT5677_PDM_OUT_CTRL,	  0x0088}, /* Unmute PDM, set stereo1 DAC */
+	{RT5677_PDM_DATA_CTRL1,   0x0001}, /* Sysclk to PDM filter divider 2 */
 };
 #define RT5677_INIT_REG_LEN ARRAY_SIZE(init_list)
 
