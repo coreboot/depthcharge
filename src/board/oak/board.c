@@ -41,6 +41,9 @@
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
 
+#include "drivers/video/display.h"
+#include "drivers/video/mt8173_ddp.h"
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_mtk_gpio_input);
@@ -64,6 +67,10 @@ static int board_setup(void)
 			  &fixed_block_dev_controllers);
 	list_insert_after(&sd_card->mmc.ctrlr.list_node,
 			  &removable_block_dev_controllers);
+
+	/* Set display ops */
+	if (lib_sysinfo.framebuffer)
+		display_set_ops(new_mt8173_display());
 
 	return 0;
 }

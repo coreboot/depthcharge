@@ -42,4 +42,8 @@ config DRIVER_VIDEO_WW_RING
 	bool "Whirlwind LED ring driver"
 	default n
 
+config DRIVER_VIDEO_MEDIATEK
+	bool "MediaTek video settings"
+	default n
+
 
