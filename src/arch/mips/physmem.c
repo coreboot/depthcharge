@@ -33,8 +33,21 @@ uint64_t arch_phys_memset(uint64_t start, int c, uint64_t size)
 		memset(phys_to_virt(0), c, (size_t)end);
 		memset(phys_to_virt(start), c, (size_t)(0 - start));
 	} else {
-		// No wrap, set everything at once.
-		memset(phys_to_virt(start), c, (size_t)size);
+		/*
+		 * No wrap, set everything at once.
+		 *
+		 * The MMU is configured such that DRAM physical and virtual
+		 * addresses match. In case DRAM address range starts at zero,
+		 * the first megabyte is explicitly unmapped (to catch NULL
+		 * pointer dereference attempts).
+		 *
+		 * If setting of this first megabyte is requested, let's use
+		 * KSEG0 window to access it to avoid TLB miss exceptions.
+		 */
+		if (start < (1 * MiB))
+			memset(phys_to_kseg0(start), c, (size_t)size);
+		else
+			memset(phys_to_virt(start), c, (size_t)size);
 	}
 	return start;
 }
