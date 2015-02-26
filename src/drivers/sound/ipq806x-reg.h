@@ -30,12 +30,34 @@
 #ifndef __DRIVERS_SOUND_IPQ806X_REG_H__
 #define __DRIVERS_SOUND_IPQ806X_REG_H__
 
+#define IPQ806X_LCC_BASE                0x28000000
 #define IPQ806X_LPAIF_BASE		0x28100000
 #define IPQ806X_LPM_BASE		0x28400000
 
 #define LPM_SIZE			(4 * 1024)
 
 #define LPAIF_BANK_OFFSET		0x1000
+
+/* LCC MI2S Configuration/Control */
+
+#define LCC_MI2S_NS_REG                 0x48
+#define LCC_MI2S_STAT_REG               0x50
+
+#define LCC_MI2S_NS_OSR_CXC_MASK        0x20000
+#define LCC_MI2S_NS_OSR_CXC_SHIFT       17
+#define LCC_MI2S_NS_OSR_CXC_ENABLE      (1 << LCC_MI2S_NS_OSR_CXC_SHIFT)
+
+#define LCC_MI2S_NS_BIT_CXC_MASK        0x8000
+#define LCC_MI2S_NS_BIT_CXC_SHIFT       15
+#define LCC_MI2S_NS_BIT_CXC_ENABLE      (1 << LCC_MI2S_NS_BIT_CXC_SHIFT)
+
+#define LCC_MI2S_STAT_OSR_CLK_MASK      0x2
+#define LCC_MI2S_STAT_OSR_CLK_SHIFT     1
+#define LCC_MI2S_STAT_OSR_CLK_ON        (1 << LCC_MI2S_STAT_OSR_CLK_SHIFT)
+
+#define LCC_MI2S_STAT_BIT_CLK_MASK      0x1
+#define LCC_MI2S_STAT_BIT_CLK_SHIFT     0
+#define LCC_MI2S_STAT_BIT_CLK_ON        (1 << LCC_MI2S_STAT_BIT_CLK_SHIFT)
 
 /* LPAIF I2S Configuration/Control */
 

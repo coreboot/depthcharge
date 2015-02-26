@@ -31,6 +31,7 @@
 #include <libpayload.h>
 #include <stdint.h>
 
+#include "base/cleanup_funcs.h"
 #include "base/container_of.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/sound/ipq806x.h"
@@ -48,6 +49,12 @@ typedef struct __attribute__((packed)) {
 	uint32_t UNUSED;
 	uint32_t period_length;
 } Ipq806xI2sDmaRegs;
+
+typedef struct __attribute__((packed)) {
+	uint32_t ns;
+	uint32_t UNUSED;
+	uint32_t status;
+} Ipq806xLccMi2sRegs;
 
 static size_t ipq806x_sound_make_tone(int16_t *buffer, size_t buffer_length,
 		unsigned int channels, unsigned int frame_rate,
@@ -278,10 +285,34 @@ static int ipq806x_sound_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 	return ret;
 }
 
+static int ipq806x_sound_shutdown(struct CleanupFunc *cleanup, CleanupType type)
+{
+	Ipq806xSound *sound = (Ipq806xSound *)cleanup->data;
+	Ipq806xLccMi2sRegs *mi2s_regs = sound->lcc_mi2s_regs;
+	uint32_t regval;
+
+	printf("Shutting off the MI2S audio clock.\n");
+	regval = readl(&mi2s_regs->ns);
+	regval &= ~LCC_MI2S_NS_OSR_CXC_ENABLE;
+	regval &= ~LCC_MI2S_NS_BIT_CXC_ENABLE;
+	writel(regval, &mi2s_regs->ns);
+
+	udelay(10);
+
+	regval = readl(&mi2s_regs->status);
+	if (!(regval & LCC_MI2S_STAT_OSR_CLK_MASK))
+		if (!(regval & LCC_MI2S_STAT_BIT_CLK_MASK))
+			return 0;
+
+	printf("%s: error disabling MI2S clocks: %u\n", __func__, regval);
+	return 1;
+}
+
 Ipq806xSound *new_ipq806x_sound(GpioOps *gpio, unsigned int frame_rate,
 		unsigned int channels, unsigned int bitwidth, uint16_t volume)
 {
 	Ipq806xSound *sound = xzalloc(sizeof(*sound));
+	CleanupFunc *cleanup = xzalloc(sizeof(*cleanup));
 
 	assert(gpio != NULL);
 
@@ -295,6 +326,7 @@ Ipq806xSound *new_ipq806x_sound(GpioOps *gpio, unsigned int frame_rate,
 			LPAIF_MI2S_CTL_OFFSET(LPAIF_I2S_PORT_MI2S));
 	sound->dma_regs = (void *)(IPQ806X_LPAIF_BASE +
 			LPAIF_DMA_ADDR(LPAIF_DMA_RD_CH_MI2S, 0x00));
+	sound->lcc_mi2s_regs = (void *)(IPQ806X_LCC_BASE + LCC_MI2S_NS_REG);
 	sound->buffer = (void *)(IPQ806X_LPM_BASE);
 
 	sound->buffer_length = LPM_SIZE;
@@ -302,6 +334,11 @@ Ipq806xSound *new_ipq806x_sound(GpioOps *gpio, unsigned int frame_rate,
 	sound->channels = channels;
 	sound->bitwidth = bitwidth;
 	sound->volume = volume;
+
+	cleanup->cleanup = &ipq806x_sound_shutdown;
+	cleanup->types = CleanupOnHandoff | CleanupOnLegacy;
+	cleanup->data = sound;
+	list_insert_after(&cleanup->list_node, &cleanup_funcs);
 
 	return sound;
 }

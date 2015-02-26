@@ -40,6 +40,7 @@ typedef struct
 
 	void *ctrl_regs;
 	void *dma_regs;
+	void *lcc_mi2s_regs;
 	void *buffer;
 
 	size_t buffer_length;
