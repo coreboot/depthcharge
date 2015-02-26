@@ -23,6 +23,7 @@
 #ifndef __BOOT_FIT_H__
 #define __BOOT_FIT_H__
 
+#include <stddef.h>
 #include <stdint.h>
 
 struct DeviceTree;
