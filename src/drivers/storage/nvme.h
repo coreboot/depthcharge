@@ -93,6 +93,7 @@ typedef int NVME_STATUS;
 #define NVME_CCQ_SIZE	15	/* Number of I/O completion queue entries per queue, min 2, max 64 */
 
 #define NVME_NUM_QUEUES	2	/* Number of queues (Admin + IO) supported by the driver, only 2 supported */
+#define NVME_NUM_IO_QUEUES	(NVME_NUM_QUEUES - 1) /* Number of IO queues (not counting Admin Queue) */
 #define NVME_ADMIN_QUEUE_INDEX	0	/* Admin queu index must be 0 */
 #define NVME_IO_QUEUE_INDEX		1	/* IO queue */
 
@@ -168,6 +169,9 @@ typedef uint32_t NVME_CQHDBL;
 #define NVME_ADMIN_CRIOSQ_QID(x)	(x)
 #define NVME_ADMIN_CRIOSQ_QSIZE(x)	(((x)-1) << 16)
 #define NVME_ADMIN_CRIOSQ_CQID(x)	((x) << 16)
+
+#define NVME_ADMIN_SETFEATURES_OPC	9
+#define NVME_ADMIN_SETFEATURES_NUMQUEUES	7
 
 #define NVME_ADMIN_CRIOCQ_OPC	5
 #define NVME_ADMIN_CRIOCQ_QID(x)	(x)

@@ -96,7 +96,7 @@ static void nvme_dump_status(NVME_CQ volatile *cq) {
 /* Disables and resets the NVMe controller */
 static NVME_STATUS nvme_disable_controller(NvmeCtrlr *ctrlr) {
 	NVME_CC cc;
-	uint8_t timeout;
+	uint32_t timeout;
 
 	/* Read controller configuration */
 	cc = readl(ctrlr->ctrlr_regs + NVME_CC_OFFSET);
@@ -121,7 +121,7 @@ static NVME_STATUS nvme_disable_controller(NvmeCtrlr *ctrlr) {
 /* Enables controller and verifies that it's ready */
 static NVME_STATUS nvme_enable_controller(NvmeCtrlr *ctrlr) {
 	NVME_CC cc = 0;
-	uint8_t timeout;
+	uint32_t timeout;
 
 	SET(cc, NVME_CC_EN);
 	cc |= NVME_CC_IOSQES(6); /* Spec. recommended values */
@@ -162,7 +162,7 @@ static NVME_STATUS nvme_submit_cmd_polled(NvmeCtrlr *ctrlr,
 
 	if (NULL == ctrlr)
 		return NVME_INVALID_PARAMETER;
-	if (qid > (NVME_NUM_QUEUES - 1))
+	if (qid > NVME_NUM_IO_QUEUES)
 		return NVME_INVALID_PARAMETER;
 	if (timeout_ms == 0)
 		timeout_ms = 1;
@@ -214,7 +214,7 @@ static NVME_STATUS nvme_submit_cmd_polled(NvmeCtrlr *ctrlr,
 static NVME_STATUS nvme_submit_cmd(NvmeCtrlr *ctrlr, uint16_t qid, uint32_t sqsize) {
 	if (NULL == ctrlr)
 		return NVME_INVALID_PARAMETER;
-	if (qid > (NVME_NUM_QUEUES - 1))
+	if (qid > NVME_NUM_IO_QUEUES)
 		return NVME_INVALID_PARAMETER;
 
 	/* Update the submission queue tail in host memory */
@@ -232,7 +232,7 @@ static NVME_STATUS nvme_submit_cmd(NvmeCtrlr *ctrlr, uint16_t qid, uint32_t sqsi
 static NVME_STATUS nvme_ring_sq_doorbell(NvmeCtrlr *ctrlr, uint16_t qid) {
 	if (NULL == ctrlr)
 		return NVME_INVALID_PARAMETER;
-	if (qid > (NVME_NUM_QUEUES - 1))
+	if (qid > NVME_NUM_IO_QUEUES)
 		return NVME_INVALID_PARAMETER;
 
 	/* Ring SQ doorbell by writing SQ tail index to controller */
@@ -259,7 +259,7 @@ static NVME_STATUS nvme_complete_cmds_polled(NvmeCtrlr *ctrlr,
 
 	if (NULL == ctrlr)
 		return NVME_INVALID_PARAMETER;
-	if (qid > (NVME_NUM_QUEUES - 1))
+	if (qid > NVME_NUM_IO_QUEUES)
 		return NVME_INVALID_PARAMETER;
 	if (timeout_ms == 0)
 		timeout_ms = 1;
@@ -298,6 +298,38 @@ static NVME_STATUS nvme_complete_cmds_polled(NvmeCtrlr *ctrlr,
 	writel_with_flush(ctrlr->cq_h_dbl[qid], ctrlr->ctrlr_regs + NVME_CQHDBL_OFFSET(qid, NVME_CAP_DSTRD(ctrlr->cap)));
 
 	return NVME_SUCCESS;
+}
+
+/* Sends Set Feature 07h to allocate count number of IO queues */
+static NVME_STATUS nvme_set_queue_count(NvmeCtrlr *ctrlr, uint16_t count) {
+	NVME_SQ *sq;
+	int status = NVME_SUCCESS;
+
+	if (count == 0)
+		return NVME_INVALID_PARAMETER;
+
+	sq  = ctrlr->sq_buffer[NVME_ADMIN_QUEUE_INDEX] + ctrlr->sq_t_dbl[NVME_ADMIN_QUEUE_INDEX];
+
+	memset(sq, 0, sizeof(NVME_SQ));
+
+	sq->opc = NVME_ADMIN_SETFEATURES_OPC;
+	sq->cid = ctrlr->cid[NVME_ADMIN_QUEUE_INDEX]++;
+
+	sq->cdw10 = NVME_ADMIN_SETFEATURES_NUMQUEUES;
+
+	/* Count is a 0's based value, so subtract one */
+	count--;
+	/* Set count number of IO SQs and CQs */
+	sq->cdw11 = count;
+	sq->cdw11 |= (count << 16);
+
+	status = nvme_submit_cmd_polled(ctrlr,
+				NVME_ADMIN_QUEUE_INDEX,
+				NVME_ASQ_SIZE,
+				NVME_ACQ_SIZE,
+				NVME_GENERIC_TIMEOUT);
+
+	return status;
 }
 
 /* Creates a single IO completion queue */
@@ -859,6 +891,11 @@ static int nvme_ctrlr_init(BlockDevCtrlrOps *me)
 
 	/* Enable controller */
 	status = nvme_enable_controller(ctrlr);
+	if (NVME_ERROR(status))
+		goto exit;
+
+	/* Set IO queue count */
+	status = nvme_set_queue_count(ctrlr, NVME_NUM_IO_QUEUES);
 	if (NVME_ERROR(status))
 		goto exit;
 
