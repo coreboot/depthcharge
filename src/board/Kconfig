@@ -71,6 +71,9 @@ endif
 if BOARD = "link"
 source src/board/link/Kconfig
 endif
+if BOARD = "ninja"
+source src/board/ninja/Kconfig
+endif
 if BOARD = "nyan"
 source src/board/nyan/Kconfig
 endif
