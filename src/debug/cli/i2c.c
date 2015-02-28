@@ -108,6 +108,34 @@ static int scan_bus(void)
 	return CMD_RET_SUCCESS;
 }
 
+static int write_bus(uint8_t dev, uint8_t reg, uint8_t data)
+{
+	int ret;
+	I2cSeg seg;
+	uint8_t buffer[2];
+
+	buffer[0] = reg;
+	buffer[1] = data;
+
+	seg.read = 0;
+	seg.buf = buffer;
+	seg.len = sizeof(buffer);
+	seg.chip = dev;
+
+	ret = picked_i2c_bus_controller->ops->transfer
+		(picked_i2c_bus_controller->ops, &seg, 1);
+	if (ret) {
+		printf ("i2c write of dev %#2.2x reg %#x failed (%d)\n",
+			dev, reg, ret);
+		return CMD_RET_FAILURE;
+	}
+
+	printf ("i2c wrote %#2.2x to dev %#2.2x reg %#x\n",
+		data, dev, reg);
+
+	return CMD_RET_SUCCESS;
+}
+
 static int do_i2c(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	if (argc < 2)
@@ -138,6 +166,13 @@ static int do_i2c(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 				1);
 	}
 
+	if (!strcmp(argv[1], "write")) {
+		if (argc < 5)
+			return CMD_RET_USAGE;
+		return write_bus((uint8_t)strtoul(argv[2], 0, 16),
+				(uint8_t)strtoul(argv[3], 0, 16),
+				(uint8_t)strtoul(argv[4], 0, 16));
+	}
 	return CMD_RET_FAILURE;
 }
 
@@ -150,4 +185,6 @@ U_BOOT_CMD(
 	"  read <dev addr> <reg>\n"
 	"                   - read one byte from <dev addr> <reg>\n"
 	"  scan             - scan interface for devices\n"
+	"  write <dev addr> <reg> <data>\n"
+	"                   - write <data> into <reg> on <dev addr>\n"
 );
