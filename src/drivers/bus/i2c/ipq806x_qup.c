@@ -45,36 +45,6 @@ static unsigned gsbi_qup_base[] = {
 #define QUP_ADDR(gsbi_num, reg)	((void *)((gsbi_qup_base[gsbi_num-1]) + (reg)))
 #define MAX_DELAY_MS	100
 
-static char *get_error_string(qup_return_t error)
-{
-	char *msg;
-	switch (error) {
-	case QUP_ERR_BAD_PARAM:
-		msg = "bad parameter";
-		break;
-	case QUP_ERR_STATE_SET:
-		msg = "setting state failed";
-		break;
-	case QUP_ERR_TIMEOUT:
-		msg = "timeout";
-		break;
-	case QUP_ERR_UNSUPPORTED:
-		msg = "unsupported";
-		break;
-	case QUP_ERR_I2C_INVALID_SLAVE_ADDR:
-		msg = "invalid slave address";
-		break;
-	case QUP_ERR_XFER_FAIL:
-		msg = "transfer failed";
-		break;
-	case QUP_ERR_UNDEFINED:
-	default:
-		msg = "undefined";
-		break;
-	}
-	return msg;
-}
-
 static qup_return_t qup_i2c_master_status(gsbi_id_t gsbi_id)
 {
 	qup_return_t ret = QUP_SUCCESS;
@@ -82,14 +52,28 @@ static qup_return_t qup_i2c_master_status(gsbi_id_t gsbi_id)
 
 	if (readl(QUP_ADDR(gsbi_id, QUP_ERROR_FLAGS)))
 		ret = QUP_ERR_XFER_FAIL;
-	else if (reg_val & QUP_I2C_INVALID_READ_ADDR)
-		ret = QUP_ERR_I2C_INVALID_SLAVE_ADDR;
-	else if (reg_val & QUP_I2C_PACKET_NACK)
-		ret = QUP_ERR_I2C_NACK;
-	else if (reg_val & QUP_I2C_INVALID_WRITE)
-		ret = QUP_ERR_I2C_INVALID_WRITE;
-	else if (reg_val & QUP_I2C_XFER_FAIL_BITS)
-		ret = QUP_ERR_XFER_FAIL;
+	else if (reg_val & QUP_I2C_XFER_FAIL_BITS) {
+
+		printf("%s() returns 0x%08x\n", __func__,
+			reg_val & QUP_I2C_XFER_FAIL_BITS);
+
+		if (reg_val & QUP_I2C_PACKET_NACK)
+			ret = QUP_ERR_I2C_NACK;
+		else if (reg_val & QUP_I2C_INVALID_READ_ADDR)
+			ret = QUP_ERR_I2C_INVALID_SLAVE_ADDR;
+		else if (reg_val & QUP_I2C_INVALID_WRITE)
+			ret = QUP_ERR_I2C_INVALID_WRITE;
+		else if (reg_val & QUP_I2C_ARB_LOST)
+			ret = QUP_ERR_I2C_ARB_LOST;
+		else if (reg_val & QUP_I2C_BUS_ERROR)
+			ret = QUP_ERR_I2C_BUS_ERROR;
+		else if (reg_val & QUP_I2C_INVALID_READ_SEQ)
+			ret = QUP_I2C_ERR_INVALID_READ_SEQ;
+		else if (reg_val & QUP_I2C_INVALID_TAG)
+			ret = QUP_ERR_I2C_INVALID_TAG;
+		else
+			ret = QUP_ERR_I2C_FAILED;
+	}
 
 	return ret;
 }
@@ -208,8 +192,7 @@ bailout:
 		 * i2c bus scan attempt.
 		 */
 		if (ret != QUP_ERR_XFER_FAIL)
-			printf("%s() returns %s(%d)\n", __func__,
-			       get_error_string(ret), ret);
+			printf("%s() returns %d\n", __func__, ret);
 	}
 
 	return ret;
@@ -315,7 +298,7 @@ recv_done:
 bailout:
 	if (QUP_SUCCESS != ret) {
 		qup_set_state(gsbi_id, QUP_STATE_RESET);
-		printf("%s() returns %s\n", __func__, get_error_string(ret));
+		printf("%s() returns %d\n", __func__, ret);
 	}
 
 	return ret;
@@ -385,7 +368,7 @@ qup_return_t qup_init(gsbi_id_t gsbi_id, qup_config_t *config_ptr)
 
 bailout:
 	if (QUP_SUCCESS != ret)
-		printf("%s() returns %s\n", __func__, get_error_string(ret));
+		printf("%s() returns %d\n", __func__, ret);
 
 	return ret;
 }
