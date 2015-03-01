@@ -45,7 +45,7 @@ static unsigned gsbi_qup_base[] = {
 #define QUP_ADDR(gsbi_num, reg)	((void *)((gsbi_qup_base[gsbi_num-1]) + (reg)))
 #define MAX_DELAY_MS	100
 
-static qup_return_t qup_i2c_master_status(gsbi_id_t gsbi_id)
+static qup_return_t qup_i2c_master_status(gsbi_id_t gsbi_id, int repor_err)
 {
 	qup_return_t ret = QUP_SUCCESS;
 	uint32_t reg_val = readl(QUP_ADDR(gsbi_id, QUP_I2C_MASTER_STATUS));
@@ -54,8 +54,9 @@ static qup_return_t qup_i2c_master_status(gsbi_id_t gsbi_id)
 		ret = QUP_ERR_XFER_FAIL;
 	else if (reg_val & QUP_I2C_XFER_FAIL_BITS) {
 
-		printf("%s() returns 0x%08x\n", __func__,
-			reg_val & QUP_I2C_XFER_FAIL_BITS);
+		if (repor_err)
+			printf("%s() returns 0x%08x\n", __func__,
+			       reg_val & QUP_I2C_XFER_FAIL_BITS);
 
 		if (reg_val & QUP_I2C_PACKET_NACK)
 			ret = QUP_ERR_I2C_NACK;
@@ -100,7 +101,8 @@ static qup_return_t qup_wait_for_state(gsbi_id_t gsbi_id, unsigned wait_for)
 }
 
 static qup_return_t qup_i2c_write(gsbi_id_t gsbi_id, uint8_t mode,
-				  qup_data_t *p_tx_obj, uint8_t stop_seq)
+				  qup_data_t *p_tx_obj, uint8_t stop_seq,
+				  int write_errmsg_on)
 {
 	qup_return_t ret = QUP_ERR_UNDEFINED;
 	uint32_t start_ts;
@@ -139,7 +141,8 @@ static qup_return_t qup_i2c_write(gsbi_id_t gsbi_id, uint8_t mode,
 			while (data_len && readl(QUP_ADDR(gsbi_id,
 						  QUP_OPERATIONAL)) &
 						  OUTPUT_FIFO_FULL) {
-				ret = qup_i2c_master_status(gsbi_id);
+				ret = qup_i2c_master_status(gsbi_id,
+							    write_errmsg_on);
 				if (QUP_SUCCESS != ret)
 					goto bailout;
 				if (start_ts < (timer_raw_value() - d)) {
@@ -166,7 +169,7 @@ static qup_return_t qup_i2c_write(gsbi_id_t gsbi_id, uint8_t mode,
 		start_ts = timer_raw_value();
 		while (((readl(QUP_ADDR(gsbi_id, QUP_OPERATIONAL))) &
 					 OUTPUT_FIFO_NOT_EMPTY)) {
-			ret = qup_i2c_master_status(gsbi_id);
+			ret = qup_i2c_master_status(gsbi_id, write_errmsg_on);
 			if (QUP_SUCCESS != ret)
 				goto bailout;
 			if (start_ts < (timer_raw_value() - d)) {
@@ -176,7 +179,7 @@ static qup_return_t qup_i2c_write(gsbi_id_t gsbi_id, uint8_t mode,
 		}
 
 		qup_set_state(gsbi_id, QUP_STATE_PAUSE);
-		ret = qup_i2c_master_status(gsbi_id);
+		ret = qup_i2c_master_status(gsbi_id, write_errmsg_on);
 	}
 	break;
 
@@ -191,7 +194,7 @@ bailout:
 		 * Do not report transfer fail - this is likely to be an the
 		 * i2c bus scan attempt.
 		 */
-		if (ret != QUP_ERR_XFER_FAIL)
+		if (write_errmsg_on || (ret != QUP_ERR_I2C_NACK))
 			printf("%s() returns %d\n", __func__, ret);
 	}
 
@@ -228,7 +231,7 @@ static qup_return_t qup_i2c_read(gsbi_id_t gsbi_id, uint8_t mode,
 		start_ts = timer_raw_value();
 		while ((readl(QUP_ADDR(gsbi_id, QUP_OPERATIONAL)) &
 				 OUTPUT_FIFO_NOT_EMPTY)) {
-			ret = qup_i2c_master_status(gsbi_id);
+			ret = qup_i2c_master_status(gsbi_id, 1);
 			if (QUP_SUCCESS != ret)
 				goto bailout;
 			if (start_ts < (timer_raw_value() - d)) {
@@ -245,7 +248,7 @@ static qup_return_t qup_i2c_read(gsbi_id_t gsbi_id, uint8_t mode,
 			start_ts = timer_raw_value();
 			while ((!((readl(QUP_ADDR(gsbi_id, QUP_OPERATIONAL))) &
 				   INPUT_SERVICE_FLAG))) {
-				ret = qup_i2c_master_status(gsbi_id);
+				ret = qup_i2c_master_status(gsbi_id, 1);
 				if (QUP_SUCCESS != ret)
 					goto bailout;
 				if (start_ts < (timer_raw_value() - d)) {
@@ -409,7 +412,7 @@ qup_return_t qup_reset_i2c_master_status(gsbi_id_t gsbi_id)
 }
 
 qup_return_t qup_send_data(gsbi_id_t gsbi_id, qup_data_t *p_tx_obj,
-			   uint8_t stop_seq)
+			   uint8_t stop_seq, int write_errmsg_on)
 {
 	qup_return_t ret = QUP_ERR_UNDEFINED;
 
@@ -422,7 +425,8 @@ qup_return_t qup_send_data(gsbi_id_t gsbi_id, qup_data_t *p_tx_obj,
 						       QUP_IO_MODES)) >>
 					      QUP_OUTPUT_MODE_SHFT) &
 					QUP_MODE_MASK;
-			ret = qup_i2c_write(gsbi_id, mode, p_tx_obj, stop_seq);
+			ret = qup_i2c_write(gsbi_id, mode, p_tx_obj, stop_seq,
+					    write_errmsg_on);
 			if (0) {
 				int i;
 				printf("i2c tx bus %d device %2.2x:",

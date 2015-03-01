@@ -121,7 +121,8 @@ static int i2c_read(uint32_t gsbi_id, uint8_t slave,
 }
 
 static int i2c_write(uint32_t gsbi_id, uint8_t slave,
-		     uint8_t *data, int data_len, uint8_t stop_seq)
+		     uint8_t *data, int data_len, uint8_t stop_seq,
+		     int write_errmsg_on)
 {
 	qup_data_t obj;
 	qup_return_t qup_ret = 0;
@@ -131,7 +132,7 @@ static int i2c_write(uint32_t gsbi_id, uint8_t slave,
 	obj.p.iic.addr = slave;
 	obj.p.iic.data_len = data_len;
 	obj.p.iic.data = data;
-	qup_ret = qup_send_data(gsbi_id, &obj, stop_seq);
+	qup_ret = qup_send_data(gsbi_id, &obj, stop_seq, write_errmsg_on);
 
 	if (QUP_SUCCESS != qup_ret)
 		return 1;
@@ -159,7 +160,8 @@ static int i2c_transfer(struct I2cOps *me, I2cSeg *segments, int seg_count)
 		else
 			ret  = i2c_write(bus->gsbi_id, seg->chip,
 					 seg->buf, seg->len,
-					 (seg_count ? 0 : 1));
+					 (seg_count ? 0 : 1),
+			!me->scan_mode);
 		seg++;
 	}
 
@@ -180,7 +182,7 @@ Ipq806xI2c *new_ipq806x_i2c(unsigned gsbi_id)
 		bus->gsbi_id = gsbi_id;
 		bus->initialized = 1;
 		bus->ops.transfer = &i2c_transfer;
-
+		bus->ops.scan_mode_on_off = scan_mode_on_off;
 		if (CONFIG_CLI)
 			add_i2c_controller_to_list(&bus->ops,
 						   "gsbi%d", gsbi_id);
