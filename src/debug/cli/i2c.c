@@ -100,9 +100,17 @@ static int scan_bus(void)
 
 	printf("Will scan bus %s\n", picked_i2c_bus_controller->i2c_name);
 
+	if (picked_i2c_bus_controller->ops->scan_mode_on_off)
+		picked_i2c_bus_controller->ops->scan_mode_on_off
+			(picked_i2c_bus_controller->ops, 1);
+
 	for (address = 0; address < 128; address++)
 		if (read_bus(address, 0, 0) == CMD_RET_SUCCESS)
 			printf ("%#2.2x ", address);
+
+	if (picked_i2c_bus_controller->ops->scan_mode_on_off)
+		picked_i2c_bus_controller->ops->scan_mode_on_off
+			(picked_i2c_bus_controller->ops, 0);
 
 	printf("\n");
 	return CMD_RET_SUCCESS;
