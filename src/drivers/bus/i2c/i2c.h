@@ -39,8 +39,12 @@ typedef struct I2cSeg
 
 typedef struct I2cOps
 {
+	int scan_mode;
 	int (*transfer)(struct I2cOps *me, I2cSeg *segments, int seg_count);
+	void (*scan_mode_on_off)(struct I2cOps *me, int mode_on);
 } I2cOps;
+
+void scan_mode_on_off(struct I2cOps *me, int mode_on);
 
 /*
  * Read a raw chunk of data in one segment and one frame.

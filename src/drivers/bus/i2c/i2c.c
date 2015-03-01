@@ -79,3 +79,8 @@ int i2c_writew(I2cOps *ops, uint8_t chip, uint8_t reg, uint16_t data)
 
 	return ops->transfer(ops, &seg, 1);
 }
+
+void scan_mode_on_off(I2cOps *ops, int scan_mode)
+{
+	ops->scan_mode = scan_mode;
+}
