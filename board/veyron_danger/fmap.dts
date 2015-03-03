@@ -93,7 +93,7 @@
 			 * each RW_SECTION.
 			 */
 			reg = <0x00200000 0x00002000>;
-			type = "keyblock boot,ecrwhash,romstage,ramstage";
+			type = "keyblock boot,romstage,ramstage";
 			with_index;
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
@@ -104,14 +104,8 @@
 		rw-a-boot {
 			/* Alignment: no requirement (yet). */
 			label = "fw-main-a";
-			reg = <0x00202000 0x00056000>;
-			type = "blob boot,ecrwhash,romstage,ramstage";
-			with_index;
-		};
-		rw-a-ec-boot {
-			label = "ec-main-a";
-			type = "blob ecbin";
-			reg = <0x00258000 0x0001ff00>;
+			reg = <0x00202000 0x00075f00>;
+			type = "blob boot,romstage,ramstage";
 			with_index;
 		};
 		rw-a-firmware-id {
@@ -122,14 +116,14 @@
 			type = "blobstring fwid";
 		};
 
-		/* ---- Section: Rewritable shared 16 KB---- */
+		/* ---- Section: Rewritable shared 8 KB ---- */
 		shared-section {
 			/*
 			 * Alignment: 4k (for updating).
 			 * Anything in this range may be updated in recovery.
 			 */
 			label = "rw-shared";
-			reg = <0x00278000 0x00004000>;
+			reg = <0x00278000 0x00002000>;
 		};
 		shared-data {
 			label = "shared-data";
@@ -137,12 +131,21 @@
 			 * Alignment: 4k (for random read/write).
 			 * RW firmware can put calibration data here.
 			 */
-			reg = <0x00278000 0x00004000>;
+			reg = <0x00278000 0x00002000>;
 			type = "wiped";
 			wipe-value = [00];
 		};
 
-		/* ---- Section: Rewritable Event Log 16KB ---- */
+		/* ---- Section: Storage to simulate NVRAM 8 KB ---- */
+		rw-nvram {
+			label = "rw-nvram";
+			reg = <0x0027a000 0x00002000>;
+			type = "wiped";
+			wipe-value = [ff];
+		};
+
+
+		/* ---- Section: Rewritable Event Log 16 KB ---- */
 		rw-elog {
 			label = "rw-elog";
 			/* Alignment: 4K (for updating) */
@@ -150,8 +153,6 @@
 			type = "wiped";
 			wipe-value = [ff];
 		};
-
-		/* TODO(dhendrix): VBNV stuff */
 
 		/* ---- Section: Rewritable slot B ---- */
 		rw-b {
@@ -166,7 +167,7 @@
 			 * each RW_SECTION.
 			 */
 			reg = <0x00280000 0x00002000>;
-			type = "keyblock boot,ecrwhash,romstage,ramstage";
+			type = "keyblock boot,romstage,ramstage";
 			with_index;
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
@@ -177,14 +178,8 @@
 		rw-b-boot {
 			label = "fw-main-b";
 			/* Alignment: no requirement (yet). */
-			reg = <0x00282000 0x00056000>;
-			type = "blob boot,ecrwhash,romstage,ramstage";
-			with_index;
-		};
-		rw-b-ec-boot {
-			label = "ec-main-b";
-			type = "blob ecbin";
-			reg = <0x002d8000 0x0001ff00>;
+			reg = <0x00282000 0x00075f00>;
+			type = "blob boot,romstage,ramstage";
 			with_index;
 		};
 		rw-b-firmware-id {
