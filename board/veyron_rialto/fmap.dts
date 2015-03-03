@@ -137,7 +137,6 @@
 		};
 
 		/* ---- Section: Storage to simulate NVRAM 8 KB ---- */
-		/* TODO(hungte) Sync with NVRAM location/size on Brain. */
 		rw-nvram {
 			label = "rw-nvram";
 			reg = <0x0027a000 0x00002000>;
