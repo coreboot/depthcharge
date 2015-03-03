@@ -21,3 +21,21 @@ config DRIVER_VIDEO_EXYNOS5
 config DRIVER_VIDEO_EXYNOS5_BASE
 	hex "Exynos5 video base address"
 	depends on DRIVER_VIDEO_EXYNOS5
+
+config DRIVER_VIDEO_INTEL_I915
+	bool "Intel i915 video driver"
+	default n
+
+config DRIVER_VIDEO_TEGRA132
+	bool "tegra132 video settings"
+	default n
+
+config DRIVER_VIDEO_ROCKCHIP
+	bool "rockchip video settings"
+	default n
+
+config DRIVER_VIDEO_WW_RING
+	bool "Whirlwind LED ring driver"
+	default n
+
+
