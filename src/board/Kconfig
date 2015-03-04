@@ -40,6 +40,9 @@ endif
 if BOARD = "falco"
 source src/board/falco/Kconfig
 endif
+if BOARD = "foster"
+source src/board/foster/Kconfig
+endif
 if BOARD = "fox_wtm2"
 source src/board/fox_wtm2/Kconfig
 endif
