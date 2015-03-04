@@ -144,67 +144,6 @@ static NVME_STATUS nvme_enable_controller(NvmeCtrlr *ctrlr) {
 	return NVME_SUCCESS;
 }
 
-/* Submit and complete 1 command by polling CQ for phase change
- * Rings SQ doorbell, polls waiting for completion, rings CQ doorbell
- *
- * ctrlr: NVMe controller handle
- * qid: Queue Identifier for the SQ/CQ containing the new command
- * sqsize: Number of commands (size) of the submission queue
- * cqsize: Number of commands (size) of the completion queue
- * timeout_ms: How long in milliseconds to wait for command completion
- */
-static NVME_STATUS nvme_submit_cmd_polled(NvmeCtrlr *ctrlr,
-			uint16_t qid,
-			uint32_t sqsize,
-			uint32_t cqsize,
-			uint32_t timeout_ms) {
-	NVME_CQ *cq;
-
-	if (NULL == ctrlr)
-		return NVME_INVALID_PARAMETER;
-	if (qid > NVME_NUM_IO_QUEUES)
-		return NVME_INVALID_PARAMETER;
-	if (timeout_ms == 0)
-		timeout_ms = 1;
-
-	cq  = ctrlr->cq_buffer[qid] + ctrlr->cq_h_dbl[qid];
-
-	/* Update SQ tail index in host memory */
-	if (++(ctrlr->sq_t_dbl[qid]) > (sqsize-1))
-		ctrlr->sq_t_dbl[qid] = 0;
-
-	/* Ring the submission queue doorbell */
-	writel_with_flush(ctrlr->sq_t_dbl[qid],
-				ctrlr->ctrlr_regs +
-				NVME_SQTDBL_OFFSET(qid, NVME_CAP_DSTRD(ctrlr->cap)));
-
-	/* Wait for phase to change (or timeout) */
-	if (WAIT_WHILE(
-		((readw(&(cq->flags)) & NVME_CQ_FLAGS_PHASE) == ctrlr->pt[qid]),
-		timeout_ms)) {
-			printf("nvme_submit_cmd_polled: ERROR - timeout\n");
-			return NVME_TIMEOUT;
-	}
-
-	/* Dump completion entry status for debugging. */
-	DEBUG(nvme_dump_status(cq);)
-
-	/* Update the completion queue head index, queue phase if necessary */
-	if (++(ctrlr->cq_h_dbl[qid]) > (cqsize-1)) {
-		ctrlr->cq_h_dbl[qid] = 0;
-		ctrlr->pt[qid] ^= 1;
-	}
-	/* Update SQ head pointer */
-	ctrlr->sqhd[qid] = cq->sqhd;
-
-	/* Ring the CQ doorbell */
-	writel_with_flush(ctrlr->cq_h_dbl[qid],
-			ctrlr->ctrlr_regs +
-			NVME_CQHDBL_OFFSET(qid, NVME_CAP_DSTRD(ctrlr->cap)));
-
-	return NVME_SUCCESS;
-}
-
 /* Add command to host SQ, don't write to HW SQ yet
  *
  * ctrlr: NVMe controller handle
@@ -288,7 +227,6 @@ static NVME_STATUS nvme_complete_cmds_polled(NvmeCtrlr *ctrlr,
 		if (++(ctrlr->cq_h_dbl[qid]) > (cqsize-1)) {
 			ctrlr->cq_h_dbl[qid] = 0;
 			ctrlr->pt[qid] ^= 1;
-			ctrlr->cid[qid] = 0;
 		}
 		/* Update SQ head pointer */
 		ctrlr->sqhd[qid] = cq->sqhd;
@@ -296,6 +234,59 @@ static NVME_STATUS nvme_complete_cmds_polled(NvmeCtrlr *ctrlr,
 
 	/* Ring the completion queue doorbell register*/
 	writel_with_flush(ctrlr->cq_h_dbl[qid], ctrlr->ctrlr_regs + NVME_CQHDBL_OFFSET(qid, NVME_CAP_DSTRD(ctrlr->cap)));
+
+	/* If the SQ is empty, reset cid to zero */
+	if (ctrlr->sq_t_dbl[qid] == ctrlr->sqhd[qid])
+		ctrlr->cid[qid] = 0;
+
+	return NVME_SUCCESS;
+}
+
+/* Submit and complete 1 command by polling CQ for phase change
+ * Rings SQ doorbell, polls waiting for completion, rings CQ doorbell
+ *
+ * ctrlr: NVMe controller handle
+ * qid: Queue Identifier for the SQ/CQ containing the new command
+ * sqsize: Number of commands (size) of the submission queue
+ * cqsize: Number of commands (size) of the completion queue
+ * timeout_ms: How long in milliseconds to wait for command completion
+ */
+static NVME_STATUS nvme_do_one_cmd_synchronous(NvmeCtrlr *ctrlr,
+			uint16_t qid,
+			uint32_t sqsize,
+			uint32_t cqsize,
+			uint32_t timeout_ms) {
+	NVME_STATUS status = NVME_SUCCESS;
+
+	if (NULL == ctrlr)
+		return NVME_INVALID_PARAMETER;
+	if (qid > NVME_NUM_IO_QUEUES)
+		return NVME_INVALID_PARAMETER;
+	if (timeout_ms == 0)
+		timeout_ms = 1;
+
+	/* This function should only be called when no commands are pending
+	 * because it will complete all outstanding commands. */
+	if (ctrlr->sq_t_dbl[qid] != ctrlr->sqhd[qid])
+		printf("nvme_do_one_cmd_synchronous: warning, SQ not empty. All commands will be completed.\n");
+
+	status = nvme_submit_cmd(ctrlr, qid, sqsize);
+	if (NVME_ERROR(status)) {
+		DEBUG(printf("nvme_do_one_cmd_synchronous: error %d submitting command\n",status);)
+		return status;
+	}
+
+	status = nvme_ring_sq_doorbell(ctrlr, qid);
+	if (NVME_ERROR(status)) {
+		DEBUG(printf("nvme_do_one_cmd_synchronous: error %d ringing doorbell\n",status);)
+		return status;
+	}
+
+	status = nvme_complete_cmds_polled(ctrlr, qid, cqsize, NVME_GENERIC_TIMEOUT);
+	if (NVME_ERROR(status)) {
+		DEBUG(printf("nvme_do_one_cmd_synchronous: error %d completing command\n",status);)
+		return status;
+	}
 
 	return NVME_SUCCESS;
 }
@@ -323,7 +314,7 @@ static NVME_STATUS nvme_set_queue_count(NvmeCtrlr *ctrlr, uint16_t count) {
 	sq->cdw11 = count;
 	sq->cdw11 |= (count << 16);
 
-	status = nvme_submit_cmd_polled(ctrlr,
+	status = nvme_do_one_cmd_synchronous(ctrlr,
 				NVME_ADMIN_QUEUE_INDEX,
 				NVME_ASQ_SIZE,
 				NVME_ACQ_SIZE,
@@ -352,7 +343,7 @@ static NVME_STATUS nvme_create_cq(NvmeCtrlr *ctrlr, uint16_t qid, uint16_t qsize
 	sq->cdw10 |= NVME_ADMIN_CRIOCQ_QID(qid);
 	sq->cdw10 |= NVME_ADMIN_CRIOCQ_QSIZE(qsize);
 
-	status = nvme_submit_cmd_polled(ctrlr,
+	status = nvme_do_one_cmd_synchronous(ctrlr,
 				NVME_ADMIN_QUEUE_INDEX,
 				NVME_ASQ_SIZE,
 				NVME_ACQ_SIZE,
@@ -384,7 +375,7 @@ static NVME_STATUS nvme_create_sq(NvmeCtrlr *ctrlr, uint16_t qid, uint16_t qsize
 	sq->cdw10 |= NVME_ADMIN_CRIOSQ_QID(qid);
 	sq->cdw10 |= NVME_ADMIN_CRIOSQ_QSIZE(qsize);
 
-	status = nvme_submit_cmd_polled(ctrlr,
+	status = nvme_do_one_cmd_synchronous(ctrlr,
 				NVME_ADMIN_QUEUE_INDEX,
 				NVME_ASQ_SIZE,
 				NVME_ACQ_SIZE,
@@ -668,7 +659,7 @@ static NVME_STATUS nvme_identify(NvmeCtrlr *ctrlr) {
 	/* Set bit 0 (Cns bit) to 1 to identify a controller */
 	sq->cdw10 = 1;
 
-	status = nvme_submit_cmd_polled(ctrlr,
+	status = nvme_do_one_cmd_synchronous(ctrlr,
 				NVME_ADMIN_QUEUE_INDEX,
 				NVME_ASQ_SIZE,
 				NVME_ACQ_SIZE,
@@ -724,7 +715,7 @@ static NVME_STATUS nvme_identify_namespaces(NvmeCtrlr *ctrlr) {
 		sq->prp[0] = (uintptr_t)virt_to_phys(namespace_data);
 		/* Clear bit 0 (Cns bit) to identify a namespace */
 
-		status = nvme_submit_cmd_polled(ctrlr,
+		status = nvme_do_one_cmd_synchronous(ctrlr,
 				NVME_ADMIN_QUEUE_INDEX,
 				NVME_ASQ_SIZE,
 				NVME_ACQ_SIZE,
