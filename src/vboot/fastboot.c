@@ -26,6 +26,7 @@
 
 #include "drivers/power/power.h"
 #include "fastboot/fastboot.h"
+#include "vboot/stages.h"
 
 fb_ret_type __attribute__((weak)) device_mode_enter(void)
 {
@@ -57,9 +58,9 @@ static void vboot_set_recovery(void)
 	vboot_update_recovery(VBNV_RECOVERY_RO_MANUAL);
 }
 
-void vboot_try_fastboot(int is_recovery)
+void vboot_try_fastboot(void)
 {
-	if (is_recovery == 0)
+	if (vboot_in_recovery() == 0)
 		return;
 
 	if (board_should_enter_device_mode() == 0)

@@ -24,9 +24,9 @@
 #define __VBOOT_FASTBOOT_H__
 
 #if CONFIG_FASTBOOT_MODE
-void vboot_try_fastboot(int is_recovery);
+void vboot_try_fastboot(void);
 #else
-static inline void vboot_try_fastboot(int is_recovery) {}
+static inline void vboot_try_fastboot(void) {}
 #endif
 
 #endif /* __VBOOT_FASTBOOT_H__ */
