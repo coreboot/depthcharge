@@ -23,6 +23,8 @@
 #include <libpayload.h>
 #include <vboot_api.h>
 
+#include "drivers/video/display.h"
+
 VbError_t VbExDisplayInit(uint32_t *width, uint32_t *height)
 {
 	printf("%s:%d invoked\n", __func__, __LINE__);
@@ -37,8 +39,7 @@ VbError_t VbExDisplayBacklight(uint8_t enable)
 
 VbError_t VbExDisplayScreen(uint32_t screen_type)
 {
-	printf("%s:%d invoked\n", __func__, __LINE__);
-	return VBERROR_SUCCESS;
+	return display_screen((enum VbScreenType_t)screen_type);
 }
 
 VbError_t VbExDisplayImage(uint32_t x, uint32_t y,
