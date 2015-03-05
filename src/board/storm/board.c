@@ -30,8 +30,8 @@
 #include "base/init_funcs.h"
 #include "boot/fit.h"
 #include "boot/ramoops.h"
-#include "drivers/bus/i2c/ipq806x_gsbi.h"
 #include "drivers/bus/i2c/ipq806x.h"
+#include "drivers/bus/i2c/ipq806x_gsbi.h"
 #include "drivers/bus/spi/ipq806x.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/gpio/gpio.h"
@@ -41,14 +41,15 @@
 #include "drivers/sound/ipq806x.h"
 #include "drivers/sound/route.h"
 #include "drivers/storage/ipq806x_mmc.h"
-#include "drivers/tpm/slb9635_i2c.h"
-#include "drivers/tpm/tpm.h"
-#include "vboot/callbacks/nvstorage_flash.h"
-#include "vboot/util/flag.h"
 #include "drivers/storage/mtd/mtd.h"
+#include "drivers/storage/mtd/nand/ipq_nand.h"
 #include "drivers/storage/mtd/stream.h"
 #include "drivers/storage/spi_gpt.h"
-#include "drivers/storage/mtd/nand/ipq_nand.h"
+#include "drivers/tpm/slb9635_i2c.h"
+#include "drivers/tpm/tpm.h"
+#include "drivers/video/ww_ring.h"
+#include "vboot/callbacks/nvstorage_flash.h"
+#include "vboot/util/flag.h"
 
 #include "board.h"
 
@@ -361,8 +362,21 @@ static int board_setup(void)
 	Ipq806xI2c *i2c = new_ipq806x_i2c(GSBI_ID_1);
 	tpm_set_ops(&new_slb9635_i2c(&i2c->ops, 0x20)->base.ops);
 
-	if (lib_sysinfo.board_id >= BOARD_ID_WHIRLWIND_SP5)
-		new_ipq806x_i2c(GSBI_ID_7); /* for the LED daughtercard. */
+	if (lib_sysinfo.board_id >= BOARD_ID_WHIRLWIND_SP5) {
+
+		DisplayOps *ww_ring_ops = new_ww_ring_display
+			(&new_ipq806x_i2c (GSBI_ID_7)->ops, 0x32);
+
+		display_set_ops(ww_ring_ops);
+
+		/*
+		 * Explicit initialization is required because the ring could
+		 * be in an arbitrary state before the system is restarted,
+		 * and board reset would not affect the state of the ring
+		 * attached over i2c.
+		 */
+		display_init();
+	}
 
 	Ipq806xSound *sound = new_ipq806x_sound(new_storm_dac_gpio_output(),
 			48000, 2, 16, 16000);
