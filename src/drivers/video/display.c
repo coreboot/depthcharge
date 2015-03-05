@@ -30,7 +30,7 @@ static DisplayOps *display_ops;
 
 static int display_cleanup(struct CleanupFunc *cleanup, CleanupType type)
 {
-	if (display_ops != NULL && display_ops->stop != NULL)
+	if (display_ops && display_ops->stop)
 		return display_ops->stop(display_ops);
 	return 0;
 }
@@ -51,7 +51,7 @@ void display_set_ops(DisplayOps *ops)
 
 int display_init(void)
 {
-	if (display_ops != NULL && display_ops->init != NULL)
+	if (display_ops && display_ops->init)
 		return display_ops->init(display_ops);
 
 	return 0;
@@ -59,10 +59,18 @@ int display_init(void)
 
 int backlight_update(uint8_t enable)
 {
-	if (display_ops != NULL && display_ops->backlight_update != NULL)
+	if (display_ops && display_ops->backlight_update)
 		return display_ops->backlight_update(display_ops, enable);
 
 	printf("%s called but not implemented.\n", __func__);
+	return 0;
+}
+
+int display_screen(enum VbScreenType_t screen)
+{
+	if (display_ops && display_ops->display_screen)
+		return display_ops->display_screen(display_ops, screen);
+
 	return 0;
 }
 

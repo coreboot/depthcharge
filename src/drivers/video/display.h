@@ -23,6 +23,8 @@
 #ifndef __DRIVERS_VIDEO_DISPLAY_H__
 #define __DRIVERS_VIDEO_DISPLAY_H__
 
+#include <vboot_api.h>
+
 typedef struct DisplayOps {
 	/* Perform any work required for initializing the display. */
 	int (*init)(struct DisplayOps *me);
@@ -30,10 +32,14 @@ typedef struct DisplayOps {
 	int (*backlight_update)(struct DisplayOps *me, uint8_t enable);
 	/* Stop the display as kernel boot is taking place. */
 	int (*stop)(struct DisplayOps *me);
+	/* Display a screen appropriate for the Vboot state. */
+	int (*display_screen)(struct DisplayOps *me,
+			      enum VbScreenType_t screen);
 } DisplayOps;
 
 int display_init(void);
 int backlight_update(uint8_t enable);
 void display_set_ops(DisplayOps *ops);
+int display_screen(enum VbScreenType_t screen);
 
 #endif
