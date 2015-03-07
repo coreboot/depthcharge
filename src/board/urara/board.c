@@ -21,6 +21,7 @@
 
 #include "base/init_funcs.h"
 #include "boot/fit.h"
+#include "drivers/bus/i2c/imgtec_i2c.h"
 #include "drivers/bus/spi/imgtec_spfi.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/flash/spi.h"
@@ -30,6 +31,8 @@
 #include "drivers/storage/mtd/nand/spi_nand.h"
 #include "drivers/storage/mtd/stream.h"
 #include "drivers/storage/spi_gpt.h"
+#include "drivers/tpm/slb9635_i2c.h"
+#include "drivers/tpm/tpm.h"
 #include "vboot/callbacks/nvstorage_flash.h"
 #include "vboot/util/flag.h"
 
@@ -116,6 +119,7 @@ static int board_setup(void)
 	SpiGptCtrlr *virtual_dev;
 	UsbHostController *usb_host;
 	ImgGpio *img_gpio;
+	ImgI2c *img_i2c;
 	struct board_conf *conf = pick_board_config();
 
 	flag_install(FLAG_DEVSW, new_gpio_low());
@@ -140,6 +144,9 @@ static int board_setup(void)
 				  "spi@18101000/flash@1");
 	list_insert_after(&virtual_dev->block_ctrlr.list_node,
 				&fixed_block_dev_controllers);
+	img_i2c = new_imgtec_i2c(conf->i2c_interface, 100000, 33333333);
+	tpm_set_ops(&new_slb9635_i2c(&(img_i2c->ops), 0x20)->base.ops);
+
 	fit_set_compat(conf->compatible);
 
 	flash_nvram_init();
