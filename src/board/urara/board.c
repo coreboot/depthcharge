@@ -31,22 +31,58 @@
 #include "drivers/gpio/imgtec_pistachio.h"
 #include "boot/fit.h"
 
-#define IMG_SPIM0_BASE_ADDRESS	0xB8100F00
-#define IMG_SPIM1_BASE_ADDRESS	0xB8101000
+#define IMG_SPIM0_BASE_ADDRESS		0xB8100F00
+#define IMG_SPIM1_BASE_ADDRESS		0xB8101000
 
-#define IMG_SPIM1_BASE_ADDRESS_CS0	0
-#define IMG_SPIM1_BASE_ADDRESS_CS1	58
-#define IMG_SPIM1_BASE_ADDRESS_CS2	31
-#define IMG_SPIM1_BASE_ADDRESS_CS3	56
-#define IMG_SPIM1_BASE_ADDRESS_CS4	57
+/*
+ * The following structure described unique hardware properties of all designs
+ * using the concerto/urara board, as well as the compatible string to look
+ * for in the FIT header. The board_id field is the key for searching in an
+ * array of these structures.
+ *
+ * Board ID is determined by coreboot and passed through the sysinfo
+ * structure.
+ */
+struct board_conf {
+	uint8_t board_id;
+	uint8_t i2c_interface;
+	uint8_t nor_cs_gpio;
+	uint8_t nand_cs_gpio;
+	const char *compatible;
+} board_configs[] = {
+	/*
+	 * Each time a new board needs to be supported, an element in this
+	 * array will have to be added. The board IDs must match the coreboot
+	 * ones defined in src/mainboard/google/urara/urara_boardid.h
+	 */
+	{0, 0, 0, 58, "img,pistachio-bub"},
+	{1, 3, 0,  1, "google,buranku"},
+	{2, 3, 0,  1, "google,derwent"},
+	{3, 3, 0,  1, "google,jaguar"},
+	{4, 3, 0,  1, "google,kennet"},
+	{5, 3, 0,  1, "google,space"},
+};
 
-#define IMG_SPIM0_BASE_ADDRESS_CS0	2
-#define IMG_SPIM0_BASE_ADDRESS_CS1	1
-#define IMG_SPIM0_BASE_ADDRESS_CS2	55
-#define IMG_SPIM0_BASE_ADDRESS_CS3	56
-#define IMG_SPIM0_BASE_ADDRESS_CS4	57
+static struct board_conf *pick_board_config(void)
+{
+	int i;
+	static struct board_conf *board_config;
 
-#define SPIM_MFIO(base,cs)	base##_CS##cs
+	if (!board_config) {
+		board_config = board_configs;
+		for (i = 0;
+		     i < ARRAY_SIZE(board_configs);
+		     i++, board_config++) {
+			if (board_config->board_id == lib_sysinfo.board_id)
+				return board_config;
+		}
+
+		printf("Invalid board ID %d, using 0\n", lib_sysinfo.board_id);
+		board_config = board_configs;
+	}
+
+	return board_config;
+}
 
 static int board_setup(void)
 {
@@ -55,6 +91,7 @@ static int board_setup(void)
 	SpiGptCtrlr *virtual_dev;
 	UsbHostController *usb_host;
 	ImgGpio *img_gpio;
+	struct board_conf *conf = pick_board_config();
 
 	flag_install(FLAG_DEVSW, new_gpio_low());
 	flag_install(FLAG_LIDSW, new_gpio_high());
@@ -66,11 +103,11 @@ static int board_setup(void)
 	usb_host = new_usb_hc(DWC2, 0xB8120000);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
 
-	img_gpio = new_imgtec_gpio_output(SPIM_MFIO(IMG_SPIM1_BASE_ADDRESS, 0));
+	img_gpio = new_imgtec_gpio_output(conf->nor_cs_gpio);
 	spfi = new_imgtec_spi(IMG_SPIM1_BASE_ADDRESS, 0, &(img_gpio->ops));
 	flash_set_ops(&new_spi_flash(&spfi->ops)->ops);
 
-	img_gpio = new_imgtec_gpio_output(SPIM_MFIO(IMG_SPIM1_BASE_ADDRESS, 1));
+	img_gpio = new_imgtec_gpio_output(conf->nand_cs_gpio);
 	spfi = new_imgtec_spi(IMG_SPIM1_BASE_ADDRESS, 1, &(img_gpio->ops));
 
 	mtd = new_spi_nand(&spfi->ops);
@@ -78,7 +115,7 @@ static int board_setup(void)
 				  "spi@18101000/flash@1");
 	list_insert_after(&virtual_dev->block_ctrlr.list_node,
 				&fixed_block_dev_controllers);
-	fit_set_compat("img,pistachio-bub");
+	fit_set_compat(conf->compatible);
 	return 0;
 }
 
