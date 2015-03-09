@@ -12,3 +12,7 @@ config DRIVER_STORAGE_MTD_IPQ_NAND
 config DRIVER_STORAGE_MTD_SPI_NAND
 	bool "SPI NAND devices support"
 	select DRIVER_STORAGE_MTD_NAND
+
+config DRIVER_STORAGE_MTD_BCM_NAND
+	bool "Broadcom NAND controller support"
+	select DRIVER_STORAGE_MTD_NAND

@@ -20,11 +20,25 @@
 #include "base/init_funcs.h"
 #include "drivers/flash/spi.h"
 #include "drivers/bus/spi/bcm_qspi.h"
+#include "drivers/storage/mtd/mtd.h"
+#include "drivers/storage/mtd/stream.h"
+#include "drivers/storage/spi_gpt.h"
+#include "drivers/storage/mtd/nand/bcm_nand.h"
 
 static int board_setup(void)
 {
 	bcm_qspi *qspi = new_bcm_qspi(BCM_QSPI_BASE, SPI_MODE_3, 50000000);
 	flash_set_ops(&new_spi_flash(&qspi->ops)->ops);
+
+	MtdDevCtrlr *mtd = new_bcm_nand((void *)BCM_NAND_BASE,
+					(void *)BCM_NAND_IDM_BASE,
+					4 /* ONFI timing mode */);
+	SpiGptCtrlr *virtual_dev = new_spi_gpt("RW_GPT",
+					       new_mtd_stream(mtd),
+					       "nand");
+	list_insert_after(&virtual_dev->block_ctrlr.list_node,
+			  &fixed_block_dev_controllers);
+
 	return 0;
 }
 
