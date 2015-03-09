@@ -148,26 +148,17 @@ static int spi_gpt_fixup(DeviceTreeFixup *fixup, DeviceTree *tree)
 
 	ListNode *prev_child = &nand->children;
 
-	/* Partition 0 goes over the whole device */
-	DeviceTreeNode *partition = xzalloc(sizeof(*partition));
-	partition->name = "device";
-	u64 start = 0;
-	u64 size = dev->block_dev.stream_block_count << BLOCK_SHIFT;
-
+	u64 total_size = dev->block_dev.stream_block_count << BLOCK_SHIFT;
 	/* TODO(chromium:436265): If we use 4GB+ NAND, update to support
 	 * two-word addresses for partitions on 32-bit architectures. */
-	if (size >> (32 * addrc) || size >> (32 * sizec)) {
+	if (total_size >> (32 * addrc) || total_size >> (32 * sizec)) {
 		printf(
 		       "Multiple word addresses not supported, addrc=%d, sizec=%d",
 		       addrc, sizec);
 		return 1;
 	}
 
-	dt_add_reg_prop(partition, &start, &size, 1, addrc, sizec);
-	list_insert_after(&partition->list_node, prev_child);
-	prev_child = &partition->list_node;
-
-	/* Partitions 1 and beyond are from the GPT */
+	/* Partitions are from the GPT */
 	GptHeader *header = (GptHeader *)gpt->primary_header;
 	GptEntry *entries = (GptEntry *)gpt->primary_entries;
 	GptEntry *e;
