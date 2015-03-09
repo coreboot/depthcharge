@@ -104,29 +104,14 @@ static int board_setup(void)
 		new_tegra_apb_dma((void *)0x60020000, dma_channel_bases,
 				  ARRAY_SIZE(dma_channel_bases));
 
-	TegraSpi *spi4 = new_tegra_spi(0x7000da00, dma_controller,
-				       APBDMA_SLAVE_SL2B4);
+	TegraSpi *qspi = new_tegra_spi(0x70410000, dma_controller,
+				       APBDMA_SLAVE_HSI);
 
-	SpiFlash *flash = new_spi_flash(&spi4->ops);
+	SpiFlash *flash = new_spi_flash(&qspi->ops);
 
 	flash_set_ops(&flash->ops);
 
 	FlashBlockDev *fbdev = block_flash_register_nor(&flash->ops);
-
-	TegraI2c *cam_i2c = new_tegra_i2c((void *)0x7000c500, 3,
-					  (void *)CLK_RST_U_RST_SET,
-					  (void *)CLK_RST_U_RST_CLR,
-					  CLK_U_I2C3);
-
-	tpm_set_ops(&new_slb9635_i2c(&cam_i2c->ops, 0x20)->base.ops);
-
-	TegraI2c *ec_i2c = new_tegra_i2c((void *)0x7000c400, 2,
-					  (void *)CLK_RST_H_RST_SET,
-					  (void *)CLK_RST_H_RST_CLR,
-					  CLK_H_I2C2);
-
-	CrosEcI2cBus *cros_ec_i2c_bus = new_cros_ec_i2c_bus(&ec_i2c->ops, 0x1E);
-	cros_ec_set_bus(&cros_ec_i2c_bus->ops);
 
 	TegraI2c *pwr_i2c = new_tegra_i2c((void *)0x7000d000, 5,
 					  (void *)CLK_RST_H_RST_SET,
