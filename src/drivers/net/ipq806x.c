@@ -13,6 +13,7 @@
 #include "drivers/gpio/ipq806x.h"
 #include "drivers/net/nss/msm_ipq806x_gmac.h"
 #include "drivers/net/athrs17_phy.h"
+#include "board/storm/board.h"
 
 #define PCS_QSGMII_MAC_STAT	0x74
 #define MAX_FRAME_SIZE		1536
@@ -568,24 +569,15 @@ static NetDevice *ipq_gmac_init(const ipq_gmac_board_cfg_t *gmac_cfg)
 	unsigned clk_div_val;
 	int i;
 
-	dev = malloc(sizeof(*dev));
-	if (!dev)
-		goto failed;
-
-	memset(dev, 0, sizeof(*dev));
-
-	dev->dev_data = malloc(sizeof(IpqEthDev));
-	if (!dev->dev_data)
-		goto failed;
-
-	ipq_dev = dev->dev_data;
-	memset(ipq_dev, 0, sizeof(*ipq_dev));
+	dev = xzalloc(sizeof(*dev));
+	ipq_dev = xzalloc(sizeof(IpqEthDev));
+	dev->dev_data = ipq_dev;
 
 	/* Board is supposed to supply a MAC address. */
 	if (!get_eth_mac_address(ipq_dev->mac_addr.addr))
 		goto failed;
 
-	ipq_info("MAC addr");
+	ipq_info("Ipq806x MAC addr");
 	for (i = 0; i < sizeof(ipq_dev->mac_addr.addr); i++)
 		ipq_info("%c%2.2x", i ? ':' : ' ', ipq_dev->mac_addr.addr[i]);
 	ipq_info("\n");
@@ -799,22 +791,11 @@ static const uip_eth_addr *ipq_get_mac(NetDevice *dev)
 	return &priv->mac_addr;
 }
 
-static int ipq_eth_init(void)
-{
-	static const ipq_gmac_board_cfg_t gmac_cfg = {
-		.base		 = NSS_GMAC0_BASE,
-		.unit		 = 0,
-		.is_macsec	 = 0,
-		.phy		 = PHY_INTERFACE_MODE_RGMII,
-		/* GMAC0 is in 2.5v RGMII, specify
-		mac_pwr0 and mac_pwr1 values.
-		*/
-		.mac_pwr0	 = 0,
-		.mac_pwr1	 = 0,
-		.mac_conn_to_phy = 0,
-		.mdio_addr	 = 4,
-		.switch_reset_gpio = 26 /* This in fact is board specific. */
-	};
+static ipq_gmac_board_cfg_t gmac_cfg = {
+	.base		 = NSS_GMAC0_BASE,
+	.phy		 = PHY_INTERFACE_MODE_RGMII,
+	.switch_reset_gpio = 26 /* This in fact is board specific. */
+};
 
 const gpio_func_data_t gmac0_gpio[] = {
 	{
@@ -851,26 +832,47 @@ const gpio_func_data_t gmac0_gpio[] = {
 	}
 };
 
+static int ipq_eth_init(void)
+{
+	NetDevice *ipq_network_device;
+
+	/* Port number happens to match port's MDIO address. */
+	gmac_cfg.mdio_addr = board_wan_port_number();
+	ipq_info("Using port #%d\n", gmac_cfg.mdio_addr);
+
 	ipq_gmac_common_init(&gmac_cfg);
-
 	ipq_configure_gpio(gmac0_gpio, ARRAY_SIZE(gmac0_gpio));
+	ipq_network_device = ipq_gmac_init(&gmac_cfg);
 
-	do {
-		NetDevice *ipq_network_device =	ipq_gmac_init(&gmac_cfg);
+	if (!ipq_network_device)
+		return -1;
 
-		if (!ipq_network_device)
-			break;
+	ipq_network_device->ready = ipq_phy_check_link;
+	ipq_network_device->recv = ipq_eth_recv;
+	ipq_network_device->send = ipq_eth_send;
+	ipq_network_device->get_mac = ipq_get_mac;
 
-		ipq_network_device->ready = ipq_phy_check_link;
-		ipq_network_device->recv = ipq_eth_recv;
-		ipq_network_device->send = ipq_eth_send;
-		ipq_network_device->get_mac = ipq_get_mac;
+	net_add_device(ipq_network_device);
 
-		net_add_device(ipq_network_device);
-
-		return 0;
-	} while(0);
-	return -1;
+	return 0;
 }
 
-INIT_FUNC(ipq_eth_init);
+static void ipq_net_poller(struct NetPoller *poller)
+{
+	static int initted;
+	if (!initted && !ipq_eth_init())
+		initted = 1;
+}
+
+static NetPoller net_poller = {
+	.poll = ipq_net_poller
+};
+
+static int ipq_eth_driver_register(void)
+{
+	list_insert_after(&net_poller.list_node, &net_pollers);
+
+	return 0;
+}
+
+INIT_FUNC(ipq_eth_driver_register);

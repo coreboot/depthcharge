@@ -30,6 +30,7 @@
 
 #include "ipq806x.h"
 #include "athrs17_phy.h"
+#include "board/storm/board.h"
 
 
 
@@ -140,28 +141,47 @@ athrs17_reg_write(uint32_t reg_addr, uint32_t reg_val)
  * INPUT : NONE
  * OUTPUT: NONE
  *********************************************************************/
-void athrs17_vlan_config(void)
+void athrs17_vlan_config(const ipq_gmac_board_cfg_t *gmac_cfg)
 {
-	athrs17_reg_write(S17_P0LOOKUP_CTRL_REG, 0x00140020);
-	athrs17_reg_write(S17_P0VLAN_CTRL0_REG, 0x20001);
+	if (gmac_cfg->mdio_addr == 4) {
 
-	athrs17_reg_write(S17_P1LOOKUP_CTRL_REG, 0x0014005c);
-	athrs17_reg_write(S17_P1VLAN_CTRL0_REG, 0x10001);
+		athrs17_reg_write(S17_P0LOOKUP_CTRL_REG, 0x00140020);
+		athrs17_reg_write(S17_P0VLAN_CTRL0_REG, 0x20001);
 
-	athrs17_reg_write(S17_P2LOOKUP_CTRL_REG, 0x0014005a);
-	athrs17_reg_write(S17_P2VLAN_CTRL0_REG, 0x10001);
+		athrs17_reg_write(S17_P1LOOKUP_CTRL_REG, 0x0014005c);
+		athrs17_reg_write(S17_P1VLAN_CTRL0_REG, 0x10001);
 
-	athrs17_reg_write(S17_P3LOOKUP_CTRL_REG, 0x00140056);
-	athrs17_reg_write(S17_P3VLAN_CTRL0_REG, 0x10001);
+		athrs17_reg_write(S17_P2LOOKUP_CTRL_REG, 0x0014005a);
+		athrs17_reg_write(S17_P2VLAN_CTRL0_REG, 0x10001);
 
-	athrs17_reg_write(S17_P4LOOKUP_CTRL_REG, 0x0014004e);
-	athrs17_reg_write(S17_P4VLAN_CTRL0_REG, 0x10001);
+		athrs17_reg_write(S17_P3LOOKUP_CTRL_REG, 0x00140056);
+		athrs17_reg_write(S17_P3VLAN_CTRL0_REG, 0x10001);
 
-	athrs17_reg_write(S17_P5LOOKUP_CTRL_REG, 0x00140001);
-	athrs17_reg_write(S17_P5VLAN_CTRL0_REG, 0x20001);
+		athrs17_reg_write(S17_P4LOOKUP_CTRL_REG, 0x0014004e);
+		athrs17_reg_write(S17_P4VLAN_CTRL0_REG, 0x10001);
 
-	athrs17_reg_write(S17_P6LOOKUP_CTRL_REG, 0x0014001e);
-	athrs17_reg_write(S17_P6VLAN_CTRL0_REG, 0x10001);
+		athrs17_reg_write(S17_P5LOOKUP_CTRL_REG, 0x00140001);
+		athrs17_reg_write(S17_P5VLAN_CTRL0_REG, 0x20001);
+
+		athrs17_reg_write(S17_P6LOOKUP_CTRL_REG, 0x0014001e);
+		athrs17_reg_write(S17_P6VLAN_CTRL0_REG, 0x10001);
+	} else if (gmac_cfg->mdio_addr == 1) {
+
+		athrs17_reg_write(S17_P0LOOKUP_CTRL_REG, 0x00140004);
+		athrs17_reg_write(S17_P0VLAN_CTRL0_REG, 0x20001);
+
+		athrs17_reg_write(S17_P1LOOKUP_CTRL_REG, 0x00140040);
+		athrs17_reg_write(S17_P1VLAN_CTRL0_REG, 0x10001);
+
+		athrs17_reg_write(S17_P2LOOKUP_CTRL_REG, 0x00140001);
+		athrs17_reg_write(S17_P2VLAN_CTRL0_REG, 0x20001);
+
+		athrs17_reg_write(S17_P6LOOKUP_CTRL_REG, 0x00140002);
+		athrs17_reg_write(S17_P6VLAN_CTRL0_REG, 0x10001);
+	} else {
+		printf("\n Unsupported port %d\n", gmac_cfg->mdio_addr);
+	}
+
 	printf("%s ...done\n", __func__);
 }
 
@@ -267,6 +287,6 @@ void ipq_switch_init(const ipq_gmac_board_cfg_t *gmac_cfg)
 		athrs17_reset_switch();
 		athrs17_reg_init(gmac_cfg);
 		athrs17_reg_init_lan(gmac_cfg);
-		athrs17_vlan_config();
+		athrs17_vlan_config(gmac_cfg);
 	}
 }

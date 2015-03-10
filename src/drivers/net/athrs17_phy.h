@@ -591,5 +591,5 @@
 #undef HEADER_EN
 #endif
 void athrs17_reset_switch(void);
-void athrs17_vlan_config(void);
+void athrs17_vlan_config(const ipq_gmac_board_cfg_t *gmac_cfg);
 #endif
