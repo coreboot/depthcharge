@@ -387,4 +387,13 @@ int get_mach_id(void)
 	return -1;
 }
 
+int board_wan_port_number(void)
+{
+	if ((lib_sysinfo.board_id == BOARD_ID_PROTO_0) ||
+	    (lib_sysinfo.board_id == BOARD_ID_PROTO_0_2))
+		return 4; /* Storm variants */
+
+	return 1; /* Whirlwind variants, let it be the default. */
+}
+
 INIT_FUNC(board_setup);

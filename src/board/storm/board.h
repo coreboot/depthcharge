@@ -25,6 +25,7 @@
 #include "base/device_tree.h"
 
 int set_wifi_calibration(DeviceTree *tree);
+int board_wan_port_number(void);
 
 /* Authoritative copy in http://go/jetstream-board-ids */
 enum storm_board_id {
