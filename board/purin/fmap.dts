@@ -84,7 +84,7 @@
 		rw-a {
 			label = "rw-section-a";
 			/* Alignment: 4k (for updating) */
-			reg = <0x00100000 0x00068000>;
+			reg = <0x00100000 0x00058000>;
 		};
 		rw-a-vblock {
 			label = "vblock-a";
@@ -103,13 +103,13 @@
 		rw-a-boot {
 			/* Alignment: no requirement (yet). */
 			label = "fw-main-a";
-			reg = <0x00102000 0x00065f00>;
+			reg = <0x00102000 0x00055f00>;
 			type = "blob cbfs/rw/a-boot";
 		};
 		rw-a-firmware-id {
 			/* Alignment: no requirement. */
 			label = "rw-fwid-a";
-			reg = <0x00167f00 0x00000100>;
+			reg = <0x00157f00 0x00000100>;
 			read-only;
 			type = "blobstring fwid";
 		};
@@ -121,7 +121,7 @@
 			 * Anything in this range may be updated in recovery.
 			 */
 			label = "rw-shared";
-			reg = <0x00168000 0x00004000>;
+			reg = <0x00158000 0x00004000>;
 		};
 		shared-data {
 			label = "shared-data";
@@ -129,7 +129,7 @@
 			 * Alignment: 4k (for random read/write).
 			 * RW firmware can put calibration data here.
 			 */
-			reg = <0x00168000 0x00004000>;
+			reg = <0x00158000 0x00004000>;
 			type = "wiped";
 			wipe-value = [00];
 		};
@@ -138,7 +138,28 @@
 		rw-elog {
 			label = "rw-elog";
 			/* Alignment: 4K (for updating) */
-			reg = <0x0016c000 0x00004000>;
+			reg = <0x0015c000 0x00004000>;
+			type = "wiped";
+			wipe-value = [ff];
+		};
+
+		/* ---- Section: Rewritable GPT 128 KB ---- */
+		rw-gpt {
+			label = "rw-gpt";
+			/* Alignment: 64k (for updating) */
+			reg = <0x00160000 0x00020000>;
+		};
+		rw-gpt-primary {
+			label = "rw-gpt-primary";
+			/* Alignment: 64k (for updating) */
+			reg = <0x00160000 0x00010000>;
+			type = "wiped";
+			wipe-value = [ff];
+		};
+		rw-gpt-secondary {
+			label = "rw-gpt-secondary";
+			/* Alignment: 64k (for updating) */
+			reg = <0x00170000 0x00010000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
@@ -147,7 +168,7 @@
 		rw-b {
 			label = "rw-section-b";
 			/* Alignment: 4k (for updating) */
-			reg = <0x00180000 0x000068000>;
+			reg = <0x00180000 0x000058000>;
 		};
 		rw-b-vblock {
 			label = "vblock-b";
@@ -166,13 +187,13 @@
 		rw-b-boot {
 			label = "fw-main-b";
 			/* Alignment: no requirement (yet). */
-			reg = <0x00182000 0x00065f00>;
+			reg = <0x00182000 0x00055f00>;
 			type = "blob cbfs/rw/b-boot";
 		};
 		rw-b-firmware-id {
 			label = "rw-fwid-b";
 			/* Alignment: no requirement. */
-			reg = <0x001e7f00 0x00000100>;
+			reg = <0x001d7f00 0x00000100>;
 			read-only;
 			type = "blobstring fwid";
 		};
@@ -181,7 +202,7 @@
 		rw-vpd {
 			label = "rw-vpd";
 			/* Alignment: 4k (for updating) */
-			reg = <0x001e8000 0x00008000>;
+			reg = <0x001d8000 0x00008000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
@@ -190,7 +211,7 @@
 		rw-nvram {
 			label = "rw-nvram";
 			/* Alignment: 64K (for block erases) */
-			reg = <0x001f0000 0x00010000>;
+			reg = <0x001e0000 0x00010000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
