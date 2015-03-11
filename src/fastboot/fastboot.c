@@ -348,13 +348,18 @@ static fb_ret_type fb_getvar_single(struct fb_cmd *cmd)
 		return FB_SUCCESS;
 
 	/*
+	 * Since fb_read_var returned non-zero value it means that we were not
+	 * able to read variable value. Thus, send message type to be sent back
+	 * to host as FAIL.
+	 */
+	cmd->type = FB_FAIL;
+
+	/*
 	 * If no new information was added by board about the failure, put in
 	 * nonexistent string.
 	 */
-	if (fb_buffer_length(&cmd->output) == out_len) {
+	if (fb_buffer_length(&cmd->output) == out_len)
 		fb_add_string(&cmd->output, "nonexistent", NULL);
-		cmd->type = FB_FAIL;
-	}
 
 	return FB_SUCCESS;
 }
