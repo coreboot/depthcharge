@@ -343,8 +343,7 @@ static int spi_xfer(SpiOps *spi_ops, void *din, const void *dout,
 }
 
 /* Initialize SPI slave */
-ImgSpi *new_imgtec_spi(uintptr_t reg_addr, unsigned int cs,
-					GpioOps *img_gpio)
+ImgSpi *new_imgtec_spi(unsigned int port, unsigned int cs, GpioOps *img_gpio)
 {
 	ImgSpi *bus = NULL;
 	struct spim_device_parameters *device_parameters;
@@ -352,7 +351,7 @@ ImgSpi *new_imgtec_spi(uintptr_t reg_addr, unsigned int cs,
 	die_if(cs > SPIM_DEVICE4, "Error: unsupported chipselect.\n");
 
 	bus = xzalloc(sizeof(*bus));
-	bus->base = (u32)reg_addr;
+	bus->base = IMG_SPIM_BASE_ADDRESS(port);
 	bus->cs = cs;
 
 	device_parameters = &(bus->device_parameters);

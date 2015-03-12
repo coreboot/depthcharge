@@ -131,7 +131,6 @@ typedef struct ImgSpi {
 	GpioOps *img_gpio;
 } ImgSpi;
 
-ImgSpi *new_imgtec_spi(uintptr_t reg_addr, unsigned int cs,
-					GpioOps *img_gpio);
+ImgSpi *new_imgtec_spi(unsigned int port, unsigned int cs, GpioOps *img_gpio);
 
 #endif /* __DRIVERS_BUS_SPI_IMGTEC_H__ */

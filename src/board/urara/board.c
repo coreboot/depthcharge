@@ -31,8 +31,10 @@
 #include "drivers/gpio/imgtec_pistachio.h"
 #include "boot/fit.h"
 
-#define IMG_SPIM0_BASE_ADDRESS		0xB8100F00
-#define IMG_SPIM1_BASE_ADDRESS		0xB8101000
+#define SPIM_INTERFACE	1
+#define NOR_CS		0
+#define NOR_CS_GPIO	0
+#define NAND_CS		1
 
 /*
  * The following structure described unique hardware properties of all designs
@@ -46,7 +48,6 @@
 struct board_conf {
 	uint8_t board_id;
 	uint8_t i2c_interface;
-	uint8_t nor_cs_gpio;
 	uint8_t nand_cs_gpio;
 	const char *compatible;
 } board_configs[] = {
@@ -55,12 +56,12 @@ struct board_conf {
 	 * array will have to be added. The board IDs must match the coreboot
 	 * ones defined in src/mainboard/google/urara/urara_boardid.h
 	 */
-	{0, 0, 0, 58, "img,pistachio-bub"},
-	{1, 3, 0,  1, "google,buranku"},
-	{2, 3, 0,  1, "google,derwent"},
-	{3, 3, 0,  1, "google,jaguar"},
-	{4, 3, 0,  1, "google,kennet"},
-	{5, 3, 0,  1, "google,space"},
+	{0, 0, 58, "img,pistachio-bub"},
+	{1, 3,  1, "google,buranku"},
+	{2, 3,  1, "google,derwent"},
+	{3, 3,  1, "google,jaguar"},
+	{4, 3,  1, "google,kennet"},
+	{5, 3,  1, "google,space"},
 };
 
 static struct board_conf *pick_board_config(void)
@@ -103,12 +104,12 @@ static int board_setup(void)
 	usb_host = new_usb_hc(DWC2, 0xB8120000);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
 
-	img_gpio = new_imgtec_gpio_output(conf->nor_cs_gpio);
-	spfi = new_imgtec_spi(IMG_SPIM1_BASE_ADDRESS, 0, &(img_gpio->ops));
+	img_gpio = new_imgtec_gpio_output(NOR_CS_GPIO);
+	spfi = new_imgtec_spi(SPIM_INTERFACE, NOR_CS, &(img_gpio->ops));
 	flash_set_ops(&new_spi_flash(&spfi->ops)->ops);
 
 	img_gpio = new_imgtec_gpio_output(conf->nand_cs_gpio);
-	spfi = new_imgtec_spi(IMG_SPIM1_BASE_ADDRESS, 1, &(img_gpio->ops));
+	spfi = new_imgtec_spi(SPIM_INTERFACE, NAND_CS, &(img_gpio->ops));
 
 	mtd = new_spi_nand(&spfi->ops);
 	virtual_dev = new_spi_gpt("RW_GPT", new_mtd_stream(mtd),

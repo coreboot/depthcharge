@@ -32,6 +32,8 @@
 	(((val) << (field##_SHIFT)) & (field##_MASK)))	\
 )
 
+#define IMG_SPIM_BASE_ADDRESS(i)	(0xB8100F00 + (0x100*(i)))
+
 /*
  * Parameter register
  * Each of these corresponds to a single port (ie CS line) in the interface
