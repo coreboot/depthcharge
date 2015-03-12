@@ -25,10 +25,8 @@
 
 #include "drivers/bus/i2c/i2c.h"
 #include <libpayload.h>
-/* ==============================================================================
- * I2C Configuration
- * ==============================================================================
- */
+
+/* I2C Configuration */
 
 enum {
 	I2C_CLK_RATE = 12350,	/* EMI/16 (khz) */
@@ -61,6 +59,27 @@ enum {
 	I2C6 = 6
 };
 
+enum {
+	I2C_DMA_CON_TX		= 0x0,
+	I2C_DMA_CON_RX		= 0x1,
+	I2C_DMA_START_EN	= 0x1,
+	I2C_DMA_INT_FLAG_NONE	= 0x0,
+	I2C_DMA_CLR_FLAG	= 0x0,
+	I2C_DMA_FLUSH_FLAG	= 0x1
+};
+
+enum DMA_REGS_OFFSET {
+	OFFSET_INT_FLAG = 0x0,
+	OFFSET_INT_EN = 0x04,
+	OFFSET_EN = 0x08,
+	OFFSET_FLUSH = 0x14,
+	OFFSET_CON = 0x18,
+	OFFSET_TX_MEM_ADDR = 0x1c,
+	OFFSET_RX_MEM_ADDR = 0x20,
+	OFFSET_TX_LEN = 0x24,
+	OFFSET_RX_LEN = 0x28,
+};
+
 typedef enum {
 	ST_MODE,
 	FS_MODE,
@@ -69,6 +88,7 @@ typedef enum {
 
 struct mtk_i2c_t {
 	uint32_t base;                  /* The base address of i2c register */
+	uint32_t dma_base;              /* The base address of i2c dma register */
 	uint8_t id;                     /* select which one i2c controller */
 	uint8_t dir;                    /* Transaction direction, 1,PMIC or 0,6589 */
 	uint8_t addr;                   /* The address of the slave device, 7bit */
@@ -83,10 +103,7 @@ struct mtk_i2c_t {
 	uint8_t is_dma_enabled;                 /* Transaction via DMA instead of 8-byte FIFO */
 };
 
-/* ==============================================================================
- * I2C Register
- * ==============================================================================
- */
+/* I2C Register */
 enum {
 	MTK_I2C_DATA_PORT = 0x0000,
 	MTK_I2C_SLAVE_ADDR = 0x0004,
@@ -118,7 +135,7 @@ enum {
 	I2C_CONTROL_MASK = (0x3f << 1)
 };
 
-/* ----------- Register mask ------------------- */
+/* Register mask */
 enum {
 	I2C_3_BIT_MASK = 0x07,
 	I2C_4_BIT_MASK = 0x0f,
@@ -169,57 +186,25 @@ enum {
 	STOP_FLAG = (0 << 1)
 };
 
-/* ==============================================================================
- * I2C Status Code
- * ==============================================================================
- */
+/* I2C Status Code */
 
 enum {
 	I2C_OK = 0x0000,
 	I2C_SET_SPEED_FAIL_OVER_SPEED = 0xA001,
-	I2C_READ_FAIL_ZERO_LENGTH = 0xA002,
-	I2C_READ_FAIL_HS_NACKERR = 0xA003,
-	I2C_READ_FAIL_ACKERR = 0xA004,
-	I2C_READ_FAIL_TIMEOUT = 0xA005,
-	I2C_WRITE_FAIL_ZERO_LENGTH = 0xA012,
-	I2C_WRITE_FAIL_HS_NACKERR = 0xA013,
-	I2C_WRITE_FAIL_ACKERR = 0xA014,
-	I2C_WRITE_FAIL_TIMEOUT = 0xA015
+	I2C_TRANSFER_INVALID_LENGTH = 0xA002,
+	I2C_TRANSFER_FAIL_HS_NACKERR = 0xA003,
+	I2C_TRANSFER_FAIL_ACKERR = 0xA004,
+	I2C_TRANSFER_FAIL_TIMEOUT = 0xA005,
+	I2C_TRANSFER_INVALID_ARGUMENT = 0xA006
 };
-
-/* -----------------------------------------------------------------------
- * Set I2C Speend interface:    Set internal I2C speed,
- *                              Goal is that get sample_cnt_div and step_cnt_div
- *   i2c:    I2C chip config, see struct mtk_i2c_t.
- *   clock: Depends on the current MCU/AHB/APB clock frequency
- *   Returns: ERROR_CODE
- */
-uint32_t mtk_i2c_set_speed(struct mtk_i2c_t *i2c, uint32_t clock);
-/* -----------------------------------------------------------------------
- * new read interface: Read bytes
- *   i2c:    I2C chip config, see struct mtk_i2c_t.
- *   buffer:  Where to read/write the data.
- *   len:     How many bytes to read/write
- *   Returns: ERROR_CODE
- */
-extern uint32_t mtk_i2c_read(struct mtk_i2c_t *i2c, uint8_t *buffer,
-			     uint32_t len);
-
-/* -----------------------------------------------------------------------
- * New write interface: Write bytes
- *   i2c:    I2C chip config, see struct mtk_i2c_t.
- *   buffer:  Where to read/write the data.
- *   len:     How many bytes to read/write
- *   Returns: ERROR_CODE
- */
-extern uint32_t mtk_i2c_write(struct mtk_i2c_t *i2c, uint8_t *buffer,
-			      uint32_t len);
 
 /* -----------------------------------------------------------------------
  * mtk i2c init function.
  *   i2c:    I2C chip config, see struct mtk_i2c_t.
  *   Returns: bus
  */
-MTKI2c *new_mtk_i2c(struct mtk_i2c_t *i2c);
+MTKI2c *new_mtk_i2c(uint32_t base, uint32_t dma_base, uint8_t id, uint8_t dir,
+                    uint8_t addr, uint8_t mode, uint16_t speed,
+                    uint8_t is_rs_enable);
 
 #endif /* __MTK_I2C_H__ */
