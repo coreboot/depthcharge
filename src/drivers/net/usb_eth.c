@@ -88,9 +88,6 @@ static int usb_eth_probe(GenericUsbDevice *dev)
 	int i;
 	UsbEthDevice *eth_dev;
 
-	if (net_get_device())
-		printf("Warning: switching to new network device.\n");
-
 	device_descriptor_t *dd = (device_descriptor_t *)dev->dev->descriptor;
 	list_for_each(eth_dev, usb_eth_drivers, list_node) {
 		for (i = 0; i < eth_dev->num_supported_ids; i++) {
@@ -101,7 +98,7 @@ static int usb_eth_probe(GenericUsbDevice *dev)
 				if (eth_dev->init(dev)) {
 					break;
 				} else {
-					net_set_device(usb_eth_net_device);
+					net_add_device(usb_eth_net_device);
 					return 1;
 				}
 			}
@@ -112,10 +109,23 @@ static int usb_eth_probe(GenericUsbDevice *dev)
 
 static void usb_eth_remove(GenericUsbDevice *dev)
 {
-	if (net_get_device() == usb_eth_net_device)
-		net_set_device(NULL);
+	net_remove_device(usb_eth_net_device);
 	free(dev->dev_data);
 }
+
+static void usb_net_poller(struct NetPoller *poller)
+{
+	static int usb_initted;
+
+	if (!usb_initted)
+		dc_usb_initialize();
+
+	usb_poll();
+}
+
+static NetPoller net_poller = {
+	.poll = usb_net_poller
+};
 
 static GenericUsbDriver usb_eth_driver = {
 	.probe = &usb_eth_probe,
@@ -126,6 +136,9 @@ static int usb_eth_driver_register(void)
 {
 	list_insert_after(&usb_eth_driver.list_node,
 			  &generic_usb_drivers);
+
+	list_insert_after(&net_poller.list_node, &net_pollers);
+
 	return 0;
 }
 

@@ -21,7 +21,6 @@
  */
 
 #include <libpayload.h>
-#include <usb/usb.h>
 #include <vboot_nvstorage.h>
 #include <vboot_api.h>
 
@@ -29,7 +28,6 @@
 #include "base/timestamp.h"
 #include "config.h"
 #include "debug/cli/common.h"
-#include "drivers/bus/usb/usb.h"
 #include "drivers/input/input.h"
 #include "drivers/net/net.h"
 #include "drivers/power/power.h"
@@ -126,21 +124,7 @@ int try_dhcp(uip_ipaddr_t *my_ip,
 
 void netboot(uip_ipaddr_t *tftp_ip, char *bootfile, char *argsfile, char *args)
 {
-	dc_usb_initialize();
-
-	printf("Looking for network device... ");
-	while (!net_get_device())
-		usb_poll();
-	printf("done.\n");
-
-	printf("Waiting for link... ");
-	int ready = 0;
-	while (!ready) {
-		if (net_ready(&ready))
-			halt();
-	}
-	mdelay(200);	// some dongles need more time than they think
-	printf("done.\n");
+	net_wait_for_link();
 
 	// Start up the network stack.
 	uip_init();

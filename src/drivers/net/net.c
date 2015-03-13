@@ -28,10 +28,22 @@
 #include "net/uip.h"
 #include "net/uip_arp.h"
 
+ListNode net_pollers;
+static ListNode net_devices;
 static NetDevice *net_device;
 
-void net_set_device(NetDevice *dev)
+void net_add_device(NetDevice *dev)
 {
+	NetDevice *list_dev;
+
+	/* Just in case, see if it has been already added. */
+	list_for_each(list_dev, net_devices, list_node)
+		if (dev == list_dev) {
+			printf("%s: Attemp to include the same device\n",
+			       __func__);
+			return;
+		}
+
 	if (dev) {
 		assert(dev->ready);
 		assert(dev->recv);
@@ -39,12 +51,53 @@ void net_set_device(NetDevice *dev)
 		assert(dev->get_mac);
 	}
 
-	net_device = dev;
+	printf("Adding net device\n");
+	list_insert_after(&dev->list_node, &net_devices);
+}
+
+void net_remove_device(NetDevice *dev)
+{
+	if (net_device == dev) {
+		printf("Removing current net device\n");
+		net_device = NULL;
+	}
+
+	list_remove(&dev->list_node);
 }
 
 NetDevice *net_get_device(void)
 {
 	return net_device;
+}
+
+void net_wait_for_link(void)
+{
+	printf("Waiting for link\n");
+
+	while (1) {
+		NetPoller *net_poller;
+		NetDevice *new_device;
+
+		list_for_each(net_poller, net_pollers, list_node)
+			net_poller->poll(net_poller);
+
+		list_for_each(new_device, net_devices, list_node) {
+			int ready;
+
+			/* the first link up wins */
+			new_device->ready(new_device, &ready);
+			if (ready) {
+				net_device = new_device;
+				/*
+				 * Just in case, to accommodate some dongles
+				 * which need more time than they think
+				 */
+				mdelay(200);
+				printf("done.\n");
+				return;
+			}
+		}
+	}
 }
 
 void net_poll(void)
@@ -74,15 +127,6 @@ void net_poll(void)
 				net_device->send(net_device, uip_buf, uip_len);
 		}
 	}
-}
-
-int net_ready(int *ready)
-{
-	if (!net_device) {
-		printf("No network device.\n");
-		return 1;
-	}
-	return net_device->ready(net_device, ready);
 }
 
 int net_send(void *buf, uint16_t len)
