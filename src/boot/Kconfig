@@ -54,3 +54,11 @@ config KERNEL_FIT_FDT_ADDR
 	depends on KERNEL_FIT
 	help
 	  Where to put the updated device tree when booting a FIT image.
+
+config ANDROID_DT_FIXUP
+	bool "Fixup device tree with properties for Android"
+	default n
+	help
+	  Enabling this option will create a /firmware/android node in the
+	  device tree and populate it with the hardware name and other
+	  values from the VPD such as the serial number.
