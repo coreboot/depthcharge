@@ -866,7 +866,7 @@ const gpio_func_data_t gmac0_gpio[] = {
 		ipq_network_device->send = ipq_eth_send;
 		ipq_network_device->get_mac = ipq_get_mac;
 
-		net_set_device(ipq_network_device);
+		net_add_device(ipq_network_device);
 
 		return 0;
 	} while(0);
