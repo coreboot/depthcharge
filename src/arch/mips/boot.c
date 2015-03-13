@@ -29,7 +29,7 @@
 
 int boot_mips_linux(void *fdt, void *kernel, uint32_t kernel_size)
 {
-	void (*entry)(unsigned, unsigned);
+	void (*entry)(unsigned, void *);
 
 	run_cleanup_funcs(CleanupOnHandoff);
 
@@ -45,7 +45,7 @@ int boot_mips_linux(void *fdt, void *kernel, uint32_t kernel_size)
 	timestamp_add_now(TS_START_KERNEL);
 
 	cache_sync_instructions();
-	entry(0xfffffffe, virt_to_phys(fdt));
+	entry(0xfffffffe, phys_to_kseg0(virt_to_phys(fdt)));
 	printf("Kernel returned!\n");
 
 	return 0;
