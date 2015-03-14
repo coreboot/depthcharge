@@ -15,26 +15,18 @@
 
 static NetDevice *get_net_device(void)
 {
-	uint64_t start = timer_us(0);
 	NetDevice *ndev = net_get_device();
+	int ready = 0;
 
 	if (ndev)
-		return ndev;
+		ndev->ready(ndev, &ready);
 
-	/* There is no built in device, try getting one off USB dongle. */
-	printf("Looking for network device... ");
-	dc_usb_initialize();
-	while (timer_us(start) < DEV_TIMEOUT_US) {
-		usb_poll();
+	if (!ready) {
+		net_wait_for_link();
 		ndev = net_get_device();
-		if (ndev) {
-			printf("done.\n");
-			return ndev;
-		}
 	}
 
-	printf("\nNo network device found, try again?\n");
-	return NULL;
+	return ndev;
 }
 
 static int do_enet(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
@@ -48,14 +40,6 @@ static int do_enet(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	ndev = get_net_device();
 	if (!ndev)
 		return CMD_RET_FAILURE;
-
-	/* Check link status just in case */
-	ndev->ready(ndev, &ready);
-
-	if (!strcmp(argv[1], "check")) {
-		printf("Link is %s\n", ready ? "up" : "down");
-		return CMD_RET_SUCCESS;
-	}
 
 	if (!strcmp(argv[1], "send")) {
 		unsigned long addr;
@@ -89,7 +73,6 @@ static int do_enet(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 U_BOOT_CMD(
 	enet,	5,	1,
 	"ethernet interface utilities",
-	"check         - report phy interface status\n"
 	"dhcp          - try obtainitg IP address over DHCP\n"
 	"enet send addr len - send a frame from memory,\n"
 	"                     'len' bytes starting at address 'addr'\n"
