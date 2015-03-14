@@ -24,6 +24,7 @@
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
+#include "boot/android_dt.h"
 #include "boot/fit.h"
 #include "boot/commandline.h"
 #include "board/rush_ryu/fastboot.h"
@@ -75,6 +76,11 @@ enum {
 const char *mainboard_commandline(void)
 {
 	return NULL;
+}
+
+const char *hardware_name(void)
+{
+	return "ryu";
 }
 
 static void choose_devicetree_by_boardid(void)
