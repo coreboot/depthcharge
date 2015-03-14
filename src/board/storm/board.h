@@ -24,6 +24,11 @@
 
 #include "base/device_tree.h"
 
+#define QFPROM_BASE			((void *)0x00700000)
+#define QFPROM_CORR_BASE		(QFPROM_BASE + 0x40000)
+#define QFPROM_CORR_PTE_ROW0_LSB	(QFPROM_CORR_BASE + 0xB8)
+#define QFPROM_CORR_PTE_ROW0_MSB	(QFPROM_CORR_BASE + 0xBC)
+
 int set_wifi_calibration(DeviceTree *tree);
 int board_wan_port_number(void);
 

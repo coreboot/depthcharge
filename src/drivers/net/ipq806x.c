@@ -26,13 +26,51 @@ static void *net_rx_packets[NO_OF_RX_DESC];
 
 static int ipq_eth_start(IpqEthDev *priv);
 
-/* to be instatiated */
+/*
+ * get_eth_mac_address:
+ *
+ * Retrieve MAC address from the sysinfo table.
+ *
+ * If the address is not set in the sysinfo table, set the first byte to 0x02
+ * (a locally administered MAC address) and use the unique 64 bit value
+ * provided by the SOC to calculate the remaining 5 bytes.
+ *
+ * Retrun 1, as nonzero return value indicates success.
+ */
 static int get_eth_mac_address(u8 *enetaddr)
 {
 	int i;
+	int valid_mac = 0;
 
-	for (i = 0; i < 6; i++)
+	for (i = 0; i < 6; i++) {
 		enetaddr[i] = lib_sysinfo.macs[0].mac_addr[i];
+		if (enetaddr[i])
+			valid_mac = 1; /* Not all zeros */
+	}
+
+	if (!valid_mac) {
+		uint8_t scramble[SHA1_DIGEST_LENGTH];
+		uint32_t soc_unique[2];
+
+		printf("Will use default MAC address\n");
+
+		/* Read 8 bytes of HW provided unique value. */
+		soc_unique[0] = readl(QFPROM_CORR_PTE_ROW0_LSB);
+		soc_unique[1] = readl(QFPROM_CORR_PTE_ROW0_MSB);
+
+		/* calculate its sha1. */
+		sha1((const u8 *)soc_unique, sizeof(soc_unique), scramble);
+
+		/*
+		 * 0x02 is a good first byte of the locally administered MAC
+		 * address (bit d1 in the first byte set to 1).
+		 */
+		enetaddr[0] = 0x02;
+
+		/* the rest is derived from the SOC HW id. */
+		memcpy(enetaddr + 1, scramble, 5);
+	}
+
 	return 1;
 }
 
