@@ -93,11 +93,6 @@ static int scan_bus(void)
 {
 	int address;
 
-	if (!picked_i2c_bus_controller) {
-		printf("Pick the bus to use first\n");
-		return CMD_RET_FAILURE;
-	}
-
 	printf("Will scan bus %s\n", picked_i2c_bus_controller->i2c_name);
 
 	if (picked_i2c_bus_controller->ops->scan_mode_on_off)
@@ -116,18 +111,22 @@ static int scan_bus(void)
 	return CMD_RET_SUCCESS;
 }
 
-static int write_bus(uint8_t dev, uint8_t reg, uint8_t data)
+static int write_bus(uint8_t dev, uint8_t reg,
+		     char * const *params, int count)
 {
 	int ret;
 	I2cSeg seg;
-	uint8_t buffer[2];
+	uint8_t buffer[1 + count];
+	int i;
 
 	buffer[0] = reg;
-	buffer[1] = data;
+
+	for (i = 0; i < count; i++)
+		buffer[i + 1] = strtoul(params[i], 0, 16);
 
 	seg.read = 0;
 	seg.buf = buffer;
-	seg.len = sizeof(buffer);
+	seg.len = count + 1;
 	seg.chip = dev;
 
 	ret = picked_i2c_bus_controller->ops->transfer
@@ -138,8 +137,12 @@ static int write_bus(uint8_t dev, uint8_t reg, uint8_t data)
 		return CMD_RET_FAILURE;
 	}
 
-	printf ("i2c wrote %#2.2x to dev %#2.2x reg %#x\n",
-		data, dev, reg);
+	printf ("i2c wrote");
+
+	for (i = 0; i < count; i++)
+		printf(" %2.2x", buffer[i + 1]);
+
+	printf(" to dev %#2.2x reg %#x\n", dev, reg);
 
 	return CMD_RET_SUCCESS;
 }
@@ -163,6 +166,15 @@ static int do_i2c(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if (!strcmp(argv[1], "pick"))
 		return pick_bus(argc, argv[2]);
 
+	if (!picked_i2c_bus_controller) {
+		picked_i2c_bus_controller = container_of
+			(i2c_bus_controllers.next,
+			 I2cBusController, list_node);
+
+		printf("will use bus %s\n",
+		       picked_i2c_bus_controller->i2c_name);
+	}
+
 	if (!strcmp(argv[1], "scan"))
 		return scan_bus();
 
@@ -179,7 +191,7 @@ static int do_i2c(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			return CMD_RET_USAGE;
 		return write_bus((uint8_t)strtoul(argv[2], 0, 16),
 				(uint8_t)strtoul(argv[3], 0, 16),
-				(uint8_t)strtoul(argv[4], 0, 16));
+				 argv + 4, argc - 4);
 	}
 	return CMD_RET_FAILURE;
 }
