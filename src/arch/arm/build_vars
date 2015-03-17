@@ -19,4 +19,9 @@ VB_FIRMWARE_ARCH=arm
 ifeq ($(CONFIG_ARCH_ARM_V7),y)
 ARCH_ABI_FLAGS += -mthumb
 endif
+
+ifeq ($(CONFIG_ARCH_ARM_V8),y)
+ARCH_CFLAGS += -mgeneral-regs-only
+endif
+
 ARCH_LINK_FLAGS :=
