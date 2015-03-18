@@ -349,7 +349,7 @@ static int board_setup(void)
 	}
 
 	Ipq806xSound *sound = new_ipq806x_sound(new_storm_dac_gpio_output(),
-			48000, 2, 16, 100);
+			48000, 2, 16, 1000);
 	SoundRoute *sound_route = new_sound_route(&sound->ops);
 	sound_set_ops(&sound_route->ops);
 
