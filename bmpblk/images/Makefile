@@ -11,6 +11,7 @@
 # this occasional need.
 
 TARGETS ?= ALL
+OUTPUT ?= ../build
 
 # Default locales for each target is defined in board.yaml.
 LOCALES ?=
@@ -25,6 +26,6 @@ all:
 	LOCALES="$(LOCALES)" ./build_images.py $@
 
 clean:
-	rm -rf ../build/*
+	rm -rf $(OUTPUT)/*
 
 .PHONY: $(TARGETS) clean all default

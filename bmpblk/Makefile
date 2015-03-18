@@ -5,17 +5,10 @@
 # This will regenerate the BIOS bitmap images for all platforms. You
 # shouldn't need to do this, though.
 
-STAGE ?= build/.stage
+OUTPUT ?= build
+STAGE ?= $(OUTPUT)/.stage
 
-default: outside_chroot strings images
-
-outside_chroot:
-	@if [ -e /etc/debian_chroot ]; then \
-		echo "PIL color quantization is broken inside the chroot."; \
-		echo "You must be outside the chroot to do this"; \
-		echo "(and you probably shouldn't be doing it anyway)."; \
-		exit 1; \
-	fi
+default: strings images
 
 strings:
 	$(MAKE) -C strings
@@ -26,14 +19,14 @@ images:
 clean:
 	$(MAKE) -C strings clean
 	$(MAKE) -C images clean
-	rm -rf ./build
+	rm -rf $(OUTPUT)
 	find . -type f -name '*.pyc' -delete
 
 $(STAGE):
 	$(MAKE) -C strings
 
 .DEFAULT:
-	$(MAKE) outside_chroot $(STAGE)
+	$(MAKE) $(STAGE)
 	$(MAKE) -C images $@
 
-.PHONY: outside_chroot strings images clean
+.PHONY: strings images clean

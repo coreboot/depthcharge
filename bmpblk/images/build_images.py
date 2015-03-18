@@ -272,8 +272,9 @@ def build_image(board, config_database):
   if config is None:
     raise BuildImageError('Unknown board: %s' % board)
 
-  output_dir = os.path.join('..', 'build', board)
-  stage_dir = os.path.join('..', 'build', '.stage')
+  output_base = os.getenv('OUTPUT', os.path.join('..', 'build'))
+  output_dir = os.path.join(output_base, board)
+  stage_dir = os.path.join(output_base, '.stage')
   assets_dir = config[ASSETS_DIR_KEY]
 
   resolution = config[RESOLUTION_KEY]

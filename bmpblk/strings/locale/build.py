@@ -31,7 +31,9 @@ FORMAT_FILE = 'format.yaml'
 TXT_TO_PNG_SVG = os.path.join(SCRIPT_BASE, '..', 'text_to_png_svg')
 BACKGROUND_IMAGE = os.path.join(SCRIPT_BASE, '..', '..', 'images',
                                 'Background.png')
-OUTPUT_DIR = os.path.join(SCRIPT_BASE, '..', '..', 'build', '.stage', 'locale')
+OUTPUT_DIR = os.path.join(os.getenv('OUTPUT', os.path.join(SCRIPT_BASE, '..',
+                                                           '..', 'build')),
+                          '.stage', 'locale')
 
 
 class DataError(Exception):
