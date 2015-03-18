@@ -42,6 +42,7 @@
 #define LP55231_ENGCTRL2_REG	0x01
 #define LP55231_D1_CRT_CTRL_REG	0x26
 #define LP55231_MISC_REG	0x36
+#define LP55231_VARIABLE_REG	0x3c
 #define LP55231_RESET_REG	0x3d
 #define LP55231_ENG1_PROG_START	0x4c
 #define LP55231_PROG_PAGE_REG	0x4f
@@ -54,10 +55,21 @@
 #define LP55231_ENGCTRL1_CHIP_EN     0x40
 #define LP55231_ENGCTRL1_ALL_ENG_GO  0x2a
 
+/* LP55231_ENGCTRL2_REG	fields. */
+#define LP55231_ENGCTRL2_ALL_DISABLE 0
+#define LP55231_ENGCTRL2_ALL_LOAD    0x15
+#define LP55231_ENGCTRL2_ALL_RUN     0x2a
+
 /* LP55231_MISC_REG fields. */
 #define LP55231_MISC_AUTOINCR  (1 << 6)
 #define LP55231_MISC_PUMP_1X   (1 << 3)
 #define LP55231_MISC_INT_CLK   (3 << 0)
+
+/*
+ * LP55231_VARIABLE_REG cookie value. It indicates to depthcharge that the
+ * ring has been initialized by coreboot.
+ */
+#define LP55231_VARIABLE_COOKIE	0xb4
 
 /* Goes into LP55231_RESET_REG to reset the chip. */
 #define LP55231_RESET_VALUE	0xff
@@ -224,12 +236,41 @@ static int ledc_read(TiLp55231 *ledc, uint8_t addr, uint8_t *data)
 }
 
 /*
- * Reset transaction is expected to result in a failing i2c command,
- * no need to return a value.
+ * Reset the LED ring if necessary.
+ *
+ * This function detects three conditions:
+ *  - LED controller not present
+ *  - LED controller present, but not initialized by coreboot
+ *  - LED controller present and initialized by coreboot
+ *
+ * In case the controller is present but notinitialized, the reset command is
+ * issued. It is expected to result in a failing i2c transaction, the next
+ * read command is restoring the i2c bus condition.
+ *
+ * Return -1 on failure to detect controller, 0 on finding an uninitialized
+ * controller, 1on finding an initialized controller.
  */
-static void ledc_reset(TiLp55231 *ledc)
+static int ledc_reset(TiLp55231 *ledc)
 {
 	uint8_t data;
+
+	data = ~0;
+	ledc_read(ledc, LP55231_RESET_REG, &data);
+	if (data) {
+		printf("WW_RING: no controller found at %#2.2x\n",
+		       ledc->dev_addr);
+		return -1;
+	}
+
+	ledc_read(ledc, LP55231_VARIABLE_REG, &data);
+	if (data == LP55231_VARIABLE_COOKIE) {
+		data = 0;
+		printf("WW_RING: initialized controller found at %#2.2x\n",
+		       ledc->dev_addr);
+		/* make sure this condition does not persist. */
+		ledc_write(ledc, LP55231_VARIABLE_REG, &data, 1);
+		return 1;
+	}
 
 	data = LP55231_RESET_VALUE;
 	ledc_write(ledc, LP55231_RESET_REG, &data, 1);
@@ -241,6 +282,7 @@ static void ledc_reset(TiLp55231 *ledc)
 	 * fails.
 	 */
 	ledc_read(ledc, LP55231_RESET_REG, &data);
+	return 0;
 }
 
 /*
@@ -270,22 +312,32 @@ static void ledc_write_program(TiLp55231 *ledc, uint8_t load_addr,
 			   program, segment_size);
 
 		count -= segment_size;
+		program += segment_size;
 		page_offs = 0;
 		page_num++;
 	}
+}
+
+static void ledc_write_engctrl2(TiLp55231 *ledc, uint8_t value)
+{
+	ledc_write(ledc, LP55231_ENGCTRL2_REG, &value, 1);
+	udelay(1500);
 }
 
 /* Run an lp55231 program on a controller. */
 static void ledc_run_program(TiLp55231 *ledc,
 			     const TiLp55231Program *program_desc)
 {
-	uint8_t data;
 	int i;
+	uint8_t data;
 
-	data = 0;
-	ledc_write(ledc, LP55231_ENGCTRL2_REG, &data, 1);
-	data = 0x15;
-	ledc_write(ledc, LP55231_ENGCTRL2_REG, &data, 1);
+	/* All engines on hold. */
+	data = LP55231_ENGCTRL1_CHIP_EN;
+	ledc_write(ledc, LP55231_ENGCTRL1_REG, &data, 1);
+
+	ledc_write_engctrl2(ledc, LP55231_ENGCTRL2_ALL_DISABLE);
+	ledc_write_engctrl2(ledc, LP55231_ENGCTRL2_ALL_LOAD);
+
 	ledc_write_program(ledc, program_desc->load_addr,
 			   program_desc->program_text,
 			   program_desc->program_size);
@@ -294,10 +346,9 @@ static void ledc_run_program(TiLp55231 *ledc,
 		ledc_write(ledc, LP55231_ENG1_PROG_START + i,
 			   program_desc->engine_start_addr + i, 1);
 
-	data = 0;
-	ledc_write(ledc, LP55231_ENGCTRL2_REG, &data, 1);
-	data = 0x2a;
-	ledc_write(ledc, LP55231_ENGCTRL2_REG, &data, 1);
+	data = LP55231_ENGCTRL1_CHIP_EN | LP55231_ENGCTRL1_ALL_ENG_GO;
+	ledc_write(ledc, LP55231_ENGCTRL1_REG, &data, 1);
+	ledc_write_engctrl2(ledc, LP55231_ENGCTRL2_ALL_RUN);
 }
 
 /*
@@ -306,19 +357,21 @@ static void ledc_run_program(TiLp55231 *ledc,
  */
 static int ledc_init_validate(TiLp55231 *ledc)
 {
-	const uint8_t ctrl1_reset[] = {
-		0,
-		LP55231_ENGCTRL1_CHIP_EN,
-		LP55231_ENGCTRL1_CHIP_EN | LP55231_ENGCTRL1_ALL_ENG_GO
-	};
 	uint8_t data;
 	int i;
 
-	ledc_reset(ledc);
+	switch (ledc_reset(ledc)) {
+	case -1:
+		return -1;
+	case 1:
+		return 0;
+	default:
+		break;
+	}
 
-	/* Set up all engines to run. */
-	for (i = 0; i < ARRAY_SIZE(ctrl1_reset); i++)
-		ledc_write(ledc, LP55231_ENGCTRL1_REG, ctrl1_reset + i, 1);
+	/* Enable the chip, keep engines in hold state. */
+	data = LP55231_ENGCTRL1_CHIP_EN;
+	ledc_write(ledc, LP55231_ENGCTRL1_REG, &data, 1);
 
 	/*
 	 * Internal clock, 3.3V output (pump 1x), autoincrement on multibyte
@@ -333,7 +386,6 @@ static int ledc_init_validate(TiLp55231 *ledc)
 	 * value at reset.
 	 */
 	for (i = 0; i < 9; i++) {
-		data = 0;
 		ledc_read(ledc, LP55231_D1_CRT_CTRL_REG + i, &data);
 		if (data != LP55231_CRT_CTRL_DEFAULT) {
 			printf("%s: read %#2.2x from register %#x\n", __func__,
@@ -357,9 +409,13 @@ static int ww_ring_display_screen(DisplayOps *me,
 	for (i = 0; i < ARRAY_SIZE(state_programs); i++)
 		if (state_programs[i].vb_screen == screen_type) {
 			int j;
-			for (j = 0; j < WW_RING_NUM_LED_CONTROLLERS; j++)
+
+			for (j = 0; j < WW_RING_NUM_LED_CONTROLLERS; j++) {
+				if (!lp55231s[j].dev_addr)
+					continue;
 				ledc_run_program(lp55231s + j,
 						 state_programs[i].programs[j]);
+			}
 			return 0;
 		}
 
@@ -374,7 +430,6 @@ static int ww_ring_init(DisplayOps *me)
 	WwRingDisplayOps *display;
 	TiLp55231 *ledc;
 	int i, count = 0;
-
 
 	if (lp55231s)
 		return 0; /* Already initialized. */
@@ -391,11 +446,17 @@ static int ww_ring_init(DisplayOps *me)
 
 		if (!ledc_init_validate(ledc))
 			count++;
+		else
+			ledc->dev_addr = 0; /* Mark disabled. */
 	}
 
 	printf("WW_RING: initialized %d out of %d\n", count, i);
-	if (count != i)
-		printf("WW_RING: will keep going anyway\n");
+	if (count != i) {
+		if (count)
+			printf("WW_RING: will keep going anyway\n");
+		else
+			printf("WW_RING: LED ring not present\n");
+	}
 
 	ww_ring_display_screen(me, VB_SCREEN_BLANK);
 	return 0;
