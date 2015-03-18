@@ -53,8 +53,11 @@ peach_pi:
 
 veyron_minnie:
   # 1280x800, boots recovery image on any SD card or USB ports.
+  # The difference in resolution (104%) is too small so we don't want assets and
+  # text to be resized, to get better image quality and smaller output.
   res:      [1280, 800]
   panel:    [1280, 800]
+  assets_res: [1280, 800]
 
 daisy,daisy_snow:
   # 1366x768, and can only boot recovery by SD card or USB2 [not USB3].
