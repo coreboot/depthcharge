@@ -29,10 +29,7 @@
 #include <libpayload.h>
 
 #include "base/container_of.h"
-#include "drivers/video/ww_ring.h"
-
-/* Number of lp55321 controllers on the ring */
-#define WW_RING_NUM_LED_CONTROLLERS 2
+#include "drivers/video/ww_ring_programs.h"
 
 /* I2c address of the first of the controllers, the rest are contiguous. */
 #define WW_RING_BASE_ADDR	0x32
@@ -82,9 +79,6 @@
 #define LP55231_PROG_PAGES      6
 #define LP55231_MAX_PROG_SIZE  (LP55231_PROG_PAGE_SIZE * LP55231_PROG_PAGES)
 
-/* There are threee independent engines/cores in the controller. */
-#define LP55231_NUM_OF_ENGINES 3
-
 /*
  * Structure to cache data relevant to accessing one controller. I2c interface
  * to use, device address on the i2c bus and a data buffer for write
@@ -96,54 +90,6 @@ typedef struct {
 	uint8_t dev_addr;
 	uint8_t data_buffer[LP55231_PROG_PAGE_SIZE + 1];
 } TiLp55231;
-
-/*
- * Structure to describe an lp55231 program: pointer to the text of the
- * program, its size and load address (load addr + size sould not exceed
- * LP55231_MAX_PROG_SIZE), and start addresses for all of the three
- * engines.
- */
-typedef struct {
-	const uint8_t *program_text;
-	uint8_t program_size;
-	uint8_t  load_addr;
-	uint8_t  engine_start_addr[LP55231_NUM_OF_ENGINES];
-} TiLp55231Program;
-
-/* A structure to bind controller programs to a vboot state. */
-typedef struct {
-	enum VbScreenType_t    vb_screen;
-	const TiLp55231Program *programs[WW_RING_NUM_LED_CONTROLLERS];
-} WwRingStateProg;
-
-/****************************************************************/
-/*   LED ring program definitions for different vboot states.	*/
-
-static const uint8_t blink_program_text[] = {
-	0x40, 0x40, 0x9D, 0x04, 0x40, 0x40, 0x7E,
-	0x00, 0x9D, 0x07, 0x40, 0x00, 0x9D, 0x04,
-	0x40, 0x00, 0x7E, 0x00, 0xA0, 0x00, 0x00,
-	0x00 };
-
-static const TiLp55231Program led_blink_program = {
-	blink_program_text,
-	sizeof(blink_program_text),
-	0,
-	{0,
-	 sizeof(blink_program_text) - 2,
-	 sizeof(blink_program_text) - 2}
-};
-
-static const WwRingStateProg state_programs[] = {
-	/*
-	 * for test purposes the blank screen program is set to blinking, will
-	 * be changed soon.
-	 */
-	{VB_SCREEN_BLANK, {&led_blink_program, &led_blink_program}},
-	/* Other vboot state programs are coming. */
-};
-/*								*/
-/****************************************************************/
 
 /* Dynamicaly allocated descriptors, one per controller */
 static TiLp55231 *lp55231s;
@@ -335,7 +281,6 @@ static void ledc_run_program(TiLp55231 *ledc,
 	data = LP55231_ENGCTRL1_CHIP_EN;
 	ledc_write(ledc, LP55231_ENGCTRL1_REG, &data, 1);
 
-	ledc_write_engctrl2(ledc, LP55231_ENGCTRL2_ALL_DISABLE);
 	ledc_write_engctrl2(ledc, LP55231_ENGCTRL2_ALL_LOAD);
 
 	ledc_write_program(ledc, program_desc->load_addr,
@@ -404,17 +349,31 @@ static int ledc_init_validate(TiLp55231 *ledc)
 static int ww_ring_display_screen(DisplayOps *me,
 				  enum VbScreenType_t screen_type)
 {
-	int i;
+	const WwRingStateProg *state_program;
 
-	for (i = 0; i < ARRAY_SIZE(state_programs); i++)
-		if (state_programs[i].vb_screen == screen_type) {
+	for (state_program = wwr_state_programs;
+	     state_program->programs[0];
+	     state_program++)
+		if (state_program->vb_screen == screen_type) {
 			int j;
+
+			/*
+			 * First stop all running programs to avoid
+			 * inerference between the controllers.
+			 */
+			for (j = 0; j < WW_RING_NUM_LED_CONTROLLERS; j++) {
+				if (!lp55231s[j].dev_addr)
+					continue;
+				ledc_write_engctrl2
+					(lp55231s + j,
+					 LP55231_ENGCTRL2_ALL_DISABLE);
+			}
 
 			for (j = 0; j < WW_RING_NUM_LED_CONTROLLERS; j++) {
 				if (!lp55231s[j].dev_addr)
 					continue;
-				ledc_run_program(lp55231s + j,
-						 state_programs[i].programs[j]);
+				ledc_run_program (lp55231s + j,
+						  state_program->programs[j]);
 			}
 			return 0;
 		}
@@ -458,7 +417,6 @@ static int ww_ring_init(DisplayOps *me)
 			printf("WW_RING: LED ring not present\n");
 	}
 
-	ww_ring_display_screen(me, VB_SCREEN_BLANK);
 	return 0;
 }
 
