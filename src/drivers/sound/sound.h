@@ -18,6 +18,7 @@ typedef struct SoundOps
 	int (*start)(struct SoundOps *me, uint32_t frequency);
 	int (*stop)(struct SoundOps *me);
 	int (*play)(struct SoundOps *me, uint32_t msec, uint32_t frequency);
+	int (*set_volume)(struct SoundOps *me, uint32_t volume);
 } SoundOps;
 
 void sound_set_ops(SoundOps *ops);
@@ -25,5 +26,10 @@ void sound_set_ops(SoundOps *ops);
 int sound_start(uint32_t frequency);
 int sound_stop(void);
 int sound_play(uint32_t msec, uint32_t frequency);
+/*
+ * An API which uses a callback optionally provided by the driver. The volume
+ * parameter is an abstract number in 0..100 range.
+ */
+int sound_set_volume(uint32_t volume);
 
 #endif /* __DRIVERS_SOUND_SOUND_H__ */
