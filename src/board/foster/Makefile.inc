@@ -19,5 +19,4 @@
 
 depthcharge-y += board.c
 depthcharge-y += keyboard.c
-depthcharge-y += state_machine.c
 depthcharge-$(CONFIG_FASTBOOT_MODE) += fastboot.c
