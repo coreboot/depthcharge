@@ -82,6 +82,14 @@ static void choose_devicetree_by_boardid(void)
 	fit_set_compat_by_rev("google,ryu-rev%d", lib_sysinfo.board_id);
 }
 
+static int no_tpm_xmit(struct TpmOps *me, const uint8_t *sendbuf,
+		       size_t send_size, uint8_t *recvbuf, size_t *recv_len)
+{
+	return -1;
+}
+
+static TpmOps no_tpm_ops;
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_tegra_gpio_input_from_coreboot);
@@ -112,6 +120,10 @@ static int board_setup(void)
 	flash_set_ops(&flash->ops);
 
 	FlashBlockDev *fbdev = block_flash_register_nor(&flash->ops);
+
+	/* Foster has no TPM */
+	no_tpm_ops.xmit = &no_tpm_xmit;
+	tpm_set_ops(&no_tpm_ops);
 
 	TegraI2c *pwr_i2c = new_tegra_i2c((void *)0x7000d000, 5,
 					  (void *)CLK_RST_H_RST_SET,
