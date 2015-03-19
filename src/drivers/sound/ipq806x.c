@@ -285,6 +285,19 @@ static int ipq806x_sound_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 	return ret;
 }
 
+static int ipq806x_set_volume(SoundOps *me, uint32_t volume)
+{
+	Ipq806xSound *sound = container_of(me, Ipq806xSound, ops);
+
+	if (volume > 100)
+		volume = 100; /* Just in case. */
+
+	/* Max IPQ volume setting is 16000. */
+	sound->volume = 160 * volume;
+
+	return 0;
+}
+
 static int ipq806x_sound_shutdown(struct CleanupFunc *cleanup, CleanupType type)
 {
 	Ipq806xSound *sound = (Ipq806xSound *)cleanup->data;
@@ -319,6 +332,7 @@ Ipq806xSound *new_ipq806x_sound(GpioOps *gpio, unsigned int frame_rate,
 	sound->ops.start = &ipq806x_sound_start;
 	sound->ops.stop = &ipq806x_sound_stop;
 	sound->ops.play = &ipq806x_sound_play;
+	sound->ops.set_volume = &ipq806x_set_volume;
 
 	sound->gpio = gpio;
 
