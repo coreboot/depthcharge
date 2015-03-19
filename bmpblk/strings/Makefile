@@ -7,7 +7,7 @@
 LOCALEDIR=locale
 OUTPUT?=../build
 OUTDIR=$(OUTPUT)/.stage
-FONTSIZE=15
+FONTSIZE=14
 
 all: shared_strings font $(LOCALEDIR)
 
