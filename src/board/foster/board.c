@@ -38,7 +38,7 @@
 #include "drivers/flash/block_flash.h"
 #include "drivers/flash/spi.h"
 #include "drivers/power/sysinfo.h"
-#include "drivers/power/tps65913.h"
+#include "drivers/power/max77620.h"
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/storage/tegra_mmc.h"
@@ -118,7 +118,7 @@ static int board_setup(void)
 					  (void *)CLK_RST_H_RST_CLR,
 					  CLK_H_I2C5);
 
-	Tps65913Pmic *pmic = new_tps65913_pmic(&pwr_i2c->ops, 0x58);
+	Max77620Pmic *pmic = new_max77620_pmic(&pwr_i2c->ops, 0x3c);
 	SysinfoResetPowerOps *power = new_sysinfo_reset_power_ops(&pmic->ops,
 			new_tegra_gpio_output_from_coreboot);
 	power_set_ops(&power->ops);
