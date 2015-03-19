@@ -90,59 +90,26 @@ bitmap block structure incompatible with previous versions.
 Instructions for manually rebuilding things:
 
 
-Some libraries and programs (ex, PIL, pango-view, rsvg) used in generating
-image files need fonts set properly or specific version (ex, PIL is broken
-inside chroot), and simpler to do OUTSIDE of the chroot.
+Enter chroot and run "make" so everything will be regenerated:
 
-On Ubuntu, you need to install following packages:
+  (cr) $  cd ~/trunk/src/platform/bmpblk
+  (cr) ~/trunk/src/platform/bmpblk $  make
 
-  sudo apt-get install libpango1.0-dev python-imaging librsvg2-bin
-
-And you probably want to make sure all required fonts are installed:
-
-  sudo apt-get install fonts-nanum ttf-indic-fonts fonts-droid fonts-noto
-
-If you want to use the "bitmap viewer" utility, add these packages:
-
-  sudo apt-get install python-yaml python-wxgtk2.8
-
-We also need some utilities from ChromiumOS source tree. You need to install
-dependency libraries for them:
-
-  sudo apt-get install libtspi-dev uuid-dev libyaml-dev
-
-On older Ubuntu installations you would also need liblzml-dev, on newer ones -
-liblzma-dev, try installing both, one at a time, at least one must succeed.
-
-Now, time to build the utilities in vboot_reference outside of the chroot:
-
-  cd src/platform/vboot_reference
-  make
-
-Once you've built vboot_reference you'll find the executables in
-./build/utility/bmpblk*. If they were built in the standard place they
-will be found by this tool automatically. If not, their location must be added
-to your $PATH.
-
-Now you should be able to just run "make" and everything will be
-regenerated:
-
-  cd ~/chromiumos/src/platform/bmpblk
-  make
 
 This should generate BIOS bmpblock file for all platforms cross all locales,
 which takes a long time.
 
 If you simply want to build image for single target with default locales, do:
 
-  cd ~/chromiumos/src/platform/bmpblk
+  cd ~/trunk/src/platform/bmpblk
   make $BOARD
 
 Where $BOARD is the board name of your target, ex: "link". There is one simple
 reference target "std" with fewer locales so you can test the building procedure
 faster: "make std".
 
-The generated output files are in ./build/$BOARD.
+The default generated output files are in ./build/$BOARD. To override output
+folder, just specify OUTPUT=/path_to_output in Make variables.
 
 Note if you want to override the default locales list defined in boards.yaml
 (ex, to build with only English locale to speed up testing flow, or to try
@@ -223,7 +190,6 @@ falco,peppy,wolf,leon:
   # With card reader. USB3 ports will run in USB2 mode for recovery boot.
   res:      [1024, 768]
   panel:    [1366, 768]
-  locales: [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id, th]
 ------------------------------------------------------------------------------
 
 Now to build images for the new target (as $BOARD) run:
@@ -294,3 +260,40 @@ image, the bmpblk_utility has options to display or unpack the binary.
 Once you've unpacked it you can use the bitmap_viewer on the unpacked
 config.yaml file to see what it looks like. There's not (yet) a single tool
 that directly displays the raw binary.
+
+------------------------------------------------------------------------------
+If you want to build OUTSIDE chroot, here's some information:
+
+Some libraries and programs (ex, PIL, pango-view, rsvg) used in generating
+image files need fonts set properly or specific version (ex, PIL is broken
+inside chroot), and simpler to do OUTSIDE of the chroot.
+
+On Ubuntu, you need to install following packages:
+
+  sudo apt-get install libpango1.0-dev python-imaging librsvg2-bin
+
+And you probably want to make sure all required fonts are installed:
+
+  sudo apt-get install fonts-nanum ttf-indic-fonts fonts-droid fonts-noto
+
+If you want to use the "bitmap viewer" utility, add these packages:
+
+  sudo apt-get install python-yaml python-wxgtk2.8
+
+We also need some utilities from ChromiumOS source tree. You need to install
+dependency libraries for them:
+
+  sudo apt-get install libtspi-dev uuid-dev libyaml-dev
+
+On older Ubuntu installations you would also need liblzml-dev, on newer ones -
+liblzma-dev, try installing both, one at a time, at least one must succeed.
+
+Now, time to build the utilities in vboot_reference outside of the chroot:
+
+  cd src/platform/vboot_reference
+  make
+
+Once you've built vboot_reference you'll find the executables in
+./build/utility/bmpblk*. If they were built in the standard place they
+will be found by this tool automatically. If not, their location must be added
+to your $PATH.
