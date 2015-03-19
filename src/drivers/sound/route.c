@@ -63,12 +63,25 @@ static int route_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 	return route->source->play(route->source, msec, frequency);
 }
 
+static int route_set_volume(SoundOps *me, uint32_t volume)
+{
+	SoundRoute *route = container_of(me, SoundRoute, ops);
+
+	if (route_enable_components(route))
+		return 1;
+
+	if (!route->source->set_volume)
+		return -1;
+	return route->source->set_volume(route->source, volume);
+}
+
 SoundRoute *new_sound_route(SoundOps *source)
 {
 	SoundRoute *route = xzalloc(sizeof(*route));
 	route->ops.start = &route_start;
 	route->ops.stop = &route_stop;
 	route->ops.play = &route_play;
+	route->ops.set_volume = &route_set_volume;
 	route->source = source;
 	return route;
 }

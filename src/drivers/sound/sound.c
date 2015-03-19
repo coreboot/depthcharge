@@ -53,3 +53,22 @@ int sound_play(uint32_t msec, uint32_t frequency)
 
 	return sound_ops->play(sound_ops, msec, frequency);
 }
+
+int sound_set_volume(uint32_t volume)
+{
+	if (!sound_ops) {
+		printf("%s: No sound ops set.\n", __func__);
+		return 1;
+	}
+	if (!sound_ops->set_volume) {
+		printf("%s: No volume control provided.\n", __func__);
+		return 1;
+	}
+
+	if (volume > 100) {
+		printf("%s: Volume level must not exceed 100.\n", __func__);
+		return 1;
+	}
+
+	return sound_ops->set_volume(sound_ops, volume);
+}
