@@ -378,9 +378,21 @@ def build_bitmap_block(board, output_info):
   """
   output_dir = output_info[0]
   panel_size = output_info[1]
-  # Git information.
-  git_version = shell('git show -s --format="%h"', capture_stdout=True)
-  git_dirty = shell("git diff --shortstat", capture_stdout=True) and "_mod"
+  # Get version information.
+  vcsid = os.getenv('VCSID')
+  # VCSID comes in REV-GITHASH (0.0.1-r1-abcdef....).
+  if vcsid:
+    rev, unused_token, git_version = vcsid.rpartition('-')
+    if rev == '9999':
+      git_version = git_version[:6]
+      git_dirty = '_mod'
+    else:
+      git_version = rev
+      git_dirty = ''
+  else:
+    git_version = shell('git show -s --format="%h"', capture_stdout=True)
+    git_dirty = shell("git diff --shortstat", capture_stdout=True) and "_mod"
+
   archive_name = ("chromeos-bmpblk-%s-%s%s.tbz2" %
                   (board, git_version.strip(), git_dirty.strip()))
 
