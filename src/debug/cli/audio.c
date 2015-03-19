@@ -38,6 +38,13 @@ static int do_audio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		duration = MAX_DURATION_MS;
 	}
 
+	if (argc > 3) {
+		uint32_t volume = (uint32_t) strtoul(argv[3], 0, 10);
+
+		printf("Setting volume to %d\n", volume);
+		sound_set_volume(volume);
+	}
+
 	res = sound_start(freq);
 	if (!res) {
 		/* Nonblocking API must be used. */
@@ -65,8 +72,9 @@ static int do_audio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 }
 
 U_BOOT_CMD(
-	   audio,	3,	1,
+	   audio,	4,	1,
 	   "rudimentary audio capabilities test",
-	   "<freq> <duration>  - play sound of <freq> Hz "
-	   "for <duration> milliseconds"
+	   "\n<freq> <duration> [<volume>]  - play sound of <freq> Hz for "
+	   "<duration>\n"
+	   "                                milliseconds at volume <volume>"
 );
