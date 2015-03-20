@@ -44,6 +44,7 @@
 #include "drivers/tpm/tpm.h"
 #include "drivers/video/ww_ring.h"
 #include "vboot/callbacks/nvstorage_flash.h"
+#include "vboot/stages.h"
 #include "vboot/util/flag.h"
 
 #include "board.h"
@@ -303,6 +304,76 @@ static void set_ramoops_buffer(void)
 		ramoops_buffer(base, total_size, record_size);
 }
 
+static uint8_t kb_buffer[4];
+static int kb_in, kb_out;
+
+static int storm_havekey(void)
+{
+	/*
+	 * We want to react to the button press only, i.e. we need to
+	 * catch the "unpressed -> pressed" transition.
+	 */
+	static uint32_t prev = 1;
+	uint32_t rv = flag_fetch(FLAG_PHYS_PRESENCE);
+
+	if (prev == rv)
+		return kb_in != kb_out;
+
+	prev = rv;
+	if (!rv)
+		return kb_in != kb_out;
+
+	if (((kb_in + 1) % sizeof(kb_buffer)) == kb_out) {
+		printf("%s: keyboard buffer overflow!\n", __func__);
+		return 0;
+	}
+
+	/* Dev switch was pressed, what's the meaning of it? */
+	if (vboot_in_recovery()) {
+		/* This must mean ^D, the user wants to switch to dev mode. */
+		kb_buffer[kb_in++] = 0x4;
+		kb_in %= sizeof(kb_buffer);
+
+		if (((kb_in + 1) % sizeof(kb_buffer)) != kb_out)
+			kb_buffer[kb_in++] = 0xd;
+		else
+			/*
+			 * Should never happen, but worse come to worse the
+			 * user will lose the CR and will have to reboot in
+			 * recovery mode again to enter dev mode.
+			 */
+			printf("%s: keyboard buffer overflow!\n", __func__);
+	} else {
+		/* This must mean ^U, the user wants to boot from USB. */
+		kb_buffer[kb_in++] = 0x15;
+	}
+
+	kb_in %= sizeof(kb_buffer);
+
+	return 1;
+}
+
+static int storm_getchar(void)
+{
+	int storm_char;
+
+	while (!storm_havekey())
+		;
+
+	storm_char = kb_buffer[kb_out++];
+
+	kb_out %= sizeof(kb_buffer);
+
+	return storm_char;
+}
+
+static struct console_input_driver storm_input_driver =
+{
+	NULL,
+	&storm_havekey,
+	&storm_getchar
+};
+
 static int board_setup(void)
 {
 	sysinfo_install_flags();
@@ -312,6 +383,8 @@ static int board_setup(void)
 	fit_set_compat(bdescriptor.compat_string);
 
 	install_phys_presence_flag();
+
+	console_add_input_driver(&storm_input_driver);
 
 	power_set_ops(new_ipq806x_power_ops());
 
