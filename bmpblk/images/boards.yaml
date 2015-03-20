@@ -51,18 +51,18 @@ peach_pi:
   assets_dir: assets2x
   assets_res: [1920, 1080]
 
-minnie:
+veyron_minnie:
   # 1280x800, boots recovery image on any SD card or USB ports.
   res:      [1280, 800]
   panel:    [1280, 800]
 
-snow:
+daisy,daisy_snow:
   # 1366x768, and can only boot recovery by SD card or USB2 [not USB3].
   res:      [1366, 768]
   panel:    [1366, 768]
   bad_usb3: True
 
-spring:
+daisy_spring:
   # 1366x768, can only boot recovery by USB. (No card reader, or not able to
   # recover from card reader.)
   res:       [1366, 768]
