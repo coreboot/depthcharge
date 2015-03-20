@@ -141,6 +141,20 @@ static int board_setup(void)
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
 
+	/* sdmmc1: sd card */
+	TegraGpio *enable_vdd_sd = new_tegra_gpio_output(GPIO(Z, 4));
+
+	TegraGpio *card_detect = new_tegra_gpio_input(GPIO(Z, 1));
+	GpioOps *card_detect_ops = &card_detect->ops;
+	card_detect_ops = new_gpio_not(card_detect_ops);
+
+	TegraMmcHost *sd_card = new_tegra_mmc_host(0x700b0000, 4, 1,
+						   card_detect_ops,
+						   &enable_vdd_sd->ops);
+
+	list_insert_after(&sd_card->mmc.ctrlr.list_node,
+			  &removable_block_dev_controllers);
+
 	/* Fill in fastboot related information */
 	BlockDevCtrlr *bdev_arr[BDEV_COUNT] = {
 		[FLASH_BDEV] = &fbdev->ctrlr,
