@@ -91,6 +91,9 @@ endif
 if BOARD = "slippy"
 source src/board/slippy/Kconfig
 endif
+if BOARD = "smaug"
+source src/board/smaug/Kconfig
+endif
 if BOARD = "storm"
 source src/board/storm/Kconfig
 endif
