@@ -40,6 +40,12 @@ config DRIVER_POWER_TPS65913
 	help
 	  Reboot or power off using the TPS65913 PMIC.
 
+config DRIVER_POWER_MAX77620
+	bool "MAX77620 PMIC power management"
+	default n
+	help
+	  Reboot or power off using the MAX77620 PMIC.
+
 config DRIVER_POWER_RK808
 	bool "RK808 PMIC power management"
 	default n
