@@ -21,3 +21,4 @@ depthcharge-y += init_funcs.c
 depthcharge-y += list.c
 depthcharge-y += ranges.c
 depthcharge-y += timestamp.c
+depthcharge-y += state_machine.c

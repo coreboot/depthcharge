@@ -40,25 +40,37 @@ enum {
 	KEY_CODE_END = 131,
 };
 
-/*
- * This function is expected to be implemented by every board that uses pseudo
- * keyboard driver. Input pins and the way input is interpreted can be different
- * for every board. So, common key codes are established to be passed back to
- * the pseudo driver.
- *
- * Key codes are expected as follows:
- * ASCII characters : ASCII values (0 - 127)
- * Key UP          : 128
- * Key DOWN        : 129
- * Key Right       : 130
- * Key Left        : 131
- *
- * Modifier flags are set in similar way as handled in keyboard.c. Modifiers is
- * basically a bitmask to indicate what modifiers are set.
- *
- * This function returns the number of codes read into codes array.
- */
-size_t read_key_codes(Modifier *modifiers, uint16_t *codes, size_t max_codes);
+/* Structure defining final states of pseudo keyboard state machine */
+struct pk_final_state {
+	int state_id;
+	Modifier mod;
+	uint16_t keycode;
+};
 
+/* Structure defining transition for pseudo keyboard states */
+struct pk_trans {
+	int src;
+	int inp;
+	int dst;
+};
+
+/* Structure for state machine descriptor filled in by mainboard */
+struct pk_sm_desc {
+	size_t total_states_count;
+	int start_state;
+	size_t int_states_count;
+	const int *int_states_arr;
+	size_t final_states_count;
+	const struct pk_final_state *final_states_arr;
+	size_t trans_count;
+	const struct pk_trans *trans_arr;
+};
+
+/* Special input value defining no input present */
+#define NO_INPUT		-1
+
+/* Mainboard defined functions */
+void mainboard_keyboard_init(struct pk_sm_desc *desc);
+int mainboard_read_input(void);
 
 #endif /* __DRIVERS_INPUT_PSEUDO_KEYBOARD_H__ */

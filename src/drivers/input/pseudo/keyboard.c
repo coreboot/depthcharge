@@ -27,8 +27,45 @@
 #include <stdint.h>
 
 #include "base/init_funcs.h"
+#include "base/state_machine.h"
 #include "drivers/input/input.h"
 #include "drivers/input/pseudo/keyboard.h"
+
+/* State machine data for pseudo keyboard */
+static struct sm_data *pk_sm;
+struct pk_sm_desc desc;
+
+static void pk_state_machine_setup(void)
+{
+	int i;
+
+	/* Mainboard needs to define keyboard_init function and return back
+	   filled state machine desc. */
+	mainboard_keyboard_init(&desc);
+
+	if (desc.total_states_count == 0)
+		return;
+
+	/* Initialize state machine for pseudo keyboard */
+	pk_sm = sm_init(desc.total_states_count);
+
+	/* Add start state */
+	sm_add_start_state(pk_sm, desc.start_state);
+
+	/* Add intermediate states */
+	for (i = 0; i < desc.int_states_count; i++)
+		sm_add_nonfinal_state(pk_sm, desc.int_states_arr[i]);
+
+	/* Add final states */
+	for (i = 0; i < desc.final_states_count; i++)
+		sm_add_final_state(pk_sm, desc.final_states_arr[i].state_id);
+
+	/* Add valid transitions */
+	for (i = 0; i < desc.trans_count; i++)
+		sm_add_transition(pk_sm, desc.trans_arr[i].src,
+				  desc.trans_arr[i].inp,
+				  desc.trans_arr[i].dst);
+}
 
 /*
  * Key codes are expected as follows:
@@ -37,11 +74,80 @@
  * Key DOWN        : 129
  * Key Right       : 130
  * Key Left        : 131
+ *
+ * Modifiers is basically a bitmask to indicate what modifiers are set.
+ *
+ * This function returns the number of codes read into codes array.
  */
-size_t __attribute__((weak)) read_key_codes(Modifier *modifiers,
-					    uint16_t *codes, size_t max_codes)
+static size_t read_key_codes(Modifier *modifiers, uint16_t *codes,
+			     size_t max_codes)
 {
-	return 0;
+	assert (modifiers && codes && max_codes);
+
+	int i = 0;
+
+	sm_reset_state(pk_sm);
+
+	/* We have only max_codes space in codes to fill up key codes. */
+	while (i < max_codes) {
+
+		int input, ret, output;
+		uint64_t start = timer_us(0);
+		/* If no input is received for 500 msec, return. */
+		uint64_t timeout_us = 500 * 1000;
+
+		do {
+			uint64_t button_press = timer_us(0);
+			uint64_t button_timeout = 100 * 1000;
+
+			/* Mainboard needs to define function to read input */
+			input = mainboard_read_input();
+
+			if (input == NO_INPUT)
+				continue;
+
+			/* Input should be seen for at least 100 ms */
+			do {
+				if (mainboard_read_input() != input) {
+					input = NO_INPUT;
+					break;
+				}
+			} while (timer_us(button_press) < button_timeout);
+
+			/*
+			 * If input is received, wait until input changes to
+			 * avoid duplicate entries for same input.
+			 */
+			if (input != NO_INPUT) {
+				while (mainboard_read_input() == input)
+					;
+				break;
+			}
+		} while (timer_us(start) < timeout_us);
+
+		/* If timeout without input, return. */
+		if (input == NO_INPUT)
+			break;
+
+		/* Run state machine to move to next state */
+		ret = sm_run(pk_sm, input, &output);
+
+		if (ret == STATE_NOT_FINAL)
+			continue;
+
+		if (ret == STATE_NO_TRANSITION) {
+			sm_reset_state(pk_sm);
+			continue;
+		}
+
+		assert(output < desc.total_states_count);
+		const struct pk_final_state *ptr;
+		ptr = &desc.final_states_arr[output];
+		*modifiers |= ptr->mod;
+		codes[i++] = ptr->keycode;
+	}
+
+	return i;
 }
 
 #define KEY_FIFO_SIZE 16
@@ -183,6 +289,9 @@ static int pk_install_on_demand_input(void)
 	};
 
 	list_insert_after(&dev.list_node, &on_demand_input_devices);
+
+	pk_state_machine_setup();
+
 	return 0;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Google Inc.
+ * Copyright 2015 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -24,13 +24,13 @@
 #include <assert.h>
 #include <libpayload.h>
 
-#include "board/rush_ryu/state_machine.h"
+#include "base/state_machine.h"
 
 /*
  * Each state is represented by:
- * Unique id provided by caller
- * Whether this is final state
- * List of all valid transitions from this state
+ * a. Unique id provided by caller
+ * b. Whether this is final state
+ * c. List of all valid transitions from this state
  */
 struct sm_state {
 	int id;
@@ -40,9 +40,9 @@ struct sm_state {
 
 /*
  * Each transition is represented by:
- * Input that it takes
- * Dest state because of this transition
- * Pointer to next valid transition at source state
+ * a. Input that it takes
+ * b. Dest state because of this transition
+ * c. Pointer to next valid transition at source state
  */
 struct sm_transition {
 	int input;
@@ -52,11 +52,11 @@ struct sm_transition {
 
 /*
  * State machine is represented by:
- * Start state
- * Current state of the machine
- * Array containing pointers to each state machine structure(arr)
- * Used slots in state machine arr
- * Max slots available in state machine arr
+ * a. Start state
+ * b. Current state of the machine
+ * c. Array containing pointers to each state machine structure(arr)
+ * d. Used slots in state machine arr
+ * e. Max slots available in state machine arr
  */
 struct sm_data {
 	struct sm_state *start_state;

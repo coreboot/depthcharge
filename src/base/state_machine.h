@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Google Inc.
+ * Copyright 2015 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -21,15 +21,15 @@
  *
  */
 
-#ifndef __BOARD_RYU_STATE_MACHINE_H__
-#define __BOARD_RYU_STATE_MACHINE_H__
+#ifndef __BASE_STATE_MACHINE_H__
+#define __BASE_STATE_MACHINE_H__
 
 #include "base/list.h"
 
 /* Values to indicate if state is final, not final, invalid */
-#define STATE_FINAL		(1)
+#define STATE_FINAL			(1)
 #define STATE_NOT_FINAL		(0)
-#define STATE_NO_TRANSITION	(-1)
+#define STATE_NO_TRANSITION		(-1)
 
 struct sm_data;
 
@@ -56,4 +56,4 @@ void sm_add_transition(struct sm_data *sm, int src_id, int input, int dst_id);
  */
 int sm_run(struct sm_data *sm, int input, int *output);
 
-#endif /* __BOARD_RYU_STATE_MACHINE_H__ */
+#endif /* __BASE_STATE_MACHINE_H__ */
