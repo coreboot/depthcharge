@@ -11,12 +11,14 @@ Usage:
 
 # TODO(hungte) Read, write and handle UTF8 BOM.
 
-import Image
 import glob
+import multiprocessing
 import os
 import re
 import subprocess
 import sys
+
+import Image
 import yaml
 
 SCRIPT_BASE = os.path.dirname(os.path.abspath(__file__))
@@ -125,36 +127,39 @@ def BuildTextFiles(inputs, files, output_dir):
       CreateFile(file_name, contents, output_dir)
 
 
-def ConvertPngFiles(locale, max_width, files, styles, fonts, output_dir):
+def ConvertPngFile(locale, max_width, file_name, styles, fonts, output_dir):
   """Converts text files into PNG image files.
 
   Args:
     locale: Locale (language) to select implicit rendering options.
     max_width: Maximum allowed image width.
-    files: List of file names to generate.
+    file_name: String of input file name to generate.
     styles: Dictionary to get associated per-file style options.
     fonts: Dictionary to get associated per-file font options.
     output_dir: Directory to generate image files.
   """
-  for file_name in files:
-    input_file = os.path.join(output_dir, file_name + '.txt')
-    command = [TXT_TO_PNG_SVG, "--lan=%s" % locale, "--outdir=%s" % output_dir]
-    if file_name in styles:
-      command.append(styles[file_name])
-    if locale in fonts:
-      command.append("--font='%s'" % fonts[locale])
-    font_size = os.getenv("FONTSIZE")
-    if font_size is not None:
-      command.append('--point=%r' % font_size)
-    command.append(input_file)
+  input_file = os.path.join(output_dir, file_name + '.txt')
+  command = [TXT_TO_PNG_SVG, "--lan=%s" % locale, "--outdir=%s" % output_dir]
+  if file_name in styles:
+    command.append(styles[file_name])
+  if locale in fonts:
+    command.append("--font='%s'" % fonts[locale])
+  font_size = os.getenv("FONTSIZE")
+  if font_size is not None:
+    command.append('--point=%r' % font_size)
+  command.append(input_file)
 
-    # print command
-    subprocess.check_call(' '.join(command), shell=True)
-    # Check output file size
-    output_file = os.path.join(output_dir, file_name + '.png')
-    if max_width < GetImageWidth(output_file):
-      raise DataError("Error: message too long: %s/%s" % (locale, file_name))
+  if subprocess.call(' '.join(command), shell=True,
+                     stdout=subprocess.PIPE) != 0:
+    return False
 
+  # Check output file size
+  output_file = os.path.join(output_dir, file_name + '.png')
+  if max_width < GetImageWidth(output_file):
+    print 'Error: message too long: %s/%s' % (locale, file_name)
+    return False
+
+  return True
 
 def main(argv):
   with open(FORMAT_FILE) as f:
@@ -169,6 +174,8 @@ def main(argv):
   if not locales:
     locales = formats[KEY_LOCALES]
 
+  pool = multiprocessing.Pool(multiprocessing.cpu_count())
+  results = []
   for locale in locales:
     print locale,
     inputs = ParseLocaleInputFile(locale, formats[KEY_INPUTS])
@@ -176,8 +183,16 @@ def main(argv):
     if not os.path.exists(output_dir):
       os.makedirs(output_dir)
     BuildTextFiles(inputs, formats[KEY_FILES], output_dir)
-    ConvertPngFiles(locale, max_width, formats[KEY_FILES], formats[KEY_STYLES],
-                    formats[KEY_FONTS], output_dir)
+    results += [pool.apply_async(ConvertPngFile,
+                                 (locale, max_width, file_name,
+                                  formats[KEY_STYLES], formats[KEY_FONTS],
+                                  output_dir))
+                for file_name in formats[KEY_FILES]]
+  print ""
+  pool.close()
+  pool.join()
+  if not all((r.get() for r in results)):
+    exit("Failed to render some locales.")
 
 
 if __name__ == '__main__':
