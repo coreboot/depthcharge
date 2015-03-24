@@ -58,7 +58,7 @@ static int max98090_hw_params(Max98090Codec *codec)
 	}
 
 	/* Update filter mode */
-	int mode_mask = (sample_rate < 240000) ? 0 : M98090_MODE_MASK;
+	int mode_mask = (sample_rate < 24000) ? 0 : M98090_MODE_MASK;
 	if (max98090_update_bits(codec, M98090_REG_FILTER_CONFIG,
 				 M98090_MODE_MASK, mode_mask))
 		return 1;
