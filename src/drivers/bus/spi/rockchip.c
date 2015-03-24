@@ -213,20 +213,10 @@ static int spi_transfer(SpiOps *me, void *in, const void *out, uint32_t size)
 static int spi_start(SpiOps *me)
 {
 	int res = 0;
-	unsigned int cr0 = 0;
 	RkSpi *bus = container_of(me, RkSpi, ops);
 	RkSpiRegs *regs = bus->reg_addr;
 
 	spi_info("spi:: start\n");
-	cr0 |= 1 << CR0_HALFWORD_TS_BIT;
-	cr0 |= 1 << CR0_SSN_DELAY_BIT;
-	cr0 |= (bus->polarity << CR0_CLOCK_POLARITY_BIT);
-	cr0 |= (bus->phase << CR0_CLOCK_PHASE_BIT);
-	cr0 |= FRAME_SIZE_8BIT << CR0_FRAME_SIZE_BIT;
-	writel(cr0, &regs->ctrlr0);
-
-	writel(FIFO_DEPTH / 2 - 1, &regs->txflr);
-	writel(FIFO_DEPTH / 2 - 1, &regs->rxflr);
 	writel(1, &regs->ser);
 	return res;
 }
@@ -242,18 +232,12 @@ static int spi_stop(SpiOps *me)
 	return res;
 }
 
-RkSpi *new_rockchip_spi(uintptr_t reg_addr, unsigned int polarity,
-			  unsigned int cs, unsigned int phase)
+RkSpi *new_rockchip_spi(uintptr_t reg_addr)
 {
 	RkSpi *bus = NULL;
 
-	die_if(cs >= MAX_SLAVE, "spi cs exceed max slave\n");
-
 	bus = xzalloc(sizeof(*bus));
 	bus->reg_addr = (void *)reg_addr;
-	bus->cs = cs;
-	bus->polarity = polarity;
-	bus->phase = phase;
 	bus->ops.start = &spi_start;
 	bus->ops.stop = &spi_stop;
 	bus->ops.transfer = &spi_transfer;

@@ -26,14 +26,9 @@
 typedef struct RkSpi {
 	SpiOps ops;
 	void *reg_addr;
-	unsigned int cs;
-	unsigned int div;
-	unsigned int polarity;
-	unsigned int phase;
 } RkSpi;
 
-RkSpi *new_rockchip_spi(uintptr_t reg_addr, unsigned int polarity,
-	unsigned int cs, unsigned int phase);
+RkSpi *new_rockchip_spi(uintptr_t reg_addr);
 
 
 #endif				/* __DRIVERS_BUS_SPI_RK3288_H__ */
