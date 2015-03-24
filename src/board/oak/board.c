@@ -26,6 +26,7 @@
 #include "base/init_funcs.h"
 #include "boot/ramoops.h"
 #include "drivers/bus/i2c/mtk_i2c.h"
+#include "drivers/bus/i2s/mt8173.h"
 #include "drivers/bus/spi/mt8173.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/ec.h"
@@ -35,7 +36,8 @@
 #include "drivers/gpio/mtk_gpio.h"
 #include "drivers/power/mt6397.h"
 #include "drivers/sound/i2s.h"
-#include "drivers/sound/max98090.h"
+#include "drivers/sound/rt5645.h"
+#include "drivers/sound/rt5677.h"
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
@@ -43,6 +45,28 @@
 
 #include "drivers/video/display.h"
 #include "drivers/video/mt8173_ddp.h"
+
+static int sound_setup(void)
+{
+	MtkI2s *i2s0 = new_mtk_i2s(0x11220000, 2, 48000);
+	I2sSource *i2s_source = new_i2s_source(&i2s0->ops, 48000, 2, 16000);
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+	MTKI2c *i2c0 = new_mtk_i2c(0x11007000, 0x11000100);
+	rt5645Codec *rt5645 = new_rt5645_codec(&i2c0->ops, 0x1a);
+	rt5677Codec *rt5677 = new_rt5677_codec(&i2c0->ops, 0x2c, 16, 48000, 256,
+					       0, 1);
+	list_insert_after(&rt5645->component.list_node, &sound_route->components);
+	list_insert_after(&rt5677->component.list_node, &sound_route->components);
+	/*
+	 * Realtek codecs need SoC's I2S on before codecs are enabled
+	 * or codecs' PLL will be in wrong state. Make i2s a route component
+	 * so it can be enabled before codecs during route_enable_components()
+	 * by inserting i2s before codec nodes
+	 */
+	list_insert_after(&i2s0->component.list_node, &sound_route->components);
+	sound_set_ops(&sound_route->ops);
+	return 0;
+}
 
 static int board_setup(void)
 {
@@ -71,6 +95,8 @@ static int board_setup(void)
 	/* Set display ops */
 	if (lib_sysinfo.framebuffer)
 		display_set_ops(new_mt8173_display());
+
+	sound_setup();
 
 	return 0;
 }
