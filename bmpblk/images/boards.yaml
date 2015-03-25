@@ -61,16 +61,23 @@ veyron_minnie:
 
 daisy,daisy_snow:
   # 1366x768, and can only boot recovery by SD card or USB2 [not USB3].
+  # Using old U-Boot firmware that has only 515712 bytes for bitmaps, so the
+  # locale list is limited.
   res:      [1366, 768]
   panel:    [1366, 768]
   bad_usb3: True
+  locales:   [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id,
+              th, ar, ms, zh-CN, zh-TW, fi, pl]
 
 daisy_spring:
-  # 1366x768, can only boot recovery by USB. (No card reader, or not able to
-  # recover from card reader.)
+  # 1366x768, can only boot recovery by USB (No card reader, or not able to
+  # recover from card reader). Using old U-Boot firmware that has only 515712
+  # bytes for bitmaps, so the locale list is limited.
   res:       [1366, 768]
   panel:     [1366, 768]
   sdcard:    False
+  locales:   [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id,
+              th, ar, ms, zh-CN, zh-TW, fi, pl]
 
 falco,peppy,wolf,leon,banjo:
   # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
