@@ -39,6 +39,18 @@ std:
   panel:    [1366, 768]
   locales:  [en, ja]
 
+x86-generic,amd64-generic:
+  # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
+  # Boots recovery image on any SD card and USB ports.
+  res:      [1024, 768]
+  panel:    [1366, 768]
+
+arm-generic,mips-generic:
+  # Using native graphics mode 1366x768.
+  # Boots recovery image on any SD card and USB ports.
+  res:      [1366, 768]
+  panel:    [1366, 768]
+
 peach_pit,nyan,nyan_big,veyron_pinky,veyron_jerry:
   # 1366x768, boots recovery image on any SD card or USB ports.
   res:      [1366, 768]
