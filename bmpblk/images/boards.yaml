@@ -51,7 +51,7 @@ arm-generic,mips-generic:
   res:      [1366, 768]
   panel:    [1366, 768]
 
-peach_pit,nyan,nyan_big,veyron_pinky,veyron_jerry:
+nyan,nyan_big,veyron_pinky,veyron_jerry:
   # 1366x768, boots recovery image on any SD card or USB ports.
   res:      [1366, 768]
   panel:    [1366, 768]
@@ -70,6 +70,15 @@ veyron_minnie:
   res:      [1280, 800]
   panel:    [1280, 800]
   assets_res: [1280, 800]
+
+peach_pit:
+  # 1366x768, boots recovery image on any SD card or USB ports.
+  # Using old U-Boot firmware that has only 515712 bytes for bitmaps, so the
+  # locale list is limited.
+  res:      [1366, 768]
+  panel:    [1366, 768]
+  locales:   [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id,
+              th, ar, ms, zh-CN, zh-TW, fi, pl]
 
 daisy,daisy_snow:
   # 1366x768, and can only boot recovery by SD card or USB2 [not USB3].
