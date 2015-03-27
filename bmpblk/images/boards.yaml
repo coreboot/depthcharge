@@ -58,10 +58,14 @@ nyan,nyan_big,veyron_pinky,veyron_jerry:
 
 peach_pi:
   # 1920x1080, boots recovery image on any SD card or USB ports.
+  # Using old U-Boot firmware that has only 515712 bytes for bitmaps, so the
+  # locale list is limited.
   res:      [1920, 1080]
   panel:    [1920, 1080]
   assets_dir: assets2x
   assets_res: [1920, 1080]
+  locales:   [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id,
+              th, ar, ms, zh-CN, zh-TW, fi, pl]
 
 veyron_minnie:
   # 1280x800, boots recovery image on any SD card or USB ports.
@@ -80,7 +84,7 @@ peach_pit:
   locales:   [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id,
               th, ar, ms, zh-CN, zh-TW, fi, pl]
 
-daisy,daisy_snow:
+daisy,daisy_snow,daisy_skate,daisy_freon:
   # 1366x768, and can only boot recovery by SD card or USB2 [not USB3].
   # Using old U-Boot firmware that has only 515712 bytes for bitmaps, so the
   # locale list is limited.
