@@ -80,7 +80,7 @@ const char *mainboard_commandline(void)
 
 const char *hardware_name(void)
 {
-	return "ryu";
+	return "dragon";
 }
 
 static void choose_devicetree_by_boardid(void)
