@@ -84,7 +84,7 @@ peach_pit:
   locales:   [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id,
               th, ar, ms, zh-CN, zh-TW, fi, pl]
 
-daisy,daisy_snow,daisy_skate,daisy_freon:
+daisy,daisy_snow,daisy_skate,daisy_freon,daisy_skate-freon:
   # 1366x768, and can only boot recovery by SD card or USB2 [not USB3].
   # Using old U-Boot firmware that has only 515712 bytes for bitmaps, so the
   # locale list is limited.
@@ -94,7 +94,7 @@ daisy,daisy_snow,daisy_skate,daisy_freon:
   locales:   [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id,
               th, ar, ms, zh-CN, zh-TW, fi, pl]
 
-daisy_spring:
+daisy_spring,daisy_spring-freon:
   # 1366x768, can only boot recovery by USB (No card reader, or not able to
   # recover from card reader). Using old U-Boot firmware that has only 515712
   # bytes for bitmaps, so the locale list is limited.
