@@ -110,58 +110,18 @@ static void fill_board_descriptor(void)
 	}
 }
 
-/*
- * MAC address fixup. There might be more addresses in lib_sysinfo than
- * required. Just two need to be set, at the particular paths in the device
- * tree listed in the array below.
- */
-static int set_mac_addresses(DeviceTree *tree)
-{
-	/*
-	 * Map MAC addresses found in the coreboot table into the device tree
-	 * locations.
-	 * Some locations need to be forced to create, some locations are
-	 * skipped if not present in the existing device tree.
-	 */
-	static const struct mac_addr_map {
-		char *dt_path;
-		int force_create;
-	} maps[] = {
-		{ "soc/ethernet@37000000", 0 },
-		{ "soc/ethernet@37400000", 0 },
-		{ "chosen/bluetooth", 1 }
-	};
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(maps); i++) {
-		DeviceTreeNode *gmac_node;
-		const struct mac_addr_map *map;
-
-		if (i >= lib_sysinfo.num_macs)
-			break;
-
-		map = maps + i;
-		gmac_node = dt_find_node_by_path(tree->root, map->dt_path,
-						 NULL, NULL,
-						 map->force_create);
-		if (!gmac_node) {
-			printf("Failed to %s %s in the device tree\n",
-			       map->force_create ? "create" : "find",
-			       map->dt_path);
-			continue;
-		}
-		dt_add_bin_prop(gmac_node, "local-mac-address",
-				lib_sysinfo.macs[i].mac_addr,
-				sizeof(lib_sysinfo.macs[i].mac_addr));
-	}
-	return 0;
-}
+static const DtPathMap maps[] = {
+	{ 0, "soc/ethernet@37000000/local-mac-address" },
+	{ 0, "soc/ethernet@37400000/local-mac-address" },
+	{ 1, "chosen/bluetooth/local-mac-address" },
+	{}
+};
 
 static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 {
 	int rv;
 
-	rv = set_mac_addresses(tree);
+	rv = dt_set_mac_addresses(tree, maps);
 
 	if (bdescriptor.calibration_needed)
 		rv |= set_wifi_calibration(tree);

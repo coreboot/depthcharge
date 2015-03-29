@@ -768,3 +768,40 @@ int dt_apply_fixups(DeviceTree *tree)
 	}
 	return 0;
 }
+
+int dt_set_bin_prop_by_path(DeviceTree *tree, const char *path,
+			    void *data, size_t data_size, int create)
+{
+	char *path_copy, *prop_name;
+	DeviceTreeNode *dt_node;
+
+	path_copy = strdup(path);
+
+	if (!path_copy) {
+		printf("Failed to allocate a copy of path %s\n", path);
+		return 1;
+	}
+
+	prop_name = strrchr(path_copy, '/');
+	if (!prop_name) {
+		printf("Path %s does not include '/'\n", path);
+		free(path_copy);
+		return 1;
+	}
+
+	*prop_name++ = '\0'; /* Separate path from the property name. */
+
+	dt_node = dt_find_node_by_path(tree->root, path_copy, NULL,
+				       NULL, create);
+
+	if (!dt_node) {
+		printf("Failed to %s %s in the device tree\n",
+		       create ? "create" : "find", path_copy);
+		free(path_copy);
+		return 1;
+	}
+
+	dt_add_bin_prop(dt_node, prop_name, data, data_size);
+
+	return 0;
+}

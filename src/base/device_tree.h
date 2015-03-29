@@ -154,6 +154,8 @@ void dt_add_string_prop(DeviceTreeNode *node, char *name, char *str);
 void dt_add_u32_prop(DeviceTreeNode *node, char *name, u32 val);
 void dt_add_reg_prop(DeviceTreeNode *node, u64 *addrs, u64 *sizes,
 		     int count, u32 addr_cells, u32 size_cells);
+int dt_set_bin_prop_by_path(DeviceTree *tree, const char *path,
+			    void *data, size_t size, int create);
 
 void dt_find_bin_prop(DeviceTreeNode *node, const char *name, void **data,
 		      size_t *size);
@@ -173,5 +175,23 @@ typedef struct DeviceTreeFixup
 extern ListNode device_tree_fixups;
 
 int dt_apply_fixups(DeviceTree *tree);
+
+/*
+ * Structure defining mapping between arbitrary objects and the device tree
+ * path to the property corresponding to the object.
+ */
+typedef struct {
+	int force_create; /* If false - do not create a new node. */
+	const char *dt_path;
+	const char *key;
+} DtPathMap;
+
+/*
+ * Copy mac addresses from sysinfo table into the device tree. The mapping
+ * between the dt_maps entries and sysinfo mac address table elements is
+ * implicit, i.e. the device tree node found in the maps entry, gets assinged
+ * the mac address found in the sysinfo table, in the same order.
+  */
+int dt_set_mac_addresses(DeviceTree *tree, const DtPathMap *dt_maps);
 
 #endif /* __BASE_DEVICE_TREE_H__ */

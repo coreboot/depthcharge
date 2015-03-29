@@ -18,18 +18,20 @@
  */
 
 #include <arch/cpu.h>
+
 #include "base/init_funcs.h"
-#include "drivers/flash/spi.h"
-#include "drivers/bus/usb/usb.h"
+#include "boot/fit.h"
 #include "drivers/bus/spi/imgtec_spfi.h"
+#include "drivers/bus/usb/usb.h"
+#include "drivers/flash/spi.h"
+#include "drivers/gpio/gpio.h"
+#include "drivers/gpio/imgtec_pistachio.h"
 #include "drivers/storage/mtd/mtd.h"
+#include "drivers/storage/mtd/nand/spi_nand.h"
 #include "drivers/storage/mtd/stream.h"
 #include "drivers/storage/spi_gpt.h"
-#include "drivers/storage/mtd/nand/spi_nand.h"
-#include "drivers/gpio/gpio.h"
+#include "vboot/callbacks/nvstorage_flash.h"
 #include "vboot/util/flag.h"
-#include "drivers/gpio/imgtec_pistachio.h"
-#include "boot/fit.h"
 
 #define SPIM_INTERFACE	1
 #define NOR_CS		0
@@ -85,6 +87,22 @@ static struct board_conf *pick_board_config(void)
 	return board_config;
 }
 
+static const DtPathMap mac_maps[] = {
+	{ 1, "ethernet@18140000/mac-address" },
+	{ 1, "wifi@18480000/mac-address-0" },
+	{ 1, "wifi@18480000/mac-address-1" },
+	{}
+};
+
+static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
+{
+	return dt_set_mac_addresses(tree, mac_maps);
+}
+
+static DeviceTreeFixup urara_dt_fixup = {
+	.fixup = fix_device_tree
+};
+
 static int board_setup(void)
 {
 	ImgSpi *spfi;
@@ -117,6 +135,9 @@ static int board_setup(void)
 	list_insert_after(&virtual_dev->block_ctrlr.list_node,
 				&fixed_block_dev_controllers);
 	fit_set_compat(conf->compatible);
+
+	list_insert_after(&urara_dt_fixup.list_node, &device_tree_fixups);
+
 	return 0;
 }
 
