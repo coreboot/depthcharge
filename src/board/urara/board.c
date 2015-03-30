@@ -142,6 +142,8 @@ static int board_setup(void)
 				&fixed_block_dev_controllers);
 	fit_set_compat(conf->compatible);
 
+	flash_nvram_init();
+
 	list_insert_after(&urara_dt_fixup.list_node, &device_tree_fixups);
 
 	return 0;
