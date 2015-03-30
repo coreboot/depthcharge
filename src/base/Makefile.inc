@@ -18,6 +18,7 @@
 depthcharge-y += cleanup_funcs.c
 depthcharge-y += device_tree.c
 depthcharge-y += dt_set_macs.c
+depthcharge-y += dt_set_wifi_calibration.c
 depthcharge-y += init_funcs.c
 depthcharge-y += list.c
 depthcharge-y += ranges.c

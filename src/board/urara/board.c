@@ -94,9 +94,15 @@ static const DtPathMap mac_maps[] = {
 	{}
 };
 
+static const DtPathMap calibration_maps[] = {
+	{ 1, "wifi@18480000/calibration-data", "wifi_calibration0" },
+	{}
+};
+
 static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 {
-	return dt_set_mac_addresses(tree, mac_maps);
+	return dt_set_mac_addresses(tree, mac_maps) |
+		dt_set_wifi_calibration(tree, calibration_maps);
 }
 
 static DeviceTreeFixup urara_dt_fixup = {

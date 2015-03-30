@@ -21,8 +21,7 @@
  */
 
 #include <libpayload.h>
-
-#include "board.h"
+#include "base/device_tree.h"
 
 /*
  * This file provides functions retrieving WiFi calibration data from CBMEM
@@ -50,23 +49,6 @@ struct calibration_entry {
 	uint32_t size;
 	struct calibration_blob entries[0];  /* A varialble size container. */
 };
-
-/*
- * The keys' values match one of two templates followed by a single digit, the
- * interface number.
- */
-static const char * const templates[] = {
-	"wifi_base64_calibration",
-	"wifi_calibration"
-};
-
-/*
- * The string below represents the location of the blobs in the device tree
- * passed to the kernel. The %d is replaced by a number derived from the blob
- * index. In case the calibration data is stored in base64 form (as defined by
- * the key), the last node name needs to be extended by "-base64".
- */
-static const char *dt_path = "soc/pci@%8.8x/pcie@0/ath10k@0,0";
 
 /* Mapping of interface numbers into the wifi device address on the PCI bus. */
 static const uint32_t if_to_address[] = { 0x1b500000, 0x1b700000, 0x1b900000 };
@@ -98,52 +80,9 @@ static int blob_is_valid(struct calibration_entry *cal_entry,
 	return 1;
 }
 
-static void process_blob(DeviceTree *tree,
-			 struct calibration_blob *cal_blob,
-			 const char *templ,
-			 int base64)
+int dt_set_wifi_calibration(DeviceTree *tree, const DtPathMap *maps)
 {
-	void *value;
-	char *key = (char *)(cal_blob + 1);
-	int templ_len = strlen(templ);
-	int if_index;
-	int string_size;
-	char path_str[100];  /* Should be enough for a longest path. */
-	DeviceTreeNode *node;
-
-	if (((templ_len + 2) != cal_blob->key_size) ||
-	    strncmp(key, templ, templ_len))
-		return;		/* Key does not match. */
-
-	if_index = key[templ_len] - '0';
-
-	if ((if_index < 0) || (if_index >= ARRAY_SIZE(if_to_address)))
-		return;
-
-	string_size = snprintf(path_str, sizeof(path_str),
-			       dt_path, if_to_address[if_index]);
-	if (string_size >= sizeof(path_str))
-		return;
-
-	/*
-	 * Binary nodes are supposed to be present in the device tree, the
-	 * base64 nodes need to be created.
-	 */
-	node = dt_find_node_by_path(tree->root, path_str, NULL, NULL, base64);
-	if (!node)
-		return;
-
-	/* The value data starts right above the key. */
-	value = key + cal_blob->key_size;
-	dt_add_bin_prop(node, base64 ?
-			"qcom,ath10k-calibration-data-base64" :
-			"qcom,ath10k-calibration-data",
-			value, cal_blob->value_size);
-}
-
-int set_wifi_calibration(DeviceTree *tree)
-{
-	int i;
+	int rv = 0;
 	struct calibration_entry *cal_entry;
 	struct calibration_blob *cal_blob;
 
@@ -156,15 +95,30 @@ int set_wifi_calibration(DeviceTree *tree)
 	cal_blob = cal_entry->entries;
 
 	while(blob_is_valid(cal_entry, cal_blob)) {
+		const DtPathMap *map = maps;
 
-		for (i = 0; i < ARRAY_SIZE(templates); i++)
-			process_blob(tree, cal_blob, templates[i],
-				     strstr(templates[i], "_base64") != NULL);
+		while (map->dt_path) {
+			char *key = (char *)(cal_blob + 1);
+
+			if (!strcmp(map->key, key)) {
+				rv |= dt_set_bin_prop_by_path
+					(tree, map->dt_path,
+					 key + cal_blob->key_size,
+					 cal_blob->value_size,
+					 map->force_create);
+				break;
+			}
+
+			map++;
+		}
+
+		if (!map->dt_path)
+			printf("%s: did not find mapping for %s\n",
+			       __func__, map->key);
 
 		cal_blob = (struct calibration_blob *)
 			((uintptr_t)cal_blob + cal_blob->blob_size);
 	}
 
-	return 0;
+	return rv;
 }
-

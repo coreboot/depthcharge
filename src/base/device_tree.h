@@ -194,4 +194,12 @@ typedef struct {
   */
 int dt_set_mac_addresses(DeviceTree *tree, const DtPathMap *dt_maps);
 
+/*
+ * Copy WIFI calibration data from sysinfo table into the device tree. Each
+ * WIFI calibration blob stored the sysinfo table contains key and data. The
+ * key is used for mapping into the device tree path. The data becomes the
+ * contents of the device tree property at that path.
+ */
+int dt_set_wifi_calibration(DeviceTree *tree, const DtPathMap *maps);
+
 #endif /* __BASE_DEVICE_TREE_H__ */

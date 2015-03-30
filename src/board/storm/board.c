@@ -110,10 +110,20 @@ static void fill_board_descriptor(void)
 	}
 }
 
-static const DtPathMap maps[] = {
+static const DtPathMap mac_maps[] = {
 	{ 0, "soc/ethernet@37000000/local-mac-address" },
 	{ 0, "soc/ethernet@37400000/local-mac-address" },
 	{ 1, "chosen/bluetooth/local-mac-address" },
+	{}
+};
+
+static const DtPathMap calibration_maps[] = {
+	{1, "soc/pci@1b500000/pcie@0/ath10k@0,0/qcom,ath10k-calibration-data",
+	 "wifi_calibration0"},
+	{1, "soc/pci@1b700000/pcie@0/ath10k@0,0/qcom,ath10k-calibration-data",
+	 "wifi_calibration1"},
+	{1, "soc/pci@1b900000/pcie@0/ath10k@0,0/qcom,ath10k-calibration-data",
+	 "wifi_calibration2"},
 	{}
 };
 
@@ -121,10 +131,10 @@ static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 {
 	int rv;
 
-	rv = dt_set_mac_addresses(tree, maps);
+	rv = dt_set_mac_addresses(tree, mac_maps);
 
 	if (bdescriptor.calibration_needed)
-		rv |= set_wifi_calibration(tree);
+		rv |= dt_set_wifi_calibration(tree, calibration_maps);
 
 	return rv;
 }
