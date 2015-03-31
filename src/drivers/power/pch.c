@@ -40,6 +40,7 @@
 #define RST_CNT         0xcf9
 #define   SYS_RST       (1 << 1)
 #define   RST_CPU       (1 << 2)
+#define   FULL_RST      (1 << 3)
 
 /*
  * Do a hard reset through the chipset's reset control register. This
@@ -50,7 +51,7 @@
  */
 static int pch_cold_reboot(PowerOps *me)
 {
-	outb(SYS_RST | RST_CPU, RST_CNT);
+	outb(SYS_RST | RST_CPU | FULL_RST, RST_CNT);
 	halt();
 }
 
