@@ -37,7 +37,6 @@
 #include "drivers/sound/max98090.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
-#include "drivers/storage/ahci.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/tpm/lpc.h"
 #include "vboot/util/flag.h"
@@ -68,11 +67,6 @@ static int board_setup(void)
 
 	power_set_ops(&baytrail_power_ops);
 	tpm_set_ops(&new_lpc_tpm((void *)0xfed40000)->ops);
-
-	/* Add SATA controller support here. */
-	AhciCtrlr *sata;
-	sata = new_ahci_ctrlr(PCI_DEV(0, 0x13, 0));
-	list_insert_after(&sata->ctrlr.list_node, &fixed_block_dev_controllers);
 
 	SdhciHost *emmc, *sd;
 
