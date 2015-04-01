@@ -56,7 +56,7 @@ nyan,nyan_big,veyron_pinky,veyron_jerry:
   res:      [1366, 768]
   panel:    [1366, 768]
 
-peach_pi:
+peach_pi,peach_pi-freon:
   # 1920x1080, boots recovery image on any SD card or USB ports.
   # Using old U-Boot firmware that has only 515712 bytes for bitmaps, so the
   # locale list is limited.
@@ -75,7 +75,7 @@ veyron_minnie:
   panel:    [1280, 800]
   assets_res: [1280, 800]
 
-peach_pit:
+peach_pit,peach_pit-freon:
   # 1366x768, boots recovery image on any SD card or USB ports.
   # Using old U-Boot firmware that has only 515712 bytes for bitmaps, so the
   # locale list is limited.
