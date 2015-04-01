@@ -72,8 +72,6 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 				nvstorage_flash_get_blob_size());
 	}
 
-	int recovery = 0;
-
 	int fw_index = vdat->firmware_index;
 	const char *fwid;
 	int fwid_size;
@@ -89,7 +87,7 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 
 	dt_add_bin_prop(node, "firmware-version", (char *)fwid, fwid_size);
 
-	if (recovery)
+	if (fw_index == VDAT_RECOVERY)
 		dt_add_string_prop(node, "firmware-type", "recovery");
 	else if (vdat->flags & VBSD_BOOT_DEV_SWITCH_ON)
 		dt_add_string_prop(node, "firmware-type", "developer");
