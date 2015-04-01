@@ -387,7 +387,24 @@ static int tegra_spi_pio_transfer(TegraSpi *bus, uint8_t *in,
 		out_bytes--;
 	}
 
+	/*
+	 * Need to stabilize other reg bit before GO bit set.
+	 *
+	 * From IAS:
+	 * For successful operation at various freq combinations, min of 4-5
+	 * spi_clk cycle delay might be required before enabling PIO or DMA bit.
+	 * This is needed to overcome the MCP between core and pad_macro.
+	 * The worst case delay calculation can be done considering slowest
+	 * qspi_clk as 1 MHz. based on that 1 us delay should be enough before
+	 * enabling pio or dma.
+	 */
+	udelay(2);
+
 	writel(command1 | SPI_CMD1_GO, &regs->command1);
+
+	/* Need to wait a few cycles before command1 register is read */
+	udelay(1);
+
 	// Make sure the write to command1 completes.
 	readl(&regs->command1);
 	wait_for_transfer(regs, size);
