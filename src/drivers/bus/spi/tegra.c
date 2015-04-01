@@ -258,8 +258,7 @@ static int tegra_spi_dma_config(TegraApbDmaChannel *dma, void *ahb_ptr,
 
 static void wait_for_transfer(TegraSpiRegs *regs, uint32_t packets)
 {
-	while ((readl(&regs->trans_status) & SPI_STATUS_BLOCK_COUNT) < packets)
-	{}
+	while ((readl(&regs->trans_status) & SPI_STATUS_RDY) != SPI_STATUS_RDY);
 }
 
 static int tegra_spi_dma_transfer(TegraSpi *bus, void *in, const void *out,
@@ -393,23 +392,6 @@ static int tegra_spi_pio_transfer(TegraSpi *bus, uint8_t *in,
 	readl(&regs->command1);
 	wait_for_transfer(regs, size);
 
-	uint32_t in_bytes = in ? size : 0;
-
-	// BLOCK_COUNT does not seem to always reflect the number of packets
-	// available in the FIFO. To avoid an underrun wait until
-	// RX_FIFO_FULL_COUNT shows the value we expect.
-	// See: chrome-os-partner:24215
-	while ((readl(&regs->fifo_status) &
-	        SPI_FIFO_STATUS_RX_FIFO_FULL_COUNT_MASK) >>
-	       SPI_FIFO_STATUS_RX_FIFO_FULL_COUNT_SHIFT != in_bytes)
-		;
-
-	while (in_bytes) {
-		uint32_t data = readl(&regs->rx_fifo);
-		*in++ = data;
-		in_bytes--;
-	}
-
 	command1 &= ~(SPI_CMD1_TX_EN | SPI_CMD1_RX_EN);
 	writel(command1, &regs->command1);
 
@@ -418,6 +400,13 @@ static int tegra_spi_pio_transfer(TegraSpi *bus, uint8_t *in,
 		printf("%s: Error in fifo status %#x.\n", __func__, status);
 		clear_fifo_status(regs);
 		return -1;
+	}
+
+	uint32_t in_bytes = in ? size : 0;
+	while (in_bytes) {
+		uint32_t data = readl(&regs->rx_fifo);
+		*in++ = data;
+		in_bytes--;
 	}
 
 	return 0;
