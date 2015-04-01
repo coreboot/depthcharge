@@ -97,7 +97,7 @@ int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry,
 	printf("jumping to kernel\n");
 
 	/* Flush dcache and icache to make loaded code visible. */
-	cache_sync_instructions();
+	arch_program_segment_loaded(reloc_addr, kernel_size);
 
 	tlb_invalidate_all();
 
