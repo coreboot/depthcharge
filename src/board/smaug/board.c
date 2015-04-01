@@ -75,6 +75,11 @@ const char *mainboard_commandline(void)
 	return NULL;
 }
 
+const char *hardware_name(void)
+{
+	return "dragon";
+}
+
 static void choose_devicetree_by_boardid(void)
 {
 	fit_set_compat_by_rev("google,smaug-rev%d", lib_sysinfo.board_id);
