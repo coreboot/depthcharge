@@ -278,11 +278,11 @@ VbError_t VbExEcEnteringMode(int devidx, enum VbEcBootMode_t mode)
 {
 	switch(mode) {
 	case VB_EC_RECOVERY:
-		return cros_ec_entering_mode(devidx, EC_VBOOT_MODE_RECOVERY);
+		return cros_ec_entering_mode(devidx, VBOOT_MODE_RECOVERY);
 	case VB_EC_DEVELOPER:
-		return cros_ec_entering_mode(devidx, EC_VBOOT_MODE_DEVELOPER);
+		return cros_ec_entering_mode(devidx, VBOOT_MODE_DEVELOPER);
 	case VB_EC_NORMAL:
 	default :
-		return cros_ec_entering_mode(devidx, EC_VBOOT_MODE_NORMAL);
+		return cros_ec_entering_mode(devidx, VBOOT_MODE_NORMAL);
 	}
 }
