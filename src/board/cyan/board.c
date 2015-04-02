@@ -58,7 +58,8 @@ static int board_setup(void)
 
 #if CONFIG_DRIVER_EC_CROS
   #if CONFIG_DRIVER_EC_CROS_LPC
-	CrosEcLpcBus *cros_ec_lpc_bus = new_cros_ec_lpc_bus();
+	CrosEcLpcBus *cros_ec_lpc_bus =
+		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
 	cros_ec_set_bus(&cros_ec_lpc_bus->ops);
   #endif
 #endif

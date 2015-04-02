@@ -54,6 +54,20 @@ typedef struct CrosEcBusOps
 	int (*send_packet)(struct CrosEcBusOps *me,
 			   const void *dout, uint32_t dout_len,
 			   void *din, uint32_t din_len);
+
+	/**
+	 * Byte I/O functions.
+	 *
+	 * Read or write a sequence a bytes over the desired protocol.
+	 * Used to support protocol variants - currently only implemented
+	 * for LPC.
+	 *
+	 * @param data		Read / write data buffer
+	 * @param port		I/O port
+	 * @size		Number of bytes to read / write
+	 */
+	void (*read)(uint8_t *data, uint16_t port, int size);
+	void (*write)(const uint8_t *data, uint16_t port, int size);
 } CrosEcBusOps;
 
 int cros_ec_set_bus(CrosEcBusOps *bus);

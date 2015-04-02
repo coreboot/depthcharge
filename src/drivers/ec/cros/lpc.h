@@ -32,5 +32,12 @@ typedef struct
 	CrosEcBusOps ops;
 } CrosEcLpcBus;
 
-CrosEcLpcBus *new_cros_ec_lpc_bus(void);
+typedef enum
+{
+	/* LPC access to command / data / memmap buffers */
+	CROS_EC_LPC_BUS_GENERIC,
+} CrosEcLpcBusVariant;
+
+CrosEcLpcBus *new_cros_ec_lpc_bus(CrosEcLpcBusVariant variant);
+
 #endif /* __DRIVERS_EC_CROS_LPC_H__ */

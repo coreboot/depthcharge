@@ -29,38 +29,32 @@
 /* Timeout waiting for a flash erase command to complete */
 static const int CROS_EC_CMD_TIMEOUT_MS = 5000;
 
-static int wait_for_sync(void)
+static int wait_for_sync(CrosEcBusOps *me)
 {
 	uint64_t start = timer_us(0);
-	while (inb(EC_LPC_ADDR_HOST_CMD) & EC_LPC_STATUS_BUSY_MASK) {
-		if (timer_us(start) > CROS_EC_CMD_TIMEOUT_MS * 1000) {
-			printf("%s: Timeout waiting for CrosEC sync\n",
-				__func__);
-			return -1;
-		}
+	uint8_t data;
+
+	while (timer_us(start) < CROS_EC_CMD_TIMEOUT_MS * 1000) {
+		me->read(&data, EC_LPC_ADDR_HOST_CMD, 1);
+		if (!(data & EC_LPC_STATUS_BUSY_MASK))
+			return 0;
 	}
-	return 0;
+
+	printf("%s: Timeout waiting for CrosEC sync\n",
+		__func__);
+	return -1;
 }
 
-static void outb_range(const uint8_t *data, uint16_t port, int size)
+static void lpc_write(const uint8_t *data, uint16_t port, int size)
 {
 	while (size--)
 		outb(*data++, port++);
 }
 
-static void inb_range(uint8_t *data, uint16_t port, int size)
+static void lpc_read(uint8_t *data, uint16_t port, int size)
 {
 	while (size--)
 		*data++ = inb(port++);
-}
-
-static uint8_t inb_range_checksum(uint8_t *data, uint16_t port, int size)
-{
-	uint8_t checksum = 0;
-	while (size--)
-		checksum += inb(port++);
-
-	return checksum;
 }
 
 static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
@@ -68,6 +62,8 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 			void *din, uint32_t din_len)
 {
 	struct ec_lpc_host_args args;
+	uint8_t res;
+	int i;
 
 	if (dout_len > EC_PROTO2_MAX_PARAM_SIZE) {
 		printf("%s: Cannot send %d bytes\n", __func__, dout_len);
@@ -83,33 +79,33 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 	args.checksum = cmd + args.flags + args.command_version +
 		args.data_size + cros_ec_calc_checksum(dout, dout_len);
 
-	if (wait_for_sync()) {
+	if (wait_for_sync(me)) {
 		printf("%s: Timeout waiting ready\n", __func__);
 		return -1;
 	}
 
 	/* Write args */
-	outb_range((uint8_t *)&args, EC_LPC_ADDR_HOST_ARGS, sizeof(args));
+	me->write((uint8_t *)&args, EC_LPC_ADDR_HOST_ARGS, sizeof(args));
 
 	/* Write data, if any */
-	outb_range(dout, EC_LPC_ADDR_HOST_PARAM, dout_len);
+	me->write(dout, EC_LPC_ADDR_HOST_PARAM, dout_len);
 
-	outb(cmd, EC_LPC_ADDR_HOST_CMD);
+	me->write(&cmd, EC_LPC_ADDR_HOST_CMD, 1);
 
-	if (wait_for_sync()) {
+	if (wait_for_sync(me)) {
 		printf("%s: Timeout waiting for response\n", __func__);
 		return -1;
 	}
 
 	/* Check result */
-	int res = inb(EC_LPC_ADDR_HOST_DATA);
+	me->read(&res, EC_LPC_ADDR_HOST_DATA, 1);
 	if (res) {
 		printf("%s: CrosEC result code %d\n", __func__, res);
 		return -res;
 	}
 
 	/* Read back args */
-	inb_range((uint8_t *)&args, EC_LPC_ADDR_HOST_ARGS, sizeof(args));
+	me->read((uint8_t *)&args, EC_LPC_ADDR_HOST_ARGS, sizeof(args));
 
 	/*
 	 * If EC didn't modify args flags, then somehow we sent a new-style
@@ -130,11 +126,15 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 	uint8_t csum = 0;
 	if (din) {
 		/* Read data, if any */
-		inb_range(din, EC_LPC_ADDR_HOST_PARAM, args.data_size);
-		csum = cros_ec_calc_checksum(din, args.data_size);
+		me->read(din, EC_LPC_ADDR_HOST_PARAM, args.data_size);
+		for (i = 0; i < args.data_size; ++i)
+			csum += ((uint8_t *)din)[i];
 	} else {
-		csum = inb_range_checksum(din, EC_LPC_ADDR_HOST_PARAM,
-					  args.data_size);
+		/* Discard data, but still update checksum */
+		for (i = 0; i < args.data_size; ++i) {
+			me->read(&res, EC_LPC_ADDR_HOST_PARAM + i, 1);
+			csum += res;
+		}
 	}
 
 	/* Verify checksum */
@@ -152,6 +152,8 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 		       void *din, uint32_t din_len)
 {
+	uint8_t data;
+
 	if (dout_len > EC_LPC_HOST_PACKET_SIZE) {
 		printf("%s: Cannot send %d bytes\n", __func__, dout_len);
 		return -1;
@@ -162,31 +164,32 @@ static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 		return -1;
 	}
 
-	if (wait_for_sync()) {
+	if (wait_for_sync(me)) {
 		printf("%s: Timeout waiting ready\n", __func__);
 		return -1;
 	}
 
 	/* Copy packet */
-	outb_range(dout, EC_LPC_ADDR_HOST_PACKET, dout_len);
+	me->write(dout, EC_LPC_ADDR_HOST_PACKET, dout_len);
 
 	/* Start the command */
-	outb(EC_COMMAND_PROTOCOL_3, EC_LPC_ADDR_HOST_CMD);
+	data = EC_COMMAND_PROTOCOL_3;
+	me->write(&data, EC_LPC_ADDR_HOST_CMD, 1);
 
-	if (wait_for_sync()) {
+	if (wait_for_sync(me)) {
 		printf("%s: Timeout waiting ready\n", __func__);
 		return -1;
 	}
 
 	/* Check result */
-	int res = inb(EC_LPC_ADDR_HOST_DATA);
-	if (res) {
-		printf("%s: CrosEC result code %d\n", __func__, res);
-		return -res;
+	me->read(&data, EC_LPC_ADDR_HOST_DATA, 1);
+	if (data) {
+		printf("%s: CrosEC result code %d\n", __func__, data);
+		return -data;
 	}
 
 	/* Read back response packet */
-	inb_range(din, EC_LPC_ADDR_HOST_PACKET, din_len);
+	me->read(din, EC_LPC_ADDR_HOST_PACKET, din_len);
 
 	return 0;
 }
@@ -200,29 +203,43 @@ static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
  */
 static int cros_ec_lpc_init(CrosEcBusOps *me)
 {
-	int byte, i;
+	int i;
+	uint8_t res;
 
 	/* See if we can find an EC at the other end */
-	byte = 0xff;
-	byte &= inb(EC_LPC_ADDR_HOST_CMD);
-	byte &= inb(EC_LPC_ADDR_HOST_DATA);
-	for (i = 0; i < EC_PROTO2_MAX_PARAM_SIZE && (byte == 0xff); i++)
-		byte &= inb(EC_LPC_ADDR_HOST_PARAM + i);
-	if (byte == 0xff) {
+	me->read(&res, EC_LPC_ADDR_HOST_CMD, 1);
+	if (res != 0xff)
+		return 0;
+	me->read(&res, EC_LPC_ADDR_HOST_DATA, 1);
+	if (res != 0xff)
+		return 0;
+	for (i = 0; i < EC_PROTO2_MAX_PARAM_SIZE && (res == 0xff); i++)
+		me->read(&res, EC_LPC_ADDR_HOST_PARAM + i, 1);
+
+	if (res == 0xff) {
 		printf("%s: CrosEC device not found on LPC bus\n",
 			__func__);
 		return -1;
 	}
-
 	return 0;
 }
 
-CrosEcLpcBus *new_cros_ec_lpc_bus(void)
+CrosEcLpcBus *new_cros_ec_lpc_bus(CrosEcLpcBusVariant variant)
 {
 	CrosEcLpcBus *bus = xzalloc(sizeof(*bus));
 	bus->ops.init = &cros_ec_lpc_init;
 	bus->ops.send_command = &send_command;
 	bus->ops.send_packet = &send_packet;
 
+	switch (variant) {
+	case CROS_EC_LPC_BUS_GENERIC:
+		bus->ops.read = lpc_read;
+		bus->ops.write = lpc_write;
+		break;
+	default:
+		printf("%s: Unknown LPC variant %d\n", __func__, variant);
+		free(bus);
+		return NULL;
+	}
 	return bus;
 }

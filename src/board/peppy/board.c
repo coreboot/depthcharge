@@ -45,7 +45,8 @@ static int board_setup(void)
 	LpPchGpio *ec_in_rw = new_lp_pch_gpio_input(14);
 	flag_install(FLAG_ECINRW, &ec_in_rw->ops);
 
-	CrosEcLpcBus *cros_ec_lpc_bus = new_cros_ec_lpc_bus();
+	CrosEcLpcBus *cros_ec_lpc_bus =
+		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
 	cros_ec_set_bus(&cros_ec_lpc_bus->ops);
 
 	flash_set_ops(&new_mem_mapped_flash(0xff800000, 0x800000)->ops);
