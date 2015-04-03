@@ -36,6 +36,8 @@ typedef enum
 {
 	/* LPC access to command / data / memmap buffers */
 	CROS_EC_LPC_BUS_GENERIC,
+	/* Access memmap range through EMI unit */
+	CROS_EC_LPC_BUS_MEC,
 } CrosEcLpcBusVariant;
 
 CrosEcLpcBus *new_cros_ec_lpc_bus(CrosEcLpcBusVariant variant);

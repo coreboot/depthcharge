@@ -25,6 +25,7 @@
 
 #include "base/container_of.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/ec/cros/lpc_mec.h"
 
 /* Timeout waiting for a flash erase command to complete */
 static const int CROS_EC_CMD_TIMEOUT_MS = 5000;
@@ -55,6 +56,59 @@ static void lpc_read(uint8_t *data, uint16_t port, int size)
 {
 	while (size--)
 		*data++ = inb(port++);
+}
+
+static void mec_emi_write_address(uint16_t addr, uint8_t access_mode)
+{
+	/* Address relative to start of EMI range */
+	addr -= MEC_EMI_RANGE_START;
+	outb((addr & 0xfc) | access_mode, MEC_EMI_EC_ADDRESS_B0);
+	outb((addr >> 8) & 0x7f, MEC_EMI_EC_ADDRESS_B1);
+}
+
+static void mec_io_bytes(int write, uint8_t *data, uint16_t port, int size) {
+	int i = 0;
+	int io_addr;
+
+	if (size == 0)
+		return;
+
+	/* Initialize I/O at desired address */
+	mec_emi_write_address(port, ACCESS_TYPE_LONG_AUTO_INCREMENT);
+
+	/* Skip bytes in case of misaligned port */
+	io_addr = MEC_EMI_EC_DATA_B0 + (port & 0x3);
+	while (i < size) {
+		while (io_addr <= MEC_EMI_EC_DATA_B3) {
+			if (write)
+				outb(data[i++], io_addr++);
+			else
+				data[i++] = inb(io_addr++);
+
+			/* Extra bounds check in case of misaligned length */
+			if (i == size)
+				return;
+		}
+
+		/* Access [B0, B3] on each loop pass */
+		io_addr = MEC_EMI_EC_DATA_B0;
+	}
+}
+
+static void mec_write(const uint8_t *data, uint16_t port, int size)
+{
+	if (port >= MEC_EMI_RANGE_START && port <= MEC_EMI_RANGE_END)
+		mec_io_bytes(1, (uint8_t *)data, port, size);
+	else
+		lpc_write(data, port, size);
+}
+
+static void mec_read(uint8_t *data, uint16_t port, int size)
+{
+	if (port >= MEC_EMI_RANGE_START && port <= MEC_EMI_RANGE_END)
+		mec_io_bytes(0, data, port, size);
+	else
+		lpc_read(data, port, size);
 }
 
 static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
@@ -235,6 +289,10 @@ CrosEcLpcBus *new_cros_ec_lpc_bus(CrosEcLpcBusVariant variant)
 	case CROS_EC_LPC_BUS_GENERIC:
 		bus->ops.read = lpc_read;
 		bus->ops.write = lpc_write;
+		break;
+	case CROS_EC_LPC_BUS_MEC:
+		bus->ops.read = mec_read;
+		bus->ops.write = mec_write;
 		break;
 	default:
 		printf("%s: Unknown LPC variant %d\n", __func__, variant);
