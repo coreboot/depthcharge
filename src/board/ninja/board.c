@@ -48,6 +48,14 @@
 static const int emmc_sd_clock_min = 400 * 1000;
 static const int emmc_clock_max = 200 * 1000 * 1000;
 static const int sd_clock_max = 52 * 1000 * 1000;
+static GpioOps recsw_gpio_ops;
+
+static int get_recovery_mode_switch(GpioOps *me)
+{
+	u8 ec_switches = inb(EC_LPC_ADDR_MEMMAP + EC_MEMMAP_SWITCHES);
+
+	return ec_switches & (EC_SWITCH_DEDICATED_RECOVERY) ? 1 : 0;
+}
 
 static int board_setup(void)
 {
@@ -59,6 +67,12 @@ static int board_setup(void)
 	PchGpio *ec_in_rw = new_baytrail_gpio_input(59 / 32,
 						    59 % 32);
 	if (flag_install(FLAG_ECINRW, &ec_in_rw->ops))
+		return 1;
+
+	// Read the current value of the recovery button instead of the
+	// value passed by coreboot.
+	recsw_gpio_ops.get = &get_recovery_mode_switch;
+	if (flag_replace(FLAG_RECSW, &recsw_gpio_ops))
 		return 1;
 
 	CrosEcLpcBus *cros_ec_lpc_bus = new_cros_ec_lpc_bus();
