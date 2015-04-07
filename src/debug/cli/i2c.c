@@ -99,7 +99,8 @@ static int scan_bus(void)
 		picked_i2c_bus_controller->ops->scan_mode_on_off
 			(picked_i2c_bus_controller->ops, 1);
 
-	for (address = 0; address < 128; address++)
+	/* Valid addresses on the i2c bus are in the 8..119 range. */
+	for (address = 8; address < 120; address++)
 		if (read_bus(address, 0, 0) == CMD_RET_SUCCESS)
 			printf ("%#2.2x ", address);
 
