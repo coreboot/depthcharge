@@ -20,6 +20,7 @@
  * MA 02111-1307 USA
  */
 
+#include <config.h>
 #include <libpayload.h>
 #include <vboot_api.h>
 #include <vboot/util/flag.h>
@@ -43,6 +44,11 @@ uint32_t VbExGetSwitches(uint32_t request_mask)
 	if ((request_mask & VB_INIT_FLAG_WP_ENABLED) &&
 	    flag_fetch(FLAG_WPSW))
 		result |= VB_INIT_FLAG_WP_ENABLED;
+
+	if (CONFIG_USB_BOOT_ON_DEV &&
+	    (request_mask & VB_INIT_FLAG_ALLOW_USB_BOOT)) {
+		result |= VB_INIT_FLAG_ALLOW_USB_BOOT;
+	}
 
 	return result;
 }
