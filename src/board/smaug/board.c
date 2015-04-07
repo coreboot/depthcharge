@@ -46,6 +46,15 @@
 #include "drivers/ec/cros/i2c.h"
 #include "vboot/boot_policy.h"
 #include "vboot/util/flag.h"
+#include "drivers/sound/i2s.h"
+#include "drivers/sound/rt5677.h"
+#include "drivers/sound/tegra_ahub.h"
+
+#define AXBAR_BASE		0x702D0800
+#define ADMAIF_BASE		0x702D0000
+#define I2S1_BASE		0x702D1000
+#define I2C6_BASE		0x7000D100
+#define RT5677_DEV_NUM		0x2D
 
 enum {
 	CLK_RST_BASE = 0x60006000,
@@ -162,6 +171,23 @@ static int board_setup(void)
 
 	/* Lid always open for now. */
 	flag_replace(FLAG_LIDSW, new_gpio_high());
+
+	/* Audio init */
+	TegraAudioHubXbar *xbar = new_tegra_audio_hub_xbar(AXBAR_BASE);
+	TegraAudioHubApbif *apbif = new_tegra_audio_hub_apbif(ADMAIF_BASE, 8);
+	TegraI2s *i2s1 = new_tegra_i2s(I2S1_BASE, &apbif->ops, 1, 16, 2,
+				       1536000, 48000);
+	TegraAudioHub *ahub = new_tegra_audio_hub(xbar, apbif, i2s1);
+	I2sSource *i2s_source = new_i2s_source(&i2s1->ops, 48000, 2, 16000);
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+	TegraI2c *i2c6 = new_tegra_i2c((void *)I2C6_BASE, 6,
+				       (void *)CLK_RST_X_RST_SET,
+				       (void *)CLK_RST_X_RST_CLR, CLK_X_I2C6);
+	rt5677Codec *codec = new_rt5677_codec(&i2c6->ops, RT5677_DEV_NUM, 16, 48000, 256, 1);
+	list_insert_after(&ahub->component.list_node, &sound_route->components);
+	list_insert_after(&codec->component.list_node, &sound_route->components);
+
+	sound_set_ops(&sound_route->ops);
 
 	return 0;
 }

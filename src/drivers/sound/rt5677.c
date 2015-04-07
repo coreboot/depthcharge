@@ -34,7 +34,7 @@ static struct rt5677_init_reg init_list[] = {
 	{RT5677_CLK_TREE_CTRL1,	  0x0111},
 	{RT5677_PLL1_CTRL1,	  0x0000},
 	{RT5677_PLL1_CTRL2,	  0x0000},
-	{RT5677_GPIO_CTRL2,	  0x01B0},
+	{RT5677_GPIO_CTRL2,       0x61B0},      /* GPIO5 output, high for SPKR_PA_EN on Smaug */
 	{RT5677_DIG_MISC,	  0x0029},
 	{RT5677_GEN_CTRL1,	  0x00FF},
 	{RT5677_PWR_DIG2,	  0x9024},
@@ -156,7 +156,7 @@ static int rt5677_set_fmt(rt5677Codec *codec)
 	ret |= rt5677_update_bits(codec, RT5677_I2S1_SDP, RT5677_I2S_DF_MASK,
 	       RT5677_I2S_DF_I2S);
 
-	/* Ryu: I2S2 (going to speaker amp) is master */
+	/* A44: I2S2 (going to speaker amp) is master */
 	ret = rt5677_update_bits(codec, RT5677_I2S2_SDP, RT5677_I2S_MS_MASK,
 	      RT5677_I2S_MS_M);
 
