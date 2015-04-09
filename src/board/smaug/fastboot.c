@@ -59,7 +59,9 @@ struct part_info fb_part_list[] = {
 		 8),
 	PART_GPT("persistent", "ext4", BDEV_ENTRY(MMC_BDEV), GPT_TYPE(LINUX_FS),
 		 9),
-	PART_NONGPT("gpt", "ext4", BDEV_ENTRY(MMC_BDEV), 1, 33),
+	PART_NONGPT("chromeos", NULL, BDEV_ENTRY(MMC_BDEV), 0, 0),
+	PART_NONGPT("mbr", NULL, BDEV_ENTRY(MMC_BDEV), 0, 1),
+	PART_NONGPT("gpt", NULL, BDEV_ENTRY(MMC_BDEV), 1, 33),
 	PART_NONGPT("firmware", NULL, BDEV_ENTRY(FLASH_BDEV), 0, 0),
 };
 
@@ -114,4 +116,5 @@ void fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT])
 		fb_fill_bdev_list(i, bdev_ctrlr_arr[i]);
 	fb_fill_part_list("firmware", 0, lib_sysinfo.spi_flash.size /
 			  lib_sysinfo.spi_flash.sector_size);
+	fb_fill_part_list("chromeos", 0, backend_get_bdev_size_blocks("mmc"));
 }
