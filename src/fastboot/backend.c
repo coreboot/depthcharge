@@ -602,6 +602,24 @@ uint64_t backend_get_bdev_size_bytes(const char *name)
 	return size;
 }
 
+uint64_t backend_get_bdev_size_blocks(const char *name)
+{
+	if (backend_do_init() != BE_SUCCESS)
+		return 0;
+
+	struct bdev_info *bdev_entry;
+
+	/* Get bdev info from board-specific bdev table */
+	bdev_entry = get_bdev_info(name);
+	if (bdev_entry == NULL)
+		return 0;
+
+	BlockDev *bdev = bdev_entry->bdev;
+	uint64_t size = (uint64_t)bdev->block_count;
+
+	return size;
+}
+
 int fb_fill_part_list(const char *name, size_t base, size_t size)
 {
 	struct part_info *part_entry = get_part_info(name);
