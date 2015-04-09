@@ -100,10 +100,16 @@ endif
 if BOARD = "veyron_mighty"
 source src/board/veyron_mighty/Kconfig
 endif
+if BOARD = "veyron_nicky"
+source src/board/veyron_nicky/Kconfig
+endif
 if BOARD = "veyron_pinky"
 source src/board/veyron_pinky/Kconfig
 endif
 if BOARD = "veyron_speedy"
 source src/board/veyron_speedy/Kconfig
+endif
+if BOARD = "veyron_thea"
+source src/board/veyron_thea/Kconfig
 endif
 endmenu
