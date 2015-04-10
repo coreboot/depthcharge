@@ -77,6 +77,9 @@ endif
 if BOARD = "nyan"
 source src/board/nyan/Kconfig
 endif
+if BOARD = "orco"
+source src/board/orco/Kconfig
+endif
 if BOARD = "panther"
 source src/board/panther/Kconfig
 endif
