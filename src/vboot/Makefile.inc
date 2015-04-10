@@ -50,6 +50,7 @@ else
 		fwlib
 endif
 
+.PHONY: $(VB_LIB)
 
 # Trampoline to go from RO depthcharge to RW. Make our own libpayload where only
 # a few whitelisted symbols are linkable to avoid accidental binary bloat here.
