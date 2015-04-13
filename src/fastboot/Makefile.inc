@@ -17,6 +17,6 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-depthcharge-$(CONFIG_FASTBOOT_MODE) += backend.c
-depthcharge-$(CONFIG_FASTBOOT_MODE) += fastboot.c
-depthcharge-$(CONFIG_FASTBOOT_MODE) += udc.c
+depthcharge-y += backend.c
+depthcharge-y += fastboot.c
+depthcharge-y += udc.c
