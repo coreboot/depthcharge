@@ -60,6 +60,7 @@ DEFAULT_LOCALES = ['en', 'es-419', 'pt-BR', 'fr', 'es', 'pt-PT', 'ca', 'it',
 
 DEFAULT_OPTIONAL_SCREENS = []
 DEFAULT_TEXT_COLORS = TEXT_COLORS_AUTODETECT
+DEFAULT_SIZE_LIMIT = 970112  # Based by recent ARM firmware.
 
 # YAML key names.
 PANEL_SIZE_KEY = 'panel'
@@ -72,10 +73,12 @@ PHY_REC_KEY = 'phy_rec'
 LOCALES_KEY = 'locales'
 OPTIONAL_SCREENS_KEY = 'optional_screens'
 TEXT_COLORS_KEY = 'text_colors'
+SIZE_LIMIT_KEY = 'size_limit'
 
 KNOWN_KEYS = set((PANEL_SIZE_KEY, RESOLUTION_KEY, SDCARD_KEY, BAD_USB3_KEY,
                   PHY_REC_KEY, ASSETS_DIR_KEY, ASSETS_RESOLUTION_KEY,
-                  LOCALES_KEY, OPTIONAL_SCREENS_KEY, TEXT_COLORS_KEY))
+                  LOCALES_KEY, OPTIONAL_SCREENS_KEY, TEXT_COLORS_KEY,
+                  SIZE_LIMIT_KEY))
 
 
 class BuildImageError(Exception):
@@ -147,6 +150,8 @@ def load_boards_config(filename):
         data[OPTIONAL_SCREENS_KEY] = DEFAULT_OPTIONAL_SCREENS
       if TEXT_COLORS_KEY not in data:
         data[TEXT_COLORS_KEY] = DEFAULT_TEXT_COLORS
+      if SIZE_LIMIT_KEY not in data:
+        data[SIZE_LIMIT_KEY] = DEFAULT_SIZE_LIMIT
       if set(data) - KNOWN_KEYS:
         raise BuildImageError('Unknown entries in config %s: %r' %
                               (board, list(set(data) - KNOWN_KEYS)))
@@ -257,22 +262,16 @@ def convert_to_bmp(source, output_folder, scale_params, background_colors,
         output_file=output_file, max_colors=max_colors)
 
 
-def build_image(board, config_database):
+def build_image(board, config):
   """Builds all images required by a board.
 
   Args:
     board: a string, name of the board to use.
-    config_database: a dictionary, the configuration from load_boards_config.
+    config: a dictionary of board configuration.
 
   Returns:
-    A list (folder, panel_size), "folder" is a string for the output folder
-    containing all resources, and panel_size is a list (w, h) for the expected
-    size of panel for the output bitmaps.
+    A string for the output folder containing all resources.
   """
-
-  config = config_database.get(board, None)
-  if config is None:
-    raise BuildImageError('Unknown board: %s' % board)
 
   output_base = os.getenv('OUTPUT', os.path.join('..', 'build'))
   output_dir = os.path.join(output_base, board)
@@ -366,20 +365,20 @@ def build_image(board, config_database):
   shell("cd %s && OPTIONAL_SCREENS='%s' %s/make_default_yaml.py %s" %
         (output_dir, ' '.join(optional_screens), SCRIPT_BASE,
          ' '.join(locales)))
-  return (output_dir, panel_size)
+  return output_dir
 
 
-def build_bitmap_block(board, output_info):
+def build_bitmap_block(board, config, output_dir):
   """Builds the bitmap block output file (and archive files) in output_dir.
 
   Args:
     board: a string, the name of board to use.
-    output_info: a list (output_dir, panel_size). output_dir is a string of the
-      folder containing all resources and to put the output files, and
-      panel_size is a list (w, h) for the expected panel size.
+    config: a dictionary of board configuration.
+    output_dir: a string of folder to contain resources and to output files.
   """
-  output_dir = output_info[0]
-  panel_size = output_info[1]
+  panel_size = config[PANEL_SIZE_KEY]
+  size_limit = config[SIZE_LIMIT_KEY]
+
   # Get version information.
   vcsid = os.getenv('VCSID')
   # VCSID comes in REV-GITHASH (0.0.1-r1-abcdef....).
@@ -407,8 +406,14 @@ def build_bitmap_block(board, output_info):
          "   ../bitmap_viewer %s/DEFAULT.yaml %sx%s\n" %
          (output_dir, BMPBLK_OUTPUT, output_dir, archive_name, output_dir,
           panel_size[0], panel_size[1]))
-  # TODO(hungte) Check and alert if output binary is too large.
   shell("ls -l %s/%s" % (output_dir, BMPBLK_OUTPUT))
+
+  # Check size limitation.
+  output_file = os.path.join(output_dir, BMPBLK_OUTPUT)
+  output_size = os.path.getsize(output_file)
+  if output_size > size_limit:
+    raise BuildImageError('Exceed output size limitation (%d > %d): %s' %
+                          (output_size, size_limit, board))
 
 
 def main(args):
@@ -424,8 +429,10 @@ def main(args):
     args = config_database.keys()
     print 'Building all boards: ', args
   for board in args:
-    output_info = build_image(board, config_database)
-    build_bitmap_block(board, output_info)
+    config = config_database.get(board, None)
+    if config is None:
+      raise BuildImageError('Unknown board: %s' % board)
+    build_bitmap_block(board, config, build_image(board, config))
 
 
 if __name__ == '__main__':
