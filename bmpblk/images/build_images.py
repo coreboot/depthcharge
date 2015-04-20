@@ -55,7 +55,9 @@ DEFAULT_LOCALES = ['en', 'es-419', 'pt-BR', 'fr', 'es', 'pt-PT', 'ca', 'it',
                    'de', 'el', 'nl', 'da', 'nb', 'sv', 'fi', 'et', 'lv', 'lt',
                    'ru', 'pl', 'cs', 'sk', 'hu', 'sl', 'sr', 'hr', 'bg', 'ro',
                    'uk', 'tr', 'he', 'ar', 'fa', 'hi', 'th', 'ms', 'vi', 'id',
-                   'fil', 'zh-CN', 'zh-TW', 'ko', 'ja']
+                   'fil', 'zh-CN', 'zh-TW', 'ko', 'ja',
+                   'bn', 'gu', 'kn', 'ml', 'mr', 'ta', 'te']
+
 DEFAULT_OPTIONAL_SCREENS = []
 DEFAULT_TEXT_COLORS = TEXT_COLORS_AUTODETECT
 
@@ -205,7 +207,7 @@ def get_locales(config):
 
 
 def convert_to_bmp(source, output_folder, scale_params, background_colors,
-                   replace_map, max_colors=256):
+                   replace_map, max_colors=128):
   """Utility function to convert images into BMP format. Creates requested
   files in output directory.
 
@@ -325,17 +327,17 @@ def build_image(board, config_database):
   # looks good with less colors).
   if scale == (1, 1):
     text_files = PNG_FILES
-    text_max_colors = 16
+    text_max_colors = 7
   else:
     text_files = SVG_FILES
-    text_max_colors = 6
+    text_max_colors = 5
   if config[TEXT_COLORS_KEY] != TEXT_COLORS_AUTODETECT:
     text_max_colors = config[TEXT_COLORS_KEY]
 
   # Prepares strings and localized images.
   convert_to_bmp(os.path.join(stage_dir, text_files),
                  output_dir, scale_params, background_colors,
-                 replace_map)
+                 replace_map, text_max_colors)
   locale_dir = os.path.join(stage_dir, LOCALE_DIR)
   locales = get_locales(config)
 

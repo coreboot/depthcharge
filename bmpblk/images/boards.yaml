@@ -28,6 +28,7 @@
 #  en es-419 pt-BR fr es pt-PT ca it de
 #  el nl da nb(no) sv fi et lv lt ru pl cs sk hu sl sr hr bg ro
 #  uk tr he(iw) ar fa hi th vi id fil zh-CN zh-TW ko ja
+#  bn, gu, kn, ml, mr, ta, te
 #
 # Note the locale should be supported (and named) by Chrome browser:
 # https://chromium.googlesource.com/chromium/chromium/+/master/ui/base/l10n/l10n_util.cc
@@ -178,6 +179,7 @@ stout:
   panel:    [1366, 768]
   sdcard:   False
   bad_usb3: True
+  text_colors:  4
 
 link:
   # Non-standard Graphics mode 1280x850, with 2560x1700 panel.
