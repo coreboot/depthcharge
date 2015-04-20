@@ -32,6 +32,7 @@
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/gpio/mtk_gpio.h"
+#include "drivers/power/mt6397.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/max98090.h"
 #include "drivers/tpm/slb9635_i2c.h"
@@ -47,6 +48,9 @@ static int board_setup(void)
 	MTKI2c *i2c2 = new_mtk_i2c(0x11009000, 0x11000200, 2, 0, 0x20,
 				   ST_MODE, 100, 0);
 	tpm_set_ops(&new_slb9635_i2c(&i2c2->ops, 0x20)->base.ops);
+
+	Mt6397Pmic *pmic = new_mt6397_power(0x1000D000, 0x10007000);
+	power_set_ops(&pmic->ops);
 
 	return 0;
 }
