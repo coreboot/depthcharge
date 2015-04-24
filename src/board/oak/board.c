@@ -45,8 +45,7 @@ static int board_setup(void)
 {
 	sysinfo_install_flags(new_mtk_gpio_input);
 
-	MTKI2c *i2c2 = new_mtk_i2c(0x11009000, 0x11000200, 2, 0, 0x20,
-				   ST_MODE, 100, 0);
+	MTKI2c *i2c2 = new_mtk_i2c(0x11009000, 0x11000200);
 	tpm_set_ops(&new_slb9635_i2c(&i2c2->ops, 0x20)->base.ops);
 
 	MtkSpi *spibus = new_mtk_spi(0x1100A000);
