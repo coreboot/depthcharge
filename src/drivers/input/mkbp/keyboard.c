@@ -162,6 +162,10 @@ static void more_keys(void)
 	if (fifo_offset != fifo_size)
 		return;
 
+	// If the EC doesn't assert its interrupt line, it has no more keys.
+	if (!cros_ec_interrupt_pending())
+		return;
+
 	fifo_offset = fifo_size = 0;
 
 	// Get scancodes from the EC.
