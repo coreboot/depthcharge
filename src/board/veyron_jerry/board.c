@@ -53,6 +53,8 @@ static int board_setup(void)
 
 	RkSpi *spi0 = new_rockchip_spi(0xff110000);
 	cros_ec_set_bus(&new_cros_ec_spi_bus(&spi0->ops)->ops);
+	cros_ec_set_interrupt_gpio(sysinfo_lookup_gpio("EC interrupt", 1,
+			new_rk_gpio_input_from_coreboot));
 
 	sysinfo_install_flags(new_rk_gpio_input_from_coreboot);
 

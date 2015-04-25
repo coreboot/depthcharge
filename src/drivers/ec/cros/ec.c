@@ -36,6 +36,7 @@
 #include "drivers/ec/cros/ec.h"
 
 static CrosEcBusOps *cros_ec_bus;
+static GpioOps *cros_ec_interrupt_gpio;
 
 typedef int (*SendCommandFunc)(int cmd, int cmd_version, const void *dout,
 			       int dout_len, void *dinp, int din_len);
@@ -588,9 +589,17 @@ int cros_ec_reboot(int devidx, enum ec_reboot_cmd cmd, uint8_t flags)
 	return 0;
 }
 
+void cros_ec_set_interrupt_gpio(GpioOps *gpio)
+{
+	die_if(cros_ec_interrupt_gpio, "EC interrupt GPIO already set.\n");
+	cros_ec_interrupt_gpio = gpio;
+}
+
 int cros_ec_interrupt_pending(void)
 {
-	return 0;
+	if (cros_ec_interrupt_gpio)
+		return cros_ec_interrupt_gpio->get(cros_ec_interrupt_gpio);
+	return 1;	// Always assume we have input if no GPIO set
 }
 
 int cros_ec_mkbp_info(struct ec_response_mkbp_info *info)

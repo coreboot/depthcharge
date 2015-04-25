@@ -27,6 +27,7 @@
 #include <stdint.h>
 
 #include "drivers/ec/cros/commands.h"
+#include "drivers/gpio/gpio.h"
 
 typedef struct CrosEcBusOps
 {
@@ -71,6 +72,7 @@ typedef struct CrosEcBusOps
 } CrosEcBusOps;
 
 int cros_ec_set_bus(CrosEcBusOps *bus);
+void cros_ec_set_interrupt_gpio(GpioOps *gpio);
 
 /*
  * Hard-code the number of columns we happen to know we have right now.  It
