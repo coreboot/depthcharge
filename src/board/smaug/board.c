@@ -46,6 +46,7 @@
 #include "drivers/ec/cros/i2c.h"
 #include "vboot/boot_policy.h"
 #include "vboot/util/flag.h"
+#include "drivers/video/tegra132.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/rt5677.h"
 #include "drivers/sound/tegra_ahub.h"
@@ -92,6 +93,18 @@ const char *hardware_name(void)
 static void choose_devicetree_by_boardid(void)
 {
 	fit_set_compat_by_rev("google,smaug-rev%d", lib_sysinfo.board_id);
+}
+
+static TegraI2c *get_i2c6(void)
+{
+	static TegraI2c *i2c6;
+
+	if (i2c6 == NULL)
+		i2c6 = new_tegra_i2c((void *)I2C6_BASE, 6,
+					(void *)CLK_RST_X_RST_SET,
+					(void *)CLK_RST_X_RST_CLR,
+					CLK_X_I2C6);
+	return i2c6;
 }
 
 static int board_setup(void)
@@ -180,9 +193,7 @@ static int board_setup(void)
 	TegraAudioHub *ahub = new_tegra_audio_hub(xbar, apbif, i2s1);
 	I2sSource *i2s_source = new_i2s_source(&i2s1->ops, 48000, 2, 16000);
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
-	TegraI2c *i2c6 = new_tegra_i2c((void *)I2C6_BASE, 6,
-				       (void *)CLK_RST_X_RST_SET,
-				       (void *)CLK_RST_X_RST_CLR, CLK_X_I2C6);
+	TegraI2c *i2c6 = get_i2c6();
 	rt5677Codec *codec = new_rt5677_codec(&i2c6->ops, RT5677_DEV_NUM, 16, 48000, 256, 1);
 	list_insert_after(&ahub->component.list_node, &sound_route->components);
 	list_insert_after(&codec->component.list_node, &sound_route->components);
@@ -193,3 +204,63 @@ static int board_setup(void)
 }
 
 INIT_FUNC(board_setup);
+
+/* Turn on or turn off the backlight */
+static int smaug_backlight_update(DisplayOps *me, uint8_t enable)
+{
+	struct bl_reg {
+		uint8_t reg;
+		uint8_t val;
+	};
+
+	static const struct bl_reg bl_on_list[] = {
+		{0x10, 0x01},	/* Brightness mode: BRTHI/BRTLO */
+		{0x11, 0x05},	/* maxcurrent: 20ma */
+		{0x14, 0x7f},	/* ov: 2v, all 6 current sinks enabled */
+		{0x00, 0x01},	/* backlight on */
+		{0x04, 0x55},	/* brightness: BRT[11:4] */
+				/*             0x000: 0%, 0xFFF: 100% */
+	};
+
+	static const struct bl_reg bl_off_list[] = {
+		{0x00, 0x00},	/* backlight off */
+	};
+
+	TegraI2c *backlight_i2c = get_i2c6();
+	const struct bl_reg *current;
+	size_t size, i;
+
+	if (enable) {
+		current = bl_on_list;
+		size = ARRAY_SIZE(bl_on_list);
+	} else {
+		current = bl_off_list;
+		size = ARRAY_SIZE(bl_off_list);
+	}
+
+	for (i = 0; i < size; ++i) {
+		i2c_writeb(&backlight_i2c->ops, 0x2c, current->reg,
+				current->val);
+		++current;
+	}
+	return 0;
+}
+
+static DisplayOps smaug_display_ops = {
+	.init = &tegra132_display_init,
+	.backlight_update = &smaug_backlight_update,
+	.stop = &tegra132_display_stop,
+};
+
+static int display_setup(void)
+{
+	if (lib_sysinfo.framebuffer == NULL ||
+		lib_sysinfo.framebuffer->physical_address == 0)
+		return 0;
+
+	display_set_ops(&smaug_display_ops);
+
+	return 0;
+}
+
+INIT_FUNC(display_setup);

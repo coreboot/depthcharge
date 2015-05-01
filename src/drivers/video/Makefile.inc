@@ -21,5 +21,6 @@ depthcharge-$(CONFIG_DRIVER_VIDEO_EXYNOS5) += exynos5.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_INTEL_I915) += intel_i915.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_ROCKCHIP) += rockchip.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_TEGRA132) += tegra132.c
+depthcharge-$(CONFIG_DRIVER_VIDEO_TEGRA210) += tegra132.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_WW_RING) += ww_ring.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_WW_RING) += ww_ring_programs.c
