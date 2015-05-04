@@ -38,3 +38,7 @@ config DRIVER_BUS_SPI_TEGRA
 config DRIVER_BUS_SPI_BCM_QSPI
 	bool "BCM58305 SPI driver"
 	default n
+
+config DRIVER_BUS_SPI_MT8173
+	bool "mt8173 SPI driver"
+	default n
