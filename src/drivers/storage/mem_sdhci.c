@@ -25,15 +25,23 @@
 #include "drivers/storage/sdhci.h"
 
 /* Initialize an SDHCI port with memory address */
-SdhciHost *new_mem_sdhci_host(void *ioaddr, int removable,
+SdhciHost *new_mem_sdhci_host(void *ioaddr, int platform_info,
 			      int clock_min, int clock_max)
 {
 	SdhciHost *host;
+	int removable = platform_info & SDHCI_PLATFORM_REVOMVABLE;
 
 	host = xzalloc(sizeof(*host));
 
 	host->quirks = SDHCI_QUIRK_NO_HISPD_BIT |
 		SDHCI_QUIRK_NO_SIMULT_VDD_AND_POWER;
+
+	if (platform_info & SDHCI_PLATFORM_NO_EMMC_HS200)
+		host->quirks |= SDHCI_QUIRK_NO_EMMC_HS200;
+
+	if (platform_info & SDHCI_PLATFORM_EMMC_1V8_POWER)
+		host->quirks |= SDHCI_QUIRK_EMMC_1V8_POWER;
+
 	host->clock_f_min = clock_min;
 	host->clock_f_max = clock_max;
 	host->removable = removable;
