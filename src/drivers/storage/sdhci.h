@@ -233,6 +233,12 @@
 #define SDHCI_MAX_DIV_SPEC_300	2046
 
 /*
+* platform_infos
+*/
+#define SDHCI_PLATFORM_REVOMVABLE	(1 << 0)
+#define SDHCI_PLATFORM_NO_EMMC_HS200	(1 << 1)
+#define SDHCI_PLATFORM_EMMC_1V8_POWER	(1 << 2)
+/*
  * quirks
  */
 #define SDHCI_QUIRK_32BIT_DMA_ADDR	(1 << 0)
@@ -243,6 +249,8 @@
 #define SDHCI_QUIRK_NO_CD		(1 << 5)
 #define SDHCI_QUIRK_WAIT_SEND_CMD	(1 << 6)
 #define SDHCI_QUIRK_NO_SIMULT_VDD_AND_POWER (1 << 7)
+#define SDHCI_QUIRK_NO_EMMC_HS200	(1 << 8)
+#define SDHCI_QUIRK_EMMC_1V8_POWER	(1 << 9)
 
 /*
  * Host SDMA buffer boundary. Valid values from 4K to 512K in powers of 2.
@@ -331,13 +339,13 @@ void add_sdhci(SdhciHost *host);
 
 /* Add SDHCI controller from PCI */
 SdhciHost *new_pci_sdhci_host(pcidev_t dev,
-			      int removable,
+			      int platform_info,
 			      int clock_min,
 			      int clock_max);
 
 /* Add SDHCI controller with memory address */
 SdhciHost *new_mem_sdhci_host(void *ioaddr,
-			      int removable,
+			      int platform_info,
 			      int clock_min,
 			      int clock_max);
 

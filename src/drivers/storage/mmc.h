@@ -46,6 +46,7 @@
 #define MMC_MODE_HS		0x001
 #define MMC_MODE_HS_52MHz	0x010
 #define MMC_MODE_HS_200MHz	0x020
+#define MMC_MODE_1V8_VDD	0x080
 #define MMC_MODE_4BIT		0x100
 #define MMC_MODE_8BIT		0x200
 #define MMC_MODE_SPI		0x400

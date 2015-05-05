@@ -513,7 +513,11 @@ static int mmc_change_freq(MmcMedia *media)
 	if (err)
 		return err;
 
-	cardtype = ext_csd[EXT_CSD_CARD_TYPE] & 0x1f;
+	if (media->ctrlr->caps & MMC_MODE_HS_200MHz)
+		cardtype = ext_csd[EXT_CSD_CARD_TYPE] & 0x1f;
+	else
+		cardtype = ext_csd[EXT_CSD_CARD_TYPE] & 0xf;
+
 	if (cardtype & MMC_HS_200MHZ) {
 		/* Switch to 8-bit since HS200 only support 8-bit bus width */
 		err = mmc_switch(media, EXT_CSD_CMD_SET_NORMAL,
