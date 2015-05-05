@@ -52,10 +52,11 @@ static int attach_device(SdhciHost *host)
 }
 
 /* Initialize an HDHCI port */
-SdhciHost *new_pci_sdhci_host(pcidev_t dev, int removable,
+SdhciHost *new_pci_sdhci_host(pcidev_t dev, int platform_info,
 			      int clock_min, int clock_max)
 {
 	PciSdhciHost *host;
+	int removable = platform_info & SDHCI_PLATFORM_REVOMVABLE;
 
 	host = xzalloc(sizeof(*host));
 
@@ -65,6 +66,12 @@ SdhciHost *new_pci_sdhci_host(pcidev_t dev, int removable,
 
 	host->sdhci_host.quirks = SDHCI_QUIRK_NO_HISPD_BIT |
 		SDHCI_QUIRK_NO_SIMULT_VDD_AND_POWER;
+
+	if (platform_info & SDHCI_PLATFORM_NO_EMMC_HS200)
+		host->sdhci_host.quirks |= SDHCI_QUIRK_NO_EMMC_HS200;
+
+	if (platform_info & SDHCI_PLATFORM_EMMC_1V8_POWER)
+		host->sdhci_host.quirks |= SDHCI_QUIRK_EMMC_1V8_POWER;
 
 	host->sdhci_host.attach = attach_device;
 	host->sdhci_host.clock_f_min = clock_min;
