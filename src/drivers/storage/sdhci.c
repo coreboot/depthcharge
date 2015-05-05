@@ -477,8 +477,9 @@ static void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 		sdhci_set_clock(host, mmc_ctrlr->bus_hz);
 
 	/* Switch to 1.8 volt for HS200 */
-	if (mmc_ctrlr->bus_hz == MMC_CLOCK_200MHZ)
-		sdhci_set_power(host, MMC_VDD_165_195_SHIFT);
+	if (mmc_ctrlr->caps & MMC_MODE_1V8_VDD)
+		if (mmc_ctrlr->bus_hz == MMC_CLOCK_200MHZ)
+			sdhci_set_power(host, MMC_VDD_165_195_SHIFT);
 
 	/* Set bus width */
 	ctrl = sdhci_readb(host, SDHCI_HOST_CONTROL);
@@ -568,8 +569,16 @@ static int sdhci_pre_init(SdhciHost *host)
 	if (host->quirks & SDHCI_QUIRK_BROKEN_VOLTAGE)
 		host->mmc_ctrlr.voltages |= host->voltages;
 
-	host->mmc_ctrlr.caps = MMC_MODE_HS | MMC_MODE_HS_52MHz |
-		MMC_MODE_4BIT | MMC_MODE_HC | MMC_MODE_HS_200MHz;
+	if (host->quirks & SDHCI_QUIRK_NO_EMMC_HS200)
+		host->mmc_ctrlr.caps = MMC_MODE_HS | MMC_MODE_HS_52MHz |
+			MMC_MODE_4BIT | MMC_MODE_HC;
+	else
+		host->mmc_ctrlr.caps = MMC_MODE_HS | MMC_MODE_HS_52MHz |
+			MMC_MODE_4BIT | MMC_MODE_HC | MMC_MODE_HS_200MHz;
+
+	if (host->quirks & SDHCI_QUIRK_EMMC_1V8_POWER)
+		host->mmc_ctrlr.caps |= MMC_MODE_1V8_VDD;
+
 	if (caps & SDHCI_CAN_DO_8BIT)
 		host->mmc_ctrlr.caps |= MMC_MODE_8BIT;
 	if (host->host_caps)
