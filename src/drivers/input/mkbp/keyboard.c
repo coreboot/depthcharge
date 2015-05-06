@@ -159,14 +159,15 @@ static void add_key(uint16_t key)
 static void more_keys(void)
 {
 	// No more keys until you finish the ones you've got.
-	if (fifo_offset != fifo_size)
+	if (fifo_offset < fifo_size)
 		return;
+
+	// FIFO empty, reinitialize it back to its default state.
+	fifo_offset = fifo_size = 0;
 
 	// If the EC doesn't assert its interrupt line, it has no more keys.
 	if (!cros_ec_interrupt_pending())
 		return;
-
-	fifo_offset = fifo_size = 0;
 
 	// Get scancodes from the EC.
 	uint8_t scancodes[KeyFifoSize];
@@ -229,7 +230,7 @@ static int mkbp_keyboard_havekey(void)
 	// Get more keys if we need them.
 	more_keys();
 
-	return fifo_size;
+	return fifo_offset < fifo_size;
 }
 
 static int mkbp_keyboard_getchar(void)
