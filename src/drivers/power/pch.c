@@ -154,6 +154,11 @@ static int baytrail_power_off(PowerOps *me)
 	return pch_power_off_common(0xfff8, 0x28);
 }
 
+static int braswell_power_off(PowerOps *me)
+{
+	return pch_power_off_common(0xfff8, 0x28);
+}
+
 PowerOps pch_power_ops = {
 	.cold_reboot = &pch_cold_reboot,
 	.power_off = &pch_power_off
@@ -162,4 +167,9 @@ PowerOps pch_power_ops = {
 PowerOps baytrail_power_ops = {
 	.cold_reboot = &pch_cold_reboot,
 	.power_off = &baytrail_power_off
+};
+
+PowerOps braswell_power_ops = {
+	.cold_reboot = &pch_cold_reboot,
+	.power_off = &braswell_power_off
 };

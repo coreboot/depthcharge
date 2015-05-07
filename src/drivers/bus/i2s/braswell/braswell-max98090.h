@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Google Inc.
+ * Copyright 2015 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -20,13 +20,11 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __DRIVERS_POWER_PCH_H__
-#define __DRIVERS_POWER_PCH_H__
+#ifndef __DRIVERS_BUS_I2S_BRASWELL_BRASWELL_MAX98090_H__
+#define __DRIVERS_BUS_I2S_BRASWELL_BRASWELL_MAX98090_H__
 
-#include "drivers/power/power.h"
+#include "drivers/bus/i2s/braswell/braswell.h"
 
-PowerOps pch_power_ops;
-PowerOps baytrail_power_ops;
-PowerOps braswell_power_ops;
+extern const BswI2sSettings braswell_max98090_settings;
 
-#endif /* __DRIVERS_POWER_PCH_H__ */
+#endif

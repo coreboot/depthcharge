@@ -28,3 +28,4 @@ config DRIVER_BUS_I2S_ROCKCHIP
 
 source src/drivers/bus/i2s/baytrail/Kconfig
 source src/drivers/bus/i2s/broadwell/Kconfig
+source src/drivers/bus/i2s/braswell/Kconfig
