@@ -428,10 +428,11 @@ int fit_load(void *fit, char *cmd_line, void **kernel, uint32_t *kernel_size,
 				compat_str += len;
 				bytes -= len;
 			}
-			if (!compat_config ||
-			    config->compat_rank > compat_config->compat_rank) {
+
+			if ((compat_config && (config->compat_rank >
+					       compat_config->compat_rank)) ||
+			    (!compat_config && (config->compat_rank != -1)))
 				compat_config = config;
-			}
 		}
 		printf("\n");
 	}
