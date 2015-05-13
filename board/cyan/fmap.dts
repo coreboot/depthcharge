@@ -1,12 +1,12 @@
 /dts-v1/;
 
 / {
-	model = "Acer Cyan";
+	model = "Google Cyan";
 	config {
-		hwid = "Cyan TEST 9084";
+		hwid = "CYAN TEST A-A 1829";
 	};
 	chromeos-config {
-		/* Enable factory-friendly features. */
+		/* Enable developer and factory friendly features. */
 		gbb-flag-dev-screen-short-delay;
 		gbb-flag-force-dev-switch-on;
 		gbb-flag-force-dev-boot-usb;
@@ -57,7 +57,7 @@
 			reg = <0x00200000 0x00600000>;
 		};
 
-		/* ---- Section: Rewritable slot A ---- */
+		/* --- Section: Rewritable slot A --- */
 		rw-a {
 			label = "rw-section-a";
 			/* Alignment: 4k (for updating) */
@@ -99,7 +99,7 @@
 			type = "blobstring fwid";
 		};
 
-		/* ---- Section: Rewritable slot B ---- */
+		/* --- Section: Rewritable slot B --- */
 		rw-b {
 			label = "rw-section-b";
 			/* Alignment: 4k (for updating) */
@@ -141,7 +141,7 @@
 			type = "blobstring fwid";
 		};
 
-		/* ---- Section: Rewritable MRC cache 64KB ---- */
+		/* --- Section: Rewritable MRC cache 64 KB --- */
 		rw-mrc-cache {
 			label = "rw-mrc-cache";
 			/* Alignment: 4k (for updating) */
@@ -150,7 +150,7 @@
 			wipe-value = [ff];
 		};
 
-		/* ---- Section: Rewritable Event Log 16KB ---- */
+		/* --- Section: Rewritable Event Log 16 KB --- */
 		rw-elog {
 			label = "rw-elog";
 			/* Alignment: 4k (for updating) */
@@ -159,7 +159,7 @@
 			wipe-value = [ff];
 		};
 
-		/* ---- Section: Rewritable shared 16 KB---- */
+		/* --- Section: Rewritable shared 16 KB --- */
 		shared-section {
 			/*
 			 * Alignment: 4k (for updating).
@@ -192,9 +192,9 @@
 			wipe-value = [ff];
 		};
 
-		/* ---- Section: Rewritable private 16 KB---- */
+		/* --- Section: Rewritable private 16 KB --- */
 
-		/* ---- Section: Rewritable VPD 8 KB ---- */
+		/* --- Section: Rewritable VPD 8 KB --- */
 		rw-vpd {
 			label = "rw-vpd";
 			/* Alignment: 4k (for updating) */
@@ -228,7 +228,7 @@
 			read-only;
 		};
 
-		/* ---- Section: Vital-product data (VPD) ---- */
+		/* --- Section: Vital-product data (VPD) --- */
 		ro-vpd {
 			label = "ro-vpd";
 
