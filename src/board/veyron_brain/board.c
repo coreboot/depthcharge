@@ -78,19 +78,19 @@ static int board_setup(void)
 	UsbHostController *usb_host1 = new_usb_hc(DWC2, 0xff540000);
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
 
+	// This is actually an OTG port and is labeled as such in the schematic,
+	// though in reality we use it as a regular host mode port and leave
+	// the OTG_ID pin disconnected.
 	UsbHostController *usb_otg = new_usb_hc(DWC2, 0xff580000);
 	list_insert_after(&usb_otg->list_node, &usb_host_controllers);
 
-	/* Lid always open for now. */
+	// Claim that we have an open lid to satisfy vboot.
 	flag_replace(FLAG_LIDSW, new_gpio_high());
 
 	ramoops_buffer(0x31f00000, 0x100000, 0x20000);
 
-	if (lib_sysinfo.framebuffer != NULL) {
-		GpioOps *backlight_gpio = sysinfo_lookup_gpio("backlight", 1,
-			new_rk_gpio_output_from_coreboot);
-		display_set_ops(new_rockchip_display(backlight_gpio));
-	}
+	if (lib_sysinfo.framebuffer != NULL)
+		display_set_ops(NULL);
 
 	return 0;
 }
