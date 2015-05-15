@@ -83,6 +83,10 @@ SdhciHost *new_pci_sdhci_host(pcidev_t dev, int platform_info,
 	 * and 2.7..3.6 voltage ranges, which is typical for eMMC devices.
 	 */
 	host->sdhci_host.mmc_ctrlr.hardcoded_voltage = 0x40ff8080;
+	/*
+	 * Need to program host->ioaddr for SD/MMC read/write operation
+	 */
+	attach_device(&host->sdhci_host);
 
 	add_sdhci(&host->sdhci_host);
 

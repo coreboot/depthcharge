@@ -38,6 +38,17 @@
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
 #include "drivers/bus/usb/usb.h"
+#include "drivers/storage/sdhci.h"
+
+/*
+ * Clock frequencies for the eMMC and SD ports are defined below. The minimum
+ * frequency is the same for both interfaces, the firmware does not run any
+ * interface faster than 52 MHz, but defines maximum eMMC frequency as 200 MHz
+ * for proper divider settings.
+ */
+#define EMMC_SD_CLOCK_MIN	400000
+#define EMMC_CLOCK_MAX		200000000
+#define SD_CLOCK_MAX		52000000
 
 static int board_setup(void)
 {
@@ -61,6 +72,15 @@ static int board_setup(void)
 	UsbHostController *usb_host1 = new_usb_hc(XHCI, UsbMmioBase);
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
 
+	SdhciHost *emmc, *sd;
+	emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1e, 4), 0,
+			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
+	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+			&fixed_block_dev_controllers);
+	sd = new_pci_sdhci_host(PCI_DEV(0, 0x1e, 6), 1,
+			EMMC_SD_CLOCK_MIN, SD_CLOCK_MAX);
+	list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
+				&removable_block_dev_controllers);
 	power_set_ops(&pch_power_ops);
 
 	/* Enable TPM here when present on board. */
