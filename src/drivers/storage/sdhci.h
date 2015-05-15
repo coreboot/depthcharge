@@ -265,6 +265,13 @@ typedef struct {
 	u32     addr;
 } SdhciAdma;
 
+typedef struct {
+	u16     attributes;
+	u16     length;
+	u32     addr;
+	u32     addr_hi;
+} SdhciAdma64;
+
 #define SDHCI_MAX_PER_DESCRIPTOR 0x10000
 
 /* ADMA descriptor attributes */
@@ -297,6 +304,9 @@ struct sdhci_host {
 	 * transfers
 	 */
 	SdhciAdma *adma_descs;
+	SdhciAdma64 *adma64_descs;
+	/* select 32bit or 64bit ADMA operations */
+	unsigned dma64;
 
 	/* Number of ADMA descriptors currently in the array. */
 	int adma_desc_count;
