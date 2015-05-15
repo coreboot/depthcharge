@@ -25,6 +25,7 @@
 #include "drivers/video/coreboot_fb.h"
 #include "drivers/video/display.h"
 #include "fastboot/backend.h"
+#include "fastboot/capabilities.h"
 #include "fastboot/fastboot.h"
 #include "fastboot/udc.h"
 #include "vboot/boot.h"
@@ -247,6 +248,13 @@ static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 		}
 
 		fb_add_number(output, "%llu", bdev_size);
+		break;
+	}
+	case FB_SECURE: {
+		if (fb_cap_func_allowed(FB_ID_FLASH) == FB_CAP_FUNC_NOT_ALLOWED)
+			fb_add_string(output, "%s", "no");
+		else
+			fb_add_string(output, "%s", "yes");
 		break;
 	}
 	default:
@@ -733,20 +741,22 @@ static fb_ret_type fb_powerdown(struct fb_cmd *cmd)
 /************** Command Function Table *****************/
 struct fastboot_func {
 	struct name_string name;
+	fb_func_id_t id;
 	fb_ret_type (*fn)(struct fb_cmd *cmd);
 };
 
 const struct fastboot_func fb_func_table[] = {
-	{ NAME_ARGS("getvar", ':'), fb_getvar},
-	{ NAME_ARGS("download", ':'), fb_download},
-	{ NAME_ARGS("verify", ':'), fb_verify},
-	{ NAME_ARGS("flash", ':'), fb_flash},
-	{ NAME_ARGS("erase", ':'), fb_erase},
-	{ NAME_NO_ARGS("boot"), fb_boot},
-	{ NAME_NO_ARGS("continue"), fb_continue},
-	{ NAME_NO_ARGS("reboot"), fb_reboot},
-	{ NAME_NO_ARGS("reboot-bootloader"), fb_reboot_bootloader},
-	{ NAME_NO_ARGS("powerdown"), fb_powerdown},
+	{ NAME_ARGS("getvar", ':'), FB_ID_GETVAR, fb_getvar},
+	{ NAME_ARGS("download", ':'), FB_ID_DOWNLOAD, fb_download},
+	{ NAME_ARGS("verify", ':'), FB_ID_VERIFY, fb_verify},
+	{ NAME_ARGS("flash", ':'), FB_ID_FLASH, fb_flash},
+	{ NAME_ARGS("erase", ':'), FB_ID_ERASE, fb_erase},
+	{ NAME_NO_ARGS("boot"), FB_ID_BOOT, fb_boot},
+	{ NAME_NO_ARGS("continue"), FB_ID_CONTINUE, fb_continue},
+	{ NAME_NO_ARGS("reboot"), FB_ID_REBOOT, fb_reboot},
+	{ NAME_NO_ARGS("reboot-bootloader"), FB_ID_REBOOT_BOOTLOADER,
+	  fb_reboot_bootloader},
+	{ NAME_NO_ARGS("powerdown"), FB_ID_POWERDOWN, fb_powerdown},
 };
 
 /************** Protocol Handler ************************/
@@ -785,6 +795,15 @@ static fb_ret_type fastboot_proto_handler(struct fb_cmd *cmd)
 	if (match_len == 0) {
 		FB_LOG("Unknown command\n");
 		fb_add_string(out_buff, "unknown command", NULL);
+		cmd->type = FB_FAIL;
+		return FB_SUCCESS;
+	}
+
+	/* Check if this function is allowed to be executed */
+	if (fb_cap_func_allowed(fb_func_table[i].id) ==
+	    FB_CAP_FUNC_NOT_ALLOWED) {
+		FB_LOG("Unsupported command\n");
+		fb_add_string(out_buff, "unsupported command", NULL);
 		cmd->type = FB_FAIL;
 		return FB_SUCCESS;
 	}
