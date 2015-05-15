@@ -106,6 +106,11 @@ int vboot_in_recovery(void)
 	return vboot_out_flags & VB_INIT_OUT_ENABLE_RECOVERY;
 }
 
+int vboot_in_developer(void)
+{
+	return vboot_out_flags & VB_INIT_OUT_ENABLE_DEVELOPER;
+}
+
 int vboot_do_init_out_flags(uint32_t out_flags)
 {
 	if (out_flags & VB_INIT_OUT_CLEAR_RAM) {
