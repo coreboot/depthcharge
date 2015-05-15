@@ -337,8 +337,8 @@ static fb_ret_type fb_getvar_single(struct fb_cmd *cmd)
 	}
 
 	if (match_len == 0) {
-		fb_add_string(&cmd->output, "nonexistent", NULL);
-		cmd->type = FB_FAIL;
+		fb_add_string(&cmd->output, "unknown variable", NULL);
+		cmd->type = FB_OKAY;
 		return FB_SUCCESS;
 	}
 
@@ -352,14 +352,14 @@ static fb_ret_type fb_getvar_single(struct fb_cmd *cmd)
 	 * able to read variable value. Thus, send message type to be sent back
 	 * to host as FAIL.
 	 */
-	cmd->type = FB_FAIL;
+	cmd->type = FB_OKAY;
 
 	/*
 	 * If no new information was added by board about the failure, put in
 	 * nonexistent string.
 	 */
 	if (fb_buffer_length(&cmd->output) == out_len)
-		fb_add_string(&cmd->output, "nonexistent", NULL);
+		fb_add_string(&cmd->output, "unknown variable", NULL);
 
 	return FB_SUCCESS;
 }

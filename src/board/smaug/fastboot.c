@@ -25,6 +25,7 @@
 #include <udc/chipidea.h>
 
 #include "board/smaug/fastboot.h"
+#include "boot/android_dt.h"
 #include "config.h"
 #include "drivers/bus/usb/usb.h"
 #include "vboot/firmware_id.h"
@@ -82,12 +83,14 @@ int get_board_var(struct fb_cmd *cmd, fb_getvar_t var)
 		break;
 	}
 	case FB_PRODUCT:
-		fb_add_number(output, "google,smaug-rev%d",
-			      lib_sysinfo.board_id);
+		fb_add_string(output, "%s", hardware_name());
 		break;
 	case FB_DWNLD_SIZE:
 		/* Max download size set to half of heap size */
 		fb_add_number(output, "0x%x", CONFIG_HEAP_SIZE/2);
+		break;
+	case FB_BASEBAND_VERSION:
+		fb_add_string(output, "%s", "N/A");
 		break;
 	default:
 		ret = -1;
