@@ -109,20 +109,8 @@ static int sdhci_transfer_data(SdhciHost *host, MmcData *data,
 	return 0;
 }
 
-static int sdhci_setup_adma(SdhciHost *host, MmcData* data)
+static void sdhci_alloc_adma_descs(SdhciHost *host, u32 need_descriptors)
 {
-	int i, togo, need_descriptors;
-	char *buffer_data;
-
-	togo = data->blocks * data->blocksize;
-	if (!togo) {
-		printf("%s: MmcData corrupted: %d blocks of %d bytes\n",
-		       __func__, data->blocks, data->blocksize);
-		return -1;
-	}
-
-	need_descriptors = 1 +  togo / SDHCI_MAX_PER_DESCRIPTOR;
-
 	if (host->adma_descs) {
 		if (host->adma_desc_count < need_descriptors) {
 			/* Previously allocated array is too small */
@@ -140,6 +128,49 @@ static int sdhci_setup_adma(SdhciHost *host, MmcData* data)
 
 	memset(host->adma_descs, 0, sizeof(*host->adma_descs) *
 	       need_descriptors);
+}
+
+static void sdhci_alloc_adma64_descs(SdhciHost *host, u32 need_descriptors)
+{
+	if (host->adma64_descs) {
+		if (host->adma_desc_count < need_descriptors) {
+			/* Previously allocated array is too small */
+			free(host->adma64_descs);
+			host->adma_desc_count = 0;
+			host->adma64_descs = NULL;
+		}
+	}
+
+	if (!host->adma64_descs) {
+		host->adma64_descs = xmalloc(need_descriptors *
+					   sizeof(*host->adma64_descs));
+		host->adma_desc_count = need_descriptors;
+	}
+
+	memset(host->adma64_descs, 0, sizeof(*host->adma64_descs) *
+	       need_descriptors);
+}
+
+static int sdhci_setup_adma(SdhciHost *host, MmcData *data)
+{
+	int i, togo, need_descriptors;
+	char *buffer_data;
+	u16 attributes;
+
+	togo = data->blocks * data->blocksize;
+	if (!togo) {
+		printf("%s: MmcData corrupted: %d blocks of %d bytes\n",
+		       __func__, data->blocks, data->blocksize);
+		return -1;
+	}
+
+	need_descriptors = 1 +  togo / SDHCI_MAX_PER_DESCRIPTOR;
+
+	if (host->dma64)
+		sdhci_alloc_adma64_descs(host, need_descriptors);
+	else
+		sdhci_alloc_adma_descs(host, need_descriptors);
+
 	buffer_data = data->dest;
 
 	/* Now set up the descriptor chain. */
@@ -150,18 +181,33 @@ static int sdhci_setup_adma(SdhciHost *host, MmcData* data)
 			desc_length = togo;
 		else
 			desc_length = SDHCI_MAX_PER_DESCRIPTOR;
+		togo -= desc_length;
 
-		host->adma_descs[i].addr = (u32) buffer_data;
-		host->adma_descs[i].length = desc_length;
-		host->adma_descs[i].attributes =
-			SDHCI_ADMA_VALID | SDHCI_ACT_TRAN;
+		attributes = SDHCI_ADMA_VALID | SDHCI_ACT_TRAN;
+		if (togo == 0)
+			attributes |= SDHCI_ADMA_END;
+
+		if (host->dma64) {
+			host->adma64_descs[i].addr = (u32) buffer_data;
+			host->adma64_descs[i].addr_hi = 0;
+			host->adma64_descs[i].length = desc_length;
+			host->adma64_descs[i].attributes = attributes;
+
+		} else {
+			host->adma_descs[i].addr = (u32) buffer_data;
+			host->adma_descs[i].length = desc_length;
+			host->adma_descs[i].attributes = attributes;
+		}
 
 		buffer_data += desc_length;
-		togo -= desc_length;
 	}
-	host->adma_descs[i - 1].attributes |= SDHCI_ADMA_END;
 
-	sdhci_writel(host, (u32) host->adma_descs, SDHCI_ADMA_ADDRESS);
+	if (host->dma64)
+		sdhci_writel(host, (u32) host->adma64_descs,
+			     SDHCI_ADMA_ADDRESS);
+	else
+		sdhci_writel(host, (u32) host->adma_descs,
+			     SDHCI_ADMA_ADDRESS);
 
 	return 0;
 }
@@ -506,7 +552,10 @@ static void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 
 	if (host->host_caps & MMC_AUTO_CMD12) {
 		ctrl &= ~SDHCI_CTRL_DMA_MASK;
-		ctrl |= SDHCI_CTRL_ADMA32;
+		if (host->dma64)
+			ctrl |= SDHCI_CTRL_ADMA64;
+		else
+			ctrl |= SDHCI_CTRL_ADMA32;
 	}
 
 	sdhci_writeb(host, ctrl, SDHCI_HOST_CONTROL);
@@ -583,6 +632,8 @@ static int sdhci_pre_init(SdhciHost *host)
 		host->mmc_ctrlr.caps |= MMC_MODE_8BIT;
 	if (host->host_caps)
 		host->mmc_ctrlr.caps |= host->host_caps;
+	if (caps & SDHCI_CAN_64BIT)
+		host->dma64 = 1;
 
 	sdhci_reset(host, SDHCI_RESET_ALL);
 
