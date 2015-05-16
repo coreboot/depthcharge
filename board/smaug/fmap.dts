@@ -11,6 +11,7 @@
 		gbb-flag-force-dev-switch-on;
 		gbb-flag-force-dev-boot-usb;
 		gbb-flag-disable-fw-rollback-check;
+		gbb-flag-force-dev-boot-fastboot-full-cap;
 	};
 	flash@0 {
 		#address-cells = <1>;
