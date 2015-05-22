@@ -21,6 +21,7 @@
  */
 
 #include <libpayload.h>
+#include <vboot_api.h>
 
 #include "drivers/video/coreboot_fb.h"
 #include "drivers/video/display.h"
@@ -30,6 +31,7 @@
 #include "fastboot/udc.h"
 #include "vboot/boot.h"
 #include "vboot/boot_policy.h"
+#include "vboot/util/commonparams.h"
 
 #define FASTBOOT_DEBUG
 
@@ -674,12 +676,10 @@ static fb_ret_type fb_flash(struct fb_cmd *cmd)
 }
 
 /*
- * TODO(furquan): Change this function once verified boot stuff is
- * resolved. Currently, we boot unsigned kernel bootimg from memory. However, we
- * will have to update this so that we check the signature on the image using
- * recovery key. Also, need to ensure that fastboot boot command is not enabled
- * by default on entering recovery mode. It should be enabled only after some
- * flag VB_ALLOW_FB_BOOT is set by user.
+ * fb_boot allows user to send a signed recovery image from host directly to
+ * device memory and boot from it. It calls vboot function
+ * VbVerifyMemoryBootImage to check if the given image is okay to boot from
+ * memory in current mode.
  */
 static fb_ret_type fb_boot(struct fb_cmd *cmd)
 {
@@ -693,7 +693,21 @@ static fb_ret_type fb_boot(struct fb_cmd *cmd)
 		return FB_SUCCESS;
 	}
 
-	kparams.kernel_buffer = image_addr;
+	size_t kernel_size;
+	void *kernel = bootimg_get_kernel_ptr(image_addr, image_size,
+					      &kernel_size);
+	if (kernel == NULL) {
+		fb_add_string(&cmd->output, "bootimg format not recognized",
+			      NULL);
+		return FB_SUCCESS;
+	}
+
+	if (VbVerifyMemoryBootImage(&cparams, &kparams, kernel, kernel_size) !=
+	    VBERROR_SUCCESS) {
+		fb_add_string(&cmd->output, "image verification failed", NULL);
+		return FB_SUCCESS;
+	}
+
 	kparams.flags = KERNEL_IMAGE_BOOTIMG;
 
 	if (fill_boot_info(&bi, &kparams)) {
