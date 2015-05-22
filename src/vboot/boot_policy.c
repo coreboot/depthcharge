@@ -91,6 +91,24 @@ struct bootimg_hdr {
 	uint8_t extra_cmdline[BOOTIMG_EXTRA_ARGS_SIZE];
 };
 
+void *bootimg_get_kernel_ptr(void *img, size_t image_size, size_t *kernel_size)
+{
+	struct bootimg_hdr *hdr = img;
+	void *kernel;
+
+	if (memcmp(hdr->magic, BOOTIMG_MAGIC, BOOTIMG_MAGIC_SIZE)) {
+		printf("Oops no match for bootimg\n");
+		return NULL;
+	}
+
+	kernel = (void *)((uintptr_t)hdr + hdr->page_size);
+
+	if (kernel_size && image_size)
+		*kernel_size = image_size - hdr->page_size;
+
+	return kernel;
+}
+
 static int fill_info_bootimg(struct boot_info *bi,
 			     VbSelectAndLoadKernelParams *kparams)
 {
@@ -99,13 +117,12 @@ static int fill_info_bootimg(struct boot_info *bi,
 	uintptr_t ramdisk_addr;
 	uint32_t kernel_size;
 
-	if (memcmp(hdr->magic, BOOTIMG_MAGIC, BOOTIMG_MAGIC_SIZE)) {
-		printf("Oops no match for bootimg\n");
-		return -1;
-	}
+	bi->kernel = bootimg_get_kernel_ptr(hdr, 0, NULL);
 
-	kernel = (uintptr_t)hdr + hdr->page_size;
-	bi->kernel = (void *)kernel;
+	if (bi->kernel == NULL)
+		return -1;
+
+	kernel = (uintptr_t)bi->kernel;
 
 	if (boot_policy.cmd_line_loc == CMD_LINE_BOOTIMG_HDR)
 		bi->cmd_line = (char *)hdr->cmdline;
