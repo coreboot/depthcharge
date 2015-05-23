@@ -11,8 +11,6 @@
 #include "spi_nand.h"
 #include "base/container_of.h"
 
-#include <strings.h>
-
 /* SPI NAND commands */
 #define	SPI_NAND_WRITE_ENABLE		0x06
 #define	SPI_NAND_WRITE_DISABLE		0x04
@@ -975,8 +973,8 @@ int spi_nand_scan(MtdDev *mtd)
 	mtd->block_isbad = spi_nand_block_isbad;
 	mtd->block_markbad = spi_nand_block_markbad;
 
-	dev->page_shift = ffs(mtd->writesize) - 1;
-	dev->phys_erase_shift = ffs(mtd->erasesize) - 1;
+	dev->page_shift = __ffs(mtd->writesize);
+	dev->phys_erase_shift = __ffs(mtd->erasesize);
 
 	return 0;
 }

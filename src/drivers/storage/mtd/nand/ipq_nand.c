@@ -2,12 +2,12 @@
  * Copyright (c) 2012 - 2013 The Linux Foundation. All rights reserved.
  */
 
+#include <libpayload.h>
+
 #include "nand.h"
 #include "ipq_nand.h"
 #include "ipq_nand_private.h"
 #include "base/container_of.h"
-
-#include <strings.h>
 
 /*
  * MTD, NAND and the IPQ806x NAND controller uses various terms to
@@ -1395,8 +1395,8 @@ int ipq_nand_scan(MtdDev *mtd)
 	mtd->block_isbad = ipq_nand_block_isbad;
 	mtd->block_markbad = ipq_nand_block_markbad;
 
-	dev->page_shift = ffs(mtd->writesize) - 1;
-	dev->phys_erase_shift = ffs(mtd->erasesize) - 1;
+	dev->page_shift = __ffs(mtd->writesize);
+	dev->phys_erase_shift = __ffs(mtd->erasesize);
 
 	/* One of the NAND layer functions that the command layer
 	 * tries to access directly.
