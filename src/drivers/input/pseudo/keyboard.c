@@ -67,6 +67,16 @@ static void pk_state_machine_setup(void)
 				  desc.trans_arr[i].dst);
 }
 
+static const struct pk_final_state *pk_find_final_state(int id)
+{
+	int i;
+	for (i = 0; i < desc.final_states_count; i++)
+		if (desc.final_states_arr[i].state_id == id)
+			return &desc.final_states_arr[i];
+
+	die("Error in final state logic\n");
+}
+
 /*
  * Key codes are expected as follows:
  * ASCII characters : ASCII values (0 - 127)
@@ -142,7 +152,7 @@ static size_t read_key_codes(Modifier *modifiers, uint16_t *codes,
 
 		assert(output < desc.total_states_count);
 		const struct pk_final_state *ptr;
-		ptr = &desc.final_states_arr[output];
+		ptr = pk_find_final_state(output);
 		*modifiers |= ptr->mod;
 		codes[i++] = ptr->keycode;
 	}
