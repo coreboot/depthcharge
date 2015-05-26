@@ -39,6 +39,7 @@ typedef enum {
 	FB_PART_TYPE,
 	FB_PART_SIZE,
 	FB_BDEV_SIZE,
+	FB_UNLOCKED,
 } fb_getvar_t;
 
 typedef enum fb_ret {
@@ -170,5 +171,12 @@ void fb_add_number(struct fb_buffer *buff, const char *format,
 /******* Functions to be implemented by board wanting to use fastboot *******/
 int get_board_var(struct fb_cmd *cmd, fb_getvar_t var);
 int board_should_enter_device_mode(void);
+/*
+ * Function to get user confirmation. Every device needs to implement this as
+ * per the available physical buttons. Return value expected is:
+ * 1 = user confirmed
+ * 0 = user cancelled / no user confirmation.
+ */
+int board_user_confirmation(void);
 
 #endif /* __FASTBOOT_FASTBOOT_H__ */

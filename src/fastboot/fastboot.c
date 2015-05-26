@@ -31,6 +31,7 @@
 #include "fastboot/udc.h"
 #include "vboot/boot.h"
 #include "vboot/boot_policy.h"
+#include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
 
 #define FASTBOOT_DEBUG
@@ -52,6 +53,12 @@ static size_t image_size;
 
 int  __attribute__((weak)) board_should_enter_device_mode(void)
 {
+	return 0;
+}
+
+int __attribute__((weak)) board_user_confirmation(void)
+{
+	/* Default weak implementation. Returns 0 = no user confirmation. */
 	return 0;
 }
 
@@ -179,6 +186,11 @@ static inline void fb_free_string(char *dst)
 	free(dst);
 }
 
+static inline int fb_device_unlocked(void)
+{
+	return vboot_in_developer();
+}
+
 static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 {
 	size_t input_len = fb_buffer_length(&cmd->input);
@@ -259,6 +271,13 @@ static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 			fb_add_string(output, "no", NULL);
 		break;
 	}
+	case FB_UNLOCKED: {
+		if (fb_device_unlocked())
+			fb_add_string(output, "yes", NULL);
+		else
+			fb_add_string(output, "no", NULL);
+		break;
+	}
 	default:
 		goto board_read;
 	}
@@ -321,6 +340,7 @@ static const struct {
 	{ NAME_NO_ARGS("max-download-size"), FB_DWNLD_SIZE},
 	{ NAME_ARGS("partition-type", ':'), FB_PART_TYPE},
 	{ NAME_ARGS("partition-size", ':'), FB_PART_SIZE},
+	{ NAME_NO_ARGS("unlocked"), FB_UNLOCKED},
 	/*
 	 * OEM specific :
 	 * Spec says names starting with lowercase letter are reserved.
@@ -752,6 +772,56 @@ static fb_ret_type fb_powerdown(struct fb_cmd *cmd)
 	return FB_POWEROFF;
 }
 
+static fb_ret_type fb_lock(struct fb_cmd *cmd)
+{
+	cmd->type = FB_FAIL;
+
+	if (!board_user_confirmation()) {
+		FB_LOG("User cancelled\n");
+		fb_add_string(&cmd->output, "User cancelled request", NULL);
+		return FB_SUCCESS;
+	}
+
+	FB_LOG("Locking device\n");
+	if (!fb_device_unlocked()) {
+		fb_add_string(&cmd->output, "Device already locked", NULL);
+		return FB_SUCCESS;
+	}
+
+	if (VbLockDevice() != VBERROR_SUCCESS) {
+		fb_add_string(&cmd->output, "Lock device failed", NULL);
+		return FB_SUCCESS;
+	}
+
+	cmd->type = FB_OKAY;
+	return FB_REBOOT;
+}
+
+static fb_ret_type fb_unlock(struct fb_cmd *cmd)
+{
+	cmd->type = FB_FAIL;
+
+	if (!board_user_confirmation()) {
+		FB_LOG("User cancelled\n");
+		fb_add_string(&cmd->output, "User cancelled request", NULL);
+		return FB_SUCCESS;
+	}
+
+	FB_LOG("Unlocking device\n");
+	if (fb_device_unlocked()) {
+		fb_add_string(&cmd->output, "Device already unlocked", NULL);
+		return FB_SUCCESS;
+	}
+
+	if (VbUnlockDevice() != VBERROR_SUCCESS) {
+		fb_add_string(&cmd->output, "Unlock device failed", NULL);
+		return FB_SUCCESS;
+	}
+
+	cmd->type = FB_OKAY;
+	return FB_REBOOT;
+}
+
 /************** Command Function Table *****************/
 struct fastboot_func {
 	struct name_string name;
@@ -771,6 +841,8 @@ const struct fastboot_func fb_func_table[] = {
 	{ NAME_NO_ARGS("reboot-bootloader"), FB_ID_REBOOT_BOOTLOADER,
 	  fb_reboot_bootloader},
 	{ NAME_NO_ARGS("powerdown"), FB_ID_POWERDOWN, fb_powerdown},
+	{ NAME_NO_ARGS("oem unlock"), FB_ID_UNLOCK, fb_unlock},
+	{ NAME_NO_ARGS("oem lock"), FB_ID_LOCK, fb_lock},
 };
 
 /************** Protocol Handler ************************/

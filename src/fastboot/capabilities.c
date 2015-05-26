@@ -64,27 +64,32 @@ static uint32_t fb_get_curr_cap_bitmap(void)
 	if (bitmap)
 		return bitmap;
 
+	VbNvContext context;
+
+	VbExNvStorageRead(context.raw);
+	VbNvSetup(&context);
+
 	/* If we are currently in normal mode, only limited cap is available */
 	if (vboot_in_developer() == 0) {
+		uint32_t fastboot_unlock;
+
 		bitmap = fb_cap_bitmap[FB_LIMITED_CAP];
-		return bitmap;
+
+		/* If unlock in fw is set in nvstorage, add unlock to bitmap. */
+		VbNvGet(&context, VBNV_FASTBOOT_UNLOCK_IN_FW, &fastboot_unlock);
+		if (fastboot_unlock)
+			bitmap |= FB_ID_UNLOCK;
+
+		goto cleanup;
 	}
 
 	/*
 	 * If we are in developer mode, we need to read the fastboot_full_cap
 	 * flag from nvstorage.
 	 */
-	VbNvContext context;
 	uint32_t fastboot_full_cap;
 
-	VbExNvStorageRead(context.raw);
-	VbNvSetup(&context);
-
 	VbNvGet(&context, VBNV_DEV_BOOT_FASTBOOT_FULL_CAP, &fastboot_full_cap);
-
-	VbNvTeardown(&context);
-	if (context.raw_changed)
-		VbExNvStorageWrite(context.raw);
 
 	if (fastboot_full_cap == 0)
 		/* If the flag is not set, check GBB override. */
@@ -97,6 +102,11 @@ static uint32_t fb_get_curr_cap_bitmap(void)
 		bitmap = fb_cap_bitmap[FB_FULL_CAP];
 	else
 		bitmap = fb_cap_bitmap[FB_LIMITED_CAP];
+
+cleanup:
+	VbNvTeardown(&context);
+	if (context.raw_changed)
+		VbExNvStorageWrite(context.raw);
 
 	return bitmap;
 }
