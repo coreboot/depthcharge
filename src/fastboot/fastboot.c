@@ -254,9 +254,9 @@ static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 	}
 	case FB_SECURE: {
 		if (fb_cap_func_allowed(FB_ID_FLASH) == FB_CAP_FUNC_NOT_ALLOWED)
-			fb_add_string(output, "%s", "no");
+			fb_add_string(output, "yes", NULL);
 		else
-			fb_add_string(output, "%s", "yes");
+			fb_add_string(output, "no", NULL);
 		break;
 	}
 	default:
