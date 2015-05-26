@@ -121,3 +121,22 @@ void fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT])
 			  lib_sysinfo.spi_flash.sector_size);
 	fb_fill_part_list("chromeos", 0, backend_get_bdev_size_blocks("mmc"));
 }
+
+int board_user_confirmation(void)
+{
+	int ret = 0;
+
+	while (1) {
+		uint32_t ch = getchar();
+
+		if (ch == '\r') {
+			ret = 1;
+			break;
+		}
+		if (ch == ' ') {
+			ret = 0;
+			break;
+		}
+	}
+	return ret;
+}
