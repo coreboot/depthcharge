@@ -27,7 +27,7 @@
  * handoff structure.
  */
 
-#define MAX_PARSED_FW_COMPONENTS 5
+#define MAX_PARSED_FW_COMPONENTS 6
 
 struct firmware_component {
 	uint32_t address;
