@@ -23,7 +23,6 @@
 #include <assert.h>
 #include <libpayload.h>
 #include <stdint.h>
-#include <vboot_api.h>
 
 #include "base/timestamp.h"
 #include "boot/commandline.h"
@@ -200,8 +199,6 @@ int vboot_select_firmware(void)
 
 int vboot_select_and_load_kernel(void)
 {
-	static char cmd_line_buf[2 * CmdLineSize];
-
 	VbSelectAndLoadKernelParams kparams = {
 		.kernel_buffer = (void *)&_kernel_start,
 		.kernel_buffer_size = &_kernel_end - &_kernel_start
@@ -226,35 +223,43 @@ int vboot_select_and_load_kernel(void)
 			return 1;
 	}
 
-	timestamp_add_now(TS_CROSSYSTEM_DATA);
+	vboot_boot_kernel(&kparams);
 
+	return 1;
+}
+
+void vboot_boot_kernel(VbSelectAndLoadKernelParams *kparams)
+{
+	static char cmd_line_buf[2 * CmdLineSize];
 	struct boot_info bi;
+
+	timestamp_add_now(TS_CROSSYSTEM_DATA);
 
 	memset(&bi, 0, sizeof(bi));
 
-	if (fill_boot_info(&bi, &kparams) == -1) {
+	if (fill_boot_info(&bi, kparams) == -1) {
 		printf("ERROR!!! Unable to parse boot info\n");
 		goto fail;
 	}
 
-	BlockDev *bdev = (BlockDev *)kparams.disk_handle;
+	BlockDev *bdev = (BlockDev *)kparams->disk_handle;
 
 	struct commandline_info info = {
 		.devnum = 0,
-		.partnum = kparams.partition_number + 1,
-		.guid = kparams.partition_guid,
+		.partnum = kparams->partition_number + 1,
+		.guid = kparams->partition_guid,
 		.external_gpt = bdev->external_gpt,
 	};
 
 	if (bi.cmd_line) {
 		if (commandline_subst(bi.cmd_line, cmd_line_buf,
 				      sizeof(cmd_line_buf), &info))
-			return 1;
+			return;
 		bi.cmd_line = cmd_line_buf;
 	}
 
 	if (crossystem_setup())
-		return 1;
+		return;
 
 	boot(&bi);
 
@@ -265,6 +270,4 @@ fail:
 	 */
 	if (CONFIG_KERNEL_LEGACY)
 		legacy_boot(bi.kernel, cmd_line_buf);
-
-	return 1;
 }
