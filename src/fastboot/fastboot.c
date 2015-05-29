@@ -704,7 +704,6 @@ static fb_ret_type fb_flash(struct fb_cmd *cmd)
 static fb_ret_type fb_boot(struct fb_cmd *cmd)
 {
 	VbSelectAndLoadKernelParams kparams;
-	struct boot_info bi;
 
 	cmd->type = FB_FAIL;
 
@@ -730,15 +729,10 @@ static fb_ret_type fb_boot(struct fb_cmd *cmd)
 
 	kparams.flags = KERNEL_IMAGE_BOOTIMG;
 
-	if (fill_boot_info(&bi, &kparams)) {
-		fb_add_string(&cmd->output, "bootimg parse failed", NULL);
-		return FB_SUCCESS;
-	}
-
 	cmd->type = FB_OKAY;
 	fb_execute_send(cmd);
 
-	boot(&bi);
+	vboot_boot_kernel(&kparams);
 
 	/* We should never reach here, if boot successful. */
 	return FB_SUCCESS;
