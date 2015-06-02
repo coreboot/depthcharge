@@ -127,7 +127,7 @@ auron_paine,auron_yuna,cid,lulu:
   res:      [1024, 768]
   panel:    [1366, 768]
 
-panther,tricky,mccloud,guado,tidus,rikku,ninja:
+panther,tricky,mccloud,guado,tidus,rikku,ninja,brain,mickey,romy:
   # Using VESA graphics mode 1024x768 (0x0117).
   # A chromebox without built-in panel/keyboard.
   # Assume the display is a modern 16:9 (1920x1080) monitor.
