@@ -15,6 +15,7 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
+depthcharge-y += cgptlib.c
 depthcharge-y += debug.c
 depthcharge-y += disk.c
 ifneq ($(CONFIG_HEADLESS),y)
