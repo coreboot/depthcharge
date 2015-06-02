@@ -134,3 +134,7 @@ config USB_BOOT_ON_DEV
 	help
 	  When swtiching to dev from normal, set the NVRAM flag which allows
 	  booting from USB.
+
+config BCB_SUPPORT
+	bool "Enable support for Bootloader control block"
+	default n
