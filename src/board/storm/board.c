@@ -76,6 +76,11 @@ static void fill_board_descriptor(void)
 		bdescriptor.calibration_needed = 1;
 		break;
 
+	case BOARD_ID_ARKHAM_PROTO:
+		bdescriptor.compat_string = "google,arkham";
+		bdescriptor.calibration_needed = 1;
+		break;
+
 	default:
 		bdescriptor.compat_string = "google,storm-proto0";
 		bdescriptor.calibration_needed = 0;

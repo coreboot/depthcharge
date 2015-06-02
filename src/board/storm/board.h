@@ -38,6 +38,7 @@ enum storm_board_id {
 	BOARD_ID_PROTO_0_2 = 1,
 	BOARD_ID_WHIRLWIND_SP3 = 2,
 	BOARD_ID_WHIRLWIND_SP5 = 3,
+	BOARD_ID_ARKHAM_PROTO = 6,
 };
 
 #endif
