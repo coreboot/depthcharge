@@ -22,6 +22,7 @@
 
 #include <libpayload.h>
 
+#include "base/gpt.h"
 #include "fastboot/backend.h"
 
 #define BACKEND_DEBUG
@@ -297,37 +298,6 @@ static backend_ret_t write_raw_image(struct image_part_details *img,
 		return BE_WRITE_ERR;
 
 	return BE_SUCCESS;
-}
-
-/***************************** GPT handling ***********************************/
-
-static GptData *alloc_gpt(BlockDev *bdev)
-{
-	GptData *gpt = malloc(sizeof(*gpt));
-
-	memset(gpt, 0, sizeof(*gpt));
-
-	gpt->sector_bytes = bdev->block_size;
-	gpt->streaming_drive_sectors = bdev->block_count;
-	gpt->gpt_drive_sectors = bdev->block_count;
-
-	if (AllocAndReadGptData(bdev, gpt) != 0) {
-		free(gpt);
-		return NULL;
-	}
-
-	if (GptInit(gpt) != GPT_SUCCESS) {
-		free(gpt);
-		gpt = NULL;
-	}
-
-	return gpt;
-}
-
-static void free_gpt(BlockDev *bdev, GptData *gpt)
-{
-	WriteAndFreeGptData(bdev, gpt);
-	free(gpt);
 }
 
 /********************** Image Partition handling ******************************/
