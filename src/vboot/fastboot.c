@@ -22,7 +22,6 @@
 
 #include <libpayload.h>
 #include <vboot_nvstorage.h>
-#include <vboot_api.h>
 
 #include "drivers/power/power.h"
 #include "fastboot/fastboot.h"
@@ -31,21 +30,6 @@
 fb_ret_type __attribute__((weak)) device_mode_enter(void)
 {
 	return FB_CONTINUE_RECOVERY;
-}
-
-static void vboot_update_recovery(uint32_t request)
-{
-	VbNvContext context;
-
-	VbExNvStorageRead(context.raw);
-	VbNvSetup(&context);
-
-	VbNvSet(&context, VBNV_RECOVERY_REQUEST, request);
-
-	VbNvTeardown(&context);
-	if (context.raw_changed)
-		VbExNvStorageWrite(context.raw);
-
 }
 
 static void vboot_clear_recovery(void)
