@@ -23,6 +23,8 @@
 #include <assert.h>
 #include <libpayload.h>
 #include <stdint.h>
+#include <vboot_api.h>
+#include <vboot_nvstorage.h>
 
 #include "base/timestamp.h"
 #include "boot/commandline.h"
@@ -115,6 +117,20 @@ int vboot_in_recovery(void)
 int vboot_in_developer(void)
 {
 	return vboot_out_flags & VB_INIT_OUT_ENABLE_DEVELOPER;
+}
+
+void vboot_update_recovery(uint32_t request)
+{
+	VbNvContext context;
+
+	VbExNvStorageRead(context.raw);
+	VbNvSetup(&context);
+
+	VbNvSet(&context, VBNV_RECOVERY_REQUEST, request);
+
+	VbNvTeardown(&context);
+	if (context.raw_changed)
+		VbExNvStorageWrite(context.raw);
 }
 
 int vboot_do_init_out_flags(uint32_t out_flags)
