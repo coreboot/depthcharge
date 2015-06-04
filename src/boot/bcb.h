@@ -10,7 +10,7 @@
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but without any warranty; without even the implied warranty of
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -20,18 +20,15 @@
  * MA 02111-1307 USA
  */
 
-#include <libpayload.h>
-#include <vboot_api.h>
-#include <gpt.h>
-
-#include "boot/bcb.h"
 #include "config.h"
+#include "drivers/storage/blockdev.h"
 
-uint8_t VbExOverrideGptEntryPriority(const GptEntry *e)
-{
-#if CONFIG_BCB_SUPPORT
-	if (bcb_override_priority(e->name))
-		return 15;
-#endif
-	return 0;
-}
+/* Read bcb partition and handle command. */
+void bcb_handle_command(void);
+/* Returns 1 if override of priority is required. */
+uint8_t bcb_override_priority(const uint16_t *name);
+/* Sets command and recovery values in BCB partition. */
+void bcb_request_recovery(const char *command, const char *recovery);
+
+/* Functions to be implemented by board */
+BlockDevCtrlr *bcb_board_bdev_ctrlr(void);

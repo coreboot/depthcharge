@@ -62,3 +62,7 @@ config ANDROID_DT_FIXUP
 	  Enabling this option will create a /firmware/android node in the
 	  device tree and populate it with the hardware name and other
 	  values from the VPD such as the serial number.
+
+config BCB_SUPPORT
+	bool "Enable support for Bootloader control block"
+	default n

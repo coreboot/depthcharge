@@ -27,6 +27,7 @@
 #include "arch/sign_of_life.h"
 #include "base/init_funcs.h"
 #include "base/timestamp.h"
+#include "boot/bcb.h"
 #include "config.h"
 #include "debug/cli/common.h"
 #include "drivers/input/input.h"
@@ -110,6 +111,10 @@ int main(void)
 		halt();
 
 	vboot_try_fastboot();
+
+	/* Handle BCB command, if supported. */
+	if (CONFIG_BCB_SUPPORT)
+		bcb_handle_command();
 
 	timestamp_add_now(TS_VB_SELECT_AND_LOAD_KERNEL);
 
