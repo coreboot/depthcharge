@@ -87,6 +87,9 @@ static int board_setup(void)
 	// Claim that we have an open lid to satisfy vboot.
 	flag_replace(FLAG_LIDSW, new_gpio_high());
 
+	// Claim that we have an power key to satisfy vboot.
+	flag_replace(FLAG_PWRSW, new_gpio_low());
+
 	ramoops_buffer(0x31f00000, 0x100000, 0x20000);
 
 	if (lib_sysinfo.framebuffer != NULL)
