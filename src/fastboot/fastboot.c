@@ -49,6 +49,39 @@
 static void *image_addr;
 static size_t image_size;
 
+static void print_string(const char *str)
+{
+	int str_len = strlen(str);
+	while (str_len--) {
+		if (*str == '\n')
+			video_console_putchar('\r');
+		video_console_putchar(*str++);
+	}
+}
+
+/*
+ * TODO(furquan): Get rid of this once the vboot flows and fastboot interactions
+ * are finalized.
+ */
+static void fb_print_on_screen(const char *msg)
+{
+	unsigned int rows, cols;
+
+	if (display_init())
+		return;
+
+	if (backlight_update(1))
+		return;
+
+	video_init();
+	video_console_cursor_enable(0);
+
+	video_get_rows_cols(&rows, &cols);
+	video_console_set_cursor((cols - strlen(msg)) / 2, rows / 2);
+
+	print_string(msg);
+}
+
 /********************* Stubs *************************/
 
 int  __attribute__((weak)) board_should_enter_device_mode(void)
@@ -643,6 +676,7 @@ static fb_ret_type fb_erase(struct fb_cmd *cmd)
 	cmd->type = FB_INFO;
 	fb_add_string(&cmd->output, "erasing flash", NULL);
 	fb_execute_send(cmd);
+	fb_print_on_screen("Erasing flash....\n");
 
 	cmd->type = FB_OKAY;
 
@@ -674,6 +708,7 @@ static fb_ret_type fb_flash(struct fb_cmd *cmd)
 	cmd->type = FB_INFO;
 	fb_add_string(&cmd->output, "writing flash", NULL);
 	fb_execute_send(cmd);
+	fb_print_on_screen("Writing flash....\n");
 
 	struct fb_buffer *input = &cmd->input;
 	size_t len = fb_buffer_length(input);
@@ -902,40 +937,6 @@ static void print_input(struct fb_cmd *cmd)
 #endif
 }
 
-static void print_string(const char *str)
-{
-	int str_len = strlen(str);
-	while (str_len--) {
-		if (*str == '\n')
-			video_console_putchar('\r');
-		video_console_putchar(*str++);
-	}
-}
-
-/*
- * TODO(furquan): Get rid of this once the vboot flows and fastboot interactions
- * are finalized.
- */
-static void fb_print_on_screen()
-{
-	const char *msg = "Entered fastboot mode";
-	unsigned int rows, cols;
-
-	if (display_init())
-		return;
-
-	if (backlight_update(1))
-		return;
-
-	video_init();
-	video_console_cursor_enable(0);
-
-	video_get_rows_cols(&rows, &cols);
-	video_console_set_cursor((cols - strlen(msg)) / 2, rows / 2);
-
-	print_string(msg);
-}
-
 /*
  * Func: device_mode_enter
  * Desc: This function handles the entry into the device mode. It is responsible
@@ -970,7 +971,6 @@ fb_ret_type device_mode_enter(void)
 	fb_buffer_push(&cmd.output, PREFIX_LEN);
 
 	FB_LOG("********** Entered fastboot mode *****************\n");
-	fb_print_on_screen();
 
 	/*
 	 * Keep looping until we get boot, reboot or poweroff command from host.
@@ -978,12 +978,15 @@ fb_ret_type device_mode_enter(void)
 	do {
 		size_t len;
 
+		fb_print_on_screen("Waiting for fastboot command....\n");
 		/* Receive a packet from the host */
 		len = usb_gadget_recv(pkt, MAX_COMMAND_LENGTH);
 
 		fb_buffer_push(&cmd.input, len);
 
 		print_input(&cmd);
+
+		fb_print_on_screen("Processing fastboot command....\n");
 
 		/* Process the packet as per fastboot protocol */
 		ret = fastboot_proto_handler(&cmd);
