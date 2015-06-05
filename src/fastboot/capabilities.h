@@ -60,4 +60,7 @@ typedef enum {
  */
 fb_cap_status_t fb_cap_func_allowed(fb_func_id_t id);
 
+/* Check if GBB flag is set to force full fastboot capability. */
+uint8_t fb_check_gbb_override(void);
+
 #endif /* __FASTBOOT_CAPABILITIES_H__ */
