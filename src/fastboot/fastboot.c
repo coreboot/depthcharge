@@ -801,11 +801,20 @@ static fb_ret_type fb_powerdown(struct fb_cmd *cmd)
 	return FB_POWEROFF;
 }
 
+static int fb_user_confirmation()
+{
+	/* If GBB is set, we don't need to get user confirmation. */
+	if (fb_check_gbb_override())
+		return 1;
+
+	return board_user_confirmation();
+}
+
 static fb_ret_type fb_lock(struct fb_cmd *cmd)
 {
 	cmd->type = FB_FAIL;
 
-	if (!board_user_confirmation()) {
+	if (!fb_user_confirmation()) {
 		FB_LOG("User cancelled\n");
 		fb_add_string(&cmd->output, "User cancelled request", NULL);
 		return FB_SUCCESS;
@@ -830,7 +839,7 @@ static fb_ret_type fb_unlock(struct fb_cmd *cmd)
 {
 	cmd->type = FB_FAIL;
 
-	if (!board_user_confirmation()) {
+	if (!fb_user_confirmation()) {
 		FB_LOG("User cancelled\n");
 		fb_add_string(&cmd->output, "User cancelled request", NULL);
 		return FB_SUCCESS;

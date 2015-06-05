@@ -43,7 +43,7 @@ static uint32_t fb_cap_bitmap[] = {
 	[FB_FULL_CAP] = FB_ID_MASK,
 };
 
-static uint8_t fb_check_gbb_override(void)
+uint8_t fb_check_gbb_override(void)
 {
 	GoogleBinaryBlockHeader *gbb = cparams.gbb_data;
 	if (memcmp(gbb->signature, GBB_SIGNATURE, GBB_SIGNATURE_SIZE)) {
@@ -63,6 +63,12 @@ static uint32_t fb_get_curr_cap_bitmap(void)
 
 	if (bitmap)
 		return bitmap;
+
+	/* If GBB flag is set to allow full fastboot capability, so do we. */
+	if (fb_check_gbb_override()) {
+		bitmap = fb_cap_bitmap[FB_FULL_CAP];
+		return bitmap;
+	}
 
 	VbNvContext context;
 
@@ -90,10 +96,6 @@ static uint32_t fb_get_curr_cap_bitmap(void)
 	uint32_t fastboot_full_cap;
 
 	VbNvGet(&context, VBNV_DEV_BOOT_FASTBOOT_FULL_CAP, &fastboot_full_cap);
-
-	if (fastboot_full_cap == 0)
-		/* If the flag is not set, check GBB override. */
-		fastboot_full_cap = fb_check_gbb_override();
 
 	/*
 	 * If the flag is set, full fastboot capability is enabled in firmware.
