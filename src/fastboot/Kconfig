@@ -31,3 +31,13 @@ config FASTBOOT_USBDID
 	hex "Fastboot USB Vendor ID"
 	default 0x0
 	depends on FASTBOOT_MODE
+
+config FASTBOOT_HEAP_SIZE
+	hex "Heap size required for fastboot operations"
+	default 0x0 if !FASTBOOT_MODE
+	default 0x10000000 if FASTBOOT_MODE
+	help
+	  The size of the heap required for fastboot operations in bytes, minus
+	  any padding needed to align it to a 16 byte boundary. (Do not
+	  override in defconfig, since it would increase the heap size for
+	  non-fastboot images as well).

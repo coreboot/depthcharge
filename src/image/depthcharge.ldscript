@@ -151,6 +151,7 @@ SECTIONS
 		. = ALIGN(16);
 		_heap = .;
 		. += HEAP_SIZE;
+		. += FASTBOOT_HEAP_SIZE;
 		. = ALIGN(16);
 		_eheap = .;
 
