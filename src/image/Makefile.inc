@@ -29,4 +29,5 @@ link_config_options := \
 	BASE_ADDRESS \
 	HEAP_SIZE \
 	STACK_SIZE \
-	GBB_COPY_SIZE
+	GBB_COPY_SIZE \
+	FASTBOOT_HEAP_SIZE \
