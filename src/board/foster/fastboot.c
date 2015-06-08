@@ -84,7 +84,7 @@ int get_board_var(struct fb_cmd *cmd, fb_getvar_t var)
 		break;
 	case FB_DWNLD_SIZE:
 		/* Max download size set to half of heap size */
-		fb_add_number(output, "0x%x", CONFIG_HEAP_SIZE/2);
+		fb_add_number(output, "0x%x", CONFIG_FASTBOOT_HEAP_SIZE);
 		break;
 	default:
 		ret = -1;
