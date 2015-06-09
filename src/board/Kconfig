@@ -118,6 +118,9 @@ endif
 if BOARD = "veyron_rialto"
 source src/board/veyron_rialto/Kconfig
 endif
+if BOARD = "veyron_shark"
+source src/board/veyron_shark/Kconfig
+endif
 if BOARD = "veyron_speedy"
 source src/board/veyron_speedy/Kconfig
 endif

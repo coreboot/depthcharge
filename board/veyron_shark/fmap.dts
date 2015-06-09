@@ -1,0 +1,212 @@
+/dts-v1/;
+
+/ {
+	model = "Google Veyron_Shark";
+	config {
+		hwid = "SHARK TEST A-A 8553";
+	};
+	chromeos-config {
+		/* Enable factory-friendly features. */
+		gbb-flag-dev-screen-short-delay;
+		gbb-flag-force-dev-switch-on;
+		gbb-flag-force-dev-boot-usb;
+		gbb-flag-disable-fw-rollback-check;
+	};
+	flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "chromeos,flashmap";
+		reg = <0x00000000 0x00400000>;
+
+		/* ---- Section: Read-only ---- */
+		wp-ro {
+			label = "wp-ro";
+			reg = <0x00000000 0x00200000>;
+			read-only;
+		};
+
+		ro-section {
+			label = "ro-section";
+			reg = <0x00000000 0x001f0000>;
+			read-only;
+		};
+		ro-boot {
+			label = "coreboot";
+			size = <0x00100000>;
+			read-only;
+			type = "blob coreboot";
+			required;
+		};
+
+		ro-fmap {
+			label = "fmap";
+
+			/* We encourage to align FMAP partition in as large
+			 * block as possible so that flashrom can find it soon.
+			 * For example, aligning to 512KB is better than to
+			 * 256KB. */
+
+			reg = <0x00100000 0x00001000>;
+			read-only;
+			type = "fmap";
+			ver-major = <1>;
+			ver-minor = <0>;
+		};
+
+		ro-gbb {
+			label = "gbb";
+
+			/* GBB offset must be aligned to 4K bytes */
+			reg = <0x00101000 0x000eef00>;
+			read-only;
+			type = "blob gbb";
+		};
+
+		ro-firmware-id {
+			label = "ro-frid";
+			reg = <0x001eff00 0x00000100>;
+			read-only;
+			type = "blobstring fwid";
+		};
+
+		/* ---- Section: Vital-product data (VPD) ---- */
+		ro-vpd {
+			label = "ro-vpd";
+
+			/* VPD offset must be aligned to 4K bytes */
+			reg = <0x001f0000 0x00010000>;
+			read-only;
+			type = "wiped";
+			wipe-value = [ff];
+		};
+
+		/* ---- Section: Rewritable slot A ---- */
+		rw-a {
+			label = "rw-section-a";
+			/* Alignment: 4k (for updating) */
+			reg = <0x00200000 0x00078000>;
+		};
+		rw-a-vblock {
+			label = "vblock-a";
+			/*
+			 * Alignment: 4k (for updating) and must be in start of
+			 * each RW_SECTION.
+			 */
+			reg = <0x00200000 0x00002000>;
+			type = "keyblock boot,ecrwhash,romstage,ramstage";
+			with_index;
+			keyblock = "firmware.keyblock";
+			signprivate = "firmware_data_key.vbprivk";
+			version = <1>;
+			kernelkey = "kernel_subkey.vbpubk";
+			preamble-flags = <0>;
+		};
+		rw-a-boot {
+			/* Alignment: no requirement (yet). */
+			label = "fw-main-a";
+			reg = <0x00202000 0x00056000>;
+			type = "blob boot,ecrwhash,romstage,ramstage";
+			with_index;
+		};
+		rw-a-ec-boot {
+			label = "ec-main-a";
+			type = "blob ecbin";
+			reg = <0x00258000 0x0001ff00>;
+			with_index;
+		};
+		rw-a-firmware-id {
+			/* Alignment: no requirement. */
+			label = "rw-fwid-a";
+			reg = <0x00277f00 0x00000100>;
+			read-only;
+			type = "blobstring fwid";
+		};
+
+		/* ---- Section: Rewritable shared 16 KB---- */
+		shared-section {
+			/*
+			 * Alignment: 4k (for updating).
+			 * Anything in this range may be updated in recovery.
+			 */
+			label = "rw-shared";
+			reg = <0x00278000 0x00004000>;
+		};
+		shared-data {
+			label = "shared-data";
+			/*
+			 * Alignment: 4k (for random read/write).
+			 * RW firmware can put calibration data here.
+			 */
+			reg = <0x00278000 0x00004000>;
+			type = "wiped";
+			wipe-value = [00];
+		};
+
+		/* ---- Section: Rewritable Event Log 16KB ---- */
+		rw-elog {
+			label = "rw-elog";
+			/* Alignment: 4K (for updating) */
+			reg = <0x0027c000 0x00004000>;
+			type = "wiped";
+			wipe-value = [ff];
+		};
+
+		/* ---- Section: Rewritable slot B ---- */
+		rw-b {
+			label = "rw-section-b";
+			/* Alignment: 4k (for updating) */
+			reg = <0x00280000 0x00078000>;
+		};
+		rw-b-vblock {
+			label = "vblock-b";
+			/*
+			 * Alignment: 4k (for updating) and must be in start of
+			 * each RW_SECTION.
+			 */
+			reg = <0x00280000 0x00002000>;
+			type = "keyblock boot,ecrwhash,romstage,ramstage";
+			with_index;
+			keyblock = "firmware.keyblock";
+			signprivate = "firmware_data_key.vbprivk";
+			version = <1>;
+			kernelkey = "kernel_subkey.vbpubk";
+			preamble-flags = <0>;
+		};
+		rw-b-boot {
+			label = "fw-main-b";
+			/* Alignment: no requirement (yet). */
+			reg = <0x00282000 0x00056000>;
+			type = "blob boot,ecrwhash,romstage,ramstage";
+			with_index;
+		};
+		rw-b-ec-boot {
+			label = "ec-main-b";
+			type = "blob ecbin";
+			reg = <0x002d8000 0x0001ff00>;
+			with_index;
+		};
+		rw-b-firmware-id {
+			label = "rw-fwid-b";
+			/* Alignment: no requirement. */
+			reg = <0x002f7f00 0x00000100>;
+			read-only;
+			type = "blobstring fwid";
+		};
+
+		/* ---- Section: Rewritable VPD 32 KB ---- */
+		rw-vpd {
+			label = "rw-vpd";
+			/* Alignment: 4k (for updating) */
+			reg = <0x002f8000 0x00008000>;
+			type = "wiped";
+			wipe-value = [ff];
+		};
+
+		rw-legacy {
+			label = "rw-legacy";
+			reg = <0x00300000 0x00100000>;
+			type = "wiped";
+			wipe-value = [ff];
+		};
+	};
+};
