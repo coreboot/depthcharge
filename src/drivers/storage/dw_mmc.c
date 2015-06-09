@@ -376,6 +376,8 @@ static int dwmci_update(BlockDevCtrlrOps *me)
 			host->mmc.media->dev.removable = 1;
 			host->mmc.media->dev.ops.read = &block_mmc_read;
 			host->mmc.media->dev.ops.write = &block_mmc_write;
+			host->mmc.media->dev.ops.fill_write =
+				&block_mmc_fill_write;
 			host->mmc.media->dev.ops.new_stream =
 						&new_simple_stream;
 			list_insert_after(&host->mmc.media->dev.list_node,
@@ -393,6 +395,8 @@ static int dwmci_update(BlockDevCtrlrOps *me)
 		host->mmc.media->dev.removable = 0;
 		host->mmc.media->dev.ops.read = &block_mmc_read;
 		host->mmc.media->dev.ops.write = &block_mmc_write;
+		host->mmc.media->dev.ops.fill_write =
+			&block_mmc_fill_write;
 		host->mmc.media->dev.ops.new_stream = &new_simple_stream;
 		list_insert_after(&host->mmc.media->dev.list_node,
 				  &fixed_block_devices);
