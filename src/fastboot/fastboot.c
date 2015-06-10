@@ -723,7 +723,13 @@ static fb_ret_type fb_flash(struct fb_cmd *cmd)
 	cmd->type = FB_OKAY;
 
 	char *partition = fb_get_string(data, len);
-	ret = backend_write_partition(partition, image_addr, image_size);
+
+	ret = board_write_partition(partition, image_addr, image_size);
+
+	if (ret == BE_NOT_HANDLED)
+		ret = backend_write_partition(partition, image_addr,
+					      image_size);
+
 	fb_free_string(partition);
 
 	if (ret != BE_SUCCESS) {
