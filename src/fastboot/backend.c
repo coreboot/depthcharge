@@ -49,6 +49,15 @@ struct image_part_details {
 	size_t part_size_lba;
 };
 
+/********************** Stub implementations *****************************/
+backend_ret_t __attribute__((weak)) board_write_partition(const char *name,
+							  void *image_addr,
+							  size_t image_size)
+{
+	return BE_NOT_HANDLED;
+}
+
+
 /********************** Sparse Image Handling ****************************/
 
 /* Sparse Image Header */
@@ -86,7 +95,7 @@ struct sparse_chunk_hdr {
 };
 
 /* Check if given image is sparse */
-static int is_sparse_image(void *image_addr)
+int is_sparse_image(void *image_addr)
 {
 	struct sparse_image_hdr *hdr = image_addr;
 
@@ -302,7 +311,7 @@ static backend_ret_t write_raw_image(struct image_part_details *img,
 
 /********************** Image Partition handling ******************************/
 
-static struct part_info *get_part_info(const char *name)
+struct part_info *get_part_info(const char *name)
 {
 	int i;
 
@@ -471,10 +480,10 @@ backend_ret_t backend_write_partition(const char *name, void *image_addr,
 		return ret;
 
 	if (is_sparse_image(image_addr)) {
-		BE_LOG("Writing sparse image...\n");
+		BE_LOG("Writing sparse image to %s...\n", name);
 		ret = write_sparse_image(&img, image_addr, image_size);
 	} else {
-		BE_LOG("Writing raw image...\n");
+		BE_LOG("Writing raw image to %s...\n", name);
 		ret = write_raw_image(&img, image_addr, image_size);
 	}
 
