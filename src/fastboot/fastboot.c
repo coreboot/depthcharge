@@ -23,6 +23,7 @@
 #include <libpayload.h>
 #include <vboot_api.h>
 
+#include "config.h"
 #include "drivers/video/coreboot_fb.h"
 #include "drivers/video/display.h"
 #include "fastboot/backend.h"
@@ -233,6 +234,11 @@ static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 	switch (var) {
 	case FB_VERSION:
 		fb_add_string(output, FB_VERSION_STRING, NULL);
+		break;
+
+	case FB_DWNLD_SIZE:
+		/* Max download size set to half of heap size */
+		fb_add_number(output, "0x%x", CONFIG_FASTBOOT_HEAP_SIZE/2);
 		break;
 
 	case FB_PART_SIZE: {
