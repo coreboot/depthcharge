@@ -28,6 +28,7 @@
 #include "boot/android_dt.h"
 #include "config.h"
 #include "drivers/bus/usb/usb.h"
+#include "image/fmap.h"
 #include "vboot/firmware_id.h"
 
 struct bdev_info fb_bdev_list[BDEV_COUNT] = {
@@ -61,7 +62,21 @@ struct part_info fb_part_list[] = {
 	PART_NONGPT("chromeos", NULL, BDEV_ENTRY(MMC_BDEV), 0, 0),
 	PART_NONGPT("mbr", NULL, BDEV_ENTRY(MMC_BDEV), 0, 1),
 	PART_NONGPT("gpt", NULL, BDEV_ENTRY(MMC_BDEV), 1, 33),
-	PART_NONGPT("firmware", NULL, BDEV_ENTRY(FLASH_BDEV), 0, 0),
+	PART_NONGPT("RO_SECTION", NULL, BDEV_ENTRY(FLASH_BDEV), 0, 0),
+	PART_NONGPT("RW_SECTION_A", NULL, BDEV_ENTRY(FLASH_BDEV), 0, 0),
+	PART_NONGPT("RW_SECTION_B", NULL, BDEV_ENTRY(FLASH_BDEV), 0, 0),
+	/*
+	 * "bootloader" is a special alias used to flash different firmware
+	 * partitions to spi flash. When asked by the host, we report entire spi
+	 * flash as the size of this partition. When host asks the device to
+	 * flash an image to bootloader partition, device will extract specific
+	 * parts from the image i.e. ro, rw-a, rw-b and write them to
+	 * appropriate offsets on the spi flash.
+	 * This partition name is required to satisfy host-side scripts that
+	 * want to update ro, rw-a and rw-b sections of the firmware using a
+	 * single name and image.
+	 */
+	PART_NONGPT("bootloader", NULL, BDEV_ENTRY(FLASH_BDEV), 0, 9),
 };
 
 size_t fb_part_count = ARRAY_SIZE(fb_part_list);
@@ -111,9 +126,40 @@ void fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT])
 
 	for (i = 0; i < BDEV_COUNT; i++)
 		fb_fill_bdev_list(i, bdev_ctrlr_arr[i]);
-	fb_fill_part_list("firmware", 0, lib_sysinfo.spi_flash.size /
-			  lib_sysinfo.spi_flash.sector_size);
 	fb_fill_part_list("chromeos", 0, backend_get_bdev_size_blocks("mmc"));
+
+	FmapArea area;
+	const char *name;
+	size_t flash_sec_size = lib_sysinfo.spi_flash.sector_size;
+
+	for (i = 0; i < fb_part_count; i++) {
+		if (fb_part_list[i].bdev_info != BDEV_ENTRY(FLASH_BDEV))
+			continue;
+
+		name = fb_part_list[i].part_name;
+
+		if (fmap_find_area(name, &area)) {
+			/*
+			 * Special partition bootloader cannot be found on the
+			 * spi flash using fmap_find_area. Check if current
+			 * flash_bdec partition is bootloader and set its range
+			 * as the entire spi flash.
+			 */
+			if (!strcmp(name, "bootloader"))
+				fb_fill_part_list("bootloader", 0,
+						  lib_sysinfo.spi_flash.size /
+						  flash_sec_size);
+			else
+				printf("ERROR: Area %s not found\n", name);
+			continue;
+		}
+
+		assert(ALIGN(area.offset, flash_sec_size) == area.offset);
+		assert(ALIGN(area.size, flash_sec_size) == area.size);
+
+		fb_fill_part_list(name, area.offset / flash_sec_size,
+				  area.size / flash_sec_size);
+	}
 }
 
 int board_user_confirmation(void)
@@ -133,4 +179,57 @@ int board_user_confirmation(void)
 		}
 	}
 	return ret;
+}
+
+/*
+ * This routine is used to handle fastboot calls to write image to special
+ * "bootloader" partition. It is assumed that this call is made before fastboot
+ * protocol handler calls backend write partition handler.
+ * This routine takes an image equal to the size of the spi flash and extracts
+ * partitions that need to flashed i.e. ro, rw-a and rw-b.
+ */
+backend_ret_t board_write_partition(const char *name, void *image_addr,
+				    size_t image_size)
+{
+	/* Handle writes to bootloader partition. Others use default path. */
+	if (strcmp(name, "bootloader"))
+		return BE_NOT_HANDLED;
+
+	/* Cannot handle sparse image here. */
+	if (is_sparse_image(image_addr))
+		return BE_WRITE_ERR;
+
+	static const char * const part_names[] = {
+		"RO_SECTION",
+		"RW_SECTION_A",
+		"RW_SECTION_B",
+	};
+
+	int i;
+	struct part_info *part;
+	uintptr_t offset;
+	size_t size;
+	size_t flash_size = lib_sysinfo.spi_flash.size;
+	size_t flash_sec_size = lib_sysinfo.spi_flash.sector_size;
+
+	for (i = 0; i < ARRAY_SIZE(part_names); i++) {
+
+		part = get_part_info(part_names[i]);
+
+		/* Ensure image size is equal to flash size. */
+		if (flash_size != image_size)
+			return BE_IMAGE_OVERFLOW_ERR;
+
+		/*
+		 * We only write to specific regions in spi flash. Calculate the
+		 * offset within the image to write to ro, rw-a and rw-b
+		 * sections.
+		 */
+		offset = (uintptr_t)image_addr + part->base * flash_sec_size;
+		size = part->size * flash_sec_size;
+
+		backend_write_partition(part_names[i], (void *)offset, size);
+	}
+
+	return BE_SUCCESS;
 }
