@@ -159,6 +159,11 @@ struct fb_cmd {
 	fb_rsp_type type;
 };
 
+/*
+ * Returns 0 if device is unlocked or non-zero otherwise.
+ */
+int fb_device_unlocked(void);
+
 fb_ret_type device_mode_enter(void);
 /*
  * Function to add string to output buffer.
