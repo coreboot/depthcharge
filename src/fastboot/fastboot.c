@@ -223,7 +223,7 @@ static inline void fb_free_string(char *dst)
 	free(dst);
 }
 
-static inline int fb_device_unlocked(void)
+int fb_device_unlocked(void)
 {
 	return vboot_in_developer();
 }

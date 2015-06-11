@@ -22,12 +22,15 @@
 
 #include <assert.h>
 #include <libpayload.h>
+#include <keycodes.h>
 #include <vboot_nvstorage.h>
 #include <vboot_struct.h>
 
 #include "drivers/ec/cros/commands.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/power/power.h"
+#include "drivers/video/coreboot_fb.h"
+#include "drivers/video/display.h"
 #include "fastboot/fastboot.h"
 #include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
@@ -73,7 +76,7 @@ uint8_t fastboot_keyboard_mask(void)
 	return 0;
 }
 
-uint8_t vboot_get_entrypoint(void)
+static int is_fastboot_mode_requested(void)
 {
 	VbSharedDataHeader *vdat;
 	int size;
@@ -90,28 +93,16 @@ uint8_t vboot_get_entrypoint(void)
 	 * Else, enter recovery-menu to allow user to choose from different
 	 * options.
 	 */
-	if ((vdat->recovery_reason == VBNV_RECOVERY_FW_FASTBOOT) ||
+	return ((vdat->recovery_reason == VBNV_RECOVERY_FW_FASTBOOT) ||
 	    (vdat->recovery_reason == VBNV_RECOVERY_BCB_USER_MODE) ||
 	    ((vdat->recovery_reason == VBNV_RECOVERY_RO_MANUAL) &&
-	     fastboot_keyboard_mask()))
-		return ENTRY_POINT_FASTBOOT_MODE;
-
-	return ENTRY_POINT_RECOVERY_MENU;
+	     fastboot_keyboard_mask()));
 }
 
-void vboot_try_fastboot(void)
+static void udc_fastboot(void)
 {
-	if (vboot_in_recovery() == 0)
+	if (!board_should_enter_device_mode())
 		return;
-
-	if (board_should_enter_device_mode() == 0)
-		return;
-
-	uint8_t entry_point = vboot_get_entrypoint();
-
-	/* TBD(furquan/pgeorgi): Add recovery menu */
-	if (entry_point == ENTRY_POINT_RECOVERY_MENU)
-		printf("RECOVERY MENU NOT YET SUPPORTED!\n");
 
 	vboot_clear_recovery();
 
@@ -131,8 +122,139 @@ void vboot_try_fastboot(void)
 		/* Does not return */
 		power_off();
 		break;
+	case FB_CONTINUE_RECOVERY:
+		/* Continue in cros recovery mode */
+		break;
 	default:
-		/* Continue in recovery mode */
+		/* unknown error. reboot into fastboot menu */
+		vboot_set_recovery();
+		cold_reboot();
 		break;
 	}
+}
+
+static void menu_start(void)
+{
+	vboot_clear_recovery();
+	cold_reboot();
+}
+
+
+static void menu_fastboot(void)
+{
+	udc_fastboot();
+}
+
+static void menu_reset(void)
+{
+	cold_reboot();
+}
+
+static void menu_power_off(void)
+{
+	power_off();
+}
+
+static void printf_color(int foreground, int background, const char *fmt, ...)
+{
+	int i, len;
+	char str[200];
+
+	va_list ap;
+	va_start(ap, fmt);
+	len = vsnprintf(str, 199, fmt, ap);
+	va_end(ap);
+	if (len <= 0)
+		return;
+	str[199] = '\0';
+
+	foreground &= 0xf;
+	foreground <<= 8;
+	background &= 0xf;
+	background <<= 12;
+
+	for (i = 0; i < len; i++)
+		video_console_putchar(str[i] | foreground | background);
+}
+
+void vboot_try_fastboot(void)
+{
+	static const struct {
+		const char *text;
+		const int color; /* VGA color */
+		void (*func)(void);
+	} commands[] = {
+		{ "Start", 10, menu_start },		/* green */
+		{ "Enable fastboot", 7, menu_fastboot },
+		{ "Enter CrOS recovery mode", 7, NULL},
+		{ "Reset device", 12, menu_reset},	/* red */
+		{ "Power off device", 12, menu_power_off},
+	};
+
+	if (is_fastboot_mode_requested()) {
+		/* fastboot mode is explicitly requested. skip menu. */
+		printf("entering fastboot mode\n");
+		udc_fastboot();
+		return;
+	}
+
+	const int command_count = ARRAY_SIZE(commands);
+	int position = 0;
+
+	int i;
+	int max_strlen = 0;
+	for (i = 0; i < command_count; i++) {
+		int j = strlen(commands[i].text);
+		if (j > max_strlen)
+			max_strlen = j;
+	}
+
+	unsigned int rows, cols;
+	if (display_init())
+		return;
+
+	if (backlight_update(1))
+		return;
+
+	video_init();
+	video_console_clear();
+	video_console_cursor_enable(0);
+
+	video_get_rows_cols(&rows, &cols);
+
+	video_console_set_cursor(0, 3);
+	printf_color(7, 0, "<-- Button up: run selected option\n\n");
+	printf_color(7, 0, "<-- Button down: next option\n");
+
+	video_console_set_cursor(0, rows - 10);
+
+	// set cursor appropriately
+	printf_color(12, 0, "FASTBOOT MODE\n");
+	/*
+	 * TODO: Show PRODUCT_NAME, VARIANT, HW VERSION, BOOTLOADER VERSION,
+	 * SERIAL NUMBER, SIGNING
+	 */
+	printf_color(12, 0, "DEVICE: %s\n",
+		     fb_device_unlocked() ? "unlocked" : "locked");
+
+	while (1) {
+		video_console_set_cursor(0, 0);
+		printf_color(commands[position].color, 0, "%*s",
+			-max_strlen, commands[position].text);
+		int keypress = getchar();
+		printf("got keypress %x\n", keypress);
+		if (keypress == ' ') {
+			printf("moving forward\n");
+			if (++position == command_count)
+				position = 0;
+		} else if (keypress & KEY_SELECT) {
+			printf("selected %s\n", commands[position].text);
+			if (commands[position].func == NULL)
+				/* leave menu and continue to boot */
+				break;
+			commands[position].func();
+			break;
+		}
+	}
+	printf("leaving fastboot menu\n");
 }

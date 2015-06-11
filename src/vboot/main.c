@@ -110,7 +110,9 @@ int main(void)
 	if (vboot_init_handoff())
 		halt();
 
-	vboot_try_fastboot();
+	/* Fastboot is only entered in recovery path */
+	if (vboot_in_recovery())
+		vboot_try_fastboot();
 
 	/* Handle BCB command, if supported. */
 	if (CONFIG_BCB_SUPPORT)
