@@ -23,6 +23,7 @@
 #include <libpayload.h>
 #include <vboot_api.h>
 
+#include "config.h"
 #include "drivers/video/coreboot_fb.h"
 #include "drivers/video/display.h"
 #include "fastboot/backend.h"
