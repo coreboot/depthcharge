@@ -146,6 +146,14 @@ DeviceTreeNode *dt_find_node_by_path(DeviceTreeNode *parent, const char *path,
 				     u32 *addrcp, u32 *sizecp, int create);
 // Look up a node relative to a parent node, through its compatible string.
 DeviceTreeNode *dt_find_compat(DeviceTreeNode *parent, const char *compatible);
+// Look up the next child of a parent node, through its compatible string. It
+// uses child pointer as the marker to find next.
+DeviceTreeNode *dt_find_next_compat_child(DeviceTreeNode *parent,
+					  DeviceTreeNode *child,
+					  const char *compat);
+// Look up a node relative to a parent node, through its property value.
+DeviceTreeNode *dt_find_prop_value(DeviceTreeNode *parent, const char *name,
+				   void *data, size_t size);
 // Write src into *dest as a 'length'-byte big-endian integer.
 void dt_write_int(u8 *dest, u64 src, size_t length);
 // Add different kinds of properties to a node, or update existing ones.
