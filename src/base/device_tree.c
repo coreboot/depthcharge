@@ -594,6 +594,38 @@ DeviceTreeNode *dt_find_node_by_path(DeviceTreeNode *parent, const char *path,
 	free(dup_path);
 	return node;
 }
+
+/*
+ * Check if given node is compatible.
+ *
+ * @param node		The node which is to be checked for compatible property.
+ * @param compat	The compatible string to match.
+ * @return		1 = compatible, 0 = not compatible.
+ */
+static int dt_check_compat_match(DeviceTreeNode *node, const char *compat)
+{
+	DeviceTreeProperty *prop;
+
+	list_for_each(prop, node->properties, list_node) {
+		if (!strcmp("compatible", prop->prop.name)) {
+			size_t bytes = prop->prop.size;
+			const char *str = prop->prop.data;
+			while (bytes > 0) {
+				if (!strncmp(compat, str, bytes))
+					return 1;
+				size_t len = strnlen(str, bytes) + 1;
+				if (bytes <= len)
+					break;
+				str += len;
+				bytes -= len;
+			}
+			break;
+		}
+	}
+
+	return 0;
+}
+
 /*
  * Find a node from a compatible string, in the subtree of a parent node.
  *
@@ -603,23 +635,9 @@ DeviceTreeNode *dt_find_node_by_path(DeviceTreeNode *parent, const char *path,
  */
 DeviceTreeNode *dt_find_compat(DeviceTreeNode *parent, const char *compat)
 {
-	DeviceTreeProperty *prop;
-
 	// Check if the parent node itself is compatible.
-	list_for_each(prop, parent->properties, list_node) {
-		if (!strcmp("compatible", prop->prop.name)) {
-			int bytes = prop->prop.size;
-			const char *str = prop->prop.data;
-			while (bytes > 0) {
-				if (!strncmp(compat, str, bytes))
-					return parent;
-				int len = strnlen(str, bytes) + 1;
-				str += len;
-				bytes -= len;
-			}
-			break;
-		}
-	}
+	if (dt_check_compat_match(parent, compat))
+		return parent;
 
 	DeviceTreeNode *child;
 	list_for_each(child, parent->children, list_node) {
@@ -628,6 +646,77 @@ DeviceTreeNode *dt_find_compat(DeviceTreeNode *parent, const char *compat)
 			return found;
 	}
 
+	return NULL;
+}
+
+/*
+ * Find the next compatible child of a given parent. All children upto the
+ * child passed in by caller are ignored. If child is NULL, it considers all the
+ * children to find the first child which is compatible.
+ *
+ * @param parent	The parent node under which to look.
+ * @param child	The child node to start search from (exclusive). If NULL
+ *                      consider all children.
+ * @param compat	The compatible string to find.
+ * @return		The found node, or NULL.
+ */
+DeviceTreeNode *dt_find_next_compat_child(DeviceTreeNode *parent,
+					  DeviceTreeNode *child,
+					  const char *compat)
+{
+	DeviceTreeNode *next;
+	int ignore = 0;
+
+	if (child)
+		ignore = 1;
+
+	list_for_each(next, parent->children, list_node) {
+		if (ignore) {
+			if (child == next)
+				ignore = 0;
+			continue;
+		}
+
+		if (dt_check_compat_match(next, compat))
+			return next;
+	}
+
+	return NULL;
+}
+
+/*
+ * Find a node with matching property value, in the subtree of a parent node.
+ *
+ * @param parent	The parent node under which to look.
+ * @param name		The property name to look for.
+ * @param data		The property value to look for.
+ * @param size		The property size.
+ */
+DeviceTreeNode *dt_find_prop_value(DeviceTreeNode *parent, const char *name,
+				   void *data, size_t size)
+{
+	DeviceTreeProperty *prop;
+
+	/* Check if parent itself has the required property value. */
+	list_for_each(prop, parent->properties, list_node) {
+		if (!strcmp(name, prop->prop.name)) {
+			size_t bytes = prop->prop.size;
+			void *prop_data = prop->prop.data;
+			if (size != bytes)
+				break;
+			if (!memcmp(data, prop_data, size))
+				return parent;
+			break;
+		}
+	}
+
+	DeviceTreeNode *child;
+	list_for_each(child, parent->children, list_node) {
+		DeviceTreeNode *found = dt_find_prop_value(child, name, data,
+							   size);
+		if (found)
+			return found;
+	}
 	return NULL;
 }
 
