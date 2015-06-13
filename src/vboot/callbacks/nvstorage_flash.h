@@ -23,7 +23,6 @@
 #ifndef __VBOOT_CALLBACKS_NVSTORAGE_FLASH__
 #define __VBOOT_CALLBACKS_NVSTORAGE_FLASH__
 
-int flash_nvram_init(void);
 /*
  * Note that this functions's return value could change within a single boot
  * sequence, never cache it, call this function each time explicitly.
