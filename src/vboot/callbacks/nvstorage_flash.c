@@ -62,49 +62,13 @@ static int nvram_blob_offset;
 /* Local cache of the NVRAM blob. */
 static uint8_t nvram_cache[CONFIG_NV_STORAGE_FLASH_BLOB_SIZE];
 
-VbError_t VbExNvStorageRead(uint8_t *buf)
+static int flash_nvram_init(void)
 {
-	memcpy(buf, nvram_cache, sizeof(nvram_cache));
-	return VBERROR_SUCCESS;
-}
+	static int vbnv_flash_is_initialized = 0;
 
-VbError_t VbExNvStorageWrite(const uint8_t *buf)
-{
-	int i;
+	if (vbnv_flash_is_initialized)
+		return 0;
 
-	/* Bail out if there have been no changes. */
-	if (!memcmp(buf, nvram_cache, sizeof(nvram_cache)))
-		return VBERROR_SUCCESS;
-
-	/* See if we can overwrite the current blob with the new one. */
-	for (i = 0; i < sizeof(nvram_cache); i++)
-		if ((nvram_cache[i] & buf[i]) != buf[i])
-			break;
-
-	if (i != sizeof(nvram_cache)) {
-		int new_blob_offset;
-		/*
-		 * Won't be able to overwrite, need to use the next blob,
-		 * let's see if it is available.
-		 */
-		new_blob_offset = nvram_blob_offset + sizeof(nvram_cache);
-		if ((new_blob_offset + sizeof(nvram_cache)) >
-		    nvram_area_descriptor.size)
-			return VBERROR_INVALID_PARAMETER;
-
-		nvram_blob_offset = new_blob_offset;
-	}
-
-	if (flash_write(nvram_area_descriptor.offset + nvram_blob_offset,
-			sizeof(nvram_cache), buf) != sizeof(nvram_cache))
-		return VBERROR_UNKNOWN;
-
-	memcpy(nvram_cache, buf, sizeof(nvram_cache));
-	return VBERROR_SUCCESS;
-}
-
-int flash_nvram_init(void)
-{
 	int area_offset, i, prev_offset, size_limit;
 	uint8_t empty_nvram_block[sizeof(nvram_cache)];
 
@@ -144,7 +108,55 @@ int flash_nvram_init(void)
 	       sizeof(nvram_cache));
 
 	nvram_blob_offset = prev_offset;
+	vbnv_flash_is_initialized = 1;
 	return 0;
+}
+
+VbError_t VbExNvStorageRead(uint8_t *buf)
+{
+	if (flash_nvram_init())
+		return VBERROR_UNKNOWN;
+
+	memcpy(buf, nvram_cache, sizeof(nvram_cache));
+	return VBERROR_SUCCESS;
+}
+
+VbError_t VbExNvStorageWrite(const uint8_t *buf)
+{
+	int i;
+
+	if (flash_nvram_init())
+		return VBERROR_UNKNOWN;
+
+	/* Bail out if there have been no changes. */
+	if (!memcmp(buf, nvram_cache, sizeof(nvram_cache)))
+		return VBERROR_SUCCESS;
+
+	/* See if we can overwrite the current blob with the new one. */
+	for (i = 0; i < sizeof(nvram_cache); i++)
+		if ((nvram_cache[i] & buf[i]) != buf[i])
+			break;
+
+	if (i != sizeof(nvram_cache)) {
+		int new_blob_offset;
+		/*
+		 * Won't be able to overwrite, need to use the next blob,
+		 * let's see if it is available.
+		 */
+		new_blob_offset = nvram_blob_offset + sizeof(nvram_cache);
+		if ((new_blob_offset + sizeof(nvram_cache)) >
+		    nvram_area_descriptor.size)
+			return VBERROR_INVALID_PARAMETER;
+
+		nvram_blob_offset = new_blob_offset;
+	}
+
+	if (flash_write(nvram_area_descriptor.offset + nvram_blob_offset,
+			sizeof(nvram_cache), buf) != sizeof(nvram_cache))
+		return VBERROR_UNKNOWN;
+
+	memcpy(nvram_cache, buf, sizeof(nvram_cache));
+	return VBERROR_SUCCESS;
 }
 
 int nvstorage_flash_get_offet(void)

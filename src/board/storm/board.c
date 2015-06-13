@@ -426,8 +426,6 @@ static int board_setup(void)
 	SoundRoute *sound_route = new_sound_route(&sound->ops);
 	sound_set_ops(&sound_route->ops);
 
-	flash_nvram_init();
-
 	list_insert_after(&ipq_enet_fixup.list_node, &device_tree_fixups);
 
 	set_ramoops_buffer();
