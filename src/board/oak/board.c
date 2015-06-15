@@ -102,6 +102,8 @@ static int board_setup(void)
 
 	sound_setup();
 
+	ramoops_buffer(0xb1f00000, 0x100000, 0x20000);
+
 	return 0;
 }
 
