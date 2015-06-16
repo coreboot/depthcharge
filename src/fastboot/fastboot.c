@@ -673,6 +673,16 @@ const char *backend_error_string[] = {
 
 static fb_ret_type fb_erase(struct fb_cmd *cmd)
 {
+	/* Check if there is an override. If yes, do not erase partition. */
+	if (fb_check_gbb_override()) {
+		FB_LOG("skipping erase operation\n");
+		cmd->type = FB_INFO;
+		fb_add_string(&cmd->output, "skipping erase", NULL);
+		fb_execute_send(cmd);
+		cmd->type = FB_OKAY;
+		return FB_SUCCESS;
+	}
+
 	backend_ret_t ret;
 	struct fb_buffer *input = &cmd->input;
 	size_t len = fb_buffer_length(input);
