@@ -69,9 +69,6 @@ static int board_setup(void)
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
 
-	UsbHostController *usb_host1 = new_usb_hc(DWC2, 0xff540000);
-	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
-
 	// This is actually an OTG port and is labeled as such in the schematic,
 	// though in reality we use it as a regular host mode port and leave
 	// the OTG_ID pin disconnected.
