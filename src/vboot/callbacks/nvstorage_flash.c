@@ -53,9 +53,6 @@
 /* FMAP descriptor of the NVRAM area */
 static FmapArea nvram_area_descriptor;
 
-/* Pointer to the NVRAM area in the flash mirror buffer. */
-static uint8_t *nvram_area_in_flash;
-
 /* Offset of the actual NVRAM blob offset in the NVRAM block. */
 static int nvram_blob_offset;
 
@@ -64,9 +61,10 @@ static uint8_t nvram_cache[VBNV_BLOCK_SIZE];
 
 static int flash_nvram_init(void)
 {
-	int area_offset, i, prev_offset, size_limit;
+	int area_offset, prev_offset, size_limit;
 	static int vbnv_flash_is_initialized = 0;
 	uint8_t empty_nvram_block[sizeof(nvram_cache)];
+	uint8_t *nvram_area_in_flash;
 
 	if (vbnv_flash_is_initialized)
 		return 0;
@@ -84,8 +82,7 @@ static int flash_nvram_init(void)
 	}
 
 	/* Prepare an empty NVRAM block to compare against. */
-	for (i = 0; i < sizeof(nvram_cache); i++)
-		empty_nvram_block[i] = 0xff;
+	memset(empty_nvram_block, 0xff, sizeof(empty_nvram_block));
 
 	/*
 	 * Now find the first completely empty NVRAM blob. The actual NVRAM
