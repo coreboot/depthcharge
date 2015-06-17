@@ -98,15 +98,6 @@ config NV_STORAGE_DISK_SIZE
 	int "Disk based nonvolatile storage size"
 	depends on NV_STORAGE_DISK
 
-config NV_STORAGE_FLASH_BLOB_SIZE
-       int "Flash based NV storage blob size"
-       depends on NV_STORAGE_FLASH
-       default 16
-       help
-         Size of a single blob represeinting NV RAM contents when it is stored
-         in flash memory. Usually flash area allocated for NV storage fits
-         multiple NVRAM blobs, the last blob is the actual NVRAM contents.
-
 choice
 	prompt "Crossystem data mechanism"
 	default CROSSYSTEM_STUB
