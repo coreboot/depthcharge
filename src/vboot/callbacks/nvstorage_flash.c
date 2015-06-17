@@ -60,7 +60,7 @@ static uint8_t *nvram_area_in_flash;
 static int nvram_blob_offset;
 
 /* Local cache of the NVRAM blob. */
-static uint8_t nvram_cache[CONFIG_NV_STORAGE_FLASH_BLOB_SIZE];
+static uint8_t nvram_cache[VBNV_BLOCK_SIZE];
 
 static int flash_nvram_init(void)
 {
