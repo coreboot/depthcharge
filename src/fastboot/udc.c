@@ -20,6 +20,7 @@
  * MA 02111-1307 USA
  */
 
+#include <assert.h>
 #include <config.h>
 #include <libpayload.h>
 
@@ -104,11 +105,51 @@ static struct usbdev_configuration fastboot_config = {
 
 static struct usbdev_ctrl *udc = NULL;
 
+/* UDC string table operations */
+#define MAX_STR_COUNT		256
+static const char *str_table[MAX_STR_COUNT];
+
+/* Index starts from 1 because 0 has special meaning in USB string table. */
+#define STRING_TABLE_EMPTY	1
+static uint8_t str_table_index = STRING_TABLE_EMPTY;
+
+static uint8_t udc_add_string(const char *str)
+{
+	assert(str_table_index < MAX_STR_COUNT);
+
+	uint8_t ret = str_table_index;
+
+	str_table[str_table_index] = str;
+	str_table_index++;
+
+	return ret;
+}
+
+static inline uint8_t udc_string_table_count(void)
+{
+	return str_table_index;
+}
+
+static inline const char **udc_string_table(void)
+{
+	return str_table;
+}
+
 int usb_gadget_init(void)
 {
+	if (lib_sysinfo.serialno)
+		device_descriptor.iSerialNumber =
+			udc_add_string(lib_sysinfo.serialno);
+
 	fastboot_chipset_init(&udc, &device_descriptor);
 	if (udc == NULL)
 		return 0;
+
+	uint8_t count = udc_string_table_count();
+
+	if (count != STRING_TABLE_EMPTY)
+		udc->add_strings(LANG_EN_US, count, udc_string_table());
+
 	udc->add_gadget(udc, &fastboot_config);
 	return 1;
 }
