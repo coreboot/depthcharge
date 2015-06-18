@@ -62,7 +62,6 @@ struct part_info fb_part_list[] = {
 	PART_NONGPT("mbr", NULL, BDEV_ENTRY(MMC_BDEV), 0, 1),
 	PART_NONGPT("gpt", NULL, BDEV_ENTRY(MMC_BDEV), 1, 33),
 	PART_NONGPT("firmware", NULL, BDEV_ENTRY(FLASH_BDEV), 0, 0),
-	PART_NONGPT("bootloader", NULL, BDEV_ENTRY(FLASH_BDEV), 0, 0),
 };
 
 size_t fb_part_count = ARRAY_SIZE(fb_part_list);
@@ -113,8 +112,6 @@ void fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT])
 	for (i = 0; i < BDEV_COUNT; i++)
 		fb_fill_bdev_list(i, bdev_ctrlr_arr[i]);
 	fb_fill_part_list("firmware", 0, lib_sysinfo.spi_flash.size /
-			  lib_sysinfo.spi_flash.sector_size);
-	fb_fill_part_list("bootloader", 0, lib_sysinfo.spi_flash.size /
 			  lib_sysinfo.spi_flash.sector_size);
 	fb_fill_part_list("chromeos", 0, backend_get_bdev_size_blocks("mmc"));
 }
