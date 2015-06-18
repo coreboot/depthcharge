@@ -23,6 +23,7 @@ depthcharge-y += cbfs.c
 depthcharge-y += command.c
 depthcharge-y += console_main.c
 depthcharge-y += display.c
+depthcharge-y += draw.c
 depthcharge-y += i2c.c
 depthcharge-y += memory.c
 depthcharge-y += printbuf.c
