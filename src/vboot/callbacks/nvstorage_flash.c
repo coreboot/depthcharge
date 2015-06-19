@@ -64,13 +64,12 @@ static uint8_t nvram_cache[CONFIG_NV_STORAGE_FLASH_BLOB_SIZE];
 
 static int flash_nvram_init(void)
 {
+	int area_offset, i, prev_offset, size_limit;
 	static int vbnv_flash_is_initialized = 0;
+	uint8_t empty_nvram_block[sizeof(nvram_cache)];
 
 	if (vbnv_flash_is_initialized)
 		return 0;
-
-	int area_offset, i, prev_offset, size_limit;
-	uint8_t empty_nvram_block[sizeof(nvram_cache)];
 
 	if (fmap_find_area("RW_NVRAM", &nvram_area_descriptor)) {
 		printf("%s: failed to find NVRAM area\n", __func__);
