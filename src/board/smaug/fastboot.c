@@ -53,6 +53,8 @@ struct part_info fb_part_list[] = {
 	PART_GPT("vendor", "ext4", BDEV_ENTRY(MMC_BDEV), GPT_TYPE(LINUX_FS), 1),
 	PART_GPT("cache", "ext4", BDEV_ENTRY(MMC_BDEV), GPT_TYPE(LINUX_FS), 2),
 	PART_GPT("data", "ext4", BDEV_ENTRY(MMC_BDEV), GPT_TYPE(LINUX_FS), 3),
+	PART_GPT("userdata", "ext4", BDEV_ENTRY(MMC_BDEV), GPT_TYPE(LINUX_FS),
+		 3),
 	PART_GPT("metadata", "ext4", BDEV_ENTRY(MMC_BDEV), GPT_TYPE(LINUX_FS),
 		 4),
 	PART_GPT("boot", "ext4", BDEV_ENTRY(MMC_BDEV), GPT_TYPE(LINUX_FS), 5),
