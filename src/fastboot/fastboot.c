@@ -786,13 +786,22 @@ static fb_ret_type fb_boot(struct fb_cmd *cmd)
 	}
 
 	size_t kernel_size;
-	void *kernel = bootimg_get_kernel_ptr(image_addr, image_size,
-					      &kernel_size);
+	void *kernel = bootimg_get_kernel_ptr(image_addr, image_size);
+
 	if (kernel == NULL) {
 		fb_add_string(&cmd->output, "bootimg format not recognized",
 			      NULL);
 		return FB_SUCCESS;
 	}
+
+	kernel_size = (uintptr_t)kernel - (uintptr_t)image_addr;
+
+	if (kernel_size >= image_size) {
+		fb_add_string(&cmd->output, "bootimg kernel not found", NULL);
+		return FB_SUCCESS;
+	}
+
+	kernel_size = image_size - kernel_size;
 
 	if (VbVerifyMemoryBootImage(&cparams, &kparams, kernel, kernel_size) !=
 	    VBERROR_SUCCESS) {
