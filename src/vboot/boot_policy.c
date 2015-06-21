@@ -91,20 +91,27 @@ struct bootimg_hdr {
 	uint8_t extra_cmdline[BOOTIMG_EXTRA_ARGS_SIZE];
 };
 
-void *bootimg_get_kernel_ptr(void *img, size_t image_size, size_t *kernel_size)
+void *bootimg_get_kernel_ptr(void *img, size_t image_size)
 {
 	struct bootimg_hdr *hdr = img;
 	void *kernel;
 
+	if (image_size < sizeof(struct bootimg_hdr)) {
+		printf("Bootimg: Header size error!\n");
+		return NULL;
+	}
+
 	if (memcmp(hdr->magic, BOOTIMG_MAGIC, BOOTIMG_MAGIC_SIZE)) {
-		printf("Oops no match for bootimg\n");
+		printf("Bootimg: BOOTIMG_MAGIC mismatch!\n");
+		return NULL;
+	}
+
+	if (image_size <= hdr->page_size) {
+		printf("Bootimg: Header page size error!\n");
 		return NULL;
 	}
 
 	kernel = (void *)((uintptr_t)hdr + hdr->page_size);
-
-	if (kernel_size && image_size)
-		*kernel_size = image_size - hdr->page_size;
 
 	return kernel;
 }
@@ -117,7 +124,7 @@ static int fill_info_bootimg(struct boot_info *bi,
 	uintptr_t ramdisk_addr;
 	uint32_t kernel_size;
 
-	bi->kernel = bootimg_get_kernel_ptr(hdr, 0, NULL);
+	bi->kernel = bootimg_get_kernel_ptr(hdr, kparams->kernel_buffer_size);
 
 	if (bi->kernel == NULL)
 		return -1;
@@ -140,10 +147,18 @@ static int fill_info_bootimg(struct boot_info *bi,
 	 * multiple of pages.
 	 */
 	kernel_size = ALIGN_UP(hdr->kernel_size, hdr->page_size);
-	ramdisk_addr = kernel + kernel_size;
 
-	bi->ramdisk_size = hdr->ramdisk_size;
-	bi->ramdisk_addr = (void *)ramdisk_addr;
+	if (kernel_size < kparams->kernel_buffer_size) {
+		ramdisk_addr = kernel + kernel_size;
+
+		bi->ramdisk_size = hdr->ramdisk_size;
+		bi->ramdisk_addr = (void *)ramdisk_addr;
+		printf("Bootimg: Ramdisk is present\n");
+	} else {
+		bi->ramdisk_size = 0;
+		bi->ramdisk_addr = NULL;
+		printf("Bootimg: No ramdisk present\n");
+	}
 
 	return 0;
 }
