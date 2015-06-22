@@ -60,6 +60,7 @@ typedef enum fb_ret {
  */
 #define PREFIX_LEN	4
 typedef enum fb_rsp {
+	FB_NONE,
 	FB_DATA,
 	FB_FAIL,
 	FB_INFO,

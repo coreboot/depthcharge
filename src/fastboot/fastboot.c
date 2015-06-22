@@ -141,6 +141,9 @@ static void fb_execute_send(struct fb_cmd *cmd)
 		[FB_OKAY] = "OKAY",
 	};
 
+	if (cmd->type == FB_NONE)
+		return;
+
 	fb_send(&cmd->output, prefix[cmd->type]);
 }
 
@@ -598,16 +601,26 @@ static void alloc_image_space(size_t bytes)
  * Desc: Download data from host and store it in image_addr
  *
  */
-static void fb_recv_data(struct fb_cmd *cmd)
+static int fb_recv_data(struct fb_cmd *cmd)
 {
 	size_t curr_len = 0;
 
 	while (curr_len < image_size) {
 		void *curr = (uint8_t *)image_addr + curr_len;
-		curr_len += usb_gadget_recv(curr, image_size - curr_len);
+
+		size_t ret = usb_gadget_recv(curr, image_size - curr_len);
+
+		if (ret == 0) {
+			curr_len = 0;
+			cmd->type = FB_NONE;
+			return curr_len;
+		}
+
+		curr_len += ret;
 	}
 
 	cmd->type = FB_OKAY;
+	return curr_len;
 }
 
 /*
@@ -646,7 +659,10 @@ static fb_ret_type fb_download(struct fb_cmd *cmd)
 	fb_add_number(output, "%08lx", bytes);
 	fb_execute_send(cmd);
 
-	fb_recv_data(cmd);
+	if (fb_recv_data(cmd) == 0) {
+		FB_LOG("Freeing memory.. failed to download data\n");
+		free_image_space();
+	}
 
 	return FB_SUCCESS;
 }
@@ -1012,6 +1028,9 @@ fb_ret_type device_mode_enter(void)
 		fb_print_on_screen("Waiting for fastboot command....\n");
 		/* Receive a packet from the host */
 		len = usb_gadget_recv(pkt, MAX_COMMAND_LENGTH);
+
+		if (len == 0)
+			continue;
 
 		fb_buffer_push(&cmd.input, len);
 
