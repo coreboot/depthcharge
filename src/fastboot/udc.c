@@ -162,6 +162,11 @@ size_t usb_gadget_send(const char *msg, size_t size)
 	return size;
 }
 
+static void usb_gadget_force_shutdown(void)
+{
+	udc->force_shutdown(udc);
+}
+
 size_t usb_gadget_recv(void *pkt, size_t size)
 {
 	/* max 64 packets at once */
@@ -183,7 +188,16 @@ size_t usb_gadget_recv(void *pkt, size_t size)
 			size = remaining;
 
 		udc->enqueue_packet(udc, 1, 0, tmp, size, 0, 0);
-		while (out_length == 0) udc->poll(udc);
+		while ((out_length == 0) && udc->initialized)
+			udc->poll(udc);
+
+		/* If lost connection, re-initialize gadget mode. */
+		if (!udc->initialized) {
+			usb_gadget_force_shutdown();
+			usb_gadget_init();
+			return 0;
+		}
+
 		memcpy(pkt, tmp, out_length);
 
 		total += out_length;
