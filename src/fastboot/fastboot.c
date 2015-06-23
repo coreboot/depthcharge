@@ -1038,8 +1038,19 @@ fb_ret_type device_mode_enter(void)
 		/* Receive a packet from the host */
 		len = usb_gadget_recv(pkt, MAX_COMMAND_LENGTH);
 
-		if (len == 0)
+		if (len == 0) {
+			/*
+			 * No packet received from host. We should reach here
+			 * either because packet_recv timed out or the usb
+			 * connection with host was disconnected. Continue
+			 * waiting for fastboot command.
+			 *
+			 * Update ret to FB_SUCCESS so that we don't break out
+			 * of the loop.
+			 */
+			ret = FB_SUCCESS;
 			continue;
+		}
 
 		fb_buffer_push(&cmd.input, len);
 
