@@ -135,6 +135,11 @@ static inline const char **udc_string_table(void)
 	return str_table;
 }
 
+static inline void udc_string_table_reset(void)
+{
+	str_table_index = STRING_TABLE_EMPTY;
+}
+
 int usb_gadget_init(void)
 {
 	if (lib_sysinfo.serialno)
@@ -164,6 +169,7 @@ size_t usb_gadget_send(const char *msg, size_t size)
 
 static void usb_gadget_force_shutdown(void)
 {
+	udc_string_table_reset();
 	udc->force_shutdown(udc);
 }
 
@@ -214,5 +220,6 @@ size_t usb_gadget_recv(void *pkt, size_t size)
 
 void usb_gadget_stop(void)
 {
+	udc_string_table_reset();
 	udc->shutdown(udc);
 }

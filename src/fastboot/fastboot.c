@@ -1038,8 +1038,10 @@ fb_ret_type device_mode_enter(void)
 		/* Receive a packet from the host */
 		len = usb_gadget_recv(pkt, MAX_COMMAND_LENGTH);
 
-		if (len == 0)
+		if (len == 0) {
+			ret = FB_SUCCESS;
 			continue;
+		}
 
 		fb_buffer_push(&cmd.input, len);
 
