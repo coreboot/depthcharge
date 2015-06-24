@@ -39,9 +39,7 @@ static void update_cmdline(struct boot_info *bi, DeviceTree *tree)
 	if (node == NULL)
 		goto fail;
 
-	char *str;
-	size_t size;
-	dt_find_bin_prop(node, "bootargs", (void **)&str, &size);
+	const char *str = dt_find_string_prop(node, "bootargs");
 
 	if (str == NULL)
 		goto fail;

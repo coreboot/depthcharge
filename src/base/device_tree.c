@@ -763,6 +763,23 @@ void dt_add_bin_prop(DeviceTreeNode *node, char *name, void *data, size_t size)
 }
 
 /*
+ * Find given string property in a node and return its content.
+ *
+ * @param node		The device tree node to search.
+ * @param name		The name of the property.
+ * @return		The found string, or NULL.
+ */
+const char *dt_find_string_prop(DeviceTreeNode *node, const char *name)
+{
+	void *content;
+	size_t size;
+
+	dt_find_bin_prop(node, name, &content, &size);
+
+	return content;
+}
+
+/*
  * Find given property in a node.
  *
  * @param node		The device tree node to search.
