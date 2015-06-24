@@ -22,86 +22,132 @@
 
 #include <coreboot_tables.h>
 #include <libpayload.h>
+#include <lzma.h>
+#include <lz4.h>
+#include <stdlib.h>
 
 #include "arch/arm/boot.h"
-#include "base/cleanup_funcs.h"
 #include "base/timestamp.h"
 #include "config.h"
 #include "vboot/boot.h"
 #include "base/ranges.h"
 #include "base/physmem.h"
-#include <stdlib.h>
 
-void boot_arm_linux_jump(void *entry, void *fdt)
-	__attribute__((noreturn));
+#define MAX_KERNEL_SIZE (64*MiB)
 
-static uintptr_t get_kernel_reloc_addr(uint64_t total_size)
+typedef struct {
+	u32 code0;
+	u32 code1;
+	u64 text_offset;
+	u64 image_size;
+	u64 flags;
+	u64 res2;
+	u64 res3;
+	u64 res4;
+	u32 magic;
+#define KERNEL_HEADER_MAGIC  0x644d5241
+	u32 res5;
+} Arm64KernelHeader;
+
+static void *get_kernel_reloc_addr(uint32_t load_offset)
 {
 	int i = 0;
 
 	for (; i < lib_sysinfo.n_memranges; i++) {
 		struct memrange *range = &lib_sysinfo.memrange[i];
+		if (range->type != CB_MEM_RAM)
+			continue;
 
-		if (range->type == CB_MEM_RAM) {
-			uint64_t start = range->base;
-			uint64_t end = range->base + range->size;
-			uint64_t base = ALIGN_UP(start, 2*MiB);
+		uint64_t start = range->base;
+		uint64_t end = range->base + range->size;
+		uint64_t kstart = ALIGN_UP(start, 2*MiB) + load_offset;
+		uint64_t kend = kstart + MAX_KERNEL_SIZE;
 
-			if (base + total_size < end) {
-				return base;
-			}
+		if (kend > CONFIG_BASE_ADDRESS || kend > CONFIG_KERNEL_START ||
+		    kend > CONFIG_KERNEL_FIT_FDT_ADDR) {
+			printf("ERROR: Kernel might overlap depthcharge!\n");
+			return 0;
 		}
+
+		if (kend <= end)
+			return (void *)kstart;
+
+		// Should be avoided in practice, that memory might be wasted.
+		printf("WARNING: Skipping low memory range [%p:%p]!\n",
+			       (void *)start, (void *)end);
 	}
+
+	printf("ERROR: Cannot find enough continuous memory for kernel!\n");
 	return 0;
 }
 
-#define KERNEL_HEADER_MAGIC  0x644d5241
-#define KERNEL_TEXT_OFFSET   1
-#define KERNEL_MAGIC_OFFSET  7
-
-int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry,
-		   uint32_t kernel_size)
+int boot_arm_linux(void *fdt, FitImageNode *kernel)
 {
-	uint64_t *kernel_header = entry;
-	uintptr_t new_base;
-	void *reloc_addr;
+	// Duplicating text_offset in the FIT is our custom hack to simplify
+	// compressed images. Use the more "correct" source where possible.
+	if (kernel->compression == CompressionNone) {
+		Arm64KernelHeader *header = kernel->data;
+		kernel->load = header->text_offset;
+	}
 
-	run_cleanup_funcs(CleanupOnHandoff);
+	void *reloc_addr = get_kernel_reloc_addr(kernel->load);
+	if (!reloc_addr)
+		return 1;
 
-	timestamp_add_now(TS_START_KERNEL);
-
-	if (*(uint32_t*)(kernel_header + KERNEL_MAGIC_OFFSET) !=
-	    KERNEL_HEADER_MAGIC) {
-		printf("ERROR: Kernel Magic Header Fail!\n");
+	size_t true_size = kernel->size;
+	switch (kernel->compression) {
+	case CompressionNone:
+		if (kernel->size > MAX_KERNEL_SIZE) {
+			printf("ERROR: Cannot relocate a kernel this large!\n");
+			return 1;
+		}
+		printf("Relocating kernel to %p\n", reloc_addr);
+		memmove(reloc_addr, kernel->data, kernel->size);
+		break;
+	case CompressionLzma:
+		printf("Decompressing LZMA kernel to %p\n", reloc_addr);
+		true_size = ulzman(kernel->data, kernel->size,
+				   reloc_addr, MAX_KERNEL_SIZE);
+		if (!true_size) {
+			printf("ERROR: LZMA decompression failed!\n");
+			return 1;
+		}
+		break;
+	case CompressionLz4:
+		printf("Decompressing LZ4 kernel to %p\n", reloc_addr);
+		true_size = ulz4fn(kernel->data, kernel->size,
+				   reloc_addr, MAX_KERNEL_SIZE);
+		if (!true_size) {
+			printf("ERROR: LZ4 decompression failed!\n");
+			return 1;
+		}
+		break;
+	default:
+		printf("ERROR: Unsupported compression algorithm!\n");
 		return 1;
 	}
 
-	printf("Kernel Magic Header Match!\n");
-
-	new_base = get_kernel_reloc_addr(kernel_size +
-					 kernel_header[KERNEL_TEXT_OFFSET]);
-
-	if (new_base == 0) {
-		printf("ERROR: Cannot relocate kernel\n");
+	Arm64KernelHeader *header = reloc_addr;
+	if (header->magic != KERNEL_HEADER_MAGIC) {
+		printf("ERROR: Invalid kernel magic: %#.8x\n", header->magic);
 		return 1;
 	}
-
-	/* relocate kernel */
-	reloc_addr = (void*)(new_base +
-			     kernel_header[KERNEL_TEXT_OFFSET]);
-
-	printf("Relocating kernel to %p\n", reloc_addr);
-	memmove(reloc_addr, entry, kernel_size);
-	entry = reloc_addr;
+	if (header->text_offset != kernel->load) {
+		printf("ERROR: FIT load offset did not match kernel header:"
+		       "%#.16llx != %#.8x", header->text_offset, kernel->load);
+		return 1;
+	}
 
 	printf("jumping to kernel\n");
 
+	timestamp_add_now(TS_START_KERNEL);
+
 	/* Flush dcache and icache to make loaded code visible. */
-	arch_program_segment_loaded(reloc_addr, kernel_size);
+	arch_program_segment_loaded(reloc_addr, true_size);
 
 	tlb_invalidate_all();
 
-	boot_arm_linux_jump(entry, fdt);
+	boot_arm_linux_jump(fdt, reloc_addr);
 
 	return 0;
 }

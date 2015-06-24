@@ -23,6 +23,7 @@
 #include <libpayload.h>
 
 #include "arch/arm/boot.h"
+#include "base/cleanup_funcs.h"
 #include "base/device_tree.h"
 #include "boot/commandline.h"
 #include "boot/fit.h"
@@ -64,16 +65,10 @@ fail:
 int boot(struct boot_info *bi)
 {
 	DeviceTree *tree;
-	void *kernel;
-	uint32_t kernel_size;
+	FitImageNode *kernel = fit_load(bi->kernel, bi->cmd_line, &tree);
 
-	if (fit_load(bi->kernel, bi->cmd_line, &kernel, &kernel_size, &tree))
+	if (!kernel || !tree)
 		return 1;
-
-	if (!tree) {
-		printf("A device tree is required to boot on ARM.\n");
-		return 1;
-	}
 
 	/*
 	 * On ARM, there are two different types of images that can be used for
@@ -116,6 +111,7 @@ int boot(struct boot_info *bi)
 	// Flatten it.
 	dt_flatten(tree, fdt);
 
-	return boot_arm_linux(CONFIG_ARCH_ARM_MACHINE_TYPE, fdt, kernel,
-			      kernel_size);
+	run_cleanup_funcs(CleanupOnHandoff);
+
+	return boot_arm_linux(fdt, kernel);
 }

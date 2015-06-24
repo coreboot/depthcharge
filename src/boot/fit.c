@@ -25,44 +25,11 @@
 #include <libpayload.h>
 #include <stdint.h>
 
-#include "base/device_tree.h"
-#include "base/list.h"
 #include "base/ranges.h"
 #include "boot/fit.h"
 #include "config.h"
 
 
-
-typedef enum CompressionType
-{
-	CompressionInvalid,
-	CompressionNone
-} CompressionType;
-
-typedef struct FitImageNode
-{
-	const char *name;
-	void *data;
-	uint32_t size;
-	CompressionType compression;
-
-	ListNode list_node;
-} FitImageNode;
-
-typedef struct FitConfigNode
-{
-	const char *name;
-	const char *kernel;
-	FitImageNode *kernel_node;
-	const char *fdt;
-	FitImageNode *fdt_node;
-	const char *ramdisk;
-	FitImageNode *ramdisk_node;
-	FdtProperty compat;
-	int compat_rank;
-
-	ListNode list_node;
-} FitConfigNode;
 
 static ListNode image_nodes;
 static ListNode config_nodes;
@@ -96,9 +63,15 @@ static void image_node(DeviceTreeNode *node)
 		if (!strcmp("data", prop->prop.name)) {
 			image->data = prop->prop.data;
 			image->size = prop->prop.size;
+		} else if (!strcmp("load", prop->prop.name)) {
+			image->load = betohl(*(uint32_t *)prop->prop.data);
 		} else if (!strcmp("compression", prop->prop.name)) {
 			if (!strcmp("none", prop->prop.data))
 				image->compression = CompressionNone;
+			else if (!strcmp("lzma", prop->prop.data))
+				image->compression = CompressionLzma;
+			else if (!strcmp("lz4", prop->prop.data))
+				image->compression = CompressionLz4;
 			else
 				image->compression = CompressionInvalid;
 		}
@@ -217,11 +190,6 @@ void fit_add_ramdisk(DeviceTree *tree, void *ramdisk_addr, size_t ramdisk_size)
 
 	dt_add_u32_prop(node, "linux,initrd-start", start);
 	dt_add_u32_prop(node, "linux,initrd-end", end);
-}
-
-static void update_ramdisk(DeviceTree *tree, FitImageNode *ramdisk_node)
-{
-	fit_add_ramdisk(tree, ramdisk_node->data, ramdisk_node->size);
 }
 
 static void update_reserve_map(uint64_t start, uint64_t end, void *data)
@@ -349,8 +317,7 @@ static void update_memory(DeviceTree *tree)
 	dt_add_bin_prop(node, "reg", data, length);
 }
 
-int fit_load(void *fit, char *cmd_line, void **kernel, uint32_t *kernel_size,
-	     DeviceTree **dt)
+FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt)
 {
 	FdtHeader *header = (FdtHeader *)fit;
 	FitImageNode *image;
@@ -361,7 +328,7 @@ int fit_load(void *fit, char *cmd_line, void **kernel, uint32_t *kernel_size,
 	if (betohl(header->magic) != FdtMagic) {
 		printf("Bad FIT header magic value 0x%08x.\n",
 			betohl(header->magic));
-		return 1;
+		return NULL;
 	}
 
 	DeviceTree *tree = fdt_unflatten(fit);
@@ -390,16 +357,18 @@ int fit_load(void *fit, char *cmd_line, void **kernel, uint32_t *kernel_size,
 				(config->fdt && !config->fdt_node)) {
 			printf("Missing image, discarding config %s.\n",
 				config->name);
-			FitConfigNode *prev =
-				container_of(config->list_node.prev,
-					FitConfigNode, list_node);
 			list_remove(&config->list_node);
-			free(config);
-			config = prev;
 			continue;
 		}
 
 		if (config->fdt_node) {
+			if (config->fdt_node->compression != CompressionNone) {
+				printf("FDT compression not yet supported, "
+				       "skipping config %s.\n", config->name);
+				list_remove(&config->list_node);
+				continue;
+			}
+
 			void *fdt_blob = config->fdt_node->data;
 			FdtHeader *fdt_header = (FdtHeader *)fdt_blob;
 			uint32_t fdt_offset =
@@ -458,17 +427,14 @@ int fit_load(void *fit, char *cmd_line, void **kernel, uint32_t *kernel_size,
 		printf("No compatible or default configs. Giving up.\n");
 		// We're leaking memory here, but at this point we're beyond
 		// saving anyway.
-		return 1;
+		return NULL;
 	}
-
-	*kernel = to_boot->kernel_node->data;
-	*kernel_size = to_boot->kernel_node->size;
 
 	if (to_boot->fdt_node) {
 		*dt = fdt_unflatten(to_boot->fdt_node->data);
 		if (!*dt) {
 			printf("Failed to unflatten the kernel's fdt.\n");
-			return 1;
+			return NULL;
 		}
 
 		/* Update only if non-NULL cmd line */
@@ -476,9 +442,17 @@ int fit_load(void *fit, char *cmd_line, void **kernel, uint32_t *kernel_size,
 			update_chosen(*dt, cmd_line);
 
 		update_memory(*dt);
-		if (to_boot->ramdisk_node)
-			update_ramdisk(*dt, to_boot->ramdisk_node);
+
+		if (to_boot->ramdisk_node) {
+			if (to_boot->ramdisk_node->compression
+					!= CompressionNone) {
+				printf("Ramdisk compression not supported.\n");
+				return NULL;
+			}
+			fit_add_ramdisk(*dt, to_boot->ramdisk_node->data,
+					to_boot->ramdisk_node->size);
+		}
 	}
 
-	return 0;
+	return to_boot->kernel_node;
 }

@@ -23,7 +23,6 @@
 #include <libpayload.h>
 
 #include "arch/arm/boot.h"
-#include "base/cleanup_funcs.h"
 #include "base/timestamp.h"
 #include "config.h"
 #include "vboot/boot.h"
@@ -41,16 +40,16 @@ static inline void set_sctlr(uint32_t val)
 	asm volatile("" ::: "memory");
 }
 
-void boot_arm_linux_jump(void *entry, uint32_t machine_type, void *fdt)
-	__attribute__((noreturn));
-
-int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry,
-		   uint32_t kernel_size)
+int boot_arm_linux(void *fdt, FitImageNode *kernel)
 {
-	run_cleanup_funcs(CleanupOnHandoff);
-
 	static const uint32_t SctlrM = (0x1 << 0);
 	static const uint32_t SctlrC = (0x1 << 2);
+
+	void *entry = kernel->data;
+	if (kernel->compression != CompressionNone) {
+		printf("Kernel decompression not supported for ARM32.\n");
+		return 1;
+	}
 
 	uint32_t sctlr = get_sctlr();
 
@@ -69,7 +68,7 @@ int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry,
 
 	tlb_invalidate_all();
 
-	boot_arm_linux_jump(entry, machine_type, fdt);
+	boot_arm_linux_jump(fdt, entry);
 
 	return 0;
 }

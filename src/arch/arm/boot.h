@@ -23,6 +23,10 @@
 #ifndef __ARCH_ARM_BOOT_H__
 #define __ARCH_ARM_BOOT_H__
 
-int boot_arm_linux(uint32_t machine_type, void *fdt, void *entry, uint32_t kernel_size);
+#include "boot/fit.h"
+
+int boot_arm_linux(void *fdt, FitImageNode *kernel);
+
+void boot_arm_linux_jump(void *fdt, void *entry) __attribute__((noreturn));
 
 #endif /* __ARCH_ARM_BOOT_H__ */

@@ -31,19 +31,15 @@
 int boot(struct boot_info *bi)
 {
 	DeviceTree *tree;
-	void *kernel;
-	uint32_t kernel_size;
+	FitImageNode *kernel = fit_load(bi->kernel, bi->cmd_line, &tree);
 
-	if (fit_load(bi->kernel, bi->cmd_line, &kernel, &kernel_size, &tree))
+	if (!kernel || !tree || dt_apply_fixups(tree))
 		return 1;
 
-	if (!tree) {
-		printf("A device tree is required to boot on MIPS.\n");
+	if (kernel->compression != CompressionNone) {
+		printf("Kernel decompression not supported for MIPS.\n");
 		return 1;
 	}
-
-	if (dt_apply_fixups(tree))
-		return 1;
 
 	// Allocate a spot for the FDT in memory.
 	void *fdt = (void *)(uintptr_t)CONFIG_KERNEL_FIT_FDT_ADDR;
@@ -58,5 +54,5 @@ int boot(struct boot_info *bi)
 	// Flatten it.
 	dt_flatten(tree, fdt);
 
-	return boot_mips_linux(fdt, kernel, kernel_size);
+	return boot_mips_linux(fdt, kernel->data, kernel->size);
 }

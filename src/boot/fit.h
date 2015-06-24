@@ -26,11 +26,49 @@
 #include <stddef.h>
 #include <stdint.h>
 
-struct DeviceTree;
-typedef struct DeviceTree DeviceTree;
+#include "base/device_tree.h"
+#include "base/list.h"
 
-int fit_load(void *fit, char *cmd_line, void **kernel, uint32_t *kernel_size,
-	     DeviceTree **dt);
+typedef enum CompressionType
+{
+	CompressionInvalid,
+	CompressionNone,
+	CompressionLzma,
+	CompressionLz4,
+} CompressionType;
+
+typedef struct FitImageNode
+{
+	const char *name;
+	void *data;
+	uint32_t size;
+	uint32_t load;
+	CompressionType compression;
+
+	ListNode list_node;
+} FitImageNode;
+
+typedef struct FitConfigNode
+{
+	const char *name;
+	const char *kernel;
+	FitImageNode *kernel_node;
+	const char *fdt;
+	FitImageNode *fdt_node;
+	const char *ramdisk;
+	FitImageNode *ramdisk_node;
+	FdtProperty compat;
+	int compat_rank;
+
+	ListNode list_node;
+} FitConfigNode;
+
+/*
+ * Unpack a FIT image into memory, choosing the right configuration through the
+ * compatible string set by fit_set_compat() and unflattening the corresponding
+ * kernel device tree.
+ */
+FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt);
 
 /*
  * Set compatible string for the preferred kernel DT. |compat| must stay
