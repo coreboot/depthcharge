@@ -48,9 +48,8 @@
 /* Default fastboot function callback table. */
 fb_callback_t __attribute__((weak)) fb_board_handler;
 
-/* Pointer to memory location where image is downloaded for further action */
-static void *image_addr;
-static uint64_t image_size;
+/* Size of currently loaded image (0 = no image loaded). */
+static uint64_t image_size = 0;
 
 static void fb_print_on_screen(fb_msg_t type, const char *msg)
 {
@@ -180,10 +179,14 @@ int fb_device_unlocked(void)
 	return vboot_in_developer();
 }
 
-static uint64_t fb_get_max_download_size(void)
+static inline uint64_t fb_get_max_download_size(void)
 {
-	/* Max download size set to half of heap size */
-	return CONFIG_FASTBOOT_HEAP_SIZE/2;
+	return CONFIG_KERNEL_SIZE;
+}
+
+static inline void *fb_get_image_ptr(void)
+{
+	return &_kernel_start;
 }
 
 static int battery_soc_check(void)
@@ -753,26 +756,9 @@ static fb_ret_type fb_getvar(struct fb_cmd *cmd)
 	}
 }
 
-static void free_image_space(void)
-{
-	if (image_addr) {
-		free(image_addr);
-		image_addr = NULL;
-		image_size = 0;
-	}
-}
-
-static void alloc_image_space(uint64_t bytes)
-{
-	free_image_space();
-	image_addr = xmalloc(bytes);
-	if (image_addr)
-		image_size = bytes;
-}
-
 /*
  * Func: fb_recv_data
- * Desc: Download data from host and store it in image_addr
+ * Desc: Download data from host
  *
  */
 static int fb_recv_data(struct fb_cmd *cmd)
@@ -780,7 +766,7 @@ static int fb_recv_data(struct fb_cmd *cmd)
 	uint64_t curr_len = 0;
 
 	while (curr_len < image_size) {
-		void *curr = (uint8_t *)image_addr + curr_len;
+		void *curr = (uint8_t *)fb_get_image_ptr() + curr_len;
 
 		uint64_t ret = usb_gadget_recv(curr, image_size - curr_len);
 
@@ -818,30 +804,23 @@ static fb_ret_type fb_download(struct fb_cmd *cmd)
 	char *num = fb_get_string(input, len);
 
 	/* num of bytes are passed in hex(0x) format */
-	uint64_t bytes = strtoul(num, NULL, 16);
+	image_size = strtoul(num, NULL, 16);
 
 	fb_free_string(num);
 
-	if (bytes > fb_get_max_download_size()) {
-		fb_add_string(output, "Image size exceeds max download size",
-			      NULL);
-		return FB_SUCCESS;
-	}
-
-	alloc_image_space(bytes);
-
-	if ((image_addr == NULL) || (image_size == 0)) {
+	if (image_size > fb_get_max_download_size()) {
 		fb_add_string(output, "not sufficient memory", NULL);
+		image_size = 0;
 		return FB_SUCCESS;
 	}
 
 	cmd->type = FB_DATA;
-	fb_add_number(output, "%08llx", bytes);
+	fb_add_number(output, "%08llx", image_size);
 	fb_execute_send(cmd);
 
 	if (fb_recv_data(cmd) == 0) {
-		FB_LOG("Freeing memory.. failed to download data\n");
-		free_image_space();
+		FB_LOG("Failed to download data\n");
+		image_size = 0;
 	}
 
 	return FB_SUCCESS;
@@ -930,7 +909,7 @@ static fb_ret_type fb_flash(struct fb_cmd *cmd)
 
 	backend_ret_t ret;
 
-	if (image_addr == NULL) {
+	if (image_size == 0) {
 		fb_add_string(&cmd->output, "no image downloaded", NULL);
 		cmd->type = FB_FAIL;
 		return FB_SUCCESS;
@@ -950,10 +929,10 @@ static fb_ret_type fb_flash(struct fb_cmd *cmd)
 
 	char *partition = fb_get_string(data, len);
 
-	ret = board_write_partition(partition, image_addr, image_size);
+	ret = board_write_partition(partition, fb_get_image_ptr(), image_size);
 
 	if (ret == BE_NOT_HANDLED)
-		ret = backend_write_partition(partition, image_addr,
+		ret = backend_write_partition(partition, fb_get_image_ptr(),
 					      image_size);
 
 	fb_free_string(partition);
@@ -995,7 +974,7 @@ static fb_ret_type fb_boot(struct fb_cmd *cmd)
 
 	cmd->type = FB_FAIL;
 
-	if (image_addr == NULL) {
+	if (image_size == 0) {
 		fb_add_string(&cmd->output, "no image downloaded", NULL);
 		return FB_SUCCESS;
 	}
@@ -1003,7 +982,8 @@ static fb_ret_type fb_boot(struct fb_cmd *cmd)
 	size_t kernel_size;
 	void *kernel_base = &_kernel_start;
 
-	memcpy(kernel_base, image_addr, image_size);
+	if (kernel_base != fb_get_image_ptr())
+		memcpy(kernel_base, fb_get_image_ptr(), image_size);
 
 	void *kernel = bootimg_get_kernel_ptr(kernel_base, image_size);
 
@@ -1049,9 +1029,6 @@ static fb_ret_type fb_boot(struct fb_cmd *cmd)
 			kparams.kernel_buffer_size = image_size;
 		}
 	}
-
-	/* No longer need the image space. */
-	free_image_space();
 
 	kparams.flags = KERNEL_IMAGE_BOOTIMG;
 

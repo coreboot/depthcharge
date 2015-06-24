@@ -34,6 +34,7 @@ config KERNEL_START
 
 config KERNEL_SIZE
 	hex "The size of the region the kernel image is loaded into"
+	default 0x10000000 if FASTBOOT_MODE
 	default 0x2000000
 	help
 	  The size of the memory region described in KERNEL_START.
