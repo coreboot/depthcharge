@@ -3,7 +3,7 @@
 / {
 	model = "Google Heli";
 	config {
-		hwid = "HELI TEST A-A 9114";
+		hwid = "HELI TEST A-A 1557";
 	};
 	chromeos-config {
 		/* Enable factory-friendly features. */
