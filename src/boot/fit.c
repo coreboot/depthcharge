@@ -283,10 +283,20 @@ static void update_memory(DeviceTree *tree)
 {
 	Ranges mem;
 	Ranges reserved;
+	DeviceTreeNode *node;
 	u32 addr_cells = 1, size_cells = 1;
-	const char *path[] = { "memory", NULL };
-	DeviceTreeNode *node = dt_find_node(tree->root, path,
-					    &addr_cells, &size_cells, 1);
+	dt_read_cell_props(tree->root, &addr_cells, &size_cells);
+
+	// First remove all existing device_type="memory" nodes, then add ours.
+	list_for_each(node, tree->root->children, list_node) {
+		const char *devtype = dt_find_string_prop(node, "device_type");
+		if (devtype && !strcmp(devtype, "memory"))
+			list_remove(&node->list_node);
+	}
+	node = xzalloc(sizeof(*node));
+	node->name = "memory";
+	list_insert_after(&node->list_node, &tree->root->children);
+	dt_add_string_prop(node, "device_type", "memory");
 
 	// Read memory info from coreboot (ranges are merged automatically).
 	ranges_init(&mem);
