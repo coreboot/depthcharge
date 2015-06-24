@@ -27,24 +27,20 @@ config LDSCRIPT_ARCH
 	  Otherwise, the default src/image/depthchearge.ldscript is used.
 
 config KERNEL_START
-	hex "Physical address of the region the kernel is loaded into"
+	hex "Physical address of the region the kernel image is loaded into"
 	default 0x100000
 	help
-	  The start of a region of memory the kernel is loaded into before
-	  it's verified or booted. Also, the code which pivots from the
-	  read only firmware to one of the read/write versions is loaded here
-	  when depthcharge starts.
+	  The start of a region of memory the kernel image is loaded into from
+	  the boot medium (vboot, network, etc.). This image may or may not be
+	  a wrapper around the actual kernel code (e.g. FIT) and may or may not
+	  require further decompression or relocation. Also, this area is used
+	  by the old trampoline code in a way nobody cares about anymore.
 
 config KERNEL_SIZE
-	hex "The size of the region the kernel is loaded into"
-	default 0x1000000
+	hex "The size of the region the kernel image is loaded into"
+	default 0x2000000
 	help
-	  The size of a region of memroy the kernel is loaded into before
-	  it's verified or booted. Also, the code which pivots from the
-	  read only firmware to one of the read/write versions is loaded here
-	  when depthcharge starts. That code is overwritten when the kernel is
-	  loaded, so this should be set to the size of the larger of the two,
-	  not their sizes added together.
+	  The size of the memory region described in KERNEL_START.
 
 config BASE_ADDRESS
 	hex "The address depthcharge is linked to run at"
