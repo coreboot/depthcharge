@@ -26,22 +26,21 @@
 	.global boot_arm_linux_jump
 	.type boot_arm_linux_jump, function
 boot_arm_linux_jump:
-	/* Entered with X0 = entry, X1 = &fdt */
+	/* Entered with X0 = &fdt, X1 = entry */
 
-	mov	x27, x0		/* Kernel entry */
-	mov	x26, x1		/* FDT pointer */
+	mov	x27, x1		/* Kernel entry */
 
 	/* Configure sctlr to have caches off, etc. */
-	read_current x0, sctlr
-	ldr	 x1, .SCTLR_MASK
-	and	 x0, x0, x1
-	write_current sctlr, x0, x1
+	read_current x2, sctlr
+	ldr	 x3, .SCTLR_MASK
+	and	 x2, x2, x3
+	write_current sctlr, x2, x3
 
 	isb
 
 	msr      DAIFSet, #0xf
-1:
-	mov	x0, x26		/* X0 = physical address of dtb */
+
+				/* X0 = &fdt (already set by function caller) */
 	mov	x1, #0		/* X1 = 0 */
 	mov	x2, #0		/* X2 = 0 */
 	mov	x3, #0		/* X3 = 0 */

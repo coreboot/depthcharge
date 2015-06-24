@@ -49,7 +49,6 @@ config ARCH_ARM_V8
 
 endchoice
 
-source src/arch/Kconfig
 source src/base/Kconfig
 source src/board/Kconfig
 source src/boot/Kconfig
