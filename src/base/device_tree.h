@@ -167,6 +167,7 @@ int dt_set_bin_prop_by_path(DeviceTree *tree, const char *path,
 
 void dt_find_bin_prop(DeviceTreeNode *node, const char *name, void **data,
 		      size_t *size);
+const char *dt_find_string_prop(DeviceTreeNode *node, const char *name);
 
 /*
  * Fixups to apply to a kernel's device tree before booting it.
