@@ -109,8 +109,6 @@ static int max98095_hw_params(Max98095Codec *codec)
 // Configures audio interface system clock for the selected frequency.
 static int max98095_set_sysclk(Max98095Codec *codec)
 {
-	enum { MHz = 1000000 };
-
 	int freq = codec->lr_frame_size * codec->sample_rate;
 	uint8_t mclksel = (codec->master_clock == 2) ? 1 : 0;
 
