@@ -63,7 +63,7 @@ static int gbb_init(void)
 	}
 
 	cparams.gbb_size = area.size;
-	cparams.gbb_data = (void *)&_gbb_copy_start;
+	cparams.gbb_data = &_gbb_copy_start;
 	memset(cparams.gbb_data, 0, cparams.gbb_size);
 
 	uint32_t offset = area.offset;

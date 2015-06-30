@@ -27,25 +27,25 @@
 
 // C level variable definitions for symbols defined in the linker script.
 
-extern const uint8_t _start;
-extern const uint8_t _gbb_copy_start;
-extern const uint8_t _gbb_copy_end;
-extern const uint8_t _edata;
-extern const uint8_t _heap;
-extern const uint8_t _eheap;
-extern const uint8_t _estack;
-extern const uint8_t _stack;
-extern const uint8_t _exc_estack;
-extern const uint8_t _exc_stack;
-extern const uint8_t _end;
-extern const uint8_t _tramp_start;
-extern const uint8_t _tramp_end;
-extern const uint8_t _tramp_stack;
-extern const uint8_t _tramp_estack;
-extern const uint8_t _kernel_start;
-extern const uint8_t _kernel_end;
-extern const uint8_t _init_funcs_start;
-extern const uint8_t _init_funcs_end;
+extern uint8_t _start;
+extern uint8_t _gbb_copy_start;
+extern uint8_t _gbb_copy_end;
+extern uint8_t _edata;
+extern uint8_t _heap;
+extern uint8_t _eheap;
+extern uint8_t _estack;
+extern uint8_t _stack;
+extern uint8_t _exc_estack;
+extern uint8_t _exc_stack;
+extern uint8_t _end;
+extern uint8_t _tramp_start;
+extern uint8_t _tramp_end;
+extern uint8_t _tramp_stack;
+extern uint8_t _tramp_estack;
+extern uint8_t _kernel_start;
+extern uint8_t _kernel_end;
+extern uint8_t _init_funcs_start;
+extern uint8_t _init_funcs_end;
 
 #define CPARAMS __attribute__((section(".cparams")))
 #define SHARED_DATA __attribute__((section(".shared_data")))

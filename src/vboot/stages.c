@@ -216,7 +216,7 @@ int vboot_select_firmware(void)
 int vboot_select_and_load_kernel(void)
 {
 	VbSelectAndLoadKernelParams kparams = {
-		.kernel_buffer = (void *)&_kernel_start,
+		.kernel_buffer = &_kernel_start,
 		.kernel_buffer_size = &_kernel_end - &_kernel_start
 	};
 
