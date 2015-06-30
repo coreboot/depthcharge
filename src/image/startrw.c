@@ -31,12 +31,11 @@
 int start_rw_firmware(const void *compressed_image, uint32_t size)
 {
 	// Put the decompressed RW ELF at the end of the trampoline.
-	void *elf_image = (void *)&_tramp_end;
+	void *elf_image = &_tramp_end;
 
 	// Decompress the RW image.
 	uint32_t out_size = ulzman(compressed_image, size, elf_image,
-				   (uint8_t *)&_kernel_end -
-				   (uint8_t *)&_tramp_end);
+				   &_kernel_end - &_tramp_end);
 	if (!out_size) {
 		printf("Error decompressing RW firmware.\n");
 		return -1;
