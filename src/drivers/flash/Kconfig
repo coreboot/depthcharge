@@ -45,3 +45,8 @@ config DRIVER_FLASH_ICH_BASE
 config DRIVER_FLASH
 	bool
 	default n
+
+config DRIVER_CBFS_FLASH
+	bool "Glue code to bind libcbfs to depthcharge's flash"
+	depends on !ARCH_X86
+	default n
