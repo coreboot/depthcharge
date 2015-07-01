@@ -16,6 +16,7 @@
 ##
 
 subdirs-y += bus
+subdirs-y += cbfs
 subdirs-y += dma
 subdirs-y += ec
 subdirs-y += flash
