@@ -100,9 +100,11 @@ static int board_setup(void)
 
 	if (nvs->scc_en[SCC_NVS_MMC])
 		emmc = new_mem_sdhci_host((void *)nvs->scc_bar0[SCC_NVS_MMC],
-					  0, emmc_sd_clock_min, emmc_clock_max);
+					  SDHCI_PLATFORM_NO_EMMC_HS200,
+					  emmc_sd_clock_min, emmc_clock_max);
 	else
-		emmc = new_pci_sdhci_host(PCI_DEV(0, 23, 0), 0,
+		emmc = new_pci_sdhci_host(PCI_DEV(0, 23, 0),
+					  SDHCI_PLATFORM_NO_EMMC_HS200,
 					  emmc_sd_clock_min, emmc_clock_max);
 
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
