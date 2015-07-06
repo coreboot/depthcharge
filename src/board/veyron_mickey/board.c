@@ -81,6 +81,11 @@ static int board_setup(void)
 	// Claim that we have an power key to satisfy vboot.
 	flag_replace(FLAG_PWRSW, new_gpio_low());
 
+	// Read the current value of the recovery button for confirmation
+	// when transitioning between normal and dev mode.
+	flag_replace(FLAG_RECSW, sysinfo_lookup_gpio("recovery",
+				1, new_rk_gpio_input_from_coreboot));
+
 	ramoops_buffer(0x31f00000, 0x100000, 0x20000);
 
 	if (lib_sysinfo.framebuffer != NULL)
