@@ -56,7 +56,7 @@ SdhciHost *new_pci_sdhci_host(pcidev_t dev, int platform_info,
 			      int clock_min, int clock_max)
 {
 	PciSdhciHost *host;
-	int removable = platform_info & SDHCI_PLATFORM_REVOMVABLE;
+	int removable = platform_info & SDHCI_PLATFORM_REMOVABLE;
 
 	host = xzalloc(sizeof(*host));
 
