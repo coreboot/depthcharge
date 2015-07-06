@@ -235,7 +235,7 @@
 /*
 * platform_infos
 */
-#define SDHCI_PLATFORM_REVOMVABLE	(1 << 0)
+#define SDHCI_PLATFORM_REMOVABLE	(1 << 0)
 #define SDHCI_PLATFORM_NO_EMMC_HS200	(1 << 1)
 #define SDHCI_PLATFORM_EMMC_1V8_POWER	(1 << 2)
 /*

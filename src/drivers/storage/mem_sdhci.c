@@ -29,7 +29,7 @@ SdhciHost *new_mem_sdhci_host(void *ioaddr, int platform_info,
 			      int clock_min, int clock_max)
 {
 	SdhciHost *host;
-	int removable = platform_info & SDHCI_PLATFORM_REVOMVABLE;
+	int removable = platform_info & SDHCI_PLATFORM_REMOVABLE;
 
 	host = xzalloc(sizeof(*host));
 
