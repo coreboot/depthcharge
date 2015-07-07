@@ -27,11 +27,12 @@ typedef struct
 	int lr_frame_size;
 
 	uint8_t master_clock;
+	uint8_t bypass;	/* bypass I2S to another codec */
 } rt5677Codec;
 
 rt5677Codec *new_rt5677_codec(I2cOps *i2c, uint8_t chip, int bits_per_sample,
 			      int sample_rate, int lr_frame_size,
-			      uint8_t master_clock);
+			      uint8_t master_clock, uint8_t bypass);
 
 /*
  * RT5677 Registers Definition

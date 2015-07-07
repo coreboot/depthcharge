@@ -182,7 +182,7 @@ static int board_setup(void)
 				       (void *)CLK_RST_X_RST_SET,
 				       (void *)CLK_RST_X_RST_CLR,
 				       CLK_X_I2C6);
-	rt5677Codec *codec = new_rt5677_codec(&i2c6->ops, 0x2D, 16, 48000, 256, 1);	//0x2C for P0
+	rt5677Codec *codec = new_rt5677_codec(&i2c6->ops, 0x2D, 16, 48000, 256, 1, 0);	//0x2C for P0
 	list_insert_after(&ahub->component.list_node, &sound_route->components);
 	list_insert_after(&codec->component.list_node, &sound_route->components);
 

@@ -125,7 +125,7 @@ static int board_setup(void)
 
 	DesignwareI2c *i2c0 = i2c_enable(SIO_NVS_I2C0);
 	rt5677Codec *codec = new_rt5677_codec(&i2c0->ops, 0x2c, 16,
-					      48000, 256, 0);
+					      48000, 256, 0, 0);
 
 	list_insert_after(&codec->component.list_node,
 			  &sound_route->components);

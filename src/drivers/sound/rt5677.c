@@ -43,7 +43,39 @@ static struct rt5677_init_reg init_list[] = {
 	{RT5677_PRIV_DATA,	  0x364D},
 	{RT5677_DAC1_DIG_VOL,	  0x9090},
 };
-#define RT5677_INIT_REG_LEN ARRAY_SIZE(init_list)
+
+static struct rt5677_init_reg bypass_init_list[] = {
+	/* init_list in kernel driver */
+	{RT5677_ASRC_12,	  0x0018},
+	{RT5677_PRIV_INDEX,	  0x0015},
+	{RT5677_PRIV_DATA,	  0x0490},
+	{RT5677_PRIV_INDEX,	  0x0038},
+	{RT5677_PRIV_DATA,	  0x0F71},
+	{RT5677_PRIV_INDEX,	  0x0039},
+	{RT5677_PRIV_DATA,	  0x0F71},
+	/* rt5677_probe */
+	{RT5677_PWR_DSP2,	  0x0C00},
+	/* set I2S2 master */
+	{RT5677_I2S2_SDP,	  0x0000},
+	/* mixer setting */
+	{RT5677_STO1_DAC_MIXER,	  0X8A8A},
+	{RT5677_STO2_ADC_MIXER,	  0XA440},
+	{RT5677_TDM2_CTRL2,	  0x0011},
+	/* set pll and sysclk*/
+	{RT5677_PLL1_CTRL1,	  0X0F02},
+	{RT5677_PLL1_CTRL2,	  0X0800},
+	{RT5677_GLB_CLK1,	  0X4800},
+	/* turn on */
+	{RT5677_PWR_ANLG1,	  0XA955},
+	{RT5677_DIG_MISC,	  0X0021},
+	{RT5677_PWR_DIG1,	  0XC000},
+	{RT5677_PWR_DIG2,	  0X1020},
+	{RT5677_PLL1_CTRL2,	  0X0802},
+	{RT5677_PWR_ANLG2,	  0X0280},
+	{RT5677_PLL1_CTRL2,	  0X0801},
+	{RT5677_ASRC_1,		  0X0003},
+	{RT5677_TDM2_CTRL1,	  0X1300},
+};
 
 static int rt5677_i2c_readw(rt5677Codec *codec, uint8_t reg, uint16_t *data)
 {
@@ -76,10 +108,16 @@ static void rt5677_reg_init(rt5677Codec *codec)
 {
 	int i;
 
-	for (i = 0; i < RT5677_INIT_REG_LEN; i++)
-		rt5677_i2c_writew(codec, init_list[i].reg, init_list[i].val);
+	if (codec->bypass) {
+		for (i = 0; i < ARRAY_SIZE(bypass_init_list); i++)
+			rt5677_i2c_writew(codec, bypass_init_list[i].reg,
+					  bypass_init_list[i].val);
+	} else {
+		for (i = 0; i < ARRAY_SIZE(init_list); i++)
+			rt5677_i2c_writew(codec, init_list[i].reg,
+					  init_list[i].val);
+	}
 }
-
 
 #ifdef DEBUG
 static void debug_dump_5677_regs(rt5677Codec *codec, int swap)
@@ -235,12 +273,13 @@ static int rt5677_enable(SoundRouteComponentOps *me)
 
 rt5677Codec *new_rt5677_codec(I2cOps *i2c, uint8_t chip,
 				  int bits_per_sample, int sample_rate,
-				  int lr_frame_size, uint8_t master_clock)
+				  int lr_frame_size, uint8_t master_clock,
+				  uint8_t bypass)
 {
 	printf("%s: chip = 0x%02X, bits_per_sample = %d, sample_rate = %d\n",
 		 __func__, chip, bits_per_sample, sample_rate);
-	printf("  lr_frame_size = %d, master_clock = %d\n",
-	       lr_frame_size, master_clock);
+	printf("  lr_frame_size = %d, master_clock = %d, bypass = %d\n",
+	       lr_frame_size, master_clock, bypass);
 
 	rt5677Codec *codec = xzalloc(sizeof(*codec));
 
@@ -254,6 +293,7 @@ rt5677Codec *new_rt5677_codec(I2cOps *i2c, uint8_t chip,
 	codec->lr_frame_size = lr_frame_size;
 
 	codec->master_clock = master_clock;
+	codec->bypass = bypass;
 
 	return codec;
 }

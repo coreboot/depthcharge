@@ -220,7 +220,7 @@ static int board_setup(void)
 	I2sSource *i2s_source = new_i2s_source(&i2s1->ops, 48000, 2, 16000);
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
 	TegraI2c *i2c6 = get_i2c6();
-	rt5677Codec *codec = new_rt5677_codec(&i2c6->ops, RT5677_DEV_NUM, 16, 48000, 256, 1);
+	rt5677Codec *codec = new_rt5677_codec(&i2c6->ops, RT5677_DEV_NUM, 16, 48000, 256, 1, 0);
 	list_insert_after(&ahub->component.list_node, &sound_route->components);
 	list_insert_after(&codec->component.list_node, &sound_route->components);
 
