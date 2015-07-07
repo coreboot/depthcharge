@@ -49,6 +49,9 @@ HOSTCFLAGS := -I$(srck) -I$(objk)
 HOSTCXXFLAGS := -I$(srck) -I$(objk)
 
 ifdef LIBPAYLOAD_DIR
+# libpayload's xcompile script checks for this config flag to decide which
+# compiler to use
+CONFIG_LP_COMPILER_GCC=y
 include $(LIBPAYLOAD_DIR)/libpayload.xcompile
 endif
 LIBPAYLOAD_DIR ?= ../libpayload/install/libpayload
@@ -94,6 +97,15 @@ ARCH_TO_TOOLCHAIN_arm64  := arm64
 ARCH_TO_TOOLCHAIN_mips   := mipsel
 
 toolchain := $(ARCH_TO_TOOLCHAIN_$(ARCH))
+
+# libpayload's xcompile adapted the coreboot naming scheme, which is different
+# in some places. If the names above don't work, use another set.
+ifeq ($(CC_$(toolchain)),)
+new_toolchain_name_i386 := x86_32
+new_toolchain_name_mipsel := mips
+
+toolchain := $(new_toolchain_name_$(toolchain))
+endif
 
 CC:=$(firstword $(CC_$(toolchain)))
 XCC := CC=$(CC) $(LIBPAYLOAD_DIR)/bin/lpgcc
