@@ -34,6 +34,10 @@ config DRIVER_SOUND_MAX98095
 	bool "MAX98095 codec driver"
 	default n
 
+config DRIVER_SOUND_RT5645
+	bool "RT5645 codec driver"
+	default n
+
 config DRIVER_SOUND_RT5677
 	bool "RT5677 codec driver"
 	default n
