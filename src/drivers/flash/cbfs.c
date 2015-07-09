@@ -41,10 +41,10 @@ static size_t cbfs_media_read(struct cbfs_media *media,
 			      void *dest, size_t offset,
 			      size_t count)
 {
-	uint8_t *cache = NULL;
+	uint8_t *cache;
 
 	if (offset == 0 - sizeof(uint32_t) && count == sizeof(uint32_t))
-		printf("Reading last 4 bytes not supported\n");
+		cache = (uint8_t *)&lib_sysinfo.cbfs_header_offset;
 	else
 		cache = flash_read(offset, count);
 	if (!cache)
