@@ -37,6 +37,9 @@ endif
 if BOARD = "bolt"
 source src/board/bolt/Kconfig
 endif
+if BOARD = "buddy"
+source src/board/buddy/Kconfig
+endif
 if BOARD = "cid"
 source src/board/cid/Kconfig
 endif
