@@ -376,7 +376,7 @@ static int ahci_identify(AhciIoPort *port, AtaIdentify *id)
 		printf("AHCI: Identify command failed.\n");
 		return -1;
 	}
-	printf("size of AtaIdentify is %d.\n", sizeof(AtaIdentify));
+	printf("size of AtaIdentify is %zu.\n", sizeof(AtaIdentify));
 
 	return 0;
 }
