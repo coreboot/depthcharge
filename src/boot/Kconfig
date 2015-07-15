@@ -26,7 +26,6 @@ choice
 
 	config KERNEL_FIT
 	bool "FIT"
-	default n
 
 	config KERNEL_DUMMY
 	bool "dummy"
