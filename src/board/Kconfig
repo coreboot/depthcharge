@@ -25,9 +25,6 @@ endif
 if BOARD = "bayleybay"
 source src/board/bayleybay/Kconfig
 endif
-if BOARD = "beltino"
-source src/board/beltino/Kconfig
-endif
 if BOARD = "bolt"
 source src/board/bolt/Kconfig
 endif
@@ -42,9 +39,6 @@ source src/board/falco/Kconfig
 endif
 if BOARD = "foster"
 source src/board/foster/Kconfig
-endif
-if BOARD = "fox_wtm2"
-source src/board/fox_wtm2/Kconfig
 endif
 if BOARD = "gizmo"
 source src/board/gizmo/Kconfig
