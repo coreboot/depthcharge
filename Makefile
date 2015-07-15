@@ -27,20 +27,29 @@ export obj ?= $(src)/build
 export objk ?= $(obj)/util/kconfig
 
 export KERNELVERSION      := 0.1.0
+
 export KCONFIG_AUTOHEADER := $(obj)/config.h
 export KCONFIG_AUTOCONFIG := $(obj)/auto.conf
+export KCONFIG_DEPENDENCIES := $(obj)/auto.conf.cmd
+export KCONFIG_SPLITCONFIG := $(obj)/config
+export KCONFIG_TRISTATE := $(obj)/tristate.conf
+export KCONFIG_NEGATIVES := 1
+DOTCONFIG ?= .config
+export KCONFIG_CONFIG = $(DOTCONFIG)
+
 
 CONFIG_SHELL := sh
 ifdef BOARD
 KBUILD_DEFCONFIG := $(src)/board/$(BOARD)/defconfig
 endif
 UNAME_RELEASE := $(shell uname -r)
-HAVE_DOTCONFIG := $(wildcard .config)
+HAVE_DOTCONFIG := $(wildcard $(DOTCONFIG))
 MAKEFLAGS += -rR --no-print-directory
 
 # Make is silent per default, but 'make V=1' will show all compiler calls.
 ifneq ($(V),1)
-Q := @
+Q:=@
+.SILENT:
 endif
 
 HOSTCC = gcc
@@ -149,7 +158,8 @@ all:
 
 endif
 
-
+$(KCONFIG_AUTOHEADER): $(KCONFIG_CONFIG)
+	$(MAKE) oldconfig
 
 strip_quotes = $(subst ",,$(subst \",,$(1)))
 
@@ -215,7 +225,7 @@ printall:
 	@$(foreach class,$(special-classes),echo $(class):='$($(class))'; )
 
 ifndef NOMKDIR
-$(shell mkdir -p $(obj) $(objk)/lxdialog $(additional-dirs) $(alldirs))
+$(shell mkdir -p $(obj) $(KCONFIG_SPLITCONFIG) $(objk)/lxdialog $(additional-dirs) $(alldirs))
 endif
 
 # macro to define template macros that are used by use_template macro
@@ -226,7 +236,7 @@ define create_cc_template
 # $4 additional dependencies
 ifn$(EMPTY)def $(1)-objs_$(2)_template
 de$(EMPTY)fine $(1)-objs_$(2)_template
-$(obj)/$$(1).$(1).o: src/$$(1).$(2) $(obj)/config.h $(4)
+$(obj)/$$(1).$(1).o: src/$$(1).$(2) $(KCONFIG_AUTOHEADER) $(4)
 	@printf "    CC         $$$$(subst $$$$(obj)/,,$$$$(@))\n"
 	$(Q)$(XCC) $(3) -MMD $$$$(CFLAGS) -c -o $$$$@ $$$$<
 en$(EMPTY)def
