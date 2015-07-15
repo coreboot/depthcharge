@@ -115,8 +115,30 @@ BlockDevCtrlr *bcb_board_bdev_ctrlr(void)
 	return bcb_bdev_ctrlr;
 }
 
+#define SPI_FLASH_BLOCK_ERASE_64KB	0xd8
+
+/*
+ * Override SPI flash params sector_size and erase_cmd passed in by
+ * coreboot. Smaug uses Winbond W25Q128FW which takes 3x time to erase 64KiB
+ * using sector erase (4KiB) as compared to block erase (64KiB).
+ *
+ * Coreboot needs to use sector erase (4KiB) to ensure that vbnv_erase does not
+ * clear off unwanted parts of the flash.
+ *
+ * Thus, override sector_size to be equal to 64KiB and erase command as block
+ * erase here so that fastboot can operate on BLOCK_SIZE and achieve faster
+ * write time.
+ */
+static void flash_params_override(void)
+{
+	lib_sysinfo.spi_flash.sector_size = 64 * KiB;
+	lib_sysinfo.spi_flash.erase_cmd = SPI_FLASH_BLOCK_ERASE_64KB;
+}
+
 static int board_setup(void)
 {
+	flash_params_override();
+
 	sysinfo_install_flags(new_tegra_gpio_input_from_coreboot);
 
 	choose_devicetree_by_boardid();
