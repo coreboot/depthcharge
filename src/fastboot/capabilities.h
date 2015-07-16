@@ -50,7 +50,8 @@ typedef enum {
 	FB_ID_POWERDOWN		= (1 << 9),
 	FB_ID_UNLOCK			= (1 << 10),
 	FB_ID_LOCK			= (1 << 11),
-	FB_ID_MASK			= ((1 << 12) - 1),
+	FB_ID_SETENV			= (1 << 12),
+	FB_ID_MASK			= ((1 << 13) - 1),
 } fb_func_id_t;
 
 /*

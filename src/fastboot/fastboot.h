@@ -52,6 +52,11 @@ typedef enum fb_ret {
 	FB_CONTINUE_RECOVERY,
 } fb_ret_type;
 
+
+typedef enum {
+	FB_SETENV_FORCE_ERASE,
+} fb_setenv_t;
+
 /*
  * IMPORTANT!!!!
  * Prefix len is set to 4 under the assumption that all command responses are of
