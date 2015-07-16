@@ -49,6 +49,15 @@ typedef struct {
 	u32 res5;
 } Arm64KernelHeader;
 
+struct {
+	union {
+		Arm64KernelHeader header;
+		u8 raw[sizeof(Arm64KernelHeader) + 0x100];
+	};
+#define SCRATCH_CANARY_VALUE 0xdeadbeef
+	u32 canary;
+} scratch;
+
 static void *get_kernel_reloc_addr(uint32_t load_offset)
 {
 	int i = 0;
@@ -83,14 +92,38 @@ static void *get_kernel_reloc_addr(uint32_t load_offset)
 
 int boot_arm_linux(void *fdt, FitImageNode *kernel)
 {
-	// Duplicating text_offset in the FIT is our custom hack to simplify
-	// compressed images. Use the more "correct" source where possible.
-	if (kernel->compression == CompressionNone) {
-		Arm64KernelHeader *header = kernel->data;
-		kernel->load = header->text_offset;
+	// Partially decompress to get text_offset. Can't check for errors.
+	scratch.canary = SCRATCH_CANARY_VALUE;
+	switch (kernel->compression) {
+	case CompressionNone:
+		memcpy(scratch.raw, kernel->data, sizeof(scratch.raw));
+		break;
+	case CompressionLzma:
+		ulzman(kernel->data, kernel->size,
+		       scratch.raw, sizeof(scratch.raw));
+		break;
+	case CompressionLz4:
+		ulz4fn(kernel->data, kernel->size,
+		       scratch.raw, sizeof(scratch.raw));
+		break;
+	default:
+		printf("ERROR: Unsupported compression algorithm!\n");
+		return 1;
 	}
 
-	void *reloc_addr = get_kernel_reloc_addr(kernel->load);
+	// Should never happen, but if it does we'll want to know.
+	if (scratch.canary != SCRATCH_CANARY_VALUE) {
+		printf("ERROR: Partial decompression ran over scratchbuf!\n");
+		return 1;
+	}
+
+	if (scratch.header.magic != KERNEL_HEADER_MAGIC) {
+		printf("ERROR: Invalid kernel magic: %#.8x\n != %#.8x\n",
+		       scratch.header.magic, KERNEL_HEADER_MAGIC);
+		return 1;
+	}
+
+	void *reloc_addr = get_kernel_reloc_addr(scratch.header.text_offset);
 	if (!reloc_addr)
 		return 1;
 
@@ -122,19 +155,7 @@ int boot_arm_linux(void *fdt, FitImageNode *kernel)
 			return 1;
 		}
 		break;
-	default:
-		printf("ERROR: Unsupported compression algorithm!\n");
-		return 1;
-	}
-
-	Arm64KernelHeader *header = reloc_addr;
-	if (header->magic != KERNEL_HEADER_MAGIC) {
-		printf("ERROR: Invalid kernel magic: %#.8x\n", header->magic);
-		return 1;
-	}
-	if (header->text_offset != kernel->load) {
-		printf("ERROR: FIT load offset did not match kernel header:"
-		       "%#.16llx != %#.8x", header->text_offset, kernel->load);
+	default: // It's 2015 and GCC's reachability analyzer still sucks...
 		return 1;
 	}
 

@@ -63,8 +63,6 @@ static void image_node(DeviceTreeNode *node)
 		if (!strcmp("data", prop->prop.name)) {
 			image->data = prop->prop.data;
 			image->size = prop->prop.size;
-		} else if (!strcmp("load", prop->prop.name)) {
-			image->load = betohl(*(uint32_t *)prop->prop.data);
 		} else if (!strcmp("compression", prop->prop.name)) {
 			if (!strcmp("none", prop->prop.data))
 				image->compression = CompressionNone;
