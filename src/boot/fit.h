@@ -42,7 +42,6 @@ typedef struct FitImageNode
 	const char *name;
 	void *data;
 	uint32_t size;
-	uint32_t load;
 	CompressionType compression;
 
 	ListNode list_node;
