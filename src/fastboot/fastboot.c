@@ -369,6 +369,75 @@ static size_t name_check_match(const char *str, size_t len,
 	return str_len + name->expects_args;
 }
 
+/* Environment variables and routines to set the variables. */
+
+/*
+ * env_force_erase: Force erase of partitions even if full fastboot cap is
+ * enabled in GBB.
+ */
+static unsigned char env_force_erase;
+
+static const struct {
+	struct name_string name;
+	fb_setenv_t var;
+} setenv_table[] = {
+	{ NAME_ARGS("force-erase", ':'), FB_SETENV_FORCE_ERASE},
+};
+
+static void fb_write_env(struct fb_cmd *cmd, fb_setenv_t var)
+{
+	const char *input = fb_buffer_head(&cmd->input);
+	size_t input_len = fb_buffer_length(&cmd->input);
+
+	switch (var) {
+	case FB_SETENV_FORCE_ERASE:
+		if (input_len != 1) {
+			cmd->type = FB_FAIL;
+			fb_add_string(&cmd->output, "invalid args", NULL);
+			return;
+		}
+		if (*input == '1')
+			env_force_erase = 1;
+		else if (*input == '0')
+			env_force_erase = 0;
+		else {
+			cmd->type = FB_FAIL;
+			fb_add_string(&cmd->output, "invalid args", NULL);
+		}
+		break;
+	default:
+		cmd->type = FB_FAIL;
+		fb_add_string(&cmd->output, "unsupported", NULL);
+		break;
+	}
+}
+
+static fb_ret_type fb_setenv(struct fb_cmd *cmd)
+{
+	int i;
+	size_t match_len = 0;
+	const char *input = fb_buffer_head(&cmd->input);
+	size_t len = fb_buffer_length(&cmd->input);
+
+	for (i = 0; i < ARRAY_SIZE(setenv_table); i++) {
+		match_len = name_check_match(input, len, &setenv_table[i].name);
+		if (match_len)
+			break;
+	}
+
+	if (match_len == 0) {
+		fb_add_string(&cmd->output, "unknown setenv command", NULL);
+		cmd->type = FB_FAIL;
+		return FB_SUCCESS;
+	}
+
+	fb_buffer_pull(&cmd->input, match_len);
+
+	cmd->type = FB_OKAY;
+	fb_write_env(cmd, setenv_table[i].var);
+	return FB_SUCCESS;
+}
+
 static const struct {
 	struct name_string name;
 	fb_getvar_t var;
@@ -689,8 +758,12 @@ const char *backend_error_string[] = {
 
 static fb_ret_type fb_erase(struct fb_cmd *cmd)
 {
-	/* Check if there is an override. If yes, do not erase partition. */
-	if (fb_check_gbb_override()) {
+	/*
+	 * Check if there is an override and env_force_erase = 0, then skip
+	 * erase operation. This is possible only when GBB flag
+	 * FULL_FASTBOOT_CAP is true.
+	 */
+	if (fb_check_gbb_override() && (env_force_erase == 0)) {
 		FB_LOG("skipping erase operation\n");
 		cmd->type = FB_INFO;
 		fb_add_string(&cmd->output, "skipping erase", NULL);
@@ -928,6 +1001,8 @@ const struct fastboot_func fb_func_table[] = {
 	{ NAME_NO_ARGS("powerdown"), FB_ID_POWERDOWN, fb_powerdown},
 	{ NAME_NO_ARGS("oem unlock"), FB_ID_UNLOCK, fb_unlock},
 	{ NAME_NO_ARGS("oem lock"), FB_ID_LOCK, fb_lock},
+	/* OEM cmd names starting in uppercase imply vendor/device specific. */
+	{ NAME_ARGS("oem Setenv", ' '), FB_ID_SETENV, fb_setenv}
 };
 
 /************** Protocol Handler ************************/
