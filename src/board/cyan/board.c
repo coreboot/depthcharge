@@ -30,7 +30,7 @@
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
-#include "drivers/gpio/baytrail.h"
+#include "drivers/gpio/braswell.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
 #include "drivers/sound/i2s.h"
@@ -50,12 +50,16 @@
 static const int emmc_sd_clock_min = 400 * 1000;
 static const int emmc_clock_max = 200 * 1000 * 1000;
 static const int sd_clock_max = 52 * 1000 * 1000;
+#define SATA_LEDN	(77) /*EC_IN_RW GPIO*/
 
 static int board_setup(void)
 {
 	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + DEVICE_NVS_OFFSET;
+	GpioOps	*ec_in_rw =
+		(GpioOps *)new_braswell_gpio_input(
+			GP_SOUTHWEST, SATA_LEDN);
 	sysinfo_install_flags(NULL);
-
+	flag_install(FLAG_ECINRW, ec_in_rw);
 #if CONFIG_DRIVER_EC_CROS
   #if CONFIG_DRIVER_EC_CROS_LPC
 	CrosEcLpcBus *cros_ec_lpc_bus =
