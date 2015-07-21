@@ -78,6 +78,8 @@ static int board_setup(void)
 	MtkSpi *spibus = new_mtk_spi(0x1100A000);
 	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spibus->ops);
 	cros_ec_set_bus(&cros_ec_spi_bus->ops);
+	cros_ec_set_interrupt_gpio(sysinfo_lookup_gpio("EC interrupt", 1,
+			new_mtk_gpio_input));
 
 	Mt6397Pmic *pmic = new_mt6397_power(0x1000D000, 0x10007000);
 	power_set_ops(&pmic->ops);
