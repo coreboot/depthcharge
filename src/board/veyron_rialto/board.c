@@ -93,6 +93,11 @@ static int board_setup(void)
 	UsbHostController *usb_otg = new_usb_hc(DWC2, 0xff580000);
 	list_insert_after(&usb_otg->list_node, &usb_host_controllers);
 
+	// Read the current value of the recovery button for confirmation
+	// when transitioning between normal and dev mode.
+	flag_replace(FLAG_RECSW, sysinfo_lookup_gpio("recovery",
+				1, new_rk_gpio_input_from_coreboot));
+
 	/* Lid always open for now. */
 	flag_replace(FLAG_LIDSW, new_gpio_high());
 
