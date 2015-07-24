@@ -46,6 +46,48 @@
 #include "drivers/video/display.h"
 #include "drivers/video/mt8173_ddp.h"
 
+int oak_backlight_update(DisplayOps *me, uint8_t enable)
+{
+	GpioOps *panel_lcd_power_en, *disp_pwm0, *panel_power_en;
+
+	switch (lib_sysinfo.board_id) {
+	case 0:
+	case 1:
+	case 2:
+		panel_lcd_power_en = NULL;
+		disp_pwm0 = new_mtk_gpio_output(PAD_DISP_PWM0);
+		panel_power_en = new_mtk_gpio_output(PAD_PCM_TX);
+		break;
+	case 3:
+		panel_lcd_power_en = new_mtk_gpio_output(PAD_UCTS2);
+		disp_pwm0 = new_mtk_gpio_output(PAD_DISP_PWM0);
+		panel_power_en = new_mtk_gpio_output(PAD_PCM_TX);
+		break;
+	case 4:
+	default:
+		panel_lcd_power_en = new_mtk_gpio_output(PAD_SRCLKENAI);
+		disp_pwm0 = new_mtk_gpio_output(PAD_DISP_PWM0);
+		panel_power_en = new_mtk_gpio_output(PAD_PCM_TX);
+	}
+
+	if (enable) {
+		if (panel_lcd_power_en) {
+			panel_lcd_power_en->set(panel_lcd_power_en, 1);
+			mdelay(1);
+		}
+
+		disp_pwm0->set(disp_pwm0, 1);
+		panel_power_en->set(panel_power_en, 1);
+	} else {
+		panel_power_en->set(panel_power_en, 0);
+		disp_pwm0->set(disp_pwm0, 0);
+		if (panel_lcd_power_en)
+			panel_lcd_power_en->set(panel_lcd_power_en, 0);
+	}
+
+	return 0;
+}
+
 static int sound_setup(void)
 {
 	MtkI2s *i2s0 = new_mtk_i2s(0x11220000, 2, 48000);
@@ -96,7 +138,7 @@ static int board_setup(void)
 
 	/* Set display ops */
 	if (lib_sysinfo.framebuffer)
-		display_set_ops(new_mt8173_display());
+		display_set_ops(new_mt8173_display(oak_backlight_update));
 
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11270000);
 

@@ -25,6 +25,7 @@
 
 #include "drivers/video/display.h"
 
-DisplayOps *new_mt8173_display(void);
+DisplayOps *new_mt8173_display(int (*backlight_update)
+			       (DisplayOps *me, uint8_t enable));
 
 #endif /* __DRIVERS_VIDEO_MT8173_H__ */

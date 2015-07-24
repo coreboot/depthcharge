@@ -48,13 +48,14 @@ static int mt8173_display_stop(DisplayOps *me)
 	return 0;
 }
 
-
-static DisplayOps mt8173_display_ops = {
-	.init = &mt8173_display_init,
-	.stop = &mt8173_display_stop,
-};
-
-DisplayOps *new_mt8173_display(void)
+DisplayOps *new_mt8173_display(int (*backlight_update)
+			       (DisplayOps *me, uint8_t enable))
 {
-	return &mt8173_display_ops;
+	DisplayOps *display_ops = xzalloc(sizeof(DisplayOps));
+	display_ops->init = mt8173_display_init;
+	display_ops->stop = mt8173_display_stop;
+	if (backlight_update)
+		display_ops->backlight_update = backlight_update;
+
+	return display_ops;
 }
