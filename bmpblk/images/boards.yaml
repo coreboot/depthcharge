@@ -127,7 +127,7 @@ auron_paine,auron_yuna,cid,lulu:
   res:      [1024, 768]
   panel:    [1366, 768]
 
-panther,tricky,mccloud,guado,tidus,rikku,ninja,veyron_brain,veyron_danger,veyron_mickey,veyron_romy:
+panther,tricky,mccloud,guado,tidus,rikku,ninja,veyron_brain,veyron_danger,veyron_romy:
   # Using VESA graphics mode 1024x768 (0x0117).
   # A chromebox without built-in panel/keyboard.
   # Assume the display is a modern 16:9 (1920x1080) monitor.
@@ -210,3 +210,13 @@ lumpy:
   panel:    [1366, 768]
   size_limit: 515712
   locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja]
+
+veyron_mickey:
+  # Using VESA graphics mode 640x480 (0x0101).
+  # A chromebox with external display only, use low-res "safe" mode.
+  # With physical recovery switch, without card reader.
+  res:      [640, 480]
+  panel:    [1920, 1080]
+  phy_rec:  True
+  sdcard:   False
+  text_colors:  4

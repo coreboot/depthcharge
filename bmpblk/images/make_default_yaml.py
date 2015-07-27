@@ -282,7 +282,7 @@ class Screen(object):
     Args:
       do_locale: True to show locale indicators.
     """
-    self.set_centered_y_percent(17)
+    self.set_centered_y_percent(15)
     self.add_centered_below("divider_top")
     self.move_pos_left(self.get_width("divider_top") / 2 )
     self.move_pos_up(self.ypad)
