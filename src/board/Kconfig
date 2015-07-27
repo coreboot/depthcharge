@@ -1,5 +1,5 @@
 ##
-## Copyright 2013 Google Inc.  All rights reserved.
+## Copyright 2015 Google Inc.  All rights reserved.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -27,6 +27,9 @@ source src/board/bayleybay/Kconfig
 endif
 if BOARD = "bolt"
 source src/board/bolt/Kconfig
+endif
+if BOARD = "celes"
+source src/board/celes/Kconfig
 endif
 if BOARD = "cyan"
 source src/board/cyan/Kconfig
