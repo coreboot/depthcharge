@@ -52,21 +52,52 @@ static const int emmc_clock_max = 200 * 1000 * 1000;
 static const int sd_clock_max = 52 * 1000 * 1000;
 #define SATA_LEDN	(77) /*EC_IN_RW GPIO*/
 
+#if CONFIG_DRIVER_EC_CROS
+  #if CONFIG_DRIVER_EC_CROS_LPC
+static CrosEcLpcBus *cros_ec_lpc_bus;
+  #endif
+#endif
+
+static int read_ec_memmap(void) {
+	u8 ec_switches;
+#if CONFIG_DRIVER_EC_CROS
+  #if CONFIG_DRIVER_EC_CROS_LPC
+	cros_ec_lpc_bus->ops.read(&ec_switches,
+		EC_LPC_ADDR_MEMMAP + EC_MEMMAP_SWITCHES, 1);
+	return ec_switches;
+  #endif
+#else
+	//Default return Lid open
+	return EC_SWITCH_LID_OPEN;
+#endif
+}
+
+static int get_lid_sw(GpioOps *me) {
+	return read_ec_memmap() & EC_SWITCH_LID_OPEN;
+}
+
+static int get_pwr_btn(GpioOps *me) {
+	return read_ec_memmap() & EC_SWITCH_POWER_BUTTON_PRESSED;
+}
+
 static int board_setup(void)
 {
 	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + DEVICE_NVS_OFFSET;
-	GpioOps	*ec_in_rw =
-		(GpioOps *)new_braswell_gpio_input(
+	GpioOps	*ec_in_rw = (GpioOps *)new_braswell_gpio_input(
 			GP_SOUTHWEST, SATA_LEDN);
-	sysinfo_install_flags(NULL);
-	flag_install(FLAG_ECINRW, ec_in_rw);
+	static GpioOps	lidops = {get_lid_sw, NULL};
+	static GpioOps	pwrbtnops = {get_pwr_btn, NULL};
+
 #if CONFIG_DRIVER_EC_CROS
   #if CONFIG_DRIVER_EC_CROS_LPC
-	CrosEcLpcBus *cros_ec_lpc_bus =
-		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_MEC);
+	cros_ec_lpc_bus = new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_MEC);
 	cros_ec_set_bus(&cros_ec_lpc_bus->ops);
   #endif
 #endif
+	sysinfo_install_flags(NULL);
+	flag_replace(FLAG_LIDSW, &lidops);
+	flag_replace(FLAG_PWRSW, &pwrbtnops);
+	flag_install(FLAG_ECINRW, ec_in_rw);
 
 	flash_set_ops(&new_mem_mapped_flash(0xff800000, 0x800000)->ops);
 
