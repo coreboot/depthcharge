@@ -939,6 +939,20 @@ int cros_ec_write_vbnvcontext(const uint8_t *block)
 	return 0;
 }
 
+int cros_ec_set_boot_on_ac(uint32_t value)
+{
+	struct ec_params_get_set_value params;
+
+	params.flags = EC_GSV_SET;
+	params.value = value;
+
+	if (ec_command(EC_CMD_GSV_BOOT_ON_AC, 0,
+		       &params, sizeof(params), &params, sizeof(params)) < 0)
+		return -1;
+
+	return 0;
+}
+
 static int set_max_proto3_sizes(int request_size, int response_size,
 				int passthru_size)
 {
