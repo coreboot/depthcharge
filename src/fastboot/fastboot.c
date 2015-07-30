@@ -22,8 +22,10 @@
 
 #include <libpayload.h>
 #include <vboot_api.h>
+#include <vboot_nvstorage.h>
 
 #include "config.h"
+#include "drivers/ec/cros/ec.h"
 #include "drivers/video/coreboot_fb.h"
 #include "drivers/video/display.h"
 #include "fastboot/backend.h"
@@ -980,6 +982,54 @@ static fb_ret_type fb_unlock(struct fb_cmd *cmd)
 	return FB_REBOOT;
 }
 
+static fb_ret_type fb_set_off_mode_charge(struct fb_cmd *cmd)
+{
+	const char *input = fb_buffer_head(&cmd->input);
+	size_t input_len = fb_buffer_length(&cmd->input);
+
+	if (input_len != 1) {
+		cmd->type = FB_FAIL;
+		fb_add_string(&cmd->output, "Invalid args", NULL);
+		return FB_SUCCESS;
+	}
+
+	/*
+	 * If off-mode-charge is set to 1, we want the device to continue
+	 * charging in off-mode i.e. device does not boot up if AC is plugged
+	 * in. On the other hand, if off-mode-charge is set to 0, then we want
+	 * the device to immediately boot up if AC is plugged in. Based on
+	 * passed in argument, convey appropriate message to EC and also set the
+	 * flag in VBNV_STORAGE.
+	 */
+	int boot_on_ac;
+	if (*input == '1')
+		boot_on_ac = 0;
+	else
+		boot_on_ac = 1;
+
+	if (cros_ec_set_boot_on_ac(boot_on_ac) != 0) {
+
+		cmd->type = FB_FAIL;
+		fb_add_string(&cmd->output, "Failed to set off-mode-charge",
+			      NULL);
+		return FB_SUCCESS;
+	}
+
+	VbNvContext context;
+
+	VbExNvStorageRead(context.raw);
+	VbNvSetup(&context);
+
+	VbNvSet(&context, VBNV_BOOT_ON_AC_DETECT, boot_on_ac);
+
+	VbNvTeardown(&context);
+	if (context.raw_changed)
+		VbExNvStorageWrite(context.raw);
+
+	cmd->type = FB_OKAY;
+	return FB_SUCCESS;
+}
+
 /************** Command Function Table *****************/
 struct fastboot_func {
 	struct name_string name;
@@ -1001,6 +1051,8 @@ const struct fastboot_func fb_func_table[] = {
 	{ NAME_NO_ARGS("powerdown"), FB_ID_POWERDOWN, fb_powerdown},
 	{ NAME_NO_ARGS("oem unlock"), FB_ID_UNLOCK, fb_unlock},
 	{ NAME_NO_ARGS("oem lock"), FB_ID_LOCK, fb_lock},
+	{ NAME_ARGS("oem off-mode-charge", ' '), FB_ID_OFF_MODE_CHARGE,
+	  fb_set_off_mode_charge},
 	/* OEM cmd names starting in uppercase imply vendor/device specific. */
 	{ NAME_ARGS("oem Setenv", ' '), FB_ID_SETENV, fb_setenv}
 };
