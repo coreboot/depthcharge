@@ -22,6 +22,8 @@
 
 #include <assert.h>
 #include <libpayload.h>
+#include <vboot_api.h>
+#include <vboot_nvstorage.h>
 
 #include "base/init_funcs.h"
 #include "boot/bcb.h"
@@ -45,6 +47,7 @@
 #include "drivers/storage/tegra_mmc.h"
 #include "drivers/video/display.h"
 #include "drivers/ec/cros/i2c.h"
+#include "drivers/ec/cros/ec.h"
 #include "vboot/boot_policy.h"
 #include "vboot/util/flag.h"
 #include "drivers/video/tegra132.h"
@@ -133,6 +136,24 @@ static void flash_params_override(void)
 {
 	lib_sysinfo.spi_flash.sector_size = 64 * KiB;
 	lib_sysinfo.spi_flash.erase_cmd = SPI_FLASH_BLOCK_ERASE_64KB;
+}
+
+static void update_boot_on_ac_detect_state(void)
+{
+	uint32_t boot_on_ac;
+	VbNvContext context;
+
+	VbExNvStorageRead(context.raw);
+	VbNvSetup(&context);
+
+	VbNvGet(&context, VBNV_BOOT_ON_AC_DETECT, &boot_on_ac);
+
+	VbNvTeardown(&context);
+	if (context.raw_changed)
+		VbExNvStorageWrite(context.raw);
+
+	if (cros_ec_set_boot_on_ac(boot_on_ac) != 0)
+		printf("ERROR: Could not set boot_on_ac\n");
 }
 
 static int board_setup(void)
@@ -232,6 +253,9 @@ static int board_setup(void)
 	list_insert_after(&codec->component.list_node, &sound_route->components);
 
 	sound_set_ops(&sound_route->ops);
+
+	/* Update BOOT_ON_AC_DETECT state */
+	update_boot_on_ac_detect_state();
 
 	return 0;
 }
