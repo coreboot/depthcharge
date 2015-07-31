@@ -155,28 +155,6 @@ static void menu_power_off(void)
 	power_off();
 }
 
-static void printf_color(int foreground, int background, const char *fmt, ...)
-{
-	int i, len;
-	char str[200];
-
-	va_list ap;
-	va_start(ap, fmt);
-	len = vsnprintf(str, 199, fmt, ap);
-	va_end(ap);
-	if (len <= 0)
-		return;
-	str[199] = '\0';
-
-	foreground &= 0xf;
-	foreground <<= 8;
-	background &= 0xf;
-	background <<= 12;
-
-	for (i = 0; i < len; i++)
-		video_console_putchar(str[i] | foreground | background);
-}
-
 void vboot_try_fastboot(void)
 {
 	static const struct {
@@ -223,23 +201,23 @@ void vboot_try_fastboot(void)
 	video_get_rows_cols(&rows, &cols);
 
 	video_console_set_cursor(0, 3);
-	printf_color(7, 0, "<-- Button up: run selected option\n\n");
-	printf_color(7, 0, "<-- Button down: next option\n");
+	video_printf(7, 0, "<-- Button up: run selected option\n\n");
+	video_printf(7, 0, "<-- Button down: next option\n");
 
 	video_console_set_cursor(0, rows - 10);
 
 	// set cursor appropriately
-	printf_color(12, 0, "FASTBOOT MODE\n");
+	video_printf(12, 0, "FASTBOOT MODE\n");
 	/*
 	 * TODO: Show PRODUCT_NAME, VARIANT, HW VERSION, BOOTLOADER VERSION,
 	 * SERIAL NUMBER, SIGNING
 	 */
-	printf_color(12, 0, "DEVICE: %s\n",
+	video_printf(12, 0, "DEVICE: %s\n",
 		     fb_device_unlocked() ? "unlocked" : "locked");
 
 	while (1) {
 		video_console_set_cursor(0, 0);
-		printf_color(commands[position].color, 0, "%*s",
+		video_printf(commands[position].color, 0, "%*s",
 			-max_strlen, commands[position].text);
 		int keypress = getchar();
 		printf("got keypress %x\n", keypress);
