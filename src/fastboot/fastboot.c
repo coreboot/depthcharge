@@ -1072,6 +1072,7 @@ const struct fastboot_func fb_func_table[] = {
 	{ NAME_NO_ARGS("flashing get_unlock_ability"), FB_ID_GET_UNLOCK_ABILITY,
 	  fb_get_unlock_ability},
 	/* OEM cmd names starting in uppercase imply vendor/device specific. */
+	{ NAME_NO_ARGS("oem Powerdown"), FB_ID_POWERDOWN, fb_powerdown},
 	{ NAME_ARGS("oem Setenv", ' '), FB_ID_SETENV, fb_setenv}
 };
 
