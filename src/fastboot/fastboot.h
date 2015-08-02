@@ -272,6 +272,15 @@ typedef struct {
 	 * Voltage is returned in param mV.
 	 */
 	int (*read_batt_volt)(uint32_t *mV);
+
+	/*
+	 * Cut-off battery.
+	 *
+	 * Return value:
+	 * 0 = success
+	 * -1 = error
+	 */
+	int (*battery_cutoff)(void);
 } fb_callback_t;
 
 extern fb_callback_t fb_board_handler;

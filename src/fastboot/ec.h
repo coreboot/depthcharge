@@ -24,5 +24,6 @@
 #define __FASTBOOT_EC_H__
 
 int ec_fb_keyboard_mask(void);
+int ec_fb_battery_cutoff(void);
 
 #endif /* __FASTBOOT_EC_H__ */

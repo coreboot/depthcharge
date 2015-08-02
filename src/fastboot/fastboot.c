@@ -896,6 +896,30 @@ static fb_ret_type fb_powerdown(struct fb_cmd *cmd)
 	return FB_POWEROFF;
 }
 
+static fb_ret_type fb_battery_cutoff(struct fb_cmd *cmd)
+{
+	FB_LOG("Cutting off battery\n");
+	cmd->type = FB_FAIL;
+
+	if (fb_board_handler.battery_cutoff == NULL) {
+		fb_add_string(&cmd->output, "Unsupported cmd", NULL);
+		return FB_SUCCESS;
+	}
+
+	if (fb_board_handler.battery_cutoff() != 0)
+		fb_add_string(&cmd->output, "Failed to cut-off battery", NULL);
+	else
+		cmd->type = FB_OKAY;
+
+	/*
+	 * Don't power-off (FB_POWEROFF) immediately because we may still want
+	 * to perform other commands, for example the finalization needs to
+	 * run "oem lock" or "powerdown" as the last command.
+	 */
+	return FB_SUCCESS;
+}
+
+
 static int fb_user_confirmation()
 {
 	/* If GBB is set, we don't need to get user confirmation. */
@@ -1045,6 +1069,8 @@ const struct fastboot_func fb_func_table[] = {
 	  fb_get_unlock_ability},
 	/* OEM cmd names starting in uppercase imply vendor/device specific. */
 	{ NAME_NO_ARGS("oem Powerdown"), FB_ID_POWERDOWN, fb_powerdown},
+	{ NAME_NO_ARGS("oem Battery-cutoff"), FB_ID_BATTERY_CUTOFF,
+	  fb_battery_cutoff},
 	{ NAME_ARGS("oem Setenv", ' '), FB_ID_SETENV, fb_setenv}
 };
 

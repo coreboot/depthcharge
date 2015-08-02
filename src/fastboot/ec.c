@@ -42,3 +42,8 @@ int ec_fb_keyboard_mask(void)
 	return 0;
 }
 
+int ec_fb_battery_cutoff(void)
+{
+	/* Cut-off immediately. The system will keep running by USB power. */
+	return cros_ec_battery_cutoff(0);
+}

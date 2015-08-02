@@ -252,4 +252,5 @@ fb_callback_t fb_board_handler = {
 	.keyboard_mask = ec_fb_keyboard_mask,
 	.print_screen = fb_print_text_on_screen,
 	.read_batt_volt = cros_ec_read_batt_volt,
+	.battery_cutoff = ec_fb_battery_cutoff,
 };
