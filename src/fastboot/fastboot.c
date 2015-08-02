@@ -1002,6 +1002,7 @@ const struct fastboot_func fb_func_table[] = {
 	{ NAME_NO_ARGS("oem unlock"), FB_ID_UNLOCK, fb_unlock},
 	{ NAME_NO_ARGS("oem lock"), FB_ID_LOCK, fb_lock},
 	/* OEM cmd names starting in uppercase imply vendor/device specific. */
+	{ NAME_NO_ARGS("oem Powerdown"), FB_ID_POWERDOWN, fb_powerdown},
 	{ NAME_ARGS("oem Setenv", ' '), FB_ID_SETENV, fb_setenv}
 };
 
