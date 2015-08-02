@@ -329,6 +329,14 @@ int cros_ec_write_vbnvcontext(const uint8_t *block);
 int cros_ec_set_boot_on_ac(uint32_t value);
 
 /**
+ * Cut-off battery on ChromeOS EC device.
+ *
+ * @param flags		Flag to indicate cut-off options.
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_battery_cutoff(uint8_t flags);
+
+/**
  * Read the value of present battery voltage.
  *
  * @param volt		Buffer to read present battery voltage.

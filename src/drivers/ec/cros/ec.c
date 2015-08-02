@@ -972,6 +972,20 @@ int cros_ec_read_batt_volt(uint32_t *volt)
 	return cros_ec_read_memmap(EC_MEMMAP_BATT_VOLT, sizeof(*volt), volt);
 }
 
+int cros_ec_battery_cutoff(uint8_t flags)
+{
+	struct ec_params_battery_cutoff p;
+	int len;
+
+	p.flags = flags;
+
+	len = ec_command(EC_CMD_BATTERY_CUT_OFF, 0, &p, sizeof(p), NULL, 0);
+
+	if (len < 0)
+		return -1;
+	return 0;
+}
+
 static int set_max_proto3_sizes(int request_size, int response_size,
 				int passthru_size)
 {
