@@ -28,6 +28,7 @@
 #include "boot/android_dt.h"
 #include "config.h"
 #include "drivers/bus/usb/usb.h"
+#include "drivers/ec/cros/ec.h"
 #include "image/fmap.h"
 #include "vboot/firmware_id.h"
 
@@ -122,6 +123,12 @@ int get_board_var(struct fb_cmd *cmd, fb_getvar_t var)
 int board_should_enter_device_mode(void)
 {
 	return 1;
+}
+
+int board_battery_cutoff(void)
+{
+	/* Cut-off immediately. The system will keep running by USB power. */
+	return cros_ec_battery_cutoff(0);
 }
 
 void fastboot_chipset_init(struct usbdev_ctrl **udc, device_descriptor_t *dd)
