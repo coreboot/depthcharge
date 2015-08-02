@@ -197,6 +197,7 @@ void fb_add_number(struct fb_buffer *buff, const char *format,
 /******* Functions to be implemented by board wanting to use fastboot *******/
 int get_board_var(struct fb_cmd *cmd, fb_getvar_t var);
 int board_should_enter_device_mode(void);
+int board_battery_cutoff(void);
 /*
  * Function to get user confirmation. Every device needs to implement this as
  * per the available physical buttons.

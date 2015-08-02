@@ -75,6 +75,12 @@ int  __attribute__((weak)) board_should_enter_device_mode(void)
 	return 0;
 }
 
+int __attribute__((weak)) board_battery_cutoff(void)
+{
+	FB_LOG("Not implemented on this device.\n");
+	return -1;
+}
+
 int __attribute__((weak)) board_user_confirmation(fb_action action)
 {
 	/* Default weak implementation. Returns 0 = no user confirmation. */
@@ -925,6 +931,21 @@ static fb_ret_type fb_powerdown(struct fb_cmd *cmd)
 	return FB_POWEROFF;
 }
 
+static fb_ret_type fb_battery_cutoff(struct fb_cmd *cmd)
+{
+	FB_LOG("Cutting off battery\n");
+	cmd->type = FB_FAIL;
+
+	if (board_battery_cutoff() == 0)
+		cmd->type = FB_OKAY;
+	/**
+	 * Don't power-off (FB_POWEROFF) immediately because we may still want
+	 * to perform other commands, for example the finalization needs to
+	 * run "oem lock" or "powerdown" as the last command.
+	 */
+	return FB_SUCCESS;
+}
+
 static int fb_user_confirmation(fb_action action)
 {
 	/* If GBB is set, we don't need to get user confirmation. */
@@ -1073,6 +1094,8 @@ const struct fastboot_func fb_func_table[] = {
 	  fb_get_unlock_ability},
 	/* OEM cmd names starting in uppercase imply vendor/device specific. */
 	{ NAME_NO_ARGS("oem Powerdown"), FB_ID_POWERDOWN, fb_powerdown},
+	{ NAME_NO_ARGS("oem Battery-cutoff"), FB_ID_BATTERY_CUTOFF,
+	  fb_battery_cutoff},
 	{ NAME_ARGS("oem Setenv", ' '), FB_ID_SETENV, fb_setenv}
 };
 
