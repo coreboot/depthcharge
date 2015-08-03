@@ -13,10 +13,11 @@
 
 VB_FIRMWARE_ARCH=arm
 ifeq ($(CONFIG_ARCH_ARM_V7),y)
-ARCH_ABI_FLAGS += -mthumb
+ARCH_ABI_FLAGS += -mthumb -march=armv7-a
 endif
 
 ifeq ($(CONFIG_ARCH_ARM_V8),y)
+ARCH_ABI_FLAGS += -march=armv8-a
 ARCH_CFLAGS += -mgeneral-regs-only
 endif
 
