@@ -260,6 +260,18 @@ static int sdc_wait_ready(MtkMmcHost *host, MmcCommand *cmd, MmcData *data)
 			return -1;
 	}
 
+	if (cmd->resp_type == MMC_RSP_R1b || data) {
+		/* should wait SDCBUSY goto high
+		 * the core layer should already ensure card is in
+		 * ready for data state by cmd13.
+		 */
+		if (mmc_busy_wait_io(&reg->sdc_sts, NULL, SDC_STS_SDCBUSY,
+				     MTK_MMC_TIMEOUT_MS)) {
+			mmc_error("Failed while wait sdc_busy ready!\n");
+			return -1;
+		}
+	}
+
 	return 0;
 }
 
@@ -404,18 +416,42 @@ static int mtk_mmc_update(BlockDevCtrlrOps *me)
 		return -1;
 	host->initialized = 1;
 
-	if (mmc_setup_media(&host->mmc))
-		return -1;
-	host->mmc.media->dev.name = "mtk_mmc";
-	host->mmc.media->dev.removable = 0;
-	host->mmc.media->dev.ops.read = &block_mmc_read;
-	host->mmc.media->dev.ops.write = &block_mmc_write;
-	host->mmc.media->dev.ops.fill_write = &block_mmc_fill_write;
-	host->mmc.media->dev.ops.new_stream = &new_simple_stream;
-	list_insert_after(&host->mmc.media->dev.list_node,
-	                  &fixed_block_devices);
-	host->mmc.ctrlr.need_update = 0;
-
+	if (host->removable) {
+		int present = host->cd_gpio->get(host->cd_gpio);
+		mmc_debug("SD card present: %d\n", present);
+		if (present && !host->mmc.media) {
+			/* A card is present and not set up yet. Get it ready. */
+			if (mmc_setup_media(&host->mmc))
+				return -1;
+			host->mmc.media->dev.name = "removable mtk_mmc";
+			host->mmc.media->dev.removable = 1;
+			host->mmc.media->dev.ops.read = &block_mmc_read;
+			host->mmc.media->dev.ops.write = &block_mmc_write;
+			host->mmc.media->dev.ops.fill_write =
+				&block_mmc_fill_write;
+			host->mmc.media->dev.ops.new_stream =
+						&new_simple_stream;
+			list_insert_after(&host->mmc.media->dev.list_node,
+			                  &removable_block_devices);
+		} else if (!present && host->mmc.media) {
+			/* A card was present but isn't any more. Get rid of it. */
+			list_remove(&host->mmc.media->dev.list_node);
+			free(host->mmc.media);
+			host->mmc.media = NULL;
+		}
+	} else {
+		if (mmc_setup_media(&host->mmc))
+			return -1;
+		host->mmc.media->dev.name = "mtk_mmc";
+		host->mmc.media->dev.removable = 0;
+		host->mmc.media->dev.ops.read = &block_mmc_read;
+		host->mmc.media->dev.ops.write = &block_mmc_write;
+		host->mmc.media->dev.ops.fill_write = &block_mmc_fill_write;
+		host->mmc.media->dev.ops.new_stream = &new_simple_stream;
+		list_insert_after(&host->mmc.media->dev.list_node,
+		                  &fixed_block_devices);
+		host->mmc.ctrlr.need_update = 0;
+	}
 	return 0;
 }
 
