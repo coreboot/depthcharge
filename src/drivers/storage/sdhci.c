@@ -399,18 +399,18 @@ static int sdhci_set_clock(SdhciHost *host, unsigned int clock)
 
 	if ((host->version & SDHCI_SPEC_VER_MASK) >= SDHCI_SPEC_300) {
 		/* Version 3.00 divisors must be a multiple of 2. */
-		if (host->mmc_ctrlr.f_max <= clock)
+		if (host->clock_base <= clock)
 			div = 1;
 		else {
 			for (div = 2; div < SDHCI_MAX_DIV_SPEC_300; div += 2) {
-				if ((host->mmc_ctrlr.f_max / div) <= clock)
+				if ((host->clock_base / div) <= clock)
 					break;
 			}
 		}
 	} else {
 		/* Version 2.00 divisors must be a power of 2. */
 		for (div = 1; div < SDHCI_MAX_DIV_SPEC_200; div *= 2) {
-			if ((host->mmc_ctrlr.f_max / div) <= clock)
+			if ((host->clock_base / div) <= clock)
 				break;
 		}
 	}
@@ -579,33 +579,34 @@ static int sdhci_pre_init(SdhciHost *host)
 	if (caps & SDHCI_CAN_DO_ADMA2)
 		host->host_caps |= MMC_AUTO_CMD12;
 
-	if (host->clock_f_max) {
-		host->mmc_ctrlr.f_max = host->clock_f_max;
-	} else {
-		if ((host->version & SDHCI_SPEC_VER_MASK) >= SDHCI_SPEC_300)
-			host->mmc_ctrlr.f_max = (caps &
-						 SDHCI_CLOCK_V3_BASE_MASK)
-				>> SDHCI_CLOCK_BASE_SHIFT;
-		else
-			host->mmc_ctrlr.f_max = (caps & SDHCI_CLOCK_BASE_MASK)
-				>> SDHCI_CLOCK_BASE_SHIFT;
+	/* get base clock frequency from CAP register */
+	if ((host->version & SDHCI_SPEC_VER_MASK) >= SDHCI_SPEC_300)
+		host->clock_base = (caps & SDHCI_CLOCK_V3_BASE_MASK)
+			>> SDHCI_CLOCK_BASE_SHIFT;
+	else
+		host->clock_base = (caps & SDHCI_CLOCK_BASE_MASK)
+			>> SDHCI_CLOCK_BASE_SHIFT;
 
-		if (host->mmc_ctrlr.f_max == 0) {
-			printf("Hardware doesn't specify base clock frequency\n");
-			return -1;
-		}
-		host->mmc_ctrlr.f_max *= 1000000;
+	if (host->clock_base == 0) {
+		printf("Hardware doesn't specify base clock frequency\n");
+		return -1;
 	}
+	host->clock_base *= 1000000;
+
+	if (host->clock_f_max)
+		host->mmc_ctrlr.f_max = host->clock_f_max;
+	else
+		host->mmc_ctrlr.f_max = host->clock_base;
 
 	if (host->clock_f_min) {
 		host->mmc_ctrlr.f_min = host->clock_f_min;
 	} else {
 		if ((host->version & SDHCI_SPEC_VER_MASK) >= SDHCI_SPEC_300)
 			host->mmc_ctrlr.f_min =
-				host->mmc_ctrlr.f_max / SDHCI_MAX_DIV_SPEC_300;
+				host->clock_base / SDHCI_MAX_DIV_SPEC_300;
 		else
 			host->mmc_ctrlr.f_min =
-				host->mmc_ctrlr.f_max / SDHCI_MAX_DIV_SPEC_200;
+				host->clock_base / SDHCI_MAX_DIV_SPEC_200;
 	}
 
 	if (caps & SDHCI_CAN_VDD_330)

@@ -296,6 +296,7 @@ struct sdhci_host {
 	unsigned clock; /* current, min and max interface clocks */
 	unsigned clock_f_min;
 	unsigned clock_f_max;
+	unsigned clock_base; /* controller base clock */
 	int removable;
 	unsigned voltages;
 
