@@ -69,7 +69,7 @@ all: help
 
 else
 
-include $(src)/.config
+include $(DOTCONFIG)
 
 ifeq ($(CONFIG_ARCH_X86),y)
 ARCH = x86
