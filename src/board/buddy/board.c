@@ -30,7 +30,7 @@
 #include "drivers/gpio/lynxpoint_lp.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
-#include "drivers/sound/hda_codec.h"
+#include "drivers/sound/pcat_beep.h"
 #include "drivers/sound/sound.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
@@ -55,11 +55,7 @@ static int board_setup(void)
 
 	flash_set_ops(&new_mem_mapped_flash(0xff800000, 0x800000)->ops);
 
-	HdaCodec *codec = new_hda_codec();
-	sound_set_ops(&codec->ops);
-
-	// The realtek codec doesn't report its beep_nid (NID 1)
-	set_hda_beep_nid_override(codec, 1);
+	sound_set_ops(&new_pcat_beep()->ops);
 
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 31, 2));
 	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
