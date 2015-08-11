@@ -31,18 +31,10 @@
 #include "drivers/video/display.h"
 #include "vboot/firmware_id.h"
 #include "vboot/util/commonparams.h"
+#include "vboot/stages.h"
 
 VbError_t VbExDisplayInit(uint32_t *width, uint32_t *height)
 {
-	if (display_init())
-		return VBERROR_UNKNOWN;
-
-	video_init();
-	video_console_cursor_enable(0);
-
-	if (gbb_copy_in_bmp_block())
-		return VBERROR_UNKNOWN;
-
 	if (lib_sysinfo.framebuffer) {
 		*width = lib_sysinfo.framebuffer->x_resolution;
 		*height = lib_sysinfo.framebuffer->y_resolution;
@@ -60,70 +52,9 @@ VbError_t VbExDisplayBacklight(uint8_t enable)
 	return VBERROR_SUCCESS;
 }
 
-static void print_string(const char *str)
-{
-	int str_len = strlen(str);
-	while (str_len--) {
-		if (*str == '\n')
-			video_console_putchar('\r');
-		video_console_putchar(*str++);
-	}
-}
-
-static void print_string_newline(const char *str)
-{
-	print_string(str);
-	print_string("\n");
-}
-
-void print_on_center(const char *msg)
-{
-	unsigned int rows, cols;
-	video_get_rows_cols(&rows, &cols);
-	video_console_set_cursor((cols - strlen(msg)) / 2, rows / 2);
-	print_string(msg);
-}
-
 VbError_t VbExDisplayScreen(uint32_t screen_type)
 {
-	const char *msg = NULL;
-
-	/*
-	 * Show the debug messages for development. It is a backup method
-	 * when GBB does not contain a full set of bitmaps.
-	 */
-	switch (screen_type) {
-	case VB_SCREEN_BLANK:
-		// clear the screen
-		video_console_clear();
-		break;
-	case VB_SCREEN_DEVELOPER_WARNING:
-		msg = "developer mode warning";
-		break;
-	case VB_SCREEN_DEVELOPER_EGG:
-		msg = "easter egg";
-		break;
-	case VB_SCREEN_RECOVERY_REMOVE:
-		msg = "remove inserted devices";
-		break;
-	case VB_SCREEN_RECOVERY_INSERT:
-		msg = "insert recovery image";
-		break;
-	case VB_SCREEN_RECOVERY_NO_GOOD:
-		msg = "insert image invalid";
-		break;
-	case VB_SCREEN_WAIT:
-		msg = "wait for ec update";
-		break;
-	default:
-		printf("Not a valid screen type: %d.\n", screen_type);
-		return VBERROR_INVALID_SCREEN_INDEX;
-	}
-
-	if (msg)
-		print_on_center(msg);
-
-	return VBERROR_SUCCESS;
+	return vboot_draw_screen(screen_type, 0, 1);
 }
 
 VbError_t VbExDisplayImage(uint32_t x, uint32_t y,
@@ -145,16 +76,14 @@ VbError_t VbExDisplaySetDimension(uint32_t width, uint32_t height)
 VbError_t VbExDisplayDebugInfo(const char *info_str)
 {
 	video_console_set_cursor(0, 0);
-	print_string(info_str);
+	video_printf(15, 0, 0, info_str);
 
-	print_string("read-only firmware id: ");
-	print_string_newline(get_ro_fw_id());
+	video_printf(15, 0, 0, "read-only firmware id: %s\n", get_ro_fw_id());
 
-	print_string("active firmware id: ");
 	const char *id = get_active_fw_id();
 	if (id == NULL)
 		id = "NOT FOUND";
-	print_string_newline(id);
+	video_printf(15, 0, 0, "active firmware id: %s\n", id);
 
 	return VBERROR_SUCCESS;
 }

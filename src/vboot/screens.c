@@ -26,6 +26,10 @@
 
 #include "drivers/video/display.h"
 
+#define FB_INFO_POSITION_ROW 30
+#define FB_INFO_FOREGROUND 11
+#define FB_INFO_BACKGROUND 0
+
 static uint32_t current_screen = VB_SCREEN_BLANK;
 static char initialized = 0;
 
@@ -52,6 +56,110 @@ static VbError_t fastboot_draw_base_screen(uint32_t localize)
 	draw_box(68, 16, 18, 1, 15, 157, 88);
 
 	return VBERROR_SUCCESS;
+}
+
+static VbError_t vboot_draw_base_screen(uint32_t localize)
+{
+	return fastboot_draw_base_screen(localize);
+}
+
+static VbError_t vboot_draw_developer_warning(uint32_t localize)
+{
+	VbError_t rv = vboot_draw_base_screen(localize);
+	if (rv)
+		return rv;
+
+	video_console_set_cursor(0, FB_INFO_POSITION_ROW);
+	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
+		     "OS verification is OFF\n");
+	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
+		     "Press Volume Down to re-enable.\n");
+
+	return VBERROR_SUCCESS;
+}
+
+static VbError_t vboot_draw_recovery_remove(uint32_t localize)
+{
+	VbError_t rv = vboot_draw_base_screen(localize);
+	if (rv)
+		return rv;
+
+	video_console_set_cursor(0, FB_INFO_POSITION_ROW);
+	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
+		     "Remove inserted media\n");
+	return rv;
+}
+
+static VbError_t vboot_draw_recovery_no_good(uint32_t localize)
+{
+	VbError_t rv = vboot_draw_base_screen(localize);
+	if (rv)
+		return rv;
+
+	video_console_set_cursor(0, FB_INFO_POSITION_ROW);
+	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
+		     "The device you inserted does not contain Chrome OS.\n");
+	return rv;
+}
+
+static VbError_t vboot_draw_recovery_insert(uint32_t localize)
+{
+	VbError_t rv = vboot_draw_base_screen(localize);
+	if (rv)
+		return rv;
+
+	video_console_set_cursor(0, FB_INFO_POSITION_ROW);
+	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
+		     "Chrome OS is missing or damaged.\n");
+	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
+		     "Please insert a recovery USB stick.\n");
+	return rv;
+}
+
+static VbError_t vboot_draw_recovery_to_dev(uint32_t localize)
+{
+	VbError_t rv = vboot_draw_base_screen(localize);
+	if (rv)
+		return rv;
+
+	video_console_set_cursor(0, FB_INFO_POSITION_ROW);
+	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
+		     "To turn OS verificaion OFF, press Volume Up.\n");
+	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
+		     "Your system will reboot and local data will be cleared.\n");
+	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
+		     "To go back, press ESC.\n");
+	return rv;
+}
+
+static VbError_t vboot_draw_developer_to_norm(uint32_t localize)
+{
+	VbError_t rv = vboot_draw_base_screen(localize);
+	if (rv)
+		return rv;
+
+	video_console_set_cursor(0, FB_INFO_POSITION_ROW);
+	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
+		     "OS verification is OFF\n");
+	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
+		     "Press Volume Up to confirm you wish to turn OS verification on.\n");
+	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
+		     "Your system will reboot and local data will be cleared.\n");
+	return rv;
+}
+
+static VbError_t vboot_draw_to_norm_confirmed(uint32_t localize)
+{
+	VbError_t rv = vboot_draw_base_screen(localize);
+	if (rv)
+		return rv;
+
+	video_console_set_cursor(0, FB_INFO_POSITION_ROW);
+	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
+		     "OS verification is ON\n");
+	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
+		     "Your system will reboot and local data will be cleared.\n");
+	return rv;
 }
 
 static VbError_t vboot_draw_fastboot_menu(uint32_t localize)
@@ -105,13 +213,28 @@ static VbError_t draw_screen(uint32_t screen_type, uint32_t localize)
 		rv = vboot_draw_fastboot_mode(localize);
 		break;
 	case VB_SCREEN_DEVELOPER_WARNING:
+		rv = vboot_draw_developer_warning(localize);
+		break;
 	case VB_SCREEN_RECOVERY_REMOVE:
+		rv = vboot_draw_recovery_remove(localize);
+		break;
 	case VB_SCREEN_RECOVERY_NO_GOOD:
+		rv = vboot_draw_recovery_no_good(localize);
+		break;
 	case VB_SCREEN_RECOVERY_INSERT:
+		rv = vboot_draw_recovery_insert(localize);
+		break;
 	case VB_SCREEN_RECOVERY_TO_DEV:
+		rv = vboot_draw_recovery_to_dev(localize);
+		break;
 	case VB_SCREEN_DEVELOPER_TO_NORM:
+		rv = vboot_draw_developer_to_norm(localize);
+		break;
 	case VB_SCREEN_WAIT:
+		break;
 	case VB_SCREEN_TO_NORM_CONFIRMED:
+		rv = vboot_draw_to_norm_confirmed(localize);
+		break;
 	default:
 		printf("Not a valid screen type: 0x%x\n", screen_type);
 		return VBERROR_INVALID_SCREEN_INDEX;
