@@ -40,6 +40,8 @@ static int emc_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 		return 1;
 	}
 
+	dt_add_bin_prop(emc_node, "has-derated-tables", NULL, 0);
+
 	emc_table_node = dt_find_node(emc_node, emc_table_dt_name, NULL, NULL, 1);
 	if (!emc_table_node) {
 		printf("ERROR: Failed to find node /%s/%s\n",
