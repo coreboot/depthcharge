@@ -100,6 +100,9 @@ endif
 if BOARD = "strago"
 source src/board/strago/Kconfig
 endif
+if BOARD = "ultima"
+source src/board/ultima/Kconfig
+endif
 if BOARD = "urara"
 source src/board/urara/Kconfig
 endif
