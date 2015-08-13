@@ -120,6 +120,21 @@ static void usb_net_poller(struct NetPoller *poller)
 	if (!usb_initted)
 		dc_usb_initialize();
 
+	/* FIXME: This 1 mS delay is a temporary workaround until the
+	real root cause is found.
+
+	It is found that in strago/cyan devices, sometimes USB ethernet
+	device is not enumerated, as the SET_ADDRESS command
+	fails during enumeration. While the LeCroy USB captures
+	show no activity on the bus, the debug messages in libpayload
+	indicate failures around set_address command. Adding a small
+	delay (1 mS), before polling for the USB ethernet device,
+	gets the enumeration to go through successfully. This delay
+	is needed only so long as the USB ethernet device enumeration
+	is not done.
+	*/
+	mdelay(1);
+
 	usb_poll();
 }
 
