@@ -69,7 +69,8 @@ static int board_setup(void)
 	power_set_ops(&pch_power_ops);
 
 	/* eMMC */
-	SdhciHost *emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1e, 4), 0,
+	SdhciHost *emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1e, 4),
+			SDHCI_PLATFORM_NO_EMMC_HS200,
 			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			&fixed_block_dev_controllers);
