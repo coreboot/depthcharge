@@ -25,9 +25,7 @@
 #include <keycodes.h>
 #include <vboot_nvstorage.h>
 #include <vboot_struct.h>
-#include <cbfs.h>
 
-#include "config.h"
 #include "drivers/ec/cros/commands.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/power/power.h"
@@ -37,22 +35,17 @@
 #include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
 
-#define FB_MENU_POSITION_COL	26
-#define FB_MENU_POSITION_ROW	10
-#define FB_MENU_FOREGROUND	10
-#define FB_MENU_BACKGROUND	0
-
-#define FB_INFO_POSITION_COL	60
-#define FB_INFO_POSITION_ROW	34
-#define FB_INFO_FOREGROUND	11
-#define FB_INFO_BACKGROUND	0
-
 fb_ret_type __attribute__((weak)) device_mode_enter(void)
 {
 	return FB_CONTINUE_RECOVERY;
 }
 
-static void vboot_set_fastboot(void)
+static void vboot_clear_recovery(void)
+{
+	vboot_update_recovery(VBNV_RECOVERY_NOT_REQUESTED);
+}
+
+static void vboot_set_recovery(void)
 {
 	vboot_update_recovery(VBNV_RECOVERY_FW_FASTBOOT);
 }
@@ -111,6 +104,8 @@ static void udc_fastboot(void)
 	if (!board_should_enter_device_mode())
 		return;
 
+	vboot_clear_recovery();
+
 	fb_ret_type ret = device_mode_enter();
 
 	switch(ret) {
@@ -119,7 +114,7 @@ static void udc_fastboot(void)
 		cold_reboot();
 		break;
 	case FB_REBOOT_BOOTLOADER:
-		vboot_set_fastboot();
+		vboot_set_recovery();
 		/* Does not return */
 		cold_reboot();
 		break;
@@ -132,24 +127,30 @@ static void udc_fastboot(void)
 		break;
 	default:
 		/* unknown error. reboot into fastboot menu */
-		vboot_set_fastboot();
+		vboot_set_recovery();
 		cold_reboot();
 		break;
 	}
 }
 
-static void menu_restart(void)
+static void menu_start(void)
 {
-	/* recovery request is automatically cleared by vboot at every boot */
+	vboot_clear_recovery();
 	cold_reboot();
 }
+
 
 static void menu_fastboot(void)
 {
 	udc_fastboot();
 }
 
-static void menu_shutdown(void)
+static void menu_reset(void)
+{
+	cold_reboot();
+}
+
+static void menu_power_off(void)
 {
 	power_off();
 }
@@ -158,36 +159,15 @@ void vboot_try_fastboot(void)
 {
 	static const struct {
 		const char *text;
-		const int fg; /* VGA color */
-		const int bg; /* VGA color */
-		void (*execute)(void);
-		void (*highlight)(void);
-	} cmds[] = {
-		{ "Restart Android", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
-				menu_restart, NULL},
-		{ "Enter Fastboot", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
-				menu_fastboot, NULL},
-		{ "Self Recovery Mode", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
-				NULL, NULL},
-		{ "Power Off", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
-				menu_shutdown, NULL},
+		const int color; /* VGA color */
+		void (*func)(void);
+	} commands[] = {
+		{ "Start", 10, menu_start },		/* green */
+		{ "Enable fastboot", 7, menu_fastboot },
+		{ "Enter CrOS recovery mode", 7, NULL},
+		{ "Reset device", 12, menu_reset},	/* red */
+		{ "Power off device", 12, menu_power_off},
 	};
-	const int command_count = ARRAY_SIZE(cmds);
-	int pos = 0, row, col;
-	unsigned int rows, cols;
-	int i;
-
-	if (display_init())
-		return;
-
-	if (backlight_update(1))
-		return;
-
-	/* initialize video console */
-	video_init();
-	video_console_clear();
-	video_console_cursor_enable(0);
-	video_get_rows_cols(&rows, &cols);
 
 	if (is_fastboot_mode_requested()) {
 		/* fastboot mode is explicitly requested. skip menu. */
@@ -196,58 +176,61 @@ void vboot_try_fastboot(void)
 		return;
 	}
 
-	vboot_draw_screen(VB_SCREEN_FASTBOOT_MENU, 0, 1);
+	const int command_count = ARRAY_SIZE(commands);
+	int position = 0;
 
+	int i;
+	int max_strlen = 0;
 	for (i = 0; i < command_count; i++) {
-		video_console_set_cursor(FB_MENU_POSITION_COL,
-					 FB_MENU_POSITION_ROW + i);
-		video_printf(cmds[i].fg, cmds[i].bg, cmds[i].text);
+		int j = strlen(commands[i].text);
+		if (j > max_strlen)
+			max_strlen = j;
 	}
 
+	unsigned int rows, cols;
+	if (display_init())
+		return;
+
+	if (backlight_update(1))
+		return;
+
+	video_init();
+	video_console_clear();
+	video_console_cursor_enable(0);
+
+	video_get_rows_cols(&rows, &cols);
+
+	video_console_set_cursor(0, 3);
+	video_printf(7, 0, "<-- Button up: run selected option\n\n");
+	video_printf(7, 0, "<-- Button down: next option\n");
+
+	video_console_set_cursor(0, rows - 10);
+
+	// set cursor appropriately
+	video_printf(12, 0, "FASTBOOT MODE\n");
 	/*
-	 * TODO: Show variant name, serial number, signing state
+	 * TODO: Show PRODUCT_NAME, VARIANT, HW VERSION, BOOTLOADER VERSION,
+	 * SERIAL NUMBER, SIGNING
 	 */
-	row = FB_INFO_POSITION_ROW;
-	col = FB_INFO_POSITION_COL;
-	video_console_set_cursor(col, row++);
-	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND,
-		     "PRODUCT NAME: %s %s",
-		     cb_mb_vendor_string(lib_sysinfo.mainboard),
-		     cb_mb_part_string(lib_sysinfo.mainboard));
-	video_console_set_cursor(col, row++);
-	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND,
-		     "HW VERSION: %d", lib_sysinfo.board_id);
-	video_console_set_cursor(col, row++);
-	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND,
-		     "BOOTLOADER VERSION: %s %s",
-		     lib_sysinfo.cb_version,
-		     lib_sysinfo.extra_version);
-	video_console_set_cursor(col, row++);
-	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND,
-		     "LOCK STATE: %s",
-		     fb_device_unlocked() ? "Unlocked" : "Locked");
+	video_printf(12, 0, "DEVICE: %s\n",
+		     fb_device_unlocked() ? "unlocked" : "locked");
 
 	while (1) {
-		video_console_set_cursor(FB_MENU_POSITION_COL,
-					 FB_MENU_POSITION_ROW + pos);
-		video_printf(cmds[pos].bg, cmds[pos].fg, cmds[pos].text);
-		if (cmds[pos].highlight)
-			cmds[pos].highlight();
+		video_console_set_cursor(0, 0);
+		video_printf(commands[position].color, 0, "%*s",
+			-max_strlen, commands[position].text);
 		int keypress = getchar();
 		printf("got keypress %x\n", keypress);
 		if (keypress == ' ') {
-			video_console_set_cursor(FB_MENU_POSITION_COL,
-						 FB_MENU_POSITION_ROW + pos);
-			video_printf(cmds[pos].fg, cmds[pos].bg,
-				     cmds[pos].text);
-			if (++pos == command_count)
-				pos = 0;
+			printf("moving forward\n");
+			if (++position == command_count)
+				position = 0;
 		} else if (keypress & KEY_SELECT) {
-			printf("selected %s\n", cmds[pos].text);
-			if (cmds[pos].execute == NULL)
+			printf("selected %s\n", commands[position].text);
+			if (commands[position].func == NULL)
 				/* leave menu and continue to boot */
 				break;
-			cmds[pos].execute();
+			commands[position].func();
 			break;
 		}
 	}

@@ -48,27 +48,41 @@
 #define MAX_COMMAND_LENGTH	64
 #define MAX_RESPONSE_LENGTH	64
 
-#define FB_MESSAGE_NORM_FG	15	/* white */
-#define FB_MESSAGE_NORM_BG	0
-#define FB_MESSAGE_WARN_FG	11	/* yellow */
-#define FB_MESSAGE_WARN_BG	0
-
 /* Pointer to memory location where image is downloaded for further action */
 static void *image_addr;
 static size_t image_size;
+
+static void print_string(const char *str)
+{
+	int str_len = strlen(str);
+	while (str_len--) {
+		if (*str == '\n')
+			video_console_putchar('\r');
+		video_console_putchar(*str++);
+	}
+}
 
 /*
  * TODO(furquan): Get rid of this once the vboot flows and fastboot interactions
  * are finalized.
  */
-static void fb_print_on_screen(const char *msg, int fg, int bg)
+static void fb_print_on_screen(const char *msg)
 {
 	unsigned int rows, cols;
 
-	vboot_draw_screen(VB_SCREEN_FASTBOOT_MODE, 0, 1);
+	if (display_init())
+		return;
+
+	if (backlight_update(1))
+		return;
+
+	video_init();
+	video_console_cursor_enable(0);
+
 	video_get_rows_cols(&rows, &cols);
 	video_console_set_cursor((cols - strlen(msg)) / 2, rows / 2);
-	video_printf(fg, bg, msg);
+
+	print_string(msg);
 }
 
 /********************* Stubs *************************/
@@ -769,8 +783,7 @@ static fb_ret_type fb_erase(struct fb_cmd *cmd)
 	cmd->type = FB_INFO;
 	fb_add_string(&cmd->output, "erasing flash", NULL);
 	fb_execute_send(cmd);
-	fb_print_on_screen("Erasing flash....\n",
-			   FB_MESSAGE_WARN_FG, FB_MESSAGE_WARN_BG);
+	fb_print_on_screen("Erasing flash....\n");
 
 	cmd->type = FB_OKAY;
 
@@ -795,7 +808,6 @@ static fb_ret_type fb_flash(struct fb_cmd *cmd)
 	if (image_addr == NULL) {
 		fb_add_string(&cmd->output, "no image downloaded", NULL);
 		cmd->type = FB_FAIL;
-		/* TODO: fb_print_on_screen(message) */
 		return FB_SUCCESS;
 	}
 
@@ -803,8 +815,7 @@ static fb_ret_type fb_flash(struct fb_cmd *cmd)
 	cmd->type = FB_INFO;
 	fb_add_string(&cmd->output, "writing flash", NULL);
 	fb_execute_send(cmd);
-	fb_print_on_screen("Writing flash....\n",
-			   FB_MESSAGE_WARN_FG, FB_MESSAGE_WARN_BG);
+	fb_print_on_screen("Writing flash....\n");
 
 	struct fb_buffer *input = &cmd->input;
 	size_t len = fb_buffer_length(input);
@@ -825,7 +836,6 @@ static fb_ret_type fb_flash(struct fb_cmd *cmd)
 	if (ret != BE_SUCCESS) {
 		cmd->type = FB_FAIL;
 		fb_add_string(&cmd->output, backend_error_string[ret], NULL);
-		/* TODO: fb_print_on_screen(message) */
 	}
 
 	free(partition);
@@ -1151,8 +1161,7 @@ fb_ret_type device_mode_enter(void)
 	do {
 		size_t len;
 
-		fb_print_on_screen("Waiting for fastboot command....\n",
-				   FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG);
+		fb_print_on_screen("Waiting for fastboot command....\n");
 		/* Receive a packet from the host */
 		len = usb_gadget_recv(pkt, MAX_COMMAND_LENGTH);
 
@@ -1165,8 +1174,7 @@ fb_ret_type device_mode_enter(void)
 
 		print_input(&cmd);
 
-		fb_print_on_screen("Processing fastboot command....\n",
-				   FB_MESSAGE_WARN_FG, FB_MESSAGE_WARN_BG);
+		fb_print_on_screen("Processing fastboot command....\n");
 
 		/* Process the packet as per fastboot protocol */
 		ret = fastboot_proto_handler(&cmd);
