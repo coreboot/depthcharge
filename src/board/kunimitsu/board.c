@@ -73,7 +73,8 @@ static int board_setup(void)
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
 
 	SdhciHost *emmc, *sd;
-	emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1e, 4), 0,
+	emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1e, 4),
+			SDHCI_PLATFORM_NO_EMMC_HS200,
 			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			&fixed_block_dev_controllers);
