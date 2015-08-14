@@ -40,16 +40,6 @@ fb_ret_type __attribute__((weak)) device_mode_enter(void)
 	return FB_CONTINUE_RECOVERY;
 }
 
-static void vboot_clear_recovery(void)
-{
-	vboot_update_recovery(VBNV_RECOVERY_NOT_REQUESTED);
-}
-
-static void vboot_set_recovery(void)
-{
-	vboot_update_recovery(VBNV_RECOVERY_FW_FASTBOOT);
-}
-
 enum {
 	ENTRY_POINT_RECOVERY_MENU,
 	ENTRY_POINT_FASTBOOT_MODE,
@@ -104,8 +94,6 @@ static void udc_fastboot(void)
 	if (!board_should_enter_device_mode())
 		return;
 
-	vboot_clear_recovery();
-
 	fb_ret_type ret = device_mode_enter();
 
 	switch(ret) {
@@ -114,7 +102,7 @@ static void udc_fastboot(void)
 		cold_reboot();
 		break;
 	case FB_REBOOT_BOOTLOADER:
-		vboot_set_recovery();
+		vboot_update_recovery(VBNV_RECOVERY_FW_FASTBOOT);
 		/* Does not return */
 		cold_reboot();
 		break;
@@ -127,7 +115,7 @@ static void udc_fastboot(void)
 		break;
 	default:
 		/* unknown error. reboot into fastboot menu */
-		vboot_set_recovery();
+		vboot_update_recovery(VBNV_RECOVERY_RO_FIRMWARE);
 		cold_reboot();
 		break;
 	}
@@ -135,10 +123,9 @@ static void udc_fastboot(void)
 
 static void menu_start(void)
 {
-	vboot_clear_recovery();
+	/* recovery request is automatically cleared by vboot at every boot */
 	cold_reboot();
 }
-
 
 static void menu_fastboot(void)
 {
