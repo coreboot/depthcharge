@@ -22,6 +22,7 @@ depthcharge-$(CONFIG_FASTBOOT_MODE) += fastboot.c
 depthcharge-y += boot_policy.c
 depthcharge-y += firmware_id.c
 depthcharge-y += screens.c
+depthcharge-y += vbnv.c
 
 # Where "main" lives.
 readonly-y += ro_main.c
