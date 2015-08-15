@@ -446,6 +446,7 @@ static const struct {
 	{ NAME_ARGS("partition-size", ':'), FB_PART_SIZE},
 	{ NAME_NO_ARGS("unlocked"), FB_UNLOCKED},
 	{ NAME_NO_ARGS("off-mode-charge"), FB_OFF_MODE_CHARGE},
+	{ NAME_NO_ARGS("variant"), FB_VARIANT},
 	/*
 	 * OEM specific :
 	 * Spec says names starting with lowercase letter are reserved.

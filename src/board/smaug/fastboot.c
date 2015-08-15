@@ -104,6 +104,13 @@ int get_board_var(struct fb_cmd *cmd, fb_getvar_t var)
 	case FB_BASEBAND_VERSION:
 		fb_add_string(output, "%s", "N/A");
 		break;
+	case FB_VARIANT:
+		/*
+		 * We do not have any variants for this board. Return empty
+		 * string.
+		 */
+		fb_add_string(output, "", NULL);
+		break;
 	default:
 		ret = -1;
 		break;
