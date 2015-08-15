@@ -36,6 +36,7 @@
 #include "vboot/boot_policy.h"
 #include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
+#include "vboot/vbnv.h"
 
 #define FASTBOOT_DEBUG
 
@@ -1005,16 +1006,7 @@ static fb_ret_type fb_set_off_mode_charge(struct fb_cmd *cmd)
 		return FB_SUCCESS;
 	}
 
-	VbNvContext context;
-
-	VbExNvStorageRead(context.raw);
-	VbNvSetup(&context);
-
-	VbNvSet(&context, VBNV_BOOT_ON_AC_DETECT, boot_on_ac);
-
-	VbNvTeardown(&context);
-	if (context.raw_changed)
-		VbExNvStorageWrite(context.raw);
+	vbnv_write(VBNV_BOOT_ON_AC_DETECT, boot_on_ac);
 
 	cmd->type = FB_OKAY;
 	return FB_SUCCESS;

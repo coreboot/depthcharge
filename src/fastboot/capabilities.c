@@ -28,6 +28,7 @@
 #include "fastboot/capabilities.h"
 #include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
+#include "vboot/vbnv.h"
 
 enum {
 	FB_LIMITED_CAP = 0,
@@ -71,45 +72,27 @@ static uint32_t fb_get_curr_cap_bitmap(void)
 		return bitmap;
 	}
 
-	VbNvContext context;
-
-	VbExNvStorageRead(context.raw);
-	VbNvSetup(&context);
-
 	/* If we are currently in normal mode, only limited cap is available */
 	if (vboot_in_developer() == 0) {
-		uint32_t fastboot_unlock;
 
 		bitmap = fb_cap_bitmap[FB_LIMITED_CAP];
 
 		/* If unlock in fw is set in nvstorage, add unlock to bitmap. */
-		VbNvGet(&context, VBNV_FASTBOOT_UNLOCK_IN_FW, &fastboot_unlock);
-		if (fastboot_unlock)
+		if (vbnv_read(VBNV_FASTBOOT_UNLOCK_IN_FW))
 			bitmap |= FB_ID_UNLOCK;
 
-		goto cleanup;
+		return bitmap;
 	}
 
 	/*
 	 * If we are in developer mode, we need to read the fastboot_full_cap
 	 * flag from nvstorage.
-	 */
-	uint32_t fastboot_full_cap;
-
-	VbNvGet(&context, VBNV_DEV_BOOT_FASTBOOT_FULL_CAP, &fastboot_full_cap);
-
-	/*
 	 * If the flag is set, full fastboot capability is enabled in firmware.
 	 */
-	if (fastboot_full_cap)
+	if (vbnv_read(VBNV_DEV_BOOT_FASTBOOT_FULL_CAP))
 		bitmap = fb_cap_bitmap[FB_FULL_CAP];
 	else
 		bitmap = fb_cap_bitmap[FB_LIMITED_CAP];
-
-cleanup:
-	VbNvTeardown(&context);
-	if (context.raw_changed)
-		VbExNvStorageWrite(context.raw);
 
 	return bitmap;
 }

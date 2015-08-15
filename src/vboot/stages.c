@@ -45,6 +45,7 @@
 #include "vboot/util/ec.h"
 #include "vboot/util/flag.h"
 #include "vboot/util/memory.h"
+#include "vboot/vbnv.h"
 
 static uint32_t vboot_out_flags;
 
@@ -121,16 +122,7 @@ int vboot_in_developer(void)
 
 void vboot_update_recovery(uint32_t request)
 {
-	VbNvContext context;
-
-	VbExNvStorageRead(context.raw);
-	VbNvSetup(&context);
-
-	VbNvSet(&context, VBNV_RECOVERY_REQUEST, request);
-
-	VbNvTeardown(&context);
-	if (context.raw_changed)
-		VbExNvStorageWrite(context.raw);
+	vbnv_write(VBNV_RECOVERY_REQUEST, request);
 }
 
 int vboot_do_init_out_flags(uint32_t out_flags)

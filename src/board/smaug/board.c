@@ -50,6 +50,7 @@
 #include "drivers/ec/cros/ec.h"
 #include "vboot/boot_policy.h"
 #include "vboot/util/flag.h"
+#include "vboot/vbnv.h"
 #include "drivers/video/tegra132.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/rt5677.h"
@@ -140,17 +141,7 @@ static void flash_params_override(void)
 
 static void update_boot_on_ac_detect_state(void)
 {
-	uint32_t boot_on_ac;
-	VbNvContext context;
-
-	VbExNvStorageRead(context.raw);
-	VbNvSetup(&context);
-
-	VbNvGet(&context, VBNV_BOOT_ON_AC_DETECT, &boot_on_ac);
-
-	VbNvTeardown(&context);
-	if (context.raw_changed)
-		VbExNvStorageWrite(context.raw);
+	uint32_t boot_on_ac = vbnv_read(VBNV_BOOT_ON_AC_DETECT);
 
 	if (cros_ec_set_boot_on_ac(boot_on_ac) != 0)
 		printf("ERROR: Could not set boot_on_ac\n");

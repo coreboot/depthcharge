@@ -40,6 +40,7 @@
 #include "netboot/tftp.h"
 #include "vboot/boot.h"
 #include "vboot/util/flag.h"
+#include "vboot/vbnv.h"
 
 static void enable_graphics(void)
 {
@@ -58,15 +59,7 @@ static void enable_graphics(void)
 	if (!oprom_loaded) {
 		printf("Enabling graphics.\n");
 
-		VbNvContext context;
-
-		VbExNvStorageRead(context.raw);
-		VbNvSetup(&context);
-
-		VbNvSet(&context, VBNV_OPROM_NEEDED, 1);
-
-		VbNvTeardown(&context);
-		VbExNvStorageWrite(context.raw);
+		vbnv_write(VBNV_OPROM_NEEDED, 1);
 
 		printf("Rebooting.\n");
 		if (cold_reboot())
