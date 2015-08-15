@@ -42,6 +42,7 @@ typedef enum {
 	FB_PART_SIZE,
 	FB_BDEV_SIZE,
 	FB_UNLOCKED,
+	FB_OFF_MODE_CHARGE,
 } fb_getvar_t;
 
 typedef enum fb_ret {
