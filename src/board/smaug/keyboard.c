@@ -90,19 +90,16 @@ enum {
  *
  * Ctrl - D = Pwr + Vup
  * Ctrl - U = Pwr + Vdn
- * CR       = Vup
+ * CR       = Pwr
+ * Tab      = Vup
  * Space    = Vdn
- * Ctrl - L = Pwr -> Vup
- * Tab      = Pwr -> Vdn
  */
 static const struct pk_trans trans_arr[] = {
 	{STATE_ID_START, KEYSET(PWR_BTN, VOL_UP, 0), STATE_ID_CTRL_D},
 	{STATE_ID_START, KEYSET(PWR_BTN, 0, VOL_DOWN), STATE_ID_CTRL_U},
-	{STATE_ID_START, KEYSET(0, VOL_UP, 0), STATE_ID_CR},
+	{STATE_ID_START, KEYSET(PWR_BTN, 0, 0), STATE_ID_CR},
+	{STATE_ID_START, KEYSET(0, VOL_UP, 0), STATE_ID_TAB},
 	{STATE_ID_START, KEYSET(0, 0, VOL_DOWN), STATE_ID_SPC},
-	{STATE_ID_START, KEYSET(PWR_BTN, 0, 0), STATE_ID_S1},
-	{STATE_ID_S1, KEYSET(0, VOL_UP, 0), STATE_ID_CTRL_L},
-	{STATE_ID_S1, KEYSET(0, 0, VOL_DOWN), STATE_ID_TAB},
 };
 
 static void smaug_sm_init(struct pk_sm_desc *desc)

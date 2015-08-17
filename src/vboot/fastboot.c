@@ -151,27 +151,70 @@ static void menu_shutdown(void)
 	power_off();
 }
 
+/*
+ * Fastboot menu options
+ */
+static const struct {
+	const char *text;
+	const int fg;			/* VGA color for text foreground */
+	const int bg;			/* VGA color for text background */
+	void (*execute)(void);		/* called when option is executed */
+	void (*highlight)(void);	/* called when option is highlighted */
+} opts[] = {
+	{"Restart Android", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
+			menu_restart, NULL },
+	{"Enter Fastboot", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
+			menu_fastboot, NULL },
+	{"Self Recovery Mode", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
+			NULL, NULL },
+	{"Power Off", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
+			menu_shutdown, NULL },
+};
+
+static void draw_option(int pos, int highlight)
+{
+	video_console_set_cursor(FB_MENU_POSITION_COL,
+				 FB_MENU_POSITION_ROW + pos);
+	if (highlight) {
+		video_printf(opts[pos].bg, opts[pos].fg, 0, opts[pos].text);
+		if (opts[pos].highlight)
+			opts[pos].highlight();
+	} else {
+		video_printf(opts[pos].fg, opts[pos].bg, 0, opts[pos].text);
+	}
+}
+
+static void draw_device_info(void)
+{
+	const char *version = get_active_fw_id();
+	int row = FB_INFO_POSITION_ROW;
+
+	/*
+	 * TODO: Show variant name, serial number, signing state
+	 */
+	video_console_set_cursor(FB_INFO_POSITION_COL, row++);
+	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 0,
+		     "PRODUCT NAME: %s %s",
+		     cb_mb_vendor_string(lib_sysinfo.mainboard),
+		     cb_mb_part_string(lib_sysinfo.mainboard));
+	video_console_set_cursor(FB_INFO_POSITION_COL, row++);
+	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 0,
+		     "HW VERSION: %d", lib_sysinfo.board_id);
+	if (version) {
+		video_console_set_cursor(FB_INFO_POSITION_COL, row++);
+		video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 0,
+			     "BOOTLOADER VERSION: %s", version);
+	}
+	video_console_set_cursor(FB_INFO_POSITION_COL, row++);
+	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 0,
+		     "LOCK STATE: %s",
+		     fb_device_unlocked() ? "Unlocked" : "Locked");
+}
+
 void vboot_try_fastboot(void)
 {
-	static const struct {
-		const char *text;
-		const int fg; /* VGA color */
-		const int bg; /* VGA color */
-		void (*execute)(void);
-		void (*highlight)(void);
-	} cmds[] = {
-		{ "Restart Android", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
-				menu_restart, NULL},
-		{ "Enter Fastboot", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
-				menu_fastboot, NULL},
-		{ "Self Recovery Mode", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
-				NULL, NULL},
-		{ "Power Off", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
-				menu_shutdown, NULL},
-	};
-	const int command_count = ARRAY_SIZE(cmds);
-	int pos = 0, row, col;
-	unsigned int rows, cols;
+	const int command_count = ARRAY_SIZE(opts);
+	int pos = 0;
 	int i;
 
 	if (is_fastboot_mode_requested()) {
@@ -182,59 +225,26 @@ void vboot_try_fastboot(void)
 	}
 
 	vboot_draw_screen(VB_SCREEN_FASTBOOT_MENU, 0, 1);
-	video_get_rows_cols(&rows, &cols);
 
-	for (i = 0; i < command_count; i++) {
-		video_console_set_cursor(FB_MENU_POSITION_COL,
-					 FB_MENU_POSITION_ROW + i);
-		video_printf(cmds[i].fg, cmds[i].bg, 0, cmds[i].text);
-	}
+	for (i = 0; i < command_count; i++)
+		draw_option(i, 0);
 
-	/*
-	 * TODO: Show variant name, serial number, signing state
-	 */
-	row = FB_INFO_POSITION_ROW;
-	col = FB_INFO_POSITION_COL;
-	video_console_set_cursor(col, row++);
-	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 0,
-		     "PRODUCT NAME: %s %s",
-		     cb_mb_vendor_string(lib_sysinfo.mainboard),
-		     cb_mb_part_string(lib_sysinfo.mainboard));
-	video_console_set_cursor(col, row++);
-	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 0,
-		     "HW VERSION: %d", lib_sysinfo.board_id);
-	const char *version = get_active_fw_id();
-	if (version) {
-		video_console_set_cursor(col, row++);
-		video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 0,
-			     "BOOTLOADER VERSION: %s", version);
-	}
-	video_console_set_cursor(col, row++);
-	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 0,
-		     "LOCK STATE: %s",
-		     fb_device_unlocked() ? "Unlocked" : "Locked");
+	draw_device_info();
 
 	while (1) {
-		video_console_set_cursor(FB_MENU_POSITION_COL,
-					 FB_MENU_POSITION_ROW + pos);
-		video_printf(cmds[pos].bg, cmds[pos].fg, 0, cmds[pos].text);
-		if (cmds[pos].highlight)
-			cmds[pos].highlight();
+		draw_option(pos, 1);
 		int keypress = getchar();
-		printf("got keypress %x\n", keypress);
-		if (keypress == ' ') {
-			video_console_set_cursor(FB_MENU_POSITION_COL,
-						 FB_MENU_POSITION_ROW + pos);
-			video_printf(cmds[pos].fg, cmds[pos].bg, 0,
-				     cmds[pos].text);
-			if (++pos == command_count)
+		if (keypress == ' ') {		/* move down */
+			draw_option(pos++, 0);
+			if (pos == command_count)
 				pos = 0;
-		} else if (keypress & KEY_SELECT) {
-			printf("selected %s\n", cmds[pos].text);
-			if (cmds[pos].execute == NULL)
-				/* leave menu and continue to boot */
-				break;
-			cmds[pos].execute();
+		} else if (keypress == '\t') {	/* move up */
+			draw_option(pos--, 0);
+			if (pos == -1)
+				pos = command_count - 1;
+		} else if (keypress == '\r') {	/* execute */
+			if (opts[pos].execute)
+				opts[pos].execute();
 			break;
 		}
 	}

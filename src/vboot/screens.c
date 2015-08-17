@@ -124,7 +124,7 @@ static VbError_t vboot_draw_recovery_to_dev(uint32_t localize)
 
 	video_console_set_cursor(0, FB_INFO_POSITION_ROW);
 	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
-		     "To turn OS verificaion OFF, press Volume Up.\n");
+		     "To turn OS verificaion OFF, press Power button.\n");
 	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
 		     "Your system will reboot and local data will be cleared.\n");
 	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
@@ -142,7 +142,7 @@ static VbError_t vboot_draw_developer_to_norm(uint32_t localize)
 	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
 		     "OS verification is OFF\n");
 	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
-		     "Press Volume Up to confirm you wish to turn OS verification on.\n");
+		     "Press Power Button to confirm you wish to turn OS verification on.\n");
 	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
 		     "Your system will reboot and local data will be cleared.\n");
 	return rv;
@@ -178,7 +178,7 @@ static VbError_t vboot_draw_fastboot_menu(uint32_t localize)
 		free(buf);
 	}
 	video_console_set_cursor(102, 10);
-	video_printf(15, 0, 0, "Volume Up: Run Selected Option");
+	video_printf(15, 0, 0, "Volume Up: Move Cursor Up");
 
 	buf = load_bitmap("arrow_down.bmp", &size);
 	if (buf) {
@@ -186,7 +186,10 @@ static VbError_t vboot_draw_fastboot_menu(uint32_t localize)
 		free(buf);
 	}
 	video_console_set_cursor(102, 11);
-	video_printf(15, 0, 0, "Volume Down: Next Option");
+	video_printf(15, 0, 0, "Volume Down: Move Cursor Down");
+
+	video_console_set_cursor(102, 12);
+	video_printf(15, 0, 0, "Power: Run Selected Option");
 
 	return VBERROR_SUCCESS;
 }
