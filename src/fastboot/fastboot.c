@@ -67,8 +67,8 @@ static void fb_print_on_screen(const char *msg, int fg, int bg)
 
 	vboot_draw_screen(VB_SCREEN_FASTBOOT_MODE, 0, 1);
 	video_get_rows_cols(&rows, &cols);
-	video_console_set_cursor((cols - strlen(msg)) / 2, rows / 2);
-	video_printf(fg, bg, msg);
+	video_console_set_cursor(0, rows / 2);
+	video_printf(fg, bg, 1, msg);
 }
 
 /********************* Stubs *************************/

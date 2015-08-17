@@ -185,7 +185,7 @@ void vboot_try_fastboot(void)
 	for (i = 0; i < command_count; i++) {
 		video_console_set_cursor(FB_MENU_POSITION_COL,
 					 FB_MENU_POSITION_ROW + i);
-		video_printf(cmds[i].fg, cmds[i].bg, cmds[i].text);
+		video_printf(cmds[i].fg, cmds[i].bg, 0, cmds[i].text);
 	}
 
 	/*
@@ -194,28 +194,28 @@ void vboot_try_fastboot(void)
 	row = FB_INFO_POSITION_ROW;
 	col = FB_INFO_POSITION_COL;
 	video_console_set_cursor(col, row++);
-	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND,
+	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 0,
 		     "PRODUCT NAME: %s %s",
 		     cb_mb_vendor_string(lib_sysinfo.mainboard),
 		     cb_mb_part_string(lib_sysinfo.mainboard));
 	video_console_set_cursor(col, row++);
-	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND,
+	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 0,
 		     "HW VERSION: %d", lib_sysinfo.board_id);
 	const char *version = get_active_fw_id();
 	if (version) {
 		video_console_set_cursor(col, row++);
-		video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND,
+		video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 0,
 			     "BOOTLOADER VERSION: %s", version);
 	}
 	video_console_set_cursor(col, row++);
-	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND,
+	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 0,
 		     "LOCK STATE: %s",
 		     fb_device_unlocked() ? "Unlocked" : "Locked");
 
 	while (1) {
 		video_console_set_cursor(FB_MENU_POSITION_COL,
 					 FB_MENU_POSITION_ROW + pos);
-		video_printf(cmds[pos].bg, cmds[pos].fg, cmds[pos].text);
+		video_printf(cmds[pos].bg, cmds[pos].fg, 0, cmds[pos].text);
 		if (cmds[pos].highlight)
 			cmds[pos].highlight();
 		int keypress = getchar();
@@ -223,7 +223,7 @@ void vboot_try_fastboot(void)
 		if (keypress == ' ') {
 			video_console_set_cursor(FB_MENU_POSITION_COL,
 						 FB_MENU_POSITION_ROW + pos);
-			video_printf(cmds[pos].fg, cmds[pos].bg,
+			video_printf(cmds[pos].fg, cmds[pos].bg, 0,
 				     cmds[pos].text);
 			if (++pos == command_count)
 				pos = 0;

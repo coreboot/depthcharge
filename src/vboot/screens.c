@@ -70,7 +70,7 @@ static VbError_t vboot_draw_fastboot_menu(uint32_t localize)
 		free(buf);
 	}
 	video_console_set_cursor(102, 10);
-	video_printf(15, 0, "Volume Up: Run Selected Option");
+	video_printf(15, 0, 0, "Volume Up: Run Selected Option");
 
 	buf = load_bitmap("arrow_down.bmp", &size);
 	if (buf) {
@@ -78,7 +78,7 @@ static VbError_t vboot_draw_fastboot_menu(uint32_t localize)
 		free(buf);
 	}
 	video_console_set_cursor(102, 11);
-	video_printf(15, 0, "Volume Down: Next Option");
+	video_printf(15, 0, 0, "Volume Down: Next Option");
 
 	return VBERROR_SUCCESS;
 }
