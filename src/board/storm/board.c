@@ -411,9 +411,10 @@ static int board_setup(void)
 	tpm_set_ops(&new_slb9635_i2c(&i2c->ops, 0x20)->base.ops);
 
 	if (lib_sysinfo.board_id >= BOARD_ID_WHIRLWIND_SP5) {
-
 		DisplayOps *ww_ring_ops = new_ww_ring_display
-			(&new_ipq806x_i2c (GSBI_ID_7)->ops, 0x32);
+				(&new_ipq806x_i2c (GSBI_ID_7)->ops,
+				 0x32,
+				 lib_sysinfo.board_id >= BOARD_ID_ARKHAM_PROTO);
 
 		display_set_ops(ww_ring_ops);
 

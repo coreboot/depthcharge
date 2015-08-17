@@ -94,6 +94,8 @@ typedef struct {
 /* Dynamicaly allocated descriptors, one per controller */
 static TiLp55231 *lp55231s;
 
+/* Number of LED controllers */
+static uint8_t num_led_controllers;
 
 /*
  * i2c transfer function for the driver. To keep things simple, the function
@@ -342,6 +344,8 @@ static int ledc_init_validate(TiLp55231 *ledc)
 	return 0;
 }
 
+static const WwRingStateProg *led_programs;
+
 /*
  * Find a program matching screen type, and run it on both controllers, if
  * found.
@@ -351,7 +355,7 @@ static int ww_ring_display_screen(DisplayOps *me,
 {
 	const WwRingStateProg *state_program;
 
-	for (state_program = wwr_state_programs;
+	for (state_program = led_programs;
 	     state_program->programs[0];
 	     state_program++)
 		if (state_program->vb_screen == screen_type) {
@@ -361,7 +365,7 @@ static int ww_ring_display_screen(DisplayOps *me,
 			 * First stop all running programs to avoid
 			 * inerference between the controllers.
 			 */
-			for (j = 0; j < WW_RING_NUM_LED_CONTROLLERS; j++) {
+			for (j = 0; j < num_led_controllers; j++) {
 				if (!lp55231s[j].dev_addr)
 					continue;
 				ledc_write_engctrl2
@@ -369,7 +373,7 @@ static int ww_ring_display_screen(DisplayOps *me,
 					 LP55231_ENGCTRL2_ALL_DISABLE);
 			}
 
-			for (j = 0; j < WW_RING_NUM_LED_CONTROLLERS; j++) {
+			for (j = 0; j < num_led_controllers; j++) {
 				if (!lp55231s[j].dev_addr)
 					continue;
 				ledc_run_program (lp55231s + j,
@@ -393,11 +397,11 @@ static int ww_ring_init(DisplayOps *me)
 	if (lp55231s)
 		return 0; /* Already initialized. */
 
-	lp55231s = xzalloc(sizeof(*ledc) * WW_RING_NUM_LED_CONTROLLERS);
+	lp55231s = xzalloc(sizeof(*ledc) * num_led_controllers);
 	display = container_of(me, WwRingDisplayOps, wwr_display_ops);
 
 	for (i = 0, ledc = lp55231s;
-	     i < WW_RING_NUM_LED_CONTROLLERS;
+	     i < num_led_controllers;
 	     i++, ledc++) {
 
 		ledc->ops = display->wwr_i2c_ops;
@@ -420,10 +424,19 @@ static int ww_ring_init(DisplayOps *me)
 	return 0;
 }
 
-DisplayOps *new_ww_ring_display(I2cOps *i2cOps, uint8_t base_addr)
+DisplayOps *new_ww_ring_display(I2cOps *i2cOps, uint8_t base_addr,
+				uint8_t is_arkham)
 {
 	WwRingDisplayOps *wwr_display_ops = xzalloc
 		(sizeof(*wwr_display_ops));
+
+	if (is_arkham) {
+		num_led_controllers = ARKHAM_NUM_LED_CONTROLLERS;
+		led_programs = arkham_led_state_programs;
+	} else {
+		num_led_controllers = WW_RING_NUM_LED_CONTROLLERS;
+		led_programs = wwr_state_programs;
+	}
 
 	wwr_display_ops->wwr_display_ops.display_screen =
 		ww_ring_display_screen;

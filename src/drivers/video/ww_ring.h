@@ -39,6 +39,7 @@ typedef struct {
  *
  * Returns a pointer to DisplayOps structure.
  */
-DisplayOps *new_ww_ring_display(I2cOps *i2cOps, uint8_t base_addr);
+DisplayOps *new_ww_ring_display(I2cOps *i2cOps, uint8_t base_addr,
+				uint8_t is_arkham);
 
 #endif
