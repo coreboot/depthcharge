@@ -198,6 +198,19 @@ static VbError_t vboot_draw_fastboot_mode(uint32_t localize)
 	return VBERROR_SUCCESS;
 }
 
+static VbError_t vboot_draw_splash(uint32_t localize)
+{
+	uint32_t size;
+	VbError_t rv = VBERROR_SUCCESS;
+	uint8_t *buf = load_bitmap("splash.bmp", &size);
+	if (!buf)
+		return VBERROR_UNKNOWN;
+	if (draw_bitmap(40, 45, 20, buf, size))
+		rv = VBERROR_UNKNOWN;
+	free(buf);
+	return rv;
+}
+
 static VbError_t draw_screen(uint32_t screen_type, uint32_t localize)
 {
 	VbError_t rv = VBERROR_SUCCESS;
@@ -206,11 +219,8 @@ static VbError_t draw_screen(uint32_t screen_type, uint32_t localize)
 	case VB_SCREEN_BLANK:
 		video_console_clear();
 		break;
-	case VB_SCREEN_FASTBOOT_MENU:
-		rv = vboot_draw_fastboot_menu(localize);
-		break;
-	case VB_SCREEN_FASTBOOT_MODE:
-		rv = vboot_draw_fastboot_mode(localize);
+	case VB_SCREEN_SPLASH:
+		rv = vboot_draw_splash(localize);
 		break;
 	case VB_SCREEN_DEVELOPER_WARNING:
 		rv = vboot_draw_developer_warning(localize);
@@ -234,6 +244,12 @@ static VbError_t draw_screen(uint32_t screen_type, uint32_t localize)
 		break;
 	case VB_SCREEN_TO_NORM_CONFIRMED:
 		rv = vboot_draw_to_norm_confirmed(localize);
+		break;
+	case VB_SCREEN_FASTBOOT_MENU:
+		rv = vboot_draw_fastboot_menu(localize);
+		break;
+	case VB_SCREEN_FASTBOOT_MODE:
+		rv = vboot_draw_fastboot_mode(localize);
 		break;
 	default:
 		printf("Not a valid screen type: 0x%x\n", screen_type);

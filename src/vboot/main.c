@@ -23,6 +23,7 @@
 
 #include <libpayload.h>
 #include <vboot_struct.h>
+#include <vboot_api.h>
 
 #include "arch/sign_of_life.h"
 #include "base/init_funcs.h"
@@ -100,6 +101,9 @@ int main(void)
 	// Run any generic initialization functions that are compiled in.
 	if (run_init_funcs())
 		halt();
+
+	if (vboot_draw_screen(VB_SCREEN_SPLASH, 0, 1))
+		printf("Failed to draw splash screen\n");
 
 	timestamp_add_now(TS_RO_VB_INIT);
 
