@@ -28,6 +28,7 @@
 #include "boot/android_dt.h"
 #include "config.h"
 #include "drivers/bus/usb/usb.h"
+#include "drivers/ec/cros/ec.h"
 #include "image/fmap.h"
 #include "vboot/firmware_id.h"
 
@@ -250,4 +251,5 @@ fb_callback_t fb_board_handler = {
 	.user_confirmation = board_user_confirmation,
 	.keyboard_mask = ec_fb_keyboard_mask,
 	.print_screen = fb_print_text_on_screen,
+	.read_batt_volt = cros_ec_read_batt_volt,
 };

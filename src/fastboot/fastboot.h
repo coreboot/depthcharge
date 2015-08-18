@@ -44,6 +44,7 @@ typedef enum {
 	FB_UNLOCKED,
 	FB_OFF_MODE_CHARGE,
 	FB_VARIANT,
+	FB_BATT_VOLTAGE,
 } fb_getvar_t;
 
 typedef enum fb_ret {
@@ -260,6 +261,17 @@ typedef struct {
 	 * Handler is expected to perform reboot/poweroff on its own.
 	 */
 	int (*enter_menu)(void);
+
+	/*
+	 * Read battery voltage.
+	 *
+	 * Return value:
+	 * 0 = success
+	 * -1 = error
+	 *
+	 * Voltage is returned in param mV.
+	 */
+	int (*read_batt_volt)(uint32_t *mV);
 } fb_callback_t;
 
 extern fb_callback_t fb_board_handler;
