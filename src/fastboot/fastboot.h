@@ -42,6 +42,7 @@ typedef enum {
 	FB_UNLOCKED,
 	FB_OFF_MODE_CHARGE,
 	FB_VARIANT,
+	FB_BATT_VOLTAGE,
 } fb_getvar_t;
 
 typedef enum fb_ret {

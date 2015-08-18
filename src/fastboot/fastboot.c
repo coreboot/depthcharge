@@ -313,6 +313,14 @@ static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 		fb_add_number(output, "%d", !vbnv_read(VBNV_BOOT_ON_AC_DETECT));
 		break;
 	}
+	case FB_BATT_VOLTAGE: {
+		uint32_t volt;
+		if (cros_ec_read_batt_volt(&volt) != 0)
+			fb_add_string(output, "Unknown", NULL);
+		else
+			fb_add_number(output, "%d mV", volt);
+		break;
+	}
 	default:
 		goto board_read;
 	}
@@ -446,6 +454,7 @@ static const struct {
 	{ NAME_ARGS("partition-size", ':'), FB_PART_SIZE},
 	{ NAME_NO_ARGS("unlocked"), FB_UNLOCKED},
 	{ NAME_NO_ARGS("off-mode-charge"), FB_OFF_MODE_CHARGE},
+	{ NAME_NO_ARGS("battery-voltage"), FB_BATT_VOLTAGE},
 	{ NAME_NO_ARGS("variant"), FB_VARIANT},
 	/*
 	 * OEM specific :
