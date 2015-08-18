@@ -953,6 +953,25 @@ int cros_ec_battery_cutoff(uint8_t flags)
 	return 0;
 }
 
+static int cros_ec_read_memmap(uint8_t offset, uint8_t size, void *dest)
+{
+	struct ec_params_read_memmap params;
+
+	params.offset = offset;
+	params.size = size;
+
+	if (ec_command(EC_CMD_READ_MEMMAP, 0, &params, sizeof(params), dest,
+		       size) < 0)
+		return -1;
+
+	return 0;
+}
+
+int cros_ec_read_batt_volt(uint32_t *volt)
+{
+	return cros_ec_read_memmap(EC_MEMMAP_BATT_VOLT, sizeof(*volt), volt);
+}
+
 static int set_max_proto3_sizes(int request_size, int response_size,
 				int passthru_size)
 {
