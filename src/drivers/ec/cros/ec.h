@@ -329,6 +329,14 @@ int cros_ec_write_vbnvcontext(const uint8_t *block);
 int cros_ec_set_boot_on_ac(uint32_t value);
 
 /**
+ * Read the value of present battery voltage.
+ *
+ * @param volt		Buffer to read present battery voltage.
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_read_batt_volt(uint32_t *volt);
+
+/**
  * Read the version information for the EC images
  *
  * @param versionp	This is the version information
