@@ -229,6 +229,28 @@ static VbError_t vboot_draw_splash(uint32_t localize)
 	return rv;
 }
 
+static VbError_t vboot_draw_oem_lock_unlock(uint32_t localize, int lock)
+{
+	unsigned int rows, cols;
+	char *lock_unlock = lock ? "Lock" : "Unlock";
+
+	fastboot_draw_base_screen(localize);
+	video_get_rows_cols(&rows, &cols);
+	video_console_set_cursor(0, rows / 2);
+	video_printf(FB_MESSAGE_WARN_FG, FB_MESSAGE_WARN_BG, 1,
+		     "%s bootloader?\n\n", lock_unlock);
+	video_printf(FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG, 1,
+		     "%sing bootloader will also delete all personal data"
+		     "from your device.\n",
+		     lock_unlock);
+	const char *confirm = board_get_button_string(FB_BUTTON_CONFIRM);
+	const char *cancel = board_get_button_string(FB_BUTTON_CANCEL);
+	video_printf(FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG, 1,
+		     "Press %s to confirm or %s to cancel.\n", confirm, cancel);
+
+	return VBERROR_SUCCESS;
+}
+
 static VbError_t draw_screen(uint32_t screen_type, uint32_t localize)
 {
 	VbError_t rv = VBERROR_SUCCESS;
@@ -268,6 +290,12 @@ static VbError_t draw_screen(uint32_t screen_type, uint32_t localize)
 		break;
 	case VB_SCREEN_FASTBOOT_MODE:
 		rv = vboot_draw_fastboot_mode(localize);
+		break;
+	case VB_SCREEN_OEM_LOCK_CONFIRM:
+		rv = vboot_draw_oem_lock_unlock(localize, 1);
+		break;
+	case VB_SCREEN_OEM_UNLOCK_CONFIRM:
+		rv = vboot_draw_oem_lock_unlock(localize, 0);
 		break;
 	default:
 		printf("Not a valid screen type: 0x%x\n", screen_type);

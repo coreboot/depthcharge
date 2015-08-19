@@ -954,6 +954,8 @@ static fb_ret_type fb_lock(struct fb_cmd *cmd)
 {
 	cmd->type = FB_FAIL;
 
+	vboot_draw_screen(VB_SCREEN_OEM_LOCK_CONFIRM, 0, 0);
+
 	if (!fb_user_confirmation()) {
 		FB_LOG("User cancelled\n");
 		fb_add_string(&cmd->output, "User cancelled request", NULL);
@@ -983,6 +985,8 @@ static fb_ret_type fb_lock(struct fb_cmd *cmd)
 static fb_ret_type fb_unlock(struct fb_cmd *cmd)
 {
 	cmd->type = FB_FAIL;
+
+	vboot_draw_screen(VB_SCREEN_OEM_UNLOCK_CONFIRM, 0, 0);
 
 	if (!fb_user_confirmation()) {
 		FB_LOG("User cancelled\n");
