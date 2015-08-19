@@ -88,17 +88,19 @@ static int is_fastboot_mode_requested(void)
 	/*
 	 * Enter fastboot mode when:
 	 * 1. Recovery reason is set to fastboot requested by FW, or
-	 * 2. Recovery reason is set to recovery requested by BCB, or
-	 * 3. Recovery reason is set to manual request and keyboard mask is set
+	 * 2. Recovery reason is set to fastboot requested by User-mode, or
+	 * 3. Recovery reason is set to recovery requested by BCB, or
+	 * 4. Recovery reason is set to manual request and keyboard mask is set
 	 * to fastboot event.
 	 *
 	 * Else, enter recovery-menu to allow user to choose from different
 	 * options.
 	 */
 	return ((vdat->recovery_reason == VBNV_RECOVERY_FW_FASTBOOT) ||
-	    (vdat->recovery_reason == VBNV_RECOVERY_BCB_USER_MODE) ||
-	    ((vdat->recovery_reason == VBNV_RECOVERY_RO_MANUAL) &&
-	     fastboot_keyboard_mask()));
+		(vdat->recovery_reason == VBNV_RECOVERY_US_FASTBOOT) ||
+		(vdat->recovery_reason == VBNV_RECOVERY_BCB_USER_MODE) ||
+		((vdat->recovery_reason == VBNV_RECOVERY_RO_MANUAL) &&
+		 fastboot_keyboard_mask()));
 }
 
 static void udc_fastboot(void)
