@@ -24,6 +24,7 @@
 #include <vboot_api.h>
 #include <vboot_nvstorage.h>
 
+#include "boot/bcb.h"
 #include "config.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/video/coreboot_fb.h"
@@ -959,6 +960,11 @@ static fb_ret_type fb_lock(struct fb_cmd *cmd)
 		return FB_SUCCESS;
 	}
 
+#if CONFIG_BCB_SUPPORT
+	bcb_request_recovery("boot-recovery",
+		         "recovery\n--wipe_data\n--reason=fastboot_oem_lock");
+#endif
+
 	cmd->type = FB_OKAY;
 	return FB_REBOOT;
 }
@@ -983,6 +989,11 @@ static fb_ret_type fb_unlock(struct fb_cmd *cmd)
 		fb_add_string(&cmd->output, "Unlock device failed", NULL);
 		return FB_SUCCESS;
 	}
+
+#if CONFIG_BCB_SUPPORT
+	bcb_request_recovery("boot-recovery",
+		         "recovery\n--wipe_data\n--reason=fastboot_oem_unlock");
+#endif
 
 	cmd->type = FB_OKAY;
 	return FB_REBOOT;
@@ -1160,6 +1171,7 @@ fb_ret_type device_mode_enter(void)
 
 		fb_print_on_screen("Waiting for fastboot command....\n",
 				   FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG);
+
 		/* Receive a packet from the host */
 		len = usb_gadget_recv(pkt, MAX_COMMAND_LENGTH);
 
