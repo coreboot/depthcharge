@@ -81,6 +81,12 @@ typedef enum fb_rsp {
 	FB_OKAY,
 } fb_rsp_type;
 
+typedef enum {
+	FB_ACTION_NONE = 0,
+	FB_ACTION_LOCK = 1,
+	FB_ACTION_UNLOCK = 2,
+} fb_action;
+
 /*
  * fb_buffer defines either input / output buffer for a fastboot cmd.
  * For input buffer, data is the command received from host, head points to
@@ -193,10 +199,14 @@ int get_board_var(struct fb_cmd *cmd, fb_getvar_t var);
 int board_should_enter_device_mode(void);
 /*
  * Function to get user confirmation. Every device needs to implement this as
- * per the available physical buttons. Return value expected is:
+ * per the available physical buttons.
+ *
+ * action: FB_ACTION_* indicating action requesting confirmation
+ *
+ * Return value expected is:
  * 1 = user confirmed
  * 0 = user cancelled / no user confirmation.
  */
-int board_user_confirmation(void);
+int board_user_confirmation(fb_action action);
 
 #endif /* __FASTBOOT_FASTBOOT_H__ */

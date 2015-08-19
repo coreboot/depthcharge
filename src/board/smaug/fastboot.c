@@ -172,7 +172,7 @@ void fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT])
 	}
 }
 
-int board_user_confirmation(void)
+int board_user_confirmation(fb_action action)
 {
 	int ret = 0;
 
