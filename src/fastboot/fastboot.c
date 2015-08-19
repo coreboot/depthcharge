@@ -50,11 +50,6 @@
 #define MAX_COMMAND_LENGTH	64
 #define MAX_RESPONSE_LENGTH	64
 
-#define FB_MESSAGE_NORM_FG	15	/* white */
-#define FB_MESSAGE_NORM_BG	0
-#define FB_MESSAGE_WARN_FG	11	/* yellow */
-#define FB_MESSAGE_WARN_BG	0
-
 /* Pointer to memory location where image is downloaded for further action */
 static void *image_addr;
 static size_t image_size;

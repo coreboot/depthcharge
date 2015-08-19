@@ -27,6 +27,12 @@
 
 #define FB_VERSION_STRING	"0.3"
 
+/* foreground and background colors for text messages */
+#define FB_MESSAGE_NORM_FG	15	/* white */
+#define FB_MESSAGE_NORM_BG	0
+#define FB_MESSAGE_WARN_FG	11	/* yellow */
+#define FB_MESSAGE_WARN_BG	0
+
 /* Fastboot getvar variables */
 typedef enum {
 	FB_VERSION,
