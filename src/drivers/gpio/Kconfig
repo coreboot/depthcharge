@@ -14,25 +14,14 @@
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
-config DRIVER_GPIO_PCH
-	bool
-	default n
-	depends on ARCH_X86
-
-config DRIVER_GPIO_PANTHERPOINT
-	bool "Intel Pantherpoint PCH GPIO driver"
-	default n
-	select DRIVER_GPIO_PCH
-
-config DRIVER_GPIO_LYNXPOINT_LP
-	bool "Intel Lynxpoint LP PCH GPIO driver"
-	default n
-	depends on ARCH_X86
-
 config DRIVER_GPIO_BAYTRAIL
 	bool "Intel Baytrail PCH GPIO driver"
 	default n
 	select DRIVER_GPIO_PCH
+
+config DRIVER_GPIO_BRASWELL
+	bool "Intel Braswell GPIO driver"
+	default n
 
 config DRIVER_GPIO_EXYNOS5250
 	bool "Exynos 5250 GPIO driver"
@@ -49,25 +38,36 @@ config DRIVER_GPIO_IMGTEC_PISTACHIO
 	default n
 	depends on ARCH_MIPS
 
-config DRIVER_GPIO_TEGRA
-	bool "Tegra GPIO driver"
-	default n
-
 config DRIVER_GPIO_IPQ_806X
 	bool "Qualcomm IPQ806X GPIO driver"
 	default n
 	depends on ARCH_ARM
+
+config DRIVER_GPIO_LYNXPOINT_LP
+	bool "Intel Lynxpoint LP PCH GPIO driver"
+	default n
+	depends on ARCH_X86
+
+config DRIVER_GPIO_MT8173
+	bool "MediaTek MT8173 GPIO driver"
+	default n
+	depends on ARCH_ARM
+
+config DRIVER_GPIO_PANTHERPOINT
+	bool "Intel Pantherpoint PCH GPIO driver"
+	default n
+	select DRIVER_GPIO_PCH
+
+config DRIVER_GPIO_PCH
+	bool
+	default n
+	depends on ARCH_X86
 
 config DRIVER_GPIO_ROCKCHIP
 	bool "Rk3288 GPIO driver"
 	default n
 	depends on ARCH_ARM
 
-config DRIVER_GPIO_BRASWELL
-	bool "Intel Braswell GPIO driver"
-	default	n
-
-config DRIVER_GPIO_MT8173
-	bool "MediaTek MT8173 GPIO driver"
+config DRIVER_GPIO_TEGRA
+	bool "Tegra GPIO driver"
 	default n
-	depends on ARCH_ARM
