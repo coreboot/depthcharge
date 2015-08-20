@@ -54,14 +54,15 @@ static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
 
-	LpPchGpio *ec_in_rw = new_lp_pch_gpio_input(25);
-	flag_install(FLAG_ECINRW, &ec_in_rw->ops);
-
+	/* MEC1322 Chrome EC */
 	CrosEcLpcBus *cros_ec_lpc_bus =
-		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
+		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_MEC);
 	cros_ec_set_bus(&cros_ec_lpc_bus->ops);
 
 	flash_set_ops(&new_mem_mapped_flash(0xff000000, 0x1000000)->ops);
+
+	/* SLB9670 SPI TPM */
+	tpm_set_ops(&new_lpc_tpm((void *)(uintptr_t)0xfed40000)->ops);
 
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 23, 0));
 	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
