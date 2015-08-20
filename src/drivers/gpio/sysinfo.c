@@ -36,17 +36,15 @@ GpioOps *sysinfo_lookup_gpio(const char *name_to_find, int resample_at_runtime,
 			continue;
 
 		if (resample_at_runtime) {
-			if (new_gpio_from_cb) {
-				die_if((int)cb->port == -1,
-				       "GPIO '%s' not specified", cb->name);
+			if ((int)cb->port == -1) {
+				printf("WARNING: can't convert coreboot GPIOs, '%s' won't be resampled at runtime!\n",
+				       cb->name);
+			} else if (new_gpio_from_cb) {
 				GpioOps *dc_gpio = new_gpio_from_cb(cb->port);
 				if (cb->polarity == CB_GPIO_ACTIVE_LOW)
 					dc_gpio = new_gpio_not(dc_gpio);
 				return dc_gpio;
 			}
-
-			printf("WARNING: can't convert coreboot GPIOs, '%s' won't be resampled at runtime!\n",
-			       cb->name);
 		}
 
 		uint32_t value = cb->value;
