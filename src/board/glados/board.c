@@ -31,6 +31,7 @@
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
+#include "drivers/gpio/skylake.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
 #include "drivers/storage/blockdev.h"
@@ -52,7 +53,7 @@
 
 static int board_setup(void)
 {
-	sysinfo_install_flags(NULL);
+	sysinfo_install_flags(new_skylake_gpio_input_from_coreboot);
 
 	/* MEC1322 Chrome EC */
 	CrosEcLpcBus *cros_ec_lpc_bus =
