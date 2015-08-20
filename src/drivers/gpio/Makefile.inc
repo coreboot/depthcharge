@@ -29,4 +29,5 @@ depthcharge-$(CONFIG_DRIVER_GPIO_MT8173) += mtk_gpio.c
 depthcharge-$(CONFIG_DRIVER_GPIO_PANTHERPOINT) += pantherpoint.c
 depthcharge-$(CONFIG_DRIVER_GPIO_PCH) += pch.c
 depthcharge-$(CONFIG_DRIVER_GPIO_ROCKCHIP) += rockchip.c
+depthcharge-$(CONFIG_DRIVER_GPIO_SKYLAKE) += skylake.c
 depthcharge-$(CONFIG_DRIVER_GPIO_TEGRA) += tegra.c

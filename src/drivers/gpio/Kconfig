@@ -68,6 +68,10 @@ config DRIVER_GPIO_ROCKCHIP
 	default n
 	depends on ARCH_ARM
 
+config DRIVER_GPIO_SKYLAKE
+	bool "Intel Skylake GPIO driver"
+	default n
+
 config DRIVER_GPIO_TEGRA
 	bool "Tegra GPIO driver"
 	default n
