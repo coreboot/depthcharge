@@ -20,6 +20,7 @@
 #include <arch/io.h>
 
 #include "base/init_funcs.h"
+#include "base/container_of.h"
 #include "boot/fit.h"
 #include "boot/ramoops.h"
 #include "drivers/gpio/rockchip.h"
@@ -32,6 +33,7 @@
 #include "drivers/power/sysinfo.h"
 #include "drivers/storage/dw_mmc.h"
 #include "drivers/storage/rk_mmc.h"
+#include "drivers/video/display.h"
 
 #include "drivers/gpio/sysinfo.h"
 #include "vboot/util/flag.h"
@@ -51,8 +53,100 @@ static void install_phys_presence_flag(void)
 	flag_install(FLAG_PHYS_PRESENCE, phys_presence);
 }
 
+typedef struct {
+	DisplayOps ops;
+
+	GpioOps *ready;		/* Wireless icon, white */
+	GpioOps *ready2;	/* Wireless icon, orange */
+	GpioOps *syncing;	/* Refresh icon, white */
+	GpioOps *error;		/* Warning icon, orange */
+} RialtoDisplayOps;
+
+static int rialto_leds_display_screen(DisplayOps *me,
+				      enum VbScreenType_t screen_type) {
+	RialtoDisplayOps *leds = container_of(me, RialtoDisplayOps, ops);
+
+	switch(screen_type) {
+	case VB_SCREEN_BLANK:
+		leds->ready->set(leds->ready,     1);
+		leds->ready2->set(leds->ready2,   1);
+		leds->syncing->set(leds->syncing, 1);
+		leds->error->set(leds->error,     1);
+		break;
+
+	case VB_SCREEN_DEVELOPER_WARNING:
+		leds->ready->set(leds->ready,     0);
+		leds->ready2->set(leds->ready2,   0);
+		leds->syncing->set(leds->syncing, 1);
+		leds->error->set(leds->error,     1);
+		break;
+
+	case VB_SCREEN_RECOVERY_REMOVE:
+		leds->ready->set(leds->ready,     0);
+		leds->ready2->set(leds->ready2,   1);
+		leds->syncing->set(leds->syncing, 0);
+		leds->error->set(leds->error,     1);
+		break;
+
+	case VB_SCREEN_RECOVERY_INSERT:
+		leds->ready->set(leds->ready,     0);
+		leds->ready2->set(leds->ready2,   0);
+		leds->syncing->set(leds->syncing, 0);
+		leds->error->set(leds->error,     1);
+		break;
+
+	case VB_SCREEN_DEVELOPER_TO_NORM:
+		/* fall through */
+	case VB_SCREEN_RECOVERY_TO_DEV:
+		leds->ready->set(leds->ready,     1);
+		leds->ready2->set(leds->ready2,   0);
+		leds->syncing->set(leds->syncing, 1);
+		leds->error->set(leds->error,     1);
+		break;
+
+	case VB_SCREEN_TO_NORM_CONFIRMED:
+		/* same as blank */
+		leds->ready->set(leds->ready,     1);
+		leds->ready2->set(leds->ready2,   1);
+		leds->syncing->set(leds->syncing, 1);
+		leds->error->set(leds->error,     1);
+		break;
+
+	case VB_SCREEN_RECOVERY_NO_GOOD:
+		leds->ready->set(leds->ready,     1);
+		leds->ready2->set(leds->ready2,   1);
+		leds->syncing->set(leds->syncing, 0);
+		leds->error->set(leds->error,     1);
+		break;
+
+	case VB_SCREEN_DEVELOPER_EGG:
+		/* fall through */
+	default:
+		printf("%s: no led pattern defined for screen %d\n",
+			__func__, screen_type);
+		return -1;
+	}
+	return 0;
+}
+
+RialtoDisplayOps *new_rialto_leds(void) {
+	RialtoDisplayOps *leds = xzalloc(sizeof(*leds));
+
+	/* The following are active high */
+	leds->ready   = &new_rk_gpio_output(GPIO(7, A, 0))->ops; /* LED_READY */
+	leds->ready2  = &new_rk_gpio_output(GPIO(7, B, 5))->ops; /* Ready2_LED */
+	leds->syncing = &new_rk_gpio_output(GPIO(7, B, 3))->ops; /* LED_SYNCING */
+	leds->error   = &new_rk_gpio_output(GPIO(7, B, 7))->ops; /* LED_ERROR */
+
+	leds->ops.display_screen = rialto_leds_display_screen;
+
+	return leds;
+}
+
 static int board_setup(void)
 {
+	RialtoDisplayOps *leds;
+
 	fit_set_compat_by_rev("google,veyron-rialto-rev%d",
 			      lib_sysinfo.board_id);
 
@@ -73,6 +167,9 @@ static int board_setup(void)
 	DwmciHost *emmc = new_rkdwmci_host(0xff0f0000, 594000000, 8, 0, NULL);
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
+
+	leds = new_rialto_leds();
+	display_set_ops(&(leds->ops));
 
 	UsbHostController *usb_host1 = new_usb_hc(DWC2, 0xff540000);
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
