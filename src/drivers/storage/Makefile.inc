@@ -29,3 +29,4 @@ depthcharge-$(CONFIG_DRIVER_STORAGE_SDHCI_PCI) += pci_sdhci.c
 depthcharge-$(CONFIG_DRIVER_STORAGE_SPI_GPT) += spi_gpt.c
 depthcharge-$(CONFIG_DRIVER_STORAGE_NVME) += nvme.c
 subdirs-y += mtd
+depthcharge-$(CONFIG_DRIVER_STORAGE_MMC_MT8173) += mtk_mmc.c bouncebuf.c
