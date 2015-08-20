@@ -28,7 +28,10 @@
 #include "boot/ramoops.h"
 #include "config.h"
 #include "drivers/bus/i2c/mtk_i2c.h"
+#include "drivers/bus/spi/mt8173.h"
 #include "drivers/bus/usb/usb.h"
+#include "drivers/ec/cros/ec.h"
+#include "drivers/ec/cros/spi.h"
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/gpio/mtk_gpio.h"
@@ -48,6 +51,10 @@ static int board_setup(void)
 	MTKI2c *i2c2 = new_mtk_i2c(0x11009000, 0x11000200, 2, 0, 0x20,
 				   ST_MODE, 100, 0);
 	tpm_set_ops(&new_slb9635_i2c(&i2c2->ops, 0x20)->base.ops);
+
+	MtkSpi *spibus = new_mtk_spi(0x1100A000);
+	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spibus->ops);
+	cros_ec_set_bus(&cros_ec_spi_bus->ops);
 
 	Mt6397Pmic *pmic = new_mt6397_power(0x1000D000, 0x10007000);
 	power_set_ops(&pmic->ops);
