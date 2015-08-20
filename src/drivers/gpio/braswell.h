@@ -22,26 +22,17 @@
 #define	__DRIVERS_GPIO_BRASWELL_H__
 
 #include <stdint.h>
-#include <arch/io.h>
-#include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/gpio/gpio.h"
 
-inline uint32_t read32(unsigned long addr)
-{
-	return *(volatile uint32_t *)addr;
-}
+#define GPIO_BASE_ADDRESS		0xfed80000
 
-#define IO_BASE_ADDRESS                 0xfed80000
+#define GP_SOUTHWEST			0
+#define GP_NORTH			1
+#define GP_EAST				2
+#define GP_SOUTHEAST			3
 
-#define GP_SOUTHWEST    0
-#define GP_NORTH        1
-#define GP_EAST         2
-#define GP_SOUTHEAST    3
-
-#define COMMUNITY_BASE(community)               \
-(IO_BASE_ADDRESS + community * 0x8000)
+#define COMMUNITY_BASE(community)	(GPIO_BASE_ADDRESS + community * 0x8000)
 
 #define MAX_FAMILY_PAD_GPIO_NO		15
 #define FAMILY_PAD_REGS_OFF		0x4400
@@ -54,18 +45,13 @@ inline uint32_t read32(unsigned long addr)
 			+ (FAMILY_PAD_REGS_SIZE * FAMILY_NUMBER(gpio_pad) \
 			+ (GPIO_REGS_SIZE * INTERNAL_PAD_NUM(gpio_pad))))
 
-#define PAD_RX_BIT	1
+#define PAD_RX_BIT			1
 
-typedef struct GpioDesc
-{
-	unsigned long addr;
-} GpioDesc;
+typedef struct GpioCfg {
+	GpioOps ops;
+	uint32_t *addr;
+} GpioCfg;
 
-typedef struct GpioCfg
-{
-	GpioOps         ops;
-	GpioDesc        desc;
-}GpioCfg;
+GpioCfg *new_braswell_gpio_input(int community, int offset);
 
-GpioCfg	*new_braswell_gpio_input(int community, int offset);
 #endif /* __DRIVERS_GPIO_BRASWELL_H__*/
