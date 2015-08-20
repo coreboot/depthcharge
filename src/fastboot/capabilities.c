@@ -40,7 +40,7 @@ static uint32_t fb_cap_bitmap[] = {
 	[FB_LIMITED_CAP] = (FB_ID_GETVAR | FB_ID_DOWNLOAD | FB_ID_BOOT |
 			    FB_ID_CONTINUE | FB_ID_REBOOT |
 			    FB_ID_REBOOT_BOOTLOADER | FB_ID_POWERDOWN |
-			    FB_ID_OFF_MODE_CHARGE),
+			    FB_ID_OFF_MODE_CHARGE | FB_ID_GET_UNLOCK_ABILITY),
 	/* Full fastboot functionality allowed in firmware. */
 	[FB_FULL_CAP] = FB_ID_MASK,
 };
