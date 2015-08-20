@@ -960,6 +960,17 @@ static fb_ret_type fb_unlock(struct fb_cmd *cmd)
 	return FB_REBOOT;
 }
 
+static fb_ret_type fb_get_unlock_ability(struct fb_cmd *cmd)
+{
+	fb_add_number(&cmd->output, "%d",
+		      vbnv_read(VBNV_FASTBOOT_UNLOCK_IN_FW));
+	cmd->type = FB_INFO;
+	fb_execute_send(cmd);
+
+	cmd->type = FB_OKAY;
+	return FB_SUCCESS;
+}
+
 static fb_ret_type fb_set_off_mode_charge(struct fb_cmd *cmd)
 {
 	cmd->type = FB_FAIL;
@@ -1028,6 +1039,10 @@ const struct fastboot_func fb_func_table[] = {
 	{ NAME_NO_ARGS("oem lock"), FB_ID_LOCK, fb_lock},
 	{ NAME_ARGS("oem off-mode-charge", ' '), FB_ID_OFF_MODE_CHARGE,
 	  fb_set_off_mode_charge},
+	{ NAME_NO_ARGS("flashing lock"), FB_ID_LOCK, fb_lock},
+	{ NAME_NO_ARGS("flashing unlock"), FB_ID_UNLOCK, fb_unlock},
+	{ NAME_NO_ARGS("flashing get_unlock_ability"), FB_ID_GET_UNLOCK_ABILITY,
+	  fb_get_unlock_ability},
 	/* OEM cmd names starting in uppercase imply vendor/device specific. */
 	{ NAME_NO_ARGS("oem Powerdown"), FB_ID_POWERDOWN, fb_powerdown},
 	{ NAME_ARGS("oem Setenv", ' '), FB_ID_SETENV, fb_setenv}
