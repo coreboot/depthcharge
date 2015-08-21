@@ -82,10 +82,13 @@ typedef enum fb_rsp {
 } fb_rsp_type;
 
 typedef enum {
-	FB_ACTION_NONE = 0,
-	FB_ACTION_LOCK = 1,
-	FB_ACTION_UNLOCK = 2,
-} fb_action;
+	FB_BUTTON_NONE = 0,
+	FB_BUTTON_UP   = (1 << 0),
+	FB_BUTTON_DOWN = (1 << 1),
+	FB_BUTTON_SELECT = (1 << 2),
+	FB_BUTTON_CONFIRM = (1 << 3),
+	FB_BUTTON_CANCEL = (1 << 4),
+} fb_button_type;
 
 /*
  * fb_buffer defines either input / output buffer for a fastboot cmd.
@@ -199,15 +202,21 @@ int get_board_var(struct fb_cmd *cmd, fb_getvar_t var);
 int board_should_enter_device_mode(void);
 int board_battery_cutoff(void);
 /*
- * Function to get user confirmation. Every device needs to implement this as
- * per the available physical buttons.
- *
- * action: FB_ACTION_* indicating action requesting confirmation
- *
- * Return value expected is:
- * 1 = user confirmed
- * 0 = user cancelled / no user confirmation.
+ * In order to have board-specific messages for user input, this function asks
+ * for the string to be displayed corresponding to a button.
  */
-int board_user_confirmation(fb_action action);
+const char *board_get_button_string(fb_button_type button);
+
+/*
+ * board_getchar() is fastboot specific board implementation of getchar, which
+ * is expected to return user input into fb_button_type format.
+ *
+ *
+ * @param button_flags: Indicating buttons that are expected.
+ *
+ * @return: Button out of the button flags that was pressed.
+ *          FB_BUTTON_NONE if no button pressed or input error.
+ */
+fb_button_type board_getchar(uint32_t button_flags);
 
 #endif /* __FASTBOOT_FASTBOOT_H__ */

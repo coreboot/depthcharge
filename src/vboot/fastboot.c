@@ -233,16 +233,19 @@ void vboot_try_fastboot(void)
 
 	while (1) {
 		draw_option(pos, 1);
-		int keypress = getchar();
-		if (keypress == ' ') {		/* move down */
+
+		int keypress = board_getchar(FB_BUTTON_DOWN | FB_BUTTON_UP |
+					     FB_BUTTON_SELECT);
+
+		if (keypress == FB_BUTTON_DOWN) {		/* move down */
 			draw_option(pos++, 0);
 			if (pos == command_count)
 				pos = 0;
-		} else if (keypress == '\t') {	/* move up */
+		} else if (keypress == FB_BUTTON_UP) {		/* move up */
 			draw_option(pos--, 0);
 			if (pos == -1)
 				pos = command_count - 1;
-		} else if (keypress == '\r') {	/* execute */
+		} else if (keypress == FB_BUTTON_SELECT) {	/* execute */
 			if (opts[pos].execute)
 				opts[pos].execute();
 			break;

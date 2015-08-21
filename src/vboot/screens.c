@@ -25,6 +25,7 @@
 #include <vboot_api.h>
 
 #include "drivers/video/display.h"
+#include "fastboot/fastboot.h"
 
 #define FB_INFO_POSITION_ROW 30
 #define FB_INFO_FOREGROUND 11
@@ -72,8 +73,6 @@ static VbError_t vboot_draw_developer_warning(uint32_t localize)
 	video_console_set_cursor(0, FB_INFO_POSITION_ROW);
 	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
 		     "OS verification is OFF\n");
-	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
-		     "Press Volume Down to re-enable.\n");
 
 	return VBERROR_SUCCESS;
 }
@@ -162,6 +161,17 @@ static VbError_t vboot_draw_to_norm_confirmed(uint32_t localize)
 	return rv;
 }
 
+const char *__attribute__((weak)) board_get_button_string(fb_button_type button)
+{
+	/* Should be implemented by board. Not optional. */
+	die("%d not implemented!\n", button);
+}
+
+fb_button_type __attribute__((weak)) board_getchar(uint32_t flags)
+{
+	return FB_BUTTON_NONE;
+}
+
 static VbError_t vboot_draw_fastboot_menu(uint32_t localize)
 {
 	VbError_t rv;
@@ -178,7 +188,10 @@ static VbError_t vboot_draw_fastboot_menu(uint32_t localize)
 		free(buf);
 	}
 	video_console_set_cursor(102, 10);
-	video_printf(15, 0, 0, "Volume Up: Move Cursor Up");
+
+	const char *fb_str = board_get_button_string(FB_BUTTON_UP);
+
+	video_printf(15, 0, 0, "%s: Move Cursor Up", fb_str);
 
 	buf = load_bitmap("arrow_down.bmp", &size);
 	if (buf) {
@@ -186,10 +199,12 @@ static VbError_t vboot_draw_fastboot_menu(uint32_t localize)
 		free(buf);
 	}
 	video_console_set_cursor(102, 11);
-	video_printf(15, 0, 0, "Volume Down: Move Cursor Down");
+	fb_str = board_get_button_string(FB_BUTTON_DOWN);
+	video_printf(15, 0, 0, "%s: Move Cursor Down", fb_str);
 
 	video_console_set_cursor(102, 12);
-	video_printf(15, 0, 0, "Power: Run Selected Option");
+	fb_str = board_get_button_string(FB_BUTTON_SELECT);
+	video_printf(15, 0, 0, "%s: Run Selected Option", fb_str);
 
 	return VBERROR_SUCCESS;
 }

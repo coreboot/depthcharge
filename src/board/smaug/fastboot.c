@@ -25,6 +25,7 @@
 #include <udc/chipidea.h>
 
 #include "board/smaug/fastboot.h"
+#include "board/smaug/input.h"
 #include "boot/android_dt.h"
 #include "config.h"
 #include "drivers/bus/usb/usb.h"
@@ -179,25 +180,6 @@ void fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT])
 	}
 }
 
-int board_user_confirmation(fb_action action)
-{
-	int ret = 0;
-
-	while (1) {
-		uint32_t ch = getchar();
-
-		if (ch == '\r') {
-			ret = 1;
-			break;
-		}
-		if (ch == ' ') {
-			ret = 0;
-			break;
-		}
-	}
-	return ret;
-}
-
 /*
  * This routine is used to handle fastboot calls to write image to special
  * "bootloader" partition. It is assumed that this call is made before fastboot
@@ -249,4 +231,42 @@ backend_ret_t board_write_partition(const char *name, void *image_addr,
 	}
 
 	return BE_SUCCESS;
+}
+
+static const struct {
+	fb_button_type button;
+	const char *string;
+	uint8_t input;
+} button_table[] = {
+	{FB_BUTTON_UP, "Volume up", KEYSET(0, VOL_UP, 0)},
+	{FB_BUTTON_DOWN, "Volume down", KEYSET(0, 0, VOL_DOWN)},
+	{FB_BUTTON_SELECT, "Power button", KEYSET(PWR_BTN, 0, 0)},
+	{FB_BUTTON_CONFIRM, "Power button", KEYSET(PWR_BTN, 0, 0)},
+	{FB_BUTTON_CANCEL, "Volume down", KEYSET(0, 0, VOL_DOWN)},
+};
+
+const char *board_get_button_string(fb_button_type button)
+{
+	int i;
+	for (i = 0; i < ARRAY_SIZE(button_table); i++)
+		if (button_table[i].button == button)
+			return button_table[i].string;
+
+	die("%d not implemented!\n", button);
+	return NULL;
+}
+
+fb_button_type board_getchar(uint32_t flags)
+{
+	int i;
+	uint8_t input;
+
+	while (1) {
+		input = read_char();
+		for (i = 0; i < ARRAY_SIZE(button_table); i++) {
+			if ((button_table[i].button & flags) &&
+			    (button_table[i].input == input))
+				return button_table[i].button;
+		}
+	}
 }
