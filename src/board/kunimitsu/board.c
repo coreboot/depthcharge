@@ -22,23 +22,24 @@
  */
 
 #include <pci.h>
-
 #include <pci/pci.h>
+#include <libpayload.h>
+#include <sysinfo.h>
+
 #include "base/init_funcs.h"
 #include "base/list.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
-#include "drivers/gpio/lynxpoint_lp.h"
+#include "drivers/gpio/skylake.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
-#include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
+#include "drivers/storage/sdhci.h"
 #include "drivers/tpm/lpc.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
 #include "drivers/bus/usb/usb.h"
-#include "drivers/storage/sdhci.h"
 
 /*
  * Clock frequencies for the eMMC and SD ports are defined below. The minimum
@@ -52,7 +53,7 @@
 
 static int board_setup(void)
 {
-	sysinfo_install_flags(NULL);
+	sysinfo_install_flags(new_skylake_gpio_input_from_coreboot);
 
 	/* MEC1322 Chrome EC */
 	CrosEcLpcBus *cros_ec_lpc_bus =
@@ -63,9 +64,6 @@ static int board_setup(void)
 
 	/* SLB9670 SPI TPM */
 	tpm_set_ops(&new_lpc_tpm((void *)(uintptr_t)0xfed40000)->ops);
-
-	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 23, 0));
-	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
 
 	uintptr_t UsbMmioBase =
 		pci_read_config32(PCI_DEV(0, 0x14, 0), PCI_BASE_ADDRESS_0);
@@ -84,8 +82,6 @@ static int board_setup(void)
 	list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
 				&removable_block_dev_controllers);
 	power_set_ops(&pch_power_ops);
-
-	/* Enable TPM here when present on board. */
 
 	return 0;
 }
