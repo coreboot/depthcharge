@@ -213,6 +213,12 @@ int fb_device_unlocked(void)
 	return vboot_in_developer();
 }
 
+static size_t fb_get_max_download_size(void)
+{
+	/* Max download size set to half of heap size */
+	return CONFIG_FASTBOOT_HEAP_SIZE/2;
+}
+
 static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 {
 	size_t input_len = fb_buffer_length(&cmd->input);
@@ -225,8 +231,7 @@ static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 		break;
 
 	case FB_DWNLD_SIZE:
-		/* Max download size set to half of heap size */
-		fb_add_number(output, "0x%x", CONFIG_FASTBOOT_HEAP_SIZE/2);
+		fb_add_number(output, "0x%x", fb_get_max_download_size());
 		break;
 
 	case FB_PART_SIZE: {
@@ -716,6 +721,12 @@ static fb_ret_type fb_download(struct fb_cmd *cmd)
 	unsigned long bytes = strtoul(num, NULL, 16);
 
 	fb_free_string(num);
+
+	if (bytes > fb_get_max_download_size()) {
+		fb_add_string(output, "Image size exceeds max download size",
+			      NULL);
+		return FB_SUCCESS;
+	}
 
 	alloc_image_space(bytes);
 
