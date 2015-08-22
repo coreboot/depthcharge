@@ -34,7 +34,7 @@
 static uint32_t current_screen = VB_SCREEN_BLANK;
 static char initialized = 0;
 
-static inline void *load_bitmap(const char *name, uint32_t *size)
+void *load_bitmap(const char *name, uint32_t *size)
 {
 	struct cbfs_file *file = cbfs_get_file(CBFS_DEFAULT_MEDIA, name);
 	if (file == NULL) {
@@ -216,17 +216,17 @@ static VbError_t vboot_draw_fastboot_mode(uint32_t localize)
 	return VBERROR_SUCCESS;
 }
 
+int __attribute__((weak)) board_draw_splash(uint32_t localize)
+{
+	printf("splash screen not implemented\n");
+	return -1;
+}
+
 static VbError_t vboot_draw_splash(uint32_t localize)
 {
-	uint32_t size;
-	VbError_t rv = VBERROR_SUCCESS;
-	uint8_t *buf = load_bitmap("splash.bmp", &size);
-	if (!buf)
+	if (board_draw_splash(localize))
 		return VBERROR_UNKNOWN;
-	if (draw_bitmap(40, 45, 20, buf, size))
-		rv = VBERROR_UNKNOWN;
-	free(buf);
-	return rv;
+	return VBERROR_SUCCESS;
 }
 
 static VbError_t vboot_draw_oem_lock_unlock(uint32_t localize, int lock)

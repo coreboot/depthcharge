@@ -36,5 +36,6 @@ int vboot_in_normal(void);
 void vboot_update_recovery(uint32_t request);
 void vboot_boot_kernel(VbSelectAndLoadKernelParams *kparams);
 int vboot_draw_screen(uint32_t screen, uint32_t localize, int force);
+int board_draw_splash(uint32_t localize);
 
 #endif /* __VBOOT_STAGES_H__ */

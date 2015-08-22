@@ -48,7 +48,9 @@
 #include "drivers/video/display.h"
 #include "drivers/ec/cros/i2c.h"
 #include "drivers/ec/cros/ec.h"
+#include "drivers/video/coreboot_fb.h"
 #include "vboot/boot_policy.h"
+#include "vboot/stages.h"
 #include "vboot/util/flag.h"
 #include "vboot/vbnv.h"
 #include "drivers/video/tegra132.h"
@@ -312,3 +314,23 @@ static int display_setup(void)
 }
 
 INIT_FUNC(display_setup);
+
+int board_draw_splash(uint32_t localize)
+{
+	int rv = 0;
+	uint32_t size;
+	uint8_t *buf = load_bitmap("splash.bmp", &size);
+	if (!buf)
+		return -1;
+	/*
+	 * need to draw using native drawing routine to make the image match
+	 * pixel by pixel the animation following after depthcharge.
+	 *
+	 * TODO: compress the image so that we can store full screen image
+	 * and avoid hardcoding the coordinate.
+	 */
+	if (dc_corebootfb_draw_bitmap(900, 760, buf))
+		rv = -1;
+	free(buf);
+	return rv;
+}
