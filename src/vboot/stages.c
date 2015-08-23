@@ -236,6 +236,10 @@ int vboot_select_and_load_kernel(void)
 			return 1;
 	}
 
+	if (vboot_in_developer())
+		if (vboot_draw_screen(VB_SCREEN_SPLASH, 0, 1))
+			printf("Failed to draw splash screen\n");
+
 	vboot_boot_kernel(&kparams);
 
 	return 1;

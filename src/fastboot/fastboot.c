@@ -54,17 +54,50 @@
 static void *image_addr;
 static size_t image_size;
 
+#define MAX_MSG_BUF_SIZE	512
+
 /*
  * TODO(furquan): Get rid of this once the vboot flows and fastboot interactions
  * are finalized.
  */
 static void fb_print_on_screen(const char *msg, int fg, int bg)
 {
-	unsigned int rows, cols;
+	static unsigned int rows = 0, cols = 0;
+	static char *buf = NULL;
 
-	vboot_draw_screen(VB_SCREEN_FASTBOOT_MODE, 0, 1);
-	video_get_rows_cols(&rows, &cols);
+	assert(strlen(msg) < MAX_MSG_BUF_SIZE);
+
+	/* Set screen if earlier screen was different. */
+	vboot_draw_screen(VB_SCREEN_FASTBOOT_MODE, 0, 0);
+
+	if ((rows == 0) || (cols == 0) || (buf == NULL)) {
+
+		/* Get number of rows and cols. */
+		video_get_rows_cols(&rows, &cols);
+		if ((rows == 0) || (cols == 0))
+			return;
+
+		/*
+		 * We only write to lower half of the screen. Maintain a buffer
+		 * to clear lower half upto (MAX_MSG_BUF_SIZE + cols). This is
+		 * assuming that the last message starts in the last col of
+		 * center row in worst case.
+		 */
+		size_t buf_size = MAX_MSG_BUF_SIZE + cols;
+		buf = malloc(buf_size);
+		if (buf == NULL)
+			return;
+		memset(buf, ' ', buf_size);
+		buf[buf_size - 1] = '\0';
+	}
+
+	/* Set cursor to center row. */
 	video_console_set_cursor(0, rows / 2);
+
+	/* Clear lower half of the screen where we write. */
+	video_printf(fg, bg, 0, buf);
+
+	/* Put message on center of screen. */
 	video_printf(fg, bg, 1, msg);
 }
 
@@ -1001,17 +1034,17 @@ static fb_ret_type fb_lock(struct fb_cmd *cmd)
 {
 	cmd->type = FB_FAIL;
 
+	FB_LOG("Locking device\n");
+	if (!fb_device_unlocked()) {
+		fb_add_string(&cmd->output, "Device already locked", NULL);
+		return FB_SUCCESS;
+	}
+
 	vboot_draw_screen(VB_SCREEN_OEM_LOCK_CONFIRM, 0, 0);
 
 	if (!fb_user_confirmation()) {
 		FB_LOG("User cancelled\n");
 		fb_add_string(&cmd->output, "User cancelled request", NULL);
-		return FB_SUCCESS;
-	}
-
-	FB_LOG("Locking device\n");
-	if (!fb_device_unlocked()) {
-		fb_add_string(&cmd->output, "Device already locked", NULL);
 		return FB_SUCCESS;
 	}
 
@@ -1033,17 +1066,17 @@ static fb_ret_type fb_unlock(struct fb_cmd *cmd)
 {
 	cmd->type = FB_FAIL;
 
+	FB_LOG("Unlocking device\n");
+	if (fb_device_unlocked()) {
+		fb_add_string(&cmd->output, "Device already unlocked", NULL);
+		return FB_SUCCESS;
+	}
+
 	vboot_draw_screen(VB_SCREEN_OEM_UNLOCK_CONFIRM, 0, 0);
 
 	if (!fb_user_confirmation()) {
 		FB_LOG("User cancelled\n");
 		fb_add_string(&cmd->output, "User cancelled request", NULL);
-		return FB_SUCCESS;
-	}
-
-	FB_LOG("Unlocking device\n");
-	if (fb_device_unlocked()) {
-		fb_add_string(&cmd->output, "Device already unlocked", NULL);
 		return FB_SUCCESS;
 	}
 

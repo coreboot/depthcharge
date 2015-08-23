@@ -102,9 +102,6 @@ int main(void)
 	if (run_init_funcs())
 		halt();
 
-	if (vboot_draw_screen(VB_SCREEN_SPLASH, 0, 1))
-		printf("Failed to draw splash screen\n");
-
 	timestamp_add_now(TS_RO_VB_INIT);
 
 	if (CONFIG_CLI)
@@ -121,6 +118,10 @@ int main(void)
 	/* Handle BCB command, if supported. */
 	if (CONFIG_BCB_SUPPORT)
 		bcb_handle_command();
+
+	if (vboot_in_normal())
+		if (vboot_draw_screen(VB_SCREEN_SPLASH, 0, 1))
+			printf("Failed to draw splash screen\n");
 
 	timestamp_add_now(TS_VB_SELECT_AND_LOAD_KERNEL);
 
