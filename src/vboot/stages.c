@@ -120,6 +120,11 @@ int vboot_in_developer(void)
 	return vboot_out_flags & VB_INIT_OUT_ENABLE_DEVELOPER;
 }
 
+int vboot_in_normal(void)
+{
+	return !(vboot_in_recovery() || vboot_in_developer());
+}
+
 void vboot_update_recovery(uint32_t request)
 {
 	vbnv_write(VBNV_RECOVERY_REQUEST, request);
