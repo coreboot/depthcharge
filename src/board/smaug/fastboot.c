@@ -270,3 +270,19 @@ fb_button_type board_getchar(uint32_t flags)
 		}
 	}
 }
+
+int board_battery_soc_ok(void)
+{
+	uint32_t perc;
+	if (cros_ec_read_batt_state_of_charge(&perc) != 0)
+		return 0;
+
+	/*
+	 * Flash / erase operations are acceptable only if battery
+	 * state-of-charge is > 50%.
+	 */
+	if (perc > 50)
+		return 1;
+
+	return 0;
+}
