@@ -45,6 +45,7 @@ typedef enum {
 	FB_OFF_MODE_CHARGE,
 	FB_VARIANT,
 	FB_BATT_VOLTAGE,
+	FB_BATT_SOC_OK,
 } fb_getvar_t;
 
 typedef enum fb_ret {
@@ -307,6 +308,15 @@ typedef struct {
 	 */
 	const char * (*get_button_str)(fb_button_type button);
 
+	/*
+	 * Check to see if battery state-of-charge is okay for flash/erase
+	 * operations.
+	 *
+	 * Return:
+	 * 1 = Battery state-of-charge is acceptable
+	 * 0 = Battery state-of-charge is not acceptable
+	 */
+	int (*battery_soc_ok)(void);
 } fb_callback_t;
 
 extern fb_callback_t fb_board_handler;

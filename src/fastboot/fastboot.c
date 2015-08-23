@@ -188,6 +188,28 @@ static size_t fb_get_max_download_size(void)
 	return CONFIG_FASTBOOT_HEAP_SIZE/2;
 }
 
+static int battery_soc_check(void)
+{
+	/*
+	 * If board does not define this function, then by default it is
+	 * assumed that there are no restrictions on flash/erase
+	 * operation w.r.t. battery state-of-charge.
+	 */
+	if (fb_board_handler.battery_soc_ok == NULL) {
+		FB_LOG("No handler defined for battery_soc_ok\n");
+		return 1;
+	}
+
+	/*
+	 * No check for battery state-of-charge is performed if GBB override is
+	 * set.
+	 */
+	if (fb_check_gbb_override())
+		return 1;
+
+	return fb_board_handler.battery_soc_ok();
+}
+
 static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 {
 	size_t input_len = fb_buffer_length(&cmd->input);
@@ -290,6 +312,17 @@ static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 			fb_add_string(output, "Unknown", NULL);
 		else
 			fb_add_number(output, "%d mV", val_mv);
+		break;
+	}
+	case FB_BATT_SOC_OK: {
+		/*
+		 * This variable is supposed to return yes if device battery
+		 * state-of-charge is acceptable for flashing.
+		 */
+		if (battery_soc_check())
+			fb_add_string(output, "yes", NULL);
+		else
+			fb_add_string(output, "no", NULL);
 		break;
 	}
 	default:
@@ -432,6 +465,7 @@ static const struct {
 	{ NAME_NO_ARGS("off-mode-charge"), FB_OFF_MODE_CHARGE},
 	{ NAME_NO_ARGS("battery-voltage"), FB_BATT_VOLTAGE},
 	{ NAME_NO_ARGS("variant"), FB_VARIANT},
+	{ NAME_NO_ARGS("battery-soc-ok"), FB_BATT_SOC_OK},
 	/*
 	 * OEM specific :
 	 * Spec says names starting with lowercase letter are reserved.
@@ -744,6 +778,15 @@ const char *backend_error_string[] = {
 
 static fb_ret_type fb_erase(struct fb_cmd *cmd)
 {
+	/* No guarantees if battery state changes during erase operation. */
+	if (!battery_soc_check()) {
+		FB_LOG("Battery state-of-charge not acceptable.\n");
+		cmd->type = FB_FAIL;
+		fb_add_string(&cmd->output,
+			      "battery state-of-charge not acceptable", NULL);
+		return FB_SUCCESS;
+	}
+
 	/*
 	 * Check if there is an override and env_force_erase = 0, then skip
 	 * erase operation. This is possible only when GBB flag
@@ -787,6 +830,15 @@ static fb_ret_type fb_erase(struct fb_cmd *cmd)
 
 static fb_ret_type fb_flash(struct fb_cmd *cmd)
 {
+	/* No guarantees if battery state changes during flash operation. */
+	if (!battery_soc_check()) {
+		FB_LOG("Battery state-of-charge not acceptable.\n");
+		cmd->type = FB_FAIL;
+		fb_add_string(&cmd->output,
+			      "battery state-of-charge not acceptable", NULL);
+		return FB_SUCCESS;
+	}
+
 	backend_ret_t ret;
 
 	if (image_addr == NULL) {
