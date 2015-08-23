@@ -345,6 +345,14 @@ int cros_ec_battery_cutoff(uint8_t flags);
 int cros_ec_read_batt_volt(uint32_t *volt);
 
 /**
+ * Read the value of battery state-of-charge.
+ *
+ * @param: state	Buffer to read battery state-of-charge.
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_read_batt_state_of_charge(uint32_t *state);
+
+/**
  * Read the version information for the EC images
  *
  * @param versionp	This is the version information

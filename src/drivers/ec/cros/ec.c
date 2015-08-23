@@ -972,6 +972,21 @@ int cros_ec_read_batt_volt(uint32_t *volt)
 	return cros_ec_read_memmap(EC_MEMMAP_BATT_VOLT, sizeof(*volt), volt);
 }
 
+int cros_ec_read_batt_state_of_charge(uint32_t *state)
+{
+	struct ec_params_charge_state params;
+	struct ec_response_charge_state resp;
+
+	params.cmd = CHARGE_STATE_CMD_GET_STATE;
+
+	if (ec_command(EC_CMD_CHARGE_STATE, 0, &params, sizeof(params), &resp,
+		       sizeof(resp)) < 0)
+		return -1;
+
+	*state = resp.get_state.batt_state_of_charge;
+	return 0;
+}
+
 int cros_ec_battery_cutoff(uint8_t flags)
 {
 	struct ec_params_battery_cutoff p;
