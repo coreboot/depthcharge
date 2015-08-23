@@ -49,6 +49,7 @@ typedef enum {
 	FB_OFF_MODE_CHARGE,
 	FB_VARIANT,
 	FB_BATT_VOLTAGE,
+	FB_BATT_SOC_OK,
 } fb_getvar_t;
 
 typedef enum fb_ret {
@@ -218,5 +219,10 @@ const char *board_get_button_string(fb_button_type button);
  *          FB_BUTTON_NONE if no button pressed or input error.
  */
 fb_button_type board_getchar(uint32_t button_flags);
+
+/*
+ * Check to see if battery state-of-charge is okay for flash/erase operations.
+ */
+int board_battery_soc_ok(void);
 
 #endif /* __FASTBOOT_FASTBOOT_H__ */

@@ -81,6 +81,12 @@ int __attribute__((weak)) board_battery_cutoff(void)
 	return -1;
 }
 
+int __attribute__((weak)) board_battery_soc_ok(void)
+{
+	FB_LOG("Not implemented on this device.\n");
+	return 0;
+}
+
 /************* Responses to Host **********************/
 /*
  * Func: fb_send
@@ -322,6 +328,17 @@ static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 			fb_add_number(output, "%d mV", volt);
 		break;
 	}
+	case FB_BATT_SOC_OK: {
+		/*
+		 * This variable is supposed to return yes if device battery
+		 * state-of-charge is acceptable for flashing.
+		 */
+		if (board_battery_soc_ok())
+			fb_add_string(output, "yes", NULL);
+		else
+			fb_add_string(output, "no", NULL);
+		break;
+	}
 	default:
 		goto board_read;
 	}
@@ -457,6 +474,7 @@ static const struct {
 	{ NAME_NO_ARGS("off-mode-charge"), FB_OFF_MODE_CHARGE},
 	{ NAME_NO_ARGS("battery-voltage"), FB_BATT_VOLTAGE},
 	{ NAME_NO_ARGS("variant"), FB_VARIANT},
+	{ NAME_NO_ARGS("battery-soc-ok"), FB_BATT_SOC_OK},
 	/*
 	 * OEM specific :
 	 * Spec says names starting with lowercase letter are reserved.
@@ -769,6 +787,15 @@ const char *backend_error_string[] = {
 
 static fb_ret_type fb_erase(struct fb_cmd *cmd)
 {
+	/* No guarantees if battery state changes during erase operation. */
+	if (!board_battery_soc_ok()) {
+		FB_LOG("Battery state-of-charge not acceptable.\n");
+		cmd->type = FB_FAIL;
+		fb_add_string(&cmd->output,
+			      "battery state-of-charge not acceptable", NULL);
+		return FB_SUCCESS;
+	}
+
 	/*
 	 * Check if there is an override and env_force_erase = 0, then skip
 	 * erase operation. This is possible only when GBB flag
@@ -813,6 +840,15 @@ static fb_ret_type fb_erase(struct fb_cmd *cmd)
 
 static fb_ret_type fb_flash(struct fb_cmd *cmd)
 {
+	/* No guarantees if battery state changes during flash operation. */
+	if (!board_battery_soc_ok()) {
+		FB_LOG("Battery state-of-charge not acceptable.\n");
+		cmd->type = FB_FAIL;
+		fb_add_string(&cmd->output,
+			      "battery state-of-charge not acceptable", NULL);
+		return FB_SUCCESS;
+	}
+
 	backend_ret_t ret;
 
 	if (image_addr == NULL) {
