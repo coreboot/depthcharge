@@ -317,6 +317,18 @@ typedef struct {
 	 * 0 = Battery state-of-charge is not acceptable
 	 */
 	int (*battery_soc_ok)(void);
+
+	/*
+	 * Check if board allows "oem unlock" to be performed in bootloader.
+	 * This is to allow boards that are unable to set
+	 * VBNV_FASTBOOT_UNLOCK_IN_FW in NvStorage and want to use an alternate
+	 * storage e.g. FRP (factory reset protection) partition on the eMMC.
+	 *
+	 * Return:
+	 * 1 = allow unlock in bootloader
+	 * 0 = do not allow unlock in bootloader
+	 */
+	int (*allow_unlock)(void);
 } fb_callback_t;
 
 extern fb_callback_t fb_board_handler;

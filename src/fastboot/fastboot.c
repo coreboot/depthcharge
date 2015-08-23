@@ -1022,6 +1022,22 @@ static int fb_user_confirmation()
 		== FB_BUTTON_CONFIRM ? 1 : 0;
 }
 
+static int unlock_in_fw_set(void)
+{
+	/* If fastboot override is set, allow lock/unlock unconditionally. */
+	if (fb_check_gbb_override())
+		return 1;
+
+	/*
+	 * Else:
+	 * 1. Check fastboot unlock flag in nvstorage or
+	 * 2. Callback board handler if it exists.
+	 */
+	return (vbnv_read(VBNV_FASTBOOT_UNLOCK_IN_FW) ||
+		(fb_board_handler.allow_unlock &&
+		 fb_board_handler.allow_unlock()));
+}
+
 static fb_ret_type fb_lock(struct fb_cmd *cmd)
 {
 	cmd->type = FB_FAIL;
@@ -1029,6 +1045,12 @@ static fb_ret_type fb_lock(struct fb_cmd *cmd)
 	FB_LOG("Locking device\n");
 	if (!fb_device_unlocked()) {
 		fb_add_string(&cmd->output, "Device already locked", NULL);
+		return FB_SUCCESS;
+	}
+
+	if (!unlock_in_fw_set()) {
+		fb_add_string(&cmd->output, "Enable OEM unlock is not set",
+			      NULL);
 		return FB_SUCCESS;
 	}
 
@@ -1057,6 +1079,12 @@ static fb_ret_type fb_unlock(struct fb_cmd *cmd)
 		return FB_SUCCESS;
 	}
 
+	if (!unlock_in_fw_set()) {
+		fb_add_string(&cmd->output, "Enable OEM unlock is not set",
+			      NULL);
+		return FB_SUCCESS;
+	}
+
 	if (!fb_user_confirmation()) {
 		FB_LOG("User cancelled\n");
 		fb_add_string(&cmd->output, "User cancelled request", NULL);
@@ -1074,8 +1102,8 @@ static fb_ret_type fb_unlock(struct fb_cmd *cmd)
 
 static fb_ret_type fb_get_unlock_ability(struct fb_cmd *cmd)
 {
-	fb_add_number(&cmd->output, "%d",
-		      vbnv_read(VBNV_FASTBOOT_UNLOCK_IN_FW));
+	fb_add_number(&cmd->output, "%d", unlock_in_fw_set());
+
 	cmd->type = FB_INFO;
 	fb_execute_send(cmd);
 
