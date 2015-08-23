@@ -225,4 +225,11 @@ fb_button_type board_getchar(uint32_t button_flags);
  */
 int board_battery_soc_ok(void);
 
+/*
+ * Check if board allows "oem unlock" to be performed in bootloader.
+ * This is to allow boards that are unable to set VBNV_FASTBOOT_UNLOCK_IN_FW in
+ * NvStorage and want to use an alternate storage e.g. FRP (factory reset
+ * partition) on the eMMC.
+ */
+int board_allow_unlock(void);
 #endif /* __FASTBOOT_FASTBOOT_H__ */

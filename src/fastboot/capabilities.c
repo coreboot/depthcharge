@@ -60,6 +60,12 @@ uint8_t fb_check_gbb_override(void)
 	return 0;
 }
 
+int __attribute__((weak)) board_allow_unlock(void)
+{
+	/* Default weak implemenation, always returns 0 */
+	return 0;
+}
+
 static uint32_t fb_get_curr_cap_bitmap(void)
 {
 	static uint32_t bitmap = 0;
@@ -79,7 +85,8 @@ static uint32_t fb_get_curr_cap_bitmap(void)
 		bitmap = fb_cap_bitmap[FB_LIMITED_CAP];
 
 		/* If unlock in fw is set in nvstorage, add unlock to bitmap. */
-		if (vbnv_read(VBNV_FASTBOOT_UNLOCK_IN_FW))
+		if (vbnv_read(VBNV_FASTBOOT_UNLOCK_IN_FW) ||
+		    board_allow_unlock())
 			bitmap |= FB_ID_UNLOCK;
 
 		return bitmap;
