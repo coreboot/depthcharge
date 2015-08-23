@@ -24,6 +24,7 @@
 #include <libpayload.h>
 #include <udc/chipidea.h>
 
+#include "base/gpt.h"
 #include "board/smaug/fastboot.h"
 #include "board/smaug/input.h"
 #include "boot/android_dt.h"
@@ -285,4 +286,86 @@ int board_battery_soc_ok(void)
 		return 1;
 
 	return 0;
+}
+
+int board_allow_unlock(void)
+{
+	uint8_t *buffer = NULL;
+	static int allow_unlock = -1;
+
+	if (allow_unlock != -1)
+		return allow_unlock;
+
+	/* In case of any failure below, do not allow unlock. */
+	allow_unlock = 0;
+
+	/* Get blockdev ctrlr. */
+	BlockDevCtrlr *bdev_ctrlr = fb_bdev_list[MMC_BDEV].bdev_ctrlr;
+	if (bdev_ctrlr == NULL)
+		goto fail;
+
+	/* Get all fixed block devices. */
+	ListNode *devs;
+	BlockDev *bdev = NULL, *temp;
+	int count = get_all_bdevs(BLOCKDEV_FIXED, &devs);
+
+	if (count == 0)
+		goto fail;
+
+	/* Identify the block device owned by required bdev ctlr. */
+	list_for_each(temp, *devs, list_node) {
+		if (bdev_ctrlr->ops.is_bdev_owned(&bdev_ctrlr->ops, temp)) {
+			bdev = temp;
+			break;
+		}
+	}
+
+	if (bdev == NULL)
+		goto fail;
+
+	/* Allocate GPT data. */
+	GptData *gpt = alloc_gpt(bdev);
+	if (gpt == NULL)
+		goto fail;
+
+	/* Read GPT entries. */
+	GptHeader *header = (GptHeader *)gpt->primary_header;
+	GptEntry *entries = (GptEntry *)gpt->primary_entries;
+	GptEntry *e;
+	int i;
+
+	/* FRP-partition label: "PST" */
+	const uint16_t lbl_required[] = {'P','S','T'};
+
+	/* Identify the entry for FRP partition. */
+	for (i = 0, e = entries; i < header->number_of_entries; i++, e++) {
+		if (memcmp(e->name, lbl_required, sizeof(lbl_required)) == 0)
+			break;
+	}
+
+	/* FRP not found. return 0. */
+	if (i == header->number_of_entries)
+		goto fail;
+
+	/* Get offset and size of FRP. */
+	uintptr_t offset = e->starting_lba;
+	size_t size = GptGetEntrySizeLba(e);
+	buffer = malloc(gpt->sector_bytes);
+
+	if (buffer == NULL)
+		goto fail;
+
+	/* Read last sector of FRP. */
+	BlockDevOps *ops = &bdev->ops;
+	if (ops->read(ops, offset + size - 1, 1, (void *)buffer) != 1)
+		goto fail;
+
+	/* Allow unlock is LSB in last byte of FRP. */
+	allow_unlock = buffer[gpt->sector_bytes - 1] & 0x1;
+
+fail:
+	free(buffer);
+	if (bdev && gpt)
+		free_gpt(bdev, gpt);
+	return allow_unlock;
 }
