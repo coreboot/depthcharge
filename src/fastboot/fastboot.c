@@ -1156,6 +1156,25 @@ static fb_ret_type fb_set_off_mode_charge(struct fb_cmd *cmd)
 	return FB_SUCCESS;
 }
 
+static fb_ret_type fb_clear_gbb(struct fb_cmd *cmd)
+{
+	if (gbb_clear_flags() == 0) {
+		/*
+		 * Clearing GBB implies changes in significant components:
+		 * 1. Fastboot override
+		 * 2. Device forced unlock status
+		 *
+		 * In order to maintain a clear state, it is safe to reboot the
+		 * device into fastboot mode once the GBB flags are cleared.
+		 */
+		cmd->type = FB_OKAY;
+		return FB_REBOOT_BOOTLOADER;
+	}
+
+	cmd->type = FB_FAIL;
+	return FB_SUCCESS;
+}
+
 /************** Command Function Table *****************/
 struct fastboot_func {
 	struct name_string name;
@@ -1187,7 +1206,8 @@ const struct fastboot_func fb_func_table[] = {
 	{ NAME_NO_ARGS("oem Powerdown"), FB_ID_POWERDOWN, fb_powerdown},
 	{ NAME_NO_ARGS("oem Battery-cutoff"), FB_ID_BATTERY_CUTOFF,
 	  fb_battery_cutoff},
-	{ NAME_ARGS("oem Setenv", ' '), FB_ID_SETENV, fb_setenv}
+	{ NAME_ARGS("oem Setenv", ' '), FB_ID_SETENV, fb_setenv},
+	{ NAME_NO_ARGS("oem Clear-gbb"), FB_ID_CLEAR_GBB, fb_clear_gbb},
 };
 
 /************** Protocol Handler ************************/
