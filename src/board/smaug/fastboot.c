@@ -31,6 +31,7 @@
 #include "config.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/ec.h"
+#include "drivers/flash/flash.h"
 #include "image/fmap.h"
 #include "vboot/firmware_id.h"
 
@@ -368,4 +369,22 @@ fail:
 	if (bdev && gpt)
 		free_gpt(bdev, gpt);
 	return allow_unlock;
+}
+
+int board_write_protect(void)
+{
+	/*
+	 * status:
+	 * Bit 7 : SRP0 = 1
+	 * Bit 6 : SEC = 0
+	 * Bit 5 : TB = 1
+	 * Bit 4 : BP2 = 1
+	 * Bit 3 : BP1 = 0
+	 * Bit 2 : BP0 = 1
+	 * Bit 1 : WEL = 0
+	 * Bit 0 : BSY = 0
+	 *
+	 * Status = 1011 0100 = 0xB4
+	 */
+	return flash_write_status(0xB4);
 }
