@@ -1227,6 +1227,18 @@ static fb_ret_type fb_clear_gbb(struct fb_cmd *cmd)
 	return FB_SUCCESS;
 }
 
+static fb_ret_type fb_write_protect(struct fb_cmd *cmd)
+{
+	cmd->type = FB_FAIL;
+
+	if (fb_board_handler.write_protect_ro == NULL) {
+		FB_LOG("write_protect_ro not implemented by board.\n");
+	} else if (fb_board_handler.write_protect_ro() == 0)
+		cmd->type = FB_OKAY;
+
+	return FB_SUCCESS;
+}
+
 /************** Command Function Table *****************/
 struct fastboot_func {
 	struct name_string name;
@@ -1260,6 +1272,8 @@ const struct fastboot_func fb_func_table[] = {
 	  fb_battery_cutoff},
 	{ NAME_ARGS("oem Setenv", ' '), FB_ID_SETENV, fb_setenv},
 	{ NAME_NO_ARGS("oem Clear-gbb"), FB_ID_CLEAR_GBB, fb_clear_gbb},
+	{ NAME_NO_ARGS("oem Write-protect"), FB_ID_WRITE_PROTECT,
+	  fb_write_protect},
 };
 
 /************** Protocol Handler ************************/

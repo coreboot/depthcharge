@@ -329,6 +329,15 @@ typedef struct {
 	 * 0 = do not allow unlock in bootloader
 	 */
 	int (*allow_unlock)(void);
+
+	/*
+	 * Let board write-protect the RO regions on the device.
+	 *
+	 * Return:
+	 * 0 = Successful
+	 * -1 = Error
+	 */
+	int (*write_protect_ro)(void);
 } fb_callback_t;
 
 extern fb_callback_t fb_board_handler;
