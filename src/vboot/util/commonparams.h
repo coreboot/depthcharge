@@ -34,5 +34,6 @@ int gbb_copy_in_bmp_block();
 int common_params_init(int clear_shared_data);
 // Implemented by each arch.
 int find_common_params(void **blob, int *size);
+int gbb_clear_flags(void);
 
 #endif /* __VBOOT_UTIL_COMMONPARAMS_H__ */

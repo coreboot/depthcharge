@@ -49,8 +49,27 @@ static void *gbb_copy_in(uint32_t gbb_offset, uint32_t offset, uint32_t size)
 	return gbb_copy + offset;
 }
 
+static void gbb_copy_out(uint32_t gbb_offset, uint32_t offset, uint32_t size)
+{
+	uint8_t *gbb_copy = cparams.gbb_data;
+
+	if ((offset > cparams.gbb_size) ||
+	    ((offset + size) > cparams.gbb_size)) {
+		printf("GBB component not inside the GBB\n");
+		return;
+	}
+
+	flash_rewrite(gbb_offset + offset, size, gbb_copy + offset);
+	return;
+}
+
 static int gbb_init(void)
 {
+	static int initialized = 0;
+
+	if (initialized)
+		return 0;
+
 	FmapArea area;
 	if (fmap_find_area("GBB", &area)) {
 		printf("Couldn't find the GBB.\n");
@@ -87,6 +106,24 @@ static int gbb_init(void)
 			 header->recovery_key_size))
 		return 1;
 
+	initialized = 1;
+	return 0;
+}
+
+int gbb_clear_flags(void)
+{
+	if (gbb_init() != 0)
+		return 1;
+
+	FmapArea area;
+	if (fmap_find_area("GBB", &area)) {
+		printf("Couldn't find the GBB.\n");
+		return 1;
+	}
+
+	GoogleBinaryBlockHeader *header = cparams.gbb_data;
+	header->flags = 0;
+	gbb_copy_out(area.offset, 0, sizeof(*header));
 	return 0;
 }
 
