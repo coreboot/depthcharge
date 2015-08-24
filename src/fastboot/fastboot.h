@@ -232,4 +232,9 @@ int board_battery_soc_ok(void);
  * partition) on the eMMC.
  */
 int board_allow_unlock(void);
+
+/*
+ * Let board write-protect the RO regions on the device.
+ */
+int board_write_protect(void);
 #endif /* __FASTBOOT_FASTBOOT_H__ */
