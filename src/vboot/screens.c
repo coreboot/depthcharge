@@ -51,10 +51,10 @@ static VbError_t fastboot_draw_base_screen(uint32_t localize)
 		return VBERROR_UNKNOWN;
 
 	/* 'the lightbar' (Red Yellow Blue Green) */
-	draw_box(14, 16, 18, 1, 219, 65, 55);
-	draw_box(32, 16, 18, 1, 244, 180, 0);
-	draw_box(50, 16, 18, 1, 66, 133, 244);
-	draw_box(68, 16, 18, 1, 15, 157, 88);
+	draw_box( 0, 16, 25, 1, 219, 65, 55);
+	draw_box(25, 16, 25, 1, 244, 180, 0);
+	draw_box(50, 16, 25, 1, 66, 133, 244);
+	draw_box(75, 16, 25, 1, 15, 157, 88);
 
 	return VBERROR_SUCCESS;
 }
@@ -177,6 +177,7 @@ static VbError_t vboot_draw_fastboot_menu(uint32_t localize)
 	VbError_t rv;
 	uint32_t size;
 	uint8_t *buf;
+	const char *fb_str;
 
 	rv = fastboot_draw_base_screen(localize);
 	if (rv)
@@ -184,25 +185,23 @@ static VbError_t vboot_draw_fastboot_menu(uint32_t localize)
 
 	buf = load_bitmap("arrow_up.bmp", &size);
 	if (buf) {
-		draw_bitmap(61, 20, 2, buf, size);
+		draw_bitmap(63, 20, 2, buf, size);
 		free(buf);
 	}
-	video_console_set_cursor(102, 10);
-
-	const char *fb_str = board_get_button_string(FB_BUTTON_UP);
-
+	video_console_set_cursor(98, 11);
+	fb_str = board_get_button_string(FB_BUTTON_UP);
 	video_printf(15, 0, 0, "%s: Move Cursor Up", fb_str);
 
 	buf = load_bitmap("arrow_down.bmp", &size);
 	if (buf) {
-		draw_bitmap(61, 22, 2, buf, size);
+		draw_bitmap(63, 21, 2, buf, size);
 		free(buf);
 	}
-	video_console_set_cursor(102, 11);
+	video_console_set_cursor(98, 12);
 	fb_str = board_get_button_string(FB_BUTTON_DOWN);
 	video_printf(15, 0, 0, "%s: Move Cursor Down", fb_str);
 
-	video_console_set_cursor(102, 12);
+	video_console_set_cursor(98, 13);
 	fb_str = board_get_button_string(FB_BUTTON_SELECT);
 	video_printf(15, 0, 0, "%s: Run Selected Option", fb_str);
 

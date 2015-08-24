@@ -38,7 +38,7 @@
 #include "vboot/util/commonparams.h"
 
 #define FB_MENU_POSITION_COL	26
-#define FB_MENU_POSITION_ROW	10
+#define FB_MENU_POSITION_ROW	11
 #define FB_MENU_FOREGROUND	10
 #define FB_MENU_BACKGROUND	0
 
