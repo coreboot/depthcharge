@@ -28,6 +28,7 @@
 #include <cbfs.h>
 
 #include "config.h"
+#include "boot/bcb.h"
 #include "drivers/ec/cros/commands.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/power/power.h"
@@ -138,6 +139,7 @@ static void udc_fastboot(void)
 static void menu_restart(void)
 {
 	/* recovery request is automatically cleared by vboot at every boot */
+	mdelay(100);
 	cold_reboot();
 }
 
@@ -148,8 +150,29 @@ static void menu_fastboot(void)
 
 static void menu_shutdown(void)
 {
+	mdelay(100);
 	power_off();
 }
+
+static void menu_recovery(void)
+{
+	/*
+	 * TODO(furquan): Currently we only have support for BCB to reboot into
+	 * recovery.
+	 */
+#if CONFIG_BCB_SUPPORT
+	bcb_request_recovery("boot-recovery", "");
+#else
+	die("menu_recovery not implemented.\n");
+#endif
+	menu_restart();
+}
+
+typedef enum {
+	MENU_NONE = 0,
+	MENU_NORMAL = (1 << 0),
+	MENU_DEV = (1 << 1),
+} menu_mode_t;
 
 /*
  * Fastboot menu options
@@ -160,15 +183,18 @@ static const struct {
 	const int bg;			/* VGA color for text background */
 	void (*execute)(void);		/* called when option is executed */
 	void (*highlight)(void);	/* called when option is highlighted */
+	menu_mode_t mode;		/* mode to display this option */
 } opts[] = {
 	{"Restart Android", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
-			menu_restart, NULL },
+	 menu_restart, NULL, MENU_NORMAL | MENU_DEV },
 	{"Enter Fastboot", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
-			menu_fastboot, NULL },
-	{"Self Recovery Mode", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
-			NULL, NULL },
+	 menu_fastboot, NULL, MENU_NORMAL | MENU_DEV },
+	{"Boot to recovery", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
+	 menu_recovery, NULL, MENU_NORMAL | MENU_DEV },
 	{"Power Off", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
-			menu_shutdown, NULL },
+	 menu_shutdown, NULL, MENU_NORMAL | MENU_DEV },
+	{"USB recovery", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
+	 NULL, NULL, MENU_NORMAL | MENU_DEV },
 };
 
 static void draw_option(int pos, int highlight)
@@ -182,6 +208,68 @@ static void draw_option(int pos, int highlight)
 	} else {
 		video_printf(opts[pos].fg, opts[pos].bg, 0, opts[pos].text);
 	}
+}
+
+static menu_mode_t vboot_get_menu_mode(void)
+{
+	if (vboot_in_developer())
+		return MENU_DEV;
+
+	return MENU_NORMAL;
+}
+
+/* Holds current position that is highlighted in menu. */
+static int cur_pos = -1;
+
+static void draw_menu(void)
+{
+	int i;
+	int highlight = 0;
+	menu_mode_t mode = vboot_get_menu_mode();
+
+	for (i = 0; i < ARRAY_SIZE(opts); i++) {
+		highlight = 0;
+		if (opts[i].mode & mode) {
+			if (cur_pos == -1) {
+				cur_pos = i;
+				highlight = 1;
+			}
+			draw_option(i, highlight);
+		}
+	}
+}
+
+static void menu_move(int incr)
+{
+	menu_mode_t mode = vboot_get_menu_mode();
+	draw_option(cur_pos, 0);
+
+	while (1) {
+		cur_pos = (cur_pos + ARRAY_SIZE(opts) + incr) %
+			ARRAY_SIZE(opts);
+		if (opts[cur_pos].mode & mode) {
+			draw_option(cur_pos, 1);
+			break;
+		}
+	}
+}
+
+static inline void menu_move_down(void)
+{
+	menu_move(1);
+}
+
+static inline void menu_move_up(void)
+{
+	menu_move(-1);
+}
+
+static inline void menu_select(void)
+{
+	if (opts[cur_pos].execute)
+		opts[cur_pos].execute();
+
+	cur_pos = -1;
 }
 
 static void draw_device_info(void)
@@ -213,9 +301,7 @@ static void draw_device_info(void)
 
 void vboot_try_fastboot(void)
 {
-	const int command_count = ARRAY_SIZE(opts);
-	int pos = 0;
-	int i;
+	int loop = 1;
 
 	if (is_fastboot_mode_requested()) {
 		/* fastboot mode is explicitly requested. skip menu. */
@@ -225,29 +311,27 @@ void vboot_try_fastboot(void)
 	}
 
 	vboot_draw_screen(VB_SCREEN_FASTBOOT_MENU, 0, 1);
-
-	for (i = 0; i < command_count; i++)
-		draw_option(i, 0);
-
+	draw_menu();
 	draw_device_info();
 
-	while (1) {
-		draw_option(pos, 1);
+	while (loop) {
 
 		int keypress = board_getchar(FB_BUTTON_DOWN | FB_BUTTON_UP |
 					     FB_BUTTON_SELECT);
 
-		if (keypress == FB_BUTTON_DOWN) {		/* move down */
-			draw_option(pos++, 0);
-			if (pos == command_count)
-				pos = 0;
-		} else if (keypress == FB_BUTTON_UP) {		/* move up */
-			draw_option(pos--, 0);
-			if (pos == -1)
-				pos = command_count - 1;
-		} else if (keypress == FB_BUTTON_SELECT) {	/* execute */
-			if (opts[pos].execute)
-				opts[pos].execute();
+		switch (keypress) {
+		case FB_BUTTON_DOWN:
+			menu_move_down();
+			break;
+		case FB_BUTTON_UP:
+			menu_move_up();
+			break;
+		case FB_BUTTON_SELECT:
+			menu_select();
+			loop = 0;
+			break;
+		default:
+			printf("Unexpected input\n");
 			break;
 		}
 	}

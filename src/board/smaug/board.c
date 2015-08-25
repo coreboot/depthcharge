@@ -299,7 +299,7 @@ static int smaug_backlight_update(DisplayOps *me, uint8_t enable)
 static DisplayOps smaug_display_ops = {
 	.init = &tegra132_display_init,
 	.backlight_update = &smaug_backlight_update,
-	.stop = &tegra132_display_stop,
+	.stop = NULL,
 };
 
 static int display_setup(void)

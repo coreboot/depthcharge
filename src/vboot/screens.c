@@ -97,7 +97,7 @@ static VbError_t vboot_draw_recovery_no_good(uint32_t localize)
 
 	video_console_set_cursor(0, FB_INFO_POSITION_ROW);
 	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
-		     "The device you inserted does not contain Chrome OS.\n");
+		     "The device you inserted does not contain OS.\n");
 	return rv;
 }
 
@@ -109,7 +109,7 @@ static VbError_t vboot_draw_recovery_insert(uint32_t localize)
 
 	video_console_set_cursor(0, FB_INFO_POSITION_ROW);
 	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
-		     "Chrome OS is missing or damaged.\n");
+		     "OS is missing or damaged.\n");
 	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
 		     "Please insert a recovery USB stick.\n");
 	return rv;
@@ -240,7 +240,7 @@ static VbError_t vboot_draw_oem_lock_unlock(uint32_t localize, int lock)
 		     "%s bootloader?\n\n", lock_unlock);
 	video_printf(FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG, 1,
 		     "%sing bootloader will also delete all personal data"
-		     "from your device.\n",
+		     " from your device.\n",
 		     lock_unlock);
 	const char *confirm = board_get_button_string(FB_BUTTON_CONFIRM);
 	const char *cancel = board_get_button_string(FB_BUTTON_CANCEL);
