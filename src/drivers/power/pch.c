@@ -100,11 +100,15 @@ static void busmaster_disable(void)
  *
  * This function never returns.
  */
-static int pch_power_off_common(uint16_t bar_mask, uint16_t gpe_en_reg)
+static int pch_power_off_full_args(pcidev_t pci_dev, int pmbase_reg,
+					uint16_t bar_mask, uint16_t gpe_en_reg,
+					int num_gpe_regs)
 {
+	int i;
+
 	// Make sure this is an Intel chipset with the LPC device hard coded
 	// at 0:1f.0.
-	uint16_t id = pci_read_config16(PCI_DEV(0, 0x1f, 0), 0x00);
+	uint16_t id = pci_read_config16(pci_dev, 0x00);
 	if (id != 0x8086) {
 		printf("Power off is not implemented for this chipset. "
 		       "Halting the CPU.\n");
@@ -112,7 +116,7 @@ static int pch_power_off_common(uint16_t bar_mask, uint16_t gpe_en_reg)
 	}
 
 	// Find the base address of the powermanagement registers.
-	uint16_t pmbase = pci_read_config16(PCI_DEV(0, 0x1f, 0), 0x40);
+	uint16_t pmbase = pci_read_config16(pci_dev, pmbase_reg);
 	pmbase &= bar_mask;
 
 	// Mask interrupts or system might stay in a coma (not executing
@@ -124,7 +128,8 @@ static int pch_power_off_common(uint16_t bar_mask, uint16_t gpe_en_reg)
 
 	// Avoid any GPI waking the system from S5 or the system might stay
 	// in a coma.
-	outl(0x00000000, pmbase + gpe_en_reg);
+	for (i = 0; i < num_gpe_regs; i++)
+		outl(0x00000000, pmbase + gpe_en_reg + i * sizeof(uint32_t));
 
 	// Clear Power Button Status.
 	outw(PWRBTN_STS, pmbase + PM1_STS);
@@ -142,6 +147,12 @@ static int pch_power_off_common(uint16_t bar_mask, uint16_t gpe_en_reg)
 	outl(reg32, pmbase + PM1_CNT);
 
 	halt();
+}
+
+static int pch_power_off_common(uint16_t bar_mask, uint16_t gpe_en_reg)
+{
+	return pch_power_off_full_args(PCI_DEV(0, 0x1f, 0), 0x40,
+					bar_mask, gpe_en_reg, 1);
 }
 
 static int pch_power_off(PowerOps *me)
