@@ -170,6 +170,14 @@ static int braswell_power_off(PowerOps *me)
 	return pch_power_off_common(0xfff8, 0x28);
 }
 
+static int skylake_power_off(PowerOps *me)
+{
+	// Skylake has 4 GPE en registers and the bar lives within the
+	// PMC device at 0:1f.2.
+	return pch_power_off_full_args(PCI_DEV(0, 0x1f, 2), 0x40,
+					0xfff0, 0x90, 4);
+}
+
 PowerOps pch_power_ops = {
 	.cold_reboot = &pch_cold_reboot,
 	.power_off = &pch_power_off
@@ -183,4 +191,9 @@ PowerOps baytrail_power_ops = {
 PowerOps braswell_power_ops = {
 	.cold_reboot = &pch_cold_reboot,
 	.power_off = &braswell_power_off
+};
+
+PowerOps skylake_power_ops = {
+	.cold_reboot = &pch_cold_reboot,
+	.power_off = &skylake_power_off
 };

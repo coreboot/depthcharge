@@ -28,5 +28,6 @@
 PowerOps pch_power_ops;
 PowerOps baytrail_power_ops;
 PowerOps braswell_power_ops;
+PowerOps skylake_power_ops;
 
 #endif /* __DRIVERS_POWER_PCH_H__ */
