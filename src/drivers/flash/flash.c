@@ -49,6 +49,15 @@ int flash_erase_ops(FlashOps *ops, uint32_t offset, uint32_t size)
 	return 0;
 }
 
+static inline int flash_write_status_ops(FlashOps *ops, uint8_t status)
+{
+	die_if(!ops, "%s: No flash ops set.\n", __func__);
+	if (ops->write_status)
+		return ops->write_status(ops, status);
+
+	return 0;
+}
+
 static inline uint32_t flash_sector_size_ops(FlashOps *ops)
 {
 	return ops->sector_size;
@@ -113,4 +122,9 @@ uint32_t flash_sector_size(void)
 int flash_rewrite(uint32_t start, uint32_t length, const void *buffer)
 {
 	return flash_rewrite_ops(flash_ops, start, length, buffer);
+}
+
+int flash_write_status(uint8_t status)
+{
+	return flash_write_status_ops(flash_ops, status);
 }

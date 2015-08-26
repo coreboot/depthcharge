@@ -32,6 +32,7 @@
 typedef enum {
 	ReadCommand = 3,
 	ReadSr1Command = 5,
+	WriteStatus = 1,
 	WriteCommand = 2,
 	WriteEnableCommand = 6,
 	ReadId = 0x9f
@@ -298,6 +299,54 @@ static int spi_flash_erase(FlashOps *me, uint32_t start, uint32_t size)
 	return offset;
 }
 
+static int spi_flash_write_status(FlashOps *me, uint8_t status)
+{
+	int ret = -1;
+	SpiFlash *flash = container_of(me, SpiFlash, ops);
+
+	uint8_t command_bytes[2];
+
+	if (flash->spi->start(flash->spi)) {
+		printf("%s: Failed to start transaction.\n", __func__);
+		goto fail;
+	}
+
+	command_bytes[0] = WriteEnableCommand;
+	if (flash->spi->transfer(flash->spi, NULL, &command_bytes, 1)) {
+		printf("%s: Failed to send write enable command.\n",
+		       __func__);
+		goto fail;
+	}
+
+	/*
+	 * CS needs to be deasserted before any other command can be
+	 * issued after WREN.
+	 */
+	if (toggle_cs(flash, "WREN"))
+		goto fail;
+
+	if (operation_failed(flash, "WREN") == 0)
+		ret = 0;
+
+	command_bytes[0] = WriteStatus;
+	command_bytes[1] = status;
+
+	if (flash->spi->transfer(flash->spi, NULL, &command_bytes, 2)) {
+		printf("%s: Failed to send write status command.\n", __func__);
+		goto fail;
+	}
+
+	if (operation_failed(flash, "WRSTATUS") == 0)
+		ret = 0;
+
+fail:
+	if (flash->spi->stop(flash->spi)) {
+		printf("%s: Failed to stop.\n", __func__);
+		ret = -1;
+	}
+	return ret;
+}
+
 SpiFlash *new_spi_flash(SpiOps *spi)
 {
 	uint32_t rom_size = lib_sysinfo.spi_flash.size;
@@ -309,6 +358,7 @@ SpiFlash *new_spi_flash(SpiOps *spi)
 	flash->ops.read = spi_flash_read;
 	flash->ops.write = spi_flash_write;
 	flash->ops.erase = spi_flash_erase;
+	flash->ops.write_status = spi_flash_write_status;
 	flash->ops.sector_size = sector_size;
 	assert(rom_size == ALIGN_DOWN(rom_size, sector_size));
 	flash->ops.sector_count = rom_size / sector_size;
