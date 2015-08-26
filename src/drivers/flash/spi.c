@@ -33,7 +33,8 @@ typedef enum {
 	ReadCommand = 3,
 	ReadSr1Command = 5,
 	WriteCommand = 2,
-	WriteEnableCommand = 6
+	WriteEnableCommand = 6,
+	ReadId = 0x9f
 } SpiFlashCommands;
 
 static void *spi_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
@@ -93,10 +94,46 @@ static int toggle_cs(SpiFlash *flash, const char *phase)
 #define POLL_INTERVAL_US 10
 #define MAX_POLL_CYCLES (2000000/POLL_INTERVAL_US)
 #define SPI_FLASH_STATUS_WIP (1 << 0)
-#define SPI_FLASH_STATUS_ERASE_ERR (1 << 5)
-#define SPI_FLASH_STATUS_PROG_ERR (1 << 6)
-#define SPI_FLASH_STATUS_ERR (SPI_FLASH_STATUS_ERASE_ERR | \
-			      SPI_FLASH_STATUS_PROG_ERR)
+#define SPANSION_FLASH_ERASE_ERR (1 << 5)
+#define SPANSION_FLASH_PROG_ERR (1 << 6)
+#define SPANSION_FLASH_ERR (SPANSION_FLASH_PROG_ERR | \
+				SPANSION_FLASH_ERASE_ERR)
+
+#define SPANSION_ID		0x01
+
+/*
+ * Check if a programming/erase error occurred.
+ */
+static int check_error(SpiFlash *flash, uint8_t status)
+{
+	uint8_t id[6];	/* worst-case scenario for Spansion */
+	uint8_t cmd = ReadId;
+
+	if (flash->spi->transfer(flash->spi, NULL, &cmd, sizeof(cmd))) {
+		printf("%s: Failed to send register read command.\n",
+		       __func__);
+		return -1;
+	}
+
+	if (flash->spi->transfer(flash->spi, &id, NULL, sizeof(id))) {
+		printf("%s: Failed to send register read command.\n",
+		       __func__);
+		return -1;
+	}
+
+	switch(id[0]) {
+	case SPANSION_ID:
+		/* For now, assume all Spansion chips we care about act
+		   the same with regards to error checking. */
+		if (status & SPANSION_FLASH_ERR)
+			return -1;
+		break;
+	default:
+		break;
+	}
+
+	return 0;
+}
 
 /*
  * Poll device status register until write/erase operation has completed or
@@ -124,14 +161,16 @@ static int operation_failed(SpiFlash *flash, const char *opname)
 			       __func__, i);
 			return -1;
 		}
+
 		if (!(value & SPI_FLASH_STATUS_WIP)) {
-			if (value & SPI_FLASH_STATUS_ERR) {
+			if (check_error(flash, value)) {
 				printf("%s: status %#x after %d cycles.\n",
 				       __func__, value, i);
 				return -1;
 			}
 			return 0;
 		}
+
 		udelay(POLL_INTERVAL_US);
 	}
 	printf("%s: timeout waiting for %s completion\n", __func__, opname);
