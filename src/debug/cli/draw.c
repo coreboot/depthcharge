@@ -30,17 +30,24 @@ static int init_display(void)
 	return 0;
 }
 
-static int do_draw_image(const char *name, unsigned long x, unsigned long y)
+static int do_draw_image(char * const argv[])
 {
-	struct cbfs_file *file;
-	file = cbfs_get_file(CBFS_DEFAULT_MEDIA, name);
-	if (file == NULL) {
-		printf("File '%s' not found\n", name);
+	size_t scale = strtoul(argv[5], NULL, 0);
+	const void *bitmap;
+	size_t size;
+
+	bitmap = cbfs_get_file_content(CBFS_DEFAULT_MEDIA, argv[2],
+				       CBFS_TYPE_RAW, &size);
+	if (!bitmap) {
+		printf("File '%s' not found\n", argv[2]);
 		return -1;
 	}
+	const struct vector top_left = {
+			.x = strtoul(argv[3], NULL, 0),
+			.y = strtoul(argv[4], NULL, 0),
+	};
 
-	return dc_corebootfb_draw_bitmap(x, y,
-					 (void *)file + ntohl(file->offset));
+	return draw_bitmap(&top_left, scale, bitmap, size);
 }
 
 static int do_print_info(void)
@@ -96,11 +103,8 @@ static int do_draw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		return CMD_RET_FAILURE;
 	}
 
-	if (argc == 5 && !strcmp("image", argv[1])) {
-		unsigned long x = strtoul(argv[2], NULL, 10);
-		unsigned long y = strtoul(argv[3], NULL, 10);
-		/* TODO: validate (x, y) fits in the screen */
-		if (do_draw_image(argv[1], x, y))
+	if (argc == 6 && !strcmp("image", argv[1])) {
+		if (do_draw_image(argv))
 			rv = CMD_RET_FAILURE;
 	} else if (argc == 2 && !strcmp("info", argv[1])) {
 		if (do_print_info())
@@ -119,7 +123,7 @@ static int do_draw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 U_BOOT_CMD(
 	   draw,	9,	1,
 	   "draw image on screen, print screen info, etc.",
-	   "image <name> <x> <y> - load image from cbfs and draw it at (x, y)\n"
+	   "image <name> <x> <y> <scale> - draw image in cbfs at (x, y)\n"
 	   "info - print framebuffer information\n"
 	   "box <x> <y> <width> <height> <red> <green> <blue> - draw a box"
 );
