@@ -67,7 +67,7 @@ static int board_setup(void)
 	tpm_set_ops(&new_lpc_tpm((void *)(uintptr_t)0xfed40000)->ops);
 
 	/* PCH Power */
-	power_set_ops(&pch_power_ops);
+	power_set_ops(&skylake_power_ops);
 
 	/* eMMC */
 	SdhciHost *emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1e, 4),
