@@ -81,7 +81,7 @@ static int board_setup(void)
 			EMMC_SD_CLOCK_MIN, SD_CLOCK_MAX);
 	list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
 				&removable_block_dev_controllers);
-	power_set_ops(&pch_power_ops);
+	power_set_ops(&skylake_power_ops);
 
 	return 0;
 }
