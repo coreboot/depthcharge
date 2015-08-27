@@ -35,6 +35,7 @@ typedef enum {
 #if CONFIG_FASTBOOT_MODE
 
 #include "fastboot/backend.h"
+#include "fastboot/capabilities.h"
 #include "fastboot/fastboot.h"
 #include "fastboot/udc.h"
 

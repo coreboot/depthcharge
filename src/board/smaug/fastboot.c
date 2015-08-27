@@ -275,6 +275,9 @@ fb_button_type board_getchar(uint32_t flags)
 
 int board_battery_soc_ok(void)
 {
+	if (fb_check_gbb_override())
+		return 1;
+
 	uint32_t perc;
 	if (cros_ec_read_batt_state_of_charge(&perc) != 0)
 		return 0;
