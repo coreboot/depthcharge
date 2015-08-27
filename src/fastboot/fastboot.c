@@ -1030,6 +1030,11 @@ static int fb_user_confirmation(void)
 		== FB_BUTTON_CONFIRM ? 1 : 0;
 }
 
+static inline int unlock_in_fw_set(void)
+{
+	return vbnv_read(VBNV_FASTBOOT_UNLOCK_IN_FW) || board_allow_unlock();
+}
+
 static fb_ret_type fb_lock(struct fb_cmd *cmd)
 {
 	cmd->type = FB_FAIL;
@@ -1037,6 +1042,12 @@ static fb_ret_type fb_lock(struct fb_cmd *cmd)
 	FB_LOG("Locking device\n");
 	if (!fb_device_unlocked()) {
 		fb_add_string(&cmd->output, "Device already locked", NULL);
+		return FB_SUCCESS;
+	}
+
+	if (!unlock_in_fw_set()) {
+		fb_add_string(&cmd->output, "Enable OEM unlock is not set",
+			      NULL);
 		return FB_SUCCESS;
 	}
 
@@ -1072,6 +1083,12 @@ static fb_ret_type fb_unlock(struct fb_cmd *cmd)
 		return FB_SUCCESS;
 	}
 
+	if (!unlock_in_fw_set()) {
+		fb_add_string(&cmd->output, "Enable OEM unlock is not set",
+			      NULL);
+		return FB_SUCCESS;
+	}
+
 	vboot_draw_screen(VB_SCREEN_OEM_UNLOCK_CONFIRM, 0, 0);
 
 	if (!fb_user_confirmation()) {
@@ -1096,8 +1113,8 @@ static fb_ret_type fb_unlock(struct fb_cmd *cmd)
 
 static fb_ret_type fb_get_unlock_ability(struct fb_cmd *cmd)
 {
-	fb_add_number(&cmd->output, "%d",
-		      vbnv_read(VBNV_FASTBOOT_UNLOCK_IN_FW));
+	fb_add_number(&cmd->output, "%d", unlock_in_fw_set());
+
 	cmd->type = FB_INFO;
 	fb_execute_send(cmd);
 

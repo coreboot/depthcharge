@@ -40,7 +40,7 @@ static uint32_t fb_cap_bitmap[] = {
 	[FB_LIMITED_CAP] = (FB_ID_GETVAR | FB_ID_DOWNLOAD | FB_ID_BOOT |
 			    FB_ID_CONTINUE | FB_ID_REBOOT |
 			    FB_ID_REBOOT_BOOTLOADER | FB_ID_POWERDOWN |
-			    FB_ID_BATTERY_CUTOFF | FB_ID_LOCK |
+			    FB_ID_BATTERY_CUTOFF | FB_ID_LOCK | FB_ID_UNLOCK |
 			    FB_ID_OFF_MODE_CHARGE | FB_ID_GET_UNLOCK_ABILITY),
 	/* Full fastboot functionality allowed in firmware. */
 	[FB_FULL_CAP] = FB_ID_MASK,
@@ -83,11 +83,6 @@ static uint32_t fb_get_curr_cap_bitmap(void)
 	if (vboot_in_developer() == 0) {
 
 		bitmap = fb_cap_bitmap[FB_LIMITED_CAP];
-
-		/* If unlock in fw is set in nvstorage, add unlock to bitmap. */
-		if (vbnv_read(VBNV_FASTBOOT_UNLOCK_IN_FW) ||
-		    board_allow_unlock())
-			bitmap |= FB_ID_UNLOCK;
 
 		return bitmap;
 	}
