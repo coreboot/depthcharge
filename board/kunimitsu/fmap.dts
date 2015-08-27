@@ -1,7 +1,7 @@
 /dts-v1/;
 
 / {
-	model = "Intel Skylake RVP";
+	model = "Intel Kunimitsu";
 	config {
 		hwid = "KUNIMITSU TEST 8819";
 	};
@@ -30,7 +30,7 @@
 		 */
 		si-all {
 			label = "si-all";
-			reg = <0x00000000 0x00300000>;
+			reg = <0x00000000 0x00200000>;
 			type = "ifd";
 		};
 
@@ -49,7 +49,7 @@
 		 */
 		si-me {
 			label = "si-me";
-			reg = <0x00001000 0x002ff000>;
+			reg = <0x00001000 0x001ff000>;
 		};
 
 		/*
@@ -59,14 +59,14 @@
 		 */
 		si-bios {
 			label ="si-bios";
-			reg = <0x00300000 0x00d00000>;
+			reg = <0x00200000 0x00e00000>;
 		};
 
 		/* ---- Section: Rewritable slot A ---- */
 		rw-a {
 			label = "rw-section-a";
 			/* Alignment: 4k (for updating) */
-			reg = <0x00300000 0x003f0000>;
+			reg = <0x00200000 0x003f0000>;
 		};
 		rw-a-vblock {
 			label = "vblock-a";
@@ -74,8 +74,8 @@
 			 * Alignment: 4k (for updating) and must be in start of
 			 * each RW_SECTION.
 			 */
-			reg = <0x00300000 0x00010000>;
-			type = "keyblock boot,ecrwhash,pdrwhash,ramstage,refcode";
+			reg = <0x00200000 0x00010000>;
+			type = "keyblock boot,ecrwhash,pdrwhash,ramstage";
 			with_index;
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
@@ -86,14 +86,26 @@
 		rw-a-boot {
 			/* Alignment: no requirement (yet). */
 			label = "fw-main-a";
-			reg = <0x00310000 0x003dffc0>;
-			type = "blob boot,ecrwhash,pdrwhash,ramstage,refcode";
+			reg = <0x00210000 0x003b0000>;
+			type = "blob boot,ecrwhash,pdrwhash,ramstage";
+			with_index;
+		};
+		rw-a-pd-boot {
+			label = "pd-main-a";
+			type = "blob pdrw";
+			reg = <0x005c0000 0x00010000>;
+			with_index;
+		};
+		rw-a-ec-boot {
+			label = "ec-main-a";
+			type = "blob ecbin";
+			reg = <0x005d0000 0x0001ffc0>;
 			with_index;
 		};
 		rw-a-firmware-id {
 			/* Alignment: no requirement. */
 			label = "rw-fwid-a";
-			reg = <0x006effc0 0x00000040>;
+			reg = <0x005effc0 0x00000040>;
 			read-only;
 			type = "blobstring fwid";
 		};
@@ -102,7 +114,7 @@
 		rw-b {
 			label = "rw-section-b";
 			/* Alignment: 4k (for updating) */
-			reg = <0x006f0000 0x003f0000>;
+			reg = <0x005f0000 0x003f0000>;
 		};
 		rw-b-vblock {
 			label = "vblock-b";
@@ -110,8 +122,8 @@
 			 * Alignment: 4k (for updating) and must be in start of
 			 * each RW_SECTION.
 			 */
-			reg = <0x006f0000 0x00010000>;
-			type = "keyblock boot,ecrwhash,pdrwhash,ramstage,refcode";
+			reg = <0x005f0000 0x00010000>;
+			type = "keyblock boot,ecrwhash,pdrwhash,ramstage";
 			with_index;
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
@@ -122,14 +134,26 @@
 		rw-b-boot {
 			label = "fw-main-b";
 			/* Alignment: no requirement (yet). */
-			reg = <0x00700000 0x003dffc0>;
-			type = "blob boot,ecrwhash,pdrwhash,ramstage,refcode";
+			reg = <0x00600000 0x003b0000>;
+			type = "blob boot,ecrwhash,pdrwhash,ramstage";
+			with_index;
+		};
+		rw-b-pd-boot {
+			label = "pd-main-b";
+			type = "blob pdrw";
+			reg = <0x009b0000 0x00010000>;
+			with_index;
+		};
+		rw-b-ec-boot {
+			label = "ec-main-b";
+			type = "blob ecbin";
+			reg = <0x009c0000 0x0001ffc0>;
 			with_index;
 		};
 		rw-b-firmware-id {
 			label = "rw-fwid-b";
 			/* Alignment: no requirement. */
-			reg = <0x00adffc0 0x00000040>;
+			reg = <0x009dffc0 0x00000040>;
 			read-only;
 			type = "blobstring fwid";
 		};
@@ -138,7 +162,7 @@
 		rw-mrc-cache {
 			label = "rw-mrc-cache";
 			/* Alignment: 4k (for updating) */
-			reg = <0x00ae0000 0x00010000>;
+			reg = <0x009e0000 0x00010000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
@@ -147,7 +171,7 @@
 		rw-elog {
 			label = "rw-elog";
 			/* Alignment: 4k (for updating) */
-			reg = <0x00af0000 0x00004000>;
+			reg = <0x009f0000 0x00004000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
@@ -159,7 +183,7 @@
 			 * Anything in this range may be updated in recovery.
 			 */
 			label = "rw-shared";
-			reg = <0x00af4000 0x00004000>;
+			reg = <0x009f4000 0x00004000>;
 		};
 		shared-data {
 			label = "shared-data";
@@ -167,7 +191,7 @@
 			 * Alignment: 4k (for random read/write).
 			 * RW firmware can put calibration data here.
 			 */
-			reg = <0x00af4000 0x00002000>;
+			reg = <0x009f4000 0x00002000>;
 			type = "wiped";
 			wipe-value = [00];
 		};
@@ -180,7 +204,7 @@
 			 * vblock to validate dev-mode kernels.
 			 * See crosbug.com/p/11216.
 			 */
-			reg = <0x00af6000 0x00002000>;
+			reg = <0x009f6000 0x00002000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
@@ -191,7 +215,7 @@
 		rw-vpd {
 			label = "rw-vpd";
 			/* Alignment: 4k (for updating) */
-			reg = <0x00af8000 0x00002000>;
+			reg = <0x009f8000 0x00002000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
@@ -203,14 +227,14 @@
 		 */
 		rw-unused {
 			label = "rw-unused";
-			reg = <0x00afa000 0x00006000>;
+			reg = <0x009fa000 0x00006000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
 
 		rw-legacy {
 			label = "rw-legacy";
-			reg = <0x00b00000 0x00200000>;
+			reg = <0x00a00000 0x00200000>;
 			type = "blob legacy";
 			read-only;
 		};
@@ -221,7 +245,7 @@
 		 */
 		wp-ro {
 			label = "wp-ro";
-			reg = <0x00d00000 0x00300000>;
+			reg = <0x00c00000 0x00400000>;
 			read-only;
 		};
 
@@ -230,7 +254,7 @@
 			label = "ro-vpd";
 
 			/* VPD offset must be aligned to 4K bytes */
-			reg = <0x00d00000 0x00004000>;
+			reg = <0x00c00000 0x00004000>;
 			read-only;
 			type = "wiped";
 			wipe-value = [ff];
@@ -243,7 +267,7 @@
 		 */
 		ro-unused {
 			label = "ro-unused";
-			reg = <0x00d04000 0x0000c000>;
+			reg = <0x00c04000 0x0000c000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
@@ -251,7 +275,7 @@
 		/* ---- Section: Read-only ---- */
 		ro-section {
 			label = "ro-section";
-			reg = <0x00d10000 0x003f0000>;
+			reg = <0x00c10000 0x003f0000>;
 			read-only;
 		};
 		ro-fmap {
@@ -264,7 +288,7 @@
 			 * 256KB.
 			 */
 
-			reg = <0x00d10000 0x00000800>;
+			reg = <0x00c10000 0x00000800>;
 			read-only;
 			type = "fmap";
 			ver-major = <1>;
@@ -272,7 +296,7 @@
 		};
 		ro-firmware-id {
 			label = "ro-frid";
-			reg = <0x00d10800 0x00000040>;
+			reg = <0x00c10800 0x00000040>;
 			read-only;
 			type = "blobstring fwid";
 		};
@@ -284,7 +308,7 @@
 		 */
 		ro-firmware-id-pad {
 			label = "ro-frid-pad";
-			reg = <0x00d10840 0x000007c0>;
+			reg = <0x00c10840 0x000007c0>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
@@ -292,13 +316,13 @@
 			label = "gbb";
 
 			/* GBB offset must be aligned to 4K bytes */
-			reg = <0x00d11000 0x000ef000>;
+			reg = <0x00c11000 0x000ef000>;
 			read-only;
 			type = "blob gbb";
 		};
 		ro-boot {
 			label = "boot-stub";
-			reg = <0x00e00000 0x00200000>; /* 2 MB */
+			reg = <0x00d00000 0x00300000>; /* 3 MB */
 			read-only;
 			type = "blob coreboot";
 			required;
