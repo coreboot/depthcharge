@@ -85,7 +85,7 @@
 		rw-a {
 			label = "rw-section-a";
 			/* Alignment: 4k (for updating) */
-			reg = <0x00500000 0x00500000>;
+			reg = <0x00400000 0x00580000>;
 		};
 		rw-a-vblock {
 			label = "vblock-a";
@@ -93,7 +93,7 @@
 			 * Alignment: 4k (for updating) and must be in start of
 			 * each RW_SECTION.
 			 */
-			reg = <0x00500000 0x00002000>;
+			reg = <0x00400000 0x00002000>;
 			type = "keyblock boot,ecrwhash,romstage,ramstage,bl31,secure_os,tegra_mtc";
 			with_index;
 			keyblock = "firmware.keyblock";
@@ -105,20 +105,20 @@
 		rw-a-boot {
 			/* Alignment: no requirement (yet). */
 			label = "fw-main-a";
-			reg = <0x00502000 0x004de000>;
+			reg = <0x00402000 0x0055e000>;
 			type = "blob boot,ecrwhash,romstage,ramstage,bl31,secure_os,tegra_mtc";
 			with_index;
 		};
 		rw-a-ec-boot {
 			label = "ec-main-a";
 			type = "blob ecbin";
-			reg = <0x009e0000 0x0001ff00>;
+			reg = <0x00960000 0x0001ff00>;
 			with_index;
 		};
 		rw-a-firmware-id {
 			/* Alignment: no requirement. */
 			label = "rw-fwid-a";
-			reg = <0x009fff00 0x00000100>;
+			reg = <0x0097ff00 0x00000100>;
 			read-only;
 			type = "blobstring fwid";
 		};
@@ -127,7 +127,7 @@
 		rw-b {
 			label = "rw-section-b";
 			/* Alignment: 4k (for updating) */
-			reg = <0x00a00000 0x00500000>;
+			reg = <0x00980000 0x00580000>;
 		};
 		rw-b-vblock {
 			label = "vblock-b";
@@ -135,7 +135,7 @@
 			 * Alignment: 4k (for updating) and must be in start of
 			 * each RW_SECTION.
 			 */
-			reg = <0x00a00000 0x00002000>;
+			reg = <0x00980000 0x00002000>;
 			type = "keyblock boot,ecrwhash,romstage,ramstage,bl31,secure_os,tegra_mtc";
 			with_index;
 			keyblock = "firmware.keyblock";
@@ -147,7 +147,7 @@
 		rw-b-boot {
 			label = "fw-main-b";
 			/* Alignment: no requirement (yet). */
-			reg = <0x00a02000 0x004de000>;
+			reg = <0x00982000 0x0055e000>;
 			type = "blob boot,ecrwhash,romstage,ramstage,bl31,secure_os,tegra_mtc";
 			with_index;
 		};
