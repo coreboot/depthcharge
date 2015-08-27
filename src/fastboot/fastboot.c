@@ -930,6 +930,8 @@ static fb_ret_type fb_flash(struct fb_cmd *cmd)
  * device memory and boot from it. It calls vboot function
  * VbVerifyMemoryBootImage to check if the given image is okay to boot from
  * memory in current mode.
+ *
+ * In unlocked mode, allow the user to boot any image irrespective of signature.
  */
 static fb_ret_type fb_boot(struct fb_cmd *cmd)
 {
@@ -962,8 +964,23 @@ static fb_ret_type fb_boot(struct fb_cmd *cmd)
 
 	if (VbVerifyMemoryBootImage(&cparams, &kparams, kernel, kernel_size) !=
 	    VBERROR_SUCCESS) {
-		fb_add_string(&cmd->output, "image verification failed", NULL);
-		return FB_SUCCESS;
+		if (!fb_device_unlocked()) {
+			/*
+			 * If device is locked, fail if image is not properly
+			 * signed.
+			 */
+			fb_add_string(&cmd->output, "image verification failed",
+				      NULL);
+			return FB_SUCCESS;
+		} else {
+			/*
+			 * If device is unlocked and signature cannot be
+			 * verified, then just pass the original image
+			 * to vboot_boot_kernel.
+			 */
+			kparams.kernel_buffer = image_addr;
+			kparams.kernel_buffer_size = image_size;
+		}
 	}
 
 	kparams.flags = KERNEL_IMAGE_BOOTIMG;
