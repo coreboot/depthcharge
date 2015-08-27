@@ -97,6 +97,9 @@ static void fb_print_on_screen(const char *msg, int fg, int bg)
 	/* Clear lower half of the screen where we write. */
 	video_printf(fg, bg, 0, buf);
 
+	/* Set cursor to center row. */
+	video_console_set_cursor(0, rows / 2);
+
 	/* Put message on center of screen. */
 	video_printf(fg, bg, 1, msg);
 }
