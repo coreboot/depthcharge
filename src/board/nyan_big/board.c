@@ -105,8 +105,6 @@ static VirtualMmcPowerGpio *new_virtual_mmc_power(GpioOps *gpio,
 
 static int board_setup(void)
 {
-	fit_set_compat_by_rev("google,nyan-big-rev%d", lib_sysinfo.board_id);
-
 	sysinfo_install_flags(new_tegra_gpio_input_from_coreboot);
 
 	void *dma_channel_bases[32];

@@ -34,17 +34,30 @@
 static ListNode image_nodes;
 static ListNode config_nodes;
 
-static const char *fit_kernel_compat = "uninitialized!";
+static const char *fit_kernel_compat = NULL;
 
 void fit_set_compat(const char *compat)
 {
 	fit_kernel_compat = compat;
 }
 
-void fit_set_compat_by_rev(const char *pattern, int rev)
+static void fit_set_default_compat(void)
 {
-	char *compat = strdup(pattern);
-	sprintf(compat, pattern, rev);
+	const char pattern[] = "google,%s-rev%u";
+	u32 rev = lib_sysinfo.board_id;
+
+	// Make sure board ID is not ~0 and will fit in two digits, so that
+	// it doesn't require more space than the '%u' in the pattern string.
+	assert(rev < 100);
+
+	char *compat = malloc(sizeof(pattern) + sizeof(CONFIG_BOARD));
+	sprintf(compat, pattern, CONFIG_BOARD, lib_sysinfo.board_id);
+
+	char *c;
+	for (c = compat; *c != '\0'; c++)
+		if (*c == '_')
+			*c = '-';
+
 	fit_set_compat(compat);
 }
 
@@ -341,6 +354,8 @@ FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt)
 	list_for_each(image, image_nodes, list_node)
 		printf("Image %s has %d bytes.\n", image->name, image->size);
 
+	if (!fit_kernel_compat)
+		fit_set_default_compat();
 	printf("Compat preference: %s\n", fit_kernel_compat);
 	// Process and list the configs.
 	list_for_each(config, config_nodes, list_node) {

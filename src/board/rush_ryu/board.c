@@ -85,7 +85,10 @@ const char *hardware_name(void)
 
 static void choose_devicetree_by_boardid(void)
 {
-	fit_set_compat_by_rev("google,ryu-rev%d", lib_sysinfo.board_id);
+	const char *pattern = "google,ryu-rev%d";
+	char *compat = strdup(pattern);
+	sprintf(compat, pattern, lib_sysinfo.board_id);
+	fit_set_compat(compat);
 }
 
 static int board_setup(void)

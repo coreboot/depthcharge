@@ -75,13 +75,6 @@ FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt);
  */
 void fit_set_compat(const char *compat);
 
-/*
- * Shorthand to set a compatible string from a printf() pattern with %d and a
- * board revision number. Caller must ensure that |pattern| contains exactly one
- * format directive and that its replacement takes up no more than 2 characters!
- */
-void fit_set_compat_by_rev(const char *pattern, int rev);
-
 void fit_add_ramdisk(DeviceTree *tree, void *ramdisk_addr, size_t ramdisk_size);
 
 #endif /* __BOOT_FIT_H__ */

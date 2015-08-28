@@ -91,11 +91,6 @@ const char *hardware_name(void)
 	return "dragon";
 }
 
-static void choose_devicetree_by_boardid(void)
-{
-	fit_set_compat_by_rev("google,smaug-rev%d", lib_sysinfo.board_id);
-}
-
 static TegraI2c *get_i2c6(void)
 {
 	static TegraI2c *i2c6;
@@ -140,8 +135,6 @@ static int board_setup(void)
 	flash_params_override();
 
 	sysinfo_install_flags(new_tegra_gpio_input_from_coreboot);
-
-	choose_devicetree_by_boardid();
 
 	static const struct boot_policy policy[] = {
 		{KERNEL_IMAGE_BOOTIMG, CMD_LINE_DTB},

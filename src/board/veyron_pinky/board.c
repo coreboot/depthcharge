@@ -45,9 +45,7 @@
 
 static int board_setup(void)
 {
-	/* We started adding board IDs (from 0) with the rev1 board... m( */
-	fit_set_compat_by_rev("google,veyron-pinky-rev%d",
-			      lib_sysinfo.board_id + 1);
+	// Board IDs will be off by one. Nobody uses Pinky anymore anyway...
 
 	RkSpi *spi2 = new_rockchip_spi(0xff130000);
 	flash_set_ops(&new_spi_flash(&spi2->ops)->ops);
