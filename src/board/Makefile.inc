@@ -15,4 +15,4 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-subdirs-y += $(call strip_quotes,$(CONFIG_BOARD))
+subdirs-y += $(call strip_quotes,$(CONFIG_BOARD_DIR))

@@ -19,6 +19,10 @@ menu "Board"
 config BOARD
 	string "Board name"
 
+config BOARD_DIR
+	string "Board directory"
+	default BOARD
+
 if BOARD = "auron"
 source src/board/auron/Kconfig
 endif
