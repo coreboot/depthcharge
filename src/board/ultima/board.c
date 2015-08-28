@@ -26,11 +26,10 @@
 #include "base/init_funcs.h"
 #include "board/ultima/device_nvs.h"
 #include "drivers/bus/i2c/designware.h"
-#include "drivers/bus/i2s/baytrail/baytrail-max98090.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
-#include "drivers/gpio/baytrail.h"
+#include "drivers/gpio/braswell.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
 #include "drivers/sound/i2s.h"
@@ -50,19 +49,41 @@
 static const int emmc_sd_clock_min = 400 * 1000;
 static const int emmc_clock_max = 200 * 1000 * 1000;
 static const int sd_clock_max = 52 * 1000 * 1000;
+static const int SATA_LEDN = 77; /*EC_IN_RW GPIO*/
+
+static CrosEcLpcBus *cros_ec_lpc_bus;
+
+static int read_ec_memmap(void) {
+	u8 ec_switches;
+	cros_ec_lpc_bus->ops.read(&ec_switches,
+		EC_LPC_ADDR_MEMMAP + EC_MEMMAP_SWITCHES, 1);
+	return ec_switches;
+	}
+
+static int get_lid_sw(GpioOps *me) {
+	return read_ec_memmap() & EC_SWITCH_LID_OPEN;
+}
+
+static int get_pwr_btn(GpioOps *me) {
+	return read_ec_memmap() & EC_SWITCH_POWER_BUTTON_PRESSED;
+}
 
 static int board_setup(void)
 {
 	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + DEVICE_NVS_OFFSET;
-	sysinfo_install_flags(NULL);
+	GpioOps *ec_in_rw;
+	GpioCfg *cfg = new_braswell_gpio_input(GP_SOUTHWEST, SATA_LEDN);
+	ec_in_rw = &cfg->ops;
+	static GpioOps lidops = {get_lid_sw, NULL};
+	static GpioOps pwrbtnops = {get_pwr_btn, NULL};
 
-#if CONFIG_DRIVER_EC_CROS
-  #if CONFIG_DRIVER_EC_CROS_LPC
-	CrosEcLpcBus *cros_ec_lpc_bus =
-		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_MEC);
+	cros_ec_lpc_bus = new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_MEC);
 	cros_ec_set_bus(&cros_ec_lpc_bus->ops);
-  #endif
-#endif
+
+	sysinfo_install_flags(NULL);
+	flag_replace(FLAG_LIDSW, &lidops);
+	flag_replace(FLAG_PWRSW, &pwrbtnops);
+	flag_install(FLAG_ECINRW, ec_in_rw);
 
 	flash_set_ops(&new_mem_mapped_flash(0xff800000, 0x800000)->ops);
 
