@@ -333,10 +333,20 @@ static int smaug_backlight_update(DisplayOps *me, uint8_t enable)
 	return 0;
 }
 
+static void *const disp_cmd = (void *)(uintptr_t)0x542000c8;
+
+#define CTRL_MODE_MASK		(0x3 << 5)
+
+static int smaug_display_stop(struct DisplayOps *me)
+{
+	writel(readl(disp_cmd) & ~CTRL_MODE_MASK, disp_cmd);
+	return 0;
+}
+
 static DisplayOps smaug_display_ops = {
 	.init = &tegra132_display_init,
 	.backlight_update = &smaug_backlight_update,
-	.stop = NULL,
+	.stop = &smaug_display_stop,
 };
 
 static int display_setup(void)
