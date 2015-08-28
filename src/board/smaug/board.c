@@ -87,9 +87,31 @@ enum {
 	CLK_X_I2C6 = 0x1 << 6
 };
 
+#define BOOTREASON_SCRATCH_REG		((void *)(uintptr_t)(0x7000EC48ULL))
+
+enum {
+	PMC_BOOTREASON_MASK = 0x7,
+	PMC_BOOTREASON_REBOOT = 0x1,
+	PMC_BOOTREASON_PANIC = 0x2,
+	PMC_BOOTREASON_WATCHDOG = 0x3,
+	PMC_BOOTREASON_SENSOR = 0x4,
+};
+
+static const char * const bootreason_string[] = {
+	[PMC_BOOTREASON_REBOOT] = "android.bootreason=reboot ",
+	[PMC_BOOTREASON_PANIC] = "android.bootreason=kernel_panic ",
+	[PMC_BOOTREASON_WATCHDOG] = "android.bootreason=watchdog ",
+	[PMC_BOOTREASON_SENSOR] = "android.bootreason=oemerr_thermal ",
+};
+
 const char *mainboard_commandline(void)
 {
-	return NULL;
+	uint32_t val = read32(BOOTREASON_SCRATCH_REG) & PMC_BOOTREASON_MASK;
+
+	if ((val < PMC_BOOTREASON_REBOOT) || (val > PMC_BOOTREASON_SENSOR))
+		val = PMC_BOOTREASON_REBOOT;
+
+	return bootreason_string[val];
 }
 
 const char *hardware_name(void)
