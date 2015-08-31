@@ -146,7 +146,7 @@ static int mmc_send_cmd(MmcCtrlr *ctrlr, MmcCommand *cmd, MmcData *data)
 	return ret;
 }
 
-static int mmc_send_status(MmcMedia *media, int tries)
+static int mmc_send_status(MmcMedia *media, ssize_t tries)
 {
 	MmcCommand cmd;
 	cmd.cmdidx = MMC_CMD_SEND_STATUS;
@@ -959,6 +959,18 @@ static int mmc_startup(MmcMedia *media)
 		       (media->cid[2] >> 24) & 0xff);
 	printf(" Revision %d.%d\n", (media->cid[2] >> 20) & 0xf,
 	       (media->cid[2] >> 16) & 0xf);
+
+	/* Check whether to use HC erase group size or not. */
+	if (ext_csd[EXT_CSD_ERASE_GROUP_DEF] & 0x1)
+		media->erase_size = ext_csd[EXT_CSD_HC_ERASE_GRP_SIZE] *
+			512 * KiB;
+	else
+		media->erase_size = (extract_uint32_bits(media->csd, 81, 5)
+				     + 1) *
+			(extract_uint32_bits(media->csd, 86, 5) + 1);
+
+	media->trim_mult = ext_csd[EXT_CSD_TRIM_MULT];
+
 	return 0;
 }
 
@@ -1115,6 +1127,77 @@ lba_t block_mmc_write(BlockDevOps *me, lba_t start, lba_t count,
 	return count;
 }
 
+lba_t block_mmc_erase(BlockDevOps *me, lba_t start, lba_t count)
+{
+	MmcCommand cmd;
+
+	if (block_mmc_setup(me, start, count, 0) == 0)
+		return 0;
+
+	MmcMedia *media = mmc_media(me);
+	MmcCtrlr *ctrlr = mmc_ctrlr(media);
+
+	cmd.cmdidx = MMC_CMD_ERASE_GROUP_START;
+	cmd.resp_type = MMC_RSP_R1;
+	cmd.cmdarg = start;
+	cmd.flags = 0;
+
+	if (mmc_send_cmd(ctrlr, &cmd, NULL))
+		return 0;
+
+	cmd.cmdidx = MMC_CMD_ERASE_GROUP_END;
+	cmd.cmdarg = start + count - 1;
+	cmd.resp_type = MMC_RSP_R1;
+	cmd.flags = 0;
+
+	if (mmc_send_cmd(ctrlr, &cmd, NULL))
+		return 0;
+
+	cmd.cmdidx = MMC_CMD_ERASE;
+	cmd.cmdarg = MMC_TRIM_ARG;	/* just unmap blocks */
+	cmd.resp_type = MMC_RSP_R1;
+	cmd.flags = 0;
+
+	if (mmc_send_cmd(ctrlr, &cmd, NULL))
+		return 0;
+
+	size_t erase_blocks;
+	/*
+	 * Timeout for TRIM operation on one erase group is defined as:
+	 * TRIM timeout = 300ms x TRIM_MULT
+	 *
+	 * This timeout is expressed in units of 100us to mmc_send_status.
+	 *
+	 * Hence, timeout_per_erase_block = TRIM timeout * 1000us/100us;
+	 */
+	size_t timeout_per_erase_block = (media->trim_mult * 300) * 10;
+	int err = 0;
+
+	erase_blocks = ALIGN_UP(count, media->erase_size) / media->erase_size;
+
+	while (erase_blocks) {
+		/*
+		 * To avoid overflow of timeout value, loop in calls to
+		 * mmc_send_status for erase_blocks number of times.
+		 */
+		err = mmc_send_status(media, timeout_per_erase_block);
+
+		/* Send status successful, erase action complete. */
+		if (err == 0)
+			break;
+
+		erase_blocks--;
+	}
+
+	/* Total timeout done. Still status not successful. */
+	if (err) {
+		mmc_error("TRIM operation not successful within timeout.\n");
+		return 0;
+	}
+
+	return count;
+}
+
 lba_t block_mmc_fill_write(BlockDevOps *me, lba_t start, lba_t count,
 			   uint8_t fill_byte)
 {
@@ -1140,7 +1223,7 @@ lba_t block_mmc_fill_write(BlockDevOps *me, lba_t start, lba_t count,
 	/*
 	 * Actual allocated buffer size is minimum of three entities:
 	 * 1) 4MiB equivalent in lba
-	 * 2) count: Number of lbas to erase
+	 * 2) count: Number of lbas to overwrite
 	 * 3) ctrlr->b_max: Max lbas that the block device allows write
 	 * operation on at a time.
 	 */
