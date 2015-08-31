@@ -98,20 +98,35 @@ enum {
 };
 
 static const char * const bootreason_string[] = {
-	[PMC_BOOTREASON_REBOOT] = "android.bootreason=reboot ",
-	[PMC_BOOTREASON_PANIC] = "android.bootreason=kernel_panic ",
-	[PMC_BOOTREASON_WATCHDOG] = "android.bootreason=watchdog ",
-	[PMC_BOOTREASON_SENSOR] = "android.bootreason=oemerr_thermal ",
+	[PMC_BOOTREASON_REBOOT] = "reboot",
+	[PMC_BOOTREASON_PANIC] = "kernel_panic",
+	[PMC_BOOTREASON_WATCHDOG] = "watchdog",
+	[PMC_BOOTREASON_SENSOR] = "oemerr_thermal",
+};
+
+enum {
+	MC_BASE = 0x70019000,
+	VIDEO_PROTECT_BOM = MC_BASE + 0x648,
+	VIDEO_PROTECT_SIZE_MB = MC_BASE + 0x64C,
 };
 
 const char *mainboard_commandline(void)
 {
+	static char bootreason_and_vpr[80];
+	uint32_t vsize, vaddr;
 	uint32_t val = read32(BOOTREASON_SCRATCH_REG) & PMC_BOOTREASON_MASK;
 
 	if ((val < PMC_BOOTREASON_REBOOT) || (val > PMC_BOOTREASON_SENSOR))
 		val = PMC_BOOTREASON_REBOOT;
 
-	return bootreason_string[val];
+	/* Get Video Protect Region (VPR) size/address for kernel use */
+	vsize = readl((void *)VIDEO_PROTECT_SIZE_MB);
+	vaddr = readl((void *)VIDEO_PROTECT_BOM);
+	snprintf(bootreason_and_vpr, sizeof(bootreason_and_vpr),
+		 "vpr=0x%08x@0x%08x android.bootreason=%s ",  vsize << 20, vaddr,
+		 bootreason_string[val]);
+
+	return bootreason_and_vpr;
 }
 
 const char *hardware_name(void)
