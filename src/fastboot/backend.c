@@ -516,12 +516,19 @@ backend_ret_t backend_erase_partition(const char *name)
 	size_t part_size_lba = img.part_size_lba;
 	size_t part_addr = img.part_addr;
 
-	/* Perform fill_write operation on the partition */
-	if (ops->fill_write(ops, part_addr, part_size_lba, 0xFF)
-	    != part_size_lba)
-		ret = BE_WRITE_ERR;
+	/* First try to perform erase operation, if ops for erase exist. */
+	if ((ops->erase == NULL) ||
+	    (ops->erase(ops, part_addr, part_size_lba) != part_size_lba)) {
+		BE_LOG("Failed to erase. Falling back to fill_write\n");
+
+		/* If erase fails, perform fill_write operation. */
+		if (ops->fill_write(ops, part_addr, part_size_lba, 0xFF)
+		    != part_size_lba)
+			ret = BE_WRITE_ERR;
+	}
+
 	/* If operation was successful, update GPT entry if required */
-	else if (img.gpt)
+	if ((ret == BE_SUCCESS) && img.gpt)
 		GptUpdateKernelWithEntry(img.gpt, img.gpt_entry,
 					 GPT_UPDATE_ENTRY_INVALID);
 
