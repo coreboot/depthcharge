@@ -63,6 +63,20 @@ static lba_t block_flash_write(BlockDevOps *me, lba_t start, lba_t count,
 	return count;
 }
 
+static lba_t block_flash_erase(BlockDevOps *me, lba_t start, lba_t count)
+{
+	FlashBlockDev *flash = block_flash_get_bdev(me);
+	FlashOps *ops = flash->ops;
+	size_t block_size = flash->dev.block_size;
+	size_t todo = count * block_size;
+	size_t curr_ptr = start * block_size;
+
+	if (flash_erase_ops(ops, curr_ptr, todo) != todo)
+		return 0;
+
+	return count;
+}
+
 static lba_t block_flash_fill_write(BlockDevOps *me, lba_t start, lba_t count,
 				    uint8_t fill_byte)
 {
@@ -139,6 +153,7 @@ FlashBlockDev *block_flash_register_nor(FlashOps *ops)
 	flash->dev.stream_block_count = 0;
 	flash->dev.ops.read = block_flash_read;
 	flash->dev.ops.write = block_flash_write;
+	flash->dev.ops.erase = block_flash_erase;
 	flash->dev.ops.fill_write = block_flash_fill_write;
 	flash->dev.ops.new_stream = NULL;
 
