@@ -91,6 +91,9 @@
 #define MMC_CMD_SPI_READ_OCR		58
 #define MMC_CMD_SPI_CRC_ON_OFF		59
 
+#define MMC_TRIM_ARG			0x1
+#define MMC_SECURE_ERASE_ARG		0x80000000
+
 #define SD_CMD_SEND_RELATIVE_ADDR	3
 #define SD_CMD_SWITCH_FUNC		6
 #define SD_CMD_SEND_IF_COND		8
@@ -165,6 +168,7 @@
 #define EXT_CSD_CARD_TYPE		196	/* RO */
 #define EXT_CSD_SEC_CNT			212	/* RO, 4 bytes */
 #define EXT_CSD_HC_ERASE_GRP_SIZE	224	/* RO */
+#define EXT_CSD_TRIM_MULT		232     /* RO */
 
 /*
  * EXT_CSD field definitions
@@ -270,6 +274,10 @@ typedef struct MmcMedia {
 	uint64_t capacity;
 	int high_capacity;
 	uint32_t tran_speed;
+	/* Erase size in terms of block length. */
+	uint32_t erase_size;
+	/* Trim operation multiplier for determining timeout. */
+	uint32_t trim_mult;
 
 	uint32_t ocr;
 	uint16_t rca;
@@ -290,6 +298,7 @@ int mmc_setup_media(MmcCtrlr *ctrlr);
 lba_t block_mmc_read(BlockDevOps *me, lba_t start, lba_t count, void *buffer);
 lba_t block_mmc_write(BlockDevOps *me, lba_t start, lba_t count,
 		      const void *buffer);
+lba_t block_mmc_erase(BlockDevOps *me, lba_t start, lba_t count);
 lba_t block_mmc_fill_write(BlockDevOps *me, lba_t start, lba_t count,
 			   uint8_t fill_byte);
 
