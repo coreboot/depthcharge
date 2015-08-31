@@ -201,24 +201,27 @@ void vboot_try_fastboot(void)
 	video_get_rows_cols(&rows, &cols);
 
 	video_console_set_cursor(0, 3);
-	video_printf(7, 0, "<-- Button up: run selected option\n\n");
-	video_printf(7, 0, "<-- Button down: next option\n");
+	video_printf(7, 0, VIDEO_PRINTF_ALIGN_KEEP,
+		     "<-- Button up: run selected option\n\n");
+	video_printf(7, 0, VIDEO_PRINTF_ALIGN_KEEP,
+		     "<-- Button down: next option\n");
 
 	video_console_set_cursor(0, rows - 10);
 
 	// set cursor appropriately
-	video_printf(12, 0, "FASTBOOT MODE\n");
+	video_printf(12, 0, VIDEO_PRINTF_ALIGN_KEEP, "FASTBOOT MODE\n");
 	/*
 	 * TODO: Show PRODUCT_NAME, VARIANT, HW VERSION, BOOTLOADER VERSION,
 	 * SERIAL NUMBER, SIGNING
 	 */
-	video_printf(12, 0, "DEVICE: %s\n",
+	video_printf(12, 0, VIDEO_PRINTF_ALIGN_KEEP, "DEVICE: %s\n",
 		     fb_device_unlocked() ? "unlocked" : "locked");
 
 	while (1) {
 		video_console_set_cursor(0, 0);
-		video_printf(commands[position].color, 0, "%*s",
-			-max_strlen, commands[position].text);
+		video_printf(commands[position].color, 0,
+			     VIDEO_PRINTF_ALIGN_KEEP,
+			     "%*s", -max_strlen, commands[position].text);
 		int keypress = getchar();
 		printf("got keypress %x\n", keypress);
 		if (keypress == ' ') {
