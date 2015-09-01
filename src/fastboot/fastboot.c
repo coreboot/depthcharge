@@ -997,6 +997,8 @@ static fb_ret_type fb_boot(struct fb_cmd *cmd)
 	cmd->type = FB_OKAY;
 	fb_execute_send(cmd);
 
+	vboot_draw_screen(VB_SCREEN_BLANK, 0, 0);
+
 	vboot_boot_kernel(&kparams);
 
 	/* We should never reach here, if boot successful. */
@@ -1382,6 +1384,7 @@ fb_ret_type device_mode_enter(void)
 	    (ret != FB_REBOOT_BOOTLOADER))
 		ret = FB_REBOOT;
 
+	vboot_draw_screen(VB_SCREEN_BLANK, 0, 0);
 	FB_LOG("********** Exit fastboot mode *****************\n");
 	return ret;
 }
