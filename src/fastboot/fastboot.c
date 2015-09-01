@@ -1191,8 +1191,10 @@ static fb_ret_type fb_clear_gbb(struct fb_cmd *cmd)
 {
 	if (gbb_clear_flags() == 0)
 		cmd->type = FB_OKAY;
-	else
+	else {
+		fb_add_string(&cmd->output, "Cannot write GBB", NULL);
 		cmd->type = FB_FAIL;
+	}
 	return FB_SUCCESS;
 }
 
