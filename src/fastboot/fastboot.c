@@ -433,10 +433,10 @@ static size_t name_check_match(const char *str, size_t len,
 /* Environment variables and routines to set the variables. */
 
 /*
- * env_force_erase: Force erase of partitions even if full fastboot cap is
+ * env_force_erase: Force/skip erase of partitions when full fastboot cap is
  * enabled in GBB.
  */
-static unsigned char env_force_erase;
+static unsigned char env_force_erase = 1;
 
 static const struct {
 	struct name_string name;
