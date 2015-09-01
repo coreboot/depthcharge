@@ -308,7 +308,7 @@ static int spi_flash_write_status(FlashOps *me, uint8_t status)
 
 	if (flash->spi->start(flash->spi)) {
 		printf("%s: Failed to start transaction.\n", __func__);
-		goto fail;
+		return ret;
 	}
 
 	command_bytes[0] = WriteEnableCommand;
@@ -318,15 +318,15 @@ static int spi_flash_write_status(FlashOps *me, uint8_t status)
 		goto fail;
 	}
 
+	if (operation_failed(flash, "WREN") != 0)
+		goto fail;
+
 	/*
 	 * CS needs to be deasserted before any other command can be
 	 * issued after WREN.
 	 */
 	if (toggle_cs(flash, "WREN"))
 		goto fail;
-
-	if (operation_failed(flash, "WREN") == 0)
-		ret = 0;
 
 	command_bytes[0] = WriteStatus;
 	command_bytes[1] = status;
