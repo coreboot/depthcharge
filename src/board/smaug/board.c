@@ -26,6 +26,7 @@
 #include <vboot_nvstorage.h>
 
 #include "base/init_funcs.h"
+#include "base/cleanup_funcs.h"
 #include "boot/bcb.h"
 #include "boot/fit.h"
 #include "boot/commandline.h"
@@ -186,6 +187,34 @@ static void update_boot_on_ac_detect_state(void)
 		printf("ERROR: Could not set boot_on_ac\n");
 }
 
+static int smaug_display_lines_cleanup(struct CleanupFunc *cleanup,
+				       CleanupType type)
+{
+	if ((type != CleanupOnReboot) && (type != CleanupOnPowerOff))
+		return 0;
+
+	/* LCD_RST_L (V2) - set to 0. */
+	TegraGpio *lcd_rst = new_tegra_gpio_output(GPIO(V, 2));
+	lcd_rst->ops.set(&lcd_rst->ops, 0);
+	mdelay(30);
+
+	/* LCD_EN (V1) - set to 0. */
+	TegraGpio *lcd_en = new_tegra_gpio_output(GPIO(V, 1));
+	lcd_en->ops.set(&lcd_en->ops, 0);
+	mdelay(2);
+
+	/* EN_VDD18_LCD (V3) - set to 0. */
+	TegraGpio *vdd18_lcd = new_tegra_gpio_output(GPIO(V, 3));
+	vdd18_lcd->ops.set(&vdd18_lcd->ops, 0);
+	mdelay(1);
+
+	/* EN_VDD_LCD (V4) - set to 0. */
+	TegraGpio *vdd_lcd = new_tegra_gpio_output(GPIO(V, 4));
+	vdd_lcd->ops.set(&vdd_lcd->ops, 0);
+
+	return 0;
+}
+
 static int board_setup(void)
 {
 	flash_params_override();
@@ -286,6 +315,14 @@ static int board_setup(void)
 
 	/* Update BOOT_ON_AC_DETECT state */
 	update_boot_on_ac_detect_state();
+
+	static CleanupFunc disp = {
+		&smaug_display_lines_cleanup,
+		CleanupOnPowerOff | CleanupOnReboot,
+		NULL
+	};
+
+	list_insert_after(&disp.list_node, &cleanup_funcs);
 
 	return 0;
 }
