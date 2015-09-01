@@ -58,6 +58,15 @@ static inline int flash_write_status_ops(FlashOps *ops, uint8_t status)
 	return 0;
 }
 
+static inline int flash_read_status_ops(FlashOps *ops)
+{
+	die_if(!ops, "%s: No flash ops set.\n", __func__);
+	if (ops->read_status)
+		return ops->read_status(ops);
+
+	return -1;
+}
+
 static inline uint32_t flash_sector_size_ops(FlashOps *ops)
 {
 	return ops->sector_size;
@@ -127,4 +136,9 @@ int flash_rewrite(uint32_t start, uint32_t length, const void *buffer)
 int flash_write_status(uint8_t status)
 {
 	return flash_write_status_ops(flash_ops, status);
+}
+
+int flash_read_status(void)
+{
+	return flash_read_status_ops(flash_ops);
 }

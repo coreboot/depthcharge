@@ -36,6 +36,8 @@ typedef struct FlashOps
 	 * Offset and size must be erase_size-aligned. */
 	int (*erase)(struct FlashOps *me, uint32_t offset, uint32_t size);
 	int (*write_status)(struct FlashOps *me, uint8_t status);
+	/* Reads status and returns -1 on error, status reg value on success. */
+	int (*read_status)(struct FlashOps *me);
 	/* Granularity and alignment of erases */
 	uint32_t sector_size;
 	/* Total number of sectors present */
@@ -50,6 +52,7 @@ int flash_erase(uint32_t offset, uint32_t size);
 uint32_t flash_sector_size(void);
 int flash_rewrite(uint32_t start, uint32_t length, const void *buffer);
 int flash_write_status(uint8_t status);
+int flash_read_status(void);
 
 /* Functions operating on passed in ops */
 void *flash_read_ops(FlashOps *ops, uint32_t offset, uint32_t size);

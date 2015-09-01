@@ -299,6 +299,41 @@ static int spi_flash_erase(FlashOps *me, uint32_t start, uint32_t size)
 	return offset;
 }
 
+static int spi_flash_read_status(FlashOps *me)
+{
+	int ret = -1;
+	SpiFlash *flash = container_of(me, SpiFlash, ops);
+
+	uint8_t command;
+
+	if (flash->spi->start(flash->spi)) {
+		printf("%s: Failed to start transaction.\n", __func__);
+		return ret;
+	}
+
+	if (toggle_cs(flash, "RDSTATUS") != 0)
+		goto fail;
+
+	command = ReadSr1Command;
+	if (flash->spi->transfer(flash->spi, NULL, &command, sizeof(command))) {
+		printf("%s: Failed to send register read command.\n", __func__);
+		goto fail;
+	}
+
+	if (flash->spi->transfer(flash->spi, &command, NULL, sizeof(command))) {
+		printf("%s: Failed to read status.\n", __func__);
+		goto fail;
+	}
+
+	ret = command;
+fail:
+	if (flash->spi->stop(flash->spi)) {
+		printf("%s: Failed to stop.\n", __func__);
+		ret = -1;
+	}
+	return ret;
+}
+
 static int spi_flash_write_status(FlashOps *me, uint8_t status)
 {
 	int ret = -1;
@@ -359,6 +394,7 @@ SpiFlash *new_spi_flash(SpiOps *spi)
 	flash->ops.write = spi_flash_write;
 	flash->ops.erase = spi_flash_erase;
 	flash->ops.write_status = spi_flash_write_status;
+	flash->ops.read_status = spi_flash_read_status;
 	flash->ops.sector_size = sector_size;
 	assert(rom_size == ALIGN_DOWN(rom_size, sector_size));
 	flash->ops.sector_count = rom_size / sector_size;
