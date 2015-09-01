@@ -69,10 +69,7 @@ int __attribute__((weak)) board_allow_unlock(void)
 
 static uint32_t fb_get_curr_cap_bitmap(void)
 {
-	static uint32_t bitmap = 0;
-
-	if (bitmap)
-		return bitmap;
+	uint32_t bitmap = 0;
 
 	/* If GBB flag is set to allow full fastboot capability, so do we. */
 	if (fb_check_gbb_override()) {
@@ -82,9 +79,7 @@ static uint32_t fb_get_curr_cap_bitmap(void)
 
 	/* If we are currently in normal mode, only limited cap is available */
 	if (vboot_in_developer() == 0) {
-
 		bitmap = fb_cap_bitmap[FB_LIMITED_CAP];
-
 		return bitmap;
 	}
 
