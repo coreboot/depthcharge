@@ -233,28 +233,21 @@ static VbError_t vboot_draw_splash(uint32_t localize)
 static void vboot_print_unlock_warning(void)
 {
 	video_printf(FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG, 1,
-		     "Unlocking the bootloader will void any applicable "
-		     "warranty. If you unlock the bootloader, you will be  \n");
+		     "Unlocking the bootloader will void any applicable warranty.                                               \n\n");
 	video_printf(FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG, 1,
-		     "able to install custom operating system on this tablet. "
-		     "A custom OS is not subject to the same testing as the\n");
+		     "If you unlock the bootloader, you will be able to install custom operating system software on this tablet.\n");
 	video_printf(FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG, 1,
-		     "original OS, and can cause your tablet and installed "
-		     "applications to stop working properly. If you unlock \n");
+		     "A custom OS is not subject to the same testing as the original OS, and can cause your tablet and installed\n");
 	video_printf(FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG, 1,
-		     "the bootloader, you may not be able to lock it back and "
-		     "re-install the original OS.\n\n");
+		     "applications to stop working properly. If you unlock the bootloader, you may not be able to re-install the\n");
 	video_printf(FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG, 1,
-		     "Once you unlock the bootloader, the data in your tablet "
-		     " may be exposed to unauthorized access. To try to   \n");
+		     "original OS.                                                                                              \n\n");
 	video_printf(FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG, 1,
-		     "limit that exposure, unlocking the bootloader will "
-		     "automatically commence a data reset that will delete\n");
+		     "Once you unlock the bootloader, the data in your tablet may be exposed to unauthorized access. To try to  \n");
 	video_printf(FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG, 1,
-		     "all data from your tablet, but there's no guarantee that "
-		     "unauthorized access will be prevented during or after\n");
+		     "limit that exposure, unlocking the bootloader will delete all data from your tablet but there's no        \n");
 	video_printf(FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG, 1,
-		     " the data reset process.\n\n\n");
+		     "guarantee that unauthorized access will be prevented during or after the data reset process.              \n\n");
 }
 
 static void vboot_print_lock_warning(void)
@@ -268,13 +261,14 @@ static void vboot_print_lock_warning(void)
 static VbError_t vboot_draw_oem_lock_unlock(uint32_t localize, int lock)
 {
 	unsigned int rows, cols;
-	char *lock_unlock = lock ? "Lock" : "Unlock";
+	char *lock_unlock = lock ? "lock" : "unlock";
+	char *Lock_Unlock = lock ? "Lock" : "Unlock";
 
 	fastboot_draw_base_screen(localize);
 	video_get_rows_cols(&rows, &cols);
 	video_console_set_cursor(0, rows / 2);
 	video_printf(FB_MESSAGE_WARN_FG, FB_MESSAGE_WARN_BG, 1,
-		     "%s bootloader?\n\n", lock_unlock);
+		     "%s bootloader?\n\n", Lock_Unlock);
 
 	if (lock)
 		vboot_print_lock_warning();
@@ -284,11 +278,8 @@ static VbError_t vboot_draw_oem_lock_unlock(uint32_t localize, int lock)
 	const char *confirm = board_get_button_string(FB_BUTTON_CONFIRM);
 	const char *cancel = board_get_button_string(FB_BUTTON_CANCEL);
 	video_printf(FB_MESSAGE_WARN_FG, FB_MESSAGE_WARN_BG, 1,
-		     "Press the %s to confirm that you really intend to %s the "
-		     "bootloader.\n", confirm, lock_unlock);
-	video_printf(FB_MESSAGE_WARN_FG, FB_MESSAGE_WARN_BG, 1,
-		     "You still have time to cancel and go back to fastboot "
-		     "mode by pushing %s.\n", cancel);
+		     "Press the %s to %s the bootloader. Press the %s to cancel.\n",
+		     confirm, lock_unlock, cancel);
 
 	return VBERROR_SUCCESS;
 }
