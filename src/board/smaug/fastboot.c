@@ -88,6 +88,33 @@ struct part_info fb_part_list[] = {
 	PART_NONGPT("bootloader", NULL, BDEV_ENTRY(FLASH_BDEV), 0, 9),
 };
 
+const char *board_fw_version(void)
+{
+	/*
+	 * It is tricky to report back bootloader version for
+	 * us. fastboot expects a single value for bootloader
+	 * version. However, we have 3 copies of bootloader image
+	 * i.e. RO, RW-A and RW-B.
+	 *
+	 * It might not be right to provide RO bootloader version
+	 * always, especially if user receives OTA update for firmware
+	 * or flashes a new firmware with different version without
+	 * disabling write-protect.
+	 *
+	 * This scheme reads the index of firmware tried for last boot
+	 * and reports the version of that firmware index. Here, the
+	 * assumption is that since the firmware was tried last it is
+	 * the one with most recent version. NOTE: Currently, we do not
+	 * have any mechanism in OS to set the FW_PREV_BOOT_RESULT.
+	 *
+	 */
+	uint8_t index = vbnv_read(VBNV_FW_PREV_TRIED);
+	if (index > VDAT_RW_B)
+		index = VDAT_RO;
+
+	return get_fw_id(index);
+}
+
 size_t fb_part_count = ARRAY_SIZE(fb_part_list);
 
 int get_board_var(struct fb_cmd *cmd, fb_getvar_t var)
@@ -97,29 +124,8 @@ int get_board_var(struct fb_cmd *cmd, fb_getvar_t var)
 
 	switch(var) {
 	case FB_BOOTLOADER_VERSION: {
-		/*
-		 * It is tricky to report back bootloader version for
-		 * us. fastboot expects a single value for bootloader
-		 * version. However, we have 3 copies of bootloader image
-		 * i.e. RO, RW-A and RW-B.
-		 *
-		 * It might not be right to provide RO bootloader version
-		 * always, especially if user receives OTA update for firmware
-		 * or flashes a new firmware with different version without
-		 * disabling write-protect.
-		 *
-		 * This scheme reads the index of firmware tried for last boot
-		 * and reports the version of that firmware index. Here, the
-		 * assumption is that since the firmware was tried last it is
-		 * the one with most recent version. NOTE: Currently, we do not
-		 * have any mechanism in OS to set the FW_PREV_BOOT_RESULT.
-		 *
-		 */
-		uint8_t index = vbnv_read(VBNV_FW_PREV_TRIED);
-		if (index > VDAT_RW_B)
-			index = VDAT_RO;
 
-		const char *version = get_fw_id(index);
+		const char *version = board_fw_version();
 
 		if (version == NULL)
 			ret = -1;

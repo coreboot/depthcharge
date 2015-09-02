@@ -272,9 +272,14 @@ static inline void menu_select(void)
 	cur_pos = -1;
 }
 
+const char * __attribute__((weak)) board_fw_version(void)
+{
+	return get_active_fw_id();
+}
+
 static void draw_device_info(void)
 {
-	const char *version = get_active_fw_id();
+	const char *version = board_fw_version();
 	int row = FB_INFO_POSITION_ROW;
 
 	/*

@@ -25,6 +25,7 @@
 
 #if CONFIG_FASTBOOT_MODE
 void vboot_try_fastboot(void);
+const char *board_fw_version(void);
 #else
 static inline void vboot_try_fastboot(void) {}
 #endif
