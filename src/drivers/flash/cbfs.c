@@ -39,19 +39,10 @@ static size_t cbfs_media_read(struct cbfs_media *media,
 			      void *dest, size_t offset,
 			      size_t count)
 {
-	uint8_t *cache = NULL;
-	uint32_t offset_u32;
-
-	if (offset == 0 - sizeof(uint32_t) && count == sizeof(uint32_t)) {
-		offset_u32 = (uint32_t)lib_sysinfo.cbfs_offset;
-		cache = (uint8_t *)&offset_u32;
-	} else {
-		cache = flash_read(offset, count);
-	}
+	uint8_t *cache = flash_read(offset, count);
 	if (!cache)
 		return 0;
 	memcpy(dest, cache, count);
-
 	return count;
 }
 
