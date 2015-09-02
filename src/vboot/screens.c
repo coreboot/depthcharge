@@ -47,13 +47,12 @@ void *load_bitmap(const char *name, uint32_t *size)
 
 static VbError_t fastboot_draw_base_screen(uint32_t localize)
 {
-	if (clear_screen(0x0, 0x0, 0x0))
-		return VBERROR_UNKNOWN;
+	video_console_clear();
 
-	/* 'the lightbar' (Red Yellow Blue Green) */
-	draw_box( 0, 16, 25, 1, 219, 65, 55);
-	draw_box(25, 16, 25, 1, 244, 180, 0);
-	draw_box(50, 16, 25, 1, 66, 133, 244);
+	/* 'the lightbar' (Blue,Red,Yellow,Green) */
+	draw_box( 0, 16, 25, 1, 66, 133, 244);
+	draw_box(25, 16, 25, 1, 219, 65, 55);
+	draw_box(50, 16, 25, 1, 244, 180, 0);
 	draw_box(75, 16, 25, 1, 15, 157, 88);
 
 	return VBERROR_SUCCESS;
@@ -72,7 +71,9 @@ static VbError_t vboot_draw_developer_warning(uint32_t localize)
 
 	video_console_set_cursor(0, FB_INFO_POSITION_ROW);
 	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
-		     "OS verification is OFF\n");
+		     "Bootloader is unlocked and OS verification is OFF.\n");
+	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
+		     "Device will continue booting in 30 seconds.\n");
 
 	return VBERROR_SUCCESS;
 }
@@ -109,9 +110,10 @@ static VbError_t vboot_draw_recovery_insert(uint32_t localize)
 
 	video_console_set_cursor(0, FB_INFO_POSITION_ROW);
 	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
-		     "OS is missing or damaged.\n");
+		     "For more information on USB recovery, please "
+		     "visit: \n");
 	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
-		     "Please insert a recovery USB stick.\n");
+		     "smaug.google.com/usb-recovery\n");
 	return rv;
 }
 
@@ -228,6 +230,41 @@ static VbError_t vboot_draw_splash(uint32_t localize)
 	return VBERROR_SUCCESS;
 }
 
+static void vboot_print_unlock_warning(void)
+{
+	video_printf(FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG, 1,
+		     "Unlocking the bootloader will void any applicable "
+		     "warranty. If you unlock the bootloader, you will be  \n");
+	video_printf(FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG, 1,
+		     "able to install custom operating system on this tablet. "
+		     "A custom OS is not subject to the same testing as the\n");
+	video_printf(FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG, 1,
+		     "original OS, and can cause your tablet and installed "
+		     "applications to stop working properly. If you unlock \n");
+	video_printf(FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG, 1,
+		     "the bootloader, you may not be able to lock it back and "
+		     "re-install the original OS.\n\n");
+	video_printf(FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG, 1,
+		     "Once you unlock the bootloader, the data in your tablet "
+		     " may be exposed to unauthorized access. To try to   \n");
+	video_printf(FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG, 1,
+		     "limit that exposure, unlocking the bootloader will "
+		     "automatically commence a data reset that will delete\n");
+	video_printf(FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG, 1,
+		     "all data from your tablet, but there's no guarantee that "
+		     "unauthorized access will be prevented during or after\n");
+	video_printf(FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG, 1,
+		     " the data reset process.\n\n\n");
+}
+
+static void vboot_print_lock_warning(void)
+{
+	video_printf(FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG, 1,
+		     "Locking bootloader will automatically commence a factory "
+		     "data reset to delete all personal data from your tablet."
+		     "\n\n");
+}
+
 static VbError_t vboot_draw_oem_lock_unlock(uint32_t localize, int lock)
 {
 	unsigned int rows, cols;
@@ -238,14 +275,20 @@ static VbError_t vboot_draw_oem_lock_unlock(uint32_t localize, int lock)
 	video_console_set_cursor(0, rows / 2);
 	video_printf(FB_MESSAGE_WARN_FG, FB_MESSAGE_WARN_BG, 1,
 		     "%s bootloader?\n\n", lock_unlock);
-	video_printf(FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG, 1,
-		     "%sing bootloader will also delete all personal data"
-		     " from your device.\n",
-		     lock_unlock);
+
+	if (lock)
+		vboot_print_lock_warning();
+	else
+		vboot_print_unlock_warning();
+
 	const char *confirm = board_get_button_string(FB_BUTTON_CONFIRM);
 	const char *cancel = board_get_button_string(FB_BUTTON_CANCEL);
-	video_printf(FB_MESSAGE_NORM_FG, FB_MESSAGE_NORM_BG, 1,
-		     "Press %s to confirm or %s to cancel.\n", confirm, cancel);
+	video_printf(FB_MESSAGE_WARN_FG, FB_MESSAGE_WARN_BG, 1,
+		     "Press the %s to confirm that you really intend to %s the "
+		     "bootloader.\n", confirm, lock_unlock);
+	video_printf(FB_MESSAGE_WARN_FG, FB_MESSAGE_WARN_BG, 1,
+		     "You still have time to cancel and go back to fastboot "
+		     "mode by pushing %s.\n", cancel);
 
 	return VBERROR_SUCCESS;
 }

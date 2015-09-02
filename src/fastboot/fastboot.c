@@ -861,7 +861,8 @@ static fb_ret_type fb_erase(struct fb_cmd *cmd)
 	cmd->type = FB_INFO;
 	fb_add_string(&cmd->output, "erasing flash", NULL);
 	fb_execute_send(cmd);
-	fb_print_on_screen("Erasing flash....\n",
+	fb_print_on_screen("Erasing partition. Please don't turn off this "
+			   "device.",
 			   FB_MESSAGE_WARN_FG, FB_MESSAGE_WARN_BG);
 
 	cmd->type = FB_OKAY;
@@ -904,7 +905,8 @@ static fb_ret_type fb_flash(struct fb_cmd *cmd)
 	cmd->type = FB_INFO;
 	fb_add_string(&cmd->output, "writing flash", NULL);
 	fb_execute_send(cmd);
-	fb_print_on_screen("Writing flash....\n",
+	fb_print_on_screen("Writing image to partition. Please don't turn off "
+			   "this device.",
 			   FB_MESSAGE_WARN_FG, FB_MESSAGE_WARN_BG);
 
 	struct fb_buffer *input = &cmd->input;

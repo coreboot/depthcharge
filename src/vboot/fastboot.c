@@ -47,6 +47,8 @@
 #define FB_INFO_POSITION_ROW	34
 #define FB_INFO_FOREGROUND	11
 #define FB_INFO_BACKGROUND	0
+#define FB_WARN_FOREGROUND	11
+#define FB_WARN_BACKGROUND	1
 
 fb_ret_type __attribute__((weak)) device_mode_enter(void)
 {
@@ -185,15 +187,15 @@ static const struct {
 	void (*highlight)(void);	/* called when option is highlighted */
 	menu_mode_t mode;		/* mode to display this option */
 } opts[] = {
-	{"Restart Android", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
+	{"Restart this device", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
 	 menu_restart, NULL, MENU_NORMAL | MENU_DEV },
-	{"Enter Fastboot", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
+	{"Switch to fastboot mode", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
 	 menu_fastboot, NULL, MENU_NORMAL | MENU_DEV },
-	{"Boot to recovery", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
+	{"Reboot into Android Recovery", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
 	 menu_recovery, NULL, MENU_NORMAL | MENU_DEV },
-	{"Power Off", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
+	{"Turn off this device", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
 	 menu_shutdown, NULL, MENU_NORMAL | MENU_DEV },
-	{"USB recovery", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
+	{"Switch to USB recovery", FB_MENU_FOREGROUND, FB_MENU_BACKGROUND,
 	 NULL, NULL, MENU_NORMAL | MENU_DEV },
 };
 
@@ -277,6 +279,19 @@ const char * __attribute__((weak)) board_fw_version(void)
 	return get_active_fw_id();
 }
 
+static void display_banner(void)
+{
+	VbSharedDataHeader *vdat;
+	int size;
+
+	assert(find_common_params((void **)&vdat, &size) == 0);
+
+	if (vdat->recovery_reason == VBNV_RECOVERY_RW_NO_KERNEL)
+		video_printf(FB_WARN_FOREGROUND, FB_WARN_BACKGROUND, 0,
+			     "  OS on your tablet is damaged. "
+			     "Need recovery.  ");
+}
+
 static void draw_device_info(void)
 {
 	const char *version = board_fw_version();
@@ -302,6 +317,10 @@ static void draw_device_info(void)
 	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 0,
 		     "LOCK STATE: %s",
 		     fb_device_unlocked() ? "Unlocked" : "Locked");
+
+	video_console_set_cursor(FB_INFO_POSITION_COL, row+=4);
+
+	display_banner();
 }
 
 void vboot_try_fastboot(void)
