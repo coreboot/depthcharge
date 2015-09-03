@@ -35,6 +35,8 @@ typedef struct FlashOps
 	/* Return the number of successfully erased bytes.
 	 * Offset and size must be erase_size-aligned. */
 	int (*erase)(struct FlashOps *me, uint32_t offset, uint32_t size);
+	/* Check if soft write-protect bit is set. */
+	int (*is_wp_enabled)(struct FlashOps *me);
 	int (*write_status)(struct FlashOps *me, uint8_t status);
 	/* Reads status and returns -1 on error, status reg value on success. */
 	int (*read_status)(struct FlashOps *me);
