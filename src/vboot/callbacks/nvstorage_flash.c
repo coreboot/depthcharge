@@ -117,6 +117,19 @@ VbError_t VbExNvStorageRead(uint8_t *buf)
 	return VBERROR_SUCCESS;
 }
 
+static VbError_t erase_nvram(void)
+{
+	if (flash_nvram_init())
+		return VBERROR_UNKNOWN;
+
+	if (flash_erase(nvram_area_descriptor.offset,
+			nvram_area_descriptor.size) !=
+					nvram_area_descriptor.size)
+		return VBERROR_UNKNOWN;
+
+	return VBERROR_SUCCESS;
+}
+
 VbError_t VbExNvStorageWrite(const uint8_t *buf)
 {
 	int i;
@@ -140,10 +153,12 @@ VbError_t VbExNvStorageWrite(const uint8_t *buf)
 		 * let's see if it is available.
 		 */
 		new_blob_offset = nvram_blob_offset + sizeof(nvram_cache);
-		if ((new_blob_offset + sizeof(nvram_cache)) >
-		    nvram_area_descriptor.size)
-			return VBERROR_INVALID_PARAMETER;
-
+		if (new_blob_offset >= nvram_area_descriptor.size) {
+			printf("nvram is used up. deleting it to start over\n");
+			if (erase_nvram() != VBERROR_SUCCESS)
+				return VBERROR_UNKNOWN;
+			new_blob_offset = 0;
+		}
 		nvram_blob_offset = new_blob_offset;
 	}
 
