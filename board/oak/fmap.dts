@@ -93,7 +93,7 @@
 			 * each RW_SECTION.
 			 */
 			reg = <0x00200000 0x00002000>;
-			type = "keyblock boot,ecrwhash,ramstage";
+			type = "keyblock boot,ecrwhash,romstage,ramstage,bl31";
 			with_index;
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
@@ -105,7 +105,7 @@
 			/* Alignment: no requirement (yet). */
 			label = "fw-main-a";
 			reg = <0x00202000 0x00056000>;
-			type = "blob boot,ecrwhash,ramstage";
+			type = "blob boot,ecrwhash,romstage,ramstage,bl31";
 			with_index;
 		};
 		rw-a-ec-boot {
@@ -122,14 +122,14 @@
 			type = "blobstring fwid";
 		};
 
-		/* ---- Section: Rewritable shared 16 KB---- */
+		/* ---- Section: Rewritable shared 8 KB ---- */
 		shared-section {
 			/*
 			 * Alignment: 4k (for updating).
 			 * Anything in this range may be updated in recovery.
 			 */
 			label = "rw-shared";
-			reg = <0x00278000 0x00004000>;
+			reg = <0x00278000 0x00002000>;
 		};
 		shared-data {
 			label = "shared-data";
@@ -137,9 +137,17 @@
 			 * Alignment: 4k (for random read/write).
 			 * RW firmware can put calibration data here.
 			 */
-			reg = <0x00278000 0x00004000>;
+			reg = <0x00278000 0x00002000>;
 			type = "wiped";
 			wipe-value = [00];
+		};
+
+		/* ---- Section: Storage to simulate NVRAM 8 KB ---- */
+		rw-nvram {
+			label = "rw-nvram";
+			reg = <0x0027a000 0x00002000>;
+			type = "wiped";
+			wipe-value = [ff];
 		};
 
 		/* ---- Section: Rewritable Event Log 16KB ---- */
@@ -164,7 +172,7 @@
 			 * each RW_SECTION.
 			 */
 			reg = <0x00280000 0x00002000>;
-			type = "keyblock boot,ecrwhash,ramstage";
+			type = "keyblock boot,ecrwhash,romstage,ramstage,bl31";
 			with_index;
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
@@ -176,7 +184,7 @@
 			label = "fw-main-b";
 			/* Alignment: no requirement (yet). */
 			reg = <0x00282000 0x00056000>;
-			type = "blob boot,ecrwhash,ramstage";
+			type = "blob boot,ecrwhash,romstage,ramstage,bl31";
 			with_index;
 		};
 		rw-b-ec-boot {
@@ -202,13 +210,8 @@
 			wipe-value = [ff];
 		};
 
-		/*
-		 * This space is currently unused and reserved for future
-		 * extensions. cros_bundle_firmware dislikes holes in the
-		 * FMAP, so we cover all empty space here.
-		 */
-		rw-unused {
-			label = "rw-unused";
+		rw-legacy {
+			label = "rw-legacy";
 			reg = <0x00300000 0x00100000>;
 			type = "wiped";
 			wipe-value = [ff];
