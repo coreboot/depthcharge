@@ -20,6 +20,7 @@
  * MA 02111-1307 USA
  */
 
+#include <gbb_header.h>
 #include <libpayload.h>
 #include <vboot_api.h>
 #include <vboot_nvstorage.h>
@@ -382,6 +383,12 @@ static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 			fb_add_string(output, "no", NULL);
 		break;
 	}
+	case FB_GBB_FLAGS: {
+		GoogleBinaryBlockHeader *gbb = cparams.gbb_data;
+
+		fb_add_number(output, "0x%x", gbb->flags);
+		break;
+	}
 	default:
 		goto board_read;
 	}
@@ -523,6 +530,7 @@ static const struct {
 	 * Spec says names starting with lowercase letter are reserved.
 	 */
 	{ NAME_ARGS("Bdev-size", ':'), FB_BDEV_SIZE},
+	{ NAME_NO_ARGS("Gbb-flags"), FB_GBB_FLAGS},
 };
 
 /*
