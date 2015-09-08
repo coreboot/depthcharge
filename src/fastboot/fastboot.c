@@ -24,6 +24,7 @@
 #include <vboot_api.h>
 #include <vboot_nvstorage.h>
 
+#include "base/cleanup_funcs.h"
 #include "boot/bcb.h"
 #include "config.h"
 #include "drivers/ec/cros/ec.h"
@@ -936,6 +937,21 @@ static fb_ret_type fb_flash(struct fb_cmd *cmd)
 	return FB_SUCCESS;
 }
 
+static int fb_boot_cleanup_func(struct CleanupFunc *cleanup, CleanupType type)
+{
+	if (type != CleanupOnHandoff)
+		return -1;
+
+	struct fb_cmd *cmd = cleanup->data;
+
+	cmd->type = FB_OKAY;
+	fb_execute_send(cmd);
+
+	vboot_draw_screen(VB_SCREEN_BLANK, 0, 0);
+
+	return 0;
+}
+
 /*
  * fb_boot allows user to send a signed recovery image from host directly to
  * device memory and boot from it. It calls vboot function
@@ -973,8 +989,8 @@ static fb_ret_type fb_boot(struct fb_cmd *cmd)
 
 	kernel_size = image_size - kernel_size;
 
-	if (VbVerifyMemoryBootImage(&cparams, &kparams, kernel, kernel_size) !=
-	    VBERROR_SUCCESS) {
+	if (VbVerifyMemoryBootImage(&cparams, &kparams, kernel, kernel_size, 0)
+	    != VBERROR_SUCCESS) {
 		if (!fb_device_unlocked()) {
 			/*
 			 * If device is locked, fail if image is not properly
@@ -983,12 +999,17 @@ static fb_ret_type fb_boot(struct fb_cmd *cmd)
 			fb_add_string(&cmd->output, "image verification failed",
 				      NULL);
 			return FB_SUCCESS;
-		} else {
-			/*
-			 * If device is unlocked and signature cannot be
-			 * verified, then just pass the original image
-			 * to vboot_boot_kernel.
-			 */
+		}
+
+		/*
+		 * If device is unlocked and signature cannot be
+		 * verified, then perform integrity-only check. If that
+		 * fails as well, just pass the original image
+		 * to vboot_boot_kernel.
+		 */
+		if (VbVerifyMemoryBootImage(&cparams, &kparams, kernel,
+					    kernel_size, 1) !=
+		    VBERROR_SUCCESS) {
 			kparams.kernel_buffer = image_addr;
 			kparams.kernel_buffer_size = image_size;
 		}
@@ -996,15 +1017,26 @@ static fb_ret_type fb_boot(struct fb_cmd *cmd)
 
 	kparams.flags = KERNEL_IMAGE_BOOTIMG;
 
-	cmd->type = FB_OKAY;
-	fb_execute_send(cmd);
+	static CleanupFunc fb_boot_cleanup = {
+		&fb_boot_cleanup_func,
+		CleanupOnHandoff,
+		NULL,
+	};
 
-	vboot_draw_screen(VB_SCREEN_BLANK, 0, 0);
+	fb_boot_cleanup.data = cmd;
+
+	list_insert_after(&fb_boot_cleanup.list_node, &cleanup_funcs);
 
 	vboot_boot_kernel(&kparams);
 
 	/* We should never reach here, if boot successful. */
-	return FB_SUCCESS;
+	list_remove(&fb_boot_cleanup.list_node);
+
+	cmd->type = FB_FAIL;
+	fb_add_string(&cmd->output, "Invalid boot image", NULL);
+
+	/* We want to reset the boot state. So, reboot into fastboot mode. */
+	return FB_REBOOT_BOOTLOADER;
 }
 
 static fb_ret_type fb_continue(struct fb_cmd *cmd)
