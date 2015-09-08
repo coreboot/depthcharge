@@ -55,6 +55,7 @@ uint32_t flash_sector_size(void);
 int flash_rewrite(uint32_t start, uint32_t length, const void *buffer);
 int flash_write_status(uint8_t status);
 int flash_read_status(void);
+int flash_is_wp_enabled(void);
 
 /* Functions operating on passed in ops */
 void *flash_read_ops(FlashOps *ops, uint32_t offset, uint32_t size);

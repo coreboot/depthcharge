@@ -67,6 +67,15 @@ static inline int flash_read_status_ops(FlashOps *ops)
 	return -1;
 }
 
+static inline int flash_is_wp_enabled_ops(FlashOps *ops)
+{
+	die_if(!ops, "%s: No flash ops set.\n", __func__);
+	if (ops->is_wp_enabled)
+		return ops->is_wp_enabled(ops);
+
+	return -1;
+}
+
 static inline uint32_t flash_sector_size_ops(FlashOps *ops)
 {
 	return ops->sector_size;
@@ -141,4 +150,9 @@ int flash_write_status(uint8_t status)
 int flash_read_status(void)
 {
 	return flash_read_status_ops(flash_ops);
+}
+
+int flash_is_wp_enabled(void)
+{
+	return flash_is_wp_enabled_ops(flash_ops);
 }
