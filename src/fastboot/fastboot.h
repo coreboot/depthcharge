@@ -46,6 +46,7 @@ typedef enum {
 	FB_VARIANT,
 	FB_BATT_VOLTAGE,
 	FB_BATT_SOC_OK,
+	FB_GBB_FLAGS,
 } fb_getvar_t;
 
 typedef enum fb_ret {
