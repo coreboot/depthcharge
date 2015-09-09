@@ -289,7 +289,7 @@ static void display_banner(void)
 	if (vdat->recovery_reason == VBNV_RECOVERY_RW_NO_KERNEL)
 		video_printf(FB_WARN_FOREGROUND, FB_WARN_BACKGROUND, 0,
 			     "  OS on your tablet is damaged. "
-			     "Need recovery.  ");
+			     "Needs recovery.  ");
 }
 
 static void draw_device_info(void)
