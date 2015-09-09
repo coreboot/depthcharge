@@ -1,6 +1,6 @@
 /*
- * Copyright 2015 Google Inc.
- * Copyright (C) 2015 Intel Corporation.
+ * Copyright (C) 2015 Google Inc.
+ * Copyright (C) 2015 Intel Corporation
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -60,10 +60,10 @@ static int board_setup(void)
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_MEC);
 	cros_ec_set_bus(&cros_ec_lpc_bus->ops);
 
-	/* W25Q128FV SPI Flash */
+	/* 16MB SPI Flash */
 	flash_set_ops(&new_mem_mapped_flash(0xff000000, 0x1000000)->ops);
 
-	/* SLB9670 SPI TPM */
+	/* SPI TPM memory mapped to act like LPC TPM */
 	tpm_set_ops(&new_lpc_tpm((void *)(uintptr_t)0xfed40000)->ops);
 
 	/* PCH Power */

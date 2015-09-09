@@ -1,6 +1,6 @@
 /*
- * Copyright 2013 Google Inc.
- * Copyright (C) 2015 Intel Corporation.
+ * Copyright (C) 2015 Google Inc.
+ * Copyright (C) 2015 Intel Corporation
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -60,28 +60,27 @@ static int board_setup(void)
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_MEC);
 	cros_ec_set_bus(&cros_ec_lpc_bus->ops);
 
+	/* 16MB SPI Flash */
 	flash_set_ops(&new_mem_mapped_flash(0xff000000, 0x1000000)->ops);
 
-	/* SLB9670 SPI TPM */
+	/* SPI TPM memory mapped to act like LPC TPM */
 	tpm_set_ops(&new_lpc_tpm((void *)(uintptr_t)0xfed40000)->ops);
 
-	uintptr_t UsbMmioBase =
-		pci_read_config32(PCI_DEV(0, 0x14, 0), PCI_BASE_ADDRESS_0);
-	UsbMmioBase &= 0xFFFF0000; /* 32 bits only */
-	UsbHostController *usb_host1 = new_usb_hc(XHCI, UsbMmioBase);
-	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
+	/* PCH Power */
+	power_set_ops(&skylake_power_ops);
 
-	SdhciHost *emmc, *sd;
-	emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1e, 4),
+	/* eMMC */
+	SdhciHost *emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1e, 4),
 			SDHCI_PLATFORM_NO_EMMC_HS200,
 			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			&fixed_block_dev_controllers);
-	sd = new_pci_sdhci_host(PCI_DEV(0, 0x1e, 6), 1,
+
+	/* SD Card */
+	SdhciHost *sd = new_pci_sdhci_host(PCI_DEV(0, 0x1e, 6), 1,
 			EMMC_SD_CLOCK_MIN, SD_CLOCK_MAX);
 	list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
 				&removable_block_dev_controllers);
-	power_set_ops(&skylake_power_ops);
 
 	return 0;
 }
