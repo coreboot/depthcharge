@@ -235,6 +235,19 @@ static int smaug_display_lines_cleanup(struct CleanupFunc *cleanup,
 	return 0;
 }
 
+static int smaug_touch_deassert(struct CleanupFunc *cleanup,
+				CleanupType type)
+{
+	if (type != CleanupOnHandoff)
+		return 0;
+
+	/* TOUCH_RST_L(V6) -- Set to 1 */
+	TegraGpio *touch_rst = new_tegra_gpio_output(GPIO(V, 6));
+	touch_rst->ops.set(&touch_rst->ops, 1);
+
+	return 0;
+}
+
 static int board_setup(void)
 {
 	flash_params_override();
@@ -343,6 +356,14 @@ static int board_setup(void)
 	};
 
 	list_insert_after(&disp.list_node, &cleanup_funcs);
+
+	static CleanupFunc touch = {
+		&smaug_touch_deassert,
+		CleanupOnHandoff,
+		NULL
+	};
+
+	list_insert_after(&touch.list_node, &cleanup_funcs);
 
 	return 0;
 }
