@@ -3,7 +3,7 @@
 / {
 	model = "Intel Strago";
 	config {
-		hwid = "STRAGO TEST A-A 9657";
+		hwid = "STRAGO TEST A-A 6957";
 	};
 	chromeos-config {
 		/* Enable factory-friendly features. */
