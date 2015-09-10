@@ -113,7 +113,7 @@ static VbError_t vboot_draw_recovery_insert(uint32_t localize)
 		     "For more information on USB recovery, please "
 		     "visit: \n");
 	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
-		     "smaug.google.com/usb-recovery\n");
+		     "g.co/c-recovery\n");
 	return rv;
 }
 
