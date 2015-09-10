@@ -106,14 +106,32 @@ static const char * const bootreason_string[] = {
 };
 
 enum {
+	DEVICE_UNLOCKED = 0,
+	DEVICE_LOCKED = 1,
+};
+
+static const char *const bootstate_string[] = {
+	[DEVICE_UNLOCKED] = "orange",
+	[DEVICE_LOCKED] = "green",
+};
+
+enum {
 	MC_BASE = 0x70019000,
 	VIDEO_PROTECT_BOM = MC_BASE + 0x648,
 	VIDEO_PROTECT_SIZE_MB = MC_BASE + 0x64C,
 };
 
+static int get_bootstate(void)
+{
+	if (vboot_in_developer())
+		return DEVICE_UNLOCKED;
+	else
+		return DEVICE_LOCKED;
+}
+
 const char *mainboard_commandline(void)
 {
-	static char bootreason_and_vpr[80];
+	static char bootreason_and_vpr[160];
 	uint32_t vsize, vaddr;
 	uint32_t val = read32(BOOTREASON_SCRATCH_REG) & PMC_BOOTREASON_MASK;
 
@@ -124,7 +142,9 @@ const char *mainboard_commandline(void)
 	vsize = readl((void *)VIDEO_PROTECT_SIZE_MB);
 	vaddr = readl((void *)VIDEO_PROTECT_BOM);
 	snprintf(bootreason_and_vpr, sizeof(bootreason_and_vpr),
-		 "vpr=0x%08x@0x%08x android.bootreason=%s ",  vsize << 20, vaddr,
+		 "vpr=0x%08x@0x%08x android.verifiedbootstate=%s "
+		 "android.bootreason=%s ", vsize << 20, vaddr,
+		 bootstate_string[get_bootstate()],
 		 bootreason_string[val]);
 
 	return bootreason_and_vpr;
