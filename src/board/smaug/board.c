@@ -27,6 +27,7 @@
 
 #include "base/init_funcs.h"
 #include "base/cleanup_funcs.h"
+#include "boot/android_dt.h"
 #include "boot/bcb.h"
 #include "boot/fit.h"
 #include "boot/commandline.h"
@@ -111,23 +112,27 @@ enum {
 	VIDEO_PROTECT_SIZE_MB = MC_BASE + 0x64C,
 };
 
-const char *mainboard_commandline(void)
+const char *get_bootreason(void)
 {
-	static char bootreason_and_vpr[80];
-	uint32_t vsize, vaddr;
 	uint32_t val = read32(BOOTREASON_SCRATCH_REG) & PMC_BOOTREASON_MASK;
 
 	if ((val < PMC_BOOTREASON_REBOOT) || (val > PMC_BOOTREASON_SENSOR))
 		val = PMC_BOOTREASON_REBOOT;
 
+	return bootreason_string[val];
+}
+
+const char *mainboard_commandline(void)
+{
+	static char vpr[80];
+	uint32_t vsize, vaddr;
+
 	/* Get Video Protect Region (VPR) size/address for kernel use */
 	vsize = readl((void *)VIDEO_PROTECT_SIZE_MB);
 	vaddr = readl((void *)VIDEO_PROTECT_BOM);
-	snprintf(bootreason_and_vpr, sizeof(bootreason_and_vpr),
-		 "vpr=0x%08x@0x%08x android.bootreason=%s ",  vsize << 20, vaddr,
-		 bootreason_string[val]);
+	snprintf(vpr, sizeof(vpr), "vpr=0x%08x@0x%08x ", vsize << 20, vaddr);
 
-	return bootreason_and_vpr;
+	return vpr;
 }
 
 const char *hardware_name(void)
