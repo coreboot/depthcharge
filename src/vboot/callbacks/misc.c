@@ -45,6 +45,18 @@ uint32_t VbExIsShutdownRequested(void)
 	if (pwrsw) {
 		printf("Power key pressed.\n");
 		shutdown_request |= VB_SHUTDOWN_REQUEST_POWER_BUTTON;
+
+		/* Wait upto 2 seconds for power button to be released. */
+		uint64_t button_timeout_us = 2 * 1000 * 1000UL;
+		uint64_t button_press_us = timer_us(0);
+
+		do {
+			if (!flag_fetch(FLAG_PWRSW))
+				break;
+		} while (timer_us(button_press_us) < button_timeout_us);
+
+		if (timer_us(button_press_us) >= button_timeout_us)
+			printf("WARNING! Power key stuck?");
 	}
 
 	return shutdown_request;
