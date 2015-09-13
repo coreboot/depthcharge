@@ -25,6 +25,15 @@
 #include "base/device_tree.h"
 #include "base/init_funcs.h"
 #include "boot/android_dt.h"
+#include "vboot/stages.h"
+
+static const char *get_verifiedbootstate(void)
+{
+	if (vboot_in_developer())
+		return "orange";
+	else
+		return "green";
+}
 
 static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 {
@@ -39,7 +48,8 @@ static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 	} maps[] = {
 		{ "compatible", "android,firmware" },
 		{ "hardware", hardware_name() },
-		{ "serialno", lib_sysinfo.serialno }
+		{ "serialno", lib_sysinfo.serialno },
+		{ "verifiedbootstate", get_verifiedbootstate() },
 	};
 
 	firmware_node = dt_find_node(tree->root, firmware_dt_name,
