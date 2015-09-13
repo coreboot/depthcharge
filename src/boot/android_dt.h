@@ -24,5 +24,6 @@
 #define __BOOT_ANDROID_DT_H__
 
 const char *hardware_name(void);
+const char *get_bootreason(void);
 
 #endif /* __BOOT_ANDROID_DT_H__ */

@@ -35,6 +35,11 @@ static const char *get_verifiedbootstate(void)
 		return "green";
 }
 
+const char *__attribute__((weak)) get_bootreason(void)
+{
+	return NULL;
+}
+
 static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 {
 	const char *firmware_dt_name[] = { "firmware", NULL };
@@ -50,6 +55,7 @@ static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 		{ "hardware", hardware_name() },
 		{ "serialno", lib_sysinfo.serialno },
 		{ "verifiedbootstate", get_verifiedbootstate() },
+		{ "bootreason", get_bootreason() },
 	};
 
 	firmware_node = dt_find_node(tree->root, firmware_dt_name,
