@@ -22,3 +22,8 @@ config DRIVER_BUS_I2S_BRASWELL_MAX98090
 	bool "Braswell/MAX98090 I2S driver"
 	depends on DRIVER_BUS_I2S_BRASWELL
 	default n
+
+config DRIVER_BUS_I2S_BRASWELL_RT5645
+        bool "Braswell/RT5645 I2S driver"
+        depends on DRIVER_BUS_I2S_BRASWELL
+        default n

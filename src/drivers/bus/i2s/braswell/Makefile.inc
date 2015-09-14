@@ -17,3 +17,4 @@
 
 depthcharge-$(CONFIG_DRIVER_BUS_I2S_BRASWELL) += braswell.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2S_BRASWELL_MAX98090) += braswell-max98090.c
+depthcharge-$(CONFIG_DRIVER_BUS_I2S_BRASWELL_RT5645) += braswell-rt5645.c
