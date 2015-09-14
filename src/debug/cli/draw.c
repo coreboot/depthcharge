@@ -30,24 +30,49 @@ static int init_display(void)
 	return 0;
 }
 
-static int do_draw_image(char * const argv[])
+static int do_draw_image(int argc, char * const argv[])
 {
-	size_t scale = strtoul(argv[5], NULL, 0);
+	const struct scale *dim_rel = NULL;
 	const void *bitmap;
 	size_t size;
+	int rv;
 
-	bitmap = cbfs_get_file_content(CBFS_DEFAULT_MEDIA, argv[2],
-				       CBFS_TYPE_RAW, &size);
+	bitmap = load_bitmap(argv[2], &size);
 	if (!bitmap) {
 		printf("File '%s' not found\n", argv[2]);
 		return -1;
 	}
-	const struct vector top_left = {
-			.x = strtoul(argv[3], NULL, 0),
-			.y = strtoul(argv[4], NULL, 0),
+	const struct scale pos_rel = {
+		.x = {
+			.nume = strtoul(argv[3], NULL, 0),
+			.deno = 100,
+		},
+		.y = {
+			.nume = strtoul(argv[4], NULL, 0),
+			.deno = 100,
+		},
 	};
 
-	return draw_bitmap(&top_left, scale, bitmap, size);
+	if (argc == 7) {
+		const struct scale s = {
+			.x = {
+				.nume = strtoul(argv[5], NULL, 0),
+				.deno = 100,
+			},
+			.y = {
+				.nume = strtoul(argv[6], NULL, 0),
+				.deno = 100,
+			},
+		};
+		dim_rel = &s;
+	}
+
+	rv = draw_bitmap(bitmap, size, &pos_rel,
+			   PIVOT_H_LEFT|PIVOT_V_TOP, dim_rel);
+	if (rv)
+		printf("draw_bitmap returned error: %d\n", rv);
+
+	return rv;
 }
 
 static int do_print_info(void)
@@ -78,20 +103,22 @@ static int do_print_info(void)
 
 static int do_draw_box(char * const argv[])
 {
-	const struct vector top_left_rel = {
+	const struct rect box = {
+		.offset = {
 			.x = strtoul(argv[2], NULL, 0),
 			.y = strtoul(argv[3], NULL, 0),
-	};
-	const struct vector size_rel = {
-			.x = strtoul(argv[4], NULL, 0),
-			.y = strtoul(argv[5], NULL, 0),
+		},
+		.size = {
+			.width = strtoul(argv[4], NULL, 0),
+			.height = strtoul(argv[5], NULL, 0),
+		},
 	};
 	const struct rgb_color rgb = {
 			.red = strtoul(argv[6], NULL, 0),
 			.green = strtoul(argv[7], NULL, 0),
 			.blue = strtoul(argv[8], NULL, 0),
 	};
-	return draw_box(&top_left_rel, &size_rel, &rgb);
+	return draw_box(&box, &rgb);
 }
 
 static int do_draw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
@@ -103,8 +130,8 @@ static int do_draw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		return CMD_RET_FAILURE;
 	}
 
-	if (argc == 6 && !strcmp("image", argv[1])) {
-		if (do_draw_image(argv))
+	if ((argc == 3 || argc == 7) && !strcmp("image", argv[1])) {
+		if (do_draw_image(argc, argv))
 			rv = CMD_RET_FAILURE;
 	} else if (argc == 2 && !strcmp("info", argv[1])) {
 		if (do_print_info())
@@ -121,9 +148,9 @@ static int do_draw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 }
 
 U_BOOT_CMD(
-	   draw,	9,	1,
+	   draw,	7,	1,
 	   "draw image on screen, print screen info, etc.",
-	   "image <name> <x> <y> <scale> - draw image in cbfs at (x, y)\n"
+	   "image <name> <x> <y> [<width> <height>] - draw image in cbfs at (x, y)\n"
 	   "info - print framebuffer information\n"
 	   "box <x> <y> <width> <height> <red> <green> <blue> - draw a box"
 );
