@@ -33,6 +33,7 @@
 #include "fastboot/udc.h"
 #include "vboot/boot.h"
 #include "vboot/boot_policy.h"
+#include "vboot/firmware_id.h"
 #include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/vbnv.h"
@@ -212,6 +213,15 @@ static int battery_soc_check(void)
 	return fb_board_handler.battery_soc_ok();
 }
 
+static const struct fw_type_to_index {
+	const char *name;
+	uint8_t index;
+} fb_fw_type_to_index[] = {
+	{"RO", VDAT_RO},
+	{"RW_A", VDAT_RW_A},
+	{"RW_B", VDAT_RW_B},
+};
+
 static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 {
 	size_t input_len = fb_buffer_length(&cmd->input);
@@ -331,6 +341,34 @@ static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 		GoogleBinaryBlockHeader *gbb = cparams.gbb_data;
 
 		fb_add_number(output, "0x%x", gbb->flags);
+		break;
+	}
+	case FB_OEM_VERSION: {
+		if (input_len == 0) {
+			fb_add_string(output, "invalid arg", NULL);
+			return -1;
+		}
+
+		char *data = fb_buffer_pull(&cmd->input, input_len);
+		char *fw_type = fb_get_string(data, input_len);
+		int i;
+
+		for (i = 0; i < ARRAY_SIZE(fb_fw_type_to_index); i++) {
+			if (strcmp(fb_fw_type_to_index[i].name, fw_type) == 0)
+				break;
+		}
+
+		if (i == ARRAY_SIZE(fb_fw_type_to_index)) {
+			fb_add_string(output, "invalid arg", NULL);
+			return -1;
+		}
+
+		const char *version = get_fw_id(fb_fw_type_to_index[i].index);
+		if (version == NULL)
+			fb_add_string(output, "unknown", NULL);
+		else
+			fb_add_string(output, "%s", version);
+
 		break;
 	}
 	default:
@@ -480,6 +518,7 @@ static const struct {
 	 */
 	{ NAME_ARGS("Bdev-size", ':'), FB_BDEV_SIZE},
 	{ NAME_NO_ARGS("Gbb-flags"), FB_GBB_FLAGS},
+	{ NAME_ARGS("Oem-version", ':'), FB_OEM_VERSION},
 };
 
 /*
@@ -664,6 +703,16 @@ static fb_ret_type fb_getvar_all(struct fb_cmd *host_cmd)
 					      offsetof(struct bdev_info,
 						       name),
 					      fb_bdev_count);
+			break;
+		}
+
+		case FB_OEM_VERSION: {
+			fb_format_getvar_args(cmd_in, cmd_out,
+					      &fb_fw_type_to_index,
+					      sizeof(fb_fw_type_to_index[0]),
+					      offsetof(struct fw_type_to_index,
+						       name),
+					      ARRAY_SIZE(fb_fw_type_to_index));
 			break;
 		}
 
