@@ -580,6 +580,52 @@ static fb_ret_type fb_getvar_single(struct fb_cmd *cmd)
 }
 
 /*
+ * Format getvar commands for variables with arguments.
+ *
+ * Parameters:
+ * cmd_in : Current command input
+ * cmd_out: Current command response
+ * table: Table of different arguments to variable
+ * record_size: Size of each record in 'table'
+ * name_offset: Offset of name string in record
+ * count: Number of records in table
+ *
+ */
+static void fb_format_getvar_args(struct fb_buffer *cmd_in,
+				  struct fb_buffer *cmd_out,
+				  const void *table, size_t record_size,
+				  size_t name_offset, size_t count)
+{
+	int j;
+	struct fb_cmd curr_cmd;
+
+	struct fb_buffer *input = &curr_cmd.input;
+	struct fb_buffer *output = &curr_cmd.output;
+
+	uintptr_t table_addr = (uintptr_t)table;
+
+	for (j = 0; j < count; j++) {
+		uintptr_t *pname_addr = (uintptr_t *)(table_addr +
+						      record_size * j +
+						      name_offset);
+
+		const char *pname = (void *)*pname_addr;
+		fb_buffer_clone(cmd_in, input);
+		fb_buffer_clone(cmd_out, output);
+
+		fb_add_string(input, pname, NULL);
+		fb_copy_buffer_data(output, input);
+		fb_add_string(output, ": ", NULL);
+
+		curr_cmd.type = FB_INFO;
+		fb_getvar_single(&curr_cmd);
+
+		if (curr_cmd.type == FB_INFO)
+			fb_execute_send(&curr_cmd);
+	}
+}
+
+/*
  * Func: fb_getvar_all
  * Desc: Send to host values of all possible variables.
  */
@@ -645,41 +691,33 @@ static fb_ret_type fb_getvar_all(struct fb_cmd *host_cmd)
 		 */
 
 		switch(var) {
-		case FB_PART_TYPE:
-		case FB_PART_SIZE:
-		case FB_BDEV_SIZE: {
-			int j;
-
-			struct fb_cmd curr_cmd;
-
-			struct fb_buffer *input = &curr_cmd.input;
-			struct fb_buffer *output = &curr_cmd.output;
-
-			int count = (var == FB_BDEV_SIZE)? fb_bdev_count:
-				fb_part_count;
-
-			for (j = 0; j < count; j++) {
-				const char *pname;
-				if (var == FB_BDEV_SIZE)
-					pname = fb_bdev_list[j].name;
-				else
-					pname = fb_part_list[j].part_name;
-
-				fb_buffer_clone(cmd_in, input);
-				fb_buffer_clone(cmd_out, output);
-
-				fb_add_string(input, pname, NULL);
-				fb_copy_buffer_data(output, input);
-				fb_add_string(output, ": ", NULL);
-
-				curr_cmd.type = FB_INFO;
-				fb_getvar_single(&curr_cmd);
-
-				if (curr_cmd.type == FB_INFO)
-					fb_execute_send(&curr_cmd);
-			}
+		case FB_PART_TYPE: {
+			fb_format_getvar_args(cmd_in, cmd_out, fb_part_list,
+					      sizeof(fb_part_list[0]),
+					      offsetof(struct part_info,
+						       part_name),
+					      fb_part_count);
 			break;
 		}
+
+		case FB_PART_SIZE: {
+			fb_format_getvar_args(cmd_in, cmd_out, fb_part_list,
+					      sizeof(fb_part_list[0]),
+					      offsetof(struct part_info,
+						       part_name),
+					      fb_part_count);
+			break;
+		}
+
+		case FB_BDEV_SIZE: {
+			fb_format_getvar_args(cmd_in, cmd_out, fb_bdev_list,
+					      sizeof(fb_bdev_list[0]),
+					      offsetof(struct bdev_info,
+						       name),
+					      fb_bdev_count);
+			break;
+		}
+
 		default:
 			fb_copy_buffer_data(cmd_out, cmd_in);
 			fb_add_string(cmd_out, ": ", NULL);
