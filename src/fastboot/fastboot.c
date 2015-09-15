@@ -832,8 +832,6 @@ static fb_ret_type fb_erase(struct fb_cmd *cmd)
 		fb_add_string(&cmd->output, backend_error_string[ret], NULL);
 	}
 
-	free(partition);
-
 	return FB_SUCCESS;
 }
 
@@ -882,8 +880,6 @@ static fb_ret_type fb_flash(struct fb_cmd *cmd)
 		cmd->type = FB_FAIL;
 		fb_add_string(&cmd->output, backend_error_string[ret], NULL);
 	}
-
-	free(partition);
 
 	return FB_SUCCESS;
 }
