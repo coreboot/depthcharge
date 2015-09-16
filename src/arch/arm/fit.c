@@ -28,6 +28,7 @@
 #include "boot/commandline.h"
 #include "boot/fit.h"
 #include "config.h"
+#include "drivers/storage/blockdev.h"
 #include "vboot/boot.h"
 
 #define CMD_LINE_SIZE	4096
@@ -46,8 +47,14 @@ static void update_cmdline(struct boot_info *bi, DeviceTree *tree)
 		goto fail;
 
 	static char cmd_line_buf[2 * CMD_LINE_SIZE];
-	struct commandline_info info;
-	memset(&info, 0, sizeof(info));
+	BlockDev *bdev = (BlockDev *)bi->kparams->disk_handle;
+
+	struct commandline_info info = {
+		.devnum = 0,
+		.partnum = bi->kparams->partition_number + 1,
+		.guid = bi->kparams->partition_guid,
+		.external_gpt = bdev->external_gpt,
+	};
 
 	if (commandline_subst(str, cmd_line_buf, sizeof(cmd_line_buf), &info))
 		goto fail;
