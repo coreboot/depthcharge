@@ -323,9 +323,9 @@ int board_battery_soc_ok(void)
 
 	/*
 	 * Flash / erase operations are acceptable only if battery
-	 * state-of-charge is > 50%.
+	 * state-of-charge is > 15%.
 	 */
-	if (perc > 50)
+	if (perc > 15)
 		return 1;
 
 	return 0;
