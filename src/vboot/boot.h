@@ -23,6 +23,8 @@
 #ifndef __BOOT_BOOT_H__
 #define __BOOT_BOOT_H__
 
+#include <vboot_api.h>
+
 struct boot_info {
 	void *kernel;
 	char *cmd_line;
@@ -30,6 +32,7 @@ struct boot_info {
 	void *loader;
 	void *ramdisk_addr;
 	size_t ramdisk_size;
+	VbSelectAndLoadKernelParams *kparams;
 };
 
 // To be implemented by each boot method.

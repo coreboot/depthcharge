@@ -250,6 +250,8 @@ void vboot_boot_kernel(VbSelectAndLoadKernelParams *kparams)
 		goto fail;
 	}
 
+	bi.kparams = kparams;
+
 	BlockDev *bdev = (BlockDev *)kparams->disk_handle;
 
 	struct commandline_info info = {
