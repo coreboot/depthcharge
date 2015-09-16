@@ -47,9 +47,9 @@ int mt_set_gpio_out(GpioOps *me, u32 output)
 	bit = pin % MAX_GPIO_REG_BITS;
 
 	if (output == 0)
-		setbits_le32(&reg->dout[pos].rst, (1L << bit));
+		write16(&reg->dout[pos].rst, 1L << bit);
 	else
-		setbits_le32(&reg->dout[pos].set, (1L << bit));
+		write16(&reg->dout[pos].set, 1L << bit);
 
 	return 0;
 }
@@ -67,6 +67,7 @@ int mt_get_gpio_in(GpioOps *me)
 	bit = pin % MAX_GPIO_REG_BITS;
 
 	val = readl(&reg->din[pos].val);
+
 	return (((val & (1L << bit)) != 0) ? 1 : 0);
 }
 
