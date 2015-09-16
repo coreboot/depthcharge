@@ -51,7 +51,7 @@ static void update_cmdline(struct boot_info *bi, DeviceTree *tree)
 
 	struct commandline_info info = {
 		.devnum = 0,
-		.partnum = bi->kparams->partition_number + 1,
+		.partnum = bi->kparams->partition_number,
 		.guid = bi->kparams->partition_guid,
 		.external_gpt = bdev->external_gpt,
 	};

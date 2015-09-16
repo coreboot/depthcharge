@@ -265,7 +265,7 @@ void vboot_boot_kernel(VbSelectAndLoadKernelParams *kparams)
 
 	struct commandline_info info = {
 		.devnum = 0,
-		.partnum = kparams->partition_number + 1,
+		.partnum = kparams->partition_number,
 		.guid = kparams->partition_guid,
 		.external_gpt = bdev->external_gpt,
 	};
