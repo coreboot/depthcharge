@@ -364,12 +364,12 @@ static int smaug_backlight_update(DisplayOps *me, uint8_t enable)
 	};
 
 	static const struct bl_reg bl_on_list[] = {
-		{0x10, 0x01},	/* Brightness mode: BRTHI/BRTLO */
-		{0x11, 0x05},	/* maxcurrent: 20ma */
-		{0x14, 0x7f},	/* ov: 2v, all 6 current sinks enabled */
+		{0x00, 0x00},	/* backlight off */
+		{0x10, 0x00},	/* Brightness mode: PWM */
+		{0x11, 0x04},	/* maxcurrent: 18ma */
+		{0x13, 0x03},	/* boostfreq: 1MHz, bcomp option 1 */
+		{0x14, 0xbf},	/* ov: 2v, all 6 current sinks enabled */
 		{0x00, 0x01},	/* backlight on */
-		{0x04, 0x55},	/* brightness: BRT[11:4] */
-				/*             0x000: 0%, 0xFFF: 100% */
 	};
 
 	static const struct bl_reg bl_off_list[] = {
