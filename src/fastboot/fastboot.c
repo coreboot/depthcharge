@@ -1082,10 +1082,13 @@ static fb_ret_type fb_boot(struct fb_cmd *cmd)
 
 	if (VbVerifyMemoryBootImage(&cparams, &kparams, kernel, kernel_size, 0)
 	    != VBERROR_SUCCESS) {
-		if (!fb_device_unlocked()) {
+		if ((!fb_device_unlocked()) ||
+		    (vbnv_read(VBNV_DEV_BOOT_FASTBOOT_FULL_CAP) == 0)) {
 			/*
-			 * If device is locked, fail if image is not properly
-			 * signed.
+			 * Fail if:
+			 * 1. Device is locked, or
+			 * 2. Device is unlocked, but full fastboot cap is not
+			 *    set.
 			 */
 			fb_add_string(&cmd->output, "image verification failed",
 				      NULL);
