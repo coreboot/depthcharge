@@ -38,5 +38,6 @@ typedef struct DesignwareI2c
 } DesignwareI2c;
 
 DesignwareI2c *new_designware_i2c(uintptr_t regs, int speed);
+DesignwareI2c *new_pci_designware_i2c(pcidev_t dev, int speed);
 
 #endif /* __DRIVERS_BUS_I2C_DESIGNWARE_H__ */

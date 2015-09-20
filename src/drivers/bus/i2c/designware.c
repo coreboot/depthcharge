@@ -22,6 +22,7 @@
  * MA 02111-1307 USA
  */
 
+#include <config.h>
 #include <libpayload.h>
 
 #include "base/container_of.h"
@@ -389,6 +390,10 @@ DesignwareI2c *new_designware_i2c(uintptr_t reg_addr, int speed)
 	bus->ops.transfer = &i2c_transfer;
 	bus->regs = (void *)reg_addr;
 	bus->speed = speed;
+
+	if (CONFIG_CLI)
+		add_i2c_controller_to_list(&bus->ops, "Designware-%08x",
+					   (uint32_t)reg_addr);
 
 	return bus;
 }

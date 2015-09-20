@@ -30,6 +30,10 @@ config DRIVER_BUS_I2C_DESIGNWARE
 	bool "Designware I2C driver"
 	default n
 
+config DRIVER_BUS_I2C_DESIGNWARE_PCI
+	bool "Designware I2C driver for PCI device"
+	default n
+
 config DRIVER_BUS_I2C_IMGTEC
 	bool "IMG I2C driver"
 	default n
