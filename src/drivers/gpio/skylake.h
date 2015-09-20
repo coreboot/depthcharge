@@ -20,6 +20,7 @@
 #define __DRIVERS_GPIO_SKYLAKE_H__
 
 #include <stdint.h>
+#include "base/cleanup_funcs.h"
 
 /*
  * There are 8 GPIO groups. GPP_A -> GPP_G and GPD. GPD is the special case
@@ -429,13 +430,22 @@ struct pad_config {
 
 typedef struct GpioCfg {
 	GpioOps ops;
-	int gpio_num;
+
+	int gpio_num;		/* GPIO number */
+	uint32_t *dw_regs;	/* Pointer to DW regs */
+	uint32_t current_dw0;	/* Current DW0 register value */
+
+	/* Use to save and restore GPIO configuration */
+	uint32_t save_dw0;
+	uint32_t save_dw1;
+	CleanupFunc cleanup;
+
 	int (*configure)(struct GpioCfg *, const struct pad_config *);
 } GpioCfg;
 
 GpioCfg *new_skylake_gpio(int gpio_num);
 GpioCfg *new_skylake_gpio_input(int gpio_num);
-GpioCfg *new_skylake_gpio_output(int gpio_num);
+GpioCfg *new_skylake_gpio_output(int gpio_num, unsigned value);
 GpioOps *new_skylake_gpio_input_from_coreboot(uint32_t port);
 
 #endif /* __DRIVERS_GPIO_SKYLAKE_H__ */
