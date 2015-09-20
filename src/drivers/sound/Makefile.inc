@@ -15,6 +15,7 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
+depthcharge-$(CONFIG_DRIVER_SOUND_GPIO_PDM) += gpio_pdm.c
 depthcharge-$(CONFIG_DRIVER_SOUND_HDA) += hda_codec.c
 depthcharge-$(CONFIG_DRIVER_SOUND_I2S) += i2s.c
 depthcharge-$(CONFIG_DRIVER_SOUND_IPQ806X) += ipq806x.c
