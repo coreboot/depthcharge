@@ -41,4 +41,6 @@ enum storm_board_id {
 	BOARD_ID_PROTO_0_2_NAND = 26,
 };
 
+PowerOps *new_ipq40xx_power_ops(void);
+
 #endif

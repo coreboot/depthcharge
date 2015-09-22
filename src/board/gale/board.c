@@ -376,7 +376,7 @@ static int board_setup(void)
 
 	console_add_input_driver(&dakota_input_driver);
 
-	power_set_ops(new_ipq806x_power_ops());
+	power_set_ops(new_ipq40xx_power_ops());
 
 	SpiController *spi = new_spi(0, 0);
 	flash_set_ops(&new_spi_flash(&spi->ops)->ops);
