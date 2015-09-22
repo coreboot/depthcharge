@@ -297,7 +297,7 @@ static void set_ramoops_buffer(void)
 static uint8_t kb_buffer[4];
 static int kb_in, kb_out;
 
-static int storm_havekey(void)
+static int dakota_havekey(void)
 {
 	/*
 	 * We want to react to the button press only, i.e. we need to
@@ -343,11 +343,11 @@ static int storm_havekey(void)
 	return 1;
 }
 
-static int storm_getchar(void)
+static int dakota_getchar(void)
 {
 	int storm_char;
 
-	while (!storm_havekey())
+	while (!dakota_havekey())
 		;
 
 	storm_char = kb_buffer[kb_out++];
@@ -357,11 +357,11 @@ static int storm_getchar(void)
 	return storm_char;
 }
 
-static struct console_input_driver storm_input_driver =
+static struct console_input_driver dakota_input_driver =
 {
 	NULL,
-	&storm_havekey,
-	&storm_getchar
+	&dakota_havekey,
+	&dakota_getchar
 };
 
 static int board_setup(void)
@@ -374,7 +374,7 @@ static int board_setup(void)
 
 	install_phys_presence_flag();
 
-	console_add_input_driver(&storm_input_driver);
+	console_add_input_driver(&dakota_input_driver);
 
 	power_set_ops(new_ipq806x_power_ops());
 
