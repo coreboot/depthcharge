@@ -29,8 +29,7 @@
 
 #include <libpayload.h>
 
-#include "ipq806x.h"
-#include "drivers/bus/spi/ipq806x.h"
+#include "ipq40xx.h"
 
 /*******************************************************
 Function description: check for invalid GPIO #
@@ -151,4 +150,3 @@ void gpio_input(gpio_t gpio)
 	gpio_tlmm_config_set(gpio, GPIO_FUNC_DISABLE,
 			     GPIO_NO_PULL, GPIO_2MA, GPIO_DISABLE);
 }
-

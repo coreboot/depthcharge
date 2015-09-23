@@ -28,21 +28,20 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __SOC_QUALCOMM_IPQ806X_GPIO_H_
-#define __SOC_QUALCOMM_IPQ806X_GPIO_H_
+#ifndef __SOC_QCA_IPQ40XX_GPIO_H_
+#define __SOC_QCA_IPQ40XX_GPIO_H_
 
-typedef unsigned int gpio_t;
+#define TLMM_BASE_ADDR		((void *)0x01000000)
+#define GPIO_CONFIG_ADDR(x)	(TLMM_BASE_ADDR + 0x1000 * (x))
+#define GPIO_IN_OUT_ADDR(x)	(GPIO_CONFIG_ADDR(x) + 4)
 
-#define TLMM_BASE_ADDR  ((unsigned char *)0x00800000)
-#define GPIO_CONFIG_ADDR(x) (TLMM_BASE_ADDR + 0x1000 + (x)*0x10)
-#define GPIO_IN_OUT_ADDR(x) (TLMM_BASE_ADDR + 0x1004 + (x)*0x10)
-
-/* Various GPIO pin functions */
 #define GPIO_FUNC_ENABLE			1
 #define GPIO_FUNC_DISABLE			0
 #define FUNC_SEL_1				1
 #define FUNC_SEL_3				3
 #define FUNC_SEL_GPIO				0
+#define GPIO_DRV_STR_10MA			0x4
+#define GPIO_DRV_STR_11MA			0x7
 
 /* GPIO TLMM: Direction */
 #define GPIO_INPUT      0
@@ -65,23 +64,29 @@ typedef unsigned int gpio_t;
 #define GPIO_16MA       7
 
 /* GPIO TLMM: Status */
-#define GPIO_ENABLE     1
 #define GPIO_DISABLE    0
+#define GPIO_ENABLE     1
 
 /* GPIO MAX Valid # */
 #define GPIO_MAX_NUM  68
 
 /* GPIO TLMM: Mask */
-#define GPIO_CFG_PULL_MASK    0x3
-#define GPIO_CFG_FUNC_MASK    0xF
-#define GPIO_CFG_DRV_MASK     0x7
-#define GPIO_CFG_OE_MASK      0x1
+#define GPIO_CFG_PULL_MASK	0x3
+#define GPIO_CFG_FUNC_MASK	0xF
+#define GPIO_CFG_DRV_MASK	0x7
+#define GPIO_CFG_OE_MASK	0x1
+#define GPIO_CFG_VM_MASK	0x1
+#define GPIO_CFG_OD_EN_MASK	0x1
+#define GPIO_CFG_PU_REMASKFT	0x3
 
 /* GPIO TLMM: Shift */
-#define GPIO_CFG_PULL_SHIFT   0
-#define GPIO_CFG_FUNC_SHIFT   2
-#define GPIO_CFG_DRV_SHIFT    6
-#define GPIO_CFG_OE_SHIFT     9
+#define GPIO_CFG_PULL_SHIFT	0
+#define GPIO_CFG_FUNC_SHIFT	2
+#define GPIO_CFG_DRV_SHIFT	6
+#define GPIO_CFG_OE_SHIFT	9
+#define GPIO_CFG_VM_SHIFT	11
+#define GPIO_CFG_OD_EN_SHIFT	12
+#define GPIO_CFG_PU_RES_SHIFT	13
 
 /* GPIO IO: Mask */
 #define GPIO_IO_IN_MASK       0x1
@@ -91,6 +96,8 @@ typedef unsigned int gpio_t;
 #define GPIO_IO_IN_SHIFT      0
 #define GPIO_IO_OUT_SHIFT     1
 
+typedef u32 gpio_t;
+
 void gpio_tlmm_config_set(gpio_t gpio, unsigned int func,
 			  unsigned int pull, unsigned int drvstr,
 			  unsigned int enable);
@@ -98,9 +105,8 @@ void gpio_tlmm_config_set(gpio_t gpio, unsigned int func,
 void gpio_tlmm_config_get(gpio_t gpio, unsigned int *func,
 			  unsigned int *pull, unsigned int *drvstr,
 			  unsigned int *enable);
-int gpio_get_in_value(gpio_t gpio);
-void gpio_set_out_value(gpio_t gpio, unsigned value);
 
+void gpio_io_config_set(gpio_t gpio, unsigned int out);
 
 /* Keep this to maintain backwards compatibility with the vendor API. */
 static inline void gpio_tlmm_config(unsigned int gpio, unsigned int func,
@@ -109,4 +115,4 @@ static inline void gpio_tlmm_config(unsigned int gpio, unsigned int func,
 {
 	gpio_tlmm_config_set(gpio, func, pull, drvstr, enable);
 }
-#endif // __SOC_QUALCOMM_IPQ806X_GPIO_H_
+#endif // __SOC_QCA_IPQ40XX_GPIO_H_

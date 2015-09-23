@@ -39,6 +39,11 @@ config DRIVER_GPIO_IPQ_806X
 	default n
 	depends on ARCH_ARM
 
+config DRIVER_GPIO_IPQ40XX
+	bool "QCA IPQ40XX GPIO driver"
+	default n
+	depends on ARCH_ARM
+
 config DRIVER_GPIO_LYNXPOINT_LP
 	bool "Intel Lynxpoint LP PCH GPIO driver"
 	default n
