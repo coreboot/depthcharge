@@ -303,4 +303,5 @@ fb_callback_t fb_board_handler = {
 	.battery_cutoff = ec_fb_battery_cutoff,
 	.read_input = read_input,
 	.get_button_str = get_button_str,
+	.double_tap_disable = ec_fb_double_tap_disable,
 };

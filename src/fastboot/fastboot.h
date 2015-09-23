@@ -340,6 +340,15 @@ typedef struct {
 	 * -1 = Error
 	 */
 	int (*write_protect_ro)(void);
+
+	/*
+	 * Allow disabling of double-tap feature.
+	 *
+	 * Return:
+	 * 0 = Successful
+	 * -1 = Error
+	 */
+	int (*double_tap_disable)(void);
 } fb_callback_t;
 
 extern fb_callback_t fb_board_handler;

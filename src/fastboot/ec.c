@@ -47,3 +47,9 @@ int ec_fb_battery_cutoff(void)
 	/* Cut-off immediately. The system will keep running by USB power. */
 	return cros_ec_battery_cutoff(0);
 }
+
+int ec_fb_double_tap_disable(void)
+{
+	return cros_ec_set_motion_sense_activity(
+					MOTIONSENSE_ACTIVITY_DOUBLE_TAP, 0);
+}

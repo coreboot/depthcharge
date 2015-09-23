@@ -25,5 +25,6 @@
 
 int ec_fb_keyboard_mask(void);
 int ec_fb_battery_cutoff(void);
+int ec_fb_double_tap_disable(void);
 
 #endif /* __FASTBOOT_EC_H__ */

@@ -1330,6 +1330,18 @@ static fb_ret_type fb_write_protect(struct fb_cmd *cmd)
 	return FB_SUCCESS;
 }
 
+static fb_ret_type fb_double_tap_disable(struct fb_cmd *cmd)
+{
+	cmd->type = FB_FAIL;
+
+	if (fb_board_handler.double_tap_disable == NULL) {
+		FB_LOG("Double tap disable not implemented for this board.\n");
+	} else if (fb_board_handler.double_tap_disable() == 0)
+		cmd->type = FB_OKAY;
+
+	return FB_SUCCESS;
+}
+
 /************** Command Function Table *****************/
 struct fastboot_func {
 	struct name_string name;
@@ -1365,6 +1377,8 @@ const struct fastboot_func fb_func_table[] = {
 	{ NAME_NO_ARGS("oem Clear-gbb"), FB_ID_CLEAR_GBB, fb_clear_gbb},
 	{ NAME_NO_ARGS("oem Write-protect"), FB_ID_WRITE_PROTECT,
 	  fb_write_protect},
+	{ NAME_NO_ARGS("oem Double-tap-disable"), FB_ID_DOUBLE_TAP_DISABLE,
+	  fb_double_tap_disable},
 };
 
 /************** Protocol Handler ************************/
