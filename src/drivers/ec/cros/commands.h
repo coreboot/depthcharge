@@ -90,7 +90,10 @@
 /* Unused 0x84 - 0x8f */
 #define EC_MEMMAP_ACC_STATUS       0x90 /* Accelerometer status (8 bits )*/
 /* Unused 0x91 */
-#define EC_MEMMAP_ACC_DATA         0x92 /* Accelerometer data 0x92 - 0x9f */
+#define EC_MEMMAP_ACC_DATA         0x92 /* Accelerometers data 0x92 - 0x9f */
+/* 0x92: Lid Angle if available, LID_ANGLE_UNRELIABLE otherwise */
+/* 0x94 - 0x99: 1st Accelerometer */
+/* 0x9a - 0x9f: 2nd Accelerometer */
 #define EC_MEMMAP_GYRO_DATA        0xa0 /* Gyroscope data 0xa0 - 0xa5 */
 /* Unused 0xa6 - 0xdf */
 
@@ -859,7 +862,7 @@ struct ec_response_get_set_value {
 	uint32_t value;
 } __packed;
 
-/* More than one command can use these structs to get/set paramters. */
+/* More than one command can use these structs to get/set parameters. */
 #define EC_CMD_GSV_PAUSE_IN_S5	0x0c
 /*      EC_CMD_GSV_BOOT_ON_AC   0xa3 (defined below) */
 
@@ -1700,6 +1703,18 @@ enum motionsense_command {
 	 */
 	MOTIONSENSE_CMD_SENSOR_OFFSET = 11,
 
+	/*
+	 * List available activities for a MOTION sensor.
+	 * Indicates if they are enabled or disabled.
+	 */
+	MOTIONSENSE_CMD_LIST_ACTIVITIES = 12,
+
+	/*
+	 * Activity management
+	 * Enable/Disable activity recognition.
+	 */
+	MOTIONSENSE_CMD_SET_ACTIVITY = 13,
+
 	/* Number of motionsense sub-commands. */
 	MOTIONSENSE_NUM_CMDS
 };
@@ -1709,14 +1724,17 @@ enum motionsensor_type {
 	MOTIONSENSE_TYPE_ACCEL = 0,
 	MOTIONSENSE_TYPE_GYRO = 1,
 	MOTIONSENSE_TYPE_MAG = 2,
-	MOTIONSENSE_TYPE_MAX = 3,
+	MOTIONSENSE_TYPE_PROX = 3,
+	MOTIONSENSE_TYPE_LIGHT = 4,
+	MOTIONSENSE_TYPE_ACTIVITY = 5,
+	MOTIONSENSE_TYPE_MAX,
 };
 
 /* List of motion sensor locations. */
 enum motionsensor_location {
 	MOTIONSENSE_LOC_BASE = 0,
 	MOTIONSENSE_LOC_LID = 1,
-	MOTIONSENSE_LOC_MAX = 2,
+	MOTIONSENSE_LOC_MAX,
 };
 
 /* List of motion sensor chips. */
@@ -1724,6 +1742,9 @@ enum motionsensor_chip {
 	MOTIONSENSE_CHIP_KXCJ9 = 0,
 	MOTIONSENSE_CHIP_LSM6DS0 = 1,
 	MOTIONSENSE_CHIP_BMI160 = 2,
+	MOTIONSENSE_CHIP_SI1141 = 3,
+	MOTIONSENSE_CHIP_SI1142 = 4,
+	MOTIONSENSE_CHIP_SI1143 = 5,
 };
 
 struct ec_response_motion_sensor_data {
@@ -1738,6 +1759,11 @@ struct ec_response_motion_sensor_data {
 			uint16_t    rsvd;
 			uint32_t    timestamp;
 		} __packed;
+		struct {
+			uint8_t     activity; /* motionsensor_activity */
+			uint8_t     state;
+			int16_t     add_info[2];
+		};
 	};
 } __packed;
 
@@ -1758,6 +1784,22 @@ struct ec_response_motion_sense_fifo_data {
 	uint32_t number_data;
 	struct ec_response_motion_sensor_data data[0];
 } __packed;
+
+/* List supported activity recognition */
+enum motionsensor_activity {
+	MOTIONSENSE_ACTIVITY_RESERVED = 0,
+	MOTIONSENSE_ACTIVITY_SIG_MOTION = 1,
+	MOTIONSENSE_ACTIVITY_DOUBLE_TAP = 2,
+};
+
+struct ec_motion_sense_activity {
+	uint8_t sensor_num;
+	uint8_t activity; /* one of enum motionsensor_activity */
+	uint8_t enable;   /* 1: enable, 0: disable */
+	uint8_t reserved;
+	uint16_t parameters[3]; /* activity dependent parameters */
+};
+
 /* Module flag masks used for the dump sub-command. */
 #define MOTIONSENSE_MODULE_FLAG_ACTIVE (1<<0)
 
@@ -1770,6 +1812,7 @@ struct ec_response_motion_sense_fifo_data {
  */
 #define MOTIONSENSE_SENSOR_FLAG_FLUSH (1<<0)
 #define MOTIONSENSE_SENSOR_FLAG_TIMESTAMP (1<<1)
+#define MOTIONSENSE_SENSOR_FLAG_WAKEUP (1<<2)
 
 /*
  * Send this value for the data element to only perform a read. If you
@@ -1811,7 +1854,7 @@ struct ec_params_motion_sense {
 		 * and MOTIONSENSE_CMD_PERFORM_CALIB. */
 		struct {
 			uint8_t sensor_num;
-		} info, data, fifo_flush, perform_calib;
+		} info, data, fifo_flush, perform_calib, list_activities;
 
 		/*
 		 * Used for MOTIONSENSE_CMD_EC_RATE, MOTIONSENSE_CMD_SENSOR_ODR
@@ -1853,6 +1896,7 @@ struct ec_params_motion_sense {
 			 * Unit:
 			 * Accelerometer: 1/1024 g
 			 * Gyro:          1/1024 deg/s
+			 * Compass:       1/16 uT
 			 */
 			int16_t offset[3];
 		} __packed sensor_offset;
@@ -1869,6 +1913,8 @@ struct ec_params_motion_sense {
 			 */
 			uint32_t max_data_vector;
 		} fifo_read;
+
+		struct ec_motion_sense_activity set_activity;
 	};
 } __packed;
 
@@ -1923,6 +1969,15 @@ struct ec_response_motion_sense {
 		struct ec_response_motion_sense_fifo_info fifo_info, fifo_flush;
 
 		struct ec_response_motion_sense_fifo_data fifo_read;
+
+		struct {
+			uint16_t reserved;
+			uint32_t enabled;
+			uint32_t disabled;
+		} __packed list_activities;
+
+		struct {
+		} set_activity;
 	};
 } __packed;
 
@@ -2842,13 +2897,17 @@ struct ec_params_current_limit {
 } __packed;
 
 /*
- * Set maximum external power current.
+ * Set maximum external voltage / current.
  */
-#define EC_CMD_EXT_POWER_CURRENT_LIMIT 0xa2
+#define EC_CMD_EXTERNAL_POWER_LIMIT 0xa2
 
-struct ec_params_ext_power_current_limit {
-	uint32_t limit; /* in mA */
+/* Command v0 is used only on Spring and is obsolete + unsupported */
+struct ec_params_external_power_limit_v1 {
+	uint16_t current_lim; /* in mA, or EC_POWER_LIMIT_NONE to clear limit */
+	uint16_t voltage_lim; /* in mV, or EC_POWER_LIMIT_NONE to clear limit */
 } __packed;
+
+#define EC_POWER_LIMIT_NONE 0xffff
 
 /*****************************************************************************/
 
@@ -3103,8 +3162,6 @@ struct ec_params_pd_status {
 #define PD_STATUS_JUMPED_TO_IMAGE (1 << 2) /* Current image was jumped to */
 #define PD_STATUS_TCPC_ALERT_0    (1 << 3) /* Alert active in port 0 TCPC */
 #define PD_STATUS_TCPC_ALERT_1    (1 << 4) /* Alert active in port 1 TCPC */
-#define PD_STATUS_TCPC_ALERT_2    (1 << 5) /* Alert active in port 2 TCPC */
-#define PD_STATUS_TCPC_ALERT_3    (1 << 6) /* Alert active in port 3 TCPC */
 #define PD_STATUS_EC_INT_ACTIVE  (PD_STATUS_TCPC_ALERT_0 | \
 				      PD_STATUS_TCPC_ALERT_1 | \
 				      PD_STATUS_HOST_EVENT)
@@ -3148,11 +3205,32 @@ enum usb_pd_control_mux {
 	USB_PD_CTRL_MUX_COUNT
 };
 
+enum usb_pd_control_swap {
+	USB_PD_CTRL_SWAP_NONE = 0,
+	USB_PD_CTRL_SWAP_DATA = 1,
+	USB_PD_CTRL_SWAP_POWER = 2,
+	USB_PD_CTRL_SWAP_VCONN = 3,
+	USB_PD_CTRL_SWAP_COUNT
+};
+
 struct ec_params_usb_pd_control {
 	uint8_t port;
 	uint8_t role;
 	uint8_t mux;
+	uint8_t swap;
 } __packed;
+
+#define PD_CTRL_RESP_ENABLED_COMMS      (1 << 0) /* Communication enabled */
+#define PD_CTRL_RESP_ENABLED_CONNECTED  (1 << 1) /* Device connected */
+#define PD_CTRL_RESP_ENABLED_PD_CAPABLE (1 << 2) /* Partner is PD capable */
+
+#define PD_CTRL_RESP_ROLE_POWER         (1 << 0) /* 0=SNK/1=SRC */
+#define PD_CTRL_RESP_ROLE_DATA          (1 << 1) /* 0=UFP/1=DFP */
+#define PD_CTRL_RESP_ROLE_VCONN         (1 << 2) /* Vconn status */
+#define PD_CTRL_RESP_ROLE_DR_POWER      (1 << 3) /* Partner is dualrole power */
+#define PD_CTRL_RESP_ROLE_DR_DATA       (1 << 4) /* Partner is dualrole data */
+#define PD_CTRL_RESP_ROLE_USB_COMM      (1 << 5) /* Partner USB comm capable */
+#define PD_CTRL_RESP_ROLE_EXT_POWERED   (1 << 6) /* Partner externally powerd */
 
 struct ec_response_usb_pd_control {
 	uint8_t enabled;
@@ -3162,8 +3240,8 @@ struct ec_response_usb_pd_control {
 } __packed;
 
 struct ec_response_usb_pd_control_v1 {
-	uint8_t enabled; /* [0] comm enabled [1] connected */
-	uint8_t role; /* [0] power: 0=SNK/1=SRC [1] data: 0=UFP/1=DFP */
+	uint8_t enabled;
+	uint8_t role;
 	uint8_t polarity;
 	char state[32];
 } __packed;
@@ -3401,31 +3479,6 @@ struct ec_params_pd_write_log_entry {
 } __packed;
 
 #endif  /* !__ACPI__ */
-
-
-/*****************************************************************************/
-/*
- * Blob commands are just opaque chunks of data, sent with proto v3.
- * params is struct ec_host_request, response is struct ec_host_response.
- */
-#define EC_CMD_BLOB 0x200
-
-/*****************************************************************************/
-/*
- * Reserve a range of host commands for board-specific, experimental, or
- * special purpose features. These can be (re)used without updating this file.
- *
- * CAUTION: Don't go nuts with this. Shipping products should document ALL
- * their EC commands for easier development, testing, debugging, and support.
- *
- * In your experimental code, you may want to do something like this:
- *
- *   #define EC_CMD_MAGIC_FOO (EC_CMD_BOARD_SPECIFIC_BASE + 0x000)
- *   #define EC_CMD_MAGIC_BAR (EC_CMD_BOARD_SPECIFIC_BASE + 0x001)
- *   #define EC_CMD_MAGIC_HEY (EC_CMD_BOARD_SPECIFIC_BASE + 0x002)
- */
-#define EC_CMD_BOARD_SPECIFIC_BASE 0x3E00
-#define EC_CMD_BOARD_SPECIFIC_LAST 0x3FFF
 
 /*****************************************************************************/
 /*
