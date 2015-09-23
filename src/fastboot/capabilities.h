@@ -56,7 +56,8 @@ typedef enum {
 	FB_ID_BATTERY_CUTOFF		= (1 << 15),
 	FB_ID_CLEAR_GBB		= (1 << 16),
 	FB_ID_WRITE_PROTECT		= (1 << 17),
-	FB_ID_MASK			= ((1 << 18) - 1),
+	FB_ID_DOUBLE_TAP_DISABLE	= (1 << 18),
+	FB_ID_MASK			= ((1 << 19) - 1),
 } fb_func_id_t;
 
 /*
