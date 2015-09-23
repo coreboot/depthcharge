@@ -953,6 +953,22 @@ int cros_ec_battery_cutoff(uint8_t flags)
 	return 0;
 }
 
+int cros_ec_set_motion_sense_activity(uint32_t activity, uint32_t value)
+{
+	struct ec_params_motion_sense params;
+	struct ec_response_motion_sense resp;
+
+	params.cmd = MOTIONSENSE_CMD_SET_ACTIVITY;
+	params.set_activity.activity = activity;
+	params.set_activity.enable = value;
+
+	if (ec_command(EC_CMD_MOTION_SENSE_CMD, 2, &params, sizeof(params),
+		       &resp, sizeof(resp)) < 0)
+		return -1;
+
+	return 0;
+}
+
 static int cros_ec_read_memmap(uint8_t offset, uint8_t size, void *dest)
 {
 	struct ec_params_read_memmap params;

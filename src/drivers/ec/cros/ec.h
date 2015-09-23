@@ -321,6 +321,15 @@ int cros_ec_read_vbnvcontext(uint8_t *block);
 int cros_ec_write_vbnvcontext(const uint8_t *block);
 
 /**
+ * Enable / disable motion sense activity.
+ *
+ * @param activity	indicating the activity to set.
+ * @param value	indicating enable/disable activity.
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_set_motion_sense_activity(uint32_t activity, uint32_t value);
+
+/**
  * Cut-off battery on ChromeOS EC device.
  *
  * @param flags		Flag to indicate cut-off options.
