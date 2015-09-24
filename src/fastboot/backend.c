@@ -165,6 +165,13 @@ static backend_ret_t write_sparse_image(struct image_part_details *img,
 		chunk_size_bytes = chunk_hdr->size_in_blks * img_hdr->blk_size;
 		chunk_size_lba = chunk_size_bytes / bdev_block_size;
 
+		/* Should not write past partition size */
+		if (part_size_lba < chunk_size_lba) {
+			BE_LOG("part_size_lba:%zx\n", part_size_lba);
+			BE_LOG("chunk_size_lba:%zx\n", chunk_size_lba);
+			return BE_IMAGE_OVERFLOW_ERR;
+		}
+
 		switch (chunk_hdr->type) {
 		case CHUNK_TYPE_RAW: {
 
@@ -179,13 +186,6 @@ static backend_ret_t write_sparse_image(struct image_part_details *img,
 				BE_LOG("total_size_bytes:%x\n",
 				       chunk_hdr->total_size_bytes);
 				return BE_CHUNK_HDR_ERR;
-			}
-
-			/* Should not write past partition size */
-			if (part_size_lba < chunk_size_lba) {
-				BE_LOG("part_size_lba:%zx\n", part_size_lba);
-				BE_LOG("chunk_size_lba:%zx\n", chunk_size_lba);
-				return BE_IMAGE_OVERFLOW_ERR;
 			}
 
 			if (ops->write(ops, part_addr, chunk_size_lba, data_ptr)
