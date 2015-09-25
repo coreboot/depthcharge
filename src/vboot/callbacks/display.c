@@ -31,14 +31,13 @@
 #include "drivers/video/display.h"
 #include "vboot/firmware_id.h"
 #include "vboot/util/commonparams.h"
+#include "vboot/screens.h"
 
 VbError_t VbExDisplayInit(uint32_t *width, uint32_t *height)
 {
-	if (display_init())
+	const struct rgb_color rgb = { .red = 0, .green = 0, .blue = 0 };
+	if (clear_screen(&rgb))
 		return VBERROR_UNKNOWN;
-
-	video_init();
-	video_console_cursor_enable(0);
 
 	if (gbb_copy_in_bmp_block())
 		return VBERROR_UNKNOWN;
@@ -49,6 +48,7 @@ VbError_t VbExDisplayInit(uint32_t *width, uint32_t *height)
 	} else {
 		*width = *height = 0;
 	}
+
 	return VBERROR_SUCCESS;
 }
 
@@ -87,6 +87,9 @@ void print_on_center(const char *msg)
 VbError_t VbExDisplayScreen(uint32_t screen_type)
 {
 	const char *msg = NULL;
+
+	if (vboot_draw_screen(screen_type) == CBGFX_SUCCESS)
+		return VBERROR_SUCCESS;
 
 	/*
 	 * Show the debug messages for development. It is a backup method
