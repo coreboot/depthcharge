@@ -38,6 +38,9 @@
 /* Indicate width or height is automatically set based on the other value */
 #define VB_SIZE_AUTO	0
 
+/* Height of the icons relative to the canvas size */
+#define VB_ICON_HEIGHT	160
+
 /* Vertical position and size of the dividers */
 #define VB_DIVIDER_WIDTH	800	/* 80.0% */
 #define VB_DIVIDER_V_OFFSET	160	/* 16.0% */
@@ -97,6 +100,14 @@ static int draw_image_locale(const char *image_name, uint32_t locale,
 	return draw_image(str, x, y, width, height, pivot);
 }
 
+static int draw_icon(const char *image_name)
+{
+	return draw_image(image_name,
+			  VB_SCALE_HALF, VB_SCALE_HALF,
+			  VB_SIZE_AUTO, VB_ICON_HEIGHT,
+			  PIVOT_H_CENTER|PIVOT_V_BOTTOM);
+}
+
 static VbError_t vboot_draw_base_screen(uint32_t locale)
 {
 	const struct rgb_color white = { 0xff, 0xff, 0xff };
@@ -154,48 +165,112 @@ static VbError_t vboot_draw_blank(uint32_t locale)
 static VbError_t vboot_draw_developer_warning(uint32_t locale)
 {
 	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	RETURN_ON_ERROR(draw_icon("VerificationOff.bmp"));
+	RETURN_ON_ERROR(draw_image_locale("verif_off.bmp", locale,
+			VB_SCALE_HALF, VB_SCALE_HALF,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			PIVOT_H_CENTER|PIVOT_V_TOP));
+	RETURN_ON_ERROR(draw_image_locale("devmode.bmp", locale,
+			VB_SCALE_HALF, VB_SCALE_HALF + VB_TEXT_HEIGHT,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			PIVOT_H_CENTER|PIVOT_V_TOP));
 	return VBERROR_SUCCESS;
 }
 
 static VbError_t vboot_draw_recovery_remove(uint32_t locale)
 {
 	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	RETURN_ON_ERROR(draw_image_locale("remove.bmp", locale,
+			VB_SCALE_HALF, VB_SCALE_HALF - VB_ICON_HEIGHT,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			PIVOT_H_CENTER|PIVOT_V_BOTTOM));
+	RETURN_ON_ERROR(draw_image("RemoveDevices.bmp",
+			VB_SCALE_HALF, VB_SCALE_HALF,
+			VB_SIZE_AUTO, VB_ICON_HEIGHT * 2,
+			PIVOT_H_CENTER|PIVOT_V_CENTER));
 	return VBERROR_SUCCESS;
 }
 
 static VbError_t vboot_draw_recovery_no_good(uint32_t locale)
 {
 	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	RETURN_ON_ERROR(draw_image_locale("yuck.bmp", locale,
+			VB_SCALE_HALF, VB_SCALE_HALF,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			PIVOT_H_CENTER|PIVOT_V_BOTTOM));
+	/*
+	 * TODO: We need a mechanism to let boards customize these. For example,
+	 * some boards have only USB.
+	 */
+	RETURN_ON_ERROR(draw_image("BadSD.bmp",
+			VB_SCALE_HALF, VB_SCALE_HALF,
+			VB_SIZE_AUTO, VB_ICON_HEIGHT,
+			PIVOT_H_RIGHT|PIVOT_V_TOP));
+	RETURN_ON_ERROR(draw_image("BadUSB.bmp",
+			VB_SCALE_HALF, VB_SCALE_HALF,
+			VB_SIZE_AUTO, VB_ICON_HEIGHT,
+			PIVOT_H_LEFT|PIVOT_V_TOP));
 	return VBERROR_SUCCESS;
 }
 
 static VbError_t vboot_draw_recovery_insert(uint32_t locale)
 {
 	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	RETURN_ON_ERROR(draw_icon("Warning.bmp"));
+	RETURN_ON_ERROR(draw_image_locale("insert.bmp", locale,
+			VB_SCALE_HALF, VB_SCALE_HALF,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 2,
+			PIVOT_H_CENTER|PIVOT_V_TOP));
 	return VBERROR_SUCCESS;
 }
 
 static VbError_t vboot_draw_recovery_to_dev(uint32_t locale)
 {
 	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	RETURN_ON_ERROR(draw_image_locale("todev.bmp", locale,
+			VB_SCALE_HALF, VB_SCALE_HALF,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 4,
+			PIVOT_H_CENTER|PIVOT_V_CENTER));
 	return VBERROR_SUCCESS;
 }
 
 static VbError_t vboot_draw_developer_to_norm(uint32_t locale)
 {
 	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	RETURN_ON_ERROR(draw_icon("VerificationOff.bmp"));
+	RETURN_ON_ERROR(draw_image_locale("verif_off.bmp", locale,
+			VB_SCALE_HALF, VB_SCALE_HALF,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			PIVOT_H_CENTER|PIVOT_V_TOP));
+	RETURN_ON_ERROR(draw_image_locale("tonorm.bmp", locale,
+			VB_SCALE_HALF, VB_SCALE_HALF + VB_TEXT_HEIGHT,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 3,
+			PIVOT_H_CENTER|PIVOT_V_TOP));
 	return VBERROR_SUCCESS;
 }
 
 static VbError_t vboot_draw_wait(uint32_t locale)
 {
 	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	RETURN_ON_ERROR(draw_image_locale("update.bmp", locale,
+			VB_SCALE_HALF, VB_SCALE_HALF,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 3,
+			PIVOT_H_CENTER|PIVOT_V_CENTER));
 	return VBERROR_SUCCESS;
 }
 
 static VbError_t vboot_draw_to_norm_confirmed(uint32_t locale)
 {
 	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	RETURN_ON_ERROR(draw_icon("VerificationOn.bmp"));
+	RETURN_ON_ERROR(draw_image_locale("verif_on.bmp", locale,
+			VB_SCALE_HALF, VB_SCALE_HALF,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			PIVOT_H_CENTER|PIVOT_V_TOP));
+	RETURN_ON_ERROR(draw_image_locale("reboot_erase.bmp", locale,
+			VB_SCALE_HALF, VB_SCALE_HALF + VB_TEXT_HEIGHT,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			PIVOT_H_CENTER|PIVOT_V_TOP));
 	return VBERROR_SUCCESS;
 }
 
