@@ -126,6 +126,7 @@ static const DtPathMap calibration_maps[] = {
 	{}
 };
 
+#if 0
 static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 {
 	int rv;
@@ -141,6 +142,7 @@ static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 static DeviceTreeFixup ipq_enet_fixup = {
 	.fixup = fix_device_tree
 };
+#endif
 
 /* DAC GPIO assignment. */
 enum storm_dac_gpio {
@@ -181,6 +183,7 @@ static int get_gpio(struct GpioOps *me)
 	return gpio_get_in_value(gpio->desc);
 }
 
+#if 0
 static int set_gpio(struct GpioOps *me, unsigned value)
 {
 	StormGpio *gpio = container_of(me, StormGpio, gpio_ops);
@@ -195,6 +198,7 @@ static GpioOps *new_storm_dac_gpio_output()
 	gpio->desc = (gpio_t)DAC_SDMODE;
 	return &gpio->gpio_ops;
 }
+#endif
 
 static GpioOps *new_storm_gpio_input_from_coreboot(uint32_t port)
 {
@@ -234,6 +238,7 @@ void board_mmc_gpio_config(void)
 	}
 }
 
+#if 0
 void board_i2s_gpio_config(void)
 {
 	unsigned i;
@@ -250,6 +255,7 @@ void board_dac_gpio_config(void)
 	gpio_tlmm_config_set(DAC_SDMODE, FUNC_SEL_GPIO, GPIO_NO_PULL,
 			GPIO_16MA, 1);
 }
+#endif
 
 static void set_ramoops_buffer(void)
 {
@@ -380,7 +386,7 @@ static int board_setup(void)
 
 	SpiController *spi = new_spi(0, 0);
 	flash_set_ops(&new_spi_flash(&spi->ops)->ops);
-
+#if 0
 	UsbHostController *usb_host1 = new_usb_hc(XHCI, 0x11000000);
 
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
@@ -410,7 +416,7 @@ static int board_setup(void)
 	sound_set_ops(&sound_route->ops);
 
 	list_insert_after(&ipq_enet_fixup.list_node, &device_tree_fixups);
-
+#endif
 	set_ramoops_buffer();
 
 	return 0;
