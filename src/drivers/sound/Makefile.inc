@@ -12,9 +12,10 @@
 ##
 ## You should have received a copy of the GNU General Public License
 ## along with this program; if not, write to the Free Software
-## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 ##
 
+depthcharge-$(CONFIG_DRIVER_SOUND_GPIO_I2S) += gpio_i2s.c
 depthcharge-$(CONFIG_DRIVER_SOUND_GPIO_PDM) += gpio_pdm.c
 depthcharge-$(CONFIG_DRIVER_SOUND_HDA) += hda_codec.c
 depthcharge-$(CONFIG_DRIVER_SOUND_I2S) += i2s.c
