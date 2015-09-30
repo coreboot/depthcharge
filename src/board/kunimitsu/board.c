@@ -28,12 +28,19 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "drivers/bus/i2c/designware.h"
+#include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/skylake.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
+#include "drivers/sound/gpio_i2s.h"
+#include "drivers/sound/gpio_pdm.h"
+#include "drivers/sound/max98357a.h"
+#include "drivers/sound/route.h"
+#include "drivers/sound/ssm4567.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
 #include "drivers/tpm/lpc.h"
@@ -80,7 +87,62 @@ static int board_setup(void)
 	SdhciHost *sd = new_pci_sdhci_host(PCI_DEV(0, 0x1e, 6), 1,
 			EMMC_SD_CLOCK_MIN, SD_CLOCK_MAX);
 	list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
-				&removable_block_dev_controllers);
+			&removable_block_dev_controllers);
+
+	/* GPIO to activate buffer to isolate I2S from PCH & allow GPIO */
+	GpioCfg *boot_beep_gpio_cfg = new_skylake_gpio_output(GPP_F23, 0);
+
+	gpio_set(&boot_beep_gpio_cfg->ops, 1);
+
+	/* Use GPIO to bit-bang I2S to the codec */
+	GpioCfg *i2s2_bclk = new_skylake_gpio_output(GPP_F0, 0);
+	GpioCfg *i2s2_sfrm = new_skylake_gpio_output(GPP_F1, 0);
+	GpioCfg *i2s2_txd  = new_skylake_gpio_output(GPP_F2, 0);
+
+	/* Identify the codec on the daughter board */
+	GpioCfg *audio_db_id = new_skylake_gpio_input(GPP_E3);
+
+	if (gpio_get(&audio_db_id->ops)) {
+		/* Speaker Amp Codec is on I2C4 */
+		DesignwareI2c *i2c4 =
+			new_pci_designware_i2c(PCI_DEV(0, 0x19, 2), 400000);
+		ssm4567Codec *speaker_amp_left =
+			new_ssm4567_codec(&i2c4->ops, 0x34, SSM4567_MODE_PDM);
+
+		GpioPdm *pdm = new_gpio_pdm(
+				&i2s2_bclk->ops,	/* PDM Clock GPIO */
+				&i2s2_txd->ops,		/* PDM Data GPIO */
+				85000,			/* Clock Start */
+				16000,			/* Sample Rate */
+				2,			/* Channels */
+				1000);			/* Volume */
+
+		SoundRoute *sound = new_sound_route(&pdm->ops);
+
+		list_insert_after(&speaker_amp_left->component.list_node,
+				&sound->components);
+		sound_set_ops(&sound->ops);
+	} else {
+		/* Speaker Amp codec MAX98357A */
+		GpioCfg *sdmode_gpio = new_skylake_gpio_output(GPP_E3, 0);
+		max98357aCodec *speaker_amp =
+			new_max98357a_codec(sdmode_gpio);
+
+		GpioI2s *i2s = new_gpio_i2s(
+				&i2s2_bclk->ops,    /* I2S Bit Clock GPIO */
+				&i2s2_sfrm->ops,    /* I2S Frame Sync GPIO */
+				&i2s2_txd->ops,     /* I2S Data GPIO */
+				16000,              /* Sample rate */
+				2,                  /* Channels */
+				0x1FFF);            /* Volume */
+
+		/* Connect the Codec to the I2S source */
+		SoundRoute *sound = new_sound_route(&i2s->ops);
+
+		list_insert_after(&speaker_amp->component.list_node,
+				&sound->components);
+		sound_set_ops(&sound->ops);
+	}
 
 	return 0;
 }
