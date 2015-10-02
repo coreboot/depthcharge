@@ -32,6 +32,7 @@ extern uint8_t shared_data_blob[VB_SHARED_DATA_REC_SIZE];
 
 int gbb_copy_in_bmp_block();
 int common_params_init(int clear_shared_data);
+int is_cparams_initialized(void);
 // Implemented by each arch.
 int find_common_params(void **blob, int *size);
 

@@ -108,10 +108,18 @@ int gbb_copy_in_bmp_block(void)
 	return 0;
 }
 
+static int cparams_initialized = 0;
+
+int is_cparams_initialized(void)
+{
+	return cparams_initialized;
+}
+
 int common_params_init(int clear_shared_data)
 {
 	// Set up the common param structure.
 	memset(&cparams, 0, sizeof(cparams));
+	cparams_initialized = 1;
 
 	if (gbb_init())
 		return 1;
