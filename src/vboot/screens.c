@@ -25,11 +25,177 @@
 #include <vboot/screens.h>
 #include "drivers/video/display.h"
 
+/*
+ * This is the base used to specify the size and the coordinate of the image.
+ * For example, height = 40 means 4.0% of the canvas (=drawing area) height.
+ */
+#define VB_SCALE	1000
+#define VB_SCALE_HALF	(VB_SCALE / 2)	/* 50.0% */
+
+/* Height of the text image per line relative to the canvas size */
+#define VB_TEXT_HEIGHT	40		/* 4.0% */
+
+/* Indicate width or height is automatically set based on the other value */
+#define VB_SIZE_AUTO	0
+
+/* Vertical position and size of the dividers */
+#define VB_DIVIDER_WIDTH	800	/* 80.0% */
+#define VB_DIVIDER_V_OFFSET	160	/* 16.0% */
+
+#define RETURN_ON_ERROR(function_call) do {				\
+		VbError_t rv = (function_call);				\
+		if (rv)							\
+			return rv;					\
+	} while (0)
+
 static char initialized = 0;
+
+/*
+ * Locale dependent images are stored using these locale strings as a directory
+ * name. For example, language.bmp for English is named en/language.bmp in cbfs.
+ */
+static const char * const locale_string[] = {
+	"en",
+};
+
+static VbError_t draw_image(const char *image_name,
+			    int32_t x, int32_t y, int32_t width, int32_t height,
+			    char pivot)
+{
+	uint8_t *image;
+	size_t size;
+	VbError_t rv = VBERROR_SUCCESS;
+
+	image = load_bitmap(image_name, &size);
+	if (!image)
+		return VBERROR_NO_IMAGE_PRESENT;
+
+	struct scale pos = {
+		.x = { .nume = x, .deno = VB_SCALE, },
+		.y = { .nume = y, .deno = VB_SCALE, },
+	};
+	struct scale dim = {
+		.x = { .nume = width, .deno = VB_SCALE, },
+		.y = { .nume = height, .deno = VB_SCALE, },
+	};
+
+	rv = draw_bitmap(image, size, &pos, pivot, &dim);
+	if (rv)
+		rv = VBERROR_UNKNOWN;
+	free(image);
+
+	return rv;
+}
+
+static int draw_image_locale(const char *image_name, uint32_t locale,
+			     int32_t x, int32_t y,
+			     int32_t width, int32_t height, char pivot)
+{
+	char str[256];
+	snprintf(str, sizeof(str), "locale/%s/%s",
+		 locale_string[locale], image_name);
+	return draw_image(str, x, y, width, height, pivot);
+}
+
+static VbError_t vboot_draw_base_screen(uint32_t locale)
+{
+	const struct rgb_color white = { 0xff, 0xff, 0xff };
+
+	if (clear_screen(&white))
+		return VBERROR_UNKNOWN;
+	RETURN_ON_ERROR(draw_image("chrome_logo.bmp",
+			(VB_SCALE - VB_DIVIDER_WIDTH)/2,
+			/* '-10' to keep the logo lifted up from the divider */
+			VB_DIVIDER_V_OFFSET - 10,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			PIVOT_H_LEFT|PIVOT_V_BOTTOM));
+	/*
+	 * Language section is at the top right corner. The language text image
+	 * is placed in the middle using the center as a pivot. Then, arrows
+	 * are placed on each side using PIVOT_H_RIGHT and PIVOT_H_LEFT. This
+	 * way, we can keep the different language images all in the middle.
+	 *
+	 * TODO: Get the width of the projected image and use it to determine
+	 * horizontal positions relative to the right edge of the divider.
+	 */
+	RETURN_ON_ERROR(draw_image("arrow_left.bmp",
+			770, VB_DIVIDER_V_OFFSET, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			PIVOT_H_RIGHT|PIVOT_V_BOTTOM));
+	RETURN_ON_ERROR(draw_image_locale("language.bmp", locale,
+			820, VB_DIVIDER_V_OFFSET, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			PIVOT_H_CENTER|PIVOT_V_BOTTOM));
+	RETURN_ON_ERROR(draw_image("arrow_right.bmp",
+			870, VB_DIVIDER_V_OFFSET, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			PIVOT_H_LEFT|PIVOT_V_BOTTOM));
+	RETURN_ON_ERROR(draw_image("divider_top.bmp",
+			VB_SCALE_HALF, VB_DIVIDER_V_OFFSET,
+			VB_DIVIDER_WIDTH, VB_SIZE_AUTO,
+			PIVOT_H_CENTER|PIVOT_V_TOP));
+	RETURN_ON_ERROR(draw_image("divider_btm.bmp",
+			VB_SCALE_HALF, VB_SCALE - VB_DIVIDER_V_OFFSET,
+			VB_DIVIDER_WIDTH, VB_SIZE_AUTO,
+			PIVOT_H_CENTER|PIVOT_V_BOTTOM));
+
+	/*
+	 * TODO: Draw the footer. The footer consists of URL and MODEL. Both
+	 * consist of a pair of text images. Thus, to place them horizontally in
+	 * the center, we need to get the width of the projected image.
+	 */
+
+	return VBERROR_SUCCESS;
+}
 
 static VbError_t vboot_draw_blank(uint32_t locale)
 {
 	video_console_clear();
+	return VBERROR_SUCCESS;
+}
+
+static VbError_t vboot_draw_developer_warning(uint32_t locale)
+{
+	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	return VBERROR_SUCCESS;
+}
+
+static VbError_t vboot_draw_recovery_remove(uint32_t locale)
+{
+	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	return VBERROR_SUCCESS;
+}
+
+static VbError_t vboot_draw_recovery_no_good(uint32_t locale)
+{
+	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	return VBERROR_SUCCESS;
+}
+
+static VbError_t vboot_draw_recovery_insert(uint32_t locale)
+{
+	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	return VBERROR_SUCCESS;
+}
+
+static VbError_t vboot_draw_recovery_to_dev(uint32_t locale)
+{
+	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	return VBERROR_SUCCESS;
+}
+
+static VbError_t vboot_draw_developer_to_norm(uint32_t locale)
+{
+	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	return VBERROR_SUCCESS;
+}
+
+static VbError_t vboot_draw_wait(uint32_t locale)
+{
+	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	return VBERROR_SUCCESS;
+}
+
+static VbError_t vboot_draw_to_norm_confirmed(uint32_t locale)
+{
+	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
 	return VBERROR_SUCCESS;
 }
 
@@ -48,36 +214,36 @@ static const struct vboot_screen_descriptor vboot_screens[] = {
 	},
 	{
 		.id = VB_SCREEN_DEVELOPER_WARNING,
-		.draw = NULL,
+		.draw = vboot_draw_developer_warning,
 		.mesg = "OS verification is OFF\n"
 			"Press SPACE to re-enable.\n",
 	},
 	{
 		.id = VB_SCREEN_RECOVERY_REMOVE,
-		.draw = NULL,
+		.draw = vboot_draw_recovery_remove,
 		.mesg = "Please remove all external devices to begin recovery\n",
 	},
 	{
 		.id = VB_SCREEN_RECOVERY_NO_GOOD,
-		.draw = NULL,
+		.draw = vboot_draw_recovery_no_good,
 		.mesg = "The device you inserted does not contain Chrome OS.\n",
 	},
 	{
 		.id = VB_SCREEN_RECOVERY_INSERT,
-		.draw = NULL,
+		.draw = vboot_draw_recovery_insert,
 		.mesg = "Chrome OS is missing or damaged.\n"
 			"Please insert a recovery USB stick or SD card.\n",
 	},
 	{
 		.id = VB_SCREEN_RECOVERY_TO_DEV,
-		.draw = NULL,
+		.draw = vboot_draw_recovery_to_dev,
 		.mesg = "To turn OS verificaion OFF, press ENTER.\n"
 			"Your system will reboot and local data will be cleared.\n"
 			"To go back, press ESC.\n",
 	},
 	{
 		.id = VB_SCREEN_DEVELOPER_TO_NORM,
-		.draw = NULL,
+		.draw = vboot_draw_developer_to_norm,
 		.mesg = "OS verification is OFF\n"
 			"Press ENTER to confirm you wish to turn OS verification on.\n"
 			"Your system will reboot and local data will be cleared.\n"
@@ -85,13 +251,13 @@ static const struct vboot_screen_descriptor vboot_screens[] = {
 	},
 	{
 		.id = VB_SCREEN_WAIT,
-		.draw = NULL,
+		.draw = vboot_draw_wait,
 		.mesg = "Your system is applying a critical update.\n"
 			"Please do not turn off.\n",
 	},
 	{
 		.id = VB_SCREEN_TO_NORM_CONFIRMED,
-		.draw = NULL,
+		.draw = vboot_draw_to_norm_confirmed,
 		.mesg = "OS verification is ON\n"
 			"Your system will reboot and local data will be cleared.\n",
 	},
@@ -160,13 +326,17 @@ int vboot_draw_screen(uint32_t screen)
 	static uint32_t current_locale = 0;
 	/* TODO: Read locale from nvram */
 	uint32_t locale = 0;
-	VbError_t rv;
 
 	printf("%s: screen=0x%x locale=%d\n", __func__, screen, locale);
 
 	if (!initialized) {
 		if (vboot_init_display())
 			return VBERROR_UNKNOWN;
+	}
+
+	if (locale > ARRAY_SIZE(locale_string)) {
+		printf("Invalid locale id = %d\n", locale);
+		return VBERROR_INVALID_PARAMETER;
 	}
 
 	/* If requested screen is the same as the current one, we're done. */
@@ -177,9 +347,7 @@ int vboot_draw_screen(uint32_t screen)
 	backlight_update(VB_SCREEN_BLANK == screen ? 0 : 1);
 
 	/* TODO: draw only locale dependent part if current_screen == screen */
-	rv = draw_screen(screen, locale);
-	if (rv)
-		return rv;
+	RETURN_ON_ERROR(draw_screen(screen, locale));
 
 	current_screen = screen;
 	current_locale = locale;
