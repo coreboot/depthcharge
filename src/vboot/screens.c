@@ -22,9 +22,11 @@
 
 #include <libpayload.h>
 #include <cbfs.h>
+#include <gbb_header.h>
 #include <vboot_api.h>
 #include <vboot/screens.h>
 #include "drivers/video/display.h"
+#include "vboot/util/commonparams.h"
 
 /*
  * This is the base used to specify the size and the coordinate of the image.
@@ -141,8 +143,40 @@ static int draw_icon(const char *image_name)
 			  PIVOT_H_CENTER|PIVOT_V_BOTTOM);
 }
 
+static int draw_text(const char *text, int32_t x, int32_t y,
+		     int32_t height, char pivot)
+{
+	int32_t w;
+	char str[256];
+	while (*text) {
+		sprintf(str, "font/idx%03d_%02x.bmp", *text, *text);
+		w = 0;
+		RETURN_ON_ERROR(get_image_size(str, &w, &height));
+		RETURN_ON_ERROR(draw_image(str,
+				x, y, VB_SIZE_AUTO, height, pivot));
+		x += w;
+		text++;
+	}
+	return VBERROR_SUCCESS;
+}
+
+static int get_text_width(const char *text, int32_t *width, int32_t *height)
+{
+	int32_t w;
+	char str[256];
+	while (*text) {
+		sprintf(str, "font/idx%03d_%02x.bmp", *text, *text);
+		w = 0;
+		RETURN_ON_ERROR(get_image_size(str, &w, height));
+		*width += w;
+		text++;
+	}
+	return VBERROR_SUCCESS;
+}
+
 static VbError_t vboot_draw_footer(uint32_t locale)
 {
+	char *hwid = NULL;
 	int32_t x, y, w1, h1, w2, h2;
 
 	/*
@@ -168,6 +202,37 @@ static VbError_t vboot_draw_footer(uint32_t locale)
 	x += w1;
 	RETURN_ON_ERROR(draw_image("Url.bmp",
 			x, y, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			PIVOT_H_LEFT|PIVOT_V_TOP));
+
+	/*
+	 * Draw model line: 'Model XYZ'. It consists of two parts: 'Model',
+	 * which is locale dependent, and 'XYZ', a model name. Model name
+	 * consists of individual font images: 'X' 'Y' 'Z'.
+	 */
+	if (is_cparams_initialized()) {
+		GoogleBinaryBlockHeader *gbb = cparams.gbb_data;
+		if (gbb)
+			hwid = (char *)((uintptr_t)gbb + gbb->hwid_offset);
+	}
+	if (!hwid)
+		hwid = "NOT FOUND";
+
+	w1 = 0;
+	h1 = VB_TEXT_HEIGHT;
+	RETURN_ON_ERROR(get_image_size_locale("model.bmp", locale, &w1, &h1));
+
+	w2 = 0;
+	h2 = VB_TEXT_HEIGHT;
+	RETURN_ON_ERROR(get_text_width(hwid, &w2, &h2));
+
+	/* Calculate horizontal position to centralize the combined images */
+	x = (VB_SCALE - w1 - w2) / 2;
+	y += VB_TEXT_HEIGHT;
+	RETURN_ON_ERROR(draw_image_locale("model.bmp", locale,
+			x, y, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			PIVOT_H_LEFT|PIVOT_V_TOP));
+	x += w1;
+	RETURN_ON_ERROR(draw_text(hwid, x, y, VB_TEXT_HEIGHT,
 			PIVOT_H_LEFT|PIVOT_V_TOP));
 
 	return VBERROR_SUCCESS;
