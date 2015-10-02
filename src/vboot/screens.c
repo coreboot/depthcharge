@@ -96,12 +96,81 @@ static int draw_image_locale(const char *image_name, uint32_t locale,
 	return draw_image(str, x, y, width, height, pivot);
 }
 
+static VbError_t get_image_size(const char *image_name,
+				int32_t *width, int32_t *height)
+{
+	uint8_t *image;
+	size_t size;
+	VbError_t rv;
+
+	image = cbfs_get_file_content(CBFS_DEFAULT_MEDIA, image_name,
+				      CBFS_TYPE_RAW, &size);
+	if (!image)
+		return VBERROR_NO_IMAGE_PRESENT;
+
+	struct scale dim = {
+		.x = { .n = *width, .d = VB_SCALE, },
+		.y = { .n = *height, .d = VB_SCALE, },
+	};
+
+	rv = get_bitmap_dimension(image, size, &dim);
+	free(image);
+	if (rv)
+		return VBERROR_UNKNOWN;
+
+	*width = dim.x.n * VB_SCALE / dim.x.d;
+	*height = dim.y.n * VB_SCALE / dim.y.d;
+
+	return VBERROR_SUCCESS;
+}
+
+static VbError_t get_image_size_locale(const char *image_name, uint32_t locale,
+				       int32_t *width, int32_t *height)
+{
+	char str[256];
+	snprintf(str, sizeof(str), "locale/%s/%s",
+		 supported_locales[locale], image_name);
+	return get_image_size(str, width, height);
+}
+
 static int draw_icon(const char *image_name)
 {
 	return draw_image(image_name,
 			  VB_SCALE_HALF, VB_SCALE_HALF,
 			  VB_SIZE_AUTO, VB_ICON_HEIGHT,
 			  PIVOT_H_CENTER|PIVOT_V_BOTTOM);
+}
+
+static VbError_t vboot_draw_footer(uint32_t locale)
+{
+	int32_t x, y, w1, h1, w2, h2;
+
+	/*
+	 * Draw help URL line: 'For help visit http://.../'. It consits of
+	 * two parts: 'For help visit', which is locale dependent, and a URL.
+	 * Since the widths vary, we need to get the widths first then calculate
+	 * the horizontal positions of the images.
+	 */
+	w1 = 0;
+	h1 = VB_TEXT_HEIGHT;
+	RETURN_ON_ERROR(get_image_size_locale("for_help_left.bmp", locale,
+					      &w1, &h1));
+	w2 = 0;
+	h2 = VB_TEXT_HEIGHT;
+	RETURN_ON_ERROR(get_image_size("Url.bmp", &w2, &h2));
+
+	/* Calculate horizontal position to centralize the combined images */
+	x = (VB_SCALE - w1 - w2) / 2;
+	y = VB_SCALE - VB_DIVIDER_V_OFFSET;
+	RETURN_ON_ERROR(draw_image_locale("for_help_left.bmp", locale,
+			x, y, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			PIVOT_H_LEFT|PIVOT_V_TOP));
+	x += w1;
+	RETURN_ON_ERROR(draw_image("Url.bmp",
+			x, y, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			PIVOT_H_LEFT|PIVOT_V_TOP));
+
+	return VBERROR_SUCCESS;
 }
 
 static VbError_t vboot_draw_base_screen(uint32_t locale)
@@ -143,11 +212,7 @@ static VbError_t vboot_draw_base_screen(uint32_t locale)
 			VB_DIVIDER_WIDTH, VB_SIZE_AUTO,
 			PIVOT_H_CENTER|PIVOT_V_BOTTOM));
 
-	/*
-	 * TODO: Draw the footer. The footer consists of URL and MODEL. Both
-	 * consist of a pair of text images. Thus, to place them horizontally in
-	 * the center, we need to get the width of the projected image.
-	 */
+	RETURN_ON_ERROR(vboot_draw_footer(locale));
 
 	return VBERROR_SUCCESS;
 }
