@@ -28,12 +28,24 @@
 
 enum {
 	MAX77620_ONOFF_CFG = 0x41,
+	MAX77620_ONOFF_CFG2 = 0x42,
 };
 
 enum {
 	MAX77620_ONOFF_CFG_SFT_RST = 0x1 << 7,
 	MAX77620_ONOFF_CFG_PWR_OFF = 0x1 << 1,
+
+	MAX77620_ONOFF_CFG2_SFT_RST_WK = 0x1 << 7,
 };
+
+static int max77620_clear_bit(Max77620Pmic *pmic, uint8_t reg, uint8_t bit)
+{
+	uint8_t val;
+	if (i2c_readb(pmic->bus, pmic->chip, reg, &val) ||
+	    i2c_writeb(pmic->bus, pmic->chip, reg, (val & ~bit)))
+		return -1;
+	return 0;
+}
 
 static int max77620_set_bit(Max77620Pmic *pmic, uint8_t reg, uint8_t bit)
 {
@@ -52,6 +64,8 @@ static int max77620_set_reg(Max77620Pmic *pmic, uint8_t reg, uint8_t value)
 static int max77620_cold_reboot(PowerOps *me)
 {
 	Max77620Pmic *pmic = container_of(me, Max77620Pmic, ops);
+	max77620_set_bit(pmic, MAX77620_ONOFF_CFG2,
+			 MAX77620_ONOFF_CFG2_SFT_RST_WK);
 	max77620_set_bit(pmic, MAX77620_ONOFF_CFG, MAX77620_ONOFF_CFG_SFT_RST);
 	halt();
 }
@@ -59,7 +73,9 @@ static int max77620_cold_reboot(PowerOps *me)
 static int max77620_power_off(PowerOps *me)
 {
 	Max77620Pmic *pmic = container_of(me, Max77620Pmic, ops);
-	max77620_set_reg(pmic, MAX77620_ONOFF_CFG, MAX77620_ONOFF_CFG_PWR_OFF);
+	max77620_clear_bit(pmic, MAX77620_ONOFF_CFG2,
+			   MAX77620_ONOFF_CFG2_SFT_RST_WK);
+	max77620_set_reg(pmic, MAX77620_ONOFF_CFG, MAX77620_ONOFF_CFG_SFT_RST);
 	halt();
 }
 
