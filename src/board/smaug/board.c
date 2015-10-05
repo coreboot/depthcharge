@@ -211,7 +211,7 @@ static int smaug_display_lines_cleanup(struct CleanupFunc *cleanup,
 	/* EN_VDD18_LCD (V3) - set to 0. */
 	TegraGpio *vdd18_lcd = new_tegra_gpio_output(GPIO(V, 3));
 	vdd18_lcd->ops.set(&vdd18_lcd->ops, 0);
-	mdelay(1);
+	mdelay(6);
 
 	/* EN_VDD_LCD (V4) - set to 0. */
 	TegraGpio *vdd_lcd = new_tegra_gpio_output(GPIO(V, 4));
