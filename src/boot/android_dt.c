@@ -25,6 +25,7 @@
 #include "base/device_tree.h"
 #include "base/init_funcs.h"
 #include "boot/android_dt.h"
+#include "vboot/firmware_id.h"
 #include "vboot/stages.h"
 
 static const char *get_verifiedbootstate(void)
@@ -56,6 +57,7 @@ static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 		{ "serialno", lib_sysinfo.serialno },
 		{ "verifiedbootstate", get_verifiedbootstate() },
 		{ "bootreason", get_bootreason() },
+		{ "bootloader", get_active_fw_id() },
 	};
 
 	firmware_node = dt_find_node(tree->root, firmware_dt_name,
