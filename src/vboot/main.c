@@ -45,6 +45,8 @@ static int vboot_init_handoff()
 	if (common_params_init(0))
 		return 1;
 
+	return 0;
+
 	if (lib_sysinfo.vboot_handoff == NULL) {
 		printf("vboot handoff pointer is NULL\n");
 		return 1;
