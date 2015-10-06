@@ -94,7 +94,7 @@ $(eval $(call declare_unified,$(DEPTHCHARGE),$$$$(depthcharge-objs) \
 	$$$$(unified-objs),))
 
 $(eval $(call declare_unified,$(NETBOOT),$$$$(depthcharge-objs) \
-	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs),))
+	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs) $$$$(unified-objs),))
 
 $(eval $(call declare_ro_rw,$(DEV),$$$$(depthcharge-objs) \
 	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs) $$$$(dev-objs), \
