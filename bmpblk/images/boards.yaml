@@ -121,7 +121,7 @@ squawks,glimmer,clapper,enguarde,expresso,kip,gnawty,winky,quawks,swanky,candy:
   res:      [1024, 768]
   panel:    [1366, 768]
 
-auron_paine,auron_yuna,cid,lulu:
+auron_paine,auron_yuna,cid,lulu,reks,lars:
   # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
   # With card reader. All USB ports can boot in recovery mode.
   res:      [1024, 768]
@@ -158,7 +158,7 @@ monroe,sumo:
   phy_rec:  True
   sdcard:   False
 
-cranky:
+cranky,buddy:
   # Using VESA graphics mode 1024x768 (0x0117).
   # A chromestation with built-in panel, without built-in keyboard.
   # Display is a modern 16:9 (1920x1080) monitor.
