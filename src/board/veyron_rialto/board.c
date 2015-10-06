@@ -47,7 +47,7 @@ static int board_setup(void)
 	fit_set_compat_by_rev("google,veyron-rialto-rev%d",
 			      lib_sysinfo.board_id);
 
-	RkSpi *spi2 = new_rockchip_spi(0xff130000, 0, 0, 0);
+	RkSpi *spi2 = new_rockchip_spi(0xff130000);
 	flash_set_ops(&new_spi_flash(&spi2->ops, 0x400000)->ops);
 
 	sysinfo_install_flags(new_rk_gpio_input_from_coreboot);
@@ -75,11 +75,11 @@ static int board_setup(void)
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
 
-	UsbHostController *usb_host0 = new_usb_hc(DWC2, 0xff580000);
-	list_insert_after(&usb_host0->list_node, &usb_host_controllers);
-
 	UsbHostController *usb_host1 = new_usb_hc(DWC2, 0xff540000);
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
+
+	UsbHostController *usb_otg = new_usb_hc(DWC2, 0xff580000);
+	list_insert_after(&usb_otg->list_node, &usb_host_controllers);
 
 	/* Lid always open for now. */
 	flag_replace(FLAG_LIDSW, new_gpio_high());
