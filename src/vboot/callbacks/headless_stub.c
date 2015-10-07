@@ -37,7 +37,7 @@ VbError_t VbExDisplayBacklight(uint8_t enable)
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExDisplayScreen(uint32_t screen_type)
+VbError_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale)
 {
 	return display_screen((enum VbScreenType_t)screen_type);
 }

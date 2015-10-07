@@ -25,6 +25,6 @@
 
 #include <stdint.h>
 
-int vboot_draw_screen(uint32_t screen);
+int vboot_draw_screen(uint32_t screen, uint32_t locale);
 
 #endif /* __VBOOT_SCREENS_H__ */

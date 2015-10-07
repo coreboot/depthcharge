@@ -53,14 +53,8 @@
 	} while (0)
 
 static char initialized = 0;
-
-/*
- * Locale dependent images are stored using these locale strings as a directory
- * name. For example, language.bmp for English is named en/language.bmp in cbfs.
- */
-static const char * const locale_string[] = {
-	"en",
-};
+static uint32_t locale_count;
+static char *supported_locales[256];
 
 static VbError_t draw_image(const char *image_name,
 			    int32_t x, int32_t y, int32_t width, int32_t height,
@@ -98,7 +92,7 @@ static int draw_image_locale(const char *image_name, uint32_t locale,
 {
 	char str[256];
 	snprintf(str, sizeof(str), "locale/%s/%s",
-		 locale_string[locale], image_name);
+		 supported_locales[locale], image_name);
 	return draw_image(str, x, y, width, height, pivot);
 }
 
@@ -380,6 +374,12 @@ static VbError_t draw_screen(uint32_t screen_type, uint32_t locale)
 		return VBERROR_INVALID_SCREEN_INDEX;
 	}
 
+	if (locale >= locale_count) {
+		printf("Unsupported locale (%d)\n", locale);
+		print_fallback_message(desc);
+		return VBERROR_INVALID_PARAMETER;
+	}
+
 	/* if no drawing function is registered, fallback msg will be printed */
 	if (desc->draw)
 		rv = desc->draw(locale);
@@ -389,8 +389,50 @@ static VbError_t draw_screen(uint32_t screen_type, uint32_t locale)
 	return rv;
 }
 
-static VbError_t vboot_init_display(void)
+static void vboot_init_locale(void)
 {
+	char *locales, *loc_start, *loc;
+	size_t size;
+
+	locale_count = 0;
+
+	/* Load locale list from cbfs */
+	locales = cbfs_get_file_content(CBFS_DEFAULT_MEDIA, "locales",
+					CBFS_TYPE_RAW, &size);
+	if (!locales || !size) {
+		printf("%s: locale list not found", __func__);
+		return;
+	}
+
+	/* Copy the file and null-terminate it */
+	loc_start = malloc(size + 1);
+	if (!loc_start) {
+		printf("%s: out of memory\n", __func__);
+		free(locales);
+		return;
+	}
+	memcpy(loc_start, locales, size);
+	loc_start[size] = '\0';
+
+	/* Parse the list */
+	printf("%s: Supported locales:", __func__);
+	loc = loc_start;
+	while (loc - loc_start < size
+			&& locale_count < ARRAY_SIZE(supported_locales)) {
+		char *lang = strsep(&loc, "\n");
+		if (!lang || !strlen(lang))
+			break;
+		printf(" %s,", lang);
+		supported_locales[locale_count] = lang;
+		locale_count++;
+	}
+	free(locales);
+	printf(" (%d locales)\n", locale_count);
+}
+
+static VbError_t vboot_init_screen(void)
+{
+	vboot_init_locale();
 	if (display_init())
 		return VBERROR_UNKNOWN;
 
@@ -403,23 +445,16 @@ static VbError_t vboot_init_display(void)
 	return VBERROR_SUCCESS;
 }
 
-int vboot_draw_screen(uint32_t screen)
+int vboot_draw_screen(uint32_t screen, uint32_t locale)
 {
 	static uint32_t current_screen = VB_SCREEN_BLANK;
 	static uint32_t current_locale = 0;
-	/* TODO: Read locale from nvram */
-	uint32_t locale = 0;
 
 	printf("%s: screen=0x%x locale=%d\n", __func__, screen, locale);
 
 	if (!initialized) {
-		if (vboot_init_display())
+		if (vboot_init_screen())
 			return VBERROR_UNKNOWN;
-	}
-
-	if (locale > ARRAY_SIZE(locale_string)) {
-		printf("Invalid locale id = %d\n", locale);
-		return VBERROR_INVALID_PARAMETER;
 	}
 
 	/* If requested screen is the same as the current one, we're done. */
