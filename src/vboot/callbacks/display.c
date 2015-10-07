@@ -163,3 +163,9 @@ VbError_t VbExDisplayDebugInfo(const char *info_str)
 
 	return VBERROR_SUCCESS;
 }
+
+VbError_t VbExGetLocalizationCount(uint32_t *count)
+{
+	*count = vboot_get_locale_count();
+	return VBERROR_SUCCESS;
+}

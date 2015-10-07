@@ -27,4 +27,11 @@
 
 int vboot_draw_screen(uint32_t screen, uint32_t locale);
 
+/**
+ * Return number of supported locales
+ *
+ * @return number of supported locales
+ */
+int vboot_get_locale_count(void);
+
 #endif /* __VBOOT_SCREENS_H__ */

@@ -472,3 +472,12 @@ int vboot_draw_screen(uint32_t screen, uint32_t locale)
 
 	return VBERROR_SUCCESS;
 }
+
+int vboot_get_locale_count(void)
+{
+	if (!initialized) {
+		if (vboot_init_screen())
+			return VBERROR_UNKNOWN;
+	}
+	return locale_count;
+}
