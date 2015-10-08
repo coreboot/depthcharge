@@ -44,26 +44,14 @@ static int do_draw_image(int argc, char * const argv[])
 		return -1;
 	}
 	const struct scale pos_rel = {
-		.x = {
-			.nume = strtoul(argv[3], NULL, 0),
-			.deno = 100,
-		},
-		.y = {
-			.nume = strtoul(argv[4], NULL, 0),
-			.deno = 100,
-		},
+		.x = { .n = strtoul(argv[3], NULL, 0), .d = 100, },
+		.y = { .n = strtoul(argv[4], NULL, 0), .d = 100, },
 	};
 
 	if (argc == 7) {
 		const struct scale s = {
-			.x = {
-				.nume = strtoul(argv[5], NULL, 0),
-				.deno = 100,
-			},
-			.y = {
-				.nume = strtoul(argv[6], NULL, 0),
-				.deno = 100,
-			},
+			.x = { .n = strtoul(argv[5], NULL, 0), .d = 100, },
+			.y = { .n = strtoul(argv[6], NULL, 0), .d = 100, },
 		};
 		dim_rel = &s;
 	}

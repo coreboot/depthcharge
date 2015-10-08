@@ -74,12 +74,12 @@ static VbError_t draw_image(const char *image_name,
 		return VBERROR_NO_IMAGE_PRESENT;
 
 	struct scale pos = {
-		.x = { .nume = x, .deno = VB_SCALE, },
-		.y = { .nume = y, .deno = VB_SCALE, },
+		.x = { .n = x, .d = VB_SCALE, },
+		.y = { .n = y, .d = VB_SCALE, },
 	};
 	struct scale dim = {
-		.x = { .nume = width, .deno = VB_SCALE, },
-		.y = { .nume = height, .deno = VB_SCALE, },
+		.x = { .n = width, .d = VB_SCALE, },
+		.y = { .n = height, .d = VB_SCALE, },
 	};
 
 	rv = draw_bitmap(image, size, &pos, pivot, &dim);
