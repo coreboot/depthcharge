@@ -101,7 +101,8 @@ static int is_fastboot_mode_requested(void)
 
 static void udc_fastboot(void)
 {
-	if (!board_should_enter_device_mode())
+	if ((fb_board_handler.enter_device_mode == NULL) ||
+	    (fb_board_handler.enter_device_mode() == 0))
 		return;
 
 	vboot_clear_recovery();

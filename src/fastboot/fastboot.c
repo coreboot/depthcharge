@@ -46,6 +46,9 @@
 #define MAX_COMMAND_LENGTH	64
 #define MAX_RESPONSE_LENGTH	64
 
+/* Default fastboot function callback table. */
+fb_callback_t __attribute__((weak)) fb_board_handler;
+
 /* Pointer to memory location where image is downloaded for further action */
 static void *image_addr;
 static size_t image_size;
@@ -81,19 +84,6 @@ static void fb_print_on_screen(const char *msg)
 	video_console_set_cursor((cols - strlen(msg)) / 2, rows / 2);
 
 	print_string(msg);
-}
-
-/********************* Stubs *************************/
-
-int  __attribute__((weak)) board_should_enter_device_mode(void)
-{
-	return 0;
-}
-
-int __attribute__((weak)) board_user_confirmation(void)
-{
-	/* Default weak implementation. Returns 0 = no user confirmation. */
-	return 0;
 }
 
 /************* Responses to Host **********************/
@@ -148,15 +138,6 @@ static void fb_execute_send(struct fb_cmd *cmd)
 }
 
 /************** Command Handlers ***********************/
-/*
- * Default weak implementation returning -1. Board should implement this
- * function.
- */
-int __attribute__((weak)) get_board_var(struct fb_cmd *cmd, fb_getvar_t var)
-{
-	return -1;
-}
-
 void fb_add_string(struct fb_buffer *buff, const char *str, const char *args)
 {
 	if (str == NULL)
@@ -327,7 +308,10 @@ static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 	return 0;
 
 board_read:
-	return get_board_var(cmd, var);
+	if (fb_board_handler.get_var)
+		return fb_board_handler.get_var(cmd, var);
+	else
+		return -1;
 }
 
 struct name_string {
@@ -927,7 +911,10 @@ static int fb_user_confirmation()
 	if (fb_check_gbb_override())
 		return 1;
 
-	return board_user_confirmation();
+	if (fb_board_handler.user_confirmation)
+		return fb_board_handler.user_confirmation();
+	else
+		return 0;
 }
 
 static fb_ret_type fb_lock(struct fb_cmd *cmd)

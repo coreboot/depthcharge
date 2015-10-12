@@ -180,14 +180,38 @@ void fb_add_number(struct fb_buffer *buff, const char *format,
 		   unsigned long long num);
 
 /******* Functions to be implemented by board wanting to use fastboot *******/
-int get_board_var(struct fb_cmd *cmd, fb_getvar_t var);
-int board_should_enter_device_mode(void);
-/*
- * Function to get user confirmation. Every device needs to implement this as
- * per the available physical buttons. Return value expected is:
- * 1 = user confirmed
- * 0 = user cancelled / no user confirmation.
- */
-int board_user_confirmation(void);
+
+typedef struct {
+	/*
+	 * Read value of a variable from board. Board is expected to fill in the
+	 * value of the variable in cmd->output buffer.
+	 *
+	 * Return value:
+	 *  0 = success
+	 * -1 = error
+	 */
+	int (*get_var)(struct fb_cmd *cmd, fb_getvar_t var);
+
+	/*
+	 * Check if board should enter device mode for fastboot. (Device mode
+	 * means that the board is ready to act as a device for USB connection).
+	 *
+	 * Return value:
+	 * 1 = enter device mode
+	 * 0 = otherwise
+	 */
+	int (*enter_device_mode)(void);
+
+	/*
+	 * Get user confirmation for lock/unlock operation.
+	 *
+	 * Return value:
+	 * 1 = user confirmed
+	 * 0 = user cancelled / no user confirmation
+	 */
+	int (*user_confirmation)(void);
+} fb_callback_t;
+
+extern fb_callback_t fb_board_handler;
 
 #endif /* __FASTBOOT_FASTBOOT_H__ */

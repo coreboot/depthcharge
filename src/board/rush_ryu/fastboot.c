@@ -67,7 +67,7 @@ struct part_info fb_part_list[] = {
 
 size_t fb_part_count = ARRAY_SIZE(fb_part_list);
 
-int get_board_var(struct fb_cmd *cmd, fb_getvar_t var)
+static int get_board_var(struct fb_cmd *cmd, fb_getvar_t var)
 {
 	int ret = 0;
 	struct fb_buffer *output = &cmd->output;
@@ -96,7 +96,7 @@ int get_board_var(struct fb_cmd *cmd, fb_getvar_t var)
 	return ret;
 }
 
-int board_should_enter_device_mode(void)
+static int board_should_enter_device_mode(void)
 {
 	return 1;
 }
@@ -117,3 +117,8 @@ void fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT])
 			  lib_sysinfo.spi_flash.sector_size);
 	fb_fill_part_list("chromeos", 0, backend_get_bdev_size_blocks("mmc"));
 }
+
+fb_callback_t fb_board_handler = {
+	.get_var = get_board_var,
+	.enter_device_mode = board_should_enter_device_mode,
+};
