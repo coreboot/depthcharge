@@ -35,9 +35,11 @@
 
 VbError_t VbExDisplayInit(uint32_t *width, uint32_t *height)
 {
-	const struct rgb_color rgb = { .red = 0, .green = 0, .blue = 0 };
-	if (clear_screen(&rgb))
+	if (display_init())
 		return VBERROR_UNKNOWN;
+
+	video_init();
+	video_console_cursor_enable(0);
 
 	if (gbb_copy_in_bmp_block())
 		return VBERROR_UNKNOWN;
