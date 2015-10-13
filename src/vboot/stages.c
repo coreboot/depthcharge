@@ -220,6 +220,16 @@ int vboot_select_and_load_kernel(void)
 	printf("Calling VbSelectAndLoadKernel().\n");
 	VbError_t res = VbSelectAndLoadKernel(&cparams, &kparams);
 	if (res == VBERROR_EC_REBOOT_TO_RO_REQUIRED) {
+
+		/* Let the splash screen remain for some time. */
+		delay(3);
+
+		/* Put up warning screen informing user about reboot. */
+		vboot_draw_screen(VB_SCREEN_RO_REBOOT_WARNING, 0, 1);
+
+		/* Let the warning screen appear for some time. */
+		delay(5);
+
 		printf("Rebooting the EC to RO.\n");
 		reboot_ec_to_ro();
 		if (power_off())

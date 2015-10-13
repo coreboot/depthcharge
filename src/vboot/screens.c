@@ -63,6 +63,20 @@ static VbError_t vboot_draw_base_screen(uint32_t localize)
 	return fastboot_draw_base_screen(localize);
 }
 
+static VbError_t vboot_draw_reboot_warning(uint32_t localize)
+{
+	VbError_t rv = vboot_draw_base_screen(localize);
+	if (rv)
+		return rv;
+
+	video_console_set_cursor(0, FB_INFO_POSITION_ROW);
+	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
+		     "Need to apply critical firmware update. "
+		     "Device will reboot now. Please be patient.\n");
+
+	return VBERROR_SUCCESS;
+}
+
 static VbError_t vboot_draw_developer_warning(uint32_t localize)
 {
 	VbError_t rv = vboot_draw_base_screen(localize);
@@ -329,6 +343,9 @@ static VbError_t draw_screen(uint32_t screen_type, uint32_t localize)
 		break;
 	case VB_SCREEN_OEM_UNLOCK_CONFIRM:
 		rv = vboot_draw_oem_lock_unlock(localize, 0);
+		break;
+	case VB_SCREEN_RO_REBOOT_WARNING:
+		rv = vboot_draw_reboot_warning(localize);
 		break;
 	default:
 		printf("Not a valid screen type: 0x%x\n", screen_type);
