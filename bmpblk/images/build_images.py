@@ -351,6 +351,10 @@ def build_image(board, config):
                    replace_map, text_max_colors)
   sys.stderr.write("\n")
 
+  sys.stderr.write("creating locale list file\n")
+  with open(os.path.join(output_dir, 'locales'), 'w') as locale_list:
+    locale_list.write('\n'.join(locales))
+
   font_dir = os.path.join(stage_dir, FONT_DIR)
   font_output_dir = os.path.join(output_dir, FONT_DIR)
   os.makedirs(font_output_dir)
