@@ -311,8 +311,10 @@ static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 board_read:
 	if (fb_board_handler.get_var)
 		return fb_board_handler.get_var(cmd, var);
-	else
+	else {
+		FB_LOG("ERROR: get_var is not defined by board\n");
 		return -1;
+	}
 }
 
 struct name_string {
@@ -914,8 +916,10 @@ static int fb_user_confirmation()
 
 	if (fb_board_handler.user_confirmation)
 		return fb_board_handler.user_confirmation();
-	else
+	else {
+		FB_LOG("ERROR: user_confirmation not defined by board.\n");
 		return 0;
+	}
 }
 
 static fb_ret_type fb_lock(struct fb_cmd *cmd)
