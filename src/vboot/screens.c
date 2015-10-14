@@ -21,6 +21,7 @@
  */
 
 #include <libpayload.h>
+#include <cbfs.h>
 #include <vboot_api.h>
 #include <vboot/screens.h>
 #include "drivers/video/display.h"
@@ -69,7 +70,8 @@ static VbError_t draw_image(const char *image_name,
 	size_t size;
 	VbError_t rv = VBERROR_SUCCESS;
 
-	image = load_bitmap(image_name, &size);
+	image = cbfs_get_file_content(CBFS_DEFAULT_MEDIA, image_name,
+				      CBFS_TYPE_RAW, &size);
 	if (!image)
 		return VBERROR_NO_IMAGE_PRESENT;
 
