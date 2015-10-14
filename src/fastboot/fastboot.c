@@ -22,6 +22,7 @@
 
 #include <libpayload.h>
 #include <vboot_api.h>
+#include <vboot_nvstorage.h>
 
 #include "config.h"
 #include "drivers/video/coreboot_fb.h"
@@ -967,6 +968,60 @@ static fb_ret_type fb_unlock(struct fb_cmd *cmd)
 	return FB_REBOOT;
 }
 
+static fb_ret_type fb_set_off_mode_charge(struct fb_cmd *cmd)
+{
+	cmd->type = FB_FAIL;
+
+	if (fb_board_handler.set_boot_on_ac_detect == NULL) {
+		fb_add_string(&cmd->output, "Unsupported cmd", NULL);
+		return FB_SUCCESS;
+	}
+
+	const char *input = fb_buffer_head(&cmd->input);
+	size_t input_len = fb_buffer_length(&cmd->input);
+
+	if (input_len != 1) {
+		fb_add_string(&cmd->output, "Invalid args", NULL);
+		return FB_SUCCESS;
+	}
+
+	/*
+	 * If off-mode-charge is set to 1, we want the device to continue
+	 * charging in off-mode i.e. device does not boot up if AC is plugged
+	 * in. On the other hand, if off-mode-charge is set to 0, then we want
+	 * the device to immediately boot up if AC is plugged in. Based on
+	 * passed in argument:
+	 * 1. Call board handler to set/clear boot_on_ac_detect (This can
+	 * default to EC or any component handling charging for the board).
+	 * 2. Set flag in VBNV_STORAGE so that it can be used on later boots.
+	 */
+	int boot_on_ac;
+	if (*input == '1')
+		boot_on_ac = 0;
+	else
+		boot_on_ac = 1;
+
+	if (fb_board_handler.set_boot_on_ac_detect(boot_on_ac) != 0) {
+		fb_add_string(&cmd->output, "Failed to set off-mode-charge",
+			      NULL);
+		return FB_SUCCESS;
+	}
+
+	VbNvContext context;
+
+	VbExNvStorageRead(context.raw);
+	VbNvSetup(&context);
+
+	VbNvSet(&context, VBNV_BOOT_ON_AC_DETECT, boot_on_ac);
+
+	VbNvTeardown(&context);
+	if (context.raw_changed)
+		VbExNvStorageWrite(context.raw);
+
+	cmd->type = FB_OKAY;
+	return FB_SUCCESS;
+}
+
 /************** Command Function Table *****************/
 struct fastboot_func {
 	struct name_string name;
@@ -988,6 +1043,8 @@ const struct fastboot_func fb_func_table[] = {
 	{ NAME_NO_ARGS("powerdown"), FB_ID_POWERDOWN, fb_powerdown},
 	{ NAME_NO_ARGS("oem unlock"), FB_ID_UNLOCK, fb_unlock},
 	{ NAME_NO_ARGS("oem lock"), FB_ID_LOCK, fb_lock},
+	{ NAME_ARGS("oem off-mode-charge", ' '), FB_ID_OFF_MODE_CHARGE,
+	  fb_set_off_mode_charge},
 	/* OEM cmd names starting in uppercase imply vendor/device specific. */
 	{ NAME_NO_ARGS("oem Powerdown"), FB_ID_POWERDOWN, fb_powerdown},
 	{ NAME_ARGS("oem Setenv", ' '), FB_ID_SETENV, fb_setenv}

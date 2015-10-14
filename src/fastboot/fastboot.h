@@ -219,6 +219,20 @@ typedef struct {
 	 * 0 = no request for entry into fastboot mode
 	 */
 	int (*keyboard_mask)(void);
+
+	/*
+	 * Set/clear boot on ac detect value. Boot on ac detect determines
+	 * whether the device should start booting up if AC is plugged in
+	 * off-mode.
+	 *
+	 * Params:
+	 * boot_on_ac_detect : 1=set, 0=clear
+	 *
+	 * Return value:
+	 * 0 = success
+	 * -1 = error
+	 */
+	int (*set_boot_on_ac_detect)(int boot_on_ac);
 } fb_callback_t;
 
 extern fb_callback_t fb_board_handler;
