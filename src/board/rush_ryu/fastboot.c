@@ -121,4 +121,5 @@ void fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT])
 fb_callback_t fb_board_handler = {
 	.get_var = get_board_var,
 	.enter_device_mode = board_should_enter_device_mode,
+	.keyboard_mask = ec_fb_keyboard_mask,
 };

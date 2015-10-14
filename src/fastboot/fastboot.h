@@ -210,6 +210,15 @@ typedef struct {
 	 * 0 = user cancelled / no user confirmation
 	 */
 	int (*user_confirmation)(void);
+
+	/*
+	 * Read keyboard mask to check if fastboot event is requested.
+	 *
+	 * Return value:
+	 * 1 = user requested entry into fastboot mode
+	 * 0 = no request for entry into fastboot mode
+	 */
+	int (*keyboard_mask)(void);
 } fb_callback_t;
 
 extern fb_callback_t fb_board_handler;

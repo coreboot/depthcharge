@@ -20,31 +20,25 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __BOARD_SMAUG_FASTBOOT_H__
-#define __BOARD_SMAUG_FASTBOOT_H__
+#include <libpayload.h>
 
-#include "config.h"
-#include "drivers/storage/blockdev.h"
-
-typedef enum {
-	MMC_BDEV,
-	FLASH_BDEV,
-	BDEV_COUNT,
-}bdev_t;
-
-#if CONFIG_FASTBOOT_MODE
-
-#include "fastboot/backend.h"
+#include "drivers/ec/cros/commands.h"
+#include "drivers/ec/cros/ec.h"
 #include "fastboot/ec.h"
-#include "fastboot/fastboot.h"
-#include "fastboot/udc.h"
 
-void fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT]);
+int ec_fb_keyboard_mask(void)
+{
+	uint32_t ec_events;
+	const uint32_t kb_fastboot_mask =
+		EC_HOST_EVENT_MASK(EC_HOST_EVENT_KEYBOARD_FASTBOOT);
 
-#else
+	cros_ec_get_host_events(&ec_events);
 
-static inline void fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT]) {}
+	if (kb_fastboot_mask & ec_events) {
+		cros_ec_clear_host_events(kb_fastboot_mask);
+		return 1;
+	}
 
-#endif /* CONFIG_FASTBOOT_MODE */
+	return 0;
+}
 
-#endif /* __BOARD_SMAUG_FASTBOOT_H__ */

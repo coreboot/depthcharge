@@ -26,8 +26,6 @@
 #include <vboot_nvstorage.h>
 #include <vboot_struct.h>
 
-#include "drivers/ec/cros/commands.h"
-#include "drivers/ec/cros/ec.h"
 #include "drivers/power/power.h"
 #include "drivers/video/coreboot_fb.h"
 #include "drivers/video/display.h"
@@ -55,27 +53,6 @@ enum {
 	ENTRY_POINT_FASTBOOT_MODE,
 };
 
-/*
- * Currently, all boards use EC to identify keyboard events. If in the future,
- * any other mechanism is used, every mechanism needs to have its own
- * implementation of this routine.
- */
-uint8_t fastboot_keyboard_mask(void)
-{
-	uint32_t ec_events;
-	const uint32_t kb_fastboot_mask =
-		EC_HOST_EVENT_MASK(EC_HOST_EVENT_KEYBOARD_FASTBOOT);
-
-	cros_ec_get_host_events(&ec_events);
-
-	if (kb_fastboot_mask & ec_events) {
-		cros_ec_clear_host_events(kb_fastboot_mask);
-		return 1;
-	}
-
-	return 0;
-}
-
 static int is_fastboot_mode_requested(void)
 {
 	VbSharedDataHeader *vdat;
@@ -96,7 +73,8 @@ static int is_fastboot_mode_requested(void)
 	return ((vdat->recovery_reason == VBNV_RECOVERY_FW_FASTBOOT) ||
 	    (vdat->recovery_reason == VBNV_RECOVERY_BCB_USER_MODE) ||
 	    ((vdat->recovery_reason == VBNV_RECOVERY_RO_MANUAL) &&
-	     fastboot_keyboard_mask()));
+	     fb_board_handler.keyboard_mask &&
+	     fb_board_handler.keyboard_mask()));
 }
 
 static void udc_fastboot(void)

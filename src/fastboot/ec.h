@@ -20,31 +20,9 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __BOARD_SMAUG_FASTBOOT_H__
-#define __BOARD_SMAUG_FASTBOOT_H__
+#ifndef __FASTBOOT_EC_H__
+#define __FASTBOOT_EC_H__
 
-#include "config.h"
-#include "drivers/storage/blockdev.h"
+int ec_fb_keyboard_mask(void);
 
-typedef enum {
-	MMC_BDEV,
-	FLASH_BDEV,
-	BDEV_COUNT,
-}bdev_t;
-
-#if CONFIG_FASTBOOT_MODE
-
-#include "fastboot/backend.h"
-#include "fastboot/ec.h"
-#include "fastboot/fastboot.h"
-#include "fastboot/udc.h"
-
-void fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT]);
-
-#else
-
-static inline void fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT]) {}
-
-#endif /* CONFIG_FASTBOOT_MODE */
-
-#endif /* __BOARD_SMAUG_FASTBOOT_H__ */
+#endif /* __FASTBOOT_EC_H__ */
