@@ -19,3 +19,4 @@ Poista käyttöjärjestelmän vahvistaminen käytöstä painamalla PALAUTUS-pain
 Yhdistetyn virtalähteen teho ei riitä laitteen käynnissä pitämiseen.
 Chrome-käyttöjärjestelmä sammutetaan.
 Yhdistä sopiva virtalähde ja yritä uudelleen.
+NEED_TRANSLATION: Please remove all devices...

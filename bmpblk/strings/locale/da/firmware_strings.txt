@@ -19,3 +19,4 @@ Du kan slå OS-bekræftelse FRA ved at trykke på knappen GENDANNELSE.
 Den tilsluttede strømforsyning leverer ikke strøm nok til at drive denne enhed.
 Chrome OS lukker nu ned.
 Brug den rigtige adapter, og prøv igen.
+NEED_TRANSLATION: Please remove all devices...

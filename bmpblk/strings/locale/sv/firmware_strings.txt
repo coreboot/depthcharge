@@ -19,3 +19,4 @@ Om du vill INAKTIVERA OS-verifiering trycker du på ÅTERSTÄLLNINGSKNAPPEN.
 Det anslutna nätadaptern är för svag för att driva den här enheten.
 Chrome OS stängs nu av.
 Anslut rätt adapter och försök igen.
+NEED_TRANSLATION: Please remove all devices...

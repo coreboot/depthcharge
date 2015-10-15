@@ -33,6 +33,7 @@ inputs:
   - wrong_adapter  #19 The connected power supply does not have enough power...
   - shutdown_now   #20 Chrome OS will now shut down.
   - change_adapter #21 Please use the correct adapter and try again.
+  - os_broken      #22 OS may be broken. Remove media and initiate recovery.
 
 files:
   # Text files to be generated.
@@ -56,6 +57,7 @@ files:
   reboot_erase:
   update:         # pre-generated.
   language:       # pre-generated.
+  os_broken:      [missing, os_broken]
 
 styles:
   todev:          '--align=left'

@@ -19,3 +19,4 @@ Zum Deaktivieren der Betriebssystembestätigung drücken Sie die Wiederherstellu
 Das angeschlossene Netzteil reicht für die Stromversorgung dieses Geräts nicht aus.
 Chrome OS wird jetzt heruntergefahren.
 Bitte versuchen Sie es mit dem richtigen Netzteil erneut.
+NEED_TRANSLATION: Please remove all devices...

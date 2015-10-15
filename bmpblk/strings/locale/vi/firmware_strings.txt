@@ -19,3 +19,4 @@ Mô hình
 Nguồn điện được kết nối không có đủ điện để chạy thiết bị này.
 Chrome OS sẽ tắt bây giờ.
 Hãy sử dụng bộ đổi nguồn đúng và thử lại.
+NEED_TRANSLATION: Please remove all devices...

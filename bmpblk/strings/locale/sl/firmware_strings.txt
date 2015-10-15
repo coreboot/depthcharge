@@ -19,3 +19,4 @@ Model
 Priključeno napajanje je prešibko za to napravo.
 Sistem Chrome OS se bo zaustavil.
 Uporabite ustrezen napajalnik in poskusite znova.
+NEED_TRANSLATION: Please remove all devices...

@@ -19,3 +19,4 @@ Chcete-li vypnout ověření operačního systému, stiskněte tlačítko RECOVE
 Připojený zdroj napájení nemá pro toto zařízení dostatečný výkon.
 Systém Chrome OS se nyní vypne.
 Použijte prosím správný adaptér a zkuste to znovu.
+NEED_TRANSLATION: Please remove all devices...

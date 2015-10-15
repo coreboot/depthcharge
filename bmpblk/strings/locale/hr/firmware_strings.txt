@@ -19,3 +19,4 @@ Da biste isključili potvrđivanje OS-a, pritisnite gumb za oporavak.
 Priključeni izvor napajanja nema dovoljno snage za napajanje ovog uređaja.
 OS Chrome sada će se isključiti.
 Priključite odgovarajući adapter i pokušajte ponovno.
+NEED_TRANSLATION: Please remove all devices...

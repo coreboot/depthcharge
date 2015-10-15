@@ -19,3 +19,4 @@ To turn OS verification OFF, press the RECOVERY button.
 The connected power supply does not have enough power to run this device.
 Chrome OS will now shut down.
 Please use the correct adapter and try again.
+Please remove all connected devices and start recovery.

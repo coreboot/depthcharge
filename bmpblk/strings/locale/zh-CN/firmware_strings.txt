@@ -19,3 +19,4 @@ Chrome 操作系统不存在或已损坏。
 连接的电源没有充足的电量来运行此设备。
 Chrome操作系统将立即关闭。
 请使用正确的电源适配器并重试。
+NEED_TRANSLATION: Please remove all devices...

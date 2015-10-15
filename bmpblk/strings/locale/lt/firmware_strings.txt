@@ -19,3 +19,4 @@ Jei norite IŠJUNGTI operacinės sistemos patvirtinimą, paspauskite ATKŪRIMO m
 Prijungtas maitinimo šaltinis neteikia pakankamai energijos, kad šis įrenginys veiktų.
 „Chrome“ OS dabar bus išjungta.
 Naudokite tinkamą adapterį ir bandykite dar kartą.
+NEED_TRANSLATION: Please remove all devices...

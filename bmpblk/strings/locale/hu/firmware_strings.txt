@@ -19,3 +19,4 @@ Az operációs rendszer ellenőrzésének kikapcsolásához nyomja meg a VISSZA�
 A csatlakoztatott áramforrás nem elég nagy teljesítményű az eszköz működtetéséhez.
 A Chrome OS kikapcsol.
 Kérjük, próbálja újra egy megfelelő tápegység használatával.
+NEED_TRANSLATION: Please remove all devices...

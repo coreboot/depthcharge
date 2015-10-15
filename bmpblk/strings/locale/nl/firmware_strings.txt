@@ -19,3 +19,4 @@ Als u de OS-verificatie UIT wilt zetten, drukt u op de knop RECOVERY.
 De aangesloten voeding levert niet voldoende stroom voor dit apparaat.
 Chrome OS wordt nu uitgeschakeld.
 Gebruik de juiste adapter en probeer het opnieuw.
+NEED_TRANSLATION: Please remove all devices...

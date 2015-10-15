@@ -19,3 +19,4 @@ OS-i kinnitamise lülitamiseks asendisse VÄLJAS vajutage nuppu TAASTE.
 Ühendatud toiteallikas pole seadme käitamiseks piisavalt võimas.
 Chrome OS lülitub nüüd välja.
 Kasutage õiget adapterit ja proovige uuesti.
+NEED_TRANSLATION: Please remove all devices...

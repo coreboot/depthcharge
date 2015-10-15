@@ -19,3 +19,4 @@ Lai IZSLĒGTU OS verifikāciju, nospiediet ATKOPŠANAS pogu.
 Pievienotajam barošanas avotam nav pietiekami daudz jaudas, lai darbinātu šo ierīci.
 Operētājsistēma Chrome OS tūlīt tiks izslēgta.
 Lūdzu, izmantojiet pareizo adapteri un mēģiniet vēlreiz.
+NEED_TRANSLATION: Please remove all devices...

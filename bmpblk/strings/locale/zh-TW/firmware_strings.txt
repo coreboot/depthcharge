@@ -19,3 +19,4 @@ Chrome 作業系統已毀損或遺失。
 目前連接的電源供應器所提供的電力不足，無法讓這部裝置維持運作。
 Chrome 作業系統將立即關閉。
 請使用正確的變壓器，然後再試一次。
+NEED_TRANSLATION: Please remove all devices...
