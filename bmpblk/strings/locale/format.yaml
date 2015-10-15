@@ -41,11 +41,11 @@ files:
   devmode:
   remove:
   yuck:
-  insert:         [missing, insert]
-  insert_usb:     [missing, insert_usb]
-  insert_sd_usb2: [missing, 'insert_usb2_sd@s/(\(|\. )/\n\1/']
+  insert:         [insert]
+  insert_usb:     [insert_usb]
+  insert_sd_usb2: ['insert_usb2_sd@s/(\(|\. )/\n\1/']
 #  insert_kiev:    [missing, insert_4usb]
-  insert_usb2:    [missing, insert_usb, 'insert_usb2_sd@s/.*(\(|\. )/\1/']
+  insert_usb2:    [insert_usb, 'insert_usb2_sd@s/.*(\(|\. )/\1/']
   for_help_left:  ['for_help@s/.http.*//' ]
   for_help_right: ['for_help@s/.*chromeos.recovery ?//']
   todev:          [todev, reboot_erase, '', esc_back]
