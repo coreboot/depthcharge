@@ -426,6 +426,16 @@ static VbError_t vboot_draw_to_norm_confirmed(uint32_t locale)
 	return VBERROR_SUCCESS;
 }
 
+static VbError_t vboot_draw_os_broken(uint32_t locale)
+{
+	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	RETURN_ON_ERROR(draw_image_locale("os_broken.bmp", locale,
+			VB_SCALE_HALF, VB_SCALE_HALF,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 2,
+			PIVOT_H_CENTER|PIVOT_V_CENTER));
+	return VBERROR_SUCCESS;
+}
+
 /* we may export this in the future for the board customization */
 struct vboot_screen_descriptor {
 	uint32_t id;				/* VB_SCREEN_* */
@@ -490,7 +500,7 @@ static const struct vboot_screen_descriptor vboot_screens[] = {
 	},
 	{
 		.id = VB_SCREEN_OS_BROKEN,
-		.draw = NULL,
+		.draw = vboot_draw_os_broken,
 		.mesg = "Chrome OS may be broken.\n"
 			"Remove media and initiate recovery.\n",
 	},
