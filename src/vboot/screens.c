@@ -371,7 +371,7 @@ static VbError_t vboot_draw_recovery_insert(uint32_t locale)
 	RETURN_ON_ERROR(draw_icon("Warning.bmp"));
 	RETURN_ON_ERROR(draw_image_locale("insert.bmp", locale,
 			VB_SCALE_HALF, VB_SCALE_HALF,
-			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 2,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
 			PIVOT_H_CENTER|PIVOT_V_TOP));
 	return VBERROR_SUCCESS;
 }
