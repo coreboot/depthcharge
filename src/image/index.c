@@ -46,6 +46,8 @@ const void *index_subsection(const FmapArea *area, const int entry,
 			     uint32_t *entry_size)
 {
 	const SectionIndex *index = index_from_fmap(area);
+	if (index == NULL)
+		return NULL;
 	if (index->count <= entry) {
 		printf("Asked for index entry %d, but there are only %d.\n",
 			entry, index->count);
