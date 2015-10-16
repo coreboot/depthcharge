@@ -70,8 +70,7 @@
 			 * each RW_SECTION.
 			 */
 			reg = <0x00200000 0x00010000>;
-			type = "keyblock boot,ecrwhash,pdrwhash,ramstage,refcode,romstage";
-			with_index;
+			type = "keyblock cbfs/rw/a-boot";
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
 			version = <1>;
@@ -81,21 +80,8 @@
 		rw-a-boot {
 			/* Alignment: no requirement (yet). */
 			label = "fw-main-a";
-			reg = <0x00210000 0x003b0000>;
-			type = "blob boot,ecrwhash,pdrwhash,ramstage,refcode,romstage";
-			with_index;
-		};
-		rw-a-pd-boot {
-			label = "pd-main-a";
-			type = "blob pdrw";
-			reg = <0x005c0000 0x00010000>;
-			with_index;
-		};
-		rw-a-ec-boot {
-			label = "ec-main-a";
-			type = "blob ecbin";
-			reg = <0x005d0000 0x0001ffc0>;
-			with_index;
+			reg = <0x00210000 0x003dffc0>;
+			type = "blob cbfs/rw/a-boot";
 		};
 		rw-a-firmware-id {
 			/* Alignment: no requirement. */
@@ -118,8 +104,7 @@
 			 * each RW_SECTION.
 			 */
 			reg = <0x005f0000 0x00010000>;
-			type = "keyblock boot,ecrwhash,pdrwhash,ramstage,refcode,romstage";
-			with_index;
+			type = "keyblock cbfs/rw/b-boot";
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
 			version = <1>;
@@ -129,21 +114,8 @@
 		rw-b-boot {
 			label = "fw-main-b";
 			/* Alignment: no requirement (yet). */
-			reg = <0x00600000 0x003b0000>;
-			type = "blob boot,ecrwhash,pdrwhash,ramstage,refcode,romstage";
-			with_index;
-		};
-		rw-b-pd-boot {
-			label = "pd-main-b";
-			type = "blob pdrw";
-			reg = <0x009b0000 0x00010000>;
-			with_index;
-		};
-		rw-b-ec-boot {
-			label = "ec-main-b";
-			type = "blob ecbin";
-			reg = <0x009c0000 0x0001ffc0>;
-			with_index;
+			reg = <0x00600000 0x003dffc0>;
+			type = "blob cbfs/rw/b-boot";
 		};
 		rw-b-firmware-id {
 			label = "rw-fwid-b";
