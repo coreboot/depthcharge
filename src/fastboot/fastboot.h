@@ -247,6 +247,17 @@ typedef struct {
 	 * No return value.
 	 */
 	void (*print_screen)(fb_msg_t type, const char *msg, size_t len);
+
+	/*
+	 * Handle fastboot menu.
+	 *
+	 * Return value:
+	 * 1 = enter fastboot mode
+	 * 0 = continue with USB recovery
+	 *
+	 * Handler is expected to perform reboot/poweroff on its own.
+	 */
+	int (*enter_menu)(void);
 } fb_callback_t;
 
 extern fb_callback_t fb_board_handler;

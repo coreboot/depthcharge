@@ -27,8 +27,6 @@
 #include <vboot_struct.h>
 
 #include "drivers/power/power.h"
-#include "drivers/video/coreboot_fb.h"
-#include "drivers/video/display.h"
 #include "fastboot/fastboot.h"
 #include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
@@ -77,11 +75,19 @@ static int is_fastboot_mode_requested(void)
 	     fb_board_handler.keyboard_mask()));
 }
 
-static void udc_fastboot(void)
+static void udc_fastboot(const char *reason)
 {
-	if ((fb_board_handler.enter_device_mode == NULL) ||
-	    (fb_board_handler.enter_device_mode() == 0))
+	if (fb_board_handler.enter_device_mode == NULL) {
+		printf("ERROR: No handler for entering device mode\n");
 		return;
+	}
+
+	if (fb_board_handler.enter_device_mode() == 0) {
+		printf("Board does not want to enter device mode\n");
+		return;
+	}
+
+	printf("Entering fastboot mode: %s\n", reason);
 
 	vboot_clear_recovery();
 
@@ -112,109 +118,24 @@ static void udc_fastboot(void)
 	}
 }
 
-static void menu_start(void)
-{
-	vboot_clear_recovery();
-	cold_reboot();
-}
-
-
-static void menu_fastboot(void)
-{
-	udc_fastboot();
-}
-
-static void menu_reset(void)
-{
-	cold_reboot();
-}
-
-static void menu_power_off(void)
-{
-	power_off();
-}
-
 void vboot_try_fastboot(void)
 {
-	static const struct {
-		const char *text;
-		const int color; /* VGA color */
-		void (*func)(void);
-	} commands[] = {
-		{ "Start", 10, menu_start },		/* green */
-		{ "Enable fastboot", 7, menu_fastboot },
-		{ "Enter CrOS recovery mode", 7, NULL},
-		{ "Reset device", 12, menu_reset},	/* red */
-		{ "Power off device", 12, menu_power_off},
-	};
+	const char *fb_mode_reason = NULL;
 
-	if (is_fastboot_mode_requested()) {
-		/* fastboot mode is explicitly requested. skip menu. */
-		printf("entering fastboot mode\n");
-		udc_fastboot();
-		return;
-	}
-
-	const int command_count = ARRAY_SIZE(commands);
-	int position = 0;
-
-	int i;
-	int max_strlen = 0;
-	for (i = 0; i < command_count; i++) {
-		int j = strlen(commands[i].text);
-		if (j > max_strlen)
-			max_strlen = j;
-	}
-
-	unsigned int rows, cols;
-	if (display_init())
-		return;
-
-	if (backlight_update(1))
-		return;
-
-	video_init();
-	video_console_clear();
-	video_console_cursor_enable(0);
-
-	video_get_rows_cols(&rows, &cols);
-
-	video_console_set_cursor(0, 3);
-	video_printf(7, 0, VIDEO_PRINTF_ALIGN_KEEP,
-		     "<-- Button up: run selected option\n\n");
-	video_printf(7, 0, VIDEO_PRINTF_ALIGN_KEEP,
-		     "<-- Button down: next option\n");
-
-	video_console_set_cursor(0, rows - 10);
-
-	// set cursor appropriately
-	video_printf(12, 0, VIDEO_PRINTF_ALIGN_KEEP, "FASTBOOT MODE\n");
 	/*
-	 * TODO: Show PRODUCT_NAME, VARIANT, HW VERSION, BOOTLOADER VERSION,
-	 * SERIAL NUMBER, SIGNING
+	 * Enter fastboot mode:
+	 * 1. If it is requested explicitly through recovery reason, or
+	 * 2. If device does not support menu in recovery mode, or
+	 * 3. If device supports menu and fastboot mode is requested through
+	 * menu.
 	 */
-	video_printf(12, 0, VIDEO_PRINTF_ALIGN_KEEP, "DEVICE: %s\n",
-		     fb_device_unlocked() ? "unlocked" : "locked");
+	if (is_fastboot_mode_requested())
+		fb_mode_reason = "Requested by user";
+	else if (fb_board_handler.enter_menu == NULL)
+		fb_mode_reason = "No menu support";
+	else if (fb_board_handler.enter_menu())
+		fb_mode_reason = "Selected from menu";
 
-	while (1) {
-		video_console_set_cursor(0, 0);
-		video_printf(commands[position].color, 0,
-			     VIDEO_PRINTF_ALIGN_KEEP,
-			     "%*s", -max_strlen, commands[position].text);
-		int keypress = getchar();
-		printf("got keypress %x\n", keypress);
-		if (keypress == ' ') {
-			printf("moving forward\n");
-			if (++position == command_count)
-				position = 0;
-		} else if (keypress & KEY_SELECT) {
-			printf("selected %s\n", commands[position].text);
-			if (commands[position].func == NULL)
-				/* leave menu and continue to boot */
-				break;
-			commands[position].func();
-			break;
-		}
-	}
-	printf("leaving fastboot menu\n");
+	if (fb_mode_reason)
+		udc_fastboot(fb_mode_reason);
 }
