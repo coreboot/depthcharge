@@ -242,4 +242,5 @@ fb_callback_t fb_board_handler = {
 	.enter_device_mode = board_should_enter_device_mode,
 	.user_confirmation = board_user_confirmation,
 	.keyboard_mask = ec_fb_keyboard_mask,
+	.print_screen = fb_print_text_on_screen,
 };

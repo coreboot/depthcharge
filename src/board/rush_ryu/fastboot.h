@@ -37,6 +37,7 @@ typedef enum {
 #include "fastboot/backend.h"
 #include "fastboot/ec.h"
 #include "fastboot/fastboot.h"
+#include "fastboot/print.h"
 #include "fastboot/udc.h"
 
 void fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT]);

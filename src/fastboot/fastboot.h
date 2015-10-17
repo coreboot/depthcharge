@@ -25,6 +25,8 @@
 
 #include <assert.h>
 
+#include "fastboot/print.h"
+
 #define FB_VERSION_STRING	"0.3"
 
 /* Fastboot getvar variables */
@@ -233,6 +235,18 @@ typedef struct {
 	 * -1 = error
 	 */
 	int (*set_boot_on_ac_detect)(int boot_on_ac);
+
+	/*
+	 * Print message on display screen.
+	 *
+	 * Params:
+	 * msg: Message to be printed
+	 * len: Message len
+	 * type: Type of message (one of the fb_msg_t enums)
+	 *
+	 * No return value.
+	 */
+	void (*print_screen)(fb_msg_t type, const char *msg, size_t len);
 } fb_callback_t;
 
 extern fb_callback_t fb_board_handler;

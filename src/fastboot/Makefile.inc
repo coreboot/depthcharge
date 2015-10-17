@@ -21,4 +21,5 @@ depthcharge-y += backend.c
 depthcharge-y += capabilities.c
 depthcharge-$(CONFIG_DRIVER_EC_CROS) += ec.c
 depthcharge-y += fastboot.c
+depthcharge-y += print.c
 depthcharge-y += udc.c

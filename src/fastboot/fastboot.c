@@ -25,8 +25,6 @@
 #include <vboot_nvstorage.h>
 
 #include "config.h"
-#include "drivers/video/coreboot_fb.h"
-#include "drivers/video/display.h"
 #include "fastboot/backend.h"
 #include "fastboot/capabilities.h"
 #include "fastboot/fastboot.h"
@@ -54,37 +52,10 @@ fb_callback_t __attribute__((weak)) fb_board_handler;
 static void *image_addr;
 static size_t image_size;
 
-static void print_string(const char *str)
+static void fb_print_on_screen(fb_msg_t type, const char *msg)
 {
-	int str_len = strlen(str);
-	while (str_len--) {
-		if (*str == '\n')
-			video_console_putchar('\r');
-		video_console_putchar(*str++);
-	}
-}
-
-/*
- * TODO(furquan): Get rid of this once the vboot flows and fastboot interactions
- * are finalized.
- */
-static void fb_print_on_screen(const char *msg)
-{
-	unsigned int rows, cols;
-
-	if (display_init())
-		return;
-
-	if (backlight_update(1))
-		return;
-
-	video_init();
-	video_console_cursor_enable(0);
-
-	video_get_rows_cols(&rows, &cols);
-	video_console_set_cursor((cols - strlen(msg)) / 2, rows / 2);
-
-	print_string(msg);
+	if (fb_board_handler.print_screen)
+		fb_board_handler.print_screen(type, msg, strlen(msg));
 }
 
 /************* Responses to Host **********************/
@@ -768,7 +739,7 @@ static fb_ret_type fb_erase(struct fb_cmd *cmd)
 	cmd->type = FB_INFO;
 	fb_add_string(&cmd->output, "erasing flash", NULL);
 	fb_execute_send(cmd);
-	fb_print_on_screen("Erasing flash....\n");
+	fb_print_on_screen(PRINT_WARN, "Erasing flash....\n");
 
 	cmd->type = FB_OKAY;
 
@@ -800,7 +771,7 @@ static fb_ret_type fb_flash(struct fb_cmd *cmd)
 	cmd->type = FB_INFO;
 	fb_add_string(&cmd->output, "writing flash", NULL);
 	fb_execute_send(cmd);
-	fb_print_on_screen("Writing flash....\n");
+	fb_print_on_screen(PRINT_WARN, "Writing flash....\n");
 
 	struct fb_buffer *input = &cmd->input;
 	size_t len = fb_buffer_length(input);
@@ -1158,7 +1129,8 @@ fb_ret_type device_mode_enter(void)
 	do {
 		size_t len;
 
-		fb_print_on_screen("Waiting for fastboot command....\n");
+		fb_print_on_screen(PRINT_INFO,
+				   "Waiting for fastboot command....\n");
 		/* Receive a packet from the host */
 		len = usb_gadget_recv(pkt, MAX_COMMAND_LENGTH);
 
@@ -1180,7 +1152,8 @@ fb_ret_type device_mode_enter(void)
 
 		print_input(&cmd);
 
-		fb_print_on_screen("Processing fastboot command....\n");
+		fb_print_on_screen(PRINT_WARN,
+				   "Processing fastboot command....\n");
 
 		/* Process the packet as per fastboot protocol */
 		ret = fastboot_proto_handler(&cmd);
