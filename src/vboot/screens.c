@@ -25,6 +25,7 @@
 #include <gbb_header.h>
 #include <vboot_api.h>
 #include <vboot/screens.h>
+#include "base/graphics.h"
 #include "drivers/video/display.h"
 #include "vboot/util/commonparams.h"
 
@@ -508,14 +509,12 @@ static const struct vboot_screen_descriptor *get_screen_descriptor(uint32_t id)
 static void print_fallback_message(const struct vboot_screen_descriptor *desc)
 {
 	const struct rgb_color white = { 0xff, 0xff, 0xff };
-	if (clear_screen(&white))
-		return;
-	if (desc->mesg) {
-		unsigned int rows, cols;
-		video_get_rows_cols(&rows, &cols);
-		video_console_set_cursor(0, rows/2);
-		video_printf(0, 15, VIDEO_PRINTF_ALIGN_CENTER, desc->mesg);
-	}
+
+	if (desc->mesg)
+		graphics_print_single_text_block(desc->mesg, &white, 0, 15,
+						 VIDEO_PRINTF_ALIGN_CENTER);
+	else
+		clear_screen(&white);
 }
 
 static VbError_t draw_screen(uint32_t screen_type, uint32_t locale)
@@ -588,13 +587,10 @@ static void vboot_init_locale(void)
 static VbError_t vboot_init_screen(void)
 {
 	vboot_init_locale();
-	if (display_init())
+
+	if (graphics_init())
 		return VBERROR_UNKNOWN;
 
-	/* initialize video console */
-	video_init();
-	video_console_clear();
-	video_console_cursor_enable(0);
 	initialized = 1;
 
 	return VBERROR_SUCCESS;
