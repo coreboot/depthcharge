@@ -48,6 +48,9 @@
 #define VB_DIVIDER_WIDTH	800	/* 80.0% */
 #define VB_DIVIDER_V_OFFSET	160	/* 16.0% */
 
+/* Width of the language name */
+#define VB_LANGUAGE_WIDTH	100
+
 #define RETURN_ON_ERROR(function_call) do {				\
 		VbError_t rv = (function_call);				\
 		if (rv)							\
@@ -238,6 +241,43 @@ static VbError_t vboot_draw_footer(uint32_t locale)
 	return VBERROR_SUCCESS;
 }
 
+/*
+ * Draws the language section at the top right corner. The language text image
+ * is placed in the middle surrounded by arrows on each side.
+ */
+static VbError_t vboot_draw_language(uint32_t locale)
+{
+	int32_t w, h, x;
+
+	/* This width is used to calculate the position of language.bmp */
+	w = 0;
+	h = VB_TEXT_HEIGHT;
+	RETURN_ON_ERROR(get_image_size("arrow_right.bmp", &w, &h));
+
+	/*
+	 * Right arrow starts from the right edge of the divider, which is
+	 * positioned horizontally in the center.
+	 */
+	x = VB_SCALE_HALF + VB_DIVIDER_WIDTH / 2;
+	RETURN_ON_ERROR(draw_image("arrow_right.bmp",
+			x, VB_DIVIDER_V_OFFSET, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			PIVOT_H_RIGHT|PIVOT_V_BOTTOM));
+
+	/* Since widths of language.bmp vary, we have to use the center pivot */
+	x -= (w + VB_LANGUAGE_WIDTH / 2);
+	RETURN_ON_ERROR(draw_image_locale("language.bmp", locale,
+			x, VB_DIVIDER_V_OFFSET, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			PIVOT_H_CENTER|PIVOT_V_BOTTOM));
+
+	/* Left arrow starts from the right edge of language.bmp */
+	x -= VB_LANGUAGE_WIDTH / 2;
+	RETURN_ON_ERROR(draw_image("arrow_left.bmp",
+			x, VB_DIVIDER_V_OFFSET, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			PIVOT_H_RIGHT|PIVOT_V_BOTTOM));
+
+	return VBERROR_SUCCESS;
+}
+
 static VbError_t vboot_draw_base_screen(uint32_t locale)
 {
 	const struct rgb_color white = { 0xff, 0xff, 0xff };
@@ -250,24 +290,9 @@ static VbError_t vboot_draw_base_screen(uint32_t locale)
 			VB_DIVIDER_V_OFFSET - 10,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
 			PIVOT_H_LEFT|PIVOT_V_BOTTOM));
-	/*
-	 * Language section is at the top right corner. The language text image
-	 * is placed in the middle using the center as a pivot. Then, arrows
-	 * are placed on each side using PIVOT_H_RIGHT and PIVOT_H_LEFT. This
-	 * way, we can keep the different language images all in the middle.
-	 *
-	 * TODO: Get the width of the projected image and use it to determine
-	 * horizontal positions relative to the right edge of the divider.
-	 */
-	RETURN_ON_ERROR(draw_image("arrow_left.bmp",
-			770, VB_DIVIDER_V_OFFSET, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
-			PIVOT_H_RIGHT|PIVOT_V_BOTTOM));
-	RETURN_ON_ERROR(draw_image_locale("language.bmp", locale,
-			820, VB_DIVIDER_V_OFFSET, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
-			PIVOT_H_CENTER|PIVOT_V_BOTTOM));
-	RETURN_ON_ERROR(draw_image("arrow_right.bmp",
-			870, VB_DIVIDER_V_OFFSET, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
-			PIVOT_H_LEFT|PIVOT_V_BOTTOM));
+
+	RETURN_ON_ERROR(vboot_draw_language(locale));
+
 	RETURN_ON_ERROR(draw_image("divider_top.bmp",
 			VB_SCALE_HALF, VB_DIVIDER_V_OFFSET,
 			VB_DIVIDER_WIDTH, VB_SIZE_AUTO,
