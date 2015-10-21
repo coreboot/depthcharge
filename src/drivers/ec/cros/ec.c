@@ -972,6 +972,33 @@ int cros_ec_read_batt_volt(uint32_t *volt)
 	return cros_ec_read_memmap(EC_MEMMAP_BATT_VOLT, sizeof(*volt), volt);
 }
 
+int cros_ec_read_limit_power_request(int *limit_power)
+{
+	struct ec_params_charge_state p;
+	struct ec_response_charge_state r;
+	int res;
+
+	p.cmd = CHARGE_STATE_CMD_GET_PARAM;
+	p.get_param.param = CS_PARAM_LIMIT_POWER;
+	res = ec_command(EC_CMD_CHARGE_STATE, 0, &p, sizeof(p), &r, sizeof(r));
+
+	/*
+	 * If our EC doesn't support the LIMIT_POWER parameter, assume that
+	 * LIMIT_POWER is not requested.
+	 */
+	if (res == -EC_RES_INVALID_PARAM || res == -EC_RES_INVALID_COMMAND) {
+		printf("PARAM_LIMIT_POWER not supported by EC.\n");
+		*limit_power = 0;
+		return 0;
+	}
+
+	if (res != sizeof(r.get_param))
+		return -1;
+
+	*limit_power = r.get_param.value;
+	return 0;
+}
+
 static int set_max_proto3_sizes(int request_size, int response_size,
 				int passthru_size)
 {

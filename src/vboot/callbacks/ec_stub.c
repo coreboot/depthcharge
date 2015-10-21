@@ -82,3 +82,8 @@ VbError_t VbExEcEnteringMode(int devidx, enum VbEcBootMode_t mode)
 {
 	return VBERROR_SUCCESS;
 }
+
+VbError_t VbExEcVbootDone(int in_recovery)
+{
+	return VBERROR_SUCCESS;
+}

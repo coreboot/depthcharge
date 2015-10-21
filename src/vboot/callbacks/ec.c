@@ -24,6 +24,7 @@
 #include <libpayload.h>
 #include <vboot_api.h>
 
+#include "base/timestamp.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/flash/flash.h"
 #include "image/fmap.h"
@@ -285,4 +286,48 @@ VbError_t VbExEcEnteringMode(int devidx, enum VbEcBootMode_t mode)
 	default :
 		return cros_ec_entering_mode(devidx, VBOOT_MODE_NORMAL);
 	}
+}
+
+/* Wait 3 seconds after software sync for EC to clear the limit power flag. */
+#define LIMIT_POWER_WAIT_TIMEOUT 3000
+/* Check the limit power flag every 50 ms while waiting. */
+#define LIMIT_POWER_POLL_SLEEP 50
+
+VbError_t VbExEcVbootDone(int in_recovery)
+{
+	int limit_power;
+	int limit_power_wait_time = 0;
+	int message_printed = 0;
+
+	/* Ensure we have enough power to continue booting */
+	while(1) {
+		if (cros_ec_read_limit_power_request(&limit_power)) {
+			printf("Failed to check EC limit power flag.\n");
+			return VBERROR_UNKNOWN;
+		}
+
+		/*
+		 * Do not wait for the limit power flag to be cleared in
+		 * recovery mode since we didn't just sysjump.
+		 */
+		if (!limit_power || in_recovery ||
+		    limit_power_wait_time > LIMIT_POWER_WAIT_TIMEOUT)
+			break;
+
+		if (!message_printed) {
+			printf("Waiting for EC to clear limit power flag.\n");
+			message_printed = 1;
+		}
+
+		mdelay(LIMIT_POWER_POLL_SLEEP);
+		limit_power_wait_time += LIMIT_POWER_POLL_SLEEP;
+	}
+
+	if (limit_power) {
+		printf("EC requests limited power usage. Request shutdown.\n");
+		return VBERROR_SHUTDOWN_REQUESTED;
+	}
+
+	timestamp_add_now(TS_VB_EC_VBOOT_DONE);
+	return VBERROR_SUCCESS;
 }
