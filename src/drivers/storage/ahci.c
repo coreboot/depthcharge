@@ -360,9 +360,42 @@ static lba_t ahci_write(BlockDevOps *me, lba_t start, lba_t count,
 	return count;
 }
 
+static inline int ata_implements_major(AtaIdentify *id, AtaMajorRevision rev)
+{
+	uint16_t major = le16toh(id->major_version);
+
+	return major != 0xffff && (major & rev);
+}
+
+static int ata_identify_integrity(AtaIdentify *id)
+{
+	uint8_t sum = 0;
+	int i;
+
+	/*
+	 * Target integrity check only for >= ATA8; it's supported on other
+	 * standards, but we can't be bothered to detect all of them right now
+	 */
+	if (ata_implements_major(id, ATA_MAJOR_ATA8))
+		return 0;
+
+	/*
+	 * Checksum is still optional; if we don't see the signature byte in
+	 * the lower bits, it's not implemented
+	 */
+	if ((le16toh(id->integrity) & 0xff) != 0xA5)
+		return 0;
+
+	for (i = 0; i < sizeof(*id); i++)
+		sum += ((uint8_t *)id)[i];
+
+	return sum != 0;
+}
+
 static int ahci_identify(AhciIoPort *port, AtaIdentify *id)
 {
 	uint8_t fis[20];
+	int ret;
 
 	memset(fis, 0, 20);
 	// Construct the FIS
@@ -378,7 +411,12 @@ static int ahci_identify(AhciIoPort *port, AtaIdentify *id)
 	}
 	printf("size of AtaIdentify is %d.\n", sizeof(AtaIdentify));
 
-	return 0;
+	ret = ata_identify_integrity(id);
+	if (ret)
+		printf("ATA identify integrity failed on port %d\n",
+				port->index);
+
+	return ret;
 }
 
 static int ahci_read_capacity(AhciIoPort *port, lba_t *cap,

@@ -113,6 +113,14 @@ typedef enum AtaStatus {
 
 #include <stdint.h>
 
+typedef enum AtaMajorRevision {
+	ATA_MAJOR_ATA4	= (1 << 4),
+	ATA_MAJOR_ATA5	= (1 << 5),
+	ATA_MAJOR_ATA6	= (1 << 6),
+	ATA_MAJOR_ATA7	= (1 << 7),
+	ATA_MAJOR_ATA8	= (1 << 8),
+} AtaMajorRevision;
+
 typedef struct AtaIdentify {
 	uint16_t config;
 	uint16_t word1;
