@@ -60,7 +60,7 @@ static int pch_gpio_set(unsigned num, int bit, int val)
 		conf0 |= (1 << bit);
 	else
 		conf0 &= ~(1 << bit);
-	outl(addr, conf0);
+	outl(conf0, addr);
 	return 0;
 }
 
