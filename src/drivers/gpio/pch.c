@@ -59,7 +59,7 @@ static int pch_gpio_set(unsigned bank, unsigned bit, uint8_t *bases, int val)
 	uint16_t addr = pch_gpiobase() + bases[bank];
 	uint32_t reg = inl(addr);
 	reg = (reg & ~(1 << bit)) | ((val & 1) << bit);
-	outl(addr, reg);
+	outl(reg, addr);
 	return 0;
 }
 
