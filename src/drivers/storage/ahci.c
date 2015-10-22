@@ -132,7 +132,7 @@ static void ahci_print_info(AhciCtrlr *ctrlr)
 	if (cap2 & (1 << 2)) printf("apst ");
 	if (cap2 & (1 << 1)) printf("nvmp ");
 	if (cap2 & (1 << 0)) printf("boh ");
-	puts("\n");
+	putchar('\n');
 }
 
 #define MAX_DATA_BYTE_COUNT  (4 * 1024 * 1024)
