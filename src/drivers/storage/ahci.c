@@ -360,6 +360,89 @@ static lba_t ahci_write(BlockDevOps *me, lba_t start, lba_t count,
 	return count;
 }
 
+static int ahci_bring_up_port(AhciIoPort *port, int index)
+{
+	AhciCtrlr *ctrlr = container_of(port - index, AhciCtrlr, ports[0]);
+	uint8_t *port_mmio = port->port_mmio;
+	uint8_t *mmio = ctrlr->mmio_base;
+	int i = index;
+
+	/* make sure port is not active */
+	uint32_t port_cmd = readl(port_mmio + PORT_CMD);
+	uint32_t port_cmd_bits =
+		PORT_CMD_LIST_ON | PORT_CMD_FIS_ON |
+		PORT_CMD_FIS_RX | PORT_CMD_START;
+	if (port_cmd & port_cmd_bits) {
+		printf("Port %d is active. Deactivating.\n", i);
+		port_cmd &= ~port_cmd_bits;
+		writel_with_flush(port_cmd, port_mmio + PORT_CMD);
+
+		/* spec says 500 msecs for each bit, so
+		 * this is slightly incorrect.
+		 */
+		mdelay(500);
+	}
+
+	/* Bring up SATA link. */
+	port_cmd = PORT_CMD_SPIN_UP | PORT_CMD_FIS_RX;
+	writel_with_flush(port_cmd, port_mmio + PORT_CMD);
+
+	int j;
+	uint32_t tmp;
+	for (j = 0; j < wait_ms_linkup; j++) {
+		tmp = readl(port_mmio + PORT_SCR_STAT);
+		if ((tmp & 0xf) == 0x3)
+			break;
+		mdelay(1);
+	}
+	if (j == wait_ms_linkup) {
+		printf("SATA link %d timeout.\n", i);
+		return 1;
+	} else {
+		printf("SATA link %d ok.\n", i);
+	}
+
+	/* Clear error status */
+	uint32_t port_scr_err = readl(port_mmio + PORT_SCR_ERR);
+	if (port_scr_err)
+		writel(port_scr_err, port_mmio + PORT_SCR_ERR);
+
+	/* Wait for SATA device to complete spin-up. */
+	printf("Waiting for device on port %d... ", i);
+
+	for (j = 0; j < wait_ms_spinup; j++) {
+		tmp = readl(port_mmio + PORT_TFDATA);
+		if (!(tmp & (ATA_STAT_BUSY | ATA_STAT_DRQ)))
+			break;
+		mdelay(1);
+	}
+	if (j == wait_ms_spinup)
+		printf("timeout.\n");
+	else
+		printf("ok. Target spinup took %d ms.\n", j);
+
+	/* Clear error status */
+	port_scr_err = readl(port_mmio + PORT_SCR_ERR);
+	if (port_scr_err) {
+		printf("PORT_SCR_ERR %#x\n", port_scr_err);
+		writel(port_scr_err, port_mmio + PORT_SCR_ERR);
+	}
+
+	/* ack any pending irq events for this port */
+	uint32_t port_irq_stat = readl(port_mmio + PORT_IRQ_STAT);
+	if (port_irq_stat) {
+		printf("PORT_IRQ_STAT 0x%x\n", port_irq_stat);
+		writel(port_irq_stat, port_mmio + PORT_IRQ_STAT);
+	}
+
+	writel(1 << i, mmio + HOST_IRQ_STAT);
+
+	/* set irq mask (enables interrupts) */
+	writel(DEF_PORT_IRQ, port_mmio + PORT_IRQ_MASK);
+
+	return 0;
+}
+
 static inline int ata_implements_major(AtaIdentify *id, AtaMajorRevision rev)
 {
 	uint16_t major = le16toh(id->major_version);
@@ -491,78 +574,8 @@ static int ahci_ctrlr_init(BlockDevCtrlrOps *me)
 		uint8_t *port_mmio = (uint8_t *)ctrlr->ports[i].port_mmio;
 		ahci_setup_port(&ctrlr->ports[i], mmio, i);
 
-		/* make sure port is not active */
-		uint32_t port_cmd = readl(port_mmio + PORT_CMD);
-		uint32_t port_cmd_bits =
-			PORT_CMD_LIST_ON | PORT_CMD_FIS_ON |
-			PORT_CMD_FIS_RX | PORT_CMD_START;
-		if (port_cmd & port_cmd_bits) {
-			printf("Port %d is active. Deactivating.\n", i);
-			port_cmd &= ~port_cmd_bits;
-			writel_with_flush(port_cmd, port_mmio + PORT_CMD);
-
-			/* spec says 500 msecs for each bit, so
-			 * this is slightly incorrect.
-			 */
-			mdelay(500);
-		}
-
-		/* Bring up SATA link. */
-		port_cmd = PORT_CMD_SPIN_UP | PORT_CMD_FIS_RX;
-		writel_with_flush(port_cmd, port_mmio + PORT_CMD);
-
-		int j;
-		uint32_t tmp;
-		for (j = 0; j < wait_ms_linkup; j++) {
-			tmp = readl(port_mmio + PORT_SCR_STAT);
-			if ((tmp & 0xf) == 0x3)
-				break;
-			mdelay(1);
-		}
-		if (j == wait_ms_linkup) {
-			printf("SATA link %d timeout.\n", i);
+		if (ahci_bring_up_port(&ctrlr->ports[i], i))
 			continue;
-		} else {
-			printf("SATA link %d ok.\n", i);
-		}
-
-		/* Clear error status */
-		uint32_t port_scr_err = readl(port_mmio + PORT_SCR_ERR);
-		if (port_scr_err)
-			writel(port_scr_err, port_mmio + PORT_SCR_ERR);
-
-		/* Wait for SATA device to complete spin-up. */
-		printf("Waiting for device on port %d... ", i);
-
-		for (j = 0; j < wait_ms_spinup; j++) {
-			tmp = readl(port_mmio + PORT_TFDATA);
-			if (!(tmp & (ATA_STAT_BUSY | ATA_STAT_DRQ)))
-				break;
-			mdelay(1);
-		}
-		if (j == wait_ms_spinup)
-			printf("timeout.\n");
-		else
-			printf("ok. Target spinup took %d ms.\n", j);
-
-		/* Clear error status */
-		port_scr_err = readl(port_mmio + PORT_SCR_ERR);
-		if (port_scr_err) {
-			printf("PORT_SCR_ERR %#x\n", port_scr_err);
-			writel(port_scr_err, port_mmio + PORT_SCR_ERR);
-		}
-
-		/* ack any pending irq events for this port */
-		uint32_t port_irq_stat = readl(port_mmio + PORT_IRQ_STAT);
-		if (port_irq_stat) {
-			printf("PORT_IRQ_STAT 0x%x\n", port_irq_stat);
-			writel(port_irq_stat, port_mmio + PORT_IRQ_STAT);
-		}
-
-		writel(1 << i, mmio + HOST_IRQ_STAT);
-
-		/* set irq mask (enables interrupts) */
-		writel(DEF_PORT_IRQ, port_mmio + PORT_IRQ_MASK);
 
 		/* register linkup ports */
 		uint32_t port_scr_stat = readl(port_mmio + PORT_SCR_STAT);
