@@ -36,6 +36,7 @@
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
+#include "drivers/gpio/gpio.h"
 #include "drivers/gpio/lynxpoint_lp.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -98,6 +99,81 @@ static BdwI2s *i2s_enable(int ssp)
 		&broadwell_alc5677_settings);
 }
 
+static void samus_reboot_ssd(void)
+{
+	static GpioOps *ssd_pwr_out;
+	static GpioOps *ssd_reset_l_out;
+
+	if (!ssd_pwr_out)
+		/* PP3300_SSD_EN */
+		ssd_pwr_out = &new_lp_pch_gpio_output(21)->ops;
+
+	if (!ssd_reset_l_out)
+		/* SSD_RESET_L */
+		ssd_reset_l_out = &new_lp_pch_gpio_output(47)->ops;
+
+	printf("Power cycling SSD...");
+	gpio_set(ssd_reset_l_out, 0);
+	mdelay(100);
+	gpio_set(ssd_pwr_out, 0);
+	/* Let power stabilize */
+	mdelay(1000);
+	gpio_set(ssd_pwr_out, 1);
+	mdelay(100);
+	gpio_set(ssd_reset_l_out, 1);
+	mdelay(100);
+	printf("done\n");
+}
+
+static uint8_t ssdfw_2_3[] = {
+#include "ssdfw-2.3.h"
+};
+#define SSD_MODEL_32G		"KINGSTON RBU-SUS151S332GD"
+#define SSD_MODEL_64G		"KINGSTON RBU-SUS151S364GD"
+#define SSDFW_ID_1_7		"S9FM01.7"
+#define SSDFW_ID_1_8		"S9FM01.8"
+#define SSDFW_ID_2_3		"S9FM02.3"
+
+static const AhciFwUpdate ssd_fw_updates[] = {
+	/* 32G Kingston SSD, firmware 1.7 -> 2.3 */
+	{
+		.fw		= ssdfw_2_3,
+		.fwlen		= sizeof(ssdfw_2_3),
+		.power_cycle	= &samus_reboot_ssd,
+		.model		= SSD_MODEL_32G,
+		.old_fw		= SSDFW_ID_1_7,
+		.new_fw		= SSDFW_ID_2_3,
+	},
+	/* 64G Kingston SSD, firmware 1.7 -> 2.3 */
+	{
+		.fw		= ssdfw_2_3,
+		.fwlen		= sizeof(ssdfw_2_3),
+		.power_cycle	= &samus_reboot_ssd,
+		.model		= SSD_MODEL_64G,
+		.old_fw		= SSDFW_ID_1_7,
+		.new_fw		= SSDFW_ID_2_3,
+	},
+	/* 32G Kingston SSD, firmware 1.8 -> 2.3 */
+	{
+		.fw		= ssdfw_2_3,
+		.fwlen		= sizeof(ssdfw_2_3),
+		.power_cycle	= &samus_reboot_ssd,
+		.model		= SSD_MODEL_32G,
+		.old_fw		= SSDFW_ID_1_8,
+		.new_fw		= SSDFW_ID_2_3,
+	},
+	/* 64G Kingston SSD, firmware 1.8 -> 2.3 */
+	{
+		.fw		= ssdfw_2_3,
+		.fwlen		= sizeof(ssdfw_2_3),
+		.power_cycle	= &samus_reboot_ssd,
+		.model		= SSD_MODEL_64G,
+		.old_fw		= SSDFW_ID_1_8,
+		.new_fw		= SSDFW_ID_2_3,
+	},
+	{} /* Sentinel; NULL fw marks end */
+};
+
 static int board_setup(void)
 {
 	sysinfo_install_flags();
@@ -111,6 +187,7 @@ static int board_setup(void)
 	flash_set_ops(&new_mem_mapped_flash(0xff800000, 0x800000)->ops);
 
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 31, 2));
+	ahci->fw_updates = ssd_fw_updates; // install SSD FW update list
 	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
 
 	power_set_ops(&pch_power_ops);
