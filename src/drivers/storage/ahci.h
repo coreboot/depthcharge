@@ -178,6 +178,25 @@ typedef struct AhciIoPort {
 	int index;
 } AhciIoPort;
 
+typedef struct AhciFwUpdate {
+	/* Firmware binary */
+	void *fw;
+	unsigned int fwlen;
+	/*
+	 * Boards can provide implementation for power cycling the drive after
+	 * the update
+	 */
+	void (*power_cycle)(void);
+	/* Drive model string, to match against */
+	const char *model;
+	/* Old firmware ID string, to match against */
+	const char *old_fw;
+	/* New firmware ID string, to make sure the update loads properly */
+	const char *new_fw;
+} AhciFwUpdate;
+
+#define DRIVE_FW_UPGRADE_ATTEMPTS		3
+
 typedef struct AhciCtrlr {
 	BlockDevCtrlr ctrlr;
 
@@ -188,6 +207,10 @@ typedef struct AhciCtrlr {
 	uint32_t cap;		// cache of HOST_CAP register
 	uint32_t port_map;	// cache of HOST_PORTS_IMPL reg
 	uint32_t link_port_map;	// linkup port map
+
+	const AhciFwUpdate *fw_updates;	// set by board file, to be run on each
+					// port; terminate with empty entry
+					// ('fw' field is NULL)
 } AhciCtrlr;
 
 AhciCtrlr *new_ahci_ctrlr(pcidev_t dev);

@@ -522,6 +522,190 @@ static int ahci_read_capacity(AhciIoPort *port, lba_t *cap,
 	return 0;
 }
 
+/*
+ * Pull out a string field consisting of 16-bit words (little-endian) into a
+ * char array, trimming any trailing whitespace
+ */
+static void ata_identify_get_string(const uint16_t *field, unsigned int nwords,
+				    char *out, unsigned int len)
+{
+	int i, pos;
+
+	for (i = 0, pos = 0; i < nwords; i++) {
+		uint16_t word = le16toh(field[i]);
+
+		if (pos < len)
+			out[pos++] = (word >> 8) & 0xff;
+		if (pos < len)
+			out[pos++] = word & 0xff;
+	}
+
+	/* NULL terminate */
+	out[len - 1] = '\0';
+
+	/* Remove trailing whitespace */
+	for (i = (int)len - 2; i >= 0; i--)
+		if (isspace(out[i]))
+			out[i] = '\0';
+		else
+			return;
+}
+
+static void ata_get_fwrev(AtaIdentify *id, char *rev, unsigned int len)
+{
+	ata_identify_get_string(&id->firmware[0], ARRAY_SIZE(id->firmware),
+				rev, len);
+}
+
+static void ata_get_model(AtaIdentify *id, char *model, unsigned int len)
+{
+	ata_identify_get_string(&id->model[0], ARRAY_SIZE(id->model),
+				model, len);
+}
+
+static int ahci_read_fwrev(AhciIoPort *port, char *rev, size_t len)
+{
+	AtaIdentify id;
+
+	if (ahci_identify(port, &id))
+		return -1;
+
+	ata_get_fwrev(&id, rev, len);
+
+	return 0;
+}
+
+static int ahci_download_microcode(AhciIoPort *port, unsigned int offset,
+				   void *buf, unsigned int len)
+{
+	uint8_t fis[20], *rx_fis = port->rx_fis + RX_FIS_D2H_REG;
+	unsigned int blockoffs = offset / 512;
+	unsigned int blockcount = len / 512;
+
+	memset(fis, 0, sizeof(fis));
+	fis[0] = 0x27;		// Host to device FIS
+	fis[1] = 1 << 7;	// Command FIS.
+	fis[2] = ATA_CMD_DOWNLOAD_MICROCODE;
+	fis[3] = 0x03;		// Feature 0x03: download with offsets
+
+	fis[4] = (blockcount >> 8) & 0xff;
+	fis[5] = blockoffs & 0xff;
+	fis[6] = (blockoffs >> 8) & 0xff;
+	fis[7] = 1 << 6; // device reg: set LBA28 mode
+
+	fis[12] = blockcount & 0xff;
+
+	if (ahci_device_data_io(port, fis, sizeof(fis), buf, len, 1,
+				wait_ms_dataio)) {
+		printf("AHCI: Download microcode command failed.\n");
+		return -1;
+	}
+
+	// mode 3 return status
+	return rx_fis[12];
+}
+
+/*
+ * Re-initialize a port that is already setup; e.g., after power cycling drive
+ */
+static void ahci_reset_port(AhciIoPort *port)
+{
+	uint8_t *port_mmio = port->port_mmio;
+
+	printf("Reinitializing AHCI port %d\n", port->index);
+
+	ahci_bring_up_port(port, port->index);
+
+	writel_with_flush(PORT_CMD_ICC_ACTIVE | PORT_CMD_FIS_RX |
+			  PORT_CMD_POWER_ON | PORT_CMD_SPIN_UP |
+			  PORT_CMD_START, port_mmio + PORT_CMD);
+}
+
+static int ahci_update_firmware(AhciIoPort *port, const AhciFwUpdate *updates)
+{
+	const AhciFwUpdate *update = NULL;
+	AtaIdentify id;
+	char fwrev[sizeof(id.firmware) + 1], model[sizeof(id.model) + 1];
+	unsigned int fwlen, max_xfer_size, offs;
+	void *fw;
+	int ret;
+
+	if (ahci_identify(port, &id)) {
+		printf("AHCI: failed to identify\n");
+		return -1;
+	}
+
+	ata_get_model(&id, model, sizeof(model));
+	ata_get_fwrev(&id, fwrev, sizeof(fwrev));
+
+	/* NULL fw marks end of array */
+	for (update = updates; update->fw; update++)
+		if (!strcmp(model, update->model) &&
+					!strcmp(fwrev, update->old_fw))
+			break;
+
+	if (!update->fw) {
+		printf("AHCI: no matching firmware, skipping upgrade\n");
+		printf("Model - %s, FW revision - %s\n", model, fwrev);
+		return 0;
+	}
+
+	printf("AHCI: %s: updating firmware from %s to %s\n",
+			update->model, fwrev, update->new_fw);
+	fw = update->fw;
+	fwlen = update->fwlen;
+
+	max_xfer_size = le16toh(id.max_512s_per_dnld_micro) * 512;
+	if (!max_xfer_size) {
+		printf("Error: bad xfer size\n");
+		return -1;
+	}
+	printf("Max transfer chunk size: %#x\n", max_xfer_size);
+
+	for (offs = 0; offs < fwlen; offs += max_xfer_size) {
+		unsigned int xfer_size = MIN(max_xfer_size, fwlen - offs);
+		ret = ahci_download_microcode(port, offs, fw + offs, xfer_size);
+		if (ret < 0) {
+			printf("Error: download returned: %d\n", ret);
+			return ret;
+		}
+		printf("Downloaded %#x bytes, return code: %d\n",
+				xfer_size, ret);
+	}
+
+	// power cycle drive
+	if (update->power_cycle)
+		update->power_cycle();
+
+	ahci_reset_port(port);
+
+	if (ahci_read_fwrev(port, fwrev, sizeof(fwrev))) {
+		printf("AHCI: failed to read firmware revision\n");
+		return -1;
+	}
+
+	if (strcmp(fwrev, update->new_fw)) {
+		printf("New firmware version doesn't match: %s, expected %s\n",
+			fwrev, update->new_fw);
+		return -1;
+	}
+	printf("AHCI: new firmware revision: %s\n", fwrev);
+
+	return 0;
+}
+
+static void ahci_try_firmware_update(AhciIoPort *port,
+				     const AhciFwUpdate *updates)
+{
+	int i;
+
+	for (i = 0; i < DRIVE_FW_UPGRADE_ATTEMPTS; i++)
+		if (!ahci_update_firmware(port, updates))
+			return;
+
+	printf("AHCI: failed to upgrade disk FW after %d attempts\n", i);
+}
+
 static int ahci_ctrlr_init(BlockDevCtrlrOps *me)
 {
 	AhciCtrlr *ctrlr = container_of(me, AhciCtrlr, ctrlr.ops);
@@ -625,6 +809,10 @@ static int ahci_ctrlr_init(BlockDevCtrlrOps *me)
 			sata_drive->port = port;
 			list_insert_after(&sata_drive->dev.list_node,
 					  &fixed_block_devices);
+
+			if (ctrlr->fw_updates)
+				ahci_try_firmware_update(port,
+							 ctrlr->fw_updates);
 		}
 	}
 
