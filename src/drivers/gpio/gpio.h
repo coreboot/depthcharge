@@ -28,6 +28,16 @@ typedef struct GpioOps {
 	int (*set)(struct GpioOps *me, unsigned value);
 } GpioOps;
 
+static inline int gpio_get(GpioOps *gpio)
+{
+	return gpio->get(gpio);
+}
+
+static inline void gpio_set(GpioOps *gpio, int val)
+{
+	gpio->set(gpio, val);
+}
+
 GpioOps *new_gpio_high(void);
 GpioOps *new_gpio_low(void);
 GpioOps *new_gpio_not(GpioOps *a);
