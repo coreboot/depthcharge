@@ -926,12 +926,37 @@ static int fb_user_confirmation()
 	if (fb_check_gbb_override())
 		return 1;
 
-	if (fb_board_handler.user_confirmation)
-		return fb_board_handler.user_confirmation();
-	else {
-		FB_LOG("ERROR: user_confirmation not defined by board.\n");
+	if ((fb_board_handler.read_input == NULL) ||
+	    (fb_board_handler.get_button_str == NULL)) {
+		FB_LOG("ERROR: Read input or get str not defined by board.\n");
 		return 0;
 	}
+
+	const char * const str = "Press %s to confirm, %s to cancel.";
+	const char *confirm_str, *cancel_str;
+	/* Wait for 1 minute to get user confirmation. */
+	uint64_t read_timeout_us = 60 * 1000 * 1000;
+
+	confirm_str = fb_board_handler.get_button_str(FB_BUTTON_CONFIRM);
+	cancel_str =fb_board_handler.get_button_str(FB_BUTTON_CANCEL);
+
+	/*
+	 * Total length = (Length of str - length of 2 %s + 1 byte for \0) +
+	 * 		   (Length of confirm str) + (Length of cancel str)
+	 */
+	size_t print_str_len = (strlen(str) - 4 + 1) + strlen(confirm_str) +
+		strlen(cancel_str);
+	char *print_str = malloc(print_str_len);
+
+	snprintf(print_str, print_str_len, str, confirm_str, cancel_str);
+
+	fb_print_on_screen(PRINT_WARN, print_str);
+
+	free(print_str);
+
+	return fb_board_handler.read_input(FB_BUTTON_CONFIRM | FB_BUTTON_CANCEL,
+					   read_timeout_us)
+		== FB_BUTTON_CONFIRM ? 1 : 0;
 }
 
 static fb_ret_type fb_lock(struct fb_cmd *cmd)

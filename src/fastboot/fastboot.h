@@ -77,6 +77,15 @@ typedef enum fb_rsp {
 	FB_OKAY,
 } fb_rsp_type;
 
+typedef enum {
+	FB_BUTTON_NONE = 0,
+	FB_BUTTON_UP   = (1 << 0),
+	FB_BUTTON_DOWN = (1 << 1),
+	FB_BUTTON_SELECT = (1 << 2),
+	FB_BUTTON_CONFIRM = (1 << 3),
+	FB_BUTTON_CANCEL = (1 << 4),
+} fb_button_type;
+
 /*
  * fb_buffer defines either input / output buffer for a fastboot cmd.
  * For input buffer, data is the command received from host, head points to
@@ -208,15 +217,6 @@ typedef struct {
 	int (*enter_device_mode)(void);
 
 	/*
-	 * Get user confirmation for lock/unlock operation.
-	 *
-	 * Return value:
-	 * 1 = user confirmed
-	 * 0 = user cancelled / no user confirmation
-	 */
-	int (*user_confirmation)(void);
-
-	/*
 	 * Read keyboard mask to check if fastboot event is requested.
 	 *
 	 * Return value:
@@ -281,6 +281,32 @@ typedef struct {
 	 * -1 = error
 	 */
 	int (*battery_cutoff)(void);
+
+	/*
+	 * Read user input in fb_button_type format.
+	 *
+	 * Params:
+	 * button_flags: Indicates buttons that are expected.
+	 * timeout_us: Time to wait for user input in microseconds.
+	 *
+	 * Return:
+	 * Button out of the button flags that was pressed.
+	 * FB_BUTTON_NONE if no button pressed until timeout or input error.
+	 */
+	fb_button_type (*read_input)(uint32_t button_flags,
+				     uint64_t timeout_us);
+
+	/*
+	 * String to be displayed corresponding to a button.
+	 *
+	 * Params:
+	 * button: Button of type fb_button_type for which string is required.
+	 *
+	 * Return:
+	 * String corresponding to the button. NULL if failure.
+	 */
+	const char * (*get_button_str)(fb_button_type button);
+
 } fb_callback_t;
 
 extern fb_callback_t fb_board_handler;
