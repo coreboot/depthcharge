@@ -59,16 +59,16 @@ files:
 
 styles:
   todev:          '--align=left'
-  devmode:        '--color=606060'
-  tonorm:         '--align=left --color=606060'
-  reboot_erase:   '--color=606060'
-  language:       '--color=888888'
+  devmode:        '--color=303030'
+  tonorm:         '--align=left --color=303030'
+  reboot_erase:   '--color=303030'
+  language:       '--color=444444'
   verif_off:      '--markup'
   verif_on:       '--markup'
-  for_help:       '--color=888888'
-  for_help_left:  '--color=888888'
-  for_help_right: '--color=888888'
-  model:          '--color=888888'
+  for_help:       '--color=444444'
+  for_help_left:  '--color=444444'
+  for_help_right: '--color=444444'
+  model:          '--color=444444'
 
 fonts:
   # All fonts should be provided and selected by 'ui-sans' family defined in
