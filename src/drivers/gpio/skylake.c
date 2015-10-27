@@ -201,7 +201,7 @@ static void gpio_configure_pad(const struct pad_config *cfg)
 	gpio_handle_pad_mode(cfg);
 }
 
-static int gpio_get(int gpio_num)
+static int __skylake_gpio_get(int gpio_num)
 {
 	uint32_t *dw_regs;
 	uint32_t reg;
@@ -216,7 +216,7 @@ static int gpio_get(int gpio_num)
 	return (reg >> GPIORXSTATE_SHIFT) & GPIORXSTATE_MASK;
 }
 
-static void gpio_set(int gpio_num, int value)
+static void __skylake_gpio_set(int gpio_num, int value)
 {
 	uint32_t *dw_regs;
 	uint32_t reg;
@@ -247,13 +247,13 @@ static int skylake_gpio_configure(struct GpioCfg *gpio,
 static int skylake_gpio_get(struct GpioOps *me)
 {
 	GpioCfg *gpio = container_of(me, GpioCfg, ops);
-	return gpio_get(gpio->gpio_num);
+	return __skylake_gpio_get(gpio->gpio_num);
 }
 
 static int skylake_gpio_set(struct GpioOps *me, unsigned value)
 {
 	GpioCfg *gpio = container_of(me, GpioCfg, ops);
-	gpio_set(gpio->gpio_num, value);
+	__skylake_gpio_set(gpio->gpio_num, value);
 	return 0;
 }
 

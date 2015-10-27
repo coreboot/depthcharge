@@ -42,14 +42,14 @@ static void gpio_enable(unsigned int pin)
 	gpio_write(addr, pin, 1);
 }
 
-static int gpio_get(unsigned int pin)
+static int __imgtec_gpio_get(unsigned int pin)
 {
 	u32 addr = imgtec_gpiobase() + GPIO_CTRL_INPUT(pin);
 	u32 rdata = read32(addr);
 	return !!(rdata & (1 << (pin % 16)));
 }
 
-static void gpio_set(unsigned int pin, unsigned int value)
+static void __imgtec_gpio_set(unsigned int pin, unsigned int value)
 {
 	u32 addr = imgtec_gpiobase() + GPIO_CTRL_OUTPUT(pin);
 	gpio_write(addr, pin, value);
@@ -78,7 +78,7 @@ static int imgtec_gpio_get_value(GpioOps *me)
 		gpio_direction_input(gpio->num);
 		gpio->dir_set = 1;
 	}
-	return gpio_get(gpio->num);
+	return __imgtec_gpio_get(gpio->num);
 }
 
 static int imgtec_gpio_set_value(GpioOps *me, unsigned int value)
@@ -89,7 +89,7 @@ static int imgtec_gpio_set_value(GpioOps *me, unsigned int value)
 		gpio_direction_output(gpio->num);
 		gpio->dir_set = 1;
 	}
-	gpio_set(gpio->num, value);
+	__imgtec_gpio_set(gpio->num, value);
 	return 0;
 }
 
