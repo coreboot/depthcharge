@@ -131,9 +131,9 @@ int mainboard_read_input(void)
 {
 	int input;
 
-	input = (pwr_btn_gpio->get(pwr_btn_gpio) << PWR_BTN_SHIFT) |
-		(vol_up_gpio->get(vol_up_gpio) << VOL_UP_SHIFT) |
-		(vol_down_gpio->get(vol_down_gpio) << VOL_DOWN_SHIFT);
+	input = (gpio_get(pwr_btn_gpio) << PWR_BTN_SHIFT) |
+		(gpio_get(vol_up_gpio) << VOL_UP_SHIFT) |
+		(gpio_get(vol_down_gpio) << VOL_DOWN_SHIFT);
 
 	if (input == NO_BTN_PRESSED)
 		input = -1;

@@ -56,10 +56,10 @@ static uint8_t board_id(void)
 		TegraGpio *x1 = new_tegra_gpio_input(GPIO(X, 1));
 		TegraGpio *x4 = new_tegra_gpio_input(GPIO(X, 4));
 
-		id = q3->ops.get(&q3->ops) << 0 |
-		     t1->ops.get(&t1->ops) << 1 |
-		     x1->ops.get(&x1->ops) << 2 |
-		     x4->ops.get(&x4->ops) << 3;
+		id = gpio_get(&q3->ops) << 0 |
+		     gpio_get(&t1->ops) << 1 |
+		     gpio_get(&x1->ops) << 2 |
+		     gpio_get(&x4->ops) << 3;
 	}
 	return id;
 }
@@ -99,7 +99,7 @@ static int virtual_mmc_power_set(GpioOps *me, unsigned value)
 {
 	VirtualMmcPowerGpio *power = container_of(me, VirtualMmcPowerGpio, ops);
 	assert(power->gpio && power->as3722);
-	if (power->gpio->set(power->gpio, value) ||
+	if (gpio_set(power->gpio, value) ||
 	    power->as3722->set_reg(power->as3722, power->reg, value ?
 				   power->enable_val : power->disable_val)) {
 		printf("Failed to enable SD/MMC power.\n");

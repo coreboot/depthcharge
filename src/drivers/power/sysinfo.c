@@ -26,7 +26,7 @@
 static int gpio_reboot(PowerOps *me)
 {
 	SysinfoResetPowerOps *p = container_of(me, SysinfoResetPowerOps, ops);
-	p->reset_gpio->set(p->reset_gpio, 1);
+	gpio_set(p->reset_gpio, 1);
 	while (1);	// not halt(), it can trigger a GDB entry
 	return -1;
 }

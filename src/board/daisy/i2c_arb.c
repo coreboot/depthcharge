@@ -18,19 +18,19 @@
 
 static void i2c_release_bus(GpioOps *request)
 {
-	request->set(request, 1);
+	gpio_set(request, 1);
 }
 
 static int i2c_claim_bus(GpioOps *request, GpioOps *grant)
 {
 	// Request the bus.
-	if (request->set(request, 0) < 0)
+	if (gpio_set(request, 0) < 0)
 		return 1;
 
 	// Wait for the EC to give it to us.
 	int timeout = 2000 * 100; // 2s.
 	while (timeout--) {
-		int value = grant->get(grant);
+		int value = gpio_get(grant);
 		if (value  < 0) {
 			i2c_release_bus(request);
 			return 1;

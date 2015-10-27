@@ -365,7 +365,7 @@ static int dwmci_update(BlockDevCtrlrOps *me)
 		int present = 0;
 
 		if (host->cd_gpio)	//use gpio detect
-			present = host->cd_gpio->get(host->cd_gpio);
+			present = gpio_get(host->cd_gpio);
 		else
 			present = !dwmci_readl(host, DWMCI_CDETECT);
 		if (present && !host->mmc.media) {

@@ -78,7 +78,7 @@ static int virtual_mmc_power_set(GpioOps *me, unsigned value)
 {
 	VirtualMmcPowerGpio *power = container_of(me, VirtualMmcPowerGpio, ops);
 	assert(power->gpio && power->as3722);
-	if (power->gpio->set(power->gpio, value) ||
+	if (gpio_set(power->gpio, value) ||
 	    power->as3722->set_reg(power->as3722, power->reg, value ?
 				   power->enable_val : power->disable_val)) {
 		printf("Failed to enable SD/MMC power.\n");

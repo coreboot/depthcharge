@@ -39,25 +39,25 @@ typedef struct {
 static int gpio_not_get(GpioOps *me)
 {
 	GpioUnaryOp *op = container_of(me, GpioUnaryOp, ops);
-	return !op->a->get(op->a);
+	return !gpio_get(op->a);
 }
 
 static int gpio_not_set(GpioOps *me, unsigned value)
 {
 	GpioUnaryOp *op = container_of(me, GpioUnaryOp, ops);
-	return op->a->set(op->a, !value);
+	return gpio_set(op->a, !value);
 }
 
 static int gpio_and_get(GpioOps *me)
 {
 	GpioBinaryOp *op = container_of(me, GpioBinaryOp, ops);
-	return op->a->get(op->a) && op->b->get(op->b);
+	return gpio_get(op->a) && gpio_get(op->b);
 }
 
 static int gpio_or_get(GpioOps *me)
 {
 	GpioBinaryOp *op = container_of(me, GpioBinaryOp, ops);
-	return op->a->get(op->a) || op->b->get(op->b);
+	return gpio_get(op->a) || gpio_get(op->b);
 }
 
 GpioOps *new_gpio_not(GpioOps *a)

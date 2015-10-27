@@ -40,7 +40,7 @@ static uint32_t *vop1_sys_ctrl = (uint32_t *)0xff940008;
 static int rockchip_backlight_update(DisplayOps *me, uint8_t enable)
 {
 	RkDisplay *display = container_of(me, RkDisplay, ops);
-	display->backlight_gpio->set(display->backlight_gpio, enable);
+	gpio_set(display->backlight_gpio, enable);
 	return 0;
 }
 

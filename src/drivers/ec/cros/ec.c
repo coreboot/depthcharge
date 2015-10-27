@@ -598,7 +598,7 @@ void cros_ec_set_interrupt_gpio(GpioOps *gpio)
 int cros_ec_interrupt_pending(void)
 {
 	if (cros_ec_interrupt_gpio)
-		return cros_ec_interrupt_gpio->get(cros_ec_interrupt_gpio);
+		return gpio_get(cros_ec_interrupt_gpio);
 	return 1;	// Always assume we have input if no GPIO set
 }
 

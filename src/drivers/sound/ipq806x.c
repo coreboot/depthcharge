@@ -194,7 +194,7 @@ static int ipq806x_sound_init(Ipq806xSound *sound)
 
 	/* Initialize the GPIOs required for the board */
 	board_dac_gpio_config();
-	gpio->set(gpio, 1);
+	gpio_set(gpio, 1);
 	board_i2s_gpio_config();
 
 	return 0;
@@ -239,7 +239,7 @@ static int ipq806x_sound_start(SoundOps *me, uint32_t frequency)
 
 	mdelay(2);
 
-	gpio->set(gpio, 1);
+	gpio_set(gpio, 1);
 
 	return 0;
 }
@@ -255,7 +255,7 @@ static int ipq806x_sound_stop(SoundOps *me)
 	if (!sound->initialized)
 		return 0;
 
-	gpio->set(gpio, 0);
+	gpio_set(gpio, 0);
 
 	mdelay(1);
 

@@ -227,7 +227,7 @@ static void cs_change(SpiOps *spi_ops, int enable) {
 				__func__);
 		}
 	} else {
-		gpio_ops->set(gpio_ops, !((unsigned int)enable));
+		gpio_set(gpio_ops, !((unsigned int)enable));
 	}
 }
 

@@ -487,7 +487,7 @@ static int tegra_mmc_init(BlockDevCtrlrOps *me)
 	unsigned int mask;
 	mmc_debug("%s called\n", __func__);
 	if (host->power_gpio) {
-		host->power_gpio->set(host->power_gpio, 1);
+		gpio_set(host->power_gpio, 1);
 		udelay(2000);
 	}
 
@@ -538,7 +538,7 @@ static int tegra_mmc_update(BlockDevCtrlrOps *me)
 	host->initialized = 1;
 
 	if (host->removable) {
-		int present = host->cd_gpio->get(host->cd_gpio);
+		int present = gpio_get(host->cd_gpio);
 		if (present && !host->mmc.media) {
 			// A card is present and not set up yet. Get it ready.
 			if (mmc_setup_media(&host->mmc))

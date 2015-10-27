@@ -37,7 +37,7 @@ int flag_fetch(FlagIndex index)
 	GpioOps *gpio = flag_gpios[index];
 	die_if(gpio == NULL, "Don't have a gpio set up for flag %d.\n", index);
 
-	return gpio->get(gpio);
+	return gpio_get(gpio);
 }
 
 void flag_replace(FlagIndex index, GpioOps *gpio)

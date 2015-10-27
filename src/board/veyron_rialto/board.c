@@ -68,55 +68,55 @@ static int rialto_leds_display_screen(DisplayOps *me,
 
 	switch(screen_type) {
 	case VB_SCREEN_BLANK:
-		leds->ready->set(leds->ready,     1);
-		leds->ready2->set(leds->ready2,   1);
-		leds->syncing->set(leds->syncing, 1);
-		leds->error->set(leds->error,     1);
+		gpio_set(leds->ready,   1);
+		gpio_set(leds->ready2,  1);
+		gpio_set(leds->syncing, 1);
+		gpio_set(leds->error,   1);
 		break;
 
 	case VB_SCREEN_DEVELOPER_WARNING:
-		leds->ready->set(leds->ready,     0);
-		leds->ready2->set(leds->ready2,   0);
-		leds->syncing->set(leds->syncing, 1);
-		leds->error->set(leds->error,     1);
+		gpio_set(leds->ready,   0);
+		gpio_set(leds->ready2,  0);
+		gpio_set(leds->syncing, 1);
+		gpio_set(leds->error,   1);
 		break;
 
 	case VB_SCREEN_RECOVERY_REMOVE:
-		leds->ready->set(leds->ready,     0);
-		leds->ready2->set(leds->ready2,   1);
-		leds->syncing->set(leds->syncing, 0);
-		leds->error->set(leds->error,     1);
+		gpio_set(leds->ready,   0);
+		gpio_set(leds->ready2,  1);
+		gpio_set(leds->syncing, 0);
+		gpio_set(leds->error,   1);
 		break;
 
 	case VB_SCREEN_RECOVERY_INSERT:
-		leds->ready->set(leds->ready,     0);
-		leds->ready2->set(leds->ready2,   0);
-		leds->syncing->set(leds->syncing, 0);
-		leds->error->set(leds->error,     1);
+		gpio_set(leds->ready,   0);
+		gpio_set(leds->ready2,  0);
+		gpio_set(leds->syncing, 0);
+		gpio_set(leds->error,   1);
 		break;
 
 	case VB_SCREEN_DEVELOPER_TO_NORM:
 		/* fall through */
 	case VB_SCREEN_RECOVERY_TO_DEV:
-		leds->ready->set(leds->ready,     1);
-		leds->ready2->set(leds->ready2,   0);
-		leds->syncing->set(leds->syncing, 1);
-		leds->error->set(leds->error,     1);
+		gpio_set(leds->ready,   1);
+		gpio_set(leds->ready2,  0);
+		gpio_set(leds->syncing, 1);
+		gpio_set(leds->error,   1);
 		break;
 
 	case VB_SCREEN_TO_NORM_CONFIRMED:
 		/* same as blank */
-		leds->ready->set(leds->ready,     1);
-		leds->ready2->set(leds->ready2,   1);
-		leds->syncing->set(leds->syncing, 1);
-		leds->error->set(leds->error,     1);
+		gpio_set(leds->ready,   1);
+		gpio_set(leds->ready2,  1);
+		gpio_set(leds->syncing, 1);
+		gpio_set(leds->error,   1);
 		break;
 
 	case VB_SCREEN_RECOVERY_NO_GOOD:
-		leds->ready->set(leds->ready,     1);
-		leds->ready2->set(leds->ready2,   1);
-		leds->syncing->set(leds->syncing, 0);
-		leds->error->set(leds->error,     1);
+		gpio_set(leds->ready,   1);
+		gpio_set(leds->ready2,  1);
+		gpio_set(leds->syncing, 0);
+		gpio_set(leds->error,   1);
 		break;
 
 	case VB_SCREEN_DEVELOPER_EGG:

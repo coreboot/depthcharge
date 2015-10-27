@@ -44,21 +44,20 @@ static void gpio_pdm_send_bit(GpioPdm *pdm, int bit)
 	switch (pdm->channels) {
 	case 1:
 		/* Mono: send data on both clock edges */
-		pdm->data_gpio->set(pdm->data_gpio, bit);
+		gpio_set(pdm->data_gpio, bit);
 
 		/* Toggle Clock */
-		pdm->clock_gpio->set(pdm->clock_gpio,
-			     pdm->clock_gpio->get(pdm->clock_gpio) ^ 1);
+		gpio_set(pdm->clock_gpio, gpio_get(pdm->clock_gpio) ^ 1);
 		break;
 
 	case 2:
 		/* Stereo: left channel on rising edge */
-		pdm->data_gpio->set(pdm->data_gpio, bit);
-		pdm->clock_gpio->set(pdm->clock_gpio, 1);
+		gpio_set(pdm->data_gpio, bit);
+		gpio_set(pdm->clock_gpio, 1);
 
 		/* Stereo: right channel on falling edge */
-		pdm->data_gpio->set(pdm->data_gpio, bit);
-		pdm->clock_gpio->set(pdm->clock_gpio, 0);
+		gpio_set(pdm->data_gpio, bit);
+		gpio_set(pdm->clock_gpio, 0);
 		break;
 
 	default:
