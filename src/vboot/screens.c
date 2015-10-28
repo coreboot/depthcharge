@@ -150,12 +150,13 @@ static int draw_icon(const char *image_name)
 static int draw_text(const char *text, int32_t x, int32_t y,
 		     int32_t height, char pivot)
 {
-	int32_t w;
+	int32_t w, h;
 	char str[256];
 	while (*text) {
 		sprintf(str, "font/idx%03d_%02x.bmp", *text, *text);
 		w = 0;
-		RETURN_ON_ERROR(get_image_size(str, &w, &height));
+		h = height;
+		RETURN_ON_ERROR(get_image_size(str, &w, &h));
 		RETURN_ON_ERROR(draw_image(str,
 				x, y, VB_SIZE_AUTO, height, pivot));
 		x += w;
@@ -166,12 +167,13 @@ static int draw_text(const char *text, int32_t x, int32_t y,
 
 static int get_text_width(const char *text, int32_t *width, int32_t *height)
 {
-	int32_t w;
+	int32_t w, h;
 	char str[256];
 	while (*text) {
 		sprintf(str, "font/idx%03d_%02x.bmp", *text, *text);
 		w = 0;
-		RETURN_ON_ERROR(get_image_size(str, &w, height));
+		h = *height;
+		RETURN_ON_ERROR(get_image_size(str, &w, &h));
 		*width += w;
 		text++;
 	}
