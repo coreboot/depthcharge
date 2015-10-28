@@ -1026,15 +1026,15 @@ static fb_ret_type fb_lock(struct fb_cmd *cmd)
 {
 	cmd->type = FB_FAIL;
 
-	if (!fb_user_confirmation()) {
-		FB_LOG("User cancelled\n");
-		fb_add_string(&cmd->output, "User cancelled request", NULL);
-		return FB_SUCCESS;
-	}
-
 	FB_LOG("Locking device\n");
 	if (!fb_device_unlocked()) {
 		fb_add_string(&cmd->output, "Device already locked", NULL);
+		return FB_SUCCESS;
+	}
+
+	if (!fb_user_confirmation()) {
+		FB_LOG("User cancelled\n");
+		fb_add_string(&cmd->output, "User cancelled request", NULL);
 		return FB_SUCCESS;
 	}
 
@@ -1051,15 +1051,15 @@ static fb_ret_type fb_unlock(struct fb_cmd *cmd)
 {
 	cmd->type = FB_FAIL;
 
-	if (!fb_user_confirmation()) {
-		FB_LOG("User cancelled\n");
-		fb_add_string(&cmd->output, "User cancelled request", NULL);
-		return FB_SUCCESS;
-	}
-
 	FB_LOG("Unlocking device\n");
 	if (fb_device_unlocked()) {
 		fb_add_string(&cmd->output, "Device already unlocked", NULL);
+		return FB_SUCCESS;
+	}
+
+	if (!fb_user_confirmation()) {
+		FB_LOG("User cancelled\n");
+		fb_add_string(&cmd->output, "User cancelled request", NULL);
 		return FB_SUCCESS;
 	}
 
