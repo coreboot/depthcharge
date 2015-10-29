@@ -24,6 +24,7 @@
 #include <vboot_api.h>
 #include <vboot_nvstorage.h>
 
+#include "base/cleanup_funcs.h"
 #include "config.h"
 #include "fastboot/backend.h"
 #include "fastboot/capabilities.h"
@@ -879,11 +880,28 @@ static fb_ret_type fb_flash(struct fb_cmd *cmd)
 	return FB_SUCCESS;
 }
 
+static int fb_boot_cleanup_func(struct CleanupFunc *cleanup, CleanupType type)
+{
+	if (type != CleanupOnHandoff)
+		return -1;
+
+	struct fb_cmd *cmd = cleanup->data;
+
+	cmd->type = FB_OKAY;
+	fb_execute_send(cmd);
+
+	return 0;
+}
+
 /*
- * fb_boot allows user to send a signed recovery image from host directly to
- * device memory and boot from it. It calls vboot function
- * VbVerifyMemoryBootImage to check if the given image is okay to boot from
- * memory in current mode.
+ * Behavior of "fastboot boot":
+ * 1. Locked mode or unlocked mode with fastboot full cap not set:
+ *    - Device will boot only an officially signed recovery image.
+ * 2. Unlocked mode with fastboot full cap set:
+ *    - Device will boot any of:
+ *      a. Officially signed recovery image
+ *      b. Dev-signed boot image (Hash only check)
+ *      c. Any valid boot image (No signature / hash check)
  */
 static fb_ret_type fb_boot(struct fb_cmd *cmd)
 {
@@ -916,19 +934,53 @@ static fb_ret_type fb_boot(struct fb_cmd *cmd)
 
 	if (VbVerifyMemoryBootImage(&cparams, &kparams, kernel, kernel_size) !=
 	    VBERROR_SUCCESS) {
-		fb_add_string(&cmd->output, "image verification failed", NULL);
-		return FB_SUCCESS;
+		/*
+		 * Fail if:
+		 * 1. Device is locked, or
+		 * 2. Device is unlocked, but full fastboot cap is not set in
+		 * GBB and VbNvStorage.
+		 */
+		if ((fb_device_unlocked() == 0) ||
+		    ((vbnv_read(VBNV_DEV_BOOT_FASTBOOT_FULL_CAP) == 0) &&
+		     (fb_check_gbb_override() == 0))) {
+			fb_add_string(&cmd->output, "image verification failed",
+				      NULL);
+			return FB_SUCCESS;
+		} else {
+			/*
+			 * If device is unlocked, required full fastboot cap
+			 * flag is set and yet image verification fails, try
+			 * passing the original image to vboot_boot_kernel.
+			 * "fastboot boot" can simply pass a kernel image
+			 * without any signature in unlocked mode with full
+			 * fastboot cap set.
+			 */
+			kparams.kernel_buffer = image_addr;
+			kparams.kernel_buffer_size = image_size;
+		}
 	}
 
 	kparams.flags = KERNEL_IMAGE_BOOTIMG;
 
-	cmd->type = FB_OKAY;
-	fb_execute_send(cmd);
+	/* Define a cleanup function to send OKAY back if jumping to kernel. */
+	static CleanupFunc fb_boot_cleanup = {
+		&fb_boot_cleanup_func,
+		CleanupOnHandoff,
+		NULL,
+	};
+	fb_boot_cleanup.data = cmd;
+	list_insert_after(&fb_boot_cleanup.list_node, &cleanup_funcs);
 
 	vboot_boot_kernel(&kparams);
 
 	/* We should never reach here, if boot successful. */
-	return FB_SUCCESS;
+	list_remove(&fb_boot_cleanup.list_node);
+
+	cmd->type = FB_FAIL;
+	fb_add_string(&cmd->output, "Invalid boot image", NULL);
+
+	/* We want to reset the boot state. So, reboot into fastboot mode. */
+	return FB_REBOOT_BOOTLOADER;
 }
 
 static fb_ret_type fb_continue(struct fb_cmd *cmd)
