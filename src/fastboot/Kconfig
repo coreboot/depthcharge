@@ -41,3 +41,13 @@ config FASTBOOT_HEAP_SIZE
 	  any padding needed to align it to a 16 byte boundary. (Do not
 	  override in defconfig, since it would increase the heap size for
 	  non-fastboot images as well).
+
+config FASTBOOT_EP_IN
+	int "In-Endpoint to use for fastboot"
+	default 1
+	depends on FASTBOOT_MODE
+
+config FASTBOOT_EP_OUT
+	int "Out-Endpoint to use for fastboot"
+	default 1
+	depends on FASTBOOT_MODE

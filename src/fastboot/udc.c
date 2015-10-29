@@ -48,7 +48,9 @@ static int out_length;
 static void fastboot_packet(struct usbdev_ctrl *this, int ep, int in_dir,
 	void *data, int len)
 {
-	if (ep != 1) return; /* none of ours */
+	/* verify that we're responsible for the transfer */
+	if (in_dir && (ep != CONFIG_FASTBOOT_EP_IN)) return;
+	if (!in_dir && (ep != CONFIG_FASTBOOT_EP_OUT)) return;
 
 	if (in_dir == 0) {
 		// tell usb_gadget_recv() that the transfer is done
@@ -83,7 +85,7 @@ static struct usbdev_configuration fastboot_config = {
 		.eps = (endpoint_descriptor_t[]){{
 			.bLength = sizeof(endpoint_descriptor_t),
 			.bDescriptorType = 5,
-			.bEndpointAddress = 1, // 1-OUT
+			.bEndpointAddress = CONFIG_FASTBOOT_EP_OUT,
 			.bmAttributes = 2, // Bulk
 			.wMaxPacketSize = 512,
 			.bInterval = 9,
@@ -91,7 +93,7 @@ static struct usbdev_configuration fastboot_config = {
 		{
 			.bLength = sizeof(endpoint_descriptor_t),
 			.bDescriptorType = 5,
-			.bEndpointAddress = 0x81, // 1-IN
+			.bEndpointAddress = 0x80 | CONFIG_FASTBOOT_EP_IN,
 			.bmAttributes = 2, // Bulk
 			.wMaxPacketSize = 512,
 			.bInterval = 9,
@@ -163,7 +165,7 @@ size_t usb_gadget_send(const char *msg, size_t size)
 {
 	void *tmp = udc->alloc_data(size);
 	memcpy(tmp, msg, size);
-	udc->enqueue_packet(udc, 1, 1, tmp, size, 0, 1);
+	udc->enqueue_packet(udc, CONFIG_FASTBOOT_EP_IN, 1, tmp, size, 0, 1);
 	return size;
 }
 
@@ -193,7 +195,8 @@ size_t usb_gadget_recv(void *pkt, size_t size)
 		if (size > remaining)
 			size = remaining;
 
-		udc->enqueue_packet(udc, 1, 0, tmp, size, 0, 0);
+		udc->enqueue_packet(udc, CONFIG_FASTBOOT_EP_OUT, 0,
+			tmp, size, 0, 0);
 		while ((out_length == 0) && udc->initialized)
 			udc->poll(udc);
 
