@@ -112,6 +112,10 @@ static int gbb_init(void)
 
 int gbb_clear_flags(void)
 {
+	/* If WP is enabled, cannot write to RO-GBB. */
+	if (flash_is_wp_enabled() != 0)
+		return 1;
+
 	if (gbb_init() != 0)
 		return 1;
 
