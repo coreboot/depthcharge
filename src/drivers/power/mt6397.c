@@ -101,7 +101,7 @@ static void rtc_write_trigger(Mt6397Pmic *pmic)
 	pwrap_write(pmic, (uintptr_t)RTC_WRTGR, 1);
 
 	do {
-		pwrap_read(pmic, (uintptr_t) RTC_WRTGR, &rdata);
+		pwrap_read(pmic, (uintptr_t) RTC_BBPU, &rdata);
 	} while (rdata & RTC_BBPU_CBUSY);
 }
 
