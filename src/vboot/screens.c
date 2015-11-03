@@ -59,20 +59,145 @@
 	} while (0)
 
 static char initialized = 0;
-static uint32_t locale_count;
-static char *supported_locales[256];
+static struct directory *base_graphics;
+static struct directory *font_graphics;
+static struct {
+	/* current locale */
+	uint32_t current;
 
-static VbError_t draw_image(const char *image_name,
-			    int32_t x, int32_t y, int32_t width, int32_t height,
-			    char pivot)
+	/* pointer to the localized graphics data and its locale */
+	uint32_t archive_locale;
+	struct directory *archive;
+
+	/* number of supported language and codes: en, ja, ... */
+	uint32_t count;
+	char *codes[256];
+} locale_data;
+
+/*
+ * Load archive into RAM
+ */
+static VbError_t load_archive(const char *name, struct directory **dest)
 {
-	uint8_t *image;
+	struct directory *dir;
+	struct dentry *entry;
 	size_t size;
+	int i;
+
+	printf("%s: loading %s\n", __func__, name);
+	*dest = NULL;
+
+	/* load archive from cbfs */
+	dir = cbfs_get_file_content(CBFS_DEFAULT_MEDIA, name,
+				  CBFS_TYPE_RAW, &size);
+	if (!dir || !size) {
+		printf("%s: failed to load %s\n", __func__, name);
+		return VBERROR_INVALID_BMPFV;
+	}
+
+	/* convert endianness of archive header */
+	dir->count = le32toh(dir->count);
+	dir->size = le32toh(dir->size);
+
+	/* validate the total size */
+	if (dir->size != size) {
+		printf("%s: archive size does not match\n", __func__);
+		return VBERROR_INVALID_BMPFV;
+	}
+
+	/* validate magic field */
+	if (memcmp(dir->magic, CBAR_MAGIC, sizeof(CBAR_MAGIC))) {
+		printf("%s: invalid archive magic\n", __func__);
+		return VBERROR_INVALID_BMPFV;
+	}
+
+	/* validate count field */
+	if (get_first_offset(dir) > dir->size) {
+		printf("%s: invalid count\n", __func__);
+		return VBERROR_INVALID_BMPFV;
+	}
+
+	/* convert endianness of file headers */
+	entry = get_first_dentry(dir);
+	for (i = 0; i < dir->count; i++) {
+		entry[i].offset = le32toh(entry[i].offset);
+		entry[i].size = le32toh(entry[i].size);
+	}
+
+	*dest = dir;
+
+	return VBERROR_SUCCESS;
+}
+
+static VbError_t load_localized_graphics(uint32_t locale)
+{
+	char str[256];
+
+	/* check whether we've already loaded the archive for this locale */
+	if (locale_data.archive) {
+		if (locale_data.archive_locale == locale)
+			return VBERROR_SUCCESS;
+		/* No need to keep more than one locale graphics at a time */
+		free(locale_data.archive);
+	}
+
+	/* compose archive name using the language code */
+	snprintf(str, sizeof(str), "locale_%s.bin", locale_data.codes[locale]);
+	RETURN_ON_ERROR(load_archive(str, &locale_data.archive));
+
+	/* Remember what's cached */
+	locale_data.archive_locale = locale;
+
+	return VBERROR_SUCCESS;
+}
+
+static struct dentry *find_file_in_archive(const struct directory *dir,
+					   const char *name)
+{
+	struct dentry *entry;
+	uintptr_t start;
+	int i;
+
+	if (!dir) {
+		printf("%s: archive not loaded\n", __func__);
+		return NULL;
+	}
+
+	/* calculate start of the file content section */
+	start = get_first_offset(dir);
+	entry = get_first_dentry(dir);
+	for (i = 0; i < dir->count; i++) {
+		if (strncmp(entry[i].name, name, NAME_LENGTH))
+			continue;
+		/* validate offset & size */
+		if (entry[i].offset < start
+				|| entry[i].offset + entry[i].size > dir->size
+				|| entry[i].offset > dir->size
+				|| entry[i].size > dir->size) {
+			printf("%s: '%s' has invalid offset or size\n",
+			       __func__, name);
+			return NULL;
+		}
+		return &entry[i];
+	}
+
+	printf("%s: file '%s' not found\n", __func__, name);
+
+	return NULL;
+}
+
+/*
+ * Find and draw image in archive
+ */
+static VbError_t draw(struct directory *dir, const char *image_name,
+		      int32_t x, int32_t y, int32_t width, int32_t height,
+		      char pivot)
+{
+	struct dentry *file;
 	VbError_t rv = VBERROR_SUCCESS;
 
-	image = cbfs_get_file_content(CBFS_DEFAULT_MEDIA, image_name,
-				      CBFS_TYPE_RAW, &size);
-	if (!image)
+	file = find_file_in_archive(dir, image_name);
+	if (!file)
 		return VBERROR_NO_IMAGE_PRESENT;
 
 	struct scale pos = {
@@ -84,34 +209,38 @@ static VbError_t draw_image(const char *image_name,
 		.y = { .n = height, .d = VB_SCALE, },
 	};
 
-	rv = draw_bitmap(image, size, &pos, pivot, &dim);
+	rv = draw_bitmap((uint8_t *)dir + file->offset, file->size,
+			 &pos, pivot, &dim);
 	if (rv)
 		rv = VBERROR_UNKNOWN;
-	free(image);
 
 	return rv;
 }
 
-static int draw_image_locale(const char *image_name, uint32_t locale,
-			     int32_t x, int32_t y,
-			     int32_t width, int32_t height, char pivot)
+static VbError_t draw_image(const char *image_name,
+			    int32_t x, int32_t y, int32_t width, int32_t height,
+			    char pivot)
 {
-	char str[256];
-	snprintf(str, sizeof(str), "locale/%s/%s",
-		 supported_locales[locale], image_name);
-	return draw_image(str, x, y, width, height, pivot);
+	return draw(base_graphics, image_name, x, y, width, height, pivot);
 }
 
-static VbError_t get_image_size(const char *image_name,
+static VbError_t draw_image_locale(const char *image_name, uint32_t locale,
+				   int32_t x, int32_t y,
+				   int32_t width, int32_t height, char pivot)
+{
+	RETURN_ON_ERROR(load_localized_graphics(locale));
+	return draw(locale_data.archive, image_name,
+		    x, y, width, height, pivot);
+}
+
+static VbError_t get_image_size(struct directory *dir, const char *image_name,
 				int32_t *width, int32_t *height)
 {
-	uint8_t *image;
-	size_t size;
+	struct dentry *file;
 	VbError_t rv;
 
-	image = cbfs_get_file_content(CBFS_DEFAULT_MEDIA, image_name,
-				      CBFS_TYPE_RAW, &size);
-	if (!image)
+	file = find_file_in_archive(dir, image_name);
+	if (!file)
 		return VBERROR_NO_IMAGE_PRESENT;
 
 	struct scale dim = {
@@ -119,8 +248,8 @@ static VbError_t get_image_size(const char *image_name,
 		.y = { .n = *height, .d = VB_SCALE, },
 	};
 
-	rv = get_bitmap_dimension(image, size, &dim);
-	free(image);
+	rv = get_bitmap_dimension((uint8_t *)dir + file->offset,
+				  file->size, &dim);
 	if (rv)
 		return VBERROR_UNKNOWN;
 
@@ -133,10 +262,8 @@ static VbError_t get_image_size(const char *image_name,
 static VbError_t get_image_size_locale(const char *image_name, uint32_t locale,
 				       int32_t *width, int32_t *height)
 {
-	char str[256];
-	snprintf(str, sizeof(str), "locale/%s/%s",
-		 supported_locales[locale], image_name);
-	return get_image_size(str, width, height);
+	RETURN_ON_ERROR(load_localized_graphics(locale));
+	return get_image_size(locale_data.archive, image_name, width, height);
 }
 
 static int draw_icon(const char *image_name)
@@ -153,12 +280,12 @@ static int draw_text(const char *text, int32_t x, int32_t y,
 	int32_t w, h;
 	char str[256];
 	while (*text) {
-		sprintf(str, "font/idx%03d_%02x.bmp", *text, *text);
+		sprintf(str, "idx%03d_%02x.bmp", *text, *text);
 		w = 0;
 		h = height;
-		RETURN_ON_ERROR(get_image_size(str, &w, &h));
-		RETURN_ON_ERROR(draw_image(str,
-				x, y, VB_SIZE_AUTO, height, pivot));
+		RETURN_ON_ERROR(get_image_size(font_graphics, str, &w, &h));
+		RETURN_ON_ERROR(draw(font_graphics, str,
+				     x, y, VB_SIZE_AUTO, height, pivot));
 		x += w;
 		text++;
 	}
@@ -170,10 +297,10 @@ static int get_text_width(const char *text, int32_t *width, int32_t *height)
 	int32_t w, h;
 	char str[256];
 	while (*text) {
-		sprintf(str, "font/idx%03d_%02x.bmp", *text, *text);
+		sprintf(str, "idx%03d_%02x.bmp", *text, *text);
 		w = 0;
 		h = *height;
-		RETURN_ON_ERROR(get_image_size(str, &w, &h));
+		RETURN_ON_ERROR(get_image_size(font_graphics, str, &w, &h));
 		*width += w;
 		text++;
 	}
@@ -197,7 +324,7 @@ static VbError_t vboot_draw_footer(uint32_t locale)
 					      &w1, &h1));
 	w2 = 0;
 	h2 = VB_TEXT_HEIGHT;
-	RETURN_ON_ERROR(get_image_size("Url.bmp", &w2, &h2));
+	RETURN_ON_ERROR(get_image_size(base_graphics, "Url.bmp", &w2, &h2));
 
 	/* Calculate horizontal position to centralize the combined images */
 	x = (VB_SCALE - w1 - w2) / 2;
@@ -255,7 +382,8 @@ static VbError_t vboot_draw_language(uint32_t locale)
 	/* This width is used to calculate the position of language.bmp */
 	w = 0;
 	h = VB_TEXT_HEIGHT;
-	RETURN_ON_ERROR(get_image_size("arrow_right.bmp", &w, &h));
+	RETURN_ON_ERROR(get_image_size(base_graphics, "arrow_right.bmp",
+				       &w, &h));
 
 	/*
 	 * Right arrow starts from the right edge of the divider, which is
@@ -540,7 +668,7 @@ static VbError_t draw_screen(uint32_t screen_type, uint32_t locale)
 		return VBERROR_INVALID_SCREEN_INDEX;
 	}
 
-	if (locale >= locale_count) {
+	if (locale >= locale_data.count) {
 		printf("Unsupported locale (%d)\n", locale);
 		print_fallback_message(desc);
 		return VBERROR_INVALID_PARAMETER;
@@ -560,7 +688,7 @@ static void vboot_init_locale(void)
 	char *locales, *loc_start, *loc;
 	size_t size;
 
-	locale_count = 0;
+	locale_data.count = 0;
 
 	/* Load locale list from cbfs */
 	locales = cbfs_get_file_content(CBFS_DEFAULT_MEDIA, "locales",
@@ -584,24 +712,36 @@ static void vboot_init_locale(void)
 	printf("%s: Supported locales:", __func__);
 	loc = loc_start;
 	while (loc - loc_start < size
-			&& locale_count < ARRAY_SIZE(supported_locales)) {
+			&& locale_data.count < ARRAY_SIZE(locale_data.codes)) {
 		char *lang = strsep(&loc, "\n");
 		if (!lang || !strlen(lang))
 			break;
 		printf(" %s,", lang);
-		supported_locales[locale_count] = lang;
-		locale_count++;
+		locale_data.codes[locale_data.count] = lang;
+		locale_data.count++;
 	}
 	free(locales);
-	printf(" (%d locales)\n", locale_count);
+
+	printf(" (%d locales)\n", locale_data.count);
 }
 
 static VbError_t vboot_init_screen(void)
 {
-	vboot_init_locale();
-
 	if (graphics_init())
 		return VBERROR_UNKNOWN;
+
+	/* create a list of supported locales */
+	vboot_init_locale();
+
+	/* load generic (location-free) graphics data. ignore errors.
+	 * fallback screens will be drawn for missing data */
+	load_archive("vbgfx.bin", &base_graphics);
+
+	/* load font graphics */
+	load_archive("font.bin", &font_graphics);
+
+	/* reset localized graphics. we defer loading it. */
+	locale_data.archive = NULL;
 
 	initialized = 1;
 
@@ -611,7 +751,6 @@ static VbError_t vboot_init_screen(void)
 int vboot_draw_screen(uint32_t screen, uint32_t locale)
 {
 	static uint32_t current_screen = VB_SCREEN_BLANK;
-	static uint32_t current_locale = 0;
 
 	printf("%s: screen=0x%x locale=%d\n", __func__, screen, locale);
 
@@ -621,7 +760,7 @@ int vboot_draw_screen(uint32_t screen, uint32_t locale)
 	}
 
 	/* If requested screen is the same as the current one, we're done. */
-	if (screen == current_screen && locale == current_locale)
+	if (screen == current_screen && locale == locale_data.current)
 		return VBERROR_SUCCESS;
 
 	/* If the screen is blank, turn off the backlight; else turn it on. */
@@ -631,7 +770,7 @@ int vboot_draw_screen(uint32_t screen, uint32_t locale)
 	RETURN_ON_ERROR(draw_screen(screen, locale));
 
 	current_screen = screen;
-	current_locale = locale;
+	locale_data.current = locale;
 
 	return VBERROR_SUCCESS;
 }
@@ -642,5 +781,5 @@ int vboot_get_locale_count(void)
 		if (vboot_init_screen())
 			return VBERROR_UNKNOWN;
 	}
-	return locale_count;
+	return locale_data.count;
 }
