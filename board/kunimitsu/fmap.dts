@@ -11,11 +11,6 @@
 		gbb-flag-force-dev-switch-on;
 		gbb-flag-force-dev-boot-usb;
 		gbb-flag-disable-fw-rollback-check;
-		/*
-		 * TODO(crbug.com/p/41959): Enable PD SW sync by default
-		 * once we have RO and RW images in kunimitsu_pd.
-		 */
-		gbb-flag-disable-pd-software-sync;
 	};
 	flash@ff000000 {
 		#address-cells = <1>;
