@@ -185,7 +185,7 @@ int fb_device_unlocked(void)
 	return vboot_in_developer();
 }
 
-static size_t fb_get_max_download_size(void)
+static unsigned long long fb_get_max_download_size(void)
 {
 	/* Max download size set to half of heap size */
 	return CONFIG_FASTBOOT_HEAP_SIZE/2;
@@ -234,7 +234,7 @@ static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 		break;
 
 	case FB_DWNLD_SIZE:
-		fb_add_number(output, "0x%x", fb_get_max_download_size());
+		fb_add_number(output, "0x%llx", fb_get_max_download_size());
 		break;
 
 	case FB_PART_SIZE: {
@@ -314,7 +314,8 @@ static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 		break;
 	}
 	case  FB_OFF_MODE_CHARGE: {
-		fb_add_number(output, "%d", !vbnv_read(VBNV_BOOT_ON_AC_DETECT));
+		fb_add_number(output, "%lld",
+			      !vbnv_read(VBNV_BOOT_ON_AC_DETECT));
 		break;
 	}
 	case FB_BATT_VOLTAGE: {
@@ -323,7 +324,7 @@ static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 		    (fb_board_handler.read_batt_volt(&val_mv) != 0))
 			fb_add_string(output, "Unknown", NULL);
 		else
-			fb_add_number(output, "%d mV", val_mv);
+			fb_add_number(output, "%lld mV", val_mv);
 		break;
 	}
 	case FB_BATT_SOC_OK: {
@@ -339,8 +340,7 @@ static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 	}
 	case FB_GBB_FLAGS: {
 		GoogleBinaryBlockHeader *gbb = cparams.gbb_data;
-
-		fb_add_number(output, "0x%x", gbb->flags);
+		fb_add_number(output, "0x%llx", gbb->flags);
 		break;
 	}
 	case FB_OEM_VERSION: {
@@ -823,7 +823,7 @@ static fb_ret_type fb_download(struct fb_cmd *cmd)
 	char *num = fb_get_string(input, len);
 
 	/* num of bytes are passed in hex(0x) format */
-	unsigned long bytes = strtoul(num, NULL, 16);
+	unsigned long long bytes = strtoul(num, NULL, 16);
 
 	fb_free_string(num);
 
@@ -841,7 +841,7 @@ static fb_ret_type fb_download(struct fb_cmd *cmd)
 	}
 
 	cmd->type = FB_DATA;
-	fb_add_number(output, "%08lx", bytes);
+	fb_add_number(output, "%08llx", bytes);
 	fb_execute_send(cmd);
 
 	if (fb_recv_data(cmd) == 0) {
@@ -1245,7 +1245,7 @@ static fb_ret_type fb_unlock(struct fb_cmd *cmd)
 
 static fb_ret_type fb_get_unlock_ability(struct fb_cmd *cmd)
 {
-	fb_add_number(&cmd->output, "%d", unlock_in_fw_set());
+	fb_add_number(&cmd->output, "%lld", unlock_in_fw_set());
 
 	cmd->type = FB_INFO;
 	fb_execute_send(cmd);
