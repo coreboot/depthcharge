@@ -16,6 +16,10 @@ strings:
 images:
 	$(MAKE) -C images all
 
+archive:
+	./archive_images.py -a $(ARCHIVER) -d $(OUTPUT)
+	${ARCHIVER} "${OUTPUT}/font.bin" create "${OUTPUT}"/font/*.bmp
+
 clean:
 	$(MAKE) -C strings clean
 	$(MAKE) -C images clean
