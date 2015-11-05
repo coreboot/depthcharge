@@ -26,6 +26,7 @@
 #include "base/init_funcs.h"
 #include "board/ultima/device_nvs.h"
 #include "drivers/bus/i2c/designware.h"
+#include "drivers/bus/i2s/braswell/braswell-rt5645.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
@@ -39,6 +40,7 @@
 #include "drivers/bus/usb/usb.h"
 #include "drivers/tpm/lpc.h"
 #include "vboot/util/flag.h"
+#include "drivers/sound/rt5645.h"
 
 /*
  * Clock frequencies for the eMMC and SD ports are defined below. The minimum
@@ -87,7 +89,30 @@ static int board_setup(void)
 
 	flash_set_ops(&new_mem_mapped_flash(0xff800000, 0x800000)->ops);
 
-	power_set_ops(&baytrail_power_ops);
+	power_set_ops(&braswell_power_ops);
+
+	uintptr_t lpe_mmio = nvs->lpe_bar0;
+	if (!nvs->lpe_en) {
+		pcidev_t lpe_pcidev = PCI_DEV(0, 0x15, 0);
+		lpe_mmio = pci_read_config32(lpe_pcidev, PCI_BASE_ADDRESS_0)
+		& 0xfffffff0;
+	}
+
+	BswI2s *i2s = new_bsw_i2s(lpe_mmio, &braswell_rt5645_settings,
+			16, 2,4800000, 48000);
+
+	I2sSource *i2s_source = new_i2s_source(&i2s->ops, 48000, 2, 16000);
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+
+	die_if(!nvs->lpss_en[LPSS_NVS_I2C5], "Codec I2C misconfigured\n");
+	DesignwareI2c *i2c = new_designware_i2c(
+			nvs->lpss_bar0[LPSS_NVS_I2C5], 400000);
+
+	rt5645Codec *codec = new_rt5645_codec(&i2c->ops, 0x1a);
+	list_insert_after(&codec->component.list_node,
+			&sound_route->components);
+
+	sound_set_ops(&sound_route->ops);
 	tpm_set_ops(&new_lpc_tpm((void *)0xfed40000)->ops);
 
 	SdhciHost *emmc, *sd;
