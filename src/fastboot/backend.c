@@ -45,14 +45,14 @@ struct image_part_details {
 	struct part_info *part_entry;
 	GptData *gpt;
 	GptEntry *gpt_entry;
-	size_t part_addr;
-	size_t part_size_lba;
+	uint64_t part_addr;
+	uint64_t part_size_lba;
 };
 
 /********************** Stub implementations *****************************/
 backend_ret_t __attribute__((weak)) board_write_partition(const char *name,
 							  void *image_addr,
-							  size_t image_size)
+							  uint64_t image_size)
 {
 	return BE_NOT_HANDLED;
 }
@@ -106,11 +106,11 @@ int is_sparse_image(void *image_addr)
 
 /* Write sparse image to partition */
 static backend_ret_t write_sparse_image(struct image_part_details *img,
-					void *image_addr, size_t image_size)
+					void *image_addr, uint64_t image_size)
 {
 	struct sparse_image_hdr *img_hdr = image_addr;
 	struct sparse_chunk_hdr *chunk_hdr;
-	size_t bdev_block_size = img->bdev_entry->bdev->block_size;
+	uint64_t bdev_block_size = img->bdev_entry->bdev->block_size;
 
 	BE_LOG("Magic          : %x\n", img_hdr->magic);
 	BE_LOG("Major Version  : %x\n", img_hdr->major_version);
@@ -135,8 +135,8 @@ static backend_ret_t write_sparse_image(struct image_part_details *img,
 		return BE_CHUNK_HDR_ERR;
 
 	int i;
-	size_t part_addr = img->part_addr;
-	size_t part_size_lba = img->part_size_lba;
+	uint64_t part_addr = img->part_addr;
+	uint64_t part_size_lba = img->part_size_lba;
 	BlockDevOps *ops = &img->bdev_entry->bdev->ops;
 	/* data_ptr points to first byte after image header */
 	uint8_t *data_ptr = image_addr;
@@ -151,6 +151,7 @@ static backend_ret_t write_sparse_image(struct image_part_details *img,
 		BE_LOG("Type         : %x\n", chunk_hdr->type);
 		BE_LOG("Size in blks : %x\n", chunk_hdr->size_in_blks);
 		BE_LOG("Total size   : %x\n", chunk_hdr->total_size_bytes);
+		BE_LOG("Part addr    : %llx\n", part_addr);
 
 		/*
 		 * Make data_ptr point to chunk data(if any):
@@ -161,14 +162,16 @@ static backend_ret_t write_sparse_image(struct image_part_details *img,
 		data_ptr += sizeof(*chunk_hdr);
 
 		/* Size in bytes and lba of the area occupied by chunk range */
-		size_t chunk_size_bytes, chunk_size_lba;
-		chunk_size_bytes = chunk_hdr->size_in_blks * img_hdr->blk_size;
+		uint64_t chunk_size_bytes, chunk_size_lba;
+
+		chunk_size_bytes = (uint64_t)chunk_hdr->size_in_blks *
+			img_hdr->blk_size;
 		chunk_size_lba = chunk_size_bytes / bdev_block_size;
 
 		/* Should not write past partition size */
 		if (part_size_lba < chunk_size_lba) {
-			BE_LOG("part_size_lba:%zx\n", part_size_lba);
-			BE_LOG("chunk_size_lba:%zx\n", chunk_size_lba);
+			BE_LOG("part_size_lba:%llx\n", part_size_lba);
+			BE_LOG("chunk_size_lba:%llx\n", chunk_size_lba);
 			return BE_IMAGE_OVERFLOW_ERR;
 		}
 
@@ -181,7 +184,7 @@ static backend_ret_t write_sparse_image(struct image_part_details *img,
 			 */
 			if ((chunk_size_bytes + sizeof(*chunk_hdr))!=
 			    chunk_hdr->total_size_bytes) {
-				BE_LOG("chunk_size_bytes:%zx\n",
+				BE_LOG("chunk_size_bytes:%llx\n",
 				       chunk_size_bytes + sizeof(*chunk_hdr));
 				BE_LOG("total_size_bytes:%x\n",
 				       chunk_hdr->total_size_bytes);
@@ -214,7 +217,6 @@ static backend_ret_t write_sparse_image(struct image_part_details *img,
 				return BE_CHUNK_HDR_ERR;
 			}
 
-
 			/* Perform fill_write operation */
 			if (ops->fill_write(ops, part_addr, chunk_size_lba,
 					    *(uint32_t *)data_ptr)
@@ -239,7 +241,6 @@ static backend_ret_t write_sparse_image(struct image_part_details *img,
 				       chunk_hdr->total_size_bytes);
 				return BE_CHUNK_HDR_ERR;
 			}
-
 			break;
 		}
 		case CHUNK_TYPE_CRC32: {
@@ -278,16 +279,16 @@ static backend_ret_t write_sparse_image(struct image_part_details *img,
 /********************** Raw Image Handling *******************************/
 
 static backend_ret_t write_raw_image(struct image_part_details *img,
-				     void *image_addr, size_t image_size)
+				     void *image_addr, uint64_t image_size)
 {
 	struct bdev_info *bdev_entry = img->bdev_entry;
-	size_t part_addr = img->part_addr;
-	size_t part_size_lba = img->part_size_lba;
-	size_t image_size_lba;
+	uint64_t part_addr = img->part_addr;
+	uint64_t part_size_lba = img->part_size_lba;
+	uint64_t image_size_lba;
 
 	BlockDevOps *ops = &bdev_entry->bdev->ops;
 
-	size_t block_size = bdev_entry->bdev->block_size;
+	uint64_t block_size = bdev_entry->bdev->block_size;
 
 	/* Ensure that image size is multiple of block size */
 	if (image_size != ALIGN_DOWN(image_size, block_size))
@@ -297,8 +298,8 @@ static backend_ret_t write_raw_image(struct image_part_details *img,
 
 	/* Ensure image size is less than partition size */
 	if (part_size_lba < image_size_lba) {
-		BE_LOG("part_size_lba:%zx\n", part_size_lba);
-		BE_LOG("image_size_lba:%zx\n", image_size_lba);
+		BE_LOG("part_size_lba:%llx\n", part_size_lba);
+		BE_LOG("image_size_lba:%llx\n", image_size_lba);
 		return BE_IMAGE_OVERFLOW_ERR;
 	}
 
@@ -397,8 +398,8 @@ static backend_ret_t fill_img_part_info(struct image_part_details *img,
 	struct part_info *part_entry;
 	GptData *gpt = NULL;
 	GptEntry *gpt_entry = NULL;
-	size_t part_addr;
-	size_t part_size_lba;
+	uint64_t part_addr;
+	uint64_t part_size_lba;
 
 	/* Get partition info from board-specific partition table */
 	part_entry = get_part_info(name);
@@ -465,7 +466,7 @@ static void clean_img_part_info(struct image_part_details *img)
 /********************** Backend API functions *******************************/
 
 backend_ret_t backend_write_partition(const char *name, void *image_addr,
-				      size_t image_size)
+				      uint64_t image_size)
 {
 	backend_ret_t ret;
 	struct image_part_details img;
@@ -513,8 +514,8 @@ backend_ret_t backend_erase_partition(const char *name)
 	struct bdev_info *bdev_entry = img.bdev_entry;
 
 	BlockDevOps *ops = &bdev_entry->bdev->ops;
-	size_t part_size_lba = img.part_size_lba;
-	size_t part_addr = img.part_addr;
+	uint64_t part_size_lba = img.part_size_lba;
+	uint64_t part_addr = img.part_addr;
 
 	/* First try to perform erase operation, if ops for erase exist. */
 	if ((ops->erase == NULL) ||
@@ -606,7 +607,7 @@ uint64_t backend_get_bdev_size_blocks(const char *name)
 	return size;
 }
 
-int fb_fill_part_list(const char *name, size_t base, size_t size)
+int fb_fill_part_list(const char *name, uint64_t base, uint64_t size)
 {
 	struct part_info *part_entry = get_part_info(name);
 

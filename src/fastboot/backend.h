@@ -69,9 +69,9 @@ struct part_info {
 		};
 		struct {
 			/* Starting LBA */
-			size_t base;
+			uint64_t base;
 			/* Size in LBA */
-			size_t size;
+			uint64_t size;
 		};
 	};
 };
@@ -82,10 +82,10 @@ extern size_t fb_part_count;
 extern struct part_info fb_part_list[];
 
 backend_ret_t board_write_partition(const char *name, void *image_addr,
-				    size_t image_size);
+				    uint64_t image_size);
 backend_ret_t backend_erase_partition(const char *name);
 backend_ret_t backend_write_partition(const char *name, void *image_addr,
-				      size_t image_size);
+				      uint64_t image_size);
 uint64_t backend_get_part_size_bytes(const char *name);
 const char *backend_get_part_fs_type(const char *name);
 uint64_t backend_get_bdev_size_bytes(const char *name);
@@ -102,7 +102,7 @@ static inline int fb_fill_bdev_list(int index, BlockDevCtrlr *bdev_ctrlr)
 	return 0;
 }
 
-int fb_fill_part_list(const char *name, size_t base, size_t size);
+int fb_fill_part_list(const char *name, uint64_t base, uint64_t size);
 
 #define PART_GPT(part_name, part_fs, bdev_name, g, inst)		\
 	{part_name, part_fs, bdev_name, 1, .guid = g, .instance = inst}

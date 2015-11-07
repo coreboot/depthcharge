@@ -54,7 +54,7 @@ fb_callback_t __attribute__((weak)) fb_board_handler;
 
 /* Pointer to memory location where image is downloaded for further action */
 static void *image_addr;
-static size_t image_size;
+static uint64_t image_size;
 
 static void fb_print_on_screen(fb_msg_t type, const char *msg)
 {
@@ -133,8 +133,7 @@ void fb_add_string(struct fb_buffer *buff, const char *str, const char *args)
 	fb_buffer_push(buff, ret);
 }
 
-void fb_add_number(struct fb_buffer *buff, const char *format,
-		   unsigned long long num)
+void fb_add_number(struct fb_buffer *buff, const char *format, uint64_t num)
 {
 	if (format == NULL)
 		return;
@@ -185,7 +184,7 @@ int fb_device_unlocked(void)
 	return vboot_in_developer();
 }
 
-static unsigned long long fb_get_max_download_size(void)
+static uint64_t fb_get_max_download_size(void)
 {
 	/* Max download size set to half of heap size */
 	return CONFIG_FASTBOOT_HEAP_SIZE/2;
@@ -245,7 +244,7 @@ static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 
 		char *data = fb_buffer_pull(&cmd->input, input_len);
 		char *part_name = fb_get_string(data, input_len);
-		unsigned long long part_size;
+		uint64_t part_size;
 
 		part_size = backend_get_part_size_bytes(part_name);
 		fb_free_string(part_name);
@@ -286,7 +285,7 @@ static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 
 		char *data = fb_buffer_pull(&cmd->input, input_len);
 		char *bdev_name = fb_get_string(data, input_len);
-		unsigned long long bdev_size;
+		uint64_t bdev_size;
 
 		bdev_size = backend_get_bdev_size_bytes(bdev_name);
 		fb_free_string(bdev_name);
@@ -767,7 +766,7 @@ static void free_image_space(void)
 	}
 }
 
-static void alloc_image_space(size_t bytes)
+static void alloc_image_space(uint64_t bytes)
 {
 	free_image_space();
 	image_addr = xmalloc(bytes);
@@ -782,12 +781,12 @@ static void alloc_image_space(size_t bytes)
  */
 static int fb_recv_data(struct fb_cmd *cmd)
 {
-	size_t curr_len = 0;
+	uint64_t curr_len = 0;
 
 	while (curr_len < image_size) {
 		void *curr = (uint8_t *)image_addr + curr_len;
 
-		size_t ret = usb_gadget_recv(curr, image_size - curr_len);
+		uint64_t ret = usb_gadget_recv(curr, image_size - curr_len);
 
 		if (ret == 0) {
 			curr_len = 0;
@@ -823,7 +822,7 @@ static fb_ret_type fb_download(struct fb_cmd *cmd)
 	char *num = fb_get_string(input, len);
 
 	/* num of bytes are passed in hex(0x) format */
-	unsigned long long bytes = strtoul(num, NULL, 16);
+	uint64_t bytes = strtoul(num, NULL, 16);
 
 	fb_free_string(num);
 

@@ -207,7 +207,7 @@ void fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT])
  * partitions that need to flashed i.e. ro, rw-a and rw-b.
  */
 backend_ret_t board_write_partition(const char *name, void *image_addr,
-				    size_t image_size)
+				    uint64_t image_size)
 {
 	/* Handle writes to bootloader partition. Others use default path. */
 	if (strcmp(name, "bootloader"))
