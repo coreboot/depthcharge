@@ -1206,7 +1206,7 @@ lba_t block_mmc_fill_write(BlockDevOps *me, lba_t start, lba_t count,
 
 	MmcMedia *media = mmc_media(me);
 	MmcCtrlr *ctrlr = mmc_ctrlr(media);
-	size_t block_size = media->dev.block_size;
+	uint64_t block_size = media->dev.block_size;
 	/*
 	 * We allocate max 4 MiB buffer on heap and set it to fill_byte and
 	 * perform mmc_write operation using this 4MiB buffer until requested
@@ -1229,7 +1229,7 @@ lba_t block_mmc_fill_write(BlockDevOps *me, lba_t start, lba_t count,
 	 */
 	lba_t buffer_lba = MIN(MIN(heap_lba, count), ctrlr->b_max);
 
-	size_t buffer_bytes = buffer_lba * block_size;
+	uint64_t buffer_bytes = buffer_lba * block_size;
 	uint8_t *buffer = xmalloc(buffer_bytes);
 	memset(buffer, fill_byte, buffer_bytes);
 
