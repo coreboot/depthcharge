@@ -89,6 +89,15 @@ static VbError_t vboot_draw_developer_warning(uint32_t localize)
 	video_printf(FB_INFO_FOREGROUND, FB_INFO_BACKGROUND, 1,
 		     "Device will continue booting in 30 seconds.\n");
 
+	/*
+	 * For smaug, we are using long press(> 2 seconds) to power-on the
+	 * device. The first screen that is displayed on unlocked devices is the
+	 * developer-mode warning screen. Add a delay of 3 seconds to prevent
+	 * users from accidentally powering off their device at dev screen since
+	 * power button can be held down at this point by the user.
+	 */
+	delay(3);
+
 	return VBERROR_SUCCESS;
 }
 
