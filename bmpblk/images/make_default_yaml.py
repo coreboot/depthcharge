@@ -354,12 +354,9 @@ def ScreenDev(locale, image_database):
 
 
 @NewScreen
-def ScreenRemove(locale, image_database):
-  s = Screen('remove', locale, image_database)
-  s.add_header()
-  s.set_centered_y_percent(50)
-  s.insert_centered_vertical("@remove", "RemoveDevices")
-  s.add_footer(do_url=True)
+def ScreenOsBroken(locale, image_database):
+  s = Screen('os_broken', locale, image_database)
+  s.insert_centered_vertical("@os_broken")
   return s
 
 
