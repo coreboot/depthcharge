@@ -41,6 +41,20 @@
 #include "drivers/video/rockchip.h"
 #include "vboot/util/flag.h"
 
+static const DtPathMap mac_maps[] = {
+	{ 0, "ethernet@ff290000/local-mac-address" },
+	{}
+};
+
+static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
+{
+	return dt_set_mac_addresses(tree, mac_maps);
+}
+
+static DeviceTreeFixup ethernet_fixup = {
+	.fixup = fix_device_tree
+};
+
 static int board_setup(void)
 {
 	RkSpi *spi2 = new_rockchip_spi(0xff130000);
@@ -85,6 +99,8 @@ static int board_setup(void)
 	// when transitioning between normal and dev mode.
 	flag_replace(FLAG_RECSW, sysinfo_lookup_gpio("recovery",
 				1, new_rk_gpio_input_from_coreboot));
+
+	list_insert_after(&ethernet_fixup.list_node, &device_tree_fixups);
 
 	ramoops_buffer(0x31f00000, 0x100000, 0x20000);
 
