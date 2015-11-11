@@ -98,6 +98,9 @@ endif
 if BOARD = "storm"
 source src/board/storm/Kconfig
 endif
+if BOARD = "cyclone"
+source src/board/cyclone/Kconfig
+endif
 if BOARD = "strago"
 source src/board/strago/Kconfig
 endif
