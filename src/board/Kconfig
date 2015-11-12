@@ -37,6 +37,9 @@ endif
 if BOARD = "daisy"
 source src/board/daisy/Kconfig
 endif
+if BOARD = "edgar"
+source src/board/edgar/Kconfig
+endif
 if BOARD = "falco"
 source src/board/falco/Kconfig
 endif
