@@ -32,7 +32,7 @@
  * as the one filled by the signer. This is important to maintain consistency
  * with current boards.
  */
-static const struct boot_policy boot_policy = {
+static struct boot_policy boot_policy = {
 	.img_type = KERNEL_IMAGE_CROS,
 	.cmd_line_loc = CMD_LINE_SIGNER,
 };
@@ -248,7 +248,11 @@ int fill_boot_info(struct boot_info *bi, VbSelectAndLoadKernelParams *kparams)
 		return -1;
 	}
 
-	printf("Boot policy: Match for type %x\n", type);
+	boot_policy.img_type = curr_policy.policy[i].img_type;
+	boot_policy.cmd_line_loc = curr_policy.policy[i].cmd_line_loc;
++
+	printf("Boot policy: Match for type %x with cmdline %x\n",
+	       boot_policy.img_type, boot_policy.cmd_line_loc);
 
-	return img_type_info[type].fn(bi, kparams);
+	return img_type_info[boot_policy.img_type].fn(bi, kparams);
 }
