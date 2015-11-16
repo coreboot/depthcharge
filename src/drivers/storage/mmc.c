@@ -811,7 +811,8 @@ static int mmc_startup(MmcMedia *media)
 	if (IS_SD(media))
 		media->write_bl_len = media->read_bl_len;
 	else
-		media->write_bl_len = 1 << ((media->csd[3] >> 22) & 0xf);
+		media->write_bl_len =
+			1 << extract_uint32_bits(media->csd, 102, 4);
 
 	if (media->high_capacity) {
 		cmult = 8;
