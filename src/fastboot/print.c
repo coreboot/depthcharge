@@ -44,8 +44,15 @@ static const struct {
  */
 void fb_print_text_on_screen(fb_msg_t type, const char *msg, size_t len)
 {
-	if (graphics_init())
-		return;
+	static int initialized;
+
+	if (initialized == 0) {
+		if (graphics_init())
+			return;
+
+		backlight_update(1);
+		initialized = 1;
+	}
 
 	/* Print text on black screen. */
 	const struct rgb_color black = { 0x0, 0x0, 0x0 };

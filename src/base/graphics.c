@@ -35,8 +35,6 @@ int graphics_init(void)
 	video_console_clear();
 	video_console_cursor_enable(0);
 
-	backlight_update(1);
-
 	initialized = 1;
 
 	return 0;
