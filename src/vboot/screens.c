@@ -49,9 +49,6 @@
 #define VB_DIVIDER_WIDTH	800	/* 80.0% */
 #define VB_DIVIDER_V_OFFSET	160	/* 16.0% */
 
-/* Width of the language name */
-#define VB_LANGUAGE_WIDTH	100
-
 #define RETURN_ON_ERROR(function_call) do {				\
 		VbError_t rv = (function_call);				\
 		if (rv)							\
@@ -379,32 +376,40 @@ static VbError_t vboot_draw_language(uint32_t locale)
 {
 	int32_t w, h, x;
 
-	/* This width is used to calculate the position of language.bmp */
-	w = 0;
-	h = VB_TEXT_HEIGHT;
-	RETURN_ON_ERROR(get_image_size(base_graphics, "arrow_right.bmp",
-				       &w, &h));
-
 	/*
 	 * Right arrow starts from the right edge of the divider, which is
 	 * positioned horizontally in the center.
 	 */
 	x = VB_SCALE_HALF + VB_DIVIDER_WIDTH / 2;
+
+	/* Draw the right arrow */
+	w = 0;
+	h = VB_TEXT_HEIGHT;
+	RETURN_ON_ERROR(get_image_size(base_graphics, "arrow_right.bmp",
+				       &w, &h));
+	x -= w;
 	RETURN_ON_ERROR(draw_image("arrow_right.bmp",
 			x, VB_DIVIDER_V_OFFSET, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
-			PIVOT_H_RIGHT|PIVOT_V_BOTTOM));
+			PIVOT_H_LEFT|PIVOT_V_BOTTOM));
 
-	/* Since widths of language.bmp vary, we have to use the center pivot */
-	x -= (w + VB_LANGUAGE_WIDTH / 2);
+	/* Draw the language name */
+	w = 0;
+	h = VB_TEXT_HEIGHT;
+	RETURN_ON_ERROR(get_image_size_locale("language.bmp", locale, &w, &h));
+	x -= w;
 	RETURN_ON_ERROR(draw_image_locale("language.bmp", locale,
 			x, VB_DIVIDER_V_OFFSET, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
-			PIVOT_H_CENTER|PIVOT_V_BOTTOM));
+			PIVOT_H_LEFT|PIVOT_V_BOTTOM));
 
-	/* Left arrow starts from the right edge of language.bmp */
-	x -= VB_LANGUAGE_WIDTH / 2;
+	/* Draw the left arrow */
+	w = 0;
+	h = VB_TEXT_HEIGHT;
+	RETURN_ON_ERROR(get_image_size(base_graphics, "arrow_left.bmp",
+				       &w, &h));
+	x -= w;
 	RETURN_ON_ERROR(draw_image("arrow_left.bmp",
 			x, VB_DIVIDER_V_OFFSET, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
-			PIVOT_H_RIGHT|PIVOT_V_BOTTOM));
+			PIVOT_H_LEFT|PIVOT_V_BOTTOM));
 
 	return VBERROR_SUCCESS;
 }
@@ -694,7 +699,7 @@ static void vboot_init_locale(void)
 	locales = cbfs_get_file_content(CBFS_DEFAULT_MEDIA, "locales",
 					CBFS_TYPE_RAW, &size);
 	if (!locales || !size) {
-		printf("%s: locale list not found", __func__);
+		printf("%s: locale list not found\n", __func__);
 		return;
 	}
 
