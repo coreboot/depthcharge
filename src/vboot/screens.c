@@ -191,7 +191,6 @@ static VbError_t draw(struct directory *dir, const char *image_name,
 		      char pivot)
 {
 	struct dentry *file;
-	VbError_t rv = VBERROR_SUCCESS;
 
 	file = find_file_in_archive(dir, image_name);
 	if (!file)
@@ -206,12 +205,8 @@ static VbError_t draw(struct directory *dir, const char *image_name,
 		.y = { .n = height, .d = VB_SCALE, },
 	};
 
-	rv = draw_bitmap((uint8_t *)dir + file->offset, file->size,
-			 &pos, pivot, &dim);
-	if (rv)
-		rv = VBERROR_UNKNOWN;
-
-	return rv;
+	return draw_bitmap((uint8_t *)dir + file->offset, file->size,
+			   &pos, pivot, &dim);
 }
 
 static VbError_t draw_image(const char *image_name,
@@ -225,9 +220,16 @@ static VbError_t draw_image_locale(const char *image_name, uint32_t locale,
 				   int32_t x, int32_t y,
 				   int32_t width, int32_t height, char pivot)
 {
+	VbError_t rv;
 	RETURN_ON_ERROR(load_localized_graphics(locale));
-	return draw(locale_data.archive, image_name,
-		    x, y, width, height, pivot);
+	rv = draw(locale_data.archive, image_name, x, y, width, height, pivot);
+	if (rv == CBGFX_ERROR_BOUNDARY && width == VB_SIZE_AUTO) {
+		printf("%s: '%s' overflowed. fit it to canvas width\n",
+		       __func__, image_name);
+		rv = draw(locale_data.archive, image_name,
+			  x, y, VB_SCALE, VB_SIZE_AUTO, pivot);
+	}
+	return rv;
 }
 
 static VbError_t get_image_size(struct directory *dir, const char *image_name,
@@ -326,12 +328,23 @@ static VbError_t vboot_draw_footer(uint32_t locale)
 	/* Calculate horizontal position to centralize the combined images */
 	x = (VB_SCALE - w1 - w2) / 2;
 	y = VB_SCALE - VB_DIVIDER_V_OFFSET;
+	if (x < 0) {
+		/* images are too wide. need to fit them to canvas width */
+		int32_t total;
+
+		printf("%s: help line overflowed. fit it to canvas width\n",
+		       __func__);
+		total = w1 + w2;
+		x = 0;
+		w1 = VB_SCALE * w1 / total;
+		w2 = VB_SCALE * w2 / total;
+	}
 	RETURN_ON_ERROR(draw_image_locale("for_help_left.bmp", locale,
-			x, y, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			x, y, w1, VB_SIZE_AUTO,
 			PIVOT_H_LEFT|PIVOT_V_TOP));
 	x += w1;
 	RETURN_ON_ERROR(draw_image("Url.bmp",
-			x, y, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			x, y, w2, VB_SIZE_AUTO,
 			PIVOT_H_LEFT|PIVOT_V_TOP));
 
 	/*
@@ -355,7 +368,11 @@ static VbError_t vboot_draw_footer(uint32_t locale)
 	h2 = VB_TEXT_HEIGHT;
 	RETURN_ON_ERROR(get_text_width(hwid, &w2, &h2));
 
-	/* Calculate horizontal position to centralize the combined images */
+	/* Calculate horizontal position to centralize the combined images. */
+	/*
+	 * No clever way to redraw the combined images when they overflow but
+	 * luckily there is plenty of space for just 'model' + model name.
+	 */
 	x = (VB_SCALE - w1 - w2) / 2;
 	y += VB_TEXT_HEIGHT;
 	RETURN_ON_ERROR(draw_image_locale("model.bmp", locale,
