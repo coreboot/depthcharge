@@ -31,6 +31,7 @@
 #include "fastboot/capabilities.h"
 #include "fastboot/fastboot.h"
 #include "fastboot/udc.h"
+#include "image/symbols.h"
 #include "vboot/boot.h"
 #include "vboot/boot_policy.h"
 #include "vboot/firmware_id.h"
@@ -1005,7 +1006,11 @@ static fb_ret_type fb_boot(struct fb_cmd *cmd)
 	}
 
 	size_t kernel_size;
-	void *kernel = bootimg_get_kernel_ptr(image_addr, image_size);
+	void *kernel_base = &_kernel_start;
+
+	memcpy(kernel_base, image_addr, image_size);
+
+	void *kernel = bootimg_get_kernel_ptr(kernel_base, image_size);
 
 	if (kernel == NULL) {
 		fb_add_string(&cmd->output, "bootimg format not recognized",
@@ -1013,7 +1018,7 @@ static fb_ret_type fb_boot(struct fb_cmd *cmd)
 		return FB_SUCCESS;
 	}
 
-	kernel_size = (uintptr_t)kernel - (uintptr_t)image_addr;
+	kernel_size = (uintptr_t)kernel - (uintptr_t)kernel_base;
 
 	if (kernel_size >= image_size) {
 		fb_add_string(&cmd->output, "bootimg kernel not found", NULL);
@@ -1045,10 +1050,13 @@ static fb_ret_type fb_boot(struct fb_cmd *cmd)
 			 * without any signature in unlocked mode with full
 			 * fastboot cap set.
 			 */
-			kparams.kernel_buffer = image_addr;
+			kparams.kernel_buffer = kernel_base;
 			kparams.kernel_buffer_size = image_size;
 		}
 	}
+
+	/* No longer need the image space. */
+	free_image_space();
 
 	kparams.flags = KERNEL_IMAGE_BOOTIMG;
 
