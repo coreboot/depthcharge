@@ -202,7 +202,7 @@ static int dwmci_send_cmd(MmcCtrlr *ctrlr, MmcCommand *cmd, MmcData *data)
 
 	if (data) {
 		uint32_t error_mask = (DWMCI_DATA_ERR | DWMCI_DATA_TOUT),
-			 timeout_ms = 1000;
+			 timeout_ms = 240000;
 		mask = 0;
 		if (mmc_busy_wait_io_until(
 				dwmci_get_ioaddr(host, DWMCI_RINTSTS),
