@@ -49,6 +49,16 @@ struct part_info fb_part_list[] = {
 		 GPT_TYPE(CHROMEOS_ROOTFS), 0),
 	PART_GPT("rootfs-b", "ext4", BDEV_ENTRY(MMC_BDEV),
 		 GPT_TYPE(CHROMEOS_ROOTFS), 1),
+	PART_GPT("data", "ext4", BDEV_ENTRY(MMC_BDEV), GPT_TYPE(LINUX_FS), 0),
+	PART_GPT("userdata", "ext4", BDEV_ENTRY(MMC_BDEV), GPT_TYPE(LINUX_FS),
+		 0),
+	PART_GPT("system", "ext4", BDEV_ENTRY(MMC_BDEV), GPT_TYPE(LINUX_FS), 1),
+	PART_GPT("metadata", "ext4", BDEV_ENTRY(MMC_BDEV), GPT_TYPE(LINUX_FS),
+		 2),
+	PART_GPT("misc", "ext4", BDEV_ENTRY(MMC_BDEV), GPT_TYPE(LINUX_FS), 3),
+	PART_GPT("cache", "ext4", BDEV_ENTRY(MMC_BDEV), GPT_TYPE(LINUX_FS), 4),
+	PART_GPT("persistent", "ext4", BDEV_ENTRY(MMC_BDEV), GPT_TYPE(LINUX_FS),
+		 5),
 };
 
 size_t fb_part_count = ARRAY_SIZE(fb_part_list);

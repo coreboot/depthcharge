@@ -39,10 +39,25 @@
 #include "drivers/tpm/tpm.h"
 #include "drivers/video/display.h"
 #include "drivers/video/rockchip.h"
+#include "vboot/boot_policy.h"
 #include "vboot/util/flag.h"
+
+const char *hardware_name(void)
+{
+	return "shark";
+}
 
 static int board_setup(void)
 {
+	static const struct boot_policy policy[] = {
+		{KERNEL_IMAGE_BOOTIMG, CMD_LINE_DTB},
+		{KERNEL_IMAGE_CROS, CMD_LINE_SIGNER},
+	};
+
+	if (set_boot_policy(policy, ARRAY_SIZE(policy)) == -1)
+		halt();
+
+
 	RkSpi *spi2 = new_rockchip_spi(0xff130000);
 
 	SpiFlash *flash = new_spi_flash(&spi2->ops);
