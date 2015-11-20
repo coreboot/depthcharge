@@ -50,7 +50,7 @@ const char *hardware_name(void)
 static int board_setup(void)
 {
 	static const struct boot_policy policy[] = {
-		{KERNEL_IMAGE_BOOTIMG, CMD_LINE_DTB},
+		{KERNEL_IMAGE_BOOTIMG, CMD_LINE_BOOTIMG_HDR},
 		{KERNEL_IMAGE_CROS, CMD_LINE_SIGNER},
 	};
 
