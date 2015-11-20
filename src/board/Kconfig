@@ -133,4 +133,7 @@ endif
 if BOARD = "veyron_speedy"
 source src/board/veyron_speedy/Kconfig
 endif
+if BOARD = "wizpig"
+source src/board/wizpig/Kconfig
+endif
 endmenu
