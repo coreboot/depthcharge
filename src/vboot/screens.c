@@ -49,6 +49,9 @@
 #define VB_DIVIDER_WIDTH	800	/* 80.0% */
 #define VB_DIVIDER_V_OFFSET	160	/* 16.0% */
 
+/* Space between 'MODEL' and a model name */
+#define VB_MODEL_PADDING	10	/* 1.0 % */
+
 #define RETURN_ON_ERROR(function_call) do {				\
 		VbError_t rv = (function_call);				\
 		if (rv)							\
@@ -363,6 +366,7 @@ static VbError_t vboot_draw_footer(uint32_t locale)
 	w1 = 0;
 	h1 = VB_TEXT_HEIGHT;
 	RETURN_ON_ERROR(get_image_size_locale("model.bmp", locale, &w1, &h1));
+	w1 += VB_MODEL_PADDING;
 
 	w2 = 0;
 	h2 = VB_TEXT_HEIGHT;
