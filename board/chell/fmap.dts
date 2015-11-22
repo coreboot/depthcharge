@@ -215,13 +215,9 @@
 			wipe-value = [ff];
 		};
 
-		/*
-		 * This space is currently unused and reserved for future
-		 * extensions. cros_bundle_firmware dislikes holes in the
-		 * FMAP, so we cover all empty space here.
-		 */
-		rw-unused {
-			label = "rw-unused";
+		/* ---- Section: Storage to simulate NVRAM ---- */
+		rw-nvram {
+			label = "rw-nvram";
 			reg = <0x009fa000 0x00006000>;
 			type = "wiped";
 			wipe-value = [ff];
