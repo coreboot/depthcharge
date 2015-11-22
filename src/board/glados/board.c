@@ -92,6 +92,10 @@ static int board_setup(void)
 	ssm4567Codec *speaker_amp_left =
 		new_ssm4567_codec(&i2c4->ops, 0x34, SSM4567_MODE_PDM);
 
+	/* Activate buffer to disconnect I2S from PCH and allow GPIO */
+	GpioCfg *i2s2_buffer = new_skylake_gpio_output(GPP_D22, 0);
+	gpio_set(&i2s2_buffer->ops, 1);
+
 	/* Use GPIO to bit-bang PDM to the codec */
 	GpioCfg *i2s2_sclk = new_skylake_gpio_output(GPP_F0, 0);
 	GpioCfg *i2s2_txd  = new_skylake_gpio_output(GPP_F2, 0);
