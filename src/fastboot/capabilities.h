@@ -57,7 +57,8 @@ typedef enum {
 	FB_ID_CLEAR_GBB		= (1 << 16),
 	FB_ID_WRITE_PROTECT		= (1 << 17),
 	FB_ID_DOUBLE_TAP_DISABLE	= (1 << 18),
-	FB_ID_MASK			= ((1 << 19) - 1),
+	FB_ID_USB_RECOVERY		= (1 << 19),
+	FB_ID_MASK			= ((1 << 20) - 1),
 } fb_func_id_t;
 
 /*

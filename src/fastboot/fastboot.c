@@ -1349,6 +1349,13 @@ static fb_ret_type fb_double_tap_disable(struct fb_cmd *cmd)
 	return FB_SUCCESS;
 }
 
+static fb_ret_type fb_usb_recovery(struct fb_cmd *cmd)
+{
+	cmd->type = FB_OKAY;
+
+	return FB_CONTINUE_RECOVERY;
+}
+
 /************** Command Function Table *****************/
 struct fastboot_func {
 	struct name_string name;
@@ -1386,6 +1393,8 @@ const struct fastboot_func fb_func_table[] = {
 	  fb_write_protect},
 	{ NAME_NO_ARGS("oem Double-tap-disable"), FB_ID_DOUBLE_TAP_DISABLE,
 	  fb_double_tap_disable},
+	{ NAME_NO_ARGS("oem Usb-recovery"), FB_ID_USB_RECOVERY,
+	  fb_usb_recovery},
 };
 
 /************** Protocol Handler ************************/
@@ -1529,9 +1538,12 @@ fb_ret_type device_mode_enter(void)
 	/* Done with usb gadget driver - Stop it */
 	usb_gadget_stop();
 
-	/* Ret should be either poweroff, reboot or reboot bootloader */
+	/*
+	 * Ret should be either poweroff, reboot, reboot bootloader or continue
+	 * usb recovery.
+	 */
 	if ((ret != FB_POWEROFF) && (ret != FB_REBOOT) &&
-	    (ret != FB_REBOOT_BOOTLOADER))
+	    (ret != FB_REBOOT_BOOTLOADER) && (ret != FB_CONTINUE_RECOVERY))
 		ret = FB_REBOOT;
 
 	FB_LOG("********** Exit fastboot mode *****************\n");
