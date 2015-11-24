@@ -21,6 +21,8 @@
 #include "boot/fit.h"
 #include "base/init_funcs.h"
 #include "drivers/bus/usb/usb.h"
+#include "drivers/bus/i2c/armada38x_i2c.h"
+#include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
 #include "drivers/gpio/sysinfo.h"
@@ -60,6 +62,7 @@
 
 #define MV_USB3_HOST_BASE 0xF10F8000
 #define MV_SPI_BASE 0xF1010600
+#define MV_I2C_BASE 0xF1011000
 
 static void enable_usb(int target)
 {
@@ -142,6 +145,7 @@ static int board_setup(void)
 {
 	UsbHostController *usb_host30;
 	SpiController *spi;
+	Armada38xI2c *i2c;
 
 	sysinfo_install_flags(NULL);
 
@@ -155,6 +159,9 @@ static int board_setup(void)
 	spi = new_armada38x_spi(MV_SPI_BASE, MV_BOARD_TCLK_250MHZ,
 				1, 0, MV_SPI_DEFAULT_SPEED);
 	flash_set_ops(&new_spi_flash(&spi->ops)->ops);
+
+	i2c = new_armada38x_i2c(MV_I2C_BASE, MV_BOARD_TCLK_250MHZ, 1);
+	tpm_set_ops(&new_slb9635_i2c(&i2c->ops, 0x20)->base.ops);
 	return 0;
 }
 
