@@ -24,6 +24,7 @@
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
 #include "drivers/gpio/sysinfo.h"
+#include "drivers/bus/spi/armada38x_spi.h"
 
 #define CYCLONE_COMPAT_STR "google,cyclone-proto1"
 
@@ -54,8 +55,11 @@
 #define USB_BRIDGE_INTR_MASK_REG (USB_REG_BASE + 0x314)
 #define USB_BRIDGE_IPG_REG (USB_REG_BASE + 0x360)
 
-#define MV_USB3_HOST_BASE 0xF10F8000
+#define MV_BOARD_TCLK_250MHZ 250000000
+#define MV_SPI_DEFAULT_SPEED 50000000
 
+#define MV_USB3_HOST_BASE 0xF10F8000
+#define MV_SPI_BASE 0xF1010600
 
 static void enable_usb(int target)
 {
@@ -137,6 +141,7 @@ static void enable_usb(int target)
 static int board_setup(void)
 {
 	UsbHostController *usb_host30;
+	SpiController *spi;
 
 	sysinfo_install_flags(NULL);
 
@@ -147,6 +152,9 @@ static int board_setup(void)
 	usb_host30 = new_usb_hc(XHCI, MV_USB3_HOST_BASE);
 	list_insert_after(&usb_host30->list_node, &usb_host_controllers);
 
+	spi = new_armada38x_spi(MV_SPI_BASE, MV_BOARD_TCLK_250MHZ,
+				1, 0, MV_SPI_DEFAULT_SPEED);
+	flash_set_ops(&new_spi_flash(&spi->ops)->ops);
 	return 0;
 }
 
