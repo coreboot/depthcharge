@@ -27,6 +27,7 @@
 #include "vboot/util/flag.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/bus/spi/armada38x_spi.h"
+#include "drivers/power/armada38x.h"
 
 #define CYCLONE_COMPAT_STR "google,cyclone-proto1"
 
@@ -150,6 +151,8 @@ static int board_setup(void)
 	sysinfo_install_flags(NULL);
 
 	fit_set_compat(CYCLONE_COMPAT_STR);
+
+	power_set_ops(new_armada38x_power_ops());
 
 	enable_usb(0);
 
