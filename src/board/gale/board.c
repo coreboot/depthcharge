@@ -438,9 +438,7 @@ static int board_setup(void)
 	list_insert_after(&mmc->mmc.ctrlr.list_node,
 				  &fixed_block_dev_controllers);
 
-
-#if 0
-	UsbHostController *usb_host1 = new_usb_hc(XHCI, 0x11000000);
+	UsbHostController *usb_host1 = new_usb_hc(XHCI, 0x8A00000);
 
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
 
@@ -463,6 +461,7 @@ static int board_setup(void)
 	Ipq806xI2c *i2c = new_ipq806x_i2c(GSBI_ID_1);
 	tpm_set_ops(&new_slb9635_i2c(&i2c->ops, 0x20)->base.ops);
 
+#if 0
 	Ipq806xSound *sound = new_ipq806x_sound(new_storm_dac_gpio_output(),
 			48000, 2, 16, 1000);
 	SoundRoute *sound_route = new_sound_route(&sound->ops);
