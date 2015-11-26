@@ -30,9 +30,9 @@
 
 /dts-v1/;
 / {
-	model = "Google Storm";
+	model = "Google Gale";
 	config {
-		hwid = "Storm TEST 1";
+		hwid = "Gale TEST 1";
 	};
 	chromeos-config {
 		/* Enable factory-friendly features. */
