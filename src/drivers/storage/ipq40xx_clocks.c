@@ -28,86 +28,43 @@
  */
 
 #include <libpayload.h>
-#include "drivers/storage/ipq806x_clocks.h"
-#include "drivers/storage/ipq806x_mmc.h"
+#include "drivers/storage/ipq40xx_mmc.h"
+#include "drivers/storage/ipq40xx_clocks.h"
 
-void clock_init_mmc(unsigned instance)
+void clock_config_mmc(MmcCtrlr *ctrlr, int mode)
 {
-	/* Enable h/w gating */
-	writel(1<<6, SDCn_HCLK_CTL_REG(instance));
-}
+	printf("%s : %d\n",__func__,mode);
+	/* Select SDCC clock source as DDR_PLL_SDCC1_CLK  192MHz */
+	writel(0x100, GCC_SDCC1_APPS_RCGR);
+	/* Update APPS_CMD_RCGR to reflect source selection */
+	writel(0x1, GCC_SDCC1_APPS_CMD_RCGR);
+	udelay(10);
 
-static void clock_set_m_n_d(uint32_t instance, uint32_t m,
-				uint32_t n, uint32_t d,
-				uint32_t s, uint32_t pre)
-{
-	uint32_t reg;
-
-	reg = 2 * d;
-	reg = ~reg;
-	reg &= 0xFF;
-
-	reg |= (m << 16);
-	writel(reg, SDCn_APPS_CLK_MD_REG(instance));
-
-	reg = (((~(n-m)) << 16) & 0xFFFF0000)|1<<11|s;
-	writel(reg, SDCn_APPS_CLK_NS_REG(instance));
-
-	/* enable m n d counters. */
-	reg |= (2 << 5) | (pre << 3);
-	writel(reg, SDCn_APPS_CLK_NS_REG(instance));
-
-	reg |= (1 << 8);
-	writel(reg, SDCn_APPS_CLK_NS_REG(instance));
-
-	/* enable clock */
-	writel(reg | 1<<9, SDCn_APPS_CLK_NS_REG(instance));
-}
-
-void clock_config_mmc(MmcCtrlr *ctrlr, unsigned freq)
-{
-	uint32_t m, n, d, s, pre;
-	uint32_t reg;
-	QcomMmcHost *mmc_host = container_of(ctrlr, QcomMmcHost, mmc);
-	uint32_t instance = mmc_host->instance;
-
-	/*Disable the clk */
-	reg = readl(SDCn_APPS_CLK_NS_REG(instance));
-	reg &= ~(1<<9);
-	writel(reg, SDCn_APPS_CLK_NS_REG(instance));
-
-	switch (freq) {
-	case 144000:
-		m = 2;
-		n = 125;
-		d = 3;
-		s = 0;
-		pre = 2;
-		break;
-
-	case 400000:
-		m = 1;
-		n = 240;
-		d = 4;
-		s = 3;
-		pre = 3;
-		break;
-
-	case 48000000:
-	case 52000000:
-		m = 1;
-		n = 2;
-		d = 1;
-		s = 3;
-		pre = 3;
-		break;
-
-	default:
-		printf("MMC clock speed not supported %d\n", freq);
-		return;
+	if (mode == MMC_IDENTIFY_MODE) {
+		/* Set root clock generator to bypass mode */
+		writel(0x0, GCC_SDCC1_APPS_CBCR);
+		udelay(10);
+		/* Choose divider for 400KHz */
+		writel(0x1e4 , GCC_SDCC1_MISC);
+		/* Enable root clock generator */
+		writel(0x1, GCC_SDCC1_APPS_CBCR);
+		udelay(10);
 	}
+	if (mode == MMC_DATA_TRANSFER_MODE) {
+		/* Set root clock generator to bypass mode */
+		writel(0x0, GCC_SDCC1_APPS_CBCR);
+		udelay(10);
+		/* Choose divider for 48MHz */
+		writel(0x3, GCC_SDCC1_MISC);
+		/* Enable root clock generator */
+		writel(0x1, GCC_SDCC1_APPS_CBCR);
+		udelay(10);
+	}
+	//  mmc_boot_mci_clk_enable(ctrlr);
+}
 
-	clock_set_m_n_d(instance, m, n, d, s, pre);
-
-	mmc_boot_mci_clk_enable(ctrlr);
+void clock_disable_mmc(void)
+{
+	/* Clear divider */
+	writel(0x0, GCC_SDCC1_MISC);
 }

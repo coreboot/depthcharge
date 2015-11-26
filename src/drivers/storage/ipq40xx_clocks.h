@@ -27,19 +27,12 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __DRIVERS_STORAGE_IPQ806X_CLOCKS_H__
-#define __DRIVERS_STORAGE_IPQ806X_CLOCKS_H__
+#ifndef __DRIVERS_STORAGE_IPQ406X_CLOCKS_H__
+#define __DRIVERS_STORAGE_IPQ406X_CLOCKS_H__
 
-/* MMC clocks */
-#define MSM_CLK_CTL_BASE                    ((unsigned char *)0x00900000)
+#define GCC_SDCC1_MISC			((void *)0x1818014)
+#define GCC_SDCC1_APPS_CBCR		((void *)0x181800C)
+#define GCC_SDCC1_APPS_RCGR		((void *)0x1818008)
+#define GCC_SDCC1_APPS_CMD_RCGR		((void *)0x1818004)
 
-#define REG(off)                            (MSM_CLK_CTL_BASE + (off))
-
-#define SDCn_APPS_CLK_MD_REG(n)             REG(0x2828+(0x20*((n)-1)))
-#define SDCn_APPS_CLK_NS_REG(n)             REG(0x282C+(0x20*((n)-1)))
-#define SDCn_HCLK_CTL_REG(n)                REG(0x2820+(0x20*((n)-1)))
-#define SDCn_RESET_REG(n)                   REG(0x2830+(0x20*((n)-1)))
-
-#define CLK_HALT_DFAB_STATE_REG             REG(0x2FC8)
-
-#endif /* __DRIVERS_STORAGE_IPQ806X_CLOCKS_H__ */
+#endif

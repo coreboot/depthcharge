@@ -759,6 +759,9 @@ QcomMmcHost *new_qcom_mmc_host(unsigned slot, uint32_t base, int bus_width)
 					MMC_MODE_8BIT : MMC_MODE_4BIT;
 		new_host->mmc.caps |= MMC_MODE_HS | MMC_MODE_HS_52MHz |
 			MMC_MODE_HC;
+
+		clock_config_mmc(&(new_host->mmc), 1);
+		clock_disable_mmc();
 	}
 
 	return new_host;

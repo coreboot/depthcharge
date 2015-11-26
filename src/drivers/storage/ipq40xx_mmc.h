@@ -27,8 +27,8 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __DRIVERS_STORAGE_IPQ806X_MMC_H__
-#define __DRIVERS_STORAGE_IPQ806X_MMC_H__
+#ifndef __DRIVERS_STORAGE_IPQ40XX_MMC_H__
+#define __DRIVERS_STORAGE_IPQ40XX_MMC_H__
 
 #include "drivers/storage/mmc.h"
 
@@ -50,6 +50,7 @@ extern int __mmc_trace;
 #define MMC_BOOT_MCI_PWR_OFF              0x00
 #define MMC_BOOT_MCI_PWR_UP               0x02
 #define MMC_BOOT_MCI_PWR_ON               0x03
+#define MMC_BOOT_MCI_SW_RST		(1 << 7)
 
 #define MMC_BOOT_MCI_CLK(base)    MMC_BOOT_MCI_REG(base, 0x004)	/* 16 bits */
 /* Enable MCI bus clock - 0: clock disabled 1: enabled */
@@ -209,6 +210,8 @@ extern int __mmc_trace;
 		MMC_BOOT_MCI_SDIO_INTR_CLR| \
 		MMC_BOOT_MCI_STAT_PROG_DONE| \
 		MMC_BOOT_MCI_STAT_ATA_CMD_CMPL |\
+		MMC_BOOT_MCI_STAT_SDIO_INTR |\
+		MMC_BOOT_MCI_STAT_SDIO_INTR_OP |\
 		MMC_BOOT_MCI_STAT_CCS_TIMEOUT)
 
 #define MMC_BOOT_MCI_CLEAR(base)                MMC_BOOT_MCI_REG(base, 0x038)
@@ -314,6 +317,7 @@ typedef struct {
 	unsigned instance;
 	uint8_t *mci_base;
 	uint32_t mmc_cont_version;
+	int clk_mode;
 } QcomMmcHost;
 
 /* We have 16 32-bits FIFO registers */
@@ -334,6 +338,9 @@ typedef struct {
 #define MMC_CLK_ENABLE      1
 #define MMC_CLK_DISABLE     0
 
+#define MMC_IDENTIFY_MODE 1
+#define MMC_DATA_TRANSFER_MODE 2
+
 #define MMC_READ_ERROR		(MMC_BOOT_MCI_STAT_DATA_CRC_FAIL|\
 				MMC_BOOT_MCI_STAT_DATA_TIMEOUT|\
 				MMC_BOOT_MCI_STAT_RX_OVRRUN)
@@ -342,10 +349,9 @@ typedef struct {
 				MMC_BOOT_MCI_STAT_DATA_TIMEOUT|\
 				MMC_BOOT_MCI_STAT_TX_UNDRUN)
 
-void mmc_boot_mci_clk_enable(MmcCtrlr *ctrlr);
-void clock_init_mmc(unsigned instance);
-void clock_config_mmc(MmcCtrlr *ctrlr, unsigned freq);
+void clock_config_mmc(MmcCtrlr *ctrlr, int mode);
+void clock_disable_mmc(void);
 void board_mmc_gpio_config(void);
 QcomMmcHost *new_qcom_mmc_host(unsigned slot, uint32_t base, int bus_width);
 
-#endif /* __DRIVERS_STORAGE_IPQ806X_MMC_H__ */
+#endif /* __DRIVERS_STORAGE_IPQ406X_MMC_H__ */
