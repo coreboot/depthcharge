@@ -72,40 +72,12 @@ static struct board_descriptor bdescriptor;
 
 static void fill_board_descriptor(void)
 {
-	int storm_board = 0;
-	bdescriptor.use_nand = 0;
-
 	switch(lib_sysinfo.board_id) {
-	case BOARD_ID_WHIRLWIND_SP3:
-		bdescriptor.compat_string = "google,whirlwind-sp3";
-		bdescriptor.calibration_needed = 1;
-		break;
-
-	case BOARD_ID_WHIRLWIND_SP5:
-		bdescriptor.compat_string = "google,whirlwind-sp5";
-		bdescriptor.calibration_needed = 1;
-		break;
-
-	case BOARD_ID_PROTO_0_2_NAND:
-		bdescriptor.use_nand = 1;
-		storm_board = 1;
-		break;
-
-	case BOARD_ID_PROTO_0:
-	case BOARD_ID_PROTO_0_2:
-		storm_board = 1;
-		break;
-
 	default:
-		printf("Unknown board id %d; assuming like Storm Proto 0.2\n",
-		       lib_sysinfo.board_id);
-		storm_board = 1;
+		/* FIXME: Add valid board IDs */
+		bdescriptor.compat_string = "google,gale";
+		bdescriptor.calibration_needed = 1;
 		break;
-	}
-
-	if (storm_board) {
-		bdescriptor.compat_string = "google,storm-proto0";
-		bdescriptor.calibration_needed = 0;
 	}
 }
 
