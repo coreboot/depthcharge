@@ -701,12 +701,17 @@ static VbError_t draw_screen(uint32_t screen_type, uint32_t locale)
 	}
 
 	/* if no drawing function is registered, fallback msg will be printed */
-	if (desc->draw)
+	if (desc->draw) {
 		rv = desc->draw(locale);
-	if (rv)
+		if (rv)
+			printf("Drawing failed (0x%x)\n", rv);
+	}
+	if (rv) {
 		print_fallback_message(desc);
+		return VBERROR_SCREEN_DRAW;
+	}
 
-	return rv;
+	return VBERROR_SUCCESS;
 }
 
 static void vboot_init_locale(void)
