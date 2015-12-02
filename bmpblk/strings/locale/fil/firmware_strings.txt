@@ -19,4 +19,4 @@ Upang I-OFF ang pag-verify ng OS, pindutin ang button na PAGBAWI.
 Walang sapat na power ang nakakonektang power supply upang patakbuhin ang device na ito.
 Magsa-shut down na ngayon ang Chrome OS.
 Pakigamit ang tamang adaptor at subukang muli.
-NEED_TRANSLATION: Please remove all devices...
+Pakialis ang lahat ng nakakonektang device at simulan ang pag-recover

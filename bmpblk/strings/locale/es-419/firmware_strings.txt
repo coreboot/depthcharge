@@ -19,4 +19,4 @@ Para desactivar la verificación del SO, presiona el botón de RECUPERACIÓN.
 La fuente de alimentación conectada no tiene suficiente energía para hacer funcionar este dispositivo.
 El Sistema operativo Chrome se cerrará.
 Utiliza el adaptador correcto y vuelve a intentarlo.
-NEED_TRANSLATION: Please remove all devices...
+Quita todos los dispositivos conectados y comienza la recuperación

@@ -19,4 +19,4 @@ Pour désactiver la validation du système d'exploitation, appuyez sur le bouton
 L'alimentation sur laquelle l'appareil est branché n'est pas assez puissante.
 Chrome OS va se fermer.
 Veuillez utiliser le bon adaptateur, puis réessayer.
-NEED_TRANSLATION: Please remove all devices...
+Veuillez débrancher tous les appareils connectés et lancer la récupération.

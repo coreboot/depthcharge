@@ -19,4 +19,4 @@ Per DISATTIVARE la verifica del sistema operativo, premi il pulsante RIPRISTINO.
 L'alimentatore collegato non fornisce energia sufficiente per consentire il funzionamento del dispositivo.
 Chrome OS non verrà arrestato.
 Utilizza l'alimentatore adeguato e riprova.
-NEED_TRANSLATION: Please remove all devices...
+Rimuovi tutti i dispositivi collegati e avvia il ripristino

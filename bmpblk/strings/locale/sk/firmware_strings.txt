@@ -19,4 +19,4 @@ Ak chcete vypnúť overenie operačného systému, stlačte tlačidlo RECOVERY (
 Pripojený zdroj napájania pre toto zariadenie nemá dostatočný výkon.
 Systém OS Chrome sa teraz vypne.
 Použite správny adaptér a skúste to znova.
-NEED_TRANSLATION: Please remove all devices...
+Odstráňte všetky pripojené zariadenia a začnite obnovenie

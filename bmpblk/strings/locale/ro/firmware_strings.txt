@@ -19,4 +19,4 @@ Pentru a DEZACTIVA verificarea sistemului de operare, apăsați pe butonul RECUP
 Adaptorul de curent conectat nu are suficientă putere pentru ca dispozitivul să funcționeze.
 Acum sistemul de operare Chrome se va închide.
 Folosiți adaptorul corect și încercați din nou.
-NEED_TRANSLATION: Please remove all devices...
+Eliminați toate dispozitivele conectate și începeți recuperarea

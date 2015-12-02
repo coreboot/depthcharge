@@ -19,4 +19,4 @@ OS doğrulamayı KAPATMAK için KURTARMA düğmesine basın.
 Bağlı güç kaynağı, bu cihazı çalıştırmaya yetecek güce sahip değil.
 Chrome OS şimdi kapatılacak.
 Lütfen doğru adaptörü kullanın ve tekrar deneyin.
-NEED_TRANSLATION: Please remove all devices...
+Lütfen tüm bağlı cihazları çıkarın ve kurtarma işlemini başlatın
