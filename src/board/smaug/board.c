@@ -367,6 +367,7 @@ static int smaug_backlight_update(DisplayOps *me, uint8_t enable)
 		{0x00, 0x00},	/* backlight off */
 		{0x10, 0x00},	/* Brightness mode: PWM */
 		{0x11, 0x04},	/* maxcurrent: 18ma */
+		{0x12, 0x39},	/* pgen: 9.8kHz, full threshold */
 		{0x13, 0x03},	/* boostfreq: 1MHz, bcomp option 1 */
 		{0x14, 0xbf},	/* ov: 2v, all 6 current sinks enabled */
 		{0x15, 0xc3},	/* smoothing step */
