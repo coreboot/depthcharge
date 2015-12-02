@@ -49,7 +49,6 @@
  */
 #define EMMC_SD_CLOCK_MIN	400000
 #define EMMC_CLOCK_MAX		200000000
-#define SD_CLOCK_MAX		52000000
 
 static int board_setup(void)
 {
@@ -75,12 +74,6 @@ static int board_setup(void)
 			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			&fixed_block_dev_controllers);
-
-	/* SD Card */
-	SdhciHost *sd = new_pci_sdhci_host(PCI_DEV(0, 0x1e, 6), 1,
-			EMMC_SD_CLOCK_MIN, SD_CLOCK_MAX);
-	list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
-				&removable_block_dev_controllers);
 
 	return 0;
 }
