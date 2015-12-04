@@ -19,4 +19,4 @@ Trykk på RECOVERY-knappen for å slå av OS-bekreftelse.
 Strømforsyningen som er tilkoblet har ikke nok effekt til å drifte denne enheten.
 Chrome OS avsluttes nå.
 Bruk riktig adapter og prøv på nytt.
-NEED_TRANSLATION: Please remove all devices...
+Fjern alle tilkoblede enheter og begynn gjenopprettingen
