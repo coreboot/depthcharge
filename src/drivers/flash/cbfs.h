@@ -20,8 +20,6 @@
 
 struct cbfs_media;
 
-int cbfs_media_from_fmap(struct cbfs_media *media, const char *name);
-
 /* Return a cbfs_media structure representing the RO CBFS -- NULL on error. */
 struct cbfs_media *cbfs_ro_media(void);
 

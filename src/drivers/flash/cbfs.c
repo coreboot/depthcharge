@@ -113,30 +113,6 @@ int libpayload_init_default_cbfs_media(struct cbfs_media *media)
 	return 0;
 }
 
-int cbfs_media_from_fmap(struct cbfs_media *media, const char *name)
-{
-	FmapArea *area = malloc(sizeof(*area));
-
-	if (area == NULL) {
-		printf("couldn't allocate memory for FmapArea\n");
-		return -1;
-	}
-	if (fmap_find_area(name, area)) {
-		printf("'%s' not found\n", name);
-		return -1;
-	}
-
-	media->context = area;
-
-	media->open = cbfs_media_open;
-	media->close = cbfs_media_close;
-	media->read = cbfs_media_read;
-	media->map = cbfs_media_map;
-	media->unmap = cbfs_media_unmap;
-
-	return 0;
-}
-
 struct cbfs_media *cbfs_ro_media(void)
 {
 	FmapArea area;

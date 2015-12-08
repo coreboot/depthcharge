@@ -32,7 +32,6 @@
 #include "config.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/flash/flash.h"
-#include "drivers/flash/cbfs.h"
 #include "image/fmap.h"
 #include "image/index.h"
 #include "vboot/util/flag.h"
@@ -53,31 +52,19 @@ static enum ec_flash_region get_flash_region(enum VbSelectFirmware_t select)
 		EC_FLASH_REGION_RW;
 }
 
-static struct cbfs_file *get_file_from_cbfs(const char *fmap_name,
-	const char *filename)
+static struct cbfs_file *get_file_from_cbfs(const char *filename)
 {
-	struct cbfs_media media;
-	struct cbfs_file *file;
-
 	if (!IS_ENABLED(CONFIG_DRIVER_CBFS_FLASH))
 		return NULL;
 
-	if (cbfs_media_from_fmap(&media, fmap_name)) {
-		printf("couldn't access cbfs media\n");
-		return NULL;
-	}
-
-	file = cbfs_get_file(&media, filename);
-	media.close(&media);
-
-	return file;
+	return cbfs_get_file(CBFS_DEFAULT_MEDIA, filename);
 }
 
-static const uint8_t *get_file_hash_from_cbfs(const char *fmap_name,
+static const uint8_t *get_file_hash_from_cbfs(
 	const char *filename, int *hash_size)
 {
 	printf("Trying to fetch hash for '%s' from CBFS\n", filename);
-	struct cbfs_file *file = get_file_from_cbfs(fmap_name, filename);
+	struct cbfs_file *file = get_file_from_cbfs(filename);
 
 	if (file == NULL) {
 		printf("file not found\n");
@@ -203,20 +190,16 @@ VbError_t VbExEcGetExpectedImage(int devidx, enum VbSelectFirmware_t select,
 				 const uint8_t **image, int *image_size)
 {
 	const char *name;
-	const char *main_name;
 
 	switch (select) {
 	case VB_SELECT_FIRMWARE_A:
 		name = (devidx == 0 ? "EC_MAIN_A" : "PD_MAIN_A");
-		main_name = "FW_MAIN_A";
 		break;
 	case VB_SELECT_FIRMWARE_B:
 		name = (devidx == 0 ? "EC_MAIN_B" : "PD_MAIN_B");
-		main_name = "FW_MAIN_B";
 		break;
 	case VB_SELECT_FIRMWARE_READONLY:
 		name = "FW_MAIN_RO";
-		main_name = "FW_MAIN_RO";
 		break;
 	default:
 		printf("Unrecognized EC firmware requested.\n");
@@ -229,8 +212,7 @@ VbError_t VbExEcGetExpectedImage(int devidx, enum VbSelectFirmware_t select,
 		/* It may be gone in favor of CBFS based RW sections,
 		 * so look there, too. */
 		const char *filename = get_fw_filename(devidx, select);
-		struct cbfs_file *file =
-			get_file_from_cbfs(main_name, filename);
+		struct cbfs_file *file = get_file_from_cbfs(filename);
 		if (file == NULL)
 			return VBERROR_UNKNOWN;
 		printf("found '%s', sized 0x%x\n", filename, ntohl(file->len));
@@ -338,7 +320,7 @@ VbError_t VbExEcGetExpectedImageHash(int devidx, enum VbSelectFirmware_t select,
 		printf("Didn't find precalculated hash subsection %d.\n",
 		       devidx + 1);
 		const char *filename = get_fw_filename(devidx, select);
-		*hash = get_file_hash_from_cbfs(name, filename, hash_size);
+		*hash = get_file_hash_from_cbfs(filename, hash_size);
 		if (!*hash)
 			return VBERROR_UNKNOWN;
 	}
