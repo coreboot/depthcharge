@@ -281,7 +281,7 @@
 			type = "blob gbb";
 		};
 		ro-boot {
-			label = "boot-stub";
+			label = "coreboot";
 			reg = <0x00e00000 0x00200000>; /* 2 MB */
 			read-only;
 			type = "blob coreboot";
