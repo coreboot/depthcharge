@@ -375,25 +375,36 @@ static VbError_t vboot_draw_footer(uint32_t locale)
 
 	w1 = 0;
 	h1 = VB_TEXT_HEIGHT;
-	RETURN_ON_ERROR(get_image_size_locale("model.bmp", locale, &w1, &h1));
+	RETURN_ON_ERROR(get_image_size_locale("model_left.bmp", locale,
+					      &w1, &h1));
 	w1 += VB_MODEL_PADDING;
 
 	w2 = 0;
 	h2 = VB_TEXT_HEIGHT;
 	RETURN_ON_ERROR(get_text_width(hwid, &w2, &h2));
+	w2 += VB_MODEL_PADDING;
+
+	w3 = 0;
+	h3 = VB_TEXT_HEIGHT;
+	RETURN_ON_ERROR(get_image_size_locale("model_right.bmp", locale,
+					      &w3, &h3));
 
 	/* Calculate horizontal position to centralize the combined images. */
 	/*
 	 * No clever way to redraw the combined images when they overflow but
 	 * luckily there is plenty of space for just 'model' + model name.
 	 */
-	x = (VB_SCALE - w1 - w2) / 2;
+	x = (VB_SCALE - w1 - w2 - w3) / 2;
 	y += VB_TEXT_HEIGHT;
-	RETURN_ON_ERROR(draw_image_locale("model.bmp", locale,
+	RETURN_ON_ERROR(draw_image_locale("model_left.bmp", locale,
 			x, y, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
 			PIVOT_H_LEFT|PIVOT_V_TOP));
 	x += w1;
 	RETURN_ON_ERROR(draw_text(hwid, x, y, VB_TEXT_HEIGHT,
+			PIVOT_H_LEFT|PIVOT_V_TOP));
+	x += w2;
+	RETURN_ON_ERROR(draw_image_locale("model_right.bmp", locale,
+			x, y, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
 			PIVOT_H_LEFT|PIVOT_V_TOP));
 
 	return VBERROR_SUCCESS;
