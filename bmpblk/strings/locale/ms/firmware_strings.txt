@@ -14,7 +14,7 @@ Untuk MEMATIKAN pengesahan OS, tekan ENTER.
 Untuk mendapatkan bantuan, lawati http://google.com/chromeos/recovery
 Kod ralat
 Sila alih keluar semua peranti luaran untuk memulakan pemulihan.
-Model
+Model 60061e
 Untuk MEMATIKAN pengesahan OS, tekan butang PEMULIHAN.
 Bekalan kuasa yang disambungkan tiada kuasa yang mencukupi untuk menjalankan peranti ini.
 OS Chrome akan ditutup sekarang.

@@ -14,7 +14,7 @@ Chcete-li ověření operačního systému VYPNOUT, stiskněte klávesu ENTER.
 Nápovědu naleznete na stránce http://google.com/chromeos/recovery.
 Kód chyby
 Před spuštěním obnovení prosím odeberte všechna externí zařízení.
-Model
+Model 60061e
 Chcete-li vypnout ověření operačního systému, stiskněte tlačítko RECOVERY (Obnovení).
 Připojený zdroj napájení nemá pro toto zařízení dostatečný výkon.
 Systém Chrome OS se nyní vypne.

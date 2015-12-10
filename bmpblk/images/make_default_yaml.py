@@ -17,7 +17,6 @@ import sys
 import yaml
 
 OUTPUT_FILE = "DEFAULT.yaml"
-RTOL_LOCALE_LIST = ('ar', 'fa', 'he')
 SCREEN_LIST = []
 OPTIONAL_SCREENS = {}
 
@@ -312,10 +311,7 @@ class Screen(object):
       # Doubling with ypad seems like a good idea.
       self.move_pos_down(self.ypad)
 
-    if self.locale in RTOL_LOCALE_LIST:
-      self.insert_centered_below('hwid_placeholder', "@model")
-    else:
-      self.insert_centered_below("@model", 'hwid_placeholder')
+    self.insert_centered_below("@model_left", 'hwid_placeholder', "@model_right")
 
 # --- Screen Definitions --------------------------------------------------
 

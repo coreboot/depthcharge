@@ -14,7 +14,7 @@ Per DESACTIVAR la verificació d'OS, premeu RETORN.
 Per obtenir ajuda, visiteu http://google.com/chromeos/recovery
 Codi d'error
 Retireu tots els dispositius externs per començar la recuperació.
-Model
+Model 60061e
 Per DESACTIVAR la verificació del SO, premeu el botó RECUPERACIÓ.
 La font d'alimentació que heu connectat no té prou potència per mantenir el dispositiu engegat.
 Chrome OS s'apagarà d'aquí a uns instants.

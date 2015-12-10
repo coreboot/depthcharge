@@ -14,7 +14,7 @@ Az OS-ellenőrzés KIKAPCSOLÁSÁHOZ nyomja meg az ENTER billentyűt.
 Ha segítségre van szüksége, keresse fel a http://google.com/chromeos/recovery webhelyet.
 Hibakód
 Távolítsa el az összes külső eszközt a helyreállítás megkezdéséhez.
-Modell
+Modell 60061e
 Az operációs rendszer ellenőrzésének kikapcsolásához nyomja meg a VISSZAÁLLÍTÁS gombot.
 A csatlakoztatott áramforrás nem elég nagy teljesítményű az eszköz működtetéséhez.
 A Chrome OS kikapcsol.

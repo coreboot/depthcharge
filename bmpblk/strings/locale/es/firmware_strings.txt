@@ -14,7 +14,7 @@ Para DESACTIVARLA, pulsa INTRO.
 Para obtener ayuda, accede a http://google.com/chromeos/recovery.
 Código de error
 Retira todos los dispositivos externos para iniciar la recuperación.
-Modelo
+Modelo 60061e
 Para desactivar la verificación del SO, pulsa el botón de recuperación.
 La fuente de alimentación conectada no tiene suficiente potencia para hacer funcionar este dispositivo.
 Chrome OS se cerrará.

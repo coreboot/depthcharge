@@ -14,7 +14,7 @@ Pentru a DEZACTIVA verificarea SO, apăsaţi pe ENTER.
 Pentru ajutor, accesaţi http://google.com/chromeos/recovery
 Cod de eroare
 Eliminaţi toate dispozitivele externe pentru a începe recuperarea.
-Model
+Model 60061e
 Pentru a DEZACTIVA verificarea sistemului de operare, apăsați pe butonul RECUPERARE.
 Adaptorul de curent conectat nu are suficientă putere pentru ca dispozitivul să funcționeze.
 Acum sistemul de operare Chrome se va închide.

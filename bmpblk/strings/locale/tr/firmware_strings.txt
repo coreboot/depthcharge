@@ -14,7 +14,7 @@ OS doğrulamayı KAPATMAK için ENTER tuşuna basın.
 Yardım için: http://google.com/chromeos/recovery
 Hata kodu
 Kurtarma işlemine başlamak için lütfen tüm harici cihazları çıkarın.
-Model
+Model 60061e
 OS doğrulamayı KAPATMAK için KURTARMA düğmesine basın.
 Bağlı güç kaynağı, bu cihazı çalıştırmaya yetecek güce sahip değil.
 Chrome OS şimdi kapatılacak.

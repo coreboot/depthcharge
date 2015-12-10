@@ -14,7 +14,7 @@ Xác minh OS đang BẬT.
 Để được trợ giúp, hãy truy cập http://google.com/chromeos/recovery
 Mã lỗi
 Vui lòng tháo tất cả các thiết bị ngoài để bắt đầu khôi phục.
-Mô hình
+Mô hình 60061e
 Để TẮT xác minh OS, nhấn nút KHÔI PHỤC.
 Nguồn điện được kết nối không có đủ điện để chạy thiết bị này.
 Chrome OS sẽ tắt bây giờ.

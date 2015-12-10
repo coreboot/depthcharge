@@ -37,7 +37,8 @@ inputs:
 
 files:
   # Text files to be generated.
-  model:
+  model_left:     ['model@s/60061e.*//']
+  model_right:    ['model@s/.*60061e//']
   devmode:
   remove:
   yuck:

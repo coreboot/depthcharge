@@ -14,7 +14,7 @@ Para definir a confirmação do SO como DESATIVADA, prima ENTER.
 Para obter ajuda, visite http://google.com/chromeos/recovery
 Código de erro
 Retire todos os dispositivos externos para iniciar a recuperação.
-Modelo
+Modelo 60061e
 Para desativar a confirmação do SO, prima o botão RECOVERY.
 A fonte de alimentação ligada não tem energia suficiente para alimentar este dispositivo.
 O SO Chrome será agora encerrado.

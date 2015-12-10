@@ -14,7 +14,7 @@ Druk op ENTER om OS-verificatie uit te schakelen.
 Ga naar http://google.com/chromeos/recovery voor hulp
 Foutcode
 Verwijder alle externe apparaten om het herstel te starten.
-Model
+Model 60061e
 Als u de OS-verificatie UIT wilt zetten, drukt u op de knop RECOVERY.
 De aangesloten voeding levert niet voldoende stroom voor dit apparaat.
 Chrome OS wordt nu uitgeschakeld.

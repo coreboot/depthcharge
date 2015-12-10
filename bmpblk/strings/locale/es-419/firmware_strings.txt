@@ -14,7 +14,7 @@ Para DESACTIVAR la verificación del SO, presiona ENTER.
 Para obtener ayuda, visita http://google.com/chromeos/recovery.
 Código de error
 Retira todos los dispositivos externos para iniciar la recuperación.
-Modelo
+Modelo 60061e
 Para desactivar la verificación del SO, presiona el botón de RECUPERACIÓN.
 La fuente de alimentación conectada no tiene suficiente energía para hacer funcionar este dispositivo.
 El Sistema operativo Chrome se cerrará.

@@ -14,7 +14,7 @@ Lai IZSLĒGTU OS verifikāciju, nospiediet taustiņu ENTER.
 Lai saņemtu palīdzību, apmeklējiet vietni http://google.com/chromeos/recovery.
 Kļūdas kods
 Lūdzu, noņemiet visas ārējās ierīces, lai sāktu atkopšanu.
-Modelis
+Modelis 60061e
 Lai IZSLĒGTU OS verifikāciju, nospiediet ATKOPŠANAS pogu.
 Pievienotajam barošanas avotam nav pietiekami daudz jaudas, lai darbinātu šo ierīci.
 Operētājsistēma Chrome OS tūlīt tiks izslēgta.

@@ -14,7 +14,7 @@ Drücken Sie die Eingabetaste, um die OS-Bestätigung auszuschalten.
 Hilfe erhalten Sie unter http://google.com/chromeos/recovery.
 Fehlercode
 Entfernen Sie alle externen Geräte, um mit der Wiederherstellung zu beginnen.
-Modell
+Modell 60061e
 Zum Deaktivieren der Betriebssystembestätigung drücken Sie die Wiederherstellungstaste.
 Das angeschlossene Netzteil reicht für die Stromversorgung dieses Geräts nicht aus.
 Chrome OS wird jetzt heruntergefahren.

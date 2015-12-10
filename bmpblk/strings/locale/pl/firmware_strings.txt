@@ -14,7 +14,7 @@ Aby WYŁĄCZYĆ sprawdzanie systemu operacyjnego, naciśnij ENTER.
 Pomoc znajdziesz na http://google.com/chromeos/recovery
 Kod błędu
 Aby rozpocząć przywracanie, odłącz wszystkie urządzenia zewnętrzne.
-Model
+Model 60061e
 Aby wyłączyć weryfikację systemu operacyjnego, naciśnij przycisk RECOVERY.
 Podłączone źródło zasilania nie ma wystarczającej mocy do obsługi tego urządzenia.
 Chrome OS zostanie teraz zamknięty.

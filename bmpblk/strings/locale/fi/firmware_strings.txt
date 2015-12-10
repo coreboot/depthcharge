@@ -14,7 +14,7 @@ Poista käyttöjärjestelmän todentaminen käytöstä painamalla ENTER.
 Saat ohjeita osoitteessa http://google.com/chromeos/recovery
 Virhekoodi
 Aloita palautus poistamalla kaikki ulkoiset laitteet.
-Malli
+Malli 60061e
 Poista käyttöjärjestelmän vahvistaminen käytöstä painamalla PALAUTUS-painiketta.
 Yhdistetyn virtalähteen teho ei riitä laitteen käynnissä pitämiseen.
 Chrome-käyttöjärjestelmä sammutetaan.

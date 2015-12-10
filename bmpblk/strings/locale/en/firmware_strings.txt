@@ -14,7 +14,7 @@ To turn OS verification OFF, press ENTER.
 For help visit http://google.com/chromeos/recovery
 Error code
 Please remove all external devices to begin recovery.
-Model
+Model 60061e
 To turn OS verification OFF, press the RECOVERY button.
 The connected power supply does not have enough power to run this device.
 Chrome OS will now shut down.

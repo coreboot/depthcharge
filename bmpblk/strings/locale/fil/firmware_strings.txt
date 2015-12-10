@@ -14,7 +14,7 @@ Upang I-OFF ang pag-verify ng OS, pindutin ang ENTER.
 Para sa tulong, bisitahin ang http://google.com/chromeos/recovery
 Code ng error
 Paki-alis ang lahat ng panlabas na device upang umpisahan ang pagbawi.
-Modelo
+Modelo 60061e
 Upang I-OFF ang pag-verify ng OS, pindutin ang button na PAGBAWI.
 Walang sapat na power ang nakakonektang power supply upang patakbuhin ang device na ito.
 Magsa-shut down na ngayon ang Chrome OS.

@@ -14,7 +14,7 @@ Inaktivera verifiering av operativsystemet genom att trycka på RETUR.
 Om du behöver hjälp besöker du http://google.com/chromeos/recovery
 Felkod
 Ta bort alla externa enheter och påbörja återställningen.
-Modell
+Modell 60061e
 Om du vill INAKTIVERA OS-verifiering trycker du på ÅTERSTÄLLNINGSKNAPPEN.
 Det anslutna nätadaptern är för svag för att driva den här enheten.
 Chrome OS stängs nu av.

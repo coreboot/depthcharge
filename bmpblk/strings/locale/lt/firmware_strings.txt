@@ -14,7 +14,7 @@ Jei norite IŠJUNGTI OS patvirtinimą, paspauskite ENTER.
 Jei reikia pagalbos, apsilankykite šiuo adresu: http://google.com/chromeos/recovery
 Klaidos kodas
 Jei norite pradėti atkūrimą, pašalinkite visus išorinius įrenginius.
-Modelis
+Modelis 60061e
 Jei norite IŠJUNGTI operacinės sistemos patvirtinimą, paspauskite ATKŪRIMO mygtuką.
 Prijungtas maitinimo šaltinis neteikia pakankamai energijos, kad šis įrenginys veiktų.
 „Chrome“ OS dabar bus išjungta.

@@ -14,7 +14,7 @@ Pour DÉSACTIVER la vérification du système d'exploitation, appuyez sur ENTRÉ
 Pour obtenir de l'aide, rendez-vous sur http://google.com/chromeos/recovery
 Code d'erreur
 Veuillez retirer tous les périphériques externes pour lancer la procédure de récupération.
-Modèle
+Modèle 60061e
 Pour désactiver la validation du système d'exploitation, appuyez sur le bouton RÉINITIALISER.
 L'alimentation sur laquelle l'appareil est branché n'est pas assez puissante.
 Chrome OS va se fermer.
