@@ -312,11 +312,11 @@ static int get_text_width(const char *text, int32_t *width, int32_t *height)
 static VbError_t vboot_draw_footer(uint32_t locale)
 {
 	char *hwid = NULL;
-	int32_t x, y, w1, h1, w2, h2;
+	int32_t x, y, w1, h1, w2, h2, w3, h3;
 
 	/*
 	 * Draw help URL line: 'For help visit http://.../'. It consits of
-	 * two parts: 'For help visit', which is locale dependent, and a URL.
+	 * three parts: [for_help_left.bmp][URL][for_help_right.bmp].
 	 * Since the widths vary, we need to get the widths first then calculate
 	 * the horizontal positions of the images.
 	 */
@@ -328,8 +328,13 @@ static VbError_t vboot_draw_footer(uint32_t locale)
 	h2 = VB_TEXT_HEIGHT;
 	RETURN_ON_ERROR(get_image_size(base_graphics, "Url.bmp", &w2, &h2));
 
+	w3 = 0;
+	h3 = VB_TEXT_HEIGHT;
+	RETURN_ON_ERROR(get_image_size_locale("for_help_right.bmp", locale,
+					      &w3, &h3));
+
 	/* Calculate horizontal position to centralize the combined images */
-	x = (VB_SCALE - w1 - w2) / 2;
+	x = (VB_SCALE - w1 - w2 - w3) / 2;
 	y = VB_SCALE - VB_DIVIDER_V_OFFSET;
 	if (x < 0) {
 		/* images are too wide. need to fit them to canvas width */
@@ -337,10 +342,11 @@ static VbError_t vboot_draw_footer(uint32_t locale)
 
 		printf("%s: help line overflowed. fit it to canvas width\n",
 		       __func__);
-		total = w1 + w2;
+		total = w1 + w2 + w3;
 		x = 0;
 		w1 = VB_SCALE * w1 / total;
 		w2 = VB_SCALE * w2 / total;
+		w3 = VB_SCALE * w3 / total;
 	}
 	RETURN_ON_ERROR(draw_image_locale("for_help_left.bmp", locale,
 			x, y, w1, VB_SIZE_AUTO,
@@ -348,6 +354,10 @@ static VbError_t vboot_draw_footer(uint32_t locale)
 	x += w1;
 	RETURN_ON_ERROR(draw_image("Url.bmp",
 			x, y, w2, VB_SIZE_AUTO,
+			PIVOT_H_LEFT|PIVOT_V_TOP));
+	x += w2;
+	RETURN_ON_ERROR(draw_image_locale("for_help_right.bmp", locale,
+			x, y, w3, VB_SIZE_AUTO,
 			PIVOT_H_LEFT|PIVOT_V_TOP));
 
 	/*
