@@ -129,13 +129,13 @@ model = "GizmoShpere Gizmo";
 		/* ---- Section: Read-only ---- */
 		wp-ro {
 			label = "wp-ro";
-			reg = <0x000c8000 0x00140000>;
+			reg = <0x000c8000 0x00138000>;
 			read-only;
 		};
 
 		ro-section {
 			label = "ro-section";
-			reg = <0x000c8000 0x00140000>;
+			reg = <0x000c8000 0x00138000>;
 			read-only;
 		};
 

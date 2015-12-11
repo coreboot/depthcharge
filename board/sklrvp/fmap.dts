@@ -205,7 +205,7 @@
 		 */
 		wp-ro {
 			label = "wp-ro";
-			reg = <0x00d00000 0x00200000>;
+			reg = <0x00d00000 0x00300000>;
 			read-only;
 		};
 
@@ -282,7 +282,7 @@
 		};
 		ro-boot {
 			label = "boot-stub";
-			reg = <0x00e00000 0x00200000>; /* 1 MB */
+			reg = <0x00e00000 0x00200000>; /* 2 MB */
 			read-only;
 			type = "blob coreboot";
 			required;
