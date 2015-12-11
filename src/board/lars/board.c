@@ -34,6 +34,9 @@
 #include "drivers/gpio/skylake.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
+#include "drivers/sound/gpio_i2s.h"
+#include "drivers/sound/max98357a.h"
+#include "drivers/sound/route.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
 #include "drivers/tpm/lpc.h"
@@ -74,6 +77,36 @@ static int board_setup(void)
 			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			&fixed_block_dev_controllers);
+
+	/* Speaker Amp codec MAX98357A */
+	GpioCfg *sdmode_gpio = new_skylake_gpio_output(GPP_B2, 0);
+	max98357aCodec *speaker_amp =
+		new_max98357a_codec(sdmode_gpio);
+
+	/* GPIO to activate buffer to isolate I2S from PCH & allow GPIO */
+	GpioCfg *boot_beep_gpio_cfg = new_skylake_gpio_output(GPP_F23, 0);
+
+	gpio_set(&boot_beep_gpio_cfg->ops, 1);
+
+	/* Use GPIO to bit-bang I2S to the codec */
+	GpioCfg *i2s2_bclk = new_skylake_gpio_output(GPP_F0, 0);
+	GpioCfg *i2s2_sfrm = new_skylake_gpio_output(GPP_F1, 0);
+	GpioCfg *i2s2_txd  = new_skylake_gpio_output(GPP_F2, 0);
+
+	GpioI2s *i2s = new_gpio_i2s(
+			&i2s2_bclk->ops,    /* I2S Bit Clock GPIO */
+			&i2s2_sfrm->ops,    /* I2S Frame Sync GPIO */
+			&i2s2_txd->ops,     /* I2S Data GPIO */
+			16000,              /* Sample rate */
+			2,                  /* Channels */
+			0x1FFF);            /* Volume */
+
+	/* Connect the Codec to the I2S source */
+	SoundRoute *sound = new_sound_route(&i2s->ops);
+
+	list_insert_after(&speaker_amp->component.list_node,
+			&sound->components);
+	sound_set_ops(&sound->ops);
 
 	return 0;
 }
