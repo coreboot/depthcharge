@@ -293,9 +293,10 @@ U_BOOT_CMD(
 	"command for controlling onboard storage devices",
 	"\n"
 	" dev [dev#] - display or set default storage device\n"
+	" erase <base blk> <num blks> - erase in default device\n"
 	" init - initialize storage devices\n"
 	" show - show currently initialized devices\n"
 	" read <base blk> <num blks> <dest addr> - read from default device\n"
-	" write <base blk> <num blks> <src addr> - write from default device\n"
+	" write <base blk> <num blks> <src addr> - write to default device\n"
 );
 
