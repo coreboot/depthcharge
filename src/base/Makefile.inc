@@ -16,7 +16,9 @@ depthcharge-y += device_tree.c
 depthcharge-y += dt_set_macs.c
 depthcharge-y += dt_set_wifi_calibration.c
 depthcharge-y += gpt.c
+ifneq ($(CONFIG_HEADLESS),y)
 depthcharge-y += graphics.c
+endif
 depthcharge-y += init_funcs.c
 depthcharge-y += list.c
 depthcharge-y += ranges.c

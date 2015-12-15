@@ -19,7 +19,9 @@ depthcharge-y += cbfs.c
 depthcharge-y += command.c
 depthcharge-y += console_main.c
 depthcharge-y += display.c
+ifneq ($(CONFIG_HEADLESS),y)
 depthcharge-y += draw.c
+endif
 depthcharge-y += i2c.c
 depthcharge-y += memory.c
 depthcharge-y += printbuf.c
