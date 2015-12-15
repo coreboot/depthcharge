@@ -167,6 +167,9 @@ int rt5645_device_init(rt5645Codec *codec)
 	if (reg == RT5650_DEVICE_ID)
 		rt5645_i2c_writew(codec, 0xF6, 0x0100);
 
+	/* rt5645_reg in kernel driver */
+	rt5645_i2c_writew(codec, RT5645_AD_DA_MIXER, 0x8080);
+
 	/* mixer control to enable SPK */
 	rt5645_i2c_writew(codec, RT5645_SPK_L_MIXER, 0x003c);
 	rt5645_i2c_writew(codec, RT5645_SPK_R_MIXER, 0x003c);
