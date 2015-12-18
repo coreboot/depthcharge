@@ -39,6 +39,7 @@ typedef enum Modifier {
 	ModifierShift = 0x4
 } Modifier;
 
+// Returns amount of scanned keys, or -1 if EC's buffer is known to be empty.
 static int read_scancodes(Modifier *modifiers, uint8_t *codes, int max_codes)
 {
 	static struct cros_ec_keyscan last_scan;
@@ -47,12 +48,17 @@ static int read_scancodes(Modifier *modifiers, uint8_t *codes, int max_codes)
 	assert(modifiers);
 	*modifiers = ModifierNone;
 
+	// If the EC doesn't assert its interrupt line, it has no more states.
+	if (!cros_ec_interrupt_pending())
+		return -1;
+
 	if (cros_ec_scan_keyboard(&scan)) {
 		printf("Key matrix scan failed.\n");
-		return 0;
+		return -1;
 	}
 
 	int total = 0;
+	int changed = 0;
 
 	int cols = mkbp_keymatrix.cols;
 	int rows = mkbp_keymatrix.rows;
@@ -73,6 +79,9 @@ static int read_scancodes(Modifier *modifiers, uint8_t *codes, int max_codes)
 		uint8_t last_data = last_scan.data[byte];
 		uint8_t data = scan.data[byte];
 		last_scan.data[byte] = data;
+
+		if (last_data != data)
+			changed++;
 
 		// Only a few bits are going to be set at any one time.
 		if (!data)
@@ -110,6 +119,10 @@ static int read_scancodes(Modifier *modifiers, uint8_t *codes, int max_codes)
 		if (total == max_codes)
 			break;
 	}
+
+	// The EC only resends the same state if its FIFO was empty.
+	if (!changed)
+		return -1;
 
 	// If there could be ghosting, throw everything away. Also, transfer
 	// valid keycodes into the buffer.
@@ -165,63 +178,65 @@ static void more_keys(void)
 	// FIFO empty, reinitialize it back to its default state.
 	fifo_offset = fifo_size = 0;
 
-	// If the EC doesn't assert its interrupt line, it has no more keys.
-	if (!cros_ec_interrupt_pending())
-		return;
-
 	// Get scancodes from the EC.
 	uint8_t scancodes[KeyFifoSize];
 	Modifier modifiers;
-	int count = read_scancodes(&modifiers, scancodes, KeyFifoSize);
 
-	// Figure out which layout to use based on the modifiers.
-	int map;
-	if (modifiers & ModifierAlt) {
-		if (modifiers & ModifierShift)
-			map = MkbpLayoutShiftAlt;
-		else
-			map = MkbpLayoutAlt;
-	} else if (modifiers & ModifierShift) {
-		map = MkbpLayoutShift;
-	} else {
-		map = MkbpLayoutNoMod;
-	}
+	// Keep searching through states until we find a valid key press.
+	while (!fifo_size) {
+		int count = read_scancodes(&modifiers, scancodes, KeyFifoSize);
+		if (count < 0)
+			return;	// EC has no more key states buffered.
 
-	// Look at all the keys and fill the FIFO.
-	for (int pos = 0; pos < count; pos++) {
-		uint8_t code = scancodes[pos];
+		// Figure out which layout to use based on the modifiers.
+		int map;
+		if (modifiers & ModifierAlt) {
+			if (modifiers & ModifierShift)
+				map = MkbpLayoutShiftAlt;
+			else
+				map = MkbpLayoutAlt;
+		} else if (modifiers & ModifierShift) {
+			map = MkbpLayoutShift;
+		} else {
+			map = MkbpLayoutNoMod;
+		}
 
-		// Handle arrow keys.
-		if (code == 0x6c)
-			add_key(KEY_DOWN);
-		else if (code == 0x6a)
-			add_key(KEY_RIGHT);
-		else if (code == 0x67)
-			add_key(KEY_UP);
-		else if (code == 0x69)
-			add_key(KEY_LEFT);
+		// Look at all the keys and fill the FIFO.
+		for (int pos = 0; pos < count; pos++) {
+			uint8_t code = scancodes[pos];
 
-		// Make sure the next check will prevent us from recognizing
-		// this key twice.
-		assert(MkbpLayoutSize < 0x6c);
+			// Handle arrow keys.
+			if (code == 0x6c)
+				add_key(KEY_DOWN);
+			else if (code == 0x6a)
+				add_key(KEY_RIGHT);
+			else if (code == 0x67)
+				add_key(KEY_UP);
+			else if (code == 0x69)
+				add_key(KEY_LEFT);
 
-		// Ignore the scancode if it's a modifier or too big.
-		if (code == 0x1d || code == 0x61 ||
-				code == 0x38 || code == 0x64 ||
-				code == 0x2a || code == 0x36 ||
-				code >= MkbpLayoutSize)
-			continue;
+			// Make sure the next check will prevent us from
+			// recognizing this key twice.
+			assert(MkbpLayoutSize < 0x6c);
 
-		// Map it to its ASCII value.
-		uint16_t ascii = mkbp_keyboard_layout[map][code];
+			// Ignore the scancode if it's a modifier or too big.
+			if (code == 0x1d || code == 0x61 ||
+					code == 0x38 || code == 0x64 ||
+					code == 0x2a || code == 0x36 ||
+					code >= MkbpLayoutSize)
+				continue;
 
-		// Handle the Ctrl modifier.
-		if ((modifiers & ModifierCtrl) &&
-				((ascii >= 'a' && ascii <= 'z') ||
-				 (ascii >= 'A' && ascii <= 'Z')))
-			ascii &= 0x1f;
+			// Map it to its ASCII value.
+			uint16_t ascii = mkbp_keyboard_layout[map][code];
 
-		add_key(ascii);
+			// Handle the Ctrl modifier.
+			if ((modifiers & ModifierCtrl) &&
+					((ascii >= 'a' && ascii <= 'z') ||
+					 (ascii >= 'A' && ascii <= 'Z')))
+				ascii &= 0x1f;
+
+			add_key(ascii);
+		}
 	}
 }
 
