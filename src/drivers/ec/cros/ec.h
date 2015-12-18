@@ -131,10 +131,12 @@ int cros_ec_read_current_image(int devidx, enum ec_current_image *image);
  * Read the hash of the ChromeOS EC device firmware.
  *
  * @param devidx	Index of target device
+ * @param region	region to get hash
  * @param hash		Destination for hash information
  * @return 0 if ok, <0 on error
  */
-int cros_ec_read_hash(int devidx, struct ec_response_vboot_hash *hash);
+int cros_ec_read_hash(int devidx, enum ec_flash_region region,
+		      struct ec_response_vboot_hash *hash);
 
 /**
  * Send a reboot command to the ChromeOS EC device.
@@ -219,14 +221,16 @@ int cros_ec_entering_mode(int devidx, int mode);
 int cros_ec_test(void);
 
 /**
- * Update the EC RW copy.
+ * Update the EC flash region.
  *
  * @param devidx	Index of target device
+ * @param region	flash region to update
  * @param image		the content to write
  * @param imafge_size	content length
  * @return 0 if ok, <0 if the test failed
  */
-int cros_ec_flash_update_rw(int devidx, const uint8_t *image, int image_size);
+int cros_ec_flash_update_region(int devidx, enum ec_flash_region region,
+				const uint8_t *image, int image_size);
 
 /* Internal interfaces */
 

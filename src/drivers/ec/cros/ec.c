@@ -498,16 +498,24 @@ int cros_ec_read_current_image(int devidx, enum ec_current_image *image)
 	return 0;
 }
 
-int cros_ec_read_hash(int devidx, struct ec_response_vboot_hash *hash)
+int cros_ec_read_hash(int devidx,  enum ec_flash_region region,
+		      struct ec_response_vboot_hash *hash)
 {
 	struct ec_params_vboot_hash p;
 	uint64_t start;
 	int recalc_requested = 0;
+	uint32_t hash_offset;
+
+	if (region == EC_FLASH_REGION_WP_RO)
+		hash_offset = EC_VBOOT_HASH_OFFSET_RO;
+	else
+		hash_offset = EC_VBOOT_HASH_OFFSET_RW;
 
 	start = timer_us(0);
 	do {
 		/* Get hash if available. */
 		p.cmd = EC_VBOOT_HASH_GET;
+		p.offset = hash_offset;
 		if (ec_command(EC_CMD_PASSTHRU_OFFSET(devidx) +
 			       EC_CMD_VBOOT_HASH, 0, &p, sizeof(p),
 			       hash, sizeof(*hash)) < 0)
@@ -526,7 +534,6 @@ int cros_ec_read_hash(int devidx, struct ec_response_vboot_hash *hash)
 			p.cmd = EC_VBOOT_HASH_START;
 			p.hash_type = EC_VBOOT_HASH_TYPE_SHA256;
 			p.nonce_size = 0;
-			p.offset = EC_VBOOT_HASH_OFFSET_RW;
 
 			if (ec_command(EC_CMD_PASSTHRU_OFFSET(devidx) +
 				       EC_CMD_VBOOT_HASH, 0, &p,
@@ -877,31 +884,31 @@ int cros_ec_flash_read(int devidx, uint8_t *data, uint32_t offset,
 	return 0;
 }
 
-int cros_ec_flash_update_rw(int devidx, const uint8_t *image, int image_size)
+int cros_ec_flash_update_region(int devidx, enum ec_flash_region region,
+				const uint8_t *image, int image_size)
 {
-	uint32_t rw_offset, rw_size;
+	uint32_t region_offset, region_size;
 	int ret;
 
-	if (cros_ec_flash_offset(devidx, EC_FLASH_REGION_RW,
-				 &rw_offset, &rw_size))
+	if (cros_ec_flash_offset(devidx, region, &region_offset, &region_size))
 		return -1;
-	if (image_size > rw_size)
+	if (image_size > region_size)
 		return -1;
 
 	/*
-	 * Erase the entire RW section, so that the EC doesn't see any garbage
+	 * Erase the entire region, so that the EC doesn't see any garbage
 	 * past the new image if it's smaller than the current image.
 	 *
 	 * TODO: could optimize this to erase just the current image, since
 	 * presumably everything past that is 0xff's.  But would still need to
 	 * round up to the nearest multiple of erase size.
 	 */
-	ret = cros_ec_flash_erase(devidx, rw_offset, rw_size);
+	ret = cros_ec_flash_erase(devidx, region_offset, region_size);
 	if (ret)
 		return ret;
 
 	/* Write the image */
-	ret = cros_ec_flash_write(devidx, image, rw_offset, image_size);
+	ret = cros_ec_flash_write(devidx, image, region_offset, image_size);
 	if (ret)
 		return ret;
 

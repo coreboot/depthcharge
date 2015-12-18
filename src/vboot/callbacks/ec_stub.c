@@ -51,29 +51,31 @@ VbError_t VbExEcDisableJump(int devidx)
 	no_ec_soft_sync();
 }
 
-VbError_t VbExEcHashRW(int devidx, const uint8_t **hash, int *hash_size)
+VbError_t VbExEcHashImage(int devidx, enum VbSelectFirmware_t select,
+			  const uint8_t **hash, int *hash_size)
 {
 	no_ec_soft_sync();
 }
 
-VbError_t VbExEcGetExpectedRW(int devidx, enum VbSelectFirmware_t select,
-			      const uint8_t **image, int *image_size)
+VbError_t VbExEcGetExpectedImage(int devidx, enum VbSelectFirmware_t select,
+				 const uint8_t **image, int *image_size)
 {
 	no_ec_soft_sync();
 }
 
-VbError_t VbExEcGetExpectedRWHash(int devidx, enum VbSelectFirmware_t select,
-				  const uint8_t **hash, int *hash_size)
+VbError_t VbExEcGetExpectedImageHash(int devidx, enum VbSelectFirmware_t select,
+				     const uint8_t **hash, int *hash_size)
 {
 	no_ec_soft_sync();
 }
 
-VbError_t VbExEcUpdateRW(int devidx, const uint8_t *image, int image_size)
+VbError_t VbExEcUpdateImage(int devidx, enum VbSelectFirmware_t select,
+			    const uint8_t *image, int image_size)
 {
 	no_ec_soft_sync();
 }
 
-VbError_t VbExEcProtectRW(int devidx)
+VbError_t VbExEcProtect(int devidx, enum VbSelectFirmware_t select)
 {
 	no_ec_soft_sync();
 }

@@ -40,9 +40,17 @@
 /* Returns the CBFS filename for EC firmware images based on the device index
  * passed in from vboot.
  */
-static const char *get_fw_filename(int devidx)
+static const char *get_fw_filename(int devidx, int select)
 {
+	if (select == VB_SELECT_FIRMWARE_READONLY)
+		return "ecro";
 	return devidx == 0 ? "ecrw" : "pdrw";
+}
+
+static enum ec_flash_region get_flash_region(enum VbSelectFirmware_t select)
+{
+	return (select == VB_SELECT_FIRMWARE_READONLY) ? EC_FLASH_REGION_WP_RO :
+		EC_FLASH_REGION_RW;
 }
 
 static struct cbfs_file *get_file_from_cbfs(const char *fmap_name,
@@ -153,11 +161,12 @@ VbError_t VbExEcDisableJump(int devidx)
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExEcHashRW(int devidx, const uint8_t **hash, int *hash_size)
+VbError_t VbExEcHashImage(int devidx, enum VbSelectFirmware_t select,
+			  const uint8_t **hash, int *hash_size)
 {
 	static struct ec_response_vboot_hash resp;
 
-	if (cros_ec_read_hash(devidx, &resp) < 0) {
+	if (cros_ec_read_hash(devidx, get_flash_region(select), &resp) < 0) {
 		printf("Failed to read EC hash.\n");
 		return VBERROR_UNKNOWN;
 	}
@@ -190,8 +199,8 @@ VbError_t VbExEcHashRW(int devidx, const uint8_t **hash, int *hash_size)
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExEcGetExpectedRW(int devidx, enum VbSelectFirmware_t select,
-			      const uint8_t **image, int *image_size)
+VbError_t VbExEcGetExpectedImage(int devidx, enum VbSelectFirmware_t select,
+				 const uint8_t **image, int *image_size)
 {
 	const char *name;
 	const char *main_name;
@@ -205,6 +214,10 @@ VbError_t VbExEcGetExpectedRW(int devidx, enum VbSelectFirmware_t select,
 		name = (devidx == 0 ? "EC_MAIN_B" : "PD_MAIN_B");
 		main_name = "FW_MAIN_B";
 		break;
+	case VB_SELECT_FIRMWARE_READONLY:
+		name = "FW_MAIN_RO";
+		main_name = "FW_MAIN_RO";
+		break;
 	default:
 		printf("Unrecognized EC firmware requested.\n");
 		return VBERROR_UNKNOWN;
@@ -215,7 +228,7 @@ VbError_t VbExEcGetExpectedRW(int devidx, enum VbSelectFirmware_t select,
 		printf("Didn't find section %s in the fmap.\n", name);
 		/* It may be gone in favor of CBFS based RW sections,
 		 * so look there, too. */
-		const char *filename = get_fw_filename(devidx);
+		const char *filename = get_fw_filename(devidx, select);
 		struct cbfs_file *file =
 			get_file_from_cbfs(main_name, filename);
 		if (file == NULL)
@@ -232,16 +245,21 @@ VbError_t VbExEcGetExpectedRW(int devidx, enum VbSelectFirmware_t select,
 	if (!*image)
 		return VBERROR_UNKNOWN;
 
-	printf("EC-RW firmware address, size are %p, %d.\n",
-		*image, *image_size);
+	printf("EC-%s firmware address, size are %p, %d.\n", select ==
+	       VB_SELECT_FIRMWARE_READONLY ? "RO" : "RW", *image, *image_size);
 
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t ec_protect_rw(int devidx, int protect)
+static VbError_t ec_protect_region(int devidx, enum VbSelectFirmware_t select,
+				   int protect)
 {
 	struct ec_response_flash_protect resp;
+	uint32_t protected_region = EC_FLASH_PROTECT_ALL_NOW;
 	uint32_t mask = EC_FLASH_PROTECT_ALL_NOW | EC_FLASH_PROTECT_ALL_AT_BOOT;
+
+	if (select == VB_SELECT_FIRMWARE_READONLY)
+		protected_region = EC_FLASH_PROTECT_RO_NOW;
 
 	/* Update protection */
 	if (cros_ec_flash_protect(devidx, mask,
@@ -252,7 +270,7 @@ static VbError_t ec_protect_rw(int devidx, int protect)
 
 	if (!protect) {
 		/* If protection is still enabled, need reboot */
-		if (resp.flags & EC_FLASH_PROTECT_ALL_NOW)
+		if (resp.flags & protected_region)
 			return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
 
 		return VBERROR_SUCCESS;
@@ -278,8 +296,8 @@ static VbError_t ec_protect_rw(int devidx, int protect)
 	return VBERROR_UNKNOWN;
 }
 
-VbError_t VbExEcGetExpectedRWHash(int devidx, enum VbSelectFirmware_t select,
-				  const uint8_t **hash, int *hash_size)
+VbError_t VbExEcGetExpectedImageHash(int devidx, enum VbSelectFirmware_t select,
+				     const uint8_t **hash, int *hash_size)
 {
 	const char *name;
 
@@ -289,6 +307,9 @@ VbError_t VbExEcGetExpectedRWHash(int devidx, enum VbSelectFirmware_t select,
 		break;
 	case VB_SELECT_FIRMWARE_B:
 		name = "FW_MAIN_B";
+		break;
+	case VB_SELECT_FIRMWARE_READONLY:
+		name = "FW_MAIN_RO";
 		break;
 	default:
 		printf("Unrecognized EC hash requested.\n");
@@ -316,14 +337,14 @@ VbError_t VbExEcGetExpectedRWHash(int devidx, enum VbSelectFirmware_t select,
 	if (!*hash) {
 		printf("Didn't find precalculated hash subsection %d.\n",
 		       devidx + 1);
-		const char *filename = get_fw_filename(devidx);
+		const char *filename = get_fw_filename(devidx, select);
 		*hash = get_file_hash_from_cbfs(name, filename, hash_size);
 		if (!*hash)
 			return VBERROR_UNKNOWN;
 	}
 
-	printf("EC-RW hash address, size are %p, %d.\n",
-		*hash, *hash_size);
+	printf("EC-%s hash address, size are %p, %d.\n", select ==
+	       VB_SELECT_FIRMWARE_READONLY ? "RO" : "RW", *hash, *hash_size);
 
 	printf("Hash = ");
 	for (int i = 0; i < *hash_size; i++)
@@ -333,25 +354,26 @@ VbError_t VbExEcGetExpectedRWHash(int devidx, enum VbSelectFirmware_t select,
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExEcUpdateRW(int devidx, const uint8_t *image, int image_size)
+VbError_t VbExEcUpdateImage(int devidx, enum VbSelectFirmware_t select,
+			    const uint8_t *image, int image_size)
 {
-	int rv;
-
-	rv = ec_protect_rw(devidx, 0);
+	int rv = ec_protect_region(devidx, select, 0);
 	if (rv == VBERROR_EC_REBOOT_TO_RO_REQUIRED || rv != VBERROR_SUCCESS)
 		return rv;
 
-	if (cros_ec_flash_update_rw(devidx, image, image_size)) {
-		printf("Failed to update EC RW flash.\n");
+	if (cros_ec_flash_update_region(devidx, get_flash_region(select), image,
+					image_size)) {
+		printf("Failed to update EC-%s flash.\n", select ==
+		       VB_SELECT_FIRMWARE_READONLY ? "RO" : "RW");
 		return VBERROR_UNKNOWN;
 	}
 
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExEcProtectRW(int devidx)
+VbError_t VbExEcProtect(int devidx, enum VbSelectFirmware_t select)
 {
-	return ec_protect_rw(devidx, 1);
+	return ec_protect_region(devidx, select, 1);
 }
 
 VbError_t VbExEcEnteringMode(int devidx, enum VbEcBootMode_t mode)
