@@ -264,6 +264,11 @@ static struct console_input_driver mkbp_keyboard =
 
 static void mkbp_keyboard_init(void)
 {
+	// Flush out EC's FIFO to avoid misinterpreting keys from before reboot.
+	while (mkbp_keyboard_havekey())
+		printf("mkbp: ignoring key code %d received before boot.\n",
+		       mkbp_keyboard_getchar());
+
 	console_add_input_driver(&mkbp_keyboard);
 }
 
