@@ -41,6 +41,19 @@ static int do_spi_read(int argc, char * const argv[], int read_flag)
 	return 0;
 }
 
+static int do_spi_erase(int argc, char * const argv[], int ignore)
+{
+	unsigned offset, length;
+
+	if (argc != 2)
+		return CMD_RET_USAGE;
+
+	offset = strtoul(argv[0], 0, 16);
+	length = strtoul(argv[1], 0, 16);
+
+	return length != flash_erase(offset, length);
+}
+
 static int do_spi_write(int argc, char * const argv[], int read_flag)
 {
 	unsigned offset, length;
@@ -65,6 +78,7 @@ static int do_spi(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	} subcommands[] = {
 		{"read", 1, do_spi_read},
 		{"dump", 0, do_spi_read},
+		{"erase", 1, do_spi_erase},
 		{"write", 0, do_spi_write}
 	};
 	int i;
@@ -85,6 +99,7 @@ U_BOOT_CMD(
 	"SPI flash sub-system",
 	"dump offset len      - dump on the console `len' bytes starting\n"
 	"                           at `offset'\n"
+	"spi erase offset len - Erase 'len' bytes starting at 'offset'\n"
 	"spi read offset len addr - read 'len' bytes starting at 'offset'\n"
 	"                           into RAM starting at 'addr'\n"
 	"spi write offset len addr - write 'len' bytes starting at 'offset'\n"
