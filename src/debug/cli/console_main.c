@@ -918,3 +918,42 @@ int read_line (const char *prompt, char *buffer)
 {
 	return ubreadline_into_buffer(prompt, buffer);
 }
+
+#define USEC_PER_SEC			1000000
+
+/*
+ * Wait for a key press within specified no. of seconds.
+ * sec: No of seconds to wait
+ * print: print remaining time on the console
+ * Return: 1 if a key was pressed, 0 if timed out
+ */
+int timed_wait(int sec, int print)
+{
+	uint64_t start, now = 0;
+
+	if (print)
+		printf("%4d", sec);
+
+	start = timer_us(0);
+
+	while (!serial_havechar() && (sec > 0)) {
+		now = timer_us(start);
+		if (now >= USEC_PER_SEC) {
+			sec--;
+			start = timer_us(0) - (now - USEC_PER_SEC);
+			if (print)
+				printf("\b\b\b\b%4d", sec);
+		}
+	}
+
+	if (print)
+		printf("\b\b\b\b");	/* Clear it out */
+
+	if (sec) {
+		/* Got a key press, consume it */
+		serial_getchar();
+		return 1;
+	}
+
+	return 0;
+}
