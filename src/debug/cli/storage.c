@@ -6,6 +6,10 @@
 #include "base/list.h"
 #include "debug/cli/common.h"
 #include "drivers/storage/blockdev.h"
+#include <vboot_api.h>
+#include <gpt.h>
+#include <gpt_misc.h>
+
 
 typedef struct {
 
@@ -125,6 +129,89 @@ static int storage_dev(int argc, char *const argv[])
 	return rv;
 }
 
+static int storage_part(int argc, char *const argv[])
+{
+	VbDiskInfo *info;
+	uint32_t i, count, flag;
+	BlockDev *bdev;
+	GptData gpt;
+	GptHeader *header;
+	GptEntry *entry;
+
+	const Guid guid_unused = GPT_ENT_TYPE_UNUSED;
+
+	if (!current_devices.total) {
+		printf("No initialized devices present\n");
+		return CMD_RET_FAILURE;
+	}
+
+	bdev = current_devices.known_devices[current_devices.curr_device];
+
+	flag = bdev->removable ? VB_DISK_FLAG_REMOVABLE : VB_DISK_FLAG_FIXED;
+
+	if (VbExDiskGetInfo(&info, &count, flag) != VBERROR_SUCCESS) {
+		printf("failed to get disk info\n");
+		return CMD_RET_FAILURE;
+	}
+
+	for (i = 0; i < count; i++)
+		if (info[i].handle == bdev)
+			break;
+
+	if (i == count) {
+		printf("failed to get disk info for current device\n");
+		return CMD_RET_FAILURE;
+	}
+
+	gpt.sector_bytes = info[i].bytes_per_lba;
+	gpt.streaming_drive_sectors = info[i].streaming_lba_count ?
+					info[i].streaming_lba_count :
+					info[i].lba_count;
+	gpt.gpt_drive_sectors = info[i].lba_count;
+	gpt.flags = bdev->external_gpt ? GPT_FLAG_EXTERNAL : 0;
+
+	if (0 != AllocAndReadGptData(bdev, &gpt)) {
+		printf("Unable to read GPT data\n");
+		return CMD_RET_FAILURE;
+	}
+
+	if (GPT_SUCCESS != GptInit(&gpt)) {
+		printf("Unable to parse GPT\n");
+		return CMD_RET_FAILURE;
+	}
+
+	header = (GptHeader *)gpt.primary_header;
+	entry = (GptEntry *)gpt.primary_entries;
+
+	printf("------------ GPT for %s ------------\n\n", info[i].name);
+	printf("Bytes per LBA = %llu\n\n", info[i].bytes_per_lba);
+
+	printf("SNo: %18s %18s Name\n", "Start", "Count");
+	for (i = 0; i < header->number_of_entries; i++, entry++) {
+		int j;
+		uint16_t *name;
+
+		if (memcmp(&entry->type, &guid_unused, sizeof(Guid)) == 0)
+			continue;
+
+		printf("%3d: %#18llx %#18llx ", i + 1,
+			entry->starting_lba,
+			entry->ending_lba - entry->starting_lba + 1);
+
+		name = entry->name;
+		/* Crude wide-char print */
+		for (j = 0; name[j] &&
+			(j < sizeof(entry->name) / sizeof(entry->name[0]));
+			j++)
+			printf("%c", name[j] & 0xff);
+		printf("\n");
+	}
+
+	VbExDiskFreeInfo(info, bdev);
+
+	return CMD_RET_SUCCESS;
+}
+
 static int storage_init(int argc, char *const argv[])
 {
 	int i, count;
@@ -179,6 +266,8 @@ static const cmd_map cmdmap[] = {
 	{ "show", storage_show, 0, 0 },
 	{ "read", storage_read, 3, 3 },
 	{ "write", storage_write, 3, 3 },
+	{ "erase", storage_erase, 2, 2 },
+	{ "part", storage_part, 0, 0 },
 };
 
 static int do_storage(cmd_tbl_t *cmdtp, int flag,
