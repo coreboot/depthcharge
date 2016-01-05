@@ -74,6 +74,31 @@ static int storage_write(int argc, char *const argv[])
 	return i != num_blocks;
 }
 
+static int storage_erase(int argc, char *const argv[])
+{
+	int base_block, num_blocks, i;
+	int *args[] = {&base_block, &num_blocks};
+	BlockDev *bd;
+
+	for (i = 0; i < ARRAY_SIZE(args); i++)
+		*args[i] = strtoul(argv[i], NULL, 0);
+
+	if ((current_devices.curr_device < 0) ||
+	    (current_devices.curr_device >= current_devices.total)) {
+		printf("Is storage subsystem initialized?");
+		return -1;
+	}
+
+	bd = current_devices.known_devices[current_devices.curr_device];
+	if (!bd->ops.erase) {
+		printf("Erase not applicable to %s\n", bd->name);
+		return CMD_RET_SUCCESS;
+	}
+
+	i = bd->ops.erase(&bd->ops, base_block, num_blocks);
+	return i != num_blocks;
+}
+
 static int storage_dev(int argc, char *const argv[])
 {
 	int rv = 0;
