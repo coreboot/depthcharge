@@ -26,6 +26,7 @@
 #include <vboot_api.h>
 #include <vboot/screens.h>
 #include "base/graphics.h"
+#include "drivers/flash/cbfs.h"
 #include "drivers/video/display.h"
 #include "vboot/util/commonparams.h"
 
@@ -61,6 +62,7 @@
 static char initialized = 0;
 static struct directory *base_graphics;
 static struct directory *font_graphics;
+static struct cbfs_media *ro_cbfs;
 static struct {
 	/* current locale */
 	uint32_t current;
@@ -88,8 +90,7 @@ static VbError_t load_archive(const char *name, struct directory **dest)
 	*dest = NULL;
 
 	/* load archive from cbfs */
-	dir = cbfs_get_file_content(CBFS_DEFAULT_MEDIA, name,
-				  CBFS_TYPE_RAW, &size);
+	dir = cbfs_get_file_content(ro_cbfs, name, CBFS_TYPE_RAW, &size);
 	if (!dir || !size) {
 		printf("%s: failed to load %s\n", __func__, name);
 		return VBERROR_INVALID_BMPFV;
@@ -743,7 +744,7 @@ static void vboot_init_locale(void)
 	locale_data.count = 0;
 
 	/* Load locale list from cbfs */
-	locales = cbfs_get_file_content(CBFS_DEFAULT_MEDIA, "locales",
+	locales = cbfs_get_file_content(ro_cbfs, "locales",
 					CBFS_TYPE_RAW, &size);
 	if (!locales || !size) {
 		printf("%s: locale list not found\n", __func__);
@@ -779,6 +780,14 @@ static void vboot_init_locale(void)
 
 static VbError_t vboot_init_screen(void)
 {
+	if (ro_cbfs == NULL) {
+		ro_cbfs = cbfs_ro_media();
+		if (ro_cbfs == NULL) {
+			printf("No RO CBFS found.\n");
+			return VBERROR_UNKNOWN;
+		}
+	}
+
 	if (graphics_init())
 		return VBERROR_UNKNOWN;
 

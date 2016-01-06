@@ -33,22 +33,40 @@ static int cbfs_media_open(struct cbfs_media *media)
 
 static int cbfs_media_close(struct cbfs_media *media)
 {
-	if (media->context)
-		free(media->context);
-
 	return 0;
 }
 
-static size_t add_offset(struct cbfs_media *media,
-			size_t offset, size_t count)
+/*
+ * Translate offset is technically only needed for non-CBFS_DEFAULT_MEDIA
+ * under Chrome OS current construction. The reason is that the firmware
+ * will set the appropriate current CBFS in the coreboot tables and
+ * libpayload will honor those for CBFS_DEFAULT_MEDIA. However, when passing
+ * a non-CBFS_DEFAULT_MEDIA pointer into libpayload's CBFS driver it will
+ * need to perform the translation since it attempts to locate the CBFS
+ * master header in order to derive its size and offset. The offsets used
+ * when locating the master header are negative numbers. Thus, translate
+ * the negative offset into one which is within the size of the region.
+ */
+static size_t translate_offset(struct cbfs_media *media, size_t offset)
 {
-	if (media->context) {
-		FmapArea *area = (FmapArea *)media->context;
+	FmapArea *area;
+	ssize_t soffset;
 
-		if (offset + count > area->size)
-			return offset;
-		return offset + area->offset;
-	}
+	if (media->context == NULL)
+		return offset;
+
+	area = media->context;
+	soffset = offset;
+
+	/*
+	 * When the offset passed in is less than zero libpayload is attempting
+	 * to locate the master header. Therefore translate that into an
+	 * absolute offset within the RO fmap area. There will be 2 calls:
+	 * offset = -4 and signed 32-bit relative value found at -4 offset.
+	 */
+	if (soffset < 0)
+		offset = soffset + area->size + area->offset;
+
 	return offset;
 }
 
@@ -56,8 +74,10 @@ static size_t cbfs_media_read(struct cbfs_media *media,
 			      void *dest, size_t offset,
 			      size_t count)
 {
-	offset = add_offset(media, offset, count);
-	uint8_t *cache = flash_read(offset, count);
+	uint8_t *cache;
+
+	offset = translate_offset(media, offset);
+	cache = flash_read(offset, count);
 	if (!cache)
 		return 0;
 	memcpy(dest, cache, count);
@@ -67,8 +87,10 @@ static size_t cbfs_media_read(struct cbfs_media *media,
 static void *cbfs_media_map(struct cbfs_media *media,
 			    size_t offset, size_t count)
 {
-	offset = add_offset(media, offset, count);
-	void *ptr = flash_read(offset, count);
+	void *ptr;
+
+	offset = translate_offset(media, offset);
+	ptr = flash_read(offset, count);
 	if (!ptr)
 		ptr = CBFS_MEDIA_INVALID_MAP_ADDRESS;
 	return ptr;
@@ -113,4 +135,25 @@ int cbfs_media_from_fmap(struct cbfs_media *media, const char *name)
 	media->unmap = cbfs_media_unmap;
 
 	return 0;
+}
+
+struct cbfs_media *cbfs_ro_media(void)
+{
+	FmapArea area;
+	struct cbfs_media *media;
+
+	/* The FMAP entries for the RO CBFS are either COREBOOT or BOOT_STUB. */
+	if (fmap_find_area("COREBOOT", &area) &&
+	    fmap_find_area("BOOT_STUB", &area))
+		return NULL;
+
+	media = xmalloc(sizeof(*media));
+
+	libpayload_init_default_cbfs_media(media);
+
+	media->context = xmalloc(sizeof(area));
+
+	memcpy(media->context, &area, sizeof(area));
+
+	return media;
 }
