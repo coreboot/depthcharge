@@ -21,6 +21,7 @@
 #include <vboot_api.h>
 #include <vboot/screens.h>
 #include "base/graphics.h"
+#include "config.h"
 #include "drivers/flash/cbfs.h"
 #include "drivers/video/display.h"
 #include "vboot/util/commonparams.h"
@@ -92,6 +93,24 @@ struct menu {
 	uint32_t count;
 };
 
+static VbError_t get_file_content(const char *name, void **ptr, size_t *size)
+{
+	if (IS_ENABLED(CONFIG_MEDIA_RESOURCES_IN_RW)) {
+		*ptr = cbfs_get_file_content(CBFS_DEFAULT_MEDIA, name,
+					     CBFS_TYPE_RAW, size);
+		if (*ptr && *size)
+			return VBERROR_SUCCESS;
+		printf("%s: failed to load %s from default media. "
+		       "falling back to RO cbfs\n", __func__, name);
+	}
+	*ptr = cbfs_get_file_content(ro_cbfs, name, CBFS_TYPE_RAW, size);
+	if (!*ptr || !*size) {
+		printf("%s: failed to load %s from RO cbfs\n", __func__, name);
+		return VBERROR_INVALID_BMPFV;
+	}
+	return VBERROR_SUCCESS;
+}
+
 /*
  * Load archive into RAM
  */
@@ -106,11 +125,7 @@ static VbError_t load_archive(const char *name, struct directory **dest)
 	*dest = NULL;
 
 	/* load archive from cbfs */
-	dir = cbfs_get_file_content(ro_cbfs, name, CBFS_TYPE_RAW, &size);
-	if (!dir || !size) {
-		printf("%s: failed to load %s\n", __func__, name);
-		return VBERROR_INVALID_BMPFV;
-	}
+	RETURN_ON_ERROR(get_file_content(name, (void **)&dir, &size));
 
 	/* convert endianness of archive header */
 	dir->count = le32toh(dir->count);
@@ -1019,7 +1034,7 @@ static VbError_t draw_ui(uint32_t screen_type, struct params *p)
 	return VBERROR_SUCCESS;
 }
 
-static void vboot_init_locale(void)
+static VbError_t vboot_init_locale(void)
 {
 	char *locales, *loc_start, *loc;
 	size_t size;
@@ -1027,19 +1042,14 @@ static void vboot_init_locale(void)
 	locale_data.count = 0;
 
 	/* Load locale list from cbfs */
-	locales = cbfs_get_file_content(ro_cbfs, "locales",
-					CBFS_TYPE_RAW, &size);
-	if (!locales || !size) {
-		printf("%s: locale list not found\n", __func__);
-		return;
-	}
+	RETURN_ON_ERROR(get_file_content("locales", (void **)&locales, &size));
 
 	/* Copy the file and null-terminate it */
 	loc_start = malloc(size + 1);
 	if (!loc_start) {
 		printf("%s: out of memory\n", __func__);
 		free(locales);
-		return;
+		return VBERROR_UNKNOWN;
 	}
 	memcpy(loc_start, locales, size);
 	loc_start[size] = '\0';
@@ -1059,6 +1069,8 @@ static void vboot_init_locale(void)
 	free(locales);
 
 	printf(" (%d locales)\n", locale_data.count);
+
+	return VBERROR_SUCCESS;
 }
 
 static VbError_t vboot_init_screen(void)

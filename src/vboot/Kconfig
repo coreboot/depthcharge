@@ -137,3 +137,9 @@ config USB_BOOT_ON_DEV
 	help
 	  When swtiching to dev from normal, set the NVRAM flag which allows
 	  booting from USB.
+
+config MEDIA_RESOURCES_IN_RW
+  bool "Media resources in AP-RW"
+  default n
+  help
+    Check for media resources in AP-RW before falling back to AP-RO.
