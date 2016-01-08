@@ -36,6 +36,13 @@ static const char *get_verifiedbootstate(void)
 		return "green";
 }
 
+static const char *get_is_device_locked(void)
+{
+	if (vboot_in_developer())
+		return "0";
+	return "1";
+}
+
 const char *__attribute__((weak)) get_bootreason(void)
 {
 	return NULL;
@@ -58,6 +65,8 @@ static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 		{ "verifiedbootstate", get_verifiedbootstate() },
 		{ "bootreason", get_bootreason() },
 		{ "bootloader", get_active_fw_id() },
+		{ "oem_unlock_supported", "1" },
+		{ "locked", get_is_device_locked() },
 	};
 
 	firmware_node = dt_find_node(tree->root, firmware_dt_name,
