@@ -127,6 +127,13 @@ auron_paine,auron_yuna,cid,lulu,reks,lars:
   res:      [1024, 768]
   panel:    [1366, 768]
 
+chell,glados:
+  # 1920x1080, boots recovery image on any SD card or USB ports.
+  res:      [1920, 1080]
+  panel:    [1920, 1080]
+  assets_dir: assets2x
+  assets_res: [1920, 1080]
+
 panther,tricky,mccloud,guado,tidus,rikku,ninja,veyron_brain,veyron_danger,veyron_emile,veyron_romy:
   # Using VESA graphics mode 1024x768 (0x0117).
   # A chromebox without built-in panel/keyboard.
