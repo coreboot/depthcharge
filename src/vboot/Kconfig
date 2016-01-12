@@ -115,10 +115,6 @@ config CROSSYSTEM_FDT
 
 endchoice
 
-config VBOOT2_VERIFY_FIRMWARE
-	bool "Verify firmware using vboot2"
-	default n
-
 config USB_BOOT_ON_DEV
 	bool "Enable USB Boot when switching to dev"
 	default n
