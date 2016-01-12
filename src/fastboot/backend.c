@@ -523,7 +523,7 @@ backend_ret_t backend_erase_partition(const char *name)
 		BE_LOG("Failed to erase. Falling back to fill_write\n");
 
 		/* If erase fails, perform fill_write operation. */
-		if (ops->fill_write(ops, part_addr, part_size_lba, 0xFF)
+		if (ops->fill_write(ops, part_addr, part_size_lba, 0xFFFFFFFF)
 		    != part_size_lba)
 			ret = BE_WRITE_ERR;
 	}

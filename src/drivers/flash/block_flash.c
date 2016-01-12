@@ -78,7 +78,7 @@ static lba_t block_flash_erase(BlockDevOps *me, lba_t start, lba_t count)
 }
 
 static lba_t block_flash_fill_write(BlockDevOps *me, lba_t start, lba_t count,
-				    uint8_t fill_byte)
+				    uint32_t fill_pattern)
 {
 	FlashBlockDev *flash = block_flash_get_bdev(me);
 	FlashOps *ops = flash->ops;
@@ -88,10 +88,10 @@ static lba_t block_flash_fill_write(BlockDevOps *me, lba_t start, lba_t count,
 	int ret = 0;
 
 	/*
-	 * If fill_byte is 0xFF, we can safely return after erase since it sets
-	 * all bytes to 0xFF.
+	 * If fill_pattern is 0xFFFFFFFF, we can safely return after erase since
+	 * it sets all bytes to 0xFF.
 	 */
-	if (fill_byte == 0xFF) {
+	if (fill_pattern == 0xFFFFFFFF) {
 		if (flash_erase_ops(ops, curr_ptr, todo) != todo)
 			return ret;
 		return count;
@@ -105,9 +105,12 @@ static lba_t block_flash_fill_write(BlockDevOps *me, lba_t start, lba_t count,
 	lba_t heap_lba = (4 * MiB) / block_size;
 	lba_t buffer_lba = MIN(heap_lba, count);
 	size_t buffer_bytes = buffer_lba * block_size;
-	uint8_t *buffer = xmalloc(buffer_bytes);
+	size_t buffer_words = buffer_bytes / sizeof(uint32_t);
+	uint32_t *buffer = xmalloc(buffer_bytes);
+	uint32_t *ptr = buffer;
 
-	memset(buffer, fill_byte, buffer_bytes);
+	for ( ; buffer_words ; buffer_words--)
+		*ptr++ = fill_pattern;
 
 	do {
 		size_t curr_bytes = MIN(buffer_bytes, todo);
