@@ -14,6 +14,18 @@
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
+config CUSTOM_MUSIC
+	bool "Allow the board file to override the default firmware sound tones"
+	default n
+	help
+	  By default depthcharge waits for 30 seconds and beeps twice
+	  during the developer mode screen. If CUSTOM_MUSIC is defined, the
+	  note array can be overridden and custom tones and delays could be
+	  played. A useful example of this is for lengthening the developer
+	  mode screen. VbExGetMusicPtr() and VbExMaxMusicSize() must be
+	  implemented (in order to provide the particular music data) in the
+	  board file when CUSTOM_MUSIC is enabled.
+
 config EC_SOFTWARE_SYNC
 	bool "Enable EC software sync"
 	default n
