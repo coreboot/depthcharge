@@ -47,6 +47,7 @@ else
 		CFLAGS="$(CFLAGS) -DVBOOT_DEBUG" \
 		$(MAKE) -C $(VB_SOURCE) \
 		MOCK_TPM=$(CONFIG_MOCK_TPM) \
+		CUSTOM_MUSIC=$(CONFIG_CUSTOM_MUSIC) \
 		BUILD=$(dir $(VB_LIB)) \
 		V=$(V) \
 		fwlib
