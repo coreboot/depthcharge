@@ -143,6 +143,30 @@ RialtoDisplayOps *new_rialto_leds(void) {
 	return leds;
 }
 
+uint16_t dev_mode_music[] = {
+	0x5324, 0x444e, /* "$SND" signature */
+	0xb2fb, 0x2650, /* crc32 over count & all notes */
+	10, 0,          /* number of notes */
+	20000, 0,       /* 20 seconds */
+	1000, 400,      /* two long beeps, to "qualify" as a song */
+	1000, 0,
+	1000, 400,
+	7000, 0,        /* 30 seconds so far */
+	30000, 0,       /* another 2.5 minutes */
+	30000, 0,
+	30000, 0,
+	30000, 0,
+	30000, 0        /* 3 minutes total */
+};
+
+void *VbExGetMusicPtr(void) {
+	return &dev_mode_music;
+}
+
+uint32_t VbExMaxMusicSize(void) {
+	return sizeof(dev_mode_music);
+}
+
 static int board_setup(void)
 {
 	RialtoDisplayOps *leds;
