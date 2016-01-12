@@ -1199,7 +1199,7 @@ lba_t block_mmc_erase(BlockDevOps *me, lba_t start, lba_t count)
 }
 
 lba_t block_mmc_fill_write(BlockDevOps *me, lba_t start, lba_t count,
-			   uint8_t fill_byte)
+			   uint32_t fill_pattern)
 {
 	if (block_mmc_setup(me, start, count, 0) == 0)
 		return 0;
@@ -1208,7 +1208,7 @@ lba_t block_mmc_fill_write(BlockDevOps *me, lba_t start, lba_t count,
 	MmcCtrlr *ctrlr = mmc_ctrlr(media);
 	size_t block_size = media->dev.block_size;
 	/*
-	 * We allocate max 4 MiB buffer on heap and set it to fill_byte and
+	 * We allocate max 4 MiB buffer on heap and set it to fill_pattern and
 	 * perform mmc_write operation using this 4MiB buffer until requested
 	 * size on disk is written by the fill byte.
 	 *
@@ -1230,8 +1230,12 @@ lba_t block_mmc_fill_write(BlockDevOps *me, lba_t start, lba_t count,
 	lba_t buffer_lba = MIN(MIN(heap_lba, count), ctrlr->b_max);
 
 	size_t buffer_bytes = buffer_lba * block_size;
-	uint8_t *buffer = xmalloc(buffer_bytes);
-	memset(buffer, fill_byte, buffer_bytes);
+	size_t buffer_words = buffer_bytes / sizeof(uint32_t);
+	uint32_t *buffer = xmalloc(buffer_bytes);
+	uint32_t *ptr = buffer;
+
+	for ( ; buffer_words ; buffer_words--)
+		*ptr++ = fill_pattern;
 
 	lba_t todo = count;
 	int ret = 0;
