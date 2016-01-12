@@ -93,12 +93,7 @@
 			 * each RW_SECTION.
 			 */
 			reg = <0x00200000 0x00002000>;
-#if CONFIG_VBOOT2_VERIFY_FIRMWARE
 			type = "keyblock cbfs/rw/a-boot";
-#else
-			type = "keyblock boot,ecrwhash,ramstage";
-			with_index;
-#endif
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
 			version = <1>;
@@ -108,20 +103,8 @@
 		rw-a-boot {
 			/* Alignment: no requirement (yet). */
 			label = "fw-main-a";
-#if CONFIG_VBOOT2_VERIFY_FIRMWARE
 			reg = <0x00202000 0x00075f00>;
 			type = "blob cbfs/rw/a-boot";
-#else
-			reg = <0x00202000 0x00056000>;
-			type = "blob boot,ecrwhash,ramstage";
-			with_index;
-		};
-		rw-a-ec-boot {
-			label = "ec-main-a";
-			type = "blob ecbin";
-			reg = <0x00258000 0x0001ff00>;
-			with_index;
-#endif
 		};
 		rw-a-firmware-id {
 			/* Alignment: no requirement. */
@@ -173,12 +156,7 @@
 			 * each RW_SECTION.
 			 */
 			reg = <0x00280000 0x00002000>;
-#if CONFIG_VBOOT2_VERIFY_FIRMWARE
 			type = "keyblock cbfs/rw/b-boot";
-#else
-			type = "keyblock boot,ecrwhash,ramstage";
-			with_index;
-#endif
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
 			version = <1>;
@@ -188,20 +166,8 @@
 		rw-b-boot {
 			label = "fw-main-b";
 			/* Alignment: no requirement (yet). */
-#if CONFIG_VBOOT2_VERIFY_FIRMWARE
 			reg = <0x00282000 0x00075f00>;
 			type = "blob cbfs/rw/b-boot";
-#else
-			reg = <0x00282000 0x00056000>;
-			type = "blob boot,ecrwhash,ramstage";
-			with_index;
-		};
-		rw-b-ec-boot {
-			label = "ec-main-b";
-			type = "blob ecbin";
-			reg = <0x002d8000 0x0001ff00>;
-			with_index;
-#endif
 		};
 		rw-b-firmware-id {
 			label = "rw-fwid-b";
