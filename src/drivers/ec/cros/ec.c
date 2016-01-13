@@ -580,7 +580,7 @@ int cros_ec_reboot(int devidx, enum ec_reboot_cmd cmd, uint8_t flags)
 		int timeout = 20;
 		do {
 			mdelay(50);
-		} while (timeout-- && cros_ec_test());
+		} while (--timeout && cros_ec_test());
 
 		if (!timeout)
 			return -1;
