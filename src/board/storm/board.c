@@ -72,6 +72,7 @@ static void fill_board_descriptor(void)
 		break;
 
 	case BOARD_ID_WHIRLWIND_SP5:
+	case BOARD_ID_WW_NT5CC256M16DP_DI:
 		bdescriptor.compat_string = "google,whirlwind-sp5";
 		bdescriptor.calibration_needed = 1;
 		break;
