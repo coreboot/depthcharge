@@ -32,10 +32,13 @@
 #include "config.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/flash/flash.h"
+#include "drivers/flash/cbfs.h"
 #include "image/fmap.h"
 #include "image/index.h"
 #include "vboot/util/flag.h"
 
+
+static struct cbfs_media *ro_cbfs;
 /* Returns the CBFS filename for EC firmware images based on the device index
  * passed in from vboot.
  */
@@ -52,22 +55,31 @@ static enum ec_flash_region get_flash_region(enum VbSelectFirmware_t select)
 		EC_FLASH_REGION_RW;
 }
 
-static struct cbfs_file *get_file_from_cbfs(const char *filename)
+static struct cbfs_file *get_file_from_cbfs(
+	const char *filename, enum VbSelectFirmware_t select)
 {
 	if (!IS_ENABLED(CONFIG_DRIVER_CBFS_FLASH))
 		return NULL;
 
+	if (select == VB_SELECT_FIRMWARE_READONLY) {
+		printf("Trying to locate '%s' in RO CBFS\n", filename);
+		if (ro_cbfs == NULL)
+			ro_cbfs = cbfs_ro_media();
+		return cbfs_get_file(ro_cbfs, filename);
+	}
+
+	printf("Trying to locate '%s' in CBFS\n", filename);
 	return cbfs_get_file(CBFS_DEFAULT_MEDIA, filename);
 }
 
 static const uint8_t *get_file_hash_from_cbfs(
-	const char *filename, int *hash_size)
+	const char *filename, int *hash_size, enum VbSelectFirmware_t select)
 {
-	printf("Trying to fetch hash for '%s' from CBFS\n", filename);
-	struct cbfs_file *file = get_file_from_cbfs(filename);
+	printf("Trying to fetch hash for '%s'\n", filename);
+	struct cbfs_file *file = get_file_from_cbfs(filename, select);
 
 	if (file == NULL) {
-		printf("file not found\n");
+		printf("%s not found\n", filename);
 		return NULL;
 	}
 
@@ -75,7 +87,7 @@ static const uint8_t *get_file_hash_from_cbfs(
 		CBFS_FILE_ATTR_TAG_HASH);
 
 	if (attr == NULL) {
-		printf("ECRW found, but without hash\n");
+		printf("%s found, but without hash\n", filename);
 		return NULL;
 	}
 
@@ -212,7 +224,7 @@ VbError_t VbExEcGetExpectedImage(int devidx, enum VbSelectFirmware_t select,
 		/* It may be gone in favor of CBFS based RW sections,
 		 * so look there, too. */
 		const char *filename = get_fw_filename(devidx, select);
-		struct cbfs_file *file = get_file_from_cbfs(filename);
+		struct cbfs_file *file = get_file_from_cbfs(filename, select);
 		if (file == NULL)
 			return VBERROR_UNKNOWN;
 		printf("found '%s', sized 0x%x\n", filename, ntohl(file->len));
@@ -299,10 +311,8 @@ VbError_t VbExEcGetExpectedImageHash(int devidx, enum VbSelectFirmware_t select,
 	}
 
 	FmapArea area;
-	if (fmap_find_area(name, &area)) {
+	if (fmap_find_area(name, &area))
 		printf("Didn't find section %s in the fmap.\n", name);
-		return VBERROR_UNKNOWN;
-	}
 
 	uint32_t size;
 
@@ -316,11 +326,12 @@ VbError_t VbExEcGetExpectedImageHash(int devidx, enum VbSelectFirmware_t select,
 	 */
 	*hash = index_subsection(&area, devidx + 1, &size);
 	*hash_size = size;
+
 	if (!*hash) {
 		printf("Didn't find precalculated hash subsection %d.\n",
 		       devidx + 1);
 		const char *filename = get_fw_filename(devidx, select);
-		*hash = get_file_hash_from_cbfs(filename, hash_size);
+		*hash = get_file_hash_from_cbfs(filename, hash_size, select);
 		if (!*hash)
 			return VBERROR_UNKNOWN;
 	}
