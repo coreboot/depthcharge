@@ -78,6 +78,7 @@ static void fill_board_descriptor(void)
 		break;
 
 	case BOARD_ID_ARKHAM_PROTO:
+	case BOARD_ID_ARKHAM_H5TC4G63CFR_PBA:
 		bdescriptor.compat_string = "google,arkham";
 		bdescriptor.calibration_needed = 1;
 		break;
