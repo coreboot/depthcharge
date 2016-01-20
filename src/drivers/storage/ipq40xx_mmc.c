@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2014 The Linux Foundation. All rights reserved.
+ * Copyright (C) 2010-2014, 2016 The Linux Foundation. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -36,7 +36,8 @@
 
 #include "config.h"
 #include "drivers/storage/blockdev.h"
-#include "drivers/storage/ipq806x_mmc.h"
+#include "drivers/storage/ipq40xx_mmc.h"
+#include "base/cleanup_funcs.h"
 
 #define USEC_PER_SEC	(1000000L)
 #define MAX_DELAY_MS	100
@@ -530,15 +531,13 @@ static int mmc_boot_send_command(MmcCtrlr *ctrlr,
 		return MMC_UNUSABLE_ERR;
 
 	/* data transfer */
-	if (data != NULL)
+	if (data != NULL) {
 		if (data->flags == MMC_DATA_READ ||
 			data->flags == MMC_DATA_WRITE) {
 			mmc_boot_setup_data_transfer(ctrlr, data);
 			data_transfer = 1;
 		}
-
-	/* 1. Write command argument to MMC_BOOT_MCI_ARGUMENT register */
-	writel(cmd->cmdarg, MMC_BOOT_MCI_ARGUMENT(mmc_host->mci_base));
+	}
 
 	/*
 	 * 2. Set appropriate fields and write MMC_BOOT_MCI_CMD.
@@ -558,8 +557,6 @@ static int mmc_boot_send_command(MmcCtrlr *ctrlr,
 
 	/*
 	 * 2d. Set INTERRUPT bit to disable command timeout.
-	 * 2e. Set PENDING bit for CMD12 in the beginning of stream mode data
-	 * transfer
 
 	if (cmd->xfer_mode == MMC_BOOT_XFER_MODE_STREAM) {
 		mmc_cmd |= MMC_BOOT_MCI_CMD_PENDING;
@@ -584,6 +581,11 @@ static int mmc_boot_send_command(MmcCtrlr *ctrlr,
 	 */
 	writel(MMC_BOOT_MCI_STATIC_STATUS,
 	       MMC_BOOT_MCI_CLEAR(mmc_host->mci_base));
+
+	mmc_mclk_reg_wr_delay(ctrlr);
+
+	/* 1. Write command argument to MMC_BOOT_MCI_ARGUMENT register */
+	writel(cmd->cmdarg, MMC_BOOT_MCI_ARGUMENT(mmc_host->mci_base));
 
 	/* 2k. Write to MMC_BOOT_MCI_CMD register. */
 	writel(mmc_cmd, MMC_BOOT_MCI_CMD(mmc_host->mci_base));
@@ -659,14 +661,25 @@ static int mmc_boot_send_command(MmcCtrlr *ctrlr,
 
 static void mmc_boot_set_ios(struct MmcCtrlr *ctrlr)
 {
+	QcomMmcHost *mmc_host = container_of(ctrlr, QcomMmcHost, mmc);
 	int mmc_ret = MMC_BOOT_E_SUCCESS;
+	int mode;
 
-	/* Clock frequency should not exceed 400KHz in identification mode. */
-	clock_config_mmc(ctrlr, ctrlr->bus_hz);
+	if (ctrlr->bus_hz  <= ctrlr->f_min)
+		mode = MMC_IDENTIFY_MODE;
+	else
+		mode = MMC_DATA_TRANSFER_MODE;
+
+	if (mode != mmc_host->clk_mode) {
+		mmc_host->clk_mode = mode;
+		clock_config_mmc(ctrlr, mode);
+	}
 
 	mmc_ret = mmc_boot_set_bus_width(ctrlr, ctrlr->bus_width);
 	if (mmc_ret != MMC_BOOT_E_SUCCESS)
 		mmc_error("Set bus width error %d\n", mmc_ret);
+
+	mmc_boot_mci_clk_enable(ctrlr);
 }
 
 /*
@@ -676,17 +689,18 @@ static int mmc_boot_init(QcomMmcHost *host)
 {
 	uint32_t mmc_pwr;
 
-	/* Initialize any clocks needed for SDC controller */
-	clock_init_mmc(host->instance);
-
 	/* Initialize the GPIO's required for the board. */
 	board_mmc_gpio_config();
 
 	/* Save the version of the mmc controller. */
 	host->mmc_cont_version = readl(MMC_BOOT_MCI_VERSION(host->mci_base));
 
+	printf("MMC version  = %x\n", host->mmc_cont_version);
+	host->clk_mode = MMC_IDENTIFY_MODE ;
 	/* Setup initial freq to 400KHz. */
-	clock_config_mmc(&(host->mmc), MMC_CLK_400KHZ);
+	clock_config_mmc(&(host->mmc), 1);
+
+	mmc_pwr = readl(MMC_BOOT_MCI_POWER(host->mci_base));
 
 	/* set power mode. */
 	mmc_pwr = (MMC_BOOT_MCI_PWR_ON | MMC_BOOT_MCI_PWR_UP);
@@ -717,6 +731,7 @@ static int qcom_mmc_update(BlockDevCtrlrOps *me)
 		return -1;
 	}
 
+	udelay(100);
 	if (mmc_setup_media(&(mmc_host->mmc)))
 		return -1;
 
@@ -733,6 +748,22 @@ static int qcom_mmc_update(BlockDevCtrlrOps *me)
 	return 0;
 }
 
+static int qcom_mmc_boot_cleanup_func(struct CleanupFunc *cleanup,
+					CleanupType type)
+{
+	/* QcomMmcHost *host = cleanup->data; */
+
+	clock_disable_mmc();
+
+	return 0;
+}
+
+static CleanupFunc qcom_mmc_boot_cleanup = {
+	&qcom_mmc_boot_cleanup_func,
+	CleanupOnHandoff,
+	NULL,
+};
+
 QcomMmcHost *new_qcom_mmc_host(unsigned slot, uint32_t base, int bus_width)
 {
 	QcomMmcHost *new_host = xzalloc(sizeof(QcomMmcHost));
@@ -745,23 +776,26 @@ QcomMmcHost *new_qcom_mmc_host(unsigned slot, uint32_t base, int bus_width)
 		new_host->mmc.ctrlr.need_update = 1;
 		new_host->mmc.set_ios = &mmc_boot_set_ios;
 		new_host->mmc.send_cmd = mmc_boot_send_command;
-		new_host->mmc.bus_hz = MMC_CLK_400KHZ;
-		new_host->mmc.f_max = MMC_CLK_48MHZ;
-		new_host->mmc.f_min = MMC_CLK_400KHZ;
-		new_host->mmc.hardcoded_voltage =
-			MMC_BOOT_OCR_27_36 | MMC_BOOT_OCR_SEC_MODE;
-		new_host->mmc.voltages = MMC_BOOT_OCR_27_36;
+		new_host->mmc.f_max = 52000000;
+		new_host->mmc.f_min = 400000;
+
+		new_host->mmc.hardcoded_voltage = 0x40FF8080;
+		new_host->mmc.voltages = 0x40FF8080;
+
 		/* Some controllers use 16-bit regs.*/
-		new_host->mmc.b_max = 0xFFFF;
+		new_host->mmc.b_max = 512;
 		new_host->mmc.bus_width = bus_width;
 		new_host->mmc.bus_hz = new_host->mmc.f_min;
-		new_host->mmc.caps = (bus_width == 8) ?
-					MMC_MODE_8BIT : MMC_MODE_4BIT;
-		new_host->mmc.caps |= MMC_MODE_HS | MMC_MODE_HS_52MHz |
-			MMC_MODE_HC;
+		new_host->mmc.caps = MMC_MODE_8BIT ;
+		new_host->mmc.caps |= MMC_MODE_HC;
 
 		clock_config_mmc(&(new_host->mmc), 1);
 		clock_disable_mmc();
+
+		qcom_mmc_boot_cleanup.data = new_host;
+		list_insert_after(&qcom_mmc_boot_cleanup.list_node,
+					&cleanup_funcs);
+
 	}
 
 	return new_host;
