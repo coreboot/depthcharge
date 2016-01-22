@@ -82,6 +82,12 @@
 			label = "fw-main-a";
 			reg = <0x00210000 0x003dffc0>;
 			type = "blob cbfs/rw/a-boot";
+
+			cbfs-files {
+				romstage = "add-stage -n fallback/romstage -f romstage.elf${COREBOOT_VARIANT} -a 64 --xip -S .car.data";
+				fsp = "add -n fsp.bin -f fsp.bin -t fsp";
+				verstage = "remove -n fallback/verstage";
+			};
 		};
 		rw-a-firmware-id {
 			/* Alignment: no requirement. */
@@ -116,6 +122,12 @@
 			/* Alignment: no requirement (yet). */
 			reg = <0x00600000 0x003dffc0>;
 			type = "blob cbfs/rw/b-boot";
+
+			cbfs-files {
+				romstage = "add-stage -n fallback/romstage -f romstage.elf${COREBOOT_VARIANT} -a 64 --xip -S .car.data";
+				fsp = "add -n fsp.bin -f fsp.bin -t fsp";
+				verstage = "remove -n fallback/verstage";
+			};
 		};
 		rw-b-firmware-id {
 			label = "rw-fwid-b";
