@@ -22,4 +22,4 @@ depthcharge-$(CONFIG_DRIVER_SOUND_MAX98095) += max98095.c
 depthcharge-$(CONFIG_DRIVER_SOUND_PCAT_BEEP) += pcat_beep.c
 depthcharge-$(CONFIG_DRIVER_SOUND_ROUTE) += route.c
 depthcharge-$(CONFIG_DRIVER_SOUND_TEGRA_AUDIO_HUB) += tegra_ahub.c
-depthcharge-y += sound.c
+depthcharge-y += dummy.c sound.c
