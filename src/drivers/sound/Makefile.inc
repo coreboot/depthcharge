@@ -29,4 +29,4 @@ depthcharge-$(CONFIG_DRIVER_SOUND_RT5645) += rt5645.c
 depthcharge-$(CONFIG_DRIVER_SOUND_RT5677) += rt5677.c
 depthcharge-$(CONFIG_DRIVER_SOUND_SSM4567) += ssm4567.c
 depthcharge-$(CONFIG_DRIVER_SOUND_TEGRA_AUDIO_HUB) += tegra_ahub.c
-depthcharge-y += sound.c
+depthcharge-y += dummy.c sound.c
