@@ -83,7 +83,7 @@ static void mtk_mmc_change_clock(MtkMmcHost *host, uint32_t clock)
 	}
 
 	clrsetbits_le32(&reg->msdc_cfg, MSDC_CFG_CKMOD | MSDC_CFG_CKDIV,
-			(mode << 16) | (((div + 1) % 0xff) << 8));
+			(mode << 16) | ((div % 0xff) << 8));
 	if (mmc_busy_wait_io_until(&reg->msdc_cfg, NULL, MSDC_CFG_CKSTB,
 				   MTK_MMC_TIMEOUT_MS))
 		mmc_error("Failed while wait clock stable!\n");
