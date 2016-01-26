@@ -31,6 +31,7 @@
 #include "drivers/tpm/tpm.h"
 #include "drivers/power/rk808.h"
 #include "drivers/power/sysinfo.h"
+#include "drivers/sound/dummy.h"
 #include "drivers/storage/dw_mmc.h"
 #include "drivers/storage/rk_mmc.h"
 #include "drivers/video/display.h"
@@ -178,6 +179,8 @@ static int board_setup(void)
 
 	RkI2c *i2c1 = new_rockchip_i2c((void *)0xff140000);
 	tpm_set_ops(&new_slb9635_i2c(&i2c1->ops, 0x20)->base.ops);
+
+	sound_set_ops(new_dummy_sound());
 
 	RkI2c *i2c0 = new_rockchip_i2c((void *)0xff650000);
 	Rk808Pmic *pmic = new_rk808_pmic(&i2c0->ops, 0x1b);
