@@ -241,7 +241,7 @@ void vboot_boot_kernel(VbSelectAndLoadKernelParams *kparams)
 	static char cmd_line_buf[2 * CmdLineSize];
 	struct boot_info bi;
 
-	timestamp_add_now(TS_CROSSYSTEM_DATA);
+	timestamp_add_now(TS_VB_VBOOT_DONE);
 
 	memset(&bi, 0, sizeof(bi));
 

@@ -127,6 +127,8 @@ int boot_arm_linux(void *fdt, FitImageNode *kernel)
 	if (!reloc_addr)
 		return 1;
 
+	timestamp_add_now(TS_KERNEL_DECOMPRESSION);
+
 	size_t true_size = kernel->size;
 	switch (kernel->compression) {
 	case CompressionNone:

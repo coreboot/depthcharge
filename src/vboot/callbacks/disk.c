@@ -24,6 +24,7 @@
 #include <libpayload.h>
 #include <vboot_api.h>
 
+#include "base/timestamp.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/stream.h"
 
@@ -54,6 +55,10 @@ VbError_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
 		bd_type = BLOCKDEV_REMOVABLE;
 
 	*count = get_all_bdevs(bd_type, &devs);
+
+	// Only log for fixed disks to avoid spamming timestamps in recovery.
+	if (disk_flags & VB_DISK_FLAG_FIXED)
+		timestamp_add_now(TS_VB_STORAGE_INIT_DONE);
 
 	// Allocate enough VbDiskInfo structures.
 	VbDiskInfo *disk = NULL;
@@ -119,6 +124,13 @@ VbError_t VbExStreamRead(VbExStream_t stream, uint32_t bytes, void *buffer)
 		printf("Stream read failed.\n");
 		return VBERROR_UNKNOWN;
 	}
+
+	// Vboot first reads some headers from the front of the kernel partition
+	// and then the whole kernel body in one call. We assume that any read
+	// larger than 1MB is the kernel body, and thus the last read.
+	if (bytes > MiB)
+		timestamp_add_now(TS_VB_READ_KERNEL_DONE);
+
 	return VBERROR_SUCCESS;
 }
 
