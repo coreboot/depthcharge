@@ -31,112 +31,149 @@
 
 #include <libpayload.h>
 #include <arch/io.h>
-#include "drivers/gpio/ipq806x.h"
-#include "ipq806x_gsbi.h"
-#include "drivers/bus/spi/ipq806x.h"
+#include "base/container_of.h"
+#include "base/init_funcs.h"
+#include "drivers/gpio/ipq40xx.h"
+#include "drivers/bus/spi/ipq40xx.h"
+#include "ipq40xx_blsp.h"
 
-#define GPIO_FUNC_I2C		0x1
+#define GPIO_58_FUNC_SCL		0x3
+#define GPIO_59_FUNC_SDA		0x2
 
-static int gsbi_init_board(gsbi_id_t gsbi_id)
+#define TPM_RESET_GPIO		60
+void ipq_setup_tpm(void)
 {
-	switch (gsbi_id) {
-	case GSBI_ID_7:
-			gpio_tlmm_config_set(8, GPIO_FUNC_I2C,
-					     GPIO_NO_PULL, GPIO_2MA, 1);
-			gpio_tlmm_config_set(9, GPIO_FUNC_I2C,
-					     GPIO_NO_PULL, GPIO_2MA, 1);
-		break;
-	case GSBI_ID_4:
-			/* Configure GPIOs 13 - SCL, 12 - SDA, 2mA gpio_en */
-			gpio_tlmm_config_set(12, GPIO_FUNC_I2C,
-					     GPIO_NO_PULL, GPIO_2MA, 1);
-			gpio_tlmm_config_set(13, GPIO_FUNC_I2C,
-					     GPIO_NO_PULL, GPIO_2MA, 1);
-		break;
-	case GSBI_ID_1:
-			/* Configure GPIOs 54 - SCL, 53 - SDA, 2mA gpio_en */
-			gpio_tlmm_config_set(54, GPIO_FUNC_I2C,
-					     GPIO_NO_PULL, GPIO_2MA, 1);
-			gpio_tlmm_config_set(53, GPIO_FUNC_I2C,
-					     GPIO_NO_PULL, GPIO_2MA, 1);
-		break;
-	default:
-		printf("%s: attempt to set up usupported GSBI (%d)\n",
-		       __func__, gsbi_id);
-		return GSBI_UNSUPPORTED;
-	}
+#if 0
+Not sure if this is needed. Coreboot would have
+powered up the TPM should depthcharge repeat that?
 
-	return GSBI_SUCCESS;
+	gpio_tlmm_config_set(TPM_RESET_GPIO, FUNC_SEL_GPIO,
+			GPIO_PULL_UP, GPIO_6MA, 1);
+	gpio_set_out_value(TPM_RESET_GPIO, 0);
+	udelay(100);
+	gpio_set_out_value(TPM_RESET_GPIO, 1);
+
+	/*
+	 * ----- Per the SLB 9615XQ1.2 spec -----
+	 *
+	 * 4.7.1 Reset Timing
+	 *
+	 * The TPM_ACCESS_x.tpmEstablishment bit has the correct value
+	 * and the TPM_ACCESS_x.tpmRegValidSts bit is typically set
+	 * within 8ms after RESET# is deasserted.
+	 *
+	 * The TPM is ready to receive a command after less than 30 ms.
+	 *
+	 * --------------------------------------
+	 *
+	 * I'm assuming this means "wait for 30ms"
+	 *
+	 * If we don't wait here, subsequent QUP I2C accesses
+	 * to the TPM either fail or timeout.
+	 */
+	mdelay(30);
+#endif
 }
 
-static inline void *gsbi_ctl_reg_addr(gsbi_id_t gsbi_id)
+int blsp_init_board(blsp_qup_id_t id)
 {
-	switch (gsbi_id) {
-	case GSBI_ID_1:
-		return GSBI1_CTL_REG;
-	case GSBI_ID_2:
-		return GSBI2_CTL_REG;
-	case GSBI_ID_3:
-		return GSBI3_CTL_REG;
-	case GSBI_ID_4:
-		return GSBI4_CTL_REG;
-	case GSBI_ID_5:
-		return GSBI5_CTL_REG;
-	case GSBI_ID_6:
-		return GSBI6_CTL_REG;
-	case GSBI_ID_7:
-		return GSBI7_CTL_REG;
+	switch (id) {
+	case BLSP_QUP_ID_0:
+	case BLSP_QUP_ID_1:
+	case BLSP_QUP_ID_2:
+	case BLSP_QUP_ID_3:
+		/* Configure GPIOs 58 - SCL, 59 - SDA, 2mA gpio_en */
+		gpio_tlmm_config_set(59, GPIO_59_FUNC_SDA,
+				     GPIO_NO_PULL, GPIO_2MA, 1);
+		gpio_tlmm_config_set(58, GPIO_58_FUNC_SCL,
+				     GPIO_NO_PULL, GPIO_2MA, 1);
+		gpio_tlmm_config_set(60, FUNC_SEL_GPIO,
+				     GPIO_PULL_UP, GPIO_6MA, 1);
+		ipq_setup_tpm();
+		break;
 	default:
-		printf("Unsupported GSBI%d\n", gsbi_id);
-		return 0;
+		return 1;
 	}
+
+	return 0;
 }
 
-gsbi_return_t gsbi_init(gsbi_id_t gsbi_id, gsbi_protocol_t protocol)
+int blsp_i2c_clock_config(blsp_qup_id_t id)
 {
-	unsigned reg_val;
-	unsigned m = 1;
-	unsigned n = 4;
-	unsigned pre_div = 4;
-	unsigned src = 3;
-	unsigned mnctr_mode = 2;
-	void *gsbi_ctl = gsbi_ctl_reg_addr(gsbi_id);
+#if 0
+Not sure if this is needed. Coreboot has done this
 
-	if (!gsbi_ctl)
-		return GSBI_ID_ERROR;
+	int i;
+	const int max_tries = 200;
+	struct { void *cbcr, *cmd, *cfg; } clk[] = {
+		{
+			GCC_BLSP1_QUP1_I2C_APPS_CBCR,
+			GCC_BLSP1_QUP1_I2C_APPS_CMD_RCGR,
+			GCC_BLSP1_QUP1_I2C_APPS_CFG_RCGR,
+		},
+		{
+			GCC_BLSP1_QUP1_I2C_APPS_CBCR,
+			GCC_BLSP1_QUP1_I2C_APPS_CMD_RCGR,
+			GCC_BLSP1_QUP1_I2C_APPS_CFG_RCGR,
+		},
+		{
+			GCC_BLSP1_QUP1_I2C_APPS_CBCR,
+			GCC_BLSP1_QUP1_I2C_APPS_CMD_RCGR,
+			GCC_BLSP1_QUP1_I2C_APPS_CFG_RCGR,
+		},
+		{
+			GCC_BLSP1_QUP1_I2C_APPS_CBCR,
+			GCC_BLSP1_QUP1_I2C_APPS_CMD_RCGR,
+			GCC_BLSP1_QUP1_I2C_APPS_CFG_RCGR,
+		},
+	};
 
-	writel((1 << GSBI_HCLK_CTL_GATE_ENA) | (1 << GSBI_HCLK_CTL_BRANCH_ENA),
-		GSBI_HCLK_CTL(gsbi_id));
+	/* uart_clock_config() does this, duplication should be ok... */
+	setbits_le32(GCC_CLK_BRANCH_ENA, BLSP1_AHB | BLSP1_SLEEP);
 
-	if (gsbi_init_board(gsbi_id))
-		return GSBI_UNSUPPORTED;
+	if (clk[id].cbcr == NULL)
+		return -EINVAL;
 
-	writel(0, GSBI_QUP_APSS_NS_REG(gsbi_id));
-	writel(0, GSBI_QUP_APSS_MD_REG(gsbi_id));
+	/* Src Sel 1 (fepll 200), Src Div 10.5 */
+	write32(clk[id].cfg, (1u << 8) | (20u << 0));
 
-	reg_val = ((m & GSBI_QUP_APPS_M_MASK) << GSBI_QUP_APPS_M_SHFT) |
-		  ((~n & GSBI_QUP_APPS_D_MASK) << GSBI_QUP_APPS_D_SHFT);
-	writel(reg_val, GSBI_QUP_APSS_MD_REG(gsbi_id));
+	write32(clk[id].cmd, BIT(0)); /* Update En */
 
-	reg_val = (((~(n - m)) & GSBI_QUP_APPS_N_MASK) <<
-					GSBI_QUP_APPS_N_SHFT) |
-		  ((mnctr_mode & GSBI_QUP_APPS_MNCTR_MODE_MSK) <<
-				 GSBI_QUP_APPS_MNCTR_MODE_SFT) |
-		  (((pre_div - 1) & GSBI_QUP_APPS_PRE_DIV_MSK) <<
-				 GSBI_QUP_APPS_PRE_DIV_SFT) |
-		  (src & GSBI_QUP_APPS_SRC_SEL_MSK);
-	writel(reg_val, GSBI_QUP_APSS_NS_REG(gsbi_id));
+	for (i = 0; i < max_tries; i++) {
+		if (read32(clk[id].cmd) & BIT(0)) {
+			udelay(5);
+			continue;
+		}
+		break;
+	}
 
-	reg_val |= (1 << GSBI_QUP_APPS_ROOT_ENA_SFT) |
-		   (1 << GSBI_QUP_APPS_MNCTR_EN_SFT);
-	writel(reg_val, GSBI_QUP_APSS_NS_REG(gsbi_id));
+	if (i == max_tries) {
+		printk(BIOS_ERR, "== %s failed ==\n", __func__);
+		return -ETIMEDOUT;
+	}
 
-	reg_val |= (1 << GSBI_QUP_APPS_BRANCH_ENA_SFT);
-	writel(reg_val, GSBI_QUP_APSS_NS_REG(gsbi_id));
+	write32(clk[id].cbcr, BIT(0));	/* Enable */
+#endif
 
-	/*Select i2c protocol*/
-	writel(((GSBI_CTL_PROTO_I2C & GSBI_CTL_PROTO_CODE_MSK) <<
-					GSBI_CTL_PROTO_CODE_SFT), gsbi_ctl);
+	return 0;
+}
 
-	return GSBI_SUCCESS;
+blsp_return_t blsp_init(blsp_qup_id_t id, blsp_protocol_t protocol)
+{
+	void *base = blsp_qup_base(id);
+
+	if (!base)
+		return BLSP_ID_ERROR;
+
+	if (blsp_i2c_clock_config(id) != 0)
+		return BLSP_ID_ERROR;
+
+	if (blsp_init_board(id))
+		return BLSP_UNSUPPORTED;
+
+	/* Configure Mini core to I2C core */
+	clrsetbits_le32(base, QUP_CONFIG_MINI_CORE_MSK,
+				QUP_CONFIG_MINI_CORE_I2C);
+
+	return BLSP_SUCCESS;
 }

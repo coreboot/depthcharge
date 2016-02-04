@@ -30,15 +30,14 @@
 #include "base/init_funcs.h"
 #include "boot/fit.h"
 #include "boot/ramoops.h"
-#include "drivers/bus/i2c/ipq806x.h"
-#include "drivers/bus/i2c/ipq806x_gsbi.h"
-#include "drivers/bus/spi/ipq806x.h"
+#include "drivers/bus/spi/ipq40xx.h"
+#include "drivers/bus/i2c/ipq40xx.h"
+#include "drivers/bus/i2c/ipq40xx_blsp.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/ipq40xx.h"
 #include "drivers/gpio/sysinfo.h"
-#include "drivers/power/ipq806x.h"
-#include "drivers/sound/ipq806x.h"
+#include "drivers/power/power.h"
 #include "drivers/sound/route.h"
 #include "drivers/storage/ipq40xx_mmc.h"
 #include "drivers/storage/mtd/mtd.h"
@@ -213,39 +212,22 @@ gpio_func_data_t mmc_ap_dk04[] = {
 	},
 };
 
-/* Storm GPIO access wrapper. */
+/* Ipq GPIO access wrapper. */
 typedef struct
 {
 	GpioOps gpio_ops;	/* Depthcharge GPIO API wrapper. */
 	gpio_t desc;		/* GPIO description. */
-} StormGpio;
+} IpqGpio;
 
 static int get_gpio(struct GpioOps *me)
 {
-	StormGpio *gpio = container_of(me, StormGpio, gpio_ops);
+	IpqGpio *gpio = container_of(me, IpqGpio, gpio_ops);
 	return gpio_get_in_value(gpio->desc);
 }
 
-#if 0
-static int set_gpio(struct GpioOps *me, unsigned value)
+static GpioOps *new_gpio_input_from_coreboot(uint32_t port)
 {
-	StormGpio *gpio = container_of(me, StormGpio, gpio_ops);
-	gpio_set_out_value(gpio->desc, value);
-	return 0;
-}
-
-static GpioOps *new_storm_dac_gpio_output()
-{
-	StormGpio *gpio = xzalloc(sizeof(*gpio));
-	gpio->gpio_ops.set = set_gpio;
-	gpio->desc = (gpio_t)DAC_SDMODE;
-	return &gpio->gpio_ops;
-}
-#endif
-
-static GpioOps *new_storm_gpio_input_from_coreboot(uint32_t port)
-{
-	StormGpio *gpio = xzalloc(sizeof(*gpio));
+	IpqGpio *gpio = xzalloc(sizeof(*gpio));
 	gpio->gpio_ops.get = get_gpio;
 	gpio->desc = (gpio_t)port;
 	return &gpio->gpio_ops;
@@ -254,7 +236,7 @@ static GpioOps *new_storm_gpio_input_from_coreboot(uint32_t port)
 static void install_phys_presence_flag(void)
 {
 	GpioOps *phys_presence = sysinfo_lookup_gpio
-		("developer", 1, new_storm_gpio_input_from_coreboot);
+		("developer", 1, new_gpio_input_from_coreboot);
 
 	if (!phys_presence) {
 		printf("%s failed retrieving phys presence GPIO\n", __func__);
@@ -263,7 +245,7 @@ static void install_phys_presence_flag(void)
 	flag_install(FLAG_PHYS_PRESENCE, phys_presence);
 }
 
-void qca_configure_gpio(gpio_func_data_t *gpio, uint32_t count)
+void ipq_configure_gpio(gpio_func_data_t *gpio, uint32_t count)
 {
 	int i;
 
@@ -278,7 +260,7 @@ void qca_configure_gpio(gpio_func_data_t *gpio, uint32_t count)
 
 void board_mmc_gpio_config(void)
 {
-	qca_configure_gpio(mmc_ap_dk04, ARRAY_SIZE(mmc_ap_dk04));
+	ipq_configure_gpio(mmc_ap_dk04, ARRAY_SIZE(mmc_ap_dk04));
 }
 
 #if 0
@@ -442,23 +424,7 @@ static int board_setup(void)
 
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
 
-	if (bdescriptor.use_nand) {
-		MtdDevCtrlr *mtd = new_ipq_nand((void *)EBI2ND_BASE);
-		SpiGptCtrlr *virtual_dev = new_spi_gpt("RW_GPT",
-						       new_mtd_stream(mtd),
-						       "soc/nand@0x1ac00000");
-		list_insert_after(&virtual_dev->block_ctrlr.list_node,
-				  &fixed_block_dev_controllers);
-	} else {
-		QcomMmcHost *mmc = new_qcom_mmc_host(1, MSM_SDC1_BASE, 8);
-		if (!mmc)
-			return -1;
-
-		list_insert_after(&mmc->mmc.ctrlr.list_node,
-				  &fixed_block_dev_controllers);
-	}
-
-	Ipq806xI2c *i2c = new_ipq806x_i2c(GSBI_ID_1);
+	Ipq40xxI2c *i2c = new_ipq40xx_i2c(BLSP_QUP_ID_2);
 	tpm_set_ops(&new_slb9635_i2c(&i2c->ops, 0x20)->base.ops);
 
 #if 0
@@ -473,31 +439,6 @@ static int board_setup(void)
 	set_ramoops_buffer();
 
 	return 0;
-}
-
-int get_mach_id(void)
-{
-	int i;
-	struct cb_mainboard *mainboard = lib_sysinfo.mainboard;
-	const char *part_number = (const char *)mainboard->strings +
-		mainboard->part_number_idx;
-
-	struct PartDescriptor {
-		const char *part_name;
-		int mach_id;
-	} parts[] = {
-		{"Storm", 4936},
-		{"AP148", CONFIG_MACHID},
-	};
-
-	for (i = 0; i < ARRAY_SIZE(parts); i++) {
-		if (!strncmp(parts[i].part_name,
-			     part_number, strlen(parts[i].part_name))) {
-			return parts[i].mach_id;
-		}
-	}
-
-	return -1;
 }
 
 int board_wan_port_number(void)

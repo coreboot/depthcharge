@@ -29,16 +29,16 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __DRIVERS_BUS_I2C_IPQ806X_H__
-#define __DRIVERS_BUS_I2C_IPQ806X_H__
+#ifndef __DRIVERS_BUS_I2C_IPQ40XX_H__
+#define __DRIVERS_BUS_I2C_IPQ40XX_H__
 
 #include "drivers/bus/i2c/i2c.h"
 
 typedef struct {
 	I2cOps ops;
-	unsigned gsbi_id;
+	unsigned id;
 	unsigned initialized;
-} Ipq806xI2c;
+} Ipq40xxI2c;
 
-Ipq806xI2c *new_ipq806x_i2c(unsigned gsbi_id);
+Ipq40xxI2c *new_ipq40xx_i2c(unsigned gsbi_id);
 #endif

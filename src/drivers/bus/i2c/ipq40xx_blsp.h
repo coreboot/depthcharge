@@ -29,85 +29,44 @@
  * IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef __GSBI_TYPES_H__
-#define __GSBI_TYPES_H__
-
-#define MSM_CLK_CTL_BASE	((void *)0x00900000)
-
-#define GSBI1_BASE		((void *)0x12440000)
-#define GSBI2_BASE		((void *)0x12480000)
-#define GSBI3_BASE		((void *)0x16200000)
-#define GSBI4_BASE		((void *)0x16300000)
-
-#define GSBI1_CTL_REG		(GSBI1_BASE + (0x0))
-#define GSBI2_CTL_REG		(GSBI2_BASE + (0x0))
-#define GSBI3_CTL_REG		(GSBI3_BASE + (0x0))
-#define GSBI4_CTL_REG		(GSBI4_BASE + (0x0))
-#define GSBI5_CTL_REG		(GSBI5_BASE + (0x0))
-#define GSBI6_CTL_REG		(GSBI6_BASE + (0x0))
-#define GSBI7_CTL_REG		(GSBI7_BASE + (0x0))
-
-#define GSBI_QUP1_BASE		(GSBI1_BASE + 0x20000)
-#define GSBI_QUP2_BASE		(GSBI2_BASE + 0x20000)
-#define GSBI_QUP3_BASE		(GSBI3_BASE + 0x80000)
-#define GSBI_QUP4_BASE		(GSBI4_BASE + 0x80000)
-#define GSBI_QUP5_BASE		(GSBI5_BASE + 0x80000)
-#define GSBI_QUP6_BASE		(GSBI6_BASE + 0x80000)
-#define GSBI_QUP7_BASE		(GSBI7_BASE + 0x80000)
-
-#define GSBI_CTL_PROTO_I2C              2
-#define GSBI_CTL_PROTO_CODE_SFT         4
-#define GSBI_CTL_PROTO_CODE_MSK         0x7
-#define GSBI_HCLK_CTL_GATE_ENA          6
-#define GSBI_HCLK_CTL_BRANCH_ENA        4
-#define GSBI_QUP_APPS_M_SHFT            16
-#define GSBI_QUP_APPS_M_MASK            0xFF
-#define GSBI_QUP_APPS_D_SHFT            0
-#define GSBI_QUP_APPS_D_MASK            0xFF
-#define GSBI_QUP_APPS_N_SHFT            16
-#define GSBI_QUP_APPS_N_MASK            0xFF
-#define GSBI_QUP_APPS_ROOT_ENA_SFT      11
-#define GSBI_QUP_APPS_BRANCH_ENA_SFT    9
-#define GSBI_QUP_APPS_MNCTR_EN_SFT      8
-#define GSBI_QUP_APPS_MNCTR_MODE_MSK    0x3
-#define GSBI_QUP_APPS_MNCTR_MODE_SFT    5
-#define GSBI_QUP_APPS_PRE_DIV_MSK       0x3
-#define GSBI_QUP_APPS_PRE_DIV_SFT       3
-#define GSBI_QUP_APPS_SRC_SEL_MSK       0x7
-
-
-#define GSBI_QUP_APSS_MD_REG(gsbi_n)	((MSM_CLK_CTL_BASE + 0x29c8) + \
-							(32*(gsbi_n-1)))
-#define GSBI_QUP_APSS_NS_REG(gsbi_n)	((MSM_CLK_CTL_BASE + 0x29cc) + \
-							(32*(gsbi_n-1)))
-#define GSBI_HCLK_CTL(n)		((MSM_CLK_CTL_BASE + 0x29C0) + \
-							(32*(n-1)))
+#ifndef __BLSP_TYPES_H__
+#define __BLSP_TYPES_H__
 
 typedef enum {
-	GSBI_ID_1 = 1,
-	GSBI_ID_2,
-	GSBI_ID_3,
-	GSBI_ID_4,
-	GSBI_ID_5,
-	GSBI_ID_6,
-	GSBI_ID_7,
-} gsbi_id_t;
+	BLSP_QUP_ID_0,
+	BLSP_QUP_ID_1,
+	BLSP_QUP_ID_2,
+	BLSP_QUP_ID_3,
+} blsp_qup_id_t;
 
 typedef enum {
-	GSBI_SUCCESS = 0,
-	GSBI_ID_ERROR,
-	GSBI_ERROR,
-	GSBI_UNSUPPORTED
-} gsbi_return_t;
+	BLSP_SUCCESS = 0,
+	BLSP_ID_ERROR,
+	BLSP_ERROR,
+	BLSP_UNSUPPORTED
+} blsp_return_t;
 
 typedef enum {
-	GSBI_PROTO_I2C_UIM = 1,
-	GSBI_PROTO_I2C_ONLY,
-	GSBI_PROTO_SPI_ONLY,
-	GSBI_PROTO_UART_FLOW_CTL,
-	GSBI_PROTO_UIM,
-	GSBI_PROTO_I2C_UART,
-} gsbi_protocol_t;
+	BLSP_PROTO_I2C_UIM = 1,
+	BLSP_PROTO_I2C_ONLY,
+	BLSP_PROTO_SPI_ONLY,
+	BLSP_PROTO_UART_FLOW_CTL,
+	BLSP_PROTO_UIM,
+	BLSP_PROTO_I2C_UART,
+} blsp_protocol_t;
 
-gsbi_return_t gsbi_init(gsbi_id_t gsbi_id, gsbi_protocol_t protocol);
+blsp_return_t blsp_init(blsp_qup_id_t id, blsp_protocol_t protocol);
+int blsp_init_board(blsp_qup_id_t id);
+
+static inline void *blsp_qup_base(blsp_qup_id_t id)
+{
+	switch (id) {
+	case BLSP_QUP_ID_0: return BLSP_QUP0_REG_BASE;
+	case BLSP_QUP_ID_1: return BLSP_QUP1_REG_BASE;
+	case BLSP_QUP_ID_2: return BLSP_QUP2_REG_BASE;
+	case BLSP_QUP_ID_3: return BLSP_QUP3_REG_BASE;
+	}
+	return NULL;
+}
+
 #endif

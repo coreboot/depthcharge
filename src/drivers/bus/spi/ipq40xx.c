@@ -19,6 +19,8 @@
 #include <libpayload.h>
 #include "base/container_of.h"
 #include "ipq40xx.h"
+#include "drivers/storage/mtd/mtd.h"
+
 static void write_force_cs(SpiOps *ops, int assert);
 
 

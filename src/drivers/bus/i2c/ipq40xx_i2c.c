@@ -34,159 +34,158 @@
 
 #include "config.h"
 #include "base/container_of.h"
+#include "drivers/bus/spi/ipq40xx.h"
 #include "drivers/bus/i2c/i2c.h"
-#include "drivers/bus/i2c/ipq806x_qup.h"
-#include "drivers/bus/i2c/ipq806x_gsbi.h"
-#include "drivers/bus/i2c/ipq806x.h"
+#include "drivers/bus/i2c/ipq40xx_qup.h"
+#include "drivers/bus/i2c/ipq40xx_blsp.h"
+#include "drivers/bus/i2c/ipq40xx.h"
 
-static qup_config_t gsbi1_qup_config = {
-		QUP_MINICORE_I2C_MASTER,
-		100000,
-		24000000,
-		QUP_MODE_FIFO,
-	};
+static qup_config_t blsp1_qup0_config = {
+	QUP_MINICORE_I2C_MASTER,
+	100000,
+	19050000,
+	QUP_MODE_FIFO,
+};
 
-static qup_config_t gsbi4_qup_config = {
-		QUP_MINICORE_I2C_MASTER,
-		100000,
-		24000000,
-		QUP_MODE_FIFO,
-	};
+static qup_config_t blsp1_qup1_config = {
+	QUP_MINICORE_I2C_MASTER,
+	100000,
+	19050000,
+	QUP_MODE_FIFO,
+};
 
-static qup_config_t gsbi7_qup_config = {
-		QUP_MINICORE_I2C_MASTER,
-		100000,
-		24000000,
-		QUP_MODE_FIFO,
-	};
+static qup_config_t blsp1_qup2_config = {
+	QUP_MINICORE_I2C_MASTER,
+	100000,
+	19050000,
+	QUP_MODE_FIFO,
+};
 
-static int i2c_init(unsigned gsbi_id)
+static qup_config_t blsp1_qup3_config = {
+	QUP_MINICORE_I2C_MASTER,
+	100000,
+	19050000,
+	QUP_MODE_FIFO,
+};
+
+static int i2c_read(uint32_t id, uint8_t slave, uint8_t *data, int data_len)
 {
-	gsbi_return_t gsbi_ret = 0;
+	qup_data_t obj;
 	qup_return_t qup_ret = 0;
+
+	memset(&obj, 0, sizeof(obj));
+	obj.protocol = QUP_MINICORE_I2C_MASTER;
+	obj.p.iic.addr = slave;
+	obj.p.iic.data_len = data_len;
+	obj.p.iic.data = data;
+	qup_ret = qup_recv_data(id, &obj);
+
+	if (QUP_SUCCESS != qup_ret)
+		return 1;
+	else
+		return 0;
+}
+
+static int i2c_write(uint32_t id, uint8_t slave, uint8_t *data, int data_len,
+			uint8_t stop_seq)
+{
+	qup_data_t obj;
+	qup_return_t qup_ret = 0;
+
+	memset(&obj, 0, sizeof(obj));
+	obj.protocol = QUP_MINICORE_I2C_MASTER;
+	obj.p.iic.addr = slave;
+	obj.p.iic.data_len = data_len;
+	obj.p.iic.data = data;
+	qup_ret = qup_send_data(id, &obj, stop_seq);
+
+	if (QUP_SUCCESS != qup_ret)
+		return 1;
+	else
+		return 0;
+}
+
+static int i2c_init(blsp_qup_id_t id)
+{
 	qup_config_t *qup_config;
 
-	switch (gsbi_id) {
-	case 1:
-		qup_config = &gsbi1_qup_config;
+	switch (id) {
+	case BLSP_QUP_ID_0:
+		qup_config = &blsp1_qup0_config;
 		break;
-	case 4:
-		qup_config = &gsbi4_qup_config;
+	case BLSP_QUP_ID_1:
+		qup_config = &blsp1_qup1_config;
 		break;
-	case 7:
-		qup_config = &gsbi7_qup_config;
+	case BLSP_QUP_ID_2:
+		qup_config = &blsp1_qup2_config;
+		break;
+	case BLSP_QUP_ID_3:
+		qup_config = &blsp1_qup3_config;
 		break;
 	default:
-		printf("QUP configuration not defined for GSBI%d\n", gsbi_id);
+		printf("QUP configuration not defind for GSBI%d.\n", id);
 		return 1;
 	}
 
-	gsbi_ret = gsbi_init(gsbi_id, GSBI_PROTO_I2C_ONLY);
-	if (GSBI_SUCCESS != gsbi_ret) {
-		printf("%s: gsbi_init failed\n", __func__);
+	if (blsp_init(id, BLSP_PROTO_I2C_ONLY)) {
+		printf("failed to initialize blsp\n");
 		return 1;
 	}
 
-	qup_ret = qup_init(gsbi_id, qup_config);
-	if (QUP_SUCCESS != qup_ret) {
-		printf("%s: qup_init failed\n", __func__);
+	if (qup_init(id, qup_config)) {
+		printf("failed to initialize qup\n");
 		return 1;
 	}
 
-
-	qup_ret = qup_reset_i2c_master_status(gsbi_id);
-	if (QUP_SUCCESS != qup_ret) {
-		printf("%s: qup_reset failed\n", __func__);
+	if (qup_reset_i2c_master_status(id)) {
+		printf("failed to reset i2c master status\n");
 		return 1;
 	}
 
 	return 0;
 }
 
-static int i2c_read(uint32_t gsbi_id, uint8_t slave,
-			uint8_t *data, int data_len)
-{
-	qup_data_t obj;
-	qup_return_t qup_ret = 0;
-
-	memset(&obj, 0, sizeof(obj));
-	obj.protocol = QUP_MINICORE_I2C_MASTER;
-	obj.p.iic.addr = slave;
-	obj.p.iic.data_len = data_len;
-	obj.p.iic.data = data;
-	qup_ret = qup_recv_data(gsbi_id, &obj);
-
-	if (QUP_SUCCESS != qup_ret)
-		return 1;
-	else
-		return 0;
-}
-
-static int i2c_write(uint32_t gsbi_id, uint8_t slave,
-		     uint8_t *data, int data_len, uint8_t stop_seq,
-		     int write_errmsg_on)
-{
-	qup_data_t obj;
-	qup_return_t qup_ret = 0;
-
-	memset(&obj, 0, sizeof(obj));
-	obj.protocol = QUP_MINICORE_I2C_MASTER;
-	obj.p.iic.addr = slave;
-	obj.p.iic.data_len = data_len;
-	obj.p.iic.data = data;
-	qup_ret = qup_send_data(gsbi_id, &obj, stop_seq, write_errmsg_on);
-
-	if (QUP_SUCCESS != qup_ret)
-		return 1;
-	else
-		return 0;
-}
-
 static int i2c_transfer(struct I2cOps *me, I2cSeg *segments, int seg_count)
 {
-	Ipq806xI2c *bus = container_of(me, Ipq806xI2c, ops);
+	Ipq40xxI2c *bus = container_of(me, Ipq40xxI2c, ops);
 	I2cSeg *seg = segments;
 	int ret = 0;
 
 	if (!bus->initialized) {
-		if (0 != i2c_init(bus->gsbi_id))
+		if (0 != i2c_init(bus->id))
 			return 1;
 		bus->initialized = 1;
 	}
 
 	while (!ret && seg_count--) {
 		if (seg->read)
-			ret = i2c_read(bus->gsbi_id, seg->chip,
-				       seg->buf, seg->len);
+			ret = i2c_read(bus->id, seg->chip, seg->buf, seg->len);
 		else
-			ret  = i2c_write(bus->gsbi_id, seg->chip,
-					 seg->buf, seg->len,
-					 (seg_count ? 0 : 1),
-			!me->scan_mode);
+			ret = i2c_write(bus->id, seg->chip, seg->buf, seg->len,
+					(seg_count ? 0 : 1));
 		seg++;
 	}
 
-	if (QUP_SUCCESS != ret) {
-		qup_set_state(bus->gsbi_id, QUP_STATE_RESET);
+	if (ret) {
+		qup_set_state(bus->id, BLSP_QUP_STATE_RESET);
 		return 1;
 	}
 
 	return 0;
 }
 
-Ipq806xI2c *new_ipq806x_i2c(unsigned gsbi_id)
+Ipq40xxI2c *new_ipq40xx_i2c(unsigned id)
 {
-	Ipq806xI2c *bus = 0;
+	Ipq40xxI2c *bus = 0;
 
-	if (!i2c_init(gsbi_id)) {
+	if (!i2c_init(id)) {
 		bus = xzalloc(sizeof(*bus));
-		bus->gsbi_id = gsbi_id;
+		bus->id = id;
 		bus->initialized = 1;
 		bus->ops.transfer = &i2c_transfer;
 		bus->ops.scan_mode_on_off = scan_mode_on_off;
 		if (CONFIG_CLI)
-			add_i2c_controller_to_list(&bus->ops,
-						   "gsbi%d", gsbi_id);
+			add_i2c_controller_to_list(&bus->ops, "gsbi%d", id);
 
 	}
 	return bus;
