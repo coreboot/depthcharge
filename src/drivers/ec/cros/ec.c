@@ -577,7 +577,9 @@ int cros_ec_reboot(int devidx, enum ec_reboot_cmd cmd, uint8_t flags)
 		       &p, sizeof(p), NULL, 0) < 0)
 		return -1;
 
-	if (!(flags & EC_REBOOT_FLAG_ON_AP_SHUTDOWN)) {
+	/* Do we expect our command to immediately reboot the EC? */
+	if (cmd != EC_REBOOT_DISABLE_JUMP &&
+	    !(flags & EC_REBOOT_FLAG_ON_AP_SHUTDOWN)) {
 		/*
 		 * EC reboot will take place immediately so delay to allow it
 		 * to complete.  Note that some reboot types (EC_REBOOT_COLD)
