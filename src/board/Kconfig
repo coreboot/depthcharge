@@ -115,6 +115,9 @@ endif
 if BOARD = "ultima"
 source src/board/ultima/Kconfig
 endif
+if BOARD = "umaro"
+source src/board/umaro/Kconfig
+endif
 if BOARD = "urara"
 source src/board/urara/Kconfig
 endif
