@@ -24,29 +24,7 @@
 #include "base/container_of.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/skylake.h"
-
-/* Skylake PCR access to GPIO registers. */
-#define PCH_PCR_BASE_ADDRESS	0xfd000000
-
-/* Port Id lives in bits 23:16 and register offset lives in 15:0 of address. */
-#define PCH_PCR_PORTID_SHIFT	16
-
-/* PCR PIDs for the GPIO communities. */
-#define PCH_PCR_PID_GPIOCOM3	0xAC
-#define PCH_PCR_PID_GPIOCOM2	0xAD
-#define PCH_PCR_PID_GPIOCOM1	0xAE
-#define PCH_PCR_PID_GPIOCOM0	0xAF
-
-static uint8_t *pcr_port_regs(u8 pid)
-{
-	uintptr_t reg_addr;
-
-	/* Create an address based off of port id and offset. */
-	reg_addr = PCH_PCR_BASE_ADDRESS;
-	reg_addr += ((uintptr_t)pid) << PCH_PCR_PORTID_SHIFT;
-
-	return (uint8_t *)reg_addr;
-}
+#include "drivers/soc/skylake.h"
 
 /* There are 4 communities with 8 GPIO groups (GPP_[A:G] and GPD) */
 struct gpio_community {
