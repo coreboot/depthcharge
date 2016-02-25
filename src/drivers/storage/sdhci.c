@@ -575,17 +575,20 @@ static int sdhci_pre_init(SdhciHost *host)
 		host->host_caps |= MMC_AUTO_CMD12;
 
 	/* get base clock frequency from CAP register */
-	if ((host->version & SDHCI_SPEC_VER_MASK) >= SDHCI_SPEC_300)
-		host->clock_base = (caps & SDHCI_CLOCK_V3_BASE_MASK)
-			>> SDHCI_CLOCK_BASE_SHIFT;
-	else
-		host->clock_base = (caps & SDHCI_CLOCK_BASE_MASK)
-			>> SDHCI_CLOCK_BASE_SHIFT;
+	if (!(host->quirks & SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN)) {
+		if ((host->version & SDHCI_SPEC_VER_MASK) >= SDHCI_SPEC_300)
+			host->clock_base = (caps & SDHCI_CLOCK_V3_BASE_MASK)
+				>> SDHCI_CLOCK_BASE_SHIFT;
+		else
+			host->clock_base = (caps & SDHCI_CLOCK_BASE_MASK)
+				>> SDHCI_CLOCK_BASE_SHIFT;
+	}
 
 	if (host->clock_base == 0) {
 		printf("Hardware doesn't specify base clock frequency\n");
 		return -1;
 	}
+
 	host->clock_base *= 1000000;
 
 	if (host->clock_f_max)

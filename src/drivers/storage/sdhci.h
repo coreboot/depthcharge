@@ -233,6 +233,7 @@
 #define SDHCI_PLATFORM_REMOVABLE	(1 << 0)
 #define SDHCI_PLATFORM_NO_EMMC_HS200	(1 << 1)
 #define SDHCI_PLATFORM_EMMC_1V8_POWER	(1 << 2)
+#define SDHCI_PLATFORM_NO_CLK_BASE	(1 << 3)
 /*
  * quirks
  */
@@ -246,6 +247,7 @@
 #define SDHCI_QUIRK_NO_SIMULT_VDD_AND_POWER (1 << 7)
 #define SDHCI_QUIRK_NO_EMMC_HS200	(1 << 8)
 #define SDHCI_QUIRK_EMMC_1V8_POWER	(1 << 9)
+#define SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN (1 << 10)
 
 /*
  * Host SDMA buffer boundary. Valid values from 4K to 512K in powers of 2.
@@ -353,6 +355,7 @@ SdhciHost *new_pci_sdhci_host(pcidev_t dev,
 SdhciHost *new_mem_sdhci_host(void *ioaddr,
 			      int platform_info,
 			      int clock_min,
-			      int clock_max);
+			      int clock_max,
+			      int clock_base);
 
 #endif
