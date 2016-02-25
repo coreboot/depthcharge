@@ -183,13 +183,13 @@ static int sdhci_setup_adma(SdhciHost *host, MmcData *data)
 			attributes |= SDHCI_ADMA_END;
 
 		if (host->dma64) {
-			host->adma64_descs[i].addr = (u32) buffer_data;
+			host->adma64_descs[i].addr = (uintptr_t) buffer_data;
 			host->adma64_descs[i].addr_hi = 0;
 			host->adma64_descs[i].length = desc_length;
 			host->adma64_descs[i].attributes = attributes;
 
 		} else {
-			host->adma_descs[i].addr = (u32) buffer_data;
+			host->adma_descs[i].addr = (uintptr_t) buffer_data;
 			host->adma_descs[i].length = desc_length;
 			host->adma_descs[i].attributes = attributes;
 		}
