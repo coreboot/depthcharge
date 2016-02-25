@@ -18,6 +18,7 @@
  * GNU General Public License for more details.
  */
 
+#include <arch/cache.h>
 #include <errno.h>
 #include <libpayload.h>
 #include <malloc.h>

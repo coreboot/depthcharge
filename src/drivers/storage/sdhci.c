@@ -22,6 +22,7 @@
 #include <libpayload.h>
 
 #include "drivers/storage/blockdev.h"
+#include "drivers/storage/mmc.h"
 #include "drivers/storage/sdhci.h"
 
 static void sdhci_reset(SdhciHost *host, u8 mask)
@@ -115,9 +116,12 @@ static void sdhci_alloc_adma_descs(SdhciHost *host, u32 need_descriptors)
 		}
 	}
 
+	/* use dma_malloc() to make sure we get the coherent/uncached memory */
 	if (!host->adma_descs) {
-		host->adma_descs = xmalloc(need_descriptors *
-					   sizeof(*host->adma_descs));
+		host->adma_descs = dma_malloc(need_descriptors *
+					      sizeof(*host->adma_descs));
+		if (host->adma_descs == NULL)
+			die("fail to malloc adma_descs\n");
 		host->adma_desc_count = need_descriptors;
 	}
 
@@ -136,9 +140,13 @@ static void sdhci_alloc_adma64_descs(SdhciHost *host, u32 need_descriptors)
 		}
 	}
 
+	/* use dma_malloc() to make sure we get the coherent/uncached memory */
 	if (!host->adma64_descs) {
-		host->adma64_descs = xmalloc(need_descriptors *
+		host->adma64_descs = dma_malloc(need_descriptors *
 					   sizeof(*host->adma64_descs));
+		if (host->adma64_descs == NULL)
+			die("fail to malloc adma64_descs\n");
+
 		host->adma_desc_count = need_descriptors;
 	}
 
@@ -146,7 +154,8 @@ static void sdhci_alloc_adma64_descs(SdhciHost *host, u32 need_descriptors)
 	       need_descriptors);
 }
 
-static int sdhci_setup_adma(SdhciHost *host, MmcData *data)
+static int sdhci_setup_adma(SdhciHost *host, MmcData *data,
+			    struct bounce_buffer *bbstate)
 {
 	int i, togo, need_descriptors;
 	char *buffer_data;
@@ -166,7 +175,10 @@ static int sdhci_setup_adma(SdhciHost *host, MmcData *data)
 	else
 		sdhci_alloc_adma_descs(host, need_descriptors);
 
-	buffer_data = data->dest;
+	if (bbstate)
+		buffer_data = (char *)bbstate->bounce_buffer;
+	else
+		buffer_data = data->dest;
 
 	/* Now set up the descriptor chain. */
 	for (i = 0; togo; i++) {
@@ -198,10 +210,10 @@ static int sdhci_setup_adma(SdhciHost *host, MmcData *data)
 	}
 
 	if (host->dma64)
-		sdhci_writel(host, (u32) host->adma64_descs,
+		sdhci_writel(host, (uintptr_t) host->adma64_descs,
 			     SDHCI_ADMA_ADDRESS);
 	else
-		sdhci_writel(host, (u32) host->adma_descs,
+		sdhci_writel(host, (uintptr_t) host->adma_descs,
 			     SDHCI_ADMA_ADDRESS);
 
 	return 0;
@@ -257,8 +269,9 @@ static int sdhci_complete_adma(SdhciHost *host, MmcCommand *cmd)
 		return MMC_COMM_ERR;
 }
 
-static int sdhci_send_command(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
-			      MmcData *data)
+static int sdhci_send_command_bounced(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
+				      MmcData *data,
+				      struct bounce_buffer *bbstate)
 {
 	unsigned int stat = 0;
 	int ret = 0;
@@ -325,7 +338,7 @@ static int sdhci_send_command(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
 		sdhci_writew(host, data->blocks, SDHCI_BLOCK_COUNT);
 
 		if (host->host_caps & MMC_AUTO_CMD12) {
-			if (sdhci_setup_adma(host, data))
+			if (sdhci_setup_adma(host, data, bbstate))
 				return -1;
 
 			mode |= SDHCI_TRNS_DMA;
@@ -381,6 +394,45 @@ static int sdhci_send_command(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
 		return MMC_TIMEOUT;
 	else
 		return MMC_COMM_ERR;
+}
+
+static int sdhci_send_command(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
+			      MmcData *data)
+{
+	void *buf;
+	unsigned int bbflags;
+	size_t len;
+	struct bounce_buffer *bbstate = NULL;
+	struct bounce_buffer bbstate_val;
+	int ret;
+
+	if (data) {
+		if (data->flags & MMC_DATA_READ) {
+			buf = data->dest;
+			bbflags = GEN_BB_WRITE;
+		} else {
+			buf = (void *)data->src;
+			bbflags = GEN_BB_READ;
+		}
+		len = data->blocks * data->blocksize;
+
+		/*
+		 * on some platform(like rk3399 etc) need to worry about
+		 * cache coherency, so check the buffer, if not dma
+		 * coherent, use bounce_buffer to do DMA management.
+		 */
+		if (!dma_coherent(buf)) {
+			bbstate = &bbstate_val;
+			bounce_buffer_start(bbstate, buf, len, bbflags);
+		}
+	}
+
+	ret = sdhci_send_command_bounced(mmc_ctrl, cmd, data, bbstate);
+
+	if (data && bbstate->bounce_buffer)
+		bounce_buffer_stop(bbstate);
+
+	return ret;
 }
 
 static int sdhci_set_clock(SdhciHost *host, unsigned int clock)
