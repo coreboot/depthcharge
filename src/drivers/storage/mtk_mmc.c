@@ -404,6 +404,8 @@ static int mtk_mmc_init(BlockDevCtrlrOps *me)
 	writel(readl(&reg->msdc_int), &reg->msdc_int);
 	/* Configure to default data timeout */
 	clrsetbits_le32(&reg->sdc_cfg, SDC_CFG_DTOC, DEFAULT_DTOC << 24);
+	/* Sample response by falling clock edge */
+	setbits_le32(&reg->msdc_iocon, MSDC_IOCON_RSPL);
 	mtk_mmc_set_buswidth(host, 1);
 
 	return 0;
