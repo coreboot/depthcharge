@@ -49,7 +49,7 @@ static void dwmci_set_idma_desc(DwmciIdmac *idmac, uint32_t desc0,
 	desc->flags = desc0;
 	desc->cnt = desc1;
 	desc->addr = desc2;
-	desc->next_addr = (unsigned int)desc + sizeof(DwmciIdmac);
+	desc->next_addr = (uintptr_t)desc + sizeof(DwmciIdmac);
 }
 
 static void dwmci_prepare_data(DwmciHost *host, MmcData *data)
@@ -84,7 +84,7 @@ static void dwmci_prepare_data(DwmciHost *host, MmcData *data)
 			cnt = data->blocksize * 8;
 
 		dwmci_set_idma_desc(cur_idmac, flags, cnt,
-				    (uint32_t)start_addr + (i * PageSize));
+				    (uintptr_t)start_addr + (i * PageSize));
 
 		if(blk_cnt < 8)
 			break;
