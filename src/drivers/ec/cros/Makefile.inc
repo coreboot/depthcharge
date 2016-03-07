@@ -15,7 +15,8 @@
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
 ##
 
-depthcharge-$(CONFIG_DRIVER_EC_CROS) += ec.c
+depthcharge-y += ec.c
 depthcharge-$(CONFIG_DRIVER_EC_CROS_I2C) += i2c.c
 depthcharge-$(CONFIG_DRIVER_EC_CROS_LPC) += lpc.c
 depthcharge-$(CONFIG_DRIVER_EC_CROS_SPI) += spi.c
+depthcharge-$(CONFIG_ARCH_X86) += lid_shutdown.c
