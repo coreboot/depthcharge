@@ -32,6 +32,9 @@
 VbCommonParams cparams CPARAMS;
 uint8_t shared_data_blob[VB_SHARED_DATA_REC_SIZE] SHARED_DATA;
 
+static int gbb_initialized = 0;
+static int cparams_initialized = 0;
+
 static void *gbb_copy_in(uint32_t gbb_offset, uint32_t offset, uint32_t size)
 {
 	uint8_t *gbb_copy = cparams.gbb_data;
@@ -65,9 +68,7 @@ static void gbb_copy_out(uint32_t gbb_offset, uint32_t offset, uint32_t size)
 
 static int gbb_init(void)
 {
-	static int initialized = 0;
-
-	if (initialized)
+	if (gbb_initialized)
 		return 0;
 
 	FmapArea area;
@@ -106,7 +107,7 @@ static int gbb_init(void)
 			 header->recovery_key_size))
 		return 1;
 
-	initialized = 1;
+	gbb_initialized = 1;
 	return 0;
 }
 
@@ -131,6 +132,16 @@ int gbb_clear_flags(void)
 	return 0;
 }
 
+uint32_t gbb_get_flags(void)
+{
+	GoogleBinaryBlockHeader *header = cparams.gbb_data;
+
+	if (gbb_init() != 0)
+		return 0;
+
+	return header->flags;
+}
+
 int gbb_copy_in_bmp_block(void)
 {
 	FmapArea area;
@@ -149,8 +160,6 @@ int gbb_copy_in_bmp_block(void)
 	return 0;
 }
 
-static int cparams_initialized = 0;
-
 int is_cparams_initialized(void)
 {
 	return cparams_initialized;
@@ -158,12 +167,21 @@ int is_cparams_initialized(void)
 
 int common_params_init(int clear_shared_data)
 {
+	uint32_t save_gbb_size = cparams.gbb_size;
+	void *save_gbb_data = cparams.gbb_data;
+
 	// Set up the common param structure.
 	memset(&cparams, 0, sizeof(cparams));
 	cparams_initialized = 1;
 
-	if (gbb_init())
-		return 1;
+	// Restore GBB size/data if it was already initialized.
+	if (gbb_initialized) {
+		cparams.gbb_size = save_gbb_size;
+		cparams.gbb_data = save_gbb_data;
+	} else {
+		if (gbb_init())
+			return 1;
+	}
 
 	void *blob;
 	int size;
