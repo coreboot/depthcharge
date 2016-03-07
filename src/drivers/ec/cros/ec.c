@@ -614,7 +614,31 @@ int cros_ec_interrupt_pending(void)
 int cros_ec_mkbp_info(struct ec_response_mkbp_info *info)
 {
 	if (ec_command(EC_CMD_MKBP_INFO, 0, NULL, 0, info,
-			sizeof(*info)) < sizeof(info))
+		       sizeof(*info)) < sizeof(*info))
+		return -1;
+
+	return 0;
+}
+
+int cros_ec_get_event_mask(u8 type, uint32_t *mask)
+{
+	struct ec_response_host_event_mask rsp;
+
+	if (ec_command(type, 0, NULL, 0, &rsp, sizeof(rsp)) < sizeof(rsp))
+		return -1;
+
+	*mask = rsp.mask;
+
+	return 0;
+}
+
+int cros_ec_set_event_mask(u8 type, uint32_t mask)
+{
+	struct ec_params_host_event_mask req;
+
+	req.mask = mask;
+
+	if (ec_command(type, 0, &req, sizeof(req), NULL, 0) < 0)
 		return -1;
 
 	return 0;

@@ -175,6 +175,24 @@ int cros_ec_init(void);
 int cros_ec_mkbp_info(struct ec_response_mkbp_info *info);
 
 /**
+ * Get the specified event mask
+ *
+ * @param type	Host event type from commands.h
+ * @param mask	Mask for this host event
+ * @return 0 if ok, <0 on error
+ */
+int cros_ec_get_event_mask(u8 type, uint32_t *mask);
+
+/**
+ * Set the specified event mask
+ *
+ * @param type	Host event type from commands.h
+ * @param mask	Mask to set for this host event type
+ * @return 0 if ok, <0 on error
+ */
+int cros_ec_set_event_mask(u8 type, uint32_t mask);
+
+/**
  * Read the host event flags
  *
  * @param events_ptr	Destination for event flags.  Not changed on error.
