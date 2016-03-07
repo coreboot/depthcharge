@@ -36,5 +36,6 @@ int is_cparams_initialized(void);
 // Implemented by each arch.
 int find_common_params(void **blob, int *size);
 int gbb_clear_flags(void);
+uint32_t gbb_get_flags(void);
 
 #endif /* __VBOOT_UTIL_COMMONPARAMS_H__ */
