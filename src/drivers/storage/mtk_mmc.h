@@ -91,6 +91,7 @@ typedef struct {
 	int removable;
 } MtkMmcHost;
 
-MtkMmcHost *new_mtk_mmc_host(uintptr_t ioaddr, uint32_t src_hz, int bus_width,
+MtkMmcHost *new_mtk_mmc_host(uintptr_t ioaddr, uint32_t src_hz,
+			     uint32_t max_freq, int bus_width,
 			     int removable, GpioOps *card_detect);
 #endif // __DRIVERS_STORAGE_MTK_MMC_H_

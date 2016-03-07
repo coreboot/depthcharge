@@ -131,10 +131,11 @@ static int board_setup(void)
 	Mt6397Pmic *pmic = new_mt6397_power(0x1000D000, 0x10007000);
 	power_set_ops(&pmic->ops);
 
-	MtkMmcHost *emmc = new_mtk_mmc_host(0x11230000, 200 * MHz, 8, 0, NULL);
+	MtkMmcHost *emmc = new_mtk_mmc_host(0x11230000, 200 * MHz, 50 * MHz,
+					    8, 0, NULL);
 	GpioOps *card_detect_ops = new_gpio_not(new_mtk_gpio_input(PAD_EINT1));
-	MtkMmcHost *sd_card = new_mtk_mmc_host(0x11240000, 200 * MHz, 4, 1,
-			card_detect_ops);
+	MtkMmcHost *sd_card = new_mtk_mmc_host(0x11240000, 200 * MHz, 25 * MHz,
+					       4, 1, card_detect_ops);
 
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);

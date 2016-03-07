@@ -28,10 +28,10 @@
 enum {
 	/* For card identification, and also the highest low-speed SDOI card */
 	/* frequency (actually 400Khz). */
-	MtkMmcMinFreq = 375000,
+	MtkMmcMinFreq = 375 * KHz,
 
 	/* Highest HS eMMC clock as per the SD/MMC spec (actually 52MHz). */
-	MtkMmcMaxFreq = 50000000,
+	MtkMmcMaxFreq = 50 * MHz,
 
 	MtkMmcVoltages = (MMC_VDD_32_33 | MMC_VDD_33_34),
 };
@@ -457,17 +457,19 @@ static int mtk_mmc_update(BlockDevCtrlrOps *me)
 	return 0;
 }
 
-MtkMmcHost *new_mtk_mmc_host(uintptr_t ioaddr, uint32_t src_hz, int bus_width,
-			     int removable, GpioOps *card_detect)
+MtkMmcHost *new_mtk_mmc_host(uintptr_t ioaddr, uint32_t src_hz, uint32_t max_freq,
+			     int bus_width, int removable, GpioOps *card_detect)
 {
 	MtkMmcHost *ctrlr = xzalloc(sizeof(*ctrlr));
+
+	assert((max_freq <= MtkMmcMaxFreq) && (max_freq >= MtkMmcMinFreq));
 
 	ctrlr->mmc.ctrlr.ops.update = &mtk_mmc_update;
 	ctrlr->mmc.ctrlr.need_update = 1;
 
 	ctrlr->mmc.voltages = MtkMmcVoltages;
 	ctrlr->mmc.f_min = MtkMmcMinFreq;
-	ctrlr->mmc.f_max = MtkMmcMaxFreq;
+	ctrlr->mmc.f_max = max_freq;
 
 	ctrlr->mmc.bus_width = bus_width;
 	ctrlr->mmc.bus_hz = ctrlr->mmc.f_min;
