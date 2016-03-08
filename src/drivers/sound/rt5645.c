@@ -192,6 +192,9 @@ int rt5645_device_init(rt5645Codec *codec)
 	rt5645_i2c_writew(codec, RT5645_PWR_VOL, 0xC000);
 	rt5645_i2c_writew(codec, RT5645_PWR_DIG1, 0x9B01);
 
+	/* enable mclk detection and auto switch amp */
+	rt5645_i2c_writew(codec, RT5645_GEN_CTRL3, 0x0200);
+
 	printf("%s completed, codec = %s\n", __func__,
 	       (reg == RT5650_DEVICE_ID) ? "5650" : "5645");
 	return 0;
