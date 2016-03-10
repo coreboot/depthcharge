@@ -110,9 +110,9 @@ static void fill_board_descriptor(void)
 }
 
 static const DtPathMap mac_maps[] = {
-	{ 0, "soc/ethernet@37000000/local-mac-address" },
-	{ 0, "soc/ethernet@37400000/local-mac-address" },
-	{ 1, "chosen/bluetooth/local-mac-address" },
+	{ 0, "soc/edma@c080000/gmac0/local-mac-address" },
+	{ 0, "soc/edma@c080000/gmac1/local-mac-address" },
+	//{ 1, "chosen/bluetooth/local-mac-address" },
 	{}
 };
 
@@ -126,15 +126,14 @@ static const DtPathMap calibration_maps[] = {
 	{}
 };
 
-#if 0
 static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 {
 	int rv;
 
-	rv = dt_set_mac_addresses(tree, mac_maps);
+	//rv = dt_set_mac_addresses(tree, mac_maps);
 
-	if (bdescriptor.calibration_needed)
-		rv |= dt_set_wifi_calibration(tree, calibration_maps);
+	//if (bdescriptor.calibration_needed)
+		rv = dt_set_wifi_calibration(tree, calibration_maps);
 
 	return rv;
 }
@@ -142,7 +141,6 @@ static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 static DeviceTreeFixup ipq_enet_fixup = {
 	.fixup = fix_device_tree
 };
-#endif
 
 /* DAC GPIO assignment. */
 enum storm_dac_gpio {
@@ -415,8 +413,9 @@ static int board_setup(void)
 	SoundRoute *sound_route = new_sound_route(&sound->ops);
 	sound_set_ops(&sound_route->ops);
 
-	list_insert_after(&ipq_enet_fixup.list_node, &device_tree_fixups);
 #endif
+	list_insert_after(&ipq_enet_fixup.list_node, &device_tree_fixups);
+
 	set_ramoops_buffer();
 
 	return 0;
