@@ -35,12 +35,12 @@
 #include "drivers/bus/spi/ipq806x.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/gpio/gpio.h"
-#include "drivers/gpio/ipq806x.h"
+#include "drivers/gpio/ipq40xx.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/ipq806x.h"
 #include "drivers/sound/ipq806x.h"
 #include "drivers/sound/route.h"
-#include "drivers/storage/ipq806x_mmc.h"
+#include "drivers/storage/ipq40xx_mmc.h"
 #include "drivers/storage/mtd/mtd.h"
 #include "drivers/storage/mtd/nand/ipq_nand.h"
 #include "drivers/storage/mtd/stream.h"
@@ -53,12 +53,8 @@
 
 #include "board.h"
 
-#define GPIO_SDCC_FUNC_VAL      2
-#define GPIO_I2S_FUNC_VAL       1
+#define MSM_SDC1_BASE		0x7824000
 
-#define MSM_SDC1_BASE		0x12400000
-
-#define EBI2ND_BASE		0x1ac00000
 
 /* Structure describing properties of various Storm based boards. */
 struct board_descriptor {
@@ -114,30 +110,107 @@ static DeviceTreeFixup ipq_enet_fixup = {
 	.fixup = fix_device_tree
 };
 
-/* DAC GPIO assignment. */
-enum storm_dac_gpio {
-	DAC_SDMODE = 25,
-};
-
-/* I2S bus GPIO assignments. */
-enum storm_i2s_gpio {
-	I2S_SYNC = 27,
-	I2S_CLK = 28,
-	I2S_DOUT = 32,
-};
-
-/* MMC bus GPIO assignments. */
-enum storm_emmc_gpio {
-	SDC1_DATA7 = 38,
-	SDC1_DATA6 = 39,
-	SDC1_DATA3 = 40,
-	SDC1_DATA2 = 41,
-	SDC1_CLK = 42,
-	SDC1_DATA1 = 43,
-	SDC1_DATA0 = 44,
-	SDC1_CMD = 45,
-	SDC1_DATA5 = 46,
-	SDC1_DATA4 = 47,
+gpio_func_data_t mmc_ap_dk04[] = {
+	{
+		.gpio = 23,
+		.func = 1,
+		.pull = GPIO_PULL_UP,
+		.drvstr = GPIO_10MA,
+		.oe = GPIO_OE_DISABLE,
+		.gpio_vm = GPIO_VM_ENABLE,
+		.gpio_od_en = GPIO_OD_DISABLE,
+		.gpio_pu_res = GPIO_PULL_RES2
+	},
+	{
+		.gpio = 24,
+		.func = 1,
+		.pull = GPIO_PULL_UP,
+		.drvstr = GPIO_10MA,
+		.oe = GPIO_OE_DISABLE,
+		.gpio_vm = GPIO_VM_ENABLE,
+		.gpio_od_en = GPIO_OD_DISABLE,
+		.gpio_pu_res = GPIO_PULL_RES2
+	},
+	{
+		.gpio = 25,
+		.func = 1,
+		.pull = GPIO_PULL_UP,
+		.drvstr = GPIO_10MA,
+		.oe = GPIO_OE_DISABLE,
+		.gpio_vm = GPIO_VM_ENABLE,
+		.gpio_od_en = GPIO_OD_DISABLE,
+		.gpio_pu_res = GPIO_PULL_RES2
+	},
+	{
+		.gpio = 26,
+		.func = 1,
+		.pull = GPIO_PULL_UP,
+		.drvstr = GPIO_10MA,
+		.oe = GPIO_OE_DISABLE,
+		.gpio_vm = GPIO_VM_ENABLE,
+		.gpio_od_en = GPIO_OD_DISABLE,
+		.gpio_pu_res = GPIO_PULL_RES2
+	},
+	{
+		.gpio = 27,
+		.func = 1,
+		.pull = GPIO_PULL_UP,
+		.drvstr = GPIO_16MA,
+		.oe = GPIO_OE_DISABLE,
+		.gpio_vm = GPIO_VM_ENABLE,
+		.gpio_od_en = GPIO_OD_DISABLE,
+		.gpio_pu_res = GPIO_PULL_RES2
+	},
+	{
+		.gpio = 28,
+		.func = 1,
+		.pull = GPIO_PULL_UP,
+		.drvstr = GPIO_10MA,
+		.oe = GPIO_OE_DISABLE,
+		.gpio_vm = GPIO_VM_ENABLE,
+		.gpio_od_en = GPIO_OD_DISABLE,
+		.gpio_pu_res = GPIO_PULL_RES2
+	},
+	{
+		.gpio = 29,
+		.func = 1,
+		.pull = GPIO_PULL_UP,
+		.drvstr = GPIO_10MA,
+		.oe = GPIO_OE_DISABLE,
+		.gpio_vm = GPIO_VM_ENABLE,
+		.gpio_od_en = GPIO_OD_DISABLE,
+		.gpio_pu_res = GPIO_PULL_RES2
+	},
+	{
+		.gpio = 30,
+		.func = 1,
+		.pull = GPIO_PULL_UP,
+		.drvstr = GPIO_10MA,
+		.oe = GPIO_OE_DISABLE,
+		.gpio_vm = GPIO_VM_ENABLE,
+		.gpio_od_en = GPIO_OD_DISABLE,
+		.gpio_pu_res = GPIO_PULL_RES2
+	},
+	{
+		.gpio = 31,
+		.func = 1,
+		.pull = GPIO_PULL_UP,
+		.drvstr = GPIO_10MA,
+		.oe = GPIO_OE_DISABLE,
+		.gpio_vm = GPIO_VM_ENABLE,
+		.gpio_od_en = GPIO_OD_DISABLE,
+		.gpio_pu_res = GPIO_PULL_RES2
+	},
+	{
+		.gpio = 32,
+		.func = 1,
+		.pull = GPIO_NO_PULL,
+		.drvstr = GPIO_10MA,
+		.oe = GPIO_OE_DISABLE,
+		.gpio_vm = GPIO_VM_ENABLE,
+		.gpio_od_en = GPIO_OD_DISABLE,
+		.gpio_pu_res = GPIO_PULL_RES2
+	},
 };
 
 /* Storm GPIO access wrapper. */
@@ -187,25 +260,25 @@ static void install_phys_presence_flag(void)
 		printf("%s failed retrieving phys presence GPIO\n", __func__);
 		return;
 	}
-
 	flag_install(FLAG_PHYS_PRESENCE, phys_presence);
+}
+
+void qca_configure_gpio(gpio_func_data_t *gpio, uint32_t count)
+{
+	int i;
+
+	for (i = 0; i < count; i++) {
+		gpio_tlmm_config(gpio->gpio, gpio->func, gpio->out,
+				gpio->pull, gpio->drvstr, gpio->oe,
+				gpio->gpio_vm, gpio->gpio_od_en,
+				gpio->gpio_pu_res);
+		gpio++;
+	}
 }
 
 void board_mmc_gpio_config(void)
 {
-	unsigned i;
-	unsigned char gpio_config_arr[] = {
-		SDC1_DATA7, SDC1_DATA6, SDC1_DATA3,
-		SDC1_DATA2, SDC1_DATA1, SDC1_DATA0,
-		SDC1_CMD, SDC1_DATA5, SDC1_DATA4};
-
-	gpio_tlmm_config_set(SDC1_CLK, GPIO_SDCC_FUNC_VAL,
-		GPIO_PULL_DOWN, GPIO_16MA, 1);
-
-	for (i = 0; i < ARRAY_SIZE(gpio_config_arr); i++) {
-		gpio_tlmm_config_set(gpio_config_arr[i],
-		GPIO_SDCC_FUNC_VAL, GPIO_PULL_UP, GPIO_10MA, 1);
-	}
+	qca_configure_gpio(mmc_ap_dk04, ARRAY_SIZE(mmc_ap_dk04));
 }
 
 #if 0
@@ -356,6 +429,16 @@ static int board_setup(void)
 
 	SpiController *spi = new_spi(0, 0);
 	flash_set_ops(&new_spi_flash(&spi->ops)->ops);
+
+	QcomMmcHost *mmc = new_qcom_mmc_host(1, MSM_SDC1_BASE, 8);
+
+	if (!mmc)
+		return -1;
+
+	list_insert_after(&mmc->mmc.ctrlr.list_node,
+				  &fixed_block_dev_controllers);
+
+
 #if 0
 	UsbHostController *usb_host1 = new_usb_hc(XHCI, 0x11000000);
 

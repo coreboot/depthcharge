@@ -30,7 +30,6 @@
 #include <libpayload.h>
 
 #include "ipq40xx.h"
-
 /*******************************************************
 Function description: check for invalid GPIO #
 Arguments :
@@ -73,6 +72,46 @@ void gpio_tlmm_config_set(gpio_t gpio, unsigned func,
 	val |= (enable & GPIO_CFG_OE_MASK) << GPIO_CFG_OE_SHIFT;
 
 	writel(val, GPIO_CONFIG_ADDR(gpio));
+}
+/*******************************************************
+Function description: configure GPIO functinality
+Arguments :
+unsigned int gpio - Gpio number
+unsigned int func - Functionality number
+unsigned int dir  - direction 0- i/p, 1- o/p
+unsigned int pull - pull up/down, no pull range(0-3)
+unsigned int drvstr - range (0 - 7)-> (2- 16)MA steps of 2
+unsigned int oe - 0 - Disable, 1- Enable.
+
+Return : None
+*******************************************************/
+void gpio_tlmm_config(unsigned int gpio, unsigned int func,
+		      unsigned int out, unsigned int pull,
+		      unsigned int drvstr, unsigned int oe,
+		      unsigned int gpio_vm, unsigned int gpio_od_en,
+		      unsigned int gpio_pu_res)
+{
+	unsigned int val = 0;
+	unsigned int *addr = (unsigned int *)GPIO_CONFIG_ADDR(gpio);
+
+	val |= pull;
+	val |= func << 2;
+	val |= drvstr << 6;
+	val |= oe << 9;
+	val |= gpio_vm << 11;
+	val |= gpio_od_en << 12;
+	val |= gpio_pu_res << 13;
+
+	writel(val, addr);
+
+	/* Output value is only relevant if GPIO has been configured for fixed
+	 * output setting - i.e. func == 0 */
+	if (func == 0) {
+		addr = (unsigned int *)GPIO_IN_OUT_ADDR(gpio);
+		val = readl(addr);
+		val |= out << 1;
+		writel(val, addr);
+	}
 }
 
 /*******************************************************
