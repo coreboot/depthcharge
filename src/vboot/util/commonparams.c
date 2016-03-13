@@ -134,11 +134,11 @@ int gbb_clear_flags(void)
 
 uint32_t gbb_get_flags(void)
 {
-	GoogleBinaryBlockHeader *header = cparams.gbb_data;
+	GoogleBinaryBlockHeader *header;
 
 	if (gbb_init() != 0)
 		return 0;
-
+	header = cparams.gbb_data;
 	return header->flags;
 }
 
