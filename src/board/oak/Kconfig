@@ -9,3 +9,8 @@
 ## but WITHOUT ANY WARRANTY; without even the implied warranty of
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
+
+# All Oak-derivatives count their board IDs as 0 being equivalent to Oak rev6.
+config BOARD_ID_ADJUSTMENT
+	int
+	default 7

@@ -46,7 +46,7 @@ int oak_backlight_update(DisplayOps *me, uint8_t enable)
 {
 	GpioOps *panel_lcd_power_en, *disp_pwm0, *panel_power_en;
 
-	switch (lib_sysinfo.board_id) {
+	switch (lib_sysinfo.board_id + CONFIG_BOARD_ID_ADJUSTMENT) {
 	case 1:
 	case 2:
 		panel_lcd_power_en = NULL;
@@ -92,7 +92,7 @@ static int sound_setup(void)
 
 	list_insert_after(&rt5645->component.list_node, &sound_route->components);
 
-	if (lib_sysinfo.board_id < 5) {
+	if (lib_sysinfo.board_id + CONFIG_BOARD_ID_ADJUSTMENT < 5) {
 		rt5677Codec *rt5677 = new_rt5677_codec(&i2c0->ops, 0x2c, 16,
 						       48000, 256, 0, 1);
 		list_insert_after(&rt5677->component.list_node,
