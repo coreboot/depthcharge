@@ -29,8 +29,7 @@ config KERNEL_START
 	  The start of a region of memory the kernel image is loaded into from
 	  the boot medium (vboot, network, etc.). This image may or may not be
 	  a wrapper around the actual kernel code (e.g. FIT) and may or may not
-	  require further decompression or relocation. Also, this area is used
-	  by the old trampoline code in a way nobody cares about anymore.
+	  require further decompression or relocation.
 
 config KERNEL_SIZE
 	hex "The size of the region the kernel image is loaded into"

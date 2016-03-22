@@ -12,7 +12,6 @@
 ##
 
 depthcharge-y += boot.c
-depthcharge-y += enter_trampoline.c
 depthcharge-y += gcc.c
 depthcharge-y += physmem.c
 depthcharge-$(CONFIG_KERNEL_ZIMAGE) += zimage.c

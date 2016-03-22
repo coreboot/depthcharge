@@ -37,10 +37,6 @@ static void used_list_initialize(void)
 
 	// Add regions depthcharge occupies.
 	ranges_add(&used, (uintptr_t)&_start, (uintptr_t)&_end);
-	// Remove trampoline area if it is non-zero in size.
-	if (&_tramp_start != &_tramp_end)
-		ranges_add(&used, (uintptr_t)&_tramp_start,
-		           (uintptr_t)&_tramp_end);
 
 	initialized = 1;
 }

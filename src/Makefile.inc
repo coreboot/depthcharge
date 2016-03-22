@@ -31,9 +31,6 @@ $1.elf: $2
 	@printf "    OBJCOPY    $$(subst $$(obj)/,,$$@)\n"
 	$$(Q)$$(OBJCOPY) --remove-section=".shared_data" \
 		--remove-section=".cparams" --remove-section=".gbb_copy" \
-		--redefine-sym $$(TRAMP_PREFIX)_\$$$$a=\$$$$a \
-		--redefine-sym $$(TRAMP_PREFIX)_\$$$$t=\$$$$t \
-		--redefine-sym $$(TRAMP_PREFIX)_\$$$$d=\$$$$d \
 		$$@.tmp $$@
 
 $1.bin: $1.elf

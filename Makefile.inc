@@ -13,6 +13,6 @@
 ## GNU General Public License for more details.
 ##
 
-classes-y := depthcharge trampoline unified uip net netboot dev fastboot
+classes-y := depthcharge unified uip net netboot dev fastboot
 
 subdirs-y := src/
