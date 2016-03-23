@@ -546,11 +546,14 @@ static VbError_t vboot_draw_recovery_no_good(uint32_t locale)
 static VbError_t vboot_draw_recovery_insert(uint32_t locale)
 {
 	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
-	RETURN_ON_ERROR(draw_icon("Warning.bmp"));
 	RETURN_ON_ERROR(draw_image_locale("insert.bmp", locale,
-			VB_SCALE_HALF, VB_SCALE_HALF,
+			VB_SCALE_HALF, VB_SCALE_HALF - VB_ICON_HEIGHT,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
-			PIVOT_H_CENTER|PIVOT_V_TOP));
+			PIVOT_H_CENTER|PIVOT_V_BOTTOM));
+	RETURN_ON_ERROR(draw_image("InsertDevices.bmp",
+			VB_SCALE_HALF, VB_SCALE_HALF,
+			VB_SIZE_AUTO, VB_ICON_HEIGHT * 2,
+			PIVOT_H_CENTER|PIVOT_V_CENTER));
 	return VBERROR_SUCCESS;
 }
 
