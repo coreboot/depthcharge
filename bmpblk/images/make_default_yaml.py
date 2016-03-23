@@ -352,7 +352,7 @@ def ScreenDev(locale, image_database):
 @NewScreen
 def ScreenOsBroken(locale, image_database):
   s = Screen('os_broken', locale, image_database)
-  s.insert_centered_vertical("@os_broken")
+  s.insert_centered_vertical("Warning", "@os_broken")
   return s
 
 
