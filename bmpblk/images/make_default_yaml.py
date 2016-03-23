@@ -361,7 +361,7 @@ def ScreenYuck(locale, image_database):
   s = Screen('yuck', locale, image_database)
   s.add_header()
   s.set_centered_y_percent(50)
-  s.insert_centered_image_groups(["@yuck"], ["BadSD", "BadUSB"])
+  s.insert_centered_vertical("BadDevices", "@yuck")
   s.add_footer(do_url=True)
   return s
 

@@ -174,7 +174,7 @@ def build_replace_map(config):
   replace_map = {}
 
   if not sdcard:
-    replace_map['BadSD'] = DUMMY_IMAGE
+    replace_map['BadDevices'] = 'BadUSB'
     replace_map['InsertDevices'] = 'InsertUSB'
     replace_map['insert'] = ('insert_usb2' if bad_usb3 else 'insert_usb')
   elif bad_usb3:
