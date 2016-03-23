@@ -602,10 +602,11 @@ static VbError_t vboot_draw_to_norm_confirmed(uint32_t locale)
 static VbError_t vboot_draw_os_broken(uint32_t locale)
 {
 	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	RETURN_ON_ERROR(draw_icon("Warning.bmp"));
 	RETURN_ON_ERROR(draw_image_locale("os_broken.bmp", locale,
 			VB_SCALE_HALF, VB_SCALE_HALF,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 2,
-			PIVOT_H_CENTER|PIVOT_V_CENTER));
+			PIVOT_H_CENTER|PIVOT_V_TOP));
 	return VBERROR_SUCCESS;
 }
 
