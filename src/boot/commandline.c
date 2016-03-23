@@ -92,6 +92,7 @@ int commandline_subst(const char *src, char *dest, size_t dest_size,
 	 */
 
 	char *dest_end = dest + dest_size;
+	char *dest_start = dest;
 
 #define CHECK_SPACE(bytes) \
 	if (!(dest + (bytes) <= dest_end)) { \
@@ -200,5 +201,7 @@ int commandline_subst(const char *src, char *dest, size_t dest_size,
 #undef CHECK_SPACE
 
 	*dest = '\0';
+	printf("Modified kernel command line: %s\n", dest_start);
+
 	return 0;
 }

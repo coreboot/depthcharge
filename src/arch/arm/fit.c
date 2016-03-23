@@ -59,8 +59,6 @@ static void update_cmdline(struct boot_info *bi, DeviceTree *tree)
 	if (commandline_subst(str, cmd_line_buf, sizeof(cmd_line_buf), &info))
 		goto fail;
 
-	printf("Adding cmdline : %s\n", cmd_line_buf);
-
 	dt_add_string_prop(node, "bootargs", cmd_line_buf);
 
 	return;
