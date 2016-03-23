@@ -523,18 +523,10 @@ static VbError_t vboot_draw_recovery_no_good(uint32_t locale)
 			VB_SCALE_HALF, VB_SCALE_HALF,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
 			PIVOT_H_CENTER|PIVOT_V_BOTTOM));
-	/*
-	 * TODO: We need a mechanism to let boards customize these. For example,
-	 * some boards have only USB.
-	 */
-	RETURN_ON_ERROR(draw_image("BadSD.bmp",
+	RETURN_ON_ERROR(draw_image("BadDevices.bmp",
 			VB_SCALE_HALF, VB_SCALE_HALF,
 			VB_SIZE_AUTO, VB_ICON_HEIGHT,
-			PIVOT_H_RIGHT|PIVOT_V_TOP));
-	RETURN_ON_ERROR(draw_image("BadUSB.bmp",
-			VB_SCALE_HALF, VB_SCALE_HALF,
-			VB_SIZE_AUTO, VB_ICON_HEIGHT,
-			PIVOT_H_LEFT|PIVOT_V_TOP));
+			PIVOT_H_CENTER|PIVOT_V_TOP));
 	return VBERROR_SUCCESS;
 }
 
