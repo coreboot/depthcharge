@@ -369,10 +369,7 @@ def ScreenYuck(locale, image_database):
 @NewScreen
 def ScreenInsert(locale, image_database):
   s = Screen('insert', locale, image_database)
-  s.add_header()
-  s.set_centered_y_percent(50)
-  s.insert_centered_vertical("Warning", "@insert")
-  s.add_footer(do_url=True)
+  s.insert_centered_vertical("InsertDevices", "@insert")
   return s
 
 
