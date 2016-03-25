@@ -14,4 +14,5 @@
 ##
 
 depthcharge-y += board.c
-depthcharge-$(CONFIG_FASTBOOT_MODE) += fastboot.c
+
+fastboot-y += fastboot.c

@@ -14,6 +14,6 @@
 ##
 
 classes-y := depthcharge trampoline readwrite readonly unified \
-	     uip net netboot dev
+	     uip net netboot dev fastboot
 
 subdirs-y := src/

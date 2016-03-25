@@ -15,5 +15,6 @@
 
 depthcharge-y += board.c
 depthcharge-y += emc.c
-depthcharge-$(CONFIG_FASTBOOT_MODE) += input.c
-depthcharge-$(CONFIG_FASTBOOT_MODE) += fastboot.c
+
+fastboot-y += input.c
+fastboot-y += fastboot.c

@@ -42,6 +42,12 @@
 #include "vboot/boot_policy.h"
 #include "vboot/util/flag.h"
 
+void __attribute__((weak))
+fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT])
+{
+	/* Default weak implementation. */
+}
+
 const char *hardware_name(void)
 {
 	return "shark";

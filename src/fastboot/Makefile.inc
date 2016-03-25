@@ -13,9 +13,9 @@
 ## GNU General Public License for more details.
 ##
 
-depthcharge-y += backend.c
-depthcharge-y += capabilities.c
-depthcharge-$(CONFIG_DRIVER_EC_CROS) += ec.c
-depthcharge-y += fastboot.c
-depthcharge-y += print.c
-depthcharge-y += udc.c
+fastboot-y += backend.c
+fastboot-y += capabilities.c
+fastboot-$(CONFIG_DRIVER_EC_CROS) += ec.c
+fastboot-y += fastboot.c
+fastboot-y += print.c
+fastboot-y += udc.c

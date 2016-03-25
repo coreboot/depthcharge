@@ -11,10 +11,7 @@
 ## GNU General Public License for more details.
 ##
 
-subdirs-y := arch base board boot debug drivers image net netboot vboot
-
-# Fastboot related files
-subdirs-$(CONFIG_FASTBOOT_MODE) += fastboot
+subdirs-y := arch base board boot debug drivers image net netboot vboot fastboot
 
 DEPTHCHARGE = $(obj)/depthcharge
 NETBOOT = $(obj)/netboot
@@ -102,4 +99,4 @@ $(eval $(call declare_unified,$(DEV),$$$$(depthcharge-objs) \
 # Rules for creating fastboot-capable depthcharge binary
 
 $(eval $(call declare_unified,$(FASTBOOT),$$$$(depthcharge-objs) \
-	$$$$(unified-objs),))
+	$$$$(fastboot-objs) $$$$(unified-objs),))

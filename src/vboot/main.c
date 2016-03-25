@@ -32,6 +32,11 @@
 #include "vboot/util/flag.h"
 #include "vboot/util/vboot_handoff.h"
 
+void  __attribute__((weak)) vboot_try_fastboot(void)
+{
+	/* Default weak implementation. */
+}
+
 static int vboot_init_handoff()
 {
 	struct vboot_handoff *vboot_handoff;

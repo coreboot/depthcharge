@@ -27,8 +27,6 @@ typedef enum {
 	BDEV_COUNT,
 }bdev_t;
 
-#if CONFIG_FASTBOOT_MODE
-
 #include "fastboot/backend.h"
 #include "fastboot/ec.h"
 #include "fastboot/fastboot.h"
@@ -36,11 +34,5 @@ typedef enum {
 #include "fastboot/udc.h"
 
 void fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT]);
-
-#else
-
-static inline void fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT]) {}
-
-#endif /* CONFIG_FASTBOOT_MODE */
 
 #endif /* __BOARD_RUSH_RYU_FASTBOOT_H__ */
