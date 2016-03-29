@@ -43,6 +43,12 @@ typedef enum {
 	FB_BATT_SOC_OK,
 	FB_GBB_FLAGS,
 	FB_OEM_VERSION,
+	FB_HAS_SLOT,
+	FB_CURR_SLOT,
+	FB_SLOT_SUFFIXES,
+	FB_SLOT_SUCCESSFUL,
+	FB_SLOT_UNBOOTABLE,
+	FB_SLOT_RETRY_COUNT,
 } fb_getvar_t;
 
 typedef enum fb_ret {

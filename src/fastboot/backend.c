@@ -18,6 +18,7 @@
 #include <libpayload.h>
 
 #include "base/gpt.h"
+#include "config.h"
 #include "fastboot/backend.h"
 
 #define BACKEND_DEBUG
@@ -366,6 +367,99 @@ static backend_ret_t backend_fill_bdev_info(void)
 	return BE_SUCCESS;
 }
 
+#if CONFIG_FASTBOOT_SLOTS
+static inline int slot_is_first_instance(const char *name)
+{
+	return !strcmp(name + strlen(name) - 2,
+		       CONFIG_FASTBOOT_SLOTS_STARTING_SUFFIX);
+}
+
+size_t fb_base_count;
+struct part_base_info *fb_base_list;
+
+/*
+ * Identifies unique base names of all partitions.
+ * e.g.: if the partitions are:
+ * kernel-a
+ * kernel-b
+ * cache
+ * system
+ *
+ * Then, fb_base_list would contain the following:
+ * kernel
+ * cache
+ * system
+ *
+ * This information is useful while responding back to fastboot getvar variables
+ * related to slots.
+ */
+static backend_ret_t backend_base_list_init(void)
+{
+	int i;
+
+	fb_base_count = fb_part_count;
+
+	/* Get unique base name count */
+	for (i = 0; i < fb_part_count; i++) {
+		if (fb_part_list[i].is_slotted == 0)
+			continue;
+
+		if (slot_is_first_instance(fb_part_list[i].part_name))
+			continue;
+
+		/*
+		 * If a partition is slotted and not the first instance, then
+		 * decrement base count. Finally, base count would contain
+		 * total number of unique base names.
+		 */
+		fb_base_count--;
+	}
+
+	if (fb_base_count == 0)
+		return BE_PART_NOT_FOUND;
+
+	fb_base_list = xmalloc(fb_base_count * sizeof(*fb_base_list));
+
+	size_t count;
+	size_t str_len;
+	char *base_name;
+
+	for (i = 0, count = 0; i < fb_part_count; i++) {
+		const char *name = fb_part_list[i].part_name;
+
+		assert (count < fb_base_count);
+
+		if (fb_part_list[i].is_slotted == 0) {
+			fb_base_list[count].base_name = name;
+			fb_base_list[count++].is_slotted = 0;
+			continue;
+		}
+
+		str_len = strlen(name);
+		/* Name should be > 2 characters. Ends with -<suffix> */
+		assert(str_len > 2);
+
+		if (!slot_is_first_instance(name))
+			continue;
+
+		/*
+		 * Base name length = Part name length
+		 *			- 2 (for -<suffix>)
+		 *			+ 1 (for '\0')
+		 */
+		str_len = str_len - 2 + 1;
+		base_name = xzalloc(str_len);
+		strncpy(base_name, name, str_len - 1);
+		fb_base_list[count].base_name = base_name;
+		fb_base_list[count++].is_slotted = 1;
+	}
+
+	assert (count == fb_base_count);
+
+	return BE_SUCCESS;
+}
+#endif
+
 static backend_ret_t backend_do_init(void)
 {
 	static int backend_data_init = 0;
@@ -381,6 +475,10 @@ static backend_ret_t backend_do_init(void)
 
 	if((fb_part_count == 0) || (fb_part_list == NULL))
 		return BE_PART_NOT_FOUND;
+
+#if CONFIG_FASTBOOT_SLOTS
+	backend_base_list_init();
+#endif
 
 	backend_data_init = 1;
 	return BE_SUCCESS;
@@ -483,10 +581,6 @@ backend_ret_t backend_write_partition(const char *name, void *image_addr,
 		ret = write_raw_image(&img, image_addr, image_size);
 	}
 
-	if (img.gpt)
-		GptUpdateKernelWithEntry(img.gpt, img.gpt_entry,
-					 GPT_UPDATE_ENTRY_RESET);
-
 	clean_img_part_info(&img);
 
 	return ret;
@@ -522,11 +616,6 @@ backend_ret_t backend_erase_partition(const char *name)
 		    != part_size_lba)
 			ret = BE_WRITE_ERR;
 	}
-
-	/* If operation was successful, update GPT entry if required */
-	if ((ret == BE_SUCCESS) && img.gpt)
-		GptUpdateKernelWithEntry(img.gpt, img.gpt_entry,
-					 GPT_UPDATE_ENTRY_INVALID);
 
 	clean_img_part_info(&img);
 
@@ -614,3 +703,184 @@ int fb_fill_part_list(const char *name, uint64_t base, uint64_t size)
 
 	return 0;
 }
+
+#if CONFIG_FASTBOOT_SLOTS
+/**************************** Slots handling ******************************/
+
+static struct bdev_info *kernel_bdev_entry;
+
+static const Guid kernel_guid = GPT_ENT_TYPE_CHROMEOS_KERNEL;
+
+static void get_kernel_bdev_entry(void)
+{
+	if (kernel_bdev_entry)
+		return;
+
+	int i;
+
+	/* Scan through all part lists to find kernel partition. */
+	for (i = 0; i < fb_part_count; i++) {
+		if (fb_part_list[i].gpt_based &&
+		    (!memcmp(&kernel_guid, &fb_part_list[i].guid,
+			     sizeof(kernel_guid))))
+			break;
+	}
+
+	assert (i < fb_part_count);
+
+	/* Record bdev ptr for kernel partition. */
+	kernel_bdev_entry = fb_part_list[i].bdev_info;
+}
+
+int backend_get_curr_slot(void)
+{
+	if (backend_do_init() != BE_SUCCESS)
+		return -1;
+
+	get_kernel_bdev_entry();
+
+	GptData *gpt = NULL;
+	GptEntry *gpt_entry = NULL;
+
+	/* Setup GPT structure. */
+	gpt = alloc_gpt(kernel_bdev_entry->bdev);
+
+	if (gpt == NULL)
+		return -1;
+
+	int i;
+	int curr_slot = -1;
+	int curr_prio = -1;
+	int prio;
+
+	/*
+	 * Current active slot is considered as the highest priority slot with
+	 * success flag set.
+	 */
+	for (i = 0; i < CONFIG_FASTBOOT_SLOTS_COUNT; i++) {
+		gpt_entry = GptFindNthEntry(gpt, &kernel_guid, i);
+		if (gpt_entry == NULL)
+			break;
+
+		if (GetEntrySuccessful(gpt_entry)) {
+			prio = GetEntryPriority(gpt_entry);
+			if (prio > curr_prio) {
+				curr_prio = prio;
+				curr_slot = i;
+			}
+		}
+	}
+
+	if (gpt)
+		free_gpt(kernel_bdev_entry->bdev, gpt);
+
+	return curr_slot;
+
+}
+
+int backend_get_slot_flags(fb_getvar_t var, int index)
+{
+	if (index >= CONFIG_FASTBOOT_SLOTS_COUNT)
+		return -1;
+
+	if (backend_do_init() != BE_SUCCESS)
+		return -1;
+
+	get_kernel_bdev_entry();
+
+	GptData *gpt = NULL;
+	GptEntry *gpt_entry = NULL;
+	int ret = -1;
+
+	/* Setup GPT structure. */
+	gpt = alloc_gpt(kernel_bdev_entry->bdev);
+
+	if (gpt == NULL)
+		goto fail;
+
+	gpt_entry = GptFindNthEntry(gpt, &kernel_guid, index);
+	if (gpt_entry == NULL)
+		goto fail;
+
+	switch (var) {
+	case FB_SLOT_SUCCESSFUL: {
+		ret = GetEntrySuccessful(gpt_entry);
+		break;
+	}
+	case FB_SLOT_UNBOOTABLE: {
+		ret = !(GetEntrySuccessful(gpt_entry) ||
+			GetEntryTries(gpt_entry));
+		break;
+	}
+	case FB_SLOT_RETRY_COUNT: {
+		ret = GetEntryTries(gpt_entry);
+		break;
+	}
+	default:
+		break;
+	}
+
+fail:
+	if (gpt)
+		free_gpt(kernel_bdev_entry->bdev, gpt);
+
+	return ret;
+
+}
+
+backend_ret_t backend_set_active_slot(int index)
+{
+	backend_ret_t ret = BE_SUCCESS;
+
+	if (index >= CONFIG_FASTBOOT_SLOTS_COUNT)
+		return BE_INVALID_SLOT_INDEX;
+
+	ret = backend_do_init();
+	if (ret != BE_SUCCESS)
+		return ret;
+
+	get_kernel_bdev_entry();
+
+	GptData *gpt = NULL;
+	GptEntry *gpt_entry = NULL;
+	int i;
+
+	/* Setup GPT structure. */
+	gpt = alloc_gpt(kernel_bdev_entry->bdev);
+
+	if (gpt == NULL) {
+		ret = BE_GPT_ERR;
+		goto fail;
+	}
+
+	/* First mark requested slot as active. */
+	gpt_entry = GptFindNthEntry(gpt, &kernel_guid, index);
+	if (gpt_entry == NULL) {
+		ret = BE_GPT_ERR;
+		goto fail;
+	}
+	GptUpdateKernelWithEntry(gpt, gpt_entry, GPT_UPDATE_ENTRY_ACTIVE);
+
+	/* Mark remaining slots as inactive. */
+	for (i = 0; i < CONFIG_FASTBOOT_SLOTS_COUNT; i++) {
+
+		if (i == index)
+			continue;
+
+		gpt_entry = GptFindNthEntry(gpt, &kernel_guid, i);
+		if (gpt_entry == NULL) {
+			ret = BE_GPT_ERR;
+			goto fail;
+		}
+
+		GptUpdateKernelWithEntry(gpt, gpt_entry,
+					 GPT_UPDATE_ENTRY_INVALID);
+	}
+
+fail:
+	if (gpt)
+		free_gpt(kernel_bdev_entry->bdev, gpt);
+
+	return ret;
+}
+#endif

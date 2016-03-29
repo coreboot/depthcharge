@@ -24,6 +24,7 @@
 
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/stream.h"
+#include "fastboot/fastboot.h"
 
 typedef enum {
 	BE_SUCCESS,
@@ -35,6 +36,7 @@ typedef enum {
 	BE_SPARSE_HDR_ERR,
 	BE_CHUNK_HDR_ERR,
 	BE_GPT_ERR,
+	BE_INVALID_SLOT_INDEX,
 	BE_NOT_HANDLED,
 } backend_ret_t;
 
@@ -69,12 +71,41 @@ struct part_info {
 			uint64_t size;
 		};
 	};
+	/* Is this partition multi-slotted? 1-yes, 0-no */
+	int is_slotted;
 };
 
 extern size_t fb_bdev_count;
 extern struct bdev_info fb_bdev_list[];
 extern size_t fb_part_count;
 extern struct part_info fb_part_list[];
+
+struct part_base_info {
+	/* Partition base name */
+	const char *base_name;
+	/* Does this partition have multiple slots? 1-yes, 0-no */
+	int is_slotted;
+};
+
+
+/*
+ * fb_base_list identifies unique base names of all partitions.
+ * e.g.: if the partitions are:
+ * kernel-a
+ * kernel-b
+ * cache
+ * system
+ *
+ * Then, fb_base_list would contain the following:
+ * kernel
+ * cache
+ * system
+ *
+ * This information is useful while responding back to fastboot getvar variables
+ * related to slots.
+ */
+extern size_t fb_base_count;
+extern struct part_base_info *fb_base_list;
 
 backend_ret_t board_write_partition(const char *name, void *image_addr,
 				    uint64_t image_size);
@@ -99,10 +130,23 @@ static inline int fb_fill_bdev_list(int index, BlockDevCtrlr *bdev_ctrlr)
 
 int fb_fill_part_list(const char *name, uint64_t base, uint64_t size);
 
+#if CONFIG_FASTBOOT_SLOTS
+int backend_get_curr_slot(void);
+int backend_get_slot_flags(fb_getvar_t var, int index);
+backend_ret_t backend_set_active_slot(int index);
+#endif
+
 #define PART_GPT(part_name, part_fs, bdev_name, g, inst)		\
 	{part_name, part_fs, bdev_name, 1, .guid = g, .instance = inst}
 #define PART_NONGPT(part_name, part_fs, bdev_name, start, len)		\
 	{part_name, part_fs, bdev_name, 0, .base = start, .size = len}
+
+#define PART_GPT_SLOTTED(part_name, part_fs, bdev_name, g, inst)	\
+	{part_name, part_fs, bdev_name, 1, .guid = g, .instance = inst, \
+			.is_slotted = 1}
+#define PART_NONGPT_SLOTTED(part_name, part_fs, bdev_name, start, len)	\
+	{part_name, part_fs, bdev_name, 0, .base = start, .size = len,	\
+			.is_slotted = 1}
 
 #define BDEV_ENTRY(bdev)	(&fb_bdev_list[(bdev)])
 #define GPT_TYPE(type)		GPT_ENT_TYPE_##type

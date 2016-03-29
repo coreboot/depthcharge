@@ -37,3 +37,18 @@ config FASTBOOT_EP_OUT
 	int "Out-Endpoint to use for fastboot"
 	default 1
 	depends on FASTBOOT_MODE
+
+config FASTBOOT_SLOTS
+	bool "Multiple slots of same type supported"
+	default n
+	depends on FASTBOOT_MODE
+
+config FASTBOOT_SLOTS_COUNT
+	hex "Number of slots present for slotted partitions"
+	default 0x2
+	depends on FASTBOOT_SLOTS
+
+config FASTBOOT_SLOTS_STARTING_SUFFIX
+	string "Starting suffix for slotted partitions"
+	default "-a"
+	depends on FASTBOOT_SLOTS

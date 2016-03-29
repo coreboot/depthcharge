@@ -220,6 +220,29 @@ static const struct fw_type_to_index {
 	{"RW_B", VDAT_RW_B},
 };
 
+#if CONFIG_FASTBOOT_SLOTS
+static const char *slot_get_suffix(int index)
+{
+	static char suffix[3];
+
+	assert (strlen(CONFIG_FASTBOOT_SLOTS_STARTING_SUFFIX) == 2);
+	strcpy(suffix, CONFIG_FASTBOOT_SLOTS_STARTING_SUFFIX);
+	suffix[1] += index;
+
+	return suffix;
+}
+
+static int slot_get_index(const char *suffix, size_t suffix_len)
+{
+	const char *starting_suffix = CONFIG_FASTBOOT_SLOTS_STARTING_SUFFIX;
+
+	assert ((suffix_len == 2) &&
+		(strlen(starting_suffix) == 2));
+
+	return suffix[1] - starting_suffix[1];
+}
+#endif
+
 static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 {
 	size_t input_len = fb_buffer_length(&cmd->input);
@@ -369,6 +392,80 @@ static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 
 		break;
 	}
+#if CONFIG_FASTBOOT_SLOTS
+	case FB_HAS_SLOT: {
+		if (input_len == 0) {
+			fb_add_string(output, "invalid arg", NULL);
+			return -1;
+		}
+
+		char *base = fb_buffer_pull(&cmd->input, input_len);
+		int i;
+
+		for (i = 0; i < fb_base_count; i++) {
+			if (input_len != strlen(fb_base_list[i].base_name))
+				continue;
+
+			if (strncmp(base, fb_base_list[i].base_name,
+				    input_len) == 0)
+				break;
+		}
+
+		if (i == fb_base_count) {
+			fb_add_string(output, "invalid arg", NULL);
+			return -1;
+		}
+
+		if (fb_base_list[i].is_slotted == 1)
+			fb_add_string(output, "yes", NULL);
+		else
+			fb_add_string(output, "no", NULL);
+
+		break;
+	}
+	case FB_CURR_SLOT: {
+		int slot = backend_get_curr_slot();
+
+		if (slot < 0) {
+			fb_add_string(output, "no valid curr slot", NULL);
+			return -1;
+		}
+
+		assert(slot < CONFIG_FASTBOOT_SLOTS_COUNT);
+		fb_add_string(output, slot_get_suffix(slot), NULL);
+		break;
+	}
+	case FB_SLOT_SUFFIXES: {
+		int i;
+
+		fb_add_string(output, CONFIG_FASTBOOT_SLOTS_STARTING_SUFFIX,
+			      NULL);
+
+		for (i = 1; i < CONFIG_FASTBOOT_SLOTS_COUNT; i++)
+			fb_add_string(output, ",%s", slot_get_suffix(i));
+		break;
+	}
+	case FB_SLOT_SUCCESSFUL:
+	case FB_SLOT_UNBOOTABLE:
+	case FB_SLOT_RETRY_COUNT: {
+		if (input_len != 2) {
+			fb_add_string(output, "invalid arg", NULL);
+			return -1;
+		}
+
+		char *data = fb_buffer_pull(&cmd->input, input_len);
+		int index = slot_get_index(data, input_len);
+		int ret = backend_get_slot_flags(var, index);
+
+		if (ret < 0) {
+			fb_add_string(output, "failed to get flags", NULL);
+			return -1;
+		}
+
+		fb_add_number(output, "%lld", ret);
+		break;
+	}
+#endif
 	default:
 		goto board_read;
 	}
@@ -510,6 +607,15 @@ static const struct {
 	{ NAME_NO_ARGS("battery-voltage"), FB_BATT_VOLTAGE},
 	{ NAME_NO_ARGS("variant"), FB_VARIANT},
 	{ NAME_NO_ARGS("battery-soc-ok"), FB_BATT_SOC_OK},
+#if CONFIG_FASTBOOT_SLOTS
+	/* Slots related */
+	{ NAME_ARGS("has-slot", ':'), FB_HAS_SLOT},
+	{ NAME_NO_ARGS("current-slot"), FB_CURR_SLOT},
+	{ NAME_NO_ARGS("slot-suffixes"), FB_SLOT_SUFFIXES},
+	{ NAME_ARGS("slot-successful", ':'), FB_SLOT_SUCCESSFUL},
+	{ NAME_ARGS("slot-unbootable", ':'), FB_SLOT_UNBOOTABLE},
+	{ NAME_ARGS("slot-retry-count", ':'), FB_SLOT_RETRY_COUNT},
+#endif
 	/*
 	 * OEM specific :
 	 * Spec says names starting with lowercase letter are reserved.
@@ -714,6 +820,44 @@ static fb_ret_type fb_getvar_all(struct fb_cmd *host_cmd)
 			break;
 		}
 
+#if CONFIG_FASTBOOT_SLOTS
+		case FB_HAS_SLOT: {
+			fb_format_getvar_args(cmd_in, cmd_out,
+					      fb_base_list,
+					      sizeof(fb_base_list[0]),
+					      offsetof(struct part_base_info,
+						       base_name),
+					      fb_base_count);
+			break;
+		}
+
+		case FB_SLOT_SUCCESSFUL:
+		case FB_SLOT_UNBOOTABLE:
+		case FB_SLOT_RETRY_COUNT: {
+			struct fb_cmd curr_cmd;
+			struct fb_buffer *input = &curr_cmd.input;
+			struct fb_buffer *output = &curr_cmd.output;
+			int i;
+
+			for (i = 0; i < CONFIG_FASTBOOT_SLOTS_COUNT; i++) {
+				fb_buffer_clone(cmd_in, input);
+				fb_buffer_clone(cmd_out, output);
+
+				fb_add_string(input, slot_get_suffix(i), NULL);
+				fb_copy_buffer_data(output, input);
+				fb_add_string(output, ": ", NULL);
+
+				curr_cmd.type = FB_INFO;
+				fb_getvar_single(&curr_cmd);
+
+				if (curr_cmd.type == FB_INFO)
+					fb_execute_send(&curr_cmd);
+			}
+
+			break;
+		}
+#endif
+
 		default:
 			fb_copy_buffer_data(cmd_out, cmd_in);
 			fb_add_string(cmd_out, ": ", NULL);
@@ -844,6 +988,7 @@ const char *backend_error_string[] = {
 	[BE_SPARSE_HDR_ERR] = "sparse header error",
 	[BE_CHUNK_HDR_ERR] = "sparse chunk header error",
 	[BE_GPT_ERR] = "GPT error",
+	[BE_INVALID_SLOT_INDEX] = "Invalid slot index",
 };
 
 static fb_ret_type fb_erase(struct fb_cmd *cmd)
@@ -1233,6 +1378,33 @@ static fb_ret_type fb_get_unlock_ability(struct fb_cmd *cmd)
 	return FB_SUCCESS;
 }
 
+#if CONFIG_FASTBOOT_SLOTS
+static fb_ret_type fb_set_active_slot(struct fb_cmd *cmd)
+{
+	cmd->type = FB_FAIL;
+
+	const char *input = fb_buffer_head(&cmd->input);
+	size_t input_len = fb_buffer_length(&cmd->input);
+
+	if (input_len != 2) {
+		fb_add_string(&cmd->output, "Invalid args", NULL);
+		return FB_SUCCESS;
+	}
+
+	int index = slot_get_index(input, input_len);
+	backend_ret_t ret = backend_set_active_slot(index);
+
+	if (ret != BE_SUCCESS) {
+		fb_add_string(&cmd->output, backend_error_string[ret], NULL);
+		return FB_SUCCESS;
+	}
+
+	cmd->type = FB_OKAY;
+	fb_add_string(&cmd->output, "Set active slot done", NULL);
+	return FB_SUCCESS;
+}
+#endif
+
 static fb_ret_type fb_set_off_mode_charge(struct fb_cmd *cmd)
 {
 	cmd->type = FB_FAIL;
@@ -1355,6 +1527,10 @@ const struct fastboot_func fb_func_table[] = {
 	{ NAME_NO_ARGS("flashing unlock"), FB_ID_UNLOCK, fb_unlock},
 	{ NAME_NO_ARGS("flashing get_unlock_ability"), FB_ID_GET_UNLOCK_ABILITY,
 	  fb_get_unlock_ability},
+#if CONFIG_FASTBOOT_SLOTS
+	{ NAME_ARGS("set_active", ':'), FB_ID_SET_ACTIVE_SLOT,
+	  fb_set_active_slot},
+#endif
 	/* OEM cmd names starting in uppercase imply vendor/device specific. */
 	{ NAME_NO_ARGS("oem Powerdown"), FB_ID_POWERDOWN, fb_powerdown},
 	{ NAME_NO_ARGS("oem Battery-cutoff"), FB_ID_BATTERY_CUTOFF,
