@@ -1,5 +1,5 @@
 ##
-## Copyright 2013 Google Inc.  All rights reserved.
+## Copyright 2016 Google Inc.  All rights reserved.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -114,5 +114,8 @@ source src/board/veyron_speedy/Kconfig
 endif
 if BOARD = "veyron_thea"
 source src/board/veyron_thea/Kconfig
+endif
+if BOARD = "veyron_tiger"
+source src/board/veyron_tiger/Kconfig
 endif
 endmenu
