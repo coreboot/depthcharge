@@ -414,3 +414,8 @@ VbError_t VbExEcVbootDone(int in_recovery)
 	timestamp_add_now(TS_VB_EC_VBOOT_DONE);
 	return VBERROR_SUCCESS;
 }
+
+VbError_t VbExEcBatteryCutOff(void) {
+	 return (cros_ec_battery_cutoff(0) == 0 ? VBERROR_SUCCESS :
+		 VBERROR_UNKNOWN);
+}
