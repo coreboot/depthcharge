@@ -150,7 +150,7 @@ static int do_draw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 }
 
 U_BOOT_CMD(
-	   draw,	7,	1,
+	   draw,	9,	1,
 	   "draw image on screen, print screen info, etc.",
 	   "image <name> <x> <y> [<width> <height>] - draw image in cbfs at (x, y)\n"
 	   "info - print framebuffer information\n"
