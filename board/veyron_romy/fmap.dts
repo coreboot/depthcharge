@@ -32,7 +32,7 @@
 		};
 		ro-boot {
 			label = "coreboot";
-			size = <0x00100000>;
+			size = <0x00180000>;
 			read-only;
 			type = "blob coreboot";
 			required;
@@ -46,7 +46,7 @@
 			 * For example, aligning to 512KB is better than to
 			 * 256KB. */
 
-			reg = <0x00100000 0x00001000>;
+			reg = <0x00180000 0x00001000>;
 			read-only;
 			type = "fmap";
 			ver-major = <1>;
@@ -57,7 +57,7 @@
 			label = "gbb";
 
 			/* GBB offset must be aligned to 4K bytes */
-			reg = <0x00101000 0x000eef00>;
+			reg = <0x00181000 0x0006ef00>;
 			read-only;
 			type = "blob gbb";
 		};
