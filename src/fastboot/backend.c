@@ -162,7 +162,8 @@ static backend_ret_t write_sparse_image(struct image_part_details *img,
 
 		/* Size in bytes and lba of the area occupied by chunk range */
 		size_t chunk_size_bytes, chunk_size_lba;
-		chunk_size_bytes = chunk_hdr->size_in_blks * img_hdr->blk_size;
+		chunk_size_bytes = (size_t)chunk_hdr->size_in_blks *
+			img_hdr->blk_size;
 		chunk_size_lba = chunk_size_bytes / bdev_block_size;
 
 		/* Should not write past partition size */
