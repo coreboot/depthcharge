@@ -12,6 +12,7 @@
 ##
 
 depthcharge-y += i2c.c
+depthcharge-$(CONFIG_DRIVER_BUS_I2C_CROS_EC_TUNNEL) += cros_ec_tunnel.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_CYGNUS) += cygnus.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_DESIGNWARE) += designware.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_DESIGNWARE_PCI) += designware_pci.c

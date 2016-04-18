@@ -56,3 +56,8 @@ config DRIVER_BUS_I2C_CYGNUS
 config DRIVER_BUS_I2C_ARMADA38X
         bool "Marvell Armada38x I2C driver"
         default n
+
+config DRIVER_BUS_I2C_CROS_EC_TUNNEL
+        bool "Chrome OS EC tunnel I2C driver"
+        depends on DRIVER_EC_CROS
+        default n
