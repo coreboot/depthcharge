@@ -22,6 +22,9 @@ config BOARD
 if BOARD = "auron"
 source src/board/auron/Kconfig
 endif
+if BOARD = "banon"
+source src/board/banon/Kconfig
+endif
 if BOARD = "bayleybay"
 source src/board/bayleybay/Kconfig
 endif
