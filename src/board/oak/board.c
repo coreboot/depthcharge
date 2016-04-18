@@ -20,10 +20,12 @@
 
 #include "base/init_funcs.h"
 #include "boot/ramoops.h"
+#include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/bus/i2c/mtk_i2c.h"
 #include "drivers/bus/i2s/mt8173.h"
 #include "drivers/bus/spi/mt8173.h"
 #include "drivers/bus/usb/usb.h"
+#include "drivers/ec/anx7688/anx7688.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/cros/spi.h"
 #include "drivers/flash/spi.h"
@@ -129,9 +131,21 @@ static int board_setup(void)
 	GpioOps *ec_int = sysinfo_lookup_gpio("EC interrupt", 1,
 					      new_mtk_gpio_input);
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, 0, ec_int);
-	CrosEc *cros_pd = new_cros_ec(&cros_ec_spi_bus->ops, 1, NULL);
 	register_vboot_ec(&cros_ec->vboot, 0);
-	register_vboot_ec(&cros_pd->vboot, 1);
+
+	/* oak-rev7 / elm-rev0 onwards use ANX7688. */
+	if (lib_sysinfo.board_id + CONFIG_BOARD_ID_ADJUSTMENT < 7) {
+		CrosEc *cros_pd = new_cros_ec(&cros_ec_spi_bus->ops, 1, NULL);
+
+		register_vboot_ec(&cros_pd->vboot, 1);
+	} else {
+		CrosECTunnelI2c *cros_ec_i2c_tunnel =
+			new_cros_ec_tunnel_i2c(cros_ec, 1);
+
+		Anx7688 *anx7688 = new_anx7688(cros_ec_i2c_tunnel);
+
+		register_vboot_ec(&anx7688->vboot, 1);
+	}
 
 	Mt6397Pmic *pmic = new_mt6397_power(0x1000D000, 0x10007000);
 	power_set_ops(&pmic->ops);
