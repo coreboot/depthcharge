@@ -1,5 +1,5 @@
 ##
-## Copyright 2012 Google Inc.
+## Copyright 2016 Google Inc.  All rights reserved.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -9,9 +9,9 @@
 ## but WITHOUT ANY WARRANTY; without even the implied warranty of
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
-##
 
-subdirs-$(CONFIG_DRIVER_EC_CROS) += cros
-subdirs-$(CONFIG_DRIVER_EC_ANX7688) += anx7688
-
-depthcharge-y += vboot_ec.c
+config DRIVER_EC_ANX7688
+	bool "ANX7688 TCPC and HDMI->DP converter"
+	default n
+	help
+	  Add support for ANX7688 TCPC and HDMI->DP converter
