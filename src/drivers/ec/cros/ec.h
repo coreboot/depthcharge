@@ -87,6 +87,22 @@ typedef struct CrosEc
 	int proto3_response_size;
 } CrosEc;
 
+/**
+ * Send an arbitrary EC command.
+ *
+ * @param ec		EC device
+ * @param cmd		Command to send (EC_CMD_...)
+ * @param cmd_version	Command version number (often 0)
+ * @param dout		Outgoing data to EC
+ * @param dout_len	Outgoing length in bytes
+ * @param din		Where to put the incoming data from EC
+ * @param din_len	Max number of bytes to accept from EC
+ * @return 0 if ok, -1 on error
+ */
+int ec_command(CrosEc *ec, int cmd, int cmd_version,
+	       const void *dout, int dout_len,
+	       void *din, int din_len);
+
 /*
  * Hard-code the number of columns we happen to know we have right now.  It
  * would be more correct to call cros_ec_mkbp_info() at startup and determine

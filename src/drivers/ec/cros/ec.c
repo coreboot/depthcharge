@@ -343,9 +343,9 @@ static int send_command_proto2(CrosEc *me, int cmd, int cmd_version,
 	return len;
 }
 
-static int ec_command(CrosEc *me, int cmd, int cmd_version,
-		      const void *dout, int dout_len,
-		      void *din, int din_len)
+int ec_command(CrosEc *me, int cmd, int cmd_version,
+	       const void *dout, int dout_len,
+	       void *din, int din_len)
 {
 	if (!me->initialized && ec_init(me))
 		return -1;
