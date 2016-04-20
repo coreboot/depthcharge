@@ -32,8 +32,9 @@
 #include "drivers/tpm/lpc.h"
 #include "drivers/storage/sdhci.h"
 
-#define EMMC_SD_CLOCK_MIN       400000
-#define EMMC_CLOCK_MAX          200000000
+#define EMMC_SD_CLOCK_MIN	400000
+#define SD_CLOCK_MAX		52000000
+#define EMMC_CLOCK_MAX		200000000
 
 /* Flash memory map size includes the 4K descriptor which is not accessible */
 #define FLASH_MEM_MAP_SIZE      0x77F000
@@ -55,6 +56,16 @@ static int board_setup(void)
 			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			&fixed_block_dev_controllers);
+
+	/* SD Card (if present) */
+	pcidev_t sd_pci_dev = PCI_DEV(0, 0x1b, 0);
+	uint16_t sd_vendor_id = pci_read_config32(sd_pci_dev, REG_VENDOR_ID);
+	if (sd_vendor_id == PCI_VENDOR_ID_INTEL) {
+		SdhciHost *sd = new_pci_sdhci_host(sd_pci_dev, 1,
+					EMMC_SD_CLOCK_MIN, SD_CLOCK_MAX);
+		list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
+					&removable_block_dev_controllers);
+	}
 
 	/* PCH Power */
 	power_set_ops(&apollolake_power_ops);
