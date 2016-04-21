@@ -24,6 +24,7 @@
 #include <sysinfo.h>
 
 #include "base/init_funcs.h"
+#include "drivers/ec/cros/lpc.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/tpm/tpm.h"
@@ -40,10 +41,15 @@
 #define FLASH_MEM_MAP_SIZE      0x77F000
 #define FLASH_MEM_MAP_BASE      ((uintptr_t)(0x100000000ULL - FLASH_MEM_MAP_SIZE))
 
-
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
+
+	/* Chrome EC bus */
+	CrosEcLpcBus *cros_ec_lpc_bus =
+		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, 0, NULL);
+	register_vboot_ec(&cros_ec->vboot, 0);
 
 	/* W25Q128FV SPI Flash */
 	flash_set_ops(&new_mem_mapped_flash(FLASH_MEM_MAP_BASE, FLASH_MEM_MAP_SIZE)->ops);
