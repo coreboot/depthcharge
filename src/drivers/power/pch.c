@@ -173,6 +173,12 @@ static int skylake_power_off(PowerOps *me)
 					0xfff0, 0x90, 4);
 }
 
+static int apollolake_power_off(PowerOps *me)
+{
+	return pch_power_off_full_args(PCI_DEV(0, 0xd, 1), 0x20,
+					0xfffc, 0x30, 4);
+}
+
 PowerOps pch_power_ops = {
 	.cold_reboot = &pch_cold_reboot,
 	.power_off = &pch_power_off
@@ -191,4 +197,9 @@ PowerOps braswell_power_ops = {
 PowerOps skylake_power_ops = {
 	.cold_reboot = &pch_cold_reboot,
 	.power_off = &skylake_power_off
+};
+
+PowerOps apollolake_power_ops = {
+	.cold_reboot = &pch_cold_reboot,
+	.power_off = &apollolake_power_off
 };
