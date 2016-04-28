@@ -12,3 +12,5 @@
 ##
 
 subdirs-$(CONFIG_DRIVER_EC_CROS) += cros
+
+depthcharge-y += vboot_ec.c

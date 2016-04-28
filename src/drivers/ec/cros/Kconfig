@@ -29,11 +29,6 @@ config DRIVER_EC_CROS_SPI
 	default n
 	depends on DRIVER_EC_CROS
 
-config DRIVER_EC_CROS_PASSTHRU
-	bool "Support passthru commands"
-	default n
-	depends on DRIVER_EC_CROS
-
 config DRIVER_EC_CROS_SPI_WAKEUP_DELAY_US
 	int "Delay EC transfer after asserting chip-select"
 	default 0

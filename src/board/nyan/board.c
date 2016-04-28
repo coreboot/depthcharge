@@ -179,7 +179,9 @@ static int board_setup(void)
 			  &sound_route->components);
 	sound_set_ops(&sound_route->ops);
 
-	cros_ec_set_bus(&new_cros_ec_spi_bus(&spi1->ops)->ops);
+	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spi1->ops);
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, 0, NULL);
+	register_vboot_ec(&cros_ec->vboot, 0);
 
 	TegraI2c *pwr_i2c = new_tegra_i2c((void *)0x7000d000, 5,
 					  (void *)CLK_RST_H_RST_SET,

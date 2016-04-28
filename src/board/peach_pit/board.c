@@ -61,7 +61,8 @@ static int board_setup(void)
 	Exynos5Spi *spi2 = new_exynos5_spi(0x12d40000);
 
 	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spi2->ops);
-	cros_ec_set_bus(&cros_ec_spi_bus->ops);
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, 0, NULL);
+	register_vboot_ec(&cros_ec->vboot, 0);
 
 	flash_set_ops(&new_spi_flash(&spi1->ops)->ops);
 

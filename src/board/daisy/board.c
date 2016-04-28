@@ -71,7 +71,8 @@ static int board_setup(void)
 					    &grant_gpio->ops);
 
 	CrosEcI2cBus *cros_ec_i2c_bus = new_cros_ec_i2c_bus(&arb4->ops, 0x1e);
-	cros_ec_set_bus(&cros_ec_i2c_bus->ops);
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_i2c_bus->ops, 0, NULL);
+	register_vboot_ec(&cros_ec->vboot, 0);
 
 	tpm_set_ops(&new_slb9635_i2c(&i2c3->ops, 0x20)->base.ops);
 

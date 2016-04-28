@@ -24,6 +24,7 @@
 #include "base/timestamp.h"
 #include "boot/commandline.h"
 #include "config.h"
+#include "drivers/ec/vboot_ec.h"
 #include "drivers/flash/flash.h"
 #include "drivers/input/input.h"
 #include "drivers/power/power.h"
@@ -37,7 +38,6 @@
 #include "vboot/stages.h"
 #include "vboot/crossystem/crossystem.h"
 #include "vboot/util/commonparams.h"
-#include "vboot/util/ec.h"
 #include "vboot/util/flag.h"
 #include "vboot/util/memory.h"
 #include "vboot/vbnv.h"
@@ -210,8 +210,7 @@ int vboot_select_and_load_kernel(void)
 	printf("Calling VbSelectAndLoadKernel().\n");
 	VbError_t res = VbSelectAndLoadKernel(&cparams, &kparams);
 	if (res == VBERROR_EC_REBOOT_TO_RO_REQUIRED) {
-		printf("Rebooting the EC to RO.\n");
-		reboot_ec_to_ro();
+		reboot_all_ecs();
 		if (power_off())
 			return 1;
 	} else if (res == VBERROR_SHUTDOWN_REQUESTED) {

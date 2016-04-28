@@ -72,10 +72,11 @@ static int board_setup(void)
 	FlashBlockDev *fbdev = block_flash_register_nor(&flash->ops);
 
 	RkSpi *spi0 = new_rockchip_spi(0xff110000);
-
-	cros_ec_set_bus(&new_cros_ec_spi_bus(&spi0->ops)->ops);
-	cros_ec_set_interrupt_gpio(sysinfo_lookup_gpio("EC interrupt", 1,
-			new_rk_gpio_input_from_coreboot));
+	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spi0->ops);
+	GpioOps *ec_int = sysinfo_lookup_gpio("EC interrupt", 1,
+					      new_rk_gpio_input_from_coreboot);
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, 0, ec_int);
+	register_vboot_ec(&cros_ec->vboot, 0);
 
 	sysinfo_install_flags(new_rk_gpio_input_from_coreboot);
 

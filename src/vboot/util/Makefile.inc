@@ -16,12 +16,6 @@ depthcharge-y += flag.c
 depthcharge-y += memory.c
 unified-y += commonparams-unified.c
 
-ifeq ($(CONFIG_EC_SOFTWARE_SYNC),y)
-depthcharge-y += ec.c
-else
-depthcharge-y += ec_stub.c
-endif
-
 ifneq ($(CONFIG_ARCH_X86),y)
 readonly-y += find_commonparams.c
 readwrite-y += find_commonparams.c
