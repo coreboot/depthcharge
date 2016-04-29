@@ -85,11 +85,11 @@ static const DtPathMap mac_maps[] = {
 
 static const DtPathMap calibration_maps[] = {
 	{1, "soc/wifi@a000000/qcom,ath10k-pre-calibration-data",
-	 "wifi_calibration0"},
+	 "wifi_base64_calibration0"},
 	{1, "soc/wifi@a800000/qcom,ath10k-pre-calibration-data",
-	 "wifi_calibration1"},
+	 "wifi_base64_calibration1"},
 	{1, "soc/qcom,pcie@80000/pcie@0/ath10k@0,0/qcom,ath10k-calibration-data",
-	 "wifi_calibration2"},
+	 "wifi_base64_calibration2"},
 	{}
 };
 
