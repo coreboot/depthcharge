@@ -37,6 +37,15 @@
 #define   RST_CPU       (1 << 2)
 #define   FULL_RST      (1 << 3)
 
+/* Temporary disable cold reboot on Apollolake platform due to USB LDO issue,
+ * which will be fixed on B0 or later stepping.
+ */
+static int apl_warm_reboot(PowerOps *me)
+{
+	outb(SYS_RST | RST_CPU , RST_CNT);
+	halt();
+}
+
 /*
  * Do a hard reset through the chipset's reset control register. This
  * register is available on all x86 systems (at least those built in
@@ -200,6 +209,6 @@ PowerOps skylake_power_ops = {
 };
 
 PowerOps apollolake_power_ops = {
-	.cold_reboot = &pch_cold_reboot,
+	.cold_reboot = &apl_warm_reboot,
 	.power_off = &apollolake_power_off
 };
