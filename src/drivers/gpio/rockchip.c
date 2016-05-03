@@ -19,18 +19,6 @@
 #include "drivers/gpio/rockchip.h"
 #include "drivers/gpio/gpio.h"
 
-static RkGpioRegs *gpio_port[] = {
-	(RkGpioRegs *)0xff750000,
-	(RkGpioRegs *)0xff780000,
-	(RkGpioRegs *)0xff790000,
-	(RkGpioRegs *)0xff7a0000,
-	(RkGpioRegs *)0xff7b0000,
-	(RkGpioRegs *)0xff7c0000,
-	(RkGpioRegs *)0xff7d0000,
-	(RkGpioRegs *)0xff7e0000,
-	(RkGpioRegs *)0xff7f0000
-};
-
 static int rk_gpio_get_value(GpioOps *me)
 {
 	assert(me);

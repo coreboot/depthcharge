@@ -64,8 +64,13 @@ config DRIVER_GPIO_PCH
 	default n
 	depends on ARCH_X86
 
-config DRIVER_GPIO_ROCKCHIP
+config DRIVER_GPIO_RK3288
 	bool "Rk3288 GPIO driver"
+	default n
+	select DRIVER_GPIO_ROCKCHIP
+
+config DRIVER_GPIO_ROCKCHIP
+	bool
 	default n
 	depends on ARCH_ARM
 

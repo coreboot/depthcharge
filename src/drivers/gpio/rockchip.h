@@ -12,9 +12,10 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __RK3288_GPIO_H
-#define __RK3288_GPIO_H
+#ifndef __ROCKCHIP_GPIO_H
+#define __ROCKCHIP_GPIO_H
 
+#include <libpayload.h>
 #include "drivers/gpio/gpio.h"
 
 #define GPIO(p, b, i) ((RkGpioSpec){.port = p, .bank = GPIO_##b, .idx = i})
@@ -66,6 +67,8 @@ typedef struct RkGpio {
 	GpioOps ops;
 	RkGpioSpec gpioindex;
 } RkGpio;
+
+extern RkGpioRegs *gpio_port[];
 
 GpioOps *new_rk_gpio_input_from_coreboot(uint32_t port);
 GpioOps *new_rk_gpio_output_from_coreboot(uint32_t port);
