@@ -156,7 +156,7 @@ static int prepare_proto3_response_buffer(int rs_size, int din_len)
  * @return number of bytes of response data, or <0 if error
  */
 static int handle_proto3_response(struct ec_host_response *rs,
-				  uint8_t **dinp, int din_len)
+				  uint8_t *dinp, int din_len)
 {
 	int in_bytes;
 	int csum;
