@@ -54,14 +54,12 @@ void cros_ec_dump_data(const char *name, int cmd, const void *data, int len)
 {
 #ifdef DEBUG
 	const uint8_t *bytes = data;
-	int i;
 
 	printf("%s: ", name);
 	if (cmd != -1)
 		printf("cmd=%#x: ", cmd);
-	for (i = 0; i < len; i++)
-		printf("%02x ", bytes[i]);
-	printf("\n");
+	printf(" (%d/0x%x bytes)\n", len, len);
+	hexdump(bytes, len);
 #endif
 }
 
