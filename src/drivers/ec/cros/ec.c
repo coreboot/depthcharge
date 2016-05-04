@@ -468,8 +468,9 @@ static enum ec_flash_region vboot_to_ec_region(enum VbSelectFirmware_t select)
 		EC_FLASH_REGION_RW;
 }
 
-VbError_t vboot_hash_image(VbootEcOps *vbec, enum VbSelectFirmware_t select,
-		     const uint8_t **hash, int *hash_size)
+static VbError_t vboot_hash_image(VbootEcOps *vbec,
+				  enum VbSelectFirmware_t select,
+				  const uint8_t **hash, int *hash_size)
 {
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
 	static struct ec_response_vboot_hash resp;
