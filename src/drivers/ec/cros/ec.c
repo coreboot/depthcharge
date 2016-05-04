@@ -179,7 +179,7 @@ static int handle_proto3_response(struct ec_host_response *rs,
 		return -EC_RES_RESPONSE_TOO_BIG;
 	}
 
-	cros_ec_dump_data("in-data", -1, rs + sizeof(*rs), rs->data_len);
+	cros_ec_dump_data("in-data", -1, rs + 1, rs->data_len);
 
 	/* Update in_bytes to actual data size */
 	in_bytes = sizeof(*rs) + rs->data_len;
