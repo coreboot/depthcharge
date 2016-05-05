@@ -69,6 +69,11 @@ config DRIVER_GPIO_RK3288
 	default n
 	select DRIVER_GPIO_ROCKCHIP
 
+config DRIVER_GPIO_RK3399
+	bool "Rk3399 GPIO driver"
+	default n
+	select DRIVER_GPIO_ROCKCHIP
+
 config DRIVER_GPIO_ROCKCHIP
 	bool
 	default n
