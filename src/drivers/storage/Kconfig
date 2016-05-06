@@ -72,6 +72,11 @@ config DRIVER_STORAGE_DWMMC_RK3288
         bool "R3288 DWMMC driver"
         default n
 
+config DRIVER_STORAGE_DWMMC_RK3399
+        select DRIVER_STORAGE_MMC_DW
+        bool "R3399 DWMMC driver"
+        default n
+
 config DRIVER_STORAGE_SPI_GPT
 	bool "Look up a kernel partition from a GPT on SPI"
 	default n
