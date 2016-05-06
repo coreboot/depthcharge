@@ -67,9 +67,9 @@ config DRIVER_STORAGE_SDHCI_PCI
 	bool "PCI SDHCI based eMMC/SD driver"
 	default n
 
-config DRIVER_STORAGE_MMC_ROCKCHIP
+config DRIVER_STORAGE_DWMMC_RK3288
         select DRIVER_STORAGE_MMC_DW
-        bool "ROCKCHIP MMC driver"
+        bool "R3288 DWMMC driver"
         default n
 
 config DRIVER_STORAGE_SPI_GPT

@@ -12,8 +12,10 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __RK3288_MMC_H
-#define __RK3288_MMC_H
+#ifndef __RK_DWMMC_H
+#define __RK_DWMMC_H
+
+#define RK_CLRSETBITS(clr, set) ((((clr) | (set)) << 16) | set)
 
 DwmciHost *new_rkdwmci_host(uintptr_t ioaddr, uint32_t src_hz,
 				  int bus_width, int removable,

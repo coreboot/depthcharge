@@ -26,7 +26,7 @@
 #include "drivers/power/rk808.h"
 #include "drivers/power/sysinfo.h"
 #include "drivers/storage/dw_mmc.h"
-#include "drivers/storage/rk_mmc.h"
+#include "drivers/storage/rk_dwmmc.h"
 
 #include "drivers/gpio/sysinfo.h"
 #include "vboot/util/flag.h"

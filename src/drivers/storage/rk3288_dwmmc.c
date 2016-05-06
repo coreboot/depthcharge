@@ -16,6 +16,7 @@
 #include <libpayload.h>
 
 #include "drivers/storage/dw_mmc.h"
+#include "drivers/storage/rk_dwmmc.h"
 #include "drivers/gpio/rockchip.h"
 
 struct rk3288_cru_reg {
@@ -46,8 +47,6 @@ struct rk3288_cru_reg {
 };
 
 static struct rk3288_cru_reg *cru_ptr = (void *)0xff760000;
-
-#define RK_CLRSETBITS(clr, set) ((((clr) | (set)) << 16) | set)
 
 void rkclk_configure_emmc(DwmciHost *host, unsigned int freq)
 {

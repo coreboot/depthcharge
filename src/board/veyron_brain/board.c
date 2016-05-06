@@ -30,7 +30,7 @@
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/route.h"
 #include "drivers/storage/dw_mmc.h"
-#include "drivers/storage/rk_mmc.h"
+#include "drivers/storage/rk_dwmmc.h"
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/video/display.h"

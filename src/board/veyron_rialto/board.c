@@ -28,7 +28,7 @@
 #include "drivers/power/sysinfo.h"
 #include "drivers/sound/dummy.h"
 #include "drivers/storage/dw_mmc.h"
-#include "drivers/storage/rk_mmc.h"
+#include "drivers/storage/rk_dwmmc.h"
 #include "drivers/video/display.h"
 
 #include "drivers/gpio/sysinfo.h"

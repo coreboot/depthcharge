@@ -28,7 +28,7 @@
 #include "drivers/power/rk808.h"
 #include "drivers/power/sysinfo.h"
 #include "drivers/storage/dw_mmc.h"
-#include "drivers/storage/rk_mmc.h"
+#include "drivers/storage/rk_dwmmc.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/route.h"
 #include "drivers/sound/max98090.h"
