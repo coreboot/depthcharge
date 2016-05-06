@@ -126,9 +126,9 @@ static int board_setup(void)
 	max98357aCodec *speaker_amp = new_max98357a_codec(sdmode_gpio);
 
 	/* GPIO to activate buffer to isolate I2S from PCH & allow GPIO */
-	GpioCfg *boot_beep_gpio_cfg = new_skylake_gpio_output(GPP_F23, 0);
+	GpioCfg *boot_beep_gpio_cfg = new_skylake_gpio_output(GPP_F23, 1);
 
-	gpio_set(&boot_beep_gpio_cfg->ops, 1);
+	gpio_set(&boot_beep_gpio_cfg->ops, 0);
 
 	/* Use GPIO to bit-bang I2S to the codec */
 	GpioCfg *i2s2_bclk = new_skylake_gpio_output(GPP_F0, 0);
