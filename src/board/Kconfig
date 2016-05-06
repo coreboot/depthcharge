@@ -88,6 +88,9 @@ endif
 if BOARD = "reks"
 source src/board/reks/Kconfig
 endif
+if BOARD = "relm"
+source src/board/relm/Kconfig
+endif
 if BOARD = "rush"
 source src/board/rush/Kconfig
 endif
