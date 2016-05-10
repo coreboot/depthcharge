@@ -76,6 +76,62 @@ int i2c_writew(I2cOps *ops, uint8_t chip, uint8_t reg, uint16_t data)
 	return ops->transfer(ops, &seg, 1);
 }
 
+int i2c_writeblock(I2cOps *ops, uint8_t chip, uint8_t reg,
+		   const uint8_t *data, int len)
+{
+	I2cSeg seg;
+	uint8_t buf[len+1];
+
+	buf[0] = reg;
+	memcpy(buf+1, data, len);
+
+	seg.read = 0;
+	seg.chip = chip;
+	seg.buf = buf;
+	seg.len = len+1;
+
+	return ops->transfer(ops, &seg, 1);
+}
+
+int i2c_readblock(I2cOps *ops, uint8_t chip, uint8_t reg,
+		  uint8_t *data, int len)
+{
+	I2cSeg seg[2];
+
+	seg[0].read = 0;
+	seg[0].chip = chip;
+	seg[0].buf = &reg;
+	seg[0].len = 1;
+	seg[1].read = 1;
+	seg[1].chip = chip;
+	seg[1].buf = data;
+	seg[1].len = len;
+
+	return ops->transfer(ops, seg, ARRAY_SIZE(seg));
+}
+
+int i2c_clear_bits(I2cOps *bus, int chip, int reg, int mask_clr)
+{
+	uint8_t tmp;
+
+	if (i2c_readb(bus, chip, reg, &tmp) < 0)
+		return -1;
+	if (i2c_writeb(bus, chip, reg, tmp & ~mask_clr) < 0)
+		return -1;
+	return 0;
+}
+
+int i2c_set_bits(I2cOps *bus, int chip, int reg, int mask_set)
+{
+	uint8_t tmp;
+
+	if (i2c_readb(bus, chip, reg, &tmp) < 0)
+		return -1;
+	if (i2c_writeb(bus, chip, reg, tmp | mask_set) < 0)
+		return -1;
+	return 0;
+}
+
 void scan_mode_on_off(I2cOps *ops, int scan_mode)
 {
 	ops->scan_mode = scan_mode;

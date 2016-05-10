@@ -94,6 +94,32 @@ int i2c_readw(I2cOps *ops, uint8_t chip, uint8_t reg, uint16_t *data);
  */
 int i2c_writew(I2cOps *ops, uint8_t chip, uint8_t reg, uint16_t data);
 
+/**
+ * Read a block by 2 segments in one frame
+ *
+ * [start][slave addr][w][register addr][start][slave addr][r][data][stop]
+ */
+int i2c_readblock(I2cOps *ops, uint8_t chip, uint8_t reg,
+		   uint8_t *data, int len);
+
+/**
+ * Write a block by one segment in one frame.
+ *
+ * [start][slave addr][w][register addr][data][stop]
+ */
+int i2c_writeblock(I2cOps *ops, uint8_t chip, uint8_t reg,
+		const uint8_t *data, int len);
+
+/**
+ * Clears bits in a register by doing a read/modify/write cycle.
+ */
+int i2c_clear_bits(I2cOps *bus, int chip, int reg, int mask_clr);
+
+/**
+ * Sets bits in a register by doing a read/modify/write cycle.
+ */
+int i2c_set_bits(I2cOps *bus, int chip, int reg, int mask_set);
+
 /*
  * Add I2C node to the list of nodes known to the system.
  *
