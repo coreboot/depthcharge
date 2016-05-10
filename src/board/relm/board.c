@@ -93,7 +93,8 @@ static int board_setup(void)
 	uintptr_t lpe_mmio = nvs->lpe_bar0;
 	if (!nvs->lpe_en) {
 		pcidev_t lpe_pcidev = PCI_DEV(0, 0x15, 0);
-		lpe_mmio = pci_read_config32(lpe_pcidev, PCI_BASE_ADDRESS_0);
+		lpe_mmio = pci_read_config32(lpe_pcidev, PCI_BASE_ADDRESS_0)
+							& 0xfffffff0;
 	}
 	BswI2s *i2s = new_bsw_i2s(lpe_mmio, &braswell_rt5645_settings,
 				16, 2,4800000, 48000);
