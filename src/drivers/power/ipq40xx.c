@@ -23,12 +23,15 @@
 #include <libpayload.h>
 #include "base/container_of.h"
 #include "drivers/power/power.h"
+#include "board/gale/board.h"
 
 #define GCNT_PSHOLD		((void *)0x004AB000u)
 
 
 static int ipq40xx_cold_reboot(struct PowerOps *me)
 {
+	writel(0, TCSR_BOOT_MISC_DETECT);
+	writel(0, TCSR_RESET_DEBUG_SW_ENTRY);
 	writel(0, GCNT_PSHOLD);
 
 	for (;;)

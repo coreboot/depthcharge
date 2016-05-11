@@ -48,6 +48,12 @@ enum gale_board_id {
 	BOARD_ID_GALE_EVT3 = 2,
 };
 
+#define TCSR_BOOT_MISC_DETECT		((void *)0x0193D100)
+#define TCSR_RESET_DEBUG_SW_ENTRY	((void *)0x01940000)
+#define IPQ_CRASH_MAGIC			0x10
+#define IPQ_CRASH_DUMP_MAX_TRIES	3
+#define IPQ_CRASH_DUMP_WAIT_SEC		5
+
 PowerOps *new_ipq40xx_power_ops(void);
 
 #endif
