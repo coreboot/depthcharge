@@ -384,6 +384,7 @@ static int mtk_mmc_init(BlockDevCtrlrOps *me)
 {
 	MtkMmcHost *host = container_of(me, MtkMmcHost, mmc.ctrlr.ops);
 	MtkMmcReg *reg = host->reg;
+	MtkMmcTuneReg tune_reg = host->tune_reg;
 	mmc_debug("%s called\n", __func__);
 
 	/* Configure to MMC/SD mode */
@@ -399,8 +400,8 @@ static int mtk_mmc_init(BlockDevCtrlrOps *me)
 	writel(readl(&reg->msdc_int), &reg->msdc_int);
 	/* Configure to default data timeout */
 	clrsetbits_le32(&reg->sdc_cfg, SDC_CFG_DTOC, DEFAULT_DTOC << 24);
-	/* Sample response by falling clock edge */
-	setbits_le32(&reg->msdc_iocon, MSDC_IOCON_RSPL);
+	writel(tune_reg.msdc_iocon, &reg->msdc_iocon);
+	writel(tune_reg.pad_tune, &reg->pad_tune);
 	mtk_mmc_set_buswidth(host, 1);
 
 	return 0;
@@ -453,7 +454,8 @@ static int mtk_mmc_update(BlockDevCtrlrOps *me)
 }
 
 MtkMmcHost *new_mtk_mmc_host(uintptr_t ioaddr, uint32_t src_hz, uint32_t max_freq,
-			     int bus_width, int removable, GpioOps *card_detect)
+			     MtkMmcTuneReg tune_reg, int bus_width, int removable,
+			     GpioOps *card_detect)
 {
 	MtkMmcHost *ctrlr = xzalloc(sizeof(*ctrlr));
 
@@ -465,6 +467,7 @@ MtkMmcHost *new_mtk_mmc_host(uintptr_t ioaddr, uint32_t src_hz, uint32_t max_fre
 	ctrlr->mmc.voltages = MtkMmcVoltages;
 	ctrlr->mmc.f_min = MtkMmcMinFreq;
 	ctrlr->mmc.f_max = max_freq;
+	ctrlr->tune_reg = tune_reg;
 
 	ctrlr->mmc.bus_width = bus_width;
 	ctrlr->mmc.bus_hz = ctrlr->mmc.f_min;

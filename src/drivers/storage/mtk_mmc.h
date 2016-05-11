@@ -74,9 +74,15 @@ typedef struct {
 } MtkMmcReg;
 
 typedef struct {
+	uint32_t msdc_iocon;
+	uint32_t pad_tune;
+} MtkMmcTuneReg;
+
+typedef struct {
 	MmcCtrlr mmc;
 
 	MtkMmcReg *reg;
+	MtkMmcTuneReg tune_reg;
 	uint32_t clock;         /* Current clock (MHz) */
 	uint32_t src_hz;        /* Source clock (hz) */
 
@@ -87,6 +93,6 @@ typedef struct {
 } MtkMmcHost;
 
 MtkMmcHost *new_mtk_mmc_host(uintptr_t ioaddr, uint32_t src_hz,
-			     uint32_t max_freq, int bus_width,
-			     int removable, GpioOps *card_detect);
+			     uint32_t max_freq, MtkMmcTuneReg tune_reg,
+			     int bus_width, int removable, GpioOps *card_detect);
 #endif // __DRIVERS_STORAGE_MTK_MMC_H_

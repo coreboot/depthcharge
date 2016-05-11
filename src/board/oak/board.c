@@ -112,6 +112,9 @@ static int sound_setup(void)
 
 static int board_setup(void)
 {
+	MtkMmcTuneReg emmc_tune_reg = {.msdc_iocon = 0, .pad_tune = 0x10 << 16};
+	MtkMmcTuneReg sd_card_tune_reg = {.msdc_iocon = 0, .pad_tune = 0};
+
 	sysinfo_install_flags(new_mtk_gpio_input);
 
 	MTKI2c *i2c2 = new_mtk_i2c(0x11009000, 0x11000200);
@@ -130,10 +133,11 @@ static int board_setup(void)
 	power_set_ops(&pmic->ops);
 
 	MtkMmcHost *emmc = new_mtk_mmc_host(0x11230000, 200 * MHz, 50 * MHz,
-					    8, 0, NULL);
+					    emmc_tune_reg, 8, 0, NULL);
 	GpioOps *card_detect_ops = new_gpio_not(new_mtk_gpio_input(PAD_EINT1));
 	MtkMmcHost *sd_card = new_mtk_mmc_host(0x11240000, 200 * MHz, 25 * MHz,
-					       4, 1, card_detect_ops);
+					       sd_card_tune_reg, 4, 1,
+					       card_detect_ops);
 
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
