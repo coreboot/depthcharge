@@ -44,7 +44,7 @@ static const char *get_fw_filename(int devidx, int select)
 	return devidx == 0 ? "ecrw" : "pdrw";
 }
 
-static struct cbfs_file *get_file_from_cbfs(
+static struct cbfs_handle *find_file_in_cbfs(
 	const char *filename, enum VbSelectFirmware_t select)
 {
 	if (!IS_ENABLED(CONFIG_DRIVER_CBFS_FLASH))
@@ -54,25 +54,25 @@ static struct cbfs_file *get_file_from_cbfs(
 		printf("Trying to locate '%s' in RO CBFS\n", filename);
 		if (ro_cbfs == NULL)
 			ro_cbfs = cbfs_ro_media();
-		return cbfs_get_file(ro_cbfs, filename);
+		return cbfs_get_handle(ro_cbfs, filename);
 	}
 
 	printf("Trying to locate '%s' in CBFS\n", filename);
-	return cbfs_get_file(CBFS_DEFAULT_MEDIA, filename);
+	return cbfs_get_handle(CBFS_DEFAULT_MEDIA, filename);
 }
 
 static const uint8_t *get_file_hash_from_cbfs(
 	const char *filename, int *hash_size, enum VbSelectFirmware_t select)
 {
 	printf("Trying to fetch hash for '%s'\n", filename);
-	struct cbfs_file *file = get_file_from_cbfs(filename, select);
+	struct cbfs_handle *handle = find_file_in_cbfs(filename, select);
 
-	if (file == NULL) {
+	if (handle == NULL) {
 		printf("%s not found\n", filename);
 		return NULL;
 	}
 
-	struct cbfs_file_attribute *attr = cbfs_file_find_attr(file,
+	struct cbfs_file_attr_hash *attr = cbfs_get_attr(handle,
 		CBFS_FILE_ATTR_TAG_HASH);
 
 	if (attr == NULL) {
@@ -80,14 +80,12 @@ static const uint8_t *get_file_hash_from_cbfs(
 		return NULL;
 	}
 
-	struct cbfs_file_attr_hash *hash = (struct cbfs_file_attr_hash *)attr;
-
-	if (ntohl(hash->hash_type) != VB2_HASH_SHA256) {
+	if (ntohl(attr->hash_type) != VB2_HASH_SHA256) {
 		printf("hash is not SHA256\n");
 		return NULL;
 	}
-	*hash_size = ntohl(hash->len) - sizeof(*hash);
-	return hash->hash_data;
+	*hash_size = ntohl(attr->len) - sizeof(*attr);
+	return attr->hash_data;
 }
 
 int VbExTrustEC(int devidx)
@@ -160,13 +158,17 @@ VbError_t VbExEcGetExpectedImage(int devidx, enum VbSelectFirmware_t select,
 		printf("Didn't find section %s in the fmap.\n", name);
 		/* It may be gone in favor of CBFS based RW sections,
 		 * so look there, too. */
+		size_t size;
 		const char *filename = get_fw_filename(devidx, select);
-		struct cbfs_file *file = get_file_from_cbfs(filename, select);
-		if (file == NULL)
+		struct cbfs_handle *h = find_file_in_cbfs(filename, select);
+		if (h == NULL)
 			return VBERROR_UNKNOWN;
-		printf("found '%s', sized 0x%x\n", filename, ntohl(file->len));
-		*image = CBFS_SUBHEADER(file);
-		*image_size = ntohl(file->len);
+		*image = cbfs_get_contents(h, &size, 0);
+		free(h);
+		if (*image == NULL)
+			return VBERROR_UNKNOWN;
+		*image_size = size;
+		printf("found '%s', sized 0x%zx\n", filename, size);
 		return VBERROR_SUCCESS;
 	}
 

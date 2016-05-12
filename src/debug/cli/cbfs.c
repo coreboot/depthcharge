@@ -11,7 +11,7 @@ static int do_cbfs_dump(char * const name)
 {
 	struct cbfs_file *file;
 
-	file = cbfs_get_file(CBFS_DEFAULT_MEDIA, name);
+	file = cbfs_find(name);
 	if (file == NULL) {
 		printf("File '%s' not found\n", name);
 		return CMD_RET_FAILURE;
