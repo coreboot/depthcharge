@@ -185,7 +185,7 @@ static inline qup_return_t qup_i2c_write_fifo_flush(blsp_qup_id_t id)
 	ret = qup_i2c_master_status(id);
 
 	if (ret)
-		printf(QUPDBG "%s: error\n", __func__);
+		printf(QUPDBG "%s: error 0x%x\n", __func__, ret);
 
 	return ret;
 }
@@ -199,9 +199,10 @@ static qup_return_t qup_i2c_write_fifo(blsp_qup_id_t id, qup_data_t *p_tx_obj,
 		unsigned data_len = p_tx_obj->p.iic.data_len;
 		unsigned idx = 0;
 	uint32_t tag, *fifo = QUP_ADDR(id, QUP_OUTPUT_FIFO);
-	const uint32_t *fifo_end = fifo + QUP_OUTPUT_FIFO_SIZE / sizeof(*fifo);
 
 	qup_reset_master_status(id);
+
+	qup_write32(QUP_ADDR(id, QUP_MX_OUTPUT_COUNT), data_len + 1);
 
 	qup_set_state(id, BLSP_QUP_STATE_RUN);
 
@@ -224,7 +225,6 @@ static qup_return_t qup_i2c_write_fifo(blsp_qup_id_t id, qup_data_t *p_tx_obj,
 	idx++;
 
 	qup_write32(fifo, tag);
-	fifo++;
 
 	while (data_len) {
 
@@ -241,19 +241,12 @@ static qup_return_t qup_i2c_write_fifo(blsp_qup_id_t id, qup_data_t *p_tx_obj,
 		}
 
 		qup_write32(fifo, tag);
-		fifo++;
 
-		if ((fifo >= fifo_end) && data_len) {
+		ret = qup_i2c_write_fifo_flush(id);
 
-			fifo = QUP_ADDR(id, QUP_OUTPUT_FIFO);
-
-			ret = qup_i2c_write_fifo_flush(id);
-
-			if (ret) {
-				printf(QUPDBG "%s: error\n", __func__);
-				return ret;
-			}
-
+		if (ret) {
+			printf(QUPDBG "%s: error\n", __func__);
+			return ret;
 		}
 	}
 
@@ -271,6 +264,7 @@ static qup_return_t qup_i2c_write(blsp_qup_id_t id, uint8_t mode,
 
 	switch (mode) {
 	case QUP_MODE_FIFO:
+	case QUP_MODE_BLOCK:
 		ret = qup_i2c_write_fifo(id, p_tx_obj, stop_seq);
 		break;
 	default:
@@ -318,9 +312,17 @@ static qup_return_t qup_i2c_read_fifo(blsp_qup_id_t id, qup_data_t *p_tx_obj)
 	unsigned data_len = p_tx_obj->p.iic.data_len;
 	unsigned idx = 0;
 	uint32_t *fifo = QUP_ADDR(id, QUP_OUTPUT_FIFO);
-	const uint32_t *fifo_end = fifo + QUP_INPUT_FIFO_SIZE / sizeof(*fifo);
 
 	qup_reset_master_status(id);
+
+	qup_write32(QUP_ADDR(id, QUP_IO_MODES),
+		QUP_UNPACK_EN | QUP_PACK_EN |
+			  ((QUP_MODE_BLOCK & QUP_MODE_MASK) <<
+					QUP_OUTPUT_MODE_SHFT) |
+			  ((QUP_MODE_BLOCK & QUP_MODE_MASK) <<
+					QUP_INPUT_MODE_SHFT));
+
+	qup_write32(QUP_ADDR(id, QUP_MX_INPUT_COUNT), data_len);
 
 	qup_set_state(id, BLSP_QUP_STATE_RUN);
 
@@ -333,8 +335,6 @@ static qup_return_t qup_i2c_read_fifo(blsp_qup_id_t id, qup_data_t *p_tx_obj)
 		printf(QUPDBG "%s: OUTPUT_FIFO_NOT_EMPTY\n", __func__);
 		return ret;
 	}
-
-	qup_write32(QUP_ADDR(id, QUP_MX_READ_COUNT), data_len);
 
 	ret = qup_fifo_wait_for(id, INPUT_SERVICE_FLAG);
 	if (ret) {
@@ -349,7 +349,7 @@ static qup_return_t qup_i2c_read_fifo(blsp_qup_id_t id, qup_data_t *p_tx_obj)
 		int count;
 
 		data = read32(fifo);
-		fifo++;
+		mdelay(1);
 
 		count = qup_i2c_parse_tag(data, data_ptr + idx, data_len);
 
@@ -364,11 +364,7 @@ static qup_return_t qup_i2c_read_fifo(blsp_qup_id_t id, qup_data_t *p_tx_obj)
 		idx += count;
 		data_len -= count;
 
-		if ((fifo >= fifo_end) || (data_len == 0)) {
-			fifo = QUP_ADDR(id, QUP_INPUT_FIFO);
-			qup_write32(QUP_ADDR(id, QUP_OPERATIONAL),
-					INPUT_SERVICE_FLAG);
-		}
+		qup_write32(QUP_ADDR(id, QUP_OPERATIONAL), INPUT_SERVICE_FLAG);
 	}
 
 	p_tx_obj->p.iic.data_len = idx;
@@ -389,6 +385,7 @@ static qup_return_t qup_i2c_read(blsp_qup_id_t id, uint8_t mode,
 
 	switch (mode) {
 	case QUP_MODE_FIFO:
+	case QUP_MODE_BLOCK:
 		ret = qup_i2c_read_fifo(id, p_tx_obj);
 		break;
 	default:
@@ -445,6 +442,7 @@ qup_return_t qup_init(blsp_qup_id_t id, const qup_config_t *config_ptr)
 	/* Set QUP IO Mode */
 	switch (config_ptr->mode) {
 	case QUP_MODE_FIFO:
+	case QUP_MODE_BLOCK:
 		reg_val = QUP_UNPACK_EN | QUP_PACK_EN |
 			  ((config_ptr->mode & QUP_MODE_MASK) <<
 					QUP_OUTPUT_MODE_SHFT) |
