@@ -44,28 +44,28 @@ static qup_config_t blsp1_qup0_config = {
 	QUP_MINICORE_I2C_MASTER,
 	100000,
 	19050000,
-	QUP_MODE_FIFO,
+	QUP_MODE_BLOCK,
 };
 
 static qup_config_t blsp1_qup1_config = {
 	QUP_MINICORE_I2C_MASTER,
 	100000,
 	19050000,
-	QUP_MODE_FIFO,
+	QUP_MODE_BLOCK,
 };
 
 static qup_config_t blsp1_qup2_config = {
 	QUP_MINICORE_I2C_MASTER,
 	100000,
 	19050000,
-	QUP_MODE_FIFO,
+	QUP_MODE_BLOCK,
 };
 
 static qup_config_t blsp1_qup3_config = {
 	QUP_MINICORE_I2C_MASTER,
 	100000,
 	19050000,
-	QUP_MODE_FIFO,
+	QUP_MODE_BLOCK,
 };
 
 static int i2c_read(uint32_t id, uint8_t slave, uint8_t *data, int data_len)
