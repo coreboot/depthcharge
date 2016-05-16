@@ -1,0 +1,191 @@
+/dts-v1/;
+/*
+ * NOTE: this needs to align with src/mainboard/google/reef/chromeos.fmd
+ * in the coreboot repository. Any changes made there should be reflected
+ * in this file. There are parallel notions of fmap information. However,
+ * both are used in different parts of the system so the right answer now
+ * is to keep them in sync.
+ */
+
+/ {
+	model = "Google Reef";
+	config {
+		hwid = "REEF TEST 3240";
+	};
+	chromeos-config {
+		/* Enable factory-friendly features. */
+		gbb-flag-dev-screen-short-delay;
+		gbb-flag-force-dev-switch-on;
+		gbb-flag-force-dev-boot-usb;
+		gbb-flag-disable-fw-rollback-check;
+	};
+	flash@ff800000 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "chromeos,flashmap";
+		/* FIXME: the part is really 16MiB */
+		reg = <0xff800000 0x00800000>;
+
+		/*
+		 * This encompasses both the descriptor proper and IFWI
+		 * information found in the first part of the BIOS section.
+		 */
+		si-all {
+			label = "si-all";
+			reg = <0x00000000 0x00200000>;
+			type = "ifd";
+		};
+
+		/*
+		* Firmware Descriptor section of the Intel Firmware Descriptor
+		* image.
+		*/
+		si-desc {
+			label = "si-desc";
+			reg = <0x00000000 0x00001000>;
+		};
+		bootblock {
+			label = "bootblock";
+			reg = <0x00076480 0x00008000>;
+		};
+		ro-vpid {
+			label = "ro-vpid";
+			reg = <0x00200000 0x00004000>;
+			read-only;
+		};
+		ro-fmap {
+			label = "fmap";
+			/*
+			* We encourage to align FMAP partition in as large
+			* block as possible so that flashrom can find it soon.
+			* For example, aligning to 512KB is better than to
+			* 256KB.
+			*/
+
+			reg = <0x00204000 0x00000800>;
+			read-only;
+			type = "fmap";
+			ver-major = <1>;
+			ver-minor = <1>;
+		};
+		ro-frid {
+			label = "ro-frid";
+			reg = <0x00204800 0x00000040>;
+			read-only;
+		};
+		ro-boot {
+			label = "coreboot";
+			reg = <0x00205000 0x0017b000>;
+			read-only;
+			type = "blob coreboot";
+			required;
+		};
+		ro-sig2 {
+			label = "sign_cse";
+			reg = <0x00380000 0x00010000>;
+			read-only;
+			required;
+		};
+		ro-gbb {
+			label = "gbb";
+			/* GBB offset must be aligned to 4K bytes */
+			reg = <0x00390000 0x00050000>;
+			read-only;
+			type = "blob gbb";
+		};
+		/* ---- Section: Rewritable MRC cache 64KB ---- */
+		rw-mrc-cache {
+			label = "rw-mrc-cache";
+			/* Alignment: 4k (for updating) */
+			reg = <0x00400000 0x00010000>;
+			type = "wiped";
+			wipe-value = [ff];
+		};
+		/* ---- 8k of event log */
+		rw-elog {
+			label = "rw-elog";
+			/* Alignment: 4k (for updating) */
+			reg = <0x00410000 0x00004000>;
+			type = "wiped";
+			wipe-value = [ff];
+		};
+		/* --- Section: Rewritable shared 16 KB --- */
+		shared-section {
+			/*
+			 * Alignment: 4k (for updating).
+			 * Anything in this range may be updated in recovery.
+			 */
+			label = "rw-shared";
+			reg = <0x00414000 0x00004000>;
+		};
+		shared-data {
+			label = "shared-data";
+			/*
+			 * Alignment: 4k (for random read/write).
+			 * RW firmware can put calibration data here.
+			 */
+			reg = <0x00414000 0x00002000>;
+			type = "wiped";
+			wipe-value = [00];
+		};
+		/* ---- Section: Rewritable slot A ---- */
+		rw-a {
+			label = "rw-section-a";
+			/* Alignment: 4k (for updating) */
+			reg = <0x00520000 0x000f0000>;
+		};
+		rw-a-vblock {
+			label = "vblock-a";
+			/*
+			 * Alignment: 4k (for updating) and must be in start of
+			 * each RW_SECTION.
+			 */
+			reg = <0x00520000 0x00010000>;
+			type = "keyblock cbfs/rw/a-boot";
+			keyblock = "firmware.keyblock";
+			signprivate = "firmware_data_key.vbprivk";
+			version = <1>;
+			kernelkey = "kernel_subkey.vbpubk";
+			preamble-flags = <0>;
+		};
+		rw-a-boot {
+			/* Alignment: no requirement (yet). */
+			label = "fw-main-a";
+			reg = <0x00530000 0x000c0000>;
+			type = "blob cbfs/rw/a-boot";
+		};
+		/* ---- Section: Rewritable slot B ---- */
+		rw-b {
+			label = "rw-section-b";
+			/* Alignment: 4k (for updating) */
+			reg = <0x00610000 0x000f0000>;
+		};
+		rw-b-vblock {
+			label = "vblock-b";
+			/*
+			 * Alignment: 4k (for updating) and must be in start of
+			 * each RW_SECTION.
+			 */
+			reg = <0x00610000 0x00010000>;
+			type = "keyblock cbfs/rw/b-boot";
+			keyblock = "firmware.keyblock";
+			signprivate = "firmware_data_key.vbprivk";
+			version = <1>;
+			kernelkey = "kernel_subkey.vbpubk";
+			preamble-flags = <0>;
+		};
+		rw-b-boot {
+			label = "fw-main-b";
+			/* Alignment: no requirement (yet). */
+			reg = <0x00620000 0x000c0000>;
+			type = "blob cbfs/rw/b-boot";
+		};
+
+		device-extension {
+			/* CSE RW data */
+			reg = <0x00700000 0x00100000>;
+			type = "wiped";
+			wipe-value = [ff];
+		}
+	};
+};
