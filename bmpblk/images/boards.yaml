@@ -134,7 +134,7 @@ chell,glados:
   assets_dir: assets2x
   assets_res: [1920, 1080]
 
-panther,tricky,mccloud,guado,tidus,rikku,ninja,veyron_brain,veyron_danger,veyron_emile,veyron_romy:
+panther,tricky,mccloud,guado,tidus,rikku,ninja:
   # Using VESA graphics mode 1024x768 (0x0117).
   # A chromebox without built-in panel/keyboard.
   # Assume the display is a modern 16:9 (1920x1080) monitor.
