@@ -182,6 +182,48 @@ static int i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
 	return 0;
 }
 
+int cros_ec_tunnel_i2c_protect(CrosECTunnelI2c *bus)
+{
+	struct ec_params_i2c_passthru_protect params = {
+		.subcmd = EC_CMD_I2C_PASSTHRU_PROTECT_ENABLE,
+		.port = bus->remote_bus
+	};
+	int result;
+
+	result = ec_command(bus->ec, EC_CMD_I2C_PASSTHRU_PROTECT, 0,
+			    &params, sizeof(params),
+			    NULL, 0);
+
+	if (result < 0)
+		return result;
+
+	return 0;
+}
+
+int cros_ec_tunnel_i2c_protect_status(CrosECTunnelI2c *bus, int *status)
+{
+	struct ec_params_i2c_passthru_protect params = {
+		.subcmd = EC_CMD_I2C_PASSTHRU_PROTECT_STATUS,
+		.port = bus->remote_bus
+	};
+	struct ec_response_i2c_passthru_protect response;
+	int result;
+
+	result = ec_command(bus->ec, EC_CMD_I2C_PASSTHRU_PROTECT, 0,
+			    &params, sizeof(params),
+			    &response, sizeof(response));
+
+	if (result < 0)
+		return result;
+
+	if (result < sizeof(response))
+		return -1;
+
+	*status = response.status;
+
+	return 0;
+}
+
 CrosECTunnelI2c *new_cros_ec_tunnel_i2c(CrosEc *ec,
 					uint16_t remote_bus) {
 	CrosECTunnelI2c *bus = xzalloc(sizeof(*bus));

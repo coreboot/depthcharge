@@ -36,4 +36,12 @@ typedef struct CrosECTunnelI2c {
 CrosECTunnelI2c *new_cros_ec_tunnel_i2c(CrosEc *ec,
 					uint16_t remote_bus);
 
+/* -----------------------------------------------------------------------
+ * Protect the I2C bus, or query the protection status (exact nature of the
+ * bus protection is board-specific, implemented in EC, ranging from no-op
+ * to blocking all accesses on the given bus).
+ */
+int cros_ec_tunnel_i2c_protect(CrosECTunnelI2c *bus);
+int cros_ec_tunnel_i2c_protect_status(CrosECTunnelI2c *bus, int *status);
+
 #endif
