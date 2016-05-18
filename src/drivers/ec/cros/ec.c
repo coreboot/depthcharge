@@ -799,6 +799,20 @@ static int cros_ec_flash_write_burst_size(int devidx)
 		info.write_block_size;
 }
 
+/**
+ * Return erase block size
+ */
+static int cros_ec_flash_erase_block_size(int devidx)
+{
+	struct ec_response_flash_info info;
+
+	if (ec_command(EC_CMD_PASSTHRU_OFFSET(devidx) + EC_CMD_FLASH_INFO, 0,
+		       NULL, 0, &info, sizeof(info)) < sizeof(info))
+		return 0;
+
+	return info.erase_block_size;
+}
+
 int cros_ec_flash_write(int devidx, const uint8_t *data, uint32_t offset,
 			uint32_t size)
 {
@@ -879,8 +893,8 @@ int cros_ec_flash_read(int devidx, uint8_t *data, uint32_t offset,
 
 int cros_ec_flash_update_rw(int devidx, const uint8_t *image, int image_size)
 {
-	uint32_t rw_offset, rw_size;
-	int ret;
+	uint32_t rw_offset, rw_size, rw_half;
+	int ret, erase_size;
 
 	if (cros_ec_flash_offset(devidx, EC_FLASH_REGION_RW,
 				 &rw_offset, &rw_size))
@@ -896,16 +910,46 @@ int cros_ec_flash_update_rw(int devidx, const uint8_t *image, int image_size)
 	 * presumably everything past that is 0xff's.  But would still need to
 	 * round up to the nearest multiple of erase size.
 	 */
-	ret = cros_ec_flash_erase(devidx, rw_offset, rw_size);
+
+	/*
+	 * crosbug.com/p/53370: Erase + flash the image in partitions of
+	 * image_size / 2. If spontaneous power-down occurs, we will have
+	 * at least half of a valid image, so EC image size detection will not
+	 * watchdog.
+	 */
+	erase_size = cros_ec_flash_erase_block_size(devidx);
+	if (erase_size == 0)
+		return -1;
+
+	/* Pad halfway point to erase block size */
+	rw_half = image_size / 2;
+	rw_half += (rw_half % erase_size == 0) ?
+			0 : erase_size - (rw_half % erase_size);
+
+	if (image_size < rw_half)
+		return -1;
+
+	/* Erase the first half of RW */
+	ret = cros_ec_flash_erase(devidx, rw_offset, rw_half);
 	if (ret)
 		return ret;
 
-	/* Write the image */
-	ret = cros_ec_flash_write(devidx, image, rw_offset, image_size);
+	/* Write the first part of the image */
+	ret = cros_ec_flash_write(devidx, image, rw_offset, rw_half);
 	if (ret)
 		return ret;
 
-	return 0;
+	/* Erase the second half of RW */
+	ret = cros_ec_flash_erase(devidx, rw_offset + rw_half,
+			rw_size - rw_half);
+	if (ret)
+		return ret;
+
+	/* Write the second part of the image */
+	ret = cros_ec_flash_write(devidx, image + rw_half,
+			rw_offset + rw_half, image_size - rw_half);
+
+	return ret;
 }
 
 int cros_ec_read_vbnvcontext(uint8_t *block)
