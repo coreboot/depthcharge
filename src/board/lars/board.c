@@ -77,7 +77,7 @@ static int board_setup(void)
 			&fixed_block_dev_controllers);
 
 	/* Speaker Amp codec MAX98357A */
-	GpioCfg *sdmode_gpio = new_skylake_gpio_output(GPP_B2, 0);
+	GpioOps *sdmode_gpio = &new_skylake_gpio_output(GPP_B2, 0)->ops;
 	max98357aCodec *speaker_amp =
 		new_max98357a_codec(sdmode_gpio);
 

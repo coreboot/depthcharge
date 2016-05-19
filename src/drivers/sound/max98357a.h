@@ -18,7 +18,6 @@
 #define __DRIVERS_SOUND_MAX98357A_H__
 
 #include "drivers/gpio/gpio.h"
-#include "drivers/gpio/skylake.h"
 #include "drivers/sound/route.h"
 
 typedef struct
@@ -28,6 +27,6 @@ typedef struct
 
 } max98357aCodec;
 
-max98357aCodec *new_max98357a_codec(struct GpioCfg *);
+max98357aCodec *new_max98357a_codec(GpioOps *);
 
 #endif /* __DRIVERS_SOUND_MAX98357A_H__ */
