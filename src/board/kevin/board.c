@@ -21,12 +21,16 @@
 #include "base/init_funcs.h"
 #include "boot/fit.h"
 #include "config.h"
+#include "drivers/bus/i2s/rockchip.h"
 #include "drivers/bus/spi/rockchip.h"
 #include "drivers/ec/cros/spi.h"
 #include "drivers/flash/spi.h"
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/rockchip.h"
 #include "drivers/gpio/sysinfo.h"
+#include "drivers/sound/i2s.h"
+#include "drivers/sound/max98357a.h"
+#include "drivers/sound/route.h"
 #include "drivers/storage/dw_mmc.h"
 #include "drivers/storage/rk_dwmmc.h"
 #include "drivers/storage/sdhci.h"
@@ -64,6 +68,21 @@ static int board_setup(void)
 
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
+
+	RockchipI2s *i2s0 = new_rockchip_i2s(0xff880000, 16, 2, 256);
+	I2sSource *i2s_source = new_i2s_source(&i2s0->ops, 48000, 2, 16000);
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+
+	/* Speaker Amp codec MAX98357A */
+	GpioOps *sdmode_gpio = &new_rk_gpio_output(GPIO(1, A, 2))->ops;
+
+	max98357aCodec *speaker_amp =
+		new_max98357a_codec(sdmode_gpio);
+
+	list_insert_after(&speaker_amp->component.list_node,
+			  &sound_route->components);
+
+	sound_set_ops(&sound_route->ops);
 
 	RkGpio *card_detect;
 
