@@ -15,8 +15,3 @@ depthcharge-y += commonparams.c
 depthcharge-y += flag.c
 depthcharge-y += memory.c
 unified-y += commonparams-unified.c
-
-ifneq ($(CONFIG_ARCH_X86),y)
-readonly-y += find_commonparams.c
-readwrite-y += find_commonparams.c
-endif

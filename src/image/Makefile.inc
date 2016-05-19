@@ -13,7 +13,6 @@
 
 depthcharge-y += fmap.c
 depthcharge-y += index.c
-readonly-y += startrw.c
 
 trampoline-y += load_elf.c
 

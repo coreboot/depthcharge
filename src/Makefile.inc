@@ -43,23 +43,6 @@ $1.bin: $1.elf
 	$$(Q)$$(LZMA) --stdout $$@.tmp > $$@
 endef
 
-# Defines rules for a legacy binaries (depthcharge RO and RW with trampoline)
-# $1 output file base name (will result in $1.ro.elf, $1.rw.bin)
-# $2 common objects to be linked into  both stages
-# $3 object containing entry point (main) for RO
-# $4 object containing entry point (main) for RW
-# $5 additional compiler/linker flags to pass
-define declare_ro_rw
-
-$(eval $(call declare_bin,$1.ro,$2 $3 $$$$(VB_LIB) \
-				$$$$(TRAMPOLINE) $$$$(TRAMP_LP),$5))
-
-$(eval $(call declare_bin,$1.rw,$2 $4 $$$$(VB_LIB),$5))
-
-$(notdir $1)_ro_rw: $1.ro.bin $1.rw.bin
-PHONY += $(notdir $1)_ro_rw
-endef
-
 # Defines rules for a unified (EFS) binary
 # $1 output file base name (will result in $1.elf)
 # $2 objects to be linked into the binary
@@ -81,17 +64,12 @@ $(notdir $1)_unified: $1.bin $1.payload
 PHONY += $(notdir $1)_unified
 endef
 
-$(eval $(call declare_ro_rw,$(DEPTHCHARGE),$$$$(depthcharge-objs), \
-	$$$$(readonly-objs),$$$$(readwrite-objs),))
 $(eval $(call declare_unified,$(DEPTHCHARGE),$$$$(depthcharge-objs) \
 	$$$$(unified-objs),))
 
 $(eval $(call declare_unified,$(NETBOOT),$$$$(depthcharge-objs) \
 	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs),))
 
-$(eval $(call declare_ro_rw,$(DEV),$$$$(depthcharge-objs) \
-	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs) $$$$(dev-objs), \
-	$$$$(readonly-objs),$$$$(readwrite-objs),$(DONT_GC_NETBOOT)))
 $(eval $(call declare_unified,$(DEV),$$$$(depthcharge-objs) \
 	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs) $$$$(dev-objs) \
 	$$$$(unified-objs),$(DONT_GC_NETBOOT)))

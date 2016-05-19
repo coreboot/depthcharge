@@ -31,7 +31,6 @@
 #include "drivers/storage/blockdev.h"
 #include "image/fmap.h"
 #include "image/index.h"
-#include "image/startrw.h"
 #include "image/symbols.h"
 #include "vboot/boot.h"
 #include "vboot/boot_policy.h"
@@ -43,67 +42,6 @@
 #include "vboot/vbnv.h"
 
 static uint32_t vboot_out_flags;
-
-int vboot_init(void)
-{
-	VbInitParams iparams = {
-		.flags = 0
-	};
-
-	int dev_switch = flag_fetch(FLAG_DEVSW);
-	int rec_switch = flag_fetch(FLAG_RECSW);
-	int wp_switch = flag_fetch(FLAG_WPSW);
-	int lid_switch = flag_fetch(FLAG_LIDSW);
-	int oprom_loaded = 0;
-	if (CONFIG_OPROM_MATTERS)
-		oprom_loaded = flag_fetch(FLAG_OPROM);
-
-
-	printf("%s:%d dev %d, rec %d, wp %d, lid %d, oprom %d\n",
-	       __func__, __LINE__, dev_switch, rec_switch,
-	       wp_switch, lid_switch, oprom_loaded);
-
-	if (dev_switch < 0 || rec_switch < 0 || lid_switch < 0 ||
-	    wp_switch < 0 || oprom_loaded < 0) {
-		// An error message should have already been printed.
-		return 1;
-	}
-
-	// Decide what flags to pass into VbInit.
-	iparams.flags |= VB_INIT_FLAG_RO_NORMAL_SUPPORT;
-	/* Don't fail the boot process when lid switch is closed.
-	 * The OS might not have enough time to log success before
-	 * shutting down.
-	 */
-	if (!lid_switch)
-		iparams.flags |= VB_INIT_FLAG_NOFAIL_BOOT;
-	if (dev_switch)
-		iparams.flags |= VB_INIT_FLAG_DEV_SWITCH_ON;
-	if (rec_switch)
-		iparams.flags |= VB_INIT_FLAG_REC_BUTTON_PRESSED;
-	if (wp_switch)
-		iparams.flags |= VB_INIT_FLAG_WP_ENABLED;
-	if (oprom_loaded)
-		iparams.flags |= VB_INIT_FLAG_OPROM_LOADED;
-	if (CONFIG_OPROM_MATTERS)
-		iparams.flags |= VB_INIT_FLAG_OPROM_MATTERS;
-	if (CONFIG_VIRTUAL_DEV_SWITCH)
-		iparams.flags |= VB_INIT_FLAG_VIRTUAL_DEV_SWITCH;
-	if (CONFIG_EC_SOFTWARE_SYNC)
-		iparams.flags |= VB_INIT_FLAG_EC_SOFTWARE_SYNC;
-        if (!CONFIG_PHYSICAL_REC_SWITCH)
-                iparams.flags |= VB_INIT_FLAG_VIRTUAL_REC_SWITCH;
-
-	printf("Calling VbInit().\n");
-	VbError_t res = VbInit(&cparams, &iparams);
-	if (res != VBERROR_SUCCESS) {
-		printf("VbInit returned %d, Doing a cold reboot.\n", res);
-		if (cold_reboot())
-			return 1;
-	}
-
-	return vboot_do_init_out_flags(iparams.out_flags);
-};
 
 int vboot_in_recovery(void)
 {
@@ -136,66 +74,6 @@ int vboot_do_init_out_flags(uint32_t out_flags)
 		input_enable();
 
 	vboot_out_flags = out_flags;
-
-	return 0;
-}
-
-int vboot_select_firmware(void)
-{
-	VbSelectFirmwareParams fparams = {
-		.verification_block_A = NULL,
-		.verification_block_B = NULL,
-		.verification_size_A = 0,
-		.verification_size_B = 0
-	};
-
-	// Set up the fparams structure.
-	FmapArea vblock_a, vblock_b;
-	if (fmap_find_area("VBLOCK_A", &vblock_a) ||
-	    fmap_find_area("VBLOCK_B", &vblock_b)) {
-		printf("Couldn't find one of the vblocks.\n");
-		return 1;
-	}
-	fparams.verification_block_A =
-		flash_read(vblock_a.offset, vblock_a.size);
-	fparams.verification_size_A = vblock_a.size;
-	fparams.verification_block_B =
-		flash_read(vblock_b.offset, vblock_b.size);
-	fparams.verification_size_B = vblock_b.size;
-
-	printf("Calling VbSelectFirmware().\n");
-	VbError_t res = VbSelectFirmware(&cparams, &fparams);
-	if (res != VBERROR_SUCCESS) {
-		printf("VbSelectFirmware returned %d, "
-		       "Doing a cold reboot.\n", res);
-		if (cold_reboot())
-			return 1;
-	}
-
-	enum VbSelectFirmware_t select = fparams.selected_firmware;
-
-	// If an RW firmware was selected, start it.
-	if (select == VB_SELECT_FIRMWARE_A || select == VB_SELECT_FIRMWARE_B) {
-		const char *name;
-		if (select == VB_SELECT_FIRMWARE_A)
-			name = "FW_MAIN_A";
-		else
-			name = "FW_MAIN_B";
-
-		FmapArea rw_area;
-		if (fmap_find_area(name, &rw_area)) {
-			printf("Didn't find section %s in the fmap.\n", name);
-			return 1;
-		}
-
-		uint32_t image_size;
-		const void *image = index_subsection(&rw_area, 0, &image_size);
-		if (!image)
-			return 1;
-
-		if (start_rw_firmware(image, image_size))
-			return 1;
-	}
 
 	return 0;
 }

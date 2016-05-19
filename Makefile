@@ -141,14 +141,10 @@ all:
 	@echo
 	@echo  '  depthcharge_unified	- Build unified depthcharge (with no'
 	@echo  '  			  firmware selection, for use with EFS)'
-	@echo  '  depthcharge_ro_rw	- Build depthcharge RO and RW (with'
-	@echo  '  			  old trampoline and VbSelectFirmware)'
 	@echo  '  netboot_unified	- Build netboot binary'
 	@echo  '  fastboot_bin		- Build fastboot binary'
 	@echo  '  dev_unified		- Build unified developer binary (with'
 	@echo  '  			  (EFS) vboot, netboot and gdb)'
-	@echo  '  dev_ro_rw		- Build RO/RW developer binary (with
-	@echo  '			  (legacy) vboot, netboot and gdb)'
 	@echo  '  dts                   - Preprocess fmap.dts file'
 	@echo  '  clean			- Delete final output binaries'
 	@echo  '  distclean		- Delete whole build directory'

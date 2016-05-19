@@ -12,8 +12,6 @@
 ##
 
 depthcharge-y += boot.c
-readonly-y += commonparams.c
-readwrite-y += commonparams.c
 depthcharge-y += enter_trampoline.c
 depthcharge-y += gcc.c
 depthcharge-y += physmem.c
