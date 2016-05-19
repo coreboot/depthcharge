@@ -42,6 +42,11 @@
 #define GPIO_FUNC_SCL	0x1
 #define GPIO_FUNC_SDA	0x1
 
+#define SCL_GPIO_I2C1       34
+#define SDA_GPIO_I2C1       35
+#define GPIO_I2C1_FUNC_SCL  0x1
+#define GPIO_I2C1_FUNC_SDA  0x1
+
 int blsp_init_board(blsp_qup_id_t id)
 {
 	switch (id) {
@@ -53,6 +58,12 @@ int blsp_init_board(blsp_qup_id_t id)
 		gpio_tlmm_config_set(SDA_GPIO, GPIO_FUNC_SDA,
 			GPIO_NO_PULL, GPIO_2MA, 1);
 		gpio_tlmm_config_set(SCL_GPIO, GPIO_FUNC_SCL,
+			GPIO_NO_PULL, GPIO_2MA, 1);
+
+		/* Configure GPIOs 34 - SCL, 35 - SDA, 2mA gpio_en */
+		gpio_tlmm_config_set(SDA_GPIO_I2C1, GPIO_I2C1_FUNC_SDA,
+			GPIO_NO_PULL, GPIO_2MA, 1);
+		gpio_tlmm_config_set(SCL_GPIO_I2C1, GPIO_I2C1_FUNC_SCL,
 			GPIO_NO_PULL, GPIO_2MA, 1);
 
 		break;

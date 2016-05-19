@@ -46,6 +46,7 @@
 #include "drivers/storage/spi_gpt.h"
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
+#include "drivers/video/ww_ring.h"
 #include "vboot/callbacks/nvstorage_flash.h"
 #include "vboot/stages.h"
 #include "vboot/util/flag.h"
@@ -428,6 +429,13 @@ static int board_setup(void)
 	Ipq40xxI2c *i2c = new_ipq40xx_i2c(BLSP_QUP_ID_2);
 	tpm_set_ops(&new_slb9635_i2c(&i2c->ops, 0x20)->base.ops);
 #endif
+
+	DisplayOps *ww_ring_ops = new_ww_ring_display
+		(&new_ipq40xx_i2c (BLSP_QUP_ID_3)->ops, 0x32);
+
+	display_set_ops(ww_ring_ops);
+
+	display_init();
 
 #if 0
 	Ipq806xSound *sound = new_ipq806x_sound(new_storm_dac_gpio_output(),
