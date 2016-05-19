@@ -21,15 +21,16 @@
 #include "base/init_funcs.h"
 #include "boot/fit.h"
 #include "config.h"
+#include "drivers/bus/spi/rockchip.h"
+#include "drivers/ec/cros/spi.h"
+#include "drivers/flash/spi.h"
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/rockchip.h"
 #include "drivers/gpio/sysinfo.h"
-#include "vboot/util/flag.h"
-#include "drivers/storage/sdhci.h"
 #include "drivers/storage/dw_mmc.h"
 #include "drivers/storage/rk_dwmmc.h"
-#include "drivers/flash/spi.h"
-#include "drivers/bus/spi/rockchip.h"
+#include "drivers/storage/sdhci.h"
+#include "vboot/util/flag.h"
 
 static const int emmc_sd_clock_min = 400 * 1000;
 static const int emmc_clock_max = 200 * 1000 * 1000;
@@ -45,6 +46,15 @@ static int board_setup(void)
 	RkSpi *spi1 = new_rockchip_spi(0xff1d0000);
 
 	flash_set_ops(&new_spi_flash(&spi1->ops)->ops);
+
+	// EC on Gru is connected to SPI bus #5
+	RkSpi *spi5 = new_rockchip_spi(0xff200000);
+	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spi5->ops);
+	GpioOps *ec_int = sysinfo_lookup_gpio("EC interrupt", 1,
+					      new_rk_gpio_input_from_coreboot);
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, 0, ec_int);
+	register_vboot_ec(&cros_ec->vboot, 0);
+
 
 	SdhciHost *emmc = new_mem_sdhci_host((void *)0xfe330000,
 					     SDHCI_PLATFORM_NO_EMMC_HS200 |
