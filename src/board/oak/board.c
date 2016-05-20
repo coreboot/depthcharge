@@ -42,27 +42,31 @@
 #include "drivers/video/display.h"
 #include "drivers/video/mt8173_ddp.h"
 
+
+
 int oak_backlight_update(DisplayOps *me, uint8_t enable)
 {
-	GpioOps *panel_lcd_power_en, *disp_pwm0, *panel_power_en;
+	static GpioOps *panel_lcd_power_en, *disp_pwm0, *panel_power_en;
 
-	switch (lib_sysinfo.board_id + CONFIG_BOARD_ID_ADJUSTMENT) {
-	case 1:
-	case 2:
-		panel_lcd_power_en = NULL;
-		break;
-	case 3:
-		panel_lcd_power_en = new_mtk_gpio_output(PAD_UCTS2);
-		break;
-	case 4:
-		panel_lcd_power_en = new_mtk_gpio_output(PAD_SRCLKENAI);
-		break;
-	default:
-		panel_lcd_power_en = new_mtk_gpio_output(PAD_UTXD2);
+	if (!panel_power_en) {
+		switch (lib_sysinfo.board_id + CONFIG_BOARD_ID_ADJUSTMENT) {
+		case 1:
+		case 2:
+			panel_lcd_power_en = NULL;
+			break;
+		case 3:
+			panel_lcd_power_en = new_mtk_gpio_output(PAD_UCTS2);
+			break;
+		case 4:
+			panel_lcd_power_en = new_mtk_gpio_output(PAD_SRCLKENAI);
+			break;
+		default:
+			panel_lcd_power_en = new_mtk_gpio_output(PAD_UTXD2);
+		}
+
+		disp_pwm0 = new_mtk_gpio_output(PAD_DISP_PWM0);
+		panel_power_en = new_mtk_gpio_output(PAD_PCM_TX);
 	}
-
-	disp_pwm0 = new_mtk_gpio_output(PAD_DISP_PWM0);
-	panel_power_en = new_mtk_gpio_output(PAD_PCM_TX);
 
 	if (enable) {
 		if (panel_lcd_power_en) {
