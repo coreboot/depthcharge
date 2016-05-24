@@ -23,6 +23,7 @@
 #include "config.h"
 #include "drivers/bus/i2s/rockchip.h"
 #include "drivers/bus/spi/rockchip.h"
+#include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/spi.h"
 #include "drivers/flash/spi.h"
 #include "drivers/flash/spi.h"
@@ -105,6 +106,16 @@ static int board_setup(void)
 
 	list_insert_after(&sd_card->mmc.ctrlr.list_node,
 			  &removable_block_dev_controllers);
+
+	/*
+	 * Support both USB3.0 XHCI controllers in firmware.
+	 * And both USB2.0 controllers not needed in firmware.
+	 */
+	UsbHostController *uhst0_xhci = new_usb_hc(XHCI, 0xfe800000);
+	UsbHostController *uhst1_xhci = new_usb_hc(XHCI, 0xfe900000);
+
+	list_insert_after(&uhst0_xhci->list_node, &usb_host_controllers);
+	list_insert_after(&uhst1_xhci->list_node, &usb_host_controllers);
 
 	return 0;
 }
