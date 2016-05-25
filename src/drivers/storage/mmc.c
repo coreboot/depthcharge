@@ -134,8 +134,8 @@ static int mmc_send_cmd(MmcCtrlr *ctrlr, MmcCommand *cmd, MmcData *data)
 		}
 		mmc_trace("\trv:\t\t\t %d\n", ret);
 
-		/* Retry failed data commands, bail out otherwise.  */
-		if (!data || !ret)
+		/* Retry failed commands, bail out otherwise.  */
+		if (!ret)
 			break;
 	}
 	return ret;
