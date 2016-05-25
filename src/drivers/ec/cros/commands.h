@@ -434,6 +434,9 @@ enum host_event_code {
 	/* Keyboard fastboot combo has been pressed */
 	EC_HOST_EVENT_KEYBOARD_FASTBOOT = 25,
 
+	/* EC RTC event occurred */
+	EC_HOST_EVENT_RTC = 26,
+
 	/*
 	 * The high bit of the event mask is not used as a host event code.  If
 	 * it reads back as set, then the entire event mask should be
@@ -942,6 +945,8 @@ enum ec_feature_code {
 	EC_FEATURE_USB_MUX = 23,
 	/* Motion Sensor code has an internal software FIFO */
 	EC_FEATURE_MOTION_SENSE_FIFO = 24,
+	/* Support temporary secure vstore */
+	EC_FEATURE_VSTORE = 25,
 };
 
 #define EC_FEATURE_MASK_0(event_code) (1UL << (event_code % 32))
@@ -1171,6 +1176,7 @@ struct ec_params_pwm_set_fan_target_rpm_v1 {
 } __packed;
 
 /* Get keyboard backlight */
+/* OBSOLETE - Use EC_CMD_PWM_SET_DUTY */
 #define EC_CMD_PWM_GET_KEYBOARD_BACKLIGHT 0x22
 
 struct ec_response_pwm_get_keyboard_backlight {
@@ -1179,6 +1185,7 @@ struct ec_response_pwm_get_keyboard_backlight {
 } __packed;
 
 /* Set keyboard backlight */
+/* OBSOLETE - Use EC_CMD_PWM_SET_DUTY */
 #define EC_CMD_PWM_SET_KEYBOARD_BACKLIGHT 0x23
 
 struct ec_params_pwm_set_keyboard_backlight {
@@ -1197,6 +1204,35 @@ struct ec_params_pwm_set_fan_duty_v0 {
 struct ec_params_pwm_set_fan_duty_v1 {
 	uint32_t percent;
 	uint8_t fan_idx;
+} __packed;
+
+#define EC_CMD_PWM_SET_DUTY 0x25
+
+enum ec_pwm_type {
+	/* All types, indexed by board-specific enum pwm_channel */
+	EC_PWM_TYPE_GENERIC = 0,
+	/* Keyboard backlight */
+	EC_PWM_TYPE_KB_LIGHT,
+	/* Display backlight */
+	EC_PWM_TYPE_DISPLAY_LIGHT,
+	EC_PWM_TYPE_COUNT,
+};
+
+struct ec_params_pwm_set_duty {
+	uint8_t percent;   /* Duty cycle percent on [0, 100] */
+	uint8_t pwm_type;  /* ec_pwm_type */
+	uint8_t index;     /* Type-specific index, or 0 if unique */
+} __packed;
+
+#define EC_CMD_PWM_GET_DUTY 0x26
+
+struct ec_params_pwm_get_duty {
+	uint8_t pwm_type;  /* ec_pwm_type */
+	uint8_t index;     /* Type-specific index, or 0 if unique */
+} __packed;
+
+struct ec_response_pwm_get_duty {
+	uint8_t percent;
 } __packed;
 
 /*****************************************************************************/
@@ -1713,6 +1749,11 @@ enum motionsense_command {
 	 */
 	MOTIONSENSE_CMD_SET_ACTIVITY = 13,
 
+	/*
+	 * Lid Angle
+	 */
+	MOTIONSENSE_CMD_LID_ANGLE = 14,
+
 	/* Number of motionsense sub-commands. */
 	MOTIONSENSE_NUM_CMDS
 };
@@ -1827,6 +1868,8 @@ struct ec_motion_sense_activity {
 /* Set Calibration information */
 #define MOTION_SENSE_SET_OFFSET 1
 
+#define LID_ANGLE_UNRELIABLE 500
+
 struct ec_params_motion_sense {
 	uint8_t cmd;
 	union {
@@ -1915,6 +1958,10 @@ struct ec_params_motion_sense {
 		} fifo_read;
 
 		struct ec_motion_sense_activity set_activity;
+
+		/* Used for MOTIONSENSE_CMD_LID_ANGLE */
+		struct {
+		} lid_angle;
 	};
 } __packed;
 
@@ -1978,6 +2025,16 @@ struct ec_response_motion_sense {
 
 		struct {
 		} set_activity;
+
+
+		/* Used for MOTIONSENSE_CMD_LID_ANGLE */
+		struct {
+			/*
+			 * Angle between 0 and 360 degree if available,
+			 * LID_ANGLE_UNRELIABLE otherwise.
+			 */
+			uint16_t value;
+		} lid_angle;
 	};
 } __packed;
 
@@ -2099,6 +2156,50 @@ struct ec_response_port80_read {
 
 struct ec_response_port80_last_boot {
 	uint16_t code;
+} __packed;
+
+/*****************************************************************************/
+/* Temporary secure storage for host verified boot use */
+
+/* Number of bytes in a vstore slot */
+#define EC_VSTORE_SLOT_SIZE 64
+
+/* Maximum number of vstore slots */
+#define EC_VSTORE_SLOT_MAX 32
+
+/* Get persistent storage info */
+#define EC_CMD_VSTORE_INFO 0x49
+
+struct ec_response_vstore_info {
+	/* Indicates which slots are locked */
+	uint32_t slot_locked;
+	/* Total number of slots available */
+	uint8_t slot_count;
+} __packed;
+
+/*
+ * Read temporary secure storage
+ *
+ * Response is EC_VSTORE_SLOT_SIZE bytes of data.
+ */
+#define EC_CMD_VSTORE_READ 0x4a
+
+struct ec_params_vstore_read {
+	uint8_t slot; /* Slot to read from */
+} __packed;
+
+struct ec_response_vstore_read {
+	uint8_t data[EC_VSTORE_SLOT_SIZE];
+} __packed;
+
+/*
+ * Write temporary secure storage and lock it.
+ */
+#define EC_CMD_VSTORE_WRITE 0x4b
+
+struct ec_params_vstore_write {
+	uint8_t slot; /* Slot to write to */
+	uint8_t data[EC_VSTORE_SLOT_SIZE];
 } __packed;
 
 /*****************************************************************************/
@@ -2412,6 +2513,13 @@ struct ec_response_get_next_event {
 	uint8_t event_type;
 	/* Followed by event data if any */
 	union ec_response_get_next_data data;
+} __packed;
+
+/* Run keyboard factory test scanning */
+#define EC_CMD_KEYBOARD_FACTORY_TEST 0x68
+
+struct ec_response_keyboard_factory_test {
+	uint16_t shorted;	/* Keyboard pins are shorted */
 } __packed;
 
 /*****************************************************************************/
@@ -3085,6 +3193,25 @@ struct ec_params_entering_mode {
 #define VBOOT_MODE_NORMAL    0
 #define VBOOT_MODE_DEVELOPER 1
 #define VBOOT_MODE_RECOVERY  2
+
+/*****************************************************************************/
+/* I2C passthru protection command: Protects I2C tunnels against access on
+ * certain addresses (board-specific). */
+#define EC_CMD_I2C_PASSTHRU_PROTECT 0xb7
+
+enum ec_i2c_passthru_protect_subcmd {
+	EC_CMD_I2C_PASSTHRU_PROTECT_STATUS = 0x0,
+	EC_CMD_I2C_PASSTHRU_PROTECT_ENABLE = 0x1,
+};
+
+struct ec_params_i2c_passthru_protect {
+	uint8_t subcmd;
+	uint8_t port;		/* I2C port number */
+} __packed;
+
+struct ec_response_i2c_passthru_protect {
+	uint8_t status;		/* Status flags (0: unlocked, 1: locked) */
+} __packed;
 
 /*****************************************************************************/
 /* System commands */
