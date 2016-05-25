@@ -183,6 +183,7 @@
 
 		device-extension {
 			/* CSE RW data */
+			label = "device-extension";
 			reg = <0x00700000 0x00100000>;
 			type = "wiped";
 			wipe-value = [ff];
