@@ -46,10 +46,10 @@
 		};
 		bootblock {
 			label = "bootblock";
-			reg = <0x00076480 0x00008000>;
+			reg = <0x0007c480 0x00008000>;
 		};
-		ro-vpid {
-			label = "ro-vpid";
+		ro-vpd {
+			label = "ro-vpd";
 			reg = <0x00200000 0x00004000>;
 			read-only;
 		};
@@ -89,7 +89,7 @@
 		ro-gbb {
 			label = "gbb";
 			/* GBB offset must be aligned to 4K bytes */
-			reg = <0x00390000 0x00050000>;
+			reg = <0x00390000 0x00070000>;
 			read-only;
 			type = "blob gbb";
 		};
@@ -101,7 +101,7 @@
 			type = "wiped";
 			wipe-value = [ff];
 		};
-		/* ---- 8k of event log */
+		/* ---- 16k of event log ---- */
 		rw-elog {
 			label = "rw-elog";
 			/* Alignment: 4k (for updating) */
@@ -128,11 +128,31 @@
 			type = "wiped";
 			wipe-value = [00];
 		};
+		rw-vblock-dev {
+			label = "vblock-dev";
+			/*
+			 * Alignment: 4k (for random read/write).
+			 * Reserve space for an optional user-installed
+			 * vblock to validate dev-mode kernels.
+			 * See crosbug.com/p/11216.
+			 */
+			reg = <0x00416000 0x00002000>;
+			type = "wiped";
+			wipe-value = [ff];
+		};
+		/* ---- Section: Rewritable VPD 8 KB ---- */
+		rw-vpd {
+			label = "rw-vpd";
+			/* Alignment: 4k (for updating) */
+			reg = <0x00418000 0x00002000>;
+			type = "wiped";
+			wipe-value = [ff];
+		};
 		/* ---- Section: Rewritable slot A ---- */
 		rw-a {
 			label = "rw-section-a";
 			/* Alignment: 4k (for updating) */
-			reg = <0x00520000 0x000f0000>;
+			reg = <0x0041a000 0x00173000>;
 		};
 		rw-a-vblock {
 			label = "vblock-a";
@@ -140,7 +160,7 @@
 			 * Alignment: 4k (for updating) and must be in start of
 			 * each RW_SECTION.
 			 */
-			reg = <0x00520000 0x00010000>;
+			reg = <0x0041a000 0x00010000>;
 			type = "keyblock cbfs/rw/a-boot";
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
@@ -151,14 +171,22 @@
 		rw-a-boot {
 			/* Alignment: no requirement (yet). */
 			label = "fw-main-a";
-			reg = <0x00530000 0x000c0000>;
+			reg = <0x0042a000 0x00162fc0>;
 			type = "blob cbfs/rw/a-boot";
 		};
+		rw-a-firmware-id {
+			/* Alignment: no requirement. */
+			label = "rw-fwid-a";
+			reg = <0x0058cfc0 0x00000040>;
+			read-only;
+			type = "blobstring fwid";
+		};
+
 		/* ---- Section: Rewritable slot B ---- */
 		rw-b {
 			label = "rw-section-b";
 			/* Alignment: 4k (for updating) */
-			reg = <0x00610000 0x000f0000>;
+			reg = <0x0058d000 0x00173000>;
 		};
 		rw-b-vblock {
 			label = "vblock-b";
@@ -166,7 +194,7 @@
 			 * Alignment: 4k (for updating) and must be in start of
 			 * each RW_SECTION.
 			 */
-			reg = <0x00610000 0x00010000>;
+			reg = <0x0058d000 0x00010000>;
 			type = "keyblock cbfs/rw/b-boot";
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
@@ -177,8 +205,15 @@
 		rw-b-boot {
 			label = "fw-main-b";
 			/* Alignment: no requirement (yet). */
-			reg = <0x00620000 0x000c0000>;
+			reg = <0x0059d000 0x00162fc0>;
 			type = "blob cbfs/rw/b-boot";
+		};
+		rw-b-firmware-id {
+			label = "rw-fwid-b";
+			/* Alignment: no requirement. */
+			reg = <0x006fffc0 0x00000040>;
+			read-only;
+			type = "blobstring fwid";
 		};
 
 		device-extension {
