@@ -80,18 +80,18 @@
 			type = "blob coreboot";
 			required;
 		};
-		ro-sig2 {
-			label = "sign_cse";
-			reg = <0x00380000 0x00010000>;
-			read-only;
-			required;
-		};
 		ro-gbb {
 			label = "gbb";
 			/* GBB offset must be aligned to 4K bytes */
-			reg = <0x00390000 0x00070000>;
+			reg = <0x00380000 0x00040000>;
 			read-only;
 			type = "blob gbb";
+		};
+		ro-sig2 {
+			label = "sign_cse";
+			reg = <0x003c0000 0x00010000>;
+			read-only;
+			required;
 		};
 		/* ---- Section: Rewritable MRC cache 64KB ---- */
 		rw-mrc-cache {
@@ -219,7 +219,7 @@
 		device-extension {
 			/* CSE RW data */
 			label = "device-extension";
-			reg = <0x00700000 0x00100000>;
+			reg = <0x0077f000 0x00080000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
