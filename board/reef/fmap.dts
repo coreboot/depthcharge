@@ -43,6 +43,8 @@
 			label = "ro-vpd";
 			reg = <0x00200000 0x00004000>;
 			read-only;
+			type = "wiped";
+			wipe-value = [ff];
 		};
 		ro-fmap {
 			label = "fmap";
