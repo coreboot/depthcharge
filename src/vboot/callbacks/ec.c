@@ -32,20 +32,16 @@
 #include "image/index.h"
 #include "vboot/util/flag.h"
 
+#define _EC_FILENAME(devidx, select, suffix) \
+	(select == VB_SELECT_FIRMWARE_READONLY ? "ecro" suffix : \
+	 (devidx == 0 ? "ecrw" suffix : "pdrw" suffix))
+#define EC_IMAGE_FILENAME(devidx, select) _EC_FILENAME(devidx, select, "")
+#define EC_HASH_FILENAME(devidx, select) _EC_FILENAME(devidx, select, ".hash")
 
 static struct cbfs_media *ro_cbfs;
-/* Returns the CBFS filename for EC firmware images based on the device index
- * passed in from vboot.
- */
-static const char *get_fw_filename(int devidx, int select)
-{
-	if (select == VB_SELECT_FIRMWARE_READONLY)
-		return "ecro";
-	return devidx == 0 ? "ecrw" : "pdrw";
-}
 
-static struct cbfs_handle *find_file_in_cbfs(
-	const char *filename, enum VbSelectFirmware_t select)
+static void *get_file_from_cbfs(
+	const char *filename, enum VbSelectFirmware_t select, size_t *size)
 {
 	if (!IS_ENABLED(CONFIG_DRIVER_CBFS_FLASH))
 		return NULL;
@@ -54,38 +50,13 @@ static struct cbfs_handle *find_file_in_cbfs(
 		printf("Trying to locate '%s' in RO CBFS\n", filename);
 		if (ro_cbfs == NULL)
 			ro_cbfs = cbfs_ro_media();
-		return cbfs_get_handle(ro_cbfs, filename);
+		return cbfs_get_file_content(ro_cbfs, filename,
+					     CBFS_TYPE_RAW, size);
 	}
 
 	printf("Trying to locate '%s' in CBFS\n", filename);
-	return cbfs_get_handle(CBFS_DEFAULT_MEDIA, filename);
-}
-
-static const uint8_t *get_file_hash_from_cbfs(
-	const char *filename, int *hash_size, enum VbSelectFirmware_t select)
-{
-	printf("Trying to fetch hash for '%s'\n", filename);
-	struct cbfs_handle *handle = find_file_in_cbfs(filename, select);
-
-	if (handle == NULL) {
-		printf("%s not found\n", filename);
-		return NULL;
-	}
-
-	struct cbfs_file_attr_hash *attr = cbfs_get_attr(handle,
-		CBFS_FILE_ATTR_TAG_HASH);
-
-	if (attr == NULL) {
-		printf("%s found, but without hash\n", filename);
-		return NULL;
-	}
-
-	if (ntohl(attr->hash_type) != VB2_HASH_SHA256) {
-		printf("hash is not SHA256\n");
-		return NULL;
-	}
-	*hash_size = ntohl(attr->len) - sizeof(*attr);
-	return attr->hash_data;
+	return cbfs_get_file_content(CBFS_DEFAULT_MEDIA, filename,
+				     CBFS_TYPE_RAW, size);
 }
 
 int VbExTrustEC(int devidx)
@@ -159,16 +130,11 @@ VbError_t VbExEcGetExpectedImage(int devidx, enum VbSelectFirmware_t select,
 		/* It may be gone in favor of CBFS based RW sections,
 		 * so look there, too. */
 		size_t size;
-		const char *filename = get_fw_filename(devidx, select);
-		struct cbfs_handle *h = find_file_in_cbfs(filename, select);
-		if (h == NULL)
-			return VBERROR_UNKNOWN;
-		*image = cbfs_get_contents(h, &size, 0);
-		free(h);
+		const char *filename = EC_IMAGE_FILENAME(devidx, select);
+		*image = get_file_from_cbfs(filename, select, &size);
 		if (*image == NULL)
 			return VBERROR_UNKNOWN;
 		*image_size = size;
-		printf("found '%s', sized 0x%zx\n", filename, size);
 		return VBERROR_SUCCESS;
 	}
 
@@ -177,9 +143,6 @@ VbError_t VbExEcGetExpectedImage(int devidx, enum VbSelectFirmware_t select,
 	*image_size = size;
 	if (!*image)
 		return VBERROR_UNKNOWN;
-
-	printf("EC-%s firmware address, size are %p, %d.\n", select ==
-	       VB_SELECT_FIRMWARE_READONLY ? "RO" : "RW", *image, *image_size);
 
 	return VBERROR_SUCCESS;
 }
@@ -224,19 +187,13 @@ VbError_t VbExEcGetExpectedImageHash(int devidx, enum VbSelectFirmware_t select,
 	if (!*hash) {
 		printf("Didn't find precalculated hash subsection %d.\n",
 		       devidx + 1);
-		const char *filename = get_fw_filename(devidx, select);
-		*hash = get_file_hash_from_cbfs(filename, hash_size, select);
+		size_t size;
+		const char *filename = EC_HASH_FILENAME(devidx, select);
+		*hash = get_file_from_cbfs(filename, select, &size);
 		if (!*hash)
 			return VBERROR_UNKNOWN;
+		*hash_size = size;
 	}
-
-	printf("EC-%s hash address, size are %p, %d.\n", select ==
-	       VB_SELECT_FIRMWARE_READONLY ? "RO" : "RW", *hash, *hash_size);
-
-	printf("Hash = ");
-	for (int i = 0; i < *hash_size; i++)
-		printf("%02x", (*hash)[i]);
-	printf("\n");
 
 	return VBERROR_SUCCESS;
 }
