@@ -27,22 +27,13 @@
 		reg = <0xff800000 0x00800000>;
 
 		/*
-		 * This encompasses both the descriptor proper and IFWI
-		 * information found in the first part of the BIOS section.
-		 */
-		si-all {
-			label = "si-all";
-			reg = <0x00000000 0x00200000>;
-			type = "ifd";
-		};
-
-		/*
 		* Firmware Descriptor section of the Intel Firmware Descriptor
 		* image.
 		*/
 		si-desc {
 			label = "si-desc";
 			reg = <0x00000000 0x00001000>;
+			type = "ifd";
 		};
 		bootblock {
 			label = "bootblock";
