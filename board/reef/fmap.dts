@@ -59,12 +59,13 @@
 			read-only;
 			type = "fmap";
 			ver-major = <1>;
-			ver-minor = <1>;
+			ver-minor = <0>;
 		};
-		ro-frid {
+		ro-firmware-id {
 			label = "ro-frid";
 			reg = <0x00204800 0x00000040>;
 			read-only;
+			type = "blobstring fwid";
 		};
 		ro-boot {
 			label = "coreboot";
