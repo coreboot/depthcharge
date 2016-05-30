@@ -35,9 +35,12 @@
 			reg = <0x00000000 0x00001000>;
 			type = "ifd";
 		};
-		bootblock {
-			label = "bootblock";
-			reg = <0x0007c480 0x00008000>;
+		ro-ifwi {
+			label = "ifwi";
+			reg = <0x00001000 0x001ff000>;
+			read-only;
+			required;
+			type = "blob ifwi";
 		};
 		ro-vpd {
 			label = "ro-vpd";
@@ -86,6 +89,7 @@
 			reg = <0x003c0000 0x00010000>;
 			read-only;
 			required;
+			type = "blob sig2";
 		};
 		/* ---- Section: Rewritable MRC cache 64KB ---- */
 		rw-mrc-cache {
