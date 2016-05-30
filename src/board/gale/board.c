@@ -436,6 +436,8 @@ static int board_setup(void)
 	sound_set_ops(&sound_route->ops);
 
 #endif
+	write32(ADSS_AUDIO_TXB_CBCR_REG, 0); /* Disable ADSS clock branch */
+
 	list_insert_after(&ipq_enet_fixup.list_node, &device_tree_fixups);
 
 	set_ramoops_buffer();
