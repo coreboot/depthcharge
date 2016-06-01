@@ -18,8 +18,12 @@
  */
 
 #include <arch/io.h>
+#include <config.h>
+#include <libpayload.h>
+#include <sysinfo.h>
 
 #include "base/init_funcs.h"
+#include "base/device_tree.h"
 #include "boot/fit.h"
 #include "boot/ramoops.h"
 #include "drivers/bus/i2c/rockchip.h"
@@ -41,6 +45,40 @@
 #include "drivers/video/display.h"
 #include "drivers/video/rockchip.h"
 #include "vboot/util/flag.h"
+
+/* On-board MAC in the device-tree */
+#define DT_PATH_GMAC "ethernet@ff290000"
+
+/*
+ * MAC address fixup.
+ * Map the MAC address found in the coreboot table into the device tree
+ * gmac peripheral settings.
+ */
+static int fix_dt_mac_addr(DeviceTreeFixup *fixup, DeviceTree *tree)
+{
+	DeviceTreeNode *gmac_node;
+
+	if (lib_sysinfo.num_macs < 1) {
+		printf("No MAC address defined in the VPD\n");
+		return 0;
+	}
+
+	gmac_node = dt_find_node_by_path(tree->root, DT_PATH_GMAC,
+					 NULL, NULL, 0);
+	if (!gmac_node) {
+		printf("Failed to find %s in the device tree\n", DT_PATH_GMAC);
+		return 0;
+	}
+	dt_add_bin_prop(gmac_node, "mac-address",
+			lib_sysinfo.macs[0].mac_addr,
+			sizeof(lib_sysinfo.macs[0].mac_addr));
+
+	return 0;
+}
+
+static DeviceTreeFixup mac_addr_fixup = {
+	.fixup = fix_dt_mac_addr
+};
 
 static int board_setup(void)
 {
@@ -91,6 +129,8 @@ static int board_setup(void)
 	// when transitioning between normal and dev mode.
 	flag_replace(FLAG_RECSW, sysinfo_lookup_gpio("recovery",
 				1, new_rk_gpio_input_from_coreboot));
+
+	list_insert_after(&mac_addr_fixup.list_node, &device_tree_fixups);
 
 	ramoops_buffer(0x31f00000, 0x100000, 0x20000);
 
