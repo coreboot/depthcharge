@@ -1207,6 +1207,8 @@ struct ec_params_pwm_set_fan_duty_v1 {
 } __packed;
 
 #define EC_CMD_PWM_SET_DUTY 0x25
+/* 16 bit duty cycle, 65535 = 100% */
+#define EC_PWM_MAX_DUTY 65535
 
 enum ec_pwm_type {
 	/* All types, indexed by board-specific enum pwm_channel */
@@ -1219,7 +1221,7 @@ enum ec_pwm_type {
 };
 
 struct ec_params_pwm_set_duty {
-	uint8_t percent;   /* Duty cycle percent on [0, 100] */
+	uint16_t duty;     /* Duty cycle, EC_PWM_MAX_DUTY = 100% */
 	uint8_t pwm_type;  /* ec_pwm_type */
 	uint8_t index;     /* Type-specific index, or 0 if unique */
 } __packed;
@@ -1232,7 +1234,7 @@ struct ec_params_pwm_get_duty {
 } __packed;
 
 struct ec_response_pwm_get_duty {
-	uint8_t percent;
+	uint16_t duty;     /* Duty cycle, EC_PWM_MAX_DUTY = 100% */
 } __packed;
 
 /*****************************************************************************/
@@ -1786,6 +1788,7 @@ enum motionsensor_chip {
 	MOTIONSENSE_CHIP_SI1143 = 5,
 	MOTIONSENSE_CHIP_KX022 = 6,
 	MOTIONSENSE_CHIP_L3GD20H = 7,
+	MOTIONSENSE_CHIP_BMA255 = 8,
 };
 
 struct ec_response_motion_sensor_data {
@@ -3643,6 +3646,21 @@ struct ec_params_pd_write_log_entry {
 
 #endif  /* !__ACPI__ */
 
+
+/* Control USB-PD chip */
+#define EC_CMD_PD_CONTROL 0x119
+
+enum ec_pd_control_cmd {
+	PD_SUSPEND = 0,      /* Suspend the PD chip (EC: stop talking to PD) */
+	PD_RESUME,           /* Resume the PD chip (EC: start talking to PD) */
+	PD_RESET,            /* Force reset the PD chip */
+	PD_CONTROL_DISABLE   /* Disable further calls to this command */
+};
+
+struct ec_params_pd_control {
+	uint8_t chip;         /* chip id (should be 0) */
+	uint8_t subcmd;
+} __packed;
 
 /*****************************************************************************/
 /*
