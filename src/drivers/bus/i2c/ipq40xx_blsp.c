@@ -130,12 +130,6 @@ blsp_return_t blsp_init(blsp_qup_id_t id, blsp_protocol_t protocol)
 	if (!base)
 		return BLSP_ID_ERROR;
 
-	if (blsp_i2c_clock_config(id) != 0)
-		return BLSP_ID_ERROR;
-
-	if (blsp_init_board(id))
-		return BLSP_UNSUPPORTED;
-
 	/* Configure Mini core to I2C core */
 	clrsetbits_le32(base, QUP_CONFIG_MINI_CORE_MSK,
 				QUP_CONFIG_MINI_CORE_I2C);
