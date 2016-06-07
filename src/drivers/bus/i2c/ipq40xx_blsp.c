@@ -37,43 +37,10 @@
 #include "drivers/bus/spi/ipq40xx.h"
 #include "ipq40xx_blsp.h"
 
-#define GPIO_58_FUNC_SCL		0x3
-#define GPIO_59_FUNC_SDA		0x2
-
-#define TPM_RESET_GPIO		60
-void ipq_setup_tpm(void)
-{
-#if 0
-Not sure if this is needed. Coreboot would have
-powered up the TPM should depthcharge repeat that?
-
-	gpio_tlmm_config_set(TPM_RESET_GPIO, FUNC_SEL_GPIO,
-			GPIO_PULL_UP, GPIO_6MA, 1);
-	gpio_set_out_value(TPM_RESET_GPIO, 0);
-	udelay(100);
-	gpio_set_out_value(TPM_RESET_GPIO, 1);
-
-	/*
-	 * ----- Per the SLB 9615XQ1.2 spec -----
-	 *
-	 * 4.7.1 Reset Timing
-	 *
-	 * The TPM_ACCESS_x.tpmEstablishment bit has the correct value
-	 * and the TPM_ACCESS_x.tpmRegValidSts bit is typically set
-	 * within 8ms after RESET# is deasserted.
-	 *
-	 * The TPM is ready to receive a command after less than 30 ms.
-	 *
-	 * --------------------------------------
-	 *
-	 * I'm assuming this means "wait for 30ms"
-	 *
-	 * If we don't wait here, subsequent QUP I2C accesses
-	 * to the TPM either fail or timeout.
-	 */
-	mdelay(30);
-#endif
-}
+#define SCL_GPIO	20
+#define SDA_GPIO	21
+#define GPIO_FUNC_SCL	0x1
+#define GPIO_FUNC_SDA	0x1
 
 int blsp_init_board(blsp_qup_id_t id)
 {
@@ -82,14 +49,12 @@ int blsp_init_board(blsp_qup_id_t id)
 	case BLSP_QUP_ID_1:
 	case BLSP_QUP_ID_2:
 	case BLSP_QUP_ID_3:
-		/* Configure GPIOs 58 - SCL, 59 - SDA, 2mA gpio_en */
-		gpio_tlmm_config_set(59, GPIO_59_FUNC_SDA,
-				     GPIO_NO_PULL, GPIO_2MA, 1);
-		gpio_tlmm_config_set(58, GPIO_58_FUNC_SCL,
-				     GPIO_NO_PULL, GPIO_2MA, 1);
-		gpio_tlmm_config_set(60, FUNC_SEL_GPIO,
-				     GPIO_PULL_UP, GPIO_6MA, 1);
-		ipq_setup_tpm();
+		/* Configure GPIOs 20 - SCL, 21 - SDA, 2mA gpio_en */
+		gpio_tlmm_config_set(SDA_GPIO, GPIO_FUNC_SDA,
+			GPIO_NO_PULL, GPIO_2MA, 1);
+		gpio_tlmm_config_set(SCL_GPIO, GPIO_FUNC_SCL,
+			GPIO_NO_PULL, GPIO_2MA, 1);
+
 		break;
 	default:
 		return 1;
