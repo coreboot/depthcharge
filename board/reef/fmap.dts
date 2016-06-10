@@ -18,6 +18,7 @@
 		gbb-flag-force-dev-switch-on;
 		gbb-flag-force-dev-boot-usb;
 		gbb-flag-disable-fw-rollback-check;
+		gbb-flag-disable-ec-software-sync;
 	};
 	flash@ff800000 {
 		#address-cells = <1>;
