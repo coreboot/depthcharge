@@ -21,11 +21,12 @@
 #include <sysinfo.h>
 
 #include "base/init_funcs.h"
-#include "drivers/gpio/sysinfo.h"
+#include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/memmapped.h"
+#include "drivers/gpio/sysinfo.h"
+#include "drivers/tpm/lpc.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/power/pch.h"
-#include "drivers/tpm/lpc.h"
 #include "drivers/storage/sdhci.h"
 
 #define EMMC_SD_CLOCK_MIN       400000
@@ -57,6 +58,12 @@
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
+
+	/* EC */
+	CrosEcLpcBus *cros_ec_lpc_bus =
+		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, 0, NULL);
+	register_vboot_ec(&cros_ec->vboot, 0);
 
 	/* W25Q128FV SPI Flash */
 	flash_set_ops(&new_mem_mapped_flash(FLASH_MEM_MAP_BASE,
