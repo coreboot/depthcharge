@@ -423,13 +423,16 @@ static int sdhci_send_command(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
 		 */
 		if (!dma_coherent(buf)) {
 			bbstate = &bbstate_val;
-			bounce_buffer_start(bbstate, buf, len, bbflags);
+			if (bounce_buffer_start(bbstate, buf, len, bbflags)) {
+				printf("ERROR: Failed to get bounce buffer.\n");
+				return -1;
+			}
 		}
 	}
 
 	ret = sdhci_send_command_bounced(mmc_ctrl, cmd, data, bbstate);
 
-	if (data && bbstate->bounce_buffer)
+	if (bbstate)
 		bounce_buffer_stop(bbstate);
 
 	return ret;
