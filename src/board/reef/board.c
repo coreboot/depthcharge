@@ -52,7 +52,7 @@
  * used for FLASH_MEM_MAP_SIZE.
  *
  */
-#define FLASH_MEM_MAP_SIZE 0x77f000
+#define FLASH_MEM_MAP_SIZE 0xf7f000
 #define FLASH_MEM_MAP_BASE ((uintptr_t)(0x100000000ULL - FLASH_MEM_MAP_SIZE))
 
 static int board_setup(void)

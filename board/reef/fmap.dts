@@ -24,8 +24,7 @@
 		#address-cells = <1>;
 		#size-cells = <1>;
 		compatible = "chromeos,flashmap";
-		/* FIXME: the part is really 16MiB */
-		reg = <0xff800000 0x00800000>;
+		reg = <0xff800000 0x01000000>;
 
 		/*
 		* Firmware Descriptor section of the Intel Firmware Descriptor
@@ -87,7 +86,7 @@
 		};
 		ro-sig2 {
 			label = "sign_cse";
-			reg = <0x003c0000 0x00010000>;
+			reg = <0x007c0000 0x00010000>;
 			read-only;
 			required;
 			type = "blob sig2";
@@ -96,7 +95,7 @@
 		rw-mrc-cache {
 			label = "rw-mrc-cache";
 			/* Alignment: 4k (for updating) */
-			reg = <0x00400000 0x00010000>;
+			reg = <0x00800000 0x00010000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
@@ -104,7 +103,7 @@
 		rw-elog {
 			label = "rw-elog";
 			/* Alignment: 4k (for updating) */
-			reg = <0x00410000 0x00004000>;
+			reg = <0x00810000 0x00004000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
@@ -115,7 +114,7 @@
 			 * Anything in this range may be updated in recovery.
 			 */
 			label = "rw-shared";
-			reg = <0x00414000 0x00004000>;
+			reg = <0x00814000 0x00004000>;
 		};
 		shared-data {
 			label = "shared-data";
@@ -123,7 +122,7 @@
 			 * Alignment: 4k (for random read/write).
 			 * RW firmware can put calibration data here.
 			 */
-			reg = <0x00414000 0x00002000>;
+			reg = <0x00814000 0x00002000>;
 			type = "wiped";
 			wipe-value = [00];
 		};
@@ -135,7 +134,7 @@
 			 * vblock to validate dev-mode kernels.
 			 * See crosbug.com/p/11216.
 			 */
-			reg = <0x00416000 0x00002000>;
+			reg = <0x00816000 0x00002000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
@@ -143,7 +142,7 @@
 		rw-vpd {
 			label = "rw-vpd";
 			/* Alignment: 4k (for updating) */
-			reg = <0x00418000 0x00002000>;
+			reg = <0x00818000 0x00002000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
@@ -151,7 +150,7 @@
 		rw-a {
 			label = "rw-section-a";
 			/* Alignment: 4k (for updating) */
-			reg = <0x0041a000 0x00173000>;
+			reg = <0x0081a000 0x00173000>;
 		};
 		rw-a-vblock {
 			label = "vblock-a";
@@ -159,7 +158,7 @@
 			 * Alignment: 4k (for updating) and must be in start of
 			 * each RW_SECTION.
 			 */
-			reg = <0x0041a000 0x00010000>;
+			reg = <0x0081a000 0x00010000>;
 			type = "keyblock cbfs/rw/a-boot";
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
@@ -170,13 +169,13 @@
 		rw-a-boot {
 			/* Alignment: no requirement (yet). */
 			label = "fw-main-a";
-			reg = <0x0042a000 0x00162fc0>;
+			reg = <0x0082a000 0x00162fc0>;
 			type = "blob cbfs/rw/a-boot";
 		};
 		rw-a-firmware-id {
 			/* Alignment: no requirement. */
 			label = "rw-fwid-a";
-			reg = <0x0058cfc0 0x00000040>;
+			reg = <0x0098cfc0 0x00000040>;
 			read-only;
 			type = "blobstring fwid";
 		};
@@ -185,7 +184,7 @@
 		rw-b {
 			label = "rw-section-b";
 			/* Alignment: 4k (for updating) */
-			reg = <0x0058d000 0x00173000>;
+			reg = <0x0098d000 0x00173000>;
 		};
 		rw-b-vblock {
 			label = "vblock-b";
@@ -193,7 +192,7 @@
 			 * Alignment: 4k (for updating) and must be in start of
 			 * each RW_SECTION.
 			 */
-			reg = <0x0058d000 0x00010000>;
+			reg = <0x0098d000 0x00010000>;
 			type = "keyblock cbfs/rw/b-boot";
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
@@ -204,13 +203,13 @@
 		rw-b-boot {
 			label = "fw-main-b";
 			/* Alignment: no requirement (yet). */
-			reg = <0x0059d000 0x00162fc0>;
+			reg = <0x0099d000 0x00162fc0>;
 			type = "blob cbfs/rw/b-boot";
 		};
 		rw-b-firmware-id {
 			label = "rw-fwid-b";
 			/* Alignment: no requirement. */
-			reg = <0x006fffc0 0x00000040>;
+			reg = <0x00afffc0 0x00000040>;
 			read-only;
 			type = "blobstring fwid";
 		};
@@ -218,7 +217,7 @@
 		device-extension {
 			/* CSE RW data */
 			label = "device-extension";
-			reg = <0x0077f000 0x00080000>;
+			reg = <0x00f7f000 0x00081000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
