@@ -214,6 +214,21 @@
 			type = "blobstring fwid";
 		};
 
+		/* ---- Section: Storage to simulate NVRAM ---- */
+		rw-nvram {
+			label = "rw-nvram";
+			reg = <0x00b00000 0x00006000>;
+			type = "wiped";
+			wipe-value = [ff];
+		};
+
+		rw-legacy {
+			label = "rw-legacy";
+			reg = <0x00b06000 0x00200000>;
+			type = "blob legacy";
+			read-only;
+		};
+
 		device-extension {
 			/* CSE RW data */
 			label = "device-extension";
