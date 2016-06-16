@@ -20,6 +20,7 @@
 
 #include "base/init_funcs.h"
 #include "boot/fit.h"
+#include "boot/ramoops.h"
 #include "config.h"
 #include "drivers/bus/i2s/rockchip.h"
 #include "drivers/bus/spi/rockchip.h"
@@ -39,6 +40,7 @@
 
 static const int emmc_sd_clock_min = 400 * 1000;
 static const int emmc_clock_max = 200 * 1000 * 1000;
+
 
 static int board_setup(void)
 {
@@ -116,6 +118,8 @@ static int board_setup(void)
 
 	list_insert_after(&uhst0_xhci->list_node, &usb_host_controllers);
 	list_insert_after(&uhst1_xhci->list_node, &usb_host_controllers);
+
+	ramoops_common_set_buffer();
 
 	return 0;
 }

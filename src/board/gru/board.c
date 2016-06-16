@@ -20,6 +20,7 @@
 
 #include "base/init_funcs.h"
 #include "boot/fit.h"
+#include "boot/ramoops.h"
 #include "config.h"
 #include "drivers/bus/spi/rockchip.h"
 #include "drivers/bus/usb/usb.h"
@@ -94,6 +95,8 @@ static int board_setup(void)
 
 	list_insert_after(&uhst0_xhci->list_node, &usb_host_controllers);
 	list_insert_after(&uhst1_xhci->list_node, &usb_host_controllers);
+
+	ramoops_common_set_buffer();
 
 	return 0;
 }
