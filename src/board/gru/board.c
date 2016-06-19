@@ -61,11 +61,33 @@ static DisplayOps kevin_display_ops = {
 	.stop = NULL,
 };
 
+/**
+ * Read the lid switch value from the EC
+ *
+ * @return 0 if lid closed, 1 if lid open or unable to read
+ */
+static int get_lid_switch_from_ec(GpioOps *me)
+{
+	uint32_t lid_open;
+
+	if (!cros_ec_read_lid_switch(&lid_open))
+		return lid_open;
+
+	/* Assume the lid is open if we get any sort of error */
+	printf("error, assuming lid is open\n");
+	return 1;
+}
+
+static GpioOps *lid_open_gpio(void)
+{
+	GpioOps *ops = xzalloc(sizeof(*ops));
+
+	ops->get = &get_lid_switch_from_ec;
+	return ops;
+}
+
 static int board_setup(void)
 {
-	// Claim that we have an open lid to satisfy vboot.
-	flag_replace(FLAG_LIDSW, new_gpio_high());
-
 	// Claim that we have an power key to satisfy vboot.
 	flag_replace(FLAG_PWRSW, new_gpio_low());
 
@@ -78,9 +100,12 @@ static int board_setup(void)
 	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spi5->ops);
 	GpioOps *ec_int = sysinfo_lookup_gpio("EC interrupt", 1,
 					      new_rk_gpio_input_from_coreboot);
+
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, 0, ec_int);
 	register_vboot_ec(&cros_ec->vboot, 0);
 
+	// Read the lid switch from the EC.
+	flag_replace(FLAG_LIDSW, lid_open_gpio());
 
 	SdhciHost *emmc = new_mem_sdhci_host((void *)0xfe330000,
 					     SDHCI_PLATFORM_NO_EMMC_HS200 |
