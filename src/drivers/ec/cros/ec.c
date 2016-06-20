@@ -1116,6 +1116,24 @@ int cros_ec_read_batt_state_of_charge(uint32_t *state)
 	return 0;
 }
 
+/*
+ * Set backlight.  Note that duty value needs to be passed
+ * to the EC as a 16 bit number for increased precision.
+ */
+int cros_ec_set_bl_pwm_duty(uint32_t percent)
+{
+	struct ec_params_pwm_set_duty params;
+
+	params.duty = (percent * EC_PWM_MAX_DUTY)/100;
+	params.pwm_type = EC_PWM_TYPE_DISPLAY_LIGHT;
+	params.index = 0;
+
+	if (ec_command(get_main_ec(), EC_CMD_PWM_SET_DUTY, 0,
+		       &params, sizeof(params), NULL, 0) < 0)
+		return -1;
+	return 0;
+}
+
 static int set_max_proto3_sizes(CrosEc *me, int request_size, int response_size)
 {
 	free(me->proto3_request);

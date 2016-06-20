@@ -247,6 +247,8 @@ int cros_ec_read_batt_state_of_charge(uint32_t *state);
  */
 int cros_ec_read_limit_power_request(int *limit_power);
 
+int cros_ec_set_bl_pwm_duty(uint32_t percent);
+
 CrosEc *new_cros_ec(CrosEcBusOps *bus, int devidx, GpioOps *interrupt_gpio);
 
 #endif
