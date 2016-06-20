@@ -10,3 +10,9 @@
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
 ##
+
+config GRU_USB2_BOOT_REQUIRED
+        bool "Enable USB2 boot for a Gru derivative"
+        default false
+	help
+	  Set this to true if this board requires booting off USB2 interface(s).

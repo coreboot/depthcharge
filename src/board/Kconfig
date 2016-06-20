@@ -46,6 +46,9 @@ endif
 if BOARD_DIR = "glados"
 source src/board/glados/Kconfig
 endif
+if BOARD_DIR = "gru"
+source src/board/gru/Kconfig
+endif
 if BOARD_DIR = "jecht"
 source src/board/jecht/Kconfig
 endif

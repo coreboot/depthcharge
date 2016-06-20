@@ -22,6 +22,7 @@
 #include "boot/fit.h"
 #include "boot/ramoops.h"
 #include "config.h"
+#include "drivers/bus/i2s/rockchip.h"
 #include "drivers/bus/spi/rockchip.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/spi.h"
@@ -29,6 +30,9 @@
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/rockchip.h"
 #include "drivers/gpio/sysinfo.h"
+#include "drivers/sound/i2s.h"
+#include "drivers/sound/max98357a.h"
+#include "drivers/sound/route.h"
 #include "drivers/storage/dw_mmc.h"
 #include "drivers/storage/rk_dwmmc.h"
 #include "drivers/storage/sdhci.h"
@@ -49,7 +53,7 @@ static int board_setup(void)
 
 	flash_set_ops(&new_spi_flash(&spi1->ops)->ops);
 
-	// EC on Gru is connected to SPI bus #5
+	// EC is connected to SPI bus #5
 	RkSpi *spi5 = new_rockchip_spi(0xff200000);
 	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spi5->ops);
 	GpioOps *ec_int = sysinfo_lookup_gpio("EC interrupt", 1,
@@ -67,6 +71,24 @@ static int board_setup(void)
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
 
+	RockchipI2s *i2s0 = new_rockchip_i2s(0xff880000, 16, 2, 256);
+	I2sSource *i2s_source = new_i2s_source(&i2s0->ops, 48000, 2, 16000);
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+
+	/* Speaker Amp codec MAX98357A */
+	GpioOps *sdmode_gpio = &new_rk_gpio_output(GPIO(1, A, 2))->ops;
+
+	max98357aCodec *speaker_amp = new_max98357a_codec(sdmode_gpio);
+
+	list_insert_after(&speaker_amp->component.list_node,
+			  &sound_route->components);
+
+	sound_set_ops(&sound_route->ops);
+
+	 /*
+	  * SDMMC_DET_L is different on early Kevin boards, let's just ignore
+	  * them.
+	  */
 	RkGpio *card_detect = new_rk_gpio_input(GPIO(4, D, 0));
 	GpioOps *card_detect_ops = &card_detect->ops;
 
@@ -78,17 +100,17 @@ static int board_setup(void)
 	list_insert_after(&sd_card->mmc.ctrlr.list_node,
 			  &removable_block_dev_controllers);
 
-	/* Support USB20_HOST1 in firmware and USB20_HOST0 not needed. */
-	/* USB2.0-EHCI*/
-	UsbHostController *uhst1_ehci = new_usb_hc(EHCI, 0xfe3c0000);
+	if (IS_ENABLED(CONFIG_GRU_USB2_BOOT_REQUIRED)) {
+		/* USB2.0-EHCI*/
+		UsbHostController *uhst1_ehci = new_usb_hc(EHCI, 0xfe3c0000);
+		list_insert_after(&uhst1_ehci->list_node,
+				  &usb_host_controllers);
 
-	list_insert_after(&uhst1_ehci->list_node, &usb_host_controllers);
-
-	/* USB2.0-OHCI */
-	UsbHostController *uhst1_ohci = new_usb_hc(OHCI, 0xfe3e0000);
-
-	list_insert_after(&uhst1_ohci->list_node, &usb_host_controllers);
-
+		/* USB2.0-OHCI */
+		UsbHostController *uhst1_ohci = new_usb_hc(OHCI, 0xfe3e0000);
+		list_insert_after(&uhst1_ohci->list_node,
+				  &usb_host_controllers);
+	}
 	/* Support both USB3.0 XHCI controllers in firmware. */
 	UsbHostController *uhst0_xhci = new_usb_hc(XHCI, 0xfe800000);
 	UsbHostController *uhst1_xhci = new_usb_hc(XHCI, 0xfe900000);
