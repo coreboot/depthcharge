@@ -51,16 +51,7 @@ define declare_unified
 
 $(eval $(call declare_bin,$1,$2 $$$$(VB_LIB),$3))
 
-$1.payload: $1.elf
-	@printf "    PAYLOAD    $$(subst $$(obj)/,,$$@)\n"
-	$$(Q)-rm -f $1.rom $1.bb
-	$$(Q)dd if=/dev/zero of=$1.bb bs=512 count=1
-	$$(Q)cbfstool $1.rom create -m $$(ARCH) -s 1024K -B $1.bb
-	$$(Q)cbfstool $1.rom add-payload -f $$< -n dc.elf -c lzma
-	$$(Q)cbfstool $1.rom extract -n dc.elf -f $$@
-	$$(Q)rm -f $1.rom $1.bb
-
-$(notdir $1)_unified: $1.bin $1.payload
+$(notdir $1)_unified: $1.bin
 PHONY += $(notdir $1)_unified
 endef
 
