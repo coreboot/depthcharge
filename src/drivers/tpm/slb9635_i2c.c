@@ -155,7 +155,7 @@ static int iic_tpm_write(Slb9635I2c *tpm, uint8_t addr, const uint8_t *buffer,
 	int rc = 0;
 	int count;
 
-	if (len > MaxTpmBufSize) {
+	if (len > TpmMaxBufSize) {
 		printf("%s: Length %zd is too large\n", __func__, len);
 		return -1;
 	}
@@ -409,7 +409,7 @@ static int tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
 	size_t count = 0;
 	uint8_t sts = TpmStsGo;
 
-	if (len > MaxTpmBufSize)
+	if (len > TpmMaxBufSize)
 		return -1; // Command is too long for our tpm, sorry.
 
 	status = tpm->base.chip_ops.status(&tpm->base.chip_ops);

@@ -23,7 +23,8 @@
 
 enum {
 	TpmCmdCountOffset = 2,
-	TpmCmdOrdinalOffset = 6
+	TpmCmdOrdinalOffset = 6,
+	TpmMaxBufSize = 1260
 };
 
 typedef struct TpmOps

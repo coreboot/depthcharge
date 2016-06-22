@@ -20,10 +20,6 @@
 
 #include "drivers/tpm/i2c.h"
 
-enum {
-	MaxTpmBufSize = 1260
-};
-
 enum i2c_chip_type {
 	SLB9635,
 	SLB9645,
@@ -33,7 +29,7 @@ enum i2c_chip_type {
 typedef struct Slb9635I2c
 {
 	I2cTpm base;
-	uint8_t buf[sizeof(uint8_t) + MaxTpmBufSize]; // addr + buff size
+	uint8_t buf[sizeof(uint8_t) + TpmMaxBufSize]; // addr + buff size
 	enum i2c_chip_type chip_type;
 } Slb9635I2c;
 
