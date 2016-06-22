@@ -279,13 +279,13 @@
 			label = "gbb";
 
 			/* GBB offset must be aligned to 4K bytes */
-			reg = <0x00611000 0x000ef000>;
+			reg = <0x00611000 0x0006f000>;
 			read-only;
 			type = "blob gbb";
 		};
 		ro-boot {
 			label = "coreboot";
-			reg = <0x00700000 0x00100000>; /* 1 MB */
+			reg = <0x00680000 0x00180000>; /* 1.5 MB */
 			read-only;
 			type = "blob coreboot";
 			required;
