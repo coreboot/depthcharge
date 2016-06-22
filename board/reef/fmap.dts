@@ -70,6 +70,13 @@
 			read-only;
 			type = "blobstring fwid";
 		};
+		ro-frid-pad {
+			label ="ro-frid-pad";
+			reg = <0x00204840 0x000007c0>;
+			read-only;
+			type = "wiped";
+			wipe-value = [ff];
+		};
 		ro-boot {
 			label = "coreboot";
 			reg = <0x00205000 0x0017b000>;
@@ -84,12 +91,26 @@
 			read-only;
 			type = "blob gbb";
 		};
+		ro-unused-1 {
+			label ="ro-unused-1";
+			reg = <0x003c0000 0x00400000>;
+			read-only;
+			type = "wiped";
+			wipe-value = [ff];
+		};
 		ro-sig2 {
 			label = "sign_cse";
 			reg = <0x007c0000 0x00010000>;
 			read-only;
 			required;
 			type = "blob sig2";
+		};
+		ro-unused-2 {
+			label ="ro-unused-2";
+			reg = <0x007d0000 0x00030000>;
+			read-only;
+			type = "wiped";
+			wipe-value = [ff];
 		};
 		/* ---- Section: Rewritable MRC cache 64KB ---- */
 		rw-mrc-cache {
@@ -150,7 +171,7 @@
 		rw-a {
 			label = "rw-section-a";
 			/* Alignment: 4k (for updating) */
-			reg = <0x0081a000 0x00173000>;
+			reg = <0x0081a000 0x0028f800>;
 		};
 		rw-a-vblock {
 			label = "vblock-a";
@@ -169,13 +190,13 @@
 		rw-a-boot {
 			/* Alignment: no requirement (yet). */
 			label = "fw-main-a";
-			reg = <0x0082a000 0x00162fc0>;
+			reg = <0x0082a000 0x0027f7c0>;
 			type = "blob cbfs/rw/a-boot";
 		};
 		rw-a-firmware-id {
 			/* Alignment: no requirement. */
 			label = "rw-fwid-a";
-			reg = <0x0098cfc0 0x00000040>;
+			reg = <0x00aa97c0 0x00000040>;
 			read-only;
 			type = "blobstring fwid";
 		};
@@ -184,7 +205,7 @@
 		rw-b {
 			label = "rw-section-b";
 			/* Alignment: 4k (for updating) */
-			reg = <0x0098d000 0x00173000>;
+			reg = <0x00aa9800 0x0028f800>;
 		};
 		rw-b-vblock {
 			label = "vblock-b";
@@ -192,7 +213,7 @@
 			 * Alignment: 4k (for updating) and must be in start of
 			 * each RW_SECTION.
 			 */
-			reg = <0x0098d000 0x00010000>;
+			reg = <0x00aa9800 0x00010000>;
 			type = "keyblock cbfs/rw/b-boot";
 			keyblock = "firmware.keyblock";
 			signprivate = "firmware_data_key.vbprivk";
@@ -203,13 +224,13 @@
 		rw-b-boot {
 			label = "fw-main-b";
 			/* Alignment: no requirement (yet). */
-			reg = <0x0099d000 0x00162fc0>;
+			reg = <0x00ab9800 0x0027f7c0>;
 			type = "blob cbfs/rw/b-boot";
 		};
 		rw-b-firmware-id {
 			label = "rw-fwid-b";
 			/* Alignment: no requirement. */
-			reg = <0x00afffc0 0x00000040>;
+			reg = <0x00d38fc0 0x00000040>;
 			read-only;
 			type = "blobstring fwid";
 		};
@@ -217,22 +238,39 @@
 		/* ---- Section: Storage to simulate NVRAM ---- */
 		rw-nvram {
 			label = "rw-nvram";
-			reg = <0x00b00000 0x00006000>;
+			reg = <0x00d39000 0x00006000>;
 			type = "wiped";
 			wipe-value = [ff];
 		};
 
 		rw-legacy {
 			label = "rw-legacy";
-			reg = <0x00b06000 0x00200000>;
+			reg = <0x00d3f000 0x00200000>;
 			type = "blob legacy";
 			read-only;
+		};
+
+		/* ---- Last 256KiB of BIOS is unusable. ---- */
+		bios-unusable {
+			label ="bios-unusable";
+			reg = <0x00f3f000 0x00040000>;
+			read-only;
+			type = "wiped";
+			wipe-value = [ff];
 		};
 
 		device-extension {
 			/* CSE RW data */
 			label = "device-extension";
-			reg = <0x00f7f000 0x00081000>;
+			reg = <0x00f7f000 0x00080000>;
+			type = "wiped";
+			wipe-value = [ff];
+		};
+
+		unused-hole {
+			label ="unused-hole";
+			reg = <0x00fff000 0x00001000>;
+			read-only;
 			type = "wiped";
 			wipe-value = [ff];
 		};
