@@ -1084,6 +1084,17 @@ int cros_ec_read_lid_switch(uint32_t *lid)
 	return 0;
 }
 
+int cros_ec_read_power_btn(uint32_t *pwr_btn)
+{
+	uint8_t flags;
+
+	if (read_memmap(EC_MEMMAP_SWITCHES, sizeof(flags), &flags))
+		return -1;
+	*pwr_btn = !!(flags & EC_SWITCH_POWER_BUTTON_PRESSED);
+
+	return 0;
+}
+
 int cros_ec_read_limit_power_request(int *limit_power)
 {
 	struct ec_params_charge_state p;

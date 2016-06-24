@@ -257,6 +257,14 @@ int cros_ec_set_bl_pwm_duty(uint32_t percent);
  */
 int cros_ec_read_lid_switch(uint32_t *lid);
 
+/**
+ * Read the value of power button.
+ *
+ * @param pwr_btn	Buffer to read lid open flag (returns 0 or 1)
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_read_power_btn(uint32_t *pwr_btn);
+
 CrosEc *new_cros_ec(CrosEcBusOps *bus, int devidx, GpioOps *interrupt_gpio);
 
 #endif
