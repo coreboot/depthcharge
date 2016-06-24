@@ -247,6 +247,13 @@ int cros_ec_read_batt_state_of_charge(uint32_t *state);
  */
 int cros_ec_read_limit_power_request(int *limit_power);
 
+
+/**
+ * Set duty cycle of the display panel.
+ *
+ * @param percent	Desired duty cycle, in 0..99 range.
+ * @return 0 if ok, -1 on error
+ */
 int cros_ec_set_bl_pwm_duty(uint32_t percent);
 
 /**
