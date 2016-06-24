@@ -30,6 +30,9 @@
 #define QFPROM_CORR_PTE_ROW0_MSB	(QFPROM_CORR_BASE + 0xBC)
 
 #define ADSS_AUDIO_TXB_CBCR_REG		((void *)0x770014C)
+#define TCSR_WIFI0_GLB_CFG		((void *)0x01949000)
+#define TCSR_WIFI1_GLB_CFG		((void *)0x01949004)
+#define TCSR_PNOC_SNOC_MEMTYPE_M0_M2	((void *)0x01957004)
 
 int set_wifi_calibration(DeviceTree *tree);
 int board_wan_port_number(void);

@@ -396,6 +396,24 @@ static struct console_input_driver dakota_input_driver =
 	&dakota_getchar
 };
 
+static void ipq_snoc_pnoc_init(void)
+{
+	/*
+	 * IPQ40xx WiFi Global Config
+	 * Bit 30:AXID_EN
+	 * Enable AXI master bus Axid translating to confirm
+	 * all txn submitted by order
+	 * Bit 24: Use locally generated socslv_wxi_bvalid
+	 * 1:  use locally generate socslv_wxi_bvalid for performance.
+	 * 0:  use SNOC socslv_wxi_bvalid.	37
+	 */
+	write32(TCSR_WIFI0_GLB_CFG, 0x41000000);
+	write32(TCSR_WIFI1_GLB_CFG, 0x41000000);
+
+	/* IPQ40xx MEM_TYPE_SEL_M0_M2 Select Bit 26:24 - 2 NORMAL */
+	write32(TCSR_PNOC_SNOC_MEMTYPE_M0_M2, 0x02222222);
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
@@ -445,6 +463,8 @@ static int board_setup(void)
 
 #endif
 	write32(ADSS_AUDIO_TXB_CBCR_REG, 0); /* Disable ADSS clock branch */
+
+	ipq_snoc_pnoc_init();
 
 	list_insert_after(&ipq_enet_fixup.list_node, &device_tree_fixups);
 
