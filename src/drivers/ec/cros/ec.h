@@ -249,6 +249,14 @@ int cros_ec_read_limit_power_request(int *limit_power);
 
 int cros_ec_set_bl_pwm_duty(uint32_t percent);
 
+/**
+ * Read the value of the 'lid open' switch.
+ *
+ * @param lid		Buffer to read lid open flag (returns 0 or 1)
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_read_lid_switch(uint32_t *lid);
+
 CrosEc *new_cros_ec(CrosEcBusOps *bus, int devidx, GpioOps *interrupt_gpio);
 
 #endif

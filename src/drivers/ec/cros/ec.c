@@ -1073,6 +1073,17 @@ int cros_ec_read_batt_volt(uint32_t *volt)
 	return read_memmap(EC_MEMMAP_BATT_VOLT, sizeof(*volt), volt);
 }
 
+int cros_ec_read_lid_switch(uint32_t *lid)
+{
+	uint8_t flags;
+
+	if (read_memmap(EC_MEMMAP_SWITCHES, sizeof(flags), &flags))
+		return -1;
+	*lid = !!(flags & EC_SWITCH_LID_OPEN);
+
+	return 0;
+}
+
 int cros_ec_read_limit_power_request(int *limit_power)
 {
 	struct ec_params_charge_state p;
