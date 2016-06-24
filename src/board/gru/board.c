@@ -27,6 +27,7 @@
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/spi.h"
 #include "drivers/flash/spi.h"
+#include "drivers/flash/spi.h"
 #include "drivers/gpio/rockchip.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/sound/i2s.h"
@@ -35,7 +36,6 @@
 #include "drivers/storage/dw_mmc.h"
 #include "drivers/storage/rk_dwmmc.h"
 #include "drivers/storage/sdhci.h"
-#include "drivers/tpm/spi.h"
 #include "drivers/video/display.h"
 #include "vboot/util/flag.h"
 
@@ -69,12 +69,8 @@ static int board_setup(void)
 	// Claim that we have an power key to satisfy vboot.
 	flag_replace(FLAG_PWRSW, new_gpio_low());
 
-	// TPM on Gru is connected to SPI bus #0
-	RkSpi *spi0 = new_rockchip_spi(0xff1c0000);
-	tpm_set_ops(&new_tpm_spi(&spi0->ops)->ops);
-
-	// Flash on Gru is connected to SPI bus #1.
 	RkSpi *spi1 = new_rockchip_spi(0xff1d0000);
+
 	flash_set_ops(&new_spi_flash(&spi1->ops)->ops);
 
 	// EC is connected to SPI bus #5
