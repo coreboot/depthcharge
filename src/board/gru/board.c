@@ -86,11 +86,33 @@ static GpioOps *lid_open_gpio(void)
 	return ops;
 }
 
+/**
+ * Read the power button value from the EC
+ *
+ * @return 1 if button is pressed, 0 in not pressed or unable to read
+ */
+static int get_power_btn_from_ec(GpioOps *me)
+{
+	uint32_t pwr_btn;
+
+	if (!cros_ec_read_power_btn(&pwr_btn))
+		return pwr_btn;
+
+	/* Assume poer button is not pressed if we get any sort of error */
+	printf("error, assuming power button not pressed\n");
+	return 0;
+}
+
+static GpioOps *power_btn_gpio(void)
+{
+	GpioOps *ops = xzalloc(sizeof(*ops));
+
+	ops->get = &get_power_btn_from_ec;
+	return ops;
+}
+
 static int board_setup(void)
 {
-	// Claim that we have an power key to satisfy vboot.
-	flag_replace(FLAG_PWRSW, new_gpio_low());
-
 	RkSpi *spi1 = new_rockchip_spi(0xff1d0000);
 
 	flash_set_ops(&new_spi_flash(&spi1->ops)->ops);
@@ -104,8 +126,9 @@ static int board_setup(void)
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, 0, ec_int);
 	register_vboot_ec(&cros_ec->vboot, 0);
 
-	// Read the lid switch from the EC.
+	// Power button and lid swith available from EC.
 	flag_replace(FLAG_LIDSW, lid_open_gpio());
+	flag_replace(FLAG_PWRSW, power_btn_gpio());
 
 	SdhciHost *emmc = new_mem_sdhci_host((void *)0xfe330000,
 					     SDHCI_PLATFORM_NO_EMMC_HS200 |
