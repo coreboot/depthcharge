@@ -21,6 +21,10 @@ config DRIVER_TPM_SLB9635_I2C
 	select DRIVER_TPM
 	default n
 
+config TPM2_MODE
+       bool "Configure VBOOT for TPM2 support"
+       default n
+
 config DRIVER_TPM_SPI
 	bool "SPI TPM driver"
 	select DRIVER_TPM
