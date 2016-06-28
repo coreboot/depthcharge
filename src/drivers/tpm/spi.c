@@ -45,7 +45,7 @@ static void stopwatch_init_usecs_expire(struct stopwatch *sw, long us)
 
 static int stopwatch_expired(struct stopwatch *sw)
 {
-	return timer_us(sw->start > sw->expires);
+	return timer_us(sw->start) > sw->expires;
 }
 
 /*
