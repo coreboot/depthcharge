@@ -123,7 +123,7 @@ struct tpm2_info tpm_info;
  * TODO(vbendeb): make CONFIG_DEBUG_TPM an int to allow different level of
  * debug traces. Right now it is either 0 or 1.
  */
-static const int debug_level_ = 1;
+static const int debug_level_ = 0;
 
 /* Locality management bits (in TPM_ACCESS_REG) */
 enum tpm_access_bits {
