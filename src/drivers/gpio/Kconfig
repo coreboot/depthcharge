@@ -86,3 +86,7 @@ config DRIVER_GPIO_SKYLAKE
 config DRIVER_GPIO_TEGRA
 	bool "Tegra GPIO driver"
 	default n
+
+config DRIVER_GPIO_APOLLOLAKE
+	bool "Intel Apollolake GPIO driver"
+	default n

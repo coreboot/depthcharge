@@ -15,3 +15,8 @@ config DRIVER_SOC_SKYLAKE
 	bool "Skylake SoC driver"
 	default n
 	select DRIVER_GPIO_SKYLAKE
+
+config DRIVER_SOC_APOLLOLAKE
+	bool "Apollolake SoC driver"
+	default n
+	select DRIVER_GPIO_APOLLOLAKE
