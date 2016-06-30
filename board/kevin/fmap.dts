@@ -3,7 +3,7 @@
 / {
 	model = "Google Kevin";
 	config {
-		hwid = "KEVIN TEST A-A 5018";
+		hwid = "KEVIN TEST 1422";
 	};
 	chromeos-config {
 		/* Enable factory-friendly features. */

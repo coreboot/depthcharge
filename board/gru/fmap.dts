@@ -3,7 +3,7 @@
 / {
 	model = "Google Gru";
 	config {
-		hwid = "GRU TEST A-A 5018";
+		hwid = "GRU TEST 5431";
 	};
 	chromeos-config {
 		/* Enable factory-friendly features. */
