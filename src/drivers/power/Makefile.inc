@@ -23,3 +23,4 @@ depthcharge-$(CONFIG_DRIVER_POWER_MT6397) += mt6397.c
 depthcharge-$(CONFIG_DRIVER_POWER_ARMADA38X) += armada38x.c
 depthcharge-y += power.c
 depthcharge-y += sysinfo.c
+depthcharge-$(CONFIG_ARCH_ARM_V8) += psci.c
