@@ -29,6 +29,7 @@
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/rockchip.h"
 #include "drivers/gpio/sysinfo.h"
+#include "drivers/power/psci.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/max98357a.h"
 #include "drivers/sound/route.h"
@@ -133,6 +134,8 @@ static int board_setup(void)
 	// Power button and lid swith available from EC.
 	flag_replace(FLAG_LIDSW, lid_open_gpio());
 	flag_replace(FLAG_PWRSW, power_btn_gpio());
+
+	power_set_ops(&psci_power_ops);
 
 	SdhciHost *emmc = new_mem_sdhci_host((void *)0xfe330000,
 					     SDHCI_PLATFORM_NO_EMMC_HS200 |
