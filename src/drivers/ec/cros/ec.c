@@ -412,6 +412,14 @@ int cros_ec_scan_keyboard(struct cros_ec_keyscan *scan)
 	return 0;
 }
 
+int cros_ec_get_next_event(struct ec_response_get_next_event *e)
+{
+	int rv = ec_command(get_main_ec(), EC_CMD_GET_NEXT_EVENT, 0, NULL, 0, e,
+			    sizeof(*e));
+
+	return rv < 0 ? rv : 0;
+}
+
 static int ec_read_id(CrosEc *me, char *id, int maxlen)
 {
 	struct ec_response_get_version r;

@@ -22,6 +22,7 @@
 #include <stdint.h>
 
 #include "base/init_funcs.h"
+#include "config.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/input/input.h"
 #include "drivers/input/mkbp/keymatrix.h"
@@ -38,7 +39,7 @@ typedef enum Modifier {
 static int read_scancodes(Modifier *modifiers, uint8_t *codes, int max_codes)
 {
 	static struct cros_ec_keyscan last_scan;
-	static struct cros_ec_keyscan scan;
+	static struct ec_response_get_next_event event;
 
 	assert(modifiers);
 	*modifiers = ModifierNone;
@@ -47,9 +48,25 @@ static int read_scancodes(Modifier *modifiers, uint8_t *codes, int max_codes)
 	if (!cros_ec_interrupt_pending())
 		return -1;
 
-	if (cros_ec_scan_keyboard(&scan)) {
-		printf("Key matrix scan failed.\n");
-		return -1;
+	if (IS_ENABLED(CONFIG_DRIVER_INPUT_MKBP_HAS_KEYMATRIX_ONLY)) {
+		if (cros_ec_scan_keyboard((struct cros_ec_keyscan *)
+					  &event.data.key_matrix)) {
+			printf("Key matrix scan failed.\n");
+			return -1;
+		}
+	} else {
+		// Get pending MKBP event.  It may not be a key matrix event.
+		do {
+			int rv = cros_ec_get_next_event(&event);
+			// The EC has no events for us at this time.
+			if (rv == -EC_RES_UNAVAILABLE) {
+				return -1;
+			} else if (rv < 0) {
+				printf("Error getting next MKBP event. (%d)\n",
+				       rv);
+				return -1;
+			}
+		} while (event.event_type != EC_MKBP_EVENT_KEY_MATRIX);
 	}
 
 	int total = 0;
@@ -72,7 +89,7 @@ static int read_scancodes(Modifier *modifiers, uint8_t *codes, int max_codes)
 		int byte = pos / 8;
 
 		uint8_t last_data = last_scan.data[byte];
-		uint8_t data = scan.data[byte];
+		uint8_t data = event.data.key_matrix[byte];
 		last_scan.data[byte] = data;
 
 		if (last_data != data)

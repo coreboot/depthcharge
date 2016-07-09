@@ -10,5 +10,14 @@
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
 
+config DRIVER_INPUT_MKBP_OLD_COMMAND
+       bool "Old method of retrieving keyscans via the ChromeOS EC MKBP."
+       default n
+       help
+         In older ChromeOS EC images, the MKBP FIFO only contains key matrix
+         changes.  Therefore, retrieving the MKBP state will always be a key
+         matrix and the EC_CMD_MKBP_STATE host command is supported.  This is
+         not the case for newer EC images.
+
 source src/drivers/input/mkbp/keymatrix/Kconfig
 source src/drivers/input/mkbp/layout/Kconfig
