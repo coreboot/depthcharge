@@ -45,9 +45,6 @@ struct calibration_entry {
 	struct calibration_blob entries[0];  /* A varialble size container. */
 };
 
-/* Mapping of interface numbers into the wifi device address on the PCI bus. */
-static const uint32_t if_to_address[] = { 0x1b500000, 0x1b700000, 0x1b900000 };
-
 static int blob_is_valid(struct calibration_entry *cal_entry,
 			 struct calibration_blob *cal_blob)
 {
