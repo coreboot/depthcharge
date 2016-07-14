@@ -131,6 +131,8 @@ static int board_setup(void)
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, 0, ec_int);
 	register_vboot_ec(&cros_ec->vboot, 0);
 
+	sysinfo_install_flags(new_rk_gpio_input_from_coreboot);
+
 	// Power button and lid swith available from EC.
 	flag_replace(FLAG_LIDSW, lid_open_gpio());
 	flag_replace(FLAG_PWRSW, power_btn_gpio());
