@@ -89,8 +89,6 @@ static const DtPathMap calibration_maps[] = {
 	 "wifi_base64_calibration0"},
 	{1, "soc/wifi@a800000/qcom,ath10k-pre-calibration-data",
 	 "wifi_base64_calibration1"},
-	{1, "soc/qcom,pcie@80000/pcie@0/ath10k@0,0/qcom,ath10k-calibration-data",
-	 "wifi_base64_calibration2"},
 	{}
 };
 
@@ -455,13 +453,6 @@ static int board_setup(void)
 
 	display_init();
 
-#if 0
-	Ipq806xSound *sound = new_ipq806x_sound(new_storm_dac_gpio_output(),
-			48000, 2, 16, 1000);
-	SoundRoute *sound_route = new_sound_route(&sound->ops);
-	sound_set_ops(&sound_route->ops);
-
-#endif
 	write32(ADSS_AUDIO_TXB_CBCR_REG, 0); /* Disable ADSS clock branch */
 
 	ipq_snoc_pnoc_init();
@@ -472,14 +463,4 @@ static int board_setup(void)
 
 	return 0;
 }
-
-int board_wan_port_number(void)
-{
-	if ((lib_sysinfo.board_id == BOARD_ID_PROTO_0) ||
-	    (lib_sysinfo.board_id == BOARD_ID_PROTO_0_2))
-		return 4; /* Storm variants */
-
-	return 1; /* Whirlwind variants, let it be the default. */
-}
-
 INIT_FUNC(board_setup);
