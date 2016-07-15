@@ -36,13 +36,16 @@
 
 int set_wifi_calibration(DeviceTree *tree);
 
-/* Authoritative copy in http://go/jetstream-board-ids */
-enum storm_board_id {
-	BOARD_ID_PROTO_0 = 0,
-	BOARD_ID_PROTO_0_2 = 1,
-	BOARD_ID_WHIRLWIND_SP3 = 2,
-	BOARD_ID_WHIRLWIND_SP5 = 3,
-	BOARD_ID_PROTO_0_2_NAND = 26,
+#define TCSR_BOOT_MISC_DETECT		((void *)0x0193D100)
+#define TCSR_RESET_DEBUG_SW_ENTRY	((void *)0x01940000)
+#define IPQ_CRASH_MAGIC			0x10
+#define IPQ_CRASH_DUMP_MAX_TRIES	3
+#define IPQ_CRASH_DUMP_WAIT_SEC		5
+
+enum gale_board_id {
+	BOARD_ID_GALE_EVT = 0,
+	BOARD_ID_GALE_EVT2 = 1,
+	BOARD_ID_GALE_EVT3 = 2,
 };
 
 PowerOps *new_ipq40xx_power_ops(void);
