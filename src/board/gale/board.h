@@ -35,7 +35,6 @@
 #define TCSR_PNOC_SNOC_MEMTYPE_M0_M2	((void *)0x01957004)
 
 int set_wifi_calibration(DeviceTree *tree);
-int board_wan_port_number(void);
 
 /* Authoritative copy in http://go/jetstream-board-ids */
 enum storm_board_id {
