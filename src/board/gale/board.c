@@ -69,9 +69,14 @@ static struct board_descriptor bdescriptor;
 static void fill_board_descriptor(void)
 {
 	switch(lib_sysinfo.board_id) {
-	default:
-		/* FIXME: Add valid board IDs */
+	case BOARD_ID_GALE_EVT:
+	case BOARD_ID_GALE_EVT2:
 		bdescriptor.compat_string = "google,gale";
+		bdescriptor.calibration_needed = 1;
+		break;
+	case BOARD_ID_GALE_EVT3:
+	default:
+		bdescriptor.compat_string = "google,gale-v2";
 		bdescriptor.calibration_needed = 1;
 		break;
 	}
