@@ -48,7 +48,7 @@ static int read_scancodes(Modifier *modifiers, uint8_t *codes, int max_codes)
 	if (!cros_ec_interrupt_pending())
 		return -1;
 
-	if (IS_ENABLED(CONFIG_DRIVER_INPUT_MKBP_HAS_KEYMATRIX_ONLY)) {
+	if (IS_ENABLED(CONFIG_DRIVER_INPUT_MKBP_OLD_COMMAND)) {
 		if (cros_ec_scan_keyboard((struct cros_ec_keyscan *)
 					  &event.data.key_matrix)) {
 			printf("Key matrix scan failed.\n");
