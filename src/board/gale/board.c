@@ -69,6 +69,7 @@ static struct board_descriptor bdescriptor;
 static void fill_board_descriptor(void)
 {
 	switch(lib_sysinfo.board_id) {
+	case BOARD_ID_GALE_PROTO:
 	case BOARD_ID_GALE_EVT:
 	case BOARD_ID_GALE_EVT2:
 		bdescriptor.compat_string = "google,gale";
