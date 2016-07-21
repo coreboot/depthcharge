@@ -86,7 +86,6 @@ static void fill_board_descriptor(void)
 static const DtPathMap mac_maps[] = {
 	{ 0, "soc/edma@c080000/gmac0/local-mac-address" },
 	{ 0, "soc/edma@c080000/gmac1/local-mac-address" },
-	//{ 1, "chosen/bluetooth/local-mac-address" },
 	{}
 };
 
@@ -100,12 +99,13 @@ static const DtPathMap calibration_maps[] = {
 
 static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 {
-	int rv;
+	int rv = 0;
 
-	//rv = dt_set_mac_addresses(tree, mac_maps);
+	if (lib_sysinfo.board_id >= BOARD_ID_GALE_EVT3)
+		rv = dt_set_mac_addresses(tree, mac_maps);
 
-	//if (bdescriptor.calibration_needed)
-		rv = dt_set_wifi_calibration(tree, calibration_maps);
+	if (bdescriptor.calibration_needed)
+		rv |= dt_set_wifi_calibration(tree, calibration_maps);
 
 	return rv;
 }
