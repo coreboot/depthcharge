@@ -22,6 +22,7 @@
 #include "boot/fit.h"
 #include "boot/ramoops.h"
 #include "config.h"
+#include "drivers/bus/i2c/rockchip.h"
 #include "drivers/bus/i2s/rockchip.h"
 #include "drivers/bus/spi/rockchip.h"
 #include "drivers/bus/usb/usb.h"
@@ -36,6 +37,7 @@
 #include "drivers/storage/dw_mmc.h"
 #include "drivers/storage/rk_dwmmc.h"
 #include "drivers/storage/sdhci.h"
+#include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/spi.h"
 #include "drivers/video/display.h"
 #include "vboot/util/flag.h"
@@ -114,9 +116,13 @@ static GpioOps *power_btn_gpio(void)
 
 static int board_setup(void)
 {
-	// TPM on Gru is connected to SPI bus #0
-	RkSpi *spi0 = new_rockchip_spi(0xff1c0000);
-	tpm_set_ops(&new_tpm_spi(&spi0->ops)->ops);
+	if (IS_ENABLED(CONFIG_TPM2_MODE)) {
+		RkSpi *spi0 = new_rockchip_spi(0xff1c0000);
+		tpm_set_ops(&new_tpm_spi(&spi0->ops)->ops);
+	} else {
+		RkI2c *i2c0 = new_rockchip_i2c((void *)0xff3c0000);
+		tpm_set_ops(&new_slb9635_i2c(&i2c0->ops, 0x20)->base.ops);
+	}
 
 	// Flash on Gru is connected to SPI bus #1.
 	RkSpi *spi1 = new_rockchip_spi(0xff1d0000);
