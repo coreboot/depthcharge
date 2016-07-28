@@ -27,6 +27,15 @@
 		reg = <0xff800000 0x01000000>;
 
 		/*
+		* This describes the portion of the image that will be
+		* write-protected in the factory.
+		*/
+		wp-ro {
+			label = "wp-ro";
+			reg = <0x00000000 0x00800000>;
+			read-only;
+		};
+		/*
 		* Firmware Descriptor section of the Intel Firmware Descriptor
 		* image.
 		*/
@@ -48,6 +57,13 @@
 			read-only;
 			type = "wiped";
 			wipe-value = [ff];
+		};
+
+		/* ---- Section: Read-only ---- */
+		ro-section {
+			label = "ro-section";
+			reg = <0x00204000 0x005fc000>;
+			read-only;
 		};
 		ro-fmap {
 			label = "fmap";
