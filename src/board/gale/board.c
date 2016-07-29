@@ -71,7 +71,8 @@ static void fill_board_descriptor(void)
 	switch(lib_sysinfo.board_id) {
 	case BOARD_ID_GALE_PROTO:
 	case BOARD_ID_GALE_EVT:
-	case BOARD_ID_GALE_EVT2:
+	case BOARD_ID_GALE_EVT2_0:
+	case BOARD_ID_GALE_EVT2_1:
 		bdescriptor.compat_string = "google,gale";
 		bdescriptor.calibration_needed = 1;
 		break;
