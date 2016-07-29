@@ -45,7 +45,8 @@ int set_wifi_calibration(DeviceTree *tree);
 enum gale_board_id {
 	BOARD_ID_GALE_PROTO = 0,
 	BOARD_ID_GALE_EVT = 1,
-	BOARD_ID_GALE_EVT2 = 2,
+	BOARD_ID_GALE_EVT2_0 = 2,
+	BOARD_ID_GALE_EVT2_1 = 6,
 	BOARD_ID_GALE_EVT3 = 5,
 };
 
