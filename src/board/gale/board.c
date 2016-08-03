@@ -102,7 +102,8 @@ static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 {
 	int rv = 0;
 
-	if (lib_sysinfo.board_id >= BOARD_ID_GALE_EVT3)
+	if ((lib_sysinfo.board_id >= BOARD_ID_GALE_EVT3) &&
+		(lib_sysinfo.board_id != BOARD_ID_GALE_EVT2_1))
 		rv = dt_set_mac_addresses(tree, mac_maps);
 
 	if (bdescriptor.calibration_needed)
