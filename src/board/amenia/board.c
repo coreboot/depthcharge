@@ -33,12 +33,12 @@
 #include "drivers/tpm/lpc.h"
 #include "drivers/storage/sdhci.h"
 
-#define EMMC_SD_CLOCK_MIN	400000
-#define SD_CLOCK_MAX		52000000
-#define EMMC_CLOCK_MAX		200000000
+#define EMMC_SD_CLOCK_MIN       400000
+#define EMMC_CLOCK_MAX          200000000
+#define SD_CLOCK_MAX            52000000
 
 /* Flash memory map size includes the 4K descriptor which is not accessible */
-#define FLASH_MEM_MAP_SIZE      0x77F000
+#define FLASH_MEM_MAP_SIZE      0xF7F000
 #define FLASH_MEM_MAP_BASE      ((uintptr_t)(0x100000000ULL - FLASH_MEM_MAP_SIZE))
 
 static int board_setup(void)
