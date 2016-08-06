@@ -105,7 +105,6 @@ static int usb_eth_probe(GenericUsbDevice *dev)
 static void usb_eth_remove(GenericUsbDevice *dev)
 {
 	net_remove_device(usb_eth_net_device);
-	free(dev->dev_data);
 }
 
 static void usb_net_poller(struct NetPoller *poller)
