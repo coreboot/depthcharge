@@ -15,6 +15,7 @@
  * GNU General Public License for more details.
  */
 
+#include <config.h>
 #include <endian.h>
 #include <libpayload.h>
 #include <stdint.h>
@@ -99,6 +100,12 @@ void ramoops_buffer(uint64_t start, uint64_t size, uint64_t record_size)
 void ramoops_common_set_buffer(void)
 {
 	uint64_t base, total_size, record_size;
+
+	/* ARM64 libpayload makes its own memory allocations from the top of
+	 * memory and doesn't reflect them in the coreboot table. Using this
+	 * function there risks overlapping ramoops with the DMA heap or the
+	 * frame buffer. */
+	die_if(IS_ENABLED(CONFIG_ARCH_ARM_V8), "Don't use this on ARM64!\n");
 
 	/*
 	 * Hardcoded record and total sizes could be defined through Kconfig.
