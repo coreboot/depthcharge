@@ -452,7 +452,7 @@ static VbError_t vboot_draw_language(uint32_t locale)
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_draw_base_screen(uint32_t locale)
+static VbError_t draw_base_screen(uint32_t locale, int show_language)
 {
 	const struct rgb_color white = { 0xff, 0xff, 0xff };
 
@@ -465,7 +465,8 @@ static VbError_t vboot_draw_base_screen(uint32_t locale)
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
 			PIVOT_H_LEFT|PIVOT_V_BOTTOM));
 
-	RETURN_ON_ERROR(vboot_draw_language(locale));
+	if (show_language)
+		RETURN_ON_ERROR(vboot_draw_language(locale));
 
 	RETURN_ON_ERROR(draw_image("divider_top.bmp",
 			VB_SCALE_HALF, VB_DIVIDER_V_OFFSET,
@@ -479,6 +480,16 @@ static VbError_t vboot_draw_base_screen(uint32_t locale)
 	RETURN_ON_ERROR(vboot_draw_footer(locale));
 
 	return VBERROR_SUCCESS;
+}
+
+static VbError_t vboot_draw_base_screen(uint32_t locale)
+{
+	return draw_base_screen(locale, 1);
+}
+
+static VbError_t vboot_draw_base_screen_without_language(uint32_t locale)
+{
+	return draw_base_screen(locale, 0);
 }
 
 static VbError_t vboot_draw_blank(uint32_t locale)
@@ -571,7 +582,11 @@ static VbError_t vboot_draw_developer_to_norm(uint32_t locale)
 
 static VbError_t vboot_draw_wait(uint32_t locale)
 {
-	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	/*
+	 * Currently, language cannot be changed while EC software sync is
+	 * taking place because keyboard is disabled.
+	 */
+	RETURN_ON_ERROR(vboot_draw_base_screen_without_language(locale));
 	RETURN_ON_ERROR(draw_image_locale("update.bmp", locale,
 			VB_SCALE_HALF, VB_SCALE_HALF,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 3,
