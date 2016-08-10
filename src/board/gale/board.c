@@ -116,7 +116,7 @@ static DeviceTreeFixup ipq_enet_fixup = {
 	.fixup = fix_device_tree
 };
 
-gpio_func_data_t mmc_ap_dk04[] = {
+gpio_func_data_t gale_mmc_gpio_conf[] = {
 	{
 		.gpio = 23,
 		.func = 1,
@@ -161,7 +161,7 @@ gpio_func_data_t mmc_ap_dk04[] = {
 		.gpio = 27,
 		.func = 1,
 		.pull = GPIO_PULL_UP,
-		.drvstr = GPIO_16MA,
+		.drvstr = GPIO_4MA,
 		.oe = GPIO_OE_DISABLE,
 		.gpio_vm = GPIO_VM_ENABLE,
 		.gpio_od_en = GPIO_OD_DISABLE,
@@ -267,7 +267,7 @@ void ipq_configure_gpio(gpio_func_data_t *gpio, uint32_t count)
 
 void board_mmc_gpio_config(void)
 {
-	ipq_configure_gpio(mmc_ap_dk04, ARRAY_SIZE(mmc_ap_dk04));
+	ipq_configure_gpio(gale_mmc_gpio_conf, ARRAY_SIZE(gale_mmc_gpio_conf));
 }
 
 #if 0
