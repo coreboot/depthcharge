@@ -16,7 +16,6 @@
 
 #include "base/init_funcs.h"
 #include "boot/fit.h"
-#include "boot/ramoops.h"
 #include "drivers/bus/i2c/rockchip.h"
 #include "drivers/bus/i2s/rockchip.h"
 #include "drivers/bus/spi/rockchip.h"
@@ -77,8 +76,6 @@ static int board_setup(void)
 	// when transitioning between normal and dev mode.
 	flag_replace(FLAG_RECSW, sysinfo_lookup_gpio("recovery",
 				1, new_rk_gpio_input_from_coreboot));
-
-	ramoops_buffer(0x31f00000, 0x100000, 0x20000);
 
 	if (lib_sysinfo.framebuffer != NULL)
 		display_set_ops(NULL);

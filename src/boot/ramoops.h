@@ -21,6 +21,5 @@
 #include <stdint.h>
 
 void ramoops_buffer(uint64_t start, uint64_t size, uint64_t record_size);
-void ramoops_common_set_buffer(void);
 
 #endif /* __BOOT_RAMOOPS_H__ */

@@ -16,7 +16,6 @@
 
 #include "base/init_funcs.h"
 #include "boot/fit.h"
-#include "boot/ramoops.h"
 #include "drivers/bus/i2c/rockchip.h"
 #include "drivers/bus/i2s/rockchip.h"
 #include "drivers/bus/spi/rockchip.h"
@@ -88,8 +87,6 @@ static int board_setup(void)
 
 	UsbHostController *usb_otg = new_usb_hc(DWC2, 0xff580000);
 	list_insert_after(&usb_otg->list_node, &usb_host_controllers);
-
-	ramoops_buffer(0x31f00000, 0x100000, 0x20000);
 
 	if (lib_sysinfo.framebuffer != NULL) {
 		GpioOps *backlight_gpio = sysinfo_lookup_gpio("backlight", 1,

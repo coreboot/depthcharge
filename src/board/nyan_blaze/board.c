@@ -22,7 +22,6 @@
 
 #include "base/init_funcs.h"
 #include "boot/fit.h"
-#include "boot/ramoops.h"
 #include "config.h"
 #include "drivers/bus/i2c/tegra.h"
 #include "drivers/bus/i2s/tegra.h"
@@ -185,8 +184,6 @@ static int board_setup(void)
 	list_insert_after(&usbd->list_node, &usb_host_controllers);
 	list_insert_after(&usb2->list_node, &usb_host_controllers);
 	list_insert_after(&usb3->list_node, &usb_host_controllers);
-
-	ramoops_buffer(0x87f00000, 0x100000, 0x20000);
 
 	return 0;
 }

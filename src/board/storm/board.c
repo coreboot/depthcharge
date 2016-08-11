@@ -24,7 +24,6 @@
 
 #include "base/init_funcs.h"
 #include "boot/fit.h"
-#include "boot/ramoops.h"
 #include "drivers/bus/i2c/ipq806x.h"
 #include "drivers/bus/i2c/ipq806x_gsbi.h"
 #include "drivers/bus/spi/ipq806x.h"
@@ -379,8 +378,6 @@ static int board_setup(void)
 	sound_set_ops(&sound_route->ops);
 
 	list_insert_after(&ipq_enet_fixup.list_node, &device_tree_fixups);
-
-	ramoops_common_set_buffer();
 
 	return 0;
 }

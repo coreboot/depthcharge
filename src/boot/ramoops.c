@@ -97,64 +97,11 @@ void ramoops_buffer(uint64_t start, uint64_t size, uint64_t record_size)
 	memory_mark_used(start, start + size);
 }
 
-void ramoops_common_set_buffer(void)
-{
-	uint64_t base, total_size, record_size;
-
-	/* ARM64 libpayload makes its own memory allocations from the top of
-	 * memory and doesn't reflect them in the coreboot table. Using this
-	 * function there risks overlapping ramoops with the DMA heap or the
-	 * frame buffer. */
-	die_if(IS_ENABLED(CONFIG_ARCH_ARM_V8), "Don't use this on ARM64!\n");
-
-	/*
-	 * Hardcoded record and total sizes could be defined through Kconfig.
-	 *
-	 * The 'total_size' bytes of memory, aligned at 'record_size' boundary
-	 * is found at the top of available memory as defined in the coreboot
-	 * table and assigned to the ramoops cache.
-	 *
-	 * This is fairly brittle, as other parts of depthcharge or libpayload
-	 * could be using this memory for something. But this is no worse than
-	 * hardcoding this area to any particular address.
-	 *
-	 * A proper solution would be to have coreboot assign this memory and
-	 * explicitly describe this in the coreboot memory table.
-	 */
-	record_size = 0x20000;
-	total_size = 0x100000;
-	base = 0;
-
-	/* Let's allocate it as high as possible in the available memory */
-	for (int i = 0; i < lib_sysinfo.n_memranges; i++) {
-		uint64_t new_base, size;
-		struct memrange *range = lib_sysinfo.memrange + i;
-
-		size = range->size;
-		if ((range->type != CB_MEM_RAM) ||
-		    (size < (total_size + record_size)))
-			continue;
-
-		/* Record size aligned area is guaranteed to fit. */
-		new_base = ALIGN_DOWN(range->base + size - total_size,
-				      record_size);
-		if (new_base > base)
-			base = new_base;
-
-	}
-
-	if (base)
-		ramoops_buffer(base, total_size, record_size);
-}
-
 static int ramoops_init(void)
 {
-	if ((lib_sysinfo.ramoops_buffer == 0) ||
-	    (lib_sysinfo.ramoops_buffer_size == 0))
-		return 0;
-
-	ramoops_buffer(lib_sysinfo.ramoops_buffer,
-		       lib_sysinfo.ramoops_buffer_size, 0x20000);
+	if (lib_sysinfo.ramoops_buffer_size != 0)
+		ramoops_buffer(lib_sysinfo.ramoops_buffer,
+			       lib_sysinfo.ramoops_buffer_size, 0x20000);
 
 	return 0;
 }

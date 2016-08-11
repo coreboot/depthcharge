@@ -19,7 +19,6 @@
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
-#include "boot/ramoops.h"
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/bus/i2c/mtk_i2c.h"
 #include "drivers/bus/i2s/mt8173.h"
@@ -171,8 +170,6 @@ static int board_setup(void)
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
 
 	sound_setup();
-
-	ramoops_buffer(0xb1f00000, 0x100000, 0x20000);
 
 	/* Setup Nor flash ops */
 	MtkNorFlash *nor_flash = new_mtk_nor_flash(0x1100D000);

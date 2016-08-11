@@ -17,7 +17,6 @@
 #include "base/init_funcs.h"
 #include "base/container_of.h"
 #include "boot/fit.h"
-#include "boot/ramoops.h"
 #include "drivers/gpio/rockchip.h"
 #include "drivers/bus/i2c/rockchip.h"
 #include "drivers/flash/spi.h"
@@ -206,8 +205,6 @@ static int board_setup(void)
 
 	/* Follow Storm to use recovery button as Ctrl-U. */
 	install_phys_presence_flag();
-
-	ramoops_buffer(0x31f00000, 0x100000, 0x20000);
 
 	return 0;
 }
