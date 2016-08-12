@@ -184,7 +184,8 @@ int rt5645_device_init(rt5645Codec *codec)
 
 	/* turn on */
 	rt5645_i2c_writew(codec, RT5645_PWR_ANLG1, 0xA8D2);
-	rt5645_i2c_writew(codec, RT5645_GEN_CTRL1, 0x2061);
+	rt5645_i2c_writew(codec, RT5645_GEN_CTRL1, 0x3261);
+	rt5645_i2c_writew(codec, RT5645_GEN_CTRL3, 0x0A00);
 	rt5645_i2c_writew(codec, RT5645_PWR_ANLG2, 0x0200);
 	rt5645_i2c_writew(codec, RT5645_PWR_DIG2, 0x0800);
 	rt5645_i2c_writew(codec, RT5645_ASRC_1, 0x0800);
