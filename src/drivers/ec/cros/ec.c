@@ -568,10 +568,8 @@ static int ec_test(CrosEc *me)
 		printf("ec_command() returned error\n");
 		return -1;
 	}
-	if (resp.out_data != req.in_data + 0x01020304) {
-		printf("Received invalid handshake %x\n", resp.out_data);
+	if (resp.out_data != req.in_data + 0x01020304)
 		return -1;
-	}
 
 	return 0;
 }
@@ -596,13 +594,17 @@ static int ec_reboot(CrosEc *me, enum ec_reboot_cmd cmd, uint8_t flags)
 		 * will reboot the AP as well, in which case we won't actually
 		 * get to this point.
 		 */
-		int timeout = 20;
-		do {
-			mdelay(50);
-		} while (--timeout && ec_test(me));
-
-		if (!timeout)
-			return -1;
+		mdelay(50);	// default delay we shall wait after EC reboot
+		uint64_t start = timer_us(0);
+		while (ec_test(me)) {
+			if (timer_us(start) > 3 * 1000 * 1000) {
+				printf("EC did not return from reboot.\n");
+				return -1;
+			}
+			mdelay(5);	// avoid spamming bus too hard
+		}
+		printf("EC returned from reboot after %lluus\n",
+		       timer_us(start));
 	}
 
 	return 0;

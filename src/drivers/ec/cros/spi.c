@@ -34,9 +34,10 @@
 
 // How long we have to leave CS deasserted between transactions.
 static const uint64_t CsCooldownUs = 200;
-static const uint64_t FramingTimeoutUs = 1000 * 1000;
-
-static const uint8_t EcFramingByte = 0xec;
+// How long we'll wait for the EC to accept a packet and start handling it.
+static const uint64_t AcceptTimeoutUs = 5 * 1000;
+// How long we'll wait in total for a valid packet response from the EC.
+static const uint64_t ProcessTimeoutUs = 1000 * 1000;
 
 static void stop_bus(CrosEcSpiBus *bus)
 {
@@ -44,20 +45,50 @@ static void stop_bus(CrosEcSpiBus *bus)
 	bus->last_transfer = timer_us(0);
 }
 
-static int wait_for_frame(CrosEcSpiBus *bus)
+static int wait_for_frame(CrosEcSpiBus *bus, int silent_timeout)
 {
 	uint64_t start = timer_us(0);
+	int accepted = 0;
 	uint8_t byte;
-	do {
+
+	while (1) {
 		if (bus->spi->transfer(bus->spi, &byte, NULL, 1))
 			return -1;
-		if (byte != EcFramingByte &&
-				timer_us(start) > FramingTimeoutUs) {
-			printf("Timeout waiting for framing byte.\n");
+
+		switch (byte) {
+		case EC_SPI_FRAME_START:
+			// Done waiting, can start receiving response packet.
+			return 0;
+		case EC_SPI_PROCESSING:
+			// EC has accepted our command and started processing.
+			// It should continue sending 0xFA from here on out,
+			// but we don't want to rely on that since the NPCX has
+			// a bug corrupting every 256th byte it sends.
+			accepted = 1;
+			break;
+		case EC_SPI_RX_BAD_DATA:
+			printf("EC: Claims to have received bad data.\n");
+			return -1;
+		case EC_SPI_NOT_READY:
+			printf("EC: Was not ready to receive host command.\n");
+			return -1;
+		default:
+			// Probably EC_SPI_RECEIVING, or random garbage.
+			break;
+		}
+
+		uint64_t waited = timer_us(start);
+		if (!accepted && waited > AcceptTimeoutUs) {
+			if (silent_timeout)
+				return -1;
+			printf("EC: Took too long to accept host command.\n");
 			return -1;
 		}
-	} while (byte != EcFramingByte);
-	return 0;
+		if (waited > ProcessTimeoutUs) {
+			printf("EC: Took too long to process host command.\n");
+			return -1;
+		}
+	}
 }
 
 static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
@@ -80,8 +111,10 @@ static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 		return -1;
 	}
 
-	// Wait until the EC is ready.
-	if (wait_for_frame(bus)) {
+	// Wait until the EC is ready. Do not print warnings for lack of reply
+	// if the command is HELLO -- we use that to test if the EC is ready.
+	const struct ec_host_request *rq = dout;
+	if (wait_for_frame(bus, rq->command == EC_CMD_HELLO)) {
 		stop_bus(bus);
 		return -1;
 	}
@@ -154,8 +187,9 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 		return -1;
 	}
 
-	// Wait until the EC is ready.
-	if (wait_for_frame(bus)) {
+	// Wait until the EC is ready. Do not print warnings for lack of reply
+	// if the command is HELLO -- we use that to test if the EC is ready.
+	if (wait_for_frame(bus, cmd == EC_CMD_HELLO)) {
 		stop_bus(bus);
 		return -1;
 	}
