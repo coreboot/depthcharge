@@ -36,17 +36,12 @@ DUMMY_IMAGE = 'dummy'
 CHARGE_ASSETS_PREFIX = "reserve_charging"
 
 # Path, directory names and output file name.
-BMPBLK_OUTPUT = "bmpblk.bin"
 SCRIPT_BASE = os.path.dirname(os.path.abspath(__file__))
 LOCALE_DIR = 'locale'
 FONT_DIR = 'font'
 PNG_FILES = '*.png'
 SVG_FILES = '*.svg'
 TEXT_COLORS_AUTODETECT = 0
-
-# Base processing utilities, built by vboot_reference
-BMPLKU = "bmpblk_utility"
-BMPLKFONT = "bmpblk_font"
 
 DEFAULT_RESOLUTION = (1366.0, 768.0)
 DEFAULT_PANEL_SIZE = DEFAULT_RESOLUTION
@@ -361,63 +356,11 @@ def build_image(board, config):
   convert_to_bmp(os.path.join(font_dir, text_files), font_output_dir,
                  scale_params, background_colors, replace_map, text_max_colors)
 
-  # Build font file.
-  shell("bmpblk_font --outfile %s/hwid_fonts.font %s/font/*.bmp" %
-        (output_dir, output_dir), capture_stdout=True)
-
   # Create YAML file.
   shell("cd %s && OPTIONAL_SCREENS='%s' %s/make_default_yaml.py %s" %
         (output_dir, ' '.join(optional_screens), SCRIPT_BASE,
          ' '.join(locales)))
   return output_dir
-
-
-def build_bitmap_block(board, config, output_dir):
-  """Builds the bitmap block output file (and archive files) in output_dir.
-
-  Args:
-    board: a string, the name of board to use.
-    config: a dictionary of board configuration.
-    output_dir: a string of folder to contain resources and to output files.
-  """
-  panel_size = config[PANEL_SIZE_KEY]
-  size_limit = config[SIZE_LIMIT_KEY]
-
-  # Get version information.
-  vcsid = os.getenv('VCSID')
-  # VCSID comes in REV-GITHASH (0.0.1-r1-abcdef....).
-  if vcsid:
-    rev, unused_token, git_version = vcsid.rpartition('-')
-    if rev == '9999':
-      git_version = git_version[:6]
-      git_dirty = '_mod'
-    else:
-      git_version = rev
-      git_dirty = ''
-  else:
-    git_version = shell('git show -s --format="%h"', capture_stdout=True)
-    git_dirty = shell("git diff --shortstat", capture_stdout=True) and "_mod"
-
-  archive_name = ("chromeos-bmpblk-%s-%s%s.tbz2" %
-                  (board, git_version.strip(), git_dirty.strip()))
-
-  # Compile bitmap block file.
-  shell("cd %s && %s -c DEFAULT.yaml %s && tar -acf %s %s" %
-        (output_dir, BMPLKU, BMPBLK_OUTPUT, archive_name, BMPBLK_OUTPUT))
-  print ("\nBitmap block file generated in: %s/%s\n"
-         "Archive file to upload: %s/%s\n"
-         "To preview, run following command OUTSIDE chroot:\n"
-         "   ../bitmap_viewer %s/DEFAULT.yaml %sx%s\n" %
-         (output_dir, BMPBLK_OUTPUT, output_dir, archive_name, output_dir,
-          panel_size[0], panel_size[1]))
-  shell("ls -l %s/%s" % (output_dir, BMPBLK_OUTPUT))
-
-  # Check size limitation.
-  output_file = os.path.join(output_dir, BMPBLK_OUTPUT)
-  output_size = os.path.getsize(output_file)
-  if output_size > size_limit:
-    raise BuildImageError('Exceed output size limitation (%d > %d): %s' %
-                          (output_size, size_limit, board))
 
 
 def main(args):
@@ -427,8 +370,6 @@ def main(args):
     args: a list, boards to build.
   """
   config_database = load_boards_config('boards.yaml')
-  find_utility(BMPLKU)
-  find_utility(BMPLKFONT)
   if args == ['ALL']:
     args = config_database.keys()
     print 'Building all boards: ', args
@@ -436,7 +377,7 @@ def main(args):
     config = config_database.get(board, None)
     if config is None:
       raise BuildImageError('Unknown board: %s' % board)
-    build_bitmap_block(board, config, build_image(board, config))
+    build_image(board, config)
 
 
 if __name__ == '__main__':

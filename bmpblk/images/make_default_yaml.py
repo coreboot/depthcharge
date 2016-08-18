@@ -4,8 +4,8 @@
 # found in the LICENSE file.
 
 """
-Scans images in current folder and generates a new YAML file for bmpblk_utility
-to create bitmap block files.
+Scans images in current folder and generates a new YAML file for
+archive_images to create bitmap archives.
 
 Usage:
   ./make_default_yaml.py <locales>
@@ -41,9 +41,6 @@ class ImageInfo(object):
     self.height = height
     self.path = path
     self.name = os.path.splitext(path)[0].replace('locale/', '')
-    if self.name == 'hwid_placeholder':
-      self.name = '$HWID'
-      self.path = 'hwid_fonts.font'
 
 
 class ImageDatabase(object):
@@ -458,14 +455,12 @@ def generate_yaml_output(screens, locales, image_db):
     image_db: Image database containing information for all used image files.
 
   Returns:
-    Plain text YAML output, for bmpblk_utility to create bitmap block file.
+    Plain text YAML output, for archive_images to create bitmap archives.
   """
   data = {
       'bmpblock': 2.0,
       'compression': 2,  # LZMA
-      'images': {
-          '$HWID':  'hwid_fonts.font',
-      },
+      'images': {},
       'screens': {},
       'localizations': [],
       'locale_index': [],
