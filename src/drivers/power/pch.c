@@ -50,11 +50,30 @@ static int pch_cold_reboot(PowerOps *me)
 	halt();
 }
 
-static void busmaster_disable_on_bus(int bus)
+struct power_off_args {
+	/* PCI device for power-mgmt. */
+	pcidev_t pci_dev;
+	/* Do we need to keep PCI dev for power-mgmt enabled? */
+	int en_pci_dev;
+	/* Register address to read pmbase from. */
+	uint16_t pmbase_reg;
+	/* BAR for power-mgmt operations. */
+	uint16_t pmbase;
+	uint16_t pmbase_mask;
+	/* Registers to disable GPE wakes. */
+	uint16_t gpe_en_reg;
+	int num_gpe_regs;
+};
+
+static void busmaster_disable_on_bus(int bus, struct power_off_args *args)
 {
 	for (int slot = 0; slot < 0x20; slot++) {
 		for (int func = 0; func < 8; func++) {
 			pcidev_t dev = PCI_DEV(bus, slot, func);
+
+			if (args->en_pci_dev && (dev == args->pci_dev))
+				continue;
+
 			uint32_t ids = pci_read_config32(dev, REG_VENDOR_ID);
 
 			if (ids == 0xffffffff || ids == 0x00000000 ||
@@ -74,15 +93,16 @@ static void busmaster_disable_on_bus(int bus)
 				uint32_t busses;
 				busses = pci_read_config32(
 						dev, REG_PRIMARY_BUS);
-				busmaster_disable_on_bus((busses >> 8) & 0xff);
+				busmaster_disable_on_bus((busses >> 8) & 0xff,
+							 args);
 			}
 		}
 	}
 }
 
-static void busmaster_disable(void)
+static void busmaster_disable(struct power_off_args *args)
 {
-	busmaster_disable_on_bus(0);
+	busmaster_disable_on_bus(0, args);
 }
 
 /*
@@ -95,49 +115,61 @@ static void busmaster_disable(void)
  *
  * This function never returns.
  */
-static int pch_power_off_full_args(pcidev_t pci_dev, int pmbase_reg,
-					uint16_t bar_mask, uint16_t gpe_en_reg,
-					int num_gpe_regs)
+static int __pch_power_off_common(struct power_off_args *args)
 {
 	int i;
+	uint16_t pmbase;
 
-	// Make sure this is an Intel chipset with the LPC device hard coded
-	// at 0:1f.0.
-	uint16_t id = pci_read_config16(pci_dev, 0x00);
+	/*
+	 * Make sure this is an Intel chipset with the LPC device hard coded
+	 * at 0:1f.0.
+	 */
+	uint16_t id = pci_read_config16(args->pci_dev, 0x00);
 	if (id != 0x8086) {
 		printf("Power off is not implemented for this chipset. "
 		       "Halting the CPU.\n");
 		return -1;
 	}
 
-	// Find the base address of the powermanagement registers.
-	uint16_t pmbase = pci_read_config16(pci_dev, pmbase_reg);
-	pmbase &= bar_mask;
+	/*
+	 * Find the base address of the power-management registers, if not
+	 * already provided by the caller.
+	 */
+	pmbase = args->pmbase;
+	if (!pmbase) {
+		pmbase = pci_read_config16(args->pci_dev, args->pmbase_reg);
+		pmbase &= args->pmbase_mask;
+	}
 
-	// Mask interrupts or system might stay in a coma (not executing
-	// code anymore, but not powered off either.
+	/*
+	 * Mask interrupts or system might stay in a coma (not executing
+	 * code anymore, but not powered off either.
+	 */
 	asm volatile ("cli" ::: "memory");
 
-	// Turn off all bus master enable bits.
-	busmaster_disable();
+	/* Turn off all bus master enable bits. */
+	busmaster_disable(args);
 
-	// Avoid any GPI waking the system from S5 or the system might stay
-	// in a coma.
-	for (i = 0; i < num_gpe_regs; i++)
-		outl(0x00000000, pmbase + gpe_en_reg + i * sizeof(uint32_t));
+	/*
+	 * Avoid any GPI waking the system from S5 or the system might stay
+	 * in a coma.
+	 */
+	for (i = 0; i < args->num_gpe_regs; i++)
+		outl(0x00000000, pmbase + args->gpe_en_reg +
+		     i * sizeof(uint32_t));
 
-	// Clear Power Button Status.
+	/* Clear Power Button Status. */
 	outw(PWRBTN_STS, pmbase + PM1_STS);
 
-	// PMBASE + 4, Bit 10-12, Sleeping Type, set to 111 -> S5, soft_off
+	/* PMBASE + 4, Bit 10-12, Sleeping Type, set to 111 -> S5, soft_off */
 	uint32_t reg32 = inl(pmbase + PM1_CNT);
 
-	// Set Sleeping Type to S5 (poweroff).
+	/* Set Sleeping Type to S5 (poweroff). */
 	reg32 &= ~(SLP_EN | SLP_TYP);
 	reg32 |= SLP_TYP_S5;
 	outl(reg32, pmbase + PM1_CNT);
 
-	// Now set the Sleep Enable bit.
+	/* Now set the Sleep Enable bit. */
 	reg32 |= SLP_EN;
 	outl(reg32, pmbase + PM1_CNT);
 
@@ -146,8 +178,16 @@ static int pch_power_off_full_args(pcidev_t pci_dev, int pmbase_reg,
 
 static int pch_power_off_common(uint16_t bar_mask, uint16_t gpe_en_reg)
 {
-	return pch_power_off_full_args(PCI_DEV(0, 0x1f, 0), 0x40,
-					bar_mask, gpe_en_reg, 1);
+	struct power_off_args args;
+	memset(&args, 0, sizeof(args));
+
+	args.pci_dev = PCI_DEV(0, 0x1f, 0);
+	args.pmbase_reg = 0x40;
+	args.pmbase_mask = bar_mask;
+	args.gpe_en_reg = gpe_en_reg;
+	args.num_gpe_regs = 1;
+
+	return __pch_power_off_common(&args);
 }
 
 static int pch_power_off(PowerOps *me)
@@ -167,16 +207,38 @@ static int braswell_power_off(PowerOps *me)
 
 static int skylake_power_off(PowerOps *me)
 {
-	// Skylake has 4 GPE en registers and the bar lives within the
-	// PMC device at 0:1f.2.
-	return pch_power_off_full_args(PCI_DEV(0, 0x1f, 2), 0x40,
-					0xfff0, 0x90, 4);
+	/*
+	 * Skylake has 4 GPE en registers and the bar lives within the
+	 * PMC device at 0:1f.2.
+	 */
+	struct power_off_args args;
+	memset(&args, 0, sizeof(args));
+
+	args.pci_dev = PCI_DEV(0, 0x1f, 2);
+	args.pmbase_reg = 0x40;
+	args.pmbase_mask = 0xfff0;
+	args.gpe_en_reg = 0x90;
+	args.num_gpe_regs = 4;
+
+	return __pch_power_off_common(&args);
 }
 
 static int apollolake_power_off(PowerOps *me)
 {
-	return pch_power_off_full_args(PCI_DEV(0, 0xd, 1), 0x20,
-					0xfffc, 0x30, 4);
+	struct power_off_args args;
+	memset(&args, 0, sizeof(args));
+
+	args.pci_dev = PCI_DEV(0, 0xd, 1);
+	args.en_pci_dev = 1;
+	/*
+	 * This is hard-coded because reading BAR4 from PMC dev does not work
+	 * correctly. It simply returns 0.
+	 */
+	args.pmbase = 0x400;
+	args.gpe_en_reg = 0x30;
+	args.num_gpe_regs = 4;
+
+	return __pch_power_off_common(&args);
 }
 
 PowerOps pch_power_ops = {
