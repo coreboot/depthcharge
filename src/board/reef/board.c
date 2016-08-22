@@ -86,7 +86,8 @@ static int board_setup(void)
 	tpm_set_ops(&new_lpc_tpm((void *)(uintptr_t)0xfed40000)->ops);
 
 	SdhciHost *emmc;
-	emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1c, 0), 0,
+	emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1c, 0),
+			SDHCI_PLATFORM_NO_EMMC_HS200,
 			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			&fixed_block_dev_controllers);
