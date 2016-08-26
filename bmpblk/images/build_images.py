@@ -24,7 +24,7 @@ import subprocess
 import sys
 import yaml
 
-ASSET_DIR = 'assets2x'
+ASSET_DIR = 'assets'
 LOCALE_DIR = 'locale'
 FONT_DIR = 'font'
 PNG_FILES = '*.png'
