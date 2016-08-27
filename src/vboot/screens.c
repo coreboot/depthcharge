@@ -29,24 +29,31 @@
  * This is the base used to specify the size and the coordinate of the image.
  * For example, height = 40 means 4.0% of the canvas (=drawing area) height.
  */
-#define VB_SCALE	1000
-#define VB_SCALE_HALF	(VB_SCALE / 2)	/* 50.0% */
+#define VB_SCALE		1000		/* 100.0% */
+#define VB_SCALE_HALF		(VB_SCALE / 2)	/* 50.0% */
 
 /* Height of the text image per line relative to the canvas size */
-#define VB_TEXT_HEIGHT	40		/* 4.0% */
+#define VB_TEXT_HEIGHT		36	/* 3.6% */
+
+/* Chrome logo size and distance from the divider */
+#define VB_LOGO_HEIGHT		39	/* 3.9% */
+#define VB_LOGO_LIFTUP		8
 
 /* Indicate width or height is automatically set based on the other value */
-#define VB_SIZE_AUTO	0
+#define VB_SIZE_AUTO		0
 
 /* Height of the icons relative to the canvas size */
-#define VB_ICON_HEIGHT	160
+#define VB_ICON_HEIGHT		169	/* 16.9% */
+
+/* Height of InsertDevices, RemoveDevices */
+#define VB_DEVICE_HEIGHT	371	/* 37.1% */
 
 /* Vertical position and size of the dividers */
-#define VB_DIVIDER_WIDTH	800	/* 80.0% */
+#define VB_DIVIDER_WIDTH	1000	/* 100.0% */
 #define VB_DIVIDER_V_OFFSET	160	/* 16.0% */
 
 /* Space between 'MODEL' and a model name */
-#define VB_MODEL_PADDING	10	/* 1.0 % */
+#define VB_PADDING		8	/* 0.8 % */
 
 #define RETURN_ON_ERROR(function_call) do {				\
 		VbError_t rv = (function_call);				\
@@ -309,52 +316,72 @@ static VbError_t vboot_draw_footer(uint32_t locale)
 {
 	char *hwid = NULL;
 	int32_t x, y, w1, h1, w2, h2, w3, h3;
+	int32_t total;
 
 	/*
-	 * Draw help URL line: 'For help visit http://.../'. It consits of
+	 * Draw help URL line: 'For help visit http://.../'. It consists of
 	 * three parts: [for_help_left.bmp][URL][for_help_right.bmp].
 	 * Since the widths vary, we need to get the widths first then calculate
 	 * the horizontal positions of the images.
 	 */
-	w1 = 0;
+	w1 = VB_SIZE_AUTO;
 	h1 = VB_TEXT_HEIGHT;
-	RETURN_ON_ERROR(get_image_size_locale("for_help_left.bmp", locale,
-					      &w1, &h1));
-	w2 = 0;
+	/* Expected to fail in locales which don't have left part */
+	get_image_size_locale("for_help_left.bmp", locale, &w1, &h1);
+
+	w2 = VB_SIZE_AUTO;
 	h2 = VB_TEXT_HEIGHT;
 	RETURN_ON_ERROR(get_image_size(base_graphics, "Url.bmp", &w2, &h2));
 
-	w3 = 0;
+	w3 = VB_SIZE_AUTO;
 	h3 = VB_TEXT_HEIGHT;
-	RETURN_ON_ERROR(get_image_size_locale("for_help_right.bmp", locale,
-					      &w3, &h3));
+	/* Expected to fail in locales which don't have right part */
+	get_image_size_locale("for_help_right.bmp", locale, &w3, &h3);
 
-	/* Calculate horizontal position to centralize the combined images */
-	x = (VB_SCALE - w1 - w2 - w3) / 2;
+	total = w1 + VB_PADDING + w2 + VB_PADDING + w3;
 	y = VB_SCALE - VB_DIVIDER_V_OFFSET;
-	if (x < 0) {
+	if (VB_SCALE - total >= 0) {
+		/* Calculate position to centralize the images combined */
+		x = (VB_SCALE - total) / 2;
+		/* Expected to fail in locales which don't have left part */
+		draw_image_locale("for_help_left.bmp", locale,
+				  x, y, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+				  PIVOT_H_LEFT|PIVOT_V_TOP);
+		x += w1 + VB_PADDING;
+		RETURN_ON_ERROR(draw_image("Url.bmp",
+					   x, y,
+					   VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+					   PIVOT_H_LEFT|PIVOT_V_TOP));
+		x += w2 + VB_PADDING;
+		/* Expected to fail in locales which don't have right part */
+		draw_image_locale("for_help_right.bmp", locale,
+				  x, y, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+				  PIVOT_H_LEFT|PIVOT_V_TOP);
+	} else {
+		int32_t pad;
 		/* images are too wide. need to fit them to canvas width */
-		int32_t total;
-
 		printf("%s: help line overflowed. fit it to canvas width\n",
 		       __func__);
-		total = w1 + w2 + w3;
 		x = 0;
+		/* Shrink all images */
 		w1 = VB_SCALE * w1 / total;
 		w2 = VB_SCALE * w2 / total;
 		w3 = VB_SCALE * w3 / total;
+		pad = VB_SCALE * VB_PADDING / total;
+
+		/* Render using width as a base */
+		draw_image_locale("for_help_left.bmp", locale,
+				  x, y, w1, VB_SIZE_AUTO,
+				  PIVOT_H_LEFT|PIVOT_V_TOP);
+		x += w1 + pad;
+		RETURN_ON_ERROR(draw_image("Url.bmp",
+					   x, y, w2, VB_SIZE_AUTO,
+					   PIVOT_H_LEFT|PIVOT_V_TOP));
+		x += w2 + pad;
+		draw_image_locale("for_help_right.bmp", locale,
+				  x, y, w3, VB_SIZE_AUTO,
+				  PIVOT_H_LEFT|PIVOT_V_TOP);
 	}
-	RETURN_ON_ERROR(draw_image_locale("for_help_left.bmp", locale,
-			x, y, w1, VB_SIZE_AUTO,
-			PIVOT_H_LEFT|PIVOT_V_TOP));
-	x += w1;
-	RETURN_ON_ERROR(draw_image("Url.bmp",
-			x, y, w2, VB_SIZE_AUTO,
-			PIVOT_H_LEFT|PIVOT_V_TOP));
-	x += w2;
-	RETURN_ON_ERROR(draw_image_locale("for_help_right.bmp", locale,
-			x, y, w3, VB_SIZE_AUTO,
-			PIVOT_H_LEFT|PIVOT_V_TOP));
 
 	/*
 	 * Draw model line: 'Model XYZ'. It consists of two parts: 'Model',
@@ -369,21 +396,19 @@ static VbError_t vboot_draw_footer(uint32_t locale)
 	if (!hwid)
 		hwid = "NOT FOUND";
 
-	w1 = 0;
+	w1 = VB_SIZE_AUTO;
 	h1 = VB_TEXT_HEIGHT;
-	RETURN_ON_ERROR(get_image_size_locale("model_left.bmp", locale,
-					      &w1, &h1));
-	w1 += VB_MODEL_PADDING;
+	get_image_size_locale("model_left.bmp", locale, &w1, &h1);
+	w1 += VB_PADDING;
 
-	w2 = 0;
+	w2 = VB_SIZE_AUTO;
 	h2 = VB_TEXT_HEIGHT;
 	RETURN_ON_ERROR(get_text_width(hwid, &w2, &h2));
-	w2 += VB_MODEL_PADDING;
+	w2 += VB_PADDING;
 
-	w3 = 0;
+	w3 = VB_SIZE_AUTO;
 	h3 = VB_TEXT_HEIGHT;
-	RETURN_ON_ERROR(get_image_size_locale("model_right.bmp", locale,
-					      &w3, &h3));
+	get_image_size_locale("model_right.bmp", locale, &w3, &h3);
 
 	/* Calculate horizontal position to centralize the combined images. */
 	/*
@@ -392,16 +417,16 @@ static VbError_t vboot_draw_footer(uint32_t locale)
 	 */
 	x = (VB_SCALE - w1 - w2 - w3) / 2;
 	y += VB_TEXT_HEIGHT;
-	RETURN_ON_ERROR(draw_image_locale("model_left.bmp", locale,
-			x, y, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
-			PIVOT_H_LEFT|PIVOT_V_TOP));
+	draw_image_locale("model_left.bmp", locale,
+			  x, y, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			  PIVOT_H_LEFT|PIVOT_V_TOP);
 	x += w1;
 	RETURN_ON_ERROR(draw_text(hwid, x, y, VB_TEXT_HEIGHT,
 			PIVOT_H_LEFT|PIVOT_V_TOP));
 	x += w2;
-	RETURN_ON_ERROR(draw_image_locale("model_right.bmp", locale,
-			x, y, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
-			PIVOT_H_LEFT|PIVOT_V_TOP));
+	draw_image_locale("model_right.bmp", locale,
+			  x, y, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			  PIVOT_H_LEFT|PIVOT_V_TOP);
 
 	return VBERROR_SUCCESS;
 }
@@ -420,34 +445,29 @@ static VbError_t vboot_draw_language(uint32_t locale)
 	 */
 	x = VB_SCALE_HALF + VB_DIVIDER_WIDTH / 2;
 
-	/* Draw the right arrow */
-	w = 0;
+	/* Draw right arrow */
+	w = VB_SIZE_AUTO;
 	h = VB_TEXT_HEIGHT;
+	RETURN_ON_ERROR(draw_image("arrow_right.bmp", x, VB_DIVIDER_V_OFFSET,
+				   w, h, PIVOT_H_RIGHT|PIVOT_V_BOTTOM));
 	RETURN_ON_ERROR(get_image_size(base_graphics, "arrow_right.bmp",
 				       &w, &h));
-	x -= w;
-	RETURN_ON_ERROR(draw_image("arrow_right.bmp",
-			x, VB_DIVIDER_V_OFFSET, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
-			PIVOT_H_LEFT|PIVOT_V_BOTTOM));
+	x -= w + VB_PADDING;
 
-	/* Draw the language name */
-	w = 0;
+	/* Draw language name */
+	w = VB_SIZE_AUTO;
 	h = VB_TEXT_HEIGHT;
-	RETURN_ON_ERROR(get_image_size_locale("language.bmp", locale, &w, &h));
-	x -= w;
 	RETURN_ON_ERROR(draw_image_locale("language.bmp", locale,
-			x, VB_DIVIDER_V_OFFSET, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
-			PIVOT_H_LEFT|PIVOT_V_BOTTOM));
+					  x, VB_DIVIDER_V_OFFSET, w, h,
+					  PIVOT_H_RIGHT|PIVOT_V_BOTTOM));
+	RETURN_ON_ERROR(get_image_size_locale("language.bmp", locale, &w, &h));
+	x -= w + VB_PADDING;
 
-	/* Draw the left arrow */
-	w = 0;
+	/* Draw left arrow */
+	w = VB_SIZE_AUTO;
 	h = VB_TEXT_HEIGHT;
-	RETURN_ON_ERROR(get_image_size(base_graphics, "arrow_left.bmp",
-				       &w, &h));
-	x -= w;
-	RETURN_ON_ERROR(draw_image("arrow_left.bmp",
-			x, VB_DIVIDER_V_OFFSET, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
-			PIVOT_H_LEFT|PIVOT_V_BOTTOM));
+	RETURN_ON_ERROR(draw_image("arrow_left.bmp", x, VB_DIVIDER_V_OFFSET,
+				   w, h, PIVOT_H_RIGHT|PIVOT_V_BOTTOM));
 
 	return VBERROR_SUCCESS;
 }
@@ -460,9 +480,8 @@ static VbError_t draw_base_screen(uint32_t locale, int show_language)
 		return VBERROR_UNKNOWN;
 	RETURN_ON_ERROR(draw_image("chrome_logo.bmp",
 			(VB_SCALE - VB_DIVIDER_WIDTH)/2,
-			/* '-10' to keep the logo lifted up from the divider */
-			VB_DIVIDER_V_OFFSET - 10,
-			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			VB_DIVIDER_V_OFFSET - VB_LOGO_LIFTUP,
+			VB_SIZE_AUTO, VB_LOGO_HEIGHT,
 			PIVOT_H_LEFT|PIVOT_V_BOTTOM));
 
 	if (show_language)
@@ -507,7 +526,7 @@ static VbError_t vboot_draw_developer_warning(uint32_t locale)
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
 			PIVOT_H_CENTER|PIVOT_V_TOP));
 	RETURN_ON_ERROR(draw_image_locale("devmode.bmp", locale,
-			VB_SCALE_HALF, VB_SCALE_HALF + VB_TEXT_HEIGHT,
+			VB_SCALE_HALF, VB_SCALE_HALF + VB_TEXT_HEIGHT * 2,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
 			PIVOT_H_CENTER|PIVOT_V_TOP));
 	return VBERROR_SUCCESS;
@@ -515,14 +534,14 @@ static VbError_t vboot_draw_developer_warning(uint32_t locale)
 
 static VbError_t vboot_draw_recovery_remove(uint32_t locale)
 {
+	int32_t h = VB_DEVICE_HEIGHT;
 	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
 	RETURN_ON_ERROR(draw_image_locale("remove.bmp", locale,
-			VB_SCALE_HALF, VB_SCALE_HALF - VB_ICON_HEIGHT,
+			VB_SCALE_HALF, VB_SCALE_HALF - h/2,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
 			PIVOT_H_CENTER|PIVOT_V_BOTTOM));
 	RETURN_ON_ERROR(draw_image("RemoveDevices.bmp",
-			VB_SCALE_HALF, VB_SCALE_HALF,
-			VB_SIZE_AUTO, VB_ICON_HEIGHT * 2,
+			VB_SCALE_HALF, VB_SCALE_HALF, VB_SIZE_AUTO, h,
 			PIVOT_H_CENTER|PIVOT_V_CENTER));
 	return VBERROR_SUCCESS;
 }
@@ -543,14 +562,14 @@ static VbError_t vboot_draw_recovery_no_good(uint32_t locale)
 
 static VbError_t vboot_draw_recovery_insert(uint32_t locale)
 {
+	const int32_t h = VB_DEVICE_HEIGHT;
 	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
 	RETURN_ON_ERROR(draw_image_locale("insert.bmp", locale,
-			VB_SCALE_HALF, VB_SCALE_HALF - VB_ICON_HEIGHT,
+			VB_SCALE_HALF, VB_SCALE_HALF - h/2,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
 			PIVOT_H_CENTER|PIVOT_V_BOTTOM));
 	RETURN_ON_ERROR(draw_image("InsertDevices.bmp",
-			VB_SCALE_HALF, VB_SCALE_HALF,
-			VB_SIZE_AUTO, VB_ICON_HEIGHT * 2,
+			VB_SCALE_HALF, VB_SCALE_HALF, VB_SIZE_AUTO, h,
 			PIVOT_H_CENTER|PIVOT_V_CENTER));
 	return VBERROR_SUCCESS;
 }
@@ -574,8 +593,8 @@ static VbError_t vboot_draw_developer_to_norm(uint32_t locale)
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
 			PIVOT_H_CENTER|PIVOT_V_TOP));
 	RETURN_ON_ERROR(draw_image_locale("tonorm.bmp", locale,
-			VB_SCALE_HALF, VB_SCALE_HALF + VB_TEXT_HEIGHT,
-			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 3,
+			VB_SCALE_HALF, VB_SCALE_HALF + VB_TEXT_HEIGHT * 2,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 4,
 			PIVOT_H_CENTER|PIVOT_V_TOP));
 	return VBERROR_SUCCESS;
 }
@@ -603,7 +622,7 @@ static VbError_t vboot_draw_to_norm_confirmed(uint32_t locale)
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
 			PIVOT_H_CENTER|PIVOT_V_TOP));
 	RETURN_ON_ERROR(draw_image_locale("reboot_erase.bmp", locale,
-			VB_SCALE_HALF, VB_SCALE_HALF + VB_TEXT_HEIGHT,
+			VB_SCALE_HALF, VB_SCALE_HALF + VB_TEXT_HEIGHT * 2,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
 			PIVOT_H_CENTER|PIVOT_V_TOP));
 	return VBERROR_SUCCESS;
