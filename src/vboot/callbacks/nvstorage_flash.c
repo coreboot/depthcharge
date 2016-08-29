@@ -56,10 +56,10 @@ static uint8_t nvram_cache[VBNV_BLOCK_SIZE];
 
 static int flash_nvram_init(void)
 {
-	int area_offset, prev_offset, size_limit;
+	int used_below, empty_above;
 	static int vbnv_flash_is_initialized = 0;
 	uint8_t empty_nvram_block[sizeof(nvram_cache)];
-	uint8_t *nvram_area_in_flash;
+	uint8_t *block;
 
 	if (vbnv_flash_is_initialized)
 		return 0;
@@ -69,36 +69,43 @@ static int flash_nvram_init(void)
 		return -1;
 	}
 
-	nvram_area_in_flash = flash_read(nvram_area_descriptor.offset,
-					 nvram_area_descriptor.size);
-	if (!nvram_area_in_flash) {
-		printf("%s: failed to read NVRAM area\n", __func__);
-		return -1;
-	}
-
 	/* Prepare an empty NVRAM block to compare against. */
 	memset(empty_nvram_block, 0xff, sizeof(empty_nvram_block));
 
-	/*
-	 * Now find the first completely empty NVRAM blob. The actual NVRAM
-	 * blob will be right below it.
-	 */
-	size_limit = nvram_area_descriptor.size - sizeof(nvram_cache);
-	for (area_offset = 0, prev_offset = 0;
-	     area_offset <= size_limit;
-	     area_offset += sizeof(nvram_cache)) {
-		if (!memcmp(nvram_area_in_flash + area_offset,
-			    empty_nvram_block,
-			    sizeof(nvram_cache)))
-			break;
-		prev_offset = area_offset;
+	/* Binary search for the border between used and empty */
+	used_below = 0;
+	empty_above = nvram_area_descriptor.size / sizeof(nvram_cache);
+
+	while (used_below + 1 < empty_above) {
+		int guess = (used_below + empty_above) / 2;
+		block = flash_read(nvram_area_descriptor.offset +
+				   guess * sizeof(nvram_cache),
+				   sizeof(nvram_cache));
+		if (!block) {
+			printf("%s: failed to read NVRAM area\n", __func__);
+			return -1;
+		}
+
+		if (!memcmp(block, empty_nvram_block, sizeof(nvram_cache)))
+			empty_above = guess;
+		else
+			used_below = guess;
 	}
 
-	memcpy(nvram_cache,
-	       nvram_area_in_flash + prev_offset,
-	       sizeof(nvram_cache));
+	/*
+	 * Offset points to the last non-empty blob.  Or if all blobs are empty
+	 * (nvram is totally erased), point to the first blob.
+	 */
+	nvram_blob_offset = used_below * sizeof(nvram_cache);
 
-	nvram_blob_offset = prev_offset;
+	block = flash_read(nvram_area_descriptor.offset + nvram_blob_offset,
+			   sizeof(nvram_cache));
+	if (!block) {
+		printf("%s: failed to read NVRAM area\n", __func__);
+		return -1;
+	}
+	memcpy(nvram_cache, block, sizeof(nvram_cache));
+
 	vbnv_flash_is_initialized = 1;
 	return 0;
 }
