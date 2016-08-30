@@ -1,1 +1,1 @@
-<span color='#888'>&#x25c0;</span>
+<span color='#888'>&#x25c2;</span>
