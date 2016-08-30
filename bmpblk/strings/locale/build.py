@@ -31,8 +31,6 @@ KEY_STYLES = 'styles'
 FIRMWARE_STRINGS_FILE = 'firmware_strings.txt'
 FORMAT_FILE = 'format.yaml'
 TXT_TO_PNG_SVG = os.path.join(SCRIPT_BASE, '..', 'text_to_png_svg')
-BACKGROUND_IMAGE = os.path.join(SCRIPT_BASE, '..', '..', 'images',
-                                'Background.png')
 OUTPUT_DIR = os.path.join(os.getenv('OUTPUT', os.path.join(SCRIPT_BASE, '..',
                                                            '..', 'build')),
                           '.stage', 'locale')
@@ -127,12 +125,11 @@ def BuildTextFiles(inputs, files, output_dir):
       CreateFile(file_name, contents, output_dir)
 
 
-def ConvertPngFile(locale, max_width, file_name, styles, fonts, output_dir):
+def ConvertPngFile(locale, file_name, styles, fonts, output_dir):
   """Converts text files into PNG image files.
 
   Args:
     locale: Locale (language) to select implicit rendering options.
-    max_width: Maximum allowed image width.
     file_name: String of input file name to generate.
     styles: Dictionary to get associated per-file style options.
     fonts: Dictionary to get associated per-file font options.
@@ -155,16 +152,12 @@ def ConvertPngFile(locale, max_width, file_name, styles, fonts, output_dir):
 
   # Check output file size
   output_file = os.path.join(output_dir, file_name + '.png')
-  if max_width < GetImageWidth(output_file):
-    print 'Error: message too long: %s/%s' % (locale, file_name)
-    return False
 
   return True
 
 def main(argv):
   with open(FORMAT_FILE) as f:
     formats = yaml.load(f)
-  max_width = GetImageWidth(BACKGROUND_IMAGE) * (4 / 5.0)
 
   # Decide locales to build.
   if len(argv) > 0:
@@ -184,7 +177,7 @@ def main(argv):
       os.makedirs(output_dir)
     BuildTextFiles(inputs, formats[KEY_FILES], output_dir)
     results += [pool.apply_async(ConvertPngFile,
-                                 (locale, max_width, file_name,
+                                 (locale, file_name,
                                   formats[KEY_STYLES], formats[KEY_FONTS],
                                   output_dir))
                 for file_name in formats[KEY_FILES]]
