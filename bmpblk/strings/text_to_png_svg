@@ -94,12 +94,19 @@ bgcolor="${bgcolor###}"
 # - SVG defaults to 90DPI, which is larger than standard point size (72DPI).
 #   To support both SVG and raster rendering, we always use 90DPI.
 
+if [ -n "$outdir" ] && [ -n "$language" ]; then
+  mkdir -p "${outdir%/}/lo"
+fi
+
 for txtfile in $*; do
   # pango-view does not support assigning output format options for bitmap, so
   # we must create images in PNG format and then post-process it (ex, convert
   # into BMP by ImageMagick).
   pngfile="${txtfile%.*}".png
-  [ -z "$outdir" ] || pngfile="${outdir%/}/$(basename "$pngfile")"
+  if [ -n "$outdir" ]; then
+    pngfile="${outdir%/}/$(basename "$pngfile")"
+    pngfile_lo="${outdir%/}/lo/$(basename "$pngfile")"
+  fi
   svgfile="${pngfile%.*}".svg
   file_opt=""
   case "$txtfile" in
@@ -116,12 +123,15 @@ for txtfile in $*; do
   esac
   pango_opt="-q $language \
     '--background=$bgcolor' '--foreground=$color' \
-    '--font=$font $pointsize' --dpi=90 \
+    '--font=$font $pointsize' \
     '--margin=$margin' \
     '--align=$align' \
     $params $file_opt"
 
-  eval pango-view $pango_opt --hinting=full --output "$pngfile" "$txtfile"
+  eval pango-view $pango_opt --hinting=full --dpi=180 --output "$pngfile" "$txtfile"
+  if [ -n "$language" ]; then
+    eval pango-view $pango_opt --hinting=full --dpi=90 --output "$pngfile_lo" "$txtfile"
+  fi
   eval pango-view $pango_opt --hinting=none --output "$svgfile" "$txtfile"
   echo "wrote $pngfile,svg"
 done

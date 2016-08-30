@@ -5,143 +5,132 @@
 #   key2: value ...
 #   ...
 #
-# name: List of board names for this configuration, seperated by comma.
+# name: List of board names for this configuration, separated by comma.
 # keys are as follows:
-# 'assets_dir': Directory of image resources (icons and diagrams) to be used
-#               (default: 'assets').
-# 'assets_res': Screen resolution that best fits current assets
-#               (default: [1366, 768]).
-# 'bad_usb3': Presence of USB3 ports that cannot boot recovery (default: False).
-# 'locales': List of locales to include (default: All locales).
-# 'optional_screens': List of optional screens to include (default: None).
-# 'panel': Panel Dimension (default: [1366, 768]).
-# 'phy_rec': Presence of physical recovery button (default: False, check
-#            http://crosbug.com/p/24963).
-# 'res': Firmware graphics resolution (default: [1366, 768])
-# 'sdcard': Presence of SD/MMC Card Reader that can boot in recovery mode
-#           (default: True).
-# 'size_limit': Limitation of output file size (by the reserved space in GBB).
-# 'text_colors': Max colors for text images (Default: 6 for scaled images,
-#                otherwise 16. Set to zero for auto-detect). Decrease to reduce
-#                output file size.
 #
-# These are all the known locales, sorted more-or-less geograpically
-#  en es-419 pt-BR fr es pt-PT ca it de
-#  el nl da nb(no) sv fi et lv lt ru pl cs sk hu sl sr hr bg ro
-#  uk tr he(iw) ar fa hi th vi id fil zh-CN zh-TW ko ja
-#  bn, gu, kn, ml, mr, ta, te
+# screen: Resolution of the framebuffer where firmware plots pixels
+# panel: Display dimension. This is optional and used as a hint to adjust
+#   image sizes for stretched displays. For a stretched display, narrower
+#   images will be created so that displayed images will look proportional to
+#   the original aspect ratio. If this is omitted, the panel dimension is
+#   assumed to be the same as the framebuffer.
+# bad_usb3: Presence of USB3 ports that cannot boot recovery
+# locales: List of locales to include
+# hi_res: List of locales rendered in higher DPI
+# phy_rec: Presence of physical recovery button (http://crosbug.com/p/24963).
+# sdcard: Presence of SD/MMC Card Reader that can boot in recovery mode
+# text_colors: Maximum number of colors for text images.
 #
 # Note the locale should be supported (and named) by Chrome browser:
 # https://chromium.googlesource.com/chromium/chromium/+/master/ui/base/l10n/l10n_util.cc
 # In other words, iw should be 'he', and no should be 'nb'.
 
-std:
-  # Standard bitmap, for test and development.
-  res:      [1366, 768]
-  panel:    [1366, 768]
-  locales:  [en, ja]
+# Default configuration
+# These are the values used unless set otherwise in the board specific config
+_DEFAULT_:
+  screen:      [1366, 768]
+  panel:       []
+  sdcard:      True
+  bad_usb3:    False
+  phy_rec:     False
+  text_colors: 7
+  locales:     [en, es-419, pt-BR, fr, es, pt-PT, ca, it, de,
+                el, nl, da, nb, sv, fi, et, lv, lt, ru, pl, cs, sk, hu, sl, sr, hr, bg, ro,
+                uk, tr, he, ar, fa, hi, th, ms, vi, id, fil, zh-CN, zh-TW, ko, ja,
+                bn, gu, kn, ml, mr, ta, te]
+  hi_res:      [en, es-419, pt-BR, fr, es, pt-PT, ca, it, de,
+                el, nl, da, nb, sv, fi, et, lv, lt, ru, pl, cs, sk, hu, sl, sr, hr, bg, ro,
+                uk, tr, he, ar, fa, hi, th, ms, vi, id, fil, zh-CN, zh-TW, ko, ja,
+                bn, gu, kn, ml, mr, ta, te]
 
 x86-generic,amd64-generic:
-  # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
+  # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
   # Boots recovery image on any SD card and USB ports.
-  res:      [1024, 768]
+  screen:   [1024, 768]
   panel:    [1366, 768]
-  size_limit: 970368
+  hi_res:   [en]
 
 arm-generic,mips-generic:
+  hi_res:   [en]
+
+nyan,nyan_big:
+  hi_res:   [en]
+
+veyron_pinky,veyron_jerry:
   # Using native graphics mode 1366x768.
   # Boots recovery image on any SD card and USB ports.
-  res:      [1366, 768]
-  panel:    [1366, 768]
-  size_limit: 970112
-
-nyan,nyan_big,veyron_pinky,veyron_jerry:
-  # 1366x768, boots recovery image on any SD card or USB ports.
-  res:      [1366, 768]
-  panel:    [1366, 768]
+  hi_res:   [en]
 
 peach_pi,peach_pi-freon:
   # 1920x1080, boots recovery image on any SD card or USB ports.
   # Using old U-Boot firmware with smaller size so the locale list is limited.
-  res:      [1920, 1080]
-  panel:    [1920, 1080]
-  assets_dir: assets2x
-  assets_res: [1920, 1080]
-  size_limit: 515712
-  locales:   [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id,
-              th, ar, ms, zh-CN, zh-TW, fi, pl]
+  screen:   [1920, 1080]
+  locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id,
+             th, ar, ms, zh-CN, zh-TW, fi, pl]
 
 veyron_minnie:
   # 1280x800, boots recovery image on any SD card or USB ports.
-  # The difference in resolution (104%) is too small so we don't want assets and
-  # text to be resized, to get better image quality and smaller output.
-  res:      [1280, 800]
-  panel:    [1280, 800]
-  assets_res: [1280, 800]
+  screen:   [1280, 800]
+  hi_res:   [en]
 
 peach_pit,peach_pit-freon:
   # 1366x768, boots recovery image on any SD card or USB ports.
   # Using old U-Boot firmware with smaller size so the locale list is limited.
-  res:      [1366, 768]
-  panel:    [1366, 768]
-  size_limit: 515712
-  locales:   [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id,
-              th, ar, ms, zh-CN, zh-TW, fi, pl]
+  locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id,
+             th, ar, ms, zh-CN, zh-TW, fi, pl]
 
 daisy,daisy_snow,daisy_skate,daisy_freon,daisy_skate-freon:
   # 1366x768, and can only boot recovery by SD card or USB2 [not USB3].
   # Using old U-Boot firmware with smaller size so the locale list is limited.
-  res:      [1366, 768]
-  panel:    [1366, 768]
   bad_usb3: True
-  size_limit: 515712
-  locales:   [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id,
-              th, ar, ms, zh-CN, zh-TW, fi, pl]
+  locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id,
+             th, ar, ms, zh-CN, zh-TW, fi, pl]
+  hi_res:   [en]
 
 daisy_spring,daisy_spring-freon:
   # 1366x768, can only boot recovery by USB (No card reader, or not able to
   # recover from card reader).
   # Using old U-Boot firmware with smaller size so the locale list is limited.
-  res:       [1366, 768]
-  panel:     [1366, 768]
-  sdcard:    False
-  size_limit: 515712
-  locales:   [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id,
-              th, ar, ms, zh-CN, zh-TW, fi, pl]
+  sdcard:   False
+  locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id,
+             th, ar, ms, zh-CN, zh-TW, fi, pl]
+  hi_res:   [en]
 
 falco,peppy,wolf,leon,banjo,orco,gandof,heli:
-  # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
+  # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
   # With card reader. USB3 ports will run in USB2 mode for recovery boot.
-  res:      [1024, 768]
+  screen:   [1024, 768]
   panel:    [1366, 768]
+  hi_res:   [en]
 
 squawks,glimmer,clapper,enguarde,expresso,kip,gnawty,winky,quawks,swanky,candy:
-  # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
+  # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
   # With card reader. All USB ports can boot in recovery mode.
-  res:      [1024, 768]
+  screen:   [1024, 768]
   panel:    [1366, 768]
+  hi_res:   [en]
 
 auron_paine,auron_yuna,cid,lulu,reks,lars:
-  # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
+  # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
   # With card reader. All USB ports can boot in recovery mode.
-  res:      [1024, 768]
+  screen:   [1024, 768]
   panel:    [1366, 768]
+  hi_res:   [en]
 
 chell,glados:
   # 1920x1080, boots recovery image on any SD card or USB ports.
-  res:      [1920, 1080]
-  panel:    [1920, 1080]
-  assets_dir: assets2x
-  assets_res: [1920, 1080]
+  screen:   [1920, 1080]
+  hi_res:   [en]
 
 panther,tricky,mccloud,guado,tidus,rikku,ninja:
   # Using VESA graphics mode 1024x768 (0x0117).
   # A chromebox without built-in panel/keyboard.
   # Assume the display is a modern 16:9 (1920x1080) monitor.
   # With card reader and physical recovery switch.
-  res:      [1024, 768]
+  screen:   [1024, 768]
   panel:    [1920, 1080]
   phy_rec:  True
+  hi_res:   [en]
 
 zako:
   # Using VESA graphics mode 1024x768 (0x0117).
@@ -149,81 +138,95 @@ zako:
   # Assume the display is a modern 16:9 (1920x1080) monitor.
   # With card reader and physical recovery switch.
   # Special firmware with WrongPowerSupply screens.
-  res:      [1024, 768]
+  screen:   [1024, 768]
   panel:    [1920, 1080]
   phy_rec:  True
   optional_screens: [ReserveCharging, ReserveChargingEmpty, WrongPowerSupply]
   text_colors:  4
+  hi_res:   [en]
 
 monroe,sumo:
   # Using VESA graphics mode 1024x768 (0x0117).
   # A chromestation with built-in panel, without built-in keyboard.
   # Display is a modern 16:9 (1920x1080) monitor.
   # With physical recovery switch, without card reader.
-  res:      [1024, 768]
+  screen:   [1024, 768]
   panel:    [1920, 1080]
   phy_rec:  True
   sdcard:   False
+  hi_res:   [en]
 
 cranky,buddy:
   # Using VESA graphics mode 1024x768 (0x0117).
   # A chromestation with built-in panel, without built-in keyboard.
   # Display is a modern 16:9 (1920x1080) monitor.
   # With physical recovery switch, with card reader.
-  res:      [1024, 768]
+  screen:   [1024, 768]
   panel:    [1920, 1080]
   phy_rec:  True
+  hi_res:   [en]
 
 parrot,butterfly:
-  # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
+  # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
   # Can only boot recovery by USB. (No card reader, or not able to recover
   # from card reader.)
-  res:      [1024, 768]
+  screen:   [1024, 768]
   panel:    [1366, 768]
   sdcard:   False
+  hi_res:   [en]
 
 stout:
-  # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
+  # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
   # Can only boot recovery by USB2 [not USB3]. (No card reader, or not able
   # to recover from card reader.)
-  res:      [1024, 768]
+  screen:   [1024, 768]
   panel:    [1366, 768]
   sdcard:   False
   bad_usb3: True
   text_colors:  4
+  hi_res:   [en]
 
 link:
   # Non-standard Graphics mode 1280x850, with 2560x1700 panel.
   # Can boot recovery by USB and SD card readers.
   # Note its firmware can not contain all default locales so the shipping locale
   # list is specified.
-  res:      [1280, 850]
+  screen:   [1280, 850]
   panel:    [2560, 1700]
-  locales: [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id, th]
+  locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id, th]
+  hi_res:   [en]
 
 stumpy:
   # There's no standard panel size for Stumpy -- depends on the monitor user has
   # attached. Let's assume it's a modern LCD panel with 1920x1080 dimension.
-  res:      [800, 600]
+  screen:   [800, 600]
   panel:    [1920, 1080]
   locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja]
-  size_limit: 515712
   sdcard:   False
+  hi_res:   [en]
 
 lumpy:
   # Lumpy was shipped with old firmware bitmaps and caused its resolution to be
   # 800x600.
-  res:      [800, 600]
+  screen:   [800, 600]
   panel:    [1366, 768]
-  size_limit: 515712
   locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja]
+  hi_res:   [en]
 
 veyron_mickey:
-  # Using VESA graphics mode 640x480 (0x0101).
-  # A chromebox with external display only, use low-res "safe" mode.
+  # A chromebit with external display only, use low-res "safe" mode.
   # With physical recovery switch, without card reader.
-  res:      [640, 480]
+  screen:   [640, 480]
   panel:    [1920, 1080]
   phy_rec:  True
   sdcard:   False
   text_colors:  4
+  hi_res:   [en]
+
+kevin,kevin-tpm2:
+  # 2400x1600, boots recovery image on any SD card or USB ports.
+  screen:   [2400, 1600]
+
+samus:
+  screen:   [1280, 850]
+  hi_res:   [en]

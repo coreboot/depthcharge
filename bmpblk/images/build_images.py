@@ -14,370 +14,387 @@ Usage:
   configuration file.
 '''
 
+import copy
+from collections import defaultdict
 import glob
+import Image
 import os
 import shutil
 import subprocess
 import sys
 import yaml
 
-import convert_to_bmp3
-
-# Composition settings
-CHARGE_BACKGROUND_COLOR = (0, 0, 0)
-
-# The files that use different scaling parameter.
-BACKGROUND_IMAGE = 'Background'
-CHARGE_BACKGROUND_IMAGE = 'reserve_charging_background'
-BACKGROUND_LIST = (BACKGROUND_IMAGE, CHARGE_BACKGROUND_IMAGE)
-DUMMY_IMAGE = 'dummy'
-
-# Files with different background
-CHARGE_ASSETS_PREFIX = "reserve_charging"
-
-# Path, directory names and output file name.
-SCRIPT_BASE = os.path.dirname(os.path.abspath(__file__))
+ASSET_DIR = 'assets2x'
 LOCALE_DIR = 'locale'
 FONT_DIR = 'font'
 PNG_FILES = '*.png'
 SVG_FILES = '*.svg'
-TEXT_COLORS_AUTODETECT = 0
-
-DEFAULT_RESOLUTION = (1366.0, 768.0)
-DEFAULT_PANEL_SIZE = DEFAULT_RESOLUTION
-DEFAULT_ASSETS_DIR = 'assets'
-DEFAULT_LOCALES = ['en', 'es-419', 'pt-BR', 'fr', 'es', 'pt-PT', 'ca', 'it',
-                   'de', 'el', 'nl', 'da', 'nb', 'sv', 'fi', 'et', 'lv', 'lt',
-                   'ru', 'pl', 'cs', 'sk', 'hu', 'sl', 'sr', 'hr', 'bg', 'ro',
-                   'uk', 'tr', 'he', 'ar', 'fa', 'hi', 'th', 'ms', 'vi', 'id',
-                   'fil', 'zh-CN', 'zh-TW', 'ko', 'ja',
-                   'bn', 'gu', 'kn', 'ml', 'mr', 'ta', 'te']
-
-DEFAULT_OPTIONAL_SCREENS = []
-DEFAULT_TEXT_COLORS = TEXT_COLORS_AUTODETECT
-DEFAULT_SIZE_LIMIT = 970112  # Based by recent ARM firmware.
 
 # YAML key names.
-PANEL_SIZE_KEY = 'panel'
-RESOLUTION_KEY = 'res'
-ASSETS_DIR_KEY = 'assets_dir'
-ASSETS_RESOLUTION_KEY = 'assets_res'
+BOARDS_CONFIG = 'boards.yaml'
+DEFAULT_NAME = '_DEFAULT_'
+SCREEN_KEY = 'screen'
+PANEL_KEY = 'panel'
 SDCARD_KEY = 'sdcard'
 BAD_USB3_KEY = 'bad_usb3'
 PHY_REC_KEY = 'phy_rec'
 LOCALES_KEY = 'locales'
-OPTIONAL_SCREENS_KEY = 'optional_screens'
+HI_RES_KEY = 'hi_res'
 TEXT_COLORS_KEY = 'text_colors'
-SIZE_LIMIT_KEY = 'size_limit'
 
-KNOWN_KEYS = set((PANEL_SIZE_KEY, RESOLUTION_KEY, SDCARD_KEY, BAD_USB3_KEY,
-                  PHY_REC_KEY, ASSETS_DIR_KEY, ASSETS_RESOLUTION_KEY,
-                  LOCALES_KEY, OPTIONAL_SCREENS_KEY, TEXT_COLORS_KEY,
-                  SIZE_LIMIT_KEY))
+# Set scale for each image. Key is image name and value is (x, y) where x is
+# the width and the height relative to the screen size. For example, if
+# SCALE_BASE is 1000, (500, 100) means the image will be scaled to 50.0% of
+# the screen width and 10.0% of the screen height.
+#
+# These are supposed to be kept in sync with the numbers set in Depthcharge to
+# avoid runtime scaling, which makes images blurry.
+SCALE_BASE = 1000  # 100.0%
+DEFAULT_ASSET_SCALE = (0, 169)
+ASSET_SCALES = {
+    'chrome_logo': (0, 39),
+    'divider_btm': (SCALE_BASE, 0),
+    'divider_top': (SCALE_BASE, 0),
+    'InsertDevices': (0, 371),
+    'RemoveDevices': (0, 371),
+    'reserve_charging': (0, 117),
+    'reserve_charging_empty': (0, 117),
+}
+TEXT_HEIGHT = 36   #   3.6%
+DEFAULT_TEXT_SCALE = (0, TEXT_HEIGHT)
+TEXT_SCALES = {
+    'tonorm': (0, 4 * TEXT_HEIGHT),
+    'insert_sd_usb2': (0, 2 * TEXT_HEIGHT),
+    'insert_usb2': (0, 2 * TEXT_HEIGHT),
+    'os_broken': (0, 2 * TEXT_HEIGHT),
+    'todev': (0, 4 * TEXT_HEIGHT),
+    'todev_phyrec': (0, 4 * TEXT_HEIGHT),
+    'tonorm': (0, 4 * TEXT_HEIGHT),
+    'update': (0, 3 * TEXT_HEIGHT),
+    'wrong_power_supply': (0, 4 * TEXT_HEIGHT),
+}
+# Background colors
+DEFAULT_BACKGROUND = (255, 255, 255)
+CHARGE_BACKGROUND = (0, 0, 0)
+BACKGROUND_COLORS = {
+    'reserve_charging': CHARGE_BACKGROUND,
+    'reserve_charging_empty': CHARGE_BACKGROUND,
+}
+ASSET_MAX_COLORS = 128
 
 
 class BuildImageError(Exception):
-  """The exception class for all errors generated during build image process."""
+  """The exception class for all errors generated during build image process"""
   pass
 
 
-def shell(command, capture_stdout=False):
-  """Executes command by shell interpreter.
+class Convert(object):
+  """Converts assets, texts, URLs, and fonts to bitmap images"""
 
-  Args:
-    command: a string, the shell script command to invoke.
-    capture_stdout: True to capture an return data sent to stdout, otherwise
-                    leave it untouched.
-  Returns:
-    Output on stdout if capture_stdout is True, otherwise None.
-  """
-  if capture_stdout:
-    return subprocess.check_output(command, shell=True)
-  else:
-    subprocess.check_call(command, shell=True)
+  DEFAULT_OUTPUT_EXT = '.bmp'
 
+  replace_map = {
+      'BadSD': '',
+      'BadUSB': '',
+      'InsertUSB': '',
+      'RemoveSD': '',
+      'RemoveUSB': '',
+      'insert_sd_usb2': '',
+      'insert_usb2': '',
+      'insert_usb': '',
+      'todev_phyrec': '',
+      'remove': '',
+      'wrong_power_supply': '',
+  }
 
-def find_utility(name):
-  """Finds a utility program and setup PATH for it.
+  def __init__(self, board, config):
+    """
+    Args:
+      board: a string, name of the board to use.
+      config: a dictionary of configuration parameters.
+    """
+    self.board = board
+    self.config = config
+    self.set_dirs()
+    self.set_screen()
+    self.set_replace_map()
+    self.set_locales()
+    self.text_max_colors = self.config[TEXT_COLORS_KEY]
 
-  Args:
-      name: a string, name of the utility program to find.
-  """
-  if os.system("type %s >/dev/null 2>&1" % name) == 0:
-    return
+  def set_dirs(self):
+    """Set output directory and stage directory"""
+    output_base = os.getenv('OUTPUT', os.path.join('..', 'build'))
+    self.output_dir = os.path.join(output_base, self.board)
+    self.stage_dir = os.path.join(output_base, '.stage')
 
-  vbutil_dir = os.path.join(SCRIPT_BASE, '..', '..', 'vboot_reference',
-                            'build', 'utility')
-  if os.path.exists(os.path.join(vbutil_dir, name)):
-    os.putenv('PATH', os.getenv('PATH') + (':%s' % vbutil_dir))
-  else:
-    raise BuildImageError('%s is not found in PATH.' % name)
+  def set_screen(self):
+    """Set screen width and height"""
+    self.screen_width, self.screen_height = self.config[SCREEN_KEY]
+
+    self.stretch = (1, 1)
+    if self.config[PANEL_KEY]:
+      # Calculate 'stretch'. It's used to shrink images horizontally so that
+      # resulting images will look proportional to the original image on the
+      # stretched display. If the display is not stretched, meaning aspect
+      # ratio is same as the screen where images were rendered (1366x766),
+      # no shrinking is performed.
+      panel_width, panel_height = self.config[PANEL_KEY]
+      self.stretch = (self.screen_width * panel_height,
+                      self.screen_height * panel_width)
+
+    if self.stretch[0] > self.stretch[1]:
+      raise BuildImageError('Panel aspect ratio (%f) is smaller than screen '
+                            'aspect ratio (%f). It indicates screen will be '
+                            'shrunk horizontally. It is currently unsupported.'
+                            % (float(panel_width) / panel_height,
+                               float(self.screen_width) / self.screen_height))
+
+    # Set up square drawing area
+    # TODO: Depthcharge should narrow the canvas if the screen is stretched.
+    self.screen_width = self.screen_height
+
+  def set_replace_map(self):
+    """Builds a map replacing images
+
+    For each (key, value), image 'key' will be replaced by image 'value'
+    """
+    sdcard = self.config[SDCARD_KEY]
+    bad_usb3 = self.config[BAD_USB3_KEY]
+    physical_recovery = self.config[PHY_REC_KEY]
+
+    if not sdcard:
+      self.replace_map['BadDevices'] = 'BadUSB'
+      self.replace_map['InsertDevices'] = 'InsertUSB'
+      self.replace_map['insert'] = ('insert_usb2' if bad_usb3 else 'insert_usb')
+    elif bad_usb3:
+      self.replace_map['insert'] = 'insert_sd_usb2'
+
+    if physical_recovery:
+      self.replace_map['todev'] = 'todev_phyrec'
+
+  def set_locales(self):
+    """Set a list of locales for which localized images are converted"""
+    # LOCALES environment variable can overwrite boards.yaml
+    locales = os.getenv('LOCALES')
+    if locales:
+      self.locales = locales.split()
+    else:
+      self.locales = self.config[LOCALES_KEY]
+    self.hi_res_locales = self.config[HI_RES_KEY]
+
+  def calculate_dimension(self, original, scale):
+      """Calculate scaled width and height
+
+      This imitates the function of Depthcharge with the same name.
+
+      Args:
+        original: (width, height) of the original image
+        scale: (x, y) scale parameter relative to the screen size using
+            SCALE_BASE as a base.
+
+      Returns:
+        (width, height) of the scaled image
+      """
+      dim_width, dim_height = (0, 0)
+      scale_x, scale_y = scale
+      org_width, org_height = original
+
+      if scale_x == 0 and scale_y == 0:
+        raise BuildImageError('Invalid scale parameter: %s' % (scale))
+      if scale_x > 0:
+        dim_width = self.screen_width * scale_x / SCALE_BASE
+      if scale_y > 0:
+        dim_height = self.screen_height * scale_y / SCALE_BASE
+      if scale_x == 0:
+        dim_width = org_width * dim_height / org_height
+      if scale_y == 0:
+        dim_height = org_height * dim_width / org_width
+
+      dim_width = dim_width * self.stretch[0] / self.stretch[1]
+
+      return (dim_width, dim_height)
+
+  def convert_to_bitmap(self, input, scale, background, output, max_colors):
+    """Convert an image file to the bitmap format"""
+    image = Image.open(input)
+
+    # Process alpha channel and transparency.
+    if image.mode == 'RGBA':
+      target = Image.new('RGB', image.size, background)
+      image.load()  # required for image.split()
+      mask = image.split()[-1]
+      target.paste(image, mask=mask)
+    elif (image.mode == 'P') and ('transparency' in image.info):
+      exit('Sorry, PNG with RGBA palette is not supported.')
+    elif image.mode != 'RGB':
+      target = image.convert('RGB')
+    else:
+      target = image
+
+    # Process scaling
+    if scale:
+      new_size = self.calculate_dimension(image.size, scale)
+      if new_size[0] == 0 or new_size[1] == 0:
+        print 'Scaling', input
+        print 'Warning: width or height is 0 after resizing:',
+        print 'scale=%s size=%s stretch=%s new_size=%s' % (
+              scale, image.size, self.stretch, new_size)
+        return
+      target = target.resize(new_size, Image.ANTIALIAS)
+
+    # Export and downsample color space.
+    target.convert('P', dither=None, colors=max_colors, palette=Image.ADAPTIVE
+                   ).save(output)
+
+  def convert(self, input, output_dir, scales, max_colors):
+    """Convert file(s) to bitmap format"""
+    files = glob.glob(input)
+    if not files:
+      raise BuildImageError('Unable to find file(s): %s' % input)
+
+    for file in files:
+      name, ext = os.path.splitext(os.path.basename(file))
+      output = os.path.join(output_dir, name + self.DEFAULT_OUTPUT_EXT)
+
+      background = DEFAULT_BACKGROUND
+      if name in BACKGROUND_COLORS:
+        background = BACKGROUND_COLORS[name]
+
+      scale = scales[name]
+
+      if name in self.replace_map:
+        name = self.replace_map[name]
+        if not name:
+          continue
+        print 'Replace: %s => %s' % (file, name)
+        file = os.path.join(os.path.dirname(file), name + ext)
+
+      self.convert_to_bitmap(file, scale, background, output, max_colors)
+
+  def convert_assets(self):
+    """Convert images in assets folder"""
+    scales = defaultdict(lambda: DEFAULT_ASSET_SCALE)
+    scales.update(ASSET_SCALES)
+    self.convert(os.path.join(ASSET_DIR, PNG_FILES), self.output_dir,
+                 scales, ASSET_MAX_COLORS)
+
+  def convert_url(self):
+    """Convert URL and arrows"""
+    # URL and arrows should be default height
+    scales = defaultdict(lambda: DEFAULT_TEXT_SCALE)
+    files = os.path.join(self.stage_dir, PNG_FILES)
+    self.convert(files, self.output_dir, scales, self.text_max_colors)
+
+  def convert_texts(self):
+    """Convert localized texts"""
+    locale_dir = os.path.join(self.stage_dir, LOCALE_DIR)
+    # Using stderr to report progress synchronously
+    sys.stderr.write('  processing:')
+    for locale in self.locales:
+      output_dir = os.path.join(self.output_dir, LOCALE_DIR, locale)
+      if locale in self.hi_res_locales:
+        scales = defaultdict(lambda: DEFAULT_TEXT_SCALE)
+        scales.update(TEXT_SCALES)
+      else:
+        # We use low-res images for these locales and turn off scaling
+        # to make the files fit in a ROM. Note that these text images will
+        # be scaled by Depthcharge to be the same height as hi-res texts.
+        locale += '/lo'
+        scales = defaultdict(lambda: None)
+      sys.stderr.write(' ' + locale)
+      os.makedirs(output_dir)
+      self.convert(os.path.join(locale_dir, locale, PNG_FILES),
+                   output_dir, scales, self.text_max_colors)
+    sys.stderr.write('\n')
+
+  def convert_fonts(self):
+    """Convert font images"""
+    scales = defaultdict(lambda: DEFAULT_TEXT_SCALE)
+    font_dir = os.path.join(self.stage_dir, FONT_DIR)
+    files = os.path.join(font_dir, PNG_FILES)
+    font_output_dir = os.path.join(self.output_dir, FONT_DIR)
+    os.makedirs(font_output_dir)
+    self.convert(files, font_output_dir, scales, self.text_max_colors)
+
+  def create_locale_list(self):
+    """Create locale list"""
+    with open(os.path.join(self.output_dir, 'locales'), 'w') as locale_list:
+      locale_list.write('\n'.join(self.locales))
+
+  def build_image(self):
+    """Builds all images required by a board"""
+    # Clean up output directory
+    if os.path.exists(self.output_dir):
+      shutil.rmtree(self.output_dir)
+    os.makedirs(self.output_dir)
+
+    print 'Converting asset images...'
+    self.convert_assets()
+
+    if not os.path.exists(self.stage_dir):
+      raise BuildImageError('Missing stage folder. Run make in strings dir.')
+
+    print 'Converting URL images...'
+    self.convert_url()
+
+    print 'Converting localized text images...'
+    self.convert_texts()
+
+    print 'Creating locale list file...'
+    self.create_locale_list()
+
+    print 'Converting fonts...'
+    self.convert_fonts()
 
 
 def load_boards_config(filename):
-  """Loads the configuration of all boards from a YAML file.
+  """Loads the configuration of all boards from a YAML file
 
   Args:
-    filename: a string, file name of a YAML config file.
+    filename: file name of a YAML config file.
 
   Returns:
-    A dictionary, where keys are board names, and values are corresponding board
-    configuration.
+    A dictionary with keys as board names and values as config parameters.
   """
-  with open(filename, 'r') as conf_file:
-    raw_config = yaml.load(conf_file)
-  config = {}
+  with open(filename, 'r') as file:
+    raw = yaml.load(file)
 
-  # Normalize configurations.
-  for boards, data in raw_config.iteritems():
+  configs = {}
+  default = raw[DEFAULT_NAME]
+  if not default:
+    raise BuildImageError('Default configuration is not found')
+  for boards, params in raw.iteritems():
+    if boards == DEFAULT_NAME:
+      continue
+    config = copy.deepcopy(default)
+    if params:
+      config.update(params)
     for board in boards.replace(',', ' ').split():
-      if data is None:
-        data = {}
-      if PANEL_SIZE_KEY not in data:
-        data[PANEL_SIZE_KEY] = DEFAULT_PANEL_SIZE
-      if RESOLUTION_KEY not in data:
-        data[RESOLUTION_KEY] = DEFAULT_RESOLUTION
-      if ASSETS_DIR_KEY not in data:
-        data[ASSETS_DIR_KEY] = DEFAULT_ASSETS_DIR
-      if ASSETS_RESOLUTION_KEY not in data:
-        data[ASSETS_RESOLUTION_KEY] = DEFAULT_RESOLUTION
-      if OPTIONAL_SCREENS_KEY not in data:
-        data[OPTIONAL_SCREENS_KEY] = DEFAULT_OPTIONAL_SCREENS
-      if TEXT_COLORS_KEY not in data:
-        data[TEXT_COLORS_KEY] = DEFAULT_TEXT_COLORS
-      if SIZE_LIMIT_KEY not in data:
-        data[SIZE_LIMIT_KEY] = DEFAULT_SIZE_LIMIT
-      if set(data) - KNOWN_KEYS:
-        raise BuildImageError('Unknown entries in config %s: %r' %
-                              (board, list(set(data) - KNOWN_KEYS)))
-      config[board] = data
-  return config
+      configs[board] = config
 
-
-def build_replace_map(config):
-  """Builds a map for replacing entries in given board configuration.
-
-  Args:
-    config: a dictionary, board configuration.
-
-  Returns:
-    A dictionary, each key represents the name of entry to be replaced by value.
-  """
-  sdcard = config.get(SDCARD_KEY, True)
-  bad_usb3 = config.get(BAD_USB3_KEY, False)
-  physical_recovery = config.get(PHY_REC_KEY, False)
-  replace_map = {}
-
-  if not sdcard:
-    replace_map['BadDevices'] = 'BadUSB'
-    replace_map['InsertDevices'] = 'InsertUSB'
-    replace_map['insert'] = ('insert_usb2' if bad_usb3 else 'insert_usb')
-  elif bad_usb3:
-    replace_map['insert'] = 'insert_sd_usb2'
-
-  if physical_recovery:
-    replace_map['todev'] = 'todev_phyrec'
-
-  return replace_map
-
-
-def get_locales(config):
-  """Gets the locales to include when building for one board.
-
-  The locales are decided by following order:
-    1. The LOCALES environment variable.
-    2. The 'locales' entry, if defined in config.
-    3. DEFAULT_LOCALES.
-
-  Args:
-    config: a dictionary, board configuration to specify default locales.
-
-  Returns:
-    A list, locales to use.
-  """
-  locales = os.getenv('LOCALES')
-  if locales:
-    return locales.split()
-
-  # Otherwise, follow the recommendation from config
-  if LOCALES_KEY in config:
-    return config[LOCALES_KEY]
-
-  return DEFAULT_LOCALES
-
-
-def convert_to_bmp(source, output_folder, scale_params, background_colors,
-                   replace_map, max_colors=128):
-  """Utility function to convert images into BMP format. Creates requested
-  files in output directory.
-
-  Args:
-    source: a string, source file(s). May contain glob-style wildcards.
-    output: a string, output folder.
-    scale_params: A list, scale parameters in (normal, background) format.
-                  'normal' is the scaling factor when the image is a normal
-                  image, and 'background' is the parameter for background image.
-    background_colors: A list, background color to fill if the input image has
-                  transparency, in (normal, charge) format.
-                  'normal' is the background color for images, and 'charge' is
-                  for images in charing mode (usually black).
-    replace_map: A dictionary, keys are file names to change and values are
-                 new output names.
-    max_colors: Maximum of colors can be used in output image.
-  """
-  files = glob.glob(source)
-  if not files:
-    raise BuildImageError('Unable to find file(s): %s' % source)
-
-  for image in files:
-    image_base, image_ext = os.path.splitext(os.path.basename(image))
-    output_file = os.path.join(
-        output_folder, image_base + convert_to_bmp3.DEFAULT_OUTPUT_EXT)
-    background_color = background_colors[0]
-    scale_param = scale_params[0]
-
-    if image_base in BACKGROUND_LIST:
-      scale_param = scale_params[1]
-    elif image_base.startswith(CHARGE_ASSETS_PREFIX):
-      background_color = background_colors[1]
-
-    if image_base in replace_map:
-      print 'Replace: %s <= %s' % (image, replace_map[image_base])
-      if replace_map[image_base] == DUMMY_IMAGE:
-        # Dummy is always in top folder, without scale.
-        scale_param = ''
-        image = DUMMY_IMAGE + '.png'
-      else:
-        image = os.path.join(os.path.dirname(image),
-                             replace_map[image_base] + image_ext)
-
-    # TODO(hungte) Cache results to speed up YAML generation.
-    convert_to_bmp3.convert_to_bmp(
-        image, scale_param, background=background_color,
-        output_file=output_file, max_colors=max_colors)
-
-
-def build_image(board, config):
-  """Builds all images required by a board.
-
-  Args:
-    board: a string, name of the board to use.
-    config: a dictionary of board configuration.
-
-  Returns:
-    A string for the output folder containing all resources.
-  """
-
-  output_base = os.getenv('OUTPUT', os.path.join('..', 'build'))
-  output_dir = os.path.join(output_base, board)
-  stage_dir = os.path.join(output_base, '.stage')
-  assets_dir = config[ASSETS_DIR_KEY]
-
-  resolution = config[RESOLUTION_KEY]
-  panel_size = config[PANEL_SIZE_KEY]
-  assets_resolution = config[ASSETS_RESOLUTION_KEY]
-  replace_map = build_replace_map(config)
-  optional_screens = config[OPTIONAL_SCREENS_KEY]
-  background_colors = (convert_to_bmp3.BACKGROUND_COLOR,
-                       CHARGE_BACKGROUND_COLOR)
-
-  # TODO(hungte) Allow overriding stage directory for 2x resolution files.
-  if not os.path.exists(stage_dir):
-    raise BuildImageError('Missing stage folder: %s, run make in strings' %
-                          stage_dir)
-
-  # Calculate the new aspect ratio (always shrink,never expand).
-  aspect_ratio = ((resolution[0] / float(resolution[1])) /
-                  (panel_size[0] / float(panel_size[1])))
-  if aspect_ratio < 1:
-    scale = (aspect_ratio, 1)
-  else:
-    scale = (1 / aspect_ratio, 1)
-
-  # Resizing text to smaller size makes it really hard to read, and most smaller
-  # resolutions, for example 800x600, can still use 100% text, so we only want
-  # to resize for larger resolutions.
-  if (resolution[1] > assets_resolution[1]):
-    # TODO(hungte) Regenerate text files in different sizes instead of rescale.
-    rescale_factor = resolution[1] / float(assets_resolution[1])
-    scale = (scale[0] * rescale_factor, scale[1] * rescale_factor)
-
-  scale_params = ('%d%%x%d%%' % (round(scale[0] * 100), round(scale[1] * 100)),
-                  '%dx%d!' % (resolution[0], resolution[1]))
-  print "%s: %s scaling: %s" % (board, assets_dir, ','.join(scale_params))
-
-  # Prepare output folder
-  if os.path.exists(output_dir):
-    shutil.rmtree(output_dir)
-  os.makedirs(output_dir)
-
-  # Prepare images in current and assets folder
-  convert_to_bmp(PNG_FILES, output_dir, scale_params, background_colors,
-                 replace_map)
-  convert_to_bmp(os.path.join(assets_dir, PNG_FILES), output_dir, scale_params,
-                 background_colors, replace_map)
-
-  # If we need to scale, use vector text images for better quality (which still
-  # looks good with less colors).
-  if scale == (1, 1):
-    text_files = PNG_FILES
-    text_max_colors = 7
-  else:
-    text_files = SVG_FILES
-    text_max_colors = 5
-  if config[TEXT_COLORS_KEY] != TEXT_COLORS_AUTODETECT:
-    text_max_colors = config[TEXT_COLORS_KEY]
-
-  # Prepares strings and localized images.
-  convert_to_bmp(os.path.join(stage_dir, text_files),
-                 output_dir, scale_params, background_colors,
-                 replace_map, text_max_colors)
-  locale_dir = os.path.join(stage_dir, LOCALE_DIR)
-  locales = get_locales(config)
-
-  # Show progress because processing SVG files may take a long time.
-  sys.stderr.write(" > processing: ")
-  for locale in locales:
-    sys.stderr.write(locale + " ")
-    locale_output_dir = os.path.join(output_dir, LOCALE_DIR, locale)
-    os.makedirs(locale_output_dir)
-    convert_to_bmp(os.path.join(locale_dir, locale, text_files),
-                   locale_output_dir, scale_params, background_colors,
-                   replace_map, text_max_colors)
-  sys.stderr.write("\n")
-
-  sys.stderr.write("creating locale list file\n")
-  with open(os.path.join(output_dir, 'locales'), 'w') as locale_list:
-    locale_list.write('\n'.join(locales))
-
-  font_dir = os.path.join(stage_dir, FONT_DIR)
-  font_output_dir = os.path.join(output_dir, FONT_DIR)
-  os.makedirs(font_output_dir)
-  convert_to_bmp(os.path.join(font_dir, text_files), font_output_dir,
-                 scale_params, background_colors, replace_map, text_max_colors)
-
-  # Create YAML file.
-  shell("cd %s && OPTIONAL_SCREENS='%s' %s/make_default_yaml.py %s" %
-        (output_dir, ' '.join(optional_screens), SCRIPT_BASE,
-         ' '.join(locales)))
-  return output_dir
+  return configs
 
 
 def main(args):
-  """Entry point when executed from command line.
+  """Entry point when executed from command line
 
   Args:
-    args: a list, boards to build.
+    args: a list, boards to build. None for all boards.
   """
-  config_database = load_boards_config('boards.yaml')
-  if args == ['ALL']:
-    args = config_database.keys()
-    print 'Building all boards: ', args
-  for board in args:
-    config = config_database.get(board, None)
-    if config is None:
-      raise BuildImageError('Unknown board: %s' % board)
-    build_image(board, config)
+  configs = load_boards_config(BOARDS_CONFIG)
+
+  targets = args
+  if not targets:
+    targets = configs.keys()
+
+  print 'Building for', ', '.join(targets)
+
+  for board in targets:
+    if board not in configs:
+      raise BuildImageError('%s not found in %s' % (BOARDS_CONFIG, board))
+    print 'Building for', board
+    convert = Convert(board, configs[board])
+    convert.build_image()
 
 
 if __name__ == '__main__':
@@ -385,4 +402,3 @@ if __name__ == '__main__':
     main(sys.argv[1:])
   except BuildImageError, err:
     sys.stderr.write("ERROR: %s\n" % err)
-

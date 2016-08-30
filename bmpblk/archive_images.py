@@ -16,10 +16,10 @@ Usage:
 
 from collections import defaultdict
 import getopt
+import glob
 import os
 import subprocess
 import sys
-import yaml
 
 def archive_images(archiver, output, name, files):
   """Archive files.
@@ -37,38 +37,33 @@ def archive_images(archiver, output, name, files):
   subprocess.call(command, shell=True)
 
 def archive(archiver, output):
-  """Archive language indepdent and depndent images.
+  """Archive base images and localized images
 
   Args:
     archiver: path to the archive tool
     output: path to the output directory
   """
-  # Everything comes from DEFAULT.yaml
-  default_yaml = os.path.join(output, 'DEFAULT.yaml')
-  with open(default_yaml, 'r') as yaml_file:
-    config = yaml.load(yaml_file)
-
-  # image section contains list of images used by the board
-  config_images = config['images']
   base_images = []
   locale_images = defaultdict(lambda: [])
-  for name, path in config_images.iteritems():
-    dir = os.path.dirname(path)
-    base = os.path.basename(path)
-    if not dir:
-      # language independent files are placed at root dir
-      base_images.append(base)
-    else:
-      # assume everything else is language dependent files
-      lang = os.path.basename(dir)
-      locale_images[lang].append(path)
 
-  # create archive for base (language independent) images
+  files = glob.glob(os.path.join(output, "*.bmp"))
+  for file in files:
+    base = os.path.basename(file)
+    base_images.append(base)
+
+  # create archive of base images
   archive_images(archiver, output, 'vbgfx.bin', base_images)
 
-  # create archives for language dependent files
-  for lang, images in locale_images.iteritems():
-    archive_images(archiver, output, 'locale_%s.bin' % lang, images)
+  dirs = glob.glob(os.path.join(output, "locale/*"))
+  for dir in dirs:
+    files = glob.glob(os.path.join(dir, "*.bmp"))
+    locale = os.path.basename(dir)
+    for file in files:
+      locale_images[locale].append(file)
+
+  # create archives of localized images
+  for locale, images in locale_images.iteritems():
+    archive_images(archiver, output, 'locale_%s.bin' % locale, images)
 
 def main(args):
   opts, args = getopt.getopt(args, 'a:d:')
