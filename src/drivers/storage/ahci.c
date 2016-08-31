@@ -436,6 +436,8 @@ static int ahci_read_capacity(AhciIoPort *port, lba_t *cap,
 
 static int ahci_ctrlr_init(BlockDevCtrlrOps *me)
 {
+	uint32_t host_impl_bitmap;
+
 	AhciCtrlr *ctrlr = container_of(me, AhciCtrlr, ctrlr.ops);
 
 	ctrlr->mmio_base = (void *)pci_read_resource(ctrlr->dev, 5);
@@ -471,8 +473,17 @@ static int ahci_ctrlr_init(BlockDevCtrlrOps *me)
 	writel_with_flush(0xf, mmio + HOST_PORTS_IMPL);
 
 	ctrlr->cap = readl(mmio + HOST_CAP);
-	ctrlr->port_map = readl(mmio + HOST_PORTS_IMPL);
-	ctrlr->n_ports = (ctrlr->cap & 0x1f) + 1;
+	host_impl_bitmap = ctrlr->port_map = readl(mmio + HOST_PORTS_IMPL);
+	/* ABAR+0x0 (GHC_CAP) reports number of SATA ports, its always read as
+	 * +1 means if '0' which means number of enabled SATA port is 1.
+	 * ABAR+0xC (GHC_PI) provides port bit map, hence relied on Port Map
+	 * not number of SATA port
+	 */
+	ctrlr->n_ports = 0;
+	while (host_impl_bitmap != 0) {
+		ctrlr->n_ports++;
+		host_impl_bitmap = host_impl_bitmap >> 1;
+	}
 
 	printf("cap %#x  port_map %#x  n_ports %d\n",
 	      ctrlr->cap, ctrlr->port_map, ctrlr->n_ports);
