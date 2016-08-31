@@ -379,7 +379,7 @@ static int get_cmd_versions(CrosEc *me, int cmd, uint32_t *pmask)
 	p.cmd = cmd;
 
 	if (ec_command(me, EC_CMD_GET_CMD_VERSIONS,
-		       0, &p, sizeof(p), &r, sizeof(r)) < sizeof(r))
+		       0, &p, sizeof(p), &r, sizeof(r)) != sizeof(r))
 		return -1;
 
 	*pmask = r.version_mask;
@@ -406,7 +406,7 @@ static int cmd_version_supported(CrosEc *me, int cmd, int ver)
 int cros_ec_scan_keyboard(struct cros_ec_keyscan *scan)
 {
 	if (ec_command(get_main_ec(), EC_CMD_MKBP_STATE, 0, NULL, 0, scan,
-		       sizeof(*scan)) < sizeof(*scan))
+		       sizeof(*scan)) != sizeof(*scan))
 		return -1;
 
 	return 0;
@@ -425,10 +425,10 @@ static int ec_read_id(CrosEc *me, char *id, int maxlen)
 	struct ec_response_get_version r;
 
 	if (ec_command(me, EC_CMD_GET_VERSION, 0, NULL, 0, &r,
-		       sizeof(r)) < sizeof(r))
+		       sizeof(r)) != sizeof(r))
 		return -1;
 
-	if (maxlen > sizeof(r.version_string_ro))
+	if (maxlen > (int)sizeof(r.version_string_ro))
 		maxlen = sizeof(r.version_string_ro);
 
 	switch (r.current_image) {
@@ -452,7 +452,7 @@ static VbError_t vboot_running_rw(VbootEcOps *vbec, int *in_rw)
 	struct ec_response_get_version r;
 
 	if (ec_command(me, EC_CMD_GET_VERSION, 0,
-		       NULL, 0, &r, sizeof(r)) < sizeof(r))
+		       NULL, 0, &r, sizeof(r)) != sizeof(r))
 		return VBERROR_UNKNOWN;
 
 	switch (r.current_image) {
@@ -564,7 +564,7 @@ static int ec_test(CrosEc *me)
 
 	req.in_data = 0x12345678;
 	if (ec_command(me, EC_CMD_HELLO, 0, &req, sizeof(req),
-		       &resp, sizeof(resp)) < sizeof(resp)) {
+		       &resp, sizeof(resp)) != sizeof(resp)) {
 		printf("ec_command() returned error\n");
 		return -1;
 	}
@@ -656,7 +656,7 @@ int cros_ec_interrupt_pending(void)
 int cros_ec_mkbp_info(struct ec_response_mkbp_info *info)
 {
 	if (ec_command(get_main_ec(), EC_CMD_MKBP_INFO, 0, NULL, 0, info,
-		       sizeof(*info)) < sizeof(*info))
+		       sizeof(*info)) != sizeof(*info))
 		return -1;
 
 	return 0;
@@ -667,7 +667,7 @@ int cros_ec_get_event_mask(u8 type, uint32_t *mask)
 	struct ec_response_host_event_mask rsp;
 
 	if (ec_command(get_main_ec(), type, 0, NULL, 0,
-		       &rsp, sizeof(rsp)) < sizeof(rsp))
+		       &rsp, sizeof(rsp)) != sizeof(rsp))
 		return -1;
 
 	*mask = rsp.mask;
@@ -696,7 +696,7 @@ int cros_ec_get_host_events(uint32_t *events_ptr)
 	 * used by ACPI/SMI.
 	 */
 	if (ec_command(get_main_ec(), EC_CMD_HOST_EVENT_GET_B, 0, NULL, 0,
-		       &resp, sizeof(resp)) < sizeof(resp))
+		       &resp, sizeof(resp)) != sizeof(resp))
 		return -1;
 
 	if (resp.mask & EC_HOST_EVENT_MASK(EC_HOST_EVENT_INVALID))
@@ -733,7 +733,7 @@ static int ec_flash_protect(CrosEc *me, uint32_t set_mask, uint32_t set_flags,
 
 	if (ec_command(me, EC_CMD_FLASH_PROTECT, EC_VER_FLASH_PROTECT,
 		       &params, sizeof(params),
-		       resp, sizeof(*resp)) < sizeof(*resp))
+		       resp, sizeof(*resp)) != sizeof(*resp))
 		return -1;
 
 	return 0;
@@ -862,7 +862,7 @@ static int ec_flash_write_burst_size(CrosEc *me)
 	 * size, and must also fit into the host parameter buffer.
 	 */
 	if (ec_command(me, EC_CMD_FLASH_INFO, 0,
-		       NULL, 0, &info, sizeof(info)) < sizeof(info))
+		       NULL, 0, &info, sizeof(info)) != sizeof(info))
 		return 0;
 
 	return (pdata_max_size / info.write_block_size) *
@@ -1216,7 +1216,7 @@ static int ec_init(CrosEc *me)
 
 		struct ec_response_get_protocol_info info;
 		if (ec_command(me, EC_CMD_GET_PROTOCOL_INFO, 0,
-			       NULL, 0, &info, sizeof(info)) < sizeof(info)) {
+			       NULL, 0, &info, sizeof(info)) != sizeof(info)) {
 			set_max_proto3_sizes(me, 0, 0);
 			me->send_command = NULL;
 			goto proto2;
@@ -1227,7 +1227,7 @@ static int ec_init(CrosEc *me)
 			if (me->send_command(me, EC_CMD_GET_PROTOCOL_INFO,
 					     0, NULL, 0, &master_info,
 					     sizeof(master_info))
-					     < sizeof(master_info)) {
+			    != sizeof(master_info)) {
 				set_max_proto3_sizes(me, 0, 0);
 				me->send_command = NULL;
 				goto proto2;
