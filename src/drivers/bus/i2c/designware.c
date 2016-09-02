@@ -135,6 +135,10 @@ enum {
 	INTR_RX_UNDER = 0x0001,
 };
 
+enum {
+	TIMEOUT_US = 4000
+};
+
 /*
  * set_speed_regs - Set bus speed controller registers.
  * @regs:	i2c register base address
@@ -254,7 +258,7 @@ static int i2c_wait_for_bus_idle(DesignwareI2cRegs *regs)
 	while ((readl(&regs->status) & STATUS_MA) ||
 	       !(readl(&regs->status) & STATUS_TFE))
 		/* Evaluate timeout, wait for up to 16 bytes in FIFO. */
-		if (timer_us(start) > 2000 * 16)
+		if (timer_us(start) > TIMEOUT_US * 16)
 			return -1;
 
 	return 0;
@@ -274,7 +278,7 @@ static int i2c_xfer_finish(DesignwareI2cRegs *regs)
 		if ((readl(&regs->raw_intr_stat) & INTR_STOP_DET)) {
 			readl(&regs->clear_stop_det_intr);
 			break;
-		} else if (timer_us(start) > 2000)
+		} else if (timer_us(start) > TIMEOUT_US)
 			break;
 	}
 
@@ -318,7 +322,7 @@ static int i2c_transfer_segment(DesignwareI2cRegs *regs,
 		/* Write op only: Wait for FIFO not full. */
 		if (!segment->read) {
 			while (!(readl(&regs->status) & STATUS_TFNF))
-				if (timer_us(start) > 2000)
+				if (timer_us(start) > TIMEOUT_US)
 					return -1;
 			cmd = segment->buf[i];
 		} else
@@ -333,7 +337,7 @@ static int i2c_transfer_segment(DesignwareI2cRegs *regs,
 		/* Read op only: Wait FIFO data and store it. */
 		if (segment->read) {
 			while (!(readl(&regs->status) & STATUS_RFNE))
-				if (timer_us(start) > 2000)
+				if (timer_us(start) > TIMEOUT_US)
 					return -1;
 			segment->buf[i] = (uint8_t)readl(&regs->cmd_data);
 		}
