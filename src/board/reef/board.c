@@ -23,10 +23,12 @@
 #include <sysinfo.h>
 
 #include "base/init_funcs.h"
+#include "drivers/bus/i2c/designware.h"
+#include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/sysinfo.h"
-#include "drivers/tpm/lpc.h"
+#include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/power/pch.h"
 #include "drivers/storage/sdhci.h"
@@ -82,8 +84,10 @@ static int board_setup(void)
 
 	board_flash_init();
 
-	/* FIXME: not stuffed but need MOCK_TPM to work. */
-	tpm_set_ops(&new_lpc_tpm((void *)(uintptr_t)0xfed40000)->ops);
+	/* H1 TPM on I2C bus 2 */
+	DesignwareI2c *i2c2 =
+		new_pci_designware_i2c(PCI_DEV(0, 0x16, 2), 400000, 133);
+	tpm_set_ops(&new_cr50_i2c(&i2c2->ops, 0x50)->base.ops);
 
 	SdhciHost *emmc;
 	emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1c, 0),
