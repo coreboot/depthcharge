@@ -15,6 +15,12 @@ config DRIVER_TPM_LPC
 	select DRIVER_TPM
 	default n
 
+config DRIVER_TPM_CR50_I2C
+	bool "CR50 I2C TPM driver"
+	select DRIVER_TPM_I2C
+	select DRIVER_TPM
+	default n
+
 config DRIVER_TPM_SLB9635_I2C
 	bool "SLB9635 I2C TPM driver"
 	select DRIVER_TPM_I2C
@@ -22,8 +28,8 @@ config DRIVER_TPM_SLB9635_I2C
 	default n
 
 config TPM2_MODE
-       bool "Configure VBOOT for TPM2 support"
-       default n
+	bool "Configure VBOOT for TPM2 support"
+	default n
 
 config DRIVER_TPM_SPI
 	bool "SPI TPM driver"
