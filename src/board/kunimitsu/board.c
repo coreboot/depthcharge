@@ -135,7 +135,8 @@ static int board_setup(void)
 	if (gpio_get(&audio_db_id->ops)) {
 		/* Speaker Amp Codec is on I2C4 */
 		DesignwareI2c *i2c4 =
-			new_pci_designware_i2c(PCI_DEV(0, 0x19, 2), 400000);
+			new_pci_designware_i2c(PCI_DEV(0, 0x19, 2), 400000,
+					       120);
 		ssm4567Codec *speaker_amp_left =
 			new_ssm4567_codec(&i2c4->ops, 0x34, SSM4567_MODE_PDM);
 

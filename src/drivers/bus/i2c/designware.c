@@ -61,6 +61,7 @@ typedef struct {
 
 /* High and low times in different speed modes (in ns). */
 enum {
+	DEFAULT_SDA_HOLD_TIME = 300,
 	MIN_SS_SCL_HIGHTIME = 4000,
 	MIN_SS_SCL_LOWTIME = 4700,
 	MIN_FS_SCL_HIGHTIME = 600,
@@ -74,8 +75,6 @@ enum {
 	MAX_SPEED_HZ = 3400000,
 	FAST_SPEED_HZ = 400000,
 	STANDARD_SPEED_HZ = 100000,
-
-	CLK_MHZ = 166,
 };
 
 /* Control register definitions. */
@@ -147,14 +146,16 @@ enum {
  *
  * Set bus speed controller registers.
  */
-static inline void set_speed_regs(DesignwareI2cRegs *regs, uint32_t cntl_mask,
+static inline void set_speed_regs(DesignwareI2c *bus, uint32_t cntl_mask,
 				  int high_time, uint32_t *high_reg,
 				  int low_time, uint32_t *low_reg)
 {
+	DesignwareI2cRegs *regs = bus->regs;
 	uint32_t cntl;
 
-	writel(CLK_MHZ * high_time / 1000, high_reg);
-	writel(CLK_MHZ * low_time / 1000, low_reg);
+	writel(bus->clk_mhz * high_time / 1000, high_reg);
+	writel(bus->clk_mhz * low_time / 1000, low_reg);
+	writel(bus->clk_mhz * DEFAULT_SDA_HOLD_TIME / 1000, &regs->sda_hold);
 
 	cntl = (readl(&regs->control) & (~CONTROL_SPEED_MASK));
 	cntl |= CONTROL_RE;
@@ -178,15 +179,15 @@ static int i2c_set_bus_speed(DesignwareI2c *bus)
 	writel(enable, &regs->enable);
 
 	if (bus->speed >= MAX_SPEED_HZ)
-		set_speed_regs(regs, CONTROL_SPEED_HS,
+		set_speed_regs(bus, CONTROL_SPEED_HS,
 			       MIN_HS_SCL_HIGHTIME, &regs->hs_scl_hcnt,
 			       MIN_HS_SCL_LOWTIME, &regs->hs_scl_lcnt);
 	else if (bus->speed >= FAST_SPEED_HZ)
-		set_speed_regs(regs, CONTROL_SPEED_FS,
+		set_speed_regs(bus, CONTROL_SPEED_FS,
 			       MIN_FS_SCL_HIGHTIME, &regs->fs_scl_hcnt,
 			       MIN_FS_SCL_LOWTIME, &regs->fs_scl_lcnt);
 	else
-		set_speed_regs(regs, CONTROL_SPEED_SS,
+		set_speed_regs(bus, CONTROL_SPEED_SS,
 			       MIN_SS_SCL_HIGHTIME, &regs->ss_scl_hcnt,
 			       MIN_SS_SCL_LOWTIME, &regs->ss_scl_lcnt);
 
@@ -375,16 +376,18 @@ static int i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
  * new_designware_i2c - Allocate new i2c bus.
  * @regs:	i2c register base address
  * @speed:	required i2c speed
+ * @clk_mhz:	controller core clock speed in MHz
  *
  * Allocate new designware i2c bus.
  */
-DesignwareI2c *new_designware_i2c(uintptr_t reg_addr, int speed)
+DesignwareI2c *new_designware_i2c(uintptr_t reg_addr, int speed, int clk_mhz)
 {
 	DesignwareI2c *bus = xzalloc(sizeof(*bus));
 
 	bus->ops.transfer = &i2c_transfer;
 	bus->regs = (void *)reg_addr;
 	bus->speed = speed;
+	bus->clk_mhz = clk_mhz;
 
 	if (CONFIG_CLI)
 		add_i2c_controller_to_list(&bus->ops, "Designware-%08x",

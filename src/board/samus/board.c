@@ -80,7 +80,7 @@ static DesignwareI2c *i2c_enable(int sio_index)
 	writel(readl(reg_ppr) | SIO_BIT_PPR_CLOCK_EN, reg_ppr);
 	(void)readl(reg_ppr);
 
-	return new_designware_i2c(nvs->bar0[sio_index], I2C_BUS_SPEED);
+	return new_designware_i2c(nvs->bar0[sio_index], I2C_BUS_SPEED, 166);
 }
 
 static BdwI2s *i2s_enable(int ssp)

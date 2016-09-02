@@ -29,10 +29,11 @@ typedef struct DesignwareI2c
 	I2cOps ops;
 	void *regs;
 	int speed;
+	int clk_mhz;
 	int initialized;
 } DesignwareI2c;
 
-DesignwareI2c *new_designware_i2c(uintptr_t regs, int speed);
-DesignwareI2c *new_pci_designware_i2c(pcidev_t dev, int speed);
+DesignwareI2c *new_designware_i2c(uintptr_t regs, int speed, int clk_mhz);
+DesignwareI2c *new_pci_designware_i2c(pcidev_t dev, int speed, int clk_mhz);
 
 #endif /* __DRIVERS_BUS_I2C_DESIGNWARE_H__ */

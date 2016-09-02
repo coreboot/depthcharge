@@ -21,10 +21,11 @@
  *
  * @dev:	PCI device for I2C controller
  * @speed:	required i2c speed
+ * @clk_mhz:	controller core clock speed in MHz
  *
  * Allocate new designware i2c bus.
  */
-DesignwareI2c *new_pci_designware_i2c(pcidev_t dev, int speed)
+DesignwareI2c *new_pci_designware_i2c(pcidev_t dev, int speed, int clk_mhz)
 {
 	uint32_t addr = pci_read_config32(dev, PCI_BASE_ADDRESS_0);
 
@@ -35,5 +36,5 @@ DesignwareI2c *new_pci_designware_i2c(pcidev_t dev, int speed)
 	}
 	addr &= ~0xf;
 
-	return new_designware_i2c((uintptr_t)addr, speed);
+	return new_designware_i2c((uintptr_t)addr, speed, clk_mhz);
 }

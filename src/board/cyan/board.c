@@ -83,7 +83,7 @@ static int board_setup(void)
 	die_if(!nvs->lpss_en[LPSS_NVS_I2C2], "Codec I2C misconfigured\n");
 
 	DesignwareI2c *i2c = new_designware_i2c(
-		nvs->lpss_bar0[LPSS_NVS_I2C2], 400000);
+		nvs->lpss_bar0[LPSS_NVS_I2C2], 400000, 133);
 
 	Max98090Codec *codec = new_max98090_codec(
 		&i2c->ops, 0x10, 16, 48000, 400, 1);
