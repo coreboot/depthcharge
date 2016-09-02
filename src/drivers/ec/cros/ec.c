@@ -564,10 +564,8 @@ static int ec_test(CrosEc *me)
 
 	req.in_data = 0x12345678;
 	if (ec_command(me, EC_CMD_HELLO, 0, &req, sizeof(req),
-		       &resp, sizeof(resp)) != sizeof(resp)) {
-		printf("ec_command() returned error\n");
+		       &resp, sizeof(resp)) != sizeof(resp))
 		return -1;
-	}
 	if (resp.out_data != req.in_data + 0x01020304)
 		return -1;
 
