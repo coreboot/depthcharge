@@ -17,6 +17,7 @@
 #include "base/container_of.h"
 #include "drivers/bus/spi/spi.h"
 #include "drivers/bus/spi/rockchip.h"
+#include <stdbool.h>
 
 #define spi_info(x...) do {if (0) printf(x); } while (0)
 
@@ -50,6 +51,11 @@ typedef struct {
 #define TXFLR_LEVEL_MASK		0x3f
 // RXFLR bits
 #define RXFLR_LEVEL_MASK		0x3f
+
+/* Byte and Halfword Transform */
+#define SPI_HALF_WORLD_TX_OFFSET	13
+/* apb 8bit write/read, spi 8bit write/read */
+#define SPI_APB_8BIT			0x01
 
 #define FIFO_DEPTH			32
 
@@ -131,7 +137,8 @@ static void set_transfer_mode(RkSpiRegs *regs, void *in, const void *out)
 }
 
 // returns 0 to indicate success, <0 otherwise
-static int do_xfer(RkSpi *bus, void *in, const void *out, uint32_t size)
+static int do_xfer(RkSpi *bus, bool use_16bit, void *in,
+		   const void *out, uint32_t size)
 {
 	RkSpiRegs *regs = bus->reg_addr;
 	uint8_t *in_buf =in;
@@ -148,11 +155,23 @@ static int do_xfer(RkSpi *bus, void *in, const void *out, uint32_t size)
 		}
 
 		if (in_buf && !(sr & SR_RF_EMPT)) {
-			int todo = readl(&regs->rxflr) & RXFLR_LEVEL_MASK;
-			xferred = todo;
+			int fifo = readl(&regs->rxflr) & RXFLR_LEVEL_MASK;
+			int val;
 
-			while (todo-- > 0)
-				*in_buf++ = readl(&regs->rxdr) & 0xff;
+			if (use_16bit)
+				xferred = fifo * 2;
+			else
+				xferred = fifo;
+
+			while (fifo-- > 0) {
+				val = readl(&regs->rxdr);
+				if (use_16bit) {
+					*in_buf++ = val & 0xff;
+					*in_buf++ = (val >> 8) & 0xff;
+				} else {
+					*in_buf++ = val & 0xff;
+				}
+			}
 		}
 
 		size -= xferred;
@@ -182,9 +201,28 @@ static int spi_transfer(SpiOps *me, void *in, const void *out, uint32_t size)
 	// ctrlr1, all bytes that we see in rxdr end up being 0x00. 0xffff - 1
 	// seems to work fine.
 	while (size) {
-		unsigned int dataframes = MIN(size, 0xffff);
+		unsigned int dataframes = MIN(size, 0xfffe);
+		unsigned int mask;
+		bool use_16bit;
 
 		writel(CONTROLLER_DISABLE, &regs->enr);
+
+		/*
+		 * Use 16-bit transfers for higher-speed reads. If we are
+		 * transferring an odd number of bytes, try to make it even.
+		 */
+		use_16bit = false;
+		if (out == NULL) {
+			if ((dataframes & 1) && dataframes > 1)
+				dataframes--;
+			if (!(dataframes & 1))
+				use_16bit = true;
+		}
+		mask = SPI_APB_8BIT << SPI_HALF_WORLD_TX_OFFSET;
+		if (use_16bit)
+			clrbits_le32(&regs->ctrlr0, mask);
+		else
+			setbits_le32(&regs->ctrlr0, mask);
 
 		writel(dataframes - 1, &regs->ctrlr1);
 
@@ -194,7 +232,7 @@ static int spi_transfer(SpiOps *me, void *in, const void *out, uint32_t size)
 
 		writel(CONTROLLER_ENABLE, &regs->enr);
 
-		res = do_xfer(bus, in, out, dataframes);
+		res = do_xfer(bus, use_16bit, in, out, dataframes);
 		if (res < 0)
 			break;
 
