@@ -468,6 +468,14 @@ static int tpm_init(I2cTpmChipOps *me)
 {
 	Slb9635I2c *tpm = container_of(me, Slb9635I2c, base.chip_ops);
 
+	/*
+	 * Probe TPM twice; the first probing might fail because TPM is asleep,
+	 * and the probing can wake up TPM.
+	 */
+	if (i2c_writeb(tpm->base.bus, tpm->base.addr, 0, 0) &&
+	    i2c_writeb(tpm->base.bus, tpm->base.addr, 0, 0))
+		return -1;
+
 	if (request_locality(tpm, 0) != 0)
 		return -1;
 
