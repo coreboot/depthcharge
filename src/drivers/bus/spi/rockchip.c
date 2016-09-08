@@ -46,6 +46,11 @@ typedef struct {
 	u32 rxdr[0x100];
 } RkSpiRegs;
 
+// TXFLR bits
+#define TXFLR_LEVEL_MASK		0x3f
+// RXFLR bits
+#define RXFLR_LEVEL_MASK		0x3f
+
 #define FIFO_DEPTH			32
 
 //Control register 0
@@ -143,9 +148,11 @@ static int do_xfer(RkSpi *bus, void *in, const void *out, uint32_t size)
 		}
 
 		if (in_buf && !(sr & SR_RF_EMPT)) {
-			*in_buf = readl(&regs->rxdr) & 0xff;
-			in_buf++;
-			xferred = 1;
+			int todo = readl(&regs->rxflr) & RXFLR_LEVEL_MASK;
+			xferred = todo;
+
+			while (todo-- > 0)
+				*in_buf++ = readl(&regs->rxdr) & 0xff;
 		}
 
 		size -= xferred;
