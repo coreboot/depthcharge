@@ -403,7 +403,7 @@ static qup_return_t qup_i2c_read(blsp_qup_id_t id, uint8_t mode,
 qup_return_t qup_init(blsp_qup_id_t id, const qup_config_t *config_ptr)
 {
 	qup_return_t ret = QUP_ERR_UNDEFINED;
-	uint32_t reg_val;
+	uint32_t reg_val, mstr_cfg = 0;
 
 	/* Reset the QUP core.*/
 	qup_write32(QUP_ADDR(id, QUP_SW_RESET), 0x1);
@@ -434,7 +434,7 @@ qup_return_t qup_init(blsp_qup_id_t id, const qup_config_t *config_ptr)
 	qup_write32(QUP_ADDR(id, QUP_CONFIG), reg_val);
 
 	/* Choose version 1 tag */
-	qup_write32(QUP_ADDR(id, QUP_I2C_MASTER_CONFIG), 0);
+	qup_write32(QUP_ADDR(id, QUP_I2C_MASTER_CONFIG), mstr_cfg);
 
 	/* Reset i2c clk cntl register */
 	qup_write32(QUP_ADDR(id, QUP_I2C_MASTER_CLK_CTL), 0);
@@ -456,10 +456,31 @@ qup_return_t qup_init(blsp_qup_id_t id, const qup_config_t *config_ptr)
 	qup_write32(QUP_ADDR(id, QUP_IO_MODES), reg_val);
 
 	/*Set i2c clk cntl*/
-	reg_val = (QUP_DIVIDER_MIN_VAL << QUP_HS_DIVIDER_SHFT);
-	reg_val |= ((((config_ptr->src_frequency / config_ptr->clk_frequency)
-			/ 2) - QUP_DIVIDER_MIN_VAL) &
-				QUP_FS_DIVIDER_MASK);
+	if (config_ptr->ht_div && config_ptr->fs_div) {
+		reg_val = ((config_ptr->ht_div & QUP_HT_DIVIDER_MASK) <<
+				QUP_HT_DIVIDER_SHFT) |
+				(config_ptr->fs_div & QUP_FS_DIVIDER_MASK);
+	} else {
+		reg_val = (QUP_DIVIDER_MIN_VAL << QUP_HS_DIVIDER_SHFT);
+		reg_val |= ((((config_ptr->src_frequency /
+				config_ptr->clk_frequency) / 2) -
+				QUP_DIVIDER_MIN_VAL) & QUP_FS_DIVIDER_MASK);
+	}
+
+	if (config_ptr->noise_rej_sda) {
+		reg_val = I2C_SDA_NOISE_REJECTION(reg_val,
+						  config_ptr->noise_rej_sda);
+		qup_write32(QUP_ADDR(id, QUP_I2C_MASTER_CONFIG),
+				     mstr_cfg | QUP_CLK_NOISE_REJECT_ENABLE);
+	}
+
+	if (config_ptr->noise_rej_scl) {
+		reg_val = I2C_SCL_NOISE_REJECTION(reg_val,
+						  config_ptr->noise_rej_scl);
+		qup_write32(QUP_ADDR(id, QUP_I2C_MASTER_CONFIG),
+				     mstr_cfg | QUP_CLK_NOISE_REJECT_ENABLE);
+	}
+
 	qup_write32(QUP_ADDR(id, QUP_I2C_MASTER_CLK_CTL), reg_val);
 
 	qup_set_state(id, BLSP_QUP_STATE_RESET);

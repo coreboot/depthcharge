@@ -79,6 +79,7 @@
 #define QUP_INPUT_MODE_SHFT		(12)
 
 #define QUP_FS_DIVIDER_MASK		(0xFF)
+#define QUP_HT_DIVIDER_MASK		(0xFF)
 
 #define QUP_APP_CLK_ON_EN		(1 << 12)
 #define QUP_CORE_CLK_ON_EN		(1 << 13)
@@ -112,6 +113,7 @@
 
 /*Bit vals for I2C_MASTER_CLK_CTL register */
 #define QUP_HS_DIVIDER_SHFT		(8)
+#define QUP_HT_DIVIDER_SHFT		(16)
 #define QUP_DIVIDER_MIN_VAL		(0x3)
 
 /* Bit masks for I2C_MASTER_STATUS register */
@@ -132,6 +134,21 @@
 					 QUP_I2C_ARB_LOST | \
 					 QUP_I2C_PACKET_NACK | \
 					 QUP_I2C_BUS_ERROR)
+
+/* Noise reject reg value */
+#define SCL_NOISE_REJECT		24
+#define SCL_NOISE_REJECT_MASK		0x3
+#define SDA_NOISE_REJECT		26
+#define SDA_NOISE_REJECT_MASK		0x3
+#define QUP_CLK_NOISE_REJECT_ENABLE	0x2
+
+#define I2C_SCL_NOISE_REJECTION(reg_val, noise_rej_val) \
+		(((reg_val) & ~(SCL_NOISE_REJECT_MASK << SCL_NOISE_REJECT)) | \
+		(((noise_rej_val) & SCL_NOISE_REJECT_MASK) << SCL_NOISE_REJECT))
+
+#define I2C_SDA_NOISE_REJECTION(reg_val, noise_rej_val) \
+		(((reg_val) & ~(SDA_NOISE_REJECT_MASK << SDA_NOISE_REJECT)) | \
+		(((noise_rej_val) & SDA_NOISE_REJECT_MASK) << SDA_NOISE_REJECT))
 
 typedef enum {
 	QUP_SUCCESS = 0,
@@ -168,6 +185,11 @@ typedef struct {
 	unsigned clk_frequency;
 	unsigned src_frequency;
 	qup_mode_t mode;
+	unsigned fs_div;
+	unsigned hs_div;
+	unsigned ht_div;
+	unsigned noise_rej_scl;
+	unsigned noise_rej_sda;
 } qup_config_t;
 
 typedef struct {
