@@ -23,6 +23,8 @@
 #include "base/container_of.h"
 #include "drivers/bus/i2c/designware.h"
 
+#define DESIGNWARE_I2C_DEBUG 0
+
 typedef struct {
 	uint32_t control;
 	uint32_t target_addr;
@@ -57,6 +59,19 @@ typedef struct {
 	uint32_t rx_level;
 	uint32_t sda_hold;
 	uint32_t tx_abort_source;
+	uint32_t slv_data_nak_only;
+	uint32_t dma_cr;
+	uint32_t dma_tdlr;
+	uint32_t dma_rdlr;
+	uint32_t sda_setup;
+	uint32_t ack_general_call;
+	uint32_t enable_status;
+	uint32_t fs_spklen;
+	uint32_t hs_spklen;
+	uint32_t clr_restart_det;
+	uint32_t comp_param1;
+	uint32_t comp_version;
+	uint32_t comp_type;
 } __attribute__((packed)) DesignwareI2cRegs;
 
 /* High and low times in different speed modes (in ns). */
@@ -139,6 +154,29 @@ enum {
 	TIMEOUT_US = 4000
 };
 
+static void i2c_enable(DesignwareI2cRegs *regs)
+{
+	if (!(readl(&regs->enable) & ENABLE_0B))
+		writel(ENABLE_0B, &regs->enable);
+}
+
+static int i2c_disable(DesignwareI2cRegs *regs)
+{
+	if (readl(&regs->enable) & ENABLE_0B) {
+		uint64_t start;
+
+		writel(0, &regs->enable);
+
+		/* Wait for enable status bit to clear */
+		start = timer_us(0);
+		while (read32(&regs->enable_status) & ENABLE_0B)
+			if (timer_us(start) > TIMEOUT_US)
+				return -1;
+	}
+
+	return 0;
+}
+
 /*
  * set_speed_regs - Set bus speed controller registers.
  * @regs:	i2c register base address
@@ -175,12 +213,6 @@ static inline void set_speed_regs(DesignwareI2c *bus, uint32_t cntl_mask,
 static int i2c_set_bus_speed(DesignwareI2c *bus)
 {
 	DesignwareI2cRegs *regs = bus->regs;
-	uint32_t enable;
-
-	/* Disable controller before setting speed. */
-	enable = readl(&regs->enable);
-	enable &= ~ENABLE_0B;
-	writel(enable, &regs->enable);
 
 	if (bus->speed >= MAX_SPEED_HZ)
 		set_speed_regs(bus, CONTROL_SPEED_HS,
@@ -195,10 +227,6 @@ static int i2c_set_bus_speed(DesignwareI2c *bus)
 			       MIN_SS_SCL_HIGHTIME, &regs->ss_scl_hcnt,
 			       MIN_SS_SCL_LOWTIME, &regs->ss_scl_lcnt);
 
-	/* Re-enable controller. */
-	enable |= ENABLE_0B;
-	writel(enable, &regs->enable);
-
 	return 0;
 }
 
@@ -212,23 +240,15 @@ static int i2c_set_bus_speed(DesignwareI2c *bus)
 static void i2c_init(DesignwareI2c *bus)
 {
 	DesignwareI2cRegs *regs = bus->regs;
-	uint32_t enable;
 
 	/* Disable controller. */
-	enable = readl(&regs->enable);
-	enable &= ~ENABLE_0B;
-	writel(enable, &regs->enable);
+	i2c_disable(regs);
 
 	writel(CONTROL_SD | CONTROL_SPEED_FS | CONTROL_MM, &regs->control);
 	writel(RX_THRESH, &regs->rx_thresh);
 	writel(TX_THRESH, &regs->tx_thresh);
 	i2c_set_bus_speed(bus);
 	writel(INTR_STOP_DET, &regs->intr_mask);
-
-	/* Re-enable controller. */
-	enable = readl(&regs->enable);
-	enable |= ENABLE_0B;
-	writel(enable, &regs->enable);
 
 	bus->initialized = 1;
 }
@@ -355,25 +375,45 @@ static int i2c_transfer_segment(DesignwareI2cRegs *regs,
  */
 static int i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
 {
-	int i;
+	int i, ret = -1;
 	DesignwareI2c *bus = container_of(me, DesignwareI2c, ops);
 	DesignwareI2cRegs *regs = bus->regs;
 
 	if (!bus->initialized)
 		i2c_init(bus);
 
+	i2c_enable(regs);
+
 	if (i2c_wait_for_bus_idle(regs))
-		return -1;
+		goto out;
 
 	// Set stop condition on final segment only. Repeated start will
 	// be automatically generated on R->W or W->R switch.
-	for (i = 0; i < seg_count; ++i)
+	for (i = 0; i < seg_count; ++i) {
+		if (DESIGNWARE_I2C_DEBUG)
+			printf("i2c %02x %s %d bytes : ", segments[i].chip,
+			       segments[i].read ? "R" : "W", segments[i].len);
+
 		if (i2c_transfer_segment(regs,
 					 &segments[i],
-					 i == seg_count - 1))
-			return -1;
+					 i == seg_count - 1)) {
+			printf("I2C transfer failed\n");
+			goto out;
+		}
 
-	return i2c_xfer_finish(regs);
+		if (DESIGNWARE_I2C_DEBUG) {
+			int j;
+			for (j = 0; j < segments[i].len; j++)
+				printf("%02x ", segments[i].buf[j]);
+			printf("\n");
+		}
+	}
+
+	ret = i2c_xfer_finish(regs);
+out:
+	readl(&regs->clear_intr);
+	i2c_disable(regs);
+	return ret;
 }
 
 /*
