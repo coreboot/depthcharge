@@ -64,7 +64,9 @@ static void *get_kernel_reloc_addr(uint32_t load_offset)
 
 		uint64_t start = range->base;
 		uint64_t end = range->base + range->size;
-		uint64_t kstart = ALIGN_UP(start, 2*MiB) + load_offset;
+		uint64_t kstart = ALIGN_DOWN(start, 2*MiB) + load_offset < start
+				? ALIGN_UP(start, 2*MiB) + load_offset
+				: ALIGN_DOWN(start, 2*MiB) + load_offset;
 		uint64_t kend = kstart + MAX_KERNEL_SIZE;
 
 		if (kend > CONFIG_BASE_ADDRESS || kend > CONFIG_KERNEL_START ||
