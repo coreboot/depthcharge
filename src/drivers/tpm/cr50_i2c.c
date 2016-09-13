@@ -282,26 +282,25 @@ static int tpm_recv(I2cTpmChipOps *me, uint8_t *buf, size_t buf_len)
 {
 	Cr50I2c *tpm = container_of(me, Cr50I2c, base.chip_ops);
 
-	int ret = -1;
 	int status;
 	uint32_t expected_buf;
 	size_t burstcnt, expected, current, len;
 	uint8_t addr = tpm_data_fifo(tpm->base.locality);
 
 	if (buf_len < TPM_HEADER_SIZE)
-		goto out;
+		return -1;
 
 	if (wait_for_burst_status(tpm, TpmStsValid, &burstcnt, &status) < 0)
-		goto out;
+		goto out_err;
 	if (!(status & TpmStsDataAvail)) {
 		printf("%s: First chunk not available\n", __func__);
-		goto out;
+		goto out_err;
 	}
 
 	// Read first chunk of burstcnt bytes
 	if (iic_tpm_read(tpm, addr, buf, burstcnt) < 0) {
 		printf("%s: Read failed\n", __func__);
-		goto out;
+		goto out_err;
 	}
 
 	memcpy(&expected_buf, buf + TpmCmdCountOffset, sizeof(expected_buf));
@@ -309,7 +308,7 @@ static int tpm_recv(I2cTpmChipOps *me, uint8_t *buf, size_t buf_len)
 	if (expected > buf_len) {
 		printf("%s: Too much data: %zu > %zu\n", __func__,
 		       expected, buf_len);
-		goto out;
+		goto out_err;
 	}
 
 	// Now read the rest of the data
@@ -317,33 +316,35 @@ static int tpm_recv(I2cTpmChipOps *me, uint8_t *buf, size_t buf_len)
 	while (current < expected) {
 		if (wait_for_burst_status(tpm, TpmStsValid,
 					  &burstcnt, &status) < 0)
-			goto out;
+			goto out_err;
 		if (!(status & TpmStsDataAvail)) {
 			printf("%s: Data not available\n", __func__);
-			goto out;
+			goto out_err;
 		}
 
 		len = MIN(burstcnt, expected - current);
 		if (iic_tpm_read(tpm, addr, buf + current, len) != 0) {
 			printf("%s: Read failed\n", __func__);
-			goto out;
+			goto out_err;
 		}
 
 		current += len;
 	}
 
 	if (wait_for_burst_status(tpm, TpmStsValid, &burstcnt, &status) < 0)
-		goto out;
+		goto out_err;
 	if (status & TpmStsDataAvail) {
 		printf("%s: Data still available\n", __func__);
-		goto out;
+		goto out_err;
 	}
 
-	ret = current;
+	return current;
 
-out:
-	tpm_ready(&tpm->base.chip_ops);
-	return ret;
+out_err:
+	if (tpm->base.chip_ops.status(&tpm->base.chip_ops) &
+	    TpmStsCommandReady)
+		tpm_ready(&tpm->base.chip_ops);
+	return -1;
 }
 
 static int tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
@@ -357,12 +358,16 @@ static int tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
 	if (len > TpmMaxBufSize)
 		return -1; // Command is too long for our tpm, sorry.
 
-	status = tpm->base.chip_ops.status(&tpm->base.chip_ops);
-	if (!(status & TpmStsCommandReady)) {
-		tpm_ready(&tpm->base.chip_ops);
-		if (wait_for_burst_status(tpm, TpmStsValid | TpmStsCommandReady,
-					  &burstcnt, &status) < 0)
+	uint64_t start = timer_us(0);
+
+	while (!(tpm->base.chip_ops.status(&tpm->base.chip_ops) &
+		 TpmStsCommandReady)) {
+
+		if (timer_us(start) > 2 * 1000 * 1000) // Two second timeout.
 			goto out_err;
+
+		tpm_ready(&tpm->base.chip_ops);
+		udelay(TpmTimeout);
 	}
 
 	while (len > 0) {
@@ -403,7 +408,9 @@ static int tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
 	return sent;
 
 out_err:
-	tpm_ready(&tpm->base.chip_ops);
+	if (tpm->base.chip_ops.status(&tpm->base.chip_ops) &
+	    TpmStsCommandReady)
+		tpm_ready(&tpm->base.chip_ops);
 	return -1;
 }
 
