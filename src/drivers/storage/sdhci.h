@@ -311,7 +311,6 @@ struct sdhci_host {
 
 	int (*attach)(SdhciHost *host);
 	void (*set_control_reg)(SdhciHost *host);
-	void (*set_clock)(SdhciHost *host, unsigned int div);
 };
 
 static inline void sdhci_writel(SdhciHost *host, u32 val, int reg)
@@ -344,6 +343,7 @@ static inline u8 sdhci_readb(SdhciHost *host, int reg)
 }
 
 void add_sdhci(SdhciHost *host);
+void sdhci_set_ios(MmcCtrlr *mmc_ctrlr);
 
 /* Add SDHCI controller from PCI */
 SdhciHost *new_pci_sdhci_host(pcidev_t dev,
