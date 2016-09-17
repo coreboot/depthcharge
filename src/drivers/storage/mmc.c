@@ -492,6 +492,12 @@ static void mmc_set_bus_width(MmcCtrlr *ctrlr, uint32_t width)
 	ctrlr->set_ios(ctrlr);
 }
 
+static void mmc_set_timing(MmcCtrlr *ctrlr, uint32_t timing)
+{
+	ctrlr->timing = timing;
+	ctrlr->set_ios(ctrlr);
+}
+
 static int mmc_change_freq(MmcMedia *media)
 {
 	char cardtype;
@@ -526,12 +532,17 @@ static int mmc_change_freq(MmcMedia *media)
 		if (err)
 			return err;
 
+		mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_HS200);
+
 		/* Adjust Host Bus Wisth to 8-bit */
 		mmc_set_bus_width(media->ctrlr, 8);
 		media->caps |= EXT_CSD_BUS_WIDTH_8;
 	} else {
 		err = mmc_switch(media, EXT_CSD_CMD_SET_NORMAL,
 			 EXT_CSD_HS_TIMING, 1);
+
+		if (!err)
+			mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_HS);
 	}
 
 	if (err)
@@ -675,8 +686,10 @@ static int sd_change_freq(MmcMedia *media)
 	if (err)
 		return err;
 
-	if ((ntohl(switch_status[4]) & 0x0f000000) == 0x01000000)
+	if ((ntohl(switch_status[4]) & 0x0f000000) == 0x01000000) {
 		media->caps |= MMC_MODE_HS;
+		mmc_set_timing(media->ctrlr, MMC_TIMING_SD_HS);
+	}
 	return 0;
 }
 
