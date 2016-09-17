@@ -466,9 +466,6 @@ static int sdhci_set_clock(SdhciHost *host, unsigned int clock)
 	}
 	div >>= 1;
 
-	if (host->set_clock)
-		host->set_clock(host, div);
-
 	clk = (div & SDHCI_DIV_MASK) << SDHCI_DIVIDER_SHIFT;
 	clk |= ((div & SDHCI_DIV_HI_MASK) >> SDHCI_DIV_MASK_LEN)
 		<< SDHCI_DIVIDER_HI_SHIFT;
@@ -489,6 +486,9 @@ static int sdhci_set_clock(SdhciHost *host, unsigned int clock)
 
 	clk |= SDHCI_CLOCK_CARD_EN;
 	sdhci_writew(host, clk, SDHCI_CLOCK_CONTROL);
+
+	host->clock = host->mmc_ctrlr.bus_hz;
+
 	return 0;
 }
 
@@ -587,7 +587,7 @@ void sdhci_set_uhs_signaling(SdhciHost *host, uint32_t timing)
 	sdhci_writew(host, ctrl_2, SDHCI_HOST_CONTROL2);
 }
 
-static void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
+void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 {
 	u32 ctrl;
 	SdhciHost *host = container_of(mmc_ctrlr,
