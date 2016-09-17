@@ -469,11 +469,6 @@ static int sdhci_set_clock(SdhciHost *host, unsigned int clock)
 	if (host->set_clock)
 		host->set_clock(host, div);
 
-	if (clock == MMC_CLOCK_200MHZ) {
-		sdhci_writew(host, SDHCI_CTRL_UHS_SDR104
-			| SDHCI_CTRL_VDD_180 | SDHCI_CTRL_DRV_TYPE_A
-			, SDHCI_HOST_CONTROL2);
-	}
 	clk = (div & SDHCI_DIV_MASK) << SDHCI_DIVIDER_SHIFT;
 	clk |= ((div & SDHCI_DIV_HI_MASK) >> SDHCI_DIV_MASK_LEN)
 		<< SDHCI_DIVIDER_HI_SHIFT;
@@ -560,6 +555,38 @@ static void sdhci_set_power(SdhciHost *host, unsigned short power)
 	sdhci_writeb(host, pwr, SDHCI_POWER_CONTROL);
 }
 
+void sdhci_set_uhs_signaling(SdhciHost *host, uint32_t timing)
+{
+	u16 ctrl_2;
+
+	ctrl_2 = sdhci_readw(host, SDHCI_HOST_CONTROL2);
+	/* Select Bus Speed Mode for host */
+	ctrl_2 &= ~SDHCI_CTRL_UHS_MASK;
+
+	if ((timing != MMC_TIMING_LEGACY) &&
+	    (timing != MMC_TIMING_MMC_HS) &&
+	    (timing != MMC_TIMING_SD_HS))
+		ctrl_2 |= SDHCI_CTRL_VDD_180;
+
+	if ((timing == MMC_TIMING_MMC_HS200) ||
+	    (timing == MMC_TIMING_UHS_SDR104))
+		ctrl_2 |= SDHCI_CTRL_UHS_SDR104 | SDHCI_CTRL_DRV_TYPE_A;
+	else if (timing == MMC_TIMING_UHS_SDR12)
+		ctrl_2 |= SDHCI_CTRL_UHS_SDR12;
+	else if (timing == MMC_TIMING_UHS_SDR25)
+		ctrl_2 |= SDHCI_CTRL_UHS_SDR25;
+	else if (timing == MMC_TIMING_UHS_SDR50)
+		ctrl_2 |= SDHCI_CTRL_UHS_SDR50;
+	else if ((timing == MMC_TIMING_UHS_DDR50) ||
+		 (timing == MMC_TIMING_MMC_DDR52))
+		ctrl_2 |= SDHCI_CTRL_UHS_DDR50;
+	else if (timing == MMC_TIMING_MMC_HS400 ||
+		 timing == MMC_TIMING_MMC_HS400ES)
+		ctrl_2 |= SDHCI_CTRL_HS400 | SDHCI_CTRL_DRV_TYPE_A;
+
+	sdhci_writew(host, ctrl_2, SDHCI_HOST_CONTROL2);
+}
+
 static void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 {
 	u32 ctrl;
@@ -597,6 +624,8 @@ static void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 		ctrl |= SDHCI_CTRL_HISPD;
 	else
 		ctrl &= ~SDHCI_CTRL_HISPD;
+
+	sdhci_set_uhs_signaling(host, mmc_ctrlr->timing);
 
 	if (host->host_caps & MMC_AUTO_CMD12) {
 		ctrl &= ~SDHCI_CTRL_DMA_MASK;
