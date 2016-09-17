@@ -59,8 +59,7 @@ SdhciHost *new_pci_sdhci_host(pcidev_t dev, int platform_info,
 	snprintf(host->dev_name, sizeof(host->dev_name), "PCI SDHCI %d.%d.%d",
 		 PCI_BUS(dev), PCI_SLOT(dev), PCI_FUNC(dev));
 
-	host->sdhci_host.quirks = SDHCI_QUIRK_NO_HISPD_BIT |
-		SDHCI_QUIRK_NO_SIMULT_VDD_AND_POWER;
+	host->sdhci_host.quirks = SDHCI_QUIRK_NO_SIMULT_VDD_AND_POWER;
 
 	if (platform_info & SDHCI_PLATFORM_NO_EMMC_HS200)
 		host->sdhci_host.quirks |= SDHCI_QUIRK_NO_EMMC_HS200;
