@@ -35,7 +35,7 @@
 #include "drivers/sound/route.h"
 #include "drivers/storage/dw_mmc.h"
 #include "drivers/storage/rk_dwmmc.h"
-#include "drivers/storage/sdhci.h"
+#include "drivers/storage/rk_sdhci.h"
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/spi.h"
 #include "drivers/video/display.h"
@@ -127,7 +127,7 @@ static int board_setup(void)
 
 	power_set_ops(&psci_power_ops);
 
-	SdhciHost *emmc = new_mem_sdhci_host((void *)0xfe330000,
+	SdhciHost *emmc = new_rk_sdhci_host((void *)0xfe330000,
 					     SDHCI_PLATFORM_NO_EMMC_HS200 |
 					     SDHCI_PLATFORM_NO_CLK_BASE,
 					     emmc_sd_clock_min,
