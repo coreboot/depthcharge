@@ -1085,6 +1085,15 @@ static int block_mmc_setup(BlockDevOps *me, lba_t start, lba_t count,
 	uint32_t bl_len = is_read ? media->read_bl_len :
 		media->write_bl_len;
 
+	/*
+	 * CMD16 only applies to single data rate mode, and block
+	 * length for double data rate is always 512 bytes.
+	 */
+	if ((ctrlr->timing == MMC_TIMING_UHS_DDR50) ||
+	    (ctrlr->timing == MMC_TIMING_MMC_DDR52) ||
+	    (ctrlr->timing == MMC_TIMING_MMC_HS400) ||
+	    (ctrlr->timing == MMC_TIMING_MMC_HS400ES))
+		return 1;
 	if (mmc_set_blocklen(ctrlr, bl_len))
 		return 0;
 
