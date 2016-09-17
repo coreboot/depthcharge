@@ -592,12 +592,10 @@ static void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 			ctrl &= ~SDHCI_CTRL_4BITBUS;
 	}
 
-	if (mmc_ctrlr->bus_hz > 26000000)
+	if (!(mmc_ctrlr->timing == MMC_TIMING_LEGACY) &&
+	    !(host->quirks & SDHCI_QUIRK_NO_HISPD_BIT))
 		ctrl |= SDHCI_CTRL_HISPD;
 	else
-		ctrl &= ~SDHCI_CTRL_HISPD;
-
-	if (host->quirks & SDHCI_QUIRK_NO_HISPD_BIT)
 		ctrl &= ~SDHCI_CTRL_HISPD;
 
 	if (host->host_caps & MMC_AUTO_CMD12) {
