@@ -28,8 +28,7 @@ SdhciHost *new_mem_sdhci_host(void *ioaddr, int platform_info,
 
 	host = xzalloc(sizeof(*host));
 
-	host->quirks = SDHCI_QUIRK_NO_HISPD_BIT |
-		SDHCI_QUIRK_NO_SIMULT_VDD_AND_POWER;
+	host->quirks = SDHCI_QUIRK_NO_SIMULT_VDD_AND_POWER;
 
 	if (platform_info & SDHCI_PLATFORM_NO_EMMC_HS200)
 		host->quirks |= SDHCI_QUIRK_NO_EMMC_HS200;
