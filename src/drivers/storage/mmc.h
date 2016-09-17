@@ -258,6 +258,7 @@ typedef struct MmcCtrlr {
 #define MMC_TIMING_MMC_DDR52	8
 #define MMC_TIMING_MMC_HS200	9
 #define MMC_TIMING_MMC_HS400	10
+#define MMC_TIMING_MMC_HS400ES	11
 
 	/*
 	 * Some eMMC devices do not support iterative OCR setting, they need
