@@ -72,6 +72,11 @@ config DRIVER_STORAGE_SDHCI_PCI
 	bool "PCI SDHCI based eMMC/SD driver"
 	default n
 
+config DRIVER_STORAGE_SDHCI_RK3399
+	select DRIVER_SDHCI
+	bool "RK3399 sdhci eMMC driver"
+	default n
+
 config DRIVER_STORAGE_DWMMC_RK3288
         select DRIVER_STORAGE_MMC_DW
         bool "R3288 DWMMC driver"
