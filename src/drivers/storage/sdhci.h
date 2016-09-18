@@ -193,6 +193,7 @@
 #define  SDHCI_CAN_64BIT	0x10000000
 
 #define SDHCI_CAPABILITIES_1	0x44
+#define SDHCI_SUPPORT_HS400	0x80000000
 
 #define SDHCI_MAX_CURRENT	0x48
 
@@ -234,6 +235,7 @@
 #define SDHCI_PLATFORM_NO_EMMC_HS200	(1 << 1)
 #define SDHCI_PLATFORM_EMMC_1V8_POWER	(1 << 2)
 #define SDHCI_PLATFORM_NO_CLK_BASE	(1 << 3)
+#define SDHCI_PLATFORM_SUPPORTS_HS400ES	(1 << 4)
 /*
  * quirks
  */
@@ -248,6 +250,7 @@
 #define SDHCI_QUIRK_NO_EMMC_HS200	(1 << 8)
 #define SDHCI_QUIRK_EMMC_1V8_POWER	(1 << 9)
 #define SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN (1 << 10)
+#define SDHCI_QUIRK_SUPPORTS_HS400ES	(1 << 11)
 
 /*
  * Host SDMA buffer boundary. Valid values from 4K to 512K in powers of 2.

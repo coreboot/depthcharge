@@ -641,7 +641,7 @@ void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 /* Prepare SDHCI controller to be initialized */
 static int sdhci_pre_init(SdhciHost *host)
 {
-	unsigned int caps;
+	unsigned int caps, caps_1;
 
 	if (host->attach) {
 		int rv = host->attach(host);
@@ -652,6 +652,11 @@ static int sdhci_pre_init(SdhciHost *host)
 	host->version = sdhci_readw(host, SDHCI_HOST_VERSION) & 0xff;
 
 	caps = sdhci_readl(host, SDHCI_CAPABILITIES);
+	caps_1 = sdhci_readl(host, SDHCI_CAPABILITIES_1);
+
+	if ((caps_1 & SDHCI_SUPPORT_HS400) &&
+	   (host->quirks & SDHCI_QUIRK_SUPPORTS_HS400ES))
+		host->host_caps |= MMC_MODE_HS400ES;
 
 	if (caps & SDHCI_CAN_DO_ADMA2)
 		host->host_caps |= MMC_AUTO_CMD12;

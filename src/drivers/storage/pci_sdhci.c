@@ -64,6 +64,9 @@ SdhciHost *new_pci_sdhci_host(pcidev_t dev, int platform_info,
 	if (platform_info & SDHCI_PLATFORM_NO_EMMC_HS200)
 		host->sdhci_host.quirks |= SDHCI_QUIRK_NO_EMMC_HS200;
 
+	if (platform_info & SDHCI_PLATFORM_SUPPORTS_HS400ES)
+		host->sdhci_host.quirks |= SDHCI_QUIRK_SUPPORTS_HS400ES;
+
 	if (platform_info & SDHCI_PLATFORM_EMMC_1V8_POWER)
 		host->sdhci_host.quirks |= SDHCI_QUIRK_EMMC_1V8_POWER;
 
