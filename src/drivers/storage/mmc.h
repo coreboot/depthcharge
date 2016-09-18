@@ -41,12 +41,14 @@
 #define MMC_MODE_HS		0x001
 #define MMC_MODE_HS_52MHz	0x010
 #define MMC_MODE_HS_200MHz	0x020
-#define MMC_MODE_1V8_VDD	0x080
-#define MMC_MODE_4BIT		0x100
-#define MMC_MODE_8BIT		0x200
-#define MMC_MODE_SPI		0x400
-#define MMC_MODE_HC		0x800
-#define MMC_AUTO_CMD12		0x1000
+#define MMC_MODE_HS400		0x040
+#define MMC_MODE_HS400ES	0x080
+#define MMC_MODE_1V8_VDD	0x100
+#define MMC_MODE_4BIT		0x200
+#define MMC_MODE_8BIT		0x400
+#define MMC_MODE_SPI		0x800
+#define MMC_MODE_HC		0x1000
+#define MMC_AUTO_CMD12		0x2000
 
 #define SD_DATA_4BIT		0x00040000
 
@@ -55,6 +57,7 @@
 #define MMC_DATA_READ		1
 #define MMC_DATA_WRITE		2
 
+#define MMC_SUPPORT_ERR		-15 /* No support feature */
 #define MMC_NO_CARD_ERR		-16 /* No SD/MMC card inserted */
 #define MMC_UNUSABLE_ERR	-17 /* Unusable Card */
 #define MMC_COMM_ERR		-18 /* Communications Error */
@@ -106,6 +109,7 @@
 #define MMC_HS_TIMING		0x00000100
 #define MMC_HS_52MHZ		0x2
 #define MMC_HS_200MHZ		0x10
+#define MMC_HS400		0x40
 
 #define OCR_BUSY		0x80000000
 #define OCR_HCS			0x40000000
@@ -158,6 +162,7 @@
 #define EXT_CSD_ERASE_GROUP_DEF		175	/* R/W */
 #define EXT_CSD_PART_CONF		179	/* R/W */
 #define EXT_CSD_BUS_WIDTH		183	/* R/W */
+#define EXT_CSD_STROBE_SUPPORT		184	/* RO */
 #define EXT_CSD_HS_TIMING		185	/* R/W */
 #define EXT_CSD_REV			192	/* RO */
 #define EXT_CSD_CARD_TYPE		196	/* RO */
@@ -179,6 +184,14 @@
 #define EXT_CSD_BUS_WIDTH_1	0	/* Card is in 1 bit mode */
 #define EXT_CSD_BUS_WIDTH_4	1	/* Card is in 4 bit mode */
 #define EXT_CSD_BUS_WIDTH_8	2	/* Card is in 8 bit mode */
+#define EXT_CSD_DDR_BUS_WIDTH_4	5	/* Card is in 4 bit DDR mode */
+#define EXT_CSD_DDR_BUS_WIDTH_8	6	/* Card is in 8 bit DDR mode */
+#define EXT_CSD_BUS_WIDTH_STROBE (1<<7)	/* Enhanced strobe mode */
+
+#define EXT_CSD_TIMING_BC	0	/* Backwards compatility */
+#define EXT_CSD_TIMING_HS	1	/* High speed */
+#define EXT_CSD_TIMING_HS200	2	/* HS200 */
+#define EXT_CSD_TIMING_HS400	3	/* HS400 */
 
 #define R1_ILLEGAL_COMMAND		(1 << 22)
 #define R1_APP_CMD			(1 << 5)
