@@ -43,7 +43,7 @@
 #include "vboot/util/flag.h"
 
 static const int emmc_sd_clock_min = 400 * 1000;
-static const int emmc_clock_max = 200 * 1000 * 1000;
+static const int emmc_clock_max = 150 * 1000 * 1000;
 
 
 /**
@@ -128,10 +128,10 @@ static int board_setup(void)
 	power_set_ops(&psci_power_ops);
 
 	SdhciHost *emmc = new_rk_sdhci_host((void *)0xfe330000,
-					     SDHCI_PLATFORM_NO_EMMC_HS200 |
+					     SDHCI_PLATFORM_SUPPORTS_HS400ES |
 					     SDHCI_PLATFORM_NO_CLK_BASE,
 					     emmc_sd_clock_min,
-					     emmc_clock_max, 198);
+					     emmc_clock_max, 149);
 
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			  &fixed_block_dev_controllers);

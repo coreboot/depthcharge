@@ -86,8 +86,12 @@ static void rk3399_emmc_phy_power_off(void)
 	writel(RK_CLRSETBITS(1 << 1, 0), &emmc_phy->emmcphy_con[6]);
 }
 
+#define SDHCI_ARASAN_VENDOR_REGISTER	0x78
+#define VENDOR_ENHANCED_STROBE		(1 << 0)
+
 static void rk3399_sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 {
+	u32 vendor;
 	SdhciHost *host = container_of(mmc_ctrlr,
 				       SdhciHost, mmc_ctrlr);
 	int change_clock = mmc_ctrlr->bus_hz != host->clock;
@@ -96,6 +100,14 @@ static void rk3399_sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 		rk3399_emmc_phy_power_off();
 
 	sdhci_set_ios(mmc_ctrlr);
+
+	/* configure HS400 Enhanced Store feature */
+	vendor = sdhci_readl(host, SDHCI_ARASAN_VENDOR_REGISTER);
+	if (mmc_ctrlr->timing == MMC_TIMING_MMC_HS400ES)
+		vendor |= VENDOR_ENHANCED_STROBE;
+	else
+		vendor &= ~VENDOR_ENHANCED_STROBE;
+	sdhci_writel(host, vendor, SDHCI_ARASAN_VENDOR_REGISTER);
 
 	if (change_clock)
 		rk3399_emmc_phy_power_on();
