@@ -24,6 +24,7 @@ depthcharge-y += draw.c
 endif
 depthcharge-y += i2c.c
 depthcharge-y += memory.c
+depthcharge-y += memtest.c
 depthcharge-y += printbuf.c
 depthcharge-y += spi.c
 depthcharge-y += storage.c
