@@ -11,25 +11,10 @@
  * GNU General Public License for more details.
  */
 
-#include "base/init_funcs.h"
-#include "boot/fit.h"
-#include "drivers/flash/memmapped.h"
-#include "drivers/flash/spi.h"
-#include "drivers/gpio/sysinfo.h"
-#include "drivers/gpio/mvmap2315.h"
-#include "vboot/util/flag.h"
+#ifndef __DRIVERS_MT_GPIO_H__
+#define __DRIVERS_MT_GPIO_H__
 
-static int board_setup(void)
-{
-	fit_set_compat("marvell,mvmap2315");
+void mvmap2315_gpio_setup(void);
 
-	MemMappedFlash *bSpiFlash = new_mem_mapped_flash(0x400000, 0x400000);
+#endif /* __DRIVERS_MT_GPIO_H__ */
 
-	flash_set_ops((FlashOps *)bSpiFlash);
-
-	mvmap2315_gpio_setup();
-
-	return 0;
-}
-
-INIT_FUNC(board_setup);
