@@ -17,16 +17,27 @@
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/gpio/mvmap2315.h"
+#include "drivers/storage/mvmap2315_mmc.h"
 #include "vboot/util/flag.h"
 
 static int board_setup(void)
 {
+	Mvmap2315MmcHost *sd_card;
+
 	fit_set_compat("marvell,mvmap2315");
 
 	MemMappedFlash *bSpiFlash = new_mem_mapped_flash(0x400000, 0x400000);
 
 	flash_set_ops((FlashOps *)bSpiFlash);
 
+	sd_card = new_mvmap2315_mmc_host(0xE0138800,
+					 4,
+					 400000,
+					 50000000,
+					 200000000);
+
+	list_insert_after(&sd_card->mmc.ctrlr.list_node,
+			  &fixed_block_dev_controllers);
 	mvmap2315_gpio_setup();
 
 	return 0;

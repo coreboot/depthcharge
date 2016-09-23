@@ -51,6 +51,11 @@ config DRIVER_STORAGE_MMC_MT8173
 	bool "MTK MMC driver"
 	default n
 
+config DRIVER_STORAGE_MMC_MVMAP2315
+	depends on DRIVER_STORAGE_MMC
+	bool "MVMAP2315 MMC driver"
+	default n
+
 config DRIVER_STORAGE_MMC_TEGRA
 	depends on DRIVER_STORAGE_MMC
 	bool "NVIDIA Tegra MMC driver"
