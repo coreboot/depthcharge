@@ -127,7 +127,7 @@
 			signprivate = "firmware_data_key.vbprivk";
 			version = <1>;
 			kernelkey = "kernel_subkey.vbpubk";
-			preamble-flags = <0>;
+			preamble-flags = <1>;
 		};
 		rw-a-boot {
 			/* Alignment: no requirement (yet). */
@@ -203,7 +203,7 @@
 			signprivate = "firmware_data_key.vbprivk";
 			version = <1>;
 			kernelkey = "kernel_subkey.vbpubk";
-			preamble-flags = <0>;
+			preamble-flags = <1>;
 		};
 		rw-b-boot {
 			label = "fw-main-b";
