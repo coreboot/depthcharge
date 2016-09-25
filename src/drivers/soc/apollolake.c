@@ -12,6 +12,8 @@
  * GNU General Public License for more details.
  */
 
+#include <libpayload.h>
+
 #include "drivers/soc/apollolake.h"
 
 void *pcr_port_regs(uint8_t pid)
@@ -23,4 +25,23 @@ void *pcr_port_regs(uint8_t pid)
 	reg_addr += ((uintptr_t)pid) << PCH_PCR_PORTID_SHIFT;
 
 	return (void *)reg_addr;
+}
+
+int apollolake_get_gpe(int gpe)
+{
+	int bank;
+	uint32_t mask, sts;
+
+	if (gpe < 0 || gpe > GPE0_DW3_31)
+		return -1;
+
+	bank = gpe / 32;
+	mask = 1 << (gpe % 32);
+
+	sts = inl(ACPI_PMIO_BASE + GPE0_STS(bank));
+	if (sts & mask) {
+		outl(mask, ACPI_PMIO_BASE + GPE0_STS(bank));
+		return 1;
+	}
+	return 0;
 }
