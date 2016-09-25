@@ -20,18 +20,19 @@
 
 #include "drivers/tpm/i2c.h"
 
-enum i2c_chip_type {
-	CR50,
-	UNKNOWN,
+enum {
+	Cr50MaxBufSize = 63,
 };
+
+typedef int (*cr50_irq_status_t)(void);
 
 typedef struct Cr50I2c
 {
 	I2cTpm base;
-	uint8_t buf[sizeof(uint8_t) + TpmMaxBufSize]; // addr + buff size
-	enum i2c_chip_type chip_type;
+	cr50_irq_status_t irq_status;
+	uint8_t buf[sizeof(uint8_t) + Cr50MaxBufSize];
 } Cr50I2c;
 
-Cr50I2c *new_cr50_i2c(I2cOps *bus, uint8_t addr);
+Cr50I2c *new_cr50_i2c(I2cOps *bus, uint8_t addr, cr50_irq_status_t irq_status);
 
 #endif /* __DRIVERS_TPM_CR50_I2C_H__ */
