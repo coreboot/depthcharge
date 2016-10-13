@@ -63,6 +63,7 @@ struct power_off_args {
 	/* Registers to disable GPE wakes. */
 	uint16_t gpe_en_reg;
 	int num_gpe_regs;
+	int no_config_space;
 };
 
 static void busmaster_disable_on_bus(int bus, struct power_off_args *args)
@@ -125,7 +126,7 @@ static int __pch_power_off_common(struct power_off_args *args)
 	 * at 0:1f.0.
 	 */
 	uint16_t id = pci_read_config16(args->pci_dev, 0x00);
-	if (id != 0x8086) {
+	if (!args->no_config_space && id != 0x8086) {
 		printf("Power off is not implemented for this chipset. "
 		       "Halting the CPU.\n");
 		return -1;
@@ -137,6 +138,11 @@ static int __pch_power_off_common(struct power_off_args *args)
 	 */
 	pmbase = args->pmbase;
 	if (!pmbase) {
+		if (args->no_config_space) {
+			printf("pmbase needed when no config space present.\n");
+			return -1;
+		}
+
 		pmbase = pci_read_config16(args->pci_dev, args->pmbase_reg);
 		pmbase &= args->pmbase_mask;
 	}
@@ -237,6 +243,8 @@ static int apollolake_power_off(PowerOps *me)
 	args.pmbase = 0x400;
 	args.gpe_en_reg = 0x30;
 	args.num_gpe_regs = 4;
+	/* Check if the config space is present. */
+	args.no_config_space = pci_read_config16(args.pci_dev, 0x00) == 0xffff;
 
 	return __pch_power_off_common(&args);
 }
