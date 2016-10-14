@@ -1,0 +1,22 @@
+/dts-v1/;
+/*
+ * NOTE: this needs to align with src/mainboard/google/reef/chromeos.fmd
+ * in the coreboot repository. Any changes made there should be reflected
+ * in this file. There are parallel notions of fmap information. However,
+ * both are used in different parts of the system so the right answer now
+ * is to keep them in sync.
+ */
+
+/ {
+	model = "Google Snappy";
+	config {
+		hwid = "SNAPPY TEST 1088";
+	};
+	chromeos-config {
+		/* Enable factory-friendly features. */
+		gbb-flag-dev-screen-short-delay;
+		gbb-flag-force-dev-switch-on;
+		gbb-flag-force-dev-boot-usb;
+		gbb-flag-disable-fw-rollback-check;
+	};
+};
