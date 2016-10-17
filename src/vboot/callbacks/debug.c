@@ -16,6 +16,7 @@
  */
 
 #include <libpayload.h>
+#include <vb2_api.h>
 #include <vboot_api.h>
 
 void VbExError(const char* format, ...)
@@ -32,5 +33,14 @@ void VbExDebug(const char* format, ...)
 	va_list ap;
 	va_start(ap, format);
 	vprintf(format, ap);
+	va_end(ap);
+}
+
+void vb2ex_printf(const char *func, const char *fmt, ...)
+{
+	va_list ap;
+	va_start(ap, fmt);
+	printf("%s: ", func);
+	vprintf(fmt, ap);
 	va_end(ap);
 }
