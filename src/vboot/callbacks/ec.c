@@ -29,7 +29,6 @@
 #include "drivers/flash/flash.h"
 #include "drivers/flash/cbfs.h"
 #include "image/fmap.h"
-#include "image/index.h"
 #include "vboot/util/flag.h"
 
 #define _EC_FILENAME(devidx, select, suffix) \
@@ -107,93 +106,24 @@ VbError_t VbExEcHashImage(int devidx, enum VbSelectFirmware_t select,
 VbError_t VbExEcGetExpectedImage(int devidx, enum VbSelectFirmware_t select,
 				 const uint8_t **image, int *image_size)
 {
-	const char *name;
-
-	switch (select) {
-	case VB_SELECT_FIRMWARE_A:
-		name = (devidx == 0 ? "EC_MAIN_A" : "PD_MAIN_A");
-		break;
-	case VB_SELECT_FIRMWARE_B:
-		name = (devidx == 0 ? "EC_MAIN_B" : "PD_MAIN_B");
-		break;
-	case VB_SELECT_FIRMWARE_READONLY:
-		name = "FW_MAIN_RO";
-		break;
-	default:
-		printf("Unrecognized EC firmware requested.\n");
+	size_t size;
+	const char *filename = EC_IMAGE_FILENAME(devidx, select);
+	*image = get_file_from_cbfs(filename, select, &size);
+	if (*image == NULL)
 		return VBERROR_UNKNOWN;
-	}
-
-	FmapArea area;
-	if (fmap_find_area(name, &area)) {
-		printf("Didn't find section %s in the fmap.\n", name);
-		/* It may be gone in favor of CBFS based RW sections,
-		 * so look there, too. */
-		size_t size;
-		const char *filename = EC_IMAGE_FILENAME(devidx, select);
-		*image = get_file_from_cbfs(filename, select, &size);
-		if (*image == NULL)
-			return VBERROR_UNKNOWN;
-		*image_size = size;
-		return VBERROR_SUCCESS;
-	}
-
-	uint32_t size;
-	*image = index_subsection(&area, 0, &size);
 	*image_size = size;
-	if (!*image)
-		return VBERROR_UNKNOWN;
-
 	return VBERROR_SUCCESS;
 }
 
 VbError_t VbExEcGetExpectedImageHash(int devidx, enum VbSelectFirmware_t select,
 				     const uint8_t **hash, int *hash_size)
 {
-	const char *name;
-
-	switch (select) {
-	case VB_SELECT_FIRMWARE_A:
-		name = "FW_MAIN_A";
-		break;
-	case VB_SELECT_FIRMWARE_B:
-		name = "FW_MAIN_B";
-		break;
-	case VB_SELECT_FIRMWARE_READONLY:
-		name = "FW_MAIN_RO";
-		break;
-	default:
-		printf("Unrecognized EC hash requested.\n");
+	size_t size;
+	const char *filename = EC_HASH_FILENAME(devidx, select);
+	*hash = get_file_from_cbfs(filename, select, &size);
+	if (!*hash)
 		return VBERROR_UNKNOWN;
-	}
-
-	FmapArea area;
-	if (fmap_find_area(name, &area))
-		printf("Didn't find section %s in the fmap.\n", name);
-
-	uint32_t size;
-
-	/*
-	 * Assume the hash is subsection (devidx+1) in the main firmware.  This
-	 * is currently true (see for example, board/samus/fmap.dts), but
-	 * fragile as all heck.
-	 *
-	 * TODO(rspangler@chromium.org): More robust way of locating the hash.
-	 * Subsections should really have names/tags, not just indices.
-	 */
-	*hash = index_subsection(&area, devidx + 1, &size);
 	*hash_size = size;
-
-	if (!*hash) {
-		printf("Didn't find precalculated hash subsection %d.\n",
-		       devidx + 1);
-		size_t size;
-		const char *filename = EC_HASH_FILENAME(devidx, select);
-		*hash = get_file_from_cbfs(filename, select, &size);
-		if (!*hash)
-			return VBERROR_UNKNOWN;
-		*hash_size = size;
-	}
 
 	return VBERROR_SUCCESS;
 }

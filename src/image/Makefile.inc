@@ -12,7 +12,6 @@
 ##
 
 depthcharge-y += fmap.c
-depthcharge-y += index.c
 
 # These options are passed from .config to the linker script. When making
 # changes, update Kconfig as well.

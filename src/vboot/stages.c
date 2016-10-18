@@ -30,7 +30,6 @@
 #include "drivers/power/power.h"
 #include "drivers/storage/blockdev.h"
 #include "image/fmap.h"
-#include "image/index.h"
 #include "image/symbols.h"
 #include "vboot/boot.h"
 #include "vboot/boot_policy.h"
