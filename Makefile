@@ -139,12 +139,11 @@ endif
 all:
 	@echo  'You must specify one of the following targets to build:'
 	@echo
-	@echo  '  depthcharge_unified	- Build unified depthcharge (with no'
-	@echo  '  			  firmware selection, for use with EFS)'
-	@echo  '  netboot_unified	- Build netboot binary'
-	@echo  '  fastboot_bin		- Build fastboot binary'
-	@echo  '  dev_unified		- Build unified developer binary (with'
-	@echo  '  			  (EFS) vboot, netboot and gdb)'
+	@echo  '  depthcharge		- Build default binary'
+	@echo  '  netboot		- Build netboot binary'
+	@echo  '  fastboot		- Build fastboot binary'
+	@echo  '  dev			- Build developer binary'
+	@echo
 	@echo  '  dts                   - Preprocess fmap.dts file'
 	@echo  '  clean			- Delete final output binaries'
 	@echo  '  distclean		- Delete whole build directory'

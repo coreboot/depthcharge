@@ -20,11 +20,11 @@ FASTBOOT = $(obj)/fastboot
 
 DONT_GC_NETBOOT = -Wl,-u,netboot_entry
 
-# Defines rules for a unified (EFS) binary
+# Defines rules for the payload executable
 # $1 output file base name (will result in $1.elf)
 # $2 objects to be linked into the binary
 # $3 additional compiler/linker flags to pass
-define declare_unified
+define declare_payload
 
 $1.elf: $2 $$$$(VB_LIB)
 	@printf "    LD         $$(subst $$(obj)/,,$$@.tmp)\n"
@@ -34,21 +34,21 @@ $1.elf: $2 $$$$(VB_LIB)
 		--remove-section=".cparams" --remove-section=".gbb_copy" \
 		$$@.tmp $$@
 
-$(notdir $1)_unified: $1.elf
-PHONY += $(notdir $1)_unified
+$(notdir $1): $1.elf
+PHONY += $(notdir $1)
 endef
 
-$(eval $(call declare_unified,$(DEPTHCHARGE),$$$$(depthcharge-objs) \
+$(eval $(call declare_payload,$(DEPTHCHARGE),$$$$(depthcharge-objs) \
 	$$$$(unified-objs),))
 
-$(eval $(call declare_unified,$(NETBOOT),$$$$(depthcharge-objs) \
+$(eval $(call declare_payload,$(NETBOOT),$$$$(depthcharge-objs) \
 	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs),))
 
-$(eval $(call declare_unified,$(DEV),$$$$(depthcharge-objs) \
+$(eval $(call declare_payload,$(DEV),$$$$(depthcharge-objs) \
 	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs) $$$$(dev-objs) \
 	$$$$(unified-objs),$(DONT_GC_NETBOOT)))
 
 # Rules for creating fastboot-capable depthcharge binary
 
-$(eval $(call declare_unified,$(FASTBOOT),$$$$(depthcharge-objs) \
+$(eval $(call declare_payload,$(FASTBOOT),$$$$(depthcharge-objs) \
 	$$$$(fastboot-objs) $$$$(unified-objs),))
