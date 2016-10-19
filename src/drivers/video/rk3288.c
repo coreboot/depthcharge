@@ -16,7 +16,7 @@
 #include <libpayload.h>
 
 #include "base/container_of.h"
-#include "drivers/video/rockchip.h"
+#include "drivers/video/rk3288.h"
 
 typedef struct {
 	DisplayOps ops;
@@ -32,14 +32,14 @@ typedef struct {
 static uint32_t *vop0_sys_ctrl = (uint32_t *)0xff930008;
 static uint32_t *vop1_sys_ctrl = (uint32_t *)0xff940008;
 
-static int rockchip_backlight_update(DisplayOps *me, uint8_t enable)
+static int rk3288_backlight_update(DisplayOps *me, uint8_t enable)
 {
 	RkDisplay *display = container_of(me, RkDisplay, ops);
 	gpio_set(display->backlight_gpio, enable);
 	return 0;
 }
 
-static int rockchip_display_stop(DisplayOps *me)
+static int rk3288_display_stop(DisplayOps *me)
 {
 	/* set vop0 to standby */
 	writel(RK_SETBITS(1 << VOP_STANDBY_EN), vop0_sys_ctrl);
@@ -53,13 +53,13 @@ static int rockchip_display_stop(DisplayOps *me)
 	return 0;
 }
 
-DisplayOps *new_rockchip_display(GpioOps *backlight)
+DisplayOps *new_rk3288_display(GpioOps *backlight)
 {
 	RkDisplay *display = xzalloc(sizeof(*display));
-	display->ops.stop = rockchip_display_stop;
+	display->ops.stop = rk3288_display_stop;
 	if (backlight) {
 		display->backlight_gpio = backlight;
-		display->ops.backlight_update = rockchip_backlight_update;
+		display->ops.backlight_update = rk3288_backlight_update;
 	}
 
 	return &display->ops;

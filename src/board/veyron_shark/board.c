@@ -37,7 +37,7 @@
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/video/display.h"
-#include "drivers/video/rockchip.h"
+#include "drivers/video/rk3288.h"
 #include "vboot/boot_policy.h"
 #include "vboot/util/flag.h"
 
@@ -124,7 +124,7 @@ static int board_setup(void)
 	if (lib_sysinfo.framebuffer != NULL) {
 		GpioOps *backlight_gpio = sysinfo_lookup_gpio("backlight", 1,
 			new_rk_gpio_output_from_coreboot);
-		display_set_ops(new_rockchip_display(backlight_gpio));
+		display_set_ops(new_rk3288_display(backlight_gpio));
 	}
 
 	/* Fill in fastboot related information */

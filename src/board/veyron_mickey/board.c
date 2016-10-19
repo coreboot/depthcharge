@@ -32,7 +32,7 @@
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/video/display.h"
-#include "drivers/video/rockchip.h"
+#include "drivers/video/rk3288.h"
 #include "vboot/util/flag.h"
 
 static int board_setup(void)
