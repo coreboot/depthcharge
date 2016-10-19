@@ -18,6 +18,6 @@
 #include "drivers/gpio/gpio.h"
 #include "drivers/video/display.h"
 
-DisplayOps *new_rockchip_display(GpioOps *backlight);
+DisplayOps *new_rk3288_display(GpioOps *backlight);
 
 #endif
