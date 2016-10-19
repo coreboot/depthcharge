@@ -39,16 +39,16 @@ PHONY += $(notdir $1)
 endef
 
 $(eval $(call declare_payload,$(DEPTHCHARGE),$$$$(depthcharge-objs) \
-	$$$$(unified-objs),))
+	$$$$(vboot-objs),))
 
 $(eval $(call declare_payload,$(NETBOOT),$$$$(depthcharge-objs) \
 	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs),))
 
 $(eval $(call declare_payload,$(DEV),$$$$(depthcharge-objs) \
 	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs) $$$$(dev-objs) \
-	$$$$(unified-objs),$(DONT_GC_NETBOOT)))
+	$$$$(vboot-objs),$(DONT_GC_NETBOOT)))
 
 # Rules for creating fastboot-capable depthcharge binary
 
 $(eval $(call declare_payload,$(FASTBOOT),$$$$(depthcharge-objs) \
-	$$$$(fastboot-objs) $$$$(unified-objs),))
+	$$$$(fastboot-objs) $$$$(vboot-objs),))

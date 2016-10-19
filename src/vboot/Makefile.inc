@@ -21,7 +21,7 @@ depthcharge-y += screens.c
 depthcharge-y += vbnv.c
 
 # Where "main" lives.
-unified-y += main.c
+vboot-y += main.c
 
 VB_LIB = $(obj)/external/vboot/vboot_fw.a
 
