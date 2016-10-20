@@ -39,29 +39,12 @@
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/spi.h"
 #include "drivers/video/display.h"
+#include "drivers/video/rk3399.h"
 #include "vboot/util/flag.h"
 
 static const int emmc_sd_clock_min = 400 * 1000;
 static const int emmc_clock_max = 200 * 1000 * 1000;
 
-// Set backlight to 80% by default when on
-// This mirrors default value from the kernel
-// from internal_backlight_no_als_ac_brightness
-#define DEFAULT_EC_BL_PWM_DUTY 80
-
-/*
- * callback to turn on/off the backlight
- */
-static int kevin_backlight_update(DisplayOps *me, uint8_t enable)
-{
-	return cros_ec_set_bl_pwm_duty(enable ? DEFAULT_EC_BL_PWM_DUTY : 0);
-}
-
-static DisplayOps kevin_display_ops = {
-	.init = NULL,
-	.backlight_update = &kevin_backlight_update,
-	.stop = NULL,
-};
 
 /**
  * Read the lid switch value from the EC
@@ -203,7 +186,7 @@ static int board_setup(void)
 	// turn on the backlight
 	if (lib_sysinfo.framebuffer &&
 	    lib_sysinfo.framebuffer->physical_address)
-		display_set_ops(&kevin_display_ops);
+		display_set_ops(new_rk3399_display());
 
 	return 0;
 }
