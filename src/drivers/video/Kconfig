@@ -34,6 +34,10 @@ config DRIVER_VIDEO_RK3288
 	bool "rk3288 video settings"
 	default n
 
+config DRIVER_VIDEO_RK3399
+	bool "rk3399 video settings"
+	default n
+
 config DRIVER_VIDEO_WW_RING
 	bool "Whirlwind LED ring driver"
 	default n
