@@ -14,3 +14,7 @@
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
+# Almost all boards are using active low buffer enables.
+config BEEP_I2S_BUFFER_ENABLE
+	hex "Value to control BIOS Beep Buffers' Output Enable"
+	default 0x0

@@ -50,7 +50,7 @@ endif
 if BOARD = "gizmo"
 source src/board/gizmo/Kconfig
 endif
-if BOARD = "glados"
+if BOARD_DIR = "glados"
 source src/board/glados/Kconfig
 endif
 if BOARD = "jecht"

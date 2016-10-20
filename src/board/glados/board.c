@@ -21,6 +21,7 @@
  * MA 02111-1307 USA
  */
 
+#include <config.h>
 #include <gbb_header.h>
 #include <pci.h>
 #include <pci/pci.h>
@@ -87,6 +88,8 @@ GpioOps *ec_in_rw_workaround_gpio(void)
 
 static int board_setup(void)
 {
+	const int i2s_buffer_enable = CONFIG_BEEP_I2S_BUFFER_ENABLE;
+
 	sysinfo_install_flags(new_skylake_gpio_input_from_coreboot);
 	flag_replace(FLAG_ECINRW, ec_in_rw_workaround_gpio());
 
@@ -128,8 +131,8 @@ static int board_setup(void)
 		new_ssm4567_codec(&i2c4->ops, 0x34, SSM4567_MODE_PDM);
 
 	/* Activate buffer to disconnect I2S from PCH and allow GPIO */
-	GpioCfg *i2s2_buffer = new_skylake_gpio_output(GPP_D22, 0);
-	gpio_set(&i2s2_buffer->ops, 1);
+	GpioCfg *i2s2_buffer = new_skylake_gpio_output(GPP_D22, i2s_buffer_enable);
+	gpio_set(&i2s2_buffer->ops, !i2s_buffer_enable);
 
 	/* Use GPIO to bit-bang PDM to the codec */
 	GpioCfg *i2s2_sclk = new_skylake_gpio_output(GPP_F0, 0);
