@@ -37,7 +37,10 @@
 static const int CROS_EC_CMD_TIMEOUT_MS = 5000;
 
 /* Timeout waiting for EC hash calculation completion */
-static const int CROS_EC_HASH_TIMEOUT_MS = 2000;
+/* NOTE(oak FW branch): We increase the EC hash timeout from 2s to 5s, to
+ * workaround a bug in EC RO, see crosbug.com/p/58770.
+ */
+static const int CROS_EC_HASH_TIMEOUT_MS = 5000;
 
 /* Time to delay between polling status of EC hash calculation */
 static const int CROS_EC_HASH_CHECK_DELAY_MS = 10;
