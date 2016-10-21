@@ -23,11 +23,8 @@ typedef struct {
 	GpioOps *backlight_gpio;
 } RkDisplay;
 
-#define RK_CLRSETBITS(clr, set) ((((clr) | (set)) << 16) | set)
-#define RK_SETBITS(set) RK_CLRSETBITS(0, set)
-#define RK_CLRBITS(clr) RK_CLRSETBITS(clr, 0)
-
-#define VOP_STANDBY_EN    22
+#define VOP_STANDBY_EN		1
+#define VOP_STANDBY_OFFSET	22
 
 static uint32_t *vop0_sys_ctrl = (uint32_t *)0xff930008;
 static uint32_t *vop1_sys_ctrl = (uint32_t *)0xff940008;
@@ -42,10 +39,10 @@ static int rk3288_backlight_update(DisplayOps *me, uint8_t enable)
 static int rk3288_display_stop(DisplayOps *me)
 {
 	/* set vop0 to standby */
-	writel(RK_SETBITS(1 << VOP_STANDBY_EN), vop0_sys_ctrl);
+	setbits_le32(vop0_sys_ctrl, VOP_STANDBY_EN << VOP_STANDBY_OFFSET);
 
 	/* set vop1 to standby */
-	writel(RK_SETBITS(1 << VOP_STANDBY_EN), vop1_sys_ctrl);
+	setbits_le32(vop1_sys_ctrl, VOP_STANDBY_EN << VOP_STANDBY_OFFSET);
 
 	/* wait frame complete (60Hz) to enter standby */
 	mdelay(17);
