@@ -48,3 +48,32 @@ static int pit_8254_cleanup_install(void)
 
 INIT_FUNC(pit_8254_cleanup_install);
 
+int skylake_get_gpe(int gpe)
+{
+	int bank;
+	uint32_t mask, sts;
+	uint64_t start;
+	int rc = 0;
+	const uint64_t timeout_us = 1000;
+
+	if (gpe < 0 || gpe > GPE0_WADT)
+		return -1;
+
+	bank = gpe / 32;
+	mask = 1 << (gpe % 32);
+
+	/* Wait for GPE status to clear */
+	start = timer_us(0);
+	do {
+		if (timer_us(start) > timeout_us)
+			break;
+
+		sts = inl(ACPI_BASE_ADDRESS + GPE0_STS(bank));
+		if (sts & mask) {
+			outl(mask, ACPI_BASE_ADDRESS + GPE0_STS(bank));
+			rc = 1;
+		}
+	} while (sts & mask);
+
+	return rc;
+}
