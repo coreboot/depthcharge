@@ -101,7 +101,7 @@ static int ramoops_init(void)
 {
 	if (lib_sysinfo.ramoops_buffer_size != 0)
 		ramoops_buffer(lib_sysinfo.ramoops_buffer,
-			       lib_sysinfo.ramoops_buffer_size, 0x20000);
+			       lib_sysinfo.ramoops_buffer_size, 0x40000);
 
 	return 0;
 }
