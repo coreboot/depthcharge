@@ -54,22 +54,17 @@ HOSTCXX = g++
 HOSTCFLAGS := -I$(srck) -I$(objk)
 HOSTCXXFLAGS := -I$(srck) -I$(objk)
 
-ifdef LIBPAYLOAD_DIR
-# libpayload's xcompile script checks for this config flag to decide which
-# compiler to use
-CONFIG_LP_COMPILER_GCC=y
-include $(LIBPAYLOAD_DIR)/libpayload.xcompile
-endif
-LIBPAYLOAD_DIR ?= ../libpayload/install/libpayload
-LZMA := lzma
-
 ifeq ($(strip $(HAVE_DOTCONFIG)),)
 
 all: help
 
 else
 
+LIBPAYLOAD_DIR ?= ../libpayload/install/libpayload
+
 include $(DOTCONFIG)
+include $(LIBPAYLOAD_DIR)/libpayload.config
+include $(LIBPAYLOAD_DIR)/libpayload.xcompile
 
 ifeq ($(CONFIG_ARCH_X86),y)
 ARCH = x86
@@ -114,7 +109,7 @@ toolchain := $(new_toolchain_name_$(toolchain))
 endif
 
 CC:=$(firstword $(CC_$(toolchain)))
-XCC := CC=$(CC) $(LIBPAYLOAD_DIR)/bin/lpgcc
+XCC := CC=$(CC) $(abspath $(LIBPAYLOAD_DIR))/bin/lpgcc
 AS = $(LIBPAYLOAD_DIR)/bin/lpas
 OBJCOPY ?= $(OBJCOPY_$(toolchain))
 STRIP ?= $(STRIP_$(toolchain))
