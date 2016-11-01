@@ -14,17 +14,26 @@
 #include "base/list.h"
 #include "drivers/sound/route.h"
 
-static int route_enable_components(SoundRoute *route)
+static int route_enable_components(SoundRoute *route, int enable)
 {
 	int res = 0;
 
 	SoundRouteComponent *component;
 	list_for_each(component, route->components, list_node) {
-		if (!component->enabled) {
-			if (component->ops.enable(&component->ops))
-				res = -1;
-			else
-				component->enabled = 1;
+		if (component->enabled != enable) {
+			if (enable) {
+				if (component->ops.enable(&component->ops))
+					res = -1;
+				else
+					component->enabled = 1;
+			} else {
+				if (!component->ops.disable)
+					continue;
+				if (component->ops.disable(&component->ops))
+					res = -1;
+				else
+					component->enabled = 0;
+			}
 		}
 	}
 
@@ -34,41 +43,60 @@ static int route_enable_components(SoundRoute *route)
 static int route_start(SoundOps *me, uint32_t frequency)
 {
 	SoundRoute *route = container_of(me, SoundRoute, ops);
-
-	if (route_enable_components(route))
-		return 1;
+	int res;
 
 	if (!route->source->start)
 		return -1;
-	return route->source->start(route->source, frequency);
+
+	res = route_enable_components(route, 1);
+	if (res)
+		goto err;
+
+	res = route->source->start(route->source, frequency);
+	if (res)
+		goto err;
+
+	return 0;
+
+err:
+	route_enable_components(route, 0);
+	return res;
 }
 
 static int route_stop(SoundOps *me)
 {
 	SoundRoute *route = container_of(me, SoundRoute, ops);
+	int res;
+
 	if (!route->source->stop)
 		return -1;
-	return route->source->stop(route->source);
+	res = route->source->stop(route->source);
+	res |= route_enable_components(route, 0);
+	return res;
 }
 
 static int route_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 {
 	SoundRoute *route = container_of(me, SoundRoute, ops);
-
-	if (route_enable_components(route))
-		return 1;
+	int res;
 
 	if (!route->source->play)
 		return -1;
-	return route->source->play(route->source, msec, frequency);
+
+	res = route_enable_components(route, 1);
+	if (res)
+		goto out;
+
+	res = route->source->play(route->source, msec, frequency);
+
+out:
+	res |= route_enable_components(route, 0);
+	return res;
 }
 
 static int route_set_volume(SoundOps *me, uint32_t volume)
 {
 	SoundRoute *route = container_of(me, SoundRoute, ops);
-
-	if (route_enable_components(route))
-		return 1;
 
 	if (!route->source->set_volume)
 		return -1;
