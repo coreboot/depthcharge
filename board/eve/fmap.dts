@@ -1,0 +1,15 @@
+/dts-v1/;
+
+/ {
+	model = "Google Eve";
+	config {
+		hwid = "EVE TEST 1394";
+	};
+	chromeos-config {
+		/* Enable factory-friendly features. */
+		gbb-flag-dev-screen-short-delay;
+		gbb-flag-force-dev-switch-on;
+		gbb-flag-force-dev-boot-usb;
+		gbb-flag-disable-fw-rollback-check;
+	};
+};
