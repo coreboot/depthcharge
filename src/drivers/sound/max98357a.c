@@ -26,12 +26,20 @@ static int max98357a_enable(SoundRouteComponentOps *me)
 	return gpio_set(codec->sdmode_gpio, 1);
 }
 
+static int max98357a_disable(SoundRouteComponentOps *me)
+{
+	max98357aCodec *codec = container_of(me, max98357aCodec, component.ops);
+
+	return gpio_set(codec->sdmode_gpio, 0);
+}
+
 max98357aCodec *new_max98357a_codec(GpioOps *ops)
 {
 	max98357aCodec *codec = xzalloc(sizeof(*codec));
 
 	codec->sdmode_gpio = ops;
 	codec->component.ops.enable = &max98357a_enable;
+	codec->component.ops.disable = &max98357a_disable;
 
 	return codec;
 }
