@@ -40,6 +40,8 @@
 enum {
 	Cr50TimeoutLong = 2 * 1000 * 1000,	// usecs
 	Cr50TimeoutShort = 2 * 1000,		// usecs
+	Cr50TimeoutNoIrq = 20 * 1000,		// usecs
+	Cr50TimeoutIrq = 100 * 1000,		// usecs
 };
 
 enum {
@@ -53,11 +55,11 @@ static int cr50_i2c_wait_tpm_ready(Cr50I2c *tpm)
 
 	if (!tpm->irq_status) {
 		// Fixed delay if interrupt not supported
-		udelay(Cr50TimeoutShort);
+		udelay(Cr50TimeoutNoIrq);
 		return 0;
 	}
 
-	timeout = 5 * Cr50TimeoutShort;
+	timeout = Cr50TimeoutIrq;
 	start = timer_us(0);
 
 	while (!tpm->irq_status())
