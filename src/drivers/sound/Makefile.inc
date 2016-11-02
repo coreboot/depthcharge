@@ -11,6 +11,7 @@
 ## GNU General Public License for more details.
 ##
 
+depthcharge-$(CONFIG_DRIVER_SOUND_GPIO_BUZZER) += gpio_buzzer.c
 depthcharge-$(CONFIG_DRIVER_SOUND_GPIO_I2S) += gpio_i2s.c
 depthcharge-$(CONFIG_DRIVER_SOUND_GPIO_PDM) += gpio_pdm.c
 depthcharge-$(CONFIG_DRIVER_SOUND_HDA) += hda_codec.c

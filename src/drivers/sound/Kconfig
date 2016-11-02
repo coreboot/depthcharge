@@ -18,6 +18,10 @@ config DRIVER_SOUND_GPIO_PDM
 	bool "PDM driver based on bit-bang GPIO"
 	default n
 
+config DRIVER_SOUND_GPIO_BUZZER
+	bool "A buzzer controlled by gpio"
+	default n
+
 config DRIVER_SOUND_HDA
 	bool "HDA codec driver"
 	default n
