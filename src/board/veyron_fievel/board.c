@@ -35,9 +35,7 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/rk808.h"
 #include "drivers/power/sysinfo.h"
-#include "drivers/sound/max98090.h"
-#include "drivers/sound/i2s.h"
-#include "drivers/sound/route.h"
+#include "drivers/sound/gpio_buzzer.h"
 #include "drivers/storage/dw_mmc.h"
 #include "drivers/storage/rk_mmc.h"
 #include "drivers/tpm/slb9635_i2c.h"
@@ -93,15 +91,9 @@ static int board_setup(void)
 	RkI2c *i2c1 = new_rockchip_i2c((void *)0xff140000);
 	tpm_set_ops(&new_slb9635_i2c(&i2c1->ops, 0x20)->base.ops);
 
-	RockchipI2s *i2s0 = new_rockchip_i2s(0xff890000, 16, 2, 256);
-	I2sSource *i2s_source = new_i2s_source(&i2s0->ops, 48000, 2, 16000);
-	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
-	RkI2c *i2c2 = new_rockchip_i2c((void *)0xff660000);
-	Max98090Codec *codec = new_max98090_codec(&i2c2->ops, 0x10, 16, 48000,
-						  256, 1);
-	list_insert_after(&codec->component.list_node,
-			  &sound_route->components);
-	sound_set_ops(&sound_route->ops);
+	RkGpio *buzzer = new_rk_gpio_output(GPIO(7, A, 5));
+	GpioOps *buzzer_ops = &buzzer->ops;
+	sound_set_ops(&new_gpio_buzzer_sound(buzzer_ops)->ops);
 
 	RkI2c *i2c0 = new_rockchip_i2c((void *)0xff650000);
 	Rk808Pmic *pmic = new_rk808_pmic(&i2c0->ops, 0x1b);
