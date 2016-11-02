@@ -14,6 +14,10 @@
 ## along with this program; if not, write to the Free Software
 ## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
 
+config DRIVER_SOUND_GPIO_BUZZER
+	bool "A buzzer controlled by gpio"
+	default n
+
 config DRIVER_SOUND_HDA
 	bool "HDA codec driver"
 	default n
