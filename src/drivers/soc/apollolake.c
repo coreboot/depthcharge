@@ -31,6 +31,9 @@ int apollolake_get_gpe(int gpe)
 {
 	int bank;
 	uint32_t mask, sts;
+	uint64_t start;
+	int rc = 0;
+	const uint64_t timeout_us = 1000;
 
 	if (gpe < 0 || gpe > GPE0_DW3_31)
 		return -1;
@@ -38,10 +41,18 @@ int apollolake_get_gpe(int gpe)
 	bank = gpe / 32;
 	mask = 1 << (gpe % 32);
 
-	sts = inl(ACPI_PMIO_BASE + GPE0_STS(bank));
-	if (sts & mask) {
-		outl(mask, ACPI_PMIO_BASE + GPE0_STS(bank));
-		return 1;
-	}
-	return 0;
+	/* Wait for GPE status to clear */
+	start = timer_us(0);
+	do {
+		if (timer_us(start) > timeout_us)
+			break;
+
+		sts = inl(ACPI_PMIO_BASE + GPE0_STS(bank));
+		if (sts & mask) {
+			outl(mask, ACPI_PMIO_BASE + GPE0_STS(bank));
+			rc = 1;
+		}
+	} while (sts & mask);
+
+	return rc;
 }
