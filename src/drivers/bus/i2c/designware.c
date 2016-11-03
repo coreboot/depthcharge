@@ -151,7 +151,7 @@ enum {
 };
 
 enum {
-	TIMEOUT_US = 4000
+	TIMEOUT_US = 10000
 };
 
 static void i2c_enable(DesignwareI2cRegs *regs)
