@@ -94,6 +94,10 @@ int vboot_select_and_load_kernel(void)
 		printf("Powering off.\n");
 		if (power_off())
 			return 1;
+	} else if (res == VBERROR_REBOOT_REQUIRED) {
+		printf("Reboot requested. Doing a cold reboot.\n");
+		if (cold_reboot())
+			return 1;
 	}
 	if (res != VBERROR_SUCCESS) {
 		printf("VbSelectAndLoadKernel returned %d, "
