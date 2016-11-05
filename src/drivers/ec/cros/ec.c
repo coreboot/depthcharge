@@ -1266,7 +1266,8 @@ proto2:
 	// Unconditionally clear the EC recovery request.
 	printf("Clearing the recovery request.\n");
 	const uint32_t kb_rec_mask =
-		EC_HOST_EVENT_MASK(EC_HOST_EVENT_KEYBOARD_RECOVERY);
+		EC_HOST_EVENT_MASK(EC_HOST_EVENT_KEYBOARD_RECOVERY) |
+		EC_HOST_EVENT_MASK(EC_HOST_EVENT_KEYBOARD_RECOVERY_HW_REINIT);
 	cros_ec_clear_host_events(kb_rec_mask);
 
 	return 0;
