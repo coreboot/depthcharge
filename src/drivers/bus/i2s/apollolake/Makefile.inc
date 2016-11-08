@@ -1,5 +1,6 @@
 ##
-## Copyright 2012 Google Inc.
+## Copyright (c) 2016, Intel Corporation.
+## Copyright 2016 Google Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -11,9 +12,5 @@
 ## GNU General Public License for more details.
 ##
 
-subdirs-y += apollolake baytrail broadwell braswell
-
-depthcharge-$(CONFIG_DRIVER_BUS_I2S_EXYNOS5) += exynos5.c
-depthcharge-$(CONFIG_DRIVER_BUS_I2S_MT8173) += mt8173.c
-depthcharge-$(CONFIG_DRIVER_BUS_I2S_TEGRA) += tegra.c
-depthcharge-$(CONFIG_DRIVER_BUS_I2S_ROCKCHIP) += rockchip.c
+depthcharge-$(CONFIG_DRIVER_BUS_I2S_APOLLOLAKE) += apollolake.c
+depthcharge-$(CONFIG_DRIVER_BUS_I2S_APOLLOLAKE_MAX98357A) += apollolake-max98357a.c
