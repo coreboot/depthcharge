@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Rambi";
-	config {
-		hwid = "RAMBI TEST A-A 0128";
-	};
 };

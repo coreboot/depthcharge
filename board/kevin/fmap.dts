@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Kevin";
-	config {
-		hwid = "KEVIN TEST 1422";
-	};
 };

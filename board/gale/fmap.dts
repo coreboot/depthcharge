@@ -31,7 +31,4 @@
 /dts-v1/;
 / {
 	model = "Google Gale";
-	config {
-		hwid = "Gale TEST 1";
-	};
 };

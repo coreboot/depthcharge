@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Oak";
-	config {
-		hwid = "OAK TEST 6858";
-	};
 };

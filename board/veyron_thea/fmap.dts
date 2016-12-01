@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Veyron_Thea";
-	config {
-		hwid = "THEA TEST A-A 7163";
-	};
 };

@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Hana";
-	config {
-		hwid = "HANA TEST 5855";
-	};
 };

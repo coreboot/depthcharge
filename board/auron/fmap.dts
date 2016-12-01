@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Auron";
-	config {
-		hwid = "AURON TEST A-A 9944";
-	};
 };

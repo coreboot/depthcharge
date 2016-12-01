@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Veyron_Minnie";
-	config {
-		hwid = "MINNIE TEST A-A 5151";
-	};
 };

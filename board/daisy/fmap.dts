@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Snow";
-	config {
-		hwid = "DAISY TEST A-A 9382";
-	};
 };

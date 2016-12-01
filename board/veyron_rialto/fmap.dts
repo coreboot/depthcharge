@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Veyron_Rialto";
-	config {
-		hwid = "RIALTO TEST A-A 2322";
-	};
 };

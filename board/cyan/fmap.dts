@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Cyan";
-	config {
-		hwid = "CYAN TEST A-A 1829";
-	};
 };

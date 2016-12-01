@@ -9,7 +9,4 @@
 
 / {
 	model = "Google Reef";
-	config {
-		hwid = "REEF TEST 3240";
-	};
 };

@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Samus";
-	config {
-		hwid = "SAMUS TEST 8028";
-	};
 };

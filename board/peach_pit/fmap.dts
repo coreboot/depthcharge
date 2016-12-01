@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Peach Pit";
-	config {
-		hwid = "PEACH TEST A-A 9382";
-	};
 };

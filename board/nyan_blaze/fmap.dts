@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Nyan Blaze";
-	config {
-		hwid = "BLAZE TEST 9xxx";
-	};
 };

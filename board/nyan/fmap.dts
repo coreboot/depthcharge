@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Nyan";
-	config {
-		hwid = "NYAN TEST 9382";
-	};
 };

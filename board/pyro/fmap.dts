@@ -9,7 +9,4 @@
 
 / {
 	model = "Google Pyro";
-	config {
-		hwid = "PYRO TEST 0290";
-	};
 };

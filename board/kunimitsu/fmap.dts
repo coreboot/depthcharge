@@ -2,7 +2,4 @@
 
 / {
 	model = "Intel Kunimitsu";
-	config {
-		hwid = "KUNIMITSU TEST 8819";
-	};
 };

@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Veyron_Gus";
-	config {
-		hwid = "GUS TEST A-A 2606";
-	};
 };

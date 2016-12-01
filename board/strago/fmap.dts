@@ -2,7 +2,4 @@
 
 / {
 	model = "Intel Strago";
-	config {
-		hwid = "STRAGO TEST A-A 9657";
-	};
 };

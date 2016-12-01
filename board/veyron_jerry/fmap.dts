@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Veyron_Jerry";
-	config {
-		hwid = "JERRY TEST A-A 1250";
-	};
 };

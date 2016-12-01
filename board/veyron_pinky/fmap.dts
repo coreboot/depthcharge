@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Veyron_Pinky";
-	config {
-		hwid = "PINKY TEST A-A 3693";
-	};
 };

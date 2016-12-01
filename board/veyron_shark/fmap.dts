@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Veyron_Shark";
-	config {
-		hwid = "SHARK TEST A-A 8553";
-	};
 };

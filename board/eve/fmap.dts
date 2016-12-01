@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Eve";
-	config {
-		hwid = "EVE TEST 1394";
-	};
 };

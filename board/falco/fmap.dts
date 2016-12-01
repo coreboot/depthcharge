@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Falco";
-	config {
-		hwid = "X86 FALCO TEST 0289";
-	};
 };

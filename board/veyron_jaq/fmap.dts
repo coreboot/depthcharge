@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Veyron_Jaq";
-	config {
-		hwid = "JAQ TEST A-A 8292";
-	};
 };

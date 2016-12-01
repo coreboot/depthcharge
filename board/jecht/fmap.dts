@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Jecht";
-	config {
-		hwid = "JECHT TEST A-A 8958";
-	};
 };

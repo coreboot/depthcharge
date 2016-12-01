@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Veyron_Speedy";
-	config {
-		hwid = "SPEEDY TEST A-A 8421";
-	};
 };

@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Panther";
-	config {
-		hwid = "X86 PANTHER TEST 6287";
-	};
 };

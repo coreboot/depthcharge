@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Elm";
-	config {
-		hwid = "ELM TEST 3839";
-	};
 };

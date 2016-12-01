@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Nyan Big";
-	config {
-		hwid = "BIG TEST 9382";
-	};
 };

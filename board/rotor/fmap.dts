@@ -2,7 +2,4 @@
 
 / {
 	model = "Marvell Rotor ";
-	config {
-		hwid = "ROTOR TEST 1234";
-	};
 };

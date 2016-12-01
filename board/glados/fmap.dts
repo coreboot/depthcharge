@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Glados";
-	config {
-		hwid = "GLADOS TEST 1988";
-	};
 };

@@ -2,7 +2,4 @@
 
 / {
 	model = "Nvidia Foster";
-	config {
-		hwid = "FOSTER TEST 1184";
-	};
 };

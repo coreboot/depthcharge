@@ -2,7 +2,4 @@
 
 / {
 	model = "Google Veyron_Nicky";
-	config {
-		hwid = "NICKY TEST A-A 9039";
-	};
 };
