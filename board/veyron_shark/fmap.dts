@@ -5,12 +5,4 @@
 	config {
 		hwid = "SHARK TEST A-A 8553";
 	};
-	chromeos-config {
-		/* Enable factory-friendly features. */
-		gbb-flag-dev-screen-short-delay;
-		gbb-flag-force-dev-switch-on;
-		gbb-flag-force-dev-boot-usb;
-		gbb-flag-disable-fw-rollback-check;
-		gbb-flag-force-dev-boot-fastboot-full-cap;
-	};
 };

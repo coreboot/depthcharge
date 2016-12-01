@@ -12,11 +12,4 @@
 	config {
 		hwid = "SNAPPY TEST 1088";
 	};
-	chromeos-config {
-		/* Enable factory-friendly features. */
-		gbb-flag-dev-screen-short-delay;
-		gbb-flag-force-dev-switch-on;
-		gbb-flag-force-dev-boot-usb;
-		gbb-flag-disable-fw-rollback-check;
-	};
 };

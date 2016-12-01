@@ -5,6 +5,4 @@
 	config {
 		hwid = "X86 LINK TEST 6638";
 	};
-	chromeos-config {
-	};
 };

@@ -34,10 +34,4 @@
 	config {
 		hwid = "Gale TEST 1";
 	};
-	chromeos-config {
-		/* Enable factory-friendly features. */
-		gbb-flag-dev-screen-short-delay;
-		gbb-flag-force-dev-boot-usb;
-		gbb-flag-disable-fw-rollback-check;
-	};
 };

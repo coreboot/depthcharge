@@ -5,11 +5,4 @@
 	config {
 		hwid = "CYAN TEST A-A 1829";
 	};
-	chromeos-config {
-		/* Enable developer and factory friendly features. */
-		gbb-flag-dev-screen-short-delay;
-		gbb-flag-force-dev-switch-on;
-		gbb-flag-force-dev-boot-usb;
-		gbb-flag-disable-fw-rollback-check;
-	};
 };
