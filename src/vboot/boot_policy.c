@@ -245,7 +245,7 @@ int fill_boot_info(struct boot_info *bi, VbSelectAndLoadKernelParams *kparams)
 
 	boot_policy.img_type = curr_policy.policy[i].img_type;
 	boot_policy.cmd_line_loc = curr_policy.policy[i].cmd_line_loc;
-+
+
 	printf("Boot policy: Match for type %x with cmdline %x\n",
 	       boot_policy.img_type, boot_policy.cmd_line_loc);
 
