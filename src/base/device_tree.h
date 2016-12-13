@@ -206,4 +206,8 @@ int dt_set_mac_addresses(DeviceTree *tree, const DtPathMap *dt_maps);
  */
 int dt_set_wifi_calibration(DeviceTree *tree, const DtPathMap *maps);
 
+/*
+ * Retrieve Country Code data from VPD and add it into the device tree.
+ */
+int dt_set_wifi_country_code(DeviceTree *tree, const DtPathMap *maps);
 #endif /* __BASE_DEVICE_TREE_H__ */

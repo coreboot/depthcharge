@@ -16,7 +16,9 @@
  */
 
 #include <libpayload.h>
+#include <string.h>
 #include "base/device_tree.h"
+#include "base/vpd_util.h"
 
 /*
  * This file provides functions retrieving WiFi calibration data from CBMEM
@@ -110,6 +112,37 @@ int dt_set_wifi_calibration(DeviceTree *tree, const DtPathMap *maps)
 
 		cal_blob = (struct calibration_blob *)
 			((uintptr_t)cal_blob + cal_blob->blob_size);
+	}
+
+	return rv;
+}
+
+int dt_set_wifi_country_code(DeviceTree *tree, const DtPathMap *maps)
+{
+	int rv = 0;
+	DeviceTreeNode *dt_node;
+	const DtPathMap *map = maps;
+	const char regioncode_key[] = "region";
+	char country_code[8], *cc;
+
+        if (!vpd_gets(regioncode_key, country_code, sizeof(country_code))) {
+                printf("No region code found in VPD\n");
+                return rv;
+        }
+
+        /* Add only the two letter Alpha-2 country code, remove the variant
+         * in region code */
+        country_code[2] = 0;
+        cc = strdup(country_code);
+
+	for (; map && map->dt_path; map++) {
+		dt_node = dt_find_node_by_path(tree->root, map->dt_path, NULL,
+						NULL, map->force_create);
+		if (!dt_node) {
+			rv |= 1;
+			continue;
+		}
+		dt_add_string_prop(dt_node, (char *)map->key, cc);
 	}
 
 	return rv;

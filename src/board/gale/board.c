@@ -97,6 +97,12 @@ static const DtPathMap calibration_maps[] = {
 	{}
 };
 
+static const DtPathMap cc_maps[] = {
+	{1, "soc/wifi@a000000", "qcom,ath10k-country-code"},
+	{1, "soc/wifi@a800000", "qcom,ath10k-country-code"},
+	{}
+};
+
 static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 {
 	int rv = 0;
@@ -107,6 +113,8 @@ static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 
 	if (bdescriptor.calibration_needed)
 		rv |= dt_set_wifi_calibration(tree, calibration_maps);
+
+	rv |= dt_set_wifi_country_code(tree, cc_maps);
 
 	return rv;
 }
