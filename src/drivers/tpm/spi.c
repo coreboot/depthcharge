@@ -165,12 +165,15 @@ typedef struct {
 /*
  * Each TPM2 SPI transaction starts the same: CS is asserted, the 4 byte
  * header is sent to the TPM, the master waits til TPM is ready to continue.
+ *
+ * Returns 1 on success, 0 on failure (TPM2 flow control timeout).
  */
-static void start_transaction(int read_write, size_t bytes, unsigned addr)
+static int start_transaction(int read_write, size_t bytes, unsigned addr)
 {
 	spi_frame_header header;
 	uint8_t byte;
 	int i;
+	struct stopwatch sw;
 
 	/*
 	 * Give it 10 ms. TODO(vbendeb): remove this once cr50 SPS TPM driver
@@ -220,9 +223,15 @@ static void start_transaction(int read_write, size_t bytes, unsigned addr)
 	tpm_if.xfer(tpm_if.slave, header.body, sizeof(header.body), NULL, 0);
 
 	/* Now poll the bus until TPM removes the stall bit. */
+	stopwatch_init_usecs_expire(&sw, 10000);
 	do {
 		tpm_if.xfer(tpm_if.slave, NULL, 0, &byte, 1);
+		if (stopwatch_expired(&sw)) {
+			printf("TPM flow control failure\n");
+			return 0;
+		}
 	} while (!(byte & 1));
+	return 1;
 }
 
 /*
@@ -324,7 +333,8 @@ static int tpm2_write_reg(unsigned reg_number, const void *buffer, size_t bytes)
  */
 static int tpm2_read_reg(unsigned reg_number, void *buffer, size_t bytes)
 {
-	start_transaction(true, bytes, reg_number);
+	if (!start_transaction(true, bytes, reg_number))
+		return 0;
 	read_bytes(buffer, bytes);
 	tpm_if.cs_deassert(tpm_if.slave);
 	trace_dump("R", reg_number, bytes, buffer, 0);
@@ -363,7 +373,8 @@ static int tpm2_init(SpiOps *spi_ops)
 	uint32_t did_vid, status;
 	uint8_t cmd;
 
-	tpm2_read_reg(TPM_DID_VID_REG, &did_vid, sizeof(did_vid));
+	if (!tpm2_read_reg(TPM_DID_VID_REG, &did_vid, sizeof(did_vid)))
+		return -1;
 
 	/* Try claiming locality zero. */
 	tpm2_read_reg(TPM_ACCESS_REG, &cmd, sizeof(cmd));
