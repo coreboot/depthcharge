@@ -135,6 +135,15 @@ VbError_t VbExDisplayImage(uint32_t x, uint32_t y,
 	return VBERROR_SUCCESS;
 }
 
+VbError_t VbExDisplayText(uint32_t x, uint32_t y,
+			  const char *info_str)
+{
+	video_console_set_cursor(x, y);
+	print_string(info_str);
+
+	return VBERROR_SUCCESS;
+}
+
 VbError_t VbExDisplaySetDimension(uint32_t width, uint32_t height)
 {
 	// TODO(hungte) Shift or scale images if width/height is not equal to
