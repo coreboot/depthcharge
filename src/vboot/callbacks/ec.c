@@ -195,6 +195,6 @@ VbError_t VbExEcVbootDone(int in_recovery)
 }
 
 VbError_t VbExEcBatteryCutOff(void) {
-	 return (cros_ec_battery_cutoff(0) == 0 ? VBERROR_SUCCESS :
-		 VBERROR_UNKNOWN);
+	 return (cros_ec_battery_cutoff(EC_BATTERY_CUTOFF_FLAG_AT_SHUTDOWN) == 0
+		 ? VBERROR_SUCCESS : VBERROR_UNKNOWN);
 }
