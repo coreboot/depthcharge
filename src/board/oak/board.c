@@ -91,7 +91,7 @@ int oak_backlight_update(DisplayOps *me, uint8_t enable)
 static int sound_setup(void)
 {
 	MtkI2s *i2s0 = new_mtk_i2s(0x11220000, 2, 48000);
-	I2sSource *i2s_source = new_i2s_source(&i2s0->ops, 48000, 2, 16000);
+	I2sSource *i2s_source = new_i2s_source(&i2s0->ops, 48000, 2, 8000);
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
 	MTKI2c *i2c0 = new_mtk_i2c(0x11007000, 0x11000100);
 	rt5645Codec *rt5645 = new_rt5645_codec(&i2c0->ops, 0x1a);
