@@ -22,6 +22,14 @@ config CUSTOM_MUSIC
 	  implemented (in order to provide the particular music data) in the
 	  board file when CUSTOM_MUSIC is enabled.
 
+config DETACHABLE_UI
+	bool "Enable detachable FW menu UI"
+	default n
+	help
+	  Enable detachable FW menu options, which is used with devices that
+	  don't have a keyboard.  This assumes that user will flip through
+	  menu options with vol up/down and power buttons.
+
 config EC_SOFTWARE_SYNC
 	bool "Enable EC software sync"
 	default n
