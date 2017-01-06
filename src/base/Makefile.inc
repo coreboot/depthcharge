@@ -24,3 +24,4 @@ depthcharge-y += list.c
 depthcharge-y += ranges.c
 depthcharge-y += state_machine.c
 depthcharge-y += timestamp.c
+depthcharge-y += vpd_util.c
