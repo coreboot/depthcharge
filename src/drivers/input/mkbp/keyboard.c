@@ -36,7 +36,7 @@ typedef enum Modifier {
 } Modifier;
 
 // Returns amount of scanned keys, or -1 if EC's buffer is known to be empty.
-static int read_scancodes(Modifier *modifiers, uint8_t *codes, int max_codes)
+static int read_scancodes(Modifier *modifiers, uint16_t *codes, int max_codes)
 {
 	static struct cros_ec_keyscan last_scan;
 	static struct ec_response_get_next_event event;
@@ -80,7 +80,7 @@ static int read_scancodes(Modifier *modifiers, uint8_t *codes, int max_codes)
 	{
 		uint8_t row;
 		uint8_t col;
-		uint8_t code;
+		uint16_t code;
 	} Key;
 
 	Key keys[num_keys];
@@ -191,7 +191,7 @@ static void more_keys(void)
 	fifo_offset = fifo_size = 0;
 
 	// Get scancodes from the EC.
-	uint8_t scancodes[KeyFifoSize];
+	uint16_t scancodes[KeyFifoSize];
 	Modifier modifiers;
 
 	// Keep searching through states until we find a valid key press.
@@ -215,7 +215,7 @@ static void more_keys(void)
 
 		// Look at all the keys and fill the FIFO.
 		for (int pos = 0; pos < count; pos++) {
-			uint8_t code = scancodes[pos];
+			uint16_t code = scancodes[pos];
 
 			// Handle arrow keys.
 			if (code == 0x6c)
