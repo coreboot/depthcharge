@@ -35,6 +35,15 @@ typedef enum Modifier {
 	ModifierShift = 0x4
 } Modifier;
 
+/*
+ * These values come from libpayload/drivers/keyboard.c.  Vol Down/Up ascii
+ * values were already defined for 8042.
+ */
+typedef enum Buttons {
+	BUTTON_VOL_UP = 0x63,
+	BUTTON_VOL_DOWN = 0x62
+} Buttons;
+
 // Returns amount of scanned keys, or -1 if EC's buffer is known to be empty.
 static int read_scancodes(Modifier *modifiers, uint16_t *codes, int max_codes)
 {
@@ -66,7 +75,8 @@ static int read_scancodes(Modifier *modifiers, uint16_t *codes, int max_codes)
 				       rv);
 				return -1;
 			}
-		} while (event.event_type != EC_MKBP_EVENT_KEY_MATRIX);
+		} while (event.event_type != EC_MKBP_EVENT_KEY_MATRIX &&
+			 event.event_type != EC_MKBP_EVENT_BUTTON);
 	}
 
 	int total = 0;
@@ -85,51 +95,101 @@ static int read_scancodes(Modifier *modifiers, uint16_t *codes, int max_codes)
 
 	Key keys[num_keys];
 
-	for (int pos = 0; pos < num_keys; pos += 8) {
-		int byte = pos / 8;
+	/* 1.  Check for button events first
+	 *
+	 * Assuming that scancodes are in the same order as the bit order of the
+	 * map of EC_MKBP_* events defined in
+	 * depthcharge/src/ec/cros/commands.h.  For example, as
+	 * EC_MKBP_POWER_BUTTON=0, then the scancode for this button will be
+	 * first in the button_scancodes array.  EC_MKBP_VOL_UP=1, so its
+	 * scancode is the 2nd entry in the button_scancode array.
+	 */
+	if (event.event_type == EC_MKBP_EVENT_BUTTON) {
+		uint32_t last_buttons = last_scan.buttons;
+		uint32_t buttons = event.data.buttons;
+		last_scan.buttons = buttons;
 
-		uint8_t last_data = last_scan.data[byte];
-		uint8_t data = event.data.key_matrix[byte];
-		last_scan.data[byte] = data;
-
-		if (last_data != data)
+		uint32_t pressed_buttons = (last_buttons ^ buttons) & buttons;
+		if (pressed_buttons & (1 << EC_MKBP_POWER_BUTTON)) {
+			keys[total].code =
+			  mkbp_keymatrix.button_scancodes[EC_MKBP_POWER_BUTTON];
+			keys[total].row = 0xFF;
+			keys[total].col = 0xFF;
+			total++;
 			changed++;
-
-		// Only a few bits are going to be set at any one time.
-		if (!data)
-			continue;
-
-		const int max = MIN(8, num_keys - pos);
-		for (int i = 0; i < max; i++) {
-			if ((data >> i) & 0x1) {
-				int row = (pos + i) % rows;
-				int col = (pos + i) / rows;
-
-				uint16_t code =
-					mkbp_keymatrix.scancodes[row][col];
-
-				// Look for modifiers, ignoring capslock.
-				if (code == 0x1d || code == 0x61)
-					*modifiers |= ModifierCtrl;
-				if (code == 0x38 || code == 0x64)
-					*modifiers |= ModifierAlt;
-				if (code == 0x2a || code == 0x36)
-					*modifiers |= ModifierShift;
-
-				// Ignore keys that were already pressed.
-				if ((last_data >> i) & 0x1)
-					code = 0xffff;
-
-				keys[total].row = row;
-				keys[total].col = col;
-				keys[total].code = code;
-				total++;
-				if (total == max_codes)
-					break;
-			}
 		}
-		if (total == max_codes)
-			break;
+		if (pressed_buttons & (1 << EC_MKBP_VOL_UP)) {
+			keys[total].code =
+			  mkbp_keymatrix.button_scancodes[EC_MKBP_VOL_UP];
+			keys[total].row = 0xFF;
+			keys[total].col = 0xFF;
+			total++;
+			changed++;
+		}
+		if (pressed_buttons & (1 << EC_MKBP_VOL_DOWN)) {
+			keys[total].code =
+			  mkbp_keymatrix.button_scancodes[EC_MKBP_VOL_DOWN];
+			keys[total].row = 0xFF;
+			keys[total].col = 0xFF;
+			total++;
+			changed++;
+		}
+	}
+
+	/* 2.  Now check for keyboard matrix events */
+	if (event.event_type == EC_MKBP_EVENT_KEY_MATRIX) {
+		for (int pos = 0; pos < num_keys; pos += 8) {
+			int byte = pos / 8;
+
+			uint8_t last_data = last_scan.data[byte];
+			uint8_t data = event.data.key_matrix[byte];
+			last_scan.data[byte] = data;
+
+			if (last_data != data)
+				changed++;
+
+			// Only a few bits are going to be set at any one time.
+			if (!data)
+				continue;
+
+			const int max = MIN(8, num_keys - pos);
+			for (int i = 0; i < max; i++) {
+				if ((data >> i) & 0x1) {
+					int row = (pos + i) % rows;
+					int col = (pos + i) / rows;
+
+					uint16_t code =
+					     mkbp_keymatrix.scancodes[row][col];
+
+					/*
+					 * Look for modifiers, ignoring
+					 * capslock.
+					 */
+					if (code == 0x1d || code == 0x61)
+						*modifiers |= ModifierCtrl;
+					if (code == 0x38 || code == 0x64)
+						*modifiers |= ModifierAlt;
+					if (code == 0x2a || code == 0x36)
+						*modifiers |= ModifierShift;
+
+					/*
+					 * Ignore keys that were already
+					 * pressed.
+					 */
+					if ((last_data >> i) & 0x1)
+						code = 0xffff;
+
+					keys[total].row = row;
+					keys[total].col = col;
+					keys[total].code = code;
+					total++;
+					if (total == max_codes)
+						break;
+				}
+			}
+			if (total == max_codes)
+				break;
+		}
 	}
 
 	// The EC only resends the same state if its FIFO was empty.
@@ -141,6 +201,10 @@ static int read_scancodes(Modifier *modifiers, uint16_t *codes, int max_codes)
 	for (int i = 0; i < total; i++) {
 		int row_match = 0;
 		int col_match = 0;
+
+
+		if (keys[i].row == 0xFF)
+			goto post_ghost; /* Not a matrixed key */
 
 		for (int j = 0; j < total; j++) {
 			if (i == j)
@@ -157,6 +221,7 @@ static int read_scancodes(Modifier *modifiers, uint16_t *codes, int max_codes)
 			}
 		}
 
+post_ghost:
 		if (keys[i].code != 0xffff)
 			*codes++ = keys[i].code;
 	}
@@ -226,6 +291,10 @@ static void more_keys(void)
 				add_key(KEY_UP);
 			else if (code == 0x69)
 				add_key(KEY_LEFT);
+			else if (code == 0xe021)
+				add_key(BUTTON_VOL_DOWN);
+			else if (code == 0xe032)
+				add_key(BUTTON_VOL_UP);
 
 			// Make sure the next check will prevent us from
 			// recognizing this key twice.

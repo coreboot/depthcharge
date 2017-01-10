@@ -65,4 +65,17 @@ static uint16_t *scancode_rows[] = {
 	scancodes[4], scancodes[5], scancodes[6], scancodes[7]
 };
 
-MkbpKeymatrix mkbp_keymatrix = { Rows, Cols, scancode_rows };
+/**
+ * These are the make scancodes for power, volume up, volume down
+ * for 8042, which we are going to use for mkbp as well.
+ * Order is important here!  It's based on the order of the bit map
+ * that is defined in depthcharge/src/drivers/ec/cros/commands.h.
+ */
+static uint16_t button_scancodes[] = {
+	0xe037, /* Power */
+	0xe021, /* Volume Down */
+	0xe032  /* Volume Up */
+};
+
+
+MkbpKeymatrix mkbp_keymatrix = { Rows, Cols, scancode_rows, button_scancodes };

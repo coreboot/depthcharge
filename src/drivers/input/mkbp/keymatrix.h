@@ -24,6 +24,7 @@ typedef struct MkbpKeymatrix {
 	int rows;
 	int cols;
 	uint16_t **scancodes;
+	uint16_t *button_scancodes;
 } MkbpKeymatrix;
 
 extern MkbpKeymatrix mkbp_keymatrix;

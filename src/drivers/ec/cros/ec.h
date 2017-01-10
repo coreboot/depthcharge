@@ -113,6 +113,7 @@ int ec_command(CrosEc *ec, int cmd, int cmd_version,
 /* Information returned by a key scan */
 struct cros_ec_keyscan {
 	uint8_t data[CROS_EC_KEYSCAN_COLS];
+	uint32_t buttons;
 };
 
 /**
