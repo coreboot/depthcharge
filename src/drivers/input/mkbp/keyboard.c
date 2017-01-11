@@ -37,11 +37,14 @@ typedef enum Modifier {
 
 /*
  * These values come from libpayload/drivers/keyboard.c.  Vol Down/Up ascii
- * values were already defined for 8042.
+ * values were already defined for 8042.  Power button ascii value was created
+ * for detachables.  0x90 was picked because it was out of the matrix keyboard
+ * range to avoid conflicts.
  */
 typedef enum Buttons {
+	BUTTON_VOL_DOWN = 0x62,
 	BUTTON_VOL_UP = 0x63,
-	BUTTON_VOL_DOWN = 0x62
+	BUTTON_POWER = 0x90
 } Buttons;
 
 // Returns amount of scanned keys, or -1 if EC's buffer is known to be empty.
@@ -295,6 +298,8 @@ static void more_keys(void)
 				add_key(BUTTON_VOL_DOWN);
 			else if (code == 0xe032)
 				add_key(BUTTON_VOL_UP);
+			else if (code == 0xe037)
+				add_key(BUTTON_POWER);
 
 			// Make sure the next check will prevent us from
 			// recognizing this key twice.

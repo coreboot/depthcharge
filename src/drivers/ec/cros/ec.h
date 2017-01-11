@@ -283,6 +283,15 @@ int cros_ec_read_lid_switch(uint32_t *lid);
  */
 int cros_ec_read_power_btn(uint32_t *pwr_btn);
 
+/**
+ * Enable/Disable execution of SMI pulse on x86 systems
+ *
+ * @param flag		bitmask of power button configs
+ *                      bit 0: enable smi pulse
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_config_powerbtn(uint32_t enable);
+
 CrosEc *new_cros_ec(CrosEcBusOps *bus, int devidx, GpioOps *interrupt_gpio);
 
 #endif

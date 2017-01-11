@@ -24,6 +24,7 @@
 #include "base/timestamp.h"
 #include "boot/commandline.h"
 #include "config.h"
+#include "drivers/ec/cros/ec.h"
 #include "drivers/ec/vboot_ec.h"
 #include "drivers/flash/flash.h"
 #include "drivers/input/input.h"
@@ -85,8 +86,10 @@ int vboot_select_and_load_kernel(void)
 	};
 #if CONFIG_DETACHABLE_UI
 	kparams.inflags = VB_SALK_INFLAGS_ENABLE_DETACHABLE_UI;
-#endif
 
+	/* disable SMIs for x86 systems */
+	cros_ec_config_powerbtn(0);
+#endif
 
 	printf("Calling VbSelectAndLoadKernel().\n");
 	VbError_t res = VbSelectAndLoadKernel(&cparams, &kparams);
@@ -109,6 +112,10 @@ int vboot_select_and_load_kernel(void)
 		if (cold_reboot())
 			return 1;
 	}
+#if CONFIG_DETACHABLE_UI
+	/* enable SMIs again */
+	cros_ec_config_powerbtn(EC_POWER_BUTTON_ENABLE_SMI_PULSE);
+#endif
 
 	vboot_boot_kernel(&kparams);
 

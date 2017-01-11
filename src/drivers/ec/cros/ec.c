@@ -1101,6 +1101,18 @@ int cros_ec_read_power_btn(uint32_t *pwr_btn)
 	return 0;
 }
 
+int cros_ec_config_powerbtn(uint32_t flags)
+{
+	struct ec_params_config_power_button params;
+
+	params.flags = flags;
+	if (ec_command(get_main_ec(), EC_CMD_CONFIG_POWER_BUTTON, 0,
+		       &params, sizeof(params), NULL, 0) < 0)
+		return -1;
+
+	return 0;
+}
+
 int cros_ec_read_limit_power_request(int *limit_power)
 {
 	struct ec_params_charge_state p;
