@@ -17,6 +17,7 @@
 
 #include <libpayload.h>
 
+#include "config.h"
 #include "drivers/tpm/tpm.h"
 
 static TpmOps *tpm_ops;
@@ -25,6 +26,9 @@ void tpm_set_ops(TpmOps *ops)
 {
 	die_if(tpm_ops, "%s: TPM ops already set.\n", __func__);
 	tpm_ops = ops;
+
+	if (CONFIG_TPM_DEBUG_EXTENSIONS)
+		tpm_ops->report_state = tpm_internal_state;
 }
 
 int tpm_xmit(const uint8_t *sendbuf, size_t send_size,
@@ -32,4 +36,12 @@ int tpm_xmit(const uint8_t *sendbuf, size_t send_size,
 {
 	die_if(!tpm_ops, "%s: No TPM ops set.\n", __func__);
 	return tpm_ops->xmit(tpm_ops, sendbuf, send_size, recvbuf, recv_len);
+}
+
+char *tpm_report_state(void)
+{
+	if (!tpm_ops || !tpm_ops->report_state)
+		return NULL;
+
+	return tpm_ops->report_state(tpm_ops);
 }
