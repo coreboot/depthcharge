@@ -31,6 +31,7 @@ typedef struct TpmOps
 {
 	int (*xmit)(struct TpmOps *me, const uint8_t *sendbuf, size_t send_size,
 		    uint8_t *recvbuf, size_t *recv_len);
+	char *(*report_state)(struct TpmOps *me);
 } TpmOps;
 
 void tpm_set_ops(TpmOps *ops);
@@ -50,5 +51,25 @@ void tpm_set_ops(TpmOps *ops);
  */
 int tpm_xmit(const uint8_t *sendbuf, size_t send_size,
 	     uint8_t *recvbuf, size_t *recv_len);
+
+/*
+ * tpm_internal_state()
+ *
+ * When implemented, queries the TPM, retrieves its internal state and then
+ * returns a string containing the state informwation. The string space is
+ * allocated by the this function and is expected to be freed by the caller.
+ */
+char *tpm_internal_state(struct TpmOps *me);
+
+/*
+ * tpm_report_state()
+ *
+ * On platforms where this feature is supported this function returns a buffer
+ * containing a string representing internal TPM state. If the feature is not
+ * supported, the function returns NULL.
+ *
+ * The caller of this function is expected to free the string buffer.
+ */
+char *tpm_report_state(void);
 
 #endif /* __DRIVERS_TPM_TPM_H__ */
