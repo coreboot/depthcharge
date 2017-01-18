@@ -43,3 +43,10 @@ config DRIVER_TPM_I2C
 config DRIVER_TPM
 	bool
 	default n
+
+config TPM_DEBUG_EXTENSIONS
+	bool "TPM chip allows retrieving debug information"
+	default n
+	help
+	  Enabled when the TPM is capable of providing additional debug
+	  information which can be retrieved in case of boot failure.
