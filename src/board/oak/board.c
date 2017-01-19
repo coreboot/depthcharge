@@ -162,8 +162,14 @@ static int board_setup(void)
 			  &removable_block_dev_controllers);
 
 	/* Set display ops */
-	if (lib_sysinfo.framebuffer)
-		display_set_ops(new_mt8173_display(oak_backlight_update));
+	if (lib_sysinfo.framebuffer) {
+		if (IS_ENABLED(CONFIG_OAK_MIPI_DISPLAY)) {
+			/* setup display ops for rowan */
+			display_set_ops(new_mt8173_display(NULL));
+		} else
+			display_set_ops(new_mt8173_display(
+						oak_backlight_update));
+	}
 
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11270000);
 
