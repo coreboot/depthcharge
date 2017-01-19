@@ -31,4 +31,5 @@ depthcharge-y += storage.c
 depthcharge-y += timer.c
 depthcharge-y += tpm.c
 
+netboot-y += net.c
 netboot-y += enet.c
