@@ -40,7 +40,8 @@ void vb2ex_printf(const char *func, const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
-	printf("%s: ", func);
+	if (func)
+		printf("%s: ", func);
 	vprintf(fmt, ap);
 	va_end(ap);
 }
