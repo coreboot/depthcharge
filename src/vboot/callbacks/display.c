@@ -22,11 +22,12 @@
 #include <vboot_struct.h>
 
 #include "base/cleanup_funcs.h"
+#include "drivers/tpm/tpm.h"
 #include "drivers/video/coreboot_fb.h"
 #include "drivers/video/display.h"
 #include "vboot/firmware_id.h"
-#include "vboot/util/commonparams.h"
 #include "vboot/screens.h"
+#include "vboot/util/commonparams.h"
 
 VbError_t VbExDisplayInit(uint32_t *width, uint32_t *height)
 {
@@ -164,6 +165,15 @@ VbError_t VbExDisplayDebugInfo(const char *info_str)
 	if (id == NULL)
 		id = "NOT FOUND";
 	print_string_newline(id);
+
+	char *tpm_state = tpm_report_state();
+	print_string("TPM state: ");
+	if (tpm_state) {
+		print_string(tpm_state);
+		free(tpm_state);
+	} else {
+		print_string_newline(" not supported");
+	}
 
 	return VBERROR_SUCCESS;
 }
