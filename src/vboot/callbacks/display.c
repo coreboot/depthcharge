@@ -166,13 +166,20 @@ VbError_t VbExDisplayDebugInfo(const char *info_str)
 		id = "NOT FOUND";
 	print_string_newline(id);
 
-	char *tpm_state = tpm_report_state();
 	print_string("TPM state: ");
-	if (tpm_state) {
-		print_string(tpm_state);
-		free(tpm_state);
+	if (IS_ENABLED(CONFIG_DRIVER_TPM)) {
+		char *tpm_state = tpm_report_state();
+		if (tpm_state) {
+			print_string(tpm_state);
+			free(tpm_state);
+		} else {
+			print_string_newline(" not supported");
+		}
 	} else {
-		print_string_newline(" not supported");
+		if (IS_ENABLED(CONFIG_DRIVER_MOCK_TPM))
+			print_string_newline(" MOCK TPM");
+		else
+			print_string_newline(" not supported");
 	}
 
 	return VBERROR_SUCCESS;
