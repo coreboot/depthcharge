@@ -39,7 +39,7 @@ else
 		TPM2_MODE=$(CONFIG_TPM2_MODE) \
 		DETACHABLE_UI=$(CONFIG_DETACHABLE_UI) \
 		CUSTOM_MUSIC=$(CONFIG_CUSTOM_MUSIC) \
-		BUILD=$(dir $(VB_LIB)) \
+		BUILD=$(abspath $(dir $(VB_LIB))) \
 		V=$(V) \
 		fwlib
 endif
