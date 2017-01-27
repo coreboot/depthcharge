@@ -23,6 +23,7 @@
 
 #include "config.h"
 #include "base/cleanup_funcs.h"
+#include "base/graphics.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/video/coreboot_fb.h"
 #include "drivers/video/display.h"
@@ -140,8 +141,11 @@ VbError_t VbExDisplayImage(uint32_t x, uint32_t y,
 VbError_t VbExDisplayText(uint32_t x, uint32_t y,
 			  const char *info_str)
 {
-	video_console_set_cursor(x, y);
-	print_string(info_str);
+	graphics_print_text_xy(info_str,
+			       0,  /* black text */
+			       15, /* white background */
+			       x, y,
+			       VIDEO_PRINTF_ALIGN_KEEP);
 
 	return VBERROR_SUCCESS;
 }

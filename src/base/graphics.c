@@ -56,7 +56,15 @@ int graphics_print_single_text_block(const char *msg,
 	unsigned int rows, cols;
 
 	video_get_rows_cols(&rows, &cols);
-	video_console_set_cursor(0, rows/2);
+
+	return graphics_print_text_xy(msg, fg, bg, 0, rows/2, align);
+}
+
+int graphics_print_text_xy(const char *msg, int fg, int bg, int x, int y,
+			   enum video_printf_align align)
+{
+	assert(msg);
+	video_console_set_cursor(x, y);
 	video_printf(fg, bg, align, msg);
 
 	return 0;
