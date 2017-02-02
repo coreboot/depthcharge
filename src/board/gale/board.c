@@ -217,7 +217,7 @@ gpio_func_data_t gale_mmc_gpio_conf[] = {
 	{
 		.gpio = 32,
 		.func = 1,
-		.pull = GPIO_NO_PULL,
+		.pull = GPIO_PULL_UP,
 		.drvstr = GPIO_10MA,
 		.oe = GPIO_OE_DISABLE,
 		.gpio_vm = GPIO_VM_ENABLE,
