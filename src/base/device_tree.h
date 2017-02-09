@@ -210,4 +210,10 @@ int dt_set_wifi_calibration(DeviceTree *tree, const DtPathMap *maps);
  * Retrieve Country Code data from VPD and add it into the device tree.
  */
 int dt_set_wifi_country_code(DeviceTree *tree, const DtPathMap *maps);
+
+/*
+ * Init/retrieve the /reserved-memory/ node.
+ */
+DeviceTreeNode *dt_init_reserved_memory_node(DeviceTree *tree);
+
 #endif /* __BASE_DEVICE_TREE_H__ */

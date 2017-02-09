@@ -906,3 +906,32 @@ int dt_set_bin_prop_by_path(DeviceTree *tree, const char *path,
 
 	return 0;
 }
+
+/*
+ * Prepare the /reserved-memory/ node.
+ *
+ * Technically, this can be called more than one time, to init and/or retrieve
+ * the node. But dt_add_u32_prop() may leak a bit of memory if you do.
+ *
+ * @tree: Device tree to add/retrieve from.
+ * @return: The /reserved-memory/ node (or NULL, if error).
+ */
+DeviceTreeNode *dt_init_reserved_memory_node(DeviceTree *tree)
+{
+	DeviceTreeNode *reserved;
+	u32 addr = 0, size = 0;
+
+	reserved = dt_find_node_by_path(tree->root, "reserved-memory", &addr,
+					&size, 1);
+	if (!reserved)
+		return NULL;
+
+	// Binding doc says this should have the same #{address,size}-cells as
+	// the root.
+	dt_add_u32_prop(reserved, "#address-cells", addr);
+	dt_add_u32_prop(reserved, "#size-cells", size);
+	// Binding doc says this should be empty (i.e., 1:1 mapping from root).
+	dt_add_bin_prop(reserved, "ranges", NULL, 0);
+
+	return reserved;
+}

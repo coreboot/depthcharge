@@ -24,24 +24,28 @@
 #include "base/device_tree.h"
 #include "base/init_funcs.h"
 #include "base/list.h"
-#include "boot/ramoops.h"
 #include "vboot/util/memory.h"
 
 typedef struct
 {
 	uint64_t start;
 	uint64_t size;
-	uint64_t record_size;
 
 	DeviceTreeFixup fixup;
 } Ramoops;
 
-/* Undocumented, but linux kernel expects record-size to use only one cell */
-#define RECORD_SIZE_CELLS	1
+#define RECORD_SIZE		0x40000
+#define CONSOLE_SIZE		0x40000
+#define FTRACE_SIZE		0x20000
+#define PMSG_SIZE		0x20000
 
 static int ramoops_fixup(DeviceTreeFixup *fixup, DeviceTree *tree)
 {
 	Ramoops *ramoops = container_of(fixup, Ramoops, fixup);
+
+	DeviceTreeNode *reserved = dt_init_reserved_memory_node(tree);
+	if (!reserved)
+		return 1;
 
 	// Eliminate any existing ramoops node.
 	DeviceTreeNode *node = dt_find_compat(tree->root, "ramoops");
@@ -49,12 +53,12 @@ static int ramoops_fixup(DeviceTreeFixup *fixup, DeviceTree *tree)
 		list_remove(&node->list_node);
 
 	u32 addr_cells = 1, size_cells = 1;
-	dt_read_cell_props(tree->root, &addr_cells, &size_cells);
+	dt_read_cell_props(reserved, &addr_cells, &size_cells);
 
-	// Create a ramoops node at the root of the tree.
+	// Create a ramoops node under /reserved-memory/.
 	node = xzalloc(sizeof(*node));
 	node->name = "ramoops";
-	list_insert_after(&node->list_node, &tree->root->children);
+	list_insert_after(&node->list_node, &reserved->children);
 
 	// Add a compatible property.
 	dt_add_string_prop(node, "compatible", "ramoops");
@@ -63,45 +67,33 @@ static int ramoops_fixup(DeviceTreeFixup *fixup, DeviceTree *tree)
 	dt_add_reg_prop(node, &ramoops->start, &ramoops->size, 1,
 			addr_cells, size_cells);
 
-	// Add a record-size property.
-	u8 *data = xzalloc(size_cells * sizeof(u32));
-	dt_write_int(data, ramoops->record_size,
-		     RECORD_SIZE_CELLS * sizeof(u32));
-	dt_add_bin_prop(node, "record-size", data,
-			RECORD_SIZE_CELLS * sizeof(u32));
+	// Add size properties.
+	dt_add_u32_prop(node, "record-size", RECORD_SIZE);
+	dt_add_u32_prop(node, "console-size", CONSOLE_SIZE);
+	dt_add_u32_prop(node, "ftrace-size", FTRACE_SIZE);
+	dt_add_u32_prop(node, "pmsg-size", PMSG_SIZE);
 
 	// Add the optional dump-oops property.
 	dt_add_bin_prop(node, "dump-oops", NULL, 0);
 
-	// Add a memory reservation for the buffer range.
-	DeviceTreeReserveMapEntry *reserve = xzalloc(sizeof(*reserve));
-	reserve->start = ramoops->start;
-	reserve->size = ramoops->size;
-	list_insert_after(&reserve->list_node, &tree->reserve_map);
-
 	return 0;
-}
-
-void ramoops_buffer(uint64_t start, uint64_t size, uint64_t record_size)
-{
-	static Ramoops ramoops;
-
-	die_if(ramoops.fixup.fixup, "Only one ramoops buffer allowed.\n");
-
-	ramoops.start = start;
-	ramoops.size = size;
-	ramoops.record_size = record_size;
-	ramoops.fixup.fixup = &ramoops_fixup;
-	list_insert_after(&ramoops.fixup.list_node, &device_tree_fixups);
-
-	memory_mark_used(start, start + size);
 }
 
 static int ramoops_init(void)
 {
-	if (lib_sysinfo.ramoops_buffer_size != 0)
-		ramoops_buffer(lib_sysinfo.ramoops_buffer,
-			       lib_sysinfo.ramoops_buffer_size, 0x40000);
+	static Ramoops ramoops;
+	uint64_t start = lib_sysinfo.ramoops_buffer;
+	uint64_t size = lib_sysinfo.ramoops_buffer_size;
+
+	if (size == 0)
+		return 0;
+
+	ramoops.start = start;
+	ramoops.size = size;
+	ramoops.fixup.fixup = &ramoops_fixup;
+	list_insert_after(&ramoops.fixup.list_node, &device_tree_fixups);
+
+	memory_mark_used(start, start + size);
 
 	return 0;
 }
