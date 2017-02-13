@@ -139,12 +139,21 @@ VbError_t VbExDisplayImage(uint32_t x, uint32_t y,
 }
 
 VbError_t VbExDisplayText(uint32_t x, uint32_t y,
-			  const char *info_str)
+			  const char *info_str,
+			  int highlight)
 {
-	graphics_print_text_xy(info_str,
-			       0,  /* black text */
-			       15, /* white background */
-			       x, y,
+	const int black = 0;
+	const int white = 15;
+
+	int text_fg = black;
+	int text_bg = white;
+	if (highlight) {
+		int tmp = text_bg;
+		text_bg = text_fg;
+		text_fg = tmp;
+	}
+
+	graphics_print_text_xy(info_str, text_fg, text_bg, x, y,
 			       VIDEO_PRINTF_ALIGN_KEEP);
 
 	return VBERROR_SUCCESS;
