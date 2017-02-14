@@ -707,6 +707,11 @@ static const struct vboot_screen_descriptor vboot_screens[] = {
 		.mesg = "Chrome OS may be broken.\n"
 			"Remove media and initiate recovery.\n",
 	},
+	{
+		.id = VB_SCREEN_BASE,
+		.draw = vboot_draw_base_screen,
+		.mesg = NULL,
+	},
 };
 
 static const struct vboot_screen_descriptor *get_screen_descriptor(uint32_t id)

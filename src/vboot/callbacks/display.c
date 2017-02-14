@@ -100,6 +100,8 @@ VbError_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale)
 		// clear the screen
 		video_console_clear();
 		break;
+	case VB_SCREEN_BASE:
+		break;
 	case VB_SCREEN_DEVELOPER_WARNING:
 		msg = "developer mode warning";
 		break;
