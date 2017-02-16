@@ -94,9 +94,11 @@ static void rk3399_sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 	u32 vendor;
 	SdhciHost *host = container_of(mmc_ctrlr,
 				       SdhciHost, mmc_ctrlr);
-	int change_clock = mmc_ctrlr->bus_hz != host->clock;
+	/* Power cycle PHY only for the frequency bump to 200MHz */
+	int cycle_phy = mmc_ctrlr->bus_hz != host->clock &&
+			mmc_ctrlr->bus_hz > MMC_CLOCK_52MHZ;
 
-	if (change_clock)
+	if (cycle_phy)
 		rk3399_emmc_phy_power_off();
 
 	sdhci_set_ios(mmc_ctrlr);
@@ -109,7 +111,7 @@ static void rk3399_sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 		vendor &= ~VENDOR_ENHANCED_STROBE;
 	sdhci_writel(host, vendor, SDHCI_ARASAN_VENDOR_REGISTER);
 
-	if (change_clock)
+	if (cycle_phy)
 		rk3399_emmc_phy_power_on();
 }
 
