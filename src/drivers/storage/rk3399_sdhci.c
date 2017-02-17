@@ -33,9 +33,14 @@ static struct rk3399_grf_emmc_phy *emmc_phy = (void *)0xff77f780;
 #define PHYCTRL_DLLRDY_SHIFT		0x5
 #define PHYCTRL_DLLRDY_DONE		0x1
 
-static void rk3399_emmc_phy_power_on(void)
+#define PHYCTRL_FREQSEL_200M            0x0
+#define PHYCTRL_FREQSEL_50M             0x1
+#define PHYCTRL_FREQSEL_100M            0x2
+#define PHYCTRL_FREQSEL_150M            0x3
+
+static void rk3399_emmc_phy_power_on(uint32_t clock)
 {
-	u32 caldone, dllrdy;
+	u32 caldone, dllrdy, freqsel;
 	uint64_t start_us;
 
 	writel(RK_CLRSETBITS(7 << 4, 0), &emmc_phy->emmcphy_con[6]);
@@ -62,7 +67,17 @@ static void rk3399_emmc_phy_power_on(void)
 		return;
 	}
 	/* Set the frequency of the DLL operation */
-	writel(RK_CLRSETBITS(3 << 12, 3 << 12), &emmc_phy->emmcphy_con[0]);
+	if (clock < 75 * MHz)
+		freqsel = PHYCTRL_FREQSEL_50M;
+	else if (clock < 125 * MHz)
+		freqsel = PHYCTRL_FREQSEL_100M;
+	else if (clock < 175 * MHz)
+		freqsel = PHYCTRL_FREQSEL_150M;
+	else
+		freqsel = PHYCTRL_FREQSEL_200M;
+
+	writel(RK_CLRSETBITS(3 << 12, freqsel << 12),
+	       &emmc_phy->emmcphy_con[0]);
 	writel(RK_CLRSETBITS(1 << 1, 1 << 1), &emmc_phy->emmcphy_con[6]);
 
 	start_us = timer_us(0);
@@ -112,7 +127,7 @@ static void rk3399_sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 	sdhci_writel(host, vendor, SDHCI_ARASAN_VENDOR_REGISTER);
 
 	if (cycle_phy)
-		rk3399_emmc_phy_power_on();
+		rk3399_emmc_phy_power_on(mmc_ctrlr->bus_hz);
 }
 
 SdhciHost *new_rk_sdhci_host(void *ioaddr, int platform_info,
