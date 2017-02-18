@@ -19,6 +19,7 @@ source src/drivers/dma/Kconfig
 source src/drivers/ec/cros/Kconfig
 source src/drivers/flash/Kconfig
 source src/drivers/gpio/Kconfig
+source src/drivers/hid/Kconfig
 source src/drivers/input/Kconfig
 source src/drivers/net/Kconfig
 source src/drivers/power/Kconfig

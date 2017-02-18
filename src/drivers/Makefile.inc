@@ -20,6 +20,7 @@ subdirs-y += dma
 subdirs-y += ec
 subdirs-y += flash
 subdirs-y += gpio
+subdirs-y += hid
 subdirs-y += input
 subdirs-y += net
 subdirs-y += power
