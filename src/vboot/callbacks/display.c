@@ -21,6 +21,7 @@
 #include <vboot_api.h>
 #include <vboot_struct.h>
 
+#include "config.h"
 #include "base/cleanup_funcs.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/video/coreboot_fb.h"
