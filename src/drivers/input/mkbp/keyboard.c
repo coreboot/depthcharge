@@ -52,6 +52,7 @@ static int read_scancodes(Modifier *modifiers, uint16_t *codes, int max_codes)
 {
 	static struct cros_ec_keyscan last_scan;
 	static struct ec_response_get_next_event event;
+	static struct cros_ec_keyscan scan;
 
 	assert(modifiers);
 	*modifiers = ModifierNone;
@@ -61,11 +62,12 @@ static int read_scancodes(Modifier *modifiers, uint16_t *codes, int max_codes)
 		return -1;
 
 	if (IS_ENABLED(CONFIG_DRIVER_INPUT_MKBP_OLD_COMMAND)) {
-		if (cros_ec_scan_keyboard((struct cros_ec_keyscan *)
-					  &event.data.key_matrix)) {
+		if (cros_ec_scan_keyboard(&scan)) {
 			printf("Key matrix scan failed.\n");
 			return -1;
 		}
+
+		memcpy(&event.data.key_matrix, &scan.data, sizeof(scan.data));
 	} else {
 		// Get pending MKBP event.  It may not be a key matrix event.
 		do {

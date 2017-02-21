@@ -403,8 +403,8 @@ static int cmd_version_supported(CrosEc *me, int cmd, int ver)
 
 int cros_ec_scan_keyboard(struct cros_ec_keyscan *scan)
 {
-	if (ec_command(get_main_ec(), EC_CMD_MKBP_STATE, 0, NULL, 0, scan,
-		       sizeof(*scan)) != sizeof(*scan))
+	if (ec_command(get_main_ec(), EC_CMD_MKBP_STATE, 0, NULL, 0,
+		       &scan->data, sizeof(scan->data)) != sizeof(scan->data))
 		return -1;
 
 	return 0;
