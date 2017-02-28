@@ -26,6 +26,7 @@
 #include <pci/pci.h>
 #include <libpayload.h>
 #include <sysinfo.h>
+#include <vboot_api.h>
 
 #include "base/init_funcs.h"
 #include "base/list.h"
@@ -36,6 +37,8 @@
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/skylake.h"
 #include "drivers/gpio/sysinfo.h"
+#include "drivers/hid/hid-vkb.h"
+#include "drivers/hid/i2c-hid.h"
 #include "drivers/power/pch.h"
 #include "drivers/sound/gpio_pdm.h"
 #include "drivers/sound/route.h"
@@ -56,6 +59,40 @@
 #define EMMC_SD_CLOCK_MIN	400000
 #define EMMC_CLOCK_MAX		200000000
 #define SD_CLOCK_MAX		52000000
+
+#define KEY_POS_NULL	KEY_POS(0, 0, 0, 0)
+
+#define KEY_POS_CTRL    KEY_POS(200, 775, 188, 92)
+#define KEY_POS_ENTER   KEY_POS(2516, 1143, 172, 76)
+#define KEY_POS_SPACE   KEY_POS(1230, 775, 448, 92)
+#define KEY_POS_TAB     KEY_POS(131, 1318, 119, 76)
+#define KEY_POS_ESC     KEY_POS(113, 1640, 100, 47)
+#define KEY_POS_UP      KEY_POS(2406, 824, 98, 44)
+#define KEY_POS_DOWN    KEY_POS(2406, 727, 98, 44)
+#define KEY_POS_LEFT    KEY_POS(2203, 727, 80, 44)
+#define KEY_POS_RIGHT   KEY_POS(2608, 727, 80, 44)
+#define KEY_POS_U       KEY_POS(1458, 1318,80, 76)
+#define KEY_POS_D       KEY_POS(768, 1143, 80, 76)
+#define KEY_POS_L       KEY_POS(1872, 1143, 80, 76)
+
+struct key_array_t board_key_list[] = {
+	{{KEY_POS_U,     KEY_POS_CTRL}, 2, 0x15          },	/* ctrl-u */
+	{{KEY_POS_D,     KEY_POS_CTRL}, 2, 0x04          },	/* ctrl-d */
+	{{KEY_POS_L,     KEY_POS_CTRL}, 2, 0x0c          },	/* ctrl-l */
+	{{KEY_POS_ENTER, KEY_POS_NULL}, 1, '\r'          },	/* enter */
+	{{KEY_POS_SPACE, KEY_POS_NULL}, 1, ' '           },	/* space */
+	{{KEY_POS_TAB,   KEY_POS_NULL}, 1, '\t'          },	/* tab */
+	{{KEY_POS_ESC,   KEY_POS_NULL}, 1, 0x1b          },	/* esc */
+	{{KEY_POS_UP,    KEY_POS_NULL}, 1, VB_KEY_UP        },	/* up */
+	{{KEY_POS_DOWN,  KEY_POS_NULL}, 1, VB_KEY_DOWN      },	/* down */
+	{{KEY_POS_LEFT,  KEY_POS_NULL}, 1, VB_KEY_LEFT      },	/* left */
+	{{KEY_POS_RIGHT, KEY_POS_NULL}, 1, VB_KEY_RIGHT     },	/* right */
+	{{KEY_POS_ENTER, KEY_POS_CTRL}, 2, VB_KEY_CTRL_ENTER},	/* ctrl-enter */
+	{}
+};
+
+static i2chiddev_t *i2c_dev;
+static GpioCfg *int_cfg;
 
 /*
  * Workaround for issue where silego is unable to see EC reset to clear the
@@ -83,6 +120,36 @@ GpioOps *ec_in_rw_workaround_gpio(void)
 	GpioOps *ops = xzalloc(sizeof(*ops));
 	ops->get = &ec_in_rw_workaround_get_value;
 	return ops;
+}
+
+static int pbody_havekey(void)
+{
+	if (i2c_dev != NULL)
+		return vkb_havekey(i2c_dev) != 0;
+
+	return 0;
+}
+
+static int pbody_getchar(void)
+{
+	return vkb_getchar();
+}
+
+static struct console_input_driver pbody_input_driver =
+{
+	NULL,
+	&pbody_havekey,
+	&pbody_getchar
+};
+
+static int int_status(void)
+{
+	return !int_cfg->ops.get(&int_cfg->ops);
+}
+
+static int hw_reset(void)
+{
+	return 0;
 }
 
 static int board_setup(void)
@@ -119,6 +186,25 @@ static int board_setup(void)
 					   EMMC_SD_CLOCK_MIN, SD_CLOCK_MAX);
 		list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
 				  &removable_block_dev_controllers);
+	}
+	/* The interrupt is level sensitive and active low */
+	int_cfg = new_skylake_gpio_input(GPP_B3);
+
+	/* Virtual Keyboard is on I2C1 */
+	DesignwareI2c *i2c1 =
+		new_pci_designware_i2c(PCI_DEV(0, 0x15, 1), 400000);
+
+	i2c_dev = new_i2c_hid(&i2c1->ops, 0x20, 0x20, &int_status, &hw_reset);
+
+	if (i2c_dev) {
+		if (!configure_virtual_keyboard(i2c_dev)) {
+			console_add_input_driver(&pbody_input_driver);
+			printf("virtual keyboard installed\n");
+			board_virtual_keyboard_layout(&board_key_list[0]);
+		} else {
+			i2c_dev = NULL;
+			printf("virtual keyboard install failed\n");
+		}
 	}
 
 	/* Speaker Amp Codec is on I2C4 */
