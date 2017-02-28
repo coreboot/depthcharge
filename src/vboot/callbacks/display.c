@@ -168,6 +168,13 @@ VbError_t VbExDisplaySetDimension(uint32_t width, uint32_t height)
 	return VBERROR_SUCCESS;
 }
 
+VbError_t VbExDisplayGetDimension(uint32_t *width, uint32_t *height)
+{
+	video_get_rows_cols(height, width);
+
+	return VBERROR_SUCCESS;
+}
+
 VbError_t VbExDisplayDebugInfo(const char *info_str)
 {
 	video_console_set_cursor(0, 0);

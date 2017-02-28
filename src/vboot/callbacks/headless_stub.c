@@ -58,6 +58,12 @@ VbError_t VbExDisplaySetDimension(uint32_t width, uint32_t height)
 	return VBERROR_SUCCESS;
 }
 
+VbError_t VbExDisplayGetDimension(uint32_t *width, uint32_t *height)
+{
+	printf("%s:%d invoked\n", __func__, __LINE__);
+	return VBERROR_SUCCESS;
+}
+
 VbError_t VbExDisplayDebugInfo(const char *info_str)
 {
 	printf("%s:%d invoked\n", __func__, __LINE__);
