@@ -20,6 +20,7 @@
 
 #include <base/cleanup_funcs.h>
 #include <drivers/bus/spi/spi.h>
+#include <drivers/gpio/gpio.h>
 #include <drivers/tpm/tpm.h>
 
 // Supported TPM device types.
@@ -31,11 +32,12 @@ typedef enum {
 typedef struct
 {
 	TpmOps ops;
+	GpioOps *tpm_latched_irq;
 	SpiOps *bus;
 	CleanupFunc cleanup;
 	SpiTpmType chip_type;
 } SpiTpm;
 
-SpiTpm *new_tpm_spi(SpiOps *bus);
+SpiTpm *new_tpm_spi(SpiOps *bus, GpioOps *tpm_latched_irq);
 
 #endif // __SRC_DRIVERS_TPM_TPM_SPI_H
