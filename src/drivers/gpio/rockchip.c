@@ -37,6 +37,21 @@ static int rk_gpio_set_value(GpioOps *me, unsigned value)
 	return 0;
 }
 
+static int rk_gpio_irq_status(GpioOps *me)
+{
+	assert(me);
+	RkGpio *gpio = container_of(me, RkGpio, ops);
+	uint32_t int_status;
+
+	int_status = read32(&gpio_port[gpio->gpioindex.port]->int_status);
+	if (!(int_status & 1 << gpio->gpioindex.num))
+		return 0;
+
+	setbits_le32(&gpio_port[gpio->gpioindex.port]->porta_eoi,
+		     1 << gpio->gpioindex.num);
+	return 1;
+}
+
 GpioOps *new_rk_gpio_input_from_coreboot(uint32_t port)
 {
 	return &new_rk_gpio_input((RkGpioSpec)port)->ops;
@@ -45,6 +60,11 @@ GpioOps *new_rk_gpio_input_from_coreboot(uint32_t port)
 GpioOps *new_rk_gpio_output_from_coreboot(uint32_t port)
 {
 	return &new_rk_gpio_output((RkGpioSpec)port)->ops;
+}
+
+GpioOps *new_rk_gpio_latched_from_coreboot(uint32_t port)
+{
+	return &new_rk_gpio_latched((RkGpioSpec)port)->ops;
 }
 
 RkGpio *new_rk_gpio_input(RkGpioSpec gpioindex)
@@ -59,6 +79,14 @@ RkGpio *new_rk_gpio_output(RkGpioSpec gpioindex)
 {
 	RkGpio *gpio = xzalloc(sizeof(*gpio));
 	gpio->ops.set = &rk_gpio_set_value;
+	gpio->gpioindex = gpioindex;
+	return gpio;
+}
+
+RkGpio *new_rk_gpio_latched(RkGpioSpec gpioindex)
+{
+	RkGpio *gpio = xzalloc(sizeof(*gpio));
+	gpio->ops.get = &rk_gpio_irq_status;
 	gpio->gpioindex = gpioindex;
 	return gpio;
 }

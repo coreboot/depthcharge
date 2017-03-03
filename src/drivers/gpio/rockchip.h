@@ -72,6 +72,8 @@ extern RkGpioRegs *gpio_port[];
 
 GpioOps *new_rk_gpio_input_from_coreboot(uint32_t port);
 GpioOps *new_rk_gpio_output_from_coreboot(uint32_t port);
+GpioOps *new_rk_gpio_latched_from_coreboot(uint32_t port);
+RkGpio *new_rk_gpio_latched(RkGpioSpec gpioindex);
 RkGpio *new_rk_gpio_output(RkGpioSpec gpioindex);
 RkGpio *new_rk_gpio_input(RkGpioSpec gpioindex);
 
