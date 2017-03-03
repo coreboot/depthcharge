@@ -162,6 +162,36 @@ typedef struct {
 	unsigned char body[4];
 } spi_frame_header;
 
+static int tpm_irq_status(void)
+{
+	if (spi_tpm.tpm_latched_irq)
+		return gpio_get(spi_tpm.tpm_latched_irq);
+
+	mdelay(10);
+
+	return 1;
+}
+
+/*
+ * TPM may trigger a irq after finish processing previous transfer.
+ * Waiting for this irq to sync tpm status.
+ *
+ * Returns 1 on success, 0 on failure (timeout).
+ */
+static int tpm_sync(void)
+{
+	struct stopwatch sw;
+
+	stopwatch_init_usecs_expire(&sw, 10 * 1000);
+	while (!tpm_irq_status()) {
+		if (stopwatch_expired(&sw)) {
+			printf("Timeout wait for tpm irq!\n");
+			return 0;
+		}
+	}
+	return 1;
+}
+
 /*
  * Each TPM2 SPI transaction starts the same: CS is asserted, the 4 byte
  * header is sent to the TPM, the master waits til TPM is ready to continue.
@@ -175,11 +205,8 @@ static int start_transaction(int read_write, size_t bytes, unsigned addr)
 	int i;
 	struct stopwatch sw;
 
-	/*
-	 * Give it 10 ms. TODO(vbendeb): remove this once cr50 SPS TPM driver
-	 * performance is fixed.
-	 */
-	mdelay(10);
+	/* Wait for tpm to finish previous transaction */
+	tpm_sync();
 
 	/* Try to wake cr50 if it is asleep. */
 	tpm_if.cs_assert(tpm_if.slave);
@@ -667,12 +694,17 @@ static int xmit_wrapper(struct TpmOps *me,
 	return -1;
 }
 
-SpiTpm *new_tpm_spi(SpiOps *bus)
+SpiTpm *new_tpm_spi(SpiOps *bus, GpioOps *tpm_latched_irq)
 {
 	spi_tpm.ops.xmit = xmit_wrapper;
+	spi_tpm.tpm_latched_irq = tpm_latched_irq;
 	spi_tpm.bus = bus;
 	spi_tpm.cleanup.cleanup = tpm_cleanup;
 	spi_tpm.cleanup.types = CleanupOnReboot | CleanupOnPowerOff |
 		CleanupOnHandoff | CleanupOnLegacy;
+
+	if (!tpm_latched_irq)
+		printf("WARNING: tpm irq not defined, will waste 10ms to wait on Cr50!!\n");
+
 	return &spi_tpm;
 }
