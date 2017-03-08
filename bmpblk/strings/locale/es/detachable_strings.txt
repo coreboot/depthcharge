@@ -1,0 +1,13 @@
+Opciones para desarrolladores
+Mostrar la información de depuración
+Habilitar la verificación de dispositivos root
+Apagar
+Idioma
+Iniciar con imagen de red (aún no funciona)
+Iniciar con BIOS antiguo
+Iniciar con imagen USB
+Iniciar con imagen de desarrollador
+Cancelar
+Confirmar que quieres habilitar el inicio verificado
+Habilitar modo desarrollador
+Confirmar que quieres habilitar el modo desarrollador

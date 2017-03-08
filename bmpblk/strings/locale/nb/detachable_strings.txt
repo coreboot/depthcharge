@@ -1,0 +1,13 @@
+Utvikleralternativer
+Vis feilsøkingsinformasjon
+Slå på rotbekreftelse
+Slå av
+Språk
+Start opp med en nettverksavbildning (fungerer ikke ennå)
+Start opp med et tidligere BIOS
+Start opp med en USB-avbildning
+Start opp med en utvikleravbildning
+Avbryt
+Bekreft at du vil slå på bekreftet oppstart
+Slå på utviklermodus
+Bekreft at du vil slå på utviklermodus

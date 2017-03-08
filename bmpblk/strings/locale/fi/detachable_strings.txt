@@ -1,0 +1,13 @@
+Kehittäjäasetukset
+Näytä virheenjäljitystiedot
+Ota käynnistyksen vahvistaminen käyttöön
+Virta pois
+Kieli
+Käynnistä verkkokuvasta (ei toimi vielä)
+Käynnistä vanhassa BIOS-tilassa
+Käynnistä USB-kuvasta
+Käynnistä kehittäjäkuvasta
+Peruuta
+Vahvista vahvistetun käynnistyksen käyttöönotto
+Ota kehittäjätila käyttöön
+Vahvista kehittäjätilan käyttöönotto

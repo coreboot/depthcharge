@@ -1,0 +1,13 @@
+Možnosti za razvijalce
+Prikaz podatkov o odpravljanju napak
+Omogočanje korenskega preverjanja
+Izklop
+Jezik
+Zagon slike v omrežju (še ne deluje)
+Zagon s starejšim BIOS-om
+Zagon slike s pogona USB
+Zagon slike za razvijalce
+Prekliči
+Potrditev omogočanja preverjenega zagona
+Omogočanje načina za razvijalce
+Potrditev omogočanja načina za razvijalce

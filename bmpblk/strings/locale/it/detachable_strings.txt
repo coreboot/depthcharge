@@ -1,0 +1,13 @@
+Opzioni sviluppatore
+Mostra informazioni di debug
+Attiva verifica root
+Spegni
+Lingua
+Avvia immagine di rete (attualmente non funzionante)
+Avvia BIOS precedente
+Avvia immagine USB
+Avvia immagine sviluppatore
+Annulla
+Conferma attivazione avvio verificato
+Attiva modalità sviluppatore
+Conferma attivazione modalità sviluppatore

@@ -1,0 +1,13 @@
+Kūrėjo parinktys
+Rodyti derinimo informaciją
+Įgalinti pagrindinį patvirtinimą
+Išjungti
+Kalba
+Paleisti tinklo atvaizdį (dar neveikia)
+Paleisti pasenusią BIOS sistemą
+Paleisti USB atvaizdį
+Paleisti kūrėjo atvaizdį
+Atšaukti
+Patvirtinti patvirtinto paleidimo įgalinimą
+Įgalinti kūrėjo režimą
+Patvirtinti kūrėjo režimo įgalinimą

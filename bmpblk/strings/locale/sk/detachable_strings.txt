@@ -1,0 +1,13 @@
+Možnosti pre vývojárov
+Zobrazenie informácií o ladení
+Povolenie overenia typu root
+Vypnutie
+Jazyk
+Spustenie obrazu zo siete (zatiaľ nefunguje)
+Spustenie starého systému BIOS
+Spustenie obrazu z USB
+Spustenie obrazu od vývojára
+Zrušiť
+Potvrdenie povolenia overeného spustenia
+Povolenie režimu vývojára
+Potvrdenie povolenia režimu vývojára

@@ -1,0 +1,13 @@
+Opcions per a desenvolupadors
+Mostra la informació de depuració
+Activa la verificació de dispositius arrel
+Apaga
+Idioma
+Inicia la imatge de xarxa (encara no funciona)
+Inicia la BIOS heretada
+Inicia la imatge USB
+Inicia la imatge del desenvolupador
+Cancel·la
+Confirma l'activació de l'inici verificat
+Activa el mode desenvolupador
+Confirma l'activació del mode desenvolupador

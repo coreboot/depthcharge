@@ -1,0 +1,13 @@
+Opțiuni dezvoltator
+Afișați informațiile de remediere a erorilor
+Activați verificarea stării de root
+Închideți
+Limbă
+Pornire cu imagine din rețea (încă nu funcționează)
+Pornire cu BIOS vechi
+Pornire cu imagine de pe USB
+Pornire cu imaginea de dezvoltator
+Anulați
+Confirmați activarea pornirii verificate
+Activați modul pentru dezvoltatori
+Confirmați activarea modului pentru dezvoltatori

@@ -1,0 +1,13 @@
+Tùy chọn dành cho nhà phát triển
+Hiển thị thông tin gỡ lỗi
+Bật xác minh gốc
+Tắt nguồn
+Ngôn ngữ
+Khởi động hình ảnh mạng (chưa hoạt động)
+Khởi động BIOS cũ
+Khởi động hình ảnh USB
+Khởi động hình ảnh nhà phát triển
+Hủy
+Xác nhận bật khởi động đã xác minh
+Bật chế độ nhà phát triển
+Xác nhận bật chế độ nhà phát triển

@@ -1,0 +1,13 @@
+Opcje programisty
+Pokaż dane debugowania
+Włącz weryfikację roota
+Wyłącz zasilanie
+Język
+Rozruch z obrazu sieciowego (jeszcze nie działa)
+Rozruch ze starszej wersji systemu BIOS
+Rozruch z obrazu USB
+Rozruch z obrazu od programisty
+Anuluj
+Potwierdź włączenie rozruchu w trybie zweryfikowanym
+Włącz tryb programisty
+Potwierdź włączenie trybu programisty

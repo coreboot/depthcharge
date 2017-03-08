@@ -1,0 +1,13 @@
+Arendaja valikud
+Silumisteabe kuvamine
+Juure kinnitamise lubamine
+Väljalülitamine
+Keel
+Võrgukujutise käivitamine (ei tööta veel)
+Pärand-BIOS-i käivitamine
+USB-kujutise käivitamine
+Arendaja kujutise käivitamine
+Tühistamine
+Kontrollitud käivitamise lubamise kinnitamine
+Arendajarežiimi lubamine
+Arendajarežiimi lubamise kinnitamine

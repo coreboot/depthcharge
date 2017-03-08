@@ -1,0 +1,13 @@
+Opções de programador
+Mostrar informações de depuração
+Ativar validação da raiz
+Desligar
+Idioma
+Arrancar a partir da imagem da rede (ainda não funciona)
+Arrancar a partir do BIOS antigo
+Arrancar a partir da imagem no dispositivo USB
+Arrancar a partir da imagem do programador
+Cancelar
+Confirmar ativação do arranque validado
+Ativar modo de programador
+Confirmar ativação do modo de programador

@@ -35,6 +35,21 @@ inputs:
   - change_adapter #21 Please use the correct adapter and try again.
   - os_broken      #22 OS may be broken. Remove media and initiate recovery.
 
+detachable_inputs:
+  - dev_option     #01 Developer Options
+  - debug_info     #02 Show Debug Info
+  - enable_ver     #03 Enable Root Verification
+  - power_off      #04 Power Off
+  - lang           #05 Language
+  - boot_network   #06 Boot Network Image (not working yet)
+  - boot_legacy    #07 Boot Legacy BIOS
+  - boot_usb       #08 Boot USB Image
+  - boot_dev       #09 Boot Developer Image
+  - cancel         #10 Cancel
+  - confirm_ver    #11 Confirm Enabling Verified Boot
+  - enable_dev     #12 Enable Developer Mode
+  - confirm_dev    #13 Confirm Enabling Developer Mode
+
 files:
   # Text files to be generated.
   model_left:     ['model@s/60061e.*//']
@@ -60,6 +75,21 @@ files:
   language:       # pre-generated.
   os_broken:      [missing, os_broken]
 
+detachable_files:
+  dev_option:     [dev_option]
+  debug_info:     [debug_info]
+  enable_ver:     [enable_ver]
+  power_off:      [power_off]
+  lang:           [lang]
+  boot_network:   [boot_network]
+  boot_legacy:    [boot_legacy]
+  boot_usb:       [boot_usb]
+  boot_dev:       [boot_dev]
+  cancel:         [cancel]
+  confirm_ver:    [confirm_ver]
+  enable_dev:     [enable_dev]
+  confirm_dev:    [confirm_dev]
+
 styles:
   todev:          '--align=left'
   devmode:        '--color=303030'
@@ -72,6 +102,21 @@ styles:
   for_help_left:  '--color=444444'
   for_help_right: '--color=444444'
   model:          '--color=444444'
+
+detachable_styles:
+  dev_option:     '--align=left'
+  debug_info:     '--align=left'
+  enable_ver:     '--align=left'
+  power_off:      '--align=left'
+  lang:           '--align=left'
+  boot_network:   '--align=left'
+  boot_legacy:    '--align=left'
+  boot_usb:       '--align=left'
+  boot_dev:       '--align=left'
+  cancel:         '--align=left'
+  confirm_ver:    '--align=left'
+  enable_dev:     '--align=left'
+  confirm_dev:    '--align=left'
 
 fonts:
   # All fonts should be provided and selected by 'ui-sans' family defined in

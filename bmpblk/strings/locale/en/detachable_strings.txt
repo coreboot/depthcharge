@@ -1,0 +1,13 @@
+Developer Options
+Show Debug Info
+Enable Root Verification
+Power Off
+Language
+Boot Network Image (not working yet)
+Boot Legacy BIOS
+Boot USB Image
+Boot Developer Image
+Cancel
+Confirm Enabling Verified Boot
+Enable Developer Mode
+Confirm Enabling Developer Mode

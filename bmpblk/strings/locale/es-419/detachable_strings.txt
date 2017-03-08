@@ -1,0 +1,13 @@
+Opciones para programador
+Mostrar datos de depuración
+Habilitar verificación de raíz
+Apagar
+Idioma
+Iniciar imagen de red (aún no funciona)
+Iniciar Legacy BIOS
+Iniciar imagen de USB
+Iniciar imagen de programador
+Cancelar
+Confirmar habilitación de inicio verificado
+Habilitar modo de programador
+Confirmar habilitación de modo de programador

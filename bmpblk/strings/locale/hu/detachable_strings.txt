@@ -1,0 +1,13 @@
+Fejlesztői beállítások
+Hibakeresési adatok megjelenítése
+Gyökérazonosítás engedélyezése
+Kikapcsolás
+Nyelv
+Hálózati képfájl indítása (még nem működik)
+Régi BIOS indítása
+USB-képfájl indítása
+Fejlesztői képfájl indítása
+Mégse
+Ellenőrzött rendszerindítás engedélyezésének megerősítése
+Fejlesztői mód engedélyezése
+Fejlesztői mód engedélyezésének megerősítése

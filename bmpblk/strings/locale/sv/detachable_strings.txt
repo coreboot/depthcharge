@@ -1,0 +1,13 @@
+Utvecklaralternativ
+Visa felsökningsinformation
+Aktivera rotverifiering
+Stäng av
+Språk
+Starta nätverksavbild (fungerar inte ännu)
+Starta äldre BIOS
+Starta USB-avbild
+Starta utvecklaravbild
+Avbryt
+Bekräfta att du vill aktivera verifierad start
+Aktivera utvecklarläget
+Bekräfta att du vill aktivera utvecklarläget

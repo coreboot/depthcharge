@@ -1,0 +1,13 @@
+Entwickleroptionen
+Informationen zur Fehlerbehebung anzeigen
+Root-Überprüfung aktivieren
+Ausschalten
+Sprache
+Netzwerk-Image starten (funktioniert noch nicht)
+Altes BIOS starten
+USB-Image starten
+Entwickler-Image starten
+Abbrechen
+Aktivierung von "Bestätigter Bootmodus" bestätigen
+Entwicklermodus aktivieren
+Aktivierung von "Entwicklermodus" bestätigen

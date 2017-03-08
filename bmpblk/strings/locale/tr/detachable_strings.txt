@@ -1,0 +1,13 @@
+Geliştirici Seçenekleri
+Hata Ayıklama Bilgilerini Göster
+Root Doğrulamayı Etkinleştir
+Kapat
+Dil
+Ağ Görüntüsünü Önyükle (henüz çalışmıyor)
+Eski BIOS'u Önyükle
+USB Görüntüsünü Önyükle
+Geliştirici Görüntüsünü Önyükle
+İptal
+Doğrulanmış Önyüklemenin Etkinleştirilmesini Onayla
+Geliştirici Modunu Etkinleştir
+Geliştirici Modunu Etkinleştirmeyi Onayla

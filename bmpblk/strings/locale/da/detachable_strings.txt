@@ -1,0 +1,13 @@
+Indstillinger for udviklere
+Vis fejlrettelsesdata
+Aktivér rodbekræftelse
+Sluk
+Sprog
+Start netværksbillede (fungerer endnu ikke)
+Start forældet BIOS
+Start USB-billede
+Start udviklerbillede
+Annuller
+Bekræft aktivering af bekræftet start
+Aktivér udviklertilstand
+Bekræft aktivering af udviklertilstand

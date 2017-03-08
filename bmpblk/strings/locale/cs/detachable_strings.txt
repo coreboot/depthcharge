@@ -1,0 +1,13 @@
+Možnosti pro vývojáře
+Zobrazit informace o ladění
+Zapnout ověření rootování
+Vypnout
+Jazyk
+Spustit pomocí obrazu v síti (zatím nefunkční)
+Spustit pomocí starší verze systému BIOS
+Spustit pomocí obrazu na jednotce USB
+Spustit pomocí obrazu pro vývojáře
+Zrušit
+Potvrďte, že chcete aktivovat ověřené spuštění
+Zapnout režim pro vývojáře
+Potvrďte, že chcete zapnout režim pro vývojáře

@@ -1,0 +1,13 @@
+Opções do desenvolvedor
+Mostrar informações de depuração
+Ativar verificação de raiz
+Desligar
+Idioma
+Inicializar imagem de rede (não funciona no momento)
+Inicializar BIOS legado
+Inicializar imagem do USB
+Inicializar imagem do desenvolvedor
+Cancelar
+Confirmar ativação de inicialização verificada
+Ativar modo de desenvolvedor
+Confirmar ativação de modo de desenvolvedor

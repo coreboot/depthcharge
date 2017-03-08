@@ -1,0 +1,13 @@
+Mga Opsyon ng Developer
+Ipakita ang Impormasyon ng Pag-debug
+I-enable ang Pag-verify ng Root
+I-off
+Wika
+I-boot ang Larawan ng Network (hind pa gumagana)
+I-boot ang Legacy BIOS
+I-boot ang Larawan ng USB
+I-boot ang Larawan ng Developer
+Kanselahin
+Kumpirmahin ang Pag-enable sa Na-verify na Pag-boot
+I-enable ang Developer Mode
+Kumpirmahin ang Pag-enable sa Developer Mode

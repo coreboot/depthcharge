@@ -1,0 +1,13 @@
+Opsi Developer
+Tampilkan Info Debug
+Aktifkan Verifikasi Root
+Matikan Daya
+Bahasa
+Booting Gambar Jaringan (belum berfungsi)
+Booting BIOS Versi Lama
+Booting Gambar USB
+Booting Gambar Developer
+Batal
+Konfirmasi Pengaktifan Booting Terverifikasi
+Aktifkan Mode Developer
+Konfirmasi Pengaktifan Mode Developer

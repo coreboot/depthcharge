@@ -1,0 +1,13 @@
+Ontwikkelaarsopties
+Foutopsporingsgegevens weergeven
+Root-verificatie inschakelen
+Uitschakelen
+Taal
+Netwerkimage opstarten (werkt nog niet)
+Verouderd BIOS opstarten
+USB-image opstarten
+Ontwikkelaarsimage opstarten
+Annuleren
+Inschakelen van geverifieerd opstarten bevestigen
+Ontwikkelaarsmodus inschakelen
+Inschakelen van ontwikkelaarsmodus bevestigen
