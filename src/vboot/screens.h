@@ -21,6 +21,8 @@
 #include <stdint.h>
 
 int vboot_draw_screen(uint32_t screen, uint32_t locale);
+int vboot_draw_ui(uint32_t screen, uint32_t locale,
+		  uint32_t selected_index, uint32_t redraw_base);
 
 /**
  * Return number of supported locales

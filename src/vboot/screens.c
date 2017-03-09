@@ -78,6 +78,19 @@ static struct {
 	char *codes[256];
 } locale_data;
 
+/* params structure for vboot draw functions */
+struct params {
+	uint32_t locale;
+	uint32_t selected_index;
+	uint32_t redraw_base;
+};
+
+/* struct for passing around menu string arrays */
+struct menu {
+	const char *const *strings;
+	uint32_t count;
+};
+
 /*
  * Load archive into RAM
  */
@@ -501,25 +514,106 @@ static VbError_t draw_base_screen(uint32_t locale, int show_language)
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_draw_base_screen(uint32_t locale)
+static VbError_t vboot_draw_base_screen(struct params *p)
 {
-	return draw_base_screen(locale, 1);
+	return draw_base_screen(p->locale, 1);
 }
 
-static VbError_t vboot_draw_base_screen_without_language(uint32_t locale)
+static VbError_t vboot_draw_base_screen_without_language(struct params *p)
 {
-	return draw_base_screen(locale, 0);
+	return draw_base_screen(p->locale, 0);
 }
 
-static VbError_t vboot_draw_blank(uint32_t locale)
+static VbError_t vboot_draw_blank(struct params *p)
 {
 	video_console_clear();
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_draw_developer_warning(uint32_t locale)
+static VbError_t draw_selected_locale(const char *image_name, uint32_t locale,
+		     int32_t x, int32_t y,
+		     int32_t width, int32_t height, char pivot,
+		     uint32_t selected)
 {
-	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	const uint32_t MAX_SIZE = 80;
+	char str[MAX_SIZE];
+	strncpy(str, image_name, MAX_SIZE);
+	if (selected) {
+		/* Use the selected image name */
+		strncat(str, "_sel", MAX_SIZE);
+	}
+	strncat(str, ".bmp", MAX_SIZE);
+	return draw_image_locale(str, locale, x, y, width, height, pivot);
+}
+
+static VbError_t vboot_draw_menu(struct params *p, const struct menu *m)
+{
+	int i = 0;
+	int yoffset;
+
+	/* find starting point y offset */
+	yoffset = 0 - m->count/2;
+	for (i = 0; i < m->count; i++, yoffset++) {
+		RETURN_ON_ERROR(draw_selected_locale(m->strings[i], p->locale,
+			VB_SCALE_HALF, VB_SCALE_HALF + VB_TEXT_HEIGHT * yoffset,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			PIVOT_H_CENTER|PIVOT_V_TOP,
+			p->selected_index == i ? 1 : 0));
+	}
+
+	return VBERROR_SUCCESS;
+}
+
+/*
+ * String arrays with bmp file names for detachable Menus
+*/
+static const char *const dev_warning_menu_files[] = {
+	"dev_option", /* Developer Options */
+	"debug_info", /* Show Debug Info */
+	"enable_ver", /* Enable Root Verification */
+	"power_off",  /* Power Off */
+	"lang",       /* Language */
+};
+
+static const char *const dev_menu_files[] = {
+	"boot_network", /* Boot Network Image */
+	"boot_legacy",  /* Boot Legacy BIOS */
+	"boot_usb",     /* Boot USB Image */
+	"boot_dev",     /* Boot Developer Image */
+	"cancel",       /* Cancel */
+	"power_off",    /* Power Off */
+	"lang",         /* Language */
+};
+
+static const char *const rec_menu_files[] = {
+	"enable_dev", /* Enable Developer Mode */
+	"debug_info",  /* Show Debug Info */
+	"power_off",  /* Power Off */
+	"lang",       /* Language */
+};
+
+static const char *const rec_to_dev_files[] = {
+	"confirm_dev", /* Confirm enabling developer mode */
+	"cancel",     /* Cancel */
+	"power_off",   /* Power Off */
+	"lang",        /* Language */
+};
+
+static const char *const dev_to_norm_files[] = {
+	"confirm_ver", /* Confirm Enabling Verified Boot */
+	"cancel",      /* Cancel */
+	"power_off",   /* Power Off */
+	"lang",        /* Language */
+};
+
+static const char *const lang_files[] = {
+	"language",
+};
+
+static VbError_t vboot_draw_developer_warning(struct params *p)
+{
+	uint32_t locale = p->locale;
+	RETURN_ON_ERROR(vboot_draw_base_screen(p));
 	RETURN_ON_ERROR(draw_icon("VerificationOff.bmp"));
 	RETURN_ON_ERROR(draw_image_locale("verif_off.bmp", locale,
 			VB_SCALE_HALF, VB_SCALE_HALF,
@@ -532,10 +626,28 @@ static VbError_t vboot_draw_developer_warning(uint32_t locale)
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_draw_recovery_remove(uint32_t locale)
+static VbError_t vboot_draw_developer_warning_menu(struct params *p)
+{
+	if (p->redraw_base)
+		RETURN_ON_ERROR(vboot_draw_base_screen(p));
+	const struct menu m = { dev_warning_menu_files,
+				ARRAY_SIZE(dev_warning_menu_files) };
+	return vboot_draw_menu(p, &m);
+}
+
+static VbError_t vboot_draw_developer_menu(struct params *p)
+{
+	if (p->redraw_base)
+		RETURN_ON_ERROR(vboot_draw_base_screen(p));
+	const struct menu m = { dev_menu_files, ARRAY_SIZE(dev_menu_files) };
+	return vboot_draw_menu(p, &m);
+}
+
+static VbError_t vboot_draw_recovery_remove(struct params *p)
 {
 	int32_t h = VB_DEVICE_HEIGHT;
-	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	uint32_t locale = p->locale;
+	RETURN_ON_ERROR(vboot_draw_base_screen(p));
 	RETURN_ON_ERROR(draw_image_locale("remove.bmp", locale,
 			VB_SCALE_HALF, VB_SCALE_HALF - h/2,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
@@ -546,9 +658,10 @@ static VbError_t vboot_draw_recovery_remove(uint32_t locale)
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_draw_recovery_no_good(uint32_t locale)
+static VbError_t vboot_draw_recovery_no_good(struct params *p)
 {
-	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	uint32_t locale = p->locale;
+	RETURN_ON_ERROR(vboot_draw_base_screen(p));
 	RETURN_ON_ERROR(draw_image_locale("yuck.bmp", locale,
 			VB_SCALE_HALF, VB_SCALE_HALF,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
@@ -560,10 +673,11 @@ static VbError_t vboot_draw_recovery_no_good(uint32_t locale)
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_draw_recovery_insert(uint32_t locale)
+static VbError_t vboot_draw_recovery_insert(struct params *p)
 {
 	const int32_t h = VB_DEVICE_HEIGHT;
-	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	uint32_t locale = p->locale;
+	RETURN_ON_ERROR(vboot_draw_base_screen(p));
 	RETURN_ON_ERROR(draw_image_locale("insert.bmp", locale,
 			VB_SCALE_HALF, VB_SCALE_HALF - h/2,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
@@ -574,9 +688,18 @@ static VbError_t vboot_draw_recovery_insert(uint32_t locale)
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_draw_recovery_to_dev(uint32_t locale)
+static VbError_t vboot_draw_recovery_menu(struct params *p)
 {
-	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	if (p->redraw_base)
+		RETURN_ON_ERROR(vboot_draw_base_screen(p));
+	const struct menu m = { rec_menu_files, ARRAY_SIZE(rec_menu_files) };
+	return vboot_draw_menu(p, &m);
+}
+
+static VbError_t vboot_draw_recovery_to_dev(struct params *p)
+{
+	uint32_t locale = p->locale;
+	RETURN_ON_ERROR(vboot_draw_base_screen(p));
 	RETURN_ON_ERROR(draw_image_locale("todev.bmp", locale,
 			VB_SCALE_HALF, VB_SCALE_HALF,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 4,
@@ -584,9 +707,19 @@ static VbError_t vboot_draw_recovery_to_dev(uint32_t locale)
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_draw_developer_to_norm(uint32_t locale)
+static VbError_t vboot_draw_recovery_to_dev_menu(struct params *p)
 {
-	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	if (p->redraw_base)
+		RETURN_ON_ERROR(vboot_draw_base_screen(p));
+	const struct menu m = { rec_to_dev_files,
+				ARRAY_SIZE(rec_to_dev_files) };
+	return vboot_draw_menu(p, &m);
+}
+
+static VbError_t vboot_draw_developer_to_norm(struct params *p)
+{
+	uint32_t locale = p->locale;
+	RETURN_ON_ERROR(vboot_draw_base_screen(p));
 	RETURN_ON_ERROR(draw_icon("VerificationOff.bmp"));
 	RETURN_ON_ERROR(draw_image_locale("verif_off.bmp", locale,
 			VB_SCALE_HALF, VB_SCALE_HALF,
@@ -599,23 +732,33 @@ static VbError_t vboot_draw_developer_to_norm(uint32_t locale)
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_draw_wait(uint32_t locale)
+static VbError_t vboot_draw_developer_to_norm_menu(struct params *p)
+{
+	if (p->redraw_base)
+		RETURN_ON_ERROR(vboot_draw_base_screen(p));
+	const struct menu m = { dev_to_norm_files,
+				ARRAY_SIZE(dev_to_norm_files) };
+	return vboot_draw_menu(p, &m);
+}
+
+static VbError_t vboot_draw_wait(struct params *p)
 {
 	/*
 	 * Currently, language cannot be changed while EC software sync is
 	 * taking place because keyboard is disabled.
 	 */
-	RETURN_ON_ERROR(vboot_draw_base_screen_without_language(locale));
-	RETURN_ON_ERROR(draw_image_locale("update.bmp", locale,
+	RETURN_ON_ERROR(vboot_draw_base_screen_without_language(p));
+	RETURN_ON_ERROR(draw_image_locale("update.bmp", p->locale,
 			VB_SCALE_HALF, VB_SCALE_HALF,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 3,
 			PIVOT_H_CENTER|PIVOT_V_CENTER));
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_draw_to_norm_confirmed(uint32_t locale)
+static VbError_t vboot_draw_to_norm_confirmed(struct params *p)
 {
-	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	uint32_t locale = p->locale;
+	RETURN_ON_ERROR(vboot_draw_base_screen(p));
 	RETURN_ON_ERROR(draw_icon("VerificationOn.bmp"));
 	RETURN_ON_ERROR(draw_image_locale("verif_on.bmp", locale,
 			VB_SCALE_HALF, VB_SCALE_HALF,
@@ -628,9 +771,10 @@ static VbError_t vboot_draw_to_norm_confirmed(uint32_t locale)
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_draw_os_broken(uint32_t locale)
+static VbError_t vboot_draw_os_broken(struct params *p)
 {
-	RETURN_ON_ERROR(vboot_draw_base_screen(locale));
+	uint32_t locale = p->locale;
+	RETURN_ON_ERROR(vboot_draw_base_screen(p));
 	RETURN_ON_ERROR(draw_icon("Warning.bmp"));
 	RETURN_ON_ERROR(draw_image_locale("os_broken.bmp", locale,
 			VB_SCALE_HALF, VB_SCALE_HALF,
@@ -639,14 +783,24 @@ static VbError_t vboot_draw_os_broken(uint32_t locale)
 	return VBERROR_SUCCESS;
 }
 
+static VbError_t vboot_draw_languages_menu(struct params *p)
+{
+	if (p->redraw_base)
+		RETURN_ON_ERROR(vboot_draw_base_screen(p));
+	/* Current language */
+	// TODO: need to support changing languages
+	const struct menu m = { lang_files, ARRAY_SIZE(lang_files) };
+	return vboot_draw_menu(p, &m);
+}
+
 /* we may export this in the future for the board customization */
-struct vboot_screen_descriptor {
+struct vboot_ui_descriptor {
 	uint32_t id;				/* VB_SCREEN_* */
-	VbError_t (*draw)(uint32_t locale);	/* draw function */
+	VbError_t (*draw)(struct params *p);	/* draw function */
 	const char *mesg;			/* fallback message */
 };
 
-static const struct vboot_screen_descriptor vboot_screens[] = {
+static const struct vboot_ui_descriptor vboot_screens[] = {
 	{
 		.id = VB_SCREEN_BLANK,
 		.draw = vboot_draw_blank,
@@ -710,11 +864,41 @@ static const struct vboot_screen_descriptor vboot_screens[] = {
 	{
 		.id = VB_SCREEN_BASE,
 		.draw = vboot_draw_base_screen,
-		.mesg = NULL,
+		.mesg = "Base Screen\n",
+	},
+	{
+		.id = VB_SCREEN_DEVELOPER_WARNING_MENU,
+		.draw = vboot_draw_developer_warning_menu,
+		.mesg = "Developer Warning Menu\n",
+	},
+	{
+		.id = VB_SCREEN_DEVELOPER_MENU,
+		.draw = vboot_draw_developer_menu,
+		.mesg = "Developer Menu\n",
+	},
+	{
+		.id = VB_SCREEN_RECOVERY_MENU,
+		.draw = vboot_draw_recovery_menu,
+		.mesg = "Recovery Menu\n",
+	},
+	{
+		.id = VB_SCREEN_RECOVERY_TO_DEV_MENU,
+		.draw = vboot_draw_recovery_to_dev_menu,
+		.mesg = "Recovery to Dev Menu\n",
+	},
+	{
+		.id = VB_SCREEN_DEVELOPER_TO_NORM_MENU,
+		.draw = vboot_draw_developer_to_norm_menu,
+		.mesg = "Developer to Norm Menu",
+	},
+	{
+		.id = VB_SCREEN_LANGUAGES_MENU,
+		.draw = vboot_draw_languages_menu,
+		.mesg = "Languages Menu",
 	},
 };
 
-static const struct vboot_screen_descriptor *get_screen_descriptor(uint32_t id)
+static const struct vboot_ui_descriptor *get_ui_descriptor(uint32_t id)
 {
 	int i;
 	for (i = 0; i < ARRAY_SIZE(vboot_screens); i++) {
@@ -724,7 +908,7 @@ static const struct vboot_screen_descriptor *get_screen_descriptor(uint32_t id)
 	return NULL;
 }
 
-static void print_fallback_message(const struct vboot_screen_descriptor *desc)
+static void print_fallback_message(const struct vboot_ui_descriptor *desc)
 {
 	const struct rgb_color white = { 0xff, 0xff, 0xff };
 
@@ -735,26 +919,26 @@ static void print_fallback_message(const struct vboot_screen_descriptor *desc)
 		clear_screen(&white);
 }
 
-static VbError_t draw_screen(uint32_t screen_type, uint32_t locale)
+static VbError_t draw_ui(uint32_t screen_type, struct params *p)
 {
 	VbError_t rv = VBERROR_UNKNOWN;
-	const struct vboot_screen_descriptor *desc;
+	const struct vboot_ui_descriptor *desc;
 
-	desc = get_screen_descriptor(screen_type);
+	desc = get_ui_descriptor(screen_type);
 	if (!desc) {
 		printf("Not a valid screen type: 0x%x\n", screen_type);
 		return VBERROR_INVALID_SCREEN_INDEX;
 	}
 
-	if (locale >= locale_data.count) {
-		printf("Unsupported locale (%d)\n", locale);
+	if (p->locale >= locale_data.count) {
+		printf("Unsupported locale (%d)\n", p->locale);
 		print_fallback_message(desc);
 		return VBERROR_INVALID_PARAMETER;
 	}
 
 	/* if no drawing function is registered, fallback msg will be printed */
 	if (desc->draw) {
-		rv = desc->draw(locale);
+		rv = desc->draw(p);
 		if (rv)
 			printf("Drawing failed (0x%x)\n", rv);
 	}
@@ -858,12 +1042,32 @@ int vboot_draw_screen(uint32_t screen, uint32_t locale)
 	backlight_update(VB_SCREEN_BLANK == screen ? 0 : 1);
 
 	/* TODO: draw only locale dependent part if current_screen == screen */
-	RETURN_ON_ERROR(draw_screen(screen, locale));
+	/* setting selected_index value to 0xFFFFFFFF invalidates the field */
+	struct params p = { locale, 0xFFFFFFFF, 1 };
+	RETURN_ON_ERROR(draw_ui(screen, &p));
 
 	current_screen = screen;
 	locale_data.current = locale;
 
 	return VBERROR_SUCCESS;
+}
+
+int vboot_draw_ui(uint32_t screen, uint32_t locale,
+		  uint32_t selected_index, uint32_t redraw_base)
+{
+	printf("%s: screen=0x%x locale=%d, selected_index=%d\n",
+	       __func__, screen, locale, selected_index);
+
+	if (!initialized) {
+		if (vboot_init_screen())
+			return VBERROR_UNKNOWN;
+	}
+
+	/* If the screen is blank, turn off the backlight; else turn it on. */
+	backlight_update(screen == VB_SCREEN_BLANK ? 0 : 1);
+
+	struct params p = { locale, selected_index, redraw_base };
+	return draw_ui(screen, &p);
 }
 
 int vboot_get_locale_count(void)
