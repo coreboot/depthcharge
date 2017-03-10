@@ -47,6 +47,30 @@ typedef enum Buttons {
 	BUTTON_POWER = 0x90
 } Buttons;
 
+/*
+ * EC has no more states if:
+ * 1. It no longer asserts the interrupt line or
+ * 2. EC_HOST_EVENT_MKBP is not set if interrupt line is not supported.
+ */
+static int more_input_states(void)
+{
+	if (IS_ENABLED(CONFIG_DRIVER_INPUT_MKBP_NO_INTERRUPT)) {
+		uint32_t events;
+		const uint32_t mkbp_mask =
+			EC_HOST_EVENT_MASK(EC_HOST_EVENT_MKBP);
+
+		if ((cros_ec_get_host_events(&events) == 0) &&
+			(events & mkbp_mask)) {
+			cros_ec_clear_host_events(mkbp_mask);
+			return 1;
+		}
+
+		return 0;
+	}
+
+	return cros_ec_interrupt_pending();
+}
+
 // Returns amount of scanned keys, or -1 if EC's buffer is known to be empty.
 static int read_scancodes(Modifier *modifiers, uint16_t *codes, int max_codes)
 {
@@ -57,8 +81,7 @@ static int read_scancodes(Modifier *modifiers, uint16_t *codes, int max_codes)
 	assert(modifiers);
 	*modifiers = ModifierNone;
 
-	// If the EC doesn't assert its interrupt line, it has no more states.
-	if (!cros_ec_interrupt_pending())
+	if (!more_input_states())
 		return -1;
 
 	if (IS_ENABLED(CONFIG_DRIVER_INPUT_MKBP_OLD_COMMAND)) {
