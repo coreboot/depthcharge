@@ -131,6 +131,12 @@ VbError_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale)
 	return VBERROR_SUCCESS;
 }
 
+VbError_t VbExDisplayMenu(uint32_t screen_type, uint32_t locale,
+			  uint32_t selected_index, uint32_t redraw_base)
+{
+	return vboot_draw_ui(screen_type, locale, selected_index, redraw_base);
+}
+
 VbError_t VbExDisplayImage(uint32_t x, uint32_t y,
 			   void *buffer, uint32_t buffersize)
 {
