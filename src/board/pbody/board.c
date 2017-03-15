@@ -30,6 +30,7 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "base/vpd_util.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/lpc.h"
@@ -62,6 +63,8 @@
 
 #define KEY_POS_NULL	KEY_POS(0, 0, 0, 0)
 
+/* For US KB */
+
 #define KEY_POS_CTRL    KEY_POS(200, 775, 188, 92)
 #define KEY_POS_ENTER   KEY_POS(2516, 1143, 172, 76)
 #define KEY_POS_SPACE   KEY_POS(1230, 775, 448, 92)
@@ -74,6 +77,36 @@
 #define KEY_POS_U       KEY_POS(1458, 1318,80, 76)
 #define KEY_POS_D       KEY_POS(768, 1143, 80, 76)
 #define KEY_POS_L       KEY_POS(1872, 1143, 80, 76)
+
+/* For Germany KB */
+
+#define DE_KEY_POS_CTRL    KEY_POS(200, 775, 188, 92)
+#define DE_KEY_POS_ENTER   KEY_POS(2608, 1230, 80, 163)
+#define DE_KEY_POS_SPACE   KEY_POS(1230, 775, 448, 92)
+#define DE_KEY_POS_TAB     KEY_POS(131, 1318, 119, 76)
+#define DE_KEY_POS_ESC     KEY_POS(113, 1640, 100, 47)
+#define DE_KEY_POS_UP      KEY_POS(2406, 824, 98, 44)
+#define DE_KEY_POS_DOWN    KEY_POS(2406, 727, 98, 44)
+#define DE_KEY_POS_LEFT    KEY_POS(2203, 727, 80, 44)
+#define DE_KEY_POS_RIGHT   KEY_POS(2608, 727, 80, 44)
+#define DE_KEY_POS_U       KEY_POS(1458, 1318,80, 76)
+#define DE_KEY_POS_D       KEY_POS(768, 1143, 80, 76)
+#define DE_KEY_POS_L       KEY_POS(1872, 1143, 80, 76)
+
+/* For Japan KB */
+
+#define JP_KEY_POS_CTRL    KEY_POS(178, 775, 166, 92)
+#define JP_KEY_POS_ENTER   KEY_POS(2608, 1230, 80, 163)
+#define JP_KEY_POS_SPACE   KEY_POS(1228, 775, 319, 92)
+#define JP_KEY_POS_TAB     KEY_POS(131, 1318, 119, 76)
+#define JP_KEY_POS_ESC     KEY_POS(113, 1640, 100, 47)
+#define JP_KEY_POS_UP      KEY_POS(2406, 824, 98, 44)
+#define JP_KEY_POS_DOWN    KEY_POS(2406, 727, 98, 44)
+#define JP_KEY_POS_LEFT    KEY_POS(2203, 727, 80, 44)
+#define JP_KEY_POS_RIGHT   KEY_POS(2608, 727, 80, 44)
+#define JP_KEY_POS_U       KEY_POS(1458, 1318,80, 76)
+#define JP_KEY_POS_D       KEY_POS(768, 1143, 80, 76)
+#define JP_KEY_POS_L       KEY_POS(1872, 1143, 80, 76)
 
 struct key_array_t board_key_list[] = {
 	{{KEY_POS_U,     KEY_POS_CTRL}, 2, 0x15          },	/* ctrl-u */
@@ -91,8 +124,64 @@ struct key_array_t board_key_list[] = {
 	{}
 };
 
+struct key_array_t de_board_key_list[] = {
+	{{DE_KEY_POS_U,     DE_KEY_POS_CTRL}, 2, 0x15      },	/* ctrl-u */
+	{{DE_KEY_POS_D,     DE_KEY_POS_CTRL}, 2, 0x04      },	/* ctrl-d */
+	{{DE_KEY_POS_L,     DE_KEY_POS_CTRL}, 2, 0x0c      },	/* ctrl-l */
+	{{DE_KEY_POS_ENTER, KEY_POS_NULL}, 1, '\r'         },	/* enter */
+	{{DE_KEY_POS_SPACE, KEY_POS_NULL}, 1, ' '          },	/* space */
+	{{DE_KEY_POS_TAB,   KEY_POS_NULL}, 1, '\t'         },	/* tab */
+	{{DE_KEY_POS_ESC,   KEY_POS_NULL}, 1, 0x1b         },	/* esc */
+	{{DE_KEY_POS_UP,    KEY_POS_NULL}, 1, VB_KEY_UP    },	/* up */
+	{{DE_KEY_POS_DOWN,  KEY_POS_NULL}, 1, VB_KEY_DOWN  },	/* down */
+	{{DE_KEY_POS_LEFT,  KEY_POS_NULL}, 1, VB_KEY_LEFT  },	/* left */
+	{{DE_KEY_POS_RIGHT, KEY_POS_NULL}, 1, VB_KEY_RIGHT },	/* right */
+	{{DE_KEY_POS_ENTER, DE_KEY_POS_CTRL}, 2, VB_KEY_CTRL_ENTER},
+		/* ctrl-enter */
+	{}
+};
+
+
+struct key_array_t jp_board_key_list[] = {
+	{{JP_KEY_POS_U,     JP_KEY_POS_CTRL}, 2, 0x15      },	/* ctrl-u */
+	{{JP_KEY_POS_D,     JP_KEY_POS_CTRL}, 2, 0x04      },	/* ctrl-d */
+	{{JP_KEY_POS_L,     JP_KEY_POS_CTRL}, 2, 0x0c      },	/* ctrl-l */
+	{{JP_KEY_POS_ENTER, KEY_POS_NULL}, 1, '\r'         },	/* enter */
+	{{JP_KEY_POS_SPACE, KEY_POS_NULL}, 1, ' '          },	/* space */
+	{{JP_KEY_POS_TAB,   KEY_POS_NULL}, 1, '\t'         },	/* tab */
+	{{JP_KEY_POS_ESC,   KEY_POS_NULL}, 1, 0x1b         },	/* esc */
+	{{JP_KEY_POS_UP,    KEY_POS_NULL}, 1, VB_KEY_UP    },	/* up */
+	{{JP_KEY_POS_DOWN,  KEY_POS_NULL}, 1, VB_KEY_DOWN  },	/* down */
+	{{JP_KEY_POS_LEFT,  KEY_POS_NULL}, 1, VB_KEY_LEFT  },	/* left */
+	{{JP_KEY_POS_RIGHT, KEY_POS_NULL}, 1, VB_KEY_RIGHT },	/* right */
+	{{JP_KEY_POS_ENTER, JP_KEY_POS_CTRL}, 2, VB_KEY_CTRL_ENTER},
+		/* ctrl-enter */
+	{}
+};
 static i2chiddev_t *i2c_dev;
 static GpioCfg *int_cfg;
+
+static void board_get_keyboard_layout(void)
+{
+	const char regioncode_key[] = "region";
+	char country_code[8], *cc;
+
+	if (!vpd_gets(regioncode_key, country_code, sizeof(country_code))) {
+		printf("No region code found in VPD\n");
+		board_virtual_keyboard_layout(&board_key_list[0]);
+		return;
+	}
+	/* Add only the two letter Alpha-2 country code, remove the variant
+	 * in region code */
+	country_code[2] = 0;
+	cc = strdup(country_code);
+	if(!strncasecmp(cc,"DE",2))
+		board_virtual_keyboard_layout(&de_board_key_list[0]);
+	else if(!strncasecmp(cc,"JP",2))
+		board_virtual_keyboard_layout(&jp_board_key_list[0]);
+	else
+		board_virtual_keyboard_layout(&board_key_list[0]);
+}
 
 /*
  * Workaround for issue where silego is unable to see EC reset to clear the
@@ -122,7 +211,7 @@ GpioOps *ec_in_rw_workaround_gpio(void)
 	return ops;
 }
 
-static int pbody_havekey(void)
+static int board_havekey(void)
 {
 	if (i2c_dev != NULL)
 		return vkb_havekey(i2c_dev) != 0;
@@ -130,16 +219,16 @@ static int pbody_havekey(void)
 	return 0;
 }
 
-static int pbody_getchar(void)
+static int board_getchar(void)
 {
 	return vkb_getchar();
 }
 
-static struct console_input_driver pbody_input_driver =
+static struct console_input_driver board_input_driver =
 {
 	NULL,
-	&pbody_havekey,
-	&pbody_getchar
+	&board_havekey,
+	&board_getchar
 };
 
 static int int_status(void)
@@ -198,9 +287,9 @@ static int board_setup(void)
 
 	if (i2c_dev) {
 		if (!configure_virtual_keyboard(i2c_dev)) {
-			console_add_input_driver(&pbody_input_driver);
+			console_add_input_driver(&board_input_driver);
 			printf("virtual keyboard installed\n");
-			board_virtual_keyboard_layout(&board_key_list[0]);
+			board_get_keyboard_layout();
 		} else {
 			i2c_dev = NULL;
 			printf("virtual keyboard install failed\n");
