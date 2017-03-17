@@ -90,11 +90,11 @@ int crossystem_setup(void)
 	}
 
 	uint16_t chsw = 0;
-	if (flag_fetch(FLAG_WPSW))
-		chsw |= CHSW_FIRMWARE_WP_DIS;
-	if (flag_fetch(FLAG_RECSW))
+	if (vdat->flags & VBSD_BOOT_FIRMWARE_WP_ENABLED)
+		chsw |= CHSW_FIRMWARE_WP;
+	if (vdat->flags & VBSD_BOOT_REC_SWITCH_ON)
 		chsw |= CHSW_RECOVERY_X86;
-	if (flag_fetch(FLAG_DEVSW))
+	if (vdat->flags & VBSD_BOOT_DEV_SWITCH_ON)
 		chsw |= CHSW_DEVELOPER_SWITCH;
 	acpi_table->chsw = chsw;
 

@@ -29,7 +29,7 @@ enum {
 	CHSW_RECOVERY_X86 =     (1 << 1),
 	CHSW_RECOVERY_EC =      (1 << 2),
 	CHSW_DEVELOPER_SWITCH = (1 << 5),
-	CHSW_FIRMWARE_WP_DIS =  (1 << 9)
+	CHSW_FIRMWARE_WP =      (1 << 9)
 };
 
 enum {
