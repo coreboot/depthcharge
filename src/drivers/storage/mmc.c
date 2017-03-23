@@ -509,7 +509,7 @@ static void mmc_set_clock(MmcCtrlr *ctrlr, uint32_t clock)
 
 static void mmc_recalculate_clock(MmcMedia *media)
 {
-	uint32_t clock;
+	uint32_t clock = 1;
 
 	if (IS_SD(media)) {
 		if (media->caps & MMC_MODE_HS)
