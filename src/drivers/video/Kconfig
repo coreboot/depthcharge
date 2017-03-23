@@ -46,4 +46,7 @@ config DRIVER_VIDEO_MEDIATEK
 	bool "MediaTek video settings"
 	default n
 
-
+config DRIVER_VIDEO_EC_PWM_BACKLIGHT
+	bool "Control backlight by EC PWM"
+	default n
+	depends on DRIVER_EC_CROS

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Rockchip Electronics Co., Ltd.
+ * Copyright 2017 Google Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -12,12 +12,12 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __RK3399_VIDEO_H
-#define __RK3399_VIDEO_H
+#ifndef __EC_PWM_BACKLIGHT_H
+#define __EC_PWM_BACKLIGHT_H
 
+#include "drivers/ec/cros/ec.h"
 #include "drivers/gpio/gpio.h"
-#include "drivers/video/display.h"
 
-DisplayOps *new_rk3399_display(GpioOps *backlight);
+GpioOps *new_ec_pwm_backlight(void);
 
 #endif

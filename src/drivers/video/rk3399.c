@@ -19,13 +19,13 @@
 #include "drivers/ec/cros/ec.h"
 #include "drivers/video/rk3399.h"
 
+typedef struct {
+	DisplayOps ops;
+	GpioOps *backlight_gpio;
+} RkDisplay;
+
 #define VOP_STANDBY_EN		1
 #define VOP_STANDBY_OFFSET	22
-
-// Set backlight to 80% by default when on
-// This mirrors default value from the kernel
-// from internal_backlight_no_als_ac_brightness
-#define DEFAULT_EC_BL_PWM_DUTY 80
 
 /* video_ctl_1 */
 #define VIDEO_EN				(0x1 << 7)
@@ -70,7 +70,9 @@ static int edp_enable(void)
  */
 static int rk3399_backlight_update(DisplayOps *me, uint8_t enable)
 {
-	return cros_ec_set_bl_pwm_duty(enable ? DEFAULT_EC_BL_PWM_DUTY : 0);
+	RkDisplay *display = container_of(me, RkDisplay, ops);
+	gpio_set(display->backlight_gpio, enable);
+	return 0;
 }
 
 static int rockchip_display_init(DisplayOps *me)
@@ -99,13 +101,16 @@ static int rockchip_display_stop(DisplayOps *me)
 	return 0;
 }
 
-DisplayOps *new_rk3399_display(void)
+DisplayOps *new_rk3399_display(GpioOps *backlight)
 {
-	DisplayOps *display = xzalloc(sizeof(*display));
+	RkDisplay *display = xzalloc(sizeof(*display));
+	display->ops.init = rockchip_display_init;
+	display->ops.stop = rockchip_display_stop;
 
-	display->init = rockchip_display_init;
-	display->stop = rockchip_display_stop;
-	display->backlight_update = rk3399_backlight_update;
+	if (backlight) {
+		display->backlight_gpio = backlight;
+		display->ops.backlight_update = rk3399_backlight_update;
+	}
 
-	return display;
+	return &display->ops;
 }
