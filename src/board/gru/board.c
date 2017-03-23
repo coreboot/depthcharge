@@ -39,6 +39,7 @@
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/spi.h"
 #include "drivers/video/display.h"
+#include "drivers/video/ec_pwm_backlight.h"
 #include "drivers/video/rk3399.h"
 #include "vboot/util/flag.h"
 
@@ -188,9 +189,12 @@ static int board_setup(void)
 
 	// turn on the backlight
 	if (lib_sysinfo.framebuffer &&
-	    lib_sysinfo.framebuffer->physical_address)
-		display_set_ops(new_rk3399_display());
-
+	    lib_sysinfo.framebuffer->physical_address) {
+		GpioOps *backlight_gpio = NULL;
+		if (IS_ENABLED(CONFIG_DRIVER_VIDEO_EC_PWM_BACKLIGHT))
+			backlight_gpio = new_ec_pwm_backlight();
+		display_set_ops(new_rk3399_display(backlight_gpio));
+	}
 	return 0;
 }
 
