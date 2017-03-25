@@ -12,22 +12,19 @@
  * GNU General Public License for more details.
  */
 
-#include "drivers/video/ec_pwm_backlight.h"
-#include "drivers/video/rk3399.h"
+#ifndef __ARCTIC_SAND_BACKLIGHT_H
+#define __ARCTIC_SAND_BACKLIGHT_H
 
-// Set backlight to 80% by default when on
-// This mirrors default value from the kernel
-// from internal_backlight_no_als_ac_brightness
-#define DEFAULT_EC_BL_PWM_DUTY 80
+#include "drivers/bus/i2c/i2c.h"
+#include "drivers/gpio/gpio.h"
 
-static inline int switch_backlight_pwm(GpioOps *me, unsigned enable)
-{
-	return cros_ec_set_bl_pwm_duty(enable ? DEFAULT_EC_BL_PWM_DUTY : 0);
-}
+typedef struct {
+	I2cOps     *i2c_ops;
+	GpioOps    gpio_ops;
+	uint8_t	   chip_addr;
+	uint8_t	   initialized;
+} ArcticSandBacklight;
 
-GpioOps *new_ec_pwm_backlight(void)
-{
-	GpioOps *ops = xzalloc(sizeof(*ops));
-	ops->set = switch_backlight_pwm;
-	return ops;
-}
+GpioOps *new_arctic_sand_backlight(I2cOps *i2c_ops, uint8_t chip_addr);
+
+#endif
