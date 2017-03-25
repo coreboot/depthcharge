@@ -39,6 +39,7 @@
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/spi.h"
 #include "drivers/video/display.h"
+#include "drivers/video/arctic_sand_backlight.h"
 #include "drivers/video/ec_pwm_backlight.h"
 #include "drivers/video/rk3399.h"
 #include "vboot/util/flag.h"
@@ -99,6 +100,7 @@ static GpioOps *power_btn_gpio(void)
 
 static int board_setup(void)
 {
+	RkI2c *i2c0 = NULL;
 	if (IS_ENABLED(CONFIG_TPM2_MODE)) {
 		RkSpi *spi0 = new_rockchip_spi(0xff1c0000);
 		GpioOps *tpm_int = sysinfo_lookup_gpio("TPM interrupt", 1,
@@ -106,7 +108,7 @@ static int board_setup(void)
 
 		tpm_set_ops(&new_tpm_spi(&spi0->ops, tpm_int)->ops);
 	} else {
-		RkI2c *i2c0 = new_rockchip_i2c((void *)0xff3c0000);
+		i2c0 = new_rockchip_i2c((void *)0xff3c0000);
 		tpm_set_ops(&new_slb9635_i2c(&i2c0->ops, 0x20)->base.ops);
 	}
 
@@ -193,6 +195,12 @@ static int board_setup(void)
 		GpioOps *backlight_gpio = NULL;
 		if (IS_ENABLED(CONFIG_DRIVER_VIDEO_EC_PWM_BACKLIGHT))
 			backlight_gpio = new_ec_pwm_backlight();
+		else if (IS_ENABLED(CONFIG_DRIVER_VIDEO_ARCTICSAND_BACKLIGHT)) {
+			if (!i2c0)
+				i2c0 = new_rockchip_i2c((void *)0xff3c0000);
+			backlight_gpio =
+				new_arctic_sand_backlight(&i2c0->ops, 0x30);
+		}
 		display_set_ops(new_rk3399_display(backlight_gpio));
 	}
 	return 0;
