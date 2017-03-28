@@ -109,9 +109,8 @@ static void rk3399_sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 	u32 vendor;
 	SdhciHost *host = container_of(mmc_ctrlr,
 				       SdhciHost, mmc_ctrlr);
-	/* Power cycle PHY only for the frequency bump to 200MHz */
 	int cycle_phy = mmc_ctrlr->bus_hz != host->clock &&
-			mmc_ctrlr->bus_hz > MMC_CLOCK_52MHZ;
+			mmc_ctrlr->bus_hz > 400*KHz;
 
 	if (cycle_phy)
 		rk3399_emmc_phy_power_off();
