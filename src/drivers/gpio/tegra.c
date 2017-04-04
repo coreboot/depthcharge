@@ -52,7 +52,6 @@ typedef struct {
 // If this changes between SOCs but this driver would otherwise work, we'll
 // have to parameterize the address.
 static GpioBank * const gpio_banks = (void *)0x6000d000;
-static uint32_t * const pinmux_regs = (void *)0x70003000;
 
 static int tegra_gpio_get(GpioOps *me)
 {

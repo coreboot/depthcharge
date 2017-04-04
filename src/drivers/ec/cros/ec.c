@@ -42,12 +42,6 @@ static const int CROS_EC_HASH_TIMEOUT_MS = 2000;
 /* Time to delay between polling status of EC hash calculation */
 static const int CROS_EC_HASH_CHECK_DELAY_MS = 10;
 
-static const char * const ec_current_image_name[] = {
-	[EC_IMAGE_UNKNOWN] = "unknown",
-	[EC_IMAGE_RO] = "RO",
-	[EC_IMAGE_RW] = "RW"
-};
-
 static int ec_init(CrosEc *me);
 
 void cros_ec_dump_data(const char *name, int cmd, const void *data, int len)
