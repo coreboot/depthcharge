@@ -162,21 +162,6 @@ static int cr50_i2c_write(Cr50I2c *tpm, uint8_t addr, const uint8_t *buffer,
 
 #define TPM_HEADER_SIZE 10
 
-enum {
-	TpmAccessValid = 0x80,
-	TpmAccessActiveLocality = 0x20,
-	TpmAccessRequestPending = 0x04,
-	TpmAccessRequestUse = 0x02,
-};
-
-enum {
-	TpmStsValid = 0x80,
-	TpmStsCommandReady = 0x40,
-	TpmStsGo = 0x20,
-	TpmStsDataAvail = 0x10,
-	TpmStsDataExpect = 0x08,
-};
-
 static inline uint8_t tpm_access(uint8_t locality)
 {
 	return 0x0 | (locality << 4);

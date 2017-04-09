@@ -22,6 +22,31 @@
 #include <stdint.h>
 
 enum {
+	TpmAccessValid = (1 << 7),
+	TpmAccessActiveLocality = (1 << 5),
+	TpmAccessRequestPending = (1 << 2),
+	TpmAccessRequestUse = (1 << 1),
+	TpmAccessEstablishment = (1 << 0),
+};
+
+enum {
+	TpmStsFamilyShift = 26,
+	TpmStsFamilyMask = (0x3 << TpmStsFamilyShift),
+	TpmStsFamilyTpm2 = (1 << TpmStsFamilyShift),
+	TpmStsResetEstablismentBit = (1 << 25),
+	TpmStsCommandCancel = (1 << 24),
+	TpmStsBurstCountShift = 8,
+	TpmStsBurstCountMask = (0xFFFF << TpmStsBurstCountShift),
+	TpmStsValid = (1 << 7),
+	TpmStsCommandReady = (1 << 6),
+	TpmStsGo = (1 << 5),
+	TpmStsDataAvail = (1 << 4),
+	TpmStsDataExpect = (1 << 3),
+	TpmStsSelfTestDone = (1 << 2),
+	TpmStsResponseRetry = (1 << 1),
+};
+
+enum {
 	TpmCmdCountOffset = 2,
 	TpmCmdOrdinalOffset = 6,
 	TpmMaxBufSize = 1260

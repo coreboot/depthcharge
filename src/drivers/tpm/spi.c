@@ -125,35 +125,6 @@ static struct tpm2_info tpm_info;
  */
 static const int debug_level_ = 0;
 
-/* Locality management bits (in TPM_ACCESS_REG) */
-enum tpm_access_bits {
-	tpm_reg_valid_sts = (1 << 7),
-	active_locality = (1 << 5),
-	request_use = (1 << 1),
-	tpm_establishment = (1 << 0),
-};
-
-/*
- * Variuous fields of the TPM status register, arguably the most important
- * register when interfacing to a TPM.
- */
-enum tpm_sts_bits {
-	tpm_family_shift = 26,
-	tpm_family_mask = ((1 << 2) - 1),  /* 2 bits wide. */
-	tpm_family_tpm2 = 1,
-	reset_establishment_bit = (1 << 25),
-	command_cancel = (1 << 24),
-	burst_count_shift = 8,
-	burst_count_mask = ((1 << 16) - 1),  /* 16 bits wide. */
-	sts_valid = (1 << 7),
-	command_ready = (1 << 6),
-	tpm_go = (1 << 5),
-	data_avail = (1 << 4),
-	expect = (1 << 3),
-	self_test_done = (1 << 2),
-	response_retry = (1 << 1),
-};
-
 /*
  * SPI frame header for TPM transactions is 4 bytes in size, it is described
  * in section "6.4.6 Spi Bit Protocol".
@@ -398,7 +369,7 @@ static uint32_t get_burst_count(void)
 	uint32_t status;
 
 	read_tpm_sts(&status);
-	return (status >> burst_count_shift) & burst_count_mask;
+	return (status & TpmStsBurstCountMask) >> TpmStsBurstCountShift;
 }
 
 static int tpm2_init(SpiOps *spi_ops)
@@ -411,36 +382,35 @@ static int tpm2_init(SpiOps *spi_ops)
 
 	/* Try claiming locality zero. */
 	tpm2_read_reg(TPM_ACCESS_REG, &cmd, sizeof(cmd));
-	if ((cmd & (active_locality & tpm_reg_valid_sts)) ==
-	    (active_locality & tpm_reg_valid_sts)) {
+	if ((cmd & (TpmAccessActiveLocality & TpmAccessValid)) ==
+	    (TpmAccessActiveLocality & TpmAccessValid)) {
 		/*
 		 * Locality active - maybe reset line is not connected?
 		 * Release the locality and try again
 		 */
-		cmd = active_locality;
+		cmd = TpmAccessActiveLocality;
 		tpm2_write_reg(TPM_ACCESS_REG, &cmd, sizeof(cmd));
 		tpm2_read_reg(TPM_ACCESS_REG, &cmd, sizeof(cmd));
 	}
 
-	/* The tpm_establishment bit can be either set or not, ignore it. */
-	if ((cmd & ~tpm_establishment) != tpm_reg_valid_sts) {
+	/* TpmAccessEstablishment bit can be either set or not, ignore it. */
+	if ((cmd & ~TpmAccessEstablishment) != TpmAccessValid) {
 		printf("invalid reset status: %#x\n", cmd);
 		return -1;
 	}
 
-	cmd = request_use;
+	cmd = TpmAccessRequestUse;
 	tpm2_write_reg(TPM_ACCESS_REG, &cmd, sizeof(cmd));
 	tpm2_read_reg(TPM_ACCESS_REG, &cmd, sizeof(cmd));
-	if ((cmd &  ~tpm_establishment) !=
-	    (tpm_reg_valid_sts | active_locality)) {
+	if ((cmd &  ~TpmAccessEstablishment) !=
+	    (TpmAccessValid | TpmAccessActiveLocality)) {
 		printf("failed to claim locality 0, status: %#x\n",
 		       cmd);
 		return -1;
 	}
 
 	read_tpm_sts(&status);
-	if (((status >> tpm_family_shift) & tpm_family_mask) !=
-	    tpm_family_tpm2) {
+	if ((status & TpmStsFamilyMask) != TpmStsFamilyTpm2) {
 		printf("unexpected TPM family value, status: %#x\n",
 		       status);
 		return -1;
@@ -571,7 +541,7 @@ static size_t tpm2_process_command(const void *tpm2_command,
 	}
 
 	/* Let the TPM know that the command is coming. */
-	write_tpm_sts(command_ready);
+	write_tpm_sts(TpmStsCommandReady);
 
 	/*
 	 * Tpm commands and responses written to and read from the FIFO
@@ -588,10 +558,10 @@ static size_t tpm2_process_command(const void *tpm2_command,
 	fifo_transfer(command_size, fifo_buffer, fifo_transmit);
 
 	/* Now tell the TPM it can start processing the command. */
-	write_tpm_sts(tpm_go);
+	write_tpm_sts(TpmStsGo);
 
 	/* Now wait for it to report that the response is ready. */
-	expected_status_bits = sts_valid | data_avail;
+	expected_status_bits = TpmStsValid | TpmStsDataAvail;
 	if (!wait_for_status(expected_status_bits, expected_status_bits)) {
 		/*
 		 * If timed out, which should never happen, let's at least
@@ -650,13 +620,13 @@ static size_t tpm2_process_command(const void *tpm2_command,
 
 	/* Verify that 'data available' is not asseretd any more. */
 	read_tpm_sts(&status);
-	if ((status & expected_status_bits) != sts_valid) {
+	if ((status & expected_status_bits) != TpmStsValid) {
 		printf("unexpected final status %#x\n", status);
 		return 0;
 	}
 
 	/* Move the TPM back to idle state. */
-	write_tpm_sts(command_ready);
+	write_tpm_sts(TpmStsCommandReady);
 
 	return payload_size;
 }

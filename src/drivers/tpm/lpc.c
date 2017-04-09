@@ -56,25 +56,6 @@ typedef struct TpmRegs
 	TpmLocality localities[5];
 } TpmRegs;
 
-enum {
-	TisStsValid = 0x80,
-	TisStsCommandReady = 0x40,
-	TisStsTpmGo = 0x20,
-	TisStsDataAvailable = 0x10,
-	TisStsExpect = 0x08,
-	TisStsResponseRetry = 0x02
-};
-
-enum {
-	TisAccessTpmRegValidSts = 0x80,
-	TisAccessActiveLocality = 0x20,
-	TisAccessBeenSeized = 0x10,
-	TisAccessSeize = 0x08,
-	TisAccessPendingRequest = 0x04,
-	TisAccessRequestUse = 0x02,
-	TisAccessTpmEstablishment = 0x01
-};
-
 /*
  * Structures defined below allow creating descriptions of TPM vendor/device
  * ID information for run time discovery. The only device the system knows
@@ -182,17 +163,17 @@ static int lpctpm_command_ready(LpcTpm *tpm)
 	uint8_t *status = &tpm->regs->localities[0].tpm_status;
 
 	// 1st attempt to set command ready.
-	writeb(TisStsCommandReady, status);
+	writeb(TpmStsCommandReady, status);
 
 	// Check if command ready is set yet.
-	if (readb(status) & TisStsCommandReady)
+	if (readb(status) & TpmStsCommandReady)
 		return 0;
 
 	// 2nd attempt to set command ready.
-	writeb(TisStsCommandReady, status);
+	writeb(TpmStsCommandReady, status);
 
 	// Wait for command ready to get set.
-	return lpctpm_wait_reg(status, TisStsCommandReady, TisStsCommandReady);
+	return lpctpm_wait_reg(status, TpmStsCommandReady, TpmStsCommandReady);
 }
 
 /*
@@ -213,7 +194,7 @@ static uint32_t lpctpm_senddata(LpcTpm *tpm, const uint8_t * const data,
 	uint32_t offset = 0;
 
 	if (lpctpm_wait_reg(&tpm->regs->localities[0].tpm_status,
-			    TisStsCommandReady, TisStsCommandReady)) {
+			    TpmStsCommandReady, TpmStsCommandReady)) {
 		printf("%s:%d - failed to get 'command_ready' status\n",
 		       __FILE__, __LINE__);
 		return -1;
@@ -246,9 +227,9 @@ static uint32_t lpctpm_senddata(LpcTpm *tpm, const uint8_t * const data,
 			writeb(data[offset++], &tpm->regs->localities[0].data);
 
 		if (lpctpm_wait_reg(&tpm->regs->localities[0].tpm_status,
-				    TisStsValid, TisStsValid) ||
+				    TpmStsValid, TpmStsValid) ||
 		    !(readb(&tpm->regs->localities[0].tpm_status) &
-		      TisStsExpect)) {
+		      TpmStsDataExpect)) {
 			printf("%s:%d TPM command feed overflow\n",
 			       __FILE__, __LINE__);
 			return -1;
@@ -272,8 +253,8 @@ static uint32_t lpctpm_senddata(LpcTpm *tpm, const uint8_t * const data,
 	 * command.
 	 */
 	if (lpctpm_wait_reg(&tpm->regs->localities[0].tpm_status,
-			    TisStsValid, TisStsValid) ||
-	    (readb(&tpm->regs->localities[0].tpm_status) & TisStsExpect)) {
+			    TpmStsValid, TpmStsValid) ||
+	    (readb(&tpm->regs->localities[0].tpm_status) & TpmStsDataExpect)) {
 		printf("%s:%d unexpected TPM status 0x%x\n",
 		       __FILE__, __LINE__,
 		       readb(&tpm->regs->localities[0].tpm_status));
@@ -281,7 +262,7 @@ static uint32_t lpctpm_senddata(LpcTpm *tpm, const uint8_t * const data,
 	}
 
 	// OK, sitting pretty, let's start the command execution.
-	writeb(TisStsTpmGo, &tpm->regs->localities[0].tpm_status);
+	writeb(TpmStsGo, &tpm->regs->localities[0].tpm_status);
 	return 0;
 }
 
@@ -301,7 +282,7 @@ static uint32_t lpctpm_readresponse(LpcTpm *tpm, uint8_t *buffer, size_t *len)
 {
 	uint16_t burst;
 	uint32_t offset = 0;
-	const uint32_t has_data = TisStsDataAvailable | TisStsValid;
+	const uint32_t has_data = TpmStsDataAvail | TpmStsValid;
 	uint32_t expected_count = *len;
 
 	// Wait for the TPM to process the command.
@@ -352,7 +333,7 @@ static uint32_t lpctpm_readresponse(LpcTpm *tpm, uint8_t *buffer, size_t *len)
 
 		// Wait for the next portion.
 		if (lpctpm_wait_reg(&tpm->regs->localities[0].tpm_status,
-				     TisStsValid, TisStsValid)) {
+				     TpmStsValid, TpmStsValid)) {
 			printf("%s:%d failed to read response\n",
 			       __FILE__, __LINE__);
 			return -1;
@@ -365,10 +346,10 @@ static uint32_t lpctpm_readresponse(LpcTpm *tpm, uint8_t *buffer, size_t *len)
 	         == has_data);
 
 	/*
-	 * Make sure we indeed read all there was. The TisStsValid bit is
+	 * Make sure we indeed read all there was. The TpmStsValid bit is
 	 * known to be set.
 	 */
-	if (readb(&tpm->regs->localities[0].tpm_status) & TisStsDataAvailable) {
+	if (readb(&tpm->regs->localities[0].tpm_status) & TpmStsDataAvail) {
 		printf("%s:%d wrong receive status %x\n",
 		       __FILE__, __LINE__,
 		       readb(&tpm->regs->localities[0].tpm_status));
@@ -387,10 +368,10 @@ int lpctpm_close(LpcTpm *tpm)
 {
 	uint8_t *access = &tpm->regs->localities[0].access;
 
-	if (readb(access) & TisAccessActiveLocality) {
-		writeb(TisAccessActiveLocality, access);
+	if (readb(access) & TpmAccessActiveLocality) {
+		writeb(TpmAccessActiveLocality, access);
 
-		if (lpctpm_wait_reg(access, TisAccessActiveLocality, 0)) {
+		if (lpctpm_wait_reg(access, TpmAccessActiveLocality, 0)) {
 			printf("%s:%d - failed to release locality 0\n",
 			       __FILE__, __LINE__);
 			return -1;
@@ -454,11 +435,11 @@ int lpctpm_init(LpcTpm *tpm)
 		return -1;
 
 	// Now request access to locality.
-	writeb(TisAccessRequestUse, access);
+	writeb(TpmAccessRequestUse, access);
 
 	// Did we get a lock?
-	if (lpctpm_wait_reg(access, TisAccessActiveLocality,
-			    TisAccessActiveLocality)) {
+	if (lpctpm_wait_reg(access, TpmAccessActiveLocality,
+			    TpmAccessActiveLocality)) {
 		printf("%s:%d - failed to lock locality 0\n",
 		       __FILE__, __LINE__);
 		return -1;
