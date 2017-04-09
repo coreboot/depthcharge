@@ -554,6 +554,10 @@ static size_t tpm2_process_command(const void *tpm2_command,
 	union fifo_transfer_buffer fifo_buffer;
 	const int HEADER_SIZE = 6;
 
+	/* Do not try using an uninitialized TPM. */
+	if (!tpm_info.vendor_id)
+		return 0;
+
 	/* Skip the two byte tag, read the size field. */
 	payload_size = read_be32(cmd_body + 2);
 
