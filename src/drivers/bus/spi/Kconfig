@@ -18,6 +18,10 @@ config DRIVER_BUS_SPI_IMGTEC
 	bool "IMGTEC SPFI driver"
 	default n
 
+config DRIVER_BUS_SPI_INTEL_GSPI
+	bool "Intel GSPI driver"
+	default n
+
 config DRIVER_BUS_SPI_IPQ806X
 	bool "Ipq806x SPI driver"
 	default n
