@@ -62,6 +62,7 @@
 	} while (0)
 
 static char initialized = 0;
+static int  prev_lang_page_num = -1;
 static struct directory *base_graphics;
 static struct directory *font_graphics;
 static struct cbfs_media *ro_cbfs;
@@ -785,12 +786,56 @@ static VbError_t vboot_draw_os_broken(struct params *p)
 
 static VbError_t vboot_draw_languages_menu(struct params *p)
 {
-	if (p->redraw_base)
+	int i = 0;
+
+	/*
+	 * There are too many languages to fit onto a page.  Let's
+	 * try to list about 15 at a time.
+	 */
+	const int lang_per_page = 15;
+	int selected_index = p->selected_index % locale_data.count;
+	int yoffset = 0 - lang_per_page/2;
+	locale_data.current = selected_index;
+
+	int page_num = selected_index / lang_per_page;
+	int page_start_index = lang_per_page * page_num;
+	int total_pages = locale_data.count / lang_per_page;
+	if (locale_data.count % lang_per_page > 0)
+		total_pages++;
+
+	/*
+	 * redraw screen if we cross a page boundary
+	 * or if we're instructed to do so (because of screen change)
+	 */
+	if (prev_lang_page_num != page_num || p->redraw_base)
 		RETURN_ON_ERROR(vboot_draw_base_screen(p));
-	/* Current language */
-	// TODO: need to support changing languages
-	const struct menu m = { lang_files, ARRAY_SIZE(lang_files) };
-	return vboot_draw_menu(p, &m);
+
+	/* Print out page #s (1/5, 2/5, etc.) */
+	// TODO: Create bitmap for this.  Doing text only for now.
+	char page_count[6];
+	snprintf(page_count, sizeof(page_count), "%d/%d", page_num + 1,
+		 total_pages);
+	graphics_print_text_xy(page_count,
+			       0, 15,
+			       50, 30,
+			       VIDEO_PRINTF_ALIGN_KEEP);
+
+	// TODO: We need to cache this.
+	// we're loading an archive for each language, so it's rather slow.
+	// maybe we can cache each language each time we switch pages.
+	for (i = page_start_index;
+	     i < page_start_index + lang_per_page && i < locale_data.count;
+	     i++, yoffset++) {
+		RETURN_ON_ERROR(draw_selected_locale("language", i,
+				VB_SCALE_HALF,
+				VB_SCALE_HALF + VB_TEXT_HEIGHT * yoffset,
+				VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+				PIVOT_H_CENTER|PIVOT_V_TOP,
+				selected_index == i ? 1 : 0));
+	}
+	prev_lang_page_num = page_num;
+
+	return VBERROR_SUCCESS;
 }
 
 /* we may export this in the future for the board customization */
