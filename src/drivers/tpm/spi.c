@@ -135,12 +135,12 @@ typedef struct {
 
 static int tpm_irq_status(void)
 {
-	if (spi_tpm.tpm_latched_irq)
-		return gpio_get(spi_tpm.tpm_latched_irq);
+	if (!spi_tpm.irq_status) {
+		mdelay(10);
+		return 1;
+	}
 
-	mdelay(10);
-
-	return 1;
+	return spi_tpm.irq_status();
 }
 
 /*
@@ -668,16 +668,16 @@ static int xmit_wrapper(struct TpmOps *me,
 	return -1;
 }
 
-SpiTpm *new_tpm_spi(SpiOps *bus, GpioOps *tpm_latched_irq)
+SpiTpm *new_tpm_spi(SpiOps *bus, tpm_irq_status_t irq_status)
 {
 	spi_tpm.ops.xmit = xmit_wrapper;
-	spi_tpm.tpm_latched_irq = tpm_latched_irq;
+	spi_tpm.irq_status = irq_status;
 	spi_tpm.bus = bus;
 	spi_tpm.cleanup.cleanup = tpm_cleanup;
 	spi_tpm.cleanup.types = CleanupOnReboot | CleanupOnPowerOff |
 		CleanupOnHandoff | CleanupOnLegacy;
 
-	if (!tpm_latched_irq)
+	if (!irq_status)
 		printf("WARNING: tpm irq not defined, will waste 10ms to wait on Cr50!!\n");
 
 	return &spi_tpm;

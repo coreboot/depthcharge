@@ -29,15 +29,17 @@ typedef enum {
 	UNKNOWN_SPI_TPM,  // This would trigger default behavior.
 } SpiTpmType;
 
+typedef int (*tpm_irq_status_t)(void);
+
 typedef struct
 {
 	TpmOps ops;
-	GpioOps *tpm_latched_irq;
+	tpm_irq_status_t irq_status;
 	SpiOps *bus;
 	CleanupFunc cleanup;
 	SpiTpmType chip_type;
 } SpiTpm;
 
-SpiTpm *new_tpm_spi(SpiOps *bus, GpioOps *tpm_latched_irq);
+SpiTpm *new_tpm_spi(SpiOps *bus, tpm_irq_status_t irq_status);
 
 #endif // __SRC_DRIVERS_TPM_TPM_SPI_H

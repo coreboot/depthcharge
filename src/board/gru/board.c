@@ -98,15 +98,23 @@ static GpioOps *power_btn_gpio(void)
 	return ops;
 }
 
+static int cr50_irq_status(void)
+{
+	static GpioOps *tpm_int;
+
+	if (!tpm_int)
+		tpm_int = sysinfo_lookup_gpio("TPM interrupt", 1,
+					new_rk_gpio_latched_from_coreboot);
+
+	return gpio_get(tpm_int);
+}
+
 static int board_setup(void)
 {
 	RkI2c *i2c0 = NULL;
 	if (IS_ENABLED(CONFIG_TPM2_MODE)) {
 		RkSpi *spi0 = new_rockchip_spi(0xff1c0000);
-		GpioOps *tpm_int = sysinfo_lookup_gpio("TPM interrupt", 1,
-					new_rk_gpio_latched_from_coreboot);
-
-		tpm_set_ops(&new_tpm_spi(&spi0->ops, tpm_int)->ops);
+		tpm_set_ops(&new_tpm_spi(&spi0->ops, cr50_irq_status)->ops);
 	} else {
 		i2c0 = new_rockchip_i2c((void *)0xff3c0000);
 		tpm_set_ops(&new_slb9635_i2c(&i2c0->ops, 0x20)->base.ops);
