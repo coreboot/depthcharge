@@ -23,8 +23,10 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "config.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
+#include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
@@ -37,6 +39,7 @@
 #include "drivers/sound/route.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
+#include "drivers/tpm/spi.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 
@@ -50,9 +53,36 @@
 #define EMMC_CLOCK_MAX		200000000
 #define SD_CLOCK_MAX		52000000
 
+static int cr50_irq_status(void)
+{
+	return skylake_get_gpe(GPE0_DW2_00);
+}
+
+static void poppy_setup_tpm(void)
+{
+	if (!IS_ENABLED(CONFIG_DRIVER_TPM_SPI))
+		return;
+
+	/* SPI TPM */
+	const IntelGspiSetupParams gspi0_params = {
+		.dev = PCI_DEV(0, 0x1e, 2),
+		.cs_polarity = SPI_POLARITY_LOW,
+		.clk_phase = SPI_CLOCK_PHASE_FIRST,
+		.clk_polarity = SPI_POLARITY_LOW,
+		.ref_clk_mhz = 120,
+		.gspi_clk_mhz = 1,
+	};
+
+	tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0_params),
+				 cr50_irq_status)->ops);
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_skylake_gpio_input_from_coreboot);
+
+	/* TPM */
+	poppy_setup_tpm();
 
 	/* Chrome EC (eSPI) */
 	CrosEcLpcBus *cros_ec_lpc_bus =
