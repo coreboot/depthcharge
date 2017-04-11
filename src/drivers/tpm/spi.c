@@ -15,6 +15,7 @@
  * Specification Revision 00.43".
  */
 
+#include <assert.h>
 #include <libpayload.h>
 
 #include "spi.h"
@@ -372,6 +373,51 @@ static uint32_t get_burst_count(void)
 	return (status & TpmStsBurstCountMask) >> TpmStsBurstCountShift;
 }
 
+static uint8_t tpm2_read_access_reg(void)
+{
+	uint8_t access;
+	tpm2_read_reg(TPM_ACCESS_REG, &access, sizeof(access));
+	/* We do not care about access establishment bit state. Ignore it. */
+	return access & ~TpmAccessEstablishment;
+}
+
+static void tpm2_write_access_reg(uint8_t cmd)
+{
+	/* Writes to access register can set only 1 bit at a time. */
+	assert (!(cmd & (cmd - 1)));
+	tpm2_write_reg(TPM_ACCESS_REG, &cmd, sizeof(cmd));
+}
+
+static int tpm2_claim_locality(void)
+{
+	uint8_t access;
+
+	access = tpm2_read_access_reg();
+	/*
+	 * If active locality is set (maybe reset line is not connected?),
+	 * release the locality and try again.
+	 */
+	if (access & TpmAccessActiveLocality) {
+		tpm2_write_access_reg(TpmAccessActiveLocality);
+		access = tpm2_read_access_reg();
+	}
+
+	if (access != TpmAccessValid) {
+		printf("Invalid reset status: %#x\n", access);
+		return 0;
+	}
+
+	tpm2_write_access_reg(TpmAccessRequestUse);
+	access = tpm2_read_access_reg();
+	if (access != (TpmAccessValid | TpmAccessActiveLocality)) {
+		printf("Failed to claim locality 0, status: %#x\n", access);
+		return 0;
+	}
+
+	return 1;
+
+}
+
 static int tpm2_init(SpiOps *spi_ops)
 {
 	uint32_t did_vid, status;
@@ -380,34 +426,9 @@ static int tpm2_init(SpiOps *spi_ops)
 	if (!tpm2_read_reg(TPM_DID_VID_REG, &did_vid, sizeof(did_vid)))
 		return -1;
 
-	/* Try claiming locality zero. */
-	tpm2_read_reg(TPM_ACCESS_REG, &cmd, sizeof(cmd));
-	if ((cmd & (TpmAccessActiveLocality & TpmAccessValid)) ==
-	    (TpmAccessActiveLocality & TpmAccessValid)) {
-		/*
-		 * Locality active - maybe reset line is not connected?
-		 * Release the locality and try again
-		 */
-		cmd = TpmAccessActiveLocality;
-		tpm2_write_reg(TPM_ACCESS_REG, &cmd, sizeof(cmd));
-		tpm2_read_reg(TPM_ACCESS_REG, &cmd, sizeof(cmd));
-	}
-
-	/* TpmAccessEstablishment bit can be either set or not, ignore it. */
-	if ((cmd & ~TpmAccessEstablishment) != TpmAccessValid) {
-		printf("invalid reset status: %#x\n", cmd);
+	/* Claim locality 0. */
+	if (!tpm2_claim_locality())
 		return -1;
-	}
-
-	cmd = TpmAccessRequestUse;
-	tpm2_write_reg(TPM_ACCESS_REG, &cmd, sizeof(cmd));
-	tpm2_read_reg(TPM_ACCESS_REG, &cmd, sizeof(cmd));
-	if ((cmd &  ~TpmAccessEstablishment) !=
-	    (TpmAccessValid | TpmAccessActiveLocality)) {
-		printf("failed to claim locality 0, status: %#x\n",
-		       cmd);
-		return -1;
-	}
 
 	read_tpm_sts(&status);
 	if ((status & TpmStsFamilyMask) != TpmStsFamilyTpm2) {
