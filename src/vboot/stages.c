@@ -84,15 +84,21 @@ int vboot_select_and_load_kernel(void)
 		.kernel_buffer = &_kernel_start,
 		.kernel_buffer_size = &_kernel_end - &_kernel_start,
 	};
-#if CONFIG_DETACHABLE_UI
-	kparams.inflags = VB_SALK_INFLAGS_ENABLE_DETACHABLE_UI;
 
-	/* disable SMIs for x86 systems */
-	cros_ec_config_powerbtn(0);
-#endif
+	if (IS_ENABLED(CONFIG_DETACHABLE_UI)) {
+		kparams.inflags = VB_SALK_INFLAGS_ENABLE_DETACHABLE_UI;
+		/* On x86 systems, disable power button pulse from EC. */
+		cros_ec_config_powerbtn(0);
+	}
 
 	printf("Calling VbSelectAndLoadKernel().\n");
 	VbError_t res = VbSelectAndLoadKernel(&cparams, &kparams);
+
+	if (IS_ENABLED(CONFIG_DETACHABLE_UI)) {
+		/* On x86 systems, enable power button pulse from EC. */
+		cros_ec_config_powerbtn(EC_POWER_BUTTON_ENABLE_PULSE);
+	}
+
 	if (res == VBERROR_EC_REBOOT_TO_RO_REQUIRED) {
 		reboot_all_ecs();
 		if (power_off())
@@ -112,10 +118,6 @@ int vboot_select_and_load_kernel(void)
 		if (cold_reboot())
 			return 1;
 	}
-#if CONFIG_DETACHABLE_UI
-	/* enable SMIs again */
-	cros_ec_config_powerbtn(EC_POWER_BUTTON_ENABLE_SMI_PULSE);
-#endif
 
 	vboot_boot_kernel(&kparams);
 
