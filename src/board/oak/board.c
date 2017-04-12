@@ -44,27 +44,30 @@
 #include "drivers/video/mt8173_ddp.h"
 
 
+static GpioOps *oak_get_panel_lcd_power_en(void)
+{
+	if (IS_ENABLED(CONFIG_OAK_MIPI_DISPLAY))
+		return new_mtk_gpio_output(PAD_DAIPCMOUT);
+
+	switch (lib_sysinfo.board_id + CONFIG_BOARD_ID_ADJUSTMENT) {
+	case 1:
+	case 2:
+		return NULL;
+	case 3:
+		return new_mtk_gpio_output(PAD_UCTS2);
+	case 4:
+		return new_mtk_gpio_output(PAD_SRCLKENAI);
+	default:
+		return new_mtk_gpio_output(PAD_UTXD2);
+	}
+}
 
 int oak_backlight_update(DisplayOps *me, uint8_t enable)
 {
 	static GpioOps *panel_lcd_power_en, *disp_pwm0, *panel_power_en;
 
 	if (!panel_power_en) {
-		switch (lib_sysinfo.board_id + CONFIG_BOARD_ID_ADJUSTMENT) {
-		case 1:
-		case 2:
-			panel_lcd_power_en = NULL;
-			break;
-		case 3:
-			panel_lcd_power_en = new_mtk_gpio_output(PAD_UCTS2);
-			break;
-		case 4:
-			panel_lcd_power_en = new_mtk_gpio_output(PAD_SRCLKENAI);
-			break;
-		default:
-			panel_lcd_power_en = new_mtk_gpio_output(PAD_UTXD2);
-		}
-
+		panel_lcd_power_en = oak_get_panel_lcd_power_en();
 		disp_pwm0 = new_mtk_gpio_output(PAD_DISP_PWM0);
 		panel_power_en = new_mtk_gpio_output(PAD_PCM_TX);
 	}
@@ -162,14 +165,8 @@ static int board_setup(void)
 			  &removable_block_dev_controllers);
 
 	/* Set display ops */
-	if (lib_sysinfo.framebuffer) {
-		if (IS_ENABLED(CONFIG_OAK_MIPI_DISPLAY)) {
-			/* setup display ops for rowan */
-			display_set_ops(new_mt8173_display(NULL));
-		} else
-			display_set_ops(new_mt8173_display(
-						oak_backlight_update));
-	}
+	if (lib_sysinfo.framebuffer)
+		display_set_ops(new_mt8173_display(oak_backlight_update));
 
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11270000);
 
