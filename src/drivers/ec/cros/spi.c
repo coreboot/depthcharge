@@ -35,7 +35,7 @@
 // How long we have to leave CS deasserted between transactions.
 static const uint64_t CsCooldownUs = 200;
 // How long we'll wait for the EC to accept a packet and start handling it.
-static const uint64_t AcceptTimeoutUs = 5 * 1000;
+static const uint64_t AcceptTimeoutUs = 1000 * 1000;
 // How long we'll wait in total for a valid packet response from the EC.
 static const uint64_t ProcessTimeoutUs = 1000 * 1000;
 
