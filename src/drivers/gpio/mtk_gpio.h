@@ -209,8 +209,51 @@ typedef struct MtGpio {
 	u32 pin_num;
 } MtGpio;
 
+typedef struct {
+	uint32_t sta[16];		/* 0xB000 ~ 0xB03F: 64 bytes */
+	uint32_t ack[16];		/* 0xB040 ~ 0xB07F: 64 bytes */
+	uint32_t mask[16];		/* 0xB080 ~ 0xB0BF: 64 bytes */
+	uint32_t mask_set[16];		/* 0xB0C0 ~ 0xB0FF: 64 bytes */
+	uint32_t mask_clr[16];		/* 0xB100 ~ 0xB13F: 64 bytes */
+	uint32_t sens[16];		/* 0xB140 ~ 0xB17F: 64 bytes */
+	uint32_t sens_set[16];		/* 0xB180 ~ 0xB1BF: 64 bytes */
+	uint32_t sens_clr[16];		/* 0xB1C0 ~ 0xB1FF: 64 bytes */
+	uint32_t soft[16];		/* 0xB200 ~ 0xB23F: 64 bytes */
+	uint32_t soft_set[16];		/* 0xB240 ~ 0xB27F: 64 bytes */
+	uint32_t soft_clr[16];		/* 0xB280 ~ 0xB2BF: 64 bytes */
+	uint32_t rsv00[16];		/* 0xB2C0 ~ 0xB2FF: 64 bytes */
+	uint32_t pol[16];		/* 0xB300 ~ 0xB33F: 64 bytes */
+	uint32_t pol_set[16];		/* 0xB340 ~ 0xB35F: 64 bytes */
+	uint32_t pol_clr[16];		/* 0xB380 ~ 0xB39F: 64 bytes */
+	uint32_t rsv01[16];		/* 0xB3C0 ~ 0xB3FF: 64 bytes */
+	uint32_t d0en[8];		/* 0xB400 ~ 0xB41F: 32 bytes */
+	uint32_t d1en[8];		/* 0xB420 ~ 0xB43F: 32 bytes */
+	uint32_t resv02[48];		/* 0xB440 ~ 0xB4FF: 192 bytes */
+	uint32_t dbnc_3_0[8];		/* 0xB500 ~ 0xB51F: 32 bytes */
+	uint32_t resv03[56];		/* 0xB520 ~ 0xB5FF: 224 bytes */
+	uint32_t dbnc_set[8];		/* 0xB600 ~ 0xB61F: 32 bytes */
+	uint32_t resv04[56];		/* 0xB620 ~ 0xB6FF: 224 bytes */
+	uint32_t dbnc_clr[8];		/* 0xB700 ~ 0xB71F: 32 bytes */
+	uint32_t resv05[56];		/* 0xB720 ~ 0xB7FF: 224 bytes */
+	uint32_t deint_con;		/* 0xB800 ~ 0xB803: 4 bytes */
+	uint32_t resv06[15];		/* 0xB804 ~ 0xB83F: 60 bytes */
+	uint32_t deint_sel_3_0;		/* 0xB840 ~ 0xB843: 4 bytes */
+	uint32_t deint_sel_7_4;		/* 0xB844 ~ 0xB847: 4 bytes */
+	uint32_t resv07[14];		/* 0xB848 ~ 0xB87F: 56 bytes */
+	uint32_t deint_sel_3_0_set;	/* 0xB880 ~ 0xB883: 4 bytes */
+	uint32_t deint_sel_7_4_set;	/* 0xB884 ~ 0xB887: 4 bytes */
+	uint32_t resv08[14];		/* 0xB888 ~ 0xB8BF: 56 bytes */
+	uint32_t deint_sel_3_0_clr;	/* 0xB8C0 ~ 0xB8C3: 4 bytes */
+	uint32_t deint_sel_7_4_clr;	/* 0xB8C4 ~ 0xB8C7: 4 bytes */
+	uint32_t resv09[14];		/* 0xB8C8 ~ 0xB8FF: 56 bytes */
+	uint32_t eevt;			/* 0xB900 ~ 0xB903: 4 bytes */
+	uint32_t resv10[63];		/* 0xB8C8 ~ 0xB8FF: 252 bytes */
+	uint32_t raw_sta[16];		/* 0xBA00 ~ 0xBA3F: 64 bytes */
+} EintRegs;
+
 GpioOps *new_mtk_gpio_input(u32 pin);
 GpioOps *new_mtk_gpio_output(u32 pin);
+GpioOps *new_mtk_eint(u32 pin);
 
 #endif /* __DRIVERS_MT_GPIO_H__ */
 

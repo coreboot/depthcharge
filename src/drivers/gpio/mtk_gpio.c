@@ -20,14 +20,17 @@
 #include "config.h"
 
 enum {
-        MAX_GPIO_REG_BITS = 16,
+	MAX_GPIO_REG_BITS = 16,
+	MAX_EINT_REG_BITS = 32,
 };
 
 enum {
 	GPIO_BASE = 0x10005000,
+	EINT_BASE = 0x1000B000,
 };
 
 static GpioRegs *gpio_reg = (GpioRegs *)(GPIO_BASE);
+static EintRegs *eint_reg = (EintRegs *)(EINT_BASE);
 
 int mt_set_gpio_out(GpioOps *me, u32 output)
 {
@@ -66,6 +69,26 @@ int mt_get_gpio_in(GpioOps *me)
 	return (((val & (1L << bit)) != 0) ? 1 : 0);
 }
 
+int mt_eint_irq_status(GpioOps *me)
+{
+	MtGpio *gpio = container_of(me, MtGpio, ops);
+	u32 pin = gpio->pin_num;
+	u32 pos, bit, status;
+	EintRegs *reg = eint_reg;
+
+	assert(pin < GPIO_MAX);
+
+	pos = pin / MAX_EINT_REG_BITS;
+	bit = pin % MAX_EINT_REG_BITS;
+
+	status = (((readl(&reg->sta[pos]) & (1L << bit)) != 0) ? 1 : 0);
+
+	if (status)
+		writel(1L << bit, &reg->ack[pos]);
+
+	return status;
+}
+
 static MtGpio *new_mtk_gpio(u32 pin)
 {
 	die_if(pin > GPIO_MAX, "Bad GPIO pin number %d.\n", pin);
@@ -89,5 +112,13 @@ GpioOps *new_mtk_gpio_output(u32 pin)
 	MtGpio *gpio = new_mtk_gpio(pin);
 
 	gpio->ops.set = &mt_set_gpio_out;
+	return &gpio->ops;
+}
+
+GpioOps *new_mtk_eint(u32 pin)
+{
+	MtGpio *gpio = new_mtk_gpio(pin);
+
+	gpio->ops.get = &mt_eint_irq_status;
 	return &gpio->ops;
 }
