@@ -36,6 +36,7 @@
 #include "drivers/sound/rt5677.h"
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/flash/mtk_nor_flash.h"
+#include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
@@ -118,6 +119,17 @@ static int sound_setup(void)
 	return 0;
 }
 
+static int cr50_irq_status(void)
+{
+	static GpioOps *cr50_irq;
+
+	if (!cr50_irq)
+		cr50_irq = sysinfo_lookup_gpio("Cr50 interrupt", 1,
+					       new_mtk_eint);
+
+	return cr50_irq->get(cr50_irq);
+}
+
 static int board_setup(void)
 {
 	MtkMmcTuneReg emmc_tune_reg = {.msdc_iocon = 0, .pad_tune = 0x10 << 16};
@@ -126,7 +138,12 @@ static int board_setup(void)
 	sysinfo_install_flags(new_mtk_gpio_input);
 
 	MTKI2c *i2c2 = new_mtk_i2c(0x11009000, 0x11000200);
-	tpm_set_ops(&new_slb9635_i2c(&i2c2->ops, 0x20)->base.ops);
+
+	if (CONFIG_DRIVER_TPM_CR50_I2C)
+		tpm_set_ops(&new_cr50_i2c(&i2c2->ops, 0x50,
+					  &cr50_irq_status)->base.ops);
+	else
+		tpm_set_ops(&new_slb9635_i2c(&i2c2->ops, 0x20)->base.ops);
 
 	MtkSpi *spibus = new_mtk_spi(0x1100A000);
 	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spibus->ops);
