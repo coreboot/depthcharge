@@ -22,6 +22,7 @@
 typedef struct {
 	DisplayOps ops;
 	GpioOps *backlight_gpio;
+	int uses_edp;
 } RkDisplay;
 
 #define VOP_STANDBY_EN		1
@@ -78,9 +79,11 @@ static int rk3399_backlight_update(DisplayOps *me, uint8_t enable)
 static int rockchip_display_init(DisplayOps *me)
 {
 	uintptr_t phys_addr = lib_sysinfo.framebuffer->physical_address;
+	RkDisplay *display = container_of(me, RkDisplay, ops);
 
-	if (edp_enable())
-		return -1;
+	if (display->uses_edp)
+		if (edp_enable())
+			return -1;
 
 	writel(phys_addr, vop0_win0_yrgb_mst);
 
@@ -101,11 +104,12 @@ static int rockchip_display_stop(DisplayOps *me)
 	return 0;
 }
 
-DisplayOps *new_rk3399_display(GpioOps *backlight)
+DisplayOps *new_rk3399_display(GpioOps *backlight, int uses_edp)
 {
 	RkDisplay *display = xzalloc(sizeof(*display));
 	display->ops.init = rockchip_display_init;
 	display->ops.stop = rockchip_display_stop;
+	display->uses_edp = uses_edp;
 
 	if (backlight) {
 		display->backlight_gpio = backlight;

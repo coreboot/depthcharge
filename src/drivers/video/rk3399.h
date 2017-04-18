@@ -18,6 +18,6 @@
 #include "drivers/gpio/gpio.h"
 #include "drivers/video/display.h"
 
-DisplayOps *new_rk3399_display(GpioOps *backlight);
+DisplayOps *new_rk3399_display(GpioOps *backlight, int uses_edp);
 
 #endif

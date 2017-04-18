@@ -19,3 +19,9 @@ config GRU_USB2_BOOT_REQUIRED
 config GRU_SPEAKER_VOLUME
 	int "Set speaker volume as other value if the board needs"
 	default 16000
+
+config GRU_MIPI_DISPLAY
+        bool "Enable MIPI display for a Gru derivative"
+        default false
+	help
+	  Set this to true if this board have a MIPI panel.

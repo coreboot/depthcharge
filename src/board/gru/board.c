@@ -212,7 +212,8 @@ static int board_setup(void)
 			backlight_gpio =
 				new_arctic_sand_backlight(&i2c0->ops, 0x30);
 		}
-		display_set_ops(new_rk3399_display(backlight_gpio));
+		display_set_ops(new_rk3399_display(backlight_gpio,
+				!IS_ENABLED(CONFIG_GRU_MIPI_DISPLAY)));
 	}
 	return 0;
 }
