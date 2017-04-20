@@ -124,7 +124,7 @@ static int cr50_irq_status(void)
 	static GpioOps *cr50_irq;
 
 	if (!cr50_irq)
-		cr50_irq = sysinfo_lookup_gpio("Cr50 interrupt", 1,
+		cr50_irq = sysinfo_lookup_gpio("TPM interrupt", 1,
 					       new_mtk_eint);
 
 	return cr50_irq->get(cr50_irq);
