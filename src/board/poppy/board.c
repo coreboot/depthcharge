@@ -39,7 +39,9 @@
 #include "drivers/sound/route.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
+#include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/spi.h"
+#include "drivers/tpm/tpm.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 
@@ -60,21 +62,24 @@ static int cr50_irq_status(void)
 
 static void poppy_setup_tpm(void)
 {
-	if (!IS_ENABLED(CONFIG_DRIVER_TPM_SPI))
-		return;
-
-	/* SPI TPM */
-	const IntelGspiSetupParams gspi0_params = {
-		.dev = PCI_DEV(0, 0x1e, 2),
-		.cs_polarity = SPI_POLARITY_LOW,
-		.clk_phase = SPI_CLOCK_PHASE_FIRST,
-		.clk_polarity = SPI_POLARITY_LOW,
-		.ref_clk_mhz = 120,
-		.gspi_clk_mhz = 1,
-	};
-
-	tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0_params),
-				 cr50_irq_status)->ops);
+	if (IS_ENABLED(CONFIG_DRIVER_TPM_SPI)) {
+		/* SPI TPM */
+		const IntelGspiSetupParams gspi0_params = {
+			.dev = PCI_DEV(0, 0x1e, 2),
+			.cs_polarity = SPI_POLARITY_LOW,
+			.clk_phase = SPI_CLOCK_PHASE_FIRST,
+			.clk_polarity = SPI_POLARITY_LOW,
+			.ref_clk_mhz = 120,
+			.gspi_clk_mhz = 1,
+		};
+		tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0_params),
+					 cr50_irq_status)->ops);
+	} else if (IS_ENABLED(CONFIG_DRIVER_TPM_CR50_I2C)) {
+		DesignwareI2c *i2c1 = new_pci_designware_i2c(
+			PCI_DEV(0, 0x15, 1), 400000, SKYLAKE_DW_I2C_MHZ);
+		tpm_set_ops(&new_cr50_i2c(&i2c1->ops, 0x50,
+					  &cr50_irq_status)->base.ops);
+	}
 }
 
 static int board_setup(void)
