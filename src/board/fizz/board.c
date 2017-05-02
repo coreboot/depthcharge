@@ -31,6 +31,7 @@
 #include "drivers/power/pch.h"
 #include "drivers/soc/skylake.h"
 #include "drivers/storage/ahci.h"
+#include "drivers/storage/nvme.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
 
@@ -59,7 +60,11 @@ static int board_setup(void)
 	/* PCH Power */
 	power_set_ops(&skylake_power_ops);
 
-	/* SSD */
+	/* PCIe NVME */
+	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(1, 0, 0));
+	list_insert_after(&nvme->ctrlr.list_node, &fixed_block_dev_controllers);
+
+	/* SATA SSD */
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 0x17, 0));
 	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
 
