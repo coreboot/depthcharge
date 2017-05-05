@@ -18,7 +18,10 @@
 #include <assert.h>
 #include <libpayload.h>
 #include <stdint.h>
+#include <stdlib.h>
 
+#include "boot/multiboot.h"
+#include "config.h"
 #include "vboot/boot.h"
 #include "vboot/boot_policy.h"
 
@@ -60,6 +63,23 @@ static int fill_info_cros(struct boot_info *bi,
 
 	return 0;
 }
+
+/*********************** Multiboot Image Parsing *************************/
+#if IS_ENABLED(CONFIG_KERNEL_MULTIBOOT)
+static int fill_info_multiboot(struct boot_info *bi,
+			       VbSelectAndLoadKernelParams *kparams)
+{
+	bi->kparams = kparams;
+
+	if (multiboot_fill_boot_info(bi) < 0)
+		return -1;
+
+	if (boot_policy.cmd_line_loc != CMD_LINE_SIGNER)
+		bi->cmd_line = NULL;
+
+	return 0;
+}
+#endif
 
 /************************* Bootimg Parsing *******************************/
 #define BOOTIMG_MAGIC			"ANDROID!"
@@ -169,6 +189,9 @@ static const struct {
 	[KERNEL_IMAGE_CROS] = {CMD_LINE_SIGNER | CMD_LINE_DTB, fill_info_cros},
 	[KERNEL_IMAGE_BOOTIMG] = {CMD_LINE_SIGNER | CMD_LINE_BOOTIMG_HDR |
 				  CMD_LINE_DTB, fill_info_bootimg},
+#if IS_ENABLED(CONFIG_KERNEL_MULTIBOOT)
+	[KERNEL_IMAGE_MULTIBOOT] = {CMD_LINE_SIGNER, fill_info_multiboot},
+#endif
 };
 
 /* Returns 0 if img type allows given command line location, else -1 */

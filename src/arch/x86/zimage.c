@@ -19,10 +19,16 @@
 
 #include "arch/x86/boot.h"
 #include "vboot/boot.h"
+#include "vboot/boot_policy.h"
 #include "vboot/util/acpi.h"
 
 int boot(struct boot_info *bi)
 {
+	if (GET_KERNEL_IMG_TYPE(bi->kparams->flags) != KERNEL_IMAGE_CROS) {
+		printf("zimage: Not a Chrome OS kernel image\n");
+		return -1;
+	}
+
 	// If nobody's prepared the boot_params structure for us already,
 	// do that now.
 	if (!bi->params) {

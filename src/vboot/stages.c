@@ -23,6 +23,7 @@
 
 #include "base/timestamp.h"
 #include "boot/commandline.h"
+#include "boot/multiboot.h"
 #include "config.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/vboot_ec.h"
@@ -168,4 +169,6 @@ fail:
 	 */
 	if (CONFIG_KERNEL_LEGACY)
 		legacy_boot(bi.kernel, cmd_line_buf);
+	if (CONFIG_KERNEL_MULTIBOOT)
+		multiboot_boot(&bi);
 }

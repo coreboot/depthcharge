@@ -25,7 +25,7 @@
 /*
  * Flags field in vboot kernel preamble is defined as:
  * [31:2] - Reserved (for future use)
- * [1:0]  - Image type (0x0 = CrOS, 0x1 = Bootimg)
+ * [1:0]  - Image type (0x0 = CrOS, 0x1 = Bootimg, 0x2 = Multiboot)
  */
 #define KERNEL_IMG_TYPE_MASK	(0x3)
 #define KERNEL_IMG_TYPE_SHIFT	(0x0)
@@ -36,6 +36,7 @@
 typedef enum {
 	KERNEL_IMAGE_CROS = 0 << KERNEL_IMG_TYPE_SHIFT,
 	KERNEL_IMAGE_BOOTIMG = 1 << KERNEL_IMG_TYPE_SHIFT,
+	KERNEL_IMAGE_MULTIBOOT = 2 << KERNEL_IMG_TYPE_SHIFT,
 } kernel_img_type_t;
 
 typedef enum {

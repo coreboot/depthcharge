@@ -31,6 +31,10 @@ config KERNEL_LEGACY
 	bool "Allow alternative(legacy) kernels"
 	default n
 
+config KERNEL_MULTIBOOT
+	bool "Allow alternative(multiboot) kernels"
+	default n
+
 config MACHID
        hex "Machine ID to pass to the kernel"
        depends on KERNEL_LEGACY
