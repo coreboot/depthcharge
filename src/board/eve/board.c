@@ -23,6 +23,7 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "config.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/lpc.h"
@@ -39,6 +40,7 @@
 #include "drivers/storage/sdhci.h"
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/tpm.h"
+#include "vboot/boot_policy.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 
@@ -59,7 +61,14 @@ static int cr50_irq_status(void)
 
 static int board_setup(void)
 {
+	static const struct boot_policy policy[] = {
+		{KERNEL_IMAGE_MULTIBOOT, CMD_LINE_SIGNER},
+		{KERNEL_IMAGE_CROS, CMD_LINE_SIGNER},
+	};
 	sysinfo_install_flags(new_skylake_gpio_input_from_coreboot);
+
+	if (IS_ENABLED(CONFIG_KERNEL_MULTIBOOT))
+		set_boot_policy(policy, ARRAY_SIZE(policy));
 
 	/* Chrome EC (eSPI) */
 	CrosEcLpcBus *cros_ec_lpc_bus =
