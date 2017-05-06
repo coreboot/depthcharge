@@ -26,6 +26,7 @@
 #include "base/timestamp.h"
 #include "config.h"
 #include "drivers/ec/cros/ec.h"
+#include "drivers/ec/vboot_aux_fw.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/cbfs.h"
 #include "image/fmap.h"
@@ -197,4 +198,14 @@ VbError_t VbExEcVbootDone(int in_recovery)
 VbError_t VbExEcBatteryCutOff(void) {
 	 return (cros_ec_battery_cutoff(0) == 0 ? VBERROR_SUCCESS :
 		 VBERROR_UNKNOWN);
+}
+
+VbError_t VbExCheckAuxFw(VbAuxFwUpdateSeverity_t *severity)
+{
+	return check_vboot_aux_fw(severity);
+}
+
+VbError_t VbExUpdateAuxFw(void)
+{
+	return update_vboot_aux_fw();
 }
