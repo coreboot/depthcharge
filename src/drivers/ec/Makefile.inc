@@ -15,3 +15,4 @@ subdirs-$(CONFIG_DRIVER_EC_CROS) += cros
 subdirs-$(CONFIG_DRIVER_EC_ANX7688) += anx7688
 
 depthcharge-y += vboot_ec.c
+depthcharge-y += vboot_aux_fw.c
