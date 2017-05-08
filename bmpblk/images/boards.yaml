@@ -226,6 +226,7 @@ veyron_mickey:
 kevin,kevin-tpm2:
   # 2400x1600, boots recovery image on any SD card or USB ports.
   screen:   [2400, 1600]
+  text_colors:  4
 
 eve:
   # 2400x1600, boots recovery image on USB ports.
@@ -241,8 +242,10 @@ poppy:
   # 2400x1600, boots recovery image on any SD card or USB ports.
   screen:   [2400, 1600]
   hi_res:   [en]
+  text_colors:  4
 
 soraka:
   # 2400x1600, boots recovery image on any SD card or USB ports.
   screen:   [2400, 1600]
   hi_res:   [en]
+  text_colors:  4
