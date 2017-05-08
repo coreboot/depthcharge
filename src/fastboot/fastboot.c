@@ -984,6 +984,7 @@ const char *backend_error_string[] = {
 	[BE_BDEV_NOT_FOUND] = "block device not found",
 	[BE_IMAGE_SIZE_MULTIPLE_ERR] = "image not multiple of block size",
 	[BE_IMAGE_OVERFLOW_ERR] = "image greater than partition size",
+	[BE_IMAGE_INSUFFICIENT_DATA] = "image does not have enough data",
 	[BE_WRITE_ERR] = "image write failed",
 	[BE_SPARSE_HDR_ERR] = "sparse header error",
 	[BE_CHUNK_HDR_ERR] = "sparse chunk header error",

@@ -100,13 +100,61 @@ int is_sparse_image(void *image_addr)
 		(hdr->major_version == 0x1));
 }
 
+struct img_buff {
+	void *data;
+	uint64_t size;
+};
+
+/*
+ * Initialize img_buff structure with passed in data and size. Verifies that
+ * buff and data is not NULL.
+ * Returns 0 on success and -1 on error.
+ */
+static int img_buff_init(struct img_buff *buff, void *data, uint64_t size)
+{
+	if ((buff == NULL) || (data == NULL))
+		return -1;
+
+	buff->data = data;
+	buff->size = size;
+
+	return 0;
+}
+
+/*
+ * Obtain current pointer to data and advance data pointer by size. If there is
+ * not enough data to advance, then it returns NULL.
+ */
+static void *img_buff_advance(struct img_buff *buff, uint64_t size)
+{
+	void *data;
+
+	if (buff->size < size)
+		return NULL;
+
+	data = buff->data;
+	buff->data = (uint8_t *)(buff->data) + size;
+	buff->size -= size;
+
+	return data;
+}
+
 /* Write sparse image to partition */
 static backend_ret_t write_sparse_image(struct image_part_details *img,
 					void *image_addr, uint64_t image_size)
 {
-	struct sparse_image_hdr *img_hdr = image_addr;
+	struct img_buff buff;
+	struct sparse_image_hdr *img_hdr;
 	struct sparse_chunk_hdr *chunk_hdr;
 	uint64_t bdev_block_size = img->bdev_entry->bdev->block_size;
+
+	if (img_buff_init(&buff, image_addr, image_size))
+		return BE_IMAGE_INSUFFICIENT_DATA;
+
+	img_hdr = img_buff_advance(&buff, sizeof(*img_hdr));
+
+	if (img_hdr == NULL)
+		return BE_IMAGE_INSUFFICIENT_DATA;
 
 	BE_LOG("Magic          : %x\n", img_hdr->magic);
 	BE_LOG("Major Version  : %x\n", img_hdr->major_version);
@@ -134,28 +182,20 @@ static backend_ret_t write_sparse_image(struct image_part_details *img,
 	uint64_t part_addr = img->part_addr;
 	uint64_t part_size_lba = img->part_size_lba;
 	BlockDevOps *ops = &img->bdev_entry->bdev->ops;
-	/* data_ptr points to first byte after image header */
-	uint8_t *data_ptr = image_addr;
-	data_ptr += sizeof(*img_hdr);
 
 	/* Perform the following operation on each chunk */
 	for (i = 0; i < img_hdr->total_chunks; i++) {
 		/* Get chunk header */
-		chunk_hdr = (struct sparse_chunk_hdr *)data_ptr;
+		chunk_hdr = img_buff_advance(&buff, sizeof(*chunk_hdr));
+
+		if (chunk_hdr == NULL)
+			return BE_IMAGE_INSUFFICIENT_DATA;
 
 		BE_LOG("Chunk %d\n", i);
 		BE_LOG("Type         : %x\n", chunk_hdr->type);
 		BE_LOG("Size in blks : %x\n", chunk_hdr->size_in_blks);
 		BE_LOG("Total size   : %x\n", chunk_hdr->total_size_bytes);
 		BE_LOG("Part addr    : %llx\n", part_addr);
-
-		/*
-		 * Make data_ptr point to chunk data(if any):
-		 * Raw chunk data = chunk_size_in_blks * img_blk_size
-		 * Fill chunk data = 4 bytes of fill data
-		 * CRC32 chunk data = 4 bytes of CRC32
-		 */
-		data_ptr += sizeof(*chunk_hdr);
 
 		/* Size in bytes and lba of the area occupied by chunk range */
 		uint64_t chunk_size_bytes, chunk_size_lba;
@@ -174,6 +214,8 @@ static backend_ret_t write_sparse_image(struct image_part_details *img,
 		switch (chunk_hdr->type) {
 		case CHUNK_TYPE_RAW: {
 
+			uint8_t *data_ptr;
+
 			/*
 			 * For Raw chunk type:
 			 * chunk_size_bytes + chunk_hdr_size = chunk_total_size
@@ -187,19 +229,20 @@ static backend_ret_t write_sparse_image(struct image_part_details *img,
 				return BE_CHUNK_HDR_ERR;
 			}
 
+			data_ptr = img_buff_advance(&buff, chunk_size_bytes);
+			if (data_ptr == NULL)
+				return BE_IMAGE_INSUFFICIENT_DATA;
+
 			if (ops->write(ops, part_addr, chunk_size_lba, data_ptr)
 			    != chunk_size_lba)
 				return BE_WRITE_ERR;
 
-			/*
-			 * Data present in chunk sparse image is
-			 * chunk_size_bytes
-			 */
-			data_ptr += chunk_size_bytes;
-
 			break;
 		}
 		case CHUNK_TYPE_FILL: {
+
+			uint32_t *data_fill;
+
 			/*
 			 * For fill chunk type:
 			 * chunk_hdr_size + 4 bytes = chunk_total_size_bytes
@@ -213,14 +256,16 @@ static backend_ret_t write_sparse_image(struct image_part_details *img,
 				return BE_CHUNK_HDR_ERR;
 			}
 
+			data_fill = img_buff_advance(&buff,
+							sizeof(*data_fill));
+			if (!data_fill)
+				return BE_IMAGE_INSUFFICIENT_DATA;
+
 			/* Perform fill_write operation */
 			if (ops->fill_write(ops, part_addr, chunk_size_lba,
-					    *(uint32_t *)data_ptr)
+					    *data_fill)
 			    != chunk_size_lba)
 				return BE_WRITE_ERR;
-
-			/* Data present in chunk sparse image is 4 bytes */
-			data_ptr += sizeof(uint32_t);
 
 			break;
 		}
@@ -256,7 +301,9 @@ static backend_ret_t write_sparse_image(struct image_part_details *img,
 			/* TODO(furquan): Verify CRC32 header? */
 
 			/* Data present in chunk sparse image = 4 bytes */
-			data_ptr += sizeof(uint32_t);
+			if (img_buff_advance(&buff, sizeof(uint32_t)) == NULL)
+				return BE_IMAGE_INSUFFICIENT_DATA;
+			break;
 		}
 		default: {
 			/* Unknown chunk type */
