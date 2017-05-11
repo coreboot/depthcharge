@@ -23,9 +23,11 @@
 #include <sysinfo.h>
 
 #include "base/init_funcs.h"
+#include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/ec/ps8751/ps8751.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/soc/apollolake.h"
@@ -51,7 +53,11 @@
 #define  BFPREG_LIMIT_MASK      (0x7fff << BFPREG_LIMIT_SHIFT)
 
 #define AUD_VOLUME		4000
-#define SDMODE_PIN          GPIO_76
+#define SDMODE_PIN		GPIO_76
+
+#ifdef PD_SYNC
+#error "PD_SYNC configuration incompatible with ec_tunnel"
+#endif
 
 static void board_flash_init(void)
 {
@@ -97,6 +103,12 @@ static int board_setup(void)
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, 0, NULL);
 	register_vboot_ec(&cros_ec->vboot, 0);
+
+	/* programmables downstream from the EC */
+	CrosECTunnelI2c *cros_ec_i2c_tunnel_ps =
+		new_cros_ec_tunnel_i2c(cros_ec, /* i2c bus */ 1);
+	Ps8751 *ps8751 = new_ps8751(cros_ec_i2c_tunnel_ps, /* ec pd# */ 1);
+	register_vboot_aux_fw(&ps8751->fw_ops);
 
 	board_flash_init();
 
