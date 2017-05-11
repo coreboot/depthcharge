@@ -1,5 +1,5 @@
 ##
-## Copyright 2012 Google Inc.
+## Copyright 2017 Google Inc.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -11,9 +11,4 @@
 ## GNU General Public License for more details.
 ##
 
-subdirs-$(CONFIG_DRIVER_EC_CROS) += cros
-subdirs-$(CONFIG_DRIVER_EC_ANX7688) += anx7688
-subdirs-$(CONFIG_DRIVER_EC_PS8751) += ps8751
-
-depthcharge-y += vboot_ec.c
-depthcharge-y += vboot_aux_fw.c
+depthcharge-y += ps8751.c
