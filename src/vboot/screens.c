@@ -208,7 +208,7 @@ static struct dentry *find_file_in_archive(const struct directory *dir,
  */
 static VbError_t draw(struct directory *dir, const char *image_name,
 		      int32_t x, int32_t y, int32_t width, int32_t height,
-		      char pivot)
+		      uint32_t flags)
 {
 	struct dentry *file;
 
@@ -224,9 +224,8 @@ static VbError_t draw(struct directory *dir, const char *image_name,
 		.x = { .n = width, .d = VB_SCALE, },
 		.y = { .n = height, .d = VB_SCALE, },
 	};
-
 	return draw_bitmap((uint8_t *)dir + file->offset, file->size,
-			   &pos, pivot, &dim);
+			   &pos, &dim, flags);
 }
 
 static VbError_t draw_image(const char *image_name,
@@ -238,16 +237,17 @@ static VbError_t draw_image(const char *image_name,
 
 static VbError_t draw_image_locale(const char *image_name, uint32_t locale,
 				   int32_t x, int32_t y,
-				   int32_t width, int32_t height, char pivot)
+				   int32_t width, int32_t height,
+				   uint32_t flags)
 {
 	VbError_t rv;
 	RETURN_ON_ERROR(load_localized_graphics(locale));
-	rv = draw(locale_data.archive, image_name, x, y, width, height, pivot);
+	rv = draw(locale_data.archive, image_name, x, y, width, height, flags);
 	if (rv == CBGFX_ERROR_BOUNDARY && width == VB_SIZE_AUTO) {
 		printf("%s: '%s' overflowed. fit it to canvas width\n",
 		       __func__, image_name);
 		rv = draw(locale_data.archive, image_name,
-			  x, y, VB_SCALE, VB_SIZE_AUTO, pivot);
+			  x, y, VB_SCALE, VB_SIZE_AUTO, flags);
 	}
 	return rv;
 }
@@ -531,35 +531,22 @@ static VbError_t vboot_draw_blank(struct params *p)
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t draw_selected_locale(const char *image_name, uint32_t locale,
-		     int32_t x, int32_t y,
-		     int32_t width, int32_t height, char pivot,
-		     uint32_t selected)
-{
-	const uint32_t MAX_SIZE = 80;
-	char str[MAX_SIZE];
-	strncpy(str, image_name, MAX_SIZE);
-	if (selected) {
-		/* Use the selected image name */
-		strncat(str, "_sel", MAX_SIZE);
-	}
-	strncat(str, ".bmp", MAX_SIZE);
-	return draw_image_locale(str, locale, x, y, width, height, pivot);
-}
-
 static VbError_t vboot_draw_menu(struct params *p, const struct menu *m)
 {
 	int i = 0;
 	int yoffset;
+	uint32_t flags;
 
 	/* find starting point y offset */
 	yoffset = 0 - m->count/2;
 	for (i = 0; i < m->count; i++, yoffset++) {
-		RETURN_ON_ERROR(draw_selected_locale(m->strings[i], p->locale,
+		flags = PIVOT_H_CENTER|PIVOT_V_TOP;
+		if (p->selected_index == i)
+			flags |= INVERT_COLORS;
+		RETURN_ON_ERROR(draw_image_locale(m->strings[i], p->locale,
 			VB_SCALE_HALF, VB_SCALE_HALF + VB_TEXT_HEIGHT * yoffset,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
-			PIVOT_H_CENTER|PIVOT_V_TOP,
-			p->selected_index == i ? 1 : 0));
+			flags));
 	}
 
 	return VBERROR_SUCCESS;
@@ -569,46 +556,46 @@ static VbError_t vboot_draw_menu(struct params *p, const struct menu *m)
  * String arrays with bmp file names for detachable Menus
 */
 static const char *const dev_warning_menu_files[] = {
-	"dev_option", /* Developer Options */
-	"debug_info", /* Show Debug Info */
-	"enable_ver", /* Enable Root Verification */
-	"power_off",  /* Power Off */
-	"lang",       /* Language */
+	"dev_option.bmp", /* Developer Options */
+	"debug_info.bmp", /* Show Debug Info */
+	"enable_ver.bmp", /* Enable Root Verification */
+	"power_off.bmp",  /* Power Off */
+	"lang.bmp",       /* Language */
 };
 
 static const char *const dev_menu_files[] = {
-	"boot_network", /* Boot Network Image */
-	"boot_legacy",  /* Boot Legacy BIOS */
-	"boot_usb",     /* Boot USB Image */
-	"boot_dev",     /* Boot Developer Image */
-	"cancel",       /* Cancel */
-	"power_off",    /* Power Off */
-	"lang",         /* Language */
+	"boot_network.bmp", /* Boot Network Image */
+	"boot_legacy.bmp",  /* Boot Legacy BIOS */
+	"boot_usb.bmp",     /* Boot USB Image */
+	"boot_dev.bmp",     /* Boot Developer Image */
+	"cancel.bmp",       /* Cancel */
+	"power_off.bmp",    /* Power Off */
+	"lang.bmp",         /* Language */
 };
 
 static const char *const rec_menu_files[] = {
-	"enable_dev", /* Enable Developer Mode */
-	"debug_info",  /* Show Debug Info */
-	"power_off",  /* Power Off */
-	"lang",       /* Language */
+	"enable_dev.bmp", /* Enable Developer Mode */
+	"debug_info.bmp", /* Show Debug Info */
+	"power_off.bmp",  /* Power Off */
+	"lang.bmp",       /* Language */
 };
 
 static const char *const rec_to_dev_files[] = {
-	"confirm_dev", /* Confirm enabling developer mode */
-	"cancel",     /* Cancel */
-	"power_off",   /* Power Off */
-	"lang",        /* Language */
+	"confirm_dev.bmp", /* Confirm enabling developer mode */
+	"cancel.bmp",      /* Cancel */
+	"power_off.bmp",   /* Power Off */
+	"lang.bmp",        /* Language */
 };
 
 static const char *const dev_to_norm_files[] = {
-	"confirm_ver", /* Confirm Enabling Verified Boot */
-	"cancel",      /* Cancel */
-	"power_off",   /* Power Off */
-	"lang",        /* Language */
+	"confirm_ver.bmp", /* Confirm Enabling Verified Boot */
+	"cancel.bmp",      /* Cancel */
+	"power_off.bmp",   /* Power Off */
+	"lang.bmp",        /* Language */
 };
 
 static const char *const lang_files[] = {
-	"language",
+	"language.bmp",
 };
 
 static VbError_t vboot_draw_developer_warning(struct params *p)
@@ -823,15 +810,18 @@ static VbError_t vboot_draw_languages_menu(struct params *p)
 	// TODO: We need to cache this.
 	// we're loading an archive for each language, so it's rather slow.
 	// maybe we can cache each language each time we switch pages.
+	uint32_t flags;
 	for (i = page_start_index;
 	     i < page_start_index + lang_per_page && i < locale_data.count;
 	     i++, yoffset++) {
-		RETURN_ON_ERROR(draw_selected_locale("language", i,
+		flags = PIVOT_H_CENTER|PIVOT_V_TOP;
+		if (selected_index == i)
+			flags |= INVERT_COLORS;
+		RETURN_ON_ERROR(draw_image_locale("language.bmp", i,
 				VB_SCALE_HALF,
 				VB_SCALE_HALF + VB_TEXT_HEIGHT * yoffset,
 				VB_SIZE_AUTO, VB_TEXT_HEIGHT,
-				PIVOT_H_CENTER|PIVOT_V_TOP,
-				selected_index == i ? 1 : 0));
+				flags));
 	}
 	prev_lang_page_num = page_num;
 
