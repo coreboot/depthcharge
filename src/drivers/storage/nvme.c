@@ -909,6 +909,7 @@ static int nvme_ctrlr_init(BlockDevCtrlrOps *me)
 	status = nvme_enable_controller(ctrlr);
 	if (NVME_ERROR(status))
 		goto exit;
+	ctrlr->enabled = 1;
 
 	/* Set IO queue count */
 	status = nvme_set_queue_count(ctrlr, NVME_NUM_IO_QUEUES);
@@ -948,16 +949,16 @@ static int nvme_shutdown(struct CleanupFunc *cleanup, CleanupType type)
 	NvmeDrive *drive;
 	int status = NVME_SUCCESS;
 
-	printf("Shutting down NVMe controller.\n");
-
 	if (NULL == ctrlr)
 		return 1;
 
 	/* Only disable controller if initialized */
-	if (ctrlr->ctrlr.need_update != 1) {
+	if (ctrlr->enabled) {
+		printf("Shutting down NVMe controller.\n");
 		status = nvme_disable_controller(ctrlr);
 		if (NVME_ERROR(status))
 			return 1;
+		ctrlr->enabled = 0;
 	}
 
 	list_for_each(drive, ctrlr->drives, list_node) {

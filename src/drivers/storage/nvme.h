@@ -319,6 +319,7 @@ typedef struct NvmeCtrlr {
 	BlockDevCtrlr ctrlr;
 	ListNode drives;
 
+	int enabled;
 	pcidev_t dev;
 	uint32_t ctrlr_regs;
 
