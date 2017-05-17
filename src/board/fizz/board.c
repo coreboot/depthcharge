@@ -61,7 +61,7 @@ static int board_setup(void)
 	power_set_ops(&skylake_power_ops);
 
 	/* PCIe NVME */
-	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(1, 0, 0));
+	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x1c, 4));
 	list_insert_after(&nvme->ctrlr.list_node, &fixed_block_dev_controllers);
 
 	/* SATA SSD */
