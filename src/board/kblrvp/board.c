@@ -30,8 +30,10 @@
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
+#include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
+#include "drivers/storage/nvme.h"
 #include "drivers/tpm/lpc.h"
 #include "drivers/tpm/tpm.h"
 #include <libpayload.h>
@@ -62,6 +64,18 @@ static int board_setup(void)
 	/* PCH Power */
 	power_set_ops(&skylake_power_ops);
 
+	/* SATA SSD */
+	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 0x17, 0));
+	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
+
+	/* SATA controller on bus 1 dev/fun 0 */
+	AhciCtrlr *ahci1 = new_ahci_ctrlr(PCI_DEV(1, 0x00, 0));
+	list_insert_after(&ahci1->ctrlr.list_node, &fixed_block_dev_controllers);
+
+        /* PCIe NVME */
+	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x1c, 4));
+	list_insert_after(&nvme->ctrlr.list_node, &fixed_block_dev_controllers);
+
 	/* eMMC */
 	SdhciHost *emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1e, 4),
 			SDHCI_PLATFORM_NO_EMMC_HS200,
@@ -72,6 +86,7 @@ static int board_setup(void)
 	/* SD Card */
 	SdhciHost *sd = new_pci_sdhci_host(PCI_DEV(0, 0x1e, 6), 1,
 			EMMC_SD_CLOCK_MIN, SD_CLOCK_MAX);
+
 	list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
 			&removable_block_dev_controllers);
 
