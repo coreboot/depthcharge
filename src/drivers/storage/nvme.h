@@ -362,6 +362,7 @@ typedef struct NvmeDrive {
 	ListNode list_node;
 } NvmeDrive;
 
+/* Provide NVMe device or the root port it is connected to */
 NvmeCtrlr *new_nvme_ctrlr(pcidev_t dev);
 
 #endif /* __DRIVERS_STORAGE_NVME_H__ */

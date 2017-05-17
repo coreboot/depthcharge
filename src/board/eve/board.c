@@ -37,6 +37,7 @@
 #include "drivers/sound/max98927.h"
 #include "drivers/sound/route.h"
 #include "drivers/storage/blockdev.h"
+#include "drivers/storage/nvme.h"
 #include "drivers/storage/sdhci.h"
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/tpm.h"
@@ -94,6 +95,10 @@ static int board_setup(void)
 			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
+
+	/* NVMe Root Port */
+	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x1c, 4));
+	list_insert_after(&nvme->ctrlr.list_node, &fixed_block_dev_controllers);
 
 	/* Speaker amp is Maxim 98927 codec on I2C4 */
 	DesignwareI2c *i2c4 =

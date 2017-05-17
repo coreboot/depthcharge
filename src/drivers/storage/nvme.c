@@ -762,6 +762,17 @@ exit:
 	return status;
 }
 
+static int is_nvme_ctrlr(pcidev_t dev)
+{
+	if (pci_read_config8(dev, REG_PROG_IF) != PCI_IF_NVMHCI)
+		return 0;
+	if (pci_read_config8(dev, REG_SUBCLASS) != PCI_CLASS_MASS_STORAGE_NVM)
+		return 0;
+	if (pci_read_config8(dev, REG_CLASS) != PCI_CLASS_MASS_STORAGE)
+		return 0;
+	return 1;
+}
+
 /* Initialization entrypoint */
 static int nvme_ctrlr_init(BlockDevCtrlrOps *me)
 {
@@ -769,12 +780,26 @@ static int nvme_ctrlr_init(BlockDevCtrlrOps *me)
 	pcidev_t dev = ctrlr->dev;
 	int status = NVME_SUCCESS;
 
-	if ((pci_read_config8(ctrlr->dev, REG_PROG_IF) != PCI_IF_NVMHCI)
-		|| (pci_read_config8(ctrlr->dev, REG_SUBCLASS) != PCI_CLASS_MASS_STORAGE_NVM)
-		|| (pci_read_config8(ctrlr->dev, REG_CLASS) != PCI_CLASS_MASS_STORAGE)) {
-		printf("Unsupported NVMe controller found\n");
-		status = NVME_UNSUPPORTED;
-		goto exit;
+	/* If this is not an NVMe device, check if it is a root port */
+	if (!is_nvme_ctrlr(dev)) {
+		uint8_t header_type = pci_read_config8(dev, REG_HEADER_TYPE);
+		header_type &= 0x7f;
+		if (header_type != HEADER_TYPE_BRIDGE) {
+			status = NVME_UNSUPPORTED;
+			goto exit;
+		}
+
+		/* Look for NVMe device on this root port */
+		uint32_t bus = pci_read_config32(dev, REG_PRIMARY_BUS);
+		bus = (bus >> 8) & 0xff;
+		dev = PCI_DEV(bus, 0, 0);
+		if (!is_nvme_ctrlr(dev)) {
+			status = NVME_UNSUPPORTED;
+			goto exit;
+		}
+
+		/* Update the device pointer */
+		ctrlr->dev = dev;
 	}
 
 	printf("Initializing NVMe controller %04x:%04x\n",
@@ -790,14 +815,14 @@ static int nvme_ctrlr_init(BlockDevCtrlrOps *me)
 
 	/* Verify that the NVM command set is supported */
 	if (NVME_CAP_CSS(ctrlr->cap) != NVME_CAP_CSS_NVM) {
-		printf("NVMe Cap CSS not NVMe (CSS=%01x. Unsupported controller.\n",(uint8_t)NVME_CAP_CSS(ctrlr->cap));
+		printf("NVMe Cap CSS not NVMe (CSS=%01x.\n",(uint8_t)NVME_CAP_CSS(ctrlr->cap));
 		status = NVME_UNSUPPORTED;
 		goto exit;
 	}
 
 	/* Driver only supports 4k page size */
 	if (NVME_CAP_MPSMIN(ctrlr->cap) > NVME_PAGE_SHIFT) {
-		printf("NVMe driver only supports 4k page size. Unsupported controller.\n");
+		printf("NVMe driver only supports 4k page size.\n");
 		status = NVME_UNSUPPORTED;
 		goto exit;
 	}
@@ -912,6 +937,8 @@ static int nvme_ctrlr_init(BlockDevCtrlrOps *me)
 exit:
 	ctrlr->ctrlr.need_update = 0;
 
+	if (status == NVME_UNSUPPORTED)
+		printf("Unsupported NVMe controller found\n");
 	return NVME_ERROR(status);
 }
 
