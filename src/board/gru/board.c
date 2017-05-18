@@ -151,7 +151,10 @@ static int board_setup(void)
 			  &fixed_block_dev_controllers);
 
 	RockchipI2s *i2s0 = new_rockchip_i2s(0xff880000, 16, 2, 256);
-	I2sSource *i2s_source = new_i2s_source(&i2s0->ops, 48000, 2, 16000);
+	I2sSource *i2s_source = new_i2s_source(&i2s0->ops,
+						48000,
+						2,
+						CONFIG_GRU_SPEAKER_VOLUME);
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
 
 	/* Speaker Amp codec MAX98357A */
