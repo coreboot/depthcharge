@@ -14,6 +14,7 @@
 #ifndef __DRIVERS_BUS_I2C_I2C_H__
 #define __DRIVERS_BUS_I2C_I2C_H__
 
+#include <stddef.h>
 #include <stdint.h>
 
 /*
@@ -39,6 +40,12 @@ typedef struct I2cOps
 	int (*transfer)(struct I2cOps *me, I2cSeg *segments, int seg_count);
 	void (*scan_mode_on_off)(struct I2cOps *me, int mode_on);
 } I2cOps;
+
+typedef struct I2cWriteVec
+{
+	uint8_t	reg;
+	uint8_t	val;
+} I2cWriteVec;
 
 void scan_mode_on_off(struct I2cOps *me, int mode_on);
 
@@ -109,6 +116,18 @@ int i2c_readblock(I2cOps *ops, uint8_t chip, uint8_t reg,
  */
 int i2c_writeblock(I2cOps *ops, uint8_t chip, uint8_t reg,
 		const uint8_t *data, int len);
+
+/**
+ * Read multiple registers as individual transactions.
+ */
+int i2c_read_regs(I2cOps *ops, uint8_t chip,
+		  const uint8_t *regs, size_t count, uint8_t *data);
+
+/**
+ * Write multiple registers as individual transactions.
+ */
+int i2c_write_regs(I2cOps *ops, uint8_t chip,
+		   const I2cWriteVec *cmds, size_t count);
 
 /**
  * Clears bits in a register by doing a read/modify/write cycle.
