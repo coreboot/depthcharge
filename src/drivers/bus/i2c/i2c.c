@@ -110,6 +110,26 @@ int i2c_readblock(I2cOps *ops, uint8_t chip, uint8_t reg,
 	return ops->transfer(ops, seg, ARRAY_SIZE(seg));
 }
 
+int i2c_read_regs(I2cOps *ops, uint8_t chip,
+		  const uint8_t *regs, size_t count, uint8_t *data)
+{
+	for (size_t i = 0; i < count; ++i, ++regs, ++data) {
+		if (i2c_readb(ops, chip, *regs, data) < 0)
+			return -1;
+	}
+	return 0;
+}
+
+int i2c_write_regs(I2cOps *ops, uint8_t chip,
+		   const I2cWriteVec *cmds, size_t count)
+{
+	for (size_t i = 0; i < count; ++i, ++cmds) {
+		if (i2c_writeb(ops, chip, cmds->reg, cmds->val) < 0)
+			return -1;
+	}
+	return 0;
+}
+
 int i2c_clear_bits(I2cOps *bus, int chip, int reg, int mask_clr)
 {
 	uint8_t tmp;
