@@ -7,6 +7,7 @@
 
 OUTPUT ?= build
 STAGE ?= $(OUTPUT)/.stage
+DETACHABLE_UI ?= 0
 
 default: strings images
 

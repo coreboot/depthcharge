@@ -27,8 +27,12 @@ KEY_INPUTS = 'inputs'
 KEY_FILES = 'files'
 KEY_FONTS = 'fonts'
 KEY_STYLES = 'styles'
+DETACHABLE_INPUTS = 'detachable_inputs'
+DETACHABLE_FILES = 'detachable_files'
+DETACHABLE_STYLES = 'detachable_styles'
 
 FIRMWARE_STRINGS_FILE = 'firmware_strings.txt'
+DETACHABLE_STRINGS_FILE = 'detachable_strings.txt'
 FORMAT_FILE = 'format.yaml'
 TXT_TO_PNG_SVG = os.path.join(SCRIPT_BASE, '..', 'text_to_png_svg')
 OUTPUT_DIR = os.path.join(os.getenv('OUTPUT', os.path.join(SCRIPT_BASE, '..',
@@ -45,7 +49,7 @@ def GetImageWidth(filename):
   return Image.open(filename).size[0]
 
 
-def ParseLocaleInputFile(locale_dir, input_format):
+def ParseLocaleInputFile(locale_dir, input_format, detachable_format):
   """Parses a FIRMWARE_STRINGS_FILE in given locale directory for BuildTextFiles
 
   Args:
@@ -71,6 +75,19 @@ def ParseLocaleInputFile(locale_dir, input_format):
     name, _ = os.path.splitext(os.path.basename(input_file))
     with open(input_file, "r") as f:
       result[name] = f.read()
+
+  # Now parse detachable menu strings
+  if os.getenv("DETACHABLE_UI") == "1":
+    print " (detachable_ui enabled)"
+    detach_input_file = os.path.join(locale_dir, DETACHABLE_STRINGS_FILE)
+    with open(detach_input_file, 'r') as df:
+      detach_input_data = df.readlines()
+    if len(detach_input_data) != len(detachable_format):
+      raise DataError('Input file for locale <%s> does not match input format.'
+                      % locale_dir)
+    detach_input_data = [s.strip() for s in detach_input_data]
+    result.update(dict(zip(detachable_format, detach_input_data)))
+
   return result
 
 
@@ -171,14 +188,21 @@ def main(argv):
   results = []
   for locale in locales:
     print locale,
-    inputs = ParseLocaleInputFile(locale, formats[KEY_INPUTS])
+    inputs = ParseLocaleInputFile(locale, formats[KEY_INPUTS],
+                                  formats[DETACHABLE_INPUTS])
     output_dir = os.path.normpath(os.path.join(OUTPUT_DIR, locale))
     if not os.path.exists(output_dir):
       os.makedirs(output_dir)
-    BuildTextFiles(inputs, formats[KEY_FILES], output_dir)
+    files = formats[KEY_FILES];
+    styles = formats[KEY_STYLES];
+    if os.getenv("DETACHABLE_UI") == "1":
+      files.update(formats[DETACHABLE_FILES]);
+      styles.update(formats[DETACHABLE_STYLES]);
+    BuildTextFiles(inputs, files, output_dir)
+
     results += [pool.apply_async(ConvertPngFile,
                                  (locale, file_name,
-                                  formats[KEY_STYLES], formats[KEY_FONTS],
+                                  styles, formats[KEY_FONTS],
                                   output_dir))
                 for file_name in formats[KEY_FILES]]
   print ""
