@@ -19,7 +19,11 @@ config DRIVER_SOUND_GPIO_PDM
 	default n
 
 config DRIVER_SOUND_GPIO_BUZZER
-	bool "A buzzer controlled by gpio"
+	bool "A buzzer controlled by gpio value"
+	default n
+
+config DRIVER_SOUND_GPIO_EDGE_BUZZER
+	bool "A buzzer that is gpio edge triggered"
 	default n
 
 config DRIVER_SOUND_HDA

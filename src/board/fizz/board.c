@@ -30,6 +30,7 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
 #include "drivers/soc/skylake.h"
+#include "drivers/sound/gpio_edge_buzzer.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/nvme.h"
 #include "drivers/storage/blockdev.h"
@@ -77,6 +78,10 @@ static int board_setup(void)
 		list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
 					&removable_block_dev_controllers);
 	}
+
+	GpioCfg *sound_gpio = new_skylake_gpio_output(GPP_B14, 0);
+	GpioEdgeBuzzer *buzzer = new_gpio_edge_buzzer(&sound_gpio->ops);
+	sound_set_ops(&buzzer->ops);
 
 	return 0;
 }
