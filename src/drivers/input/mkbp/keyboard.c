@@ -71,6 +71,35 @@ static int more_input_states(void)
 	return cros_ec_interrupt_pending();
 }
 
+typedef struct Key
+{
+	uint8_t row;
+	uint8_t col;
+	uint16_t code;
+} Key;
+
+static int update_keys(Key *keys, int *total, int max,
+			uint8_t row, uint8_t col, uint16_t code)
+{
+	int curr = *total;
+
+	if (curr >= max)
+		return -1;
+
+	keys[curr].row = row;
+	keys[curr].col = col;
+	keys[curr].code = code;
+
+	*total = curr + 1;
+	return 0;
+}
+
+static void add_button_code(Key *keys, int *total, int max, int button)
+{
+	update_keys(keys, total, max, 0xFF, 0xFF,
+		    mkbp_keymatrix.button_scancodes[button]);
+}
+
 // Returns amount of scanned keys, or -1 if EC's buffer is known to be empty.
 static int read_scancodes(Modifier *modifiers, uint16_t *codes, int max_codes)
 {
@@ -138,13 +167,6 @@ static int read_scancodes(Modifier *modifiers, uint16_t *codes, int max_codes)
 	int rows = mkbp_keymatrix.rows;
 	int num_keys = cols * rows;
 
-	typedef struct Key
-	{
-		uint8_t row;
-		uint8_t col;
-		uint16_t code;
-	} Key;
-
 	Key keys[num_keys];
 
 	/* 1.  Check for button events first
@@ -157,30 +179,16 @@ static int read_scancodes(Modifier *modifiers, uint16_t *codes, int max_codes)
 	 * scancode is the 2nd entry in the button_scancode array.
 	 */
 	if (event.event_type == EC_MKBP_EVENT_BUTTON) {
-		if (pressed_buttons & (1 << EC_MKBP_POWER_BUTTON)) {
-			keys[total].code =
-			  mkbp_keymatrix.button_scancodes[EC_MKBP_POWER_BUTTON];
-			keys[total].row = 0xFF;
-			keys[total].col = 0xFF;
-			total++;
-			changed++;
-		}
-		if (pressed_buttons & (1 << EC_MKBP_VOL_UP)) {
-			keys[total].code =
-			  mkbp_keymatrix.button_scancodes[EC_MKBP_VOL_UP];
-			keys[total].row = 0xFF;
-			keys[total].col = 0xFF;
-			total++;
-			changed++;
-		}
-		if (pressed_buttons & (1 << EC_MKBP_VOL_DOWN)) {
-			keys[total].code =
-			  mkbp_keymatrix.button_scancodes[EC_MKBP_VOL_DOWN];
-			keys[total].row = 0xFF;
-			keys[total].col = 0xFF;
-			total++;
-			changed++;
-		}
+		if (pressed_buttons & (1 << EC_MKBP_POWER_BUTTON))
+			add_button_code(keys, &total, max_codes,
+					EC_MKBP_POWER_BUTTON);
+		if (pressed_buttons & (1 << EC_MKBP_VOL_UP))
+			add_button_code(keys, &total, max_codes,
+					EC_MKBP_VOL_UP);
+		if (pressed_buttons & (1 << EC_MKBP_VOL_DOWN))
+			add_button_code(keys, &total, max_codes,
+					EC_MKBP_VOL_DOWN);
+		changed = !!total;
 	}
 
 	/* 2.  Now check for keyboard matrix events */
@@ -193,7 +201,7 @@ static int read_scancodes(Modifier *modifiers, uint16_t *codes, int max_codes)
 			last_scan.data[byte] = data;
 
 			if (last_data != data)
-				changed++;
+				changed = 1;
 
 			// Only a few bits are going to be set at any one time.
 			if (!data)
@@ -226,11 +234,8 @@ static int read_scancodes(Modifier *modifiers, uint16_t *codes, int max_codes)
 					if ((last_data >> i) & 0x1)
 						code = 0xffff;
 
-					keys[total].row = row;
-					keys[total].col = col;
-					keys[total].code = code;
-					total++;
-					if (total == max_codes)
+					if (update_keys(keys, &total, max_codes,
+							row, col, code))
 						break;
 				}
 			}
