@@ -280,9 +280,9 @@ enum {
 	KeyFifoSize = 16
 };
 
-uint16_t key_fifo[KeyFifoSize];
-int fifo_offset;
-int fifo_size;
+static uint16_t key_fifo[KeyFifoSize];
+static int fifo_offset;
+static int fifo_size;
 
 static void add_key(uint16_t key)
 {
