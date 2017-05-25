@@ -77,6 +77,7 @@ static int read_scancodes(Modifier *modifiers, uint16_t *codes, int max_codes)
 	static struct cros_ec_keyscan last_scan;
 	static struct ec_response_get_next_event event;
 	static struct cros_ec_keyscan scan;
+	uint32_t pressed_buttons;
 
 	assert(modifiers);
 	*modifiers = ModifierNone;
@@ -92,8 +93,13 @@ static int read_scancodes(Modifier *modifiers, uint16_t *codes, int max_codes)
 
 		memcpy(&event.data.key_matrix, &scan.data, sizeof(scan.data));
 	} else {
-		// Get pending MKBP event.  It may not be a key matrix event.
-		do {
+		/* Get pending MKBP event. Loop until we can find:
+		 *  1. Key matrix event or
+		 *  2. Button event with new button pressed info (MKBP events
+		 *  are raised for button release events as well -- This driver
+		 *  doesn't care about the release events).
+		 */
+		while (1) {
 			int rv = cros_ec_get_next_event(&event);
 			// The EC has no events for us at this time.
 			if (rv == -EC_RES_UNAVAILABLE) {
@@ -103,8 +109,26 @@ static int read_scancodes(Modifier *modifiers, uint16_t *codes, int max_codes)
 				       rv);
 				return -1;
 			}
-		} while (event.event_type != EC_MKBP_EVENT_KEY_MATRIX &&
-			 event.event_type != EC_MKBP_EVENT_BUTTON);
+
+			if (event.event_type == EC_MKBP_EVENT_KEY_MATRIX)
+				break;
+
+			if (event.event_type == EC_MKBP_EVENT_BUTTON) {
+				uint32_t last_buttons = last_scan.buttons;
+				uint32_t buttons = event.data.buttons;
+				last_scan.buttons = buttons;
+
+				/*
+				 * This checks to ensure that we have a new
+				 * button press event. If not, just skip this
+				 * event and go to next.
+				 */
+				pressed_buttons = (last_buttons ^ buttons) &
+							buttons;
+				if (pressed_buttons)
+					break;
+			}
+		}
 	}
 
 	int total = 0;
@@ -133,11 +157,6 @@ static int read_scancodes(Modifier *modifiers, uint16_t *codes, int max_codes)
 	 * scancode is the 2nd entry in the button_scancode array.
 	 */
 	if (event.event_type == EC_MKBP_EVENT_BUTTON) {
-		uint32_t last_buttons = last_scan.buttons;
-		uint32_t buttons = event.data.buttons;
-		last_scan.buttons = buttons;
-
-		uint32_t pressed_buttons = (last_buttons ^ buttons) & buttons;
 		if (pressed_buttons & (1 << EC_MKBP_POWER_BUTTON)) {
 			keys[total].code =
 			  mkbp_keymatrix.button_scancodes[EC_MKBP_POWER_BUTTON];
