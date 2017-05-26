@@ -37,6 +37,13 @@ VbError_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale)
 	return display_screen((enum VbScreenType_t)screen_type);
 }
 
+VbError_t VbExDisplayMenu(uint32_t screen_type, uint32_t locale,
+			  uint32_t selected_index, uint32_t redraw_base)
+{
+	printf("%s:%d invoked\n", __func__, __LINE__);
+	return VBERROR_SUCCESS;
+}
+
 VbError_t VbExDisplayImage(uint32_t x, uint32_t y,
 			   void *buffer, uint32_t buffersize)
 {
