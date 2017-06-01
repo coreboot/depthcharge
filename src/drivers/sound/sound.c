@@ -27,7 +27,8 @@ int sound_start(uint32_t frequency)
 		printf("%s: No sound ops set.\n", __func__);
 		return 1;
 	}
-	assert(sound_ops->start);
+	if (!sound_ops->start)
+		return -1;
 
 	return sound_ops->start(sound_ops, frequency);
 }
@@ -38,7 +39,8 @@ int sound_stop(void)
 		printf("%s: No sound ops set.\n", __func__);
 		return 1;
 	}
-	assert(sound_ops->stop);
+	if (!sound_ops->stop)
+		return -1;
 
 	return sound_ops->stop(sound_ops);
 }
@@ -49,7 +51,8 @@ int sound_play(uint32_t msec, uint32_t frequency)
 		printf("%s: No sound ops set.\n", __func__);
 		return 1;
 	}
-	assert(sound_ops->play);
+	if (!sound_ops->play)
+		return -1;
 
 	return sound_ops->play(sound_ops, msec, frequency);
 }
