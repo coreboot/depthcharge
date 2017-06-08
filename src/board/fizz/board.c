@@ -23,6 +23,8 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "config.h"
+#include "drivers/bus/i2c/designware.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
@@ -35,6 +37,8 @@
 #include "drivers/storage/nvme.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
+#include "drivers/tpm/cr50_i2c.h"
+#include "drivers/tpm/tpm.h"
 
 /*
  * Clock frequencies for the eMMC and SD ports are defined below. The minimum
@@ -45,9 +49,27 @@
 #define EMMC_SD_CLOCK_MIN	400000
 #define SD_CLOCK_MAX		52000000
 
+static int cr50_irq_status(void)
+{
+	return skylake_get_gpe(GPE0_DW2_00);
+}
+
+static void fizz_setup_tpm(void)
+{
+	if (IS_ENABLED(CONFIG_DRIVER_TPM_CR50_I2C)) {
+		DesignwareI2c *i2c1 = new_pci_designware_i2c(
+			PCI_DEV(0, 0x15, 1), 400000, SKYLAKE_DW_I2C_MHZ);
+		tpm_set_ops(&new_cr50_i2c(&i2c1->ops, 0x50,
+					  &cr50_irq_status)->base.ops);
+	}
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_skylake_gpio_input_from_coreboot);
+
+	/* TPM */
+	fizz_setup_tpm();
 
 	/* Chrome EC (eSPI) */
 	CrosEcLpcBus *cros_ec_lpc_bus =
