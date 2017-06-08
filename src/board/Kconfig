@@ -31,6 +31,9 @@ endif
 if BOARD_DIR = "cyan"
 source src/board/cyan/Kconfig
 endif
+if BOARD_DIR = "kahlee"
+source src/board/kahlee/Kconfig
+endif
 if BOARD_DIR = "daisy"
 source src/board/daisy/Kconfig
 endif
