@@ -32,3 +32,4 @@ depthcharge-$(CONFIG_DRIVER_GPIO_RK3399) += rk3399.c
 depthcharge-$(CONFIG_DRIVER_GPIO_SKYLAKE) += skylake.c
 depthcharge-$(CONFIG_DRIVER_GPIO_TEGRA) += tegra.c
 depthcharge-$(CONFIG_DRIVER_GPIO_APOLLOLAKE) += apollolake.c
+depthcharge-$(CONFIG_DRIVER_GPIO_KERN) += kern.c

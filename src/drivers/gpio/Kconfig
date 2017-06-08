@@ -95,3 +95,7 @@ config DRIVER_GPIO_TEGRA
 config DRIVER_GPIO_APOLLOLAKE
 	bool "Intel Apollolake GPIO driver"
 	default n
+
+config DRIVER_GPIO_KERN
+	bool "AMD Kern FCH GPIO driver"
+	default n
