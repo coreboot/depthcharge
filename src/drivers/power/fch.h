@@ -1,5 +1,6 @@
 /*
  * Copyright 2012 Google Inc.
+ * Copyright (C) 2017 Advanced Micro Devices, Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -20,10 +21,6 @@
 
 #include "drivers/power/power.h"
 
-PowerOps pch_power_ops;
-PowerOps baytrail_power_ops;
-PowerOps braswell_power_ops;
-PowerOps skylake_power_ops;
-PowerOps apollolake_power_ops;
+PowerOps kern_power_ops;
 
 #endif /* __DRIVERS_POWER_PCH_H__ */
