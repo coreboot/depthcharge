@@ -27,6 +27,7 @@
 #include "drivers/sound/sound.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
+#include "drivers/tpm/lpc.h"
 #include "drivers/bus/usb/usb.h"
 #include "vboot/util/flag.h"
 
@@ -64,6 +65,8 @@ static int board_setup(void)
 	}
 
 	power_set_ops(&kern_power_ops);
+
+	tpm_set_ops(&new_lpc_tpm((void *)(uintptr_t)0xfed40000)->ops);
 
 	return 0;
 }
