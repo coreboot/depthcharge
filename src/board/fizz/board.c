@@ -25,6 +25,7 @@
 #include "base/list.h"
 #include "config.h"
 #include "drivers/bus/i2c/designware.h"
+#include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
@@ -38,6 +39,7 @@
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
 #include "drivers/tpm/cr50_i2c.h"
+#include "drivers/tpm/spi.h"
 #include "drivers/tpm/tpm.h"
 
 /*
@@ -56,7 +58,19 @@ static int cr50_irq_status(void)
 
 static void fizz_setup_tpm(void)
 {
-	if (IS_ENABLED(CONFIG_DRIVER_TPM_CR50_I2C)) {
+	if (IS_ENABLED(CONFIG_DRIVER_TPM_SPI)) {
+		/* SPI TPM */
+		const IntelGspiSetupParams gspi0_params = {
+			.dev = PCI_DEV(0, 0x1e, 2),
+			.cs_polarity = SPI_POLARITY_LOW,
+			.clk_phase = SPI_CLOCK_PHASE_FIRST,
+			.clk_polarity = SPI_POLARITY_LOW,
+			.ref_clk_mhz = 120,
+			.gspi_clk_mhz = 1,
+		};
+		tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0_params),
+					 cr50_irq_status)->ops);
+	} else if (IS_ENABLED(CONFIG_DRIVER_TPM_CR50_I2C)) {
 		DesignwareI2c *i2c1 = new_pci_designware_i2c(
 			PCI_DEV(0, 0x15, 1), 400000, SKYLAKE_DW_I2C_MHZ);
 		tpm_set_ops(&new_cr50_i2c(&i2c1->ops, 0x50,
