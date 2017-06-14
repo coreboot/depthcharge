@@ -88,7 +88,7 @@ static void marshal_u32(void *buf, uint32_t value)
 	memcpy(buf, &value, sizeof(value));
 }
 
-static uint16_t unmarshal_u32(void *buf)
+static uint32_t unmarshal_u32(void *buf)
 {
 	uint32_t value;
 
