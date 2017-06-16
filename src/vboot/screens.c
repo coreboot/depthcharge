@@ -595,10 +595,6 @@ static const char *const dev_to_norm_files[] = {
 	"lang.bmp",        /* Language */
 };
 
-static const char *const lang_files[] = {
-	"language.bmp",
-};
-
 static VbError_t vboot_draw_developer_warning(struct params *p)
 {
 	uint32_t locale = p->locale;
