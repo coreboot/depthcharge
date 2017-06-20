@@ -63,6 +63,7 @@
 
 static char initialized = 0;
 static int  prev_lang_page_num = -1;
+static int  prev_selected_index = -1;
 static struct directory *base_graphics;
 static struct directory *font_graphics;
 static struct cbfs_media *ro_cbfs;
@@ -807,12 +808,29 @@ static VbError_t vboot_draw_languages_menu(struct params *p)
 			       50, 30,
 			       VIDEO_PRINTF_ALIGN_KEEP);
 
-	// TODO: We need to cache this.
-	// we're loading an archive for each language, so it's rather slow.
-	// maybe we can cache each language each time we switch pages.
+	/*
+	 * Check if we can just redraw some entries (staying on the
+	 * same page) instead of the whole page because opening the
+	 * archives for each language slows things down.
+	 */
+	int num_lang_to_draw = lang_per_page;
+	int start_index = page_start_index;
+	if (prev_lang_page_num == page_num && !p->redraw_base) {
+		/* Redraw selected index and previously selected index */
+		num_lang_to_draw = 2;
+		start_index = MIN(prev_selected_index, selected_index);
+		/* previous index invalid. */
+		if (prev_selected_index == -1) {
+			start_index = selected_index;
+			num_lang_to_draw = 1;
+		}
+		yoffset = 0 - lang_per_page/2 +
+			(start_index - page_start_index);
+	}
+
 	uint32_t flags;
-	for (i = page_start_index;
-	     i < page_start_index + lang_per_page && i < locale_data.count;
+	for (i = start_index;
+	     i < start_index + num_lang_to_draw && i < locale_data.count;
 	     i++, yoffset++) {
 		flags = PIVOT_H_CENTER|PIVOT_V_TOP;
 		if (selected_index == i)
@@ -824,6 +842,7 @@ static VbError_t vboot_draw_languages_menu(struct params *p)
 				flags));
 	}
 	prev_lang_page_num = page_num;
+	prev_selected_index = selected_index;
 
 	return VBERROR_SUCCESS;
 }
