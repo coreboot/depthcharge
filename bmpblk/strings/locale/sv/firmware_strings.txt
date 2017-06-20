@@ -11,7 +11,7 @@ Systemet startas om, och lokala data tas bort.
 Tryck på Esc så återvänder du till föregående sida.
 Verifiering av operativsystemet är PÅ.
 Inaktivera verifiering av operativsystemet genom att trycka på RETUR.
-Om du behöver hjälp besöker du http://google.com/chromeos/recovery
+Om du behöver hjälp besöker du https://google.com/chromeos/recovery
 Felkod
 Ta bort alla externa enheter och påbörja återställningen.
 Modell 60061e

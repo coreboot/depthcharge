@@ -11,7 +11,7 @@ Sistema bus įkelta iš naujo, o vietiniai duomenys išvalyti.
 Jei norite grįžti, paspauskite ESC.
 OS patvirtinimas ĮJUNGTAS.
 Jei norite IŠJUNGTI OS patvirtinimą, paspauskite ENTER.
-Jei reikia pagalbos, apsilankykite šiuo adresu: http://google.com/chromeos/recovery
+Jei reikia pagalbos, apsilankykite šiuo adresu: https://google.com/chromeos/recovery
 Klaidos kodas
 Jei norite pradėti atkūrimą, pašalinkite visus išorinius įrenginius.
 Modelis 60061e

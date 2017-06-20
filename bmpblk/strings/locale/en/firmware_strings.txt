@@ -11,7 +11,7 @@ Your system will reboot and local data will be cleared.
 To go back, press ESC.
 OS verification is ON.
 To turn OS verification OFF, press ENTER.
-For help visit http://google.com/chromeos/recovery
+For help visit https://google.com/chromeos/recovery
 Error code
 Please remove all external devices to begin recovery.
 Model 60061e

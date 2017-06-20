@@ -11,7 +11,7 @@ Systém se restartuje a smažou se místní data.
 Chcete-li se vrátit zpět, stiskněte klávesu ESC.
 Ověření operačního systému je ZAPNUTO.
 Chcete-li ověření operačního systému VYPNOUT, stiskněte klávesu ENTER.
-Nápovědu naleznete na stránce http://google.com/chromeos/recovery.
+Nápovědu naleznete na stránce https://google.com/chromeos/recovery.
 Kód chyby
 Před spuštěním obnovení prosím odeberte všechna externí zařízení.
 Model 60061e

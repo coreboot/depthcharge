@@ -11,7 +11,7 @@ Votre système va redémarrer et les données locales vont être effacées.
 Pour annuler, appuyez sur ÉCHAP.
 La vérification du système d'exploitation est ACTIVÉE.
 Pour DÉSACTIVER la vérification du système d'exploitation, appuyez sur ENTRÉE.
-Pour obtenir de l'aide, rendez-vous sur http://google.com/chromeos/recovery
+Pour obtenir de l'aide, rendez-vous sur https://google.com/chromeos/recovery
 Code d'erreur
 Veuillez retirer tous les périphériques externes pour lancer la procédure de récupération.
 Modèle 60061e

@@ -11,7 +11,7 @@ Systemet vil blive genstartet og lokale data ryddet.
 Tryk på ESC for at gå tilbage.
 Bekræftelse af operativsystemet er slået TIL.
 Tryk på ENTER for at slå bekræftelse af operativsystemet FRA.
-Du kan få hjælp på http://google.com/chromeos/recovery
+Du kan få hjælp på https://google.com/chromeos/recovery
 Fejlkode
 Fjern alle eksterne enheder for at påbegynde genoprettelse.
 Model 60061e

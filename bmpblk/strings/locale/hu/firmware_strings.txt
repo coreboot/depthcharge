@@ -11,7 +11,7 @@ A rendszer újraindul, és a helyi adatok törlődnek.
 A visszalépéshez nyomja meg az ESC billentyűt.
 OS-ellenőrzés BEKAPCSOLVA.
 Az OS-ellenőrzés KIKAPCSOLÁSÁHOZ nyomja meg az ENTER billentyűt.
-Ha segítségre van szüksége, keresse fel a http://google.com/chromeos/recovery webhelyet.
+Ha segítségre van szüksége, keresse fel a https://google.com/chromeos/recovery webhelyet.
 Hibakód
 Távolítsa el az összes külső eszközt a helyreállítás megkezdéséhez.
 Modell 60061e

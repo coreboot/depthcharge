@@ -11,7 +11,7 @@ Tu sistema se reiniciará y se borrarán los datos locales.
 Para volver atrás, presiona ESC.
 La verificación del SO está ACTIVADA.
 Para DESACTIVAR la verificación del SO, presiona ENTER.
-Para obtener ayuda, visita http://google.com/chromeos/recovery.
+Para obtener ayuda, visita https://google.com/chromeos/recovery.
 Código de error
 Retira todos los dispositivos externos para iniciar la recuperación.
 Modelo 60061e

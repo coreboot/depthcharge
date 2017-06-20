@@ -11,7 +11,7 @@ OS 확인을 사용하도록 설정하려면 ENTER를 누르세요.
 돌아가려면 ESC를 누르세요.
 OS 확인을 사용 중입니다.
 OS 확인을 사용 중지하려면 Enter를 누르세요.
-도움이 필요한 경우 http://google.com/chromeos/recovery 페이지를 방문하세요.
+도움이 필요한 경우 https://google.com/chromeos/recovery 페이지를 방문하세요.
 오류 코드
 복구를 시작하려면 모든 외부 기기를 제거하세요.
 모델 60061e

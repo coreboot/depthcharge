@@ -11,7 +11,7 @@ Se reiniciará el sistema y se borrarán los datos locales.
 Para volver atrás, pulsa ESC.
 La verificación de Chrome OS está ACTIVADA.
 Para DESACTIVARLA, pulsa INTRO.
-Para obtener ayuda, accede a http://google.com/chromeos/recovery.
+Para obtener ayuda, accede a https://google.com/chromeos/recovery.
 Código de error
 Retira todos los dispositivos externos para iniciar la recuperación.
 Modelo 60061e

@@ -11,7 +11,7 @@ Sistemul va reporni şi datele locale vor fi şterse.
 Pentru a reveni, apăsaţi pe ESC.
 Verificarea SO este ACTIVATĂ.
 Pentru a DEZACTIVA verificarea SO, apăsaţi pe ENTER.
-Pentru ajutor, accesaţi http://google.com/chromeos/recovery
+Pentru ajutor, accesaţi https://google.com/chromeos/recovery
 Cod de eroare
 Eliminaţi toate dispozitivele externe pentru a începe recuperarea.
 Model 60061e

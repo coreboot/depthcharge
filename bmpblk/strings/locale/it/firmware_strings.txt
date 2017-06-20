@@ -11,7 +11,7 @@ Il sistema verrà riavviato e i dati locali verranno cancellati.
 Per tornare indietro, premi ESC.
 La verifica del sistema operativo è ATTIVA.
 Per DISATTIVARE la verifica del sistema operativo, premi INVIO.
-Per assistenza, visita il sito http://google.com/chromeos/recovery.
+Per assistenza, visita il sito https://google.com/chromeos/recovery.
 Codice di errore
 Rimuovi tutti i dispositivi esterni per iniziare il ripristino.
 Modello 60061e

@@ -11,7 +11,7 @@ O sistema irá reiniciar e os dados locais serão apagados.
 Para retroceder, prima ESC.
 A confirmação do SO está ATIVADA.
 Para definir a confirmação do SO como DESATIVADA, prima ENTER.
-Para obter ajuda, visite http://google.com/chromeos/recovery
+Para obter ajuda, visite https://google.com/chromeos/recovery
 Código de erro
 Retire todos os dispositivos externos para iniciar a recuperação.
 Modelo 60061e

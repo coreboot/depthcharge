@@ -11,7 +11,7 @@ Uw systeem wordt opnieuw opgestart en de lokale gegevens worden gewist.
 Druk op ESC om terug te gaan.
 OS-verificatie staat AAN.
 Druk op ENTER om OS-verificatie uit te schakelen.
-Ga naar http://google.com/chromeos/recovery voor hulp
+Ga naar https://google.com/chromeos/recovery voor hulp
 Foutcode
 Verwijder alle externe apparaten om het herstel te starten.
 Model 60061e

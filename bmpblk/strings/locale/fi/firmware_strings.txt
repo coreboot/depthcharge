@@ -11,7 +11,7 @@ Järjestelmä käynnistyy uudelleen ja paikalliset tiedot poistetaan.
 Paina ESC, jos haluat palata takaisin.
 Käyttöjärjestelmän todentaminen on KÄYTÖSSÄ.
 Poista käyttöjärjestelmän todentaminen käytöstä painamalla ENTER.
-Saat ohjeita osoitteessa http://google.com/chromeos/recovery
+Saat ohjeita osoitteessa https://google.com/chromeos/recovery
 Virhekoodi
 Aloita palautus poistamalla kaikki ulkoiset laitteet.
 Malli 60061e

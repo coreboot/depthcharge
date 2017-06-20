@@ -11,7 +11,7 @@ Sustav će se ponovo pokrenuti i lokalni će podaci biti obrisani.
 Za povratak pritisnite ESC.
 Potvrda OS-a UKLJUČENA je.
 Da biste ISKLJUČILI potvrdu OS-a, pritisnite tipku ENTER.
-Pomoć potražite na stranici http://google.com/chromeos/recovery
+Pomoć potražite na stranici https://google.com/chromeos/recovery
 Kôd pogreške
 Uklonite sve vanjske uređaje da biste pokrenuli oporavak.
 Model 60061e

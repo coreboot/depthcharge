@@ -11,7 +11,7 @@ Magre-reboot ang iyong system at maki-clear ang lokal na data.
 Upang bumalik, pindutin ang ESC.
 NAKA-ON ang pag-verify ng OS.
 Upang I-OFF ang pag-verify ng OS, pindutin ang ENTER.
-Para sa tulong, bisitahin ang http://google.com/chromeos/recovery
+Para sa tulong, bisitahin ang https://google.com/chromeos/recovery
 Code ng error
 Paki-alis ang lahat ng panlabas na device upang umpisahan ang pagbawi.
 Modelo 60061e

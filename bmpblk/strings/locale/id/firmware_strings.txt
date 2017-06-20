@@ -11,7 +11,7 @@ Sistem Anda akan dinyalakan ulang dan data lokal akan dihapus.
 Untuk kembali, tekan ESC.
 Verifikasi OS NYALA.
 Untuk MEMATIKAN verifikasi OS, tekan ENTER.
-Untuk bantuan, kunjungi http://google.com/chromeos/recovery
+Untuk bantuan, kunjungi https://google.com/chromeos/recovery
 Kode kesalahan
 Lepaskan semua perangkat eksternal untuk memulai pemulihan.
 Model 60061e

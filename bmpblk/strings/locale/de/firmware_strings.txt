@@ -11,7 +11,7 @@ Ihr System wird neu gestartet und lokale Daten werden gelöscht.
 Um zurückzugehen, drücken Sie die Esc-Taste.
 Die OS-Bestätigung ist AN.
 Drücken Sie die Eingabetaste, um die OS-Bestätigung auszuschalten.
-Hilfe erhalten Sie unter http://google.com/chromeos/recovery.
+Hilfe erhalten Sie unter https://google.com/chromeos/recovery.
 Fehlercode
 Entfernen Sie alle externen Geräte, um mit der Wiederherstellung zu beginnen.
 Modell 60061e

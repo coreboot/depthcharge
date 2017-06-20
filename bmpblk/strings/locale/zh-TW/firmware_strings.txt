@@ -11,7 +11,7 @@ Chrome 作業系統已毀損或遺失。
 如要返回，請按下 Esc 鍵。
 作業系統驗證程序已「開啟」。
 如要「關閉」作業系統驗證程序，請按下 Enter 鍵。
-如需協助，請造訪 http://google.com/chromeos/recovery
+如需協助，請造訪 https://google.com/chromeos/recovery
 錯誤代碼
 開始進行修復程序之前，請移除所有外接裝置。
 型號 60061e

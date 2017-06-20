@@ -11,7 +11,7 @@ Hệ thống của bạn sẽ khởi động lại và dữ liệu cục bộ s�
 Để quay lại, nhấn ESC.
 Xác minh OS đang BẬT.
 Để TẮT xác minh OS, nhấn ENTER.
-Để được trợ giúp, hãy truy cập http://google.com/chromeos/recovery
+Để được trợ giúp, hãy truy cập https://google.com/chromeos/recovery
 Mã lỗi
 Vui lòng tháo tất cả các thiết bị ngoài để bắt đầu khôi phục.
 Mô hình 60061e

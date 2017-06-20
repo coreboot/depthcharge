@@ -11,7 +11,7 @@ Seu sistema será reiniciado, e os dados locais serão removidos.
 Para voltar, pressione a tecla "ESC".
 A verificação do sistema operacional está ATIVADA.
 Para DESATIVAR a verificação do sistema operacional, pressione "ENTER".
-Para obter ajuda, visite http://google.com/chromeos/recovery
+Para obter ajuda, visite https://google.com/chromeos/recovery
 Código de erro
 Remova todos os dispositivos externos para iniciar a recuperação.
 Modelo 60061e

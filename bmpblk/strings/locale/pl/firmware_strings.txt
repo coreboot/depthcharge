@@ -11,7 +11,7 @@ System uruchomi się ponownie, a dane lokalne zostaną usunięte.
 Aby zrezygnować, naciśnij ESC.
 Sprawdzanie systemu operacyjnego jest WŁĄCZONE.
 Aby WYŁĄCZYĆ sprawdzanie systemu operacyjnego, naciśnij ENTER.
-Pomoc znajdziesz na http://google.com/chromeos/recovery
+Pomoc znajdziesz na https://google.com/chromeos/recovery
 Kod błędu
 Aby rozpocząć przywracanie, odłącz wszystkie urządzenia zewnętrzne.
 Model 60061e

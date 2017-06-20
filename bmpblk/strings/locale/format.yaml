@@ -25,7 +25,7 @@ inputs:
   - esc_back       #11 To go back, press ESC.
   - verif_on       #12 OS verification is ON.
   - todev          #13 To turn OS verification OFF, press ENTER.
-  - for_help       #14 For help visit http://google.com/chromeos/recovery
+  - for_help       #14 For help visit https://google.com/chromeos/recovery
   - error_code     #15 Error code
   - remove         #16 Please remove all external devices to begin recovery.
   - model          #17 Model

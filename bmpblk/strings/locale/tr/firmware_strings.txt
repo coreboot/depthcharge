@@ -11,7 +11,7 @@ Sisteminiz yeniden açılacak ve yerel veriler temizlenecek.
 Geri gitmek için ESC tuşuna basın.
 OS doğrulama AÇIK.
 OS doğrulamayı KAPATMAK için ENTER tuşuna basın.
-Yardım için: http://google.com/chromeos/recovery
+Yardım için: https://google.com/chromeos/recovery
 Hata kodu
 Kurtarma işlemine başlamak için lütfen tüm harici cihazları çıkarın.
 Model 60061e

@@ -11,7 +11,7 @@ Systém sa reštartuje a miestne údaje sa vymažú.
 Ak sa chcete vrátiť späť, stlačte kláves ESC.
 Verifikácia OS je ZAPNUTÁ.
 Ak chcete verifikáciu OS VYPNÚŤ, stlačte kláves ENTER.
-Pomocníka nájdete na stránke http://google.com/chromeos/recovery
+Pomocníka nájdete na stránke https://google.com/chromeos/recovery
 Kód chyby
 Pred spustením obnovenia odpojte všetky externé zariadenia.
 Model 60061e
