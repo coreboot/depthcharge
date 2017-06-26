@@ -20,6 +20,7 @@
 #include <stdlib.h>
 
 #include "base/cleanup_funcs.h"
+#include "boot/bootdata.h"
 #include "boot/multiboot.h"
 #include "config.h"
 #include "base/timestamp.h"
@@ -174,7 +175,7 @@ int multiboot_fill_boot_info(struct boot_info *bi)
  * Example image loaded by vboot and processed by multiboot_fill_boot_info():
  *  00100000:001c3000 kparams->kernel_buffer
  *  00100050:001c3000 bi->kernel (multiboot header)
- *  001c3000:001c4000 bi->cmdline
+ *  001c3000:001c4000 bi->cmd_line
  *  001c4000:001c5000 bi->params
  *  001c5000:00503000 bi->ramdisk_addr
  *
@@ -322,6 +323,10 @@ int multiboot_boot(struct boot_info *bi)
 	info = multiboot_info(bi);
 	if (!info)
 		return -1;
+
+	// Add bootdata info structures if a bootdata kernel is found
+	if (IS_ENABLED(CONFIG_KERNEL_MULTIBOOT_BOOTDATA))
+		bootdata_prepare(bi);
 
 	run_cleanup_funcs(CleanupOnHandoff);
 
