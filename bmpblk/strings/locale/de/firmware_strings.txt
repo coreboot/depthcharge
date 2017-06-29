@@ -4,18 +4,18 @@ Stecken Sie einen Wiederherstellungs-USB-Stick ein.
 Stecken Sie eine Wiederherstellungs-SD-Karte bzw. einen Wiederherstellungs-USB-Stick ein. Hinweis: Der blaue USB-Anschluss funktioniert für die Wiederherstellung NICHT.
 Stecken Sie einen Wiederherstellungs-USB-Stick in einen der 4 Anschlüsse auf der RÜCKSEITE des Geräts ein.
 Auf dem eingesteckten Gerät ist Chrome OS nicht vorhanden.
-Die OS-Bestätigung ist AUS.
-Drücken Sie die Leertaste, um sie erneut zu aktivieren.
-Drücken Sie die Eingabetaste, um zu bestätigen, dass Sie die OS-Bestätigung aktivieren möchten.
+Die Betriebssystemüberprüfung ist AUS.
+Drücken Sie die Leertaste, um sie wieder zu aktivieren.
+Drücken Sie die Eingabetaste, um zu bestätigen, dass Sie die Betriebssystemüberprüfung aktivieren möchten.
 Ihr System wird neu gestartet und lokale Daten werden gelöscht.
 Um zurückzugehen, drücken Sie die Esc-Taste.
-Die OS-Bestätigung ist AN.
-Drücken Sie die Eingabetaste, um die OS-Bestätigung auszuschalten.
+Die Betriebssystemüberprüfung ist AN.
+Drücken Sie die Eingabetaste, um die Betriebssystemüberprüfung auszuschalten.
 Hilfe erhalten Sie unter https://google.com/chromeos/recovery.
 Fehlercode
 Entfernen Sie alle externen Geräte, um mit der Wiederherstellung zu beginnen.
 Modell 60061e
-Zum Deaktivieren der Betriebssystembestätigung drücken Sie die Wiederherstellungstaste.
+Drücken Sie die Wiederherstellungstaste, um die Betriebssystemüberprüfung auszuschalten.
 Das angeschlossene Netzteil reicht für die Stromversorgung dieses Geräts nicht aus.
 Chrome OS wird jetzt heruntergefahren.
 Bitte versuchen Sie es mit dem richtigen Netzteil erneut.
