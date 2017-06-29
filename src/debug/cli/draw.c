@@ -57,8 +57,8 @@ static int do_draw_image(int argc, char * const argv[])
 		dim_rel = &s;
 	}
 
-	rv = draw_bitmap(bitmap, size, &pos_rel,
-			   PIVOT_H_LEFT|PIVOT_V_TOP, dim_rel);
+	rv = draw_bitmap(bitmap, size, &pos_rel, dim_rel,
+			   PIVOT_H_LEFT|PIVOT_V_TOP);
 	if (rv)
 		printf("draw_bitmap returned error: %d\n", rv);
 
