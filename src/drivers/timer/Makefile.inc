@@ -1,5 +1,5 @@
 ##
-## Copyright 2012 Google Inc.
+## Copyright (C) 2017 Intel Corporation.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -11,17 +11,5 @@
 ## GNU General Public License for more details.
 ##
 
-subdirs-y += bus
-subdirs-y += dma
-subdirs-y += ec
-subdirs-y += flash
-subdirs-y += gpio
-subdirs-y += input
-subdirs-y += net
-subdirs-y += power
-subdirs-y += soc
-subdirs-y += sound
-subdirs-y += storage
-subdirs-y += timer
-subdirs-y += tpm
-subdirs-y += video
+depthcharge-y += timer.c
+
