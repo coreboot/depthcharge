@@ -18,6 +18,7 @@
 #include <assert.h>
 #include <libpayload.h>
 
+#include "drivers/timer/timer.h"
 #include "spi.h"
 
 /************************************************************/
@@ -33,21 +34,6 @@ struct tpm2_info {
 	uint16_t device_id;
 	uint16_t revision;
 };
-
-struct stopwatch {
-	u64 start;
-	u64 expires;
-};
-static void stopwatch_init_usecs_expire(struct stopwatch *sw, long us)
-{
-	sw->start = timer_us(0);
-	sw->expires = us;
-}
-
-static int stopwatch_expired(struct stopwatch *sw)
-{
-	return timer_us(sw->start) > sw->expires;
-}
 
 /*
  * Use static driver structure, we're not going to have multiple TPM devices
@@ -154,7 +140,7 @@ static int tpm_sync(void)
 {
 	struct stopwatch sw;
 
-	stopwatch_init_usecs_expire(&sw, 10 * 1000);
+	stopwatch_init_msecs_expire(&sw, 10);
 	while (!tpm_irq_status()) {
 		if (stopwatch_expired(&sw)) {
 			printf("Timeout wait for tpm irq!\n");
@@ -228,7 +214,7 @@ static int start_transaction(int read_write, size_t bytes, unsigned addr)
 	tpm_if.xfer(tpm_if.slave, header.body, sizeof(header.body), NULL, 0);
 
 	/* Now poll the bus until TPM removes the stall bit. */
-	stopwatch_init_usecs_expire(&sw, 10000);
+	stopwatch_init_msecs_expire(&sw, 10);
 	do {
 		tpm_if.xfer(tpm_if.slave, NULL, 0, &byte, 1);
 		if (stopwatch_expired(&sw)) {
@@ -465,9 +451,9 @@ static int wait_for_status(uint32_t status_mask, uint32_t status_expected)
 	uint32_t status;
 	struct stopwatch sw;
 
-	stopwatch_init_usecs_expire(&sw, MAX_STATUS_TIMEOUT * 1000 * 1000);
+	stopwatch_init_usecs_expire(&sw, MAX_STATUS_TIMEOUT * USECS_PER_SEC);
 	do {
-		udelay(1000);
+		udelay(MSECS_PER_SEC);
 		if (stopwatch_expired(&sw)) {
 			printf("failed to get expected status %x\n",
 			       status_expected);
