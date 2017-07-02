@@ -106,7 +106,7 @@ static int read_scancodes(Modifier *modifiers, uint16_t *codes, int max_codes)
 	static struct cros_ec_keyscan last_scan;
 	static struct ec_response_get_next_event event;
 	static struct cros_ec_keyscan scan;
-	uint32_t pressed_buttons;
+	uint32_t pressed_buttons = 0;
 
 	assert(modifiers);
 	*modifiers = ModifierNone;
