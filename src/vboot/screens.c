@@ -84,6 +84,7 @@ static struct {
 struct params {
 	uint32_t locale;
 	uint32_t selected_index;
+	uint32_t disabled_idx_mask;
 	uint32_t redraw_base;
 };
 
@@ -540,7 +541,9 @@ static VbError_t vboot_draw_menu(struct params *p, const struct menu *m)
 
 	/* find starting point y offset */
 	yoffset = 0 - m->count/2;
-	for (i = 0; i < m->count; i++, yoffset++) {
+	for (i = 0; i < m->count; i++) {
+		if ((p->disabled_idx_mask & (1 << i)) != 0)
+			continue;
 		flags = PIVOT_H_CENTER|PIVOT_V_TOP;
 		if (p->selected_index == i)
 			flags |= INVERT_COLORS;
@@ -548,6 +551,7 @@ static VbError_t vboot_draw_menu(struct params *p, const struct menu *m)
 			VB_SCALE_HALF, VB_SCALE_HALF + VB_TEXT_HEIGHT * yoffset,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
 			flags));
+		yoffset++;
 	}
 
 	return VBERROR_SUCCESS;
@@ -1093,7 +1097,7 @@ int vboot_draw_screen(uint32_t screen, uint32_t locale)
 
 	/* TODO: draw only locale dependent part if current_screen == screen */
 	/* setting selected_index value to 0xFFFFFFFF invalidates the field */
-	struct params p = { locale, 0xFFFFFFFF, 1 };
+	struct params p = { locale, 0xFFFFFFFF, 0, 1 };
 	RETURN_ON_ERROR(draw_ui(screen, &p));
 
 	current_screen = screen;
@@ -1103,10 +1107,12 @@ int vboot_draw_screen(uint32_t screen, uint32_t locale)
 }
 
 int vboot_draw_ui(uint32_t screen, uint32_t locale,
-		  uint32_t selected_index, uint32_t redraw_base)
+		  uint32_t selected_index, uint32_t disabled_idx_mask,
+		  uint32_t redraw_base)
 {
-	printf("%s: screen=0x%x locale=%d, selected_index=%d\n",
-	       __func__, screen, locale, selected_index);
+	printf("%s: screen=0x%x locale=%d, selected_index=%d,"
+	       "disabled_idx_mask=0x%x\n",
+	       __func__, screen, locale, selected_index, disabled_idx_mask);
 
 	if (!initialized) {
 		if (vboot_init_screen())
@@ -1116,7 +1122,8 @@ int vboot_draw_ui(uint32_t screen, uint32_t locale,
 	/* If the screen is blank, turn off the backlight; else turn it on. */
 	backlight_update(screen == VB_SCREEN_BLANK ? 0 : 1);
 
-	struct params p = { locale, selected_index, redraw_base };
+	struct params p = { locale, selected_index,
+			    disabled_idx_mask, redraw_base };
 	return draw_ui(screen, &p);
 }
 
