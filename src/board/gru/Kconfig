@@ -20,8 +20,10 @@ config GRU_SPEAKER_VOLUME
 	int "Set speaker volume as other value if the board needs"
 	default 16000
 
-config GRU_MIPI_DISPLAY
-        bool "Enable MIPI display for a Gru derivative"
-        default false
+config GRU_SCARLET
+	bool "Scarlet-based variant"
+	default false
 	help
-	  Set this to true if this board have a MIPI panel.
+	  Scarlet is an RK3399-based board but contains many board-specific
+	  departures in terms of components and pinout. This option is for
+	  Scarlet and other boards derived from it.

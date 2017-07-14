@@ -111,6 +111,16 @@ static int cr50_irq_status(void)
 
 static int board_setup(void)
 {
+	GpioOps *sd_card_detect_gpio;
+	GpioOps *speaker_enable_gpio;
+	if (IS_ENABLED(CONFIG_GRU_SCARLET)) {
+		sd_card_detect_gpio = &new_rk_gpio_input(GPIO(1, B, 3))->ops;
+		speaker_enable_gpio = &new_rk_gpio_output(GPIO(0, A, 2))->ops;
+	} else {
+		sd_card_detect_gpio = &new_rk_gpio_input(GPIO(4, D, 0))->ops;
+		speaker_enable_gpio = &new_rk_gpio_output(GPIO(1, A, 2))->ops;
+	}
+
 	RkI2c *i2c0 = NULL;
 	if (IS_ENABLED(CONFIG_TPM2_MODE)) {
 		RkSpi *spi0 = new_rockchip_spi(0xff1c0000);
@@ -157,27 +167,16 @@ static int board_setup(void)
 						CONFIG_GRU_SPEAKER_VOLUME);
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
 
-	/* Speaker Amp codec MAX98357A */
-	GpioOps *sdmode_gpio = &new_rk_gpio_output(GPIO(1, A, 2))->ops;
-
-	max98357aCodec *speaker_amp = new_max98357a_codec(sdmode_gpio);
+	max98357aCodec *speaker_amp = new_max98357a_codec(speaker_enable_gpio);
 
 	list_insert_after(&speaker_amp->component.list_node,
 			  &sound_route->components);
 
 	sound_set_ops(&sound_route->ops);
 
-	 /*
-	  * SDMMC_DET_L is different on early Kevin boards, let's just ignore
-	  * them.
-	  */
-	RkGpio *card_detect = new_rk_gpio_input(GPIO(4, D, 0));
-	GpioOps *card_detect_ops = &card_detect->ops;
-
-	card_detect_ops = new_gpio_not(card_detect_ops);
-
+	sd_card_detect_gpio = new_gpio_not(sd_card_detect_gpio);
 	DwmciHost *sd_card = new_rkdwmci_host(0xfe320000, 594000000, 4, 1,
-					      card_detect_ops);
+					      sd_card_detect_gpio);
 
 	list_insert_after(&sd_card->mmc.ctrlr.list_node,
 			  &removable_block_dev_controllers);
@@ -203,17 +202,18 @@ static int board_setup(void)
 	// turn on the backlight
 	if (lib_sysinfo.framebuffer &&
 	    lib_sysinfo.framebuffer->physical_address) {
-		GpioOps *backlight_gpio = NULL;
-		if (IS_ENABLED(CONFIG_DRIVER_VIDEO_EC_PWM_BACKLIGHT))
-			backlight_gpio = new_ec_pwm_backlight();
+		GpioOps *backlight = NULL;
+		if (IS_ENABLED(CONFIG_GRU_SCARLET))
+			backlight = &new_rk_gpio_output(GPIO(4, C, 6))->ops;
+		else if (IS_ENABLED(CONFIG_DRIVER_VIDEO_EC_PWM_BACKLIGHT))
+			backlight = new_ec_pwm_backlight();
 		else if (IS_ENABLED(CONFIG_DRIVER_VIDEO_ARCTICSAND_BACKLIGHT)) {
 			if (!i2c0)
 				i2c0 = new_rockchip_i2c((void *)0xff3c0000);
-			backlight_gpio =
-				new_arctic_sand_backlight(&i2c0->ops, 0x30);
+			backlight = new_arctic_sand_backlight(&i2c0->ops, 0x30);
 		}
-		display_set_ops(new_rk3399_display(backlight_gpio,
-				!IS_ENABLED(CONFIG_GRU_MIPI_DISPLAY)));
+		display_set_ops(new_rk3399_display(backlight,
+				!IS_ENABLED(CONFIG_GRU_SCARLET)));
 	}
 	return 0;
 }
