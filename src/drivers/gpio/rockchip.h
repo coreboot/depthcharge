@@ -48,16 +48,16 @@ typedef struct {
 typedef union {
 	u32 raw;
 	struct {
-		u16 port;
 		union {
 			struct {
-				u16 num:5;
-				u16 :11;
+				u32 num : 5;
+				u32 reserved1 : 27;
 			};
 			struct {
-				u16 idx:3;
-				u16 bank:2;
-				u16 :11;
+				u32 idx : 3;
+				u32 bank : 2;
+				u32 port : 4;
+				u32 reserved2 : 23;
 			};
 		};
 	};
