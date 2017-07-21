@@ -188,6 +188,9 @@ static int read_scancodes(Modifier *modifiers, uint16_t *codes, int max_codes)
 		if (pressed_buttons & (1 << EC_MKBP_VOL_DOWN))
 			add_button_code(keys, &total, max_codes,
 					EC_MKBP_VOL_DOWN);
+		if (pressed_buttons & (1 << EC_MKBP_RECOVERY))
+			add_button_code(keys, &total, max_codes,
+					EC_MKBP_RECOVERY);
 		changed = !!total;
 	}
 

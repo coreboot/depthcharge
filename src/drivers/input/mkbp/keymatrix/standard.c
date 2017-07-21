@@ -74,7 +74,8 @@ static uint16_t *scancode_rows[] = {
 static uint16_t button_scancodes[] = {
 	0xe037, /* Power */
 	0xe021, /* Volume Down */
-	0xe032  /* Volume Up */
+	0xe032, /* Volume Up */
+	0x001c  /* Recovery - Use same code as enter key */
 };
 
 
