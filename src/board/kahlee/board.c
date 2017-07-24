@@ -27,9 +27,14 @@
 #include "drivers/sound/sound.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
+#include "drivers/storage/sdhci.h"
 #include "drivers/tpm/lpc.h"
 #include "drivers/bus/usb/usb.h"
 #include "vboot/util/flag.h"
+
+#define EMMC_SD_CLOCK_MIN	400000
+#define EMMC_CLOCK_MAX		200000000
+#define SD_CLOCK_MAX		52000000
 
 static int board_setup(void)
 {
@@ -63,6 +68,13 @@ static int board_setup(void)
 		usb_xchi = new_usb_hc(XHCI, usb_base);
 		list_insert_after(&usb_xchi->list_node, &usb_host_controllers);
 	}
+
+	SdhciHost *emmc;
+	emmc = new_pci_sdhci_host(PCI_DEV(0, 0x14, 7),
+			SDHCI_PLATFORM_NO_EMMC_HS200,
+			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
+	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+			&fixed_block_dev_controllers);
 
 	power_set_ops(&kern_power_ops);
 
