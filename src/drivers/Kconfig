@@ -12,6 +12,7 @@
 
 source src/drivers/bus/Kconfig
 source src/drivers/dma/Kconfig
+source src/drivers/ec/anx3429/Kconfig
 source src/drivers/ec/anx7688/Kconfig
 source src/drivers/ec/cros/Kconfig
 source src/drivers/flash/Kconfig
