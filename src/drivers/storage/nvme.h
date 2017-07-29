@@ -68,12 +68,13 @@
 #define writel_with_flush(a,b)	do { writel(a, b); readl(b); } while (0)
 
 typedef int NVME_STATUS;
-#define NVME_SUCCESS								0
-#define NVME_UNSUPPORTED							-1
-#define NVME_DEVICE_ERROR							-2
+#define NVME_SUCCESS							0
+#define NVME_UNSUPPORTED						-1
+#define NVME_DEVICE_ERROR						-2
 #define NVME_OUT_OF_RESOURCES						-3
-#define NVME_TIMEOUT								-4
+#define NVME_TIMEOUT							-4
 #define NVME_INVALID_PARAMETER						-5
+#define NVME_NOT_FOUND							-6
 
 #define NVME_ERROR(err) ((err) < 0?1:0)
 
