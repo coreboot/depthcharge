@@ -100,6 +100,11 @@ static int board_setup(void)
 	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x1c, 4));
 	list_insert_after(&nvme->ctrlr.list_node, &fixed_block_dev_controllers);
 
+	/* Backup NVMe Root Port in case WiFi device is missing */
+	NvmeCtrlr *nvme_backup = new_nvme_ctrlr(PCI_DEV(0, 0x1c, 0));
+	list_insert_after(&nvme_backup->ctrlr.list_node,
+			  &fixed_block_dev_controllers);
+
 	/* Speaker amp is Maxim 98927 codec on I2C4 */
 	DesignwareI2c *i2c4 =
 		new_pci_designware_i2c(PCI_DEV(0, 0x19, 2), 400000, 120);

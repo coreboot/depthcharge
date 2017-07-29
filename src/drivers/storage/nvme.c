@@ -785,7 +785,9 @@ static int nvme_ctrlr_init(BlockDevCtrlrOps *me)
 		uint8_t header_type = pci_read_config8(dev, REG_HEADER_TYPE);
 		header_type &= 0x7f;
 		if (header_type != HEADER_TYPE_BRIDGE) {
-			status = NVME_UNSUPPORTED;
+			status = NVME_NOT_FOUND;
+			printf("PCIe bridge not found @ %02x:%02x:%02x\n",
+			       PCI_BUS(dev), PCI_SLOT(dev), PCI_FUNC(dev));
 			goto exit;
 		}
 
@@ -794,7 +796,9 @@ static int nvme_ctrlr_init(BlockDevCtrlrOps *me)
 		bus = (bus >> 8) & 0xff;
 		dev = PCI_DEV(bus, 0, 0);
 		if (!is_nvme_ctrlr(dev)) {
-			status = NVME_UNSUPPORTED;
+			status = NVME_NOT_FOUND;
+			printf("NVMe device not found @ %02x:%02x:%02x\n",
+			       PCI_BUS(dev), PCI_SLOT(dev), PCI_FUNC(dev));
 			goto exit;
 		}
 
@@ -977,13 +981,7 @@ static int nvme_shutdown(struct CleanupFunc *cleanup, CleanupType type)
 NvmeCtrlr *new_nvme_ctrlr(pcidev_t dev)
 {
 	NvmeCtrlr *ctrlr = xzalloc(sizeof(*ctrlr));
-	static CleanupFunc cleanup = {
-		&nvme_shutdown,
-		CleanupOnHandoff | CleanupOnLegacy,
-		NULL
-	};
-
-	assert(cleanup.data == NULL);
+	CleanupFunc *cleanup = xzalloc(sizeof(*cleanup));
 
 	printf("New NVMe Controller %p @ %02x:%02x:%02x\n",
 		ctrlr, PCI_BUS(dev),PCI_SLOT(dev),PCI_FUNC(dev));
@@ -991,8 +989,11 @@ NvmeCtrlr *new_nvme_ctrlr(pcidev_t dev)
 	ctrlr->ctrlr.ops.update = &nvme_ctrlr_init;
 	ctrlr->ctrlr.need_update = 1;
 	ctrlr->dev = dev;
-	cleanup.data = (void *)ctrlr;
-	list_insert_after(&cleanup.list_node, &cleanup_funcs);
+
+	cleanup->cleanup = &nvme_shutdown;
+	cleanup->types = CleanupOnHandoff | CleanupOnLegacy;
+	cleanup->data = ctrlr;
+	list_insert_after(&cleanup->list_node, &cleanup_funcs);
 
 	return ctrlr;
 }
