@@ -231,6 +231,45 @@ static int i2c_set_bus_speed(DesignwareI2c *bus)
 }
 
 /*
+ * i2c_speed_init_done - Check if bus speed is already configured
+ * @high_reg:	high cycle time register
+ * @low_reg:	low cycle time register
+ *
+ * Check if high and low cycle time registers are configured.
+ *
+ */
+static int i2c_speed_init_done(uint32_t *high_reg, uint32_t *low_reg)
+{
+	/*
+	 * If both high_reg and low_reg are set to non-zero value, assume that
+	 * the bus speed is already configured.
+	 */
+	return readl(high_reg) && readl(low_reg);
+}
+
+/*
+ * i2c_bus_initialized - Check if coreboot already initialized bus
+ * @bus:	i2c bus description structure
+ *
+ * Check if coreboot already initializaed the bus.
+ *
+ */
+static int i2c_bus_initialized(DesignwareI2c *bus)
+{
+	DesignwareI2cRegs *regs = bus->regs;
+
+	if (bus->speed >= MAX_SPEED_HZ)
+		return i2c_speed_init_done(&regs->hs_scl_hcnt,
+						&regs->hs_scl_lcnt);
+	else if (bus->speed >= FAST_SPEED_HZ)
+		return i2c_speed_init_done(&regs->fs_scl_hcnt,
+						&regs->fs_scl_lcnt);
+
+	return i2c_speed_init_done(&regs->ss_scl_hcnt,
+					&regs->ss_scl_lcnt);
+}
+
+/*
  * i2c_init - Init function.
  * @bus:	i2c bus description structure
  * @slaveadd:	slave address for controller (not used if master-only)
@@ -240,6 +279,15 @@ static int i2c_set_bus_speed(DesignwareI2c *bus)
 static void i2c_init(DesignwareI2c *bus)
 {
 	DesignwareI2cRegs *regs = bus->regs;
+
+	/*
+	 * If bus is already initialized in coreboot, skip initialization here
+	 * and set bus->initialized to 1 directly.
+	 */
+	if (i2c_bus_initialized(bus)) {
+		bus->initialized = 1;
+		return;
+	}
 
 	/* Disable controller. */
 	i2c_disable(regs);
