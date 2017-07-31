@@ -249,3 +249,10 @@ soraka:
   screen:   [2400, 1600]
   hi_res:   [en]
   text_colors:  4
+
+kahlee:
+  # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
+  # With card reader. All USB ports can boot in recovery mode.
+  screen:   [1024, 768]
+  panel:    [1366, 768]
+  hi_res:   [en]
