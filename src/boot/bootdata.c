@@ -187,7 +187,7 @@ int bootdata_prepare(struct boot_info *bi)
 
 	// Ignore remaining space before the ramdisk
 	if ((blen < sizeof(bootdata_t)) || (blen & 7)) {
-		printf("%s: invalid bootdata length %d\n", __func__, blen);
+		printf("%s: invalid bootdata length %zd\n", __func__, blen);
 		return -1;
 	}
 	hdr.type = BOOTDATA_IGNORE;
