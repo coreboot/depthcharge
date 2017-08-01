@@ -3957,6 +3957,42 @@ struct __ec_align1 ec_response_usb_pd_mux_info {
 	uint8_t flags; /* USB_PD_MUX_*-encoded USB mux state */
 };
 
+#define EC_CMD_PD_CHIP_INFO		0x11b
+
+struct __ec_align1 ec_params_pd_chip_info {
+	uint8_t port;	/* USB-C port number */
+	uint8_t renew;	/* Force renewal */
+};
+
+struct __ec_align2 ec_response_pd_chip_info {
+	uint16_t vendor_id;
+	uint16_t product_id;
+	uint16_t device_id;
+	union {
+		uint8_t fw_version_string[8];
+		uint64_t fw_version_number;
+	};
+};
+
+/* Run RW signature verification and get status */
+#define EC_CMD_RWSIG_CHECK_STATUS	0x11c
+
+struct __ec_align4 ec_response_rwsig_check_status {
+	uint32_t status;
+};
+
+/* For controlling RWSIG task */
+#define EC_CMD_RWSIG_ACTION	0x11d
+
+enum rwsig_action {
+	RWSIG_ACTION_ABORT = 0,		/* Abort RWSIG and prevent jumping */
+	RWSIG_ACTION_CONTINUE = 1,	/* Jump to RW immediately */
+};
+
+struct __ec_align4 ec_params_rwsig_action {
+	uint32_t action;
+};
+
 #endif  /* !__ACPI__ */
 
 /*****************************************************************************/
