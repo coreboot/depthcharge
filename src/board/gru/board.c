@@ -123,8 +123,13 @@ static int board_setup(void)
 
 	RkI2c *i2c0 = NULL;
 	if (IS_ENABLED(CONFIG_TPM2_MODE)) {
-		RkSpi *spi0 = new_rockchip_spi(0xff1c0000);
-		tpm_set_ops(&new_tpm_spi(&spi0->ops, cr50_irq_status)->ops);
+		RkSpi *tpm_spi;
+
+		if (IS_ENABLED(CONFIG_GRU_SCARLET))
+			tpm_spi = new_rockchip_spi(0xff1e0000);
+		else
+			tpm_spi = new_rockchip_spi(0xff1c0000);
+		tpm_set_ops(&new_tpm_spi(&tpm_spi->ops, cr50_irq_status)->ops);
 	} else {
 		i2c0 = new_rockchip_i2c((void *)0xff3c0000);
 		tpm_set_ops(&new_slb9635_i2c(&i2c0->ops, 0x20)->base.ops);
