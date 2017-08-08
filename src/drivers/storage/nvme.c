@@ -680,6 +680,9 @@ static NVME_STATUS nvme_identify(NvmeCtrlr *ctrlr) {
 	DEBUG(printf("    CQES      : 0x%x\n", ctrlr->controller_data->cqes);)
 	DEBUG(printf("    NN        : 0x%x\n", ctrlr->controller_data->nn);)
 
+	printf("Identified NVMe model %s\n",
+	       (char *)ctrlr->controller_data->mn);
+
 	return status;
 }
 
