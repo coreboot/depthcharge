@@ -324,6 +324,11 @@ typedef struct NvmeCtrlr {
 	pcidev_t dev;
 	uint32_t ctrlr_regs;
 
+	/* static namespace data */
+	uint32_t namespace_id;
+	unsigned int block_size;
+	lba_t block_count;
+
 	/* local copy of controller CAP register */
 	NVME_CAP cap;
 
@@ -366,5 +371,9 @@ typedef struct NvmeDrive {
 
 /* Provide NVMe device or the root port it is connected to */
 NvmeCtrlr *new_nvme_ctrlr(pcidev_t dev);
+
+/* Specify static namespace data and skip calling Identify Namespace */
+void nvme_set_static_namespace(NvmeCtrlr *ctrlr, uint32_t namespace_id,
+			       unsigned int block_size, lba_t block_count);
 
 #endif /* __DRIVERS_STORAGE_NVME_H__ */
