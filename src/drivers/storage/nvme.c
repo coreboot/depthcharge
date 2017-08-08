@@ -686,6 +686,35 @@ static NVME_STATUS nvme_identify(NvmeCtrlr *ctrlr) {
 	return status;
 }
 
+static NVME_STATUS nvme_create_drive(NvmeCtrlr *ctrlr, uint32_t namespace_id,
+				     unsigned int block_size, lba_t block_count)
+{
+	/* Create drive node. */
+	NvmeDrive *nvme_drive = xzalloc(sizeof(*nvme_drive));
+	static const int name_size = 21;
+	char *name = xmalloc(name_size);
+	snprintf(name, name_size, "NVMe Namespace %d", namespace_id);
+	nvme_drive->dev.ops.read = &nvme_read;
+	nvme_drive->dev.ops.write = &nvme_write;
+	nvme_drive->dev.ops.new_stream = &new_simple_stream;
+	nvme_drive->dev.name = name;
+	nvme_drive->dev.removable = 0;
+	nvme_drive->dev.block_size = block_size;
+	nvme_drive->dev.block_count = block_count;
+	nvme_drive->ctrlr = ctrlr;
+	nvme_drive->namespace_id = namespace_id;
+
+	list_insert_after(&nvme_drive->dev.list_node, &fixed_block_devices);
+	list_insert_after(&nvme_drive->list_node, &ctrlr->drives);
+
+	printf("Added NVMe drive \"%s\" lbasize:%d, count:0x%llx\n",
+	       nvme_drive->dev.name, nvme_drive->dev.block_size,
+	       (uint64_t)nvme_drive->dev.block_count);
+
+	return NVME_SUCCESS;
+}
+
+
 /* Sends the Identify Namespace command, creates NvmeDrives for each namespace */
 static NVME_STATUS nvme_identify_namespaces(NvmeCtrlr *ctrlr) {
 	NVME_SQ *sq;
@@ -737,24 +766,13 @@ static NVME_STATUS nvme_identify_namespaces(NvmeCtrlr *ctrlr) {
 			status = NVME_DEVICE_ERROR;
 			goto exit;
 		} else {
-			/* Create drive node. */
-			NvmeDrive *nvme_drive = xzalloc(sizeof(*nvme_drive));
-			static const int name_size = 21;
-			char *name = xmalloc(name_size);
-			snprintf(name, name_size, "NVMe Namespace %d", index);
-			nvme_drive->dev.ops.read = &nvme_read;
-			nvme_drive->dev.ops.write = &nvme_write;
-			nvme_drive->dev.ops.new_stream = &new_simple_stream;
-			nvme_drive->dev.name = name;
-			nvme_drive->dev.removable = 0;
-			nvme_drive->dev.block_size = 2 << (namespace_data->lba_format[namespace_data->flbas & 0xF].lbads - 1);
-			nvme_drive->dev.block_count = namespace_data->nsze;
-			nvme_drive->ctrlr = ctrlr;
-			nvme_drive->namespace_id = index;
-			list_insert_after(&nvme_drive->dev.list_node,
-								&fixed_block_devices);
-			list_insert_after(&nvme_drive->list_node, &ctrlr->drives);
-			printf("Added NVMe drive \"%s\" lbasize:%d, count:0x%llx\n", nvme_drive->dev.name, nvme_drive->dev.block_size, (uint64_t)nvme_drive->dev.block_count);
+			unsigned int block_size =
+				2 << (namespace_data->lba_format[
+				      namespace_data->flbas & 0xF].lbads - 1);
+			status = nvme_create_drive(ctrlr, index, block_size,
+						   namespace_data->nsze);
+			if (NVME_ERROR(status))
+				goto exit;
 		}
 	}
 
@@ -937,10 +955,15 @@ static int nvme_ctrlr_init(BlockDevCtrlrOps *me)
 	if (NVME_ERROR(status))
 		goto exit;
 
-	/* Identify Namespace and create drive nodes */
-	status = nvme_identify_namespaces(ctrlr);
-	if (NVME_ERROR(status))
-		goto exit;
+	if (ctrlr->namespace_id && ctrlr->block_size && ctrlr->block_count) {
+		/* Create drive based on static namespace data */
+		DEBUG(printf("Skip Identify Namespace and use static data\n");)
+		status = nvme_create_drive(ctrlr, ctrlr->namespace_id,
+				   ctrlr->block_size, ctrlr->block_count);
+	} else {
+		/* Identify Namespace and create drive nodes */
+		status = nvme_identify_namespaces(ctrlr);
+	}
 
 exit:
 	ctrlr->ctrlr.need_update = 0;
@@ -976,6 +999,14 @@ static int nvme_shutdown(struct CleanupFunc *cleanup, CleanupType type)
 	free(ctrlr->buffer);
 	free(ctrlr);
 	return 0;
+}
+
+void nvme_set_static_namespace(NvmeCtrlr *ctrlr, uint32_t namespace_id,
+			       unsigned int block_size, lba_t block_count)
+{
+	ctrlr->namespace_id = namespace_id;
+	ctrlr->block_size = block_size;
+	ctrlr->block_count = block_count;
 }
 
 /* Setup controller initialization/shutdown callbacks.
