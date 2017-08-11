@@ -33,7 +33,6 @@ typedef struct Ps8751
 		uint16_t vendor;
 		uint16_t product;
 		uint16_t device;
-		uint8_t hw_rev;
 		uint8_t fw_rev;
 	} chip;
 } Ps8751;

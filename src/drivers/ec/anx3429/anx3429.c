@@ -718,14 +718,9 @@ static VbError_t anx3429_check_hash(const VbootAuxFwOps *vbaux,
 	if (hash_size != sizeof(me->chip.fw_rev))
 		return VBERROR_INVALID_PARAMETER;
 
-	if (anx3429_ec_pd_suspend(me) != 0)
-		return VBERROR_UNKNOWN;
-
 	if (anx3429_capture_device_id(me, 0) == 0)
 		status = VBERROR_SUCCESS;
 
-	if (anx3429_ec_pd_resume(me) != 0)
-		status = VBERROR_UNKNOWN;
 	if (status != VBERROR_SUCCESS)
 		return status;
 
@@ -978,14 +973,12 @@ static VbError_t anx3429_update_image(const VbootAuxFwOps *vbaux,
 		goto pd_resume;
 	}
 
-	if (anx3429_capture_device_id(me, 1) != 0)
-		status = VBERROR_UNKNOWN;
-
 pd_resume:
 	if (anx3429_ec_pd_resume(me) != 0)
 		status = VBERROR_UNKNOWN;
-	if (status != VBERROR_SUCCESS)
-		return status;
+
+	if (anx3429_capture_device_id(me, 1) != 0)
+		status = VBERROR_UNKNOWN;
 
 	return status;
 }
