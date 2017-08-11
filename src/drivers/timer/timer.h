@@ -15,10 +15,6 @@
 #ifndef __DRIVERS_TIMER_H__
 #define __DRIVERS_TIMER_H__
 
-#define USECS_PER_SEC 1000000
-#define MSECS_PER_SEC 1000
-#define USECS_PER_MSEC (USECS_PER_SEC / MSECS_PER_SEC)
-
 struct stopwatch {
 	uint64_t start;
 	uint64_t expires;
