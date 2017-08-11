@@ -1085,7 +1085,6 @@ static VbError_t vboot_init_screen(void)
 
 int vboot_draw_screen(uint32_t screen, uint32_t locale)
 {
-	static uint32_t current_screen = VB_SCREEN_BLANK;
 
 	printf("%s: screen=0x%x locale=%d\n", __func__, screen, locale);
 
@@ -1093,10 +1092,6 @@ int vboot_draw_screen(uint32_t screen, uint32_t locale)
 		if (vboot_init_screen())
 			return VBERROR_UNKNOWN;
 	}
-
-	/* If requested screen is the same as the current one, we're done. */
-	if (screen == current_screen && locale == locale_data.current)
-		return VBERROR_SUCCESS;
 
 	/* If the screen is blank, turn off the backlight; else turn it on. */
 	backlight_update(VB_SCREEN_BLANK == screen ? 0 : 1);
@@ -1106,7 +1101,6 @@ int vboot_draw_screen(uint32_t screen, uint32_t locale)
 	struct params p = { locale, 0xFFFFFFFF, 0, 1 };
 	RETURN_ON_ERROR(draw_ui(screen, &p));
 
-	current_screen = screen;
 	locale_data.current = locale;
 
 	return VBERROR_SUCCESS;
