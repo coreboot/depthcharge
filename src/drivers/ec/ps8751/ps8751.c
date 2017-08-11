@@ -558,24 +558,6 @@ static int __must_check ps8751_keep_awake(Ps8751 *me, uint64_t *deadline)
 }
 
 /**
- * get chip firmware version.
- *
- * @param me		device context
- * @param version	pointer to result version byte
- * @return 0 if ok, -1 on error
- */
-
-static int __must_check ps8751_get_fw_version(Ps8751 *me, uint8_t *version)
-{
-	int status;
-
-	status = read_reg(me, I2C_MASTER, P3_FW_REV, version);
-	if (status != 0)
-		printf("ps8751.%d: could not read P3_FW_REV\n", me->ec_pd_id);
-	return status;
-}
-
-/**
  * get chip hardware version.  result of 0xa3 means it's an A3 chip.
  *
  * @param me		device context
@@ -607,39 +589,31 @@ static int __must_check ps8751_get_hw_version(Ps8751 *me, uint8_t *version)
  * @return 0 if ok, -1 on error
  */
 
-static int __must_check ps8751_capture_device_id(Ps8751 *me)
+static int __must_check ps8751_capture_device_id(Ps8751 *me, int renew)
 {
-	int status;
-	uint8_t buf[6];
-	uint8_t hw_rev;
-	uint8_t fw_rev;
+	struct ec_params_pd_chip_info p;
+	struct ec_response_pd_chip_info r;
 
-	if (me->chip.vendor != 0)
+	if (me->chip.vendor != 0 && !renew)
 		return 0;
 
-	for (int i = P3_VENDOR_ID_LOW; i < sizeof(buf); ++i) {
-		status = read_reg(me, I2C_MASTER, i, &buf[i]);
-		if (status != 0)
-			break;
-	}
-	if (status == 0)
-		status = ps8751_get_hw_version(me, &hw_rev);
-	if (status == 0)
-		status = ps8751_get_fw_version(me, &fw_rev);
-
-	if (status != 0) {
-		printf("ps8751.%d: could not read chip ID regs!\n",
-		       me->ec_pd_id);
+	p.port = me->ec_pd_id;
+	p.renew = renew;
+	int status = ec_command(me->bus->ec, EC_CMD_PD_CHIP_INFO, 0,
+				&p, sizeof(p), &r, sizeof(r));
+	if (status < 0) {
+		printf("ps8751.%d: could not get chip info!\n", me->ec_pd_id);
 		return -1;
 	}
 
-	uint16_t vendor  = le16dec(buf);
-	uint16_t product = le16dec(buf + 2);
-	uint16_t device  = le16dec(buf + 4);
+	uint16_t vendor  = r.vendor_id;
+	uint16_t product = r.product_id;
+	uint16_t device  = r.device_id;
+	uint8_t fw_rev = r.fw_version_number;
 
 	printf("ps8751.%d: vendor 0x%04x product 0x%04x "
-	       "device 0x%04x hw_rev %02X fw_rev 0x%02x\n",
-	       me->ec_pd_id, vendor, product, device, hw_rev, fw_rev);
+	       "device 0x%04x fw_rev 0x%02x\n",
+	       me->ec_pd_id, vendor, product, device, fw_rev);
 	if (vendor == 0) {
 		/* vendor 0 likely due to "missing" firmware */
 		printf("ps8751.%d: MCU must be down!\n", me->ec_pd_id);
@@ -651,7 +625,6 @@ static int __must_check ps8751_capture_device_id(Ps8751 *me)
 	me->chip.vendor = vendor;
 	me->chip.product = product;
 	me->chip.device = device;
-	me->chip.hw_rev = hw_rev;
 	me->chip.fw_rev = fw_rev;
 	return 0;
 }
@@ -683,13 +656,17 @@ static uint8_t __must_check ps8751_blob_hw_version(const uint8_t *fw_blob)
 
 static int __must_check ps8751_is_fw_compatible(Ps8751 *me, const uint8_t *fw)
 {
+	uint8_t hw_rev;
 	uint8_t fw_chip_version;
 
+	if (ps8751_get_hw_version(me, &hw_rev) < 0)
+		return 0;
+
 	fw_chip_version = ps8751_blob_hw_version(fw);
-	if (me->chip.hw_rev == fw_chip_version)
+	if (hw_rev == fw_chip_version)
 		return 1;
 	printf("ps8751.%d: chip rev 0x%02x but firmware for 0x%02x\n",
-	       me->ec_pd_id, me->chip.hw_rev, fw_chip_version);
+	       me->ec_pd_id, hw_rev, fw_chip_version);
 	return 0;
 }
 
@@ -1070,7 +1047,7 @@ static int ps8751_reflash(Ps8751 *me, const uint8_t *data, size_t data_size)
 
 /*
  * reading the firmware takes about 15-20 secs, so we'll just use the
- * (chip rev, firmware rev) tags as a trivial hash
+ * firmware rev as a trivial hash.
  */
 
 static VbError_t ps8751_check_hash(const VbootAuxFwOps *vbaux,
@@ -1079,35 +1056,18 @@ static VbError_t ps8751_check_hash(const VbootAuxFwOps *vbaux,
 {
 	Ps8751 *me = container_of(vbaux, Ps8751, fw_ops);
 	VbError_t status = VBERROR_UNKNOWN;
-	int protected;
 
 	debug("call...\n");
 
 	if (hash_size != 2)
 		return VBERROR_INVALID_PARAMETER;
 
-	if (ps8751_ec_tunnel_status(me, &protected) != 0)
-		return VBERROR_UNKNOWN;
-	if (protected)
-		return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
-
-	if (ps8751_ec_pd_suspend(me) != 0)
-		return VBERROR_UNKNOWN;
-
-	if (ps8751_wake_i2c(me) != 0)
-		goto pd_resume;
-	if (ps8751_capture_device_id(me) == 0)
+	if (ps8751_capture_device_id(me, 0) == 0)
 		status = VBERROR_SUCCESS;
-	if (ps8751_hide_i2c(me) != 0)
-		status = VBERROR_UNKNOWN;
-
-pd_resume:
-	if (ps8751_ec_pd_resume(me) != 0)
-		status = VBERROR_UNKNOWN;
 	if (status != VBERROR_SUCCESS)
 		return status;
 
-	if (hash[0] == me->chip.hw_rev && hash[1] == me->chip.fw_rev)
+	if (hash[1] == me->chip.fw_rev)
 		*severity = VB_AUX_FW_NO_UPDATE;
 	else
 		*severity = VB_AUX_FW_SLOW_UPDATE;
@@ -1160,8 +1120,6 @@ static VbError_t ps8751_update_image(const VbootAuxFwOps *vbaux,
 	if (ps8751_wake_i2c(me) != 0)
 		goto pd_resume;
 
-	if (ps8751_capture_device_id(me) != 0)
-		goto hide_i2c;
 	if (!ps8751_is_fw_compatible(me, image))
 		goto hide_i2c;
 	if (ps8751_halt_and_flash(me, image, image_size) == 0)
@@ -1173,6 +1131,9 @@ hide_i2c:
 
 pd_resume:
 	if (ps8751_ec_pd_resume(me) != 0)
+		status = VBERROR_UNKNOWN;
+
+	if (ps8751_capture_device_id(me, 1) != 0)
 		status = VBERROR_UNKNOWN;
 
 	return status;
