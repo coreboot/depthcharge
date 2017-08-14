@@ -679,8 +679,14 @@ static VbError_t vboot_draw_recovery_insert(struct params *p)
 
 static VbError_t vboot_draw_recovery_menu(struct params *p)
 {
-	if (p->redraw_base)
+	const int32_t h = VB_DEVICE_HEIGHT;
+	if (p->redraw_base) {
 		RETURN_ON_ERROR(vboot_draw_base_screen(p));
+		RETURN_ON_ERROR(draw_image_locale("insert.bmp", p->locale,
+				VB_SCALE_HALF, VB_SCALE_HALF - h/2,
+				VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+				PIVOT_H_CENTER|PIVOT_V_BOTTOM));
+	}
 	const struct menu m = { rec_menu_files, ARRAY_SIZE(rec_menu_files) };
 	return vboot_draw_menu(p, &m);
 }
