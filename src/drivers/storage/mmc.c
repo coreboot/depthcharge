@@ -1087,7 +1087,7 @@ int mmc_setup_media(MmcCtrlr *ctrlr)
 		err = mmc_send_op_cond(media);
 
 		if (err && err != MMC_IN_PROGRESS) {
-			mmc_error("Card did not respond to voltage select!\n");
+			printf("MMC did not respond to voltage select!\n");
 			free(media);
 			return MMC_UNUSABLE_ERR;
 		}
