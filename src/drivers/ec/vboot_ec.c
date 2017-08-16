@@ -26,18 +26,3 @@ void register_vboot_ec(VbootEcOps *ec, int devidx)
 
 	vboot_ec[devidx] = ec;
 }
-
-void reboot_all_ecs(void)
-{
-	int devidx;
-
-	printf("Preparing all ECs to reboot to RO...\n");
-	for (devidx = 0; devidx < NUM_MAX_VBOOT_ECS; devidx++) {
-		VbootEcOps *ec = vboot_ec[devidx];
-		if (!ec)
-			continue;
-		if (ec->reboot_to_ro(ec) != VBERROR_SUCCESS)
-			printf("...EC[%d] failed, ignoring\n", devidx);
-	}
-	printf("...done!\n");
-}

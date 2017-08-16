@@ -42,6 +42,5 @@ typedef struct VbootEcOps {
 extern VbootEcOps *vboot_ec[];
 
 void register_vboot_ec(VbootEcOps *ec, int devidx);
-void reboot_all_ecs(void);
 
 #endif	/* __DRIVERS_EC_VBOOT_EC_H */

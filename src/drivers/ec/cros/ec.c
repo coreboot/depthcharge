@@ -25,6 +25,7 @@
 
 #include <assert.h>
 #include <libpayload.h>
+#include <vboot_api.h>
 
 #include "base/container_of.h"
 #include "drivers/ec/cros/message.h"
@@ -462,10 +463,28 @@ static VbError_t vboot_running_rw(VbootEcOps *vbec, int *in_rw)
 	return VBERROR_SUCCESS;
 }
 
+static uint32_t get_vboot_hash_offset(enum VbSelectFirmware_t select)
+{
+	switch (select) {
+	case VB_SELECT_FIRMWARE_READONLY:
+		return EC_VBOOT_HASH_OFFSET_RO;
+	case VB_SELECT_FIRMWARE_EC_UPDATE:
+		return EC_VBOOT_HASH_OFFSET_UPDATE;
+	default:
+		return EC_VBOOT_HASH_OFFSET_ACTIVE;
+	}
+}
+
 static enum ec_flash_region vboot_to_ec_region(enum VbSelectFirmware_t select)
 {
-	return (select == VB_SELECT_FIRMWARE_READONLY) ? EC_FLASH_REGION_WP_RO :
-		EC_FLASH_REGION_RW;
+	switch (select) {
+	case VB_SELECT_FIRMWARE_READONLY:
+		return EC_FLASH_REGION_WP_RO;
+	case VB_SELECT_FIRMWARE_EC_UPDATE:
+		return EC_FLASH_REGION_UPDATE;
+	default:
+		return EC_FLASH_REGION_ACTIVE;
+	}
 }
 
 static VbError_t vboot_hash_image(VbootEcOps *vbec,
@@ -479,10 +498,7 @@ static VbError_t vboot_hash_image(VbootEcOps *vbec,
 	int recalc_requested = 0;
 	uint32_t hash_offset;
 
-	if (vboot_to_ec_region(select) == EC_FLASH_REGION_WP_RO)
-		hash_offset = EC_VBOOT_HASH_OFFSET_RO;
-	else
-		hash_offset = EC_VBOOT_HASH_OFFSET_RW;
+	hash_offset = get_vboot_hash_offset(select);
 
 	start = timer_us(0);
 	do {
@@ -1139,6 +1155,11 @@ int cros_ec_read_batt_state_of_charge(uint32_t *state)
 
 	*state = resp.get_state.batt_state_of_charge;
 	return 0;
+}
+
+int cros_ec_reboot(uint8_t flags)
+{
+	return ec_reboot(get_main_ec(), EC_REBOOT_COLD, flags);
 }
 
 /*

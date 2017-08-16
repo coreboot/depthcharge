@@ -101,7 +101,13 @@ int vboot_select_and_load_kernel(void)
 	}
 
 	if (res == VBERROR_EC_REBOOT_TO_RO_REQUIRED) {
-		reboot_all_ecs();
+		if (IS_ENABLED(CONFIG_DRIVER_EC_CROS))
+			cros_ec_reboot(0);
+		if (power_off())
+			return 1;
+	} else if (res == VBERROR_EC_REBOOT_TO_SWITCH_RW) {
+		if (IS_ENABLED(CONFIG_DRIVER_EC_CROS))
+			cros_ec_reboot(EC_REBOOT_FLAG_SWITCH_RW_SLOT);
 		if (power_off())
 			return 1;
 	} else if (res == VBERROR_SHUTDOWN_REQUESTED) {

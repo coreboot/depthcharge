@@ -292,6 +292,14 @@ int cros_ec_read_power_btn(uint32_t *pwr_btn);
  */
 int cros_ec_config_powerbtn(uint32_t enable);
 
+/**
+ * Reboots main EC
+ *
+ * @param flags
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_reboot(uint8_t flags);
+
 CrosEc *new_cros_ec(CrosEcBusOps *bus, int devidx, GpioOps *interrupt_gpio);
 
 #endif
