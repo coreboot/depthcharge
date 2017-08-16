@@ -118,9 +118,9 @@ static VbError_t apply_dev_fw(const VbootAuxFwOps *aux_fw)
 }
 
 /**
- * iterate over registered firmware updaters and apply updates.
- * check_vboot_aux_fw() must have been called before this to determine
- * what needs to be updated.
+ * iterate over registered firmware updaters and apply updates where
+ * needed.  check_vboot_aux_fw() must have been called before this to
+ * determine what needs to be updated.
  *
  * @return VBERROR_... error, VBERROR_SUCCESS on success.
  */
@@ -133,17 +133,17 @@ VbError_t update_vboot_aux_fw(void)
 	for (int i = 0; i < vboot_aux_fw_count; ++i) {
 		const VbootAuxFwOps *aux_fw;
 
-		if (vboot_aux_fw[i].severity == VB_AUX_FW_NO_UPDATE)
-			continue;
 		aux_fw = vboot_aux_fw[i].fw_ops;
-		status = apply_dev_fw(aux_fw);
-		if (status != VBERROR_SUCCESS)
-			return status;
-		status = check_dev_fw_hash(aux_fw, &severity);
-		if (status != VBERROR_SUCCESS)
-			return status;
-		if (severity != VB_AUX_FW_NO_UPDATE)
-			return VBERROR_UNKNOWN;
+		if (vboot_aux_fw[i].severity != VB_AUX_FW_NO_UPDATE) {
+			status = apply_dev_fw(aux_fw);
+			if (status != VBERROR_SUCCESS)
+				return status;
+			status = check_dev_fw_hash(aux_fw, &severity);
+			if (status != VBERROR_SUCCESS)
+				return status;
+			if (severity != VB_AUX_FW_NO_UPDATE)
+				return VBERROR_UNKNOWN;
+		}
 		status = aux_fw->protect(aux_fw);
 		if (status != VBERROR_SUCCESS)
 			return status;
