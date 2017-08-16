@@ -49,6 +49,13 @@ static int board_setup(void)
 	HdaCodec *codec = new_hda_codec();
 	sound_set_ops(&codec->ops);
 
+	SdhciHost *emmc;
+	emmc = new_pci_sdhci_host(PCI_DEV(0, 0x14, 7),
+			SDHCI_PLATFORM_NO_EMMC_HS200,
+			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
+	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+			&fixed_block_dev_controllers);
+
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 17, 0));
 	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
 
@@ -68,13 +75,6 @@ static int board_setup(void)
 		usb_xchi = new_usb_hc(XHCI, usb_base);
 		list_insert_after(&usb_xchi->list_node, &usb_host_controllers);
 	}
-
-	SdhciHost *emmc;
-	emmc = new_pci_sdhci_host(PCI_DEV(0, 0x14, 7),
-			SDHCI_PLATFORM_NO_EMMC_HS200,
-			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
-	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
-			&fixed_block_dev_controllers);
 
 	power_set_ops(&kern_power_ops);
 
