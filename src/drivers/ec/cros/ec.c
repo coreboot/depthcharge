@@ -889,18 +889,9 @@ static int ec_flash_write(CrosEc *me, const uint8_t *data, uint32_t offset,
 	end = offset + size;
 	for (off = offset; off < end; off += burst, data += burst) {
 		uint32_t todo = MIN(end - off, burst);
-
-		if (todo < burst) {
-			uint8_t *buf = xmalloc(burst);
-			memcpy(buf, data, todo);
-			// Pad the buffer with a decent guess for erased data
-			// value.
-			memset(buf + todo, 0xff, burst - todo);
-			ret = ec_flash_write_block(me, buf, off, burst);
-			free(buf);
-		} else {
-			ret = ec_flash_write_block(me, data, off, burst);
-		}
+		/* If SPI flash needs to add padding to make a legitimate write
+		 * block, do so on EC. */
+		ret = ec_flash_write_block(me, data, off, todo);
 		if (ret)
 			return ret;
 	}
