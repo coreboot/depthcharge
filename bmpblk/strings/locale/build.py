@@ -70,11 +70,12 @@ def ParseLocaleInputFile(locale_dir, input_format, detachable_format):
 
   # Walk locale directory to add pre-generated items.
   for input_file in glob.glob(os.path.join(locale_dir, "*.txt")):
-    if os.path.basename(input_file) == FIRMWARE_STRINGS_FILE:
+    if (os.path.basename(input_file) == FIRMWARE_STRINGS_FILE or
+        os.path.basename(input_file) == DETACHABLE_STRINGS_FILE):
       continue
     name, _ = os.path.splitext(os.path.basename(input_file))
     with open(input_file, "r") as f:
-      result[name] = f.read()
+      result[name] = f.read().strip()
 
   # Now parse detachable menu strings
   if os.getenv("DETACHABLE_UI") == "1":
