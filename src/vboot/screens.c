@@ -21,6 +21,7 @@
 #include <vboot_api.h>
 #include <vboot/screens.h>
 #include "base/graphics.h"
+#include "config.h"
 #include "drivers/flash/cbfs.h"
 #include "drivers/video/display.h"
 #include "vboot/util/commonparams.h"
@@ -462,13 +463,16 @@ static VbError_t vboot_draw_language(uint32_t locale)
 	x = VB_SCALE_HALF + VB_DIVIDER_WIDTH / 2;
 
 	/* Draw right arrow */
-	w = VB_SIZE_AUTO;
-	h = VB_TEXT_HEIGHT;
-	RETURN_ON_ERROR(draw_image("arrow_right.bmp", x, VB_DIVIDER_V_OFFSET,
-				   w, h, PIVOT_H_RIGHT|PIVOT_V_BOTTOM));
-	RETURN_ON_ERROR(get_image_size(base_graphics, "arrow_right.bmp",
-				       &w, &h));
-	x -= w + VB_PADDING;
+	if (!IS_ENABLED(CONFIG_DETACHABLE_UI)) {
+		w = VB_SIZE_AUTO;
+		h = VB_TEXT_HEIGHT;
+		RETURN_ON_ERROR(draw_image("arrow_right.bmp", x,
+					   VB_DIVIDER_V_OFFSET, w, h,
+					   PIVOT_H_RIGHT|PIVOT_V_BOTTOM));
+		RETURN_ON_ERROR(get_image_size(base_graphics, "arrow_right.bmp",
+					       &w, &h));
+		x -= w + VB_PADDING;
+	}
 
 	/* Draw language name */
 	w = VB_SIZE_AUTO;
@@ -477,13 +481,17 @@ static VbError_t vboot_draw_language(uint32_t locale)
 					  x, VB_DIVIDER_V_OFFSET, w, h,
 					  PIVOT_H_RIGHT|PIVOT_V_BOTTOM));
 	RETURN_ON_ERROR(get_image_size_locale("language.bmp", locale, &w, &h));
-	x -= w + VB_PADDING;
 
-	/* Draw left arrow */
-	w = VB_SIZE_AUTO;
-	h = VB_TEXT_HEIGHT;
-	RETURN_ON_ERROR(draw_image("arrow_left.bmp", x, VB_DIVIDER_V_OFFSET,
-				   w, h, PIVOT_H_RIGHT|PIVOT_V_BOTTOM));
+	if (!IS_ENABLED(CONFIG_DETACHABLE_UI)) {
+		x -= w + VB_PADDING;
+
+		/* Draw left arrow */
+		w = VB_SIZE_AUTO;
+		h = VB_TEXT_HEIGHT;
+		RETURN_ON_ERROR(draw_image("arrow_left.bmp", x,
+					   VB_DIVIDER_V_OFFSET, w, h,
+					   PIVOT_H_RIGHT|PIVOT_V_BOTTOM));
+	}
 
 	return VBERROR_SUCCESS;
 }
