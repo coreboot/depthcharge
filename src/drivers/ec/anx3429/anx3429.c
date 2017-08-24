@@ -48,6 +48,7 @@
 #endif
 
 #define ANX_TIMEOUT_US		(1 * USECS_PER_SEC)	/* 1s */
+#define ANX_RESTART_MS		(1 * MSECS_PER_SEC)	/* 1s */
 
 /* OTP memory layout */
 
@@ -520,20 +521,19 @@ static int __must_check anx3429_enable_mcu(Anx3429 *me)
  * capture chip (vendor, product, device, rev) IDs
  *
  * @param me	device context
- * @param renew force info to be refreshed from chip
  * @return 0 if ok, -1 on error
  */
 
-static int __must_check anx3429_capture_device_id(Anx3429 *me, int renew)
+static int __must_check anx3429_capture_device_id(Anx3429 *me)
 {
 	struct ec_params_pd_chip_info p;
 	struct ec_response_pd_chip_info r;
 
-	if (me->chip.vendor != 0 && !renew)
+	if (me->chip.vendor != 0)
 		return 0;
 
 	p.port = me->ec_pd_id;
-	p.renew = renew;
+	p.renew = 0;
 	int status = ec_command(me->bus->ec, EC_CMD_PD_CHIP_INFO, 0,
 				&p, sizeof(p), &r, sizeof(r));
 	if (status < 0) {
@@ -561,6 +561,11 @@ static int __must_check anx3429_capture_device_id(Anx3429 *me, int renew)
 	me->chip.device = device;
 	me->chip.fw_rev = fw_rev;
 	return 0;
+}
+
+static void anx3429_clear_device_id(Anx3429 *me)
+{
+	memset(&me->chip, 0, sizeof(me->chip));
 }
 
 /*
@@ -718,7 +723,7 @@ static VbError_t anx3429_check_hash(const VbootAuxFwOps *vbaux,
 	if (hash_size != sizeof(me->chip.fw_rev))
 		return VBERROR_INVALID_PARAMETER;
 
-	if (anx3429_capture_device_id(me, 0) == 0)
+	if (anx3429_capture_device_id(me) == 0)
 		status = VBERROR_SUCCESS;
 
 	if (status != VBERROR_SUCCESS)
@@ -977,8 +982,15 @@ pd_resume:
 	if (anx3429_ec_pd_resume(me) != 0)
 		status = VBERROR_UNKNOWN;
 
-	if (anx3429_capture_device_id(me, 1) != 0)
-		status = VBERROR_UNKNOWN;
+	/* force re-read */
+	anx3429_clear_device_id(me);
+	/*
+	 * wait for the TCPC and pd_task() to restart
+	 *
+	 * TODO(b/64696543): remove delay when the EC can delay TCPC
+	 * host commands until it can service them.
+	 */
+	mdelay(ANX_RESTART_MS);
 
 	return status;
 }
