@@ -92,6 +92,8 @@
 
 #define SPI_STATUS_WIP		0x01
 #define SPI_STATUS_WEL		0x02
+#define SPI_STATUS_BP		0x0c
+#define SPI_STATUS_SRP		0x80
 
 /*
  * period of issuing reads on the I2C master to keep the chip awake
@@ -110,13 +112,24 @@
 #define PARADE_BINVERSION_OFFSET	0x501c
 #define PARADE_CHIPVERSION_OFFSET	0x503a
 
+#if (PS8751_DEBUG >= 2)
+#define PARADE_FW_START		0x38000
+#else
 #define PARADE_FW_START		0x30000
+#endif
 #define PARADE_FW_END		0x40000
 #define PARADE_FW_SECTOR	 0x1000		/* erase sector size */
 
 #define PARADE_TEST_FW_SIZE	0x1000
 
 #define PARADE_VENDOR_ID	0x1da0
+
+static const uint8_t erased_bytes[] = {
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+};
+_Static_assert(sizeof(erased_bytes) == PS_FW_RD_CHUNK,
+	       "erased_bytes initializer size mismatch");
 
 /**
  * write a single byte to a register of an i2c target
@@ -224,41 +237,6 @@ static int __must_check ps8751_spi_fifo_wait_busy(Ps8751 *me)
 static int __must_check ps8751_spi_fifo_reset(Ps8751 *me)
 {
 	if (write_reg(me, SLAVE2, P2_SPI_CTRL, P2_SPI_CTRL_FIFO_RESET) != 0)
-		return -1;
-	return 0;
-}
-
-/*
- * lock the SPI bus
- *
- * TODO: check with vendor to see if manipulating
- * P1_SPI_WP.P1_SPI_WP_EN really makes sense.
- *
- * NOTE: keep in sync with ps8751_unlock_spi_bus()
- * NOTE: on A3 silicon, P1_SPI_WP_EN reads back inverted!
- */
-
-static int __must_check ps8751_lock_spi_bus(Ps8751 *me)
-{
-	return 0;
-}
-
-/*
- * reset SPI bus cmd FIFOs and unlock the SPI bus...
- *
- * TODO: check with vendor why we don't need to
- * unlock (enable) the SPI interface as documented
- * (manipulating P1_SPI_WP does nothing)
- *
- * NOTE: call ps8751_disable_mpu() before this so we have
- *	 a functional SPI bus.
- *
- * NOTE: on A3 silicon, P1_SPI_WP_EN reads back inverted!
- */
-
-static int __must_check ps8751_unlock_spi_bus(Ps8751 *me)
-{
-	if (ps8751_spi_fifo_reset(me) != 0)
 		return -1;
 	return 0;
 }
@@ -424,14 +402,148 @@ static int __must_check ps8751_spi_wait_prog_cmd(Ps8751 *me)
 	do {
 		if (read_reg(me, SLAVE2, P2_SPI_STATUS, &busy) != 0)
 			return -1;
-		if ((busy & 0xcf) == 0x00) {
+		if ((busy & 0x3f) == 0x00) {
 			/* {chip,sector} erase, program cmd finished */
 			return 0;
 		}
 	} while (timer_us(t0_us) < PS_WIP_TIMEOUT_US);
-	printf("ps8751.%d: erase timeout after %ums\n",
+	printf("ps8751.%d: flash prog/erase timeout after %ums\n",
 	       me->ec_pd_id, USEC_TO_MSEC(PS_SPI_TIMEOUT_US));
 	return -1;
+}
+
+/**
+ * read SPI flash status register
+ *
+ * @param me	device context
+ * @return status if ok, -1 on error
+ */
+
+static int __must_check ps8751_spi_cmd_read_status(Ps8751 *me, uint8_t *status)
+{
+	static const I2cWriteVec rs[] = {
+		{ P2_WR_FIFO, SPI_CMD_READ_STATUS_REG },
+		{ P2_SPI_LEN, 0x00 },
+		{ P2_SPI_CTRL, P2_SPI_CTRL_TRIGGER },
+	};
+
+	if (write_regs(me, SLAVE2, rs, ARRAY_SIZE(rs)) != 0)
+		return -1;
+	if (ps8751_spi_fifo_wait_busy(me) != 0)
+		return -1;
+	if (read_reg(me, SLAVE2, P2_RD_FIFO, status) != 0)
+		return -1;
+	return 0;
+}
+
+/**
+ * wait for SPI flash status WIP (write-in-progress) bit to clear
+ * this is needed after write-status-reg, any prog, any erase command
+ *
+ * @param me	device context
+ * @return status if ok, -1 on error
+ */
+
+static int __must_check ps8751_spi_wait_wip(Ps8751 *me)
+{
+	uint8_t status;
+	uint64_t t0_us;
+
+	t0_us = timer_us(0);
+	do {
+		if (ps8751_spi_cmd_read_status(me, &status) != 0)
+			return -1;
+		if (timer_us(t0_us) >= PS_WIP_TIMEOUT_US) {
+			printf("ps8751.%d: WIP timeout after %ums\n",
+			       me->ec_pd_id, USEC_TO_MSEC(PS_WIP_TIMEOUT_US));
+			return -1;
+		}
+	} while (status & SPI_STATUS_WIP);
+	return 0;
+}
+
+/**
+ * write SPI flash status register
+ *
+ * @param me	device context
+ * @return 0 if ok, -1 on error
+ */
+
+static int __must_check ps8751_spi_cmd_write_status(Ps8751 *me, uint8_t val)
+{
+	if (ps8751_spi_cmd_enable_writes(me) < 0)
+		return -1;
+
+	const I2cWriteVec ws[] = {
+		{ P2_WR_FIFO, SPI_CMD_WRITE_STATUS_REG },
+		{ P2_WR_FIFO, val },
+		{ P2_SPI_LEN, 0x01 },
+		{ P2_SPI_CTRL, P2_SPI_CTRL_NOREAD|P2_SPI_CTRL_TRIGGER },
+	};
+
+	if (write_regs(me, SLAVE2, ws, ARRAY_SIZE(ws)) != 0)
+		return -1;
+	if (ps8751_spi_fifo_wait_busy(me) != 0)
+		return -1;
+	if (ps8751_spi_wait_wip(me) != 0)
+		return -1;
+	return 0;
+}
+
+/*
+ * lock the SPI flash
+ *
+ * NOTE: keep in sync with ps8751_spi_flash_unlock()
+ * NOTE: on A3 silicon, P1_SPI_WP_EN reads back inverted!
+ */
+
+static int __must_check ps8751_spi_flash_lock(Ps8751 *me)
+{
+	int status = 0;
+
+	if (ps8751_spi_cmd_write_status(me, SPI_STATUS_SRP|SPI_STATUS_BP) != 0)
+		status = -1;
+
+	/* assert SPI flash WP# */
+	if (write_reg(me, SLAVE1, P1_SPI_WP, P1_SPI_WP_EN) != 0)
+		status = -1;
+
+	return status;
+}
+
+/*
+ * reset SPI bus cmd FIFOs and unlock the SPI flash...
+ *
+ * NOTE: call ps8751_disable_mpu() before this so we have
+ *	 a functional SPI bus.
+ *
+ * NOTE: on A3 silicon, P1_SPI_WP_EN reads back inverted!
+ */
+
+static int __must_check ps8751_spi_flash_unlock(Ps8751 *me)
+{
+	uint8_t status;
+
+	if (ps8751_spi_fifo_reset(me) != 0)
+		return -1;
+
+	/* deassert SPI flash WP# */
+	if (write_reg(me, SLAVE1, P1_SPI_WP, 0x00) != 0)
+		return -1;
+
+	/* clear the SRP, BP bits */
+	if (ps8751_spi_cmd_write_status(me, 0x00) != 0)
+		return -1;
+
+	if (ps8751_spi_cmd_read_status(me, &status) != 0)
+		return -1;
+
+	if ((status & (SPI_STATUS_SRP|SPI_STATUS_BP)) != 0) {
+		printf("ps8751.%d: could not clear flash status "
+		       "SRP|BP (0x%02x)\n", me->ec_pd_id, status);
+		return -1;
+	}
+	return 0;
 }
 
 /*
@@ -440,34 +552,12 @@ static int __must_check ps8751_spi_wait_prog_cmd(Ps8751 *me)
  * flash part itself.
  */
 
-static int __must_check ps8751_wait_spi_rom_ready(Ps8751 *me)
+static int __must_check ps8751_spi_wait_rom_ready(Ps8751 *me)
 {
-	uint8_t status;
-	uint64_t t0_us;
-
 	if (ps8751_spi_wait_prog_cmd(me) != 0)
 		return -1;
-
-	t0_us = timer_us(0);
-	do {
-		static const I2cWriteVec rds[] = {
-			{ P2_WR_FIFO, SPI_CMD_READ_STATUS_REG },
-			{ P2_SPI_LEN, 0x00 },
-			{ P2_SPI_CTRL, P2_SPI_CTRL_TRIGGER },
-		};
-
-		if (write_regs(me, SLAVE2, rds, ARRAY_SIZE(rds)) != 0)
-			return -1;
-		if (ps8751_spi_fifo_wait_busy(me) != 0)
-			return -1;
-		if (read_reg(me, SLAVE2, P2_RD_FIFO, &status) != 0)
-			return -1;
-		if (timer_us(t0_us) >= PS_WIP_TIMEOUT_US) {
-			printf("ps8751.%d: WIP timeout after %ums\n",
-			       me->ec_pd_id, USEC_TO_MSEC(PS_WIP_TIMEOUT_US));
-			return -1;
-		}
-	} while (status & SPI_STATUS_WIP);
+	if (ps8751_spi_wait_wip(me) != 0)
+		return -1;
 	return 0;
 }
 
@@ -716,7 +806,7 @@ static int __must_check ps8751_sector_erase(Ps8751 *me, uint32_t offset)
 		return -1;
 	if (ps8751_spi_fifo_wait_busy(me) != 0)
 		return -1;
-	if (ps8751_wait_spi_rom_ready(me) != 0)
+	if (ps8751_spi_wait_rom_ready(me) != 0)
 		return -1;
 	return 0;
 }
@@ -812,7 +902,7 @@ static int __must_check ps8751_program(Ps8751 *me,
 			return -1;
 		if (ps8751_spi_fifo_wait_busy(me) != 0)
 			return -1;
-		if (ps8751_wait_spi_rom_ready(me) != 0)
+		if (ps8751_spi_wait_rom_ready(me) != 0)
 			return -1;
 	}
 	printf("ps8751.%d: programmed %uKB in %us\n",
@@ -873,7 +963,7 @@ static int __must_check ps8751_verify(Ps8751 *me,
 				printf("ps8751.%d: mismatch at offset 0x%06x "
 				       "0x%02x != 0x%02x (expected)\n",
 				       me->ec_pd_id,
-				       data_offset + i,
+				       fw_addr + data_offset + i,
 				       readback, data[data_offset + i]);
 				return -1;
 			}
@@ -1024,6 +1114,17 @@ static int ps8751_reflash(Ps8751 *me, const uint8_t *data, size_t data_size)
 		printf("ps8751.%d: chip erase failed\n", me->ec_pd_id);
 		return -1;
 	}
+	/*
+	 * quick sanity check to see if we modified flash
+	 * we'll do a full verify after programming
+	 */
+	status = ps8751_verify(me, PARADE_FW_START,
+			       erased_bytes,
+			       MIN(data_size, sizeof(erased_bytes)));
+	if (status != 0) {
+		printf("ps8751.%d: chip erase verify failed\n", me->ec_pd_id);
+		return -1;
+	}
 
 	if (PS8751_DEBUG > 0) {
 		debug("start post erase 7s delay...\n");
@@ -1081,14 +1182,14 @@ static int ps8751_halt_and_flash(Ps8751 *me,
 
 	if (ps8751_disable_mpu(me) != 0)
 		return -1;
-	if (ps8751_unlock_spi_bus(me) != 0)
+	if (ps8751_spi_flash_unlock(me) != 0)
 		goto enable_mpu;
 	debug("unlock_spi_bus returned\n");
 	if (ps8751_spi_flash_identify(me) == 0 &&
 	    ps8751_reflash(me, image, image_size) == 0)
 		status = 0;
 
-	if (ps8751_lock_spi_bus(me) != 0)
+	if (ps8751_spi_flash_lock(me) != 0)
 		status = -1;
 
 enable_mpu:
