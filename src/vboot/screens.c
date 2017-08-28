@@ -753,7 +753,7 @@ static VbError_t vboot_draw_wait(struct params *p)
 	RETURN_ON_ERROR(vboot_draw_base_screen_without_language(p));
 	RETURN_ON_ERROR(draw_image_locale("update.bmp", p->locale,
 			VB_SCALE_HALF, VB_SCALE_HALF,
-			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 3,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 2,
 			PIVOT_H_CENTER|PIVOT_V_CENTER));
 	return VBERROR_SUCCESS;
 }
