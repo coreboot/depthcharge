@@ -1,22 +1,22 @@
-Nawawala o sira ang Chrome OS.
-Mangyaring maglagay ng recovery USB stick o SD card.
-Mangyaring maglagay ng recovery USB stick.
-Mangyaring maglagay ng recovery SD card o USB stick (tandaan: HINDI gagana ang asul na USB port para sa pagbawi).
-Mangyaring maglagay ng recovery USB stick sa isa sa 4 na port sa LIKOD ng device.
-Walang Chrome OS ang device na iyong inilagay.
+Hindi makita o nasira ang Chrome OS.
+Maglagay ng pang-recover na USB stick o SD card.
+Maglagay ng pang-recover na USB stick.
+Maglagay ng pang-recover na SD card o USB stick (tandaan: HINDI gagana ang asul na USB port sa pag-recover).
+Maglagay ng pang-recover na USB stick sa isa sa 4 na port sa LIKOD ng device.
+Walang Chrome OS sa device na iyong inilagay.
 NAKA-OFF ang pag-verify ng OS
-Pindutin ang SPACE upang paganahing muli.
-Pindutin ang ENTER upang kumpirmahing nais mong i-on ang pag-verify ng OS.
+Pindutin ang SPACE upang muling i-enable.
+Pindutin ang ENTER upang kumpirmahing gusto mong i-on ang pag-verify ng OS.
 Magre-reboot ang iyong system at maki-clear ang lokal na data.
 Upang bumalik, pindutin ang ESC.
 NAKA-ON ang pag-verify ng OS.
 Upang I-OFF ang pag-verify ng OS, pindutin ang ENTER.
 Para sa tulong, bisitahin ang https://google.com/chromeos/recovery
 Code ng error
-Paki-alis ang lahat ng panlabas na device upang umpisahan ang pagbawi.
-Modelo 60061e
-Upang I-OFF ang pag-verify ng OS, pindutin ang button na PAGBAWI.
-Walang sapat na power ang nakakonektang power supply upang patakbuhin ang device na ito.
+Pakialis ang lahat ng external na device upang simulan ang pag-recover.
+Modelong 60061e
+Upang I-OFF ang pag-verify ng OS, pindutin ang button na PAG-RECOVER.
+Walang sapat na power ang nakakonektang power supply upang paganahin ang device na ito.
 Magsa-shut down na ngayon ang Chrome OS.
-Pakigamit ang tamang adaptor at subukang muli.
-Pakialis ang lahat ng nakakonektang device at simulan ang pag-recover
+Pakigamit ang tamang adapter at subukang muli.
+Pakialis ang lahat ng nakakonektang device at simulan ang pag-recover.

@@ -1,13 +1,13 @@
 Kūrėjo parinktys
 Rodyti derinimo informaciją
-Įgalinti pagrindinį patvirtinimą
+Įgalinti OS tikrinimą
 Išjungti
 Kalba
-Paleisti tinklo atvaizdį (dar neveikia)
+Paleisti iš tinklo
 Paleisti pasenusią BIOS sistemą
-Paleisti USB atvaizdį
-Paleisti kūrėjo atvaizdį
+Paleisti iš USB
+Paleisti iš vidinio disko
 Atšaukti
-Patvirtinti patvirtinto paleidimo įgalinimą
-Įgalinti kūrėjo režimą
-Patvirtinti kūrėjo režimo įgalinimą
+Patvirtinti OS tikrinimo įgalinimą
+Išjungti OS tikrinimą
+Patvirtinti OS tikrinimo išjungimą

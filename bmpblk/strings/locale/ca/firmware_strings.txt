@@ -1,22 +1,22 @@
-Falta Chrome OS o bé està malmès.
-Inseriu un llapis USB o bé una targeta SD de recuperació.
-Inseriu un llapis USB de recuperació.
-Inseriu una targeta SD o bé un llapis USB de recuperació (nota: el port USB de color blau NO funcionarà per a la recuperació).
-Inseriu un llapis USB de recuperació en un dels quatre ports de la part POSTERIOR del dispositiu.
-El dispositiu que heu inserit no conté Chrome OS.
-La verificació d'OS està desactivada
-Premeu ESPAI per tornar-la a activar.
-Premeu RETORN per confirmar que voleu activar la verificació d'OS.
+Falta Chrome OS o està malmès.
+Insereix una memòria USB o bé una targeta SD de recuperació.
+Insereix una memòria USB de recuperació.
+Insereix una targeta SD o bé una memòria USB de recuperació (nota: el port USB de color blau NO funcionarà per a la recuperació).
+Insereix una memòria USB de recuperació en un dels 4 ports a la part POSTERIOR del dispositiu.
+El dispositiu que has inserit no conté Chrome OS.
+La verificació del SO està DESACTIVADA
+Prem ESPAI per tornar-la a activar.
+Prem RETORN per confirmar que vols activar la verificació del SO.
 Es reiniciarà el sistema i s'esborraran les dades locals.
-Per tornar enrere, premeu ESC.
-La verificació d'OS està ACTIVADA.
-Per DESACTIVAR la verificació d'OS, premeu RETORN.
-Per obtenir ajuda, visiteu https://google.com/chromeos/recovery
+Per tornar enrere, prem ESC.
+La verificació del SO està ACTIVADA.
+Per DESACTIVAR la verificació del SO, prem RETORN.
+Per obtenir més informació, visita https://google.com/chromeos/recovery
 Codi d'error
-Retireu tots els dispositius externs per començar la recuperació.
-Model 60061e
-Per DESACTIVAR la verificació del SO, premeu el botó RECUPERACIÓ.
-La font d'alimentació que heu connectat no té prou potència per mantenir el dispositiu engegat.
+Treu tots els dispositius externs per iniciar la recuperació.
+Model᠎ 60061e
+Per desactivar la verificació del SO, prem el botó RECUPERACIÓ.
+La font d'alimentació que has connectat no té prou potència per mantenir el dispositiu encès.
 Chrome OS s'apagarà d'aquí a uns instants.
-Utilitzeu l'adaptador correcte i torneu-ho a provar.
-Traieu tots els dispositius connectats i inicieu la recuperació
+Utilitza l'adaptador correcte i torna-ho a provar.
+Treu tots els dispositius connectats i inicia la recuperació.

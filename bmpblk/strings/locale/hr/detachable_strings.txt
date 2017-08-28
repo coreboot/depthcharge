@@ -1,13 +1,13 @@
 Opcije za razvojne programere
 Prikaz informacija o otklanjanju pogrešaka
-Omogućivanje korijenske verifikacije
+Omogući potvrdu OS-a
 Isključivanje
 Jezik
-Pokretanje mrežne slike (još ne funkcionira)
-Pokretanje starog BIOS-a
-Pokretanje USB slike
-Pokretanje slike za razvojnog programera
+Pokretanje s mreže
+Pokretanje legacy BIOS-a
+Pokretanje s USB-a
+Pokretanje s unutarnjeg diska
 Odustani
-Potvrđivanje omogućivanja potvrđenog pokretanja
-Omogućivanje načina rada razvojnog programera
-Potvrđivanje omogućivanja načina rada razvojnog programera
+Potvrdi omogućivanje potvrde OS-a
+Onemogući potvrdu OS-a
+Potvrdi onemogućivanje potvrde OS-a

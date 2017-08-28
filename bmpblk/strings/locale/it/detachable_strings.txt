@@ -1,13 +1,13 @@
 Opzioni sviluppatore
 Mostra informazioni di debug
-Attiva verifica root
+Attiva la verifica del sistema operativo
 Spegni
 Lingua
-Avvia immagine di rete (attualmente non funzionante)
-Avvia BIOS precedente
-Avvia immagine USB
-Avvia immagine sviluppatore
+Avvia dalla rete
+Avvia Legacy BIOS
+Avvia da USB
+Avvia da disco interno
 Annulla
-Conferma attivazione avvio verificato
-Attiva modalità sviluppatore
-Conferma attivazione modalità sviluppatore
+Conferma l'attivazione della verifica del sistema operativo
+Disattiva la verifica del sistema operativo
+Conferma la disattivazione della verifica del sistema operativo

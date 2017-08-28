@@ -1,2 +1,2 @@
-Järjestelmä ottaa käyttöön tärkeää päivitystä.
-Älä katkaise tietokoneen virtaa.
+Järjestelmäsi asentaa tärkeää päivitystä.
+Älä sammuta tietokonetta.

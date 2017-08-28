@@ -5,7 +5,7 @@ Sila masukkan batang USB atau kad SD pemulihan (perhatian: port USB biru TIDAK a
 Sila masukkan batang USB pemulihan ke dalam salah satu daripada 4 port di BELAKANG peranti.
 Peranti yang anda masukkan tidak mengandungi OS Chrome.
 Pengesahan OS DIMATIKAN
-Tekan SPACE untuk mendayakan semula.
+Tekan RUANG untuk mendayakan semula.
 Tekan ENTER untuk mengesahkan yang anda ingin menghidupkan pengesahan OS.
 Sistem anda akan but semula dan data setempat akan dihapuskan.
 Untuk kembali, tekan ESC.
@@ -19,4 +19,4 @@ Untuk MEMATIKAN pengesahan OS, tekan butang PEMULIHAN.
 Bekalan kuasa yang disambungkan tiada kuasa yang mencukupi untuk menjalankan peranti ini.
 OS Chrome akan ditutup sekarang.
 Sila gunakan penyesuai yang betul dan cuba lagi.
-Sila alih keluar semua peranti yang disambungkan, kemudian mulakan pemulihan
+Sila alih keluar semua peranti yang disambungkan dan mulakan pemulihan.

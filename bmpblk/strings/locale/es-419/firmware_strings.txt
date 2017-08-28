@@ -1,22 +1,22 @@
-El Sistema operativo de Chrome no se encuentra o está dañado.
+Se dañó o no se instaló el Sistema operativo Chrome.
 Inserta una tarjeta SD o un dispositivo de memoria USB de recuperación.
 Inserta un dispositivo de memoria USB de recuperación.
-Inserta un dispositivo de memoria USB o una tarjeta SD de recuperación (ten en cuenta que el puerto USB azul NO funcionará para la recuperación de datos).
-Inserta un dispositivo de memoria USB de recuperación en alguno de los cuatro puertos de la parte de ATRÁS del dispositivo.
-El dispositivo que insertaste no cuenta con el Sistema operativo de Chrome
-La verificación del SO está DESACTIVADA.
-Presiona ESPACIO para volver a activarla.
-Presiona ENTER para confirmar que deseas activar la verificación del SO.
-Tu sistema se reiniciará y se borrarán los datos locales.
-Para volver atrás, presiona ESC.
+Inserta un dispositivo de memoria USB o una tarjeta SD de recuperación (ten en cuenta que el puerto USB azul NO funcionará para la recuperación del sistema).
+Inserta un dispositivo de memoria USB de recuperación en alguno de los 4 puertos de la parte POSTERIOR del dispositivo.
+El dispositivo que insertaste no contiene el Sistema operativo Chrome.
+La verificación del SO está DESACTIVADA
+Presiona ESPACIO para volver a habilitarla.
+Presiona INTRO para confirmar que deseas activar la verificación del SO.
+Se reiniciará el sistema y se borrarán los datos locales.
+Para volver hacia atrás, presiona ESC.
 La verificación del SO está ACTIVADA.
-Para DESACTIVAR la verificación del SO, presiona ENTER.
-Para obtener ayuda, visita https://google.com/chromeos/recovery.
+Para DESACTIVAR la verificación del SO, presiona INTRO.
+Para obtener ayuda, visita https://google.com/chromeos/recovery
 Código de error
-Retira todos los dispositivos externos para iniciar la recuperación.
+Quita todos los dispositivos externos para iniciar la recuperación.
 Modelo 60061e
-Para desactivar la verificación del SO, presiona el botón de RECUPERACIÓN.
-La fuente de alimentación conectada no tiene suficiente energía para hacer funcionar este dispositivo.
+Para DESACTIVAR la verificación del SO, presiona el botón RECUPERACIÓN.
+La fuente de alimentación que se conectó no tiene energía suficiente para hacer funcionar este dispositivo.
 El Sistema operativo Chrome se cerrará.
-Utiliza el adaptador correcto y vuelve a intentarlo.
-Quita todos los dispositivos conectados y comienza la recuperación
+Usa el adaptador correcto y vuelve a intentarlo.
+Quita todos los dispositivos conectados y comienza la recuperación.

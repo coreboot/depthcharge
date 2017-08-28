@@ -1,2 +1,2 @@
-El sistema está aplicando una actualización importante.
-No apagues el sistema.
+El sistema está instalando una actualización importante.
+No apagues el dispositivo.

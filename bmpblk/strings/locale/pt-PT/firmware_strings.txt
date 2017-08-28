@@ -1,22 +1,22 @@
 O SO Chrome está em falta ou danificado.
 Insira um cartão SD ou memory stick USB de recuperação.
 Insira um memory stick USB de recuperação.
-Insira um cartão SD ou memory stick USB de recuperação (nota: a porta USB azul NÃO funcionará para recuperação).
+Insira um cartão SD ou memory stick USB de recuperação (nota: a porta USB azul NÃO funciona para recuperação).
 Insira um memory stick USB de recuperação numa das 4 portas na PARTE POSTERIOR do dispositivo.
 O dispositivo que inseriu não contém o SO Chrome.
-A confirmação do SO está DESATIVADA
-Prima ESPAÇO para reativar.
-Prima ENTER para confirmar que pretende ativar a confirmação do SO.
-O sistema irá reiniciar e os dados locais serão apagados.
+A Validação do SO está DESATIVADA
+Prima ESPAÇO para reativá-la.
+Prima ENTER para confirmar que pretende ativar a Validação do SO.
+O sistema reinicia e os dados locais são apagados.
 Para retroceder, prima ESC.
-A confirmação do SO está ATIVADA.
-Para definir a confirmação do SO como DESATIVADA, prima ENTER.
+A Validação do SO está ATIVADA.
+Para definir a Validação do SO como DESATIVADA, prima ENTER.
 Para obter ajuda, visite https://google.com/chromeos/recovery
-Código de erro
-Retire todos os dispositivos externos para iniciar a recuperação.
+Código do erro
+Remova todos os dispositivos externos para iniciar a recuperação.
 Modelo 60061e
-Para desativar a confirmação do SO, prima o botão RECOVERY.
+Para desativar a Validação do SO, prima o botão RECOVERY.
 A fonte de alimentação ligada não tem energia suficiente para alimentar este dispositivo.
 O SO Chrome será agora encerrado.
 Utilize o carregador correto e tente novamente.
-Remova todos os dispositivos ligados e inicie a recuperação
+Remova todos os dispositivos ligados e inicie a recuperação.

@@ -4,19 +4,19 @@ Yhdistä palautustiedot sisältävä USB-muisti.
 Yhdistä palautustiedot sisältävä USB-muisti tai SD-kortti (huomaa: sinistä USB-porttia EI voi käyttää palauttamiseen).
 Yhdistä palautustiedot sisältävä USB-muisti johonkin laitteen TAKAOSAN neljästä USB-portista.
 Yhdistämäsi laite EI sisällä Chrome-käyttöjärjestelmää.
-Käyttöjärjestelmän todentaminen on POIS KÄYTÖSTÄ.
-Ota se käyttöön painamalla välilyöntiä.
+Käyttöjärjestelmän tarkistus on POISSA KÄYTÖSTÄ.
+Ota uudelleen käyttöön painamalla VÄLILYÖNTIÄ.
 Vahvista käyttöjärjestelmän todentamisen käyttöönotto painamalla ENTER.
 Järjestelmä käynnistyy uudelleen ja paikalliset tiedot poistetaan.
 Paina ESC, jos haluat palata takaisin.
 Käyttöjärjestelmän todentaminen on KÄYTÖSSÄ.
 Poista käyttöjärjestelmän todentaminen käytöstä painamalla ENTER.
-Saat ohjeita osoitteessa https://google.com/chromeos/recovery
+Saat lisäohjeita osoitteesta https://google.com/chromeos/recovery
 Virhekoodi
 Aloita palautus poistamalla kaikki ulkoiset laitteet.
 Malli 60061e
-Poista käyttöjärjestelmän vahvistaminen käytöstä painamalla PALAUTUS-painiketta.
+Jos haluat, että käyttöjärjestelmän tarkistus on POISSA KÄYTÖSTÄ, paina PALAUTUS-painiketta.
 Yhdistetyn virtalähteen teho ei riitä laitteen käynnissä pitämiseen.
 Chrome-käyttöjärjestelmä sammutetaan.
 Yhdistä sopiva virtalähde ja yritä uudelleen.
-Irrota kaikki yhdistetyt laitteet ja aloita palauttaminen.
+Irrota kaikki yhdistetyt laitteet ja aloita palautus.

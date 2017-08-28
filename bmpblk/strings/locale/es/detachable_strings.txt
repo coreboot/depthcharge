@@ -1,13 +1,13 @@
 Opciones para desarrolladores
 Mostrar la información de depuración
-Habilitar la verificación de dispositivos root
+Habilitar la función Verificación de SO
 Apagar
 Idioma
-Iniciar con imagen de red (aún no funciona)
-Iniciar con BIOS antiguo
-Iniciar con imagen USB
-Iniciar con imagen de desarrollador
+Iniciar desde la red
+Iniciar BIOS antiguo
+Iniciar desde USB
+Iniciar desde el disco interno
 Cancelar
-Confirmar que quieres habilitar el inicio verificado
-Habilitar modo desarrollador
-Confirmar que quieres habilitar el modo desarrollador
+Confirmar que quieres habilitar la función Verificación de SO
+Inhabilitar la función Verificación de SO
+Confirmar que quieres inhabilitar la función Verificación de SO

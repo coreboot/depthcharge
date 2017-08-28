@@ -1,13 +1,13 @@
 Opciones para programador
 Mostrar datos de depuración
-Habilitar verificación de raíz
+Habilitar verificación del SO
 Apagar
 Idioma
-Iniciar imagen de red (aún no funciona)
+Iniciar desde la red
 Iniciar Legacy BIOS
-Iniciar imagen de USB
-Iniciar imagen de programador
+Iniciar desde USB
+Iniciar desde el disco interno
 Cancelar
-Confirmar habilitación de inicio verificado
-Habilitar modo de programador
-Confirmar habilitación de modo de programador
+Confirmar habilitación de verificación del SO
+Inhabilitar verificación del SO
+Confirmar inhabilitación de verificación del SO

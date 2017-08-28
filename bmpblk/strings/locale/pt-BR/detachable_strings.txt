@@ -1,13 +1,13 @@
 Opções do desenvolvedor
 Mostrar informações de depuração
-Ativar verificação de raiz
+Ativar o recurso Verificação do SO
 Desligar
 Idioma
-Inicializar imagem de rede (não funciona no momento)
+Inicializar a partir da rede
 Inicializar BIOS legado
-Inicializar imagem do USB
-Inicializar imagem do desenvolvedor
+Inicializar a partir do USB
+Inicializar a partir do disco interno
 Cancelar
-Confirmar ativação de inicialização verificada
-Ativar modo de desenvolvedor
-Confirmar ativação de modo de desenvolvedor
+Confirmar ativação do recurso Verificação do SO
+Desativar o recurso Verificação do SO
+Confirmar a desativação do recurso Verificação do SO

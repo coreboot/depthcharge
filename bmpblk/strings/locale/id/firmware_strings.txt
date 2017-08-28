@@ -1,22 +1,22 @@
 Chrome OS tidak ada atau rusak.
-Masukkan stik USB atau kartu SD pemulihan.
-Masukkan stik USB pemulihan.
-Masukkan kartu SD atau stik USB pemulihan (catatan: port USB biru TIDAK akan berfungsi untuk pemulihan).
-Masukkan stik USB ke salah satu dari 4 port di bagian BELAKANG perangkat.
+Harap masukkan stik USB atau kartu SD pemulihan.
+Harap masukkan stik USB pemulihan.
+Harap masukkan kartu SD atau stik USB pemulihan (catatan: port USB berwarna biru TIDAK akan berfungsi untuk pemulihan).
+Harap masukkan stik USB ke salah satu dari 4 port di bagian BELAKANG perangkat.
 Perangkat yang Anda masukkan tidak berisi Chrome OS.
-Verifikasi OS MATI
-Tekan SPASI untuk mengaktifkan kembali.
+Verifikasi OS NONAKTIF
+Tekan SPACE untuk mengaktifkan kembali.
 Tekan ENTER untuk mengonfirmasi bahwa Anda ingin mengaktifkan verifikasi OS.
-Sistem Anda akan dinyalakan ulang dan data lokal akan dihapus.
+Sistem Anda akan reboot dan data lokal akan dihapus.
 Untuk kembali, tekan ESC.
-Verifikasi OS NYALA.
-Untuk MEMATIKAN verifikasi OS, tekan ENTER.
-Untuk bantuan, kunjungi https://google.com/chromeos/recovery
-Kode kesalahan
-Lepaskan semua perangkat eksternal untuk memulai pemulihan.
+Verifikasi OS AKTIF.
+Untuk MENONAKTIFKAN verifikasi OS, tekan ENTER.
+Untuk mendapat bantuan, buka https://google.com/chromeos/recovery
+Kode error
+Harap hapus semua perangkat eksternal untuk memulai pemulihan.
 Model 60061e
 Untuk MENONAKTIFKAN verifikasi OS, tekan tombol PEMULIHAN.
-Penyedia daya yang terhubung tidak memiliki cukup daya untuk menjalankan perangkat ini.
+Daya pada sumber listrik yang terhubung tidak cukup untuk menjalankan perangkat ini.
 Chrome OS akan dimatikan sekarang.
-Gunakan adaptor yang sesuai dan coba lagi.
-Hapus semua perangkat yang tersambung dan mulai pemulihan
+Harap gunakan adaptor yang tepat kemudian coba lagi.
+Harap hapus semua perangkat yang terhubung lalu mulai pemulihan.

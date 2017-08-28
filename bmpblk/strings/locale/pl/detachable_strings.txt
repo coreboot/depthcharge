@@ -1,13 +1,13 @@
 Opcje programisty
 Pokaż dane debugowania
-Włącz weryfikację roota
+Włącz weryfikację systemu operacyjnego
 Wyłącz zasilanie
 Język
-Rozruch z obrazu sieciowego (jeszcze nie działa)
+Rozruch z sieci
 Rozruch ze starszej wersji systemu BIOS
-Rozruch z obrazu USB
-Rozruch z obrazu od programisty
+Rozruch z dysku USB
+Rozruch z dysku wewnętrznego
 Anuluj
-Potwierdź włączenie rozruchu w trybie zweryfikowanym
-Włącz tryb programisty
-Potwierdź włączenie trybu programisty
+Potwierdź włączenie weryfikacji systemu operacyjnego
+Wyłącz weryfikację systemu operacyjnego
+Potwierdź wyłączenie weryfikacji systemu operacyjnego

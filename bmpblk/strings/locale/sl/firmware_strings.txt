@@ -1,22 +1,22 @@
-Sistema Chrome OS ni ali pa je poškodovan.
-Vstavite pomnilnik USB ali kartico SD za obnovitev.
-Vstavite pomnilnik USB za obnovitev.
-Vstavite kartico SD ali pomnilnik USB za obnovitev (opomba: modra vrata USB NE delujejo za obnovitev).
-Pomnilnik USB za obnovitev vstavite v ena od štirih vrat na HRBTNI STRANI naprave.
-Na vstavljeni napravi ni sistema Chrome OS.
+Ni sistema OS Chrome ali pa je poškodovan.
+Vstavite ključek USB ali kartico SD za obnovitev.
+Vstavite ključek USB za obnovitev.
+Vstavite kartico SD ali ključek USB za obnovitev (opomba: modra vrata USB NE delujejo za obnovitev).
+Ključek USB za obnovitev vstavite v ena od štirih vrat na HRBTNI STRANI naprave.
+Vstavljena naprava ne vsebuje sistema OS Chrome.
 Preverjanje operacijskega sistema je IZKLOPLJENO
-Pritisnite preslednico, da ga spet vklopite.
-Pritisnite ENTER za potrditev, da želite vklopiti preverjanje operacijskega sistema.
+Pritisnite PRESLEDNICO, če ga želite znova omogočiti.
+Pritisnite ENTER, če želite potrditi, da želite vklopiti preverjanje operacijskega sistema.
 Sistem se bo znova zagnal in lokalni podatki bodo izbrisani.
 Če se želite vrniti, pritisnite ESC.
 Preverjanje operacijskega sistema je VKLOPLJENO.
 Če želite IZKLOPITI preverjanje operacijskega sistema, pritisnite ENTER.
-Pomoč najdete na https://google.com/chromeos/recovery
+Pomoč je na voljo na naslovu https://google.com/chromeos/recovery
 Koda napake
-Če želite začeti obnovitev, odstranite vse zunanje naprave.
+Odstranite vse zunanje naprave, če želite začeti obnovitev.
 Model 60061e
-Če želite IZKLOPITI preverjanje operacijskega sistema, pritisnite OBNOVITEV.
+Če želite IZKLOPITI preverjanje operacijskega sistema, pritisnite gumb za OBNOVITEV.
 Priključeno napajanje je prešibko za to napravo.
-Sistem Chrome OS se bo zaustavil.
+Sistem OS Chrome se bo zaustavil.
 Uporabite ustrezen napajalnik in poskusite znova.
-Odstranite vse povezane naprave in začnite obnovitev
+Odstranite vse povezane naprave in začnite obnovitev.

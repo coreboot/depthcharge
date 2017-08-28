@@ -1,22 +1,22 @@
-Systém OS Chrome chýba alebo je poškodený.
-Vložte kľúč USB alebo kartu SD na obnovenie.
+Systém Chrome OS chýba alebo je poškodený.
+Vložte kľúč USB alebo SD kartu na obnovenie.
 Vložte kľúč USB na obnovenie.
-Vložte kartu SD alebo kľúč USB na obnovenie (poznámka: modrý port USB NIE JE MOŽNÉ použiť na obnovenie).
+Vložte SD kartu alebo kľúč USB na obnovenie (poznámka: modrý port USB NIE JE MOŽNÉ použiť na obnovenie).
 Vložte kľúč USB do jedného zo 4 portov na ZADNEJ strane zariadenia.
-Vložené zariadenie neobsahuje systém OS Chrome.
-Verifikácia OS je VYPNUTÁ
-Ak ju chcete znova povoliť, stlačte MEDZERNÍK.
-Stlačením klávesu ENTER potvrdíte, že chcete zapnúť verifikáciu OS.
-Systém sa reštartuje a miestne údaje sa vymažú.
+Vložené zariadenie neobsahuje systém Chrome OS.
+Overenie operačného systému je VYPNUTÉ
+Stlačením MEDZERNÍKA ho obnovíte.
+Stlačením klávesa ENTER potvrdíte, že chcete zapnúť overenie operačného systému.
+Systém sa reštartuje a miestne dáta sa vymažú.
 Ak sa chcete vrátiť späť, stlačte kláves ESC.
-Verifikácia OS je ZAPNUTÁ.
-Ak chcete verifikáciu OS VYPNÚŤ, stlačte kláves ENTER.
-Pomocníka nájdete na stránke https://google.com/chromeos/recovery
+Overenie operačného systému je ZAPNUTÉ.
+Ak chcete overenie operačného systému VYPNÚŤ, stlačte kláves ENTER.
+Pomoc nájdete na adrese https://google.com/chromeos/recovery
 Kód chyby
-Pred spustením obnovenia odpojte všetky externé zariadenia.
+Ak chcete spustiť obnovenie, odstráňte všetky pripojené zariadenia.
 Model 60061e
-Ak chcete vypnúť overenie operačného systému, stlačte tlačidlo RECOVERY (Obnovenie).
+Ak chcete VYPNÚŤ overenie operačného systému, stlačte tlačidlo RECOVERY (Obnovenie).
 Pripojený zdroj napájania pre toto zariadenie nemá dostatočný výkon.
 Systém OS Chrome sa teraz vypne.
 Použite správny adaptér a skúste to znova.
-Odstráňte všetky pripojené zariadenia a začnite obnovenie
+Odstráňte všetky pripojené zariadenia a spustite obnovenie.

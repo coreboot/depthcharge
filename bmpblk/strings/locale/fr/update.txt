@@ -1,2 +1,2 @@
-Une mise à jour critique est en cours d'installation sur votre système.
-Veuillez ne pas l'éteindre.
+Votre système applique actuellement une mise à jour critique.
+Ne l'éteignez pas.

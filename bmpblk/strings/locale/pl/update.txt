@@ -1,2 +1,2 @@
-System instaluje ważną aktualizację.
+System instaluje krytyczną aktualizację.
 Nie wyłączaj urządzenia.

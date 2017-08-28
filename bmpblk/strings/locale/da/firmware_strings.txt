@@ -1,22 +1,22 @@
 Chrome OS mangler eller er beskadiget.
-Indsæt en USB-nøgle eller et SD-kort til genoprettelse.
-Indsæt en USB-nøgle til genoprettelse.
-Indsæt et SD-kort eller en USB-nøgle til genoprettelse (bemærk, at den blå USB-port IKKE kan bruges til genoprettelse).
-Indsæt en USB-nøgle til genoprettelse i en af de fire porte på enhedens bagside.
+Indsæt en USB-nøgle eller et SD-kort til gendannelse.
+Indsæt en USB-nøgle til gendannelse.
+Indsæt et SD-kort eller en USB-nøgle til gendannelse. (Bemærk! Den blå USB-port kan IKKE bruges til gendannelse).
+Indsæt en USB-nøgle til gendannelse i en af de fire porte bag på enheden.
 Den enhed, du har indsat, indeholder ikke Chrome OS.
-Bekræftelse af operativsystemet er slået FRA
-Tryk på MELLEMRUMSTASTEN for at genaktivere.
-Tryk på ENTER for at bekræfte, at du vil slå bekræftelse af operativsystemet til.
-Systemet vil blive genstartet og lokale data ryddet.
+OS-bekræftelse er slået FRA
+Tryk på mellemrumstasten for at genaktivere.
+Tryk på ENTER for at bekræfte, at du vil aktivere OS-bekræftelse.
+Systemet genstartes og lokale data ryddes.
 Tryk på ESC for at gå tilbage.
-Bekræftelse af operativsystemet er slået TIL.
-Tryk på ENTER for at slå bekræftelse af operativsystemet FRA.
-Du kan få hjælp på https://google.com/chromeos/recovery
+OS-bekræftelse er slået TIL.
+Tryk på ENTER for at slå OS-bekræftelse FRA.
+Se https://google.com/chromeos/recovery, hvis du har brug for hjælp
 Fejlkode
-Fjern alle eksterne enheder for at påbegynde genoprettelse.
+Fjern alle eksterne enheder for at starte gendannelsen.
 Model 60061e
 Du kan slå OS-bekræftelse FRA ved at trykke på knappen GENDANNELSE.
-Den tilsluttede strømforsyning leverer ikke strøm nok til at drive denne enhed.
+Den tilsluttede strømforsyning leverer ikke strøm nok til, at denne enhed kan køre.
 Chrome OS lukker nu ned.
 Brug den rigtige adapter, og prøv igen.
-Fjern alle tilsluttede enheder, og start gendannelsen
+Fjern alle tilsluttede enheder, og start gendannelsen.

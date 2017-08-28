@@ -1,13 +1,13 @@
 Utvecklaralternativ
 Visa felsökningsinformation
-Aktivera rotverifiering
+Aktivera Verifiering av operativsystemet
 Stäng av
 Språk
-Starta nätverksavbild (fungerar inte ännu)
-Starta äldre BIOS
-Starta USB-avbild
-Starta utvecklaravbild
+Starta från nätverk
+Starta Legacy BIOS
+Starta från USB
+Starta från intern disk
 Avbryt
-Bekräfta att du vill aktivera verifierad start
-Aktivera utvecklarläget
-Bekräfta att du vill aktivera utvecklarläget
+Bekräfta att du vill aktivera Verifiering av operativsystemet
+Inaktivera Verifiering av operativsystemet
+Bekräfta att du vill inaktivera Verifiering av operativsystemet

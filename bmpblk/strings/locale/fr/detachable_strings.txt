@@ -1,13 +1,13 @@
 Options pour les développeurs
 Afficher les informations de débogage
-Activer la validation racine
+Activer la validation du système d'exploitation
 Éteindre
 Langue
-Démarrer l'image réseau (ne fonctionne pas encore)
+Démarrer à partir du réseau
 Démarrer le BIOS Legacy
-Démarrer l'image USB
-Démarrer l'image développeur
+Démarrer à partir d'une clé USB
+Démarrer à partir du disque interne
 Annuler
-Confirmer l'activation du démarrage validé
-Activer le mode développeur
-Confirmer l'activation du mode développeur
+Confirmer l'activation de la validation du système d'exploitation
+Désactiver la validation du système d'exploitation
+Confirmer la désactivation de la validation du système d'exploitation

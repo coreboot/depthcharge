@@ -1,13 +1,13 @@
 Izstrādātājiem paredzētās opcijas
 Rādīt atkļūdošanas informāciju
-Iespējot saknes verifikāciju
+Iespējot OS verifikāciju
 Izslēgt
 Valoda
-Palaist no tīkla attēla (vēl nedarbojas)
-Palaist no mantotā BIOS
-Palaist no USB attēla
-Palaist no izstrādātāja attēla
+Palaist no tīkla
+Palaist no Legacy BIOS
+Palaist no USB
+Palaist no iekšējā diska
 Atcelt
-Apstiprināt drošās palaišanas iespējošanu
-Iespējot izstrādātāja režīmu
-Apstiprināt izstrādātāja režīma iespējošanu
+Apstiprināt OS verifikācijas iespējošanu
+Atspējot OS verifikāciju
+Apstiprināt OS verifikācijas atspējošanu

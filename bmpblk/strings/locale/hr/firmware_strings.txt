@@ -5,18 +5,18 @@ Umetnite SD karticu ili USB memorijski uređaj za oporavak (napomena: plavi USB 
 Umetnite USB memorijski uređaj za oporavak u jedan od četiri priključka sa STRAŽNJE strane uređaja.
 Uređaj koji ste umetnuli ne sadrži OS Chrome.
 Potvrda OS-a ISKLJUČENA je
-Pritisnite RAZMAKNICU da biste ju ponovo omogućili.
+Pritisnite RAZMAKNICU kako biste je ponovo omogućili.
 Pritisnite tipku ENTER kako biste potvrdili da želite uključiti potvrdu OS-a.
 Sustav će se ponovo pokrenuti i lokalni će podaci biti obrisani.
 Za povratak pritisnite ESC.
 Potvrda OS-a UKLJUČENA je.
 Da biste ISKLJUČILI potvrdu OS-a, pritisnite tipku ENTER.
-Pomoć potražite na stranici https://google.com/chromeos/recovery
+Pomoć potražite na https://google.com/chromeos/recovery
 Kôd pogreške
-Uklonite sve vanjske uređaje da biste pokrenuli oporavak.
+Uklonite sve vanjske uređaje za početak oporavka.
 Model 60061e
 Da biste isključili potvrđivanje OS-a, pritisnite gumb za oporavak.
 Priključeni izvor napajanja nema dovoljno snage za napajanje ovog uređaja.
 OS Chrome sada će se isključiti.
 Priključite odgovarajući adapter i pokušajte ponovno.
-Uklonite sve povezane uređaje i pokrenite oporavak
+Uklonite sve povezane uređaje i pokrenite oporavak.

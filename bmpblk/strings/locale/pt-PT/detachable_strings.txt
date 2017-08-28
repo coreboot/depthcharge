@@ -1,13 +1,13 @@
 Opções de programador
 Mostrar informações de depuração
-Ativar validação da raiz
+Ativar Validação do SO
 Desligar
 Idioma
-Arrancar a partir da imagem da rede (ainda não funciona)
+Arrancar a partir da rede
 Arrancar a partir do BIOS antigo
-Arrancar a partir da imagem no dispositivo USB
-Arrancar a partir da imagem do programador
+Arrancar a partir de USB
+Arrancar a partir de disco interno
 Cancelar
-Confirmar ativação do arranque validado
-Ativar modo de programador
-Confirmar ativação do modo de programador
+Confirmar ativação da Validação do SO
+Desativar Validação do SO
+Confirmar desativação da Validação do SO

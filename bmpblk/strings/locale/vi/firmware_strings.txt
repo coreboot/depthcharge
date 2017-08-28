@@ -3,20 +3,20 @@ Vui lòng cắm thẻ USB hoặc thẻ SD khôi phục.
 Vui lòng cắm thẻ USB khôi phục.
 Vui lòng cắm thẻ SD hoặc thẻ USB khôi phục (lưu ý: cổng USB màu xanh lam KHÔNG sử dụng để khôi phục).
 Vui lòng cắm thẻ USB khôi phục vào một trong 4 cổng ở PHÍA SAU thiết bị.
-Thiết bị bạn đã cắm không chứa Chrome OS.
-Xác minh OS đang TẮT
-Nhấn SPACE để bật lại.
-Nhấn ENTER để xác nhận bạn muốn bật xác minh OS.
-Hệ thống của bạn sẽ khởi động lại và dữ liệu cục bộ sẽ bị xóa.
-Để quay lại, nhấn ESC.
-Xác minh OS đang BẬT.
-Để TẮT xác minh OS, nhấn ENTER.
-Để được trợ giúp, hãy truy cập https://google.com/chromeos/recovery
+Thiết bị bạn đã cắm không có Chrome OS.
+Tính năng Xác minh OS đã TẮT
+Hãy nhấn vào PHÍM CÁCH để bật lại.
+Hãy nhấn vào phím ENTER để xác nhận bạn muốn bật tính năng Xác minh OS.
+Hệ thống của bạn sẽ khởi động lại và dữ liệu trên máy sẽ bị xóa.
+Để quay lại, hãy nhấn vào phím ESC.
+Tính năng Xác minh OS đang BẬT.
+Để TẮT tính năng Xác minh OS, hãy nhấn vào phím ENTER.
+Để được trợ giúp, hãy truy cập vào https://google.com/chromeos/recovery
 Mã lỗi
-Vui lòng tháo tất cả các thiết bị ngoài để bắt đầu khôi phục.
-Mô hình 60061e
-Để TẮT xác minh OS, nhấn nút KHÔI PHỤC.
+Vui lòng tháo tất cả các thiết bị bên ngoài để bắt đầu quá trình khôi phục.
+Kiểu máy 60061e
+Để TẮT tính năng Xác minh OS, hãy nhấn vào nút KHÔI PHỤC.
 Nguồn điện được kết nối không có đủ điện để chạy thiết bị này.
 Chrome OS sẽ tắt bây giờ.
-Hãy sử dụng bộ đổi nguồn đúng và thử lại.
-Vui lòng tháo tất cả các thiết bị đã kết nối và bắt đầu khôi phục
+Vui lòng sử dụng đúng bộ chuyển đổi điện và thử lại.
+Vui lòng tháo tất cả các thiết bị đã kết nối và bắt đầu quá trình khôi phục.

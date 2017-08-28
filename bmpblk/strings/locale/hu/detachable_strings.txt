@@ -1,13 +1,13 @@
 Fejlesztői beállítások
 Hibakeresési adatok megjelenítése
-Gyökérazonosítás engedélyezése
+Operációsrendszer-ellenőrzés engedélyezése
 Kikapcsolás
 Nyelv
-Hálózati képfájl indítása (még nem működik)
+Indítás hálózatról
 Régi BIOS indítása
-USB-képfájl indítása
-Fejlesztői képfájl indítása
+Indítás USB-ről
+Indítás belső lemezről
 Mégse
-Ellenőrzött rendszerindítás engedélyezésének megerősítése
-Fejlesztői mód engedélyezése
-Fejlesztői mód engedélyezésének megerősítése
+Operációsrendszer-ellenőrzés engedélyezésének megerősítése
+Operációsrendszer-ellenőrzés letiltása
+Operációsrendszer-ellenőrzés letiltásának megerősítése

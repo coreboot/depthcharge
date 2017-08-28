@@ -1,17 +1,17 @@
-Trūkst operētājsistēmas Chrome OS, vai tā ir bojāta.
-Lūdzu, ievietojiet atkopšanas USB atmiņas ierīci vai SD karti.
-Lūdzu, ievietojiet atkopšanas USB atmiņas ierīci.
-Lūdzu, ievietojiet atkopšanas SD karti vai USB atmiņas ierīci. (Piezīme. Zilā USB pieslēgvieta NEDARBOJAS atkopšanai.)
-Lūdzu, ievietojiet USB atmiņas ierīci vienā no 4 pieslēgvietām ierīces AIZMUGURĒ.
-Ievietotajā ierīcē nav operētājsistēmas Chrome OS.
-OS verifikācija ir IZSLĒGTA.
-Lai to atkārtoti iespējotu, nospiediet ATSTARPES taustiņu.
-Nospiediet taustiņu ENTER, lai apstiprinātu, ka vēlaties ieslēgt OS verifikāciju.
-Sistēma tiks atsāknēta, un vietējie dati tiks dzēsti.
+Trūkst operētājsistēmas Chrome OS, vai tā ir bojāta.
+Lūdzu, ievietojiet atkopšanas USB atmiņas ierīci vai SD karti.
+Lūdzu, ievietojiet atkopšanas USB atmiņas ierīci.
+Lūdzu, ievietojiet atkopšanas SD karti vai USB atmiņas ierīci. (Piezīme. Zilā USB pieslēgvieta NEDARBOJAS atkopšanai.)
+Lūdzu, ievietojiet USB atmiņas ierīci vienā no 4 pieslēgvietām ierīces AIZMUGURĒ.
+Ievietotajā ierīcē nav operētājsistēmas Chrome OS.
+OS verifikācija ir IZSLĒGTA.
+Lai atkārtoti iespējotu, nospiediet ATSTARPES taustiņu.
+Nospiediet taustiņu ENTER, lai apstiprinātu, ka vēlaties ieslēgt OS verifikāciju.
+Sistēma tiks atkārtoti palaista, un vietējie dati tiks izdzēsti.
 Lai atgrieztos, nospiediet taustiņu ESC.
-OS verifikācija ir IESLĒGTA.
-Lai IZSLĒGTU OS verifikāciju, nospiediet taustiņu ENTER.
-Lai saņemtu palīdzību, apmeklējiet vietni https://google.com/chromeos/recovery.
+OS verifikācija ir IESLĒGTA.
+Lai IZSLĒGTU OS verifikāciju, nospiediet taustiņu ENTER.
+Lai saņemtu palīdzību, apmeklējiet vietni https://google.com/chromeos/recovery
 Kļūdas kods
 Lūdzu, noņemiet visas ārējās ierīces, lai sāktu atkopšanu.
 Modelis 60061e

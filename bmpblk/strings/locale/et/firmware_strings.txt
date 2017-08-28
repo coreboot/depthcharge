@@ -5,18 +5,18 @@ Sisestage taastamiseks mõeldud SD-kaart või USB-mälupulk (märkus: sinine USB
 Sisestage taastamiseks mõeldud USB-mälupulk ühte neljast pordist seadme TAGAKÜLJEL.
 Sisestatud seade ei sisalda Chrome OS-i.
 OS-i kinnitamine on VÄLJAS
-Selle uuesti lubamiseks vajutage TÜHIKUT.
+Uuesti lubamiseks vajutage TÜHIKUT.
 OS-i kinnitamise sisselülitamise kinnitamiseks vajutage sisestusklahvi ENTER.
 Teie süsteem lähtestatakse ja kohalikud andmed kustutatakse.
-Tagasi minemiseks vajutage paoklahvi ESC.
+Tagasiminemiseks vajutage paoklahvi ESC.
 OS-i kinnitamine on SEES.
-OS-i kinnitamise VÄLJA lülitamiseks vajutage sisestusklahvi ENTER.
+OS-i kinnitamise VÄLJALÜLITAMISEKS vajutage sisestusklahvi ENTER.
 Abi saamiseks külastage saiti https://google.com/chromeos/recovery
 Veakood
 Taastamise alustamiseks eemaldage kõik välised seadmed.
 Mudel 60061e
-OS-i kinnitamise lülitamiseks asendisse VÄLJAS vajutage nuppu TAASTE.
+OS-i kinnitamise VÄLJALÜLITAMISEKS vajutage nuppu TAASTAMINE.
 Ühendatud toiteallikas pole seadme käitamiseks piisavalt võimas.
 Chrome OS lülitub nüüd välja.
 Kasutage õiget adapterit ja proovige uuesti.
-Eemaldage kõik ühendatud seadmed ja alustage taastamist
+Eemaldage kõik ühendatud seadmed ja alustage taastamist.

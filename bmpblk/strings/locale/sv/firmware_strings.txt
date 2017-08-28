@@ -5,18 +5,18 @@ Anslut ett USB-minne eller SD-kort för återställning (Obs! Den blå USB-porte
 Anslut ett USB-minne till någon av de fyra portarna på enhetens BAKSIDA.
 Chrome OS finns inte på enheten som du har anslutit.
 Verifiering av operativsystemet är AV
-Aktivera verifieringen på nytt genom att trycka på MELLANSLAG.
+Återaktivera genom att trycka på BLANKSTEG.
 Bekräfta att du vill aktivera verifiering av operativsystemet genom att trycka på RETUR.
-Systemet startas om, och lokala data tas bort.
-Tryck på Esc så återvänder du till föregående sida.
+Systemet startas om och lokal data tas bort.
+Tryck på ESC så återvänder du till föregående sida.
 Verifiering av operativsystemet är PÅ.
 Inaktivera verifiering av operativsystemet genom att trycka på RETUR.
-Om du behöver hjälp besöker du https://google.com/chromeos/recovery
+Besök https://google.com/chromeos/recovery om du behöver hjälp
 Felkod
-Ta bort alla externa enheter och påbörja återställningen.
+Ta bort alla externa enheter för att påbörja återställningen.
 Modell 60061e
-Om du vill INAKTIVERA OS-verifiering trycker du på ÅTERSTÄLLNINGSKNAPPEN.
+Om du vill INAKTIVERA verifiering av operativsystemet trycker du på ÅTERSTÄLLNINGSKNAPPEN.
 Det anslutna nätadaptern är för svag för att driva den här enheten.
 Chrome OS stängs nu av.
 Anslut rätt adapter och försök igen.
-Ta bort alla anslutna enheter och påbörja återställningen
+Ta bort alla anslutna enheter och påbörja återställningen.

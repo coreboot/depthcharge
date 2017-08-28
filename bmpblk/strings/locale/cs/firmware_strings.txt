@@ -1,22 +1,22 @@
 Systém Chrome OS chybí nebo je poškozen.
-Vložte jednotku USB nebo kartu SD pro obnovení.
+Vložte jednotku USB nebo SD kartu pro obnovení.
 Vložte jednotku USB pro obnovení.
-Vložte kartu SD nebo jednotku USB pro obnovení. (Poznámka: modrý port USB pro obnovení NELZE použít.)
+Vložte SD kartu nebo jednotku USB pro obnovení. (Poznámka: modrý port USB pro obnovení NELZE použít.)
 Vložte jednotku USB do jednoho ze čtyř portů na ZADNÍ straně zařízení.
 Vložené zařízení neobsahuje systém Chrome OS.
 Ověření operačního systému je VYPNUTO.
-Chcete-li je znovu zapnout, stiskněte MEZERNÍK.
+Stisknutím MEZERNÍKU ho obnovíte.
 Stisknutím klávesy ENTER potvrdíte, že chcete zapnout ověření operačního systému.
 Systém se restartuje a smažou se místní data.
 Chcete-li se vrátit zpět, stiskněte klávesu ESC.
 Ověření operačního systému je ZAPNUTO.
 Chcete-li ověření operačního systému VYPNOUT, stiskněte klávesu ENTER.
-Nápovědu naleznete na stránce https://google.com/chromeos/recovery.
+Nápovědu naleznete na adrese https://google.com/chromeos/recovery
 Kód chyby
-Před spuštěním obnovení prosím odeberte všechna externí zařízení.
+Chcete-li zahájit obnovení, odeberte všechna připojená zařízení.
 Model 60061e
 Chcete-li vypnout ověření operačního systému, stiskněte tlačítko RECOVERY (Obnovení).
 Připojený zdroj napájení nemá pro toto zařízení dostatečný výkon.
 Systém Chrome OS se nyní vypne.
 Použijte prosím správný adaptér a zkuste to znovu.
-Odeberte všechna připojená zařízení a zahajte obnovení.
+Odeberte všechna připojená zařízení a zahajte obnovení.

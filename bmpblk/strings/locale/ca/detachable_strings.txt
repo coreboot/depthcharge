@@ -1,13 +1,13 @@
 Opcions per a desenvolupadors
 Mostra la informació de depuració
-Activa la verificació de dispositius arrel
+Activa la verificació del SO
 Apaga
 Idioma
-Inicia la imatge de xarxa (encara no funciona)
-Inicia la BIOS heretada
-Inicia la imatge USB
-Inicia la imatge del desenvolupador
+Inicia des de la xarxa
+Inicia Legacy BIOS
+Inicia des de l'USB
+Inicia des del disc intern
 Cancel·la
-Confirma l'activació de l'inici verificat
-Activa el mode desenvolupador
-Confirma l'activació del mode desenvolupador
+Confirma l'activació de la verificació del SO
+Desactiva la verificació del SO
+Confirma la desactivació de la verificació del SO

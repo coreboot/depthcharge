@@ -1,13 +1,13 @@
 Utvikleralternativer
 Vis feilsøkingsinformasjon
-Slå på rotbekreftelse
+Slå på OS-bekreftelse
 Slå av
 Språk
-Start opp med en nettverksavbildning (fungerer ikke ennå)
-Start opp med et tidligere BIOS
-Start opp med en USB-avbildning
-Start opp med en utvikleravbildning
+Start opp fra nettverket
+Start opp med Legacy BIOS
+Start opp fra USB
+Start opp fra intern disk
 Avbryt
-Bekreft at du vil slå på bekreftet oppstart
-Slå på utviklermodus
-Bekreft at du vil slå på utviklermodus
+Bekreft at du vil slå på OS-bekreftelse
+Slå av OS-bekreftelse
+Bekreft at du vil slå av OS-bekreftelse

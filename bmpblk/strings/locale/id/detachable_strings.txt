@@ -1,13 +1,13 @@
 Opsi Developer
 Tampilkan Info Debug
-Aktifkan Verifikasi Root
-Matikan Daya
+Aktifkan Verifikasi OS
+Matikan
 Bahasa
-Booting Gambar Jaringan (belum berfungsi)
-Booting BIOS Versi Lama
-Booting Gambar USB
-Booting Gambar Developer
+Booting Dari Jaringan
+Booting Legacy BIOS
+Booting Dari USB
+Booting Dari Disk Internal
 Batal
-Konfirmasi Pengaktifan Booting Terverifikasi
-Aktifkan Mode Developer
-Konfirmasi Pengaktifan Mode Developer
+Konfirmasi Pengaktifan Verifikasi OS
+Nonaktifkan Verifikasi OS
+Konfirmasi Penonaktifkan Verifikasi OS

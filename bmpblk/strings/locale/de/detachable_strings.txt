@@ -3,11 +3,11 @@ Informationen zur Fehlerbehebung anzeigen
 Betriebssystemüberprüfung aktivieren
 Ausschalten
 Sprache
-Netzwerk-Image starten (funktioniert noch nicht)
+Vom Netzwerk starten
 Legacy BIOS starten
-USB-Image starten
-Entwickler-Image starten
+Von USB starten
+Vom internen Laufwerk starten
 Abbrechen
 Aktivierung der Betriebssystemüberprüfung bestätigen
-Entwicklermodus aktivieren
-Aktivierung des Entwicklermodus bestätigen
+Betriebssystemüberprüfung deaktivieren
+Deaktivierung der Betriebssystemüberprüfung bestätigen

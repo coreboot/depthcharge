@@ -1,13 +1,13 @@
 Indstillinger for udviklere
 Vis fejlrettelsesdata
-Aktivér rodbekræftelse
+Aktivér OS-bekræftelse
 Sluk
 Sprog
-Start netværksbillede (fungerer endnu ikke)
-Start forældet BIOS
-Start USB-billede
-Start udviklerbillede
+Start fra netværk
+Start Legacy BIOS
+Start fra USB
+Start fra intern disk
 Annuller
-Bekræft aktivering af bekræftet start
-Aktivér udviklertilstand
-Bekræft aktivering af udviklertilstand
+Bekræft aktivering af OS-bekræftelse
+Deaktiver OS-bekræftelse
+Bekræft deaktivering af OS-bekræftelse

@@ -1,22 +1,22 @@
-Brak systemu operacyjnego Chrome lub jest on uszkodzony.
-Podłącz dysk USB lub włóż kartę SD przywracania.
-Podłącz dysk USB przywracania.
-Włóż kartę SD lub podłącz dysk USB przywracania (uwaga: NIE podłączaj go do niebieskiego portu USB).
-Podłącz dysk USB przywracania do jednego z czterech portów z TYŁU urządzenia.
-Podłączone urządzenie nie zawiera systemu operacyjnego Chrome.
-Sprawdzanie systemu operacyjnego jest WYŁĄCZONE.
-Naciśnij SPACJĘ, by je włączyć.
-Naciśnij ENTER, by potwierdzić, że chcesz włączyć sprawdzanie systemu operacyjnego.
+Brak Chrome OS lub jest on uszkodzony.
+Podłącz dysk USB lub włóż kartę SD z obrazem przywracania.
+Podłącz dysk USB z obrazem przywracania.
+Włóż kartę SD lub podłącz dysk USB z obrazem przywracania (uwaga: NIE podłączaj go do niebieskiego portu USB).
+Podłącz dysk USB z obrazem przywracania do jednego z czterech portów z TYŁU urządzenia.
+Podłączone urządzenie nie zawiera Chrome OS.
+Weryfikacja systemu operacyjnego jest WYŁĄCZONA
+Naciśnij SPACJĘ, by włączyć ją ponownie.
+Naciśnij ENTER, by potwierdzić, że chcesz włączyć weryfikację systemu operacyjnego.
 System uruchomi się ponownie, a dane lokalne zostaną usunięte.
 Aby zrezygnować, naciśnij ESC.
-Sprawdzanie systemu operacyjnego jest WŁĄCZONE.
-Aby WYŁĄCZYĆ sprawdzanie systemu operacyjnego, naciśnij ENTER.
-Pomoc znajdziesz na https://google.com/chromeos/recovery
+Weryfikacja systemu operacyjnego jest WŁĄCZONA.
+Aby WYŁĄCZYĆ weryfikację systemu operacyjnego, naciśnij ENTER.
+Aby uzyskać pomoc, wejdź na https://google.com/chromeos/recovery
 Kod błędu
 Aby rozpocząć przywracanie, odłącz wszystkie urządzenia zewnętrzne.
 Model 60061e
-Aby wyłączyć weryfikację systemu operacyjnego, naciśnij przycisk RECOVERY.
+Aby WYŁĄCZYĆ weryfikację systemu operacyjnego, naciśnij PRZYCISK PRZYWRACANIA.
 Podłączone źródło zasilania nie ma wystarczającej mocy do obsługi tego urządzenia.
 Chrome OS zostanie teraz zamknięty.
 Użyj odpowiedniego zasilacza i spróbuj ponownie.
-Odłącz wszystkie podłączone urządzenia i rozpocznij odzyskiwanie
+Odłącz wszystkie podłączone urządzenia i rozpocznij przywracanie.

@@ -1,13 +1,13 @@
 Geliştirici Seçenekleri
 Hata Ayıklama Bilgilerini Göster
-Root Doğrulamayı Etkinleştir
+OS Doğrulamayı Etkinleştir
 Kapat
 Dil
-Ağ Görüntüsünü Önyükle (henüz çalışmıyor)
-Eski BIOS'u Önyükle
-USB Görüntüsünü Önyükle
-Geliştirici Görüntüsünü Önyükle
+Ağ Üzerinden Başlat
+Eski BIOS'u Başlat
+USB Üzerinden Başlat
+Dahili Diskten Başlat
 İptal
-Doğrulanmış Önyüklemenin Etkinleştirilmesini Onayla
-Geliştirici Modunu Etkinleştir
-Geliştirici Modunu Etkinleştirmeyi Onayla
+OS Doğrulama Özelliğinin Etkinleştirilmesini Onaylayın
+OS Doğrulamayı Devre Dışı Bırak
+OS Doğrulama Özelliğinin Devre Dışı Bırakılmasını Onaylayın

@@ -1,22 +1,22 @@
 „Chrome“ OS nėra arba ji pažeista.
-Įkiškite atkūrimo USB atmintuką arba SD kortelę.
-Įkiškite atkūrimo USB atmintuką.
-Įkiškite atkūrimo SD kortelę arba USB atmintuką (pastaba: mėlynos spalvos USB prievadas NEVEIKS atkuriant).
-Įkiškite atkūrimo USB atmintuką į vieną iš 4 prievadų įrenginio GALINĖJE pusėje.
+Įdėkite atkūrimo USB atmintinę arba SD kortelę.
+Įdėkite atkūrimo USB atmintinę.
+Įdėkite atkūrimo SD kortelę arba USB atmintinę (pastaba: mėlynos spalvos USB prievadas NEVEIKS atkuriant).
+Įdėkite atkūrimo USB atmintinę į vieną iš 4 prievadų įrenginio GALINĖJE pusėje.
 Įdėtame įrenginyje nėra „Chrome“ OS.
-OS patvirtinimas IŠJUNGTAS
-Kad iš naujo įgalintumėte, paspauskite TARPO klavišą.
-Kad patvirtintumėte, jog norite įjungti OS patvirtinimą, paspauskite ENTER.
-Sistema bus įkelta iš naujo, o vietiniai duomenys išvalyti.
+OS tikrinimas IŠJUNGTAS
+Paspauskite TARPĄ, kad iš naujo įgalintumėte.
+Patvirtinkite, kad norite įjungti OS tikrinimą, paspaudę ENTER.
+Sistema bus paleista iš naujo, o vietiniai duomenys išvalyti.
 Jei norite grįžti, paspauskite ESC.
-OS patvirtinimas ĮJUNGTAS.
-Jei norite IŠJUNGTI OS patvirtinimą, paspauskite ENTER.
-Jei reikia pagalbos, apsilankykite šiuo adresu: https://google.com/chromeos/recovery
+OS tikrinimas ĮJUNGTAS.
+Jei norite IŠJUNGTI OS tikrinimą, paspauskite ENTER.
+Pagalbos galite gauti apsilankę adresu https://google.com/chromeos/recovery
 Klaidos kodas
-Jei norite pradėti atkūrimą, pašalinkite visus išorinius įrenginius.
+Pašalinkite visus išorinius įrenginius, kad pradėtumėte atkūrimą.
 Modelis 60061e
-Jei norite IŠJUNGTI operacinės sistemos patvirtinimą, paspauskite ATKŪRIMO mygtuką.
+Jei norite IŠJUNGTI OS tikrinimą, paspauskite ATKŪRIMO mygtuką.
 Prijungtas maitinimo šaltinis neteikia pakankamai energijos, kad šis įrenginys veiktų.
 „Chrome“ OS dabar bus išjungta.
 Naudokite tinkamą adapterį ir bandykite dar kartą.
-Pašalinkite visus prijungtus įrenginius ir pradėkite atkūrimo procesą
+Pašalinkite visus prijungtus įrenginius ir pradėkite atkūrimą.

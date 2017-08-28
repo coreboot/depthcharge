@@ -1,13 +1,13 @@
 Tùy chọn dành cho nhà phát triển
 Hiển thị thông tin gỡ lỗi
-Bật xác minh gốc
+Bật tính năng Xác minh OS
 Tắt nguồn
 Ngôn ngữ
-Khởi động hình ảnh mạng (chưa hoạt động)
+Khởi động từ mạng
 Khởi động BIOS cũ
-Khởi động hình ảnh USB
-Khởi động hình ảnh nhà phát triển
+Khởi động từ USB
+Khởi động từ ổ đĩa bên trong
 Hủy
-Xác nhận bật khởi động đã xác minh
-Bật chế độ nhà phát triển
-Xác nhận bật chế độ nhà phát triển
+Xác nhận bật tính năng Xác minh OS
+Tắt tính năng Xác minh OS
+Xác nhận tắt tính năng Xác minh OS

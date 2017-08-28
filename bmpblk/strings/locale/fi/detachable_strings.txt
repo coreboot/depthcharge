@@ -1,13 +1,13 @@
 Kehittäjäasetukset
 Näytä virheenjäljitystiedot
-Ota käynnistyksen vahvistaminen käyttöön
+Ota käyttöön käyttöjärjestelmän tarkistus
 Virta pois
 Kieli
-Käynnistä verkkokuvasta (ei toimi vielä)
+Käynnistä verkosta
 Käynnistä vanhassa BIOS-tilassa
-Käynnistä USB-kuvasta
-Käynnistä kehittäjäkuvasta
+Käynnistä USB:ltä
+Käynnistä sisäiseltä levyltä
 Peruuta
-Vahvista vahvistetun käynnistyksen käyttöönotto
-Ota kehittäjätila käyttöön
-Vahvista kehittäjätilan käyttöönotto
+Vahvista käyttöjärjestelmän tarkistuksen käyttöönotto
+Poista käyttöjärjestelmän tarkistus käytöstä
+Vahvista käyttöjärjestelmän tarkistuksen käytöstä poistaminen

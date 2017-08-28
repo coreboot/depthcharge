@@ -1,13 +1,13 @@
 Ontwikkelaarsopties
 Foutopsporingsgegevens weergeven
-Root-verificatie inschakelen
+OS-verificatie inschakelen
 Uitschakelen
 Taal
-Netwerkimage opstarten (werkt nog niet)
-Verouderd BIOS opstarten
-USB-image opstarten
-Ontwikkelaarsimage opstarten
+Opstarten via netwerk
+Legacy BIOS opstarten
+Opstarten via USB
+Opstarten via interne schijf
 Annuleren
-Inschakelen van geverifieerd opstarten bevestigen
-Ontwikkelaarsmodus inschakelen
-Inschakelen van ontwikkelaarsmodus bevestigen
+Inschakeling van OS-verificatie bevestigen
+OS-verificatie uitschakelen
+Uitschakeling van OS-verificatie bevestigen
