@@ -1306,7 +1306,7 @@ lba_t block_mmc_fill_write(BlockDevOps *me, lba_t start, lba_t count,
 
 	uint64_t buffer_bytes = buffer_lba * block_size;
 	uint64_t buffer_words = buffer_bytes / sizeof(uint32_t);
-	uint32_t *buffer = xmalloc(buffer_bytes);
+	uint32_t *buffer = xmemalign(ARCH_DMA_MINALIGN, buffer_bytes);
 	uint32_t *ptr = buffer;
 
 	for ( ; buffer_words ; buffer_words--)
