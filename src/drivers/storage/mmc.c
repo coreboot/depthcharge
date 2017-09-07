@@ -1330,3 +1330,10 @@ cleanup:
 	free(buffer);
 	return ret;
 }
+
+int block_mmc_is_bdev_owned(BlockDevCtrlrOps *me, BlockDev *bdev)
+{
+	MmcCtrlr *mmc_ctrlr = container_of(me, MmcCtrlr, ctrlr.ops);
+
+	return &mmc_ctrlr->media->dev == bdev;
+}

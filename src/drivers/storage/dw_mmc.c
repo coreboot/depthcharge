@@ -404,13 +404,6 @@ static int dwmci_update(BlockDevCtrlrOps *me)
 	return 0;
 }
 
-static int dwmmc_is_bdev_owned(BlockDevCtrlrOps *me, BlockDev *bdev)
-{
-	DwmciHost *host = container_of(me, DwmciHost, mmc.ctrlr.ops);
-
-	return (&host->mmc.media->dev == bdev);
-}
-
 DwmciHost *new_dwmci_host(uintptr_t ioaddr, uint32_t src_hz,
 				int bus_width, int removable,
 				GpioOps *card_detect, uint32_t clksel_val)
@@ -418,7 +411,7 @@ DwmciHost *new_dwmci_host(uintptr_t ioaddr, uint32_t src_hz,
 	DwmciHost *ctrlr = xzalloc(sizeof(*ctrlr));
 
 	ctrlr->mmc.ctrlr.ops.update = &dwmci_update;
-	ctrlr->mmc.ctrlr.ops.is_bdev_owned = &dwmmc_is_bdev_owned;
+	ctrlr->mmc.ctrlr.ops.is_bdev_owned = block_mmc_is_bdev_owned;
 
 	ctrlr->mmc.ctrlr.need_update = 1;
 

@@ -461,6 +461,7 @@ MtkMmcHost *new_mtk_mmc_host(uintptr_t ioaddr, uint32_t src_hz, uint32_t max_fre
 
 	assert((max_freq <= MtkMmcMaxFreq) && (max_freq >= MtkMmcMinFreq));
 
+	ctrlr->mmc.ctrlr.ops.is_bdev_owned = block_mmc_is_bdev_owned;
 	ctrlr->mmc.ctrlr.ops.update = &mtk_mmc_update;
 	ctrlr->mmc.ctrlr.need_update = 1;
 

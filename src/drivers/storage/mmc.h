@@ -323,6 +323,7 @@ lba_t block_mmc_write(BlockDevOps *me, lba_t start, lba_t count,
 lba_t block_mmc_erase(BlockDevOps *me, lba_t start, lba_t count);
 lba_t block_mmc_fill_write(BlockDevOps *me, lba_t start, lba_t count,
 			   uint32_t fill_pattern);
+int block_mmc_is_bdev_owned(BlockDevCtrlrOps *me, BlockDev *bdev);
 
 // Debug functions.
 extern int __mmc_debug, __mmc_trace;

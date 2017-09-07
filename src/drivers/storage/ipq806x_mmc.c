@@ -739,6 +739,7 @@ QcomMmcHost *new_qcom_mmc_host(unsigned slot, uint32_t base, int bus_width)
 		new_host->instance = slot;
 		new_host->mci_base = (uint8_t *)base;
 
+		new_host->mmc.ctrlr.ops.is_bdev_owned = block_mmc_is_bdev_owned;
 		new_host->mmc.ctrlr.ops.update = qcom_mmc_update;
 		new_host->mmc.ctrlr.need_update = 1;
 		new_host->mmc.set_ios = &mmc_boot_set_ios;

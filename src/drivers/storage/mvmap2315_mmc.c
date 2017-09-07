@@ -531,6 +531,7 @@ Mvmap2315MmcHost *new_mvmap2315_mmc_host(uintptr_t ioaddr,
 {
 	Mvmap2315MmcHost *ctrlr = xzalloc(sizeof(*ctrlr));
 
+	ctrlr->mmc.ctrlr.ops.is_bdev_owned = block_mmc_is_bdev_owned;
 	ctrlr->mmc.ctrlr.ops.update = &mvmap2315_mmc_update;
 	ctrlr->mmc.ctrlr.need_update = 1;
 

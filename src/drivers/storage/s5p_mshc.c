@@ -520,6 +520,7 @@ MshciHost *new_mshci_host(uintptr_t ioaddr, uint32_t src_hz, int bus_width,
 {
 	MshciHost *ctrlr = xzalloc(sizeof(*ctrlr));
 
+	ctrlr->mmc.ctrlr.ops.is_bdev_owned = block_mmc_is_bdev_owned;
 	ctrlr->mmc.ctrlr.ops.update = &s5p_mshc_update;
 	ctrlr->mmc.ctrlr.need_update = 1;
 

@@ -573,21 +573,14 @@ static int tegra_mmc_update(BlockDevCtrlrOps *me)
 	return 0;
 }
 
-static int tegra_is_bdev_owned(BlockDevCtrlrOps *me, BlockDev *bdev)
-{
-	TegraMmcHost *host = container_of(me, TegraMmcHost, mmc.ctrlr.ops);
-
-	return (&host->mmc.media->dev == bdev);
-}
-
 TegraMmcHost *new_tegra_mmc_host(uintptr_t ioaddr, int bus_width,
 				 int removable, GpioOps *card_detect,
 				 GpioOps *enable_power)
 {
 	TegraMmcHost *ctrlr = xzalloc(sizeof(*ctrlr));
 
+	ctrlr->mmc.ctrlr.ops.is_bdev_owned = block_mmc_is_bdev_owned;
 	ctrlr->mmc.ctrlr.ops.update = &tegra_mmc_update;
-	ctrlr->mmc.ctrlr.ops.is_bdev_owned = &tegra_is_bdev_owned;
 	ctrlr->mmc.ctrlr.need_update = 1;
 
 	ctrlr->mmc.voltages = TegraMmcVoltages;
