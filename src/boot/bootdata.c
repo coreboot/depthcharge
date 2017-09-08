@@ -35,32 +35,40 @@
 #include "vboot/boot_policy.h"
 #include "vboot/boot.h"
 
-typedef struct {
-	bootdata_t hdr_file;
-	bootdata_t hdr_kernel;
-	bootdata_kernel_t data_kernel;
-} kernel_t;
-
 static int add_bootdata(void **ptr, size_t *avail, bootdata_t *bd, void *data)
 {
-	size_t len;
+	size_t len, offset;
+	bootextra_t extra = {
+		.magic = BOOTITEM_MAGIC,
+		.crc32 = BOOTITEM_NO_CRC32,
+	};
 
 	if (!ptr || !avail || !bd || !data)
 		return -1;
 
+	// Enable extra header
+	bd->flags |= BOOTDATA_FLAG_EXTRA;
+
 	len = BOOTDATA_ALIGN(bd->length);
-	if ((sizeof(bootdata_t) + len) > *avail) {
+	if ((sizeof(bootdata_t) + sizeof(bootextra_t) + len) > *avail) {
 		printf("%s: no room for bootdata type=0x%08x size=%u\n",
 		       __func__, bd->type, bd->length);
 		return -1;
 	}
 
-	memcpy(*ptr, bd, sizeof(bootdata_t));
-	memcpy(*ptr + sizeof(bootdata_t), data, bd->length);
+	// Copy bootdata header into place
+	memcpy(*ptr, bd, sizeof(*bd));
+	offset = sizeof(*bd);
+	// Copy bootextra header into place
+	memcpy(*ptr + offset, &extra, sizeof(extra));
+	offset += sizeof(extra);
+	// Copy data into place after headers
+	memcpy(*ptr + offset, data, bd->length);
+	// Clear alignment bytes at the end if necessary
 	if (len > bd->length)
-		memset(*ptr + sizeof(bootdata_t) + bd->length, 0,
-		       len - bd->length);
-	len += sizeof(bootdata_t);
+		memset(*ptr + offset + bd->length, 0, len - bd->length);
+
+	len += offset;
 	*ptr += len;
 	*avail -= len;
 
@@ -95,7 +103,11 @@ static int bootdata_framebuffer_format(struct cb_framebuffer *fb)
 
 int bootdata_prepare(struct boot_info *bi)
 {
-	kernel_t *image = bi->ramdisk_addr;
+	bootdata_t *image = bi->ramdisk_addr;
+	bootextra_t extra = {
+		.magic = BOOTITEM_MAGIC,
+		.crc32 = BOOTITEM_NO_CRC32,
+	};
 	bootdata_t hdr;
 	void *bptr;
 	size_t blen;
@@ -104,9 +116,8 @@ int bootdata_prepare(struct boot_info *bi)
 		printf("%s: bootdata image missing\n", __func__);
 		return -1;
 	}
-	if (image->hdr_file.type != BOOTDATA_CONTAINER ||
-	    image->hdr_file.extra != BOOTDATA_MAGIC ||
-	    image->hdr_file.flags != 0) {
+	if (image->type != BOOTDATA_CONTAINER ||
+	    image->extra != BOOTDATA_MAGIC) {
 		printf("%s: invalid bootdata header at %p\n", __func__, image);
 		return -1;
 	}
@@ -125,11 +136,17 @@ int bootdata_prepare(struct boot_info *bi)
 	// Add container to describe bootdata + ramdisk
 	memset(&hdr, 0, sizeof(hdr));
 	hdr.type = BOOTDATA_CONTAINER;
-	hdr.length = image->hdr_file.length + CrosParamSize;
+	hdr.length = image->length + CrosParamSize;
 	hdr.extra = BOOTDATA_MAGIC;
+	hdr.flags = BOOTDATA_FLAG_EXTRA;
 	memcpy(bptr, &hdr, sizeof(hdr));
 	bptr += sizeof(hdr);
 	blen -= sizeof(hdr);
+
+	// Add extra header
+	memcpy(bptr, &extra, sizeof(extra));
+	bptr += sizeof(extra);
+	blen -= sizeof(extra);
 
 	// Add serial console descriptor
 	if (lib_sysinfo.serial) {
@@ -186,14 +203,17 @@ int bootdata_prepare(struct boot_info *bi)
 	}
 
 	// Ignore remaining space before the ramdisk
-	if ((blen < sizeof(bootdata_t)) || (blen & 7)) {
+	if ((blen < (sizeof(bootdata_t) + sizeof(bootextra_t))) || (blen & 7)) {
 		printf("%s: invalid bootdata length %zd\n", __func__, blen);
 		return -1;
 	}
 	hdr.type = BOOTDATA_IGNORE;
-	hdr.length = blen;
+	hdr.length = blen - sizeof(extra);
 	hdr.extra = 0;
+	hdr.flags = BOOTDATA_FLAG_EXTRA;
 	memcpy(bptr, &hdr, sizeof(hdr));
+	bptr += sizeof(hdr);
+	memcpy(bptr, &extra, sizeof(extra));
 
 	return 0;
 }
