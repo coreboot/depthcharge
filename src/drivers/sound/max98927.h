@@ -28,6 +28,6 @@ typedef struct
 
 Max98927Codec *new_max98927_codec(I2cOps *i2c, uint8_t chip,
 				  int bits_per_sample, int sample_rate,
-				  int lr_frame_size);
+				  int lr_frame_size, uint16_t bst_ilim_ma);
 
 #endif /* __DRIVERS_SOUND_MAX98927_H__ */

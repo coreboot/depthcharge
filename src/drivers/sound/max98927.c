@@ -26,9 +26,15 @@ enum {
 	REG_AMP_ENABLE = 0x003a,
 	REG_SPEAKER_SOURCE = 0x003b,
 	REG_SPEAKER_GAIN = 0x003c,
+	REG_BOOST_CONTROL_1 = 0x0042,
 	REG_MEAS_ADC_CONFIG = 0x0043,
 	REG_GLOBAL_ENABLE = 0x00ff,
 	REG_SOFT_RESET = 0x0100,
+};
+
+// REG_BOOST_CONTROL_1
+enum {
+	BOOST_CONTROL_1_ILIM_MASK = 0x3e,
 };
 
 // REG_SPEAKER_GAIN: PCM[2:0] PDM[6:4]
@@ -364,9 +370,22 @@ static int max98927_enable(SoundRouteComponentOps *me)
 		max98927_power(codec, 1);
 }
 
+static void max98927_set_bst_ilim(Max98927Codec *codec, uint16_t bst_ilim_ma)
+{
+	uint16_t bst_ilim;
+
+	if ((bst_ilim_ma < 1000) || (bst_ilim_ma > 4100))
+		return;
+
+	bst_ilim = bst_ilim_ma / 100 - 10;
+	if (max98927_update(codec, REG_BOOST_CONTROL_1,
+			    BOOST_CONTROL_1_ILIM_MASK, bst_ilim << 1))
+		printf("%s: ERROR: Failed to set BST_ILIM!\n", __func__);
+}
+
 Max98927Codec *new_max98927_codec(I2cOps *i2c, uint8_t chip,
 				  int bits_per_sample, int sample_rate,
-				  int lr_frame_size)
+				  int lr_frame_size, uint16_t bst_ilim_ma)
 {
 	Max98927Codec *codec = xzalloc(sizeof(*codec));
 
@@ -378,6 +397,8 @@ Max98927Codec *new_max98927_codec(I2cOps *i2c, uint8_t chip,
 	codec->bits_per_sample = bits_per_sample;
 	codec->sample_rate = sample_rate;
 	codec->lr_frame_size = lr_frame_size;
+
+	max98927_set_bst_ilim(codec, bst_ilim_ma);
 
 	return codec;
 }

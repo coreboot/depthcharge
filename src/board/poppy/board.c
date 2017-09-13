@@ -122,9 +122,9 @@ static int board_setup(void)
 	DesignwareI2c *i2c5 =
 		new_pci_designware_i2c(PCI_DEV(0, 0x19, 1), 400000, 120);
 	Max98927Codec *speaker_amp_l =
-		new_max98927_codec(&i2c5->ops, 0x3a, 16, 16000, 64);
+		new_max98927_codec(&i2c5->ops, 0x3a, 16, 16000, 64, 2000);
 	Max98927Codec *speaker_amp_r =
-		new_max98927_codec(&i2c5->ops, 0x39, 16, 16000, 64);
+		new_max98927_codec(&i2c5->ops, 0x39, 16, 16000, 64, 2000);
 
 	/* Activate buffer to disconnect I2S from PCH and allow GPIO */
 	GpioCfg *i2s2_buffer_enable = new_skylake_gpio_output(GPP_D22, 1);
