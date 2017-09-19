@@ -22,6 +22,11 @@
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/vboot_aux_fw.h"
 
+typedef enum  ParadeChipType {
+	CHIP_PS8751,
+	CHIP_PS8805,
+} ParadeChipType;
+
 typedef struct Ps8751
 {
 	VbootAuxFwOps fw_ops;
@@ -35,9 +40,12 @@ typedef struct Ps8751
 		uint16_t device;
 		uint8_t fw_rev;
 	} chip;
+	uint8_t blob_hw_version;
+	ParadeChipType chip_type;
 	char chip_name[16];
 } Ps8751;
 
 Ps8751 *new_ps8751(CrosECTunnelI2c *bus, int ec_pd_id);
+Ps8751 *new_ps8805(CrosECTunnelI2c *bus, int ec_pd_id);
 
 #endif /* __DRIVERS_EC_PS8751_H__ */

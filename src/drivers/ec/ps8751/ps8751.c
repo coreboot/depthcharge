@@ -38,8 +38,11 @@
 #define SLAVE2		(0x14 >> 1)	/* a.k.a. "page 2" */
 #define I2C_MASTER	(0x16 >> 1)	/* a.k.a. "page 3" */
 
-#define P1_SPI_WP		0x4b
-#define P1_SPI_WP_EN		0x10	/* WP enable bit */
+#define PS8751_P1_SPI_WP	0x4b
+/* NOTE: on 8751 A3 silicon, P1_SPI_WP_EN reads back inverted! */
+#define PS8751_P1_SPI_WP_EN	0x10	/* WP enable bit */
+#define PS8805_P2_SPI_WP	0x2a
+#define PS8805_P2_SPI_WP_EN	0x10	/* WP enable bit */
 #define P1_CHIP_REV_LO		0xf0	/* the 0x03 in "A3" */
 #define P1_CHIP_REV_HI		0xf1	/* the 0x0a in "A3" */
 #define P1_CHIP_ID_LO		0xf2	/* 0x50 */
@@ -58,7 +61,6 @@
 #define P2_CLK_CTRL		0xd6
 
 #define P3_VENDOR_ID_LOW	0x00
-#define P3_FW_REV		0x90
 #define P3_I2C_DEBUG		0xa0
 #define P3_I2C_DEBUG_DEFAULT	0x31
 #define P3_I2C_DEBUG_ENABLE	0x30
@@ -493,19 +495,36 @@ static int __must_check ps8751_spi_cmd_write_status(Ps8751 *me, uint8_t val)
 /*
  * lock the SPI flash
  *
+ * @param me	device context
+ * @return 0 if ok, -1 on error
+ *
  * NOTE: keep in sync with ps8751_spi_flash_unlock()
- * NOTE: on A3 silicon, P1_SPI_WP_EN reads back inverted!
  */
 
 static int __must_check ps8751_spi_flash_lock(Ps8751 *me)
 {
 	int status = 0;
+	uint8_t slave;
+	uint8_t wp_reg;
+	uint8_t wp_en;
 
 	if (ps8751_spi_cmd_write_status(me, SPI_STATUS_SRP|SPI_STATUS_BP) != 0)
 		status = -1;
 
+	switch (me->chip_type) {
+	case CHIP_PS8751:
+		slave = SLAVE1;
+		wp_reg = PS8751_P1_SPI_WP;
+		wp_en = PS8751_P1_SPI_WP_EN;
+		break;
+	case CHIP_PS8805:
+		slave = SLAVE2;
+		wp_reg = PS8805_P2_SPI_WP;
+		wp_en = PS8805_P2_SPI_WP_EN;
+		break;
+	}
 	/* assert SPI flash WP# */
-	if (write_reg(me, SLAVE1, P1_SPI_WP, P1_SPI_WP_EN) != 0)
+	if (write_reg(me, slave, wp_reg, wp_en) != 0)
 		status = -1;
 
 	return status;
@@ -514,21 +533,33 @@ static int __must_check ps8751_spi_flash_lock(Ps8751 *me)
 /*
  * reset SPI bus cmd FIFOs and unlock the SPI flash...
  *
+ * @param me	device context
+ *
  * NOTE: call ps8751_disable_mpu() before this so we have
  *	 a functional SPI bus.
- *
- * NOTE: on A3 silicon, P1_SPI_WP_EN reads back inverted!
  */
 
 static int __must_check ps8751_spi_flash_unlock(Ps8751 *me)
 {
 	uint8_t status;
+	uint8_t slave;
+	uint8_t wp_reg;
 
 	if (ps8751_spi_fifo_reset(me) != 0)
 		return -1;
 
+	switch (me->chip_type) {
+	case CHIP_PS8751:
+		slave = SLAVE1;
+		wp_reg = PS8751_P1_SPI_WP;
+		break;
+	case CHIP_PS8805:
+		slave = SLAVE2;
+		wp_reg = PS8805_P2_SPI_WP;
+		break;
+	}
 	/* deassert SPI flash WP# */
-	if (write_reg(me, SLAVE1, P1_SPI_WP, 0x00) != 0)
+	if (write_reg(me, slave, wp_reg, 0x00) != 0)
 		return -1;
 
 	/* clear the SRP, BP bits */
@@ -550,6 +581,8 @@ static int __must_check ps8751_spi_flash_unlock(Ps8751 *me)
  * wait for "erase/program command finished" as seen by the ps8751
  * then, wait for the WIP (write-in-progress) bit to clear on the
  * flash part itself.
+ *
+ * @param me	device context
  */
 
 static int __must_check ps8751_spi_wait_rom_ready(Ps8751 *me)
@@ -564,7 +597,7 @@ static int __must_check ps8751_spi_wait_rom_ready(Ps8751 *me)
 /**
  * query the flash ID and see if we support it
  *
- * @param me		device context
+ * @param me	device context
  * @return 0 if ok, -1 on error
  */
 
@@ -640,7 +673,6 @@ static int __must_check ps8751_keep_awake(Ps8751 *me, uint64_t *deadline)
 		int status = read_reg(me, I2C_MASTER, P3_I2C_DEBUG, &dummy);
 		if (status != 0) {
 			printf("%s: chip dozed off!\n", me->chip_name);
-
 			return -1;
 		}
 	}
@@ -752,7 +784,14 @@ static int __must_check ps8751_is_fw_compatible(Ps8751 *me, const uint8_t *fw)
 	if (ps8751_get_hw_version(me, &hw_rev) < 0)
 		return 0;
 
-	fw_chip_version = ps8751_blob_hw_version(fw);
+	switch (me->chip_type) {
+	case CHIP_PS8751:
+		fw_chip_version = ps8751_blob_hw_version(fw);
+		break;
+	case CHIP_PS8805:
+		fw_chip_version = me->blob_hw_version;
+		break;
+	}
 	if (hw_rev == fw_chip_version)
 		return 1;
 	printf("%s: chip rev 0x%02x but firmware for 0x%02x\n",
@@ -1158,14 +1197,17 @@ static VbError_t ps8751_check_hash(const VbootAuxFwOps *vbaux,
 
 	debug("call...\n");
 
-	if (hash_size != 2)
+	if (hash_size != 2) {
+		debug("hash_size %u unexpected\n", hash_size);
 		return VBERROR_INVALID_PARAMETER;
+	}
 
 	if (ps8751_capture_device_id(me, 0) == 0)
 		status = VBERROR_SUCCESS;
 	if (status != VBERROR_SUCCESS)
 		return status;
 
+	me->blob_hw_version = hash[0];
 	if (hash[1] == me->chip.fw_rev)
 		*severity = VB_AUX_FW_NO_UPDATE;
 	else
@@ -1259,6 +1301,14 @@ static const VbootAuxFwOps ps8751_fw_ops = {
 	.protect = ps8751_protect,
 };
 
+static const VbootAuxFwOps ps8805_fw_ops = {
+	.fw_image_name = "ps8805_a1.bin",
+	.fw_hash_name = "ps8805_a1.hash",
+	.check_hash = ps8751_check_hash,
+	.update_image = ps8751_update_image,
+	.protect = ps8751_protect,
+};
+
 Ps8751 *new_ps8751(CrosECTunnelI2c *bus, int ec_pd_id)
 {
 	Ps8751 *me = xzalloc(sizeof(*me));
@@ -1266,7 +1316,21 @@ Ps8751 *new_ps8751(CrosECTunnelI2c *bus, int ec_pd_id)
 	me->bus = bus;
 	me->ec_pd_id = ec_pd_id;
 	me->fw_ops = ps8751_fw_ops;
+	me->chip_type = CHIP_PS8751;
 	snprintf(me->chip_name, sizeof(me->chip_name), "ps8751.%d", ec_pd_id);
+
+	return me;
+}
+
+Ps8751 *new_ps8805(CrosECTunnelI2c *bus, int ec_pd_id)
+{
+	Ps8751 *me = xzalloc(sizeof(*me));
+
+	me->bus = bus;
+	me->ec_pd_id = ec_pd_id;
+	me->fw_ops = ps8805_fw_ops;
+	me->chip_type = CHIP_PS8805;
+	snprintf(me->chip_name, sizeof(me->chip_name), "ps8805.%d", ec_pd_id);
 
 	return me;
 }
