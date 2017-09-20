@@ -229,6 +229,24 @@ static int skylake_power_off(PowerOps *me)
 	return __pch_power_off_common(&args);
 }
 
+static int cannonlake_power_off(PowerOps *me)
+{
+	/*
+	 * Cannonlake has 4 GPE en registers and the bar lives within the
+	 * PMC device at 0:1f.2.
+	 */
+	struct power_off_args args;
+	memset(&args, 0, sizeof(args));
+
+	args.pci_dev = PCI_DEV(0, 0x1f, 2);
+	args.pmbase_reg = 0x20;
+	args.pmbase_mask = 0xff80;
+	args.gpe_en_reg = 0x70;
+	args.num_gpe_regs = 4;
+
+	return __pch_power_off_common(&args);
+}
+
 static int apollolake_power_off(PowerOps *me)
 {
 	struct power_off_args args;
@@ -272,4 +290,9 @@ PowerOps skylake_power_ops = {
 PowerOps apollolake_power_ops = {
 	.cold_reboot = &pch_cold_reboot,
 	.power_off = &apollolake_power_off
+};
+
+PowerOps cannonlake_power_ops = {
+	.cold_reboot = &pch_cold_reboot,
+	.power_off = &cannonlake_power_off
 };
