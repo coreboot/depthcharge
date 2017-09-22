@@ -222,14 +222,17 @@ typedef struct {
 	uint8_t  rsvd7[16];	/* Reserved as of Nvm Express 1.1 Spec */
 } NVME_PSDESCRIPTOR;
 
+#define NVME_MODEL_NUMBER_LEN	40
+#define NVME_SERIAL_NUMBER_LEN	20
+
 /* Identify Controller Data */
 typedef struct {
 	/* Controller Capabilities and Features 0-255 */
 	uint16_t vid;	/* PCI Vendor ID */
 	uint16_t ssvid;	/* PCI sub-system vendor ID */
-	uint8_t  sn[20];	/* Produce serial number */
+	uint8_t  sn[NVME_SERIAL_NUMBER_LEN];	/* Product serial number */
 
-	uint8_t  mn[40];	/* Proeduct model number */
+	uint8_t  mn[NVME_MODEL_NUMBER_LEN];	/* Product model number */
 	uint8_t  fr[8];	/* Firmware Revision */
 	uint8_t  rab;	/* Recommended Arbitration Burst */
 	uint8_t  ieee_oiu[3];	/* Organization Unique Identifier */
@@ -313,6 +316,15 @@ typedef struct PrpList {
 	uint64_t prp_entry[PRP_ENTRIES_PER_LIST];
 } PrpList;
 
+typedef struct NvmeModelData {
+	char model_id[NVME_MODEL_NUMBER_LEN];
+	uint32_t namespace_id;
+	unsigned int block_size;
+	lba_t block_count;
+
+	ListNode list_node;
+} NvmeModelData;
+
 /*
  * Driver Types
  */
@@ -325,9 +337,7 @@ typedef struct NvmeCtrlr {
 	uint32_t ctrlr_regs;
 
 	/* static namespace data */
-	uint32_t namespace_id;
-	unsigned int block_size;
-	lba_t block_count;
+	ListNode static_model_data;
 
 	/* local copy of controller CAP register */
 	NVME_CAP cap;
@@ -373,7 +383,8 @@ typedef struct NvmeDrive {
 NvmeCtrlr *new_nvme_ctrlr(pcidev_t dev);
 
 /* Specify static namespace data and skip calling Identify Namespace */
-void nvme_set_static_namespace(NvmeCtrlr *ctrlr, uint32_t namespace_id,
-			       unsigned int block_size, lba_t block_count);
+void nvme_add_static_namespace(NvmeCtrlr *ctrlr, uint32_t namespace_id,
+			       unsigned int block_size, lba_t block_count,
+			       const char *model_id);
 
 #endif /* __DRIVERS_STORAGE_NVME_H__ */
