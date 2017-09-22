@@ -26,10 +26,11 @@ static int buzzer_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 	if (!frequency)
 		return -1;
 
+	/* Using frequency ~2.7kHz, which is peak loudness */
 	start = timer_us(0);
 	while (timer_us(start)/1000 < msec) {
 		buzzer->gpio->set(buzzer->gpio, ++i & 1);
-		mdelay(1);
+		udelay(185);
 	}
 	buzzer->gpio->set(buzzer->gpio, 0);
 
