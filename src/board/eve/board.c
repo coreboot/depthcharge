@@ -98,13 +98,15 @@ static int board_setup(void)
 
 	/* NVMe Root Port */
 	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x1c, 4));
-	nvme_set_static_namespace(nvme, 1, 512, 0x3b9e12b0);
+	nvme_add_static_namespace(nvme, 1, 512, 0x3b9e12b0, "KUS040205M");
+	nvme_add_static_namespace(nvme, 1, 512, 0x1dcf32b0, "KUS030205M");
 	list_insert_after(&nvme->ctrlr.list_node, &fixed_block_dev_controllers);
 
 	/* Backup NVMe Root Port in case WiFi device is missing */
-	NvmeCtrlr *nvme_backup = new_nvme_ctrlr(PCI_DEV(0, 0x1c, 0));
-	nvme_set_static_namespace(nvme_backup, 1, 512, 0x3b9e12b0);
-	list_insert_after(&nvme_backup->ctrlr.list_node,
+	NvmeCtrlr *nvmeb = new_nvme_ctrlr(PCI_DEV(0, 0x1c, 0));
+	nvme_add_static_namespace(nvmeb, 1, 512, 0x3b9e12b0, "KUS040205M");
+	nvme_add_static_namespace(nvmeb, 1, 512, 0x1dcf32b0, "KUS030205M");
+	list_insert_after(&nvmeb->ctrlr.list_node,
 			  &fixed_block_dev_controllers);
 
 	/* Speaker amp is Maxim 98927 codec on I2C4 */

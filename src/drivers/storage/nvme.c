@@ -794,6 +794,16 @@ static int is_nvme_ctrlr(pcidev_t dev)
 	return 1;
 }
 
+static NvmeModelData *nvme_match_static_model(NvmeCtrlr *ctrlr)
+{
+	NvmeModelData *model;
+	list_for_each(model, ctrlr->static_model_data, list_node)
+		if (strstr((const char *)ctrlr->controller_data->mn,
+			   model->model_id))
+			return model;
+	return NULL;
+}
+
 /* Initialization entrypoint */
 static int nvme_ctrlr_init(BlockDevCtrlrOps *me)
 {
@@ -955,11 +965,12 @@ static int nvme_ctrlr_init(BlockDevCtrlrOps *me)
 	if (NVME_ERROR(status))
 		goto exit;
 
-	if (ctrlr->namespace_id && ctrlr->block_size && ctrlr->block_count) {
+	NvmeModelData *model = nvme_match_static_model(ctrlr);
+	if (model) {
 		/* Create drive based on static namespace data */
 		DEBUG(printf("Skip Identify Namespace and use static data\n");)
-		status = nvme_create_drive(ctrlr, ctrlr->namespace_id,
-				   ctrlr->block_size, ctrlr->block_count);
+		status = nvme_create_drive(ctrlr, model->namespace_id,
+				   model->block_size, model->block_count);
 	} else {
 		/* Identify Namespace and create drive nodes */
 		status = nvme_identify_namespaces(ctrlr);
@@ -1001,12 +1012,17 @@ static int nvme_shutdown(struct CleanupFunc *cleanup, CleanupType type)
 	return 0;
 }
 
-void nvme_set_static_namespace(NvmeCtrlr *ctrlr, uint32_t namespace_id,
-			       unsigned int block_size, lba_t block_count)
+void nvme_add_static_namespace(NvmeCtrlr *ctrlr, uint32_t namespace_id,
+			       unsigned int block_size, lba_t block_count,
+			       const char *model_id)
 {
-	ctrlr->namespace_id = namespace_id;
-	ctrlr->block_size = block_size;
-	ctrlr->block_count = block_count;
+	NvmeModelData *data = xzalloc(sizeof(*data));
+	data->namespace_id = namespace_id;
+	data->block_size = block_size;
+	data->block_count = block_count;
+	strncpy(data->model_id, model_id,
+		MIN(strlen(model_id), NVME_MODEL_NUMBER_LEN));
+	list_insert_after(&data->list_node, &ctrlr->static_model_data);
 }
 
 /* Setup controller initialization/shutdown callbacks.
