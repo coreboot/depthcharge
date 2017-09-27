@@ -493,7 +493,7 @@ static VbError_t vboot_hash_image(VbootEcOps *vbec,
 {
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
 	static struct ec_response_vboot_hash resp;
-	struct ec_params_vboot_hash p;
+	struct ec_params_vboot_hash p = { 0 };
 	uint64_t start;
 	int recalc_requested = 0;
 	uint32_t hash_offset;
