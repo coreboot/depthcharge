@@ -46,9 +46,6 @@ static int add_bootdata(void **ptr, size_t *avail, bootdata_t *bd, void *data)
 	if (!ptr || !avail || !bd || !data)
 		return -1;
 
-	// Enable extra header
-	bd->flags |= BOOTDATA_FLAG_EXTRA;
-
 	len = BOOTDATA_ALIGN(bd->length);
 	if ((sizeof(bootdata_t) + sizeof(bootextra_t) + len) > *avail) {
 		printf("%s: no room for bootdata type=0x%08x size=%u\n",
@@ -60,8 +57,10 @@ static int add_bootdata(void **ptr, size_t *avail, bootdata_t *bd, void *data)
 	memcpy(*ptr, bd, sizeof(*bd));
 	offset = sizeof(*bd);
 	// Copy bootextra header into place
-	memcpy(*ptr + offset, &extra, sizeof(extra));
-	offset += sizeof(extra);
+	if (bd->flags & BOOTDATA_FLAG_EXTRA) {
+		memcpy(*ptr + offset, &extra, sizeof(extra));
+		offset += sizeof(extra);
+	}
 	// Copy data into place after headers
 	memcpy(*ptr + offset, data, bd->length);
 	// Clear alignment bytes at the end if necessary
@@ -138,15 +137,18 @@ int bootdata_prepare(struct boot_info *bi)
 	hdr.type = BOOTDATA_CONTAINER;
 	hdr.length = image->length + CrosParamSize;
 	hdr.extra = BOOTDATA_MAGIC;
-	hdr.flags = BOOTDATA_FLAG_EXTRA;
+	if (image->flags & BOOTDATA_FLAG_EXTRA)
+		hdr.flags = BOOTDATA_FLAG_EXTRA;
 	memcpy(bptr, &hdr, sizeof(hdr));
 	bptr += sizeof(hdr);
 	blen -= sizeof(hdr);
 
 	// Add extra header
-	memcpy(bptr, &extra, sizeof(extra));
-	bptr += sizeof(extra);
-	blen -= sizeof(extra);
+	if (hdr.flags & BOOTDATA_FLAG_EXTRA) {
+		memcpy(bptr, &extra, sizeof(extra));
+		bptr += sizeof(extra);
+		blen -= sizeof(extra);
+	}
 
 	// Add serial console descriptor
 	if (lib_sysinfo.serial) {
@@ -208,12 +210,15 @@ int bootdata_prepare(struct boot_info *bi)
 		return -1;
 	}
 	hdr.type = BOOTDATA_IGNORE;
-	hdr.length = blen - sizeof(extra);
+	hdr.length = blen;
 	hdr.extra = 0;
-	hdr.flags = BOOTDATA_FLAG_EXTRA;
 	memcpy(bptr, &hdr, sizeof(hdr));
-	bptr += sizeof(hdr);
-	memcpy(bptr, &extra, sizeof(extra));
+
+	// Add extra header
+	if (hdr.flags & BOOTDATA_FLAG_EXTRA) {
+		bptr += sizeof(hdr);
+		memcpy(bptr, &extra, sizeof(extra));
+	}
 
 	return 0;
 }
