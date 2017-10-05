@@ -36,6 +36,7 @@
 #include "drivers/soc/skylake.h"
 #include "drivers/sound/gpio_i2s.h"
 #include "drivers/sound/max98927.h"
+#include "drivers/sound/max98357a.h"
 #include "drivers/sound/route.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
@@ -82,6 +83,30 @@ static void poppy_setup_tpm(void)
 	}
 }
 
+static void board_audio_init(SoundRoute *sound)
+{
+	if (IS_ENABLED(CONFIG_DRIVER_SOUND_MAX98927)) {
+		/* Speaker amp is Maxim 98927 codec on I2C5 */
+		DesignwareI2c *i2c5 =
+			new_pci_designware_i2c(PCI_DEV(0, 0x19, 1), 400000, 120);
+		Max98927Codec *speaker_amp_l =
+			new_max98927_codec(&i2c5->ops, 0x3a, 16, 16000, 64, 2000);
+		Max98927Codec *speaker_amp_r =
+			new_max98927_codec(&i2c5->ops, 0x39, 16, 16000, 64, 2000);
+		list_insert_after(&speaker_amp_l->component.list_node,
+			&sound->components);
+		list_insert_after(&speaker_amp_r->component.list_node,
+			&sound->components);
+	} else if (IS_ENABLED(CONFIG_DRIVER_SOUND_MAX98357A)) {
+		/* Speaker amp is Maxim 98357a codec*/
+		GpioOps *sdmode_gpio = &new_skylake_gpio_output(GPP_A23, 0)->ops;
+		max98357aCodec *speaker_amp =
+				new_max98357a_codec(sdmode_gpio);
+		list_insert_after(&speaker_amp->component.list_node,
+				&sound->components);
+	}
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_skylake_gpio_input_from_coreboot);
@@ -117,15 +142,6 @@ static int board_setup(void)
 		list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
 					&removable_block_dev_controllers);
 	}
-
-	/* Speaker amp is Maxim 98927 codec on I2C5 */
-	DesignwareI2c *i2c5 =
-		new_pci_designware_i2c(PCI_DEV(0, 0x19, 1), 400000, 120);
-	Max98927Codec *speaker_amp_l =
-		new_max98927_codec(&i2c5->ops, 0x3a, 16, 16000, 64, 2000);
-	Max98927Codec *speaker_amp_r =
-		new_max98927_codec(&i2c5->ops, 0x39, 16, 16000, 64, 2000);
-
 	/* Activate buffer to disconnect I2S from PCH and allow GPIO */
 	GpioCfg *i2s2_buffer_enable = new_skylake_gpio_output(GPP_D22, 1);
 	gpio_set(&i2s2_buffer_enable->ops, 0);
@@ -141,13 +157,8 @@ static int board_setup(void)
 			16000,              /* Sample rate */
 			2,                  /* Channels */
 			0x1FFF);            /* Volume */
-
-	/* Connect the speaker amp to the PCM clock source */
 	SoundRoute *sound = new_sound_route(&i2s->ops);
-	list_insert_after(&speaker_amp_l->component.list_node,
-			  &sound->components);
-	list_insert_after(&speaker_amp_r->component.list_node,
-			  &sound->components);
+	board_audio_init(sound);
 	sound_set_ops(&sound->ops);
 
 	return 0;
