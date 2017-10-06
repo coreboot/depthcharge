@@ -36,6 +36,7 @@
 #include "drivers/power/pch.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
+#include "drivers/storage/nvme.h"
 #include "drivers/tpm/lpc.h"
 #include "drivers/tpm/tpm.h"
 #include <gbb_header.h>
@@ -56,6 +57,8 @@
 
 static int board_setup(void)
 {
+	uint8_t secondary_bus;
+
 	sysinfo_install_flags(NULL);
 
 	/* 16MB SPI Flash */
@@ -79,6 +82,12 @@ static int board_setup(void)
 			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			&fixed_block_dev_controllers);
+
+	/* NVME SSD */
+	secondary_bus = pci_read_config8(PCI_DEV(0, 0x1D, 0),
+			REG_SECONDARY_BUS);
+	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(secondary_bus, 0, 0));
+	list_insert_after(&nvme->ctrlr.list_node, &fixed_block_dev_controllers);
 
 	return 0;
 }
