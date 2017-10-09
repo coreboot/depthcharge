@@ -20,13 +20,19 @@ config FASTBOOT_MODE
 
 config FASTBOOT_USBVID
 	hex "Fastboot USB Vendor ID"
-	default 0x0
+	default 0x18d1
 	depends on FASTBOOT_MODE
+	help
+	  The default is 0x18d1(Galaxy Nexus phone), for boards that don't have
+	  an official one.
 
-config FASTBOOT_USBDID
-	hex "Fastboot USB Vendor ID"
-	default 0x0
+config FASTBOOT_USBPID
+	hex "Fastboot USB Product ID"
+	default 0x4e30
 	depends on FASTBOOT_MODE
+	help
+	  The default is 0x4e30(Galaxy Nexus phone), for boards that don't have
+	  an official one.
 
 config FASTBOOT_EP_IN
 	int "In-Endpoint to use for fastboot"

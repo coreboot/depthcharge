@@ -31,7 +31,7 @@ static device_descriptor_t device_descriptor = {
 	.bDeviceProtocol = 0,
 	.bMaxPacketSize0 = 64,
 	.idVendor = CONFIG_FASTBOOT_USBVID,
-	.idProduct = CONFIG_FASTBOOT_USBDID,
+	.idProduct = CONFIG_FASTBOOT_USBPID,
 };
 
 /* Length of OUT transfer. Because these transfers
