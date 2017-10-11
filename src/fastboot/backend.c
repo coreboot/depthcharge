@@ -39,8 +39,6 @@ struct part_info fb_part_list[] __attribute__((weak)) = {{}} ;
 struct image_part_details {
 	struct bdev_info *bdev_entry;
 	struct part_info *part_entry;
-	GptData *gpt;
-	GptEntry *gpt_entry;
 	uint64_t part_addr;
 	uint64_t part_size_lba;
 };
@@ -536,8 +534,6 @@ static backend_ret_t fill_img_part_info(struct image_part_details *img,
 {
 	struct bdev_info *bdev_entry;
 	struct part_info *part_entry;
-	GptData *gpt = NULL;
-	GptEntry *gpt_entry = NULL;
 	uint64_t part_addr;
 	uint64_t part_size_lba;
 
@@ -558,22 +554,29 @@ static backend_ret_t fill_img_part_info(struct image_part_details *img,
 	 * and size of the partition on block device
 	 */
 	if (part_entry->gpt_based) {
+		GptData *gpt = NULL;
+		GptEntry *gpt_entry = NULL;
+
 		/* Allocate GPT structure used by cgptlib */
 		gpt = alloc_gpt(bdev_entry->bdev);
 
 		if (gpt == NULL)
-			goto fail;
+			return BE_GPT_ERR;
 
 		/* Find nth entry based on GUID & instance provided by board */
 		gpt_entry = GptFindNthEntry(gpt, &part_entry->guid,
 					    part_entry->instance);
 
-		if (gpt_entry == NULL)
-			goto fail;
+		if (gpt_entry == NULL) {
+			free_gpt(bdev_entry->bdev, gpt);
+			return BE_GPT_ERR;
+		}
 
 		/* Get partition addr and size from GPT entry */
 		part_addr = gpt_entry->starting_lba;
 		part_size_lba = GptGetEntrySizeLba(gpt_entry);
+
+		free_gpt(bdev_entry->bdev, gpt);
 	} else {
 		/* Take board provided partition addr and size */
 		part_addr = part_entry->base;
@@ -583,24 +586,10 @@ static backend_ret_t fill_img_part_info(struct image_part_details *img,
 	/* Fill image partition details structure */
 	img->bdev_entry = bdev_entry;
 	img->part_entry = part_entry;
-	img->gpt = gpt;
-	img->gpt_entry = gpt_entry;
 	img->part_addr = part_addr;
 	img->part_size_lba = part_size_lba;
 
 	return BE_SUCCESS;
-
-fail:
-	/* In case of failure, ensure gpt is freed */
-	if (gpt)
-		free_gpt(bdev_entry->bdev, gpt);
-	return BE_GPT_ERR;
-}
-
-static void clean_img_part_info(struct image_part_details *img)
-{
-	if (img->gpt)
-		free_gpt(img->bdev_entry->bdev, img->gpt);
 }
 
 /********************** Backend API functions *******************************/
@@ -627,8 +616,6 @@ backend_ret_t backend_write_partition(const char *name, void *image_addr,
 		BE_LOG("Writing raw image to %s...\n", name);
 		ret = write_raw_image(&img, image_addr, image_size);
 	}
-
-	clean_img_part_info(&img);
 
 	return ret;
 }
@@ -664,8 +651,6 @@ backend_ret_t backend_erase_partition(const char *name)
 			ret = BE_WRITE_ERR;
 	}
 
-	clean_img_part_info(&img);
-
 	return ret;
 }
 
@@ -681,8 +666,6 @@ uint64_t backend_get_part_size_bytes(const char *name)
 		return ret;
 
 	ret = (uint64_t)img.part_size_lba * img.bdev_entry->bdev->block_size;
-
-	clean_img_part_info(&img);
 
 	return ret;
 }
