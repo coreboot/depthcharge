@@ -19,7 +19,8 @@
 #define __BOARD_SMAUG_FASTBOOT_H__
 
 #include "config.h"
-#include "drivers/storage/blockdev.h"
+#include "drivers/flash/spi.h"
+#include "drivers/storage/tegra_mmc.h"
 
 typedef enum {
 	MMC_BDEV,
@@ -33,6 +34,6 @@ typedef enum {
 #include "fastboot/print.h"
 #include "fastboot/udc.h"
 
-void fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT]);
+void fill_fb_info(TegraMmcHost *emmc, SpiFlash *flash);
 
 #endif /* __BOARD_SMAUG_FASTBOOT_H__ */

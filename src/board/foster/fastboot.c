@@ -22,6 +22,7 @@
 #include "board/foster/fastboot.h"
 #include "config.h"
 #include "drivers/bus/usb/usb.h"
+#include "drivers/flash/block_flash.h"
 #include "vboot/firmware_id.h"
 
 struct bdev_info fb_bdev_list[BDEV_COUNT] = {
@@ -96,12 +97,13 @@ void fastboot_chipset_init(struct usbdev_ctrl **udc, device_descriptor_t *dd)
 	*udc = chipidea_init(dd);
 }
 
-void fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT])
+void fill_fb_info(TegraMmcHost *emmc, SpiFlash *flash)
 {
-	int i;
+	FlashBlockDev *fbdev = block_flash_register_nor(&flash->ops);
 
-	for (i = 0; i < BDEV_COUNT; i++)
-		fb_fill_bdev_list(i, bdev_ctrlr_arr[i]);
+	fb_fill_bdev_list(MMC_BDEV, &emmc->mmc.ctrlr);
+
+	fb_fill_bdev_list(FLASH_BDEV, &fbdev->ctrlr);
 	fb_fill_part_list("firmware", 0, lib_sysinfo.spi_flash.size /
 			  lib_sysinfo.spi_flash.sector_size);
 }

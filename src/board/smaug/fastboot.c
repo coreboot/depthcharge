@@ -26,6 +26,7 @@
 #include "config.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/ec.h"
+#include "drivers/flash/block_flash.h"
 #include "image/fmap.h"
 #include "vboot/firmware_id.h"
 #include "vboot/vbnv.h"
@@ -152,17 +153,18 @@ void fastboot_chipset_init(struct usbdev_ctrl **udc, device_descriptor_t *dd)
 	*udc = chipidea_init(dd);
 }
 
-void fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT])
+void fill_fb_info(TegraMmcHost *emmc, SpiFlash *flash)
 {
-	int i;
-
-	for (i = 0; i < BDEV_COUNT; i++)
-		fb_fill_bdev_list(i, bdev_ctrlr_arr[i]);
-	fb_fill_part_list("chromeos", 0, backend_get_bdev_size_blocks("mmc"));
-
+	FlashBlockDev *fbdev = block_flash_register_nor(&flash->ops);
 	FmapArea area;
 	const char *name;
 	size_t flash_sec_size = lib_sysinfo.spi_flash.sector_size;
+	int i;
+
+	fb_fill_bdev_list(MMC_BDEV, &emmc->mmc.ctrlr);
+	fb_fill_part_list("chromeos", 0, backend_get_bdev_size_blocks("mmc"));
+
+	fb_fill_bdev_list(FLASH_BDEV, &fbdev->ctrlr);
 
 	for (i = 0; i < fb_part_count; i++) {
 		if (fb_part_list[i].bdev_info != BDEV_ENTRY(FLASH_BDEV))

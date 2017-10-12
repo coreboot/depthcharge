@@ -30,7 +30,6 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/gpio/tegra.h"
 #include "drivers/dma/tegra_apb.h"
-#include "drivers/flash/block_flash.h"
 #include "drivers/flash/spi.h"
 #include "drivers/power/sysinfo.h"
 #include "drivers/power/max77620.h"
@@ -68,7 +67,7 @@ enum {
 };
 
 void __attribute__((weak))
-fill_fb_info(BlockDevCtrlr *bdev_ctrlr_arr[BDEV_COUNT])
+fill_fb_info(TegraMmcHost *emmc, SpiFlash *flash)
 {
 	/* Default weak implementation. */
 }
@@ -120,8 +119,6 @@ static int board_setup(void)
 
 	flash_set_ops(&flash->ops);
 
-	FlashBlockDev *fbdev = block_flash_register_nor(&flash->ops);
-
 	/* Foster has no TPM */
 	no_tpm_ops.xmit = &no_tpm_xmit;
 	tpm_set_ops(&no_tpm_ops);
@@ -157,11 +154,7 @@ static int board_setup(void)
 			  &removable_block_dev_controllers);
 
 	/* Fill in fastboot related information */
-	BlockDevCtrlr *bdev_arr[BDEV_COUNT] = {
-		[FLASH_BDEV] = &fbdev->ctrlr,
-		[MMC_BDEV] = &emmc->mmc.ctrlr,
-	};
-	fill_fb_info(bdev_arr);
+	fill_fb_info(emmc, flash);
 
 	/* Careful: the EHCI base is at offset 0x100 from the SoC's IP base */
 	UsbHostController *usbd = new_usb_hc(EHCI, 0x7d000100);
