@@ -49,7 +49,7 @@ screen description, the magic image name "$HWID" (or "$HWID.rtol" for a
 right-justified placement) indicates that the ASCII HWID value should be
 displayed at the given coordinates instead of a bitmap image. This means
 that we only need to generate one bmpblock for all locales, since the ASCII
-HWID string can be changed at the factory using "gbb_utility". The
+HWID string can be changed at the factory using "futility gbb". The
 last-displayed locale is stored in nvram, so it's sticky across reboots. The
 factory process sets the default locale to the appropriate region.
 
@@ -224,15 +224,14 @@ be found in http://goo.gl/yXBvz
 ------------------------------------
 Handling generated bitmaps:
 
-You can use the gbb_utility to modify your BIOS to contain this new set of
-bitmaps:
+You can use futility to modify your BIOS to contain this new set of bitmaps:
 
-  gbb_utility -s -b PATH/TO/YOUR/bmpblk.bin OLDBIOS.bin NEWBIOS.bin
+  futility gbb -s -b PATH/TO/YOUR/bmpblk.bin OLDBIOS.bin NEWBIOS.bin
 
 
 
 You can do that last step on the chromebook device itself, provided that the
-BIOS write-protection is disabled. gbb_utility should be in the rootfs:
+BIOS write-protection is disabled. futility should be in the rootfs:
 
   Become root:
 
@@ -249,7 +248,7 @@ BIOS write-protection is disabled. gbb_utility should be in the rootfs:
 
   Put the new bmpblock in the copy of the BIOS:
 
-    gbb_utility -s -b bmpblk.bin bios.bin
+    futility gbb -s -b bmpblk.bin bios.bin
 
   Reflash the BIOS with the new content
 
