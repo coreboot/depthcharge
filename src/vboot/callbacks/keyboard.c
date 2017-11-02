@@ -23,6 +23,8 @@
 #include <libpayload.h>
 #include <vboot_api.h>
 
+#include "drivers/storage/blockdev.h"
+
 #define CSI_0 0x1B
 #define CSI_1 0x5B
 
@@ -36,6 +38,17 @@
 uint32_t VbExKeyboardRead(void)
 {
 	uint64_t timer_start;
+
+	// This is the only callback the vboot UI will continuously poll in dev
+	// mode. We need to update SD storage controllers to detect insertion or
+	// removal somewhere, and this is the only place we have, so we need to
+	// do it here even though it doesn't really fit well.
+	BlockDevCtrlr *bdevc;
+	list_for_each(bdevc, removable_block_devices, list_node) {
+		if (bdevc->ops.update && bdevc->need_update &&
+		    bdevc->ops.update(&bdevc->ops))
+			printf("Updating storage controller failed.\n");
+	}
 
 	// No input, just give up.
 	if (!havechar())
