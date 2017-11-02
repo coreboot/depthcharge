@@ -11,6 +11,7 @@
 #include <libpayload.h>
 
 #include "drivers/tpm/tpm.h"
+#include "drivers/tpm/tpm_utils.h"
 
 /*
  * The below structure represents the body of the response to the 'report tpm
@@ -46,55 +47,6 @@ struct tpm_vendor_state {
 	uint32_t max_tries;	/* gp.maxTries */
 	/* The below fields are present in version 2 and above. */
 } __attribute__((packed));
-
-/*
- * This structure describes the header used for TPM Vendor commands and their
- * responses. Command payload or response (if any) are concatenated with the
- * header. All values are transmitted in big endian format.
- */
-
-struct tpm_vendor_header {
-	uint16_t tag;		  /* TPM_ST_NO_SESSIONS */
-	uint32_t size;		  /* including this header */
-	uint32_t code;		  /* Command out, Response code back. */
-	uint16_t subcommand_code; /* Vendor subcommand, not used on response. */
-} __attribute__((packed));
-
-/*
- * TPMv2 Spec mandates that vendor-specific command codes have bit 29 set,
- * while bits 15-0 indicate the command. All other bits should be zero. We
- * define one of those 16-bit command values for Cr50 purposes, and use the
- * subcommand_code in struct TpmCmdHeader to further distinguish the desired
- * operation.
- */
-#define TPM_CC_VENDOR_BIT   0x20000000
-
-/* Cr50 vendor-specific subcommand codes. 16 bits available. */
-enum vendor_cmd_cc {
-	VENDOR_CC_REPORT_TPM_STATE = 23,
-};
-
-#define TPM_ST_NO_SESSIONS 0x8001
-
-static void marshal_u16(void *buf, uint16_t value)
-{
-	value = htobe16(value);
-	memcpy(buf, &value, sizeof(value));
-}
-
-static void marshal_u32(void *buf, uint32_t value)
-{
-	value = htobe32(value);
-	memcpy(buf, &value, sizeof(value));
-}
-
-static uint32_t unmarshal_u32(void *buf)
-{
-	uint32_t value;
-
-	memcpy(&value, buf, sizeof(value));
-	return be32toh(value);
-}
 
 static void stringify_state(struct tpm_vendor_state *s,
 			    char *state_str,
