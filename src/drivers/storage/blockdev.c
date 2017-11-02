@@ -109,6 +109,7 @@ int get_all_bdevs(blockdev_type_t type, ListNode **bdevs)
 	for (ListNode *node = devs->next; node; node = node->next, count++)
 		;
 
-	*bdevs = devs;
+	if (bdevs)
+		*bdevs = devs;
 	return count;
 }
