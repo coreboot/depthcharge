@@ -21,6 +21,7 @@
 #include <vboot/util/flag.h>
 
 #include "debug/dev.h"
+#include "drivers/storage/blockdev.h"
 
 #define CSI_0 0x1B
 #define CSI_1 0x5B
@@ -39,6 +40,12 @@
 uint32_t VbExKeyboardRead(void)
 {
 	uint64_t timer_start;
+
+	// This is the only callback the vboot UI will continuously poll in dev
+	// mode. We need to update SD storage controllers to detect insertion or
+	// removal somewhere, and this is the only place we have, so we need to
+	// do it here even though it doesn't really fit well.
+	get_all_bdevs(BLOCKDEV_REMOVABLE, NULL);
 
 	// No input, just give up.
 	if (!havechar())
