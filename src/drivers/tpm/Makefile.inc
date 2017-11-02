@@ -18,4 +18,5 @@ depthcharge-$(CONFIG_DRIVER_TPM_I2C) += i2c.c
 depthcharge-$(CONFIG_DRIVER_TPM_LPC) += lpc.c
 depthcharge-$(CONFIG_DRIVER_TPM_SLB9635_I2C) += slb9635_i2c.c
 depthcharge-$(CONFIG_DRIVER_TPM_SPI) += spi.c
+depthcharge-$(CONFIG_DRIVER_TPM_CR50_REC) += cr50_rec_switch.c
 depthcharge-$(CONFIG_TPM_DEBUG_EXTENSIONS) += tpm_state.c

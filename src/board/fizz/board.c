@@ -39,8 +39,10 @@
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
 #include "drivers/tpm/cr50_i2c.h"
+#include "drivers/tpm/cr50_rec_switch.h"
 #include "drivers/tpm/spi.h"
 #include "drivers/tpm/tpm.h"
+#include "vboot/util/flag.h"
 
 /*
  * Clock frequencies for the eMMC and SD ports are defined below. The minimum
@@ -56,7 +58,7 @@ static int cr50_irq_status(void)
 	return skylake_get_gpe(GPE0_DW2_00);
 }
 
-static void fizz_setup_tpm(void)
+static TpmOps *fizz_setup_tpm(void)
 {
 	if (IS_ENABLED(CONFIG_DRIVER_TPM_SPI)) {
 		/* SPI TPM */
@@ -68,13 +70,18 @@ static void fizz_setup_tpm(void)
 			.ref_clk_mhz = 120,
 			.gspi_clk_mhz = 1,
 		};
-		tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0_params),
-					 cr50_irq_status)->ops);
+		SpiTpm *tpm = new_tpm_spi(new_intel_gspi(&gspi0_params),
+					  cr50_irq_status);
+		tpm_set_ops(&tpm->ops);
+		return &tpm->ops;
+
 	} else if (IS_ENABLED(CONFIG_DRIVER_TPM_CR50_I2C)) {
 		DesignwareI2c *i2c1 = new_pci_designware_i2c(
 			PCI_DEV(0, 0x15, 1), 400000, SKYLAKE_DW_I2C_MHZ);
-		tpm_set_ops(&new_cr50_i2c(&i2c1->ops, 0x50,
-					  &cr50_irq_status)->base.ops);
+		Cr50I2c *tpm = new_cr50_i2c(&i2c1->ops, 0x50,
+					    &cr50_irq_status);
+		tpm_set_ops(&tpm->base.ops);
+		return &tpm->base.ops;
 	}
 }
 
@@ -83,7 +90,8 @@ static int board_setup(void)
 	sysinfo_install_flags(new_skylake_gpio_input_from_coreboot);
 
 	/* TPM */
-	fizz_setup_tpm();
+	TpmOps *tpm_ops	= fizz_setup_tpm();
+	flag_replace(FLAG_RECSW, &new_cr50_rec_switch(tpm_ops)->ops);
 
 	/* Chrome EC (eSPI) */
 	CrosEcLpcBus *cros_ec_lpc_bus =

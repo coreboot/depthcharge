@@ -31,6 +31,13 @@ config TPM2_MODE
 	bool "Configure VBOOT for TPM2 support"
 	default n
 
+config DRIVER_TPM_CR50_REC
+	bool "CR50 Driver for Recovery Button State"
+	select DRIVER_TPM
+	default n
+	help
+	  When enabled, the recovery button state is read through CR50
+
 config DRIVER_TPM_SPI
 	bool "SPI TPM driver"
 	select DRIVER_TPM
