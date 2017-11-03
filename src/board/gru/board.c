@@ -111,16 +111,6 @@ static int cr50_irq_status(void)
 
 static int board_setup(void)
 {
-	GpioOps *sd_card_detect_gpio;
-	GpioOps *speaker_enable_gpio;
-	if (IS_ENABLED(CONFIG_GRU_SCARLET)) {
-		sd_card_detect_gpio = &new_rk_gpio_input(GPIO(1, B, 3))->ops;
-		speaker_enable_gpio = &new_rk_gpio_output(GPIO(0, A, 2))->ops;
-	} else {
-		sd_card_detect_gpio = &new_rk_gpio_input(GPIO(4, D, 0))->ops;
-		speaker_enable_gpio = &new_rk_gpio_output(GPIO(1, A, 2))->ops;
-	}
-
 	RkI2c *i2c0 = NULL;
 	if (IS_ENABLED(CONFIG_TPM2_MODE)) {
 		RkSpi *tpm_spi;
@@ -172,13 +162,20 @@ static int board_setup(void)
 						CONFIG_GRU_SPEAKER_VOLUME);
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
 
-	max98357aCodec *speaker_amp = new_max98357a_codec(speaker_enable_gpio);
+	max98357aCodec *speaker_amp = new_max98357a_codec(
+			sysinfo_lookup_gpio("speaker enable", 1,
+					    new_rk_gpio_output_from_coreboot));
 
 	list_insert_after(&speaker_amp->component.list_node,
 			  &sound_route->components);
 
 	sound_set_ops(&sound_route->ops);
 
+	GpioOps *sd_card_detect_gpio;
+	if (IS_ENABLED(CONFIG_GRU_SCARLET))
+		sd_card_detect_gpio = &new_rk_gpio_input(GPIO(1, B, 3))->ops;
+	else
+		sd_card_detect_gpio = &new_rk_gpio_input(GPIO(4, D, 0))->ops;
 	sd_card_detect_gpio = new_gpio_not(sd_card_detect_gpio);
 	DwmciHost *sd_card = new_rkdwmci_host(0xfe320000, 594000000, 4, 1,
 					      sd_card_detect_gpio);
