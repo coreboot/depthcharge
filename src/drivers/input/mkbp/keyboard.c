@@ -42,8 +42,8 @@ typedef enum Modifier {
  * range to avoid conflicts.
  */
 typedef enum Buttons {
-	BUTTON_VOL_DOWN = 0x62,
-	BUTTON_VOL_UP = 0x63,
+	BUTTON_VOL_UP = 0x62,
+	BUTTON_VOL_DOWN = 0x63,
 	BUTTON_POWER = 0x90
 } Buttons;
 
