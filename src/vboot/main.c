@@ -20,6 +20,7 @@
 #include <vboot_struct.h>
 
 #include "arch/sign_of_life.h"
+#include "base/cleanup_funcs.h"
 #include "base/init_funcs.h"
 #include "base/timestamp.h"
 #include "boot/bcb.h"
@@ -117,6 +118,9 @@ int main(void)
 	/* Handle BCB command, if supported. */
 	if (CONFIG_BCB_SUPPORT)
 		bcb_handle_command();
+
+	// Run any cleanup functions before vboot takes control
+	run_cleanup_funcs(CleanupOnVboot);
 
 	timestamp_add_now(TS_VB_SELECT_AND_LOAD_KERNEL);
 
