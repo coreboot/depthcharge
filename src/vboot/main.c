@@ -30,6 +30,7 @@
 #include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
+#include "vboot/util/init_funcs.h"
 #include "vboot/util/vboot_handoff.h"
 
 void  __attribute__((weak)) vboot_try_fastboot(void)
@@ -117,6 +118,10 @@ int main(void)
 	/* Handle BCB command, if supported. */
 	if (CONFIG_BCB_SUPPORT)
 		bcb_handle_command();
+
+	// Run any initialization functions before vboot takes control
+	if (run_vboot_init_funcs())
+		halt();
 
 	timestamp_add_now(TS_VB_SELECT_AND_LOAD_KERNEL);
 
