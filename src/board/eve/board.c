@@ -16,11 +16,14 @@
  */
 
 #include <arch/io.h>
+#include <endian.h>
+#include <gbb_header.h>
 #include <libpayload.h>
 #include <pci.h>
 #include <pci/pci.h>
 #include <sysinfo.h>
 
+#include "base/cleanup_funcs.h"
 #include "base/init_funcs.h"
 #include "base/list.h"
 #include "config.h"
@@ -42,6 +45,7 @@
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/boot_policy.h"
+#include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 
@@ -54,6 +58,87 @@
 #define EMMC_SD_CLOCK_MIN	400000
 #define EMMC_CLOCK_MAX		200000000
 #define SD_CLOCK_MAX		52000000
+
+/*
+ * Read device ID register from rt5514 codec to check audio health and hard
+ * reset the system via cr50 if there are any issues found.  A byte of CMOS
+ * is used to ensure the workaround is only attempted once and the system
+ * does not get stuck in a reset loop.
+ */
+#define RT5514_I2C_SLAVE_ADDR	0x57
+#define RT5514_DEVID_REG	0x18002ff4
+#define RT5514_DEVID_VALID	0x10ec5514
+#define CMOS_RESET_REG		0x64
+#define CMOS_RESET_MAGIC	0xad
+
+static int read_rt5514_id(DesignwareI2c *i2c, uint32_t *id)
+{
+	uint32_t device_id_reg = htobe32(RT5514_DEVID_REG);
+	I2cSeg seg[2];
+
+	seg[0].read = 0;
+	seg[0].buf = (uint8_t *)&device_id_reg;
+	seg[0].len = sizeof(device_id_reg);
+	seg[0].chip = RT5514_I2C_SLAVE_ADDR;
+
+	seg[1].read = 1;
+	seg[1].buf = (uint8_t *)id;
+	seg[1].len = sizeof(*id);
+	seg[1].chip = RT5514_I2C_SLAVE_ADDR;
+
+	return i2c->ops.transfer(&i2c->ops, seg, ARRAY_SIZE(seg));
+}
+
+static int board_check_audio(struct CleanupFunc *cleanup, CleanupType type)
+{
+	DesignwareI2c *i2c = cleanup->data;
+	GoogleBinaryBlockHeader *gbb = cparams.gbb_data;
+	uint8_t reset_reg = nvram_read(CMOS_RESET_REG);
+	uint32_t device_id_valid = htobe32(RT5514_DEVID_VALID);
+	uint32_t device_id = 0;
+	const uint8_t cr50_reset[] = {
+		0x80, 0x01,		/* TPM_ST_NO_SESSIONS */
+		0x00, 0x00, 0x00, 0x0c,	/* commandSize */
+		0x20, 0x00, 0x00, 0x00,	/* cr50 vendor command */
+		0x00, 0x13		/* immediate reset command */
+	};
+	int ret;
+
+	/* Skip in recovery mode */
+	if (vboot_in_recovery())
+		return 0;
+
+	/* Skip if FAFT is enabled */
+	if (gbb->flags & GBB_FLAG_FAFT_KEY_OVERIDE)
+		return 0;
+
+	ret = read_rt5514_id(i2c, &device_id);
+	if (ret || device_id != device_id_valid) {
+		/* Re-read once on failure */
+		ret = read_rt5514_id(i2c, &device_id);
+	}
+
+	if (ret || device_id != device_id_valid) {
+		printf("Audio is broken\n");
+		/* Only reset if CMOS has not been set to magic value */
+		if (reset_reg != CMOS_RESET_MAGIC) {
+			printf("Reset system via cr50\n");
+			nvram_write(CMOS_RESET_MAGIC, CMOS_RESET_REG);
+			tpm_xmit(cr50_reset, ARRAY_SIZE(cr50_reset), NULL, 0);
+		}
+	} else if (reset_reg == CMOS_RESET_MAGIC) {
+		/* Audio is OK, clear CMOS register to reset workaround */
+		printf("Audio is working again\n");
+		nvram_write(0, CMOS_RESET_REG);
+	}
+
+	return 0;
+}
+
+static CleanupFunc audio_cleanup_func = {
+	.cleanup = &board_check_audio,
+	.types = CleanupOnVboot,
+};
 
 static int cr50_irq_status(void)
 {
@@ -114,6 +199,10 @@ static int board_setup(void)
 		new_pci_designware_i2c(PCI_DEV(0, 0x19, 2), 400000, 120);
 	Max98927Codec *speaker_amp =
 		new_max98927_codec(&i2c4->ops, 0x39, 16, 16000, 64);
+
+	/* Check audio health */
+	audio_cleanup_func.data = i2c4;
+	list_insert_after(&audio_cleanup_func.list_node, &cleanup_funcs);
 
 	/* Activate buffer to disconnect I2S from PCH and allow GPIO */
 	GpioCfg *i2s_buffer = new_skylake_gpio_output(GPP_D22, 1);
