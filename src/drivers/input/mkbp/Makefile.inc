@@ -13,4 +13,4 @@
 
 subdirs-y += keymatrix layout
 
-depthcharge-$(CONFIG_DRIVER_INPUT_MKBP) += keyboard.c
+depthcharge-$(CONFIG_DRIVER_INPUT_MKBP) += mkbp.c

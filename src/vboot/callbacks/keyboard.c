@@ -31,10 +31,6 @@
 #define KEY_LEFT 0404
 #define KEY_RIGHT 0405
 
-#define BUTTON_VOL_DOWN 0x63
-#define BUTTON_VOL_UP   0x62
-#define BUTTON_POWER    0x90
-
 #define TIMEOUT_US (10 * 1000)	// 10ms
 
 uint32_t VbExKeyboardRead(void)
@@ -58,9 +54,7 @@ uint32_t VbExKeyboardRead(void)
 	case KEY_DOWN: return VB_KEY_DOWN;
 	case KEY_RIGHT: return VB_KEY_RIGHT;
 	case KEY_LEFT: return VB_KEY_LEFT;
-	case BUTTON_VOL_DOWN: return VB_BUTTON_VOL_DOWN;
-	case BUTTON_VOL_UP: return VB_BUTTON_VOL_UP;
-	case BUTTON_POWER: return VB_BUTTON_POWER;
+
 	case CSI_0:
 		timer_start = timer_us(0);
 		while (!havechar()) {

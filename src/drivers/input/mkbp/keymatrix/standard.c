@@ -16,7 +16,10 @@
  *
  */
 
+#include <libpayload.h>
+
 #include "drivers/input/mkbp/keymatrix.h"
+#include "drivers/ec/cros/commands.h"
 
 enum {
 	Rows = 8,
@@ -65,18 +68,32 @@ static uint16_t *scancode_rows[] = {
 	scancodes[4], scancodes[5], scancodes[6], scancodes[7]
 };
 
-/**
- * These are the make scancodes for power, volume up, volume down
- * for 8042, which we are going to use for mkbp as well.
- * Order is important here!  It's based on the order of the bit map
- * that is defined in depthcharge/src/drivers/ec/cros/commands.h.
- */
-static uint16_t button_scancodes[] = {
-	0xe037, /* Power */
-	0xe032, /* Volume Up */
-	0xe021, /* Volume Down */
-	0x001c  /* Recovery - Use same code as enter key */
+MkbpKeymatrix mkbp_keymatrix = { Rows, Cols, scancode_rows };
+
+#define MKBP_BUTTON(x)		(1 << (x))
+
+MkbpButtonInfo mkbp_buttoninfo[] = {
+	{
+		.button_combo = MKBP_BUTTON(EC_MKBP_POWER_BUTTON),
+		.short_press_code = POWER_SHORT_PRESS,
+		.long_press_code = BUTTON_CODE_INVALID,
+	},
+	{
+		.button_combo = MKBP_BUTTON(EC_MKBP_VOL_UP),
+		.short_press_code = VOL_UP_SHORT_PRESS,
+		.long_press_code = VOL_UP_LONG_PRESS,
+	},
+	{
+		.button_combo = MKBP_BUTTON(EC_MKBP_VOL_DOWN),
+		.short_press_code = VOL_DOWN_SHORT_PRESS,
+		.long_press_code = VOL_DOWN_LONG_PRESS,
+	},
+	{
+		.button_combo = MKBP_BUTTON(EC_MKBP_VOL_UP) |
+				MKBP_BUTTON(EC_MKBP_VOL_DOWN),
+		.short_press_code = VOL_UP_DOWN_COMBO_PRESS,
+		.long_press_code = BUTTON_CODE_INVALID,
+	},
 };
 
-
-MkbpKeymatrix mkbp_keymatrix = { Rows, Cols, scancode_rows, button_scancodes };
+size_t mkbp_buttoninfo_count = ARRAY_SIZE(mkbp_buttoninfo);
