@@ -125,12 +125,17 @@ static int board_check_audio(struct CleanupFunc *cleanup, CleanupType type)
 			printf("Reset system via cr50\n");
 			nvram_write(CMOS_RESET_MAGIC, CMOS_RESET_REG);
 			tpm_xmit(cr50_reset, ARRAY_SIZE(cr50_reset), NULL, 0);
+		} else {
+			printf("Audio recovery failed\n");
 		}
 	} else if (reset_reg == CMOS_RESET_MAGIC) {
 		/* Audio is OK, clear CMOS register to reset workaround */
 		printf("Audio is working again\n");
-		nvram_write(0, CMOS_RESET_REG);
 	}
+
+	/* Clear CMOS register to reset workaround */
+	if (reset_reg != 0)
+		nvram_write(0, CMOS_RESET_REG);
 
 	return 0;
 }
