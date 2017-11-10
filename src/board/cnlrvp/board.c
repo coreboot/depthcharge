@@ -89,6 +89,12 @@ static int board_setup(void)
 	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(secondary_bus, 0, 0));
 	list_insert_after(&nvme->ctrlr.list_node, &fixed_block_dev_controllers);
 
+	/* SD Card */
+	SdhciHost *sd = new_pci_sdhci_host(PCI_DEV(0, 0x14, 5), 1,
+			EMMC_SD_CLOCK_MIN, SD_CLOCK_MAX);
+	list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
+			&removable_block_dev_controllers);
+
 	return 0;
 }
 
