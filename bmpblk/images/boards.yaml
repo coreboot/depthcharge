@@ -275,3 +275,9 @@ nautilus:
   screen:   [2400, 1600]
   hi_res:   [en]
   text_colors:  4
+
+meowth:
+  # 2400x1600, boots recovery image on USB ports.
+  screen:   [2400, 1600]
+  hi_res:   [en]
+  text_colors:  4
