@@ -610,6 +610,13 @@ static const char *const dev_to_norm_files[] = {
 	"lang.bmp",        /* Language */
 };
 
+static const char *const options_files[] = {
+	"debug_info.bmp",  /* Show Debug Info */
+	"cancel.bmp",      /* Cancel */
+	"power_off.bmp",   /* Power Off */
+	"lang.bmp",        /* Language */
+};
+
 static VbError_t vboot_draw_developer_warning(struct params *p)
 {
 	uint32_t locale = p->locale;
@@ -686,20 +693,6 @@ static VbError_t vboot_draw_recovery_insert(struct params *p)
 			VB_SCALE_HALF, VB_SCALE_HALF, VB_SIZE_AUTO, h,
 			PIVOT_H_CENTER|PIVOT_V_CENTER));
 	return VBERROR_SUCCESS;
-}
-
-static VbError_t vboot_draw_recovery_menu(struct params *p)
-{
-	const int32_t h = VB_DEVICE_HEIGHT;
-	if (p->redraw_base) {
-		RETURN_ON_ERROR(vboot_draw_base_screen(p));
-		RETURN_ON_ERROR(draw_image_locale("insert.bmp", p->locale,
-				VB_SCALE_HALF, VB_SCALE_HALF - h/2,
-				VB_SIZE_AUTO, VB_TEXT_HEIGHT,
-				PIVOT_H_CENTER|PIVOT_V_BOTTOM));
-	}
-	const struct menu m = { rec_menu_files, ARRAY_SIZE(rec_menu_files) };
-	return vboot_draw_menu(p, &m);
 }
 
 static VbError_t vboot_draw_recovery_to_dev(struct params *p)
@@ -864,6 +857,15 @@ static VbError_t vboot_draw_languages_menu(struct params *p)
 	return VBERROR_SUCCESS;
 }
 
+static VbError_t vboot_draw_options_menu(struct params *p)
+{
+	if (p->redraw_base)
+		RETURN_ON_ERROR(vboot_draw_base_screen(p));
+	const struct menu m = { options_files,
+				ARRAY_SIZE(options_files) };
+	return vboot_draw_menu(p, &m);
+}
+
 /* we may export this in the future for the board customization */
 struct vboot_ui_descriptor {
 	uint32_t id;				/* VB_SCREEN_* */
@@ -948,11 +950,6 @@ static const struct vboot_ui_descriptor vboot_screens[] = {
 		.mesg = "Developer Menu\n",
 	},
 	{
-		.id = VB_SCREEN_RECOVERY_MENU,
-		.draw = vboot_draw_recovery_menu,
-		.mesg = "Recovery Menu\n",
-	},
-	{
 		.id = VB_SCREEN_RECOVERY_TO_DEV_MENU,
 		.draw = vboot_draw_recovery_to_dev_menu,
 		.mesg = "Recovery to Dev Menu\n",
@@ -966,6 +963,11 @@ static const struct vboot_ui_descriptor vboot_screens[] = {
 		.id = VB_SCREEN_LANGUAGES_MENU,
 		.draw = vboot_draw_languages_menu,
 		.mesg = "Languages Menu",
+	},
+	{
+		.id = VB_SCREEN_OPTIONS_MENU,
+		.draw = vboot_draw_options_menu,
+		.mesg = "Options Menu",
 	},
 };
 
