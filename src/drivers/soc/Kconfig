@@ -34,3 +34,8 @@ config DRIVER_SOC_GLK
 	bool "Glk SoC driver"
 	default n
 	select DRIVER_GPIO_APOLLOLAKE
+
+config DRIVER_SOC_ICELAKE
+	bool "Icelake SoC driver"
+	default n
+	select DRIVER_GPIO_ICELAKE

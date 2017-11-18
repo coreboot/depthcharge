@@ -1,5 +1,5 @@
 ##
-## Copyright 2016 Google Inc.
+## Copyright (C) 2018 Intel Corporation.
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -10,10 +10,9 @@
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
 ##
+## You should have received a copy of the GNU General Public License
+## along with this program; if not, write to the Free Software
+## Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+##
 
-depthcharge-$(CONFIG_DRIVER_SOC_SKYLAKE) += skylake.c
-depthcharge-$(CONFIG_DRIVER_SOC_APOLLOLAKE) += apollolake.c
-depthcharge-$(CONFIG_DRIVER_SOC_CANNONLAKE) += cannonlake.c
-depthcharge-$(CONFIG_DRIVER_SOC_STONEYRIDGE) += stoneyridge.c
-depthcharge-$(CONFIG_DRIVER_SOC_GLK) += apollolake.c
-depthcharge-$(CONFIG_DRIVER_SOC_ICELAKE) += icelake.c
+depthcharge-y += board.c

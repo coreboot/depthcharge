@@ -1,5 +1,6 @@
 /*
  * Copyright 2012 Google Inc.
+ * Copyright (C) 2018 Intel Corporation.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -270,6 +271,26 @@ static int apollolake_power_off(PowerOps *me)
 	return __pch_power_off_common(&args);
 }
 
+static int icelake_power_off(PowerOps *me)
+{
+	struct power_off_args args;
+	memset(&args, 0, sizeof(args));
+
+	args.pci_dev = PCI_DEV(0, 0x1f, 2);
+	/*
+	 * PMC device is not accesible as standard PCI device and is not
+	 * visible over bus, reading the BAR2 from, PCI config space returns
+	 * an invalid value. Hence the ACPI BASE is hardcoded below.
+	 */
+	args.pmbase = ACPI_BASE_ADDRESS;
+	args.gpe_en_reg = 0x70;
+	args.num_gpe_regs = 4;
+	/* Check if the config space is present. */
+	args.no_config_space = pci_read_config16(args.pci_dev, 0x00) == 0xffff;
+
+	return __pch_power_off_common(&args);
+}
+
 PowerOps pch_power_ops = {
 	.cold_reboot = &pch_cold_reboot,
 	.power_off = &pch_power_off
@@ -298,4 +319,9 @@ PowerOps apollolake_power_ops = {
 PowerOps cannonlake_power_ops = {
 	.cold_reboot = &pch_cold_reboot,
 	.power_off = &cannonlake_power_off
+};
+
+PowerOps icelake_power_ops = {
+	.cold_reboot = &pch_cold_reboot,
+	.power_off = &icelake_power_off
 };
