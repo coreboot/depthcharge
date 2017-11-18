@@ -15,3 +15,4 @@ depthcharge-$(CONFIG_DRIVER_SOC_SKYLAKE) += skylake.c
 depthcharge-$(CONFIG_DRIVER_SOC_APOLLOLAKE) += apollolake.c
 depthcharge-$(CONFIG_DRIVER_SOC_CANNONLAKE) += cannonlake.c
 depthcharge-$(CONFIG_DRIVER_SOC_STONEYRIDGE) += stoneyridge.c
+depthcharge-$(CONFIG_DRIVER_SOC_GLK) += apollolake.c

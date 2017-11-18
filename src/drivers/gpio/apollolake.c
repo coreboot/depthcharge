@@ -19,17 +19,36 @@
 #include <arch/io.h>
 #include <libpayload.h>
 #include <stdint.h>
+#include <config.h>
 
-#include "base/cleanup_funcs.h"
-#include "base/container_of.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/apollolake.h"
 #include "drivers/soc/apollolake.h"
 
+#if IS_ENABLED(CONFIG_DRIVER_SOC_GLK)
 static const struct gpio_community {
 	int first_pad;
 	int port_id;
-} gpio_communitys[] = {
+} gpio_communities[] = {
+	{
+		.port_id = PCH_PCR_PID_GPIO_SCC,
+		.first_pad = SCC_OFFSET,
+	}, {
+		.port_id = PCH_PCR_PID_GPIO_AUDIO,
+		.first_pad = AUDIO_OFFSET,
+	}, {
+		.port_id = PCH_PCR_PID_GPIO_NORTH,
+		.first_pad = N_OFFSET,
+	}, {
+		.port_id = PCH_PCR_PID_GPIO_NORTHWEST,
+		.first_pad = NW_OFFSET,
+	}
+};
+#else
+static const struct gpio_community {
+	int first_pad;
+	int port_id;
+} gpio_communities[] = {
 	{
 		.port_id = PCH_PCR_PID_GPIO_SOUTHWEST,
 		.first_pad = SW_OFFSET,
@@ -44,10 +63,11 @@ static const struct gpio_community {
 		.first_pad = 0,
 	}
 };
+#endif
 
 static const struct gpio_community *gpio_get_community(int pad)
 {
-	const struct gpio_community *map = gpio_communitys;
+	const struct gpio_community *map = gpio_communities;
 
 	while (map->first_pad > pad)
 		map++;
@@ -70,7 +90,7 @@ static void *gpio_dw_regs(int pad)
 	pad_relative = pad - comm->first_pad;
 
 	/* DW0 and Dw1 regs are 4 bytes each. */
-	return &regs[PAD_CFG_DW_OFFSET + pad_relative * 8];
+	return &regs[PAD_CFG_DW_OFFSET + pad_relative * PAD_CFG_DW_OFFSET_MUL ];
 }
 
 static void *gpio_hostsw_reg(int pad, size_t *bit)

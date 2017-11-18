@@ -29,3 +29,8 @@ config DRIVER_SOC_STONEYRIDGE
 	bool "Stoney Ridge SoC driver"
 	default n
 	select DRIVER_GPIO_KERN
+
+config DRIVER_SOC_GLK
+	bool "Glk SoC driver"
+	default n
+	select DRIVER_GPIO_APOLLOLAKE
