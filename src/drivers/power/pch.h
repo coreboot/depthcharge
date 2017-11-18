@@ -1,5 +1,6 @@
 /*
  * Copyright 2012 Google Inc.
+ * Copyright (C) 2018 Intel Corporation.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -25,6 +26,7 @@ PowerOps baytrail_power_ops;
 PowerOps braswell_power_ops;
 PowerOps skylake_power_ops;
 PowerOps cannonlake_power_ops;
+PowerOps icelake_power_ops;
 PowerOps apollolake_power_ops;
 
 #endif /* __DRIVERS_POWER_PCH_H__ */
