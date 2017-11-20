@@ -206,7 +206,8 @@ static int board_setup(void)
 	    lib_sysinfo.framebuffer->physical_address) {
 		GpioOps *backlight = NULL;
 		if (IS_ENABLED(CONFIG_GRU_SCARLET))
-			backlight = &new_rk_gpio_output(GPIO(4, C, 6))->ops;
+			backlight = sysinfo_lookup_gpio("backlight", 1,
+					new_rk_gpio_output_from_coreboot);
 		else if (IS_ENABLED(CONFIG_DRIVER_VIDEO_EC_PWM_BACKLIGHT))
 			backlight = new_ec_pwm_backlight();
 		else if (IS_ENABLED(CONFIG_DRIVER_VIDEO_ARCTICSAND_BACKLIGHT)) {
