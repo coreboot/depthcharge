@@ -27,3 +27,9 @@ config GRU_SCARLET
 	  Scarlet is an RK3399-based board but contains many board-specific
 	  departures in terms of components and pinout. This option is for
 	  Scarlet and other boards derived from it.
+
+config GRU_MIPI_DISPLAY
+	bool "Set up MIPI display for the board."
+	default false
+	help
+	  Set this to true if the board uses a MIPI display.
