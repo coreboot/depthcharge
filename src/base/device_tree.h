@@ -176,6 +176,10 @@ void dt_find_bin_prop(DeviceTreeNode *node, const char *name, void **data,
 		      size_t *size);
 const char *dt_find_string_prop(DeviceTreeNode *node, const char *name);
 
+// Apply an overlay FDT blob to an already unpacked device tree. Ownership of
+// overlay_blob passes to the tree -- do not free() or access it afterwards!
+int dt_apply_overlay(DeviceTree *tree, void *overlay_blob);
+
 /*
  * Fixups to apply to a kernel's device tree before booting it.
  */
