@@ -17,18 +17,22 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "drivers/bus/i2c/designware.h"
+#include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/kern.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/fch.h"
+#include "drivers/soc/stoneyridge.h"
 #include "drivers/sound/hda_codec.h"
 #include "drivers/sound/sound.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
-#include "drivers/tpm/lpc.h"
+#include "drivers/tpm/cr50_i2c.h"
+#include "drivers/tpm/tpm.h"
 #include "drivers/bus/usb/usb.h"
 #include "vboot/util/flag.h"
 
@@ -57,6 +61,12 @@ static int board_setup(void)
 			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			&fixed_block_dev_controllers);
+
+	/* Setup h1 on I2C1 */
+	DesignwareI2c *i2c_h1 = new_designware_i2c(
+		AP_I2C1_ADDR, 400000, AP_I2C_CLK_MHZ);
+	tpm_set_ops(&new_cr50_i2c(&i2c_h1->ops, 0x50,
+				  &cr50_irq_status)->base.ops);
 
 	uintptr_t usb_base;
 	UsbHostController *usb_ehci;
