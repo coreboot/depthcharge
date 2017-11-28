@@ -18,7 +18,7 @@
 #include <assert.h>
 #include <libpayload.h>
 #include <stdint.h>
-#include <vboot_nvstorage.h>
+#include <vb2_api.h>
 
 #include "base/gpt.h"
 #include "base/init_funcs.h"
@@ -51,7 +51,7 @@ struct bcb {
 /* If there is any failure in BCB handling, reboot into rec mode. */
 static void bcb_fail(void)
 {
-	vboot_update_recovery(VBNV_RECOVERY_RW_BCB_ERROR);
+	vboot_update_recovery(VB2_RECOVERY_RW_BCB_ERROR);
 	cold_reboot();
 }
 
@@ -154,7 +154,7 @@ static void bcb_copy_part_name(char *arg, size_t len)
 
 static void bcb_reboot_bootloader(char *arg, size_t len)
 {
-	vboot_update_recovery(VBNV_RECOVERY_BCB_USER_MODE);
+	vboot_update_recovery(VB2_RECOVERY_BCB_USER_MODE);
 }
 
 /* Post-cmd handle flags. */

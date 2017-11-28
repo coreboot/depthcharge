@@ -15,10 +15,11 @@
  * GNU General Public License for more details.
  */
 
+#define NEED_VB20_INTERNALS  /* Poking around inside NV storage fields */
 
 #include <libpayload.h>
 #include <udc/chipidea.h>
-#include <vboot_nvstorage.h>
+#include <vb2_api.h>
 
 #include "board/smaug/fastboot.h"
 #include "board/smaug/input.h"
@@ -109,7 +110,7 @@ static int get_board_var(struct fb_cmd *cmd, fb_getvar_t var)
 		 * have any mechanism in OS to set the FW_PREV_BOOT_RESULT.
 		 *
 		 */
-		uint8_t index = vbnv_read(VBNV_FW_PREV_TRIED);
+		uint8_t index = vbnv_read(VB2_NV_FW_PREV_TRIED);
 		if (index > VDAT_RW_B)
 			index = VDAT_RO;
 

@@ -15,41 +15,34 @@
  * GNU General Public License for more details.
  */
 
+#define NEED_VB20_INTERNALS  /* Poking around inside NV storage fields */
+
 #include <libpayload.h>
+#include <vb2_api.h>
 #include <vboot_api.h>
-#include <vboot_nvstorage.h>
 
 #include "vboot/vbnv.h"
 
 uint32_t vbnv_read(uint32_t flag)
 {
-	uint32_t val;
-	VbNvContext context;
+	struct vb2_context ctx;
 
-	VbExNvStorageRead(context.raw);
-	VbNvSetup(&context);
-
-	VbNvGet(&context, flag, &val);
-
-	VbNvTeardown(&context);
-	if (context.raw_changed)
-		VbExNvStorageWrite(context.raw);
-
-	return val;
+	memset(&ctx, 0, sizeof(ctx));
+	VbExNvStorageRead(ctx.nvdata);
+	vb2_nv_init(&ctx);
+	return vb2_nv_get(&ctx, flag);
 }
 
 void vbnv_write(uint32_t flag, uint32_t val)
 {
-	VbNvContext context;
+	struct vb2_context ctx;
 
-	VbExNvStorageRead(context.raw);
-	VbNvSetup(&context);
-
-	VbNvSet(&context, flag, val);
-
-	VbNvTeardown(&context);
-	if (context.raw_changed)
-		VbExNvStorageWrite(context.raw);
+	memset(&ctx, 0, sizeof(ctx));
+	VbExNvStorageRead(ctx.nvdata);
+	vb2_nv_init(&ctx);
+	vb2_nv_set(&ctx, flag, val);
+	if (ctx.flags & VB2_CONTEXT_NVDATA_CHANGED)
+		VbExNvStorageWrite(ctx.nvdata);
 }
 
 

@@ -18,7 +18,7 @@
 #include <assert.h>
 #include <libpayload.h>
 #include <keycodes.h>
-#include <vboot_nvstorage.h>
+#include <vb2_api.h>
 #include <vboot_struct.h>
 
 #include "drivers/power/power.h"
@@ -33,12 +33,12 @@ fb_ret_type __attribute__((weak)) device_mode_enter(void)
 
 static void vboot_clear_recovery(void)
 {
-	vboot_update_recovery(VBNV_RECOVERY_NOT_REQUESTED);
+	vboot_update_recovery(VB2_RECOVERY_NOT_REQUESTED);
 }
 
 static void vboot_set_recovery(void)
 {
-	vboot_update_recovery(VBNV_RECOVERY_FW_FASTBOOT);
+	vboot_update_recovery(VB2_RECOVERY_FW_FASTBOOT);
 }
 
 enum {
@@ -64,10 +64,10 @@ static int is_fastboot_mode_requested(void)
 	 * Else, enter recovery-menu to allow user to choose from different
 	 * options.
 	 */
-	return ((vdat->recovery_reason == VBNV_RECOVERY_FW_FASTBOOT) ||
-		(vdat->recovery_reason == VBNV_RECOVERY_US_FASTBOOT) ||
-		(vdat->recovery_reason == VBNV_RECOVERY_BCB_USER_MODE) ||
-		((vdat->recovery_reason == VBNV_RECOVERY_RO_MANUAL) &&
+	return ((vdat->recovery_reason == VB2_RECOVERY_FW_FASTBOOT) ||
+		(vdat->recovery_reason == VB2_RECOVERY_US_FASTBOOT) ||
+		(vdat->recovery_reason == VB2_RECOVERY_BCB_USER_MODE) ||
+		((vdat->recovery_reason == VB2_RECOVERY_RO_MANUAL) &&
 		 fb_board_handler.keyboard_mask &&
 		 fb_board_handler.keyboard_mask()));
 }
