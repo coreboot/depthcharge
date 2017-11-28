@@ -15,10 +15,12 @@
  * GNU General Public License for more details.
  */
 
+#define NEED_VB20_INTERNALS  /* Poking around inside NV storage fields */
+
 #include <gbb_header.h>
 #include <libpayload.h>
+#include <vb2_api.h>
 #include <vboot_api.h>
-#include <vboot_nvstorage.h>
 
 #include "base/cleanup_funcs.h"
 #include "config.h"
@@ -336,7 +338,7 @@ static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 	}
 	case  FB_OFF_MODE_CHARGE: {
 		fb_add_number(output, "%lld",
-			      !vbnv_read(VBNV_BOOT_ON_AC_DETECT));
+			      !vbnv_read(VB2_NV_BOOT_ON_AC_DETECT));
 		break;
 	}
 	case FB_BATT_VOLTAGE: {
@@ -1157,7 +1159,7 @@ static fb_ret_type fb_boot(struct fb_cmd *cmd)
 		 * GBB and VbNvStorage.
 		 */
 		if ((fb_device_unlocked() == 0) ||
-		    ((vbnv_read(VBNV_DEV_BOOT_FASTBOOT_FULL_CAP) == 0) &&
+		    ((vbnv_read(VB2_NV_DEV_BOOT_FASTBOOT_FULL_CAP) == 0) &&
 		     (fb_check_gbb_override() == 0))) {
 			fb_add_string(&cmd->output, "image verification failed",
 				      NULL);
@@ -1301,7 +1303,7 @@ static int unlock_in_fw_set(void)
 	 * 1. Check fastboot unlock flag in nvstorage or
 	 * 2. Callback board handler if it exists.
 	 */
-	return (vbnv_read(VBNV_FASTBOOT_UNLOCK_IN_FW) ||
+	return (vbnv_read(VB2_NV_FASTBOOT_UNLOCK_IN_FW) ||
 		(fb_board_handler.allow_unlock &&
 		 fb_board_handler.allow_unlock()));
 }
@@ -1445,7 +1447,7 @@ static fb_ret_type fb_set_off_mode_charge(struct fb_cmd *cmd)
 		return FB_SUCCESS;
 	}
 
-	vbnv_write(VBNV_BOOT_ON_AC_DETECT, boot_on_ac);
+	vbnv_write(VB2_NV_BOOT_ON_AC_DETECT, boot_on_ac);
 
 	cmd->type = FB_OKAY;
 	return FB_SUCCESS;

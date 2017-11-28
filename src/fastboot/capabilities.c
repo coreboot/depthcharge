@@ -15,10 +15,12 @@
  * GNU General Public License for more details.
  */
 
+#define NEED_VB20_INTERNALS  /* Poking around inside NV storage fields */
+
 #include <assert.h>
 #include <gbb_header.h>
+#include <vb2_api.h>
 #include <vboot_api.h>
-#include <vboot_nvstorage.h>
 
 #include "fastboot/capabilities.h"
 #include "fastboot/fastboot.h"
@@ -82,7 +84,7 @@ static uint32_t fb_get_curr_cap_bitmap(void)
 	 * flag from nvstorage.
 	 * If the flag is set, full fastboot capability is enabled in firmware.
 	 */
-	if (vbnv_read(VBNV_DEV_BOOT_FASTBOOT_FULL_CAP))
+	if (vbnv_read(VB2_NV_DEV_BOOT_FASTBOOT_FULL_CAP))
 		bitmap = fb_cap_bitmap[FB_FULL_CAP];
 	else
 		bitmap = fb_cap_bitmap[FB_LIMITED_CAP];

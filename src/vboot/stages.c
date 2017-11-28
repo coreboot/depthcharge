@@ -15,11 +15,13 @@
  * GNU General Public License for more details.
  */
 
+#define NEED_VB20_INTERNALS  /* Poking around inside NV storage fields */
+
 #include <assert.h>
 #include <libpayload.h>
 #include <stdint.h>
+#include <vb2_api.h>
 #include <vboot_api.h>
-#include <vboot_nvstorage.h>
 
 #include "base/timestamp.h"
 #include "boot/commandline.h"
@@ -56,7 +58,7 @@ int vboot_in_developer(void)
 
 void vboot_update_recovery(uint32_t request)
 {
-	vbnv_write(VBNV_RECOVERY_REQUEST, request);
+	vbnv_write(VB2_NV_RECOVERY_REQUEST, request);
 }
 
 int vboot_do_init_out_flags(uint32_t out_flags)

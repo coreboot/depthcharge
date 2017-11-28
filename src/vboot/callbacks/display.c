@@ -19,7 +19,6 @@
 #include <libpayload.h>
 #include <sysinfo.h>
 #include <vboot_api.h>
-#include <vboot_struct.h>
 
 #include "config.h"
 #include "base/cleanup_funcs.h"

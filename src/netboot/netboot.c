@@ -15,8 +15,10 @@
  * GNU General Public License for more details.
  */
 
+#define NEED_VB20_INTERNALS  /* Poking around inside NV storage fields */
+
 #include <libpayload.h>
-#include <vboot_nvstorage.h>
+#include <vb2_api.h>
 #include <vboot_api.h>
 
 #include "base/init_funcs.h"
@@ -54,7 +56,7 @@ static void enable_graphics(void)
 	if (!oprom_loaded) {
 		printf("Enabling graphics.\n");
 
-		vbnv_write(VBNV_OPROM_NEEDED, 1);
+		vbnv_write(VB2_NV_OPROM_NEEDED, 1);
 
 		printf("Rebooting.\n");
 		if (cold_reboot())
