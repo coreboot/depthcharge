@@ -17,7 +17,7 @@
 #    --markup           Render text as pango-view markup file
 #    --outdir=OUTDIR    Directory for output files
 #
-font="Noto Sans UI"
+font="Noto Sans"
 language=""
 pointsize=14
 margin=3

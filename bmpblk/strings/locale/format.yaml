@@ -124,7 +124,7 @@ fonts:
   #   fc-match 'ui-sans:lang=$locale' for locales we have.
   ar:     'Noto Naskh Arabic UI'
   bn:     'Noto Sans Bengali UI'
-  en:     'Noto Sans UI'
+  en:     'Noto Sans'
   fa:     'Noto Naskh Arabic UI'
   gu:     'Noto Sans Gujarati UI'
   he:     'Noto Sans Hebrew'

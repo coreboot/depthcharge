@@ -9,7 +9,7 @@ SCRIPT="$(readlink -f "$0")"
 SCRIPT_DIR="$(dirname "$SCRIPT")"
 GLYPHS='* 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ{}-_'
 COLOR="#505050"
-FONT="Noto Sans UI"
+FONT="Noto Sans"
 MARGIN="3"
 
 die() {
