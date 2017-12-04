@@ -143,7 +143,7 @@ static int board_setup(void)
 	img_i2c = new_imgtec_i2c(conf->i2c_interface, 100000, 33333333);
 	tpm_set_ops(&new_slb9635_i2c(&(img_i2c->ops), 0x20)->base.ops);
 
-	fit_set_compat(conf->compatible);
+	fit_add_compat(conf->compatible);
 
 	list_insert_after(&urara_dt_fixup.list_node, &device_tree_fixups);
 

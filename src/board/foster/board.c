@@ -79,7 +79,7 @@ const char *mainboard_commandline(void)
 
 static void choose_devicetree_by_boardid(void)
 {
-	fit_set_compat("nvidia,foster");
+	fit_add_compat("nvidia,foster");
 }
 
 static int no_tpm_xmit(struct TpmOps *me, const uint8_t *sendbuf,

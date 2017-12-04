@@ -322,7 +322,7 @@ static int board_setup(void)
 
 	fill_board_descriptor();
 
-	fit_set_compat(bdescriptor.compat_string);
+	fit_add_compat(bdescriptor.compat_string);
 
 	install_phys_presence_flag();
 

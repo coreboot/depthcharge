@@ -29,31 +29,44 @@
 static ListNode image_nodes;
 static ListNode config_nodes;
 
-static const char *fit_kernel_compat = NULL;
+static const char *fit_kernel_compat[10] = { NULL };
+static int num_fit_kernel_compat = 0;
 
-void fit_set_compat(const char *compat)
+void fit_add_compat(const char *compat)
 {
-	fit_kernel_compat = compat;
+	assert(num_fit_kernel_compat < ARRAY_SIZE(fit_kernel_compat));
+	fit_kernel_compat[num_fit_kernel_compat++] = compat;
 }
 
-static void fit_set_default_compat(void)
+static void fit_add_default_compats(void)
 {
-	const char pattern[] = "google,%s-rev%u";
+	const char pattern[] = "google,%s-rev%u-sku%u";
 	u32 rev = lib_sysinfo.board_id;
+	u32 sku = lib_sysinfo.sku_id;
 
-	// Make sure board ID is not ~0 and will fit in two digits, so that
-	// it doesn't require more space than the '%u' in the pattern string.
-	assert(rev < 100);
+	static int done = 0;
+	if (done)
+		return;
+	done = 1;
 
-	char *compat = malloc(sizeof(pattern) + sizeof(CONFIG_BOARD));
-	sprintf(compat, pattern, CONFIG_BOARD, lib_sysinfo.board_id);
+	char *compat = xmalloc(sizeof(pattern) + sizeof(CONFIG_BOARD) + 20);
+	sprintf(compat, pattern, CONFIG_BOARD,
+		lib_sysinfo.board_id, lib_sysinfo.sku_id);
 
 	char *c;
 	for (c = compat; *c != '\0'; c++)
 		if (*c == '_')
 			*c = '-';
 
-	fit_set_compat(compat);
+	if (sku != UNDEFINED_STRAPPING_ID && rev != UNDEFINED_STRAPPING_ID)
+		fit_add_compat(strdup(compat));
+
+	*strrchr(compat, '-') = '\0';
+	if (rev != UNDEFINED_STRAPPING_ID)
+		fit_add_compat(strdup(compat));
+
+	*strrchr(compat, '-') = '\0';
+	fit_add_compat(compat);
 }
 
 
@@ -328,6 +341,7 @@ FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt)
 	FdtHeader *header = (FdtHeader *)fit;
 	FitImageNode *image;
 	FitConfigNode *config;
+	int i;
 
 	printf("Loading FIT.\n");
 
@@ -349,9 +363,11 @@ FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt)
 	list_for_each(image, image_nodes, list_node)
 		printf("Image %s has %d bytes.\n", image->name, image->size);
 
-	if (!fit_kernel_compat)
-		fit_set_default_compat();
-	printf("Compat preference: %s\n", fit_kernel_compat);
+	fit_add_default_compats();
+	printf("Compat preference:");
+	for (i = 0; i < num_fit_kernel_compat; i++)
+		printf(" %s", fit_kernel_compat[i]);
+	printf("\n");
 	// Process and list the configs.
 	list_for_each(config, config_nodes, list_node) {
 		if (config->kernel)
@@ -381,14 +397,20 @@ FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt)
 			FdtHeader *fdt_header = (FdtHeader *)fdt_blob;
 			uint32_t fdt_offset =
 				betohl(fdt_header->structure_offset);
-			if (fdt_find_compat(fdt_blob, fdt_offset,
+			config->compat_pos = -1;
+			config->compat_rank = -1;
+			if (!fdt_find_compat(fdt_blob, fdt_offset,
 					    &config->compat)) {
-				config->compat_rank = -1;
-				config->compat.name = NULL;
-			} else {
-				config->compat_rank =
-					fit_check_compat(&config->compat,
-							 fit_kernel_compat);
+				for (i = 0; i < num_fit_kernel_compat; i++) {
+					int pos = fit_check_compat(
+							&config->compat,
+							fit_kernel_compat[i]);
+					if (pos >= 0) {
+						config->compat_pos = pos;
+						config->compat_rank = i;
+						break;
+					}
+				}
 			}
 		}
 
@@ -409,16 +431,15 @@ FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt)
 			const char *compat_str = config->compat.data;
 			for (int pos = 0; bytes && compat_str[0]; pos++) {
 				printf(" %s", compat_str);
-				if (pos == config->compat_rank)
+				if (pos == config->compat_pos)
 					printf(" (match)");
 				int len = strlen(compat_str) + 1;
 				compat_str += len;
 				bytes -= len;
 			}
 
-			if ((compat_config && (config->compat_rank >
-					       compat_config->compat_rank)) ||
-			    (!compat_config && (config->compat_rank != -1)))
+			if (config->compat_rank >= 0 && (!compat_config ||
+			    config->compat_rank < compat_config->compat_rank))
 				compat_config = config;
 		}
 		printf("\n");
@@ -427,7 +448,8 @@ FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt)
 	FitConfigNode *to_boot = NULL;
 	if (compat_config) {
 		to_boot = compat_config;
-		printf("Choosing best match %s.\n", to_boot->name);
+		printf("Choosing best match %s for compat %s.\n",
+		       to_boot->name, fit_kernel_compat[to_boot->compat_rank]);
 	} else if (default_config) {
 		to_boot = default_config;
 		printf("No match, choosing default %s.\n", to_boot->name);
