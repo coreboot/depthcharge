@@ -24,7 +24,7 @@ static int board_setup(void)
 {
 	Mvmap2315MmcHost *sd_card;
 
-	fit_set_compat("marvell,mvmap2315");
+	fit_add_compat("marvell,mvmap2315");
 
 	MemMappedFlash *bSpiFlash = new_mem_mapped_flash(0x400000, 0x400000);
 

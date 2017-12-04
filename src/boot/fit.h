@@ -53,22 +53,25 @@ typedef struct FitConfigNode
 	FitImageNode *ramdisk_node;
 	FdtProperty compat;
 	int compat_rank;
+	int compat_pos;
 
 	ListNode list_node;
 } FitConfigNode;
 
 /*
  * Unpack a FIT image into memory, choosing the right configuration through the
- * compatible string set by fit_set_compat() and unflattening the corresponding
+ * compatible string set by fit_add_compat() and unflattening the corresponding
  * kernel device tree.
  */
 FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt);
 
 /*
- * Set compatible string for the preferred kernel DT. |compat| must stay
- * accessible throughout depthcharge's runtime and thus not be stack-allocated!
+ * Add a compatible string for the preferred kernel DT to the list for this
+ * platform. This should be called before the first fit_load() so it will be
+ * ranked as a better match than the default compatible strings. |compat| must
+ * stay accessible throughout depthcharge's runtime (i.e. not stack-allocated)!
  */
-void fit_set_compat(const char *compat);
+void fit_add_compat(const char *compat);
 
 void fit_add_ramdisk(DeviceTree *tree, void *ramdisk_addr, size_t ramdisk_size);
 

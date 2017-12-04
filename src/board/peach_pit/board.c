@@ -40,7 +40,7 @@ static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
 
-	fit_set_compat("google,pit-rev3");
+	fit_add_compat("google,pit-rev3");
 
 	Exynos5420Gpio *lid_switch = new_exynos5420_gpio_input(GPIO_X, 3, 4);
 	Exynos5420Gpio *ec_in_rw = new_exynos5420_gpio_input(GPIO_X, 2, 3);

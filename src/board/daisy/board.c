@@ -45,7 +45,7 @@ static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
 
-	fit_set_compat("google,snow");
+	fit_add_compat("google,snow");
 
 	Exynos5250Gpio *lid_switch = new_exynos5250_gpio_input(GPIO_X, 3, 5);
 	Exynos5250Gpio *ec_in_rw = new_exynos5250_gpio_input(GPIO_D, 1, 7);
