@@ -40,7 +40,7 @@
 #define EMMC_CLOCK_MAX		200000000
 #define SD_CLOCK_MAX		52000000
 
-#define FLASH_SIZE		0x800000
+#define FLASH_SIZE		0x1000000
 #define FLASH_START		( 0xffffffff - FLASH_SIZE + 1 )
 
 static int board_setup(void)
