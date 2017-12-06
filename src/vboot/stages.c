@@ -23,6 +23,7 @@
 #include <vb2_api.h>
 #include <vboot_api.h>
 
+#include "base/cleanup_funcs.h"
 #include "base/timestamp.h"
 #include "boot/commandline.h"
 #include "boot/multiboot.h"
@@ -81,6 +82,19 @@ int vboot_do_init_out_flags(uint32_t out_flags)
 	return 0;
 }
 
+static int x86_ec_powerbtn_cleanup_func(struct CleanupFunc *c, CleanupType t)
+{
+	// Reenable power button pulse that we inhibited on x86 systems with UI.
+	cros_ec_config_powerbtn(EC_POWER_BUTTON_ENABLE_PULSE);
+	return 0;
+}
+static CleanupFunc x86_ec_powerbtn_cleanup = {
+	&x86_ec_powerbtn_cleanup_func,
+	CleanupOnReboot | CleanupOnPowerOff |
+	CleanupOnHandoff | CleanupOnLegacy,
+	NULL,
+};
+
 int vboot_select_and_load_kernel(void)
 {
 	VbSelectAndLoadKernelParams kparams = {
@@ -90,17 +104,18 @@ int vboot_select_and_load_kernel(void)
 
 	if (IS_ENABLED(CONFIG_DETACHABLE_UI)) {
 		kparams.inflags = VB_SALK_INFLAGS_ENABLE_DETACHABLE_UI;
-		/* On x86 systems, disable power button pulse from EC. */
-		cros_ec_config_powerbtn(0);
+		if (IS_ENABLED(CONFIG_ARCH_X86) &&
+		    IS_ENABLED(CONFIG_DRIVER_EC_CROS) &&
+		    (vboot_in_recovery() || vboot_in_developer())) {
+			// On x86 systems, inhibit power button pulse from EC.
+			cros_ec_config_powerbtn(0);
+			list_insert_after(&x86_ec_powerbtn_cleanup.list_node,
+					  &cleanup_funcs);
+		}
 	}
 
 	printf("Calling VbSelectAndLoadKernel().\n");
 	VbError_t res = VbSelectAndLoadKernel(&cparams, &kparams);
-
-	if (IS_ENABLED(CONFIG_DETACHABLE_UI)) {
-		/* On x86 systems, enable power button pulse from EC. */
-		cros_ec_config_powerbtn(EC_POWER_BUTTON_ENABLE_PULSE);
-	}
 
 	if (res == VBERROR_EC_REBOOT_TO_RO_REQUIRED) {
 		if (IS_ENABLED(CONFIG_DRIVER_EC_CROS))
