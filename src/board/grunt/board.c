@@ -15,6 +15,8 @@
  * GNU General Public License for more details.
  */
 
+#include <libpayload.h>
+
 #include "base/init_funcs.h"
 #include "base/list.h"
 #include "drivers/bus/i2c/designware.h"
@@ -42,6 +44,11 @@
 
 #define FLASH_SIZE		0x1000000
 #define FLASH_START		( 0xffffffff - FLASH_SIZE + 1 )
+
+static int cr50_irq_status(void)
+{
+	return stoneyridge_get_gpe(22);
+}
 
 static int board_setup(void)
 {
@@ -86,8 +93,6 @@ static int board_setup(void)
 	}
 
 	power_set_ops(&kern_power_ops);
-
-	/* Todo: Add TPM operations (b:69555585) */
 
 	return 0;
 }
