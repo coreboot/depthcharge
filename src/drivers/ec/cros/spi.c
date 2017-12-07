@@ -45,11 +45,16 @@ static void stop_bus(CrosEcSpiBus *bus)
 	bus->last_transfer = timer_us(0);
 }
 
-static int wait_for_frame(CrosEcSpiBus *bus, int silent_timeout)
+static int wait_for_frame(CrosEcSpiBus *bus, uint16_t command)
 {
 	uint64_t start = timer_us(0);
+	int accept_timeout_us = AcceptTimeoutUs;
 	int accepted = 0;
 	uint8_t byte;
+
+	// STM32 does XIP and can't handle interrupts timely while erasing.
+	if (command == EC_CMD_GET_COMMS_STATUS)
+		accept_timeout_us = ProcessTimeoutUs;
 
 	while (1) {
 		if (bus->spi->transfer(bus->spi, &byte, NULL, 1))
@@ -78,8 +83,9 @@ static int wait_for_frame(CrosEcSpiBus *bus, int silent_timeout)
 		}
 
 		uint64_t waited = timer_us(start);
-		if (!accepted && waited > AcceptTimeoutUs) {
-			if (silent_timeout)
+		if (!accepted && waited > accept_timeout_us) {
+			// Don't spam if waiting to come back up after SW sync.
+			if (command == EC_CMD_HELLO)
 				return -1;
 			printf("EC: Took too long to accept host command.\n");
 			return -1;
@@ -114,7 +120,7 @@ static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 	// Wait until the EC is ready. Do not print warnings for lack of reply
 	// if the command is HELLO -- we use that to test if the EC is ready.
 	const struct ec_host_request *rq = dout;
-	if (wait_for_frame(bus, rq->command == EC_CMD_HELLO)) {
+	if (wait_for_frame(bus, rq->command)) {
 		stop_bus(bus);
 		return -1;
 	}
@@ -189,7 +195,7 @@ static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
 
 	// Wait until the EC is ready. Do not print warnings for lack of reply
 	// if the command is HELLO -- we use that to test if the EC is ready.
-	if (wait_for_frame(bus, cmd == EC_CMD_HELLO)) {
+	if (wait_for_frame(bus, cmd)) {
 		stop_bus(bus);
 		return -1;
 	}
