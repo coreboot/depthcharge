@@ -39,7 +39,9 @@
 #include "drivers/sound/max98927.h"
 #include "drivers/sound/max98357a.h"
 #include "drivers/sound/route.h"
+#include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
+#include "drivers/storage/nvme.h"
 #include "drivers/storage/sdhci.h"
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/spi.h"
@@ -156,6 +158,26 @@ static int board_setup(void)
 			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			&fixed_block_dev_controllers);
+
+	/* SSD if config enabled */
+	if (IS_ENABLED(CONFIG_DRIVER_AHCI)) {
+		AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 0x17, 0));
+		list_insert_after(&ahci->ctrlr.list_node,
+				  &fixed_block_dev_controllers);
+	}
+
+	/* NVMe if config enabled */
+	if (IS_ENABLED(CONFIG_DRIVER_STORAGE_NVME)) {
+		/* Root port 5 */
+		NvmeCtrlr *nvme1 = new_nvme_ctrlr(PCI_DEV(0, 0x1c, 4));
+		list_insert_after(&nvme1->ctrlr.list_node,
+				  &fixed_block_dev_controllers);
+
+		/* Root port 9 */
+		NvmeCtrlr *nvme2 = new_nvme_ctrlr(PCI_DEV(0, 0x1d, 0));
+		list_insert_after(&nvme2->ctrlr.list_node,
+				  &fixed_block_dev_controllers);
+	}
 
 	/* SD Card (if present) */
 	pcidev_t sd_pci_dev = PCI_DEV(0, 0x1e, 6);
