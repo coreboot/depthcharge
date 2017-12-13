@@ -151,7 +151,7 @@ class Convert(object):
 
     # Set up square drawing area
     # TODO: Depthcharge should narrow the canvas if the screen is stretched.
-    self.screen_width = self.screen_height
+    self.canvas_px = min(self.screen_width, self.screen_height)
 
   def set_replace_map(self):
     """Builds a map replacing images
@@ -189,7 +189,7 @@ class Convert(object):
 
       Args:
         original: (width, height) of the original image
-        scale: (x, y) scale parameter relative to the screen size using
+        scale: (x, y) scale parameter relative to the canvas size using
             SCALE_BASE as a base.
 
       Returns:
@@ -202,9 +202,9 @@ class Convert(object):
       if scale_x == 0 and scale_y == 0:
         raise BuildImageError('Invalid scale parameter: %s' % (scale))
       if scale_x > 0:
-        dim_width = self.screen_width * scale_x / SCALE_BASE
+        dim_width = self.canvas_px * scale_x / SCALE_BASE
       if scale_y > 0:
-        dim_height = self.screen_height * scale_y / SCALE_BASE
+        dim_height = self.canvas_px * scale_y / SCALE_BASE
       if scale_x == 0:
         dim_width = org_width * dim_height / org_height
       if scale_y == 0:
