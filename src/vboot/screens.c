@@ -50,7 +50,7 @@
 #define VB_DEVICE_HEIGHT	371	/* 37.1% */
 
 /* Vertical position and size of the dividers */
-#define VB_DIVIDER_WIDTH	1000	/* 100.0% */
+#define VB_DIVIDER_WIDTH	900	/* 90.0% -> 5% padding on each side */
 #define VB_DIVIDER_V_OFFSET	160	/* 16.0% */
 
 /* Space between 'MODEL' and a model name */
