@@ -53,8 +53,8 @@ SCALE_BASE = 1000  # 100.0%
 DEFAULT_ASSET_SCALE = (0, 169)
 ASSET_SCALES = {
     'chrome_logo': (0, 39),
-    'divider_btm': (SCALE_BASE, 0),
-    'divider_top': (SCALE_BASE, 0),
+    'divider_btm': (900, 0),
+    'divider_top': (900, 0),
     'InsertDevices': (0, 371),
     'RemoveDevices': (0, 371),
     'reserve_charging': (0, 117),
