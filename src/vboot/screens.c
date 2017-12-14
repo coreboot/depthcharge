@@ -53,8 +53,11 @@
 #define VB_DIVIDER_WIDTH	900	/* 90.0% -> 5% padding on each side */
 #define VB_DIVIDER_V_OFFSET	160	/* 16.0% */
 
-/* Space between 'MODEL' and a model name */
-#define VB_PADDING		8	/* 0.8 % */
+/* Space between sections of text */
+#define VB_PADDING		3	/* 0.3 % */
+
+/* Downshift for vertical characters to match middle of text in Noto Sans */
+#define VB_ARROW_V_OFF		3	/* 0.3 % */
 
 #define RETURN_ON_ERROR(function_call) do {				\
 		VbError_t rv = (function_call);				\
@@ -467,8 +470,8 @@ static VbError_t vboot_draw_language(uint32_t locale)
 		w = VB_SIZE_AUTO;
 		h = VB_TEXT_HEIGHT;
 		RETURN_ON_ERROR(draw_image("arrow_right.bmp", x,
-					   VB_DIVIDER_V_OFFSET, w, h,
-					   PIVOT_H_RIGHT|PIVOT_V_BOTTOM));
+					   VB_DIVIDER_V_OFFSET + VB_ARROW_V_OFF,
+					   w, h, PIVOT_H_RIGHT|PIVOT_V_BOTTOM));
 		RETURN_ON_ERROR(get_image_size(base_graphics, "arrow_right.bmp",
 					       &w, &h));
 		x -= w + VB_PADDING;
@@ -489,8 +492,8 @@ static VbError_t vboot_draw_language(uint32_t locale)
 		w = VB_SIZE_AUTO;
 		h = VB_TEXT_HEIGHT;
 		RETURN_ON_ERROR(draw_image("arrow_left.bmp", x,
-					   VB_DIVIDER_V_OFFSET, w, h,
-					   PIVOT_H_RIGHT|PIVOT_V_BOTTOM));
+					   VB_DIVIDER_V_OFFSET + VB_ARROW_V_OFF,
+					   w, h, PIVOT_H_RIGHT|PIVOT_V_BOTTOM));
 	}
 
 	return VBERROR_SUCCESS;
