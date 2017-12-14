@@ -140,9 +140,16 @@ static int board_setup(void)
 
 	sysinfo_install_flags(new_rk_gpio_input_from_coreboot);
 
-	// Power button and lid swith available from EC.
-	flag_replace(FLAG_LIDSW, lid_open_gpio());
-	flag_replace(FLAG_PWRSW, power_btn_gpio());
+	// On Scarlet, we have no lid switch and the power button is handled by
+	// the detachable UI via MKBP. On non-Scarlet boards, we need to read
+	// the state of these from the EC whenever vboot polls them.
+	if (IS_ENABLED(CONFIG_GRU_SCARLET)) {
+		flag_replace(FLAG_LIDSW, new_gpio_high()); /* always open */
+		flag_replace(FLAG_PWRSW, new_gpio_low());  /* never pressed */
+	} else {
+		flag_replace(FLAG_LIDSW, lid_open_gpio());
+		flag_replace(FLAG_PWRSW, power_btn_gpio());
+	}
 
 	power_set_ops(&psci_power_ops);
 
