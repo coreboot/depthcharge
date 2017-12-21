@@ -22,6 +22,11 @@ config DRIVER_BUS_SPI_INTEL_GSPI
 	bool "Intel GSPI driver"
 	default n
 
+config DRIVER_BUS_SPI_INTEL_GSPI_VERSION_2
+	bool "Intel GSPI driver - v2(CS_CONTROL quirks for CNL)"
+	default n
+	select DRIVER_BUS_SPI_INTEL_GSPI
+
 config DRIVER_BUS_SPI_IPQ806X
 	bool "Ipq806x SPI driver"
 	default n
