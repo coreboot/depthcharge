@@ -19,5 +19,7 @@
 
 depthcharge-y += board.c
 depthcharge-y += emc.c
+depthcharge-y += nsmem.c
+depthcharge-y += smc.c
 depthcharge-$(CONFIG_FASTBOOT_MODE) += input.c
 depthcharge-$(CONFIG_FASTBOOT_MODE) += fastboot.c
