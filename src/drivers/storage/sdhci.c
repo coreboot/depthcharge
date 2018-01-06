@@ -348,7 +348,8 @@ static int sdhci_send_command_bounced(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
 		/* Quirk: Some AMD chipsets require the cleraring the
 		 * transfer mode 0 before sending a command without data.
 		 * Commands with data always set the transfer mode */
-		sdhci_writew(host, 0, SDHCI_TRANSFER_MODE);
+		if (host->quirks & SDHCI_QUIRK_CLEAR_TRANSFER_BEFORE_CMD)
+			sdhci_writew(host, 0, SDHCI_TRANSFER_MODE);
 	}
 
 	sdhci_writel(host, cmd->cmdarg, SDHCI_ARGUMENT);
