@@ -251,6 +251,7 @@
 #define SDHCI_QUIRK_EMMC_1V8_POWER	(1 << 9)
 #define SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN (1 << 10)
 #define SDHCI_QUIRK_SUPPORTS_HS400ES	(1 << 11)
+#define SDHCI_QUIRK_CLEAR_TRANSFER_BEFORE_CMD	(1 << 12)
 
 /*
  * Host SDMA buffer boundary. Valid values from 4K to 512K in powers of 2.
