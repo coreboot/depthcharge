@@ -70,6 +70,10 @@ SdhciHost *new_pci_sdhci_host(pcidev_t dev, int platform_info,
 	if (platform_info & SDHCI_PLATFORM_EMMC_1V8_POWER)
 		host->sdhci_host.quirks |= SDHCI_QUIRK_EMMC_1V8_POWER;
 
+	if (platform_info & SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD)
+		host->sdhci_host.quirks |=
+				SDHCI_QUIRK_CLEAR_TRANSFER_BEFORE_CMD;
+
 	host->sdhci_host.attach = attach_device;
 	host->sdhci_host.clock_f_min = clock_min;
 	host->sdhci_host.clock_f_max = clock_max;
