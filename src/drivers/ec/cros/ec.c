@@ -363,7 +363,7 @@ static CrosEc *get_main_ec(void)
  */
 static int get_cmd_versions(CrosEc *me, int cmd, uint32_t *pmask)
 {
-	struct ec_params_get_cmd_versions p;
+	struct ec_params_get_cmd_versions_v1 p;
 	struct ec_response_get_cmd_versions r;
 
 	*pmask = 0;
@@ -371,7 +371,7 @@ static int get_cmd_versions(CrosEc *me, int cmd, uint32_t *pmask)
 	p.cmd = cmd;
 
 	if (ec_command(me, EC_CMD_GET_CMD_VERSIONS,
-		       0, &p, sizeof(p), &r, sizeof(r)) != sizeof(r))
+		       1, &p, sizeof(p), &r, sizeof(r)) != sizeof(r))
 		return -1;
 
 	*pmask = r.version_mask;
