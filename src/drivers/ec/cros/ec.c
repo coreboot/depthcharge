@@ -925,13 +925,22 @@ static int ec_flash_write(CrosEc *me, const uint8_t *data, uint32_t offset,
 static int ec_efs_verify(CrosEc *me, enum ec_flash_region region)
 {
 	struct ec_params_efs_verify p;
-	if (!cmd_version_supported(me, EC_CMD_EFS_VERIFY, 0)) {
-		return 0;
-	}
+	int rv;
 	printf("EFS: EC is verifying updated image...\n");
 	p.region = region;
-	/* Less than 0 indicates verification failed */
-	return ec_command(me, EC_CMD_EFS_VERIFY, 0, &p, sizeof(p), NULL, 0) < 0;
+
+	rv = ec_command(me, EC_CMD_EFS_VERIFY, 0, &p, sizeof(p), NULL, 0);
+	if (rv >= 0) {
+		printf("EFS: Verification success\n");
+		return 0;
+	}
+	if (rv == -EC_RES_INVALID_COMMAND) {
+		printf("EFS: EC doesn't support EFS_VERIFY command\n");
+		return 0;
+	}
+
+	printf("EFS: Verification failed\n");
+	return rv;
 }
 
 static VbError_t vboot_set_region_protection(CrosEc *me,
