@@ -915,6 +915,25 @@ static int ec_flash_write(CrosEc *me, const uint8_t *data, uint32_t offset,
 	return 0;
 }
 
+/**
+ * Run verification on a slot
+ *
+ * @param me     CrosEc instance
+ * @param region Region to run verification on
+ * @return 0 if success or not applicable. Non-zero if verification failed.
+ */
+static int ec_efs_verify(CrosEc *me, enum ec_flash_region region)
+{
+	struct ec_params_efs_verify p;
+	if (!cmd_version_supported(me, EC_CMD_EFS_VERIFY, 0)) {
+		return 0;
+	}
+	printf("EFS: EC is verifying updated image...\n");
+	p.region = region;
+	/* Less than 0 indicates verification failed */
+	return ec_command(me, EC_CMD_EFS_VERIFY, 0, &p, sizeof(p), NULL, 0) < 0;
+}
+
 static VbError_t vboot_set_region_protection(CrosEc *me,
 	enum VbSelectFirmware_t select, int enable)
 {
@@ -964,12 +983,12 @@ static VbError_t vboot_update_image(VbootEcOps *vbec,
 {
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
 	uint32_t region_offset, region_size;
+	enum ec_flash_region region = vboot_to_ec_region(select);
 	VbError_t rv = vboot_set_region_protection(me, select, 0);
 	if (rv == VBERROR_EC_REBOOT_TO_RO_REQUIRED || rv != VBERROR_SUCCESS)
 		return rv;
 
-	if (ec_flash_offset(me, vboot_to_ec_region(select),
-				 &region_offset, &region_size))
+	if (ec_flash_offset(me, region, &region_offset, &region_size))
 		return VBERROR_UNKNOWN;
 	if (image_size > region_size)
 		return VBERROR_INVALID_PARAMETER;
@@ -987,6 +1006,10 @@ static VbError_t vboot_update_image(VbootEcOps *vbec,
 
 	/* Write the image */
 	if (ec_flash_write(me, image, region_offset, image_size))
+		return VBERROR_UNKNOWN;
+
+	/* Verify the image */
+	if (ec_efs_verify(me, region))
 		return VBERROR_UNKNOWN;
 
 	return VBERROR_SUCCESS;
