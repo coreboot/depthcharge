@@ -3999,6 +3999,13 @@ struct __ec_align4 ec_params_rwsig_action {
 	uint32_t action;
 };
 
+/* Run verification on a slot */
+#define EC_CMD_EFS_VERIFY	0x011e
+
+struct __ec_align1 ec_params_efs_verify {
+	uint8_t region;		/* enum ec_flash_region */
+};
+
 #endif  /* !__ACPI__ */
 
 /*****************************************************************************/
