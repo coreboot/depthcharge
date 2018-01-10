@@ -73,6 +73,8 @@ static void meowth_setup_tpm(void)
 
 static int board_setup(void)
 {
+	uint8_t secondary_bus;
+
 	sysinfo_install_flags(NULL);
 
 	/* TPM */
@@ -97,10 +99,21 @@ static int board_setup(void)
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
 
 	/* eMMC */
-	SdhciHost *emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1a, 0), 0,
-			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
-	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
-			&fixed_block_dev_controllers);
+	if (IS_ENABLED(CONFIG_DRIVER_STORAGE_MMC)) {
+		SdhciHost *emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1a, 0), 0,
+				EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
+		list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+				&fixed_block_dev_controllers);
+	}
+
+	/* NVME SSD */
+	if (IS_ENABLED(CONFIG_DRIVER_STORAGE_NVME)) {
+		secondary_bus = pci_read_config8(PCI_DEV(0, 0x1D, 0),
+				REG_SECONDARY_BUS);
+		NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(secondary_bus, 0, 0));
+		list_insert_after(&nvme->ctrlr.list_node, &fixed_block_dev_controllers);
+	}
+
 	return 0;
 }
 
