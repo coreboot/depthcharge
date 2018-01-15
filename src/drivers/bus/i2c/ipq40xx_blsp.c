@@ -77,7 +77,7 @@ int blsp_init_board(blsp_qup_id_t id)
 int blsp_i2c_clock_config(blsp_qup_id_t id)
 {
 #if 0
-Not sure if this is needed. Coreboot has done this
+Not sure if this is needed. coreboot has done this
 
 	int i;
 	const int max_tries = 200;

@@ -24,7 +24,7 @@
 static int lynxpoint_route_to_xhci(struct CleanupFunc *cleanup,
 				   CleanupType type)
 {
-	// Issue SMI to Coreboot to route all USB ports to XHCI.
+	// Issue SMI to coreboot to route all USB ports to XHCI.
 	printf("Routing USB ports to XHCI controller\n");
 	outb(0xca, 0xb2);
 	return 0;
