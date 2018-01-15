@@ -74,7 +74,7 @@ static uint32_t read_be32(const void *ptr)
 }
 
 /*********************************************************/
-/*   Coreboot driver with as little changes as possible. */
+/*   coreboot driver with as little changes as possible. */
 
 
 #define TPM_LOCALITY_0_SPI_BASE 0x00d40000

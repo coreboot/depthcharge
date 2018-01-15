@@ -103,7 +103,7 @@ static int x86_mtrr_cleanup(struct CleanupFunc *cleanup, CleanupType type)
 {
 	/*
 	 * Un-cache the ROM so the kernel has one more MTRR available.
-	 * Coreboot should have assigned this to the top available variable
+	 * coreboot should have assigned this to the top available variable
 	 * MTRR.
 	 */
 	uint8_t top_mtrr = (_rdmsr(MTRRcap_MSR) & 0xff) - 1;
@@ -140,8 +140,8 @@ static int coreboot_finalize(struct CleanupFunc *cleanup, CleanupType type)
 	if (type == CleanupOnLegacy)
 		outb(0xcc, 0xb2);
 
-	// Issue SMI to Coreboot to lock down ME and registers.
-	printf("Finalizing Coreboot\n");
+	// Issue SMI to coreboot to lock down ME and registers.
+	printf("Finalizing coreboot\n");
 	outb(0xcb, 0xb2);
 	return 0;
 }

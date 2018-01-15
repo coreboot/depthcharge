@@ -117,7 +117,7 @@ BlockDevCtrlr *bcb_board_bdev_ctrlr(void)
  * coreboot. Smaug uses Winbond W25Q128FW which takes 3x time to erase 64KiB
  * using sector erase (4KiB) as compared to block erase (64KiB).
  *
- * Coreboot needs to use sector erase (4KiB) to ensure that vbnv_erase does not
+ * coreboot needs to use sector erase (4KiB) to ensure that vbnv_erase does not
  * clear off unwanted parts of the flash.
  *
  * Thus, override sector_size to be equal to 64KiB and erase command as block
