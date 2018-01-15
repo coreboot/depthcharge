@@ -56,16 +56,26 @@ static void rk3399_emmc_phy_power_on(uint32_t clock)
 	writel(RK_CLRSETBITS(1, 1), &emmc_phy->emmcphy_con[6]);
 
 	/*
-	 * According to the user manual, it asks driver to
-	 * wait 5us for calpad busy trimming
+	 * According to the user manual, it asks driver to wait 5us for
+	 * calpad busy trimming. However it is documented that this value is
+	 * PVT(A.K.A process,voltage and temperature) relevant, so some
+	 * failure cases are found which indicates we should be more tolerant
+	 * to calpad busy trimming.
 	 */
-	udelay(5);
-	caldone = readl(&emmc_phy->emmcphy_status);
-	caldone = (caldone >> PHYCTRL_CALDONE_SHIFT) & PHYCTRL_CALDONE_MASK;
+	start_us = timer_us(0);
+	do {
+		udelay(1);
+		caldone = readl(&emmc_phy->emmcphy_status);
+		caldone = (caldone >> PHYCTRL_CALDONE_SHIFT) &
+			PHYCTRL_CALDONE_MASK;
+		if (caldone == PHYCTRL_CALDONE_DONE)
+			break;
+	} while (timer_us(start_us) < 50);
 	if (caldone != PHYCTRL_CALDONE_DONE) {
 		printf("%s: caldone timeout.\n", __func__);
 		return;
 	}
+
 	/* Set the frequency of the DLL operation */
 	if (clock < 75 * MHz)
 		freqsel = PHYCTRL_FREQSEL_50M;
