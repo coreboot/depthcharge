@@ -1021,7 +1021,7 @@ int cros_ec_battery_cutoff(uint8_t flags)
 
 	p.flags = flags;
 
-	len = ec_command(get_main_ec(), EC_CMD_BATTERY_CUT_OFF, 0,
+	len = ec_command(get_main_ec(), EC_CMD_BATTERY_CUT_OFF, 1,
 			 &p, sizeof(p), NULL, 0);
 
 	if (len < 0)
