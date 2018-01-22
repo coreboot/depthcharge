@@ -24,7 +24,6 @@ config DRIVER_SOC_APOLLOLAKE
 config DRIVER_SOC_CANNONLAKE
 	bool "Cannonlake SoC driver"
 	default n
-	select DRIVER_GPIO_CANNONLAKE
 
 config DRIVER_SOC_STONEYRIDGE
 	bool "Stoney Ridge SoC driver"
