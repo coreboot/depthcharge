@@ -22,7 +22,7 @@
 int cannonlake_get_gpe(int gpe);
 
 #define ACPI_BASE_ADDRESS	0x1800
-#define GPE0_STS(x)             (0x80 + ((x) * 4))
+#define GPE0_STS(x)             (0x60 + ((x) * 4))
 
 /* GPE_31_0 */
 #define GPE0_DW0_00		0
