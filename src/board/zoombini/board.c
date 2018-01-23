@@ -52,7 +52,7 @@
 
 static int cr50_irq_status(void)
 {
-	return 0; /* FIXME - cannonlake_get_gpe(GPE0_DW1_12); *//* GPP_C12 */
+	return cannonlake_get_gpe(GPE0_DW2_12); /* GPP_C12 */
 }
 
 static void zoombini_setup_tpm(void)

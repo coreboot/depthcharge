@@ -51,7 +51,7 @@
 
 static int cr50_irq_status(void)
 {
-	return cannonlake_get_gpe(GPE0_DW2_12);
+	return cannonlake_get_gpe(GPE0_DW2_12); /* GPP_C12 */
 }
 
 static void meowth_setup_tpm(void)
