@@ -28,7 +28,9 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/fch.h"
 #include "drivers/soc/stoneyridge.h"
-#include "drivers/sound/sound.h"
+#include "drivers/sound/gpio_i2s.h"
+#include "drivers/sound/max98357a.h"
+#include "drivers/sound/route.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
@@ -49,6 +51,29 @@ static int cr50_irq_status(void)
 	return stoneyridge_get_gpe(22);
 }
 
+static void audio_setup(void)
+{
+	KernGpio *i2s_bclk = new_kern_fch_gpio_output(140, 0);
+	KernGpio *i2s_lrclk = new_kern_fch_gpio_output(144, 0);
+	KernGpio *i2s2_data = new_kern_fch_gpio_output(143, 0);
+	GpioI2s *i2s = new_gpio_i2s(
+			&i2s_bclk->ops,		/* I2S Bit Clock GPIO */
+			&i2s_lrclk->ops,	/* I2S Frame Sync GPIO */
+			&i2s2_data->ops,	/* I2S Data GPIO */
+			16000,			/* Sample rate */
+			2,			/* Channels */
+			0x1FFF);		/* Volume */
+	SoundRoute *sound_route = new_sound_route(&i2s->ops);
+
+	KernGpio *spk_pa_en = new_kern_fch_gpio_output(119, 0);
+	max98357aCodec *speaker_amp = new_max98357a_codec(&spk_pa_en->ops);
+
+	list_insert_after(&speaker_amp->component.list_node,
+			  &sound_route->components);
+
+	sound_set_ops(&sound_route->ops);
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
@@ -59,7 +84,7 @@ static int board_setup(void)
 
 	flash_set_ops(&new_mem_mapped_flash(FLASH_START, FLASH_SIZE)->ops);
 
-	/* TODO: Add Audio information (b:69407112) */
+	audio_setup();
 
 	SdhciHost *emmc;
 	emmc = new_pci_sdhci_host(PCI_DEV(0, 0x14, 7),
