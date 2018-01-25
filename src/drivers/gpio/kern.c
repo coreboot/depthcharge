@@ -34,6 +34,29 @@
 
 /* Functions for manipulating GPIO regs. */
 
+/*
+ * This table defines the IOMUX value required to configure a particular pin
+ * as its GPIO function.
+ */
+static const uint8_t fch_gpio_use_table[FCH_NUM_GPIOS] = {
+	/*         0   1   2   3   4   5   6   7   8   9 */
+	/*   0 */  1,  1,  1,  0,  0,  0,  0,  0,  0,  0,
+	/*  10 */  1,  2,  2,  1,  1,  1,  2,  2,  2,  2,
+	/*  20 */  2,  1,  1,  2,  1,  1,  1,  0,  0,  0,
+	/*  30 */  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,
+	/*  40 */  0,  0,  1,  0,  0,  0,  0,  0,  0,  0,
+	/*  50 */  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+	/*  60 */  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+	/*  70 */  0,  0,  0,  0,  1,  1,  0,  0,  0,  0,
+	/*  80 */  0,  0,  0,  0,  1,  1,  1,  1,  1,  0,
+	/*  90 */  0,  1,  3,  1,  0,  0,  0,  0,  0,  0,
+	/* 100 */  0,  1,  1,  0,  0,  0,  0,  0,  0,  0,
+	/* 110 */  0,  0,  0,  2,  2,  1,  1,  1,  1,  2,
+	/* 120 */  1,  1,  1,  0,  0,  0,  0,  0,  0,  0,
+	/* 130 */  1,  3,  2,  1,  1,  1,  1,  1,  1,  1,
+	/* 140 */  1,  1,  1,  1,  1,  1,  1,  1,  1
+};
+
 /* Careful! MUX setting for GPIOn is not consistent for all pins.  See BKDG. */
 static void fch_iomux_set(KernGpio *gpio, int val)
 {
@@ -121,6 +144,9 @@ KernGpio *new_kern_fch_gpio_input(unsigned num)
 	KernGpio *gpio = new_kern_fch_gpio(num);
 	gpio->ops.get = &kern_fch_gpio_get_value;
 
+	/* Configure pin to use its GPIO function. */
+	fch_iomux_set(gpio, fch_gpio_use_table[num]);
+
 	/* Unnecessary but disable output so we can trust input */
 	fch_gpio_set(gpio, FCH_GPIO_OUTPUT_EN, 0);
 
@@ -131,6 +157,9 @@ KernGpio *new_kern_fch_gpio_output(unsigned num, unsigned value)
 {
 	KernGpio *gpio = new_kern_fch_gpio(num);
 	gpio->ops.set = &kern_fch_gpio_set_value;
+
+	/* Configure pin to use its GPIO function. */
+	fch_iomux_set(gpio, fch_gpio_use_table[num]);
 
 	/* Configure GPIO as an output with initial value. */
 	fch_gpio_set(gpio, FCH_GPIO_OUTPUT_VAL, value);
