@@ -42,14 +42,15 @@ static uintptr_t fch_iomuxbase(void)
 /* Careful! MUX setting for GPIOn is not consistent for all pins.  See BKDG. */
 static int fch_iomux_set(unsigned num, int val)
 {
-	uint8_t *addr = phys_to_virt(fch_iomuxbase + num);
+	uint8_t *addr = phys_to_virt(fch_iomuxbase() + num);
+
 	*addr = 0x3 & (uint8_t)val;
 	return 0;
 }
 
 static int fch_gpio_set(unsigned num, int bit, int val)
 {
-	uint32_t *addr = phys_to_virt(fch_gpiobase + FCH_GPIO_REG(num));
+	uint32_t *addr = phys_to_virt(fch_gpiobase() + FCH_GPIO_REG(num));
 	uint32_t conf = *addr;
 	if (val)
 		conf |= (1 << bit);
@@ -61,7 +62,7 @@ static int fch_gpio_set(unsigned num, int bit, int val)
 
 static int fch_gpio_get(unsigned num, int bit)
 {
-	uint32_t *addr = phys_to_virt(fch_gpiobase + FCH_GPIO_REG(num));
+	uint32_t *addr = phys_to_virt(fch_gpiobase() + FCH_GPIO_REG(num));
 	uint32_t conf = *addr;
 	return !!(conf & (1 << bit));
 }
