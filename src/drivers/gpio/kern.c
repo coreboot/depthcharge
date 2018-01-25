@@ -22,6 +22,7 @@
 
 #define KERN_PM_MMIO 0xfed80000
 
+#define FCH_NUM_GPIOS		149
 #define FCH_GPIO_REG(num)	((num) * 4)
 #define  FCH_GPIO_OUTPUT_EN	23
 #define  FCH_GPIO_OUTPUT_VAL	22
@@ -104,6 +105,8 @@ static int kern_fch_gpio_use(KernGpio *me, unsigned use)
 
 KernGpio *new_kern_fch_gpio(unsigned num)
 {
+	assert(num < FCH_NUM_GPIOS);
+
 	KernGpio *gpio = xzalloc(sizeof(*gpio));
 	gpio->use = &kern_fch_gpio_use;
 	gpio->num = num;
