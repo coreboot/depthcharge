@@ -286,6 +286,7 @@ static int mkbp_add_button(uint16_t *codes, int max_codes, uint32_t curr_bitmap)
 {
 	const uint64_t long_press_timeout_us = 3 * 1000 * 1000;
 	static uint64_t prev_timestamp_us;
+	static int combo_detected = 0;
 	int total = 0;
 
 	/*
@@ -296,9 +297,20 @@ static int mkbp_add_button(uint16_t *codes, int max_codes, uint32_t curr_bitmap)
 		return total;
 
 	/* If a button was pressed before, check if it has been released now. */
-	if (prev_bitmap & ~curr_bitmap)
-		mkbp_add_button_code(codes, max_codes, &total, prev_bitmap, 0);
-	else if (prev_bitmap == curr_bitmap) {
+	if (prev_bitmap & ~curr_bitmap) {
+		if (combo_detected) {
+			/*
+			 * We're still waiting for a combo release... just check
+			 * if we're done with that and otherwise ignore.
+			 */
+			if (!curr_bitmap)
+				combo_detected = 0;
+		} else {
+			/* Normal button release -> add key code. */
+			mkbp_add_button_code(codes, max_codes, &total,
+					     prev_bitmap, 0);
+		}
+	} else if (prev_bitmap == curr_bitmap) {
 		/*
 		 * If a button was pressed before and it is still pressed, then
 		 * check if it has been held down for long enough to consider as
@@ -318,12 +330,11 @@ static int mkbp_add_button(uint16_t *codes, int max_codes, uint32_t curr_bitmap)
 
 	/*
 	 * If more than one button is pressed, report the combo right away and
-	 * forget about it.
+	 * set the flag to make sure we ignore the buttons on the way back up.
 	 */
 	if (curr_bitmap & (curr_bitmap - 1)) {
 		mkbp_add_button_code(codes, max_codes, &total, curr_bitmap, 0);
-		prev_bitmap = 0;
-		prev_timestamp_us = 0;
+		combo_detected = 1;
 	} else {
 		prev_bitmap = curr_bitmap;
 		prev_timestamp_us = timer_us(0);
