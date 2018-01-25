@@ -46,6 +46,11 @@
 #define FLASH_SIZE		0x1000000
 #define FLASH_START		( 0xffffffff - FLASH_SIZE + 1 )
 
+#define DA7219_I2C_ADDR		0x1a
+
+#define DA7219_DAI_CLK_MODE	0x2b
+#define   DAI_CLK_EN		0x80
+
 static int cr50_irq_status(void)
 {
 	return stoneyridge_get_gpe(22);
@@ -53,6 +58,23 @@ static int cr50_irq_status(void)
 
 static void audio_setup(void)
 {
+	/* Setup da7219 on I2C0 */
+	DesignwareI2c *i2c0 = new_designware_i2c(AP_I2C0_ADDR, 400000,
+						 AP_I2C_CLK_MHZ);
+
+	/* Clear DAI_CLK_MODE.dai_clk_en to set BCLK/WCLK pins as inputs */
+	int ret = i2c_clear_bits(&i2c0->ops, DA7219_I2C_ADDR,
+				 DA7219_DAI_CLK_MODE, DAI_CLK_EN);
+	/*
+	 * If we cannot clear DAI_CLK_EN, we may be fighting with it for
+	 * control of BCLK/WCLK, so skip audio initialization.
+	 */
+	if (ret < 0) {
+		printf("Failed to clear dai_clk_en (%d), skipping bit-bang i2s config\n",
+		       ret);
+		return;
+	}
+
 	KernGpio *i2s_bclk = new_kern_fch_gpio_output(140, 0);
 	KernGpio *i2s_lrclk = new_kern_fch_gpio_output(144, 0);
 	KernGpio *i2s2_data = new_kern_fch_gpio_output(143, 0);
