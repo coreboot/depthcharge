@@ -156,7 +156,7 @@ static int do_i2c(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if (!strcmp(argv[1], "list")) {
 		I2cBusController *controller;
 
-		printf("Availabe i2c interfaces:\n");
+		printf("Available i2c interfaces:\n");
 
 		list_for_each(controller, i2c_bus_controllers, list_node)
 			printf("  %s\n", controller->i2c_name);
