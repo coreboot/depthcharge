@@ -12,6 +12,7 @@
  */
 
 #include <arch/io.h>
+#include <arch/msr.h>
 #include <libpayload.h>
 #include <stdint.h>
 
@@ -43,4 +44,17 @@ int stoneyridge_get_gpe(int gpe)
 	} while (sts & mask);
 
 	return rc;
+}
+
+#define CU_PTSC_MSR	0xc0010280
+#define PTSC_FREQ_MHZ	100
+
+uint64_t timer_hz(void)
+{
+	return PTSC_FREQ_MHZ * MHz;
+}
+
+uint64_t timer_raw_value(void)
+{
+	return _rdmsr(CU_PTSC_MSR);
 }
