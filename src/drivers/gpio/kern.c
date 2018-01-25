@@ -41,15 +41,14 @@ static uintptr_t fch_iomuxbase(void)
 }
 
 /* Careful! MUX setting for GPIOn is not consistent for all pins.  See BKDG. */
-static int fch_iomux_set(unsigned num, int val)
+static void fch_iomux_set(unsigned num, int val)
 {
 	uint8_t *addr = phys_to_virt(fch_iomuxbase() + num);
 
 	*addr = 0x3 & (uint8_t)val;
-	return 0;
 }
 
-static int fch_gpio_set(unsigned num, int bit, int val)
+static void fch_gpio_set(unsigned num, int bit, int val)
 {
 	uint32_t *addr = phys_to_virt(fch_gpiobase() + FCH_GPIO_REG(num));
 	uint32_t conf = *addr;
@@ -58,7 +57,6 @@ static int fch_gpio_set(unsigned num, int bit, int val)
 	else
 		conf &= ~(1 << bit);
 	*addr = conf;
-	return 0;
 }
 
 static int fch_gpio_get(unsigned num, int bit)
@@ -76,8 +74,7 @@ static int kern_fch_gpio_get_value(GpioOps *me)
 	KernGpio *gpio = container_of(me, KernGpio, ops);
 	if (!gpio->dir_set) {
 		/* Unnecessary but disable output so we can trust input */
-		if (fch_gpio_set(gpio->num, FCH_GPIO_OUTPUT_EN, 0) < 0)
-			return -1;
+		fch_gpio_set(gpio->num, FCH_GPIO_OUTPUT_EN, 0);
 		gpio->dir_set = 1;
 	}
 	return fch_gpio_get(gpio->num, FCH_GPIO_INPUT_VAL);
@@ -88,17 +85,20 @@ static int kern_fch_gpio_set_value(GpioOps *me, unsigned value)
 	assert(me);
 	KernGpio *gpio = container_of(me, KernGpio, ops);
 	if (!gpio->dir_set) {
-		if (fch_gpio_set(gpio->num, FCH_GPIO_OUTPUT_EN, 1) < 0)
-			return -1;
+		fch_gpio_set(gpio->num, FCH_GPIO_OUTPUT_EN, 1);
 		gpio->dir_set = 1;
 	}
-	return fch_gpio_set(gpio->num, FCH_GPIO_OUTPUT_VAL, value);
+	fch_gpio_set(gpio->num, FCH_GPIO_OUTPUT_VAL, value);
+
+	return 0;
 }
 
 static int kern_fch_gpio_use(KernGpio *me, unsigned use)
 {
 	assert(me);
-	return fch_iomux_set(me->num, use);
+	fch_iomux_set(me->num, use);
+
+	return 0;
 }
 
 /* Functions to allocate and set up a GPIO structure. */
