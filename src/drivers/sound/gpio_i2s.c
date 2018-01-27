@@ -84,6 +84,16 @@ static int gpio_i2s_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 	return 0;
 }
 
+static int gpio_i2s_set_volume(struct SoundOps *me, uint32_t volume)
+{
+	GpioI2s *i2s = container_of(me, GpioI2s, ops);
+
+	/* Convert volume to percentage of full-scale int16_t. */
+	i2s->volume = (volume * 0x7fff) / 100;
+
+	return 0;
+}
+
 GpioI2s *new_gpio_i2s(GpioOps *bclk_gpio, GpioOps *sfrm_gpio,
 		      GpioOps *data_gpio, uint16_t sample_rate,
 		      uint8_t channels, uint16_t volume)
@@ -91,6 +101,7 @@ GpioI2s *new_gpio_i2s(GpioOps *bclk_gpio, GpioOps *sfrm_gpio,
 	GpioI2s *i2s = xzalloc(sizeof(*i2s));
 
 	i2s->ops.play = &gpio_i2s_play;
+	i2s->ops.set_volume = &gpio_i2s_set_volume;
 
 	i2s->bclk_gpio		= bclk_gpio;
 	i2s->sfrm_gpio		= sfrm_gpio;
