@@ -21,49 +21,38 @@
 #include "drivers/gpio/kern.h"
 
 #define KERN_PM_MMIO 0xfed80000
+#define FCH_GPIO_BASE		(KERN_PM_MMIO + 0x1500)
+#define FCH_IOMUX_BASE		(KERN_PM_MMIO + 0xd00)
 
 #define FCH_NUM_GPIOS		149
-#define FCH_GPIO_REG(num)	((num) * 4)
+
+#define FCH_GPIO_REG(num)	(FCH_GPIO_BASE + (num) * 4)
 #define  FCH_GPIO_OUTPUT_EN	23
 #define  FCH_GPIO_OUTPUT_VAL	22
 #define  FCH_GPIO_INPUT_VAL	16
+#define FCH_IOMUX_REG(num)	(FCH_IOMUX_BASE + (num))
 
 /* Functions for manipulating GPIO regs. */
 
-static uintptr_t fch_gpiobase(void)
-{
-	return KERN_PM_MMIO + 0x1500;
-}
-
-static uintptr_t fch_iomuxbase(void)
-{
-	return KERN_PM_MMIO + 0xd00;
-}
-
 /* Careful! MUX setting for GPIOn is not consistent for all pins.  See BKDG. */
-static void fch_iomux_set(unsigned num, int val)
+static void fch_iomux_set(KernGpio *gpio, int val)
 {
-	uint8_t *addr = phys_to_virt(fch_iomuxbase() + num);
-
-	write8(addr, val & 3);
+	write8(gpio->iomux, val & 3);
 }
 
-static void fch_gpio_set(unsigned num, int bit, int val)
+static void fch_gpio_set(KernGpio *gpio, int bit, int val)
 {
-	uint32_t *addr = phys_to_virt(fch_gpiobase() + FCH_GPIO_REG(num));
-	uint32_t conf = read32(addr);
+	uint32_t conf = read32(gpio->reg);
 	if (val)
 		conf |= (1 << bit);
 	else
 		conf &= ~(1 << bit);
-	write32(addr, conf);
+	write32(gpio->reg, conf);
 }
 
-static int fch_gpio_get(unsigned num, int bit)
+static int fch_gpio_get(KernGpio *gpio, int bit)
 {
-	uint32_t *addr = phys_to_virt(fch_gpiobase() + FCH_GPIO_REG(num));
-	uint32_t conf = read32(addr);
-	return !!(conf & (1 << bit));
+	return !!(read32(gpio->reg) & (1 << bit));
 }
 
 /* Interface functions for manipulating a GPIO. */
@@ -74,10 +63,10 @@ static int kern_fch_gpio_get_value(GpioOps *me)
 	KernGpio *gpio = container_of(me, KernGpio, ops);
 	if (!gpio->dir_set) {
 		/* Unnecessary but disable output so we can trust input */
-		fch_gpio_set(gpio->num, FCH_GPIO_OUTPUT_EN, 0);
+		fch_gpio_set(gpio, FCH_GPIO_OUTPUT_EN, 0);
 		gpio->dir_set = 1;
 	}
-	return fch_gpio_get(gpio->num, FCH_GPIO_INPUT_VAL);
+	return fch_gpio_get(gpio, FCH_GPIO_INPUT_VAL);
 }
 
 static int kern_fch_gpio_set_value(GpioOps *me, unsigned value)
@@ -85,10 +74,10 @@ static int kern_fch_gpio_set_value(GpioOps *me, unsigned value)
 	assert(me);
 	KernGpio *gpio = container_of(me, KernGpio, ops);
 	if (!gpio->dir_set) {
-		fch_gpio_set(gpio->num, FCH_GPIO_OUTPUT_EN, 1);
+		fch_gpio_set(gpio, FCH_GPIO_OUTPUT_EN, 1);
 		gpio->dir_set = 1;
 	}
-	fch_gpio_set(gpio->num, FCH_GPIO_OUTPUT_VAL, value);
+	fch_gpio_set(gpio, FCH_GPIO_OUTPUT_VAL, value);
 
 	return 0;
 }
@@ -96,7 +85,7 @@ static int kern_fch_gpio_set_value(GpioOps *me, unsigned value)
 static int kern_fch_gpio_use(KernGpio *me, unsigned use)
 {
 	assert(me);
-	fch_iomux_set(me->num, use);
+	fch_iomux_set(me, use);
 
 	return 0;
 }
@@ -109,7 +98,8 @@ KernGpio *new_kern_fch_gpio(unsigned num)
 
 	KernGpio *gpio = xzalloc(sizeof(*gpio));
 	gpio->use = &kern_fch_gpio_use;
-	gpio->num = num;
+	gpio->reg = (uint32_t *)(uintptr_t)FCH_GPIO_REG(num);
+	gpio->iomux = (uint8_t *)(uintptr_t)FCH_IOMUX_REG(num);
 	return gpio;
 }
 

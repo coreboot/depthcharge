@@ -25,7 +25,8 @@ typedef struct KernGpio
 {
 	GpioOps ops;
 	int (*use)(struct KernGpio *, unsigned use);
-	int num;
+	uint32_t *reg;
+	uint8_t *iomux;
 	int dir_set;
 } KernGpio;
 
