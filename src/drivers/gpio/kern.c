@@ -26,7 +26,7 @@
 #define FCH_GPIO_REG(num)	((num) * 4)
 #define  FCH_GPIO_OUTPUT_EN	23
 #define  FCH_GPIO_OUTPUT_VAL	22
-#define  FCH_GPIO_INPUT_VAL	28
+#define  FCH_GPIO_INPUT_VAL	16
 
 /* Functions for manipulating GPIO regs. */
 
