@@ -61,11 +61,6 @@ static int kern_fch_gpio_get_value(GpioOps *me)
 {
 	assert(me);
 	KernGpio *gpio = container_of(me, KernGpio, ops);
-	if (!gpio->dir_set) {
-		/* Unnecessary but disable output so we can trust input */
-		fch_gpio_set(gpio, FCH_GPIO_OUTPUT_EN, 0);
-		gpio->dir_set = 1;
-	}
 	return fch_gpio_get(gpio, FCH_GPIO_INPUT_VAL);
 }
 
@@ -73,10 +68,7 @@ static int kern_fch_gpio_set_value(GpioOps *me, unsigned value)
 {
 	assert(me);
 	KernGpio *gpio = container_of(me, KernGpio, ops);
-	if (!gpio->dir_set) {
-		fch_gpio_set(gpio, FCH_GPIO_OUTPUT_EN, 1);
-		gpio->dir_set = 1;
-	}
+
 	fch_gpio_set(gpio, FCH_GPIO_OUTPUT_VAL, value);
 
 	return 0;
@@ -107,12 +99,21 @@ KernGpio *new_kern_fch_gpio_input(unsigned num)
 {
 	KernGpio *gpio = new_kern_fch_gpio(num);
 	gpio->ops.get = &kern_fch_gpio_get_value;
+
+	/* Unnecessary but disable output so we can trust input */
+	fch_gpio_set(gpio, FCH_GPIO_OUTPUT_EN, 0);
+
 	return gpio;
 }
 
-KernGpio *new_kern_fch_gpio_output(unsigned num)
+KernGpio *new_kern_fch_gpio_output(unsigned num, unsigned value)
 {
 	KernGpio *gpio = new_kern_fch_gpio(num);
 	gpio->ops.set = &kern_fch_gpio_set_value;
+
+	/* Configure GPIO as an output with initial value. */
+	fch_gpio_set(gpio, FCH_GPIO_OUTPUT_VAL, value);
+	fch_gpio_set(gpio, FCH_GPIO_OUTPUT_EN, 1);
+
 	return gpio;
 }

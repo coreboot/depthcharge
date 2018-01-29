@@ -27,11 +27,10 @@ typedef struct KernGpio
 	int (*use)(struct KernGpio *, unsigned use);
 	uint32_t *reg;
 	uint8_t *iomux;
-	int dir_set;
 } KernGpio;
 
 KernGpio *new_kern_gpio(unsigned num);
-KernGpio *new_kern_fch_gpio_output(unsigned num);
+KernGpio *new_kern_fch_gpio_output(unsigned num, unsigned value);
 KernGpio *new_kern_fch_gpio_input(unsigned num);
 
 #endif /* __DRIVERS_GPIO_KERN_H__ */
