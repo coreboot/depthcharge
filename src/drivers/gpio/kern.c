@@ -82,6 +82,16 @@ static int kern_fch_gpio_use(KernGpio *me, unsigned use)
 	return 0;
 }
 
+static int kern_fch_gpio_cleanup(CleanupFunc *cleanup, CleanupType type)
+{
+	KernGpio *gpio = cleanup->data;
+
+	write32(gpio->reg, gpio->save_reg);
+	write8(gpio->iomux, gpio->save_iomux);
+
+	return 0;
+}
+
 /* Functions to allocate and set up a GPIO structure. */
 
 KernGpio *new_kern_fch_gpio(unsigned num)
@@ -92,6 +102,17 @@ KernGpio *new_kern_fch_gpio(unsigned num)
 	gpio->use = &kern_fch_gpio_use;
 	gpio->reg = (uint32_t *)(uintptr_t)FCH_GPIO_REG(num);
 	gpio->iomux = (uint8_t *)(uintptr_t)FCH_IOMUX_REG(num);
+
+	/* Save initial GPIO state */
+	gpio->save_reg = read32(gpio->reg);
+	gpio->save_iomux = read8(gpio->iomux);
+
+	/* Register callback to restore GPIO state on exit */
+	gpio->cleanup.cleanup = &kern_fch_gpio_cleanup;
+	gpio->cleanup.types = CleanupOnHandoff | CleanupOnLegacy;
+	gpio->cleanup.data = gpio;
+	list_insert_after(&gpio->cleanup.list_node, &cleanup_funcs);
+
 	return gpio;
 }
 

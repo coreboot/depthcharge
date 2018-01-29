@@ -19,6 +19,7 @@
 #ifndef __DRIVERS_GPIO_KERN_H__
 #define __DRIVERS_GPIO_KERN_H__
 
+#include "base/cleanup_funcs.h"
 #include "drivers/gpio/gpio.h"
 
 typedef struct KernGpio
@@ -27,6 +28,11 @@ typedef struct KernGpio
 	int (*use)(struct KernGpio *, unsigned use);
 	uint32_t *reg;
 	uint8_t *iomux;
+
+	/* Used to save and restore GPIO configuration */
+	uint32_t save_reg;
+	uint8_t save_iomux;
+	CleanupFunc cleanup;
 } KernGpio;
 
 KernGpio *new_kern_gpio(unsigned num);
