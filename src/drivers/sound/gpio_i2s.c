@@ -21,7 +21,7 @@
 
 /* Generate square wave sound data for 1 second. */
 static void i2s_square_wave(uint16_t *data, uint16_t samples,
-		uint32_t frequency, uint16_t volume)
+		uint32_t frequency, int16_t volume)
 {
 	unsigned period = samples / frequency;
 	unsigned half = period / 2;
@@ -86,7 +86,7 @@ static int gpio_i2s_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 
 GpioI2s *new_gpio_i2s(GpioOps *bclk_gpio, GpioOps *sfrm_gpio,
 		      GpioOps *data_gpio, uint16_t sample_rate,
-		      uint8_t channels, uint16_t volume)
+		      uint8_t channels, int16_t volume)
 {
 	GpioI2s *i2s = xzalloc(sizeof(*i2s));
 

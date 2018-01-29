@@ -35,10 +35,10 @@ typedef struct
 	uint8_t channels;
 
 	/* Amplitude for square wave */
-	uint16_t volume;
+	int16_t volume;
 
 } GpioI2s;
 
 GpioI2s *new_gpio_i2s(GpioOps *bclk_gpio, GpioOps *sfrm_gpio,
 		      GpioOps *data_gpio, uint16_t sample_rate,
-		      uint8_t channels, uint16_t volume);
+		      uint8_t channels, int16_t volume);
