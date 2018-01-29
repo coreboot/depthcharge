@@ -27,9 +27,9 @@
 #define FCH_NUM_GPIOS		149
 
 #define FCH_GPIO_REG(num)	(FCH_GPIO_BASE + (num) * 4)
-#define  FCH_GPIO_OUTPUT_EN	23
-#define  FCH_GPIO_OUTPUT_VAL	22
-#define  FCH_GPIO_INPUT_VAL	16
+#define  FCH_GPIO_OUTPUT_EN	(1 << 23)
+#define  FCH_GPIO_OUTPUT_VAL	(1 << 22)
+#define  FCH_GPIO_INPUT_VAL	(1 << 16)
 #define FCH_IOMUX_REG(num)	(FCH_IOMUX_BASE + (num))
 
 /* Functions for manipulating GPIO regs. */
@@ -63,19 +63,26 @@ static void fch_iomux_set(KernGpio *gpio, int val)
 	write8(gpio->iomux, val & 3);
 }
 
-static void fch_gpio_set(KernGpio *gpio, int bit, int val)
+static void fch_gpio_set(KernGpio *gpio, uint8_t val)
 {
-	uint32_t conf = read32(gpio->reg);
+	uint32_t conf = gpio->save_reg | FCH_GPIO_OUTPUT_EN;
+
 	if (val)
-		conf |= (1 << bit);
+		conf |= FCH_GPIO_OUTPUT_VAL;
 	else
-		conf &= ~(1 << bit);
+		conf &= ~FCH_GPIO_OUTPUT_VAL;
+
 	write32(gpio->reg, conf);
 }
 
-static int fch_gpio_get(KernGpio *gpio, int bit)
+static int fch_gpio_get(KernGpio *gpio)
 {
-	return !!(read32(gpio->reg) & (1 << bit));
+	return !!(read32(gpio->reg) & FCH_GPIO_INPUT_VAL);
+}
+
+static void fch_gpio_conf_input(KernGpio *gpio)
+{
+	write32(gpio->reg, read32(gpio->reg) & ~FCH_GPIO_OUTPUT_EN);
 }
 
 /* Interface functions for manipulating a GPIO. */
@@ -84,7 +91,7 @@ static int kern_fch_gpio_get_value(GpioOps *me)
 {
 	assert(me);
 	KernGpio *gpio = container_of(me, KernGpio, ops);
-	return fch_gpio_get(gpio, FCH_GPIO_INPUT_VAL);
+	return fch_gpio_get(gpio);
 }
 
 static int kern_fch_gpio_set_value(GpioOps *me, unsigned value)
@@ -92,7 +99,7 @@ static int kern_fch_gpio_set_value(GpioOps *me, unsigned value)
 	assert(me);
 	KernGpio *gpio = container_of(me, KernGpio, ops);
 
-	fch_gpio_set(gpio, FCH_GPIO_OUTPUT_VAL, value);
+	fch_gpio_set(gpio, value);
 
 	return 0;
 }
@@ -147,8 +154,8 @@ KernGpio *new_kern_fch_gpio_input(unsigned num)
 	/* Configure pin to use its GPIO function. */
 	fch_iomux_set(gpio, fch_gpio_use_table[num]);
 
-	/* Unnecessary but disable output so we can trust input */
-	fch_gpio_set(gpio, FCH_GPIO_OUTPUT_EN, 0);
+	/* Configure GPIO as an input with pulls disabled */
+	fch_gpio_conf_input(gpio);
 
 	return gpio;
 }
@@ -162,8 +169,7 @@ KernGpio *new_kern_fch_gpio_output(unsigned num, unsigned value)
 	fch_iomux_set(gpio, fch_gpio_use_table[num]);
 
 	/* Configure GPIO as an output with initial value. */
-	fch_gpio_set(gpio, FCH_GPIO_OUTPUT_VAL, value);
-	fch_gpio_set(gpio, FCH_GPIO_OUTPUT_EN, 1);
+	fch_gpio_set(gpio, value);
 
 	return gpio;
 }
