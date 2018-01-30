@@ -30,33 +30,43 @@
  * as the one filled by the signer. This is important to maintain consistency
  * with current boards.
  */
-static struct boot_policy boot_policy = {
-	.img_type = KERNEL_IMAGE_CROS,
-	.cmd_line_loc = CMD_LINE_SIGNER,
+static const struct boot_policy boot_policy[] = {
+#if IS_ENABLED(CONFIG_KERNEL_MULTIBOOT)
+	{
+		.img_type = KERNEL_IMAGE_MULTIBOOT,
+		.cmd_line_loc = CMD_LINE_SIGNER,
+	},
+#endif
+	{
+		.img_type = KERNEL_IMAGE_CROS,
+		.cmd_line_loc = CMD_LINE_SIGNER,
+	},
 };
 
 static struct {
 	size_t count;
 	const struct boot_policy *policy;
 } curr_policy = {
-	.count = 1,
-	.policy = &boot_policy,
+	.count = ARRAY_SIZE(boot_policy),
+	.policy = boot_policy,
 };
 
 typedef int (*fill_bootinfo_fnptr)(struct boot_info *bi,
-				   VbSelectAndLoadKernelParams *kparams);
+				   VbSelectAndLoadKernelParams *kparams,
+				   const struct boot_policy *policy);
 
 /************************* CrOS Image Parsing ****************************/
 
 static int fill_info_cros(struct boot_info *bi,
-			  VbSelectAndLoadKernelParams *kparams)
+			  VbSelectAndLoadKernelParams *kparams,
+			  const struct boot_policy *policy)
 {
 	bi->kernel = kparams->kernel_buffer;
 	bi->loader = (uint8_t *)bi->kernel +
 		(kparams->bootloader_address - 0x100000);
 	bi->params = (uint8_t *)bi->loader - CrosParamSize;
 
-	if (boot_policy.cmd_line_loc == CMD_LINE_SIGNER)
+	if (policy->cmd_line_loc == CMD_LINE_SIGNER)
 		bi->cmd_line = (char *)bi->params - CmdLineSize;
 	else
 		bi->cmd_line = NULL;
@@ -67,14 +77,15 @@ static int fill_info_cros(struct boot_info *bi,
 /*********************** Multiboot Image Parsing *************************/
 #if IS_ENABLED(CONFIG_KERNEL_MULTIBOOT)
 static int fill_info_multiboot(struct boot_info *bi,
-			       VbSelectAndLoadKernelParams *kparams)
+			       VbSelectAndLoadKernelParams *kparams,
+			       const struct boot_policy *policy)
 {
 	bi->kparams = kparams;
 
 	if (multiboot_fill_boot_info(bi) < 0)
 		return -1;
 
-	if (boot_policy.cmd_line_loc != CMD_LINE_SIGNER)
+	if (policy->cmd_line_loc != CMD_LINE_SIGNER)
 		bi->cmd_line = NULL;
 
 	return 0;
@@ -132,7 +143,8 @@ void *bootimg_get_kernel_ptr(void *img, size_t image_size)
 }
 
 static int fill_info_bootimg(struct boot_info *bi,
-			     VbSelectAndLoadKernelParams *kparams)
+			     VbSelectAndLoadKernelParams *kparams,
+			     const struct boot_policy *policy)
 {
 	struct bootimg_hdr *hdr = kparams->kernel_buffer;
 	uintptr_t kernel;
@@ -146,7 +158,7 @@ static int fill_info_bootimg(struct boot_info *bi,
 
 	kernel = (uintptr_t)bi->kernel;
 
-	if (boot_policy.cmd_line_loc == CMD_LINE_BOOTIMG_HDR)
+	if (policy->cmd_line_loc == CMD_LINE_BOOTIMG_HDR)
 		bi->cmd_line = (char *)hdr->cmdline;
 	else
 		bi->cmd_line = NULL;
@@ -253,7 +265,7 @@ int set_boot_policy(const struct boot_policy *policy, size_t count)
 int fill_boot_info(struct boot_info *bi, VbSelectAndLoadKernelParams *kparams)
 {
 	int i;
-
+	const struct boot_policy *policy;
 	uint32_t type = GET_KERNEL_IMG_TYPE(kparams->flags);
 
 	for (i = 0; i < curr_policy.count; i++) {
@@ -265,12 +277,10 @@ int fill_boot_info(struct boot_info *bi, VbSelectAndLoadKernelParams *kparams)
 		printf("Boot policy: Invalid image type %x!\n", type);
 		return -1;
 	}
-
-	boot_policy.img_type = curr_policy.policy[i].img_type;
-	boot_policy.cmd_line_loc = curr_policy.policy[i].cmd_line_loc;
+	policy = &curr_policy.policy[i];
 
 	printf("Boot policy: Match for type %x with cmdline %x\n",
-	       boot_policy.img_type, boot_policy.cmd_line_loc);
+	       policy->img_type, policy->cmd_line_loc);
 
-	return img_type_info[boot_policy.img_type].fn(bi, kparams);
+	return img_type_info[policy->img_type].fn(bi, kparams, policy);
 }
