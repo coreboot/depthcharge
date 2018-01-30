@@ -45,24 +45,24 @@ static void fch_iomux_set(unsigned num, int val)
 {
 	uint8_t *addr = phys_to_virt(fch_iomuxbase() + num);
 
-	*addr = 0x3 & (uint8_t)val;
+	write8(addr, val & 3);
 }
 
 static void fch_gpio_set(unsigned num, int bit, int val)
 {
 	uint32_t *addr = phys_to_virt(fch_gpiobase() + FCH_GPIO_REG(num));
-	uint32_t conf = *addr;
+	uint32_t conf = read32(addr);
 	if (val)
 		conf |= (1 << bit);
 	else
 		conf &= ~(1 << bit);
-	*addr = conf;
+	write32(addr, conf);
 }
 
 static int fch_gpio_get(unsigned num, int bit)
 {
 	uint32_t *addr = phys_to_virt(fch_gpiobase() + FCH_GPIO_REG(num));
-	uint32_t conf = *addr;
+	uint32_t conf = read32(addr);
 	return !!(conf & (1 << bit));
 }
 
