@@ -51,10 +51,10 @@ int stoneyridge_get_gpe(int gpe)
 
 uint64_t timer_hz(void)
 {
-	return PTSC_FREQ_MHZ * MHz;
+	return 1 * MHz;
 }
 
 uint64_t timer_raw_value(void)
 {
-	return _rdmsr(CU_PTSC_MSR);
+	return _rdmsr(CU_PTSC_MSR) / PTSC_FREQ_MHZ;
 }
