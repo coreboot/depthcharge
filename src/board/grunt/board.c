@@ -60,7 +60,7 @@ static void audio_setup(void)
 			&i2s_bclk->ops,		/* I2S Bit Clock GPIO */
 			&i2s_lrclk->ops,	/* I2S Frame Sync GPIO */
 			&i2s2_data->ops,	/* I2S Data GPIO */
-			16000,			/* Sample rate */
+			24000,			/* Sample rate, measured */
 			2,			/* Channels */
 			0x1FFF);		/* Volume */
 	SoundRoute *sound_route = new_sound_route(&i2s->ops);
