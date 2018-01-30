@@ -28,26 +28,33 @@
 
 static void * const payload = (void *)(uintptr_t)CONFIG_KERNEL_START;
 
+static const char DHCP[] = "dhcp";
+
 int do_tftpboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	char *address;
 	char *bootfile;
 	char *argsfile;
 	uip_ipaddr_t tftp_ip;
+	uip_ipaddr_t *tftp_ip_arg;
 
 	if (argc != 4)
 		return CMD_RET_USAGE;
 
 	address = argv[1];
-	bootfile = argv[2];
+	bootfile = (!strcmp(argv[2], DHCP)) ? NULL : argv[2];
 	argsfile = argv[3];
 
-	if (!uiplib_ipaddrconv(address, &tftp_ip)) {
+	if (!strcmp(address, DHCP)) {
+		tftp_ip_arg = NULL;
+	} else if (!uiplib_ipaddrconv(address, &tftp_ip)) {
 		printf("Invalid IPv4 address: %s\n", address);
 		return CMD_RET_USAGE;
+	} else {
+		tftp_ip_arg = &tftp_ip;
 	}
 
-	netboot(&tftp_ip, bootfile, argsfile, NULL);
+	netboot(tftp_ip_arg, bootfile, argsfile, NULL);
 
 	/* netboot() only returns if it failed */
 
@@ -57,5 +64,8 @@ int do_tftpboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 U_BOOT_CMD(
 	tftpboot,	4,	1,
 	"boot image via network using TFTP protocol",
-	"[host IP addr] [boot file] [args file]"
+	"[host IP addr] [boot file] [args file]\n"
+	"\n"
+	"The IP address and boot file can take the \"dhcp\" special value\n"
+	"to send DHCP requests rather than using static values."
 );
