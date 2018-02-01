@@ -643,21 +643,6 @@ static VbError_t vboot_draw_developer_menu(struct params *p)
 	return vboot_draw_menu(p, &m);
 }
 
-static VbError_t vboot_draw_recovery_remove(struct params *p)
-{
-	int32_t h = VB_DEVICE_HEIGHT;
-	uint32_t locale = p->locale;
-	RETURN_ON_ERROR(vboot_draw_base_screen(p));
-	RETURN_ON_ERROR(draw_image_locale("remove.bmp", locale,
-			VB_SCALE_HALF, VB_SCALE_HALF - h/2,
-			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
-			PIVOT_H_CENTER|PIVOT_V_BOTTOM));
-	RETURN_ON_ERROR(draw_image("RemoveDevices.bmp",
-			VB_SCALE_HALF, VB_SCALE_HALF, VB_SIZE_AUTO, h,
-			PIVOT_H_CENTER|PIVOT_V_CENTER));
-	return VBERROR_SUCCESS;
-}
-
 static VbError_t vboot_draw_recovery_no_good(struct params *p)
 {
 	uint32_t locale = p->locale;
@@ -879,11 +864,6 @@ static const struct vboot_ui_descriptor vboot_screens[] = {
 			"Press SPACE to re-enable.\n",
 	},
 	{
-		.id = VB_SCREEN_RECOVERY_REMOVE,
-		.draw = vboot_draw_recovery_remove,
-		.mesg = "Please remove all external devices to begin recovery\n",
-	},
-	{
 		.id = VB_SCREEN_RECOVERY_NO_GOOD,
 		.draw = vboot_draw_recovery_no_good,
 		.mesg = "The device you inserted does not contain Chrome OS.\n",
@@ -926,11 +906,6 @@ static const struct vboot_ui_descriptor vboot_screens[] = {
 		.draw = vboot_draw_os_broken,
 		.mesg = "Chrome OS may be broken.\n"
 			"Remove media and initiate recovery.\n",
-	},
-	{
-		.id = VB_SCREEN_BASE,
-		.draw = vboot_draw_base_screen,
-		.mesg = "Base Screen\n",
 	},
 	{
 		.id = VB_SCREEN_DEVELOPER_WARNING_MENU,

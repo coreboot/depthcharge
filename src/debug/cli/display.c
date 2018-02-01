@@ -8,7 +8,6 @@
 static const enum VbScreenType_t screen_map[] = {
 	VB_SCREEN_BLANK,
 	VB_SCREEN_DEVELOPER_WARNING,
-	VB_SCREEN_RECOVERY_REMOVE,
 	VB_SCREEN_RECOVERY_INSERT,
 	VB_SCREEN_RECOVERY_TO_DEV,
 	VB_SCREEN_RECOVERY_NO_GOOD,
@@ -16,7 +15,6 @@ static const enum VbScreenType_t screen_map[] = {
 	VB_SCREEN_WAIT,
 	VB_SCREEN_TO_NORM_CONFIRMED,
 	VB_SCREEN_OS_BROKEN,
-	VB_SCREEN_DEVELOPER_EGG,
 };
 
 static int do_display(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
@@ -35,16 +33,14 @@ static int do_display(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 U_BOOT_CMD(
 	   display,	2,	1,
 	   "rudimentary display test",
-	   "<num> - trigger display of a sertain screen\n"
+	   "<num> - trigger display of a certain screen\n"
 	   "         0 - off\n"
 	   "         1 - dev mode\n"
-	   "         2 - recovery USB remove\n"
-	   "         3 - recovery USB insert\n"
-	   "         4 - waiting to transition to dev mode\n"
-	   "         5 - bad USB stick\n"
-	   "         6 - waiting to transition to normal mode\n"
-	   "         7 - waiting EC programming\n"
-	   "         8 - confirm to normal mode\n"
-	   "         9 - verification failure\n"
-	   "        10 - easter egg\n"
+	   "         2 - recovery USB insert\n"
+	   "         3 - waiting to transition to dev mode\n"
+	   "         4 - bad USB stick\n"
+	   "         5 - waiting to transition to normal mode\n"
+	   "         6 - waiting EC programming\n"
+	   "         7 - confirm to normal mode\n"
+	   "         8 - verification failure\n"
 );

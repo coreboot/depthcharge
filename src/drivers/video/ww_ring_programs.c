@@ -156,7 +156,7 @@ static const TiLp55231Program blink_dev1_program = {
 	{ 3,  24,  25,  }
 };
 
-static const uint8_t blink_rcv_remove1_text[] = {
+static const uint8_t blink_rcv_broken1_text[] = {
 	0x00,  0x01,  0x00,  0x02,  0x00,  0x04,  0x90,  0x02,
 	0x94,  0x0a,  0x9f,  0x80,  0x98,   255,  0x84,  0x62,
 	0x9f,  0x81,  0x98,    50,  0x84,  0x62,  0x9f,  0x82,
@@ -166,9 +166,9 @@ static const uint8_t blink_rcv_remove1_text[] = {
 	0xc0,  0x00,  0xc0,  0x00,  0x00,
 };
 
-static const TiLp55231Program blink_rcv_remove1_program = {
-	blink_rcv_remove1_text,
-	sizeof(blink_rcv_remove1_text),
+static const TiLp55231Program blink_rcv_broken1_program = {
+	blink_rcv_broken1_text,
+	sizeof(blink_rcv_broken1_text),
 	0,
 	{ 3,  24,  25,  }
 };
@@ -301,7 +301,6 @@ loop1:  ramp 0.1, 255
 
 .segment program3
 	end
-*/
 
 static const uint8_t run_lights1_text[] = {
 	0x00,  0x07,  0x00,  0x01,  0x00,  0x02,  0x00,  0x04,
@@ -316,6 +315,7 @@ static const TiLp55231Program run_lights1_program = {
 	0,
 	{ 4,  13,  14,  }
 };
+*/
 
 const WwRingStateProg wwr_state_programs[] = {
 	/*
@@ -324,10 +324,9 @@ const WwRingStateProg wwr_state_programs[] = {
 	 */
 	{VB_SCREEN_BLANK, {&solid_000000_program} },
 	{VB_SCREEN_DEVELOPER_WARNING, {&blink_dev1_program} },
-	{VB_SCREEN_RECOVERY_REMOVE, {&blink_rcv_remove1_program} },
+	{VB_SCREEN_OS_BROKEN, {&blink_rcv_broken1_program} },
 	{VB_SCREEN_RECOVERY_INSERT, {&blink_rcv_insert1_program} },
 	{VB_SCREEN_RECOVERY_TO_DEV, {&blink_rcv2dev1_program} },
 	{VB_SCREEN_RECOVERY_NO_GOOD, {&ping_pong1_program} },
-	{VB_SCREEN_DEVELOPER_EGG, {&run_lights1_program} },
 	{}, /* Empty record to mark the end of the table. */
 };
