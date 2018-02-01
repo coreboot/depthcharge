@@ -38,7 +38,7 @@
 
 /* Chrome logo size and distance from the divider */
 #define VB_LOGO_HEIGHT		39	/* 3.9% */
-#define VB_LOGO_LIFTUP		8
+#define VB_LOGO_LIFTUP		0
 
 /* Indicate width or height is automatically set based on the other value */
 #define VB_SIZE_AUTO		0
