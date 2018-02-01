@@ -379,9 +379,6 @@ static int i2c_transfer_segment(DesignwareI2cRegs *regs,
 {
 	int i;
 
-	/* Set slave device bus address. */
-	writel(segment->chip, &regs->target_addr);
-
 	/* Read or write each byte in segment. */
 	for (i = 0; i < segment->len; ++i) {
 		uint64_t start = timer_us(0);
@@ -426,9 +423,14 @@ static int i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
 	int i, ret = -1;
 	DesignwareI2c *bus = container_of(me, DesignwareI2c, ops);
 	DesignwareI2cRegs *regs = bus->regs;
+	uint8_t last_tar;
 
 	if (!bus->initialized)
 		i2c_init(bus);
+
+	/* Set target address first, while i2c is still disabled. */
+	last_tar = segments[0].chip;
+	writel(last_tar, &regs->target_addr);
 
 	i2c_enable(regs);
 
@@ -441,6 +443,25 @@ static int i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
 		if (DESIGNWARE_I2C_DEBUG)
 			printf("i2c %02x %s %d bytes : ", segments[i].chip,
 			       segments[i].read ? "R" : "W", segments[i].len);
+
+		/*
+		 * Designware IP Target Address Register (TAR) can only be
+		 * updated while i2c is disabled.
+		 *
+		 * However, disabling and re-enabling i2c between segments
+		 * means a repeated-start cannot used sent, which is useful
+		 * especially when doing a simple i2c register read.
+		 *
+		 * So, only do the disable-TAR-enable sequence if the TAR has
+		 * changed between segments.
+		 */
+		if (segments[i].chip != last_tar) {
+			i2c_disable(regs);
+			/* Target address must be set when i2c is disabled. */
+			writel(segments[i].chip, &regs->target_addr);
+			last_tar = segments[i].chip;
+			i2c_enable(regs);
+		}
 
 		if (i2c_transfer_segment(regs,
 					 &segments[i],
