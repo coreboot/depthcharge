@@ -29,7 +29,7 @@ KEY_FONTS = 'fonts'
 KEY_STYLES = 'styles'
 DETACHABLE_INPUTS = 'detachable_inputs'
 DETACHABLE_FILES = 'detachable_files'
-DETACHABLE_STYLES = 'detachable_styles'
+KEYBOARD_FILES = 'keyboard_files'
 
 FIRMWARE_STRINGS_FILE = 'firmware_strings.txt'
 DETACHABLE_STRINGS_FILE = 'detachable_strings.txt'
@@ -194,11 +194,12 @@ def main(argv):
     output_dir = os.path.normpath(os.path.join(OUTPUT_DIR, locale))
     if not os.path.exists(output_dir):
       os.makedirs(output_dir)
-    files = formats[KEY_FILES];
-    styles = formats[KEY_STYLES];
+    files = formats[KEY_FILES]
+    styles = formats[KEY_STYLES]
     if os.getenv("DETACHABLE_UI") == "1":
-      files.update(formats[DETACHABLE_FILES]);
-      styles.update(formats[DETACHABLE_STYLES]);
+      files.update(formats[DETACHABLE_FILES])
+    else:
+      files.update(formats[KEYBOARD_FILES])
     BuildTextFiles(inputs, files, output_dir)
 
     results += [pool.apply_async(ConvertPngFile,

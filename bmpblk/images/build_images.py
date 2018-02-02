@@ -97,14 +97,15 @@ class Convert(object):
       'BadSD': '',
       'BadUSB': '',
       'InsertUSB': '',
+      'RemoveDevices': '',
       'RemoveSD': '',
       'RemoveUSB': '',
       'insert_sd_usb2': '',
       'insert_usb2': '',
       'insert_usb': '',
       'todev_phyrec': '',
-      'remove': '',
-      'wrong_power_supply': '',
+      'reserve_charging': '',
+      'reserve_charging_empty': '',
   }
 
   def __init__(self, board, config):
@@ -171,6 +172,9 @@ class Convert(object):
 
     if physical_recovery:
       self.replace_map['todev'] = 'todev_phyrec'
+
+    if os.getenv("DETACHABLE_UI") == "1":
+      self.replace_map['VerificationOff'] = ''
 
   def set_locales(self):
     """Set a list of locales for which localized images are converted"""
@@ -391,7 +395,7 @@ def main(args):
 
   for board in targets:
     if board not in configs:
-      raise BuildImageError('%s not found in %s' % (BOARDS_CONFIG, board))
+      raise BuildImageError('%s not found in %s' % (board, BOARDS_CONFIG))
     print 'Building for', board
     convert = Convert(board, configs[board])
     convert.build_image()

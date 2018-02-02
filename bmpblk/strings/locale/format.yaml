@@ -54,41 +54,39 @@ files:
   # Text files to be generated.
   model_left:     ['model@s/60061e.*//']
   model_right:    ['model@s/.*60061e//']
-  devmode:
-  remove:
   yuck:
-  insert:         [insert]
+  insert:
   insert_usb:     [insert_usb]
   insert_sd_usb2: ['insert_usb2_sd@s/(\(|\. )/\n\1/']
-#  insert_kiev:    [missing, insert_4usb]
   insert_usb2:    [insert_usb, 'insert_usb2_sd@s/.*(\(|\. )/\1/']
   for_help_left:  ['for_help@s/.http.*//' ]
   for_help_right: ['for_help@s/.*chromeos.recovery ?//']
-  todev:          [todev, reboot_erase, '', esc_back]
-  todev_phyrec:   [todev_phyrec, reboot_erase, '', esc_back]
-  tonorm:         [tonorm, reboot_erase, '', esc_back]
-  verif_off:
   verif_on:
-  wrong_power_supply: [wrong_adapter, shutdown_now, '', change_adapter]
   reboot_erase:
   update:         # pre-generated.
   language:       # pre-generated.
   os_broken:      [missing, os_broken]
 
 detachable_files:
-  dev_option:     [dev_option]
-  debug_info:     [debug_info]
-  enable_ver:     [enable_ver]
-  power_off:      [power_off]
-  lang:           [lang]
-  boot_network:   [boot_network]
-  boot_legacy:    [boot_legacy]
-  boot_usb:       [boot_usb]
-  boot_dev:       [boot_dev]
-  cancel:         [cancel]
-  confirm_ver:    [confirm_ver]
-  enable_dev:     [enable_dev]
-  confirm_dev:    [confirm_dev]
+  dev_option:
+  debug_info:
+  enable_ver:
+  power_off:
+  lang:
+  boot_network:
+  boot_legacy:
+  boot_usb:
+  boot_dev:
+  cancel:
+  confirm_ver:
+  confirm_dev:
+
+keyboard_files:
+  devmode:
+  todev:          [todev, reboot_erase, '', esc_back]
+  todev_phyrec:   [todev_phyrec, reboot_erase, '', esc_back]
+  tonorm:         [tonorm, reboot_erase, '', esc_back]
+  verif_off:
 
 styles:
   todev:          '--align=left'
@@ -96,27 +94,10 @@ styles:
   tonorm:         '--align=left --color=303030'
   reboot_erase:   '--color=303030'
   language:       '--color=444444'
-  verif_off:      '--markup'
-  verif_on:       '--markup'
   for_help:       '--color=444444'
   for_help_left:  '--color=444444'
   for_help_right: '--color=444444'
   model:          '--color=444444'
-
-detachable_styles:
-  dev_option:     '--align=left'
-  debug_info:     '--align=left'
-  enable_ver:     '--align=left'
-  power_off:      '--align=left'
-  lang:           '--align=left'
-  boot_network:   '--align=left'
-  boot_legacy:    '--align=left'
-  boot_usb:       '--align=left'
-  boot_dev:       '--align=left'
-  cancel:         '--align=left'
-  confirm_ver:    '--align=left'
-  enable_dev:     '--align=left'
-  confirm_dev:    '--align=left'
 
 fonts:
   # All fonts should be provided and selected by 'ui-sans' family defined in
