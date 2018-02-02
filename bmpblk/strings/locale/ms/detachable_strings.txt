@@ -6,8 +6,16 @@ Bahasa
 But daripada Rangkaian
 But Legacy BIOS
 But daripada USB
+But Daripada USB atau Kad SD
 But daripada Cakera Dalaman
 Batal
 Sahkan Mendayakan Pengesahan OS
 Lumpuhkan Pengesahan OS
 Sahkan Melumpuhkan Pengesahan OS
+Gunakan butang kelantangan untuk menavigasi ke atas atau ke bawah
+dan butang kuasa untuk membuat pilihan.
+Langkah melumpuhkan Pengesahan OS akan menjadikan sistem anda TIDAK SELAMAT.
+Pilih "Batal" untuk terus dilindungi.
+Pengesahan OS DIMATIKAN. Sistem anda TIDAK SELAMAT.
+Pilih "Dayakan Pengesahan OS" untuk mendapatkan kembali perlindungan.
+Pilih "Sahkan Mendayakan Pengesahan OS" untuk melindungi sistem anda.

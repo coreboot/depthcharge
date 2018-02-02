@@ -6,8 +6,16 @@ Valoda
 Palaist no tīkla
 Palaist no Legacy BIOS
 Palaist no USB
+Palaist no USB vai SD kartes
 Palaist no iekšējā diska
 Atcelt
 Apstiprināt OS verifikācijas iespējošanu
 Atspējot OS verifikāciju
 Apstiprināt OS verifikācijas atspējošanu
+Izmantojiet skaļuma pogas, lai pārietu uz augšu vai uz leju,
+un barošanas pogu, lai atlasītu kādu opciju.
+Ja atspējosiet OS verifikāciju, jūsu sistēma kļūs NEDROŠA.
+Atlasiet “Atcelt”, lai saglabātu aizsardzību.
+OS verifikācija ir IZSLĒGTA. Jūsu sistēma ir NEDROŠA.
+Atlasiet “Iespējot OS verifikāciju”, lai atkal būtu drošībā.
+Atlasiet “Apstiprināt OS verifikācijas iespējošanu”, lai aizsargātu savu sistēmu.

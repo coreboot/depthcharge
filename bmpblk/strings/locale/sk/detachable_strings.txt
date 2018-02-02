@@ -6,8 +6,16 @@ Jazyk
 Spustiť zo siete
 Spustiť Legacy BIOS
 Spustiť z USB
+Spustenie z USB alebo SD karty
 Spustiť z interného disku
 Zrušiť
 Potvrdiť zapnutie overenia operačného systému
 Vypnúť overenie operačného systému
 Potvrdiť vypnutie overenia operačného systému
+Pomocou tlačidiel hlasitosti prechádzajte nahor a nadol
+a vypínačom vyberte požadovanú možnosť.
+Keď deaktivujete Overenie operačného systému, váš systém NEBUDE ZABEZPEČENÝ.
+Ak chcete zachovať ochranu, vyberte možnosť Zrušiť.
+Overenie operačného systému je VYPNUTÉ. Systém NIE JE ZABEZPEČENÝ.
+Ak chcete obnoviť ochranu, vyberte možnosť Zapnúť overenie operačného systému.
+Ak chcete chrániť svoj systém, vyberte možnosť Potvrdiť zapnutie overenia operačného systému.

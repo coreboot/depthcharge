@@ -6,8 +6,16 @@ Dil
 Ağ Üzerinden Başlat
 Eski BIOS'u Başlat
 USB Üzerinden Başlat
+USB veya SD Karttan Başlat
 Dahili Diskten Başlat
 İptal
 OS Doğrulama Özelliğinin Etkinleştirilmesini Onaylayın
 OS Doğrulamayı Devre Dışı Bırak
 OS Doğrulama Özelliğinin Devre Dışı Bırakılmasını Onaylayın
+Yukarı veya aşağı gitmek için ses düğmelerini ve
+bir seçeneği belirlemek için güç düğmesini kullanın.
+OS Doğrulama devre dışı bırakıldığında sistem GÜVENSİZ olur.
+Korunmaya devam etmek için "İptal"i seçin.
+OS Doğrulama KAPALI. Sisteminiz GÜVENSİZ.
+Güvenliğe geri dönmek için "OS Doğrulamayı Etkinleştir"i seçin.
+Sisteminizi korumak için "OS Doğrulama Özelliğinin Etkinleştirilmesini Onaylayın" seçeneğini belirleyin.

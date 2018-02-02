@@ -6,8 +6,16 @@ Jazyk
 Spustit ze sítě
 Spustit pomocí starší verze (legacy) systému BIOS
 Spustit z USB
+Spuštění z USB nebo SD karty
 Spustit z interního disku
 Zrušit
 Potvrdit zapnutí ověření operačního systému
 Vypnout ověření operačního systému
 Potvrdit vypnutí ověření operačního systému
+Pomocí tlačítek hlasitosti se pohybujte nahoru a dolů
+a pomocí vypínače vyberte možnost.
+Když deaktivujete Ověření operačního systému, váš systém NEBUDE ZABEZPEČEN.
+Chcete-li zachovat ochranu, vyberte Zrušit.
+Ověření operačního systému je VYPNUTO. Váš systém NENÍ ZABEZPEČEN.
+Chcete-li obnovit ochranu, vyberte Zapnout ověření operačního systému.
+Chcete-li chránit svůj systém, vyberte Potvrdit zapnutí ověření operačního systému.

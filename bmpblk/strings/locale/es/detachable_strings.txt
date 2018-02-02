@@ -6,8 +6,16 @@ Idioma
 Iniciar desde la red
 Iniciar BIOS antiguo
 Iniciar desde USB
+Iniciar desde USB o tarjeta SD
 Iniciar desde el disco interno
 Cancelar
 Confirmar que quieres habilitar la función Verificación de SO
 Inhabilitar la función Verificación de SO
 Confirmar que quieres inhabilitar la función Verificación de SO
+Usa los botones de volumen para desplazarte hacia arriba o hacia abajo
+y el botón de encendido para seleccionar una opción.
+Si inhabilitas la verificación de SO, tu sistema se volverá inseguro.
+Selecciona Cancelar para que el sistema siga estando protegido.
+La verificación de SO está desactivada. El sistema no es seguro.
+Selecciona Habilitar la función Verificación de SO para que el sistema vuelva a estar protegido.
+Selecciona Confirmar que quieres habilitar la función Verificación de SO para proteger el sistema.

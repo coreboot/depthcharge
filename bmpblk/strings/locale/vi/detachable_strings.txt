@@ -6,8 +6,16 @@ Ngôn ngữ
 Khởi động từ mạng
 Khởi động BIOS cũ
 Khởi động từ USB
+Khởi động từ USB hoặc thẻ SD
 Khởi động từ ổ đĩa bên trong
 Hủy
 Xác nhận bật tính năng Xác minh OS
 Tắt tính năng Xác minh OS
 Xác nhận tắt tính năng Xác minh OS
+Sử dụng các nút âm lượng để di chuyển lên trên hoặc xuống dưới
+và nút nguồn để chọn một tùy chọn.
+Việc tắt xác minh hệ điều hành sẽ làm cho hệ thống của bạn KHÔNG AN TOÀN.
+Chọn "Hủy" để tiếp tục được bảo vệ.
+Xác minh hệ điều hành đã TẮT. Hệ thống của bạn KHÔNG AN TOÀN.
+Chọn "Bật tính năng Xác minh OS" để quay lại chế độ an toàn.
+Chọn "Xác nhận bật tính năng Xác minh OS" để bảo vệ hệ thống của bạn.

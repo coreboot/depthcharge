@@ -74,6 +74,10 @@ TEXT_SCALES = {
     'tonorm': (0, 4 * TEXT_HEIGHT),
     'update': (0, 3 * TEXT_HEIGHT),
     'wrong_power_supply': (0, 4 * TEXT_HEIGHT),
+    'navigate': (0, 2 * TEXT_HEIGHT),
+    'disable_warn': (0, 2 * TEXT_HEIGHT),
+    'enable_hint': (0, 2 * TEXT_HEIGHT),
+    'confirm_hint': (0, 2 * TEXT_HEIGHT),
 }
 # Background colors
 DEFAULT_BACKGROUND = (255, 255, 255)
@@ -102,6 +106,7 @@ class Convert(object):
       'RemoveDevices': '',
       'RemoveSD': '',
       'RemoveUSB': '',
+      'boot_usb_only': '',
       'insert_sd_usb2': '',
       'insert_usb2': '',
       'insert_usb': '',
@@ -169,6 +174,7 @@ class Convert(object):
       self.replace_map['BadDevices'] = 'BadUSB'
       self.replace_map['InsertDevices'] = 'InsertUSB'
       self.replace_map['insert'] = ('insert_usb2' if bad_usb3 else 'insert_usb')
+      self.replace_map['boot_usb'] = 'boot_usb_only'
     elif bad_usb3:
       self.replace_map['insert'] = 'insert_sd_usb2'
 

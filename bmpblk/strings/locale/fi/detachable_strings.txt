@@ -6,8 +6,16 @@ Kieli
 Käynnistä verkosta
 Käynnistä vanhassa BIOS-tilassa
 Käynnistä USB:ltä
+Käynnistä USB:ltä tai SD-kortilta
 Käynnistä sisäiseltä levyltä
 Peruuta
 Vahvista käyttöjärjestelmän tarkistuksen käyttöönotto
 Poista käyttöjärjestelmän tarkistus käytöstä
 Vahvista käyttöjärjestelmän tarkistuksen käytöstä poistaminen
+Siirry ylös tai alas äänenvoimakkuuspainikkeilla
+ja valitse vaihtoehto virtapainikkeella.
+Jos poistat käyttöjärjestelmän tarkistuksen käytöstä, järjestelmän
+turvallisuus vaarantuu. Valitse Peruuta, niin se pysyy suojattuna.
+Käyttöjärjestelmän tarkistus ei ole käytössä. Järjestelmää ei suojata.
+Ota käyttöön käyttöjärjestelmän tarkistus, niin järjestelmä suojataan.
+Vahvista käyttöjärjestelmän tarkistuksen käyttöönotto, niin järjestelmä suojataan.

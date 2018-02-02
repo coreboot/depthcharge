@@ -6,8 +6,16 @@ Idioma
 Arrancar a partir da rede
 Arrancar a partir do BIOS antigo
 Arrancar a partir de USB
+Arrancar a partir de USB ou do cartão SD
 Arrancar a partir de disco interno
 Cancelar
 Confirmar ativação da Validação do SO
 Desativar Validação do SO
 Confirmar desativação da Validação do SO
+Utilize os botões de volume para navegar para cima ou para baixo
+e o botão ligar/desligar para selecionar uma opção.
+A desativação da Validação do SO torna o seu sistema INSEGURO.
+Selecione "Cancelar" para permanecer protegido.
+A Validação do SO está DESATIVADA. O seu sistema está DESPROTEGIDO.
+Selecione "Ativar a Validação do SO" para voltar a estar seguro.
+Selecione "Confirmar a ativação da Validação do SO" para proteger o seu sistema.

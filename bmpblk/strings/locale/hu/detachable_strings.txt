@@ -6,8 +6,16 @@ Nyelv
 Indítás hálózatról
 Régi BIOS indítása
 Indítás USB-ről
+Indítás USB-ről vagy SD-kártyáról
 Indítás belső lemezről
 Mégse
 Operációsrendszer-ellenőrzés engedélyezésének megerősítése
 Operációsrendszer-ellenőrzés letiltása
 Operációsrendszer-ellenőrzés letiltásának megerősítése
+A hangerőgombokkal navigálhat fel és le,
+illetve a bekapcsológombbal választhat lehetőséget.
+Az operációsrendszer-ellenőrzés letiltásával a rendszer NEM LESZ BIZTONSÁGOS.
+Válassza a „Mégse” lehetőséget a védelem megőrzéséhez.
+Az operációsrendszer-ellenőrzés KIKAPCSOLT állapotban van. A rendszer NEM BIZTONSÁGOS.
+Válassza az „Operációsrendszer-ellenőrzés engedélyezése” lehetőséget, hogy ismét biztonságban legyen.
+A rendszer védelméhez válassza az „Operációsrendszer-ellenőrzés engedélyezésének megerősítése” lehetőséget.

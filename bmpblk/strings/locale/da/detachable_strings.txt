@@ -6,8 +6,16 @@ Sprog
 Start fra netværk
 Start Legacy BIOS
 Start fra USB
+Start fra USB eller SD-kort
 Start fra intern disk
 Annuller
 Bekræft aktivering af OS-bekræftelse
 Deaktiver OS-bekræftelse
 Bekræft deaktivering af OS-bekræftelse
+Brug lydstyrkeknapperne til at gå op eller ned
+og afbryderknappen til at vælge en mulighed.
+Deaktivering af OS-bekræftelse gør dit system USIKKERT.
+Vælg "Annuller" for at forblive beskyttet.
+OS-bekræftelse er slået FRA. Dit system er USIKKERT.
+Vælg "Aktivér OS-bekræftelse" for at blive beskyttet igen.
+Vælg "Bekræft aktivering af OS-bekræftelse" for at beskytte dit system.

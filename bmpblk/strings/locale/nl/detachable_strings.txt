@@ -1,13 +1,21 @@
 Ontwikkelaarsopties
 Foutopsporingsgegevens weergeven
-OS-verificatie inschakelen
+Verificatie van besturingssysteem inschakelen
 Uitschakelen
 Taal
 Opstarten via netwerk
 Legacy BIOS opstarten
 Opstarten via USB
+Opstarten vanaf USB of SD-kaart
 Opstarten via interne schijf
 Annuleren
-Inschakeling van OS-verificatie bevestigen
-OS-verificatie uitschakelen
-Uitschakeling van OS-verificatie bevestigen
+Verificatie van besturingssysteem inschakelen bevestigen
+Verificatie van besturingssysteem uitschakelen
+Verificatie van besturingssysteem uitschakelen bevestigen
+Gebruik de volumeknoppen om naar boven en beneden te navigeren
+en de aan/uit-knop om een optie te selecteren.
+Als u verificatie van het besturingssysteem uitschakelt, wordt uw systeem ONVEILIG.
+Selecteer Annuleren om beschermd te blijven.
+Verificatie van besturingssysteem is UIT. Uw systeem is ONVEILIG.
+Selecteer Verificatie van besturingssysteem inschakelen om weer veilig te worden.
+Selecteer Verificatie van besturingssysteem inschakelen bevestigen om uw systeem te beveiligen.

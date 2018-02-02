@@ -6,8 +6,16 @@ Keel
 Käivitamine võrgus
 Legacy BIOS-i käivitamine
 Käivitamine USB-lt
+Käivitamine USB-lt või SD-kaardilt
 Käivitamine sisemiselt kettalt
 Tühistamine
 OS-i kinnitamise lubamise kinnitamine
 OS-i kinnitamise keelamine
 OS-i kinnitamise keelamise kinnitamine
+Kasutage üles või alla navigeerimiseks helitugevuse nuppe
+ning valiku tegemiseks toitenuppu.
+Operatsioonisüsteemi kinnitamise keelamine muudab teie süsteemi EBATURVALISEKS.
+Kaitse kasutamise jätkamiseks tehke valik „Tühistamine”.
+Operatsioonisüsteemi kinnitamine on VÄLJA LÜLITATUD. Teie süsteem on EBATURVALINE.
+Turvalisuse taastamiseks tehke valik „OS-i kinnitamise lubamine”.
+Oma süsteemi kaitsmiseks tehke valik „OS-i kinnitamise lubamise kinnitamine”.

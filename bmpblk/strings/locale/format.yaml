@@ -43,12 +43,20 @@ detachable_inputs:
   - lang           #05 Language
   - boot_network   #06 Boot Network Image (not working yet)
   - boot_legacy    #07 Boot Legacy BIOS
-  - boot_usb       #08 Boot USB Image
-  - boot_dev       #09 Boot Developer Image
-  - cancel         #10 Cancel
-  - confirm_ver    #11 Confirm Enabling Verified Boot
-  - enable_dev     #12 Enable Developer Mode
-  - confirm_dev    #13 Confirm Enabling Developer Mode
+  - boot_usb_only  #08 Boot From USB
+  - boot_usb       #09 Boot From USB or SD card
+  - boot_dev       #10 Boot From Internal Disk
+  - cancel         #11 Cancel
+  - confirm_ver    #12 Confirm Enabling Verified Boot
+  - enable_dev     #13 Enable Developer Mode
+  - confirm_dev    #14 Confirm Enabling Developer Mode
+  - navigate1      #15 Use the volume buttons to navigate up or down
+  - navigate2      #16 and the power button to select an option.
+  - disable_insc   #17 Disabling OS verfication will make your system INSECURE.
+  - select_cancel  #18 Select "Cancel" to remain protected.
+  - verif_off_insc #19 OS verification is OFF. Your system is INSECURE.
+  - select_enable  #20 Select "Enable OS Verification" to get back to safety.
+  - select_confirm #21 Select "Confirm OS Verification" to protect your system.
 
 files:
   # Text files to be generated.
@@ -75,11 +83,16 @@ detachable_files:
   lang:
   boot_network:
   boot_legacy:
+  boot_usb_only:
   boot_usb:
   boot_dev:
   cancel:
   confirm_ver:
   confirm_dev:
+  navigate:       [navigate1, navigate2]
+  disable_warn:   [disable_insc, select_cancel]
+  enable_hint:    [verif_off_insc, select_enable]
+  confirm_hint:   [select_confirm, reboot_erase]
 
 keyboard_files:
   devmode:
@@ -93,6 +106,10 @@ styles:
   devmode:        '--color=303030'
   tonorm:         '--align=left --color=303030'
   reboot_erase:   '--color=303030'
+  disable_warn:   '--color=303030'
+  enable_hint:    '--color=303030'
+  confirm_hint:   '--color=303030'
+  navigate:       '--color=444444'
   language:       '--color=444444'
   for_help:       '--color=444444'
   for_help_left:  '--color=444444'

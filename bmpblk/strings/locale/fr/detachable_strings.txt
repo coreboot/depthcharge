@@ -6,8 +6,16 @@ Langue
 Démarrer à partir du réseau
 Démarrer le BIOS Legacy
 Démarrer à partir d'une clé USB
+Démarrer à partir d'une clé USB ou d'une carte SD
 Démarrer à partir du disque interne
 Annuler
 Confirmer l'activation de la validation du système d'exploitation
 Désactiver la validation du système d'exploitation
 Confirmer la désactivation de la validation du système d'exploitation
+Utilisez les boutons de volume pour vous déplacer vers le haut ou vers le bas
+et le bouton Marche/Arrêt pour sélectionner une option.
+Si vous désactivez la validation de l'OS, votre système ne sera PLUS SÉCURISÉ.
+Sélectionnez "Annuler" pour maintenir la protection.
+La validation de l'OS est désactivée. Votre système n'est PAS SÉCURISÉ.
+Sélectionnez "Activer la validation du système d'exploitation" pour assurer votre sécurité.
+Sélectionnez "Confirmer l'activation de la validation du système d'exploitation" pour protéger votre système.

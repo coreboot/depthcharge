@@ -6,8 +6,16 @@ Bahasa
 Booting Dari Jaringan
 Booting Legacy BIOS
 Booting Dari USB
+Booting dari USB atau Kartu SD
 Booting Dari Disk Internal
 Batal
 Konfirmasi Pengaktifan Verifikasi OS
 Nonaktifkan Verifikasi OS
 Konfirmasi Penonaktifkan Verifikasi OS
+Gunakan tombol volume untuk mengarahkan ke atas atau ke bawah
+dan gunakan tombol power untuk memilih opsi.
+Menonaktifkan Verifikasi OS akan membuat sistem Anda TIDAK AMAN.
+Pilih "Batal" agar tetap terlindungi.
+Verifikasi OS NONAKTIF. Sistem Anda TIDAK AMAN.
+Pilih "Aktifkan Verifikasi OS" untuk menjaga keamanan Anda.
+Pilih "Konfirmasi Pengaktifan Verifikasi OS" untuk melindungi sistem Anda.

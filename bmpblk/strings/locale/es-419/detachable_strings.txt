@@ -6,8 +6,16 @@ Idioma
 Iniciar desde la red
 Iniciar Legacy BIOS
 Iniciar desde USB
+Iniciar desde una tarjeta SD o unidad USB
 Iniciar desde el disco interno
 Cancelar
 Confirmar habilitación de verificación del SO
 Inhabilitar verificación del SO
 Confirmar inhabilitación de verificación del SO
+Usa los botones de volumen para navegar hacia arriba o hacia abajo,
+y el de encendido para seleccionar una opción.
+Si inhabilitas la Verificación del SO, tu sistema NO SERÁ SEGURO.
+Selecciona "Cancelar" para seguir protegido.
+La Verificación del SO está DESACTIVADA. Tu sistema NO ES SEGURO.
+Selecciona "Habilitar verificación del SO" para volver a estar protegido.
+Selecciona "Confirmar habilitación de verificación del SO" para proteger tu sistema.

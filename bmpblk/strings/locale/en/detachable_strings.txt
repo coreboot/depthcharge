@@ -6,8 +6,16 @@ Language
 Boot From Network
 Boot Legacy BIOS
 Boot From USB
+Boot From USB or SD Card
 Boot From Internal Disk
 Cancel
 Confirm Enabling OS Verification
 Disable OS Verification
 Confirm Disabling OS Verification
+Use the volume buttons to navigate up or down
+and the power button to select an option.
+Disabling OS verification will make your system INSECURE.
+Select "Cancel" to remain protected.
+OS verification is OFF. Your system is INSECURE.
+Select "Enable OS Verification" to get back to safety.
+Select "Confirm Enabling OS Verification" to protect your system.

@@ -6,8 +6,16 @@ Limbă
 Pornire cu imagine din rețea
 Pornire cu legacy BIOS
 Pornire cu imagine de pe USB
+Pornire de pe USB sau card SD
 Pornire cu imagine de pe disc intern
 Anulați
 Confirmați activarea verificării sistemului de operare
 Dezactivați verificarea sistemului de operare
 Confirmați dezactivarea verificării sistemului de operare
+Folosiți butoanele de volum pentru a naviga în sus și în jos
+și butonul de pornire pentru a selecta o opțiune.
+Dacă dezactivați verificarea sistemului de operare, acesta va deveni NESIGUR.
+Selectați „Anulați” pentru a menține protecția.
+Verificarea sistemului de operare este DEZACTIVATĂ. Sistemul dvs. este NESIGUR.
+Selectați „Activați verificarea sistemului de operare” pentru a reveni la siguranță.
+Selectați „Confirmați activarea verificării sistemului de operare” pentru a vă proteja sistemul.
