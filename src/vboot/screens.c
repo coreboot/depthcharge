@@ -578,6 +578,12 @@ static VbError_t vboot_draw_menu(struct params *p, const struct menu *m)
 		yoffset++;
 	}
 
+	RETURN_ON_ERROR(draw_image_locale("navigate.bmp", p->locale,
+			VB_SCALE_HALF,
+			VB_SCALE - VB_DIVIDER_V_OFFSET - VB_TEXT_HEIGHT,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 2,
+			PIVOT_H_CENTER|PIVOT_V_BOTTOM));
+
 	return VBERROR_SUCCESS;
 }
 
@@ -643,6 +649,10 @@ static VbError_t vboot_draw_developer_warning_menu(struct params *p)
 {
 	if (p->redraw_base)
 		RETURN_ON_ERROR(vboot_draw_base_screen(p));
+	RETURN_ON_ERROR(draw_image_locale("enable_hint.bmp", p->locale,
+			VB_SCALE_HALF, VB_DIVIDER_V_OFFSET + VB_TEXT_HEIGHT,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 2,
+			PIVOT_H_CENTER|PIVOT_V_TOP));
 	const struct menu m = { dev_warning_menu_files,
 				ARRAY_SIZE(dev_warning_menu_files) };
 	return vboot_draw_menu(p, &m);
@@ -701,6 +711,10 @@ static VbError_t vboot_draw_recovery_to_dev_menu(struct params *p)
 {
 	if (p->redraw_base)
 		RETURN_ON_ERROR(vboot_draw_base_screen(p));
+	RETURN_ON_ERROR(draw_image_locale("disable_warn.bmp", p->locale,
+			VB_SCALE_HALF, VB_DIVIDER_V_OFFSET + VB_TEXT_HEIGHT,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 2,
+			PIVOT_H_CENTER|PIVOT_V_TOP));
 	const struct menu m = { rec_to_dev_files,
 				ARRAY_SIZE(rec_to_dev_files) };
 	return vboot_draw_menu(p, &m);
@@ -726,6 +740,10 @@ static VbError_t vboot_draw_developer_to_norm_menu(struct params *p)
 {
 	if (p->redraw_base)
 		RETURN_ON_ERROR(vboot_draw_base_screen(p));
+	RETURN_ON_ERROR(draw_image_locale("confirm_hint.bmp", p->locale,
+			VB_SCALE_HALF, VB_DIVIDER_V_OFFSET + VB_TEXT_HEIGHT,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 2,
+			PIVOT_H_CENTER|PIVOT_V_TOP));
 	const struct menu m = { dev_to_norm_files,
 				ARRAY_SIZE(dev_to_norm_files) };
 	return vboot_draw_menu(p, &m);
@@ -778,12 +796,14 @@ static VbError_t vboot_draw_languages_menu(struct params *p)
 	int i = 0;
 
 	/*
-	 * There are too many languages to fit onto a page.  Let's
-	 * try to list about 15 at a time.
+	 * There are too many languages to fit onto a page.  Let's try to list
+	 * about 15 at a time. Since the explanatory text needs to fit on the
+	 * bottom, center the list two entries higher than the screen center.
 	 */
 	const int lang_per_page = 15;
+	const int yoffset_start = 0 - lang_per_page/2 - 2;
+	int yoffset = yoffset_start;
 	int selected_index = p->selected_index % locale_data.count;
-	int yoffset = 0 - lang_per_page/2;
 	locale_data.current = selected_index;
 
 	int page_num = selected_index / lang_per_page;
@@ -800,14 +820,13 @@ static VbError_t vboot_draw_languages_menu(struct params *p)
 		RETURN_ON_ERROR(vboot_draw_base_screen(p));
 
 	/* Print out page #s (1/5, 2/5, etc.) */
-	// TODO: Create bitmap for this.  Doing text only for now.
 	char page_count[6];
 	snprintf(page_count, sizeof(page_count), "%d/%d", page_num + 1,
 		 total_pages);
-	graphics_print_text_xy(page_count,
-			       0, 15,
-			       50, 30,
-			       VIDEO_PRINTF_ALIGN_KEEP);
+	/* draw_text() cannot pivot center, so must fudge x-coord a little. */
+	RETURN_ON_ERROR(draw_text(page_count, VB_SCALE_HALF - 20,
+			VB_DIVIDER_V_OFFSET, VB_TEXT_HEIGHT,
+			PIVOT_H_LEFT|PIVOT_V_BOTTOM));
 
 	/*
 	 * Check if we can just redraw some entries (staying on the
@@ -825,8 +844,7 @@ static VbError_t vboot_draw_languages_menu(struct params *p)
 			start_index = selected_index;
 			num_lang_to_draw = 1;
 		}
-		yoffset = 0 - lang_per_page/2 +
-			(start_index - page_start_index);
+		yoffset = yoffset_start + (start_index - page_start_index);
 	}
 
 	uint32_t flags;
@@ -844,6 +862,12 @@ static VbError_t vboot_draw_languages_menu(struct params *p)
 	}
 	prev_lang_page_num = page_num;
 	prev_selected_index = selected_index;
+
+	RETURN_ON_ERROR(draw_image_locale("navigate.bmp", p->locale,
+			VB_SCALE_HALF,
+			VB_SCALE - VB_DIVIDER_V_OFFSET - VB_TEXT_HEIGHT,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 2,
+			PIVOT_H_CENTER|PIVOT_V_BOTTOM));
 
 	return VBERROR_SUCCESS;
 }
