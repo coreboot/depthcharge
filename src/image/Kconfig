@@ -70,9 +70,3 @@ config GBB_COPY_SIZE
 
 
 # End of options passed to the linker script.
-
-config FMAP_OFFSET
-	hex "Offset of the FMAP in the firmware image"
-	help
-	  This is the offset of the FMAP in the ROM. The FMAP is not searched
-	  for, so if the address isn't correct the system won't boot.

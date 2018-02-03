@@ -90,7 +90,7 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 	else
 		dt_add_string_prop(node, "firmware-type", "normal");
 
-	dt_add_u32_prop(node, "fmap-offset", CONFIG_FMAP_OFFSET);
+	dt_add_u32_prop(node, "fmap-offset", lib_sysinfo.fmap_offset);
 
 	int ro_fw_size = get_ro_fw_size();
 

@@ -38,7 +38,7 @@ static void fmap_init(void)
 	if (init_done)
 		return;
 
-	main_fmap = flash_read(CONFIG_FMAP_OFFSET, sizeof(Fmap));
+	main_fmap = flash_read(lib_sysinfo.fmap_offset, sizeof(Fmap));
 	if (!main_fmap)
 		halt();
 	if (fmap_check_signature()) {
@@ -47,7 +47,7 @@ static void fmap_init(void)
 	}
 	uint32_t fmap_size = sizeof(Fmap) +
 		main_fmap->nareas * sizeof(FmapArea);
-	main_fmap = flash_read(CONFIG_FMAP_OFFSET, fmap_size);
+	main_fmap = flash_read(lib_sysinfo.fmap_offset, fmap_size);
 	if (!main_fmap)
 		halt();
 
