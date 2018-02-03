@@ -97,7 +97,8 @@ styles:
   for_help:       '--color=444444'
   for_help_left:  '--color=444444'
   for_help_right: '--color=444444'
-  model:          '--color=444444'
+  model_left:     '--color=444444'
+  model_right:    '--color=444444'
 
 fonts:
   # All fonts should be provided and selected by 'ui-sans' family defined in
