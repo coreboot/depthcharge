@@ -217,10 +217,12 @@ static VbError_t draw(struct directory *dir, const char *image_name,
 		      uint32_t flags)
 {
 	struct dentry *file;
+	void *bitmap;
 
 	file = find_file_in_archive(dir, image_name);
 	if (!file)
 		return VBERROR_NO_IMAGE_PRESENT;
+	bitmap = (uint8_t *)dir + file->offset;
 
 	struct scale pos = {
 		.x = { .n = x, .d = VB_SCALE, },
@@ -230,6 +232,26 @@ static VbError_t draw(struct directory *dir, const char *image_name,
 		.x = { .n = width, .d = VB_SCALE, },
 		.y = { .n = height, .d = VB_SCALE, },
 	};
+
+	if (get_bitmap_dimension(bitmap, file->size, &dim))
+		return VBERROR_UNKNOWN;
+
+	if ((int64_t)dim.x.n * VB_SCALE <= (int64_t)dim.x.d * VB_DIVIDER_WIDTH)
+		return draw_bitmap((uint8_t *)dir + file->offset, file->size,
+				   &pos, &dim, flags);
+
+	/*
+	 * If we get here the image is too wide, so fit it to the content width.
+	 * This only works if it is horizontally centered (x == VB_SCALE_HALF
+	 * and flags & PIVOT_H_CENTER), but that applies to our current stuff
+	 * which might be too wide (locale-dependent strings). Only exception is
+	 * the "For help" footer, which was already fitted in its own function.
+	 */
+	printf("vbgfx: '%s' too wide, fitting to content width\n", image_name);
+	dim.x.n = VB_DIVIDER_WIDTH;
+	dim.x.d = VB_SCALE;
+	dim.y.n = VB_SIZE_AUTO;
+	dim.y.d = VB_SCALE;
 	return draw_bitmap((uint8_t *)dir + file->offset, file->size,
 			   &pos, &dim, flags);
 }
@@ -242,20 +264,11 @@ static VbError_t draw_image(const char *image_name,
 }
 
 static VbError_t draw_image_locale(const char *image_name, uint32_t locale,
-				   int32_t x, int32_t y,
-				   int32_t width, int32_t height,
+				   int32_t x, int32_t y, int32_t w, int32_t h,
 				   uint32_t flags)
 {
-	VbError_t rv;
 	RETURN_ON_ERROR(load_localized_graphics(locale));
-	rv = draw(locale_data.archive, image_name, x, y, width, height, flags);
-	if (rv == CBGFX_ERROR_BOUNDARY && width == VB_SIZE_AUTO) {
-		printf("%s: '%s' overflowed. fit it to canvas width\n",
-		       __func__, image_name);
-		rv = draw(locale_data.archive, image_name,
-			  x, y, VB_SCALE, VB_SIZE_AUTO, flags);
-	}
-	return rv;
+	return draw(locale_data.archive, image_name, x, y, w, h, flags);
 }
 
 static VbError_t get_image_size(struct directory *dir, const char *image_name,
@@ -360,7 +373,7 @@ static VbError_t vboot_draw_footer(uint32_t locale)
 
 	total = w1 + VB_PADDING + w2 + VB_PADDING + w3;
 	y = VB_SCALE - VB_DIVIDER_V_OFFSET;
-	if (VB_SCALE - total >= 0) {
+	if (VB_DIVIDER_WIDTH - total >= 0) {
 		/* Calculate position to centralize the images combined */
 		x = (VB_SCALE - total) / 2;
 		/* Expected to fail in locales which don't have left part */
@@ -379,15 +392,15 @@ static VbError_t vboot_draw_footer(uint32_t locale)
 				  PIVOT_H_LEFT|PIVOT_V_TOP);
 	} else {
 		int32_t pad;
-		/* images are too wide. need to fit them to canvas width */
-		printf("%s: help line overflowed. fit it to canvas width\n",
+		/* images are too wide. need to fit them to content width */
+		printf("%s: help line overflowed. fit it to content width\n",
 		       __func__);
-		x = 0;
+		x = (VB_SCALE - VB_DIVIDER_WIDTH) / 2;
 		/* Shrink all images */
-		w1 = VB_SCALE * w1 / total;
-		w2 = VB_SCALE * w2 / total;
-		w3 = VB_SCALE * w3 / total;
-		pad = VB_SCALE * VB_PADDING / total;
+		w1 = VB_DIVIDER_WIDTH * w1 / total;
+		w2 = VB_DIVIDER_WIDTH * w2 / total;
+		w3 = VB_DIVIDER_WIDTH * w3 / total;
+		pad = VB_DIVIDER_WIDTH * VB_PADDING / total;
 
 		/* Render using width as a base */
 		draw_image_locale("for_help_left.bmp", locale,
