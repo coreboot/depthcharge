@@ -589,13 +589,6 @@ static const char *const dev_menu_files[] = {
 	"lang.bmp",         /* Language */
 };
 
-static const char *const rec_menu_files[] = {
-	"enable_dev.bmp", /* Enable Developer Mode */
-	"debug_info.bmp", /* Show Debug Info */
-	"power_off.bmp",  /* Power Off */
-	"lang.bmp",       /* Language */
-};
-
 static const char *const rec_to_dev_files[] = {
 	"confirm_dev.bmp", /* Confirm enabling developer mode */
 	"cancel.bmp",      /* Cancel */
