@@ -681,13 +681,13 @@ static VbError_t vboot_draw_recovery_no_good(struct params *p)
 	uint32_t locale = p->locale;
 	RETURN_ON_ERROR(vboot_draw_base_screen(p));
 	RETURN_ON_ERROR(draw_image_locale("yuck.bmp", locale,
-			VB_SCALE_HALF, VB_SCALE_HALF,
+			VB_SCALE_HALF, VB_SCALE_HALF - VB_DEVICE_HEIGHT / 2,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
 			PIVOT_H_CENTER|PIVOT_V_BOTTOM));
 	RETURN_ON_ERROR(draw_image("BadDevices.bmp",
 			VB_SCALE_HALF, VB_SCALE_HALF,
 			VB_SIZE_AUTO, VB_ICON_HEIGHT,
-			PIVOT_H_CENTER|PIVOT_V_TOP));
+			PIVOT_H_CENTER|PIVOT_V_CENTER));
 	return VBERROR_SUCCESS;
 }
 
