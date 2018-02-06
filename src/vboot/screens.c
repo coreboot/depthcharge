@@ -258,7 +258,7 @@ static VbError_t draw(struct directory *dir, const char *image_name,
 
 static VbError_t draw_image(const char *image_name,
 			    int32_t x, int32_t y, int32_t width, int32_t height,
-			    char pivot)
+			    uint32_t pivot)
 {
 	return draw(base_graphics, image_name, x, y, width, height, pivot);
 }
@@ -575,6 +575,16 @@ static VbError_t vboot_draw_menu(struct params *p, const struct menu *m)
 			VB_SCALE_HALF, VB_SCALE_HALF + VB_TEXT_HEIGHT * yoffset,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
 			flags));
+		if (!strncmp(m->strings[i], "lang.bmp", NAME_LENGTH)) {
+			int32_t w = VB_SIZE_AUTO, h = VB_TEXT_HEIGHT;
+			RETURN_ON_ERROR(get_image_size_locale(m->strings[i],
+				p->locale, &w, &h));
+			RETURN_ON_ERROR(draw_image("globe.bmp",
+				VB_SCALE_HALF + w / 2,
+				VB_SCALE_HALF + VB_TEXT_HEIGHT * yoffset,
+				VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+				PIVOT_H_LEFT | PIVOT_V_TOP));
+		}
 		yoffset++;
 	}
 
