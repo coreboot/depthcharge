@@ -51,7 +51,11 @@ TEXT_COLORS_KEY = 'text_colors'
 # avoid runtime scaling, which makes images blurry.
 SCALE_BASE = 1000  # 100.0%
 DEFAULT_ASSET_SCALE = (0, 169)
+TEXT_HEIGHT = 36   #   3.6%
+DEFAULT_TEXT_SCALE = (0, TEXT_HEIGHT)
 ASSET_SCALES = {
+    'arrow_left': DEFAULT_TEXT_SCALE,
+    'arrow_right': DEFAULT_TEXT_SCALE,
     'chrome_logo': (0, 39),
     'divider_btm': (900, 0),
     'divider_top': (900, 0),
@@ -60,8 +64,6 @@ ASSET_SCALES = {
     'reserve_charging': (0, 117),
     'reserve_charging_empty': (0, 117),
 }
-TEXT_HEIGHT = 36   #   3.6%
-DEFAULT_TEXT_SCALE = (0, TEXT_HEIGHT)
 TEXT_SCALES = {
     'tonorm': (0, 4 * TEXT_HEIGHT),
     'insert_sd_usb2': (0, 2 * TEXT_HEIGHT),
