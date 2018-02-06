@@ -59,6 +59,7 @@ ASSET_SCALES = {
     'chrome_logo': (0, 39),
     'divider_btm': (900, 0),
     'divider_top': (900, 0),
+    'globe': DEFAULT_TEXT_SCALE,
     'InsertDevices': (0, 371),
     'RemoveDevices': (0, 371),
     'reserve_charging': (0, 117),
