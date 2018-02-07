@@ -118,11 +118,13 @@ int vboot_select_and_load_kernel(void)
 	VbError_t res = VbSelectAndLoadKernel(&cparams, &kparams);
 
 	if (res == VBERROR_EC_REBOOT_TO_RO_REQUIRED) {
+		printf("EC Reboot requested. Doing cold reboot.\n");
 		if (IS_ENABLED(CONFIG_DRIVER_EC_CROS))
 			cros_ec_reboot(0);
 		if (power_off())
 			return 1;
 	} else if (res == VBERROR_EC_REBOOT_TO_SWITCH_RW) {
+		printf("Switch EC slot requested. Doing cold reboot.\n");
 		if (IS_ENABLED(CONFIG_DRIVER_EC_CROS))
 			cros_ec_reboot(EC_REBOOT_FLAG_SWITCH_RW_SLOT);
 		if (power_off())
@@ -132,7 +134,7 @@ int vboot_select_and_load_kernel(void)
 		if (power_off())
 			return 1;
 	} else if (res == VBERROR_REBOOT_REQUIRED) {
-		printf("Reboot requested. Doing a cold reboot.\n");
+		printf("Reboot requested. Doing warm reboot.\n");
 		if (cold_reboot())
 			return 1;
 	}
