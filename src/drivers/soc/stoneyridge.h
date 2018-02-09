@@ -25,9 +25,4 @@
 #define AP_I2C2_ADDR  0xFEDC4000
 #define AP_I2C3_ADDR  0xFEDC5000
 
-/* GPE definitions */
-int stoneyridge_get_gpe(int gpe);
-
-#define EVENT_STATUS	0xfed80200
-
 #endif /* __DRIVERS_SOC_STONEYRIDGE_H__ */
