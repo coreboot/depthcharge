@@ -105,8 +105,7 @@ int vboot_select_and_load_kernel(void)
 	if (IS_ENABLED(CONFIG_DETACHABLE_UI)) {
 		kparams.inflags = VB_SALK_INFLAGS_ENABLE_DETACHABLE_UI;
 		if (IS_ENABLED(CONFIG_ARCH_X86) &&
-		    IS_ENABLED(CONFIG_DRIVER_EC_CROS) &&
-		    (vboot_in_recovery() || vboot_in_developer())) {
+		    IS_ENABLED(CONFIG_DRIVER_EC_CROS)) {
 			// On x86 systems, inhibit power button pulse from EC.
 			cros_ec_config_powerbtn(0);
 			list_insert_after(&x86_ec_powerbtn_cleanup.list_node,
