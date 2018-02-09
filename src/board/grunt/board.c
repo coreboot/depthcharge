@@ -52,9 +52,17 @@
 #define DA7219_DAI_CLK_MODE	0x2b
 #define   DAI_CLK_EN		0x80
 
+/* cr50's interrupt in attached to GPIO_9 */
+#define CR50_INT		9
+
 static int cr50_irq_status(void)
 {
-	return stoneyridge_get_gpe(22);
+	static KernGpio *tpm_gpio;
+
+	if (!tpm_gpio)
+		tpm_gpio = new_kern_fch_gpio_latched(CR50_INT);
+
+	return gpio_get(&tpm_gpio->ops);
 }
 
 static void audio_setup(void)
