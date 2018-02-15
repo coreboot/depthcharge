@@ -219,8 +219,8 @@ static int __must_check ps8751_spi_fifo_wait_busy(Ps8751 *me)
 		if (read_reg(me, SLAVE2, P2_SPI_CTRL, &status) != 0)
 			return -1;
 		if (timer_us(t0_us) >= PS_SPI_TIMEOUT_US) {
-			printf("ps8751.%d: SPI bus timeout after %ums\n",
-			       me->ec_pd_id, USEC_TO_MSEC(PS_SPI_TIMEOUT_US));
+			printf("%s: SPI bus timeout after %ums\n",
+			       me->chip_name, USEC_TO_MSEC(PS_SPI_TIMEOUT_US));
 			return -1;
 		}
 	} while (status & P2_SPI_CTRL_TRIGGER);
@@ -270,7 +270,7 @@ static int __must_check ps8751_wake_i2c(Ps8751 *me)
 	if (status == 0)
 		status = ps8751_spi_fifo_reset(me);
 	if (status != 0)
-		printf("ps8751.%d: chip did not wake up!\n", me->ec_pd_id);
+		printf("%s: chip did not wake up!\n", me->chip_name);
 	return status;
 }
 
@@ -407,8 +407,8 @@ static int __must_check ps8751_spi_wait_prog_cmd(Ps8751 *me)
 			return 0;
 		}
 	} while (timer_us(t0_us) < PS_WIP_TIMEOUT_US);
-	printf("ps8751.%d: flash prog/erase timeout after %ums\n",
-	       me->ec_pd_id, USEC_TO_MSEC(PS_SPI_TIMEOUT_US));
+	printf("%s: flash prog/erase timeout after %ums\n",
+	       me->chip_name, USEC_TO_MSEC(PS_SPI_TIMEOUT_US));
 	return -1;
 }
 
@@ -454,8 +454,8 @@ static int __must_check ps8751_spi_wait_wip(Ps8751 *me)
 		if (ps8751_spi_cmd_read_status(me, &status) != 0)
 			return -1;
 		if (timer_us(t0_us) >= PS_WIP_TIMEOUT_US) {
-			printf("ps8751.%d: WIP timeout after %ums\n",
-			       me->ec_pd_id, USEC_TO_MSEC(PS_WIP_TIMEOUT_US));
+			printf("%s: WIP timeout after %ums\n",
+			       me->chip_name, USEC_TO_MSEC(PS_WIP_TIMEOUT_US));
 			return -1;
 		}
 	} while (status & SPI_STATUS_WIP);
@@ -539,8 +539,8 @@ static int __must_check ps8751_spi_flash_unlock(Ps8751 *me)
 		return -1;
 
 	if ((status & (SPI_STATUS_SRP|SPI_STATUS_BP)) != 0) {
-		printf("ps8751.%d: could not clear flash status "
-		       "SRP|BP (0x%02x)\n", me->ec_pd_id, status);
+		printf("%s: could not clear flash status "
+		       "SRP|BP (0x%02x)\n", me->chip_name, status);
 		return -1;
 	}
 	return 0;
@@ -594,8 +594,7 @@ static int __must_check ps8751_spi_flash_identify(Ps8751 *me)
 		return -1;
 	flash_id = be16dec(buf);
 
-	printf("ps8751.%d: found SPI flash ID 0x%04x\n",
-	       me->ec_pd_id, flash_id);
+	printf("%s: found SPI flash ID 0x%04x\n", me->chip_name, flash_id);
 
 	/*
 	 * these devices must use
@@ -614,8 +613,8 @@ static int __must_check ps8751_spi_flash_identify(Ps8751 *me)
 	case 0x1f43:		/* "25DF021A" */
 		break;
 	default:
-		printf("ps8751.%d: SPI flash ID 0x%04x not recognized\n",
-		       me->ec_pd_id, flash_id);
+		printf("%s: SPI flash ID 0x%04x not recognized\n",
+		       me->chip_name, flash_id);
 		return -1;
 	}
 	return 0;
@@ -640,7 +639,8 @@ static int __must_check ps8751_keep_awake(Ps8751 *me, uint64_t *deadline)
 		*deadline = now_us + PS_REFRESH_INTERVAL_US;
 		int status = read_reg(me, I2C_MASTER, P3_I2C_DEBUG, &dummy);
 		if (status != 0) {
-			printf("ps8751.%d: chip dozed off!\n", me->ec_pd_id);
+			printf("%s: chip dozed off!\n", me->chip_name);
+
 			return -1;
 		}
 	}
@@ -665,7 +665,7 @@ static int __must_check ps8751_get_hw_version(Ps8751 *me, uint8_t *version)
 	if (status == 0)
 		status = read_reg(me, SLAVE1, P1_CHIP_REV_HI, &high);
 	if (status != 0) {
-		printf("ps8751.%d: read P1_CHIP_REV_* failed\n", me->ec_pd_id);
+		printf("%s: read P1_CHIP_REV_* failed\n", me->chip_name);
 		return status;
 	}
 	*version = (high << 4) | low;
@@ -692,7 +692,7 @@ static int __must_check ps8751_capture_device_id(Ps8751 *me, int renew)
 	int status = ec_command(me->bus->ec, EC_CMD_PD_CHIP_INFO, 0,
 				&p, sizeof(p), &r, sizeof(r));
 	if (status < 0) {
-		printf("ps8751.%d: could not get chip info!\n", me->ec_pd_id);
+		printf("%s: could not get chip info!\n", me->chip_name);
 		return -1;
 	}
 
@@ -701,12 +701,12 @@ static int __must_check ps8751_capture_device_id(Ps8751 *me, int renew)
 	uint16_t device  = r.device_id;
 	uint8_t fw_rev = r.fw_version_number;
 
-	printf("ps8751.%d: vendor 0x%04x product 0x%04x "
+	printf("%s: vendor 0x%04x product 0x%04x "
 	       "device 0x%04x fw_rev 0x%02x\n",
-	       me->ec_pd_id, vendor, product, device, fw_rev);
+	       me->chip_name, vendor, product, device, fw_rev);
 	if (vendor == 0) {
 		/* vendor 0 likely due to "missing" firmware */
-		printf("ps8751.%d: MCU must be down!\n", me->ec_pd_id);
+		printf("%s: MCU must be down!\n", me->chip_name);
 	}
 
 	if (vendor != 0 && vendor != PARADE_VENDOR_ID)
@@ -755,8 +755,8 @@ static int __must_check ps8751_is_fw_compatible(Ps8751 *me, const uint8_t *fw)
 	fw_chip_version = ps8751_blob_hw_version(fw);
 	if (hw_rev == fw_chip_version)
 		return 1;
-	printf("ps8751.%d: chip rev 0x%02x but firmware for 0x%02x\n",
-	       me->ec_pd_id, hw_rev, fw_chip_version);
+	printf("%s: chip rev 0x%02x but firmware for 0x%02x\n",
+	       me->chip_name, hw_rev, fw_chip_version);
 	return 0;
 }
 
@@ -837,8 +837,8 @@ static int __must_check ps8751_erase(Ps8751 *me,
 		if (ps8751_sector_erase(me, offset) != VBERROR_SUCCESS)
 			rval = -1;
 	}
-	printf("ps8751.%d: erased %uKB in %ums\n",
-	       me->ec_pd_id,
+	printf("%s: erased %uKB in %ums\n",
+	       me->chip_name,
 	       data_size >> 10,
 	       (unsigned)USEC_TO_MSEC(timer_us(t0_us)));
 	return rval;
@@ -866,9 +866,7 @@ static int __must_check ps8751_program(Ps8751 *me,
 	uint64_t t0_us;
 	int chunk;
 
-	printf("ps8751.%d: programming %uKB...\n",
-	       me->ec_pd_id,
-	       data_size >> 10);
+	printf("%s: programming %uKB...\n", me->chip_name, data_size >> 10);
 
 	t0_us = timer_us(0);
 	for (data_offset = 0;
@@ -905,8 +903,8 @@ static int __must_check ps8751_program(Ps8751 *me,
 		if (ps8751_spi_wait_rom_ready(me) != 0)
 			return -1;
 	}
-	printf("ps8751.%d: programmed %uKB in %us\n",
-	       me->ec_pd_id,
+	printf("%s: programmed %uKB in %us\n",
+	       me->chip_name,
 	       data_size >> 10,
 	       (unsigned)USEC_TO_SEC(timer_us(t0_us)));
 	return 0;
@@ -960,17 +958,17 @@ static int __must_check ps8751_verify(Ps8751 *me,
 			if (read_reg(me, SLAVE2, P2_RD_FIFO, &readback) != 0)
 				return -1;
 			if (readback != data[data_offset + i]) {
-				printf("ps8751.%d: mismatch at offset 0x%06x "
+				printf("%s: mismatch at offset 0x%06x "
 				       "0x%02x != 0x%02x (expected)\n",
-				       me->ec_pd_id,
+				       me->chip_name,
 				       fw_addr + data_offset + i,
 				       readback, data[data_offset + i]);
 				return -1;
 			}
 		}
 	}
-	printf("ps8751.%d: verified %uKB in %us\n",
-	       me->ec_pd_id,
+	printf("%s: verified %uKB in %us\n",
+	       me->chip_name,
 	       data_size >> 10,
 	       (unsigned)USEC_TO_SEC(timer_us(t0_us)));
 	return 0;
@@ -979,8 +977,8 @@ static int __must_check ps8751_verify(Ps8751 *me,
 static int ps8751_ec_tunnel_status(Ps8751 *me, int *protected)
 {
 	if (cros_ec_tunnel_i2c_protect_status(me->bus, protected) < 0) {
-		printf("ps8751.%d: could not get EC I2C tunnel status!\n",
-		       me->ec_pd_id);
+		printf("%s: could not get EC I2C tunnel status!\n",
+		       me->chip_name);
 		return -1;
 	}
 	return 0;
@@ -1005,7 +1003,7 @@ static int ps8751_ec_pd_suspend(Ps8751 *me)
 
 	status = ps8751_ec_control(me, PD_SUSPEND);
 	if (status != 0)
-		printf("ps8751.%d: PD_SUSPEND failed!\n", me->ec_pd_id);
+		printf("%s: PD_SUSPEND failed!\n", me->chip_name);
 	return status;
 }
 
@@ -1015,7 +1013,7 @@ static int ps8751_ec_pd_resume(Ps8751 *me)
 
 	status = ps8751_ec_control(me, PD_RESUME);
 	if (status != 0)
-		printf("ps8751.%d: PD_RESUME failed!\n", me->ec_pd_id);
+		printf("%s: PD_RESUME failed!\n", me->chip_name);
 	return status;
 }
 
@@ -1111,7 +1109,7 @@ static int ps8751_reflash(Ps8751 *me, const uint8_t *data, size_t data_size)
 
 	status = ps8751_erase(me, PARADE_FW_START, data_size);
 	if (status != 0) {
-		printf("ps8751.%d: chip erase failed\n", me->ec_pd_id);
+		printf("%s: chip erase failed\n", me->chip_name);
 		return -1;
 	}
 	/*
@@ -1122,7 +1120,7 @@ static int ps8751_reflash(Ps8751 *me, const uint8_t *data, size_t data_size)
 			       erased_bytes,
 			       MIN(data_size, sizeof(erased_bytes)));
 	if (status != 0) {
-		printf("ps8751.%d: chip erase verify failed\n", me->ec_pd_id);
+		printf("%s: chip erase verify failed\n", me->chip_name);
 		return -1;
 	}
 
@@ -1139,7 +1137,7 @@ static int ps8751_reflash(Ps8751 *me, const uint8_t *data, size_t data_size)
 	if (PS8751_DEBUG >= 2)
 		ps8751_dump_flash(me, PARADE_FW_START, PARADE_TEST_FW_SIZE);
 	if (status != 0) {
-		printf("ps8751.%d: chip program failed\n", me->ec_pd_id);
+		printf("%s: chip program failed\n", me->chip_name);
 		return -1;
 	}
 
@@ -1247,8 +1245,7 @@ static VbError_t ps8751_protect(const VbootAuxFwOps *vbaux)
 	debug("call...\n");
 
 	if (cros_ec_tunnel_i2c_protect(me->bus) != 0) {
-		printf("ps8751.%d: could not protect EC I2C tunnel\n",
-		       me->ec_pd_id);
+		printf("%s: could not protect EC I2C tunnel\n", me->chip_name);
 		return VBERROR_UNKNOWN;
 	}
 	return VBERROR_SUCCESS;
@@ -1269,6 +1266,7 @@ Ps8751 *new_ps8751(CrosECTunnelI2c *bus, int ec_pd_id)
 	me->bus = bus;
 	me->ec_pd_id = ec_pd_id;
 	me->fw_ops = ps8751_fw_ops;
+	snprintf(me->chip_name, sizeof(me->chip_name), "ps8751.%d", ec_pd_id);
 
 	return me;
 }

@@ -35,6 +35,7 @@ typedef struct Ps8751
 		uint16_t device;
 		uint8_t fw_rev;
 	} chip;
+	char chip_name[16];
 } Ps8751;
 
 Ps8751 *new_ps8751(CrosECTunnelI2c *bus, int ec_pd_id);
