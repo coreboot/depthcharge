@@ -21,6 +21,40 @@
 
 #include "drivers/power/power.h"
 
+#define ACPI_MMIO_REGION	0xfed80000
+#define PMIO_REGS		(phys_to_virt(ACPI_MMIO_REGION) + 0x300)
+
+#define AMD_FCH_VID		0x1022
+#define LPC_DEV			PCI_DEV(0, 0x14, 3)
+
+/* Power Management registers */
+#define ACPI_PM1_EVT_BLK	0x60
+#define ACPI_PM1_CNT_BLK	0x62
+#define ACPI_GPE0_BLK		0x68
+
+/* AcpiPmEvtBlk offsets & registers */
+#define PM1_STS			0x00
+#define   PWRBTN_STS		(1 << 8)
+#define PM1_EN			0x02
+
+/* AcpiGpe0Blk Offsets */
+#define GPE_EVENT_STATUS	0x00
+#define GPE_EVENT_ENABLE	0x04
+
+/* Register values for PmControl */
+#define   SLP_EN		(1 << 13)
+#define   SLP_TYP		(7 << 10)
+#define   SLP_TYP_S0		(0 << 10)
+#define   SLP_TYP_S1		(1 << 10)
+#define   SLP_TYP_S3		(3 << 10)
+#define   SLP_TYP_S4		(4 << 10)
+#define   SLP_TYP_S5		(5 << 10)
+
+#define RST_CNT			0xcf9
+#define   SYS_RST		(1 << 1)
+#define   RST_CPU		(1 << 2)
+#define   FULL_RST		(1 << 3)
+
 PowerOps kern_power_ops;
 
 #endif /* __DRIVERS_POWER_PCH_H__ */
