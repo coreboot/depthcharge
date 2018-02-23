@@ -52,6 +52,9 @@ endif
 if BOARD_DIR = "gru"
 source src/board/gru/Kconfig
 endif
+if BOARD_DIR = "grunt"
+source src/board/grunt/Kconfig
+endif
 if BOARD_DIR = "jecht"
 source src/board/jecht/Kconfig
 endif
