@@ -18,28 +18,8 @@
 
 #include <libpayload.h>
 
-#include "drivers/power/fch.h"
-#include "drivers/power/power.h"
-
-#define ACPI_MMIO_REGION 0xfed80000
-#define PMIO_REGS (phys_to_virt(ACPI_MMIO_REGION) + 0x300)
-
-#define PM1_STS         0x00
-#define   PWRBTN_STS    (1 << 8)
-#define PM1_EN          0x02
-#define PM1_CNT         0x04
-#define   SLP_EN        (1 << 13)
-#define   SLP_TYP       (7 << 10)
-#define   SLP_TYP_S0    (0 << 10)
-#define   SLP_TYP_S1    (1 << 10)
-#define   SLP_TYP_S3    (3 << 10)
-#define   SLP_TYP_S4    (4 << 10)
-#define   SLP_TYP_S5    (5 << 10)
-
-#define RST_CNT         0xcf9
-#define   SYS_RST       (1 << 1)
-#define   RST_CPU       (1 << 2)
-#define   FULL_RST      (1 << 3)
+#include "fch.h"
+#include "power.h"
 
 /*
  * Do a hard reset through the chipset's reset control register. This
@@ -58,8 +38,9 @@ struct power_off_args {
 	pcidev_t pci_dev;
 	/* Do we need to keep PCI dev for power-mgmt enabled? */
 	int en_pci_dev;
-	/* Base address for ACPI registers */
+	/* Base addresses for ACPI registers */
 	uint16_t pm1base;
+	uint16_t pm1cnt;
 	/* Registers to disable GPE wakes. */
 	uint16_t gpe_base;
 	int num_gpe_regs;
@@ -115,7 +96,7 @@ static int fch_power_off_common(struct power_off_args *args)
 {
 	/* Make sure this is an AMD chipset. */
 	uint16_t id = pci_read_config16(args->pci_dev, 0x00);
-	if (id != 0x1022) {
+	if (id != AMD_FCH_VID) {
 		printf("Power off is not implemented for this chipset. "
 		       "Halting the CPU.\n");
 		return -1;
@@ -137,22 +118,20 @@ static int fch_power_off_common(struct power_off_args *args)
 	if (args->num_gpe_regs > 1)
 		printf("Disabling GPI not currently implemented for multiple"
 				" GPE registers at this time\n");
-	outl(0x00000000, args->gpe_base + 1);
+	outl(0x00000000, args->gpe_base + GPE_EVENT_ENABLE);
 
 	/* Clear Power Button Status. */
 	outw(PWRBTN_STS, args->pm1base + PM1_STS);
 
-	/* PMBASE + 4, Bit 10-12, Sleeping Type, set to 111 -> S5, soft_off */
-	uint32_t reg32 = inl(args->pm1base + PM1_CNT);
-
-	/* Set Sleeping Type to S5 (poweroff). */
+	/* PmControl Bit 10-12, Sleep Type: soft_off */
+	uint32_t reg32 = inl(args->pm1cnt);
 	reg32 &= ~(SLP_EN | SLP_TYP);
 	reg32 |= SLP_TYP_S5;
-	outl(reg32, args->pm1base + PM1_CNT);
+	outl(reg32, args->pm1cnt);
 
 	/* Now set the Sleep Enable bit. */
 	reg32 |= SLP_EN;
-	outl(reg32, args->pm1base + PM1_CNT);
+	outl(reg32, args->pm1cnt);
 
 	halt();
 }
@@ -163,9 +142,10 @@ static int kern_power_off(PowerOps *me)
 	struct power_off_args args;
 	memset(&args, 0, sizeof(args));
 
-	args.pci_dev = PCI_DEV(0, 0x14, 3);
-	args.pm1base = (uint16_t)*(uint16_t *)(pmregs + 0x60);
-	args.gpe_base = (uint16_t)*(uint16_t *)(pmregs + 0x68);
+	args.pci_dev = LPC_DEV;
+	args.pm1base = read16(pmregs + ACPI_PM1_EVT_BLK);
+	args.pm1cnt = read16(pmregs + ACPI_PM1_CNT_BLK);
+	args.gpe_base = read16(pmregs + ACPI_GPE0_BLK);
 	args.num_gpe_regs = 1;
 	args.en_pci_dev = 1;
 
