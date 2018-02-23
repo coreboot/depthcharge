@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Intel Corporation.
+ * Copyright (C) 2017-2018 Intel Corporation.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -35,8 +35,7 @@
 #include "drivers/storage/ahci.h"
 
 #define EMMC_SD_CLOCK_MIN       400000
-//GLK A0 PO: eMMC clock must be less than 50MHz for now
-#define EMMC_CLOCK_MAX          25000000
+#define EMMC_CLOCK_MAX          200000000
 #define SD_CLOCK_MAX            52000000
 
 #define SPIBAR_BIOS_BFPREG	(0x0)
@@ -93,8 +92,9 @@ static int board_setup(void)
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
 
 	SdhciHost *emmc;
-	emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1c, 0), 0,
-			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
+	emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1c, 0),
+		SDHCI_PLATFORM_NO_EMMC_HS200, EMMC_SD_CLOCK_MIN,
+			EMMC_CLOCK_MAX);
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			&fixed_block_dev_controllers);
 
