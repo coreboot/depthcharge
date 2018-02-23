@@ -19,6 +19,7 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "config.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/lpc.h"
@@ -109,10 +110,16 @@ static int board_setup(void)
 	audio_setup();
 
 	SdhciHost *emmc;
-	emmc = new_pci_sdhci_host(PCI_DEV(0, 0x14, 7),
-			SDHCI_PLATFORM_NO_EMMC_HS200 |
-			SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD,
-			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
+	if (IS_ENABLED(CONFIG_FORCE_BH720_SDHCI)) {
+		emmc = new_pci_sdhci_host(PCI_DEV(1, 0, 0),
+				SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD,
+				EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
+	} else {
+		emmc = new_pci_sdhci_host(PCI_DEV(0, 0x14, 7),
+				SDHCI_PLATFORM_NO_EMMC_HS200 |
+				SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD,
+				EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
+	}
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			&fixed_block_dev_controllers);
 
