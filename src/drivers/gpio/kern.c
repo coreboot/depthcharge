@@ -27,6 +27,8 @@
 #define FCH_NUM_GPIOS		149
 
 #define FCH_GPIO_REG(num)	(FCH_GPIO_BASE + (num) * 4)
+#define  FCH_GPIO_WAKE_STS	(1 << 29)
+#define  FCH_GPIO_INTERRUPT_STS	(1 << 28)
 #define  FCH_GPIO_OUTPUT_EN	(1 << 23)
 #define  FCH_GPIO_OUTPUT_VAL	(1 << 22)
 #define  FCH_GPIO_INPUT_VAL	(1 << 16)
@@ -86,6 +88,22 @@ static void fch_gpio_conf_input(KernGpio *gpio)
 }
 
 /* Interface functions for manipulating a GPIO. */
+
+static int kern_fch_gpio_interrupt_status(GpioOps *me)
+{
+	assert(me);
+	KernGpio *gpio = container_of(me, KernGpio, ops);
+	uint32_t reg = read32(gpio->reg);
+
+	if (reg & FCH_GPIO_INTERRUPT_STS) {
+		/* Clear interrupt status, preserve wake status */
+		reg &= ~FCH_GPIO_WAKE_STS;
+		write32(gpio->reg, reg);
+		return 1;
+	}
+
+	return 0;
+}
 
 static int kern_fch_gpio_get_value(GpioOps *me)
 {
@@ -150,6 +168,20 @@ KernGpio *new_kern_fch_gpio_input(unsigned num)
 {
 	KernGpio *gpio = new_kern_fch_gpio(num);
 	gpio->ops.get = &kern_fch_gpio_get_value;
+
+	/* Configure pin to use its GPIO function. */
+	fch_iomux_set(gpio, fch_gpio_use_table[num]);
+
+	/* Configure GPIO as an input with pulls disabled */
+	fch_gpio_conf_input(gpio);
+
+	return gpio;
+}
+
+KernGpio *new_kern_fch_gpio_latched(unsigned int num)
+{
+	KernGpio *gpio = new_kern_fch_gpio(num);
+	gpio->ops.get = &kern_fch_gpio_interrupt_status;
 
 	/* Configure pin to use its GPIO function. */
 	fch_iomux_set(gpio, fch_gpio_use_table[num]);

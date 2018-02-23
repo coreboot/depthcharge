@@ -38,5 +38,6 @@ typedef struct KernGpio
 KernGpio *new_kern_gpio(unsigned num);
 KernGpio *new_kern_fch_gpio_output(unsigned num, unsigned value);
 KernGpio *new_kern_fch_gpio_input(unsigned num);
+KernGpio *new_kern_fch_gpio_latched(unsigned int num);
 
 #endif /* __DRIVERS_GPIO_KERN_H__ */
