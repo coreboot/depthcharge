@@ -38,6 +38,7 @@
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/bus/usb/usb.h"
+#include "pci.h"
 #include "vboot/util/flag.h"
 
 #define EMMC_SD_CLOCK_MIN	400000
@@ -54,6 +55,9 @@
 
 /* cr50's interrupt in attached to GPIO_9 */
 #define CR50_INT		9
+
+#define BH720_PCI_VID		0x1217
+#define BH720_PCI_DID		0x8620
 
 static int cr50_irq_status(void)
 {
@@ -117,19 +121,27 @@ static int board_setup(void)
 
 	audio_setup();
 
-	SdhciHost *emmc;
+	SdhciHost *emmc = NULL;
 	if (IS_ENABLED(CONFIG_FORCE_BH720_SDHCI)) {
-		emmc = new_pci_sdhci_host(PCI_DEV(1, 0, 0),
+		pcidev_t pci_dev;
+		if (pci_find_device(BH720_PCI_VID, BH720_PCI_DID, &pci_dev)) {
+			emmc = new_pci_sdhci_host(pci_dev,
 				SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD,
 				EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
+		} else {
+			printf("Failed to find BH720 with VID/DID %04x:%04x\n",
+				BH720_PCI_VID, BH720_PCI_DID);
+		}
 	} else {
 		emmc = new_pci_sdhci_host(PCI_DEV(0, 0x14, 7),
 				SDHCI_PLATFORM_NO_EMMC_HS200 |
 				SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD,
 				EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
 	}
-	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
-			&fixed_block_dev_controllers);
+	if (emmc) {
+		list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+				&fixed_block_dev_controllers);
+	}
 
 	/* Setup h1 on I2C1 */
 	DesignwareI2c *i2c_h1 = new_designware_i2c(
