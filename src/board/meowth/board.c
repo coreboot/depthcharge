@@ -100,10 +100,11 @@ static int board_setup(void)
 
 	/* eMMC */
 	if (IS_ENABLED(CONFIG_DRIVER_STORAGE_MMC)) {
-		SdhciHost *emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1a, 0), 0,
-				EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
+		SdhciHost *emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1a, 0),
+			SDHCI_PLATFORM_SUPPORTS_HS400ES,
+			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
 		list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
-				&fixed_block_dev_controllers);
+			&fixed_block_dev_controllers);
 	}
 
 	/* NVME SSD */
