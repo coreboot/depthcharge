@@ -18,6 +18,7 @@
 #define __DRIVERS_BUS_I2S_APOLLOLAKE_APOLLOLAKE_REGS_H__
 
 #include <libpayload.h>
+#include <config.h>
 
 /* FIFO over/under-run interrupt config. */
 enum {
@@ -34,8 +35,13 @@ enum {
 };
 
 enum {
+#if IS_ENABLED(CONFIG_DRIVER_SOC_GLK)
+	APL_SSP5_START_ADDRESS = 0x5000,
+	APL_SSP5_SHIM_START_ADDRESS = 0x800
+#else
 	APL_SSP5_START_ADDRESS = 0x3000,
 	APL_SSP5_SHIM_START_ADDRESS = 0x800,
+#endif
 };
 
 #define DEFINE_REG(reg, offset) \
