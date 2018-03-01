@@ -1330,11 +1330,7 @@ static fb_ret_type fb_lock(struct fb_cmd *cmd)
 		return FB_SUCCESS;
 	}
 
-	if (VbLockDevice() != VBERROR_SUCCESS) {
-		fb_add_string(&cmd->output, "Lock device failed", NULL);
-		return FB_SUCCESS;
-	}
-
+	vbnv_write(VB2_NV_DISABLE_DEV_REQUEST, 1);
 	cmd->type = FB_OKAY;
 	return FB_REBOOT;
 }
