@@ -36,6 +36,12 @@
 #include "drivers/tpm/spi.h"
 #include "drivers/tpm/tpm.h"
 
+#include "drivers/sound/i2s.h"
+#include "drivers/sound/max98357a.h"
+#include "drivers/gpio/apollolake.h"
+#include "drivers/gpio/gpio.h"
+#include "drivers/bus/i2s/apollolake/apollolake-max98357a.h"
+
 #define EMMC_SD_CLOCK_MIN       400000
 #define EMMC_CLOCK_MAX          200000000
 
@@ -43,6 +49,9 @@
 #define  BFPREG_BASE_MASK       (0x7fff)
 #define  BFPREG_LIMIT_SHIFT     (16)
 #define  BFPREG_LIMIT_MASK      (0x7fff << BFPREG_LIMIT_SHIFT)
+
+#define AUD_VOLUME              4000
+#define SDMODE_PIN              GPIO_91
 
 static int cr50_irq_status(void)
 {
@@ -126,6 +135,19 @@ static int board_setup(void)
 
 	/* PCH Power */
 	power_set_ops(&apollolake_power_ops);
+
+	/* Audio Setup (for boot beep) */
+	GpioOps *sdmode = &new_apollolake_gpio_output(SDMODE_PIN, 0)->ops;
+
+	AplI2s *i2s = new_apl_i2s(&apollolake_max98357a_settings, 16, sdmode);
+	I2sSource *i2s_source = new_i2s_source(&i2s->ops, 48000, 2, AUD_VOLUME);
+	/* Connect the Codec to the I2S source */
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+	max98357aCodec *speaker_amp = new_max98357a_codec(sdmode);
+
+	list_insert_after(&speaker_amp->component.list_node,
+		&sound_route->components);
+	sound_set_ops(&sound_route->ops);
 
 	return 0;
 }
