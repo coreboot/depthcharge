@@ -122,7 +122,11 @@ static int board_setup(void)
 	audio_setup();
 
 	SdhciHost *emmc = NULL;
-	if (IS_ENABLED(CONFIG_FORCE_BH720_SDHCI)) {
+	/* The proto version of Grunt has the FT4's SDHCI pins wired up to
+	 * the eMMC part.  All other versions of Grunt (are planned to) use
+	 * the BH720 SDHCI controller.
+	 */
+	if (lib_sysinfo.board_id > 0) {
 		pcidev_t pci_dev;
 		if (pci_find_device(BH720_PCI_VID, BH720_PCI_DID, &pci_dev)) {
 			emmc = new_pci_sdhci_host(pci_dev,

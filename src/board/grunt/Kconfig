@@ -7,10 +7,3 @@
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
 
-config FORCE_BH720_SDHCI
-	bool "Force using BH720 for SDHCI"
-	default false
-	help
-	  Ensures that the correct device is used for the SD Host Controller
-	  Interface is used for boards that don't have strapping pins set
-	  appropriately.
