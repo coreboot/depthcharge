@@ -28,6 +28,9 @@
 #define LPC_DEV			PCI_DEV(0, 0x14, 3)
 
 /* Power Management registers */
+#define POWER_RESET_CONFIG	(PMIO_REGS + 0x10)
+#define   TOGGLE_ALL_PWR_GOOD_ON_CF9	(1 << 1)
+
 #define ACPI_PM1_EVT_BLK	0x60
 #define ACPI_PM1_CNT_BLK	0x62
 #define ACPI_GPE0_BLK		0x68

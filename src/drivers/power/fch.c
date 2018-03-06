@@ -22,14 +22,16 @@
 #include "power.h"
 
 /*
- * Do a hard reset through the chipset's reset control register. This
- * register is available on all x86 systems.
+ * On stoney, don't do a standard full reset.  Instead, de-assert then
+ * re-assert all power-good signals when requesting a warm reset.
  *
  * This function never returns.
  */
 static int fch_cold_reboot(PowerOps *me)
 {
-	outb(SYS_RST | RST_CPU | FULL_RST, RST_CNT);
+	write16(POWER_RESET_CONFIG, read16(POWER_RESET_CONFIG) |
+		TOGGLE_ALL_PWR_GOOD_ON_CF9);
+	outb(SYS_RST | RST_CPU, RST_CNT);
 	halt();
 }
 
