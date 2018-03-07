@@ -44,34 +44,3 @@ uint32_t VbExIsShutdownRequested(void)
 
 	return shutdown_request;
 }
-
-VbError_t VbExDecompress(void *inbuf, uint32_t in_size,
-			 uint32_t compression_type,
-			 void *outbuf, uint32_t *out_size)
-{
-	switch (compression_type) {
-	case COMPRESS_NONE:
-		if (*out_size < in_size) {
-			printf("Output buffer too small.\n");
-			return VBERROR_UNKNOWN;
-		}
-		memcpy(outbuf, inbuf, in_size);
-		*out_size = in_size;
-		break;
-	case COMPRESS_EFIv1:
-		printf("EFIv1 compression not supported.\n");
-		return VBERROR_UNKNOWN;
-	case COMPRESS_LZMA1:
-		*out_size = ulzman(inbuf, in_size, outbuf, *out_size);
-		if (!*out_size) {
-			printf("Error doing LZMA decompression.\n");
-			return VBERROR_UNKNOWN;
-		}
-		break;
-	default:
-		printf("Unrecognized compression type %d.\n",
-		       compression_type);
-		return VBERROR_INVALID_PARAMETER;
-	}
-	return VBERROR_SUCCESS;
-}

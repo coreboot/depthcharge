@@ -20,18 +20,6 @@
 
 #include "drivers/video/display.h"
 
-VbError_t VbExDisplayInit(uint32_t *width, uint32_t *height)
-{
-	printf("%s:%d invoked\n", __func__, __LINE__);
-	return VBERROR_SUCCESS;
-}
-
-VbError_t VbExDisplayBacklight(uint8_t enable)
-{
-	printf("%s:%d invoked\n", __func__, __LINE__);
-	return VBERROR_SUCCESS;
-}
-
 VbError_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale)
 {
 	return display_screen((enum VbScreenType_t)screen_type);
@@ -40,33 +28,6 @@ VbError_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale)
 VbError_t VbExDisplayMenu(uint32_t screen_type, uint32_t locale,
 			  uint32_t selected_index, uint32_t disabled_idx_mask,
 			  uint32_t redraw_base)
-{
-	printf("%s:%d invoked\n", __func__, __LINE__);
-	return VBERROR_SUCCESS;
-}
-
-VbError_t VbExDisplayImage(uint32_t x, uint32_t y,
-			   void *buffer, uint32_t buffersize)
-{
-	printf("%s:%d invoked\n", __func__, __LINE__);
-	return VBERROR_SUCCESS;
-}
-
-VbError_t VbExDisplayText(uint32_t x, uint32_t y,
-			  const char *info_str,
-			  int highlight)
-{
-	printf("%s:%d invoked\n", __func__, __LINE__);
-	return VBERROR_SUCCESS;
-}
-
-VbError_t VbExDisplaySetDimension(uint32_t width, uint32_t height)
-{
-	printf("%s:%d invoked\n", __func__, __LINE__);
-	return VBERROR_SUCCESS;
-}
-
-VbError_t VbExDisplayGetDimension(uint32_t *width, uint32_t *height)
 {
 	printf("%s:%d invoked\n", __func__, __LINE__);
 	return VBERROR_SUCCESS;
