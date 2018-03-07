@@ -243,6 +243,8 @@ static int cannonlake_power_off(PowerOps *me)
 	args.pmbase_mask = 0xff80;
 	args.gpe_en_reg = 0x70;
 	args.num_gpe_regs = 4;
+	/* Check if the config space is present. */
+	args.no_config_space = pci_read_config16(args.pci_dev, 0x00) == 0xffff;
 
 	return __pch_power_off_common(&args);
 }
