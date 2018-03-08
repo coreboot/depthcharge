@@ -91,6 +91,9 @@ static int nsmem_to_tos(DeviceTreeFixup *fixup, DeviceTree *tree)
 	ret = smc_call(SMC_TOS_REGISTER_NS_DRAM_RANGES, (uintptr_t)&ns_mem_map,
 		 sizeof(ns_mem_map));
 
+	while (ret == SMC_ERR_PREEMPT_BY_IRQ)
+		ret = smc_call(SMC_TOS_RESUME_FID, 0, 0);
+
 	if (ret) {
 		printf("WARNING: Failed to pass NSMEM ranges to TOS (err=%d)\n",
 		       ret);

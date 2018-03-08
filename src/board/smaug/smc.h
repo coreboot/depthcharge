@@ -26,5 +26,8 @@
 uint32_t smc_call(uint32_t arg0, uintptr_t arg1, uintptr_t arg2);
 
 #define SMC_TOS_REGISTER_NS_DRAM_RANGES 0x72000004
+#define SMC_TOS_RESUME_FID 0x72000100
+
+#define SMC_ERR_PREEMPT_BY_IRQ -3
 
 #endif
