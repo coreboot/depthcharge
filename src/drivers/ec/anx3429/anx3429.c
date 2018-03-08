@@ -589,6 +589,10 @@ static int anx3429_update_fw_at(Anx3429 *me,
 	rval = anx3429_find_active_header(me, dir_start, &act_start, &act_size);
 	if (rval < 0)
 		return -1;
+	if (act_start == 0 && act_size == 0) {
+		printf("anx3429.%d: header was zero!", me->ec_pd_id);
+		return -1;
+	}
 	act_dir = rval;
 
 	printf("anx3429.%d: active FW header at "
@@ -937,22 +941,34 @@ static VbError_t anx3429_update_image(const VbootAuxFwOps *vbaux,
 
 	debug("call...\n");
 
-	if (anx3429_verify_blob(me, image, image_size) != 0)
+	if (anx3429_verify_blob(me, image, image_size) != 0) {
+		debug("verify blob failed\n");
 		return VBERROR_UNKNOWN;
+	}
 
-	if (anx3429_ec_tunnel_status(me, &protected) != 0)
+	if (anx3429_ec_tunnel_status(me, &protected) != 0) {
+		debug("tunnel status failed\n");
 		return VBERROR_UNKNOWN;
+	}
 
-	if (protected)
+	if (protected) {
+		debug("already protected\n");
 		return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
+	}
 
-	if (anx3429_ec_pd_suspend(me) != 0)
+	if (anx3429_ec_pd_suspend(me) != 0) {
+		debug("pd suspend failed\n");
 		return VBERROR_UNKNOWN;
+	}
 
-	if (anx3429_ec_pd_powerup(me) != 0)
+	if (anx3429_ec_pd_powerup(me) != 0) {
+		debug("pd powerup failed\n");
 		goto pd_resume;
-	if (anx3429_disable_mcu(me) != 0)
+	}
+	if (anx3429_disable_mcu(me) != 0) {
+		debug("pd disable failed\n");
 		goto pd_resume;
+	}
 
 	if (ANX3429_DEBUG >= 2)
 		anx3429_dump_otp(me);
@@ -970,13 +986,16 @@ static VbError_t anx3429_update_image(const VbootAuxFwOps *vbaux,
 	}
 
 	if (anx3429_enable_mcu(me) != 0) {
+		debug("enable mcu failed\n");
 		status = VBERROR_UNKNOWN;
 		goto pd_resume;
 	}
 
 pd_resume:
-	if (anx3429_ec_pd_resume(me) != 0)
+	if (anx3429_ec_pd_resume(me) != 0) {
+		debug("pd resume failed\n");
 		status = VBERROR_UNKNOWN;
+	}
 
 	/* force re-read */
 	anx3429_clear_device_id(me);
