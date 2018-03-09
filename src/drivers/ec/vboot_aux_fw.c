@@ -64,8 +64,10 @@ static VbError_t check_dev_fw_hash(const VbootAuxFwOps *aux_fw,
 	want_hash = cbfs_get_file_content(
 		CBFS_DEFAULT_MEDIA,
 		aux_fw->fw_hash_name, CBFS_TYPE_RAW, &want_size);
-	if (want_hash == NULL)
-		die("%s missing from CBFS\n", aux_fw->fw_hash_name);
+	if (want_hash == NULL) {
+		printf("%s missing from CBFS\n", aux_fw->fw_hash_name);
+		return VBERROR_UNKNOWN;
+	}
 
 	return aux_fw->check_hash(aux_fw, want_hash, want_size, severity);
 }
@@ -112,8 +114,10 @@ static VbError_t apply_dev_fw(const VbootAuxFwOps *aux_fw)
 	want_data = cbfs_get_file_content(
 		CBFS_DEFAULT_MEDIA,
 		aux_fw->fw_image_name, CBFS_TYPE_RAW, &want_size);
-	if (want_data == NULL)
-		die("%s missing from CBFS\n", aux_fw->fw_image_name);
+	if (want_data == NULL) {
+		printf("%s missing from CBFS\n", aux_fw->fw_image_name);
+		return VBERROR_UNKNOWN;
+	}
 	return aux_fw->update_image(aux_fw, want_data, want_size);
 }
 
