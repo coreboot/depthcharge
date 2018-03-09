@@ -136,6 +136,7 @@ VbError_t update_vboot_aux_fw(void)
 	VbError_t status = VBERROR_SUCCESS;
 	int power_button_disabled = 0;
 	int lid_shutdown_disabled = 0;
+	int reboot_required = 0;
 
 	for (int i = 0; i < vboot_aux_fw_count; ++i) {
 		const VbootAuxFwOps *aux_fw;
@@ -156,10 +157,14 @@ VbError_t update_vboot_aux_fw(void)
 				if (!cros_ec_set_lid_shutdown_mask(0))
 					lid_shutdown_disabled = 1;
 			}
+			/* Apply update */
 			printf("Update aux fw %d\n", i);
 			status = apply_dev_fw(aux_fw);
-			if (status != VBERROR_SUCCESS)
+			if (status == VBERROR_EC_REBOOT_TO_RO_REQUIRED)
+				reboot_required = 1;
+			else if (status != VBERROR_SUCCESS)
 				goto update_exit;
+			/* Re-check hash after update */
 			status = check_dev_fw_hash(aux_fw, &severity);
 			if (status != VBERROR_SUCCESS)
 				goto update_exit;
@@ -182,6 +187,10 @@ update_exit:
 	/* Re-enable lid shutdown event, if required */
 	if (lid_shutdown_disabled)
 		cros_ec_set_lid_shutdown_mask(1);
+
+	/* Request EC reboot, if required */
+	if (reboot_required && status == VBERROR_SUCCESS)
+		status = VBERROR_EC_REBOOT_TO_RO_REQUIRED;
 
 	return status;
 }
