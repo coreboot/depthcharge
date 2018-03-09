@@ -12,6 +12,7 @@
  * GNU General Public License for more details.
  */
 
+#include "drivers/ec/cros/ec.h"
 #include "drivers/ec/vboot_aux_fw.h"
 
 #include <libpayload.h>
@@ -132,25 +133,43 @@ static VbError_t apply_dev_fw(const VbootAuxFwOps *aux_fw)
 VbError_t update_vboot_aux_fw(void)
 {
 	VbAuxFwUpdateSeverity_t severity;
-	VbError_t status;
+	VbError_t status = VBERROR_SUCCESS;
+	int power_button_disabled = 0;
 
 	for (int i = 0; i < vboot_aux_fw_count; ++i) {
 		const VbootAuxFwOps *aux_fw;
 
 		aux_fw = vboot_aux_fw[i].fw_ops;
 		if (vboot_aux_fw[i].severity != VB_AUX_FW_NO_UPDATE) {
+			/* Disable power button from EC on x86 during update */
+			if (!power_button_disabled &&
+			    IS_ENABLED(CONFIG_ARCH_X86) &&
+			    !IS_ENABLED(CONFIG_DETACHABLE_UI)) {
+				cros_ec_config_powerbtn(0);
+				power_button_disabled = 1;
+			}
+			printf("Update aux fw %d\n", i);
 			status = apply_dev_fw(aux_fw);
 			if (status != VBERROR_SUCCESS)
-				return status;
+				goto update_exit;
 			status = check_dev_fw_hash(aux_fw, &severity);
 			if (status != VBERROR_SUCCESS)
-				return status;
-			if (severity != VB_AUX_FW_NO_UPDATE)
-				return VBERROR_UNKNOWN;
+				goto update_exit;
+			if (severity != VB_AUX_FW_NO_UPDATE) {
+				status = VBERROR_UNKNOWN;
+				goto update_exit;
+			}
 		}
+		printf("Protect aux fw %d\n", i);
 		status = aux_fw->protect(aux_fw);
 		if (status != VBERROR_SUCCESS)
-			return status;
+			goto update_exit;
 	}
-	return VBERROR_SUCCESS;
+
+update_exit:
+	/* Re-enable power button after update, if required */
+	if (power_button_disabled)
+		cros_ec_config_powerbtn(EC_POWER_BUTTON_ENABLE_PULSE);
+
+	return status;
 }
