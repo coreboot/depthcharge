@@ -29,6 +29,7 @@
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/ec/anx3429/anx3429.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/skylake.h"
@@ -165,6 +166,15 @@ static int board_setup(void)
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, 0, NULL);
 	register_vboot_ec(&cros_ec->vboot, 0);
+
+	/* Downstream EC devices */
+	CrosECTunnelI2c *cros_ec_i2c0 = new_cros_ec_tunnel_i2c(cros_ec, 0);
+	Anx3429 *anx3429_0 = new_anx3429(cros_ec_i2c0, 0);
+	register_vboot_aux_fw(&anx3429_0->fw_ops);
+
+	CrosECTunnelI2c *cros_ec_i2c1 = new_cros_ec_tunnel_i2c(cros_ec, 1);
+	Anx3429 *anx3429_1 = new_anx3429(cros_ec_i2c1, 1);
+	register_vboot_aux_fw(&anx3429_1->fw_ops);
 
 	/* 16MB SPI Flash */
 	flash_set_ops(&new_mem_mapped_flash(0xff000000, 0x1000000)->ops);
