@@ -22,26 +22,44 @@
 #include "drivers/ec/cros/ec.h"
 #include "vboot/util/commonparams.h"
 
-static int cros_ec_disable_lid_shutdown(void)
+int cros_ec_get_lid_shutdown_mask(void)
 {
-	uint32_t smi_event_mask;
+	uint32_t mask;
 
-	if (!(gbb_get_flags() & GBB_FLAG_DISABLE_LID_SHUTDOWN))
-		return 0;
-
-	if (cros_ec_get_event_mask(EC_CMD_HOST_EVENT_GET_SMI_MASK,
-				   &smi_event_mask) < 0)
+	if (cros_ec_get_event_mask(EC_CMD_HOST_EVENT_GET_SMI_MASK, &mask) < 0)
 		return -1;
 
-	// Disable lid close event in the EC SMI event mask
-	smi_event_mask &= ~EC_HOST_EVENT_MASK(EC_HOST_EVENT_LID_CLOSED);
+	return !!(mask & EC_HOST_EVENT_MASK(EC_HOST_EVENT_LID_CLOSED));
+}
 
-	if (cros_ec_set_event_mask(EC_CMD_HOST_EVENT_SET_SMI_MASK,
-				   smi_event_mask) < 0)
+int cros_ec_set_lid_shutdown_mask(int enable)
+{
+	uint32_t mask;
+
+	if (cros_ec_get_event_mask(EC_CMD_HOST_EVENT_GET_SMI_MASK, &mask) < 0)
 		return -1;
 
-	printf("EC: Disabled lid close event due to GBB override\n");
+	// Set lid close event state in the EC SMI event mask
+	if (enable)
+		mask |= EC_HOST_EVENT_MASK(EC_HOST_EVENT_LID_CLOSED);
+	else
+		mask &= ~EC_HOST_EVENT_MASK(EC_HOST_EVENT_LID_CLOSED);
+
+	if (cros_ec_set_event_mask(EC_CMD_HOST_EVENT_SET_SMI_MASK, mask) < 0)
+		return -1;
+
+	printf("EC: %sabled lid close event\n", enable ? "en" : "dis");
 	return 0;
 }
 
-INIT_FUNC(cros_ec_disable_lid_shutdown);
+static int cros_ec_disable_lid_shutdown_at_startup(void)
+{
+	if (!(gbb_get_flags() & GBB_FLAG_DISABLE_LID_SHUTDOWN))
+		return 0;
+
+	printf("EC: Disabling lid close event due to GBB override\n");
+
+	return cros_ec_set_lid_shutdown_mask(0);
+}
+
+INIT_FUNC(cros_ec_disable_lid_shutdown_at_startup);

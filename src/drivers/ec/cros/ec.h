@@ -292,6 +292,21 @@ int cros_ec_read_power_btn(uint32_t *pwr_btn);
  */
 int cros_ec_config_powerbtn(uint32_t enable);
 
+/*
+ * Read the value of lid shutdown mask on x86 systems
+ *
+ * @return 1 if enabled, 0 if disabled, -1 on error
+ */
+int cros_ec_get_lid_shutdown_mask(void);
+
+/*
+ * Set the value of lid shutdown mask on x86 systems
+ *
+ * @param enable	Set to enable lid shutdown
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_set_lid_shutdown_mask(void);
+
 CrosEc *new_cros_ec(CrosEcBusOps *bus, int devidx, GpioOps *interrupt_gpio);
 
 #endif
