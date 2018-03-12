@@ -20,7 +20,6 @@
 #include <vboot_struct.h>
 
 #include "arch/sign_of_life.h"
-#include "base/cleanup_funcs.h"
 #include "base/init_funcs.h"
 #include "base/timestamp.h"
 #include "boot/bcb.h"
@@ -31,6 +30,7 @@
 #include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
+#include "vboot/util/init_funcs.h"
 #include "vboot/util/vboot_handoff.h"
 
 void  __attribute__((weak)) vboot_try_fastboot(void)
@@ -119,8 +119,8 @@ int main(void)
 	if (CONFIG_BCB_SUPPORT)
 		bcb_handle_command();
 
-	// Run any cleanup functions before vboot takes control
-	run_cleanup_funcs(CleanupOnVboot);
+	// Run any initialization functions before vboot takes control
+	run_vboot_init_funcs();
 
 	timestamp_add_now(TS_VB_SELECT_AND_LOAD_KERNEL);
 

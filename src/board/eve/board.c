@@ -23,7 +23,6 @@
 #include <pci/pci.h>
 #include <sysinfo.h>
 
-#include "base/cleanup_funcs.h"
 #include "base/init_funcs.h"
 #include "base/list.h"
 #include "config.h"
@@ -48,6 +47,7 @@
 #include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
+#include "vboot/util/init_funcs.h"
 
 /*
  * Clock frequencies for the eMMC and SD ports are defined below. The minimum
@@ -89,9 +89,9 @@ static int read_rt5514_id(DesignwareI2c *i2c, uint32_t *id)
 	return i2c->ops.transfer(&i2c->ops, seg, ARRAY_SIZE(seg));
 }
 
-static int board_check_audio(struct CleanupFunc *cleanup, CleanupType type)
+static int board_check_audio(VbootInitFunc *init)
 {
-	DesignwareI2c *i2c = cleanup->data;
+	DesignwareI2c *i2c = init->data;
 	GoogleBinaryBlockHeader *gbb = cparams.gbb_data;
 	uint8_t reset_reg = nvram_read(CMOS_RESET_REG);
 	uint32_t device_id_valid = htobe32(RT5514_DEVID_VALID);
@@ -140,9 +140,8 @@ static int board_check_audio(struct CleanupFunc *cleanup, CleanupType type)
 	return 0;
 }
 
-static CleanupFunc audio_cleanup_func = {
-	.cleanup = &board_check_audio,
-	.types = CleanupOnVboot,
+VbootInitFunc audio_init_func = {
+	.init = &board_check_audio
 };
 
 static int cr50_irq_status(void)
@@ -205,9 +204,9 @@ static int board_setup(void)
 	Max98927Codec *speaker_amp =
 		new_max98927_codec(&i2c4->ops, 0x39, 16, 16000, 64);
 
-	/* Check audio health */
-	audio_cleanup_func.data = i2c4;
-	list_insert_after(&audio_cleanup_func.list_node, &cleanup_funcs);
+	/* Check audio health before vboot takes control */
+	audio_init_func.data = i2c4;
+	list_insert_after(&audio_init_func.list_node, &vboot_init_funcs);
 
 	/* Activate buffer to disconnect I2S from PCH and allow GPIO */
 	GpioCfg *i2s_buffer = new_skylake_gpio_output(GPP_D22, 1);
