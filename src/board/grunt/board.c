@@ -124,7 +124,8 @@ static int board_setup(void)
 	SdhciHost *emmc = NULL;
 	/* The proto version of Grunt has the FT4's SDHCI pins wired up to
 	 * the eMMC part.  All other versions of Grunt (are planned to) use
-	 * the BH720 SDHCI controller.
+	 * the BH720 SDHCI controller for EMMC and use the FT4 SDHCI pins for
+	 * the SD connector.
 	 */
 	if (lib_sysinfo.board_id > 0) {
 		pcidev_t pci_dev;
@@ -136,6 +137,14 @@ static int board_setup(void)
 			printf("Failed to find BH720 with VID/DID %04x:%04x\n",
 				BH720_PCI_VID, BH720_PCI_DID);
 		}
+
+		SdhciHost *sd;
+		sd = new_pci_sdhci_host(PCI_DEV(0, 0x14, 7),
+				SDHCI_PLATFORM_REMOVABLE |
+				SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD,
+				EMMC_SD_CLOCK_MIN, SD_CLOCK_MAX);
+		list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
+				&removable_block_dev_controllers);
 	} else {
 		emmc = new_pci_sdhci_host(PCI_DEV(0, 0x14, 7),
 				SDHCI_PLATFORM_NO_EMMC_HS200 |
