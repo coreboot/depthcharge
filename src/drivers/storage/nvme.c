@@ -144,6 +144,46 @@ static NVME_STATUS nvme_enable_controller(NvmeCtrlr *ctrlr) {
 	return NVME_SUCCESS;
 }
 
+/* Shutdown controller before power cycle */
+static NVME_STATUS nvme_shutdown_controller(NvmeCtrlr *ctrlr) {
+	NVME_CC cc;
+	uint32_t timeout;
+
+	/* Read controller configuration */
+	cc = readl(ctrlr->ctrlr_regs + NVME_CC_OFFSET);
+
+	/* Indicate normal shutdown */
+	CLR(cc, NVME_CC_SHN_MASK);
+	SET(cc, NVME_CC_SHN_NORMAL);
+
+	/* Write controller configuration */
+	writel_with_flush(cc, ctrlr->ctrlr_regs + NVME_CC_OFFSET);
+
+	/* Delay up to CAP.TO ms for CSTS.SHST to indicate complete */
+	if (NVME_CAP_TO(ctrlr->cap) == 0)
+		timeout = 1;
+	else
+		timeout = NVME_CAP_TO(ctrlr->cap);
+
+	if (WAIT_WHILE(
+		((readl(ctrlr->ctrlr_regs + NVME_CSTS_OFFSET) &
+		  NVME_CSTS_SHST_MASK) != NVME_CSTS_SHST_COMPLETE),
+		timeout)) {
+
+		/* Send abrupt shutdown notification */
+		cc = readl(ctrlr->ctrlr_regs + NVME_CC_OFFSET);
+		CLR(cc, NVME_CC_SHN_MASK);
+		SET(cc, NVME_CC_SHN_ABRUPT);
+		writel_with_flush(cc, ctrlr->ctrlr_regs + NVME_CC_OFFSET);
+
+		printf("NVMe: shutdown timeout, sent abrupt notification\n");
+		return NVME_TIMEOUT;
+	}
+
+	printf("NVMe: shutdown succeeded\n");
+	return NVME_SUCCESS;
+}
+
 /* Add command to host SQ, don't write to HW SQ yet
  *
  * ctrlr: NVMe controller handle
@@ -995,10 +1035,19 @@ static int nvme_shutdown(struct CleanupFunc *cleanup, CleanupType type)
 
 	/* Only disable controller if initialized */
 	if (ctrlr->enabled) {
-		printf("Shutting down NVMe controller.\n");
-		status = nvme_disable_controller(ctrlr);
-		if (NVME_ERROR(status))
-			return 1;
+		switch (type) {
+		case CleanupOnReboot:
+		case CleanupOnPowerOff:
+			printf("Shutting down NVMe controller.\n");
+			nvme_shutdown_controller(ctrlr);
+		case CleanupOnLegacy:
+		case CleanupOnHandoff:
+		default:
+			printf("Disabling NVMe controller.\n");
+			status = nvme_disable_controller(ctrlr);
+			if (NVME_ERROR(status))
+				return 1;
+		}
 		ctrlr->enabled = 0;
 	}
 
@@ -1041,7 +1090,8 @@ NvmeCtrlr *new_nvme_ctrlr(pcidev_t dev)
 	ctrlr->dev = dev;
 
 	cleanup->cleanup = &nvme_shutdown;
-	cleanup->types = CleanupOnHandoff | CleanupOnLegacy;
+	cleanup->types = CleanupOnHandoff | CleanupOnLegacy |
+		CleanupOnReboot | CleanupOnPowerOff;
 	cleanup->data = ctrlr;
 	list_insert_after(&cleanup->list_node, &cleanup_funcs);
 

@@ -129,10 +129,20 @@ typedef uint32_t NVME_CC;
 #define NVME_CC_EN	(1 << 0)
 #define  NVME_CC_IOCQES(x)	(((x) & 0xf) << 20)
 #define  NVME_CC_IOSQES(x)	(((x) & 0xf) << 16)
+#define NVME_CC_SHN_MASK	(3 << 14)
+#define NVME_CC_SHN_NONE	(0 << 14)
+#define NVME_CC_SHN_NORMAL	(1 << 14)
+#define NVME_CC_SHN_ABRUPT	(2 << 14)
 
 /* 3.1.6 Offset 1Ch: CSTS - Controller Status */
 typedef uint32_t NVME_CSTS;
 #define NVME_CSTS_RDY	(1 << 0)
+
+/* CSTS.SHST - Controller Shutdown Status */
+#define NVME_CSTS_SHST_NONE		(0 << 2)
+#define NVME_CSTS_SHST_INPROGRESS	(1 << 2)
+#define NVME_CSTS_SHST_COMPLETE		(2 << 2)
+#define NVME_CSTS_SHST_MASK		(3 << 2)
 
 /* 3.1.8 Offset 24h: AQA - Admin Queue Attributes */
 typedef uint32_t NVME_AQA;
