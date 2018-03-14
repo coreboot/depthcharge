@@ -16,5 +16,6 @@ net-$(CONFIG_DRIVER_NET_IPQ806X) += ipq806x.c
 net-y += asix.c
 net-y += mii.c
 net-y += net.c
+net-y += r8152.c
 net-y += smsc95xx.c
 net-y += usb_eth.c
