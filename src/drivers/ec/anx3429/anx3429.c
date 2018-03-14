@@ -1007,6 +1007,10 @@ pd_resume:
 	 */
 	mdelay(ANX_RESTART_MS);
 
+	/* Request EC reboot on successful update */
+	if (status == VBERROR_SUCCESS)
+		status = VBERROR_EC_REBOOT_TO_RO_REQUIRED;
+
 	return status;
 }
 
