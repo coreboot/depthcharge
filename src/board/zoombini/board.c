@@ -103,10 +103,19 @@ static int board_setup(void)
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
 
 	/* eMMC */
-	SdhciHost *emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1a, 0), 0,
-			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
-	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
-			&fixed_block_dev_controllers);
+	if (IS_ENABLED(CONFIG_DRIVER_STORAGE_MMC))  {
+		SdhciHost *emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1a, 0), 0,
+				EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
+		list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+				&fixed_block_dev_controllers);
+	}
+
+	/* NVMe SSD */
+	if (IS_ENABLED(CONFIG_DRIVER_STORAGE_NVME)) {
+		NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x1D, 0));
+		list_insert_after(&nvme->ctrlr.list_node,
+				&fixed_block_dev_controllers);
+	}
 
 	/* SD Card (if present) */
 	pcidev_t sd_pci_dev = PCI_DEV(0, 0x14, 5);
