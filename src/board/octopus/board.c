@@ -32,6 +32,7 @@
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
+#include "drivers/soc/apollolake.h"
 #include "drivers/storage/sdhci.h"
 #include "drivers/tpm/spi.h"
 #include "drivers/tpm/tpm.h"
@@ -55,8 +56,7 @@
 
 static int cr50_irq_status(void)
 {
-	// (GPE0_DW1_31) is for irq_status; /* GPIO_63 */
-	return 0;
+	return apollolake_get_gpe(GPE0_DW1_31); /* GPIO_63 */
 }
 
 static void octopus_setup_tpm(void)
