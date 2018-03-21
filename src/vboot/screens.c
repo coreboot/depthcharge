@@ -828,6 +828,35 @@ static VbError_t vboot_draw_languages_menu(struct params *p)
 	return VBERROR_SUCCESS;
 }
 
+static VbError_t vboot_draw_alt_os_picker(struct params *p)
+{
+	int selected_index = p->selected_index;
+
+	if (p->redraw_base) {
+		RETURN_ON_ERROR(vboot_draw_base_screen_without_language(p));
+		RETURN_ON_ERROR(draw_image("VerificationOn.bmp",
+				VB_SCALE / 4, VB_SCALE_HALF,
+				VB_SIZE_AUTO, VB_ICON_HEIGHT,
+				PIVOT_H_CENTER|PIVOT_V_BOTTOM));
+		RETURN_ON_ERROR(draw_image("VerificationOff.bmp",
+				VB_SCALE / 4 * 3, VB_SCALE_HALF,
+				VB_SIZE_AUTO, VB_ICON_HEIGHT,
+				PIVOT_H_CENTER|PIVOT_V_BOTTOM));
+	}
+
+	int flags = PIVOT_H_CENTER|PIVOT_V_TOP;
+	RETURN_ON_ERROR(draw_image_locale("chrome_os.bmp", p->locale,
+			VB_SCALE / 4, VB_SCALE_HALF + VB_TEXT_HEIGHT,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			flags | (selected_index % 2 == 0 ? INVERT_COLORS : 0)));
+
+	RETURN_ON_ERROR(draw_image_locale("alt_os.bmp", p->locale,
+			VB_SCALE / 4 * 3, VB_SCALE_HALF + VB_TEXT_HEIGHT,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			flags | (selected_index % 2 == 1 ? INVERT_COLORS : 0)));
+	return VBERROR_SUCCESS;
+}
+
 /* we may export this in the future for the board customization */
 struct vboot_ui_descriptor {
 	uint32_t id;				/* VB_SCREEN_* */
@@ -930,6 +959,11 @@ static const struct vboot_ui_descriptor vboot_screens[] = {
 		.id = VB_SCREEN_LANGUAGES_MENU,
 		.draw = vboot_draw_languages_menu,
 		.mesg = "Languages Menu",
+	},
+	{
+		.id = VB_SCREEN_ALT_OS,
+		.draw = vboot_draw_alt_os_picker,
+		.mesg = "Alt OS Mode",
 	},
 };
 
