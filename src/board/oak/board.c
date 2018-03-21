@@ -30,7 +30,7 @@
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/gpio/mtk_gpio.h"
-#include "drivers/power/mt6397.h"
+#include "drivers/power/psci.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/rt5645.h"
 #include "drivers/sound/rt5677.h"
@@ -166,8 +166,7 @@ static int board_setup(void)
 		register_vboot_ec(&anx7688->vboot, 1);
 	}
 
-	Mt6397Pmic *pmic = new_mt6397_power(0x1000D000, 0x10007000);
-	power_set_ops(&pmic->ops);
+	power_set_ops(&psci_power_ops);
 
 	MtkMmcHost *emmc = new_mtk_mmc_host(0x11230000, 200 * MHz, 50 * MHz,
 					    emmc_tune_reg, 8, 0, NULL);
