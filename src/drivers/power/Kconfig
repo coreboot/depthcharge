@@ -67,12 +67,6 @@ config DRIVER_POWER_IPQ40XX
 	help
 	  Reboot or power off using registers in the SoC.
 
-config DRIVER_POWER_MT6397
-	bool "MT6397 PMIC power management"
-	default n
-	help
-	  Reboot or power off using the MT6397 PMIC.
-
 config DRIVER_POWER_ARMADA38X
         bool "ARMADA38X PMIC power management"
         default n
