@@ -305,7 +305,7 @@ int cros_ec_get_lid_shutdown_mask(void);
  * @param enable	Set to enable lid shutdown
  * @return 0 if ok, -1 on error
  */
-int cros_ec_set_lid_shutdown_mask(void);
+int cros_ec_set_lid_shutdown_mask(int enable);
 
 CrosEc *new_cros_ec(CrosEcBusOps *bus, int devidx, GpioOps *interrupt_gpio);
 
