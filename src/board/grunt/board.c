@@ -37,6 +37,7 @@
 #include "drivers/storage/sdhci.h"
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/tpm.h"
+#include "drivers/video/display.h"
 #include "drivers/bus/usb/usb.h"
 #include "pci.h"
 #include "vboot/util/flag.h"
@@ -58,6 +59,8 @@
 
 #define BH720_PCI_VID		0x1217
 #define BH720_PCI_DID		0x8620
+
+#define GPIO_BACKLIGHT		133
 
 static int cr50_irq_status(void)
 {
@@ -108,6 +111,23 @@ static void audio_setup(void)
 
 	sound_set_ops(&sound_route->ops);
 }
+
+static int grunt_backlight_update(DisplayOps *me, uint8_t enable)
+{
+	/* Backlight signal is active low */
+	static KernGpio *backlight;
+
+	if (!backlight)
+		backlight = new_kern_fch_gpio_output(GPIO_BACKLIGHT, !enable);
+	else
+		backlight->ops.set(&backlight->ops, !enable);
+
+	return 0;
+}
+
+static DisplayOps grunt_display_ops = {
+	.backlight_update = &grunt_backlight_update,
+};
 
 static int board_setup(void)
 {
@@ -180,6 +200,7 @@ static int board_setup(void)
 	}
 
 	power_set_ops(&kern_power_ops);
+	display_set_ops(&grunt_display_ops);
 
 	return 0;
 }
