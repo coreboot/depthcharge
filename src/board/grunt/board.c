@@ -24,6 +24,7 @@
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/ec/anx3429/anx3429.h"
 #include "drivers/ec/ps8751/ps8751.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
@@ -63,6 +64,9 @@
 #define BH720_PCI_DID		0x8620
 
 #define GPIO_BACKLIGHT		133
+
+#define EC_USB_PD_PORT_ANX3429	0
+#define EC_I2C_PORT_ANX3429	1
 
 #define EC_USB_PD_PORT_PS8751	1
 #define EC_I2C_PORT_PS8751	2
@@ -149,6 +153,12 @@ static int board_setup(void)
 		new_cros_ec_tunnel_i2c(cros_ec, EC_I2C_PORT_PS8751);
 	Ps8751 *ps8751 = new_ps8751(cros_ec_i2c_tunnel, EC_USB_PD_PORT_PS8751);
 	register_vboot_aux_fw(&ps8751->fw_ops);
+
+	cros_ec_i2c_tunnel =
+		new_cros_ec_tunnel_i2c(cros_ec, EC_I2C_PORT_ANX3429);
+	Anx3429 *anx3429 =
+		new_anx3429(cros_ec_i2c_tunnel, EC_USB_PD_PORT_ANX3429);
+	register_vboot_aux_fw(&anx3429->fw_ops);
 
 	flash_set_ops(&new_mem_mapped_flash(FLASH_START, FLASH_SIZE)->ops);
 
