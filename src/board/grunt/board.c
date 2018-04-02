@@ -20,9 +20,11 @@
 #include "base/init_funcs.h"
 #include "base/list.h"
 #include "config.h"
+#include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/ec/ps8751/ps8751.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/kern.h"
@@ -61,6 +63,9 @@
 #define BH720_PCI_DID		0x8620
 
 #define GPIO_BACKLIGHT		133
+
+#define EC_USB_PD_PORT_PS8751	1
+#define EC_I2C_PORT_PS8751	2
 
 static int cr50_irq_status(void)
 {
@@ -131,11 +136,19 @@ static DisplayOps grunt_display_ops = {
 
 static int board_setup(void)
 {
+	CrosECTunnelI2c *cros_ec_i2c_tunnel;
+
 	sysinfo_install_flags(NULL);
 	CrosEcLpcBus *cros_ec_lpc_bus =
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, 0, NULL);
 	register_vboot_ec(&cros_ec->vboot, 0);
+
+	/* programmables downstream from the EC */
+	cros_ec_i2c_tunnel =
+		new_cros_ec_tunnel_i2c(cros_ec, EC_I2C_PORT_PS8751);
+	Ps8751 *ps8751 = new_ps8751(cros_ec_i2c_tunnel, EC_USB_PD_PORT_PS8751);
+	register_vboot_aux_fw(&ps8751->fw_ops);
 
 	flash_set_ops(&new_mem_mapped_flash(FLASH_START, FLASH_SIZE)->ops);
 
