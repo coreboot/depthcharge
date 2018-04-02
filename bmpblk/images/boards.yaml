@@ -291,3 +291,10 @@ nami:
   screen:   [2400, 1600]
   hi_res:   [en]
   text_colors:  4
+
+atlas:
+  # 3840x2160, boots recovery image on USB ports.
+  screen:   [3840, 2160]
+  sdcard:   False
+  hi_res:   [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id,
+             th, ar, ms, zh-CN, zh-TW, fi, pl]
