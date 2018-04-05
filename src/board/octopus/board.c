@@ -67,7 +67,7 @@ static void octopus_setup_tpm(void)
 		.cs_polarity = SPI_POLARITY_LOW,
 		.clk_phase = SPI_CLOCK_PHASE_FIRST,
 		.clk_polarity = SPI_POLARITY_LOW,
-		.ref_clk_mhz = 133,
+		.ref_clk_mhz = 100,
 		.gspi_clk_mhz = 1,
 	};
 	tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0_params),
