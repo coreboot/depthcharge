@@ -120,7 +120,7 @@ static int board_setup(void)
 
 	/* H1 TPM on I2C bus 2 */
 	DesignwareI2c *i2c2 =
-		new_pci_designware_i2c(PCI_DEV(0, 0x16, 2), 400000, 133);
+		new_pci_designware_i2c(PCI_DEV(0, 0x16, 2), 400000, 100);
 	tpm_set_ops(&new_cr50_i2c(&i2c2->ops, 0x50,
 				  &cr50_irq_status)->base.ops);
 
