@@ -21,6 +21,7 @@
 #include "drivers/gpio/gpio.h"
 #include "vboot/util/flag.h"
 #include "boot/fit.h"
+#include "drivers/bus/usb/usb.h"
 
 static int board_setup(void)
 {
@@ -29,6 +30,14 @@ static int board_setup(void)
 	flag_replace(FLAG_PWRSW, new_gpio_low());
 
 	fit_add_compat("qcom,sdm845-mtp");
+
+	/* Support primary USB3.0 XHCI controller in firmware. */
+	UsbHostController *usb_host0 = new_usb_hc(XHCI, 0xa600000);
+	list_insert_after(&usb_host0->list_node, &usb_host_controllers);
+
+	/* Support secondary USB3.0 XHCI controller in firmware. */
+	UsbHostController *usb_host1 = new_usb_hc(XHCI, 0xa800000);
+	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
 
 	return 0;
 }
