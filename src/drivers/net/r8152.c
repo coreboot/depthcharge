@@ -128,6 +128,28 @@ static int ocp_write_dword(usbdev_t *dev, uint16_t type, uint16_t index,
 	return ocp_write(dev, index, ByteEnDword, sizeof(val), &val, type);
 }
 
+static int ocp_dword_clrsetbits(usbdev_t *dev, uint16_t type, uint16_t index,
+				uint32_t clr_mask, uint32_t set_mask)
+{
+	uint32_t data;
+	if (ocp_read_dword(dev, type, index, &data))
+		return 1;
+	data = (data & ~clr_mask) | set_mask;
+	return ocp_write_dword(dev, type, index, data);
+}
+
+static int ocp_dword_setbits(usbdev_t *dev, uint16_t type, uint16_t index,
+			     uint32_t set_mask)
+{
+	return ocp_dword_clrsetbits(dev, type, index, 0, set_mask);
+}
+
+static int ocp_dword_clearbits(usbdev_t *dev, uint16_t type, uint16_t index,
+			       uint32_t clr_mask)
+{
+	return ocp_dword_clrsetbits(dev, type, index, clr_mask, 0);
+}
+
 static int ocp_read_word(usbdev_t *dev, uint16_t type, uint16_t index,
 			 uint16_t *val)
 {
@@ -456,16 +478,12 @@ static int r8153_hw_phy_cfg(usbdev_t *dev)
 
 static int r8153_set_rx_mode(usbdev_t *dev)
 {
-	uint32_t data;
 	uint32_t tmp[2] = { 0xffffffff, 0xffffffff };
 
 	if (ocp_write(dev, PlaMar, ByteEnDword, sizeof(tmp), tmp, McuTypePla))
 		return 1;
 
-	if (ocp_read_dword(dev, McuTypePla, PlaRcr, &data))
-		return 1;
-	data |= RcrAb | RcrApm | RcrAm;
-	if (ocp_write_dword(dev, McuTypePla, PlaRcr, data))
+	if (ocp_dword_setbits(dev, McuTypePla, PlaRcr, RcrAb | RcrApm | RcrAm))
 		return 1;
 
 	return 0;
@@ -600,6 +618,135 @@ static int r8153_init(usbdev_t *dev)
 	return 0;
 }
 
+static int r8153b_power_cut_disable(usbdev_t *dev)
+{
+	if (ocp_word_clearbits(dev, McuTypeUsb, UsbPowerCut, PwrEn))
+		return 1;
+
+	if (ocp_word_clearbits(dev, McuTypeUsb, UsbMisc0, PcutStatus))
+		return 1;
+
+	return 0;
+}
+
+static int r8153b_ups_disable(usbdev_t *dev)
+{
+	if (ocp_byte_clearbits(dev, McuTypeUsb, UsbPowerCut,
+			       UpsEn | UpsPrewake))
+		return 1;
+
+	if (ocp_byte_clearbits(dev, McuTypeUsb, 0xcfff, 1 << 0))
+		return 1;
+
+	if (ocp_byte_clearbits(dev, McuTypeUsb, UsbMisc0, PcutStatus))
+		return 1;
+
+	return 0;
+}
+
+static int r8153b_queue_wake_disable(usbdev_t *dev)
+{
+	if (ocp_byte_clearbits(dev, McuTypePla, 0xd38a, 1 << 0))
+		return 1;
+
+	if (ocp_byte_clearbits(dev, McuTypePla, 0xd38c, 1 << 0))
+		return 1;
+
+	return 0;
+}
+
+static int rtl_runtime_suspend_disable(usbdev_t *dev)
+{
+	if (ocp_write_byte(dev, McuTypePla, PlaCrwecr, CrwecrConfig))
+		return 1;
+
+	if (ocp_word_clearbits(dev, McuTypePla, PlaConfig34, LinkOffWakeEn))
+		return 1;
+
+	if (ocp_write_byte(dev, McuTypePla, PlaCrwecr, CrwecrNormal))
+		return 1;
+
+	return 0;
+}
+
+static int r8153b_eee_disable(usbdev_t *dev)
+{
+	if (r8153_eee_disable(dev))
+		return 1;
+
+	if (ocp_dword_clearbits(dev, McuTypeUsb, UsbUpsFlags, UpsFlagsEnEee))
+		return 1;
+
+	return 0;
+}
+
+static int r8153b_hw_phy_cfg(usbdev_t *dev)
+{
+	if (r8153b_eee_disable(dev))
+		return 1;
+
+	if (ocp_reg_write(dev, OcpEeeAdv, 0))
+		return 1;
+
+	if (ocp_reg_setbits(dev, OcpNctlCfg, PgaReturnEn))
+		return 1;
+
+	if (ocp_word_setbits(dev, McuTypePla, PlaPhyPwr, PfmPwmSwitch))
+		return 1;
+
+	return 0;
+}
+
+static int r8153b_init(usbdev_t *dev)
+{
+	uint16_t data;
+
+	if (r8153_wait_autoload_done(dev))
+		return 1;
+
+	if (r8153_wait_for_phy_status(dev, 0))
+		return 1;
+
+	if (r8152_mdio_read(dev, MiiBmcr, &data))
+		return 1;
+	data &= ~BmcrPowerDown;
+	if (r8152_mdio_write(dev, MiiBmcr, data))
+		return 1;
+
+	if (r8153_wait_for_phy_status(dev, PhyStatLanOn))
+		return 1;
+
+	if (ocp_write_word(dev, McuTypeUsb, UsbMscTimer, 0x0fff))
+		return 1;
+
+	if (r8153b_power_cut_disable(dev))
+		return 1;
+
+	if (r8153b_ups_disable(dev))
+		return 1;
+
+	if (r8153b_queue_wake_disable(dev))
+		return 1;
+
+	if (rtl_runtime_suspend_disable(dev))
+		return 1;
+
+	if (ocp_word_clearbits(dev, McuTypeUsb, UsbUsbCtrl,
+			       RxAggDisable | RxZeroEn))
+		return 1;
+
+	if (rtl_tally_reset(dev))
+		return 1;
+
+	if (rtl_enable(dev))
+		return 1;
+
+	if (r8153b_hw_phy_cfg(dev))
+		return 1;
+
+	return 0;
+}
+
 /*
  * The higher-level commands
  */
@@ -637,8 +784,9 @@ static int rtl8152_init(GenericUsbDevice *gen_dev)
 		break;
 	case RtlVersion08:
 	case RtlVersion09:
-		printf("RTL8153b is not supported yet.");
-		return 1;
+		if (r8153b_init(usb_dev))
+			return 1;
+		break;
 	}
 
 	printf("R8152: Done initializing\n");

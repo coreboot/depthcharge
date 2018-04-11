@@ -31,7 +31,6 @@ static const uint16_t ByteEnWord = 0x33;
 static const uint16_t ByteEnByte = 0x11;
 static const uint16_t ByteEnStartMask = 0x0f;
 static const uint16_t ByteEnEndMask = 0xf0;
-static const uint16_t ByteEnSixBytes = 0x3f;
 
 enum {
 	RtlVersionUnknown = 0,
@@ -54,7 +53,6 @@ enum {
 	PlaDmyReg0 = 0xc0b0,
 	PlaFmc = 0xc0b4,
 	PlaMar = 0xcd00,
-	PlaBackup = 0xd000,
 	PlaLedFeature = 0xdd92,
 	PlaBootCtrl = 0xe004,
 	PlaEeeCr = 0xe040,
@@ -66,6 +64,7 @@ enum {
 	PlaRsttally = 0xe800,
 	PlaCr = 0xe813,
 	PlaCrwecr = 0xe81c,
+	PlaConfig34 = 0xe820,
 	PlaPhyPwr = 0xe84c,
 	PlaMisc1 = 0xe85a,
 	PlaOcpGphyBase = 0xe86c
@@ -111,6 +110,11 @@ enum {
 	CrwecrConfig = 0xc0
 };
 
+/* PlaConfig34 */
+enum {
+	LinkOffWakeEn = 0x0008
+};
+
 /* PlaPhyPwr */
 enum {
 	PfmPwmSwitch = 0x0040
@@ -123,12 +127,14 @@ enum {
 	UsbCsrDummy1 = 0xb464,
 	UsbCsrDummy2 = 0xb466,
 	UsbConnectTimer = 0xcbf8,
+	UsbMscTimer = 0xcbfc,
 	UsbBurstSize = 0xcfc0,
 	UsbUsbCtrl = 0xd406,
 	UsbLpmCtrl = 0xd41a,
 	UsbPowerCut = 0xd80a,
 	UsbMisc0 = 0xd81a,
 	UsbAfeCtrl2 = 0xd824,
+	UsbUpsFlags = 0xd848,
 	UsbWdt11Ctrl = 0xe43c
 };
 
@@ -152,7 +158,9 @@ static const uint8_t RokExitLpm = 0x02;
 /* UsbPowerCut */
 enum {
 	PwrEn = 0x0001,
-	Phase2En = 0x0008
+	Phase2En = 0x0008,
+	UpsEn = 1 << 4,
+	UpsPrewake = 1 << 5
 };
 
 /* UsbMisc0 */
@@ -162,6 +170,11 @@ static const uint16_t PcutStatus = 0x0001;
 static const uint16_t SenValMask = 0xf800;
 static const uint16_t SenValNormal = 0xa000;
 static const uint16_t SelRxidle = 0x0100;
+
+/* UsbUpsFlags */
+enum {
+	UpsFlagsEnEee = 1 << 20
+};
 
 /* UsbWdt11Ctrl */
 static const uint16_t Timer11En = 0x0001;
@@ -174,6 +187,7 @@ enum {
 enum {
 	OcpBaseMii = 0xa400,
 	OcpPhyStatus = 0xa420,
+	OcpNctlCfg = 0xa42c,
 	OcpPowerCfg = 0xa430,
 	OcpEeeCfg = 0xa432,
 	OcpSramAddr = 0xa436,
@@ -188,6 +202,10 @@ enum {
 	PhyStatExtInit = 0x2,
 	PhyStatLanOn = 0x3,
 	PhyStatPwrdn = 0x5
+};
+
+enum {
+	PgaReturnEn = 1 << 1
 };
 
 /* OcpPowerCfg */
