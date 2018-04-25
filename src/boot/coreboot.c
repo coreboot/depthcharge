@@ -63,12 +63,17 @@ static int install_coreboot_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 	dt_add_reg_prop(coreboot_node, reg_addrs, reg_sizes, 2,
 			addr_cells, size_cells);
 
-	// Expose board ID and RAM code exported from coreboot to userspace.
-	if (lib_sysinfo.board_id != ~0) {
+	// Expose board ID, SKU ID, and RAM code exported from coreboot to
+	// userspace.
+	if (lib_sysinfo.board_id != UNDEFINED_STRAPPING_ID) {
 		dt_add_u32_prop(coreboot_node,
 				"board-id", lib_sysinfo.board_id);
 	}
-	if (lib_sysinfo.ram_code != ~0) {
+	if (lib_sysinfo.sku_id != UNDEFINED_STRAPPING_ID) {
+		dt_add_u32_prop(coreboot_node,
+				"sku-id", lib_sysinfo.sku_id);
+	}
+	if (lib_sysinfo.ram_code != UNDEFINED_STRAPPING_ID) {
 		dt_add_u32_prop(coreboot_node,
 				"ram-code", lib_sysinfo.ram_code);
 	}
