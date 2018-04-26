@@ -23,7 +23,6 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
-#include "boot/commandline.h"
 #include "config.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
@@ -58,29 +57,6 @@
 #define EMMC_SD_CLOCK_MIN	400000
 #define EMMC_CLOCK_MAX		200000000
 #define SD_CLOCK_MAX		52000000
-
-#define SORAKA_AUX_CTRL_MIN_HW_VERSION		5
-
-/*
- * On soraka, we need to pass an additional kernel command line parameter if
- * board version >= 5. This is required to enable proper backlight control in
- * the kernel. However, if this command line parameter is set by default on the
- * board, then backlight control will be broken on older boards. So, until we
- * phase out older boards, this hack is required to ensure that backlight
- * control works properly on all HW versions.
- *
- * TODO(furquan@): Remove this once older boards are phased out.
- */
-const char *mainboard_commandline(void)
-{
-	if (strcmp(CONFIG_BOARD, "soraka"))
-		return NULL;
-
-	if (lib_sysinfo.board_id < SORAKA_AUX_CTRL_MIN_HW_VERSION)
-		return NULL;
-
-	return " i915.enable_dpcd_backlight=1 ";
-}
 
 static int cr50_irq_status(void)
 {
