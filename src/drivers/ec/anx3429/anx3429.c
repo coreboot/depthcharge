@@ -588,10 +588,15 @@ static int anx3429_update_fw_at(Anx3429 *me,
 
 	rval = anx3429_find_active_header(me, dir_start, &act_start, &act_size);
 	if (rval < 0)
-		return -1;
+		return -2;
 	if (act_start == 0 && act_size == 0) {
-		printf("anx3429.%d: header was zero!", me->ec_pd_id);
-		return -1;
+		printf("anx3429.%d: header was zero, retry", me->ec_pd_id);
+		rval = anx3429_find_active_header(me, dir_start, &act_start,
+						  &act_size);
+		if (rval < 0)
+			return -2;
+		else if (act_start == 0 && act_size == 0)
+			return -2;
 	}
 	act_dir = rval;
 
@@ -602,7 +607,7 @@ static int anx3429_update_fw_at(Anx3429 *me,
 	if (act_dir >= dir_start + OTP_UPDATE_MAX - 1) {
 		printf("anx3429.%d: all %u FW header slots already used!\n",
 		       me->ec_pd_id, OTP_UPDATE_MAX);
-		return -1;
+		return -2;
 	}
 
 	if (act_start + act_size == 0) {
@@ -619,7 +624,7 @@ static int anx3429_update_fw_at(Anx3429 *me,
 
 	rval = anx3429_find_usable_otp(me, upd_start, fw_data, fw_words);
 	if (rval < 0)
-		return -1;
+		return -2;
 
 	upd_start = rval;
 	printf("anx3429.%d: writing new FW to offset 0x%04x, size 0x%04x\n",
@@ -936,38 +941,38 @@ static VbError_t anx3429_update_image(const VbootAuxFwOps *vbaux,
 				      const size_t image_size)
 {
 	Anx3429 *me = container_of(vbaux, Anx3429, fw_ops);
-	VbError_t status = VBERROR_UNKNOWN;
+	VbError_t status = VBERROR_EC_REBOOT_TO_RO_REQUIRED;
 	int protected;
 
 	debug("call...\n");
 
 	if (anx3429_verify_blob(me, image, image_size) != 0) {
 		debug("verify blob failed\n");
-		return VBERROR_UNKNOWN;
+		return status;
 	}
 
 	if (anx3429_ec_tunnel_status(me, &protected) != 0) {
 		debug("tunnel status failed\n");
-		return VBERROR_UNKNOWN;
+		return status;
 	}
 
 	if (protected) {
 		debug("already protected\n");
-		return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
+		return status;
 	}
 
 	if (anx3429_ec_pd_suspend(me) != 0) {
 		debug("pd suspend failed\n");
-		return VBERROR_UNKNOWN;
+		return status;
 	}
 
 	if (anx3429_ec_pd_powerup(me) != 0) {
 		debug("pd powerup failed\n");
-		goto pd_resume;
+		return status;
 	}
 	if (anx3429_disable_mcu(me) != 0) {
 		debug("pd disable failed\n");
-		goto pd_resume;
+		return status;
 	}
 
 	if (ANX3429_DEBUG >= 2)
@@ -979,6 +984,14 @@ static VbError_t anx3429_update_image(const VbootAuxFwOps *vbaux,
 	} else
 		status = anx3429_update_primary(me, image, image_size);
 
+	switch (status) {
+	case -2:
+		return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
+	case -1:
+		/* This will trigger recovery mode */
+		return VBERROR_UNKNOWN;
+	}
+
 	if (ANX3429_DEBUG >= 2) {
 		if (status == 0)
 			me->debug_updated = 1;
@@ -987,14 +1000,12 @@ static VbError_t anx3429_update_image(const VbootAuxFwOps *vbaux,
 
 	if (anx3429_enable_mcu(me) != 0) {
 		debug("enable mcu failed\n");
-		status = VBERROR_UNKNOWN;
-		goto pd_resume;
+		return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
 	}
 
-pd_resume:
 	if (anx3429_ec_pd_resume(me) != 0) {
 		debug("pd resume failed\n");
-		status = VBERROR_UNKNOWN;
+		status = VBERROR_EC_REBOOT_TO_RO_REQUIRED;
 	}
 
 	/* force re-read */
