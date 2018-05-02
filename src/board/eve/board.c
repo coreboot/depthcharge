@@ -90,6 +90,24 @@ static int read_rt5514_id(DesignwareI2c *i2c, uint32_t *id)
 	return i2c->ops.transfer(&i2c->ops, seg, ARRAY_SIZE(seg));
 }
 
+static void board_reboot_cr50(void)
+{
+	const uint8_t cr50_reset[] = {
+		0x80, 0x01,		/* TPM_ST_NO_SESSIONS */
+		0x00, 0x00, 0x00, 0x0c,	/* commandSize */
+		0x20, 0x00, 0x00, 0x00,	/* cr50 vendor command */
+		0x00, 0x13		/* immediate reset command */
+	};
+	printf("Reset system via cr50\n");
+	tpm_xmit(cr50_reset, ARRAY_SIZE(cr50_reset), NULL, 0);
+}
+
+static VbError_t board_reboot_to_ro(VbootEcOps *vbec)
+{
+	board_reboot_cr50();
+	return VBERROR_SUCCESS;
+}
+
 static int board_check_audio(VbootInitFunc *init)
 {
 	DesignwareI2c *i2c = init->data;
@@ -97,12 +115,6 @@ static int board_check_audio(VbootInitFunc *init)
 	uint8_t reset_reg = nvram_read(CMOS_RESET_REG);
 	uint32_t device_id_valid = htobe32(RT5514_DEVID_VALID);
 	uint32_t device_id = 0;
-	const uint8_t cr50_reset[] = {
-		0x80, 0x01,		/* TPM_ST_NO_SESSIONS */
-		0x00, 0x00, 0x00, 0x0c,	/* commandSize */
-		0x20, 0x00, 0x00, 0x00,	/* cr50 vendor command */
-		0x00, 0x13		/* immediate reset command */
-	};
 	int ret;
 
 	/* Skip in recovery mode */
@@ -123,9 +135,8 @@ static int board_check_audio(VbootInitFunc *init)
 		printf("Audio is broken\n");
 		/* Only reset if CMOS has not been set to magic value */
 		if (reset_reg != CMOS_RESET_MAGIC) {
-			printf("Reset system via cr50\n");
 			nvram_write(CMOS_RESET_MAGIC, CMOS_RESET_REG);
-			tpm_xmit(cr50_reset, ARRAY_SIZE(cr50_reset), NULL, 0);
+			board_reboot_cr50();
 		} else {
 			printf("Audio recovery failed\n");
 		}
@@ -165,6 +176,8 @@ static int board_setup(void)
 	CrosEcLpcBus *cros_ec_lpc_bus =
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, 0, NULL);
+	/* Override EC reboot to reset via cr50 */
+	cros_ec->vboot.reboot_to_ro = board_reboot_to_ro;
 	register_vboot_ec(&cros_ec->vboot, 0);
 
 	/* Downstream EC devices */
