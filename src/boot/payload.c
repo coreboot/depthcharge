@@ -18,7 +18,6 @@
 #include <libpayload.h>
 #include <lzma.h>
 #include <cbfs.h>
-#include <cbfs_ram.h>
 
 #include "arch/cache.h"
 #include "base/cleanup_funcs.h"
@@ -91,35 +90,15 @@ static int payload_load(struct cbfs_payload *payload, void **entryp)
 	}
 }
 
-int payload_run(const char *area_name, const char *payload_name)
+int payload_run(struct cbfs_media *media, const char *payload_name)
 {
-	FmapArea area;
-	struct cbfs_media media;
-	void *data, *entry;
 	struct cbfs_payload *payload;
+	void *entry;
 	int ret;
 
-	printf("Selected '%s' from area '%s'\n", payload_name, area_name);
-	if (fmap_find_area(area_name, &area)) {
-		printf("Fmap region %s not found.\n", area_name);
-		return 1;
-	}
-
-	data = flash_read(area.offset, area.size);
-	if (!data) {
-		printf("Could not read in legacy cbfs data.\n");
-		return 1;
-	}
-
-	if (init_cbfs_ram_media(&media, data, area.size)) {
-		printf("Could not initialize legacy cbfs.\n");
-		return 1;
-	}
-
-	payload = cbfs_load_payload(&media, payload_name);
+	payload = cbfs_load_payload(media, payload_name);
 	if (!payload) {
-		printf("Could not find '%s' in '%s' cbfs.\n", payload_name,
-		       area_name);
+		printf("Could not find '%s'.\n", payload_name);
 		return 1;
 	}
 
@@ -139,4 +118,47 @@ int payload_run(const char *area_name, const char *payload_name)
 	printf("%s returned, unfortunately", payload_name);
 
 	return 1;
+}
+
+struct ListNode *payload_get_altfw_list(struct cbfs_media *media)
+{
+	char *loaders, *ptr;
+	ListNode *head;
+	size_t size;
+
+	/* Load bootloader list from cbfs */
+	loaders = cbfs_get_file_content(media, "altfw/list", CBFS_TYPE_RAW,
+					&size);
+	if (!loaders || !size) {
+		printf("%s: altfw list not found\n", __func__);
+		return NULL;
+	}
+
+	printf("%s: Supported altfw boot loaders:\n", __func__);
+	ptr = loaders;
+	head = xzalloc(sizeof (*head));
+	do {
+		struct altfw_info *node;
+		const char *seqnum;
+		char *line;
+
+		line = strsep(&ptr, "\n");
+		if (!line)
+			break;
+		node = xzalloc(sizeof (*node));
+		seqnum = strsep(&line, ";");
+		if (!seqnum)
+			break;
+		node->seqnum = atol(seqnum);
+		node->filename = strsep(&line, ";");
+		node->name = strsep(&line, ";");
+		node->desc = strsep(&line, ";");
+		if (!node->desc)
+			break;
+		printf("   %d %-15s %-15s %s\n", node->seqnum, node->name,
+		       node->filename, node->desc);
+		list_insert_after(&node->list_node, head);
+	} while (1);
+
+	return head;
 }
