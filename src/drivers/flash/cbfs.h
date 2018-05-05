@@ -23,4 +23,13 @@ struct cbfs_media;
 /* Return a cbfs_media structure representing the RO CBFS -- NULL on error. */
 struct cbfs_media *cbfs_ro_media(void);
 
+/**
+ * cbfs_media_from_fmap() - Set up a CBFS media struct for an area
+ *
+ * @area_name:	Name of FMAP area to use (e.g. RW_LEGACY)
+ * @media:	Filled out with the corresponding CBFS media
+ * @return 0 if OK, non-zero on error
+ */
+int cbfs_media_from_fmap(const char *area_name, struct cbfs_media *media);
+
 #endif

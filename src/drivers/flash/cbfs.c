@@ -17,6 +17,7 @@
 
 #include <libpayload.h>
 #include <cbfs.h>
+#include <cbfs_ram.h>
 #include "image/fmap.h"
 #include "drivers/flash/flash.h"
 
@@ -128,4 +129,30 @@ struct cbfs_media *cbfs_ro_media(void)
 	memcpy(media->context, &area, sizeof(area));
 
 	return media;
+}
+
+int cbfs_media_from_fmap(const char *area_name, struct cbfs_media *media)
+{
+	FmapArea area;
+	void *data;
+
+	if (fmap_find_area(area_name, &area)) {
+		printf("Fmap region %s not found.\n", area_name);
+		return 1;
+	}
+
+	data = flash_read(area.offset, area.size);
+	if (!data) {
+		printf("Could not read in cbfs data from area '%s'.\n",
+		       area_name);
+		return 1;
+	}
+
+	if (init_cbfs_ram_media(media, data, area.size)) {
+		printf("Could not initialize cbfs from area '%s'.\n",
+		       area_name);
+		return 1;
+	}
+
+	return 0;
 }
