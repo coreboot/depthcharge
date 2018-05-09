@@ -27,6 +27,7 @@
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/ata.h"
 #include "drivers/storage/blockdev.h"
+#include "base/cleanup_funcs.h"
 
 typedef struct SataDrive {
 	BlockDev dev;
@@ -434,6 +435,46 @@ static int ahci_read_capacity(AhciIoPort *port, lba_t *cap,
 	return 0;
 }
 
+static int ahci_exit(struct CleanupFunc *cleanup, CleanupType type)
+{
+	AhciCtrlr *ctrlr = cleanup->data;
+	void *mmio = ctrlr->mmio_base;
+	uint32_t irq_stat, i = 0;
+	uint32_t host_impl_bitmap = readl(mmio + HOST_PORTS_IMPL);
+
+	printf("Clear pending AHCI interrupt status.\n");
+
+	/* disable interrupt in GHC */
+	writel(readl(mmio + HOST_CTL) & ~(2), mmio + HOST_CTL);
+
+	while (host_impl_bitmap) {
+		/* Skip ports that are not enabled. */
+		if (!(host_impl_bitmap & 1)) {
+			host_impl_bitmap >>= 1;
+			i += 1;
+			continue;
+		}
+		uint8_t *port_mmio = (uint8_t *)ahci_port_base(mmio, i);
+
+		/* disable all port interrupts */
+		writel(0, port_mmio + PORT_IRQ_MASK);
+
+		/* clear any pending irq events for this port */
+		irq_stat = readl(port_mmio + PORT_IRQ_STAT);
+		if (irq_stat)
+			writel(irq_stat, port_mmio + PORT_IRQ_STAT);
+
+		host_impl_bitmap >>= 1;
+		i += 1;
+	}
+
+	/* Clear pending irq events in host controller */
+	irq_stat = readl(mmio + HOST_IRQ_STAT);
+	if (irq_stat)
+		writel(irq_stat, mmio + HOST_IRQ_STAT);
+	return 0;
+}
+
 static int ahci_ctrlr_init(BlockDevCtrlrOps *me)
 {
 	uint32_t host_impl_bitmap;
@@ -632,5 +673,12 @@ AhciCtrlr *new_ahci_ctrlr(pcidev_t dev)
 	ctrlr->ctrlr.ops.update = &ahci_ctrlr_init;
 	ctrlr->ctrlr.need_update = 1;
 	ctrlr->dev = dev;
+
+	CleanupFunc *cleanup = xzalloc(sizeof(*cleanup));
+	cleanup->cleanup = &ahci_exit;
+	cleanup->types = CleanupOnHandoff | CleanupOnLegacy;
+	cleanup->data = ctrlr;
+	list_insert_after(&cleanup->list_node, &cleanup_funcs);
+
 	return ctrlr;
 }
