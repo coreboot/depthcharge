@@ -49,12 +49,6 @@ enum {
 };
 
 enum {
-	FIRMWARE_TYPE_RECOVERY = 0,
-	FIRMWARE_TYPE_NORMAL = 1,
-	FIRMWARE_TYPE_DEVELOPER = 2
-};
-
-enum {
 	BINF_RECOVERY = 0,
 	BINF_RW_A = 1,
 	BINF_RW_B = 2
