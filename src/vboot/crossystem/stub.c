@@ -19,7 +19,7 @@
 
 #include "vboot/crossystem/crossystem.h"
 
-int crossystem_setup(void)
+int crossystem_setup(int firmware_type)
 {
 	printf("%s not implemented.\n", __func__);
 	return 0;

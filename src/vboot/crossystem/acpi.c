@@ -30,7 +30,7 @@
 #include "vboot/util/flag.h"
 #include "vboot/util/vboot_handoff.h"
 
-int crossystem_setup(void)
+int crossystem_setup(int firmware_type)
 {
 	chromeos_acpi_t *acpi_table = (chromeos_acpi_t *)lib_sysinfo.vdat_addr;
 	VbSharedDataHeader *vboot_handoff_shared_data;
@@ -117,7 +117,9 @@ int crossystem_setup(void)
 		memcpy(acpi_table->frid, get_ro_fw_id(), size);
 	}
 
-	if (main_fw == BINF_RECOVERY)
+	if (firmware_type != FIRMWARE_TYPE_AUTO_DETECT)
+		acpi_table->main_fw_type = firmware_type;
+	else if (main_fw == BINF_RECOVERY)
 		acpi_table->main_fw_type = FIRMWARE_TYPE_RECOVERY;
 	else if (vdat->flags & VBSD_BOOT_DEV_SWITCH_ON)
 		acpi_table->main_fw_type = FIRMWARE_TYPE_DEVELOPER;

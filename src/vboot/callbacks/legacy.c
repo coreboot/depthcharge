@@ -27,6 +27,7 @@
 #include "base/cleanup_funcs.h"
 #include "drivers/flash/flash.h"
 #include "image/fmap.h"
+#include "vboot/crossystem/crossystem.h"
 
 static void load_payload_and_run(struct cbfs_payload *payload);
 
@@ -112,6 +113,7 @@ static void load_payload_and_run(struct cbfs_payload *payload)
 			printf("PARAMS: skipped\n");
 			break;
 		case PAYLOAD_SEGMENT_ENTRY:
+			crossystem_setup(FIRMWARE_TYPE_LEGACY);
 			run_cleanup_funcs(CleanupOnLegacy);
 			cache_sync_instructions();
 			selfboot(dst);

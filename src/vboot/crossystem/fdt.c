@@ -82,13 +82,27 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 	fwid_size = get_fw_size(fw_index);
 
 	dt_add_bin_prop(node, "firmware-version", (char *)fwid, fwid_size);
+	const char *type_names[] = {
+		[FIRMWARE_TYPE_RECOVERY] = "recovery",
+		[FIRMWARE_TYPE_NORMAL] = "normal",
+		[FIRMWARE_TYPE_DEVELOPER] = "developer",
+		[FIRMWARE_TYPE_NETBOOT] = "netboot",
+		[FIRMWARE_TYPE_LEGACY] = "legacy",
+	};
 
-	if (fw_index == VDAT_RECOVERY)
-		dt_add_string_prop(node, "firmware-type", "recovery");
-	else if (vdat->flags & VBSD_BOOT_DEV_SWITCH_ON)
-		dt_add_string_prop(node, "firmware-type", "developer");
+	int fw_type = firmware_type;
+	if (fw_type == FIRMWARE_TYPE_AUTO_DETECT) {
+		if (fw_index == VDAT_RECOVERY)
+			fw_type = FIRMWARE_TYPE_RECOVERY;
+		else if (vdat->flags & VBSD_BOOT_DEV_SWITCH_ON)
+			fw_type = FIRMWARE_TYPE_DEVELOPER;
+		else
+			fw_type = FIRMWARE_TYPE_NORMAL;
+	}
+	if (fw_type < 0 || fw_type >= ARRAY_SIZE(type_names))
+		dt_add_string_prop(node, "firmware-type", "unknown");
 	else
-		dt_add_string_prop(node, "firmware-type", "normal");
+		dt_add_string_prop(node, "firmware-type", type_names[fw_type])
 
 	dt_add_u32_prop(node, "fmap-offset", CONFIG_FMAP_OFFSET);
 
@@ -124,7 +138,7 @@ static DeviceTreeFixup crossystem_fixup = {
 	.fixup = &install_crossystem_data
 };
 
-int crossystem_setup(void)
+int crossystem_setup(int firmware_type)
 {
 	list_insert_after(&crossystem_fixup.list_node, &device_tree_fixups);
 	return 0;

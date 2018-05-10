@@ -18,8 +18,22 @@
 #ifndef __VBOOT_CROSSYSTEM_CROSSYSTEM_H__
 #define __VBOOT_CROSSYSTEM_CROSSYSTEM_H__
 
+// Specify the type of firmware we have selected to boot.
+// The values must match host/lib/include/crossystem_arch.h BINF3_*.
+// Pass FIRMWARE_TYPE_AUTO_DETECT to crossystem_setup to detect and select
+// from one of the types: (recovery, normal, developer).
+enum {
+	FIRMWARE_TYPE_AUTO_DETECT = -1,
+	FIRMWARE_TYPE_RECOVERY = 0,
+	FIRMWARE_TYPE_NORMAL = 1,
+	FIRMWARE_TYPE_DEVELOPER = 2,
+	FIRMWARE_TYPE_NETBOOT = 3,
+	FIRMWARE_TYPE_LEGACY = 4,
+};
+
+
 // Setup the crossystem data. This should be done as late as possible to
 // ensure the data used is up to date.
-int crossystem_setup(void);
+int crossystem_setup(int firmware_type);
 
 #endif /* __VBOOT_CROSSYSTEM_CROSSYSTEM_H__ */
