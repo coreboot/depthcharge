@@ -157,7 +157,7 @@ void vboot_boot_kernel(VbSelectAndLoadKernelParams *kparams)
 		bi.cmd_line = cmd_line_buf;
 	}
 
-	if (crossystem_setup())
+	if (crossystem_setup(FIRMWARE_TYPE_AUTO_DETECT))
 		return;
 
 	boot(&bi);
