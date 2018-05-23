@@ -1100,8 +1100,12 @@ static int read_memmap(uint8_t offset, uint8_t size, void *dest)
 	params.offset = offset;
 	params.size = size;
 
-	if (ec_command(get_main_ec(), EC_CMD_READ_MEMMAP, 0,
-		       &params, sizeof(params), dest, size) < 0)
+	CrosEc *ec = get_main_ec();
+
+	if (ec->bus->read)
+		ec->bus->read(dest, EC_LPC_ADDR_MEMMAP + offset, size);
+	else if (ec_command(ec, EC_CMD_READ_MEMMAP, 0, &params, sizeof(params),
+			    dest, size) < 0)
 		return -1;
 
 	return 0;
