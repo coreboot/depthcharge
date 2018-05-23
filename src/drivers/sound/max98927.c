@@ -45,7 +45,8 @@ enum {
 
 // REG_AMP_VOLUME
 enum {
-	AMP_VOLUME_0DB = 0x40,
+	AMP_VOLUME_M1DB = 0x3c, /* -1dB */
+	AMP_VOLUME_0DB = 0x40,  /* 0dB */
 };
 
 // REG_THERMAL_WARNING and REG_THERMAL_SHUTDOWN
@@ -217,11 +218,11 @@ static int max98927_hw_params(Max98927Codec *codec)
 	max98927_write(codec, REG_PCM_RX_ENABLE,
 		       PCM_RX_EN_CH0 | PCM_RX_EN_CH1);
 
-	// Set amplifier volume to 0dB
-	max98927_write(codec, REG_AMP_VOLUME, AMP_VOLUME_0DB);
+	// Set amplifier volume to -1dB
+	max98927_write(codec, REG_AMP_VOLUME, AMP_VOLUME_M1DB);
 
-	// Set speaker gain to 6dB
-	max98927_write(codec, REG_SPEAKER_GAIN, SPEAKER_GAIN_6DB);
+	// Set speaker gain to 3dB
+	max98927_write(codec, REG_SPEAKER_GAIN, SPEAKER_GAIN_3DB);
 
 	return 0;
 }
