@@ -148,6 +148,9 @@ static int board_setup(void)
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, 0, NULL);
 	register_vboot_ec(&cros_ec->vboot, 0);
 
+	flag_replace(FLAG_LIDSW, cros_ec_lid_switch_flag());
+	flag_replace(FLAG_PWRSW, cros_ec_power_btn_flag());
+
 	/* programmables downstream from the EC */
 	cros_ec_i2c_tunnel =
 		new_cros_ec_tunnel_i2c(cros_ec, EC_I2C_PORT_PS8751);
