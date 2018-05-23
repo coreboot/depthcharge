@@ -48,56 +48,6 @@ static const int emmc_sd_clock_min = 400 * 1000;
 static const int emmc_clock_max = 150 * 1000 * 1000;
 
 
-/**
- * Read the lid switch value from the EC
- *
- * @return 0 if lid closed, 1 if lid open or unable to read
- */
-static int get_lid_switch_from_ec(GpioOps *me)
-{
-	uint32_t lid_open;
-
-	if (!cros_ec_read_lid_switch(&lid_open))
-		return lid_open;
-
-	/* Assume the lid is open if we get any sort of error */
-	printf("error, assuming lid is open\n");
-	return 1;
-}
-
-static GpioOps *lid_open_gpio(void)
-{
-	GpioOps *ops = xzalloc(sizeof(*ops));
-
-	ops->get = &get_lid_switch_from_ec;
-	return ops;
-}
-
-/**
- * Read the power button value from the EC
- *
- * @return 1 if button is pressed, 0 in not pressed or unable to read
- */
-static int get_power_btn_from_ec(GpioOps *me)
-{
-	uint32_t pwr_btn;
-
-	if (!cros_ec_read_power_btn(&pwr_btn))
-		return pwr_btn;
-
-	/* Assume poer button is not pressed if we get any sort of error */
-	printf("error, assuming power button not pressed\n");
-	return 0;
-}
-
-static GpioOps *power_btn_gpio(void)
-{
-	GpioOps *ops = xzalloc(sizeof(*ops));
-
-	ops->get = &get_power_btn_from_ec;
-	return ops;
-}
-
 static int cr50_irq_status(void)
 {
 	static GpioOps *tpm_int;
@@ -147,8 +97,8 @@ static int board_setup(void)
 		flag_replace(FLAG_LIDSW, new_gpio_high()); /* always open */
 		flag_replace(FLAG_PWRSW, new_gpio_low());  /* never pressed */
 	} else {
-		flag_replace(FLAG_LIDSW, lid_open_gpio());
-		flag_replace(FLAG_PWRSW, power_btn_gpio());
+		flag_replace(FLAG_LIDSW, cros_ec_lid_switch_flag());
+		flag_replace(FLAG_PWRSW, cros_ec_power_btn_flag());
 	}
 
 	power_set_ops(&psci_power_ops);

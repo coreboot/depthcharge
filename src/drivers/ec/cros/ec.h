@@ -276,12 +276,22 @@ int cros_ec_set_bl_pwm_duty(uint32_t percent);
 int cros_ec_read_lid_switch(uint32_t *lid);
 
 /**
+ * Return GpioOps that will read the 'lid open' switch.
+ */
+GpioOps *cros_ec_lid_switch_flag(void);
+
+/**
  * Read the value of power button.
  *
  * @param pwr_btn	Buffer to read lid open flag (returns 0 or 1)
  * @return 0 if ok, -1 on error
  */
 int cros_ec_read_power_btn(uint32_t *pwr_btn);
+
+/**
+ * Return GpioOps that will read the power button.
+ */
+GpioOps *cros_ec_power_btn_flag(void);
 
 /**
  * Enable/Disable execution of SMI pulse on x86 systems

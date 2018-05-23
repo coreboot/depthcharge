@@ -1135,6 +1135,31 @@ int cros_ec_read_lid_switch(uint32_t *lid)
 	return 0;
 }
 
+/**
+ * Read the lid switch value from the EC
+ *
+ * @return 0 if lid closed, 1 if lid open or unable to read
+ */
+static int get_lid_switch_from_ec(GpioOps *me)
+{
+	uint32_t lid_open;
+
+	if (!cros_ec_read_lid_switch(&lid_open))
+		return lid_open;
+
+	/* Assume the lid is open if we get any sort of error */
+	printf("error, assuming lid is open\n");
+	return 1;
+}
+
+GpioOps *cros_ec_lid_switch_flag(void)
+{
+	GpioOps *ops = xzalloc(sizeof(*ops));
+
+	ops->get = &get_lid_switch_from_ec;
+	return ops;
+}
+
 int cros_ec_read_power_btn(uint32_t *pwr_btn)
 {
 	uint8_t flags, version;
@@ -1152,6 +1177,31 @@ int cros_ec_read_power_btn(uint32_t *pwr_btn)
 	*pwr_btn = !!(flags & EC_SWITCH_POWER_BUTTON_PRESSED);
 
 	return 0;
+}
+
+/**
+ * Read the power button value from the EC
+ *
+ * @return 1 if button is pressed, 0 in not pressed or unable to read
+ */
+static int get_power_btn_from_ec(GpioOps *me)
+{
+	uint32_t pwr_btn;
+
+	if (!cros_ec_read_power_btn(&pwr_btn))
+		return pwr_btn;
+
+	/* Assume power button is not pressed if we get any sort of error */
+	printf("error, assuming power button not pressed\n");
+	return 0;
+}
+
+GpioOps *cros_ec_power_btn_flag(void)
+{
+	GpioOps *ops = xzalloc(sizeof(*ops));
+
+	ops->get = &get_power_btn_from_ec;
+	return ops;
 }
 
 int cros_ec_config_powerbtn(uint32_t flags)
