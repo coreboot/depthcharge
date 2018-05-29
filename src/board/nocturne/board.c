@@ -35,6 +35,7 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
 #include "drivers/soc/skylake.h"
+#include "drivers/sound/max98373.h"
 #include "drivers/sound/route.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
@@ -89,6 +90,26 @@ static int board_setup(void)
 			EMMC_CLOCK_MIN, EMMC_CLOCK_MAX);
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			&fixed_block_dev_controllers);
+
+#if CONFIG_DRIVER_SOUND_MAX98373
+	/* Activate buffer to disconnect I2S from PCH and allow GPIO */
+	GpioCfg *boot_beep_buffer_enable = new_skylake_gpio_output(GPP_F1, 1);
+	gpio_set(&boot_beep_buffer_enable->ops, 0);
+
+	/* Use GPIOs to provide a BCLK+LRCLK to the codec */
+	GpioCfg *boot_beep_bclk = new_skylake_gpio_output(GPP_F0, 0);
+	GpioCfg *boot_beep_lrclk = new_skylake_gpio_output(GPP_F2, 0);
+
+	/* Speaker amp is Maxim 98373 codec on I2C4 */
+	DesignwareI2c *i2c4 =
+		new_pci_designware_i2c(PCI_DEV(0, 0x19, 2), 400000, 120);
+
+	Max98373Codec *tone_generator =
+		new_max98373_tone_generator(&i2c4->ops, 0x32, 48000,
+					    &boot_beep_bclk->ops,
+					    &boot_beep_lrclk->ops);
+	sound_set_ops(&tone_generator->ops);
+#endif
 
 	return 0;
 }
