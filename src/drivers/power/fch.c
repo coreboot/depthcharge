@@ -105,6 +105,14 @@ static int fch_power_off_common(struct power_off_args *args)
 	}
 
 	/*
+	 * On a power button press, the EC asserts PCH_PWRBTN_L for 32 ms.
+	 * If we happen to write the ACPI sleep event and sleep before
+	 * PCH_PWRBTN_L has been de-asserted the AP will immediately power back
+	 * on.
+	 */
+	mdelay(40);
+
+	/*
 	 * Mask interrupts or system might stay in a coma (not executing
 	 * code anymore, but not powered off either.
 	 */
