@@ -59,21 +59,18 @@
 static uint64_t readll(uintptr_t _a)
 {
 	uint64_t _v;
-	uint32_t *v = (uint32_t *)&_v;
 
-	v[0] = readl(_a);
-	v[1] = readl(_a + sizeof(uint32_t));
+	_v = readl(_a);
+	_v |= ((uint64_t)readl(_a + sizeof(uint32_t)) << 32);
 	return le64toh(_v);
 }
 
 /* Write 64bits to register space */
 static void writell(uint64_t _v, volatile const uintptr_t _a)
 {
-	uint32_t *v = (uint32_t *)&_v;
-
 	_v = htole64(_v);
-	writel(v[0], _a);
-	writel(v[1], _a + sizeof(uint32_t));
+	writel(_v & 0xffffffff, _a);
+	writel(_v >> 32, _a + sizeof(uint32_t));
 }
 
 DEBUG(
