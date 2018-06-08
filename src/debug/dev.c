@@ -17,6 +17,7 @@
 #include "netboot/netboot.h"
 #include "netboot/params.h"
 #include "net/uip.h"
+#include "vboot/crossystem/crossystem.h"
 
 /*
  * These are the real implementations for developer-build features that override
@@ -39,6 +40,8 @@ void dc_dev_netboot(void)
 	char *bootfile, *argsfile;
 
 	video_console_init();
+	if (crossystem_setup())
+		printf("crossystem_setup() failed on netboot, ignoring...\n");
 
 	if (netboot_params_read(&tftp_ip, NULL, 0,
 				&bootfile, &argsfile))
