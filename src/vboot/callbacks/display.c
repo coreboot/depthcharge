@@ -125,7 +125,7 @@ VbError_t VbExDisplayDebugInfo(const char *info_str)
 			print_string_newline(" not supported");
 		}
 	} else {
-		if (IS_ENABLED(CONFIG_DRIVER_MOCK_TPM))
+		if (IS_ENABLED(CONFIG_MOCK_TPM))
 			print_string_newline(" MOCK TPM");
 		else
 			print_string_newline(" not supported");
