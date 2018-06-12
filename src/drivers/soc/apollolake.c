@@ -16,17 +16,6 @@
 
 #include "drivers/soc/apollolake.h"
 
-void *pcr_port_regs(uint8_t pid)
-{
-	uintptr_t reg_addr;
-
-	/* Create an address based off of port id and offset. */
-	reg_addr = PCH_PCR_BASE_ADDRESS;
-	reg_addr += ((uintptr_t)pid) << PCH_PCR_PORTID_SHIFT;
-
-	return (void *)reg_addr;
-}
-
 int apollolake_get_gpe(int gpe)
 {
 	int bank;

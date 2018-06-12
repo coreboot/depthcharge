@@ -20,6 +20,7 @@
 #include "base/container_of.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/skylake.h"
+#include "drivers/soc/common/pcr.h"
 #include "drivers/soc/skylake.h"
 
 /* There are 4 communities with 8 GPIO groups (GPP_[A:G] and GPD) */
@@ -98,7 +99,7 @@ static void *gpio_dw_regs(int pad)
 	if (comm == NULL)
 		return NULL;
 
-	regs = pcr_port_regs(comm->port_id);
+	regs = pcr_port_regs(PCH_PCR_BASE_ADDRESS, comm->port_id);
 
 	pad_relative = pad - comm->min;
 
@@ -117,7 +118,7 @@ static void *gpio_hostsw_reg(int pad, size_t *bit)
 	if (comm == NULL)
 		return NULL;
 
-	regs = pcr_port_regs(comm->port_id);
+	regs = pcr_port_regs(PCH_PCR_BASE_ADDRESS, comm->port_id);
 
 	pad_relative = pad - comm->min;
 

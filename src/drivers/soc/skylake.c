@@ -18,6 +18,7 @@
 #include "base/cleanup_funcs.h"
 #include "base/init_funcs.h"
 #include "drivers/soc/common/iomap.h"
+#include "drivers/soc/common/pcr.h"
 #include "drivers/soc/skylake.h"
 
 static int pit_8254_enable(struct CleanupFunc *cleanup, CleanupType type)
@@ -25,7 +26,8 @@ static int pit_8254_enable(struct CleanupFunc *cleanup, CleanupType type)
 	/* Unconditionally enable the 8254 in the Legacy path. */
 	const uint32_t cge8254_mask_off = ~(1 << 2);
 	const int itssprc_offset = 0x3300;
-	void *itssprc = pcr_port_regs(PCH_PCR_PID_ITSS) + itssprc_offset;
+	void *itssprc = pcr_port_regs(PCH_PCR_BASE_ADDRESS, PCH_PCR_PID_ITSS)
+			+ itssprc_offset;
 	uint32_t reg = read32(itssprc);
 
 	reg &= cge8254_mask_off;

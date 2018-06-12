@@ -24,6 +24,7 @@
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/apollolake.h"
 #include "drivers/soc/apollolake.h"
+#include "drivers/soc/common/pcr.h"
 
 #if IS_ENABLED(CONFIG_DRIVER_SOC_GLK)
 static const struct gpio_community {
@@ -85,7 +86,7 @@ static void *gpio_dw_regs(int pad)
 	if (comm == NULL)
 		return NULL;
 
-	regs = pcr_port_regs(comm->port_id);
+	regs = pcr_port_regs(PCH_PCR_BASE_ADDRESS, comm->port_id);
 
 	pad_relative = pad - comm->first_pad;
 
@@ -103,7 +104,7 @@ static void *gpio_hostsw_reg(int pad, size_t *bit)
 	if (comm == NULL)
 		return NULL;
 
-	regs = pcr_port_regs(comm->port_id);
+	regs = pcr_port_regs(PCH_PCR_BASE_ADDRESS, comm->port_id);
 
 	pad_relative = pad - comm->first_pad;
 

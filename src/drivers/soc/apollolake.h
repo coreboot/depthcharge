@@ -20,17 +20,12 @@
 /* Apollolake PCR access to GPIO registers. */
 #define PCH_PCR_BASE_ADDRESS 0xd0000000
 
-/* Port Id lives in bit 23:16 and register offset lives in 15:0 of address */
-#define PCH_PCR_PORTID_SHIFT	16
-
 /* PCR PIDs. */
 #define PCH_PCR_PID_GPIO_SOUTHWEST	0xc0
 #define PCH_PCR_PID_GPIO_SOUTH		0xc2
 #define PCH_PCR_PID_GPIO_NORTHWEST	0xc4
 #define PCH_PCR_PID_GPIO_NORTH		0xc5
 #define PCH_PCR_PID_GPIO_WEST		0xc7
-
-void *pcr_port_regs(uint8_t pid);
 
 /* Apollolake GPE definitions */
 
