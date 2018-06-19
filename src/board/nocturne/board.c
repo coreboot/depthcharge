@@ -121,3 +121,8 @@ static int board_setup(void)
 }
 
 INIT_FUNC(board_setup);
+
+const char *mainboard_commandline(void)
+{
+	return " intel_pstate=no_hwp "; /* disable p-states */
+}
