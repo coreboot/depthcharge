@@ -48,4 +48,6 @@ typedef struct Ps8751
 Ps8751 *new_ps8751(CrosECTunnelI2c *bus, int ec_pd_id);
 Ps8751 *new_ps8805(CrosECTunnelI2c *bus, int ec_pd_id);
 
+int __must_check ps8751_should_try_upgrade(const Ps8751 *me);
+
 #endif /* __DRIVERS_EC_PS8751_H__ */

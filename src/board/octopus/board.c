@@ -25,10 +25,13 @@
 
 #include "base/init_funcs.h"
 #include "config.h"
+#include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/bus/usb/usb.h"
+#include "drivers/ec/cros/commands.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/ec/ps8751/ps8751.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -104,6 +107,21 @@ static void board_flash_init(void)
 							bios_base)->ops);
 }
 
+#define EC_USB_PD_PORT_PS8751	1
+#define EC_I2C_PORT_PS8751	2
+
+static void update_ps8751_firmware(CrosEc * const cros_ec)
+{
+	CrosECTunnelI2c *cros_ec_i2c_tunnel =
+		new_cros_ec_tunnel_i2c(cros_ec, EC_I2C_PORT_PS8751);
+	Ps8751 *ps8751 = new_ps8751(cros_ec_i2c_tunnel, EC_USB_PD_PORT_PS8751);
+
+	if (ps8751_should_try_upgrade(ps8751))
+		register_vboot_aux_fw(&ps8751->fw_ops);
+	else
+		printf("PS8751 not found. Skipping firmware upgrade check.\n");
+}
+
 static int board_setup(void)
 {
 	CrosEcLpcBus *cros_ec_lpc_bus;
@@ -132,6 +150,9 @@ static int board_setup(void)
 	cros_ec_lpc_bus = new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
 	cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, 0, NULL);
 	register_vboot_ec(&cros_ec->vboot, 0);
+
+	/* Peripherals connected to EC */
+	update_ps8751_firmware(cros_ec);
 
 	/* PCH Power */
 	power_set_ops(&apollolake_power_ops);
