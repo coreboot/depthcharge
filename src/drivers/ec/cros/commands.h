@@ -4006,6 +4006,33 @@ struct __ec_align1 ec_params_efs_verify {
 	uint8_t region;		/* enum ec_flash_region */
 };
 
+/*
+ * Retrieve info from Cros Board Info store. Response is based on the data
+ * type. Integers return a uint32. Strings return a string, using the response
+ * size to determine how big it is.
+ */
+#define EC_CMD_GET_CROS_BOARD_INFO	0x011F
+
+enum cbi_data_tag {
+	CBI_TAG_BOARD_VERSION = 0,
+	CBI_TAG_OEM_ID = 1,
+	CBI_TAG_SKU_ID = 2,
+	CBI_TAG_COUNT,
+};
+
+/*
+ * Flags to control read operation
+ *
+ * RELOAD:  Invalidate cache and read data from EEPROM. Useful to verify
+ *          write was successful without reboot.
+ */
+#define CBI_GET_RELOAD		(1 << 0)
+
+struct __ec_align4 ec_params_get_cbi {
+	uint32_t type;		/* enum cbi_data_tag */
+	uint32_t flag;		/* CBI_GET_* */
+};
+
 #endif  /* !__ACPI__ */
 
 /*****************************************************************************/

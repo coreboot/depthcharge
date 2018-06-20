@@ -117,9 +117,23 @@ struct cros_ec_keyscan {
 };
 
 /**
- * Read a keyboard scan from the ChromeOS EC device
+ * Gets the SKU id from the EC
  *
- * Send a message requesting a keyboard scan and return the result
+ * @param id		The returned SKU id
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_cbi_get_sku_id(uint32_t *id);
+
+/**
+ * Gets the OEM id from the EC
+ *
+ * @param id		The returned OEM id
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_cbi_get_oem_id(uint32_t *id);
+
+/**
+ * Read a keyboard scan from the ChromeOS EC device
  *
  * @param scan		Place to put the scan results
  * @return 0 if ok, -1 on error
