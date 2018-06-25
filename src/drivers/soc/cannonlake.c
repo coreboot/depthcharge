@@ -14,7 +14,7 @@
 #include <arch/io.h>
 #include <libpayload.h>
 #include <stdint.h>
-
+#include "drivers/soc/common/iomap.h"
 #include "drivers/soc/cannonlake.h"
 
 int cannonlake_get_gpe(int gpe)

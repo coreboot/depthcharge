@@ -17,6 +17,7 @@
 
 #include "base/cleanup_funcs.h"
 #include "base/init_funcs.h"
+#include "drivers/soc/common/iomap.h"
 #include "drivers/soc/skylake.h"
 
 static int pit_8254_enable(struct CleanupFunc *cleanup, CleanupType type)
