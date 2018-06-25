@@ -19,6 +19,7 @@
 
 #include "drivers/power/pch.h"
 #include "drivers/power/power.h"
+#include "drivers/soc/common/iomap.h"
 
 #define PM1_STS         0x00
 #define   PWRBTN_STS    (1 << 8)
@@ -231,16 +232,16 @@ static int skylake_power_off(PowerOps *me)
 
 static int cannonlake_power_off(PowerOps *me)
 {
-	/*
-	 * Cannonlake has 4 GPE en registers and the bar lives within the
-	 * PMC device at 0:1f.2.
-	 */
 	struct power_off_args args;
 	memset(&args, 0, sizeof(args));
 
 	args.pci_dev = PCI_DEV(0, 0x1f, 2);
-	args.pmbase_reg = 0x20;
-	args.pmbase_mask = 0xff80;
+	/*
+	 * PMC device is not accesible as standard PCI device and is not
+	 * visible over bus, reading the BAR2 from PCI config space returns
+	 * an invalid value. Hence the ACPI BASE is hardcoded below.
+	 */
+	args.pmbase = ACPI_BASE_ADDRESS;
 	args.gpe_en_reg = 0x70;
 	args.num_gpe_regs = 4;
 	/* Check if the config space is present. */
