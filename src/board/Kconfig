@@ -58,6 +58,9 @@ endif
 if BOARD_DIR = "jecht"
 source src/board/jecht/Kconfig
 endif
+if BOARD_DIR = "kukui"
+source src/board/kukui/Kconfig
+endif
 if BOARD_DIR = "link"
 source src/board/link/Kconfig
 endif
