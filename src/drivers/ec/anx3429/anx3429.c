@@ -900,7 +900,7 @@ static int anx3429_verify_blob(Anx3429 *me,
 		      image[ANX_UPD_VERSION_BOFFSET]);
 	} else {
 		printf("anx3429.%d: firmware update "
-		       "size %u smaller than expected!\n",
+		       "size %zu smaller than expected!\n",
 		       me->ec_pd_id, image_size);
 		status = -1;
 	}

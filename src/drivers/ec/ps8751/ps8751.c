@@ -1006,7 +1006,7 @@ static int __must_check ps8751_verify(Ps8751 *me,
 			}
 		}
 	}
-	printf("%s: verified %uKB in %us\n",
+	printf("%s: verified %zuKB in %us\n",
 	       me->chip_name,
 	       data_size >> 10,
 	       (unsigned)USEC_TO_SEC(timer_us(t0_us)));
