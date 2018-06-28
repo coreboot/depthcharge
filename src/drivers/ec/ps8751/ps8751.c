@@ -522,6 +522,8 @@ static int __must_check ps8751_spi_flash_lock(Ps8751 *me)
 		wp_reg = PS8805_P2_SPI_WP;
 		wp_en = PS8805_P2_SPI_WP_EN;
 		break;
+	default:
+		return -1;
 	}
 	/* assert SPI flash WP# */
 	if (write_reg(me, slave, wp_reg, wp_en) != 0)
@@ -557,6 +559,8 @@ static int __must_check ps8751_spi_flash_unlock(Ps8751 *me)
 		slave = SLAVE2;
 		wp_reg = PS8805_P2_SPI_WP;
 		break;
+	default:
+		return -1;
 	}
 	/* deassert SPI flash WP# */
 	if (write_reg(me, slave, wp_reg, 0x00) != 0)
@@ -791,6 +795,8 @@ static int __must_check ps8751_is_fw_compatible(Ps8751 *me, const uint8_t *fw)
 	case CHIP_PS8805:
 		fw_chip_version = me->blob_hw_version;
 		break;
+	default:
+		return 0;
 	}
 	if (hw_rev == fw_chip_version)
 		return 1;
