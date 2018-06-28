@@ -700,7 +700,7 @@ static int __must_check ps8751_get_hw_version(Ps8751 *me, uint8_t *version)
 	status = read_reg(me, SLAVE1, P1_CHIP_REV_LO, &low);
 	if (status == 0)
 		status = read_reg(me, SLAVE1, P1_CHIP_REV_HI, &high);
-	if (status != 0) {
+	if (status < 0) {
 		printf("%s: read P1_CHIP_REV_* failed\n", me->chip_name);
 		return status;
 	}
