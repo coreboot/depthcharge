@@ -579,7 +579,8 @@ void sdhci_set_uhs_signaling(SdhciHost *host, uint32_t timing)
 		ctrl_2 |= SDHCI_CTRL_UHS_SDR104 | SDHCI_CTRL_DRV_TYPE_A;
 	else if (timing == MMC_TIMING_UHS_SDR12)
 		ctrl_2 |= SDHCI_CTRL_UHS_SDR12;
-	else if (timing == MMC_TIMING_UHS_SDR25)
+	else if ((timing == MMC_TIMING_UHS_SDR25) ||
+		(timing == MMC_TIMING_MMC_HS))
 		ctrl_2 |= SDHCI_CTRL_UHS_SDR25;
 	else if (timing == MMC_TIMING_UHS_SDR50)
 		ctrl_2 |= SDHCI_CTRL_UHS_SDR50;
