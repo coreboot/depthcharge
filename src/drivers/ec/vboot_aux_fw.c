@@ -162,8 +162,11 @@ VbError_t update_vboot_aux_fw(void)
 			status = apply_dev_fw(aux_fw);
 			if (status == VBERROR_EC_REBOOT_TO_RO_REQUIRED)
 				reboot_required = 1;
+			else if (status == VBERROR_PERIPHERAL_BUSY)
+				goto update_protect;
 			else if (status != VBERROR_SUCCESS)
 				goto update_exit;
+
 			/* Re-check hash after update */
 			status = check_dev_fw_hash(aux_fw, &severity);
 			if (status != VBERROR_SUCCESS)
@@ -173,6 +176,7 @@ VbError_t update_vboot_aux_fw(void)
 				goto update_exit;
 			}
 		}
+update_protect:
 		printf("Protect aux fw %d\n", i);
 		status = aux_fw->protect(aux_fw);
 		if (status != VBERROR_SUCCESS)

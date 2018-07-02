@@ -1029,25 +1029,15 @@ static int ps8751_ec_tunnel_status(Ps8751 *me, int *protected)
 	return 0;
 }
 
-static int ps8751_ec_control(Ps8751 *me, enum ec_pd_control_cmd cmd)
-{
-	struct ec_params_pd_control p;
-	int status;
-
-	p.chip = me->ec_pd_id;
-	p.subcmd = cmd;
-
-	status = ec_command(me->bus->ec, EC_CMD_PD_CONTROL, 0,
-			    &p, sizeof(p), NULL, 0);
-	return (status < 0)? -1: 0;
-}
-
 static int ps8751_ec_pd_suspend(Ps8751 *me)
 {
 	int status;
 
-	status = ps8751_ec_control(me, PD_SUSPEND);
-	if (status != 0)
+	status = cros_ec_pd_control(me->ec_pd_id, PD_SUSPEND);
+	if (status == -EC_RES_BUSY)
+		printf("%s: PD_SUSPEND busy! Could be only power source.\n",
+		       me->chip_name);
+	else if (status != 0)
 		printf("%s: PD_SUSPEND failed!\n", me->chip_name);
 	return status;
 }
@@ -1056,7 +1046,7 @@ static int ps8751_ec_pd_resume(Ps8751 *me)
 {
 	int status;
 
-	status = ps8751_ec_control(me, PD_RESUME);
+	status = cros_ec_pd_control(me->ec_pd_id, PD_RESUME);
 	if (status != 0)
 		printf("%s: PD_RESUME failed!\n", me->chip_name);
 	return status;
@@ -1261,8 +1251,15 @@ static VbError_t ps8751_update_image(const VbootAuxFwOps *vbaux,
 	if (image == NULL || image_size == 0)
 		return VBERROR_INVALID_PARAMETER;
 
-	if (ps8751_ec_pd_suspend(me) != 0)
+	switch (ps8751_ec_pd_suspend(me)) {
+	case -EC_RES_BUSY:
+		return VBERROR_PERIPHERAL_BUSY;
+	case EC_RES_SUCCESS:
+		/* Continue onward */
+		break;
+	default:
 		return VBERROR_UNKNOWN;
+	}
 
 	if (ps8751_wake_i2c(me) != 0)
 		goto pd_resume;

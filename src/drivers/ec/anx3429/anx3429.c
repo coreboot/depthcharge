@@ -272,25 +272,16 @@ static int anx3429_ec_tunnel_status(Anx3429 *me, int *protected)
 	return 0;
 }
 
-static int anx3429_ec_control(Anx3429 *me, enum ec_pd_control_cmd cmd)
-{
-	struct ec_params_pd_control p;
-	int status;
-
-	p.chip = me->ec_pd_id;
-	p.subcmd = cmd;
-
-	status = ec_command(me->bus->ec, EC_CMD_PD_CONTROL, 0,
-			    &p, sizeof(p), NULL, 0);
-	return (status < 0)? -1: 0;
-}
-
 static int anx3429_ec_pd_suspend(Anx3429 *me)
 {
 	int status;
 
-	status = anx3429_ec_control(me, PD_SUSPEND);
-	if (status != 0)
+	status = cros_ec_pd_control(me->ec_pd_id, PD_SUSPEND);
+	if (status == -EC_RES_BUSY)
+		printf("anx3429.%d: PD_SUSPEND busy! Could be only power "
+		       "source.\n",
+		       me->ec_pd_id);
+	else  if (status != 0)
 		printf("anx3429.%d: PD_SUSPEND failed!\n", me->ec_pd_id);
 	return status;
 }
@@ -299,7 +290,7 @@ static int anx3429_ec_pd_resume(Anx3429 *me)
 {
 	int status;
 
-	status = anx3429_ec_control(me, PD_RESUME);
+	status = cros_ec_pd_control(me->ec_pd_id, PD_RESUME);
 	if (status != 0)
 		printf("anx3429.%d: PD_RESUME failed!\n", me->ec_pd_id);
 	return status;
@@ -309,7 +300,7 @@ static int anx3429_ec_pd_powerup(Anx3429 *me)
 {
 	int status;
 
-	status = anx3429_ec_control(me, PD_CHIP_ON);
+	status = cros_ec_pd_control(me->ec_pd_id, PD_CHIP_ON);
 	if (status != 0)
 		printf("anx3429.%d: PD_CHIP_ON failed!\n", me->ec_pd_id);
 	return status;
@@ -956,7 +947,13 @@ static VbError_t anx3429_update_image(const VbootAuxFwOps *vbaux,
 		return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
 	}
 
-	if (anx3429_ec_pd_suspend(me) != 0) {
+	switch (anx3429_ec_pd_suspend(me)) {
+	case -EC_RES_BUSY:
+		return VBERROR_PERIPHERAL_BUSY;
+	case EC_RES_SUCCESS:
+		/* Continue onward */
+		break;
+	default:
 		debug("pd suspend failed\n");
 		return VBERROR_UNKNOWN;
 	}

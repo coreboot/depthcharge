@@ -133,6 +133,15 @@ int cros_ec_cbi_get_sku_id(uint32_t *id);
 int cros_ec_cbi_get_oem_id(uint32_t *id);
 
 /**
+ * Sends the specified PD control command on the specified PD port
+ *
+ * @param pd_port	The PD port id
+ * @param cmd		The PD control command to send
+ * @return 0 if ok, negative (EC return code) on error
+ */
+int cros_ec_pd_control(uint8_t pd_port, enum ec_pd_control_cmd cmd);
+
+/**
  * Read a keyboard scan from the ChromeOS EC device
  *
  * @param scan		Place to put the scan results

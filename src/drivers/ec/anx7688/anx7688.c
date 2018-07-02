@@ -38,6 +38,9 @@
 /* Whole firmware can take up to 750ms to load */
 #define WAIT_TIMEOUT_US 2000000
 
+/* The hard-coded PD port id. This could be dynamic in the future. */
+#define ANX7688_PD_ID 0
+
 /* Wait for ANX7688 FW to fully boot (or stop loading due to FW corruption).
  * crc_ok returns information on whether ANX7688 FW loader CRC checks passed
  * (bits below all 1).
@@ -229,23 +232,6 @@ static uint16_t anx7688_verify(struct Anx7688 *me)
 	return version;
 }
 
-static int anx7688_pd_control(struct Anx7688 *me, enum ec_pd_control_cmd cmd)
-{
-	struct ec_params_pd_control p;
-	int ret;
-
-	p.chip = 0;
-	p.subcmd = cmd;
-
-	ret = ec_command(me->bus->ec, EC_CMD_PD_CONTROL, 0,
-			 &p, sizeof(p), NULL, 0);
-
-	if (ret < 0)
-		return ret;
-
-	return 0;
-}
-
 /* Update ANX7688 firmware.
  * Image file binary format (little-endian)
  * Header:
@@ -279,8 +265,17 @@ static VbError_t anx7688_update(struct Anx7688 *me,
 	uint64_t start = timer_us(0);
 
 	/* Lock ANX7688. */
-	if (anx7688_pd_control(me, PD_SUSPEND) < 0)
+	switch (cros_ec_pd_control(ANX7688_PD_ID, PD_SUSPEND)) {
+	case -EC_RES_BUSY:
+		printf("ANX7688 PD_SUSPEND busy! Could be only power "
+		       "source.\n");
+		return VBERROR_PERIPHERAL_BUSY;
+	case EC_RES_SUCCESS:
+		/* Continue onward */
+		break;
+	default:
 		return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
+	}
 
 	/* Wait for ANX7688 FW load to complete. */
 	ret = anx7688_wait_fw(me, NULL);
@@ -336,8 +331,8 @@ static VbError_t anx7688_update(struct Anx7688 *me,
 	}
 
 out:
-	anx7688_pd_control(me, PD_RESET);
-	anx7688_pd_control(me, PD_RESUME);
+	cros_ec_pd_control(ANX7688_PD_ID, PD_RESET);
+	cros_ec_pd_control(ANX7688_PD_ID, PD_RESUME);
 	mdelay(100);
 
 	if (ret < 0) {
@@ -397,7 +392,7 @@ static VbError_t vboot_disable_jump(VbootEcOps *vbec)
 		return VBERROR_UNKNOWN;
 	}
 
-	if (anx7688_pd_control(me, PD_CONTROL_DISABLE) < 0) {
+	if (cros_ec_pd_control(ANX7688_PD_ID, PD_CONTROL_DISABLE) < 0) {
 		/* We probably need a new EC */
 		return VBERROR_UNKNOWN;
 	}

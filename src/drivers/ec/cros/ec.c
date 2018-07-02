@@ -419,6 +419,16 @@ int cros_ec_cbi_get_oem_id(uint32_t *id)
 	return cbi_get_uint32(id, CBI_TAG_OEM_ID);
 }
 
+
+int cros_ec_pd_control(uint8_t pd_port, enum ec_pd_control_cmd cmd)
+{
+	struct ec_params_pd_control p = {p.chip = pd_port, p.subcmd = cmd};
+
+	int rv = ec_command(get_main_ec(), EC_CMD_PD_CONTROL, 0, &p, sizeof(p),
+			    NULL, 0);
+	return rv < 0 ? rv : 0;
+}
+
 int cros_ec_scan_keyboard(struct cros_ec_keyscan *scan)
 {
 	if (ec_command(get_main_ec(), EC_CMD_MKBP_STATE, 0, NULL, 0,
