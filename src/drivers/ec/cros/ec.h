@@ -117,6 +117,15 @@ struct cros_ec_keyscan {
 };
 
 /**
+ * Sends the specified PD control command on the specified PD port
+ *
+ * @param pd_port	The PD port id
+ * @param cmd		The PD control command to send
+ * @return 0 if ok, negative (EC return code) on error
+ */
+int cros_ec_pd_control(uint8_t pd_port, enum ec_pd_control_cmd cmd);
+
+/**
  * Read a keyboard scan from the ChromeOS EC device
  *
  * Send a message requesting a keyboard scan and return the result

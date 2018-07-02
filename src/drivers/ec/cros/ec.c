@@ -395,6 +395,15 @@ static int cmd_version_supported(CrosEc *me, int cmd, int ver)
 	return (mask & EC_VER_MASK(ver)) ? 1 : 0;
 }
 
+int cros_ec_pd_control(uint8_t pd_port, enum ec_pd_control_cmd cmd)
+{
+	struct ec_params_pd_control p = {p.chip = pd_port, p.subcmd = cmd};
+
+	int rv = ec_command(get_main_ec(), EC_CMD_PD_CONTROL, 0, &p, sizeof(p),
+			    NULL, 0);
+	return rv < 0 ? rv : 0;
+}
+
 int cros_ec_scan_keyboard(struct cros_ec_keyscan *scan)
 {
 	if (ec_command(get_main_ec(), EC_CMD_MKBP_STATE, 0, NULL, 0,
