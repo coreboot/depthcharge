@@ -97,7 +97,7 @@ typedef struct CrosEc
  * @param dout_len	Outgoing length in bytes
  * @param din		Where to put the incoming data from EC
  * @param din_len	Max number of bytes to accept from EC
- * @return 0 if ok, -1 on error
+ * @return negative error code, or positive num bytes received.
  */
 int ec_command(CrosEc *ec, int cmd, int cmd_version,
 	       const void *dout, int dout_len,
