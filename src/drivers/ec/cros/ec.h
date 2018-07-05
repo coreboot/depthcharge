@@ -154,6 +154,22 @@ int cros_ec_interrupt_pending(void);
 int cros_ec_mkbp_info(struct ec_response_mkbp_info *info);
 
 /**
+ * Get the boot-time keyboard matrix.
+ *
+ * @param key_matrix	Array of size CROS_EC_KEYSCAN_COLS to put the matrix.
+ * @param size		Size of the key_matrix array.
+ * @return 0 if ok, <0 on error
+ */
+int cros_ec_keyboard_get_boot_time_matrix(uint8_t *key_matrix, int size);
+
+/**
+ * Clear the boot-time keyboard matrix.
+ *
+ * @return 0 if ok, <0 on error
+ */
+int cros_ec_keyboard_clear_boot_time_matrix(void);
+
+/**
  * Get the specified event mask
  *
  * @param type	Host event type from commands.h

@@ -652,6 +652,31 @@ int cros_ec_mkbp_info(struct ec_response_mkbp_info *info)
 	return 0;
 }
 
+int cros_ec_keyboard_get_boot_time_matrix(uint8_t *key_matrix, int size)
+{
+	struct ec_params_mkbp_info param = {
+		.info_type = EC_MKBP_INFO_GET_KB_AT_BOOT
+	};
+	if (ec_command(get_main_ec(), EC_CMD_MKBP_INFO, 0,
+		       &param, sizeof(param),
+		       key_matrix, size) != CROS_EC_KEYSCAN_COLS)
+		return -1;
+
+	return 0;
+}
+
+int cros_ec_keyboard_clear_boot_time_matrix(void)
+{
+	struct ec_params_mkbp_info param = {
+		.info_type = EC_MKBP_INFO_CLEAR_KB_AT_BOOT
+	};
+	if (ec_command(get_main_ec(), EC_CMD_MKBP_INFO, 0,
+		       &param, sizeof(param), NULL, 0) != 0)
+		return -1;
+
+	return 0;
+}
+
 int cros_ec_get_event_mask(u8 type, uint32_t *mask)
 {
 	struct ec_response_host_event_mask rsp;

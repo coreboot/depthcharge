@@ -2557,6 +2557,11 @@ struct __ec_align_size1 ec_response_mkbp_info {
 struct __ec_align1 ec_params_mkbp_info {
 	uint8_t info_type;
 	uint8_t event_type;
+	union {
+		struct {
+			uint8_t key_matrix[16];
+		} simulate_kb_at_boot;
+	};
 };
 
 enum ec_mkbp_info_type {
@@ -2596,6 +2601,30 @@ enum ec_mkbp_info_type {
 	 * state of supported switches.
 	 */
 	EC_MKBP_INFO_CURRENT = 2,
+
+	/*
+	 * Gets the keyboard matrix at boot.
+	 *
+	 * Returns uint8_t key_matrix[13] indicating the state of keyboard at
+	 * boot.
+	 */
+	EC_MKBP_INFO_GET_KB_AT_BOOT = 3,
+
+	/* Clears the keyboard matrix at boot, no return data. */
+	EC_MKBP_INFO_CLEAR_KB_AT_BOOT = 4,
+
+	/*
+	 * Accepts a 16 bytes array (see
+	 * ec_params_mkbp_info.simulate_kb_at_boot), and sets the simulated
+	 * keyboard at boot.
+	 *
+	 * Note that this is not reset by
+	 * EC_MKBP_INFO_CLEAR_KB_AT_BOOT. Send this command with an array of
+	 * zeroes to reset.
+	 *
+	 * No return data.
+	 */
+	EC_MKBP_INFO_SIMULATE_KB_AT_BOOT = 5,
 };
 
 /* Simulate key press */
