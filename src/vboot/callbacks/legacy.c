@@ -19,6 +19,7 @@
 #include <endian.h>
 #include <libpayload.h>
 #include <lzma.h>
+#include <vb2_api.h>
 #include <vboot_api.h>
 #include <cbfs.h>
 #include <cbfs_ram.h>
@@ -31,13 +32,21 @@
 
 static void load_payload_and_run(struct cbfs_payload *payload);
 
-int VbExLegacy(void)
+static uint8_t *get_legacy_hash(void);
+
+int VbExLegacy(struct vb2_context *ctx)
 {
 	FmapArea area;
 	struct cbfs_media media;
 	void *data;
+	void *payload_data;
+	size_t payload_size;
 	struct cbfs_payload *payload;
 	const char *area_name = "RW_LEGACY";
+	const char *file_name = "payload";
+	uint8_t real_hash[VB2_SHA256_DIGEST_SIZE];
+	uint8_t *expected_hash;
+	int rv;
 
 	if (fmap_find_area(area_name, &area)) {
 		printf("Fmap region %s not found.\n", area_name);
@@ -55,7 +64,47 @@ int VbExLegacy(void)
 		return 1;
 	}
 
-	payload = cbfs_load_payload(&media, "payload");
+	if (!(ctx->flags & VB2_CONTEXT_DEVELOPER_MODE)) {
+		printf("Developer mode not enabled - check payload hash.\n");
+
+		payload_data = cbfs_get_file_content(
+			&media, file_name, CBFS_TYPE_PAYLOAD, &payload_size);
+		if (data == NULL) {
+			printf("Could not find payload in legacy cbfs.\n");
+			return 1;
+		}
+
+		/* Calculate hash of RW_LEGACY payload. */
+		rv = vb2_digest_buffer((const uint8_t *)payload_data,
+				       payload_size, VB2_HASH_SHA256, real_hash,
+				       sizeof(real_hash));
+		free(payload_data);
+		if (rv) {
+			printf("SHA-256 calculation failed for "
+			       "RW_LEGACY payload.\n");
+			return 1;
+		}
+
+		/* Retrieve the expected hash of RW_LEGACY payload
+		   stored in AP-RW. */
+		expected_hash = get_legacy_hash();
+		if (expected_hash == NULL) {
+			printf("Could not retrieve expected hash of "
+			       "RW_LEGACY payload.\n");
+		}
+
+		/* Compare the two hashes.  This will still succeed if
+		   expected_hash has garbage at the end. */
+		rv = memcmp(real_hash, expected_hash, sizeof(real_hash));
+		free(expected_hash);
+		if (rv != 0) {
+			printf("RW_LEGACY payload hash check failed!\n");
+			return 1;
+		}
+		printf("RW_LEGACY payload hash check succeeded.\n");
+	}
+
+	payload = cbfs_load_payload(&media, file_name);
 
 	if (payload == NULL) {
 		printf("Could not find payload in legacy cbfs.\n");
@@ -125,4 +174,21 @@ static void load_payload_and_run(struct cbfs_payload *payload)
 		}
 		seg++;
 	}
+}
+
+static uint8_t *get_legacy_hash(void)
+{
+	void *data;
+	const char *file_name = "legacy_payload.sha256";
+
+	/* Search in AP-RW CBFS (either FW_MAIN_A or FW_MAIN_B) */
+	data = cbfs_get_file_content(
+		CBFS_DEFAULT_MEDIA, file_name, CBFS_TYPE_RAW, NULL);
+
+	if (data == NULL) {
+		printf("Could not find %s in default media cbfs.\n", file_name);
+		return NULL;
+	}
+
+	return (uint8_t *)data;
 }
