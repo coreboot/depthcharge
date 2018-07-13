@@ -208,23 +208,6 @@ static int board_setup(void)
 	tpm_set_ops(&new_cr50_i2c(&i2c_h1->ops, 0x50,
 				  &cr50_irq_status)->base.ops);
 
-	uintptr_t usb_base;
-	UsbHostController *usb_ehci;
-	UsbHostController *usb_xchi;
-	usb_base = (uintptr_t)pci_read_config32(PCI_DEV(0, 18, 0),
-			PCI_BASE_ADDRESS_0) & PCI_BASE_ADDRESS_MEM_MASK;
-	if (usb_base){
-		usb_ehci = new_usb_hc(EHCI, usb_base);
-		list_insert_after(&usb_ehci->list_node, &usb_host_controllers);
-	}
-
-	usb_base = (uintptr_t)pci_read_config32(PCI_DEV(0, 16, 0),
-			PCI_BASE_ADDRESS_0) & PCI_BASE_ADDRESS_MEM_MASK;
-	if (usb_base){
-		usb_xchi = new_usb_hc(XHCI, usb_base);
-		list_insert_after(&usb_xchi->list_node, &usb_host_controllers);
-	}
-
 	power_set_ops(&kern_power_ops);
 	display_set_ops(&grunt_display_ops);
 
