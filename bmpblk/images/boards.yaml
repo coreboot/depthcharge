@@ -309,3 +309,9 @@ nocturne:
   screen:   [2400, 1600]
   hi_res:   [en]
   text_colors:  4
+
+rammus:
+  # 1920x1080, boots recovery image on USB ports.
+  screen:   [1920, 1080]
+  hi_res:   [en]
+  text_colors:  4
