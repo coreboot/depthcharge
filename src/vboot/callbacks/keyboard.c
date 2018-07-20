@@ -21,6 +21,7 @@
 #include <vboot/util/flag.h>
 
 #include "debug/dev.h"
+#include "drivers/ec/cros/ec.h"
 
 #define CSI_0 0x1B
 #define CSI_1 0x5B
@@ -35,6 +36,16 @@
 #define BUTTON_POWER    0x90
 
 #define TIMEOUT_US (10 * 1000)	// 10ms
+
+#define KEYBOARD_COL_KEY_A 1
+#define KEYBOARD_ROW_KEY_A 4
+#define KEYBOARD_MASK_KEY_A (1 << KEYBOARD_ROW_KEY_A)
+#define KEYBOARD_COL_KEY_REFRESH 2
+#define KEYBOARD_ROW_KEY_REFRESH 2
+#define KEYBOARD_MASK_KEY_REFRESH (1 << KEYBOARD_ROW_KEY_REFRESH)
+#define KEYBOARD_COL_KEY_REFRESH_3 2
+#define KEYBOARD_ROW_KEY_REFRESH_3 3
+#define KEYBOARD_MASK_KEY_REFRESH_3 (1 << KEYBOARD_ROW_KEY_REFRESH_3)
 
 uint32_t VbExKeyboardRead(void)
 {
@@ -95,4 +106,36 @@ uint32_t VbExKeyboardReadWithFlags(uint32_t *flags_ptr)
 			*flags_ptr |= VB_KEY_FLAG_TRUSTED_KEYBOARD;
 	}
 	return c;
+}
+
+int vb2ex_get_alt_os_hotkey(void)
+{
+	uint8_t key_matrix[CROS_EC_KEYSCAN_COLS];
+	int ret = cros_ec_keyboard_get_boot_time_matrix(
+			key_matrix, sizeof(key_matrix));
+	if (ret != 0)
+		return 0;
+
+	printf("Key_matrix: ");
+	for (int i = 0; i < CROS_EC_KEYSCAN_COLS; i++)
+		printf("%02hhx, ", key_matrix[i]);
+	printf("\n");
+
+	if (!(key_matrix[KEYBOARD_COL_KEY_A] & KEYBOARD_MASK_KEY_A))
+		return 0;
+
+	/*
+	 * Clear key A and refresh (possibly on row 2 or row 3),
+	 * reject if any other key is pressed.
+	 */
+	key_matrix[KEYBOARD_COL_KEY_A] &= ~KEYBOARD_MASK_KEY_A;
+	key_matrix[KEYBOARD_COL_KEY_REFRESH] &= ~KEYBOARD_MASK_KEY_REFRESH;
+	key_matrix[KEYBOARD_COL_KEY_REFRESH_3] &= ~KEYBOARD_MASK_KEY_REFRESH_3;
+	for (int i = 0; i < CROS_EC_KEYSCAN_COLS; i++)
+		if (key_matrix[i])
+			return 0;
+
+	/* Reset the key matrix only if this is our key combo. */
+	cros_ec_keyboard_clear_boot_time_matrix();
+	return 1;
 }
