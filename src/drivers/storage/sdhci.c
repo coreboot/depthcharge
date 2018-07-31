@@ -444,6 +444,11 @@ static int sdhci_send_command(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
 	return ret;
 }
 
+static int sdhci_is_clock_enabled(SdhciHost *host)
+{
+	return !!(sdhci_readw(host, SDHCI_CLOCK_CONTROL) & SDHCI_CLOCK_CARD_EN);
+}
+
 static int sdhci_set_clock(SdhciHost *host, unsigned int clock)
 {
 	unsigned int div, clk, timeout;
@@ -602,7 +607,17 @@ void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 	if (host->set_control_reg)
 		host->set_control_reg(host);
 
-	if (mmc_ctrlr->bus_hz != host->clock)
+	/*
+	 * Clock control register needs to be set if:
+	 * 1. Clock is not enabled, or
+	 * 2. Desired clock frequency is not the same as previously configured
+	 * clock.
+	 *
+	 * #1 is important because any time the SD card controller is
+	 * power-gated, it would end up clearing the clock control register. So,
+	 * we cannot rely only on previously configured clock value.
+	 */
+	if (!sdhci_is_clock_enabled(host) || mmc_ctrlr->bus_hz != host->clock)
 		sdhci_set_clock(host, mmc_ctrlr->bus_hz);
 
 	/* Switch to 1.8 volt for HS200 */
