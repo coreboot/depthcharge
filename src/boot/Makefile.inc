@@ -11,7 +11,7 @@
 ## GNU General Public License for more details.
 ##
 
-depthcharge-y += commandline.c
+depthcharge-y += commandline.c payload.c
 depthcharge-$(CONFIG_KERNEL_DUMMY) += dummy.c
 depthcharge-$(CONFIG_KERNEL_FIT) += fit.c
 depthcharge-$(CONFIG_ARCH_ARM) += coreboot.c
