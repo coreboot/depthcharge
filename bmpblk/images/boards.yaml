@@ -296,8 +296,7 @@ atlas:
   # 3840x2160, boots recovery image on USB ports.
   screen:   [3840, 2160]
   sdcard:   False
-  hi_res:   [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id,
-             th, ar, ms, zh-CN, zh-TW, fi, pl]
+  hi_res:   [en]
 
 octopus:
   # 1366x768, boots recovery image on USB ports or SD card.
