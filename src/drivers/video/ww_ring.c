@@ -111,15 +111,13 @@ static TiLp55231 *lp55231s;
 static int ledc_transfer(TiLp55231 *ledc, I2cSeg *segs,
 			 int seg_count, int reset)
 {
-	int rv, max_attempts = 2;
-
-	max_attempts = 2;
+	int rv = -1, max_attempts = 2;
 
 	while (max_attempts--) {
 
 		rv = ledc->ops->transfer(ledc->ops, segs, seg_count);
 
-		/* Accessing reset regsiter is expected to fail. */
+		/* Accessing reset register is expected to fail. */
 		if (!rv || reset)
 			break;
 	}
