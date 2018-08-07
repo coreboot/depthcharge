@@ -32,7 +32,8 @@
 
 int crossystem_setup(int firmware_type)
 {
-	chromeos_acpi_t *acpi_table = (chromeos_acpi_t *)lib_sysinfo.vdat_addr;
+	chromeos_acpi_t *acpi_table =
+		(chromeos_acpi_t *)lib_sysinfo.chromeos_acpi_addr;
 	VbSharedDataHeader *vboot_handoff_shared_data;
 	VbSharedDataHeader *vdat = (VbSharedDataHeader *)&acpi_table->vdat;
 	int size;
