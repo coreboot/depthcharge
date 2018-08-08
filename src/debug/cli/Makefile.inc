@@ -29,7 +29,7 @@ depthcharge-y += printbuf.c
 depthcharge-y += spi.c
 depthcharge-y += storage.c
 depthcharge-y += timer.c
-depthcharge-y += tpm.c
+depthcharge-$(CONFIG_DRIVER_TPM) += tpm.c
 
 netboot-y += net.c
 netboot-y += enet.c
