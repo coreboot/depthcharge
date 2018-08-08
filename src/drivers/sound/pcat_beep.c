@@ -30,7 +30,7 @@ static int pcat_timer_init(PcAtBeep *beep)
 	 * to stop it again: write 0)
 	 */
 	outb(PitCmdCtr2 | PitCmdBoth | PitCmdMode3, PitBaseAddr + PitCommand);
-	outb(PitTimer2Value, PitBaseAddr + PitT2);
+	outb(PitTimer2Value & 0xff, PitBaseAddr + PitT2);
 	outb(PitTimer2Value >> 8, PitBaseAddr + PitT2);
 	beep->timer_init_done = 1;
 	return 0;
