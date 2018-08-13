@@ -25,10 +25,12 @@
 #include "base/list.h"
 #include "boot/commandline.h"
 #include "config.h"
+#include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/ec/ps8751/ps8751.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/skylake.h"
@@ -44,6 +46,10 @@
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
+
+#ifdef PD_SYNC
+#error "PD_SYNC configuration is incompatible with ec_tunnel!"
+#endif /* PD_SYNC */
 
 /*
  * Clock frequencies for the eMMC and SD ports are defined below. The minimum
@@ -61,6 +67,8 @@ static int cr50_irq_status(void)
 
 static int board_setup(void)
 {
+	CrosECTunnelI2c *cros_ec_i2c_tunnel;
+
 	sysinfo_install_flags(new_skylake_gpio_input_from_coreboot);
 
 	/* SPI TPM */
@@ -78,6 +86,15 @@ static int board_setup(void)
 	CrosEcLpcBus *espi_ec =	new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
 	CrosEc *cros_ec = new_cros_ec(&espi_ec->ops, 0, NULL);
 	register_vboot_ec(&cros_ec->vboot, 0);
+
+	/* EC I2C Tunnel for TCPCs */
+	cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec, /* i2c bus */ 1);
+	Ps8751 *ps8805_p0 = new_ps8805(cros_ec_i2c_tunnel, /* ec pd# */ 0);
+	register_vboot_aux_fw(&ps8805_p0->fw_ops);
+
+	cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec, /* i2c bus */ 2);
+	Ps8751 *ps8805_p1 = new_ps8805(cros_ec_i2c_tunnel, /* ec pd# */ 1);
+	register_vboot_aux_fw(&ps8805_p1->fw_ops);
 
 	/* 16MB SPI Flash */
 	flash_set_ops(&new_mem_mapped_flash(0xff000000, 0x1000000)->ops);

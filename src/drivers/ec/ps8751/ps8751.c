@@ -110,6 +110,7 @@
 #define PS_SPI_TIMEOUT_US	(1 * 1000 * 1000)	/* 1s */
 #define PS_WIP_TIMEOUT_US	(1 * 1000 * 1000)	/* 1s */
 #define PS_MPU_BOOT_DELAY_MS	(50)
+#define PS_RESTART_DELAY_CS	(6)			/* 6cs / 60 ms */
 
 #define PARADE_BINVERSION_OFFSET	0x501c
 #define PARADE_CHIPVERSION_OFFSET	0x503a
@@ -1242,6 +1243,7 @@ static VbError_t ps8751_update_image(const VbootAuxFwOps *vbaux,
 	Ps8751 *me = container_of(vbaux, Ps8751, fw_ops);
 	VbError_t status = VBERROR_UNKNOWN;
 	int protected;
+	int timeout;
 
 	debug("call...\n");
 
@@ -1279,7 +1281,17 @@ pd_resume:
 	if (ps8751_ec_pd_resume(me) != 0)
 		status = VBERROR_UNKNOWN;
 
-	if (ps8751_capture_device_id(me, 1) != 0)
+	/* Wait at most ~60ms for reset to occur. */
+	timeout = PS_RESTART_DELAY_CS;
+	do {
+		if (ps8751_capture_device_id(me, 1) == 0)
+			break;
+
+		mdelay(10);
+		timeout--;
+	} while (timeout > 0);
+
+	if (timeout == 0)
 		status = VBERROR_UNKNOWN;
 
 	return status;
@@ -1307,8 +1319,8 @@ static const VbootAuxFwOps ps8751_fw_ops = {
 };
 
 static const VbootAuxFwOps ps8805_fw_ops = {
-	.fw_image_name = "ps8805_a1.bin",
-	.fw_hash_name = "ps8805_a1.hash",
+	.fw_image_name = "ps8805_a2.bin",
+	.fw_hash_name = "ps8805_a2.hash",
 	.check_hash = ps8751_check_hash,
 	.update_image = ps8751_update_image,
 	.protect = ps8751_protect,
