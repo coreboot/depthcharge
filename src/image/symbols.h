@@ -35,6 +35,8 @@ extern uint8_t _exc_stack;
 extern uint8_t _end;
 extern uint8_t _kernel_start;
 extern uint8_t _kernel_end;
+extern uint8_t _fit_fdt_start;
+extern uint8_t _fit_fdt_end;
 extern uint8_t _init_funcs_start;
 extern uint8_t _init_funcs_end;
 

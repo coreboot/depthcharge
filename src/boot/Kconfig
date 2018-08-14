@@ -54,7 +54,7 @@ config ATAG_BASE
 
 config KERNEL_FIT_FDT_ADDR
 	hex "FIT device tree load address."
-	depends on KERNEL_FIT
+	default 0x0
 	help
 	  Where to put the updated device tree when booting a FIT image.
 

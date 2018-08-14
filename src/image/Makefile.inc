@@ -22,3 +22,4 @@ link_config_options := \
 	HEAP_SIZE \
 	STACK_SIZE \
 	GBB_COPY_SIZE \
+	KERNEL_FIT_FDT_ADDR \

@@ -24,6 +24,7 @@
 #include "boot/fit.h"
 #include "config.h"
 #include "drivers/storage/blockdev.h"
+#include "image/symbols.h"
 #include "vboot/boot.h"
 
 #define CMD_LINE_SIZE	4096
@@ -99,8 +100,12 @@ int boot(struct boot_info *bi)
 		return 1;
 
 	// Allocate a spot for the FDT in memory.
-	void *fdt = (void *)(uintptr_t)CONFIG_KERNEL_FIT_FDT_ADDR;
+	void *fdt = &_fit_fdt_start;
 	uint32_t size = dt_flat_size(tree);
+	if (&_fit_fdt_start + size > &_fit_fdt_end) {
+		printf("ERROR: FDT image overflows buffer!\n");
+		return 1;
+	}
 
 	// Reserve the spot the device tree will go.
 	DeviceTreeReserveMapEntry *entry = xzalloc(sizeof(*entry));
