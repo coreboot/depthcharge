@@ -56,7 +56,14 @@ config KERNEL_FIT_FDT_ADDR
 	hex "FIT device tree load address."
 	default 0x0
 	help
-	  Where to put the updated device tree when booting a FIT image.
+	  Where to put the updated device tree when booting a FIT image. The
+	  area reserved by this is 8MB.
+
+	  ==== Placement guide (also see kernel/Documentation/<arch>/boot*) ====
+	  arm32: Somewhere between 128MB and 512MB from the start of RAM. Do not
+	  overlap DMA_COHERENT area (from coreboot memlayout)!
+	  arm64: Within the first 512MB of RAM, but as far away from the start
+	  of RAM as possible (i.e. ideally at 504MB).
 
 config ANDROID_DT_FIXUP
 	bool "Fixup device tree with properties for Android"

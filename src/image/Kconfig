@@ -31,21 +31,32 @@ config KERNEL_START
 	  a wrapper around the actual kernel code (e.g. FIT) and may or may not
 	  require further decompression or relocation.
 
+	  ==== Placement guide (also see kernel/Documentation/<arch>/boot*) ====
+	  arm32: Within first 128MB of RAM. Ideally at exactly 32MB. Do not
+	  overlap DMA_COHERENT area (from coreboot memlayout)!
+	  arm64: Anywhere, but leave as much space as possible empty from the
+	  start of RAM (ideally up to 512MB, see KERNEL_FIT_FDT_ADDR help).
+	  x86: Do not change, defaults should work fine.
+
 config KERNEL_SIZE
 	hex "The size of the region the kernel image is loaded into"
-	default 0x10000000 if FASTBOOT_MODE
-	default 0x2000000
+	default 0x08000000 if ARCH_ARM_V7	# kernel ABI limitation
+	default 0x20000000
 	help
-	  The size of the memory region described in KERNEL_START.
+	  The size of the memory region described in KERNEL_START. Note that we
+	  want this to be very generous, to have the option of loading recovery
+	  kernels with large attached initramfs in the future. While the kernel
+	  partition size on the fixed disk is usually much smaller anyway, we
+	  can make the partition on the recovery USB stick as big as we want
+	  later on. Since recovery firmware cannot be updated, this limit needs
+	  to be made sufficiently large in advance.
+	  (NOTE: Pre-2018 devices have significantly smaller limits here.)
 
 config BASE_ADDRESS
 	hex "The address depthcharge is linked to run at"
-	default 0x2000000
+	default 0x30000000
 	help
-	  The address that the main part of depthcharge runs at. That includes
-	  everything except the code which pivots between the read only and
-	  read/write firmware which is linked to run from the region of memory
-	  the kernel is eventually loaded into.
+	  The address that the the depthcharge code and data is linked to.
 
 config HEAP_SIZE
 	hex "The size of the heap in bytes"
