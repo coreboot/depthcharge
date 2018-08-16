@@ -28,8 +28,6 @@
 #include "base/ranges.h"
 #include "base/physmem.h"
 
-#define MAX_KERNEL_SIZE (64*MiB)
-
 typedef struct {
 	u32 code0;
 	u32 code1;
@@ -53,7 +51,7 @@ struct {
 	u32 canary;
 } scratch;
 
-static void *get_kernel_reloc_addr(uint32_t load_offset)
+static void *get_kernel_reloc_addr(uint32_t load_offset, size_t image_size)
 {
 	int i = 0;
 
@@ -67,7 +65,7 @@ static void *get_kernel_reloc_addr(uint32_t load_offset)
 		uint64_t kstart = ALIGN_DOWN(start, 2*MiB) + load_offset < start
 				? ALIGN_UP(start, 2*MiB) + load_offset
 				: ALIGN_DOWN(start, 2*MiB) + load_offset;
-		uint64_t kend = kstart + MAX_KERNEL_SIZE;
+		uint64_t kend = kstart + image_size;
 
 		if (kend > CONFIG_BASE_ADDRESS || kend > CONFIG_KERNEL_START ||
 		    kend > CONFIG_KERNEL_FIT_FDT_ADDR) {
@@ -89,6 +87,8 @@ static void *get_kernel_reloc_addr(uint32_t load_offset)
 
 int boot_arm_linux(void *fdt, FitImageNode *kernel)
 {
+	size_t image_size = 64*MiB;	// default value for pre-3.17 headers
+
 	// Partially decompress to get text_offset. Can't check for errors.
 	scratch.canary = SCRATCH_CANARY_VALUE;
 	switch (kernel->compression) {
@@ -120,7 +120,13 @@ int boot_arm_linux(void *fdt, FitImageNode *kernel)
 		return 1;
 	}
 
-	void *reloc_addr = get_kernel_reloc_addr(scratch.header.text_offset);
+	if (scratch.header.image_size)
+		image_size = scratch.header.image_size;
+	else
+		printf("WARNING: Kernel image_size is 0 (pre-3.17 kernel?)\n");
+
+	void *reloc_addr = get_kernel_reloc_addr(scratch.header.text_offset,
+						 image_size);
 	if (!reloc_addr)
 		return 1;
 
@@ -129,8 +135,8 @@ int boot_arm_linux(void *fdt, FitImageNode *kernel)
 	size_t true_size = kernel->size;
 	switch (kernel->compression) {
 	case CompressionNone:
-		if (kernel->size > MAX_KERNEL_SIZE) {
-			printf("ERROR: Cannot relocate a kernel this large!\n");
+		if (kernel->size > image_size) {
+			printf("ERROR: Kernel image_size was invalid!\n");
 			return 1;
 		}
 		printf("Relocating kernel to %p\n", reloc_addr);
@@ -139,7 +145,7 @@ int boot_arm_linux(void *fdt, FitImageNode *kernel)
 	case CompressionLzma:
 		printf("Decompressing LZMA kernel to %p\n", reloc_addr);
 		true_size = ulzman(kernel->data, kernel->size,
-				   reloc_addr, MAX_KERNEL_SIZE);
+				   reloc_addr, image_size);
 		if (!true_size) {
 			printf("ERROR: LZMA decompression failed!\n");
 			return 1;
@@ -148,7 +154,7 @@ int boot_arm_linux(void *fdt, FitImageNode *kernel)
 	case CompressionLz4:
 		printf("Decompressing LZ4 kernel to %p\n", reloc_addr);
 		true_size = ulz4fn(kernel->data, kernel->size,
-				   reloc_addr, MAX_KERNEL_SIZE);
+				   reloc_addr, image_size);
 		if (!true_size) {
 			printf("ERROR: LZ4 decompression failed!\n");
 			return 1;
