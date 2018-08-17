@@ -34,6 +34,7 @@
 #include "drivers/storage/sdhci.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/tpm/lpc.h"
+#include "vboot/util/acpi.h"
 #include "vboot/util/flag.h"
 
 /*
@@ -49,7 +50,7 @@ static const int sd_clock_max = 52 * 1000 * 1000;
 
 static int board_setup(void)
 {
-	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + DEVICE_NVS_OFFSET;
+	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + GNVS_DEVICE_NVS_OFFSET;
 	GpioOps	*ec_in_rw =
 		(GpioOps *)new_braswell_gpio_input(
 			GP_SOUTHWEST, SATA_LEDN);

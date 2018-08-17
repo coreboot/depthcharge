@@ -33,7 +33,7 @@
 int crossystem_setup(void)
 {
 	chromeos_acpi_t *acpi_table =
-		(chromeos_acpi_t *)lib_sysinfo.chromeos_acpi_addr;
+		lib_sysinfo.acpi_gnvs + GNVS_CHROMEOS_ACPI_OFFSET;
 	VbSharedDataHeader *vboot_handoff_shared_data;
 	VbSharedDataHeader *vdat = (VbSharedDataHeader *)&acpi_table->vdat;
 	int size;
