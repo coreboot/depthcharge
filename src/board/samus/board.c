@@ -43,6 +43,7 @@
 #include "drivers/tpm/tpm.h"
 #include "drivers/video/display.h"
 #include "drivers/video/intel_i915.h"
+#include "vboot/util/acpi.h"
 #include "vboot/util/flag.h"
 
 enum {
@@ -61,7 +62,7 @@ enum {
 /* Put device in D0 state */
 static void device_enable(int sio_index)
 {
-	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + DEVICE_NVS_OFFSET;
+	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + GNVS_DEVICE_NVS_OFFSET;
 	uint32_t reg_pcs = nvs->bar1[sio_index] + PCH_REG_PCS;
 
 	/* Put device in D0 state */
@@ -71,7 +72,7 @@ static void device_enable(int sio_index)
 
 static DesignwareI2c *i2c_enable(int sio_index)
 {
-	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + DEVICE_NVS_OFFSET;
+	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + GNVS_DEVICE_NVS_OFFSET;
 	uint32_t reg_ppr = nvs->bar0[sio_index] + SIO_REG_PPR_CLOCK;
 
 	device_enable(sio_index);
@@ -85,7 +86,7 @@ static DesignwareI2c *i2c_enable(int sio_index)
 
 static BdwI2s *i2s_enable(int ssp)
 {
-	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + DEVICE_NVS_OFFSET;
+	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + GNVS_DEVICE_NVS_OFFSET;
 
 	device_enable(SIO_NVS_ADSP);
 
