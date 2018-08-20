@@ -23,7 +23,7 @@
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/bus/i2c/mtk_i2c.h"
 #include "drivers/bus/i2s/mt8173.h"
-#include "drivers/bus/spi/mt8173.h"
+#include "drivers/bus/spi/mtk.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/anx7688/anx7688.h"
 #include "drivers/ec/cros/ec.h"
