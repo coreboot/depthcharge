@@ -12,8 +12,8 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __DRIVERS_BUS_SPI_MT8173_H__
-#define __DRIVERS_BUS_SPI_MT8173_H__
+#ifndef __DRIVERS_BUS_SPI_MTK_H__
+#define __DRIVERS_BUS_SPI_MTK_H__
 
 #include "drivers/bus/spi/spi.h"
 
@@ -56,4 +56,4 @@ typedef struct {
 } MtkSpi;
 
 MtkSpi *new_mtk_spi(uintptr_t reg_addr);
-#endif /* __DRIVERS_BUS_SPI_MT8173_H__ */
+#endif /* __DRIVERS_BUS_SPI_MTK_H__ */

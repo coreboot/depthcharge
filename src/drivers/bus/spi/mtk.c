@@ -18,7 +18,7 @@
 #include <arch/virtual.h>
 
 #include "base/container_of.h"
-#include "drivers/bus/spi/mt8173.h"
+#include "drivers/bus/spi/mtk.h"
 
 enum {
 	MTK_PACKET_SIZE = 1024,
