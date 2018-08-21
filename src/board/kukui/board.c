@@ -21,9 +21,13 @@
 #include "base/init_funcs.h"
 #include "drivers/bus/spi/mtk.h"
 #include "drivers/flash/spi.h"
+#include "drivers/gpio/mt8183.h"
+#include "drivers/gpio/sysinfo.h"
 
 static int board_setup(void)
 {
+	sysinfo_install_flags(new_mtk_gpio_input);
+
 	MtkSpi *spi1 = new_mtk_spi(0x11010000);
 	flash_set_ops(&new_spi_flash(&spi1->ops)->ops);
 
