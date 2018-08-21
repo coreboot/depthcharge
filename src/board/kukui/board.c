@@ -20,6 +20,8 @@
 
 #include "base/init_funcs.h"
 #include "drivers/bus/spi/mtk.h"
+#include "drivers/ec/cros/ec.h"
+#include "drivers/ec/cros/spi.h"
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/mt8183.h"
 #include "drivers/gpio/sysinfo.h"
@@ -30,6 +32,13 @@ static int board_setup(void)
 	sysinfo_install_flags(new_mtk_gpio_input);
 	flag_replace(FLAG_LIDSW, new_gpio_high());
 	flag_replace(FLAG_PWRSW, new_gpio_low());
+
+	MtkSpi *spi2 = new_mtk_spi(0x11012000);
+	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spi2->ops);
+	GpioOps *ec_int = sysinfo_lookup_gpio("EC interrupt", 1,
+					      new_mtk_gpio_input);
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, 0, ec_int);
+	register_vboot_ec(&cros_ec->vboot, 0);
 
 	MtkSpi *spi1 = new_mtk_spi(0x11010000);
 	flash_set_ops(&new_spi_flash(&spi1->ops)->ops);
