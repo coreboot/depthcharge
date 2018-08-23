@@ -217,9 +217,9 @@ static const struct fw_type_to_index {
 	const char *name;
 	uint8_t index;
 } fb_fw_type_to_index[] = {
-	{"RO", VDAT_RO},
-	{"RW_A", VDAT_RW_A},
-	{"RW_B", VDAT_RW_B},
+	{"RO", VBSD_RO},
+	{"RW_A", VBSD_RW_A},
+	{"RW_B", VBSD_RW_B},
 };
 
 #if CONFIG_FASTBOOT_SLOTS

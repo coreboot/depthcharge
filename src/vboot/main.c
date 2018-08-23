@@ -68,16 +68,16 @@ static int vboot_init_handoff()
 	 */
 	int lid_switch = flag_fetch(FLAG_LIDSW);
 	if (!lid_switch) {
-		VbSharedDataHeader *vdat;
-		int vdat_size;
+		VbSharedDataHeader *vb_sd;
+		int vb_sd_size;
 
-		if (find_common_params((void **)&vdat, &vdat_size) != 0)
-			vdat = NULL;
+		if (find_common_params((void **)&vb_sd, &vb_sd_size) != 0)
+			vb_sd = NULL;
 
 		/* We need something to work with */
-		if (vdat != NULL)
+		if (vb_sd != NULL)
 			/* Tell kernel selection to not count down */
-			vdat->flags |= VBSD_NOFAIL_BOOT;
+			vb_sd->flags |= VBSD_NOFAIL_BOOT;
 	}
 
 	return vboot_do_init_out_flags(vboot_handoff->init_params.out_flags);

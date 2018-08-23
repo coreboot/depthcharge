@@ -19,14 +19,14 @@
 #define __VBOOT_FIRMWARE_ID_H__
 
 enum {
-	VDAT_RW_A = 0x0,
-	VDAT_RW_B = 0x1,
-	VDAT_RO = 0xFF,
-	VDAT_RECOVERY = 0xFF,
-	VDAT_UNKNOWN = 0x100,
+	VBSD_RW_A = 0x0,
+	VBSD_RW_B = 0x1,
+	VBSD_RO = 0xFF,
+	VBSD_RECOVERY = 0xFF,
+	VBSD_UNKNOWN = 0x100,
 };
 
-/* Get firmware details by vdat indexo */
+/* Get firmware details by VbSharedDataHeader index */
 const char *get_fw_id(int index);
 int get_fw_size(int index);
 
@@ -41,8 +41,9 @@ int get_rwa_fw_size(void);
 int get_rwb_fw_size(void);
 
 /*
- * Get firmware details for currently active fw type. It looks up vdat,
- * identifies fw_index and returns appropriate id and size for that index.
+ * Get firmware details for currently active fw type. It looks up
+ * VbSharedDataHeader from vboot_handoff, identifies fw_index, and
+ * returns appropriate id and size for that index.
  */
 const char *get_active_fw_id(void);
 int get_active_fw_size(void);

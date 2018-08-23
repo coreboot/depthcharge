@@ -23,15 +23,15 @@
 #include "vboot/util/commonparams.h"
 
 static struct fwid {
-	int vdat_id;
+	int vbsd_id;
 	const char *fw_name;
 	const char *fw_id;
 	int fw_size;
 	const char *id_err;
 } fw_fmap_ops[] = {
-	{VDAT_RW_A, "RW_FWID_A", NULL, 0, "RW A: ID NOT FOUND"},
-	{VDAT_RW_B, "RW_FWID_B", NULL, 0, "RW B: ID NOT FOUND"},
-	{VDAT_RECOVERY, "RO_FRID", NULL, 0, "RO: ID NOT FOUND"},
+	{VBSD_RW_A, "RW_FWID_A", NULL, 0, "RW A: ID NOT FOUND"},
+	{VBSD_RW_B, "RW_FWID_B", NULL, 0, "RW B: ID NOT FOUND"},
+	{VBSD_RECOVERY, "RO_FRID", NULL, 0, "RO: ID NOT FOUND"},
 };
 
 static void get_fw_details(struct fwid *entry)
@@ -50,7 +50,7 @@ static struct fwid *get_fw_entry(int index)
 	int i;
 
 	for (i = 0; i < ARRAY_SIZE(fw_fmap_ops); i++) {
-		if (fw_fmap_ops[i].vdat_id == index)
+		if (fw_fmap_ops[i].vbsd_id == index)
 			break;
 	}
 
@@ -86,35 +86,35 @@ int get_fw_size(int index)
 
 const char *get_ro_fw_id(void)
 {
-	return get_fw_id(VDAT_RECOVERY);
+	return get_fw_id(VBSD_RECOVERY);
 }
 
 const char *get_rwa_fw_id(void)
 {
-	return get_fw_id(VDAT_RW_A);
+	return get_fw_id(VBSD_RW_A);
 }
 
 const char *get_rwb_fw_id(void)
 {
-	return get_fw_id(VDAT_RW_B);
+	return get_fw_id(VBSD_RW_B);
 }
 
 int get_ro_fw_size(void)
 {
-	return get_fw_size(VDAT_RECOVERY);
+	return get_fw_size(VBSD_RECOVERY);
 }
 
 int get_rwa_fw_size(void)
 {
-	return get_fw_size(VDAT_RW_A);
+	return get_fw_size(VBSD_RW_A);
 }
 
 int get_rwb_fw_size(void)
 {
-	return get_fw_size(VDAT_RW_B);
+	return get_fw_size(VBSD_RW_B);
 }
 
-static VbSharedDataHeader *get_vdat(void)
+static VbSharedDataHeader *get_vb_sd(void)
 {
 	void *blob;
 	int size;
@@ -125,28 +125,28 @@ static VbSharedDataHeader *get_vdat(void)
 	return NULL;
 }
 
-static inline int get_active_fw_index(VbSharedDataHeader *vdat)
+static inline int get_active_fw_index(VbSharedDataHeader *vb_sd)
 {
-	int fw_index = VDAT_UNKNOWN;
+	int fw_index = VBSD_UNKNOWN;
 
-	if (vdat)
-		fw_index = vdat->firmware_index;
+	if (vb_sd)
+		fw_index = vb_sd->firmware_index;
 
 	return fw_index;
 }
 
 const char *get_active_fw_id(void)
 {
-	VbSharedDataHeader *vdat = get_vdat();
-	int fw_index = get_active_fw_index(vdat);
+	VbSharedDataHeader *vb_sd = get_vb_sd();
+	int fw_index = get_active_fw_index(vb_sd);
 
 	return get_fw_id(fw_index);
 }
 
 int get_active_fw_size(void)
 {
-	VbSharedDataHeader *vdat = get_vdat();
-	int fw_index = get_active_fw_index(vdat);
+	VbSharedDataHeader *vb_sd = get_vb_sd();
+	int fw_index = get_active_fw_index(vb_sd);
 
 	return get_fw_size(fw_index);
 }

@@ -42,12 +42,14 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 
 	dt_add_string_prop(node, "compatible", "chromeos-firmware");
 
-	void *blob;
+	VbSharedDataHeader *vb_sd;
 	int size;
-	if (find_common_params(&blob, &size))
+
+	if (find_common_params((void**)&vb_sd, &size) != 0) {
+		printf("Can't find common params.\n");
 		return 1;
-	dt_add_bin_prop(node, "vboot-shared-data", blob, size);
-	VbSharedDataHeader *vdat = (VbSharedDataHeader *)blob;
+	}
+	dt_add_bin_prop(node, "vboot-shared-data", vb_sd, size);
 
 	if (CONFIG_NV_STORAGE_CMOS) {
 		dt_add_string_prop(node, "nonvolatile-context-storage","nvram");
@@ -70,7 +72,7 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 				nvstorage_flash_get_blob_size());
 	}
 
-	int fw_index = vdat->firmware_index;
+	int fw_index = vb_sd->firmware_index;
 	const char *fwid;
 	int fwid_size;
 
@@ -94,9 +96,9 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 
 	int fw_type = last_firmware_type;
 	if (fw_type == FIRMWARE_TYPE_AUTO_DETECT) {
-		if (fw_index == VDAT_RECOVERY)
+		if (fw_index == VBSD_RECOVERY)
 			fw_type = FIRMWARE_TYPE_RECOVERY;
-		else if (vdat->flags & VBSD_BOOT_DEV_SWITCH_ON)
+		else if (vb_sd->flags & VBSD_BOOT_DEV_SWITCH_ON)
 			fw_type = FIRMWARE_TYPE_DEVELOPER;
 		else
 			fw_type = FIRMWARE_TYPE_NORMAL;
