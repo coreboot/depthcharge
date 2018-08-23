@@ -44,6 +44,8 @@ static int storage_read(int argc, char *const argv[])
 	int *args[] = {&base_block, &num_blocks, (int*) &dest_addr};
 	BlockDev *bd;
 
+	dest_addr = NULL;
+
 	for (i = 0; i < ARRAY_SIZE(args); i++)
 		*args[i] = strtoul(argv[i], NULL, 0);
 
@@ -63,6 +65,8 @@ static int storage_write(int argc, char *const argv[])
 	int base_block, num_blocks, *src_addr, i;
 	int *args[] = {&base_block, &num_blocks, (int *) &src_addr};
 	BlockDev *bd;
+
+	src_addr = NULL;
 
 	for (i = 0; i < ARRAY_SIZE(args); i++)
 		*args[i] = strtoul(argv[i], NULL, 0);

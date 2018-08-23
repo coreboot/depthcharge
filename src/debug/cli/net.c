@@ -26,8 +26,6 @@
 
 #define MAX_ARGS_LEN 4096
 
-static void * const payload = (void *)(uintptr_t)CONFIG_KERNEL_START;
-
 static const char DHCP[] = "dhcp";
 
 int do_tftpboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
