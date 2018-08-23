@@ -48,10 +48,10 @@ enum {
 
 static int is_fastboot_mode_requested(void)
 {
-	VbSharedDataHeader *vdat;
+	VbSharedDataHeader *vb_sd;
 	int size;
 
-	assert(find_common_params((void **)&vdat, &size) == 0);
+	assert(find_common_params((void **)&vb_sd, &size) == 0);
 
 	/*
 	 * Enter fastboot mode when:
@@ -64,10 +64,10 @@ static int is_fastboot_mode_requested(void)
 	 * Else, enter recovery-menu to allow user to choose from different
 	 * options.
 	 */
-	return ((vdat->recovery_reason == VB2_RECOVERY_FW_FASTBOOT) ||
-		(vdat->recovery_reason == VB2_RECOVERY_US_FASTBOOT) ||
-		(vdat->recovery_reason == VB2_RECOVERY_BCB_USER_MODE) ||
-		((vdat->recovery_reason == VB2_RECOVERY_RO_MANUAL) &&
+	return ((vb_sd->recovery_reason == VB2_RECOVERY_FW_FASTBOOT) ||
+		(vb_sd->recovery_reason == VB2_RECOVERY_US_FASTBOOT) ||
+		(vb_sd->recovery_reason == VB2_RECOVERY_BCB_USER_MODE) ||
+		((vb_sd->recovery_reason == VB2_RECOVERY_RO_MANUAL) &&
 		 fb_board_handler.keyboard_mask &&
 		 fb_board_handler.keyboard_mask()));
 }

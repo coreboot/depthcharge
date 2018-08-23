@@ -111,8 +111,8 @@ static int get_board_var(struct fb_cmd *cmd, fb_getvar_t var)
 		 *
 		 */
 		uint8_t index = vbnv_read(VB2_NV_FW_PREV_TRIED);
-		if (index > VDAT_RW_B)
-			index = VDAT_RO;
+		if (index > VBSD_RW_B)
+			index = VBSD_RO;
 
 		const char *version = get_fw_id(index);
 

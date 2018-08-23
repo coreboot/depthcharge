@@ -34,11 +34,16 @@ int crossystem_setup(int firmware_type)
 {
 	chromeos_acpi_t *acpi_table =
 		lib_sysinfo.acpi_gnvs + GNVS_CHROMEOS_ACPI_OFFSET;
-	VbSharedDataHeader *vboot_handoff_shared_data;
 	VbSharedDataHeader *vdat = (VbSharedDataHeader *)&acpi_table->vdat;
-	int size;
+	VbSharedDataHeader *vb_sd;
+	int size, vb_sd_size;
 
-	if (vdat->magic != VB_SHARED_DATA_MAGIC) {
+	if (find_common_params((void**)&vb_sd, &vb_sd_size) != 0) {
+		printf("Can't find common params.\n");
+		return 1;
+	}
+
+	if (vb_sd->magic != VB_SHARED_DATA_MAGIC) {
 		printf("Bad magic value in vboot shared data header.\n");
 		return 1;
 	}
@@ -48,7 +53,7 @@ int crossystem_setup(int firmware_type)
 	int main_fw;
 	const char *fwid;
 	int fwid_size;
-	int fw_index = vdat->firmware_index;
+	int fw_index = vb_sd->firmware_index;
 
 	fwid = get_fw_id(fw_index);
 
@@ -60,17 +65,17 @@ int crossystem_setup(int firmware_type)
 	fwid_size = get_fw_size(fw_index);
 
 	const struct {
-		int vdat_fw_index;
+		int vbsd_fw_index;
 		int main_fw_index;
 	} main_fw_arr[] = {
-		{ VDAT_RW_A, BINF_RW_A },
-		{ VDAT_RW_B, BINF_RW_B },
-		{ VDAT_RECOVERY, BINF_RECOVERY },
+		{ VBSD_RW_A, BINF_RW_A },
+		{ VBSD_RW_B, BINF_RW_B },
+		{ VBSD_RECOVERY, BINF_RECOVERY },
 	};
 
 	int i;
 	for (i = 0; i < ARRAY_SIZE(main_fw_arr); i++) {
-		if (fw_index == main_fw_arr[i].vdat_fw_index) {
+		if (fw_index == main_fw_arr[i].vbsd_fw_index) {
 			main_fw = main_fw_arr[i].main_fw_index;
 			break;
 		}
@@ -91,11 +96,11 @@ int crossystem_setup(int firmware_type)
 	}
 
 	uint16_t chsw = 0;
-	if (vdat->flags & VBSD_BOOT_FIRMWARE_WP_ENABLED)
+	if (vb_sd->flags & VBSD_BOOT_FIRMWARE_WP_ENABLED)
 		chsw |= CHSW_FIRMWARE_WP;
-	if (vdat->flags & VBSD_BOOT_REC_SWITCH_ON)
+	if (vb_sd->flags & VBSD_BOOT_REC_SWITCH_ON)
 		chsw |= CHSW_RECOVERY_X86;
-	if (vdat->flags & VBSD_BOOT_DEV_SWITCH_ON)
+	if (vb_sd->flags & VBSD_BOOT_DEV_SWITCH_ON)
 		chsw |= CHSW_DEVELOPER_SWITCH;
 	acpi_table->chsw = chsw;
 
@@ -122,12 +127,12 @@ int crossystem_setup(int firmware_type)
 		acpi_table->main_fw_type = firmware_type;
 	else if (main_fw == BINF_RECOVERY)
 		acpi_table->main_fw_type = FIRMWARE_TYPE_RECOVERY;
-	else if (vdat->flags & VBSD_BOOT_DEV_SWITCH_ON)
+	else if (vb_sd->flags & VBSD_BOOT_DEV_SWITCH_ON)
 		acpi_table->main_fw_type = FIRMWARE_TYPE_DEVELOPER;
 	else
 		acpi_table->main_fw_type = FIRMWARE_TYPE_NORMAL;
 
-	acpi_table->recovery_reason = vdat->recovery_reason;
+	acpi_table->recovery_reason = vb_sd->recovery_reason;
 
 	acpi_table->fmap_base = (uintptr_t)fmap_base();
 
@@ -136,13 +141,8 @@ int crossystem_setup(int firmware_type)
 	memcpy(dest, fwid, size);
 	dest[size] = 0;
 
-	// Synchronize the value in vboot_handoff back to acpi vdat.
-	if (find_common_params((void**)(&vboot_handoff_shared_data), &size) == 0)
-		memcpy(vdat, vboot_handoff_shared_data, size);
-	else {
-		printf("Can't find common params.\n");
-		return 1;
-	}
+	// Synchronize VbSharedDataHeader from vboot_handoff to acpi vdat.
+	memcpy(vdat, vb_sd, vb_sd_size);
 
 	return 0;
 }
