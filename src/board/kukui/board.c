@@ -25,6 +25,7 @@
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/mt8183.h"
 #include "drivers/gpio/sysinfo.h"
+#include "drivers/power/psci.h"
 #include "vboot/util/flag.h"
 
 static int board_setup(void)
@@ -32,6 +33,8 @@ static int board_setup(void)
 	sysinfo_install_flags(new_mtk_gpio_input);
 	flag_replace(FLAG_LIDSW, new_gpio_high());
 	flag_replace(FLAG_PWRSW, new_gpio_low());
+
+	power_set_ops(&psci_power_ops);
 
 	MtkSpi *spi2 = new_mtk_spi(0x11012000);
 	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spi2->ops);
