@@ -23,10 +23,13 @@
 #include "drivers/flash/spi.h"
 #include "drivers/gpio/mt8183.h"
 #include "drivers/gpio/sysinfo.h"
+#include "vboot/util/flag.h"
 
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_mtk_gpio_input);
+	flag_replace(FLAG_LIDSW, new_gpio_high());
+	flag_replace(FLAG_PWRSW, new_gpio_low());
 
 	MtkSpi *spi1 = new_mtk_spi(0x11010000);
 	flash_set_ops(&new_spi_flash(&spi1->ops)->ops);
