@@ -52,11 +52,20 @@ enum {
 	TpmMaxBufSize = 1260
 };
 
+/* TPM modes -- see tpm_set_mode */
+enum {
+	TpmModeEnabledTentative = 0, /* TPM is enabled, but can be changed */
+	TpmModeEnabled = 1,          /* TPM is enabled, cannot be changed */
+	TpmModeDisabled = 2,         /* TPM is disabled, cannot be changed */
+	TpmModeMax,
+};
+
 typedef struct TpmOps
 {
 	int (*xmit)(struct TpmOps *me, const uint8_t *sendbuf, size_t send_size,
 		    uint8_t *recvbuf, size_t *recv_len);
 	char *(*report_state)(struct TpmOps *me);
+	int (*set_mode)(struct TpmOps *me, uint8_t mode_val);
 } TpmOps;
 
 void tpm_set_ops(TpmOps *ops);
@@ -96,5 +105,28 @@ char *tpm_internal_state(struct TpmOps *me);
  * The caller of this function is expected to free the string buffer.
  */
 char *tpm_report_state(void);
+
+/*
+ * tpm_internal_mode()
+ *
+ * Same as tpm_set_mode, except for internal use.  Requires providing a
+ * TpmOps pointer.
+ */
+int tpm_internal_mode(struct TpmOps *me, uint8_t mode_val);
+
+/*
+ * tpm_set_mode()
+ *
+ * Sets the TPM mode value and validates that it was changed.  If one of the
+ * following occurs, the function call fails:
+ *   - TPM does not understand the instruction (old version)
+ *   - TPM has already left the TpmModeEnabledTentative mode
+ *   - TPM responds with a mode other than the requested mode
+ *   - Some other communication error occurs
+ *  Otherwise, the function call succeeds.
+ *
+ * Returns 0 on success or -1 on failure.
+ */
+int tpm_set_mode(uint8_t mode_val);
 
 #endif /* __DRIVERS_TPM_TPM_H__ */
