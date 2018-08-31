@@ -136,7 +136,6 @@ VbError_t update_vboot_aux_fw(void)
 	VbError_t status = VBERROR_SUCCESS;
 	int power_button_disabled = 0;
 	int lid_shutdown_disabled = 0;
-	int reboot_required = 0;
 
 	for (int i = 0; i < vboot_aux_fw_count; ++i) {
 		const VbootAuxFwOps *aux_fw;
@@ -150,6 +149,7 @@ VbError_t update_vboot_aux_fw(void)
 				cros_ec_config_powerbtn(0);
 				power_button_disabled = 1;
 			}
+
 			/* Disable lid shutdown on x86 if enabled */
 			if (!lid_shutdown_disabled &&
 			    IS_ENABLED(CONFIG_ARCH_X86) &&
@@ -157,33 +157,37 @@ VbError_t update_vboot_aux_fw(void)
 				if (!cros_ec_set_lid_shutdown_mask(0))
 					lid_shutdown_disabled = 1;
 			}
+
 			/* Apply update */
 			printf("Update aux fw %d\n", i);
 			status = apply_dev_fw(aux_fw);
-			if (status == VBERROR_EC_REBOOT_TO_RO_REQUIRED)
-				reboot_required = 1;
-			else if (status == VBERROR_PERIPHERAL_BUSY)
+			if (status == VBERROR_PERIPHERAL_BUSY)
 				goto update_protect;
 			else if (status != VBERROR_SUCCESS)
-				goto update_exit;
+				break;
 
 			/* Re-check hash after update */
 			status = check_dev_fw_hash(aux_fw, &severity);
 			if (status != VBERROR_SUCCESS)
-				goto update_exit;
+				break;
 			if (severity != VB_AUX_FW_NO_UPDATE) {
 				status = VBERROR_UNKNOWN;
-				goto update_exit;
+				break;
 			}
 		}
+
 update_protect:
+		/*
+		 * AP firmware won't need to communicate to peripherals past
+		 * this point, so lock the i2c tunnel down to prevent OS from
+		 * accessing i2c tunnel later.
+		 */
 		printf("Protect aux fw %d\n", i);
 		status = aux_fw->protect(aux_fw);
 		if (status != VBERROR_SUCCESS)
-			goto update_exit;
+			break;
 	}
 
-update_exit:
 	/* Re-enable power button after update, if required */
 	if (power_button_disabled)
 		cros_ec_config_powerbtn(EC_POWER_BUTTON_ENABLE_PULSE);
@@ -191,10 +195,6 @@ update_exit:
 	/* Re-enable lid shutdown event, if required */
 	if (lid_shutdown_disabled)
 		cros_ec_set_lid_shutdown_mask(1);
-
-	/* Request EC reboot, if required */
-	if (reboot_required && status == VBERROR_SUCCESS)
-		status = VBERROR_EC_REBOOT_TO_RO_REQUIRED;
 
 	return status;
 }
