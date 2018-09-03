@@ -133,8 +133,9 @@ static void tftp_callback(void)
 	memcpy(&blocknum, (uint8_t *)uip_appdata + 2, sizeof(blocknum));
 	blocknum = ntohw(blocknum);
 
-	// Ignore blocks which are duplicated or out of order.
-	if (blocknum != tftp_blocknum)
+	// Ignore blocks which are duplicated or out of order, taking into
+	// account 16-bit block number overflow.
+	if (blocknum != (tftp_blocknum & 0xFFFF))
 		return;
 
 	void *new_data = (uint8_t *)uip_appdata + 4;
