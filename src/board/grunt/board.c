@@ -118,6 +118,9 @@ static void audio_setup(void)
 	list_insert_after(&speaker_amp->component.list_node,
 			  &sound_route->components);
 
+	/* Disable BCLK buffer for GPIO beep */
+	new_kern_fch_gpio_output(135, 0);
+
 	sound_set_ops(&sound_route->ops);
 }
 
