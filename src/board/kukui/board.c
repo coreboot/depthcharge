@@ -26,6 +26,7 @@
 #include "drivers/gpio/mt8183.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
+#include "drivers/storage/mtk_mmc.h"
 #include "vboot/util/flag.h"
 
 static int board_setup(void)
@@ -45,6 +46,17 @@ static int board_setup(void)
 
 	MtkSpi *spi1 = new_mtk_spi(0x11010000);
 	flash_set_ops(&new_spi_flash(&spi1->ops)->ops);
+
+	MtkMmcTuneReg emmc_tune_reg = {
+		.msdc_iocon = 0x1 << 8,
+		.pad_tune = 0x10 << 16
+	};
+	MtkMmcHost *emmc = new_mtk_mmc_host(
+		0x11230000, 200 * MHz, 50 * MHz, emmc_tune_reg, 8, 0, NULL,
+		MTK_MMC_V2);
+
+	list_insert_after(&emmc->mmc.ctrlr.list_node,
+			  &fixed_block_dev_controllers);
 
 	return 0;
 }
