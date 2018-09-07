@@ -46,7 +46,7 @@ config DRIVER_STORAGE_IPQ_40XX
 	bool "QCA MMC driver for IPQ40xx"
 	default n
 
-config DRIVER_STORAGE_MMC_MT8173
+config DRIVER_STORAGE_MMC_MTK
 	depends on DRIVER_STORAGE_MMC
 	bool "MTK MMC driver"
 	default n

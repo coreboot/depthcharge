@@ -40,8 +40,6 @@ enum {
 	MSDC_CFG_BV18SDT	= (0x1  << 5),	/* RW */
 	MSDC_CFG_BV18PSS	= (0x1  << 6),	/* R  */
 	MSDC_CFG_CKSTB		= (0x1  << 7),	/* R  */
-	MSDC_CFG_CKDIV		= (0xff << 8),	/* RW */
-	MSDC_CFG_CKMOD		= (0x3  << 16),	/* RW */
 };
 
 enum {

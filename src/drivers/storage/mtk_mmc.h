@@ -73,6 +73,11 @@ typedef struct {
 	uint32_t eco_ver;
 } MtkMmcReg;
 
+typedef enum {
+	MTK_MMC_V1,
+	MTK_MMC_V2,
+}MtkMmcIpVersion;
+
 typedef struct {
 	uint32_t msdc_iocon;
 	uint32_t pad_tune;
@@ -90,9 +95,12 @@ typedef struct {
 
 	int initialized;
 	int removable;
+
+	MtkMmcIpVersion version;
 } MtkMmcHost;
 
 MtkMmcHost *new_mtk_mmc_host(uintptr_t ioaddr, uint32_t src_hz,
 			     uint32_t max_freq, MtkMmcTuneReg tune_reg,
-			     int bus_width, int removable, GpioOps *card_detect);
+			     int bus_width, int removable, GpioOps *card_detect,
+			     MtkMmcIpVersion version);
 #endif // __DRIVERS_STORAGE_MTK_MMC_H_

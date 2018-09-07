@@ -169,11 +169,12 @@ static int board_setup(void)
 	power_set_ops(&psci_power_ops);
 
 	MtkMmcHost *emmc = new_mtk_mmc_host(0x11230000, 200 * MHz, 50 * MHz,
-					    emmc_tune_reg, 8, 0, NULL);
+					    emmc_tune_reg, 8, 0, NULL,
+					    MTK_MMC_V1);
 	GpioOps *card_detect_ops = new_gpio_not(new_mtk_gpio_input(PAD_EINT1));
 	MtkMmcHost *sd_card = new_mtk_mmc_host(0x11240000, 200 * MHz, 25 * MHz,
 					       sd_card_tune_reg, 4, 1,
-					       card_detect_ops);
+					       card_detect_ops, MTK_MMC_V1);
 
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);

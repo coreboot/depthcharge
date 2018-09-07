@@ -55,8 +55,8 @@ static void mtk_mmc_set_buswidth(MtkMmcHost *host, u32 width)
 
 static void mtk_mmc_change_clock(MtkMmcHost *host, uint32_t clock)
 {
-	u32 mode;
-	u32 div;
+	u32 mode, mode_shift;
+	u32 div, div_mask, div_width = 0;
 	u32 sclk;
 	u32 hclk = host->src_hz;
 	MtkMmcReg *reg = host->reg;
@@ -77,8 +77,22 @@ static void mtk_mmc_change_clock(MtkMmcHost *host, uint32_t clock)
 		}
 	}
 
-	clrsetbits_le32(&reg->msdc_cfg, MSDC_CFG_CKMOD | MSDC_CFG_CKDIV,
-			(mode << 16) | ((div % 0xff) << 8));
+	switch (host->version) {
+		case MTK_MMC_V1:
+			div_width = 8;
+			break;
+		case MTK_MMC_V2:
+			div_width = 12;
+			break;
+	}
+	assert(0 < div_width);
+
+	div_mask = (1 << div_width) - 1;
+	mode_shift = 8 + div_width;
+	assert(div <= div_mask);
+
+	clrsetbits_le32(&reg->msdc_cfg, (0x3 << mode_shift) | (div_mask << 8),
+			(mode << mode_shift) | (div << 8));
 	if (mmc_busy_wait_io_until(&reg->msdc_cfg, NULL, MSDC_CFG_CKSTB,
 				   MTK_MMC_TIMEOUT_MS))
 		mmc_error("Failed while wait clock stable!\n");
@@ -455,7 +469,7 @@ static int mtk_mmc_update(BlockDevCtrlrOps *me)
 
 MtkMmcHost *new_mtk_mmc_host(uintptr_t ioaddr, uint32_t src_hz, uint32_t max_freq,
 			     MtkMmcTuneReg tune_reg, int bus_width, int removable,
-			     GpioOps *card_detect)
+			     GpioOps *card_detect, MtkMmcIpVersion version)
 {
 	MtkMmcHost *ctrlr = xzalloc(sizeof(*ctrlr));
 
@@ -489,6 +503,7 @@ MtkMmcHost *new_mtk_mmc_host(uintptr_t ioaddr, uint32_t src_hz, uint32_t max_fre
 	ctrlr->reg = (MtkMmcReg *)ioaddr;
 	ctrlr->removable = removable;
 	ctrlr->cd_gpio = card_detect;
+	ctrlr->version = version;
 
 	return ctrlr;
 }
