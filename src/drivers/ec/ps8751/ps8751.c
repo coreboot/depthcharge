@@ -1022,14 +1022,17 @@ static int __must_check ps8751_verify(Ps8751 *me,
 	return 0;
 }
 
-static int ps8751_ec_tunnel_status(Ps8751 *me, int *protected)
+static VbError_t ps8751_ec_tunnel_status(const VbootAuxFwOps *vbaux,
+					 int *protected)
 {
+	Ps8751 *const me = container_of(vbaux, Ps8751, fw_ops);
+
 	if (cros_ec_tunnel_i2c_protect_status(me->bus, protected) < 0) {
 		printf("%s: could not get EC I2C tunnel status!\n",
 		       me->chip_name);
-		return -1;
+		return VBERROR_UNKNOWN;
 	}
-	return 0;
+	return VBERROR_SUCCESS;
 }
 
 static int ps8751_ec_pd_suspend(Ps8751 *me)
@@ -1247,7 +1250,7 @@ static VbError_t ps8751_update_image(const VbootAuxFwOps *vbaux,
 
 	debug("call...\n");
 
-	if (ps8751_ec_tunnel_status(me, &protected) != 0)
+	if (ps8751_ec_tunnel_status(vbaux, &protected) != 0)
 		return VBERROR_UNKNOWN;
 	if (protected)
 		return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
@@ -1315,6 +1318,7 @@ static const VbootAuxFwOps ps8751_fw_ops = {
 	.fw_hash_name = "ps8751_a3.hash",
 	.check_hash = ps8751_check_hash,
 	.update_image = ps8751_update_image,
+	.protect_status = ps8751_ec_tunnel_status,
 	.protect = ps8751_protect,
 };
 
@@ -1323,6 +1327,7 @@ static const VbootAuxFwOps ps8805_fw_ops = {
 	.fw_hash_name = "ps8805_a2.hash",
 	.check_hash = ps8751_check_hash,
 	.update_image = ps8751_update_image,
+	.protect_status = ps8751_ec_tunnel_status,
 	.protect = ps8751_protect,
 };
 
