@@ -285,14 +285,17 @@ static int __must_check anx3429_otp_read72ecc(Anx3429 *me,
 	return anx3429_otp_read72(me, offset, buf, R_OTP_CTL_1_RW_OTP72ECC);
 }
 
-static int anx3429_ec_tunnel_status(Anx3429 *me, int *protected)
+static VbError_t anx3429_ec_tunnel_status(const VbootAuxFwOps *vbaux,
+					  int *protected)
 {
+	Anx3429 *const me = container_of(vbaux, Anx3429, fw_ops);
+
 	if (cros_ec_tunnel_i2c_protect_status(me->bus, protected) < 0) {
 		printf("anx3429.%d: could not get EC I2C tunnel status!\n",
 		       me->ec_pd_id);
-		return -1;
+		return VBERROR_UNKNOWN;
 	}
-	return 0;
+	return VBERROR_SUCCESS;
 }
 
 static int anx3429_ec_pd_suspend(Anx3429 *me)
@@ -1057,7 +1060,7 @@ static VbError_t anx3429_update_image(const VbootAuxFwOps *vbaux,
 		return status;
 	}
 
-	if (anx3429_ec_tunnel_status(me, &protected) != 0) {
+	if (anx3429_ec_tunnel_status(vbaux, &protected) != 0) {
 		debug("tunnel status failed\n");
 		return status;
 	}
@@ -1156,6 +1159,7 @@ static const VbootAuxFwOps anx3429_fw_ops = {
 	.fw_hash_name = "anx3429_ocm.hash",
 	.check_hash = anx3429_check_hash,
 	.update_image = anx3429_update_image,
+	.protect_status = anx3429_ec_tunnel_status,
 	.protect = anx3429_protect,
 };
 
