@@ -13,6 +13,7 @@
 #    --point=POINT      Font size, in points (72dpi)
 #    --margin=MARGIN    Set different margin (usually for font bitmaps)
 #    --color=COLOR      Override foreground color (in '#ffffff' format)
+#    --bgcolor=COLOR    Override background color (in '#ffffff' format)
 #    --align=ALING      Override align settings (default: center)
 #    --markup           Render text as pango-view markup file
 #    --outdir=OUTDIR    Directory for output files
@@ -52,6 +53,10 @@ while true ; do
       ;;
     --align=*)
       align="${1##*=}"
+      shift
+      ;;
+    --bgcolor=*)
+      bgcolor="${1##*=}"
       shift
       ;;
     --color=*)
