@@ -17,11 +17,12 @@ Usage:
 import copy
 from collections import defaultdict
 import glob
-import Image
 import os
 import shutil
 import subprocess
 import sys
+
+from PIL import Image
 import yaml
 
 ASSET_DIR = 'assets'

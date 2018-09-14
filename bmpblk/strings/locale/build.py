@@ -18,7 +18,7 @@ import re
 import subprocess
 import sys
 
-import Image
+from PIL import Image
 import yaml
 
 SCRIPT_BASE = os.path.dirname(os.path.abspath(__file__))

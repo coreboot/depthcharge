@@ -6,7 +6,7 @@ OUTPUT=bmpblk.bin
 
 all:
 	for X in *.png; do \
-		python -c "import Image; \
+		python -c "from PIL import Image; \
 		Image.open('$$X').convert('P').save('$${X/png/bmp}')"; \
 	done
 	bmpblk_utility -c config.yaml $(OUTPUT)
