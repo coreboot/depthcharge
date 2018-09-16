@@ -31,6 +31,9 @@ endif
 if BOARD_DIR = "cheza"
 source src/board/cheza/Kconfig
 endif
+if BOARD_DIR = "mistral"
+source src/board/mistral/Kconfig
+endif
 if BOARD_DIR = "cyan"
 source src/board/cyan/Kconfig
 endif
