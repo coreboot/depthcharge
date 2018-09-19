@@ -27,6 +27,7 @@
 #include "arch/cache.h"
 #include "base/cleanup_funcs.h"
 #include "drivers/flash/flash.h"
+#include "drivers/tpm/tpm.h"
 #include "image/fmap.h"
 #include "vboot/crossystem/crossystem.h"
 
@@ -102,6 +103,14 @@ int VbExLegacy(struct vb2_context *ctx)
 			return 1;
 		}
 		printf("RW_LEGACY payload hash check succeeded.\n");
+
+		/* TPM _must_ be disabled before booting Alt OS. */
+		printf("Developer mode not enabled - "
+		       "disable TPM before booting.\n");
+		if (tpm_set_mode(TpmModeDisabled)) {
+			printf("Could not disable TPM, aborting.\n");
+			return 1;
+		}
 	}
 
 	payload = cbfs_load_payload(&media, file_name);
