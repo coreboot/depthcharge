@@ -56,6 +56,28 @@
 /* Space between 'MODEL' and a model name */
 #define VB_PADDING		8	/* 0.8 % */
 
+/*
+ * Convert the numbers from original design (assuming screen height = 850 unit)
+ * to the unit used in draw_* (screen height = 1000 unit).
+ */
+#define CF_SCREEN_HEIGHT 850
+#define CF_SCALE(x) ((x) * 1000 / CF_SCREEN_HEIGHT)
+
+#define CF_SELECT_OS_V_POS CF_SCALE(326)
+#define CF_SELECT_OS_HEIGHT CF_SCALE(24)
+
+#define CF_BTN_H_OFFSET CF_SCALE(6)
+#define CF_BTN_V_POS (CF_SELECT_OS_V_POS + CF_SCALE(80))
+#define CF_BTN_HEIGHT CF_SCALE(118)
+
+/* Distance between top of button and icon */
+#define CF_ICON_V_OFFSET CF_SCALE(30)
+#define CF_ICON_HEIGHT CF_SCALE(24)
+
+/* Distance between icon and text */
+#define CF_ICON_TEXT_V_OFFSET CF_SCALE(24)
+#define CF_ICON_TEXT_HEIGHT CF_SCALE(15)
+
 #define RETURN_ON_ERROR(function_call) do {				\
 		VbError_t rv = (function_call);				\
 		if (rv)							\
@@ -843,32 +865,88 @@ static VbError_t vboot_draw_languages_menu(struct params *p)
 	return VBERROR_SUCCESS;
 }
 
+static VbError_t draw_campfire_button(int32_t x, int32_t y,
+				      int32_t width, int32_t height,
+				      const char *icon_name,
+				      const char *text_name,
+				      int32_t pivot_h,
+				      int locale,
+				      int focused)
+{
+	const char *btn_name = focused ? "campfire_btn_focused.bmp" :
+			"campfire_btn_default.bmp";
+	int h_center_pos = 0;
+	int icon_v_pos = y + CF_ICON_V_OFFSET;
+	int text_v_pos = icon_v_pos + CF_ICON_HEIGHT + CF_ICON_TEXT_V_OFFSET;
+
+	RETURN_ON_ERROR(get_image_size(base_graphics, btn_name,
+			&width, &height));
+	switch (pivot_h) {
+	case PIVOT_H_LEFT:
+		h_center_pos = x + width / 2;
+		break;
+	case PIVOT_H_CENTER:
+		h_center_pos = x;
+		break;
+	case PIVOT_H_RIGHT:
+		h_center_pos = x - width / 2;
+		break;
+	default:
+		return CBGFX_ERROR_INVALID_PARAMETER;
+	}
+
+	RETURN_ON_ERROR(draw_image(btn_name, x, y, width, height,
+			pivot_h|PIVOT_V_TOP));
+	RETURN_ON_ERROR(draw_image(icon_name,
+			h_center_pos, icon_v_pos,
+			VB_SIZE_AUTO, CF_ICON_HEIGHT,
+			PIVOT_H_CENTER|PIVOT_V_TOP));
+	RETURN_ON_ERROR(draw_image_locale(text_name, locale,
+			h_center_pos, text_v_pos,
+			VB_SIZE_AUTO, CF_ICON_TEXT_HEIGHT,
+			PIVOT_H_CENTER|PIVOT_V_BOTTOM));
+
+
+	return VBERROR_SUCCESS;
+}
+
 static VbError_t vboot_draw_alt_os_picker(struct params *p)
 {
 	int selected_index = p->selected_index;
+	const struct rgb_color white = { 0xff, 0xff, 0xff };
 
 	if (p->redraw_base) {
-		RETURN_ON_ERROR(vboot_draw_base_screen_without_language(p));
-		RETURN_ON_ERROR(draw_image("VerificationOn.bmp",
-				VB_SCALE / 4, VB_SCALE_HALF,
-				VB_SIZE_AUTO, VB_ICON_HEIGHT,
+		RETURN_ON_ERROR(clear_screen(&white));
+		RETURN_ON_ERROR(draw_image_locale("select_os.bmp", p->locale,
+				VB_SCALE_HALF, CF_SELECT_OS_V_POS,
+				VB_SIZE_AUTO, CF_SELECT_OS_HEIGHT,
 				PIVOT_H_CENTER|PIVOT_V_BOTTOM));
-		RETURN_ON_ERROR(draw_image("VerificationOff.bmp",
-				VB_SCALE / 4 * 3, VB_SCALE_HALF,
-				VB_SIZE_AUTO, VB_ICON_HEIGHT,
-				PIVOT_H_CENTER|PIVOT_V_BOTTOM));
+		/*
+		 * TODO(phoenixshen): there's a chrome logo outside of the
+		 * predefined canvas area, impossible to render using
+		 * draw_bitmap().
+		 * Need API support in libpayload for this.
+		 */
 	}
 
-	int flags = PIVOT_H_CENTER|PIVOT_V_TOP;
-	RETURN_ON_ERROR(draw_image_locale("chrome_os.bmp", p->locale,
-			VB_SCALE / 4, VB_SCALE_HALF + VB_TEXT_HEIGHT,
-			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
-			flags | (selected_index % 2 == 0 ? INVERT_COLORS : 0)));
+	RETURN_ON_ERROR(draw_campfire_button(VB_SCALE_HALF - CF_BTN_H_OFFSET,
+					     CF_BTN_V_POS,
+					     VB_SIZE_AUTO, CF_BTN_HEIGHT,
+					     "campfire_chrome_os.bmp",
+					     "chrome_os.bmp",
+					     PIVOT_H_RIGHT,
+					     p->locale,
+					     selected_index % 2 == 0));
 
-	RETURN_ON_ERROR(draw_image_locale("alt_os.bmp", p->locale,
-			VB_SCALE / 4 * 3, VB_SCALE_HALF + VB_TEXT_HEIGHT,
-			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
-			flags | (selected_index % 2 == 1 ? INVERT_COLORS : 0)));
+	RETURN_ON_ERROR(draw_campfire_button(VB_SCALE_HALF + CF_BTN_H_OFFSET,
+					     CF_BTN_V_POS,
+					     VB_SIZE_AUTO, CF_BTN_HEIGHT,
+					     "campfire_alt_os.bmp",
+					     "alt_os.bmp",
+					     PIVOT_H_LEFT,
+					     p->locale,
+					     selected_index % 2 == 0));
+
 	return VBERROR_SUCCESS;
 }
 
