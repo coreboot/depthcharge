@@ -23,6 +23,12 @@
 #include "boot/fit.h"
 #include "drivers/bus/usb/usb.h"
 
+static const VpdDeviceTreeMap vpd_dt_map[] = {
+	{ "bluetooth_mac0", "bluetooth0/local-bd-address" },
+	{ "wifi_mac0", "wifi0/local-mac-address" },
+	{}
+};
+
 static int board_setup(void)
 {
 	/* stub out required GPIOs for vboot */
@@ -38,6 +44,8 @@ static int board_setup(void)
 	/* Support secondary USB3.0 XHCI controller in firmware. */
 	UsbHostController *usb_host1 = new_usb_hc(XHCI, 0xa800000);
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
+
+	dt_register_vpd_mac_fixup(vpd_dt_map);
 
 	return 0;
 }
