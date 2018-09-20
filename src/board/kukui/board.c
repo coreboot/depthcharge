@@ -20,6 +20,7 @@
 
 #include "base/init_funcs.h"
 #include "drivers/bus/spi/mtk.h"
+#include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/cros/spi.h"
 #include "drivers/flash/spi.h"
@@ -57,6 +58,9 @@ static int board_setup(void)
 
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
+
+	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11200000);
+	list_insert_after(&usb_host->list_node, &usb_host_controllers);
 
 	return 0;
 }
