@@ -25,10 +25,12 @@
 #include "base/list.h"
 #include "boot/commandline.h"
 #include "config.h"
+#include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/ec/ps8751/ps8751.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/skylake.h"
@@ -62,6 +64,9 @@ static int cr50_irq_status(void)
 
 static int board_setup(void)
 {
+	CrosECTunnelI2c *cros_ec_i2c_tunnel;
+	Ps8751 *ps8751;
+
 	sysinfo_install_flags(new_skylake_gpio_input_from_coreboot);
 
 	/* SPI TPM */
@@ -117,6 +122,10 @@ static int board_setup(void)
 					    &boot_beep_lrclk->ops);
 	sound_set_ops(&tone_generator->ops);
 #endif
+
+	cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec, /* i2c bus */ 2);
+	ps8751 = new_ps8751(cros_ec_i2c_tunnel, /* ec pd# */ 1);
+	register_vboot_aux_fw(&ps8751->fw_ops);
 
 	return 0;
 }
