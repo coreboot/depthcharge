@@ -554,26 +554,58 @@ DeviceTreeNode *dt_find_node(DeviceTreeNode *parent, const char **path,
  * @return		The found/created node, or NULL.
  *
  * It is the caller responsibility to provide the correct path string, namely
- * starting with a '/', not ending with a '/', and not having "//" anywhere in
- * it.
+ * starting with '/' for a full path, not starting with '/' for a path
+ * with an alias, not ending with a '/', and not having "//" anywhere in it.
  */
 DeviceTreeNode *dt_find_node_by_path(DeviceTree *tree, const char *path,
 				     u32 *addrcp, u32 *sizecp, int create)
 {
-	char *dup_path = strdup(&path[1]); // remove leading '/'
+	char *sub_path;
+	char *duped_str;
+	DeviceTreeNode *parent;
+	char *next_slash;
 	/* Hopefully enough depth for any node. */
 	const char *path_array[15];
 	int i;
-	char *next_slash;
 	DeviceTreeNode *node = NULL;
 
-	if (!dup_path)
-		return NULL;
+	if (path[0] == '/') { // regular path
+		sub_path = duped_str = strdup(&path[1]);
+		if (!sub_path)
+			return NULL;
 
-	next_slash = dup_path;
-	path_array[0] = dup_path;
+		parent = tree->root;
+	} else { // alias
+		char *alias;
+
+		alias = duped_str = strdup(path);
+		if (!alias)
+			return NULL;
+
+		sub_path = strchr(alias, '/');
+		if (sub_path)
+			*sub_path = '\0';
+
+		parent = dt_find_node_by_alias(tree, alias);
+		if (!parent) {
+			printf("Could not find node '%s', alias '%s' does not exist\n",
+			       path, alias);
+			free(duped_str);
+			return NULL;
+		}
+
+		if (!sub_path) {
+			// it's just the alias, no sub-path
+			free(duped_str);
+			return parent;
+		}
+
+		sub_path++;
+	}
+
+	next_slash = sub_path;
+	path_array[0] = sub_path;
 	for (i = 1; i < (ARRAY_SIZE(path_array) - 1); i++) {
-
 		next_slash = strchr(next_slash, '/');
 		if (!next_slash)
 			break;
@@ -584,12 +616,35 @@ DeviceTreeNode *dt_find_node_by_path(DeviceTree *tree, const char *path,
 
 	if (!next_slash) {
 		path_array[i] = NULL;
-		node = dt_find_node(tree->root, path_array,
+		node = dt_find_node(parent, path_array,
 				    addrcp, sizecp, create);
 	}
 
-	free(dup_path);
+	free(duped_str);
 	return node;
+}
+
+/*
+ * Find a node from an alias
+ *
+ * @param tree		The device tree.
+ * @param alias		The alias name.
+ * @return		The found node, or NULL.
+ */
+DeviceTreeNode *dt_find_node_by_alias(DeviceTree *tree, const char *alias)
+{
+	DeviceTreeNode *node;
+	const char *alias_path;
+
+	node = dt_find_node_by_path(tree, "/aliases", NULL, NULL, 0);
+	if (!node)
+		return NULL;
+
+	alias_path = dt_find_string_prop(node, alias);
+	if (!alias_path)
+		return NULL;
+
+	return dt_find_node_by_path(tree, alias_path, NULL, NULL, 0);
 }
 
 /*

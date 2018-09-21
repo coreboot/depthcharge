@@ -139,6 +139,8 @@ DeviceTreeNode *dt_find_node(DeviceTreeNode *parent, const char **path,
 // separated node names.
 DeviceTreeNode *dt_find_node_by_path(DeviceTree *tree, const char *path,
 				     u32 *addrcp, u32 *sizecp, int create);
+// Look up a node through an alias.
+DeviceTreeNode *dt_find_node_by_alias(DeviceTree *tree, const char *alias);
 // Look up a node relative to a parent node, through its compatible string.
 DeviceTreeNode *dt_find_compat(DeviceTreeNode *parent, const char *compatible);
 // Look up the next child of a parent node, through its compatible string. It
