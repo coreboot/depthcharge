@@ -945,7 +945,7 @@ static VbError_t vboot_draw_alt_os_picker(struct params *p)
 					     "alt_os.bmp",
 					     PIVOT_H_LEFT,
 					     p->locale,
-					     selected_index % 2 == 0));
+					     selected_index % 2 == 1));
 
 	return VBERROR_SUCCESS;
 }
