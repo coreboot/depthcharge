@@ -738,7 +738,8 @@ void dt_write_int(u8 *dest, u64 src, size_t length)
  * @param data		The raw data blob to be stored in the property.
  * @param size		The size of data in bytes.
  */
-void dt_add_bin_prop(DeviceTreeNode *node, char *name, void *data, size_t size)
+void dt_add_bin_prop(DeviceTreeNode *node, const char *name, void *data,
+		     size_t size)
 {
 	DeviceTreeProperty *prop;
 
@@ -806,7 +807,7 @@ void dt_find_bin_prop(DeviceTreeNode *node, const char *name, void **data,
  * @param name		The name of the new property.
  * @param str		The zero-terminated string to be stored in the property.
  */
-void dt_add_string_prop(DeviceTreeNode *node, char *name, char *str)
+void dt_add_string_prop(DeviceTreeNode *node, const char *name, char *str)
 {
 	dt_add_bin_prop(node, name, str, strlen(str) + 1);
 }
@@ -818,7 +819,7 @@ void dt_add_string_prop(DeviceTreeNode *node, char *name, char *str)
  * @param name		The name of the new property.
  * @param val		The integer to be stored in the property.
  */
-void dt_add_u32_prop(DeviceTreeNode *node, char *name, u32 val)
+void dt_add_u32_prop(DeviceTreeNode *node, const char *name, u32 val)
 {
 	u32 *val_ptr = xmalloc(sizeof(val));
 	*val_ptr = htobel(val);
