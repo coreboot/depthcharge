@@ -1284,8 +1284,21 @@ pd_resume:
 	/* Wait at most ~60ms for reset to occur. */
 	timeout = PS_RESTART_DELAY_CS;
 	do {
-		if (ps8751_capture_device_id(me, 1) == 0)
-			break;
+		if (ps8751_capture_device_id(me, 1) == 0) {
+			/*
+			 * Although, the PS8805 may respond to i2c and return
+			 * back its chip information, there seems to be a brief
+			 * period of time where the reported firmware version is
+			 * 0.  Therefore, keep checking until the reported
+			 * version is non-zero.
+			 */
+			if (me->chip.product == PARADE_PS8805_PRODUCT_ID) {
+				if (me->chip.fw_rev != 0)
+					break;
+			} else {
+				break;
+			}
+		}
 
 		mdelay(10);
 		timeout--;
