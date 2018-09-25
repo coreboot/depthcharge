@@ -184,6 +184,23 @@ extern ListNode device_tree_fixups;
 int dt_apply_fixups(DeviceTree *tree);
 
 /*
+ * Structure defining mapping between a VPD field and the device tree
+ * path to the property corresponding to the field.
+ */
+typedef struct {
+	const char *vpd_name;
+	const char *dt_path;
+} VpdDeviceTreeMap;
+
+typedef struct
+{
+	DeviceTreeFixup fixup;
+	const VpdDeviceTreeMap *map;
+} VpdDeviceTreeFixup;
+
+void dt_register_vpd_mac_fixup(const VpdDeviceTreeMap *map);
+
+/*
  * Structure defining mapping between arbitrary objects and the device tree
  * path to the property corresponding to the object.
  */
@@ -194,11 +211,13 @@ typedef struct {
 } DtPathMap;
 
 /*
+ * DEPRECATED: use dt_register_vpd_mac_fixup() instead
+ *
  * Copy mac addresses from sysinfo table into the device tree. The mapping
  * between the dt_maps entries and sysinfo mac address table elements is
  * implicit, i.e. the device tree node found in the maps entry, gets assinged
  * the mac address found in the sysinfo table, in the same order.
-  */
+ */
 int dt_set_mac_addresses(DeviceTree *tree, const DtPathMap *dt_maps);
 
 /*

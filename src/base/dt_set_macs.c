@@ -1,6 +1,11 @@
 
 #include <libpayload.h>
 #include "base/device_tree.h"
+#include "base/vpd_util.h"
+
+typedef struct  {
+	uint8_t b[6];
+} mac_addr_t;
 
 int dt_set_mac_addresses(DeviceTree *tree, const DtPathMap *maps)
 {
@@ -18,4 +23,67 @@ int dt_set_mac_addresses(DeviceTree *tree, const DtPathMap *maps)
 	}
 
 	return rv;
+}
+
+/*
+ * Decode string representation of the MAC address (a string of 12 hex
+ * symbols) into binary.
+ */
+static int decode_mac(const char *mac_addr_str, mac_addr_t *mac_addr)
+{
+	int i;
+
+	for (i = 0; i < sizeof(mac_addr->b); i++) {
+		if (!isxdigit(mac_addr_str[i * 2]) ||
+		    !isxdigit(mac_addr_str[i * 2 + 1]))
+			return 1;
+
+		mac_addr->b[i] = hex2bin(mac_addr_str[i * 2]) << 4;
+		mac_addr->b[i] |= hex2bin(mac_addr_str[i * 2 + 1]);
+	}
+
+	return 0;
+}
+
+static int dt_set_mac_addresses_from_vpd(DeviceTreeFixup *dt_fixup,
+					 DeviceTree *tree)
+{
+	VpdDeviceTreeFixup *vpd_fixup = container_of(dt_fixup,
+						     VpdDeviceTreeFixup, fixup);
+	const VpdDeviceTreeMap *map;
+	char mac_addr_str[13]; // 2 chars per byte + '\0'
+	mac_addr_t *mac_addr;
+
+	for (map = vpd_fixup->map; map->vpd_name != NULL; map++) {
+		if (!vpd_gets(map->vpd_name, mac_addr_str,
+			      sizeof(mac_addr_str))) {
+			printf("VPD entry '%s' does not exist\n", map->vpd_name);
+			continue;
+		}
+
+		mac_addr = xzalloc(sizeof(*mac_addr));
+
+		if (decode_mac(mac_addr_str, mac_addr)) {
+			printf("MAC address '%s' in the VPD has an invalid format: %s\n",
+			       map->vpd_name, mac_addr_str);
+			continue;
+		}
+
+		if (dt_set_bin_prop_by_path(tree, map->dt_path, mac_addr,
+					    sizeof(*mac_addr), 0))
+			printf("Failed to patch DT entry '%s'\n",
+			       map->dt_path);
+	}
+
+	return 0;
+}
+
+void dt_register_vpd_mac_fixup(const VpdDeviceTreeMap *map)
+{
+	VpdDeviceTreeFixup *dt_fixup = xzalloc(sizeof(*dt_fixup));
+
+	dt_fixup->fixup.fixup = dt_set_mac_addresses_from_vpd;
+	dt_fixup->map = map;
+
+	list_insert_after(&dt_fixup->fixup.list_node, &device_tree_fixups);
 }
