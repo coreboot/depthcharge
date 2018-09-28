@@ -126,7 +126,7 @@ static int spi_gpt_fixup(DeviceTreeFixup *fixup, DeviceTree *tree)
 		return 0;
 
 	uint32_t addrc, sizec;
-	DeviceTreeNode *nand = dt_find_node_by_path(tree->root,
+	DeviceTreeNode *nand = dt_find_node_by_path(tree,
 						    ctrlr->dt_path,
 						    &addrc, &sizec, 0);
 	if (!nand) {

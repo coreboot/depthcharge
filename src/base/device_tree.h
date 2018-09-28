@@ -135,9 +135,9 @@ void dt_read_cell_props(DeviceTreeNode *node, u32 *addrcp, u32 *sizecp);
 // represented as an array of strings.
 DeviceTreeNode *dt_find_node(DeviceTreeNode *parent, const char **path,
 			     u32 *addrcp, u32 *sizecp, int create);
-// Look up or create a node relative to a parent node, through its path
-// represented as a string of '/' separated node names.
-DeviceTreeNode *dt_find_node_by_path(DeviceTreeNode *parent, const char *path,
+// Look up or create a node through its path represented as a string of '/'
+// separated node names.
+DeviceTreeNode *dt_find_node_by_path(DeviceTree *tree, const char *path,
 				     u32 *addrcp, u32 *sizecp, int create);
 // Look up a node relative to a parent node, through its compatible string.
 DeviceTreeNode *dt_find_compat(DeviceTreeNode *parent, const char *compatible);
