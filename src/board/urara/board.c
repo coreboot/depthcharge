@@ -87,14 +87,14 @@ static struct board_conf *pick_board_config(void)
 }
 
 static const DtPathMap mac_maps[] = {
-	{ 1, "ethernet@18140000/mac-address" },
-	{ 1, "wifi@18480000/mac-address-0" },
-	{ 1, "wifi@18480000/mac-address-1" },
+	{ 1, "/ethernet@18140000/mac-address" },
+	{ 1, "/wifi@18480000/mac-address-0" },
+	{ 1, "/wifi@18480000/mac-address-1" },
 	{}
 };
 
 static const DtPathMap calibration_maps[] = {
-	{ 1, "wifi@18480000/calibration-data", "wifi_calibration0" },
+	{ 1, "/wifi@18480000/calibration-data", "wifi_calibration0" },
 	{}
 };
 
@@ -137,7 +137,7 @@ static int board_setup(void)
 
 	mtd = new_spi_nand(&spfi->ops);
 	virtual_dev = new_spi_gpt("RW_GPT", new_mtd_stream(mtd),
-				  "spi@18101000/flash@1");
+				  "/spi@18101000/flash@1");
 	list_insert_after(&virtual_dev->block_ctrlr.list_node,
 				&fixed_block_dev_controllers);
 	img_i2c = new_imgtec_i2c(conf->i2c_interface, 100000, 33333333);

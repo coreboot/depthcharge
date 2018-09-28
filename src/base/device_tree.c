@@ -544,7 +544,8 @@ DeviceTreeNode *dt_find_node(DeviceTreeNode *parent, const char **path,
  *
  * @param tree		The device tree object
  * @param path          A string representing a path in the device tree, with
- *			nodes separated by '/'. Example: "soc/firmware/coreboot"
+ *			nodes separated by '/'.
+ *			Example: "/soc/firmware/coreboot"
  * @param addrcp	Pointer that will be updated with any #address-cells
  *			value found in the path. May be NULL to ignore.
  * @param sizecp	Pointer that will be updated with any #size-cells
@@ -553,12 +554,13 @@ DeviceTreeNode *dt_find_node(DeviceTreeNode *parent, const char **path,
  * @return		The found/created node, or NULL.
  *
  * It is the caller responsibility to provide the correct path string, namely
- * not starting or ending with a '/', and not having "//" anywhere in it.
+ * starting with a '/', not ending with a '/', and not having "//" anywhere in
+ * it.
  */
 DeviceTreeNode *dt_find_node_by_path(DeviceTree *tree, const char *path,
 				     u32 *addrcp, u32 *sizecp, int create)
 {
-	char *dup_path = strdup(path);
+	char *dup_path = strdup(&path[1]); // remove leading '/'
 	/* Hopefully enough depth for any node. */
 	const char *path_array[15];
 	int i;
@@ -921,7 +923,7 @@ DeviceTreeNode *dt_init_reserved_memory_node(DeviceTree *tree)
 	DeviceTreeNode *reserved;
 	u32 addr = 0, size = 0;
 
-	reserved = dt_find_node_by_path(tree, "reserved-memory", &addr,
+	reserved = dt_find_node_by_path(tree, "/reserved-memory", &addr,
 					&size, 1);
 	if (!reserved)
 		return NULL;
