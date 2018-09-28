@@ -136,7 +136,7 @@ int dt_set_wifi_country_code(DeviceTree *tree, const DtPathMap *maps)
         cc = strdup(country_code);
 
 	for (; map && map->dt_path; map++) {
-		dt_node = dt_find_node_by_path(tree->root, map->dt_path, NULL,
+		dt_node = dt_find_node_by_path(tree, map->dt_path, NULL,
 						NULL, map->force_create);
 		if (!dt_node) {
 			rv |= 1;
