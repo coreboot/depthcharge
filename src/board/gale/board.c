@@ -84,22 +84,22 @@ static void fill_board_descriptor(void)
 }
 
 static const DtPathMap mac_maps[] = {
-	{ 0, "soc/edma@c080000/gmac0/local-mac-address" },
-	{ 0, "soc/edma@c080000/gmac1/local-mac-address" },
+	{ 0, "/soc/edma@c080000/gmac0/local-mac-address" },
+	{ 0, "/soc/edma@c080000/gmac1/local-mac-address" },
 	{}
 };
 
 static const DtPathMap calibration_maps[] = {
-	{1, "soc/wifi@a000000/qcom,ath10k-pre-calibration-data",
+	{1, "/soc/wifi@a000000/qcom,ath10k-pre-calibration-data",
 	 "wifi_base64_calibration0"},
-	{1, "soc/wifi@a800000/qcom,ath10k-pre-calibration-data",
+	{1, "/soc/wifi@a800000/qcom,ath10k-pre-calibration-data",
 	 "wifi_base64_calibration1"},
 	{}
 };
 
 static const DtPathMap cc_maps[] = {
-	{1, "soc/wifi@a000000", "qcom,ath10k-country-code"},
-	{1, "soc/wifi@a800000", "qcom,ath10k-country-code"},
+	{1, "/soc/wifi@a000000", "qcom,ath10k-country-code"},
+	{1, "/soc/wifi@a800000", "qcom,ath10k-country-code"},
 	{}
 };
 

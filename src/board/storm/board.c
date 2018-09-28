@@ -105,18 +105,18 @@ static void fill_board_descriptor(void)
 }
 
 static const DtPathMap mac_maps[] = {
-	{ 0, "soc/ethernet@37000000/local-mac-address" },
-	{ 0, "soc/ethernet@37400000/local-mac-address" },
-	{ 1, "chosen/bluetooth/local-mac-address" },
+	{ 0, "/soc/ethernet@37000000/local-mac-address" },
+	{ 0, "/soc/ethernet@37400000/local-mac-address" },
+	{ 1, "/chosen/bluetooth/local-mac-address" },
 	{}
 };
 
 static const DtPathMap calibration_maps[] = {
-	{1, "soc/pci@1b500000/pcie@0/ath10k@0,0/qcom,ath10k-calibration-data",
+	{1, "/soc/pci@1b500000/pcie@0/ath10k@0,0/qcom,ath10k-calibration-data",
 	 "wifi_calibration0"},
-	{1, "soc/pci@1b700000/pcie@0/ath10k@0,0/qcom,ath10k-calibration-data",
+	{1, "/soc/pci@1b700000/pcie@0/ath10k@0,0/qcom,ath10k-calibration-data",
 	 "wifi_calibration1"},
-	{1, "soc/pci@1b900000/pcie@0/ath10k@0,0/qcom,ath10k-calibration-data",
+	{1, "/soc/pci@1b900000/pcie@0/ath10k@0,0/qcom,ath10k-calibration-data",
 	 "wifi_calibration2"},
 	{}
 };
@@ -341,7 +341,7 @@ static int board_setup(void)
 		MtdDevCtrlr *mtd = new_ipq_nand((void *)EBI2ND_BASE);
 		SpiGptCtrlr *virtual_dev = new_spi_gpt("RW_GPT",
 						       new_mtd_stream(mtd),
-						       "soc/nand@0x1ac00000");
+						       "/soc/nand@0x1ac00000");
 		list_insert_after(&virtual_dev->block_ctrlr.list_node,
 				  &fixed_block_dev_controllers);
 	} else {
