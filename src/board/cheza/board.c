@@ -26,6 +26,8 @@
 static const VpdDeviceTreeMap vpd_dt_map[] = {
 	{ "bluetooth_mac0", "bluetooth0/local-bd-address" },
 	{ "wifi_mac0", "wifi0/local-mac-address" },
+	{ "bluetooth_mac", "bluetooth0/local-bd-address" },
+	{ "wifi_mac", "wifi0/local-mac-address" },
 	{}
 };
 
