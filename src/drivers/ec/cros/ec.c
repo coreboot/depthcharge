@@ -959,7 +959,6 @@ static int ec_efs_verify(CrosEc *me, enum ec_flash_region region)
 {
 	struct ec_params_efs_verify p;
 	int rv;
-	printf("EFS: EC is verifying updated image...\n");
 	p.region = region;
 
 	rv = ec_command(me, EC_CMD_EFS_VERIFY, 0, &p, sizeof(p), NULL, 0);
@@ -968,7 +967,7 @@ static int ec_efs_verify(CrosEc *me, enum ec_flash_region region)
 		return 0;
 	}
 	if (rv == -EC_RES_INVALID_COMMAND) {
-		printf("EFS: EC doesn't support EFS_VERIFY command\n");
+		printf("EFS: EC doesn't use EFS\n");
 		return 0;
 	}
 
