@@ -1024,7 +1024,7 @@ exit:
 static int nvme_shutdown(struct CleanupFunc *cleanup, CleanupType type)
 {
 	NvmeCtrlr *ctrlr = (NvmeCtrlr *)cleanup->data;
-	NvmeDrive *drive;
+	NvmeDrive *drive, *prev = NULL;
 	int status = NVME_SUCCESS;
 
 	if (NULL == ctrlr)
@@ -1049,8 +1049,10 @@ static int nvme_shutdown(struct CleanupFunc *cleanup, CleanupType type)
 	}
 
 	list_for_each(drive, ctrlr->drives, list_node) {
-		free(drive);
+		free(prev);
+		prev = drive;
 	}
+	free(prev);
 	free(ctrlr->controller_data);
 	free(ctrlr->prp_list);
 	free(ctrlr->buffer);
