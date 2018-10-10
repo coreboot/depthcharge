@@ -15,12 +15,15 @@
  * GNU General Public License for more details.
  */
 
+#include <assert.h>
 #include <libpayload.h>
 #include <cbfs.h>
 #include <gbb_header.h>
 #include <vboot_api.h>
 #include <vboot/screens.h>
+#include "base/list.h"
 #include "base/graphics.h"
+#include "boot/payload.h"
 #include "config.h"
 #include "drivers/flash/cbfs.h"
 #include "drivers/video/display.h"
@@ -882,6 +885,68 @@ static VbError_t vboot_draw_languages_menu(struct params *p)
 	return VBERROR_SUCCESS;
 }
 
+void vboot_print_string(const char *str)
+{
+	int str_len = strlen(str);
+	while (str_len--) {
+		if (*str == '\n')
+			video_console_putchar('\r');
+		video_console_putchar(*str++);
+	}
+}
+
+/* TODO(sjg@chromium.org): Make this use fonts */
+static void cons_text(int linenum, int seqnum, const char *name,
+		      const char *desc, int selected)
+{
+	unsigned int rows, cols;
+	int x, y;
+
+	video_get_rows_cols(&rows, &cols);
+
+	x = cols / 3;
+	y = rows / 2 + linenum;
+	video_console_set_cursor(x, y);
+	vboot_print_string(selected ? "-->" : "   ");
+	video_console_set_cursor(x + 4, y);
+	if (seqnum != -1) {
+		char seq[2] = {'0' + seqnum, '\0'};
+
+		vboot_print_string(seq);
+	}
+
+	video_console_set_cursor(x + 7, y);
+	vboot_print_string(name);
+
+	video_console_set_cursor(x + 24, y);
+	vboot_print_string(desc);
+}
+
+static VbError_t vboot_draw_altfw_pick(struct params *p)
+{
+	struct cbfs_media media;
+	ListNode *head;
+
+	head = payload_get_altfw_list(&media);
+	RETURN_ON_ERROR(vboot_draw_base_screen(p));
+	cons_text(0, -1,
+		  "Press a numeric key to select an alternative bootloader:",
+		  "", 0);
+	if (head) {
+		struct altfw_info *node;
+		int pos = 2;
+
+		list_for_each(node, *head, list_node) {
+			if (!node->seqnum)
+				continue;
+			cons_text(pos, node->seqnum, node->name, node->desc, 0);
+			pos++;
+		}
+	}
+
+	return VBERROR_SUCCESS;
+}
+
 static VbError_t vboot_draw_options_menu(struct params *p)
 {
 	if (p->redraw_base)
@@ -889,6 +954,36 @@ static VbError_t vboot_draw_options_menu(struct params *p)
 	const struct menu m = { options_files,
 				ARRAY_SIZE(options_files) };
 	return vboot_draw_menu(p, &m);
+}
+
+static VbError_t vboot_draw_altfw_menu(struct params *p)
+{
+	struct cbfs_media media;
+	struct altfw_info *node;
+	ListNode *head;
+
+	if (p->redraw_base)
+		RETURN_ON_ERROR(vboot_draw_base_screen(p));
+
+	head = payload_get_altfw_list(&media);
+
+	int i = 0;
+	if (head) {
+		list_for_each(node, *head, list_node) {
+			if (!node->seqnum)
+				continue;
+			if ((p->disabled_idx_mask &
+			    (1 << (node->seqnum - 1))) != 0)
+				continue;
+			cons_text(i, node->seqnum, node->name, node->desc,
+				  p->selected_index == node->seqnum - 1);
+			i++;
+		}
+	}
+	printf("i=%d, p->selected_index=%d\n", i, p->selected_index);
+	cons_text(i, -1, "Cancel", "", p->selected_index == 9 /* cancel */);
+
+	return 0;
 }
 
 /* we may export this in the future for the board customization */
@@ -983,6 +1078,16 @@ static const struct vboot_ui_descriptor vboot_screens[] = {
 		.id = VB_SCREEN_OPTIONS_MENU,
 		.draw = vboot_draw_options_menu,
 		.mesg = "Options Menu",
+	},
+	{
+		.id = VB_SCREEN_ALT_FW_PICK,
+		.draw = vboot_draw_altfw_pick,
+		.mesg = "Alternative Firmware Menu",
+	},
+	{
+		.id = VB_SCREEN_ALT_FW_MENU,
+		.draw = vboot_draw_altfw_menu,
+		.mesg = "Alternative Firmware Menu",
 	},
 };
 

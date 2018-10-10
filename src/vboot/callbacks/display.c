@@ -30,20 +30,10 @@
 #include "vboot/screens.h"
 #include "vboot/util/commonparams.h"
 
-static void print_string(const char *str)
-{
-	int str_len = strlen(str);
-	while (str_len--) {
-		if (*str == '\n')
-			video_console_putchar('\r');
-		video_console_putchar(*str++);
-	}
-}
-
 static void print_string_newline(const char *str)
 {
-	print_string(str);
-	print_string("\n");
+	vboot_print_string(str);
+	vboot_print_string("\n");
 }
 
 void print_on_center(const char *msg)
@@ -51,7 +41,7 @@ void print_on_center(const char *msg)
 	unsigned int rows, cols;
 	video_get_rows_cols(&rows, &cols);
 	video_console_set_cursor((cols - strlen(msg)) / 2, rows / 2);
-	print_string(msg);
+	vboot_print_string(msg);
 }
 
 VbError_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale)
@@ -104,22 +94,22 @@ VbError_t VbExDisplayMenu(uint32_t screen_type, uint32_t locale,
 VbError_t VbExDisplayDebugInfo(const char *info_str)
 {
 	video_console_set_cursor(0, 0);
-	print_string(info_str);
+	vboot_print_string(info_str);
 
-	print_string("read-only firmware id: ");
+	vboot_print_string("read-only firmware id: ");
 	print_string_newline(get_ro_fw_id());
 
-	print_string("active firmware id: ");
+	vboot_print_string("active firmware id: ");
 	const char *id = get_active_fw_id();
 	if (id == NULL)
 		id = "NOT FOUND";
 	print_string_newline(id);
 
-	print_string("TPM state: ");
+	vboot_print_string("TPM state: ");
 	if (IS_ENABLED(CONFIG_DRIVER_TPM)) {
 		char *tpm_state = tpm_report_state();
 		if (tpm_state) {
-			print_string(tpm_state);
+			vboot_print_string(tpm_state);
 			free(tpm_state);
 		} else {
 			print_string_newline(" not supported");
