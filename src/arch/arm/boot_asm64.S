@@ -15,21 +15,18 @@
  * GNU General Public License for more details.
  */
 
-#define __ASSEMBLY__
-#include <arch/lib_helpers.h>
+#include <arch/asm.h>
 
-	.global boot_arm_linux_jump
-	.type boot_arm_linux_jump, function
-boot_arm_linux_jump:
+ENTRY(boot_arm_linux_jump)
 	/* Entered with X0 = &fdt, X1 = entry */
 
 	mov	x27, x1		/* Kernel entry */
 
 	/* Configure sctlr to have caches off, etc. */
-	read_current x2, sctlr
-	ldr	 x3, .SCTLR_MASK
-	and	 x2, x2, x3
-	write_current sctlr, x2, x3
+	mrs	x2, sctlr_el2
+	ldr	x3, .SCTLR_MASK
+	and	x2, x2, x3
+	msr	sctlr_el2, x2
 
 	isb
 
@@ -49,3 +46,4 @@ boot_arm_linux_jump:
 	 * alignment checking disabled, and MMU disabled.
 	 */
 	 .quad 0x0fdf7eff0
+ENDPROC(boot_arm_linux_jump)
