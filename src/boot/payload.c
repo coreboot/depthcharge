@@ -21,10 +21,14 @@
 
 #include "arch/cache.h"
 #include "base/cleanup_funcs.h"
+#include "drivers/flash/cbfs.h"
 #include "drivers/flash/flash.h"
 #include "image/fmap.h"
 #include "boot/payload.h"
 #include "vboot/crossystem/crossystem.h"
+
+/* List of available bootloaders */
+static ListNode *altfw_head;
 
 /*
  * payload_load() - Load an image from the given payload
@@ -120,11 +124,16 @@ int payload_run(struct cbfs_media *media, const char *payload_name)
 	return 1;
 }
 
-struct ListNode *payload_get_altfw_list(struct cbfs_media *media)
+struct ListNode *get_altfw_list(struct cbfs_media *media)
 {
 	char *loaders, *ptr;
-	ListNode *head;
+	ListNode *head, *tail;
 	size_t size;
+
+	if (cbfs_media_from_fmap("RW_LEGACY", media)) {
+		printf("%s: Cannot set up CBFS\n", __func__);
+		return NULL;
+	}
 
 	/* Load bootloader list from cbfs */
 	loaders = cbfs_get_file_content(media, "altfw/list", CBFS_TYPE_RAW,
@@ -137,6 +146,7 @@ struct ListNode *payload_get_altfw_list(struct cbfs_media *media)
 	printf("%s: Supported altfw boot loaders:\n", __func__);
 	ptr = loaders;
 	head = xzalloc(sizeof (*head));
+	tail = head;
 	do {
 		struct altfw_info *node;
 		const char *seqnum;
@@ -157,8 +167,17 @@ struct ListNode *payload_get_altfw_list(struct cbfs_media *media)
 			break;
 		printf("   %d %-15s %-15s %s\n", node->seqnum, node->name,
 		       node->filename, node->desc);
-		list_insert_after(&node->list_node, head);
+		list_insert_after(&node->list_node, tail);
+		tail = &node->list_node;
 	} while (1);
 
 	return head;
+}
+
+struct ListNode *payload_get_altfw_list(struct cbfs_media *media)
+{
+	if (!altfw_head)
+		altfw_head = get_altfw_list(media);
+
+	return altfw_head;
 }

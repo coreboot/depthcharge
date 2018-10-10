@@ -26,6 +26,13 @@ int vboot_draw_ui(uint32_t screen, uint32_t locale,
 		  uint32_t redraw_base);
 
 /**
+ * Print a string on the cosole using the standard font
+ *
+ * @str:	String to print
+ */
+void vboot_print_string(const char *str);
+
+/**
  * Return number of supported locales
  *
  * @return number of supported locales

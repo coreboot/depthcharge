@@ -21,29 +21,35 @@
 
 #include "base/list.h"
 #include "boot/payload.h"
-#include "drivers/flash/cbfs.h"
+
+uint32_t VbExGetAltFwIdxMask(void)
+{
+	struct altfw_info *node;
+	struct cbfs_media media;
+	uint32_t mask = 0;
+	ListNode *head;
+
+	head = payload_get_altfw_list(&media);
+	if (head) {
+		list_for_each(node, *head, list_node) {
+			if (node->seqnum)
+				mask |= 1 << node->seqnum;
+		}
+	}
+
+	return mask;
+}
 
 int VbExLegacy(int altfw_num)
 {
-	ListNode *head = NULL;
-	struct altfw_info *node;
 	struct cbfs_media media;
+	ListNode *head;
 
-	if (cbfs_media_from_fmap("RW_LEGACY", &media)) {
-		printf("%s: Cannot set up CBFS\n", __func__);
-		return -1;
-	}
-
-	/*
-	 * If we don't have a particular one to boot, use 0.
-	 *
-	 * TODO(sjg@chromium.org): Add a menu to vboot for this situation so
-	 * that the user can select which to boot.
-	 */
-	if (altfw_num)
-		head = payload_get_altfw_list(&media);
-
+	/* If we don't have a particular one to boot, use 0. */
+	head = payload_get_altfw_list(&media);
 	if (head) {
+		struct altfw_info *node;
+
 		list_for_each(node, *head, list_node) {
 			if (node->seqnum == altfw_num) {
 				printf("Running bootloader '%s: %s'\n",
