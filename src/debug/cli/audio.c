@@ -13,6 +13,10 @@
 #define DEV_BEEP_FREQUENCY 400
 #define DEV_BEEP_DURATION  120
 
+/* Bad USB stick beep details */
+#define BAD_USB_BEEP_FREQUENCY 200
+#define BAD_USB_BEEP_DURATION  250
+
 static int beep(unsigned long freq, unsigned long duration)
 {
 	int res = sound_start(freq);
@@ -54,6 +58,15 @@ static int do_devbeep(cmd_tbl_t *cmbtp, int flag, int argc, char * const argv[])
 
 	/* Second beep */
 	beep(DEV_BEEP_FREQUENCY, DEV_BEEP_DURATION);
+
+	return CMD_RET_SUCCESS;
+}
+
+static int do_badusbbeep(cmd_tbl_t *cmbtp, int flag, int argc,
+			 char * const argv[])
+{
+	/* beep */
+	beep(BAD_USB_BEEP_FREQUENCY, BAD_USB_BEEP_DURATION);
 
 	return CMD_RET_SUCCESS;
 }
@@ -106,5 +119,11 @@ U_BOOT_CMD(
 U_BOOT_CMD(
 	   devbeep,	1,	1,
 	   "developer mode timeout beep",
+	   "\n"
+);
+
+U_BOOT_CMD(
+	   badusbbeep,	1,	1,
+	   "bad usb stick beep",
 	   "\n"
 );
