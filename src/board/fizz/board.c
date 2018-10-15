@@ -34,6 +34,9 @@
 #include "drivers/power/pch.h"
 #include "drivers/soc/skylake.h"
 #include "drivers/sound/gpio_edge_buzzer.h"
+#include "drivers/sound/gpio_i2s.h"
+#include "drivers/sound/max98357a.h"
+#include "drivers/sound/route.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/nvme.h"
 #include "drivers/storage/blockdev.h"
@@ -85,6 +88,19 @@ static TpmOps *fizz_setup_tpm(void)
 	}
 }
 
+static void board_audio_init(SoundRoute *sound)
+{
+	if (IS_ENABLED(CONFIG_DRIVER_SOUND_MAX98357A)) {
+		/* Speaker amp is Maxim 98357a codec*/
+		GpioOps *sdmode_gpio =
+				&new_skylake_gpio_output(GPP_A23, 0)->ops;
+		max98357aCodec *speaker_amp =
+				new_max98357a_codec(sdmode_gpio);
+		list_insert_after(&speaker_amp->component.list_node,
+				&sound->components);
+	}
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_skylake_gpio_input_from_coreboot);
@@ -123,9 +139,33 @@ static int board_setup(void)
 					&removable_block_dev_controllers);
 	}
 
-	GpioCfg *sound_gpio = new_skylake_gpio_output(GPP_B14, 0);
-	GpioEdgeBuzzer *buzzer = new_gpio_edge_buzzer(&sound_gpio->ops);
-	sound_set_ops(&buzzer->ops);
+	if (IS_ENABLED(CONFIG_DRIVER_SOUND_GPIO_EDGE_BUZZER)) {
+		GpioCfg *sound_gpio = new_skylake_gpio_output(GPP_B14, 0);
+		GpioEdgeBuzzer *buzzer = new_gpio_edge_buzzer(&sound_gpio->ops);
+		sound_set_ops(&buzzer->ops);
+	}
+
+	if (IS_ENABLED(CONFIG_DRIVER_SOUND_MAX98357A)) {
+		/* Activate buffer to disconnect I2S from PCH and allow GPIO */
+		GpioCfg *i2s2_buffer_enable =
+				new_skylake_gpio_output(GPP_D22, 1);
+		gpio_set(&i2s2_buffer_enable->ops, 0);
+
+		/* Use GPIO to provide PCM clock to the codec */
+		GpioCfg *i2s2_bclk = new_skylake_gpio_output(GPP_F0, 0);
+		GpioCfg *i2s2_sfrm = new_skylake_gpio_output(GPP_F1, 0);
+		GpioCfg *i2s2_txd  = new_skylake_gpio_output(GPP_F2, 0);
+		GpioI2s *i2s = new_gpio_i2s(
+			&i2s2_bclk->ops,    /* I2S Bit Clock GPIO */
+			&i2s2_sfrm->ops,    /* I2S Frame Sync GPIO */
+			&i2s2_txd->ops,     /* I2S Data GPIO */
+			16000,              /* Sample rate */
+			2,                  /* Channels */
+			0x1FFF);            /* Volume */
+		SoundRoute *sound = new_sound_route(&i2s->ops);
+		board_audio_init(sound);
+		sound_set_ops(&sound->ops);
+	}
 
 	return 0;
 }
