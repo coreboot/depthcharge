@@ -122,7 +122,7 @@ chell,glados:
   screen:   [1920, 1080]
   hi_res:   [en]
 
-panther,tricky,mccloud,guado,tidus,rikku,ninja,fizz:
+panther,tricky,mccloud,guado,tidus,rikku,ninja,fizz,kalista:
   # Using VESA graphics mode 1024x768 (0x0117).
   # A chromebox without built-in panel/keyboard.
   # Assume the display is a modern 16:9 (1920x1080) monitor.
