@@ -15,12 +15,15 @@
 
 #include <assert.h>
 #include <libpayload.h>
+#include <stdio.h>
+#include <stdint.h>
 
 #include "base/init_funcs.h"
 #include "config.h"
 #include "drivers/gpio/gpio.h"
 #include "vboot/util/flag.h"
 #include "boot/fit.h"
+#include "drivers/bus/usb/usb.h"
 
 static const VpdDeviceTreeMap vpd_dt_map[] = {
 	{ "cherokee_mac", "/soc@0/wifi@a000000/local-mac-address" },
@@ -64,7 +67,10 @@ static int board_setup(void)
 	flag_replace(FLAG_LIDSW, new_gpio_high());
 	flag_replace(FLAG_PWRSW, new_gpio_low());
 
-	fit_add_compat("qcom,qcs405-mtp");
+	UsbHostController *usb_host2 = new_usb_hc(XHCI, 0x78C0000);
+
+	list_insert_after(&usb_host2->list_node, &usb_host_controllers);
+	fit_add_compat("qcom,qcs404-evb");
 
 	dt_register_vpd_mac_fixup(vpd_dt_map);
 
