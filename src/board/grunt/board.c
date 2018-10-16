@@ -65,6 +65,9 @@
 
 #define GPIO_BACKLIGHT		133
 
+/* GMMx1475C ACP_BT_UART_PAD_SEL */
+#define GMMx1475C		0x1475c
+
 #define EC_USB_PD_PORT_ANX3429	0
 #define EC_I2C_PORT_ANX3429	1
 
@@ -79,6 +82,20 @@ static int cr50_irq_status(void)
 		tpm_gpio = new_kern_fch_gpio_latched(CR50_INT);
 
 	return gpio_get(&tpm_gpio->ops);
+}
+
+/*
+ * Force reset GMMx1475C ACP_BT_UART_PAD_SEL to 0 to enable bit-banging the
+ * BT_I2S pins as GPIO.  This reset happens on reboot and entering G3, but NOT
+ * in S5.
+ */
+static void audio_bt_i2s_setup(void)
+{
+	/* D1F0x24 == Graphics Memory Mapped Registers Base Address */
+	uintptr_t gmm_base = pci_read_config32(PCI_DEV(0, 0x1, 0), 0x24);
+	gmm_base &= 0xfffffff0;
+
+	write32((void *)gmm_base + GMMx1475C, 0x00);
 }
 
 static void audio_setup(void)
@@ -99,6 +116,8 @@ static void audio_setup(void)
 		       ret);
 		return;
 	}
+
+	audio_bt_i2s_setup();
 
 	KernGpio *i2s_bclk = new_kern_fch_gpio_output(140, 0);
 	KernGpio *i2s_lrclk = new_kern_fch_gpio_output(144, 0);
