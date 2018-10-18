@@ -739,26 +739,6 @@ static int is_parade_chip(const struct ec_response_pd_chip_info *const info,
 	}
 }
 
-int __must_check ps8751_should_try_upgrade(const Ps8751 *const me)
-{
-	/* Determine if a PS8751 *TCPC* is connected on the port we expect */
-	struct ec_params_pd_chip_info p = { p.port = me->ec_pd_id };
-	struct ec_response_pd_chip_info chip_info;
-
-	/* Note this check happens when EC is still in RO. */
-	int status = ec_command(me->bus->ec, EC_CMD_PD_CHIP_INFO, 0, &p,
-				sizeof(p), &chip_info, sizeof(chip_info));
-	/*
-	 * If we know there is a PS8751/PS8805 or there is a corrupted TCPC, we
-	 * should try to upgrade it. The corrupted TCPC is most likely due to
-	 * failing in the middle of a previous firmware upgrade.
-	 */
-	int try_upgrade = is_corrupted_tcpc(&chip_info) ||
-			  is_parade_chip(&chip_info, me->chip_type);
-
-	return status >= 0 && try_upgrade;
-}
-
 /**
  * capture chip (vendor, product, device, rev) IDs
  *
