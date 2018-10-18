@@ -116,10 +116,7 @@ static void update_ps8751_firmware(CrosEc * const cros_ec)
 		new_cros_ec_tunnel_i2c(cros_ec, EC_I2C_PORT_PS8751);
 	Ps8751 *ps8751 = new_ps8751(cros_ec_i2c_tunnel, EC_USB_PD_PORT_PS8751);
 
-	if (ps8751_should_try_upgrade(ps8751))
-		register_vboot_aux_fw(&ps8751->fw_ops);
-	else
-		printf("PS8751 not found. Skipping firmware upgrade check.\n");
+	register_vboot_aux_fw(&ps8751->fw_ops);
 }
 
 static int board_setup(void)
