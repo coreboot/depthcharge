@@ -15,6 +15,7 @@
  * GNU General Public License for more details.
  */
 
+#include <arch/msr.h>
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
@@ -44,6 +45,9 @@
 #include "drivers/bus/usb/usb.h"
 #include "pci.h"
 #include "vboot/util/flag.h"
+
+#define HW_CONFIG_REG 0xc0010015
+#define   HW_CONFIG_CPBDIS (1 << 25)
 
 #define EMMC_SD_CLOCK_MIN	400000
 #define EMMC_CLOCK_MAX		200000000
@@ -98,6 +102,28 @@ static void audio_bt_i2s_setup(void)
 	write32((void *)gmm_base + GMMx1475C, 0x00);
 }
 
+static int (*gpio_i2s_play)(struct SoundOps *me, uint32_t msec,
+		uint32_t frequency);
+
+static int amd_gpio_i2s_play(struct SoundOps *me, uint32_t msec,
+		uint32_t frequency)
+{
+	int ret;
+	uint64_t cur;
+
+	cur = _rdmsr(HW_CONFIG_REG);
+
+	/* Disable Core Boost while bit-banging I2S */
+	_wrmsr(HW_CONFIG_REG, cur | HW_CONFIG_CPBDIS);
+
+	ret = gpio_i2s_play(me, msec, frequency);
+
+	/* Restore previous Core Boost setting */
+	_wrmsr(HW_CONFIG_REG, cur);
+
+	return ret;
+}
+
 static void audio_setup(void)
 {
 	/* Setup da7219 on I2C0 */
@@ -130,6 +156,13 @@ static void audio_setup(void)
 			2,			/* Channels */
 			0x1FFF);		/* Volume */
 	SoundRoute *sound_route = new_sound_route(&i2s->ops);
+
+	/*
+	 * Override gpio_i2s play() op with our own that disbles CPU boost
+	 * before GPIO bit-banging I2S.
+	 */
+	gpio_i2s_play = i2s->ops.play;
+	i2s->ops.play = amd_gpio_i2s_play;
 
 	KernGpio *spk_pa_en = new_kern_fch_gpio_output(119, 0);
 	max98357aCodec *speaker_amp = new_max98357a_codec(&spk_pa_en->ops);
