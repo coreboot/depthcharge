@@ -28,7 +28,19 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
 #include "drivers/storage/mtk_mmc.h"
+#include "drivers/tpm/spi.h"
 #include "vboot/util/flag.h"
+
+static int cr50_irq_status(void)
+{
+	static GpioOps *tpm_int;
+
+	if (!tpm_int)
+		tpm_int = sysinfo_lookup_gpio("TPM interrupt", 1,
+					      new_mtk_eint);
+	assert(tpm_int);
+	return gpio_get(tpm_int);
+}
 
 static int board_setup(void)
 {
@@ -37,6 +49,9 @@ static int board_setup(void)
 	flag_replace(FLAG_PWRSW, new_gpio_low());
 
 	power_set_ops(&psci_power_ops);
+
+	MtkSpi *spi0 = new_mtk_spi(0x1100A000);
+	tpm_set_ops(&new_tpm_spi(&spi0->ops, cr50_irq_status)->ops);
 
 	MtkSpi *spi2 = new_mtk_spi(0x11012000);
 	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spi2->ops);
