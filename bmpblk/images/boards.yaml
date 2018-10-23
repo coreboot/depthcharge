@@ -262,10 +262,9 @@ kahlee:
   hi_res:   [en]
 
 grunt:
-  # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
-  # With card reader. All USB ports can boot in recovery mode.
-  screen:   [1024, 768]
-  panel:    [1366, 768]
+  # Using VESA graphics mode 1920x1080 (0x1D2), downscaled to 1366x768 panel if
+  # needed. All USB ports and the SD card reader can be used for recovery.
+  screen:   [1920, 1080]
   hi_res:   [en]
 
 zoombini:
