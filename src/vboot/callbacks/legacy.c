@@ -104,9 +104,23 @@ int VbExLegacy(struct vb2_context *ctx)
 		}
 		printf("RW_LEGACY payload hash check succeeded.\n");
 
-		/* TPM _must_ be disabled before booting Alt OS. */
+		/**
+		 * Save state and disable TPM before booting Alt OS.
+		 *   - State must be saved since TPM_Startup(ST_STATE) is
+		 *     always sent to the TPM in S3 resume path, as part of
+		 *     AP-RO.  This command fails if no state is available.
+		 *   - TPM must be disabled before booting Alt OS since it
+		 *     is untrusted.
+		 *   - TPM will be disabled again in the S3 resume path before
+		 *     control is passed back to the OS (in coreboot).
+		 * See b/118172063 for discussion.
+		 */
 		printf("Developer mode not enabled - "
 		       "disable TPM before booting.\n");
+		if (VbSaveTpmState()) {
+			printf("Could not save TPM state, aborting.\n");
+			return 1;
+		}
 		if (tpm_set_mode(TpmModeDisabled)) {
 			printf("Could not disable TPM, aborting.\n");
 			return 1;
