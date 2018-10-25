@@ -440,7 +440,14 @@ static int ahci_exit(struct CleanupFunc *cleanup, CleanupType type)
 	AhciCtrlr *ctrlr = cleanup->data;
 	void *mmio = ctrlr->mmio_base;
 	uint32_t irq_stat, i = 0;
-	uint32_t host_impl_bitmap = readl(mmio + HOST_PORTS_IMPL);
+	uint32_t host_impl_bitmap;
+
+	if (!mmio) {
+		printf("AHCI MMIO base = 0.  Skipping cleanup\n");
+		return 0;
+	}
+
+	host_impl_bitmap = readl(mmio + HOST_PORTS_IMPL);
 
 	printf("Clear pending AHCI interrupt status.\n");
 
@@ -664,6 +671,12 @@ static int ahci_ctrlr_init(BlockDevCtrlrOps *me)
 
 	ctrlr->ctrlr.need_update = 0;
 
+	CleanupFunc *cleanup = xzalloc(sizeof(*cleanup));
+	cleanup->cleanup = &ahci_exit;
+	cleanup->types = CleanupOnHandoff | CleanupOnLegacy;
+	cleanup->data = ctrlr;
+	list_insert_after(&cleanup->list_node, &cleanup_funcs);
+
 	return 0;
 }
 
@@ -673,12 +686,6 @@ AhciCtrlr *new_ahci_ctrlr(pcidev_t dev)
 	ctrlr->ctrlr.ops.update = &ahci_ctrlr_init;
 	ctrlr->ctrlr.need_update = 1;
 	ctrlr->dev = dev;
-
-	CleanupFunc *cleanup = xzalloc(sizeof(*cleanup));
-	cleanup->cleanup = &ahci_exit;
-	cleanup->types = CleanupOnHandoff | CleanupOnLegacy;
-	cleanup->data = ctrlr;
-	list_insert_after(&cleanup->list_node, &cleanup_funcs);
 
 	return ctrlr;
 }
