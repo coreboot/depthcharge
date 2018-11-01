@@ -26,20 +26,24 @@ int dt_set_mac_addresses(DeviceTree *tree, const DtPathMap *maps)
 }
 
 /*
- * Decode string representation of the MAC address (a string of 12 hex
- * symbols) into binary.
+ * Decode string representation of a MAC address (6 bytes each represented by
+ * two hex digit characters, optionally separated by colons). The string must
+ * be null-terminated.
  */
 static int decode_mac(const char *mac_addr_str, mac_addr_t *mac_addr)
 {
-	int i;
+	int i, j;
 
-	for (i = 0; i < sizeof(mac_addr->b); i++) {
-		if (!isxdigit(mac_addr_str[i * 2]) ||
-		    !isxdigit(mac_addr_str[i * 2 + 1]))
+	for (i = 0, j = 0; i < sizeof(mac_addr->b); i++, j += 2) {
+		if (mac_addr_str[j] == ':')
+			j++;
+
+		if (!isxdigit(mac_addr_str[j]) ||
+		    !isxdigit(mac_addr_str[j + 1]))
 			return 1;
 
-		mac_addr->b[i] = hex2bin(mac_addr_str[i * 2]) << 4;
-		mac_addr->b[i] |= hex2bin(mac_addr_str[i * 2 + 1]);
+		mac_addr->b[i] = hex2bin(mac_addr_str[j]) << 4;
+		mac_addr->b[i] |= hex2bin(mac_addr_str[j + 1]);
 	}
 
 	return 0;
@@ -51,7 +55,7 @@ static int dt_set_mac_addresses_from_vpd(DeviceTreeFixup *dt_fixup,
 	VpdDeviceTreeFixup *vpd_fixup = container_of(dt_fixup,
 						     VpdDeviceTreeFixup, fixup);
 	const VpdDeviceTreeMap *map;
-	char mac_addr_str[13]; // 2 chars per byte + '\0'
+	char mac_addr_str[sizeof("00:00:00:00:00:00")];
 	mac_addr_t *mac_addr;
 
 	for (map = vpd_fixup->map; map->vpd_name != NULL; map++) {
