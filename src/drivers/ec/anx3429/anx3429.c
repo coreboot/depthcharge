@@ -55,6 +55,7 @@
 #define OTP_WORDS_MAX		0x4000		/* 128KB + ECC */
 #define OTP_WORD_SIZE		9		/* 8B + ECC */
 #define OTP_PROG_CYCLES		6		/* OTP writes are hard */
+#define OTP_HEADER_0BIT_LIMIT	10		/* max 0's in inactive header */
 
 #define OTP_SCRATCH_SLOT0	(0x3900 + OTP_DIR_SLOT0)
 
@@ -368,6 +369,8 @@ static int __must_check anx3429_otp_write72raw(Anx3429 *me,
  * if we get an exact match, we're good.
  * else, see if we get a match with ECC, good enough.
  * else, fail.
+ *
+ * returns 0 on success
  */
 
 static int __must_check anx3429_otp_prog72verify(Anx3429 *me,
@@ -427,8 +430,69 @@ static uint8_t anx3429_hamming_encoder(const uint8_t *data)
 	return result;
 }
 
+static int zeros_in_byte(uint8_t u)
+{
+	int count;
+
+	u = ~u;
+	/* K&R method */
+	for (count = 0; u; ++count)
+		u &= u - 1;
+	return count;
+}
+
+static int zeros_in_word(const uint8_t *w)
+{
+	int count = 0;
+
+	for (int i = 0; i < OTP_WORD_SIZE; ++i)
+		count += zeros_in_byte(w[i]);
+	return count;
+}
+
 /*
- * returns offset of active header in directory <dir>
+ * checks for inactive header signature:  should be all 0xff.
+ * there is no ECC protection on this signature, so we try to be
+ * lenient and allow up to OTP_HEADER_0BIT_LIMIT bits of error.
+ *
+ * the OCM is strict and requires all 0xff to consider the header word
+ * inactive, so we try to correct them by re-writing the header word.
+ */
+
+static int anx3429_likely_inactive_header(Anx3429 *me,
+					  uint16_t offset,
+					  const uint8_t *w)
+{
+	int flipped_bits;
+
+	if (is_inactive_word(w))
+		return 1;
+	/*
+	 * the inactive header pattern does not have a valid ECC,
+	 * so allow up to OTP_HEADER_0BIT_LIMIT bits of error
+	 */
+	flipped_bits = zeros_in_word(w);
+	if (flipped_bits > 0)
+		dprintf("header word at 0x%04x has %u zeros\n",
+			offset, flipped_bits);
+
+	if (flipped_bits <= OTP_HEADER_0BIT_LIMIT) {
+		/*
+		 * partially erased (inactive) header
+		 * if we don't correct this, the OCM gets confused
+		 */
+		printf("anx3429.%d: "
+		       "fixing FW header at offset 0x%04x with %u zeros\n",
+		       me->ec_pd_id, offset, flipped_bits);
+		if (anx3429_otp_prog72verify(me, offset, inactive_word) == 0)
+			return 1;
+	}
+	return 0;
+}
+
+/*
+ * returns offset of active header in directory <dir> or next
+ * usable header.  invalidates any obviously bogus headers.
  */
 
 static int anx3429_find_active_header(Anx3429 *me,
@@ -436,25 +500,37 @@ static int anx3429_find_active_header(Anx3429 *me,
 				      uint16_t *act_start,
 				      uint16_t *act_size)
 {
-	uint8_t word[OTP_WORD_SIZE];
+	uint8_t word_raw[OTP_WORD_SIZE];
+	uint8_t word_ecc[OTP_WORD_SIZE];
 	uint16_t offset;
 	uint16_t start;
 	uint16_t size;
 
 	for (offset = dir; offset < dir + OTP_UPDATE_MAX; ++offset) {
-		if (anx3429_otp_read72raw(me, offset, word) != 0)
+		if (anx3429_otp_read72raw(me, offset, word_raw) != 0)
 			return -1;
-		if (is_inactive_word(word))
+		if (anx3429_likely_inactive_header(me, offset, word_raw))
 			continue;
-		start = le16dec(word);
-		size = le16dec(word + 2);
-		if (!is_blank_word(word) &&
+		if (anx3429_otp_read72ecc(me, offset, word_ecc) != 0)
+			return -1;
+		/*
+		 * a blank word is ECC-correct, no need to special case
+		 */
+		start = le16dec(word_ecc);
+		size = le16dec(word_ecc + 2);
+		if (!is_blank_word(word_ecc) &&
 		    (start < dir + OTP_UPDATE_MAX ||
 		     start + size > OTP_WORDS_MAX)) {
-			printf("anx3429.%d: FW header corrupted "
-			       "at offset 0x%04x!\n",
+			printf("anx3429.%d: fixing bogus FW header "
+			       "at offset 0x%04x: ",
 			       me->ec_pd_id, offset);
-			return -1;
+			print_otp_word(word_ecc);
+			printf("\n");
+			/* mask bogus header and skip */
+			if (anx3429_otp_prog72verify(
+				    me, offset, inactive_word) != 0)
+				return -1;
+			continue;
 		}
 		*act_start = start;
 		*act_size = size;
