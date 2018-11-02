@@ -861,10 +861,6 @@ static VbError_t anx3429_check_hash(const VbootAuxFwOps *vbaux,
  * is slot likely to be in use
  * - all 0's means it is unused
  * - all 1's means it has been invalidated
- *
- * we only check 64 bit data portion, the CRC bits are not interesting
- * for this check.
- *
  */
 
 static int anx3429_is_slot_active(const uint8_t *buf)
@@ -1105,7 +1101,8 @@ static VbError_t anx3429_update_image(const VbootAuxFwOps *vbaux,
 	}
 
 	if (anx3429_enable_mcu(me) != 0) {
-		debug("enable mcu failed\n");
+		printf("anx3429.%d: enable_mcu after update failed!\n",
+		       me->ec_pd_id);
 		status = VBERROR_UNKNOWN;
 		goto pd_resume;
 	}
