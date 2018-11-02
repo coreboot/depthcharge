@@ -204,6 +204,21 @@ static int is_blank_word(const uint8_t *w)
 	return memcmp(w, _blank_word, sizeof(_blank_word)) == 0;
 }
 
+/*
+ * determine if the 72 bit word at <from> can be changed to the 72 bit
+ * word at <to>.  the only permitted operation is to change 0s to 1s.
+ */
+
+static int is_mutable_word(const uint8_t *from, const uint8_t *to)
+{
+	for (int i = 0; i < OTP_WORD_SIZE; ++i) {
+		uint8_t zmask = ~to[i];
+		if ((from[i] & zmask) != 0)
+			return 0;
+	}
+	return 1;
+}
+
 static void print_otp_word(const uint8_t *otp_word)
 {
 	for (int i = 0; i < OTP_WORD_SIZE; ++i)
@@ -535,21 +550,6 @@ static int anx3429_find_active_header(Anx3429 *me,
 }
 
 /*
- * determine if the 72 bit word at <from> can be changed to the 72 bit
- * word at <to>.  the only permitted operation is to change 0s to 1s.
- */
-
-static int is_word_mutable(const uint8_t *from, const uint8_t *to)
-{
-	for (int i = 0; i < OTP_WORD_SIZE; ++i) {
-		uint8_t zmask = ~to[i];
-		if ((from[i] & zmask) != 0)
-			return 0;
-	}
-	return 1;
-}
-
-/*
  * return offset of fw_words contiguous words starting at offset
  * otp_start.
  *
@@ -579,7 +579,7 @@ static int anx3429_find_usable_otp(Anx3429 *me,
 		if (anx3429_otp_read72ecc(me, otp_offset, word) != 0)
 			return -1;
 		++otp_offset;
-		if (!is_word_mutable(word,
+		if (!is_mutable_word(word,
 				     &fw_data[fw_offset * OTP_WORD_SIZE])) {
 			/* hit unusable word */
 			if (otp_offset + fw_words > OTP_WORDS_MAX) {
