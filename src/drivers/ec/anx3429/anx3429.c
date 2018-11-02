@@ -202,6 +202,12 @@ static int is_blank_word(const uint8_t *w)
 	return memcmp(w, _blank_word, sizeof(_blank_word)) == 0;
 }
 
+static void print_otp_word(const uint8_t *otp_word)
+{
+	for (int i = 0; i < OTP_WORD_SIZE; ++i)
+		printf(" %02x", otp_word[i]);
+}
+
 static const uint8_t hamming_table[] = {
 	0x0b, 0x3b, 0x37, 0x07, 0x19, 0x29, 0x49, 0x89,
 	0x16, 0x26, 0x46, 0x86, 0x13, 0x23, 0x43, 0x83,
@@ -785,7 +791,6 @@ static void anx3429_dump_otp(Anx3429 *me)
 	uint8_t corrected[OTP_WORD_SIZE];
 	uint32_t offset;
 	int dot3 = 0;
-	int i;
 	uint32_t most_recent_blob = 0;
 	uint8_t ecc;
 
@@ -811,8 +816,7 @@ static void anx3429_dump_otp(Anx3429 *me)
 			printf("NOTE: active firmware:\n");
 
 		printf("0x%04x:", offset);
-		for (i = 0; i < sizeof(word); ++i)
-			printf(" %02x", word[i]);
+		print_otp_word(word);
 		ecc = anx3429_hamming_encoder(word);
 		if (ecc != word[8])
 			printf(" [computed %02x]", ecc);
@@ -822,8 +826,7 @@ static void anx3429_dump_otp(Anx3429 *me)
 			break;
 		if (memcmp(word, corrected, sizeof(word)) != 0) {
 			printf("fixed: " );
-			for (i = 0; i < sizeof(corrected); ++i)
-				printf(" %02x", corrected[i]);
+			print_otp_word(corrected);
 			printf("\n");
 		}
 
