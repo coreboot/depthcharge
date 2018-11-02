@@ -54,6 +54,7 @@
 #define OTP_UPDATE_MAX		100
 #define OTP_WORDS_MAX		0x4000		/* 128KB + ECC */
 #define OTP_WORD_SIZE		9		/* 8B + ECC */
+#define OTP_PROG_CYCLES		6		/* OTP writes are hard */
 
 #define OTP_SCRATCH_SLOT0	(0x3900 + OTP_DIR_SLOT0)
 
@@ -316,16 +317,16 @@ static int anx3429_ec_pd_powerup(Anx3429 *me)
 }
 
 /*
- *
- * R_OTP_REPROG_MAX_NUM really is 9, so there should be no
- * need to retry the write.
+ * program OTP word.
+ * programming is somewhat temperamenal even though
+ * R_OTP_REPROG_MAX_NUM is 9.
+ * must be performed OTP_PROG_CYCLES times.
  */
 
-static int __must_check anx3429_otp_prog72raw(Anx3429 *me,
-					      uint16_t offset,
-					      const uint8_t *word72)
+static int __must_check anx3429_otp_write72raw(Anx3429 *me,
+					       uint16_t offset,
+					       const uint8_t *word72)
 {
-	uint8_t otp_word[OTP_WORD_SIZE];
 	uint64_t t0_us;
 
 	if (write_reg16(me, R_OTP_ADDR_HIGH, offset) != 0)
@@ -353,14 +354,53 @@ static int __must_check anx3429_otp_prog72raw(Anx3429 *me,
 			return -1;
 		}
 	}
+	return 0;
+}
 
-	if (anx3429_otp_read72ecc(me, offset, otp_word) != 0)
+/*
+ * program OTP word and verify.
+ * if we get an exact match, we're good.
+ * else, see if we get a match with ECC, good enough.
+ * else, fail.
+ */
+
+static int __must_check anx3429_otp_prog72verify(Anx3429 *me,
+						 uint16_t offset,
+						 const uint8_t *word72)
+{
+	uint8_t otp_word_raw[OTP_WORD_SIZE];
+	uint8_t otp_word_ecc[OTP_WORD_SIZE];
+	int cycles;
+
+	for (cycles = 0; cycles < OTP_PROG_CYCLES; ++cycles) {
+		if (anx3429_otp_write72raw(me, offset, word72))
+			return -1;
+	}
+	if (anx3429_otp_read72raw(me, offset, otp_word_raw) != 0)
 		return -1;
-	if (memcmp(word72, otp_word, sizeof(otp_word)) == 0)
+	if (memcmp(word72, otp_word_raw, sizeof(otp_word_raw)) == 0)
 		return 0;
 
+	/*
+	 * programming failed, let's see if ECC saves the day
+	 */
+	if (anx3429_otp_read72ecc(me, offset, otp_word_ecc) != 0)
+		return -1;
+	if (memcmp(word72, otp_word_ecc, sizeof(otp_word_ecc)) == 0) {
+		printf("anx3429.%d: programmed word at 0x%04x "
+		       "with soft ECC error!\n",
+		       me->ec_pd_id, offset);
+		return 0;
+	}
 	printf("anx3429.%d: programming word at 0x%04x failed!\n",
 	       me->ec_pd_id, offset);
+	printf("write ");
+	print_otp_word(word72);
+	printf("\nread");
+	print_otp_word(otp_word_raw);
+	printf("\nrECC");
+	print_otp_word(otp_word_ecc);
+	printf("\n");
 	return -1;
 }
 
@@ -628,7 +668,7 @@ static int anx3429_update_fw_at(Anx3429 *me,
 	for (int i = 0; i < fw_words; ++i) {
 		const uint8_t *w = &fw_data[i * OTP_WORD_SIZE];
 
-		if (anx3429_otp_prog72raw(me, upd_start + i, w) != 0)
+		if (anx3429_otp_prog72verify(me, upd_start + i, w) != 0)
 			return -1;
 	}
 
@@ -652,7 +692,7 @@ static int anx3429_update_fw_at(Anx3429 *me,
 	printf("anx3429.%d: writing new FW header to offset 0x%04x.\n",
 	       me->ec_pd_id, upd_dir);
 
-	if (anx3429_otp_prog72raw(me, upd_dir, header) != 0)
+	if (anx3429_otp_prog72verify(me, upd_dir, header) != 0)
 		return -1;
 
 	/* mask preceding FW headers */
@@ -660,7 +700,7 @@ static int anx3429_update_fw_at(Anx3429 *me,
 	for (; act_dir < upd_dir; ++act_dir) {
 		printf("anx3429.%d: masking FW header at 0x%04x.\n",
 		       me->ec_pd_id, act_dir);
-		if (anx3429_otp_prog72raw(me, act_dir, inactive_word) != 0) {
+		if (anx3429_otp_prog72verify(me, act_dir, inactive_word) != 0) {
 			debug("oops\n");
 			return -1;
 		}
