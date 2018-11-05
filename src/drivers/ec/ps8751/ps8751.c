@@ -129,6 +129,12 @@
 #define PARADE_PS8751_PRODUCT_ID	0x8751
 #define PARADE_PS8805_PRODUCT_ID	0x8805
 
+enum ps8751_device_state {
+	PS8751_DEVICE_MISSING = -2,
+	PS8751_DEVICE_NOT_PARADE = -1,
+	PS8751_DEVICE_PRESENT = 0,
+};
+
 static const uint8_t erased_bytes[] = {
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -760,13 +766,14 @@ int __must_check ps8751_should_try_upgrade(const Ps8751 *const me)
  * @return 0 if ok, -1 on error
  */
 
-static int __must_check ps8751_capture_device_id(Ps8751 *me, int renew)
+static enum ps8751_device_state __must_check ps8751_capture_device_id(
+							Ps8751 *me, int renew)
 {
 	struct ec_params_pd_chip_info p;
 	struct ec_response_pd_chip_info r;
 
 	if (me->chip.vendor != 0 && !renew)
-		return 0;
+		return PS8751_DEVICE_PRESENT;
 
 	p.port = me->ec_pd_id;
 	p.renew = renew;
@@ -774,7 +781,7 @@ static int __must_check ps8751_capture_device_id(Ps8751 *me, int renew)
 				&p, sizeof(p), &r, sizeof(r));
 	if (status < 0) {
 		printf("%s: could not get chip info!\n", me->chip_name);
-		return -1;
+		return PS8751_DEVICE_MISSING;
 	}
 
 	uint16_t vendor  = r.vendor_id;
@@ -785,19 +792,18 @@ static int __must_check ps8751_capture_device_id(Ps8751 *me, int renew)
 	printf("%s: vendor 0x%04x product 0x%04x "
 	       "device 0x%04x fw_rev 0x%02x\n",
 	       me->chip_name, vendor, product, device, fw_rev);
-	if (vendor == 0) {
-		/* vendor 0 likely due to "missing" firmware */
+	if (is_corrupted_tcpc(&r)) {
+		/* vendor 0 likely due to "missing/corrupted" firmware */
 		printf("%s: MCU must be down!\n", me->chip_name);
+	} else if (!is_parade_chip(&r, me->chip_type)) {
+		return PS8751_DEVICE_NOT_PARADE;
 	}
-
-	if (vendor != 0 && vendor != PARADE_VENDOR_ID)
-		return -1;
 
 	me->chip.vendor = vendor;
 	me->chip.product = product;
 	me->chip.device = device;
 	me->chip.fw_rev = fw_rev;
-	return 0;
+	return PS8751_DEVICE_PRESENT;
 }
 
 /**
@@ -1237,7 +1243,7 @@ static VbError_t ps8751_check_hash(const VbootAuxFwOps *vbaux,
 				   VbAuxFwUpdateSeverity_t *severity)
 {
 	Ps8751 *me = container_of(vbaux, Ps8751, fw_ops);
-	VbError_t status = VBERROR_UNKNOWN;
+	enum ps8751_device_state status;
 
 	debug("call...\n");
 
@@ -1246,10 +1252,16 @@ static VbError_t ps8751_check_hash(const VbootAuxFwOps *vbaux,
 		return VBERROR_INVALID_PARAMETER;
 	}
 
-	if (ps8751_capture_device_id(me, 0) == 0)
-		status = VBERROR_SUCCESS;
-	if (status != VBERROR_SUCCESS)
-		return status;
+	status = ps8751_capture_device_id(me, 0);
+	if (status == PS8751_DEVICE_MISSING) {
+		*severity = VB_AUX_FW_NO_DEVICE;
+		printf("Skipping upgrade for %s\n", me->chip_name);
+		return VBERROR_SUCCESS;
+	} else if (status == PS8751_DEVICE_NOT_PARADE) {
+		*severity = VB_AUX_FW_NO_UPDATE;
+		printf("No update required for %s\n", me->chip_name);
+		return VBERROR_SUCCESS;
+	}
 
 	me->blob_hw_version = hash[0];
 	if (hash[1] == me->chip.fw_rev)
@@ -1329,7 +1341,7 @@ pd_resume:
 	/* Wait at most ~60ms for reset to occur. */
 	timeout = PS_RESTART_DELAY_CS;
 	do {
-		if (ps8751_capture_device_id(me, 1) == 0)
+		if (ps8751_capture_device_id(me, 1) == PS8751_DEVICE_PRESENT)
 			break;
 
 		mdelay(10);
