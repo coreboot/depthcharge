@@ -22,6 +22,7 @@
 #include "vboot/util/flag.h"
 #include "boot/fit.h"
 #include "drivers/bus/usb/usb.h"
+#include "drivers/power/psci.h"
 
 static const VpdDeviceTreeMap vpd_dt_map[] = {
 	{ "bluetooth_mac0", "bluetooth0/local-bd-address" },
@@ -36,6 +37,8 @@ static int board_setup(void)
 	/* stub out required GPIOs for vboot */
 	flag_replace(FLAG_LIDSW, new_gpio_high());
 	flag_replace(FLAG_PWRSW, new_gpio_low());
+
+	power_set_ops(&psci_power_ops);
 
 	/* Support primary USB3.0 XHCI controller in firmware. */
 	UsbHostController *usb_host0 = new_usb_hc(XHCI, 0xa600000);
