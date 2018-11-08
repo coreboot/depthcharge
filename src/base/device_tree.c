@@ -884,6 +884,20 @@ void dt_add_u32_prop(DeviceTreeNode *node, const char *name, u32 val)
 }
 
 /*
+ * Add a 64-bit integer property to a node, or update it if it already exists.
+ *
+ * @param node		The device tree node to add to.
+ * @param name		The name of the new property.
+ * @param val		The integer to be stored in the property.
+ */
+void dt_add_u64_prop(DeviceTreeNode *node, const char *name, u64 val)
+{
+	u64 *val_ptr = xmalloc(sizeof(val));
+	*val_ptr = htobell(val);
+	dt_add_bin_prop(node, name, val_ptr, sizeof(*val_ptr));
+}
+
+/*
  * Add a 'reg' address list property to a node, or update it if it exists.
  *
  * @param node		The device tree node to add to.
