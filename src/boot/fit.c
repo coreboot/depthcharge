@@ -19,6 +19,7 @@
 #include <endian.h>
 #include <libpayload.h>
 #include <stdint.h>
+#include <tlcl.h>
 
 #include "base/ranges.h"
 #include "boot/fit.h"
@@ -192,10 +193,23 @@ static int fit_check_compat(FdtProperty *compat_prop, const char *compat_name)
 
 static void update_chosen(DeviceTree *tree, char *cmd_line)
 {
+	int ret;
+	uint64_t kaslr_seed;
+	uint32_t size;
 	const char *path[] = { "chosen", NULL };
 	DeviceTreeNode *node = dt_find_node(tree->root, path, NULL, NULL, 1);
 
-	dt_add_string_prop(node, "bootargs", cmd_line);
+	/* Update only if non-NULL cmd line */
+	if (cmd_line)
+		dt_add_string_prop(node, "bootargs", cmd_line);
+
+	ret = TlclGetRandom((uint8_t *)&kaslr_seed, sizeof(kaslr_seed), &size);
+	if (ret || size < sizeof(kaslr_seed)) {
+		printf("Failed to populate kaslr-seed\n");
+		return;
+	}
+
+	dt_add_u64_prop(node, "kaslr-seed", kaslr_seed);
 }
 
 void fit_add_ramdisk(DeviceTree *tree, void *ramdisk_addr, size_t ramdisk_size)
@@ -467,9 +481,7 @@ FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt)
 			return NULL;
 		}
 
-		/* Update only if non-NULL cmd line */
-		if (cmd_line)
-			update_chosen(*dt, cmd_line);
+		update_chosen(*dt, cmd_line);
 
 		update_memory(*dt);
 
