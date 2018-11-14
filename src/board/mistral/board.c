@@ -24,6 +24,13 @@
 #include "boot/fit.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/power/psci.h"
+#include "drivers/storage/sdhci_msm.h"
+
+#define TLMM_BOOT_SEL		0x010C1000
+#define EMMC_BOOT		0x8000000
+#define SDC1_HC_BASE		0x07804000
+#define SDC1_TLMM_CFG_ADDR	0x10C2000
+
 
 static const VpdDeviceTreeMap vpd_dt_map[] = {
 	{ "cherokee_mac", "/soc@0/wifi@a000000/local-mac-address" },
@@ -83,6 +90,20 @@ static int board_setup(void)
 	dt_register_vpd_mac_fixup(vpd_dt_map);
 
 	list_insert_after(&ipq_enet_fixup.list_node, &device_tree_fixups);
+
+	/* eMMC support */
+	/* DATA pins are muxed between NAND and EMMC, configure them to eMMC */
+	writel(EMMC_BOOT, (uint32_t *)TLMM_BOOT_SEL);
+
+	SdhciHost *emmc = new_sdhci_msm_host((void *)SDC1_HC_BASE,
+					SDHCI_PLATFORM_EMMC_1V8_POWER |
+					SDHCI_PLATFORM_NO_EMMC_HS200,
+					100*MHz,
+					(void *)SDC1_TLMM_CFG_ADDR,
+					NULL);
+	assert(emmc);
+	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+			&fixed_block_dev_controllers);
 
 	return 0;
 }
