@@ -30,7 +30,8 @@ void tpm_set_ops(TpmOps *ops)
 	if (CONFIG_TPM_DEBUG_EXTENSIONS)
 		tpm_ops->report_state = tpm_internal_state;
 
-	tpm_ops->set_mode = tpm_internal_mode;
+	tpm_ops->get_mode = tpm_internal_get_mode;
+	tpm_ops->set_mode = tpm_internal_set_mode;
 }
 
 int tpm_xmit(const uint8_t *sendbuf, size_t send_size,
@@ -46,6 +47,14 @@ char *tpm_report_state(void)
 		return NULL;
 
 	return tpm_ops->report_state(tpm_ops);
+}
+
+int tpm_get_mode(uint8_t *mode_val)
+{
+	if (!tpm_ops)
+		return -1;
+
+	return tpm_ops->get_mode(tpm_ops, mode_val);
 }
 
 int tpm_set_mode(uint8_t mode_val)

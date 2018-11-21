@@ -73,6 +73,7 @@ typedef struct TpmOps
 	int (*xmit)(struct TpmOps *me, const uint8_t *sendbuf, size_t send_size,
 		    uint8_t *recvbuf, size_t *recv_len);
 	char *(*report_state)(struct TpmOps *me);
+	int (*get_mode)(struct TpmOps *me, uint8_t *mode_val);
 	int (*set_mode)(struct TpmOps *me, uint8_t mode_val);
 } TpmOps;
 
@@ -115,12 +116,34 @@ char *tpm_internal_state(struct TpmOps *me);
 char *tpm_report_state(void);
 
 /*
- * tpm_internal_mode()
+ * tpm_internal_get_mode()
+ *
+ * Same as tpm_get_mode, except for internal use.  Requires providing a
+ * TpmOps pointer.
+ */
+int tpm_internal_get_mode(struct TpmOps *me, uint8_t *mode_val);
+
+/*
+ * tpm_internal_set_mode()
  *
  * Same as tpm_set_mode, except for internal use.  Requires providing a
  * TpmOps pointer.
  */
-int tpm_internal_mode(struct TpmOps *me, uint8_t mode_val);
+int tpm_internal_set_mode(struct TpmOps *me, uint8_t mode_val);
+
+/*
+ * tpm_get_mode()
+ *
+ * Retrieves the current TPM mode value.  If one of the following occurs,
+ * the function call fails:
+ *   - TPM does not understand the instruction (old version)
+ *   - Some other communication error occurs
+ *  Otherwise, the function call succeeds.
+ *
+ * Returns TPM_SUCCESS on success, TPM_E_* on known failure,
+ * and -1 on unknown failure.
+ */
+int tpm_get_mode(uint8_t *mode_val);
 
 /*
  * tpm_set_mode()
