@@ -43,7 +43,13 @@ typedef struct {
 	u32 pin_num;
 } MtGpio;
 
+typedef struct {
+	uint32_t sta[16];
+	uint32_t ack[16];
+} EintRegs;
+
 GpioOps *new_mtk_gpio_input(u32 pin);
 GpioOps *new_mtk_gpio_output(u32 pin);
+GpioOps *new_mtk_eint(u32 pin);
 
 #endif

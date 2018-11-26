@@ -20,9 +20,11 @@
 
 enum {
 	MAX_GPIO_REG_BITS = 32,
+	MAX_EINT_REG_BITS = 32,
 };
 
 static GpioRegs *gpio_reg = (GpioRegs *)0x10005000;
+static EintRegs *eint_reg = (EintRegs *)0x1000B000;
 
 static int mt_set_gpio_out(GpioOps *me, u32 output)
 {
@@ -80,5 +82,33 @@ GpioOps *new_mtk_gpio_output(u32 pin)
 	MtGpio *gpio = new_mtk_gpio(pin);
 
 	gpio->ops.set = &mt_set_gpio_out;
+	return &gpio->ops;
+}
+
+int mt_eint_irq_status(GpioOps *me)
+{
+	MtGpio *gpio = container_of(me, MtGpio, ops);
+	u32 pin = gpio->pin_num;
+	u32 pos, bit, status;
+	EintRegs *reg = eint_reg;
+
+	assert(pin < GPIO_MAX);
+
+	pos = pin / MAX_EINT_REG_BITS;
+	bit = pin % MAX_EINT_REG_BITS;
+
+	status = (((readl(&reg->sta[pos]) & (1L << bit)) != 0) ? 1 : 0);
+
+	if (status)
+		writel(1L << bit, &reg->ack[pos]);
+
+	return status;
+}
+
+GpioOps *new_mtk_eint(u32 pin)
+{
+	MtGpio *gpio = new_mtk_gpio(pin);
+
+	gpio->ops.get = &mt_eint_irq_status;
 	return &gpio->ops;
 }
