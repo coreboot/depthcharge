@@ -76,3 +76,11 @@ int vb2ex_tpm_set_mode(enum vb2_tpm_mode mode_val)
 	 * correspond directly to TPM mode values. */
 	return tpm_mode_vb2ex_translate(tpm_set_mode((uint8_t)mode_val));
 }
+
+int vb2ex_tpm_cr50_reset(uint16_t delay_ms)
+{
+	if (tpm_cr50_reset(delay_ms))
+		return VB2_ERROR_UNKNOWN;
+	else
+		return VB2_SUCCESS;
+}

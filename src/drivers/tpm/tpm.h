@@ -75,6 +75,7 @@ typedef struct TpmOps
 	char *(*report_state)(struct TpmOps *me);
 	int (*get_mode)(struct TpmOps *me, uint8_t *mode_val);
 	int (*set_mode)(struct TpmOps *me, uint8_t mode_val);
+	int (*cr50_reset)(struct TpmOps *me, uint16_t delay_ms);
 } TpmOps;
 
 void tpm_set_ops(TpmOps *ops);
@@ -160,5 +161,22 @@ int tpm_get_mode(uint8_t *mode_val);
  * and -1 on unknown failure.
  */
 int tpm_set_mode(uint8_t mode_val);
+
+/*
+ * tpm_internal_cr50_reset()
+ *
+ * Same as tpm_cr50_reset, except for internal use.  Requires providing a
+ * TpmOps pointer.
+ */
+int tpm_internal_cr50_reset(struct TpmOps *me, uint16_t delay_ms);
+
+/*
+ * tpm_cr50_reset()
+ *
+ * Asks the Cr50 to reset after the delay specified.
+ *
+ * Returns -1 on error.
+ */
+int tpm_cr50_reset(uint16_t delay_ms);
 
 #endif /* __DRIVERS_TPM_TPM_H__ */

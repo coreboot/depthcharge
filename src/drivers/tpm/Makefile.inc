@@ -14,6 +14,7 @@
 depthcharge-$(CONFIG_DRIVER_TPM) += tpm.c
 depthcharge-$(CONFIG_DRIVER_TPM) += tpm_utils.c
 depthcharge-$(CONFIG_DRIVER_TPM) += tpm_mode.c
+depthcharge-$(CONFIG_DRIVER_TPM) += tpm_reset.c
 depthcharge-$(CONFIG_DRIVER_TPM_CR50_I2C) += cr50_i2c.c
 depthcharge-$(CONFIG_DRIVER_TPM_I2C) += i2c.c
 depthcharge-$(CONFIG_DRIVER_TPM_LPC) += lpc.c

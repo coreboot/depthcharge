@@ -41,6 +41,7 @@ struct tpm_vendor_header {
 
 /* Cr50 vendor-specific subcommand codes. 16 bits available. */
 enum vendor_cmd_cc {
+	VENDOR_CC_IMMEDIATE_RESET = 19,
 	VENDOR_CC_REPORT_TPM_STATE = 23,
 	VENDOR_CC_GET_REC_BTN = 29,
 	VENDOR_CC_TPM_MODE = 40,

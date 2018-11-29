@@ -32,6 +32,7 @@ void tpm_set_ops(TpmOps *ops)
 
 	tpm_ops->get_mode = tpm_internal_get_mode;
 	tpm_ops->set_mode = tpm_internal_set_mode;
+	tpm_ops->cr50_reset = tpm_internal_cr50_reset;
 }
 
 int tpm_xmit(const uint8_t *sendbuf, size_t send_size,
@@ -63,4 +64,12 @@ int tpm_set_mode(uint8_t mode_val)
 		return -1;
 
 	return tpm_ops->set_mode(tpm_ops, mode_val);
+}
+
+int tpm_cr50_reset(uint16_t delay_ms)
+{
+	if (!tpm_ops)
+		return -1;
+
+	return tpm_ops->cr50_reset(tpm_ops, delay_ms);
 }
