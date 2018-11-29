@@ -17,7 +17,7 @@ int tpm_internal_mode(struct TpmOps *me, uint8_t mode_val)
 	struct tpm_vendor_header *h;
 	uint8_t *m;
 	uint8_t out_mode;
-	int ret = -1;
+	int ret = TPM_SUCCESS;
 	uint32_t header_code;
 
 	size_t buffer_size = sizeof(*h) + sizeof(*m);
@@ -33,20 +33,31 @@ int tpm_internal_mode(struct TpmOps *me, uint8_t mode_val)
 	marshal_u8(m, mode_val);
 
 	if (me->xmit(me, (const uint8_t *)h, buffer_size,
-		     (uint8_t *)h, &recv_len) ||
-	    (recv_len != buffer_size))
-		printf("%s: Communications error\n", __func__);
-	else if ((header_code = unmarshal_u32(&h->code)))
-		printf("%s: Invalid header code: %d\n", __func__, header_code);
-	else {
+		     (uint8_t *)h, &recv_len)) {
+		printf("%s: IO error\n", __func__);
+		ret = -1;
+	} else if ((header_code = unmarshal_u32(&h->code))) {
+		if (header_code == VENDOR_RC_NO_SUCH_COMMAND) {
+			printf("%s: Command not supported\n", __func__);
+			ret = TPM_E_NO_SUCH_COMMAND;
+		} else {
+			printf("%s: Invalid header code: %d\n", __func__,
+			       header_code);
+			ret = -1;
+		}
+	} else if (recv_len != buffer_size) {
+		printf("%s: Invalid response\n", __func__);
+		ret = -1;
+	} else {
 		out_mode = unmarshal_u8(m);
-		if (out_mode != mode_val)
-			printf("%s: Invalid TPM mode response: %d (expect %d)\n",
+		if (out_mode != mode_val) {
+			printf("%s: Invalid TPM mode response: "
+			       "%d (expect %d)\n",
 			       __func__, out_mode, mode_val);
-		else
-			/* TPM responded as expected. */
-			ret = 0;
+			ret = -1;
+		}
 	}
+
 
 	free(h);
 

@@ -60,6 +60,14 @@ enum {
 	TpmModeMax,
 };
 
+/**
+ * Copied from vboot_reference's firmware/include/tss_constants.h.  Ideally
+ * there should be no need for this duplication after merging vboot_reference
+ * and depthcharge TPM drivers.
+ */
+#define TPM_SUCCESS ((uint32_t) 0x00000000)
+#define TPM_E_NO_SUCH_COMMAND        ((uint32_t) 0x0000500d)  /* vboot local */
+
 typedef struct TpmOps
 {
 	int (*xmit)(struct TpmOps *me, const uint8_t *sendbuf, size_t send_size,
@@ -125,7 +133,8 @@ int tpm_internal_mode(struct TpmOps *me, uint8_t mode_val);
  *   - Some other communication error occurs
  *  Otherwise, the function call succeeds.
  *
- * Returns 0 on success or -1 on failure.
+ * Returns TPM_SUCCESS on success, TPM_E_* on known failure,
+ * and -1 on unknown failure.
  */
 int tpm_set_mode(uint8_t mode_val);
 

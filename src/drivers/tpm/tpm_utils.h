@@ -46,6 +46,11 @@ enum vendor_cmd_cc {
 	VENDOR_CC_TPM_MODE = 40,
 };
 
+/* Error codes reported by extension and vendor commands. */
+enum vendor_cmd_rc {
+	VENDOR_RC_NO_SUCH_COMMAND = 0x57f,
+};
+
 #define TPM_ST_NO_SESSIONS 0x8001
 
 static inline void marshal_u8(void *buf, uint8_t val) { *(uint8_t *)buf = val; }
