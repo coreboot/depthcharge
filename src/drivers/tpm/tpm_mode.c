@@ -3,9 +3,8 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  *
- * This is a module which allows retreiving internal tpm state, when
- * supported. It needs to be tightly synchronised with the cr50 TPM codebase
- * in src/third_party/tpm2
+ * This module allows setting the TPM mode on Cr50.  It needs to be tightly
+ * synchronised with the cr50 TPM codebase in src/third_party/tpm2
  */
 
 #include <libpayload.h>
