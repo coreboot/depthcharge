@@ -54,7 +54,8 @@
 #define OTP_UPDATE_MAX		100
 #define OTP_WORDS_MAX		0x4000		/* 128KB + ECC */
 #define OTP_WORD_SIZE		9		/* 8B + ECC */
-#define OTP_PROG_CYCLES		6		/* OTP writes are hard */
+#define OTP_PROG_CYCLES		6		/* OTP writes cycles */
+#define OTP_PROG_FAILED_TRY_CNT	3		/* OTP program failed try count */
 #define OTP_HEADER_0BIT_LIMIT	10		/* max 0's in inactive header */
 
 #define OTP_SCRATCH_SLOT0	(0x3900 + OTP_DIR_SLOT0)
@@ -701,6 +702,7 @@ static int anx3429_update_fw_at(Anx3429 *me,
 	uint32_t upd_dir;
 	uint16_t upd_start;
 	int rval;
+	uint8_t otp_word[OTP_WORD_SIZE];
 
 	rval = anx3429_find_active_header(me, dir_start, &act_start, &act_size);
 	if (rval < 0)
@@ -741,13 +743,7 @@ static int anx3429_update_fw_at(Anx3429 *me,
 	printf("anx3429.%d: writing new FW to offset 0x%04x, size 0x%04x\n",
 	       me->ec_pd_id, upd_start, fw_words);
 
-	for (int i = 0; i < fw_words; ++i) {
-		const uint8_t *w = &fw_data[i * OTP_WORD_SIZE];
-
-		if (anx3429_otp_prog72verify(me, upd_start + i, w) != 0)
-			return -1;
-	}
-
+	/* initial FW header */
 	memset(header, 0, sizeof(header));
 	header[0] = upd_start;
 	header[1] = upd_start >> 8;
@@ -768,16 +764,90 @@ static int anx3429_update_fw_at(Anx3429 *me,
 	printf("anx3429.%d: writing new FW header to offset 0x%04x.\n",
 	       me->ec_pd_id, upd_dir);
 
-	if (anx3429_otp_prog72verify(me, upd_dir, header) != 0)
+	/*
+	 * Step 1,  repeat 6 times: write firmware data,
+	 * new header, and mask old header data.
+	 */
+	for (int repeat = OTP_PROG_CYCLES; repeat > 0; repeat--) {
+
+		for (int i = 0; i < fw_words; ++i) {
+			const uint8_t *w = &fw_data[i * OTP_WORD_SIZE];
+
+			if (anx3429_otp_write72raw(me, upd_start + i, w) != 0) {
+				printf("anx3429.%d: program data at 0x%04x on iteration %d with error!\n",
+					me->ec_pd_id, upd_start + i, repeat);
+				return -1;
+			}
+		}
+
+		if (anx3429_otp_write72raw(me, upd_dir, header) != 0) {
+			printf("anx3429.%d: program header at 0x%04x on iteration %d with error!\n",
+				me->ec_pd_id, upd_dir, repeat);
+			return -1;
+		}
+
+	}
+
+
+	/* Step2, Verify OTP data*/
+	for (int i = 0; i < fw_words; ++i) {
+		const uint8_t *w = &fw_data[i * OTP_WORD_SIZE];
+		if (anx3429_otp_read72raw(me, upd_start + i, otp_word) != 0)
+			return -1;
+
+		if (memcmp(w, otp_word, sizeof(otp_word)) != 0) {
+			printf("anx3429.%d: programmed word at 0x%04x with error!\n",
+			       me->ec_pd_id, upd_start + i);
+
+			return -1;
+		}
+	}
+
+	if (anx3429_otp_read72raw(me, upd_dir, otp_word) != 0)
 		return -1;
 
+	if (memcmp(header, otp_word, sizeof(otp_word)) != 0) {
+		printf("anx3429.%d: OTP header programmed word at 0x%04x with error!\n",
+		        me->ec_pd_id, upd_dir);
+		return -1;
+	}
+
+
 	/* mask preceding FW headers */
+	for (int repeat = OTP_PROG_CYCLES; repeat > 0; repeat--) {
+		for (; act_dir < upd_dir; ++act_dir) {
+			printf("anx3429.%d: masking FW header at 0x%04x.\n",
+			       me->ec_pd_id, act_dir);
+
+			/* Only write 0 bit to 1 bit for the old header,
+			 * because OTP data can not be written as "1" too many times.
+			 * For example, one byte of the old header: 0x01,
+			 * should write 0xFE to mask it.
+			 */
+			if (anx3429_otp_read72raw(me, act_dir, otp_word) != 0) {
+				debug("reading old header failed\n");
+				return -1;
+			}
+			for (int i = 0; i < OTP_WORD_SIZE; i++) {
+				otp_word[i] = ~otp_word[i];
+			}
+			if (anx3429_otp_write72raw(me, act_dir, otp_word) != 0) {
+				debug("masking FW header failed\n");
+				return -1;
+			}
+		}
+	}
+
+
 
 	for (; act_dir < upd_dir; ++act_dir) {
-		printf("anx3429.%d: masking FW header at 0x%04x.\n",
-		       me->ec_pd_id, act_dir);
-		if (anx3429_otp_prog72verify(me, act_dir, inactive_word) != 0) {
-			debug("oops\n");
+		if (anx3429_otp_read72raw(me, act_dir, otp_word) != 0) {
+			debug("reading old header failed\n");
+			return -1;
+		}
+		if (memcmp(inactive_word, otp_word, sizeof(otp_word)) != 0) {
+			printf("anx3429.%d: OTP mask header at 0x%04x as invailed with error!\n",
+			       me->ec_pd_id, act_dir);
 			return -1;
 		}
 	}
@@ -821,10 +891,16 @@ static int __must_check anx3429_update_primary(Anx3429 *me,
 {
 	const uint8_t *blob;
 	uint16_t blob_words;
+	int try_count;
 
 	blob = image + ANX_UPD_BLOB_BOFFSET;
 	blob_words = image_size / OTP_WORD_SIZE - ANX_UPD_BLOB_WOFFSET;
-	return anx3429_update_fw_at(me, OTP_DIR_SLOT0, blob, blob_words);
+	for (try_count = OTP_PROG_FAILED_TRY_CNT; try_count > 0; try_count--) {
+		if (anx3429_update_fw_at(me, OTP_DIR_SLOT0, blob, blob_words) == 0)
+			return 0;
+	}
+
+	return -1;
 }
 
 static VbError_t anx3429_check_hash(const VbootAuxFwOps *vbaux,
