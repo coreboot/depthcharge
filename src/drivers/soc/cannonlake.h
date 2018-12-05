@@ -14,8 +14,8 @@
 #ifndef __DRIVERS_SOC_CANNONLAKE_H__
 #define __DRIVERS_SOC_CANNONLAKE_H__
 
-/* I2C Designware Controller runs at 133MHz */
-#define CANNONLAKE_DW_I2C_MHZ	133
+/* I2C Designware Controller runs at 216MHz */
+#define CANNONLAKE_DW_I2C_MHZ	216
 
 /* GPE definitions */
 
