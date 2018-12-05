@@ -95,7 +95,6 @@ static int board_setup(void)
 	// the state of these from the EC whenever vboot polls them.
 	if (IS_ENABLED(CONFIG_GRU_SCARLET)) {
 		flag_replace(FLAG_LIDSW, new_gpio_high()); /* always open */
-		flag_replace(FLAG_PWRSW, new_gpio_low());  /* never pressed */
 	} else {
 		flag_replace(FLAG_LIDSW, cros_ec_lid_switch_flag());
 		flag_replace(FLAG_PWRSW, cros_ec_power_btn_flag());

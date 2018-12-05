@@ -46,7 +46,6 @@ static int board_setup(void)
 {
 	sysinfo_install_flags(new_mtk_gpio_input);
 	flag_replace(FLAG_LIDSW, new_gpio_high());
-	flag_replace(FLAG_PWRSW, new_gpio_low());
 
 	power_set_ops(&psci_power_ops);
 

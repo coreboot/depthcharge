@@ -19,13 +19,18 @@
 #include <lzma.h>
 #include <vboot_api.h>
 
+#include "config.h"
 #include "vboot/util/flag.h"
 
 uint32_t VbExIsShutdownRequested(void)
 {
 	int lidsw = flag_fetch(FLAG_LIDSW);
-	int pwrsw = flag_fetch(FLAG_PWRSW);
+	int pwrsw = 0;
 	uint32_t shutdown_request = 0;
+
+	// Power button is always handled as a keyboard key in detachable UI.
+	if (!IS_ENABLED(CONFIG_DETACHABLE_UI))
+		pwrsw = flag_fetch(FLAG_PWRSW);
 
 	if (lidsw < 0 || pwrsw < 0) {
 		// There isn't any way to return an error, so just hang.
