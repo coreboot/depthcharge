@@ -62,9 +62,12 @@ static int tpm_mode_vb2ex_translate(int ret) {
 
 int vb2ex_tpm_get_mode(enum vb2_tpm_mode *mode_val)
 {
+	uint8_t mode_val_u8;
+	int ret = tpm_mode_vb2ex_translate(tpm_get_mode(&mode_val_u8));
 	/* Cast safely to uint8_t, since we know enum vb2_tpm_mode values
 	 * correspond directly to TPM mode values. */
-	return tpm_mode_vb2ex_translate(tpm_get_mode((uint8_t *)mode_val));
+	*mode_val = (enum vb2_tpm_mode)mode_val_u8;
+	return ret;
 }
 
 int vb2ex_tpm_set_mode(enum vb2_tpm_mode mode_val)
