@@ -130,11 +130,6 @@ struct ListNode *get_altfw_list(struct cbfs_media *media)
 	ListNode *head, *tail;
 	size_t size;
 
-	if (cbfs_media_from_fmap("RW_LEGACY", media)) {
-		printf("%s: Cannot set up CBFS\n", __func__);
-		return NULL;
-	}
-
 	/* Load bootloader list from cbfs */
 	loaders = cbfs_get_file_content(media, "altfw/list", CBFS_TYPE_RAW,
 					&size);
@@ -176,6 +171,11 @@ struct ListNode *get_altfw_list(struct cbfs_media *media)
 
 struct ListNode *payload_get_altfw_list(struct cbfs_media *media)
 {
+	if (cbfs_media_from_fmap("RW_LEGACY", media)) {
+		printf("%s: Cannot set up CBFS\n", __func__);
+		return NULL;
+	}
+
 	if (!altfw_head)
 		altfw_head = get_altfw_list(media);
 
