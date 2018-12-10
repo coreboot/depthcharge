@@ -49,7 +49,7 @@ int payload_run(struct cbfs_media *media, const char *payload_name);
  * seqnum;filename;name;desc
  *
  * @media:	Returns the CBFS media to read from (useful if the caller then
- *		wants to call payload_run()
+ *		wants to call payload_run())
  * @return	list of alternative-firmware bootloaders (which may be empty)
  */
 struct ListNode *payload_get_altfw_list(struct cbfs_media *media);
