@@ -1109,6 +1109,13 @@ int cros_ec_battery_cutoff(uint8_t flags)
 	return 0;
 }
 
+static VbError_t vboot_battery_cutoff(VbootEcOps *vbec)
+{
+	if (cros_ec_battery_cutoff(EC_BATTERY_CUTOFF_FLAG_AT_SHUTDOWN) < 0)
+		return VBERROR_UNKNOWN;
+	return VBERROR_SUCCESS;
+}
+
 int cros_ec_set_motion_sense_activity(uint32_t activity, uint32_t value)
 {
 	struct ec_params_motion_sense params;
@@ -1274,6 +1281,13 @@ int cros_ec_read_limit_power_request(int *limit_power)
 
 	*limit_power = r.get_param.value;
 	return 0;
+}
+
+static VbError_t vboot_check_limit_power(VbootEcOps *vbec, int *limit_power)
+{
+	if (cros_ec_read_limit_power_request(limit_power) < 0)
+		return VBERROR_UNKNOWN;
+	return VBERROR_SUCCESS;
 }
 
 int cros_ec_read_batt_state_of_charge(uint32_t *state)
@@ -1444,6 +1458,8 @@ CrosEc *new_cros_ec(CrosEcBusOps *bus, int devidx, GpioOps *interrupt_gpio)
 	me->vboot.protect = vboot_protect;
 	me->vboot.entering_mode = vboot_entering_mode;
 	me->vboot.reboot_to_ro = vboot_reboot_to_ro;
+	me->vboot.battery_cutoff = vboot_battery_cutoff;
+	me->vboot.check_limit_power = vboot_check_limit_power;
 
 	return me;
 }

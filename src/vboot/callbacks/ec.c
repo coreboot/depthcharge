@@ -25,8 +25,8 @@
 
 #include "base/timestamp.h"
 #include "config.h"
-#include "drivers/ec/cros/ec.h"
 #include "drivers/ec/vboot_aux_fw.h"
+#include "drivers/ec/vboot_ec.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/cbfs.h"
 #include "image/fmap.h"
@@ -158,13 +158,14 @@ VbError_t VbExEcEnteringMode(int devidx, enum VbEcBootMode_t mode)
 
 VbError_t VbExEcVbootDone(int in_recovery)
 {
+	VbootEcOps *ec = vboot_ec[PRIMARY_VBOOT_EC];
 	int limit_power;
 	int limit_power_wait_time = 0;
 	int message_printed = 0;
 
 	/* Ensure we have enough power to continue booting */
 	while(1) {
-		if (cros_ec_read_limit_power_request(&limit_power)) {
+		if (ec->check_limit_power(ec, &limit_power)) {
 			printf("Failed to check EC limit power flag.\n");
 			return VBERROR_UNKNOWN;
 		}
@@ -196,7 +197,8 @@ VbError_t VbExEcVbootDone(int in_recovery)
 }
 
 VbError_t VbExEcBatteryCutOff(void) {
-	 return (cros_ec_battery_cutoff(EC_BATTERY_CUTOFF_FLAG_AT_SHUTDOWN) == 0
+	VbootEcOps *ec = vboot_ec[PRIMARY_VBOOT_EC];
+	return (ec->battery_cutoff(ec) == 0
 		 ? VBERROR_SUCCESS : VBERROR_UNKNOWN);
 }
 
