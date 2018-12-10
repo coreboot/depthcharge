@@ -35,9 +35,19 @@ typedef struct VbootEcOps {
 
 	/* Tells the EC to reboot to RO on next AP shutdown. */
 	VbError_t (*reboot_to_ro)(struct VbootEcOps *me);
+
+	/*
+	 * Tells the EC to cut off battery.  This is expected to take
+	 * effect when the system shuts down, not immediately.
+	 */
+	VbError_t (*battery_cutoff)(struct VbootEcOps *me);
+
+	/* Check for EC request to limit power */
+	VbError_t (*check_limit_power)(struct VbootEcOps *me, int *limit_power);
 } VbootEcOps;
 
 #define NUM_MAX_VBOOT_ECS 2
+#define PRIMARY_VBOOT_EC  0
 
 extern VbootEcOps *vboot_ec[];
 
