@@ -33,11 +33,17 @@ struct altfw_info {
 /**
  * payload_run() - Load and run a named payload file from the given flash area
  *
- * @media: CBFS media to load from
  * @payload_name: Name of CBFS file to run
  * @return non-zero on error (on success this does not return)
  */
-int payload_run(struct cbfs_media *media, const char *payload_name);
+int payload_run(const char *payload_name);
+
+/**
+ * payload_get_media() - Get the media info for the RW_LEGACY area
+ *
+ * @return pointer to media if OK, else NULL
+ */
+struct cbfs_media *payload_get_media(void);
 
 /**
  * Read and parse the list of alternative-firmware bootloaders
@@ -48,10 +54,9 @@ int payload_run(struct cbfs_media *media, const char *payload_name);
  *
  * seqnum;filename;name;desc
  *
- * @media:	Returns the CBFS media to read from (useful if the caller then
- *		wants to call payload_run())
- * @return	list of alternative-firmware bootloaders (which may be empty)
+ * @return	list of alternative-firmware bootloaders (which may be empty),
+ *		or NULL on error
  */
-struct ListNode *payload_get_altfw_list(struct cbfs_media *media);
+struct ListNode *payload_get_altfw_list(void);
 
 #endif // __BOOT_PAYLOAD_H__

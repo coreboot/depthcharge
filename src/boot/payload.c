@@ -15,6 +15,7 @@
  * GNU General Public License for more details.
  */
 
+#include <stdbool.h>
 #include <libpayload.h>
 #include <lzma.h>
 #include <cbfs.h>
@@ -29,6 +30,10 @@
 
 /* List of available bootloaders */
 static ListNode *altfw_head;
+
+/* Media to use for reading payloads */
+static struct cbfs_media cbfs_media;
+static bool cbfs_media_valid;
 
 /*
  * payload_load() - Load an image from the given payload
@@ -94,11 +99,32 @@ static int payload_load(struct cbfs_payload *payload, void **entryp)
 	}
 }
 
-int payload_run(struct cbfs_media *media, const char *payload_name)
+struct cbfs_media *payload_get_media(void)
 {
+	if (!cbfs_media_valid) {
+		int ret;
+
+		ret = cbfs_media_from_fmap("RW_LEGACY", &cbfs_media);
+		if (ret) {
+			printf("%s: Cannot set up CBFS\n", __func__);
+			return NULL;
+		}
+		cbfs_media_valid = true;
+	}
+
+	return &cbfs_media;
+}
+
+int payload_run(const char *payload_name)
+{
+	struct cbfs_media *media;
 	struct cbfs_payload *payload;
 	void *entry;
 	int ret;
+
+	media = payload_get_media();
+	if (!media)
+		return 1;
 
 	payload = cbfs_load_payload(media, payload_name);
 	if (!payload) {
@@ -124,7 +150,7 @@ int payload_run(struct cbfs_media *media, const char *payload_name)
 	return 1;
 }
 
-struct ListNode *get_altfw_list(struct cbfs_media *media)
+static struct ListNode *get_altfw_list(struct cbfs_media *media)
 {
 	char *loaders, *ptr;
 	ListNode *head, *tail;
@@ -169,12 +195,13 @@ struct ListNode *get_altfw_list(struct cbfs_media *media)
 	return head;
 }
 
-struct ListNode *payload_get_altfw_list(struct cbfs_media *media)
+struct ListNode *payload_get_altfw_list(void)
 {
-	if (cbfs_media_from_fmap("RW_LEGACY", media)) {
-		printf("%s: Cannot set up CBFS\n", __func__);
+	struct cbfs_media *media;
+
+	media = payload_get_media();
+	if (!media)
 		return NULL;
-	}
 
 	if (!altfw_head)
 		altfw_head = get_altfw_list(media);

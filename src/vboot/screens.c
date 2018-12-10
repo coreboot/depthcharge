@@ -924,10 +924,9 @@ static void cons_text(int linenum, int seqnum, const char *name,
 
 static VbError_t vboot_draw_altfw_pick(struct params *p)
 {
-	struct cbfs_media media;
 	ListNode *head;
 
-	head = payload_get_altfw_list(&media);
+	head = payload_get_altfw_list();
 	RETURN_ON_ERROR(vboot_draw_base_screen(p));
 	cons_text(0, -1,
 		  "Press a numeric key to select an alternative bootloader:",
@@ -958,14 +957,13 @@ static VbError_t vboot_draw_options_menu(struct params *p)
 
 static VbError_t vboot_draw_altfw_menu(struct params *p)
 {
-	struct cbfs_media media;
 	struct altfw_info *node;
 	ListNode *head;
 
 	if (p->redraw_base)
 		RETURN_ON_ERROR(vboot_draw_base_screen(p));
 
-	head = payload_get_altfw_list(&media);
+	head = payload_get_altfw_list();
 
 	int i = 0;
 	if (head) {
