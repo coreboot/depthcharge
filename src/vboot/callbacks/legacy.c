@@ -25,11 +25,10 @@
 uint32_t VbExGetAltFwIdxMask(void)
 {
 	struct altfw_info *node;
-	struct cbfs_media media;
 	uint32_t mask = 0;
 	ListNode *head;
 
-	head = payload_get_altfw_list(&media);
+	head = payload_get_altfw_list();
 	if (head) {
 		list_for_each(node, *head, list_node) {
 			if (node->seqnum)
@@ -42,11 +41,10 @@ uint32_t VbExGetAltFwIdxMask(void)
 
 int VbExLegacy(int altfw_num)
 {
-	struct cbfs_media media;
 	ListNode *head;
 
 	/* If we don't have a particular one to boot, use 0. */
-	head = payload_get_altfw_list(&media);
+	head = payload_get_altfw_list();
 	if (head) {
 		struct altfw_info *node;
 
@@ -54,7 +52,7 @@ int VbExLegacy(int altfw_num)
 			if (node->seqnum == altfw_num) {
 				printf("Running bootloader '%s: %s'\n",
 				       node->name, node->desc);
-				return payload_run(&media, node->filename);
+				return payload_run(node->filename);
 			}
 		}
 	}
@@ -64,7 +62,7 @@ int VbExLegacy(int altfw_num)
 	 * TODO(sjg@chromium.org): Drop this once everything is migrated to
 	 * altfw.
 	 */
-	if (payload_run(&media, "payload"))
+	if (payload_run("payload"))
 		printf("%s: Could not find default legacy payload\n", __func__);
 	printf("%s: Could not find bootloader #%d\n", __func__, altfw_num);
 
