@@ -28,6 +28,8 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
 #include "drivers/soc/cannonlake.h"
+#include "drivers/sound/hda_codec.h"
+#include "drivers/sound/sound.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/nvme.h"
@@ -67,6 +69,11 @@ static int board_setup(void)
 	NvmeCtrlr *nvme_b = new_nvme_ctrlr(PCI_DEV(0, 0x1d, 0));
 	list_insert_after(&nvme_b->ctrlr.list_node,
 			  &fixed_block_dev_controllers);
+
+	/* Boot beep uses HDA codec */
+	HdaCodec *codec = new_hda_codec();
+	sound_set_ops(&codec->ops);
+	set_hda_beep_nid_override(codec, 1);
 
 	return 0;
 }
