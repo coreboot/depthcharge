@@ -10,6 +10,11 @@
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
 
+config DRIVER_FLASH_FAST_SPI
+	bool "Intel Fast SPI flash"
+	select DRIVER_FLASH
+	default n
+
 config DRIVER_FLASH_MEMMAPPED
 	bool "Memory mapped flash"
 	select DRIVER_FLASH
