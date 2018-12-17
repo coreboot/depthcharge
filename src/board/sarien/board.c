@@ -63,6 +63,11 @@ static int board_setup(void)
 	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x1d, 4));
 	list_insert_after(&nvme->ctrlr.list_node, &fixed_block_dev_controllers);
 
+	/* M.2 2280 SSD x4 (if root ports are coalesced)  */
+	NvmeCtrlr *nvme_b = new_nvme_ctrlr(PCI_DEV(0, 0x1d, 0));
+	list_insert_after(&nvme_b->ctrlr.list_node,
+			  &fixed_block_dev_controllers);
+
 	return 0;
 }
 
