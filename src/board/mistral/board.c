@@ -22,6 +22,42 @@
 #include "vboot/util/flag.h"
 #include "boot/fit.h"
 
+static const VpdDeviceTreeMap vpd_dt_map[] = {
+	{ "cherokee_mac", "/soc@0/wifi@a000000/local-mac-address" },
+	{ "eth_wan_mac", "/soc@0/ethernet@7a80000/mdio/switch0@16/ports/port@2/local-mac-address" },
+	{ "eth_lan_mac", "/soc@0/ethernet@7a80000/mdio/switch0@16/ports/port@3/local-mac-address" },
+	{ "bluetooth_mac", "/soc@0/serial@78b2000/wcn3990-bt/local-bd-address" },
+	{ "cascade_mac", "/soc@0/pci@10000000/pcie@0/wifi@0,0/local-mac-address" },
+
+	{}
+};
+
+static const DtPathMap calibration_maps[] = {
+	{1, "/soc@0/pci@10000000/pcie@0/wifi@0,0/qcom,ath10k-pre-calibration-data",
+	"wifi_base64_calibration0"},
+	{}
+};
+
+static const DtPathMap cc_maps[] = {
+	{1, "/soc@0/pci@10000000/pcie@0/wifi@0,0", "qcom,ath10k-country-code"},
+	{1, "/soc@0/wifi@a000000", "qcom,ath10k-country-code"},
+	{}
+};
+
+static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
+{
+	int rv = 0;
+
+	rv = dt_set_wifi_calibration(tree, calibration_maps);
+	rv |= dt_set_wifi_country_code(tree, cc_maps);
+
+	return rv;
+}
+
+static DeviceTreeFixup ipq_enet_fixup = {
+	.fixup = fix_device_tree
+};
+
 static int board_setup(void)
 {
 	/* stub out required GPIOs for vboot */
@@ -29,6 +65,10 @@ static int board_setup(void)
 	flag_replace(FLAG_PWRSW, new_gpio_low());
 
 	fit_add_compat("qcom,qcs405-mtp");
+
+	dt_register_vpd_mac_fixup(vpd_dt_map);
+
+	list_insert_after(&ipq_enet_fixup.list_node, &device_tree_fixups);
 
 	return 0;
 }
