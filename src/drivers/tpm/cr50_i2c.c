@@ -244,15 +244,29 @@ static int request_locality(Cr50I2c *tpm, int loc)
 	return -1;
 }
 
-// cr50 requires all 4 bytes of status register to be read
+
+/*
+ * cr50_i2c_tpm_status() - get TPM status
+ *
+ * Note: This would probably be better returning an int so we can indicate an
+ * error code. For now it returns 0 in the case of an error.
+ *
+ * cr50 requires all 4 bytes of status register to be read
+ *
+ * Returns current TPM status, or 0 on error
+ */
 static uint8_t cr50_i2c_tpm_status(I2cTpmChipOps *me)
 {
 	Cr50I2c *tpm = container_of(me, Cr50I2c, base.chip_ops);
 	uint8_t buf[4];
-	if (cr50_i2c_read(tpm, tpm_sts(tpm->base.locality), buf, sizeof(buf)))
-		return 0;
-	else
-		return buf[0];
+
+	if (cr50_i2c_read(tpm, tpm_sts(tpm->base.locality), buf, sizeof(buf))) {
+		printf("%s: Read failure, so returning 0 as tpm_status\n",
+		       __func__);
+		return 0; /* yes, 0 */
+	}
+
+	return buf[0];
 }
 
 /*
@@ -375,10 +389,15 @@ static int cr50_i2c_tpm_recv(I2cTpmChipOps *me, uint8_t *buf, size_t buf_len)
 	return current;
 
 out_err:
-	// Abort current transaction if still pending
-	if (tpm->base.chip_ops.status(&tpm->base.chip_ops) &
-	    TpmStsCommandReady)
-		cr50_i2c_tpm_ready(&tpm->base.chip_ops); // May fail
+	/*
+	 * Abort current transaction if still pending. This will NOT abort
+	 * it if cr50_i2c_tpm_status() fails, since it returns 0 in that case.
+	 * We cannot detect that separately from a valid '0' result, so this
+	 * is an escape, of some sort.
+	 */
+	if (cr50_i2c_tpm_status(&tpm->base.chip_ops) & TpmStsCommandReady)
+		cr50_i2c_tpm_ready(&tpm->base.chip_ops); // May fail, will log
+
 	return -1;
 }
 
@@ -392,7 +411,11 @@ static int cr50_i2c_tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
 
 	uint64_t start = timer_us(0);
 
-	while (!(tpm->base.chip_ops.status(&tpm->base.chip_ops) &
+	/*
+	 * Since cr50_i2c_tpm_status() returns 0 on error, this will loop in
+	 * that case.
+	 */
+	while (!(cr50_i2c_tpm_status(&tpm->base.chip_ops) &
 		 TpmStsCommandReady)) {
 
 		if (timer_us(start) > Cr50TimeoutLong)
@@ -446,10 +469,15 @@ static int cr50_i2c_tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
 	return sent;
 
 out_err:
-	// Abort current transaction if still pending
-	if (tpm->base.chip_ops.status(&tpm->base.chip_ops) &
-	    TpmStsCommandReady)
-		cr50_i2c_tpm_ready(&tpm->base.chip_ops);
+	/*
+	 * Abort current transaction if still pending. This will NOT abort
+	 * it if cr50_i2c_tpm_status() fails, since it returns 0 in that case.
+	 * We cannot detect that separately from a valid '0' result, so this
+	 * is an escape, of some sort.
+	 */
+	if (cr50_i2c_tpm_status(&tpm->base.chip_ops) & TpmStsCommandReady)
+		cr50_i2c_tpm_ready(&tpm->base.chip_ops); // May fail, will log
+
 	return -1;
 }
 
