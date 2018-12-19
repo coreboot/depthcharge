@@ -69,8 +69,10 @@ static int cr50_i2c_wait_tpm_ready(Cr50I2c *tpm)
 	start = timer_us(0);
 
 	while (!tpm->irq_status())
-		if (timer_us(start) > timeout)
+		if (timer_us(start) > timeout) {
+			printf("%s: Timeout waiting for ready", __func__);
 			return -1;
+		}
 
 	return 0;
 }
@@ -198,6 +200,7 @@ static int check_locality(Cr50I2c *tpm, int loc)
 
 	if ((buf & mask) == mask)
 		return loc;
+	printf("%s: Failed to check locality\n",__func__);
 
 	return -1;
 }
@@ -294,7 +297,7 @@ static int cr50_i2c_wait_burststs(Cr50I2c *tpm, uint8_t mask,
 		udelay(Cr50TimeoutShort);
 	}
 
-	printf("%s: Timeout reading burst and status\n", __func__);
+	printf("%s: Timeout reading burst status\n", __func__);
 	return -1;
 }
 
@@ -308,8 +311,11 @@ static int cr50_i2c_tpm_recv(I2cTpmChipOps *me, uint8_t *buf, size_t buf_len)
 	uint8_t addr = tpm_data_fifo(tpm->base.locality);
 	uint8_t mask = TpmStsValid | TpmStsDataAvail;
 
-	if (buf_len < TPM_HEADER_SIZE)
+	if (buf_len < TPM_HEADER_SIZE) {
+		printf("%s: INTERNAL ERROR: buffer %zu too small\n", __func__,
+		       buf_len);
 		return -1;
+	}
 
 	if (cr50_i2c_wait_burststs(tpm, mask, &burstcnt, &status)) {
 		printf("%s: First chunk not available\n", __func__);
