@@ -255,13 +255,25 @@ static uint8_t cr50_i2c_tpm_status(I2cTpmChipOps *me)
 		return buf[0];
 }
 
-// cr50 requires all 4 bytes of status register to be written
+/*
+ * cr50_i2c_tpm_ready() - Write TpmStsCommandReady to cr50
+ *
+ * cr50 requires all 4 bytes of status register to be written
+ *
+ * An error cannot be reported by this function, but it is logged. The caller
+ * can check the status itself.
+ *
+ * @me: base.chip_ops member of Cr50I2c tpm
+ */
 static void cr50_i2c_tpm_ready(I2cTpmChipOps *me)
 {
 	Cr50I2c *tpm = container_of(me, Cr50I2c, base.chip_ops);
 	uint8_t buf[4] = { TpmStsCommandReady };
+
+	// Ignore any write error, but it is logged.
 	cr50_i2c_write(tpm, tpm_sts(tpm->base.locality), buf, sizeof(buf));
 	udelay(Cr50TimeoutShort);
+	printf("%s: Failed to write TpmStsCommandReady\n", __func__);
 }
 
 /*
@@ -366,7 +378,7 @@ out_err:
 	// Abort current transaction if still pending
 	if (tpm->base.chip_ops.status(&tpm->base.chip_ops) &
 	    TpmStsCommandReady)
-		cr50_i2c_tpm_ready(&tpm->base.chip_ops);
+		cr50_i2c_tpm_ready(&tpm->base.chip_ops); // May fail
 	return -1;
 }
 
@@ -386,6 +398,11 @@ static int cr50_i2c_tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
 		if (timer_us(start) > Cr50TimeoutLong)
 			goto out_err;
 
+		/*
+		 * This may fail, but we will presumably detect failure in the
+		 * while loop condition abive, and cr50_i2c_tpm_ready() will log
+		 * the error. So ignore the error here.
+		 */
 		cr50_i2c_tpm_ready(&tpm->base.chip_ops);
 	}
 
