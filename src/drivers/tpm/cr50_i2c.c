@@ -48,7 +48,13 @@ enum {
 	CR50_DID_VID = 0x00281ae0L
 };
 
-// Wait for interrupt to indicate TPM is ready
+/*
+ * cr50_i2c_wait_tpm_ready() - wait until TPM is ready for more data
+ *
+ * Wait for interrupt (or GPIO) to indicate TPM is ready
+ *
+ * Return -1 on timeout error, 0 on success.
+ */
 static int cr50_i2c_wait_tpm_ready(Cr50I2c *tpm)
 {
 	uint64_t start, timeout;
@@ -106,7 +112,7 @@ static int cr50_i2c_read(Cr50I2c *tpm, uint8_t addr, uint8_t *buffer,
 	}
 
 	// Wait for TPM to be ready with response data
-	if (cr50_i2c_wait_tpm_ready(tpm) < 0)
+	if (cr50_i2c_wait_tpm_ready(tpm))
 		return -1;
 
 	// Read response data frrom the TPM
@@ -187,7 +193,7 @@ static int check_locality(Cr50I2c *tpm, int loc)
 	uint8_t mask = TpmAccessValid | TpmAccessActiveLocality;
 	uint8_t buf;
 
-	if (cr50_i2c_read(tpm, tpm_access(loc), &buf, 1) < 0)
+	if (cr50_i2c_read(tpm, tpm_access(loc), &buf, 1))
 		return -1;
 
 	if ((buf & mask) == mask)
@@ -202,7 +208,7 @@ static void release_locality(Cr50I2c *tpm, int force)
 	uint8_t addr = tpm_access(tpm->base.locality);
 	uint8_t buf;
 
-	if (cr50_i2c_read(tpm, addr, &buf, 1) < 0)
+	if (cr50_i2c_read(tpm, addr, &buf, 1))
 		return;
 
 	if (force || (buf & mask) == mask) {
@@ -220,7 +226,7 @@ static int request_locality(Cr50I2c *tpm, int loc)
 	if (check_locality(tpm, loc) == loc)
 		return loc;
 
-	if (cr50_i2c_write(tpm, tpm_access(loc), &buf, 1) < 0)
+	if (cr50_i2c_write(tpm, tpm_access(loc), &buf, 1))
 		return -1;
 
 	uint64_t start = timer_us(0);
@@ -240,8 +246,7 @@ static uint8_t cr50_i2c_tpm_status(I2cTpmChipOps *me)
 {
 	Cr50I2c *tpm = container_of(me, Cr50I2c, base.chip_ops);
 	uint8_t buf[4];
-	if (cr50_i2c_read(tpm, tpm_sts(tpm->base.locality),
-			  buf, sizeof(buf)) < 0)
+	if (cr50_i2c_read(tpm, tpm_sts(tpm->base.locality), buf, sizeof(buf)))
 		return 0;
 	else
 		return buf[0];
@@ -256,6 +261,15 @@ static void cr50_i2c_tpm_ready(I2cTpmChipOps *me)
 	udelay(Cr50TimeoutShort);
 }
 
+/*
+ * cr50_i2c_wait_burststs() - Wait for updated burst status
+ *
+ * @tpm: TPM chip information
+ * @mask: Mask for status byte
+ * @burst: Returns new burst length
+ * @status: Returns new status byte
+ * Returns -1 on error, 0 on success.
+ */
 static int cr50_i2c_wait_burststs(Cr50I2c *tpm, uint8_t mask,
 				  size_t *burst, int *status)
 {
@@ -265,7 +279,7 @@ static int cr50_i2c_wait_burststs(Cr50I2c *tpm, uint8_t mask,
 	while (timer_us(start) < Cr50TimeoutLong) {
 
 		if (cr50_i2c_read(tpm, tpm_sts(tpm->base.locality),
-				  (uint8_t *)&buf, sizeof(buf)) < 0) {
+				  (uint8_t *)&buf, sizeof(buf))) {
 			udelay(Cr50TimeoutShort);
 			continue;
 		}
@@ -297,13 +311,13 @@ static int cr50_i2c_tpm_recv(I2cTpmChipOps *me, uint8_t *buf, size_t buf_len)
 	if (buf_len < TPM_HEADER_SIZE)
 		return -1;
 
-	if (cr50_i2c_wait_burststs(tpm, mask, &burstcnt, &status) < 0) {
+	if (cr50_i2c_wait_burststs(tpm, mask, &burstcnt, &status)) {
 		printf("%s: First chunk not available\n", __func__);
 		goto out_err;
 	}
 
 	// Read first chunk of burstcnt bytes
-	if (cr50_i2c_read(tpm, addr, buf, burstcnt) < 0) {
+	if (cr50_i2c_read(tpm, addr, buf, burstcnt)) {
 		printf("%s: Read failed\n", __func__);
 		goto out_err;
 	}
@@ -321,11 +335,11 @@ static int cr50_i2c_tpm_recv(I2cTpmChipOps *me, uint8_t *buf, size_t buf_len)
 	current = burstcnt;
 	while (current < expected) {
 		// Read updated burst count and check status
-		if (cr50_i2c_wait_burststs(tpm, mask, &burstcnt, &status) < 0)
+		if (cr50_i2c_wait_burststs(tpm, mask, &burstcnt, &status))
 			goto out_err;
 
 		len = MIN(burstcnt, expected - current);
-		if (cr50_i2c_read(tpm, addr, buf + current, len) != 0) {
+		if (cr50_i2c_read(tpm, addr, buf + current, len)) {
 			printf("%s: Read failed\n", __func__);
 			goto out_err;
 		}
@@ -333,7 +347,7 @@ static int cr50_i2c_tpm_recv(I2cTpmChipOps *me, uint8_t *buf, size_t buf_len)
 		current += len;
 	}
 
-	if (cr50_i2c_wait_burststs(tpm, TpmStsValid, &burstcnt, &status) < 0)
+	if (cr50_i2c_wait_burststs(tpm, TpmStsValid, &burstcnt, &status))
 		goto out_err;
 	if (status & TpmStsDataAvail) {
 		printf("%s: Data still available\n", __func__);
@@ -376,14 +390,14 @@ static int cr50_i2c_tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
 		if (sent > 0)
 			mask |= TpmStsDataExpect;
 
-		if (cr50_i2c_wait_burststs(tpm, mask, &burstcnt, &status) < 0)
+		if (cr50_i2c_wait_burststs(tpm, mask, &burstcnt, &status))
 			goto out_err;
 
 		// Use burstcnt - 1 to account for the address byte
 		// that is inserted by cr50_i2c_write()
 		limit = MIN(burstcnt - 1, len);
 		if (cr50_i2c_write(tpm, tpm_data_fifo(tpm->base.locality),
-				   &buf[sent], limit) != 0) {
+				   &buf[sent], limit)) {
 			printf("%s: Write failed\n", __func__);
 			goto out_err;
 		}
@@ -393,7 +407,7 @@ static int cr50_i2c_tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
 	}
 
 	// Ensure TPM is not expecting more data
-	if (cr50_i2c_wait_burststs(tpm, TpmStsValid, &burstcnt, &status) < 0)
+	if (cr50_i2c_wait_burststs(tpm, TpmStsValid, &burstcnt, &status))
 		goto out_err;
 	if (status & TpmStsDataExpect) {
 		printf("%s: Data still expected\n", __func__);
@@ -402,7 +416,7 @@ static int cr50_i2c_tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
 
 	// Start the TPM command
 	if (cr50_i2c_write(tpm, tpm_sts(tpm->base.locality), tpm_go,
-			   sizeof(tpm_go)) < 0) {
+			   sizeof(tpm_go))) {
 		printf("%s: Start command failed\n", __func__);
 		goto out_err;
 	}
@@ -425,7 +439,7 @@ static int tpm_init(I2cTpmChipOps *me)
 
 	// Read four bytes from DID_VID register.
 	uint32_t vendor;
-	if (cr50_i2c_read(tpm, tpm_did_vid(0), (uint8_t *)&vendor, 4) < 0) {
+	if (cr50_i2c_read(tpm, tpm_did_vid(0), (uint8_t *)&vendor, 4)) {
 		release_locality(tpm, 1);
 		return -1;
 	}
