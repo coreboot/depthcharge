@@ -50,7 +50,7 @@ int crossystem_setup(int firmware_type)
 
 	acpi_table->boot_reason = BOOT_REASON_OTHER;
 
-	int main_fw;
+	int main_fw = 0;
 	const char *fwid;
 	int fwid_size;
 	int fw_index = vb_sd->firmware_index;
