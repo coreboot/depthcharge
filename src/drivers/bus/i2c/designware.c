@@ -435,13 +435,19 @@ static int i2c_wait_for_bus_idle(DesignwareI2cRegs *regs)
 {
 	uint64_t start = timer_us(0);
 
-	while ((readl(&regs->status) & STATUS_MA) ||
-	       !(readl(&regs->status) & STATUS_TFE))
-		/* Evaluate timeout, wait for up to 16 bytes in FIFO. */
-		if (timer_us(start) > TIMEOUT_US * 16)
-			return -1;
+	do {
+		unsigned int status = readl(&regs->status);
 
-	return 0;
+		if (!(status & STATUS_MA) && (status & STATUS_TFE))
+			return 0;
+
+	} while (timer_us(start) <= TIMEOUT_US * 16);
+
+	printf("%s: timeout waiting for bus to become idle.\n", __func__);
+
+	i2c_print_status_registers(regs);
+
+	return -1;
 }
 
 /*
