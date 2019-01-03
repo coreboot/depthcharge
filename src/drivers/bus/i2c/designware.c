@@ -26,52 +26,52 @@
 #define DESIGNWARE_I2C_DEBUG 0
 
 typedef struct {
-	uint32_t control;
-	uint32_t target_addr;
-	uint32_t slave_addr;
-	uint32_t master_addr;
-	uint32_t cmd_data;
-	uint32_t ss_scl_hcnt;
-	uint32_t ss_scl_lcnt;
-	uint32_t fs_scl_hcnt;
-	uint32_t fs_scl_lcnt;
-	uint32_t hs_scl_hcnt;
-	uint32_t hs_scl_lcnt;
-	uint32_t intr_stat;
-	uint32_t intr_mask;
-	uint32_t raw_intr_stat;
-	uint32_t rx_thresh;
-	uint32_t tx_thresh;
-	uint32_t clear_intr;
-	uint32_t clear_rx_under_intr;
-	uint32_t clear_rx_over_intr;
-	uint32_t clear_tx_over_intr;
-	uint32_t clear_rd_req_intr;
-	uint32_t clear_tx_abrt_intr;
-	uint32_t clear_rx_done_intr;
-	uint32_t clear_activity_intr;
-	uint32_t clear_stop_det_intr;
-	uint32_t clear_start_det_intr;
-	uint32_t clear_gen_call_intr;
-	uint32_t enable;
-	uint32_t status;
-	uint32_t tx_level;
-	uint32_t rx_level;
-	uint32_t sda_hold;
-	uint32_t tx_abort_source;
-	uint32_t slv_data_nak_only;
-	uint32_t dma_cr;
-	uint32_t dma_tdlr;
-	uint32_t dma_rdlr;
-	uint32_t sda_setup;
-	uint32_t ack_general_call;
-	uint32_t enable_status;
-	uint32_t fs_spklen;
-	uint32_t hs_spklen;
-	uint32_t clr_restart_det;
-	uint32_t comp_param1;
-	uint32_t comp_version;
-	uint32_t comp_type;
+	uint32_t control;		// 0x00
+	uint32_t target_addr;		// 0x04
+	uint32_t slave_addr;		// 0x08
+	uint32_t master_addr;		// 0x0c
+	uint32_t cmd_data;		// 0x10
+	uint32_t ss_scl_hcnt;		// 0x14
+	uint32_t ss_scl_lcnt;		// 0x18
+	uint32_t fs_scl_hcnt;		// 0x1c
+	uint32_t fs_scl_lcnt;		// 0x20
+	uint32_t hs_scl_hcnt;		// 0x24
+	uint32_t hs_scl_lcnt;		// 0x28
+	uint32_t intr_stat;		// 0x2c
+	uint32_t intr_mask;		// 0x30
+	uint32_t raw_intr_stat;		// 0x34
+	uint32_t rx_thresh;		// 0x38
+	uint32_t tx_thresh;		// 0x3c
+	uint32_t clear_intr;		// 0x40
+	uint32_t clear_rx_under_intr;	// 0x44
+	uint32_t clear_rx_over_intr;	// 0x48
+	uint32_t clear_tx_over_intr;	// 0x4c
+	uint32_t clear_rd_req_intr;	// 0x50
+	uint32_t clear_tx_abrt_intr;	// 0x54
+	uint32_t clear_rx_done_intr;	// 0x58
+	uint32_t clear_activity_intr;	// 0x5c
+	uint32_t clear_stop_det_intr;	// 0x60
+	uint32_t clear_start_det_intr;	// 0x64
+	uint32_t clear_gen_call_intr;	// 0x68
+	uint32_t enable;		// 0x6c
+	uint32_t status;		// 0x70
+	uint32_t tx_fifo_level;		// 0x74
+	uint32_t rx_fifo_level;		// 0x78
+	uint32_t sda_hold;		// 0x7c
+	uint32_t tx_abort_source;	// 0x80
+	uint32_t slv_data_nak_only;	// 0x84
+	uint32_t dma_cr;		// 0x88
+	uint32_t dma_tdlr;		// 0x8c
+	uint32_t dma_rdlr;		// 0x90
+	uint32_t sda_setup;		// 0x94
+	uint32_t ack_general_call;	// 0x98
+	uint32_t enable_status;		// 0x9c
+	uint32_t fs_spklen;		// 0xa0
+	uint32_t hs_spklen;		// 0xa4
+	uint32_t clr_restart_det;	// 0xa8
+	uint32_t comp_param1;		// 0xac
+	uint32_t comp_version;		// 0xb0
+	uint32_t comp_type;		// 0xb4
 } __attribute__((packed)) DesignwareI2cRegs;
 
 /* High and low times in different speed modes (in ns). */
@@ -113,12 +113,19 @@ enum {
 
 /* status register definitions. */
 enum {
+	/* Slave FSM Activity */
 	STATUS_SA = 0x0040,
+	/* Master FSM Activity */
 	STATUS_MA = 0x0020,
+	/* Receive FIFO Completely Full */
 	STATUS_RFF = 0x0010,
+	/* Receive FIFO Not Empty */
 	STATUS_RFNE = 0x0008,
+	/* Transmit FIFO Completely Empty */
 	STATUS_TFE = 0x0004,
+	/* Transmit FIFO Not Full */
 	STATUS_TFNF = 0x0002,
+	/* Activity Status */
 	STATUS_ACT = 0x0001,
 };
 
@@ -136,17 +143,32 @@ enum {
 
 /* Interrupt status register definitions. */
 enum {
+	/* A General Call address is received and acknowledged */
 	INTR_GEN_CALL = 0x0800,
+	/* Either a START or RESTART condition occurred on the I2C interface */
 	INTR_START_DET = 0x0400,
+	/* A STOP condition occurred on the I2C interface */
 	INTR_STOP_DET = 0x0200,
+	/* There was I2C activity */
 	INTR_ACTIVITY = 0x0100,
+	/* This occurs on the last byte of the transmission, indicating that the
+	transmission is done */
 	INTR_RX_DONE = 0x0080,
+	/* The I2C controller is unable to complete the intended actions on the
+	   contents of the transmit FIFO */
 	INTR_TX_ABRT = 0x0040,
+	/* The I2C controller is acting as a slave and an I2C master is
+	   attempting to read data from the controller */
 	INTR_RD_REQ = 0x0020,
+	/* The transmit buffer is at or below the threshold value */
 	INTR_TX_EMPTY = 0x0010,
+	/* During transmit the transmit buffer is filled to TxBufferDepth */
 	INTR_TX_OVER = 0x0008,
+	/* The receive buffer reaches or goes above the receive threshold */
 	INTR_RX_FULL = 0x0004,
+	/* The receive buffer is completely filled to RxBufferDepth */
 	INTR_RX_OVER = 0x0002,
+	/* The processor attempts to read the receive buffer when it is empty */
 	INTR_RX_UNDER = 0x0001,
 };
 
