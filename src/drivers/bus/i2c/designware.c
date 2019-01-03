@@ -485,6 +485,33 @@ static int process_fatal_interrupts(DesignwareI2cRegs *regs)
 }
 
 /*
+ * Waits TIMEOUT_US for a stop condition on the bus.
+ *
+ * Returns -1 on failure and 0 on success.
+ */
+static int i2c_wait_for_stop_condition(DesignwareI2cRegs *regs)
+{
+	uint64_t start = timer_us(0);
+
+	do {
+		if (process_fatal_interrupts(regs)) {
+			printf("%s: Fatal Interrupt\n", __func__);
+			return -1;
+		}
+
+		if (readl(&regs->raw_intr_stat) & INTR_STOP_DET)
+			return 0;
+
+	} while (timer_us(start) <= TIMEOUT_US);
+
+	printf("%s: timed out\n", __func__);
+
+	i2c_print_status_registers(regs);
+
+	return -1;
+}
+
+/*
  * Waits TIMEOUT_US for space in the the TX fifo.
  *
  * Returns -1 on failure and 0 on success.
@@ -548,14 +575,10 @@ static int i2c_wait_for_rx_fifo_not_empty(DesignwareI2cRegs *regs)
  */
 static int i2c_xfer_finish(DesignwareI2cRegs *regs)
 {
-	uint64_t start = timer_us(0);
-
-	while (1) {
-		if ((readl(&regs->raw_intr_stat) & INTR_STOP_DET)) {
-			readl(&regs->clear_stop_det_intr);
-			break;
-		} else if (timer_us(start) > TIMEOUT_US)
-			break;
+	if (i2c_wait_for_stop_condition(regs)) {
+		printf("%s: Error occurred while waiting for stop condition.\n",
+		       __func__);
+		return -1;
 	}
 
 	if (i2c_wait_for_bus_idle(regs)) {
