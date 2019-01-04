@@ -74,6 +74,12 @@ typedef struct {
 	uint32_t comp_type;		// 0xb4
 } __attribute__((packed)) DesignwareI2cRegs;
 
+#define TX_ABORT_SOURCE_TX_FLUSH_CNT_SHIFT 24
+#define TX_ABORT_SOURCE_TX_FLUSH_CNT_MASK                                      \
+	(0xFF << TX_ABORT_SOURCE_TX_FLUSH_CNT_SHIFT)
+#define TX_ABORT_SOURCE_RESERVED_SHIFT 17
+#define TX_ABORT_SOURCE_RESERVED_MASK (0x7f << TX_ABORT_SOURCE_RESERVED_SHIFT)
+
 /* High and low times in different speed modes (in ns). */
 enum {
 	DEFAULT_SDA_HOLD_TIME = 300,
@@ -175,6 +181,58 @@ enum {
 enum {
 	TIMEOUT_US = 10000
 };
+
+/* Abort reasons for register tx_abort_source. */
+static const char *const tx_abort_reason[] = {
+	"Abrt7BAddrNoAck",
+	"Abrt10Addr1NoAck",
+	"Abrt10Addr2NoAck",
+	"AbrtTxDataNoAck",
+	"AbrtGCallNoAck",
+	"AbrtGCallRead",
+	"AbrtHsAckDet",
+	"AbrtSbyteAckDet",
+	"AbrtHsNoRstrt",
+	"AbrtSByteNoRstrt",
+	"Abrt10BRdNoRstrt",
+	"AbrtMasterDis",
+	"ArbLost",
+	"AbrtSlvFlushTxFifo",
+	"AbrtSlvArbLost",
+	"AbrtSlvRdInTx",
+	"ABRT_USER_ABRT",
+};
+
+/*
+ * print_tx_aborted - Pretty prints the tx_abort_source register.
+ * @regs:	i2c register base address
+ **/
+static void print_tx_aborted(DesignwareI2cRegs *regs)
+{
+	uint32_t tx_abrt = read32(&regs->tx_abort_source);
+
+	printf("i2c transaction aborted:");
+	for (size_t i = 0; i < ARRAY_SIZE(tx_abort_reason); ++i) {
+		unsigned int mask = (1U << i);
+		if (tx_abrt & mask)
+			printf(" [%#x:%s]", mask, tx_abort_reason[i]);
+	}
+
+	uint32_t tx_fifo_level =
+		(tx_abrt & TX_ABORT_SOURCE_TX_FLUSH_CNT_MASK) >>
+		TX_ABORT_SOURCE_TX_FLUSH_CNT_SHIFT;
+
+	if (tx_fifo_level)
+		printf(" [%#x: TX FIFO Level]", tx_fifo_level);
+
+	uint32_t reserved = (tx_abrt & TX_ABORT_SOURCE_RESERVED_MASK) >>
+			    TX_ABORT_SOURCE_RESERVED_SHIFT;
+
+	if (reserved)
+		printf(" [%#x:Reserved]", reserved);
+
+	printf("\n");
+}
 
 /*
  * i2c_print_status_registers - Prints controller status registers
@@ -387,6 +445,46 @@ static int i2c_wait_for_bus_idle(DesignwareI2cRegs *regs)
 }
 
 /*
+ * process_fatal_interrupts - Processes fatal interrupts..
+ * @regs:	i2c register base address
+ *
+ * Returns 1 if a fatal interrupt has occurred, otherwise 0.
+ */
+static int process_fatal_interrupts(DesignwareI2cRegs *regs)
+{
+	unsigned int intr_stat = readl(&regs->raw_intr_stat);
+
+	int ret = 0;
+
+	if ((intr_stat & INTR_TX_ABRT)) {
+		print_tx_aborted(regs);
+
+		readl(&regs->clear_tx_abrt_intr);
+		ret = 1;
+	}
+
+	if ((intr_stat & INTR_RX_UNDER)) {
+		printf("%s: RX FIFO Underflow!\n", __func__);
+		readl(&regs->clear_rx_under_intr);
+		ret = 1;
+	}
+
+	if ((intr_stat & INTR_RX_OVER)) {
+		printf("%s: RX FIFO Overflow!\n", __func__);
+		readl(&regs->clear_rx_over_intr);
+		ret = 1;
+	}
+
+	if ((intr_stat & INTR_TX_OVER)) {
+		printf("%s: TX FIFO Overflow!\n", __func__);
+		readl(&regs->clear_tx_over_intr);
+		ret = 1;
+	}
+
+	return ret;
+}
+
+/*
  * Waits TIMEOUT_US for space in the the TX fifo.
  *
  * Returns -1 on failure and 0 on success.
@@ -396,8 +494,14 @@ static int i2c_wait_for_tx_fifo_not_full(DesignwareI2cRegs *regs)
 	uint64_t start = timer_us(0);
 
 	do {
+		if (process_fatal_interrupts(regs)) {
+			printf("%s: Fatal Interrupt\n", __func__);
+			return -1;
+		}
+
 		if (readl(&regs->status) & STATUS_TFNF)
 			return 0;
+
 	} while (timer_us(start) <= TIMEOUT_US);
 
 	printf("%s: timed out waiting for space in the transmit fifo\n",
@@ -418,8 +522,14 @@ static int i2c_wait_for_rx_fifo_not_empty(DesignwareI2cRegs *regs)
 	uint64_t start = timer_us(0);
 
 	do {
+		if (process_fatal_interrupts(regs)) {
+			printf("%s: Fatal Interrupt\n", __func__);
+			return -1;
+		}
+
 		if (readl(&regs->status) & STATUS_RFNE)
 			return 0;
+
 	} while (timer_us(start) <= TIMEOUT_US);
 
 	printf("%s: timed out waiting for byte to arrive in the receive FIFO\n",
