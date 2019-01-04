@@ -361,9 +361,12 @@ static void cr50_i2c_tpm_ready(I2cTpmChipOps *me)
 	uint8_t buf[4] = { TpmStsCommandReady };
 
 	// Ignore any write error, but it is logged.
-	cr50_i2c_write(tpm, tpm_sts(tpm->base.locality), buf, sizeof(buf));
+	if (cr50_i2c_write(tpm, tpm_sts(tpm->base.locality), buf, sizeof(buf)))
+		printf("%s: Failed to write TpmStsCommandReady\n", __func__);
+
+	/* Why do we need this delay? cr50_i2c_write already waits for a write
+	 * ack interrupt. */
 	udelay(Cr50TimeoutShort);
-	printf("%s: Failed to write TpmStsCommandReady\n", __func__);
 }
 
 /*
