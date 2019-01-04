@@ -37,6 +37,8 @@
 #include "drivers/tpm/i2c.h"
 #include "drivers/tpm/cr50_i2c.h"
 
+#define CR50_I2C_DEBUG 0
+
 enum {
 	Cr50TimeoutLong = 2 * 1000 * 1000,	// usecs
 	Cr50TimeoutShort = 2 * 1000,		// usecs
@@ -47,6 +49,56 @@ enum {
 enum {
 	CR50_DID_VID = 0x00281ae0L
 };
+
+/*
+ * to_tpm_reg() - translates an I2C TPM register to TPM register
+ */
+static uint16_t to_tpm_reg(uint8_t reg) {
+	switch (reg) {
+
+	case 0:
+		return 0;	/* TPM Access */
+	case 1:
+		return 0x18;	/* TPM Status */
+	case 5:
+		return 0x24;	/* TPM Fifo, variable size. */
+	case 6:
+		return 0xf00;	/* TPM DID VID */
+	case 0xa:
+		return 0x14;	/* TPM TPM_INTF_CAPABILITY */
+	case 0xe:
+		return 0xf04;	/* TPM RID */
+	case 0xf:
+		return 0xf90;	/* TPM_FW_VER */
+	default:
+		return 0xffff;
+	}
+}
+
+/*
+ * to_tpm_name() - translates an I2C TPM register to a readable name.
+ */
+static const char *to_tpm_name(uint8_t reg) {
+	switch (reg) {
+
+	case 0:
+		return "TPM Access";
+	case 1:
+		return "TPM Status";
+	case 5:
+		return "TPM FIFO";
+	case 6:
+		return "TPM DID VID";
+	case 0xa:
+		return "TPM TPM_INTF_CAPABILITY";
+	case 0xe:
+		return "TPM RID";
+	case 0xf:
+		return "TPM_FW_VER";
+	default:
+		return "?";
+	}
+}
 
 /*
  * cr50_i2c_wait_tpm_ready() - wait until TPM is ready for more data
@@ -107,6 +159,12 @@ static int cr50_i2c_read(Cr50I2c *tpm, uint8_t addr, uint8_t *buffer,
 	// Clear interrupt before starting transaction
 	cr50_i2c_clear_tpm_irq(tpm);
 
+	if (CR50_I2C_DEBUG) {
+		printf("%s: %#02x <= %02x [%#04x: %s][%zu bytes]\n", __func__,
+		       tpm->base.addr, addr, to_tpm_reg(addr),
+		       to_tpm_name(addr), len);
+	}
+
 	// Send the register address byte to the TPM
 	if (i2c_write_raw(tpm->base.bus, tpm->base.addr, &addr, 1)) {
 		printf("%s: Address write failed\n", __func__);
@@ -123,6 +181,13 @@ static int cr50_i2c_read(Cr50I2c *tpm, uint8_t addr, uint8_t *buffer,
 	if (i2c_read_raw(tpm->base.bus, tpm->base.addr, buffer, len)) {
 		printf("%s: Read response failed\n", __func__);
 		return -1;
+	}
+
+	if (CR50_I2C_DEBUG) {
+		printf("%s: %#02x =>", __func__, tpm->base.addr);
+		for (size_t i = 0; i < len; ++i)
+			printf(" %02x", buffer[i]);
+		printf("\n");
 	}
 
 	return 0;
@@ -151,6 +216,15 @@ static int cr50_i2c_write(Cr50I2c *tpm, uint8_t addr, const uint8_t *buffer,
 	if (len > Cr50MaxBufSize) {
 		printf("%s: Length %zd is too large\n", __func__, len);
 		return -1;
+	}
+
+	if (CR50_I2C_DEBUG) {
+		printf("%s: %#02x <= %02x [%#04x: %s] +", __func__,
+		       tpm->base.addr, addr, to_tpm_reg(addr),
+		       to_tpm_name(addr));
+		for (size_t i = 0; i < len; ++i)
+			printf(" %02x", buffer[i]);
+		printf("\n");
 	}
 
 	// Prepend the 'register address' to the buffer
