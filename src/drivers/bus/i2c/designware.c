@@ -387,6 +387,50 @@ static int i2c_wait_for_bus_idle(DesignwareI2cRegs *regs)
 }
 
 /*
+ * Waits TIMEOUT_US for space in the the TX fifo.
+ *
+ * Returns -1 on failure and 0 on success.
+ */
+static int i2c_wait_for_tx_fifo_not_full(DesignwareI2cRegs *regs)
+{
+	uint64_t start = timer_us(0);
+
+	do {
+		if (readl(&regs->status) & STATUS_TFNF)
+			return 0;
+	} while (timer_us(start) <= TIMEOUT_US);
+
+	printf("%s: timed out waiting for space in the transmit fifo\n",
+	       __func__);
+
+	i2c_print_status_registers(regs);
+
+	return -1;
+}
+
+/*
+ * Waits TIMEOUT_US for a byte in the the RX fifo.
+ *
+ * Returns -1 on failure and 0 on success.
+ */
+static int i2c_wait_for_rx_fifo_not_empty(DesignwareI2cRegs *regs)
+{
+	uint64_t start = timer_us(0);
+
+	do {
+		if (readl(&regs->status) & STATUS_RFNE)
+			return 0;
+	} while (timer_us(start) <= TIMEOUT_US);
+
+	printf("%s: timed out waiting for byte to arrive in the receive FIFO\n",
+	       __func__);
+
+	i2c_print_status_registers(regs);
+
+	return -1;
+}
+
+/*
  * i2c_xfer_finish - Complete an i2c transfer.
  * @regs:	i2c register base address
  *
@@ -438,33 +482,36 @@ static int i2c_transfer_segment(DesignwareI2cRegs *regs,
 
 	/* Read or write each byte in segment. */
 	for (i = 0; i < segment->len; ++i) {
-		uint64_t start = timer_us(0);
-		uint32_t cmd;
-
-		/* Write op only: Wait for FIFO not full. */
-		if (!segment->read) {
-			while (!(readl(&regs->status) & STATUS_TFNF))
-				if (timer_us(start) > TIMEOUT_US)
-					return -1;
-			cmd = segment->buf[i];
-		} else
-			cmd = CMD_DATA_CMD;
+		uint32_t cmd = 0;
 
 		/* Send stop on last byte, if desired. */
 		if (send_stop && i == segment->len - 1)
 			cmd |= CMD_DATA_STOP;
 
-		writel(cmd, &regs->cmd_data);
-
-		/* Read op only: Wait FIFO data and store it. */
 		if (segment->read) {
-			while (!(readl(&regs->status) & STATUS_RFNE))
-				if (timer_us(start) > TIMEOUT_US)
-					return -1;
+			cmd |= CMD_DATA_CMD;
+
+			writel(cmd, &regs->cmd_data);
+
+			if (i2c_wait_for_rx_fifo_not_empty(regs))
+				goto err;
+
 			segment->buf[i] = (uint8_t)readl(&regs->cmd_data);
+		} else {
+			cmd |= segment->buf[i];
+
+			if (i2c_wait_for_tx_fifo_not_full(regs))
+				goto err;
+
+			writel(cmd, &regs->cmd_data);
 		}
 	}
+
 	return 0;
+err:
+	printf("%s: Transferring byte %u of %d failed.\n", __func__, i,
+	       segment->len);
+	return -1;
 }
 
 /*
