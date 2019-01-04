@@ -176,10 +176,28 @@ enum {
 	TIMEOUT_US = 10000
 };
 
+/*
+ * i2c_print_status_registers - Prints controller status registers
+ * @regs:	i2c register base address
+ */
+static void i2c_print_status_registers(DesignwareI2cRegs *regs)
+{
+	printf("Status: %#x, Interrupt Status: %#x\n"
+	       "RX FIFO Level: %u, TX FIFO Level: %u\n"
+	       "Enable: %#x, Enable Status: %#x\n"
+	       "Abort Source: %#x\n",
+	       readl(&regs->status), readl(&regs->raw_intr_stat),
+	       readl(&regs->rx_fifo_level), readl(&regs->tx_fifo_level),
+	       readl(&regs->enable), readl(&regs->enable_status),
+	       readl(&regs->tx_abort_source));
+}
+
 static void i2c_enable(DesignwareI2cRegs *regs)
 {
 	if (!(readl(&regs->enable) & ENABLE_0B))
 		writel(ENABLE_0B, &regs->enable);
+	else
+		printf("%s: i2s bus is already enabled.\n", __func__ );
 }
 
 static int i2c_disable(DesignwareI2cRegs *regs)
@@ -191,9 +209,15 @@ static int i2c_disable(DesignwareI2cRegs *regs)
 
 		/* Wait for enable status bit to clear */
 		start = timer_us(0);
-		while (read32(&regs->enable_status) & ENABLE_0B)
-			if (timer_us(start) > TIMEOUT_US)
+		while (read32(&regs->enable_status) & ENABLE_0B) {
+			if (timer_us(start) > TIMEOUT_US) {
+				printf("%s: Timeout\n", __func__);
+				i2c_print_status_registers(regs);
 				return -1;
+			}
+		}
+	} else {
+		printf("%s: i2s bus is already disabled.\n", __func__ );
 	}
 
 	return 0;
@@ -381,10 +405,13 @@ static int i2c_xfer_finish(DesignwareI2cRegs *regs)
 	}
 
 	if (i2c_wait_for_bus_idle(regs)) {
-		printf("Timed out waiting for bus.\n");
+		printf("%s: Error occurred while waiting for bus to become "
+		       "idle.\n",
+		       __func__);
 		return -1;
 	}
 
+	/* Why do we do this? There should be no need to flush the RX FIFO. */
 	i2c_flush_rxfifo(regs);
 
 	/* TODO(shawnn): I removed a udelay(10000) here because the purpose was
@@ -464,8 +491,10 @@ static int i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
 
 	i2c_enable(regs);
 
-	if (i2c_wait_for_bus_idle(regs))
+	if (i2c_wait_for_bus_idle(regs)) {
+		printf("%s: failed to start transfer.\n", __func__);
 		goto out;
+	}
 
 	// Set stop condition on final segment only. Repeated start will
 	// be automatically generated on R->W or W->R switch.
@@ -486,6 +515,9 @@ static int i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
 		 * changed between segments.
 		 */
 		if (segments[i].chip != last_tar) {
+			if (DESIGNWARE_I2C_DEBUG)
+				printf("updating tar from %#x to %#x\n",
+				       last_tar, segments[i].chip);
 			i2c_disable(regs);
 			/* Target address must be set when i2c is disabled. */
 			writel(segments[i].chip, &regs->target_addr);
@@ -496,7 +528,8 @@ static int i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
 		if (i2c_transfer_segment(regs,
 					 &segments[i],
 					 i == seg_count - 1)) {
-			printf("I2C transfer failed\n");
+			printf("%s: transferring segment %d of %d failed.\n",
+			       __func__, i, seg_count);
 			goto out;
 		}
 
