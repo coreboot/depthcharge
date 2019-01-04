@@ -17,7 +17,7 @@
  */
 
 /*
- * cr50 is a TPM 2.0 capable device that requries special
+ * cr50 is a TPM 2.0 capable device that requires special
  * handling for the I2C interface.
  *
  * - Use an interrupt for transaction status instead of hardcoded delays
@@ -80,8 +80,8 @@ static int cr50_i2c_wait_tpm_ready(Cr50I2c *tpm)
 /* Clear pending interrupts */
 static void cr50_i2c_clear_tpm_irq(Cr50I2c *tpm)
 {
-	if (tpm->irq_status)
-		tpm->irq_status();
+	if (tpm->irq_status && tpm->irq_status())
+		printf("%s: Clearing stale interrupt\n", __func__);
 }
 
 /*
@@ -114,10 +114,12 @@ static int cr50_i2c_read(Cr50I2c *tpm, uint8_t addr, uint8_t *buffer,
 	}
 
 	// Wait for TPM to be ready with response data
-	if (cr50_i2c_wait_tpm_ready(tpm))
+	if (cr50_i2c_wait_tpm_ready(tpm)) {
+		printf("%s: Waiting for ready interrupt failed\n", __func__ );
 		return -1;
+	}
 
-	// Read response data frrom the TPM
+	// Read response data from the TPM
 	if (i2c_read_raw(tpm->base.bus, tpm->base.addr, buffer, len)) {
 		printf("%s: Read response failed\n", __func__);
 		return -1;
@@ -367,8 +369,10 @@ static int cr50_i2c_tpm_recv(I2cTpmChipOps *me, uint8_t *buf, size_t buf_len)
 	current = burstcnt;
 	while (current < expected) {
 		// Read updated burst count and check status
-		if (cr50_i2c_wait_burststs(tpm, mask, &burstcnt, &status))
+		if (cr50_i2c_wait_burststs(tpm, mask, &burstcnt, &status)) {
+			printf("%s: Reading burst status failed\n", __func__ );
 			goto out_err;
+		}
 
 		len = MIN(burstcnt, expected - current);
 		if (cr50_i2c_read(tpm, addr, buf + current, len)) {
@@ -379,8 +383,12 @@ static int cr50_i2c_tpm_recv(I2cTpmChipOps *me, uint8_t *buf, size_t buf_len)
 		current += len;
 	}
 
-	if (cr50_i2c_wait_burststs(tpm, TpmStsValid, &burstcnt, &status))
+
+	if (cr50_i2c_wait_burststs(tpm, TpmStsValid, &burstcnt, &status)) {
+		printf("%s: Reading final burst status failed\n", __func__ );
 		goto out_err;
+	}
+
 	if (status & TpmStsDataAvail) {
 		printf("%s: Data still available\n", __func__);
 		goto out_err;
@@ -418,8 +426,10 @@ static int cr50_i2c_tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
 	while (!(cr50_i2c_tpm_status(&tpm->base.chip_ops) &
 		 TpmStsCommandReady)) {
 
-		if (timer_us(start) > Cr50TimeoutLong)
+		if (timer_us(start) > Cr50TimeoutLong) {
+			printf("%s: Timed out waiting for ready\n", __func__);
 			goto out_err;
+		}
 
 		/*
 		 * This may fail, but we will presumably detect failure in the
@@ -436,8 +446,10 @@ static int cr50_i2c_tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
 		if (sent > 0)
 			mask |= TpmStsDataExpect;
 
-		if (cr50_i2c_wait_burststs(tpm, mask, &burstcnt, &status))
+		if (cr50_i2c_wait_burststs(tpm, mask, &burstcnt, &status)) {
+			printf("%s: Error reading burst status.\n", __func__ );
 			goto out_err;
+		}
 
 		// Use burstcnt - 1 to account for the address byte
 		// that is inserted by cr50_i2c_write()
@@ -453,8 +465,11 @@ static int cr50_i2c_tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
 	}
 
 	// Ensure TPM is not expecting more data
-	if (cr50_i2c_wait_burststs(tpm, TpmStsValid, &burstcnt, &status))
+	if (cr50_i2c_wait_burststs(tpm, TpmStsValid, &burstcnt, &status)) {
+		printf("%s: Reading final burst status failed\n", __func__ );
 		goto out_err;
+	}
+
 	if (status & TpmStsDataExpect) {
 		printf("%s: Data still expected\n", __func__);
 		goto out_err;
