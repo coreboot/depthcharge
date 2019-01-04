@@ -331,8 +331,16 @@ static void i2c_init(DesignwareI2c *bus)
  */
 static void i2c_flush_rxfifo(DesignwareI2cRegs *regs)
 {
-	while (readl(&regs->status) & STATUS_RFNE)
+	unsigned int cnt = 0;
+
+	while (readl(&regs->status) & STATUS_RFNE) {
+		cnt++;
 		readl(&regs->cmd_data);
+	}
+
+	if (cnt)
+		printf("%s: %u bytes were flushed from the rx fifo!\n",
+		       __func__, cnt);
 }
 
 /*
