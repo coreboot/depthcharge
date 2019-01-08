@@ -1356,6 +1356,15 @@ static const VbootAuxFwOps ps8751_fw_ops = {
 	.protect = ps8751_protect,
 };
 
+static const VbootAuxFwOps ps8751_fw_canary_ops = {
+	.fw_image_name = "ps8751_a3_canary.bin",
+	.fw_hash_name = "ps8751_a3_canary.hash",
+	.check_hash = ps8751_check_hash,
+	.update_image = ps8751_update_image,
+	.protect_status = ps8751_ec_tunnel_status,
+	.protect = ps8751_protect,
+};
+
 static const VbootAuxFwOps ps8805_fw_ops = {
 	.fw_image_name = "ps8805_a2.bin",
 	.fw_hash_name = "ps8805_a2.hash",
@@ -1372,6 +1381,19 @@ Ps8751 *new_ps8751(CrosECTunnelI2c *bus, int ec_pd_id)
 	me->bus = bus;
 	me->ec_pd_id = ec_pd_id;
 	me->fw_ops = ps8751_fw_ops;
+	me->chip_type = CHIP_PS8751;
+	snprintf(me->chip_name, sizeof(me->chip_name), "ps8751.%d", ec_pd_id);
+
+	return me;
+}
+
+Ps8751 *new_ps8751_canary(CrosECTunnelI2c *bus, int ec_pd_id)
+{
+	Ps8751 *me = xzalloc(sizeof(*me));
+
+	me->bus = bus;
+	me->ec_pd_id = ec_pd_id;
+	me->fw_ops = ps8751_fw_canary_ops;
 	me->chip_type = CHIP_PS8751;
 	snprintf(me->chip_name, sizeof(me->chip_name), "ps8751.%d", ec_pd_id);
 
