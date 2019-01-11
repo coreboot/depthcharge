@@ -267,7 +267,7 @@ static void update_mem_property(u64 start, u64 end, void *pdata)
 	u64 full_size = end - start;
 	while (full_size) {
 		const u64 max_size = max_range(params->size_cells);
-		const u32 size = MIN(max_size, full_size);
+		const u64 size = MIN(max_size, full_size);
 
 		dt_write_int(data, start, params->addr_cells * sizeof(u32));
 		data += params->addr_cells * sizeof(uint32_t);
