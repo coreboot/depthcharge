@@ -9,3 +9,17 @@
 ## but WITHOUT ANY WARRANTY; without even the implied warranty of
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
+
+config BOARD_KUKUI
+	bool "Kukui"
+	default false
+	help
+	  Setting this option to enable board specific options for Kukui.
+
+config BOARD_FLAPJACK
+	bool "Flapjack"
+	default false
+	help
+	  Flapjack is derivative board from Kukui. Setting this option to
+	  enable board specific options.
+
