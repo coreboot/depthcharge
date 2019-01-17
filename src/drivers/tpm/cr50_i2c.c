@@ -122,7 +122,7 @@ static int cr50_i2c_wait_tpm_ready(Cr50I2c *tpm)
 
 	while (!tpm->irq_status())
 		if (timer_us(start) > timeout) {
-			printf("%s: Timeout waiting for ready", __func__);
+			printf("%s: Timeout after %lluus\n", __func__, timeout);
 			return -1;
 		}
 
