@@ -1,0 +1,10 @@
+# SPDX-License-Identifier: GPL-2.0
+#
+# Copyright 2019 Google LLC
+#
+# Depthcharge driver for the Wilco Embedded Controller.
+#
+
+config DRIVER_EC_WILCO
+	bool "Enable support for the Chrome OS Wilco EC"
+	default n

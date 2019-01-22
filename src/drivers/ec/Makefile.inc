@@ -15,6 +15,7 @@ subdirs-$(CONFIG_DRIVER_EC_CROS) += cros
 subdirs-$(CONFIG_DRIVER_EC_ANX3429) += anx3429
 subdirs-$(CONFIG_DRIVER_EC_ANX7688) += anx7688
 subdirs-$(CONFIG_DRIVER_EC_PS8751) += ps8751
+subdirs-$(CONFIG_DRIVER_EC_WILCO) += wilco
 
 depthcharge-y += vboot_ec.c
 depthcharge-y += vboot_aux_fw.c

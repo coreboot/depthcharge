@@ -16,6 +16,7 @@ source src/drivers/ec/anx3429/Kconfig
 source src/drivers/ec/anx7688/Kconfig
 source src/drivers/ec/ps8751/Kconfig
 source src/drivers/ec/cros/Kconfig
+source src/drivers/ec/wilco/Kconfig
 source src/drivers/flash/Kconfig
 source src/drivers/gpio/Kconfig
 source src/drivers/input/Kconfig
