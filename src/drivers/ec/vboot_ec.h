@@ -36,6 +36,9 @@ typedef struct VbootEcOps {
 	/* Tells the EC to reboot to RO on next AP shutdown. */
 	VbError_t (*reboot_to_ro)(struct VbootEcOps *me);
 
+	/* Tells the EC to reboot to switch RW slot. */
+	VbError_t (*reboot_switch_rw)(struct VbootEcOps *me);
+
 	/*
 	 * Tells the EC to cut off battery.  This is expected to take
 	 * effect when the system shuts down, not immediately.
@@ -44,6 +47,9 @@ typedef struct VbootEcOps {
 
 	/* Check for EC request to limit power */
 	VbError_t (*check_limit_power)(struct VbootEcOps *me, int *limit_power);
+
+	/* Enable or disable power button */
+	VbError_t (*enable_power_button)(struct VbootEcOps *me, int enable);
 } VbootEcOps;
 
 #define NUM_MAX_VBOOT_ECS 2

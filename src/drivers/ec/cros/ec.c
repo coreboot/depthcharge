@@ -673,6 +673,18 @@ static VbError_t vboot_jump_to_rw(VbootEcOps *vbec)
 	return VBERROR_SUCCESS;
 }
 
+static VbError_t vboot_reboot_switch_rw(VbootEcOps *vbec)
+{
+	CrosEc *me = container_of(vbec, CrosEc, vboot);
+
+	if (ec_reboot(me, EC_REBOOT_COLD, EC_REBOOT_FLAG_SWITCH_RW_SLOT) < 0) {
+		printf("Failed to reboot the EC to switch RW slot.\n");
+		return VBERROR_UNKNOWN;
+	}
+
+	return VBERROR_SUCCESS;
+}
+
 static VbError_t vboot_disable_jump(VbootEcOps *vbec)
 {
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
@@ -1290,6 +1302,18 @@ static VbError_t vboot_check_limit_power(VbootEcOps *vbec, int *limit_power)
 	return VBERROR_SUCCESS;
 }
 
+static VbError_t vboot_enable_power_button(VbootEcOps *vbec, int enable)
+{
+	uint32_t flags = 0;
+
+	if (enable)
+		flags = EC_POWER_BUTTON_ENABLE_PULSE;
+
+	if (cros_ec_config_powerbtn(flags) < 0)
+		return VBERROR_UNKNOWN;
+	return VBERROR_SUCCESS;
+}
+
 int cros_ec_read_batt_state_of_charge(uint32_t *state)
 {
 	struct ec_params_charge_state params;
@@ -1458,8 +1482,10 @@ CrosEc *new_cros_ec(CrosEcBusOps *bus, int devidx, GpioOps *interrupt_gpio)
 	me->vboot.protect = vboot_protect;
 	me->vboot.entering_mode = vboot_entering_mode;
 	me->vboot.reboot_to_ro = vboot_reboot_to_ro;
+	me->vboot.reboot_switch_rw = vboot_reboot_switch_rw;
 	me->vboot.battery_cutoff = vboot_battery_cutoff;
 	me->vboot.check_limit_power = vboot_check_limit_power;
+	me->vboot.enable_power_button = vboot_enable_power_button;
 
 	return me;
 }

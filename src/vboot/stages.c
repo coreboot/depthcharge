@@ -28,7 +28,6 @@
 #include "boot/commandline.h"
 #include "boot/multiboot.h"
 #include "config.h"
-#include "drivers/ec/cros/ec.h"
 #include "drivers/ec/vboot_ec.h"
 #include "drivers/flash/flash.h"
 #include "drivers/input/input.h"
@@ -84,9 +83,13 @@ int vboot_do_init_out_flags(uint32_t out_flags)
 
 static int x86_ec_powerbtn_cleanup_func(struct CleanupFunc *c, CleanupType t)
 {
+	VbootEcOps *ec = c->data;
+
 	// Reenable power button pulse that we inhibited on x86 systems with UI.
-	cros_ec_config_powerbtn(EC_POWER_BUTTON_ENABLE_PULSE);
-	return 0;
+	if (ec && ec->enable_power_button)
+		return ec->enable_power_button(ec, 1);
+
+	return -1;
 }
 static CleanupFunc x86_ec_powerbtn_cleanup = {
 	&x86_ec_powerbtn_cleanup_func,
@@ -101,13 +104,15 @@ int vboot_select_and_load_kernel(void)
 		.kernel_buffer = &_kernel_start,
 		.kernel_buffer_size = &_kernel_end - &_kernel_start,
 	};
+	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
 
 	if (IS_ENABLED(CONFIG_DETACHABLE_UI)) {
 		kparams.inflags = VB_SALK_INFLAGS_ENABLE_DETACHABLE_UI;
-		if (IS_ENABLED(CONFIG_ARCH_X86) &&
-		    IS_ENABLED(CONFIG_DRIVER_EC_CROS)) {
+		if (IS_ENABLED(CONFIG_ARCH_X86)) {
 			// On x86 systems, inhibit power button pulse from EC.
-			cros_ec_config_powerbtn(0);
+			if (ec && ec->enable_power_button)
+				ec->enable_power_button(ec, 0);
+			x86_ec_powerbtn_cleanup.data = ec;
 			list_insert_after(&x86_ec_powerbtn_cleanup.list_node,
 					  &cleanup_funcs);
 		}
@@ -118,14 +123,14 @@ int vboot_select_and_load_kernel(void)
 
 	if (res == VBERROR_EC_REBOOT_TO_RO_REQUIRED) {
 		printf("EC Reboot requested. Doing cold reboot.\n");
-		if (IS_ENABLED(CONFIG_DRIVER_EC_CROS))
-			cros_ec_reboot(0);
+		if (ec && ec->reboot_to_ro)
+			ec->reboot_to_ro(ec);
 		if (power_off())
 			return 1;
 	} else if (res == VBERROR_EC_REBOOT_TO_SWITCH_RW) {
 		printf("Switch EC slot requested. Doing cold reboot.\n");
-		if (IS_ENABLED(CONFIG_DRIVER_EC_CROS))
-			cros_ec_reboot(EC_REBOOT_FLAG_SWITCH_RW_SLOT);
+		if (ec && ec->reboot_switch_rw)
+			ec->reboot_switch_rw(ec);
 		if (power_off())
 			return 1;
 	} else if (res == VBERROR_SHUTDOWN_REQUESTED) {

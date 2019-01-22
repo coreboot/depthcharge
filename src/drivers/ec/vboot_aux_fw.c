@@ -156,6 +156,7 @@ VbError_t update_vboot_aux_fw(void)
 	VbError_t status = VBERROR_SUCCESS;
 	int power_button_disabled = 0;
 	int lid_shutdown_disabled = 0;
+	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
 
 	for (int i = 0; i < vboot_aux_fw_count; ++i) {
 		const VbootAuxFwOps *aux_fw;
@@ -169,13 +170,15 @@ VbError_t update_vboot_aux_fw(void)
 			if (!power_button_disabled &&
 			    IS_ENABLED(CONFIG_ARCH_X86) &&
 			    !IS_ENABLED(CONFIG_DETACHABLE_UI)) {
-				cros_ec_config_powerbtn(0);
+				if (ec && ec->enable_power_button)
+					ec->enable_power_button(ec, 0);
 				power_button_disabled = 1;
 			}
 
 			/* Disable lid shutdown on x86 if enabled */
 			if (!lid_shutdown_disabled &&
 			    IS_ENABLED(CONFIG_ARCH_X86) &&
+			    IS_ENABLED(CONFIG_DRIVER_CROS_EC) &&
 			    cros_ec_get_lid_shutdown_mask() > 0) {
 				if (!cros_ec_set_lid_shutdown_mask(0))
 					lid_shutdown_disabled = 1;
@@ -212,11 +215,11 @@ update_protect:
 	}
 
 	/* Re-enable power button after update, if required */
-	if (power_button_disabled)
-		cros_ec_config_powerbtn(EC_POWER_BUTTON_ENABLE_PULSE);
+	if (power_button_disabled && ec && ec->enable_power_button)
+		ec->enable_power_button(ec, 1);
 
 	/* Re-enable lid shutdown event, if required */
-	if (lid_shutdown_disabled)
+	if (IS_ENABLED(CONFIG_DRIVER_CROS_EC) && lid_shutdown_disabled)
 		cros_ec_set_lid_shutdown_mask(1);
 
 	return status;
