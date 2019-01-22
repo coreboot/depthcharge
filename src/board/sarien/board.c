@@ -24,6 +24,7 @@
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
+#include "drivers/gpio/cannonlake.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -35,6 +36,7 @@
 #include "drivers/storage/nvme.h"
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/tpm.h"
+#include "vboot/util/flag.h"
 
 static int cr50_irq_status(void)
 {
@@ -43,7 +45,10 @@ static int cr50_irq_status(void)
 
 static int board_setup(void)
 {
-	sysinfo_install_flags(NULL);
+	sysinfo_install_flags(new_cannonlake_gpio_input_from_coreboot);
+	GpioOps *rec_gpio = sysinfo_lookup_gpio("recovery", 1,
+				new_cannonlake_gpio_input_from_coreboot);
+	flag_replace(FLAG_RECSW, rec_gpio);
 
 	/* 32MB SPI Flash */
 	flash_set_ops(&new_mem_mapped_flash(0xfe000000, 0x2000000)->ops);
