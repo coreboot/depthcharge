@@ -76,21 +76,21 @@ int VbExTrustEC(int devidx)
 
 VbError_t VbExEcRunningRW(int devidx, int *in_rw)
 {
-	VbootEcOps *ec = vboot_ec[devidx];
+	VbootEcOps *ec = vboot_get_ec(devidx);
 	assert(ec && ec->running_rw);
 	return ec->running_rw(ec, in_rw);
 }
 
 VbError_t VbExEcJumpToRW(int devidx)
 {
-	VbootEcOps *ec = vboot_ec[devidx];
+	VbootEcOps *ec = vboot_get_ec(devidx);
 	assert(ec && ec->jump_to_rw);
 	return ec->jump_to_rw(ec);
 }
 
 VbError_t VbExEcDisableJump(int devidx)
 {
-	VbootEcOps *ec = vboot_ec[devidx];
+	VbootEcOps *ec = vboot_get_ec(devidx);
 	assert(ec && ec->disable_jump);
 	return ec->disable_jump(ec);
 }
@@ -98,7 +98,7 @@ VbError_t VbExEcDisableJump(int devidx)
 VbError_t VbExEcHashImage(int devidx, enum VbSelectFirmware_t select,
 			  const uint8_t **hash, int *hash_size)
 {
-	VbootEcOps *ec = vboot_ec[devidx];
+	VbootEcOps *ec = vboot_get_ec(devidx);
 	assert(ec && ec->hash_image);
 	return ec->hash_image(ec, select, hash, hash_size);
 }
@@ -131,21 +131,21 @@ VbError_t VbExEcGetExpectedImageHash(int devidx, enum VbSelectFirmware_t select,
 VbError_t VbExEcUpdateImage(int devidx, enum VbSelectFirmware_t select,
 			    const uint8_t *image, int image_size)
 {
-	VbootEcOps *ec = vboot_ec[devidx];
+	VbootEcOps *ec = vboot_get_ec(devidx);
 	assert(ec && ec->update_image);
 	return ec->update_image(ec, select, image, image_size);
 }
 
 VbError_t VbExEcProtect(int devidx, enum VbSelectFirmware_t select)
 {
-	VbootEcOps *ec = vboot_ec[devidx];
+	VbootEcOps *ec = vboot_get_ec(devidx);
 	assert(ec && ec->protect);
 	return ec->protect(ec, select);
 }
 
 VbError_t VbExEcEnteringMode(int devidx, enum VbEcBootMode_t mode)
 {
-	VbootEcOps *ec = vboot_ec[devidx];
+	VbootEcOps *ec = vboot_get_ec(devidx);
 	assert(ec && ec->entering_mode);
 	return ec->entering_mode(ec, mode);
 }
@@ -157,7 +157,7 @@ VbError_t VbExEcEnteringMode(int devidx, enum VbEcBootMode_t mode)
 
 VbError_t VbExEcVbootDone(int in_recovery)
 {
-	VbootEcOps *ec = vboot_ec[PRIMARY_VBOOT_EC];
+	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
 	int limit_power;
 	int limit_power_wait_time = 0;
 	int message_printed = 0;
@@ -196,7 +196,7 @@ VbError_t VbExEcVbootDone(int in_recovery)
 }
 
 VbError_t VbExEcBatteryCutOff(void) {
-	VbootEcOps *ec = vboot_ec[PRIMARY_VBOOT_EC];
+	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
 	return (ec->battery_cutoff(ec) == 0
 		 ? VBERROR_SUCCESS : VBERROR_UNKNOWN);
 }
