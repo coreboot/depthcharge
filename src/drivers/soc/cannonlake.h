@@ -14,6 +14,14 @@
 #ifndef __DRIVERS_SOC_CANNONLAKE_H__
 #define __DRIVERS_SOC_CANNONLAKE_H__
 
+/* PCR Interface */
+#define PCH_PCR_BASE_ADDRESS	0xfd000000
+#define PCH_PCR_PID_GPIOCOM0	0x6e
+#define PCH_PCR_PID_GPIOCOM1	0x6d
+#define PCH_PCR_PID_GPIOCOM2	0x6c
+#define PCH_PCR_PID_GPIOCOM3	0x6b
+#define PCH_PCR_PID_GPIOCOM4	0x6a
+
 /* I2C Designware Controller runs at 216MHz */
 #define CANNONLAKE_DW_I2C_MHZ	216
 

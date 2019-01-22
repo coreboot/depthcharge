@@ -19,6 +19,10 @@ config DRIVER_GPIO_BRASWELL
 	bool "Intel Braswell GPIO driver"
 	default n
 
+config DRIVER_GPIO_CANNONLAKE
+	bool "Intel Cannonlake GPIO driver"
+	default n
+
 config DRIVER_GPIO_EXYNOS5250
 	bool "Exynos 5250 GPIO driver"
 	default n
