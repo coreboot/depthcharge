@@ -49,8 +49,7 @@ typedef struct VbootEcOps {
 #define NUM_MAX_VBOOT_ECS 2
 #define PRIMARY_VBOOT_EC  0
 
-extern VbootEcOps *vboot_ec[];
-
+VbootEcOps *vboot_get_ec(int devidx);
 void register_vboot_ec(VbootEcOps *ec, int devidx);
 
 #endif	/* __DRIVERS_EC_VBOOT_EC_H */

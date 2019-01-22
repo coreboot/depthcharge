@@ -17,7 +17,12 @@
 
 #include "drivers/ec/vboot_ec.h"
 
-VbootEcOps *vboot_ec[NUM_MAX_VBOOT_ECS] = { NULL };
+static VbootEcOps *vboot_ec[NUM_MAX_VBOOT_ECS] = { NULL };
+
+VbootEcOps *vboot_get_ec(int devidx)
+{
+	return vboot_ec[devidx];
+}
 
 void register_vboot_ec(VbootEcOps *ec, int devidx)
 {

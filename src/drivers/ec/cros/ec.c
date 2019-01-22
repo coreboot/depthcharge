@@ -351,8 +351,8 @@ int ec_command(CrosEc *me, int cmd, int cmd_version,
 
 static CrosEc *get_main_ec(void)
 {
-	assert(vboot_ec[0]);
-	return container_of(vboot_ec[0], CrosEc, vboot);
+	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
+	return container_of(ec, CrosEc, vboot);
 }
 
 /**
