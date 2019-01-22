@@ -22,6 +22,7 @@
 #include "config.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
+#include "drivers/ec/wilco/ec.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/cannonlake.h"
@@ -38,6 +39,11 @@
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
 
+enum {
+	EC_HOST_BASE = 0x940,
+	EC_PACKET_BASE = 0x950,
+};
+
 static int cr50_irq_status(void)
 {
 	return cannonlake_get_gpe(GPE0_DW2_18);
@@ -52,6 +58,10 @@ static int board_setup(void)
 
 	/* 32MB SPI Flash */
 	flash_set_ops(&new_mem_mapped_flash(0xfe000000, 0x2000000)->ops);
+
+	/* Wilco EC */
+	WilcoEc *wilco_ec = new_wilco_ec(EC_HOST_BASE, EC_PACKET_BASE);
+	register_vboot_ec(&wilco_ec->vboot, PRIMARY_VBOOT_EC);
 
 	/* H1 TPM on I2C bus 4 @ 400KHz, controller core is 133MHz */
 	DesignwareI2c *i2c4 = new_pci_designware_i2c(
