@@ -13,6 +13,7 @@
 
 #include "base/cleanup_funcs.h"
 #include "drivers/ec/vboot_ec.h"
+#include "drivers/gpio/gpio.h"
 
 #define WILCO_EC_FLAG_NO_RESPONSE	(1 << 0) /* EC does not respond */
 #define WILCO_EC_FLAG_EXTENDED_DATA	(1 << 1) /* EC returns 256 data bytes */
@@ -51,6 +52,7 @@ typedef struct WilcoEc {
 	void *data_buffer;
 	size_t data_size;
 	VbootEcOps vboot;
+	GpioOps lid_gpio;
 } WilcoEc;
 
 /**
@@ -101,5 +103,6 @@ WilcoEc *new_wilco_ec(uint16_t mec_emi_base, uint16_t ec_host_base);
 int wilco_ec_reboot(WilcoEc *ec);
 int wilco_ec_exit_firmware(WilcoEc *ec);
 int wilco_ec_power_button(WilcoEc *ec, int enable);
+GpioOps *wilco_ec_lid_switch_flag(WilcoEc *ec);
 
 #endif

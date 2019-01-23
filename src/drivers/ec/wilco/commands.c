@@ -11,8 +11,11 @@
 
 #include "base/container_of.h"
 #include "drivers/ec/wilco/ec.h"
+#include "drivers/gpio/gpio.h"
 
 enum {
+	/* Read power state information */
+	EC_POWER_SMI = 0x04,
 	/* Power button */
 	EC_POWER_BUTTON = 0x06,
 	/* EC mode commands */
@@ -25,6 +28,12 @@ enum ec_modes {
 	EC_MODE_EXIT_FIRMWARE = 0x04,
 	EC_MODE_RTC_RESET = 0x05,
 	EC_MODE_EXIT_FACTORY = 0x05,
+};
+
+enum ec_power_smi {
+	EC_POWER_SMI_LEN = 9,		/* 9 bytes */
+	EC_LID_OPEN_OFFSET = 0,		/* byte 0 */
+	EC_LID_OPEN_MASK = 0x10,	/* bit 4 */
 };
 
 int wilco_ec_reboot(WilcoEc *ec)
@@ -65,4 +74,29 @@ int wilco_ec_power_button(WilcoEc *ec, int enable)
 
 	printf("EC: %sable power button\n", enable ? "en" : "dis");
 	return wilco_ec_mailbox(ec, &msg);
+}
+
+static int wilco_ec_get_lid_gpio(GpioOps *me)
+{
+	WilcoEc *ec = container_of(me, WilcoEc, lid_gpio);
+	uint8_t ec_power_smi[EC_POWER_SMI_LEN] = {};
+	WilcoEcMessage msg = {
+		.type = WILCO_EC_MSG_LEGACY,
+		.command = EC_POWER_SMI,
+		.response_data = &ec_power_smi,
+		.response_size = EC_POWER_SMI_LEN,
+	};
+
+	/* Read LID state from the EC */
+	if (wilco_ec_mailbox(ec, &msg) == EC_POWER_SMI_LEN)
+		return !!(ec_power_smi[EC_LID_OPEN_OFFSET] & EC_LID_OPEN_MASK);
+
+	/* Indicate lid is open if EC command failed */
+	return 1;
+}
+
+GpioOps *wilco_ec_lid_switch_flag(WilcoEc *ec)
+{
+	ec->lid_gpio.get = &wilco_ec_get_lid_gpio;
+	return &ec->lid_gpio;
 }

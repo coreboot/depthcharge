@@ -62,6 +62,7 @@ static int board_setup(void)
 	/* Wilco EC */
 	WilcoEc *wilco_ec = new_wilco_ec(EC_HOST_BASE, EC_PACKET_BASE);
 	register_vboot_ec(&wilco_ec->vboot, PRIMARY_VBOOT_EC);
+	flag_replace(FLAG_LIDSW, wilco_ec_lid_switch_flag(wilco_ec));
 
 	/* H1 TPM on I2C bus 4 @ 400KHz, controller core is 133MHz */
 	DesignwareI2c *i2c4 = new_pci_designware_i2c(
