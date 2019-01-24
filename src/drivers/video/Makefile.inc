@@ -27,3 +27,4 @@ depthcharge-$(CONFIG_DRIVER_VIDEO_TEGRA210) += tegra132.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_WW_RING) += ww_ring.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_WW_RING) += ww_ring_programs.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_MT8173) += mt8173_ddp.c
+depthcharge-$(CONFIG_DRIVER_VIDEO_MT8183) += mt8183_ddp.c
