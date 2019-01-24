@@ -46,6 +46,10 @@ config DRIVER_VIDEO_MEDIATEK
 	bool "MediaTek video settings"
 	default n
 
+config DRIVER_VIDEO_MEDIATEK_MT8183
+	bool "MediaTek MT8183 video settings"
+	default n
+
 config DRIVER_VIDEO_EC_PWM_BACKLIGHT
 	bool "Control backlight by EC PWM"
 	default n
