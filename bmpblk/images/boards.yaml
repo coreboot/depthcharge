@@ -50,7 +50,7 @@ x86-generic,amd64-generic:
   panel:    [1366, 768]
   hi_res:   [en]
 
-arm-generic,mips-generic:
+arm-generic,arm64-generic,mips-generic:
   hi_res:   [en]
 
 nyan,nyan_big:
