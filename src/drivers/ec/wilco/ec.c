@@ -109,7 +109,7 @@ WilcoEc *new_wilco_ec(uint16_t ec_host_base, uint16_t mec_emi_base)
 	ec->io_base_command = ec_host_base + 4;
 
 	ec->cleanup.cleanup = &wilco_ec_cleanup_boot;
-	ec->cleanup.types = CleanupOnHandoff | CleanupOnLegacy;
+	ec->cleanup.types = CleanupOnHandoff;
 	ec->cleanup.data = ec;
 	list_insert_after(&ec->cleanup.list_node, &cleanup_funcs);
 
