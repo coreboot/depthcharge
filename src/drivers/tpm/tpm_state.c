@@ -114,7 +114,7 @@ char *tpm_internal_state(struct TpmOps *me)
 
 	state_str = xzalloc(STATE_TEXT_SIZE);
 
-	cr50_fill_vendor_cmd_header(h, VENDOR_CC_REPORT_TPM_STATE);
+	cr50_fill_vendor_cmd_header(h, VENDOR_CC_REPORT_TPM_STATE, 0);
 
 	if (me->xmit(me, (void *)h, sizeof(*h), (void *)h, &buffer_size) ||
 	    (buffer_size < sizeof(struct tpm_vendor_header))) {

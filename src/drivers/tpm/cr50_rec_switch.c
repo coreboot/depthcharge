@@ -33,7 +33,7 @@ static int cr50_rec_switch_get(GpioOps *me)
 	size_t buffer_size = sizeof(struct tpm_get_rec_btn_msg);
 	u8 recovery_button = 0;
 
-	cr50_fill_vendor_cmd_header(&req, VENDOR_CC_GET_REC_BTN);
+	cr50_fill_vendor_cmd_header(&req, VENDOR_CC_GET_REC_BTN, 0);
 
 	if (tpm->xmit(tpm, (void *)&req, sizeof(struct tpm_vendor_header),
 		      (void *)&res, &buffer_size) ||

@@ -51,6 +51,7 @@ static inline void marshal_u16(void *buf, u16 val) { be16enc(buf, val); }
 static inline void marshal_u32(void *buf, u32 val) { be32enc(buf, val); }
 static inline uint32_t unmarshal_u32(void *buf) { return be32dec(buf); }
 
-void cr50_fill_vendor_cmd_header(struct tpm_vendor_header *h, u16 subcommand);
+void cr50_fill_vendor_cmd_header(struct tpm_vendor_header *h, u16 subcommand,
+				 size_t content_size);
 
 #endif /* __DRIVERS_TPM_TPM_UTILS_H__*/
