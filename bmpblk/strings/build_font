@@ -7,7 +7,8 @@
 
 SCRIPT="$(readlink -f "$0")"
 SCRIPT_DIR="$(dirname "$SCRIPT")"
-GLYPHS='* 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ{}-_/'
+FIRST_ASCII_GLYPH="32" # space
+LAST_ASCII_GLYPH="127" # delete
 COLOR="#505050"
 FONT="Noto Sans"
 MARGIN="3"
@@ -22,16 +23,14 @@ main() {
   local output="$1"
   mkdir -p "$output"
 
-  local i=1
+  local glyph="$FIRST_ASCII_GLYPH"
   local c=''
   local fontsize=""
   echo "Generating glyph text source..."
-  while true; do
-    c="$(echo "$GLYPHS" | cut -b $i)"
-    [ -z "$c" ] && break
-    ord="0x$(echo "$c" | od -t x1 -A none | awk '{print $1}')"
-    echo "$c" >"$output/idx$(printf "%03d" $ord)_$(printf "%x" $ord).txt"
-    i=$((i + 1))
+  while [[ "$glyph"  != "$LAST_ASCII_GLYPH" ]]; do
+    c=$(printf "\x$(printf %x $glyph)")
+    echo "$c" >"$output/idx$(printf "%03d" $glyph)_$(printf "%x" $glyph).txt"
+    glyph=$((glyph + 1))
   done
 
   [ -n "$FONTSIZE" ] && fontsize="--point=$FONTSIZE"
