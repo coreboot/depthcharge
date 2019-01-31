@@ -56,6 +56,11 @@
 #define VB_DIVIDER_WIDTH	900	/* 90.0% -> 5% padding on each side */
 #define VB_DIVIDER_V_OFFSET	160	/* 16.0% */
 
+/* Positions of the text for the altfw menu */
+#define VB_ALTFW_SEQ_LEFT	 160
+#define VB_ALTFW_NAME_LEFT   200
+#define VB_ALTFW_DESC_LEFT   400
+
 /* Space between sections of text */
 #define VB_PADDING		3	/* 0.3 % */
 
@@ -316,19 +321,40 @@ static int draw_icon(const char *image_name)
 }
 
 static int draw_text(const char *text, int32_t x, int32_t y,
-		     int32_t height, char pivot)
+		     int32_t height, uint32_t pivot)
 {
-	int32_t w, h;
+	int32_t w, h, total_w;
 	char str[256];
-	while (*text) {
-		sprintf(str, "idx%03d_%02x.bmp", *text, *text);
+	const char *ptr;
+
+	if (pivot & PIVOT_H_CENTER) {
+		total_w = 0;
+		ptr = text;
+		while (*ptr) {
+			w = 0;
+			h = height;
+			sprintf(str, "idx%03d_%02x.bmp", *ptr, *ptr);
+			RETURN_ON_ERROR(
+				get_image_size(font_graphics, str,&w, &h));
+			total_w += w;
+			ptr++;
+		}
+
+		pivot &= ~(PIVOT_H_CENTER);
+		pivot |= PIVOT_H_LEFT;
+		x -= total_w / 2;
+	}
+
+	ptr = text;
+	while (*ptr) {
 		w = 0;
 		h = height;
+		sprintf(str, "idx%03d_%02x.bmp", *ptr, *ptr);
 		RETURN_ON_ERROR(get_image_size(font_graphics, str, &w, &h));
 		RETURN_ON_ERROR(draw(font_graphics, str,
 				     x, y, VB_SIZE_AUTO, height, pivot));
 		x += w;
-		text++;
+		ptr++;
 	}
 	return VBERROR_SUCCESS;
 }
@@ -895,31 +921,33 @@ void vboot_print_string(const char *str)
 	}
 }
 
-/* TODO(sjg@chromium.org): Make this use fonts */
-static void cons_text(int linenum, int seqnum, const char *name,
-		      const char *desc, int selected)
+static VbError_t draw_altfw_text(int menutop, int linenum, int seqnum,
+			  const char *name, const char *desc)
 {
-	unsigned int rows, cols;
-	int x, y;
+	int top = menutop + VB_TEXT_HEIGHT * linenum;
 
-	video_get_rows_cols(&rows, &cols);
-
-	x = cols / 3;
-	y = rows / 2 + linenum;
-	video_console_set_cursor(x, y);
-	vboot_print_string(selected ? "-->" : "   ");
-	video_console_set_cursor(x + 4, y);
 	if (seqnum != -1) {
 		char seq[2] = {'0' + seqnum, '\0'};
 
-		vboot_print_string(seq);
+		RETURN_ON_ERROR(draw_text(seq,
+				VB_ALTFW_SEQ_LEFT,
+				top,
+				VB_TEXT_HEIGHT,
+				PIVOT_H_LEFT|PIVOT_V_TOP));
 	}
 
-	video_console_set_cursor(x + 7, y);
-	vboot_print_string(name);
+	RETURN_ON_ERROR(draw_text(name,
+			VB_ALTFW_NAME_LEFT,
+			top,
+			VB_TEXT_HEIGHT,
+			PIVOT_H_LEFT|PIVOT_V_TOP));
+	RETURN_ON_ERROR(draw_text(desc,
+			VB_ALTFW_DESC_LEFT,
+			top,
+			VB_TEXT_HEIGHT,
+			PIVOT_H_LEFT|PIVOT_V_TOP));
 
-	video_console_set_cursor(x + 24, y);
-	vboot_print_string(desc);
+	return VBERROR_SUCCESS;
 }
 
 static VbError_t vboot_draw_altfw_pick(struct params *p)
@@ -928,17 +956,32 @@ static VbError_t vboot_draw_altfw_pick(struct params *p)
 
 	head = payload_get_altfw_list();
 	RETURN_ON_ERROR(vboot_draw_base_screen(p));
-	cons_text(0, -1,
-		  "Press a numeric key to select an alternative bootloader:",
-		  "", 0);
 	if (head) {
 		struct altfw_info *node;
 		int pos = 2;
+		int node_cnt = 0;
+		int top;
 
 		list_for_each(node, *head, list_node) {
 			if (!node->seqnum)
 				continue;
-			cons_text(pos, node->seqnum, node->name, node->desc, 0);
+			node_cnt++;
+		}
+
+		top = VB_SCALE_HALF - (node_cnt + 2) * VB_TEXT_HEIGHT / 2;
+
+		RETURN_ON_ERROR(draw_image_locale("select_altfw.bmp", p->locale,
+			VB_SCALE_HALF, top,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			PIVOT_H_CENTER|PIVOT_V_TOP));
+		list_for_each(node, *head, list_node) {
+			if (!node->seqnum)
+				continue;
+			RETURN_ON_ERROR(draw_altfw_text(top,
+					pos,
+					node->seqnum,
+					node->name,
+					node->desc));
 			pos++;
 		}
 	}
@@ -958,7 +1001,10 @@ static VbError_t vboot_draw_options_menu(struct params *p)
 static VbError_t vboot_draw_altfw_menu(struct params *p)
 {
 	struct altfw_info *node;
+	char str[256];
 	ListNode *head;
+	int top = VB_SCALE_HALF - VB_TEXT_HEIGHT / 2;
+	uint32_t flags;
 
 	if (p->redraw_base)
 		RETURN_ON_ERROR(vboot_draw_base_screen(p));
@@ -967,19 +1013,54 @@ static VbError_t vboot_draw_altfw_menu(struct params *p)
 
 	int i = 0;
 	if (head) {
+		int node_cnt = 0;
+
 		list_for_each(node, *head, list_node) {
 			if (!node->seqnum)
 				continue;
 			if ((p->disabled_idx_mask &
 			    (1 << (node->seqnum - 1))) != 0)
 				continue;
-			cons_text(i, node->seqnum, node->name, node->desc,
-				  p->selected_index == node->seqnum - 1);
+			node_cnt++;
+		}
+
+		top = VB_SCALE_HALF - (node_cnt + 1) * VB_TEXT_HEIGHT / 2;
+
+		list_for_each(node, *head, list_node) {
+			if (!node->seqnum)
+				continue;
+			if ((p->disabled_idx_mask &
+			    (1 << (node->seqnum - 1))) != 0)
+				continue;
+
+			flags = PIVOT_H_CENTER|PIVOT_V_TOP;
+			if (p->selected_index == node->seqnum - 1)
+				flags |= INVERT_COLORS;
+
+			snprintf(str, sizeof(str), " %s - %s ",
+					node->name, node->desc);
+
+			RETURN_ON_ERROR(draw_text(str,
+					VB_SCALE_HALF,
+					top + VB_TEXT_HEIGHT * i,
+					VB_TEXT_HEIGHT,
+					flags));
 			i++;
 		}
 	}
-	printf("i=%d, p->selected_index=%d\n", i, p->selected_index);
-	cons_text(i, -1, "Cancel", "", p->selected_index == 9 /* cancel */);
+	flags = PIVOT_H_CENTER|PIVOT_V_TOP;
+	if (p->selected_index == 9)
+		flags |= INVERT_COLORS;
+	RETURN_ON_ERROR(draw_image_locale("cancel.bmp", p->locale,
+			VB_SCALE_HALF, top + VB_TEXT_HEIGHT * i,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
+			flags));
+
+	RETURN_ON_ERROR(draw_image_locale("navigate.bmp", p->locale,
+			VB_SCALE_HALF,
+			VB_SCALE - VB_DIVIDER_V_OFFSET - VB_TEXT_HEIGHT,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 2,
+			PIVOT_H_CENTER|PIVOT_V_BOTTOM));
 
 	return 0;
 }
