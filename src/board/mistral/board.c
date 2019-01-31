@@ -136,7 +136,6 @@ static int board_setup(void)
 	UsbHostController *usb_host2 = new_usb_hc(XHCI, 0x78C0000);
 
 	list_insert_after(&usb_host2->list_node, &usb_host_controllers);
-	fit_add_compat("qcom,qcs404-evb");
 
 	/* Add device-tree compatible string
 	 * based on Board-id.
