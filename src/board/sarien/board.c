@@ -23,8 +23,8 @@
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/wilco/ec.h"
+#include "drivers/flash/fast_spi.h"
 #include "drivers/flash/flash.h"
-#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/cannonlake.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/sysinfo.h"
@@ -57,7 +57,11 @@ static int board_setup(void)
 	flag_replace(FLAG_RECSW, rec_gpio);
 
 	/* 32MB SPI Flash */
-	flash_set_ops(&new_mem_mapped_flash(0xfe000000, 0x2000000)->ops);
+	uintptr_t mmio_base = pci_read_config32(PCI_DEV(0, 0x1f, 5),
+						PCI_BASE_ADDRESS_0);
+	mmio_base &= PCI_BASE_ADDRESS_MEM_MASK;
+	FastSpiFlash *spi = new_fast_spi_flash(mmio_base, 32 * MiB);
+	flash_set_ops(&spi->ops);
 
 	/* Wilco EC */
 	WilcoEc *wilco_ec = new_wilco_ec(EC_HOST_BASE, EC_PACKET_BASE);
