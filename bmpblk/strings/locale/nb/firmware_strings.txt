@@ -20,3 +20,4 @@ Strømforsyningen som er tilkoblet, er for svak til å drive denne enheten.
 Chrome OS avsluttes nå.
 Bruk riktig adapter og prøv på nytt.
 Fjern alle tilkoblede enheter, og begynn gjenopprettingen.
+Trykk på en talltast for å velge en alternativ oppstartsinnlaster:

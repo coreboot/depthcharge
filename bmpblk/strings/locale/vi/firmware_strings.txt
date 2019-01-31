@@ -20,3 +20,4 @@ Nguồn điện được kết nối không có đủ điện để chạy thi�
 Chrome OS sẽ tắt bây giờ.
 Vui lòng sử dụng đúng bộ chuyển đổi điện và thử lại.
 Vui lòng tháo tất cả các thiết bị đã kết nối và bắt đầu quá trình khôi phục.
+Nhấn vào một phím số để chọn trình tải khởi động thay thế:

@@ -20,3 +20,4 @@ La font d'alimentació que has connectat no té prou potència per mantenir el d
 Chrome OS s'apagarà d'aquí a uns instants.
 Utilitza l'adaptador correcte i torna-ho a provar.
 Treu tots els dispositius connectats i inicia la recuperació.
+Prem una tecla numèrica per seleccionar un bootloader alternatiu:

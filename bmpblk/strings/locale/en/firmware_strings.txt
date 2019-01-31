@@ -20,3 +20,4 @@ The connected power supply does not have enough power to run this device.
 Chrome OS will now shut down.
 Please use the correct adapter and try again.
 Please remove all connected devices and start recovery.
+Press a numeric key to select an alternative bootloader:

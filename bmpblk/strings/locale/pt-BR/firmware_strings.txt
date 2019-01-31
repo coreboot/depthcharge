@@ -20,3 +20,4 @@ A fonte de alimentação conectada não tem energia suficiente para executar est
 O Chrome OS será desligado agora.
 Use o adaptador correto e tente novamente.
 Remova todos os dispositivos conectados e inicie a recuperação.
+Pressione uma tecla numérica para selecionar um carregador de inicialização alternativo:

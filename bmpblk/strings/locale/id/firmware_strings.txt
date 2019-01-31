@@ -20,3 +20,4 @@ Daya pada sumber listrik yang terhubung tidak cukup untuk menjalankan perangkat 
 Chrome OS akan dimatikan sekarang.
 Harap gunakan adaptor yang tepat kemudian coba lagi.
 Harap hapus semua perangkat yang terhubung lalu mulai pemulihan.
+Tekan kunci numerik untuk memilih bootloader alternatif:

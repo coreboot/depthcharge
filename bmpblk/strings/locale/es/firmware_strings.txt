@@ -20,3 +20,4 @@ La fuente de alimentación conectada no tiene suficiente potencia para hacer fun
 Chrome OS se cerrará.
 Utiliza el adaptador correcto y vuelve a intentarlo.
 Retira todos los dispositivos conectados e inicia la recuperación.
+Pulsa una tecla numérica para seleccionar un bootloader alternativo:

@@ -20,3 +20,4 @@ Podłączone źródło zasilania nie ma wystarczającej mocy do obsługi tego ur
 Chrome OS zostanie teraz zamknięty.
 Użyj odpowiedniego zasilacza i spróbuj ponownie.
 Odłącz wszystkie podłączone urządzenia i rozpocznij przywracanie.
+Naciśnij klawisz numeryczny, by wybrać inny program rozruchowy:

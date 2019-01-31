@@ -20,3 +20,4 @@ Yhdistetyn virtalähteen teho ei riitä laitteen käynnissä pitämiseen.
 Chrome-käyttöjärjestelmä sammutetaan.
 Yhdistä sopiva virtalähde ja yritä uudelleen.
 Irrota kaikki yhdistetyt laitteet ja aloita palautus.
+Valitse vaihtoehtoinen käynnistysohjelma painamalla numeronäppäintä:

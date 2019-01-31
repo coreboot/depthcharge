@@ -20,3 +20,4 @@ Pievienotajam barošanas avotam nav pietiekami daudz jaudas, lai darbinātu šo 
 Operētājsistēma Chrome OS tūlīt tiks izslēgta.
 Lūdzu, izmantojiet pareizo adapteri un mēģiniet vēlreiz.
 Lūdzu, noņemiet visas pievienotās ierīces un sāciet atkopšanu.
+Nospiediet cipartaustiņu, lai atlasītu citu operētājsistēmu ielādes rīku:

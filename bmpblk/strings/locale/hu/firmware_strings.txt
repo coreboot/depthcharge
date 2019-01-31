@@ -20,3 +20,4 @@ A csatlakoztatott áramforrás nem elég nagy teljesítményű az eszköz műkö
 A Chrome OS kikapcsol.
 Használja a megfelelő adaptert, és próbálja újra.
 Távolítsa el az összes csatlakoztatott eszközt, és kezdje meg a helyreállítást.
+Nyomja meg valamelyik számbillentyűt az alternatív rendszerindító kiválasztásához:

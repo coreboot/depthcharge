@@ -20,3 +20,4 @@ Bağlı güç kaynağı, bu cihazı çalıştırmaya yetecek güce sahip değil.
 Chrome OS şimdi kapatılacak.
 Lütfen doğru adaptörü kullanın ve tekrar deneyin.
 Lütfen tüm bağlı cihazları çıkarın ve kurtarma işlemini başlatın.
+Alternatif bootloader için lütfen bir rakam tuşuna basın:

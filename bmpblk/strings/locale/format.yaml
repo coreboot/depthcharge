@@ -34,6 +34,7 @@ inputs:
   - shutdown_now   #20 Chrome OS will now shut down.
   - change_adapter #21 Please use the correct adapter and try again.
   - os_broken      #22 OS may be broken. Remove media and initiate recovery.
+  - select_altfw   #23 Press a numeric key to select an alternative bootloader:
 
 detachable_inputs:
   - dev_option     #01 Developer Options
@@ -100,6 +101,7 @@ keyboard_files:
   todev_phyrec:   [todev_phyrec, reboot_erase, '', esc_back]
   tonorm:         [tonorm, reboot_erase, '', esc_back]
   verif_off:
+  select_altfw:
 
 styles:
   todev:          '--align=left'

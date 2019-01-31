@@ -20,3 +20,4 @@ Walang sapat na power ang nakakonektang power supply upang paganahin ang device 
 Magsa-shut down na ngayon ang Chrome OS.
 Pakigamit ang tamang adapter at subukang muli.
 Pakialis ang lahat ng nakakonektang device at simulan ang pag-recover.
+Pumindot ng numeric key para pumili ng alternatibong bootloader:

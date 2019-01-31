@@ -20,3 +20,4 @@ Adaptorul de curent conectat nu are suficientă putere pentru ca dispozitivul s�
 Acum sistemul de operare Chrome se va închide.
 Folosiți adaptorul potrivit și încercați din nou.
 Eliminați toate dispozitivele conectate și începeți recuperarea.
+Apăsați o tastă numerică pentru a selecta un bootloader alternativ:
