@@ -35,6 +35,18 @@ enum wilco_ec_msg_type {
 };
 
 /**
+ * enum wilco_ec_result - Return codes for EC commands.
+ * @WILCO_EC_RESULT_SUCCESS: Command was successful.
+ * @WILCO_EC_RESULT_ACCESS_DENIED: Trust level did not allow command.
+ * @WILCO_EC_RESULT_FAILED: Command was not successful.
+ */
+enum wilco_ec_result {
+	WILCO_EC_RESULT_SUCCESS = 0,
+	WILCO_EC_RESULT_ACCESS_DENIED = -4,
+	WILCO_EC_RESULT_FAILED = -7,
+};
+
+/**
  * typedef struct WilcoEc - Wilco Embedded Controller handle.
  * @io_base_command: I/O port for mailbox command.
  * @io_base_data: I/O port for mailbox data.

@@ -20,8 +20,10 @@ enum {
 	EC_POWER_BUTTON = 0x06,
 	/* EC mode commands */
 	EC_MODE = 0x88,
-	/* Reboot EC */
-	EC_REBOOT = 0xf2,
+	/* Reboot EC immediately */
+	EC_REBOOT_NOW = 0xf2,
+	/* Reboot EC after host powers down */
+	EC_REBOOT_AFTER_POWEROFF = 0xf6,
 };
 
 enum ec_modes {
@@ -40,12 +42,26 @@ int wilco_ec_reboot(WilcoEc *ec)
 {
 	WilcoEcMessage msg = {
 		.type = WILCO_EC_MSG_LEGACY,
-		.flags = WILCO_EC_FLAG_NO_RESPONSE,
-		.command = EC_REBOOT,
+		.command = EC_REBOOT_NOW,
 	};
+	int ret;
 
-	printf("EC: rebooting...\n");
-	return wilco_ec_mailbox(ec, &msg);
+	printf("EC: rebooting now...\n");
+
+	ret = wilco_ec_mailbox(ec, &msg);
+	if (ret == WILCO_EC_RESULT_ACCESS_DENIED) {
+		/*
+		 * If this command is unavailable use a backup
+		 * command that will reboot after power off,
+		 * which is the next step that vboot will do
+		 * after an EC RO reboot attempt.
+		 */
+		msg.command = EC_REBOOT_AFTER_POWEROFF;
+		printf("EC: rebooting after shutdown...\n");
+		ret = wilco_ec_mailbox(ec, &msg);
+	}
+
+	return ret;
 }
 
 int wilco_ec_exit_firmware(WilcoEc *ec)

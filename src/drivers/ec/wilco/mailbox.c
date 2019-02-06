@@ -179,9 +179,9 @@ static int wilco_ec_transfer(WilcoEc *ec, WilcoEcMessage *msg,
 	/* Check result */
 	flag = inb(ec->io_base_data);
 	if (flag) {
-		printf("%s: bad response to command 0x%02x: %d\n", __func__,
-		       msg->command, flag);
-		return -1;
+		printf("%s: command 0x%02x result %d\n", __func__,
+		       msg->command, -flag);
+		return -flag;
 	}
 
 	if (msg->flags & WILCO_EC_FLAG_EXTENDED_DATA)
