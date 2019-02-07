@@ -55,6 +55,8 @@ enum wilco_ec_result {
  *               is used to hold the request and the response.
  * @data_size: Size of the data buffer used for EC communication.
  * @vboot: Verified boot handlers.
+ * @flash_offset: Location of EC region in SPI flash.
+ * @flash_size: Size of EC region in SPI flash.
  */
 typedef struct WilcoEc {
 	uint16_t io_base_command;
@@ -65,6 +67,8 @@ typedef struct WilcoEc {
 	size_t data_size;
 	VbootEcOps vboot;
 	GpioOps lid_gpio;
+	uint32_t flash_offset;
+	uint32_t flash_size;
 } WilcoEc;
 
 /**
@@ -105,10 +109,13 @@ int wilco_ec_mailbox(WilcoEc *ec, WilcoEcMessage *msg);
  * new_wilco_ec() - Create a new Wilco EC device.
  * @mec_emi_base: MEC EMI base address.
  * @ec_host_base: EC Host/Data base address.
+ * @flash_offset: Base of EC region in SPI.
+ * @flash_size: Length of EC region in SPI.
  *
  * Return: pointer to new EC device or NULL on failure.
  */
-WilcoEc *new_wilco_ec(uint16_t mec_emi_base, uint16_t ec_host_base);
+WilcoEc *new_wilco_ec(uint16_t ec_host_base, uint16_t mec_emi_base,
+		      uint32_t flash_offset, uint32_t flash_size);
 
 /* COMMANDS */
 

@@ -97,7 +97,9 @@ static int board_setup(void)
 	flash_set_ops(&spi->ops);
 
 	/* Wilco EC */
-	WilcoEc *wilco_ec = new_wilco_ec(EC_HOST_BASE, EC_PACKET_BASE);
+	WilcoEc *wilco_ec = new_wilco_ec(EC_HOST_BASE, EC_PACKET_BASE,
+					 spi->region[FLASH_REGION_EC].offset,
+					 spi->region[FLASH_REGION_EC].size);
 	register_vboot_ec(&wilco_ec->vboot, PRIMARY_VBOOT_EC);
 	flag_replace(FLAG_LIDSW, wilco_ec_lid_switch_flag(wilco_ec));
 

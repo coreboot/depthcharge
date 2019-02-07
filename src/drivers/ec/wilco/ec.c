@@ -113,11 +113,13 @@ static void wilco_ec_keyboard_setup(void)
 	}
 }
 
-WilcoEc *new_wilco_ec(uint16_t ec_host_base, uint16_t mec_emi_base)
+WilcoEc *new_wilco_ec(uint16_t ec_host_base, uint16_t mec_emi_base,
+		      uint32_t flash_offset, uint32_t flash_size)
 {
 	WilcoEc *ec;
 
-	if (ec_host_base == 0 || mec_emi_base == 0) {
+	if (ec_host_base == 0 || mec_emi_base == 0 ||
+	    flash_offset == 0 || flash_size == 0) {
 		printf("%s: Invalid parameter\n", __func__);
 		return NULL;
 	}
@@ -131,6 +133,10 @@ WilcoEc *new_wilco_ec(uint16_t ec_host_base, uint16_t mec_emi_base)
 	ec->cleanup.types = CleanupOnHandoff;
 	ec->cleanup.data = ec;
 	list_insert_after(&ec->cleanup.list_node, &cleanup_funcs);
+
+	/* Location of EC region in flash */
+	ec->flash_offset = flash_offset;
+	ec->flash_size = flash_size;
 
 	ec->vboot.hash_image = vboot_hash_image;
 	ec->vboot.reboot_to_ro = vboot_reboot_to_ro;
@@ -147,8 +153,9 @@ WilcoEc *new_wilco_ec(uint16_t ec_host_base, uint16_t mec_emi_base)
 
 	wilco_ec_keyboard_setup();
 
-	printf("Wilco EC [base 0x%x emi 0x%x]\n",
-	       ec_host_base, mec_emi_base);
+	printf("Wilco EC [base 0x%04x emi 0x%04x] flash 0x%08x-0x%08x\n",
+	       ec_host_base, mec_emi_base, flash_offset,
+	       flash_offset + flash_size - 1);
 
 	return ec;
 }
