@@ -29,6 +29,9 @@
 #include "drivers/storage/sdhci_msm.h"
 #include "drivers/gpio/sysinfo.h"
 #include "board.h"
+#include "drivers/tpm/cr50_switches.h"
+#include "drivers/tpm/spi.h"
+#include "drivers/tpm/tpm.h"
 
 #define TLMM_BOOT_SEL		0x010C1000
 #define EMMC_BOOT		0x8000000
@@ -140,6 +143,11 @@ static int board_setup(void)
 	SpiController *spi_flash = new_spi(BLSP5_SPI, 0);
 	SpiFlash *flash = new_spi_flash(&spi_flash->ops);
 	flash_set_ops(&flash->ops);
+
+	SpiController *spi_tpm = new_spi(4, 0);
+	SpiTpm *tpm = new_tpm_spi(&spi_tpm->ops, NULL);
+	tpm_set_ops(&tpm->ops);
+	flag_replace(FLAG_PHYS_PRESENCE, &new_cr50_rec_switch(&tpm->ops)->ops);
 #endif
 
 	/* eMMC support */
