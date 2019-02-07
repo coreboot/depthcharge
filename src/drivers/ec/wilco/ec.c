@@ -16,17 +16,146 @@
 #include "base/cleanup_funcs.h"
 #include "base/container_of.h"
 #include "drivers/ec/wilco/ec.h"
+#include "drivers/ec/wilco/flash.h"
+#include "drivers/ec/wilco/image.h"
+#include "drivers/flash/fast_spi.h"
+
+static const char *cbfs_file_ecrw_version = "ecrw.version";
+
+static uint32_t get_ec_version_from_cbfs(void)
+{
+	uint32_t *version;
+	size_t size;
+
+	version = cbfs_get_file_content(CBFS_DEFAULT_MEDIA,
+					cbfs_file_ecrw_version,
+					CBFS_TYPE_RAW, &size);
+
+	if (!version || size > sizeof(*version)) {
+		printf("%s: invalid EC version in %s\n", __func__,
+		       cbfs_file_ecrw_version);
+		return 0;
+	}
+
+	return *version;
+}
+
+static int vboot_find_flash_device(WilcoEc *ec, enum VbSelectFirmware_t select,
+				   WilcoEcFlashDevice *device)
+{
+	EcFlashInstance instance;
+	int ret;
+
+	/* Select primary or failsafe instance */
+	switch (select) {
+	case VB_SELECT_FIRMWARE_READONLY:
+		instance = EC_FLASH_INSTANCE_FAILSAFE;
+		break;
+	case VB_SELECT_FIRMWARE_EC_ACTIVE:
+	case VB_SELECT_FIRMWARE_EC_UPDATE:
+		instance = EC_FLASH_INSTANCE_PRIMARY;
+		break;
+	default:
+		printf("%s: Unknown firmware selection %d\n",
+		       __func__, select);
+		return -1;
+	}
+
+	/* Find EC flash device on mainboard */
+	ret = wilco_ec_flash_find(ec, device, EC_FLASH_LOCATION_MAIN,
+				  EC_FLASH_TYPE_EC, instance);
+	if (ret < 0) {
+		printf("%s: Unable to find EC device!\n", __func__);
+		return ret;
+	}
+
+	return 0;
+}
 
 static VbError_t vboot_hash_image(VbootEcOps *vbec,
 				  enum VbSelectFirmware_t select,
 				  const uint8_t **hash, int *hash_size)
 {
+	WilcoEc *ec = container_of(vbec, WilcoEc, vboot);
+	static struct vb2_sha256_context ctx;
+	WilcoEcImageHeader *header;
+	uint8_t *image;
+	uint32_t ec_offset, image_offset;
+	size_t image_size;
+
+	/* Default to empty hash to force update on VBERROR_SUCCESS */
+	*hash = ctx.block;
+	*hash_size = VB2_SHA256_DIGEST_SIZE;
+
+	/* Start of EC region in flash */
+	ec_offset = ec->flash_offset;
+
+	/* Failsafe instance starts in the middle of flash region */
+	if (select == VB_SELECT_FIRMWARE_READONLY)
+		ec_offset += ec->flash_size / 2;
+
+	/* Force update if header does not validate */
+	header = flash_read(ec_offset, sizeof(*header));
+	if (header->tag != EC_IMAGE_HEADER_TAG) {
+		printf("%s: header tag invalid (%08x != %08x)\n",
+		       __func__, header->tag, EC_IMAGE_HEADER_TAG);
+		return VBERROR_SUCCESS;
+	}
+	if (header->version != EC_IMAGE_HEADER_VER) {
+		printf("%s: header version invalid (%d != %d)\n",
+		       __func__, header->version, EC_IMAGE_HEADER_VER);
+		return VBERROR_SUCCESS;
+	}
+
+	/* Offset into flash for start of image data */
+	image_offset = ec_offset + sizeof(*header);
+
+	/* Calculate size of image data */
+	image_size = header->firmware_size * EC_IMAGE_BLOCK_SIZE;
+
+	/* Include trailing data */
+	image_size += EC_IMAGE_TRAILER_SIZE;
+
+	/* Include extra trailing data if encryption is enabled */
+	if (header->flags & EC_IMAGE_ENC_FLAG)
+		image_size += EC_IMAGE_ENC_TRAILER_SIZE;
+
+	/* Read the image from flash */
+	image = flash_read(image_offset, image_size);
+
+	/* Generate SHA-256 digest of the header and image */
+	vb2_sha256_init(&ctx);
+	vb2_sha256_update(&ctx, (uint8_t *)header, sizeof(*header));
+	vb2_sha256_update(&ctx, image, image_size);
+	vb2_sha256_finalize(&ctx, (uint8_t *)*hash);
+
 	return VBERROR_SUCCESS;
 }
 
 static VbError_t vboot_update_image(VbootEcOps *vbec,
 	enum VbSelectFirmware_t select, const uint8_t *image, int image_size)
 {
+	WilcoEc *ec = container_of(vbec, WilcoEc, vboot);
+	WilcoEcFlashDevice device;
+	uint32_t version = get_ec_version_from_cbfs();
+	int ret;
+
+	/* Find the main EC device to flash */
+	ret = vboot_find_flash_device(ec, select, &device);
+	if (ret == WILCO_EC_RESULT_ACCESS_DENIED)
+		return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
+	else if (ret < 0)
+		return VBERROR_UNKNOWN;
+
+	/* Write image to the previously found EC device */
+	if (wilco_ec_flash_image(ec, &device, image, image_size, version) < 0) {
+		printf("%s: EC update failed!\n", __func__);
+		return VBERROR_UNKNOWN;
+	}
+
+	printf("%s: EC update successful.\n", __func__);
+	ec->flash_updated = true;
+
 	return VBERROR_SUCCESS;
 }
 
@@ -40,6 +169,13 @@ static VbError_t vboot_reboot_to_ro(VbootEcOps *vbec)
 
 static VbError_t vboot_jump_to_rw(VbootEcOps *vbec)
 {
+	WilcoEc *ec = container_of(vbec, WilcoEc, vboot);
+	printf("%s: start\n", __func__);
+	if (ec->flash_updated) {
+		/* Issue EC reset to boot new image */
+		if (wilco_ec_reboot(ec) < 0)
+			return VBERROR_UNKNOWN;
+	}
 	return VBERROR_SUCCESS;
 }
 

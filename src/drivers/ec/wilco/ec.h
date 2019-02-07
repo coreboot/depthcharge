@@ -57,6 +57,7 @@ enum wilco_ec_result {
  * @vboot: Verified boot handlers.
  * @flash_offset: Location of EC region in SPI flash.
  * @flash_size: Size of EC region in SPI flash.
+ * @flash_updated: Flag indicating flash has been updated.
  */
 typedef struct WilcoEc {
 	uint16_t io_base_command;
@@ -69,6 +70,7 @@ typedef struct WilcoEc {
 	GpioOps lid_gpio;
 	uint32_t flash_offset;
 	uint32_t flash_size;
+	bool flash_updated;
 } WilcoEc;
 
 /**
