@@ -18,6 +18,8 @@ enum {
 	EC_POWER_SMI = 0x04,
 	/* Power button */
 	EC_POWER_BUTTON = 0x06,
+	/* Inform EC of OS boot */
+	EC_OS_BOOT = 0x6b,
 	/* EC mode commands */
 	EC_MODE = 0x88,
 	/* Reboot EC immediately */
@@ -67,15 +69,22 @@ int wilco_ec_reboot(WilcoEc *ec)
 int wilco_ec_exit_firmware(WilcoEc *ec)
 {
 	uint8_t param = EC_MODE_EXIT_FIRMWARE;
-	WilcoEcMessage msg = {
+	WilcoEcMessage exit_firmware_msg = {
 		.type = WILCO_EC_MSG_LEGACY,
 		.command = EC_MODE,
 		.request_data = &param,
 		.request_size = sizeof(param),
 	};
+	WilcoEcMessage os_boot_msg = {
+		.type = WILCO_EC_MSG_LEGACY,
+		.command = EC_OS_BOOT,
+	};
+
+	/* Inform EC of OS boot, ignore failure */
+	wilco_ec_mailbox(ec, &os_boot_msg);
 
 	printf("EC: exit firmware mode\n");
-	return wilco_ec_mailbox(ec, &msg);
+	return wilco_ec_mailbox(ec, &exit_firmware_msg);
 }
 
 int wilco_ec_power_button(WilcoEc *ec, int enable)
