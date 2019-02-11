@@ -103,11 +103,12 @@ int vboot_select_and_load_kernel(void)
 	VbSelectAndLoadKernelParams kparams = {
 		.kernel_buffer = &_kernel_start,
 		.kernel_buffer_size = &_kernel_end - &_kernel_start,
+		.inflags = 0
 	};
 	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
 
 	if (IS_ENABLED(CONFIG_DETACHABLE_UI)) {
-		kparams.inflags = VB_SALK_INFLAGS_ENABLE_DETACHABLE_UI;
+		kparams.inflags |= VB_SALK_INFLAGS_ENABLE_DETACHABLE_UI;
 		if (IS_ENABLED(CONFIG_ARCH_X86)) {
 			// On x86 systems, inhibit power button pulse from EC.
 			if (ec && ec->enable_power_button)
@@ -117,6 +118,10 @@ int vboot_select_and_load_kernel(void)
 					  &cleanup_funcs);
 		}
 	}
+
+	if (CONFIG_VENDOR_DATA_LENGTH > 0)
+		// TODO: Add logic for when vendor data is settable
+		kparams.inflags |= VB_SALK_INFLAGS_VENDOR_DATA_SETTABLE;
 
 	printf("Calling VbSelectAndLoadKernel().\n");
 	VbError_t res = VbSelectAndLoadKernel(&cparams, &kparams);

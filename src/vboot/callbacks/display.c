@@ -44,11 +44,12 @@ void print_on_center(const char *msg)
 	vboot_print_string(msg);
 }
 
-VbError_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale)
+VbError_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale,
+			    const VbScreenData *data)
 {
 	const char *msg = NULL;
 
-	if (vboot_draw_screen(screen_type, locale) == CBGFX_SUCCESS)
+	if (vboot_draw_screen(screen_type, locale, data) == CBGFX_SUCCESS)
 		return VBERROR_SUCCESS;
 
 	/*

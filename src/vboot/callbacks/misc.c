@@ -49,3 +49,8 @@ uint32_t VbExIsShutdownRequested(void)
 
 	return shutdown_request;
 }
+
+VbError_t VbExSetVendorData(const char *vendor_data_value)
+{
+	return VBERROR_SUCCESS;
+}

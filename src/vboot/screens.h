@@ -19,8 +19,10 @@
 #define __VBOOT_SCREENS_H__
 
 #include <stdint.h>
+#include <vboot_api.h>
 
-int vboot_draw_screen(uint32_t screen, uint32_t locale);
+int vboot_draw_screen(uint32_t screen, uint32_t locale,
+		      const VbScreenData *data);
 int vboot_draw_ui(uint32_t screen, uint32_t locale,
 		  uint32_t selected_index, uint32_t disabled_idx_mask,
 		  uint32_t redraw_base);

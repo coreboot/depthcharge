@@ -98,6 +98,7 @@ struct params {
 	uint32_t selected_index;
 	uint32_t disabled_idx_mask;
 	uint32_t redraw_base;
+	const VbScreenData *data;
 };
 
 /* struct for passing around menu string arrays */
@@ -1061,6 +1062,49 @@ static VbError_t vboot_draw_altfw_menu(struct params *p)
 	return 0;
 }
 
+#if CONFIG_VENDOR_DATA_LENGTH > 0
+static VbError_t vboot_draw_set_vendor_data(struct params *p)
+{
+	if (p->redraw_base)
+		RETURN_ON_ERROR(vboot_draw_base_screen(p));
+
+	RETURN_ON_ERROR(draw_image_locale("set_vendor_data.bmp", p->locale,
+			VB_SCALE_HALF,
+			VB_SCALE_HALF,
+			VB_SIZE_AUTO,
+			VB_TEXT_HEIGHT,
+			PIVOT_H_RIGHT|PIVOT_V_CENTER));
+
+	RETURN_ON_ERROR(draw_text(p->data->vendor_data.input_text,
+			VB_SCALE_HALF + VB_PADDING,
+			VB_SCALE_HALF,
+			VB_TEXT_HEIGHT,
+			PIVOT_H_LEFT|PIVOT_V_CENTER));
+
+	return 0;
+}
+
+static VbError_t vboot_draw_confirm_vendor_data(struct params *p)
+{
+	if (p->redraw_base)
+		RETURN_ON_ERROR(vboot_draw_base_screen(p));
+
+	RETURN_ON_ERROR(draw_image_locale("conf_vendor_data.bmp", p->locale,
+			VB_SCALE_HALF,
+			VB_SCALE_HALF,
+			VB_SIZE_AUTO,
+			VB_TEXT_HEIGHT,
+			PIVOT_H_RIGHT|PIVOT_V_CENTER));
+
+	RETURN_ON_ERROR(draw_text(p->data->vendor_data.input_text,
+			VB_SCALE_HALF + VB_PADDING,
+			VB_SCALE_HALF,
+			VB_TEXT_HEIGHT,
+			PIVOT_H_LEFT|PIVOT_V_CENTER));
+	return 0;
+}
+#endif // CONFIG_VENDOR_DATA_LENGTH > 0
+
 /* we may export this in the future for the board customization */
 struct vboot_ui_descriptor {
 	uint32_t id;				/* VB_SCREEN_* */
@@ -1164,6 +1208,18 @@ static const struct vboot_ui_descriptor vboot_screens[] = {
 		.draw = vboot_draw_altfw_menu,
 		.mesg = "Alternative Firmware Menu",
 	},
+#if CONFIG_VENDOR_DATA_LENGTH > 0
+	{
+		.id = VB_SCREEN_SET_VENDOR_DATA,
+		.draw = vboot_draw_set_vendor_data,
+		.mesg = "Set Vendor Data",
+	},
+	{
+		.id = VB_SCREEN_CONFIRM_VENDOR_DATA,
+		.draw = vboot_draw_confirm_vendor_data,
+		.mesg = "Confirm Vendor Data",
+	},
+#endif
 };
 
 static const struct vboot_ui_descriptor *get_ui_descriptor(uint32_t id)
@@ -1291,7 +1347,8 @@ static VbError_t vboot_init_screen(void)
 	return VBERROR_SUCCESS;
 }
 
-int vboot_draw_screen(uint32_t screen, uint32_t locale)
+int vboot_draw_screen(uint32_t screen, uint32_t locale,
+		      const VbScreenData *data)
 {
 
 	printf("%s: screen=0x%x locale=%d\n", __func__, screen, locale);
@@ -1306,7 +1363,7 @@ int vboot_draw_screen(uint32_t screen, uint32_t locale)
 
 	/* TODO: draw only locale dependent part if current_screen == screen */
 	/* setting selected_index value to 0xFFFFFFFF invalidates the field */
-	struct params p = { locale, 0xFFFFFFFF, 0, 1 };
+	struct params p = { locale, 0xFFFFFFFF, 0, 1, data };
 	RETURN_ON_ERROR(draw_ui(screen, &p));
 
 	locale_data.current = locale;
@@ -1331,7 +1388,7 @@ int vboot_draw_ui(uint32_t screen, uint32_t locale,
 	backlight_update(screen == VB_SCREEN_BLANK ? 0 : 1);
 
 	struct params p = { locale, selected_index,
-			    disabled_idx_mask, redraw_base };
+			    disabled_idx_mask, redraw_base, NULL };
 	return draw_ui(screen, &p);
 }
 

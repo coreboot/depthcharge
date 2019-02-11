@@ -117,7 +117,7 @@ static int do_draw_screen(int argc, char * const argv[])
 
 	if (argc == 4)
 		locale = strtoul(argv[3], NULL, 0);
-	return vboot_draw_screen(strtoul(argv[2], NULL, 0), locale);
+	return vboot_draw_screen(strtoul(argv[2], NULL, 0), locale, NULL);
 }
 
 static int do_draw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])

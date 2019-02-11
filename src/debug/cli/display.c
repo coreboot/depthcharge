@@ -27,7 +27,7 @@ static int do_display(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		return CMD_RET_USAGE;
 	}
 
-	return vboot_draw_screen(screen_map[display], locale);
+	return vboot_draw_screen(screen_map[display], locale, NULL);
 }
 
 U_BOOT_CMD(

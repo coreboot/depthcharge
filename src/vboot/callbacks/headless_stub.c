@@ -20,7 +20,8 @@
 
 #include "drivers/video/display.h"
 
-VbError_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale)
+VbError_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale,
+			    const VbScreenData *data)
 {
 	return display_screen((enum VbScreenType_t)screen_type);
 }
