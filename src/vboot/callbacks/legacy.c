@@ -39,7 +39,7 @@ uint32_t VbExGetAltFwIdxMask(void)
 	return mask;
 }
 
-int VbExLegacy(int altfw_num)
+int VbExLegacy(enum VbAltFwIndex_t altfw_num)
 {
 	ListNode *head;
 
@@ -52,7 +52,7 @@ int VbExLegacy(int altfw_num)
 			if (node->seqnum == altfw_num) {
 				printf("Running bootloader '%s: %s'\n",
 				       node->name, node->desc);
-				return payload_run(node->filename);
+				return payload_run(node->filename, 0);
 			}
 		}
 	}
@@ -62,7 +62,7 @@ int VbExLegacy(int altfw_num)
 	 * TODO(sjg@chromium.org): Drop this once everything is migrated to
 	 * altfw.
 	 */
-	if (payload_run("payload"))
+	if (payload_run("payload", 0))
 		printf("%s: Could not find default legacy payload\n", __func__);
 	printf("%s: Could not find bootloader #%d\n", __func__, altfw_num);
 

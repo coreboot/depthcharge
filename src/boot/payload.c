@@ -18,6 +18,7 @@
 #include <stdbool.h>
 #include <libpayload.h>
 #include <lzma.h>
+#include <vb2_api.h>
 #include <cbfs.h>
 
 #include "arch/cache.h"
@@ -34,6 +35,50 @@ static ListNode *altfw_head;
 /* Media to use for reading payloads */
 static struct cbfs_media cbfs_media;
 static bool cbfs_media_valid;
+
+#define PAYLOAD_HASH_SUFFIX ".sha256"
+
+/*
+ * get_payload_hash() - Obtain the hash for a given payload.
+ *    Given the name of a payload (e.g., "altfw/XXX") appends
+ *    ".sha256" to the name (e.g., "altfw/XXX.sha256") and
+ *    provides a buffer of length VB2_SHA256_DIGEST_SIZE that
+ *    contains the file's contents.
+ * @payload_name: Name of payload
+ * @return pointer to buffer on success, otherwise NULL.
+ *     Caller is responsible for freeing the buffer.
+ */
+
+static uint8_t *get_payload_hash(const char *payload_name)
+{
+	void *data;
+	size_t data_size = 0;
+	char *full_name;
+	size_t full_name_len = strlen(payload_name) +
+			       sizeof(PAYLOAD_HASH_SUFFIX);
+	full_name = xzalloc(full_name_len);
+	snprintf(full_name, full_name_len, "%s%s", payload_name,
+		 PAYLOAD_HASH_SUFFIX);
+
+	/* Search in AP-RW CBFS (either FW_MAIN_A or FW_MAIN_B) */
+	data = cbfs_get_file_content(CBFS_DEFAULT_MEDIA, full_name,
+				     CBFS_TYPE_RAW, &data_size);
+	free(full_name);
+	if (data == NULL) {
+		printf("Could not find hash for %s in default media cbfs.\n",
+		       payload_name);
+		return NULL;
+	}
+	if (data_size != VB2_SHA256_DIGEST_SIZE) {
+		printf("Size of hash for %s is not %u: %u\n",
+		       payload_name, VB2_SHA256_DIGEST_SIZE,
+		       (uint32_t)data_size);
+		free(data);
+		data = NULL;
+	}
+
+	return (uint8_t *)data;
+}
 
 /*
  * payload_load() - Load an image from the given payload
@@ -115,10 +160,11 @@ struct cbfs_media *payload_get_media(void)
 	return &cbfs_media;
 }
 
-int payload_run(const char *payload_name)
+int payload_run(const char *payload_name, int verify)
 {
 	struct cbfs_media *media;
 	struct cbfs_payload *payload;
+	size_t payload_size = 0;
 	void *entry;
 	int ret;
 
@@ -126,14 +172,51 @@ int payload_run(const char *payload_name)
 	if (!media)
 		return 1;
 
-	payload = cbfs_load_payload(media, payload_name);
+	payload = cbfs_get_file_content(media, payload_name, CBFS_TYPE_SELF,
+					&payload_size);
 	if (!payload) {
 		printf("Could not find '%s'.\n", payload_name);
 		return 1;
 	}
 
+	if (verify) {
+		uint8_t real_hash[VB2_SHA256_DIGEST_SIZE];
+		uint8_t *expected_hash;
+		int rv;
+
+		/* Calculate hash of payload. */
+		rv = vb2api_digest_buffer((const uint8_t *)payload,
+					  payload_size, VB2_HASH_SHA256,
+					  real_hash, sizeof(real_hash));
+		if (rv) {
+			printf("SHA-256 calculation failed for "
+			       "%s payload.\n", payload_name);
+			free(payload);
+			return 1;
+		}
+
+		/* Retrieve the expected hash of payload stored in AP-RW. */
+		expected_hash = get_payload_hash(payload_name);
+		if (expected_hash == NULL) {
+			printf("Could not retrieve expected hash of "
+			       "%s payload.\n", payload_name);
+			free(payload);
+			return 1;
+		}
+
+		rv = memcmp(real_hash, expected_hash, sizeof(real_hash));
+		free(expected_hash);
+		if (rv != 0) {
+			printf("%s payload hash check failed!\n", payload_name);
+			free(payload);
+			return 1;
+		}
+		printf("%s payload hash check succeeded.\n", payload_name);
+	}
+
 	printf("Loading %s into RAM\n", payload_name);
 	ret = payload_load(payload, &entry);
+	free(payload);
 	if (ret) {
 		printf("Failed: error %d\n", ret);
 		return 1;
