@@ -154,9 +154,7 @@ VbError_t update_vboot_aux_fw(void)
 {
 	VbAuxFwUpdateSeverity_t severity;
 	VbError_t status = VBERROR_SUCCESS;
-	int power_button_disabled = 0;
 	int lid_shutdown_disabled = 0;
-	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
 
 	for (int i = 0; i < vboot_aux_fw_count; ++i) {
 		const VbootAuxFwOps *aux_fw;
@@ -166,15 +164,6 @@ VbError_t update_vboot_aux_fw(void)
 			continue;
 
 		if (vboot_aux_fw[i].severity != VB_AUX_FW_NO_UPDATE) {
-			/* Disable power button from EC on x86 during update */
-			if (!power_button_disabled &&
-			    IS_ENABLED(CONFIG_ARCH_X86) &&
-			    !IS_ENABLED(CONFIG_DETACHABLE_UI)) {
-				if (ec && ec->enable_power_button)
-					ec->enable_power_button(ec, 0);
-				power_button_disabled = 1;
-			}
-
 			/* Disable lid shutdown on x86 if enabled */
 			if (!lid_shutdown_disabled &&
 			    IS_ENABLED(CONFIG_ARCH_X86) &&
@@ -213,10 +202,6 @@ update_protect:
 		if (status != VBERROR_SUCCESS)
 			break;
 	}
-
-	/* Re-enable power button after update, if required */
-	if (power_button_disabled && ec && ec->enable_power_button)
-		ec->enable_power_button(ec, 1);
 
 	/* Re-enable lid shutdown event, if required */
 	if (IS_ENABLED(CONFIG_DRIVER_CROS_EC) && lid_shutdown_disabled)

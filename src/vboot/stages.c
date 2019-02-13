@@ -85,12 +85,8 @@ int vboot_do_init_out_flags(uint32_t out_flags)
 static int x86_ec_powerbtn_cleanup_func(struct CleanupFunc *c, CleanupType t)
 {
 	VbootEcOps *ec = c->data;
-
 	// Reenable power button pulse that we inhibited on x86 systems with UI.
-	if (ec && ec->enable_power_button)
-		return ec->enable_power_button(ec, 1);
-
-	return -1;
+	return ec->enable_power_button(ec, 1);
 }
 static CleanupFunc x86_ec_powerbtn_cleanup = {
 	&x86_ec_powerbtn_cleanup_func,
@@ -131,16 +127,16 @@ int vboot_select_and_load_kernel(void)
 	};
 	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
 
-	if (IS_ENABLED(CONFIG_DETACHABLE_UI)) {
+	if (IS_ENABLED(CONFIG_DETACHABLE_UI))
 		kparams.inflags |= VB_SALK_INFLAGS_ENABLE_DETACHABLE_UI;
-		if (IS_ENABLED(CONFIG_ARCH_X86)) {
-			// On x86 systems, inhibit power button pulse from EC.
-			if (ec && ec->enable_power_button)
-				ec->enable_power_button(ec, 0);
-			x86_ec_powerbtn_cleanup.data = ec;
-			list_insert_after(&x86_ec_powerbtn_cleanup.list_node,
-					  &cleanup_funcs);
-		}
+
+	// On x86 systems, inhibit power button pulse from EC.
+	if (IS_ENABLED(CONFIG_ARCH_X86) && ec &&
+	    ec->enable_power_button) {
+		ec->enable_power_button(ec, 0);
+		x86_ec_powerbtn_cleanup.data = ec;
+		list_insert_after(&x86_ec_powerbtn_cleanup.list_node,
+				  &cleanup_funcs);
 	}
 
 	if (vendor_data_settable())
