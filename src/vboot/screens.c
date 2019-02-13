@@ -1031,6 +1031,20 @@ static VbError_t vboot_draw_altfw_pick(struct params *p)
 	return VBERROR_SUCCESS;
 }
 
+#if IS_ENABLED(CONFIG_DIAGNOSTIC_UI)
+static VbError_t vboot_draw_confirm_diag(struct params *p)
+{
+	uint32_t locale = p->locale;
+	RETURN_ON_ERROR(vboot_draw_base_screen(p));
+
+	RETURN_ON_ERROR(draw_image_locale("diag_confirm.bmp", locale,
+			VB_SCALE_HALF, VB_SCALE_HALF,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 3,
+			PIVOT_H_CENTER|PIVOT_V_CENTER));
+	return VBERROR_SUCCESS;
+}
+#endif
+
 static VbError_t vboot_draw_options_menu(struct params *p)
 {
 	if (p->redraw_base)
@@ -1263,6 +1277,14 @@ static const struct vboot_ui_descriptor vboot_screens[] = {
 		.id = VB_SCREEN_CONFIRM_VENDOR_DATA,
 		.draw = vboot_draw_confirm_vendor_data,
 		.mesg = "Confirm Vendor Data",
+	},
+#endif
+#if IS_ENABLED(CONFIG_DIAGNOSTIC_UI)
+	{
+		.id = VB_SCREEN_CONFIRM_DIAG,
+		.draw = vboot_draw_confirm_diag,
+		.mesg = "To run diagnostics tap the power button.\n"
+			"To go back, press esc.\n",
 	},
 #endif
 };

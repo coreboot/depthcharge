@@ -43,6 +43,11 @@ int VbExLegacy(enum VbAltFwIndex_t altfw_num)
 {
 	ListNode *head;
 
+	if (altfw_num == VB_ALTFW_DIAGNOSTIC) {
+		printf("Running diagnostic bootloader\n");
+		return payload_run("altfw/diag", 1);
+	}
+
 	/* If we don't have a particular one to boot, use 0. */
 	head = payload_get_altfw_list();
 	if (head) {

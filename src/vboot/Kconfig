@@ -30,6 +30,12 @@ config DETACHABLE_UI
 	  don't have a keyboard.  This assumes that user will flip through
 	  menu options with vol up/down and power buttons.
 
+config DIAGNOSTIC_UI
+	bool "Enable UI to allow boot of diagnostic rom"
+	default n
+	help
+	  Enable option to run a diagnostic rom at boot.
+
 config EC_SOFTWARE_SYNC
 	bool "Enable EC software sync"
 	default n
