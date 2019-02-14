@@ -43,13 +43,21 @@ struct tpm_vendor_header {
 enum vendor_cmd_cc {
 	VENDOR_CC_REPORT_TPM_STATE = 23,
 	VENDOR_CC_GET_REC_BTN = 29,
+	VENDOR_CC_TPM_MODE = 40,
 	VENDOR_CC_GET_PWR_BTN = 43,
+};
+
+/* Error codes reported by extension and vendor commands. */
+enum vendor_cmd_rc {
+	VENDOR_RC_NO_SUCH_COMMAND = 0x57f,
 };
 
 #define TPM_ST_NO_SESSIONS 0x8001
 
+static inline void marshal_u8(void *buf, uint8_t val) { *(uint8_t *)buf = val; }
 static inline void marshal_u16(void *buf, u16 val) { be16enc(buf, val); }
 static inline void marshal_u32(void *buf, u32 val) { be32enc(buf, val); }
+static inline uint8_t unmarshal_u8(void *buf) { return *(uint8_t *)buf; }
 static inline uint32_t unmarshal_u32(void *buf) { return be32dec(buf); }
 
 void cr50_fill_vendor_cmd_header(struct tpm_vendor_header *h, u16 subcommand,

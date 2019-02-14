@@ -16,6 +16,8 @@
  */
 
 #include <libpayload.h>
+#include <tss_constants.h>
+#include <vb2_api.h>
 #include <vboot_api.h>
 
 #include "drivers/tpm/tpm.h"
@@ -46,4 +48,21 @@ VbError_t VbExTpmSendReceive(const uint8_t *request, uint32_t request_length,
 		return VBERROR_UNKNOWN;
 	*response_length = len;
 	return VBERROR_SUCCESS;
+}
+
+int vb2ex_tpm_set_mode(enum vb2_tpm_mode mode_val)
+{
+	/*
+	 * Safely cast to uint8_t, since we know enum vb2_tpm_mode values
+	 * correspond directly to TPM mode values.
+	 */
+	int ret = tpm_set_mode((uint8_t)mode_val);
+	switch (ret) {
+	case TPM_SUCCESS:
+		return VB2_SUCCESS;
+	case TPM_E_INTERNAL_ERROR:
+		return VB2_ERROR_EX_TPM_NO_SUCH_COMMAND;
+	default:
+		return VB2_ERROR_UNKNOWN;
+	}
 }

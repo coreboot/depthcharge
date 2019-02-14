@@ -97,4 +97,20 @@ char *tpm_internal_state(struct TpmOps *me);
  */
 char *tpm_report_state(void);
 
+/*
+ * tpm_set_mode()
+ *
+ * Sets the TPM mode value and validates that it was changed.  If one of the
+ * following occurs, the function call fails:
+ *   - TPM does not understand the instruction (old version)
+ *   - TPM has already left the TpmModeEnabledTentative mode
+ *   - TPM responds with a mode other than the requested mode
+ *   - Some other communication error occurs
+ *  Otherwise, the function call succeeds.
+ *
+ * Returns 0 on success or non-zero on failure (the failure result is typically
+ * TPM_E_INTERNAL_ERROR if the command was not understood, otherwise -1).
+ */
+int tpm_set_mode(uint8_t mode_val);
+
 #endif /* __DRIVERS_TPM_TPM_H__ */
