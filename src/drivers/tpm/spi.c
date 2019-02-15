@@ -216,6 +216,7 @@ static int start_transaction(int read_write, size_t bytes, unsigned addr)
 	/* Now poll the bus until TPM removes the stall bit. */
 	stopwatch_init_msecs_expire(&sw, 10);
 	do {
+		byte = 0;
 		tpm_if.xfer(tpm_if.slave, NULL, 0, &byte, 1);
 		if (stopwatch_expired(&sw)) {
 			printf("TPM flow control failure\n");
@@ -294,9 +295,9 @@ static void write_bytes(const void *buffer, size_t bytes)
  * Once transaction is initiated and the TPM indicated that it is ready to go,
  * read the actual bytes from the register.
  */
-static void read_bytes(void *buffer, size_t bytes)
+static int read_bytes(void *buffer, size_t bytes)
 {
-	tpm_if.xfer(tpm_if.slave, NULL, 0, buffer, bytes);
+	return tpm_if.xfer(tpm_if.slave, NULL, 0, buffer, bytes);
 }
 
 /*
@@ -308,11 +309,16 @@ static void read_bytes(void *buffer, size_t bytes)
  */
 static int tpm2_write_reg(unsigned reg_number, const void *buffer, size_t bytes)
 {
+	int result = 1;
 	trace_dump("W", reg_number, bytes, buffer, 0);
-	start_transaction(false, bytes, reg_number);
-	write_bytes(buffer, bytes);
+	if (!start_transaction(false, bytes, reg_number)) {
+		printf("failed to write tpm reg %#x\n", reg_number);
+		result = 0;
+	} else {
+		write_bytes(buffer, bytes);
+	}
 	tpm_if.cs_deassert(tpm_if.slave);
-	return 1;
+	return result;
 }
 
 /*
@@ -324,12 +330,16 @@ static int tpm2_write_reg(unsigned reg_number, const void *buffer, size_t bytes)
  */
 static int tpm2_read_reg(unsigned reg_number, void *buffer, size_t bytes)
 {
-	if (!start_transaction(true, bytes, reg_number))
-		return 0;
-	read_bytes(buffer, bytes);
+	int result = 1;
+	if (!start_transaction(true, bytes, reg_number) ||
+	    read_bytes(buffer, bytes)) {
+		printf("failed to read tpm reg %#x\n", reg_number);
+		memset(buffer, 0, bytes);
+		result = 0;
+	}
 	tpm_if.cs_deassert(tpm_if.slave);
 	trace_dump("R", reg_number, bytes, buffer, 0);
-	return 1;
+	return result;
 }
 
 /*
@@ -455,11 +465,15 @@ static int wait_for_status(uint32_t status_mask, uint32_t status_expected)
 	do {
 		udelay(MSECS_PER_SEC);
 		if (stopwatch_expired(&sw)) {
-			printf("failed to get expected status %x\n",
+			printf("failed to get expected status %#x\n",
 			       status_expected);
 			return false;
 		}
-		read_tpm_sts(&status);
+		if (!read_tpm_sts(&status)) {
+			printf("Failed to read expected status %#x\n",
+			       status_expected);
+			return false;
+		}
 	} while ((status & status_mask) != status_expected);
 
 	return 1;
@@ -489,9 +503,16 @@ static void fifo_transfer(size_t transfer_size,
 	size_t handled_so_far = 0;
 
 	do {
+		struct stopwatch sw;
+		stopwatch_init_msecs_expire(&sw, 100);
+
 		do {
 			/* Could be zero when TPM is busy. */
 			burst_count = get_burst_count();
+			if (stopwatch_expired(&sw)) {
+				printf("exceeded tpm wait in burst loop\n");
+				return;
+			}
 		} while (!burst_count);
 
 		transaction_size = transfer_size - handled_so_far;
@@ -548,7 +569,10 @@ static size_t tpm2_process_command(const void *tpm2_command,
 	}
 
 	/* Let the TPM know that the command is coming. */
-	write_tpm_sts(TpmStsCommandReady);
+	if (!write_tpm_sts(TpmStsCommandReady)) {
+		printf("Failed to notify tpm of incoming command\n");
+		return 0;
+	}
 
 	/*
 	 * Tpm commands and responses written to and read from the FIFO
@@ -565,7 +589,10 @@ static size_t tpm2_process_command(const void *tpm2_command,
 	fifo_transfer(command_size, fifo_buffer, fifo_transmit);
 
 	/* Now tell the TPM it can start processing the command. */
-	write_tpm_sts(TpmStsGo);
+	if (!write_tpm_sts(TpmStsGo)) {
+		printf("Failed to notify tpm to process command\n");
+		return 0;
+	}
 
 	/* Now wait for it to report that the response is ready. */
 	expected_status_bits = TpmStsValid | TpmStsDataAvail;
@@ -632,7 +659,10 @@ static size_t tpm2_process_command(const void *tpm2_command,
 		return 0;
 	}
 
-	/* Move the TPM back to idle state. */
+	/*
+	 * Move the TPM back to idle state. This will likely fail if the current
+	 * command is disabling the tpm.
+	 */
 	write_tpm_sts(TpmStsCommandReady);
 
 	return payload_size;
