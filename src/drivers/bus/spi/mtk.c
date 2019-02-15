@@ -13,6 +13,7 @@
  */
 
 #include <libpayload.h>
+#include <assert.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <arch/virtual.h>
@@ -46,7 +47,7 @@ static void mtk_spi_dump_data(const char *name, const uint8_t *data, int size)
 #ifdef MTK_SPI_DEBUG
 	int i;
 
-	printf("%s: 0x ", name);
+	printf("%s[%d]: 0x ", name, size);
 	for (i = 0; i < size; i++)
 		printf("%#x ", data[i]);
 	printf("\n");
@@ -66,30 +67,20 @@ static int mtk_spi_start(SpiOps *me)
 	return 0;
 }
 
-static int mtk_spi_transfer(SpiOps *me, void *in, const void *out, uint32_t size)
+static int mtk_spi_xfer(MtkSpi *bus, void *in, const void *out,
+			uint8_t *inb, uint8_t *outb,
+			uint32_t *offset, uint32_t size)
 {
-	MtkSpi *bus = container_of(me, MtkSpi, ops);
 	MtkSpiRegs *regs = bus->reg_addr;
 	uint32_t packet_len, packet_loop;
 	uint64_t start;
-	uint8_t *inb = NULL, *outb = NULL;
 
-	/* The SPI controller will transmit in full-duplex for RX,
-	 * therefore we enable tx & rx DMA when just do RX.
-	 */
-	if (!in && out)
-		setbits_le32(&regs->spi_cmd_reg, 1 << SPI_CMD_TX_DMA_SHIFT);
-	else
-		setbits_le32(&regs->spi_cmd_reg, (1 << SPI_CMD_RX_DMA_SHIFT) |
-			     (1 << SPI_CMD_TX_DMA_SHIFT));
+	assert(size < MTK_PACKET_SIZE || size % MTK_PACKET_SIZE == 0);
 
-	if (in)
-		inb = dma_malloc(size);
-
-	outb = dma_malloc(size);
-
-	if (out)
-		memcpy(outb, out, size);
+	if (out) {
+		memcpy(outb, (const uint8_t *)out + *offset, size);
+		mtk_spi_dump_data("the outb data is", outb, size);
+	}
 
 	/* set transfer packet and loop */
 	packet_len = MIN(size, MTK_PACKET_SIZE);
@@ -100,13 +91,8 @@ static int mtk_spi_transfer(SpiOps *me, void *in, const void *out, uint32_t size
 			((packet_len - 1) << SPI_CFG1_PACKET_LENGTH_SHIFT) |
 			((packet_loop - 1) << SPI_CFG1_PACKET_LOOP_SHIFT));
 
-
-	if (out)
-		mtk_spi_dump_data("the outb data is", (const uint8_t *)outb, size);
-
 	write32(&regs->spi_tx_src_reg, (uintptr_t)outb);
-
-	if (in)
+	if (inb)
 		write32(&regs->spi_rx_dst_reg, (uintptr_t)inb);
 
 	if (bus->state == MTK_SPI_IDLE) {
@@ -123,7 +109,7 @@ static int mtk_spi_transfer(SpiOps *me, void *in, const void *out, uint32_t size
 	while ((read32(&regs->spi_status1_reg) & MTK_SPI_BUSY_STATUS) == 0) {
 		if (timer_us(start) > MTK_TXRX_TIMEOUT_US) {
 			printf("Timeout waiting for spi status1 register.\n");
-			goto error;
+			return 1;
 		}
 	}
 	start = timer_us(0);
@@ -131,14 +117,53 @@ static int mtk_spi_transfer(SpiOps *me, void *in, const void *out, uint32_t size
 	       MTK_SPI_PAUSE_FINISH_INT_STATUS) == 0) {
 		if (timer_us(start) > MTK_TXRX_TIMEOUT_US) {
 			printf("Timeout waiting for spi status0 register.\n");
-			goto error;
+			return 1;
 		}
 	}
 
 	if (in) {
-		mtk_spi_dump_data("the inb data is", (const uint8_t *)inb, size);
-		memcpy(in, inb, size);
+		mtk_spi_dump_data("the inb data is", inb, size);
+		memcpy((uint8_t *)in + *offset, inb, size);
 	}
+
+	*offset += size;
+	return 0;
+}
+
+static int mtk_spi_transfer(SpiOps *me, void *in, const void *out,
+			    uint32_t size)
+{
+	MtkSpi *bus = container_of(me, MtkSpi, ops);
+	MtkSpiRegs *regs = bus->reg_addr;
+	uint32_t aligned, remains, offset = 0;
+	uint8_t *inb = NULL, *outb = NULL;
+
+	remains = size % MTK_PACKET_SIZE;
+	aligned = size - remains;
+
+	/* The SPI controller will transmit in full-duplex for RX,
+	 * therefore we enable tx & rx DMA when just do RX.
+	 */
+	if (!in && out)
+		setbits_le32(&regs->spi_cmd_reg, 1 << SPI_CMD_TX_DMA_SHIFT);
+	else
+		setbits_le32(&regs->spi_cmd_reg, (1 << SPI_CMD_RX_DMA_SHIFT) |
+			     (1 << SPI_CMD_TX_DMA_SHIFT));
+
+	if (in)
+		inb = dma_malloc(MAX(remains, aligned));
+	outb = dma_malloc(MAX(remains, aligned));
+
+	if (out && remains && aligned)
+		mtk_spi_dump_data("whole out data is", out, size);
+
+	if (aligned && mtk_spi_xfer(bus, in, out, inb, outb, &offset, aligned))
+		goto error;
+	if (remains && mtk_spi_xfer(bus, in, out, inb, outb, &offset, remains))
+		goto error;
+
+	if (in && remains && aligned)
+		mtk_spi_dump_data("whole in data is", in, size);
 
 	clrbits_le32(&regs->spi_cmd_reg, (1 << SPI_CMD_RX_DMA_SHIFT) |
 		     (1 << SPI_CMD_TX_DMA_SHIFT));
