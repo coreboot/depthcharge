@@ -30,15 +30,21 @@ KEY_STYLES = 'styles'
 DETACHABLE_INPUTS = 'detachable_inputs'
 DETACHABLE_FILES = 'detachable_files'
 KEYBOARD_FILES = 'keyboard_files'
+VENDOR_INPUTS = 'vendor_inputs'
+VENDOR_FILES = 'vendor_files'
 
 FIRMWARE_STRINGS_FILE = 'firmware_strings.txt'
 DETACHABLE_STRINGS_FILE = 'detachable_strings.txt'
+VENDOR_STRINGS_FILE = 'vendor_strings.txt'
 FORMAT_FILE = 'format.yaml'
+VENDOR_FORMAT_FILE = 'vendor_format.yaml'
 TXT_TO_PNG_SVG = os.path.join(SCRIPT_BASE, '..', 'text_to_png_svg')
 OUTPUT_DIR = os.path.join(os.getenv('OUTPUT', os.path.join(SCRIPT_BASE, '..',
                                                            '..', 'build')),
                           '.stage', 'locale')
 
+VENDOR_STRINGS_DIR = os.getenv("VENDOR_STRINGS_DIR")
+VENDOR_STRINGS = VENDOR_STRINGS_DIR != None
 
 class DataError(Exception):
   pass
@@ -49,45 +55,71 @@ def GetImageWidth(filename):
   return Image.open(filename).size[0]
 
 
-def ParseLocaleInputFile(locale_dir, input_format, detachable_format):
-  """Parses a FIRMWARE_STRINGS_FILE in given locale directory for BuildTextFiles
+def ParseLocaleInputFile(locale_dir, strings_file, input_format):
+  """Parses firmware string file in given locale directory for BuildTextFiles
 
   Args:
-    locale: The locale folder with FIRMWARE_STRINGS_FILE.
-    input_format: Format description for each line in FIRMWARE_STRINGS_FILE.
+    locale: The locale folder with firmware string files.
+    strings_file: The name of the string txt file
+    input_format: Format description for each line in strings_file.
 
   Returns:
     A dictionary for mapping of "name to content" for files to be generated.
   """
-  input_file = os.path.join(locale_dir, FIRMWARE_STRINGS_FILE)
+  input_file = os.path.join(locale_dir, strings_file)
   with open(input_file, 'r') as f:
     input_data = f.readlines()
   if len(input_data) != len(input_format):
-    raise DataError('Input file for locale <%s> does not match input format.' %
-                    locale_dir)
+    raise DataError('Input file <%s> for locale <%s> '
+                    'does not match input format.' %
+                    (strings_file, locale_dir))
   input_data = [s.strip() for s in input_data]
-  result = dict(zip(input_format, input_data))
+  return dict(zip(input_format, input_data))
 
-  # Walk locale directory to add pre-generated items.
-  for input_file in glob.glob(os.path.join(locale_dir, "*.txt")):
-    if (os.path.basename(input_file) == FIRMWARE_STRINGS_FILE or
-        os.path.basename(input_file) == DETACHABLE_STRINGS_FILE):
-      continue
-    name, _ = os.path.splitext(os.path.basename(input_file))
-    with open(input_file, "r") as f:
-      result[name] = f.read().strip()
+def ParseLocaleInputFiles(locale_dir, input_format,
+                          detachable_format, vendor_format):
+  """Parses all firmware string files in given locale directory for
+  BuildTextFiles
+
+  Args:
+    locale: The locale folder with firmware string files.
+    input_format: Format description for each line in FIRMWARE_STRINGS_FILE.
+    detachable_format: Format description for each line in
+                       DETACHABLE_STRINGS_FILE.
+    vendor_format: Format description for each line in VENDOR_STRINGS_FILE.
+
+  Returns:
+    A dictionary for mapping of "name to content" for files to be generated.
+  """
+  result = dict()
+  result.update(ParseLocaleInputFile(locale_dir,
+                                     FIRMWARE_STRINGS_FILE,
+                                     input_format))
 
   # Now parse detachable menu strings
   if os.getenv("DETACHABLE_UI") == "1":
     print " (detachable_ui enabled)"
-    detach_input_file = os.path.join(locale_dir, DETACHABLE_STRINGS_FILE)
-    with open(detach_input_file, 'r') as df:
-      detach_input_data = df.readlines()
-    if len(detach_input_data) != len(detachable_format):
-      raise DataError('Input file for locale <%s> does not match input format.'
-                      % locale_dir)
-    detach_input_data = [s.strip() for s in detach_input_data]
-    result.update(dict(zip(detachable_format, detach_input_data)))
+    result.update(ParseLocaleInputFile(locale_dir,
+                                       DETACHABLE_STRINGS_FILE,
+                                       detachable_format))
+
+  # Parse vendor files if enabled
+  if VENDOR_STRINGS:
+    print " (vendor specific strings)"
+    result.update(
+      ParseLocaleInputFile(os.path.join(VENDOR_STRINGS_DIR, locale_dir),
+                                        VENDOR_STRINGS_FILE,
+                                        vendor_format))
+
+  # Walk locale directory to add pre-generated items.
+  for input_file in glob.glob(os.path.join(locale_dir, "*.txt")):
+    if (os.path.basename(input_file) == FIRMWARE_STRINGS_FILE or
+        os.path.basename(input_file) == DETACHABLE_STRINGS_FILE or
+        os.path.basename(input_file) == VENDOR_STRINGS_FILE):
+      continue
+    name, _ = os.path.splitext(os.path.basename(input_file))
+    with open(input_file, "r") as f:
+      result[name] = f.read().strip()
 
   return result
 
@@ -177,6 +209,10 @@ def main(argv):
   with open(FORMAT_FILE) as f:
     formats = yaml.load(f)
 
+  if VENDOR_STRINGS:
+    with open(os.path.join(VENDOR_STRINGS_DIR, VENDOR_FORMAT_FILE)) as f:
+      formats.update(yaml.load(f))
+
   # Decide locales to build.
   if len(argv) > 0:
     locales = argv
@@ -189,8 +225,10 @@ def main(argv):
   results = []
   for locale in locales:
     print locale,
-    inputs = ParseLocaleInputFile(locale, formats[KEY_INPUTS],
-                                  formats[DETACHABLE_INPUTS])
+    inputs = ParseLocaleInputFiles(locale, formats[KEY_INPUTS],
+                                   formats[DETACHABLE_INPUTS],
+                                   formats[VENDOR_INPUTS] if VENDOR_STRINGS
+                                                          else None)
     output_dir = os.path.normpath(os.path.join(OUTPUT_DIR, locale))
     if not os.path.exists(output_dir):
       os.makedirs(output_dir)
@@ -200,6 +238,8 @@ def main(argv):
       files.update(formats[DETACHABLE_FILES])
     else:
       files.update(formats[KEYBOARD_FILES])
+    if VENDOR_STRINGS:
+      files.update(formats[VENDOR_FILES])
     BuildTextFiles(inputs, files, output_dir)
 
     results += [pool.apply_async(ConvertPngFile,
