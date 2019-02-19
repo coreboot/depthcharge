@@ -23,6 +23,7 @@
 
 enum {
 	MTK_PACKET_SIZE = 1024,
+	MTK_PACKET_MAX_LOOP = 256,
 	MTK_TXRX_TIMEOUT_US = 1000 * 1000
 };
 
@@ -135,43 +136,45 @@ static int mtk_spi_transfer(SpiOps *me, void *in, const void *out,
 {
 	MtkSpi *bus = container_of(me, MtkSpi, ops);
 	MtkSpiRegs *regs = bus->reg_addr;
-	uint32_t aligned, remains, offset = 0;
+	uint32_t aligned, remains, offset = 0, alloc_size;
 	uint8_t *inb = NULL, *outb = NULL;
 
 	remains = size % MTK_PACKET_SIZE;
 	aligned = size - remains;
+	alloc_size = MIN(MAX(remains, aligned),
+			 MTK_PACKET_SIZE * MTK_PACKET_MAX_LOOP);
+	if (in)
+		inb = dma_malloc(alloc_size);
+	outb = dma_malloc(alloc_size);
 
 	/* The SPI controller will transmit in full-duplex for RX,
 	 * therefore we enable tx & rx DMA when just do RX.
 	 */
-	if (!in && out)
-		setbits_le32(&regs->spi_cmd_reg, 1 << SPI_CMD_TX_DMA_SHIFT);
-	else
-		setbits_le32(&regs->spi_cmd_reg, (1 << SPI_CMD_RX_DMA_SHIFT) |
-			     (1 << SPI_CMD_TX_DMA_SHIFT));
+	setbits_le32(&regs->spi_cmd_reg, (!!in << SPI_CMD_RX_DMA_SHIFT) |
+		     (1 << SPI_CMD_TX_DMA_SHIFT));
 
-	if (in)
-		inb = dma_malloc(MAX(remains, aligned));
-	outb = dma_malloc(MAX(remains, aligned));
+	while (aligned) {
+		uint32_t current_size;
 
-	if (out && remains && aligned)
-		mtk_spi_dump_data("whole out data is", out, size);
+		current_size = MIN(aligned,
+				   MTK_PACKET_SIZE * MTK_PACKET_MAX_LOOP);
 
-	if (aligned && mtk_spi_xfer(bus, in, out, inb, outb, &offset, aligned))
-		goto error;
+		if (mtk_spi_xfer(bus, in, out, inb, outb, &offset,
+				 current_size))
+			goto error;
+
+		aligned -= current_size;
+	}
+
 	if (remains && mtk_spi_xfer(bus, in, out, inb, outb, &offset, remains))
 		goto error;
 
-	if (in && remains && aligned)
-		mtk_spi_dump_data("whole in data is", in, size);
-
 	clrbits_le32(&regs->spi_cmd_reg, (1 << SPI_CMD_RX_DMA_SHIFT) |
 		     (1 << SPI_CMD_TX_DMA_SHIFT));
-
 	free(inb);
 	free(outb);
-
 	return 0;
+
 error:
 	mtk_spi_reset(regs);
 	bus->state = MTK_SPI_IDLE;
