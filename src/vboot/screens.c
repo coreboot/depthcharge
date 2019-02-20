@@ -320,55 +320,51 @@ static int draw_icon(const char *image_name)
 			  PIVOT_H_CENTER|PIVOT_V_BOTTOM);
 }
 
-static int draw_text(const char *text, int32_t x, int32_t y,
-		     int32_t height, uint32_t pivot)
+static void get_char_image_filename(char *str, const char c)
 {
-	int32_t w, h, total_w;
-	char str[256];
-	const char *ptr;
+	sprintf(str, "idx%03d_%02x.bmp", c, c);
+}
 
-	if (pivot & PIVOT_H_CENTER) {
-		total_w = 0;
-		ptr = text;
-		while (*ptr) {
-			w = 0;
-			h = height;
-			sprintf(str, "idx%03d_%02x.bmp", *ptr, *ptr);
-			RETURN_ON_ERROR(
-				get_image_size(font_graphics, str,&w, &h));
-			total_w += w;
-			ptr++;
-		}
-
-		pivot &= ~(PIVOT_H_CENTER);
-		pivot |= PIVOT_H_LEFT;
-		x -= total_w / 2;
-	}
-
-	ptr = text;
-	while (*ptr) {
-		w = 0;
+static int get_text_width(int32_t height, const char *text, int32_t *width)
+{
+	int32_t w, h;
+	char char_filename[256];
+	while (*text) {
+		get_char_image_filename(char_filename, *text);
+		w = VB_SIZE_AUTO;
 		h = height;
-		sprintf(str, "idx%03d_%02x.bmp", *ptr, *ptr);
-		RETURN_ON_ERROR(get_image_size(font_graphics, str, &w, &h));
-		RETURN_ON_ERROR(draw(font_graphics, str,
-				     x, y, VB_SIZE_AUTO, height, pivot));
-		x += w;
-		ptr++;
+		RETURN_ON_ERROR(get_image_size(font_graphics, char_filename,
+					       &w, &h));
+		*width += w;
+		text++;
 	}
 	return VBERROR_SUCCESS;
 }
 
-static int get_text_width(const char *text, int32_t *width, int32_t *height)
+static int draw_text(const char *text, int32_t x, int32_t y,
+		     int32_t height, uint32_t pivot)
 {
 	int32_t w, h;
-	char str[256];
+	char char_filename[256];
+
+	if (pivot & PIVOT_H_CENTER) {
+		w = VB_SIZE_AUTO;
+		RETURN_ON_ERROR(get_text_width(height, text, &w));
+
+		pivot &= ~(PIVOT_H_CENTER);
+		pivot |= PIVOT_H_LEFT;
+		x -= w / 2;
+	}
+
 	while (*text) {
-		sprintf(str, "idx%03d_%02x.bmp", *text, *text);
-		w = 0;
-		h = *height;
-		RETURN_ON_ERROR(get_image_size(font_graphics, str, &w, &h));
-		*width += w;
+		w = VB_SIZE_AUTO;
+		h = height;
+		get_char_image_filename(char_filename, *text);
+		RETURN_ON_ERROR(get_image_size(font_graphics, char_filename,
+					       &w, &h));
+		RETURN_ON_ERROR(draw(font_graphics, char_filename,
+				     x, y, VB_SIZE_AUTO, height, pivot));
+		x += w;
 		text++;
 	}
 	return VBERROR_SUCCESS;
@@ -465,7 +461,7 @@ static VbError_t vboot_draw_footer(uint32_t locale)
 
 	w2 = VB_SIZE_AUTO;
 	h2 = VB_TEXT_HEIGHT;
-	RETURN_ON_ERROR(get_text_width(hwid, &w2, &h2));
+	RETURN_ON_ERROR(get_text_width(h2, hwid, &w2));
 	w2 += VB_PADDING;
 
 	w3 = VB_SIZE_AUTO;
