@@ -116,7 +116,7 @@ static int fast_spi_flash_erase(FlashOps *me, uint32_t offset, uint32_t size)
 {
 	FastSpiFlash *flash = container_of(me, FastSpiFlash, ops);
 	size_t erase_size;
-	uint32_t erase_cycle;
+	uint32_t erase_cycle, remaining;
 
 	assert(offset + size <= flash->rom_size);
 
@@ -125,8 +125,9 @@ static int fast_spi_flash_erase(FlashOps *me, uint32_t offset, uint32_t size)
 		return -1;
 	}
 
-	while (size) {
-		if (IS_ALIGNED(offset, 64 * KiB) && (size >= 64 * KiB)) {
+	remaining = size;
+	while (remaining) {
+		if (IS_ALIGNED(offset, 64 * KiB) && (remaining >= 64 * KiB)) {
 			erase_size = 64 * KiB;
 			erase_cycle = SPIBAR_HSFSTS_CYCLE_64K_ERASE;
 		} else {
@@ -140,9 +141,9 @@ static int fast_spi_flash_erase(FlashOps *me, uint32_t offset, uint32_t size)
 			return -1;
 
 		offset += erase_size;
-		size -= erase_size;
+		remaining -= erase_size;
 	}
-	return 0;
+	return size;
 }
 
 static void *fast_spi_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
@@ -175,11 +176,13 @@ static int fast_spi_flash_write(FlashOps *me, const void *buffer,
 {
 	FastSpiFlash *flash = container_of(me, FastSpiFlash, ops);
 	const uint8_t *data = buffer;
+	uint32_t remaining;
 
 	assert(offset + size <= flash->rom_size);
 
-	while (size) {
-		size_t xfer_len = get_xfer_len(offset, size);
+	remaining = size;
+	while (remaining) {
+		size_t xfer_len = get_xfer_len(offset, remaining);
 
 		fill_xfer_fifo(flash, data, xfer_len);
 
@@ -189,9 +192,9 @@ static int fast_spi_flash_write(FlashOps *me, const void *buffer,
 
 		offset += xfer_len;
 		data += xfer_len;
-		size -= xfer_len;
+		remaining -= xfer_len;
 	}
-	return 0;
+	return size;
 }
 
 static void fast_spi_fill_regions(FastSpiFlash *flash)
