@@ -125,15 +125,16 @@ int dt_set_wifi_country_code(DeviceTree *tree, const DtPathMap *maps)
 	const char regioncode_key[] = "region";
 	char country_code[8], *cc;
 
-        if (!vpd_gets(regioncode_key, country_code, sizeof(country_code))) {
-                printf("No region code found in VPD\n");
-                return rv;
-        }
+	if (!vpd_gets(regioncode_key, country_code, sizeof(country_code))) {
+		printf("No region code found in VPD\n");
+		return rv;
+	}
 
-        /* Add only the two letter Alpha-2 country code, remove the variant
-         * in region code */
-        country_code[2] = 0;
-        cc = strdup(country_code);
+	/* Add only the two letter Alpha-2 country code, remove the variant
+	 * in region code.
+	 */
+	country_code[2] = 0;
+	cc = strdup(country_code);
 
 	for (; map && map->dt_path; map++) {
 		dt_node = dt_find_node_by_path(tree, map->dt_path, NULL,
@@ -143,6 +144,35 @@ int dt_set_wifi_country_code(DeviceTree *tree, const DtPathMap *maps)
 			continue;
 		}
 		dt_add_string_prop(dt_node, (char *)map->key, cc);
+	}
+
+	return rv;
+}
+
+int dt_set_xo_cal_data(DeviceTree *tree, const DtPathMap *maps)
+{
+	int key_val, rv = 0;
+	DeviceTreeNode *dt_node;
+	const DtPathMap *map = maps;
+	const char key[] = "xo_cal_data";
+	char key_value[12];
+
+	if (!vpd_gets(key, key_value, sizeof(key_value))) {
+		printf("No %s found in VPD\n",key);
+		return rv;
+	}
+
+	/* Convert the returned string to integer */
+	key_val = strtol(key_value, NULL, 10);
+
+	for (; map && map->dt_path; map++) {
+		dt_node = dt_find_node_by_path(tree, map->dt_path, NULL,
+				NULL, map->force_create);
+		if (!dt_node) {
+			rv |= 1;
+			continue;
+		}
+		dt_add_u32_prop(dt_node, (char *)map->key, key_val);
 	}
 
 	return rv;

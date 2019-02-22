@@ -47,12 +47,18 @@ static const DtPathMap cc_maps[] = {
 	{}
 };
 
+static const DtPathMap xo_cal_map[] = {
+	{1, "/soc@0/wifi@a000000", "xo-cal-data" },
+	{}
+};
+
 static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 {
 	int rv = 0;
 
 	rv = dt_set_wifi_calibration(tree, calibration_maps);
 	rv |= dt_set_wifi_country_code(tree, cc_maps);
+	rv |= dt_set_xo_cal_data(tree, xo_cal_map);
 
 	return rv;
 }

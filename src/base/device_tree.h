@@ -247,6 +247,11 @@ int dt_set_wifi_calibration(DeviceTree *tree, const DtPathMap *maps);
 int dt_set_wifi_country_code(DeviceTree *tree, const DtPathMap *maps);
 
 /*
+ * Retrieve Xo-cal-data from VPD and add it to the device tree.
+ */
+int dt_set_xo_cal_data(DeviceTree *tree, const DtPathMap *maps);
+
+/*
  * Init/retrieve the /reserved-memory/ node.
  */
 DeviceTreeNode *dt_init_reserved_memory_node(DeviceTree *tree);
