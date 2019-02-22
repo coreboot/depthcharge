@@ -24,6 +24,7 @@
 #include <libpayload.h>
 
 #include "mmc.h"
+#include "drivers/gpio/gpio.h"
 
 /*
  * Controller registers
@@ -313,6 +314,13 @@ struct sdhci_host {
 
 	/* Number of ADMA descriptors currently in the array. */
 	int adma_desc_count;
+
+	/*
+	 * Card detect GPIO. This is an optional property.
+	 * If no GPIO info is passed, the driver will use PRESENT_STATE
+	 * register to get card presence info.
+	 */
+	GpioOps *cd_gpio;
 
 	int (*attach)(SdhciHost *host);
 	void (*set_control_reg)(SdhciHost *host);

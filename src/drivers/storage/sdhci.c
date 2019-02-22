@@ -789,8 +789,13 @@ static int sdhci_update(BlockDevCtrlrOps *me)
 		(me, SdhciHost, mmc_ctrlr.ctrlr.ops);
 
 	if (host->removable) {
-		int present = (sdhci_readl(host, SDHCI_PRESENT_STATE) &
-			       SDHCI_CARD_PRESENT) != 0;
+		int present;
+
+		if (host->cd_gpio)
+			present = gpio_get(host->cd_gpio);
+		else
+			present = (sdhci_readl(host, SDHCI_PRESENT_STATE) &
+				   SDHCI_CARD_PRESENT) != 0;
 
 		if (!present) {
 			if (host->mmc_ctrlr.media) {
