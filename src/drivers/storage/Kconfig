@@ -95,4 +95,10 @@ config DRIVER_STORAGE_NVME
 	bool "NVMe driver"
 	default n
 
+config DRIVER_STORAGE_SDHCI_MSM
+	depends on DRIVER_STORAGE_MMC
+	depends on DRIVER_SDHCI
+	bool "MMC driver for Qcom MSM platforms"
+	default n
+
 source src/drivers/storage/mtd/Kconfig
