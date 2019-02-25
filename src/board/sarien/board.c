@@ -36,6 +36,7 @@
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/nvme.h"
 #include "drivers/tpm/cr50_i2c.h"
+#include "drivers/tpm/cr50_switches.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
 
@@ -51,6 +52,9 @@ static int cr50_irq_status(void)
 
 static int board_setup(void)
 {
+	Cr50I2c *tpm;
+	GpioOps *power_switch;
+
 	sysinfo_install_flags(new_cannonlake_gpio_input_from_coreboot);
 	GpioOps *rec_gpio = sysinfo_lookup_gpio("recovery", 1,
 				new_cannonlake_gpio_input_from_coreboot);
@@ -71,8 +75,13 @@ static int board_setup(void)
 	/* H1 TPM on I2C bus 4 @ 400KHz, controller core is 133MHz */
 	DesignwareI2c *i2c4 = new_pci_designware_i2c(
 		PCI_DEV(0, 0x19, 0), 400000, CANNONLAKE_DW_I2C_MHZ);
-	tpm_set_ops(&new_cr50_i2c(&i2c4->ops, 0x50,
-				  &cr50_irq_status)->base.ops);
+
+	tpm = new_cr50_i2c(&i2c4->ops, 0x50, &cr50_irq_status);
+	tpm_set_ops(&tpm->base.ops);
+
+	power_switch = &new_cr50_power_switch(&tpm->base.ops)->ops;
+	flag_replace(FLAG_PWRSW, power_switch);
+	flag_install(FLAG_PHYS_PRESENCE, power_switch);
 
 	/* Cannonlake PCH */
 	power_set_ops(&cannonlake_power_ops);

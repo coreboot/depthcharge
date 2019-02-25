@@ -42,7 +42,7 @@
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
 #include "drivers/tpm/cr50_i2c.h"
-#include "drivers/tpm/cr50_rec_switch.h"
+#include "drivers/tpm/cr50_switches.h"
 #include "drivers/tpm/spi.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"

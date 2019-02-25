@@ -43,6 +43,7 @@ struct tpm_vendor_header {
 enum vendor_cmd_cc {
 	VENDOR_CC_REPORT_TPM_STATE = 23,
 	VENDOR_CC_GET_REC_BTN = 29,
+	VENDOR_CC_GET_PWR_BTN = 43,
 };
 
 #define TPM_ST_NO_SESSIONS 0x8001
