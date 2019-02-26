@@ -41,7 +41,8 @@
 #include "drivers/sound/max98357a.h"
 #include "drivers/gpio/apollolake.h"
 #include "drivers/gpio/gpio.h"
-#include "drivers/bus/i2s/apollolake/apollolake-max98357a.h"
+#include "drivers/bus/i2s/intel_common/max98357a.h"
+#include "drivers/bus/i2s/cavs_1_5-regs.h"
 
 #define EMMC_SD_CLOCK_MIN	400000
 #define EMMC_CLOCK_MAX		200000000
@@ -147,7 +148,8 @@ static int board_setup(void)
 	/* Audio Setup (for boot beep) */
 	GpioOps *sdmode = &new_apollolake_gpio_output(SDMODE_PIN, 0)->ops;
 
-	AplI2s *i2s = new_apl_i2s(&apollolake_max98357a_settings, 16, sdmode);
+	I2s *i2s = new_i2s_structure(&max98357a_settings, 16, sdmode,
+			SSP_I2S5_START_ADDRESS);
 	I2sSource *i2s_source = new_i2s_source(&i2s->ops, 48000, 2, AUD_VOLUME);
 	/* Connect the Codec to the I2S source */
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
