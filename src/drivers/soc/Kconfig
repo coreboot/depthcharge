@@ -20,10 +20,12 @@ config DRIVER_SOC_APOLLOLAKE
 	bool "Apollolake SoC driver"
 	default n
 	select DRIVER_GPIO_APOLLOLAKE
+	select INTEL_COMMON_I2S_CAVS_1_5
 
 config DRIVER_SOC_CANNONLAKE
 	bool "Cannonlake SoC driver"
 	default n
+	select INTEL_COMMON_I2S_CAVS_1_8
 
 config DRIVER_SOC_STONEYRIDGE
 	bool "Stoney Ridge SoC driver"
@@ -34,6 +36,7 @@ config DRIVER_SOC_GLK
 	bool "Glk SoC driver"
 	default n
 	select DRIVER_GPIO_APOLLOLAKE
+	select INTEL_COMMON_I2S_CAVS_1_5
 
 config DRIVER_SOC_ICELAKE
 	bool "Icelake SoC driver"
