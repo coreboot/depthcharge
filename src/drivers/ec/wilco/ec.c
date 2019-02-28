@@ -94,6 +94,25 @@ static int wilco_ec_cleanup_boot(CleanupFunc *cleanup, CleanupType type)
 	return wilco_ec_exit_firmware(ec);
 }
 
+enum {
+	I8042_CMD_RD_CMD_BYTE = 0x20,
+	I8042_CMD_WR_CMD_BYTE = 0x60,
+	I8042_CMD_BYTE_XLATE = (1 << 6),
+};
+
+static void wilco_ec_keyboard_setup(void)
+{
+	i8042_probe();
+
+	/* Put keyboard into translated mode for the OS */
+	if (!i8042_cmd(I8042_CMD_RD_CMD_BYTE)) {
+		int cmd = i8042_read_data_ps2();
+		cmd |= I8042_CMD_BYTE_XLATE;
+		if (!i8042_cmd(I8042_CMD_WR_CMD_BYTE))
+			i8042_write_data(cmd);
+	}
+}
+
 WilcoEc *new_wilco_ec(uint16_t ec_host_base, uint16_t mec_emi_base)
 {
 	WilcoEc *ec;
@@ -125,6 +144,8 @@ WilcoEc *new_wilco_ec(uint16_t ec_host_base, uint16_t mec_emi_base)
 	ec->vboot.battery_cutoff = vboot_battery_cutoff;
 	ec->vboot.check_limit_power = vboot_check_limit_power;
 	ec->vboot.enable_power_button = vboot_enable_power_button;
+
+	wilco_ec_keyboard_setup();
 
 	printf("Wilco EC [base 0x%x emi 0x%x]\n",
 	       ec_host_base, mec_emi_base);
