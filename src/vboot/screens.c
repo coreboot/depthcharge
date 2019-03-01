@@ -22,7 +22,6 @@
 #include <vboot_api.h>
 #include <vboot/screens.h>
 #include "base/list.h"
-#include "base/graphics.h"
 #include "boot/payload.h"
 #include "config.h"
 #include "drivers/flash/cbfs.h"
@@ -66,6 +65,9 @@
 
 /* Downshift for vertical characters to match middle of text in Noto Sans */
 #define VB_ARROW_V_OFF		3	/* 0.3 % */
+
+/* draw_box() uses a different scale then we do, this helps with conversions */
+#define VB_TO_CANVAS(offset)	(offset * CANVAS_SCALE / VB_SCALE)
 
 #define RETURN_ON_ERROR(function_call) do {				\
 		VbError_t rv = (function_call);				\
@@ -553,9 +555,8 @@ static VbError_t vboot_draw_language(uint32_t locale)
 
 static VbError_t draw_base_screen(uint32_t locale, int show_language)
 {
-	const struct rgb_color white = { 0xff, 0xff, 0xff };
 
-	if (clear_screen(&white))
+	if (clear_screen(&color_white))
 		return VBERROR_UNKNOWN;
 	RETURN_ON_ERROR(draw_image("chrome_logo.bmp",
 			(VB_SCALE - VB_DIVIDER_WIDTH)/2,
@@ -592,7 +593,7 @@ static VbError_t vboot_draw_base_screen_without_language(struct params *p)
 
 static VbError_t vboot_draw_blank(struct params *p)
 {
-	video_console_clear();
+	clear_screen(&color_black);
 	return VBERROR_SUCCESS;
 }
 
@@ -921,14 +922,45 @@ static VbError_t vboot_draw_languages_menu(struct params *p)
 	return VBERROR_SUCCESS;
 }
 
-void vboot_print_string(const char *str)
+VbError_t vboot_print_string(char *str)
 {
-	int str_len = strlen(str);
-	while (str_len--) {
-		if (*str == '\n')
-			video_console_putchar('\r');
-		video_console_putchar(*str++);
+	// Left align with divider, begin right under it.
+	int left = (VB_SCALE - VB_DIVIDER_WIDTH) / 2;
+	int top = VB_DIVIDER_V_OFFSET + 10;
+
+	char *line = str;
+	int lines = 0;
+
+	while ((line = strchr(line, '\n'))) {
+		lines++;
+		line++;		// skip over '\n' to keep counting
 	}
+
+	int max_height = VB_TEXT_HEIGHT;
+	if (lines * max_height > VB_SCALE - top * 2)
+		max_height = (VB_SCALE - top * 2) / lines;
+
+	struct rect box = {
+		{ .x = VB_TO_CANVAS(left), .y = VB_TO_CANVAS(top) },
+		{ .width = VB_TO_CANVAS(VB_DIVIDER_WIDTH),
+		  .height = VB_TO_CANVAS(lines * max_height) },
+	};
+	draw_box(&box, &color_white);
+
+	while ((line = strsep(&str, "\n"))) {
+		int height = max_height;
+		int width;
+
+		RETURN_ON_ERROR(get_text_width(height, line, &width));
+		if (width > VB_DIVIDER_WIDTH)
+			height = height * VB_DIVIDER_WIDTH / width;
+
+		RETURN_ON_ERROR(draw_text(line, left, top, height,
+					  PIVOT_H_LEFT|PIVOT_V_TOP));
+		top += height;
+	}
+
+	return VBERROR_SUCCESS;
 }
 
 static VbError_t draw_altfw_text(int menutop, int linenum, int seqnum,
@@ -1247,13 +1279,14 @@ static const struct vboot_ui_descriptor *get_ui_descriptor(uint32_t id)
 
 static void print_fallback_message(const struct vboot_ui_descriptor *desc)
 {
-	const struct rgb_color white = { 0xff, 0xff, 0xff };
+	char msg[256];
 
-	if (desc->mesg)
-		graphics_print_single_text_block(desc->mesg, &white, 0, 15,
-						 VIDEO_PRINTF_ALIGN_CENTER);
-	else
-		clear_screen(&white);
+	if (!desc->mesg)
+		return;
+
+	strncpy(msg, desc->mesg, sizeof(msg) - 1);
+	msg[sizeof(msg) - 1] = '\0';
+	vboot_print_string(msg);
 }
 
 static VbError_t draw_ui(uint32_t screen_type, struct params *p)
@@ -1339,7 +1372,9 @@ static VbError_t vboot_init_screen(void)
 		}
 	}
 
-	if (graphics_init())
+	/* Make sure framebuffer is initialized before turning display on. */
+	clear_screen(&color_white);
+	if (display_init())
 		return VBERROR_UNKNOWN;
 
 	/* create a list of supported locales */

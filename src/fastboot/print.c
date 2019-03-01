@@ -17,7 +17,6 @@
 
 #include <libpayload.h>
 
-#include "base/graphics.h"
 #include "drivers/video/coreboot_fb.h"
 #include "drivers/video/display.h"
 #include "fastboot/print.h"
@@ -44,20 +43,20 @@ static const struct {
  */
 void fb_print_text_on_screen(fb_msg_t type, const char *msg, size_t len)
 {
+	unsigned int rows, cols;
 	static int initialized;
 
 	if (initialized == 0) {
-		if (graphics_init())
+		video_init();
+		if (display_init())
 			return;
-
 		backlight_update(1);
 		initialized = 1;
 	}
 
-	/* Print text on black screen. */
-	const struct rgb_color black = { 0x0, 0x0, 0x0 };
-
-	graphics_print_single_text_block(msg, &black, color_table[type].fg,
-			    color_table[type].bg, VIDEO_PRINTF_ALIGN_CENTER);
-
+	video_console_clear();
+	video_get_rows_cols(&rows, &cols);
+	video_console_set_cursor(0, rows/2);
+	video_printf(color_table[type].fg, color_table[type].bg,
+		     VIDEO_PRINTF_ALIGN_CENTER, msg);
 }

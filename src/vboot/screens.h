@@ -18,8 +18,23 @@
 #ifndef __VBOOT_SCREENS_H__
 #define __VBOOT_SCREENS_H__
 
+#include <libpayload.h>
 #include <stdint.h>
 #include <vboot_api.h>
+
+static const struct rgb_color color_pink	= { 0xff, 0x00, 0xff };
+static const struct rgb_color color_yellow	= { 0xff, 0xff, 0x00 };
+static const struct rgb_color color_orange	= { 0xff, 0x99, 0x00 };
+static const struct rgb_color color_violet	= { 0x88, 0x00, 0x88 };
+static const struct rgb_color color_green	= { 0x00, 0xff, 0x00 };
+static const struct rgb_color color_blue	= { 0x00, 0x00, 0xff };
+static const struct rgb_color color_red		= { 0xff, 0x00, 0x00 };
+static const struct rgb_color color_brown	= { 0x66, 0x33, 0x00 };
+static const struct rgb_color color_teal	= { 0x00, 0x99, 0x99 };
+static const struct rgb_color color_light_blue	= { 0x00, 0x99, 0xff };
+static const struct rgb_color color_grey	= { 0x88, 0x88, 0x88 };
+static const struct rgb_color color_white	= { 0xff, 0xff, 0xff };
+static const struct rgb_color color_black	= { 0x00, 0x00, 0x00 };
 
 int vboot_draw_screen(uint32_t screen, uint32_t locale,
 		      const VbScreenData *data);
@@ -28,11 +43,12 @@ int vboot_draw_ui(uint32_t screen, uint32_t locale,
 		  uint32_t redraw_base);
 
 /**
- * Print a string on the cosole using the standard font
+ * Print a string on the console using the standard font. The string buffer is
+ * consumed by this operation and should not be reused after.
  *
  * @str:	String to print
  */
-void vboot_print_string(const char *str);
+VbError_t vboot_print_string(char *str);
 
 /**
  * Return number of supported locales

@@ -22,7 +22,6 @@
 
 #include "config.h"
 #include "base/cleanup_funcs.h"
-#include "base/graphics.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/video/coreboot_fb.h"
 #include "drivers/video/display.h"
@@ -30,102 +29,118 @@
 #include "vboot/screens.h"
 #include "vboot/util/commonparams.h"
 
-static void print_string_newline(const char *str)
+/*
+ * When we don't know how much of a draw failed, draw a colored stripe as a
+ * fallback so the screen can be identified in a pinch but it doesn't cover up
+ * anything that was drawn successfully.
+ */
+void draw_fallback(uint32_t screen_type, int selected_index)
 {
-	vboot_print_string(str);
-	vboot_print_string("\n");
-}
+	const int32_t stripe_height = CANVAS_SCALE / 50;  // 2% screen height
+	struct rect stripe = {
+		{ .x = 0, .y = 0 },
+		{ .width = CANVAS_SCALE, .height = stripe_height },
+	};
+	switch (screen_type) {
+	case VB_SCREEN_BLANK:
+		draw_box(&stripe, &color_black);
+		break;
+	case VB_SCREEN_DEVELOPER_WARNING_MENU:
+	case VB_SCREEN_DEVELOPER_WARNING:
+		draw_box(&stripe, &color_pink);
+		break;
+	case VB_SCREEN_RECOVERY_INSERT:
+		draw_box(&stripe, &color_yellow);
+		break;
+	case VB_SCREEN_RECOVERY_NO_GOOD:
+		draw_box(&stripe, &color_orange);
+		break;
+	case VB_SCREEN_RECOVERY_TO_DEV:
+	case VB_SCREEN_RECOVERY_TO_DEV_MENU:
+		draw_box(&stripe, &color_violet);
+		break;
+	case VB_SCREEN_DEVELOPER_TO_NORM:
+	case VB_SCREEN_DEVELOPER_TO_NORM_MENU:
+		draw_box(&stripe, &color_green);
+		break;
+	case VB_SCREEN_WAIT:
+		draw_box(&stripe, &color_blue);
+		break;
+	case VB_SCREEN_OS_BROKEN:
+		draw_box(&stripe, &color_red);
+		break;
+	case VB_SCREEN_LANGUAGES_MENU:
+		draw_box(&stripe, &color_brown);
+		break;
+	case VB_SCREEN_OPTIONS_MENU:
+		draw_box(&stripe, &color_teal);
+		break;
+	case VB_SCREEN_ALT_FW_PICK:
+	case VB_SCREEN_ALT_FW_MENU:
+		draw_box(&stripe, &color_light_blue);
+		break;
+	default:
+		draw_box(&stripe, &color_grey);
+		break;
+	}
 
-void print_on_center(const char *msg)
-{
-	unsigned int rows, cols;
-	video_get_rows_cols(&rows, &cols);
-	video_console_set_cursor((cols - strlen(msg)) / 2, rows / 2);
-	vboot_print_string(msg);
+	if (selected_index >= 0) {
+		struct rect cursor = {
+			{ .x = selected_index * stripe_height, .y = 0 },
+			{ .width = stripe_height, .height = stripe_height },
+		};
+		draw_box(&cursor, &color_black);
+	}
 }
 
 VbError_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale,
 			    const VbScreenData *data)
 {
-	const char *msg = NULL;
+	int ret = vboot_draw_screen(screen_type, locale, data);
+	if (ret != VBERROR_SUCCESS)
+		draw_fallback(screen_type, -1);
 
-	if (vboot_draw_screen(screen_type, locale, data) == CBGFX_SUCCESS)
-		return VBERROR_SUCCESS;
-
-	/*
-	 * Show the debug messages for development. It is a backup method
-	 * when GBB does not contain a full set of bitmaps.
-	 */
-	switch (screen_type) {
-	case VB_SCREEN_BLANK:
-		// clear the screen
-		video_console_clear();
-		break;
-	case VB_SCREEN_DEVELOPER_WARNING:
-		msg = "developer mode warning";
-		break;
-	case VB_SCREEN_RECOVERY_INSERT:
-		msg = "insert recovery image";
-		break;
-	case VB_SCREEN_RECOVERY_NO_GOOD:
-		msg = "insert image invalid";
-		break;
-	case VB_SCREEN_WAIT:
-		msg = "wait for ec update";
-		break;
-	default:
-		printf("Not a valid screen type: %d.\n", screen_type);
-		return VBERROR_INVALID_SCREEN_INDEX;
-	}
-
-	if (msg)
-		print_on_center(msg);
-
-	return VBERROR_SUCCESS;
+	return ret;
 }
 
 VbError_t VbExDisplayMenu(uint32_t screen_type, uint32_t locale,
 			  uint32_t selected_index, uint32_t disabled_idx_mask,
 			  uint32_t redraw_base)
 {
-	return vboot_draw_ui(screen_type, locale, selected_index,
-			     disabled_idx_mask, redraw_base);
+	int ret =  vboot_draw_ui(screen_type, locale, selected_index,
+				 disabled_idx_mask, redraw_base);
+	if (ret != VBERROR_SUCCESS)
+		draw_fallback(screen_type, selected_index);
+
+	return ret;
 }
 
 VbError_t VbExDisplayDebugInfo(const char *info_str, int full_info)
 {
-	video_console_set_cursor(0, 0);
-	vboot_print_string(info_str);
+	char buf[1024];
 
-	if (!full_info)
-		return VBERROR_SUCCESS;
-
-	vboot_print_string("read-only firmware id: ");
-	print_string_newline(get_ro_fw_id());
-
-	vboot_print_string("active firmware id: ");
-	const char *id = get_active_fw_id();
-	if (id == NULL)
-		id = "NOT FOUND";
-	print_string_newline(id);
-
-	vboot_print_string("TPM state: ");
-	if (IS_ENABLED(CONFIG_DRIVER_TPM)) {
-		char *tpm_state = tpm_report_state();
-		if (tpm_state) {
-			vboot_print_string(tpm_state);
-			free(tpm_state);
-		} else {
-			print_string_newline(" not supported");
-		}
+	if (!full_info) {
+		strncpy(buf, info_str, sizeof(buf) - 2);
+		buf[sizeof(buf) - 1] = '\0';
 	} else {
-		if (IS_ENABLED(CONFIG_MOCK_TPM))
-			print_string_newline(" MOCK TPM");
-		else
-			print_string_newline(" not supported");
-	}
+		char *tpm_str = NULL;
 
-	return VBERROR_SUCCESS;
+		if (IS_ENABLED(CONFIG_MOCK_TPM))
+			tpm_str = "MOCK TPM";
+		else if (IS_ENABLED(CONFIG_DRIVER_TPM))
+			tpm_str = tpm_report_state();
+
+		if (!tpm_str)
+			tpm_str = "not supported";
+
+		snprintf(buf, sizeof(buf),
+			 "%s"	// vboot output includes newline
+			 "read-only firmware id: %s\n"
+			 "active firmware id: %s\n"
+			 "TPM state: %s\n",
+			 info_str, get_ro_fw_id(), get_active_fw_id(), tpm_str);
+	}
+	return vboot_print_string(buf);
 }
 
 VbError_t VbExGetLocalizationCount(uint32_t *count)
