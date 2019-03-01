@@ -92,10 +92,13 @@ VbError_t VbExDisplayMenu(uint32_t screen_type, uint32_t locale,
 			     disabled_idx_mask, redraw_base);
 }
 
-VbError_t VbExDisplayDebugInfo(const char *info_str)
+VbError_t VbExDisplayDebugInfo(const char *info_str, int full_info)
 {
 	video_console_set_cursor(0, 0);
 	vboot_print_string(info_str);
+
+	if (!full_info)
+		return VBERROR_SUCCESS;
 
 	vboot_print_string("read-only firmware id: ");
 	print_string_newline(get_ro_fw_id());
