@@ -321,22 +321,37 @@ static int draw_icon(const char *image_name)
 			  PIVOT_H_CENTER|PIVOT_V_BOTTOM);
 }
 
-static void get_char_image_filename(char *str, const char c)
+static const char *get_char_image_file(int height, const char c, int32_t *width)
 {
-	sprintf(str, "idx%03d_%02x.bmp", c, c);
+	int ret;
+	static char filename[16];  // result becomes invalid after next call
+	const char pattern[] = "idx%03d_%02x.bmp";
+
+	snprintf(filename, sizeof(filename), pattern, c, c);
+	*width = VB_SIZE_AUTO;
+	ret = get_image_size(font_graphics, filename, width, &height);
+	if (ret != VBERROR_SUCCESS) {
+		snprintf(filename, sizeof(filename), pattern, '?', '?');
+		*width = VB_SIZE_AUTO;
+		ret = get_image_size(font_graphics, filename, width, &height);
+		if (ret != VBERROR_SUCCESS)
+			return NULL;
+		printf("ERROR: Trying to display unprintable char: %#.2x\n", c);
+	}
+
+	return filename;
 }
 
 static int get_text_width(int32_t height, const char *text, int32_t *width)
 {
-	int32_t w, h;
-	char char_filename[256];
+	const char *char_filename;
+	*width = 0;
 	while (*text) {
-		get_char_image_filename(char_filename, *text);
-		w = VB_SIZE_AUTO;
-		h = height;
-		RETURN_ON_ERROR(get_image_size(font_graphics, char_filename,
-					       &w, &h));
-		*width += w;
+		int char_width;
+		char_filename = get_char_image_file(height, *text, &char_width);
+		if (!char_filename)
+			return VBERROR_NO_IMAGE_PRESENT;
+		*width += char_width;
 		text++;
 	}
 	return VBERROR_SUCCESS;
@@ -345,27 +360,25 @@ static int get_text_width(int32_t height, const char *text, int32_t *width)
 static int draw_text(const char *text, int32_t x, int32_t y,
 		     int32_t height, uint32_t pivot)
 {
-	int32_t w, h;
-	char char_filename[256];
+	int32_t char_width;
+	const char *char_filename;
 
 	if (pivot & PIVOT_H_CENTER) {
-		w = VB_SIZE_AUTO;
-		RETURN_ON_ERROR(get_text_width(height, text, &w));
+		char_width = VB_SIZE_AUTO;
+		RETURN_ON_ERROR(get_text_width(height, text, &char_width));
 
 		pivot &= ~(PIVOT_H_CENTER);
 		pivot |= PIVOT_H_LEFT;
-		x -= w / 2;
+		x -= char_width / 2;
 	}
 
 	while (*text) {
-		w = VB_SIZE_AUTO;
-		h = height;
-		get_char_image_filename(char_filename, *text);
-		RETURN_ON_ERROR(get_image_size(font_graphics, char_filename,
-					       &w, &h));
+		char_filename = get_char_image_file(height, *text, &char_width);
+		if (!char_filename)
+			return VBERROR_NO_IMAGE_PRESENT;
 		RETURN_ON_ERROR(draw(font_graphics, char_filename,
 				     x, y, VB_SIZE_AUTO, height, pivot));
-		x += w;
+		x += char_width;
 		text++;
 	}
 	return VBERROR_SUCCESS;
