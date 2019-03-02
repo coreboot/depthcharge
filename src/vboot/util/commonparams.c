@@ -23,6 +23,7 @@
 #include "image/fmap.h"
 #include "image/symbols.h"
 #include "vboot/util/commonparams.h"
+#include "vboot/util/vboot_handoff.h"
 
 VbCommonParams cparams CPARAMS;
 uint8_t shared_data_blob[VB_SHARED_DATA_REC_SIZE] SHARED_DATA;
@@ -188,5 +189,13 @@ int common_params_init(int clear_shared_data)
 	if (clear_shared_data)
 		memset(blob, 0, size);
 
+	return 0;
+}
+
+int find_common_params(void **blob, int *size)
+{
+	struct vboot_handoff *vboot_handoff = lib_sysinfo.vboot_handoff;
+	*blob = &vboot_handoff->shared_data[0];
+	*size = ARRAY_SIZE(vboot_handoff->shared_data);
 	return 0;
 }

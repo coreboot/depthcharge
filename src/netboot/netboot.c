@@ -36,6 +36,8 @@
 #include "netboot/params.h"
 #include "netboot/tftp.h"
 #include "vboot/boot.h"
+#include "vboot/crossystem/crossystem.h"
+#include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 #include "vboot/vbnv.h"
 
@@ -193,6 +195,9 @@ void netboot(uip_ipaddr_t *tftp_ip, char *bootfile, char *argsfile, char *args)
 		.cmd_line = cmd_line,
 	};
 
+	if (crossystem_setup(FIRMWARE_TYPE_NETBOOT))
+		return;
+
 	boot(&bi);
 }
 
@@ -217,6 +222,9 @@ int netboot_entry(void)
 
 	if (CONFIG_CLI)
 		console_loop();
+
+	if (common_params_init(0))
+		halt();
 
 	srand(timer_raw_value());
 
