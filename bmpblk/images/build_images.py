@@ -10,8 +10,8 @@ output file.
 Usage:
   ./build_images.py <board-names>
 
-  Use 'ALL' in <board-names> if you want to build every boards defined in
-  configuration file.
+  Use 'ALL' in <board-names> (or don't specify any names) if you want to build
+  every boards defined in configuration file.
 '''
 
 import copy
@@ -398,7 +398,7 @@ def main(args):
   configs = load_boards_config(BOARDS_CONFIG)
 
   targets = args
-  if not targets:
+  if not targets or targets == ['ALL']:
     targets = configs.keys()
 
   print 'Building for', ', '.join(targets)
