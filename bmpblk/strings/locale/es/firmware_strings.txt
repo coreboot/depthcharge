@@ -21,3 +21,4 @@ Chrome OS se cerrará.
 Utiliza el adaptador correcto y vuelve a intentarlo.
 Retira todos los dispositivos conectados e inicia la recuperación.
 Pulsa una tecla numérica para seleccionar un bootloader alternativo:
+Pulsa el BOTÓN DE ENCENDIDO para realizar un diagnóstico.

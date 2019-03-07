@@ -21,3 +21,4 @@ A Chrome OS kikapcsol.
 Használja a megfelelő adaptert, és próbálja újra.
 Távolítsa el az összes csatlakoztatott eszközt, és kezdje meg a helyreállítást.
 Nyomja meg valamelyik számbillentyűt az alternatív rendszerindító kiválasztásához:
+Nyomja meg a bekapcsológombot a diagnosztikai elemzés futtatásához.

@@ -21,3 +21,4 @@ OS Chrome akan ditutup sekarang.
 Sila gunakan penyesuai yang betul dan cuba lagi.
 Sila alih keluar semua peranti yang disambungkan dan mulakan pemulihan.
 Tekan kekunci nombor untuk memilih pemuat but alternatif:
+Tekan butang KUASA untuk menjalankan diagnostik.

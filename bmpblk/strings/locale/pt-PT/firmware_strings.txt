@@ -21,3 +21,4 @@ O SO Chrome será agora encerrado.
 Utilize o carregador correto e tente novamente.
 Remova todos os dispositivos ligados e inicie a recuperação.
 Prima uma tecla numérica para selecionar um carregador de arranque alternativo:
+Prima o botão LIGAR/DESLIGAR para executar os diagnósticos.

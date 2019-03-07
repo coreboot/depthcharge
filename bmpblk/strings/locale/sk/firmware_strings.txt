@@ -21,3 +21,4 @@ Systém OS Chrome sa teraz vypne.
 Použite správny adaptér a skúste to znova.
 Odstráňte všetky pripojené zariadenia a spustite obnovenie.
 Ak chcete vybrať alternatívny zavádzací program systému, stlačte numerický kláves:
+Diagnostiku spustíte stlačením vypínača.

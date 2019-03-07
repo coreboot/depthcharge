@@ -21,3 +21,4 @@ Acum sistemul de operare Chrome se va închide.
 Folosiți adaptorul potrivit și încercați din nou.
 Eliminați toate dispozitivele conectate și începeți recuperarea.
 Apăsați o tastă numerică pentru a selecta un bootloader alternativ:
+Apăsați butonul de pornire pentru a rula diagnosticarea.

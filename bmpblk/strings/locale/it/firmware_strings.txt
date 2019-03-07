@@ -21,3 +21,4 @@ Chrome OS non verrà arrestato.
 Utilizza l'alimentatore adeguato e riprova.
 Rimuovi tutti i dispositivi collegati e avvia il ripristino.
 Premi un tasto numerico per selezionare un bootloader alternativo:
+Premi il tasto di ACCENSIONE per eseguire l'analisi diagnostica.

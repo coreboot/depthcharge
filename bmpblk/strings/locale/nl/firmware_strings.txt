@@ -21,3 +21,4 @@ Chrome OS wordt nu uitgeschakeld.
 Gebruik de juiste adapter en probeer het opnieuw.
 Verwijder alle gekoppelde apparaten en start het herstelproces.
 Druk op een cijfertoets om een alternatieve bootloader te kiezen:
+Druk op de aan/uit-knop om een diagnose uit te voeren.

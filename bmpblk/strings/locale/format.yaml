@@ -35,6 +35,7 @@ inputs:
   - change_adapter #21 Please use the correct adapter and try again.
   - os_broken      #22 OS may be broken. Remove media and initiate recovery.
   - select_altfw   #23 Press a numeric key to select an alternative bootloader:
+  - diag_confirm   #24 Press the POWER button to run diagnostics.
 
 detachable_inputs:
   - dev_option     #01 Developer Options
@@ -102,6 +103,9 @@ keyboard_files:
   tonorm:         [tonorm, reboot_erase, '', esc_back]
   verif_off:
   select_altfw:
+
+diagnostic_files:
+  diag_confirm:   [diag_confirm, '', esc_back]
 
 styles:
   todev:          '--align=left'

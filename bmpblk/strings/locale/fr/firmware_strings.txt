@@ -21,3 +21,4 @@ Chrome OS va se fermer.
 Veuillez utiliser le bon adaptateur secteur, puis réessayer.
 Veuillez débrancher tous les appareils connectés et lancer la restauration.
 Appuyez sur une touche numérique pour sélectionner un autre bootloader:
+Appuyez sur le bouton Marche/Arrêt pour exécuter des diagnostics.

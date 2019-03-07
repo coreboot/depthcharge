@@ -21,3 +21,4 @@ Chrome OS will now shut down.
 Please use the correct adapter and try again.
 Please remove all connected devices and start recovery.
 Press a numeric key to select an alternative bootloader:
+Press the POWER button to run diagnostics.

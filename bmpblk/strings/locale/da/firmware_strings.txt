@@ -21,3 +21,4 @@ Chrome OS lukker nu ned.
 Brug den rigtige adapter, og prøv igen.
 Fjern alle tilsluttede enheder, og start gendannelsen.
 Tryk på et tal på tastaturet for at vælge en anden bootloader:
+Tryk på afbryderknappen for at køre diagnostik.

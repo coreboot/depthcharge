@@ -21,3 +21,4 @@ Chrome OS lülitub nüüd välja.
 Kasutage õiget adapterit ja proovige uuesti.
 Eemaldage kõik ühendatud seadmed ja alustage taastamist.
 Alternatiivse käivituslaaduri valimiseks vajutage numbriklahvi:
+Vajutage diagnostika käitamiseks TOITENUPPU.

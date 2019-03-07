@@ -32,6 +32,7 @@ DETACHABLE_FILES = 'detachable_files'
 KEYBOARD_FILES = 'keyboard_files'
 VENDOR_INPUTS = 'vendor_inputs'
 VENDOR_FILES = 'vendor_files'
+DIAGNOSTIC_FILES = 'diagnostic_files'
 
 FIRMWARE_STRINGS_FILE = 'firmware_strings.txt'
 DETACHABLE_STRINGS_FILE = 'detachable_strings.txt'
@@ -53,7 +54,6 @@ class DataError(Exception):
 def GetImageWidth(filename):
   """Returns the width of given image file."""
   return Image.open(filename).size[0]
-
 
 def ParseLocaleInputFile(locale_dir, strings_file, input_format):
   """Parses firmware string file in given locale directory for BuildTextFiles
@@ -238,6 +238,11 @@ def main(argv):
       files.update(formats[DETACHABLE_FILES])
     else:
       files.update(formats[KEYBOARD_FILES])
+
+    # Now parse strings for optional features
+    if os.getenv("DIAGNOSTIC_UI") == "1":
+      files.update(formats[DIAGNOSTIC_FILES])
+
     if VENDOR_STRINGS:
       files.update(formats[VENDOR_FILES])
     BuildTextFiles(inputs, files, output_dir)

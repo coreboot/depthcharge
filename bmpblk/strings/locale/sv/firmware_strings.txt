@@ -21,3 +21,4 @@ Chrome OS stängs nu av.
 Anslut rätt adapter och försök igen.
 Ta bort alla anslutna enheter och påbörja återställningen.
 Välj en alternativ starthanterare genom att trycka på en siffertangent:
+Tryck på STRÖMBRYTAREN om du vill köra diagnostik.

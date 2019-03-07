@@ -80,6 +80,7 @@ TEXT_SCALES = {
     'disable_warn': (0, 2 * TEXT_HEIGHT),
     'enable_hint': (0, 2 * TEXT_HEIGHT),
     'confirm_hint': (0, 2 * TEXT_HEIGHT),
+    'diag_confirm': (0, 3 * TEXT_HEIGHT),
 }
 # Background colors
 DEFAULT_BACKGROUND = (255, 255, 255)
