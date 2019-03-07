@@ -331,3 +331,9 @@ hatch:
   screen:   [2400, 1600]
   hi_res:   [en]
   text_colors:  4
+
+flapjack:
+  # 1200*1980, boots recovery image on USB ports.
+  screen:   [1200, 1900]
+  sdcard:   False
+  hi_res:   [en]
