@@ -26,6 +26,7 @@
 #include "drivers/power/psci.h"
 #include "drivers/storage/sdhci_msm.h"
 #include "drivers/gpio/sysinfo.h"
+#include "board.h"
 
 #define TLMM_BOOT_SEL		0x010C1000
 #define EMMC_BOOT		0x8000000
@@ -60,6 +61,27 @@ static const DtPathMap xo_cal_map[] = {
 	{}
 };
 
+static void runtime_dt_select(void)
+{
+	printf("\nBOARD ID: %d\n", lib_sysinfo.board_id);
+	switch(lib_sysinfo.board_id) {
+		case BOARD_ID_MISTRAL_EVB:
+			fit_add_compat("qcom,qcs404-evb");
+			fit_add_compat("google,mistral-buck");
+			break;
+		case BOARD_ID_MISTRAL_PROTO_INT_BUCK:
+			fit_add_compat("google,mistral");
+			fit_add_compat("google,mistral-buck");
+			break;
+		case BOARD_ID_MISTRAL_PROTO_EXT_BUCK:
+		default:
+			fit_add_compat("google,mistral-buck");
+			fit_add_compat("google,mistral");
+			fit_add_compat("qcom,qcs404-evb");
+			break;
+	}
+}
+
 static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 {
 	int rv = 0;
@@ -85,6 +107,11 @@ static int board_setup(void)
 
 	list_insert_after(&usb_host2->list_node, &usb_host_controllers);
 	fit_add_compat("qcom,qcs404-evb");
+
+	/* Add device-tree compatible string
+	 * based on Board-id.
+	 */
+	runtime_dt_select();
 
 	dt_register_vpd_mac_fixup(vpd_dt_map);
 
