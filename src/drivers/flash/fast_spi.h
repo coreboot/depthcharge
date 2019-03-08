@@ -47,6 +47,6 @@ typedef struct FastSpiFlash {
 	FlashOps ops;
 } FastSpiFlash;
 
-FastSpiFlash *new_fast_spi_flash(uintptr_t mmio_base, uint32_t rom_size);
+FastSpiFlash *new_fast_spi_flash(uintptr_t mmio_base);
 
 #endif /* __DRIVERS_FLASH_FAST_SPI_H__ */

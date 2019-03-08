@@ -197,6 +197,31 @@ static int fast_spi_flash_write(FlashOps *me, const void *buffer,
 	return size;
 }
 
+static int fast_spi_flash_read_status(FlashOps *me)
+{
+	FastSpiFlash *flash = container_of(me, FastSpiFlash, ops);
+	uint8_t status;
+
+	if (exec_sync_hwseq_xfer(flash, SPIBAR_HSFSTS_CYCLE_RD_STATUS, 0, 1)
+		< 0)
+		return -1;
+	drain_xfer_fifo(flash, &status, 1);
+
+	return status;
+}
+
+static int fast_spi_flash_write_status(FlashOps *me, uint8_t status)
+{
+	FastSpiFlash *flash = container_of(me, FastSpiFlash, ops);
+
+	fill_xfer_fifo(flash, &status, 1);
+	if (exec_sync_hwseq_xfer(flash, SPIBAR_HSFSTS_CYCLE_WR_STATUS, 0, 1)
+		< 0)
+		return -1;
+
+	return 0;
+}
+
 static void fast_spi_fill_regions(FastSpiFlash *flash)
 {
 	FlashRegion *region = flash->region;
@@ -220,17 +245,23 @@ static void fast_spi_fill_regions(FastSpiFlash *flash)
 	}
 }
 
-FastSpiFlash *new_fast_spi_flash(uintptr_t mmio_base, uint32_t rom_size)
+FastSpiFlash *new_fast_spi_flash(uintptr_t mmio_base)
 {
+	uint32_t rom_size = lib_sysinfo.spi_flash.size;
+	uint32_t sector_size = lib_sysinfo.spi_flash.sector_size;
+
 	FastSpiFlash *flash = xzalloc(sizeof(*flash));
 
 	flash->mmio_base = mmio_base;
 	flash->rom_size = rom_size;
 	flash->cache = xmalloc(flash->rom_size);
 
+	flash->ops.sector_size = sector_size;
 	flash->ops.read = fast_spi_flash_read;
 	flash->ops.write = fast_spi_flash_write;
 	flash->ops.erase = fast_spi_flash_erase;
+	flash->ops.read_status = fast_spi_flash_read_status;
+	flash->ops.write_status = fast_spi_flash_write_status;
 
 	fast_spi_fill_regions(flash);
 

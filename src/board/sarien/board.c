@@ -60,7 +60,7 @@ static int board_setup(void)
 	uintptr_t mmio_base = pci_read_config32(PCI_DEV(0, 0x1f, 5),
 						PCI_BASE_ADDRESS_0);
 	mmio_base &= PCI_BASE_ADDRESS_MEM_MASK;
-	FastSpiFlash *spi = new_fast_spi_flash(mmio_base, 32 * MiB);
+	FastSpiFlash *spi = new_fast_spi_flash(mmio_base);
 	flash_set_ops(&spi->ops);
 
 	/* Wilco EC */
