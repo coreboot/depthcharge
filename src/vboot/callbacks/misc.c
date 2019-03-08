@@ -15,11 +15,14 @@
  * GNU General Public License for more details.
  */
 
+#include <image/fmap.h>
 #include <libpayload.h>
 #include <lzma.h>
 #include <vboot_api.h>
 
 #include "config.h"
+#include "base/vpd_util.h"
+#include "drivers/flash/flash.h"
 #include "vboot/util/flag.h"
 
 uint32_t VbExIsShutdownRequested(void)
@@ -52,5 +55,44 @@ uint32_t VbExIsShutdownRequested(void)
 
 VbError_t VbExSetVendorData(const char *vendor_data_value)
 {
+	FmapArea vpd_area_descriptor;
+	uint8_t *ro_vpd;
+	int size, offset;
+
+	printf("%s: Setting %s to '%s'\n", __func__,
+	       CONFIG_VENDOR_DATA_KEY, vendor_data_value);
+	if (strnlen(vendor_data_value, CONFIG_VENDOR_DATA_LENGTH + 1) !=
+		CONFIG_VENDOR_DATA_LENGTH)
+		return VBERROR_INVALID_PARAMETER;
+
+	if (fmap_find_area("RO_VPD", &vpd_area_descriptor)) {
+		printf("%s: failed to find RO_VPD area\n", __func__);
+		return VBERROR_VPD_WRITE;
+	}
+
+	/* Read RO VPD from flash */
+	ro_vpd = flash_read(vpd_area_descriptor.offset,
+			    vpd_area_descriptor.size);
+
+	if (!ro_vpd) {
+		printf("%s: failed to read RO_VPD area\n", __func__);
+		return VBERROR_VPD_WRITE;
+	}
+
+	/* Find the vendor data value */
+	if (!vpd_find(CONFIG_VENDOR_DATA_KEY, ro_vpd, &offset, &size) ||
+	    size != CONFIG_VENDOR_DATA_LENGTH)
+		return VBERROR_VPD_WRITE;
+
+	/* Set vendor data to new value */
+	if (flash_rewrite(vpd_area_descriptor.offset + offset,
+			  CONFIG_VENDOR_DATA_LENGTH, vendor_data_value) !=
+			  CONFIG_VENDOR_DATA_LENGTH) {
+		printf("%s: failed to rewrite RO_VPD area\n", __func__);
+		return VBERROR_VPD_WRITE;
+	}
+
+	/* TODO: set SRWD and block protection bits */
+
 	return VBERROR_SUCCESS;
 }

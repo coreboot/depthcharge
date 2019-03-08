@@ -25,6 +25,7 @@
 
 #include "base/cleanup_funcs.h"
 #include "base/timestamp.h"
+#include "base/vpd_util.h"
 #include "boot/commandline.h"
 #include "boot/multiboot.h"
 #include "config.h"
@@ -98,6 +99,29 @@ static CleanupFunc x86_ec_powerbtn_cleanup = {
 	NULL,
 };
 
+static int vendor_data_settable(void)
+{
+	int i = 0;
+	char vendor_data[CONFIG_VENDOR_DATA_LENGTH + 1];
+
+	if (CONFIG_VENDOR_DATA_LENGTH == 0)
+		return 0;
+
+	if (flash_is_wp_enabled())
+		return 0;
+
+	if (!vpd_gets(CONFIG_VENDOR_DATA_KEY, vendor_data, sizeof(vendor_data)))
+		return 0;
+
+	printf("Vendor data %s is '%s'.\n",
+		CONFIG_VENDOR_DATA_KEY, vendor_data);
+
+	while (i < CONFIG_VENDOR_DATA_LENGTH && vendor_data[i] == ' ')
+		i++;
+
+	return i == CONFIG_VENDOR_DATA_LENGTH;
+}
+
 int vboot_select_and_load_kernel(void)
 {
 	VbSelectAndLoadKernelParams kparams = {
@@ -119,8 +143,7 @@ int vboot_select_and_load_kernel(void)
 		}
 	}
 
-	if (CONFIG_VENDOR_DATA_LENGTH > 0)
-		// TODO: Add logic for when vendor data is settable
+	if (vendor_data_settable())
 		kparams.inflags |= VB_SALK_INFLAGS_VENDOR_DATA_SETTABLE;
 
 	printf("Calling VbSelectAndLoadKernel().\n");
