@@ -41,33 +41,43 @@ void fit_add_compat(const char *compat)
 
 static void fit_add_default_compats(void)
 {
-	const char pattern[] = "google,%s-rev%u-sku%u";
 	u32 rev = lib_sysinfo.board_id;
 	u32 sku = lib_sysinfo.sku_id;
+	char compat[sizeof(CONFIG_BOARD) + 64];
+	char base[sizeof(CONFIG_BOARD) + 32];
+	char sku_string[16];
+	char rev_string[16];
 
 	static int done = 0;
 	if (done)
 		return;
 	done = 1;
 
-	char *compat = xmalloc(sizeof(pattern) + sizeof(CONFIG_BOARD) + 20);
-	sprintf(compat, pattern, CONFIG_BOARD,
-		lib_sysinfo.board_id, lib_sysinfo.sku_id);
+	sprintf(base, "google,%s", CONFIG_BOARD);
+	sprintf(rev_string, "-rev%u", rev);
+	sprintf(sku_string, "-sku%u", sku);
 
 	char *c;
-	for (c = compat; *c != '\0'; c++)
+	for (c = base; *c != '\0'; c++)
 		if (*c == '_')
 			*c = '-';
 
-	if (sku != UNDEFINED_STRAPPING_ID && rev != UNDEFINED_STRAPPING_ID)
+	if (sku != UNDEFINED_STRAPPING_ID && rev != UNDEFINED_STRAPPING_ID) {
+		sprintf(compat, "%s%s%s", base, rev_string, sku_string);
 		fit_add_compat(strdup(compat));
+	}
 
-	*strrchr(compat, '-') = '\0';
-	if (rev != UNDEFINED_STRAPPING_ID)
+	if (sku != UNDEFINED_STRAPPING_ID) {
+		sprintf(compat, "%s%s", base, sku_string);
 		fit_add_compat(strdup(compat));
+	}
 
-	*strrchr(compat, '-') = '\0';
-	fit_add_compat(compat);
+	if (rev != UNDEFINED_STRAPPING_ID) {
+		sprintf(compat, "%s%s", base, rev_string);
+		fit_add_compat(strdup(compat));
+	}
+
+	fit_add_compat(strdup(base));
 }
 
 
