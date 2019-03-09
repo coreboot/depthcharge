@@ -36,6 +36,8 @@
 #include "drivers/tpm/cr50_switches.h"
 #include "drivers/tpm/spi.h"
 #include "drivers/tpm/tpm.h"
+#include "drivers/gpio/qcs405.h"
+#include "vboot/stages.h"
 
 #define TLMM_BOOT_SEL		0x010C1000
 #define EMMC_BOOT		0x8000000
@@ -127,6 +129,88 @@ static DeviceTreeFixup ipq_enet_fixup = {
 	.fixup = fix_device_tree
 };
 
+static void install_phys_presence_flag(void)
+{
+	GpioOps *phys_presence = sysinfo_lookup_gpio
+		("developer", 1, new_qcs405_gpio_input_from_coreboot);
+
+	if (!phys_presence) {
+		printf("%s failed retrieving phys presence GPIO\n", __func__);
+		return;
+	}
+	flag_replace(FLAG_PHYS_PRESENCE, phys_presence);
+}
+
+static uint8_t kb_buffer[4];
+static int kb_in, kb_out;
+
+static int qcs_havekey(void)
+{
+	/*
+	 * We want to react to the button press only, i.e. we need to
+	 * catch the "unpressed -> pressed" transition.
+	 */
+	static uint32_t prev = 1;
+	uint32_t rv = flag_fetch(FLAG_PHYS_PRESENCE);
+
+	if (prev == rv)
+		return kb_in != kb_out;
+
+	prev = rv;
+	if (!rv)
+		return kb_in != kb_out;
+
+	if (((kb_in + 1) % sizeof(kb_buffer)) == kb_out) {
+		printf("%s: keyboard buffer overflow!\n", __func__);
+		return 0;
+	}
+
+	/* Dev switch was pressed, what's the meaning of it? */
+	if (vboot_in_recovery()) {
+		/* This must mean ^D, the user wants to switch to dev mode. */
+		kb_buffer[kb_in++] = 0x4;
+		kb_in %= sizeof(kb_buffer);
+
+		if (((kb_in + 1) % sizeof(kb_buffer)) != kb_out)
+			kb_buffer[kb_in++] = 0xd;
+		else
+			/*
+			 * Should never happen, but worse come to worse the
+			 * user will lose the CR and will have to reboot in
+			 * recovery mode again to enter dev mode.
+			 */
+			printf("%s: keyboard buffer overflow!\n", __func__);
+	} else {
+		/* This must mean ^U, the user wants to boot from USB. */
+		kb_buffer[kb_in++] = 0x15;
+	}
+
+	kb_in %= sizeof(kb_buffer);
+
+	return 1;
+}
+
+static int qcs_getchar(void)
+{
+	int storm_char;
+
+	while (!qcs_havekey())
+		;
+
+	storm_char = kb_buffer[kb_out++];
+
+	kb_out %= sizeof(kb_buffer);
+
+	return storm_char;
+}
+
+static struct console_input_driver qcs_input_driver =
+{
+	NULL,
+	&qcs_havekey,
+	&qcs_getchar,
+	CONSOLE_INPUT_TYPE_GPIO
+};
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
@@ -145,6 +229,9 @@ static int board_setup(void)
 	dt_register_vpd_mac_fixup(vpd_dt_map);
 
 	list_insert_after(&ipq_enet_fixup.list_node, &device_tree_fixups);
+
+	install_phys_presence_flag();
+	console_add_input_driver(&qcs_input_driver);
 
 #ifdef CONFIG_DRIVER_BUS_SPI_QCS405
 	SpiController *spi_flash = new_spi(BLSP5_SPI, 0);
