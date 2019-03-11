@@ -20,6 +20,26 @@
 
 #include <stdint.h>
 
+/*
+ * All of the flashes that we use have a 1 byte vendor id and a 2 byte model id
+ */
+typedef struct JedecFlashId {
+	/* Flash Vendor Id */
+	uint8_t vendor;
+	/* Flash Model Id */
+	uint16_t model;
+} JedecFlashId;
+
+typedef struct FlashProtectionMapping {
+	/* The id of the flash */
+	JedecFlashId id;
+	/*
+	 * The value to be written to the status register to enable write
+	 * protection
+	 */
+	uint8_t wp_status_value;
+} FlashProtectionMapping;
+
 typedef struct FlashOps
 {
 	/* Return a pointer to the read data in the flash driver cache. */
@@ -33,6 +53,8 @@ typedef struct FlashOps
 	int (*write_status)(struct FlashOps *me, uint8_t status);
 	/* Reads status and returns -1 on error, status reg value on success. */
 	int (*read_status)(struct FlashOps *me);
+	/* Returns the flash device id */
+	JedecFlashId (*read_id)(struct FlashOps *me);
 	/* Granularity and alignment of erases */
 	uint32_t sector_size;
 	/* Total number of sectors present */
@@ -49,6 +71,8 @@ int flash_rewrite(uint32_t start, uint32_t length, const void *buffer);
 int flash_write_status(uint8_t status);
 int flash_read_status(void);
 int flash_is_wp_enabled(void);
+int flash_set_wp_enabled(void);
+JedecFlashId flash_read_id(void);
 
 /* Functions operating on passed in ops */
 void *flash_read_ops(FlashOps *ops, uint32_t offset, uint32_t size);
@@ -58,5 +82,7 @@ int flash_erase_ops(FlashOps *ops, uint32_t offset, uint32_t size);
 int flash_rewrite_ops(FlashOps *ops, uint32_t start, uint32_t length,
 		      const void *buffer);
 
+/* List of supported flashes terminated with a 0 filled element*/
+extern FlashProtectionMapping flash_protection_list[];
 
 #endif /* __DRIVERS_FLASH_FLASH_H__ */

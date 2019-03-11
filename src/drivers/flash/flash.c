@@ -154,3 +154,36 @@ int flash_is_wp_enabled(void)
 {
 	return flash_is_wp_enabled_ops(flash_ops);
 }
+
+JedecFlashId flash_read_id(void)
+{
+	JedecFlashId empty = { 0 };
+
+	die_if(!flash_ops, "%s: No flash ops set.\n", __func__);
+	if (flash_ops->read_id)
+		return flash_ops->read_id(flash_ops);
+
+	return empty;
+}
+
+int flash_set_wp_enabled(void)
+{
+	JedecFlashId id;
+	int i;
+
+	die_if(!flash_ops, "%s: No flash ops set.\n", __func__);
+
+	id = flash_read_id();
+
+	for (i = 0; flash_protection_list[i].id.vendor != 0; i++) {
+		if (flash_protection_list[i].id.vendor != id.vendor ||
+		    flash_protection_list[i].id.model != id.model)
+			continue;
+
+		return flash_write_status(
+				flash_protection_list[i].wp_status_value);
+	}
+
+	return -1;
+}
+
