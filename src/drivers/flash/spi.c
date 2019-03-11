@@ -374,6 +374,39 @@ fail:
 	return ret;
 }
 
+static JedecFlashId spi_flash_read_id(FlashOps *me)
+{
+	JedecFlashId id = {};
+	uint8_t buffer[3];
+	SpiFlash *flash = container_of(me, SpiFlash, ops);
+
+	uint8_t command;
+
+	if (flash->spi->start(flash->spi)) {
+		printf("%s: Failed to start transaction.\n", __func__);
+		return id;
+	}
+
+	command = ReadId;
+	if (flash->spi->transfer(flash->spi, NULL, &command, sizeof(command))) {
+		printf("%s: Failed to send register read command.\n", __func__);
+		goto fail;
+	}
+
+	if (flash->spi->transfer(flash->spi, buffer, NULL, sizeof(buffer))) {
+		printf("%s: Failed to read id.\n", __func__);
+		goto fail;
+	}
+
+	id.vendor = buffer[0];
+	id.model = (buffer[1] << 8) | buffer[2];
+fail:
+	if (flash->spi->stop(flash->spi))
+		printf("%s: Failed to stop.\n", __func__);
+
+	return id;
+}
+
 SpiFlash *new_spi_flash(SpiOps *spi)
 {
 	uint32_t rom_size = lib_sysinfo.spi_flash.size;
@@ -387,6 +420,7 @@ SpiFlash *new_spi_flash(SpiOps *spi)
 	flash->ops.erase = spi_flash_erase;
 	flash->ops.write_status = spi_flash_write_status;
 	flash->ops.read_status = spi_flash_read_status;
+	flash->ops.read_id = spi_flash_read_id;
 	flash->ops.sector_size = sector_size;
 	assert(rom_size == ALIGN_DOWN(rom_size, sector_size));
 	flash->ops.sector_count = rom_size / sector_size;

@@ -197,6 +197,23 @@ static int fast_spi_flash_write(FlashOps *me, const void *buffer,
 	return size;
 }
 
+static JedecFlashId fast_spi_flash_read_id(FlashOps *me)
+{
+	JedecFlashId id = { 0 };
+	FastSpiFlash *flash = container_of(me, FastSpiFlash, ops);
+	uint8_t buffer[3];
+
+	if (exec_sync_hwseq_xfer(flash, SPIBAR_HSFSTS_CYCLE_RD_ID,
+				 0, sizeof(buffer)) < 0)
+		return id;
+	drain_xfer_fifo(flash, buffer, 3);
+
+	id.vendor = buffer[0];
+	id.model = (buffer[1] << 8) | buffer[2];
+
+	return id;
+}
+
 static int fast_spi_flash_read_status(FlashOps *me)
 {
 	FastSpiFlash *flash = container_of(me, FastSpiFlash, ops);
@@ -262,6 +279,7 @@ FastSpiFlash *new_fast_spi_flash(uintptr_t mmio_base)
 	flash->ops.erase = fast_spi_flash_erase;
 	flash->ops.read_status = fast_spi_flash_read_status;
 	flash->ops.write_status = fast_spi_flash_write_status;
+	flash->ops.read_id = fast_spi_flash_read_id;
 
 	fast_spi_fill_regions(flash);
 
