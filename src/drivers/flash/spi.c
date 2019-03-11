@@ -174,24 +174,6 @@ static int operation_failed(SpiFlash *flash, const char *opname)
 }
 
 /*
- * This checks if the status register protect bit is set. Write-protection
- * is active when both of the following conditions are met:
- * 1. Status register protect bit is set to 1.
- * 2. Hardware write-protect pin (/WP) is asserted.
- */
-static int spi_flash_is_wp_enabled(struct FlashOps *ops)
-{
-	int value = ops->read_status(ops);
-
-	/*
-	 * NOR flash chips we currently support write-protection for all have
-	 * SRP0 in bit position 7. If this changes, we'll need to read the chip
-	 * ID and take appropriate action (like with error checking).
-	 */
-	return value & (1 << 7) ? 1 : 0;
-}
-
-/*
  * Write or erase the flash. To write, pass a buffer and size; to erase,
  * pass null for the buffer.
  * This function is guaranteed to be invoked with data not spanning across
@@ -408,7 +390,6 @@ SpiFlash *new_spi_flash(SpiOps *spi)
 	flash->ops.erase = spi_flash_erase;
 	flash->ops.write_status = spi_flash_write_status;
 	flash->ops.read_status = spi_flash_read_status;
-	flash->ops.is_wp_enabled = spi_flash_is_wp_enabled;
 	flash->ops.sector_size = sector_size;
 	assert(rom_size == ALIGN_DOWN(rom_size, sector_size));
 	flash->ops.sector_count = rom_size / sector_size;
