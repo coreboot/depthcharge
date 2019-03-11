@@ -84,6 +84,11 @@ VbError_t VbExSetVendorData(const char *vendor_data_value)
 	    size != CONFIG_VENDOR_DATA_LENGTH)
 		return VBERROR_VPD_WRITE;
 
+	if (flash_write_status(0x00)) {
+		printf("%s: failed to disable wp\n", __func__);
+		return VBERROR_VPD_WRITE;
+	}
+
 	/* Set vendor data to new value */
 	if (flash_rewrite(vpd_area_descriptor.offset + offset,
 			  CONFIG_VENDOR_DATA_LENGTH, vendor_data_value) !=
@@ -92,7 +97,10 @@ VbError_t VbExSetVendorData(const char *vendor_data_value)
 		return VBERROR_VPD_WRITE;
 	}
 
-	/* TODO: set SRWD and block protection bits */
+	if (flash_set_wp_enabled()) {
+		printf("%s: failed to enable wp\n", __func__);
+		return VBERROR_VPD_WRITE;
+	}
 
 	return VBERROR_SUCCESS;
 }

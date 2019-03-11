@@ -45,6 +45,35 @@ enum {
 	EC_PACKET_BASE = 0x950,
 };
 
+FlashProtectionMapping flash_protection_list[] = {
+	{
+		/* Macronix MX25L256 */
+		.id = {
+			.vendor = 0xc2,
+			.model = 0x2019
+		},
+		.wp_status_value = 0x9c
+	},
+	{
+		/* Winbond W25Q256 */
+		.id = {
+			.vendor = 0xef,
+			.model = 0x4019
+		},
+		.wp_status_value = 0x9c
+	},
+	{
+		/* GigaDevice GD25L256 */
+		.id = {
+			.vendor = 0xc8,
+			.model = 0x4019
+		},
+		.wp_status_value = 0x9c
+	},
+	/* Empty entry for end of list */
+	{{ 0 }}
+};
+
 static int cr50_irq_status(void)
 {
 	return cannonlake_get_gpe(GPE0_DW2_18);
