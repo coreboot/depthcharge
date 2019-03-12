@@ -1118,6 +1118,7 @@ static int fb_boot_cleanup_func(struct CleanupFunc *cleanup, CleanupType type)
  */
 static fb_ret_type fb_boot(struct fb_cmd *cmd)
 {
+	struct vb2_context ctx;
 	VbSelectAndLoadKernelParams kparams;
 
 	cmd->type = FB_FAIL;
@@ -1150,8 +1151,9 @@ static fb_ret_type fb_boot(struct fb_cmd *cmd)
 
 	kernel_size = image_size - kernel_size;
 
-	if (VbVerifyMemoryBootImage(&cparams, &kparams, kernel, kernel_size) !=
-	    VBERROR_SUCCESS) {
+	memset(&ctx, 0, sizeof(ctx));
+	if (VbVerifyMemoryBootImage(&ctx, &cparams, &kparams, kernel,
+				    kernel_size) != VBERROR_SUCCESS) {
 		/*
 		 * Fail if:
 		 * 1. Device is locked, or

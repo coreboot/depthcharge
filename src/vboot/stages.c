@@ -120,6 +120,16 @@ static int vendor_data_settable(void)
 
 int vboot_select_and_load_kernel(void)
 {
+	struct vb2_context ctx;
+
+	/*
+	 * Set up vboot context.
+	 *
+	 * TODO: Propagate this up to higher API levels, and use more of the
+	 * context fields (e.g. secdatak) and flags.
+	 */
+	memset(&ctx, 0, sizeof(ctx));
+
 	VbSelectAndLoadKernelParams kparams = {
 		.kernel_buffer = &_kernel_start,
 		.kernel_buffer_size = &_kernel_end - &_kernel_start,
@@ -143,7 +153,7 @@ int vboot_select_and_load_kernel(void)
 		kparams.inflags |= VB_SALK_INFLAGS_VENDOR_DATA_SETTABLE;
 
 	printf("Calling VbSelectAndLoadKernel().\n");
-	VbError_t res = VbSelectAndLoadKernel(&cparams, &kparams);
+	VbError_t res = VbSelectAndLoadKernel(&ctx, &cparams, &kparams);
 
 	if (res == VBERROR_EC_REBOOT_TO_RO_REQUIRED) {
 		printf("EC Reboot requested. Doing cold reboot.\n");
