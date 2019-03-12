@@ -50,6 +50,8 @@ static const uint32_t TokenEndNode = 2;
 static const uint32_t TokenProperty = 3;
 static const uint32_t TokenEnd = 9;
 
+static const uint32_t PhandleIllegal = 0xdeadbeef;
+
 typedef struct FdtProperty
 {
 	const char *name;
@@ -73,6 +75,8 @@ typedef struct DeviceTreeProperty
 typedef struct DeviceTreeNode
 {
 	const char *name;
+	uint32_t phandle;
+
 	// List of DeviceTreeProperty-s.
 	ListNode properties;
 	// List of DeviceTreeNodes.
@@ -93,6 +97,7 @@ typedef struct DeviceTree
 {
 	void *header;
 	uint32_t header_size;
+	uint32_t max_phandle;
 
 	ListNode reserve_map;
 
@@ -142,6 +147,8 @@ DeviceTreeNode *dt_find_node_by_path(DeviceTree *tree, const char *path,
 				     u32 *addrcp, u32 *sizecp, int create);
 // Look up a node through an alias.
 DeviceTreeNode *dt_find_node_by_alias(DeviceTree *tree, const char *alias);
+// Look up a node through a phandle.
+DeviceTreeNode *dt_find_node_by_phandle(DeviceTreeNode *root, uint32_t phandle);
 // Look up a node relative to a parent node, through its compatible string.
 DeviceTreeNode *dt_find_compat(DeviceTreeNode *parent, const char *compatible);
 // Look up the next child of a parent node, through its compatible string. It

@@ -180,8 +180,14 @@ static DeviceTreeProperty *alloc_prop(void)
 	return &prop_cache[prop_counter++];
 }
 
+static int dt_prop_is_phandle(DeviceTreeProperty *prop)
+{
+	return !(strcmp("phandle", prop->prop.name) &&
+		 strcmp("linux,phandle", prop->prop.name));
+}
+
 static int fdt_unflatten_node(void *blob, uint32_t start_offset,
-			      DeviceTreeNode **new_node)
+			      DeviceTree *tree, DeviceTreeNode **new_node)
 {
 	ListNode *last;
 	int offset = start_offset;
@@ -203,6 +209,12 @@ static int fdt_unflatten_node(void *blob, uint32_t start_offset,
 		DeviceTreeProperty *prop = alloc_prop();
 		prop->prop = fprop;
 
+		if (dt_prop_is_phandle(prop)) {
+			node->phandle = be32dec(prop->prop.data);
+			if (node->phandle > tree->max_phandle)
+				tree->max_phandle = node->phandle;
+		}
+
 		list_insert_after(&prop->list_node, last);
 		last = &prop->list_node;
 
@@ -211,7 +223,7 @@ static int fdt_unflatten_node(void *blob, uint32_t start_offset,
 
 	DeviceTreeNode *child;
 	last = &node->children;
-	while ((size = fdt_unflatten_node(blob, offset, &child))) {
+	while ((size = fdt_unflatten_node(blob, offset, tree, &child))) {
 		list_insert_after(&child->list_node, last);
 		last = &child->list_node;
 
@@ -284,7 +296,7 @@ DeviceTree *fdt_unflatten(void *blob)
 		offset += size;
 	}
 
-	fdt_unflatten_node(blob, struct_offset, &tree->root);
+	fdt_unflatten_node(blob, struct_offset, tree, &tree->root);
 
 	return tree;
 }
@@ -639,6 +651,25 @@ DeviceTreeNode *dt_find_node_by_path(DeviceTree *tree, const char *path,
 
 	free(duped_str);
 	return node;
+}
+
+DeviceTreeNode *dt_find_node_by_phandle(DeviceTreeNode *root, uint32_t phandle)
+{
+	if (!root)
+		return NULL;
+
+	if (root->phandle == phandle)
+		return root;
+
+	DeviceTreeNode *node;
+	DeviceTreeNode *result;
+	list_for_each(node, root->children, list_node) {
+		result = dt_find_node_by_phandle(node, phandle);
+		if (result)
+			return result;
+	}
+
+	return NULL;
 }
 
 /*
