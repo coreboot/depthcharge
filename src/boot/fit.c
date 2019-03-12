@@ -362,20 +362,17 @@ static void update_memory(DeviceTree *tree)
 
 FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt)
 {
-	FdtHeader *header = (FdtHeader *)fit;
 	FitImageNode *image;
 	FitConfigNode *config;
 	int i;
 
 	printf("Loading FIT.\n");
 
-	if (betohl(header->magic) != FdtMagic) {
-		printf("Bad FIT header magic value 0x%08x.\n",
-			betohl(header->magic));
+	DeviceTree *tree = fdt_unflatten(fit);
+	if (!tree) {
+		printf("Failed to unflatten FIT image!\n");
 		return NULL;
 	}
-
-	DeviceTree *tree = fdt_unflatten(fit);
 
 	const char *default_config_name = NULL;
 	FitConfigNode *default_config = NULL;

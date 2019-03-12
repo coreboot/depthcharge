@@ -34,7 +34,7 @@ typedef struct FdtHeader {
 	uint32_t reserve_map_offset;
 
 	uint32_t version;
-	uint32_t last_compatible_version;
+	uint32_t last_comp_version;
 
 	uint32_t boot_cpuid_phys;
 
@@ -43,6 +43,7 @@ typedef struct FdtHeader {
 } FdtHeader;
 
 static const uint32_t FdtMagic = 0xd00dfeed;
+static const uint32_t FdtSupportedVersion = 17;
 
 static const uint32_t TokenBeginNode = 1;
 static const uint32_t TokenEndNode = 2;

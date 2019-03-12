@@ -245,6 +245,23 @@ DeviceTree *fdt_unflatten(void *blob)
 	FdtHeader *header = (FdtHeader *)blob;
 	tree->header = header;
 
+	uint32_t magic = betohl(header->magic);
+	uint32_t version = betohl(header->version);
+	uint32_t last_comp_version = betohl(header->last_comp_version);
+
+	if (magic != FdtMagic) {
+		printf("Invalid device tree magic %#.8x!\n", magic);
+		return NULL;
+	}
+	if (last_comp_version > FdtSupportedVersion) {
+		printf("Unsupported device tree version %u(>=%u)!\n",
+		       version, last_comp_version);
+		return NULL;
+	}
+	if (version > FdtSupportedVersion)
+		printf("NOTE: FDT version %u too new, should add support!\n",
+		       version);
+
 	uint32_t struct_offset = betohl(header->structure_offset);
 	uint32_t strings_offset = betohl(header->strings_offset);
 	uint32_t reserve_offset = betohl(header->reserve_map_offset);
