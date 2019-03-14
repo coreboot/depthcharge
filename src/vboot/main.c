@@ -38,14 +38,8 @@ void  __attribute__((weak)) vboot_try_fastboot(void)
 	/* Default weak implementation. */
 }
 
-static int vboot_init_handoff()
+static int vboot_verify_handoff(void)
 {
-	struct vboot_handoff *vboot_handoff;
-
-	// Set up the common param structure, not clearing shared data.
-	if (common_params_init(0))
-		return 1;
-
 	if (lib_sysinfo.vboot_handoff == NULL) {
 		printf("vboot handoff pointer is NULL\n");
 		return 1;
@@ -57,29 +51,35 @@ static int vboot_init_handoff()
 		return 1;
 	}
 
-	vboot_handoff = lib_sysinfo.vboot_handoff;
+	return 0;
+}
 
-	/* If the lid is closed, don't count down the boot
-	 * tries for updates, since the OS will shut down
-	 * before it can register success.
-	 *
-	 * VbInit was already called in coreboot, so we need
-	 * to update the vboot internal flags ourself.
-	 */
-	int lid_switch = flag_fetch(FLAG_LIDSW);
-	if (!lid_switch) {
-		VbSharedDataHeader *vb_sd;
-		int vb_sd_size;
+static int vboot_update_shared_data(void)
+{
+	VbSharedDataHeader *vb_sd;
+	int vb_sd_size;
 
-		if (find_common_params((void **)&vb_sd, &vb_sd_size) != 0)
-			vb_sd = NULL;
-
-		/* We need something to work with */
-		if (vb_sd != NULL)
-			/* Tell kernel selection to not count down */
-			vb_sd->flags |= VBSD_NOFAIL_BOOT;
+	if (find_common_params((void **)&vb_sd, &vb_sd_size)) {
+		printf("Unable to access VBSD\n");
+		return 1;
 	}
 
+	/*
+	 * If the lid is closed, kernel selection should not count down the
+	 * boot tries for updates, since the OS will shut down before it can
+	 * register success.
+	 */
+	if (!flag_fetch(FLAG_LIDSW))
+		vb_sd->flags |= VBSD_NOFAIL_BOOT;
+
+	return 0;
+}
+
+static int vboot_update_vbinit_flags(void)
+{
+	struct vboot_handoff *vboot_handoff = lib_sysinfo.vboot_handoff;
+	/* VbInit was already called in coreboot, so we need to update the
+	 * vboot internal flags ourself. */
 	return vboot_do_init_out_flags(vboot_handoff->init_params.out_flags);
 }
 
@@ -107,8 +107,20 @@ int main(void)
 	if (CONFIG_CLI)
 		console_loop();
 
+	// Verify incoming vboot_handoff.
+	if (vboot_verify_handoff())
+		halt();
+
 	// Set up the common param structure, not clearing shared data.
-	if (vboot_init_handoff())
+	if (common_params_init(0))
+		halt();
+
+	// Modify VbSharedDataHeader contents from vboot_handoff struct.
+	if (vboot_update_shared_data())
+		halt();
+
+	// Retrieve data from VbInit flags.
+	if (vboot_update_vbinit_flags())
 		halt();
 
 	/* Fastboot is only entered in recovery path */
