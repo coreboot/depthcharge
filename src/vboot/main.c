@@ -72,6 +72,9 @@ static int vboot_update_shared_data(void)
 	if (!flag_fetch(FLAG_LIDSW))
 		vb_sd->flags |= VBSD_NOFAIL_BOOT;
 
+	if (IS_ENABLED(CONFIG_EC_EFS))
+		vb_sd->flags |= VBSD_EC_EFS;
+
 	return 0;
 }
 

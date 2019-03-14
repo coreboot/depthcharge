@@ -38,6 +38,15 @@ config EC_SOFTWARE_SYNC
 	  firmware similar to how vboot verifies the main system firmware. This
 	  option selects whether depthcharge should support EC software sync.
 
+config EC_EFS
+	bool
+	default n
+	depends on EC_SOFTWARE_SYNC
+	help
+	  CrosEC can support EFS: Early Firmware Selection. If it's enabled,
+	  software sync need to also support it. This setting tells vboot to
+	  perform EFS software sync.
+
 config VIRTUAL_DEV_SWITCH
 	bool "Virtual developer switch support"
 	default n
