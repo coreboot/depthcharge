@@ -23,6 +23,7 @@
 #include "drivers/gpio/gpio.h"
 #include "vboot/util/flag.h"
 #include "boot/fit.h"
+#include "drivers/bus/spi/qcs405.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/power/psci.h"
 #include "drivers/storage/sdhci_msm.h"
@@ -134,6 +135,12 @@ static int board_setup(void)
 	dt_register_vpd_mac_fixup(vpd_dt_map);
 
 	list_insert_after(&ipq_enet_fixup.list_node, &device_tree_fixups);
+
+#ifdef CONFIG_DRIVER_BUS_SPI_QCS405
+	SpiController *spi_flash = new_spi(BLSP5_SPI, 0);
+	SpiFlash *flash = new_spi_flash(&spi_flash->ops);
+	flash_set_ops(&flash->ops);
+#endif
 
 	/* eMMC support */
 	/* DATA pins are muxed between NAND and EMMC, configure them to eMMC */
