@@ -154,6 +154,14 @@ static void *fast_spi_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
 
 	assert(offset + size <= flash->rom_size);
 
+	/*
+	 * If the read is entirely within the memory map just return a pointer
+	 * within the memory mapped region
+	 */
+	if (offset >= flash->mmio_offset && offset + size < flash->mmio_end)
+		return (void *)(uintptr_t)(flash->mmio_address -
+					   flash->mmio_offset + offset);
+
 	while (size) {
 		size_t xfer_len = get_xfer_len(offset, size);
 
@@ -267,10 +275,39 @@ FastSpiFlash *new_fast_spi_flash(uintptr_t mmio_base)
 	uint32_t rom_size = lib_sysinfo.spi_flash.size;
 	uint32_t sector_size = lib_sysinfo.spi_flash.sector_size;
 
+	uint32_t val = read32((void *)(mmio_base + SPIBAR_BIOS_BFPREG));
+
+	uintptr_t mmap_start;
+	size_t bios_base, bios_end, mmap_size;
+
+	bios_base = (val & BFPREG_BASE_MASK) * 4 * KiB;
+	bios_end  = (((val & BFPREG_LIMIT_MASK) >> BFPREG_LIMIT_SHIFT) + 1) *
+		4 * KiB;
+	mmap_size = bios_end - bios_base;
+
+	/* Only the top 16 MiB is memory mapped */
+	if (mmap_size > 16ULL * MiB) {
+		uint32_t offset = mmap_size - 16ULL * MiB;
+		bios_base += offset;
+		mmap_size -= offset;
+	}
+
+	/* BIOS region is mapped directly below 4GiB. */
+	mmap_start = 4ULL * GiB - mmap_size;
+
+	printf("BIOS MMAP details:\n");
+	printf("IFD Base Offset  : 0x%zx\n", bios_base);
+	printf("IFD End Offset   : 0x%zx\n", bios_end);
+	printf("MMAP Size        : 0x%zx\n", mmap_size);
+	printf("MMAP Start       : 0x%lx\n", mmap_start);
+
 	FastSpiFlash *flash = xzalloc(sizeof(*flash));
 
 	flash->mmio_base = mmio_base;
 	flash->rom_size = rom_size;
+	flash->mmio_address = mmap_start;
+	flash->mmio_offset = bios_base;
+	flash->mmio_end = bios_end;
 	flash->cache = xmalloc(flash->rom_size);
 
 	flash->ops.sector_size = sector_size;

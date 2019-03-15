@@ -40,6 +40,9 @@ typedef struct FlashRegion {
 
 typedef struct FastSpiFlash {
 	uintptr_t mmio_base;
+	uintptr_t mmio_address;
+	uint32_t mmio_offset;
+	uint32_t mmio_end;
 	uint32_t flash_bits;
 	uint32_t rom_size;
 	uint8_t *cache;
