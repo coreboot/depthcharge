@@ -75,7 +75,7 @@ static int board_setup(void)
 		.pad_tune = 0x10 << 16
 	};
 	MtkMmcHost *emmc = new_mtk_mmc_host(
-		0x11230000, 200 * MHz, 50 * MHz, emmc_tune_reg, 8, 0, NULL,
+		0x11230000, 400 * MHz, 50 * MHz, emmc_tune_reg, 8, 0, NULL,
 		MTK_MMC_V2);
 
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
