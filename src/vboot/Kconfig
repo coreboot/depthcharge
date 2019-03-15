@@ -44,6 +44,14 @@ config EC_SOFTWARE_SYNC
 	  firmware similar to how vboot verifies the main system firmware. This
 	  option selects whether depthcharge should support EC software sync.
 
+config EC_SLOW_UPDATE
+	bool
+	default n
+	depends on EC_SOFTWARE_SYNC
+	help
+	  Whether the EC (or PD) is slow to update and needs to display a
+	  screen that informs the user the update is happening.
+
 config EC_EFS
 	bool
 	default n
