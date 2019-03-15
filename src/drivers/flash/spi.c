@@ -306,9 +306,6 @@ static int spi_flash_read_status(FlashOps *me)
 		return ret;
 	}
 
-	if (toggle_cs(flash, "RDSTATUS") != 0)
-		goto fail;
-
 	command = ReadSr1Command;
 	if (flash->spi->transfer(flash->spi, NULL, &command, sizeof(command))) {
 		printf("%s: Failed to send register read command.\n", __func__);
