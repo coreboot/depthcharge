@@ -17,9 +17,9 @@
 
 #include <libpayload.h>
 #include <cbfs.h>
-#include <cbfs_ram.h>
 #include "image/fmap.h"
 #include "drivers/flash/flash.h"
+#include "drivers/flash/cbfs.h"
 
 /* flash as CBFS media. */
 
@@ -112,21 +112,12 @@ int libpayload_init_default_cbfs_media(struct cbfs_media *media)
 
 struct cbfs_media *cbfs_ro_media(void)
 {
-	FmapArea area;
-	struct cbfs_media *media;
+	struct cbfs_media *media = xmalloc(sizeof(*media));
 
-	/* The FMAP entries for the RO CBFS are either COREBOOT or BOOT_STUB. */
-	if (fmap_find_area("COREBOOT", &area) &&
-	    fmap_find_area("BOOT_STUB", &area))
+	if (cbfs_media_from_fmap("COREBOOT", media)) {
+		free(media);
 		return NULL;
-
-	media = xmalloc(sizeof(*media));
-
-	libpayload_init_default_cbfs_media(media);
-
-	media->context = xmalloc(sizeof(area));
-
-	memcpy(media->context, &area, sizeof(area));
+	}
 
 	return media;
 }
@@ -134,25 +125,17 @@ struct cbfs_media *cbfs_ro_media(void)
 int cbfs_media_from_fmap(const char *area_name, struct cbfs_media *media)
 {
 	FmapArea area;
-	void *data;
 
 	if (fmap_find_area(area_name, &area)) {
 		printf("Fmap region %s not found.\n", area_name);
 		return 1;
 	}
 
-	data = flash_read(area.offset, area.size);
-	if (!data) {
-		printf("Could not read in cbfs data from area '%s'.\n",
-		       area_name);
-		return 1;
-	}
+	libpayload_init_default_cbfs_media(media);
 
-	if (init_cbfs_ram_media(media, data, area.size)) {
-		printf("Could not initialize cbfs from area '%s'.\n",
-		       area_name);
-		return 1;
-	}
+	media->context = xmalloc(sizeof(area));
+
+	memcpy(media->context, &area, sizeof(area));
 
 	return 0;
 }
