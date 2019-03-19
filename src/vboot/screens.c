@@ -1122,45 +1122,34 @@ static VbError_t vboot_draw_altfw_menu(struct params *p)
 }
 
 #if CONFIG_VENDOR_DATA_LENGTH > 0
-static VbError_t vboot_draw_set_vendor_data(struct params *p)
-{
+static VbError_t vboot_draw_vendor_data_prompt(struct params *p,
+					       const char *string) {
 	if (p->redraw_base)
 		RETURN_ON_ERROR(vboot_draw_base_screen(p));
 
-	RETURN_ON_ERROR(draw_image_locale("set_vendor_data.bmp", p->locale,
+	RETURN_ON_ERROR(draw_image_locale(string, p->locale,
 			VB_SCALE_HALF,
-			VB_SCALE_HALF,
+			VB_SCALE_HALF - VB_TEXT_HEIGHT / 2,
 			VB_SIZE_AUTO,
 			VB_TEXT_HEIGHT,
-			PIVOT_H_RIGHT|PIVOT_V_CENTER));
+			PIVOT_H_CENTER|PIVOT_V_CENTER));
 
 	RETURN_ON_ERROR(draw_text(p->data->vendor_data.input_text,
-			VB_SCALE_HALF + VB_PADDING,
 			VB_SCALE_HALF,
+			VB_SCALE_HALF + VB_TEXT_HEIGHT / 2,
 			VB_TEXT_HEIGHT,
-			PIVOT_H_LEFT|PIVOT_V_CENTER));
-
+			PIVOT_H_CENTER|PIVOT_V_CENTER));
 	return 0;
+}
+
+static VbError_t vboot_draw_set_vendor_data(struct params *p)
+{
+	return vboot_draw_vendor_data_prompt(p, "set_vendor_data.bmp");
 }
 
 static VbError_t vboot_draw_confirm_vendor_data(struct params *p)
 {
-	if (p->redraw_base)
-		RETURN_ON_ERROR(vboot_draw_base_screen(p));
-
-	RETURN_ON_ERROR(draw_image_locale("conf_vendor_data.bmp", p->locale,
-			VB_SCALE_HALF,
-			VB_SCALE_HALF,
-			VB_SIZE_AUTO,
-			VB_TEXT_HEIGHT,
-			PIVOT_H_RIGHT|PIVOT_V_CENTER));
-
-	RETURN_ON_ERROR(draw_text(p->data->vendor_data.input_text,
-			VB_SCALE_HALF + VB_PADDING,
-			VB_SCALE_HALF,
-			VB_TEXT_HEIGHT,
-			PIVOT_H_LEFT|PIVOT_V_CENTER));
-	return 0;
+	return vboot_draw_vendor_data_prompt(p, "conf_vendor_data.bmp");
 }
 #endif // CONFIG_VENDOR_DATA_LENGTH > 0
 
