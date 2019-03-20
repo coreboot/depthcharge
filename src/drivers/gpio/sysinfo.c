@@ -68,4 +68,6 @@ void sysinfo_install_flags(new_gpio_from_coreboot_t ngfc)
 	flag_install(FLAG_LIDSW, sysinfo_lookup_gpio("lid", 1, ngfc));
 	flag_install(FLAG_PWRSW, sysinfo_lookup_gpio("power", 1, ngfc));
 	flag_install(FLAG_ECINRW, sysinfo_lookup_gpio("EC in RW", 1, ngfc));
+	flag_install(FLAG_PHYS_PRESENCE,
+		     sysinfo_lookup_gpio("presence", 1, ngfc));
 }

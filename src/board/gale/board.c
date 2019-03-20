@@ -246,19 +246,6 @@ static GpioOps *new_gpio_input_from_coreboot(uint32_t port)
 	gpio->desc = (gpio_t)port;
 	return &gpio->gpio_ops;
 }
-
-static void install_phys_presence_flag(void)
-{
-	GpioOps *phys_presence = sysinfo_lookup_gpio
-		("developer", 1, new_gpio_input_from_coreboot);
-
-	if (!phys_presence) {
-		printf("%s failed retrieving phys presence GPIO\n", __func__);
-		return;
-	}
-	flag_install(FLAG_PHYS_PRESENCE, phys_presence);
-}
-
 void ipq_configure_gpio(gpio_func_data_t *gpio, uint32_t count)
 {
 	int i;
@@ -386,13 +373,11 @@ static void ipq_snoc_pnoc_init(void)
 
 static int board_setup(void)
 {
-	sysinfo_install_flags(NULL);
+	sysinfo_install_flags(new_gpio_input_from_coreboot);
 
 	fill_board_descriptor();
 
 	fit_add_compat(bdescriptor.compat_string);
-
-	install_phys_presence_flag();
 
 	console_add_input_driver(&dakota_input_driver);
 
