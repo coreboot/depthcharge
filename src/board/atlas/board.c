@@ -125,7 +125,7 @@ static int board_setup(void)
 
 	/* left side port */
 	cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec, /* i2c bus */ 1);
-	ps8751 = new_ps8751_canary(cros_ec_i2c_tunnel, /* ec pd# */ 0);
+	ps8751 = new_ps8751(cros_ec_i2c_tunnel, /* ec pd# */ 0);
 	register_vboot_aux_fw(&ps8751->fw_ops);
 
 	/* right side port */
