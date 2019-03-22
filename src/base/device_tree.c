@@ -76,21 +76,35 @@ int fdt_node_name(void *blob, uint32_t offset, const char **name)
 
 static void print_indent(int depth)
 {
-	while (depth--)
-		printf("  ");
+	printf("%*s", depth * 8, "");
 }
 
 static void print_property(FdtProperty *prop, int depth)
 {
+	int is_string = prop->size > 0 &&
+			((char *)prop->data)[prop->size - 1] == '\0';
+
+	if (is_string)
+		for (char *c = prop->data; *c != '\0'; c++)
+			if (!isprint(*c))
+				is_string = 0;
+
 	print_indent(depth);
-	printf("prop \"%s\" (%d bytes).\n", prop->name, prop->size);
-	print_indent(depth + 1);
-	for (int i = 0; i < MIN(25, prop->size); i++) {
-		printf("%02x ", ((uint8_t *)prop->data)[i]);
+	if (is_string) {
+		printf("%s = \"%s\";\n", prop->name, (char *)prop->data);
+	} else {
+		printf("%s = < ", prop->name);
+		for (int i = 0; i < MIN(128, prop->size); i += 4) {
+			uint32_t val = 0;
+			for (int j = 0; j < MIN(4, prop->size - i); j++)
+				val |= ((uint8_t *)prop->data)[i + j] <<
+					(24 - j * 8);
+			printf("%#.2x ", val);
+		}
+		if (prop->size > 128)
+			printf("...");
+		printf(">;\n");
 	}
-	if (prop->size > 25)
-		printf("...");
-	printf("\n");
 }
 
 static int print_flat_node(void *blob, uint32_t start_offset, int depth)
@@ -105,7 +119,7 @@ static int print_flat_node(void *blob, uint32_t start_offset, int depth)
 	offset += size;
 
 	print_indent(depth);
-	printf("name = %s\n", name);
+	printf("%s {\n", name);
 
 	FdtProperty prop;
 	while ((size = fdt_next_property(blob, offset, &prop))) {
@@ -114,8 +128,13 @@ static int print_flat_node(void *blob, uint32_t start_offset, int depth)
 		offset += size;
 	}
 
+	printf("\n");	// empty line between props and nodes
+
 	while ((size = print_flat_node(blob, offset, depth + 1)))
 		offset += size;
+
+	print_indent(depth);
+	printf("}\n");
 
 	return offset - start_offset + sizeof(uint32_t);
 }
@@ -479,15 +498,22 @@ void dt_flatten(DeviceTree *tree, void *start_dest)
 static void print_node(DeviceTreeNode *node, int depth)
 {
 	print_indent(depth);
-	printf("name = %s\n", node->name);
+	if (depth == 0)
+		printf("/");	// root node has no name, print a starting slash
+	printf("%s {\n", node->name);
 
 	DeviceTreeProperty *prop;
 	list_for_each(prop, node->properties, list_node)
 		print_property(&prop->prop, depth + 1);
 
+	printf("\n");	// empty line between props and nodes
+
 	DeviceTreeNode *child;
 	list_for_each(child, node->children, list_node)
 		print_node(child, depth + 1);
+
+	print_indent(depth);
+	printf("};\n");
 }
 
 void dt_print_node(DeviceTreeNode *node)
