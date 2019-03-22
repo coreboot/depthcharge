@@ -79,6 +79,9 @@
 
 #define ANX3429_REG_FW_VERSION		0x44
 
+#define RESET_CTRL_0			0x05
+#define OCM_RESET			0x10
+
 #define POWER_DOWN_CTRL			0x0d
 #define POWER_DOWN_CTRL_DEFAULT		0x00
 #define R_POWER_DOWN_CTRL_OCM		0x02
@@ -603,6 +606,7 @@ static int __must_check anx3429_disable_mcu(Anx3429 *me)
 	 * unlock OTP access
 	 */
 	static const I2cWriteVec wc[] = {
+		{ RESET_CTRL_0, OCM_RESET},
 		{ POWER_DOWN_CTRL, R_POWER_DOWN_CTRL_OCM },
 		{ R_OTP_ACC_PROTECT, R_OTP_ACCESS_PROTECT_UNLOCK },
 	};
