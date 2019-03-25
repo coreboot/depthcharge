@@ -15,6 +15,3 @@ config BOARD_ID_ADJUSTMENT
 	int "Amount to add to the board ID to get an equivalent Oak ID."
 	default 7
 
-config OAK_MIPI_DISPLAY
-	bool "MIPI display support"
-	default n

@@ -47,9 +47,6 @@
 
 static GpioOps *oak_get_panel_lcd_power_en(void)
 {
-	if (IS_ENABLED(CONFIG_OAK_MIPI_DISPLAY))
-		return new_mtk_gpio_output(PAD_DAIPCMOUT);
-
 	switch (lib_sysinfo.board_id + CONFIG_BOARD_ID_ADJUSTMENT) {
 	case 1:
 	case 2:
