@@ -23,6 +23,7 @@
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/wilco/ec.h"
+#include "drivers/ec/wilco/pd_ti.h"
 #include "drivers/flash/fast_spi.h"
 #include "drivers/flash/flash.h"
 #include "drivers/gpio/cannonlake.h"
@@ -102,6 +103,10 @@ static int board_setup(void)
 					 spi->region[FLASH_REGION_EC].size);
 	register_vboot_ec(&wilco_ec->vboot, PRIMARY_VBOOT_EC);
 	flag_replace(FLAG_LIDSW, wilco_ec_lid_switch_flag(wilco_ec));
+
+	/* TI TCPC */
+	WilcoPd *ti_tcpc = new_wilco_pd_ti(wilco_ec, "pdrw.bin", "pdrw.hash");
+	register_vboot_aux_fw(&ti_tcpc->ops);
 
 	/* H1 TPM on I2C bus 4 @ 400KHz, controller core is 133MHz */
 	DesignwareI2c *i2c4 = new_pci_designware_i2c(
