@@ -5,4 +5,4 @@
 # Depthcharge driver for the Wilco Embedded Controller.
 #
 
-depthcharge-y += commands.c ec.c flash.c mailbox.c mec.c
+depthcharge-y += commands.c ec.c flash.c mailbox.c mec.c pd.c pd_ti.c
