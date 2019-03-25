@@ -90,8 +90,8 @@ typedef int NVME_STATUS;
 #define NVME_ASQ_SIZE	2	/* Number of admin submission queue entries, only 2 */
 #define NVME_ACQ_SIZE	2	/* Number of admin completion queue entries, only 2 */
 
-#define NVME_CSQ_SIZE	15	/* Number of I/O submission queue entries per queue, min 2, max 64 */
-#define NVME_CCQ_SIZE	15	/* Number of I/O completion queue entries per queue, min 2, max 64 */
+#define NVME_CSQ_SIZE	11	/* Number of I/O submission queue entries per queue, min 2, max 64 */
+#define NVME_CCQ_SIZE	11	/* Number of I/O completion queue entries per queue, min 2, max 64 */
 
 #define NVME_NUM_QUEUES	2	/* Number of queues (Admin + IO) supported by the driver, only 2 supported */
 #define NVME_NUM_IO_QUEUES	(NVME_NUM_QUEUES - 1) /* Number of IO queues (not counting Admin Queue) */
