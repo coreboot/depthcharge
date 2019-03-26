@@ -625,6 +625,11 @@ DeviceTreeNode *dt_find_node_by_path(DeviceTree *tree, const char *path,
 	DeviceTreeNode *node = NULL;
 
 	if (path[0] == '/') { // regular path
+		if (path[1] == '\0') {	// special case: "/" is root node
+			dt_read_cell_props(tree->root, addrcp, sizecp);
+			return tree->root;
+		}
+
 		sub_path = duped_str = strdup(&path[1]);
 		if (!sub_path)
 			return NULL;
