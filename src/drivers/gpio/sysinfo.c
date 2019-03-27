@@ -62,7 +62,6 @@ void sysinfo_install_flags(new_gpio_from_coreboot_t ngfc)
 	 * will only hit a die_if() if that flag is actually flag_fetch()ed. */
 	flag_install(FLAG_WPSW, sysinfo_lookup_gpio("write protect", 0, ngfc));
 	flag_install(FLAG_RECSW, sysinfo_lookup_gpio("recovery", 0, ngfc));
-	flag_install(FLAG_DEVSW, sysinfo_lookup_gpio("developer", 0, ngfc));
 	flag_install(FLAG_OPROM, sysinfo_lookup_gpio("oprom", 0, ngfc));
 
 	flag_install(FLAG_LIDSW, sysinfo_lookup_gpio("lid", 1, ngfc));

@@ -118,7 +118,6 @@ static int board_setup(void)
 	ImgI2c *img_i2c;
 	struct board_conf *conf = pick_board_config();
 
-	flag_install(FLAG_DEVSW, new_gpio_low());
 	flag_install(FLAG_LIDSW, new_gpio_high());
 	flag_install(FLAG_PHYS_PRESENCE, new_gpio_high());
 	flag_install(FLAG_RECSW, new_gpio_high());

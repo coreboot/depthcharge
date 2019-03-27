@@ -24,7 +24,6 @@ typedef struct GpioOps GpioOps;
 typedef enum FlagIndex {
 	FLAG_WPSW = 0,
 	FLAG_RECSW,
-	FLAG_DEVSW,
 	FLAG_LIDSW,
 	FLAG_PWRSW,
 	FLAG_ECINRW,
