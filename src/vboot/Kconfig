@@ -61,12 +61,6 @@ config EC_EFS
 	  software sync need to also support it. This setting tells vboot to
 	  perform EFS software sync.
 
-config VIRTUAL_DEV_SWITCH
-	bool "Virtual developer switch support"
-	default n
-	help
-	  Whether this platform has a virtual developer switch.
-
 config PHYSICAL_REC_SWITCH
 	bool "Physical recovery switch is present"
 	default n
