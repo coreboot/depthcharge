@@ -65,7 +65,7 @@ config PHYSICAL_REC_SWITCH
 	bool "Physical recovery switch is present"
 	default n
 	help
-	  Informs vboot that a physical recovery switch is present
+	  Whether this platform has a physical recovery switch.
 
 config OPROM_MATTERS
 	bool "Video option ROM matters"

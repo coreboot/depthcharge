@@ -81,6 +81,9 @@ static int vboot_update_shared_data(void)
 	if (IS_ENABLED(CONFIG_EC_EFS))
 		vb_sd->flags |= VBSD_EC_EFS;
 
+	if (!IS_ENABLED(CONFIG_PHYSICAL_REC_SWITCH))
+		vb_sd->flags |= VBSD_BOOT_REC_SWITCH_VIRTUAL;
+
 	return 0;
 }
 
