@@ -38,6 +38,9 @@ static int cr50_switch_get(struct TpmOps *tpm, uint16_t cr50_subcommand,
 	struct tpm_get_btn_msg res;
 	size_t buffer_size = sizeof(res);
 	int xmit_res;
+	uint32_t header_code;
+
+	/* Default switch/button state is zero if the command fails */
 	*button_state = 0;
 
 	cr50_fill_vendor_cmd_header(&req, cr50_subcommand, 0);
@@ -45,11 +48,37 @@ static int cr50_switch_get(struct TpmOps *tpm, uint16_t cr50_subcommand,
 	xmit_res = tpm->xmit(tpm, (void *)&req,
 			     sizeof(struct tpm_vendor_header),
 			     (void *)&res, &buffer_size);
-	if (xmit_res || buffer_size < sizeof(struct tpm_get_btn_msg)) {
+
+	/*
+	 * The response size varies depending on whether the Cr50 supports
+	 * the vendor command, but should always have a valid header.
+	 */
+	if (xmit_res || buffer_size < sizeof(struct tpm_vendor_header)) {
 		printf("communications error on cmd %u: %d %ld\n",
 		       cr50_subcommand, xmit_res, buffer_size);
 		return -1;
-	} else if(unmarshal_u32(&res.h.code)) {
+	}
+
+	header_code = unmarshal_u32(&res.h.code);
+	if (header_code == VENDOR_RC_NO_SUCH_COMMAND) {
+		/*
+		 * During factory setup, the Cr50 runs very old firmware so
+		 * don't treat an unsupported command as an error.
+		 */
+		printf("Command %u not supported, switch state is off\n",
+			cr50_subcommand);
+		return 0;
+	}
+
+	/* Verify the response contains the payload byte */
+	if (buffer_size < sizeof(struct tpm_get_btn_msg)) {
+		printf("communications error on cmd %u: response size %ld\n",
+		       cr50_subcommand, buffer_size);
+		return -1;
+	}
+
+	if (header_code) {
+		/* Unexpected error */
 		printf("TPM error 0x%x\n", unmarshal_u32(&res.h.code));
 		return -1;
 	}
