@@ -80,8 +80,15 @@ static void fit_add_default_compats(void)
 	fit_add_compat(strdup(base));
 }
 
-
-
+static FitImageNode *find_image(const char *name)
+{
+	FitImageNode *image;
+	list_for_each(image, image_nodes, list_node) {
+		if (!strcmp(image->name, name))
+			return image;
+	}
+	return NULL;
+}
 
 static void image_node(DeviceTreeNode *node)
 {
@@ -118,11 +125,11 @@ static void config_node(DeviceTreeNode *node)
 	DeviceTreeProperty *prop;
 	list_for_each(prop, node->properties, list_node) {
 		if (!strcmp("kernel", prop->prop.name))
-			config->kernel = prop->prop.data;
+			config->kernel = find_image(prop->prop.data);
 		else if (!strcmp("fdt", prop->prop.name))
-			config->fdt = prop->prop.data;
+			config->fdt = find_image(prop->prop.data);
 		else if (!strcmp("ramdisk", prop->prop.name))
-			config->ramdisk = prop->prop.data;
+			config->ramdisk = find_image(prop->prop.data);
 	}
 
 	list_insert_after(&config->list_node, &config_nodes);
@@ -130,39 +137,20 @@ static void config_node(DeviceTreeNode *node)
 
 static void fit_unpack(DeviceTree *tree, const char **default_config)
 {
-	assert(tree && tree->root);
+	DeviceTreeNode *child;
+	DeviceTreeNode *images = dt_find_node_by_path(tree, "/images",
+						      NULL, NULL, 0);
+	if (images)
+		list_for_each(child, images->children, list_node)
+			image_node(child);
 
-	DeviceTreeNode *top;
-	list_for_each(top, tree->root->children, list_node) {
-		DeviceTreeNode *child;
-		if (!strcmp("images", top->name)) {
-
-			list_for_each(child, top->children, list_node)
-				image_node(child);
-
-		} else if (!strcmp("configurations", top->name)) {
-
-			DeviceTreeProperty *prop;
-			list_for_each(prop, top->properties, list_node) {
-				if (!strcmp("default", prop->prop.name) &&
-						default_config)
-					*default_config = prop->prop.data;
-			}
-
-			list_for_each(child, top->children, list_node)
-				config_node(child);
-		}
+	DeviceTreeNode *configs = dt_find_node_by_path(tree, "/configurations",
+						       NULL, NULL, 0);
+	if (configs) {
+		*default_config = dt_find_string_prop(configs, "default");
+		list_for_each(child, configs->children, list_node)
+			config_node(child);
 	}
-}
-
-static FitImageNode *find_image(const char *name)
-{
-	FitImageNode *image;
-	list_for_each(image, image_nodes, list_node) {
-		if (!strcmp(image->name, name))
-			return image;
-	}
-	return NULL;
 }
 
 static int fdt_find_compat(void *blob, uint32_t start_offset, FdtProperty *prop)
@@ -201,6 +189,34 @@ static int fit_check_compat(FdtProperty *compat_prop, const char *compat_name)
 	return -1;
 }
 
+static int fit_rank_compat(FitConfigNode *config)
+{
+	if (config->fdt->compression != CompressionNone) {
+		printf("FDT compression not yet supported, skipping %s.\n",
+		       config->name);
+		return -1;
+	}
+
+	void *fdt_blob = config->fdt->data;
+	FdtHeader *fdt_header = (FdtHeader *)fdt_blob;
+	uint32_t fdt_offset = betohl(fdt_header->structure_offset);
+	config->compat_pos = -1;
+	config->compat_rank = -1;
+	if (!fdt_find_compat(fdt_blob, fdt_offset,
+			    &config->compat)) {
+		for (int i = 0; i < num_fit_kernel_compat; i++) {
+			int pos = fit_check_compat(&config->compat,
+						   fit_kernel_compat[i]);
+			if (pos >= 0) {
+				config->compat_pos = pos;
+				config->compat_rank = i;
+				break;
+			}
+		}
+	}
+
+	return 0;
+}
 static void update_chosen(DeviceTree *tree, char *cmd_line)
 {
 	int ret;
@@ -364,7 +380,6 @@ FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt)
 {
 	FitImageNode *image;
 	FitConfigNode *config;
-	int i;
 
 	printf("Loading FIT.\n");
 
@@ -386,54 +401,24 @@ FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt)
 
 	fit_add_default_compats();
 	printf("Compat preference:");
-	for (i = 0; i < num_fit_kernel_compat; i++)
+	for (int i = 0; i < num_fit_kernel_compat; i++)
 		printf(" %s", fit_kernel_compat[i]);
 	printf("\n");
 	// Process and list the configs.
 	list_for_each(config, config_nodes, list_node) {
-		if (config->kernel)
-			config->kernel_node = find_image(config->kernel);
-		if (config->fdt)
-			config->fdt_node = find_image(config->fdt);
-		if (config->ramdisk)
-			config->ramdisk_node = find_image(config->ramdisk);
-
-		if (!config->kernel_node ||
-				(config->fdt && !config->fdt_node)) {
-			printf("Missing image, discarding config %s.\n",
-				config->name);
-			list_remove(&config->list_node);
+		if (!config->kernel) {
+			printf("ERROR: config %s has no kernel, skipping.\n",
+			       config->name);
+			continue;
+		}
+		if (!config->fdt) {
+			printf("ERROR: config %s has no FDT, skipping.\n",
+			       config->name);
 			continue;
 		}
 
-		if (config->fdt_node) {
-			if (config->fdt_node->compression != CompressionNone) {
-				printf("FDT compression not yet supported, "
-				       "skipping config %s.\n", config->name);
-				list_remove(&config->list_node);
-				continue;
-			}
-
-			void *fdt_blob = config->fdt_node->data;
-			FdtHeader *fdt_header = (FdtHeader *)fdt_blob;
-			uint32_t fdt_offset =
-				betohl(fdt_header->structure_offset);
-			config->compat_pos = -1;
-			config->compat_rank = -1;
-			if (!fdt_find_compat(fdt_blob, fdt_offset,
-					    &config->compat)) {
-				for (i = 0; i < num_fit_kernel_compat; i++) {
-					int pos = fit_check_compat(
-							&config->compat,
-							fit_kernel_compat[i]);
-					if (pos >= 0) {
-						config->compat_pos = pos;
-						config->compat_rank = i;
-						break;
-					}
-				}
-			}
-		}
+		if (fit_rank_compat(config) != 0)
+			continue;
 
 		printf("Config %s", config->name);
 		if (default_config_name &&
@@ -441,11 +426,10 @@ FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt)
 			printf(" (default)");
 			default_config = config;
 		}
-		printf(", kernel %s", config->kernel);
-		if (config->fdt)
-			printf(", fdt %s", config->fdt);
+		printf(", kernel %s", config->kernel->name);
+		printf(", fdt %s", config->fdt->name);
 		if (config->ramdisk)
-			printf(", ramdisk %s", config->ramdisk);
+			printf(", ramdisk %s", config->ramdisk->name);
 		if (config->compat.name) {
 			printf(", compat");
 			int bytes = config->compat.size;
@@ -481,27 +465,24 @@ FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt)
 		return NULL;
 	}
 
-	if (to_boot->fdt_node) {
-		*dt = fdt_unflatten(to_boot->fdt_node->data);
-		if (!*dt) {
-			printf("Failed to unflatten the kernel's fdt.\n");
-			return NULL;
-		}
-
-		update_chosen(*dt, cmd_line);
-
-		update_memory(*dt);
-
-		if (to_boot->ramdisk_node) {
-			if (to_boot->ramdisk_node->compression
-					!= CompressionNone) {
-				printf("Ramdisk compression not supported.\n");
-				return NULL;
-			}
-			fit_add_ramdisk(*dt, to_boot->ramdisk_node->data,
-					to_boot->ramdisk_node->size);
-		}
+	*dt = fdt_unflatten(to_boot->fdt->data);
+	if (!*dt) {
+		printf("Failed to unflatten the kernel's fdt.\n");
+		return NULL;
 	}
 
-	return to_boot->kernel_node;
+	update_chosen(*dt, cmd_line);
+
+	update_memory(*dt);
+
+	if (to_boot->ramdisk) {
+		if (to_boot->ramdisk->compression != CompressionNone) {
+			printf("Ramdisk compression not supported.\n");
+			return NULL;
+		}
+		fit_add_ramdisk(*dt, to_boot->ramdisk->data,
+				to_boot->ramdisk->size);
+	}
+
+	return to_boot->kernel;
 }

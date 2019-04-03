@@ -45,12 +45,9 @@ typedef struct FitImageNode
 typedef struct FitConfigNode
 {
 	const char *name;
-	const char *kernel;
-	FitImageNode *kernel_node;
-	const char *fdt;
-	FitImageNode *fdt_node;
-	const char *ramdisk;
-	FitImageNode *ramdisk_node;
+	FitImageNode *kernel;
+	FitImageNode *fdt;
+	FitImageNode *ramdisk;
 	FdtProperty compat;
 	int compat_rank;
 	int compat_pos;
