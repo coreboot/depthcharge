@@ -155,12 +155,19 @@ static void *fast_spi_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
 	assert(offset + size <= flash->rom_size);
 
 	/*
-	 * If the read is entirely within the memory map just return a pointer
-	 * within the memory mapped region
+	 * If the read is entirely within the memory map just copy the data
+	 *
+	 * We can't just return the pointer because the flash_rewrite operation
+	 * will modify this data
 	 */
-	if (offset >= flash->mmio_offset && offset + size < flash->mmio_end)
-		return (void *)(uintptr_t)(flash->mmio_address -
-					   flash->mmio_offset + offset);
+	if (offset >= flash->mmio_offset && offset + size < flash->mmio_end) {
+		uintptr_t mmio_address =
+			(uintptr_t)(flash->mmio_address -
+				    flash->mmio_offset + offset);
+		memcpy(data, (void *)mmio_address, size);
+
+		return data;
+	}
 
 	while (size) {
 		size_t xfer_len = get_xfer_len(offset, size);
