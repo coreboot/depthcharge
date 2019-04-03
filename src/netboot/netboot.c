@@ -198,6 +198,10 @@ void netboot(uip_ipaddr_t *tftp_ip, char *bootfile, char *argsfile, char *args)
 	if (crossystem_setup(FIRMWARE_TYPE_NETBOOT))
 		return;
 
+	// Video console scrolling is SLOOOW so don't dump all the FIT load spam
+	if (!CONFIG_HEADLESS)
+		console_remove_output_driver(video_console_putchar);
+
 	boot(&bi);
 }
 
