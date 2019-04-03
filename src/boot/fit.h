@@ -72,4 +72,6 @@ void fit_add_compat(const char *compat);
 
 void fit_add_ramdisk(DeviceTree *tree, void *ramdisk_addr, size_t ramdisk_size);
 
+size_t fit_decompress(FitImageNode *node, void *buffer, size_t bufsize);
+
 #endif /* __BOOT_FIT_H__ */

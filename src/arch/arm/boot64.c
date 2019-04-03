@@ -17,8 +17,6 @@
 
 #include <coreboot_tables.h>
 #include <libpayload.h>
-#include <lzma.h>
-#include <lz4.h>
 #include <stdlib.h>
 
 #include "arch/arm/boot.h"
@@ -91,22 +89,7 @@ int boot_arm_linux(void *fdt, FitImageNode *kernel)
 
 	// Partially decompress to get text_offset. Can't check for errors.
 	scratch.canary = SCRATCH_CANARY_VALUE;
-	switch (kernel->compression) {
-	case CompressionNone:
-		memcpy(scratch.raw, kernel->data, sizeof(scratch.raw));
-		break;
-	case CompressionLzma:
-		ulzman(kernel->data, kernel->size,
-		       scratch.raw, sizeof(scratch.raw));
-		break;
-	case CompressionLz4:
-		ulz4fn(kernel->data, kernel->size,
-		       scratch.raw, sizeof(scratch.raw));
-		break;
-	default:
-		printf("ERROR: Unsupported compression algorithm!\n");
-		return 1;
-	}
+	fit_decompress(kernel, scratch.raw, sizeof(scratch.raw));
 
 	// Should never happen, but if it does we'll want to know.
 	if (scratch.canary != SCRATCH_CANARY_VALUE) {
@@ -132,35 +115,9 @@ int boot_arm_linux(void *fdt, FitImageNode *kernel)
 
 	timestamp_add_now(TS_KERNEL_DECOMPRESSION);
 
-	size_t true_size = kernel->size;
-	switch (kernel->compression) {
-	case CompressionNone:
-		if (kernel->size > image_size) {
-			printf("ERROR: Kernel image_size was invalid!\n");
-			return 1;
-		}
-		printf("Relocating kernel to %p\n", reloc_addr);
-		memmove(reloc_addr, kernel->data, kernel->size);
-		break;
-	case CompressionLzma:
-		printf("Decompressing LZMA kernel to %p\n", reloc_addr);
-		true_size = ulzman(kernel->data, kernel->size,
-				   reloc_addr, image_size);
-		if (!true_size) {
-			printf("ERROR: LZMA decompression failed!\n");
-			return 1;
-		}
-		break;
-	case CompressionLz4:
-		printf("Decompressing LZ4 kernel to %p\n", reloc_addr);
-		true_size = ulz4fn(kernel->data, kernel->size,
-				   reloc_addr, image_size);
-		if (!true_size) {
-			printf("ERROR: LZ4 decompression failed!\n");
-			return 1;
-		}
-		break;
-	default: // It's 2015 and GCC's reachability analyzer still sucks...
+	size_t true_size = fit_decompress(kernel, reloc_addr, image_size);
+	if (!true_size) {
+		printf("ERROR: Kernel decompression failed!\n");
 		return 1;
 	}
 

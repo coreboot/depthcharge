@@ -18,6 +18,8 @@
 #include <assert.h>
 #include <endian.h>
 #include <libpayload.h>
+#include <lzma.h>
+#include <lz4.h>
 #include <stdint.h>
 #include <tlcl.h>
 
@@ -217,6 +219,27 @@ static int fit_rank_compat(FitConfigNode *config)
 
 	return 0;
 }
+
+size_t fit_decompress(FitImageNode *node, void *buffer, size_t bufsize)
+{
+	switch (node->compression) {
+	case CompressionNone:
+		printf("Relocating %s to %p\n", node->name, buffer);
+		memmove(buffer, node->data, MIN(node->size, bufsize));
+		return node->size <= bufsize ? node->size : 0;
+	case CompressionLzma:
+		printf("LZMA decompressing %s to %p\n", node->name, buffer);
+		return ulzman(node->data, node->size, buffer, bufsize);
+	case CompressionLz4:
+		printf("LZ4 decompressing %s to %p\n", node->name, buffer);
+		return ulz4fn(node->data, node->size, buffer, bufsize);
+	default:
+		printf("ERROR: Illegal compression algorithm (%d) for %s!\n",
+		       node->compression, node->name);
+		return 0;
+	}
+}
+
 static void update_chosen(DeviceTree *tree, char *cmd_line)
 {
 	int ret;
