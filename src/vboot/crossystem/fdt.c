@@ -144,6 +144,10 @@ static DeviceTreeFixup crossystem_fixup = {
 
 int crossystem_setup(int firmware_type)
 {
+	// Never run crossystem_setup() twice or you'll get a circle in the
+	// fixup list that leads to an infinite loop when working through them!
+	assert(crossystem_fixup.list_node.next == NULL);
+
 	/* TODO(hungte): To do this more gracefully, we should consider adding a
 	 * firmware type field to vdat or a new flag to indicate legacy boot,
 	 * depending on if we find that really being very useful.

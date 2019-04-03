@@ -40,8 +40,6 @@ void dc_dev_netboot(void)
 	char *bootfile, *argsfile;
 
 	video_console_init();
-	if (crossystem_setup(FIRMWARE_TYPE_NETBOOT))
-		printf("crossystem_setup() failed on netboot, ignoring...\n");
 
 	if (netboot_params_read(&tftp_ip, NULL, 0,
 				&bootfile, &argsfile))
