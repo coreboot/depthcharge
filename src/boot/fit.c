@@ -26,6 +26,7 @@
 #include "base/ranges.h"
 #include "boot/fit.h"
 #include "config.h"
+#include "image/symbols.h"
 
 
 
@@ -132,6 +133,8 @@ static void config_node(DeviceTreeNode *node)
 			config->fdt = find_image(prop->prop.data);
 		else if (!strcmp("ramdisk", prop->prop.name))
 			config->ramdisk = find_image(prop->prop.data);
+		else if (!strcmp("compatible", prop->prop.name))
+			config->compat = prop->prop;
 	}
 
 	list_insert_after(&config->list_node, &config_nodes);
@@ -193,27 +196,38 @@ static int fit_check_compat(FdtProperty *compat_prop, const char *compat_name)
 
 static int fit_rank_compat(FitConfigNode *config)
 {
-	if (config->fdt->compression != CompressionNone) {
-		printf("FDT compression not yet supported, skipping %s.\n",
-		       config->name);
-		return -1;
+	// If there was no "compatible" property in config node, this is a
+	// legacy FIT image. Must extract compat prop from FDT itself.
+	if (!config->compat.name) {
+		void *fdt_blob = config->fdt->data;
+		FdtHeader *fdt_header = (FdtHeader *)fdt_blob;
+		uint32_t fdt_offset =
+			betohl(fdt_header->structure_offset);
+
+		if (config->fdt->compression != CompressionNone) {
+			printf("ERROR: config %s has a compressed FDT without "
+			       "external compatible property, skipping.\n",
+			       config->name);
+			return -1;
+		}
+
+		if (fdt_find_compat(fdt_blob, fdt_offset, &config->compat)) {
+			printf("ERROR: Can't find compat string in FDT %s "
+			       "for config %s, skipping.\n",
+			       config->fdt->name, config->name);
+			return -1;
+		}
 	}
 
-	void *fdt_blob = config->fdt->data;
-	FdtHeader *fdt_header = (FdtHeader *)fdt_blob;
-	uint32_t fdt_offset = betohl(fdt_header->structure_offset);
 	config->compat_pos = -1;
 	config->compat_rank = -1;
-	if (!fdt_find_compat(fdt_blob, fdt_offset,
-			    &config->compat)) {
-		for (int i = 0; i < num_fit_kernel_compat; i++) {
-			int pos = fit_check_compat(&config->compat,
-						   fit_kernel_compat[i]);
-			if (pos >= 0) {
-				config->compat_pos = pos;
-				config->compat_rank = i;
-				break;
-			}
+	for (int i = 0; i < num_fit_kernel_compat; i++) {
+		int pos = fit_check_compat(&config->compat,
+					   fit_kernel_compat[i]);
+		if (pos >= 0) {
+			config->compat_pos = pos;
+			config->compat_rank = i;
+			break;
 		}
 	}
 
@@ -238,6 +252,27 @@ size_t fit_decompress(FitImageNode *node, void *buffer, size_t bufsize)
 		       node->compression, node->name);
 		return 0;
 	}
+}
+
+static void *get_fdt_data(FitImageNode *fdt)
+{
+	// If the FDT isn't compressed, no need to alloc anything.
+	if (fdt->compression == CompressionNone)
+		return fdt->data;
+
+	// Reuse the output FDT buffer as a convenient, guaranteed FDT-sized
+	// scratchpad that is still unused (for it's real purpose) right now.
+	void *buffer = (void *)&_fit_fdt_start;
+	size_t size = &_fit_fdt_end - &_fit_fdt_start;
+
+	size = fit_decompress(fdt, buffer, size);
+	if (!size)
+		return NULL;
+
+	void *ret = malloc(size);
+	if (ret)
+		memcpy(ret, buffer, size);
+	return ret;
 }
 
 static void update_chosen(DeviceTree *tree, char *cmd_line)
@@ -488,7 +523,14 @@ FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt)
 		return NULL;
 	}
 
-	*dt = fdt_unflatten(to_boot->fdt->data);
+	void *fdt_data = get_fdt_data(to_boot->fdt);
+	if (!fdt_data) {
+		printf("ERROR: Can't decompress FDT %s!\n",
+		       to_boot->fdt->name);
+		return NULL;
+	}
+
+	*dt = fdt_unflatten(fdt_data);
 	if (!*dt) {
 		printf("Failed to unflatten the kernel's fdt.\n");
 		return NULL;
