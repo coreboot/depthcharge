@@ -187,7 +187,9 @@ enum {
 
 Qcs405GpioCfg *new_qcs405_gpio_input(qcs405GpioSpec gpio);
 Qcs405GpioCfg *new_qcs405_gpio_output(qcs405GpioSpec gpio);
+Qcs405GpioCfg *new_qcs405_gpio_latched(qcs405GpioSpec gpio);
 GpioOps *new_qcs405_gpio_input_from_coreboot(uint32_t gpio);
 GpioOps *new_qcs405_gpio_output_from_coreboot(uint32_t gpio);
+GpioOps *new_qcs405_gpio_latched_from_coreboot(uint32_t gpio);
 
 #endif // _SOC_QUALCOMM_QCS405_GPIO_H_

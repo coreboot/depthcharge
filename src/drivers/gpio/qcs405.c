@@ -19,6 +19,20 @@
 #include "drivers/gpio/gpio.h"
 #include "qcs405.h"
 
+static int qcs405_gpio_irq_status(GpioOps *me)
+{
+	assert(me);
+	uint32_t int_status;
+	Qcs405GpioCfg *gpio_cfg = container_of(me, Qcs405GpioCfg, ops);
+	TlmmGpio *regs = (void *)(uintptr_t)gpio_cfg->gpio.addr;
+
+	int_status = !!read32(&regs->intr_status);
+	if (int_status)
+		write32(&regs->intr_status, 0);
+
+	return int_status;
+}
+
 static int qcs405_gpio_get(struct GpioOps *me)
 {
 	assert(me);
@@ -66,5 +80,15 @@ Qcs405GpioCfg *new_qcs405_gpio_output(qcs405GpioSpec gpio)
 	gpio_cfg = xzalloc(sizeof(Qcs405GpioCfg));
 	gpio_cfg->gpio = gpio;
 	gpio_cfg->ops.set = &qcs405_gpio_set;
+	return gpio_cfg;
+}
+
+Qcs405GpioCfg *new_qcs405_gpio_latched(qcs405GpioSpec gpio)
+{
+	Qcs405GpioCfg *gpio_cfg;
+
+	gpio_cfg = xzalloc(sizeof(Qcs405GpioCfg));
+	gpio_cfg->gpio = gpio;
+	gpio_cfg->ops.get = &qcs405_gpio_irq_status;
 	return gpio_cfg;
 }
