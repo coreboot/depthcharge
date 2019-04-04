@@ -45,6 +45,7 @@
 
 static const VpdDeviceTreeMap vpd_dt_map[] = {
 	{ "cherokee_mac", "/soc@0/wifi@a000000/local-mac-address" },
+	{ "cherokee_mac", "/soc@0/wifi@0A000000/local-mac-address" },
 	{ "eth_wan_mac", "/soc@0/ethernet@7a80000/mdio/switch0@16/ports/port@2/local-mac-address" },
 	{ "eth_lan_mac", "/soc@0/ethernet@7a80000/mdio/switch0@16/ports/port@3/local-mac-address" },
 	{ "bluetooth_mac", "/soc@0/serial@78b2000/wcn3990-bt/local-bd-address" },
@@ -62,11 +63,13 @@ static const DtPathMap calibration_maps[] = {
 static const DtPathMap cc_maps[] = {
 	{1, "/soc@0/pci@10000000/pcie@0/wifi@0,0", "qcom,ath10k-country-code"},
 	{1, "/soc@0/wifi@a000000", "qcom,ath10k-country-code"},
+	{1, "/soc@0/wifi@0A000000", "qcom,ath10k-country-code"},
 	{}
 };
 
 static const DtPathMap xo_cal_map[] = {
 	{1, "/soc@0/wifi@a000000", "xo-cal-data" },
+	{1, "/soc@0/wifi@0A000000", "xo-cal-data" },
 	{}
 };
 
