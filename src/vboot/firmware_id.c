@@ -69,7 +69,7 @@ const char *get_fw_id(int index)
 	struct fwid *entry = get_fw_entry(index);
 
 	if(entry == NULL)
-		return NULL;
+		return "NOT FOUND";
 
 	return entry->fw_id;
 }

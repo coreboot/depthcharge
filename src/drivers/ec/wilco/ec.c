@@ -254,11 +254,9 @@ WilcoEc *new_wilco_ec(uint16_t ec_host_base, uint16_t mec_emi_base,
 {
 	WilcoEc *ec;
 
-	if (ec_host_base == 0 || mec_emi_base == 0 ||
-	    flash_offset == 0 || flash_size == 0) {
-		printf("%s: Invalid parameter\n", __func__);
-		return NULL;
-	}
+	/* Make sure parameter is valid */
+	assert (ec_host_base && mec_emi_base &&
+		flash_offset && flash_size);
 
 	ec = xzalloc(sizeof(*ec));
 	ec->io_base_packet = mec_emi_base;

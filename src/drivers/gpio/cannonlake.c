@@ -118,13 +118,17 @@ static void gpio_handle_pad_mode(const struct pad_config *cfg)
 	bit = 0;
 	hostsw_own_reg = gpio_hostsw_reg(cfg->pad, &bit);
 
+	if (!hostsw_own_reg)
+		return;
+
 	reg = read32(hostsw_own_reg);
 	reg &= ~(1U << bit);
 
-	if ((cfg->attrs & PAD_FIELD(HOSTSW, GPIO)) == PAD_FIELD(HOSTSW, GPIO))
-		reg |= (HOSTSW_GPIO << bit);
+	if ((cfg->attrs & PAD_FIELD(HOSTSW, GPIO)) ==
+		PAD_FIELD(HOSTSW, GPIO))
+			reg |= (HOSTSW_GPIO << bit);
 	else
-		reg |= (HOSTSW_ACPI << bit);
+			reg |= (HOSTSW_ACPI << bit);
 
 	write32(hostsw_own_reg, reg);
 }
