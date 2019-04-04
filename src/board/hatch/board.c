@@ -20,8 +20,10 @@
 #include "base/init_funcs.h"
 #include "base/list.h"
 #include "config.h"
+#include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/ec/ps8751/ps8751.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/gpio.h"
@@ -70,6 +72,18 @@ static void hatch_setup_tpm(void)
 	}
 }
 
+#define EC_USB_PD_PORT_PS8751	1
+#define EC_I2C_PORT_PS8751	2
+
+static void update_ps8751_firmware(CrosEc * const cros_ec)
+{
+	CrosECTunnelI2c *cros_ec_i2c_tunnel =
+		new_cros_ec_tunnel_i2c(cros_ec, EC_I2C_PORT_PS8751);
+	Ps8751 *ps8751 = new_ps8751(cros_ec_i2c_tunnel, EC_USB_PD_PORT_PS8751);
+
+	register_vboot_aux_fw(&ps8751->fw_ops);
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
@@ -82,6 +96,9 @@ static int board_setup(void)
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, 0, NULL);
 	register_vboot_ec(&cros_ec->vboot, 0);
+
+	/* Peripherals connected to EC */
+	update_ps8751_firmware(cros_ec);
 
 	/* 32MB SPI Flash */
 	flash_set_ops(&new_mem_mapped_flash(0xfe000000, 0x2000000)->ops);
