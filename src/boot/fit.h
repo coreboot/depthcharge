@@ -47,6 +47,7 @@ typedef struct FitConfigNode
 	const char *name;
 	FitImageNode *kernel;
 	FitImageNode *fdt;
+	ListNode overlays;
 	FitImageNode *ramdisk;
 	FdtProperty compat;
 	int compat_rank;
@@ -54,6 +55,18 @@ typedef struct FitConfigNode
 
 	ListNode list_node;
 } FitConfigNode;
+
+/*
+ * The same overlay may be used in more than one config node, so the
+ * list nodes to chain them MUST be in separate structs that get
+ * allocated per config. They can not be embedded in the overlay's
+ * FitImageNode struct like it's common in depthcharge code.
+ */
+typedef struct FitOverlayChain
+{
+	FitImageNode *overlay;
+	ListNode list_node;
+} FitOverlayChain;
 
 /*
  * Unpack a FIT image into memory, choosing the right configuration through the

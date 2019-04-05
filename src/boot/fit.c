@@ -90,7 +90,33 @@ static FitImageNode *find_image(const char *name)
 		if (!strcmp(image->name, name))
 			return image;
 	}
+	printf("ERROR: Can't find image node %s!\n", name);
 	return NULL;
+}
+
+static FitImageNode *find_image_with_overlays(const char *name, int bytes,
+					      ListNode *prev)
+{
+	FitImageNode *base = find_image(name);
+	if (!base)
+		return NULL;
+
+	int len = strnlen(name, bytes) + 1;
+	bytes -= len;
+	name += len;
+	while (bytes > 0) {
+		FitOverlayChain *next = xzalloc(sizeof(*next));
+		next->overlay = find_image(name);
+		if (!next->overlay)
+			return NULL;
+		list_insert_after(&next->list_node, prev);
+		prev = &next->list_node;
+		len = strnlen(name, bytes) + 1;
+		bytes -= len;
+		name += len;
+	}
+
+	return base;
 }
 
 static void image_node(DeviceTreeNode *node)
@@ -130,7 +156,8 @@ static void config_node(DeviceTreeNode *node)
 		if (!strcmp("kernel", prop->prop.name))
 			config->kernel = find_image(prop->prop.data);
 		else if (!strcmp("fdt", prop->prop.name))
-			config->fdt = find_image(prop->prop.data);
+			config->fdt = find_image_with_overlays(prop->prop.data,
+				prop->prop.size, &config->overlays);
 		else if (!strcmp("ramdisk", prop->prop.name))
 			config->ramdisk = find_image(prop->prop.data);
 		else if (!strcmp("compatible", prop->prop.name))
@@ -207,6 +234,13 @@ static int fit_rank_compat(FitConfigNode *config)
 		if (config->fdt->compression != CompressionNone) {
 			printf("ERROR: config %s has a compressed FDT without "
 			       "external compatible property, skipping.\n",
+			       config->name);
+			return -1;
+		}
+
+		// FDT overlays are not supported in legacy FIT images.
+		if (config->overlays.next) {
+			printf("ERROR: config %s has overlay but no compat!\n",
 			       config->name);
 			return -1;
 		}
@@ -438,6 +472,7 @@ FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt)
 {
 	FitImageNode *image;
 	FitConfigNode *config;
+	FitOverlayChain *overlay_chain;
 
 	printf("Loading FIT.\n");
 
@@ -486,6 +521,8 @@ FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt)
 		}
 		printf(", kernel %s", config->kernel->name);
 		printf(", fdt %s", config->fdt->name);
+		list_for_each(overlay_chain, config->overlays, list_node)
+			printf(" %s", overlay_chain->overlay->name);
 		if (config->ramdisk)
 			printf(", ramdisk %s", config->ramdisk->name);
 		if (config->compat.name) {
@@ -534,6 +571,20 @@ FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt)
 	if (!*dt) {
 		printf("Failed to unflatten the kernel's fdt.\n");
 		return NULL;
+	}
+
+	list_for_each(overlay_chain, to_boot->overlays, list_node) {
+		fdt_data = get_fdt_data(overlay_chain->overlay);
+		if (!fdt_data) {
+			printf("ERROR: Can't decompress overlay %s!\n",
+			       overlay_chain->overlay->name);
+			return NULL;
+		}
+		if (dt_apply_overlay(*dt, fdt_data) != 0) {
+			printf("ERROR: Failed to apply overlay %s!\n",
+			       overlay_chain->overlay->name);
+			return NULL;
+		}
 	}
 
 	update_chosen(*dt, cmd_line);
