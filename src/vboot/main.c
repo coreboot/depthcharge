@@ -72,6 +72,9 @@ static int vboot_update_shared_data(void)
 	if (!flag_fetch(FLAG_LIDSW))
 		vb_sd->flags |= VBSD_NOFAIL_BOOT;
 
+	if (flag_fetch(FLAG_WPSW))
+		vb_sd->flags |= VBSD_BOOT_FIRMWARE_WP_ENABLED;
+
 	if (CONFIG(EC_SOFTWARE_SYNC))
 		vb_sd->flags |= VBSD_EC_SOFTWARE_SYNC;
 
