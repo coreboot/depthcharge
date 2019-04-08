@@ -12,6 +12,7 @@
  */
 
 #include <assert.h>
+#include <libpayload.h>
 #include <pci/pci.h>
 #include <stdbool.h>
 
@@ -206,8 +207,6 @@ static void gspi_cs_change(const IntelGspi *dev, enum cs_assert cs_assert)
 
 	gspi_write_mmio_reg(dev, SPI_CS_CONTROL, cs_ctrl);
 }
-
-#define DIV_ROUND_UP(x, y)  (((x) + (y) - 1) / (y))
 
 static uint32_t gspi_get_clk_div(const IntelGspiSetupParams *p)
 {
