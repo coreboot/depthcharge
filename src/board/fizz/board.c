@@ -63,7 +63,7 @@ static int cr50_irq_status(void)
 
 static TpmOps *fizz_setup_tpm(void)
 {
-	if (IS_ENABLED(CONFIG_DRIVER_TPM_SPI)) {
+	if (CONFIG(DRIVER_TPM_SPI)) {
 		/* SPI TPM */
 		const IntelGspiSetupParams gspi0_params = {
 			.dev = PCI_DEV(0, 0x1e, 2),
@@ -78,7 +78,7 @@ static TpmOps *fizz_setup_tpm(void)
 		tpm_set_ops(&tpm->ops);
 		return &tpm->ops;
 
-	} else if (IS_ENABLED(CONFIG_DRIVER_TPM_CR50_I2C)) {
+	} else if (CONFIG(DRIVER_TPM_CR50_I2C)) {
 		DesignwareI2c *i2c1 = new_pci_designware_i2c(
 			PCI_DEV(0, 0x15, 1), 400000, SKYLAKE_DW_I2C_MHZ);
 		Cr50I2c *tpm = new_cr50_i2c(&i2c1->ops, 0x50,
@@ -90,7 +90,7 @@ static TpmOps *fizz_setup_tpm(void)
 
 static void board_audio_init(SoundRoute *sound)
 {
-	if (IS_ENABLED(CONFIG_DRIVER_SOUND_MAX98357A)) {
+	if (CONFIG(DRIVER_SOUND_MAX98357A)) {
 		/* Speaker amp is Maxim 98357a codec*/
 		GpioOps *sdmode_gpio =
 				&new_skylake_gpio_output(GPP_A23, 0)->ops;
@@ -129,7 +129,7 @@ static int board_setup(void)
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 0x17, 0));
 	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
 
-	if (IS_ENABLED(CONFIG_DRIVER_STORAGE_MMC)) {
+	if (CONFIG(DRIVER_STORAGE_MMC)) {
 		/* SD Card (if present) */
 		pcidev_t sd_pci_dev = PCI_DEV(0, 0x1e, 6);
 		uint16_t sd_vendor_id =
@@ -142,13 +142,13 @@ static int board_setup(void)
 		}
 	}
 
-	if (IS_ENABLED(CONFIG_DRIVER_SOUND_GPIO_EDGE_BUZZER)) {
+	if (CONFIG(DRIVER_SOUND_GPIO_EDGE_BUZZER)) {
 		GpioCfg *sound_gpio = new_skylake_gpio_output(GPP_B14, 0);
 		GpioEdgeBuzzer *buzzer = new_gpio_edge_buzzer(&sound_gpio->ops);
 		sound_set_ops(&buzzer->ops);
 	}
 
-	if (IS_ENABLED(CONFIG_DRIVER_SOUND_MAX98357A)) {
+	if (CONFIG(DRIVER_SOUND_MAX98357A)) {
 		/* Activate buffer to disconnect I2S from PCH and allow GPIO */
 		GpioCfg *i2s2_buffer_enable =
 				new_skylake_gpio_output(GPP_D22, 1);

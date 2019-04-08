@@ -72,16 +72,16 @@ static int vboot_update_shared_data(void)
 	if (!flag_fetch(FLAG_LIDSW))
 		vb_sd->flags |= VBSD_NOFAIL_BOOT;
 
-	if (IS_ENABLED(CONFIG_EC_SOFTWARE_SYNC))
+	if (CONFIG(EC_SOFTWARE_SYNC))
 		vb_sd->flags |= VBSD_EC_SOFTWARE_SYNC;
 
-	if (IS_ENABLED(CONFIG_EC_SLOW_UPDATE))
+	if (CONFIG(EC_SLOW_UPDATE))
 		vb_sd->flags |= VBSD_EC_SLOW_UPDATE;
 
-	if (IS_ENABLED(CONFIG_EC_EFS))
+	if (CONFIG(EC_EFS))
 		vb_sd->flags |= VBSD_EC_EFS;
 
-	if (!IS_ENABLED(CONFIG_PHYSICAL_REC_SWITCH))
+	if (!CONFIG(PHYSICAL_REC_SWITCH))
 		vb_sd->flags |= VBSD_BOOT_REC_SWITCH_VIRTUAL;
 
 	return 0;

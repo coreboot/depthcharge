@@ -125,9 +125,9 @@ VbError_t VbExDisplayDebugInfo(const char *info_str, int full_info)
 	} else {
 		char *tpm_str = NULL;
 
-		if (IS_ENABLED(CONFIG_MOCK_TPM))
+		if (CONFIG(MOCK_TPM))
 			tpm_str = "MOCK TPM";
-		else if (IS_ENABLED(CONFIG_DRIVER_TPM))
+		else if (CONFIG(DRIVER_TPM))
 			tpm_str = tpm_report_state();
 
 		if (!tpm_str)

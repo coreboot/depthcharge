@@ -23,7 +23,7 @@
 #include "base/cleanup_funcs.h"
 #include <config.h>
 
-#if IS_ENABLED(CONFIG_DRIVER_SOC_GLK)
+#if CONFIG(DRIVER_SOC_GLK)
 #include "drivers/gpio/glk_defs.h"
 #else
 #include "drivers/gpio/apl_defs.h"

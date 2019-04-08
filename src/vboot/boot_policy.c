@@ -31,7 +31,7 @@
  * with current boards.
  */
 static const struct boot_policy boot_policy[] = {
-#if IS_ENABLED(CONFIG_KERNEL_MULTIBOOT)
+#if CONFIG(KERNEL_MULTIBOOT)
 	{
 		.img_type = KERNEL_IMAGE_MULTIBOOT,
 		.cmd_line_loc = CMD_LINE_SIGNER,
@@ -75,7 +75,7 @@ static int fill_info_cros(struct boot_info *bi,
 }
 
 /*********************** Multiboot Image Parsing *************************/
-#if IS_ENABLED(CONFIG_KERNEL_MULTIBOOT)
+#if CONFIG(KERNEL_MULTIBOOT)
 static int fill_info_multiboot(struct boot_info *bi,
 			       VbSelectAndLoadKernelParams *kparams,
 			       const struct boot_policy *policy)
@@ -201,7 +201,7 @@ static const struct {
 	[KERNEL_IMAGE_CROS] = {CMD_LINE_SIGNER | CMD_LINE_DTB, fill_info_cros},
 	[KERNEL_IMAGE_BOOTIMG] = {CMD_LINE_SIGNER | CMD_LINE_BOOTIMG_HDR |
 				  CMD_LINE_DTB, fill_info_bootimg},
-#if IS_ENABLED(CONFIG_KERNEL_MULTIBOOT)
+#if CONFIG(KERNEL_MULTIBOOT)
 	[KERNEL_IMAGE_MULTIBOOT] = {CMD_LINE_SIGNER, fill_info_multiboot},
 #endif
 };

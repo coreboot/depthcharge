@@ -520,7 +520,7 @@ static VbError_t vboot_draw_language(uint32_t locale)
 	x = VB_SCALE_HALF + VB_DIVIDER_WIDTH / 2;
 
 	/* Draw right arrow */
-	if (!IS_ENABLED(CONFIG_DETACHABLE_UI)) {
+	if (!CONFIG(DETACHABLE_UI)) {
 		w = VB_SIZE_AUTO;
 		h = VB_TEXT_HEIGHT;
 		RETURN_ON_ERROR(draw_image("arrow_right.bmp", x,
@@ -539,7 +539,7 @@ static VbError_t vboot_draw_language(uint32_t locale)
 					  PIVOT_H_RIGHT|PIVOT_V_BOTTOM));
 	RETURN_ON_ERROR(get_image_size_locale("language.bmp", locale, &w, &h));
 
-	if (!IS_ENABLED(CONFIG_DETACHABLE_UI)) {
+	if (!CONFIG(DETACHABLE_UI)) {
 		x -= w + VB_PADDING;
 
 		/* Draw left arrow */
@@ -1031,7 +1031,7 @@ static VbError_t vboot_draw_altfw_pick(struct params *p)
 	return VBERROR_SUCCESS;
 }
 
-#if IS_ENABLED(CONFIG_DIAGNOSTIC_UI)
+#if CONFIG(DIAGNOSTIC_UI)
 static VbError_t vboot_draw_confirm_diag(struct params *p)
 {
 	uint32_t locale = p->locale;
@@ -1268,7 +1268,7 @@ static const struct vboot_ui_descriptor vboot_screens[] = {
 		.mesg = "Confirm Vendor Data",
 	},
 #endif
-#if IS_ENABLED(CONFIG_DIAGNOSTIC_UI)
+#if CONFIG(DIAGNOSTIC_UI)
 	{
 		.id = VB_SCREEN_CONFIRM_DIAG,
 		.draw = vboot_draw_confirm_diag,

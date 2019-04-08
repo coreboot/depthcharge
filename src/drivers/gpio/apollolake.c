@@ -26,7 +26,7 @@
 #include "drivers/soc/apollolake.h"
 #include "drivers/soc/common/pcr.h"
 
-#if IS_ENABLED(CONFIG_DRIVER_SOC_GLK)
+#if CONFIG(DRIVER_SOC_GLK)
 static const struct gpio_community {
 	int first_pad;
 	int port_id;

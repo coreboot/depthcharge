@@ -57,7 +57,7 @@ static int cr50_irq_status(void)
 
 static void hatch_setup_tpm(void)
 {
-	if (IS_ENABLED(CONFIG_DRIVER_TPM_SPI)) {
+	if (CONFIG(DRIVER_TPM_SPI)) {
 		/* SPI TPM */
 		const IntelGspiSetupParams gspi0_params = {
 			.dev = PCI_DEV(0, 0x1e, 2),

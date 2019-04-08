@@ -20,7 +20,7 @@
 #include <config.h>
 #include <libpayload.h>
 
-#if IS_ENABLED(CONFIG_INTEL_COMMON_I2S_CAVS_1_8)
+#if CONFIG(INTEL_COMMON_I2S_CAVS_1_8)
 #include "drivers/bus/i2s/cavs_1_8-regs.h"
 #else
 #include "drivers/bus/i2s/cavs_1_5-regs.h"

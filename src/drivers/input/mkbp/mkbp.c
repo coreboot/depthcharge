@@ -44,7 +44,7 @@ typedef enum Modifier {
  */
 static int more_input_states(void)
 {
-	if (IS_ENABLED(CONFIG_DRIVER_INPUT_MKBP_NO_INTERRUPT)) {
+	if (CONFIG(DRIVER_INPUT_MKBP_NO_INTERRUPT)) {
 		uint32_t events;
 		const uint32_t mkbp_mask =
 			EC_HOST_EVENT_MASK(EC_HOST_EVENT_MKBP);
@@ -110,7 +110,7 @@ static int mkbp_new_cmd_read_event(struct ec_response_get_next_event *event)
  */
 static int mkbp_read_event(struct ec_response_get_next_event *event)
 {
-	if (IS_ENABLED(CONFIG_DRIVER_INPUT_MKBP_OLD_COMMAND))
+	if (CONFIG(DRIVER_INPUT_MKBP_OLD_COMMAND))
 		return mkbp_old_cmd_read_event(event);
 
 	return mkbp_new_cmd_read_event(event);

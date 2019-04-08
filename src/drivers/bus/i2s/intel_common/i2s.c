@@ -175,7 +175,7 @@ static int enable_DSP_SSP(I2s *bus)
  * cAVS 1.8 version doesn't expose the i2s registers used to configure
  * the clock and hence avoid the clock config.
  */
-#if !IS_ENABLED(CONFIG_INTEL_COMMON_I2S_CAVS_1_8)
+#if !CONFIG(INTEL_COMMON_I2S_CAVS_1_8)
 	/* setup the clock to disable dynamic clock gating of SSP */
 	writel(DISABLE_CLOCK_GATING, bus->lpe_bar4 + CLOCK_GATING_OFFSET);
 	for (int i = 0; i < RETRY_COUNT; i++) {

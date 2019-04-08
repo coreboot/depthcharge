@@ -318,7 +318,7 @@ int multiboot_boot(struct boot_info *bi)
 	// Add bootdata info structures if a bootdata kernel is found.
 	// This can change bi->ramdisk_size, so do it before setting up
 	// the Multiboot structures that describe the ramdisk.
-	if (IS_ENABLED(CONFIG_KERNEL_MULTIBOOT_BOOTDATA))
+	if (CONFIG(KERNEL_MULTIBOOT_BOOTDATA))
 		bootdata_prepare(bi);
 
 	// Load multiboot data into proper locations for boot

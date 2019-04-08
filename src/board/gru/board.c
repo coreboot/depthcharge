@@ -62,10 +62,10 @@ static int cr50_irq_status(void)
 static int board_setup(void)
 {
 	RkI2c *i2c0 = NULL;
-	if (IS_ENABLED(CONFIG_TPM2_MODE)) {
+	if (CONFIG(TPM2_MODE)) {
 		RkSpi *tpm_spi;
 
-		if (IS_ENABLED(CONFIG_GRU_SCARLET))
+		if (CONFIG(GRU_SCARLET))
 			tpm_spi = new_rockchip_spi(0xff1e0000);
 		else
 			tpm_spi = new_rockchip_spi(0xff1c0000);
@@ -93,7 +93,7 @@ static int board_setup(void)
 	// On Scarlet, we have no lid switch and the power button is handled by
 	// the detachable UI via MKBP. On non-Scarlet boards, we need to read
 	// the state of these from the EC whenever vboot polls them.
-	if (IS_ENABLED(CONFIG_GRU_SCARLET)) {
+	if (CONFIG(GRU_SCARLET)) {
 		flag_replace(FLAG_LIDSW, new_gpio_high()); /* always open */
 	} else {
 		flag_replace(FLAG_LIDSW, cros_ec_lid_switch_flag());
@@ -128,7 +128,7 @@ static int board_setup(void)
 	sound_set_ops(&sound_route->ops);
 
 	GpioOps *sd_card_detect_gpio;
-	if (IS_ENABLED(CONFIG_GRU_SCARLET))
+	if (CONFIG(GRU_SCARLET))
 		sd_card_detect_gpio = &new_rk_gpio_input(GPIO(1, B, 3))->ops;
 	else
 		sd_card_detect_gpio = &new_rk_gpio_input(GPIO(4, D, 0))->ops;
@@ -139,7 +139,7 @@ static int board_setup(void)
 	list_insert_after(&sd_card->mmc.ctrlr.list_node,
 			  &removable_block_dev_controllers);
 
-	if (IS_ENABLED(CONFIG_GRU_USB2_BOOT_REQUIRED)) {
+	if (CONFIG(GRU_USB2_BOOT_REQUIRED)) {
 		/* USB2.0-EHCI*/
 		UsbHostController *uhst1_ehci = new_usb_hc(EHCI, 0xfe3c0000);
 		list_insert_after(&uhst1_ehci->list_node,
@@ -161,18 +161,18 @@ static int board_setup(void)
 	if (lib_sysinfo.framebuffer &&
 	    lib_sysinfo.framebuffer->physical_address) {
 		GpioOps *backlight = NULL;
-		if (IS_ENABLED(CONFIG_GRU_SCARLET))
+		if (CONFIG(GRU_SCARLET))
 			backlight = sysinfo_lookup_gpio("backlight", 1,
 					new_rk_gpio_output_from_coreboot);
-		else if (IS_ENABLED(CONFIG_DRIVER_VIDEO_EC_PWM_BACKLIGHT))
+		else if (CONFIG(DRIVER_VIDEO_EC_PWM_BACKLIGHT))
 			backlight = new_ec_pwm_backlight();
-		else if (IS_ENABLED(CONFIG_DRIVER_VIDEO_ARCTICSAND_BACKLIGHT)) {
+		else if (CONFIG(DRIVER_VIDEO_ARCTICSAND_BACKLIGHT)) {
 			if (!i2c0)
 				i2c0 = new_rockchip_i2c((void *)0xff3c0000);
 			backlight = new_arctic_sand_backlight(&i2c0->ops, 0x30);
 		}
 		display_set_ops(new_rk3399_display(backlight,
-				!IS_ENABLED(CONFIG_GRU_MIPI_DISPLAY)));
+				!CONFIG(GRU_MIPI_DISPLAY)));
 	}
 	return 0;
 }

@@ -166,8 +166,8 @@ VbError_t update_vboot_aux_fw(void)
 		if (vboot_aux_fw[i].severity != VB_AUX_FW_NO_UPDATE) {
 			/* Disable lid shutdown on x86 if enabled */
 			if (!lid_shutdown_disabled &&
-			    IS_ENABLED(CONFIG_ARCH_X86) &&
-			    IS_ENABLED(CONFIG_DRIVER_CROS_EC) &&
+			    CONFIG(ARCH_X86) &&
+			    CONFIG(DRIVER_CROS_EC) &&
 			    cros_ec_get_lid_shutdown_mask() > 0) {
 				if (!cros_ec_set_lid_shutdown_mask(0))
 					lid_shutdown_disabled = 1;
@@ -204,7 +204,7 @@ update_protect:
 	}
 
 	/* Re-enable lid shutdown event, if required */
-	if (IS_ENABLED(CONFIG_DRIVER_CROS_EC) && lid_shutdown_disabled)
+	if (CONFIG(DRIVER_CROS_EC) && lid_shutdown_disabled)
 		cros_ec_set_lid_shutdown_mask(1);
 
 	return status;

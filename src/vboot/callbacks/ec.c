@@ -43,7 +43,7 @@ static struct cbfs_media *ro_cbfs;
 static void *get_file_from_cbfs(
 	const char *filename, enum VbSelectFirmware_t select, size_t *size)
 {
-	if (!IS_ENABLED(CONFIG_DRIVER_CBFS_FLASH))
+	if (!CONFIG(DRIVER_CBFS_FLASH))
 		return NULL;
 
 	if (select == VB_SELECT_FIRMWARE_READONLY) {

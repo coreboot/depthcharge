@@ -65,7 +65,7 @@ static int cr50_irq_status(void)
 
 static void poppy_setup_tpm(void)
 {
-	if (IS_ENABLED(CONFIG_DRIVER_TPM_SPI)) {
+	if (CONFIG(DRIVER_TPM_SPI)) {
 		/* SPI TPM */
 		const IntelGspiSetupParams gspi0_params = {
 			.dev = PCI_DEV(0, 0x1e, 2),
@@ -77,7 +77,7 @@ static void poppy_setup_tpm(void)
 		};
 		tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0_params),
 					 cr50_irq_status)->ops);
-	} else if (IS_ENABLED(CONFIG_DRIVER_TPM_CR50_I2C)) {
+	} else if (CONFIG(DRIVER_TPM_CR50_I2C)) {
 		DesignwareI2c *i2c1 = new_pci_designware_i2c(
 			PCI_DEV(0, 0x15, 1), 400000, SKYLAKE_DW_I2C_MHZ);
 		tpm_set_ops(&new_cr50_i2c(&i2c1->ops, 0x50,
@@ -87,7 +87,7 @@ static void poppy_setup_tpm(void)
 
 static void board_audio_init(SoundRoute *sound)
 {
-	if (IS_ENABLED(CONFIG_DRIVER_SOUND_MAX98927)) {
+	if (CONFIG(DRIVER_SOUND_MAX98927)) {
 		/* Speaker amp is Maxim 98927 codec on I2C5 */
 		DesignwareI2c *i2c5 =
 			new_pci_designware_i2c(PCI_DEV(0, 0x19, 1), 400000, 120);
@@ -99,7 +99,7 @@ static void board_audio_init(SoundRoute *sound)
 			&sound->components);
 		list_insert_after(&speaker_amp_r->component.list_node,
 			&sound->components);
-	} else if (IS_ENABLED(CONFIG_DRIVER_SOUND_MAX98357A)) {
+	} else if (CONFIG(DRIVER_SOUND_MAX98357A)) {
 		/* Speaker amp is Maxim 98357a codec*/
 		GpioOps *sdmode_gpio = &new_skylake_gpio_output(GPP_A23, 0)->ops;
 		max98357aCodec *speaker_amp =
@@ -136,14 +136,14 @@ static int board_setup(void)
 			&fixed_block_dev_controllers);
 
 	/* SSD if config enabled */
-	if (IS_ENABLED(CONFIG_DRIVER_AHCI)) {
+	if (CONFIG(DRIVER_AHCI)) {
 		AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 0x17, 0));
 		list_insert_after(&ahci->ctrlr.list_node,
 				  &fixed_block_dev_controllers);
 	}
 
 	/* NVMe if config enabled */
-	if (IS_ENABLED(CONFIG_DRIVER_STORAGE_NVME)) {
+	if (CONFIG(DRIVER_STORAGE_NVME)) {
 		/* Root port 5 */
 		NvmeCtrlr *nvme1 = new_nvme_ctrlr(PCI_DEV(0, 0x1c, 4));
 		list_insert_after(&nvme1->ctrlr.list_node,
