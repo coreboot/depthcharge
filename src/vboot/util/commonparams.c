@@ -15,8 +15,10 @@
  * GNU General Public License for more details.
  */
 
+#include <assert.h>
 #include <gbb_header.h>
 #include <libpayload.h>
+#include <vb2_api.h>
 
 #include "config.h"
 #include "drivers/flash/flash.h"
@@ -198,4 +200,29 @@ int find_common_params(void **blob, int *size)
 	*blob = &vboot_handoff->shared_data[0];
 	*size = ARRAY_SIZE(vboot_handoff->shared_data);
 	return 0;
+}
+
+struct vb2_context *vboot_get_context(void)
+{
+	static struct vb2_context ctx;
+
+	if (ctx.workbuf)
+		return &ctx;
+
+	die_if(lib_sysinfo.vboot_workbuf == NULL,
+	       "vboot workbuf pointer is NULL\n");
+
+	ctx.workbuf_size = VB2_KERNEL_WORKBUF_RECOMMENDED_SIZE;
+	die_if(lib_sysinfo.vboot_workbuf_size > ctx.workbuf_size,
+	       "previous workbuf too big\n");
+
+	/* Import the firmware verification workbuf, which includes
+	 * vb2_shared_data. */
+	ctx.workbuf = xmemalign(VB2_WORKBUF_ALIGN,
+				VB2_KERNEL_WORKBUF_RECOMMENDED_SIZE);
+	memcpy(ctx.workbuf, lib_sysinfo.vboot_workbuf,
+	       lib_sysinfo.vboot_workbuf_size);
+	ctx.workbuf_used = lib_sysinfo.vboot_workbuf_size;
+
+	return &ctx;
 }
