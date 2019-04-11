@@ -712,6 +712,19 @@ static VbError_t vboot_draw_developer_menu(struct params *p)
 	return vboot_draw_menu(p, &m);
 }
 
+static VbError_t vboot_draw_launch_diag(struct params *p)
+{
+	if (!IS_ENABLED(CONFIG_DIAGNOSTIC_UI))
+		return VBERROR_SUCCESS;
+
+	RETURN_ON_ERROR(draw_image_locale("launch_diag.bmp", p->locale,
+			VB_SCALE_HALF,
+			VB_SCALE - VB_DIVIDER_V_OFFSET - VB_TEXT_HEIGHT,
+			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 3 / 4,
+			PIVOT_H_CENTER|PIVOT_V_CENTER));
+	return VBERROR_SUCCESS;
+}
+
 static VbError_t vboot_draw_recovery_no_good(struct params *p)
 {
 	uint32_t locale = p->locale;
@@ -724,6 +737,7 @@ static VbError_t vboot_draw_recovery_no_good(struct params *p)
 			VB_SCALE_HALF, VB_SCALE_HALF,
 			VB_SIZE_AUTO, VB_ICON_HEIGHT,
 			PIVOT_H_CENTER|PIVOT_V_CENTER));
+	RETURN_ON_ERROR(vboot_draw_launch_diag(p));
 	return VBERROR_SUCCESS;
 }
 
@@ -739,6 +753,7 @@ static VbError_t vboot_draw_recovery_insert(struct params *p)
 	RETURN_ON_ERROR(draw_image("InsertDevices.bmp",
 			VB_SCALE_HALF, VB_SCALE_HALF, VB_SIZE_AUTO, h,
 			PIVOT_H_CENTER|PIVOT_V_CENTER));
+	RETURN_ON_ERROR(vboot_draw_launch_diag(p));
 	return VBERROR_SUCCESS;
 }
 
@@ -834,6 +849,7 @@ static VbError_t vboot_draw_os_broken(struct params *p)
 			VB_SCALE_HALF, VB_SCALE_HALF,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 2,
 			PIVOT_H_CENTER|PIVOT_V_TOP));
+	RETURN_ON_ERROR(vboot_draw_launch_diag(p));
 	return VBERROR_SUCCESS;
 }
 
