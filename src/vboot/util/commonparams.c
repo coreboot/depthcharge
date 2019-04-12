@@ -18,20 +18,20 @@
 #include <assert.h>
 #include <gbb_header.h>
 #include <libpayload.h>
+#include <vboot_struct.h>
 #include <vb2_api.h>
 
 #include "config.h"
 #include "drivers/flash/flash.h"
 #include "image/fmap.h"
 #include "image/symbols.h"
+#include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
-#include "vboot/util/vboot_handoff.h"
+#include "vboot/util/flag.h"
 
+/* TODO(kitching): cparams is only used to contain GBB data.  Migrate to use
+ * vboot2 data structures instead, and remove cparams. */
 VbCommonParams cparams CPARAMS;
-uint8_t shared_data_blob[VB_SHARED_DATA_REC_SIZE] SHARED_DATA;
-
-static int gbb_initialized = 0;
-static int cparams_initialized = 0;
 
 static void *gbb_copy_in(uint32_t gbb_offset, uint32_t offset, uint32_t size)
 {
@@ -66,9 +66,6 @@ static void gbb_copy_out(uint32_t gbb_offset, uint32_t offset, uint32_t size)
 
 static int gbb_init(void)
 {
-	if (gbb_initialized)
-		return 0;
-
 	FmapArea area;
 	if (fmap_find_area("GBB", &area)) {
 		printf("Couldn't find the GBB.\n");
@@ -80,6 +77,7 @@ static int gbb_init(void)
 		return 1;
 	}
 
+	memset(&cparams, 0, sizeof(cparams));
 	cparams.gbb_size = area.size;
 	cparams.gbb_data = &_gbb_copy_start;
 	memset(cparams.gbb_data, 0, cparams.gbb_size);
@@ -105,7 +103,6 @@ static int gbb_init(void)
 			 header->recovery_key_size))
 		return 1;
 
-	gbb_initialized = 1;
 	return 0;
 }
 
@@ -140,47 +137,68 @@ uint32_t gbb_get_flags(void)
 	return header->flags;
 }
 
-int gbb_copy_in_bmp_block(void)
+static int vboot_verify_handoff(void)
 {
-	FmapArea area;
-	if (fmap_find_area("GBB", &area)) {
-		printf("Couldn't find the GBB.\n");
+	if (lib_sysinfo.vboot_handoff == NULL) {
+		printf("vboot handoff pointer is NULL\n");
 		return 1;
 	}
 
-	GoogleBinaryBlockHeader *header =
-		(GoogleBinaryBlockHeader *)cparams.gbb_data;
-
-	if (!gbb_copy_in(area.offset, header->bmpfv_offset,
-			 header->bmpfv_size))
+	if (lib_sysinfo.vboot_handoff_size != sizeof(struct vboot_handoff)) {
+		printf("Unexpected vboot handoff size: %d\n",
+		       lib_sysinfo.vboot_handoff_size);
 		return 1;
+	}
 
 	return 0;
 }
 
-int is_cparams_initialized(void)
+static int vboot_update_shared_data(void)
 {
-	return cparams_initialized;
-}
+	VbSharedDataHeader *vb_sd;
+	int vb_sd_size;
 
-int common_params_init(int clear_shared_data)
-{
-	uint32_t save_gbb_size = cparams.gbb_size;
-	void *save_gbb_data = cparams.gbb_data;
-
-	// Set up the common param structure.
-	memset(&cparams, 0, sizeof(cparams));
-	cparams_initialized = 1;
-
-	// Restore GBB size/data if it was already initialized.
-	if (gbb_initialized) {
-		cparams.gbb_size = save_gbb_size;
-		cparams.gbb_data = save_gbb_data;
-	} else {
-		if (gbb_init())
-			return 1;
+	if (find_common_params((void **)&vb_sd, &vb_sd_size)) {
+		printf("Unable to access VBSD\n");
+		return 1;
 	}
 
+	/*
+	 * If the lid is closed, kernel selection should not count down the
+	 * boot tries for updates, since the OS will shut down before it can
+	 * register success.
+	 */
+	if (!flag_fetch(FLAG_LIDSW))
+		vb_sd->flags |= VBSD_NOFAIL_BOOT;
+
+	if (flag_fetch(FLAG_WPSW))
+		vb_sd->flags |= VBSD_BOOT_FIRMWARE_WP_ENABLED;
+
+	if (CONFIG(EC_SOFTWARE_SYNC))
+		vb_sd->flags |= VBSD_EC_SOFTWARE_SYNC;
+
+	if (CONFIG(EC_SLOW_UPDATE))
+		vb_sd->flags |= VBSD_EC_SLOW_UPDATE;
+
+	if (CONFIG(EC_EFS))
+		vb_sd->flags |= VBSD_EC_EFS;
+
+	if (!CONFIG(PHYSICAL_REC_SWITCH))
+		vb_sd->flags |= VBSD_BOOT_REC_SWITCH_VIRTUAL;
+
+	return 0;
+}
+
+static int vboot_update_vbinit_flags(void)
+{
+	struct vboot_handoff *vboot_handoff = lib_sysinfo.vboot_handoff;
+	/* VbInit was already called in coreboot, so we need to update the
+	 * vboot internal flags ourself. */
+	return vboot_do_init_out_flags(vboot_handoff->init_params.out_flags);
+}
+
+static int set_cparams_shared_data(void)
+{
 	void *blob;
 	int size;
 	if (find_common_params(&blob, &size))
@@ -188,8 +206,31 @@ int common_params_init(int clear_shared_data)
 
 	cparams.shared_data_blob = blob;
 	cparams.shared_data_size = size;
-	if (clear_shared_data)
-		memset(blob, 0, size);
+
+	return 0;
+}
+
+int common_params_init(void)
+{
+	// Initialize GBB size/data.
+	if (gbb_init())
+		return 1;
+
+	// Verify incoming vboot_handoff.
+	if (vboot_verify_handoff())
+		return 1;
+
+	// Modify VbSharedDataHeader contents from vboot_handoff struct.
+	if (vboot_update_shared_data())
+		return 1;
+
+	// Retrieve data from VbInit flags.
+	if (vboot_update_vbinit_flags())
+		return 1;
+
+	// Set cparams.shared_data fields.
+	if (set_cparams_shared_data())
+		return 1;
 
 	return 0;
 }

@@ -27,8 +27,6 @@
 #include "vboot/firmware_id.h"
 #include "vboot/util/acpi.h"
 #include "vboot/util/commonparams.h"
-#include "vboot/util/flag.h"
-#include "vboot/util/vboot_handoff.h"
 
 int crossystem_setup(int firmware_type)
 {

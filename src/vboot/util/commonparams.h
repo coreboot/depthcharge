@@ -22,16 +22,25 @@
 #include <stdint.h>
 #include <vboot_api.h>
 
-extern VbCommonParams cparams;
-extern uint8_t shared_data_blob[VB_SHARED_DATA_REC_SIZE];
+/*
+ * The vboot_handoff structure contains the data to be consumed by downstream
+ * firmware after firmware selection has been completed. Namely it provides
+ * vboot shared data as well as the flags from VbInit.
+ */
+struct vboot_handoff {
+	VbInitParams init_params;
+	uint32_t selected_firmware;
+	char shared_data[VB_SHARED_DATA_MIN_SIZE];
+} __attribute__((packed));
 
-int gbb_copy_in_bmp_block();
-int common_params_init(int clear_shared_data);
-int is_cparams_initialized(void);
-// Implemented by each arch.
-int find_common_params(void **blob, int *size);
+extern VbCommonParams cparams;
+
 int gbb_clear_flags(void);
 uint32_t gbb_get_flags(void);
+
+int common_params_init(void);
+int find_common_params(void **blob, int *size);
+
 struct vb2_context *vboot_get_context(void);
 
 #endif /* __VBOOT_UTIL_COMMONPARAMS_H__ */

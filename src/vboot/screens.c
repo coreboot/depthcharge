@@ -462,11 +462,9 @@ static VbError_t vboot_draw_footer(uint32_t locale)
 	 * which is locale dependent, and 'XYZ', a model name. Model name
 	 * consists of individual font images: 'X' 'Y' 'Z'.
 	 */
-	if (is_cparams_initialized()) {
-		GoogleBinaryBlockHeader *gbb = cparams.gbb_data;
-		if (gbb)
-			hwid = (char *)((uintptr_t)gbb + gbb->hwid_offset);
-	}
+	GoogleBinaryBlockHeader *gbb = cparams.gbb_data;
+	if (gbb)
+		hwid = (char *)((uintptr_t)gbb + gbb->hwid_offset);
 	if (!hwid)
 		hwid = "NOT FOUND";
 

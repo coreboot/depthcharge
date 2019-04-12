@@ -20,6 +20,7 @@
 #include <libpayload.h>
 #include <vb2_api.h>
 #include <vboot_api.h>
+#include <vboot_struct.h>
 
 #include "base/init_funcs.h"
 #include "base/timestamp.h"
@@ -43,13 +44,19 @@
 
 static void enable_graphics(void)
 {
+	VbSharedDataHeader *vb_sd;
+	int vb_sd_size;
+
+	die_if(find_common_params((void **)&vb_sd, &vb_sd_size),
+	       "Unable to access VBSD\n");
+
 	display_init();
 	backlight_update(1);
 
-	if (!CONFIG_OPROM_MATTERS)
+	if (!(vb_sd->flags & VBSD_OPROM_MATTERS))
 		return;
 
-	int oprom_loaded = flag_fetch(FLAG_OPROM);
+	int oprom_loaded = vb_sd->flags & VBSD_OPROM_LOADED;
 
 	// Manipulating vboot's internal data and calling its internal
 	// functions is NOT NICE and will give you athlete's foot and make
@@ -216,9 +223,15 @@ int netboot_entry(void)
 
 	printf("\n\nStarting netboot on " CONFIG_BOARD "...\n");
 
+	// Set up time keeping.
 	timestamp_init();
 
+	// Run any generic initialization functions that are compiled in.
 	if (run_init_funcs())
+		halt();
+
+	// Set up common params, vboot_handoff, VBSD, and VbInit flags.
+	if (common_params_init())
 		halt();
 
 	// Make sure graphics are available if they aren't already.
@@ -226,9 +239,6 @@ int netboot_entry(void)
 
 	if (CONFIG_CLI)
 		console_loop();
-
-	if (common_params_init(0))
-		halt();
 
 	srand(timer_raw_value());
 
