@@ -478,6 +478,7 @@ MtkMmcHost *new_mtk_mmc_host(uintptr_t ioaddr, uint32_t src_hz, uint32_t max_fre
 	ctrlr->mmc.ctrlr.ops.is_bdev_owned = block_mmc_is_bdev_owned;
 	ctrlr->mmc.ctrlr.ops.update = &mtk_mmc_update;
 	ctrlr->mmc.ctrlr.need_update = 1;
+	ctrlr->mmc.hardcoded_voltage = 0x40ff8080;
 
 	ctrlr->mmc.voltages = MtkMmcVoltages;
 	ctrlr->mmc.f_min = MtkMmcMinFreq;
