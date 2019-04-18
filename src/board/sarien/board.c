@@ -12,6 +12,7 @@
  */
 
 #include <arch/io.h>
+#include <cbfs.h>
 #include <libpayload.h>
 #include <pci.h>
 #include <pci/pci.h>
@@ -45,6 +46,9 @@ enum {
 	EC_HOST_BASE = 0x940,
 	EC_PACKET_BASE = 0x950,
 };
+
+const char *pd_cbfs_firmware = "pdrw.bin";
+const char *pd_cbfs_hash = "pdrw.hash";
 
 FlashProtectionMapping flash_protection_list[] = {
 	{
@@ -104,9 +108,12 @@ static int board_setup(void)
 	register_vboot_ec(&wilco_ec->vboot, PRIMARY_VBOOT_EC);
 	flag_replace(FLAG_LIDSW, wilco_ec_lid_switch_flag(wilco_ec));
 
-	/* TI TCPC */
-	WilcoPd *ti_tcpc = new_wilco_pd_ti(wilco_ec, "pdrw.bin", "pdrw.hash");
-	register_vboot_aux_fw(&ti_tcpc->ops);
+	/* Update TI TCPC if available in CBFS */
+	if (cbfs_find_file(pd_cbfs_hash, CBFS_TYPE_RAW)) {
+		WilcoPd *ti_tcpc = new_wilco_pd_ti(wilco_ec, pd_cbfs_firmware,
+						   pd_cbfs_hash);
+		register_vboot_aux_fw(&ti_tcpc->ops);
+	}
 
 	/* H1 TPM on I2C bus 4 @ 400KHz, controller core is 133MHz */
 	DesignwareI2c *i2c4 = new_pci_designware_i2c(
