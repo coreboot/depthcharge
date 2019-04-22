@@ -36,6 +36,7 @@ inputs:
   - os_broken      #22 OS may be broken. Remove media and initiate recovery.
   - select_altfw   #23 Press a numeric key to select an alternative bootloader:
   - diag_confirm   #24 Press the POWER button to run diagnostics.
+  - todev_power    #25 To turn OS verification OFF, press the POWER button.
 
 detachable_inputs:
   - dev_option     #01 Developer Options
@@ -100,6 +101,7 @@ keyboard_files:
   devmode:
   todev:          [todev, reboot_erase, '', esc_back]
   todev_phyrec:   [todev_phyrec, reboot_erase, '', esc_back]
+  todev_power:    [todev_power, reboot_erase, '', esc_back]
   tonorm:         [tonorm, reboot_erase, '', esc_back]
   verif_off:
   select_altfw:

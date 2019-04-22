@@ -22,3 +22,4 @@ Použijte prosím správný adaptér a zkuste to znovu.
 Odeberte všechna připojená zařízení a zahajte obnovení.
 Chcete-li vybrat alternativní bootloader, stiskněte numerickou klávesu:
 Diagnostiku spustíte stisknutím vypínače.
+Chcete-li vypnout ověření operačního systému, stiskněte tlačítko napájení.

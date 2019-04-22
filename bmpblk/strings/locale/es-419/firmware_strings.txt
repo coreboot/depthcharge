@@ -22,3 +22,4 @@ Usa el adaptador correcto y vuelve a intentarlo.
 Quita todos los dispositivos conectados y comienza la recuperación.
 Presiona una tecla numérica para seleccionar un bootloader alternativo:
 Presiona el botón de encendido para realizar un diagnóstico.
+Para desactivar la verificación del SO, presiona el botón de encendido.

@@ -22,3 +22,4 @@ Bitte versuchen Sie es noch einmal mit dem richtigen Netzteil.
 Bitte entfernen Sie alle verbundenen Geräte und beginnen Sie mit der Wiederherstellung.
 Drücken Sie eine Zifferntaste, um einen alternativen Bootloader auszuwählen:
 Drücken Sie die Ein-/Aus-Taste, um eine Diagnose auszuführen.
+Drücken Sie die Ein-/Aus-Taste, um die Betriebssystemüberprüfung auszuschalten.

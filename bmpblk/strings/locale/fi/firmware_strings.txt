@@ -22,3 +22,4 @@ Yhdistä sopiva virtalähde ja yritä uudelleen.
 Irrota kaikki yhdistetyt laitteet ja aloita palautus.
 Valitse vaihtoehtoinen käynnistysohjelma painamalla numeronäppäintä:
 Paina virtapainiketta, jos haluat suorittaa diagnostiikan.
+Jos haluat, että käyttöjärjestelmän tarkistus on POISSA KÄYTÖSTÄ, paina virtapainiketta.

@@ -22,3 +22,4 @@ Vui lòng sử dụng đúng bộ chuyển đổi điện và thử lại.
 Vui lòng tháo tất cả các thiết bị đã kết nối và bắt đầu quá trình khôi phục.
 Nhấn vào một phím số để chọn trình tải khởi động thay thế:
 Nhấn nút NGUỒN để chạy chẩn đoán.
+Để TẮT tính năng Xác minh hệ điều hành, hãy nhấn nút NGUỒN.

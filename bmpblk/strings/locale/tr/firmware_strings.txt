@@ -22,3 +22,4 @@ Lütfen doğru adaptörü kullanın ve tekrar deneyin.
 Lütfen tüm bağlı cihazları çıkarın ve kurtarma işlemini başlatın.
 Alternatif bootloader için lütfen bir rakam tuşuna basın:
 Teşhis aracını çalıştırmak için GÜÇ düğmesine basın.
+OS doğrulamayı KAPATMAK için GÜÇ düğmesine basın.

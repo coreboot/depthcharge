@@ -22,3 +22,4 @@ Naudokite tinkamą adapterį ir bandykite dar kartą.
 Pašalinkite visus prijungtus įrenginius ir pradėkite atkūrimą.
 Paspauskite skaitinį klavišą ir pasirinkite alternatyviąją paleidyklę:
 Paspauskite MAITINIMO mygtuką, kad paleistumėte diagnostiką.
+Jei norite IŠJUNGTI operacinės sistemos patvirtinimą, paspauskite MAITINIMO mygtuką.

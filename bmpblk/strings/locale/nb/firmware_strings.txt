@@ -22,3 +22,4 @@ Bruk riktig adapter og prøv på nytt.
 Fjern alle tilkoblede enheter, og begynn gjenopprettingen.
 Trykk på en talltast for å velge en alternativ oppstartsinnlaster:
 Trykk på av/på-knappen for å kjøre diagnostikk.
+For å slå OS-bekreftelse AV, trykk på AV/PÅ-knappen.

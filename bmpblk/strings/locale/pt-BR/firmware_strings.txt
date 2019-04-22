@@ -22,3 +22,4 @@ Use o adaptador correto e tente novamente.
 Remova todos os dispositivos conectados e inicie a recuperação.
 Pressione uma tecla numérica para selecionar um carregador de inicialização alternativo:
 Pressione o botão liga/desliga para executar o diagnóstico.
+Para DESATIVAR a verificação do SO, pressione o botão LIGA/DESLIGA.

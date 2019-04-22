@@ -22,3 +22,4 @@ Lūdzu, izmantojiet pareizo adapteri un mēģiniet vēlreiz.
 Lūdzu, noņemiet visas pievienotās ierīces un sāciet atkopšanu.
 Nospiediet cipartaustiņu, lai atlasītu citu operētājsistēmu ielādes rīku:
 Nospiediet BAROŠANAS pogu, lai palaistu diagnostiku.
+Lai IZSLĒGTU OS verifikāciju, nospiediet BAROŠANAS pogu.

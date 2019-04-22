@@ -22,3 +22,4 @@ Harap gunakan adaptor yang tepat kemudian coba lagi.
 Harap hapus semua perangkat yang terhubung lalu mulai pemulihan.
 Tekan kunci numerik untuk memilih bootloader alternatif:
 Tekan tombol POWER untuk menjalankan diagnostik.
+Untuk MENONAKTIFKAN verifikasi OS, tekan tombol POWER.

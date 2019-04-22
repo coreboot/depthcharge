@@ -22,3 +22,4 @@ Utilitza l'adaptador correcte i torna-ho a provar.
 Treu tots els dispositius connectats i inicia la recuperació.
 Prem una tecla numèrica per seleccionar un bootloader alternatiu:
 Prem el botó d'engegada per executar un diagnòstic.
+Per desactivar la verificació del SO, prem el botó d'engegada.

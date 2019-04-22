@@ -22,3 +22,4 @@ Użyj odpowiedniego zasilacza i spróbuj ponownie.
 Odłącz wszystkie podłączone urządzenia i rozpocznij przywracanie.
 Naciśnij klawisz numeryczny, by wybrać inny program rozruchowy:
 Naciśnij PRZYCISK ZASILANIA, by uruchomić diagnostykę.
+Aby wyłączyć weryfikację systemu operacyjnego, naciśnij przycisk ZASILANIA.

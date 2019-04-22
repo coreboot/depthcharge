@@ -22,3 +22,4 @@ Utilizza l'alimentatore adeguato e riprova.
 Rimuovi tutti i dispositivi collegati e avvia il ripristino.
 Premi un tasto numerico per selezionare un bootloader alternativo:
 Premi il tasto di ACCENSIONE per eseguire l'analisi diagnostica.
+Per disattivare la verifica del sistema operativo, premi il tasto di ACCENSIONE.

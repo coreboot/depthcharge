@@ -22,3 +22,4 @@ Priključite odgovarajući adapter i pokušajte ponovno.
 Uklonite sve povezane uređaje i pokrenite oporavak.
 Pritisnite brojčanu tipku da biste odabrali alternativni početni program za pokretanje:
 Pritisnite tipku za UKLJUČIVANJE/ISKLJUČIVANJE da biste pokrenuli dijagnostiku.
+Da biste ISKLJUČILI potvrdu OS-a, pritisnite tipku za UKLJUČIVANJE/ISKLJUČIVANJE.

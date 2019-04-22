@@ -22,3 +22,4 @@ Please use the correct adapter and try again.
 Please remove all connected devices and start recovery.
 Press a numeric key to select an alternative bootloader:
 Press the POWER button to run diagnostics.
+To turn OS verification OFF, press the POWER button.
