@@ -38,7 +38,7 @@ SCREEN_KEY = 'screen'
 PANEL_KEY = 'panel'
 SDCARD_KEY = 'sdcard'
 BAD_USB3_KEY = 'bad_usb3'
-PHY_REC_KEY = 'phy_rec'
+PHY_PRES_KEY = 'phy_pres'
 LOCALES_KEY = 'locales'
 HI_RES_KEY = 'hi_res'
 TEXT_COLORS_KEY = 'text_colors'
@@ -73,6 +73,7 @@ TEXT_SCALES = {
     'os_broken': (0, 2 * TEXT_HEIGHT),
     'todev': (0, 4 * TEXT_HEIGHT),
     'todev_phyrec': (0, 4 * TEXT_HEIGHT),
+    'todev_power':  (0, 4 * TEXT_HEIGHT),
     'tonorm': (0, 4 * TEXT_HEIGHT),
     'update': (0, 3 * TEXT_HEIGHT),
     'wrong_power_supply': (0, 4 * TEXT_HEIGHT),
@@ -114,6 +115,7 @@ class Convert(object):
       'insert_usb2': '',
       'insert_usb': '',
       'todev_phyrec': '',
+      'todev_power': '',
       'reserve_charging': '',
       'reserve_charging_empty': '',
   }
@@ -171,7 +173,7 @@ class Convert(object):
     """
     sdcard = self.config[SDCARD_KEY]
     bad_usb3 = self.config[BAD_USB3_KEY]
-    physical_recovery = self.config[PHY_REC_KEY]
+    physical_presence = self.config[PHY_PRES_KEY]
 
     self.replace_map = self.DEFAULT_REPLACE_MAP.copy()
 
@@ -183,8 +185,13 @@ class Convert(object):
     elif bad_usb3:
       self.replace_map['insert'] = 'insert_sd_usb2'
 
-    if physical_recovery:
+    if physical_presence == 'power':
+      self.replace_map['todev'] = 'todev_power'
+    elif physical_presence == 'recovery':
       self.replace_map['todev'] = 'todev_phyrec'
+    elif physical_presence != 'keyboard':
+      raise BuildImageError('Invalid physical presence setting %s for board %s'
+                            % (physical_presence, self.board))
 
     if os.getenv("DETACHABLE_UI") == "1":
       self.replace_map['VerificationOff'] = ''
