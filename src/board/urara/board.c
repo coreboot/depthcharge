@@ -120,7 +120,6 @@ static int board_setup(void)
 
 	flag_install(FLAG_LIDSW, new_gpio_high());
 	flag_install(FLAG_PHYS_PRESENCE, new_gpio_high());
-	flag_install(FLAG_RECSW, new_gpio_high());
 	flag_install(FLAG_PWRSW, new_gpio_low());
 	flag_install(FLAG_WPSW, new_gpio_low());
 

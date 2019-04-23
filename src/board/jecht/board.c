@@ -34,12 +34,7 @@
 
 static int board_setup(void)
 {
-	sysinfo_install_flags(NULL);
-
-	// Read the current value of the recovery button instead of the
-	// value passed by coreboot.
-	LpPchGpio *rec_gpio = new_lp_pch_gpio_input(12);
-	flag_replace(FLAG_RECSW, new_gpio_not(&rec_gpio->ops));
+	sysinfo_install_flags(new_lp_pch_gpio_input_from_coreboot);
 
 	flash_set_ops(&new_mem_mapped_flash(0xff800000, 0x800000)->ops);
 

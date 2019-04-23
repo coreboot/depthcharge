@@ -31,5 +31,6 @@ typedef struct LpPchGpio
 LpPchGpio *new_lp_pch_gpio(unsigned num);
 LpPchGpio *new_lp_pch_gpio_input(unsigned num);
 LpPchGpio *new_lp_pch_gpio_output(unsigned num);
+GpioOps *new_lp_pch_gpio_input_from_coreboot(uint32_t port);
 
 #endif /* __DRIVERS_GPIO_GPIO_H__ */

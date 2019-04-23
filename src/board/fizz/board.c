@@ -107,7 +107,7 @@ static int board_setup(void)
 
 	/* TPM */
 	TpmOps *tpm_ops	= fizz_setup_tpm();
-	flag_replace(FLAG_RECSW, &new_cr50_rec_switch(tpm_ops)->ops);
+	flag_replace(FLAG_PHYS_PRESENCE, &new_cr50_rec_switch(tpm_ops)->ops);
 
 	/* Chrome EC (eSPI) */
 	CrosEcLpcBus *cros_ec_lpc_bus =
