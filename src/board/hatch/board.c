@@ -12,6 +12,7 @@
  */
 
 #include <arch/io.h>
+#include <assert.h>
 #include <libpayload.h>
 #include <pci.h>
 #include <pci/pci.h>
@@ -72,6 +73,20 @@ static void hatch_setup_tpm(void)
 	}
 }
 
+static void hatch_setup_flash(void)
+{
+	/* Flash is mapped at the end of 4GiB */
+	uintptr_t flash_start;
+	uint32_t flash_size = lib_sysinfo.spi_flash.size;
+	MemMappedFlash *flash;
+
+	assert(flash_size != 0);
+
+	flash_start = 4ULL * GiB - flash_size;
+	flash = new_mem_mapped_flash(flash_start, flash_size);
+	flash_set_ops(&flash->ops);
+}
+
 #define EC_USB_PD_PORT_PS8751	1
 #define EC_I2C_PORT_PS8751	2
 
@@ -100,8 +115,7 @@ static int board_setup(void)
 	/* Peripherals connected to EC */
 	update_ps8751_firmware(cros_ec);
 
-	/* 32MB SPI Flash */
-	flash_set_ops(&new_mem_mapped_flash(0xfe000000, 0x2000000)->ops);
+	hatch_setup_flash();
 
 	/* Cannonlake PCH */
 	power_set_ops(&cannonlake_power_ops);
