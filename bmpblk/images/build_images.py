@@ -102,7 +102,7 @@ class Convert(object):
 
   DEFAULT_OUTPUT_EXT = '.bmp'
 
-  replace_map = {
+  DEFAULT_REPLACE_MAP = {
       'BadSD': '',
       'BadUSB': '',
       'InsertUSB': '',
@@ -172,6 +172,8 @@ class Convert(object):
     sdcard = self.config[SDCARD_KEY]
     bad_usb3 = self.config[BAD_USB3_KEY]
     physical_recovery = self.config[PHY_REC_KEY]
+
+    self.replace_map = self.DEFAULT_REPLACE_MAP.copy()
 
     if not sdcard:
       self.replace_map['BadDevices'] = 'BadUSB'
