@@ -123,3 +123,8 @@ LpPchGpio *new_lp_pch_gpio_output(unsigned num)
 	gpio->ops.set = &lp_pch_gpio_set_value;
 	return gpio;
 }
+
+GpioOps *new_lp_pch_gpio_input_from_coreboot(uint32_t port)
+{
+	return &(new_lp_pch_gpio_input(port)->ops);
+}

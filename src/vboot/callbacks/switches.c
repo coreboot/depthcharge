@@ -28,10 +28,6 @@ uint32_t VbExGetSwitches(uint32_t request_mask)
 {
 	uint32_t result = 0;
 
-	if ((request_mask & VB_SWITCH_FLAG_REC_BUTTON_PRESSED) &&
-	    flag_fetch(FLAG_RECSW))
-		result |= VB_SWITCH_FLAG_REC_BUTTON_PRESSED;
-
 	if (CONFIG_USB_BOOT_ON_DEV &&
 	    (request_mask & VB_SWITCH_FLAG_ALLOW_USB_BOOT)) {
 		result |= VB_SWITCH_FLAG_ALLOW_USB_BOOT;

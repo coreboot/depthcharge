@@ -90,9 +90,6 @@ static int board_setup(void)
 	GpioOps *power_switch;
 
 	sysinfo_install_flags(new_cannonlake_gpio_input_from_coreboot);
-	GpioOps *rec_gpio = sysinfo_lookup_gpio("recovery", 1,
-				new_cannonlake_gpio_input_from_coreboot);
-	flag_replace(FLAG_RECSW, rec_gpio);
 
 	/* 32MB SPI Flash */
 	uintptr_t mmio_base = pci_read_config32(PCI_DEV(0, 0x1f, 5),
@@ -124,7 +121,7 @@ static int board_setup(void)
 
 	power_switch = &new_cr50_power_switch(&tpm->base.ops)->ops;
 	flag_replace(FLAG_PWRSW, power_switch);
-	flag_install(FLAG_PHYS_PRESENCE, power_switch);
+	flag_replace(FLAG_PHYS_PRESENCE, power_switch);
 
 	/* Cannonlake PCH */
 	power_set_ops(&cannonlake_power_ops);

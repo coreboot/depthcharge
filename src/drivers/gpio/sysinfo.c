@@ -58,15 +58,17 @@ GpioOps *sysinfo_lookup_gpio(const char *name_to_find, int resample_at_runtime,
 
 void sysinfo_install_flags(new_gpio_from_coreboot_t ngfc)
 {
+	GpioOps *phys_presence_gpio = NULL;
 	/* If a GPIO is not defined, we will just flag_install() a NULL, which
 	 * will only hit a die_if() if that flag is actually flag_fetch()ed. */
 	flag_install(FLAG_WPSW, sysinfo_lookup_gpio("write protect", 0, ngfc));
-	flag_install(FLAG_RECSW, sysinfo_lookup_gpio("recovery", 0, ngfc));
 	flag_install(FLAG_OPROM, sysinfo_lookup_gpio("oprom", 0, ngfc));
 
 	flag_install(FLAG_LIDSW, sysinfo_lookup_gpio("lid", 1, ngfc));
 	flag_install(FLAG_PWRSW, sysinfo_lookup_gpio("power", 1, ngfc));
 	flag_install(FLAG_ECINRW, sysinfo_lookup_gpio("EC in RW", 1, ngfc));
-	flag_install(FLAG_PHYS_PRESENCE,
-		     sysinfo_lookup_gpio("presence", 1, ngfc));
+	phys_presence_gpio = sysinfo_lookup_gpio("presence", 1, ngfc);
+	if (!phys_presence_gpio)
+		phys_presence_gpio = new_gpio_low();
+	flag_install(FLAG_PHYS_PRESENCE, phys_presence_gpio);
 }

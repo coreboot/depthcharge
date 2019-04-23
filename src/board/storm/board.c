@@ -199,19 +199,6 @@ static GpioOps *new_storm_gpio_input_from_coreboot(uint32_t port)
 	return &gpio->gpio_ops;
 }
 
-static void install_phys_presence_flag(void)
-{
-	GpioOps *phys_presence = sysinfo_lookup_gpio
-		("developer", 1, new_storm_gpio_input_from_coreboot);
-
-	if (!phys_presence) {
-		printf("%s failed retrieving phys presence GPIO\n", __func__);
-		return;
-	}
-
-	flag_install(FLAG_PHYS_PRESENCE, phys_presence);
-}
-
 void board_mmc_gpio_config(void)
 {
 	unsigned i;
@@ -319,13 +306,11 @@ static struct console_input_driver storm_input_driver =
 
 static int board_setup(void)
 {
-	sysinfo_install_flags(NULL);
+	sysinfo_install_flags(new_storm_gpio_input_from_coreboot);
 
 	fill_board_descriptor();
 
 	fit_add_compat(bdescriptor.compat_string);
-
-	install_phys_presence_flag();
 
 	console_add_input_driver(&storm_input_driver);
 
