@@ -21,7 +21,7 @@
 #include "base/init_funcs.h"
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/bus/i2c/mtk_i2c.h"
-#include "drivers/bus/i2s/mt8173.h"
+#include "drivers/bus/i2s/mtk.h"
 #include "drivers/bus/spi/mtk.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/anx7688/anx7688.h"
@@ -90,7 +90,7 @@ int oak_backlight_update(DisplayOps *me, uint8_t enable)
 
 static int sound_setup(void)
 {
-	MtkI2s *i2s0 = new_mtk_i2s(0x11220000, 2, 48000);
+	MtkI2s *i2s0 = new_mtk_i2s(0x11220000, 2, 48000, AFE_I2S1);
 	I2sSource *i2s_source = new_i2s_source(&i2s0->ops, 48000, 2, 8000);
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
 	MTKI2c *i2c0 = new_mtk_i2c(0x11007000, 0x11000100);
