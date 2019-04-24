@@ -11,7 +11,7 @@
 ## GNU General Public License for more details.
 
 config TIMESTAMP_RAW
-	bool
+	bool "Use raw TSC timestamp in coreboot timestamp table"
 	default ARCH_X86
 
 config HEADLESS

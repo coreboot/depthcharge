@@ -53,7 +53,7 @@ config EC_SLOW_UPDATE
 	  screen that informs the user the update is happening.
 
 config EC_EFS
-	bool
+	bool "Early-firmware selection (EFS) EC"
 	default n
 	depends on EC_SOFTWARE_SYNC
 	help
