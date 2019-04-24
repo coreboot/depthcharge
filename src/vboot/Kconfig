@@ -45,7 +45,7 @@ config EC_SOFTWARE_SYNC
 	  option selects whether depthcharge should support EC software sync.
 
 config EC_SLOW_UPDATE
-	bool
+	bool "EC update is slow and needs to display a screen"
 	default n
 	depends on EC_SOFTWARE_SYNC
 	help
