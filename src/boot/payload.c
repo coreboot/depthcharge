@@ -186,9 +186,9 @@ int payload_run(const char *payload_name, int verify)
 		int rv;
 
 		/* Calculate hash of payload. */
-		rv = vb2api_digest_buffer((const uint8_t *)payload,
-					  payload_size, VB2_HASH_SHA256,
-					  real_hash, sizeof(real_hash));
+		rv = vb2_digest_buffer((const uint8_t *)payload,
+				       payload_size, VB2_HASH_SHA256,
+				       real_hash, sizeof(real_hash));
 		if (rv) {
 			printf("SHA-256 calculation failed for "
 			       "%s payload.\n", payload_name);
