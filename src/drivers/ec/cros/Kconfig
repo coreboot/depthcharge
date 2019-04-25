@@ -33,3 +33,8 @@ config DRIVER_EC_CROS_SPI_WAKEUP_DELAY_US
 	int "Delay EC transfer after asserting chip-select"
 	default 0
 	depends on DRIVER_EC_CROS_SPI
+
+config CROS_EC_PROBE_AUX_FW_INFO
+	bool "Enable support to probe EC for Aux FW chip info"
+	default n
+	depends on DRIVER_EC_CROS

@@ -87,6 +87,8 @@ VbError_t check_vboot_aux_fw(VbAuxFwUpdateSeverity_t *severity)
 	VbAuxFwUpdateSeverity_t current;
 	VbError_t status;
 
+	if (CONFIG(CROS_EC_PROBE_AUX_FW_INFO))
+		cros_ec_probe_aux_fw_chips();
 	max = VB_AUX_FW_NO_DEVICE;
 	for (int i = 0; i < vboot_aux_fw_count; ++i) {
 		const VbootAuxFwOps *const aux_fw = vboot_aux_fw[i].fw_ops;

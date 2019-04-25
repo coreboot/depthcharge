@@ -21,6 +21,8 @@
 
 #include <stdint.h>
 
+#include "base/list.h"
+#include "drivers/ec/vboot_aux_fw.h"
 #include "drivers/ec/vboot_ec.h"
 #include "drivers/ec/cros/commands.h"
 #include "drivers/gpio/gpio.h"
@@ -86,6 +88,28 @@ typedef struct CrosEc
 	struct ec_host_response *proto3_response;
 	int proto3_response_size;
 } CrosEc;
+
+typedef struct CrosEcAuxFwChipInfo
+{
+	/* List Node in the chip list */
+	ListNode list_node;
+	/* Chip identifier as defined by the vendor_id:product_id */
+	uint16_t vid;
+	uint16_t pid;
+	/*
+	 * Function to create and register the firmware update operations
+	 * for that chip.
+	 */
+	const VbootAuxFwOps * (*new_chip_aux_fw_ops)(
+				struct ec_response_pd_chip_info *chip,
+				uint8_t ec_pd_id);
+} CrosEcAuxFwChipInfo;
+
+/*
+ * Global list of chips that require FW update. The drivers of the concerned
+ * chips should add themselves to the list via INIT_FUNC.
+ */
+extern ListNode ec_aux_fw_chip_list;
 
 /**
  * Send an arbitrary EC command.
@@ -364,5 +388,11 @@ int cros_ec_set_lid_shutdown_mask(int enable);
 int cros_ec_locate_tcpc_chip(uint8_t port, struct ec_response_locate_chip *r);
 
 CrosEc *new_cros_ec(CrosEcBusOps *bus, int devidx, GpioOps *interrupt_gpio);
+
+/**
+ * Probe EC to gather chip info that require FW update and register
+ * Aux FW operations with the vboot_aux_fw driver.
+ */
+void cros_ec_probe_aux_fw_chips(void);
 
 #endif
