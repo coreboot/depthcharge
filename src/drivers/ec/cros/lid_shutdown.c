@@ -15,7 +15,7 @@
  * GNU General Public License for more details.
  */
 
-#include <gbb_header.h>
+#include <vb2_api.h>
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
@@ -54,7 +54,7 @@ int cros_ec_set_lid_shutdown_mask(int enable)
 
 static int cros_ec_disable_lid_shutdown_at_startup(void)
 {
-	if (!(gbb_get_flags() & GBB_FLAG_DISABLE_LID_SHUTDOWN))
+	if (!(gbb_get_flags() & VB2_GBB_FLAG_DISABLE_LID_SHUTDOWN))
 		return 0;
 
 	printf("EC: Disabling lid close event due to GBB override\n");

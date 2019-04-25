@@ -15,11 +15,7 @@
  * GNU General Public License for more details.
  */
 
-#define NEED_VB20_INTERNALS  /* Poking around inside NV storage fields */
-
-#include <gbb_header.h>
 #include <libpayload.h>
-#include <vb2_api.h>
 #include <vboot_api.h>
 
 #include "base/cleanup_funcs.h"
@@ -362,8 +358,7 @@ static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 		break;
 	}
 	case FB_GBB_FLAGS: {
-		GoogleBinaryBlockHeader *gbb = cparams.gbb_data;
-		fb_add_number(output, "0x%llx", gbb->flags);
+		fb_add_number(output, "0x%llx", gbb_get_flags());
 		break;
 	}
 	case FB_OEM_VERSION: {

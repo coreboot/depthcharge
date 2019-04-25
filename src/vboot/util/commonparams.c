@@ -15,11 +15,12 @@
  * GNU General Public License for more details.
  */
 
+#define NEED_VB20_INTERNALS  /* Peeking into vb2_gbb_header */
+
 #include <assert.h>
-#include <gbb_header.h>
 #include <libpayload.h>
-#include <vboot_struct.h>
 #include <vb2_api.h>
+#include <vboot_struct.h>
 
 #include "config.h"
 #include "drivers/flash/flash.h"
@@ -84,14 +85,20 @@ static int gbb_init(void)
 
 	uint32_t offset = area.offset;
 
-	GoogleBinaryBlockHeader *header =
-		gbb_copy_in(offset, 0, sizeof(GoogleBinaryBlockHeader));
+	struct vb2_gbb_header *header =
+		gbb_copy_in(offset, 0, sizeof(struct vb2_gbb_header));
 	if (!header)
 		return 1;
 	printf("The GBB signature is at %p and is: ", header->signature);
-	for (int i = 0; i < GBB_SIGNATURE_SIZE; i++)
+	for (int i = 0; i < VB2_GBB_SIGNATURE_SIZE; i++)
 		printf(" %02x", header->signature[i]);
 	printf("\n");
+
+	if (memcmp(header->signature, VB2_GBB_SIGNATURE,
+		   VB2_GBB_SIGNATURE_SIZE)) {
+		printf("Bad signature on GBB.\n");
+		return 1;
+	}
 
 	if (!gbb_copy_in(offset, header->hwid_offset, header->hwid_size))
 		return 1;
@@ -121,7 +128,7 @@ int gbb_clear_flags(void)
 		return 1;
 	}
 
-	GoogleBinaryBlockHeader *header = cparams.gbb_data;
+	struct vb2_gbb_header *header = cparams.gbb_data;
 	header->flags = 0;
 	gbb_copy_out(area.offset, 0, sizeof(*header));
 	return 0;
@@ -129,12 +136,19 @@ int gbb_clear_flags(void)
 
 uint32_t gbb_get_flags(void)
 {
-	GoogleBinaryBlockHeader *header;
+	struct vb2_gbb_header *header;
 
 	if (gbb_init() != 0)
 		return 0;
 	header = cparams.gbb_data;
 	return header->flags;
+}
+
+void gbb_get_hwid(char **hwid, uint32_t *size)
+{
+	struct vb2_gbb_header *gbb = cparams.gbb_data;
+	*hwid = (char *)((uintptr_t)gbb + gbb->hwid_offset);
+	*size = gbb->hwid_size;
 }
 
 static int vboot_verify_handoff(void)

@@ -17,11 +17,11 @@
 
 #include <arch/io.h>
 #include <endian.h>
-#include <gbb_header.h>
 #include <libpayload.h>
 #include <pci.h>
 #include <pci/pci.h>
 #include <sysinfo.h>
+#include <vb2_api.h>
 
 #include "base/init_funcs.h"
 #include "base/list.h"
@@ -92,7 +92,6 @@ static int read_rt5514_id(DesignwareI2c *i2c, uint32_t *id)
 static int board_check_audio(VbootInitFunc *init)
 {
 	DesignwareI2c *i2c = init->data;
-	GoogleBinaryBlockHeader *gbb = cparams.gbb_data;
 	uint8_t reset_reg = nvram_read(CMOS_RESET_REG);
 	uint32_t device_id_valid = htobe32(RT5514_DEVID_VALID);
 	uint32_t device_id = 0;
@@ -109,7 +108,7 @@ static int board_check_audio(VbootInitFunc *init)
 		return 0;
 
 	/* Skip if FAFT is enabled */
-	if (gbb->flags & GBB_FLAG_FAFT_KEY_OVERIDE)
+	if (gbb_get_flags() & VB2_GBB_FLAG_FAFT_KEY_OVERIDE)
 		return 0;
 
 	ret = read_rt5514_id(i2c, &device_id);

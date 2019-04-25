@@ -18,7 +18,6 @@
 #define NEED_VB20_INTERNALS  /* Poking around inside NV storage fields */
 
 #include <assert.h>
-#include <gbb_header.h>
 #include <vb2_api.h>
 #include <vboot_api.h>
 
@@ -48,13 +47,7 @@ static uint32_t fb_cap_bitmap[] = {
 
 uint8_t fb_check_gbb_override(void)
 {
-	GoogleBinaryBlockHeader *gbb = cparams.gbb_data;
-	if (memcmp(gbb->signature, GBB_SIGNATURE, GBB_SIGNATURE_SIZE)) {
-		printf("Bad signature on GBB.\n");
-		return 0;
-	}
-
-	if (gbb->flags & GBB_FLAG_FORCE_DEV_BOOT_FASTBOOT_FULL_CAP)
+	if (gbb_get_flags() & VB2_GBB_FLAG_FORCE_DEV_BOOT_FASTBOOT_FULL_CAP)
 		return 1;
 
 	return 0;

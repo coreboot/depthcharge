@@ -18,7 +18,7 @@
 #include <assert.h>
 #include <libpayload.h>
 #include <cbfs.h>
-#include <gbb_header.h>
+#include <vb2_api.h>
 #include <vboot_api.h>
 #include <vboot/screens.h>
 #include "base/list.h"
@@ -462,9 +462,8 @@ static VbError_t vboot_draw_footer(uint32_t locale)
 	 * which is locale dependent, and 'XYZ', a model name. Model name
 	 * consists of individual font images: 'X' 'Y' 'Z'.
 	 */
-	GoogleBinaryBlockHeader *gbb = cparams.gbb_data;
-	if (gbb)
-		hwid = (char *)((uintptr_t)gbb + gbb->hwid_offset);
+	uint32_t size;
+	gbb_get_hwid(&hwid, &size);
 	if (!hwid)
 		hwid = "NOT FOUND";
 

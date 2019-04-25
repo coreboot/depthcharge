@@ -16,8 +16,8 @@
  */
 
 #include <assert.h>
-#include <gbb_header.h>
 #include <libpayload.h>
+#include <vb2_api.h>
 #include <vboot_api.h>
 #include <vboot_struct.h>
 
@@ -102,14 +102,11 @@ int crossystem_setup(int firmware_type)
 		chsw |= CHSW_DEVELOPER_SWITCH;
 	acpi_table->chsw = chsw;
 
-	GoogleBinaryBlockHeader *gbb = cparams.gbb_data;
-	if (memcmp(gbb->signature, GBB_SIGNATURE, GBB_SIGNATURE_SIZE)) {
-		printf("Bad signature on GBB.\n");
-		return 1;
-	}
-	char *hwid = (char *)((uintptr_t)cparams.gbb_data + gbb->hwid_offset);
-	size = MIN(gbb->hwid_size, sizeof(acpi_table->hwid));
-	memcpy(acpi_table->hwid, hwid, size);
+	char *hwid;
+	uint32_t hwid_size;
+	gbb_get_hwid(&hwid, &hwid_size);
+	hwid_size = MIN(hwid_size, sizeof(acpi_table->hwid));
+	memcpy(acpi_table->hwid, hwid, hwid_size);
 
 	size = MIN(fwid_size, sizeof(acpi_table->fwid));
 	memcpy(acpi_table->fwid, fwid, size);

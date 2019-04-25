@@ -17,10 +17,10 @@
 
 #include <assert.h>
 #include <endian.h>
-#include <gbb_header.h>
 #include <libpayload.h>
 #include <stdlib.h>
 #include <string.h>
+#include <vb2_api.h>
 #include <vboot_api.h>
 #include <vboot_struct.h>
 
@@ -116,13 +116,10 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 		dt_add_bin_prop(node, "readonly-firmware-version",
 				(char *)get_ro_fw_id(), ro_fw_size);
 
-	GoogleBinaryBlockHeader *gbb = cparams.gbb_data;
-	if (memcmp(gbb->signature, GBB_SIGNATURE, GBB_SIGNATURE_SIZE)) {
-		printf("Bad signature on GBB.\n");
-		return 1;
-	}
-	char *hwid = (char *)((uintptr_t)cparams.gbb_data + gbb->hwid_offset);
-	dt_add_bin_prop(node, "hardware-id", hwid, gbb->hwid_size);
+	char *hwid;
+	uint32_t hwid_size;
+	gbb_get_hwid(&hwid, &hwid_size);
+	dt_add_bin_prop(node, "hardware-id", hwid, hwid_size);
 
 	if (CONFIG_EC_SOFTWARE_SYNC) {
 		int in_rw = 0;

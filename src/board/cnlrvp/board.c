@@ -39,7 +39,6 @@
 #include "drivers/storage/nvme.h"
 #include "drivers/tpm/lpc.h"
 #include "drivers/tpm/tpm.h"
-#include <gbb_header.h>
 #include <libpayload.h>
 #include <sysinfo.h>
 #include "vboot/util/flag.h"

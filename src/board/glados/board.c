@@ -16,11 +16,11 @@
  * GNU General Public License for more details.
  */
 
-#include <gbb_header.h>
 #include <pci.h>
 #include <pci/pci.h>
 #include <libpayload.h>
 #include <sysinfo.h>
+#include <vb2_api.h>
 
 #include "base/init_funcs.h"
 #include "base/list.h"
@@ -59,9 +59,7 @@
  */
 static int ec_in_rw_workaround_get_value(GpioOps *me)
 {
-	GoogleBinaryBlockHeader *gbb = cparams.gbb_data;
-
-	if (gbb->flags & GBB_FLAG_FAFT_KEY_OVERIDE) {
+	if (gbb_get_flags() & VB2_GBB_FLAG_FAFT_KEY_OVERIDE) {
 		/* Override is enabled, return 0 for FAFT. */
 		printf("FAFT override enabled, returning 0 for ECINRW flag\n");
 		return 0;
