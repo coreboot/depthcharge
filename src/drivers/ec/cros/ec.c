@@ -45,6 +45,9 @@ static const int CROS_EC_HASH_TIMEOUT_MS = 2000;
 /* Time to delay between polling status of EC hash calculation */
 static const int CROS_EC_HASH_CHECK_DELAY_MS = 10;
 
+/* List of registered chip drivers to perform AUX FW update */
+ListNode ec_aux_fw_chip_list;
+
 static int ec_init(CrosEc *me);
 
 void cros_ec_dump_data(const char *name, int cmd, const void *data, int len)
@@ -1393,4 +1396,57 @@ CrosEc *new_cros_ec(CrosEcBusOps *bus, int devidx, GpioOps *interrupt_gpio)
 	me->vboot.protect_tcpc_ports = vboot_protect_tcpc_ports;
 
 	return me;
+}
+
+/**
+ * Probe EC to gather chip info that require FW update
+ */
+void cros_ec_probe_aux_fw_chips(void)
+{
+	CrosEc *cros_ec = cros_ec_get_main();
+	struct ec_response_usb_pd_ports usb_pd_ports_r;
+	struct ec_params_pd_chip_info pd_chip_p;
+	struct ec_response_pd_chip_info pd_chip_r;
+	int ret;
+	uint8_t i;
+	CrosEcAuxFwChipInfo *chip;
+	const VbootAuxFwOps *ops;
+
+	/* List is empty, no need to probe EC */
+	if (!ec_aux_fw_chip_list.next)
+		return;
+
+	ret = ec_command(cros_ec, EC_CMD_USB_PD_PORTS, 0, NULL, 0,
+				&usb_pd_ports_r, sizeof(usb_pd_ports_r));
+	if (ret < 0) {
+		printf("%s: Cannot resolve # of USB PD ports\n", __func__);
+		return;
+	}
+
+	/*
+	 * Iterate through the number of ports, get PD chip info,
+	 * and get the VbootAuxFw operations for that chip.
+	 */
+	for (i = 0; i < usb_pd_ports_r.num_ports; i++) {
+		/* Get the USB PD Chip info */
+		pd_chip_p.port = i;
+		ret = ec_command(cros_ec, EC_CMD_PD_CHIP_INFO, 0,
+					&pd_chip_p, sizeof(pd_chip_p),
+					&pd_chip_r, sizeof(pd_chip_r));
+		if (ret < 0) {
+			printf("%s: Cannot get PD port%d info - %d\n",
+					__func__, i, ret);
+			continue;
+		}
+
+		list_for_each(chip, ec_aux_fw_chip_list, list_node) {
+			if (pd_chip_r.vendor_id != chip->vid ||
+			    pd_chip_r.product_id != chip->pid)
+				continue;
+
+			ops = chip->new_chip_aux_fw_ops(&pd_chip_r, i);
+			register_vboot_aux_fw(ops);
+			break;
+		}
+	}
 }
