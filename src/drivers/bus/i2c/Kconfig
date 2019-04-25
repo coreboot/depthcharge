@@ -42,6 +42,10 @@ config DRIVER_BUS_I2C_IPQ40XX
 	bool "QCA IPQ40xx I2C driver"
 	default n
 
+config DRIVER_BUS_I2C_QCS405
+	bool "QCS405 I2C driver"
+	default n
+
 config DRIVER_BUS_I2C_ROCKCHIP
 	bool "Rockchip I2C driver"
 
