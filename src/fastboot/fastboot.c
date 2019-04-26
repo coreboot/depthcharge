@@ -1116,6 +1116,8 @@ static fb_ret_type fb_boot(struct fb_cmd *cmd)
 {
 	struct vb2_context *ctx = vboot_get_context();
 	VbSelectAndLoadKernelParams kparams;
+	VbSharedDataHeader *shared;
+	int size;
 
 	cmd->type = FB_FAIL;
 
@@ -1147,7 +1149,11 @@ static fb_ret_type fb_boot(struct fb_cmd *cmd)
 
 	kernel_size = image_size - kernel_size;
 
-	if (VbVerifyMemoryBootImage(ctx, &cparams, &kparams, kernel,
+	/* Set legacy vboot1 VbSharedDataHeader. */
+	if (find_common_params(&shared, &size))
+		return 1;
+
+	if (VbVerifyMemoryBootImage(ctx, shared, &kparams, kernel,
 				    kernel_size) != VBERROR_SUCCESS) {
 		/*
 		 * Fail if:

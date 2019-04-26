@@ -214,19 +214,6 @@ static int vboot_update_vbinit_flags(void)
 	return vboot_do_init_out_flags(vboot_handoff->out_flags);
 }
 
-static int set_cparams_shared_data(void)
-{
-	void *blob;
-	int size;
-	if (find_common_params(&blob, &size))
-		return 1;
-
-	cparams.shared_data_blob = blob;
-	cparams.shared_data_size = size;
-
-	return 0;
-}
-
 int common_params_init(void)
 {
 	// Initialize cparams, GBB size/data.
@@ -243,10 +230,6 @@ int common_params_init(void)
 
 	// Retrieve data from VbInit flags.
 	if (vboot_update_vbinit_flags())
-		return 1;
-
-	// Set cparams.shared_data fields.
-	if (set_cparams_shared_data())
 		return 1;
 
 	return 0;

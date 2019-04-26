@@ -121,6 +121,8 @@ static int vendor_data_settable(void)
 int vboot_select_and_load_kernel(void)
 {
 	struct vb2_context *ctx = vboot_get_context();
+	void *shared;
+	int size;
 
 	VbSelectAndLoadKernelParams kparams = {
 		.kernel_buffer = &_kernel_start,
@@ -144,8 +146,12 @@ int vboot_select_and_load_kernel(void)
 	if (vendor_data_settable())
 		kparams.inflags |= VB_SALK_INFLAGS_VENDOR_DATA_SETTABLE;
 
+	/* Set legacy vboot1 VbSharedDataHeader. */
+	if (find_common_params(&shared, &size))
+		return 1;
+
 	printf("Calling VbSelectAndLoadKernel().\n");
-	VbError_t res = VbSelectAndLoadKernel(ctx, &cparams, &kparams);
+	VbError_t res = VbSelectAndLoadKernel(ctx, shared, &kparams);
 
 	if (res == VBERROR_EC_REBOOT_TO_RO_REQUIRED) {
 		printf("EC Reboot requested. Doing cold reboot.\n");

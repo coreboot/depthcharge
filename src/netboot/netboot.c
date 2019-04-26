@@ -44,19 +44,19 @@
 
 static void enable_graphics(void)
 {
-	VbSharedDataHeader *vb_sd;
-	int vb_sd_size;
+	VbSharedDataHeader *shared;
+	int size;
 
-	die_if(find_common_params((void **)&vb_sd, &vb_sd_size),
+	die_if(find_common_params((void **)&shared, &size),
 	       "Unable to access VBSD\n");
 
 	display_init();
 	backlight_update(1);
 
-	if (!(vb_sd->flags & VBSD_OPROM_MATTERS))
+	if (!(shared->flags & VBSD_OPROM_MATTERS))
 		return;
 
-	int oprom_loaded = vb_sd->flags & VBSD_OPROM_LOADED;
+	int oprom_loaded = shared->flags & VBSD_OPROM_LOADED;
 
 	// Manipulating vboot's internal data and calling its internal
 	// functions is NOT NICE and will give you athlete's foot and make
