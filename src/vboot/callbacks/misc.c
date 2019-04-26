@@ -18,6 +18,7 @@
 #include <image/fmap.h>
 #include <libpayload.h>
 #include <lzma.h>
+#include <vb2_api.h>
 #include <vboot_api.h>
 
 #include "config.h"
@@ -103,4 +104,37 @@ VbError_t VbExSetVendorData(const char *vendor_data_value)
 	}
 
 	return VBERROR_SUCCESS;
+}
+
+int vb2ex_read_resource(struct vb2_context *ctx,
+			enum vb2_resource_index index,
+			uint32_t offset,
+			void *buf,
+			uint32_t size)
+{
+	FmapArea area;
+	void *data;
+
+	if (index != VB2_RES_GBB)
+		return VB2_ERROR_EX_READ_RESOURCE_INDEX;
+
+	if (fmap_find_area("GBB", &area)) {
+		printf("%s: couldn't find GBB region\n", __func__);
+		return VB2_ERROR_EX_READ_RESOURCE_INDEX;
+	}
+
+	if ((offset + size) > area.size) {
+		printf("%s: offset outside of GBB region\n", __func__);
+		return VB2_ERROR_EX_READ_RESOURCE_SIZE;
+	}
+
+	data = flash_read(area.offset + offset, size);
+	if (!data) {
+		printf("%s: failed to read from GBB region\n", __func__);
+		return VB2_ERROR_EX_READ_RESOURCE_INDEX;
+	}
+
+	memcpy(buf, data, size);
+
+	return VB2_SUCCESS;
 }
