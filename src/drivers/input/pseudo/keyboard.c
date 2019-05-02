@@ -277,7 +277,8 @@ static struct console_input_driver pseudo_keyboard =
 {
 	NULL,
 	&pk_havekey,
-	&pk_getchar
+	&pk_getchar,
+	CONSOLE_INPUT_TYPE_GPIO
 };
 
 static void pk_init(void)

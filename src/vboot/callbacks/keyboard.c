@@ -89,10 +89,14 @@ uint32_t VbExKeyboardReadWithFlags(uint32_t *flags_ptr)
 	uint32_t c = VbExKeyboardRead();
 	if (flags_ptr) {
 		*flags_ptr = 0;
-		// USB keyboards definitely cannot be trusted (assuming they
-		// are even keyboards).  There are other devices that also
-		// cannot be trusted, but this is the best we can do for now.
-		if (last_key_input_type() != CONSOLE_INPUT_TYPE_USB)
+		console_input_type input_type = last_key_input_type();
+		// Always trust UART and GPIO keyboards, and only trust
+		// EC-based keyboards when coming from a trusted EC.
+		// All other keyboards, including USB, are untrusted.
+		if (input_type == CONSOLE_INPUT_TYPE_UART ||
+		    input_type == CONSOLE_INPUT_TYPE_GPIO ||
+		    (CONFIG_DRIVER_EC_CROS &&
+		     input_type == CONSOLE_INPUT_TYPE_EC))
 			*flags_ptr |= VB_KEY_FLAG_TRUSTED_KEYBOARD;
 	}
 	return c;
