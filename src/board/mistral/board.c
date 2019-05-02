@@ -25,6 +25,7 @@
 #include "drivers/bus/usb/usb.h"
 #include "drivers/power/psci.h"
 #include "drivers/storage/sdhci_msm.h"
+#include "drivers/gpio/sysinfo.h"
 
 #define TLMM_BOOT_SEL		0x010C1000
 #define EMMC_BOOT		0x8000000
@@ -76,9 +77,7 @@ static DeviceTreeFixup ipq_enet_fixup = {
 
 static int board_setup(void)
 {
-	/* stub out required GPIOs for vboot */
-	flag_replace(FLAG_LIDSW, new_gpio_high());
-	flag_replace(FLAG_PWRSW, new_gpio_low());
+	sysinfo_install_flags(NULL);
 
 	power_set_ops(&psci_power_ops);
 
