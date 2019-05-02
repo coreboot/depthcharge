@@ -313,7 +313,8 @@ static struct console_input_driver storm_input_driver =
 {
 	NULL,
 	&storm_havekey,
-	&storm_getchar
+	&storm_getchar,
+	CONSOLE_INPUT_TYPE_GPIO
 };
 
 static int board_setup(void)

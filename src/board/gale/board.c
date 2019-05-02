@@ -350,7 +350,8 @@ static struct console_input_driver dakota_input_driver =
 {
 	NULL,
 	&dakota_havekey,
-	&dakota_getchar
+	&dakota_getchar,
+	CONSOLE_INPUT_TYPE_GPIO
 };
 
 static void ipq_snoc_pnoc_init(void)

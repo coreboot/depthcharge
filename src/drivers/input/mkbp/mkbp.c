@@ -520,7 +520,8 @@ static struct console_input_driver mkbp_keyboard =
 {
 	NULL,
 	&mkbp_keyboard_havekey,
-	&mkbp_keyboard_getchar
+	&mkbp_keyboard_getchar,
+	CONSOLE_INPUT_TYPE_EC
 };
 
 static void mkbp_keyboard_init(void)
