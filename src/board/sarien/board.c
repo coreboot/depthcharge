@@ -63,7 +63,7 @@ FlashProtectionMapping flash_protection_list[] = {
 		/* Winbond W25Q256 */
 		.id = {
 			.vendor = 0xef,
-			.model = 0x4019
+			.model = 0x7019
 		},
 		.wp_status_value = 0x9c
 	},
