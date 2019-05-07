@@ -211,7 +211,7 @@ static int vboot_update_vbinit_flags(void)
 	struct vboot_handoff *vboot_handoff = lib_sysinfo.vboot_handoff;
 	/* VbInit was already called in coreboot, so we need to update the
 	 * vboot internal flags ourself. */
-	return vboot_do_init_out_flags(vboot_handoff->init_params.out_flags);
+	return vboot_do_init_out_flags(vboot_handoff->out_flags);
 }
 
 static int set_cparams_shared_data(void)
