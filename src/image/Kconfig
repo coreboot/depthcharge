@@ -14,14 +14,6 @@
 # Options which are passed to the linker script. When making changes, update
 # the list of options in Makefile.inc as well.
 
-config LDSCRIPT_ARCH
-	bool "Architecture specific linker script"
-	default n
-	help
-	  When enabled, the linker script given as argument to the linker is
-	  the architecture specific linker script provided from libpayload.
-	  Otherwise, the default src/image/depthchearge.ldscript is used.
-
 config KERNEL_START
 	hex "Physical address of the region the kernel image is loaded into"
 	default 0x100000

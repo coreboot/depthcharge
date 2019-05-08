@@ -20,13 +20,29 @@ FASTBOOT = $(obj)/fastboot
 
 DONT_GC_NETBOOT = -Wl,-u,netboot_entry
 
+PREPROCESS_ONLY := -E -P -x assembler-with-cpp -undef
+
+LDSCRIPT_SRC := $(src)/src/image/depthcharge.ldscript.S
+LDSCRIPT_OBJ := $(obj)/image/depthcharge.ldscript
+
+# For ldscript generation, include depthcharge config.h
+# (KCONFIG_AUTOHEADER), and libpayload config.h (included
+# from kconfig.h).  kconfig.h also defines the CONFIG(option)
+# macro, which should be used when accessing boolean
+# config.h values.
+$(LDSCRIPT_OBJ): $(LDSCRIPT_SRC) $(KCONFIG_AUTOHEADER)
+	@printf "    LDSCRIPT   $@\n"
+	$(HOSTCC) $(PREPROCESS_ONLY) -I $(LIBPAYLOAD_DIR)/include \
+		-include $(LIBPAYLOAD_DIR)/include/kconfig.h \
+		-include $(KCONFIG_AUTOHEADER) $< -o $@
+
 # Defines rules for the payload executable
 # $1 output file base name (will result in $1.elf)
 # $2 objects to be linked into the binary
 # $3 additional compiler/linker flags to pass
 define declare_payload
 
-$1.elf: $2 $$$$(VB_LIB)
+$1.elf: $2 $$$$(VB_LIB) $(LDSCRIPT_OBJ)
 	@printf "    LD         $$(subst $$(obj)/,,$$@.tmp)\n"
 	$(Q)$$(XCC) $$(LINK_FLAGS) $3 -o $$@.tmp $$^
 	@printf "    OBJCOPY    $$(subst $$(obj)/,,$$@)\n"
