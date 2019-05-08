@@ -12,14 +12,3 @@
 ##
 
 depthcharge-y += fmap.c
-
-# These options are passed from .config to the linker script. When making
-# changes, update Kconfig as well.
-link_config_options := \
-	KERNEL_START \
-	KERNEL_SIZE \
-	BASE_ADDRESS \
-	HEAP_SIZE \
-	STACK_SIZE \
-	GBB_COPY_SIZE \
-	KERNEL_FIT_FDT_ADDR \
