@@ -54,3 +54,7 @@ config DRIVER_VIDEO_EC_PWM_BACKLIGHT
 config DRIVER_VIDEO_ARCTICSAND_BACKLIGHT
 	bool "Arctic Sand backlight controller setting"
 	default n
+
+config DRIVER_VIDEO_LP5562
+	bool "LP5562 LED driver"
+	default n
