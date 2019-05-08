@@ -24,6 +24,9 @@
 #include "vboot/util/flag.h"
 #include "boot/fit.h"
 #include "drivers/bus/spi/qcs405.h"
+#include "drivers/bus/i2c/qcs405.h"
+#include "drivers/bus/i2c/qcs405_blsp.h"
+#include "drivers/video/led_lp5562.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/power/psci.h"
 #include "drivers/storage/sdhci_msm.h"
@@ -163,6 +166,12 @@ static int board_setup(void)
 	assert(emmc);
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			&fixed_block_dev_controllers);
+
+	DisplayOps *led_ops = new_led_lp5562_display
+		(&new_qcs405_i2c(BLSP_QUP_ID_1)->ops, 0x30);
+	display_set_ops(led_ops);
+
+	display_init();
 
 	return 0;
 }

@@ -180,12 +180,12 @@ static const TiLp5562Program blink_rcv_broken1_program = {
 };
 
 static const uint8_t blink_rcv_insert1_b_text[] = {
-	0xE2,  0x00,  0x40,    10,  0xE2,  0x00,  0x40,     0,
+	0xE2,  0x00,  0x40,     0,  0xE2,  0x00,  0x40,     0,
 	0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
 };
 
 static const uint8_t blink_rcv_insert1_g_text[] = {
-	0xE2,  0x00,  0x40,   100,  0xE2,  0x00,  0x40,     0,
+	0xE2,  0x00,  0x40,   204,  0xE2,  0x00,  0x40,     0,
 	0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
 };
 
@@ -249,67 +249,37 @@ static const TiLp5562Program blink_rcv2dev1_program = {
 	}
 };
 
-/*
-===ping_pong1.lst===
-  1 00          .ENGINE1(B)
-  2 00 E200             trigger w3
-  3 01 400A             set_pwm 10
-  4 02 6600             wait 600
-  5 03 E30C             trigger w32,s32
-  6 04 4000             set_pwm 0
-  7 05 6600             wait 600
-  8 06 0000             gotostart
-  9
- 10 10          .ENGINE2(G)
- 11 10 E200             trigger w3
- 12 11 4064             set_pwm 100
- 13 12 6600             wait 600
- 14 13 E28A             trigger w31,s31
- 15 14 405A             set_pwm 90
- 16 15 6600             wait 600
- 17 16 0000             gotostart
- 18
- 19 20          .ENGINE3(R)
- 20 20 E006             trigger s21
- 21 21 40FF             set_pwm 255
- 22 22 6600             wait 600
- 23 23 E186             trigger w21,s21
- 24 24 40A0             set_pwm 160
- 25 25 6600             wait 600
- 26 26 0000             gotostart
-*/
 
-static const uint8_t ping_pong1_b_text[] = {
-	0xE2,  0x00,  0x40,    10,  0x66,  0x00,  0xE3,  0x00,
-	0x40,     0,  0x66,  0x00,  0x00,  0x00
+static const uint8_t blink_no_good1_b_text[] = {
+	0xE2,  0x00,  0x40,     0,  0xE2,  0x00,  0x40,     0,
+	0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
 };
 
-static const uint8_t ping_pong1_g_text[] = {
-	0xE2,  0x00,  0x40,   100,  0x66,  0x00,  0xE2,  0x80,
-	0x40,    90,  0x66,  0x00,  0x00,  0x00
+static const uint8_t blink_no_good1_g_text[] = {
+	0xE2,  0x00,  0x40,     0,  0xE2,  0x00,  0x40,     0,
+	0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
 };
 
-static const uint8_t ping_pong1_r_text[] = {
-	0xE0,  0x06,  0x40,   255,  0x66,  0x00,  0xE1,  0x80,
-	0x40,   160,  0x66,  0x00,  0x00,  0x00
-
+static const uint8_t blink_no_good1_r_text[] = {
+	0xE0,  0x06,  0x40,   255,  0x53,  0x00,  0xE0,  0x06,
+	0x40,     0,  0x63,  0x00,  0x63,  0x00,  0x00,  0x00
 };
 
-static const TiLp5562Program ping_pong1_program = {
+static const TiLp5562Program blink_no_good1_program = {
 	{
 		{
-			ping_pong1_b_text,
-			sizeof(ping_pong1_b_text),
+			blink_no_good1_b_text,
+			sizeof(blink_no_good1_b_text),
 			0,
 		},
 		{
-			ping_pong1_g_text,
-			sizeof(ping_pong1_g_text),
+			blink_no_good1_g_text,
+			sizeof(blink_no_good1_g_text),
 			0,
 		},
 		{
-			ping_pong1_r_text,
-			sizeof(ping_pong1_r_text),
+			blink_no_good1_r_text,
+			sizeof(blink_no_good1_r_text),
 			0,
 		},
 	}
@@ -325,6 +295,6 @@ const Led5562StateProg led_lp5562_state_programs[] = {
 	{VB_SCREEN_OS_BROKEN, {&blink_rcv_broken1_program} },
 	{VB_SCREEN_RECOVERY_INSERT, {&blink_rcv_insert1_program} },
 	{VB_SCREEN_RECOVERY_TO_DEV, {&blink_rcv2dev1_program} },
-	{VB_SCREEN_RECOVERY_NO_GOOD, {&ping_pong1_program} },
+	{VB_SCREEN_RECOVERY_NO_GOOD, {&blink_no_good1_program} },
 	{}, /* Empty record to mark the end of the table. */
 };
