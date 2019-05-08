@@ -24,6 +24,7 @@
 #include "config.h"
 #include "base/vpd_util.h"
 #include "drivers/flash/flash.h"
+#include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 
 uint32_t VbExIsShutdownRequested(void)
@@ -95,6 +96,12 @@ VbError_t VbExSetVendorData(const char *vendor_data_value)
 			  CONFIG_VENDOR_DATA_LENGTH, vendor_data_value) !=
 			  CONFIG_VENDOR_DATA_LENGTH) {
 		printf("%s: failed to rewrite RO_VPD area\n", __func__);
+		return VBERROR_VPD_WRITE;
+	}
+
+	/* Clear GBB flags */
+	if (gbb_clear_flags()) {
+		printf("%s: failed to clear GBB flags\n", __func__);
 		return VBERROR_VPD_WRITE;
 	}
 
