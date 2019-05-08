@@ -26,22 +26,31 @@
  */
 
 /*
- * KERNEL_START, KERNEL_SIZE, BASE_ADDRESS, HEAP_SIZE and STACK_SIZE
- * come from KConfig
+ * This file is first run through a C preprocessor before being used
+ * as a linker script.  Any Kconfig options may be referenced, which
+ * get sourced from build/config.h.
  */
 
 ENTRY(_entry)
 
 SECTIONS
 {
-	_kernel_start = KERNEL_START;
-	_kernel_end = KERNEL_START + KERNEL_SIZE;
-	_fit_fdt_start = KERNEL_FIT_FDT_ADDR;
-	_fit_fdt_end = KERNEL_FIT_FDT_ADDR + 8M;  /* enough for everyone(?) */
+	_kernel_start = CONFIG_KERNEL_START;
+	_kernel_end = CONFIG_KERNEL_START + CONFIG_KERNEL_SIZE;
+	_fit_fdt_start = CONFIG_KERNEL_FIT_FDT_ADDR;
+	_fit_fdt_end = CONFIG_KERNEL_FIT_FDT_ADDR + 8M;
 
 
 	/* The main portion of depthcharge. */
-	. = BASE_ADDRESS;
+	. = CONFIG_BASE_ADDRESS;
+
+#if CONFIG(ARCH_MIPS)
+	. = ALIGN(0x1000);
+	.exception : {
+		*exception_asm.libc.o(.text)
+		*exception_asm.libc.o(.text.*)
+	}
+#endif
 
 	. = ALIGN(16);
 	_start = .;
@@ -54,7 +63,7 @@ SECTIONS
 	}
 	.gbb_copy : {
 		_gbb_copy_start = .;
-		. += GBB_COPY_SIZE;
+		. += CONFIG_GBB_COPY_SIZE;
 		_gbb_copy_end = .;
 	}
 
@@ -72,6 +81,11 @@ SECTIONS
 	.data : {
 		*(.data)
 		*(.data.*)
+
+#if CONFIG(ARCH_MIPS)
+		. = ALIGN(16);
+		_gp = . + 0x7ff0;
+#endif
 
 		_init_funcs_start = .;
 		KEEP(*(.init_funcs))
@@ -92,17 +106,17 @@ SECTIONS
 		*(.bss)
 		*(.bss.*)
 		*(COMMON)
+		*(.scommon)
 
 		/* Stack and heap */
-
 		. = ALIGN(16);
 		_heap = .;
-		. += HEAP_SIZE;
+		. += CONFIG_HEAP_SIZE;
 		. = ALIGN(16);
 		_eheap = .;
 
 		_estack = .;
-		. += STACK_SIZE;
+		. += CONFIG_STACK_SIZE;
 		. = ALIGN(16);
 		_stack = .;
 	}
@@ -111,7 +125,7 @@ SECTIONS
 
 	_ = ASSERT(_kernel_end <= _start,
 		   "Kernel buffer must be placed before depthcharge image!");
-	_ = ASSERT(!KERNEL_FIT_FDT_ADDR ||
+	_ = ASSERT(!CONFIG_KERNEL_FIT_FDT_ADDR ||
 		   (_fit_fdt_end <= _start &&
 		    (_kernel_end <= _fit_fdt_start ||
 		     _fit_fdt_end <= _kernel_start)),

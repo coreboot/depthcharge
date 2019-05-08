@@ -83,15 +83,6 @@ ARCH = mips
 ARCH_DIR = mips
 endif
 
-ifeq ($(CONFIG_LDSCRIPT_ARCH),y)
-LDSCRIPT := $(src)/src/arch/$(ARCH_DIR)/depthcharge.ldscript
-ifeq ("$(wildcard $(LDSCRIPT))","")
-$(error $(LDSCRIPT): no such file.)
-endif
-else
-LDSCRIPT := $(src)/src/image/depthcharge.ldscript
-endif
-
 ARCH_TO_TOOLCHAIN_x86    := i386
 ARCH_TO_TOOLCHAIN_arm    := arm
 ARCH_TO_TOOLCHAIN_arm64  := arm64
@@ -121,7 +112,7 @@ INCLUDES = -I$(obj) -I$(src)/src/ -I$(src)/src/arch/$(ARCH_DIR)/includes/ \
 ABI_FLAGS := $(ARCH_ABI_FLAGS) -ffreestanding -fno-builtin \
 	-fno-stack-protector -fomit-frame-pointer
 LINK_FLAGS = $(ARCH_LINK_FLAGS) $(ABI_FLAGS) -fuse-ld=bfd \
-	-Wl,-T,$(LDSCRIPT) -Wl,--gc-sections -Wl,-Map=$@.map
+	-Wl,-T,$(LDSCRIPT_OBJ) -Wl,--gc-sections -Wl,-Map=$@.map
 CFLAGS := $(ARCH_CFLAGS) -Wall -Werror $(INCLUDES) -std=gnu99 \
 	$(ABI_FLAGS) -ffunction-sections -fdata-sections -ggdb3
 
@@ -236,10 +227,6 @@ $(foreach class,$(classes), \
 
 foreach-src=$(foreach file,$($(1)-srcs),$(eval $(call $(1)-objs_$(subst .,,$(suffix $(file)))_template,$(subst src/,,$(basename $(file))))))
 $(eval $(foreach class,$(classes),$(call foreach-src,$(class))))
-
-# Kconfig options intended for the linker.
-$(foreach option,$(link_config_options), \
-	$(eval LINK_FLAGS += -Wl,--defsym=$(option)=$$(CONFIG_$(option))))
 
 DEPENDENCIES = $(allobjs:.o=.d)
 -include $(DEPENDENCIES)
