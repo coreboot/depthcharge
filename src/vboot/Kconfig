@@ -67,12 +67,6 @@ config PHYSICAL_REC_SWITCH
 	help
 	  Whether this platform has a physical recovery switch.
 
-config OPROM_MATTERS
-	bool "Video option ROM matters"
-	default n
-	help
-	  Whether the video option ROM has run matters on this platform.
-
 config MOCK_TPM
 	bool "Mock the TPM in vboot (TURN OFF BEFORE RELEASE)"
 	default n
