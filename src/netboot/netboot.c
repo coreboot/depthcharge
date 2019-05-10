@@ -43,33 +43,24 @@
 
 static void enable_graphics(void)
 {
-	VbSharedDataHeader *shared;
-	int size;
-
-	die_if(find_common_params((void **)&shared, &size),
-	       "Unable to access VBSD\n");
-
 	display_init();
 	backlight_update(1);
 
-	if (!(shared->flags & VBSD_OPROM_MATTERS))
+	/* TODO(chromium:948529): Create a vboot API function for checking that
+	   display is enabled, and setting DISPLAY_REQUEST if it is not. */
+	struct vb2_shared_data *sd =
+		(struct vb2_shared_data *)vboot_get_context()->workbuf;
+
+	if (sd->flags & VB2_SD_FLAG_DISPLAY_AVAILABLE)
 		return;
 
-	int oprom_loaded = shared->flags & VBSD_OPROM_LOADED;
+	printf("Enabling graphics.\n");
 
-	// Manipulating vboot's internal data and calling its internal
-	// functions is NOT NICE and will give you athlete's foot and make
-	// you unpopular at parties. Right now it's the only way to ensure
-	// graphics are enabled, though, so it's a necessary evil.
-	if (!oprom_loaded) {
-		printf("Enabling graphics.\n");
+	vbnv_write(VB2_NV_DISPLAY_REQUEST, 1);
 
-		vbnv_write(VB2_NV_DISPLAY_REQUEST, 1);
-
-		printf("Rebooting.\n");
-		if (cold_reboot())
-			halt();
-	}
+	printf("Rebooting.\n");
+	if (cold_reboot())
+		halt();
 }
 
 static void print_ip_addr(const uip_ipaddr_t *ip)
