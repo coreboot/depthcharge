@@ -224,6 +224,20 @@ int cros_ec_tunnel_i2c_protect_status(CrosECTunnelI2c *bus, int *status)
 	return 0;
 }
 
+int cros_ec_tunnel_i2c_protect_tcpc_ports(CrosEc *ec)
+{
+	struct ec_params_i2c_passthru_protect protect_p = {
+		.subcmd = EC_CMD_I2C_PASSTHRU_PROTECT_ENABLE_TCPCS,
+	};
+	int ret;
+
+	ret = ec_command(ec, EC_CMD_I2C_PASSTHRU_PROTECT, 0,
+			 &protect_p, sizeof(protect_p), NULL, 0);
+	if (ret < 0)
+		return ret;
+	return 0;
+}
+
 CrosECTunnelI2c *new_cros_ec_tunnel_i2c(CrosEc *ec,
 					uint16_t remote_bus) {
 	CrosECTunnelI2c *bus = xzalloc(sizeof(*bus));

@@ -28,6 +28,7 @@
 #include <vboot_api.h>
 
 #include "base/container_of.h"
+#include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/ec/cros/commands.h"
 #include "drivers/ec/cros/message.h"
 #include "drivers/ec/cros/ec.h"
@@ -1314,6 +1315,19 @@ static VbError_t vboot_enable_power_button(VbootEcOps *vbec, int enable)
 	return VBERROR_SUCCESS;
 }
 
+static VbError_t vboot_protect_tcpc_ports(VbootEcOps *vbec)
+{
+	CrosEc *cros_ec = container_of(vbec, CrosEc, vboot);
+
+	if (CONFIG(DRIVER_BUS_I2C_CROS_EC_TUNNEL) &&
+			cros_ec_tunnel_i2c_protect_tcpc_ports(cros_ec)) {
+		printf("Some I2C tunnels in EC may be unprotected\n");
+		return VBERROR_UNKNOWN;
+	}
+
+	return VBERROR_SUCCESS;
+}
+
 int cros_ec_read_batt_state_of_charge(uint32_t *state)
 {
 	struct ec_params_charge_state params;
@@ -1486,6 +1500,7 @@ CrosEc *new_cros_ec(CrosEcBusOps *bus, int devidx, GpioOps *interrupt_gpio)
 	me->vboot.battery_cutoff = vboot_battery_cutoff;
 	me->vboot.check_limit_power = vboot_check_limit_power;
 	me->vboot.enable_power_button = vboot_enable_power_button;
+	me->vboot.protect_tcpc_ports = vboot_protect_tcpc_ports;
 
 	return me;
 }
