@@ -3485,8 +3485,9 @@ struct __ec_align4 ec_params_entering_mode {
 #define EC_CMD_I2C_PASSTHRU_PROTECT 0xb7
 
 enum ec_i2c_passthru_protect_subcmd {
-	EC_CMD_I2C_PASSTHRU_PROTECT_STATUS = 0x0,
-	EC_CMD_I2C_PASSTHRU_PROTECT_ENABLE = 0x1,
+	EC_CMD_I2C_PASSTHRU_PROTECT_STATUS = 0,
+	EC_CMD_I2C_PASSTHRU_PROTECT_ENABLE = 1,
+	EC_CMD_I2C_PASSTHRU_PROTECT_ENABLE_TCPCS = 2,
 };
 
 struct __ec_align1 ec_params_i2c_passthru_protect {
