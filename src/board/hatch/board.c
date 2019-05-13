@@ -144,10 +144,20 @@ static int board_setup(void)
 				&fixed_block_dev_controllers);
 
 	/* SD Card */
-	SdhciHost *sd = new_pci_sdhci_host(PCI_DEV(0, 0x14, 5), 1,
-			SD_CLOCK_MIN, SD_CLOCK_MAX);
-	list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
-			&removable_block_dev_controllers);
+	/* Attempt to read from the controller. If we get an invalid
+	 * value, then it is not present and we should not attempt to
+	 * initialize it. */
+	pcidev_t sdhci_dev = PCI_DEV(0, 0x14, 5);
+	u32 val = pci_read_config32(sdhci_dev, REG_VENDOR_ID);
+	if (val != 0xffffffff) {
+		SdhciHost *sd = new_pci_sdhci_host(sdhci_dev, 1,
+				SD_CLOCK_MIN, SD_CLOCK_MAX);
+		list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
+				&removable_block_dev_controllers);
+	} else {
+		printf("%s: Info: SDHCI controller not present; skipping\n",
+		       __func__);
+	}
 
 	return 0;
 }
