@@ -11,7 +11,7 @@
 #include <cbfs_core.h>
 #include <libpayload.h>
 #include <vboot_api.h>
-#include <vb2_api.h>
+#include <vb2_sha.h>
 
 #include "base/cleanup_funcs.h"
 #include "base/container_of.h"

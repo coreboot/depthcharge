@@ -19,7 +19,6 @@
 
 #include <libpayload.h>
 #include <udc/chipidea.h>
-#include <vb2_api.h>
 
 #include "board/smaug/fastboot.h"
 #include "board/smaug/input.h"

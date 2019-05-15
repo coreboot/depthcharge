@@ -19,7 +19,6 @@
 
 #include <assert.h>
 #include <vb2_api.h>
-#include <vboot_api.h>
 
 #include "fastboot/capabilities.h"
 #include "fastboot/fastboot.h"
