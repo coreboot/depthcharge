@@ -16,12 +16,10 @@
  */
 
 #include <assert.h>
-#include <libpayload.h>
 #include <cbfs.h>
-#include <vboot_api.h>
-
+#include <libpayload.h>
 #include <stddef.h>
-#include <vb2_api.h>
+#include <vboot_api.h>
 
 #include "base/timestamp.h"
 #include "config.h"

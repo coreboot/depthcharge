@@ -20,7 +20,6 @@
 #include <libpayload.h>
 #include <stdlib.h>
 #include <string.h>
-#include <vb2_api.h>
 #include <vboot_api.h>
 #include <vboot_struct.h>
 

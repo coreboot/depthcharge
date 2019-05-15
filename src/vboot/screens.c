@@ -18,7 +18,6 @@
 #include <assert.h>
 #include <libpayload.h>
 #include <cbfs.h>
-#include <vb2_api.h>
 #include <vboot_api.h>
 #include <vboot/screens.h>
 #include "base/list.h"

@@ -18,7 +18,6 @@
 #include <stdbool.h>
 #include <libpayload.h>
 #include <lzma.h>
-#include <vb2_api.h>
 #include <vb2_sha.h>
 #include <cbfs.h>
 

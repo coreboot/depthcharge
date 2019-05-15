@@ -12,7 +12,6 @@
 #include <libpayload.h>
 #include <swab.h>
 #include <vboot_api.h>
-#include <vb2_api.h>
 
 #include "base/container_of.h"
 #include "drivers/ec/wilco/ec.h"
