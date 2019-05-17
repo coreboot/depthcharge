@@ -44,7 +44,8 @@ define declare_payload
 
 $1.elf: $2 $$$$(VB_LIB) $(LDSCRIPT_OBJ)
 	@printf "    LD         $$(subst $$(obj)/,,$$@.tmp)\n"
-	$(Q)$$(XCC) $$(LINK_FLAGS) $3 -o $$@.tmp $$^
+	$(Q)$$(XCC) $$(LINK_FLAGS) $3 -o $$@.tmp \
+		$$(filter-out $(LDSCRIPT_OBJ),$$^)
 	@printf "    OBJCOPY    $$(subst $$(obj)/,,$$@)\n"
 	$(Q)$$(OBJCOPY) --remove-section=".shared_data" \
 		--remove-section=".cparams" --remove-section=".gbb_copy" \
