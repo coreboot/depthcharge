@@ -49,6 +49,7 @@ static const VpdDeviceTreeMap vpd_dt_map[] = {
 	{ "eth_wan_mac", "/soc@0/ethernet@7a80000/mdio/switch0@16/ports/port@2/local-mac-address" },
 	{ "eth_lan_mac", "/soc@0/ethernet@7a80000/mdio/switch0@16/ports/port@3/local-mac-address" },
 	{ "bluetooth_mac", "/soc@0/serial@78b2000/wcn3990-bt/local-bd-address" },
+	{ "bluetooth_mac", "/soc@0/serial@78b2000/wcn3998-bt/local-bd-address" },
 	{ "cascade_mac", "/soc@0/pci@10000000/pcie@0/wifi@0,0/local-mac-address" },
 
 	{}
