@@ -19,6 +19,7 @@
 #include <libpayload.h>
 
 #include "base/container_of.h"
+#include "base/init_funcs.h"
 #include "drivers/ec/ps8751/ps8751.h"
 
 #define PS8751_DEBUG	0
@@ -1050,6 +1051,31 @@ static int __must_check ps8751_verify(Ps8751 *me,
 	return 0;
 }
 
+static int ps8751_construct_i2c_tunnel(Ps8751 *me)
+{
+	int ret;
+	struct ec_response_locate_chip r;
+
+	ret = cros_ec_locate_tcpc_chip(me->ec_pd_id, &r);
+	if (ret)
+		return ret;
+
+	if (r.bus_type != EC_BUS_TYPE_I2C) {
+		printf("%s: Unexpected bus %d for port %d\n",
+			me->chip_name, r.bus_type, me->ec_pd_id);
+		return -1;
+	}
+
+	if (r.i2c_info.addr != I2C_MASTER) {
+		printf("%s: Unexpected addr %d for port %d\n",
+			me->chip_name, r.i2c_info.addr, me->ec_pd_id);
+		return -1;
+	}
+
+	me->bus = new_cros_ec_tunnel_i2c(cros_ec_get_main(), r.i2c_info.port);
+	return ret;
+}
+
 static VbError_t ps8751_ec_tunnel_status(const VbootAuxFwOps *vbaux,
 					 int *protected)
 {
@@ -1284,6 +1310,12 @@ static VbError_t ps8751_update_image(const VbootAuxFwOps *vbaux,
 
 	debug("call...\n");
 
+	/* If the I2C tunnel is not known, probe EC for that */
+	if (!me->bus && ps8751_construct_i2c_tunnel(me)) {
+		printf("%s: Error constructing i2c tunnel\n", me->chip_name);
+		return VBERROR_UNKNOWN;
+	}
+
 	if (ps8751_ec_tunnel_status(vbaux, &protected) != 0)
 		return VBERROR_UNKNOWN;
 	if (protected)
@@ -1393,3 +1425,33 @@ Ps8751 *new_ps8805(CrosECTunnelI2c *bus, int ec_pd_id)
 
 	return me;
 }
+
+static const VbootAuxFwOps *new_ps8751_from_chip_info(
+			struct ec_response_pd_chip_info *r, uint8_t ec_pd_id)
+{
+	Ps8751 *ps8751 = new_ps8751(NULL, ec_pd_id);
+
+	ps8751->chip.vendor = r->vendor_id;
+	ps8751->chip.product = r->product_id;
+	ps8751->chip.device = r->device_id;
+	ps8751->chip.fw_rev = r->fw_version_number;
+	printf("%s: vendor 0x%04x product 0x%04x device 0x%04x fw_rev 0x%02x\n",
+	       ps8751->chip_name, ps8751->chip.vendor, ps8751->chip.product,
+	       ps8751->chip.device, ps8751->chip.fw_rev);
+	return &ps8751->fw_ops;
+}
+
+static CrosEcAuxFwChipInfo aux_fw_chip_info = {
+	.vid = PARADE_VENDOR_ID,
+	.pid = PARADE_PS8751_PRODUCT_ID,
+	.new_chip_aux_fw_ops = new_ps8751_from_chip_info,
+};
+
+static int ps8751_register(void)
+{
+	list_insert_after(&aux_fw_chip_info.list_node,
+					&ec_aux_fw_chip_list);
+	return 0;
+}
+
+INIT_FUNC(ps8751_register);
