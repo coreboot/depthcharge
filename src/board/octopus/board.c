@@ -107,18 +107,6 @@ static void board_flash_init(void)
 							bios_base)->ops);
 }
 
-#define EC_USB_PD_PORT_PS8751	1
-#define EC_I2C_PORT_PS8751	2
-
-static void update_ps8751_firmware(CrosEc * const cros_ec)
-{
-	CrosECTunnelI2c *cros_ec_i2c_tunnel =
-		new_cros_ec_tunnel_i2c(cros_ec, EC_I2C_PORT_PS8751);
-	Ps8751 *ps8751 = new_ps8751(cros_ec_i2c_tunnel, EC_USB_PD_PORT_PS8751);
-
-	register_vboot_aux_fw(&ps8751->fw_ops);
-}
-
 static int board_setup(void)
 {
 	CrosEcLpcBus *cros_ec_lpc_bus;
@@ -141,9 +129,6 @@ static int board_setup(void)
 	cros_ec_lpc_bus = new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
 	cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, 0, NULL);
 	register_vboot_ec(&cros_ec->vboot, 0);
-
-	/* Peripherals connected to EC */
-	update_ps8751_firmware(cros_ec);
 
 	/* PCH Power */
 	power_set_ops(&apollolake_power_ops);
