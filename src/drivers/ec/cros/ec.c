@@ -1342,6 +1342,24 @@ int cros_ec_set_bl_pwm_duty(uint32_t percent)
 	return 0;
 }
 
+int cros_ec_locate_tcpc_chip(uint8_t port, struct ec_response_locate_chip *r)
+{
+	struct ec_params_locate_chip p;
+	int ret;
+
+	p.type = EC_CHIP_TYPE_TCPC;
+	p.index = port;
+	ret = ec_command(get_main_ec(), EC_CMD_LOCATE_CHIP, 0,
+				&p, sizeof(p), r, sizeof(*r));
+	if (ret < 0) {
+		printf("Failed to locate TCPC chip for port%d ret:%d\n",
+								port, ret);
+		return ret;
+	}
+
+	return 0;
+}
+
 static int set_max_proto3_sizes(CrosEc *me, int request_size, int response_size)
 {
 	free(me->proto3_request);
