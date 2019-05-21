@@ -29,7 +29,6 @@ struct VbootAuxFwOps {
 				  const uint8_t *image, size_t image_size);
 	VbError_t (*protect_status)(const VbootAuxFwOps *me,
 				    int *protect_status);
-	VbError_t (*protect)(const VbootAuxFwOps *me);
 	const char *fw_image_name;
 	const char *fw_hash_name;
 };

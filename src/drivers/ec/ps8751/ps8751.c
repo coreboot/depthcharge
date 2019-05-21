@@ -1334,26 +1334,12 @@ pd_resume:
 	return status;
 }
 
-static VbError_t ps8751_protect(const VbootAuxFwOps *vbaux)
-{
-	Ps8751 *me = container_of(vbaux, Ps8751, fw_ops);
-
-	debug("call...\n");
-
-	if (cros_ec_tunnel_i2c_protect(me->bus) != 0) {
-		printf("%s: could not protect EC I2C tunnel\n", me->chip_name);
-		return VBERROR_UNKNOWN;
-	}
-	return VBERROR_SUCCESS;
-}
-
 static const VbootAuxFwOps ps8751_fw_ops = {
 	.fw_image_name = "ps8751_a3.bin",
 	.fw_hash_name = "ps8751_a3.hash",
 	.check_hash = ps8751_check_hash,
 	.update_image = ps8751_update_image,
 	.protect_status = ps8751_ec_tunnel_status,
-	.protect = ps8751_protect,
 };
 
 static const VbootAuxFwOps ps8751_fw_canary_ops = {
@@ -1362,7 +1348,6 @@ static const VbootAuxFwOps ps8751_fw_canary_ops = {
 	.check_hash = ps8751_check_hash,
 	.update_image = ps8751_update_image,
 	.protect_status = ps8751_ec_tunnel_status,
-	.protect = ps8751_protect,
 };
 
 static const VbootAuxFwOps ps8805_fw_ops = {
@@ -1371,7 +1356,6 @@ static const VbootAuxFwOps ps8805_fw_ops = {
 	.check_hash = ps8751_check_hash,
 	.update_image = ps8751_update_image,
 	.protect_status = ps8751_ec_tunnel_status,
-	.protect = ps8751_protect,
 };
 
 Ps8751 *new_ps8751(CrosECTunnelI2c *bus, int ec_pd_id)

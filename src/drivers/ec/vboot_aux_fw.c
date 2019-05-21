@@ -176,10 +176,12 @@ VbError_t update_vboot_aux_fw(void)
 			/* Apply update */
 			printf("Update aux fw %d\n", i);
 			status = apply_dev_fw(aux_fw);
-			if (status == VBERROR_PERIPHERAL_BUSY)
-				goto update_protect;
-			else if (status != VBERROR_SUCCESS)
+			if (status == VBERROR_PERIPHERAL_BUSY) {
+				status = VBERROR_SUCCESS;
+				continue;
+			} else if (status != VBERROR_SUCCESS) {
 				break;
+			}
 
 			/* Re-check hash after update */
 			status = check_dev_fw_hash(aux_fw, &severity);
@@ -190,17 +192,6 @@ VbError_t update_vboot_aux_fw(void)
 				break;
 			}
 		}
-
-update_protect:
-		/*
-		 * AP firmware won't need to communicate to peripherals past
-		 * this point, so lock the i2c tunnel down to prevent OS from
-		 * accessing i2c tunnel later.
-		 */
-		printf("Protect aux fw %d\n", i);
-		status = aux_fw->protect(aux_fw);
-		if (status != VBERROR_SUCCESS)
-			break;
 	}
 
 	/* Re-enable lid shutdown event, if required */
