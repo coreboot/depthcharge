@@ -333,6 +333,14 @@ int cros_ec_get_lid_shutdown_mask(void);
  */
 int cros_ec_set_lid_shutdown_mask(int enable);
 
+/* -----------------------------------------------------------------------
+ * Locate TCPC chip on EC and retrieve its remote bus information
+ *   port: TCPC port index whose information is being retrieved
+ *   r: Response structure where the information is stored
+ *   Returns: 0 on success, < 0 on error.
+ */
+int cros_ec_locate_tcpc_chip(uint8_t port, struct ec_response_locate_chip *r);
+
 CrosEc *new_cros_ec(CrosEcBusOps *bus, int devidx, GpioOps *interrupt_gpio);
 
 #endif
