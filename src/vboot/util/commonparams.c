@@ -33,6 +33,7 @@
 /* TODO(kitching): cparams is only used to contain GBB data.  Migrate to use
  * vboot2 data structures instead, and remove cparams. */
 VbCommonParams cparams CPARAMS;
+static int cparams_initialized = 0;
 
 static void *gbb_copy_in(uint32_t gbb_offset, uint32_t offset, uint32_t size)
 {
@@ -65,8 +66,14 @@ static void gbb_copy_out(uint32_t gbb_offset, uint32_t offset, uint32_t size)
 	return;
 }
 
-static int gbb_init(void)
+static int cparams_init(void)
 {
+	if (cparams_initialized)
+		return 0;
+
+	// Initialize cparams.
+	memset(&cparams, 0, sizeof(cparams));
+
 	FmapArea area;
 	if (fmap_find_area("GBB", &area)) {
 		printf("Couldn't find the GBB.\n");
@@ -78,7 +85,6 @@ static int gbb_init(void)
 		return 1;
 	}
 
-	memset(&cparams, 0, sizeof(cparams));
 	cparams.gbb_size = area.size;
 	cparams.gbb_data = &_gbb_copy_start;
 	memset(cparams.gbb_data, 0, cparams.gbb_size);
@@ -110,6 +116,7 @@ static int gbb_init(void)
 			 header->recovery_key_size))
 		return 1;
 
+	cparams_initialized = 1;
 	return 0;
 }
 
@@ -119,7 +126,7 @@ int gbb_clear_flags(void)
 	if (flash_is_wp_enabled() != 0)
 		return 1;
 
-	if (gbb_init() != 0)
+	if (cparams_init() != 0)
 		return 1;
 
 	FmapArea area;
@@ -138,7 +145,7 @@ uint32_t gbb_get_flags(void)
 {
 	struct vb2_gbb_header *header;
 
-	if (gbb_init() != 0)
+	if (cparams_init() != 0)
 		return 0;
 	header = cparams.gbb_data;
 	return header->flags;
@@ -226,8 +233,8 @@ static int set_cparams_shared_data(void)
 
 int common_params_init(void)
 {
-	// Initialize GBB size/data.
-	if (gbb_init())
+	// Initialize cparams, GBB size/data.
+	if (cparams_init())
 		return 1;
 
 	// Verify incoming vboot_handoff.
