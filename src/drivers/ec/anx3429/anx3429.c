@@ -1130,27 +1130,12 @@ pd_resume:
 	return status;
 }
 
-static VbError_t anx3429_protect(const VbootAuxFwOps *vbaux)
-{
-	Anx3429 *me = container_of(vbaux, Anx3429, fw_ops);
-
-	debug("call...\n");
-
-	if (cros_ec_tunnel_i2c_protect(me->bus) != 0) {
-		printf("anx3429.%d: could not protect EC I2C tunnel\n",
-		       me->ec_pd_id);
-		return VBERROR_UNKNOWN;
-	}
-	return VBERROR_SUCCESS;
-}
-
 static const VbootAuxFwOps anx3429_fw_ops = {
 	.fw_image_name = "anx3429_ocm.bin",
 	.fw_hash_name = "anx3429_ocm.hash",
 	.check_hash = anx3429_check_hash,
 	.update_image = anx3429_update_image,
 	.protect_status = anx3429_ec_tunnel_status,
-	.protect = anx3429_protect,
 };
 
 Anx3429 *new_anx3429(CrosECTunnelI2c *bus, int ec_pd_id)
