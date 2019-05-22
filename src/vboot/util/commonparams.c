@@ -68,9 +68,6 @@ static void gbb_copy_out(uint32_t gbb_offset, uint32_t offset, uint32_t size)
 
 static int cparams_init(void)
 {
-	if (cparams_initialized)
-		return 0;
-
 	// Initialize cparams.
 	memset(&cparams, 0, sizeof(cparams));
 
@@ -126,8 +123,7 @@ int gbb_clear_flags(void)
 	if (flash_is_wp_enabled() != 0)
 		return 1;
 
-	if (cparams_init() != 0)
-		return 1;
+	die_if(!cparams_initialized, "cparams not yet initialized\n");
 
 	FmapArea area;
 	if (fmap_find_area("GBB", &area)) {
@@ -145,8 +141,8 @@ uint32_t gbb_get_flags(void)
 {
 	struct vb2_gbb_header *header;
 
-	if (cparams_init() != 0)
-		return 0;
+	die_if(!cparams_initialized, "cparams not yet initialized\n");
+
 	header = cparams.gbb_data;
 	return header->flags;
 }
