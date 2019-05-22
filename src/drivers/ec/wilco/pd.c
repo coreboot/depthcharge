@@ -247,7 +247,7 @@ static VbError_t wilco_pd_update_image(const VbootAuxFwOps *vbaux,
 	if (ret < 0)
 		return ret;
 
-	return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
+	return VBERROR_SUCCESS;
 }
 
 static VbError_t wilco_pd_protect_status(const VbootAuxFwOps *vbaux,
