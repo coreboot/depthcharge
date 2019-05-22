@@ -23,7 +23,6 @@
 #include "config.h"
 #include "base/cleanup_funcs.h"
 #include "drivers/tpm/tpm.h"
-#include "drivers/ec/cros/ec.h"
 #include "drivers/video/coreboot_fb.h"
 #include "drivers/video/display.h"
 #include "vboot/firmware_id.h"
@@ -125,7 +124,6 @@ VbError_t VbExDisplayDebugInfo(const char *info_str, int full_info)
 		buf[sizeof(buf) - 1] = '\0';
 	} else {
 		char *tpm_str = NULL;
-		char batt_pct_str[16];
 
 		if (CONFIG(MOCK_TPM))
 			tpm_str = "MOCK TPM";
@@ -133,26 +131,14 @@ VbError_t VbExDisplayDebugInfo(const char *info_str, int full_info)
 			tpm_str = tpm_report_state();
 
 		if (!tpm_str)
-			tpm_str = "(unsupported)";
+			tpm_str = "not supported";
 
-		if (!CONFIG(DRIVER_EC_CROS))
-			strcpy(batt_pct_str, "(unsupported)");
-		else {
-			uint32_t batt_pct;
-			if (cros_ec_read_batt_state_of_charge(&batt_pct))
-				strcpy(batt_pct_str, "(read failure)");
-			else
-				snprintf(batt_pct_str, sizeof(batt_pct_str),
-					 "%u%%", batt_pct);
-		}
 		snprintf(buf, sizeof(buf),
 			 "%s"	// vboot output includes newline
 			 "read-only firmware id: %s\n"
 			 "active firmware id: %s\n"
-			 "battery level: %s\n"
 			 "TPM state: %s\n",
-			 info_str, get_ro_fw_id(), get_active_fw_id(),
-			 batt_pct_str, tpm_str);
+			 info_str, get_ro_fw_id(), get_active_fw_id(), tpm_str);
 	}
 	return vboot_print_string(buf);
 }
