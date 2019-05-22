@@ -1339,7 +1339,6 @@ static const VbootAuxFwOps ps8751_fw_ops = {
 	.fw_hash_name = "ps8751_a3.hash",
 	.check_hash = ps8751_check_hash,
 	.update_image = ps8751_update_image,
-	.protect_status = ps8751_ec_tunnel_status,
 };
 
 static const VbootAuxFwOps ps8805_fw_ops = {
@@ -1347,7 +1346,6 @@ static const VbootAuxFwOps ps8805_fw_ops = {
 	.fw_hash_name = "ps8805_a2.hash",
 	.check_hash = ps8751_check_hash,
 	.update_image = ps8751_update_image,
-	.protect_status = ps8751_ec_tunnel_status,
 };
 
 Ps8751 *new_ps8751(CrosECTunnelI2c *bus, int ec_pd_id)
