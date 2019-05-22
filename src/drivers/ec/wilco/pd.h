@@ -36,14 +36,12 @@ typedef struct WilcoPdFlashInfo {
  * @ec: Handle for Wilco EC.
  * @ops: Handle for Verified Boot AUX firmware update callbacks.
  * @info: PD controller information &WilcoPdFlashInfo
- * @protected: Flag to indicate PD protect function has been called.
  */
 typedef struct WilcoPd
 {
 	WilcoEc *ec;
 	VbootAuxFwOps ops;
 	WilcoPdFlashInfo *info;
-	int protected;
 } WilcoPd;
 
 /**

@@ -250,14 +250,6 @@ static VbError_t wilco_pd_update_image(const VbootAuxFwOps *vbaux,
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t wilco_pd_protect_status(const VbootAuxFwOps *vbaux,
-					 int *protected)
-{
-	WilcoPd *pd = container_of(vbaux, WilcoPd, ops);
-	*protected = pd->protected;
-	return VBERROR_SUCCESS;
-}
-
 WilcoPd *new_wilco_pd(WilcoEc *ec, WilcoPdFlashInfo *info,
 		      const char *fw_image_name, const char *fw_hash_name)
 {
@@ -265,7 +257,6 @@ WilcoPd *new_wilco_pd(WilcoEc *ec, WilcoPdFlashInfo *info,
 
 	pd->ec = ec;
 
-	pd->ops.protect_status = &wilco_pd_protect_status;
 	pd->ops.update_image = &wilco_pd_update_image;
 	pd->ops.check_hash = &wilco_pd_check_hash;
 	pd->ops.fw_image_name = fw_image_name;

@@ -90,7 +90,6 @@ VbError_t check_vboot_aux_fw(VbAuxFwUpdateSeverity_t *severity)
 	max = VB_AUX_FW_NO_DEVICE;
 	for (int i = 0; i < vboot_aux_fw_count; ++i) {
 		const VbootAuxFwOps *const aux_fw = vboot_aux_fw[i].fw_ops;
-		int protect_status;
 
 		status = check_dev_fw_hash(aux_fw, &current);
 		if (status != VBERROR_SUCCESS)
@@ -98,21 +97,6 @@ VbError_t check_vboot_aux_fw(VbAuxFwUpdateSeverity_t *severity)
 
 		vboot_aux_fw[i].severity = current;
 		max = MAX(max, current);
-
-		if (current == VB_AUX_FW_NO_DEVICE ||
-				current == VB_AUX_FW_NO_UPDATE)
-			continue;
-
-		status = aux_fw->protect_status(aux_fw, &protect_status);
-		if (status != VBERROR_SUCCESS)
-			return status;
-
-		/*
-		 * If we have an update but the tunnel is already protected,
-		 * try to reboot earlier instead of when we apply the update.
-		 */
-		if (protect_status)
-			return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
 	}
 
 	*severity = max;
