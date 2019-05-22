@@ -107,10 +107,6 @@ static int board_check_audio(VbootInitFunc *init)
 	if (vboot_in_recovery())
 		return 0;
 
-	/* Skip if FAFT is enabled */
-	if (gbb_get_flags() & VB2_GBB_FLAG_FAFT_KEY_OVERIDE)
-		return 0;
-
 	ret = read_rt5514_id(i2c, &device_id);
 	if (ret || device_id != device_id_valid) {
 		/* Re-read once on failure */

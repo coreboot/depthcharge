@@ -55,37 +55,9 @@
 #define EMMC_CLOCK_MAX		200000000
 #define SD_CLOCK_MAX		52000000
 
-/*
- * Workaround for issue where silego is unable to see EC reset to clear the
- * EC_IN_RW state when attempting to enter recovery via servo.  This allows FAFT
- * to transition the system to developer mode.
- */
-static int ec_in_rw_workaround_get_value(GpioOps *me)
-{
-	if (gbb_get_flags() & VB2_GBB_FLAG_FAFT_KEY_OVERIDE) {
-		/* Override is enabled, return 0 for FAFT. */
-		printf("FAFT override enabled, returning 0 for ECINRW flag\n");
-		return 0;
-	}
-
-	/* Override is not enabled, lookup the real GPIO state. */
-	GpioOps *ecinrw = sysinfo_lookup_gpio("EC in RW", 1,
-			    new_skylake_gpio_input_from_coreboot);
-	return ecinrw->get(ecinrw);
-}
-
-GpioOps *ec_in_rw_workaround_gpio(void)
-{
-	GpioOps *ops = xzalloc(sizeof(*ops));
-
-	ops->get = &ec_in_rw_workaround_get_value;
-	return ops;
-}
-
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_skylake_gpio_input_from_coreboot);
-	flag_replace(FLAG_ECINRW, ec_in_rw_workaround_gpio());
 
 	/* MEC1322 Chrome EC */
 	CrosEcLpcBus *cros_ec_lpc_bus =
