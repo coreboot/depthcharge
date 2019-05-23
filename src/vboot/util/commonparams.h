@@ -38,7 +38,6 @@ extern VbCommonParams cparams;
 
 int gbb_clear_flags(void);
 uint32_t gbb_get_flags(void);
-void gbb_get_hwid(char **hwid, uint32_t *size);
 
 int common_params_init(void);
 int find_common_params(void **blob, int *size);

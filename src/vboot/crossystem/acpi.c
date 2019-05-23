@@ -17,6 +17,7 @@
 
 #include <assert.h>
 #include <libpayload.h>
+#include <vb2_api.h>
 #include <vboot_api.h>
 #include <vboot_struct.h>
 
@@ -100,11 +101,10 @@ int crossystem_setup(int firmware_type)
 		chsw |= CHSW_DEVELOPER_SWITCH;
 	acpi_table->chsw = chsw;
 
-	char *hwid;
-	uint32_t hwid_size;
-	gbb_get_hwid(&hwid, &hwid_size);
-	hwid_size = MIN(hwid_size, sizeof(acpi_table->hwid));
-	memcpy(acpi_table->hwid, hwid, hwid_size);
+	char hwid[VB2_GBB_HWID_MAX_SIZE];
+	uint32_t hwid_size = MIN(sizeof(hwid), sizeof(acpi_table->hwid));
+	if (!vb2api_gbb_read_hwid(vboot_get_context(), hwid, &hwid_size))
+		memcpy(acpi_table->hwid, hwid, hwid_size);
 
 	size = MIN(fwid_size, sizeof(acpi_table->fwid));
 	memcpy(acpi_table->fwid, fwid, size);

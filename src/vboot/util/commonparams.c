@@ -146,13 +146,6 @@ uint32_t gbb_get_flags(void)
 	return header->flags;
 }
 
-void gbb_get_hwid(char **hwid, uint32_t *size)
-{
-	struct vb2_gbb_header *gbb = cparams.gbb_data;
-	*hwid = (char *)((uintptr_t)gbb + gbb->hwid_offset);
-	*size = gbb->hwid_size;
-}
-
 static int vboot_verify_handoff(void)
 {
 	if (lib_sysinfo.vboot_handoff == NULL) {

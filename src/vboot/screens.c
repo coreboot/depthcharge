@@ -16,10 +16,12 @@
  */
 
 #include <assert.h>
-#include <libpayload.h>
 #include <cbfs.h>
+#include <libpayload.h>
+#include <vb2_api.h>
 #include <vboot_api.h>
 #include <vboot/screens.h>
+
 #include "base/list.h"
 #include "boot/payload.h"
 #include "drivers/flash/cbfs.h"
@@ -386,7 +388,6 @@ static int draw_text(const char *text, int32_t x, int32_t y,
 
 static VbError_t vboot_draw_footer(uint32_t locale)
 {
-	char *hwid = NULL;
 	int32_t x, y, w1, h1, w2, h2, w3, h3;
 	int32_t total;
 
@@ -460,10 +461,10 @@ static VbError_t vboot_draw_footer(uint32_t locale)
 	 * which is locale dependent, and 'XYZ', a model name. Model name
 	 * consists of individual font images: 'X' 'Y' 'Z'.
 	 */
-	uint32_t size;
-	gbb_get_hwid(&hwid, &size);
-	if (!hwid)
-		hwid = "NOT FOUND";
+	char hwid[VB2_GBB_HWID_MAX_SIZE];
+	uint32_t hwid_size = sizeof(hwid);
+	if (vb2api_gbb_read_hwid(vboot_get_context(), hwid, &hwid_size))
+		strcpy(hwid, "NOT FOUND");
 
 	w1 = VB_SIZE_AUTO;
 	h1 = VB_TEXT_HEIGHT;
