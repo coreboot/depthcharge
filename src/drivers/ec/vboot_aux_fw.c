@@ -12,6 +12,7 @@
  * GNU General Public License for more details.
  */
 
+#include "config.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/vboot_aux_fw.h"
 
@@ -178,7 +179,7 @@ VbError_t update_vboot_aux_fw(void)
 			/* Disable lid shutdown on x86 if enabled */
 			if (!lid_shutdown_disabled &&
 			    IS_ENABLED(CONFIG_ARCH_X86) &&
-			    IS_ENABLED(CONFIG_DRIVER_CROS_EC) &&
+			    IS_ENABLED(CONFIG_DRIVER_EC_CROS) &&
 			    cros_ec_get_lid_shutdown_mask() > 0) {
 				if (!cros_ec_set_lid_shutdown_mask(0))
 					lid_shutdown_disabled = 1;
@@ -219,7 +220,7 @@ update_protect:
 		ec->enable_power_button(ec, 1);
 
 	/* Re-enable lid shutdown event, if required */
-	if (IS_ENABLED(CONFIG_DRIVER_CROS_EC) && lid_shutdown_disabled)
+	if (IS_ENABLED(CONFIG_DRIVER_EC_CROS) && lid_shutdown_disabled)
 		cros_ec_set_lid_shutdown_mask(1);
 
 	return status;
