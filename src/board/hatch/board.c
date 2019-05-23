@@ -87,16 +87,30 @@ static void hatch_setup_flash(void)
 	flash_set_ops(&flash->ops);
 }
 
-#define EC_USB_PD_PORT_PS8751	1
-#define EC_I2C_PORT_PS8751	2
+#define EC_USB_PD_PORT_PS8751_0 0
+#define EC_USB_PD_PORT_PS8751_1	1
+#define EC_I2C_PORT_PS8751_0	3
+#define EC_I2C_PORT_PS8751_1	2
 
 static void update_ps8751_firmware(CrosEc * const cros_ec)
 {
-	CrosECTunnelI2c *cros_ec_i2c_tunnel =
-		new_cros_ec_tunnel_i2c(cros_ec, EC_I2C_PORT_PS8751);
-	Ps8751 *ps8751 = new_ps8751(cros_ec_i2c_tunnel, EC_USB_PD_PORT_PS8751);
+	static const char * const kohaku_str = "Kohaku";
+	struct cb_mainboard *mainboard = lib_sysinfo.mainboard;
 
-	register_vboot_aux_fw(&ps8751->fw_ops);
+	if (strncmp(cb_mb_part_string(mainboard), kohaku_str,
+			strlen(kohaku_str)) == 0) {
+		CrosECTunnelI2c *cros_ec_i2c_tunnel_0 =
+			new_cros_ec_tunnel_i2c(cros_ec, EC_I2C_PORT_PS8751_0);
+		Ps8751 *ps8751_0 = new_ps8751(
+			cros_ec_i2c_tunnel_0, EC_USB_PD_PORT_PS8751_0);
+		register_vboot_aux_fw(&ps8751_0->fw_ops);
+	}
+
+	CrosECTunnelI2c *cros_ec_i2c_tunnel_1 =
+		new_cros_ec_tunnel_i2c(cros_ec, EC_I2C_PORT_PS8751_1);
+	Ps8751 *ps8751_1 = new_ps8751(
+		cros_ec_i2c_tunnel_1, EC_USB_PD_PORT_PS8751_1);
+	register_vboot_aux_fw(&ps8751_1->fw_ops);
 }
 
 static int board_setup(void)
