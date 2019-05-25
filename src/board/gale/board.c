@@ -21,7 +21,6 @@
  * MA 02111-1307 USA
  */
 
-#include <config.h>
 #include <libpayload.h>
 #include <sysinfo.h>
 #include <stdio.h>

@@ -17,7 +17,6 @@
 
 #include <libpayload.h>
 
-#include "config.h"
 #include "drivers/tpm/tpm.h"
 
 static TpmOps *tpm_ops;

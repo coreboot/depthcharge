@@ -18,7 +18,6 @@
 #include <libpayload.h>
 
 #include "base/gpt.h"
-#include "config.h"
 #include "fastboot/backend.h"
 
 #define BACKEND_DEBUG

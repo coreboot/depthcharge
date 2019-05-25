@@ -32,7 +32,6 @@
 #include <libpayload.h>
 #include <stdint.h>
 
-#include "config.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/ipq806x_mmc.h"
 

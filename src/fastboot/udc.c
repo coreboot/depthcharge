@@ -16,7 +16,6 @@
  */
 
 #include <assert.h>
-#include <config.h>
 #include <libpayload.h>
 
 #include "fastboot/udc.h"

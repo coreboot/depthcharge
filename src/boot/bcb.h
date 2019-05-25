@@ -15,7 +15,6 @@
  * GNU General Public License for more details.
  */
 
-#include "config.h"
 #include "drivers/storage/blockdev.h"
 
 /* Read bcb partition and handle command. */

@@ -22,7 +22,6 @@
 
 #include "base/init_funcs.h"
 #include "boot/fit.h"
-#include "config.h"
 #include "drivers/bus/i2c/tegra.h"
 #include "drivers/bus/i2s/tegra.h"
 #include "drivers/bus/spi/tegra.h"

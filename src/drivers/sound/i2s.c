@@ -22,7 +22,6 @@
 #include <stdint.h>
 
 #include "base/container_of.h"
-#include "config.h"
 #include "drivers/bus/i2s/i2s.h"
 #include "drivers/sound/i2s.h"
 

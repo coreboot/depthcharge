@@ -13,7 +13,6 @@
 
 #include <libpayload.h>
 #include <stdio.h>
-#include "config.h"
 #include "base/container_of.h"
 #include "armada38x_i2c.h"
 

@@ -27,7 +27,6 @@
 #include <libpayload.h>
 
 #include "base/container_of.h"
-#include "config.h"
 #include "drivers/bus/spi/spi.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/cros/spi.h"

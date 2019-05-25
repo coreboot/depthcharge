@@ -27,7 +27,6 @@
 #include "base/timestamp.h"
 #include "boot/commandline.h"
 #include "boot/multiboot.h"
-#include "config.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/vboot_ec.h"
 #include "drivers/flash/flash.h"

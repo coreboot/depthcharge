@@ -20,7 +20,6 @@
 
 #include "base/init_funcs.h"
 #include "boot/fit.h"
-#include "config.h"
 #include "drivers/bus/i2c/rockchip.h"
 #include "drivers/bus/i2s/rockchip.h"
 #include "drivers/bus/spi/rockchip.h"

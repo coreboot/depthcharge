@@ -20,7 +20,6 @@
 #include "arch/mips/boot.h"
 #include "base/cleanup_funcs.h"
 #include "base/timestamp.h"
-#include "config.h"
 
 int boot_mips_linux(void *fdt, void *kernel, uint32_t kernel_size)
 {

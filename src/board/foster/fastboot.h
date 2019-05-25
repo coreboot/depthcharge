@@ -18,7 +18,6 @@
 #ifndef __BOARD_RUSH_RYU_FASTBOOT_H__
 #define __BOARD_RUSH_RYU_FASTBOOT_H__
 
-#include "config.h"
 #include "drivers/flash/spi.h"
 #include "drivers/storage/tegra_mmc.h"
 

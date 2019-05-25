@@ -26,7 +26,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
-#include <config.h>
 
 /* HACK */
 #define _DEBUG 1

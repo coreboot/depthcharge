@@ -24,7 +24,6 @@
 #include <vboot_api.h>
 
 #include "base/init_funcs.h"
-#include "config.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/input/input.h"
 #include "drivers/input/mkbp/keymatrix.h"

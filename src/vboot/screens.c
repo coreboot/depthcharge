@@ -24,7 +24,6 @@
 #include "base/list.h"
 #include "base/graphics.h"
 #include "boot/payload.h"
-#include "config.h"
 #include "drivers/flash/cbfs.h"
 #include "drivers/video/display.h"
 #include "vboot/util/commonparams.h"

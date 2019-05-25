@@ -24,7 +24,6 @@
 #include "board/smaug/fastboot.h"
 #include "board/smaug/input.h"
 #include "boot/android_dt.h"
-#include "config.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/flash/block_flash.h"

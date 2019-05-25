@@ -23,7 +23,6 @@
 
 #include "base/ranges.h"
 #include "boot/fit.h"
-#include "config.h"
 
 
 

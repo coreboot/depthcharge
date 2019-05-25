@@ -20,7 +20,6 @@
 #include <sysinfo.h>
 #include <vboot_api.h>
 
-#include "config.h"
 #include "base/cleanup_funcs.h"
 #include "base/graphics.h"
 #include "drivers/tpm/tpm.h"

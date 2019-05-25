@@ -19,7 +19,6 @@
 
 #include "arch/arm/boot.h"
 #include "base/timestamp.h"
-#include "config.h"
 #include "vboot/boot.h"
 
 static inline uint32_t get_sctlr(void)

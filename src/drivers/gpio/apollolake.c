@@ -19,7 +19,6 @@
 #include <arch/io.h>
 #include <libpayload.h>
 #include <stdint.h>
-#include <config.h>
 
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/apollolake.h"

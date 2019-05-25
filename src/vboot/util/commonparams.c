@@ -18,7 +18,6 @@
 #include <gbb_header.h>
 #include <libpayload.h>
 
-#include "config.h"
 #include "drivers/flash/flash.h"
 #include "image/fmap.h"
 #include "image/symbols.h"

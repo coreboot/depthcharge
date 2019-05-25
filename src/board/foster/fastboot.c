@@ -20,7 +20,6 @@
 #include <udc/chipidea.h>
 
 #include "board/foster/fastboot.h"
-#include "config.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/flash/block_flash.h"
 #include "vboot/firmware_id.h"

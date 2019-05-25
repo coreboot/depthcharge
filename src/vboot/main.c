@@ -23,7 +23,6 @@
 #include "base/init_funcs.h"
 #include "base/timestamp.h"
 #include "boot/bcb.h"
-#include "config.h"
 #include "debug/cli/common.h"
 #include "drivers/input/input.h"
 #include "vboot/fastboot.h"

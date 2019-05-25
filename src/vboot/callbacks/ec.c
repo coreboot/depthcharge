@@ -24,7 +24,6 @@
 #include <vb2_api.h>
 
 #include "base/timestamp.h"
-#include "config.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/vboot_aux_fw.h"
 #include "drivers/flash/flash.h"

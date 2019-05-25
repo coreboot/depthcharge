@@ -16,7 +16,6 @@
  */
 
 #include <libpayload.h>
-#include <config.h>
 #include <image/fmap.h>
 #include <drivers/flash/flash.h>
 #include <vboot_api.h>

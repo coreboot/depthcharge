@@ -17,7 +17,6 @@
 
 #include "base/container_of.h"
 #include "drivers/gpio/mtk_gpio.h"
-#include "config.h"
 
 enum {
 	MAX_GPIO_REG_BITS = 16,

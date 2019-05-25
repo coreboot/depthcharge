@@ -16,7 +16,6 @@
  * GNU General Public License for more details.
  */
 
-#include <config.h>
 #include <libpayload.h>
 #include <sysinfo.h>
 #include <stdio.h>

@@ -20,7 +20,6 @@
 #include <gpt.h>
 
 #include "boot/bcb.h"
-#include "config.h"
 
 uint8_t VbExOverrideGptEntryPriority(const GptEntry *e)
 {

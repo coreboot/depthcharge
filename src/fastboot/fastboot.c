@@ -23,7 +23,6 @@
 #include <vboot_api.h>
 
 #include "base/cleanup_funcs.h"
-#include "config.h"
 #include "fastboot/backend.h"
 #include "fastboot/capabilities.h"
 #include "fastboot/fastboot.h"

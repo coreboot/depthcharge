@@ -21,7 +21,6 @@
 #include <stdlib.h>
 
 #include "boot/multiboot.h"
-#include "config.h"
 #include "vboot/boot.h"
 #include "vboot/boot_policy.h"
 

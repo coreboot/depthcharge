@@ -24,7 +24,6 @@
 #include "base/init_funcs.h"
 #include "base/list.h"
 #include "boot/commandline.h"
-#include "config.h"
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"

@@ -23,7 +23,6 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
-#include "config.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/bus/spi/intel_gspi.h"
