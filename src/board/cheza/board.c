@@ -17,7 +17,6 @@
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
-#include "config.h"
 #include "drivers/gpio/gpio.h"
 #include "vboot/util/flag.h"
 #include "boot/fit.h"

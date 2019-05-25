@@ -17,7 +17,6 @@
 #include <stdbool.h>
 
 #include "base/container_of.h"
-#include "config.h"
 #include "drivers/bus/spi/intel_gspi.h"
 
 /* GSPI Memory Mapped Registers */

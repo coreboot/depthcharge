@@ -25,7 +25,6 @@
  * more details.
  */
 
-#include <config.h>
 #include <libpayload.h>
 #include <endian.h>
 

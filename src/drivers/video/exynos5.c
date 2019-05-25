@@ -20,7 +20,6 @@
 
 #include "base/cleanup_funcs.h"
 #include "base/init_funcs.h"
-#include "config.h"
 
 enum {
 	FIMD_VIDCON0_ENVID = 2,

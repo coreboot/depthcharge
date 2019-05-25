@@ -18,7 +18,6 @@
 #include <libpayload.h>
 #include <tss_constants.h>
 
-#include "config.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/tpm/tpm_utils.h"
 

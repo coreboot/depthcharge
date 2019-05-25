@@ -29,7 +29,6 @@
  *   instead of just reading header and determining the remainder
  */
 
-#include <config.h>
 #include <endian.h>
 #include <libpayload.h>
 

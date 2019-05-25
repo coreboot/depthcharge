@@ -22,7 +22,6 @@
 #include "base/cleanup_funcs.h"
 #include "boot/bootdata.h"
 #include "boot/multiboot.h"
-#include "config.h"
 #include "base/timestamp.h"
 #include "vboot/boot_policy.h"
 #include "vboot/boot.h"

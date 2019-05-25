@@ -20,7 +20,8 @@ FASTBOOT = $(obj)/fastboot
 
 DONT_GC_NETBOOT = -Wl,-u,netboot_entry
 
-PREPROCESS_ONLY := -E -P -x assembler-with-cpp -undef
+# -c has no effect with -E but tells lpgcc that this is not a link step.
+PREPROCESS_ONLY := -E -c -P -x assembler-with-cpp -undef
 
 LDSCRIPT_SRC := $(src)/src/image/depthcharge.ldscript.S
 LDSCRIPT_OBJ := $(obj)/image/depthcharge.ldscript
@@ -32,9 +33,7 @@ LDSCRIPT_OBJ := $(obj)/image/depthcharge.ldscript
 # config.h values.
 $(LDSCRIPT_OBJ): $(LDSCRIPT_SRC) $(KCONFIG_AUTOHEADER)
 	@printf "    LDSCRIPT   $@\n"
-	$(HOSTCC) $(PREPROCESS_ONLY) -I $(LIBPAYLOAD_DIR)/include \
-		-include $(LIBPAYLOAD_DIR)/include/kconfig.h \
-		-include $(KCONFIG_AUTOHEADER) $< -o $@
+	$(XCC) $(PREPROCESS_ONLY) $(INCLUDES) $< -o $@
 
 # Defines rules for the payload executable
 # $1 output file base name (will result in $1.elf)

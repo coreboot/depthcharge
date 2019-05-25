@@ -22,7 +22,6 @@
 #include "base/device_tree.h"
 #include "boot/commandline.h"
 #include "boot/fit.h"
-#include "config.h"
 #include "drivers/storage/blockdev.h"
 #include "image/symbols.h"
 #include "vboot/boot.h"

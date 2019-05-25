@@ -22,7 +22,6 @@
 #include <vboot_api.h>
 
 #include "base/timestamp.h"
-#include "config.h"
 #include "drivers/ec/vboot_aux_fw.h"
 #include "drivers/ec/vboot_ec.h"
 #include "drivers/flash/flash.h"

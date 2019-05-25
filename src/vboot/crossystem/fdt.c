@@ -24,7 +24,6 @@
 #include <vboot_struct.h>
 
 #include "base/device_tree.h"
-#include "config.h"
 #include "image/fmap.h"
 #include "vboot/callbacks/nvstorage_flash.h"
 #include "vboot/crossystem/crossystem.h"

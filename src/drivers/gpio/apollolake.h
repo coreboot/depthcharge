@@ -21,7 +21,6 @@
 
 #include <stdint.h>
 #include "base/cleanup_funcs.h"
-#include <config.h>
 
 #if CONFIG(DRIVER_SOC_GLK)
 #include "drivers/gpio/glk_defs.h"

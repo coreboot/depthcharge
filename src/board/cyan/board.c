@@ -17,7 +17,6 @@
 
 #include <pci/pci.h>
 
-#include "config.h"
 #include "base/init_funcs.h"
 #include "board/cyan/device_nvs.h"
 #include "drivers/bus/i2c/designware.h"

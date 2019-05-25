@@ -51,8 +51,6 @@
 #ifndef __UIPOPT_H__
 #define __UIPOPT_H__
 
-#include <config.h>
-#include <libpayload-config.h>
 #include <stdint.h>
 
 #include "net/net.h"

@@ -20,7 +20,6 @@
 #include "arch/mips/boot.h"
 #include "base/device_tree.h"
 #include "boot/fit.h"
-#include "config.h"
 #include "image/symbols.h"
 #include "vboot/boot.h"
 

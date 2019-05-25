@@ -32,7 +32,6 @@
 #include <assert.h>
 #include <libpayload.h>
 
-#include "config.h"
 #include "base/container_of.h"
 #include "drivers/bus/spi/ipq40xx.h"
 #include "drivers/bus/i2c/i2c.h"

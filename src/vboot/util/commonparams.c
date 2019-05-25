@@ -22,7 +22,6 @@
 #include <vb2_api.h>
 #include <vboot_struct.h>
 
-#include "config.h"
 #include "drivers/flash/flash.h"
 #include "image/fmap.h"
 #include "image/symbols.h"

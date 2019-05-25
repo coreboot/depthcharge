@@ -17,7 +17,6 @@
 #ifndef __DRIVERS_BUS_I2S_INTEL_COMMON_I2S_REGS_H__
 #define __DRIVERS_BUS_I2S_INTEL_COMMON_I2S_REGS_H__
 
-#include <config.h>
 #include <libpayload.h>
 
 #if CONFIG(INTEL_COMMON_I2S_CAVS_1_8)

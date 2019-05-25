@@ -17,7 +17,6 @@
  * GNU General Public License for more details.
  */
 
-#include <config.h>
 #include <libpayload.h>
 
 #include "base/container_of.h"

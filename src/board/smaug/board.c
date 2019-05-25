@@ -23,7 +23,6 @@
 #include "boot/fit.h"
 #include "boot/commandline.h"
 #include "board/smaug/fastboot.h"
-#include "config.h"
 #include "drivers/bus/spi/tegra.h"
 #include "drivers/bus/i2c/tegra.h"
 #include "drivers/bus/usb/usb.h"

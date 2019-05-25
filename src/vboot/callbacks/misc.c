@@ -21,7 +21,6 @@
 #include <vb2_api.h>
 #include <vboot_api.h>
 
-#include "config.h"
 #include "base/vpd_util.h"
 #include "drivers/flash/flash.h"
 #include "vboot/util/commonparams.h"

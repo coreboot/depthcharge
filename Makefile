@@ -17,9 +17,13 @@
 
 .SECONDEXPANSION:
 
-export src ?= $(shell pwd)
+src ?= $(shell pwd)
+export override src := $(abspath $(src))
+
+obj ?= $(src)/build
+export override obj := $(abspath $(obj))
+
 export srck ?= $(src)/util/kconfig
-export obj ?= $(src)/build
 export objk ?= $(obj)/util/kconfig
 
 export KERNELVERSION      := 0.1.0
@@ -108,7 +112,9 @@ STRIP ?= $(STRIP_$(toolchain))
 include $(src)/src/arch/$(ARCH_DIR)/build_vars
 
 INCLUDES = -I$(obj) -I$(src)/src/ -I$(src)/src/arch/$(ARCH_DIR)/includes/ \
-	-I$(VB_SOURCE)/firmware/include
+	-I$(VB_SOURCE)/firmware/include \
+	-include $(LIBPAYLOAD_DIR)/include/kconfig.h \
+	-include $(KCONFIG_AUTOHEADER)
 ABI_FLAGS := $(ARCH_ABI_FLAGS) -ffreestanding -fno-builtin \
 	-fno-stack-protector -fomit-frame-pointer
 LINK_FLAGS = $(ARCH_LINK_FLAGS) $(ABI_FLAGS) -fuse-ld=bfd \

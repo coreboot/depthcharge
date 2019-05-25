@@ -21,7 +21,6 @@
 
 #include "arch/arm/boot.h"
 #include "base/timestamp.h"
-#include "config.h"
 #include "vboot/boot.h"
 #include "base/ranges.h"
 #include "base/physmem.h"

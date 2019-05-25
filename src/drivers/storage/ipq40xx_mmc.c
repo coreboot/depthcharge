@@ -34,7 +34,6 @@
 #include <libpayload.h>
 #include <stdint.h>
 
-#include "config.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/ipq40xx_mmc.h"
 #include "base/cleanup_funcs.h"

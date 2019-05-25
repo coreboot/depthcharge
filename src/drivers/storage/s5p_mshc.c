@@ -22,7 +22,6 @@
 #include <stdint.h>
 
 #include "base/init_funcs.h"
-#include "config.h"
 #include "arch/cache.h"
 #include "drivers/storage/exynos_mshc.h"
 #include "drivers/storage/mmc.h"

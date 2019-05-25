@@ -12,7 +12,6 @@
  * GNU General Public License for more details.
  */
 
-#include "config.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/vboot_aux_fw.h"
 

@@ -19,7 +19,6 @@
 #define __DRIVERS_FLASH_MTK_NOR_H__
 
 #include <stdint.h>
-#include "config.h"
 #include "drivers/flash/flash.h"
 #include "drivers/storage/blockdev.h"
 

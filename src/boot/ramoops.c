@@ -15,7 +15,6 @@
  * GNU General Public License for more details.
  */
 
-#include <config.h>
 #include <endian.h>
 #include <libpayload.h>
 #include <stdint.h>

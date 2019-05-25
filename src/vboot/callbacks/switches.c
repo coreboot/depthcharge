@@ -15,7 +15,6 @@
  * GNU General Public License for more details.
  */
 
-#include <config.h>
 #include <libpayload.h>
 #include <vboot_api.h>
 #include <vboot/util/flag.h>

@@ -20,7 +20,6 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
-#include "config.h"
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/lpc.h"

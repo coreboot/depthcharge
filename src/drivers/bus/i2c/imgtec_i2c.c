@@ -8,7 +8,6 @@
  */
 
 #include <assert.h>
-#include <config.h>
 #include <libpayload.h>
 #include "base/container_of.h"
 #include "drivers/bus/i2c/imgtec_i2c.h"
