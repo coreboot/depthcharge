@@ -44,6 +44,12 @@ typedef struct VbootEcOps {
 
 	/* Check for EC request to limit power */
 	VbError_t (*check_limit_power)(struct VbootEcOps *me, int *limit_power);
+
+	/*
+	 * Protect bus/tunnels to TCPC ports. Optional operation, so check
+	 * before invoking it.
+	 */
+	VbError_t (*protect_tcpc_ports)(struct VbootEcOps *me);
 } VbootEcOps;
 
 #define NUM_MAX_VBOOT_ECS 2

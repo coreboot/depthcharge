@@ -162,6 +162,21 @@ VbError_t VbExEcVbootDone(int in_recovery)
 	int limit_power_wait_time = 0;
 	int message_printed = 0;
 
+	/*
+	 * The entire EC SW Sync including the AUX FW update is complete at
+	 * this point. AP firmware won't need to communicate to peripherals
+	 * past this point, so protect the remote bus/tunnel to prevent OS from
+	 * accessing it later.
+	 *
+	 * Also doing this here instead of the TCPC(AUX FW) sync code because
+	 * some chips that do not require FW update do not register with AUX FW
+	 * driver. Doing this here will help protect those tunnels as well.
+	 */
+	if (ec->protect_tcpc_ports && ec->protect_tcpc_ports(ec)) {
+		printf("Some remote tunnels in EC may be unprotected\n");
+		return VBERROR_UNKNOWN;
+	}
+
 	/* Ensure we have enough power to continue booting */
 	while(1) {
 		if (ec->check_limit_power(ec, &limit_power)) {
