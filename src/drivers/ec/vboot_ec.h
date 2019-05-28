@@ -50,6 +50,12 @@ typedef struct VbootEcOps {
 
 	/* Enable or disable power button */
 	VbError_t (*enable_power_button)(struct VbootEcOps *me, int enable);
+
+	/*
+	 * Protect bus/tunnels to TCPC ports. Optional operation, so check
+	 * before invoking it.
+	 */
+	VbError_t (*protect_tcpc_ports)(struct VbootEcOps *me);
 } VbootEcOps;
 
 #define NUM_MAX_VBOOT_ECS 2
