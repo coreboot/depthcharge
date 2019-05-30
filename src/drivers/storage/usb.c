@@ -35,8 +35,8 @@ static lba_t dc_usb_read(BlockDevOps *me, lba_t start, lba_t count,
 			 void *buffer)
 {
 	UsbDrive *drive = container_of(me, UsbDrive, dev.ops);
-	if (readwrite_blocks_512(drive->udev, start, count,
-				 cbw_direction_data_in, buffer))
+	if (readwrite_blocks(drive->udev, start, count,
+			     cbw_direction_data_in, buffer))
 		return 0;
 	else
 		return count;
@@ -46,8 +46,8 @@ static lba_t dc_usb_write(BlockDevOps *me, lba_t start, lba_t count,
 			  const void *buffer)
 {
 	UsbDrive *drive = container_of(me, UsbDrive, dev.ops);
-	if (readwrite_blocks_512(drive->udev, start, count,
-				 cbw_direction_data_out, (void *)buffer))
+	if (readwrite_blocks(drive->udev, start, count,
+			     cbw_direction_data_out, (void *)buffer))
 		return 0;
 	else
 		return count;
