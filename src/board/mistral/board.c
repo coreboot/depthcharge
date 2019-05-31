@@ -19,6 +19,7 @@
 #include <stdint.h>
 
 #include "base/init_funcs.h"
+#include "base/dt_set_wifi_calibration.h"
 #include "drivers/gpio/gpio.h"
 #include "vboot/util/flag.h"
 #include "boot/fit.h"
@@ -61,6 +62,22 @@ static const DtPathMap xo_cal_map[] = {
 	{}
 };
 
+static const DtPathMap bt_fw_map[] = {
+	{1, "/soc@0/serial@78b2000/wcn3990-bt", "firmware-name" },
+	{1, "/soc@0/serial@78b2000/wcn3998-bt", "firmware-name" },
+	{}
+};
+
+/* If CC not present in VPD, use first entry.
+ * If CC not found in map, use last entry.
+ */
+static const CcFwMap cc_fw_map[] ={
+	{"us", "crnv30.bin"},
+	{"ca", "crnv30.bin"},
+	{"e-", "crnv30_eu.bin"},
+	{}
+};
+
 static void runtime_dt_select(void)
 {
 	printf("\nBOARD ID: %d\n", lib_sysinfo.board_id);
@@ -89,6 +106,7 @@ static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 	rv = dt_set_wifi_calibration(tree, calibration_maps);
 	rv |= dt_set_wifi_country_code(tree, cc_maps);
 	rv |= dt_set_xo_cal_data(tree, xo_cal_map);
+	rv |= dt_set_bt_fw_name(tree, bt_fw_map, cc_fw_map);
 
 	return rv;
 }

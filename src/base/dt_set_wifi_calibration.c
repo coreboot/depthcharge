@@ -19,6 +19,7 @@
 #include <string.h>
 #include "base/device_tree.h"
 #include "base/vpd_util.h"
+#include "base/dt_set_wifi_calibration.h"
 
 /*
  * This file provides functions retrieving WiFi calibration data from CBMEM
@@ -173,6 +174,46 @@ int dt_set_xo_cal_data(DeviceTree *tree, const DtPathMap *maps)
 			continue;
 		}
 		dt_add_u32_prop(dt_node, (char *)map->key, key_val);
+	}
+
+	return rv;
+}
+
+int dt_set_bt_fw_name(DeviceTree *tree, const DtPathMap *maps,
+		const CcFwMap *cc_fw_maps)
+{
+	int rv = 0;
+	DeviceTreeNode *dt_node;
+	const DtPathMap *map = maps;
+	const CcFwMap *cc_fw_map = cc_fw_maps;
+	const char regioncode_key[] = "region";
+	char country_code[3];
+
+	if (!vpd_gets(regioncode_key, country_code, sizeof(country_code)) ||
+	    (strlen(country_code) < 2))
+		strcpy(country_code, cc_fw_map->country_code);
+
+	/* Add only the two letter Alpha-2 country code, remove the
+	 * variant in region code.
+	 */
+	country_code[2] = 0;
+
+	for (; cc_fw_map->country_code; cc_fw_map++) {
+		if (strcmp(country_code, cc_fw_map->country_code) == 0)
+			break;
+	}
+
+	if (!cc_fw_map->country_code)
+		cc_fw_map--;
+
+	for (; map && map->dt_path; map++) {
+		dt_node = dt_find_node_by_path(tree, map->dt_path, NULL,
+					       NULL, map->force_create);
+		if (!dt_node) {
+			rv |= 1;
+			continue;
+		}
+		dt_add_string_prop(dt_node, (char *)map->key, cc_fw_map->fw_name);
 	}
 
 	return rv;
