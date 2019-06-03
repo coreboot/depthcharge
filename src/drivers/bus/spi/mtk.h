@@ -16,6 +16,7 @@
 #define __DRIVERS_BUS_SPI_MTK_H__
 
 #include "drivers/bus/spi/spi.h"
+#include "drivers/gpio/gpio.h"
 
 /* SPI peripheral register map. */
 typedef struct {
@@ -53,7 +54,8 @@ typedef struct {
 	SpiOps ops;
 	MtkSpiRegs *reg_addr;
 	int state;
+	GpioOps *cs_gpio;
 } MtkSpi;
 
-MtkSpi *new_mtk_spi(uintptr_t reg_addr);
+MtkSpi *new_mtk_spi(uintptr_t reg_addr, GpioOps *cs_gpio);
 #endif /* __DRIVERS_BUS_SPI_MTK_H__ */

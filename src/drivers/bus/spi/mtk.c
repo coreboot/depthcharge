@@ -65,6 +65,8 @@ static int mtk_spi_start(SpiOps *me)
 	/* set pause mode */
 	setbits_le32(&regs->spi_cmd_reg, 1 << SPI_CMD_PAUSE_EN_SHIFT);
 
+	gpio_set(bus->cs_gpio, 1);
+
 	return 0;
 }
 
@@ -197,10 +199,12 @@ static int mtk_spi_stop(SpiOps *me)
 	/* clear pause mode */
 	clrbits_le32(&regs->spi_cmd_reg, 1 << SPI_CMD_PAUSE_EN_SHIFT);
 
+	gpio_set(bus->cs_gpio, 0);
+
 	return 0;
 }
 
-MtkSpi *new_mtk_spi(uintptr_t reg_addr)
+MtkSpi *new_mtk_spi(uintptr_t reg_addr, GpioOps *cs_gpio)
 {
 	MtkSpi *bus = xzalloc(sizeof(*bus));
 
@@ -208,5 +212,7 @@ MtkSpi *new_mtk_spi(uintptr_t reg_addr)
 	bus->ops.transfer = &mtk_spi_transfer;
 	bus->ops.stop = &mtk_spi_stop;
 	bus->reg_addr = (MtkSpiRegs *)reg_addr;
+	assert(cs_gpio);
+	bus->cs_gpio = cs_gpio;
 	return bus;
 }

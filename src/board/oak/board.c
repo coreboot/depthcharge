@@ -142,7 +142,8 @@ static int board_setup(void)
 	else
 		tpm_set_ops(&new_slb9635_i2c(&i2c2->ops, 0x20)->base.ops);
 
-	MtkSpi *spibus = new_mtk_spi(0x1100A000);
+	GpioOps *spi_cs = new_gpio_not(new_mtk_gpio_output(PAD_MSDC2_CMD));
+	MtkSpi *spibus = new_mtk_spi(0x1100A000, spi_cs);
 	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spibus->ops);
 	GpioOps *ec_int = sysinfo_lookup_gpio("EC interrupt", 1,
 					      new_mtk_gpio_input);

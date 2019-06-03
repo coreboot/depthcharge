@@ -93,17 +93,20 @@ static int board_setup(void)
 
 	power_set_ops(&psci_power_ops);
 
-	MtkSpi *spi0 = new_mtk_spi(0x1100A000);
+	GpioOps *spi0_cs = new_gpio_not(new_mtk_gpio_output(PAD_SPI_CSB));
+	MtkSpi *spi0 = new_mtk_spi(0x1100A000, spi0_cs);
 	tpm_set_ops(&new_tpm_spi(&spi0->ops, cr50_irq_status)->ops);
 
-	MtkSpi *spi2 = new_mtk_spi(0x11012000);
+	GpioOps *spi2_cs = new_gpio_not(new_mtk_gpio_output(PAD_EINT0));
+	MtkSpi *spi2 = new_mtk_spi(0x11012000, spi2_cs);
 	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spi2->ops);
 	GpioOps *ec_int = sysinfo_lookup_gpio("EC interrupt", 1,
 					      new_mtk_gpio_input);
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, 0, ec_int);
 	register_vboot_ec(&cros_ec->vboot, 0);
 
-	MtkSpi *spi1 = new_mtk_spi(0x11010000);
+	GpioOps *spi1_cs = new_gpio_not(new_mtk_gpio_output(PAD_SPI1_CSB));
+	MtkSpi *spi1 = new_mtk_spi(0x11010000, spi1_cs);
 	flash_set_ops(&new_spi_flash(&spi1->ops)->ops);
 
 	MtkMmcTuneReg emmc_tune_reg = {
