@@ -17,6 +17,7 @@
  */
 
 #include <libpayload.h>
+#include <vb2_api.h>
 
 #include "arch/sign_of_life.h"
 #include "base/init_funcs.h"
@@ -50,9 +51,15 @@ int main(void)
 
 	timestamp_add_now(TS_RO_VB_INIT);
 
-	// Set up common params, vboot_handoff, VBSD, and VbInit flags.
+	// Set up common params, vboot_handoff, and VBSD.
 	if (common_params_init())
 		halt();
+
+	/* Wipe memory, and enable input, if necessary. */
+	/* TODO(kitching): Check that moving input_enable() call to a vboot
+	   init func would not cause any delays.  Relocate. */
+	vboot_check_wipe_memory();
+	vboot_check_enable_input();
 
 	if (CONFIG_CLI)
 		console_loop();

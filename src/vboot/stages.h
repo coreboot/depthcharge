@@ -22,7 +22,8 @@
 #include <vboot_api.h>
 
 int vboot_select_and_load_kernel(void);
-int vboot_do_init_out_flags(uint32_t out_flags);
+int vboot_check_wipe_memory(void);
+int vboot_check_enable_input(void);
 int vboot_in_recovery(void);
 int vboot_in_developer(void);
 void vboot_update_recovery(uint32_t request);

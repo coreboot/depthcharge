@@ -91,13 +91,6 @@ static int vboot_update_shared_data(void)
 	return 0;
 }
 
-static int vboot_update_vbinit_flags(void)
-{
-	/* VbInit was already called in coreboot, so we need to update the
-	 * vboot internal flags ourself. */
-	return vboot_do_init_out_flags(handoff_data.out_flags);
-}
-
 /**
  * Sets vboot_handoff based on the information in vb2_shared_data
  */
@@ -192,10 +185,6 @@ int common_params_init(void)
 
 	// Modify VbSharedDataHeader contents from vboot_handoff struct.
 	if (vboot_update_shared_data())
-		return 1;
-
-	// Retrieve data from VbInit flags.
-	if (vboot_update_vbinit_flags())
 		return 1;
 
 	return 0;
