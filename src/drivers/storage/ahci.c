@@ -204,10 +204,11 @@ static int ahci_port_start(AhciIoPort *port, int index)
 	mem += AHCI_CMD_TBL_HDR;
 
 	port->cmd_tbl_sg = (AhciSg *)mem;
-
 	writel_with_flush((uintptr_t)port->cmd_slot, port_mmio + PORT_LST_ADDR);
+	writel_with_flush((uintptr_t)0, port_mmio + PORT_LST_ADDR_HI);
 
 	writel_with_flush((uintptr_t)port->rx_fis, port_mmio + PORT_FIS_ADDR);
+	writel_with_flush((uintptr_t)0, port_mmio + PORT_FIS_ADDR_HI);
 
 	writel_with_flush(PORT_CMD_ICC_ACTIVE | PORT_CMD_FIS_RX |
 			  PORT_CMD_POWER_ON | PORT_CMD_SPIN_UP |
