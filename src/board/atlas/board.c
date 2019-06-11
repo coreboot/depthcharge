@@ -41,7 +41,6 @@
 #include "drivers/sound/max98373.h"
 #endif
 #include "drivers/storage/blockdev.h"
-#include "drivers/storage/nvme.h"
 #include "drivers/storage/sdhci.h"
 #include "drivers/tpm/spi.h"
 #include "drivers/tpm/tpm.h"
@@ -97,11 +96,6 @@ static int board_setup(void)
 			EMMC_CLOCK_MIN, EMMC_CLOCK_MAX);
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			&fixed_block_dev_controllers);
-
-	/* NVMe - Root port 5 */
-	NvmeCtrlr *nvme1 = new_nvme_ctrlr(PCI_DEV(0, 0x1c, 4));
-	list_insert_after(&nvme1->ctrlr.list_node,
-			  &fixed_block_dev_controllers);
 
 #if CONFIG_DRIVER_SOUND_MAX98373
 	/* Activate buffer to disconnect I2S from PCH and allow GPIO */
