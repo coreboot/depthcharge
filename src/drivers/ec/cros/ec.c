@@ -1319,9 +1319,14 @@ static VbError_t vboot_protect_tcpc_ports(VbootEcOps *vbec)
 {
 	CrosEc *cros_ec = container_of(vbec, CrosEc, vboot);
 
-	if (CONFIG(DRIVER_BUS_I2C_CROS_EC_TUNNEL) &&
-			cros_ec_tunnel_i2c_protect_tcpc_ports(cros_ec)) {
-		printf("Some I2C tunnels in EC may be unprotected\n");
+	if (!CONFIG(DRIVER_BUS_I2C_CROS_EC_TUNNEL))
+		return VBERROR_SUCCESS;
+
+	int ret = cros_ec_tunnel_i2c_protect_tcpc_ports(cros_ec);
+	if (ret == -EC_RES_INVALID_COMMAND) {
+		printf("EC does not support TCPC sync in RW... ignoring.\n");
+	} else if (ret < 0) {
+		printf("ERROR: cannot protect TCPC I2C tunnels\n");
 		return VBERROR_UNKNOWN;
 	}
 
