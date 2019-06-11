@@ -230,17 +230,17 @@ static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 
 	if (dout_len > EC_LPC_HOST_PACKET_SIZE) {
 		printf("%s: Cannot send %d bytes\n", __func__, dout_len);
-		return -1;
+		return -EC_RES_BUS_ERROR;
 	}
 
 	if (din_len > EC_LPC_HOST_PACKET_SIZE) {
 		printf("%s: Cannot receive %d bytes\n", __func__, din_len);
-		return -1;
+		return -EC_RES_BUS_ERROR;
 	}
 
 	if (wait_for_sync(me)) {
 		printf("%s: Timeout waiting ready\n", __func__);
-		return -1;
+		return -EC_RES_TIMEOUT;
 	}
 
 	/* Copy packet */
@@ -252,7 +252,7 @@ static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 
 	if (wait_for_sync(me)) {
 		printf("%s: Timeout waiting ready\n", __func__);
-		return -1;
+		return -EC_RES_TIMEOUT;
 	}
 
 	/* Check result */
@@ -265,7 +265,7 @@ static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 	/* Read back response packet */
 	me->read(din, EC_LPC_ADDR_HOST_PACKET, din_len);
 
-	return 0;
+	return EC_RES_SUCCESS;
 }
 
 /**

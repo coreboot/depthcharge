@@ -57,12 +57,12 @@ static int wait_for_frame(CrosEcSpiBus *bus, uint16_t command)
 
 	while (1) {
 		if (bus->spi->transfer(bus->spi, &byte, NULL, 1))
-			return -1;
+			return -EC_RES_BUS_ERROR;
 
 		switch (byte) {
 		case EC_SPI_FRAME_START:
 			// Done waiting, can start receiving response packet.
-			return 0;
+			return EC_RES_SUCCESS;
 		case EC_SPI_PROCESSING:
 			// EC has accepted our command and started processing.
 			// It should continue sending 0xFA from here on out,
@@ -72,10 +72,10 @@ static int wait_for_frame(CrosEcSpiBus *bus, uint16_t command)
 			break;
 		case EC_SPI_RX_BAD_DATA:
 			printf("EC: Claims to have received bad data.\n");
-			return -1;
+			return -EC_RES_BUS_ERROR;
 		case EC_SPI_NOT_READY:
 			printf("EC: Was not ready to receive host command.\n");
-			return -1;
+			return -EC_RES_BUSY;
 		default:
 			// Probably EC_SPI_RECEIVING, or random garbage.
 			break;
@@ -87,11 +87,11 @@ static int wait_for_frame(CrosEcSpiBus *bus, uint16_t command)
 			if (command == EC_CMD_HELLO)
 				return -1;
 			printf("EC: Took too long to accept host command.\n");
-			return -1;
+			return -EC_RES_TIMEOUT;
 		}
 		if (waited > ProcessTimeoutUs) {
 			printf("EC: Took too long to process host command.\n");
-			return -1;
+			return -EC_RES_TIMEOUT;
 		}
 	}
 }
@@ -100,37 +100,39 @@ static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 		       void *din, uint32_t din_len)
 {
 	CrosEcSpiBus *bus = container_of(me, CrosEcSpiBus, ops);
+	int ret;
 
 	while (timer_us(bus->last_transfer) < CsCooldownUs)
 		;
 
 	if (bus->spi->start(bus->spi))
-		return -1;
+		return -EC_RES_BUS_ERROR;
 
 	// Allow EC to ramp up clock after being awaken.
 	// See chrome-os-partner:32223 for more details.
 	udelay(CONFIG_DRIVER_EC_CROS_SPI_WAKEUP_DELAY_US);
 
 	if (bus->spi->transfer(bus->spi, NULL, dout, dout_len)) {
-		stop_bus(bus);
-		return -1;
+		ret = -EC_RES_BUS_ERROR;
+		goto out;
 	}
 
 	// Wait until the EC is ready. Do not print warnings for lack of reply
 	// if the command is HELLO -- we use that to test if the EC is ready.
 	const struct ec_host_request *rq = dout;
-	if (wait_for_frame(bus, rq->command)) {
-		stop_bus(bus);
-		return -1;
-	}
+	ret = wait_for_frame(bus, rq->command);
+	if (ret)
+		goto out;
 
 	if (bus->spi->transfer(bus->spi, din, NULL, din_len)) {
-		stop_bus(bus);
-		return -1;
+		ret = -EC_RES_BUS_ERROR;
+		goto out;
 	}
 
+	ret = EC_RES_SUCCESS;
+out:
 	stop_bus(bus);
-	return 0;
+	return ret;
 }
 
 static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,

@@ -155,11 +155,11 @@ static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 	 */
 	if (out_bytes > MSG_BYTES) {
 		printf("%s: Cannot send %d bytes\n", __func__, dout_len);
-		return -1;
+		return -EC_RES_BUS_ERROR;
 	}
 	if (in_bytes > MSG_BYTES) {
 		printf("%s: Cannot receive %d bytes\n", __func__, din_len);
-		return -1;
+		return -EC_RES_BUS_ERROR;
 	}
 	assert(dout_len >= 0);
 
@@ -180,7 +180,7 @@ static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 	cros_ec_dump_data("out", -1, bus->buf, out_bytes);
 
 	if (bus->bus->transfer(bus->bus, segs, ARRAY_SIZE(segs)))
-		return -1;
+		return -EC_RES_BUS_ERROR;
 
 	cros_ec_dump_data("in", -1, bus->buf, in_bytes);
 
@@ -196,14 +196,14 @@ static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 	if (len + 2 > MSG_BYTES) {
 		printf("%s: Received length %#02x too large\n",
 		       __func__, len);
-		return -1;
+		return -EC_RES_RESPONSE_TOO_BIG;
 	}
 
 	din_len = MIN(din_len, len);
 	if (din)
 		memcpy(din, bytes, din_len);
 
-	return din_len;
+	return EC_RES_SUCCESS;
 }
 
 CrosEcI2cBus *new_cros_ec_i2c_bus(I2cOps *i2c_bus, uint8_t chip)

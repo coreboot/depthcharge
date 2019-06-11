@@ -29,25 +29,22 @@ typedef struct CrosEcBusOps
 {
 	int (*init)(struct CrosEcBusOps *me);
 
-	/**
-	 * Send a command to a ChromeOS EC device and return the reply.
-	 *
-	 * The device's internal input/output buffers are used.
-	 *
-	 * @param bus		ChromeOS EC bus ops
-	 * @param cmd		Command to send (EC_CMD_...)
-	 * @param cmd_version	Version of command to send (EC_VER_...)
-	 * @param dout          Output data (may be NULL If dout_len=0)
-	 * @param dout_len      Size of output data in bytes
-	 * @param dinp          Returns pointer to response data
-	 * @param din_len       Maximum size of response in bytes
-	 * @return number of bytes in response, or -1 on error
-	 */
+	/* DEPRECATED DO NOT USE! */
 	int (*send_command)(struct CrosEcBusOps *me, uint8_t cmd,
 			    int cmd_version,
 			    const void *dout, uint32_t dout_len,
 			    void *din, uint32_t din_len);
 
+	/**
+	 * Send a proto3 packet to a ChromeOS EC device and return the reply.
+	 *
+	 * @param bus		ChromeOS EC bus ops
+	 * @param dout          Output data (including command)
+	 * @param dout_len      Size of output data in bytes
+	 * @param din           Buffer that input data will be returned in
+	 * @param din_len       Maximum size off input buffer in bytes
+	 * @return 0 on success or negative EC_RES_XXX code on error
+	 */
 	int (*send_packet)(struct CrosEcBusOps *me,
 			   const void *dout, uint32_t dout_len,
 			   void *din, uint32_t din_len);
@@ -97,7 +94,7 @@ typedef struct CrosEc
  * @param dout_len	Outgoing length in bytes
  * @param din		Where to put the incoming data from EC
  * @param din_len	Max number of bytes to accept from EC
- * @return negative error code, or positive num bytes received.
+ * @return negative EC_RES_xxx error code, or positive num bytes received.
  */
 int ec_command(CrosEc *ec, int cmd, int cmd_version,
 	       const void *dout, int dout_len,
