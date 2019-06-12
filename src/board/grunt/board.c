@@ -39,6 +39,7 @@
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
+#include "drivers/storage/bayhub.h"
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/video/display.h"
@@ -231,9 +232,10 @@ static int board_setup(void)
 	if (lib_sysinfo.board_id > 0) {
 		pcidev_t pci_dev;
 		if (pci_find_device(BH720_PCI_VID, BH720_PCI_DID, &pci_dev)) {
-			emmc = new_pci_sdhci_host(pci_dev,
+			emmc = new_bayhub_sdhci_host(pci_dev,
 				SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD,
 				EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
+			emmc->name = "eMMC";
 		} else {
 			printf("Failed to find BH720 with VID/DID %04x:%04x\n",
 				BH720_PCI_VID, BH720_PCI_DID);
@@ -244,6 +246,7 @@ static int board_setup(void)
 				SDHCI_PLATFORM_REMOVABLE |
 				SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD,
 				EMMC_SD_CLOCK_MIN, SD_CLOCK_MAX);
+		sd->name = "SD";
 		list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
 				&removable_block_dev_controllers);
 	} else {
