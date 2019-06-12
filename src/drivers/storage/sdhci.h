@@ -254,6 +254,10 @@
 #define SDHCI_QUIRK_SUPPORTS_HS400ES	(1 << 11)
 #define SDHCI_QUIRK_CLEAR_TRANSFER_BEFORE_CMD	(1 << 12)
 
+/* JEDEC 84-B51A: The Device is guaranteed to complete a
+ * sequence of 40 times CMD21 executions within 150ms. */
+#define SDHCI_TUNING_MAX_US	150000
+
 /*
  * Host SDMA buffer boundary. Valid values from 4K to 512K in powers of 2.
  */
@@ -349,6 +353,7 @@ static inline u8 sdhci_readb(SdhciHost *host, int reg)
 
 void add_sdhci(SdhciHost *host);
 void sdhci_set_ios(MmcCtrlr *mmc_ctrlr);
+int sdhci_send_hs200_tuning_cmd(MmcCtrlr *mmc_ctrlr);
 
 /* Add SDHCI controller from PCI */
 SdhciHost *new_pci_sdhci_host(pcidev_t dev,
