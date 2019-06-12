@@ -87,6 +87,11 @@ config DRIVER_STORAGE_DWMMC_RK3399
         bool "R3399 DWMMC driver"
         default n
 
+config DRIVER_STORAGE_BAYHUB
+        depends on DRIVER_SDHCI
+        bool "Bayhub SD/eMMC driver"
+        default n
+
 config DRIVER_STORAGE_SPI_GPT
 	bool "Look up a kernel partition from a GPT on SPI"
 	default n

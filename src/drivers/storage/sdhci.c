@@ -269,6 +269,66 @@ static int sdhci_complete_adma(SdhciHost *host, MmcCommand *cmd)
 		return MMC_COMM_ERR;
 }
 
+/* Send eMMC HS200 tuning command */
+int sdhci_send_hs200_tuning_cmd(MmcCtrlr *mmc_ctrlr)
+{
+	SdhciHost *sdhc = container_of(mmc_ctrlr, SdhciHost, mmc_ctrlr);
+	int block_size;
+	u32 stat;
+	uint64_t start;
+	int ret = 0;
+
+	switch (mmc_ctrlr->bus_width) {
+	case 8:
+		block_size = 128;
+		break;
+	case 4:
+		block_size = 64;
+		break;
+	default:
+		printf("Unsupported bus width: %d\n", mmc_ctrlr->bus_width);
+		return MMC_SUPPORT_ERR;
+	}
+
+	sdhci_writel(sdhc, SDHCI_INT_ALL_MASK, SDHCI_INT_STATUS);
+
+	sdhci_writew(sdhc,
+		     SDHCI_MAKE_BLKSZ(SDHCI_DEFAULT_BOUNDARY_ARG, block_size),
+		     SDHCI_BLOCK_SIZE);
+
+	sdhci_writew(sdhc, 1, SDHCI_BLOCK_COUNT);
+
+	sdhci_writew(sdhc, SDHCI_TRNS_READ, SDHCI_TRANSFER_MODE);
+
+	sdhci_writel(sdhc, 0, SDHCI_ARGUMENT);
+
+	sdhci_writew(sdhc,
+		     SDHCI_MAKE_CMD(MMC_SEND_TUNING_BLOCK_HS200,
+				    (SDHCI_CMD_RESP_SHORT | SDHCI_CMD_CRC |
+				     SDHCI_CMD_INDEX | SDHCI_CMD_DATA)),
+		     SDHCI_COMMAND);
+
+	start = timer_us(0);
+	do {
+		stat = sdhci_readl(sdhc, SDHCI_INT_STATUS);
+		if (stat & SDHCI_INT_ERROR) {
+			printf("SDHCI controller error!\n");
+			ret = MMC_COMM_ERR;
+			break;
+		}
+
+		if (timer_us(start) > SDHCI_TUNING_MAX_US) {
+			printf("Command timeout!\n");
+			ret = MMC_TIMEOUT;
+			break;
+		}
+	} while (!(stat & SDHCI_INT_DATA_AVAIL));
+
+	sdhci_writel(sdhc, stat, SDHCI_INT_STATUS);
+
+	return ret;
+}
+
 static int sdhci_send_command_bounced(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
 				      MmcData *data,
 				      struct bounce_buffer *bbstate)
