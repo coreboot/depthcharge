@@ -131,98 +131,6 @@ static void mec_read(uint8_t *data, uint16_t port, int size)
 		lpc_read(data, port, size);
 }
 
-static int send_command(CrosEcBusOps *me, uint8_t cmd, int cmd_version,
-			const void *dout, uint32_t dout_len,
-			void *din, uint32_t din_len)
-{
-	struct ec_lpc_host_args args;
-	uint8_t res;
-	int i;
-
-	if (dout_len > EC_PROTO2_MAX_PARAM_SIZE) {
-		printf("%s: Cannot send %d bytes\n", __func__, dout_len);
-		return -1;
-	}
-
-	/* Fill in args */
-	args.flags = EC_HOST_ARGS_FLAG_FROM_HOST;
-	args.command_version = cmd_version;
-	args.data_size = dout_len;
-
-	/* Calculate checksum */
-	args.checksum = cmd + args.flags + args.command_version +
-		args.data_size + cros_ec_calc_checksum(dout, dout_len);
-
-	if (wait_for_sync(me)) {
-		printf("%s: Timeout waiting ready\n", __func__);
-		return -1;
-	}
-
-	/* Write args */
-	me->write((uint8_t *)&args, EC_LPC_ADDR_HOST_ARGS, sizeof(args));
-
-	/* Write data, if any */
-	me->write(dout, EC_LPC_ADDR_HOST_PARAM, dout_len);
-
-	me->write(&cmd, EC_LPC_ADDR_HOST_CMD, 1);
-
-	if (wait_for_sync(me)) {
-		printf("%s: Timeout waiting for response\n", __func__);
-		return -1;
-	}
-
-	/* Check result */
-	me->read(&res, EC_LPC_ADDR_HOST_DATA, 1);
-	if (res) {
-		printf("%s: CrosEC result code %d\n", __func__, res);
-		return -res;
-	}
-
-	/* Read back args */
-	me->read((uint8_t *)&args, EC_LPC_ADDR_HOST_ARGS, sizeof(args));
-
-	/*
-	 * If EC didn't modify args flags, then somehow we sent a new-style
-	 * command to an old EC, which means it would have read its params
-	 * from the wrong place.
-	 */
-	if (!(args.flags & EC_HOST_ARGS_FLAG_TO_HOST)) {
-		printf("%s: CrosEC protocol mismatch\n", __func__);
-		return -EC_RES_INVALID_RESPONSE;
-	}
-
-	if (args.data_size > din_len) {
-		printf("%s: CrosEC returned too much data %d > %d\n",
-		      __func__, args.data_size, din_len);
-		return -EC_RES_INVALID_RESPONSE;
-	}
-
-	uint8_t csum = 0;
-	if (din) {
-		/* Read data, if any */
-		me->read(din, EC_LPC_ADDR_HOST_PARAM, args.data_size);
-		for (i = 0; i < args.data_size; ++i)
-			csum += ((uint8_t *)din)[i];
-	} else {
-		/* Discard data, but still update checksum */
-		for (i = 0; i < args.data_size; ++i) {
-			me->read(&res, EC_LPC_ADDR_HOST_PARAM + i, 1);
-			csum += res;
-		}
-	}
-
-	/* Verify checksum */
-	csum += cmd + args.flags + args.command_version + args.data_size;
-
-	if (args.checksum != csum) {
-		printf("%s: CrosEC response has invalid checksum\n", __func__);
-		return -EC_RES_INVALID_CHECKSUM;
-	}
-
-	/* Return actual amount of data received */
-	return args.data_size;
-}
-
 static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 		       void *din, uint32_t din_len)
 {
@@ -302,7 +210,6 @@ CrosEcLpcBus *new_cros_ec_lpc_bus(CrosEcLpcBusVariant variant)
 {
 	CrosEcLpcBus *bus = xzalloc(sizeof(*bus));
 	bus->ops.init = &cros_ec_lpc_init;
-	bus->ops.send_command = &send_command;
 	bus->ops.send_packet = &send_packet;
 
 	switch (variant) {

@@ -270,74 +270,6 @@ static int send_command_proto3(CrosEc *me, int cmd, int cmd_version,
 	return rv;
 }
 
-/**
- * Send a command to the ChromeOS EC device and optionally return the reply.
- *
- * The device's internal input/output buffers are used.
- *
- * @param cmd		Command to send (EC_CMD_...)
- * @param cmd_version	Version of command to send (EC_VER_...)
- * @param dout          Output data (may be NULL If dout_len=0)
- * @param dout_len      Size of output data in bytes
- * @param din           Response data (may be NULL If din_len=0).
- * @param din_len       Maximum size of response in bytes
- * @return number of bytes in response, or -1 on error
- */
-static int send_command_proto2(CrosEc *me, int cmd, int cmd_version,
-			       const void *dout, int dout_len,
-			       void *din, int din_len)
-{
-	int len;
-
-	if (!me->bus) {
-		printf("No ChromeOS EC bus configured.\n");
-		return -1;
-	}
-
-	/* Proto2 can't send 16-bit command codes */
-	if (cmd > 0xff)
-		return -EC_RES_INVALID_COMMAND;
-
-	len = me->bus->send_command(me->bus, cmd, cmd_version, dout,
-				    dout_len, din, din_len);
-
-	/* If the command doesn't complete, wait a while */
-	if (len == -EC_RES_IN_PROGRESS) {
-		struct ec_response_get_comms_status resp;
-		uint64_t start;
-
-		/* Wait for command to complete */
-		start = timer_us(0);
-		do {
-			int ret;
-
-			mdelay(50);	/* Insert some reasonable delay */
-			ret = me->bus->send_command(
-				me->bus, EC_CMD_GET_COMMS_STATUS,
-				0, NULL, 0, &resp, sizeof(resp));
-			if (ret < 0)
-				return ret;
-
-			if (timer_us(start) > CROS_EC_CMD_TIMEOUT_MS * 1000) {
-				printf("%s: Command %#02x timeout",
-				      __func__, cmd);
-				return -EC_RES_TIMEOUT;
-			}
-		} while (resp.flags & EC_COMMS_STATUS_PROCESSING);
-
-		/* OK it completed, so read the status response */
-		len = me->bus->send_command(
-			me->bus, EC_CMD_RESEND_RESPONSE,
-			0, NULL, 0, din, din_len);
-	}
-
-#ifdef DEBUG
-	printf("%s: len=%d, din=%p\n", __func__, len, din);
-#endif
-
-	return len;
-}
-
 int ec_command(CrosEc *me, int cmd, int cmd_version,
 	       const void *dout, int dout_len,
 	       void *din, int din_len)
@@ -345,9 +277,8 @@ int ec_command(CrosEc *me, int cmd, int cmd_version,
 	if (!me->initialized && ec_init(me))
 		return -1;
 
-	assert(me->send_command);
-	return me->send_command(me, EC_CMD_PASSTHRU_OFFSET(me->devidx) + cmd,
-				cmd_version, dout, dout_len, din, din_len);
+	return send_command_proto3(me, EC_CMD_PASSTHRU_OFFSET(me->devidx) + cmd,
+				   cmd_version, dout, dout_len, din, din_len);
 }
 
 static CrosEc *get_main_ec(void)
@@ -445,32 +376,6 @@ int cros_ec_get_next_event(struct ec_response_get_next_event *e)
 			    sizeof(*e));
 
 	return rv < 0 ? rv : 0;
-}
-
-static int ec_read_id(CrosEc *me, char *id, int maxlen)
-{
-	struct ec_response_get_version r;
-
-	if (ec_command(me, EC_CMD_GET_VERSION, 0, NULL, 0, &r,
-		       sizeof(r)) != sizeof(r))
-		return -1;
-
-	if (maxlen > (int)sizeof(r.version_string_ro))
-		maxlen = sizeof(r.version_string_ro);
-
-	switch (r.current_image) {
-	case EC_IMAGE_RO:
-		memcpy(id, r.version_string_ro, maxlen);
-		break;
-	case EC_IMAGE_RW:
-		memcpy(id, r.version_string_rw, maxlen);
-		break;
-	default:
-		return -1;
-	}
-
-	id[maxlen - 1] = '\0';
-	return 0;
 }
 
 static VbError_t vboot_running_rw(VbootEcOps *vbec, int *in_rw)
@@ -1396,8 +1301,6 @@ static int set_max_proto3_sizes(CrosEc *me, int request_size, int response_size)
 
 static int ec_init(CrosEc *me)
 {
-	char id[MSG_BYTES];
-
 	if (me->initialized)
 		return 0;
 
@@ -1411,73 +1314,36 @@ static int ec_init(CrosEc *me)
 
 	me->initialized = 1;
 
-	// Figure out what protocol version to use.
+	if (set_max_proto3_sizes(me, DEFAULT_BUF_SIZE,
+				 DEFAULT_BUF_SIZE))
+		return -1;
 
-	if (me->bus->send_packet) {
-		me->send_command = &send_command_proto3;
-		if (set_max_proto3_sizes(me, DEFAULT_BUF_SIZE,
-					 DEFAULT_BUF_SIZE))
-			return -1;
-
-		struct ec_response_get_protocol_info info;
-		if (ec_command(me, EC_CMD_GET_PROTOCOL_INFO, 0,
-			       NULL, 0, &info, sizeof(info)) != sizeof(info)) {
-			set_max_proto3_sizes(me, 0, 0);
-			me->send_command = NULL;
-			goto proto2;
-		}
-		if (me->devidx != 0) {
-			struct ec_response_get_protocol_info master_info;
-			// Call send_command directly to talk to master EC.
-			if (me->send_command(me, EC_CMD_GET_PROTOCOL_INFO,
-					     0, NULL, 0, &master_info,
-					     sizeof(master_info))
-			    != sizeof(master_info)) {
-				set_max_proto3_sizes(me, 0, 0);
-				me->send_command = NULL;
-				goto proto2;
-			}
-			info.max_request_packet_size = MIN(
-				info.max_request_packet_size,
-				master_info.max_request_packet_size);
-		}
-		printf("%s(%d): CrosEC protocol v3 supported (%d, %d)\n",
-		       __func__, me->devidx,
-		       info.max_request_packet_size,
-		       info.max_response_packet_size);
-		set_max_proto3_sizes(me, info.max_request_packet_size,
-				     info.max_response_packet_size);
+	struct ec_response_get_protocol_info info;
+	if (ec_command(me, EC_CMD_GET_PROTOCOL_INFO, 0,
+		       NULL, 0, &info, sizeof(info)) != sizeof(info)) {
+		printf("ERROR: Cannot read EC protocol info!\n");
+		return -1;
 	}
-
-proto2:
 	if (me->devidx != 0) {
-		if (me->send_command)
-			return 0;
-		printf("%s(%d): ERROR: Passthru ECs must support proto3!\n",
-		       __func__, me->devidx);
-		return -1;
+		struct ec_response_get_protocol_info master_info;
+		// Call send_command directly to talk to master EC.
+		if (send_command_proto3(me, EC_CMD_GET_PROTOCOL_INFO,
+					0, NULL, 0, &master_info,
+					sizeof(master_info))
+		    != sizeof(master_info)) {
+			printf("ERROR: Cannot read master EC protocol info!\n");
+			return -1;
+		}
+		info.max_request_packet_size = MIN(
+			info.max_request_packet_size,
+			master_info.max_request_packet_size);
 	}
-
-	if (!me->send_command) {
-		// Fall back to protocol version 2.
-		me->send_command = &send_command_proto2;
-		me->max_param_size = EC_PROTO2_MAX_PARAM_SIZE;
-	}
-
-	if (ec_read_id(me, id, sizeof(id))) {
-		printf("%s: Could not read ChromeOS EC ID\n", __func__);
-		me->initialized = 0;
-		return -1;
-	}
-
-	printf("Google ChromeOS EC driver ready, id '%s'\n", id);
-
-	// Unconditionally clear the EC recovery request.
-	printf("Clearing the recovery request.\n");
-	const uint32_t kb_rec_mask =
-		EC_HOST_EVENT_MASK(EC_HOST_EVENT_KEYBOARD_RECOVERY) |
-		EC_HOST_EVENT_MASK(EC_HOST_EVENT_KEYBOARD_RECOVERY_HW_REINIT);
-	cros_ec_clear_host_events(kb_rec_mask);
+	printf("%s(%d): CrosEC protocol v3 supported (%d, %d)\n",
+	       __func__, me->devidx,
+	       info.max_request_packet_size,
+	       info.max_response_packet_size);
+	set_max_proto3_sizes(me, info.max_request_packet_size,
+			     info.max_response_packet_size);
 
 	return 0;
 }

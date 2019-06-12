@@ -29,12 +29,6 @@ typedef struct CrosEcBusOps
 {
 	int (*init)(struct CrosEcBusOps *me);
 
-	/* DEPRECATED DO NOT USE! */
-	int (*send_command)(struct CrosEcBusOps *me, uint8_t cmd,
-			    int cmd_version,
-			    const void *dout, uint32_t dout_len,
-			    void *din, uint32_t din_len);
-
 	/**
 	 * Send a proto3 packet to a ChromeOS EC device and return the reply.
 	 *
@@ -64,18 +58,12 @@ typedef struct CrosEcBusOps
 	void (*write)(const uint8_t *data, uint16_t port, int size);
 } CrosEcBusOps;
 
-struct CrosEc;
-typedef int (*CrosEcSendCommandFunc)(struct CrosEc *me, int cmd,
-				     int cmd_version, const void *dout,
-				     int dout_len, void *dinp, int din_len);
-
 typedef struct CrosEc
 {
 	VbootEcOps vboot;
 	CrosEcBusOps *bus;
 	int devidx;
 	GpioOps *interrupt_gpio;
-	CrosEcSendCommandFunc send_command;
 	int initialized;
 	int max_param_size;
 	struct ec_host_request *proto3_request;
