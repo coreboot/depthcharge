@@ -282,6 +282,7 @@ typedef struct MmcCtrlr {
 
 	int (*send_cmd)(struct MmcCtrlr *me, MmcCommand *cmd, MmcData *data);
 	void (*set_ios)(struct MmcCtrlr *me);
+	int (*execute_tuning)(MmcMedia *media);
 } MmcCtrlr;
 
 typedef struct MmcMedia {
