@@ -1095,3 +1095,16 @@ int cros_ec_init(void)
 
 	return 0;
 }
+
+int cros_ec_get_reset_flag(uint32_t *reset_flag)
+{
+	struct ec_response_get_reset_flag r;
+
+	if (ec_command(EC_CMD_GET_RESET_FLAG, 0, NULL, 0, &r, sizeof(r))
+			< sizeof(r))
+		*reset_flag = 0;
+	else
+		*reset_flag = r.reset_flag;
+
+	return 0;
+}

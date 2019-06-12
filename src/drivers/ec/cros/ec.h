@@ -336,4 +336,12 @@ int cros_ec_read_version(struct ec_response_get_version *versionp);
  */
 int cros_ec_read_build_info(char *strp);
 
+/**
+ * Get reset flags
+ *
+ * @param reset_flag
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_get_reset_flag(uint32_t *reset_flag);
+
 #endif
