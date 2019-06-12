@@ -33,6 +33,7 @@
  * vboot2 data structures instead, and remove cparams. */
 VbCommonParams cparams CPARAMS;
 static int cparams_initialized = 0;
+static struct vboot_handoff handoff_data;
 
 static void *gbb_copy_in(uint32_t gbb_offset, uint32_t offset, uint32_t size)
 {
@@ -146,22 +147,6 @@ uint32_t gbb_get_flags(void)
 	return header->flags;
 }
 
-static int vboot_verify_handoff(void)
-{
-	if (lib_sysinfo.vboot_handoff == NULL) {
-		printf("vboot handoff pointer is NULL\n");
-		return 1;
-	}
-
-	if (lib_sysinfo.vboot_handoff_size != sizeof(struct vboot_handoff)) {
-		printf("Unexpected vboot handoff size: %d\n",
-		       lib_sysinfo.vboot_handoff_size);
-		return 1;
-	}
-
-	return 0;
-}
-
 static int vboot_update_shared_data(void)
 {
 	VbSharedDataHeader *vb_sd;
@@ -200,10 +185,104 @@ static int vboot_update_shared_data(void)
 
 static int vboot_update_vbinit_flags(void)
 {
-	struct vboot_handoff *vboot_handoff = lib_sysinfo.vboot_handoff;
 	/* VbInit was already called in coreboot, so we need to update the
 	 * vboot internal flags ourself. */
-	return vboot_do_init_out_flags(vboot_handoff->out_flags);
+	return vboot_do_init_out_flags(handoff_data.out_flags);
+}
+
+/**
+ * Sets vboot_handoff based on the information in vb2_shared_data
+ */
+static int vboot_fill_handoff(struct vboot_handoff *vboot_handoff,
+			      struct vb2_shared_data *vb2_sd)
+{
+	VbSharedDataHeader *vb_sd =
+		(VbSharedDataHeader *)vboot_handoff->shared_data;
+	uint32_t *oflags = &vboot_handoff->out_flags;
+
+	vb_sd->flags |= VBSD_BOOT_FIRMWARE_VBOOT2;
+
+	vboot_handoff->selected_firmware = vb2_sd->fw_slot;
+
+	vb_sd->firmware_index = vb2_sd->fw_slot;
+
+	vb_sd->magic = VB_SHARED_DATA_MAGIC;
+	vb_sd->struct_version = VB_SHARED_DATA_VERSION;
+	vb_sd->struct_size = sizeof(VbSharedDataHeader);
+	vb_sd->data_size = VB_SHARED_DATA_MIN_SIZE;
+	vb_sd->data_used = sizeof(VbSharedDataHeader);
+	vb_sd->fw_version_tpm = vb2_sd->fw_version_secdata;
+
+	if (vb2_sd->recovery_reason) {
+		vb_sd->firmware_index = 0xFF;
+		if (vb2_sd->flags & VB2_SD_FLAG_MANUAL_RECOVERY)
+			vb_sd->flags |= VBSD_BOOT_REC_SWITCH_ON;
+		*oflags |= VB_INIT_OUT_ENABLE_RECOVERY;
+		*oflags |= VB_INIT_OUT_CLEAR_RAM;
+	}
+	if (vb2_sd->flags & VB2_SD_FLAG_DEV_MODE_ENABLED) {
+		*oflags |= VB_INIT_OUT_ENABLE_DEVELOPER;
+		*oflags |= VB_INIT_OUT_CLEAR_RAM;
+		vb_sd->flags |= VBSD_BOOT_DEV_SWITCH_ON;
+		vb_sd->flags |= VBSD_LF_DEV_SWITCH_ON;
+	}
+
+	/* In vboot1, VBSD_FWB_TRIED is
+	 * set only if B is booted as explicitly requested. Therefore, if B is
+	 * booted because A was found bad, the flag should not be set. It's
+	 * better not to touch it if we can only ambiguously control it. */
+	/* if (vb2_sd->fw_slot)
+		vb_sd->flags |= VBSD_FWB_TRIED; */
+
+	/* copy kernel subkey if it's found */
+	if (vb2_sd->workbuf_preamble_size) {
+		struct vb2_fw_preamble *fp;
+		uintptr_t dst, src;
+		printf("vboot_handoff: copying FW preamble\n");
+		fp = (struct vb2_fw_preamble *)((uintptr_t)vb2_sd +
+				vb2_sd->workbuf_preamble_offset);
+		src = (uintptr_t)&fp->kernel_subkey +
+				fp->kernel_subkey.key_offset;
+		dst = (uintptr_t)vb_sd + sizeof(VbSharedDataHeader);
+		if (dst + fp->kernel_subkey.key_size >
+		    (uintptr_t)vboot_handoff + sizeof(*vboot_handoff)) {
+			printf("vboot_handoff: kernel subkey size too large\n");
+			return 1;
+		}
+		memcpy((void *)dst, (void *)src,
+		       fp->kernel_subkey.key_size);
+		vb_sd->data_used += fp->kernel_subkey.key_size;
+		vb_sd->kernel_subkey.key_offset =
+				dst - (uintptr_t)&vb_sd->kernel_subkey;
+		vb_sd->kernel_subkey.key_size = fp->kernel_subkey.key_size;
+		vb_sd->kernel_subkey.algorithm = fp->kernel_subkey.algorithm;
+		vb_sd->kernel_subkey.key_version =
+				fp->kernel_subkey.key_version;
+	}
+
+	vb_sd->recovery_reason = vb2_sd->recovery_reason;
+
+	return 0;
+}
+
+static int vboot_create_handoff(void)
+{
+	struct vb2_shared_data *sd;
+
+	/* Get reference to vb2_shared_data struct. */
+	if (lib_sysinfo.vboot_workbuf == NULL) {
+		printf("vboot_handoff: vboot working data pointer is NULL\n");
+		return 1;
+	}
+	sd = lib_sysinfo.vboot_workbuf;
+	if (sd->magic != VB2_SHARED_DATA_MAGIC) {
+		printf("vboot_handoff: vb2_shared_data has invalid magic\n");
+		return 1;
+	}
+
+	printf("vboot_handoff: creating legacy vboot_handoff structure\n");
+	memset(&handoff_data, 0, sizeof(handoff_data));
+	return vboot_fill_handoff(&handoff_data, sd);
 }
 
 int common_params_init(void)
@@ -212,8 +291,8 @@ int common_params_init(void)
 	if (cparams_init())
 		return 1;
 
-	// Verify incoming vboot_handoff.
-	if (vboot_verify_handoff())
+	// Convert incoming vb2_shared_data to vboot_handoff.
+	if (vboot_create_handoff())
 		return 1;
 
 	// Modify VbSharedDataHeader contents from vboot_handoff struct.
@@ -229,9 +308,8 @@ int common_params_init(void)
 
 int find_common_params(void **blob, int *size)
 {
-	struct vboot_handoff *vboot_handoff = lib_sysinfo.vboot_handoff;
-	*blob = &vboot_handoff->shared_data[0];
-	*size = ARRAY_SIZE(vboot_handoff->shared_data);
+	*blob = &handoff_data.shared_data[0];
+	*size = ARRAY_SIZE(handoff_data.shared_data);
 	return 0;
 }
 
