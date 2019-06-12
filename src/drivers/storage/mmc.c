@@ -614,6 +614,9 @@ static int mmc_select_hs200(MmcMedia *media)
 
 	mmc_recalculate_clock(media);
 
+	if (media->ctrlr->execute_tuning)
+		ret = media->ctrlr->execute_tuning(media);
+
 	return ret;
 }
 
