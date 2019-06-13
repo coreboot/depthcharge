@@ -288,6 +288,14 @@ static void ledc_run_program(TiLp5562 *ledc,
 	enable_reg |= LP5562_ENABLE_ALL_HOLD;
 	ledc_write_enable(ledc, enable_reg);
 
+	/* Configure LED current */
+	ledc_write(ledc, LP5562_CURRENT_B,
+		&program_desc->engine_program[0].led_current, 1);
+	ledc_write(ledc, LP5562_CURRENT_G,
+		&program_desc->engine_program[1].led_current, 1);
+	ledc_write(ledc, LP5562_CURRENT_R,
+		&program_desc->engine_program[2].led_current, 1);
+
 	/* All engines in LOAD mode. */
 	ledc_write_opmode(ledc, LP5562_OPMODE_ALL_LOAD);
 

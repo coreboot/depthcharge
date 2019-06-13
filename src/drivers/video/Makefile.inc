@@ -19,6 +19,7 @@ depthcharge-$(CONFIG_DRIVER_VIDEO_EXYNOS5) += exynos5.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_INTEL_I915) += intel_i915.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_LP5562) += led_lp5562.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_LP5562) += led_lp5562_programs.c
+depthcharge-$(CONFIG_DRIVER_VIDEO_LP5562) += led_lp5562_calibration.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_RK3288) += rk3288.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_RK3399) += rk3399.c
 depthcharge-$(CONFIG_DRIVER_VIDEO_TEGRA132) += tegra132.c

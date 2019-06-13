@@ -26,6 +26,7 @@
  */
 
 #include "drivers/video/led_lp5562_programs.h"
+#include "drivers/video/led_lp5562_calibration.h"
 
 /****************************************************************
  *   LED ring program definitions for different patterns.
@@ -59,26 +60,29 @@
 */
 
 /* RGB set to 000000, resulting in all LEDs off. */
-static const uint8_t solid_00_text[] = {
+static uint8_t solid_00_text[] = {
 	0x40, 0x00, 0xc0, 0x00
 };
 
-static const TiLp5562Program solid_000000_program = {
+static TiLp5562Program solid_000000_program = {
 	{
 		{ /* Engine1:Blue */
 			solid_00_text,
 			sizeof(solid_00_text),
 			0,
+			LED_LP5562_DEFAULT_CURRENT
 		},
 		{ /* Engine2:Green */
 			solid_00_text,
 			sizeof(solid_00_text),
 			0,
+			LED_LP5562_DEFAULT_CURRENT
 		},
 		{ /* Engine3:Red */
 			solid_00_text,
 			sizeof(solid_00_text),
 			0,
+			LED_LP5562_DEFAULT_CURRENT
 		},
 	}
 };
@@ -109,178 +113,193 @@ static const TiLp5562Program solid_000000_program = {
  23 27 0000             gotostart
 */
 
-static const uint8_t blink_dev1_b_text[] = {
+static uint8_t blink_dev1_b_text[] = {
 	0xE2,  0x00,  0x40,   234,  0xE2,  0x00,  0x40,     0,
 	0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
 };
 
-static const uint8_t blink_dev1_g_text[] = {
+static uint8_t blink_dev1_g_text[] = {
 	0xE2,  0x00,  0x40,     0,  0xE2,  0x00,  0x40,     0,
 	0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
 };
 
-static const uint8_t blink_dev1_r_text[] = {
+static uint8_t blink_dev1_r_text[] = {
 	0xE0,  0x06,  0x40,    98,  0x53,  0x00,  0xE0,  0x06,
 	0x40,     0,  0x63,  0x00,  0x63,  0x00,  0x00,  0x00
 };
 
-static const TiLp5562Program blink_dev1_program = {
+static TiLp5562Program blink_dev1_program = {
 	{
 		{
 			blink_dev1_b_text,
 			sizeof(blink_dev1_b_text),
 			0,
+			LED_LP5562_DEFAULT_CURRENT
 		},
 		{
 			blink_dev1_g_text,
 			sizeof(blink_dev1_g_text),
 			0,
+			LED_LP5562_DEFAULT_CURRENT
 		},
 		{
 			blink_dev1_r_text,
 			sizeof(blink_dev1_r_text),
 			0,
+			LED_LP5562_DEFAULT_CURRENT
 		},
 	}
 };
 
-static const uint8_t blink_rcv_broken1_b_text[] = {
+static uint8_t blink_rcv_broken1_b_text[] = {
 	0xE2,  0x00,  0x40,    50,  0xE2,  0x00,  0x40,     0,
 	0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
 };
 
-static const uint8_t blink_rcv_broken1_g_text[] = {
+static uint8_t blink_rcv_broken1_g_text[] = {
 	0xE2,  0x00,  0x40,    50,  0xE2,  0x00,  0x40,     0,
 	0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
 };
 
-static const uint8_t blink_rcv_broken1_r_text[] = {
+static uint8_t blink_rcv_broken1_r_text[] = {
 	0xE0,  0x06,  0x40,   255,  0x53,  0x00,  0xE0,  0x06,
 	0x40,     0,  0x63,  0x00,  0x63,  0x00,  0x00,  0x00
 };
 
-static const TiLp5562Program blink_rcv_broken1_program = {
+static TiLp5562Program blink_rcv_broken1_program = {
 	{
 		{
 			blink_rcv_broken1_b_text,
 			sizeof(blink_rcv_broken1_b_text),
 			0,
+			LED_LP5562_DEFAULT_CURRENT
 		},
 		{
 			blink_rcv_broken1_g_text,
 			sizeof(blink_rcv_broken1_g_text),
 			0,
+			LED_LP5562_DEFAULT_CURRENT
 		},
 		{
 			blink_rcv_broken1_r_text,
 			sizeof(blink_rcv_broken1_r_text),
 			0,
+			LED_LP5562_DEFAULT_CURRENT
 		},
 	}
 };
 
-static const uint8_t blink_rcv_insert1_b_text[] = {
+static uint8_t blink_rcv_insert1_b_text[] = {
 	0xE2,  0x00,  0x40,     0,  0xE2,  0x00,  0x40,     0,
 	0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
 };
 
-static const uint8_t blink_rcv_insert1_g_text[] = {
+static uint8_t blink_rcv_insert1_g_text[] = {
 	0xE2,  0x00,  0x40,   204,  0xE2,  0x00,  0x40,     0,
 	0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
 };
 
-static const uint8_t blink_rcv_insert1_r_text[] = {
+static uint8_t blink_rcv_insert1_r_text[] = {
 	0xE0,  0x06,  0x40,   255,  0x53,  0x00,  0xE0,  0x06,
 	0x40,     0,  0x63,  0x00,  0x63,  0x00,  0x00,  0x00
 };
 
-static const TiLp5562Program blink_rcv_insert1_program = {
+static TiLp5562Program blink_rcv_insert1_program = {
 	{
 		{
 			blink_rcv_insert1_b_text,
 			sizeof(blink_rcv_insert1_b_text),
 			0,
+			LED_LP5562_DEFAULT_CURRENT
 		},
 		{
 			blink_rcv_insert1_g_text,
 			sizeof(blink_rcv_insert1_g_text),
 			0,
+			LED_LP5562_DEFAULT_CURRENT
 		},
 		{
 			blink_rcv_insert1_r_text,
 			sizeof(blink_rcv_insert1_r_text),
 			0,
+			LED_LP5562_DEFAULT_CURRENT
 		},
 	}
 };
 
-static const uint8_t blink_rcv2dev1_r_text[] = {
+static uint8_t blink_rcv2dev1_b_text[] = {
 	0xE2,  0x00,  0x40,   234,  0xE2,  0x00,  0x40,     0,
 	0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
 };
 
-static const uint8_t blink_rcv2dev1_g_text[] = {
+static uint8_t blink_rcv2dev1_g_text[] = {
 	0xE2,  0x00,  0x40,     0,  0xE2,  0x00,  0x40,     0,
 	0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
 };
 
-static const uint8_t blink_rcv2dev1_b_text[] = {
+static uint8_t blink_rcv2dev1_r_text[] = {
 	0xE0,  0x06,  0x40,    98,  0x53,  0x00,  0xE0,  0x06,
 	0x40,     0,  0x63,  0x00,  0x63,  0x00,  0x00,  0x00
 };
 
-static const TiLp5562Program blink_rcv2dev1_program = {
+static TiLp5562Program blink_rcv2dev1_program = {
 	{
 		{
 			blink_rcv2dev1_b_text,
 			sizeof(blink_rcv2dev1_b_text),
 			0,
+			LED_LP5562_DEFAULT_CURRENT
 		},
 		{
 			blink_rcv2dev1_g_text,
 			sizeof(blink_rcv2dev1_g_text),
 			0,
+			LED_LP5562_DEFAULT_CURRENT
 		},
 		{
 			blink_rcv2dev1_r_text,
 			sizeof(blink_rcv2dev1_r_text),
 			0,
+			LED_LP5562_DEFAULT_CURRENT
 		},
 	}
 };
 
 
-static const uint8_t blink_no_good1_b_text[] = {
+static uint8_t blink_no_good1_b_text[] = {
 	0xE2,  0x00,  0x40,     0,  0xE2,  0x00,  0x40,     0,
 	0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
 };
 
-static const uint8_t blink_no_good1_g_text[] = {
+static uint8_t blink_no_good1_g_text[] = {
 	0xE2,  0x00,  0x40,     0,  0xE2,  0x00,  0x40,     0,
 	0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
 };
 
-static const uint8_t blink_no_good1_r_text[] = {
+static uint8_t blink_no_good1_r_text[] = {
 	0xE0,  0x06,  0x40,   255,  0x53,  0x00,  0xE0,  0x06,
 	0x40,     0,  0x63,  0x00,  0x63,  0x00,  0x00,  0x00
 };
 
-static const TiLp5562Program blink_no_good1_program = {
+static TiLp5562Program blink_no_good1_program = {
 	{
 		{
 			blink_no_good1_b_text,
 			sizeof(blink_no_good1_b_text),
 			0,
+			LED_LP5562_DEFAULT_CURRENT
 		},
 		{
 			blink_no_good1_g_text,
 			sizeof(blink_no_good1_g_text),
 			0,
+			LED_LP5562_DEFAULT_CURRENT
 		},
 		{
 			blink_no_good1_r_text,
 			sizeof(blink_no_good1_r_text),
 			0,
+			LED_LP5562_DEFAULT_CURRENT
 		},
 	}
 };
@@ -297,4 +316,60 @@ const Led5562StateProg led_lp5562_state_programs[] = {
 	{VB_SCREEN_RECOVERY_TO_DEV, {&blink_rcv2dev1_program} },
 	{VB_SCREEN_RECOVERY_NO_GOOD, {&blink_no_good1_program} },
 	{}, /* Empty record to mark the end of the table. */
+};
+
+/*
+ * Calibration code map for "blink" pattern.
+ * Set PWM values, wait, set PWMs to 0, wait, loop.
+ */
+const struct lp5562_calibration_code_map mistral_code_map_blink[] = {
+	{
+		blue,
+		set_pwm,
+		0x01,
+		0,
+		{ }
+	},
+	{
+		green,
+		set_pwm,
+		0x11,
+		0,
+		{ }
+	},
+	{
+		red,
+		set_pwm,
+		0x21,
+		0,
+		{ }
+	},
+	{
+		0,
+		invalid,
+		0x00,
+		0,
+		{ }
+	}
+};
+
+const struct lp5562_calibration_data mistral_calibration_database[] = {
+	{
+		&blink_rcv_insert1_program,
+		1, /* Yellow */
+		100, /* 100% brightness */
+		mistral_code_map_blink,
+	},
+	{
+		&blink_no_good1_program,
+		2, /* Red */
+		100, /* 100% brightness */
+		mistral_code_map_blink,
+	},
+	{
+		NULL,
+		0,
+		0,
+		NULL
+	}
 };

@@ -12,3 +12,4 @@
 ##
 
 depthcharge-y += board.c
+depthcharge-y += led_calibration.c

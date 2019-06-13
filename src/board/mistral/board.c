@@ -32,6 +32,7 @@
 #include "drivers/storage/sdhci_msm.h"
 #include "drivers/gpio/sysinfo.h"
 #include "board.h"
+#include "led_calibration.h"
 #include "drivers/tpm/cr50_switches.h"
 #include "drivers/tpm/spi.h"
 #include "drivers/tpm/tpm.h"
@@ -167,6 +168,7 @@ static int board_setup(void)
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			&fixed_block_dev_controllers);
 
+	calibrate_led();
 	DisplayOps *led_ops = new_led_lp5562_display
 		(&new_qcs405_i2c(BLSP_QUP_ID_1)->ops, 0x30);
 	display_set_ops(led_ops);

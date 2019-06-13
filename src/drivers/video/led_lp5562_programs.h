@@ -37,6 +37,9 @@
 /* Number of LP5562 controllers on this implementation */
 #define LED_LP5562_NUM_LED_CONTROLLERS 1
 
+/* Default LED current (x0.1 mA) */
+#define LED_LP5562_DEFAULT_CURRENT 120
+
 /*
  * Structure to describe an lp5562 program: pointer to the text of the
  * program, its size for each engines, and start address relative to
@@ -45,16 +48,17 @@
  */
 typedef struct {
 	struct {
-		const uint8_t *program_text;
+		uint8_t *program_text;
 		uint8_t program_size;
 		uint8_t engine_start_addr;
+		uint8_t led_current;
 	} engine_program[LED_LP5562_NUM_OF_ENGINES];
 } TiLp5562Program;
 
 /* A structure to bind controller programs to a vboot state. */
 typedef struct {
 	enum VbScreenType_t    vb_screen;
-	const TiLp5562Program *programs[LED_LP5562_NUM_LED_CONTROLLERS];
+	TiLp5562Program *programs[LED_LP5562_NUM_LED_CONTROLLERS];
 } Led5562StateProg;
 
 extern const Led5562StateProg led_lp5562_state_programs[];
