@@ -103,6 +103,13 @@ int ec_command(CrosEc *ec, int cmd, int cmd_version,
 	       const void *dout, int dout_len,
 	       void *din, int din_len);
 
+/**
+ * Get the handle to main/primary EC
+ *
+ * @return pointer to primary EC structure.
+ */
+CrosEc *cros_ec_get_main(void);
+
 /*
  * Hard-code the number of columns we happen to know we have right now.  It
  * would be more correct to call cros_ec_mkbp_info() at startup and determine
