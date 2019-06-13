@@ -52,20 +52,6 @@ static void *gbb_copy_in(uint32_t gbb_offset, uint32_t offset, uint32_t size)
 	return gbb_copy + offset;
 }
 
-static void gbb_copy_out(uint32_t gbb_offset, uint32_t offset, uint32_t size)
-{
-	uint8_t *gbb_copy = cparams.gbb_data;
-
-	if ((offset > cparams.gbb_size) ||
-	    ((offset + size) > cparams.gbb_size)) {
-		printf("GBB component not inside the GBB\n");
-		return;
-	}
-
-	flash_rewrite(gbb_offset + offset, size, gbb_copy + offset);
-	return;
-}
-
 static int cparams_init(void)
 {
 	// Initialize cparams.
@@ -119,21 +105,25 @@ static int cparams_init(void)
 
 int gbb_clear_flags(void)
 {
-	/* If WP is enabled, cannot write to RO-GBB. */
-	if (flash_is_wp_enabled() != 0)
-		return 1;
-
-	die_if(!cparams_initialized, "cparams not yet initialized\n");
-
-	FmapArea area;
-	if (fmap_find_area("GBB", &area)) {
-		printf("Couldn't find the GBB.\n");
+	if (flash_is_wp_enabled()) {
+		printf("WP is enabled; can't write to GBB.\n");
 		return 1;
 	}
 
-	struct vb2_gbb_header *header = cparams.gbb_data;
-	header->flags = 0;
-	gbb_copy_out(area.offset, 0, sizeof(*header));
+	FmapArea area;
+	if (fmap_find_area("GBB", &area)) {
+		printf("Couldn't find GBB area.\n");
+		return 1;
+	}
+
+	vb2_gbb_flags_t new_flags = 0;
+	if (sizeof(new_flags) !=
+	    flash_rewrite(area.offset + VB2_GBB_FLAGS_OFFSET,
+			  sizeof(new_flags), &new_flags)) {
+		printf("Write to GBB failed.\n");
+		return 1;
+	}
+
 	return 0;
 }
 
