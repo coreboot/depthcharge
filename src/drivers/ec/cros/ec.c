@@ -281,7 +281,7 @@ int ec_command(CrosEc *me, int cmd, int cmd_version,
 				   cmd_version, dout, dout_len, din, din_len);
 }
 
-static CrosEc *get_main_ec(void)
+CrosEc *cros_ec_get_main(void)
 {
 	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
 	return container_of(ec, CrosEc, vboot);
@@ -335,8 +335,8 @@ static int cbi_get_uint32(uint32_t *id, uint32_t type)
 
 	p.type = type;
 
-	int rv = ec_command(get_main_ec(), EC_CMD_GET_CROS_BOARD_INFO, 0, &p,
-			    sizeof(p), id, sizeof(*id));
+	int rv = ec_command(cros_ec_get_main(), EC_CMD_GET_CROS_BOARD_INFO, 0,
+			    &p, sizeof(p), id, sizeof(*id));
 
 	return rv < 0 ? rv : 0;
 }
@@ -356,14 +356,14 @@ int cros_ec_pd_control(uint8_t pd_port, enum ec_pd_control_cmd cmd)
 {
 	struct ec_params_pd_control p = {p.chip = pd_port, p.subcmd = cmd};
 
-	int rv = ec_command(get_main_ec(), EC_CMD_PD_CONTROL, 0, &p, sizeof(p),
-			    NULL, 0);
+	int rv = ec_command(cros_ec_get_main(), EC_CMD_PD_CONTROL, 0, &p,
+			    sizeof(p), NULL, 0);
 	return rv < 0 ? rv : 0;
 }
 
 int cros_ec_scan_keyboard(struct cros_ec_keyscan *scan)
 {
-	if (ec_command(get_main_ec(), EC_CMD_MKBP_STATE, 0, NULL, 0,
+	if (ec_command(cros_ec_get_main(), EC_CMD_MKBP_STATE, 0, NULL, 0,
 		       &scan->data, sizeof(scan->data)) != sizeof(scan->data))
 		return -1;
 
@@ -372,8 +372,8 @@ int cros_ec_scan_keyboard(struct cros_ec_keyscan *scan)
 
 int cros_ec_get_next_event(struct ec_response_get_next_event *e)
 {
-	int rv = ec_command(get_main_ec(), EC_CMD_GET_NEXT_EVENT, 0, NULL, 0, e,
-			    sizeof(*e));
+	int rv = ec_command(cros_ec_get_main(), EC_CMD_GET_NEXT_EVENT, 0, NULL,
+			    0, e, sizeof(*e));
 
 	return rv < 0 ? rv : 0;
 }
@@ -605,15 +605,15 @@ static VbError_t vboot_disable_jump(VbootEcOps *vbec)
 
 int cros_ec_interrupt_pending(void)
 {
-	if (get_main_ec()->interrupt_gpio)
-		return gpio_get(get_main_ec()->interrupt_gpio);
+	if (cros_ec_get_main()->interrupt_gpio)
+		return gpio_get(cros_ec_get_main()->interrupt_gpio);
 	return 1;	// Always assume we have input if no GPIO set
 }
 
 int cros_ec_mkbp_info(struct ec_response_mkbp_info *info)
 {
-	if (ec_command(get_main_ec(), EC_CMD_MKBP_INFO, 0, NULL, 0, info,
-		       sizeof(*info)) != sizeof(*info))
+	if (ec_command(cros_ec_get_main(), EC_CMD_MKBP_INFO, 0, NULL, 0,
+		       info, sizeof(*info)) != sizeof(*info))
 		return -1;
 
 	return 0;
@@ -623,7 +623,7 @@ int cros_ec_get_event_mask(u8 type, uint32_t *mask)
 {
 	struct ec_response_host_event_mask rsp;
 
-	if (ec_command(get_main_ec(), type, 0, NULL, 0,
+	if (ec_command(cros_ec_get_main(), type, 0, NULL, 0,
 		       &rsp, sizeof(rsp)) != sizeof(rsp))
 		return -1;
 
@@ -638,7 +638,8 @@ int cros_ec_set_event_mask(u8 type, uint32_t mask)
 
 	req.mask = mask;
 
-	if (ec_command(get_main_ec(), type, 0, &req, sizeof(req), NULL, 0) < 0)
+	if (ec_command(cros_ec_get_main(), type, 0, &req, sizeof(req),
+		       NULL, 0) < 0)
 		return -1;
 
 	return 0;
@@ -652,7 +653,7 @@ int cros_ec_get_host_events(uint32_t *events_ptr)
 	 * Use the B copy of the event flags, because the main copy is already
 	 * used by ACPI/SMI.
 	 */
-	if (ec_command(get_main_ec(), EC_CMD_HOST_EVENT_GET_B, 0, NULL, 0,
+	if (ec_command(cros_ec_get_main(), EC_CMD_HOST_EVENT_GET_B, 0, NULL, 0,
 		       &resp, sizeof(resp)) != sizeof(resp))
 		return -1;
 
@@ -673,7 +674,7 @@ int cros_ec_clear_host_events(uint32_t events)
 	 * Use the B copy of the event flags, so it affects the data returned
 	 * by cros_ec_get_host_events().
 	 */
-	if (ec_command(get_main_ec(), EC_CMD_HOST_EVENT_CLEAR_B, 0,
+	if (ec_command(cros_ec_get_main(), EC_CMD_HOST_EVENT_CLEAR_B, 0,
 		       &params, sizeof(params), NULL, 0) < 0)
 		return -1;
 
@@ -987,7 +988,7 @@ int cros_ec_read_vbnvcontext(uint8_t *block)
 
 	p.op = EC_VBNV_CONTEXT_OP_READ;
 
-	len = ec_command(get_main_ec(), EC_CMD_VBNV_CONTEXT,
+	len = ec_command(cros_ec_get_main(), EC_CMD_VBNV_CONTEXT,
 			 EC_VER_VBNV_CONTEXT, &p, sizeof(p),
 			 block, EC_VBNV_BLOCK_SIZE);
 	if (len < EC_VBNV_BLOCK_SIZE)
@@ -1004,7 +1005,7 @@ int cros_ec_write_vbnvcontext(const uint8_t *block)
 	p.op = EC_VBNV_CONTEXT_OP_WRITE;
 	memcpy(p.block, block, sizeof(p.block));
 
-	len = ec_command(get_main_ec(), EC_CMD_VBNV_CONTEXT,
+	len = ec_command(cros_ec_get_main(), EC_CMD_VBNV_CONTEXT,
 			 EC_VER_VBNV_CONTEXT, &p, sizeof(p), NULL, 0);
 	if (len < 0)
 		return -1;
@@ -1019,7 +1020,7 @@ int cros_ec_battery_cutoff(uint8_t flags)
 
 	p.flags = flags;
 
-	len = ec_command(get_main_ec(), EC_CMD_BATTERY_CUT_OFF, 1,
+	len = ec_command(cros_ec_get_main(), EC_CMD_BATTERY_CUT_OFF, 1,
 			 &p, sizeof(p), NULL, 0);
 
 	if (len < 0)
@@ -1043,7 +1044,7 @@ int cros_ec_set_motion_sense_activity(uint32_t activity, uint32_t value)
 	params.set_activity.activity = activity;
 	params.set_activity.enable = value;
 
-	if (ec_command(get_main_ec(), EC_CMD_MOTION_SENSE_CMD, 2,
+	if (ec_command(cros_ec_get_main(), EC_CMD_MOTION_SENSE_CMD, 2,
 		       &params, sizeof(params), &resp, sizeof(resp)) < 0)
 		return -1;
 
@@ -1057,7 +1058,7 @@ static int read_memmap(uint8_t offset, uint8_t size, void *dest)
 	params.offset = offset;
 	params.size = size;
 
-	CrosEc *ec = get_main_ec();
+	CrosEc *ec = cros_ec_get_main();
 
 	if (ec->bus->read)
 		ec->bus->read(dest, EC_LPC_ADDR_MEMMAP + offset, size);
@@ -1166,7 +1167,7 @@ int cros_ec_config_powerbtn(uint32_t flags)
 	struct ec_params_config_power_button params;
 
 	params.flags = flags;
-	if (ec_command(get_main_ec(), EC_CMD_CONFIG_POWER_BUTTON, 0,
+	if (ec_command(cros_ec_get_main(), EC_CMD_CONFIG_POWER_BUTTON, 0,
 		       &params, sizeof(params), NULL, 0) < 0)
 		return -1;
 
@@ -1181,7 +1182,7 @@ int cros_ec_read_limit_power_request(int *limit_power)
 
 	p.cmd = CHARGE_STATE_CMD_GET_PARAM;
 	p.get_param.param = CS_PARAM_LIMIT_POWER;
-	res = ec_command(get_main_ec(), EC_CMD_CHARGE_STATE, 0,
+	res = ec_command(cros_ec_get_main(), EC_CMD_CHARGE_STATE, 0,
 			 &p, sizeof(p), &r, sizeof(r));
 
 	/*
@@ -1245,7 +1246,7 @@ int cros_ec_read_batt_state_of_charge(uint32_t *state)
 
 	params.cmd = CHARGE_STATE_CMD_GET_STATE;
 
-	if (ec_command(get_main_ec(), EC_CMD_CHARGE_STATE, 0,
+	if (ec_command(cros_ec_get_main(), EC_CMD_CHARGE_STATE, 0,
 		       &params, sizeof(params), &resp, sizeof(resp)) < 0)
 		return -1;
 
@@ -1255,7 +1256,7 @@ int cros_ec_read_batt_state_of_charge(uint32_t *state)
 
 int cros_ec_reboot(uint8_t flags)
 {
-	return ec_reboot(get_main_ec(), EC_REBOOT_COLD, flags);
+	return ec_reboot(cros_ec_get_main(), EC_REBOOT_COLD, flags);
 }
 
 /*
@@ -1270,7 +1271,7 @@ int cros_ec_set_bl_pwm_duty(uint32_t percent)
 	params.pwm_type = EC_PWM_TYPE_DISPLAY_LIGHT;
 	params.index = 0;
 
-	if (ec_command(get_main_ec(), EC_CMD_PWM_SET_DUTY, 0,
+	if (ec_command(cros_ec_get_main(), EC_CMD_PWM_SET_DUTY, 0,
 		       &params, sizeof(params), NULL, 0) < 0)
 		return -1;
 	return 0;
@@ -1283,7 +1284,7 @@ int cros_ec_locate_tcpc_chip(uint8_t port, struct ec_response_locate_chip *r)
 
 	p.type = EC_CHIP_TYPE_TCPC;
 	p.index = port;
-	ret = ec_command(get_main_ec(), EC_CMD_LOCATE_CHIP, 0,
+	ret = ec_command(cros_ec_get_main(), EC_CMD_LOCATE_CHIP, 0,
 				&p, sizeof(p), r, sizeof(*r));
 	if (ret < 0) {
 		printf("Failed to locate TCPC chip for port%d ret:%d\n",
