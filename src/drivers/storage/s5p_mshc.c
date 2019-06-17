@@ -531,13 +531,13 @@ MshciHost *new_mshci_host(uintptr_t ioaddr, uint32_t src_hz, int bus_width,
 	ctrlr->mmc.bus_hz = ctrlr->mmc.f_min;
 	ctrlr->mmc.b_max = 65535; // Some controllers use 16-bit regs.
 	if (bus_width == 8) {
-		ctrlr->mmc.caps |= MMC_MODE_8BIT;
-		ctrlr->mmc.caps &= ~MMC_MODE_4BIT;
+		ctrlr->mmc.caps |= MMC_CAPS_8BIT;
+		ctrlr->mmc.caps &= ~MMC_CAPS_4BIT;
 	} else {
-		ctrlr->mmc.caps |= MMC_MODE_4BIT;
-		ctrlr->mmc.caps &= ~MMC_MODE_8BIT;
+		ctrlr->mmc.caps |= MMC_CAPS_4BIT;
+		ctrlr->mmc.caps &= ~MMC_CAPS_8BIT;
 	}
-	ctrlr->mmc.caps |= MMC_MODE_HS_52MHz | MMC_MODE_HS | MMC_MODE_HC;
+	ctrlr->mmc.caps |= MMC_CAPS_HS_52MHz | MMC_CAPS_HS | MMC_CAPS_HC;
 	ctrlr->mmc.send_cmd = &s5p_mshci_send_command;
 	ctrlr->mmc.set_ios = &s5p_mshci_set_ios;
 

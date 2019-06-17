@@ -38,17 +38,17 @@
 #define MMC_VERSION_3		(MMC_VERSION_MMC | 0x30)
 #define MMC_VERSION_4		(MMC_VERSION_MMC | 0x40)
 
-#define MMC_MODE_HS		0x001
-#define MMC_MODE_HS_52MHz	0x010
-#define MMC_MODE_HS_200MHz	0x020
-#define MMC_MODE_HS400		0x040
-#define MMC_MODE_HS400ES	0x080
-#define MMC_MODE_1V8_VDD	0x100
-#define MMC_MODE_4BIT		0x200
-#define MMC_MODE_8BIT		0x400
-#define MMC_MODE_SPI		0x800
-#define MMC_MODE_HC		0x1000
-#define MMC_AUTO_CMD12		0x2000
+#define MMC_CAPS_HS		0x001
+#define MMC_CAPS_HS_52MHz	0x010
+#define MMC_CAPS_HS200		0x020
+#define MMC_CAPS_HS400		0x040
+#define MMC_CAPS_HS400ES	0x080
+#define MMC_CAPS_1V8_VDD	0x100
+#define MMC_CAPS_4BIT		0x200
+#define MMC_CAPS_8BIT		0x400
+#define MMC_CAPS_SPI		0x800
+#define MMC_CAPS_HC		0x1000
+#define MMC_CAPS_AUTO_CMD12	0x2000
 
 #define SD_DATA_4BIT		0x00040000
 
@@ -106,11 +106,6 @@
 /* SCR definitions in different words */
 #define SD_HIGHSPEED_BUSY	0x00020000
 #define SD_HIGHSPEED_SUPPORTED	0x00020000
-
-#define MMC_HS_TIMING		0x00000100
-#define MMC_HS_52MHZ		0x2
-#define MMC_HS_200MHZ		0x10
-#define MMC_HS400		0x40
 
 #define OCR_BUSY		0x80000000
 #define OCR_HCS			0x40000000
@@ -179,8 +174,10 @@
 #define EXT_CSD_CMD_SET_SECURE		(1 << 1)
 #define EXT_CSD_CMD_SET_CPSECURE	(1 << 2)
 
-#define EXT_CSD_CARD_TYPE_26	(1 << 0)	/* Card can run at 26MHz */
-#define EXT_CSD_CARD_TYPE_52	(1 << 1)	/* Card can run at 52MHz */
+#define EXT_CSD_CARD_TYPE_26		(1 << 0) /* Card can run at 26MHz */
+#define EXT_CSD_CARD_TYPE_52		(1 << 1) /* Card can run at 52MHz */
+#define EXT_CSD_CARD_TYPE_HS200_1_8V	(1 << 4)
+#define EXT_CSD_CARD_TYPE_HS400_1_8V	(1 << 6)
 
 #define EXT_CSD_BUS_WIDTH_1	0	/* Card is in 1 bit mode */
 #define EXT_CSD_BUS_WIDTH_4	1	/* Card is in 4 bit mode */

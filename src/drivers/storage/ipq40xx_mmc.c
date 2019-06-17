@@ -787,8 +787,8 @@ QcomMmcHost *new_qcom_mmc_host(unsigned slot, uint32_t base, int bus_width)
 		new_host->mmc.b_max = 512;
 		new_host->mmc.bus_width = bus_width;
 		new_host->mmc.bus_hz = new_host->mmc.f_min;
-		new_host->mmc.caps = MMC_MODE_8BIT ;
-		new_host->mmc.caps |= MMC_MODE_HC;
+		new_host->mmc.caps = MMC_CAPS_8BIT ;
+		new_host->mmc.caps |= MMC_CAPS_HC;
 
 		clock_config_mmc(&(new_host->mmc), 1);
 		clock_disable_mmc();

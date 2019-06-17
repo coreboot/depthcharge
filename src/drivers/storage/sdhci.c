@@ -397,7 +397,7 @@ static int sdhci_send_command_bounced(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
 
 		sdhci_writew(host, data->blocks, SDHCI_BLOCK_COUNT);
 
-		if (host->host_caps & MMC_AUTO_CMD12) {
+		if (host->host_caps & MMC_CAPS_AUTO_CMD12) {
 			if (sdhci_setup_adma(host, data, bbstate))
 				return -1;
 
@@ -415,7 +415,7 @@ static int sdhci_send_command_bounced(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
 	sdhci_writel(host, cmd->cmdarg, SDHCI_ARGUMENT);
 	sdhci_writew(host, SDHCI_MAKE_CMD(cmd->cmdidx, flags), SDHCI_COMMAND);
 
-	if (data && (host->host_caps & MMC_AUTO_CMD12))
+	if (data && (host->host_caps & MMC_CAPS_AUTO_CMD12))
 		return sdhci_complete_adma(host, cmd);
 
 	start = timer_us(0);
@@ -682,7 +682,7 @@ void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 		sdhci_set_clock(host, mmc_ctrlr->bus_hz);
 
 	/* Switch to 1.8 volt for HS200 */
-	if (mmc_ctrlr->caps & MMC_MODE_1V8_VDD)
+	if (mmc_ctrlr->caps & MMC_CAPS_1V8_VDD)
 		if (mmc_ctrlr->bus_hz == MMC_CLOCK_200MHZ)
 			sdhci_set_power(host, MMC_VDD_165_195_SHIFT);
 
@@ -709,7 +709,7 @@ void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 
 	sdhci_set_uhs_signaling(host, mmc_ctrlr->timing);
 
-	if (host->host_caps & MMC_AUTO_CMD12) {
+	if (host->host_caps & MMC_CAPS_AUTO_CMD12) {
 		ctrl &= ~SDHCI_CTRL_DMA_MASK;
 		if (host->dma64)
 			ctrl |= SDHCI_CTRL_ADMA64;
@@ -738,10 +738,10 @@ static int sdhci_pre_init(SdhciHost *host)
 
 	if ((caps_1 & SDHCI_SUPPORT_HS400) &&
 	   (host->quirks & SDHCI_QUIRK_SUPPORTS_HS400ES))
-		host->host_caps |= MMC_MODE_HS400ES;
+		host->host_caps |= MMC_CAPS_HS400ES;
 
 	if (caps & SDHCI_CAN_DO_ADMA2)
-		host->host_caps |= MMC_AUTO_CMD12;
+		host->host_caps |= MMC_CAPS_AUTO_CMD12;
 
 	/* get base clock frequency from CAP register */
 	if (!(host->quirks & SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN)) {
@@ -787,17 +787,17 @@ static int sdhci_pre_init(SdhciHost *host)
 		host->mmc_ctrlr.voltages |= host->voltages;
 
 	if (host->quirks & SDHCI_QUIRK_NO_EMMC_HS200)
-		host->mmc_ctrlr.caps = MMC_MODE_HS | MMC_MODE_HS_52MHz |
-			MMC_MODE_4BIT | MMC_MODE_HC;
+		host->mmc_ctrlr.caps = MMC_CAPS_HS | MMC_CAPS_HS_52MHz |
+			MMC_CAPS_4BIT | MMC_CAPS_HC;
 	else
-		host->mmc_ctrlr.caps = MMC_MODE_HS | MMC_MODE_HS_52MHz |
-			MMC_MODE_4BIT | MMC_MODE_HC | MMC_MODE_HS_200MHz;
+		host->mmc_ctrlr.caps = MMC_CAPS_HS | MMC_CAPS_HS_52MHz |
+			MMC_CAPS_4BIT | MMC_CAPS_HC | MMC_CAPS_HS200;
 
 	if (host->quirks & SDHCI_QUIRK_EMMC_1V8_POWER)
-		host->mmc_ctrlr.caps |= MMC_MODE_1V8_VDD;
+		host->mmc_ctrlr.caps |= MMC_CAPS_1V8_VDD;
 
 	if (caps & SDHCI_CAN_DO_8BIT)
-		host->mmc_ctrlr.caps |= MMC_MODE_8BIT;
+		host->mmc_ctrlr.caps |= MMC_CAPS_8BIT;
 	if (host->host_caps)
 		host->mmc_ctrlr.caps |= host->host_caps;
 	if (caps & SDHCI_CAN_64BIT)
