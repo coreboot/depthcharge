@@ -1,0 +1,7 @@
+# Most people committing to depthcharge (especially driver and board code)
+# should know who their assigned reviewer is. For everyone else I'm happy to do
+# the triaging.
+jwerner@chromium.org
+
+# Do not depend commit access on OWNERS
+*
