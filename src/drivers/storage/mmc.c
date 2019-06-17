@@ -214,7 +214,7 @@ static uint32_t mmc_write(MmcMedia *media, uint32_t start, lba_t block_count,
 	/* SPI multiblock writes terminate using a special
 	 * token, not a STOP_TRANSMISSION request.
 	 */
-	if ((block_count > 1) && !(media->ctrlr->caps & MMC_AUTO_CMD12)) {
+	if ((block_count > 1) && !(media->ctrlr->caps & MMC_CAPS_AUTO_CMD12)) {
 		cmd.cmdidx = MMC_CMD_STOP_TRANSMISSION;
 		cmd.cmdarg = 0;
 		cmd.resp_type = MMC_RSP_R1b;
@@ -258,7 +258,7 @@ static int mmc_read(MmcMedia *media, void *dest, uint32_t start,
 	if (mmc_send_cmd(media->ctrlr, &cmd, &data))
 		return 0;
 
-	if ((block_count > 1) && !(media->ctrlr->caps & MMC_AUTO_CMD12)) {
+	if ((block_count > 1) && !(media->ctrlr->caps & MMC_CAPS_AUTO_CMD12)) {
 		cmd.cmdidx = MMC_CMD_STOP_TRANSMISSION;
 		cmd.cmdarg = 0;
 		cmd.resp_type = MMC_RSP_R1b;
@@ -363,7 +363,7 @@ static int mmc_send_op_cond_iter(MmcMedia *media, MmcCommand *cmd, int use_arg)
 			(OCR_VOLTAGE_MASK | OCR_ACCESS_MODE);
 		cmd->cmdarg = media->ctrlr->voltages & mask;
 
-		if (media->ctrlr->caps & MMC_MODE_HC)
+		if (media->ctrlr->caps & MMC_CAPS_HC)
 			cmd->cmdarg |= OCR_HCS;
 	}
 	cmd->flags = 0;
@@ -511,16 +511,16 @@ static void mmc_recalculate_clock(MmcMedia *media)
 	uint32_t clock = 1;
 
 	if (IS_SD(media)) {
-		if (media->caps & MMC_MODE_HS)
+		if (media->caps & MMC_CAPS_HS)
 			clock = MMC_CLOCK_50MHZ;
 		else
 			clock = MMC_CLOCK_25MHZ;
 	} else {
-		if (media->caps & MMC_MODE_HS) {
-			if ((media->caps & MMC_MODE_HS_200MHz) ||
-			    (media->caps & MMC_MODE_HS400ES))
+		if (media->caps & MMC_CAPS_HS) {
+			if ((media->caps & MMC_CAPS_HS200) ||
+			    (media->caps & MMC_CAPS_HS400ES))
 				clock = MMC_CLOCK_200MHZ;
-			else if (media->caps & MMC_MODE_HS_52MHz)
+			else if (media->caps & MMC_CAPS_HS_52MHz)
 				clock = MMC_CLOCK_52MHZ;
 			else
 				clock = MMC_CLOCK_26MHZ;
@@ -540,7 +540,7 @@ static int mmc_select_hs(MmcMedia *media)
 		return ret;
 
 	mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_HS);
-	media->caps |= MMC_MODE_HS_52MHz | MMC_MODE_HS;
+	media->caps |= MMC_CAPS_HS_52MHz | MMC_CAPS_HS;
 	mmc_recalculate_clock(media);
 
 	ret = mmc_send_status(media, MMC_IO_RETRIES);
@@ -581,7 +581,7 @@ static int mmc_select_hs400es(MmcMedia *media)
 	}
 	/* Set host controller to HS400 timing and frequency */
 	mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_HS400ES);
-	media->caps |= MMC_MODE_HS400ES | MMC_MODE_HS_52MHz | MMC_MODE_HS;
+	media->caps |= MMC_CAPS_HS400ES | MMC_CAPS_HS_52MHz | MMC_CAPS_HS;
 
 	mmc_recalculate_clock(media);
 
@@ -610,7 +610,7 @@ static int mmc_select_hs200(MmcMedia *media)
 		return ret;
 
 	mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_HS200);
-	media->caps |= MMC_MODE_HS_200MHz | MMC_MODE_HS_52MHz | MMC_MODE_HS;
+	media->caps |= MMC_CAPS_HS200 | MMC_CAPS_HS_52MHz | MMC_CAPS_HS;
 
 	mmc_recalculate_clock(media);
 
@@ -635,12 +635,12 @@ static int mmc_change_freq(MmcMedia *media)
 	if (err)
 		return err;
 
-	if ((media->ctrlr->caps & MMC_MODE_HS400ES) &&
-	    (ext_csd[EXT_CSD_CARD_TYPE] & MMC_HS400) &&
+	if ((media->ctrlr->caps & MMC_CAPS_HS400ES) &&
+	    (ext_csd[EXT_CSD_CARD_TYPE] & EXT_CSD_CARD_TYPE_HS400_1_8V) &&
 	    ext_csd[EXT_CSD_STROBE_SUPPORT])
 		err = mmc_select_hs400es(media);
-	else if ((media->ctrlr->caps & MMC_MODE_HS_200MHz) &&
-		 (ext_csd[EXT_CSD_CARD_TYPE] & MMC_HS_200MHZ))
+	else if ((media->ctrlr->caps & MMC_CAPS_HS200) &&
+		 (ext_csd[EXT_CSD_CARD_TYPE] & EXT_CSD_CARD_TYPE_HS200_1_8V))
 		err = mmc_select_hs200(media);
 	else
 		err = mmc_select_hs(media);
@@ -729,7 +729,7 @@ static int sd_change_freq(MmcMedia *media)
 	}
 
 	if (media->scr[0] & SD_DATA_4BIT)
-		media->caps |= MMC_MODE_4BIT;
+		media->caps |= MMC_CAPS_4BIT;
 
 	/* Version 1.0 doesn't support switching */
 	if (media->version == SD_VERSION_1_0)
@@ -757,8 +757,8 @@ static int sd_change_freq(MmcMedia *media)
 	 * This can avoid furthur problem when the card runs in different
 	 * mode between the host.
 	 */
-	if (!((media->ctrlr->caps & MMC_MODE_HS_52MHz) &&
-		(media->ctrlr->caps & MMC_MODE_HS)))
+	if (!((media->ctrlr->caps & MMC_CAPS_HS_52MHz) &&
+		(media->ctrlr->caps & MMC_CAPS_HS)))
 		goto out;
 
 	err = sd_switch(media->ctrlr, SD_SWITCH_SWITCH, 0, 1,
@@ -767,7 +767,7 @@ static int sd_change_freq(MmcMedia *media)
 		return err;
 
 	if ((ntohl(switch_status[4]) & 0x0f000000) == 0x01000000) {
-		media->caps |= MMC_MODE_HS;
+		media->caps |= MMC_CAPS_HS;
 		mmc_set_timing(media->ctrlr, MMC_TIMING_SD_HS);
 	}
 
@@ -955,7 +955,7 @@ static int mmc_startup(MmcMedia *media)
 	media->caps &= media->ctrlr->caps;
 
 	if (IS_SD(media)) {
-		if (media->caps & MMC_MODE_4BIT) {
+		if (media->caps & MMC_CAPS_4BIT) {
 			cmd.cmdidx = MMC_CMD_APP_CMD;
 			cmd.resp_type = MMC_RSP_R1;
 			cmd.cmdarg = media->rca << 16;
@@ -978,8 +978,8 @@ static int mmc_startup(MmcMedia *media)
 	} else {
 		for (width = EXT_CSD_BUS_WIDTH_8; width >= 0; width--) {
 			/* If HS200 is switched, Bus Width has been 8-bit */
-			if ((media->caps & MMC_MODE_HS_200MHz) ||
-			    (media->caps & MMC_MODE_HS400ES))
+			if ((media->caps & MMC_CAPS_HS200) ||
+			    (media->caps & MMC_CAPS_HS400ES))
 				break;
 
 			/* Set the card to use 4 bit*/

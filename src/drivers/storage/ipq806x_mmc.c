@@ -754,9 +754,9 @@ QcomMmcHost *new_qcom_mmc_host(unsigned slot, uint32_t base, int bus_width)
 		new_host->mmc.bus_width = bus_width;
 		new_host->mmc.bus_hz = new_host->mmc.f_min;
 		new_host->mmc.caps = (bus_width == 8) ?
-					MMC_MODE_8BIT : MMC_MODE_4BIT;
-		new_host->mmc.caps |= MMC_MODE_HS | MMC_MODE_HS_52MHz |
-			MMC_MODE_HC;
+					MMC_CAPS_8BIT : MMC_CAPS_4BIT;
+		new_host->mmc.caps |= MMC_CAPS_HS | MMC_CAPS_HS_52MHz |
+			MMC_CAPS_HC;
 	}
 
 	return new_host;
