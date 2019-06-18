@@ -69,6 +69,18 @@ static int cr50_irq_status(void)
 
 int kukui_backlight_update(DisplayOps *me, uint8_t enable)
 {
+	static GpioOps *disp_pwm0, *backlight_en;
+
+	if (!backlight_en) {
+		disp_pwm0 = new_mtk_gpio_output(43);
+		backlight_en = new_mtk_gpio_output(176);
+	}
+
+	/* Enforce enable to be either 0 or 1. */
+	enable = !!enable;
+
+	gpio_set(disp_pwm0, enable);
+	gpio_set(backlight_en, enable);
 	return 0;
 }
 
