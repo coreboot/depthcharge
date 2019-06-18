@@ -23,8 +23,6 @@
 // C level variable definitions for symbols defined in the linker script.
 
 extern uint8_t _start;
-extern uint8_t _gbb_copy_start;
-extern uint8_t _gbb_copy_end;
 extern uint8_t _edata;
 extern uint8_t _heap;
 extern uint8_t _eheap;
@@ -39,9 +37,5 @@ extern uint8_t _fit_fdt_start;
 extern uint8_t _fit_fdt_end;
 extern uint8_t _init_funcs_start;
 extern uint8_t _init_funcs_end;
-
-#define CPARAMS __attribute__((section(".cparams")))
-#define SHARED_DATA __attribute__((section(".shared_data")))
-#define GBB_COPY __attribute__((section(".gbb_copy")))
 
 #endif /* __IMAGE_SYMBOLS_H__ */

@@ -55,18 +55,6 @@ SECTIONS
 	. = ALIGN(16);
 	_start = .;
 
-	.cparams : {
-		KEEP(*(.cparams))
-	}
-	.shared_data : {
-		KEEP(*(.shared_data))
-	}
-	.gbb_copy : {
-		_gbb_copy_start = .;
-		. += CONFIG_GBB_COPY_SIZE;
-		_gbb_copy_end = .;
-	}
-
 	.text : {
 		*(.text._entry)
 		*(.text)
