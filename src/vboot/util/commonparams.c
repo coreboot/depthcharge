@@ -15,7 +15,7 @@
  * GNU General Public License for more details.
  */
 
-#define NEED_VB20_INTERNALS  /* Peeking into vb2_gbb_header */
+#define NEED_VB20_INTERNALS  /* Peeking into vb2_shared_data */
 
 #include <assert.h>
 #include <libpayload.h>
@@ -29,79 +29,7 @@
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 
-/* TODO(kitching): cparams is only used to contain GBB data.  Migrate to use
- * vboot2 data structures instead, and remove cparams. */
-VbCommonParams cparams CPARAMS;
-static int cparams_initialized = 0;
 static struct vboot_handoff handoff_data;
-
-static void *gbb_copy_in(uint32_t gbb_offset, uint32_t offset, uint32_t size)
-{
-	uint8_t *gbb_copy = cparams.gbb_data;
-
-	if (offset > cparams.gbb_size || offset + size > cparams.gbb_size) {
-		printf("GBB component not inside the GBB.\n");
-		return NULL;
-	}
-
-	void *data;
-	data = flash_read(gbb_offset + offset, size);
-	if (!data)
-		return NULL;
-	memcpy(gbb_copy + offset, data, size);
-	return gbb_copy + offset;
-}
-
-static int cparams_init(void)
-{
-	// Initialize cparams.
-	memset(&cparams, 0, sizeof(cparams));
-
-	FmapArea area;
-	if (fmap_find_area("GBB", &area)) {
-		printf("Couldn't find the GBB.\n");
-		return 1;
-	}
-
-	if (area.size > CONFIG_GBB_COPY_SIZE) {
-		printf("Not enough room for a copy of the GBB.\n");
-		return 1;
-	}
-
-	cparams.gbb_size = area.size;
-	cparams.gbb_data = &_gbb_copy_start;
-	memset(cparams.gbb_data, 0, cparams.gbb_size);
-
-	uint32_t offset = area.offset;
-
-	struct vb2_gbb_header *header =
-		gbb_copy_in(offset, 0, sizeof(struct vb2_gbb_header));
-	if (!header)
-		return 1;
-	printf("The GBB signature is at %p and is: ", header->signature);
-	for (int i = 0; i < VB2_GBB_SIGNATURE_SIZE; i++)
-		printf(" %02x", header->signature[i]);
-	printf("\n");
-
-	if (memcmp(header->signature, VB2_GBB_SIGNATURE,
-		   VB2_GBB_SIGNATURE_SIZE)) {
-		printf("Bad signature on GBB.\n");
-		return 1;
-	}
-
-	if (!gbb_copy_in(offset, header->hwid_offset, header->hwid_size))
-		return 1;
-
-	if (!gbb_copy_in(offset, header->rootkey_offset, header->rootkey_size))
-		return 1;
-
-	if (!gbb_copy_in(offset, header->recovery_key_offset,
-			 header->recovery_key_size))
-		return 1;
-
-	cparams_initialized = 1;
-	return 0;
-}
 
 int gbb_clear_flags(void)
 {
@@ -267,10 +195,6 @@ static int vboot_create_handoff(void)
 
 int common_params_init(void)
 {
-	// Initialize cparams, GBB size/data.
-	if (cparams_init())
-		return 1;
-
 	// Convert incoming vb2_shared_data to vboot_handoff.
 	if (vboot_create_handoff())
 		return 1;

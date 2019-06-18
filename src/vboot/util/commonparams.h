@@ -34,8 +34,6 @@ struct vboot_handoff {
 	char shared_data[VB_SHARED_DATA_MIN_SIZE];
 } __attribute__((packed));
 
-extern VbCommonParams cparams;
-
 int gbb_clear_flags(void);
 
 int common_params_init(void);
