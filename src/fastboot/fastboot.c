@@ -358,7 +358,8 @@ static int fb_read_var(struct fb_cmd *cmd, fb_getvar_t var)
 		break;
 	}
 	case FB_GBB_FLAGS: {
-		fb_add_number(output, "0x%llx", gbb_get_flags());
+		fb_add_number(output, "0x%llx",
+			      vb2api_gbb_get_flags(vboot_get_context()));
 		break;
 	}
 	case FB_OEM_VERSION: {

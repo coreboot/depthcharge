@@ -55,7 +55,8 @@ int cros_ec_set_lid_shutdown_mask(int enable)
 
 static int cros_ec_disable_lid_shutdown_at_startup(VbootInitFunc *init)
 {
-	if (!(gbb_get_flags() & VB2_GBB_FLAG_DISABLE_LID_SHUTDOWN))
+	if (!(vb2api_gbb_get_flags(vboot_get_context())
+	    & VB2_GBB_FLAG_DISABLE_LID_SHUTDOWN))
 		return 0;
 
 	printf("EC: Disabling lid close event due to GBB override\n");

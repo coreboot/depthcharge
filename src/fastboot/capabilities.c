@@ -46,7 +46,8 @@ static uint32_t fb_cap_bitmap[] = {
 
 uint8_t fb_check_gbb_override(void)
 {
-	if (gbb_get_flags() & VB2_GBB_FLAG_FORCE_DEV_BOOT_FASTBOOT_FULL_CAP)
+	if (vb2api_gbb_get_flags(vboot_get_context())
+	    & VB2_GBB_FLAG_FORCE_DEV_BOOT_FASTBOOT_FULL_CAP)
 		return 1;
 
 	return 0;

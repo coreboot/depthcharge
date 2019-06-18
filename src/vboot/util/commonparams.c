@@ -127,16 +127,6 @@ int gbb_clear_flags(void)
 	return 0;
 }
 
-uint32_t gbb_get_flags(void)
-{
-	struct vb2_gbb_header *header;
-
-	die_if(!cparams_initialized, "cparams not yet initialized\n");
-
-	header = cparams.gbb_data;
-	return header->flags;
-}
-
 static int vboot_update_shared_data(void)
 {
 	VbSharedDataHeader *vb_sd;

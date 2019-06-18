@@ -37,7 +37,6 @@ struct vboot_handoff {
 extern VbCommonParams cparams;
 
 int gbb_clear_flags(void);
-uint32_t gbb_get_flags(void);
 
 int common_params_init(void);
 int find_common_params(void **blob, int *size);
