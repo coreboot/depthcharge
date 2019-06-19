@@ -46,6 +46,10 @@
 #define AUD_VOLUME              4000
 #define SDMODE_PIN              GPP_H3
 
+/* Clock frequencies for eMMC are defined below */
+#define EMMC_CLOCK_MIN	400000
+#define EMMC_CLOCK_MAX	200000000
+
 /* Clock frequencies for the SD ports are defined below */
 #define SD_CLOCK_MIN	400000
 #define SD_CLOCK_MAX	52000000
@@ -132,6 +136,23 @@ static int board_setup(void)
 
 	/* Cannonlake PCH */
 	power_set_ops(&cannonlake_power_ops);
+
+	/* eMMC */
+	/* Attempt to read from the controller. If we get an invalid
+	 * value, then it is not present and we should not attempt to
+	 * initialize it. */
+	pcidev_t emmc_pci_dev = PCI_DEV(0, 0x1a, 0);
+	u32 vid = pci_read_config32(emmc_pci_dev, REG_VENDOR_ID);
+	if (vid != 0xffffffff) {
+		SdhciHost *emmc = new_pci_sdhci_host(emmc_pci_dev,
+				SDHCI_PLATFORM_NO_EMMC_HS200,
+				EMMC_CLOCK_MIN, EMMC_CLOCK_MAX);
+		list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+				&fixed_block_dev_controllers);
+	} else {
+		printf("%s: Info: eMMC controller not present; skipping\n",
+		       __func__);
+	}
 
 	/* Audio Setup (for boot beep) */
 	GpioOps *sdmode = &new_cannonlake_gpio_output(SDMODE_PIN, 0)->ops;
