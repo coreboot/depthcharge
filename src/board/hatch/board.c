@@ -20,10 +20,8 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
-#include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/lpc.h"
-#include "drivers/ec/ps8751/ps8751.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/gpio.h"
@@ -90,32 +88,6 @@ static void hatch_setup_flash(void)
 	flash_set_ops(&flash->ops);
 }
 
-#define EC_USB_PD_PORT_PS8751_0 0
-#define EC_USB_PD_PORT_PS8751_1	1
-#define EC_I2C_PORT_PS8751_0	3
-#define EC_I2C_PORT_PS8751_1	2
-
-static void update_ps8751_firmware(CrosEc * const cros_ec)
-{
-	static const char * const kohaku_str = "Kohaku";
-	struct cb_mainboard *mainboard = lib_sysinfo.mainboard;
-
-	if (strncmp(cb_mb_part_string(mainboard), kohaku_str,
-			strlen(kohaku_str)) == 0) {
-		CrosECTunnelI2c *cros_ec_i2c_tunnel_0 =
-			new_cros_ec_tunnel_i2c(cros_ec, EC_I2C_PORT_PS8751_0);
-		Ps8751 *ps8751_0 = new_ps8751(
-			cros_ec_i2c_tunnel_0, EC_USB_PD_PORT_PS8751_0);
-		register_vboot_aux_fw(&ps8751_0->fw_ops);
-	}
-
-	CrosECTunnelI2c *cros_ec_i2c_tunnel_1 =
-		new_cros_ec_tunnel_i2c(cros_ec, EC_I2C_PORT_PS8751_1);
-	Ps8751 *ps8751_1 = new_ps8751(
-		cros_ec_i2c_tunnel_1, EC_USB_PD_PORT_PS8751_1);
-	register_vboot_aux_fw(&ps8751_1->fw_ops);
-}
-
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
@@ -128,9 +100,6 @@ static int board_setup(void)
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, 0, NULL);
 	register_vboot_ec(&cros_ec->vboot, 0);
-
-	/* Peripherals connected to EC */
-	update_ps8751_firmware(cros_ec);
 
 	hatch_setup_flash();
 
