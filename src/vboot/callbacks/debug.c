@@ -28,14 +28,6 @@ void VbExError(const char* format, ...)
 	halt();
 }
 
-void VbExDebug(const char* format, ...)
-{
-	va_list ap;
-	va_start(ap, format);
-	vprintf(format, ap);
-	va_end(ap);
-}
-
 void vb2ex_printf(const char *func, const char *fmt, ...)
 {
 	va_list ap;
