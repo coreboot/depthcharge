@@ -58,7 +58,7 @@ VbError_t VbExSetVendorData(const char *vendor_data_value)
 {
 	FmapArea vpd_area_descriptor;
 	uint8_t *ro_vpd;
-	int size, offset;
+	uint32_t size, offset;
 
 	printf("%s: Setting %s to '%s'\n", __func__,
 	       CONFIG_VENDOR_DATA_KEY, vendor_data_value);

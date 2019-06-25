@@ -19,8 +19,7 @@
  *
  * Returns NULL if key is not found.
  */
-const uint8_t *vpd_find(const char *key, const uint8_t *blob, int *offset,
-			int *size);
+const u8 *vpd_find(const char *key, const u8 *blob, u32 *offset, u32 *size);
 
 /*
  * Get VPD value by key.
@@ -35,6 +34,6 @@ const uint8_t *vpd_find(const char *key, const uint8_t *blob, int *offset,
  *
  * Returns NULL if key is not found.
  */
-char *vpd_gets(const char *key, char *buffer, int size);
+char *vpd_gets(const char *key, char *buffer, u32 size);
 
 #endif  /* __VPD_UTIL_H__ */
