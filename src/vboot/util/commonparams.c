@@ -110,8 +110,6 @@ static int vboot_fill_handoff(struct vboot_handoff *vboot_handoff,
 
 	vb_sd->flags |= VBSD_BOOT_FIRMWARE_VBOOT2;
 
-	vboot_handoff->selected_firmware = vb2_sd->fw_slot;
-
 	vb_sd->firmware_index = vb2_sd->fw_slot;
 
 	vb_sd->magic = VB_SHARED_DATA_MAGIC;

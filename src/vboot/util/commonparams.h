@@ -30,7 +30,7 @@
 struct vboot_handoff {
 	uint32_t reserved0;  /* originally from VbInitParams */
 	uint32_t out_flags;
-	uint32_t selected_firmware;
+	uint32_t reserved1;  /* originally selected_firmware */
 	char shared_data[VB_SHARED_DATA_MIN_SIZE];
 } __attribute__((packed));
 
