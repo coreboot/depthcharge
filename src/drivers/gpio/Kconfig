@@ -48,6 +48,11 @@ config DRIVER_GPIO_QCS405
 	default n
 	depends on ARCH_ARM
 
+config DRIVER_GPIO_SC7180
+	bool "Qualcomm SC7180 GPIO driver"
+	default n
+	depends on ARCH_ARM
+
 config DRIVER_GPIO_LYNXPOINT_LP
 	bool "Intel Lynxpoint LP PCH GPIO driver"
 	default n
