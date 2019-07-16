@@ -22,6 +22,7 @@
 #include <lz4.h>
 #include <stdint.h>
 #include <tlcl.h>
+#include <ctype.h>
 
 #include "base/ranges.h"
 #include "boot/fit.h"
@@ -45,8 +46,8 @@ static void fit_add_default_compats(void)
 {
 	u32 rev = lib_sysinfo.board_id;
 	u32 sku = lib_sysinfo.sku_id;
-	char compat[sizeof(CONFIG_BOARD) + 64];
-	char base[sizeof(CONFIG_BOARD) + 32];
+	char compat[256];
+	char base[256];
 	char sku_string[16];
 	char rev_string[16];
 
@@ -55,27 +56,39 @@ static void fit_add_default_compats(void)
 		return;
 	done = 1;
 
-	sprintf(base, "google,%s", CONFIG_BOARD);
+	int ret;
+	const char *mb_part_string = cb_mb_part_string(lib_sysinfo.mainboard);
+	ret = snprintf(base, sizeof(base), "google,%s", mb_part_string);
+	assert(ret < sizeof(base));
 	sprintf(rev_string, "-rev%u", rev);
 	sprintf(sku_string, "-sku%u", sku);
 
 	char *c;
-	for (c = base; *c != '\0'; c++)
+	for (c = base; *c != '\0'; c++) {
 		if (*c == '_')
 			*c = '-';
+		else
+			*c = tolower(*c);
+	}
 
 	if (sku != UNDEFINED_STRAPPING_ID && rev != UNDEFINED_STRAPPING_ID) {
-		sprintf(compat, "%s%s%s", base, rev_string, sku_string);
+		ret = snprintf(compat, sizeof(compat),
+			       "%s%s%s", base, rev_string, sku_string);
+		assert(ret < sizeof(compat));
 		fit_add_compat(strdup(compat));
 	}
 
 	if (sku != UNDEFINED_STRAPPING_ID) {
-		sprintf(compat, "%s%s", base, sku_string);
+		ret = snprintf(compat, sizeof(compat),
+			       "%s%s", base, sku_string);
+		assert(ret < sizeof(compat));
 		fit_add_compat(strdup(compat));
 	}
 
 	if (rev != UNDEFINED_STRAPPING_ID) {
-		sprintf(compat, "%s%s", base, rev_string);
+		ret = snprintf(compat, sizeof(compat),
+			       "%s%s", base, rev_string);
+		assert(ret < sizeof(compat));
 		fit_add_compat(strdup(compat));
 	}
 
