@@ -34,6 +34,9 @@
 #include "drivers/tpm/spi.h"
 #include "vboot/util/flag.h"
 
+#include "drivers/video/display.h"
+#include "drivers/video/mtk_ddp.h"
+
 static void sound_setup(void)
 {
 	MtkI2s *i2s2 = new_mtk_i2s(0x11220000, 2, 48000, AFE_I2S2_I2S3);
@@ -62,6 +65,11 @@ static int cr50_irq_status(void)
 					      new_mtk_eint);
 	assert(tpm_int);
 	return gpio_get(tpm_int);
+}
+
+int kukui_backlight_update(DisplayOps *me, uint8_t enable)
+{
+	return 0;
 }
 
 static int board_setup(void)
@@ -100,6 +108,10 @@ static int board_setup(void)
 
 	sound_setup();
 
+	/* Set display ops */
+	if (lib_sysinfo.framebuffer)
+		display_set_ops(new_mtk_display(kukui_backlight_update,
+						0x14008000, 2));
 	return 0;
 }
 
