@@ -115,7 +115,7 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 		dt_add_bin_prop(node, "readonly-firmware-version",
 				(char *)get_ro_fw_id(), ro_fw_size);
 
-	char hwid[VB2_GBB_HWID_MAX_SIZE];
+	static char hwid[VB2_GBB_HWID_MAX_SIZE];
 	uint32_t hwid_size = sizeof(hwid);
 	if (!vb2api_gbb_read_hwid(vboot_get_context(), hwid, &hwid_size))
 		dt_add_bin_prop(node, "hardware-id", hwid, hwid_size);
