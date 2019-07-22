@@ -30,7 +30,7 @@ struct commandline_info {
 int commandline_subst(const char *src, char *dest, size_t dest_size,
 		      const struct commandline_info *info);
 
-/* Return a string with a trailing space to add to the command line or NULL. */
-const char *mainboard_commandline(void);
+/* Append a command line parameter to the end of the command line. */
+void commandline_append(const char *param);
 
 #endif /* __BOOT_COMMAND_LINE_H__ */

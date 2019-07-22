@@ -18,7 +18,15 @@
 #include <libpayload.h>
 #include <stdint.h>
 
+#include "base/list.h"
 #include "boot/commandline.h"
+
+typedef struct {
+	const char *param;
+	ListNode list_node;
+} ParamNode;
+
+static ListNode param_list;
 
 static char *itoa(char *dest, int val)
 {
@@ -59,9 +67,11 @@ static char *emit_guid(char *dest, uint8_t *guid)
 	return dest;
 }
 
-const char * __attribute__((weak)) mainboard_commandline(void)
+void commandline_append(const char *param)
 {
-	return NULL;
+	ParamNode *node = xzalloc(sizeof(*node));
+	node->param = strdup(param);
+	list_insert_after(&node->list_node, &param_list);
 }
 
 int commandline_subst(const char *src, char *dest, size_t dest_size,
@@ -99,17 +109,6 @@ int commandline_subst(const char *src, char *dest, size_t dest_size,
 	CHECK_SPACE(cros_secure_size);
 	memcpy(dest, cros_secure, cros_secure_size);
 	dest += (cros_secure_size);
-
-	// Add any mainboard options
-	const char *mainboard_cmdline = mainboard_commandline();
-	if (mainboard_cmdline != NULL) {
-		size_t mainboard_cmdline_size = strlen(mainboard_cmdline);
-		if (mainboard_cmdline_size > 0) {
-			CHECK_SPACE(mainboard_cmdline_size)
-			memcpy(dest, mainboard_cmdline, mainboard_cmdline_size);
-			dest += mainboard_cmdline_size;
-		}
-	}
 
 	int c;
 
@@ -191,6 +190,12 @@ int commandline_subst(const char *src, char *dest, size_t dest_size,
 			*dest++ = c;
 			break;
 		}
+	}
+
+	ParamNode *node;
+	list_for_each(node, param_list, list_node) {
+		dest += snprintf(dest, dest_end - dest, " %s", node->param);
+		CHECK_SPACE(0);
 	}
 
 #undef CHECK_SPACE

@@ -80,11 +80,6 @@ fill_fb_info(TegraMmcHost *emmc, SpiFlash *flash)
 	/* Default weak implementation. */
 }
 
-const char *mainboard_commandline(void)
-{
-	return NULL;
-}
-
 const char *hardware_name(void)
 {
 	return "dragon";

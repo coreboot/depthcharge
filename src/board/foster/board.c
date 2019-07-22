@@ -71,11 +71,6 @@ fill_fb_info(TegraMmcHost *emmc, SpiFlash *flash)
 	/* Default weak implementation. */
 }
 
-const char *mainboard_commandline(void)
-{
-	return NULL;
-}
-
 static void choose_devicetree_by_boardid(void)
 {
 	fit_add_compat("nvidia,foster");
