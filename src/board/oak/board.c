@@ -42,7 +42,7 @@
 #include "vboot/util/flag.h"
 
 #include "drivers/video/display.h"
-#include "drivers/video/mt8173_ddp.h"
+#include "drivers/video/mtk_ddp.h"
 
 
 static GpioOps *oak_get_panel_lcd_power_en(void)
@@ -180,7 +180,8 @@ static int board_setup(void)
 
 	/* Set display ops */
 	if (lib_sysinfo.framebuffer)
-		display_set_ops(new_mt8173_display(oak_backlight_update));
+		display_set_ops(new_mtk_display(
+				oak_backlight_update, 0x1400c000, 1));
 
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11270000);
 

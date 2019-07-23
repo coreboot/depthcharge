@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google Inc.
+ * Copyright 2015 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -15,12 +15,13 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __DRIVERS_VIDEO_MT8183_H__
-#define __DRIVERS_VIDEO_MT8183_H__
+#ifndef __DRIVERS_VIDEO_MTK_H__
+#define __DRIVERS_VIDEO_MTK_H__
 
 #include "drivers/video/display.h"
 
-DisplayOps *new_mt8183_display(int (*backlight_update)
-			       (DisplayOps *me, uint8_t enable));
+DisplayOps *new_mtk_display(int (*backlight_update)
+			    (DisplayOps *me, uint8_t enable),
+			    uintptr_t ovl_base, int lanes);
 
-#endif /* __DRIVERS_VIDEO_MT8183_H__ */
+#endif /* __DRIVERS_VIDEO_MTK_H__ */

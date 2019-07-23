@@ -42,12 +42,8 @@ config DRIVER_VIDEO_WW_RING
 	bool "Whirlwind LED ring driver"
 	default n
 
-config DRIVER_VIDEO_MT8173
-	bool "MediaTek 8173 video settings"
-	default n
-
-config DRIVER_VIDEO_MT8183
-	bool "MediaTek MT8183 video settings"
+config DRIVER_VIDEO_MTK
+	bool "MediaTek video settings"
 	default n
 
 config DRIVER_VIDEO_EC_PWM_BACKLIGHT
