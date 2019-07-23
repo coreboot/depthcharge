@@ -94,7 +94,6 @@ VbError_t check_vboot_aux_fw(VbAuxFwUpdateSeverity_t *severity)
 
 		status = check_dev_fw_hash(aux_fw, &current);
 		if (status != VBERROR_SUCCESS)
-			current = VB_AUX_FW_NO_UPDATE;
 			return status;
 
 		vboot_aux_fw[i].severity = current;
