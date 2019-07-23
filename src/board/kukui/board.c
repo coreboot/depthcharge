@@ -19,6 +19,7 @@
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
+#include "drivers/bus/i2s/mtk.h"
 #include "drivers/bus/spi/mtk.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/ec.h"
@@ -27,9 +28,30 @@
 #include "drivers/gpio/mt8183.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
+#include "drivers/sound/i2s.h"
+#include "drivers/sound/max98357a.h"
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/tpm/spi.h"
 #include "vboot/util/flag.h"
+
+static void sound_setup(void)
+{
+	MtkI2s *i2s2 = new_mtk_i2s(0x11220000, 2, 48000, AFE_I2S2_I2S3);
+	I2sSource *i2s_source = new_i2s_source(&i2s2->ops, 48000, 2, 8000);
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+
+	GpioOps *sdmode_gpio = sysinfo_lookup_gpio("speaker enable", 1,
+						   new_mtk_gpio_output);
+
+	max98357aCodec *speaker_amp = new_max98357a_codec(sdmode_gpio);
+	list_insert_after(&speaker_amp->component.list_node,
+			  &sound_route->components);
+
+	list_insert_after(&i2s2->component.list_node,
+			  &sound_route->components);
+
+	sound_set_ops(&sound_route->ops);
+}
 
 static int cr50_irq_status(void)
 {
@@ -75,6 +97,8 @@ static int board_setup(void)
 
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11200000);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+
+	sound_setup();
 
 	return 0;
 }
