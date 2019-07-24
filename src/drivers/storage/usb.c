@@ -31,12 +31,18 @@ typedef struct UsbDrive {
 	usbdev_t *udev;
 } UsbDrive;
 
+// This should really be a list, but tearing down elements of a list while you
+// iterate through it is hairy with our list framework, and removing two USB
+// devices at the exact same time (between two update() calls) should be so
+// unlikely in practice that we can stomach the memory leak in that case.
+static UsbDrive *remove_me = NULL;
+
 static lba_t dc_usb_read(BlockDevOps *me, lba_t start, lba_t count,
 			 void *buffer)
 {
 	UsbDrive *drive = container_of(me, UsbDrive, dev.ops);
-	if (readwrite_blocks(drive->udev, start, count,
-			     cbw_direction_data_in, buffer))
+	if (!drive->udev || readwrite_blocks(drive->udev, start, count,
+			cbw_direction_data_in, buffer))
 		return 0;
 	else
 		return count;
@@ -46,8 +52,8 @@ static lba_t dc_usb_write(BlockDevOps *me, lba_t start, lba_t count,
 			  const void *buffer)
 {
 	UsbDrive *drive = container_of(me, UsbDrive, dev.ops);
-	if (readwrite_blocks(drive->udev, start, count,
-			     cbw_direction_data_out, (void *)buffer))
+	if (!drive->udev || readwrite_blocks(drive->udev, start, count,
+			cbw_direction_data_out, (void *)buffer))
 		return 0;
 	else
 		return count;
@@ -84,14 +90,21 @@ void usbdisk_remove(usbdev_t *dev)
 
 	list_remove(&drive->dev.list_node);
 	printf("Removed %s.\n", drive->dev.name);
-	free((void *)drive->dev.name);
-	free(drive);
+	remove_me = drive;
+	drive->udev = NULL;
 }
 
 static int usb_ctrlr_update(BlockDevCtrlrOps *me)
 {
 	dc_usb_initialize();
 	usb_poll();
+
+	if (remove_me) {
+		free((void *)remove_me->dev.name);
+		free(remove_me);
+		remove_me = NULL;
+	}
+
 	return 0;
 }
 
