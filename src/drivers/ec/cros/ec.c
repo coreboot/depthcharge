@@ -1108,14 +1108,3 @@ int cros_ec_get_reset_flag(uint32_t *reset_flag)
 
 	return 0;
 }
-
-int cros_ec_clear_reset_flag(uint32_t reset_flag)
-{
-	struct ec_params_clear_reset_flag p;
-
-	p.reset_flag = reset_flag;
-	if (ec_command(EC_CMD_CLEAR_RESET_FLAG, 0, &p, sizeof(p), NULL, 0) < 0)
-		return -1;
-
-	return 0;
-}

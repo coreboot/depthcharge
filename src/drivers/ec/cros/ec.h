@@ -344,12 +344,4 @@ int cros_ec_read_build_info(char *strp);
  */
 int cros_ec_get_reset_flag(uint32_t *reset_flag);
 
-/**
- * Clear reset flags
- *
- * @param reset_flag	Flags to clear
- * @return 0 if ok, -1 on error
- */
-int cros_ec_clear_reset_flag(uint32_t reset_flag);
-
 #endif

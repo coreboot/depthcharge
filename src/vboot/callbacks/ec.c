@@ -292,10 +292,6 @@ VbError_t VbExEcVbootDone(void)
 	uint32_t reset_flag;
 	cros_ec_get_reset_flag(&reset_flag);
 	printf("%s: reset_flag=0x%08x\n", __func__, reset_flag);
-	if (reset_flag & RESET_FLAG_TIMER) {
-		printf("%s: Woke up by timer\n", __func__);
-		cros_ec_clear_reset_flag(RESET_FLAG_TIMER);
-		return VBERROR_SHUTDOWN_REQUESTED;
-	}
-	return VBERROR_SUCCESS;
+	return (reset_flag & RESET_FLAG_TIMER) ?
+			VBERROR_SHUTDOWN_REQUESTED : VBERROR_SUCCESS;
 }
