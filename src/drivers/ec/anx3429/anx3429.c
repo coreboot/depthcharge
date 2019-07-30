@@ -17,6 +17,7 @@
 #include <endian.h>
 #include <libpayload.h>
 #include <stddef.h>
+#include <vb2_api.h>
 
 #include "base/container_of.h"
 #include "drivers/ec/anx3429/anx3429.h"

@@ -3,13 +3,14 @@
  * Copyright 2014 Chromium OS Authors
  */
 
+#include <gpt.h>
+#include <gpt_misc.h>
+#include <vb2_api.h>
+#include <vboot_api.h>
+
 #include "base/list.h"
 #include "debug/cli/common.h"
 #include "drivers/storage/blockdev.h"
-#include <vboot_api.h>
-#include <gpt.h>
-#include <gpt_misc.h>
-
 
 typedef struct {
 

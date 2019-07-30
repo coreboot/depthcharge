@@ -19,6 +19,7 @@
 #include <image/fmap.h>
 #include <drivers/flash/flash.h>
 #include <vboot_api.h>
+#include <vb2_api.h>
 
 /*
  * NVRAM storage in flash uses a block of flash memory to represent the NVRAM

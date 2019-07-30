@@ -17,6 +17,7 @@
 
 #include <libpayload.h>
 #include <vboot_api.h>
+#include <vb2_api.h>
 
 static void no_ec_soft_sync(void) __attribute__((noreturn));
 static void no_ec_soft_sync(void)

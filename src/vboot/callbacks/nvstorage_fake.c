@@ -17,6 +17,7 @@
 
 #include <libpayload.h>
 #include <vboot_api.h>
+#include <vb2_api.h>
 
 static u8 fake_nvram[VBNV_BLOCK_SIZE];
 
