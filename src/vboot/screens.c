@@ -1327,7 +1327,7 @@ static vb2_error_t draw_ui(uint32_t screen_type, struct params *p)
 	if (p->locale >= locale_data.count) {
 		printf("Unsupported locale (%d)\n", p->locale);
 		print_fallback_message(desc);
-		return VBERROR_INVALID_PARAMETER;
+		return VB2_ERROR_INVALID_PARAMETER;
 	}
 
 	/* if no drawing function is registered, fallback msg will be printed */

@@ -64,7 +64,7 @@ vb2_error_t VbExSetVendorData(const char *vendor_data_value)
 	       CONFIG_VENDOR_DATA_KEY, vendor_data_value);
 	if (strnlen(vendor_data_value, CONFIG_VENDOR_DATA_LENGTH + 1) !=
 		CONFIG_VENDOR_DATA_LENGTH)
-		return VBERROR_INVALID_PARAMETER;
+		return VB2_ERROR_INVALID_PARAMETER;
 
 	if (fmap_find_area("RO_VPD", &vpd_area_descriptor)) {
 		printf("%s: failed to find RO_VPD area\n", __func__);

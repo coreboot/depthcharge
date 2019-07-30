@@ -918,7 +918,7 @@ static vb2_error_t anx3429_check_hash(const VbootAuxFwOps *vbaux,
 	debug("call...\n");
 
 	if (hash_size != sizeof(me->chip.fw_rev))
-		return VBERROR_INVALID_PARAMETER;
+		return VB2_ERROR_INVALID_PARAMETER;
 
 	if (anx3429_capture_device_id(me) == 0)
 		status = VB2_SUCCESS;

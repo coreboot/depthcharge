@@ -1256,7 +1256,7 @@ static vb2_error_t ps8751_check_hash(const VbootAuxFwOps *vbaux,
 
 	if (hash_size != 2) {
 		debug("hash_size %u unexpected\n", hash_size);
-		return VBERROR_INVALID_PARAMETER;
+		return VB2_ERROR_INVALID_PARAMETER;
 	}
 
 	status = ps8751_capture_device_id(me, 0);
@@ -1323,7 +1323,7 @@ static vb2_error_t ps8751_update_image(const VbootAuxFwOps *vbaux,
 		return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
 
 	if (image == NULL || image_size == 0)
-		return VBERROR_INVALID_PARAMETER;
+		return VB2_ERROR_INVALID_PARAMETER;
 
 	switch (ps8751_ec_pd_suspend(me)) {
 	case -EC_RES_BUSY:

@@ -957,7 +957,7 @@ static vb2_error_t vboot_update_image(VbootEcOps *vbec,
 	if (ec_flash_offset(me, region, &region_offset, &region_size))
 		return VB2_ERROR_UNKNOWN;
 	if (image_size > region_size)
-		return VBERROR_INVALID_PARAMETER;
+		return VB2_ERROR_INVALID_PARAMETER;
 
 	/*
 	 * Erase the entire region, so that the EC doesn't see any garbage

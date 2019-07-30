@@ -24,7 +24,7 @@ vb2_error_t VbExNvStorageRead(uint8_t* buf)
 	if (lib_sysinfo.vbnv_start == (uint32_t)(-1)) {
 		printf("%s:%d - vbnv address undefined\n",
 		       __FUNCTION__, __LINE__);
-		return VBERROR_INVALID_PARAMETER;
+		return VB2_ERROR_INVALID_PARAMETER;
 	}
 
 	for (int i = 0; i < lib_sysinfo.vbnv_size; i++)
@@ -38,7 +38,7 @@ vb2_error_t VbExNvStorageWrite(const uint8_t* buf)
 	if (lib_sysinfo.vbnv_start == (uint32_t)(-1)) {
 		printf("%s:%d - vbnv address undefined\n",
 		       __FUNCTION__, __LINE__);
-		return VBERROR_INVALID_PARAMETER;
+		return VB2_ERROR_INVALID_PARAMETER;
 	}
 
 	for (int i = 0; i < lib_sysinfo.vbnv_size; i++)
