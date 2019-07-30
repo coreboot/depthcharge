@@ -19,6 +19,7 @@
 #include <cbfs.h>
 #include <libpayload.h>
 #include <stddef.h>
+#include <vb2_api.h>
 #include <vboot_api.h>
 
 #include "base/timestamp.h"

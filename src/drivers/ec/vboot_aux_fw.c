@@ -12,12 +12,12 @@
  * GNU General Public License for more details.
  */
 
+#include <cbfs.h>
+#include <libpayload.h>
+#include <vb2_api.h>
+
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/vboot_aux_fw.h"
-
-#include <libpayload.h>
-
-#include <cbfs.h>
 
 static struct {
 	const VbootAuxFwOps *fw_ops;

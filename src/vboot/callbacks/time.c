@@ -16,6 +16,7 @@
  */
 
 #include <libpayload.h>
+#include <vb2_api.h>
 #include <vboot_api.h>
 
 #include "drivers/sound/sound.h"
