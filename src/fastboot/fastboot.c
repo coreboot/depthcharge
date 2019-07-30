@@ -1154,7 +1154,7 @@ static fb_ret_type fb_boot(struct fb_cmd *cmd)
 		return 1;
 
 	if (VbVerifyMemoryBootImage(ctx, shared, &kparams, kernel,
-				    kernel_size) != VBERROR_SUCCESS) {
+				    kernel_size) != VB2_SUCCESS) {
 		/*
 		 * Fail if:
 		 * 1. Device is locked, or
@@ -1360,7 +1360,7 @@ static fb_ret_type fb_unlock(struct fb_cmd *cmd)
 		return FB_SUCCESS;
 	}
 
-	if (VbUnlockDevice() != VBERROR_SUCCESS) {
+	if (VbUnlockDevice() != VB2_SUCCESS) {
 		fb_add_string(&cmd->output, "Unlock device failed", NULL);
 		return FB_SUCCESS;
 	}

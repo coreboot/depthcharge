@@ -160,7 +160,7 @@ static vb2_error_t load_archive(const char *name, struct directory **dest)
 
 	*dest = dir;
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t load_localized_graphics(uint32_t locale)
@@ -170,7 +170,7 @@ static vb2_error_t load_localized_graphics(uint32_t locale)
 	/* check whether we've already loaded the archive for this locale */
 	if (locale_data.archive) {
 		if (locale_data.archive_locale == locale)
-			return VBERROR_SUCCESS;
+			return VB2_SUCCESS;
 		/* No need to keep more than one locale graphics at a time */
 		free(locale_data.archive);
 	}
@@ -182,7 +182,7 @@ static vb2_error_t load_localized_graphics(uint32_t locale)
 	/* Remember what's cached */
 	locale_data.archive_locale = locale;
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static struct dentry *find_file_in_archive(const struct directory *dir,
@@ -304,7 +304,7 @@ static vb2_error_t get_image_size(struct directory *dir, const char *image_name,
 	*width = dim.x.n * VB_SCALE / dim.x.d;
 	*height = dim.y.n * VB_SCALE / dim.y.d;
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t get_image_size_locale(const char *image_name,
@@ -332,11 +332,11 @@ static const char *get_char_image_file(int height, const char c, int32_t *width)
 	snprintf(filename, sizeof(filename), pattern, c, c);
 	*width = VB_SIZE_AUTO;
 	ret = get_image_size(font_graphics, filename, width, &height);
-	if (ret != VBERROR_SUCCESS) {
+	if (ret != VB2_SUCCESS) {
 		snprintf(filename, sizeof(filename), pattern, '?', '?');
 		*width = VB_SIZE_AUTO;
 		ret = get_image_size(font_graphics, filename, width, &height);
-		if (ret != VBERROR_SUCCESS)
+		if (ret != VB2_SUCCESS)
 			return NULL;
 		printf("ERROR: Trying to display unprintable char: %#.2x\n", c);
 	}
@@ -357,7 +357,7 @@ static vb2_error_t get_text_width(int32_t height, const char *text,
 		*width += char_width;
 		text++;
 	}
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t draw_text(const char *text, int32_t x, int32_t y,
@@ -384,7 +384,7 @@ static vb2_error_t draw_text(const char *text, int32_t x, int32_t y,
 		x += char_width;
 		text++;
 	}
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_draw_footer(uint32_t locale)
@@ -499,7 +499,7 @@ static vb2_error_t vboot_draw_footer(uint32_t locale)
 			  x, y, VB_SIZE_AUTO, VB_TEXT_HEIGHT,
 			  PIVOT_H_LEFT|PIVOT_V_TOP);
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 /*
@@ -547,7 +547,7 @@ static vb2_error_t vboot_draw_language(uint32_t locale)
 					   w, h, PIVOT_H_RIGHT|PIVOT_V_BOTTOM));
 	}
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t draw_base_screen(uint32_t locale, int show_language)
@@ -575,7 +575,7 @@ static vb2_error_t draw_base_screen(uint32_t locale, int show_language)
 
 	RETURN_ON_ERROR(vboot_draw_footer(locale));
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_draw_base_screen(struct params *p)
@@ -591,7 +591,7 @@ static vb2_error_t vboot_draw_base_screen_without_language(struct params *p)
 static vb2_error_t vboot_draw_blank(struct params *p)
 {
 	clear_screen(&color_black);
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_draw_menu(struct params *p, const struct menu *m)
@@ -631,7 +631,7 @@ static vb2_error_t vboot_draw_menu(struct params *p, const struct menu *m)
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 2,
 			PIVOT_H_CENTER|PIVOT_V_BOTTOM));
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 /*
@@ -689,7 +689,7 @@ static vb2_error_t vboot_draw_developer_warning(struct params *p)
 			VB_SCALE_HALF, VB_SCALE_HALF + VB_TEXT_HEIGHT * 2,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
 			PIVOT_H_CENTER|PIVOT_V_TOP));
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_draw_developer_warning_menu(struct params *p)
@@ -716,14 +716,14 @@ static vb2_error_t vboot_draw_developer_menu(struct params *p)
 static vb2_error_t vboot_draw_launch_diag(struct params *p)
 {
 	if (!IS_ENABLED(CONFIG_DIAGNOSTIC_UI))
-		return VBERROR_SUCCESS;
+		return VB2_SUCCESS;
 
 	RETURN_ON_ERROR(draw_image_locale("launch_diag.bmp", p->locale,
 			VB_SCALE_HALF,
 			VB_SCALE - VB_DIVIDER_V_OFFSET - VB_TEXT_HEIGHT,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 3 / 4,
 			PIVOT_H_CENTER|PIVOT_V_CENTER));
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_draw_recovery_no_good(struct params *p)
@@ -739,7 +739,7 @@ static vb2_error_t vboot_draw_recovery_no_good(struct params *p)
 			VB_SIZE_AUTO, VB_ICON_HEIGHT,
 			PIVOT_H_CENTER|PIVOT_V_CENTER));
 	RETURN_ON_ERROR(vboot_draw_launch_diag(p));
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_draw_recovery_insert(struct params *p)
@@ -755,7 +755,7 @@ static vb2_error_t vboot_draw_recovery_insert(struct params *p)
 			VB_SCALE_HALF, VB_SCALE_HALF, VB_SIZE_AUTO, h,
 			PIVOT_H_CENTER|PIVOT_V_CENTER));
 	RETURN_ON_ERROR(vboot_draw_launch_diag(p));
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_draw_recovery_to_dev(struct params *p)
@@ -766,7 +766,7 @@ static vb2_error_t vboot_draw_recovery_to_dev(struct params *p)
 			VB_SCALE_HALF, VB_SCALE_HALF,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 4,
 			PIVOT_H_CENTER|PIVOT_V_CENTER));
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_draw_recovery_to_dev_menu(struct params *p)
@@ -795,7 +795,7 @@ static vb2_error_t vboot_draw_developer_to_norm(struct params *p)
 			VB_SCALE_HALF, VB_SCALE_HALF + VB_TEXT_HEIGHT * 2,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 4,
 			PIVOT_H_CENTER|PIVOT_V_TOP));
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_draw_developer_to_norm_menu(struct params *p)
@@ -822,7 +822,7 @@ static vb2_error_t vboot_draw_wait(struct params *p)
 			VB_SCALE_HALF, VB_SCALE_HALF,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 2,
 			PIVOT_H_CENTER|PIVOT_V_CENTER));
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_draw_to_norm_confirmed(struct params *p)
@@ -838,7 +838,7 @@ static vb2_error_t vboot_draw_to_norm_confirmed(struct params *p)
 			VB_SCALE_HALF, VB_SCALE_HALF + VB_TEXT_HEIGHT * 2,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT,
 			PIVOT_H_CENTER|PIVOT_V_TOP));
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_draw_os_broken(struct params *p)
@@ -851,7 +851,7 @@ static vb2_error_t vboot_draw_os_broken(struct params *p)
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 2,
 			PIVOT_H_CENTER|PIVOT_V_TOP));
 	RETURN_ON_ERROR(vboot_draw_launch_diag(p));
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_draw_languages_menu(struct params *p)
@@ -932,7 +932,7 @@ static vb2_error_t vboot_draw_languages_menu(struct params *p)
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 2,
 			PIVOT_H_CENTER|PIVOT_V_BOTTOM));
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t vboot_print_string(char *str)
@@ -973,7 +973,7 @@ vb2_error_t vboot_print_string(char *str)
 		top += height;
 	}
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t draw_altfw_text(int menutop, int linenum, int seqnum,
@@ -1002,7 +1002,7 @@ static vb2_error_t draw_altfw_text(int menutop, int linenum, int seqnum,
 			VB_TEXT_HEIGHT,
 			PIVOT_H_LEFT|PIVOT_V_TOP));
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_draw_altfw_pick(struct params *p)
@@ -1041,7 +1041,7 @@ static vb2_error_t vboot_draw_altfw_pick(struct params *p)
 		}
 	}
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 #if CONFIG(DIAGNOSTIC_UI)
@@ -1054,7 +1054,7 @@ static vb2_error_t vboot_draw_confirm_diag(struct params *p)
 			VB_SCALE_HALF, VB_SCALE_HALF,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 3,
 			PIVOT_H_CENTER|PIVOT_V_CENTER));
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 #endif
 
@@ -1341,7 +1341,7 @@ static vb2_error_t draw_ui(uint32_t screen_type, struct params *p)
 		return VBERROR_SCREEN_DRAW;
 	}
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static void vboot_init_locale(void)
@@ -1416,7 +1416,7 @@ static vb2_error_t vboot_init_screen(void)
 
 	initialized = 1;
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t vboot_draw_screen(uint32_t screen, uint32_t locale,
@@ -1440,7 +1440,7 @@ vb2_error_t vboot_draw_screen(uint32_t screen, uint32_t locale,
 
 	locale_data.current = locale;
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t vboot_draw_ui(uint32_t screen, uint32_t locale,

@@ -98,7 +98,7 @@ vb2_error_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale,
 			      const VbScreenData *data)
 {
 	int ret = vboot_draw_screen(screen_type, locale, data);
-	if (ret != VBERROR_SUCCESS)
+	if (ret != VB2_SUCCESS)
 		draw_fallback(screen_type, -1);
 
 	return ret;
@@ -110,7 +110,7 @@ vb2_error_t VbExDisplayMenu(uint32_t screen_type, uint32_t locale,
 {
 	int ret =  vboot_draw_ui(screen_type, locale, selected_index,
 				 disabled_idx_mask, redraw_base);
-	if (ret != VBERROR_SUCCESS)
+	if (ret != VB2_SUCCESS)
 		draw_fallback(screen_type, selected_index);
 
 	return ret;
@@ -162,5 +162,5 @@ vb2_error_t VbExGetLocalizationCount(uint32_t *count)
 	*count = vboot_get_locale_count();
 	if (*count == 0)
 		return VBERROR_UNKNOWN;
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }

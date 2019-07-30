@@ -343,7 +343,7 @@ out:
 
 	printf("ANX7688 FW updated successfully (%lld ms)!\n",
 	       timer_us(start)/1000);
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t vboot_hash_image(VbootEcOps *vbec, enum VbSelectFirmware_t select,
@@ -359,7 +359,7 @@ vb2_error_t vboot_hash_image(VbootEcOps *vbec, enum VbSelectFirmware_t select,
 	*hash_size = sizeof(hash_version);
 	*hash = (uint8_t *)&hash_version;
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_running_rw(VbootEcOps *vbec, int *in_rw)
@@ -371,17 +371,17 @@ static vb2_error_t vboot_running_rw(VbootEcOps *vbec, int *in_rw)
 		return VBERROR_UNKNOWN;
 	}
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_reboot_to_ro(VbootEcOps *vbec)
 {
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_jump_to_rw(VbootEcOps *vbec)
 {
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_disable_jump(VbootEcOps *vbec)
@@ -398,7 +398,7 @@ static vb2_error_t vboot_disable_jump(VbootEcOps *vbec)
 		return VBERROR_UNKNOWN;
 	}
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_entering_mode(VbootEcOps *vbec,
@@ -406,7 +406,7 @@ static vb2_error_t vboot_entering_mode(VbootEcOps *vbec,
 {
 	/* Noop success (should not be called) */
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_update_image(VbootEcOps *vbec,
@@ -437,7 +437,7 @@ static vb2_error_t vboot_protect(VbootEcOps *vbec,
 {
 	/* Noop success */
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 Anx7688 *new_anx7688(CrosECTunnelI2c *bus)

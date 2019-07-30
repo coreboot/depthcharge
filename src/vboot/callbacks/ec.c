@@ -111,7 +111,7 @@ vb2_error_t VbExEcGetExpectedImage(int devidx, enum VbSelectFirmware_t select,
 	if (*image == NULL)
 		return VBERROR_UNKNOWN;
 	*image_size = size;
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t VbExEcGetExpectedImageHash(int devidx,
@@ -125,7 +125,7 @@ vb2_error_t VbExEcGetExpectedImageHash(int devidx,
 		return VBERROR_UNKNOWN;
 	*hash_size = size;
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t VbExEcUpdateImage(int devidx, enum VbSelectFirmware_t select,
@@ -207,13 +207,13 @@ vb2_error_t VbExEcVbootDone(int in_recovery)
 	}
 
 	timestamp_add_now(TS_VB_EC_VBOOT_DONE);
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t VbExEcBatteryCutOff(void) {
 	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
 	return (ec->battery_cutoff(ec) == 0
-		 ? VBERROR_SUCCESS : VBERROR_UNKNOWN);
+		 ? VB2_SUCCESS : VBERROR_UNKNOWN);
 }
 
 vb2_error_t VbExCheckAuxFw(VbAuxFwUpdateSeverity_t *severity)

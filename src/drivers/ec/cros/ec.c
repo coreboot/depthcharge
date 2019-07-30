@@ -403,7 +403,7 @@ static vb2_error_t vboot_running_rw(VbootEcOps *vbec, int *in_rw)
 		return VBERROR_UNKNOWN;
 	}
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static uint32_t get_vboot_hash_offset(enum VbSelectFirmware_t select)
@@ -500,7 +500,7 @@ static vb2_error_t vboot_hash_image(VbootEcOps *vbec,
 	*hash = resp.hash_digest;
 	*hash_size = resp.digest_size;
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 /**
@@ -568,7 +568,7 @@ static vb2_error_t vboot_reboot_to_ro(VbootEcOps *vbec)
 		return VBERROR_UNKNOWN;
 	}
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_jump_to_rw(VbootEcOps *vbec)
@@ -580,7 +580,7 @@ static vb2_error_t vboot_jump_to_rw(VbootEcOps *vbec)
 		return VBERROR_UNKNOWN;
 	}
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_reboot_switch_rw(VbootEcOps *vbec)
@@ -592,7 +592,7 @@ static vb2_error_t vboot_reboot_switch_rw(VbootEcOps *vbec)
 		return VBERROR_UNKNOWN;
 	}
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_disable_jump(VbootEcOps *vbec)
@@ -604,7 +604,7 @@ static vb2_error_t vboot_disable_jump(VbootEcOps *vbec)
 		return VBERROR_UNKNOWN;
 	}
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 int cros_ec_interrupt_pending(void)
@@ -715,7 +715,7 @@ static vb2_error_t vboot_entering_mode(VbootEcOps *vbec,
 	if (ec_command(me, EC_CMD_ENTERING_MODE, 0,
 		       &mode, sizeof(mode), NULL, 0))
 		return VBERROR_UNKNOWN;
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 /**
@@ -920,7 +920,7 @@ static vb2_error_t vboot_set_region_protection(
 		if (resp.flags & protected_region)
 			return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
 
-		return VBERROR_SUCCESS;
+		return VB2_SUCCESS;
 	}
 
 	/*
@@ -929,11 +929,11 @@ static vb2_error_t vboot_set_region_protection(
 	 */
 	if ((~resp.flags) & (EC_FLASH_PROTECT_GPIO_ASSERTED |
 			     EC_FLASH_PROTECT_RO_AT_BOOT))
-		return VBERROR_SUCCESS;
+		return VB2_SUCCESS;
 
 	/* If flash is protected now, success */
 	if (resp.flags & EC_FLASH_PROTECT_ALL_NOW)
-		return VBERROR_SUCCESS;
+		return VB2_SUCCESS;
 
 	/* If RW will be protected at boot but not now, need a reboot */
 	if (resp.flags & EC_FLASH_PROTECT_ALL_AT_BOOT)
@@ -951,7 +951,7 @@ static vb2_error_t vboot_update_image(VbootEcOps *vbec,
 	uint32_t region_offset, region_size;
 	enum ec_flash_region region = vboot_to_ec_region(select);
 	vb2_error_t rv = vboot_set_region_protection(me, select, 0);
-	if (rv == VBERROR_EC_REBOOT_TO_RO_REQUIRED || rv != VBERROR_SUCCESS)
+	if (rv == VBERROR_EC_REBOOT_TO_RO_REQUIRED || rv != VB2_SUCCESS)
 		return rv;
 
 	if (ec_flash_offset(me, region, &region_offset, &region_size))
@@ -978,7 +978,7 @@ static vb2_error_t vboot_update_image(VbootEcOps *vbec,
 	if (ec_efs_verify(me, region))
 		return VBERROR_UNKNOWN;
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_protect(VbootEcOps *vbec,
@@ -1039,7 +1039,7 @@ static vb2_error_t vboot_battery_cutoff(VbootEcOps *vbec)
 {
 	if (cros_ec_battery_cutoff(EC_BATTERY_CUTOFF_FLAG_AT_SHUTDOWN) < 0)
 		return VBERROR_UNKNOWN;
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 int cros_ec_set_motion_sense_activity(uint32_t activity, uint32_t value)
@@ -1213,7 +1213,7 @@ static vb2_error_t vboot_check_limit_power(VbootEcOps *vbec, int *limit_power)
 {
 	if (cros_ec_read_limit_power_request(limit_power) < 0)
 		return VBERROR_UNKNOWN;
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_enable_power_button(VbootEcOps *vbec, int enable)
@@ -1225,7 +1225,7 @@ static vb2_error_t vboot_enable_power_button(VbootEcOps *vbec, int enable)
 
 	if (cros_ec_config_powerbtn(flags) < 0)
 		return VBERROR_UNKNOWN;
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_protect_tcpc_ports(VbootEcOps *vbec)
@@ -1233,7 +1233,7 @@ static vb2_error_t vboot_protect_tcpc_ports(VbootEcOps *vbec)
 	CrosEc *cros_ec = container_of(vbec, CrosEc, vboot);
 
 	if (!CONFIG(DRIVER_BUS_I2C_CROS_EC_TUNNEL))
-		return VBERROR_SUCCESS;
+		return VB2_SUCCESS;
 
 	int ret = cros_ec_tunnel_i2c_protect_tcpc_ports(cros_ec);
 	if (ret == -EC_RES_INVALID_COMMAND) {
@@ -1243,7 +1243,7 @@ static vb2_error_t vboot_protect_tcpc_ports(VbootEcOps *vbec)
 		return VBERROR_UNKNOWN;
 	}
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 int cros_ec_read_batt_state_of_charge(uint32_t *state)

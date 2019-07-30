@@ -79,26 +79,26 @@ vb2_error_t VbExEcProtect(int devidx, enum VbSelectFirmware_t select)
 
 vb2_error_t VbExEcEnteringMode(int devidx, enum VbEcBootMode_t mode)
 {
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t VbExEcVbootDone(int in_recovery)
 {
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t VbExEcBatteryCutOff(void) {
 	printf("EC battery cut-off not supported, ignored.\n");
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t VbExCheckAuxFw(VbAuxFwUpdateSeverity_t *severity)
 {
 	*severity = VB_AUX_FW_NO_UPDATE;
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t VbExUpdateAuxFw(void)
 {
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }

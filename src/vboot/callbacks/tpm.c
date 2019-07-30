@@ -24,17 +24,17 @@
 
 vb2_error_t VbExTpmInit(void)
 {
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t VbExTpmClose(void)
 {
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t VbExTpmOpen(void)
 {
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 uint32_t VbExTpmSendReceive(const uint8_t *request, uint32_t request_length,

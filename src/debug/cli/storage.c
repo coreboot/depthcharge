@@ -154,7 +154,7 @@ static int storage_part(int argc, char *const argv[])
 
 	flag = bdev->removable ? VB_DISK_FLAG_REMOVABLE : VB_DISK_FLAG_FIXED;
 
-	if (VbExDiskGetInfo(&info, &count, flag) != VBERROR_SUCCESS) {
+	if (VbExDiskGetInfo(&info, &count, flag) != VB2_SUCCESS) {
 		printf("failed to get disk info\n");
 		return CMD_RET_FAILURE;
 	}

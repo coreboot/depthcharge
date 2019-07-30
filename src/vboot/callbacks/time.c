@@ -57,6 +57,6 @@ vb2_error_t VbExBeep(uint32_t msec, uint32_t frequency)
 			if (sound_stop())
 				return VBERROR_UNKNOWN;
 		}
-		return VBERROR_SUCCESS;
+		return VB2_SUCCESS;
         }
 }

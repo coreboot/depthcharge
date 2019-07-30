@@ -77,7 +77,7 @@ static vb2_error_t wilco_pd_check_hash(const VbootAuxFwOps *vbaux,
 				EC_FLASH_TYPE_TCPC,
 				EC_FLASH_INSTANCE_PRIMARY) < 0) {
 		printf("%s: Unable to find PD device\n", __func__);
-		return VBERROR_SUCCESS;
+		return VB2_SUCCESS;
 	}
 
 	printf("%s: TCPC version 0x%08x, ", __func__, device.version);
@@ -88,7 +88,7 @@ static vb2_error_t wilco_pd_check_hash(const VbootAuxFwOps *vbaux,
 		printf("update to version 0x%08x\n", update_version);
 		*severity = VB_AUX_FW_SLOW_UPDATE;
 	}
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static int wilco_pd_flash_start(WilcoPd *pd, WilcoPdFlashStart *start)
@@ -248,7 +248,7 @@ static vb2_error_t wilco_pd_update_image(const VbootAuxFwOps *vbaux,
 	if (ret < 0)
 		return ret;
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 WilcoPd *new_wilco_pd(WilcoEc *ec, WilcoPdFlashInfo *info,

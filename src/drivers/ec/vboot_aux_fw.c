@@ -52,7 +52,7 @@ void register_vboot_aux_fw(const VbootAuxFwOps *aux_fw)
  *
  * @param aux_fw	FW device ops
  * @param severity	return parameter for health of auxiliary firmware
- * @return VBERROR_... error, VBERROR_SUCCESS on success.
+ * @return VBERROR_... error, VB2_SUCCESS on success.
  */
 
 static vb2_error_t check_dev_fw_hash(const VbootAuxFwOps *aux_fw,
@@ -78,7 +78,7 @@ static vb2_error_t check_dev_fw_hash(const VbootAuxFwOps *aux_fw,
  * be updated.  returns how slow the worst case update will be.
  *
  * @param severity	returns VB_AUX_FW_{NO,FAST,SLOW}_UPDATE for worst case
- * @return VBERROR_... error, VBERROR_SUCCESS on success.
+ * @return VBERROR_... error, VB2_SUCCESS on success.
  */
 
 vb2_error_t check_vboot_aux_fw(VbAuxFwUpdateSeverity_t *severity)
@@ -94,7 +94,7 @@ vb2_error_t check_vboot_aux_fw(VbAuxFwUpdateSeverity_t *severity)
 		const VbootAuxFwOps *const aux_fw = vboot_aux_fw[i].fw_ops;
 
 		status = check_dev_fw_hash(aux_fw, &current);
-		if (status != VBERROR_SUCCESS)
+		if (status != VB2_SUCCESS)
 			return status;
 
 		vboot_aux_fw[i].severity = current;
@@ -102,14 +102,14 @@ vb2_error_t check_vboot_aux_fw(VbAuxFwUpdateSeverity_t *severity)
 	}
 
 	*severity = max;
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 /**
  * apply the device firmware update
  *
  * @param aux_fw	FW device ops
- * @return VBERROR_... error, VBERROR_SUCCESS on success.
+ * @return VBERROR_... error, VB2_SUCCESS on success.
  */
 
 static vb2_error_t apply_dev_fw(const VbootAuxFwOps *aux_fw)
@@ -133,13 +133,13 @@ static vb2_error_t apply_dev_fw(const VbootAuxFwOps *aux_fw)
  * needed.  check_vboot_aux_fw() must have been called before this to
  * determine what needs to be updated.
  *
- * @return VBERROR_... error, VBERROR_SUCCESS on success.
+ * @return VBERROR_... error, VB2_SUCCESS on success.
  */
 
 vb2_error_t update_vboot_aux_fw(void)
 {
 	VbAuxFwUpdateSeverity_t severity;
-	vb2_error_t status = VBERROR_SUCCESS;
+	vb2_error_t status = VB2_SUCCESS;
 	int lid_shutdown_disabled = 0;
 
 	for (int i = 0; i < vboot_aux_fw_count; ++i) {
@@ -163,15 +163,15 @@ vb2_error_t update_vboot_aux_fw(void)
 			printf("Update aux fw %d\n", i);
 			status = apply_dev_fw(aux_fw);
 			if (status == VBERROR_PERIPHERAL_BUSY) {
-				status = VBERROR_SUCCESS;
+				status = VB2_SUCCESS;
 				continue;
-			} else if (status != VBERROR_SUCCESS) {
+			} else if (status != VB2_SUCCESS) {
 				break;
 			}
 
 			/* Re-check hash after update */
 			status = check_dev_fw_hash(aux_fw, &severity);
-			if (status != VBERROR_SUCCESS)
+			if (status != VB2_SUCCESS)
 				break;
 			if (severity != VB_AUX_FW_NO_UPDATE) {
 				status = VBERROR_UNKNOWN;

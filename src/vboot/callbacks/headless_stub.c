@@ -32,13 +32,13 @@ vb2_error_t VbExDisplayMenu(uint32_t screen_type, uint32_t locale,
 			    uint32_t redraw_base)
 {
 	printf("%s:%d invoked\n", __func__, __LINE__);
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t VbExDisplayDebugInfo(const char *info_str, int full_info)
 {
 	printf("%s:%d invoked\n", __func__, __LINE__);
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 int video_console_init(void)

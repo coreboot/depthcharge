@@ -300,7 +300,7 @@ static vb2_error_t anx3429_ec_tunnel_status(const VbootAuxFwOps *vbaux,
 		       me->ec_pd_id);
 		return VBERROR_UNKNOWN;
 	}
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static int anx3429_ec_pd_suspend(Anx3429 *me)
@@ -921,9 +921,9 @@ static vb2_error_t anx3429_check_hash(const VbootAuxFwOps *vbaux,
 		return VBERROR_INVALID_PARAMETER;
 
 	if (anx3429_capture_device_id(me) == 0)
-		status = VBERROR_SUCCESS;
+		status = VB2_SUCCESS;
 
-	if (status != VBERROR_SUCCESS)
+	if (status != VB2_SUCCESS)
 		return status;
 
 	if (hash[0] == me->chip.fw_rev) {
@@ -935,7 +935,7 @@ static vb2_error_t anx3429_check_hash(const VbootAuxFwOps *vbaux,
 	} else
 		*severity = VB_AUX_FW_SLOW_UPDATE;
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 /*

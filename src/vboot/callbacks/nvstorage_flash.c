@@ -116,7 +116,7 @@ vb2_error_t VbExNvStorageRead(uint8_t *buf)
 		return VBERROR_UNKNOWN;
 
 	memcpy(buf, nvram_cache, sizeof(nvram_cache));
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t erase_nvram(void)
@@ -129,7 +129,7 @@ static vb2_error_t erase_nvram(void)
 					nvram_area_descriptor.size)
 		return VBERROR_UNKNOWN;
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t VbExNvStorageWrite(const uint8_t *buf)
@@ -141,7 +141,7 @@ vb2_error_t VbExNvStorageWrite(const uint8_t *buf)
 
 	/* Bail out if there have been no changes. */
 	if (!memcmp(buf, nvram_cache, sizeof(nvram_cache)))
-		return VBERROR_SUCCESS;
+		return VB2_SUCCESS;
 
 	/* See if we can overwrite the current blob with the new one. */
 	for (i = 0; i < sizeof(nvram_cache); i++)
@@ -157,7 +157,7 @@ vb2_error_t VbExNvStorageWrite(const uint8_t *buf)
 		new_blob_offset = nvram_blob_offset + sizeof(nvram_cache);
 		if (new_blob_offset >= nvram_area_descriptor.size) {
 			printf("nvram is used up. deleting it to start over\n");
-			if (erase_nvram() != VBERROR_SUCCESS)
+			if (erase_nvram() != VB2_SUCCESS)
 				return VBERROR_UNKNOWN;
 			new_blob_offset = 0;
 		}
@@ -169,7 +169,7 @@ vb2_error_t VbExNvStorageWrite(const uint8_t *buf)
 		return VBERROR_UNKNOWN;
 
 	memcpy(nvram_cache, buf, sizeof(nvram_cache));
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 int nvstorage_flash_get_offet(void)

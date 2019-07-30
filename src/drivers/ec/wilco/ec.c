@@ -84,7 +84,7 @@ static vb2_error_t vboot_hash_image(VbootEcOps *vbec,
 	uint32_t ec_offset, image_offset;
 	size_t image_size;
 
-	/* Default to empty hash to force update on VBERROR_SUCCESS */
+	/* Default to empty hash to force update on VB2_SUCCESS */
 	*hash = ctx.block;
 	*hash_size = VB2_SHA256_DIGEST_SIZE;
 
@@ -100,12 +100,12 @@ static vb2_error_t vboot_hash_image(VbootEcOps *vbec,
 	if (header->tag != EC_IMAGE_HEADER_TAG) {
 		printf("%s: header tag invalid (%08x != %08x)\n",
 		       __func__, header->tag, EC_IMAGE_HEADER_TAG);
-		return VBERROR_SUCCESS;
+		return VB2_SUCCESS;
 	}
 	if (header->version != EC_IMAGE_HEADER_VER) {
 		printf("%s: header version invalid (%d != %d)\n",
 		       __func__, header->version, EC_IMAGE_HEADER_VER);
-		return VBERROR_SUCCESS;
+		return VB2_SUCCESS;
 	}
 
 	/* Offset into flash for start of image data */
@@ -130,7 +130,7 @@ static vb2_error_t vboot_hash_image(VbootEcOps *vbec,
 	vb2_sha256_update(&ctx, image, image_size);
 	vb2_sha256_finalize(&ctx, (uint8_t *)*hash);
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_update_image(VbootEcOps *vbec,
@@ -158,7 +158,7 @@ static vb2_error_t vboot_update_image(VbootEcOps *vbec,
 	printf("%s: EC update successful.\n", __func__);
 	ec->flash_updated = true;
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_reboot_to_ro(VbootEcOps *vbec)
@@ -166,7 +166,7 @@ static vb2_error_t vboot_reboot_to_ro(VbootEcOps *vbec)
 	WilcoEc *ec = container_of(vbec, WilcoEc, vboot);
 	if (wilco_ec_reboot(ec) < 0)
 		return VBERROR_UNKNOWN;
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_jump_to_rw(VbootEcOps *vbec)
@@ -178,46 +178,46 @@ static vb2_error_t vboot_jump_to_rw(VbootEcOps *vbec)
 		if (wilco_ec_reboot(ec) < 0)
 			return VBERROR_UNKNOWN;
 	}
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_reboot_switch_rw(VbootEcOps *vbec)
 {
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_disable_jump(VbootEcOps *vbec)
 {
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_entering_mode(VbootEcOps *vbec,
 				       enum VbEcBootMode_t vbm)
 {
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_protect(VbootEcOps *vbec,
 				 enum VbSelectFirmware_t select)
 {
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_running_rw(VbootEcOps *vbec, int *in_rw)
 {
 	*in_rw = 0;
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 };
 
 static vb2_error_t vboot_battery_cutoff(VbootEcOps *vbec)
 {
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_check_limit_power(VbootEcOps *vbec, int *limit_power)
 {
 	*limit_power = 0;
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t vboot_enable_power_button(VbootEcOps *vbec, int enable)
@@ -225,7 +225,7 @@ static vb2_error_t vboot_enable_power_button(VbootEcOps *vbec, int enable)
 	WilcoEc *ec = container_of(vbec, WilcoEc, vboot);
 	if (wilco_ec_power_button(ec, enable) < 0)
 		return VBERROR_UNKNOWN;
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static int wilco_ec_cleanup_boot(CleanupFunc *cleanup, CleanupType type)

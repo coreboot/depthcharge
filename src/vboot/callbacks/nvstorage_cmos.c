@@ -30,7 +30,7 @@ vb2_error_t VbExNvStorageRead(uint8_t* buf)
 	for (int i = 0; i < lib_sysinfo.vbnv_size; i++)
 		buf[i] = nvram_read(lib_sysinfo.vbnv_start + i);
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t VbExNvStorageWrite(const uint8_t* buf)
@@ -44,5 +44,5 @@ vb2_error_t VbExNvStorageWrite(const uint8_t* buf)
 	for (int i = 0; i < lib_sysinfo.vbnv_size; i++)
 		nvram_write(buf[i], lib_sysinfo.vbnv_start + i);
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }

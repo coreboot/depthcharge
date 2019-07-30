@@ -26,7 +26,7 @@ struct VbootAuxFwOps {
 				const uint8_t *hash, size_t hash_size,
 				VbAuxFwUpdateSeverity_t *severity);
 	/*
-	 * Return VBERROR_SUCCESS on successful update. AUX FW Sync in turn
+	 * Return VB2_SUCCESS on successful update. AUX FW Sync in turn
 	 * requests for an EC reboot to RO on successful update, so that any
 	 * chip whose FW is updated gets reset to a clean state.
 	 */

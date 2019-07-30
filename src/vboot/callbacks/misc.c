@@ -109,7 +109,7 @@ vb2_error_t VbExSetVendorData(const char *vendor_data_value)
 		return VBERROR_VPD_WRITE;
 	}
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t vb2ex_read_resource(struct vb2_context *ctx,

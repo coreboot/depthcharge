@@ -68,14 +68,14 @@ vb2_error_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
 	list_for_each(bdev, *devs, list_node)
 		setup_vb_disk_info(disk++, bdev);
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t VbExDiskFreeInfo(VbDiskInfo *infos,
 			   VbExDiskHandle_t preserve_handle)
 {
 	free(infos);
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t VbExDiskRead(VbExDiskHandle_t handle, uint64_t lba_start,
@@ -86,7 +86,7 @@ vb2_error_t VbExDiskRead(VbExDiskHandle_t handle, uint64_t lba_start,
 		printf("Read failed.\n");
 		return VBERROR_UNKNOWN;
 	}
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t VbExDiskWrite(VbExDiskHandle_t handle, uint64_t lba_start,
@@ -97,7 +97,7 @@ vb2_error_t VbExDiskWrite(VbExDiskHandle_t handle, uint64_t lba_start,
 		printf("Write failed.\n");
 		return VBERROR_UNKNOWN;
 	}
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t VbExStreamOpen(VbExDiskHandle_t handle, uint64_t lba_start,
@@ -109,7 +109,7 @@ vb2_error_t VbExStreamOpen(VbExDiskHandle_t handle, uint64_t lba_start,
 		printf("Stream open failed.\n");
 		return VBERROR_UNKNOWN;
 	}
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t VbExStreamRead(VbExStream_t stream, uint32_t bytes, void *buffer)
@@ -127,7 +127,7 @@ vb2_error_t VbExStreamRead(VbExStream_t stream, uint32_t bytes, void *buffer)
 	if (bytes > MiB)
 		timestamp_add_now(TS_VB_READ_KERNEL_DONE);
 
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 void VbExStreamClose(VbExStream_t stream)

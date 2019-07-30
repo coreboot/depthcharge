@@ -912,7 +912,7 @@ static int __must_check ps8751_erase(Ps8751 *me,
 
 	t0_us = timer_us(0);
 	for (; offset < end; offset += PARADE_FW_SECTOR) {
-		if (ps8751_sector_erase(me, offset) != VBERROR_SUCCESS)
+		if (ps8751_sector_erase(me, offset) != VB2_SUCCESS)
 			rval = -1;
 	}
 	printf("%s: erased %uKB in %ums\n",
@@ -1087,7 +1087,7 @@ static vb2_error_t ps8751_ec_tunnel_status(const VbootAuxFwOps *vbaux,
 		       me->chip_name);
 		return VBERROR_UNKNOWN;
 	}
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static int ps8751_ec_pd_suspend(Ps8751 *me)
@@ -1263,11 +1263,11 @@ static vb2_error_t ps8751_check_hash(const VbootAuxFwOps *vbaux,
 	if (status == PS8751_DEVICE_MISSING) {
 		*severity = VB_AUX_FW_NO_DEVICE;
 		printf("Skipping upgrade for %s\n", me->chip_name);
-		return VBERROR_SUCCESS;
+		return VB2_SUCCESS;
 	} else if (status == PS8751_DEVICE_NOT_PARADE) {
 		*severity = VB_AUX_FW_NO_UPDATE;
 		printf("No update required for %s\n", me->chip_name);
-		return VBERROR_SUCCESS;
+		return VB2_SUCCESS;
 	}
 
 	me->blob_hw_version = hash[0];
@@ -1275,7 +1275,7 @@ static vb2_error_t ps8751_check_hash(const VbootAuxFwOps *vbaux,
 		*severity = VB_AUX_FW_NO_UPDATE;
 	else
 		*severity = VB_AUX_FW_SLOW_UPDATE;
-	return VBERROR_SUCCESS;
+	return VB2_SUCCESS;
 }
 
 static int ps8751_halt_and_flash(Ps8751 *me,
@@ -1341,7 +1341,7 @@ static vb2_error_t ps8751_update_image(const VbootAuxFwOps *vbaux,
 	if (!ps8751_is_fw_compatible(me, image))
 		goto hide_i2c;
 	if (ps8751_halt_and_flash(me, image, image_size) == 0)
-		status = VBERROR_SUCCESS;
+		status = VB2_SUCCESS;
 
 hide_i2c:
 	if (ps8751_hide_i2c(me) != 0)
