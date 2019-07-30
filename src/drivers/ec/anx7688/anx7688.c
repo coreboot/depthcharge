@@ -338,7 +338,7 @@ out:
 
 	if (ret < 0) {
 		printf("ANX7688 FW update error!\n");
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 
 	printf("ANX7688 FW updated successfully (%lld ms)!\n",
@@ -368,7 +368,7 @@ static vb2_error_t vboot_running_rw(VbootEcOps *vbec, int *in_rw)
 
 	if (cros_ec_tunnel_i2c_protect_status(me->bus, in_rw)) {
 		/* We probably need a new EC */
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 
 	return VB2_SUCCESS;
@@ -390,12 +390,12 @@ static vb2_error_t vboot_disable_jump(VbootEcOps *vbec)
 
 	if (cros_ec_tunnel_i2c_protect(me->bus)) {
 		/* We probably need a new EC */
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 
 	if (cros_ec_pd_control(ANX7688_PD_ID, PD_CONTROL_DISABLE) < 0) {
 		/* We probably need a new EC */
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 
 	return VB2_SUCCESS;
@@ -418,7 +418,7 @@ static vb2_error_t vboot_update_image(VbootEcOps *vbec,
 
 	if (cros_ec_tunnel_i2c_protect_status(me->bus, &protected)) {
 		/* We probably need a new EC */
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 
 	if (protected)
@@ -426,7 +426,7 @@ static vb2_error_t vboot_update_image(VbootEcOps *vbec,
 
 	/* Double-check we are really trying to update the right chip. */
 	if (!anx7688_detect(me))
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 
 	/* Force update */
 	return anx7688_update(me, image, image_size);

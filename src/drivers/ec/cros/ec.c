@@ -389,7 +389,7 @@ static vb2_error_t vboot_running_rw(VbootEcOps *vbec, int *in_rw)
 
 	if (ec_command(me, EC_CMD_GET_VERSION, 0,
 		       NULL, 0, &r, sizeof(r)) != sizeof(r))
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 
 	switch (r.current_image) {
 	case EC_IMAGE_RO:
@@ -400,7 +400,7 @@ static vb2_error_t vboot_running_rw(VbootEcOps *vbec, int *in_rw)
 		break;
 	default:
 		printf("Unrecognized EC image type %d.\n", r.current_image);
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 
 	return VB2_SUCCESS;
@@ -450,7 +450,7 @@ static vb2_error_t vboot_hash_image(VbootEcOps *vbec,
 		p.offset = hash_offset;
 		if (ec_command(me, EC_CMD_VBOOT_HASH, 0, &p, sizeof(p),
 			       &resp, sizeof(resp)) < 0)
-			return VBERROR_UNKNOWN;
+			return VB2_ERROR_UNKNOWN;
 
 		switch (resp.status) {
 		case EC_VBOOT_HASH_STATUS_NONE:
@@ -468,7 +468,7 @@ static vb2_error_t vboot_hash_image(VbootEcOps *vbec,
 
 			if (ec_command(me, EC_CMD_VBOOT_HASH, 0, &p,
 				       sizeof(p), &resp, sizeof(resp)) < 0)
-				return VBERROR_UNKNOWN;
+				return VB2_ERROR_UNKNOWN;
 
 			recalc_requested = 1;
 			/* Expect status to be busy (and don't break while)
@@ -490,11 +490,11 @@ static vb2_error_t vboot_hash_image(VbootEcOps *vbec,
 	if (resp.status != EC_VBOOT_HASH_STATUS_DONE) {
 		printf("%s: Hash status not done: %d\n", __func__,
 		      resp.status);
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 	if (resp.hash_type != EC_VBOOT_HASH_TYPE_SHA256) {
 		printf("EC hash was the wrong type.\n");
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 
 	*hash = resp.hash_digest;
@@ -565,7 +565,7 @@ static vb2_error_t vboot_reboot_to_ro(VbootEcOps *vbec)
 
 	if (ec_reboot(me, EC_REBOOT_COLD, EC_REBOOT_FLAG_ON_AP_SHUTDOWN) < 0) {
 		printf("Failed to schedule EC reboot to RO.\n");
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 
 	return VB2_SUCCESS;
@@ -577,7 +577,7 @@ static vb2_error_t vboot_jump_to_rw(VbootEcOps *vbec)
 
 	if (ec_reboot(me, EC_REBOOT_JUMP_RW, 0) < 0) {
 		printf("Failed to make the EC jump to RW.\n");
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 
 	return VB2_SUCCESS;
@@ -589,7 +589,7 @@ static vb2_error_t vboot_reboot_switch_rw(VbootEcOps *vbec)
 
 	if (ec_reboot(me, EC_REBOOT_COLD, EC_REBOOT_FLAG_SWITCH_RW_SLOT) < 0) {
 		printf("Failed to reboot the EC to switch RW slot.\n");
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 
 	return VB2_SUCCESS;
@@ -601,7 +601,7 @@ static vb2_error_t vboot_disable_jump(VbootEcOps *vbec)
 
 	if (ec_reboot(me, EC_REBOOT_DISABLE_JUMP, 0) < 0) {
 		printf("Failed to make the EC disable jumping.\n");
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 
 	return VB2_SUCCESS;
@@ -714,7 +714,7 @@ static vb2_error_t vboot_entering_mode(VbootEcOps *vbec,
 
 	if (ec_command(me, EC_CMD_ENTERING_MODE, 0,
 		       &mode, sizeof(mode), NULL, 0))
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	return VB2_SUCCESS;
 }
 
@@ -912,7 +912,7 @@ static vb2_error_t vboot_set_region_protection(
 	/* Update protection */
 	if (ec_flash_protect(me, mask, enable ? mask : 0, &resp) < 0) {
 		printf("Failed to update EC flash protection.\n");
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 
 	if (!enable) {
@@ -940,7 +940,7 @@ static vb2_error_t vboot_set_region_protection(
 		return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
 
 	/* Otherwise, it's an error */
-	return VBERROR_UNKNOWN;
+	return VB2_ERROR_UNKNOWN;
 }
 
 static vb2_error_t vboot_update_image(VbootEcOps *vbec,
@@ -955,7 +955,7 @@ static vb2_error_t vboot_update_image(VbootEcOps *vbec,
 		return rv;
 
 	if (ec_flash_offset(me, region, &region_offset, &region_size))
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	if (image_size > region_size)
 		return VBERROR_INVALID_PARAMETER;
 
@@ -968,15 +968,15 @@ static vb2_error_t vboot_update_image(VbootEcOps *vbec,
 	 * round up to the nearest multiple of erase size.
 	 */
 	if (ec_flash_erase(me, region_offset, region_size))
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 
 	/* Write the image */
 	if (ec_flash_write(me, image, region_offset, image_size))
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 
 	/* Verify the image */
 	if (ec_efs_verify(me, region))
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 
 	return VB2_SUCCESS;
 }
@@ -1038,7 +1038,7 @@ int cros_ec_battery_cutoff(uint8_t flags)
 static vb2_error_t vboot_battery_cutoff(VbootEcOps *vbec)
 {
 	if (cros_ec_battery_cutoff(EC_BATTERY_CUTOFF_FLAG_AT_SHUTDOWN) < 0)
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	return VB2_SUCCESS;
 }
 
@@ -1212,7 +1212,7 @@ int cros_ec_read_limit_power_request(int *limit_power)
 static vb2_error_t vboot_check_limit_power(VbootEcOps *vbec, int *limit_power)
 {
 	if (cros_ec_read_limit_power_request(limit_power) < 0)
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	return VB2_SUCCESS;
 }
 
@@ -1224,7 +1224,7 @@ static vb2_error_t vboot_enable_power_button(VbootEcOps *vbec, int enable)
 		flags = EC_POWER_BUTTON_ENABLE_PULSE;
 
 	if (cros_ec_config_powerbtn(flags) < 0)
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	return VB2_SUCCESS;
 }
 
@@ -1240,7 +1240,7 @@ static vb2_error_t vboot_protect_tcpc_ports(VbootEcOps *vbec)
 		printf("EC does not support TCPC sync in RW... ignoring.\n");
 	} else if (ret < 0) {
 		printf("ERROR: cannot protect TCPC I2C tunnels\n");
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 
 	return VB2_SUCCESS;

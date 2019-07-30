@@ -109,7 +109,7 @@ vb2_error_t VbExEcGetExpectedImage(int devidx, enum VbSelectFirmware_t select,
 	const char *filename = EC_IMAGE_FILENAME(devidx, select);
 	*image = get_file_from_cbfs(filename, select, &size);
 	if (*image == NULL)
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	*image_size = size;
 	return VB2_SUCCESS;
 }
@@ -122,7 +122,7 @@ vb2_error_t VbExEcGetExpectedImageHash(int devidx,
 	const char *filename = EC_HASH_FILENAME(devidx, select);
 	*hash = get_file_from_cbfs(filename, select, &size);
 	if (!*hash)
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	*hash_size = size;
 
 	return VB2_SUCCESS;
@@ -174,14 +174,14 @@ vb2_error_t VbExEcVbootDone(int in_recovery)
 	 */
 	if (ec->protect_tcpc_ports && ec->protect_tcpc_ports(ec)) {
 		printf("Some remote tunnels in EC may be unprotected\n");
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 
 	/* Ensure we have enough power to continue booting */
 	while(1) {
 		if (ec->check_limit_power(ec, &limit_power)) {
 			printf("Failed to check EC limit power flag.\n");
-			return VBERROR_UNKNOWN;
+			return VB2_ERROR_UNKNOWN;
 		}
 
 		/*
@@ -213,7 +213,7 @@ vb2_error_t VbExEcVbootDone(int in_recovery)
 vb2_error_t VbExEcBatteryCutOff(void) {
 	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
 	return (ec->battery_cutoff(ec) == 0
-		 ? VB2_SUCCESS : VBERROR_UNKNOWN);
+		 ? VB2_SUCCESS : VB2_ERROR_UNKNOWN);
 }
 
 vb2_error_t VbExCheckAuxFw(VbAuxFwUpdateSeverity_t *severity)

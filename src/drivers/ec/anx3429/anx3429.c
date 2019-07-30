@@ -298,7 +298,7 @@ static vb2_error_t anx3429_ec_tunnel_status(const VbootAuxFwOps *vbaux,
 	if (cros_ec_tunnel_i2c_protect_status(me->bus, protected) < 0) {
 		printf("anx3429.%d: could not get EC I2C tunnel status!\n",
 		       me->ec_pd_id);
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 	return VB2_SUCCESS;
 }
@@ -913,7 +913,7 @@ static vb2_error_t anx3429_check_hash(const VbootAuxFwOps *vbaux,
 				      VbAuxFwUpdateSeverity_t *severity)
 {
 	Anx3429 *me = container_of(vbaux, Anx3429, fw_ops);
-	vb2_error_t status = VBERROR_UNKNOWN;
+	vb2_error_t status = VB2_ERROR_UNKNOWN;
 
 	debug("call...\n");
 
@@ -1126,19 +1126,19 @@ static vb2_error_t anx3429_update_image(const VbootAuxFwOps *vbaux,
 					const size_t image_size)
 {
 	Anx3429 *me = container_of(vbaux, Anx3429, fw_ops);
-	vb2_error_t status = VBERROR_UNKNOWN;
+	vb2_error_t status = VB2_ERROR_UNKNOWN;
 	int protected;
 
 	debug("call...\n");
 
 	if (anx3429_verify_blob(me, image, image_size) != 0) {
 		debug("verify blob failed\n");
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 
 	if (anx3429_ec_tunnel_status(vbaux, &protected) != 0) {
 		debug("tunnel status failed\n");
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 
 	if (protected) {
@@ -1154,7 +1154,7 @@ static vb2_error_t anx3429_update_image(const VbootAuxFwOps *vbaux,
 		break;
 	default:
 		debug("pd suspend failed\n");
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 
 	if (anx3429_ec_pd_powerup(me) != 0) {
@@ -1184,14 +1184,14 @@ static vb2_error_t anx3429_update_image(const VbootAuxFwOps *vbaux,
 	if (anx3429_enable_mcu(me) != 0) {
 		printf("anx3429.%d: enable_mcu after update failed!\n",
 		       me->ec_pd_id);
-		status = VBERROR_UNKNOWN;
+		status = VB2_ERROR_UNKNOWN;
 		goto pd_resume;
 	}
 
 pd_resume:
 	if (anx3429_ec_pd_resume(me) != 0) {
 		debug("pd resume failed\n");
-		status = VBERROR_UNKNOWN;
+		status = VB2_ERROR_UNKNOWN;
 	}
 
 	/* force re-read */

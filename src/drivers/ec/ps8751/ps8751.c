@@ -1085,7 +1085,7 @@ static vb2_error_t ps8751_ec_tunnel_status(const VbootAuxFwOps *vbaux,
 	if (cros_ec_tunnel_i2c_protect_status(me->bus, protected) < 0) {
 		printf("%s: could not get EC I2C tunnel status!\n",
 		       me->chip_name);
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 	return VB2_SUCCESS;
 }
@@ -1305,7 +1305,7 @@ static vb2_error_t ps8751_update_image(const VbootAuxFwOps *vbaux,
 				       const uint8_t *image, size_t image_size)
 {
 	Ps8751 *me = container_of(vbaux, Ps8751, fw_ops);
-	vb2_error_t status = VBERROR_UNKNOWN;
+	vb2_error_t status = VB2_ERROR_UNKNOWN;
 	int protected;
 	int timeout;
 
@@ -1314,11 +1314,11 @@ static vb2_error_t ps8751_update_image(const VbootAuxFwOps *vbaux,
 	/* If the I2C tunnel is not known, probe EC for that */
 	if (!me->bus && ps8751_construct_i2c_tunnel(me)) {
 		printf("%s: Error constructing i2c tunnel\n", me->chip_name);
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 
 	if (ps8751_ec_tunnel_status(vbaux, &protected) != 0)
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	if (protected)
 		return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
 
@@ -1332,7 +1332,7 @@ static vb2_error_t ps8751_update_image(const VbootAuxFwOps *vbaux,
 		/* Continue onward */
 		break;
 	default:
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 
 	if (ps8751_wake_i2c(me) != 0)
@@ -1345,11 +1345,11 @@ static vb2_error_t ps8751_update_image(const VbootAuxFwOps *vbaux,
 
 hide_i2c:
 	if (ps8751_hide_i2c(me) != 0)
-		status = VBERROR_UNKNOWN;
+		status = VB2_ERROR_UNKNOWN;
 
 pd_resume:
 	if (ps8751_ec_pd_resume(me) != 0)
-		status = VBERROR_UNKNOWN;
+		status = VB2_ERROR_UNKNOWN;
 
 	/* Wait at most ~60ms for reset to occur. */
 	timeout = PS_RESTART_DELAY_CS;
@@ -1362,7 +1362,7 @@ pd_resume:
 	} while (timeout > 0);
 
 	if (timeout == 0)
-		status = VBERROR_UNKNOWN;
+		status = VB2_ERROR_UNKNOWN;
 
 	return status;
 }

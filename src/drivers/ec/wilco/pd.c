@@ -68,7 +68,7 @@ static vb2_error_t wilco_pd_check_hash(const VbootAuxFwOps *vbaux,
 	*severity = VB_AUX_FW_NO_UPDATE;
 
 	if (hash_size != sizeof(uint32_t))
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	memcpy(&update_version, hash, hash_size);
 
 	/* Find EC flash device on mainboard */

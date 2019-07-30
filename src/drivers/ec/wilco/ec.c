@@ -147,12 +147,12 @@ static vb2_error_t vboot_update_image(VbootEcOps *vbec,
 	if (ret == WILCO_EC_RESULT_ACCESS_DENIED)
 		return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
 	else if (ret < 0)
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 
 	/* Write image to the previously found EC device */
 	if (wilco_ec_flash_image(ec, &device, image, image_size, version) < 0) {
 		printf("%s: EC update failed!\n", __func__);
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 
 	printf("%s: EC update successful.\n", __func__);
@@ -165,7 +165,7 @@ static vb2_error_t vboot_reboot_to_ro(VbootEcOps *vbec)
 {
 	WilcoEc *ec = container_of(vbec, WilcoEc, vboot);
 	if (wilco_ec_reboot(ec) < 0)
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	return VB2_SUCCESS;
 }
 
@@ -176,7 +176,7 @@ static vb2_error_t vboot_jump_to_rw(VbootEcOps *vbec)
 	if (ec->flash_updated) {
 		/* Issue EC reset to boot new image */
 		if (wilco_ec_reboot(ec) < 0)
-			return VBERROR_UNKNOWN;
+			return VB2_ERROR_UNKNOWN;
 	}
 	return VB2_SUCCESS;
 }
@@ -224,7 +224,7 @@ static vb2_error_t vboot_enable_power_button(VbootEcOps *vbec, int enable)
 {
 	WilcoEc *ec = container_of(vbec, WilcoEc, vboot);
 	if (wilco_ec_power_button(ec, enable) < 0)
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	return VB2_SUCCESS;
 }
 

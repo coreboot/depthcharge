@@ -245,7 +245,7 @@ static vb2_error_t draw(struct directory *dir, const char *image_name,
 	};
 
 	if (get_bitmap_dimension(bitmap, file->size, &dim))
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 
 	if ((int64_t)dim.x.n * VB_SCALE <= (int64_t)dim.x.d * VB_DIVIDER_WIDTH)
 		return draw_bitmap((uint8_t *)dir + file->offset, file->size,
@@ -299,7 +299,7 @@ static vb2_error_t get_image_size(struct directory *dir, const char *image_name,
 	rv = get_bitmap_dimension((uint8_t *)dir + file->offset,
 				  file->size, &dim);
 	if (rv)
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 
 	*width = dim.x.n * VB_SCALE / dim.x.d;
 	*height = dim.y.n * VB_SCALE / dim.y.d;
@@ -554,7 +554,7 @@ static vb2_error_t draw_base_screen(uint32_t locale, int show_language)
 {
 
 	if (clear_screen(&color_white))
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	RETURN_ON_ERROR(draw_image("chrome_logo.bmp",
 			(VB_SCALE - VB_DIVIDER_WIDTH)/2,
 			VB_DIVIDER_V_OFFSET - VB_LOGO_LIFTUP,
@@ -1315,7 +1315,7 @@ static void print_fallback_message(const struct vboot_ui_descriptor *desc)
 
 static vb2_error_t draw_ui(uint32_t screen_type, struct params *p)
 {
-	vb2_error_t rv = VBERROR_UNKNOWN;
+	vb2_error_t rv = VB2_ERROR_UNKNOWN;
 	const struct vboot_ui_descriptor *desc;
 
 	desc = get_ui_descriptor(screen_type);
@@ -1392,14 +1392,14 @@ static vb2_error_t vboot_init_screen(void)
 		ro_cbfs = cbfs_ro_media();
 		if (ro_cbfs == NULL) {
 			printf("No RO CBFS found.\n");
-			return VBERROR_UNKNOWN;
+			return VB2_ERROR_UNKNOWN;
 		}
 	}
 
 	/* Make sure framebuffer is initialized before turning display on. */
 	clear_screen(&color_white);
 	if (display_init())
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 
 	/* create a list of supported locales */
 	vboot_init_locale();
@@ -1427,7 +1427,7 @@ vb2_error_t vboot_draw_screen(uint32_t screen, uint32_t locale,
 
 	if (!initialized) {
 		if (vboot_init_screen())
-			return VBERROR_UNKNOWN;
+			return VB2_ERROR_UNKNOWN;
 	}
 
 	/* If the screen is blank, turn off the backlight; else turn it on. */
@@ -1453,7 +1453,7 @@ vb2_error_t vboot_draw_ui(uint32_t screen, uint32_t locale,
 
 	if (!initialized) {
 		if (vboot_init_screen())
-			return VBERROR_UNKNOWN;
+			return VB2_ERROR_UNKNOWN;
 	}
 
 	/* If the screen is blank, turn off the backlight; else turn it on. */

@@ -84,7 +84,7 @@ vb2_error_t VbExDiskRead(VbExDiskHandle_t handle, uint64_t lba_start,
 	BlockDevOps *ops = &((BlockDev *)handle)->ops;
 	if (ops->read(ops, lba_start, lba_count, buffer) != lba_count) {
 		printf("Read failed.\n");
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 	return VB2_SUCCESS;
 }
@@ -95,7 +95,7 @@ vb2_error_t VbExDiskWrite(VbExDiskHandle_t handle, uint64_t lba_start,
 	BlockDevOps *ops = &((BlockDev *)handle)->ops;
 	if (ops->write(ops, lba_start, lba_count, buffer) != lba_count) {
 		printf("Write failed.\n");
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 	return VB2_SUCCESS;
 }
@@ -107,7 +107,7 @@ vb2_error_t VbExStreamOpen(VbExDiskHandle_t handle, uint64_t lba_start,
 	*stream_ptr = (VbExStream_t)ops->new_stream(ops, lba_start, lba_count);
 	if (*stream_ptr == NULL) {
 		printf("Stream open failed.\n");
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 	return VB2_SUCCESS;
 }
@@ -118,7 +118,7 @@ vb2_error_t VbExStreamRead(VbExStream_t stream, uint32_t bytes, void *buffer)
 	int ret = dev->read(dev, bytes, buffer);
 	if (ret != bytes) {
 		printf("Stream read failed.\n");
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	}
 
 	// Vboot first reads some headers from the front of the kernel partition

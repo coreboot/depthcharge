@@ -161,6 +161,6 @@ vb2_error_t VbExGetLocalizationCount(uint32_t *count)
 {
 	*count = vboot_get_locale_count();
 	if (*count == 0)
-		return VBERROR_UNKNOWN;
+		return VB2_ERROR_UNKNOWN;
 	return VB2_SUCCESS;
 }
