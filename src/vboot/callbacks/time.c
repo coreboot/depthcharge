@@ -37,11 +37,10 @@ void VbExSleepMs(uint32_t msec)
 VbError_t VbExBeep(uint32_t msec, uint32_t frequency)
 {
 	int res;
-        if (frequency) {
-                res = sound_start(frequency);
-        } else {
-                res = sound_stop();
-	}
+	if (frequency)
+		res = sound_start(frequency);
+	else
+		res = sound_stop();
 
 	if (res > 0) {
 		// The previous call had an error.
