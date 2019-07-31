@@ -1463,11 +1463,11 @@ int vboot_draw_ui(uint32_t screen, uint32_t locale,
 	return draw_ui(screen, &p);
 }
 
-int vboot_get_locale_count(void)
+uint32_t vboot_get_locale_count(void)
 {
 	if (!initialized) {
 		if (vboot_init_screen())
-			return VBERROR_UNKNOWN;
+			return 0;
 	}
 	return locale_data.count;
 }

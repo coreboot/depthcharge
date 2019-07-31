@@ -160,5 +160,7 @@ VbError_t VbExDisplayDebugInfo(const char *info_str, int full_info)
 VbError_t VbExGetLocalizationCount(uint32_t *count)
 {
 	*count = vboot_get_locale_count();
+	if (*count == 0)
+		return VBERROR_UNKNOWN;
 	return VBERROR_SUCCESS;
 }

@@ -55,6 +55,6 @@ VbError_t vboot_print_string(char *str);
  *
  * @return number of supported locales
  */
-int vboot_get_locale_count(void);
+uint32_t vboot_get_locale_count(void);
 
 #endif /* __VBOOT_SCREENS_H__ */
