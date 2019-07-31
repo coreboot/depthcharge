@@ -18,13 +18,13 @@
 #include <libpayload.h>
 #include <vboot_api.h>
 
-VbError_t VbExNvStorageRead(uint8_t* buf)
+vb2_error_t VbExNvStorageRead(uint8_t* buf)
 {
 	printf("Disk based nonvolatile storage not implemented.\n");
 	halt();
 }
 
-VbError_t VbExNvStorageWrite(const uint8_t* buf)
+vb2_error_t VbExNvStorageWrite(const uint8_t* buf)
 {
 	printf("Disk based nonvolatile storage not implemented.\n");
 	halt();

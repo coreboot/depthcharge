@@ -73,37 +73,37 @@ int VbExTrustEC(int devidx)
 	return !val;
 }
 
-VbError_t VbExEcRunningRW(int devidx, int *in_rw)
+vb2_error_t VbExEcRunningRW(int devidx, int *in_rw)
 {
 	VbootEcOps *ec = vboot_get_ec(devidx);
 	assert(ec && ec->running_rw);
 	return ec->running_rw(ec, in_rw);
 }
 
-VbError_t VbExEcJumpToRW(int devidx)
+vb2_error_t VbExEcJumpToRW(int devidx)
 {
 	VbootEcOps *ec = vboot_get_ec(devidx);
 	assert(ec && ec->jump_to_rw);
 	return ec->jump_to_rw(ec);
 }
 
-VbError_t VbExEcDisableJump(int devidx)
+vb2_error_t VbExEcDisableJump(int devidx)
 {
 	VbootEcOps *ec = vboot_get_ec(devidx);
 	assert(ec && ec->disable_jump);
 	return ec->disable_jump(ec);
 }
 
-VbError_t VbExEcHashImage(int devidx, enum VbSelectFirmware_t select,
-			  const uint8_t **hash, int *hash_size)
+vb2_error_t VbExEcHashImage(int devidx, enum VbSelectFirmware_t select,
+			    const uint8_t **hash, int *hash_size)
 {
 	VbootEcOps *ec = vboot_get_ec(devidx);
 	assert(ec && ec->hash_image);
 	return ec->hash_image(ec, select, hash, hash_size);
 }
 
-VbError_t VbExEcGetExpectedImage(int devidx, enum VbSelectFirmware_t select,
-				 const uint8_t **image, int *image_size)
+vb2_error_t VbExEcGetExpectedImage(int devidx, enum VbSelectFirmware_t select,
+				   const uint8_t **image, int *image_size)
 {
 	size_t size;
 	const char *filename = EC_IMAGE_FILENAME(devidx, select);
@@ -114,8 +114,9 @@ VbError_t VbExEcGetExpectedImage(int devidx, enum VbSelectFirmware_t select,
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExEcGetExpectedImageHash(int devidx, enum VbSelectFirmware_t select,
-				     const uint8_t **hash, int *hash_size)
+vb2_error_t VbExEcGetExpectedImageHash(int devidx,
+				       enum VbSelectFirmware_t select,
+				       const uint8_t **hash, int *hash_size)
 {
 	size_t size;
 	const char *filename = EC_HASH_FILENAME(devidx, select);
@@ -127,22 +128,22 @@ VbError_t VbExEcGetExpectedImageHash(int devidx, enum VbSelectFirmware_t select,
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExEcUpdateImage(int devidx, enum VbSelectFirmware_t select,
-			    const uint8_t *image, int image_size)
+vb2_error_t VbExEcUpdateImage(int devidx, enum VbSelectFirmware_t select,
+			      const uint8_t *image, int image_size)
 {
 	VbootEcOps *ec = vboot_get_ec(devidx);
 	assert(ec && ec->update_image);
 	return ec->update_image(ec, select, image, image_size);
 }
 
-VbError_t VbExEcProtect(int devidx, enum VbSelectFirmware_t select)
+vb2_error_t VbExEcProtect(int devidx, enum VbSelectFirmware_t select)
 {
 	VbootEcOps *ec = vboot_get_ec(devidx);
 	assert(ec && ec->protect);
 	return ec->protect(ec, select);
 }
 
-VbError_t VbExEcEnteringMode(int devidx, enum VbEcBootMode_t mode)
+vb2_error_t VbExEcEnteringMode(int devidx, enum VbEcBootMode_t mode)
 {
 	VbootEcOps *ec = vboot_get_ec(devidx);
 	assert(ec && ec->entering_mode);
@@ -154,7 +155,7 @@ VbError_t VbExEcEnteringMode(int devidx, enum VbEcBootMode_t mode)
 /* Check the limit power flag every 50 ms while waiting. */
 #define LIMIT_POWER_POLL_SLEEP 50
 
-VbError_t VbExEcVbootDone(int in_recovery)
+vb2_error_t VbExEcVbootDone(int in_recovery)
 {
 	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
 	int limit_power;
@@ -209,18 +210,18 @@ VbError_t VbExEcVbootDone(int in_recovery)
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExEcBatteryCutOff(void) {
+vb2_error_t VbExEcBatteryCutOff(void) {
 	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
 	return (ec->battery_cutoff(ec) == 0
 		 ? VBERROR_SUCCESS : VBERROR_UNKNOWN);
 }
 
-VbError_t VbExCheckAuxFw(VbAuxFwUpdateSeverity_t *severity)
+vb2_error_t VbExCheckAuxFw(VbAuxFwUpdateSeverity_t *severity)
 {
 	return check_vboot_aux_fw(severity);
 }
 
-VbError_t VbExUpdateAuxFw(void)
+vb2_error_t VbExUpdateAuxFw(void)
 {
 	return update_vboot_aux_fw();
 }

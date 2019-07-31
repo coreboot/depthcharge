@@ -55,8 +55,8 @@ void register_vboot_aux_fw(const VbootAuxFwOps *aux_fw)
  * @return VBERROR_... error, VBERROR_SUCCESS on success.
  */
 
-static VbError_t check_dev_fw_hash(const VbootAuxFwOps *aux_fw,
-				   VbAuxFwUpdateSeverity_t *severity)
+static vb2_error_t check_dev_fw_hash(const VbootAuxFwOps *aux_fw,
+				     VbAuxFwUpdateSeverity_t *severity)
 {
 	const void *want_hash;
 	size_t want_size;
@@ -81,11 +81,11 @@ static VbError_t check_dev_fw_hash(const VbootAuxFwOps *aux_fw,
  * @return VBERROR_... error, VBERROR_SUCCESS on success.
  */
 
-VbError_t check_vboot_aux_fw(VbAuxFwUpdateSeverity_t *severity)
+vb2_error_t check_vboot_aux_fw(VbAuxFwUpdateSeverity_t *severity)
 {
 	VbAuxFwUpdateSeverity_t max;
 	VbAuxFwUpdateSeverity_t current;
-	VbError_t status;
+	vb2_error_t status;
 
 	if (CONFIG(CROS_EC_PROBE_AUX_FW_INFO))
 		cros_ec_probe_aux_fw_chips();
@@ -112,7 +112,7 @@ VbError_t check_vboot_aux_fw(VbAuxFwUpdateSeverity_t *severity)
  * @return VBERROR_... error, VBERROR_SUCCESS on success.
  */
 
-static VbError_t apply_dev_fw(const VbootAuxFwOps *aux_fw)
+static vb2_error_t apply_dev_fw(const VbootAuxFwOps *aux_fw)
 {
 	const uint8_t *want_data;
 	size_t want_size;
@@ -136,10 +136,10 @@ static VbError_t apply_dev_fw(const VbootAuxFwOps *aux_fw)
  * @return VBERROR_... error, VBERROR_SUCCESS on success.
  */
 
-VbError_t update_vboot_aux_fw(void)
+vb2_error_t update_vboot_aux_fw(void)
 {
 	VbAuxFwUpdateSeverity_t severity;
-	VbError_t status = VBERROR_SUCCESS;
+	vb2_error_t status = VBERROR_SUCCESS;
 	int lid_shutdown_disabled = 0;
 
 	for (int i = 0; i < vboot_aux_fw_count; ++i) {

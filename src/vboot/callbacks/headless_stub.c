@@ -21,21 +21,21 @@
 
 #include "drivers/video/display.h"
 
-VbError_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale,
-			    const VbScreenData *data)
+vb2_error_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale,
+			      const VbScreenData *data)
 {
 	return display_screen((enum VbScreenType_t)screen_type);
 }
 
-VbError_t VbExDisplayMenu(uint32_t screen_type, uint32_t locale,
-			  uint32_t selected_index, uint32_t disabled_idx_mask,
-			  uint32_t redraw_base)
+vb2_error_t VbExDisplayMenu(uint32_t screen_type, uint32_t locale,
+			    uint32_t selected_index, uint32_t disabled_idx_mask,
+			    uint32_t redraw_base)
 {
 	printf("%s:%d invoked\n", __func__, __LINE__);
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExDisplayDebugInfo(const char *info_str, int full_info)
+vb2_error_t VbExDisplayDebugInfo(const char *info_str, int full_info)
 {
 	printf("%s:%d invoked\n", __func__, __LINE__);
 	return VBERROR_SUCCESS;

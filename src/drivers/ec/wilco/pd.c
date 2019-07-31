@@ -57,9 +57,9 @@ typedef struct __attribute__((packed)) WilcoPdFlashWrite {
 	uint8_t data[PD_FLASH_DATA_SIZE];
 } WilcoPdFlashWrite;
 
-static VbError_t wilco_pd_check_hash(const VbootAuxFwOps *vbaux,
-				     const uint8_t *hash, size_t hash_size,
-				     VbAuxFwUpdateSeverity_t *severity)
+static vb2_error_t wilco_pd_check_hash(const VbootAuxFwOps *vbaux,
+				       const uint8_t *hash, size_t hash_size,
+				       VbAuxFwUpdateSeverity_t *severity)
 {
 	WilcoPd *pd = container_of(vbaux, WilcoPd, ops);
 	WilcoEcFlashDevice device;
@@ -218,9 +218,9 @@ static int wilco_pd_flash_finish(WilcoPd *pd)
 	return 0;
 }
 
-static VbError_t wilco_pd_update_image(const VbootAuxFwOps *vbaux,
-				       const uint8_t *image,
-				       const size_t image_size)
+static vb2_error_t wilco_pd_update_image(const VbootAuxFwOps *vbaux,
+					 const uint8_t *image,
+					 const size_t image_size)
 {
 	WilcoPd *pd = container_of(vbaux, WilcoPd, ops);
 	WilcoPdFlashStart start = {

@@ -245,8 +245,8 @@ static uint16_t anx7688_verify(struct Anx7688 *me)
  *    - 2-byte: end
  * Payload (flat binary)
  */
-static VbError_t anx7688_update(struct Anx7688 *me,
-				const uint8_t *data, int len)
+static vb2_error_t anx7688_update(struct Anx7688 *me,
+				  const uint8_t *data, int len)
 {
 	int i, ret = 0;
 	uint16_t address;
@@ -346,8 +346,8 @@ out:
 	return VBERROR_SUCCESS;
 }
 
-VbError_t vboot_hash_image(VbootEcOps *vbec, enum VbSelectFirmware_t select,
-		     const uint8_t **hash, int *hash_size)
+vb2_error_t vboot_hash_image(VbootEcOps *vbec, enum VbSelectFirmware_t select,
+			     const uint8_t **hash, int *hash_size)
 {
 	Anx7688 *me = container_of(vbec, Anx7688, vboot);
 	/* Actually, hash is just the version */
@@ -362,7 +362,7 @@ VbError_t vboot_hash_image(VbootEcOps *vbec, enum VbSelectFirmware_t select,
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_running_rw(VbootEcOps *vbec, int *in_rw)
+static vb2_error_t vboot_running_rw(VbootEcOps *vbec, int *in_rw)
 {
 	Anx7688 *me = container_of(vbec, Anx7688, vboot);
 
@@ -374,17 +374,17 @@ static VbError_t vboot_running_rw(VbootEcOps *vbec, int *in_rw)
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_reboot_to_ro(VbootEcOps *vbec)
+static vb2_error_t vboot_reboot_to_ro(VbootEcOps *vbec)
 {
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_jump_to_rw(VbootEcOps *vbec)
+static vb2_error_t vboot_jump_to_rw(VbootEcOps *vbec)
 {
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_disable_jump(VbootEcOps *vbec)
+static vb2_error_t vboot_disable_jump(VbootEcOps *vbec)
 {
 	Anx7688 *me = container_of(vbec, Anx7688, vboot);
 
@@ -401,15 +401,17 @@ static VbError_t vboot_disable_jump(VbootEcOps *vbec)
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_entering_mode(VbootEcOps *vbec, enum VbEcBootMode_t vbm)
+static vb2_error_t vboot_entering_mode(VbootEcOps *vbec,
+				       enum VbEcBootMode_t vbm)
 {
 	/* Noop success (should not be called) */
 
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_update_image(VbootEcOps *vbec,
-	enum VbSelectFirmware_t select, const uint8_t *image, int image_size)
+static vb2_error_t vboot_update_image(VbootEcOps *vbec,
+				      enum VbSelectFirmware_t select,
+				      const uint8_t *image, int image_size)
 {
 	Anx7688 *me = container_of(vbec, Anx7688, vboot);
 	int protected;
@@ -430,7 +432,8 @@ static VbError_t vboot_update_image(VbootEcOps *vbec,
 	return anx7688_update(me, image, image_size);
 }
 
-static VbError_t vboot_protect(VbootEcOps *vbec, enum VbSelectFirmware_t select)
+static vb2_error_t vboot_protect(VbootEcOps *vbec,
+				 enum VbSelectFirmware_t select)
 {
 	/* Noop success */
 

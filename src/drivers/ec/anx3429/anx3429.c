@@ -290,8 +290,8 @@ static int __must_check anx3429_otp_read72ecc(Anx3429 *me,
 	return anx3429_otp_read72(me, offset, buf, R_OTP_CTL_1_RW_OTP72ECC);
 }
 
-static VbError_t anx3429_ec_tunnel_status(const VbootAuxFwOps *vbaux,
-					  int *protected)
+static vb2_error_t anx3429_ec_tunnel_status(const VbootAuxFwOps *vbaux,
+					    int *protected)
 {
 	Anx3429 *const me = container_of(vbaux, Anx3429, fw_ops);
 
@@ -908,12 +908,12 @@ static int __must_check anx3429_update_primary(Anx3429 *me,
 	return -1;
 }
 
-static VbError_t anx3429_check_hash(const VbootAuxFwOps *vbaux,
-				    const uint8_t *hash, size_t hash_size,
-				    VbAuxFwUpdateSeverity_t *severity)
+static vb2_error_t anx3429_check_hash(const VbootAuxFwOps *vbaux,
+				      const uint8_t *hash, size_t hash_size,
+				      VbAuxFwUpdateSeverity_t *severity)
 {
 	Anx3429 *me = container_of(vbaux, Anx3429, fw_ops);
-	VbError_t status = VBERROR_UNKNOWN;
+	vb2_error_t status = VBERROR_UNKNOWN;
 
 	debug("call...\n");
 
@@ -1121,12 +1121,12 @@ static int anx3429_verify_blob(Anx3429 *me,
 	return status;
 }
 
-static VbError_t anx3429_update_image(const VbootAuxFwOps *vbaux,
-				      const uint8_t *image,
-				      const size_t image_size)
+static vb2_error_t anx3429_update_image(const VbootAuxFwOps *vbaux,
+					const uint8_t *image,
+					const size_t image_size)
 {
 	Anx3429 *me = container_of(vbaux, Anx3429, fw_ops);
-	VbError_t status = VBERROR_UNKNOWN;
+	vb2_error_t status = VBERROR_UNKNOWN;
 	int protected;
 
 	debug("call...\n");

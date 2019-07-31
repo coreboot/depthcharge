@@ -32,72 +32,73 @@ int VbExTrustEC(int devidx)
 	return 1;
 }
 
-VbError_t VbExEcRunningRW(int devidx, int *in_rw)
+vb2_error_t VbExEcRunningRW(int devidx, int *in_rw)
 {
 	no_ec_soft_sync();
 }
 
-VbError_t VbExEcJumpToRW(int devidx)
+vb2_error_t VbExEcJumpToRW(int devidx)
 {
 	no_ec_soft_sync();
 }
 
-VbError_t VbExEcDisableJump(int devidx)
+vb2_error_t VbExEcDisableJump(int devidx)
 {
 	no_ec_soft_sync();
 }
 
-VbError_t VbExEcHashImage(int devidx, enum VbSelectFirmware_t select,
-			  const uint8_t **hash, int *hash_size)
+vb2_error_t VbExEcHashImage(int devidx, enum VbSelectFirmware_t select,
+			    const uint8_t **hash, int *hash_size)
 {
 	no_ec_soft_sync();
 }
 
-VbError_t VbExEcGetExpectedImage(int devidx, enum VbSelectFirmware_t select,
-				 const uint8_t **image, int *image_size)
+vb2_error_t VbExEcGetExpectedImage(int devidx, enum VbSelectFirmware_t select,
+				   const uint8_t **image, int *image_size)
 {
 	no_ec_soft_sync();
 }
 
-VbError_t VbExEcGetExpectedImageHash(int devidx, enum VbSelectFirmware_t select,
-				     const uint8_t **hash, int *hash_size)
+vb2_error_t VbExEcGetExpectedImageHash(int devidx,
+				       enum VbSelectFirmware_t select,
+				       const uint8_t **hash, int *hash_size)
 {
 	no_ec_soft_sync();
 }
 
-VbError_t VbExEcUpdateImage(int devidx, enum VbSelectFirmware_t select,
-			    const uint8_t *image, int image_size)
+vb2_error_t VbExEcUpdateImage(int devidx, enum VbSelectFirmware_t select,
+			      const uint8_t *image, int image_size)
 {
 	no_ec_soft_sync();
 }
 
-VbError_t VbExEcProtect(int devidx, enum VbSelectFirmware_t select)
+vb2_error_t VbExEcProtect(int devidx, enum VbSelectFirmware_t select)
 {
 	no_ec_soft_sync();
 }
 
-VbError_t VbExEcEnteringMode(int devidx, enum VbEcBootMode_t mode)
+vb2_error_t VbExEcEnteringMode(int devidx, enum VbEcBootMode_t mode)
 {
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExEcVbootDone(int in_recovery)
+vb2_error_t VbExEcVbootDone(int in_recovery)
 {
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExEcBatteryCutOff(void) {
+vb2_error_t VbExEcBatteryCutOff(void) {
 	printf("EC battery cut-off not supported, ignored.\n");
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExCheckAuxFw(VbAuxFwUpdateSeverity_t *severity)
+vb2_error_t VbExCheckAuxFw(VbAuxFwUpdateSeverity_t *severity)
 {
 	*severity = VB_AUX_FW_NO_UPDATE;
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExUpdateAuxFw(void)
+vb2_error_t VbExUpdateAuxFw(void)
 {
 	return VBERROR_SUCCESS;
 }

@@ -21,13 +21,13 @@
 
 static u8 fake_nvram[VBNV_BLOCK_SIZE];
 
-VbError_t VbExNvStorageRead(uint8_t* buf)
+vb2_error_t VbExNvStorageRead(uint8_t* buf)
 {
 	memcpy(buf, fake_nvram, sizeof(VBNV_BLOCK_SIZE));
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExNvStorageWrite(const uint8_t* buf)
+vb2_error_t VbExNvStorageWrite(const uint8_t* buf)
 {
 	memcpy(fake_nvram, buf, sizeof(VBNV_BLOCK_SIZE));
 	return VBERROR_SUCCESS;

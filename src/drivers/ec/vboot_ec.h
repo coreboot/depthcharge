@@ -19,43 +19,43 @@
 
 typedef struct VbootEcOps {
 	/* Directly correspond to normal vboot VbExEc... interfaces. */
-	VbError_t (*running_rw)(struct VbootEcOps *me, int *in_rw);
-	VbError_t (*jump_to_rw)(struct VbootEcOps *me);
-	VbError_t (*disable_jump)(struct VbootEcOps *me);
-	VbError_t (*hash_image)(struct VbootEcOps *me,
+	vb2_error_t (*running_rw)(struct VbootEcOps *me, int *in_rw);
+	vb2_error_t (*jump_to_rw)(struct VbootEcOps *me);
+	vb2_error_t (*disable_jump)(struct VbootEcOps *me);
+	vb2_error_t (*hash_image)(struct VbootEcOps *me,
 				enum VbSelectFirmware_t select,
 				const uint8_t **hash, int *hash_size);
-	VbError_t (*update_image)(struct VbootEcOps *me,
+	vb2_error_t (*update_image)(struct VbootEcOps *me,
 				  enum VbSelectFirmware_t select,
 				  const uint8_t *image, int image_size);
-	VbError_t (*protect)(struct VbootEcOps *me,
+	vb2_error_t (*protect)(struct VbootEcOps *me,
 			     enum VbSelectFirmware_t select);
-	VbError_t (*entering_mode)(struct VbootEcOps *me,
+	vb2_error_t (*entering_mode)(struct VbootEcOps *me,
 				   enum VbEcBootMode_t mode);
 
 	/* Tells the EC to reboot to RO on next AP shutdown. */
-	VbError_t (*reboot_to_ro)(struct VbootEcOps *me);
+	vb2_error_t (*reboot_to_ro)(struct VbootEcOps *me);
 
 	/* Tells the EC to reboot to switch RW slot. */
-	VbError_t (*reboot_switch_rw)(struct VbootEcOps *me);
+	vb2_error_t (*reboot_switch_rw)(struct VbootEcOps *me);
 
 	/*
 	 * Tells the EC to cut off battery.  This is expected to take
 	 * effect when the system shuts down, not immediately.
 	 */
-	VbError_t (*battery_cutoff)(struct VbootEcOps *me);
+	vb2_error_t (*battery_cutoff)(struct VbootEcOps *me);
 
 	/* Check for EC request to limit power */
-	VbError_t (*check_limit_power)(struct VbootEcOps *me, int *limit_power);
+	vb2_error_t (*check_limit_power)(struct VbootEcOps *me, int *limit_power);
 
 	/* Enable or disable power button */
-	VbError_t (*enable_power_button)(struct VbootEcOps *me, int enable);
+	vb2_error_t (*enable_power_button)(struct VbootEcOps *me, int enable);
 
 	/*
 	 * Protect bus/tunnels to TCPC ports. Optional operation, so check
 	 * before invoking it.
 	 */
-	VbError_t (*protect_tcpc_ports)(struct VbootEcOps *me);
+	vb2_error_t (*protect_tcpc_ports)(struct VbootEcOps *me);
 } VbootEcOps;
 
 #define NUM_MAX_VBOOT_ECS 2

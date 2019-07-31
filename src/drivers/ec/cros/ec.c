@@ -382,7 +382,7 @@ int cros_ec_get_next_event(struct ec_response_get_next_event *e)
 	return rv < 0 ? rv : 0;
 }
 
-static VbError_t vboot_running_rw(VbootEcOps *vbec, int *in_rw)
+static vb2_error_t vboot_running_rw(VbootEcOps *vbec, int *in_rw)
 {
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
 	struct ec_response_get_version r;
@@ -430,9 +430,9 @@ static enum ec_flash_region vboot_to_ec_region(enum VbSelectFirmware_t select)
 	}
 }
 
-static VbError_t vboot_hash_image(VbootEcOps *vbec,
-				  enum VbSelectFirmware_t select,
-				  const uint8_t **hash, int *hash_size)
+static vb2_error_t vboot_hash_image(VbootEcOps *vbec,
+				    enum VbSelectFirmware_t select,
+				    const uint8_t **hash, int *hash_size)
 {
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
 	static struct ec_response_vboot_hash resp;
@@ -559,7 +559,7 @@ static int ec_reboot(CrosEc *me, enum ec_reboot_cmd cmd, uint8_t flags)
 	return 0;
 }
 
-static VbError_t vboot_reboot_to_ro(VbootEcOps *vbec)
+static vb2_error_t vboot_reboot_to_ro(VbootEcOps *vbec)
 {
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
 
@@ -571,7 +571,7 @@ static VbError_t vboot_reboot_to_ro(VbootEcOps *vbec)
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_jump_to_rw(VbootEcOps *vbec)
+static vb2_error_t vboot_jump_to_rw(VbootEcOps *vbec)
 {
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
 
@@ -583,7 +583,7 @@ static VbError_t vboot_jump_to_rw(VbootEcOps *vbec)
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_reboot_switch_rw(VbootEcOps *vbec)
+static vb2_error_t vboot_reboot_switch_rw(VbootEcOps *vbec)
 {
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
 
@@ -595,7 +595,7 @@ static VbError_t vboot_reboot_switch_rw(VbootEcOps *vbec)
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_disable_jump(VbootEcOps *vbec)
+static vb2_error_t vboot_disable_jump(VbootEcOps *vbec)
 {
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
 
@@ -701,7 +701,8 @@ static int ec_flash_protect(CrosEc *me, uint32_t set_mask, uint32_t set_flags,
 	return 0;
 }
 
-static VbError_t vboot_entering_mode(VbootEcOps *vbec, enum VbEcBootMode_t vbm)
+static vb2_error_t vboot_entering_mode(VbootEcOps *vbec,
+				       enum VbEcBootMode_t vbm)
 {
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
 	int mode = VBOOT_MODE_NORMAL;
@@ -898,8 +899,8 @@ static int ec_efs_verify(CrosEc *me, enum ec_flash_region region)
 	return rv;
 }
 
-static VbError_t vboot_set_region_protection(CrosEc *me,
-	enum VbSelectFirmware_t select, int enable)
+static vb2_error_t vboot_set_region_protection(
+	CrosEc *me, enum VbSelectFirmware_t select, int enable)
 {
 	struct ec_response_flash_protect resp;
 	uint32_t protected_region = EC_FLASH_PROTECT_ALL_NOW;
@@ -942,13 +943,14 @@ static VbError_t vboot_set_region_protection(CrosEc *me,
 	return VBERROR_UNKNOWN;
 }
 
-static VbError_t vboot_update_image(VbootEcOps *vbec,
-	enum VbSelectFirmware_t select, const uint8_t *image, int image_size)
+static vb2_error_t vboot_update_image(VbootEcOps *vbec,
+				      enum VbSelectFirmware_t select,
+				      const uint8_t *image, int image_size)
 {
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
 	uint32_t region_offset, region_size;
 	enum ec_flash_region region = vboot_to_ec_region(select);
-	VbError_t rv = vboot_set_region_protection(me, select, 0);
+	vb2_error_t rv = vboot_set_region_protection(me, select, 0);
 	if (rv == VBERROR_EC_REBOOT_TO_RO_REQUIRED || rv != VBERROR_SUCCESS)
 		return rv;
 
@@ -979,7 +981,8 @@ static VbError_t vboot_update_image(VbootEcOps *vbec,
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_protect(VbootEcOps *vbec, enum VbSelectFirmware_t select)
+static vb2_error_t vboot_protect(VbootEcOps *vbec,
+				 enum VbSelectFirmware_t select)
 {
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
 	return vboot_set_region_protection(me, select, 1);
@@ -1032,7 +1035,7 @@ int cros_ec_battery_cutoff(uint8_t flags)
 	return 0;
 }
 
-static VbError_t vboot_battery_cutoff(VbootEcOps *vbec)
+static vb2_error_t vboot_battery_cutoff(VbootEcOps *vbec)
 {
 	if (cros_ec_battery_cutoff(EC_BATTERY_CUTOFF_FLAG_AT_SHUTDOWN) < 0)
 		return VBERROR_UNKNOWN;
@@ -1206,14 +1209,14 @@ int cros_ec_read_limit_power_request(int *limit_power)
 	return 0;
 }
 
-static VbError_t vboot_check_limit_power(VbootEcOps *vbec, int *limit_power)
+static vb2_error_t vboot_check_limit_power(VbootEcOps *vbec, int *limit_power)
 {
 	if (cros_ec_read_limit_power_request(limit_power) < 0)
 		return VBERROR_UNKNOWN;
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_enable_power_button(VbootEcOps *vbec, int enable)
+static vb2_error_t vboot_enable_power_button(VbootEcOps *vbec, int enable)
 {
 	uint32_t flags = 0;
 
@@ -1225,7 +1228,7 @@ static VbError_t vboot_enable_power_button(VbootEcOps *vbec, int enable)
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_protect_tcpc_ports(VbootEcOps *vbec)
+static vb2_error_t vboot_protect_tcpc_ports(VbootEcOps *vbec)
 {
 	CrosEc *cros_ec = container_of(vbec, CrosEc, vboot);
 

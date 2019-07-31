@@ -21,7 +21,7 @@
 
 #include "drivers/ec/cros/ec.h"
 
-VbError_t VbExNvStorageRead(uint8_t* buf)
+vb2_error_t VbExNvStorageRead(uint8_t* buf)
 {
 	if (cros_ec_read_vbnvcontext(buf))
 		return VBERROR_UNKNOWN;
@@ -29,7 +29,7 @@ VbError_t VbExNvStorageRead(uint8_t* buf)
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExNvStorageWrite(const uint8_t* buf)
+vb2_error_t VbExNvStorageWrite(const uint8_t* buf)
 {
 	if (cros_ec_write_vbnvcontext(buf))
 		return VBERROR_UNKNOWN;

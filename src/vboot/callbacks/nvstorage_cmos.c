@@ -19,7 +19,7 @@
 #include <vb2_api.h>
 #include <vboot_api.h>
 
-VbError_t VbExNvStorageRead(uint8_t* buf)
+vb2_error_t VbExNvStorageRead(uint8_t* buf)
 {
 	if (lib_sysinfo.vbnv_start == (uint32_t)(-1)) {
 		printf("%s:%d - vbnv address undefined\n",
@@ -33,7 +33,7 @@ VbError_t VbExNvStorageRead(uint8_t* buf)
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExNvStorageWrite(const uint8_t* buf)
+vb2_error_t VbExNvStorageWrite(const uint8_t* buf)
 {
 	if (lib_sysinfo.vbnv_start == (uint32_t)(-1)) {
 		printf("%s:%d - vbnv address undefined\n",

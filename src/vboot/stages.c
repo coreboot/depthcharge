@@ -150,7 +150,7 @@ int vboot_select_and_load_kernel(void)
 		return 1;
 
 	printf("Calling VbSelectAndLoadKernel().\n");
-	VbError_t res = VbSelectAndLoadKernel(ctx, shared, &kparams);
+	vb2_error_t res = VbSelectAndLoadKernel(ctx, shared, &kparams);
 
 	if (res == VBERROR_EC_REBOOT_TO_RO_REQUIRED) {
 		printf("EC Reboot requested. Doing cold reboot.\n");

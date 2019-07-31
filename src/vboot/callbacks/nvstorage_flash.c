@@ -110,7 +110,7 @@ static int flash_nvram_init(void)
 	return 0;
 }
 
-VbError_t VbExNvStorageRead(uint8_t *buf)
+vb2_error_t VbExNvStorageRead(uint8_t *buf)
 {
 	if (flash_nvram_init())
 		return VBERROR_UNKNOWN;
@@ -119,7 +119,7 @@ VbError_t VbExNvStorageRead(uint8_t *buf)
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t erase_nvram(void)
+static vb2_error_t erase_nvram(void)
 {
 	if (flash_nvram_init())
 		return VBERROR_UNKNOWN;
@@ -132,7 +132,7 @@ static VbError_t erase_nvram(void)
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExNvStorageWrite(const uint8_t *buf)
+vb2_error_t VbExNvStorageWrite(const uint8_t *buf)
 {
 	int i;
 

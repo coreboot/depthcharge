@@ -22,7 +22,7 @@
 
 typedef struct VbootAuxFwOps VbootAuxFwOps;
 struct VbootAuxFwOps {
-	VbError_t (*check_hash)(const VbootAuxFwOps *me,
+	vb2_error_t (*check_hash)(const VbootAuxFwOps *me,
 				const uint8_t *hash, size_t hash_size,
 				VbAuxFwUpdateSeverity_t *severity);
 	/*
@@ -30,7 +30,7 @@ struct VbootAuxFwOps {
 	 * requests for an EC reboot to RO on successful update, so that any
 	 * chip whose FW is updated gets reset to a clean state.
 	 */
-	VbError_t (*update_image)(const VbootAuxFwOps *me,
+	vb2_error_t (*update_image)(const VbootAuxFwOps *me,
 				  const uint8_t *image, size_t image_size);
 	const char *fw_image_name;
 	const char *fw_hash_name;
@@ -39,7 +39,7 @@ struct VbootAuxFwOps {
 #define NUM_MAX_VBOOT_AUX_FW 2
 
 extern void register_vboot_aux_fw(const VbootAuxFwOps *aux_fw);
-extern VbError_t check_vboot_aux_fw(VbAuxFwUpdateSeverity_t *severity);
-extern VbError_t update_vboot_aux_fw(void);
+extern vb2_error_t check_vboot_aux_fw(VbAuxFwUpdateSeverity_t *severity);
+extern vb2_error_t update_vboot_aux_fw(void);
 
 #endif	/* __DRIVERS_EC_VBOOT_AUX_FW_H */

@@ -54,7 +54,7 @@ uint32_t VbExIsShutdownRequested(void)
 	return shutdown_request;
 }
 
-VbError_t VbExSetVendorData(const char *vendor_data_value)
+vb2_error_t VbExSetVendorData(const char *vendor_data_value)
 {
 	FmapArea vpd_area_descriptor;
 	uint8_t *ro_vpd;

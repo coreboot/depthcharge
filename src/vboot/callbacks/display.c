@@ -94,8 +94,8 @@ void draw_fallback(uint32_t screen_type, int selected_index)
 	}
 }
 
-VbError_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale,
-			    const VbScreenData *data)
+vb2_error_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale,
+			      const VbScreenData *data)
 {
 	int ret = vboot_draw_screen(screen_type, locale, data);
 	if (ret != VBERROR_SUCCESS)
@@ -104,9 +104,9 @@ VbError_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale,
 	return ret;
 }
 
-VbError_t VbExDisplayMenu(uint32_t screen_type, uint32_t locale,
-			  uint32_t selected_index, uint32_t disabled_idx_mask,
-			  uint32_t redraw_base)
+vb2_error_t VbExDisplayMenu(uint32_t screen_type, uint32_t locale,
+			    uint32_t selected_index, uint32_t disabled_idx_mask,
+			    uint32_t redraw_base)
 {
 	int ret =  vboot_draw_ui(screen_type, locale, selected_index,
 				 disabled_idx_mask, redraw_base);
@@ -116,7 +116,7 @@ VbError_t VbExDisplayMenu(uint32_t screen_type, uint32_t locale,
 	return ret;
 }
 
-VbError_t VbExDisplayDebugInfo(const char *info_str, int full_info)
+vb2_error_t VbExDisplayDebugInfo(const char *info_str, int full_info)
 {
 	char buf[1024];
 
@@ -157,7 +157,7 @@ VbError_t VbExDisplayDebugInfo(const char *info_str, int full_info)
 	return vboot_print_string(buf);
 }
 
-VbError_t VbExGetLocalizationCount(uint32_t *count)
+vb2_error_t VbExGetLocalizationCount(uint32_t *count)
 {
 	*count = vboot_get_locale_count();
 	if (*count == 0)

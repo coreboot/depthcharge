@@ -1077,8 +1077,8 @@ static int ps8751_construct_i2c_tunnel(Ps8751 *me)
 	return ret;
 }
 
-static VbError_t ps8751_ec_tunnel_status(const VbootAuxFwOps *vbaux,
-					 int *protected)
+static vb2_error_t ps8751_ec_tunnel_status(const VbootAuxFwOps *vbaux,
+					   int *protected)
 {
 	Ps8751 *const me = container_of(vbaux, Ps8751, fw_ops);
 
@@ -1245,9 +1245,9 @@ static int ps8751_reflash(Ps8751 *me, const uint8_t *data, size_t data_size)
  * firmware rev as a trivial hash.
  */
 
-static VbError_t ps8751_check_hash(const VbootAuxFwOps *vbaux,
-				   const uint8_t *hash, size_t hash_size,
-				   VbAuxFwUpdateSeverity_t *severity)
+static vb2_error_t ps8751_check_hash(const VbootAuxFwOps *vbaux,
+				     const uint8_t *hash, size_t hash_size,
+				     VbAuxFwUpdateSeverity_t *severity)
 {
 	Ps8751 *me = container_of(vbaux, Ps8751, fw_ops);
 	enum ps8751_device_state status;
@@ -1301,11 +1301,11 @@ enable_mpu:
 	return status;
 }
 
-static VbError_t ps8751_update_image(const VbootAuxFwOps *vbaux,
-				     const uint8_t *image, size_t image_size)
+static vb2_error_t ps8751_update_image(const VbootAuxFwOps *vbaux,
+				       const uint8_t *image, size_t image_size)
 {
 	Ps8751 *me = container_of(vbaux, Ps8751, fw_ops);
-	VbError_t status = VBERROR_UNKNOWN;
+	vb2_error_t status = VBERROR_UNKNOWN;
 	int protected;
 	int timeout;
 

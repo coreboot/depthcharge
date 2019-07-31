@@ -73,9 +73,9 @@ static int vboot_find_flash_device(WilcoEc *ec, enum VbSelectFirmware_t select,
 	return 0;
 }
 
-static VbError_t vboot_hash_image(VbootEcOps *vbec,
-				  enum VbSelectFirmware_t select,
-				  const uint8_t **hash, int *hash_size)
+static vb2_error_t vboot_hash_image(VbootEcOps *vbec,
+				    enum VbSelectFirmware_t select,
+				    const uint8_t **hash, int *hash_size)
 {
 	WilcoEc *ec = container_of(vbec, WilcoEc, vboot);
 	static struct vb2_sha256_context ctx;
@@ -133,8 +133,9 @@ static VbError_t vboot_hash_image(VbootEcOps *vbec,
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_update_image(VbootEcOps *vbec,
-	enum VbSelectFirmware_t select, const uint8_t *image, int image_size)
+static vb2_error_t vboot_update_image(VbootEcOps *vbec,
+				      enum VbSelectFirmware_t select,
+				      const uint8_t *image, int image_size)
 {
 	WilcoEc *ec = container_of(vbec, WilcoEc, vboot);
 	WilcoEcFlashDevice device;
@@ -160,7 +161,7 @@ static VbError_t vboot_update_image(VbootEcOps *vbec,
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_reboot_to_ro(VbootEcOps *vbec)
+static vb2_error_t vboot_reboot_to_ro(VbootEcOps *vbec)
 {
 	WilcoEc *ec = container_of(vbec, WilcoEc, vboot);
 	if (wilco_ec_reboot(ec) < 0)
@@ -168,7 +169,7 @@ static VbError_t vboot_reboot_to_ro(VbootEcOps *vbec)
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_jump_to_rw(VbootEcOps *vbec)
+static vb2_error_t vboot_jump_to_rw(VbootEcOps *vbec)
 {
 	WilcoEc *ec = container_of(vbec, WilcoEc, vboot);
 	printf("%s: start\n", __func__);
@@ -180,44 +181,46 @@ static VbError_t vboot_jump_to_rw(VbootEcOps *vbec)
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_reboot_switch_rw(VbootEcOps *vbec)
+static vb2_error_t vboot_reboot_switch_rw(VbootEcOps *vbec)
 {
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_disable_jump(VbootEcOps *vbec)
+static vb2_error_t vboot_disable_jump(VbootEcOps *vbec)
 {
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_entering_mode(VbootEcOps *vbec, enum VbEcBootMode_t vbm)
+static vb2_error_t vboot_entering_mode(VbootEcOps *vbec,
+				       enum VbEcBootMode_t vbm)
 {
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_protect(VbootEcOps *vbec, enum VbSelectFirmware_t select)
+static vb2_error_t vboot_protect(VbootEcOps *vbec,
+				 enum VbSelectFirmware_t select)
 {
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_running_rw(VbootEcOps *vbec, int *in_rw)
+static vb2_error_t vboot_running_rw(VbootEcOps *vbec, int *in_rw)
 {
 	*in_rw = 0;
 	return VBERROR_SUCCESS;
 };
 
-static VbError_t vboot_battery_cutoff(VbootEcOps *vbec)
+static vb2_error_t vboot_battery_cutoff(VbootEcOps *vbec)
 {
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_check_limit_power(VbootEcOps *vbec, int *limit_power)
+static vb2_error_t vboot_check_limit_power(VbootEcOps *vbec, int *limit_power)
 {
 	*limit_power = 0;
 	return VBERROR_SUCCESS;
 }
 
-static VbError_t vboot_enable_power_button(VbootEcOps *vbec, int enable)
+static vb2_error_t vboot_enable_power_button(VbootEcOps *vbec, int enable)
 {
 	WilcoEc *ec = container_of(vbec, WilcoEc, vboot);
 	if (wilco_ec_power_button(ec, enable) < 0)

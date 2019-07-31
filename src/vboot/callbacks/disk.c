@@ -37,8 +37,8 @@ static void setup_vb_disk_info(VbDiskInfo *disk, BlockDev *bdev)
 		disk->flags |= VB_DISK_FLAG_EXTERNAL_GPT;
 }
 
-VbError_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
-			  uint32_t disk_flags)
+vb2_error_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
+			    uint32_t disk_flags)
 {
 	*count = 0;
 
@@ -71,15 +71,15 @@ VbError_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExDiskFreeInfo(VbDiskInfo *infos,
+vb2_error_t VbExDiskFreeInfo(VbDiskInfo *infos,
 			   VbExDiskHandle_t preserve_handle)
 {
 	free(infos);
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExDiskRead(VbExDiskHandle_t handle, uint64_t lba_start,
-		       uint64_t lba_count, void *buffer)
+vb2_error_t VbExDiskRead(VbExDiskHandle_t handle, uint64_t lba_start,
+			 uint64_t lba_count, void *buffer)
 {
 	BlockDevOps *ops = &((BlockDev *)handle)->ops;
 	if (ops->read(ops, lba_start, lba_count, buffer) != lba_count) {
@@ -89,8 +89,8 @@ VbError_t VbExDiskRead(VbExDiskHandle_t handle, uint64_t lba_start,
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExDiskWrite(VbExDiskHandle_t handle, uint64_t lba_start,
-			uint64_t lba_count, const void *buffer)
+vb2_error_t VbExDiskWrite(VbExDiskHandle_t handle, uint64_t lba_start,
+			  uint64_t lba_count, const void *buffer)
 {
 	BlockDevOps *ops = &((BlockDev *)handle)->ops;
 	if (ops->write(ops, lba_start, lba_count, buffer) != lba_count) {
@@ -100,8 +100,8 @@ VbError_t VbExDiskWrite(VbExDiskHandle_t handle, uint64_t lba_start,
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExStreamOpen(VbExDiskHandle_t handle, uint64_t lba_start,
-			 uint64_t lba_count, VbExStream_t *stream_ptr)
+vb2_error_t VbExStreamOpen(VbExDiskHandle_t handle, uint64_t lba_start,
+			   uint64_t lba_count, VbExStream_t *stream_ptr)
 {
 	BlockDevOps *ops = &((BlockDev *)handle)->ops;
 	*stream_ptr = (VbExStream_t)ops->new_stream(ops, lba_start, lba_count);
@@ -112,7 +112,7 @@ VbError_t VbExStreamOpen(VbExDiskHandle_t handle, uint64_t lba_start,
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExStreamRead(VbExStream_t stream, uint32_t bytes, void *buffer)
+vb2_error_t VbExStreamRead(VbExStream_t stream, uint32_t bytes, void *buffer)
 {
 	StreamOps *dev = (StreamOps *)stream;
 	int ret = dev->read(dev, bytes, buffer);

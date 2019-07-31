@@ -48,7 +48,7 @@ int vboot_draw_ui(uint32_t screen, uint32_t locale,
  *
  * @str:	String to print
  */
-VbError_t vboot_print_string(char *str);
+vb2_error_t vboot_print_string(char *str);
 
 /**
  * Return number of supported locales

@@ -22,17 +22,17 @@
 
 #include "drivers/tpm/tpm.h"
 
-VbError_t VbExTpmInit(void)
+vb2_error_t VbExTpmInit(void)
 {
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExTpmClose(void)
+vb2_error_t VbExTpmClose(void)
 {
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExTpmOpen(void)
+vb2_error_t VbExTpmOpen(void)
 {
 	return VBERROR_SUCCESS;
 }
