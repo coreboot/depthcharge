@@ -315,7 +315,7 @@ static vb2_error_t get_image_size_locale(const char *image_name,
 	return get_image_size(locale_data.archive, image_name, width, height);
 }
 
-static int draw_icon(const char *image_name)
+static vb2_error_t draw_icon(const char *image_name)
 {
 	return draw_image(image_name,
 			  VB_SCALE_HALF, VB_SCALE_HALF,
@@ -344,7 +344,8 @@ static const char *get_char_image_file(int height, const char c, int32_t *width)
 	return filename;
 }
 
-static int get_text_width(int32_t height, const char *text, int32_t *width)
+static vb2_error_t get_text_width(int32_t height, const char *text,
+				  int32_t *width)
 {
 	const char *char_filename;
 	*width = 0;
@@ -359,7 +360,7 @@ static int get_text_width(int32_t height, const char *text, int32_t *width)
 	return VBERROR_SUCCESS;
 }
 
-static int draw_text(const char *text, int32_t x, int32_t y,
+static vb2_error_t draw_text(const char *text, int32_t x, int32_t y,
 		     int32_t height, uint32_t pivot)
 {
 	int32_t char_width;
@@ -1418,8 +1419,8 @@ static vb2_error_t vboot_init_screen(void)
 	return VBERROR_SUCCESS;
 }
 
-int vboot_draw_screen(uint32_t screen, uint32_t locale,
-		      const VbScreenData *data)
+vb2_error_t vboot_draw_screen(uint32_t screen, uint32_t locale,
+			      const VbScreenData *data)
 {
 
 	printf("%s: screen=0x%x locale=%d\n", __func__, screen, locale);
@@ -1442,9 +1443,9 @@ int vboot_draw_screen(uint32_t screen, uint32_t locale,
 	return VBERROR_SUCCESS;
 }
 
-int vboot_draw_ui(uint32_t screen, uint32_t locale,
-		  uint32_t selected_index, uint32_t disabled_idx_mask,
-		  uint32_t redraw_base)
+vb2_error_t vboot_draw_ui(uint32_t screen, uint32_t locale,
+			  uint32_t selected_index, uint32_t disabled_idx_mask,
+			  uint32_t redraw_base)
 {
 	printf("%s: screen=0x%x locale=%d, selected_index=%d,"
 	       "disabled_idx_mask=0x%x\n",

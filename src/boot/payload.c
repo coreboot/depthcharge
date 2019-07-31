@@ -182,7 +182,7 @@ int payload_run(const char *payload_name, int verify)
 	if (verify) {
 		uint8_t real_hash[VB2_SHA256_DIGEST_SIZE];
 		uint8_t *expected_hash;
-		int rv;
+		vb2_error_t rv;
 
 		/* Calculate hash of payload. */
 		rv = vb2_digest_buffer((const uint8_t *)payload,
@@ -204,9 +204,9 @@ int payload_run(const char *payload_name, int verify)
 			return 1;
 		}
 
-		rv = memcmp(real_hash, expected_hash, sizeof(real_hash));
+		ret = memcmp(real_hash, expected_hash, sizeof(real_hash));
 		free(expected_hash);
-		if (rv != 0) {
+		if (ret != 0) {
 			printf("%s payload hash check failed!\n", payload_name);
 			free(payload);
 			return 1;

@@ -39,7 +39,7 @@ uint32_t VbExGetAltFwIdxMask(void)
 	return mask;
 }
 
-int VbExLegacy(enum VbAltFwIndex_t altfw_num)
+vb2_error_t VbExLegacy(enum VbAltFwIndex_t altfw_num)
 {
 	ListNode *head;
 

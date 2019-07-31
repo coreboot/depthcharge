@@ -36,11 +36,11 @@ static const struct rgb_color color_grey	= { 0x88, 0x88, 0x88 };
 static const struct rgb_color color_white	= { 0xff, 0xff, 0xff };
 static const struct rgb_color color_black	= { 0x00, 0x00, 0x00 };
 
-int vboot_draw_screen(uint32_t screen, uint32_t locale,
-		      const VbScreenData *data);
-int vboot_draw_ui(uint32_t screen, uint32_t locale,
-		  uint32_t selected_index, uint32_t disabled_idx_mask,
-		  uint32_t redraw_base);
+vb2_error_t vboot_draw_screen(uint32_t screen, uint32_t locale,
+			      const VbScreenData *data);
+vb2_error_t vboot_draw_ui(uint32_t screen, uint32_t locale,
+			  uint32_t selected_index, uint32_t disabled_idx_mask,
+			  uint32_t redraw_base);
 
 /**
  * Print a string on the console using the standard font. The string buffer is

@@ -50,7 +50,7 @@ uint32_t VbExTpmSendReceive(const uint8_t *request, uint32_t request_length,
 	return TPM_SUCCESS;
 }
 
-int vb2ex_tpm_set_mode(enum vb2_tpm_mode mode_val)
+vb2_error_t vb2ex_tpm_set_mode(enum vb2_tpm_mode mode_val)
 {
 	/*
 	 * Safely cast to uint8_t, since we know enum vb2_tpm_mode values
