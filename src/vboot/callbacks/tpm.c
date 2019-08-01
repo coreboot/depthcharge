@@ -37,17 +37,17 @@ VbError_t VbExTpmOpen(void)
 	return VBERROR_SUCCESS;
 }
 
-VbError_t VbExTpmSendReceive(const uint8_t *request, uint32_t request_length,
-			     uint8_t *response, uint32_t *response_length)
+uint32_t VbExTpmSendReceive(const uint8_t *request, uint32_t request_length,
+			    uint8_t *response, uint32_t *response_length)
 {
 	size_t len = *response_length;
 	if (tpm_xmit(request, request_length, response, &len))
-		return VBERROR_UNKNOWN;
+		return TPM_E_COMMUNICATION_ERROR;
 	/* check 64->32bit overflow and (re)check response buffer overflow */
 	if (len > *response_length)
-		return VBERROR_UNKNOWN;
+		return TPM_E_RESPONSE_TOO_LARGE;
 	*response_length = len;
-	return VBERROR_SUCCESS;
+	return TPM_SUCCESS;
 }
 
 int vb2ex_tpm_set_mode(enum vb2_tpm_mode mode_val)
