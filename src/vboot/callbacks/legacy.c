@@ -45,7 +45,8 @@ vb2_error_t VbExLegacy(enum VbAltFwIndex_t altfw_num)
 
 	if (altfw_num == VB_ALTFW_DIAGNOSTIC) {
 		printf("Running diagnostic bootloader\n");
-		return payload_run("altfw/diag", 1);
+		return payload_run("altfw/diag", 1) ?
+			VB2_ERROR_UNKNOWN : VB2_SUCCESS;
 	}
 
 	/* If we don't have a particular one to boot, use 0. */
@@ -57,7 +58,8 @@ vb2_error_t VbExLegacy(enum VbAltFwIndex_t altfw_num)
 			if (node->seqnum == altfw_num) {
 				printf("Running bootloader '%s: %s'\n",
 				       node->name, node->desc);
-				return payload_run(node->filename, 0);
+				return payload_run(node->filename, 0) ?
+					VB2_ERROR_UNKNOWN : VB2_SUCCESS;
 			}
 		}
 	}
@@ -71,5 +73,5 @@ vb2_error_t VbExLegacy(enum VbAltFwIndex_t altfw_num)
 		printf("%s: Could not find default legacy payload\n", __func__);
 	printf("%s: Could not find bootloader #%d\n", __func__, altfw_num);
 
-	return -1;
+	return VB2_ERROR_UNKNOWN;
 }
