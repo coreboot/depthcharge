@@ -113,6 +113,8 @@ static TiLp5562Program solid_000000_program = {
  23 27 0000             gotostart
 */
 
+/* VB_SCREEN_DEVELOPER_WARNING, Developer mode indication */
+/* Flashing Purple, (98,0,248) for 0.3sec, (0,0,0) for 1.1sec */
 static uint8_t blink_dev1_b_text[] = {
 	0xE2,  0x00,  0x40,   234,  0xE2,  0x00,  0x40,     0,
 	0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
@@ -151,6 +153,8 @@ static TiLp5562Program blink_dev1_program = {
 	}
 };
 
+/* VB_SCREEN_OS_BROKEN, Manual Recovery Required */
+/* Flashing Pink, (50,50,255) for 0.3sec, (0,0,0) for 1.1sec */
 static uint8_t blink_rcv_broken1_b_text[] = {
 	0xE2,  0x00,  0x40,    50,  0xE2,  0x00,  0x40,     0,
 	0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
@@ -189,13 +193,15 @@ static TiLp5562Program blink_rcv_broken1_program = {
 	}
 };
 
+/* VB_SCREEN_RECOVERY_INSERT, Waiting for USB stick */
+/* Flashing Red, (0,0,255) for 0.3sec, (0,0,0) for 1.1sec */
 static uint8_t blink_rcv_insert1_b_text[] = {
 	0xE2,  0x00,  0x40,     0,  0xE2,  0x00,  0x40,     0,
 	0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
 };
 
 static uint8_t blink_rcv_insert1_g_text[] = {
-	0xE2,  0x00,  0x40,   204,  0xE2,  0x00,  0x40,     0,
+	0xE2,  0x00,  0x40,     0,  0xE2,  0x00,  0x40,     0,
 	0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
 };
 
@@ -227,6 +233,8 @@ static TiLp5562Program blink_rcv_insert1_program = {
 	}
 };
 
+/* VB_SCREEN_RECOVERY_TO_DEV, Switching from REC to DEV mode */
+/* Flashing Purple, (98,0,248) for 0.3sec, (0,0,0) for 1.1sec */
 static uint8_t blink_rcv2dev1_b_text[] = {
 	0xE2,  0x00,  0x40,   234,  0xE2,  0x00,  0x40,     0,
 	0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
@@ -265,20 +273,21 @@ static TiLp5562Program blink_rcv2dev1_program = {
 	}
 };
 
-
+/* VB_SCREEN_RECOVERY_NO_GOOD, Bad USB stick */
+/* Flashing Red/Yellow, (255,0,0) for 0.6sec, (255,204,0) for 0.6sec */
 static uint8_t blink_no_good1_b_text[] = {
 	0xE2,  0x00,  0x40,     0,  0xE2,  0x00,  0x40,     0,
-	0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
+	0x00,  0x00,
 };
 
 static uint8_t blink_no_good1_g_text[] = {
-	0xE2,  0x00,  0x40,     0,  0xE2,  0x00,  0x40,     0,
-	0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00,  0x00
+	0xE2,  0x00,  0x40,     0,  0xE2,  0x00,  0x40,   204,
+	0x00,  0x00,
 };
 
 static uint8_t blink_no_good1_r_text[] = {
-	0xE0,  0x06,  0x40,   255,  0x53,  0x00,  0xE0,  0x06,
-	0x40,     0,  0x63,  0x00,  0x63,  0x00,  0x00,  0x00
+	0xE0,  0x06,  0x40,   255,  0x66,  0x00,  0xE0,  0x06,
+	0x40,   255,  0x66,  0x00,  0x00,  0x00,
 };
 
 static TiLp5562Program blink_no_good1_program = {
@@ -356,12 +365,6 @@ const struct lp5562_calibration_code_map mistral_code_map_blink[] = {
 const struct lp5562_calibration_data mistral_calibration_database[] = {
 	{
 		&blink_rcv_insert1_program,
-		1, /* Yellow */
-		100, /* 100% brightness */
-		mistral_code_map_blink,
-	},
-	{
-		&blink_no_good1_program,
 		2, /* Red */
 		100, /* 100% brightness */
 		mistral_code_map_blink,
