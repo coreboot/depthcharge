@@ -217,7 +217,6 @@ static int board_setup(void)
 	SpiController *spi_tpm = new_spi(4, 0);
 	SpiTpm *tpm = new_tpm_spi(&spi_tpm->ops, NULL);
 	tpm_set_ops(&tpm->ops);
-	flag_replace(FLAG_PHYS_PRESENCE, &new_cr50_rec_switch(&tpm->ops)->ops);
 #endif
 
 	/* eMMC support */
