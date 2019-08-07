@@ -62,6 +62,10 @@ config DRIVER_SOUND_PCAT_BEEP
 	bool "Legacy PC AT beep driver"
 	default n
 
+config DRIVER_SOUND_RT1011
+	bool "RT1011 codec driver"
+	default n
+
 config DRIVER_SOUND_RT5645
 	bool "RT5645 codec driver"
 	default n
