@@ -20,6 +20,10 @@
 #include "drivers/gpio/gpio.h"
 #include "vboot/util/flag.h"
 #include "boot/fit.h"
+#include "drivers/storage/sdhci_msm.h"
+
+#define SDC1_HC_BASE          0x7C4000
+#define SDC1_TLMM_CFG_ADDR    0x3D7A000
 
 static int board_setup(void)
 {
@@ -27,6 +31,16 @@ static int board_setup(void)
 	flag_replace(FLAG_LIDSW, new_gpio_high());
 	flag_replace(FLAG_WPSW,  new_gpio_high());
 	flag_replace(FLAG_PWRSW, new_gpio_low());
+
+	/*eMMC card support */
+	SdhciHost *emmc = new_sdhci_msm_host(SDC1_HC_BASE,
+			SDHCI_PLATFORM_EMMC_1V8_POWER |
+			SDHCI_PLATFORM_NO_EMMC_HS200,
+			100*MHz, SDC1_TLMM_CFG_ADDR,
+			NULL);
+
+	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+			&fixed_block_dev_controllers);
 
 	return 0;
 }
