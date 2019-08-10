@@ -16,6 +16,7 @@ depthcharge-$(CONFIG_DRIVER_BUS_SPI_EXYNOS5) += exynos5.c
 depthcharge-$(CONFIG_DRIVER_BUS_SPI_INTEL_GSPI) += intel_gspi.c
 depthcharge-$(CONFIG_DRIVER_BUS_SPI_IPQ806X) += ipq806x.c
 depthcharge-$(CONFIG_DRIVER_BUS_SPI_IPQ40XX) += ipq40xx.c
+depthcharge-$(CONFIG_DRIVER_BUS_QSPI_SC7180) += qspi_sc7180.c
 depthcharge-$(CONFIG_DRIVER_BUS_SPI_QCS405) += qcs405.c
 depthcharge-$(CONFIG_DRIVER_BUS_SPI_ROCKCHIP) += rockchip.c
 depthcharge-$(CONFIG_DRIVER_BUS_SPI_TEGRA) += tegra.c

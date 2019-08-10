@@ -25,6 +25,8 @@
 #include "drivers/ec/cros/spi.h"
 #include "drivers/ec/ps8751/ps8751.h"
 #include "drivers/power/psci.h"
+#include "drivers/flash/spi.h"
+#include "drivers/bus/spi/qspi_sc7180.h"
 #include "drivers/storage/sdhci_msm.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/gpio/sc7180.h"
@@ -112,6 +114,11 @@ static int board_setup(void)
 		register_vboot_aux_fw(&new_ps8805(tcpc0_tunnel, 0)->fw_ops);
 		register_vboot_aux_fw(&new_ps8805(tcpc1_tunnel, 1)->fw_ops);
 	}
+
+	/* SPI-NOR Flash driver */
+	Sc7180Qspi *spi_flash = new_sc7180_qspi(0x088DC000);
+	SpiFlash *flash = new_spi_flash(&spi_flash->ops);
+	flash_set_ops(&flash->ops);
 
 	return 0;
 }
