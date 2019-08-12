@@ -9,3 +9,6 @@
 *.swp
 build/
 vboot_reference
+
+# Development friendly files
+tags
