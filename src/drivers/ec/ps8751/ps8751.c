@@ -1271,10 +1271,25 @@ static vb2_error_t ps8751_check_hash(const VbootAuxFwOps *vbaux,
 	}
 
 	me->blob_hw_version = hash[0];
-	if (hash[1] == me->chip.fw_rev)
+	if (hash[1] == me->chip.fw_rev) {
 		*severity = VB_AUX_FW_NO_UPDATE;
-	else
-		*severity = VB_AUX_FW_SLOW_UPDATE;
+		return VB2_SUCCESS;
+	}
+	*severity = VB_AUX_FW_SLOW_UPDATE;
+
+	switch (ps8751_ec_pd_suspend(me)) {
+	case -EC_RES_BUSY:
+		printf("ps8751.%d: pd suspend busy\n", me->ec_pd_id);
+		*severity = VB_AUX_FW_NO_UPDATE;
+		break;
+	case EC_RES_SUCCESS:
+		break;
+	default:
+		printf("ps8751.%d: pd suspend failed\n", me->ec_pd_id);
+		*severity = VB_AUX_FW_NO_DEVICE;
+		return VB2_ERROR_UNKNOWN;
+	}
+
 	return VB2_SUCCESS;
 }
 
@@ -1324,16 +1339,6 @@ static vb2_error_t ps8751_update_image(const VbootAuxFwOps *vbaux,
 
 	if (image == NULL || image_size == 0)
 		return VB2_ERROR_INVALID_PARAMETER;
-
-	switch (ps8751_ec_pd_suspend(me)) {
-	case -EC_RES_BUSY:
-		return VBERROR_PERIPHERAL_BUSY;
-	case EC_RES_SUCCESS:
-		/* Continue onward */
-		break;
-	default:
-		return VB2_ERROR_UNKNOWN;
-	}
 
 	if (ps8751_wake_i2c(me) != 0)
 		goto pd_resume;

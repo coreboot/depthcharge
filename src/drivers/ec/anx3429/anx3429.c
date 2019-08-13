@@ -930,10 +930,26 @@ static vb2_error_t anx3429_check_hash(const VbootAuxFwOps *vbaux,
 		if (ANX3429_DEBUG >= 2 && !me->debug_updated) {
 			debug("forcing VB_AUX_FW_SLOW_UPDATE\n");
 			*severity = VB_AUX_FW_SLOW_UPDATE;
-		} else
+		} else {
 			*severity = VB_AUX_FW_NO_UPDATE;
-	} else
+			return VB2_SUCCESS;
+		}
+	} else {
 		*severity = VB_AUX_FW_SLOW_UPDATE;
+	}
+
+	switch (anx3429_ec_pd_suspend(me)) {
+	case -EC_RES_BUSY:
+		printf("anx3429.%d: pd suspend busy\n", me->ec_pd_id);
+		*severity = VB_AUX_FW_NO_UPDATE;
+		break;
+	case EC_RES_SUCCESS:
+		break;
+	default:
+		printf("anx3429.%d: pd suspend failed\n", me->ec_pd_id);
+		*severity = VB_AUX_FW_NO_DEVICE;
+		return VB2_ERROR_UNKNOWN;
+	}
 
 	return VB2_SUCCESS;
 }
@@ -1144,17 +1160,6 @@ static vb2_error_t anx3429_update_image(const VbootAuxFwOps *vbaux,
 	if (protected) {
 		debug("already protected\n");
 		return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
-	}
-
-	switch (anx3429_ec_pd_suspend(me)) {
-	case -EC_RES_BUSY:
-		return VBERROR_PERIPHERAL_BUSY;
-	case EC_RES_SUCCESS:
-		/* Continue onward */
-		break;
-	default:
-		debug("pd suspend failed\n");
-		return VB2_ERROR_UNKNOWN;
 	}
 
 	if (anx3429_ec_pd_powerup(me) != 0) {
