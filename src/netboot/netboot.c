@@ -211,7 +211,8 @@ int netboot_entry(void)
 	video_console_init();
 	input_init();
 
-	printf("\n\nStarting netboot on " CONFIG_BOARD "...\n");
+	const char *mb_part_string = cb_mb_part_string(lib_sysinfo.mainboard);
+	printf("\n\nStarting netboot on %s...\n", mb_part_string);
 
 	// Set up time keeping.
 	timestamp_init();

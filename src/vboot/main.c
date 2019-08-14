@@ -44,7 +44,8 @@ int main(void)
 	cbmem_console_init();
 	input_init();
 
-	printf("\n\nStarting depthcharge on " CONFIG_BOARD "...\n");
+	const char *mb_part_string = cb_mb_part_string(lib_sysinfo.mainboard);
+	printf("\n\nStarting depthcharge on %s...\n", mb_part_string);
 
 	// Set up time keeping.
 	timestamp_init();
