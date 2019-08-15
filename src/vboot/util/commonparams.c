@@ -141,12 +141,12 @@ static int vboot_fill_handoff(struct vboot_handoff *vboot_handoff,
 		vb_sd->flags |= VBSD_FWB_TRIED; */
 
 	/* copy kernel subkey if it's found */
-	if (vb2_sd->workbuf_preamble_size) {
+	if (vb2_sd->preamble_size) {
 		struct vb2_fw_preamble *fp;
 		uintptr_t dst, src;
 		printf("vboot_handoff: copying FW preamble\n");
 		fp = (struct vb2_fw_preamble *)((uintptr_t)vb2_sd +
-				vb2_sd->workbuf_preamble_offset);
+				vb2_sd->preamble_offset);
 		src = (uintptr_t)&fp->kernel_subkey +
 				fp->kernel_subkey.key_offset;
 		dst = (uintptr_t)vb_sd + sizeof(VbSharedDataHeader);
