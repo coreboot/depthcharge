@@ -17,7 +17,6 @@ depthcharge-$(CONFIG_DRIVER_BUS_I2C_CYGNUS) += cygnus.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_DESIGNWARE) += designware.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_DESIGNWARE_PCI) += designware_pci.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_EXYNOS5_USI) += exynos5_usi.c
-depthcharge-$(CONFIG_DRIVER_BUS_I2C_IMGTEC) += imgtec_i2c.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_IPQ806X) += ipq806x_gsbi.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_IPQ806X) += ipq806x_i2c.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_IPQ806X) += ipq806x_qup.c

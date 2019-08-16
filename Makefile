@@ -82,15 +82,10 @@ ARCH_DIR = arm
 else
 ARCH_DIR = $(ARCH)
 endif
-ifeq ($(CONFIG_ARCH_MIPS),y)
-ARCH = mips
-ARCH_DIR = mips
-endif
 
 ARCH_TO_TOOLCHAIN_x86    := i386
 ARCH_TO_TOOLCHAIN_arm    := arm
 ARCH_TO_TOOLCHAIN_arm64  := arm64
-ARCH_TO_TOOLCHAIN_mips   := mipsel
 
 toolchain := $(ARCH_TO_TOOLCHAIN_$(ARCH))
 
@@ -98,7 +93,6 @@ toolchain := $(ARCH_TO_TOOLCHAIN_$(ARCH))
 # in some places. If the names above don't work, use another set.
 ifeq ($(CC_$(toolchain)),)
 new_toolchain_name_i386 := x86_32
-new_toolchain_name_mipsel := mips
 
 toolchain := $(new_toolchain_name_$(toolchain))
 endif

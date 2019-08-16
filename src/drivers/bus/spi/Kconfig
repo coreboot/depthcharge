@@ -18,10 +18,6 @@ config DRIVER_BUS_SPI_EXYNOS5
 	bool "Exynos5 SPI driver"
 	default n
 
-config DRIVER_BUS_SPI_IMGTEC
-	bool "IMGTEC SPFI driver"
-	default n
-
 config DRIVER_BUS_SPI_INTEL_GSPI
 	bool "Intel GSPI driver"
 	default n

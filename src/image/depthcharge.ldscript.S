@@ -44,14 +44,6 @@ SECTIONS
 	/* The main portion of depthcharge. */
 	. = CONFIG_BASE_ADDRESS;
 
-#if CONFIG(ARCH_MIPS)
-	. = ALIGN(0x1000);
-	.exception : {
-		*exception_asm.libc.o(.text)
-		*exception_asm.libc.o(.text.*)
-	}
-#endif
-
 	. = ALIGN(16);
 	_start = .;
 
@@ -69,11 +61,6 @@ SECTIONS
 	.data : {
 		*(.data)
 		*(.data.*)
-
-#if CONFIG(ARCH_MIPS)
-		. = ALIGN(16);
-		_gp = . + 0x7ff0;
-#endif
 
 		_init_funcs_start = .;
 		KEEP(*(.init_funcs))

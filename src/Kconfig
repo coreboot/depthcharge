@@ -24,10 +24,6 @@ config ARCH_ARM
 	bool "ARM"
 	select KERNEL_FIT
 
-config ARCH_MIPS
-	bool "MIPS"
-	select KERNEL_FIT
-
 endchoice
 
 choice
