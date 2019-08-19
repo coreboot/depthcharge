@@ -17,7 +17,15 @@
 
 #include <stdint.h>
 
-#include "drivers/gpio/gpio.h"
+enum {
+	MAX_GPIO_REG_BITS = 32,
+	MAX_EINT_REG_BITS = 32,
+};
+
+enum {
+	GPIO_BASE = 0x10005000,
+	EINT_BASE = 0x1000B000,
+};
 
 enum {
 	PAD_EINT0 = 0,
@@ -200,15 +208,8 @@ enum {
 	PAD_PERIPHERAL_EN14 = 177,
 	PAD_PERIPHERAL_EN10 = 178,
 	PAD_PERIPHERAL_EN11 = 179,
-	GPIO_MAX,
+	GPIO_NUM,
 };
-
-typedef struct {
-	uint32_t val;
-	uint32_t set;
-	uint32_t rst;
-	uint32_t align;
-} GpioValRegs;
 
 typedef struct {
 	GpioValRegs dir[6];
@@ -219,17 +220,8 @@ typedef struct {
 } GpioRegs;
 
 typedef struct {
-	GpioOps ops;
-	u32 pin_num;
-} MtGpio;
-
-typedef struct {
 	uint32_t sta[16];
 	uint32_t ack[16];
 } EintRegs;
 
-GpioOps *new_mtk_gpio_input(u32 pin);
-GpioOps *new_mtk_gpio_output(u32 pin);
-GpioOps *new_mtk_eint(u32 pin);
-
-#endif
+#endif /* __DRIVERS_GPIO_MT8183_H__ */

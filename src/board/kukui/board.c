@@ -25,7 +25,7 @@
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/cros/spi.h"
 #include "drivers/flash/spi.h"
-#include "drivers/gpio/mt8183.h"
+#include "drivers/gpio/mtk_gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
 #include "drivers/sound/i2s.h"
