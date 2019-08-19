@@ -15,6 +15,8 @@
  * GNU General Public License for more details.
  */
 
+#define NEED_VB20_INTERNALS  /* Poking around inside NV storage fields */
+
 #include <libpayload.h>
 #include <vb2_api.h>
 #include <vboot_api.h>
@@ -1150,7 +1152,7 @@ static fb_ret_type fb_boot(struct fb_cmd *cmd)
 	kernel_size = image_size - kernel_size;
 
 	/* Set legacy vboot1 VbSharedDataHeader. */
-	if (find_common_params(&shared, &size))
+	if (find_common_params((void **)&shared, &size))
 		return 1;
 
 	if (VbVerifyMemoryBootImage(ctx, shared, &kparams, kernel,
@@ -1256,7 +1258,7 @@ static fb_ret_type fb_battery_cutoff(struct fb_cmd *cmd)
 }
 
 
-static int fb_user_confirmation()
+static int fb_user_confirmation(void)
 {
 	/* If GBB is set, we don't need to get user confirmation. */
 	if (fb_check_gbb_override())
@@ -1360,13 +1362,19 @@ static fb_ret_type fb_unlock(struct fb_cmd *cmd)
 		return FB_SUCCESS;
 	}
 
-	if (VbUnlockDevice() != VB2_SUCCESS) {
+	FB_LOG("Unlock device functionality disabled\n");
+	fb_add_string(&cmd->output,
+		      "Unlock device functionality disabled", NULL);
+	return FB_SUCCESS;
+#if 0
+	if (VbUnlockDevice(NULL) != VB2_SUCCESS) {
 		fb_add_string(&cmd->output, "Unlock device failed", NULL);
 		return FB_SUCCESS;
 	}
 
 	cmd->type = FB_OKAY;
 	return FB_REBOOT;
+#endif
 }
 
 static fb_ret_type fb_get_unlock_ability(struct fb_cmd *cmd)
