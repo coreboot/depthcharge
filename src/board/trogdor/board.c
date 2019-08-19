@@ -21,6 +21,7 @@
 #include "vboot/util/flag.h"
 #include "boot/fit.h"
 #include "drivers/storage/sdhci_msm.h"
+#include "drivers/bus/usb/usb.h"
 
 #define SDC1_HC_BASE          0x7C4000
 #define SDC1_TLMM_CFG_ADDR    0x3D7A000
@@ -31,6 +32,10 @@ static int board_setup(void)
 	flag_replace(FLAG_LIDSW, new_gpio_high());
 	flag_replace(FLAG_WPSW,  new_gpio_high());
 	flag_replace(FLAG_PWRSW, new_gpio_low());
+
+	/* Support USB3.0 XHCI controller in firmware. */
+	UsbHostController *usb_host = new_usb_hc(XHCI, 0xa600000);
+	list_insert_after(&usb_host->list_node, &usb_host_controllers);
 
 	/*eMMC card support */
 	SdhciHost *emmc = new_sdhci_msm_host(SDC1_HC_BASE,
