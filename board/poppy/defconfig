@@ -2,7 +2,7 @@
 CONFIG_ARCH_X86=y
 
 # Board
-CONFIG_BOARD="poppy"
+CONFIG_BOARD_DIR="poppy"
 
 # Image
 CONFIG_HEAP_SIZE=0x00600000

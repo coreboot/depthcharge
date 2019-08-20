@@ -2,7 +2,7 @@
 CONFIG_ARCH_ARM=y
 
 # Board
-CONFIG_BOARD="storm"
+CONFIG_BOARD_DIR="storm"
 
 # Documentation/arm/Booting says:
 #  The kernel should be placed in the first 128MiB of RAM. It is recommended

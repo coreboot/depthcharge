@@ -2,7 +2,7 @@
 CONFIG_ARCH_ARM=y
 
 # Board
-CONFIG_BOARD="peach_pit"
+CONFIG_BOARD_DIR="peach_pit"
 
 # Image
 CONFIG_BASE_ADDRESS=0x40000000

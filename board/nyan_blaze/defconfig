@@ -2,7 +2,7 @@
 CONFIG_ARCH_ARM=y
 
 # Board
-CONFIG_BOARD="nyan_blaze"
+CONFIG_BOARD_DIR="nyan_blaze"
 
 # Image
 CONFIG_BASE_ADDRESS=0xa0000000

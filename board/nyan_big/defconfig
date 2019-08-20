@@ -2,7 +2,7 @@
 CONFIG_ARCH_ARM=y
 
 # Board
-CONFIG_BOARD="nyan_big"
+CONFIG_BOARD_DIR="nyan_big"
 
 # Image
 CONFIG_BASE_ADDRESS=0xa0000000

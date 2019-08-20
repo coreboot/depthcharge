@@ -2,7 +2,6 @@
 CONFIG_ARCH_ARM=y
 
 # Board
-CONFIG_BOARD="veyron_speedy"
 CONFIG_BOARD_DIR="veyron"
 
 # Image

@@ -12,12 +12,8 @@
 
 menu "Board"
 
-config BOARD
-	string "Board name"
-
 config BOARD_DIR
 	string "Board directory"
-	default BOARD
 
 if BOARD_DIR = "auron"
 source src/board/auron/Kconfig

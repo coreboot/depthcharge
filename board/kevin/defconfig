@@ -3,7 +3,6 @@ CONFIG_ARCH_ARM=y
 CONFIG_ARCH_ARM_V8=y
 
 # Board
-CONFIG_BOARD="kevin"
 CONFIG_BOARD_DIR="gru"
 
 # Image
