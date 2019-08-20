@@ -533,8 +533,9 @@ enum host_event_code {
 	/* EC encountered a panic, triggering a reset */
 	EC_HOST_EVENT_PANIC = 24,
 
-	/* Keyboard fastboot combo has been pressed */
-	EC_HOST_EVENT_KEYBOARD_FASTBOOT = 25,
+	/* Keyboard fastboot combo has been pressed.
+	   Deprecated; see chromium:995172 */
+	EC_HOST_EVENT_DEPRECATED_KEYBOARD_FASTBOOT = 25,
 
 	/* EC RTC event occurred */
 	EC_HOST_EVENT_RTC = 26,

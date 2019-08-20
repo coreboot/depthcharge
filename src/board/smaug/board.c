@@ -22,7 +22,6 @@
 #include "boot/bcb.h"
 #include "boot/fit.h"
 #include "boot/commandline.h"
-#include "board/smaug/fastboot.h"
 #include "drivers/bus/spi/tegra.h"
 #include "drivers/bus/i2c/tegra.h"
 #include "drivers/bus/usb/usb.h"
@@ -74,12 +73,6 @@ enum {
 	CLK_X_I2C6 = 0x1 << 6
 };
 
-void  __attribute__((weak))
-fill_fb_info(TegraMmcHost *emmc, SpiFlash *flash)
-{
-	/* Default weak implementation. */
-}
-
 const char *hardware_name(void)
 {
 	return "dragon";
@@ -104,30 +97,8 @@ BlockDevCtrlr *bcb_board_bdev_ctrlr(void)
 	return bcb_bdev_ctrlr;
 }
 
-#define SPI_FLASH_BLOCK_ERASE_64KB	0xd8
-
-/*
- * Override SPI flash params sector_size and erase_cmd passed in by
- * coreboot. Smaug uses Winbond W25Q128FW which takes 3x time to erase 64KiB
- * using sector erase (4KiB) as compared to block erase (64KiB).
- *
- * coreboot needs to use sector erase (4KiB) to ensure that vbnv_erase does not
- * clear off unwanted parts of the flash.
- *
- * Thus, override sector_size to be equal to 64KiB and erase command as block
- * erase here so that fastboot can operate on BLOCK_SIZE and achieve faster
- * write time.
- */
-static void flash_params_override(void)
-{
-	lib_sysinfo.spi_flash.sector_size = 64 * KiB;
-	lib_sysinfo.spi_flash.erase_cmd = SPI_FLASH_BLOCK_ERASE_64KB;
-}
-
 static int board_setup(void)
 {
-	flash_params_override();
-
 	sysinfo_install_flags(new_tegra_gpio_input_from_coreboot);
 
 	static const struct boot_policy policy[] = {
@@ -185,9 +156,6 @@ static int board_setup(void)
 
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
-
-	/* Fill in fastboot related information */
-	fill_fb_info(emmc, flash);
 
 	/* Bdev ctrlr required for BCB. */
 	bcb_bdev_ctrlr = &emmc->mmc.ctrlr;

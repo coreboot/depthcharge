@@ -11,12 +11,11 @@
 ## GNU General Public License for more details.
 ##
 
-subdirs-y := arch base board boot debug drivers image net netboot vboot fastboot
+subdirs-y := arch base board boot debug drivers image net netboot vboot
 
 DEPTHCHARGE = $(obj)/depthcharge
 NETBOOT = $(obj)/netboot
 DEV = $(obj)/dev
-FASTBOOT = $(obj)/fastboot
 
 DONT_GC_NETBOOT = -Wl,-u,netboot_entry
 
@@ -63,8 +62,3 @@ $(eval $(call declare_payload,$(NETBOOT),$$$$(depthcharge-objs) \
 $(eval $(call declare_payload,$(DEV),$$$$(depthcharge-objs) \
 	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs) $$$$(dev-objs) \
 	$$$$(vboot-objs),$(DONT_GC_NETBOOT)))
-
-# Rules for creating fastboot-capable depthcharge binary
-
-$(eval $(call declare_payload,$(FASTBOOT),$$$$(depthcharge-objs) \
-	$$$$(fastboot-objs) $$$$(vboot-objs),))

@@ -21,7 +21,6 @@
 #include "base/init_funcs.h"
 #include "boot/fit.h"
 #include "boot/commandline.h"
-#include "board/foster/fastboot.h"
 #include "drivers/bus/spi/tegra.h"
 #include "drivers/bus/i2c/tegra.h"
 #include "drivers/bus/usb/usb.h"
@@ -64,12 +63,6 @@ enum {
 	CLK_H_I2C5 = 0x1 << 15,
 	CLK_X_I2C6 = 0x1 << 6
 };
-
-void __attribute__((weak))
-fill_fb_info(TegraMmcHost *emmc, SpiFlash *flash)
-{
-	/* Default weak implementation. */
-}
 
 static void choose_devicetree_by_boardid(void)
 {
@@ -146,9 +139,6 @@ static int board_setup(void)
 
 	list_insert_after(&sd_card->mmc.ctrlr.list_node,
 			  &removable_block_dev_controllers);
-
-	/* Fill in fastboot related information */
-	fill_fb_info(emmc, flash);
 
 	/* Careful: the EHCI base is at offset 0x100 from the SoC's IP base */
 	UsbHostController *usbd = new_usb_hc(EHCI, 0x7d000100);

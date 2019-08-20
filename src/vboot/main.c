@@ -24,15 +24,9 @@
 #include "boot/bcb.h"
 #include "debug/cli/common.h"
 #include "drivers/input/input.h"
-#include "vboot/fastboot.h"
 #include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/init_funcs.h"
-
-void  __attribute__((weak)) vboot_try_fastboot(void)
-{
-	/* Default weak implementation. */
-}
 
 int main(void)
 {
@@ -62,10 +56,6 @@ int main(void)
 
 	if (CONFIG_CLI)
 		console_loop();
-
-	/* Fastboot is only entered in recovery path */
-	if (vboot_in_recovery())
-		vboot_try_fastboot();
 
 	/* Handle BCB command, if supported. */
 	if (CONFIG_BCB_SUPPORT)

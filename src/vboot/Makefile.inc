@@ -14,7 +14,6 @@
 subdirs-y := callbacks crossystem stages util
 
 depthcharge-y += stages.c
-fastboot-y += fastboot.c
 depthcharge-y += boot_policy.c
 depthcharge-y += firmware_id.c
 depthcharge-y += screens.c

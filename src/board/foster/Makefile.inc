@@ -15,5 +15,3 @@
 
 depthcharge-y += board.c
 depthcharge-y += keyboard.c
-
-fastboot-y += fastboot.c
