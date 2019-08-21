@@ -17,9 +17,9 @@ static int calculate_step_time(int duration, int increment)
  * = (D*F)/increment/1000
  * Use F=2048 for short duration, F=64 for long duration.
  */
-	int step_time = ((duration * 2048) / increment) / 1000;
+	int step_time = ((duration * 2048) / increment + 500) / 1000;
 	if (step_time > 63) {
-		step_time = ((duration * 64) / increment) / 1000;
+		step_time = ((duration * 64) / increment + 500) / 1000;
 		if (step_time > 63)
 			return -1; /* Overflow */
 		step_time |= 0x40;
