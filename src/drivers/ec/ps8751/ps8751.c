@@ -1008,7 +1008,7 @@ static int __must_check ps8751_verify(Ps8751 *me,
 	uint32_t data_offset;
 	int chunk;
 
-	debug("offset 0x%06x size %u\n", fw_addr, data_size);
+	debug("offset 0x%06x size %zu\n", fw_addr, data_size);
 
 	t0_us = timer_us(0);
 	for (data_offset = 0;
@@ -1201,7 +1201,7 @@ static int ps8751_reflash(Ps8751 *me, const uint8_t *data, size_t data_size)
 {
 	int status;
 
-	debug("data %8p len %u\n", data, data_size);
+	debug("data %8p len %zu\n", data, data_size);
 
 	status = ps8751_erase(me, PARADE_FW_START, data_size);
 	if (status != 0) {
@@ -1255,7 +1255,7 @@ static vb2_error_t ps8751_check_hash(const VbootAuxFwOps *vbaux,
 	debug("call...\n");
 
 	if (hash_size != 2) {
-		debug("hash_size %u unexpected\n", hash_size);
+		debug("hash_size %zu unexpected\n", hash_size);
 		return VB2_ERROR_INVALID_PARAMETER;
 	}
 
