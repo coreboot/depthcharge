@@ -1508,8 +1508,8 @@ void cros_ec_probe_aux_fw_chips(void)
 {
 	CrosEc *cros_ec = cros_ec_get_main();
 	struct ec_response_usb_pd_ports usb_pd_ports_r;
-	struct ec_params_pd_chip_info pd_chip_p;
-	struct ec_response_pd_chip_info pd_chip_r;
+	struct ec_params_pd_chip_info pd_chip_p = {0};
+	struct ec_response_pd_chip_info pd_chip_r = {0};
 	int ret;
 	uint8_t i;
 	CrosEcAuxFwChipInfo *chip;
@@ -1533,6 +1533,7 @@ void cros_ec_probe_aux_fw_chips(void)
 	for (i = 0; i < usb_pd_ports_r.num_ports; i++) {
 		/* Get the USB PD Chip info */
 		pd_chip_p.port = i;
+		pd_chip_p.renew = 0;
 		ret = ec_command(cros_ec, EC_CMD_PD_CHIP_INFO, 0,
 					&pd_chip_p, sizeof(pd_chip_p),
 					&pd_chip_r, sizeof(pd_chip_r));
