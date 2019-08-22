@@ -25,6 +25,7 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/storage/ahci.h"
@@ -41,6 +42,12 @@ static int board_setup(void)
 	uint8_t secondary_bus;
 
 	sysinfo_install_flags(NULL);
+
+        /* Chrome EC (eSPI) */
+        CrosEcLpcBus *cros_ec_lpc_bus =
+                new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
+        CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, 0, NULL);
+        register_vboot_ec(&cros_ec->vboot, 0);
 
 	/* 32MB SPI Flash */
 	flash_set_ops(&new_mem_mapped_flash(0xfe000000, 0x2000000)->ops);
