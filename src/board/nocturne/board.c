@@ -33,6 +33,7 @@
 #include "drivers/ec/ps8751/ps8751.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
+#include "drivers/gpio/gpio.h"
 #include "drivers/gpio/skylake.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -83,8 +84,10 @@ static int board_setup(void)
 	tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0), cr50_irq_status)->ops);
 
 	/* Chrome EC (eSPI) */
-	CrosEcLpcBus *espi_ec =	new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
-	CrosEc *cros_ec = new_cros_ec(&espi_ec->ops, 0, NULL);
+	CrosEcLpcBus *espi_ec = new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
+	GpioOps *ec_gpio = sysinfo_lookup_gpio("EC sync gpio", 1,
+					new_skylake_gpio_input_from_coreboot);
+	CrosEc *cros_ec = new_cros_ec(&espi_ec->ops, 0, ec_gpio);
 	register_vboot_ec(&cros_ec->vboot, 0);
 
 	/* EC I2C Tunnel for TCPCs */
