@@ -163,9 +163,9 @@ int cros_ec_get_next_event(struct ec_response_get_next_event *event);
  * Check if the ChromeOS EC device has an interrupt pending.
  *
  * Read the status of the external interrupt connected to the ChromeOS EC
- * device. If no external interrupt is configured, this always returns 1.
+ * device. If no external interrupt is configured, this returns -1.
  *
- * @return 0 if no interrupt is pending
+ * @return 1 if interrupt pending, 0 if not pending, -1 if no interrupt pin.
  */
 int cros_ec_interrupt_pending(void);
 

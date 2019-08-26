@@ -44,21 +44,22 @@ typedef enum Modifier {
  */
 static int more_input_states(void)
 {
-	if (IS_ENABLED(CONFIG_DRIVER_INPUT_MKBP_NO_INTERRUPT)) {
-		uint32_t events;
-		const uint32_t mkbp_mask =
-			EC_HOST_EVENT_MASK(EC_HOST_EVENT_MKBP);
+	int interrupt = cros_ec_interrupt_pending();
 
-		if ((cros_ec_get_host_events(&events) == 0) &&
-			(events & mkbp_mask)) {
-			cros_ec_clear_host_events(mkbp_mask);
-			return 1;
-		}
+	if (interrupt >= 0)
+		return interrupt;
 
-		return 0;
+	uint32_t events;
+	const uint32_t mkbp_mask =
+		EC_HOST_EVENT_MASK(EC_HOST_EVENT_MKBP);
+
+	if ((cros_ec_get_host_events(&events) == 0) &&
+		(events & mkbp_mask)) {
+		cros_ec_clear_host_events(mkbp_mask);
+		return 1;
 	}
 
-	return cros_ec_interrupt_pending();
+	return 0;
 }
 
 typedef struct Key
