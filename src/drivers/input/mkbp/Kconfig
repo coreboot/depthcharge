@@ -19,15 +19,5 @@ config DRIVER_INPUT_MKBP_OLD_COMMAND
          matrix and the EC_CMD_MKBP_STATE host command is supported.  This is
          not the case for newer EC images.
 
-config DRIVER_INPUT_MKBP_NO_INTERRUPT
-       bool "No interrupt support"
-       default y if ARCH_X86
-       default n
-       help
-         On some Chromebooks (i.e. x86) that use MKBP driver for buttons,
-         there might not be an interrupt coming from the EC to the
-         AP. This allows MKBP driver to handle pending EC events in a
-         different way.
-
 source src/drivers/input/mkbp/keymatrix/Kconfig
 source src/drivers/input/mkbp/layout/Kconfig

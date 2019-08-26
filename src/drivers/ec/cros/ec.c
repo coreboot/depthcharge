@@ -611,7 +611,7 @@ int cros_ec_interrupt_pending(void)
 {
 	if (cros_ec_get_main()->interrupt_gpio)
 		return gpio_get(cros_ec_get_main()->interrupt_gpio);
-	return 1;	// Always assume we have input if no GPIO set
+	return -1;
 }
 
 int cros_ec_mkbp_info(struct ec_response_mkbp_info *info)
