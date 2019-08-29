@@ -687,8 +687,8 @@ static VbError_t vboot_disable_jump(VbootEcOps *vbec)
 
 int cros_ec_interrupt_pending(void)
 {
-	if (cros_ec_get_main()->interrupt_gpio)
-		return gpio_get(cros_ec_get_main()->interrupt_gpio);
+	if (get_main_ec()->interrupt_gpio)
+		return gpio_get(get_main_ec()->interrupt_gpio);
 	return -1;
 }
 
