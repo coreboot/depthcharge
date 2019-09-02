@@ -11,6 +11,7 @@
  * GNU General Public License for more details.
  */
 
+#include <assert.h>
 #include <libpayload.h>
 #include <stdint.h>
 
@@ -54,4 +55,11 @@ void timestamp_add_now(enum timestamp_id id)
 		timestamp_add(id, timer_raw_value());
 	else
 		timestamp_add(id, timer_us(0));
+}
+
+void timestamp_mix_in_randomness(u8 *buffer, size_t size)
+{
+	assert(ts_table);
+	for (size_t i = 0; i < size && i < ts_table->num_entries; i++)
+		buffer[i] ^= (u8)ts_table->entries[i].entry_stamp;
 }

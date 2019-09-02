@@ -40,5 +40,6 @@ enum timestamp_id {
 void timestamp_init(void);
 void timestamp_add(enum timestamp_id id, uint64_t ts_time);
 void timestamp_add_now(enum timestamp_id id);
+void timestamp_mix_in_randomness(u8 *buffer, size_t size);
 
 #endif /* __BASE_TIMESTAMP_H__ */
