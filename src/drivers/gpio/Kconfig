@@ -110,5 +110,5 @@ config DRIVER_GPIO_ICELAKE
 	default n
 
 config DRIVER_GPIO_KERN
-	bool "AMD Kern FCH GPIO driver"
+	bool "AMD Kern and Sandstone FCH GPIO driver"
 	default n

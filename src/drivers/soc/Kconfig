@@ -32,6 +32,11 @@ config DRIVER_SOC_STONEYRIDGE
 	default n
 	select DRIVER_GPIO_KERN
 
+config DRIVER_SOC_PICASSO
+	bool "Picasso & Pollock SoC driver"
+	default n
+	select DRIVER_GPIO_KERN
+
 config DRIVER_SOC_GLK
 	bool "Glk SoC driver"
 	default n

@@ -24,8 +24,6 @@
 #define FCH_GPIO_BASE		(KERN_PM_MMIO + 0x1500)
 #define FCH_IOMUX_BASE		(KERN_PM_MMIO + 0xd00)
 
-#define FCH_NUM_GPIOS		149
-
 #define FCH_GPIO_REG(num)	(FCH_GPIO_BASE + (num) * 4)
 #define  FCH_GPIO_WAKE_STS	(1 << 29)
 #define  FCH_GPIO_INTERRUPT_STS	(1 << 28)
@@ -40,6 +38,10 @@
  * This table defines the IOMUX value required to configure a particular pin
  * as its GPIO function.
  */
+#if CONFIG(DRIVER_SOC_STONEYRIDGE)
+
+#define FCH_NUM_GPIOS 149
+
 static const uint8_t fch_gpio_use_table[FCH_NUM_GPIOS] = {
 	/*         0   1   2   3   4   5   6   7   8   9 */
 	/*   0 */  1,  1,  1,  0,  0,  0,  0,  0,  0,  0,
@@ -59,7 +61,38 @@ static const uint8_t fch_gpio_use_table[FCH_NUM_GPIOS] = {
 	/* 140 */  1,  1,  1,  1,  1,  1,  1,  1,  1
 };
 
-/* Careful! MUX setting for GPIOn is not consistent for all pins.  See BKDG. */
+#elif CONFIG(DRIVER_SOC_PICASSO)
+
+#define FCH_NUM_GPIOS 145
+
+static const uint8_t fch_gpio_use_table[FCH_NUM_GPIOS] = {
+	/*         0   1   2   3   4   5   6   7   8   9 */
+	/*   0 */  1,  1,  1,  0,  0,  0,  0,  0,  0,  0,
+	/*  10 */  0,  0,  1,  1,  1,  0,  1,  1,  1,  2,
+	/*  20 */  2,  2,  2,  3,  1,  0,  1,  0,  0,  1,
+	/*  30 */  2,  2,  2,  0,  0,  0,  0,  0,  0,  0,
+	/*  40 */  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+	/*  50 */  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+	/*  60 */  0,  0,  0,  0,  0,  0,  0,  1,  0,  0,
+	/*  70 */  0,  0,  0,  0,  2,  2,  1,  0,  0,  0,
+	/*  80 */  0,  0,  0,  0,  1,  1,  1,  2,  2,  2,
+	/*  90 */  2,  1,  3,  0,  0,  0,  0,  0,  0,  0,
+	/* 100 */  0,  0,  0,  0,  3,  3,  3,  3,  2,  2,
+	/* 110 */  0,  0,  0,  2,  2,  1,  1,  0,  0,  0,
+	/* 120 */  1,  1,  0,  0,  0,  0,  0,  0,  0,  1,
+	/* 130 */  1,  3,  2,  0,  0,  2,  1,  2,  1,  1,
+	/* 140 */  2,  1,  2,  1,  1
+};
+#else
+	/* Force a build error if unknown SOC */
+	#error Unknown SOC - Only Stoney & Picasso supported
+#endif
+
+/*
+ * Careful! MUX setting for GPIOn is not consistent for all pins.  See:
+ *   Stoney Ridge BKDG: #55072
+ *   Picasso PPR: #55570
+ */
 static void fch_iomux_set(KernGpio *gpio, int val)
 {
 	write8(gpio->iomux, val & 3);
