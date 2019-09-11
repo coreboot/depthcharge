@@ -31,7 +31,7 @@
 #include "drivers/gpio/kern.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/fch.h"
-#include "drivers/soc/stoneyridge.h"
+#include "drivers/soc/picasso.h"
 #include "drivers/sound/gpio_i2s.h"
 #include "drivers/sound/max98357a.h"
 #include "drivers/sound/route.h"
@@ -94,11 +94,13 @@ static int cr50_irq_status(void)
  */
 static void audio_bt_i2s_setup(void)
 {
+#if 0 // todo: wrong BDF now, and is this still relevant?  Was planning for setting i2s pin in cb.
 	/* D1F0x24 == Graphics Memory Mapped Registers Base Address */
 	uintptr_t gmm_base = pci_read_config32(PCI_DEV(0, 0x1, 0), 0x24);
 	gmm_base &= 0xfffffff0;
 
 	write32((void *)gmm_base + GMMx1475C, 0x00);
+#endif
 }
 
 static int (*gpio_i2s_play)(struct SoundOps *me, uint32_t msec,
@@ -125,6 +127,7 @@ static int amd_gpio_i2s_play(struct SoundOps *me, uint32_t msec,
 
 static void audio_setup(void)
 {
+#if 0
 	/* Setup da7219 on I2C0 */
 	DesignwareI2c *i2c0 = new_designware_i2c(AP_I2C0_ADDR, 400000,
 						 AP_I2C_CLK_MHZ);
@@ -141,7 +144,7 @@ static void audio_setup(void)
 		       ret);
 		return;
 	}
-
+#endif
 	audio_bt_i2s_setup();
 
 	KernGpio *i2s_bclk = new_kern_fch_gpio_output(140, 0);
@@ -222,43 +225,22 @@ static int board_setup(void)
 	audio_setup();
 
 	SdhciHost *emmc = NULL;
-	/* The proto version of Zork has the FT4's SDHCI pins wired up to
-	 * the eMMC part.  All other versions of Zork (are planned to) use
-	 * the BH720 SDHCI controller for EMMC and use the FT4 SDHCI pins for
-	 * the SD connector.
+	/* The proto version of Zork has the Fp5's SDHCI pins wired up to
+	 * the eMMC part.  Later versions:  t.b.d.
 	 */
-	if (lib_sysinfo.board_id > 0) {
-		pcidev_t pci_dev;
-		if (pci_find_device(BH720_PCI_VID, BH720_PCI_DID, &pci_dev)) {
-			emmc = new_pci_sdhci_host(pci_dev,
-				SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD,
-				EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
-		} else {
-			printf("Failed to find BH720 with VID/DID %04x:%04x\n",
-				BH720_PCI_VID, BH720_PCI_DID);
-		}
-
-		SdhciHost *sd;
-		sd = new_pci_sdhci_host(PCI_DEV(0, 0x14, 7),
-				SDHCI_PLATFORM_REMOVABLE |
-				SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD,
-				EMMC_SD_CLOCK_MIN, SD_CLOCK_MAX);
-		list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
-				&removable_block_dev_controllers);
-	} else {
-		emmc = new_pci_sdhci_host(PCI_DEV(0, 0x14, 7),
-				SDHCI_PLATFORM_NO_EMMC_HS200 |
-				SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD,
-				EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
-	}
+	emmc = new_pci_sdhci_host(
+			PCI_DEV(0, PCO_SDHC_PCI_DEV, PCO_SDHC_PCI_FCN),
+			SDHCI_PLATFORM_NO_EMMC_HS200 |
+			SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD,
+			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
 	if (emmc) {
 		list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 				&fixed_block_dev_controllers);
 	}
 
-	/* Setup h1 on I2C1 */
+	/* Setup h1 on I2C3 */
 	DesignwareI2c *i2c_h1 = new_designware_i2c(
-		AP_I2C1_ADDR, 400000, AP_I2C_CLK_MHZ);
+		AP_I2C3_ADDR, 400000, AP_I2C_CLK_MHZ);
 	tpm_set_ops(&new_cr50_i2c(&i2c_h1->ops, 0x50,
 				  &cr50_irq_status)->base.ops);
 
