@@ -17,7 +17,6 @@
 
 #include <libpayload.h>
 #include <vb2_api.h>
-#include <vboot_api.h>
 
 void vb2ex_printf(const char *func, const char *fmt, ...)
 {
@@ -27,4 +26,9 @@ void vb2ex_printf(const char *func, const char *fmt, ...)
 		printf("%s: ", func);
 	vprintf(fmt, ap);
 	va_end(ap);
+}
+
+void vb2ex_abort(void)
+{
+	die("vboot has aborted execution; exit\n");
 }
