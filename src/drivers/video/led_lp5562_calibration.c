@@ -6,7 +6,7 @@
 #include "led_lp5562_programs.h"
 #include "led_lp5562_calibration.h"
 
-static int calculate_step_time(int duration, int increment)
+static int calculate_step_time(int duration, int increment, int rounding)
 {
 /*
  * On LP5562 ramp instruction, duration (D, msec) is
@@ -17,14 +17,35 @@ static int calculate_step_time(int duration, int increment)
  * = (D*F)/increment/1000
  * Use F=2048 for short duration, F=64 for long duration.
  */
-	int step_time = ((duration * 2048) / increment + 500) / 1000;
+	int step_time = ((duration * 2048) / increment + rounding) / 1000;
+
+	/*
+	 * LP5562 can't handle step_time=0 for ramp/wait instruction
+	 * (binary code 0000 is assigned for GotoStart instruction).
+	 * So we have to round-up to 1 if duration was less than minimum
+	 * resolution (increment/2048).
+	 */
+	if (step_time == 0) {
+		step_time = 1;
+	}
 	if (step_time > 63) {
-		step_time = ((duration * 64) / increment + 500) / 1000;
+		step_time = ((duration * 64) / increment + rounding) / 1000;
 		if (step_time > 63)
 			return -1; /* Overflow */
 		step_time |= 0x40;
 	}
 	return step_time;
+}
+
+static int calculate_duration(int step_time, int increment)
+{
+	int clk = 2048;
+
+	if (step_time & 0x40) {
+		clk = 64;
+		step_time &= ~0x40;
+	}
+	return (1000 * step_time * increment) / clk;
 }
 
 static void calibrate_set_pwm_instruction(
@@ -47,7 +68,10 @@ static void calibrate_ramp_instruction(
 	int offset,
 	int intensity)
 {
+	int offset_org = offset;
 	int intensity_reminder = intensity;
+	int accumulated_duration_error = 0;
+	int rounding = (code_map->code_type == ramp) ? 500 : 0;
 
 	/*
 	 * Calibrate ramp instruction:
@@ -97,7 +121,8 @@ static void calibrate_ramp_instruction(
 			code[offset+1] = 0x00;
 		} else {
 			int step_time =
-				calculate_step_time(duration, increment);
+				calculate_step_time(
+					duration, increment, rounding);
 
 			/*
 			 * LP5562 ramp/wait duration is correlated with
@@ -109,14 +134,41 @@ static void calibrate_ramp_instruction(
 			while (step_time < 0) {
 				increment++;
 				step_time = calculate_step_time(
-					duration, increment);
+					duration, increment, rounding);
 			}
 
+			accumulated_duration_error +=
+				(duration -
+				calculate_duration(step_time, increment));
 			increment = ramp_sign | (increment - 1);
 			code[offset+0] = step_time;
 			code[offset+1] = increment;
 		}
-		offset += 2;
+		if (code_map->code_type == ramp_and_wait)
+			offset += 4;
+		else
+			offset += 2;
+	}
+
+	/* Return if no wait compensation is required */
+	if ((code_map->code_type != ramp_and_wait) ||
+	    (accumulated_duration_error <= 0) ||
+	    (code_map->ramp_num <= 1)) {
+		return;
+	}
+
+	/*
+	 * Put wait instruction(s) between ramp
+	 * to compensate duration error with ramp instruction.
+	 */
+	int wait_duration =
+		(accumulated_duration_error / (code_map->ramp_num - 1));
+	offset = offset_org + 2;
+	for (int i = 0; i < code_map->ramp_num - 1; i++) {
+		int step_time = calculate_step_time(wait_duration, 1, 500);
+		code[offset+0] = step_time;
+		code[offset+1] = 0;
+		offset += 4;
 	}
 }
 
@@ -155,6 +207,7 @@ int led_lp5562_calibrate(const struct lp5562_calibration_data *cal_data,
 			break;
 
 		case ramp:
+		case ramp_and_wait:
 			calibrate_ramp_instruction(
 				code_map, code, offset, intensity);
 			break;

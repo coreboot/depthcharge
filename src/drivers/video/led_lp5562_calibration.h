@@ -22,7 +22,8 @@ enum lp5562_components {
 enum lp5562_code_types {
 	invalid = 0,
 	set_pwm,
-	ramp
+	ramp,
+	ramp_and_wait
 };
 
 /*
