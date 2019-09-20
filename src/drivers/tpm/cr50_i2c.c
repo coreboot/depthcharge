@@ -43,6 +43,11 @@ enum {
 	Cr50TimeoutShort = 2 * 1000,		// usecs
 	Cr50TimeoutNoIrq = 20 * 1000,		// usecs
 	Cr50TimeoutIrq = 100 * 1000,		// usecs
+	Cr50TimeoutWake = 50,			// usecs
+};
+
+enum {
+	Cr50WakeRetries = 3
 };
 
 enum {
@@ -136,6 +141,25 @@ static void cr50_i2c_clear_tpm_irq(Cr50I2c *tpm)
 }
 
 /*
+ * cr50_i2c_write_raw() - raw write to TPM with retry
+ *
+ * Return -1 on error, 0 on success.
+ */
+static int cr50_i2c_write_raw(Cr50I2c *tpm, uint8_t *data, int len)
+{
+	int try, ret = -1;
+
+	for (try = 0; try < Cr50WakeRetries; try++) {
+		ret = i2c_write_raw(tpm->base.bus, tpm->base.addr, data, len);
+		if (!ret)
+			break;
+		udelay(Cr50TimeoutWake);
+	}
+
+	return ret;
+}
+
+/*
  * cr50_i2c_read() - read from TPM register
  *
  * @tpm: TPM chip information
@@ -165,7 +189,7 @@ static int cr50_i2c_read(Cr50I2c *tpm, uint8_t addr, uint8_t *buffer,
 	}
 
 	// Send the register address byte to the TPM
-	if (i2c_write_raw(tpm->base.bus, tpm->base.addr, &addr, 1)) {
+	if (cr50_i2c_write_raw(tpm, &addr, 1)) {
 		printf("%s: Address write failed\n", __func__);
 		return -1;
 	}
@@ -234,7 +258,7 @@ static int cr50_i2c_write(Cr50I2c *tpm, uint8_t addr, const uint8_t *buffer,
 	cr50_i2c_clear_tpm_irq(tpm);
 
 	// Send write request buffer with address
-	if (i2c_write_raw(tpm->base.bus, tpm->base.addr, tpm->buf, len + 1)) {
+	if (cr50_i2c_write_raw(tpm, tpm->buf, len + 1)) {
 		printf("%s: Error writing to TPM\n", __func__);
 		return -1;
 	}
