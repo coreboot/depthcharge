@@ -61,3 +61,7 @@ config DRIVER_BUS_I2C_CROS_EC_TUNNEL
         bool "Chrome OS EC tunnel I2C driver"
         depends on DRIVER_EC_CROS
         default n
+
+config DRIVER_BUS_I2C_SC7180
+	bool "Qualcomm SC7180 I2C driver"
+	default n
