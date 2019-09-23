@@ -11,13 +11,13 @@
 ## GNU General Public License for more details.
 ##
 
-subdirs-y := callbacks crossystem stages util
+subdirs-y := callbacks crossystem nvdata stages util
 
 depthcharge-y += stages.c
 depthcharge-y += boot_policy.c
 depthcharge-y += firmware_id.c
 depthcharge-y += screens.c
-depthcharge-y += vbnv.c
+depthcharge-y += nvdata.c
 
 # Where "main" lives.
 vboot-y += main.c

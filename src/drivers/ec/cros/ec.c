@@ -26,7 +26,6 @@
 #include <assert.h>
 #include <libpayload.h>
 #include <vb2_api.h>
-#include <vboot_api.h>
 
 #include "base/container_of.h"
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
@@ -972,7 +971,7 @@ static vb2_error_t vboot_protect(VbootEcOps *vbec,
 	return vboot_set_region_protection(me, select, 1);
 }
 
-int cros_ec_read_vbnvcontext(uint8_t *block)
+vb2_error_t nvdata_cros_ec_read(uint8_t *block)
 {
 	struct ec_params_vbnvcontext p;
 	int len;
@@ -983,12 +982,12 @@ int cros_ec_read_vbnvcontext(uint8_t *block)
 			 EC_VER_VBNV_CONTEXT, &p, sizeof(p),
 			 block, EC_VBNV_BLOCK_SIZE);
 	if (len < EC_VBNV_BLOCK_SIZE)
-		return -1;
+		return VB2_ERROR_NV_READ;
 
-	return 0;
+	return VB2_SUCCESS;
 }
 
-int cros_ec_write_vbnvcontext(const uint8_t *block)
+vb2_error_t nvdata_cros_ec_write(const uint8_t *block)
 {
 	struct ec_params_vbnvcontext p;
 	int len;
@@ -999,9 +998,9 @@ int cros_ec_write_vbnvcontext(const uint8_t *block)
 	len = ec_command(cros_ec_get_main(), EC_CMD_VBNV_CONTEXT,
 			 EC_VER_VBNV_CONTEXT, &p, sizeof(p), NULL, 0);
 	if (len < 0)
-		return -1;
+		return VB2_ERROR_NV_WRITE;
 
-	return 0;
+	return VB2_SUCCESS;
 }
 
 int cros_ec_battery_cutoff(uint8_t flags)

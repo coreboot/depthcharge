@@ -26,9 +26,9 @@
 
 #include "base/device_tree.h"
 #include "image/fmap.h"
-#include "vboot/callbacks/nvstorage_flash.h"
 #include "vboot/crossystem/crossystem.h"
 #include "vboot/firmware_id.h"
+#include "vboot/nvdata/flash.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 
@@ -50,25 +50,25 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 	}
 	dt_add_bin_prop(node, "vboot-shared-data", vb_sd, size);
 
-	if (CONFIG_NV_STORAGE_CMOS) {
+	if (CONFIG_NVDATA_CMOS) {
 		dt_add_string_prop(node, "nonvolatile-context-storage","nvram");
-	} else if (CONFIG_NV_STORAGE_CROS_EC) {
+	} else if (CONFIG_NVDATA_CROS_EC) {
 		dt_add_string_prop(node,
 				"nonvolatile-context-storage", "cros-ec");
-	} else if (CONFIG_NV_STORAGE_DISK) {
+	} else if (CONFIG_NVDATA_DISK) {
 		dt_add_string_prop(node, "nonvolatile-context-storage", "disk");
 		dt_add_u32_prop(node, "nonvolatile-context-lba",
-				CONFIG_NV_STORAGE_DISK_LBA);
+				CONFIG_NVDATA_DISK_LBA);
 		dt_add_u32_prop(node, "nonvolatile-context-offset",
-				CONFIG_NV_STORAGE_DISK_OFFSET);
+				CONFIG_NVDATA_DISK_OFFSET);
 		dt_add_u32_prop(node, "nonvolatile-context-size",
-				CONFIG_NV_STORAGE_DISK_SIZE);
-	} else if (CONFIG_NV_STORAGE_FLASH) {
+				CONFIG_NVDATA_DISK_SIZE);
+	} else if (CONFIG_NVDATA_FLASH) {
 		dt_add_string_prop(node, "nonvolatile-context-storage","flash");
 		dt_add_u32_prop(node, "nonvolatile-context-offset",
-				nvstorage_flash_get_offet());
+				nvdata_flash_get_offset());
 		dt_add_u32_prop(node, "nonvolatile-context-size",
-				nvstorage_flash_get_blob_size());
+				nvdata_flash_get_blob_size());
 	}
 
 	int fw_index = vb_sd->firmware_index;

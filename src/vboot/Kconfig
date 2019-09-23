@@ -87,35 +87,35 @@ config MOCK_TPM
 	  THIS SHOULD NOT BE LEFT ON FOR PRODUCTION DEVICES.
 
 choice
-	prompt "Type of nonvolatile storage"
+	prompt "Type of vboot nvdata backend"
 	help
-	  Where depthcharge should keep vboot's nonvolatile storage.
+	  Where depthcharge should store vboot's nvdata.
 
-config NV_STORAGE_CMOS
+config NVDATA_CMOS
 	bool "CMOS"
 	depends on ARCH_X86
 	help
-	  The nonvolatile data is stored in CMOS.
+	  nvdata is stored in CMOS.
 
-config NV_STORAGE_DISK
+config NVDATA_DISK
 	bool "Fixed disk"
 	help
-	  The nonvolatile storage is stored on a fixed disk. The first fixed
-	  disk will be used. To avoid unexpected behavior, there should only
-	  be one fixed disk in the system.
+	  nvdata is stored on a fixed disk. The first fixed disk will be
+	  used.  To avoid unexpected behavior, there should only be one
+	  fixed disk in the system.
 
-config NV_STORAGE_CROS_EC
+config NVDATA_CROS_EC
 	bool "ChromeOS EC"
 	help
-	  The nonvolatile data is stored by the ChromeOS EC.
+	  nvdata is stored by the ChromeOS EC.
 
-config NV_STORAGE_FLASH
+config NVDATA_FLASH
 	bool "Flash"
 	help
-	  The nonvolatile data is stored in the same flash device with the
-	  firmware, location determined by the fmap 'rw-nvram' entry.
+	  nvdata is stored in the same flash device with the firmware,
+	  location determined by the fmap 'rw-nvram' entry.
 
-config NV_STORAGE_FAKE
+config NVDATA_FAKE
 	bool "Fake"
 	help
 	  Nonvolatile storage is simulated using RAM and is re-initialized
@@ -123,17 +123,17 @@ config NV_STORAGE_FAKE
 
 endchoice
 
-config NV_STORAGE_DISK_LBA
-	int "Disk based nonvolatile storage LBA"
-	depends on NV_STORAGE_DISK
+config NVDATA_DISK_LBA
+	int "Disk-based nvdata LBA"
+	depends on NVDATA_DISK
 
-config NV_STORAGE_DISK_OFFSET
-	int "Disk based nonvolatile storage offset"
-	depends on NV_STORAGE_DISK
+config NVDATA_DISK_OFFSET
+	int "Disk-based nvdata offset"
+	depends on NVDATA_DISK
 
-config NV_STORAGE_DISK_SIZE
-	int "Disk based nonvolatile storage size"
-	depends on NV_STORAGE_DISK
+config NVDATA_DISK_SIZE
+	int "Disk-based nvdata size"
+	depends on NVDATA_DISK
 
 choice
 	prompt "Crossystem data mechanism"

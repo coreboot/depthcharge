@@ -42,7 +42,7 @@
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 #include "vboot/util/memory.h"
-#include "vboot/vbnv.h"
+#include "vboot/nvdata.h"
 
 static uint32_t vboot_out_flags;
 
@@ -58,7 +58,7 @@ int vboot_in_developer(void)
 
 void vboot_update_recovery(uint32_t request)
 {
-	vbnv_write(VB2_NV_RECOVERY_REQUEST, request);
+	nvdata_write_field_DO_NOT_USE(VB2_NV_RECOVERY_REQUEST, request);
 }
 
 int vboot_do_init_out_flags(uint32_t out_flags)

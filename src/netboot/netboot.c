@@ -39,7 +39,7 @@
 #include "vboot/crossystem/crossystem.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
-#include "vboot/vbnv.h"
+#include "vboot/nvdata.h"
 
 static void enable_graphics(void)
 {
@@ -55,7 +55,7 @@ static void enable_graphics(void)
 
 	printf("Enabling graphics.\n");
 
-	vbnv_write(VB2_NV_DISPLAY_REQUEST, 1);
+	nvdata_write_field_DO_NOT_USE(VB2_NV_DISPLAY_REQUEST, 1);
 
 	printf("Rebooting.\n");
 	if (cold_reboot())

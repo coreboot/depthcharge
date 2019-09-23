@@ -45,7 +45,6 @@
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/video/ww_ring.h"
-#include "vboot/callbacks/nvstorage_flash.h"
 #include "vboot/stages.h"
 #include "vboot/util/flag.h"
 
