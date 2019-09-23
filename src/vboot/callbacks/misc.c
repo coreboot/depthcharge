@@ -146,12 +146,11 @@ vb2_error_t vb2ex_read_resource(struct vb2_context *ctx,
 	return VB2_SUCCESS;
 }
 
-vb2_error_t VbExNvStorageRead(uint8_t *buf)
+/* TODO(chromium:972956, chromium:1006689): Should also commit secdata. */
+vb2_error_t vb2ex_commit_data(struct vb2_context *ctx)
 {
-	return nvdata_read(buf);
-}
+	if (nvdata_write(ctx))
+		return VB2_ERROR_NV_WRITE;
 
-vb2_error_t VbExNvStorageWrite(const uint8_t *buf)
-{
-	return nvdata_write(buf);
+	return VB2_SUCCESS;
 }
