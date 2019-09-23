@@ -24,6 +24,15 @@
 #include "vboot/nvdata.h"
 #include "vboot/util/commonparams.h"
 
+#define PRINT_BYTES(title, value) do { \
+		int i; \
+		printf(title); \
+		printf(":"); \
+		for (i = 0; i < sizeof(*(value)); i++) \
+			printf(" %02x", *((uint8_t *)(value) + i)); \
+		printf("\n"); \
+	} while (0)
+
 /*
  * TODO(chromium:1006689): DO NOT USE THIS FUNCTION: it is being deprecated.
  * depthcharge takes care of reading/writing nvdata, but the format and layout
@@ -33,33 +42,49 @@ void nvdata_write_field_DO_NOT_USE(uint32_t field, uint32_t val)
 {
 	struct vb2_context *ctx = vboot_get_context();
 	vb2_nv_set(ctx, field, val);
-	nvdata_write(ctx->nvdata);
+	nvdata_write(ctx);
 }
 
-vb2_error_t nvdata_read(uint8_t *buf)
+vb2_error_t nvdata_read(struct vb2_context *ctx)
 {
 	if (CONFIG(NVDATA_CMOS))
-		return nvdata_cmos_read(buf);
+		return nvdata_cmos_read(ctx->nvdata);
 	else if (CONFIG(NVDATA_CROS_EC))
-		return nvdata_cros_ec_read(buf);
+		return nvdata_cros_ec_read(ctx->nvdata);
 	else if (CONFIG(NVDATA_DISK))
-		return nvdata_disk_read(buf);
+		return nvdata_disk_read(ctx->nvdata);
 	else if (CONFIG(NVDATA_FLASH))
-		return nvdata_flash_read(buf);
+		return nvdata_flash_read(ctx->nvdata);
 	else
-		return nvdata_fake_read(buf);
+		return nvdata_fake_read(ctx->nvdata);
+
+	PRINT_BYTES("read nvdata", &ctx->nvdata);
 }
 
-vb2_error_t nvdata_write(const uint8_t *buf)
+vb2_error_t nvdata_write(struct vb2_context *ctx)
 {
+	vb2_error_t ret;
+
+	if (!(ctx->flags & VB2_CONTEXT_NVDATA_CHANGED)) {
+		printf("nvdata unchanged\n");
+		return VB2_SUCCESS;
+	}
+
+	PRINT_BYTES("write nvdata", &ctx->nvdata);
+
 	if (CONFIG(NVDATA_CMOS))
-		return nvdata_cmos_write(buf);
+		ret = nvdata_cmos_write(ctx->nvdata);
 	else if (CONFIG(NVDATA_CROS_EC))
-		return nvdata_cros_ec_write(buf);
+		ret = nvdata_cros_ec_write(ctx->nvdata);
 	else if (CONFIG(NVDATA_DISK))
-		return nvdata_disk_write(buf);
+		ret = nvdata_disk_write(ctx->nvdata);
 	else if (CONFIG(NVDATA_FLASH))
-		return nvdata_flash_write(buf);
+		ret = nvdata_flash_write(ctx->nvdata);
 	else
-		return nvdata_fake_write(buf);
+		ret = nvdata_fake_write(ctx->nvdata);
+
+	if (!ret)
+		ctx->flags &= ~VB2_CONTEXT_NVDATA_CHANGED;
+
+	return ret;
 }
