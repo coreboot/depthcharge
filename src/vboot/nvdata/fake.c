@@ -16,23 +16,18 @@
  */
 
 #include <libpayload.h>
-#include <vboot_api.h>
 #include <vb2_api.h>
 
-#include "drivers/ec/cros/ec.h"
+static u8 fake_nvram[VB2_NVDATA_SIZE];
 
-vb2_error_t VbExNvStorageRead(uint8_t* buf)
+int nvdata_fake_read(uint8_t* buf)
 {
-	if (cros_ec_read_vbnvcontext(buf))
-		return VB2_ERROR_UNKNOWN;
-
-	return VB2_SUCCESS;
+	memcpy(buf, fake_nvram, sizeof(fake_nvram));
+	return 0;
 }
 
-vb2_error_t VbExNvStorageWrite(const uint8_t* buf)
+int nvdata_fake_write(const uint8_t* buf)
 {
-	if (cros_ec_write_vbnvcontext(buf))
-		return VB2_ERROR_UNKNOWN;
-
-	return VB2_SUCCESS;
+	memcpy(fake_nvram, buf, sizeof(fake_nvram));
+	return 0;
 }

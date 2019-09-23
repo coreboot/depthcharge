@@ -42,7 +42,7 @@
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 #include "vboot/util/memory.h"
-#include "vboot/vbnv.h"
+#include "vboot/nvdata.h"
 
 int vboot_in_recovery(void)
 {
@@ -56,7 +56,7 @@ int vboot_in_developer(void)
 
 void vboot_update_recovery(uint32_t request)
 {
-	vbnv_write(VB2_NV_RECOVERY_REQUEST, request);
+	nvdata_write_field_DO_NOT_USE(VB2_NV_RECOVERY_REQUEST, request);
 }
 
 int vboot_check_wipe_memory(void)

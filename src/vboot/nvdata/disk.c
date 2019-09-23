@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Google Inc.
+ * Copyright 2012 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -15,34 +15,17 @@
  * GNU General Public License for more details.
  */
 
-#define NEED_VB20_INTERNALS  /* Poking around inside NV storage fields */
-
 #include <libpayload.h>
 #include <vb2_api.h>
-#include <vboot_api.h>
 
-#include "vboot/vbnv.h"
-
-uint32_t vbnv_read(uint32_t flag)
+vb2_error_t nvdata_disk_read(uint8_t* buf)
 {
-	struct vb2_context ctx;
-
-	memset(&ctx, 0, sizeof(ctx));
-	VbExNvStorageRead(ctx.nvdata);
-	vb2_nv_init(&ctx);
-	return vb2_nv_get(&ctx, flag);
+	printf("Disk based nonvolatile storage not implemented.\n");
+	halt();
 }
 
-void vbnv_write(uint32_t flag, uint32_t val)
+vb2_error_t nvdata_disk_write(const uint8_t* buf)
 {
-	struct vb2_context ctx;
-
-	memset(&ctx, 0, sizeof(ctx));
-	VbExNvStorageRead(ctx.nvdata);
-	vb2_nv_init(&ctx);
-	vb2_nv_set(&ctx, flag, val);
-	if (ctx.flags & VB2_CONTEXT_NVDATA_CHANGED)
-		VbExNvStorageWrite(ctx.nvdata);
+	printf("Disk based nonvolatile storage not implemented.\n");
+	halt();
 }
-
-

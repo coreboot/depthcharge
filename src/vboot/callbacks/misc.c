@@ -23,6 +23,7 @@
 
 #include "base/vpd_util.h"
 #include "drivers/flash/flash.h"
+#include "vboot/nvdata.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 
@@ -143,4 +144,14 @@ vb2_error_t vb2ex_read_resource(struct vb2_context *ctx,
 	memcpy(buf, data, size);
 
 	return VB2_SUCCESS;
+}
+
+vb2_error_t VbExNvStorageRead(uint8_t *buf)
+{
+	return nvdata_read(buf);
+}
+
+vb2_error_t VbExNvStorageWrite(const uint8_t *buf)
+{
+	return nvdata_write(buf);
 }

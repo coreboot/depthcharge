@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Google Inc.
+ * Copyright 2014 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -15,17 +15,14 @@
  * GNU General Public License for more details.
  */
 
-#include <libpayload.h>
-#include <vboot_api.h>
+#ifndef __VBOOT_CALLBACKS_NVSTORAGE_FLASH__
+#define __VBOOT_CALLBACKS_NVSTORAGE_FLASH__
 
-vb2_error_t VbExNvStorageRead(uint8_t* buf)
-{
-	printf("Disk based nonvolatile storage not implemented.\n");
-	halt();
-}
+/*
+ * Note that this functions's return value could change within a single boot
+ * sequence, never cache it, call this function each time explicitly.
+ */
+int nvdata_flash_get_offset(void);
+int nvdata_flash_get_blob_size(void);
 
-vb2_error_t VbExNvStorageWrite(const uint8_t* buf)
-{
-	printf("Disk based nonvolatile storage not implemented.\n");
-	halt();
-}
+#endif
