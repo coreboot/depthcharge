@@ -39,6 +39,7 @@
 #define MMC_VERSION_4		(MMC_VERSION_MMC | 0x40)
 
 #define MMC_CAPS_HS		0x001
+#define MMC_CAPS_DDR52		0x002
 #define MMC_CAPS_HS_52MHz	0x010
 #define MMC_CAPS_HS200		0x020
 #define MMC_CAPS_HS400		0x040
@@ -176,6 +177,7 @@
 
 #define EXT_CSD_CARD_TYPE_26		(1 << 0) /* Card can run at 26MHz */
 #define EXT_CSD_CARD_TYPE_52		(1 << 1) /* Card can run at 52MHz */
+#define EXT_CSD_CARD_TYPE_DDR52_1_8V_3V	(1 << 2) /* Card can run at DDR 52MHz */
 #define EXT_CSD_CARD_TYPE_HS200_1_8V	(1 << 4)
 #define EXT_CSD_CARD_TYPE_HS400_1_8V	(1 << 6)
 
@@ -190,6 +192,16 @@
 #define EXT_CSD_TIMING_HS	1	/* High speed */
 #define EXT_CSD_TIMING_HS200	2	/* HS200 */
 #define EXT_CSD_TIMING_HS400	3	/* HS400 */
+
+#define EXT_CSD_REV_1_0		0	/* Revision 1.0 for MMC v4.0 */
+#define EXT_CSD_REV_1_1		1	/* Revision 1.1 for MMC v4.1 */
+#define EXT_CSD_REV_1_2		2	/* Revision 1.2 for MMC v4.2 */
+#define EXT_CSD_REV_1_3		3	/* Revision 1.3 for MMC v4.3 */
+#define EXT_CSD_REV_1_4		4	/* Revision 1.4 Obsolete */
+#define EXT_CSD_REV_1_5		5	/* Revision 1.5 for MMC v4.41 */
+#define EXT_CSD_REV_1_6		6	/* Revision 1.6 for MMC v4.5, v4.51 */
+#define EXT_CSD_REV_1_7		7	/* Revision 1.7 for MMC v5.0, v5.01 */
+#define EXT_CSD_REV_1_8		8	/* Revision 1.8 for MMC v5.1 */
 
 #define R1_ILLEGAL_COMMAND		(1 << 22)
 #define R1_APP_CMD			(1 << 5)
