@@ -548,6 +548,44 @@ static int mmc_select_hs(MmcMedia *media)
 	return ret;
 }
 
+static int mmc_select_ddr52(MmcMedia *media)
+{
+	int ret;
+	uint8_t width;
+
+	/* Switch card to HS mode */
+	ret = mmc_select_hs(media);
+	if (ret) {
+		mmc_error("switch to high-speed failed\n");
+		return ret;
+	}
+
+	/* Switch card to DDR 8bit or 4bit bus width */
+	for (width = EXT_CSD_DDR_BUS_WIDTH_8;
+	     width >= EXT_CSD_DDR_BUS_WIDTH_4;
+	     width--) {
+		ret = mmc_switch(media, EXT_CSD_CMD_SET_NORMAL,
+			EXT_CSD_BUS_WIDTH, width);
+		if (ret == 0)
+			break;
+
+		mmc_error("switch to ddr bus width for ddr52 failed\n");
+	}
+
+	if (width == EXT_CSD_DDR_BUS_WIDTH_8)
+		width = 8;
+	else if (width == EXT_CSD_DDR_BUS_WIDTH_4)
+		width = 4;
+	else
+		return ret;
+
+	mmc_set_bus_width(media->ctrlr, width);
+	media->caps |= MMC_CAPS_DDR52;
+	mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_DDR52);
+
+	return ret;
+}
+
 static int mmc_select_hs400es(MmcMedia *media)
 {
 	int ret;
@@ -642,6 +680,11 @@ static int mmc_change_freq(MmcMedia *media)
 	else if ((media->ctrlr->caps & MMC_CAPS_HS200) &&
 		 (ext_csd[EXT_CSD_CARD_TYPE] & EXT_CSD_CARD_TYPE_HS200_1_8V))
 		err = mmc_select_hs200(media);
+	else if ((media->ctrlr->caps & MMC_CAPS_DDR52) &&
+		 (ext_csd[EXT_CSD_REV] > EXT_CSD_REV_1_3) &&
+		 (ext_csd[EXT_CSD_CARD_TYPE] &
+		  EXT_CSD_CARD_TYPE_DDR52_1_8V_3V))
+		err = mmc_select_ddr52(media);
 	else
 		err = mmc_select_hs(media);
 
@@ -979,7 +1022,8 @@ static int mmc_startup(MmcMedia *media)
 		for (width = EXT_CSD_BUS_WIDTH_8; width >= 0; width--) {
 			/* If HS200 is switched, Bus Width has been 8-bit */
 			if ((media->caps & MMC_CAPS_HS200) ||
-			    (media->caps & MMC_CAPS_HS400ES))
+			    (media->caps & MMC_CAPS_HS400ES) ||
+			    (media->caps & MMC_CAPS_DDR52))
 				break;
 
 			/* Set the card to use 4 bit*/

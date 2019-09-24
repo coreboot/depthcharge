@@ -740,6 +740,9 @@ static int sdhci_pre_init(SdhciHost *host)
 	   (host->quirks & SDHCI_QUIRK_SUPPORTS_HS400ES))
 		host->host_caps |= MMC_CAPS_HS400ES;
 
+	if (caps_1 & SDHCI_SUPPORT_DDR50)
+		host->host_caps |= MMC_CAPS_DDR52;
+
 	if (caps & SDHCI_CAN_DO_ADMA2)
 		host->host_caps |= MMC_CAPS_AUTO_CMD12;
 
