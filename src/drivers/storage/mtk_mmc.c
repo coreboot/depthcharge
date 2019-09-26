@@ -47,7 +47,7 @@ static void mtk_mmc_set_buswidth(MtkMmcHost *host, u32 width)
 		val = (MSDC_BUS_8BITS << 16);
 		break;
 	default:
-		die("Impossible bus width!");
+		die("Impossible bus width!\n");
 	}
 
 	clrsetbits_le32(&reg->sdc_cfg, SDC_CFG_BUSWIDTH, val);

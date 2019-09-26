@@ -42,7 +42,7 @@ static uint32_t mtk_i2s_rate(uint32_t rate)
 	case 174000: return 13;
 	case 192000: return 14;
 	default:
-		die("Unsupported I2S bus rate: %u", rate);
+		die("Unsupported I2S bus rate: %u\n", rate);
 	}
 }
 
