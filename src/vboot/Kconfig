@@ -97,13 +97,6 @@ config NVDATA_CMOS
 	help
 	  nvdata is stored in CMOS.
 
-config NVDATA_DISK
-	bool "Fixed disk"
-	help
-	  nvdata is stored on a fixed disk. The first fixed disk will be
-	  used.  To avoid unexpected behavior, there should only be one
-	  fixed disk in the system.
-
 config NVDATA_CROS_EC
 	bool "ChromeOS EC"
 	help
@@ -122,18 +115,6 @@ config NVDATA_FAKE
 	  each boot.
 
 endchoice
-
-config NVDATA_DISK_LBA
-	int "Disk-based nvdata LBA"
-	depends on NVDATA_DISK
-
-config NVDATA_DISK_OFFSET
-	int "Disk-based nvdata offset"
-	depends on NVDATA_DISK
-
-config NVDATA_DISK_SIZE
-	int "Disk-based nvdata size"
-	depends on NVDATA_DISK
 
 choice
 	prompt "Crossystem data mechanism"

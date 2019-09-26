@@ -12,6 +12,5 @@
 ##
 
 depthcharge-$(CONFIG_NVDATA_CMOS) += cmos.c
-depthcharge-$(CONFIG_NVDATA_DISK) += disk.c
 depthcharge-$(CONFIG_NVDATA_FAKE) += fake.c
 depthcharge-$(CONFIG_NVDATA_FLASH) += flash.c
