@@ -22,12 +22,38 @@
 #include "drivers/flash/flash.h"
 #include "image/fmap.h"
 
-static const Fmap *main_fmap;
+static Fmap *main_fmap;
 
-static int fmap_check_signature(void)
+static int fmap_check_signature(Fmap *fmap)
 {
-	return memcmp(main_fmap->signature, (uint8_t *)FMAP_SIGNATURE,
-		      sizeof(main_fmap->signature));
+	return memcmp(fmap->signature, (uint8_t *)FMAP_SIGNATURE,
+		      sizeof(fmap->signature));
+}
+
+static void *get_fmap_cache(void) {
+	Fmap *fmap = lib_sysinfo.fmap_cache;
+	if (fmap && fmap_check_signature(fmap)) {
+		printf("Bad signature on the FMAP.\n");
+		fmap = NULL;
+	}
+	return fmap;
+}
+
+static void *read_fmap_from_flash(void) {
+	Fmap *fmap = flash_read(lib_sysinfo.fmap_offset, sizeof(Fmap));
+	uint32_t fmap_size;
+
+	if (!fmap)
+		return NULL;
+	if (fmap && fmap_check_signature(fmap)) {
+		printf("Bad signature on the FMAP.\n");
+		return NULL;
+	}
+	fmap_size = sizeof(Fmap) +
+		fmap->nareas * sizeof(FmapArea);
+	fmap = flash_read(lib_sysinfo.fmap_offset, fmap_size);
+
+	return fmap;
 }
 
 static void fmap_init(void)
@@ -37,16 +63,13 @@ static void fmap_init(void)
 	if (init_done)
 		return;
 
-	main_fmap = flash_read(lib_sysinfo.fmap_offset, sizeof(Fmap));
+	/* check if it's cached first */
+	main_fmap = get_fmap_cache();
+
+	/* not cached, so try reading from flash */
 	if (!main_fmap)
-		halt();
-	if (fmap_check_signature()) {
-		printf("Bad signature on the FMAP.\n");
-		halt();
-	}
-	uint32_t fmap_size = sizeof(Fmap) +
-		main_fmap->nareas * sizeof(FmapArea);
-	main_fmap = flash_read(lib_sysinfo.fmap_offset, fmap_size);
+		main_fmap = read_fmap_from_flash();
+
 	if (!main_fmap)
 		halt();
 
