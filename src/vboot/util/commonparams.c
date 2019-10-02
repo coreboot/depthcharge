@@ -133,13 +133,6 @@ static int vboot_fill_handoff(struct vboot_handoff *vboot_handoff,
 		vb_sd->flags |= VBSD_LF_DEV_SWITCH_ON;
 	}
 
-	/* In vboot1, VBSD_FWB_TRIED is
-	 * set only if B is booted as explicitly requested. Therefore, if B is
-	 * booted because A was found bad, the flag should not be set. It's
-	 * better not to touch it if we can only ambiguously control it. */
-	/* if (vb2_sd->fw_slot)
-		vb_sd->flags |= VBSD_FWB_TRIED; */
-
 	/* copy kernel subkey if it's found */
 	if (vb2_sd->preamble_size) {
 		struct vb2_fw_preamble *fp;
