@@ -22,9 +22,12 @@
 #include "boot/fit.h"
 #include "drivers/storage/sdhci_msm.h"
 #include "drivers/bus/usb/usb.h"
+#include "drivers/gpio/sc7180.h"
 
 #define SDC1_HC_BASE          0x7C4000
 #define SDC1_TLMM_CFG_ADDR    0x3D7A000
+#define SDC2_TLMM_CFG_ADDR 0x3D7B000
+#define SDC2_HC_BASE 0x08804000
 
 static int board_setup(void)
 {
@@ -46,6 +49,15 @@ static int board_setup(void)
 
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			&fixed_block_dev_controllers);
+
+	/* SD card support */
+	Sc7180GpioCfg *cd_gpio_cfg = new_sc7180_gpio_input(GPIO(69));
+        SdhciHost *sd = new_sdhci_msm_host(SDC2_HC_BASE,
+                                SDHCI_PLATFORM_REMOVABLE,
+                                50*MHz, SDC2_TLMM_CFG_ADDR,
+                                new_gpio_not(&cd_gpio_cfg->ops));
+        list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
+                        &removable_block_dev_controllers);
 
 	return 0;
 }
