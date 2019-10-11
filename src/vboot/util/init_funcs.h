@@ -18,6 +18,7 @@
 #ifndef __VBOOT_UTIL_INIT_FUNCS_H__
 #define __VBOOT_UTIL_INIT_FUNCS_H__
 
+#include "base/init_funcs.h"
 #include "base/list.h"
 
 typedef struct VbootInitFunc
@@ -30,5 +31,14 @@ typedef struct VbootInitFunc
 extern ListNode vboot_init_funcs;
 
 int run_vboot_init_funcs(void);
+
+/* Shorthand macro to register a VbootInitFunc like a normal INIT_FUNC(). */
+#define VBOOT_INIT_FUNC(func) \
+	static VbootInitFunc func##_data_ = { .init = &func }; \
+	static int func##_setup_(void) { \
+		list_insert_after(&func##_data_.list_node, &vboot_init_funcs); \
+		return 0; \
+	} \
+	INIT_FUNC(func##_setup_)
 
 #endif /* __VBOOT_UTIL_INIT_FUNCS_H__ */
