@@ -64,14 +64,5 @@ static int cros_ec_disable_lid_shutdown_at_startup(VbootInitFunc *init)
 	return cros_ec_set_lid_shutdown_mask(0);
 }
 
-static VbootInitFunc cros_ec_init_func = {
-	.init = &cros_ec_disable_lid_shutdown_at_startup
-};
-
-static int cros_ec_setup(void)
-{
-	list_insert_after(&cros_ec_init_func.list_node, &vboot_init_funcs);
-	return 0;
-}
-
-INIT_FUNC(cros_ec_setup);
+/* Needs to run at vboot time to ensure board_init() has set up EC driver. */
+VBOOT_INIT_FUNC(cros_ec_disable_lid_shutdown_at_startup);
