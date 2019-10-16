@@ -401,14 +401,6 @@ static vb2_error_t vboot_disable_jump(VbootEcOps *vbec)
 	return VB2_SUCCESS;
 }
 
-static vb2_error_t vboot_entering_mode(VbootEcOps *vbec,
-				       enum VbEcBootMode_t vbm)
-{
-	/* Noop success (should not be called) */
-
-	return VB2_SUCCESS;
-}
-
 static vb2_error_t vboot_update_image(VbootEcOps *vbec,
 				      enum VbSelectFirmware_t select,
 				      const uint8_t *image, int image_size)
@@ -452,7 +444,6 @@ Anx7688 *new_anx7688(CrosECTunnelI2c *bus)
 	bridge->vboot.hash_image = vboot_hash_image;
 	bridge->vboot.update_image = vboot_update_image;
 	bridge->vboot.protect = vboot_protect;
-	bridge->vboot.entering_mode = vboot_entering_mode;
 	bridge->vboot.reboot_to_ro = vboot_reboot_to_ro;
 
 	return bridge;

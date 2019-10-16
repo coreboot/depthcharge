@@ -143,13 +143,6 @@ vb2_error_t VbExEcProtect(int devidx, enum VbSelectFirmware_t select)
 	return ec->protect(ec, select);
 }
 
-vb2_error_t VbExEcEnteringMode(int devidx, enum VbEcBootMode_t mode)
-{
-	VbootEcOps *ec = vboot_get_ec(devidx);
-	assert(ec && ec->entering_mode);
-	return ec->entering_mode(ec, mode);
-}
-
 /* Wait 3 seconds after software sync for EC to clear the limit power flag. */
 #define LIMIT_POWER_WAIT_TIMEOUT 3000
 /* Check the limit power flag every 50 ms while waiting. */

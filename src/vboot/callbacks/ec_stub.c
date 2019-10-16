@@ -77,11 +77,6 @@ vb2_error_t VbExEcProtect(int devidx, enum VbSelectFirmware_t select)
 	no_ec_soft_sync();
 }
 
-vb2_error_t VbExEcEnteringMode(int devidx, enum VbEcBootMode_t mode)
-{
-	return VB2_SUCCESS;
-}
-
 vb2_error_t VbExEcVbootDone(int in_recovery)
 {
 	return VB2_SUCCESS;

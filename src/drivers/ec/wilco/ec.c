@@ -191,12 +191,6 @@ static vb2_error_t vboot_disable_jump(VbootEcOps *vbec)
 	return VB2_SUCCESS;
 }
 
-static vb2_error_t vboot_entering_mode(VbootEcOps *vbec,
-				       enum VbEcBootMode_t vbm)
-{
-	return VB2_SUCCESS;
-}
-
 static vb2_error_t vboot_protect(VbootEcOps *vbec,
 				 enum VbSelectFirmware_t select)
 {
@@ -281,7 +275,6 @@ WilcoEc *new_wilco_ec(uint16_t ec_host_base, uint16_t mec_emi_base,
 	ec->vboot.reboot_switch_rw = vboot_reboot_switch_rw;
 	ec->vboot.jump_to_rw = vboot_jump_to_rw;
 	ec->vboot.disable_jump = vboot_disable_jump;
-	ec->vboot.entering_mode = vboot_entering_mode;
 	ec->vboot.update_image = vboot_update_image;
 	ec->vboot.protect = vboot_protect;
 	ec->vboot.running_rw = vboot_running_rw;

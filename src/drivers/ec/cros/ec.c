@@ -701,23 +701,6 @@ static int ec_flash_protect(CrosEc *me, uint32_t set_mask, uint32_t set_flags,
 	return 0;
 }
 
-static vb2_error_t vboot_entering_mode(VbootEcOps *vbec,
-				       enum VbEcBootMode_t vbm)
-{
-	CrosEc *me = container_of(vbec, CrosEc, vboot);
-	int mode = VBOOT_MODE_NORMAL;
-
-	if (vbm == VB_EC_RECOVERY)
-		mode = VBOOT_MODE_RECOVERY;
-	else if (vbm == VB_EC_DEVELOPER)
-		mode = VBOOT_MODE_DEVELOPER;
-
-	if (ec_command(me, EC_CMD_ENTERING_MODE, 0,
-		       &mode, sizeof(mode), NULL, 0))
-		return VB2_ERROR_UNKNOWN;
-	return VB2_SUCCESS;
-}
-
 /**
  * Obtain position and size of a flash region
  *
@@ -1391,7 +1374,6 @@ CrosEc *new_cros_ec(CrosEcBusOps *bus, int devidx, GpioOps *interrupt_gpio)
 	me->vboot.hash_image = vboot_hash_image;
 	me->vboot.update_image = vboot_update_image;
 	me->vboot.protect = vboot_protect;
-	me->vboot.entering_mode = vboot_entering_mode;
 	me->vboot.reboot_to_ro = vboot_reboot_to_ro;
 	me->vboot.reboot_switch_rw = vboot_reboot_switch_rw;
 	me->vboot.battery_cutoff = vboot_battery_cutoff;
