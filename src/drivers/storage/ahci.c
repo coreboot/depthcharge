@@ -491,6 +491,10 @@ static int ahci_ctrlr_init(BlockDevCtrlrOps *me)
 
 	ctrlr->mmio_base = (void *)pci_read_resource(ctrlr->dev, 5);
 	printf("AHCI MMIO base = %p\n", ctrlr->mmio_base);
+	if (ctrlr->mmio_base == (void *)(0xffffffff)) {
+		printf("mmio is invalid, skip AHCI init\n");
+		return -1;
+	}
 
 	// JMicron-specific fixup taken from kernel:
 	// make sure we're in AHCI mode
