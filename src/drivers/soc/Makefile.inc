@@ -1,5 +1,5 @@
 ##
-## Copyright 2016 Google Inc.
+## Copyright 2020 Google LLC
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -24,3 +24,5 @@ depthcharge-$(CONFIG_DRIVER_SOC_ICELAKE) += icelake.c
 depthcharge-$(CONFIG_DRIVER_SOC_ICELAKE) += intel_common.c
 depthcharge-$(CONFIG_DRIVER_SOC_QCOM_QUP_SE) += qcom_qup_se.c
 depthcharge-$(CONFIG_DRIVER_SOC_JASPERLAKE) += intel_common.c
+depthcharge-$(CONFIG_DRIVER_SOC_TIGERLAKE) += tigerlake.c
+depthcharge-$(CONFIG_DRIVER_SOC_TIGERLAKE) += intel_common.c
