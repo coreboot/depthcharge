@@ -12,19 +12,46 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
+//#include "drivers/soc/tigerlake.h"
+#include "drivers/soc/cannonlake.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/nvme.h"
+#include "drivers/tpm/spi.h"
+#include "drivers/tpm/tpm.h"
 
+static int cr50_irq_status(void)
+{
+	return cannonlake_get_gpe(GPE0_DW0_21); /* GPP_C21 */
+}
+
+static void volteer_setup_tpm(void)
+{
+	/* SPI TPM */
+	const IntelGspiSetupParams gspi0_params = {
+		.dev = PCI_DEV(0, 0x1e, 2),
+		.cs_polarity = SPI_POLARITY_LOW,
+		.clk_phase = SPI_CLOCK_PHASE_FIRST,
+		.clk_polarity = SPI_POLARITY_LOW,
+		.ref_clk_mhz = 100,
+		.gspi_clk_mhz = 1,
+	};
+	tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0_params),
+		cr50_irq_status)->ops);
+}
 
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
+
+	/* TPM */
+	volteer_setup_tpm();
 
 	/* Chrome EC (eSPI) */
 	CrosEcLpcBus *cros_ec_lpc_bus =
@@ -41,6 +68,10 @@ static int board_setup(void)
 	/* NVME SSD */
 	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x1d, 0));
 	list_insert_after(&nvme->ctrlr.list_node, &fixed_block_dev_controllers);
+
+	/* SATA AHCI */
+	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 0x17, 0));
+	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
 
 	return 0;
 }
