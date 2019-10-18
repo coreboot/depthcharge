@@ -42,3 +42,8 @@ config DRIVER_SOC_ICELAKE
 	bool "Icelake SoC driver"
 	default n
 	select DRIVER_GPIO_ICELAKE
+
+config DRIVER_SOC_TIGERLAKE
+	bool "Tigerlake SoC driver"
+	default n
+	select DRIVER_GPIO_TIGERLAKE
