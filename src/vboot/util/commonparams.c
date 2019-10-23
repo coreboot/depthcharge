@@ -210,25 +210,19 @@ int find_common_params(void **blob, int *size)
 
 struct vb2_context *vboot_get_context(void)
 {
-	static struct vb2_context ctx;
+	static struct vb2_context *ctx;
+	vb2_error_t rv;
 
-	if (ctx.workbuf)
-		return &ctx;
+	if (ctx)
+		return ctx;
 
 	die_if(lib_sysinfo.vboot_workbuf == NULL,
 	       "vboot workbuf pointer is NULL\n");
 
-	ctx.workbuf_size = VB2_KERNEL_WORKBUF_RECOMMENDED_SIZE;
-	die_if(lib_sysinfo.vboot_workbuf_size > ctx.workbuf_size,
-	       "previous workbuf too big\n");
+	/* Use the firmware verification workbuf from coreboot. */
+	rv = vb2api_reinit(lib_sysinfo.vboot_workbuf, &ctx);
 
-	/* Import the firmware verification workbuf, which includes
-	 * vb2_shared_data. */
-	ctx.workbuf = xmemalign(VB2_WORKBUF_ALIGN,
-				VB2_KERNEL_WORKBUF_RECOMMENDED_SIZE);
-	memcpy(ctx.workbuf, lib_sysinfo.vboot_workbuf,
-	       lib_sysinfo.vboot_workbuf_size);
-	ctx.workbuf_used = lib_sysinfo.vboot_workbuf_size;
+	die_if(rv, "vboot workbuf could not be initialized, error: %#x\n", rv);
 
-	return &ctx;
+	return ctx;
 }
