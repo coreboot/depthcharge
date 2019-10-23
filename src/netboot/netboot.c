@@ -48,8 +48,7 @@ static void enable_graphics(void)
 
 	/* TODO(chromium:948529): Create a vboot API function for checking that
 	   display is enabled, and setting DISPLAY_REQUEST if it is not. */
-	struct vb2_shared_data *sd =
-		(struct vb2_shared_data *)vboot_get_context()->workbuf;
+	struct vb2_shared_data *sd = vb2_get_sd(vboot_get_context());
 
 	if (sd->flags & VB2_SD_FLAG_DISPLAY_AVAILABLE)
 		return;
