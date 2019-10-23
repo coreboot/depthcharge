@@ -135,14 +135,14 @@ config USB_BOOT_ON_DEV
 	  booting from USB.
 
 config VENDOR_DATA_LENGTH
-  int "The exact number of characters of the vendor data value"
+	int "The exact number of characters of the vendor data value"
 	default 0
 	help
 	  The length of vendor data value. If this is greater than zero then the
-		UI for setting vendor data in VPD will be enabled. This will
-		allow a tech to set VPD data during a mainboard swap as part of
-		an on-site RMA without a shim.
+	  UI for setting vendor data in VPD will be enabled. This will
+	  allow a tech to set VPD data during a mainboard swap as part of
+	  an on-site RMA without a shim.
 
 config VENDOR_DATA_KEY
-  string "The key for the VPD data that can be set in the UI"
+	string "The key for the VPD data that can be set in the UI"
 	default serial_number
