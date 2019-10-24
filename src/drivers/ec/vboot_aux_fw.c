@@ -21,7 +21,7 @@
 
 static struct {
 	const VbootAuxFwOps *fw_ops;
-	VbAuxFwUpdateSeverity_t severity;
+	enum vb2_auxfw_update_severity severity;
 } vboot_aux_fw[NUM_MAX_VBOOT_AUX_FW];
 
 static int vboot_aux_fw_count = 0;
@@ -56,7 +56,7 @@ void register_vboot_aux_fw(const VbootAuxFwOps *aux_fw)
  */
 
 static vb2_error_t check_dev_fw_hash(const VbootAuxFwOps *aux_fw,
-				     VbAuxFwUpdateSeverity_t *severity)
+				     enum vb2_auxfw_update_severity *severity)
 {
 	const void *want_hash;
 	size_t want_size;
@@ -80,11 +80,10 @@ static vb2_error_t check_dev_fw_hash(const VbootAuxFwOps *aux_fw,
  * @param severity	returns VB_AUX_FW_{NO,FAST,SLOW}_UPDATE for worst case
  * @return VBERROR_... error, VB2_SUCCESS on success.
  */
-
-vb2_error_t check_vboot_aux_fw(VbAuxFwUpdateSeverity_t *severity)
+vb2_error_t check_vboot_aux_fw(enum vb2_auxfw_update_severity *severity)
 {
-	VbAuxFwUpdateSeverity_t max;
-	VbAuxFwUpdateSeverity_t current;
+	enum vb2_auxfw_update_severity max;
+	enum vb2_auxfw_update_severity current;
 	vb2_error_t status;
 
 	if (CONFIG(CROS_EC_PROBE_AUX_FW_INFO))
@@ -111,7 +110,6 @@ vb2_error_t check_vboot_aux_fw(VbAuxFwUpdateSeverity_t *severity)
  * @param aux_fw	FW device ops
  * @return VBERROR_... error, VB2_SUCCESS on success.
  */
-
 static vb2_error_t apply_dev_fw(const VbootAuxFwOps *aux_fw)
 {
 	const uint8_t *want_data;
@@ -135,10 +133,9 @@ static vb2_error_t apply_dev_fw(const VbootAuxFwOps *aux_fw)
  *
  * @return VBERROR_... error, VB2_SUCCESS on success.
  */
-
 vb2_error_t update_vboot_aux_fw(void)
 {
-	VbAuxFwUpdateSeverity_t severity;
+	enum vb2_auxfw_update_severity severity;
 	vb2_error_t status = VB2_SUCCESS;
 	int lid_shutdown_disabled = 0;
 

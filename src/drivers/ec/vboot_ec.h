@@ -18,18 +18,18 @@
 #include <vboot_api.h>
 
 typedef struct VbootEcOps {
-	/* Directly correspond to normal vboot VbExEc... interfaces. */
+	/* Directly correspond to normal vboot vb2ex_ec... interfaces. */
 	vb2_error_t (*running_rw)(struct VbootEcOps *me, int *in_rw);
 	vb2_error_t (*jump_to_rw)(struct VbootEcOps *me);
 	vb2_error_t (*disable_jump)(struct VbootEcOps *me);
 	vb2_error_t (*hash_image)(struct VbootEcOps *me,
-				enum VbSelectFirmware_t select,
+				enum vb2_firmware_selection select,
 				const uint8_t **hash, int *hash_size);
 	vb2_error_t (*update_image)(struct VbootEcOps *me,
-				  enum VbSelectFirmware_t select,
+				  enum vb2_firmware_selection select,
 				  const uint8_t *image, int image_size);
 	vb2_error_t (*protect)(struct VbootEcOps *me,
-			     enum VbSelectFirmware_t select);
+			     enum vb2_firmware_selection select);
 
 	/* Tells the EC to reboot to RO on next AP shutdown. */
 	vb2_error_t (*reboot_to_ro)(struct VbootEcOps *me);

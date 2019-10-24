@@ -59,7 +59,7 @@ typedef struct __attribute__((packed)) WilcoPdFlashWrite {
 
 static vb2_error_t wilco_pd_check_hash(const VbootAuxFwOps *vbaux,
 				       const uint8_t *hash, size_t hash_size,
-				       VbAuxFwUpdateSeverity_t *severity)
+				       enum vb2_auxfw_update_severity *severity)
 {
 	WilcoPd *pd = container_of(vbaux, WilcoPd, ops);
 	WilcoEcFlashDevice device;

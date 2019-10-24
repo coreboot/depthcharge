@@ -26,68 +26,61 @@ static void no_ec_soft_sync(void)
 	halt();
 }
 
-int VbExTrustEC(int devidx)
+int vb2ex_ec_trusted(void)
 {
 	printf("The EC which doesn't exist isn't untrusted.\n");
 	return 1;
 }
 
-vb2_error_t VbExEcRunningRW(int devidx, int *in_rw)
+vb2_error_t vb2ex_ec_running_rw(int *in_rw)
 {
 	no_ec_soft_sync();
 }
 
-vb2_error_t VbExEcJumpToRW(int devidx)
+vb2_error_t vb2ex_ec_jump_to_rw(void)
 {
 	no_ec_soft_sync();
 }
 
-vb2_error_t VbExEcDisableJump(int devidx)
+vb2_error_t vb2ex_ec_disable_jump(void)
 {
 	no_ec_soft_sync();
 }
 
-vb2_error_t VbExEcHashImage(int devidx, enum VbSelectFirmware_t select,
-			    const uint8_t **hash, int *hash_size)
+vb2_error_t vb2ex_ec_hash_image(enum vb2_firmware_selection select,
+				const uint8_t **hash, int *hash_size)
 {
 	no_ec_soft_sync();
 }
 
-vb2_error_t VbExEcGetExpectedImage(int devidx, enum VbSelectFirmware_t select,
-				   const uint8_t **image, int *image_size)
+vb2_error_t vb2ex_ec_get_expected_image_hash(enum vb2_firmware_selection select,
+					     const uint8_t **hash,
+					     int *hash_size)
 {
 	no_ec_soft_sync();
 }
 
-vb2_error_t VbExEcGetExpectedImageHash(int devidx,
-				       enum VbSelectFirmware_t select,
-				       const uint8_t **hash, int *hash_size)
+vb2_error_t vb2ex_ec_update_image(enum vb2_firmware_selection select)
 {
 	no_ec_soft_sync();
 }
 
-vb2_error_t VbExEcUpdateImage(int devidx, enum VbSelectFirmware_t select,
-			      const uint8_t *image, int image_size)
+vb2_error_t vb2ex_ec_protect(enum vb2_firmware_selection select)
 {
 	no_ec_soft_sync();
 }
 
-vb2_error_t VbExEcProtect(int devidx, enum VbSelectFirmware_t select)
-{
-	no_ec_soft_sync();
-}
-
-vb2_error_t VbExEcVbootDone(int in_recovery)
+vb2_error_t vb2ex_ec_vboot_done(struct vb2_context *ctx)
 {
 	return VB2_SUCCESS;
 }
 
-vb2_error_t VbExEcBatteryCutOff(void) {
+vb2_error_t vb2ex_ec_battery_cutoff(void) {
 	printf("EC battery cut-off not supported, ignored.\n");
 	return VB2_SUCCESS;
 }
 
-vb2_error_t VbExCheckAuxFw(VbAuxFwUpdateSeverity_t *severity)
+vb2_error_t VbExCheckAuxFw(enum vb2_auxfw_update_severity *severity)
 {
 	*severity = VB_AUX_FW_NO_UPDATE;
 	return VB2_SUCCESS;
