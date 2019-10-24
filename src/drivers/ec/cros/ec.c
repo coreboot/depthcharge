@@ -406,7 +406,7 @@ static vb2_error_t vboot_running_rw(VbootEcOps *vbec, int *in_rw)
 	return VB2_SUCCESS;
 }
 
-static uint32_t get_vboot_hash_offset(enum VbSelectFirmware_t select)
+static uint32_t get_vboot_hash_offset(enum vb2_firmware_selection select)
 {
 	switch (select) {
 	case VB_SELECT_FIRMWARE_READONLY:
@@ -418,7 +418,8 @@ static uint32_t get_vboot_hash_offset(enum VbSelectFirmware_t select)
 	}
 }
 
-static enum ec_flash_region vboot_to_ec_region(enum VbSelectFirmware_t select)
+static enum ec_flash_region vboot_to_ec_region(
+	enum vb2_firmware_selection select)
 {
 	switch (select) {
 	case VB_SELECT_FIRMWARE_READONLY:
@@ -431,7 +432,7 @@ static enum ec_flash_region vboot_to_ec_region(enum VbSelectFirmware_t select)
 }
 
 static vb2_error_t vboot_hash_image(VbootEcOps *vbec,
-				    enum VbSelectFirmware_t select,
+				    enum vb2_firmware_selection select,
 				    const uint8_t **hash, int *hash_size)
 {
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
@@ -883,7 +884,7 @@ static int ec_efs_verify(CrosEc *me, enum ec_flash_region region)
 }
 
 static vb2_error_t vboot_set_region_protection(
-	CrosEc *me, enum VbSelectFirmware_t select, int enable)
+	CrosEc *me, enum vb2_firmware_selection select, int enable)
 {
 	struct ec_response_flash_protect resp;
 	uint32_t protected_region = EC_FLASH_PROTECT_ALL_NOW;
@@ -927,7 +928,7 @@ static vb2_error_t vboot_set_region_protection(
 }
 
 static vb2_error_t vboot_update_image(VbootEcOps *vbec,
-				      enum VbSelectFirmware_t select,
+				      enum vb2_firmware_selection select,
 				      const uint8_t *image, int image_size)
 {
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
@@ -965,7 +966,7 @@ static vb2_error_t vboot_update_image(VbootEcOps *vbec,
 }
 
 static vb2_error_t vboot_protect(VbootEcOps *vbec,
-				 enum VbSelectFirmware_t select)
+				 enum vb2_firmware_selection select)
 {
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
 	return vboot_set_region_protection(me, select, 1);

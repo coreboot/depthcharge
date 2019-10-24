@@ -910,7 +910,7 @@ static int __must_check anx3429_update_primary(Anx3429 *me,
 
 static vb2_error_t anx3429_check_hash(const VbootAuxFwOps *vbaux,
 				      const uint8_t *hash, size_t hash_size,
-				      VbAuxFwUpdateSeverity_t *severity)
+				      enum vb2_auxfw_update_severity *severity)
 {
 	Anx3429 *me = container_of(vbaux, Anx3429, fw_ops);
 	vb2_error_t status = VB2_ERROR_UNKNOWN;
