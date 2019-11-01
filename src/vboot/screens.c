@@ -1165,24 +1165,107 @@ static vb2_error_t vboot_draw_vendor_data_prompt(struct params *p,
 			VB_SCALE_HALF - VB_TEXT_HEIGHT / 2,
 			VB_SIZE_AUTO,
 			VB_TEXT_HEIGHT,
-			PIVOT_H_CENTER|PIVOT_V_CENTER));
+			PIVOT_H_CENTER | PIVOT_V_CENTER));
 
 	RETURN_ON_ERROR(draw_text(p->data->vendor_data.input_text,
 			VB_SCALE_HALF,
 			VB_SCALE_HALF + VB_TEXT_HEIGHT / 2,
 			VB_TEXT_HEIGHT,
-			PIVOT_H_CENTER|PIVOT_V_CENTER));
+			PIVOT_H_CENTER | PIVOT_V_CENTER));
+	return 0;
+}
+
+static vb2_error_t vboot_draw_rma(struct params *p)
+{
+	if (p->flags & DISPLAY_FLAG_REDRAW_BASE)
+		RETURN_ON_ERROR(vboot_draw_base_screen(p));
+
+	RETURN_ON_ERROR(draw_icon("VerificationOff.bmp"));
+	RETURN_ON_ERROR(draw_image_locale("rma_warn.bmp", p->locale,
+			VB_SCALE_HALF,
+			VB_SCALE_HALF,
+			VB_SIZE_AUTO,
+			VB_TEXT_HEIGHT,
+			PIVOT_H_CENTER | PIVOT_V_TOP));
+	RETURN_ON_ERROR(draw_image_locale("rma_enter.bmp", p->locale,
+			VB_SCALE_HALF,
+			VB_SCALE_HALF + VB_TEXT_HEIGHT * 2,
+			VB_SIZE_AUTO,
+			VB_TEXT_HEIGHT,
+			PIVOT_H_CENTER | PIVOT_V_TOP));
+	RETURN_ON_ERROR(draw_image_locale("rma_esc.bmp", p->locale,
+			VB_SCALE_HALF,
+			VB_SCALE_HALF + (VB_TEXT_HEIGHT * 3),
+			VB_SIZE_AUTO,
+			VB_TEXT_HEIGHT,
+			PIVOT_H_CENTER | PIVOT_V_TOP));
 	return 0;
 }
 
 static vb2_error_t vboot_draw_set_vendor_data(struct params *p)
 {
-	return vboot_draw_vendor_data_prompt(p, "set_vendor_data.bmp");
+	if (p->flags & DISPLAY_FLAG_REDRAW_BASE)
+		RETURN_ON_ERROR(vboot_draw_base_screen(p));
+
+	RETURN_ON_ERROR(
+		vboot_draw_vendor_data_prompt(p, "set_vendor_data.bmp"));
+
+	RETURN_ON_ERROR(draw_image_locale("rma_instr.bmp", p->locale,
+			VB_SCALE_HALF,
+			VB_SCALE - 130 - VB_TEXT_HEIGHT * 2,
+			VB_SIZE_AUTO,
+			VB_TEXT_HEIGHT * 0.75,
+			PIVOT_H_CENTER | PIVOT_V_BOTTOM));
+	RETURN_ON_ERROR(draw_image_locale("rma_abort.bmp", p->locale,
+			VB_SCALE_HALF,
+			VB_SCALE - 130 - VB_TEXT_HEIGHT,
+			VB_SIZE_AUTO,
+			VB_TEXT_HEIGHT * 0.75,
+			PIVOT_H_CENTER | PIVOT_V_BOTTOM));
+	return 0;
 }
 
 static vb2_error_t vboot_draw_confirm_vendor_data(struct params *p)
 {
-	return vboot_draw_vendor_data_prompt(p, "conf_vendor_data.bmp");
+	uint32_t yes_flags = PIVOT_H_CENTER | PIVOT_V_CENTER;
+	uint32_t no_flags = PIVOT_H_CENTER | PIVOT_V_CENTER;
+	if (p->flags & DISPLAY_FLAG_REDRAW_BASE)
+		RETURN_ON_ERROR(vboot_draw_base_screen(p));
+
+	RETURN_ON_ERROR(
+		vboot_draw_vendor_data_prompt(p, "conf_vendor_data.bmp"));
+
+	RETURN_ON_ERROR(draw_image_locale("rma_conf_prompt.bmp", p->locale,
+			VB_SCALE_HALF,
+			(VB_SCALE_HALF + VB_TEXT_HEIGHT * 2),
+			VB_SIZE_AUTO,
+			VB_TEXT_HEIGHT,
+			yes_flags));
+
+	if (p->data->vendor_data.selected_index == 0) // "yes" is selected
+		yes_flags |= INVERT_COLORS;
+	else
+		no_flags |= INVERT_COLORS;
+
+	RETURN_ON_ERROR(draw_image_locale("conf_yes.bmp", p->locale,
+			(VB_SCALE_HALF - (VB_SCALE_HALF * 0.1)),
+			(VB_SCALE_HALF + VB_TEXT_HEIGHT * 3.5),
+			VB_SIZE_AUTO,
+			VB_TEXT_HEIGHT,
+			yes_flags));
+	RETURN_ON_ERROR(draw_image_locale("conf_no.bmp", p->locale,
+			(VB_SCALE_HALF + (VB_SCALE_HALF * 0.1)),
+			(VB_SCALE_HALF + VB_TEXT_HEIGHT * 3.5),
+			VB_SIZE_AUTO,
+			VB_TEXT_HEIGHT,
+			no_flags));
+	RETURN_ON_ERROR(draw_image_locale("rma_abort.bmp", p->locale,
+			VB_SCALE_HALF,
+			VB_SCALE - 130 - VB_TEXT_HEIGHT,
+			VB_SIZE_AUTO,
+			VB_TEXT_HEIGHT * 0.75,
+			PIVOT_H_CENTER | PIVOT_V_BOTTOM));
+	return 0;
 }
 #endif // CONFIG_VENDOR_DATA_LENGTH > 0
 
@@ -1291,14 +1374,21 @@ static const struct vboot_ui_descriptor vboot_screens[] = {
 	},
 #if CONFIG_VENDOR_DATA_LENGTH > 0
 	{
+		.id = VB_COMPLETE_VENDOR_DATA,
+		.draw = vboot_draw_rma,
+		.mesg = "This device has not completed the RMA process\n"
+			"Press ENTER to complete RMA\n"
+			"Press ESC to boot Chrome OS\n",
+	},
+	{
 		.id = VB_SCREEN_SET_VENDOR_DATA,
 		.draw = vboot_draw_set_vendor_data,
-		.mesg = "Set Vendor Data",
+		.mesg = "Set service tag",
 	},
 	{
 		.id = VB_SCREEN_CONFIRM_VENDOR_DATA,
 		.draw = vboot_draw_confirm_vendor_data,
-		.mesg = "Confirm Vendor Data",
+		.mesg = "Confirm service tag",
 	},
 #endif
 #if CONFIG(DIAGNOSTIC_UI)
