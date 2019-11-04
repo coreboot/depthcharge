@@ -320,7 +320,7 @@ rammus:
   hi_res:   [en]
   text_colors:  4
 
-sarien:
+sarien,drallion:
   # 1920x1080, boots recovery image on USB ports.
   screen:   [1920, 1080]
   sdcard:   False
