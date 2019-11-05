@@ -334,7 +334,7 @@ hatch:
   text_colors:  4
 
 flapjack,kukui:
-  # 1200*1980, boots recovery image on USB ports.
-  screen:   [1200, 1900]
+  # 1920x1200, boots recovery image on USB ports.
+  screen:   [1920, 1200]
   sdcard:   False
   hi_res:   [en]
