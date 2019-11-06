@@ -33,7 +33,13 @@ depthcharge-y += time.c
 depthcharge-y += tpm.c
 
 ifeq ($(CONFIG_EC_SOFTWARE_SYNC),y)
-depthcharge-y += ec.c auxfw.c
+depthcharge-y += ec.c
 else
-depthcharge-y += ec_stub.c auxfw_stub.c
+depthcharge-y += ec_stub.c
+endif
+
+ifeq ($(CONFIG_AUXFW_SOFTWARE_SYNC),y)
+depthcharge-y += auxfw.c
+else
+depthcharge-y += auxfw_stub.c
 endif

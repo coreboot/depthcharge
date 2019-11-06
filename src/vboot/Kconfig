@@ -44,6 +44,16 @@ config EC_SOFTWARE_SYNC
 	  firmware similar to how vboot verifies the main system firmware. This
 	  option selects whether depthcharge should support EC software sync.
 
+config AUXFW_SOFTWARE_SYNC
+	bool "Enable Aux FW software sync"
+	default n
+	help
+	  Aux FW software sync is a mechanism where the AP ensures that all
+	  auxiliary firmware devices are running the specified version of
+	  firmware.  This is normally done for TCPCs connected to the EC.
+	  This option selects whether depthcharge should support auxiliary
+	  firmware software sync.
+
 config EC_SLOW_UPDATE
 	bool "EC update is slow and needs to display a screen"
 	default n
