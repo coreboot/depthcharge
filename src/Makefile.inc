@@ -40,7 +40,7 @@ $(LDSCRIPT_OBJ): $(LDSCRIPT_SRC) $(KCONFIG_AUTOHEADER)
 # $3 additional compiler/linker flags to pass
 define declare_payload
 
-$1.elf: $2 $$$$(VB_LIB) $(LDSCRIPT_OBJ)
+$1.elf: $2 $$$$(VBOOT_LIB) $$$$(TLCL_LIB) $(LDSCRIPT_OBJ)
 	@printf "    LD         $$(subst $$(obj)/,,$$@.tmp)\n"
 	$(Q)$$(XCC) $$(LINK_FLAGS) $3 -o $$@.tmp \
 		$$(filter-out $(LDSCRIPT_OBJ),$$^)

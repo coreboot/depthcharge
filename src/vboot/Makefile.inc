@@ -22,10 +22,12 @@ depthcharge-y += vbnv.c
 # Where "main" lives.
 vboot-y += main.c
 
-VB_LIB = $(obj)/external/vboot/vboot_fw.a
+VBOOT_BUILD_DIR = $(abspath $(obj)/external/vboot)
+VBOOT_LIB = $(VBOOT_BUILD_DIR)/vboot_fw.a
+TLCL_LIB = $(VBOOT_BUILD_DIR)/tlcl.a
 
-# The vboot library source is external to depthcharge.
-$(VB_LIB):
+# The vboot and TLCL library sources are external to depthcharge.
+$(VBOOT_LIB) $(TLCL_LIB):
 ifndef VB_SOURCE
 	$(error Set VB_SOURCE to point to the vboot source directory)
 else
@@ -40,9 +42,10 @@ else
 		VENDOR_DATA_LENGTH=$(CONFIG_VENDOR_DATA_LENGTH) \
 		DIAGNOSTIC_UI=$(CONFIG_DIAGNOSTIC_UI) \
 		CUSTOM_MUSIC=$(CONFIG_CUSTOM_MUSIC) \
-		BUILD=$(abspath $(dir $(VB_LIB))) \
+		BUILD=$(VBOOT_BUILD_DIR) \
 		V=$(V) \
-		fwlib
+		fwlib tlcl
 endif
 
-.PHONY: $(VB_LIB)
+.PHONY: $(VBOOT_LIB)
+.PHONY: $(TLCL_LIB)
