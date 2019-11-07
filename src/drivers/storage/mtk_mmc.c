@@ -230,8 +230,12 @@ static int mtk_mmc_cmd_done(MtkMmcHost *host, int events, MmcCommand *cmd)
 		return 0;
 
 	} else {
-		mmc_error("cmd: %d crc error!\n", cmd->cmdidx);
-		return MMC_COMM_ERR;
+		if (cmd->cmdidx == MMC_CMD_SEND_STATUS)
+			return 0;
+		else {
+			mmc_error("cmd: %d crc error!\n", cmd->cmdidx);
+			return MMC_COMM_ERR;
+		}
 	}
 }
 
