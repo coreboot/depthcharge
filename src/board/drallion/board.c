@@ -14,6 +14,7 @@
 #include <arch/io.h>
 #include <cbfs.h>
 #include <libpayload.h>
+#include <keycodes.h>
 #include <pci.h>
 #include <pci/pci.h>
 #include <sysinfo.h>
@@ -40,6 +41,8 @@
 #include "drivers/tpm/cr50_switches.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
+
+#define POWER_BUTTON         0x90
 
 enum {
 	EC_HOST_BASE = 0x940,
@@ -77,6 +80,26 @@ FlashProtectionMapping flash_protection_list[] = {
 	/* Empty entry for end of list */
 	{{ 0 }}
 };
+
+static int keyboard_media_key_mapping(char ch)
+{
+	switch (ch) {
+	case 0xb:
+		return KEY_F(12);
+	case 0x5e:
+		return POWER_BUTTON;
+	case 0x4b:
+		return KEY_LEFT;
+	case 0x4d:
+		return KEY_RIGHT;
+	case 0x48:
+		return KEY_UP;
+	case 0x50:
+		return KEY_DOWN;
+	default:
+		return 0;
+	}
+}
 
 static int cr50_irq_status(void)
 {
@@ -143,6 +166,8 @@ static int board_setup(void)
 	sound_set_ops(&codec->ops);
 	set_hda_beep_nid_override(codec, 1);
 
+	/* Initialize callback for media key mapping */
+	initialize_keyboard_media_key_mapping_callback(keyboard_media_key_mapping);
 	return 0;
 }
 
