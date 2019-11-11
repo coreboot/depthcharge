@@ -41,8 +41,7 @@ static uint32_t get_ec_version_from_cbfs(void)
 	return *version;
 }
 
-static int vboot_find_flash_device(WilcoEc *ec,
-				   enum vb2_firmware_selection select,
+static int vboot_find_flash_device(WilcoEc *ec, enum VbSelectFirmware_t select,
 				   WilcoEcFlashDevice *device)
 {
 	EcFlashInstance instance;
@@ -75,7 +74,7 @@ static int vboot_find_flash_device(WilcoEc *ec,
 }
 
 static vb2_error_t vboot_hash_image(VbootEcOps *vbec,
-				    enum vb2_firmware_selection select,
+				    enum VbSelectFirmware_t select,
 				    const uint8_t **hash, int *hash_size)
 {
 	WilcoEc *ec = container_of(vbec, WilcoEc, vboot);
@@ -135,7 +134,7 @@ static vb2_error_t vboot_hash_image(VbootEcOps *vbec,
 }
 
 static vb2_error_t vboot_update_image(VbootEcOps *vbec,
-				      enum vb2_firmware_selection select,
+				      enum VbSelectFirmware_t select,
 				      const uint8_t *image, int image_size)
 {
 	WilcoEc *ec = container_of(vbec, WilcoEc, vboot);
@@ -193,7 +192,7 @@ static vb2_error_t vboot_disable_jump(VbootEcOps *vbec)
 }
 
 static vb2_error_t vboot_protect(VbootEcOps *vbec,
-				 enum vb2_firmware_selection select)
+				 enum VbSelectFirmware_t select)
 {
 	return VB2_SUCCESS;
 }

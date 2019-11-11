@@ -21,25 +21,25 @@
 #include <stddef.h>
 #include <vb2_api.h>
 #include <vboot_api.h>
-#include <2misc.h>
 
 #include "base/timestamp.h"
+#include "drivers/ec/vboot_aux_fw.h"
 #include "drivers/ec/vboot_ec.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/cbfs.h"
 #include "image/fmap.h"
 #include "vboot/util/flag.h"
 
-#define _EC_FILENAME(select, suffix) \
+#define _EC_FILENAME(devidx, select, suffix) \
 	(select == VB_SELECT_FIRMWARE_READONLY ? "ecro" suffix : \
-	 "ecrw" suffix)
-#define EC_IMAGE_FILENAME(select) _EC_FILENAME(select, "")
-#define EC_HASH_FILENAME(select) _EC_FILENAME(select, ".hash")
+	 (devidx == 0 ? "ecrw" suffix : "pdrw" suffix))
+#define EC_IMAGE_FILENAME(devidx, select) _EC_FILENAME(devidx, select, "")
+#define EC_HASH_FILENAME(devidx, select) _EC_FILENAME(devidx, select, ".hash")
 
 static struct cbfs_media *ro_cbfs;
 
 static void *get_file_from_cbfs(
-	const char *filename, enum vb2_firmware_selection select, size_t *size)
+	const char *filename, enum VbSelectFirmware_t select, size_t *size)
 {
 	if (!CONFIG(DRIVER_CBFS_FLASH))
 		return NULL;
@@ -57,9 +57,12 @@ static void *get_file_from_cbfs(
 				     CBFS_TYPE_RAW, size);
 }
 
-int vb2ex_ec_trusted(void)
+int VbExTrustEC(int devidx)
 {
 	int val;
+
+	if (devidx != 0)
+		return 0;
 
 	val = flag_fetch(FLAG_ECINRW);
 	if (val < 0) {
@@ -70,41 +73,53 @@ int vb2ex_ec_trusted(void)
 	return !val;
 }
 
-vb2_error_t vb2ex_ec_running_rw(int *in_rw)
+vb2_error_t VbExEcRunningRW(int devidx, int *in_rw)
 {
-	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
+	VbootEcOps *ec = vboot_get_ec(devidx);
 	assert(ec && ec->running_rw);
 	return ec->running_rw(ec, in_rw);
 }
 
-vb2_error_t vb2ex_ec_jump_to_rw(void)
+vb2_error_t VbExEcJumpToRW(int devidx)
 {
-	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
+	VbootEcOps *ec = vboot_get_ec(devidx);
 	assert(ec && ec->jump_to_rw);
 	return ec->jump_to_rw(ec);
 }
 
-vb2_error_t vb2ex_ec_disable_jump(void)
+vb2_error_t VbExEcDisableJump(int devidx)
 {
-	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
+	VbootEcOps *ec = vboot_get_ec(devidx);
 	assert(ec && ec->disable_jump);
 	return ec->disable_jump(ec);
 }
 
-vb2_error_t vb2ex_ec_hash_image(enum vb2_firmware_selection select,
-				const uint8_t **hash, int *hash_size)
+vb2_error_t VbExEcHashImage(int devidx, enum VbSelectFirmware_t select,
+			    const uint8_t **hash, int *hash_size)
 {
-	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
+	VbootEcOps *ec = vboot_get_ec(devidx);
 	assert(ec && ec->hash_image);
 	return ec->hash_image(ec, select, hash, hash_size);
 }
 
-vb2_error_t vb2ex_ec_get_expected_image_hash(enum vb2_firmware_selection select,
-					     const uint8_t **hash,
-					     int *hash_size)
+vb2_error_t VbExEcGetExpectedImage(int devidx, enum VbSelectFirmware_t select,
+				   const uint8_t **image, int *image_size)
 {
 	size_t size;
-	const char *filename = EC_HASH_FILENAME(select);
+	const char *filename = EC_IMAGE_FILENAME(devidx, select);
+	*image = get_file_from_cbfs(filename, select, &size);
+	if (*image == NULL)
+		return VB2_ERROR_UNKNOWN;
+	*image_size = size;
+	return VB2_SUCCESS;
+}
+
+vb2_error_t VbExEcGetExpectedImageHash(int devidx,
+				       enum VbSelectFirmware_t select,
+				       const uint8_t **hash, int *hash_size)
+{
+	size_t size;
+	const char *filename = EC_HASH_FILENAME(devidx, select);
 	*hash = get_file_from_cbfs(filename, select, &size);
 	if (!*hash)
 		return VB2_ERROR_UNKNOWN;
@@ -113,22 +128,17 @@ vb2_error_t vb2ex_ec_get_expected_image_hash(enum vb2_firmware_selection select,
 	return VB2_SUCCESS;
 }
 
-vb2_error_t vb2ex_ec_update_image(enum vb2_firmware_selection select)
+vb2_error_t VbExEcUpdateImage(int devidx, enum VbSelectFirmware_t select,
+			      const uint8_t *image, int image_size)
 {
-	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
-	const char *filename = EC_IMAGE_FILENAME(select);
-	size_t size;
-	uint8_t *image = get_file_from_cbfs(filename, select, &size);
-	if (image == NULL)
-		return VB2_ERROR_UNKNOWN;
-
+	VbootEcOps *ec = vboot_get_ec(devidx);
 	assert(ec && ec->update_image);
-	return ec->update_image(ec, select, image, size);
+	return ec->update_image(ec, select, image, image_size);
 }
 
-vb2_error_t vb2ex_ec_protect(enum vb2_firmware_selection select)
+vb2_error_t VbExEcProtect(int devidx, enum VbSelectFirmware_t select)
 {
-	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
+	VbootEcOps *ec = vboot_get_ec(devidx);
 	assert(ec && ec->protect);
 	return ec->protect(ec, select);
 }
@@ -138,13 +148,27 @@ vb2_error_t vb2ex_ec_protect(enum vb2_firmware_selection select)
 /* Check the limit power flag every 50 ms while waiting. */
 #define LIMIT_POWER_POLL_SLEEP 50
 
-vb2_error_t vb2ex_ec_vboot_done(struct vb2_context *ctx)
+vb2_error_t VbExEcVbootDone(int in_recovery)
 {
 	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
 	int limit_power;
 	int limit_power_wait_time = 0;
 	int message_printed = 0;
-	int in_recovery = !!(ctx->flags & VB2_CONTEXT_RECOVERY_MODE);
+
+	/*
+	 * The entire EC SW Sync including the AUX FW update is complete at
+	 * this point. AP firmware won't need to communicate to peripherals
+	 * past this point, so protect the remote bus/tunnel to prevent OS from
+	 * accessing it later.
+	 *
+	 * Also doing this here instead of the TCPC(AUX FW) sync code because
+	 * some chips that do not require FW update do not register with AUX FW
+	 * driver. Doing this here will help protect those tunnels as well.
+	 */
+	if (ec->protect_tcpc_ports && ec->protect_tcpc_ports(ec)) {
+		printf("Some remote tunnels in EC may be unprotected\n");
+		return VB2_ERROR_UNKNOWN;
+	}
 
 	/* Ensure we have enough power to continue booting */
 	while(1) {
@@ -179,9 +203,18 @@ vb2_error_t vb2ex_ec_vboot_done(struct vb2_context *ctx)
 	return VB2_SUCCESS;
 }
 
-vb2_error_t vb2ex_ec_battery_cutoff(void)
-{
+vb2_error_t VbExEcBatteryCutOff(void) {
 	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
 	return (ec->battery_cutoff(ec) == 0
 		 ? VB2_SUCCESS : VB2_ERROR_UNKNOWN);
+}
+
+vb2_error_t VbExCheckAuxFw(VbAuxFwUpdateSeverity_t *severity)
+{
+	return check_vboot_aux_fw(severity);
+}
+
+vb2_error_t VbExUpdateAuxFw(void)
+{
+	return update_vboot_aux_fw();
 }

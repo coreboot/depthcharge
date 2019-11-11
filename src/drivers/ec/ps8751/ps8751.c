@@ -1247,7 +1247,7 @@ static int ps8751_reflash(Ps8751 *me, const uint8_t *data, size_t data_size)
 
 static vb2_error_t ps8751_check_hash(const VbootAuxFwOps *vbaux,
 				     const uint8_t *hash, size_t hash_size,
-				     enum vb2_auxfw_update_severity *severity)
+				     VbAuxFwUpdateSeverity_t *severity)
 {
 	Ps8751 *me = container_of(vbaux, Ps8751, fw_ops);
 	enum ps8751_device_state status;

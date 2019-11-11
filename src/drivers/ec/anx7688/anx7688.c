@@ -346,8 +346,7 @@ out:
 	return VB2_SUCCESS;
 }
 
-vb2_error_t vboot_hash_image(VbootEcOps *vbec,
-			     enum vb2_firmware_selection select,
+vb2_error_t vboot_hash_image(VbootEcOps *vbec, enum VbSelectFirmware_t select,
 			     const uint8_t **hash, int *hash_size)
 {
 	Anx7688 *me = container_of(vbec, Anx7688, vboot);
@@ -403,7 +402,7 @@ static vb2_error_t vboot_disable_jump(VbootEcOps *vbec)
 }
 
 static vb2_error_t vboot_update_image(VbootEcOps *vbec,
-				      enum vb2_firmware_selection select,
+				      enum VbSelectFirmware_t select,
 				      const uint8_t *image, int image_size)
 {
 	Anx7688 *me = container_of(vbec, Anx7688, vboot);
@@ -426,7 +425,7 @@ static vb2_error_t vboot_update_image(VbootEcOps *vbec,
 }
 
 static vb2_error_t vboot_protect(VbootEcOps *vbec,
-				 enum vb2_firmware_selection select)
+				 enum VbSelectFirmware_t select)
 {
 	/* Noop success */
 
