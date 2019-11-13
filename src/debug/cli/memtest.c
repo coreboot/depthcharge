@@ -30,7 +30,7 @@ typedef unsigned long volatile ulv;
 
 struct test {
 	char *name;
-	int (*fp)();
+	int (*fp)(volatile ulv *, volatile ulv *, size_t);
 };
 
 static int compare_regions(ulv *bufa, ulv *bufb, size_t count)
