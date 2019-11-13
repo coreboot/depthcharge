@@ -25,7 +25,7 @@ static int do_cbfs_dump(char * const name)
 	return CMD_RET_SUCCESS;
 }
 
-static int do_cbfs_ls()
+static int do_cbfs_ls(void)
 {
 	printf("Command not implemented\n");
 	return CMD_RET_SUCCESS;
