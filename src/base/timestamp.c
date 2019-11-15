@@ -24,7 +24,8 @@ struct timestamp_entry {
 
 struct timestamp_table {
 	uint64_t	base_time;
-	uint32_t	max_entries;
+	uint16_t	max_entries;
+	uint16_t	tick_freq_mhz;
 	uint32_t	num_entries;
 	struct timestamp_entry entries[0]; /* Variable number of entries */
 } __attribute__((packed));
