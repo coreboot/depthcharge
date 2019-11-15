@@ -9,24 +9,17 @@
 #include <vboot_api.h>
 #include <vb2_api.h>
 
-static void no_auxfw_soft_sync(void) __attribute__((noreturn));
-static void no_auxfw_soft_sync(void)
-{
-	printf("AUXFW software sync not supported.\n");
-	halt();
-}
-
 vb2_error_t vb2ex_auxfw_check(enum vb2_auxfw_update_severity *severity)
 {
-	no_auxfw_soft_sync();
+	return VB2_SUCCESS;
 }
 
 vb2_error_t vb2ex_auxfw_update(void)
 {
-	no_auxfw_soft_sync();
+	return VB2_SUCCESS;
 }
 
 vb2_error_t vb2ex_auxfw_finalize(struct vb2_context *ctx)
 {
-	no_auxfw_soft_sync();
+	return VB2_SUCCESS;
 }
