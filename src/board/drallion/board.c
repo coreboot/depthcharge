@@ -51,6 +51,8 @@ enum {
 
 const char *pd_cbfs_firmware = "pdrw.bin";
 const char *pd_cbfs_hash = "pdrw.hash";
+//Ec Board Id to skip PD SW sync
+uint32_t id_to_skip = 0;
 
 FlashProtectionMapping flash_protection_list[] = {
 	{
@@ -127,8 +129,9 @@ static int board_setup(void)
 	register_vboot_ec(&wilco_ec->vboot, PRIMARY_VBOOT_EC);
 	flag_replace(FLAG_LIDSW, wilco_ec_lid_switch_flag(wilco_ec));
 
-	/* Update TI TCPC if available in CBFS */
-	if (cbfs_find_file(pd_cbfs_hash, CBFS_TYPE_RAW)) {
+	/* Update TI TCPC if available in CBFS and if the board is not id_to_skip*/
+	if (cbfs_find_file(pd_cbfs_hash, CBFS_TYPE_RAW) &&
+	   (lib_sysinfo.board_id != id_to_skip)) {
 		WilcoPd *ti_tcpc = new_wilco_pd_ti(wilco_ec, pd_cbfs_firmware,
 						   pd_cbfs_hash);
 		register_vboot_aux_fw(&ti_tcpc->ops);
