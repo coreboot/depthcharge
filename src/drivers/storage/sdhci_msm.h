@@ -32,7 +32,7 @@
 #define VENDOR_SPEC_FUN3_POR_VAL	0x02226040
 #define SDCC_HC_VENDOR_SPECIFIC_CAPABILITIES0	0x21C
 
-SdhciHost *new_sdhci_msm_host(void *ioaddr, int platform_info, int clock_max,
-			      void *tlmmAddr, GpioOps *cd_gpio);
+SdhciHost *new_sdhci_msm_host(uintptr_t ioaddr, int platform_info, int clock_max,
+			      uintptr_t tlmmAddr, GpioOps *cd_gpio);
 
 #endif /* __DRIVERS_STORAGE_SDHCI_MSM_H__ */

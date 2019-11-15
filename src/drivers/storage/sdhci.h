@@ -371,7 +371,7 @@ SdhciHost *new_pci_sdhci_host(pcidev_t dev,
 			      int clock_max);
 
 /* Add SDHCI controller with memory address */
-SdhciHost *new_mem_sdhci_host(void *ioaddr,
+SdhciHost *new_mem_sdhci_host(uintptr_t ioaddr,
 			      int platform_info,
 			      int clock_min,
 			      int clock_max,

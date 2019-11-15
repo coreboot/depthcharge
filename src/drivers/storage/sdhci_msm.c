@@ -85,8 +85,8 @@ static int sdhci_msm_init(SdhciHost *host)
 /*
  * This function will get invoked from board_setup()
  */
-SdhciHost *new_sdhci_msm_host(void *ioaddr, int platform_info, int clock_max,
-			      void *tlmmAddr, GpioOps *cd_gpio)
+SdhciHost *new_sdhci_msm_host(uintptr_t ioaddr, int platform_info, int clock_max,
+			      uintptr_t tlmmAddr, GpioOps *cd_gpio)
 {
 	SdhciHost *host;
 
@@ -94,10 +94,6 @@ SdhciHost *new_sdhci_msm_host(void *ioaddr, int platform_info, int clock_max,
 		  clock_max/MHz, platform_info);
 
 	host = new_mem_sdhci_host(ioaddr, platform_info, 400*KHz, clock_max, 0);
-	if (!host) {
-		mmc_error("%s: Failed to allocate SdhciHost\n", __func__);
-		goto out;
-	}
 
 	host->attach = sdhci_msm_init;
 	host->cd_gpio = cd_gpio;
@@ -107,9 +103,9 @@ SdhciHost *new_sdhci_msm_host(void *ioaddr, int platform_info, int clock_max,
 
 	/* Configure drive strengths of interface lines */
 	if (host->removable)
-		writel(SDC2_TLMM_CONFIG, tlmmAddr);
+		writel(SDC2_TLMM_CONFIG, (void *)tlmmAddr);
 	else
-		writel(SDC1_TLMM_CONFIG, tlmmAddr);
-out:
+		writel(SDC1_TLMM_CONFIG, (void *)tlmmAddr);
+
 	return host;
 }

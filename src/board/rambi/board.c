@@ -90,7 +90,7 @@ static int board_setup(void)
 	SdhciHost *emmc;
 
 	if (nvs->scc_en[SCC_NVS_MMC])
-		emmc = new_mem_sdhci_host((void *)nvs->scc_bar0[SCC_NVS_MMC],
+		emmc = new_mem_sdhci_host(nvs->scc_bar0[SCC_NVS_MMC],
 				    0, emmc_sd_clock_min, emmc_clock_max, 0);
 	else
 		emmc = new_pci_sdhci_host(PCI_DEV(0, 23, 0), 0,
@@ -100,7 +100,7 @@ static int board_setup(void)
 			  &fixed_block_dev_controllers);
 
 	if (nvs->scc_en[SCC_NVS_SD])
-		emmc = new_mem_sdhci_host((void *)nvs->scc_bar0[SCC_NVS_SD],
+		emmc = new_mem_sdhci_host(nvs->scc_bar0[SCC_NVS_SD],
 				     1, emmc_sd_clock_min, sd_clock_max, 0);
 	else
 		emmc = new_pci_sdhci_host(PCI_DEV(0, 18, 0), 1,

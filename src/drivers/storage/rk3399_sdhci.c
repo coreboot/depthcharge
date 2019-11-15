@@ -139,7 +139,7 @@ static void rk3399_sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 		rk3399_emmc_phy_power_on(mmc_ctrlr->bus_hz);
 }
 
-SdhciHost *new_rk_sdhci_host(void *ioaddr, int platform_info,
+SdhciHost *new_rk_sdhci_host(uintptr_t ioaddr, int platform_info,
 			      int clock_min, int clock_max, int clock_base)
 {
 	SdhciHost *host;
