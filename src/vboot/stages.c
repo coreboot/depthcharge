@@ -131,7 +131,7 @@ int vboot_select_and_load_kernel(void)
 	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
 
 	if (CONFIG(DETACHABLE_UI))
-		kparams.inflags |= VB_SALK_INFLAGS_ENABLE_DETACHABLE_UI;
+		ctx->flags |= VB2_CONTEXT_DETACHABLE_UI;
 
 	// On x86 systems, inhibit power button pulse from EC.
 	if (CONFIG(ARCH_X86) && ec &&
