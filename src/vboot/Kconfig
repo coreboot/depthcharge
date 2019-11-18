@@ -108,12 +108,6 @@ config NVDATA_FLASH
 	  nvdata is stored in the same flash device with the firmware,
 	  location determined by the fmap 'rw-nvram' entry.
 
-config NVDATA_FAKE
-	bool "Fake"
-	help
-	  Nonvolatile storage is simulated using RAM and is re-initialized
-	  each boot.
-
 endchoice
 
 choice
