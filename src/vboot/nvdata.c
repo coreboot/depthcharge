@@ -54,7 +54,7 @@ vb2_error_t nvdata_read(struct vb2_context *ctx)
 	else if (CONFIG(NVDATA_FLASH))
 		return nvdata_flash_read(ctx->nvdata);
 	else
-		return nvdata_fake_read(ctx->nvdata);
+		die("no nvdata backend selected\n");
 
 	PRINT_BYTES("read nvdata", &ctx->nvdata);
 }
@@ -77,7 +77,7 @@ vb2_error_t nvdata_write(struct vb2_context *ctx)
 	else if (CONFIG(NVDATA_FLASH))
 		ret = nvdata_flash_write(ctx->nvdata);
 	else
-		ret = nvdata_fake_write(ctx->nvdata);
+		die("no nvdata backend selected\n");
 
 	if (!ret)
 		ctx->flags &= ~VB2_CONTEXT_NVDATA_CHANGED;
