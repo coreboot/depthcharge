@@ -54,6 +54,9 @@ static int board_setup(void)
 
 	power_set_ops(&psci_power_ops);
 
+	if (!strcmp(cb_mb_part_string(lib_sysinfo.mainboard), "Bubs"))
+		fit_add_compat("qcom,sc7180-idp");
+
 	/* Support USB3.0 XHCI controller in firmware. */
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0xa600000);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);

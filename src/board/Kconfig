@@ -24,6 +24,9 @@ endif
 if BOARD_DIR = "bolt"
 source src/board/bolt/Kconfig
 endif
+if BOARD_DIR = "trogdor"
+source src/board/trogdor/Kconfig
+endif
 if BOARD_DIR = "cheza"
 source src/board/cheza/Kconfig
 endif
