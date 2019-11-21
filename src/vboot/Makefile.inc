@@ -26,8 +26,11 @@ VBOOT_BUILD_DIR = $(abspath $(obj)/external/vboot)
 VBOOT_LIB = $(VBOOT_BUILD_DIR)/vboot_fw.a
 TLCL_LIB = $(VBOOT_BUILD_DIR)/tlcl.a
 
+.PHONY: $(VBOOT_LIB)
+.PHONY: $(TLCL_LIB)
+
 # The vboot and TLCL library sources are external to depthcharge.
-$(VBOOT_LIB) $(TLCL_LIB):
+$(VBOOT_LIB):
 ifndef VB_SOURCE
 	$(error Set VB_SOURCE to point to the vboot source directory)
 else
@@ -47,5 +50,4 @@ else
 		fwlib tlcl
 endif
 
-.PHONY: $(VBOOT_LIB)
-.PHONY: $(TLCL_LIB)
+$(TLCL_LIB): $(VBOOT_LIB)
