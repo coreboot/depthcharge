@@ -86,7 +86,7 @@ FlashProtectionMapping flash_protection_list[] = {
 static int keyboard_media_key_mapping(char ch)
 {
 	switch (ch) {
-	case 0xb:
+	case 0x57:
 		return KEY_F(12);
 	case 0x5e:
 		return POWER_BUTTON;
