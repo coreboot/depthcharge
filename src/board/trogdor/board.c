@@ -20,9 +20,15 @@
 #include "drivers/gpio/gpio.h"
 #include "vboot/util/flag.h"
 #include "boot/fit.h"
+#include "drivers/bus/i2c/cros_ec_tunnel.h"
+#include "drivers/bus/spi/qcom_qupv3_spi.h"
+#include "drivers/ec/cros/spi.h"
+#include "drivers/ec/ps8751/ps8751.h"
 #include "drivers/storage/sdhci_msm.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/gpio/sc7180.h"
+#include "drivers/gpio/sysinfo.h"
+#include "drivers/tpm/spi.h"
 
 #define SDC1_HC_BASE          0x7C4000
 #define SDC1_TLMM_CFG_ADDR    0x3D7A000
@@ -58,6 +64,27 @@ static int board_setup(void)
                                 new_gpio_not(&cd_gpio_cfg->ops));
         list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
                         &removable_block_dev_controllers);
+
+	SpiOps *spi_qup0se0 = &new_sc7180_Qup_spi(0x880000)->ops;
+	SpiOps *spi_qup1se0 = &new_sc7180_Qup_spi(0xa80000)->ops;
+	SpiOps *ec_spi = lib_sysinfo.board_id < 1 ? spi_qup0se0 : spi_qup1se0;
+	SpiOps *tpm_spi = lib_sysinfo.board_id < 1 ? spi_qup1se0 : spi_qup0se0;
+
+	if (CONFIG(DRIVER_TPM_SPI))
+		tpm_set_ops(&new_tpm_spi(tpm_spi, NULL)->ops);
+
+	if (CONFIG(DRIVER_EC_CROS)) {
+		CrosEcBusOps *ec_bus = &new_cros_ec_spi_bus(ec_spi)->ops;
+		GpioOps *ec_int = sysinfo_lookup_gpio("EC interrupt", 1,
+					new_sc7180_gpio_input_from_coreboot);
+		CrosEc *ec = new_cros_ec(ec_bus, 0, ec_int);
+		register_vboot_ec(&ec->vboot, 0);
+
+		CrosECTunnelI2c *tcpc0_tunnel = new_cros_ec_tunnel_i2c(ec, 1);
+		CrosECTunnelI2c *tcpc1_tunnel = new_cros_ec_tunnel_i2c(ec, 2);
+		register_vboot_aux_fw(&new_ps8805(tcpc0_tunnel, 0)->fw_ops);
+		register_vboot_aux_fw(&new_ps8805(tcpc1_tunnel, 1)->fw_ops);
+	}
 
 	return 0;
 }
