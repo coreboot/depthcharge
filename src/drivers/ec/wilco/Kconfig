@@ -8,3 +8,4 @@
 config DRIVER_EC_WILCO
 	bool "Enable support for the Chrome OS Wilco EC"
 	default n
+	select AUXFW_SOFTWARE_SYNC
