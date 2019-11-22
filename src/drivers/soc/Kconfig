@@ -51,3 +51,7 @@ config DRIVER_SOC_ICELAKE
 config DRIVER_SOC_QCOM_QUP_SE
 	bool "Qcom QUPV3 common driver"
 	default n
+
+config DRIVER_SOC_JASPERLAKE
+	bool "Jasperlake SoC driver"
+	default n

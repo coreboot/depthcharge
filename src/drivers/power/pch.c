@@ -327,3 +327,8 @@ PowerOps icelake_power_ops = {
 	.cold_reboot = &pch_cold_reboot,
 	.power_off = &icelake_power_off
 };
+
+PowerOps jasperlake_power_ops = {
+	.cold_reboot = &pch_cold_reboot,
+	.power_off = &icelake_power_off
+};
