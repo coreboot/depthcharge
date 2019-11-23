@@ -28,10 +28,10 @@
  */
 typedef struct I2cSeg
 {
-	int read;	// 0:write 1:read
-	uint8_t chip;	// slave address
 	uint8_t *buf;	// buffer for read or write
 	int len;	// buffer size
+	uint8_t chip;	// slave address
+	uint8_t read;	// 0:write 1:read
 } I2cSeg;
 
 typedef struct I2cOps
