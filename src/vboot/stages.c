@@ -126,7 +126,6 @@ int vboot_select_and_load_kernel(void)
 	VbSelectAndLoadKernelParams kparams = {
 		.kernel_buffer = &_kernel_start,
 		.kernel_buffer_size = &_kernel_end - &_kernel_start,
-		.inflags = 0
 	};
 	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
 
@@ -143,7 +142,7 @@ int vboot_select_and_load_kernel(void)
 	}
 
 	if (vendor_data_settable())
-		kparams.inflags |= VB_SALK_INFLAGS_VENDOR_DATA_SETTABLE;
+		ctx->flags |= VB2_CONTEXT_VENDOR_DATA_SETTABLE;
 
 	/* Set legacy vboot1 VbSharedDataHeader. */
 	if (find_common_params(&shared, &size))
