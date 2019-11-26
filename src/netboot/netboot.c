@@ -28,6 +28,7 @@
 #include "drivers/input/input.h"
 #include "drivers/net/net.h"
 #include "drivers/power/power.h"
+#include "drivers/bus/usb/usb.h"
 #include "drivers/video/display.h"
 #include "net/uip.h"
 #include "net/uip_arp.h"
@@ -223,6 +224,9 @@ int netboot_entry(void)
 	// Set up common params, vboot_handoff, VBSD, and VbInit flags.
 	if (common_params_init())
 		halt();
+
+	// Force init USB regardless of vboot mode.
+	dc_usb_initialize();
 
 	// Make sure graphics are available if they aren't already.
 	enable_graphics();
