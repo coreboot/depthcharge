@@ -109,11 +109,6 @@ static void usb_eth_remove(GenericUsbDevice *dev)
 
 static void usb_net_poller(struct NetPoller *poller)
 {
-	static int usb_initted;
-
-	if (!usb_initted)
-		dc_usb_initialize();
-
 	usb_poll();
 }
 
