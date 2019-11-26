@@ -105,5 +105,14 @@ void dc_usb_initialize(void)
 			hc->init_callback(hc);
 	}
 
+	// Some code (particularly AOA storage driver) assumes that after this
+	// is called, all USB devices that were plugged in at boot have been
+	// enumerated. However, USB devices can be crappy and sometimes need to
+	// be poked more than once to really react. This tries to solve that
+	// issue (but shouldn't poke too often either since the screen isn't up
+	// yet, and a broken device could hang every poll up to 5 seconds until
+	// the transfer times out).
+	usb_poll();
+	mdelay(300);
 	usb_poll();
 }
