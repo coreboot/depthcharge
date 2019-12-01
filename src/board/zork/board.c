@@ -104,6 +104,14 @@ static int board_setup(void)
 
 	flash_set_ops(&new_mem_mapped_flash(FLASH_START, FLASH_SIZE)->ops);
 
+	SdhciHost *emmc = new_mem_sdhci_host(
+		EMMCCFG,
+		/* Can't enable HS200 or HS400 until tuning is fixed */
+		SDHCI_PLATFORM_NO_EMMC_HS200 | SDHCI_PLATFORM_EMMC_1V8_POWER, 0,
+		0, 0);
+	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+			  &fixed_block_dev_controllers);
+
 	/* Set up h1 on I2C3 */
 	DesignwareI2c *i2c_h1 = new_designware_i2c(
 		AP_I2C3_ADDR, 400000, AP_I2C_CLK_MHZ);
