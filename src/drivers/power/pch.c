@@ -323,6 +323,15 @@ PowerOps cannonlake_power_ops = {
 	.power_off = &cannonlake_power_off
 };
 
+/*
+ * We use cannonlake power off function here as all
+ * the acpi register and PCI dev is same.
+*/
+PowerOps tigerlake_power_ops = {
+	.cold_reboot = &pch_cold_reboot,
+	.power_off = &cannonlake_power_off
+};
+
 PowerOps icelake_power_ops = {
 	.cold_reboot = &pch_cold_reboot,
 	.power_off = &icelake_power_off

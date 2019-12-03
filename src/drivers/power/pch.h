@@ -26,6 +26,7 @@ PowerOps baytrail_power_ops;
 PowerOps braswell_power_ops;
 PowerOps skylake_power_ops;
 PowerOps cannonlake_power_ops;
+PowerOps tigerlake_power_ops;
 PowerOps icelake_power_ops;
 PowerOps apollolake_power_ops;
 PowerOps jasperlake_power_ops;
