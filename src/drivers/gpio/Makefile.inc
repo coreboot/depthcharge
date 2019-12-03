@@ -17,6 +17,7 @@ depthcharge-y += sysinfo.c
 depthcharge-$(CONFIG_DRIVER_GPIO_BAYTRAIL) += baytrail.c
 depthcharge-$(CONFIG_DRIVER_GPIO_BRASWELL) += braswell.c
 depthcharge-$(CONFIG_DRIVER_GPIO_CANNONLAKE) += cannonlake.c
+depthcharge-$(CONFIG_DRIVER_GPIO_TIGERLAKE) += tigerlake.c
 depthcharge-$(CONFIG_DRIVER_GPIO_EXYNOS5250) += exynos5250.c
 depthcharge-$(CONFIG_DRIVER_GPIO_EXYNOS5420) += exynos5420.c
 depthcharge-$(CONFIG_DRIVER_GPIO_IPQ_806X) += ipq806x.c
