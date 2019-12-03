@@ -18,8 +18,7 @@
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
-//#include "drivers/soc/tigerlake.h"
-#include "drivers/soc/cannonlake.h"
+#include "drivers/soc/tigerlake.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/nvme.h"
@@ -28,7 +27,7 @@
 
 static int cr50_irq_status(void)
 {
-	return cannonlake_get_gpe(GPE0_DW0_21); /* GPP_C21 */
+	return tigerlake_get_gpe(GPE0_DW0_21); /* GPP_C21 */
 }
 
 static void volteer_setup_tpm(void)
@@ -63,7 +62,7 @@ static int board_setup(void)
 	flash_set_ops(&new_mem_mapped_flash(0xfe000000, 0x2000000)->ops);
 
 	/* PCH Power */
-	power_set_ops(&cannonlake_power_ops);
+	power_set_ops(&tigerlake_power_ops);
 
 	/* NVME SSD */
 	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x1d, 0));
