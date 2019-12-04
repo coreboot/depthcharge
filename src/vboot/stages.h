@@ -26,7 +26,6 @@ int vboot_check_wipe_memory(void);
 int vboot_check_enable_usb(void);
 int vboot_in_recovery(void);
 int vboot_in_developer(void);
-void vboot_update_recovery(uint32_t request);
 void vboot_boot_kernel(VbSelectAndLoadKernelParams *kparams);
 
 #endif /* __VBOOT_STAGES_H__ */

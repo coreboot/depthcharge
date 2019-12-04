@@ -54,11 +54,6 @@ int vboot_in_developer(void)
 	return !!(vboot_get_context()->flags & VB2_CONTEXT_DEVELOPER_MODE);
 }
 
-void vboot_update_recovery(uint32_t request)
-{
-	nvdata_write_field_DO_NOT_USE(VB2_NV_RECOVERY_REQUEST, request);
-}
-
 int vboot_check_wipe_memory(void)
 {
 	if (vboot_in_recovery() || vboot_in_developer())

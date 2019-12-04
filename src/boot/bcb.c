@@ -24,7 +24,9 @@
 #include "base/init_funcs.h"
 #include "boot/bcb.h"
 #include "drivers/power/power.h"
+#include "vboot/nvdata.h"
 #include "vboot/stages.h"
+#include "vboot/util/commonparams.h"
 
 #define MAX_CMD_LENGTH	32
 #define MAX_REC_LENGTH	768
@@ -51,7 +53,12 @@ struct bcb {
 /* If there is any failure in BCB handling, reboot into rec mode. */
 static void bcb_fail(void)
 {
-	vboot_update_recovery(VB2_RECOVERY_RW_BCB_ERROR);
+	struct vb2_context *ctx = vboot_get_context();
+	vb2api_fail(ctx, VB2_RECOVERY_DEPRECATED_RW_BCB_ERROR, 0);
+
+	/* Write recovery reason to nvdata before rebooting. */
+	nvdata_write(ctx);
+
 	cold_reboot();
 }
 
@@ -154,7 +161,8 @@ static void bcb_copy_part_name(char *arg, size_t len)
 
 static void bcb_reboot_bootloader(char *arg, size_t len)
 {
-	vboot_update_recovery(VB2_RECOVERY_BCB_USER_MODE);
+	vb2api_fail(vboot_get_context(), VB2_RECOVERY_DEPRECATED_BCB_USER_MODE,
+		    0);
 }
 
 /* Post-cmd handle flags. */
@@ -227,9 +235,11 @@ void bcb_handle_command(void)
 			bcb_fail();
 	}
 
-	/* Reboot device, if required. */
-	if (cmd_table[match_index].post_handle_flags & REBOOT_DEVICE)
+	/* Write to nvdata and reboot device, if required. */
+	if (cmd_table[match_index].post_handle_flags & REBOOT_DEVICE) {
+		nvdata_write(vboot_get_context());
 		cold_reboot();
+	}
 }
 
 uint8_t bcb_override_priority(const uint16_t *name)
