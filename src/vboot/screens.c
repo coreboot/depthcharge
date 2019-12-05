@@ -67,7 +67,7 @@
 #define VB_ARROW_V_OFF		3	/* 0.3 % */
 
 /* draw_box() uses a different scale then we do, this helps with conversions */
-#define VB_TO_CANVAS(offset)	(offset * CANVAS_SCALE / VB_SCALE)
+#define VB_TO_CANVAS(offset)	((offset) * CANVAS_SCALE / VB_SCALE)
 
 #define RETURN_ON_ERROR(function_call) do {				\
 		vb2_error_t rv = (function_call);				\
