@@ -19,7 +19,6 @@
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
-#include "boot/bcb.h"
 #include "boot/fit.h"
 #include "boot/commandline.h"
 #include "drivers/bus/spi/tegra.h"
@@ -90,13 +89,6 @@ static TegraI2c *get_i2c6(void)
 	return i2c6;
 }
 
-static BlockDevCtrlr *bcb_bdev_ctrlr;
-
-BlockDevCtrlr *bcb_board_bdev_ctrlr(void)
-{
-	return bcb_bdev_ctrlr;
-}
-
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_tegra_gpio_input_from_coreboot);
@@ -156,9 +148,6 @@ static int board_setup(void)
 
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
-
-	/* Bdev ctrlr required for BCB. */
-	bcb_bdev_ctrlr = &emmc->mmc.ctrlr;
 
 	/* Careful: the EHCI base is at offset 0x100 from the SoC's IP base */
 	UsbHostController *usbd = new_usb_hc(EHCI, 0x7d000100);

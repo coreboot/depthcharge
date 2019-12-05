@@ -11,7 +11,6 @@
 ## GNU General Public License for more details.
 ##
 
-depthcharge-y += cgptlib.c
 depthcharge-y += debug.c
 depthcharge-y += disk.c
 ifneq ($(CONFIG_HEADLESS),y)

@@ -21,4 +21,3 @@ depthcharge-$(CONFIG_KERNEL_LEGACY) += crc32.c
 depthcharge-$(CONFIG_KERNEL_MULTIBOOT) += multiboot.c
 depthcharge-$(CONFIG_KERNEL_MULTIBOOT_BOOTDATA) += bootdata.c
 depthcharge-$(CONFIG_ANDROID_DT_FIXUP) += android_dt.c
-depthcharge-$(CONFIG_BCB_SUPPORT) += bcb.c
