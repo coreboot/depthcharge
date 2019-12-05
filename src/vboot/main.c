@@ -22,7 +22,6 @@
 #include "arch/sign_of_life.h"
 #include "base/init_funcs.h"
 #include "base/timestamp.h"
-#include "boot/bcb.h"
 #include "debug/cli/common.h"
 #include "drivers/input/input.h"
 #include "vboot/stages.h"
@@ -63,10 +62,6 @@ int main(void)
 
 	if (CONFIG_CLI)
 		console_loop();
-
-	/* Handle BCB command, if supported. */
-	if (CONFIG_BCB_SUPPORT)
-		bcb_handle_command();
 
 	// Run any initialization functions before vboot takes control
 	if (run_vboot_init_funcs())
