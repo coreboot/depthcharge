@@ -131,7 +131,7 @@ static void debug_dump_5677_regs(rt5677Codec *codec, int swap)
 
 		rt5677_i2c_readw(codec, (uint8_t)i, &reg_word);
 		if (swap)
-			printf("%04X ", swap_bytes16(reg_word));
+			printf("%04X ", __builtin_bswap16(reg_word));
 		else
 			printf("%04X ", reg_word);
 	}
@@ -145,7 +145,7 @@ static void debug_dump_5677_regs(rt5677Codec *codec, int swap)
 		rt5677_i2c_writew(codec, RT5677_PRIV_INDEX, i);
 		rt5677_i2c_readw(codec, RT5677_PRIV_DATA, &reg_word);
 		if (swap)
-			printf("%04X ", swap_bytes16(reg_word));
+			printf("%04X ", __builtin_bswap16(reg_word));
 		else
 			printf("%04X ", reg_word);
 	}

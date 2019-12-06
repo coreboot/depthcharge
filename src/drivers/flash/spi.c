@@ -45,7 +45,7 @@ static void *spi_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
 		return NULL;
 	}
 
-	uint32_t command = swap_bytes32((ReadCommand << 24) | offset);
+	uint32_t command = htobe32((ReadCommand << 24) | offset);
 
 	if (flash->spi->transfer(flash->spi, NULL, &command, sizeof(command))) {
 		printf("%s: Failed to send read command.\n", __func__);
@@ -216,7 +216,7 @@ static int spi_flash_modify(SpiFlash *flash, const void *buffer,
 			break;
 
 		stop_needed = 1;
-		command.whole = swap_bytes32((opcode << 24) | offset);
+		command.whole = htobe32((opcode << 24) | offset);
 		if (flash->spi->transfer(flash->spi, NULL, &command, 4)) {
 			printf("%s: Failed to send %s command.\n",
 			       __func__, opname);
