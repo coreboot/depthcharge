@@ -68,7 +68,7 @@ static void debug_dump_5645_regs(rt5645Codec *codec, int swap)
 
 		rt5645_i2c_readw(codec, (uint8_t)i, &reg_word);
 		if (swap)
-			printf("%04X ", swap_bytes16(reg_word));
+			printf("%04X ", __builtin_bswap16(reg_word));
 			else
 			printf("%04X ", reg_word);
 		}
@@ -81,7 +81,7 @@ static void debug_dump_5645_regs(rt5645Codec *codec, int swap)
 
 		rt5645_priv_readw(codec, (uint8_t)i, &reg_word);
 		if (swap)
-			printf("%04X ", swap_bytes16(reg_word));
+			printf("%04X ", __builtin_bswap16(reg_word));
 		else
 			printf("%04X ", reg_word);
 	}

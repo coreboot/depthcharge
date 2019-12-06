@@ -10,7 +10,6 @@
 #include <cbfs_core.h>
 #include <endian.h>
 #include <libpayload.h>
-#include <swab.h>
 #include <vboot_api.h>
 #include <vb2_api.h>
 
