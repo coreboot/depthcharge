@@ -31,6 +31,7 @@ typedef struct {
 	u64 text_offset;
 	u64 image_size;
 	u64 flags;
+#define KERNEL_FLAGS_PLACE_ANYWHERE	(1 << 3)
 	u64 res2;
 	u64 res3;
 	u64 res4;
@@ -39,17 +40,9 @@ typedef struct {
 	u32 res5;
 } Arm64KernelHeader;
 
-struct {
-	union {
-		Arm64KernelHeader header;
-		u8 raw[sizeof(Arm64KernelHeader) + 0x100];
-	};
-#define SCRATCH_CANARY_VALUE 0xdeadbeef
-	u32 canary;
-} scratch;
-
-static void *get_kernel_reloc_addr(uint32_t load_offset, size_t image_size)
+static void *get_kernel_reloc_addr(Arm64KernelHeader *header, size_t image_size)
 {
+	size_t load_offset = header->text_offset;
 	int i = 0;
 
 	for (; i < lib_sysinfo.n_memranges; i++) {
@@ -74,7 +67,8 @@ static void *get_kernel_reloc_addr(uint32_t load_offset, size_t image_size)
 			return (void *)kstart;
 
 		// Should be avoided in practice, that memory might be wasted.
-		printf("WARNING: Skipping low memory range [%p:%p]!\n",
+		if (!(header->flags & KERNEL_FLAGS_PLACE_ANYWHERE))
+			printf("WARNING: Skipping low memory range [%p:%p]!\n",
 			       (void *)start, (void *)end);
 	}
 
@@ -85,6 +79,14 @@ static void *get_kernel_reloc_addr(uint32_t load_offset, size_t image_size)
 int boot_arm_linux(void *fdt, FitImageNode *kernel)
 {
 	size_t image_size = 64*MiB;	// default value for pre-3.17 headers
+	struct {
+		union {
+			Arm64KernelHeader header;
+			u8 raw[sizeof(Arm64KernelHeader) + 0x100];
+		};
+	#define SCRATCH_CANARY_VALUE 0xdeadbeef
+		u32 canary;
+	} scratch;
 
 	// Partially decompress to get text_offset. Can't check for errors.
 	scratch.canary = SCRATCH_CANARY_VALUE;
@@ -107,8 +109,7 @@ int boot_arm_linux(void *fdt, FitImageNode *kernel)
 	else
 		printf("WARNING: Kernel image_size is 0 (pre-3.17 kernel?)\n");
 
-	void *reloc_addr = get_kernel_reloc_addr(scratch.header.text_offset,
-						 image_size);
+	void *reloc_addr = get_kernel_reloc_addr(&scratch.header, image_size);
 	if (!reloc_addr)
 		return 1;
 
