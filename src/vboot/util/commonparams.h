@@ -20,23 +20,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <vboot_api.h>
-
-/*
- * The vboot_handoff structure contains the data to be consumed by downstream
- * firmware after firmware selection has been completed. Namely it provides
- * vboot shared data as well as the flags from VbInit.
- */
-struct vboot_handoff {
-	uint32_t reserved0;  /* originally from VbInitParams */
-	uint32_t reserved1;  /* originally out_flags */
-	uint32_t reserved2;  /* originally selected_firmware */
-	char shared_data[VB_SHARED_DATA_MIN_SIZE];
-} __attribute__((packed));
+#include <vb2_api.h>
 
 int gbb_clear_flags(void);
 
-int common_params_init(void);
+int vboot_create_vbsd(void);
 int find_common_params(void **blob, int *size);
 
 struct vb2_context *vboot_get_context(void);

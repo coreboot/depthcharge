@@ -220,8 +220,8 @@ int netboot_entry(void)
 	if (run_init_funcs())
 		halt();
 
-	// Set up common params, vboot_handoff, VBSD, and VbInit flags.
-	if (common_params_init())
+	// Set up VbSharedDataHeader.
+	if (vboot_create_vbsd())
 		halt();
 
 	// Make sure graphics are available if they aren't already.

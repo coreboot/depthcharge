@@ -42,8 +42,8 @@ int get_rwb_fw_size(void);
 
 /*
  * Get firmware details for currently active fw type. It looks up
- * VbSharedDataHeader from vboot_handoff, identifies fw_index, and
- * returns appropriate id and size for that index.
+ * VbSharedDataHeader, identifies fw_index, and returns appropriate
+ * id and size for that index.
  */
 const char *get_active_fw_id(void);
 int get_active_fw_size(void);

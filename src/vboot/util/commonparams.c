@@ -29,7 +29,7 @@
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 
-static struct vboot_handoff handoff_data;
+static char shared_data[VB_SHARED_DATA_MIN_SIZE];
 
 int gbb_clear_flags(void)
 {
@@ -55,15 +55,71 @@ int gbb_clear_flags(void)
 	return 0;
 }
 
-static int vboot_update_shared_data(void)
+int vboot_create_vbsd(void)
 {
-	VbSharedDataHeader *vb_sd;
-	int vb_sd_size;
+	VbSharedDataHeader *vb_sd = (VbSharedDataHeader *)shared_data;
+	struct vb2_shared_data *vb2_sd;
 
-	if (find_common_params((void **)&vb_sd, &vb_sd_size)) {
-		printf("Unable to access VBSD\n");
+	/* Get reference to vb2_shared_data struct. */
+	if (lib_sysinfo.vboot_workbuf == NULL) {
+		printf("%s: vboot working data pointer is NULL\n", __func__);
 		return 1;
 	}
+	vb2_sd = lib_sysinfo.vboot_workbuf;
+	if (vb2_sd->magic != VB2_SHARED_DATA_MAGIC) {
+		printf("%s: vb2_shared_data has invalid magic\n", __func__);
+		return 1;
+	}
+
+	printf("%s: creating legacy VbSharedDataHeader structure\n", __func__);
+	memset(&shared_data, 0, sizeof(shared_data));
+
+	vb_sd->flags |= VBSD_BOOT_FIRMWARE_VBOOT2;
+	vb_sd->firmware_index = vb2_sd->fw_slot;
+	vb_sd->magic = VB_SHARED_DATA_MAGIC;
+	vb_sd->struct_version = VB_SHARED_DATA_VERSION;
+	vb_sd->struct_size = sizeof(VbSharedDataHeader);
+	vb_sd->data_size = VB_SHARED_DATA_MIN_SIZE;
+	vb_sd->data_used = sizeof(VbSharedDataHeader);
+	vb_sd->fw_version_tpm = vb2_sd->fw_version_secdata;
+
+	if (vb2_sd->recovery_reason) {
+		vb_sd->firmware_index = 0xFF;
+		if (vb2_sd->flags & VB2_SD_FLAG_MANUAL_RECOVERY)
+			vb_sd->flags |= VBSD_BOOT_REC_SWITCH_ON;
+	}
+	if (vb2_sd->flags & VB2_SD_FLAG_DEV_MODE_ENABLED) {
+		vb_sd->flags |= VBSD_BOOT_DEV_SWITCH_ON;
+		vb_sd->flags |= VBSD_LF_DEV_SWITCH_ON;
+	}
+
+	/* copy kernel subkey if it's found */
+	if (vb2_sd->preamble_size) {
+		struct vb2_fw_preamble *fp;
+		uintptr_t dst, src;
+		printf("%s: copying FW preamble\n",  __func__);
+		fp = (struct vb2_fw_preamble *)((uintptr_t)vb2_sd +
+				vb2_sd->preamble_offset);
+		src = (uintptr_t)&fp->kernel_subkey +
+				fp->kernel_subkey.key_offset;
+		dst = (uintptr_t)vb_sd + sizeof(VbSharedDataHeader);
+		if (dst + fp->kernel_subkey.key_size >
+		    (uintptr_t)shared_data + sizeof(shared_data)) {
+			printf("%s: kernel subkey size too large\n", __func__);
+			return 1;
+		}
+		memcpy((void *)dst, (void *)src,
+		       fp->kernel_subkey.key_size);
+		vb_sd->data_used += fp->kernel_subkey.key_size;
+		vb_sd->kernel_subkey.key_offset =
+				dst - (uintptr_t)&vb_sd->kernel_subkey;
+		vb_sd->kernel_subkey.key_size = fp->kernel_subkey.key_size;
+		vb_sd->kernel_subkey.algorithm = fp->kernel_subkey.algorithm;
+		vb_sd->kernel_subkey.key_version =
+				fp->kernel_subkey.key_version;
+	}
+
+	vb_sd->recovery_reason = vb2_sd->recovery_reason;
 
 	/*
 	 * If the lid is closed, kernel selection should not count down the
@@ -91,104 +147,10 @@ static int vboot_update_shared_data(void)
 	return 0;
 }
 
-/**
- * Sets vboot_handoff based on the information in vb2_shared_data
- */
-static int vboot_fill_handoff(struct vboot_handoff *vboot_handoff,
-			      struct vb2_shared_data *vb2_sd)
-{
-	VbSharedDataHeader *vb_sd =
-		(VbSharedDataHeader *)vboot_handoff->shared_data;
-
-	vb_sd->flags |= VBSD_BOOT_FIRMWARE_VBOOT2;
-
-	vb_sd->firmware_index = vb2_sd->fw_slot;
-
-	vb_sd->magic = VB_SHARED_DATA_MAGIC;
-	vb_sd->struct_version = VB_SHARED_DATA_VERSION;
-	vb_sd->struct_size = sizeof(VbSharedDataHeader);
-	vb_sd->data_size = VB_SHARED_DATA_MIN_SIZE;
-	vb_sd->data_used = sizeof(VbSharedDataHeader);
-	vb_sd->fw_version_tpm = vb2_sd->fw_version_secdata;
-
-	if (vb2_sd->recovery_reason) {
-		vb_sd->firmware_index = 0xFF;
-		if (vb2_sd->flags & VB2_SD_FLAG_MANUAL_RECOVERY)
-			vb_sd->flags |= VBSD_BOOT_REC_SWITCH_ON;
-	}
-	if (vb2_sd->flags & VB2_SD_FLAG_DEV_MODE_ENABLED) {
-		vb_sd->flags |= VBSD_BOOT_DEV_SWITCH_ON;
-		vb_sd->flags |= VBSD_LF_DEV_SWITCH_ON;
-	}
-
-	/* copy kernel subkey if it's found */
-	if (vb2_sd->preamble_size) {
-		struct vb2_fw_preamble *fp;
-		uintptr_t dst, src;
-		printf("vboot_handoff: copying FW preamble\n");
-		fp = (struct vb2_fw_preamble *)((uintptr_t)vb2_sd +
-				vb2_sd->preamble_offset);
-		src = (uintptr_t)&fp->kernel_subkey +
-				fp->kernel_subkey.key_offset;
-		dst = (uintptr_t)vb_sd + sizeof(VbSharedDataHeader);
-		if (dst + fp->kernel_subkey.key_size >
-		    (uintptr_t)vboot_handoff + sizeof(*vboot_handoff)) {
-			printf("vboot_handoff: kernel subkey size too large\n");
-			return 1;
-		}
-		memcpy((void *)dst, (void *)src,
-		       fp->kernel_subkey.key_size);
-		vb_sd->data_used += fp->kernel_subkey.key_size;
-		vb_sd->kernel_subkey.key_offset =
-				dst - (uintptr_t)&vb_sd->kernel_subkey;
-		vb_sd->kernel_subkey.key_size = fp->kernel_subkey.key_size;
-		vb_sd->kernel_subkey.algorithm = fp->kernel_subkey.algorithm;
-		vb_sd->kernel_subkey.key_version =
-				fp->kernel_subkey.key_version;
-	}
-
-	vb_sd->recovery_reason = vb2_sd->recovery_reason;
-
-	return 0;
-}
-
-static int vboot_create_handoff(void)
-{
-	struct vb2_shared_data *sd;
-
-	/* Get reference to vb2_shared_data struct. */
-	if (lib_sysinfo.vboot_workbuf == NULL) {
-		printf("vboot_handoff: vboot working data pointer is NULL\n");
-		return 1;
-	}
-	sd = lib_sysinfo.vboot_workbuf;
-	if (sd->magic != VB2_SHARED_DATA_MAGIC) {
-		printf("vboot_handoff: vb2_shared_data has invalid magic\n");
-		return 1;
-	}
-
-	printf("vboot_handoff: creating legacy vboot_handoff structure\n");
-	memset(&handoff_data, 0, sizeof(handoff_data));
-	return vboot_fill_handoff(&handoff_data, sd);
-}
-
-int common_params_init(void)
-{
-	// Convert incoming vb2_shared_data to vboot_handoff.
-	if (vboot_create_handoff())
-		return 1;
-
-	// Modify VbSharedDataHeader contents from vboot_handoff struct.
-	if (vboot_update_shared_data())
-		return 1;
-
-	return 0;
-}
-
 int find_common_params(void **blob, int *size)
 {
-	*blob = &handoff_data.shared_data[0];
-	*size = ARRAY_SIZE(handoff_data.shared_data);
+	*blob = &shared_data[0];
+	*size = ARRAY_SIZE(shared_data);
 	return 0;
 }
 

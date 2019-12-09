@@ -134,7 +134,7 @@ int crossystem_setup(int firmware_type)
 	memcpy(dest, fwid, size);
 	dest[size] = 0;
 
-	// Synchronize VbSharedDataHeader from vboot_handoff to acpi vdat.
+	// Synchronize VbSharedDataHeader to acpi vdat.
 	memcpy(vdat, vb_sd, vb_sd_size);
 
 	return 0;

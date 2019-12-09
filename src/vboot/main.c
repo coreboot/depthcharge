@@ -50,8 +50,8 @@ int main(void)
 
 	timestamp_add_now(TS_RO_VB_INIT);
 
-	// Set up common params, vboot_handoff, and VBSD.
-	if (common_params_init())
+	// Set up VbSharedDataHeader.
+	if (vboot_create_vbsd())
 		halt();
 
 	/* Wipe memory, and enable input, if necessary. */
