@@ -33,18 +33,6 @@
 		printf("\n"); \
 	} while (0)
 
-/*
- * TODO(chromium:1006689): DO NOT USE THIS FUNCTION: it is being deprecated.
- * depthcharge takes care of reading/writing nvdata, but the format and layout
- * of fields is internal to vboot, and should not be accessed outside of vboot.
- */
-void nvdata_write_field_DO_NOT_USE(uint32_t field, uint32_t val)
-{
-	struct vb2_context *ctx = vboot_get_context();
-	vb2_nv_set(ctx, field, val);
-	nvdata_write(ctx);
-}
-
 vb2_error_t nvdata_read(struct vb2_context *ctx)
 {
 	if (CONFIG(NVDATA_CMOS))

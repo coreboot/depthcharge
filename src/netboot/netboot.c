@@ -44,19 +44,15 @@
 
 static void enable_graphics(void)
 {
+	struct vb2_context *ctx = vboot_get_context();
 	display_init();
 	backlight_update(1);
 
-	/* TODO(chromium:948529): Create a vboot API function for checking that
-	   display is enabled, and setting DISPLAY_REQUEST if it is not. */
-	struct vb2_shared_data *sd = vb2_get_sd(vboot_get_context());
-
-	if (sd->flags & VB2_SD_FLAG_DISPLAY_AVAILABLE)
+	if (!vb2api_need_reboot_for_display(ctx))
 		return;
 
 	printf("Enabling graphics.\n");
-
-	nvdata_write_field_DO_NOT_USE(VB2_NV_DISPLAY_REQUEST, 1);
+	nvdata_write(ctx);
 
 	printf("Rebooting.\n");
 	if (cold_reboot())

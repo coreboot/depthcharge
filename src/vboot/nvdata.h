@@ -20,8 +20,6 @@
 
 #include <vb2_api.h>
 
-void nvdata_write_field_DO_NOT_USE(uint32_t field, uint32_t val);
-
 vb2_error_t nvdata_read(struct vb2_context *ctx);
 vb2_error_t nvdata_write(struct vb2_context *ctx);
 
