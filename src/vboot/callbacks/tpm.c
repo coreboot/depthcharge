@@ -21,6 +21,8 @@
 #include <vboot_api.h>
 
 #include "drivers/tpm/tpm.h"
+#include "vboot/secdata_tpm.h"
+#include "vboot/util/commonparams.h"
 
 vb2_error_t VbExTpmInit(void)
 {
@@ -52,10 +54,21 @@ uint32_t VbExTpmSendReceive(const uint8_t *request, uint32_t request_length,
 
 vb2_error_t vb2ex_tpm_set_mode(enum vb2_tpm_mode mode_val)
 {
-	/*
-	 * Safely cast to uint8_t, since we know enum vb2_tpm_mode values
-	 * correspond directly to TPM mode values.
-	 */
+	/* Before disabling TPM, lock secdata_kernel space, so that the command
+	   doesn't get sent to TPM after having been disabled. */
+	if (mode_val == VB2_TPM_MODE_DISABLED) {
+		struct vb2_context *ctx = vboot_get_context();
+		uint32_t tpm_rv = secdata_kernel_lock(ctx);
+
+		if (tpm_rv) {
+			printf("%s: lock secdata_kernel returned %#x\n",
+			       __func__, tpm_rv);
+			return VB2_ERROR_SECDATA_KERNEL_LOCK;
+		}
+	}
+
+	/* Safely cast to uint8_t, since we know enum vb2_tpm_mode values
+	   correspond directly to TPM mode values. */
 	int ret = tpm_set_mode((uint8_t)mode_val);
 	switch (ret) {
 	case TPM_SUCCESS:

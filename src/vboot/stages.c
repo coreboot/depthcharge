@@ -34,12 +34,13 @@
 #include "image/symbols.h"
 #include "vboot/boot.h"
 #include "vboot/boot_policy.h"
-#include "vboot/stages.h"
 #include "vboot/crossystem/crossystem.h"
+#include "vboot/nvdata.h"
+#include "vboot/secdata_tpm.h"
+#include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 #include "vboot/util/memory.h"
-#include "vboot/nvdata.h"
 
 int vboot_in_recovery(void)
 {
@@ -102,6 +103,30 @@ static int vendor_data_settable(void)
 	return i == CONFIG_VENDOR_DATA_LENGTH;
 }
 
+static int secdata_kernel_lock_cleanup_func(struct CleanupFunc *c,
+					    CleanupType t)
+{
+	struct vb2_context *ctx = vboot_get_context();
+	uint32_t tpm_rv = secdata_kernel_lock(ctx);
+
+	if (tpm_rv) {
+		printf("%s: lock secdata_kernel returned %#x\n",
+		       __func__, tpm_rv);
+		vb2api_fail(vboot_get_context(), VB2_RECOVERY_RW_TPM_L_ERROR,
+			    tpm_rv);
+		vb2ex_commit_data(ctx);
+		cold_reboot();
+	}
+
+	return 0;
+}
+
+static CleanupFunc secdata_kernel_lock_cleanup = {
+	&secdata_kernel_lock_cleanup_func,
+	CleanupOnHandoff | CleanupOnLegacy,
+	NULL,
+};
+
 int vboot_select_and_load_kernel(void)
 {
 	struct vb2_context *ctx = vboot_get_context();
@@ -132,6 +157,21 @@ int vboot_select_and_load_kernel(void)
 	/* Set legacy vboot1 VbSharedDataHeader. */
 	if (find_common_params(&shared, &size))
 		return 1;
+
+	/*
+	 * Read secdata_kernel and secdata_fwmp spaces.  No need to read
+	 * secdata_firmware, since it was already read during firmware
+	 * verification.  We don't check the return value here because
+	 * VbSelectAndLoadKernel will catch invalid secdata and tell us
+	 * what to do (=reboot).
+	 */
+	secdata_kernel_read(ctx);
+	secdata_fwmp_read(ctx);
+
+	/* Lock secdata_kernel right before booting a kernel or chainloading
+	   to another firmware. */
+	list_insert_after(&secdata_kernel_lock_cleanup.list_node,
+			  &cleanup_funcs);
 
 	printf("Calling VbSelectAndLoadKernel().\n");
 	vb2_error_t res = VbSelectAndLoadKernel(ctx, shared, &kparams);

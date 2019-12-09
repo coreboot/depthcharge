@@ -24,6 +24,7 @@
 #include "base/vpd_util.h"
 #include "drivers/flash/flash.h"
 #include "vboot/nvdata.h"
+#include "vboot/secdata_tpm.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 
@@ -146,11 +147,34 @@ vb2_error_t vb2ex_read_resource(struct vb2_context *ctx,
 	return VB2_SUCCESS;
 }
 
-/* TODO(chromium:972956, chromium:1006689): Should also commit secdata. */
 vb2_error_t vb2ex_commit_data(struct vb2_context *ctx)
 {
-	if (nvdata_write(ctx))
-		return VB2_ERROR_NV_WRITE;
+	vb2_error_t rv = VB2_SUCCESS;
+	vb2_error_t nvdata_rv;
+	uint32_t tpm_rv;
 
-	return VB2_SUCCESS;
+	/* Write secdata spaces.  Firmware never needs to write secdata_fwmp. */
+
+	tpm_rv = secdata_firmware_write(ctx);
+	if (tpm_rv) {
+		printf("%s: write secdata_firmware returned %#x\n",
+		       __func__, tpm_rv);
+		rv = VB2_ERROR_SECDATA_FIRMWARE_WRITE;
+	}
+
+	tpm_rv = secdata_kernel_write(ctx);
+	if (tpm_rv) {
+		printf("%s: write secdata_kernel returned %#x\n",
+		       __func__, tpm_rv);
+		rv = VB2_ERROR_SECDATA_KERNEL_WRITE;
+	}
+
+	nvdata_rv = nvdata_write(ctx);
+	if (nvdata_rv) {
+		printf("%s: write nvdata returned %#x\n",
+		       __func__, nvdata_rv);
+		rv = VB2_ERROR_NV_WRITE;
+	}
+
+	return rv;
 }

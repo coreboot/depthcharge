@@ -19,6 +19,12 @@ depthcharge-y += firmware_id.c
 depthcharge-y += screens.c
 depthcharge-y += nvdata.c
 
+ifeq ($(CONFIG_MOCK_TPM),y)
+depthcharge-y += mocked_secdata_tpm.c
+else
+depthcharge-y += secdata_tpm.c
+endif
+
 # Where "main" lives.
 vboot-y += main.c
 

@@ -21,15 +21,7 @@
 #include "drivers/ec/cros/ec.h"
 #include "vboot/nvdata.h"
 #include "vboot/util/commonparams.h"
-
-#define PRINT_BYTES(title, value) do { \
-		int i; \
-		printf(title); \
-		printf(":"); \
-		for (i = 0; i < sizeof(*(value)); i++) \
-			printf(" %02x", *((uint8_t *)(value) + i)); \
-		printf("\n"); \
-	} while (0)
+#include "vboot/util/misc.h"
 
 vb2_error_t nvdata_read(struct vb2_context *ctx)
 {
