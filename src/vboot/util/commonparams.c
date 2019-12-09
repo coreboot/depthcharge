@@ -99,7 +99,6 @@ static int vboot_fill_handoff(struct vboot_handoff *vboot_handoff,
 {
 	VbSharedDataHeader *vb_sd =
 		(VbSharedDataHeader *)vboot_handoff->shared_data;
-	uint32_t *oflags = &vboot_handoff->out_flags;
 
 	vb_sd->flags |= VBSD_BOOT_FIRMWARE_VBOOT2;
 
@@ -116,12 +115,8 @@ static int vboot_fill_handoff(struct vboot_handoff *vboot_handoff,
 		vb_sd->firmware_index = 0xFF;
 		if (vb2_sd->flags & VB2_SD_FLAG_MANUAL_RECOVERY)
 			vb_sd->flags |= VBSD_BOOT_REC_SWITCH_ON;
-		*oflags |= VB_INIT_OUT_ENABLE_RECOVERY;
-		*oflags |= VB_INIT_OUT_CLEAR_RAM;
 	}
 	if (vb2_sd->flags & VB2_SD_FLAG_DEV_MODE_ENABLED) {
-		*oflags |= VB_INIT_OUT_ENABLE_DEVELOPER;
-		*oflags |= VB_INIT_OUT_CLEAR_RAM;
 		vb_sd->flags |= VBSD_BOOT_DEV_SWITCH_ON;
 		vb_sd->flags |= VBSD_LF_DEV_SWITCH_ON;
 	}
