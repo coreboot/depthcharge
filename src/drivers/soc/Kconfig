@@ -55,3 +55,4 @@ config DRIVER_SOC_QCOM_QUP_SE
 config DRIVER_SOC_JASPERLAKE
 	bool "Jasperlake SoC driver"
 	default n
+	select DRIVER_GPIO_JASPERLAKE
