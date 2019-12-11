@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -11,7 +11,6 @@ Usage:
 
 # TODO(hungte) Read, write and handle UTF8 BOM.
 
-import enum
 import glob
 import multiprocessing
 import os
@@ -35,12 +34,10 @@ VENDOR_INPUTS = 'vendor_inputs'
 VENDOR_FILES = 'vendor_files'
 DIAGNOSTIC_FILES = 'diagnostic_files'
 
-STRINGS_FILE = 'strings.txt'
 LEGACY_STRINGS_FILE = 'legacy_strings.txt'
 LEGACY_MENU_STRINGS_FILE = 'legacy_menu_strings.txt'
 VENDOR_STRINGS_FILE = 'vendor_strings.txt'
 FORMAT_FILE = 'format.yaml'
-LEGACY_FORMAT_FILE = 'legacy_format.yaml'
 VENDOR_FORMAT_FILE = 'vendor_format.yaml'
 TXT_TO_PNG_SVG = os.path.join(SCRIPT_BASE, '..', 'text_to_png_svg')
 OUTPUT_DIR = os.path.join(os.getenv('OUTPUT', os.path.join(SCRIPT_BASE, '..',
@@ -49,15 +46,6 @@ OUTPUT_DIR = os.path.join(os.getenv('OUTPUT', os.path.join(SCRIPT_BASE, '..',
 
 VENDOR_STRINGS_DIR = os.getenv("VENDOR_STRINGS_DIR")
 VENDOR_STRINGS = VENDOR_STRINGS_DIR != None
-
-class UIType(enum.Enum):
-  MENU = 1
-  LEGACY_MENU = 2
-  LEGACY_CLAMSHELL = 3
-
-UI = (UIType.MENU if os.getenv("MENU_UI") == "1" else
-      UIType.LEGACY_MENU if os.getenv("LEGACY_MENU_UI") == "1" else
-      UIType.LEGACY_CLAMSHELL)
 
 class DataError(Exception):
   pass
@@ -105,11 +93,11 @@ def ParseLocaleInputFiles(locale_dir, input_format,
   """
   result = dict()
   result.update(ParseLocaleInputFile(locale_dir,
-                                     STRINGS_FILE if UI == UIType.MENU
-                                     else LEGACY_STRINGS_FILE,
+                                     LEGACY_STRINGS_FILE,
                                      input_format))
-  # Now parse legacy menu strings
-  if UI == UIType.LEGACY_MENU:
+
+  # Now parse detachable menu strings
+  if os.getenv("LEGACY_MENU_UI") == "1":
     print " (legacy_menu_ui enabled)"
     result.update(ParseLocaleInputFile(locale_dir,
                                        LEGACY_MENU_STRINGS_FILE,
@@ -218,7 +206,7 @@ def ConvertPngFile(locale, file_name, styles, fonts, output_dir):
   return True
 
 def main(argv):
-  with open(FORMAT_FILE if UI == UIType.MENU else LEGACY_FORMAT_FILE) as f:
+  with open(FORMAT_FILE) as f:
     formats = yaml.load(f)
 
   if VENDOR_STRINGS:
@@ -238,7 +226,7 @@ def main(argv):
   for locale in locales:
     print locale,
     inputs = ParseLocaleInputFiles(locale, formats[KEY_INPUTS],
-                                   formats.get(LEGACY_MENU_INPUTS),
+                                   formats[LEGACY_MENU_INPUTS],
                                    formats[VENDOR_INPUTS] if VENDOR_STRINGS
                                                           else None)
     output_dir = os.path.normpath(os.path.join(OUTPUT_DIR, locale))
@@ -246,9 +234,9 @@ def main(argv):
       os.makedirs(output_dir)
     files = formats[KEY_FILES]
     styles = formats[KEY_STYLES]
-    if UI == UIType.LEGACY_MENU:
+    if os.getenv("LEGACY_MENU_UI") == "1":
       files.update(formats[LEGACY_MENU_FILES])
-    elif UI == UIType.LEGACY_CLAMSHELL:
+    else:
       files.update(formats[LEGACY_CLAMSHELL_FILES])
 
     # Now parse strings for optional features

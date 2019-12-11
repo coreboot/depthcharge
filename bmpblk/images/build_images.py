@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -223,10 +223,7 @@ class Convert(object):
     """Set a list of locales for which localized images are converted"""
     # LOCALES environment variable can overwrite boards.yaml
     locales = os.getenv('LOCALES')
-    if os.getenv("MENU_UI") == "1":
-      # TODO(b/144969853): Support all locales for MENU_UI.
-      self.locales = ['en']
-    elif locales:
+    if locales:
       self.locales = locales.split()
     else:
       self.locales = self.config[LOCALES_KEY]
