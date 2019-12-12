@@ -34,15 +34,8 @@
 #include "drivers/storage/sdhci.h"
 #include "drivers/tpm/spi.h"
 #include "drivers/tpm/tpm.h"
-#include "drivers/sound/i2s.h"
-#include "drivers/sound/max98357a.h"
 #include "drivers/gpio/cannonlake.h"
 #include "drivers/gpio/gpio.h"
-#include "drivers/bus/i2s/intel_common/max98357a.h"
-#include "drivers/bus/i2s/cavs_1_8-regs.h"
-
-#define AUD_VOLUME              4000
-#define SDMODE_PIN              GPP_H3
 
 /* Clock frequencies for eMMC are defined below */
 #define EMMC_CLOCK_MIN	400000
@@ -123,19 +116,10 @@ static int board_setup(void)
 		       __func__);
 	}
 
-	/* Audio Setup (for boot beep) */
-	GpioOps *sdmode = &new_cannonlake_gpio_output(SDMODE_PIN, 0)->ops;
-
-	I2s *i2s = new_i2s_structure(&max98357a_settings, 16, sdmode,
-			SSP_I2S1_START_ADDRESS);
-	I2sSource *i2s_source = new_i2s_source(&i2s->ops, 48000, 2, AUD_VOLUME);
-	/* Connect the Codec to the I2S source */
-	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
-	max98357aCodec *speaker_amp = new_max98357a_codec(sdmode);
-
-	list_insert_after(&speaker_amp->component.list_node,
-		&sound_route->components);
-	sound_set_ops(&sound_route->ops);
+	/* Audio Setup (for boot beep) - 'PWM_PP3300_BIOZZER' */
+	GpioOps *sound_gpio = &new_cannonlake_gpio_output(GPP_H22, 0)->ops;
+	GpioEdgeBuzzer *buzzer = new_gpio_edge_buzzer(&sound_gpio->ops);
+	sound_set_ops(&buzzer->ops);
 
 	/* SATA AHCI */
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 0x17, 0));
