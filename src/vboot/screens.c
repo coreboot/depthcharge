@@ -94,12 +94,16 @@ static struct {
 	char *codes[256];
 } locale_data;
 
+enum {
+	DISPLAY_FLAG_REDRAW_BASE = 0x1,
+};
+
 /* params structure for vboot draw functions */
 struct params {
 	uint32_t locale;
 	uint32_t selected_index;
 	uint32_t disabled_idx_mask;
-	uint32_t redraw_base;
+	uint32_t flags;
 	const VbScreenData *data;
 };
 
@@ -694,7 +698,7 @@ static vb2_error_t vboot_draw_developer_warning(struct params *p)
 
 static vb2_error_t vboot_draw_developer_warning_menu(struct params *p)
 {
-	if (p->redraw_base)
+	if (p->flags & DISPLAY_FLAG_REDRAW_BASE)
 		RETURN_ON_ERROR(vboot_draw_base_screen(p));
 	RETURN_ON_ERROR(draw_image_locale("enable_hint.bmp", p->locale,
 			VB_SCALE_HALF, VB_DIVIDER_V_OFFSET + VB_TEXT_HEIGHT,
@@ -707,7 +711,7 @@ static vb2_error_t vboot_draw_developer_warning_menu(struct params *p)
 
 static vb2_error_t vboot_draw_developer_menu(struct params *p)
 {
-	if (p->redraw_base)
+	if (p->flags & DISPLAY_FLAG_REDRAW_BASE)
 		RETURN_ON_ERROR(vboot_draw_base_screen(p));
 	const struct menu m = { dev_menu_files, ARRAY_SIZE(dev_menu_files) };
 	return vboot_draw_menu(p, &m);
@@ -771,7 +775,7 @@ static vb2_error_t vboot_draw_recovery_to_dev(struct params *p)
 
 static vb2_error_t vboot_draw_recovery_to_dev_menu(struct params *p)
 {
-	if (p->redraw_base)
+	if (p->flags & DISPLAY_FLAG_REDRAW_BASE)
 		RETURN_ON_ERROR(vboot_draw_base_screen(p));
 	RETURN_ON_ERROR(draw_image_locale("disable_warn.bmp", p->locale,
 			VB_SCALE_HALF, VB_DIVIDER_V_OFFSET + VB_TEXT_HEIGHT,
@@ -800,7 +804,7 @@ static vb2_error_t vboot_draw_developer_to_norm(struct params *p)
 
 static vb2_error_t vboot_draw_developer_to_norm_menu(struct params *p)
 {
-	if (p->redraw_base)
+	if (p->flags & DISPLAY_FLAG_REDRAW_BASE)
 		RETURN_ON_ERROR(vboot_draw_base_screen(p));
 	RETURN_ON_ERROR(draw_image_locale("confirm_hint.bmp", p->locale,
 			VB_SCALE_HALF, VB_DIVIDER_V_OFFSET + VB_TEXT_HEIGHT,
@@ -879,7 +883,8 @@ static vb2_error_t vboot_draw_languages_menu(struct params *p)
 	 * redraw screen if we cross a page boundary
 	 * or if we're instructed to do so (because of screen change)
 	 */
-	if (prev_lang_page_num != page_num || p->redraw_base)
+	if (prev_lang_page_num != page_num ||
+	    p->flags & DISPLAY_FLAG_REDRAW_BASE)
 		RETURN_ON_ERROR(vboot_draw_base_screen(p));
 
 	/* Print out page #s (1/5, 2/5, etc.) */
@@ -898,7 +903,8 @@ static vb2_error_t vboot_draw_languages_menu(struct params *p)
 	 */
 	int num_lang_to_draw = lang_per_page;
 	int start_index = page_start_index;
-	if (prev_lang_page_num == page_num && !p->redraw_base) {
+	if (prev_lang_page_num == page_num &&
+	    !(p->flags & DISPLAY_FLAG_REDRAW_BASE)) {
 		/* Redraw selected index and previously selected index */
 		num_lang_to_draw = 2;
 		start_index = MIN(prev_selected_index, selected_index);
@@ -1060,7 +1066,7 @@ static vb2_error_t vboot_draw_confirm_diag(struct params *p)
 
 static vb2_error_t vboot_draw_options_menu(struct params *p)
 {
-	if (p->redraw_base)
+	if (p->flags & DISPLAY_FLAG_REDRAW_BASE)
 		RETURN_ON_ERROR(vboot_draw_base_screen(p));
 	const struct menu m = { options_files,
 				ARRAY_SIZE(options_files) };
@@ -1075,7 +1081,7 @@ static vb2_error_t vboot_draw_altfw_menu(struct params *p)
 	int top = VB_SCALE_HALF - VB_TEXT_HEIGHT / 2;
 	uint32_t flags;
 
-	if (p->redraw_base)
+	if (p->flags & DISPLAY_FLAG_REDRAW_BASE)
 		RETURN_ON_ERROR(vboot_draw_base_screen(p));
 
 	head = payload_get_altfw_list();
@@ -1137,7 +1143,7 @@ static vb2_error_t vboot_draw_altfw_menu(struct params *p)
 #if CONFIG_VENDOR_DATA_LENGTH > 0
 static vb2_error_t vboot_draw_vendor_data_prompt(struct params *p,
 						 const char *string) {
-	if (p->redraw_base)
+	if (p->flags & DISPLAY_FLAG_REDRAW_BASE)
 		RETURN_ON_ERROR(vboot_draw_base_screen(p));
 
 	RETURN_ON_ERROR(draw_image_locale(string, p->locale,
@@ -1435,7 +1441,13 @@ vb2_error_t vboot_draw_screen(uint32_t screen, uint32_t locale,
 
 	/* TODO: draw only locale dependent part if current_screen == screen */
 	/* setting selected_index value to 0xFFFFFFFF invalidates the field */
-	struct params p = { locale, 0xFFFFFFFF, 0, 1, data };
+	struct params p = {
+		.locale = locale,
+		.selected_index = 0xFFFFFFFF,
+		.disabled_idx_mask = 0,
+		.flags = DISPLAY_FLAG_REDRAW_BASE,
+		.data = data,
+	};
 	RETURN_ON_ERROR(draw_ui(screen, &p));
 
 	locale_data.current = locale;
@@ -1459,8 +1471,13 @@ vb2_error_t vboot_draw_ui(uint32_t screen, uint32_t locale,
 	/* If the screen is blank, turn off the backlight; else turn it on. */
 	backlight_update(screen == VB_SCREEN_BLANK ? 0 : 1);
 
-	struct params p = { locale, selected_index,
-			    disabled_idx_mask, redraw_base, NULL };
+	struct params p = {
+		.locale = locale,
+		.selected_index = selected_index,
+		.disabled_idx_mask = disabled_idx_mask,
+		.flags = redraw_base ? DISPLAY_FLAG_REDRAW_BASE : 0,
+		.data = NULL,
+	};
 	return draw_ui(screen, &p);
 }
 
