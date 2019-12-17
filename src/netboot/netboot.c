@@ -15,12 +15,8 @@
  * GNU General Public License for more details.
  */
 
-#define NEED_VB20_INTERNALS  /* Poking around inside NV storage fields */
-
 #include <libpayload.h>
 #include <vb2_api.h>
-#include <vboot_api.h>
-#include <vboot_struct.h>
 
 #include "base/init_funcs.h"
 #include "base/timestamp.h"
@@ -39,7 +35,6 @@
 #include "vboot/boot.h"
 #include "vboot/crossystem/crossystem.h"
 #include "vboot/util/commonparams.h"
-#include "vboot/util/flag.h"
 #include "vboot/nvdata.h"
 
 static void enable_graphics(void)

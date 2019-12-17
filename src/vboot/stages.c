@@ -15,13 +15,10 @@
  * GNU General Public License for more details.
  */
 
-#define NEED_VB20_INTERNALS  /* Poking around inside NV storage fields */
-
 #include <assert.h>
 #include <libpayload.h>
 #include <stdint.h>
 #include <vb2_api.h>
-#include <vboot_api.h>
 
 #include "base/cleanup_funcs.h"
 #include "base/timestamp.h"

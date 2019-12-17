@@ -15,8 +15,6 @@
  * GNU General Public License for more details.
  */
 
-#define NEED_VB20_INTERNALS  /* Poking around inside nvdata fields */
-
 #include <libpayload.h>
 #include <vb2_api.h>
 
