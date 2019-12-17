@@ -20,12 +20,15 @@
 
 #define PCH_DEV_SDCARD	PCI_DEV(0, 0x14, 5)
 #define PCH_DEV_PCIE0	PCI_DEV(0, 0x1c, 0)
+#define PCH_DEV_EMMC	PCI_DEV(0, 0x1a, 0)
 
 /* Icelake PCR access to GPIO registers. */
 #define PCH_PCR_BASE_ADDRESS	0xfd000000
 
 #define GPE0_STS_OFF            0x60
 
+/* I2C Designware Controller runs at 120 MHz */
+#define JASPERLAKE_DW_I2C_MHZ   120
 
 /* PCR PIDs. */
 #define PCH_PCR_PID_GPIOCOM5	0x69
