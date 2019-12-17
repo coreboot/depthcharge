@@ -338,3 +338,14 @@ flapjack,kukui:
   screen:   [1920, 1200]
   sdcard:   False
   hi_res:   [en]
+
+volteer:
+  # 3840x2160, boots recovery image on USB ports.
+  screen:   [3840, 2160]
+  hi_res:   [en]
+  text_colors:  4
+
+zork:
+  # 1920x1080, boots recovery image on any SD card or USB ports.
+  screen:   [1920, 1080]
+  hi_res:   [en]
