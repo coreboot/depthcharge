@@ -28,6 +28,7 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
 #include "drivers/soc/cannonlake.h"
+#include "drivers/sound/gpio_edge_buzzer.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/nvme.h"
@@ -118,7 +119,7 @@ static int board_setup(void)
 
 	/* Audio Setup (for boot beep) - 'PWM_PP3300_BIOZZER' */
 	GpioOps *sound_gpio = &new_cannonlake_gpio_output(GPP_H22, 0)->ops;
-	GpioEdgeBuzzer *buzzer = new_gpio_edge_buzzer(&sound_gpio->ops);
+	GpioEdgeBuzzer *buzzer = new_gpio_edge_buzzer(sound_gpio);
 	sound_set_ops(&buzzer->ops);
 
 	/* SATA AHCI */
