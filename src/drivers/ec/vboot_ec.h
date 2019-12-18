@@ -15,6 +15,7 @@
 #ifndef __DRIVERS_EC_VBOOT_EC_H
 #define __DRIVERS_EC_VBOOT_EC_H
 
+#include <vb2_api.h>
 #include <vboot_api.h>
 
 typedef struct VbootEcOps {
