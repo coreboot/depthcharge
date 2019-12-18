@@ -25,7 +25,7 @@ vboot-y += main.c
 VB_LIB = $(obj)/external/vboot/vboot_fw.a
 
 # The vboot library source is external to depthcharge.
-$(VB_LIB):
+$(VB_LIB): $(KCONFIG_AUTOHEADER)
 ifndef VB_SOURCE
 	$(error Set VB_SOURCE to point to the vboot source directory)
 else
