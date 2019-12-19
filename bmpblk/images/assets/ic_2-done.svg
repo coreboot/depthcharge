@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   id="svg14"
+   version="1.1"
+   viewBox="0 0 20 20"
+   height="20px"
+   width="20px">
+  <metadata
+     id="metadata20">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs18" />
+  <!-- Generator: Sketch 55.2 (78181) - https://sketchapp.com -->
+  <title
+     id="title2">ic_2-done</title>
+  <desc
+     id="desc4">Created with Sketch.</desc>
+  <g
+     style="fill:none;fill-rule:evenodd;stroke:none;stroke-width:1"
+     id="ic_2-done">
+    <g
+       id="Stepper-active">
+      <g
+         id="g10">
+        <path
+           id="Oval"
+           d="M 20,10 A 10,10 0 0 1 10,20 10,10 0 0 1 0,10 10,10 0 0 1 10,0 10,10 0 0 1 20,10 Z"
+           style="fill:#8ab4f8" />
+        <g
+           id="1"
+           style="font-weight:400;font-size:12px;font-family:Roboto-Medium, Roboto;fill:#202124"
+           aria-label="2">
+          <path
+             id="path23"
+             style=""
+             d="M 12.888672,13.109375 V 14 H 7.3046875 V 13.220703 L 10.199219,9.9980469 q 0.714844,-0.8085938 0.960937,-1.2832031 0.251953,-0.4746094 0.251953,-0.9550782 0,-0.6269531 -0.392578,-1.0722656 -0.386718,-0.4453125 -1.0957029,-0.4453125 -0.8554687,0 -1.2773437,0.4863281 -0.421875,0.4863281 -0.421875,1.2480469 H 7.140625 q 0,-1.078125 0.7089844,-1.8515625 0.7089844,-0.7734375 2.0742187,-0.7734375 1.2070309,0 1.8867189,0.6269531 0.685547,0.6269531 0.685547,1.6523438 0,0.75 -0.462891,1.5117187 -0.46289,0.7558594 -1.136719,1.4882809 l -2.2851559,2.478516 z" />
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

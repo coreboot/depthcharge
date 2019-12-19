@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 55.2 (78181) - https://sketchapp.com -->
+    <title>ic_laptop</title>
+    <desc>Created with Sketch.</desc>
+    <g id="ic_laptop" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="dense/hardware/laptop-chromebook" fill="#9AA0A6">
+            <path d="M18,15 L19,15 C19.5522847,15 20,15.4477153 20,16 C20,16.5522847 19.5522847,17 19,17 L1,17 C0.44771525,17 0,16.5522847 0,16 C0,15.4477153 0.44771525,15 1,15 L2,15 L2,4 C2,3.44771525 2.44771525,3 3,3 L17,3 C17.2761424,3 17.5261424,3.11192881 17.7071068,3.29289322 C17.8880712,3.47385763 18,3.72385763 18,4 L18,15 Z M16,12 L16,5 L4,5 L4,12 L16,12 Z M8,14 L8,15 L12,15 L12,14 L8,14 Z" id="Combined-Shape"></path>
+        </g>
+    </g>
+</svg>

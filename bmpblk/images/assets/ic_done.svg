@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="36px" height="36px" viewBox="0 0 36 36" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 55.2 (78181) - https://sketchapp.com -->
+    <title>ic_done</title>
+    <desc>Created with Sketch.</desc>
+    <g id="ic_done" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="check_circle">
+            <g id="check_circle_gm2_24px">
+                <path d="M18,3 C9.72,3 3,9.72 3,18 C3,26.28 9.72,33 18,33 C26.28,33 33,26.28 33,18 C33,9.72 26.28,3 18,3 Z M18,30 C11.385,30 6,24.615 6,18 C6,11.385 11.385,6 18,6 C24.615,6 30,11.385 30,18 C30,24.615 24.615,30 18,30 Z M15,21.3 L11.1,17.4 L9,19.5 L15,25.5 L27,13.5 L24.9,11.4 L15,21.3 Z" id="Shape" fill="#8AB4F8"></path>
+                <polygon id="Path" points="0 0 36 0 36 36 0 36"></polygon>
+            </g>
+        </g>
+    </g>
+</svg>

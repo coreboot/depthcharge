@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="36px" height="36px" viewBox="0 0 36 36" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 55.2 (78181) - https://sketchapp.com -->
+    <title>ic_warning</title>
+    <desc>Created with Sketch.</desc>
+    <g id="ic_warning" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="dense/action/warning" fill="#E8EAED">
+            <path d="M16.4371623,4.50694991 C17.1281718,3.29768336 18.8718282,3.29768336 19.5628377,4.50694991 L33.9628377,29.7069499 C34.6485418,30.9069321 33.7820808,32.4 32.4,32.4 L3.6,32.4 C2.2179192,32.4 1.35145824,30.9069321 2.03716234,29.7069499 L16.4371623,4.50694991 Z M18,9.02801599 L6.70172342,28.8 L29.2982766,28.8 L18,9.02801599 Z M16.2,21.6 L16.2,14.4 L19.8,14.4 L19.8,21.6 L16.2,21.6 Z M16.2,27 L16.2,23.4 C18.6,23.4 19.8,23.4 19.8,23.4 C19.8,23.4 19.8,24.6 19.8,27 L16.2,27 Z" id="Combined-Shape"></path>
+        </g>
+    </g>
+</svg>

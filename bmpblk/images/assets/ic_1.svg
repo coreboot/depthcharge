@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   id="svg14"
+   version="1.1"
+   viewBox="0 0 20 20"
+   height="20px"
+   width="20px">
+  <metadata
+     id="metadata20">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs18" />
+  <!-- Generator: Sketch 55.2 (78181) - https://sketchapp.com -->
+  <title
+     id="title2">ic_1</title>
+  <desc
+     id="desc4">Created with Sketch.</desc>
+  <g
+     style="fill:none;fill-rule:evenodd;stroke:none;stroke-width:1"
+     id="ic_1">
+    <g
+       id="Stepper-inactive">
+      <g
+         id="g10">
+        <path
+           id="Oval-Copy"
+           d="M 20,10 A 10,10 0 0 1 10,20 10,10 0 0 1 0,10 10,10 0 0 1 10,0 10,10 0 0 1 20,10 Z"
+           style="fill:#ffffff;fill-opacity:0.13999999" />
+        <g
+           id="2"
+           style="font-weight:400;font-size:12px;font-family:Roboto-Medium, Roboto;fill:#202124"
+           aria-label="1">
+          <path
+             id="path23"
+             style=""
+             d="M 10.861328,5.421875 V 14 H 9.7773438 V 6.7753906 L 7.5917969,7.5722656 V 6.59375 L 10.691406,5.421875 Z" />
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

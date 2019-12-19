@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   id="svg14"
+   version="1.1"
+   viewBox="0 0 20 20"
+   height="20px"
+   width="20px">
+  <metadata
+     id="metadata20">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs18" />
+  <!-- Generator: Sketch 55.2 (78181) - https://sketchapp.com -->
+  <title
+     id="title2">ic_3-done</title>
+  <desc
+     id="desc4">Created with Sketch.</desc>
+  <g
+     style="fill:none;fill-rule:evenodd;stroke:none;stroke-width:1"
+     id="ic_3-done">
+    <g
+       id="Stepper-active">
+      <g
+         id="g10">
+        <path
+           id="Oval"
+           d="M 20,10 A 10,10 0 0 1 10,20 10,10 0 0 1 0,10 10,10 0 0 1 10,0 10,10 0 0 1 20,10 Z"
+           style="fill:#8ab4f8" />
+        <g
+           id="1"
+           style="font-weight:400;font-size:12px;font-family:Roboto-Medium, Roboto;fill:#202124"
+           aria-label="3">
+          <path
+             id="path23"
+             style=""
+             d="M 8.8808594,10.091797 V 9.2011719 h 0.796875 q 0.8378906,-0.00586 1.2480466,-0.421875 0.410157,-0.4160156 0.410157,-1.0371094 0,-1.5 -1.4882817,-1.5 -0.6914063,0 -1.1191407,0.3984375 Q 8.3007813,7.0332031 8.3007813,7.7011719 H 7.2167969 q 0,-0.9785157 0.7207031,-1.6640625 0.7265625,-0.6855469 1.9101563,-0.6855469 1.1542967,0 1.8632817,0.6152344 0.714843,0.609375 0.714843,1.7988281 0,0.4746094 -0.322265,1.0136719 -0.316407,0.5390625 -1.019532,0.8378906 0.84961,0.2753906 1.160157,0.8496095 0.310547,0.574219 0.310547,1.154297 0,1.195312 -0.773438,1.845703 -0.773437,0.650391 -1.9277344,0.650391 -1.1132812,0 -1.9101562,-0.615235 -0.796875,-0.621094 -0.796875,-1.757812 h 1.0839844 q 0,0.673828 0.4335937,1.078125 0.4394531,0.404297 1.1894531,0.404297 0.7441404,0 1.1777344,-0.392579 0.433594,-0.392578 0.433594,-1.189453 0,-0.796875 -0.492188,-1.171875 -0.492187,-0.380859 -1.3183591,-0.380859 z" />
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

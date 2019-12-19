@@ -53,6 +53,7 @@ SCALE_BASE = 1000  # 100.0%
 DEFAULT_ASSET_SCALE = (0, 169)
 TEXT_HEIGHT = 36   #   3.6%
 DEFAULT_TEXT_SCALE = (0, TEXT_HEIGHT)
+NO_SCALE = 0
 ASSET_SCALES = {
     'arrow_left': DEFAULT_TEXT_SCALE,
     'arrow_right': DEFAULT_TEXT_SCALE,
@@ -64,6 +65,20 @@ ASSET_SCALES = {
     'RemoveDevices': (0, 371),
     'reserve_charging': (0, 117),
     'reserve_charging_empty': (0, 117),
+    'ic_1': DEFAULT_TEXT_SCALE,
+    'ic_1-done': DEFAULT_TEXT_SCALE,
+    'ic_2': DEFAULT_TEXT_SCALE,
+    'ic_2-done': DEFAULT_TEXT_SCALE,
+    'ic_3': DEFAULT_TEXT_SCALE,
+    'ic_3-done': DEFAULT_TEXT_SCALE,
+    'ic_4': DEFAULT_TEXT_SCALE,
+    'ic_4-done': DEFAULT_TEXT_SCALE,
+    'ic_5': DEFAULT_TEXT_SCALE,
+    'ic_5-done': DEFAULT_TEXT_SCALE,
+    'ic_done': DEFAULT_TEXT_SCALE,
+    'separator': NO_SCALE,
+    'ic_tablet': DEFAULT_TEXT_SCALE,
+    'ic_laptop': DEFAULT_TEXT_SCALE,
 }
 TEXT_SCALES = {
     'tonorm': (0, 4 * TEXT_HEIGHT),
@@ -83,11 +98,17 @@ TEXT_SCALES = {
     'diag_confirm': (0, 3 * TEXT_HEIGHT),
 }
 # Background colors
-DEFAULT_BACKGROUND = (255, 255, 255)
-CHARGE_BACKGROUND = (0, 0, 0)
+LEGACY_DEFAULT_BACKGROUND = (255, 255, 255)
+LEGACY_CHARGE_BACKGROUND = (0, 0, 0)
+DEFAULT_BACKGROUND = (0x20, 0x21, 0x24)
+LANGUAGE_SELECTED_BACKGROUND = (0xcc, 0xcc, 0xcc)
+BUTTON_SELECTED_BACKGROUND = (0x8a, 0xb4, 0xf8)
 BACKGROUND_COLORS = {
-    'reserve_charging': CHARGE_BACKGROUND,
-    'reserve_charging_empty': CHARGE_BACKGROUND,
+    'reserve_charging': LEGACY_CHARGE_BACKGROUND,
+    'reserve_charging_empty': LEGACY_CHARGE_BACKGROUND,
+    'ic_dropdown_sel': LANGUAGE_SELECTED_BACKGROUND,
+    'ic_dropleft_sel': BUTTON_SELECTED_BACKGROUND,
+    'ic_dropright_sel': BUTTON_SELECTED_BACKGROUND,
 }
 ASSET_MAX_COLORS = 128
 
@@ -237,6 +258,13 @@ class Convert(object):
 
       return (dim_width, dim_height)
 
+  def convert_svg_to_png(self, svg_file, png_file, background):
+    """Convert .svg file to .png file"""
+    background_hex = ''.join(format(x, '02x') for x in background)
+    command = "rsvg-convert --background-color '#%s' -o %s %s" % (
+        background_hex, png_file, svg_file)
+    subprocess.check_call(command, shell=True)
+
   def convert_to_bitmap(self, input, scale, background, output, max_colors):
     """Convert an image file to the bitmap format"""
     image = Image.open(input)
@@ -269,19 +297,19 @@ class Convert(object):
     target.convert('P', dither=None, colors=max_colors, palette=Image.ADAPTIVE
                    ).save(output)
 
-  def convert(self, input, output_dir, scales, max_colors):
+  def convert(self, files, output_dir, scales, max_colors):
     """Convert file(s) to bitmap format"""
-    files = glob.glob(input)
     if not files:
-      raise BuildImageError('Unable to find file(s): %s' % input)
+      raise BuildImageError('Unable to find file(s) to convert')
 
     for file in files:
       name, ext = os.path.splitext(os.path.basename(file))
       output = os.path.join(output_dir, name + self.DEFAULT_OUTPUT_EXT)
 
-      background = DEFAULT_BACKGROUND
-      if name in BACKGROUND_COLORS:
-        background = BACKGROUND_COLORS[name]
+      default_backgdound = DEFAULT_BACKGROUND
+      if os.getenv('LEGACY_MENU_UI') == '1':
+        default_backgdound = LEGACY_DEFAULT_BACKGROUND
+      background = BACKGROUND_COLORS.get(name, default_backgdound)
 
       scale = scales[name]
 
@@ -292,20 +320,27 @@ class Convert(object):
         print 'Replace: %s => %s' % (file, name)
         file = os.path.join(os.path.dirname(file), name + ext)
 
+      if ext == '.svg':
+        png_file = os.path.join(self.stage_dir, name + '.png')
+        self.convert_svg_to_png(file, png_file, background)
+        file = png_file
+
       self.convert_to_bitmap(file, scale, background, output, max_colors)
 
   def convert_assets(self):
     """Convert images in assets folder"""
+    files = []
+    files.extend(glob.glob(os.path.join(ASSET_DIR, PNG_FILES)))
+    files.extend(glob.glob(os.path.join(ASSET_DIR, SVG_FILES)))
     scales = defaultdict(lambda: DEFAULT_ASSET_SCALE)
     scales.update(ASSET_SCALES)
-    self.convert(os.path.join(ASSET_DIR, PNG_FILES), self.output_dir,
-                 scales, ASSET_MAX_COLORS)
+    self.convert(files, self.output_dir, scales, ASSET_MAX_COLORS)
 
   def convert_url(self):
     """Convert URL and arrows"""
     # URL and arrows should be default height
     scales = defaultdict(lambda: DEFAULT_TEXT_SCALE)
-    files = os.path.join(self.stage_dir, PNG_FILES)
+    files = glob.glob(os.path.join(self.stage_dir, PNG_FILES))
     self.convert(files, self.output_dir, scales, self.text_max_colors)
 
   def convert_texts(self):
@@ -326,7 +361,7 @@ class Convert(object):
         scales = defaultdict(lambda: None)
       sys.stderr.write(' ' + locale)
       os.makedirs(output_dir)
-      self.convert(os.path.join(locale_dir, locale, PNG_FILES),
+      self.convert(glob.glob(os.path.join(locale_dir, locale, PNG_FILES)),
                    output_dir, scales, self.text_max_colors)
     sys.stderr.write('\n')
 
@@ -334,7 +369,7 @@ class Convert(object):
     """Convert font images"""
     scales = defaultdict(lambda: DEFAULT_TEXT_SCALE)
     font_dir = os.path.join(self.stage_dir, FONT_DIR)
-    files = os.path.join(font_dir, PNG_FILES)
+    files = glob.glob(os.path.join(font_dir, PNG_FILES))
     font_output_dir = os.path.join(self.output_dir, FONT_DIR)
     os.makedirs(font_output_dir)
     self.convert(files, font_output_dir, scales, self.text_max_colors)

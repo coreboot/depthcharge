@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="56px" height="1px" viewBox="0 0 56 1" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 55.2 (78181) - https://sketchapp.com -->
+    <title>separator</title>
+    <desc>Created with Sketch.</desc>
+    <g id="separator" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" stroke-linecap="round" stroke-opacity="0.14">
+        <g id="Stepper-separator" stroke="#FFFFFF">
+            <path d="M0,0.5 L56,0.5" id="Line"></path>
+        </g>
+    </g>
+</svg>
