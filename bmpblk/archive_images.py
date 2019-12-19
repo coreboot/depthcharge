@@ -31,8 +31,7 @@ def archive_images(archiver, output, name, files):
     files: list of files to be archived
   """
   archive = os.path.join(output, name)
-  paths = [ os.path.join(output, x) for x in files]
-  args = ' '.join(paths)
+  args = ' '.join(files)
   command = '%s %s create %s' % (archiver, archive, args)
   subprocess.call(command, shell=True)
 
@@ -43,17 +42,12 @@ def archive(archiver, output):
     archiver: path to the archive tool
     output: path to the output directory
   """
-  base_images = []
-  locale_images = defaultdict(lambda: [])
-
-  files = glob.glob(os.path.join(output, "*.bmp"))
-  for file in files:
-    base = os.path.basename(file)
-    base_images.append(base)
+  base_images = glob.glob(os.path.join(output, "*.bmp"))
 
   # create archive of base images
   archive_images(archiver, output, 'vbgfx.bin', base_images)
 
+  locale_images = defaultdict(lambda: [])
   dirs = glob.glob(os.path.join(output, "locale/*"))
   for dir in dirs:
     files = glob.glob(os.path.join(dir, "*.bmp"))
