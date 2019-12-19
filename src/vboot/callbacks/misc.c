@@ -33,8 +33,8 @@ uint32_t VbExIsShutdownRequested(void)
 	int pwrsw = 0;
 	uint32_t shutdown_request = 0;
 
-	// Power button is always handled as a keyboard key in detachable UI.
-	if (!CONFIG(DETACHABLE_UI))
+	// Power button is always handled as a keyboard key on detachables.
+	if (!CONFIG(DETACHABLE))
 		pwrsw = flag_fetch(FLAG_PWRSW);
 
 	if (lidsw < 0 || pwrsw < 0) {

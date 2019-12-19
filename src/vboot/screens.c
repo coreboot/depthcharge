@@ -75,6 +75,11 @@
 			return rv;					\
 	} while (0)
 
+_Static_assert(CONFIG(MENU_UI) + CONFIG(LEGACY_MENU_UI) +
+	       CONFIG(LEGACY_CLAMSHELL_UI) == 1,
+	       "Exactly one of MENU_UI, LEGACY_MENU_UI or LEGACY_CLAMSHELL_UI"
+	       " must be set");
+
 static char initialized = 0;
 static int  prev_lang_page_num = -1;
 static int  prev_selected_index = -1;
@@ -525,7 +530,7 @@ static vb2_error_t vboot_draw_language(uint32_t locale)
 	x = VB_SCALE_HALF + VB_DIVIDER_WIDTH / 2;
 
 	/* Draw right arrow */
-	if (!CONFIG(DETACHABLE_UI)) {
+	if (!CONFIG(LEGACY_MENU_UI)) {
 		w = VB_SIZE_AUTO;
 		h = VB_TEXT_HEIGHT;
 		RETURN_ON_ERROR(draw_image("arrow_right.bmp", x,
@@ -544,7 +549,7 @@ static vb2_error_t vboot_draw_language(uint32_t locale)
 					  PIVOT_H_RIGHT|PIVOT_V_BOTTOM));
 	RETURN_ON_ERROR(get_image_size_locale("language.bmp", locale, &w, &h));
 
-	if (!CONFIG(DETACHABLE_UI)) {
+	if (!CONFIG(LEGACY_MENU_UI)) {
 		x -= w + VB_PADDING;
 
 		/* Draw left arrow */

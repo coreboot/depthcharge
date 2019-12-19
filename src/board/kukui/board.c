@@ -88,7 +88,7 @@ static int board_setup(void)
 {
 	sysinfo_install_flags(new_mtk_gpio_input);
 	flag_replace(FLAG_LIDSW, cros_ec_lid_switch_flag());
-	if (!CONFIG(DETACHABLE_UI))
+	if (!CONFIG(DETACHABLE))
 		flag_replace(FLAG_PWRSW, cros_ec_power_btn_flag());
 
 	power_set_ops(&psci_power_ops);
