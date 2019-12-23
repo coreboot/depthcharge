@@ -27,15 +27,15 @@ KEY_INPUTS = 'inputs'
 KEY_FILES = 'files'
 KEY_FONTS = 'fonts'
 KEY_STYLES = 'styles'
-DETACHABLE_INPUTS = 'detachable_inputs'
-DETACHABLE_FILES = 'detachable_files'
-KEYBOARD_FILES = 'keyboard_files'
+LEGACY_MENU_INPUTS = 'legacy_menu_inputs'
+LEGACY_MENU_FILES = 'legacy_menu_files'
+LEGACY_CLAMSHELL_FILES = 'legacy_clamshell_files'
 VENDOR_INPUTS = 'vendor_inputs'
 VENDOR_FILES = 'vendor_files'
 DIAGNOSTIC_FILES = 'diagnostic_files'
 
-FIRMWARE_STRINGS_FILE = 'firmware_strings.txt'
-DETACHABLE_STRINGS_FILE = 'detachable_strings.txt'
+LEGACY_STRINGS_FILE = 'legacy_strings.txt'
+LEGACY_MENU_STRINGS_FILE = 'legacy_menu_strings.txt'
 VENDOR_STRINGS_FILE = 'vendor_strings.txt'
 FORMAT_FILE = 'format.yaml'
 VENDOR_FORMAT_FILE = 'vendor_format.yaml'
@@ -77,15 +77,15 @@ def ParseLocaleInputFile(locale_dir, strings_file, input_format):
   return dict(zip(input_format, input_data))
 
 def ParseLocaleInputFiles(locale_dir, input_format,
-                          detachable_format, vendor_format):
+                          legacy_menu_format, vendor_format):
   """Parses all firmware string files in given locale directory for
   BuildTextFiles
 
   Args:
     locale: The locale folder with firmware string files.
-    input_format: Format description for each line in FIRMWARE_STRINGS_FILE.
-    detachable_format: Format description for each line in
-                       DETACHABLE_STRINGS_FILE.
+    input_format: Format description for each line in LEGACY_STRINGS_FILE.
+    legacy_menu_format: Format description for each line in
+      LEGACY_MENU_STRINGS_FILE.
     vendor_format: Format description for each line in VENDOR_STRINGS_FILE.
 
   Returns:
@@ -93,15 +93,15 @@ def ParseLocaleInputFiles(locale_dir, input_format,
   """
   result = dict()
   result.update(ParseLocaleInputFile(locale_dir,
-                                     FIRMWARE_STRINGS_FILE,
+                                     LEGACY_STRINGS_FILE,
                                      input_format))
 
   # Now parse detachable menu strings
-  if os.getenv("DETACHABLE_UI") == "1":
-    print " (detachable_ui enabled)"
+  if os.getenv("LEGACY_MENU_UI") == "1":
+    print " (legacy_menu_ui enabled)"
     result.update(ParseLocaleInputFile(locale_dir,
-                                       DETACHABLE_STRINGS_FILE,
-                                       detachable_format))
+                                       LEGACY_MENU_STRINGS_FILE,
+                                       legacy_menu_format))
 
   # Parse vendor files if enabled
   if VENDOR_STRINGS:
@@ -113,8 +113,8 @@ def ParseLocaleInputFiles(locale_dir, input_format,
 
   # Walk locale directory to add pre-generated items.
   for input_file in glob.glob(os.path.join(locale_dir, "*.txt")):
-    if (os.path.basename(input_file) == FIRMWARE_STRINGS_FILE or
-        os.path.basename(input_file) == DETACHABLE_STRINGS_FILE or
+    if (os.path.basename(input_file) == LEGACY_STRINGS_FILE or
+        os.path.basename(input_file) == LEGACY_MENU_STRINGS_FILE or
         os.path.basename(input_file) == VENDOR_STRINGS_FILE):
       continue
     name, _ = os.path.splitext(os.path.basename(input_file))
@@ -226,7 +226,7 @@ def main(argv):
   for locale in locales:
     print locale,
     inputs = ParseLocaleInputFiles(locale, formats[KEY_INPUTS],
-                                   formats[DETACHABLE_INPUTS],
+                                   formats[LEGACY_MENU_INPUTS],
                                    formats[VENDOR_INPUTS] if VENDOR_STRINGS
                                                           else None)
     output_dir = os.path.normpath(os.path.join(OUTPUT_DIR, locale))
@@ -234,10 +234,10 @@ def main(argv):
       os.makedirs(output_dir)
     files = formats[KEY_FILES]
     styles = formats[KEY_STYLES]
-    if os.getenv("DETACHABLE_UI") == "1":
-      files.update(formats[DETACHABLE_FILES])
+    if os.getenv("LEGACY_MENU_UI") == "1":
+      files.update(formats[LEGACY_MENU_FILES])
     else:
-      files.update(formats[KEYBOARD_FILES])
+      files.update(formats[LEGACY_CLAMSHELL_FILES])
 
     # Now parse strings for optional features
     if os.getenv("DIAGNOSTIC_UI") == "1":
