@@ -33,7 +33,7 @@ def archive_images(archiver, output, name, files):
   archive = os.path.join(output, name)
   args = ' '.join(files)
   command = '%s %s create %s' % (archiver, archive, args)
-  subprocess.call(command, shell=True)
+  subprocess.check_call(command, shell=True)
 
 def archive(archiver, output):
   """Archive base images and localized images
