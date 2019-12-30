@@ -48,7 +48,9 @@
  */
 static int pch_cold_reboot(PowerOps *me)
 {
-	outb(SYS_RST | RST_CPU | FULL_RST, RST_CNT);
+	outb(FULL_RST | SYS_RST, RST_CNT); /* Req a hard reset, */
+	udelay(50); /* settle then, */
+	outb(FULL_RST | RST_CPU | SYS_RST, RST_CNT); /* reset.. */
 	halt();
 }
 
