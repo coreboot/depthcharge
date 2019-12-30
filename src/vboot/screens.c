@@ -305,8 +305,12 @@ static vb2_error_t get_image_size(struct directory *dir, const char *image_name,
 	if (rv)
 		return VB2_ERROR_UNKNOWN;
 
-	*width = dim.x.n * VB_SCALE / dim.x.d;
-	*height = dim.y.n * VB_SCALE / dim.y.d;
+	/*
+	 * Division with round-up to prevent character overlapping problem.
+	 * See b/145376714 for more details.
+	 */
+	*width = DIV_ROUND_UP(dim.x.n * VB_SCALE, dim.x.d);
+	*height = DIV_ROUND_UP(dim.y.n * VB_SCALE, dim.y.d);
 
 	return VB2_SUCCESS;
 }
