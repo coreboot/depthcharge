@@ -11,7 +11,9 @@ CONFIG_HEAP_SIZE=0x00600000
 CONFIG_TPM2_MODE=y
 CONFIG_EC_SOFTWARE_SYNC=y
 CONFIG_AUXFW_SOFTWARE_SYNC=y
-CONFIG_EC_EFS=y
+# FIXME: EFS currently causes EC problems that are yet to be resolved
+# (b/146989235) disable for now to avoid gbb flag magic during bring-up.
+CONFIG_EC_EFS=n
 CONFIG_PHYSICAL_REC_SWITCH=y
 CONFIG_CROSSYSTEM_ACPI=y
 CONFIG_NVDATA_CMOS=y
