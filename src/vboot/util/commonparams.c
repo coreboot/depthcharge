@@ -135,9 +135,6 @@ int vboot_create_vbsd(void)
 	if (CONFIG(EC_SOFTWARE_SYNC))
 		vb_sd->flags |= VBSD_EC_SOFTWARE_SYNC;
 
-	if (CONFIG(EC_EFS))
-		vb_sd->flags |= VBSD_EC_EFS;
-
 	if (!CONFIG(PHYSICAL_REC_SWITCH))
 		vb_sd->flags |= VBSD_BOOT_REC_SWITCH_VIRTUAL;
 
