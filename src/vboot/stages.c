@@ -123,6 +123,9 @@ int vboot_select_and_load_kernel(void)
 				  &cleanup_funcs);
 	}
 
+	if (CONFIG(EC_SOFTWARE_SYNC))
+		ctx->flags |= VB2_CONTEXT_EC_SYNC_SUPPORTED;
+
 	if (vendor_data_settable())
 		ctx->flags |= VB2_CONTEXT_VENDOR_DATA_SETTABLE;
 
