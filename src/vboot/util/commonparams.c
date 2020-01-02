@@ -135,9 +135,6 @@ int vboot_create_vbsd(void)
 	if (CONFIG(EC_SOFTWARE_SYNC))
 		vb_sd->flags |= VBSD_EC_SOFTWARE_SYNC;
 
-	if (CONFIG(EC_SLOW_UPDATE))
-		vb_sd->flags |= VBSD_EC_SLOW_UPDATE;
-
 	if (CONFIG(EC_EFS))
 		vb_sd->flags |= VBSD_EC_EFS;
 
