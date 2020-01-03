@@ -34,7 +34,7 @@
 
 int skylake_get_gpe(int gpe);
 
-#define GPE0_STS(x)		(0x80 + (x * 4))
+#define GPE0_STS_OFF		0x80
 
 /* GPE_31_0 */
 #define GPE0_DW0_00		0
@@ -149,5 +149,7 @@ int skylake_get_gpe(int gpe);
 #define GPE0_GPIO_T2		111
 #define GPE0_LAN_WAK		112
 #define GPE0_WADT		114
+
+#define GPE_MAX			GPE0_WADT
 
 #endif /* __DRIVERS_SOC_SKYLAKE_H__ */

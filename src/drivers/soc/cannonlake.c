@@ -11,38 +11,17 @@
  * GNU General Public License for more details.
  */
 
-#include <arch/io.h>
-#include <libpayload.h>
-#include <stdint.h>
-#include "drivers/soc/common/iomap.h"
 #include "drivers/soc/cannonlake.h"
+#include "drivers/soc/common/iomap.h"
+#include "drivers/soc/intel_common.h"
+
+static const SocGpeConfig cfg = {
+	.gpe_max = GPE_MAX,
+	.acpi_base = ACPI_BASE_ADDRESS,
+	.gpe0_sts_off = GPE0_STS_OFF,
+};
 
 int cannonlake_get_gpe(int gpe)
 {
-	int bank;
-	uint32_t mask, sts;
-	uint64_t start;
-	int rc = 0;
-	const uint64_t timeout_us = 1000;
-
-	if (gpe < 0 || gpe > GPE_MAX)
-		return -1;
-
-	bank = gpe / 32;
-	mask = 1 << (gpe % 32);
-
-	/* Wait for GPE status to clear */
-	start = timer_us(0);
-	do {
-		if (timer_us(start) > timeout_us)
-			break;
-
-		sts = inl(ACPI_BASE_ADDRESS + GPE0_STS(bank));
-		if (sts & mask) {
-			outl(mask, ACPI_BASE_ADDRESS + GPE0_STS(bank));
-			rc = 1;
-		}
-	} while (sts & mask);
-
-	return rc;
+	return soc_get_gpe(gpe, &cfg);
 }

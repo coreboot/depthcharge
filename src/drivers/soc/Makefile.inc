@@ -12,9 +12,14 @@
 ##
 
 depthcharge-$(CONFIG_DRIVER_SOC_SKYLAKE) += skylake.c
+depthcharge-$(CONFIG_DRIVER_SOC_SKYLAKE) += intel_common.c
 depthcharge-$(CONFIG_DRIVER_SOC_APOLLOLAKE) += apollolake.c
+depthcharge-$(CONFIG_DRIVER_SOC_APOLLOLAKE) += intel_common.c
 depthcharge-$(CONFIG_DRIVER_SOC_CANNONLAKE) += cannonlake.c
+depthcharge-$(CONFIG_DRIVER_SOC_CANNONLAKE) += intel_common.c
 depthcharge-$(CONFIG_DRIVER_SOC_STONEYRIDGE) += stoneyridge.c
 depthcharge-$(CONFIG_DRIVER_SOC_GLK) += apollolake.c
+depthcharge-$(CONFIG_DRIVER_SOC_GLK) += intel_common.c
 depthcharge-$(CONFIG_DRIVER_SOC_ICELAKE) += icelake.c
+depthcharge-$(CONFIG_DRIVER_SOC_ICELAKE) += intel_common.c
 depthcharge-$(CONFIG_DRIVER_SOC_QCOM_QUP_SE) += qcom_qup_se.c

@@ -24,7 +24,7 @@
 /* Icelake PCR access to GPIO registers. */
 #define PCH_PCR_BASE_ADDRESS	0xfd000000
 
-#define GPE0_STS(x)             (0x60 + ((x) * 4))
+#define GPE0_STS_OFF             0x60
 
 
 /* PCR PIDs. */

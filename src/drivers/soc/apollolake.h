@@ -30,7 +30,7 @@
 /* Apollolake GPE definitions */
 
 #define ACPI_PMIO_BASE			0x400
-#define GPE0_STS(x)			(0x20 + (x * 4))
+#define GPE0_STS_OFF			0x20
 
 /* bit position in GPE0a_STS register */
 #define GPE0A_PCIE_SCI_STS		0
