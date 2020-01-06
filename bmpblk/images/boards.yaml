@@ -156,7 +156,7 @@ monroe,sumo:
   sdcard:   False
   hi_res:   [en]
 
-cranky,buddy:
+buddy:
   # Using VESA graphics mode 1024x768 (0x0117).
   # A chromestation with built-in panel, without built-in keyboard.
   # Display is a modern 16:9 (1920x1080) monitor.
