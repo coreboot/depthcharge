@@ -193,7 +193,7 @@ class Convert(object):
       raise BuildImageError('Invalid physical presence setting %s for board %s'
                             % (physical_presence, self.board))
 
-    if os.getenv("DETACHABLE_UI") == "1":
+    if os.getenv("LEGACY_MENU_UI") == "1":
       self.replace_map['VerificationOff'] = ''
 
   def set_locales(self):

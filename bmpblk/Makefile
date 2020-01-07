@@ -7,7 +7,7 @@
 
 OUTPUT ?= build
 STAGE ?= $(OUTPUT)/.stage
-DETACHABLE_UI ?= 0
+LEGACY_MENU_UI ?= 0
 
 default: strings images
 
