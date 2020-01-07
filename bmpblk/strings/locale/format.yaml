@@ -38,7 +38,7 @@ inputs:
   - diag_confirm   #24 Press the POWER button to run diagnostics.
   - todev_power    #25 To turn OS verification OFF, press the POWER button.
 
-legacy_menu_inputs:
+detachable_inputs:
   - dev_option     #01 Developer Options
   - debug_info     #02 Show Debug Info
   - enable_ver     #03 Enable Root Verification
@@ -78,7 +78,7 @@ files:
   language:       # pre-generated.
   os_broken:      [missing, os_broken]
 
-legacy_menu_files:
+detachable_files:
   dev_option:
   debug_info:
   enable_ver:
@@ -97,7 +97,7 @@ legacy_menu_files:
   enable_hint:    [verif_off_insc, select_enable]
   confirm_hint:   [select_confirm, reboot_erase]
 
-legacy_clamshell_files:
+keyboard_files:
   devmode:
   todev:          [todev, reboot_erase, '', esc_back]
   todev_phyrec:   [todev_phyrec, reboot_erase, '', esc_back]
