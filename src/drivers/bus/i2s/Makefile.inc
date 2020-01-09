@@ -17,3 +17,4 @@ depthcharge-$(CONFIG_DRIVER_BUS_I2S_EXYNOS5) += exynos5.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2S_MTK) += mtk.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2S_TEGRA) += tegra.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2S_ROCKCHIP) += rockchip.c
+depthcharge-$(CONFIG_DRIVER_BUS_I2S_SC7180) += sc7180.c

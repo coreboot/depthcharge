@@ -30,6 +30,11 @@
 #include "drivers/gpio/sc7180.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/tpm/spi.h"
+#include "drivers/sound/max98357a.h"
+#include "drivers/bus/i2s/sc7180.h"
+#include "drivers/sound/i2s.h"
+#include "drivers/sound/route.h"
+#include "drivers/sound/sound.h"
 
 #define SDC1_HC_BASE          0x7C4000
 #define SDC1_TLMM_CFG_ADDR    0x3D7A000
@@ -134,6 +139,19 @@ static int board_setup(void)
 	Sc7180Qspi *spi_flash = new_sc7180_qspi(0x088DC000);
 	SpiFlash *flash = new_spi_flash(&spi_flash->ops);
 	flash_set_ops(&flash->ops);
+
+	GpioOps *amp_enable = sysinfo_lookup_gpio("speaker enable", 1,
+				new_sc7180_gpio_output_from_coreboot);
+	max98357aCodec *speaker_amp = new_max98357a_codec(amp_enable);
+
+	Sc7180I2s *soundq = new_sc7180_i2s(48000, 2, 16, LPASS_SECONDARY,
+				           0x62000000);
+	I2sSource *i2s_source = new_i2s_source(&soundq->ops, 48000, 2, 0x500);
+	SoundRoute *sound = new_sound_route(&i2s_source->ops);
+	list_insert_after(&speaker_amp->component.list_node,
+					  &sound->components);
+
+	sound_set_ops(&sound->ops);
 
 	return 0;
 }
