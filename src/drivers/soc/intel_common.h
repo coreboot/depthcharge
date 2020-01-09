@@ -8,6 +8,8 @@
 #ifndef __DRIVERS_SOC_INTEL_COMMON_H__
 #define __DRIVERS_SOC_INTEL_COMMON_H__
 
+#include <stdint.h>
+
 /* Platform specific GPE configuration */
 typedef struct SocGpeConfig {
 	int gpe_max;
