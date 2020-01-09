@@ -26,6 +26,10 @@ config DRIVER_BUS_I2S_ROCKCHIP
 	bool "Rockchip I2S driver"
 	default n
 
+config DRIVER_BUS_I2S_SC7180
+	bool "SC7180 I2S driver"
+	default n
+
 source src/drivers/bus/i2s/apollolake/Kconfig
 source src/drivers/bus/i2s/baytrail/Kconfig
 source src/drivers/bus/i2s/broadwell/Kconfig
