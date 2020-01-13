@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-2.0
-/* Copyright (C) 2019 Google Inc.  */
+/* Copyright 2020 Google LLC.  */
 
 /*
  * These needs to be included first.
@@ -12,18 +12,29 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "drivers/bus/i2s/cavs_2_5-regs.h"
+#include "drivers/bus/i2s/intel_common/max98357a.h"
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
+#include "drivers/gpio/gpio.h"
 #include "drivers/gpio/sysinfo.h"
+#include "drivers/gpio/tigerlake.h"
 #include "drivers/power/pch.h"
+#include "drivers/sound/i2s.h"
+#include "drivers/sound/max98357a.h"
 #include "drivers/soc/tigerlake.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/nvme.h"
 #include "drivers/tpm/spi.h"
 #include "drivers/tpm/tpm.h"
+
+#define AUD_VOLUME	4000
+#define AUD_BITDEPTH	16
+#define AUD_SAMPLE_RATE	48000
+#define SDMODE_PIN	GPP_A10
 
 static int cr50_irq_status(void)
 {
@@ -63,6 +74,19 @@ static int board_setup(void)
 
 	/* PCH Power */
 	power_set_ops(&tigerlake_power_ops);
+
+	/* Audio Setup (for boot beep) */
+	GpioOps *sdmode = &new_tigerlake_gpio_output(SDMODE_PIN, 0)->ops;
+	I2s *i2s = new_i2s_structure(&max98357a_settings, AUD_BITDEPTH,
+			sdmode, SSP_I2S1_START_ADDRESS);
+	I2sSource *i2s_source = new_i2s_source(&i2s->ops, AUD_SAMPLE_RATE,
+			2, AUD_VOLUME);
+	/* Connect the Audio codec to the I2s source */
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+	max98357aCodec *speaker_amp = new_max98357a_codec(sdmode);
+	list_insert_after(&speaker_amp->component.list_node,
+			&sound_route->components);
+	sound_set_ops(&sound_route->ops);
 
 	/* NVME SSD */
 	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x1d, 0));
