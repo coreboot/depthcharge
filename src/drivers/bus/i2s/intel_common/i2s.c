@@ -88,6 +88,10 @@ static uint32_t calculate_sscr0(const I2sSettings *settings, int bps)
 		 SSCR0_reg(NCS, NETWORK_CLOCK_DISABLE) |
 		 SSCR0_reg(FRDC,
 			SSCR0_SlotsPerFrm(settings->frame_rate_divider_ctrl));
+
+	/* ECS bit set is needed for TGL platforms */
+	if (CONFIG(INTEL_COMMON_I2S_CAVS_2_5))
+		sscr0 |= SSCR0_reg(ECS, DIV_ENABLE);
 	return sscr0;
 }
 
@@ -172,10 +176,10 @@ static int enable_DSP_SSP(I2s *bus)
 		return -1;
 
 /*
- * cAVS 1.8 version doesn't expose the i2s registers used to configure
- * the clock and hence avoid the clock config.
+ * cAVS 1.5 version exposes the i2s registers used to configure
+ * the clock and hence include the clock config.
  */
-#if !CONFIG(INTEL_COMMON_I2S_CAVS_1_8)
+#if CONFIG(INTEL_COMMON_I2S_CAVS_1_5)
 	/* setup the clock to disable dynamic clock gating of SSP */
 	writel(DISABLE_CLOCK_GATING, bus->lpe_bar4 + CLOCK_GATING_OFFSET);
 	for (int i = 0; i < RETRY_COUNT; i++) {
@@ -186,6 +190,17 @@ static int enable_DSP_SSP(I2s *bus)
 	}
 	if (readl(bus->lpe_bar4 + CLOCK_GATING_OFFSET) != DISABLED_CLOCK_GATING)
 		return -1;
+#endif
+
+#if CONFIG(INTEL_COMMON_I2S_CAVS_2_5)
+	/* In TGL platform need to set I2S MDIV and NDIV */
+	writel(1, (bus->lpe_bar4 +
+			(MNCSS_REG_BLOCK_START + MDIV_M_VAL(AMP_SSP_PORT_INDEX))));
+	writel(1, (bus->lpe_bar4 +
+			(MNCSS_REG_BLOCK_START + MDIV_N_VAL(AMP_SSP_PORT_INDEX))));
+	/* SPA register should be set for each I2S port */
+	writel(readl(bus->lpe_bar4 + I2SLCTL) | BIT(AMP_SSP_PORT_INDEX),
+			(bus->lpe_bar4 + I2SLCTL));
 #endif
 	return 0;
 }

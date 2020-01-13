@@ -61,3 +61,4 @@ config DRIVER_SOC_TIGERLAKE
 	bool "Tigerlake SoC driver"
 	default n
 	select DRIVER_GPIO_TIGERLAKE
+	select INTEL_COMMON_I2S_CAVS_2_5

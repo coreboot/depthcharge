@@ -27,3 +27,7 @@ config INTEL_COMMON_I2S_CAVS_1_8
 config INTEL_COMMON_I2S_CAVS_1_5
 	bool "Intel cAVS1.5 specification"
 	default n
+
+config INTEL_COMMON_I2S_CAVS_2_5
+        bool "Intel cAVS2.5 specification"
+        default n
