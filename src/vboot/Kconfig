@@ -93,11 +93,11 @@ config EC_EFS
 	  software sync need to also support it. This setting tells vboot to
 	  perform EFS software sync.
 
-config PHYSICAL_REC_SWITCH
-	bool "Physical recovery switch is present"
-	default n
+config PHYSICAL_PRESENCE_KEYBOARD
+	bool "Use keyboard to confirm physical presence"
+	default y
 	help
-	  Whether this platform has a physical recovery switch.
+	  Whether to confirm physical presence using keyboard.
 
 config MOCK_TPM
 	bool "Mock the TPM in vboot (TURN OFF BEFORE RELEASE)"
