@@ -38,7 +38,6 @@ SCREEN_KEY = 'screen'
 PANEL_KEY = 'panel'
 SDCARD_KEY = 'sdcard'
 BAD_USB3_KEY = 'bad_usb3'
-PHY_PRES_KEY = 'phy_pres'
 LOCALES_KEY = 'locales'
 HI_RES_KEY = 'hi_res'
 TEXT_COLORS_KEY = 'text_colors'
@@ -173,7 +172,7 @@ class Convert(object):
     """
     sdcard = self.config[SDCARD_KEY]
     bad_usb3 = self.config[BAD_USB3_KEY]
-    physical_presence = self.config[PHY_PRES_KEY]
+    physical_presence = os.getenv('PHYSICAL_PRESENCE')
 
     self.replace_map = self.DEFAULT_REPLACE_MAP.copy()
 

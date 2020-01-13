@@ -17,7 +17,6 @@
 # bad_usb3: Presence of USB3 ports that cannot boot recovery
 # locales: List of locales to include
 # hi_res: List of locales rendered in higher DPI
-# phy_pres: Button used for physical presence (keyboard, recovery, power).
 # sdcard: Presence of SD/MMC Card Reader that can boot in recovery mode
 # text_colors: Maximum number of colors for text images.
 #
@@ -32,7 +31,6 @@ _DEFAULT_:
   panel:       []
   sdcard:      True
   bad_usb3:    False
-  phy_pres:    keyboard
   text_colors: 7
   locales:     [en, es-419, pt-BR, fr, es, pt-PT, ca, it, de,
                 el, nl, da, nb, sv, fi, et, lv, lt, ru, pl, cs, sk, hu, sl, sr, hr, bg, ro,
@@ -129,7 +127,6 @@ fizz,guado,kalista,mccloud,ninja,panther,puff,rikku,tidus,tricky:
   # With card reader and physical recovery switch.
   screen:   [1024, 768]
   panel:    [1920, 1080]
-  phy_pres: recovery
   hi_res:   [en]
 
 zako:
@@ -140,7 +137,6 @@ zako:
   # Special firmware with WrongPowerSupply screens.
   screen:   [1024, 768]
   panel:    [1920, 1080]
-  phy_pres: recovery
   optional_screens: [ReserveCharging, ReserveChargingEmpty, WrongPowerSupply]
   text_colors:  4
   hi_res:   [en]
@@ -152,7 +148,6 @@ monroe,sumo:
   # With physical recovery switch, without card reader.
   screen:   [1024, 768]
   panel:    [1920, 1080]
-  phy_pres: recovery
   sdcard:   False
   hi_res:   [en]
 
@@ -163,7 +158,6 @@ buddy:
   # With physical recovery switch, with card reader.
   screen:   [1024, 768]
   panel:    [1920, 1080]
-  phy_pres: recovery
   hi_res:   [en]
 
 parrot,butterfly:
@@ -218,7 +212,6 @@ veyron_mickey:
   # With physical recovery switch, without card reader.
   screen:   [640, 480]
   panel:    [1920, 1080]
-  phy_pres: recovery
   sdcard:   False
   text_colors:  4
   hi_res:   [en]
@@ -324,7 +317,6 @@ sarien,drallion:
   # 1920x1080, boots recovery image on USB ports.
   screen:   [1920, 1080]
   sdcard:   False
-  phy_pres: power
   hi_res:   [en]
 
 hatch:
