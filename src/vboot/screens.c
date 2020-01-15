@@ -236,6 +236,7 @@ static vb2_error_t draw(struct directory *dir, const char *image_name,
 			int32_t x, int32_t y, int32_t width, int32_t height,
 			uint32_t flags)
 {
+	int rv;
 	struct dentry *file;
 	void *bitmap;
 
@@ -254,11 +255,14 @@ static vb2_error_t draw(struct directory *dir, const char *image_name,
 	};
 
 	if (get_bitmap_dimension(bitmap, file->size, &dim))
-		return VB2_ERROR_UNKNOWN;
+		return VB2_ERROR_UI_DRAW_FAILURE;
 
-	if ((int64_t)dim.x.n * VB_SCALE <= (int64_t)dim.x.d * VB_DIVIDER_WIDTH)
-		return draw_bitmap((uint8_t *)dir + file->offset, file->size,
-				   &pos, &dim, flags);
+	if ((int64_t)dim.x.n * VB_SCALE <=
+	    (int64_t)dim.x.d * VB_DIVIDER_WIDTH) {
+		rv = draw_bitmap((uint8_t *)dir + file->offset, file->size,
+				 &pos, &dim, flags);
+		return rv ? VB2_ERROR_UI_DRAW_FAILURE : VB2_SUCCESS;
+	}
 
 	/*
 	 * If we get here the image is too wide, so fit it to the content width.
@@ -272,8 +276,9 @@ static vb2_error_t draw(struct directory *dir, const char *image_name,
 	dim.x.d = VB_SCALE;
 	dim.y.n = VB_SIZE_AUTO;
 	dim.y.d = VB_SCALE;
-	return draw_bitmap((uint8_t *)dir + file->offset, file->size,
-			   &pos, &dim, flags);
+	rv = draw_bitmap((uint8_t *)dir + file->offset, file->size,
+			 &pos, &dim, flags);
+	return rv ? VB2_ERROR_UI_DRAW_FAILURE : VB2_SUCCESS;
 }
 
 static vb2_error_t draw_image(const char *image_name, int32_t x, int32_t y,
@@ -308,7 +313,7 @@ static vb2_error_t get_image_size(struct directory *dir, const char *image_name,
 	rv = get_bitmap_dimension((uint8_t *)dir + file->offset,
 				  file->size, &dim);
 	if (rv)
-		return VB2_ERROR_UNKNOWN;
+		return VB2_ERROR_UI_DRAW_FAILURE;
 
 	/*
 	 * Division with round-up to prevent character overlapping problem.
@@ -567,7 +572,7 @@ static vb2_error_t draw_base_screen(uint32_t locale, int show_language)
 {
 
 	if (clear_screen(&color_white))
-		return VB2_ERROR_UNKNOWN;
+		return VB2_ERROR_UI_DRAW_FAILURE;
 	RETURN_ON_ERROR(draw_image("chrome_logo.bmp",
 			(VB_SCALE - VB_DIVIDER_WIDTH)/2,
 			VB_DIVIDER_V_OFFSET - VB_LOGO_LIFTUP,
@@ -1330,13 +1335,13 @@ static void print_fallback_message(const struct vboot_ui_descriptor *desc)
 
 static vb2_error_t draw_ui(uint32_t screen_type, struct params *p)
 {
-	vb2_error_t rv = VB2_ERROR_UNKNOWN;
+	vb2_error_t rv;
 	const struct vboot_ui_descriptor *desc;
 
 	desc = get_ui_descriptor(screen_type);
 	if (!desc) {
 		printf("Not a valid screen type: 0x%x\n", screen_type);
-		return VBERROR_INVALID_SCREEN_INDEX;
+		return VB2_ERROR_UI_INVALID_SCREEN;
 	}
 
 	if (p->locale >= locale_data.count) {
@@ -1345,18 +1350,21 @@ static vb2_error_t draw_ui(uint32_t screen_type, struct params *p)
 		return VB2_ERROR_INVALID_PARAMETER;
 	}
 
-	/* if no drawing function is registered, fallback msg will be printed */
-	if (desc->draw) {
-		rv = desc->draw(p);
-		if (rv)
-			printf("Drawing failed (0x%x)\n", rv);
-	}
-	if (rv) {
-		print_fallback_message(desc);
-		return VBERROR_SCREEN_DRAW;
+	/* If no drawing function is registered, fallback msg will be
+	   printed. */
+	if (!desc->draw) {
+		printf("No drawing function registered for screen type: 0x%x\n",
+		       screen_type);
+		return VB2_ERROR_UI_INVALID_SCREEN;
 	}
 
-	return VB2_SUCCESS;
+	rv = desc->draw(p);
+	if (rv) {
+		printf("Drawing failed (0x%x)\n", rv);
+		print_fallback_message(desc);
+	}
+
+	return rv;
 }
 
 static void vboot_init_locale(void)
@@ -1414,7 +1422,7 @@ static vb2_error_t vboot_init_screen(void)
 	/* Make sure framebuffer is initialized before turning display on. */
 	clear_screen(&color_white);
 	if (display_init())
-		return VB2_ERROR_UNKNOWN;
+		return VB2_ERROR_UI_DISPLAY_INIT;
 
 	/* create a list of supported locales */
 	vboot_init_locale();
@@ -1440,10 +1448,8 @@ vb2_error_t vboot_draw_screen(uint32_t screen, uint32_t locale,
 
 	printf("%s: screen=0x%x locale=%d\n", __func__, screen, locale);
 
-	if (!initialized) {
-		if (vboot_init_screen())
-			return VB2_ERROR_UNKNOWN;
-	}
+	if (!initialized)
+		RETURN_ON_ERROR(vboot_init_screen());
 
 	/* If the screen is blank, turn off the backlight; else turn it on. */
 	backlight_update(VB_SCREEN_BLANK == screen ? 0 : 1);
@@ -1472,10 +1478,8 @@ vb2_error_t vboot_draw_ui(uint32_t screen, uint32_t locale,
 	       "disabled_idx_mask=0x%x\n",
 	       __func__, screen, locale, selected_index, disabled_idx_mask);
 
-	if (!initialized) {
-		if (vboot_init_screen())
-			return VB2_ERROR_UNKNOWN;
-	}
+	if (!initialized)
+		RETURN_ON_ERROR(vboot_init_screen());
 
 	/* If the screen is blank, turn off the backlight; else turn it on. */
 	backlight_update(screen == VB_SCREEN_BLANK ? 0 : 1);
