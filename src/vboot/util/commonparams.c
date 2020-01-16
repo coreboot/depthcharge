@@ -112,9 +112,6 @@ int vboot_create_vbsd(void)
 	if (flag_fetch(FLAG_WPSW))
 		vb_sd->flags |= VBSD_BOOT_FIRMWARE_WP_ENABLED;
 
-	if (CONFIG(PHYSICAL_PRESENCE_KEYBOARD))
-		vb_sd->flags |= VBSD_BOOT_REC_SWITCH_VIRTUAL;
-
 	return 0;
 }
 
