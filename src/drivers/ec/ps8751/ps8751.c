@@ -43,8 +43,16 @@
 #define PS8751_P1_SPI_WP	0x4b
 /* NOTE: on 8751 A3 silicon, P1_SPI_WP_EN reads back inverted! */
 #define PS8751_P1_SPI_WP_EN	0x10	/* WP enable bit */
+#define PS8751_P1_SPI_WP_DIS	0x00	/* WP disable "bit" */
+
 #define PS8805_P2_SPI_WP	0x2a
 #define PS8805_P2_SPI_WP_EN	0x10	/* WP enable bit */
+#define PS8805_P2_SPI_WP_DIS	0x00	/* WP disable "bit" */
+
+#define PS8815_P2_SPI_WP	0x2a
+#define PS8815_P2_SPI_WP_EN	0x00	/* WP enable "bit" */
+#define PS8815_P2_SPI_WP_DIS	0x10	/* WP disable bit */
+
 #define P1_CHIP_REV_LO		0xf0	/* the 0x03 in "A3" */
 #define P1_CHIP_REV_HI		0xf1	/* the 0x0a in "A3" */
 #define P1_CHIP_ID_LO		0xf2	/* 0x50 */
@@ -63,10 +71,17 @@
 #define P2_CLK_CTRL		0xd6
 
 #define P3_VENDOR_ID_LOW	0x00
-#define P3_I2C_DEBUG		0xa0
-#define P3_I2C_DEBUG_DEFAULT	0x31
-#define P3_I2C_DEBUG_ENABLE	0x30
-#define P3_I2C_DEBUG_DISABLE	P3_I2C_DEBUG_DEFAULT
+#define P3_CHIP_WAKEUP		0xa0
+
+#define PS8751_P3_I2C_DEBUG		0xa0
+#define PS8751_P3_I2C_DEBUG_DEFAULT	0x31
+#define PS8751_P3_I2C_DEBUG_ENABLE	0x30
+#define PS8751_P3_I2C_DEBUG_DISABLE	PS8751_P3_I2C_DEBUG_DEFAULT
+
+#define PS8815_P3_I2C_DEBUG		0x9b
+#define PS8815_P3_I2C_DEBUG_DEFAULT	0x00
+#define PS8815_P3_I2C_DEBUG_ENABLE	0x01
+#define PS8815_P3_I2C_DEBUG_DISABLE	0x02
 
 /*
  * bytes of SPI FIFO depth after command overhead
@@ -130,6 +145,7 @@
 #define PARADE_VENDOR_ID		0x1DA0
 #define PARADE_PS8751_PRODUCT_ID	0x8751
 #define PARADE_PS8805_PRODUCT_ID	0x8805
+#define PARADE_PS8815_PRODUCT_ID	0x8815
 
 enum ps8751_device_state {
 	PS8751_DEVICE_MISSING = -2,
@@ -266,10 +282,27 @@ static int __must_check ps8751_wake_i2c(Ps8751 *me)
 {
 	int status;
 	uint8_t dummy;
+	uint8_t debug_reg;
+	uint8_t debug_ena;
 
 	debug("call...\n");
 
-	status = read_reg(me, I2C_MASTER, P3_I2C_DEBUG, &dummy);
+	switch (me->chip_type) {
+	case CHIP_PS8751:
+	case CHIP_PS8805:
+		debug_reg = PS8751_P3_I2C_DEBUG;
+		debug_ena = PS8751_P3_I2C_DEBUG_ENABLE;
+		break;
+	case CHIP_PS8815:
+		debug_reg = PS8815_P3_I2C_DEBUG;
+		debug_ena = PS8815_P3_I2C_DEBUG_ENABLE;
+		break;
+	default:
+		printf("Unknown Parade chip_type: %d\n", me->chip_type);
+		return -1;
+	}
+
+	status = read_reg(me, I2C_MASTER, P3_CHIP_WAKEUP, &dummy);
 	if (status != 0) {
 		/* wait for device to wake up... */
 		mdelay(10);
@@ -279,7 +312,7 @@ static int __must_check ps8751_wake_i2c(Ps8751 *me)
 	 * this enables 7 additional i2c slave addrs:
 	 * 0x10, 0x12, 0x14, 0x18, 0x1a, 0x1c, 0x1f
 	 */
-	status = write_reg(me, I2C_MASTER, P3_I2C_DEBUG, P3_I2C_DEBUG_ENABLE);
+	status = write_reg(me, I2C_MASTER, debug_reg, debug_ena);
 	if (status == 0)
 		status = ps8751_spi_fifo_reset(me);
 	if (status != 0)
@@ -298,14 +331,31 @@ static int __must_check ps8751_hide_i2c(Ps8751 *me)
 {
 	int status;
 	uint8_t dummy;
+	uint8_t debug_reg;
+	uint8_t debug_dis;
+
+	switch (me->chip_type) {
+	case CHIP_PS8751:
+	case CHIP_PS8805:
+		debug_reg = PS8751_P3_I2C_DEBUG;
+		debug_dis = PS8751_P3_I2C_DEBUG_DEFAULT;
+		break;
+	case CHIP_PS8815:
+		debug_reg = PS8815_P3_I2C_DEBUG;
+		debug_dis = PS8815_P3_I2C_DEBUG_DEFAULT;
+		break;
+	default:
+		printf("Unknown Parade chip_type: %d\n", me->chip_type);
+		return -1;
+	}
 
 	/* make sure chip is awake (is this needed?) */
-	status = read_reg(me, I2C_MASTER, P3_I2C_DEBUG, &dummy);
+	status = read_reg(me, I2C_MASTER, P3_CHIP_WAKEUP, &dummy);
 	if (status != 0) {
 		/* wait for device to wake up... */
 		mdelay(10);
 	}
-	status = write_reg(me, I2C_MASTER, P3_I2C_DEBUG, P3_I2C_DEBUG_DISABLE);
+	status = write_reg(me, I2C_MASTER, debug_reg, debug_dis);
 	return status;
 }
 
@@ -533,7 +583,13 @@ static int __must_check ps8751_spi_flash_lock(Ps8751 *me)
 		wp_reg = PS8805_P2_SPI_WP;
 		wp_en = PS8805_P2_SPI_WP_EN;
 		break;
+	case CHIP_PS8815:
+		slave = SLAVE2;
+		wp_reg = PS8815_P2_SPI_WP;
+		wp_en = PS8815_P2_SPI_WP_EN;
+		break;
 	default:
+		printf("Unknown Parade chip_type: %d\n", me->chip_type);
 		return -1;
 	}
 	/* assert SPI flash WP# */
@@ -557,6 +613,7 @@ static int __must_check ps8751_spi_flash_unlock(Ps8751 *me)
 	uint8_t status;
 	uint8_t slave;
 	uint8_t wp_reg;
+	uint8_t wp_dis;
 
 	if (ps8751_spi_fifo_reset(me) != 0)
 		return -1;
@@ -565,16 +622,24 @@ static int __must_check ps8751_spi_flash_unlock(Ps8751 *me)
 	case CHIP_PS8751:
 		slave = SLAVE1;
 		wp_reg = PS8751_P1_SPI_WP;
+		wp_dis = PS8751_P1_SPI_WP_DIS;
 		break;
 	case CHIP_PS8805:
 		slave = SLAVE2;
 		wp_reg = PS8805_P2_SPI_WP;
+		wp_dis = PS8805_P2_SPI_WP_DIS;
+		break;
+	case CHIP_PS8815:
+		slave = SLAVE2;
+		wp_reg = PS8815_P2_SPI_WP;
+		wp_dis = PS8815_P2_SPI_WP_DIS;
 		break;
 	default:
+		printf("Unknown Parade chip_type: %d\n", me->chip_type);
 		return -1;
 	}
 	/* deassert SPI flash WP# */
-	if (write_reg(me, slave, wp_reg, 0x00) != 0)
+	if (write_reg(me, slave, wp_reg, wp_dis) != 0)
 		return -1;
 
 	/* clear the SRP, BP bits */
@@ -685,7 +750,7 @@ static int __must_check ps8751_keep_awake(Ps8751 *me, uint64_t *deadline)
 
 	if (now_us >= *deadline) {
 		*deadline = now_us + PS_REFRESH_INTERVAL_US;
-		int status = read_reg(me, I2C_MASTER, P3_I2C_DEBUG, &dummy);
+		int status = read_reg(me, I2C_MASTER, P3_CHIP_WAKEUP, &dummy);
 		if (status != 0) {
 			printf("%s: chip dozed off!\n", me->chip_name);
 			return -1;
@@ -735,8 +800,10 @@ static int is_parade_chip(const struct ec_response_pd_chip_info *const info,
 		return info->product_id == PARADE_PS8751_PRODUCT_ID;
 	case CHIP_PS8805:
 		return info->product_id == PARADE_PS8805_PRODUCT_ID;
+	case CHIP_PS8815:
+		return info->product_id == PARADE_PS8815_PRODUCT_ID;
 	default:
-		printf("Unknown Parade chip type: 0x%x\n", info->product_id);
+		printf("Unknown Parade product_id: 0x%x\n", info->product_id);
 		return 0;
 	}
 }
@@ -828,7 +895,11 @@ static int __must_check ps8751_is_fw_compatible(Ps8751 *me, const uint8_t *fw)
 	case CHIP_PS8805:
 		fw_chip_version = me->blob_hw_version;
 		break;
+	case CHIP_PS8815:
+		fw_chip_version = me->blob_hw_version;
+		break;
 	default:
+		printf("Unknown Parade chip_type: %d\n", me->chip_type);
 		return 0;
 	}
 	if (hw_rev == fw_chip_version)
@@ -938,11 +1009,14 @@ static int __must_check ps8751_erase(Ps8751 *me,
 
 static int __must_check ps8751_program(Ps8751 *me,
 				       const uint32_t fw_start,
-				       const uint8_t *data, int data_size)
+				       const uint8_t * const data,
+				       const int data_size)
 {
 	uint32_t data_offset;
 	uint64_t t0_us;
 	int chunk;
+	int chunk_mods;
+	int bytes_skipped = 0;
 
 	printf("%s: programming %uKB...\n", me->chip_name, data_size >> 10);
 
@@ -954,6 +1028,19 @@ static int __must_check ps8751_program(Ps8751 *me,
 		/* clip at flash page boundary */
 		int page_offset = (fw_start + data_offset) & SPI_PAGE_MASK;
 		chunk = MIN(chunk, SPI_PAGE_SIZE - page_offset);
+
+		/* any changes in this chunk? */
+		chunk_mods = 0;
+		for (int i = 0; i < chunk; ++i) {
+			if (data[data_offset + i] != 0xff) {
+				++chunk_mods;
+				break;
+			}
+		}
+		if (chunk_mods == 0) {
+			bytes_skipped += chunk;
+			continue;
+		}
 
 		if (ps8751_spi_cmd_enable_writes(me) != 0)
 			return -1;
@@ -981,10 +1068,11 @@ static int __must_check ps8751_program(Ps8751 *me,
 		if (ps8751_spi_wait_rom_ready(me) != 0)
 			return -1;
 	}
-	printf("%s: programmed %uKB in %us\n",
+	printf("%s: programmed %uKB in %us (%uB skipped)\n",
 	       me->chip_name,
 	       data_size >> 10,
-	       (unsigned)USEC_TO_SEC(timer_us(t0_us)));
+	       (unsigned int)USEC_TO_SEC(timer_us(t0_us)),
+	       bytes_skipped);
 	return 0;
 }
 
@@ -1000,7 +1088,8 @@ static int __must_check ps8751_program(Ps8751 *me,
 
 static int __must_check ps8751_verify(Ps8751 *me,
 				      const uint32_t fw_addr,
-				      const uint8_t *data, size_t data_size)
+				      const uint8_t * const data,
+				      const size_t data_size)
 {
 	uint64_t deadline = 0;
 	uint8_t readback;
@@ -1099,7 +1188,7 @@ static int ps8751_ec_pd_suspend(Ps8751 *me)
 		printf("%s: PD_SUSPEND busy! Could be only power source.\n",
 		       me->chip_name);
 	else if (status != 0)
-		printf("%s: PD_SUSPEND failed!\n", me->chip_name);
+		printf("%s: PD_SUSPEND failed (%d)!\n", me->chip_name, status);
 	return status;
 }
 
@@ -1168,14 +1257,10 @@ static void ps8751_dump_flash(Ps8751 *me,
 			}
 		} else {
 			memcpy(prev_buf, buf, sizeof(prev_buf));
-			if (offset < offset_start + 0x1000) {
-				printf("0x%06x: ", offset);
-				for (i = 0; i < sizeof(buf); ++i)
-					printf(" %02x", buf[i]);
-				printf("\n");
-			} else {
-				printf(".");
-			}
+			printf("0x%06x: ", offset);
+			for (i = 0; i < sizeof(buf); ++i)
+				printf(" %02x", buf[i]);
+			printf("\n");
 			dot3 = 0;
 		}
 	}
@@ -1205,7 +1290,7 @@ static int ps8751_reflash(Ps8751 *me, const uint8_t *data, size_t data_size)
 
 	status = ps8751_erase(me, PARADE_FW_START, data_size);
 	if (status != 0) {
-		printf("%s: chip erase failed\n", me->chip_name);
+		printf("%s: FW erase failed\n", me->chip_name);
 		return -1;
 	}
 	/*
@@ -1216,7 +1301,7 @@ static int ps8751_reflash(Ps8751 *me, const uint8_t *data, size_t data_size)
 			       erased_bytes,
 			       MIN(data_size, sizeof(erased_bytes)));
 	if (status != 0) {
-		printf("%s: chip erase verify failed\n", me->chip_name);
+		printf("%s: FW erase verify failed\n", me->chip_name);
 		return -1;
 	}
 
@@ -1233,7 +1318,7 @@ static int ps8751_reflash(Ps8751 *me, const uint8_t *data, size_t data_size)
 	if (PS8751_DEBUG >= 2)
 		ps8751_dump_flash(me, PARADE_FW_START, PARADE_TEST_FW_SIZE);
 	if (status != 0) {
-		printf("%s: chip program failed\n", me->chip_name);
+		printf("%s: FW program failed\n", me->chip_name);
 		return -1;
 	}
 
@@ -1279,17 +1364,16 @@ static vb2_error_t ps8751_check_hash(const VbootAuxFwOps *vbaux,
 
 	switch (ps8751_ec_pd_suspend(me)) {
 	case -EC_RES_BUSY:
-		printf("ps8751.%d: pd suspend busy\n", me->ec_pd_id);
 		*severity = VB_AUX_FW_NO_UPDATE;
 		break;
 	case EC_RES_SUCCESS:
 		break;
 	default:
-		printf("ps8751.%d: pd suspend failed\n", me->ec_pd_id);
 		*severity = VB_AUX_FW_NO_DEVICE;
 		return VB2_ERROR_UNKNOWN;
 	}
 
+	debug("update severity %d\n", *severity);
 	return VB2_SUCCESS;
 }
 
@@ -1393,6 +1477,13 @@ static const VbootAuxFwOps ps8805_fw_ops = {
 	.update_image = ps8751_update_image,
 };
 
+static const VbootAuxFwOps ps8815_fw_ops = {
+	.fw_image_name = "ps8815_a0.bin",
+	.fw_hash_name = "ps8815_a0.hash",
+	.check_hash = ps8751_check_hash,
+	.update_image = ps8751_update_image,
+};
+
 Ps8751 *new_ps8751(CrosECTunnelI2c *bus, int ec_pd_id)
 {
 	Ps8751 *me = xzalloc(sizeof(*me));
@@ -1432,6 +1523,19 @@ Ps8751 *new_ps8805(CrosECTunnelI2c *bus, int ec_pd_id)
 	return me;
 }
 
+Ps8751 *new_ps8815(CrosECTunnelI2c *bus, int ec_pd_id)
+{
+	Ps8751 *me = xzalloc(sizeof(*me));
+
+	me->bus = bus;
+	me->ec_pd_id = ec_pd_id;
+	me->fw_ops = ps8815_fw_ops;
+	me->chip_type = CHIP_PS8815;
+	snprintf(me->chip_name, sizeof(me->chip_name), "ps8815.%d", ec_pd_id);
+
+	return me;
+}
+
 static const VbootAuxFwOps *new_ps8751_from_chip_info(
 			struct ec_response_pd_chip_info *r, uint8_t ec_pd_id)
 {
@@ -1453,9 +1557,17 @@ static CrosEcAuxFwChipInfo aux_fw_chip_info = {
 	.new_chip_aux_fw_ops = new_ps8751_from_chip_info,
 };
 
+static CrosEcAuxFwChipInfo aux_fw_ps8815_info = {
+	.vid = PARADE_VENDOR_ID,
+	.pid = PARADE_PS8815_PRODUCT_ID,
+	.new_chip_aux_fw_ops = new_ps8751_from_chip_info,
+};
+
 static int ps8751_register(void)
 {
 	list_insert_after(&aux_fw_chip_info.list_node,
+					&ec_aux_fw_chip_list);
+	list_insert_after(&aux_fw_ps8815_info.list_node,
 					&ec_aux_fw_chip_list);
 	return 0;
 }

@@ -25,6 +25,7 @@
 typedef enum  ParadeChipType {
 	CHIP_PS8751,
 	CHIP_PS8805,
+	CHIP_PS8815,
 } ParadeChipType;
 
 typedef struct Ps8751
@@ -48,5 +49,6 @@ typedef struct Ps8751
 Ps8751 *new_ps8751(CrosECTunnelI2c *bus, int ec_pd_id);
 Ps8751 *new_ps8751_canary(CrosECTunnelI2c *bus, int ec_pd_id);
 Ps8751 *new_ps8805(CrosECTunnelI2c *bus, int ec_pd_id);
+Ps8751 *new_ps8815(CrosECTunnelI2c *bus, int ec_pd_id);
 
 #endif /* __DRIVERS_EC_PS8751_H__ */
