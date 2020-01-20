@@ -83,11 +83,6 @@ int vboot_create_vbsd(void)
 	vb_sd->data_used = sizeof(VbSharedDataHeader);
 	vb_sd->fw_version_tpm = vb2_sd->fw_version_secdata;
 
-	if (vb2_sd->recovery_reason) {
-		vb_sd->firmware_index = 0xFF;
-		if (vb2_sd->flags & VB2_SD_FLAG_MANUAL_RECOVERY)
-			vb_sd->flags |= VBSD_BOOT_REC_SWITCH_ON;
-	}
 	if (vb2_sd->flags & VB2_SD_FLAG_DEV_MODE_ENABLED) {
 		vb_sd->flags |= VBSD_BOOT_DEV_SWITCH_ON;
 		vb_sd->flags |= VBSD_LF_DEV_SWITCH_ON;
@@ -118,8 +113,6 @@ int vboot_create_vbsd(void)
 		vb_sd->kernel_subkey.key_version =
 				fp->kernel_subkey.key_version;
 	}
-
-	vb_sd->recovery_reason = vb2_sd->recovery_reason;
 
 	/*
 	 * If the lid is closed, kernel selection should not count down the
