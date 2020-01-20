@@ -33,10 +33,12 @@
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/nvme.h"
 #include "drivers/storage/sdhci.h"
+#include "drivers/tpm/cr50_switches.h"
 #include "drivers/tpm/spi.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/gpio/cannonlake.h"
 #include "drivers/gpio/gpio.h"
+#include "vboot/util/flag.h"
 
 /* Clock frequencies for eMMC are defined below */
 #define EMMC_CLOCK_MIN	400000
@@ -63,8 +65,11 @@ static void puff_setup_tpm(void)
 			.ref_clk_mhz = 120,
 			.gspi_clk_mhz = 1,
 		};
-		tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0_params),
-					 cr50_irq_status)->ops);
+		SpiTpm *tpm = new_tpm_spi(new_intel_gspi(&gspi0_params),
+					  cr50_irq_status);
+		tpm_set_ops(&tpm->ops);
+		flag_replace(FLAG_PHYS_PRESENCE,
+			     &new_cr50_rec_switch(&tpm->ops)->ops);
 	}
 }
 
