@@ -83,11 +83,6 @@ int vboot_create_vbsd(void)
 	vb_sd->data_used = sizeof(VbSharedDataHeader);
 	vb_sd->fw_version_tpm = vb2_sd->fw_version_secdata;
 
-	if (vb2_sd->flags & VB2_SD_FLAG_DEV_MODE_ENABLED) {
-		vb_sd->flags |= VBSD_BOOT_DEV_SWITCH_ON;
-		vb_sd->flags |= VBSD_LF_DEV_SWITCH_ON;
-	}
-
 	/* copy kernel subkey if it's found */
 	if (vb2_sd->preamble_size) {
 		struct vb2_fw_preamble *fp;
@@ -113,14 +108,6 @@ int vboot_create_vbsd(void)
 		vb_sd->kernel_subkey.key_version =
 				fp->kernel_subkey.key_version;
 	}
-
-	/*
-	 * If the lid is closed, kernel selection should not count down the
-	 * boot tries for updates, since the OS will shut down before it can
-	 * register success.
-	 */
-	if (!flag_fetch(FLAG_LIDSW))
-		vb_sd->flags |= VBSD_NOFAIL_BOOT;
 
 	if (flag_fetch(FLAG_WPSW))
 		vb_sd->flags |= VBSD_BOOT_FIRMWARE_WP_ENABLED;

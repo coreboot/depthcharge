@@ -154,6 +154,14 @@ int vboot_select_and_load_kernel(void)
 	if (vendor_data_settable())
 		ctx->flags |= VB2_CONTEXT_VENDOR_DATA_SETTABLE;
 
+	/*
+	 * If the lid is closed, kernel selection should not count down the
+	 * boot tries for updates, since the OS will shut down before it can
+	 * register success.
+	 */
+	if (!flag_fetch(FLAG_LIDSW))
+		ctx->flags |= VB2_CONTEXT_NOFAIL_BOOT;
+
 	/* Set legacy vboot1 VbSharedDataHeader. */
 	if (find_common_params(&shared, &size))
 		return 1;
