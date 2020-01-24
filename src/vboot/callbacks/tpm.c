@@ -69,7 +69,7 @@ vb2_error_t vb2ex_tpm_set_mode(enum vb2_tpm_mode mode_val)
 
 	/* Safely cast to uint8_t, since we know enum vb2_tpm_mode values
 	   correspond directly to TPM mode values. */
-	int ret = tpm_set_mode((uint8_t)mode_val);
+	int ret = tpm_set_tpm_mode((uint8_t)mode_val);
 	switch (ret) {
 	case TPM_SUCCESS:
 		return VB2_SUCCESS;

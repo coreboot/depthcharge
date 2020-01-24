@@ -99,11 +99,17 @@ uint32_t secdata_kernel_read(struct vb2_context *ctx)
 		return TPM_E_CORRUPTED_STATE;
 	}
 #endif
+	uint8_t size = VB2_SECDATA_KERNEL_MIN_SIZE;
 
-	RETURN_ON_FAILURE(TlclRead(KERNEL_NV_INDEX, ctx->secdata_kernel,
-				   VB2_SECDATA_KERNEL_SIZE));
+	RETURN_ON_FAILURE(TlclRead(KERNEL_NV_INDEX, ctx->secdata_kernel, size));
 
-	PRINT_BYTES("TPM: read secdata_kernel", &ctx->secdata_kernel);
+	if (vb2api_secdata_kernel_check(ctx, &size) ==
+	    VB2_ERROR_SECDATA_KERNEL_INCOMPLETE)
+		/* Re-read. vboot will run the check and handle errors. */
+		RETURN_ON_FAILURE(TlclRead(KERNEL_NV_INDEX,
+					   ctx->secdata_kernel, size));
+
+	PRINT_N_BYTES("TPM: read secdata_kernel", &ctx->secdata_kernel, size);
 
 	return TPM_SUCCESS;
 }
@@ -115,11 +121,13 @@ uint32_t secdata_kernel_write(struct vb2_context *ctx)
 		return TPM_SUCCESS;
 	}
 
-	PRINT_BYTES("TPM: write secdata_kernel", &ctx->secdata_kernel);
+	/* Learn the expected size. */
+	uint8_t size = VB2_SECDATA_KERNEL_MIN_SIZE;
+	vb2api_secdata_kernel_check(ctx, &size);
 
+	PRINT_N_BYTES("TPM: write secdata_kernel", &ctx->secdata_kernel, size);
 	RETURN_ON_FAILURE(secdata_safe_write(KERNEL_NV_INDEX,
-					     ctx->secdata_kernel,
-					     VB2_SECDATA_KERNEL_SIZE));
+					     ctx->secdata_kernel, size));
 
 	ctx->flags &= ~VB2_CONTEXT_SECDATA_KERNEL_CHANGED;
 	return TPM_SUCCESS;

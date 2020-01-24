@@ -879,7 +879,7 @@ static int ec_efs_verify(CrosEc *me, enum ec_flash_region region)
 		return 0;
 	}
 	if (rv == -EC_RES_INVALID_COMMAND) {
-		printf("EFS: EC doesn't use EFS\n");
+		printf("EFS: EC doesn't use EFS1\n");
 		return 0;
 	}
 

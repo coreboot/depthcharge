@@ -45,6 +45,7 @@ enum vendor_cmd_cc {
 	VENDOR_CC_GET_REC_BTN = 29,
 	VENDOR_CC_TPM_MODE = 40,
 	VENDOR_CC_GET_PWR_BTN = 43,
+	VENDOR_CC_GET_BOOT_MODE = 52,
 };
 
 /* Error codes reported by extension and vendor commands. */

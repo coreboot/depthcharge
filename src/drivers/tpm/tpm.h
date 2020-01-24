@@ -98,7 +98,7 @@ char *tpm_internal_state(struct TpmOps *me);
 char *tpm_report_state(void);
 
 /*
- * tpm_set_mode()
+ * tpm_set_tpm_mode()
  *
  * Sets the TPM mode value and validates that it was changed.  If one of the
  * following occurs, the function call fails:
@@ -111,6 +111,17 @@ char *tpm_report_state(void);
  * Returns 0 on success or non-zero on failure (the failure result is typically
  * TPM_E_INTERNAL_ERROR if the command was not understood, otherwise -1).
  */
-int tpm_set_mode(uint8_t mode_val);
+int tpm_set_tpm_mode(uint8_t mode_val);
+
+/**
+ * Get boot mode from TPM for EFS2.
+ *
+ * boot_mode controls how vboot updates EC firmware and whether vboot allows
+ * OS to boot or not.
+ *
+ * @param boot_mode	Retrieved boot mode.
+ * @return		TPM_SUCCESS on success or TPM_E_* on error.
+ */
+int tpm_get_boot_mode(uint8_t *boot_mode);
 
 #endif /* __DRIVERS_TPM_TPM_H__ */
