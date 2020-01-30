@@ -144,6 +144,7 @@
 
 #define PARADE_VENDOR_ID		0x1DA0
 #define PARADE_PS8751_PRODUCT_ID	0x8751
+#define PARADE_PS8805_BROKEN_PRODUCT_ID	0x8803
 #define PARADE_PS8805_PRODUCT_ID	0x8805
 #define PARADE_PS8815_PRODUCT_ID	0x8815
 
@@ -784,9 +785,18 @@ static int __must_check ps8751_get_hw_version(Ps8751 *me, uint8_t *version)
 	return 0;
 }
 
-static int is_corrupted_tcpc(const struct ec_response_pd_chip_info *const info)
+static int is_corrupted_tcpc(const struct ec_response_pd_chip_info *const info,
+			     const enum ParadeChipType chip)
 {
-	return info->vendor_id == 0 && info->product_id == 0;
+	switch (chip) {
+	case CHIP_PS8751:
+		return info->vendor_id == 0 && info->product_id == 0;
+	case CHIP_PS8805:
+		return info->vendor_id == PARADE_VENDOR_ID &&
+		       info->product_id == PARADE_PS8805_BROKEN_PRODUCT_ID;
+	default:
+		return 0;
+	}
 }
 
 static int is_parade_chip(const struct ec_response_pd_chip_info *const info,
@@ -841,9 +851,9 @@ static enum ps8751_device_state __must_check ps8751_capture_device_id(
 	printf("%s: vendor 0x%04x product 0x%04x "
 	       "device 0x%04x fw_rev 0x%02x\n",
 	       me->chip_name, vendor, product, device, fw_rev);
-	if (is_corrupted_tcpc(&r)) {
-		/* vendor 0 likely due to "missing/corrupted" firmware */
-		printf("%s: MCU must be down!\n", me->chip_name);
+	if (is_corrupted_tcpc(&r, me->chip_type)) {
+		printf("%s: reports corruption (%4x:%4x)\n",
+		       me->chip_name, vendor, product);
 	} else if (!is_parade_chip(&r, me->chip_type)) {
 		return PS8751_DEVICE_NOT_PARADE;
 	}
