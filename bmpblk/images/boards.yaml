@@ -129,6 +129,16 @@ fizz,guado,kalista,mccloud,ninja,panther,puff,rikku,tidus,tricky:
   panel:    [1920, 1080]
   hi_res:   [en]
 
+endeavour:
+  # Using VESA graphics mode 1024x768 (0x0117).
+  # A chromebox without built-in panel/keyboard.
+  # Assume the display is a modern 16:9 (1920x1080) monitor.
+  # With physical recovery switch, without card reader.
+  screen:   [1024, 768]
+  panel:    [1920, 1080]
+  sdcard:   False
+  hi_res:   [en]
+
 zako:
   # Using VESA graphics mode 1024x768 (0x0117).
   # A chromebox without built-in panel/keyboard.

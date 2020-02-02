@@ -9,17 +9,8 @@ SCRIPT="$(readlink -f "$0")"
 SCRIPT_DIR="$(dirname "$SCRIPT")"
 FIRST_ASCII_GLYPH="32" # space
 LAST_ASCII_GLYPH="127" # delete
-if [ -z "${MENU_UI}" ]; then
-  COLOR="#505050"
-  BGCOLOR="#ffffff"
-  FOOTER_COLOR="$COLOR"
-  FONT="Noto Sans"
-else
-  COLOR="#cccccc"
-  BGCOLOR="#202124"
-  FOOTER_COLOR="#9aa0a6"
-  FONT="Noto Sans Mono"
-fi
+COLOR="#505050"
+FONT="Noto Sans"
 MARGIN="3"
 
 die() {
@@ -30,39 +21,23 @@ die() {
 main() {
   [ "$#" = "1" ] || die "Usage: $0 output_dir"
   local output="$1"
-  local regular_output="$output/regular"
-  local footer_output="$output/footer"
-  mkdir -p "$regular_output"
-  mkdir -p "$footer_output"
+  mkdir -p "$output"
 
   local glyph="$FIRST_ASCII_GLYPH"
   local c=''
-  local name=''
   local fontsize=""
   echo "Generating glyph text source..."
   while [[ "$glyph"  != "$LAST_ASCII_GLYPH" ]]; do
     c=$(printf "\x$(printf %x $glyph)")
-    name="idx$(printf "%03d" $glyph)_$(printf "%x" $glyph)"
-    echo "$c" >"$regular_output/$name.txt"
-    echo "$c" >"$footer_output/$name-footer.txt"
+    echo "$c" >"$output/idx$(printf "%03d" $glyph)_$(printf "%x" $glyph).txt"
     glyph=$((glyph + 1))
   done
 
   [ -n "$FONTSIZE" ] && fontsize="--point=$FONTSIZE"
 
   echo "Converting glyph images..."
-
-  # proportional font
   "$SCRIPT_DIR/text_to_png_svg" --font="$FONT" --color="$COLOR" \
-    --bgcolor="$BGCOLOR" --margin="$MARGIN 0" --outdir="$output" \
-    $fontsize "$regular_output/*.txt"
-
-  # Footer uses different color in MENU_UI
-  if [ ! -z "${MENU_UI}" ]; then
-    "$SCRIPT_DIR/text_to_png_svg" --font="$FONT" --color="$FOOTER_COLOR" \
-      --bgcolor="$BGCOLOR" --margin="$MARGIN 0" --outdir="$output" \
-      $fontsize "$footer_output/*.txt"
-  fi
+    --margin="$MARGIN 0" $fontsize "$output/*.txt"
 }
 
 set -e
