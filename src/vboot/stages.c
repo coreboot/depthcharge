@@ -107,8 +107,13 @@ static int secdata_kernel_lock_cleanup_func(struct CleanupFunc *c,
 					    CleanupType t)
 {
 	struct vb2_context *ctx = vboot_get_context();
-	uint32_t tpm_rv = secdata_kernel_lock(ctx);
+	if (ctx->flags & VB2_CONTEXT_RECOVERY_MODE) {
+		printf("%s: not locking secdata_kernel in recovery mode\n",
+		       __func__);
+		return 0;
+	}
 
+	uint32_t tpm_rv = secdata_kernel_lock(ctx);
 	if (tpm_rv) {
 		printf("%s: lock secdata_kernel returned %#x\n",
 		       __func__, tpm_rv);
