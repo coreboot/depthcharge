@@ -35,6 +35,16 @@
 #define SDC2_TLMM_CFG_ADDR 0x3D7B000
 #define SDC2_HC_BASE 0x08804000
 
+static int trogdor_tpm_irq_status(void)
+{
+	static GpioOps *tpm_int = NULL;
+
+	if (!tpm_int)
+		tpm_int = sysinfo_lookup_gpio("TPM interrupt", 1,
+					new_sc7180_gpio_latched_from_coreboot);
+	return gpio_get(tpm_int);
+}
+
 static int board_setup(void)
 {
 	/* stub out required GPIOs for vboot */
@@ -71,7 +81,7 @@ static int board_setup(void)
 	SpiOps *tpm_spi = lib_sysinfo.board_id < 1 ? spi_qup1se0 : spi_qup0se0;
 
 	if (CONFIG(DRIVER_TPM_SPI))
-		tpm_set_ops(&new_tpm_spi(tpm_spi, NULL)->ops);
+		tpm_set_ops(&new_tpm_spi(tpm_spi, trogdor_tpm_irq_status)->ops);
 
 	if (CONFIG(DRIVER_EC_CROS)) {
 		CrosEcBusOps *ec_bus = &new_cros_ec_spi_bus(ec_spi)->ops;
