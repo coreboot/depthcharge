@@ -83,32 +83,6 @@ int vboot_create_vbsd(void)
 	vb_sd->data_used = sizeof(VbSharedDataHeader);
 	vb_sd->fw_version_tpm = vb2_sd->fw_version_secdata;
 
-	/* copy kernel subkey if it's found */
-	if (vb2_sd->preamble_size) {
-		struct vb2_fw_preamble *fp;
-		uintptr_t dst, src;
-		printf("%s: copying FW preamble\n",  __func__);
-		fp = (struct vb2_fw_preamble *)((uintptr_t)vb2_sd +
-				vb2_sd->preamble_offset);
-		src = (uintptr_t)&fp->kernel_subkey +
-				fp->kernel_subkey.key_offset;
-		dst = (uintptr_t)vb_sd + sizeof(VbSharedDataHeader);
-		if (dst + fp->kernel_subkey.key_size >
-		    (uintptr_t)shared_data + sizeof(shared_data)) {
-			printf("%s: kernel subkey size too large\n", __func__);
-			return 1;
-		}
-		memcpy((void *)dst, (void *)src,
-		       fp->kernel_subkey.key_size);
-		vb_sd->data_used += fp->kernel_subkey.key_size;
-		vb_sd->kernel_subkey.key_offset =
-				dst - (uintptr_t)&vb_sd->kernel_subkey;
-		vb_sd->kernel_subkey.key_size = fp->kernel_subkey.key_size;
-		vb_sd->kernel_subkey.algorithm = fp->kernel_subkey.algorithm;
-		vb_sd->kernel_subkey.key_version =
-				fp->kernel_subkey.key_version;
-	}
-
 	if (flag_fetch(FLAG_WPSW))
 		vb_sd->flags |= VBSD_BOOT_FIRMWARE_WP_ENABLED;
 
