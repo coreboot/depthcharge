@@ -21,6 +21,7 @@
 #include <vb2_api.h>
 #include <vboot_api.h>
 #include <vboot/screens.h>
+#include <vboot/stages.h>
 
 #include "base/list.h"
 #include "boot/payload.h"
@@ -405,6 +406,38 @@ static vb2_error_t draw_text(const char *text, int32_t x, int32_t y,
 	return VB2_SUCCESS;
 }
 
+static vb2_error_t vboot_draw_dev_signed_warning(void)
+{
+	struct vb2_context *ctx = vboot_get_context();
+
+	/* Dev-mode boots everything anyway, this is only interesting in rec. */
+	if (!(ctx->flags & VB2_CONTEXT_RECOVERY_MODE))
+		return VB2_SUCCESS;
+	if (!vb2api_is_developer_signed(ctx))
+		return VB2_SUCCESS;
+
+	int left = (VB_SCALE - VB_DIVIDER_WIDTH) / 2;
+	int top = VB_DIVIDER_V_OFFSET / 4;
+	int pad = 5;  /* based on what I thought looks good */
+	struct scale pos = {
+		.x = { .n = left, .d = VB_SCALE, },
+		.y = { .n = top, .d = VB_SCALE, },
+	};
+	struct scale dim = {
+		.x = { .n = VB_DIVIDER_WIDTH, .d = VB_SCALE, },
+		.y = { .n = 2 * pad + VB_TEXT_HEIGHT, .d = VB_SCALE, },
+	};
+	struct fraction thickness = { .n = pad, .d = VB_SCALE, };
+	struct fraction radius = { .n = pad, .d = VB_SCALE, };
+	draw_rounded_box(&pos, &dim, &color_red, &thickness, &radius);
+
+	RETURN_ON_ERROR(draw_text("This firmware is developer-signed. "
+				  "MP-signed recovery images will not work!",
+				  VB_SCALE_HALF, top + pad, VB_TEXT_HEIGHT,
+				  PIVOT_H_CENTER|PIVOT_V_TOP));
+	return VB2_SUCCESS;
+}
+
 static vb2_error_t vboot_draw_footer(uint32_t locale)
 {
 	int32_t x, y, w1, h1, w2, h2, w3, h3;
@@ -578,6 +611,9 @@ static vb2_error_t draw_base_screen(uint32_t locale, int show_language)
 			VB_DIVIDER_V_OFFSET - VB_LOGO_LIFTUP,
 			VB_SIZE_AUTO, VB_LOGO_HEIGHT,
 			PIVOT_H_LEFT|PIVOT_V_BOTTOM));
+
+
+	RETURN_ON_ERROR(vboot_draw_dev_signed_warning());
 
 	if (show_language)
 		RETURN_ON_ERROR(vboot_draw_language(locale));
