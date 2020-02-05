@@ -307,7 +307,7 @@ class Convert(object):
       output = os.path.join(output_dir, name + self.DEFAULT_OUTPUT_EXT)
 
       default_backgdound = DEFAULT_BACKGROUND
-      if os.getenv('LEGACY_MENU_UI') == '1':
+      if os.getenv('MENU_UI') != '1':
         default_backgdound = LEGACY_DEFAULT_BACKGROUND
       background = BACKGROUND_COLORS.get(name, default_backgdound)
 
