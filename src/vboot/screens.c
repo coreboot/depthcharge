@@ -821,7 +821,7 @@ static vb2_error_t vboot_draw_developer_to_norm_menu(struct params *p)
 	if (p->flags & DISPLAY_FLAG_REDRAW_BASE)
 		RETURN_ON_ERROR(vboot_draw_base_screen(p));
 	RETURN_ON_ERROR(draw_image_locale("confirm_hint.bmp", p->locale,
-			VB_SCALE_HALF, VB_DIVIDER_V_OFFSET + VB_TEXT_HEIGHT,
+			VB_SCALE_HALF, VB_DIVIDER_V_OFFSET + VB_TEXT_HEIGHT * 3,
 			VB_SIZE_AUTO, VB_TEXT_HEIGHT * 2,
 			PIVOT_H_CENTER|PIVOT_V_TOP));
 	const struct menu m = { dev_to_norm_files,
