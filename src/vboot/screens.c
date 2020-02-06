@@ -1340,7 +1340,7 @@ static vb2_error_t draw_ui(uint32_t screen_type, struct params *p)
 
 	desc = get_ui_descriptor(screen_type);
 	if (!desc) {
-		printf("Not a valid screen type: 0x%x\n", screen_type);
+		printf("Not a valid screen type: %#x\n", screen_type);
 		return VB2_ERROR_UI_INVALID_SCREEN;
 	}
 
@@ -1353,14 +1353,14 @@ static vb2_error_t draw_ui(uint32_t screen_type, struct params *p)
 	/* If no drawing function is registered, fallback msg will be
 	   printed. */
 	if (!desc->draw) {
-		printf("No drawing function registered for screen type: 0x%x\n",
+		printf("No drawing function registered for screen type: %#x\n",
 		       screen_type);
 		return VB2_ERROR_UI_INVALID_SCREEN;
 	}
 
 	rv = desc->draw(p);
 	if (rv) {
-		printf("Drawing failed (0x%x)\n", rv);
+		printf("Drawing failed (%#x)\n", rv);
 		print_fallback_message(desc);
 	}
 
@@ -1446,7 +1446,7 @@ vb2_error_t vboot_draw_screen(uint32_t screen, uint32_t locale,
 			      const VbScreenData *data)
 {
 
-	printf("%s: screen=0x%x locale=%d\n", __func__, screen, locale);
+	printf("%s: screen=%#x locale=%d\n", __func__, screen, locale);
 
 	if (!initialized)
 		RETURN_ON_ERROR(vboot_init_screen());
@@ -1474,8 +1474,8 @@ vb2_error_t vboot_draw_ui(uint32_t screen, uint32_t locale,
 			  uint32_t selected_index, uint32_t disabled_idx_mask,
 			  uint32_t redraw_base)
 {
-	printf("%s: screen=0x%x locale=%d, selected_index=%d,"
-	       "disabled_idx_mask=0x%x\n",
+	printf("%s: screen=%#x locale=%d, selected_index=%d,"
+	       "disabled_idx_mask=%#x\n",
 	       __func__, screen, locale, selected_index, disabled_idx_mask);
 
 	if (!initialized)
