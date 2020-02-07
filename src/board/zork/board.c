@@ -38,6 +38,7 @@
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
+#include "drivers/storage/nvme.h"
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/video/display.h"
@@ -111,6 +112,11 @@ static int board_setup(void)
 		0, 0);
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
+
+	/* PCI Bridge for NVMe */
+	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x01, 0x07));
+	list_insert_after(&nvme->ctrlr.list_node,
+				&fixed_block_dev_controllers);
 
 	/* Set up h1 on I2C3 */
 	DesignwareI2c *i2c_h1 = new_designware_i2c(
