@@ -38,6 +38,7 @@
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
+#include "drivers/storage/bayhub.h"
 #include "drivers/storage/nvme.h"
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/tpm.h"
@@ -45,6 +46,10 @@
 #include "drivers/bus/usb/usb.h"
 #include "pci.h"
 #include "vboot/util/flag.h"
+
+/* SD Controllers */
+#define BH720_PCI_VID		0x1217
+#define BH720_PCI_DID		0x8621
 
 /* I2S Beep GPIOs */
 #define I2S_BCLK_GPIO		139
@@ -104,6 +109,22 @@ static int board_setup(void)
 	flag_replace(FLAG_PWRSW, cros_ec_power_btn_flag());
 
 	flash_set_ops(&new_mem_mapped_flash(FLASH_START, FLASH_SIZE)->ops);
+
+	SdhciHost *sd = NULL;
+	pcidev_t pci_dev;
+	if (pci_find_device(BH720_PCI_VID, BH720_PCI_DID, &pci_dev)) {
+		sd = new_bayhub_sdhci_host(pci_dev,
+				SDHCI_PLATFORM_REMOVABLE,
+				0, 0);
+	}
+
+	if (sd) {
+		sd->name = "SD";
+		list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
+				&removable_block_dev_controllers);
+	} else {
+		printf("Failed to find SD card reader\n");
+	}
 
 	SdhciHost *emmc = new_mem_sdhci_host(
 		EMMCCFG,
