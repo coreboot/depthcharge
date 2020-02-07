@@ -88,7 +88,7 @@ config DRIVER_STORAGE_DWMMC_RK3399
         default n
 
 config DRIVER_STORAGE_BAYHUB
-        depends on DRIVER_SDHCI
+        depends on DRIVER_STORAGE_SDHCI_PCI
         bool "Bayhub SD/eMMC driver"
         default n
 
