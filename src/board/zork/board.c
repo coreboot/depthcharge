@@ -51,6 +51,10 @@
 #define BH720_PCI_VID		0x1217
 #define BH720_PCI_DID		0x8621
 
+#define GENESYS_PCI_VID		0x17a0
+#define GL9755S_PCI_DID		0x9755
+#define GL9750S_PCI_DID		TODO
+
 /* I2S Beep GPIOs */
 #define I2S_BCLK_GPIO		139
 #define I2S_LRCLK_GPIO		8
@@ -116,6 +120,10 @@ static int board_setup(void)
 		sd = new_bayhub_sdhci_host(pci_dev,
 				SDHCI_PLATFORM_REMOVABLE,
 				0, 0);
+	} else if (pci_find_device(GENESYS_PCI_VID, GL9755S_PCI_DID,
+				   &pci_dev)) {
+		sd = new_pci_sdhci_host(pci_dev, SDHCI_PLATFORM_REMOVABLE, 0,
+					0);
 	}
 
 	if (sd) {
