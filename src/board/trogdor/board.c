@@ -24,6 +24,7 @@
 #include "drivers/bus/spi/qcom_qupv3_spi.h"
 #include "drivers/ec/cros/spi.h"
 #include "drivers/ec/ps8751/ps8751.h"
+#include "drivers/power/psci.h"
 #include "drivers/storage/sdhci_msm.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/gpio/sc7180.h"
@@ -47,10 +48,11 @@ static int trogdor_tpm_irq_status(void)
 
 static int board_setup(void)
 {
-	/* stub out required GPIOs for vboot */
-	flag_replace(FLAG_LIDSW, new_gpio_high());
-	flag_replace(FLAG_WPSW,  new_gpio_high());
-	flag_replace(FLAG_PWRSW, new_gpio_low());
+	sysinfo_install_flags(new_sc7180_gpio_input_from_coreboot);
+	flag_replace(FLAG_PWRSW, new_gpio_low());	/* handled by EC */
+	flag_replace(FLAG_LIDSW, cros_ec_lid_switch_flag());
+
+	power_set_ops(&psci_power_ops);
 
 	/* Support USB3.0 XHCI controller in firmware. */
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0xa600000);
@@ -67,13 +69,13 @@ static int board_setup(void)
 			&fixed_block_dev_controllers);
 
 	/* SD card support */
-	Sc7180GpioCfg *cd_gpio_cfg = new_sc7180_gpio_input(GPIO(69));
-        SdhciHost *sd = new_sdhci_msm_host(SDC2_HC_BASE,
-                                SDHCI_PLATFORM_REMOVABLE,
-                                50*MHz, SDC2_TLMM_CFG_ADDR,
-                                new_gpio_not(&cd_gpio_cfg->ops));
-        list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
-                        &removable_block_dev_controllers);
+	GpioOps *sd_cd = sysinfo_lookup_gpio("SD card detect", 1,
+					new_sc7180_gpio_input_from_coreboot);
+	SdhciHost *sd = new_sdhci_msm_host(SDC2_HC_BASE,
+					   SDHCI_PLATFORM_REMOVABLE,
+					   50*MHz, SDC2_TLMM_CFG_ADDR, sd_cd);
+	list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
+			  &removable_block_dev_controllers);
 
 	SpiOps *spi_qup0se0 = &new_sc7180_Qup_spi(0x880000)->ops;
 	SpiOps *spi_qup1se0 = &new_sc7180_Qup_spi(0xa80000)->ops;
