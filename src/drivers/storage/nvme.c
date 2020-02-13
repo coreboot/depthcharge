@@ -841,6 +841,45 @@ static NvmeModelData *nvme_match_static_model(NvmeCtrlr *ctrlr)
 	return NULL;
 }
 
+static int nvme_shutdown(struct CleanupFunc *cleanup, CleanupType type)
+{
+	NvmeCtrlr *ctrlr = (NvmeCtrlr *)cleanup->data;
+	NvmeDrive *drive, *prev = NULL;
+	int status = NVME_SUCCESS;
+
+	if (ctrlr == NULL)
+		return 1;
+
+	/* Only disable controller if initialized */
+	if (ctrlr->enabled) {
+		switch (type) {
+		case CleanupOnReboot:
+		case CleanupOnPowerOff:
+			printf("Shutting down NVMe controller.\n");
+			nvme_shutdown_controller(ctrlr);
+		case CleanupOnLegacy:
+		case CleanupOnHandoff:
+		default:
+			printf("Disabling NVMe controller.\n");
+			status = nvme_disable_controller(ctrlr);
+			if (NVME_ERROR(status))
+				return 1;
+		}
+		ctrlr->enabled = 0;
+	}
+
+	list_for_each(drive, ctrlr->drives, list_node) {
+		free(prev);
+		prev = drive;
+	}
+	free(prev);
+	free(ctrlr->controller_data);
+	free(ctrlr->prp_list);
+	free(ctrlr->buffer);
+	free(ctrlr);
+	return 0;
+}
+
 /* Initialization entrypoint */
 static int nvme_ctrlr_init(BlockDevCtrlrOps *me)
 {
@@ -1013,51 +1052,19 @@ static int nvme_ctrlr_init(BlockDevCtrlrOps *me)
 		status = nvme_identify_namespaces(ctrlr);
 	}
 
+	CleanupFunc *cleanup = xzalloc(sizeof(*cleanup));
+	cleanup->cleanup = &nvme_shutdown;
+	cleanup->types = CleanupOnHandoff | CleanupOnLegacy |
+		CleanupOnReboot | CleanupOnPowerOff;
+	cleanup->data = ctrlr;
+	list_insert_after(&cleanup->list_node, &cleanup_funcs);
+
 exit:
 	ctrlr->ctrlr.need_update = 0;
 
 	if (status == NVME_UNSUPPORTED)
 		printf("Unsupported NVMe controller found\n");
 	return NVME_ERROR(status);
-}
-
-static int nvme_shutdown(struct CleanupFunc *cleanup, CleanupType type)
-{
-	NvmeCtrlr *ctrlr = (NvmeCtrlr *)cleanup->data;
-	NvmeDrive *drive, *prev = NULL;
-	int status = NVME_SUCCESS;
-
-	if (NULL == ctrlr)
-		return 1;
-
-	/* Only disable controller if initialized */
-	if (ctrlr->enabled) {
-		switch (type) {
-		case CleanupOnReboot:
-		case CleanupOnPowerOff:
-			printf("Shutting down NVMe controller.\n");
-			nvme_shutdown_controller(ctrlr);
-		case CleanupOnLegacy:
-		case CleanupOnHandoff:
-		default:
-			printf("Disabling NVMe controller.\n");
-			status = nvme_disable_controller(ctrlr);
-			if (NVME_ERROR(status))
-				return 1;
-		}
-		ctrlr->enabled = 0;
-	}
-
-	list_for_each(drive, ctrlr->drives, list_node) {
-		free(prev);
-		prev = drive;
-	}
-	free(prev);
-	free(ctrlr->controller_data);
-	free(ctrlr->prp_list);
-	free(ctrlr->buffer);
-	free(ctrlr);
-	return 0;
 }
 
 void nvme_add_static_namespace(NvmeCtrlr *ctrlr, uint32_t namespace_id,
@@ -1079,20 +1086,13 @@ void nvme_add_static_namespace(NvmeCtrlr *ctrlr, uint32_t namespace_id,
 NvmeCtrlr *new_nvme_ctrlr(pcidev_t dev)
 {
 	NvmeCtrlr *ctrlr = xzalloc(sizeof(*ctrlr));
-	CleanupFunc *cleanup = xzalloc(sizeof(*cleanup));
 
-	printf("New NVMe Controller %p @ %02x:%02x:%02x\n",
+	printf("Looking for NVMe Controller %p @ %02x:%02x:%02x\n",
 		ctrlr, PCI_BUS(dev),PCI_SLOT(dev),PCI_FUNC(dev));
 
 	ctrlr->ctrlr.ops.update = &nvme_ctrlr_init;
 	ctrlr->ctrlr.need_update = 1;
 	ctrlr->dev = dev;
-
-	cleanup->cleanup = &nvme_shutdown;
-	cleanup->types = CleanupOnHandoff | CleanupOnLegacy |
-		CleanupOnReboot | CleanupOnPowerOff;
-	cleanup->data = ctrlr;
-	list_insert_after(&cleanup->list_node, &cleanup_funcs);
 
 	return ctrlr;
 }
