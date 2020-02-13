@@ -103,15 +103,25 @@ static int vendor_data_settable(void)
 	return i == CONFIG_VENDOR_DATA_LENGTH;
 }
 
-static int secdata_kernel_lock_cleanup_func(struct CleanupFunc *c,
-					    CleanupType t)
+static int commit_and_lock_cleanup_func(struct CleanupFunc *c, CleanupType t)
 {
 	struct vb2_context *ctx = vboot_get_context();
+
+	if (vb2ex_commit_data(ctx)) {
+		if (t != CleanupOnReboot)
+			cold_reboot();
+		return 0;
+	}
+
 	if (ctx->flags & VB2_CONTEXT_RECOVERY_MODE) {
 		printf("%s: not locking secdata_kernel in recovery mode\n",
 		       __func__);
 		return 0;
 	}
+
+	/* No need to lock secdata_kernel on reboot/poweroff. */
+	if (t == CleanupOnReboot || t == CleanupOnPowerOff)
+		return 0;
 
 	uint32_t tpm_rv = secdata_kernel_lock(ctx);
 	if (tpm_rv) {
@@ -126,8 +136,9 @@ static int secdata_kernel_lock_cleanup_func(struct CleanupFunc *c,
 	return 0;
 }
 
-static CleanupFunc secdata_kernel_lock_cleanup = {
-	&secdata_kernel_lock_cleanup_func,
+static CleanupFunc commit_and_lock_cleanup = {
+	&commit_and_lock_cleanup_func,
+	CleanupOnReboot | CleanupOnPowerOff |
 	CleanupOnHandoff | CleanupOnLegacy,
 	NULL,
 };
@@ -181,9 +192,9 @@ int vboot_select_and_load_kernel(void)
 	secdata_kernel_read(ctx);
 	secdata_fwmp_read(ctx);
 
-	/* Lock secdata_kernel right before booting a kernel or chainloading
-	   to another firmware. */
-	list_insert_after(&secdata_kernel_lock_cleanup.list_node,
+	/* Commit and lock data spaces right before booting a kernel or
+	   chainloading to another firmware. */
+	list_insert_after(&commit_and_lock_cleanup.list_node,
 			  &cleanup_funcs);
 
 	printf("Calling VbSelectAndLoadKernel().\n");
