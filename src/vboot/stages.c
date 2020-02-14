@@ -146,8 +146,6 @@ static CleanupFunc commit_and_lock_cleanup = {
 int vboot_select_and_load_kernel(void)
 {
 	struct vb2_context *ctx = vboot_get_context();
-	void *shared;
-	int size;
 
 	VbSelectAndLoadKernelParams kparams = {
 		.kernel_buffer = &_kernel_start,
@@ -178,10 +176,6 @@ int vboot_select_and_load_kernel(void)
 	if (!flag_fetch(FLAG_LIDSW))
 		ctx->flags |= VB2_CONTEXT_NOFAIL_BOOT;
 
-	/* Set legacy vboot1 VbSharedDataHeader. */
-	if (find_common_params(&shared, &size))
-		return 1;
-
 	/*
 	 * Read secdata_kernel and secdata_fwmp spaces.  No need to read
 	 * secdata_firmware, since it was already read during firmware
@@ -198,7 +192,7 @@ int vboot_select_and_load_kernel(void)
 			  &cleanup_funcs);
 
 	printf("Calling VbSelectAndLoadKernel().\n");
-	vb2_error_t res = VbSelectAndLoadKernel(ctx, shared, &kparams);
+	vb2_error_t res = VbSelectAndLoadKernel(ctx, &kparams);
 
 	if (res == VBERROR_EC_REBOOT_TO_RO_REQUIRED) {
 		printf("EC Reboot requested. Doing cold reboot.\n");

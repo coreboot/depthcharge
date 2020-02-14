@@ -45,6 +45,7 @@ int get_rwb_fw_size(void);
  * VbSharedDataHeader, identifies fw_index, and returns appropriate
  * id and size for that index.
  */
+int get_active_fw_index(void);
 const char *get_active_fw_id(void);
 int get_active_fw_size(void);
 

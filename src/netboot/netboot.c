@@ -210,10 +210,6 @@ int netboot_entry(void)
 	if (run_init_funcs())
 		halt();
 
-	// Set up VbSharedDataHeader.
-	if (vboot_create_vbsd())
-		halt();
-
 	// Force init USB regardless of vboot mode.
 	dc_usb_initialize();
 

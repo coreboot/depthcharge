@@ -50,10 +50,6 @@ int main(void)
 
 	timestamp_add_now(TS_RO_VB_INIT);
 
-	// Set up VbSharedDataHeader.
-	if (vboot_create_vbsd())
-		halt();
-
 	// Wipe memory and enable USB if necessary (dev/rec mode). This *must*
 	// happen before vboot init funcs to satisfy assumptions in AOA driver.
 	vboot_check_wipe_memory();

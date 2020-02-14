@@ -18,48 +18,41 @@
 #include <assert.h>
 #include <libpayload.h>
 #include <vb2_api.h>
-#include <vboot_api.h>
-#include <vboot_struct.h>
 
 #include "image/fmap.h"
 #include "vboot/crossystem/crossystem.h"
 #include "vboot/firmware_id.h"
 #include "vboot/util/acpi.h"
 #include "vboot/util/commonparams.h"
+#include "vboot/util/flag.h"
+
+_Static_assert(VB2_VBSD_SIZE <= ARRAY_SIZE(((chromeos_acpi_t *)0)->vdat),
+	       "VbSharedDataHeader does not fit in vdat");
 
 int crossystem_setup(int firmware_type)
 {
+	struct vb2_context *ctx = vboot_get_context();
 	chromeos_acpi_t *acpi_table =
 		lib_sysinfo.acpi_gnvs + GNVS_CHROMEOS_ACPI_OFFSET;
-	VbSharedDataHeader *vdat = (VbSharedDataHeader *)&acpi_table->vdat;
-	VbSharedDataHeader *vb_sd;
-	int size, vb_sd_size;
+	int size;
 
-	if (find_common_params((void**)&vb_sd, &vb_sd_size) != 0) {
-		printf("Can't find common params.\n");
-		return 1;
-	}
-
-	if (vb_sd->magic != VB_SHARED_DATA_MAGIC) {
-		printf("Bad magic value in vboot shared data header.\n");
-		return 1;
-	}
+	/* Write VbSharedDataHeader to ACPI vdat for userspace access. */
+	vb2api_export_vbsd(ctx, flag_fetch(FLAG_WPSW), acpi_table->vdat);
 
 	acpi_table->boot_reason = BOOT_REASON_OTHER;
 
 	int main_fw = 0;
+	int fw_index;
 	const char *fwid;
 	int fwid_size;
-	int fw_index = vb_sd->firmware_index;
 
-	fwid = get_fw_id(fw_index);
-
-	if (fwid == NULL) {
-		printf("Unrecognized firmware index %d.\n", fw_index);
+	fw_index = get_active_fw_index();
+	fwid = get_active_fw_id();
+	fwid_size = get_active_fw_size();
+	if (fwid == NULL || fwid_size == 0) {
+		printf("Unrecognized active firmware index.\n");
 		return 1;
 	}
-
-	fwid_size = get_fw_size(fw_index);
 
 	const struct {
 		int vbsd_fw_index;
@@ -93,11 +86,11 @@ int crossystem_setup(int firmware_type)
 	}
 
 	uint16_t chsw = 0;
-	if (vb_sd->flags & VBSD_BOOT_FIRMWARE_WP_ENABLED)
+	if (flag_fetch(FLAG_WPSW))
 		chsw |= CHSW_FIRMWARE_WP;
-	if (vb_sd->flags & VBSD_BOOT_REC_SWITCH_ON)
+	if (ctx->flags & VB2_CONTEXT_FORCE_RECOVERY_MODE)
 		chsw |= CHSW_RECOVERY_X86;
-	if (vb_sd->flags & VBSD_BOOT_DEV_SWITCH_ON)
+	if (ctx->flags & VB2_CONTEXT_DEVELOPER_MODE)
 		chsw |= CHSW_DEVELOPER_SWITCH;
 	acpi_table->chsw = chsw;
 
@@ -120,12 +113,12 @@ int crossystem_setup(int firmware_type)
 		acpi_table->main_fw_type = firmware_type;
 	else if (main_fw == BINF_RECOVERY)
 		acpi_table->main_fw_type = FIRMWARE_TYPE_RECOVERY;
-	else if (vb_sd->flags & VBSD_BOOT_DEV_SWITCH_ON)
+	else if (ctx->flags & VB2_CONTEXT_DEVELOPER_MODE)
 		acpi_table->main_fw_type = FIRMWARE_TYPE_DEVELOPER;
 	else
 		acpi_table->main_fw_type = FIRMWARE_TYPE_NORMAL;
 
-	acpi_table->recovery_reason = vb_sd->recovery_reason;
+	acpi_table->recovery_reason = vb2api_get_recovery_reason(ctx);
 
 	acpi_table->fmap_base = (uintptr_t)fmap_base();
 
@@ -133,9 +126,6 @@ int crossystem_setup(int firmware_type)
 	uint8_t *dest = (uint8_t *)(uintptr_t)acpi_table->fwid_ptr;
 	memcpy(dest, fwid, size);
 	dest[size] = 0;
-
-	// Synchronize VbSharedDataHeader to acpi vdat.
-	memcpy(vdat, vb_sd, vb_sd_size);
 
 	return 0;
 }

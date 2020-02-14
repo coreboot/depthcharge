@@ -16,7 +16,7 @@
  */
 
 #include <libpayload.h>
-#include <vboot_struct.h>
+#include <vb2_api.h>
 
 #include "image/fmap.h"
 #include "vboot/firmware_id.h"
@@ -68,7 +68,7 @@ const char *get_fw_id(int index)
 {
 	struct fwid *entry = get_fw_entry(index);
 
-	if(entry == NULL)
+	if (entry == NULL)
 		return "NOT FOUND";
 
 	return entry->fw_id;
@@ -114,39 +114,22 @@ int get_rwb_fw_size(void)
 	return get_fw_size(VBSD_RW_B);
 }
 
-static VbSharedDataHeader *get_vb_sd(void)
+int get_active_fw_index(void)
 {
-	void *blob;
-	int size;
-
-	if (find_common_params(&blob, &size) == 0)
-		return blob;
-
-	return NULL;
-}
-
-static inline int get_active_fw_index(VbSharedDataHeader *vb_sd)
-{
-	int fw_index = VBSD_UNKNOWN;
-
-	if (vb_sd)
-		fw_index = vb_sd->firmware_index;
-
-	return fw_index;
+	struct vb2_context *ctx = vboot_get_context();
+	if (ctx->flags & VB2_CONTEXT_RECOVERY_MODE)
+		return VBSD_RECOVERY;
+	else
+		return (ctx->flags & VB2_CONTEXT_FW_SLOT_B) ?
+			VBSD_RW_B : VBSD_RW_A;
 }
 
 const char *get_active_fw_id(void)
 {
-	VbSharedDataHeader *vb_sd = get_vb_sd();
-	int fw_index = get_active_fw_index(vb_sd);
-
-	return get_fw_id(fw_index);
+	return get_fw_id(get_active_fw_index());
 }
 
 int get_active_fw_size(void)
 {
-	VbSharedDataHeader *vb_sd = get_vb_sd();
-	int fw_index = get_active_fw_index(vb_sd);
-
-	return get_fw_size(fw_index);
+	return get_fw_size(get_active_fw_index());
 }

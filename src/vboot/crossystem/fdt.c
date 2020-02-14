@@ -21,8 +21,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <vb2_api.h>
-#include <vboot_api.h>
-#include <vboot_struct.h>
 
 #include "base/device_tree.h"
 #include "image/fmap.h"
@@ -36,19 +34,16 @@ static int last_firmware_type = FIRMWARE_TYPE_AUTO_DETECT;
 
 static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 {
+	struct vb2_context *ctx = vboot_get_context();
 	const char *path[] = { "firmware", "chromeos", NULL };
 	DeviceTreeNode *node = dt_find_node(tree->root, path, NULL, NULL, 1);
 
+	/* Never free vbsd, so it sticks around until dt_flatten() is called. */
+	uint8_t *vbsd = malloc(VB2_VBSD_SIZE);
+	vb2api_export_vbsd(ctx, flag_fetch(FLAG_WPSW), vbsd);
+	dt_add_bin_prop(node, "vboot-shared-data", vbsd, VB2_VBSD_SIZE);
+
 	dt_add_string_prop(node, "compatible", "chromeos-firmware");
-
-	VbSharedDataHeader *vb_sd;
-	int size;
-
-	if (find_common_params((void**)&vb_sd, &size) != 0) {
-		printf("Can't find common params.\n");
-		return 1;
-	}
-	dt_add_bin_prop(node, "vboot-shared-data", vb_sd, size);
 
 	if (CONFIG_NVDATA_CMOS) {
 		dt_add_string_prop(node, "nonvolatile-context-storage",
@@ -65,18 +60,16 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 				nvdata_flash_get_blob_size());
 	}
 
-	int fw_index = vb_sd->firmware_index;
 	const char *fwid;
 	int fwid_size;
 
-	fwid = get_fw_id(fw_index);
-
-	if (fwid == NULL) {
-		printf("Unrecognized firmware index %d.\n", fw_index);
+	fwid = get_active_fw_id();
+	fwid_size = get_active_fw_size();
+	if (fwid == NULL || fwid_size == 0) {
+		printf("Unrecognized active firmware index.\n");
 		return 1;
 	}
 
-	fwid_size = get_fw_size(fw_index);
 
 	dt_add_bin_prop(node, "firmware-version", (char *)fwid, fwid_size);
 	char *type_names[] = {
@@ -89,9 +82,9 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 
 	int fw_type = last_firmware_type;
 	if (fw_type == FIRMWARE_TYPE_AUTO_DETECT) {
-		if (fw_index == VBSD_RECOVERY)
+		if (ctx->flags & VB2_CONTEXT_RECOVERY_MODE)
 			fw_type = FIRMWARE_TYPE_RECOVERY;
-		else if (vb_sd->flags & VBSD_BOOT_DEV_SWITCH_ON)
+		if (ctx->flags & VB2_CONTEXT_DEVELOPER_MODE)
 			fw_type = FIRMWARE_TYPE_DEVELOPER;
 		else
 			fw_type = FIRMWARE_TYPE_NORMAL;

@@ -15,21 +15,15 @@
  * GNU General Public License for more details.
  */
 
-#define NEED_VB20_INTERNALS  /* Peeking into vb2_shared_data */
-
 #include <assert.h>
 #include <libpayload.h>
 #include <vb2_api.h>
-#include <vboot_struct.h>
 
 #include "drivers/flash/flash.h"
 #include "image/fmap.h"
 #include "image/symbols.h"
 #include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
-#include "vboot/util/flag.h"
-
-static char shared_data[VB_SHARED_DATA_MIN_SIZE];
 
 int gbb_clear_flags(void)
 {
@@ -52,47 +46,6 @@ int gbb_clear_flags(void)
 		return 1;
 	}
 
-	return 0;
-}
-
-int vboot_create_vbsd(void)
-{
-	VbSharedDataHeader *vb_sd = (VbSharedDataHeader *)shared_data;
-	struct vb2_shared_data *vb2_sd;
-
-	/* Get reference to vb2_shared_data struct. */
-	if (lib_sysinfo.vboot_workbuf == NULL) {
-		printf("%s: vboot working data pointer is NULL\n", __func__);
-		return 1;
-	}
-	vb2_sd = lib_sysinfo.vboot_workbuf;
-	if (vb2_sd->magic != VB2_SHARED_DATA_MAGIC) {
-		printf("%s: vb2_shared_data has invalid magic\n", __func__);
-		return 1;
-	}
-
-	printf("%s: creating legacy VbSharedDataHeader structure\n", __func__);
-	memset(&shared_data, 0, sizeof(shared_data));
-
-	vb_sd->flags |= VBSD_BOOT_FIRMWARE_VBOOT2;
-	vb_sd->firmware_index = vb2_sd->fw_slot;
-	vb_sd->magic = VB_SHARED_DATA_MAGIC;
-	vb_sd->struct_version = VB_SHARED_DATA_VERSION;
-	vb_sd->struct_size = sizeof(VbSharedDataHeader);
-	vb_sd->data_size = VB_SHARED_DATA_MIN_SIZE;
-	vb_sd->data_used = sizeof(VbSharedDataHeader);
-	vb_sd->fw_version_tpm = vb2_sd->fw_version_secdata;
-
-	if (flag_fetch(FLAG_WPSW))
-		vb_sd->flags |= VBSD_BOOT_FIRMWARE_WP_ENABLED;
-
-	return 0;
-}
-
-int find_common_params(void **blob, int *size)
-{
-	*blob = &shared_data[0];
-	*size = ARRAY_SIZE(shared_data);
 	return 0;
 }
 

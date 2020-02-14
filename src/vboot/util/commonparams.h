@@ -23,10 +23,6 @@
 #include <vb2_api.h>
 
 int gbb_clear_flags(void);
-
-int vboot_create_vbsd(void);
-int find_common_params(void **blob, int *size);
-
 struct vb2_context *vboot_get_context(void);
 
 #endif /* __VBOOT_UTIL_COMMONPARAMS_H__ */
