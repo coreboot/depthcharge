@@ -12,7 +12,7 @@
 ##
 
 ifeq ($(CONFIG_ARCH_ARM_V8),y)
-depthcharge-y += boot_asm64.S physmem_arm64.c boot64.c smc.S
+depthcharge-y += physmem_arm64.c boot64.c smc.S
 else
 depthcharge-y += boot_asm.S physmem.c boot.c
 endif

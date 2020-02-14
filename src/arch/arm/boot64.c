@@ -15,6 +15,7 @@
  * GNU General Public License for more details.
  */
 
+#include <arch/mmu.h>
 #include <coreboot_tables.h>
 #include <libpayload.h>
 #include <stdlib.h>
@@ -129,8 +130,9 @@ int boot_arm_linux(void *fdt, FitImageNode *kernel)
 	arch_program_segment_loaded(reloc_addr, true_size);
 
 	tlb_invalidate_all();
+	mmu_disable();
 
-	boot_arm_linux_jump(fdt, reloc_addr);
-
-	return 0;
+	void (*handoff)(void *, uintptr_t, uintptr_t, uintptr_t) = reloc_addr;
+	handoff(fdt, 0, 0, 0);
+	die("Kernel returned!");
 }
