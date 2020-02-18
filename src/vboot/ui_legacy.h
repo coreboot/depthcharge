@@ -15,8 +15,8 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __VBOOT_SCREENS_H__
-#define __VBOOT_SCREENS_H__
+#ifndef __VBOOT_UI_LEGACY_H__
+#define __VBOOT_UI_LEGACY_H__
 
 #include <libpayload.h>
 #include <stdint.h>
@@ -36,11 +36,12 @@ static const struct rgb_color color_grey	= { 0x88, 0x88, 0x88 };
 static const struct rgb_color color_white	= { 0xff, 0xff, 0xff };
 static const struct rgb_color color_black	= { 0x00, 0x00, 0x00 };
 
-vb2_error_t vboot_draw_screen(uint32_t screen, uint32_t locale,
-			      const VbScreenData *data);
-vb2_error_t vboot_draw_ui(uint32_t screen, uint32_t locale,
-			  uint32_t selected_index, uint32_t disabled_idx_mask,
-			  uint32_t redraw_base);
+vb2_error_t vboot_draw_legacy_screen(uint32_t screen, uint32_t locale,
+				     const VbScreenData *data);
+vb2_error_t vboot_draw_legacy_menu(uint32_t screen, uint32_t locale,
+				   uint32_t selected_index,
+				   uint32_t disabled_idx_mask,
+				   uint32_t redraw_base);
 
 /**
  * Print a string on the console using the standard font. The string buffer is
@@ -57,4 +58,4 @@ vb2_error_t vboot_print_string(char *str);
  */
 uint32_t vboot_get_locale_count(void);
 
-#endif /* __VBOOT_SCREENS_H__ */
+#endif /* __VBOOT_UI_LEGACY_H__ */

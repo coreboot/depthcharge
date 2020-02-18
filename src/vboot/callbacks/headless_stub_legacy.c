@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright 2020 Google Inc.
+ * Copyright 2014 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -17,27 +17,33 @@
  */
 
 #include <libpayload.h>
+#include <vboot_api.h>
 #include <vb2_api.h>
-#include <vboot_api.h>  /* for VbScreenData */
 
-vb2_error_t vb2ex_display_ui(enum vb2_screen screen, uint32_t locale)
-{
-	/* TODO(b/151200757): Support headless devices */
-	return VB2_SUCCESS;
-}
+#include "drivers/video/display.h"
 
-/*
- * TODO(chromium:1055125): Before decoupling EC/AUXFW sync and UI, keep this
- * dummy function here as a workaround.
- */
 vb2_error_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale,
 			      const VbScreenData *data)
 {
+	return display_screen((enum VbScreenType_t)screen_type);
+}
+
+vb2_error_t VbExDisplayMenu(uint32_t screen_type, uint32_t locale,
+			    uint32_t selected_index, uint32_t disabled_idx_mask,
+			    uint32_t redraw_base)
+{
+	printf("%s:%d invoked\n", __func__, __LINE__);
+	return VB2_SUCCESS;
+}
+
+vb2_error_t VbExDisplayDebugInfo(const char *info_str, int full_info)
+{
+	printf("%s:%d invoked\n", __func__, __LINE__);
 	return VB2_SUCCESS;
 }
 
 int video_console_init(void)
 {
-	printf("%s stub called\n", __func__);
+	printf("%s:%d invoked\n", __func__, __LINE__);
 	return 0;
 }

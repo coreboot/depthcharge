@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: GPL-2.0
 /*
  * Copyright 2015 Google Inc.
  *
@@ -20,8 +21,8 @@
 #include <libpayload.h>
 #include <vb2_api.h>
 #include <vboot_api.h>
-#include <vboot/screens.h>
 #include <vboot/stages.h>
+#include <vboot/ui_legacy.h>
 
 #include "base/list.h"
 #include "boot/payload.h"
@@ -75,11 +76,6 @@
 		if (rv)							\
 			return rv;					\
 	} while (0)
-
-_Static_assert(CONFIG(MENU_UI) + CONFIG(LEGACY_MENU_UI) +
-	       CONFIG(LEGACY_CLAMSHELL_UI) == 1,
-	       "Exactly one of MENU_UI, LEGACY_MENU_UI or LEGACY_CLAMSHELL_UI"
-	       " must be set");
 
 static char initialized = 0;
 static int  prev_lang_page_num = -1;
@@ -1568,8 +1564,8 @@ static vb2_error_t vboot_init_screen(void)
 	return VB2_SUCCESS;
 }
 
-vb2_error_t vboot_draw_screen(uint32_t screen, uint32_t locale,
-			      const VbScreenData *data)
+vb2_error_t vboot_draw_legacy_screen(uint32_t screen, uint32_t locale,
+				     const VbScreenData *data)
 {
 
 	printf("%s: screen=%#x locale=%d\n", __func__, screen, locale);
@@ -1578,7 +1574,7 @@ vb2_error_t vboot_draw_screen(uint32_t screen, uint32_t locale,
 		RETURN_ON_ERROR(vboot_init_screen());
 
 	/* If the screen is blank, turn off the backlight; else turn it on. */
-	backlight_update(VB_SCREEN_BLANK == screen ? 0 : 1);
+	backlight_update(screen == VB_SCREEN_BLANK ? 0 : 1);
 
 	/* TODO: draw only locale dependent part if current_screen == screen */
 	/* setting selected_index value to 0xFFFFFFFF invalidates the field */
@@ -1596,9 +1592,10 @@ vb2_error_t vboot_draw_screen(uint32_t screen, uint32_t locale,
 	return VB2_SUCCESS;
 }
 
-vb2_error_t vboot_draw_ui(uint32_t screen, uint32_t locale,
-			  uint32_t selected_index, uint32_t disabled_idx_mask,
-			  uint32_t redraw_base)
+vb2_error_t vboot_draw_legacy_menu(uint32_t screen, uint32_t locale,
+				   uint32_t selected_index,
+				   uint32_t disabled_idx_mask,
+				   uint32_t redraw_base)
 {
 	printf("%s: screen=%#x locale=%d, selected_index=%d,"
 	       "disabled_idx_mask=%#x\n",
