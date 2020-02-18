@@ -79,6 +79,9 @@ ASSET_SCALES = {
     'separator': NO_SCALE,
     'ic_tablet': DEFAULT_TEXT_SCALE,
     'ic_laptop': DEFAULT_TEXT_SCALE,
+    'ic_esc': DEFAULT_TEXT_SCALE,
+    'ic_refresh': DEFAULT_TEXT_SCALE,
+    'ic_power': DEFAULT_TEXT_SCALE,
 }
 TEXT_SCALES = {
     'tonorm': (0, 4 * TEXT_HEIGHT),
