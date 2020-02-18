@@ -50,7 +50,11 @@ static int board_setup(void)
 {
 	sysinfo_install_flags(new_sc7180_gpio_input_from_coreboot);
 	flag_replace(FLAG_PWRSW, new_gpio_low());	/* handled by EC */
-	flag_replace(FLAG_LIDSW, cros_ec_lid_switch_flag());
+
+	if (CONFIG(DRIVER_EC_CROS))
+		flag_replace(FLAG_LIDSW, cros_ec_lid_switch_flag());
+	else
+		flag_replace(FLAG_LIDSW, new_gpio_high());
 
 	power_set_ops(&psci_power_ops);
 
