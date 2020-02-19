@@ -153,7 +153,7 @@ int vboot_select_and_load_kernel(void)
 		.kernel_buffer = &_kernel_start,
 		.kernel_buffer_size = &_kernel_end - &_kernel_start,
 	};
-	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
+	VbootEcOps *ec = vboot_get_ec();
 
 	// On x86 systems, inhibit power button pulse from EC.
 	if (CONFIG(ARCH_X86) && ec &&

@@ -282,13 +282,13 @@ int ec_command(CrosEc *me, int cmd, int cmd_version,
 	if (!me->initialized && ec_init(me))
 		return -1;
 
-	return send_command_proto3(me, EC_CMD_PASSTHRU_OFFSET(me->devidx) + cmd,
-				   cmd_version, dout, dout_len, din, din_len);
+	return send_command_proto3(me, cmd, cmd_version, dout, dout_len, din,
+				   din_len);
 }
 
-CrosEc *cros_ec_get_main(void)
+CrosEc *cros_ec_get(void)
 {
-	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
+	VbootEcOps *ec = vboot_get_ec();
 	return container_of(ec, CrosEc, vboot);
 }
 
@@ -340,7 +340,7 @@ static int cbi_get_uint32(uint32_t *id, uint32_t type)
 
 	p.type = type;
 
-	int rv = ec_command(cros_ec_get_main(), EC_CMD_GET_CROS_BOARD_INFO, 0,
+	int rv = ec_command(cros_ec_get(), EC_CMD_GET_CROS_BOARD_INFO, 0,
 			    &p, sizeof(p), id, sizeof(*id));
 
 	return rv < 0 ? rv : 0;
@@ -361,14 +361,14 @@ int cros_ec_pd_control(uint8_t pd_port, enum ec_pd_control_cmd cmd)
 {
 	struct ec_params_pd_control p = {p.chip = pd_port, p.subcmd = cmd};
 
-	int rv = ec_command(cros_ec_get_main(), EC_CMD_PD_CONTROL, 0, &p,
+	int rv = ec_command(cros_ec_get(), EC_CMD_PD_CONTROL, 0, &p,
 			    sizeof(p), NULL, 0);
 	return rv < 0 ? rv : 0;
 }
 
 int cros_ec_scan_keyboard(struct cros_ec_keyscan *scan)
 {
-	if (ec_command(cros_ec_get_main(), EC_CMD_MKBP_STATE, 0, NULL, 0,
+	if (ec_command(cros_ec_get(), EC_CMD_MKBP_STATE, 0, NULL, 0,
 		       &scan->data, sizeof(scan->data)) != sizeof(scan->data))
 		return -1;
 
@@ -377,7 +377,7 @@ int cros_ec_scan_keyboard(struct cros_ec_keyscan *scan)
 
 int cros_ec_get_next_event(struct ec_response_get_next_event *e)
 {
-	int rv = ec_command(cros_ec_get_main(), EC_CMD_GET_NEXT_EVENT, 0, NULL,
+	int rv = ec_command(cros_ec_get(), EC_CMD_GET_NEXT_EVENT, 0, NULL,
 			    0, e, sizeof(*e));
 
 	return rv < 0 ? rv : 0;
@@ -614,14 +614,14 @@ static vb2_error_t vboot_disable_jump(VbootEcOps *vbec)
 
 int cros_ec_interrupt_pending(void)
 {
-	if (cros_ec_get_main()->interrupt_gpio)
-		return gpio_get(cros_ec_get_main()->interrupt_gpio);
+	if (cros_ec_get()->interrupt_gpio)
+		return gpio_get(cros_ec_get()->interrupt_gpio);
 	return -1;
 }
 
 int cros_ec_mkbp_info(struct ec_response_mkbp_info *info)
 {
-	if (ec_command(cros_ec_get_main(), EC_CMD_MKBP_INFO, 0, NULL, 0,
+	if (ec_command(cros_ec_get(), EC_CMD_MKBP_INFO, 0, NULL, 0,
 		       info, sizeof(*info)) != sizeof(*info))
 		return -1;
 
@@ -632,7 +632,7 @@ int cros_ec_get_event_mask(u8 type, uint32_t *mask)
 {
 	struct ec_response_host_event_mask rsp;
 
-	if (ec_command(cros_ec_get_main(), type, 0, NULL, 0,
+	if (ec_command(cros_ec_get(), type, 0, NULL, 0,
 		       &rsp, sizeof(rsp)) != sizeof(rsp))
 		return -1;
 
@@ -647,7 +647,7 @@ int cros_ec_set_event_mask(u8 type, uint32_t mask)
 
 	req.mask = mask;
 
-	if (ec_command(cros_ec_get_main(), type, 0, &req, sizeof(req),
+	if (ec_command(cros_ec_get(), type, 0, &req, sizeof(req),
 		       NULL, 0) < 0)
 		return -1;
 
@@ -662,7 +662,7 @@ int cros_ec_get_host_events(uint32_t *events_ptr)
 	 * Use the B copy of the event flags, because the main copy is already
 	 * used by ACPI/SMI.
 	 */
-	if (ec_command(cros_ec_get_main(), EC_CMD_HOST_EVENT_GET_B, 0, NULL, 0,
+	if (ec_command(cros_ec_get(), EC_CMD_HOST_EVENT_GET_B, 0, NULL, 0,
 		       &resp, sizeof(resp)) != sizeof(resp))
 		return -1;
 
@@ -683,7 +683,7 @@ int cros_ec_clear_host_events(uint32_t events)
 	 * Use the B copy of the event flags, so it affects the data returned
 	 * by cros_ec_get_host_events().
 	 */
-	if (ec_command(cros_ec_get_main(), EC_CMD_HOST_EVENT_CLEAR_B, 0,
+	if (ec_command(cros_ec_get(), EC_CMD_HOST_EVENT_CLEAR_B, 0,
 		       &params, sizeof(params), NULL, 0) < 0)
 		return -1;
 
@@ -983,7 +983,7 @@ vb2_error_t nvdata_cros_ec_read(uint8_t *block)
 
 	p.op = EC_VBNV_CONTEXT_OP_READ;
 
-	len = ec_command(cros_ec_get_main(), EC_CMD_VBNV_CONTEXT,
+	len = ec_command(cros_ec_get(), EC_CMD_VBNV_CONTEXT,
 			 EC_VER_VBNV_CONTEXT, &p, sizeof(p),
 			 block, EC_VBNV_BLOCK_SIZE);
 	if (len < EC_VBNV_BLOCK_SIZE)
@@ -1000,7 +1000,7 @@ vb2_error_t nvdata_cros_ec_write(const uint8_t *block)
 	p.op = EC_VBNV_CONTEXT_OP_WRITE;
 	memcpy(p.block, block, sizeof(p.block));
 
-	len = ec_command(cros_ec_get_main(), EC_CMD_VBNV_CONTEXT,
+	len = ec_command(cros_ec_get(), EC_CMD_VBNV_CONTEXT,
 			 EC_VER_VBNV_CONTEXT, &p, sizeof(p), NULL, 0);
 	if (len < 0)
 		return VB2_ERROR_NV_WRITE;
@@ -1015,7 +1015,7 @@ int cros_ec_battery_cutoff(uint8_t flags)
 
 	p.flags = flags;
 
-	len = ec_command(cros_ec_get_main(), EC_CMD_BATTERY_CUT_OFF, 1,
+	len = ec_command(cros_ec_get(), EC_CMD_BATTERY_CUT_OFF, 1,
 			 &p, sizeof(p), NULL, 0);
 
 	if (len < 0)
@@ -1039,7 +1039,7 @@ int cros_ec_set_motion_sense_activity(uint32_t activity, uint32_t value)
 	params.set_activity.activity = activity;
 	params.set_activity.enable = value;
 
-	if (ec_command(cros_ec_get_main(), EC_CMD_MOTION_SENSE_CMD, 2,
+	if (ec_command(cros_ec_get(), EC_CMD_MOTION_SENSE_CMD, 2,
 		       &params, sizeof(params), &resp, sizeof(resp)) < 0)
 		return -1;
 
@@ -1053,7 +1053,7 @@ static int read_memmap(uint8_t offset, uint8_t size, void *dest)
 	params.offset = offset;
 	params.size = size;
 
-	CrosEc *ec = cros_ec_get_main();
+	CrosEc *ec = cros_ec_get();
 
 	if (ec->bus->read)
 		ec->bus->read(dest, EC_LPC_ADDR_MEMMAP + offset, size);
@@ -1162,7 +1162,7 @@ int cros_ec_config_powerbtn(uint32_t flags)
 	struct ec_params_config_power_button params;
 
 	params.flags = flags;
-	if (ec_command(cros_ec_get_main(), EC_CMD_CONFIG_POWER_BUTTON, 0,
+	if (ec_command(cros_ec_get(), EC_CMD_CONFIG_POWER_BUTTON, 0,
 		       &params, sizeof(params), NULL, 0) < 0)
 		return -1;
 
@@ -1177,7 +1177,7 @@ int cros_ec_read_limit_power_request(int *limit_power)
 
 	p.cmd = CHARGE_STATE_CMD_GET_PARAM;
 	p.get_param.param = CS_PARAM_LIMIT_POWER;
-	res = ec_command(cros_ec_get_main(), EC_CMD_CHARGE_STATE, 0,
+	res = ec_command(cros_ec_get(), EC_CMD_CHARGE_STATE, 0,
 			 &p, sizeof(p), &r, sizeof(r));
 
 	/*
@@ -1241,7 +1241,7 @@ int cros_ec_read_batt_state_of_charge(uint32_t *state)
 
 	params.cmd = CHARGE_STATE_CMD_GET_STATE;
 
-	if (ec_command(cros_ec_get_main(), EC_CMD_CHARGE_STATE, 0,
+	if (ec_command(cros_ec_get(), EC_CMD_CHARGE_STATE, 0,
 		       &params, sizeof(params), &resp, sizeof(resp)) < 0)
 		return -1;
 
@@ -1251,7 +1251,7 @@ int cros_ec_read_batt_state_of_charge(uint32_t *state)
 
 int cros_ec_reboot(uint8_t flags)
 {
-	return ec_reboot(cros_ec_get_main(), EC_REBOOT_COLD, flags);
+	return ec_reboot(cros_ec_get(), EC_REBOOT_COLD, flags);
 }
 
 /*
@@ -1266,7 +1266,7 @@ int cros_ec_set_bl_pwm_duty(uint32_t percent)
 	params.pwm_type = EC_PWM_TYPE_DISPLAY_LIGHT;
 	params.index = 0;
 
-	if (ec_command(cros_ec_get_main(), EC_CMD_PWM_SET_DUTY, 0,
+	if (ec_command(cros_ec_get(), EC_CMD_PWM_SET_DUTY, 0,
 		       &params, sizeof(params), NULL, 0) < 0)
 		return -1;
 	return 0;
@@ -1279,7 +1279,7 @@ int cros_ec_locate_tcpc_chip(uint8_t port, struct ec_response_locate_chip *r)
 
 	p.type = EC_CHIP_TYPE_TCPC;
 	p.index = port;
-	ret = ec_command(cros_ec_get_main(), EC_CMD_LOCATE_CHIP, 0,
+	ret = ec_command(cros_ec_get(), EC_CMD_LOCATE_CHIP, 0,
 				&p, sizeof(p), r, sizeof(*r));
 	if (ret < 0) {
 		printf("Failed to locate TCPC chip for port%d ret:%d\n",
@@ -1323,7 +1323,7 @@ static int ec_init(CrosEc *me)
 		return -1;
 	}
 
-	if (me->devidx == 0 && me->bus->init && me->bus->init(me->bus))
+	if (me->bus->init && me->bus->init(me->bus))
 		return -1;
 
 	me->initialized = 1;
@@ -1338,22 +1338,8 @@ static int ec_init(CrosEc *me)
 		printf("ERROR: Cannot read EC protocol info!\n");
 		return -1;
 	}
-	if (me->devidx != 0) {
-		struct ec_response_get_protocol_info master_info;
-		// Call send_command directly to talk to master EC.
-		if (send_command_proto3(me, EC_CMD_GET_PROTOCOL_INFO,
-					0, NULL, 0, &master_info,
-					sizeof(master_info))
-		    != sizeof(master_info)) {
-			printf("ERROR: Cannot read master EC protocol info!\n");
-			return -1;
-		}
-		info.max_request_packet_size = MIN(
-			info.max_request_packet_size,
-			master_info.max_request_packet_size);
-	}
-	printf("%s(%d): CrosEC protocol v3 supported (%d, %d)\n",
-	       __func__, me->devidx,
+	printf("%s: CrosEC protocol v3 supported (%d, %d)\n",
+	       __func__,
 	       info.max_request_packet_size,
 	       info.max_response_packet_size);
 	set_max_proto3_sizes(me, info.max_request_packet_size,
@@ -1362,15 +1348,11 @@ static int ec_init(CrosEc *me)
 	return 0;
 }
 
-CrosEc *new_cros_ec(CrosEcBusOps *bus, int devidx, GpioOps *interrupt_gpio)
+CrosEc *new_cros_ec(CrosEcBusOps *bus, GpioOps *interrupt_gpio)
 {
 	CrosEc *me = xzalloc(sizeof(*me));
 
-	// Firmware only cares about the main (keyboard) EC's interrupt line.
-	assert(devidx == 0 || interrupt_gpio == NULL);
-
 	me->bus = bus;
-	me->devidx = devidx;
 	me->interrupt_gpio = interrupt_gpio;
 
 	me->vboot.running_rw = vboot_running_rw;
@@ -1394,7 +1376,7 @@ CrosEc *new_cros_ec(CrosEcBusOps *bus, int devidx, GpioOps *interrupt_gpio)
  */
 void cros_ec_probe_aux_fw_chips(void)
 {
-	CrosEc *cros_ec = cros_ec_get_main();
+	CrosEc *cros_ec = cros_ec_get();
 	struct ec_response_usb_pd_ports usb_pd_ports_r;
 	struct ec_params_pd_chip_info pd_chip_p = {0};
 	struct ec_response_pd_chip_info pd_chip_r = {0};

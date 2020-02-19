@@ -64,7 +64,6 @@ typedef struct CrosEc
 {
 	VbootEcOps vboot;
 	CrosEcBusOps *bus;
-	int devidx;
 	GpioOps *interrupt_gpio;
 	int initialized;
 	int max_param_size;
@@ -117,7 +116,7 @@ int ec_command(CrosEc *ec, int cmd, int cmd_version,
  *
  * @return pointer to primary EC structure.
  */
-CrosEc *cros_ec_get_main(void);
+CrosEc *cros_ec_get(void);
 
 /*
  * Hard-code the number of columns we happen to know we have right now.  It
@@ -372,7 +371,7 @@ int cros_ec_set_lid_shutdown_mask(int enable);
  */
 int cros_ec_locate_tcpc_chip(uint8_t port, struct ec_response_locate_chip *r);
 
-CrosEc *new_cros_ec(CrosEcBusOps *bus, int devidx, GpioOps *interrupt_gpio);
+CrosEc *new_cros_ec(CrosEcBusOps *bus, GpioOps *interrupt_gpio);
 
 /**
  * Probe EC to gather chip info that require FW update and register

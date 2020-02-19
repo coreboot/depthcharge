@@ -17,17 +17,16 @@
 
 #include "drivers/ec/vboot_ec.h"
 
-static VbootEcOps *vboot_ec[NUM_MAX_VBOOT_ECS] = { NULL };
+static VbootEcOps *vboot_ec = NULL;
 
-VbootEcOps *vboot_get_ec(int devidx)
+VbootEcOps *vboot_get_ec(void)
 {
-	return vboot_ec[devidx];
+	return vboot_ec;
 }
 
-void register_vboot_ec(VbootEcOps *ec, int devidx)
+void register_vboot_ec(VbootEcOps *ec)
 {
-	assert(devidx >= 0 && devidx < NUM_MAX_VBOOT_ECS);
-	assert(!vboot_ec[devidx]);
+	assert(!vboot_ec);
 
-	vboot_ec[devidx] = ec;
+	vboot_ec = ec;
 }

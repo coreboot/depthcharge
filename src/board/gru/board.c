@@ -84,8 +84,8 @@ static int board_setup(void)
 	GpioOps *ec_int = sysinfo_lookup_gpio("EC interrupt", 1,
 					      new_rk_gpio_input_from_coreboot);
 
-	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, 0, ec_int);
-	register_vboot_ec(&cros_ec->vboot, 0);
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, ec_int);
+	register_vboot_ec(&cros_ec->vboot);
 
 	sysinfo_install_flags(new_rk_gpio_input_from_coreboot);
 

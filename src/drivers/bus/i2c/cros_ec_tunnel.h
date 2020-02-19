@@ -29,7 +29,6 @@ typedef struct CrosECTunnelI2c {
 
 /* -----------------------------------------------------------------------
  * cros ec tunnel i2c init function.
- *   devidx: EC devidx (should be 0)
  *   remote_bus: tunnel bus number
  *   Returns: bus
  */

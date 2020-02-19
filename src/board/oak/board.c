@@ -147,22 +147,8 @@ static int board_setup(void)
 	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spibus->ops);
 	GpioOps *ec_int = sysinfo_lookup_gpio("EC interrupt", 1,
 					      new_mtk_gpio_input);
-	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, 0, ec_int);
-	register_vboot_ec(&cros_ec->vboot, 0);
-
-	/* oak-rev7 / elm-rev0 onwards use ANX7688. */
-	if (lib_sysinfo.board_id + CONFIG_BOARD_ID_ADJUSTMENT < 7) {
-		CrosEc *cros_pd = new_cros_ec(&cros_ec_spi_bus->ops, 1, NULL);
-
-		register_vboot_ec(&cros_pd->vboot, 1);
-	} else {
-		CrosECTunnelI2c *cros_ec_i2c_tunnel =
-			new_cros_ec_tunnel_i2c(cros_ec, 1);
-
-		Anx7688 *anx7688 = new_anx7688(cros_ec_i2c_tunnel);
-
-		register_vboot_ec(&anx7688->vboot, 1);
-	}
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, ec_int);
+	register_vboot_ec(&cros_ec->vboot);
 
 	power_set_ops(&psci_power_ops);
 

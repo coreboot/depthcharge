@@ -57,10 +57,12 @@ typedef struct VbootEcOps {
 	vb2_error_t (*protect_tcpc_ports)(struct VbootEcOps *me);
 } VbootEcOps;
 
-#define NUM_MAX_VBOOT_ECS 2
-#define PRIMARY_VBOOT_EC  0
+/*
+ * vboot_get_ec returns the VbootEcOps that was registered with
+ * register_vboot_ec.
+ */
+VbootEcOps *vboot_get_ec(void);
 
-VbootEcOps *vboot_get_ec(int devidx);
-void register_vboot_ec(VbootEcOps *ec, int devidx);
+void register_vboot_ec(VbootEcOps *ec);
 
 #endif	/* __DRIVERS_EC_VBOOT_EC_H */

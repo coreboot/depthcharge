@@ -200,8 +200,8 @@ static int board_setup(void)
 	sysinfo_install_flags(NULL);
 	CrosEcLpcBus *cros_ec_lpc_bus =
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
-	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, 0, NULL);
-	register_vboot_ec(&cros_ec->vboot, 0);
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);
+	register_vboot_ec(&cros_ec->vboot);
 
 	flag_replace(FLAG_LIDSW, cros_ec_lid_switch_flag());
 	flag_replace(FLAG_PWRSW, cros_ec_power_btn_flag());

@@ -118,8 +118,8 @@ static int board_setup(void)
 	/* Chrome EC (eSPI) */
 	CrosEcLpcBus *cros_ec_lpc_bus =
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
-	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, 0, NULL);
-	register_vboot_ec(&cros_ec->vboot, 0);
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);
+	register_vboot_ec(&cros_ec->vboot);
 
 	/* 16MB SPI Flash */
 	flash_set_ops(&new_mem_mapped_flash(0xff000000, 0x1000000)->ops);

@@ -101,8 +101,8 @@ static int board_setup(void)
 	/* Chrome EC (eSPI) */
 	CrosEcLpcBus *cros_ec_lpc_bus =
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
-	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, 0, NULL);
-	register_vboot_ec(&cros_ec->vboot, 0);
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);
+	register_vboot_ec(&cros_ec->vboot);
 
 #if CONFIG_DRIVER_SOUND_MAX98373
 	/* For JSL, use GPPC_H15 and GPP_R6 to provide a BCLKLRCLK on SSP1 */

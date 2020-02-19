@@ -86,8 +86,8 @@ static int board_setup(void)
 	CrosEcLpcBus *espi_ec = new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
 	GpioOps *ec_gpio = sysinfo_lookup_gpio("EC sync gpio", 1,
 					new_skylake_gpio_input_from_coreboot);
-	CrosEc *cros_ec = new_cros_ec(&espi_ec->ops, 0, ec_gpio);
-	register_vboot_ec(&cros_ec->vboot, 0);
+	CrosEc *cros_ec = new_cros_ec(&espi_ec->ops, ec_gpio);
+	register_vboot_ec(&cros_ec->vboot);
 
 	/* EC I2C Tunnel for TCPCs */
 	cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec, /* i2c bus */ 1);

@@ -71,21 +71,21 @@ int vb2ex_ec_trusted(void)
 
 vb2_error_t vb2ex_ec_running_rw(int *in_rw)
 {
-	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
+	VbootEcOps *ec = vboot_get_ec();
 	assert(ec && ec->running_rw);
 	return ec->running_rw(ec, in_rw);
 }
 
 vb2_error_t vb2ex_ec_jump_to_rw(void)
 {
-	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
+	VbootEcOps *ec = vboot_get_ec();
 	assert(ec && ec->jump_to_rw);
 	return ec->jump_to_rw(ec);
 }
 
 vb2_error_t vb2ex_ec_disable_jump(void)
 {
-	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
+	VbootEcOps *ec = vboot_get_ec();
 	assert(ec && ec->disable_jump);
 	return ec->disable_jump(ec);
 }
@@ -93,7 +93,7 @@ vb2_error_t vb2ex_ec_disable_jump(void)
 vb2_error_t vb2ex_ec_hash_image(enum vb2_firmware_selection select,
 				const uint8_t **hash, int *hash_size)
 {
-	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
+	VbootEcOps *ec = vboot_get_ec();
 	assert(ec && ec->hash_image);
 	return ec->hash_image(ec, select, hash, hash_size);
 }
@@ -114,7 +114,7 @@ vb2_error_t vb2ex_ec_get_expected_image_hash(enum vb2_firmware_selection select,
 
 vb2_error_t vb2ex_ec_update_image(enum vb2_firmware_selection select)
 {
-	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
+	VbootEcOps *ec = vboot_get_ec();
 	const char *filename = EC_IMAGE_FILENAME(select);
 	size_t size;
 	uint8_t *image = get_file_from_cbfs(filename, select, &size);
@@ -127,7 +127,7 @@ vb2_error_t vb2ex_ec_update_image(enum vb2_firmware_selection select)
 
 vb2_error_t vb2ex_ec_protect(enum vb2_firmware_selection select)
 {
-	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
+	VbootEcOps *ec = vboot_get_ec();
 	assert(ec && ec->protect);
 	return ec->protect(ec, select);
 }
@@ -139,7 +139,7 @@ vb2_error_t vb2ex_ec_protect(enum vb2_firmware_selection select)
 
 vb2_error_t vb2ex_ec_vboot_done(struct vb2_context *ctx)
 {
-	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
+	VbootEcOps *ec = vboot_get_ec();
 	int limit_power;
 	int limit_power_wait_time = 0;
 	int message_printed = 0;
@@ -180,7 +180,7 @@ vb2_error_t vb2ex_ec_vboot_done(struct vb2_context *ctx)
 
 vb2_error_t vb2ex_ec_battery_cutoff(void)
 {
-	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
+	VbootEcOps *ec = vboot_get_ec();
 	return (ec->battery_cutoff(ec) == 0
 		 ? VB2_SUCCESS : VB2_ERROR_UNKNOWN);
 }

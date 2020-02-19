@@ -103,10 +103,8 @@ static int board_setup(void)
 
 	CrosEcLpcBus *cros_ec_lpc_bus =
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
-	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, 0, NULL);
-	CrosEc *cros_pd = new_cros_ec(&cros_ec_lpc_bus->ops, 1, NULL);
-	register_vboot_ec(&cros_ec->vboot, 0);
-	register_vboot_ec(&cros_pd->vboot, 1);
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);
+	register_vboot_ec(&cros_ec->vboot);
 
 	flash_set_ops(&new_mem_mapped_flash(0xff800000, 0x800000)->ops);
 

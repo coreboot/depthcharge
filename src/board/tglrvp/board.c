@@ -43,11 +43,11 @@ static int board_setup(void)
 
 	sysinfo_install_flags(NULL);
 
-        /* Chrome EC (eSPI) */
-        CrosEcLpcBus *cros_ec_lpc_bus =
-                new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
-        CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, 0, NULL);
-        register_vboot_ec(&cros_ec->vboot, 0);
+	/* Chrome EC (eSPI) */
+	CrosEcLpcBus *cros_ec_lpc_bus =
+			new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);
+	register_vboot_ec(&cros_ec->vboot);
 
 	/* 32MB SPI Flash */
 	flash_set_ops(&new_mem_mapped_flash(0xfe000000, 0x2000000)->ops);
@@ -55,9 +55,9 @@ static int board_setup(void)
 	/* PCH Power */
 	power_set_ops(&cannonlake_power_ops);
 
-        /* SATA SSD */
-        AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 0x17, 0));
-        list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
+	/* SATA SSD */
+	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 0x17, 0));
+	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
 
 	/* NVME SSD */
 	secondary_bus = pci_read_config8(PCI_DEV(0, 0x1D, 0),

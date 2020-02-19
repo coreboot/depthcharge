@@ -18,7 +18,7 @@
  */
 static vb2_error_t protect_fw_tunnels(void)
 {
-	VbootEcOps *ec = vboot_get_ec(PRIMARY_VBOOT_EC);
+	VbootEcOps *ec = vboot_get_ec();
 
 	/*
 	 * The entire auxiliary FW update is complete at this point. AP firmware

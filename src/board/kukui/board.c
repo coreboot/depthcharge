@@ -102,8 +102,8 @@ static int board_setup(void)
 	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spi2->ops);
 	GpioOps *ec_int = sysinfo_lookup_gpio("EC interrupt", 1,
 					      new_mtk_gpio_input);
-	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, 0, ec_int);
-	register_vboot_ec(&cros_ec->vboot, 0);
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, ec_int);
+	register_vboot_ec(&cros_ec->vboot);
 
 	GpioOps *spi1_cs = new_gpio_not(new_mtk_gpio_output(PAD_SPI1_CSB));
 	MtkSpi *spi1 = new_mtk_spi(0x11010000, spi1_cs);
