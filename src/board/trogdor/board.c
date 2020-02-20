@@ -36,6 +36,12 @@
 #define SDC2_TLMM_CFG_ADDR 0x3D7B000
 #define SDC2_HC_BASE 0x08804000
 
+static const VpdDeviceTreeMap vpd_dt_map[] = {
+         { "bluetooth_mac0", "bluetooth0/local-bd-address" },
+         { "wifi_mac0", "wifi0/local-mac-address" },
+         {}
+};
+
 static int trogdor_tpm_irq_status(void)
 {
 	static GpioOps *tpm_int = NULL;
@@ -60,6 +66,8 @@ static int board_setup(void)
 
 	if (!strcmp(cb_mb_part_string(lib_sysinfo.mainboard), "Bubs"))
 		fit_add_compat("qcom,sc7180-idp");
+
+	dt_register_vpd_mac_fixup(vpd_dt_map);
 
 	/* Support USB3.0 XHCI controller in firmware. */
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0xa600000);
