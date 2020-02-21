@@ -49,8 +49,7 @@ int wilco_ec_reboot(WilcoEc *ec)
 	int ret;
 
 	printf("EC: rebooting now...\n");
-	if (run_cleanup_funcs(CleanupOnReboot))
-		printf("%s: cleanup failed!\n", __func__);
+	run_cleanup_funcs(CleanupOnReboot);
 
 	ret = wilco_ec_mailbox(ec, &msg);
 	if (ret == WILCO_EC_RESULT_ACCESS_DENIED) {

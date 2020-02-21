@@ -41,7 +41,7 @@ typedef struct CleanupFunc
 
 extern ListNode cleanup_funcs;
 
-// Call all cleanup functions and report whether any had an error.
-int run_cleanup_funcs(CleanupType type);
+// Call all cleanup functions and print any errors.
+void run_cleanup_funcs(CleanupType type);
 
 #endif /* __BASE_CLEANUP_FUNCS_H__ */

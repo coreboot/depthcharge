@@ -29,25 +29,28 @@ void power_set_ops(PowerOps *ops)
 	power_ops = ops;
 }
 
-int cold_reboot(void)
+void cold_reboot(void)
 {
 	die_if(!power_ops, "%s: No power ops set.\n", __func__);
 	assert(power_ops->cold_reboot);
 
-	if (run_cleanup_funcs(CleanupOnReboot))
-		return -1;
+	run_cleanup_funcs(CleanupOnReboot);
 
 	printf("Rebooting...\n");
-	return power_ops->cold_reboot(power_ops);
+	power_ops->cold_reboot(power_ops);
+	delay(1);
+	die("Still alive?!?");
 }
 
-int power_off(void)
+void power_off(void)
 {
 	die_if(!power_ops, "%s: No power ops set.\n", __func__);
 	assert(power_ops->power_off);
 
-	if (run_cleanup_funcs(CleanupOnPowerOff))
-		return -1;
+	run_cleanup_funcs(CleanupOnPowerOff);
 
-	return power_ops->power_off(power_ops);
+	printf("Powering off...\n");
+	power_ops->power_off(power_ops);
+	delay(1);
+	die("Still alive?!?");
 }

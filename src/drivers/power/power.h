@@ -27,9 +27,9 @@ typedef struct PowerOps
 void power_set_ops(PowerOps *ops);
 
 /* Cold reboot the machine */
-int cold_reboot(void);
+__attribute__((noreturn)) void cold_reboot(void);
 
 /* Power off the machine */
-int power_off(void);
+__attribute__((noreturn)) void power_off(void);
 
 #endif /* __DRIVERS_POWER_POWER_H__ */

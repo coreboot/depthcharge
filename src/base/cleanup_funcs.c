@@ -23,21 +23,21 @@
 
 ListNode cleanup_funcs;
 
-int run_cleanup_funcs(CleanupType type)
+void run_cleanup_funcs(CleanupType type)
 {
-	int res = 0;
-
 	CleanupFunc *func;
 	list_for_each(func, cleanup_funcs, list_node) {
 		assert(func->cleanup);
-		if ((func->types & type))
-			res = func->cleanup(func, type) || res;
+		if ((func->types & type)) {
+			int res = func->cleanup(func, type);
+			if (res)
+				printf("cleanup(%d) failed! %p = %d\n",
+				       type, func->cleanup, res);
+		}
 	}
 
 	dc_dev_gdb_exit(type);
 
 	printf("Exiting depthcharge with code %d at timestamp: %llu\n",
 	       type, timer_us(0));
-
-	return res;
 }

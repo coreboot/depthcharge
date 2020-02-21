@@ -33,6 +33,7 @@
 #include "drivers/ec/cros/commands.h"
 #include "drivers/ec/cros/message.h"
 #include "drivers/ec/cros/ec.h"
+#include "drivers/power/power.h"
 
 
 #define DEFAULT_BUF_SIZE 0x100
@@ -532,8 +533,7 @@ static int ec_reboot(CrosEc *me, enum ec_reboot_cmd cmd, uint8_t flags)
 	p.flags = flags;
 
 	if (cmd == EC_REBOOT_COLD && !(flags & EC_REBOOT_FLAG_ON_AP_SHUTDOWN))
-		if (run_cleanup_funcs(CleanupOnReboot))
-			printf("%s: cleanup failed!\n", __func__);
+		run_cleanup_funcs(CleanupOnReboot);
 
 	if (ec_command(me, EC_CMD_REBOOT_EC, 0,
 		       &p, sizeof(p), NULL, 0) < 0)
@@ -573,7 +573,7 @@ static vb2_error_t vboot_reboot_to_ro(VbootEcOps *vbec)
 		return VB2_ERROR_UNKNOWN;
 	}
 
-	return VB2_SUCCESS;
+	power_off();
 }
 
 static vb2_error_t vboot_jump_to_rw(VbootEcOps *vbec)
