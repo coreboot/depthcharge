@@ -27,6 +27,7 @@
 #include <libpayload.h>
 #include <vb2_api.h>
 
+#include "base/cleanup_funcs.h"
 #include "base/container_of.h"
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/ec/cros/commands.h"
@@ -529,6 +530,10 @@ static int ec_reboot(CrosEc *me, enum ec_reboot_cmd cmd, uint8_t flags)
 
 	p.cmd = cmd;
 	p.flags = flags;
+
+	if (cmd == EC_REBOOT_COLD && !(flags & EC_REBOOT_FLAG_ON_AP_SHUTDOWN))
+		if (run_cleanup_funcs(CleanupOnReboot))
+			printf("%s: cleanup failed!\n", __func__);
 
 	if (ec_command(me, EC_CMD_REBOOT_EC, 0,
 		       &p, sizeof(p), NULL, 0) < 0)
