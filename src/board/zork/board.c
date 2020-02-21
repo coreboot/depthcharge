@@ -147,6 +147,10 @@ static int board_setup(void)
 	list_insert_after(&nvme->ctrlr.list_node,
 				&fixed_block_dev_controllers);
 
+	NvmeCtrlr *nvme_dal = new_nvme_ctrlr(PCI_DEV(0, 0x01, 0x02));
+	list_insert_after(&nvme_dal->ctrlr.list_node,
+				&fixed_block_dev_controllers);
+
 	/* Set up h1 on I2C3 */
 	DesignwareI2c *i2c_h1 = new_designware_i2c(
 		AP_I2C3_ADDR, 400000, AP_I2C_CLK_MHZ);
