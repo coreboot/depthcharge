@@ -19,17 +19,8 @@
 #include <vboot_api.h>
 #include <vboot/util/flag.h>
 
-/*
- * Return the state of the switches specified in request_mask.
- * TODO(semenzato): find a better interface than the INIT_FLAGS.
- */
-uint32_t VbExGetSwitches(uint32_t request_mask)
+int vb2ex_physical_presence_pressed(void)
 {
-	uint32_t result = 0;
-
-	if ((request_mask & VB_SWITCH_FLAG_PHYS_PRESENCE_PRESSED) &&
-	    flag_fetch(FLAG_PHYS_PRESENCE) > 0) /* < 0 is an error */
-		result |= VB_SWITCH_FLAG_PHYS_PRESENCE_PRESSED;
-
-	return result;
+	/* < 0 is an error */
+	return flag_fetch(FLAG_PHYS_PRESENCE) > 0;
 }
