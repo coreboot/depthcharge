@@ -35,6 +35,7 @@
 #include "drivers/sound/gpio_i2s.h"
 #include "drivers/sound/max98357a.h"
 #include "drivers/sound/route.h"
+#include "drivers/sound/rt5682.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
@@ -56,9 +57,13 @@
 #define GL9750S_PCI_DID		TODO
 
 /* I2S Beep GPIOs */
-#define I2S_BCLK_GPIO		139
 #define I2S_LRCLK_GPIO		8
 #define I2S_DATA_GPIO		135
+#define EN_SPKR			91
+
+/* Clock frequencies */
+#define MCLK			4800000
+#define LRCLK			8000
 
 /* SPI Flash */
 #define FLASH_SIZE		0x1000000	/* 16MB */
@@ -101,6 +106,72 @@ static DisplayOps zork_display_ops = {
 	.backlight_update = &zork_backlight_update,
 };
 
+static int (*gpio_i2s_play)(struct SoundOps *me, uint32_t msec,
+		uint32_t frequency);
+
+static int amd_gpio_i2s_play(struct SoundOps *me, uint32_t msec,
+		uint32_t frequency)
+{
+	int ret;
+	uint64_t cur;
+
+	cur = _rdmsr(HW_CONFIG_REG);
+
+	/* Disable Core Boost while bit-banging I2S */
+	_wrmsr(HW_CONFIG_REG, cur | HW_CONFIG_CPBDIS);
+
+	ret = gpio_i2s_play(me, msec, frequency);
+
+	/* Restore previous Core Boost setting */
+	_wrmsr(HW_CONFIG_REG, cur);
+
+	return ret;
+}
+
+static void audio_setup(CrosEc *cros_ec)
+{
+	CrosECTunnelI2c *cros_ec_i2c_tunnel;
+
+	cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec, /* i2c bus */ 8);
+	rt5682Codec *rt5682 = new_rt5682_codec(&cros_ec_i2c_tunnel->ops, 0x1a);
+	if (rt5682_enable(rt5682)) {
+		printf("%s: error in enabling codec\n", __func__);
+		return;
+	}
+	if (rt5682_set_clock(rt5682, MCLK, LRCLK)) {
+		printf("%s: error in setting up clocks\n", __func__);
+		return;
+	}
+
+	KernGpio *i2s_lrclk = new_kern_fch_gpio_input(I2S_LRCLK_GPIO);
+	KernGpio *i2s2_data = new_kern_fch_gpio_output(I2S_DATA_GPIO, 0);
+	GpioI2s *i2s = new_gpio_i2s(
+			NULL,			/* Use RT5682 to give clks */
+			&i2s_lrclk->ops,	/* I2S Frame Sync GPIO */
+			&i2s2_data->ops,	/* I2S Data GPIO */
+			16000,			/* Sample rate */
+			2,			/* Channels */
+			0x1FFF);		/* Volume */
+	SoundRoute *sound_route = new_sound_route(&i2s->ops);
+
+	/*
+	 * Override gpio_i2s play() op with our own that disbles CPU boost
+	 * before GPIO bit-banging I2S.
+	 */
+	gpio_i2s_play = i2s->ops.play;
+	i2s->ops.play = amd_gpio_i2s_play;
+
+	KernGpio *spk_pa_en = new_kern_fch_gpio_output(EN_SPKR, 1);
+
+	/* Codec for Grunt, should work with Zork */
+	max98357aCodec *speaker_amp = new_max98357a_codec(&spk_pa_en->ops);
+
+	list_insert_after(&speaker_amp->component.list_node,
+			  &sound_route->components);
+
+	sound_set_ops(&sound_route->ops);
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
@@ -113,6 +184,8 @@ static int board_setup(void)
 	flag_replace(FLAG_PWRSW, cros_ec_power_btn_flag());
 
 	flash_set_ops(&new_mem_mapped_flash(FLASH_START, FLASH_SIZE)->ops);
+
+	audio_setup(cros_ec);
 
 	SdhciHost *sd = NULL;
 	pcidev_t pci_dev;
