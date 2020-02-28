@@ -84,7 +84,7 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 	if (fw_type == FIRMWARE_TYPE_AUTO_DETECT) {
 		if (ctx->flags & VB2_CONTEXT_RECOVERY_MODE)
 			fw_type = FIRMWARE_TYPE_RECOVERY;
-		if (ctx->flags & VB2_CONTEXT_DEVELOPER_MODE)
+		else if (ctx->flags & VB2_CONTEXT_DEVELOPER_MODE)
 			fw_type = FIRMWARE_TYPE_DEVELOPER;
 		else
 			fw_type = FIRMWARE_TYPE_NORMAL;
