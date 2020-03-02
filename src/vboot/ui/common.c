@@ -166,6 +166,65 @@ static vb2_error_t print_error_message(const char *str, const char *locale_code)
 	return rv;
 }
 
+static const struct rgb_color colors[] = {
+	[0x0] = { 0xff, 0xc0, 0xcb },	/* pink */
+	[0x1] = { 0xff, 0x00, 0x00 },	/* red */
+	[0x2] = { 0xff, 0xa5, 0x00 },	/* orange */
+	[0x3] = { 0xff, 0xff, 0x00 },	/* yellow */
+	[0x4] = { 0xa5, 0x2a, 0x2a },	/* brown */
+	[0x5] = { 0x80, 0x00, 0x00 },	/* maroon */
+	[0x6] = { 0x80, 0x80, 0x00 },	/* olive */
+	[0x7] = { 0x00, 0xff, 0x00 },	/* lime */
+	[0x8] = { 0x90, 0xee, 0x90 },	/* light green */
+	[0x9] = { 0x00, 0x80, 0x00 },	/* green */
+	[0xa] = { 0x00, 0xff, 0xff },	/* cyan */
+	[0xb] = { 0x00, 0x80, 0x80 },	/* teal */
+	[0xc] = { 0x00, 0x00, 0xff },	/* blue */
+	[0xd] = { 0x00, 0x00, 0x80 },	/* navy */
+	[0xe] = { 0xff, 0x00, 0xff },	/* magenta */
+	[0xf] = { 0x80, 0x00, 0x80 },	/* purple */
+};
+
+/*
+ * When we don't know how much of the drawing failed, draw colored stripes as a
+ * fallback so the screen can be identified in a pinch. Place the stripes at the
+ * very top of the screen to avoid covering up anything that was drawn
+ * successfully.
+ */
+static void draw_fallback_stripes(enum vb2_screen screen,
+				  uint32_t selected_item)
+{
+	int i, shift;
+	int32_t x, y;
+	const int32_t h = UI_FALLBACK_STRIPE_HEIGHT;
+	uint32_t digit;
+
+	/* stripe 1: reference color bar */
+	y = 0;
+	x = 0;
+	for (i = 0; i < ARRAY_SIZE(colors); i++) {
+		ui_draw_box(x, y, h, h, &colors[i], 0);
+		x += h;
+	}
+
+	/* stripe 2: screen id in hex encoding */
+	y += h;
+	x = 0;
+	for (shift = 3; shift >= 0; shift--) {  // Only display 4 digits
+		digit = (screen >> (shift * 4)) & 0xf;
+		ui_draw_box(x, y, h, h, &colors[digit], 0);
+		x += h;
+	}
+
+	/* stripe 3: selected_item by position */
+	y += h;
+	ui_draw_box(0, y, h * ARRAY_SIZE(colors), h, &colors[0xd], 0);
+	if (selected_item >= ARRAY_SIZE(colors))
+		return;
+	x = h * selected_item;
+	ui_draw_box(x, y, h, h, &colors[0x0], 0);
+}
+
 vb2_error_t ui_display_screen(struct ui_state *state,
 			      const struct ui_state *prev_state)
 {
@@ -197,6 +256,8 @@ vb2_error_t ui_display_screen(struct ui_state *state,
 		/* Print fallback message if drawing failed. */
 		if (screen->mesg)
 			ui_draw_textbox(screen->mesg, &y, 1);
+		/* Also draw colored stripes */
+		draw_fallback_stripes(screen->id, state->selected_item);
 	}
 	/* Disable screen dimming. */
 	if (error_body != NULL)

@@ -213,6 +213,5 @@ vb2_error_t vb2ex_display_ui(enum vb2_screen screen,
 
  fail:
 	has_prev_state = 0;
-	/* TODO(yupingso): Add fallback display when drawing fails. */
 	return rv;
 }

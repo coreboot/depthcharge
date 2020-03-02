@@ -146,6 +146,9 @@
 #define UI_BOX_BORDER_THICKNESS			2
 #define UI_BOX_BORDER_RADIUS			6
 
+/* For fallback colored stripes */
+#define UI_FALLBACK_STRIPE_HEIGHT		10
+
 /* Indicate width or height is automatically set based on the other value */
 #define UI_SIZE_AUTO				0
 /*
