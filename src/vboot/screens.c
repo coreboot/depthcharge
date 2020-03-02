@@ -136,7 +136,7 @@ static vb2_error_t load_archive(const char *name, struct directory **dest)
 	dir = cbfs_get_file_content(ro_cbfs, name, CBFS_TYPE_RAW, &size);
 	if (!dir || !size) {
 		printf("%s: failed to load %s\n", __func__, name);
-		return VBERROR_INVALID_BMPFV;
+		return VB2_ERROR_UI_INVALID_ARCHIVE;
 	}
 
 	/* convert endianness of archive header */
@@ -146,19 +146,19 @@ static vb2_error_t load_archive(const char *name, struct directory **dest)
 	/* validate the total size */
 	if (dir->size != size) {
 		printf("%s: archive size does not match\n", __func__);
-		return VBERROR_INVALID_BMPFV;
+		return VB2_ERROR_UI_INVALID_ARCHIVE;
 	}
 
 	/* validate magic field */
 	if (memcmp(dir->magic, CBAR_MAGIC, sizeof(CBAR_MAGIC))) {
 		printf("%s: invalid archive magic\n", __func__);
-		return VBERROR_INVALID_BMPFV;
+		return VB2_ERROR_UI_INVALID_ARCHIVE;
 	}
 
 	/* validate count field */
 	if (get_first_offset(dir) > dir->size) {
 		printf("%s: invalid count\n", __func__);
-		return VBERROR_INVALID_BMPFV;
+		return VB2_ERROR_UI_INVALID_ARCHIVE;
 	}
 
 	/* convert endianness of file headers */
@@ -243,7 +243,7 @@ static vb2_error_t draw(struct directory *dir, const char *image_name,
 
 	file = find_file_in_archive(dir, image_name);
 	if (!file)
-		return VBERROR_NO_IMAGE_PRESENT;
+		return VB2_ERROR_UI_MISSING_IMAGE;
 	bitmap = (uint8_t *)dir + file->offset;
 
 	struct scale pos = {
@@ -304,7 +304,7 @@ static vb2_error_t get_image_size(struct directory *dir, const char *image_name,
 
 	file = find_file_in_archive(dir, image_name);
 	if (!file)
-		return VBERROR_NO_IMAGE_PRESENT;
+		return VB2_ERROR_UI_MISSING_IMAGE;
 
 	struct scale dim = {
 		.x = { .n = *width, .d = VB_SCALE, },
@@ -372,7 +372,7 @@ static vb2_error_t get_text_width(int32_t height, const char *text,
 		int char_width;
 		char_filename = get_char_image_file(height, *text, &char_width);
 		if (!char_filename)
-			return VBERROR_NO_IMAGE_PRESENT;
+			return VB2_ERROR_UI_MISSING_IMAGE;
 		*width += char_width;
 		text++;
 	}
@@ -397,7 +397,7 @@ static vb2_error_t draw_text(const char *text, int32_t x, int32_t y,
 	while (*text) {
 		char_filename = get_char_image_file(height, *text, &char_width);
 		if (!char_filename)
-			return VBERROR_NO_IMAGE_PRESENT;
+			return VB2_ERROR_UI_MISSING_IMAGE;
 		RETURN_ON_ERROR(draw(font_graphics, char_filename,
 				     x, y, VB_SIZE_AUTO, height, pivot));
 		x += char_width;
