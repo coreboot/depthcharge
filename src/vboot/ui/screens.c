@@ -16,15 +16,32 @@
  * GNU General Public License for more details.
  */
 
+#include <libpayload.h>
 #include <vb2_api.h>
 
-#include "drivers/video/display.h"
 #include "vboot/ui.h"
 
-static vb2_error_t vboot_draw_blank(const struct ui_state *state)
+static vb2_error_t vboot_draw_blank(const struct ui_state *state,
+				    const struct ui_state *prev_state)
 {
 	clear_screen(&ui_color_bg);
 	return VB2_SUCCESS;
+}
+
+static vb2_error_t vboot_draw_firmware_sync(const struct ui_state *state,
+					    const struct ui_state *prev_state)
+{
+	/*
+	 * Locale cannot be changed during firmware sync because user input is
+	 * not accepted.
+	 */
+	const char *const desc[] = {
+		"firmware_sync_desc.bmp",
+	};
+
+	return ui_draw_content(state, prev_state, UI_ICON_TYPE_NONE,
+			       "firmware_sync_title.bmp",
+			       desc, ARRAY_SIZE(desc));
 }
 
 /*
@@ -39,6 +56,12 @@ static const struct ui_descriptor vboot_screens[] = {
 		.screen = VB2_SCREEN_BLANK,
 		.draw = vboot_draw_blank,
 		.mesg = NULL,
+	},
+	{
+		.screen = VB2_SCREEN_FIRMWARE_SYNC,
+		.draw = vboot_draw_firmware_sync,
+		.mesg = "Please do not power off your device.\n"
+			"Your system is applying a critical update.",
 	},
 };
 

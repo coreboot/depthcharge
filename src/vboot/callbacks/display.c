@@ -25,10 +25,19 @@ _Static_assert(CONFIG(MENU_UI), "MENU_UI must be set");
 _Static_assert(!CONFIG(LEGACY_MENU_UI), "LEGACY_MENU_UI not allowed");
 _Static_assert(!CONFIG(LEGACY_CLAMSHELL_UI), "LEGACY_CLAMSHELL_UI not allowed");
 
-vb2_error_t vb2ex_display_ui(enum vb2_screen screen, uint32_t locale)
+vb2_error_t vb2ex_display_ui(enum vb2_screen screen, uint32_t locale_id)
 {
 	vb2_error_t rv;
-	printf("%s: screen=%#x, locale=%u\n", __func__, screen, locale);
+	const struct ui_locale *locale = NULL;
+	printf("%s: screen=%#x, locale=%u\n", __func__, screen, locale_id);
+
+	rv = ui_get_locale_info(locale_id, &locale);
+	if (rv == VB2_ERROR_UI_INVALID_LOCALE) {
+		printf("Locale %u not found, falling back to locale 0",
+		       locale_id);
+		locale_id = 0;
+		rv = ui_get_locale_info(locale_id, &locale);
+	}
 
 	struct ui_state state = {
 		.screen = screen,
@@ -37,7 +46,9 @@ vb2_error_t vb2ex_display_ui(enum vb2_screen screen, uint32_t locale)
 	static struct ui_state prev_state;
 	static int has_prev_state = 0;
 
-	rv = ui_display_screen(&state, has_prev_state ? &prev_state : NULL);
+	if (rv == VB2_SUCCESS)
+		rv = ui_display_screen(&state,
+				       has_prev_state ? &prev_state : NULL);
 
 	if (rv) {
 		has_prev_state = 0;
@@ -61,5 +72,5 @@ vb2_error_t vb2ex_display_ui(enum vb2_screen screen, uint32_t locale)
 vb2_error_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale,
 			      const VbScreenData *data)
 {
-	return VB2_SUCCESS;
+	return vb2ex_display_ui(screen_type, locale);
 }

@@ -14,4 +14,5 @@
 depthcharge-$(CONFIG_MENU_UI) += archive.c
 depthcharge-$(CONFIG_MENU_UI) += common.c
 depthcharge-$(CONFIG_MENU_UI) += draw.c
+depthcharge-$(CONFIG_MENU_UI) += layout.c
 depthcharge-$(CONFIG_MENU_UI) += screens.c

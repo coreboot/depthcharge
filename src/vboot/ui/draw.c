@@ -21,10 +21,32 @@
 
 #include "vboot/ui.h"
 
-static vb2_error_t draw(const struct ui_bitmap *bitmap,
-			int32_t x, int32_t y, int32_t width, int32_t height,
-			uint32_t flags)
+static uint32_t reverse_pivot(uint32_t pivot) {
+	uint32_t left = pivot & PIVOT_H_LEFT;
+
+	/* Swap PIVOT_H_LEFT and PIVOT_H_RIGHT */
+	if (pivot & PIVOT_H_RIGHT)
+		pivot |= PIVOT_H_LEFT;
+	else
+		pivot &= ~PIVOT_H_LEFT;
+
+	if (left)
+		pivot |= PIVOT_H_RIGHT;
+	else
+		pivot &= ~PIVOT_H_RIGHT;
+
+	return pivot;
+}
+
+vb2_error_t ui_draw_bitmap(const struct ui_bitmap *bitmap,
+			   int32_t x, int32_t y, int32_t width, int32_t height,
+			   uint32_t flags, int reverse)
 {
+	if (reverse) {
+		x = UI_SCALE - x;
+		flags = reverse_pivot(flags);
+	}
+
 	struct scale pos = {
 		.x = { .n = x, .d = UI_SCALE, },
 		.y = { .n = y, .d = UI_SCALE, },
@@ -43,8 +65,21 @@ static vb2_error_t draw(const struct ui_bitmap *bitmap,
 	return VB2_SUCCESS;
 }
 
-static vb2_error_t get_image_size(const struct ui_bitmap *bitmap,
-				  int32_t *width, int32_t *height)
+/*
+ * Get bitmap size.
+ *
+ * If the input width is UI_SIZE_AUTO, it will be derived from the input height
+ * to keep the aspect ratio, and vice versa. If both the input width and height
+ * are UI_SIZE_AUTO, the original bitmap size will be returned.
+ *
+ * @param bitmap	Pointer to the bitmap struct.
+ * @param width		Width of the image to be calculated.
+ * @param height	Height of the image to be calculated.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+static vb2_error_t ui_get_bitmap_size(const struct ui_bitmap *bitmap,
+				      int32_t *width, int32_t *height)
 {
 	struct scale dim = {
 		.x = { .n = *width, .d = UI_SCALE, },
@@ -64,14 +99,21 @@ static vb2_error_t get_image_size(const struct ui_bitmap *bitmap,
 	return VB2_SUCCESS;
 }
 
+vb2_error_t ui_get_bitmap_width(const struct ui_bitmap *bitmap,
+				int32_t height, int32_t *width)
+{
+	*width = UI_SIZE_AUTO;
+	VB2_TRY(ui_get_bitmap_size(bitmap, width, &height));
+	return VB2_SUCCESS;
+}
+
 static vb2_error_t get_char_width(const char c, int32_t height,
 				  enum ui_char_style style,
 				  int32_t *width)
 {
 	struct ui_bitmap bitmap;
 	VB2_TRY(ui_get_char_bitmap(c, style, &bitmap));
-	*width = UI_SIZE_AUTO;
-	VB2_TRY(get_image_size(&bitmap, width, &height));
+	VB2_TRY(ui_get_bitmap_width(&bitmap, height, width));
 	return VB2_SUCCESS;
 }
 
@@ -100,8 +142,13 @@ vb2_error_t ui_draw_text(const char *text, int32_t x, int32_t y,
 			 int32_t height, uint32_t flags,
 			 enum ui_char_style style, int reverse)
 {
-	int32_t char_width, char_height;
+	int32_t char_width;
 	struct ui_bitmap bitmap;
+
+	if (reverse) {
+		x = UI_SCALE - x;
+		flags = reverse_pivot(flags);
+	}
 
 	if (flags & PIVOT_H_CENTER || flags & PIVOT_H_RIGHT) {
 		char_width = UI_SIZE_AUTO;
@@ -120,10 +167,9 @@ vb2_error_t ui_draw_text(const char *text, int32_t x, int32_t y,
 
 	while (*text) {
 		VB2_TRY(ui_get_char_bitmap(*text, style, &bitmap));
-		char_width = UI_SIZE_AUTO;
-		char_height = height;
-		VB2_TRY(get_image_size(&bitmap, &char_width, &char_height));
-		VB2_TRY(draw(&bitmap, x, y, UI_SIZE_AUTO, height, flags));
+		VB2_TRY(ui_get_bitmap_width(&bitmap, height, &char_width));
+		VB2_TRY(ui_draw_bitmap(&bitmap, x, y, UI_SIZE_AUTO, height,
+				       flags, 0));
 		x += char_width;
 		text++;
 	}
@@ -134,8 +180,12 @@ vb2_error_t ui_draw_text(const char *text, int32_t x, int32_t y,
 vb2_error_t ui_draw_rounded_box(int32_t x, int32_t y,
 				int32_t width, int32_t height,
 				const struct rgb_color *rgb,
-				uint32_t thickness, uint32_t radius)
+				uint32_t thickness, uint32_t radius,
+				int reverse)
 {
+	if (reverse)
+		x = UI_SCALE - x - width;
+
 	struct scale pos_rel = {
 		.x = { .n = x, .d = UI_SCALE },
 		.y = { .n = y, .d = UI_SCALE },
@@ -159,4 +209,12 @@ vb2_error_t ui_draw_rounded_box(int32_t x, int32_t y,
 		return VB2_ERROR_UI_DRAW_FAILURE;
 
 	return VB2_SUCCESS;
+}
+
+vb2_error_t ui_draw_box(int32_t x, int32_t y,
+			int32_t width, int32_t height,
+			const struct rgb_color *rgb,
+			int reverse)
+{
+	return ui_draw_rounded_box(x, y, width, height, rgb, 0, 0, reverse);
 }

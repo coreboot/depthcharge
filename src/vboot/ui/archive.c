@@ -24,6 +24,9 @@
 #include "drivers/flash/cbfs.h"
 #include "vboot/ui.h"
 
+#define UI_LOCALE_CODE_MAX_LEN 8
+#define UI_CBFS_FILENAME_MAX_LEN 256
+
 static struct cbfs_media *get_ro_cbfs(void)
 {
 	static struct cbfs_media *cached_ro_cbfs;
@@ -91,6 +94,10 @@ static const struct locale_data *get_locale_data(void)
 		if (!code || !strlen(code)) {
 			UI_WARN("Unable to parse code from line: %s\n", line);
 			continue;
+		} else if (strlen(code) > UI_LOCALE_CODE_MAX_LEN) {
+			UI_WARN("Locale code %s longer than %d, skipping\n",
+				code, UI_LOCALE_CODE_MAX_LEN);
+			continue;
 		}
 		rtl = strsep(&line, ",");
 		if (!rtl || !strlen(rtl)) {
@@ -121,18 +128,21 @@ static const struct locale_data *get_locale_data(void)
 	return &cached_locales;
 }
 
-const struct ui_locale *ui_get_locale_info(uint32_t locale) {
+vb2_error_t ui_get_locale_info(uint32_t locale_id,
+			       struct ui_locale const **locale)
+{
 	const struct locale_data *locale_data = get_locale_data();
 
 	if (!locale_data)
-		return NULL;
+		return VB2_ERROR_UI_INVALID_ARCHIVE;
 
-	if (locale >= locale_data->count) {
-		UI_ERROR("Unsupported locale %u\n", locale);
-		return NULL;
+	if (locale_id >= locale_data->count) {
+		UI_ERROR("Unsupported locale %u\n", locale_id);
+		return VB2_ERROR_UI_INVALID_LOCALE;
 	}
 
-	return &locale_data->locales[locale];
+	*locale = &locale_data->locales[locale_id];
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t load_archive(const char *name, struct directory **dest)
@@ -205,15 +215,14 @@ static vb2_error_t get_graphic_archive(struct directory **dest) {
 }
 
 /* Load locale-dependent graphics. */
-static vb2_error_t get_localized_graphic_archive(uint32_t locale,
+static vb2_error_t get_localized_graphic_archive(const char *locale_code,
 						 struct directory **dest) {
 	static struct directory *cache;
-	static uint32_t cached_locale;
-	const struct locale_data *locale_data;
-	char name[256];
+	static char cached_code[UI_LOCALE_CODE_MAX_LEN + 1];
+	char name[UI_CBFS_FILENAME_MAX_LEN + 1];
 
 	if (cache) {
-		if (cached_locale == locale) {
+		if (!strncmp(cached_code, locale_code, sizeof(cached_code))) {
 			*dest = cache;
 			return VB2_SUCCESS;
 		}
@@ -222,14 +231,9 @@ static vb2_error_t get_localized_graphic_archive(uint32_t locale,
 		cache = NULL;
 	}
 
-	locale_data = get_locale_data();
-	if (!locale_data)
-		return VB2_ERROR_UI_INVALID_ARCHIVE;
-
-	snprintf(name, sizeof(name), "locale_%s.bin",
-		 locale_data->locales[locale].code);
+	snprintf(name, sizeof(name), "locale_%s.bin", locale_code);
 	VB2_TRY(load_archive(name, &cache));
-	cached_locale = locale;
+	strncpy(cached_code, locale_code, sizeof(cached_code) - 1);
 	*dest = cache;
 
 	return VB2_SUCCESS;
@@ -284,11 +288,12 @@ vb2_error_t ui_get_bitmap(const char *image_name, struct ui_bitmap *bitmap)
 	return find_bitmap_in_archive(dir, image_name, bitmap);
 }
 
-vb2_error_t ui_get_localized_bitmap(const char *image_name, uint32_t locale,
+vb2_error_t ui_get_localized_bitmap(const char *image_name,
+				    const char *locale_code,
 				    struct ui_bitmap *bitmap)
 {
 	struct directory *dir;
-	VB2_TRY(get_localized_graphic_archive(locale, &dir));
+	VB2_TRY(get_localized_graphic_archive(locale_code, &dir));
 	return find_bitmap_in_archive(dir, image_name, bitmap);
 }
 

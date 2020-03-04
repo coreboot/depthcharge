@@ -45,6 +45,37 @@
  */
 #define UI_SCALE				1000
 
+/* Margins for all screens. Nothing should be drawn within the margin. */
+#define UI_MARGIN_TOP				30
+#define UI_MARGIN_BOTTOM			70
+#define UI_MARGIN_LEFT				50
+#define UI_MARGIN_RIGHT				50
+
+/* For language item */
+#define UI_LANG_BOX_HEIGHT			40
+#define UI_LANG_MARGIN_BOTTOM			120
+
+/* For screen icon */
+#define UI_ICON_HEIGHT				45
+#define UI_ICON_MARGIN_BOTTOM			50
+
+/* For title and descriptions */
+#define UI_TITLE_TEXT_HEIGHT			56
+#define UI_TITLE_MARGIN_BOTTOM			20
+#define UI_DESC_TEXT_HEIGHT			30
+#define UI_DESC_TEXT_LINE_SPACING		5
+
+/* For footer */
+#define UI_FOOTER_HEIGHT			108
+#define UI_FOOTER_COL1_MARGIN_RIGHT		20
+#define UI_FOOTER_COL2_PARA_SPACING		16
+#define UI_FOOTER_COL2_MARGIN_RIGHT		40
+#define UI_FOOTER_COL3_MARGIN_LEFT		40
+#define UI_FOOTER_COL3_LINE_SPACING		10
+#define UI_FOOTER_COL3_ICON_MARGIN_TOP		20
+#define UI_FOOTER_COL3_ICON_HEIGHT		30
+#define UI_FOOTER_COL3_ICON_SPACING		5
+
 /*
  * UI_BOX_* constants define a large textbox taking up the width of the screen.
  * They are used for
@@ -60,9 +91,16 @@
 
 /* Indicate width or height is automatically set based on the other value */
 #define UI_SIZE_AUTO				0
+/*
+ * Minimum size that is guaranteed to show up as at least 1 pixel on the screen,
+ * provided that the canvas resolution is at least 500 (UI_SCALE / 2). Pixels
+ * may be dropped on devices with screen resolution 640x480.
+ */
+#define UI_SIZE_MIN				2
 
-static const struct rgb_color ui_color_bg	= { 0x20, 0x21, 0x24 };
-static const struct rgb_color ui_color_fg	= { 0xcc, 0xcc, 0xcc };
+static const struct rgb_color ui_color_bg		= { 0x20, 0x21, 0x24 };
+static const struct rgb_color ui_color_fg		= { 0xcc, 0xcc, 0xcc };
+static const struct rgb_color ui_color_separator	= { 0x43, 0x44, 0x46 };
 
 struct ui_bitmap {
 	const void *data;
@@ -80,11 +118,17 @@ struct ui_locale {
 /*
  * Get locale information.
  *
- * This function will load the locale data on the first call.
+ * This function will load the locale data from CBFS only on the first call.
+ * Subsequent calls with the same locale_id are guaranteed to set an identical
+ * pointer.
  *
- * @return locale info on success, NULL on error or if the locale doesn't exist.
+ * @param locale_id	Locale id.
+ * @param locale	Pointer to a ui_locale struct pointer to be set.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
  */
-const struct ui_locale *ui_get_locale_info(uint32_t locale);
+vb2_error_t ui_get_locale_info(uint32_t locale_id,
+			       struct ui_locale const **locale);
 
 /*
  * Get generic (locale-independent) bitmap.
@@ -100,12 +144,13 @@ vb2_error_t ui_get_bitmap(const char *image_name, struct ui_bitmap *bitmap);
  * Get locale-dependent bitmap.
  *
  * @param image_name	Image file name.
- * @param locale	Locale.
+ * @param locale_code	Language code of the locale.
  * @param bitmap	Bitmap struct to be filled.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t ui_get_localized_bitmap(const char *image_name, uint32_t locale,
+vb2_error_t ui_get_localized_bitmap(const char *image_name,
+				    const char *locale_code,
 				    struct ui_bitmap *bitmap);
 
 /* Character style. */
@@ -128,6 +173,38 @@ vb2_error_t ui_get_char_bitmap(const char c, enum ui_char_style style,
 
 /******************************************************************************/
 /* draw.c */
+
+/*
+ * Draw bitmap.
+ *
+ * @param bitmap	Bitmap to draw.
+ * @param x		x-coordinate of the top-left corner.
+ * @param y		y-coordicate of the top-left corner.
+ * @param width		Width of the image.
+ * @param height	Height of the image.
+ * @param flags		Flags passed to draw_bitmap() in libpayload.
+ * @param reverse	Whether to reverse the x-coordinate relative to the
+ *			canvas.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_draw_bitmap(const struct ui_bitmap *bitmap,
+			   int32_t x, int32_t y, int32_t width, int32_t height,
+			   uint32_t flags, int reverse);
+
+/*
+ * Get bitmap width.
+ *
+ * @param bitmap	Pointer to the bitmap struct.
+ * @param height	Height of the image.
+ * @param width		Width of the image, calculated from the height to keep
+ *			the aspect ratio. When height is zero, the original
+ *			bitmap width will be returned.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_get_bitmap_width(const struct ui_bitmap *bitmap,
+				int32_t height, int32_t *width);
 
 /*
  * Get text width.
@@ -171,28 +248,75 @@ vb2_error_t ui_draw_text(const char *text, int32_t x, int32_t y,
  * @param rgb		Color of the box.
  * @param thickness	Thickness of the border of the box.
  * @param radius	Radius of the rounded corners.
+ * @param reverse	Whether to reverse the x-coordinate relative to the
+ *			canvas.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
 vb2_error_t ui_draw_rounded_box(int32_t x, int32_t y,
 				int32_t width, int32_t height,
 				const struct rgb_color *rgb,
-				uint32_t thickness, uint32_t radius);
+				uint32_t thickness, uint32_t radius,
+				int reverse);
+
+/*
+ * Draw a solid box.
+ *
+ * @param x		x-coordinate of the top-left corner.
+ * @param y		y-coordinate of the top-left corner.
+ * @param width		Width of the box.
+ * @param height	Height of the box.
+ * @param rgb		Color of the box.
+ * @param reverse	Whether to reverse the x-coordinate relative to the
+ *			canvas.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_draw_box(int32_t x, int32_t y,
+			int32_t width, int32_t height,
+			const struct rgb_color *rgb,
+			int reverse);
 
 /******************************************************************************/
-/* screens.c */
+/* layout.c */
 
 /* UI state for display. */
 struct ui_state {
 	enum vb2_screen screen;
-	uint32_t locale;
+	const struct ui_locale *locale;
 };
+
+/* Icon type. */
+enum ui_icon_type {
+	UI_ICON_TYPE_NONE = 0,
+	UI_ICON_TYPE_INFO,
+};
+
+/*
+ * Draw content of the screen.
+ *
+ * @param state			UI state.
+ * @param icon			Type of the icon.
+ * @param title			Screen title.
+ * @param desc			List of screen descriptions.
+ * @param desc_size		Size of the array 'desc'.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_draw_content(const struct ui_state *state,
+			    const struct ui_state *prev_state,
+			    enum ui_icon_type icon, const char *title,
+			    const char *const desc[], size_t desc_size);
+
+/******************************************************************************/
+/* screens.c */
 
 struct ui_descriptor {
 	/* Screen id */
 	enum vb2_screen screen;
 	/* Drawing function */
-	vb2_error_t (*draw)(const struct ui_state *state);
+	vb2_error_t (*draw)(const struct ui_state *state,
+			    const struct ui_state *prev_state);
 	/* Fallback message */
 	const char *mesg;
 };
