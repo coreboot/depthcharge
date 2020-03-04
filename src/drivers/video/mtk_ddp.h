@@ -20,7 +20,7 @@
 
 #include "drivers/video/display.h"
 
-DisplayOps *new_mtk_display(int (*backlight_update)
+DisplayOps *new_mtk_display(int (*backlight_update_fn)
 			    (DisplayOps *me, uint8_t enable),
 			    uintptr_t ovl_base, int lanes);
 

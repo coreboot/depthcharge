@@ -55,7 +55,7 @@ static int mtk_display_stop(DisplayOps *me)
 	return 0;
 }
 
-DisplayOps *new_mtk_display(int (*backlight_update)
+DisplayOps *new_mtk_display(int (*backlight_update_fn)
 			    (DisplayOps *me, uint8_t enable),
 			    uintptr_t ovl_base, int lanes)
 {
@@ -65,8 +65,8 @@ DisplayOps *new_mtk_display(int (*backlight_update)
 	display->ops.stop = mtk_display_stop;
 	display->ovl_base = ovl_base;
 	display->lanes = lanes;
-	if (backlight_update)
-		display->ops.backlight_update = backlight_update;
+	if (backlight_update_fn)
+		display->ops.backlight_update = backlight_update_fn;
 
 	return &display->ops;
 }

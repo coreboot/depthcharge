@@ -105,7 +105,6 @@ static const struct uip_eth_addr broadcast_ethaddr =
   {{0xff,0xff,0xff,0xff,0xff,0xff}};
 
 static struct arp_entry arp_table[CONFIG_UIP_ARPTAB_SIZE];
-static uip_ipaddr_t ipaddr;
 static uint8_t i, c;
 
 static uint8_t arptime;
@@ -364,6 +363,7 @@ uip_arp_arpin(void)
 void
 uip_arp_out(void)
 {
+  static uip_ipaddr_t ipaddr;
   struct arp_entry *tabptr = arp_table;
   
   /* Find the destination IP address in the ARP table and construct

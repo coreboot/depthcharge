@@ -62,11 +62,11 @@ int boot_x86_linux(struct boot_params *boot_params, char *cmd_line, void *entry)
 	int i;
 	for (i = 0; i < num_entries; i++) {
 		struct memrange *memrange = &lib_sysinfo.memrange[i];
-		struct e820entry *entry = &boot_params->e820_map[i];
+		struct e820entry *e820_entry = &boot_params->e820_map[i];
 
-		entry->addr = memrange->base;
-		entry->size = memrange->size;
-		entry->type = memrange->type;
+		e820_entry->addr = memrange->base;
+		e820_entry->size = memrange->size;
+		e820_entry->type = memrange->type;
 	}
 
 	// Loader type is undefined.

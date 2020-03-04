@@ -57,10 +57,10 @@
 static int anx7688_wait_fw(struct Anx7688 *me, int *crc_ok)
 {
 	uint8_t status;
-	uint64_t start = timer_us(0);
+	uint64_t start_time = timer_us(0);
 
 	do {
-		if (timer_us(start) > WAIT_TIMEOUT_US) {
+		if (timer_us(start_time) > WAIT_TIMEOUT_US) {
 			printf("%s: Timeout\n", __func__);
 			return -1;
 		}
@@ -75,7 +75,7 @@ static int anx7688_wait_fw(struct Anx7688 *me, int *crc_ok)
 		*crc_ok = ((status & 0x70) == 0x70);
 
 	printf("%s: Waited for %lld us (%02x).\n", __func__,
-		timer_us(start), status);
+		timer_us(start_time), status);
 
 	return 0;
 }
@@ -102,7 +102,7 @@ static int verify_block(I2cOps *bus, int address, const uint8_t *block)
 {
 	uint8_t status;
 	uint8_t buffer[16];
-	uint64_t start;
+	uint64_t start_time;
 
 	printf("V");
 
@@ -112,9 +112,9 @@ static int verify_block(I2cOps *bus, int address, const uint8_t *block)
 	if (i2c_writeblock(bus, CHIP_FW, 0xE0, cmdbuf, sizeof(cmdbuf)) < 0)
 		return -1;
 
-	start = timer_us(0);
+	start_time = timer_us(0);
 	do {
-		if (timer_us(start) > RW_TIMEOUT_US) {
+		if (timer_us(start_time) > RW_TIMEOUT_US) {
 			printf("%s: Timeout\n", __func__);
 			return -1;
 		}
@@ -135,7 +135,7 @@ static int verify_block(I2cOps *bus, int address, const uint8_t *block)
 static int write_block(I2cOps *bus, int address, const uint8_t *block)
 {
 	uint8_t status;
-	uint64_t start;
+	uint64_t start_time;
 
 	printf("W");
 
@@ -150,9 +150,9 @@ static int write_block(I2cOps *bus, int address, const uint8_t *block)
 	if (i2c_writeblock(bus, CHIP_FW, 0xD0, cmdbuf, sizeof(cmdbuf)) < 0)
 		return -1;
 
-	start = timer_us(0);
+	start_time = timer_us(0);
 	do {
-		if (timer_us(start) > RW_TIMEOUT_US) {
+		if (timer_us(start_time) > RW_TIMEOUT_US) {
 			printf("%s: Timeout\n", __func__);
 			return -1;
 		}
@@ -189,11 +189,11 @@ static uint16_t anx7688_verify(struct Anx7688 *me)
 {
 	uint16_t status;
 	uint16_t version;
-	uint64_t start = timer_us(0);
+	uint64_t start_time = timer_us(0);
 
 	/* Wait for version to appear. */
 	do {
-		if (timer_us(start) > VERSION_TIMEOUT_US) {
+		if (timer_us(start_time) > VERSION_TIMEOUT_US) {
 			printf("%s: Timeout waiting for version\n", __func__);
 			return 0x0000;
 		}
@@ -205,7 +205,7 @@ static uint16_t anx7688_verify(struct Anx7688 *me)
 
 	/* Read load and CRC32 status */
 	while(1) {
-		if (timer_us(start) > WAIT_TIMEOUT_US) {
+		if (timer_us(start_time) > WAIT_TIMEOUT_US) {
 			printf("%s: Timeout waiting for CRC32\n", __func__);
 			return 0x0000;
 		}
@@ -263,7 +263,7 @@ static vb2_error_t anx7688_update(struct Anx7688 *me,
 	int rawlen = len - offset;
 
 	printf("Updating ANX7688 firmware...\n");
-	uint64_t start = timer_us(0);
+	uint64_t start_time = timer_us(0);
 
 	/* Lock ANX7688. */
 	switch (cros_ec_pd_control(ANX7688_PD_ID, PD_SUSPEND)) {
@@ -342,7 +342,7 @@ out:
 	}
 
 	printf("ANX7688 FW updated successfully (%lld ms)!\n",
-	       timer_us(start)/1000);
+	       timer_us(start_time)/1000);
 	return VB2_SUCCESS;
 }
 

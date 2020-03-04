@@ -359,8 +359,6 @@ static void mmc_boot_setup_data_transfer(MmcCtrlr *ctrlr, MmcData *data)
 	       MMC_BOOT_MCI_DATA_LENGTH(mmc_host->mci_base));
 
 	if (data->flags & MMC_DATA_READ) {
-		uint32_t mmc_reg;
-
 		/*
 		 * Set appropriate fields and write the MCI_DATA_CTL register.
 		 * Set ENABLE bit to enable the data transfer.
