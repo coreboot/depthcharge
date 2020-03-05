@@ -40,7 +40,7 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 
 	/* Never free vbsd, so it sticks around until dt_flatten() is called. */
 	uint8_t *vbsd = malloc(VB2_VBSD_SIZE);
-	vb2api_export_vbsd(ctx, flag_fetch(FLAG_WPSW), vbsd);
+	vb2api_export_vbsd(ctx, vbsd);
 	dt_add_bin_prop(node, "vboot-shared-data", vbsd, VB2_VBSD_SIZE);
 
 	dt_add_string_prop(node, "compatible", "chromeos-firmware");

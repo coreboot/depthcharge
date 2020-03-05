@@ -37,7 +37,7 @@ int crossystem_setup(int firmware_type)
 	int size;
 
 	/* Write VbSharedDataHeader to ACPI vdat for userspace access. */
-	vb2api_export_vbsd(ctx, flag_fetch(FLAG_WPSW), acpi_table->vdat);
+	vb2api_export_vbsd(ctx, acpi_table->vdat);
 
 	acpi_table->boot_reason = BOOT_REASON_OTHER;
 
@@ -86,8 +86,6 @@ int crossystem_setup(int firmware_type)
 	}
 
 	uint16_t chsw = 0;
-	if (flag_fetch(FLAG_WPSW))
-		chsw |= CHSW_FIRMWARE_WP;
 	if (ctx->flags & VB2_CONTEXT_FORCE_RECOVERY_MODE)
 		chsw |= CHSW_RECOVERY_X86;
 	if (ctx->flags & VB2_CONTEXT_DEVELOPER_MODE)
