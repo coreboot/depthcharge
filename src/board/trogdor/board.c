@@ -1,7 +1,7 @@
 /*
- * This file is part of the coreboot project.
+* This file is part of the coreboot project.
  *
- * Copyright (C) 2019, The Linux Foundation.  All rights reserved.
+ * Copyright (C) 2019-20, The Linux Foundation.  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -35,6 +35,9 @@
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/route.h"
 #include "drivers/sound/sound.h"
+#include "drivers/video/ec_pwm_backlight.h"
+#include "drivers/video/display.h"
+#include "drivers/video/sc7180.h"
 
 #define SDC1_HC_BASE          0x7C4000
 #define SDC1_TLMM_CFG_ADDR    0x3D7A000
@@ -55,6 +58,23 @@ static int trogdor_tpm_irq_status(void)
 		tpm_int = sysinfo_lookup_gpio("TPM interrupt", 1,
 					new_sc7180_gpio_latched_from_coreboot);
 	return gpio_get(tpm_int);
+}
+
+static int init_display_ops(void)
+{
+	if (lib_sysinfo.framebuffer.physical_address == 0) {
+		printf("%s: No framebuffer provided by coreboot\n", __func__);
+		return -1;
+	}
+
+	GpioOps *backlight = NULL;
+
+	if (CONFIG(DRIVER_VIDEO_EC_PWM_BACKLIGHT))
+		backlight = new_ec_pwm_backlight();
+
+	display_set_ops(new_sc7180_display(backlight));
+
+	return 0;
 }
 
 static int board_setup(void)
@@ -152,6 +172,10 @@ static int board_setup(void)
 					  &sound->components);
 
 	sound_set_ops(&sound->ops);
+
+	if (CONFIG(DRIVER_VIDEO_SC7180))
+		if (init_display_ops() != 0)
+			printf("Failed to initialize display ops!\n");
 
 	return 0;
 }
