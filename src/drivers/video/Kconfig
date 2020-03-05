@@ -58,3 +58,7 @@ config DRIVER_VIDEO_ARCTICSAND_BACKLIGHT
 config DRIVER_VIDEO_LP5562
 	bool "LP5562 LED driver"
 	default n
+
+config DRIVER_VIDEO_SC7180
+	bool "sc7180 video settings"
+	default n
