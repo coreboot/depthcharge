@@ -33,28 +33,28 @@ struct gpio_community {
 static const struct gpio_community communities[] = {
 	{
 		.port_id = PCH_PCR_PID_GPIOCOM0,
-		.min = GPIO_RSVD_0,
-		.max = GPP_R7,
-	}, /* GPP_B, GPP_A, GPP_S, GPP_R */
+		.min = GPIO_COM0_START,
+		.max = GPIO_COM0_END,
+	}, /* GPP_F, GPP_B, GPP_A, GPP_S, GPP_R */
 	{
 		.port_id = PCH_PCR_PID_GPIOCOM1,
-		.min = GPP_H0,
-		.max = GPP_C23,
+		.min = GPIO_COM1_START,
+		.max = GPIO_COM1_END,
 	}, /* GPP_H, GPP_D, GPP_C */
 	{
 		.port_id = PCH_PCR_PID_GPIOCOM2,
-		.min = GPD0,
-		.max = GPIO_RSVD_17,
+		.min = GPIO_COM2_START,
+		.max = GPIO_COM2_END,
 	}, /* GPD */
 	{
 		.port_id = PCH_PCR_PID_GPIOCOM4,
-		.min = GPIO_RSVD_18,
-		.max = GPIO_RSVD_36,
+		.min = GPIO_COM4_START,
+		.max = GPIO_COM4_END,
 	}, /* GPP_E */
 	{
 		.port_id = PCH_PCR_PID_GPIOCOM5,
-		.min = GPP_G0,
-		.max = GPP_G7,
+		.min = GPIO_COM5_START,
+		.max = GPIO_COM5_END,
 	}, /* GPP G */
 };
 
