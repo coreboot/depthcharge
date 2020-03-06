@@ -43,8 +43,3 @@ uint32_t secdata_fwmp_read(struct vb2_context *ctx)
 	ctx->flags |= VB2_CONTEXT_NO_SECDATA_FWMP;
 	return TPM_SUCCESS;
 }
-
-int tpm_get_boot_mode(uint8_t *boot_mode)
-{
-	return TPM_E_NO_SUCH_COMMAND;
-}
