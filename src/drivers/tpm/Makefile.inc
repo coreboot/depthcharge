@@ -11,7 +11,11 @@
 ## GNU General Public License for more details.
 ##
 
+ifneq ($(CONFIG_MOCK_TPM),)
+depthcharge-$(CONFIG_MOCK_TPM) += mocked_tpm.c
+else
 depthcharge-$(CONFIG_DRIVER_TPM) += tpm.c
+endif
 depthcharge-$(CONFIG_DRIVER_TPM) += tpm_utils.c
 depthcharge-$(CONFIG_DRIVER_TPM_CR50_I2C) += cr50_i2c.c
 depthcharge-$(CONFIG_DRIVER_TPM_CR50_SWITCHES) += cr50_switches.c
