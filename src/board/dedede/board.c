@@ -7,6 +7,8 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "drivers/bus/i2s/cavs-regs.h"
+#include "drivers/bus/i2s/intel_common/max98357a.h"
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/cros/lpc.h"
@@ -16,6 +18,9 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
 #include "drivers/soc/jasperlake.h"
+#include "drivers/sound/i2s.h"
+#include "drivers/sound/max98357a.h"
+#include "drivers/sound/route.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
 #include "drivers/tpm/spi.h"
@@ -29,6 +34,12 @@
 #define EMMC_SD_CLOCK_MIN       400000
 #define EMMC_CLOCK_MAX          200000000
 #define SD_CLOCK_MAX		52000000
+
+#define AUD_VOLUME		4000
+#define AUD_BITDEPTH		16
+#define AUD_SAMPLE_RATE		48000
+#define EN_SPK_PIN		GPP_D17
+#define AUD_NUM_CHANNELS	2
 
 static int cr50_irq_status(void)
 {
@@ -83,6 +94,23 @@ static int board_setup(void)
 			EMMC_SD_CLOCK_MIN, SD_CLOCK_MAX);
 	list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
 			&removable_block_dev_controllers);
+
+	/* Audio Beep Support */
+	GpioOps *spk_en = &new_jasperlake_gpio_output(EN_SPK_PIN, 0)->ops;
+	/* Use common i2s settings */
+	I2s *i2s = new_i2s_structure(&max98357a_settings, AUD_BITDEPTH, spk_en,
+				     SSP_I2S1_START_ADDRESS);
+	I2sSource *i2s_source = new_i2s_source(&i2s->ops, AUD_SAMPLE_RATE,
+					       AUD_NUM_CHANNELS, AUD_VOLUME);
+
+	/* Connect the Codec to the I2S source */
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+	/* Re-use max98357aCodec for max98360a */
+	max98357aCodec *speaker_amp = new_max98357a_codec(spk_en);
+
+	list_insert_after(&speaker_amp->component.list_node,
+			  &sound_route->components);
+	sound_set_ops(&sound_route->ops);
 
 	return 0;
 }
