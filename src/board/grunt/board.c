@@ -214,9 +214,10 @@ static int board_setup(void)
 
 	/* Treeya variant use anx3447 which do not have on board OCM and does
 	 * not support firmware update. Treeya && Treeya360 sku id range is:
-	 * 0xa0 - 0xaf.
+	 * 0xa0 - 0xaf. Nuwani and Nuwani360 sku id range is: 0xd0 - 0xdf
 	 */
-	if ((lib_sysinfo.sku_id < 0xa0) || (lib_sysinfo.sku_id > 0xaf)) {
+	if ((lib_sysinfo.sku_id < 0xa0) || (lib_sysinfo.sku_id > 0xaf) ||
+	(lib_sysinfo.sku_id < 0xd0) || (lib_sysinfo.sku_id > 0xdf)) {
 		cros_ec_i2c_tunnel =
 			new_cros_ec_tunnel_i2c(cros_ec, EC_I2C_PORT_ANX3429);
 		Anx3429 *anx3429 =
