@@ -10,14 +10,14 @@ SCRIPT_DIR="$(dirname "$SCRIPT")"
 FIRST_ASCII_GLYPH="32" # space
 LAST_ASCII_GLYPH="127" # delete
 if [ -z "${MENU_UI}" ]; then
-  COLOR="#505050"
+  FGCOLOR="#505050"
+  FGCOLOR_DARK="$FGCOLOR"
   BGCOLOR="#ffffff"
-  FOOTER_COLOR="$COLOR"
   FONT="Noto Sans"
 else
-  COLOR="#cccccc"
+  FGCOLOR="#cccccc"
+  FGCOLOR_DARK="#9aa0a6"
   BGCOLOR="#202124"
-  FOOTER_COLOR="#9aa0a6"
   FONT="Noto Sans Mono"
 fi
 MARGIN="3"
@@ -30,10 +30,10 @@ die() {
 main() {
   [ "$#" = "1" ] || die "Usage: $0 output_dir"
   local output="$1"
-  local regular_output="$output/regular"
-  local footer_output="$output/footer"
-  mkdir -p "$regular_output"
-  mkdir -p "$footer_output"
+  local txt_dir_regular="$output/regular"
+  local txt_dir_dark="$output/dark"
+  mkdir -p "$txt_dir_regular"
+  mkdir -p "$txt_dir_dark"
 
   local glyph="$FIRST_ASCII_GLYPH"
   local c=''
@@ -43,8 +43,8 @@ main() {
   while [[ "$glyph"  != "$LAST_ASCII_GLYPH" ]]; do
     c=$(printf "\x$(printf %x $glyph)")
     name="idx$(printf "%03d" $glyph)_$(printf "%x" $glyph)"
-    echo "$c" >"$regular_output/$name.txt"
-    echo "$c" >"$footer_output/$name-footer.txt"
+    echo "$c" >"$txt_dir_regular/$name.txt"
+    echo "$c" >"$txt_dir_dark/$name-dark.txt"
     glyph=$((glyph + 1))
   done
 
@@ -52,16 +52,16 @@ main() {
 
   echo "Converting glyph images..."
 
-  # proportional font
-  "$SCRIPT_DIR/text_to_png_svg" --font="$FONT" --color="$COLOR" \
+  "$SCRIPT_DIR/text_to_png_svg" --font="$FONT" --color="$FGCOLOR" \
     --bgcolor="$BGCOLOR" --margin="$MARGIN 0" --outdir="$output" \
-    $fontsize "$regular_output/*.txt"
+    $fontsize "$txt_dir_regular/*.txt"
 
-  # Footer uses different color in MENU_UI
+  # MENU_UI needs a different set of fonts with darker colors
   if [ ! -z "${MENU_UI}" ]; then
-    "$SCRIPT_DIR/text_to_png_svg" --font="$FONT" --color="$FOOTER_COLOR" \
-      --bgcolor="$BGCOLOR" --margin="$MARGIN 0" --outdir="$output" \
-      $fontsize "$footer_output/*.txt"
+    "$SCRIPT_DIR/text_to_png_svg" --font="$FONT" \
+      --color="$FGCOLOR_DARK" --bgcolor="$BGCOLOR" \
+      --margin="$MARGIN 0" --outdir="$output" \
+      $fontsize "$txt_dir_dark/*.txt"
   fi
 }
 
