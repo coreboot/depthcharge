@@ -194,6 +194,22 @@ static DisplayOps grunt_display_ops = {
 	.backlight_update = &grunt_backlight_update,
 };
 
+int is_treeya(uint32_t id)
+{
+	if ((id < 0xa0) || (id > 0xaf))
+		return 0;
+	else
+		return 1;
+}
+
+int is_nuwani(uint32_t id)
+{
+	if ((id < 0xd0) || (id > 0xdf))
+		return 0;
+	else
+		return 1;
+}
+
 static int board_setup(void)
 {
 	CrosECTunnelI2c *cros_ec_i2c_tunnel;
@@ -217,8 +233,7 @@ static int board_setup(void)
 	 * not support firmware update. Treeya && Treeya360 sku id range is:
 	 * 0xa0 - 0xaf. Nuwani and Nuwani360 sku id range is: 0xd0 - 0xdf
 	 */
-	if ((lib_sysinfo.sku_id < 0xa0) || (lib_sysinfo.sku_id > 0xaf) ||
-	(lib_sysinfo.sku_id < 0xd0) || (lib_sysinfo.sku_id > 0xdf)) {
+	if (!is_treeya(lib_sysinfo.sku_id) && !is_nuwani(lib_sysinfo.sku_id)) {
 		cros_ec_i2c_tunnel =
 			new_cros_ec_tunnel_i2c(cros_ec, EC_I2C_PORT_ANX3429);
 		Anx3429 *anx3429 =
