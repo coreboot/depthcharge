@@ -1,0 +1,4 @@
+Please do not power off your device
+Your system is applying a critical update.
+Please do not touch the touchpad
+Touchpad firmware updating... this may take a few minutes.

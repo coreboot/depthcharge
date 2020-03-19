@@ -1,148 +1,40 @@
-﻿# Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
+# Copyright 2020 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-locales: [ ar, bg, ca, cs, da, de, el, en, es, es-419, et, fa, fi, fil, fr,
-           he, hi, hr, hu, id, it, ja, ko, lt, lv, ms, nl, nb, pl, pt-BR,
-           pt-PT, ro, ru, sk, sl, sr, sv, th, tr, uk, vi, zh-CN, zh-TW,
-           bn, gu, kn, ml, mr, ta, te]
+# TODO(b/144969853): Support all locales for MENU_UI.
+locales: [ en ]
 
 inputs:
-  # The format for each line in input locale text file.
-  - missing        #01 Chrome OS is missing or damaged.
-  - insert         #02 Please insert a recovery USB stick or SD card.
-  - insert_usb     #03 Please insert a recovery USB stick.
-  - insert_usb2_sd #04 Please insert a recovery SD card or USB stick
-                   #   (note: the blue USB port will NOT work for recovery).
-  - insert_4usb    #05 Please insert a recovery USB stick into one of the
-                   #   4 ports in the BACK of the device.
-  - yuck           #06 The device you inserted does not contain Chrome OS.
-  - verif_off      #07 OS verification is OFF
-  - devmode        #08 Press SPACE to re-enable.
-  - tonorm         #09 Press ENTER to confirm you wish to turn
-                   #   OS verification on.
-  - reboot_erase   #10 Your system will reboot and local data will be cleared.
-  - esc_back       #11 To go back, press ESC.
-  - verif_on       #12 OS verification is ON.
-  - todev          #13 To turn OS verification OFF, press ENTER.
-  - for_help       #14 For help visit https://google.com/chromeos/recovery
-  - error_code     #15 Error code
-  - remove         #16 Please remove all external devices to begin recovery.
-  - model          #17 Model
-  - todev_phyrec   #18 To turn OS verification OFF, press the RECOVERY button.
-  - wrong_adapter  #19 The connected power supply does not have enough power...
-  - shutdown_now   #20 Chrome OS will now shut down.
-  - change_adapter #21 Please use the correct adapter and try again.
-  - os_broken      #22 OS may be broken. Remove media and initiate recovery.
-  - select_altfw   #23 Press a numeric key to select an alternative bootloader:
-  - diag_confirm   #24 Press the POWER button to run diagnostics.
-  - todev_power    #25 To turn OS verification OFF, press the POWER button.
-
-legacy_menu_inputs:
-  - dev_option     #01 Developer Options
-  - debug_info     #02 Show Debug Info
-  - enable_ver     #03 Enable Root Verification
-  - power_off      #04 Power Off
-  - lang           #05 Language
-  - boot_network   #06 Boot Network Image (not working yet)
-  - boot_legacy    #07 Boot Legacy BIOS
-  - boot_usb_only  #08 Boot From USB
-  - boot_usb       #09 Boot From USB or SD card
-  - boot_dev       #10 Boot From Internal Disk
-  - cancel         #11 Cancel
-  - confirm_ver    #12 Confirm Enabling Verified Boot
-  - enable_dev     #13 Enable Developer Mode
-  - confirm_dev    #14 Confirm Enabling Developer Mode
-  - navigate1      #15 Use the volume buttons to navigate up or down
-  - navigate2      #16 and the power button to select an option.
-  - disable_insc   #17 Disabling OS verfication will make your system INSECURE.
-  - select_cancel  #18 Select "Cancel" to remain protected.
-  - verif_off_insc #19 OS verification is OFF. Your system is INSECURE.
-  - select_enable  #20 Select "Enable OS Verification" to get back to safety.
-  - select_confirm #21 Select "Confirm OS Verification" to protect your system.
+  # firmware sync
+  - firmware_sync_title
+  - firmware_sync_desc
+  - touchpad_sync_title
+  - touchpad_sync_desc
 
 files:
-  # Text files to be generated.
-  model_left:     ['model@s/60061e.*//']
-  model_right:    ['model@s/.*60061e//']
-  yuck:
-  insert:
-  insert_usb:     [insert_usb]
-  insert_sd_usb2: ['insert_usb2_sd@s/(\(|\. )/\n\1/']
-  insert_usb2:    [insert_usb, 'insert_usb2_sd@s/.*(\(|\. )/\1/']
-  for_help_left:  ['for_help@s/.http.*//' ]
-  for_help_right: ['for_help@s/.*chromeos.recovery ?//']
-  verif_on:
-  reboot_erase:
-  update:         # pre-generated.
-  language:       # pre-generated.
-  os_broken:      [missing, os_broken]
+  # pre-generated
+  language:
+  language_focus: [language]
+  # firmware sync
+  firmware_sync_title:
+  firmware_sync_desc:
+  touchpad_sync_title:
+  touchpad_sync_desc:
 
-legacy_menu_files:
-  dev_option:
-  debug_info:
-  enable_ver:
-  power_off:
-  lang:
-  boot_network:
-  boot_legacy:
-  boot_usb_only:
-  boot_usb:
-  boot_dev:
-  cancel:
-  confirm_ver:
-  confirm_dev:
-  navigate:       [navigate1, navigate2]
-  disable_warn:   [disable_insc, select_cancel]
-  enable_hint:    [verif_off_insc, select_enable]
-  confirm_hint:   [select_confirm, reboot_erase]
-
-legacy_clamshell_files:
-  devmode:
-  todev:          [todev, reboot_erase, '', esc_back]
-  todev_phyrec:   [todev_phyrec, reboot_erase, '', esc_back]
-  todev_power:    [todev_power, reboot_erase, '', esc_back]
-  tonorm:         [tonorm, reboot_erase, '', esc_back]
-  verif_off:
-  select_altfw:
-
-diagnostic_files:
-  diag_confirm:   [diag_confirm, '', esc_back]
+aliases:
+  - &base_color '--color=CCCCCC --bgcolor=202124'
 
 styles:
-  todev:          '--align=left'
-  devmode:        '--color=303030'
-  tonorm:         '--align=left --color=303030'
-  reboot_erase:   '--color=303030'
-  disable_warn:   '--color=303030'
-  enable_hint:    '--color=303030'
-  confirm_hint:   '--color=303030'
-  navigate:       '--color=444444'
-  language:       '--color=444444'
-  for_help:       '--color=444444'
-  for_help_left:  '--color=444444'
-  for_help_right: '--color=444444'
-  model_left:     '--color=444444'
-  model_right:    '--color=444444'
+  language: '--color=CCCCCC --bgcolor=161719'
+  language_focus: '--color=161719 --bgcolor=CCCCCC'
+  firmware_sync_title: *base_color
+  firmware_sync_desc: *base_color
+  touchpad_sync_title: *base_color
+  touchpad_sync_desc: *base_color
 
 fonts:
   # All fonts should be provided and selected by 'ui-sans' family defined in
   # ChromiumOS SDK (/etc/fonts/local.conf).  The following list is made by
   #   fc-match 'ui-sans:lang=$locale' for locales we have.
-  ar:     'Noto Naskh Arabic UI'
-  bn:     'Noto Sans Bengali UI'
   en:     'Noto Sans'
-  fa:     'Noto Naskh Arabic UI'
-  gu:     'Noto Sans Gujarati UI'
-  he:     'Noto Sans Hebrew'
-  hi:     'Noto Sans Devanagari UI'
-  ja:     'Noto Sans CJK JP'
-  kn:     'Noto Sans Kannada UI'
-  ko:     'Noto Sans CJK KR'
-  ml:     'Noto Sans Malayalam UI'
-  mr:     'Noto Sans Devanagari UI'
-  ta:     'Noto Sans Tamil UI'
-  te:     'Noto Sans Telugu UI'
-  th:     'Noto Sans Thai UI'
-  zh-CN:  'Noto Sans CJK SC'
-  zh-TW:  'Noto Sans CJK TC'
