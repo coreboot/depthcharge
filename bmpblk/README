@@ -1,3 +1,7 @@
+# Copyright 2020 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 This directory contains the sources for the new-style BIOS bitmaps, and a
 simple (and ugly) tool to view the configuration file that describes how
 each screen is displayed.
@@ -184,9 +188,15 @@ To add a new target (board), edit images/boards.yaml and fill the information:
 link:
   # Non-standard Graphics mode 1280x850, with 2560x1700 panel.
   # Can boot recovery by USB and SD card readers.
-  res:      [1280, 850]
-  panel:    [2560, 1700]
-  locales: [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, ja, id, th]
+  screen:      [1280, 850]
+  panel:       [2560, 1700]
+  # List of locales to include.
+  locales:     [en, es-419, pt-BR, fr, es, it, de, nl, da, 'no', sv, ko, he]
+  # Right-to-left locales.
+  rtl:         [he]
+  # List of locales rendered in higher DPI. This should always contain all
+  # locales unless flash space is limited.
+  hi_res:      [en]
 ------------------------------------------------------------------------------
 
 The locale name <no> will be interpreted as boolean False in YAML, so we need to
@@ -200,8 +210,8 @@ peppy, wolf, leon):
 falco,peppy,wolf,leon:
   # Using VESA graphics mode 1024x768 (0x0117), streched to 1366x768 panel.
   # With card reader. USB3 ports will run in USB2 mode for recovery boot.
-  res:      [1024, 768]
-  panel:    [1366, 768]
+  screen:      [1024, 768]
+  panel:       [1366, 768]
 ------------------------------------------------------------------------------
 
 Now to build images for the new target (as $BOARD) run:

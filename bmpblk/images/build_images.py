@@ -15,7 +15,7 @@ Usage:
 '''
 
 import copy
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 import glob
 import os
 import shutil
@@ -39,6 +39,7 @@ PANEL_KEY = 'panel'
 SDCARD_KEY = 'sdcard'
 BAD_USB3_KEY = 'bad_usb3'
 LOCALES_KEY = 'locales'
+RTL_KEY = 'rtl'
 HI_RES_KEY = 'hi_res'
 TEXT_COLORS_KEY = 'text_colors'
 
@@ -114,6 +115,8 @@ BACKGROUND_COLORS = {
     'ic_dropright_sel': BUTTON_SELECTED_BACKGROUND,
 }
 ASSET_MAX_COLORS = 128
+
+LocaleInfo = namedtuple('LocaleInfo', ['code', 'rtl', 'hi_res'])
 
 
 class BuildImageError(Exception):
@@ -222,15 +225,29 @@ class Convert(object):
   def set_locales(self):
     """Set a list of locales for which localized images are converted"""
     # LOCALES environment variable can overwrite boards.yaml
-    locales = os.getenv('LOCALES')
+    env_locales = os.getenv('LOCALES')
+    rtl_locales = set(self.config[RTL_KEY])
+    hi_res_locales = set(self.config[HI_RES_KEY])
     if os.getenv("MENU_UI") == "1":
       # TODO(b/144969853): Support all locales for MENU_UI.
-      self.locales = ['en']
-    elif locales:
-      self.locales = locales.split()
+      locales = ['en']
+    elif env_locales:
+      locales = env_locales.split()
     else:
-      self.locales = self.config[LOCALES_KEY]
-    self.hi_res_locales = self.config[HI_RES_KEY]
+      locales = self.config[LOCALES_KEY]
+      # Check rtl_locales are contained in locales.
+      unknown_rtl_locales = rtl_locales - set(locales)
+      if unknown_rtl_locales:
+        raise BuildImageError('Unknown locales %s in %s' %
+                              (list(unknown_rtl_locales), RTL_KEY))
+      # Check hi_res_locales are contained in locales.
+      unknown_hi_res_locales = hi_res_locales - set(locales)
+      if unknown_hi_res_locales:
+        raise BuildImageError('Unknown locales %s in %s' %
+                              (list(unknown_hi_res_locales), HI_RES_KEY))
+    self.locales = [LocaleInfo(code, code in rtl_locales,
+                               code in hi_res_locales)
+                    for code in locales]
 
   def calculate_dimension(self, original, scale):
       """Calculate scaled width and height
@@ -354,9 +371,10 @@ class Convert(object):
     locale_dir = os.path.join(self.stage_dir, LOCALE_DIR)
     # Using stderr to report progress synchronously
     sys.stderr.write('  processing:')
-    for locale in self.locales:
+    for locale_info in self.locales:
+      locale = locale_info.code
       output_dir = os.path.join(self.output_dir, LOCALE_DIR, locale)
-      if locale in self.hi_res_locales:
+      if locale_info.hi_res:
         scales = defaultdict(lambda: DEFAULT_TEXT_SCALE)
         scales.update(TEXT_SCALES)
       else:
@@ -381,9 +399,16 @@ class Convert(object):
     self.convert(files, font_output_dir, scales, self.text_max_colors)
 
   def create_locale_list(self):
-    """Create locale list"""
-    with open(os.path.join(self.output_dir, 'locales'), 'w') as locale_list:
-      locale_list.write('\n'.join(self.locales))
+    """Create locale list as a CSV file
+
+    Each line in the file is of format "code,rtl", where
+    - "code": language code of the locale
+    - "rtl": "1" for right-to-left language, "0" otherwise
+    """
+    with open(os.path.join(self.output_dir, 'locales'), 'w') as f:
+      for locale_info in self.locales:
+        f.write('{},{}\n'.format(locale_info.code,
+                                 int(locale_info.rtl)))
 
   def build_image(self):
     """Builds all images required by a board"""
