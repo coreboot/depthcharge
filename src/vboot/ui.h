@@ -76,17 +76,22 @@ struct ui_bitmap {
 	size_t size;
 };
 
+struct ui_locale {
+	const char *code;	/* Language code */
+	int rtl;		/* Whether locale is right-to-left */
+};
+
 /******************************************************************************/
 /* archive.c */
 
 /*
- * Get the number of locales in locale data.
+ * Get locale information.
  *
  * This function will load the locale data on the first call.
  *
- * @return 0 on error, number of locales on success.
+ * @return locale info on success, NULL on error or if the locale doesn't exist.
  */
-uint32_t ui_get_locale_count(void);
+const struct ui_locale *ui_get_locale_info(uint32_t locale);
 
 /*
  * Get generic (locale-independent) bitmap.

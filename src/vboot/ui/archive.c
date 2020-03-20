@@ -18,6 +18,7 @@
 
 #include <cbfs.h>
 #include <libpayload.h>
+#include <string.h>
 #include <vb2_api.h>
 
 #include "drivers/flash/cbfs.h"
@@ -35,18 +36,18 @@ static struct cbfs_media *get_ro_cbfs(void)
 struct locale_data {
 	/* Number of supported languages and codes: en, ja, ... */
 	uint32_t count;
-	char *codes[256];
+	struct ui_locale locales[256];
 };
 
-static const struct locale_data *get_locales(void)
+static const struct locale_data *get_locale_data(void)
 {
-	static int cached_locales_initialized = 0;
+	static int cache_initialized = 0;
 	static struct locale_data cached_locales;
 	struct cbfs_media *ro_cbfs;
-	char *locales, *loc_start, *loc;
+	char *locales, *loc;
 	size_t size;
 
-	if (cached_locales_initialized)
+	if (cache_initialized)
 		return &cached_locales;
 
 	ro_cbfs = get_ro_cbfs();
@@ -66,45 +67,72 @@ static const struct locale_data *get_locales(void)
 	}
 
 	/* Copy the file and null-terminate it */
-	loc_start = malloc(size + 1);
-	if (!loc_start) {
+	locales = realloc(locales, size + 1);
+	if (!locales) {
 		UI_ERROR("Out of memory\n");
 		free(locales);
 		return NULL;
 	}
-	memcpy(loc_start, locales, size);
-	loc_start[size] = '\0';
+	locales[size] = '\0';
 
 	/* Parse the list */
 	UI_INFO("Supported locales:");
-	loc = loc_start;
-	while (loc - loc_start < size &&
-	       cached_locales.count < ARRAY_SIZE(cached_locales.codes)) {
-		char *lang = strsep(&loc, "\n");
-		if (!lang || !strlen(lang))
+	loc = locales;
+	while (loc - locales < size &&
+	       cached_locales.count < ARRAY_SIZE(cached_locales.locales)) {
+		/* Each line is of format "code,right-to-left" */
+		char *line;
+		const char *code, *rtl;
+		struct ui_locale *info;
+		line = strsep(&loc, "\n");
+		if (!line || !strlen(line))
 			break;
-		printf(" %s,", lang);
-		cached_locales.codes[cached_locales.count] = lang;
+		code = strsep(&line, ",");
+		if (!code || !strlen(code)) {
+			UI_WARN("Unable to parse code from line: %s\n", line);
+			continue;
+		}
+		rtl = strsep(&line, ",");
+		if (!rtl || !strlen(rtl)) {
+			UI_WARN("Unable to parse rtl from line: %s\n", line);
+			continue;
+		}
+		printf(" %s", code);
+		info = &cached_locales.locales[cached_locales.count];
+		info->code = code;
+		if (!strcmp(rtl, "1")) {
+			info->rtl = 1;
+			printf("(rtl)");
+		} else {
+			info->rtl = 0;
+		}
 		cached_locales.count++;
 	}
-	free(locales);
 
 	printf(" (%d locales)\n", cached_locales.count);
 
 	if (cached_locales.count == 0) {
 		UI_ERROR("No locale found\n");
+		free(locales);
 		return NULL;
 	}
 
-	cached_locales_initialized = 1;
+	cache_initialized = 1;
 	return &cached_locales;
 }
 
-uint32_t ui_get_locale_count(void) {
-	const struct locale_data *locales = get_locales();
-	if (!locales)
-		return 0;
-	return locales->count;
+const struct ui_locale *ui_get_locale_info(uint32_t locale) {
+	const struct locale_data *locale_data = get_locale_data();
+
+	if (!locale_data)
+		return NULL;
+
+	if (locale >= locale_data->count) {
+		UI_ERROR("Unsupported locale %u\n", locale);
+		return NULL;
+	}
+
+	return &locale_data->locales[locale];
 }
 
 static vb2_error_t load_archive(const char *name, struct directory **dest)
@@ -180,12 +208,12 @@ static vb2_error_t get_graphic_archive(struct directory **dest) {
 static vb2_error_t get_localized_graphic_archive(uint32_t locale,
 						 struct directory **dest) {
 	static struct directory *cache;
-	static uint32_t cache_locale;
-	const struct locale_data *locales;
+	static uint32_t cached_locale;
+	const struct locale_data *locale_data;
 	char name[256];
 
 	if (cache) {
-		if (cache_locale == locale) {
+		if (cached_locale == locale) {
 			*dest = cache;
 			return VB2_SUCCESS;
 		}
@@ -194,13 +222,14 @@ static vb2_error_t get_localized_graphic_archive(uint32_t locale,
 		cache = NULL;
 	}
 
-	locales = get_locales();
-	if (!locales)
+	locale_data = get_locale_data();
+	if (!locale_data)
 		return VB2_ERROR_UI_INVALID_ARCHIVE;
 
-	snprintf(name, sizeof(name), "locale_%s.bin", locales->codes[locale]);
+	snprintf(name, sizeof(name), "locale_%s.bin",
+		 locale_data->locales[locale].code);
 	RETURN_ON_ERROR(load_archive(name, &cache));
-	cache_locale = locale;
+	cached_locale = locale;
 
 	return VB2_SUCCESS;
 }

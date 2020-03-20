@@ -1557,11 +1557,19 @@ static void vboot_init_locale(void)
 	loc = loc_start;
 	while (loc - loc_start < size
 			&& locale_data.count < ARRAY_SIZE(locale_data.codes)) {
-		char *lang = strsep(&loc, "\n");
-		if (!lang || !strlen(lang))
+		/* Each line is of format "code,rtl" */
+		char *line, *code;
+		line = strsep(&loc, "\n");
+		if (!line || !strlen(line))
 			break;
-		printf(" %s,", lang);
-		locale_data.codes[locale_data.count] = lang;
+		code = strsep(&line, ",");
+		if (!code || !strlen(code)) {
+			printf("%s: Unable to parse code from line: %s\n",
+			       __func__, line);
+			continue;
+		}
+		printf(" %s,", code);
+		locale_data.codes[locale_data.count] = code;
 		locale_data.count++;
 	}
 	free(locales);

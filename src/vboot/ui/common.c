@@ -41,7 +41,6 @@ vb2_error_t ui_display_screen(struct ui_state *state,
 			      const struct ui_state *prev_state)
 {
 	vb2_error_t rv;
-	uint32_t locale_count;
 	const enum vb2_screen screen = state->screen;
 	const struct ui_descriptor *desc;
 
@@ -50,15 +49,6 @@ vb2_error_t ui_display_screen(struct ui_state *state,
 
 	/* If the screen is blank, turn off the backlight; else turn it on. */
 	backlight_update(screen != VB2_SCREEN_BLANK);
-
-	locale_count = ui_get_locale_count();
-	if (locale_count == 0)
-		return VB2_ERROR_UI_DISPLAY_INIT;
-	if (state->locale >= locale_count) {
-		UI_WARN("Unsupported locale (%d), fallback to locale 0\n",
-			state->locale);
-		state->locale = 0;
-	}
 
 	desc = ui_get_descriptor(screen);
 	if (!desc) {
