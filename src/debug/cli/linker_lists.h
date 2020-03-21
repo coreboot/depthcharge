@@ -164,9 +164,9 @@
  */
 #define ll_entry_start(_type, _list)					\
 ({									\
-	static char start[0] __attribute__((/*__aligned(4) ,*/ unused,	\
+	static char __start[0] __attribute__((/*__aligned(4) ,*/ unused,\
 		section(".dp_list_2_"#_list"_1")));			\
-	(_type *)&start;						\
+	(_type *)&__start;						\
 })
 
 /**
@@ -187,9 +187,9 @@
  */
 #define ll_entry_end(_type, _list)					\
 ({									\
-	static char end[0] __attribute__((/*__aligned(4) ,*/ unused,	\
+	static char __end[0] __attribute__((/*__aligned(4) ,*/ unused,	\
 		section(".dp_list_2_"#_list"_3")));			\
-	(_type *)&end;							\
+	(_type *)&__end;						\
 })
 /**
  * ll_entry_count() - Return the number of elements in linker-generated array
@@ -209,9 +209,9 @@
  */
 #define ll_entry_count(_type, _list)					\
 	({								\
-		_type *start = ll_entry_start(_type, _list);		\
-		_type *end = ll_entry_end(_type, _list);		\
-		unsigned int _ll_result = end - start;			\
+		_type *__cstart = ll_entry_start(_type, _list);		\
+		_type *__cend = ll_entry_end(_type, _list);		\
+		unsigned int _ll_result = __cend - __cstart;		\
 		_ll_result;						\
 	})
 
@@ -256,9 +256,9 @@
  */
 #define ll_start(_type)							\
 ({									\
-	static char start[0] /*__aligned(4)*/ __attribute__((unused,	\
+	static char __lstart[0] /*__aligned(4)*/ __attribute__((unused,	\
 		section(".dp_list_1")));				\
-	(_type *)&start;						\
+	(_type *)&__lstart;						\
 })
 
 /**
@@ -276,9 +276,9 @@
  */
 #define ll_end(_type)							\
 ({									\
-	static char end[0] /*__aligned(4)*/ __attribute__((unused,	\
+	static char __lend[0] /*__aligned(4)*/ __attribute__((unused,	\
 		section(".dp_list_3")));				\
-	(_type *)&end;							\
+	(_type *)&__lend;						\
 })
 
 #endif /* __DEBUG_CLI_LINKER_LISTS_H__ */

@@ -41,7 +41,7 @@ int _do_help (cmd_tbl_t *cmd_start, int cmd_items, cmd_tbl_t * cmdtp, int
 
 	if (argc == 1) {	/*show list of commands */
 		cmd_tbl_t *cmd_array[cmd_items];
-		int i, j, swaps;
+		int j, swaps;
 
 		/* Make array of commands from .uboot_cmd section */
 		cmdtp = cmd_start;
