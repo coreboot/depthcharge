@@ -226,7 +226,7 @@ static int board_setup(void)
 	cros_ec_i2c_tunnel =
 		new_cros_ec_tunnel_i2c(cros_ec, EC_I2C_PORT_PS8751);
 	Ps8751 *ps8751 = new_ps8751(cros_ec_i2c_tunnel, EC_USB_PD_PORT_PS8751);
-	register_vboot_aux_fw(&ps8751->fw_ops);
+	register_vboot_auxfw(&ps8751->fw_ops);
 
 	/* Treeya variant use anx3447 which do not have on board OCM and does
 	 * not support firmware update. Treeya && Treeya360 sku id range is:
@@ -237,7 +237,7 @@ static int board_setup(void)
 			new_cros_ec_tunnel_i2c(cros_ec, EC_I2C_PORT_ANX3429);
 		Anx3429 *anx3429 =
 			new_anx3429(cros_ec_i2c_tunnel, EC_USB_PD_PORT_ANX3429);
-		register_vboot_aux_fw(&anx3429->fw_ops);
+		register_vboot_auxfw(&anx3429->fw_ops);
 	}
 
 	flash_set_ops(&new_mem_mapped_flash(FLASH_START, FLASH_SIZE)->ops);

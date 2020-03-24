@@ -290,7 +290,7 @@ static int __must_check anx3429_otp_read72ecc(Anx3429 *me,
 	return anx3429_otp_read72(me, offset, buf, R_OTP_CTL_1_RW_OTP72ECC);
 }
 
-static vb2_error_t anx3429_ec_tunnel_status(const VbootAuxFwOps *vbaux,
+static vb2_error_t anx3429_ec_tunnel_status(const VbootAuxfwOps *vbaux,
 					    int *protected)
 {
 	Anx3429 *const me = container_of(vbaux, Anx3429, fw_ops);
@@ -908,7 +908,7 @@ static int __must_check anx3429_update_primary(Anx3429 *me,
 	return -1;
 }
 
-static vb2_error_t anx3429_check_hash(const VbootAuxFwOps *vbaux,
+static vb2_error_t anx3429_check_hash(const VbootAuxfwOps *vbaux,
 				      const uint8_t *hash, size_t hash_size,
 				      enum vb2_auxfw_update_severity *severity)
 {
@@ -928,26 +928,26 @@ static vb2_error_t anx3429_check_hash(const VbootAuxFwOps *vbaux,
 
 	if (hash[0] == me->chip.fw_rev) {
 		if (ANX3429_DEBUG >= 2 && !me->debug_updated) {
-			debug("forcing VB_AUX_FW_SLOW_UPDATE\n");
-			*severity = VB_AUX_FW_SLOW_UPDATE;
+			debug("forcing VB2_AUXFW_SLOW_UPDATE\n");
+			*severity = VB2_AUXFW_SLOW_UPDATE;
 		} else {
-			*severity = VB_AUX_FW_NO_UPDATE;
+			*severity = VB2_AUXFW_NO_UPDATE;
 			return VB2_SUCCESS;
 		}
 	} else {
-		*severity = VB_AUX_FW_SLOW_UPDATE;
+		*severity = VB2_AUXFW_SLOW_UPDATE;
 	}
 
 	switch (anx3429_ec_pd_suspend(me)) {
 	case -EC_RES_BUSY:
 		printf("anx3429.%d: pd suspend busy\n", me->ec_pd_id);
-		*severity = VB_AUX_FW_NO_UPDATE;
+		*severity = VB2_AUXFW_NO_UPDATE;
 		break;
 	case EC_RES_SUCCESS:
 		break;
 	default:
 		printf("anx3429.%d: pd suspend failed\n", me->ec_pd_id);
-		*severity = VB_AUX_FW_NO_DEVICE;
+		*severity = VB2_AUXFW_NO_DEVICE;
 		return VB2_ERROR_UNKNOWN;
 	}
 
@@ -1137,7 +1137,7 @@ static int anx3429_verify_blob(Anx3429 *me,
 	return status;
 }
 
-static vb2_error_t anx3429_update_image(const VbootAuxFwOps *vbaux,
+static vb2_error_t anx3429_update_image(const VbootAuxfwOps *vbaux,
 					const uint8_t *image,
 					const size_t image_size)
 {
@@ -1212,7 +1212,7 @@ static vb2_error_t anx3429_update_image(const VbootAuxFwOps *vbaux,
 	return status;
 }
 
-static const VbootAuxFwOps anx3429_fw_ops = {
+static const VbootAuxfwOps anx3429_fw_ops = {
 	.fw_image_name = "anx3429_ocm.bin",
 	.fw_hash_name = "anx3429_ocm.hash",
 	.check_hash = anx3429_check_hash,

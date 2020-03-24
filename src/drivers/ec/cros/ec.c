@@ -47,7 +47,7 @@ static const int CROS_EC_HASH_TIMEOUT_MS = 2000;
 /* Time to delay between polling status of EC hash calculation */
 static const int CROS_EC_HASH_CHECK_DELAY_MS = 10;
 
-/* List of registered chip drivers to perform AUX FW update */
+/* List of registered chip drivers to perform auxfw update */
 ListNode ec_aux_fw_chip_list;
 
 static int ec_init(CrosEc *me);
@@ -1378,8 +1378,8 @@ void cros_ec_probe_aux_fw_chips(void)
 	struct ec_response_pd_chip_info pd_chip_r = {0};
 	int ret;
 	uint8_t i;
-	CrosEcAuxFwChipInfo *chip;
-	const VbootAuxFwOps *ops;
+	CrosEcAuxfwChipInfo *chip;
+	const VbootAuxfwOps *ops;
 
 	/* List is empty, no need to probe EC */
 	if (!ec_aux_fw_chip_list.next)
@@ -1394,7 +1394,7 @@ void cros_ec_probe_aux_fw_chips(void)
 
 	/*
 	 * Iterate through the number of ports, get PD chip info,
-	 * and get the VbootAuxFw operations for that chip.
+	 * and get the VbootAuxfw operations for that chip.
 	 */
 	for (i = 0; i < usb_pd_ports_r.num_ports; i++) {
 		/* Get the USB PD Chip info */
@@ -1415,7 +1415,7 @@ void cros_ec_probe_aux_fw_chips(void)
 				continue;
 
 			ops = chip->new_chip_aux_fw_ops(&pd_chip_r, i);
-			register_vboot_aux_fw(ops);
+			register_vboot_auxfw(ops);
 			break;
 		}
 	}

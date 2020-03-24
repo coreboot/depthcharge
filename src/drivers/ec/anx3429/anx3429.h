@@ -10,11 +10,11 @@
 
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/ec/cros/ec.h"
-#include "drivers/ec/vboot_aux_fw.h"
+#include "drivers/ec/vboot_auxfw.h"
 
 typedef struct Anx3429
 {
-	VbootAuxFwOps fw_ops;
+	VbootAuxfwOps fw_ops;
 	CrosECTunnelI2c *bus;
 	int ec_pd_id;
 	int debug_updated;

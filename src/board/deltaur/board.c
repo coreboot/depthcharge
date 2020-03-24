@@ -106,7 +106,7 @@ static int board_setup(void)
 		 */
 		WilcoPd *ti_tcpc = new_wilco_pd_ti(wilco_ec, pd_cbfs_firmware,
 						   pd_cbfs_hash);
-		register_vboot_aux_fw(&ti_tcpc->ops);
+		register_vboot_auxfw(&ti_tcpc->ops);
 	}
 
 	/* H1 TPM on I2C bus 3 @ 400KHz, controller core is 133MHz */

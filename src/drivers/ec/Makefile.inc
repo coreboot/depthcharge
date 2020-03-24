@@ -18,4 +18,4 @@ subdirs-$(CONFIG_DRIVER_EC_PS8751) += ps8751
 subdirs-$(CONFIG_DRIVER_EC_WILCO) += wilco
 
 depthcharge-y += vboot_ec.c
-depthcharge-y += vboot_aux_fw.c
+depthcharge-y += vboot_auxfw.c

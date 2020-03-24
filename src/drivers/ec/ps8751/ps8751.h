@@ -20,7 +20,7 @@
 
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/ec/cros/ec.h"
-#include "drivers/ec/vboot_aux_fw.h"
+#include "drivers/ec/vboot_auxfw.h"
 
 typedef enum  ParadeChipType {
 	CHIP_PS8751,
@@ -30,7 +30,7 @@ typedef enum  ParadeChipType {
 
 typedef struct Ps8751
 {
-	VbootAuxFwOps fw_ops;
+	VbootAuxfwOps fw_ops;
 	CrosECTunnelI2c *bus;
 	int ec_pd_id;
 

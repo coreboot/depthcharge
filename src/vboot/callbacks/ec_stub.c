@@ -80,13 +80,13 @@ vb2_error_t vb2ex_ec_battery_cutoff(void) {
 	return VB2_SUCCESS;
 }
 
-vb2_error_t VbExCheckAuxFw(enum vb2_auxfw_update_severity *severity)
+vb2_error_t VbExCheckAuxfw(enum vb2_auxfw_update_severity *severity)
 {
-	*severity = VB_AUX_FW_NO_UPDATE;
+	*severity = VB2_AUXFW_NO_UPDATE;
 	return VB2_SUCCESS;
 }
 
-vb2_error_t VbExUpdateAuxFw(void)
+vb2_error_t VbExUpdateAuxfw(void)
 {
 	return VB2_SUCCESS;
 }

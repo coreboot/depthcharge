@@ -11,7 +11,7 @@
 
 #include "drivers/ec/wilco/ec.h"
 #include "drivers/ec/wilco/flash.h"
-#include "drivers/ec/vboot_aux_fw.h"
+#include "drivers/ec/vboot_auxfw.h"
 
 /**
  * WilcoPdFlashInfo - PD flash controller information
@@ -40,7 +40,7 @@ typedef struct WilcoPdFlashInfo {
 typedef struct WilcoPd
 {
 	WilcoEc *ec;
-	VbootAuxFwOps ops;
+	VbootAuxfwOps ops;
 	WilcoPdFlashInfo *info;
 } WilcoPd;
 

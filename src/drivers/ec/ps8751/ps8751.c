@@ -1176,7 +1176,7 @@ static int ps8751_construct_i2c_tunnel(Ps8751 *me)
 	return ret;
 }
 
-static vb2_error_t ps8751_ec_tunnel_status(const VbootAuxFwOps *vbaux,
+static vb2_error_t ps8751_ec_tunnel_status(const VbootAuxfwOps *vbaux,
 					   int *protected)
 {
 	Ps8751 *const me = container_of(vbaux, Ps8751, fw_ops);
@@ -1340,7 +1340,7 @@ static int ps8751_reflash(Ps8751 *me, const uint8_t *data, size_t data_size)
  * firmware rev as a trivial hash.
  */
 
-static vb2_error_t ps8751_check_hash(const VbootAuxFwOps *vbaux,
+static vb2_error_t ps8751_check_hash(const VbootAuxfwOps *vbaux,
 				     const uint8_t *hash, size_t hash_size,
 				     enum vb2_auxfw_update_severity *severity)
 {
@@ -1356,30 +1356,30 @@ static vb2_error_t ps8751_check_hash(const VbootAuxFwOps *vbaux,
 
 	status = ps8751_capture_device_id(me, 0);
 	if (status == PS8751_DEVICE_MISSING) {
-		*severity = VB_AUX_FW_NO_DEVICE;
+		*severity = VB2_AUXFW_NO_DEVICE;
 		printf("Skipping upgrade for %s\n", me->chip_name);
 		return VB2_SUCCESS;
 	} else if (status == PS8751_DEVICE_NOT_PARADE) {
-		*severity = VB_AUX_FW_NO_UPDATE;
+		*severity = VB2_AUXFW_NO_UPDATE;
 		printf("No update required for %s\n", me->chip_name);
 		return VB2_SUCCESS;
 	}
 
 	me->blob_hw_version = hash[0];
 	if (hash[1] == me->chip.fw_rev) {
-		*severity = VB_AUX_FW_NO_UPDATE;
+		*severity = VB2_AUXFW_NO_UPDATE;
 		return VB2_SUCCESS;
 	}
-	*severity = VB_AUX_FW_SLOW_UPDATE;
+	*severity = VB2_AUXFW_SLOW_UPDATE;
 
 	switch (ps8751_ec_pd_suspend(me)) {
 	case -EC_RES_BUSY:
-		*severity = VB_AUX_FW_NO_UPDATE;
+		*severity = VB2_AUXFW_NO_UPDATE;
 		break;
 	case EC_RES_SUCCESS:
 		break;
 	default:
-		*severity = VB_AUX_FW_NO_DEVICE;
+		*severity = VB2_AUXFW_NO_DEVICE;
 		return VB2_ERROR_UNKNOWN;
 	}
 
@@ -1410,7 +1410,7 @@ static int ps8751_halt_and_flash(Ps8751 *me,
 	return status;
 }
 
-static vb2_error_t ps8751_update_image(const VbootAuxFwOps *vbaux,
+static vb2_error_t ps8751_update_image(const VbootAuxfwOps *vbaux,
 				       const uint8_t *image, size_t image_size)
 {
 	Ps8751 *me = container_of(vbaux, Ps8751, fw_ops);
@@ -1466,28 +1466,28 @@ static vb2_error_t ps8751_update_image(const VbootAuxFwOps *vbaux,
 	return status;
 }
 
-static const VbootAuxFwOps ps8751_fw_ops = {
+static const VbootAuxfwOps ps8751_fw_ops = {
 	.fw_image_name = "ps8751_a3.bin",
 	.fw_hash_name = "ps8751_a3.hash",
 	.check_hash = ps8751_check_hash,
 	.update_image = ps8751_update_image,
 };
 
-static const VbootAuxFwOps ps8751_fw_canary_ops = {
+static const VbootAuxfwOps ps8751_fw_canary_ops = {
 	.fw_image_name = "ps8751_a3_canary.bin",
 	.fw_hash_name = "ps8751_a3_canary.hash",
 	.check_hash = ps8751_check_hash,
 	.update_image = ps8751_update_image,
 };
 
-static const VbootAuxFwOps ps8805_fw_ops = {
+static const VbootAuxfwOps ps8805_fw_ops = {
 	.fw_image_name = "ps8805_a2.bin",
 	.fw_hash_name = "ps8805_a2.hash",
 	.check_hash = ps8751_check_hash,
 	.update_image = ps8751_update_image,
 };
 
-static const VbootAuxFwOps ps8815_fw_ops = {
+static const VbootAuxfwOps ps8815_fw_ops = {
 	.fw_image_name = "ps8815_a0.bin",
 	.fw_hash_name = "ps8815_a0.hash",
 	.check_hash = ps8751_check_hash,
@@ -1546,7 +1546,7 @@ Ps8751 *new_ps8815(CrosECTunnelI2c *bus, int ec_pd_id)
 	return me;
 }
 
-static const VbootAuxFwOps *new_ps8xxx_from_chip_info(
+static const VbootAuxfwOps *new_ps8xxx_from_chip_info(
 	struct ec_response_pd_chip_info *r, uint8_t ec_pd_id)
 {
 	Ps8751 *ps8751;
@@ -1574,19 +1574,19 @@ static const VbootAuxFwOps *new_ps8xxx_from_chip_info(
 	return &ps8751->fw_ops;
 }
 
-static CrosEcAuxFwChipInfo aux_fw_ps8751_info = {
+static CrosEcAuxfwChipInfo aux_fw_ps8751_info = {
 	.vid = PARADE_VENDOR_ID,
 	.pid = PARADE_PS8751_PRODUCT_ID,
 	.new_chip_aux_fw_ops = new_ps8xxx_from_chip_info,
 };
 
-static CrosEcAuxFwChipInfo aux_fw_ps8815_info = {
+static CrosEcAuxfwChipInfo aux_fw_ps8815_info = {
 	.vid = PARADE_VENDOR_ID,
 	.pid = PARADE_PS8815_PRODUCT_ID,
 	.new_chip_aux_fw_ops = new_ps8xxx_from_chip_info,
 };
 
-static CrosEcAuxFwChipInfo aux_fw_ps8805_info = {
+static CrosEcAuxfwChipInfo aux_fw_ps8805_info = {
 	.vid = PARADE_VENDOR_ID,
 	.pid = PARADE_PS8805_PRODUCT_ID,
 	.new_chip_aux_fw_ops = new_ps8xxx_from_chip_info,

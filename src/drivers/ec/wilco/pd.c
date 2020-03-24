@@ -17,7 +17,7 @@
 #include "drivers/ec/wilco/ec.h"
 #include "drivers/ec/wilco/flash.h"
 #include "drivers/ec/wilco/pd.h"
-#include "drivers/ec/vboot_aux_fw.h"
+#include "drivers/ec/vboot_auxfw.h"
 
 enum wilco_pd_flash {
 	PD_FLASH_CMD = 0xea,
@@ -56,7 +56,7 @@ typedef struct __attribute__((packed)) WilcoPdFlashWrite {
 	uint8_t data[PD_FLASH_DATA_SIZE];
 } WilcoPdFlashWrite;
 
-static vb2_error_t wilco_pd_check_hash(const VbootAuxFwOps *vbaux,
+static vb2_error_t wilco_pd_check_hash(const VbootAuxfwOps *vbaux,
 				       const uint8_t *hash, size_t hash_size,
 				       enum vb2_auxfw_update_severity *severity)
 {
@@ -64,7 +64,7 @@ static vb2_error_t wilco_pd_check_hash(const VbootAuxFwOps *vbaux,
 	WilcoEcFlashDevice device;
 	uint32_t update_version;
 
-	*severity = VB_AUX_FW_NO_UPDATE;
+	*severity = VB2_AUXFW_NO_UPDATE;
 
 	if (hash_size < sizeof(uint32_t))
 		return VB2_ERROR_UNKNOWN;
@@ -86,7 +86,7 @@ static vb2_error_t wilco_pd_check_hash(const VbootAuxFwOps *vbaux,
 		printf("no update\n");
 	} else {
 		printf("update to version 0x%08x\n", update_version);
-		*severity = VB_AUX_FW_SLOW_UPDATE;
+		*severity = VB2_AUXFW_SLOW_UPDATE;
 	}
 	return VB2_SUCCESS;
 }
@@ -218,7 +218,7 @@ static int wilco_pd_flash_finish(WilcoPd *pd)
 	return 0;
 }
 
-static vb2_error_t wilco_pd_update_image(const VbootAuxFwOps *vbaux,
+static vb2_error_t wilco_pd_update_image(const VbootAuxfwOps *vbaux,
 					 const uint8_t *image,
 					 const size_t image_size)
 {

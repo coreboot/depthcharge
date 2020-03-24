@@ -18,46 +18,38 @@
 #include <vboot_api.h>
 
 #include "drivers/ec/cros/ec.h"
-#include "drivers/ec/vboot_aux_fw.h"
+#include "drivers/ec/vboot_auxfw.h"
 #include "vboot/util/commonparams.h"
 
 static struct {
-	const VbootAuxFwOps *fw_ops;
+	const VbootAuxfwOps *fw_ops;
 	enum vb2_auxfw_update_severity severity;
-} vboot_aux_fw[NUM_MAX_VBOOT_AUX_FW];
+} vboot_auxfw[NUM_MAX_VBOOT_AUXFW];
 
-static int vboot_aux_fw_count = 0;
+static int vboot_auxfw_count = 0;
 
-/**
- * register a firmware updater
- *
- * @param aux_fw	descriptor of updater ops
- * @return		die()s on failure
- */
-
-void register_vboot_aux_fw(const VbootAuxFwOps *aux_fw)
+void register_vboot_auxfw(const VbootAuxfwOps *auxfw)
 {
-	if (vboot_aux_fw_count >= NUM_MAX_VBOOT_AUX_FW)
-		die("NUM_MAX_VBOOT_AUX_FW (%d) too small\n",
-		    NUM_MAX_VBOOT_AUX_FW);
+	if (vboot_auxfw_count >= NUM_MAX_VBOOT_AUXFW)
+		die("NUM_MAX_VBOOT_AUXFW (%d) too small\n",
+		    NUM_MAX_VBOOT_AUXFW);
 
-	vboot_aux_fw[vboot_aux_fw_count++].fw_ops = aux_fw;
+	vboot_auxfw[vboot_auxfw_count++].fw_ops = auxfw;
 }
 
 /**
- * check device firmware version
+ * Check device firmware version.
  *
- * figure out if we have to update a given device's firmware.  if we
- * don't have an update blob in cbfs for the device, refuse to
- * continue.  else, report back if it's going to be a "fast" or "slow"
- * update.
+ * Figure out if we have to update a given device's firmware.  If we don't
+ * have an update blob in cbfs for the device, refuse to continue.  Otherwise,
+ * report back if it's going to be a "fast" or "slow" update.
  *
- * @param aux_fw	FW device ops
- * @param severity	return parameter for health of auxiliary firmware
- * @return VBERROR_... error, VB2_SUCCESS on success.
+ * @param auxfw		FW device ops
+ * @param severity	return parameter for health of auxfw
+ * @return VB2_SUCCESS, or non-zero if error.
  */
 
-static vb2_error_t check_dev_fw_hash(const VbootAuxFwOps *aux_fw,
+static vb2_error_t check_dev_fw_hash(const VbootAuxfwOps *auxfw,
 				     enum vb2_auxfw_update_severity *severity)
 {
 	const void *want_hash;
@@ -66,23 +58,16 @@ static vb2_error_t check_dev_fw_hash(const VbootAuxFwOps *aux_fw,
 	/* find bundled fw hash */
 	want_hash = cbfs_get_file_content(
 		CBFS_DEFAULT_MEDIA,
-		aux_fw->fw_hash_name, CBFS_TYPE_RAW, &want_size);
+		auxfw->fw_hash_name, CBFS_TYPE_RAW, &want_size);
 	if (want_hash == NULL) {
-		printf("%s missing from CBFS\n", aux_fw->fw_hash_name);
+		printf("%s missing from CBFS\n", auxfw->fw_hash_name);
 		return VB2_ERROR_UNKNOWN;
 	}
 
-	return aux_fw->check_hash(aux_fw, want_hash, want_size, severity);
+	return auxfw->check_hash(auxfw, want_hash, want_size, severity);
 }
 
-/**
- * iterate over registered firmware updaters to determine what needs to
- * be updated.  returns how slow the worst case update will be.
- *
- * @param severity	returns VB_AUX_FW_{NO,FAST,SLOW}_UPDATE for worst case
- * @return VBERROR_... error, VB2_SUCCESS on success.
- */
-vb2_error_t check_vboot_aux_fw(enum vb2_auxfw_update_severity *severity)
+vb2_error_t check_vboot_auxfw(enum vb2_auxfw_update_severity *severity)
 {
 	enum vb2_auxfw_update_severity max;
 	enum vb2_auxfw_update_severity current;
@@ -90,15 +75,15 @@ vb2_error_t check_vboot_aux_fw(enum vb2_auxfw_update_severity *severity)
 
 	if (CONFIG(CROS_EC_PROBE_AUX_FW_INFO))
 		cros_ec_probe_aux_fw_chips();
-	max = VB_AUX_FW_NO_DEVICE;
-	for (int i = 0; i < vboot_aux_fw_count; ++i) {
-		const VbootAuxFwOps *const aux_fw = vboot_aux_fw[i].fw_ops;
+	max = VB2_AUXFW_NO_DEVICE;
+	for (int i = 0; i < vboot_auxfw_count; ++i) {
+		const VbootAuxfwOps *const auxfw = vboot_auxfw[i].fw_ops;
 
-		status = check_dev_fw_hash(aux_fw, &current);
+		status = check_dev_fw_hash(auxfw, &current);
 		if (status != VB2_SUCCESS)
 			return status;
 
-		vboot_aux_fw[i].severity = current;
+		vboot_auxfw[i].severity = current;
 		max = MAX(max, current);
 	}
 
@@ -119,9 +104,9 @@ static vb2_error_t display_firmware_sync_screen(void)
 	struct vb2_context *ctx = vboot_get_context();
 	uint32_t locale;
 
-	for (int i = 0; i < vboot_aux_fw_count; ++i) {
+	for (int i = 0; i < vboot_auxfw_count; ++i) {
 		/* Display firmware sync screen if update is slow */
-		if (vboot_aux_fw[i].severity == VB_AUX_FW_SLOW_UPDATE) {
+		if (vboot_auxfw[i].severity == VB2_AUXFW_SLOW_UPDATE) {
 			if (vb2api_need_reboot_for_display(ctx))
 				return VB2_REQUEST_REBOOT;
 
@@ -145,12 +130,12 @@ static vb2_error_t display_firmware_sync_screen(void)
 }
 
 /**
- * apply the device firmware update
+ * Apply the device firmware update.
  *
- * @param aux_fw	FW device ops
- * @return VBERROR_... error, VB2_SUCCESS on success.
+ * @param auxfw		FW device ops
+ * @return VB2_SUCCESS, or non-zero if error.
  */
-static vb2_error_t apply_dev_fw(const VbootAuxFwOps *aux_fw)
+static vb2_error_t apply_dev_fw(const VbootAuxfwOps *auxfw)
 {
 	const uint8_t *want_data;
 	size_t want_size;
@@ -158,22 +143,15 @@ static vb2_error_t apply_dev_fw(const VbootAuxFwOps *aux_fw)
 	/* find bundled fw */
 	want_data = cbfs_get_file_content(
 		CBFS_DEFAULT_MEDIA,
-		aux_fw->fw_image_name, CBFS_TYPE_RAW, &want_size);
+		auxfw->fw_image_name, CBFS_TYPE_RAW, &want_size);
 	if (want_data == NULL) {
-		printf("%s missing from CBFS\n", aux_fw->fw_image_name);
+		printf("%s missing from CBFS\n", auxfw->fw_image_name);
 		return VB2_ERROR_UNKNOWN;
 	}
-	return aux_fw->update_image(aux_fw, want_data, want_size);
+	return auxfw->update_image(auxfw, want_data, want_size);
 }
 
-/**
- * iterate over registered firmware updaters and apply updates where
- * needed.  check_vboot_aux_fw() must have been called before this to
- * determine what needs to be updated.
- *
- * @return VBERROR_... error, VB2_SUCCESS on success.
- */
-vb2_error_t update_vboot_aux_fw(void)
+vb2_error_t update_vboot_auxfw(void)
 {
 	enum vb2_auxfw_update_severity severity;
 	vb2_error_t status = VB2_SUCCESS;
@@ -181,14 +159,14 @@ vb2_error_t update_vboot_aux_fw(void)
 
 	VB2_TRY(display_firmware_sync_screen());
 
-	for (int i = 0; i < vboot_aux_fw_count; ++i) {
-		const VbootAuxFwOps *aux_fw;
+	for (int i = 0; i < vboot_auxfw_count; ++i) {
+		const VbootAuxfwOps *auxfw;
 
-		aux_fw = vboot_aux_fw[i].fw_ops;
-		if (vboot_aux_fw[i].severity == VB_AUX_FW_NO_DEVICE)
+		auxfw = vboot_auxfw[i].fw_ops;
+		if (vboot_auxfw[i].severity == VB2_AUXFW_NO_DEVICE)
 			continue;
 
-		if (vboot_aux_fw[i].severity != VB_AUX_FW_NO_UPDATE) {
+		if (vboot_auxfw[i].severity != VB2_AUXFW_NO_UPDATE) {
 			/* Disable lid shutdown on x86 if enabled */
 			if (!lid_shutdown_disabled &&
 			    CONFIG(ARCH_X86) &&
@@ -199,8 +177,8 @@ vb2_error_t update_vboot_aux_fw(void)
 			}
 
 			/* Apply update */
-			printf("Update aux fw %d\n", i);
-			status = apply_dev_fw(aux_fw);
+			printf("Update auxfw %d\n", i);
+			status = apply_dev_fw(auxfw);
 			if (status == VBERROR_PERIPHERAL_BUSY) {
 				status = VB2_SUCCESS;
 				continue;
@@ -209,10 +187,10 @@ vb2_error_t update_vboot_aux_fw(void)
 			}
 
 			/* Re-check hash after update */
-			status = check_dev_fw_hash(aux_fw, &severity);
+			status = check_dev_fw_hash(auxfw, &severity);
 			if (status != VB2_SUCCESS)
 				break;
-			if (severity != VB_AUX_FW_NO_UPDATE) {
+			if (severity != VB2_AUXFW_NO_UPDATE) {
 				status = VB2_ERROR_UNKNOWN;
 				break;
 			}
