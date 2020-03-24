@@ -17,7 +17,6 @@
  */
 
 #include <vb2_api.h>
-#include <vboot_api.h>  /* for VbScreenData */
 
 #include "vboot/ui.h"
 
@@ -63,14 +62,4 @@ vb2_error_t vb2ex_display_ui(enum vb2_screen screen, uint32_t locale_id)
 	has_prev_state = 1;
 
 	return VB2_SUCCESS;
-}
-
-/*
- * TODO(chromium:1055125): Before decoupling EC/AUXFW sync and UI, keep this
- * dummy function here as a workaround.
- */
-vb2_error_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale,
-			      const VbScreenData *data)
-{
-	return vb2ex_display_ui(screen_type, locale);
 }

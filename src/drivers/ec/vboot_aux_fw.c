@@ -15,9 +15,11 @@
 #include <cbfs.h>
 #include <libpayload.h>
 #include <vb2_api.h>
+#include <vboot_api.h>
 
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/vboot_aux_fw.h"
+#include "vboot/util/commonparams.h"
 
 static struct {
 	const VbootAuxFwOps *fw_ops;
@@ -105,6 +107,44 @@ vb2_error_t check_vboot_aux_fw(enum vb2_auxfw_update_severity *severity)
 }
 
 /**
+ * Display firmware sync screen if needed.
+ *
+ * When there'll be a slow update, try to display firmware sync screen. If
+ * the display hasn't been initialized, request a reboot.
+ *
+ * @return VB2_SUCCESS, or non-zero if error.
+ */
+static vb2_error_t display_firmware_sync_screen(void)
+{
+	struct vb2_context *ctx = vboot_get_context();
+	uint32_t locale;
+
+	for (int i = 0; i < vboot_aux_fw_count; ++i) {
+		/* Display firmware sync screen if update is slow */
+		if (vboot_aux_fw[i].severity == VB_AUX_FW_SLOW_UPDATE) {
+			if (vb2api_need_reboot_for_display(ctx))
+				return VBERROR_REBOOT_REQUIRED;
+
+			locale = vb2api_get_locale_id(ctx);
+			printf("AUXFW is updating. "
+			       "Show firmware sync screen.\n");
+			if (CONFIG(MENU_UI))
+				vb2ex_display_ui(VB2_SCREEN_FIRMWARE_SYNC,
+						 locale);
+			else if (CONFIG(LEGACY_MENU_UI))
+				VbExDisplayMenu(VB_SCREEN_WAIT, locale, 0, 0,
+						1);
+			else
+				VbExDisplayScreen(VB_SCREEN_WAIT, locale, NULL);
+
+			break;
+		}
+	}
+
+	return VB2_SUCCESS;
+}
+
+/**
  * apply the device firmware update
  *
  * @param aux_fw	FW device ops
@@ -138,6 +178,8 @@ vb2_error_t update_vboot_aux_fw(void)
 	enum vb2_auxfw_update_severity severity;
 	vb2_error_t status = VB2_SUCCESS;
 	int lid_shutdown_disabled = 0;
+
+	VB2_TRY(display_firmware_sync_screen());
 
 	for (int i = 0; i < vboot_aux_fw_count; ++i) {
 		const VbootAuxFwOps *aux_fw;

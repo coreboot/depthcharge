@@ -27,6 +27,7 @@
 #include "drivers/flash/flash.h"
 #include "drivers/flash/cbfs.h"
 #include "image/fmap.h"
+#include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 
 #define _EC_FILENAME(select, suffix) \
@@ -114,6 +115,22 @@ vb2_error_t vb2ex_ec_get_expected_image_hash(enum vb2_firmware_selection select,
 
 vb2_error_t vb2ex_ec_update_image(enum vb2_firmware_selection select)
 {
+	/* Display firmware sync screen if update is slow */
+	if (CONFIG(EC_SLOW_UPDATE)) {
+		struct vb2_context *ctx = vboot_get_context();
+		uint32_t locale;
+		if (vb2api_need_reboot_for_display(ctx))
+			return VBERROR_REBOOT_REQUIRED;
+		locale = vb2api_get_locale_id(ctx);
+		printf("EC is updating. Show firmware sync screen.\n");
+		if (CONFIG(MENU_UI))
+			vb2ex_display_ui(VB2_SCREEN_FIRMWARE_SYNC, locale);
+		else if (CONFIG(LEGACY_MENU_UI))
+			VbExDisplayMenu(VB_SCREEN_WAIT, locale, 0, 0, 1);
+		else
+			VbExDisplayScreen(VB_SCREEN_WAIT, locale, NULL);
+	}
+
 	VbootEcOps *ec = vboot_get_ec();
 	const char *filename = EC_IMAGE_FILENAME(select);
 	size_t size;

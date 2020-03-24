@@ -18,26 +18,9 @@
 
 #include <libpayload.h>
 #include <vb2_api.h>
-#include <vboot_api.h>  /* for VbScreenData */
 
 vb2_error_t vb2ex_display_ui(enum vb2_screen screen, uint32_t locale)
 {
 	/* TODO(b/151200757): Support headless devices */
 	return VB2_SUCCESS;
-}
-
-/*
- * TODO(chromium:1055125): Before decoupling EC/AUXFW sync and UI, keep this
- * dummy function here as a workaround.
- */
-vb2_error_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale,
-			      const VbScreenData *data)
-{
-	return VB2_SUCCESS;
-}
-
-int video_console_init(void)
-{
-	printf("%s stub called\n", __func__);
-	return 0;
 }
