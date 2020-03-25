@@ -71,6 +71,8 @@
 /* draw_box() uses a different scale then we do, this helps with conversions */
 #define VB_TO_CANVAS(offset)	((offset) * CANVAS_SCALE / VB_SCALE)
 
+#define VB_CURSOR_WIDTH		20	/* 2.0% */
+
 #define RETURN_ON_ERROR(function_call) do {				\
 		vb2_error_t rv = (function_call);				\
 		if (rv)							\
@@ -1187,6 +1189,43 @@ static vb2_error_t vboot_draw_altfw_menu(struct params *p)
 }
 
 #if CONFIG_VENDOR_DATA_LENGTH > 0
+static vb2_error_t vboot_draw_vendor_data_cursor(struct params *p) {
+	int32_t data_width;
+	const struct rgb_color *color;
+
+	if (p->data->vendor_data.flags & VB_VENDOR_DATA_SHOW_CURSOR)
+		color = &color_black;
+	else
+		color = &color_white;
+
+	RETURN_ON_ERROR(
+		get_text_width(
+			VB_TEXT_HEIGHT,
+			p->data->vendor_data.input_text,
+			&data_width)
+	);
+
+	struct scale pos = {
+		.x = {
+			.n = VB_SCALE_HALF + data_width / 2 + VB_PADDING,
+			.d = VB_SCALE,
+		},
+		.y = {
+			.n = VB_SCALE_HALF,
+			.d = VB_SCALE,
+		},
+	};
+	struct scale dim = {
+		.x = { .n = VB_CURSOR_WIDTH, .d = VB_SCALE, },
+		.y = { .n = VB_TEXT_HEIGHT, .d = VB_SCALE, },
+	};
+	struct fraction thickness = { .n = 0, .d = VB_SCALE, };
+	struct fraction radius = { .n = 0, .d = VB_SCALE, };
+	draw_rounded_box(&pos, &dim, color, &thickness, &radius);
+
+	return 0;
+}
+
 static vb2_error_t vboot_draw_vendor_data_prompt(struct params *p,
 						 const char *string) {
 	if (p->flags & DISPLAY_FLAG_REDRAW_BASE)
@@ -1236,24 +1275,25 @@ static vb2_error_t vboot_draw_rma(struct params *p)
 
 static vb2_error_t vboot_draw_set_vendor_data(struct params *p)
 {
-	if (p->flags & DISPLAY_FLAG_REDRAW_BASE)
-		RETURN_ON_ERROR(vboot_draw_base_screen(p));
+	if (!(p->data->vendor_data.flags & VB_VENDOR_DATA_ONLY_DRAW_CURSOR)) {
+		RETURN_ON_ERROR(vboot_draw_vendor_data_prompt(
+				p, "set_vendor_data.bmp"));
 
-	RETURN_ON_ERROR(
-		vboot_draw_vendor_data_prompt(p, "set_vendor_data.bmp"));
+		RETURN_ON_ERROR(draw_image_locale("rma_instr.bmp", p->locale,
+				VB_SCALE_HALF,
+				VB_SCALE - 130 - VB_TEXT_HEIGHT * 2,
+				VB_SIZE_AUTO,
+				VB_TEXT_HEIGHT * 0.75,
+				PIVOT_H_CENTER | PIVOT_V_BOTTOM));
+		RETURN_ON_ERROR(draw_image_locale("rma_abort.bmp", p->locale,
+				VB_SCALE_HALF,
+				VB_SCALE - 130 - VB_TEXT_HEIGHT,
+				VB_SIZE_AUTO,
+				VB_TEXT_HEIGHT * 0.75,
+				PIVOT_H_CENTER | PIVOT_V_BOTTOM));
+	}
 
-	RETURN_ON_ERROR(draw_image_locale("rma_instr.bmp", p->locale,
-			VB_SCALE_HALF,
-			VB_SCALE - 130 - VB_TEXT_HEIGHT * 2,
-			VB_SIZE_AUTO,
-			VB_TEXT_HEIGHT * 0.75,
-			PIVOT_H_CENTER | PIVOT_V_BOTTOM));
-	RETURN_ON_ERROR(draw_image_locale("rma_abort.bmp", p->locale,
-			VB_SCALE_HALF,
-			VB_SCALE - 130 - VB_TEXT_HEIGHT,
-			VB_SIZE_AUTO,
-			VB_TEXT_HEIGHT * 0.75,
-			PIVOT_H_CENTER | PIVOT_V_BOTTOM));
+	RETURN_ON_ERROR(vboot_draw_vendor_data_cursor(p));
 	return 0;
 }
 
@@ -1261,8 +1301,6 @@ static vb2_error_t vboot_draw_confirm_vendor_data(struct params *p)
 {
 	uint32_t yes_flags = PIVOT_H_CENTER | PIVOT_V_CENTER;
 	uint32_t no_flags = PIVOT_H_CENTER | PIVOT_V_CENTER;
-	if (p->flags & DISPLAY_FLAG_REDRAW_BASE)
-		RETURN_ON_ERROR(vboot_draw_base_screen(p));
 
 	RETURN_ON_ERROR(
 		vboot_draw_vendor_data_prompt(p, "conf_vendor_data.bmp"));
