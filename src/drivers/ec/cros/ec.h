@@ -20,6 +20,7 @@
 #define __DRIVERS_EC_CROS_EC_H__
 
 #include <stdint.h>
+#include <libpayload.h>
 
 #include "base/list.h"
 #include "drivers/ec/vboot_aux_fw.h"

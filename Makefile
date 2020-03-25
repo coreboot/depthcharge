@@ -109,6 +109,13 @@ INCLUDES = -I$(obj) -I$(src)/src/ -I$(src)/src/arch/$(ARCH_DIR)/includes/ \
 	-I$(VB_SOURCE)/firmware/include \
 	-include $(LIBPAYLOAD_DIR)/include/kconfig.h \
 	-include $(KCONFIG_AUTOHEADER)
+
+ifndef EC_HEADERS
+$(error Set EC_HEADERS to point to the EC headers directory)
+else
+INCLUDES += -I$(EC_HEADERS)
+endif
+
 ABI_FLAGS := $(ARCH_ABI_FLAGS) -ffreestanding -fno-builtin \
 	-fno-stack-protector -fomit-frame-pointer
 LINK_FLAGS = $(ARCH_LINK_FLAGS) $(ABI_FLAGS) -fuse-ld=bfd \
