@@ -23,6 +23,9 @@
 #define PCH_PCR_PID_GPIOCOM4	0x6a
 #define PCH_PCR_PID_GPIOCOM5	0x69
 
+/* I2C Designware Controller runs at 133MHz */
+#define TIGERLAKE_DW_I2C_MHZ	133
+
 /* GPE definitions */
 
 int tigerlake_get_gpe(int gpe);
