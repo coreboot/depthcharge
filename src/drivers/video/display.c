@@ -49,6 +49,7 @@ int display_init(void)
 	if (display_ops && display_ops->init)
 		return display_ops->init(display_ops);
 
+	printf("display: %s called but not implemented.\n", __func__);
 	return 0;
 }
 
@@ -57,7 +58,7 @@ int backlight_update(uint8_t enable)
 	if (display_ops && display_ops->backlight_update)
 		return display_ops->backlight_update(display_ops, enable);
 
-	printf("%s called but not implemented.\n", __func__);
+	printf("display: %s called but not implemented.\n", __func__);
 	return 0;
 }
 
@@ -66,6 +67,7 @@ int display_screen(enum VbScreenType_t screen)
 	if (display_ops && display_ops->display_screen)
 		return display_ops->display_screen(display_ops, screen);
 
+	printf("display: %s called but not implemented.\n", __func__);
 	return 0;
 }
 
