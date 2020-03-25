@@ -835,7 +835,7 @@ static enum ps8751_device_state __must_check ps8751_capture_device_id(
 		return PS8751_DEVICE_PRESENT;
 
 	p.port = me->ec_pd_id;
-	p.renew = renew;
+	p.live = renew;
 	int status = ec_command(me->bus->ec, EC_CMD_PD_CHIP_INFO, 0,
 				&p, sizeof(p), &r, sizeof(r));
 	if (status < 0) {

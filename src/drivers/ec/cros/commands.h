@@ -3954,7 +3954,7 @@ struct __ec_align1 ec_response_usb_pd_mux_info {
 
 struct __ec_align1 ec_params_pd_chip_info {
 	uint8_t port;	/* USB-C port number */
-	uint8_t renew;	/* Force renewal */
+	uint8_t live;
 };
 
 struct __ec_align2 ec_response_pd_chip_info {
@@ -4016,7 +4016,7 @@ enum cbi_data_tag {
 #define CBI_GET_RELOAD		(1 << 0)
 
 struct __ec_align4 ec_params_get_cbi {
-	uint32_t type;		/* enum cbi_data_tag */
+	uint32_t tag;		/* enum cbi_data_tag */
 	uint32_t flag;		/* CBI_GET_* */
 };
 

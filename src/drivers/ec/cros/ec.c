@@ -338,7 +338,7 @@ static int cbi_get_uint32(uint32_t *id, uint32_t type)
 {
 	struct ec_params_get_cbi p = { 0 };
 
-	p.type = type;
+	p.tag = type;
 
 	int rv = ec_command(cros_ec_get(), EC_CMD_GET_CROS_BOARD_INFO, 0,
 			    &p, sizeof(p), id, sizeof(*id));
@@ -1403,7 +1403,7 @@ void cros_ec_probe_aux_fw_chips(void)
 	for (i = 0; i < usb_pd_ports_r.num_ports; i++) {
 		/* Get the USB PD Chip info */
 		pd_chip_p.port = i;
-		pd_chip_p.renew = 0;
+		pd_chip_p.live = 0;
 		ret = ec_command(cros_ec, EC_CMD_PD_CHIP_INFO, 0,
 					&pd_chip_p, sizeof(pd_chip_p),
 					&pd_chip_r, sizeof(pd_chip_r));

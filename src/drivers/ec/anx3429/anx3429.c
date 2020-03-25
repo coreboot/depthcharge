@@ -651,7 +651,7 @@ static int __must_check anx3429_capture_device_id(Anx3429 *me)
 		return 0;
 
 	p.port = me->ec_pd_id;
-	p.renew = 0;
+	p.live = 0;
 	int status = ec_command(me->bus->ec, EC_CMD_PD_CHIP_INFO, 0,
 				&p, sizeof(p), &r, sizeof(r));
 	if (status < 0) {
