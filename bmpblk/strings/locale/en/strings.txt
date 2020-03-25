@@ -2,3 +2,9 @@ Please do not power off your device
 Your system is applying a critical update.
 Please do not touch the touchpad
 Touchpad firmware updating... this may take a few minutes.
+Model:
+Help center:
+http://google.com/chromeos/recovery
+Navigate using:
+Enter key, and up & down arrow keys on a laptop
+Power button and volume buttons on a tablet

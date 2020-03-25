@@ -11,6 +11,13 @@ inputs:
   - firmware_sync_desc
   - touchpad_sync_title
   - touchpad_sync_desc
+  # footer
+  - model
+  - help_center
+  - rec_url
+  - navigate_using
+  - navigate_lap
+  - navigate_tab
 
 files:
   # pre-generated
@@ -21,9 +28,18 @@ files:
   firmware_sync_desc:
   touchpad_sync_title:
   touchpad_sync_desc:
+  # footer
+  model:
+  help_center:
+  rec_url:
+  navigate_using:
+  navigate_lap:
+  navigate_tab:
 
 aliases:
   - &base_color '--color=CCCCCC --bgcolor=202124'
+  - &dark_color '--color=9AA0A6 --bgcolor=202124'
+  - &dark_color_left_align '--align=left --color=9AA0A6 --bgcolor=202124'
 
 styles:
   language: '--color=CCCCCC --bgcolor=161719'
@@ -32,6 +48,13 @@ styles:
   firmware_sync_desc: *base_color
   touchpad_sync_title: *base_color
   touchpad_sync_desc: *base_color
+  # footer
+  model: *dark_color
+  help_center: *dark_color
+  rec_url: *dark_color
+  navigate_using: *dark_color_left_align
+  navigate_lap: *dark_color_left_align
+  navigate_tab: *dark_color_left_align
 
 fonts:
   # All fonts should be provided and selected by 'ui-sans' family defined in
