@@ -11,6 +11,12 @@ inputs:
   - firmware_sync_desc
   - touchpad_sync_title
   - touchpad_sync_desc
+  # recovery screen
+  - rec_select_title
+  - rec_select_desc0
+  - rec_select_desc1
+  - btn_rec_by_phone
+  - btn_rec_by_disk
   # footer
   - model
   - help_center
@@ -28,6 +34,14 @@ files:
   firmware_sync_desc:
   touchpad_sync_title:
   touchpad_sync_desc:
+  # recovery screen
+  rec_select_title:
+  rec_select_desc0:
+  rec_select_desc1:
+  btn_rec_by_phone:
+  btn_rec_by_phone_focus: [btn_rec_by_phone]
+  btn_rec_by_disk:
+  btn_rec_by_disk_focus: [btn_rec_by_disk]
   # footer
   model:
   help_center:
@@ -40,6 +54,8 @@ aliases:
   - &base_color '--color=CCCCCC --bgcolor=202124'
   - &dark_color '--color=9AA0A6 --bgcolor=202124'
   - &dark_color_left_align '--align=left --color=9AA0A6 --bgcolor=202124'
+  - &button_color '--color=8AB4F8 --bgcolor=202124'
+  - &button_focused_color '--color=202124 --bgcolor=8AB4F8'
 
 styles:
   language: '--color=CCCCCC --bgcolor=161719'
@@ -48,6 +64,14 @@ styles:
   firmware_sync_desc: *base_color
   touchpad_sync_title: *base_color
   touchpad_sync_desc: *base_color
+  # recovery screen
+  rec_select_title: *base_color
+  rec_select_desc0: *base_color
+  rec_select_desc1: *base_color
+  btn_rec_by_phone: *button_color
+  btn_rec_by_phone_focus: *button_focused_color
+  btn_rec_by_disk: *button_color
+  btn_rec_by_disk_focus: *button_focused_color
   # footer
   model: *dark_color
   help_center: *dark_color

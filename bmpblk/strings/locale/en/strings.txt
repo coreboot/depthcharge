@@ -2,6 +2,11 @@ Please do not power off your device
 Your system is applying a critical update.
 Please do not touch the touchpad
 Touchpad firmware updating... this may take a few minutes.
+Let's step you through the recovery process
+Select how you'd like to recover.
+You can recover using a USB drive or an SD card.
+Recovery using phone
+Recovery using external disk
 Model:
 Help center:
 http://google.com/chromeos/recovery
