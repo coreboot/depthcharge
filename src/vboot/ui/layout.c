@@ -40,7 +40,7 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 	struct ui_bitmap bitmap;
 
 	/* Column 1 */
-	x = UI_MARGIN_LEFT;
+	x = UI_MARGIN_H;
 	y = footer_y;
 	VB2_TRY(ui_get_bitmap("qr_code.bmp", &bitmap));
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, footer_height, footer_height,
@@ -67,7 +67,7 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 
 	/* Separator */
 	VB2_TRY(ui_draw_box(x, footer_y, UI_SIZE_MIN, footer_height,
-			    &ui_color_separator, reverse));
+			    &ui_color_border, reverse));
 
 	/* Column 3: 2 lines of text */
 	int32_t icon_width;
@@ -102,10 +102,41 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 	return VB2_SUCCESS;
 }
 
-vb2_error_t ui_draw_content(const struct ui_state *state,
-			    const struct ui_state *prev_state,
-			    enum ui_icon_type icon, const char *title,
-			    const char *const desc[], size_t desc_size)
+static vb2_error_t draw_button(const char *image_name, const char *locale_code,
+			       int32_t x, int32_t y,
+			       int32_t width, int32_t height,
+			       int reverse, int focused)
+{
+	struct ui_bitmap bitmap;
+	const int32_t x_center = x + width / 2;
+	const int32_t y_center = y + height / 2;
+	const uint32_t flags = PIVOT_H_CENTER | PIVOT_V_CENTER;
+
+	/* Clear button area */
+	VB2_TRY(ui_draw_rounded_box(x, y, width, height,
+				    focused ? &ui_color_button : &ui_color_bg,
+				    0, UI_BUTTON_BORDER_RADIUS,
+				    reverse));
+
+	/* Draw button text */
+	VB2_TRY(ui_get_menu_item_bitmap(image_name, locale_code, focused,
+					&bitmap));
+	VB2_TRY(ui_draw_bitmap(&bitmap, x_center, y_center,
+			       UI_SIZE_AUTO, UI_BUTTON_TEXT_HEIGHT,
+			       flags, reverse));
+
+	/* Draw button borders */
+	VB2_TRY(ui_draw_rounded_box(x, y, width, height,
+				    &ui_color_border,
+				    UI_BUTTON_BORDER_THICKNESS,
+				    UI_BUTTON_BORDER_RADIUS, reverse));
+
+	return VB2_SUCCESS;
+}
+
+vb2_error_t ui_draw_default(const struct ui_screen_info *screen,
+			    const struct ui_state *state,
+			    const struct ui_state *prev_state)
 {
 	int i;
 	const char *locale_code = state->locale->code;
@@ -114,6 +145,10 @@ vb2_error_t ui_draw_content(const struct ui_state *state,
 	const int32_t w = UI_SIZE_AUTO;
 	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
 	const char *icon_file;
+	const struct ui_files *desc = &screen->desc;
+	const struct ui_files *menu = &screen->menu;
+	const size_t desc_count = desc ? desc->count : 0;
+	const size_t menu_count = menu ? menu->count : 0;
 	struct ui_bitmap bitmap;
 
 	if (!prev_state) {
@@ -134,7 +169,7 @@ vb2_error_t ui_draw_content(const struct ui_state *state,
 				    &ui_color_bg, 0));
 	}
 
-	/* TODO(yupingso): Draw language item */
+	/* TODO(yupingso): Draw language menu selection */
 
 	/*
 	 * Draw the footer if previous screen doesn't have a footer, or if
@@ -148,7 +183,7 @@ vb2_error_t ui_draw_content(const struct ui_state *state,
 		VB2_TRY(draw_footer(state));
 
 	/* Icon */
-	switch (icon) {
+	switch (screen->icon) {
 	case UI_ICON_TYPE_INFO:
 		icon_file = "ic_info.bmp";
 		break;
@@ -157,7 +192,7 @@ vb2_error_t ui_draw_content(const struct ui_state *state,
 		break;
 	}
 
-	x = UI_MARGIN_LEFT;
+	x = UI_MARGIN_H;
 	y = UI_MARGIN_TOP + UI_LANG_BOX_HEIGHT + UI_LANG_MARGIN_BOTTOM;
 	if (icon_file) {
 		VB2_TRY(ui_get_bitmap(icon_file, &bitmap));
@@ -167,18 +202,52 @@ vb2_error_t ui_draw_content(const struct ui_state *state,
 	y += UI_ICON_HEIGHT + UI_ICON_MARGIN_BOTTOM;
 
 	/* Title */
-	VB2_TRY(ui_get_localized_bitmap(title, locale_code, &bitmap));
+	VB2_TRY(ui_get_localized_bitmap(screen->title, locale_code, &bitmap));
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, UI_TITLE_TEXT_HEIGHT,
 			       flags, reverse));
 	y += UI_TITLE_TEXT_HEIGHT + UI_TITLE_MARGIN_BOTTOM;
 
 	/* Description */
 	h = UI_DESC_TEXT_HEIGHT;
-	for (i = 0; i < desc_size; i++) {
-		VB2_TRY(ui_get_localized_bitmap(desc[i], locale_code, &bitmap));
+	for (i = 0; i < desc_count; i++) {
+		VB2_TRY(ui_get_localized_bitmap(desc->files[i], locale_code,
+						&bitmap));
 		VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, h, flags, reverse));
 		y += h + UI_DESC_TEXT_LINE_SPACING;
 	}
+	y += UI_DESC_MARGIN_BOTTOM;
 
+	/* Buttons */
+
+	/* Find the longest text in the buttons */
+	int32_t max_text_width = 0;
+	int32_t text_width;
+	for (i = 0; i < menu_count; i++) {
+		if (state->disabled_item_mask & (1 << i))
+			continue;
+		VB2_TRY(ui_get_localized_bitmap(menu->files[i], locale_code,
+						&bitmap));
+		VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
+					    &text_width));
+		if (text_width > max_text_width)
+			max_text_width = text_width;
+	}
+
+	const int32_t button_width = max_text_width +
+		UI_BUTTON_TEXT_PADDING_H * 2;
+	for (i = 0; i < menu_count; i++) {
+		if (state->disabled_item_mask & (1 << i))
+			continue;
+		/*
+		 * TODO(b/147424699): No need to redraw every button when
+		 * navigating between menu.
+		 */
+		VB2_TRY(draw_button(menu->files[i], locale_code,
+				    x, y, button_width, UI_BUTTON_HEIGHT,
+				    reverse, state->selected_item == i));
+		y += UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_BOTTOM;
+	}
+
+	/* TODO(yupingso): Draw advanced options */
 	return VB2_SUCCESS;
 }

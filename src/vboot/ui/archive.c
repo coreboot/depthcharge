@@ -314,3 +314,61 @@ vb2_error_t ui_get_char_bitmap(const char c, enum ui_char_style style,
 	snprintf(image_name, sizeof(image_name), pattern, c, c);
 	return find_bitmap_in_archive(dir, image_name, bitmap);
 }
+
+/*
+ * Get file name append with a suffix, before the file extension.
+ *
+ * For example, get_file_with_suffix("name.bmp", "_suf") will return
+ * "name_suf.bmp".
+ *
+ * @param file		The original file name.
+ * @param suffix	The suffix with which |file| will be appended.
+ *
+ * @return A pointer to the new file name, or NULL on malloc failure. The caller
+ * owns the returned memory.
+ */
+static char *get_filename_with_suffix(const char *file, const char *suffix)
+{
+	char *new_file, *p;
+	const char *file_ext;
+
+	new_file = malloc(strlen(file) + strlen(suffix) + 1);
+	if (!new_file)
+		return NULL;
+
+	strcpy(new_file, file);
+
+	/* Remove file extension if exists */
+	p = strrchr(new_file, '.');
+	file_ext = NULL;
+	if (p) {
+		*p = '\0';
+		file_ext = strrchr(file, '.');
+	}
+
+	strcat(new_file, suffix);
+	strcat(new_file, file_ext);
+	return new_file;
+}
+
+vb2_error_t ui_get_menu_item_bitmap(const char *image_name,
+				    const char *locale_code,
+				    int focused, struct ui_bitmap *bitmap)
+{
+	vb2_error_t rv;
+	char *image_name_focused;
+
+	if (!focused)
+		return ui_get_localized_bitmap(image_name, locale_code, bitmap);
+
+	image_name_focused = get_filename_with_suffix(image_name, "_focus");
+	if (!image_name_focused) {
+		UI_ERROR("Out of memory\n");
+		return VB2_ERROR_UI_MEMORY_ALLOC;
+	}
+
+	rv = ui_get_localized_bitmap(image_name_focused, locale_code, bitmap);
+	free(image_name_focused);
+
+	return rv;
+}

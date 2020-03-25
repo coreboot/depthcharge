@@ -82,16 +82,16 @@ static vb2_error_t print_fallback_message(const char *str)
 	}
 
 	num_lines = count_lines(buf);
-	max_total_text_height = UI_SCALE - UI_BOX_V_MARGIN * 2 -
-		UI_BOX_V_PADDING * 2;
+	max_total_text_height = UI_SCALE - UI_BOX_MARGIN_V * 2 -
+		UI_BOX_PADDING_V * 2;
 
 	if (max_height * num_lines > max_total_text_height)
 		max_height = max_total_text_height / num_lines;
 
-	x = UI_MARGIN_LEFT;
-	y = UI_BOX_V_MARGIN;
-	box_width = UI_SCALE - UI_MARGIN_LEFT - UI_MARGIN_RIGHT;
-	box_height = max_height * num_lines + UI_BOX_V_PADDING * 2;
+	x = UI_MARGIN_H;
+	y = UI_BOX_MARGIN_V;
+	box_width = UI_SCALE - UI_MARGIN_H * 2;
+	box_height = max_height * num_lines + UI_BOX_PADDING_V * 2;
 
 	/* Clear printing area. */
 	ui_draw_rounded_box(x, y, box_width, box_height, &ui_color_bg, 0, 0, 0);
@@ -99,8 +99,8 @@ static vb2_error_t print_fallback_message(const char *str)
 	ui_draw_rounded_box(x, y, box_width, box_height, &ui_color_fg,
 			    UI_BOX_BORDER_THICKNESS, UI_BOX_BORDER_RADIUS, 0);
 
-	x += UI_BOX_H_PADDING;
-	y += UI_BOX_V_PADDING;
+	x += UI_BOX_PADDING_H;
+	y += UI_BOX_PADDING_V;
 
 	end = buf;
 	while ((line = strsep(&end, "\n"))) {
@@ -133,37 +133,31 @@ vb2_error_t ui_display_screen(struct ui_state *state,
 			      const struct ui_state *prev_state)
 {
 	vb2_error_t rv;
-	const enum vb2_screen screen = state->screen;
-	const struct ui_descriptor *desc;
+	const enum vb2_screen screen_id = state->screen;
+	const struct ui_screen_info *screen;
 
 	VB2_TRY(init_screen());
 
 	/* If the screen is blank, turn off the backlight; else turn it on. */
-	backlight_update(screen != VB2_SCREEN_BLANK);
+	backlight_update(screen_id != VB2_SCREEN_BLANK);
 
-	desc = ui_get_descriptor(screen);
-	if (!desc) {
-		UI_ERROR("Not a valid screen %#x\n", screen);
+	screen = ui_get_screen_info(screen_id);
+	if (!screen) {
+		UI_ERROR("Not a valid screen %#x\n", screen_id);
 		return VB2_ERROR_UI_INVALID_SCREEN;
 	}
 
-	if (!desc->draw) {
-		UI_ERROR("No drawing function registered for screen %#x\n",
-			 screen);
-		rv = VB2_ERROR_UI_INVALID_SCREEN;
-		goto fail;
-	}
+	if (screen->draw)
+		rv = screen->draw(screen, state, prev_state);
+	else
+		rv = ui_draw_default(screen, state, prev_state);
 
-	rv = desc->draw(state, prev_state);
 	if (rv) {
-		UI_ERROR("Drawing screen %#x failed: %#x", screen, rv);
-		goto fail;
+		UI_ERROR("Drawing screen %#x failed: %#x", screen_id, rv);
+		/* Print fallback message if drawing failed. */
+		if (screen->mesg)
+			print_fallback_message(screen->mesg);
 	}
-
-	/* Print fallback message if drawing failed. */
- fail:
-	if (rv && desc->mesg)
-		print_fallback_message(desc->mesg);
 
 	return rv;
 }

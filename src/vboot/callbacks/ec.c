@@ -124,7 +124,8 @@ vb2_error_t vb2ex_ec_update_image(enum vb2_firmware_selection select)
 		locale = vb2api_get_locale_id(ctx);
 		printf("EC is updating. Show firmware sync screen.\n");
 		if (CONFIG(MENU_UI))
-			vb2ex_display_ui(VB2_SCREEN_FIRMWARE_SYNC, locale);
+			vb2ex_display_ui(VB2_SCREEN_FIRMWARE_SYNC, locale,
+					 0, 0);
 		else if (CONFIG(LEGACY_MENU_UI))
 			VbExDisplayMenu(VB_SCREEN_WAIT, locale, 0, 0, 1);
 		else

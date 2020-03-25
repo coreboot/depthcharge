@@ -48,8 +48,7 @@
 /* Margins for all screens. Nothing should be drawn within the margin. */
 #define UI_MARGIN_TOP				30
 #define UI_MARGIN_BOTTOM			70
-#define UI_MARGIN_LEFT				50
-#define UI_MARGIN_RIGHT				50
+#define UI_MARGIN_H				50
 
 /* For language item */
 #define UI_LANG_BOX_HEIGHT			40
@@ -64,6 +63,15 @@
 #define UI_TITLE_MARGIN_BOTTOM			20
 #define UI_DESC_TEXT_HEIGHT			30
 #define UI_DESC_TEXT_LINE_SPACING		5
+#define UI_DESC_MARGIN_BOTTOM			50
+
+/* For buttons */
+#define UI_BUTTON_HEIGHT			40
+#define UI_BUTTON_TEXT_HEIGHT			26
+#define UI_BUTTON_TEXT_PADDING_H		40
+#define UI_BUTTON_BORDER_THICKNESS		2
+#define UI_BUTTON_BORDER_RADIUS			8
+#define UI_BUTTON_MARGIN_BOTTOM			10
 
 /* For footer */
 #define UI_FOOTER_HEIGHT			108
@@ -83,9 +91,9 @@
  * (2) a main UI element for viewing a large body of text.
  */
 #define UI_BOX_TEXT_HEIGHT			30
-#define UI_BOX_V_MARGIN				275
-#define UI_BOX_H_PADDING			20
-#define UI_BOX_V_PADDING			15
+#define UI_BOX_MARGIN_V				275
+#define UI_BOX_PADDING_H			20
+#define UI_BOX_PADDING_V			15
 #define UI_BOX_BORDER_THICKNESS			2
 #define UI_BOX_BORDER_RADIUS			6
 
@@ -100,7 +108,8 @@
 
 static const struct rgb_color ui_color_bg		= { 0x20, 0x21, 0x24 };
 static const struct rgb_color ui_color_fg		= { 0xcc, 0xcc, 0xcc };
-static const struct rgb_color ui_color_separator	= { 0x43, 0x44, 0x46 };
+static const struct rgb_color ui_color_button		= { 0x8a, 0xb4, 0xf8 };
+static const struct rgb_color ui_color_border		= { 0x43, 0x44, 0x46 };
 
 struct ui_bitmap {
 	const void *data;
@@ -170,6 +179,20 @@ enum ui_char_style {
  */
 vb2_error_t ui_get_char_bitmap(const char c, enum ui_char_style style,
 			       struct ui_bitmap *bitmap);
+
+/*
+ * Get bitmap of menu item.
+ *
+ * @param image_name	Non-focused image name.
+ * @param locale_code	Language code of current locale.
+ * @param focused	1 for focused and 0 for non-focused.
+ * @param bitmap	Bitmap struct to be filled.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_get_menu_item_bitmap(const char *image_name,
+				    const char *locale_code,
+				    int focused, struct ui_bitmap *bitmap);
 
 /******************************************************************************/
 /* draw.c */
@@ -284,6 +307,8 @@ vb2_error_t ui_draw_box(int32_t x, int32_t y,
 struct ui_state {
 	enum vb2_screen screen;
 	const struct ui_locale *locale;
+	uint32_t selected_item;
+	uint32_t disabled_item_mask;
 };
 
 /* Icon type. */
@@ -292,43 +317,62 @@ enum ui_icon_type {
 	UI_ICON_TYPE_INFO,
 };
 
-/*
- * Draw content of the screen.
- *
- * @param state			UI state.
- * @param icon			Type of the icon.
- * @param title			Screen title.
- * @param desc			List of screen descriptions.
- * @param desc_size		Size of the array 'desc'.
- *
- * @return VB2_SUCCESS on success, non-zero on error.
- */
-vb2_error_t ui_draw_content(const struct ui_state *state,
-			    const struct ui_state *prev_state,
-			    enum ui_icon_type icon, const char *title,
-			    const char *const desc[], size_t desc_size);
+/* List of image files */
+struct ui_files {
+	const char *const *files;
+	size_t count;
+};
 
-/******************************************************************************/
-/* screens.c */
-
-struct ui_descriptor {
+struct ui_screen_info {
 	/* Screen id */
-	enum vb2_screen screen;
-	/* Drawing function */
-	vb2_error_t (*draw)(const struct ui_state *state,
+	enum vb2_screen id;
+	/* Icon type */
+	enum ui_icon_type icon;
+	/* File for screen title. Required if (draw == NULL). */
+	const char *title;
+	/* Files for screen descriptions */
+	struct ui_files desc;
+	/*
+	 * Files for menu items on the screen, excluding language selection and
+	 * advanced options.
+	 */
+	struct ui_files menu;
+	/*
+	 * Custom drawing function. When it is NULL, the default drawing
+	 * function ui_draw_default() will be called instead.
+	 */
+	vb2_error_t (*draw)(const struct ui_screen_info *screen,
+			    const struct ui_state *state,
 			    const struct ui_state *prev_state);
 	/* Fallback message */
 	const char *mesg;
 };
 
 /*
+ * Default drawing function.
+ *
+ * @param ui_desc	UI descriptor, which contains screen information such as
+ *			title and descriptions.
+ * @param state		UI state.
+ * @param prev_state	Previous UI state.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_draw_default(const struct ui_screen_info *screen,
+			    const struct ui_state *state,
+			    const struct ui_state *prev_state);
+
+/******************************************************************************/
+/* screens.c */
+
+/*
  * Get UI descriptor of a screen.
  *
- * @param screen	Screen.
+ * @param screen_id	Screen id.
  *
  * @return UI descriptor on success, NULL on error.
  */
-const struct ui_descriptor *ui_get_descriptor(enum vb2_screen screen);
+const struct ui_screen_info *ui_get_screen_info(enum vb2_screen screen_id);
 
 /******************************************************************************/
 /* common.c */

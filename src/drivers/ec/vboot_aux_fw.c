@@ -130,7 +130,7 @@ static vb2_error_t display_firmware_sync_screen(void)
 			       "Show firmware sync screen.\n");
 			if (CONFIG(MENU_UI))
 				vb2ex_display_ui(VB2_SCREEN_FIRMWARE_SYNC,
-						 locale);
+						 locale, 0, 0);
 			else if (CONFIG(LEGACY_MENU_UI))
 				VbExDisplayMenu(VB_SCREEN_WAIT, locale, 0, 0,
 						1);
