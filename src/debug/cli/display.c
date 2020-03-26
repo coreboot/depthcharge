@@ -1,6 +1,6 @@
 
 #include <vboot_api.h>
-#include <vboot/screens.h>
+#include <vboot/ui_legacy.h>
 #include "common.h"
 
 #include "drivers/video/display.h"
@@ -27,7 +27,7 @@ static int do_display(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		return CMD_RET_USAGE;
 	}
 
-	return vboot_draw_screen(screen_map[display], locale, NULL);
+	return vboot_draw_legacy_screen(screen_map[display], locale, NULL);
 }
 
 U_BOOT_CMD(
