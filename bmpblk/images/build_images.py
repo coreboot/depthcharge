@@ -223,7 +223,10 @@ class Convert(object):
     """Set a list of locales for which localized images are converted"""
     # LOCALES environment variable can overwrite boards.yaml
     locales = os.getenv('LOCALES')
-    if locales:
+    if os.getenv("MENU_UI") == "1":
+      # TODO(b/144969853): Support all locales for MENU_UI.
+      self.locales = ['en']
+    elif locales:
       self.locales = locales.split()
     else:
       self.locales = self.config[LOCALES_KEY]
