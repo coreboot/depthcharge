@@ -4044,8 +4044,8 @@ enum ec_bus_type {
 };
 
 struct ec_i2c_info {
-	uint16_t port;	/* Physical port for device */
-	uint16_t addr;	/* 7-bit (or 10-bit) address */
+	uint16_t port;		/* Physical port for device */
+	uint16_t addr_flags;	/* 7-bit (or 10-bit) address */
 };
 
 struct ec_params_locate_chip {

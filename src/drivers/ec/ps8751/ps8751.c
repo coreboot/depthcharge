@@ -1166,9 +1166,9 @@ static int ps8751_construct_i2c_tunnel(Ps8751 *me)
 		return -1;
 	}
 
-	if (r.i2c_info.addr != I2C_MASTER) {
+	if (r.i2c_info.addr_flags != I2C_MASTER) {
 		printf("%s: Unexpected addr %d for port %d\n",
-			me->chip_name, r.i2c_info.addr, me->ec_pd_id);
+			me->chip_name, r.i2c_info.addr_flags, me->ec_pd_id);
 		return -1;
 	}
 
