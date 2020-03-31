@@ -230,6 +230,7 @@ static vb2_error_t get_localized_graphic_archive(uint32_t locale,
 		 locale_data->locales[locale].code);
 	VB2_TRY(load_archive(name, &cache));
 	cached_locale = locale;
+	*dest = cache;
 
 	return VB2_SUCCESS;
 }
