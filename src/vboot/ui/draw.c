@@ -73,9 +73,9 @@ static vb2_error_t get_char_width(const char c, int32_t height,
 				  int32_t *width)
 {
 	struct ui_bitmap bitmap;
-	RETURN_ON_ERROR(ui_get_char_bitmap(c, style, &bitmap));
+	VB2_TRY(ui_get_char_bitmap(c, style, &bitmap));
 	*width = UI_SIZE_AUTO;
-	RETURN_ON_ERROR(get_image_size(&bitmap, width, &height));
+	VB2_TRY(get_image_size(&bitmap, width, &height));
 	return VB2_SUCCESS;
 }
 
@@ -91,8 +91,8 @@ static vb2_error_t get_text_width(const char *text, int32_t height,
 			UI_WARN("Failed to retrieve character bitmap of %#.2x, "
 				"use '?' to get character width instead\n",
 				*text);
-			RETURN_ON_ERROR(get_char_width('?', height, style,
-						       &char_width));
+			VB2_TRY(get_char_width('?', height, style,
+					       &char_width));
 		}
 		*width += char_width;
 		text++;
@@ -110,8 +110,7 @@ static vb2_error_t draw_text(const char *text, int32_t x, int32_t y,
 
 	if (flags & PIVOT_H_CENTER || flags & PIVOT_H_RIGHT) {
 		char_width = UI_SIZE_AUTO;
-		RETURN_ON_ERROR(get_text_width(text, height, style,
-					       &char_width));
+		VB2_TRY(get_text_width(text, height, style, &char_width));
 
 		if (flags & PIVOT_H_CENTER) {
 			flags &= ~(PIVOT_H_CENTER);
@@ -125,13 +124,11 @@ static vb2_error_t draw_text(const char *text, int32_t x, int32_t y,
 	}
 
 	while (*text) {
-		RETURN_ON_ERROR(ui_get_char_bitmap(*text, style, &bitmap));
+		VB2_TRY(ui_get_char_bitmap(*text, style, &bitmap));
 		char_width = UI_SIZE_AUTO;
 		char_height = height;
-		RETURN_ON_ERROR(get_image_size(&bitmap,
-					       &char_width, &char_height));
-		RETURN_ON_ERROR(draw(&bitmap, x, y, UI_SIZE_AUTO, height,
-				     flags));
+		VB2_TRY(get_image_size(&bitmap, &char_width, &char_height));
+		VB2_TRY(draw(&bitmap, x, y, UI_SIZE_AUTO, height, flags));
 		x += char_width;
 		text++;
 	}

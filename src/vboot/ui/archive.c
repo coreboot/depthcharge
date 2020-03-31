@@ -198,7 +198,7 @@ static vb2_error_t load_archive(const char *name, struct directory **dest)
 static vb2_error_t get_graphic_archive(struct directory **dest) {
 	static struct directory *cache;
 	if (!cache)
-		RETURN_ON_ERROR(load_archive("vbgfx.bin", &cache));
+		VB2_TRY(load_archive("vbgfx.bin", &cache));
 
 	*dest = cache;
 	return VB2_SUCCESS;
@@ -228,7 +228,7 @@ static vb2_error_t get_localized_graphic_archive(uint32_t locale,
 
 	snprintf(name, sizeof(name), "locale_%s.bin",
 		 locale_data->locales[locale].code);
-	RETURN_ON_ERROR(load_archive(name, &cache));
+	VB2_TRY(load_archive(name, &cache));
 	cached_locale = locale;
 
 	return VB2_SUCCESS;
@@ -238,7 +238,7 @@ static vb2_error_t get_localized_graphic_archive(uint32_t locale,
 static vb2_error_t get_font_archive(struct directory **dest) {
 	static struct directory *cache;
 	if (!cache)
-		RETURN_ON_ERROR(load_archive("font.bin", &cache));
+		VB2_TRY(load_archive("font.bin", &cache));
 
 	*dest = cache;
 	return VB2_SUCCESS;
@@ -279,7 +279,7 @@ static vb2_error_t find_bitmap_in_archive(const struct directory *dir,
 vb2_error_t ui_get_bitmap(const char *image_name, struct ui_bitmap *bitmap)
 {
 	struct directory *dir;
-	RETURN_ON_ERROR(get_graphic_archive(&dir));
+	VB2_TRY(get_graphic_archive(&dir));
 	return find_bitmap_in_archive(dir, image_name, bitmap);
 }
 
@@ -287,7 +287,7 @@ vb2_error_t ui_get_localized_bitmap(const char *image_name, uint32_t locale,
 				    struct ui_bitmap *bitmap)
 {
 	struct directory *dir;
-	RETURN_ON_ERROR(get_localized_graphic_archive(locale, &dir));
+	VB2_TRY(get_localized_graphic_archive(locale, &dir));
 	return find_bitmap_in_archive(dir, image_name, bitmap);
 }
 
@@ -300,7 +300,7 @@ vb2_error_t ui_get_char_bitmap(const char c, enum ui_char_style style,
 	const char *pattern;
 	struct directory *dir;
 
-	RETURN_ON_ERROR(get_font_archive(&dir));
+	VB2_TRY(get_font_archive(&dir));
 
 	/* Compose file name */
 	pattern = (style == UI_CHAR_STYLE_DARK) ?

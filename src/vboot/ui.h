@@ -34,13 +34,6 @@
 #include <libpayload.h>
 #include <vb2_api.h>
 
-/* TODO(chromium:1049032): Replace this with VB2_TRY() macro. */
-#define RETURN_ON_ERROR(function_call) do {				\
-		vb2_error_t _vb2_try_rv = (function_call);		\
-		if (_vb2_try_rv != VB2_SUCCESS)				\
-			return _vb2_try_rv;				\
-	} while (0)
-
 #define _UI_PRINT(fmt, args...) printf("%s: " fmt, __func__, ##args)
 #define UI_INFO(...) _UI_PRINT(__VA_ARGS__)
 #define UI_WARN(...) _UI_PRINT(__VA_ARGS__)
