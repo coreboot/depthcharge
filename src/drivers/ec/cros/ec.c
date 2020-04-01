@@ -878,12 +878,8 @@ static int ec_efs_verify(CrosEc *me, enum ec_flash_region region)
 		printf("EFS: Verification success\n");
 		return 0;
 	}
-	if (rv == -EC_RES_INVALID_COMMAND) {
-		printf("EFS: EC doesn't use EFS1\n");
-		return 0;
-	}
 
-	printf("EFS: Verification failed\n");
+	printf("EFS: Verification failed for %d\n", rv);
 	return rv;
 }
 
@@ -963,7 +959,7 @@ static vb2_error_t vboot_update_image(VbootEcOps *vbec,
 		return VB2_ERROR_UNKNOWN;
 
 	/* Verify the image */
-	if (ec_efs_verify(me, region))
+	if (CONFIG(EC_EFS) && ec_efs_verify(me, region))
 		return VB2_ERROR_UNKNOWN;
 
 	return VB2_SUCCESS;
