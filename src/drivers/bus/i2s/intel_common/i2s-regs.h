@@ -19,13 +19,7 @@
 
 #include <libpayload.h>
 
-#if CONFIG(INTEL_COMMON_I2S_CAVS_1_5)
-#include "drivers/bus/i2s/cavs_1_5-regs.h"
-#elif CONFIG(INTEL_COMMON_I2S_CAVS_1_8)
-#include "drivers/bus/i2s/cavs_1_8-regs.h"
-#elif CONFIG(INTEL_COMMON_I2S_CAVS_2_5)
-#include "drivers/bus/i2s/cavs_2_5-regs.h"
-#endif
+#include "drivers/bus/i2s/cavs-regs.h"
 
 #define DEFINE_REG(reg, offset) \
 	const uint8_t OFFSET_ ## reg = offset; \

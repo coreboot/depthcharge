@@ -44,7 +44,7 @@
 #include "drivers/gpio/apollolake.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/bus/i2s/intel_common/max98357a.h"
-#include "drivers/bus/i2s/cavs_1_5-regs.h"
+#include "drivers/bus/i2s/cavs-regs.h"
 
 #define EMMC_SD_CLOCK_MIN       400000
 #define EMMC_CLOCK_MAX          200000000

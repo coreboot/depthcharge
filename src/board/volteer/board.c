@@ -12,7 +12,7 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
-#include "drivers/bus/i2s/cavs_2_5-regs.h"
+#include "drivers/bus/i2s/cavs-regs.h"
 #include "drivers/bus/i2s/intel_common/max98357a.h"
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/lpc.h"

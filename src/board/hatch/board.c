@@ -41,7 +41,7 @@
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/bus/i2s/intel_common/max98357a.h"
-#include "drivers/bus/i2s/cavs_1_8-regs.h"
+#include "drivers/bus/i2s/cavs-regs.h"
 #include "drivers/sound/rt1011.h"
 
 #define AUD_VOLUME              4000
