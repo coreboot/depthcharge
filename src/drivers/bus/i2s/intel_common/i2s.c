@@ -89,8 +89,9 @@ static uint32_t calculate_sscr0(const I2sSettings *settings, int bps)
 		 SSCR0_reg(FRDC,
 			SSCR0_SlotsPerFrm(settings->frame_rate_divider_ctrl));
 
-	/* ECS bit set is needed for TGL platforms */
-	if (CONFIG(INTEL_COMMON_I2S_CAVS_2_5))
+	/* ECS bit set is needed for cAVS 2.0 or cAVS 2.5 */
+	if (CONFIG(INTEL_COMMON_I2S_CAVS_2_0) ||
+			CONFIG(INTEL_COMMON_I2S_CAVS_2_5))
 		sscr0 |= SSCR0_reg(ECS, DIV_ENABLE);
 	return sscr0;
 }
@@ -192,12 +193,15 @@ static int enable_DSP_SSP(I2s *bus)
 		return -1;
 #endif
 
-#if CONFIG(INTEL_COMMON_I2S_CAVS_2_5)
-	/* In TGL platform need to set I2S MDIV and NDIV */
+#if CONFIG(INTEL_COMMON_I2S_CAVS_2_0) || CONFIG(INTEL_COMMON_I2S_CAVS_2_5)
+	/* In cAVS 2.0 or cAVS 2.5, need to set I2S MDIV and NDIV */
 	writel(1, (bus->lpe_bar4 +
 			(MNCSS_REG_BLOCK_START + MDIV_M_VAL(AMP_SSP_PORT_INDEX))));
 	writel(1, (bus->lpe_bar4 +
 			(MNCSS_REG_BLOCK_START + MDIV_N_VAL(AMP_SSP_PORT_INDEX))));
+#endif
+
+#if (CONFIG(INTEL_COMMON_I2S_CAVS_2_5))
 	/* SPA register should be set for each I2S port */
 	writel(readl(bus->lpe_bar4 + I2SLCTL) | BIT(AMP_SSP_PORT_INDEX),
 			(bus->lpe_bar4 + I2SLCTL));

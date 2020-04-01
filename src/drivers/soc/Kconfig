@@ -56,6 +56,7 @@ config DRIVER_SOC_JASPERLAKE
 	bool "Jasperlake SoC driver"
 	default n
 	select DRIVER_GPIO_JASPERLAKE
+	select INTEL_COMMON_I2S_CAVS_2_0
 
 config DRIVER_SOC_TIGERLAKE
 	bool "Tigerlake SoC driver"
