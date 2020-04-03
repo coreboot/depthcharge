@@ -1546,11 +1546,24 @@ Ps8751 *new_ps8815(CrosECTunnelI2c *bus, int ec_pd_id)
 	return me;
 }
 
-static const VbootAuxFwOps *new_ps8751_from_chip_info(
-			struct ec_response_pd_chip_info *r, uint8_t ec_pd_id)
+static const VbootAuxFwOps *new_ps8xxx_from_chip_info(
+	struct ec_response_pd_chip_info *r, uint8_t ec_pd_id)
 {
-	Ps8751 *ps8751 = new_ps8751(NULL, ec_pd_id);
+	Ps8751 *ps8751;
 
+	switch (r->product_id) {
+	case PARADE_PS8751_PRODUCT_ID:
+		ps8751 = new_ps8751(NULL, ec_pd_id);
+		break;
+	case PARADE_PS8805_PRODUCT_ID:
+		ps8751 = new_ps8805(NULL, ec_pd_id);
+		break;
+	case PARADE_PS8815_PRODUCT_ID:
+		ps8751 = new_ps8815(NULL, ec_pd_id);
+		break;
+	default:
+		return 0;
+	}
 	ps8751->chip.vendor = r->vendor_id;
 	ps8751->chip.product = r->product_id;
 	ps8751->chip.device = r->device_id;
@@ -1564,21 +1577,21 @@ static const VbootAuxFwOps *new_ps8751_from_chip_info(
 static CrosEcAuxFwChipInfo aux_fw_chip_info = {
 	.vid = PARADE_VENDOR_ID,
 	.pid = PARADE_PS8751_PRODUCT_ID,
-	.new_chip_aux_fw_ops = new_ps8751_from_chip_info,
+	.new_chip_aux_fw_ops = new_ps8xxx_from_chip_info,
 };
 
 static CrosEcAuxFwChipInfo aux_fw_ps8815_info = {
 	.vid = PARADE_VENDOR_ID,
 	.pid = PARADE_PS8815_PRODUCT_ID,
-	.new_chip_aux_fw_ops = new_ps8751_from_chip_info,
+	.new_chip_aux_fw_ops = new_ps8xxx_from_chip_info,
 };
 
 static int ps8751_register(void)
 {
 	list_insert_after(&aux_fw_chip_info.list_node,
-					&ec_aux_fw_chip_list);
+			  &ec_aux_fw_chip_list);
 	list_insert_after(&aux_fw_ps8815_info.list_node,
-					&ec_aux_fw_chip_list);
+			  &ec_aux_fw_chip_list);
 	return 0;
 }
 
