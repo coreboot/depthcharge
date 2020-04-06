@@ -1574,7 +1574,7 @@ static const VbootAuxFwOps *new_ps8xxx_from_chip_info(
 	return &ps8751->fw_ops;
 }
 
-static CrosEcAuxFwChipInfo aux_fw_chip_info = {
+static CrosEcAuxFwChipInfo aux_fw_ps8751_info = {
 	.vid = PARADE_VENDOR_ID,
 	.pid = PARADE_PS8751_PRODUCT_ID,
 	.new_chip_aux_fw_ops = new_ps8xxx_from_chip_info,
@@ -1586,9 +1586,17 @@ static CrosEcAuxFwChipInfo aux_fw_ps8815_info = {
 	.new_chip_aux_fw_ops = new_ps8xxx_from_chip_info,
 };
 
+static CrosEcAuxFwChipInfo aux_fw_ps8805_info = {
+	.vid = PARADE_VENDOR_ID,
+	.pid = PARADE_PS8805_PRODUCT_ID,
+	.new_chip_aux_fw_ops = new_ps8xxx_from_chip_info,
+};
+
 static int ps8751_register(void)
 {
-	list_insert_after(&aux_fw_chip_info.list_node,
+	list_insert_after(&aux_fw_ps8751_info.list_node,
+			  &ec_aux_fw_chip_list);
+	list_insert_after(&aux_fw_ps8805_info.list_node,
 			  &ec_aux_fw_chip_list);
 	list_insert_after(&aux_fw_ps8815_info.list_node,
 			  &ec_aux_fw_chip_list);
