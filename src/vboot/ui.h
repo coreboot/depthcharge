@@ -130,17 +130,54 @@ vb2_error_t ui_get_char_bitmap(const char c, enum ui_char_style style,
 /* draw.c */
 
 /*
- * Print a fallback message on the top of the screen.
+ * Get text width.
  *
- * A box around the message will also be drawn. The printed text is
- * guaranteed to fit on the screen by adjusting the height of the box,
- * and by resizing individual lines horizontally to fit.
- *
- * @param str		Message to be printed, which may contain newlines.
+ * @param text		Text.
+ * @param height	Text height.
+ * @param style		Style of the text.
+ * @param width		Text width to be calculated.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t ui_print_fallback_message(const char *str);
+vb2_error_t ui_get_text_width(const char *text, int32_t height,
+			      enum ui_char_style style, int32_t *width);
+
+/*
+ * Draw a line of text.
+ *
+ * @param text		Text to be drawn, which should contain only printable
+ *			characters, including spaces, but excluding tabs.
+ * @param x		x-coordinate of the top-left corner.
+ * @param y		y-coordicate of the top-left corner.
+ * @param height	Height of the text.
+ * @param flags		Flags passed to draw_bitmap() in libpayload.
+ * @param style		Style of the text.
+ * @param reverse	Whether to reverse the x-coordinate relative to the
+ *			canvas.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_draw_text(const char *text, int32_t x, int32_t y,
+			 int32_t height, uint32_t flags,
+			 enum ui_char_style style, int reverse);
+
+/*
+ * Draw a box with rounded corners.
+ *
+ * @param x		x-coordinate of the top-left corner.
+ * @param y		y-coordinate of the top-left corner.
+ * @param width		Width of the box.
+ * @param height	Height of the box.
+ * @param rgb		Color of the box.
+ * @param thickness	Thickness of the border of the box.
+ * @param radius	Radius of the rounded corners.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_draw_rounded_box(int32_t x, int32_t y,
+				int32_t width, int32_t height,
+				const struct rgb_color *rgb,
+				uint32_t thickness, uint32_t radius);
 
 /******************************************************************************/
 /* screens.c */

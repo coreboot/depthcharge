@@ -20,7 +20,6 @@
 #include <vb2_api.h>
 
 #include "vboot/ui.h"
-#include "vboot/util/misc.h"
 
 static vb2_error_t draw(const struct ui_bitmap *bitmap,
 			int32_t x, int32_t y, int32_t width, int32_t height,
@@ -76,8 +75,8 @@ static vb2_error_t get_char_width(const char c, int32_t height,
 	return VB2_SUCCESS;
 }
 
-static vb2_error_t get_text_width(const char *text, int32_t height,
-				  enum ui_char_style style, int32_t *width)
+vb2_error_t ui_get_text_width(const char *text, int32_t height,
+			      enum ui_char_style style, int32_t *width)
 {
 	*width = 0;
 	while (*text) {
@@ -97,17 +96,16 @@ static vb2_error_t get_text_width(const char *text, int32_t height,
 	return VB2_SUCCESS;
 }
 
-/* Draw a line of text. */
-static vb2_error_t draw_text(const char *text, int32_t x, int32_t y,
-			     int32_t height, uint32_t flags,
-			     enum ui_char_style style)
+vb2_error_t ui_draw_text(const char *text, int32_t x, int32_t y,
+			 int32_t height, uint32_t flags,
+			 enum ui_char_style style, int reverse)
 {
 	int32_t char_width, char_height;
 	struct ui_bitmap bitmap;
 
 	if (flags & PIVOT_H_CENTER || flags & PIVOT_H_RIGHT) {
 		char_width = UI_SIZE_AUTO;
-		VB2_TRY(get_text_width(text, height, style, &char_width));
+		VB2_TRY(ui_get_text_width(text, height, style, &char_width));
 
 		if (flags & PIVOT_H_CENTER) {
 			flags &= ~(PIVOT_H_CENTER);
@@ -133,18 +131,18 @@ static vb2_error_t draw_text(const char *text, int32_t x, int32_t y,
 	return VB2_SUCCESS;
 }
 
-static vb2_error_t ui_draw_rounded_box(int32_t x, int32_t y,
-				       int32_t w, int32_t h,
-				       const struct rgb_color *rgb,
-				       uint32_t thickness, uint32_t radius)
+vb2_error_t ui_draw_rounded_box(int32_t x, int32_t y,
+				int32_t width, int32_t height,
+				const struct rgb_color *rgb,
+				uint32_t thickness, uint32_t radius)
 {
 	struct scale pos_rel = {
 		.x = { .n = x, .d = UI_SCALE },
 		.y = { .n = y, .d = UI_SCALE },
 	};
 	struct scale dim_rel = {
-		.x = { .n = w, .d = UI_SCALE },
-		.y = { .n = h, .d = UI_SCALE },
+		.x = { .n = width, .d = UI_SCALE },
+		.y = { .n = height, .d = UI_SCALE },
 	};
 	struct fraction thickness_rel = {
 		.n = thickness,
@@ -161,85 +159,4 @@ static vb2_error_t ui_draw_rounded_box(int32_t x, int32_t y,
 		return VB2_ERROR_UI_DRAW_FAILURE;
 
 	return VB2_SUCCESS;
-}
-
-static int count_lines(const char *str)
-{
-	const char *c = str;
-	int lines;
-	if (!str)
-		return 0;
-
-	lines = 1;
-	while (*c) {
-		if (*c == '\n')
-			lines++;
-		c++;
-	}
-	return lines;
-}
-
-vb2_error_t ui_print_fallback_message(const char *str)
-{
-	vb2_error_t rv = VB2_SUCCESS;
-	int32_t x, y;
-	int32_t max_height = UI_BOX_TEXT_HEIGHT;
-	int num_lines;
-	int32_t max_total_text_height, box_width, box_height;
-	char *buf, *end, *line;
-	const enum ui_char_style style = UI_CHAR_STYLE_DEFAULT;
-
-	/* Copy str to buf since strsep() will modify the string. */
-	buf = strdup(str);
-	if (!buf) {
-		UI_ERROR("Failed to malloc string buffer\n");
-		return VB2_ERROR_UI_DRAW_FAILURE;
-	}
-
-	num_lines = count_lines(buf);
-	max_total_text_height = UI_SCALE - UI_BOX_V_MARGIN * 2 -
-		UI_BOX_V_PADDING * 2;
-
-	if (max_height * num_lines > max_total_text_height)
-		max_height = max_total_text_height / num_lines;
-
-	x = 0;
-	y = UI_BOX_V_MARGIN;
-	box_width = UI_SCALE;
-	box_height = max_height * num_lines + UI_BOX_V_PADDING * 2;
-
-	/* Clear printing area. */
-	ui_draw_rounded_box(x, y, box_width, box_height, &ui_color_bg, 0, 0);
-	/* Draw the border of a box. */
-	ui_draw_rounded_box(x, y, box_width, box_height, &ui_color_fg,
-			    UI_BOX_BORDER_THICKNESS, UI_BOX_BORDER_RADIUS);
-
-	x += UI_BOX_H_PADDING;
-	y += UI_BOX_V_PADDING;
-
-	end = buf;
-	while ((line = strsep(&end, "\n"))) {
-		vb2_error_t line_rv;
-		int32_t width;
-		int32_t height = max_height;
-		/* Ensure the text width is no more than box width */
-		line_rv = get_text_width(line, height, style, &width);
-		if (line_rv) {
-			/* Save the first error in rv */
-			if (rv == VB2_SUCCESS)
-				rv = line_rv;
-			continue;
-		}
-		if (width > box_width)
-			height = height * box_width / width;
-		line_rv = draw_text(line, x, y, height,
-				    PIVOT_H_LEFT | PIVOT_V_TOP, style);
-		y += height;
-		/* Save the first error in rv */
-		if (line_rv && rv == VB2_SUCCESS)
-			rv = line_rv;
-	}
-
-	free(buf);
-	return rv;
 }
