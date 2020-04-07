@@ -47,15 +47,12 @@ static vb2_error_t draw(const struct ui_bitmap *bitmap,
 static vb2_error_t get_image_size(const struct ui_bitmap *bitmap,
 				  int32_t *width, int32_t *height)
 {
-	vb2_error_t rv;
-
 	struct scale dim = {
 		.x = { .n = *width, .d = UI_SCALE, },
 		.y = { .n = *height, .d = UI_SCALE, },
 	};
 
-	rv = get_bitmap_dimension(bitmap->data, bitmap->size, &dim);
-	if (rv)
+	if (get_bitmap_dimension(bitmap->data, bitmap->size, &dim))
 		return VB2_ERROR_UI_DRAW_FAILURE;
 
 	/*
