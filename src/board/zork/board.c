@@ -74,11 +74,6 @@
 /* eDP backlight */
 #define GPIO_BACKLIGHT		85
 
-
-/* Clock frequencies for eMMC are defined below */
-#define EMMC_CLOCK_MIN 400000
-#define EMMC_CLOCK_MAX 200000000
-
 static int cr50_irq_status(void)
 {
 	static KernGpio *tpm_gpio;
@@ -142,11 +137,11 @@ static int board_setup(void)
 	SdhciHost *emmc = new_mem_sdhci_host(
 		EMMCCFG,
 		/* Can't enable HS200 or HS400 until tuning is fixed */
-		SDHCI_PLATFORM_NO_EMMC_HS200 | SDHCI_PLATFORM_EMMC_1V8_POWER,
-		EMMC_CLOCK_MIN, EMMC_CLOCK_MAX, 0);
-
+		SDHCI_PLATFORM_NO_EMMC_HS200 | SDHCI_PLATFORM_EMMC_1V8_POWER, 0,
+		0, 0);
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
+
 	/* PCI Bridge for NVMe */
 	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x01, 0x07));
 	list_insert_after(&nvme->ctrlr.list_node,
