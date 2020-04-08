@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="50" height="24" viewBox="0 0 50 24">
+  <g fill="none" fill-rule="evenodd">
+    <text fill="#91979D" font-family="GoogleSans-Medium, Google Sans" font-size="12" font-weight="400">
+      <tspan x="10" y="15">enter</tspan>
+    </text>
+    <rect width="49" height="23" x=".5" y=".5" stroke="#91979D" rx="4"/>
+  </g>
+</svg>

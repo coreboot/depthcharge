@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24" viewBox="0 0 24 24">
+  <defs>
+    <path id="nav-button_volume_down-a" d="M0.7,9.1 L3.12666669,9.1 L5.6,11.55 L5.6,2.45 L3.12666669,4.9 L0.7,4.9 L0.7,9.1 Z M7,4.55 L7,9.45 C8.2432,9.00565217 8.75,7.70304348 8.75,7 C8.75,6.29695652 8.2432,5.00043478 7,4.55 Z"/>
+    <path id="nav-button_volume_down-b" d="M0.7,9.1 L3.12666669,9.1 L5.6,11.55 L5.6,2.45 L3.12666669,4.9 L0.7,4.9 L0.7,9.1 Z M7,4.55 L7,9.45 C8.2432,9.00565217 8.75,7.70304348 8.75,7 C8.75,6.29695652 8.2432,5.00043478 7,4.55 Z"/>
+  </defs>
+  <g fill="none" fill-rule="evenodd">
+    <use fill="#9AA0A6" transform="translate(7 5)" xlink:href="#nav-button_volume_down-a"/>
+    <rect width="23" height="23" x=".5" y=".5" stroke="#91979D" rx="4"/>
+    <use fill="#9AA0A6" transform="translate(7 5)" xlink:href="#nav-button_volume_down-b"/>
+  </g>
+</svg>
