@@ -1404,7 +1404,7 @@ static int ps8751_halt_and_flash(Ps8751 *me,
 	if (ps8751_spi_flash_lock(me) != 0)
 		status = -1;
 
-enable_mpu:
+ enable_mpu:
 	if (ps8751_enable_mpu(me) != 0)
 		return -1;
 	return status;
@@ -1442,11 +1442,11 @@ static vb2_error_t ps8751_update_image(const VbootAuxFwOps *vbaux,
 	if (ps8751_halt_and_flash(me, image, image_size) == 0)
 		status = VB2_SUCCESS;
 
-hide_i2c:
+ hide_i2c:
 	if (ps8751_hide_i2c(me) != 0)
 		status = VB2_ERROR_UNKNOWN;
 
-pd_resume:
+ pd_resume:
 	if (ps8751_ec_pd_resume(me) != 0)
 		status = VB2_ERROR_UNKNOWN;
 

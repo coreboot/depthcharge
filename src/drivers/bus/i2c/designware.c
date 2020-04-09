@@ -646,7 +646,7 @@ static int i2c_transfer_segment(DesignwareI2cRegs *regs,
 	}
 
 	return 0;
-err:
+ err:
 	printf("%s: Transferring byte %u of %d failed.\n", __func__, i,
 	       segment->len);
 	return -1;
@@ -727,7 +727,7 @@ static int i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
 	}
 
 	ret = i2c_xfer_finish(regs);
-out:
+ out:
 	readl(&regs->clear_intr);
 	i2c_disable(regs);
 	return ret;

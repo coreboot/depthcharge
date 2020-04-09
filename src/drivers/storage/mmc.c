@@ -814,7 +814,7 @@ static int sd_change_freq(MmcMedia *media)
 		mmc_set_timing(media->ctrlr, MMC_TIMING_SD_HS);
 	}
 
-out:
+ out:
 	mmc_recalculate_clock(media);
 	return 0;
 }
@@ -1372,7 +1372,7 @@ lba_t block_mmc_fill_write(BlockDevOps *me, lba_t start, lba_t count,
 
 	ret = count;
 
-cleanup:
+ cleanup:
 	free(buffer);
 	return ret;
 }

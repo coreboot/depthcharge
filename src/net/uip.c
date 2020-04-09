@@ -947,14 +947,14 @@ uip_process(uint8_t flag)
     UIP_LOG("udp: no matching connection found");
     goto drop;
 
-   udp_found:
+ udp_found:
     uip_conn = NULL;
     uip_flags = UIP_NEWDATA;
     uip_sappdata = uip_appdata = &uip_buf[CONFIG_UIP_LLH_LEN + UIP_IPUDPH_LEN];
     uip_slen = 0;
     UIP_UDP_APPCALL();
 
-   udp_send:
+ udp_send:
     if(uip_slen == 0) {
       goto drop;
     }
@@ -1400,7 +1400,7 @@ uip_process(uint8_t flag)
       uip_connr->len = 1;
       uip_connr->tcpstateflags = UIP_LAST_ACK;
       uip_connr->nrtx = 0;
-    tcp_send_finack:
+ tcp_send_finack:
       BUF->flags = TCP_FIN | TCP_ACK;
       goto tcp_send_nodata;
     }
@@ -1461,7 +1461,7 @@ uip_process(uint8_t flag)
       uip_slen = 0;
       UIP_APPCALL();
 
-    appsend:
+ appsend:
       
       if(uip_flags & UIP_ABORT) {
 	uip_slen = 0;
@@ -1512,7 +1512,7 @@ uip_process(uint8_t flag)
 	}
       }
       uip_connr->nrtx = 0;
-    apprexmit:
+ apprexmit:
       uip_appdata = uip_sappdata;
       
       /* If the application has data to be sent, or if the incoming

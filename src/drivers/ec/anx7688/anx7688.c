@@ -331,7 +331,7 @@ static vb2_error_t anx7688_update(struct Anx7688 *me,
 		}
 	}
 
-out:
+ out:
 	cros_ec_pd_control(ANX7688_PD_ID, PD_RESET);
 	cros_ec_pd_control(ANX7688_PD_ID, PD_RESUME);
 	mdelay(100);

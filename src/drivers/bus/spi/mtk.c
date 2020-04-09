@@ -177,7 +177,7 @@ static int mtk_spi_transfer(SpiOps *me, void *in, const void *out,
 	free(outb);
 	return 0;
 
-error:
+ error:
 	mtk_spi_reset(regs);
 	bus->state = MTK_SPI_IDLE;
 	clrbits_le32(&regs->spi_cmd_reg, (1 << SPI_CMD_RX_DMA_SHIFT) |

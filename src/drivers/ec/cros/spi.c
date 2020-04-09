@@ -130,7 +130,7 @@ static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 	}
 
 	ret = EC_RES_SUCCESS;
-out:
+ out:
 	stop_bus(bus);
 	return ret;
 }

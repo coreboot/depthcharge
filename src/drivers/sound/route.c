@@ -58,7 +58,7 @@ static int route_start(SoundOps *me, uint32_t frequency)
 
 	return 0;
 
-err:
+ err:
 	route_enable_components(route, 0);
 	return res;
 }
@@ -89,7 +89,7 @@ static int route_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 
 	res = route->source->play(route->source, msec, frequency);
 
-out:
+ out:
 	res |= route_enable_components(route, 0);
 	return res;
 }

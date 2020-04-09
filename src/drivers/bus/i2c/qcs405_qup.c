@@ -484,7 +484,7 @@ qup_return_t qup_init(blsp_qup_id_t id, const qup_config_t *config_ptr)
 	qup_write32(QUP_ADDR(id, QUP_I2C_MASTER_CLK_CTL), reg_val);
 
 	qup_set_state(id, BLSP_QUP_STATE_RESET);
-bailout:
+ bailout:
 	if (ret)
 		printf(QUPDBG "failed to init qup (%d)\n", ret);
 

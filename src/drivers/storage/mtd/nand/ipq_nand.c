@@ -775,7 +775,7 @@ static int ipq_nand_read_oob(MtdDev *mtd, uint64_t from,
 	if (mtd->ecc_stats.corrected != corrected)
 		ret = -EUCLEAN;
 
-done:
+ done:
 	ipq_exit_raw_mode(mtd);
 	return ret;
 }
@@ -1001,7 +1001,7 @@ static int ipq_nand_write_oob(MtdDev *mtd, uint64_t to,
 		ipq_nand_write_oobinc(mtd, ops);
 	}
 
-done:
+ done:
 	ipq_exit_raw_mode(mtd);
 	return ret;
 }
@@ -1226,7 +1226,7 @@ int ipq_nand_get_info_onfi(MtdDev *mtd)
 	mtd->oobsize = p->spare_bytes_per_page;
 	mtd->size = (uint64_t)p->blocks_per_lun * (mtd->erasesize);
 
-err_exit:
+ err_exit:
 	/* Restoring the page read command in read command register */
 	clrsetbits_le32(&regs->dev_cmd1, READ_ADDR_MASK,
 			READ_ADDR(NAND_CMD_READ0));
@@ -1573,10 +1573,10 @@ int ipq_nand_post_scan_init(MtdDev *mtd)
 
 	goto exit;
 
-err_exit:
+ err_exit:
 	free(dev->buffers);
 
-exit:
+ exit:
 	return ret;
 }
 

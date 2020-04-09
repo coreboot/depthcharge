@@ -379,7 +379,7 @@ static int tpm_recv(I2cTpmChipOps *me, uint8_t *buf, size_t count)
 		goto out;
 	}
 
-out:
+ out:
 	tpm_ready(&tpm->base.chip_ops);
 
 	return size;
@@ -442,7 +442,7 @@ static int tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
 	iic_tpm_write(tpm, tpm_sts(tpm->base.locality), &sts, 1);
 
 	return len;
-out_err:
+ out_err:
 	tpm_ready(&tpm->base.chip_ops);
 
 	return rc;

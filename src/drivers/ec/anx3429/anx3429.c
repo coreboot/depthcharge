@@ -1193,7 +1193,7 @@ static vb2_error_t anx3429_update_image(const VbootAuxFwOps *vbaux,
 		goto pd_resume;
 	}
 
-pd_resume:
+ pd_resume:
 	if (anx3429_ec_pd_resume(me) != 0) {
 		debug("pd resume failed\n");
 		status = VB2_ERROR_UNKNOWN;

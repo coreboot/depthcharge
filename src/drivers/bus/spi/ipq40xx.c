@@ -430,7 +430,7 @@ static int __blsp_spi_read(struct ipq_spi_slave *ds, u8 *data_buffer,
 		}
 	}
 
-out:
+ out:
 	/*
 	 * Put the SPI Core back in the Reset State
 	 * to end the transfer
@@ -548,7 +548,7 @@ static int __blsp_spi_write(struct ipq_spi_slave *ds, const u8 *cmd_buffer,
 		}
 	}
 
-out:
+ out:
 	/*
 	 * Put the SPI Core back in the Reset State
 	 * to end the transfer

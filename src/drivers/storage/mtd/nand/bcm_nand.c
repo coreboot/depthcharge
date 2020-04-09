@@ -917,7 +917,7 @@ static int nand_erase_block(uint64_t addr)
 		res = -EIO;
 	}
 
-erase_exit:
+ erase_exit:
 	/* Set write-protection */
 	NAND_REG_SET(NCREG_CS_NAND_SELECT, NCFLD_CS_NAND_SELECT_WP);
 	return res;

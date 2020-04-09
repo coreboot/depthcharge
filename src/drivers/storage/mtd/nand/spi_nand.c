@@ -600,7 +600,7 @@ static int spi_nand_read_oob(MtdDev *mtd, uint64_t from,
 	if (mtd->ecc_stats.corrected != corrected)
 		ret = -EUCLEAN;
 
-done:
+ done:
 	if (ops->mode == MTD_OOB_RAW)
 		spi_nand_ecc_enable(dev);
 	return ret;
@@ -700,7 +700,7 @@ static int spi_nand_write_oob(MtdDev *mtd, uint64_t to, struct mtd_oob_ops *ops)
 		}
 	}
 
-done:
+ done:
 	if (ops->mode == MTD_OOB_RAW)
 		spi_nand_ecc_enable(dev);
 	return ret;

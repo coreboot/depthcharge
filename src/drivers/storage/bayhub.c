@@ -68,14 +68,14 @@ static int bh720_execute_tuning(struct MmcMedia *media)
 	ret = 0;
 	goto tuning_complete;
 
-tuning_failed:
+ tuning_failed:
 	/* Tuning has timed out or failed. */
 	reg = sdhci_readw(sdhc, SDHCI_HOST_CONTROL2);
 	reg &= ~SDHCI_CTRL_TUNED_CLK;
 	reg &= ~SDHCI_CTRL_EXEC_TUNING;
 	sdhci_writew(sdhc, reg, SDHCI_HOST_CONTROL2);
 
-tuning_complete:
+ tuning_complete:
 	media->ctrlr->bus_width = bus_width;
 	media->ctrlr->set_ios(media->ctrlr);
 

@@ -120,7 +120,7 @@ static lba_t block_flash_fill_write(BlockDevOps *me, lba_t start, lba_t count,
 
 	ret = count;
 
-cleanup:
+ cleanup:
 	free(buffer);
 	return ret;
 }

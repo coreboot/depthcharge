@@ -318,7 +318,7 @@ static int spi_flash_read_status(FlashOps *me)
 	}
 
 	ret = command;
-fail:
+ fail:
 	if (flash->spi->stop(flash->spi)) {
 		printf("%s: Failed to stop.\n", __func__);
 		ret = -1;
@@ -366,7 +366,7 @@ static int spi_flash_write_status(FlashOps *me, uint8_t status)
 	if (operation_failed(flash, "WRSTATUS") == 0)
 		ret = 0;
 
-fail:
+ fail:
 	if (flash->spi->stop(flash->spi)) {
 		printf("%s: Failed to stop.\n", __func__);
 		ret = -1;
@@ -400,7 +400,7 @@ static JedecFlashId spi_flash_read_id(FlashOps *me)
 
 	id.vendor = buffer[0];
 	id.model = (buffer[1] << 8) | buffer[2];
-fail:
+ fail:
 	if (flash->spi->stop(flash->spi))
 		printf("%s: Failed to stop.\n", __func__);
 

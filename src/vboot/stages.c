@@ -311,7 +311,7 @@ void vboot_boot_kernel(VbSelectAndLoadKernelParams *kparams)
 
 	boot(&bi);
 
-fail:
+ fail:
 	/*
 	 * If the boot succeeded we'd never end up here. If configured, let's
 	 * try booting in alternative way.

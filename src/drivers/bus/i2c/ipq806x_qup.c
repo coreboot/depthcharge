@@ -187,7 +187,7 @@ static qup_return_t qup_i2c_write(gsbi_id_t gsbi_id, uint8_t mode,
 		ret = QUP_ERR_UNSUPPORTED;
 	}
 
-bailout:
+ bailout:
 	if (QUP_SUCCESS != ret) {
 		qup_set_state(gsbi_id, QUP_STATE_RESET);
 		/*
@@ -285,7 +285,7 @@ static qup_return_t qup_i2c_read(gsbi_id_t gsbi_id, uint8_t mode,
 				goto recv_done;
 			}
 		}
-recv_done:
+ recv_done:
 		writel(INPUT_SERVICE_FLAG,
 		       QUP_ADDR(gsbi_id, QUP_OPERATIONAL));
 		p_tx_obj->p.iic.data_len = idx;
@@ -298,7 +298,7 @@ recv_done:
 		ret = QUP_ERR_UNSUPPORTED;
 	}
 
-bailout:
+ bailout:
 	if (QUP_SUCCESS != ret) {
 		qup_set_state(gsbi_id, QUP_STATE_RESET);
 		printf("%s() returns %d\n", __func__, ret);
@@ -369,7 +369,7 @@ qup_return_t qup_init(gsbi_id_t gsbi_id, qup_config_t *config_ptr)
 				QUP_FS_DIVIDER_MASK);
 	writel(reg_val, QUP_ADDR(gsbi_id, QUP_I2C_MASTER_CLK_CTL));
 
-bailout:
+ bailout:
 	if (QUP_SUCCESS != ret)
 		printf("%s() returns %d\n", __func__, ret);
 

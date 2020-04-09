@@ -675,7 +675,7 @@ static NetDevice *ipq_gmac_init(const ipq_gmac_board_cfg_t *gmac_cfg)
 
 	return dev;
 
-failed:
+ failed:
 	if (dev) {
 		if (dev->dev_data)
 			free(dev->dev_data);
