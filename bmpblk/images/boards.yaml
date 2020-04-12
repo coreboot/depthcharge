@@ -49,18 +49,18 @@ x86-generic,amd64-generic:
   # Boots recovery image on any SD card and USB ports.
   screen:   [1024, 768]
   panel:    [1366, 768]
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 arm-generic,arm64-generic,mips-generic:
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 nyan,nyan_big:
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 veyron_pinky,veyron_jerry:
   # Using native graphics mode 1366x768.
   # Boots recovery image on any SD card and USB ports.
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 peach_pi,peach_pi-freon:
   # 1920x1080, boots recovery image on any SD card or USB ports.
@@ -72,7 +72,7 @@ peach_pi,peach_pi-freon:
 veyron_minnie:
   # 1280x800, boots recovery image on any SD card or USB ports.
   screen:   [1280, 800]
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 peach_pit,peach_pit-freon:
   # 1366x768, boots recovery image on any SD card or USB ports.
@@ -86,7 +86,7 @@ daisy,daisy_snow,daisy_skate,daisy_freon,daisy_skate-freon:
   bad_usb3: True
   locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id,
              th, ar, ms, zh-CN, zh-TW, fi, pl]
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 daisy_spring,daisy_spring-freon:
   # 1366x768, can only boot recovery by USB (No card reader, or not able to
@@ -95,33 +95,33 @@ daisy_spring,daisy_spring-freon:
   sdcard:   False
   locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id,
              th, ar, ms, zh-CN, zh-TW, fi, pl]
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 falco,peppy,wolf,leon,banjo,orco,gandof,heli:
   # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
   # With card reader. USB3 ports will run in USB2 mode for recovery boot.
   screen:   [1024, 768]
   panel:    [1366, 768]
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 squawks,glimmer,clapper,enguarde,expresso,kip,gnawty,winky,quawks,swanky,candy:
   # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
   # With card reader. All USB ports can boot in recovery mode.
   screen:   [1024, 768]
   panel:    [1366, 768]
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 auron_paine,auron_yuna,cid,lulu,reks,lars:
   # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
   # With card reader. All USB ports can boot in recovery mode.
   screen:   [1024, 768]
   panel:    [1366, 768]
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 chell,glados:
   # 1920x1080, boots recovery image on any SD card or USB ports.
   screen:   [1920, 1080]
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 fizz,guado,kalista,mccloud,ninja,panther,rikku,tidus,tricky:
   # Using VESA graphics mode 1024x768 (0x0117).
@@ -130,7 +130,7 @@ fizz,guado,kalista,mccloud,ninja,panther,rikku,tidus,tricky:
   # With card reader and physical recovery switch.
   screen:   [1024, 768]
   panel:    [1920, 1080]
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 endeavour:
   # Using VESA graphics mode 1024x768 (0x0117).
@@ -140,7 +140,6 @@ endeavour:
   screen:   [1024, 768]
   panel:    [1920, 1080]
   sdcard:   False
-  hi_res:   [en]
 
 zako:
   # Using VESA graphics mode 1024x768 (0x0117).
@@ -149,8 +148,8 @@ zako:
   # With card reader and physical recovery switch.
   screen:   [1024, 768]
   panel:    [1920, 1080]
-  text_colors:  4
-  hi_res:   [en]
+  text_colors:  4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 monroe,sumo:
   # Using VESA graphics mode 1024x768 (0x0117).
@@ -160,7 +159,7 @@ monroe,sumo:
   screen:   [1024, 768]
   panel:    [1920, 1080]
   sdcard:   False
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 buddy:
   # Using VESA graphics mode 1024x768 (0x0117).
@@ -169,7 +168,7 @@ buddy:
   # With physical recovery switch, with card reader.
   screen:   [1024, 768]
   panel:    [1920, 1080]
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 parrot,butterfly:
   # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
@@ -178,7 +177,7 @@ parrot,butterfly:
   screen:   [1024, 768]
   panel:    [1366, 768]
   sdcard:   False
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 stout:
   # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
@@ -188,8 +187,8 @@ stout:
   panel:    [1366, 768]
   sdcard:   False
   bad_usb3: True
-  text_colors:  4
-  hi_res:   [en]
+  text_colors:  4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 link:
   # Non-standard Graphics mode 1280x850, with 2560x1700 panel.
@@ -199,7 +198,7 @@ link:
   screen:   [1280, 850]
   panel:    [2560, 1700]
   locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja, id, th]
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 stumpy:
   # There's no standard panel size for Stumpy -- depends on the monitor user has
@@ -208,7 +207,7 @@ stumpy:
   panel:    [1920, 1080]
   locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja]
   sdcard:   False
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 lumpy:
   # Lumpy was shipped with old firmware bitmaps and caused its resolution to be
@@ -216,7 +215,7 @@ lumpy:
   screen:   [800, 600]
   panel:    [1366, 768]
   locales:  [en, es-419, pt-BR, fr, es, it, de, nl, da, nb, sv, ko, ja]
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 veyron_mickey:
   # A chromebit with external display only, use low-res "safe" mode.
@@ -224,13 +223,13 @@ veyron_mickey:
   screen:   [640, 480]
   panel:    [1920, 1080]
   sdcard:   False
-  text_colors:  4
-  hi_res:   [en]
+  text_colors:  4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 kevin,kevin-tpm2:
   # 2400x1600, boots recovery image on any SD card or USB ports.
   screen:   [2400, 1600]
-  text_colors:  4
+  text_colors:  4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 scarlet:
   # 1536x2048, "detachable", boots recovery image on any SD card or USB ports.
@@ -240,147 +239,143 @@ eve:
   # 2400x1600, boots recovery image on USB ports.
   screen:   [2400, 1600]
   sdcard:   False
-  hi_res:   [en]
+  hi_res:   [en, es-419, pt-BR, fr, es, pt-PT, ca, it, de]  # Flash limited.
 
 samus:
   screen:   [1280, 850]
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 poppy:
   # 2400x1600, boots recovery image on any SD card or USB ports.
   screen:   [2400, 1600]
-  hi_res:   [en]
-  text_colors:  4
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
+  text_colors:  4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 soraka:
   # 2400x1600, boots recovery image on any SD card or USB ports.
   screen:   [2400, 1600]
-  hi_res:   [en]
-  text_colors:  4
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
+  text_colors:  4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 dragonegg:
   # 2400x1600, boots recovery image on any SD card or USB ports.
   screen:   [2400, 1600]
-  hi_res:   [en]
-  text_colors:  4
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
+  text_colors:  4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 kahlee:
   # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
   # With card reader. All USB ports can boot in recovery mode.
   screen:   [1024, 768]
   panel:    [1366, 768]
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 grunt:
   # Using VESA graphics mode 1920x1080 (0x1D2), downscaled to 1366x768 panel if
   # needed. All USB ports and the SD card reader can be used for recovery.
   screen:   [1920, 1080]
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 zoombini:
   # 2400x1600, boots recovery image on any SD card or USB ports.
   screen:   [2400, 1600]
-  hi_res:   [en]
-  text_colors:  4
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
+  text_colors:  4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 nautilus:
   # 2400x1600, boots recovery image on any SD card or USB ports.
   screen:   [2400, 1600]
-  hi_res:   [en]
-  text_colors:  4
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
+  text_colors:  4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 meowth:
   # 2400x1600, boots recovery image on USB ports.
   screen:   [2400, 1600]
-  hi_res:   [en]
-  text_colors:  4
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
+  text_colors:  4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 nami:
   # 2400x1600, boots recovery image on USB ports.
   screen:   [2400, 1600]
-  hi_res:   [en]
-  text_colors:  4
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
+  text_colors:  4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 atlas:
   # 3840x2160, boots recovery image on USB ports.
   screen:   [3840, 2160]
   sdcard:   False
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 octopus:
   # 1366x768, boots recovery image on USB ports or SD card.
   screen:   [1366, 768]
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 nocturne:
   # 2400x1600, boots recovery image on USB ports.
   screen:   [2400, 1600]
-  hi_res:   [en]
-  text_colors:  4
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
+  text_colors:  4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 rammus:
   # 1920x1080, boots recovery image on USB ports.
   screen:   [1920, 1080]
-  hi_res:   [en]
-  text_colors:  4
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
+  text_colors:  4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 sarien,deltaur,drallion:
   # 1920x1080, boots recovery image on USB ports.
   screen:   [1920, 1080]
   sdcard:   False
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 hatch,palkia:
   # 2400x1600, boots recovery image on USB ports.
   screen:   [2400, 1600]
-  hi_res:   [en]
-  text_colors:  4
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
+  text_colors:  4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 puff:
   # 2400x1600, boots recovery image on USB ports.
   screen:   [2400, 1600]
-  hi_res:   [en, zh-CN, es-419]
+  hi_res:   [en, zh-CN, es-419]  # Flash size limited.
 
 mushu:
   # 2400x1600, boots recovery image on USB ports.
   screen:   [2400, 1600]
-  hi_res:   [en]
-  text_colors:  4
 
 flapjack,kukui:
   # 1920x1200, boots recovery image on USB ports.
   screen:   [1920, 1200]
   sdcard:   False
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 volteer:
   # 3840x2160, boots recovery image on USB ports.
   screen:   [3840, 2160]
   sdcard:   False
-  hi_res:   [en]
-  text_colors:  4
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 zork:
   # 1920x1080, boots recovery image on any SD card or USB ports.
   screen:   [1920, 1080]
-  hi_res:   [en]
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 dedede:
   # 2400x1600, boots recovery image on USB ports.
   screen:   [2400, 1600]
-  hi_res:   [en]
-  text_colors:  4
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
+  text_colors:  4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 jacuzzi:
   # 1366x768, boots recovery image on USB ports or SD card.
   screen:   [1366, 768]
-  hi_res:   [en]
 
 tglrvp:
   # 2400x1600, boots recovery image on any SD card or USB ports.
   screen:   [2400, 1600]
-  hi_res:   [en]
-  text_colors:  4
+  hi_res:   [en]  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
+  text_colors:  4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 trogdor:
   screen:   [1920, 1080]
