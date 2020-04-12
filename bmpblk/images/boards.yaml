@@ -147,10 +147,8 @@ zako:
   # A chromebox without built-in panel/keyboard.
   # Assume the display is a modern 16:9 (1920x1080) monitor.
   # With card reader and physical recovery switch.
-  # Special firmware with WrongPowerSupply screens.
   screen:   [1024, 768]
   panel:    [1920, 1080]
-  optional_screens: [ReserveCharging, ReserveChargingEmpty, WrongPowerSupply]
   text_colors:  4
   hi_res:   [en]
 
