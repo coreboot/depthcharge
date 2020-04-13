@@ -15,8 +15,7 @@
 #include "drivers/gpio/gpio.h"
 #include "drivers/sound/sound.h"
 
-typedef struct
-{
+typedef struct GpioI2s {
 	SoundOps ops;
 
 	/* GPIO to use for I2S BCLK */
@@ -37,6 +36,8 @@ typedef struct
 	/* Amplitude for square wave */
 	int16_t volume;
 
+	/* i2s send */
+	void (*send)(struct GpioI2s *i2s, uint16_t *data, size_t length);
 } GpioI2s;
 
 GpioI2s *new_gpio_i2s(GpioOps *bclk_gpio, GpioOps *sfrm_gpio,

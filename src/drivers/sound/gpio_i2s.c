@@ -43,7 +43,7 @@ static void gpio_i2s_send_bit(GpioI2s *i2s, int channel_select, int bit)
 	gpio_set(i2s->bclk_gpio, 0);
 }
 
-/* Send I2S data */
+/* Send I2S data and clock */
 static void gpio_i2s_send(GpioI2s *i2s, uint16_t *data, size_t length)
 {
 	for (; length > 0; length--, data++) {
@@ -53,6 +53,24 @@ static void gpio_i2s_send(GpioI2s *i2s, uint16_t *data, size_t length)
 		/* Right channel */
 		for (int i = 15; i >= 0; i--)
 			gpio_i2s_send_bit(i2s, 1, !!(*data & (1 << i)));
+	}
+}
+
+/* Send only I2S data */
+static void gpio_i2s_sync_send_data(GpioI2s *i2s, uint16_t *data, size_t length)
+{
+	int lr0;
+	int timeout;
+
+	for (; length > 0; length--, data++) {
+		/* Wait for LRCLK to transition */
+		lr0 = gpio_get(i2s->sfrm_gpio);
+		timeout = 200; /* Avoids infinte loop */
+		while (gpio_get(i2s->sfrm_gpio) == lr0 && timeout--)
+			continue;
+		/* bit-bang out data word as fast as possible */
+		for (int i = 15; i >= 0; i--)
+			gpio_set(i2s->data_gpio, !!(*data & (1 << i)));
 	}
 }
 
@@ -69,14 +87,14 @@ static int gpio_i2s_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 
 	/* Send 1 second chunks */
 	while (msec >= 1000) {
-		gpio_i2s_send(i2s, data, bytes / sizeof(uint16_t));
+		i2s->send(i2s, data, bytes / sizeof(uint16_t));
 		msec -= 1000;
 	}
 	/* Send remaining portion of a second */
 	if (msec) {
 		size_t len = (bytes * msec) / (sizeof(uint16_t) * 1000);
 
-		gpio_i2s_send(i2s, data, len);
+		i2s->send(i2s, data, len);
 	}
 
 	free(data);
@@ -109,6 +127,11 @@ GpioI2s *new_gpio_i2s(GpioOps *bclk_gpio, GpioOps *sfrm_gpio,
 	i2s->sample_rate	= sample_rate;
 	i2s->channels		= channels;
 	i2s->volume		= volume;
+
+	if (i2s->bclk_gpio)
+		i2s->send = &gpio_i2s_send;
+	else
+		i2s->send = &gpio_i2s_sync_send_data;
 
 	return i2s;
 }
