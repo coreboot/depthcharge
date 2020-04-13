@@ -1286,6 +1286,57 @@ int cros_ec_locate_tcpc_chip(uint8_t port, struct ec_response_locate_chip *r)
 	return 0;
 }
 
+int cros_ec_get_usb_pd_mux_info(int port, uint8_t *mux_state)
+{
+	struct ec_params_usb_pd_mux_info req;
+	struct ec_response_usb_pd_mux_info resp;
+	int ret;
+
+	req.port = port;
+
+	ret = ec_command(cros_ec_get(),
+			 EC_CMD_USB_PD_MUX_INFO, 0,
+			 &req, sizeof(req),
+			 &resp, sizeof(resp));
+	if (ret < 0) {
+		printf("Failed to get PD_MUX_INFO port%d ret:%d\n",
+		       port, ret);
+		return ret;
+	}
+
+	*mux_state = resp.flags;
+
+	return 0;
+}
+
+int cros_ec_get_usb_pd_control(int port, int *ufp, int *dbg_acc)
+{
+	struct ec_params_usb_pd_control pd_control;
+	struct ec_response_usb_pd_control_v2 resp;
+	int ret;
+
+	pd_control.port = port;
+	pd_control.role = USB_PD_CTRL_ROLE_NO_CHANGE;
+	pd_control.mux = USB_PD_CTRL_MUX_NO_CHANGE;
+	pd_control.swap = USB_PD_CTRL_SWAP_NONE;
+
+	ret = ec_command(cros_ec_get(),
+			 EC_CMD_USB_PD_CONTROL, 2,
+			 &pd_control, sizeof(pd_control),
+			 &resp, sizeof(resp));
+	if (ret < 0) {
+		printf("Failed to get PD_CONTROLv2 port%d ret:%d\n",
+		       port, ret);
+		return ret;
+	}
+
+	*ufp = !(resp.role & PD_CTRL_RESP_ROLE_DATA);
+	*dbg_acc = (resp.cc_state == PD_CC_UFP_DEBUG_ACC ||
+		    resp.cc_state == PD_CC_DFP_DEBUG_ACC);
+
+	return 0;
+}
+
 static int set_max_proto3_sizes(CrosEc *me, int request_size, int response_size)
 {
 	free(me->proto3_request);

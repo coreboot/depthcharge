@@ -380,4 +380,24 @@ CrosEc *new_cros_ec(CrosEcBusOps *bus, GpioOps *interrupt_gpio);
  */
 void cros_ec_probe_aux_fw_chips(void);
 
-#endif
+/**
+ * Return a port's mux state.
+ *
+ * @param port		the desired port number
+ * @param mux_state	pointer to the mux state (bitmask) result
+ *
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_get_usb_pd_mux_info(int port, uint8_t *mux_state);
+
+/**
+ * Return a port's UFP and DBG-ACC state.
+ *
+ * @param port		the desired port number
+ * @param ufp		pointer to the UFP state result
+ * @param dbg_acc	pointer to the debug-acc state result
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_get_usb_pd_control(int port, int *ufp, int *dbg_acc);
+
+#endif /* __DRIVERS_EC_CROS_EC_H__ */
