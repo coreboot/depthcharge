@@ -20,10 +20,8 @@
 #include "drivers/gpio/gpio.h"
 #include "vboot/util/flag.h"
 #include "boot/fit.h"
-#include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/bus/spi/qcom_qupv3_spi.h"
 #include "drivers/ec/cros/spi.h"
-#include "drivers/ec/ps8751/ps8751.h"
 #include "drivers/power/psci.h"
 #include "drivers/flash/spi.h"
 #include "drivers/bus/spi/qspi_sc7180.h"
@@ -108,11 +106,6 @@ static int board_setup(void)
 					new_sc7180_gpio_input_from_coreboot);
 		CrosEc *ec = new_cros_ec(ec_bus, ec_int);
 		register_vboot_ec(&ec->vboot);
-
-		CrosECTunnelI2c *tcpc0_tunnel = new_cros_ec_tunnel_i2c(ec, 1);
-		CrosECTunnelI2c *tcpc1_tunnel = new_cros_ec_tunnel_i2c(ec, 2);
-		register_vboot_aux_fw(&new_ps8805(tcpc0_tunnel, 0)->fw_ops);
-		register_vboot_aux_fw(&new_ps8805(tcpc1_tunnel, 1)->fw_ops);
 	}
 
 	/* SPI-NOR Flash driver */
