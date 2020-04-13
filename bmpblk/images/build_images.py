@@ -26,6 +26,7 @@ from PIL import Image
 import yaml
 
 ASSET_DIR = 'assets'
+LEGACY_ASSET_DIR = 'legacy_assets'
 LOCALE_DIR = 'locale'
 FONT_DIR = 'font'
 PNG_FILES = '*.png'
@@ -81,9 +82,6 @@ ASSET_SCALES = {
     'ic_esc': DEFAULT_TEXT_SCALE,
     'ic_refresh': DEFAULT_TEXT_SCALE,
     'ic_power': DEFAULT_TEXT_SCALE,
-    'nav-button_power': DEFAULT_TEXT_SCALE,
-    'nav-button_volume_up': DEFAULT_TEXT_SCALE,
-    'nav-button_volume_down': DEFAULT_TEXT_SCALE,
     'nav-key_enter': DEFAULT_TEXT_SCALE,
     'nav-key_up': DEFAULT_TEXT_SCALE,
     'nav-key_down': DEFAULT_TEXT_SCALE,
@@ -134,6 +132,12 @@ class Convert(object):
   DEFAULT_OUTPUT_EXT = '.bmp'
 
   DEFAULT_REPLACE_MAP = {
+      'nav-button_power': '',
+      'nav-button_volume_up': '',
+      'nav-button_volume_down': '',
+  }
+
+  LEGACY_REPLACE_MAP = {
       'BadSD': '',
       'BadUSB': '',
       'InsertUSB': '',
@@ -156,11 +160,15 @@ class Convert(object):
       board: a string, name of the board to use.
       config: a dictionary of configuration parameters.
     """
+    self.is_menu_ui = os.getenv('MENU_UI') == '1'
     self.board = board
     self.config = config
     self.set_dirs()
     self.set_screen()
-    self.set_replace_map()
+    if self.is_menu_ui:
+      self.set_replace_map()
+    else:
+      self.set_legacy_replace_map()
     self.set_locales()
     self.text_max_colors = self.config[TEXT_COLORS_KEY]
 
@@ -197,16 +205,16 @@ class Convert(object):
     # TODO: Depthcharge should narrow the canvas if the screen is stretched.
     self.canvas_px = min(self.screen_width, self.screen_height)
 
-  def set_replace_map(self):
-    """Builds a map replacing images
+  def set_legacy_replace_map(self):
+    """Set a map replacing images for legacy UIs.
 
-    For each (key, value), image 'key' will be replaced by image 'value'
+    For each (key, value), image 'key' will be replaced by image 'value'.
     """
     sdcard = self.config[SDCARD_KEY]
     bad_usb3 = self.config[BAD_USB3_KEY]
     physical_presence = os.getenv('PHYSICAL_PRESENCE')
 
-    self.replace_map = self.DEFAULT_REPLACE_MAP.copy()
+    self.replace_map = self.LEGACY_REPLACE_MAP.copy()
 
     if not sdcard:
       self.replace_map['BadDevices'] = 'BadUSB'
@@ -227,13 +235,29 @@ class Convert(object):
     if os.getenv("LEGACY_MENU_UI") == "1":
       self.replace_map['VerificationOff'] = ''
 
+  def set_replace_map(self):
+    """Set a map replacing images.
+
+    For each (key, value), image 'key' will be replaced by image 'value'.
+    """
+    replace_map = self.DEFAULT_REPLACE_MAP.copy()
+
+    if os.getenv('DETACHABLE') == '1':
+      replace_map.update({
+        'nav-key_enter': 'nav-button_power',
+        'nav-key_up': 'nav-button_volume_up',
+        'nav-key_down': 'nav-button_volume_down',
+      })
+
+    self.replace_map = replace_map
+
   def set_locales(self):
     """Set a list of locales for which localized images are converted"""
     # LOCALES environment variable can overwrite boards.yaml
     env_locales = os.getenv('LOCALES')
     rtl_locales = set(self.config[RTL_KEY])
     hi_res_locales = set(self.config[HI_RES_KEY])
-    if os.getenv("MENU_UI") == "1":
+    if self.is_menu_ui:
       # TODO(b/144969853): Support all locales for MENU_UI.
       locales = ['en']
     elif env_locales:
@@ -334,10 +358,10 @@ class Convert(object):
       name, ext = os.path.splitext(os.path.basename(file))
       output = os.path.join(output_dir, name + self.DEFAULT_OUTPUT_EXT)
 
-      default_backgdound = DEFAULT_BACKGROUND
-      if os.getenv('MENU_UI') != '1':
-        default_backgdound = LEGACY_DEFAULT_BACKGROUND
-      background = BACKGROUND_COLORS.get(name, default_backgdound)
+      default_background = DEFAULT_BACKGROUND
+      if not self.is_menu_ui:
+        default_background = LEGACY_DEFAULT_BACKGROUND
+      background = BACKGROUND_COLORS.get(name, default_background)
 
       scale = scales[name]
 
@@ -357,9 +381,10 @@ class Convert(object):
 
   def convert_assets(self):
     """Convert images in assets folder"""
+    asset_dir = ASSET_DIR if self.is_menu_ui else LEGACY_ASSET_DIR
     files = []
-    files.extend(glob.glob(os.path.join(ASSET_DIR, PNG_FILES)))
-    files.extend(glob.glob(os.path.join(ASSET_DIR, SVG_FILES)))
+    files.extend(glob.glob(os.path.join(asset_dir, SVG_FILES)))
+    files.extend(glob.glob(os.path.join(asset_dir, PNG_FILES)))
     scales = defaultdict(lambda: DEFAULT_ASSET_SCALE)
     scales.update(ASSET_SCALES)
     self.convert(files, self.output_dir, scales, ASSET_MAX_COLORS)
