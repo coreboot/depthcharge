@@ -74,6 +74,10 @@ config DRIVER_SOUND_RT5677
 	bool "RT5677 codec driver"
 	default n
 
+config DRIVER_SOUND_RT5682
+	bool "RT5682 codec driver"
+	default n
+
 config DRIVER_SOUND_ROUTE
 	bool "Sound route container"
 	default n

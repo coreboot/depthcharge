@@ -28,6 +28,7 @@ depthcharge-$(CONFIG_DRIVER_SOUND_ROUTE) += route.c
 depthcharge-$(CONFIG_DRIVER_SOUND_RT1011) += rt1011.c
 depthcharge-$(CONFIG_DRIVER_SOUND_RT5645) += rt5645.c
 depthcharge-$(CONFIG_DRIVER_SOUND_RT5677) += rt5677.c
+depthcharge-$(CONFIG_DRIVER_SOUND_RT5682) += rt5682.c
 depthcharge-$(CONFIG_DRIVER_SOUND_SSM4567) += ssm4567.c
 depthcharge-$(CONFIG_DRIVER_SOUND_TEGRA_AUDIO_HUB) += tegra_ahub.c
 depthcharge-y += dummy.c sound.c
