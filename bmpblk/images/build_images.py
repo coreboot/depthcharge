@@ -169,6 +169,7 @@ class Convert(object):
     output_base = os.getenv('OUTPUT', os.path.join('..', 'build'))
     self.output_dir = os.path.join(output_base, self.board)
     self.stage_dir = os.path.join(output_base, '.stage')
+    self.temp_dir = os.path.join(self.stage_dir, 'tmp')
 
   def set_screen(self):
     """Set screen width and height"""
@@ -348,7 +349,7 @@ class Convert(object):
         file = os.path.join(os.path.dirname(file), name + ext)
 
       if ext == '.svg':
-        png_file = os.path.join(self.stage_dir, name + '.png')
+        png_file = os.path.join(self.temp_dir, name + '.png')
         self.convert_svg_to_png(file, png_file, background)
         file = png_file
 
@@ -421,11 +422,16 @@ class Convert(object):
       shutil.rmtree(self.output_dir)
     os.makedirs(self.output_dir)
 
-    print 'Converting asset images...'
-    self.convert_assets()
-
     if not os.path.exists(self.stage_dir):
       raise BuildImageError('Missing stage folder. Run make in strings dir.')
+
+    # Clean up temp directory
+    if os.path.exists(self.temp_dir):
+      shutil.rmtree(self.temp_dir)
+    os.makedirs(self.temp_dir)
+
+    print 'Converting asset images...'
+    self.convert_assets()
 
     print 'Converting URL images...'
     self.convert_url()
