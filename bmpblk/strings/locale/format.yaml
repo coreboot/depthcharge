@@ -21,9 +21,9 @@ inputs:
   - model
   - help_center
   - rec_url
-  - navigate_using
-  - navigate_lap
-  - navigate_tab
+  - to_navigate
+  - navigate
+  - navigate_tablet
 
 files:
   # pre-generated
@@ -46,9 +46,9 @@ files:
   model:
   help_center:
   rec_url:
-  navigate_using:
-  navigate_lap:
-  navigate_tab:
+  to_navigate:
+  navigate:
+  navigate_tablet:
 
 aliases:
   - &base_color '--color=CCCCCC --bgcolor=202124'
@@ -76,9 +76,9 @@ styles:
   model: *dark_color
   help_center: *dark_color
   rec_url: *dark_color
-  navigate_using: *dark_color_left_align
-  navigate_lap: *dark_color_left_align
-  navigate_tab: *dark_color_left_align
+  to_navigate: *dark_color_left_align
+  navigate: *dark_color_left_align
+  navigate_tablet: *dark_color_left_align
 
 fonts:
   # All fonts should be provided and selected by 'ui-sans' family defined in

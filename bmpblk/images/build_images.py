@@ -132,6 +132,7 @@ class Convert(object):
   DEFAULT_OUTPUT_EXT = '.bmp'
 
   DEFAULT_REPLACE_MAP = {
+      'navigate_tablet': '',
       'nav-button_power': '',
       'nav-button_volume_up': '',
       'nav-button_volume_down': '',
@@ -247,6 +248,7 @@ class Convert(object):
         'nav-key_enter': 'nav-button_power',
         'nav-key_up': 'nav-button_volume_up',
         'nav-key_down': 'nav-button_volume_down',
+        'navigate': 'navigate_tablet',
       })
 
     self.replace_map = replace_map
