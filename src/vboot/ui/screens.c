@@ -26,6 +26,8 @@
 	.count = ARRAY_SIZE(a),			\
 })
 
+static const char *const empty_files[] = {};
+
 /******************************************************************************/
 /* VB2_SCREEN_BLANK */
 
@@ -57,6 +59,25 @@ static const struct ui_screen_info firmware_sync_screen = {
 	.desc = UI_FILES(firmware_sync_desc),
 	.mesg = "Please do not power off your device.\n"
 		"Your system is applying a critical update.",
+};
+
+/******************************************************************************/
+/* VB2_SCREEN_RECOVERY_BROKEN */
+
+static const char *const broken_desc[] = {
+	"broken_desc0.bmp",
+	"broken_desc1.bmp",
+};
+
+static const struct ui_screen_info broken_screen = {
+	.id = VB2_SCREEN_RECOVERY_BROKEN,
+	.icon = UI_ICON_TYPE_INFO,
+	.title = "broken_title.bmp",
+	.desc = UI_FILES(broken_desc),
+	.menu = UI_FILES(empty_files),
+	.mesg = "Something is wrong.\n"
+		"Please remove all connected devices and hold down Esc,\n"
+		"Refresh, and Power to initiate recovery.",
 };
 
 /******************************************************************************/
@@ -93,6 +114,7 @@ static const struct ui_screen_info recovery_select_screen = {
 static const struct ui_screen_info *const screens[] = {
 	&blank_screen,
 	&firmware_sync_screen,
+	&broken_screen,
 	&recovery_select_screen,
 };
 
