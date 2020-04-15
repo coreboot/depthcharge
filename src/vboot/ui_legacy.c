@@ -1279,13 +1279,14 @@ static vb2_error_t vboot_draw_set_vendor_data(struct params *p)
 		RETURN_ON_ERROR(vboot_draw_vendor_data_prompt(
 				p, "set_vendor_data.bmp"));
 
-		RETURN_ON_ERROR(draw_image_locale("rma_instr.bmp", p->locale,
+
+		RETURN_ON_ERROR(draw_image_locale("rma_warn.bmp", p->locale,
 				VB_SCALE_HALF,
-				VB_SCALE - 130 - VB_TEXT_HEIGHT * 2,
+				VB_SCALE_HALF / 2,
 				VB_SIZE_AUTO,
-				VB_TEXT_HEIGHT * 0.75,
-				PIVOT_H_CENTER | PIVOT_V_BOTTOM));
-		RETURN_ON_ERROR(draw_image_locale("rma_abort.bmp", p->locale,
+				VB_TEXT_HEIGHT,
+				PIVOT_H_CENTER | PIVOT_V_TOP));
+		RETURN_ON_ERROR(draw_image_locale("rma_instr.bmp", p->locale,
 				VB_SCALE_HALF,
 				VB_SCALE - 130 - VB_TEXT_HEIGHT,
 				VB_SIZE_AUTO,
@@ -1329,12 +1330,6 @@ static vb2_error_t vboot_draw_confirm_vendor_data(struct params *p)
 			VB_SIZE_AUTO,
 			VB_TEXT_HEIGHT,
 			no_flags));
-	RETURN_ON_ERROR(draw_image_locale("rma_abort.bmp", p->locale,
-			VB_SCALE_HALF,
-			VB_SCALE - 130 - VB_TEXT_HEIGHT,
-			VB_SIZE_AUTO,
-			VB_TEXT_HEIGHT * 0.75,
-			PIVOT_H_CENTER | PIVOT_V_BOTTOM));
 	return 0;
 }
 #endif // CONFIG_VENDOR_DATA_LENGTH > 0
