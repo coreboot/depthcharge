@@ -113,15 +113,4 @@ char *tpm_report_state(void);
  */
 int tpm_set_tpm_mode(uint8_t mode_val);
 
-/**
- * Get boot mode from TPM for EFS2.
- *
- * boot_mode controls how vboot updates EC firmware and whether vboot allows
- * OS to boot or not.
- *
- * @param boot_mode	Retrieved boot mode.
- * @return		TPM_SUCCESS on success or TPM_E_* on error.
- */
-int tpm_get_boot_mode(uint8_t *boot_mode);
-
 #endif /* __DRIVERS_TPM_TPM_H__ */

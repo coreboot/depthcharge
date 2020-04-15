@@ -18,7 +18,6 @@
 #include <assert.h>
 #include <libpayload.h>
 #include <stdint.h>
-#include <tss_constants.h>
 #include <vb2_api.h>
 
 #include "base/cleanup_funcs.h"
@@ -31,7 +30,6 @@
 #include "drivers/power/power.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/bus/usb/usb.h"
-#include "drivers/tpm/tpm.h"
 #include "image/fmap.h"
 #include "image/symbols.h"
 #include "vboot/boot.h"
@@ -145,53 +143,6 @@ static CleanupFunc commit_and_lock_cleanup = {
 	NULL,
 };
 
-/*
- * These are defined in platform/ec/include/vboot.h.
- * TODO: Move them to ec_commands.h.
- */
-#define EC_EFS_BOOT_MODE_NORMAL		0x00
-#define EC_EFS_BOOT_MODE_NO_BOOT	0x01
-
-static const char *get_boot_mode_string(uint8_t boot_mode)
-{
-	if (boot_mode == EC_EFS_BOOT_MODE_NORMAL)
-		return "NORMAL";
-	else if (boot_mode == EC_EFS_BOOT_MODE_NO_BOOT)
-		return "NO_BOOT";
-	else
-		return "UNDEFINED";
-}
-
-static void check_boot_mode(struct vb2_context *ctx)
-{
-	uint8_t boot_mode;
-	int rv;
-
-	rv = tpm_get_boot_mode(&boot_mode);
-	switch (rv) {
-	case TPM_E_NO_SUCH_COMMAND:
-		printf("Cr50 does not support GET_BOOT_MODE.\n");
-		/* Proceed in legacy boot model. */
-		return;
-	case TPM_SUCCESS:
-		break;
-	default:
-		printf("Communication error in tpm_get_boot_mode.\n");
-		if (!(ctx->flags & VB2_CONTEXT_RECOVERY_MODE)) {
-			vb2api_fail(ctx, VB2_RECOVERY_CR50_BOOT_MODE, rv);
-			vb2ex_commit_data(ctx);
-			cold_reboot();
-		}
-		return;
-	}
-
-	printf("Cr50 says boot_mode is %s(0x%02x).\n",
-	       get_boot_mode_string(boot_mode), boot_mode);
-
-	if (boot_mode == EC_EFS_BOOT_MODE_NO_BOOT)
-		ctx->flags |= VB2_CONTEXT_NO_BOOT;
-}
-
 int vboot_select_and_load_kernel(void)
 {
 	struct vb2_context *ctx = vboot_get_context();
@@ -224,9 +175,6 @@ int vboot_select_and_load_kernel(void)
 	 */
 	if (!flag_fetch(FLAG_LIDSW))
 		ctx->flags |= VB2_CONTEXT_NOFAIL_BOOT;
-
-	if (CONFIG(EC_SOFTWARE_SYNC))
-		check_boot_mode(ctx); /* Get boot mode if Cr50 supports it. */
 
 	/*
 	 * Read secdata_kernel and secdata_fwmp spaces.  No need to read
