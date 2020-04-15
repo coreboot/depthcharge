@@ -25,7 +25,6 @@
 
 /* All functions return TPM_SUCCESS (zero) if successful, non-zero if error */
 uint32_t secdata_firmware_write(struct vb2_context *ctx);
-uint32_t secdata_kernel_read(struct vb2_context *ctx);
 uint32_t secdata_kernel_write(struct vb2_context *ctx);
 uint32_t secdata_kernel_lock(struct vb2_context *ctx);
 uint32_t secdata_fwmp_read(struct vb2_context *ctx);

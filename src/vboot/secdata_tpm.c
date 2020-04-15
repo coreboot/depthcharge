@@ -81,39 +81,6 @@ uint32_t secdata_firmware_write(struct vb2_context *ctx)
 	return TPM_SUCCESS;
 }
 
-uint32_t secdata_kernel_read(struct vb2_context *ctx)
-{
-#if !CONFIG(TPM2_MODE)
-	/*
-	 * Before reading the kernel space, verify its permissions.  If the
-	 * kernel space has the wrong permission, we give up.  This will need
-	 * to be fixed by the recovery kernel.  We will have to worry about
-	 * this because at any time (even with PP turned off) the TPM owner can
-	 * remove and redefine a PP-protected space (but not write to it).
-	 */
-	uint32_t perms;
-
-	RETURN_ON_FAILURE(TlclGetPermissions(KERNEL_NV_INDEX, &perms));
-	if (perms != TPM_NV_PER_PPWRITE) {
-		printf("TPM: invalid secdata_kernel permissions\n");
-		return TPM_E_CORRUPTED_STATE;
-	}
-#endif
-	uint8_t size = VB2_SECDATA_KERNEL_MIN_SIZE;
-
-	RETURN_ON_FAILURE(TlclRead(KERNEL_NV_INDEX, ctx->secdata_kernel, size));
-
-	if (vb2api_secdata_kernel_check(ctx, &size) ==
-	    VB2_ERROR_SECDATA_KERNEL_INCOMPLETE)
-		/* Re-read. vboot will run the check and handle errors. */
-		RETURN_ON_FAILURE(TlclRead(KERNEL_NV_INDEX,
-					   ctx->secdata_kernel, size));
-
-	PRINT_N_BYTES("TPM: read secdata_kernel", &ctx->secdata_kernel, size);
-
-	return TPM_SUCCESS;
-}
-
 uint32_t secdata_kernel_write(struct vb2_context *ctx)
 {
 	if (!(ctx->flags & VB2_CONTEXT_SECDATA_KERNEL_CHANGED)) {

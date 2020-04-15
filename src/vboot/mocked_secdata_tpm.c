@@ -19,13 +19,6 @@ uint32_t secdata_firmware_write(struct vb2_context *ctx)
 	return TPM_SUCCESS;
 }
 
-uint32_t secdata_kernel_read(struct vb2_context *ctx)
-{
-	vb2api_secdata_kernel_create(ctx);
-	ctx->flags &= ~VB2_CONTEXT_SECDATA_KERNEL_CHANGED;
-	return TPM_SUCCESS;
-}
-
 uint32_t secdata_kernel_write(struct vb2_context *ctx)
 {
 	ctx->flags &= ~VB2_CONTEXT_SECDATA_KERNEL_CHANGED;

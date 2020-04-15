@@ -177,13 +177,11 @@ int vboot_select_and_load_kernel(void)
 		ctx->flags |= VB2_CONTEXT_NOFAIL_BOOT;
 
 	/*
-	 * Read secdata_kernel and secdata_fwmp spaces.  No need to read
-	 * secdata_firmware, since it was already read during firmware
-	 * verification.  We don't check the return value here because
-	 * VbSelectAndLoadKernel will catch invalid secdata and tell us
-	 * what to do (=reboot).
+	 * Read secdata_fwmp spaces. No need to read secdata firmware or kernel
+	 * since it was already read during firmware verification. We don't
+	 * check the return value here because VbSelectAndLoadKernel will catch
+	 * invalid secdata and tell us what to do (=reboot).
 	 */
-	secdata_kernel_read(ctx);
 	secdata_fwmp_read(ctx);
 
 	/* Commit and lock data spaces right before booting a kernel or
