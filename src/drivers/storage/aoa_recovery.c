@@ -200,7 +200,9 @@ static GenericUsbDriver aoa_recovery_driver = {
 
 static int aoa_recovery_driver_register(VbootInitFunc *unused)
 {
-	list_insert_after(&aoa_recovery_driver.list_node, &generic_usb_drivers);
+	if (vb2api_phone_recovery_enabled(vboot_get_context()))
+		list_insert_after(&aoa_recovery_driver.list_node,
+				  &generic_usb_drivers);
 	return 0;
 }
 
