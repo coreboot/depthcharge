@@ -351,6 +351,7 @@ flapjack,kukui:
 volteer:
   # 3840x2160, boots recovery image on USB ports.
   screen:   [3840, 2160]
+  sdcard:   False
   hi_res:   [en]
   text_colors:  4
 
