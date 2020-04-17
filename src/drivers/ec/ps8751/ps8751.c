@@ -1429,7 +1429,7 @@ static vb2_error_t ps8751_update_image(const VbootAuxFwOps *vbaux,
 	if (ps8751_ec_tunnel_status(vbaux, &protected) != 0)
 		return VB2_ERROR_UNKNOWN;
 	if (protected)
-		return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
+		return VB2_REQUEST_REBOOT_EC_TO_RO;
 
 	if (image == NULL || image_size == 0)
 		return VB2_ERROR_INVALID_PARAMETER;

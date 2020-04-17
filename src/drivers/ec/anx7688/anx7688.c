@@ -275,7 +275,7 @@ static vb2_error_t anx7688_update(struct Anx7688 *me,
 		/* Continue onward */
 		break;
 	default:
-		return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
+		return VB2_REQUEST_REBOOT_EC_TO_RO;
 	}
 
 	/* Wait for ANX7688 FW load to complete. */
@@ -415,7 +415,7 @@ static vb2_error_t vboot_update_image(VbootEcOps *vbec,
 	}
 
 	if (protected)
-		return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
+		return VB2_REQUEST_REBOOT_EC_TO_RO;
 
 	/* Double-check we are really trying to update the right chip. */
 	if (!anx7688_detect(me))

@@ -1159,7 +1159,7 @@ static vb2_error_t anx3429_update_image(const VbootAuxFwOps *vbaux,
 
 	if (protected) {
 		debug("already protected\n");
-		return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
+		return VB2_REQUEST_REBOOT_EC_TO_RO;
 	}
 
 	if (anx3429_ec_pd_powerup(me) != 0) {

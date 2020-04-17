@@ -192,20 +192,20 @@ int vboot_select_and_load_kernel(void)
 	printf("Calling VbSelectAndLoadKernel().\n");
 	vb2_error_t res = VbSelectAndLoadKernel(ctx, &kparams);
 
-	if (res == VBERROR_EC_REBOOT_TO_RO_REQUIRED) {
+	if (res == VB2_REQUEST_REBOOT_EC_TO_RO) {
 		printf("EC Reboot requested. Doing cold reboot.\n");
 		if (ec && ec->reboot_to_ro)
 			ec->reboot_to_ro(ec);
 		power_off();
-	} else if (res == VBERROR_EC_REBOOT_TO_SWITCH_RW) {
+	} else if (res == VB2_REQUEST_REBOOT_EC_SWITCH_RW) {
 		printf("Switch EC slot requested. Doing cold reboot.\n");
 		if (ec && ec->reboot_switch_rw)
 			ec->reboot_switch_rw(ec);
 		power_off();
-	} else if (res == VBERROR_SHUTDOWN_REQUESTED) {
+	} else if (res == VB2_REQUEST_SHUTDOWN) {
 		printf("Powering off.\n");
 		power_off();
-	} else if (res == VBERROR_REBOOT_REQUIRED) {
+	} else if (res == VB2_REQUEST_REBOOT) {
 		printf("Reboot requested. Doing warm reboot.\n");
 		cold_reboot();
 	}

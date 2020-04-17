@@ -123,7 +123,7 @@ static vb2_error_t display_firmware_sync_screen(void)
 		/* Display firmware sync screen if update is slow */
 		if (vboot_aux_fw[i].severity == VB_AUX_FW_SLOW_UPDATE) {
 			if (vb2api_need_reboot_for_display(ctx))
-				return VBERROR_REBOOT_REQUIRED;
+				return VB2_REQUEST_REBOOT;
 
 			locale = vb2api_get_locale_id(ctx);
 			printf("AUXFW is updating. "

@@ -902,7 +902,7 @@ static vb2_error_t vboot_set_region_protection(
 	if (!enable) {
 		/* If protection is still enabled, need reboot */
 		if (resp.flags & protected_region)
-			return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
+			return VB2_REQUEST_REBOOT_EC_TO_RO;
 
 		return VB2_SUCCESS;
 	}
@@ -921,7 +921,7 @@ static vb2_error_t vboot_set_region_protection(
 
 	/* If RW will be protected at boot but not now, need a reboot */
 	if (resp.flags & EC_FLASH_PROTECT_ALL_AT_BOOT)
-		return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
+		return VB2_REQUEST_REBOOT_EC_TO_RO;
 
 	/* Otherwise, it's an error */
 	return VB2_ERROR_UNKNOWN;
@@ -935,7 +935,7 @@ static vb2_error_t vboot_update_image(VbootEcOps *vbec,
 	uint32_t region_offset, region_size;
 	enum ec_flash_region region = vboot_to_ec_region(select);
 	vb2_error_t rv = vboot_set_region_protection(me, select, 0);
-	if (rv == VBERROR_EC_REBOOT_TO_RO_REQUIRED || rv != VB2_SUCCESS)
+	if (rv == VB2_REQUEST_REBOOT_EC_TO_RO || rv != VB2_SUCCESS)
 		return rv;
 
 	if (ec_flash_offset(me, region, &region_offset, &region_size))

@@ -120,7 +120,7 @@ vb2_error_t vb2ex_ec_update_image(enum vb2_firmware_selection select)
 		struct vb2_context *ctx = vboot_get_context();
 		uint32_t locale;
 		if (vb2api_need_reboot_for_display(ctx))
-			return VBERROR_REBOOT_REQUIRED;
+			return VB2_REQUEST_REBOOT;
 		locale = vb2api_get_locale_id(ctx);
 		printf("EC is updating. Show firmware sync screen.\n");
 		if (CONFIG(MENU_UI))
@@ -189,7 +189,7 @@ vb2_error_t vb2ex_ec_vboot_done(struct vb2_context *ctx)
 
 	if (limit_power) {
 		printf("EC requests limited power usage. Request shutdown.\n");
-		return VBERROR_SHUTDOWN_REQUESTED;
+		return VB2_REQUEST_SHUTDOWN;
 	}
 
 	timestamp_add_now(TS_VB_EC_VBOOT_DONE);

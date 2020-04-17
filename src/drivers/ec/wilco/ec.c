@@ -146,7 +146,7 @@ static vb2_error_t vboot_update_image(VbootEcOps *vbec,
 	/* Find the main EC device to flash */
 	ret = vboot_find_flash_device(ec, select, &device);
 	if (ret == WILCO_EC_RESULT_ACCESS_DENIED)
-		return VBERROR_EC_REBOOT_TO_RO_REQUIRED;
+		return VB2_REQUEST_REBOOT_EC_TO_RO;
 	else if (ret < 0)
 		return VB2_ERROR_UNKNOWN;
 
