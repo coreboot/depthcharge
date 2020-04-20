@@ -1,7 +1,8 @@
 Please do not power off your device
 Your system is applying a critical update.
-Please do not touch the touchpad
-Touchpad firmware updating... this may take a few minutes.
+Something is wrong
+Please remove all connected devices and hold down Esc, Refresh, and Power to
+initiate recovery.
 Let's step you through the recovery process
 Select how you'd like to recover.
 You can recover using a USB drive or an SD card.

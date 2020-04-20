@@ -9,8 +9,10 @@ inputs:
   # firmware sync
   - firmware_sync_title
   - firmware_sync_desc
-  - touchpad_sync_title
-  - touchpad_sync_desc
+  # broken screen
+  - broken_title
+  - broken_desc0
+  - broken_desc1
   # recovery screen
   - rec_select_title
   - rec_select_desc0
@@ -32,8 +34,10 @@ files:
   # firmware sync
   firmware_sync_title:
   firmware_sync_desc:
-  touchpad_sync_title:
-  touchpad_sync_desc:
+  # broken screen
+  broken_title:
+  broken_desc0:
+  broken_desc1:
   # recovery screen
   rec_select_title:
   rec_select_desc0:
@@ -62,8 +66,10 @@ styles:
   language_focus: '--color=161719 --bgcolor=CCCCCC'
   firmware_sync_title: *base_color
   firmware_sync_desc: *base_color
-  touchpad_sync_title: *base_color
-  touchpad_sync_desc: *base_color
+  # broken screen
+  broken_title: *base_color
+  broken_desc0: *base_color
+  broken_desc1: *base_color
   # recovery screen
   rec_select_title: *base_color
   rec_select_desc0: *base_color
