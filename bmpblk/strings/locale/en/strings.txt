@@ -5,7 +5,10 @@ Please remove all connected devices and hold down Esc, Refresh, and Power to
 initiate recovery.
 Let's step you through the recovery process
 Select how you'd like to recover.
-You can recover using a USB drive or an SD card.
+You can recover using external storage such as a USB drive, an SD card, or using your Android phone.
+You can recover using external storage such as a USB drive, or using your Android phone.
+You can recover using external storage such as a USB drive or an SD card.
+You can recover using external storage such as a USB drive.
 Recovery using phone
 Recovery using external disk
 Model:

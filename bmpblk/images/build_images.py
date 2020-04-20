@@ -132,6 +132,8 @@ class Convert(object):
   DEFAULT_OUTPUT_EXT = '.bmp'
 
   DEFAULT_REPLACE_MAP = {
+      'rec_sel_desc1_no_sd': '',
+      'rec_sel_desc1_no_phone_no_sd': '',
       'navigate_tablet': '',
       'nav-button_power': '',
       'nav-button_volume_up': '',
@@ -250,6 +252,10 @@ class Convert(object):
         'nav-key_down': 'nav-button_volume_down',
         'navigate': 'navigate_tablet',
       })
+
+    if not self.config[SDCARD_KEY]:
+      replace_map['rec_sel_desc1'] = 'rec_sel_desc1_no_sd'
+      replace_map['rec_sel_desc1_no_phone'] = 'rec_sel_desc1_no_phone_no_sd'
 
     self.replace_map = replace_map
 
