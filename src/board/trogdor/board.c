@@ -94,8 +94,15 @@ static int board_setup(void)
 
 	SpiOps *spi_qup0se0 = &new_sc7180_Qup_spi(0x880000)->ops;
 	SpiOps *spi_qup1se0 = &new_sc7180_Qup_spi(0xa80000)->ops;
-	SpiOps *ec_spi = lib_sysinfo.board_id < 1 ? spi_qup0se0 : spi_qup1se0;
-	SpiOps *tpm_spi = lib_sysinfo.board_id < 1 ? spi_qup1se0 : spi_qup0se0;
+	SpiOps *ec_spi = spi_qup1se0;
+	SpiOps *tpm_spi = spi_qup0se0;
+
+	/* Trogdor rev0 had EC and TPM QUP swapped. */
+	if (lib_sysinfo.board_id < 1 &&
+	    !strcmp(cb_mb_part_string(lib_sysinfo.mainboard), "Trogdor")) {
+		ec_spi = spi_qup0se0;
+		tpm_spi = spi_qup1se0;
+	}
 
 	if (CONFIG(DRIVER_TPM_SPI))
 		tpm_set_ops(&new_tpm_spi(tpm_spi, trogdor_tpm_irq_status)->ops);
