@@ -11,6 +11,20 @@ You can recover using external storage such as a USB drive or an SD card.
 You can recover using external storage such as a USB drive.
 Recovery using phone
 Recovery using external disk
+To proceed with the recovery process, you'll need
+1. An external storage disk such as a USB drive or an SD card
+1. An external storage disk such as a USB drive
+2. An additional device with internet access
+We also recommend that you connect to a power source during the recovery process.
+3. A power source for this device
+External disk setup
+1. Go to google.com/chromeos/recovery on another computer and install the Chrome extension
+2. Follow instructions on the Chrome extension, and download the recovery image onto an external disk
+3. Click next when your external disk is ready with the recovery image
+Do you have your external disk ready?
+If your external disk is ready with a recovery image, plug it into the device to start the recovery process.
+Next
+Back
 Model:
 Help center:
 http://google.com/chromeos/recovery
