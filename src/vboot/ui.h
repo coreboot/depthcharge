@@ -58,6 +58,11 @@
 #define UI_ICON_HEIGHT				45
 #define UI_ICON_MARGIN_BOTTOM			50
 
+/* For step icons */
+#define UI_STEP_ICON_HEIGHT			28
+#define UI_STEP_ICON_MARGIN_H			7
+#define UI_STEP_ICON_SEPARATOR_WIDTH		60
+
 /* For title and descriptions */
 #define UI_TITLE_TEXT_HEIGHT			56
 #define UI_TITLE_MARGIN_BOTTOM			20
@@ -179,6 +184,18 @@ enum ui_char_style {
  */
 vb2_error_t ui_get_char_bitmap(const char c, enum ui_char_style style,
 			       struct ui_bitmap *bitmap);
+
+/*
+ * Get bitmap of step icon.
+ *
+ * @param step		Step number.
+ * @param focused	1 for focused and 0 for non-focused.
+ * @param bitmap	Bitmap struct to be filled.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_get_step_icon_bitmap(int step, int focused,
+				    struct ui_bitmap *bitmap);
 
 /*
  * Get bitmap of menu item.
@@ -315,6 +332,7 @@ struct ui_state {
 enum ui_icon_type {
 	UI_ICON_TYPE_NONE = 0,
 	UI_ICON_TYPE_INFO,
+	UI_ICON_TYPE_STEP,
 };
 
 /* List of image files */
@@ -328,6 +346,9 @@ struct ui_screen_info {
 	enum vb2_screen id;
 	/* Icon type */
 	enum ui_icon_type icon;
+	/* Step icons */
+	int step;
+	int num_steps;
 	/* File for screen title. Required if (draw == NULL). */
 	const char *title;
 	/* Files for screen descriptions */
@@ -351,8 +372,7 @@ struct ui_screen_info {
 /*
  * Default drawing function.
  *
- * @param ui_desc	UI descriptor, which contains screen information such as
- *			title and descriptions.
+ * @param screen	Screen information such as title and descriptions.
  * @param state		UI state.
  * @param prev_state	Previous UI state.
  *

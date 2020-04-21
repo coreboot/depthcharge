@@ -21,6 +21,54 @@
 #include "vboot/ui.h"
 #include "vboot/util/commonparams.h"
 
+/*
+ * Draw step icons.
+ *
+ * @param screen	Screen information such as title and descriptions.
+ * @param state		Current UI state.
+ * @param prev_state	Previous UI state.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+static vb2_error_t ui_draw_step_icons(const struct ui_screen_info *screen,
+				      const struct ui_state *state,
+				      const struct ui_state *prev_state)
+{
+	struct ui_bitmap bitmap;
+	const int cur_step = screen->step;
+	const int num_steps = screen->num_steps;
+	int step;
+	int32_t x = UI_MARGIN_H;
+	const int32_t y = UI_MARGIN_TOP + UI_LANG_BOX_HEIGHT +
+		UI_LANG_MARGIN_BOTTOM;
+	const int32_t y_center = y + UI_ICON_HEIGHT / 2;
+	const int32_t icon_size = UI_STEP_ICON_HEIGHT;
+	const int reverse = state->locale->rtl;
+	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_CENTER;
+
+	for (step = 1; step <= num_steps; step++) {
+		if (step < cur_step)
+			VB2_TRY(ui_get_bitmap("ic_done.bmp", &bitmap));
+		else
+			VB2_TRY(ui_get_step_icon_bitmap(step, step == cur_step,
+							&bitmap));
+		VB2_TRY(ui_draw_bitmap(&bitmap, x, y_center,
+				       icon_size, icon_size, flags, reverse));
+		x += icon_size;
+		if (step == num_steps)
+			break;
+
+		/* Separator */
+		x += UI_STEP_ICON_MARGIN_H;
+		VB2_TRY(ui_draw_box(x, y_center,
+				    UI_STEP_ICON_SEPARATOR_WIDTH, UI_SIZE_MIN,
+				    &ui_color_border, reverse));
+		x += UI_STEP_ICON_SEPARATOR_WIDTH + UI_STEP_ICON_MARGIN_H;
+	}
+
+	return VB2_SUCCESS;
+}
+
 static vb2_error_t draw_footer(const struct ui_state *state)
 {
 	char hwid[VB2_GBB_HWID_MAX_SIZE];
@@ -194,7 +242,9 @@ vb2_error_t ui_draw_default(const struct ui_screen_info *screen,
 
 	x = UI_MARGIN_H;
 	y = UI_MARGIN_TOP + UI_LANG_BOX_HEIGHT + UI_LANG_MARGIN_BOTTOM;
-	if (icon_file) {
+	if (screen->icon == UI_ICON_TYPE_STEP) {
+		VB2_TRY(ui_draw_step_icons(screen, state, prev_state));
+	} else if (icon_file) {
 		VB2_TRY(ui_get_bitmap(icon_file, &bitmap));
 		VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, UI_ICON_HEIGHT,
 				       flags, reverse));

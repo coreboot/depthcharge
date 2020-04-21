@@ -104,6 +104,90 @@ static const struct ui_screen_info recovery_select_screen = {
 };
 
 /******************************************************************************/
+/* VB2_SCREEN_RECOVERY_DISK_STEP1 */
+
+static const char *const recovery_disk_step1_desc[] = {
+	"rec_disk_step1_desc0.bmp",
+	"rec_disk_step1_desc1.bmp",
+	/* TODO(yupingso): Draw rec_disk_step1_desc2_low_bat.bmp if battery is
+	   low. */
+	"rec_disk_step1_desc2.bmp",
+};
+
+static const char *const recovery_disk_step1_menu[] = {
+	"btn_next.bmp",
+	"btn_back.bmp",
+};
+
+static const struct ui_screen_info recovery_disk_step1_screen = {
+	.id = VB2_SCREEN_RECOVERY_DISK_STEP1,
+	.icon = UI_ICON_TYPE_STEP,
+	.step = 1,
+	.num_steps = 3,
+	.title = "rec_disk_step2_title.bmp",
+	.desc = UI_FILES(recovery_disk_step1_desc),
+	.menu = UI_FILES(recovery_disk_step1_menu),
+	.mesg = "To proceed with the recovery process, you'll need\n"
+		"1. An external storage disk such as a USB drive or an SD card"
+		"\n2. An additional device with internet access\n"
+		"We also recommend that you connect to a power source during\n"
+		"the recovery process.",
+};
+
+/******************************************************************************/
+/* VB2_SCREEN_RECOVERY_DISK_STEP2 */
+
+static const char *const recovery_disk_step2_desc[] = {
+	"rec_disk_step2_desc0.bmp",
+	"rec_disk_step2_desc1.bmp",
+	"rec_disk_step2_desc2.bmp",
+};
+
+static const char *const recovery_disk_step2_menu[] = {
+	"btn_next.bmp",
+	"btn_back.bmp",
+};
+
+static const struct ui_screen_info recovery_disk_step2_screen = {
+	.id = VB2_SCREEN_RECOVERY_DISK_STEP2,
+	.icon = UI_ICON_TYPE_STEP,
+	.step = 2,
+	.num_steps = 3,
+	.title = "rec_disk_step2_title.bmp",
+	.desc = UI_FILES(recovery_disk_step2_desc),
+	.menu = UI_FILES(recovery_disk_step2_menu),
+	.mesg = "External disk setup.\n"
+		"Go to google.com/chromeos/recovery on another computer and\n"
+		"install the Chrome extension. Follow instructions on the\n"
+		"Chrome extension, and download the recovery image onto an\n"
+		"external disk.",
+};
+
+/******************************************************************************/
+/* VB2_SCREEN_RECOVERY_DISK_STEP3 */
+
+static const char *const recovery_disk_step3_desc[] = {
+	"rec_disk_step3_desc0.bmp",
+};
+
+static const char *const recovery_disk_step3_menu[] = {
+	"btn_back.bmp",
+};
+
+static const struct ui_screen_info recovery_disk_step3_screen = {
+	.id = VB2_SCREEN_RECOVERY_DISK_STEP3,
+	.icon = UI_ICON_TYPE_STEP,
+	.step = 3,
+	.num_steps = 3,
+	.title = "rec_disk_step3_title.bmp",
+	.desc = UI_FILES(recovery_disk_step3_desc),
+	.menu = UI_FILES(recovery_disk_step3_menu),
+	.mesg = "Do you have your external disk ready?\n"
+		"If your external disk is ready with a recovery image, plug\n"
+		"it into the device to start the recovery process.",
+};
+
+/******************************************************************************/
 /*
  * TODO(chromium:1035800): Refactor UI code across vboot and depthcharge.
  * Currently vboot and depthcharge maintain their own copies of menus/screens.
@@ -116,6 +200,9 @@ static const struct ui_screen_info *const screens[] = {
 	&firmware_sync_screen,
 	&broken_screen,
 	&recovery_select_screen,
+	&recovery_disk_step1_screen,
+	&recovery_disk_step2_screen,
+	&recovery_disk_step3_screen,
 };
 
 const struct ui_screen_info *ui_get_screen_info(enum vb2_screen screen_id)

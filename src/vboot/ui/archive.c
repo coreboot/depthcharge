@@ -26,6 +26,7 @@
 
 #define UI_LOCALE_CODE_MAX_LEN 8
 #define UI_CBFS_FILENAME_MAX_LEN 256
+#define UI_BITMAP_FILENAME_MAX_LEN 32
 
 static struct cbfs_media *get_ro_cbfs(void)
 {
@@ -315,60 +316,40 @@ vb2_error_t ui_get_char_bitmap(const char c, enum ui_char_style style,
 	return find_bitmap_in_archive(dir, image_name, bitmap);
 }
 
-/*
- * Get file name append with a suffix, before the file extension.
- *
- * For example, get_file_with_suffix("name.bmp", "_suf") will return
- * "name_suf.bmp".
- *
- * @param file		The original file name.
- * @param suffix	The suffix with which |file| will be appended.
- *
- * @return A pointer to the new file name, or NULL on malloc failure. The caller
- * owns the returned memory.
- */
-static char *get_filename_with_suffix(const char *file, const char *suffix)
+vb2_error_t ui_get_step_icon_bitmap(int step, int focused,
+				    struct ui_bitmap *bitmap)
 {
-	char *new_file, *p;
-	const char *file_ext;
-
-	new_file = malloc(strlen(file) + strlen(suffix) + 1);
-	if (!new_file)
-		return NULL;
-
-	strcpy(new_file, file);
-
-	/* Remove file extension if exists */
-	p = strrchr(new_file, '.');
-	file_ext = NULL;
-	if (p) {
-		*p = '\0';
-		file_ext = strrchr(file, '.');
-	}
-
-	strcat(new_file, suffix);
-	strcat(new_file, file_ext);
-	return new_file;
+	char filename[UI_BITMAP_FILENAME_MAX_LEN + 1];
+	const char *pattern = focused ? "ic_%d-done.bmp" : "ic_%d.bmp";
+	snprintf(filename, sizeof(filename), pattern, step);
+	return ui_get_bitmap(filename, bitmap);
 }
 
 vb2_error_t ui_get_menu_item_bitmap(const char *image_name,
 				    const char *locale_code,
 				    int focused, struct ui_bitmap *bitmap)
 {
-	vb2_error_t rv;
-	char *image_name_focused;
+	int used;
+	char file[UI_BITMAP_FILENAME_MAX_LEN + 1];
+	const char *file_ext;
+	const char *suffix = "_focus";
+	const size_t image_name_len = strlen(image_name);
 
-	if (!focused)
-		return ui_get_localized_bitmap(image_name, locale_code, bitmap);
-
-	image_name_focused = get_filename_with_suffix(image_name, "_focus");
-	if (!image_name_focused) {
-		UI_ERROR("Out of memory\n");
-		return VB2_ERROR_UI_MEMORY_ALLOC;
+	if (image_name_len + strlen(suffix) >= sizeof(file)) {
+		UI_ERROR("Image name %s too long\n", image_name);
+		return VB2_ERROR_INVALID_PARAMETER;
 	}
 
-	rv = ui_get_localized_bitmap(image_name_focused, locale_code, bitmap);
-	free(image_name_focused);
+	file_ext = strrchr(image_name, '.');
+	if (file_ext)
+		used = file_ext - image_name;
+	else
+		used = image_name_len;
+	strncpy(file, image_name, used);
 
-	return rv;
+	if (focused)
+		used += snprintf(file + used, sizeof(file) - used, suffix);
+	snprintf(file + used, sizeof(file) - used, file_ext);
+
+	return ui_get_localized_bitmap(file, locale_code, bitmap);
 }
