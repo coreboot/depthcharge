@@ -179,7 +179,7 @@ vb2_error_t update_vboot_auxfw(void)
 			/* Apply update */
 			printf("Update auxfw %d\n", i);
 			status = apply_dev_fw(auxfw);
-			if (status == VBERROR_PERIPHERAL_BUSY) {
+			if (status == VB2_ERROR_EX_AUXFW_PERIPHERAL_BUSY) {
 				status = VB2_SUCCESS;
 				continue;
 			} else if (status != VB2_SUCCESS) {

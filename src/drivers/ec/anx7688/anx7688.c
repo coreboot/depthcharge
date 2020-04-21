@@ -270,7 +270,7 @@ static vb2_error_t anx7688_update(struct Anx7688 *me,
 	case -EC_RES_BUSY:
 		printf("ANX7688 PD_SUSPEND busy! Could be only power "
 		       "source.\n");
-		return VBERROR_PERIPHERAL_BUSY;
+		return VB2_ERROR_EX_AUXFW_PERIPHERAL_BUSY;
 	case EC_RES_SUCCESS:
 		/* Continue onward */
 		break;
