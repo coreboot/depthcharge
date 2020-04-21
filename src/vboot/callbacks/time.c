@@ -17,46 +17,47 @@
 
 #include <libpayload.h>
 #include <vb2_api.h>
-#include <vboot_api.h>
 
 #include "drivers/sound/sound.h"
 
-uint64_t VbExGetTimer(void)
+uint32_t vb2ex_mtime(void)
 {
-	static uint64_t start = 0;
-	if (!start)
-		start = timer_us(0);
-	return timer_us(start);
+	return timer_us(0) / USECS_PER_MSEC;
 }
 
-void VbExSleepMs(uint32_t msec)
+void vb2ex_msleep(uint32_t msec)
 {
 	mdelay(msec);
 }
 
-vb2_error_t VbExBeep(uint32_t msec, uint32_t frequency)
+void vb2ex_beep(uint32_t msec, uint32_t frequency)
 {
-	int res;
-	if (frequency)
-		res = sound_start(frequency);
-	else
-		res = sound_stop();
+	uint64_t start;
+	uint64_t elapsed;
+	int ret;
+	int need_stop = 1;
 
-	if (res > 0) {
-		// The previous call had an error.
-		return VB2_ERROR_UNKNOWN;
-	} else if (res < 0) {
-		// Non-blocking beeps aren't supported.
-		if (msec > 0 && sound_play(msec, frequency))
-			return VB2_ERROR_UNKNOWN;
-		return VBERROR_NO_BACKGROUND_SOUND;
-	} else {
-		// The non-blocking call worked. Delay if requested.
-		if (msec > 0) {
-			mdelay(msec);
-			if (sound_stop())
-				return VB2_ERROR_UNKNOWN;
-		}
-		return VB2_SUCCESS;
-        }
+	/* Zero-length beep should return immediately. */
+	if (msec == 0)
+		return;
+
+	start = timer_us(0);
+	ret = sound_start(frequency);
+
+	if (ret < 0) {
+		/* Driver only supports blocking beep calls. */
+		need_stop = 0;
+		ret = sound_play(msec, frequency);
+		if (ret)
+			printf("WARNING: sound_play() returned %#x\n", ret);
+	}
+
+	/* Wait for requested time on a non-blocking call, and
+	   enforce minimum delay in case of buggy sound drivers. */
+	elapsed = timer_us(start);
+	if (elapsed < msec * USECS_PER_MSEC)
+		mdelay(msec - elapsed / USECS_PER_MSEC);
+
+	if (need_stop)
+		sound_stop();
 }
