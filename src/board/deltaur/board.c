@@ -52,7 +52,7 @@ static const char *pd_cbfs_firmware = "pdrw.bin";
 static const char *pd_cbfs_hash = "pdrw.hash";
 
 static const pcidev_t pch_spi_pci_dev = PCI_DEV(0, 0x1f, 5);
-static const pcidev_t i2c4_pci_dev = PCI_DEV(0, 0x19, 0);
+static const pcidev_t i2c3_pci_dev = PCI_DEV(0, 0x15, 3);
 static const pcidev_t ahci_pci_dev = PCI_DEV(0, 0x17, 0);
 static const pcidev_t pcie_root_port_9 = PCI_DEV(0, 0x1d, 0);
 
@@ -66,8 +66,7 @@ FlashProtectionMapping flash_protection_list[] = {
 
 static int cr50_irq_status(void)
 {
-	/* TODO(b/150165222): Not sure of the GPE number yet */
-	return tigerlake_get_gpe(GPE0_DW0_15); /* GPP_C15 */
+	return tigerlake_get_gpe(GPE0_DW0_23); /* GPP_C23 */
 }
 
 static int board_setup(void)
@@ -100,11 +99,11 @@ static int board_setup(void)
 		register_vboot_aux_fw(&ti_tcpc->ops);
 	}
 
-	/* H1 TPM on I2C bus 4 @ 400KHz, controller core is 133MHz */
-	DesignwareI2c *i2c4 = new_pci_designware_i2c(
-		i2c4_pci_dev, 400000, TIGERLAKE_DW_I2C_MHZ);
+	/* H1 TPM on I2C bus 3 @ 400KHz, controller core is 133MHz */
+	DesignwareI2c *i2c3 = new_pci_designware_i2c(
+		i2c3_pci_dev, 400000, TIGERLAKE_DW_I2C_MHZ);
 
-	Cr50I2c *tpm = new_cr50_i2c(&i2c4->ops, cr50_addr, &cr50_irq_status);
+	Cr50I2c *tpm = new_cr50_i2c(&i2c3->ops, cr50_addr, &cr50_irq_status);
 	tpm_set_ops(&tpm->base.ops);
 
 	GpioOps *power_switch = &new_cr50_power_switch(&tpm->base.ops)->ops;
