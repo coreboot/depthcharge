@@ -52,9 +52,12 @@ TEXT_COLORS_KEY = 'text_colors'
 # These are supposed to be kept in sync with the numbers set in Depthcharge to
 # avoid runtime scaling, which makes images blurry.
 SCALE_BASE = 1000  # 100.0%
-DEFAULT_ASSET_SCALE = (0, 169)
+DEFAULT_ASSET_SCALE = (0, 30)
+LEGACY_ASSET_SCALE = (0, 169)
 TEXT_HEIGHT = 36   #   3.6%
 DEFAULT_TEXT_SCALE = (0, TEXT_HEIGHT)
+ICON_SCALE = (0, 45)
+STEP_ICON_SCALE = (0, 28)
 NO_SCALE = 0
 ASSET_SCALES = {
     'arrow_left': DEFAULT_TEXT_SCALE,
@@ -67,24 +70,16 @@ ASSET_SCALES = {
     'RemoveDevices': (0, 371),
     'reserve_charging': (0, 117),
     'reserve_charging_empty': (0, 117),
-    'ic_1': DEFAULT_TEXT_SCALE,
-    'ic_1-done': DEFAULT_TEXT_SCALE,
-    'ic_2': DEFAULT_TEXT_SCALE,
-    'ic_2-done': DEFAULT_TEXT_SCALE,
-    'ic_3': DEFAULT_TEXT_SCALE,
-    'ic_3-done': DEFAULT_TEXT_SCALE,
-    'ic_4': DEFAULT_TEXT_SCALE,
-    'ic_4-done': DEFAULT_TEXT_SCALE,
-    'ic_5': DEFAULT_TEXT_SCALE,
-    'ic_5-done': DEFAULT_TEXT_SCALE,
-    'ic_done': DEFAULT_TEXT_SCALE,
     'separator': NO_SCALE,
-    'ic_esc': DEFAULT_TEXT_SCALE,
-    'ic_refresh': DEFAULT_TEXT_SCALE,
-    'ic_power': DEFAULT_TEXT_SCALE,
-    'nav-key_enter': DEFAULT_TEXT_SCALE,
-    'nav-key_up': DEFAULT_TEXT_SCALE,
-    'nav-key_down': DEFAULT_TEXT_SCALE,
+    'ic_info': ICON_SCALE,
+    'ic_warning': ICON_SCALE,
+    'ic_error': ICON_SCALE,
+    'ic_1': STEP_ICON_SCALE,
+    'ic_1-done': STEP_ICON_SCALE,
+    'ic_2': STEP_ICON_SCALE,
+    'ic_2-done': STEP_ICON_SCALE,
+    'ic_3': STEP_ICON_SCALE,
+    'ic_3-done': STEP_ICON_SCALE,
 }
 TEXT_SCALES = {
     'tonorm': (0, 4 * TEXT_HEIGHT),
@@ -322,12 +317,21 @@ class Convert(object):
 
       return (dim_width, dim_height)
 
-  def convert_svg_to_png(self, svg_file, png_file, background):
+  def convert_svg_to_png(self, svg_file, png_file, scale, background):
     """Convert .svg file to .png file"""
     background_hex = ''.join(format(x, '02x') for x in background)
-    command = "rsvg-convert --background-color '#%s' -o %s %s" % (
-        background_hex, png_file, svg_file)
-    subprocess.check_call(command, shell=True)
+    command = ['rsvg-convert',
+               '--background-color', "'#%s'" % background_hex,
+               '-o', png_file]
+    if scale:
+        width = int(self.canvas_px * scale[0] / SCALE_BASE)
+        height = int(self.canvas_px * scale[1] / SCALE_BASE)
+        if width:
+            command.extend(['--width', '%d' % width])
+        if height:
+            command.extend(['--height', '%d' % height])
+    command.append(svg_file)
+    subprocess.check_call(' '.join(command), shell=True)
 
   def convert_to_bitmap(self, input, scale, background, output, max_colors):
     """Convert an image file to the bitmap format"""
@@ -386,7 +390,7 @@ class Convert(object):
 
       if ext == '.svg':
         png_file = os.path.join(self.temp_dir, name + '.png')
-        self.convert_svg_to_png(file, png_file, background)
+        self.convert_svg_to_png(file, png_file, scale, background)
         file = png_file
 
       self.convert_to_bitmap(file, scale, background, output, max_colors)
@@ -397,7 +401,9 @@ class Convert(object):
     files = []
     files.extend(glob.glob(os.path.join(asset_dir, SVG_FILES)))
     files.extend(glob.glob(os.path.join(asset_dir, PNG_FILES)))
-    scales = defaultdict(lambda: DEFAULT_ASSET_SCALE)
+    default_scale = (DEFAULT_ASSET_SCALE if self.is_menu_ui else
+                     LEGACY_ASSET_SCALE)
+    scales = defaultdict(lambda: default_scale)
     scales.update(ASSET_SCALES)
     self.convert(files, self.output_dir, scales, ASSET_MAX_COLORS)
 
