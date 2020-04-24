@@ -25,8 +25,6 @@ import sys
 from PIL import Image
 import yaml
 
-ASSET_DIR = 'assets'
-LEGACY_ASSET_DIR = 'legacy_assets'
 LOCALE_DIR = 'locale'
 FONT_DIR = 'font'
 PNG_FILES = '*.png'
@@ -44,33 +42,64 @@ RTL_KEY = 'rtl'
 HI_RES_KEY = 'hi_res'
 TEXT_COLORS_KEY = 'text_colors'
 
-# Set scale for each image. Key is image name and value is (x, y) where x is
-# the width and the height relative to the screen size. For example, if
-# SCALE_BASE is 1000, (500, 100) means the image will be scaled to 50.0% of
-# the screen width and 10.0% of the screen height.
-#
-# These are supposed to be kept in sync with the numbers set in Depthcharge to
-# avoid runtime scaling, which makes images blurry.
-SCALE_BASE = 1000  # 100.0%
-DEFAULT_ASSET_SCALE = (0, 30)
-LEGACY_ASSET_SCALE = (0, 169)
-TEXT_HEIGHT = 36   #   3.6%
-DEFAULT_TEXT_SCALE = (0, TEXT_HEIGHT)
-ICON_SCALE = (0, 45)
-STEP_ICON_SCALE = (0, 28)
-NO_SCALE = 0
-ASSET_SCALES = {
-    'arrow_left': DEFAULT_TEXT_SCALE,
-    'arrow_right': DEFAULT_TEXT_SCALE,
-    'chrome_logo': (0, 39),
-    'divider_btm': (900, 0),
-    'divider_top': (900, 0),
-    'globe': DEFAULT_TEXT_SCALE,
-    'InsertDevices': (0, 371),
-    'RemoveDevices': (0, 371),
-    'reserve_charging': (0, 117),
-    'reserve_charging_empty': (0, 117),
-    'separator': NO_SCALE,
+LocaleInfo = namedtuple('LocaleInfo', ['code', 'rtl', 'hi_res'])
+
+
+class BuildImageError(Exception):
+  """The exception class for all errors generated during build image process"""
+  pass
+
+
+class Converter(object):
+  """Converts assets, texts, URLs, and fonts to bitmap images.
+
+  Attributes:
+    ASSET_DIR (str): Directory of image assets.
+    DEFAULT_OUTPUT_EXT (str): Default output file extension.
+    DEFAULT_REPLACE_MAP (dict): Default mapping of file replacement. For
+      {'a': 'b'}, "a.*" will be converted to "b.*".
+    SCALE_BASE (int): See ASSET_SCALES below.
+    ASSET_SCALES (dict): Scale of each image asset. Key is the image name and
+      value is a tuple (w, h), which are the width and height relative to the
+      screen resolution. For example, if SCALE_BASE is 1000, (500, 100) means
+      the image will be scaled to 50% of the screen width and 10% of the screen
+      height.
+    TEXT_SCALES (dict): Scale of each localized text image. The meaning is
+      similar to ASSET_SCALES.
+    ASSET_MAX_COLORS (int): Maximum colors to use for converting image assets
+      to bitmaps.
+    DEFAULT_BACKGROUND (tuple): Default background color.
+    BACKGROUND_COLORS (dict): Background color of each image. Key is the image
+      name and value is a tuple of RGB values.
+
+  """
+
+  ASSET_DIR = 'assets'
+  DEFAULT_OUTPUT_EXT = '.bmp'
+
+  DEFAULT_REPLACE_MAP = {
+    'rec_sel_desc1_no_sd': '',
+    'rec_sel_desc1_no_phone_no_sd': '',
+    'rec_disk_step1_desc0_no_sd': '',
+    'navigate_tablet': '',
+    'nav-button_power': '',
+    'nav-button_volume_up': '',
+    'nav-button_volume_down': '',
+  }
+
+  # scales
+  SCALE_BASE = 1000     # 100.0%
+
+  # These are supposed to be kept in sync with the numbers set in depthcharge
+  # to avoid runtime scaling, which makes images blurry.
+  DEFAULT_ASSET_SCALE = (0, 30)
+  DEFAULT_TEXT_SCALE = (0, 36)
+  DEFAULT_FONT_SCALE = (0, 36)
+  ICON_SCALE = (0, 45)
+  STEP_ICON_SCALE = (0, 28)
+
+  ASSET_SCALES = {
+    'separator': None,
     'ic_info': ICON_SCALE,
     'ic_warning': ICON_SCALE,
     'ic_error': ICON_SCALE,
@@ -80,77 +109,20 @@ ASSET_SCALES = {
     'ic_2-done': STEP_ICON_SCALE,
     'ic_3': STEP_ICON_SCALE,
     'ic_3-done': STEP_ICON_SCALE,
-}
-TEXT_SCALES = {
-    'tonorm': (0, 4 * TEXT_HEIGHT),
-    'insert_sd_usb2': (0, 2 * TEXT_HEIGHT),
-    'insert_usb2': (0, 2 * TEXT_HEIGHT),
-    'os_broken': (0, 2 * TEXT_HEIGHT),
-    'todev': (0, 4 * TEXT_HEIGHT),
-    'todev_phyrec': (0, 4 * TEXT_HEIGHT),
-    'todev_power':  (0, 4 * TEXT_HEIGHT),
-    'tonorm': (0, 4 * TEXT_HEIGHT),
-    'update': (0, 3 * TEXT_HEIGHT),
-    'wrong_power_supply': (0, 4 * TEXT_HEIGHT),
-    'navigate': (0, 2 * TEXT_HEIGHT),
-    'disable_warn': (0, 2 * TEXT_HEIGHT),
-    'enable_hint': (0, 2 * TEXT_HEIGHT),
-    'confirm_hint': (0, 2 * TEXT_HEIGHT),
-    'diag_confirm': (0, 3 * TEXT_HEIGHT),
-}
-# Background colors
-LEGACY_DEFAULT_BACKGROUND = (255, 255, 255)
-LEGACY_CHARGE_BACKGROUND = (0, 0, 0)
-DEFAULT_BACKGROUND = (0x20, 0x21, 0x24)
-LANGUAGE_SELECTED_BACKGROUND = (0xcc, 0xcc, 0xcc)
-BUTTON_SELECTED_BACKGROUND = (0x8a, 0xb4, 0xf8)
-BACKGROUND_COLORS = {
-    'reserve_charging': LEGACY_CHARGE_BACKGROUND,
-    'reserve_charging_empty': LEGACY_CHARGE_BACKGROUND,
+  }
+
+  TEXT_SCALES = {}
+
+  # background colors
+  DEFAULT_BACKGROUND = (0x20, 0x21, 0x24)
+  LANGUAGE_SELECTED_BACKGROUND = (0xcc, 0xcc, 0xcc)
+  BUTTON_SELECTED_BACKGROUND = (0x8a, 0xb4, 0xf8)
+  ASSET_MAX_COLORS = 128
+
+  BACKGROUND_COLORS = {
     'ic_dropdown_sel': LANGUAGE_SELECTED_BACKGROUND,
     'ic_dropleft_sel': BUTTON_SELECTED_BACKGROUND,
     'ic_dropright_sel': BUTTON_SELECTED_BACKGROUND,
-}
-ASSET_MAX_COLORS = 128
-
-LocaleInfo = namedtuple('LocaleInfo', ['code', 'rtl', 'hi_res'])
-
-
-class BuildImageError(Exception):
-  """The exception class for all errors generated during build image process"""
-  pass
-
-
-class Convert(object):
-  """Converts assets, texts, URLs, and fonts to bitmap images"""
-
-  DEFAULT_OUTPUT_EXT = '.bmp'
-
-  DEFAULT_REPLACE_MAP = {
-      'rec_sel_desc1_no_sd': '',
-      'rec_sel_desc1_no_phone_no_sd': '',
-      'rec_disk_step1_desc0_no_sd': '',
-      'navigate_tablet': '',
-      'nav-button_power': '',
-      'nav-button_volume_up': '',
-      'nav-button_volume_down': '',
-  }
-
-  LEGACY_REPLACE_MAP = {
-      'BadSD': '',
-      'BadUSB': '',
-      'InsertUSB': '',
-      'RemoveDevices': '',
-      'RemoveSD': '',
-      'RemoveUSB': '',
-      'boot_usb_only': '',
-      'insert_sd_usb2': '',
-      'insert_usb2': '',
-      'insert_usb': '',
-      'todev_phyrec': '',
-      'todev_power': '',
-      'reserve_charging': '',
-      'reserve_charging_empty': '',
   }
 
   def __init__(self, board, config):
@@ -159,15 +131,11 @@ class Convert(object):
       board: a string, name of the board to use.
       config: a dictionary of configuration parameters.
     """
-    self.is_menu_ui = os.getenv('MENU_UI') == '1'
     self.board = board
     self.config = config
     self.set_dirs()
     self.set_screen()
-    if self.is_menu_ui:
-      self.set_replace_map()
-    else:
-      self.set_legacy_replace_map()
+    self.set_replace_map()
     self.set_locales()
     self.text_max_colors = self.config[TEXT_COLORS_KEY]
 
@@ -204,36 +172,6 @@ class Convert(object):
     # TODO: Depthcharge should narrow the canvas if the screen is stretched.
     self.canvas_px = min(self.screen_width, self.screen_height)
 
-  def set_legacy_replace_map(self):
-    """Set a map replacing images for legacy UIs.
-
-    For each (key, value), image 'key' will be replaced by image 'value'.
-    """
-    sdcard = self.config[SDCARD_KEY]
-    bad_usb3 = self.config[BAD_USB3_KEY]
-    physical_presence = os.getenv('PHYSICAL_PRESENCE')
-
-    self.replace_map = self.LEGACY_REPLACE_MAP.copy()
-
-    if not sdcard:
-      self.replace_map['BadDevices'] = 'BadUSB'
-      self.replace_map['InsertDevices'] = 'InsertUSB'
-      self.replace_map['insert'] = ('insert_usb2' if bad_usb3 else 'insert_usb')
-      self.replace_map['boot_usb'] = 'boot_usb_only'
-    elif bad_usb3:
-      self.replace_map['insert'] = 'insert_sd_usb2'
-
-    if physical_presence == 'power':
-      self.replace_map['todev'] = 'todev_power'
-    elif physical_presence == 'recovery':
-      self.replace_map['todev'] = 'todev_phyrec'
-    elif physical_presence != 'keyboard':
-      raise BuildImageError('Invalid physical presence setting %s for board %s'
-                            % (physical_presence, self.board))
-
-    if os.getenv("LEGACY_MENU_UI") == "1":
-      self.replace_map['VerificationOff'] = ''
-
   def set_replace_map(self):
     """Set a map replacing images.
 
@@ -261,26 +199,10 @@ class Convert(object):
   def set_locales(self):
     """Set a list of locales for which localized images are converted"""
     # LOCALES environment variable can overwrite boards.yaml
-    env_locales = os.getenv('LOCALES')
     rtl_locales = set(self.config[RTL_KEY])
     hi_res_locales = set(self.config[HI_RES_KEY])
-    if self.is_menu_ui:
-      # TODO(b/144969853): Support all locales for MENU_UI.
-      locales = ['en']
-    elif env_locales:
-      locales = env_locales.split()
-    else:
-      locales = self.config[LOCALES_KEY]
-      # Check rtl_locales are contained in locales.
-      unknown_rtl_locales = rtl_locales - set(locales)
-      if unknown_rtl_locales:
-        raise BuildImageError('Unknown locales %s in %s' %
-                              (list(unknown_rtl_locales), RTL_KEY))
-      # Check hi_res_locales are contained in locales.
-      unknown_hi_res_locales = hi_res_locales - set(locales)
-      if unknown_hi_res_locales:
-        raise BuildImageError('Unknown locales %s in %s' %
-                              (list(unknown_hi_res_locales), HI_RES_KEY))
+    # TODO(b/144969853): Support all locales for MENU_UI.
+    locales = ['en']
     self.locales = [LocaleInfo(code, code in rtl_locales,
                                code in hi_res_locales)
                     for code in locales]
@@ -305,9 +227,9 @@ class Convert(object):
       if scale_x == 0 and scale_y == 0:
         raise BuildImageError('Invalid scale parameter: %s' % (scale))
       if scale_x > 0:
-        dim_width = self.canvas_px * scale_x / SCALE_BASE
+        dim_width = self.canvas_px * scale_x / self.SCALE_BASE
       if scale_y > 0:
-        dim_height = self.canvas_px * scale_y / SCALE_BASE
+        dim_height = self.canvas_px * scale_y / self.SCALE_BASE
       if scale_x == 0:
         dim_width = org_width * dim_height / org_height
       if scale_y == 0:
@@ -332,8 +254,8 @@ class Convert(object):
                '--dpi-y', '72',
                '-o', png_file]
     if scale:
-        width = int(self.canvas_px * scale[0] / SCALE_BASE)
-        height = int(self.canvas_px * scale[1] / SCALE_BASE)
+        width = int(self.canvas_px * scale[0] / self.SCALE_BASE)
+        height = int(self.canvas_px * scale[1] / self.SCALE_BASE)
         if width:
             command.extend(['--width', '%d' % width])
         if height:
@@ -382,11 +304,7 @@ class Convert(object):
       name, ext = os.path.splitext(os.path.basename(file))
       output = os.path.join(output_dir, name + self.DEFAULT_OUTPUT_EXT)
 
-      default_background = DEFAULT_BACKGROUND
-      if not self.is_menu_ui:
-        default_background = LEGACY_DEFAULT_BACKGROUND
-      background = BACKGROUND_COLORS.get(name, default_background)
-
+      background = self.BACKGROUND_COLORS.get(name, self.DEFAULT_BACKGROUND)
       scale = scales[name]
 
       if name in self.replace_map:
@@ -405,22 +323,12 @@ class Convert(object):
 
   def convert_assets(self):
     """Convert images in assets folder"""
-    asset_dir = ASSET_DIR if self.is_menu_ui else LEGACY_ASSET_DIR
     files = []
-    files.extend(glob.glob(os.path.join(asset_dir, SVG_FILES)))
-    files.extend(glob.glob(os.path.join(asset_dir, PNG_FILES)))
-    default_scale = (DEFAULT_ASSET_SCALE if self.is_menu_ui else
-                     LEGACY_ASSET_SCALE)
-    scales = defaultdict(lambda: default_scale)
-    scales.update(ASSET_SCALES)
-    self.convert(files, self.output_dir, scales, ASSET_MAX_COLORS)
-
-  def convert_url(self):
-    """Convert URL and arrows"""
-    # URL and arrows should be default height
-    scales = defaultdict(lambda: DEFAULT_TEXT_SCALE)
-    files = glob.glob(os.path.join(self.stage_dir, PNG_FILES))
-    self.convert(files, self.output_dir, scales, self.text_max_colors)
+    files.extend(glob.glob(os.path.join(self.ASSET_DIR, SVG_FILES)))
+    files.extend(glob.glob(os.path.join(self.ASSET_DIR, PNG_FILES)))
+    scales = defaultdict(lambda: self.DEFAULT_ASSET_SCALE)
+    scales.update(self.ASSET_SCALES)
+    self.convert(files, self.output_dir, scales, self.ASSET_MAX_COLORS)
 
   def convert_texts(self):
     """Convert localized texts"""
@@ -431,8 +339,8 @@ class Convert(object):
       locale = locale_info.code
       output_dir = os.path.join(self.output_dir, LOCALE_DIR, locale)
       if locale_info.hi_res:
-        scales = defaultdict(lambda: DEFAULT_TEXT_SCALE)
-        scales.update(TEXT_SCALES)
+        scales = defaultdict(lambda: self.DEFAULT_TEXT_SCALE)
+        scales.update(self.TEXT_SCALES)
       else:
         # We use low-res images for these locales and turn off scaling
         # to make the files fit in a ROM. Note that these text images will
@@ -447,7 +355,7 @@ class Convert(object):
 
   def convert_fonts(self):
     """Convert font images"""
-    scales = defaultdict(lambda: DEFAULT_TEXT_SCALE)
+    scales = defaultdict(lambda: self.DEFAULT_FONT_SCALE)
     font_dir = os.path.join(self.stage_dir, FONT_DIR)
     files = glob.glob(os.path.join(font_dir, PNG_FILES))
     font_output_dir = os.path.join(self.output_dir, FONT_DIR)
@@ -484,9 +392,6 @@ class Convert(object):
     print 'Converting asset images...'
     self.convert_assets()
 
-    print 'Converting URL images...'
-    self.convert_url()
-
     print 'Converting localized text images...'
     self.convert_texts()
 
@@ -495,6 +400,145 @@ class Convert(object):
 
     print 'Converting fonts...'
     self.convert_fonts()
+
+
+class LegacyConverter(Converter):
+  """Converts assets, texts, URLs, and fonts to bitmap images for legacy UIs"""
+
+  ASSET_DIR = 'legacy_assets'
+
+  DEFAULT_REPLACE_MAP = {
+    'BadSD': '',
+    'BadUSB': '',
+    'InsertUSB': '',
+    'RemoveDevices': '',
+    'RemoveSD': '',
+    'RemoveUSB': '',
+    'boot_usb_only': '',
+    'insert_sd_usb2': '',
+    'insert_usb2': '',
+    'insert_usb': '',
+    'todev_phyrec': '',
+    'todev_power': '',
+    'reserve_charging': '',
+    'reserve_charging_empty': '',
+  }
+
+  # scales
+  SCALE_BASE = 1000     # 100.0%
+
+  # These are supposed to be kept in sync with the numbers set in depthcharge
+  LEGACY_TEXT_HEIGHT = 36   #   3.6%
+  DEFAULT_TEXT_SCALE = (0, LEGACY_TEXT_HEIGHT)
+  DEFAULT_ASSET_SCALE = (0, 169)
+
+  ASSET_SCALES = {
+    'arrow_left': DEFAULT_TEXT_SCALE,
+    'arrow_right': DEFAULT_TEXT_SCALE,
+    'chrome_logo': (0, 39),
+    'divider_btm': (900, 0),
+    'divider_top': (900, 0),
+    'globe': DEFAULT_TEXT_SCALE,
+    'InsertDevices': (0, 371),
+    'RemoveDevices': (0, 371),
+    'reserve_charging': (0, 117),
+    'reserve_charging_empty': (0, 117),
+  }
+
+  TEXT_SCALES = {
+    'tonorm': (0, 4 * LEGACY_TEXT_HEIGHT),
+    'insert_sd_usb2': (0, 2 * LEGACY_TEXT_HEIGHT),
+    'insert_usb2': (0, 2 * LEGACY_TEXT_HEIGHT),
+    'os_broken': (0, 2 * LEGACY_TEXT_HEIGHT),
+    'todev': (0, 4 * LEGACY_TEXT_HEIGHT),
+    'todev_phyrec': (0, 4 * LEGACY_TEXT_HEIGHT),
+    'todev_power':  (0, 4 * LEGACY_TEXT_HEIGHT),
+    'tonorm': (0, 4 * LEGACY_TEXT_HEIGHT),
+    'update': (0, 3 * LEGACY_TEXT_HEIGHT),
+    'wrong_power_supply': (0, 4 * LEGACY_TEXT_HEIGHT),
+    'navigate': (0, 2 * LEGACY_TEXT_HEIGHT),
+    'disable_warn': (0, 2 * LEGACY_TEXT_HEIGHT),
+    'enable_hint': (0, 2 * LEGACY_TEXT_HEIGHT),
+    'confirm_hint': (0, 2 * LEGACY_TEXT_HEIGHT),
+    'diag_confirm': (0, 3 * LEGACY_TEXT_HEIGHT),
+  }
+
+  # background colors
+  DEFAULT_BACKGROUND = (255, 255, 255)
+  LEGACY_CHARGE_BACKGROUND = (0, 0, 0)
+
+  BACKGROUND_COLORS = {
+    'reserve_charging': LEGACY_CHARGE_BACKGROUND,
+    'reserve_charging_empty': LEGACY_CHARGE_BACKGROUND,
+  }
+
+  def set_replace_map(self):
+    """Set a map replacing images.
+
+    For each (key, value), image 'key' will be replaced by image 'value'.
+    """
+    sdcard = self.config[SDCARD_KEY]
+    bad_usb3 = self.config[BAD_USB3_KEY]
+    physical_presence = os.getenv('PHYSICAL_PRESENCE')
+
+    self.replace_map = self.DEFAULT_REPLACE_MAP.copy()
+
+    if not sdcard:
+      self.replace_map['BadDevices'] = 'BadUSB'
+      self.replace_map['InsertDevices'] = 'InsertUSB'
+      self.replace_map['insert'] = ('insert_usb2' if bad_usb3 else 'insert_usb')
+      self.replace_map['boot_usb'] = 'boot_usb_only'
+    elif bad_usb3:
+      self.replace_map['insert'] = 'insert_sd_usb2'
+
+    if physical_presence == 'power':
+      self.replace_map['todev'] = 'todev_power'
+    elif physical_presence == 'recovery':
+      self.replace_map['todev'] = 'todev_phyrec'
+    elif physical_presence != 'keyboard':
+      raise BuildImageError('Invalid physical presence setting %s for board %s'
+                            % (physical_presence, self.board))
+
+    if os.getenv("LEGACY_MENU_UI") == "1":
+      self.replace_map['VerificationOff'] = ''
+
+  def set_locales(self):
+    """Set a list of locales for which localized images are converted"""
+    # LOCALES environment variable can overwrite boards.yaml
+    env_locales = os.getenv('LOCALES')
+    rtl_locales = set(self.config[RTL_KEY])
+    hi_res_locales = set(self.config[HI_RES_KEY])
+    if env_locales:
+      locales = env_locales.split()
+    else:
+      locales = self.config[LOCALES_KEY]
+      # Check rtl_locales are contained in locales.
+      unknown_rtl_locales = rtl_locales - set(locales)
+      if unknown_rtl_locales:
+        raise BuildImageError('Unknown locales %s in %s' %
+                              (list(unknown_rtl_locales), RTL_KEY))
+      # Check hi_res_locales are contained in locales.
+      unknown_hi_res_locales = hi_res_locales - set(locales)
+      if unknown_hi_res_locales:
+        raise BuildImageError('Unknown locales %s in %s' %
+                              (list(unknown_hi_res_locales), HI_RES_KEY))
+    self.locales = [LocaleInfo(code, code in rtl_locales,
+                               code in hi_res_locales)
+                    for code in locales]
+
+  def convert_url(self):
+    """Convert URL and arrows"""
+    # URL and arrows should be default height
+    scales = defaultdict(lambda: self.DEFAULT_TEXT_SCALE)
+    files = glob.glob(os.path.join(self.stage_dir, PNG_FILES))
+    self.convert(files, self.output_dir, scales, self.text_max_colors)
+
+  def build_image(self):
+    """Builds all images required by a board"""
+    super(LegacyConverter, self).build_image()
+
+    print 'Converting URL images...'
+    self.convert_url()
 
 
 def load_boards_config(filename):
@@ -543,8 +587,11 @@ def main(args):
     if board not in configs:
       raise BuildImageError('%s not found in %s' % (board, BOARDS_CONFIG))
     print 'Building for', board
-    convert = Convert(board, configs[board])
-    convert.build_image()
+    if os.getenv('MENU_UI') == '1':
+      converter = Converter(board, configs[board])
+    else:
+      converter = LegacyConverter(board, configs[board])
+    converter.build_image()
 
 
 if __name__ == '__main__':
