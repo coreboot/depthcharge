@@ -128,11 +128,26 @@ static int amd_gpio_i2s_play(struct SoundOps *me, uint32_t msec,
 	return ret;
 }
 
+static int is_dalboz(void)
+{
+	const char * const dalboz_str = "Dalboz";
+	struct cb_mainboard *mainboard = lib_sysinfo.mainboard;
+
+	return strncasecmp(cb_mb_part_string(mainboard),
+			   dalboz_str, strlen(dalboz_str)) == 0;
+}
+
 static void audio_setup(CrosEc *cros_ec)
 {
 	CrosECTunnelI2c *cros_ec_i2c_tunnel;
 
-	cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec, /* i2c bus */ 8);
+	if (!is_dalboz())
+		cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec,
+							    /* i2c bus */ 8);
+	else
+		cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec,
+							    /* i2c bus */ 5);
+
 	rt5682Codec *rt5682 = new_rt5682_codec(&cros_ec_i2c_tunnel->ops, 0x1a);
 	if (rt5682_enable(rt5682)) {
 		printf("%s: error in enabling codec\n", __func__);
