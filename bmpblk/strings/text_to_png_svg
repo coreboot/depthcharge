@@ -92,13 +92,6 @@ bgcolor="${bgcolor###}"
 [ -z "$color" ] || color="#$color"
 [ -z "$bgcolor" ] || bgcolor="#$bgcolor"
 
-# Image parameters
-# - New pango-view has --pixel to assign font size in pixel, but that is not
-#   supported by old (ex, 1.24.5 in chroot) so we must assign --dpi for
-#   pointsize.
-# - SVG defaults to 90DPI, which is larger than standard point size (72DPI).
-#   To support both SVG and raster rendering, we always use 90DPI.
-
 if [ -n "$outdir" ] && [ -n "$language" ]; then
   mkdir -p "${outdir%/}/lo"
 fi
