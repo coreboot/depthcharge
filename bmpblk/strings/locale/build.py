@@ -11,6 +11,7 @@ Usage:
 
 # TODO(hungte) Read, write and handle UTF8 BOM.
 
+import signal
 import enum
 import glob
 import multiprocessing
@@ -233,7 +234,11 @@ def main(argv):
   if not locales:
     locales = formats[KEY_LOCALES]
 
+  # Ignore SIGINT in child processes
+  sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
   pool = multiprocessing.Pool(multiprocessing.cpu_count())
+  signal.signal(signal.SIGINT, sigint_handler)
+
   results = []
   for locale in locales:
     print locale,
@@ -264,11 +269,19 @@ def main(argv):
                                   styles, formats[KEY_FONTS],
                                   output_dir))
                 for file_name in formats[KEY_FILES]]
-  print ""
   pool.close()
-  pool.join()
-  if not all((r.get() for r in results)):
-    exit("Failed to render some locales.")
+  print ""
+
+  try:
+    success = [r.get() for r in results]
+  except KeyboardInterrupt:
+    pool.terminate()
+    pool.join()
+    exit('Aborted by user')
+  else:
+    pool.join()
+    if not all(success):
+      exit('Failed to render some locales')
 
 
 if __name__ == '__main__':
