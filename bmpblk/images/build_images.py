@@ -320,8 +320,16 @@ class Convert(object):
   def convert_svg_to_png(self, svg_file, png_file, scale, background):
     """Convert .svg file to .png file"""
     background_hex = ''.join(format(x, '02x') for x in background)
+    # If the width/height of the SVG file is specified in points, the
+    # rsvg-convert command with default 90DPI will potentially cause the pixels
+    # at the right/bottom border of the output image to be transparent (or
+    # filled with the specified background color).  This seems like an
+    # rsvg-convert issue regarding image scaling.  Therefore, use 72DPI here
+    # to avoid the scaling.
     command = ['rsvg-convert',
                '--background-color', "'#%s'" % background_hex,
+               '--dpi-x', '72',
+               '--dpi-y', '72',
                '-o', png_file]
     if scale:
         width = int(self.canvas_px * scale[0] / SCALE_BASE)
