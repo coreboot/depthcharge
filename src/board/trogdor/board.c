@@ -73,12 +73,18 @@ static int board_setup(void)
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0xa600000);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
 
-	/*eMMC card support */
+	/*eMMC support */
+	u32 emmc_platfm_flags = SDHCI_PLATFORM_EMMC_1V8_POWER |
+				SDHCI_PLATFORM_NO_EMMC_HS200 |
+				SDHCI_PLATFORM_SUPPORTS_HS400ES;
+	if (lib_sysinfo.board_id == 1 &&
+	      !strcmp(cb_mb_part_string(lib_sysinfo.mainboard), "Trogdor"))
+		emmc_platfm_flags &= ~SDHCI_PLATFORM_SUPPORTS_HS400ES;
+
 	SdhciHost *emmc = new_sdhci_msm_host(SDC1_HC_BASE,
-			SDHCI_PLATFORM_EMMC_1V8_POWER |
-			SDHCI_PLATFORM_NO_EMMC_HS200,
-			100*MHz, SDC1_TLMM_CFG_ADDR,
-			NULL);
+					     emmc_platfm_flags,
+					     384*MHz,
+					     SDC1_TLMM_CFG_ADDR, NULL);
 
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			&fixed_block_dev_controllers);
