@@ -736,8 +736,7 @@ static int sdhci_pre_init(SdhciHost *host)
 	caps = sdhci_readl(host, SDHCI_CAPABILITIES);
 	caps_1 = sdhci_readl(host, SDHCI_CAPABILITIES_1);
 
-	if ((caps_1 & SDHCI_SUPPORT_HS400) &&
-	   (host->quirks & SDHCI_QUIRK_SUPPORTS_HS400ES))
+	if (host->quirks & SDHCI_QUIRK_SUPPORTS_HS400ES)
 		host->host_caps |= MMC_CAPS_HS400ES;
 
 	if (caps_1 & SDHCI_SUPPORT_DDR50)
