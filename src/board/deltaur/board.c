@@ -59,10 +59,11 @@ static const pcidev_t pcie_root_port_9 = PCI_DEV(0, 0x1d, 0);
 static const uint8_t cr50_addr = 0x50;
 
 FlashProtectionMapping flash_protection_list[] = {
-      /*
-       * Winbond W25Q256JVEIQ; datasheet:
-       * https://www.winbond.com/resource-files/w25q256jv%20spi%20revg%2008032017.pdf
-       */
+	{
+		/*
+		 * Winbond W25Q256JVEIQ; datasheet:
+		 * https://www.winbond.com/resource-files/w25q256jv%20spi%20revg%2008032017.pdf
+		 */
 		.id = {
 			.vendor = 0xef,
 			.model = 0x4019
