@@ -93,6 +93,9 @@ void dc_usb_initialize(void)
 		NULL
 	};
 
+	if (soc_usb_mux_init)
+		soc_usb_mux_init();
+
 	usb_initialize();
 	list_insert_after(&cleanup.list_node, &cleanup_funcs);
 
