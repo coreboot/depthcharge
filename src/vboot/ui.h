@@ -70,7 +70,7 @@
 #define UI_DESC_TEXT_LINE_SPACING		5
 #define UI_DESC_MARGIN_BOTTOM			50
 
-/* For buttons */
+/* For primary buttons */
 #define UI_BUTTON_HEIGHT			40
 #define UI_BUTTON_TEXT_HEIGHT			26
 #define UI_BUTTON_TEXT_PADDING_H		40
@@ -78,7 +78,14 @@
 #define UI_BUTTON_BORDER_RADIUS			8
 #define UI_BUTTON_MARGIN_BOTTOM			10
 
+/* For secondary (link) buttons */
+#define UI_LINK_TEXT_PADDING_LEFT		20
+#define UI_LINK_ARROW_SIZE			20
+#define UI_LINK_ARRAW_MARGIN_H			15
+#define UI_LINK_BORDER_THICKNESS		3
+
 /* For footer */
+#define UI_FOOTER_MARGIN_TOP			30
 #define UI_FOOTER_HEIGHT			108
 #define UI_FOOTER_COL1_MARGIN_RIGHT		20
 #define UI_FOOTER_COL2_PARA_SPACING		16
@@ -114,6 +121,8 @@
 static const struct rgb_color ui_color_bg		= { 0x20, 0x21, 0x24 };
 static const struct rgb_color ui_color_fg		= { 0xcc, 0xcc, 0xcc };
 static const struct rgb_color ui_color_button		= { 0x8a, 0xb4, 0xf8 };
+static const struct rgb_color ui_color_link_bg		= { 0x2a, 0x2f, 0x39 };
+static const struct rgb_color ui_color_link_border	= { 0x52, 0x68, 0x8a };
 static const struct rgb_color ui_color_border		= { 0x43, 0x44, 0x46 };
 
 struct ui_bitmap {
@@ -145,27 +154,18 @@ vb2_error_t ui_get_locale_info(uint32_t locale_id,
 			       struct ui_locale const **locale);
 
 /*
- * Get generic (locale-independent) bitmap.
+ * Get bitmap.
  *
  * @param image_name	Image file name.
+ * @param locale_code	Language code of current locale, or NULL for
+ *			locale-independent image.
+ * @param focused	1 for focused and 0 for non-focused.
  * @param bitmap	Bitmap struct to be filled.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t ui_get_bitmap(const char *image_name, struct ui_bitmap *bitmap);
-
-/*
- * Get locale-dependent bitmap.
- *
- * @param image_name	Image file name.
- * @param locale_code	Language code of the locale.
- * @param bitmap	Bitmap struct to be filled.
- *
- * @return VB2_SUCCESS on success, non-zero on error.
- */
-vb2_error_t ui_get_localized_bitmap(const char *image_name,
-				    const char *locale_code,
-				    struct ui_bitmap *bitmap);
+vb2_error_t ui_get_bitmap(const char *image_name, const char *locale_code,
+			  int focused, struct ui_bitmap *bitmap);
 
 /* Character style. */
 enum ui_char_style {
@@ -196,20 +196,6 @@ vb2_error_t ui_get_char_bitmap(const char c, enum ui_char_style style,
  */
 vb2_error_t ui_get_step_icon_bitmap(int step, int focused,
 				    struct ui_bitmap *bitmap);
-
-/*
- * Get bitmap of menu item.
- *
- * @param image_name	Non-focused image name.
- * @param locale_code	Language code of current locale.
- * @param focused	1 for focused and 0 for non-focused.
- * @param bitmap	Bitmap struct to be filled.
- *
- * @return VB2_SUCCESS on success, non-zero on error.
- */
-vb2_error_t ui_get_menu_item_bitmap(const char *image_name,
-				    const char *locale_code,
-				    int focused, struct ui_bitmap *bitmap);
 
 /******************************************************************************/
 /* draw.c */
@@ -358,6 +344,8 @@ struct ui_screen_info {
 	 * advanced options.
 	 */
 	struct ui_files menu;
+	/* Presence of the advanced options menu item */
+	int has_advanced_options;
 	/*
 	 * Custom drawing function. When it is NULL, the default drawing
 	 * function ui_draw_default() will be called instead.

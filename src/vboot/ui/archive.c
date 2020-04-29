@@ -282,20 +282,37 @@ static vb2_error_t find_bitmap_in_archive(const struct directory *dir,
 	return VB2_ERROR_UI_MISSING_IMAGE;
 }
 
-vb2_error_t ui_get_bitmap(const char *image_name, struct ui_bitmap *bitmap)
+vb2_error_t ui_get_bitmap(const char *image_name, const char *locale_code,
+			  int focused, struct ui_bitmap *bitmap)
 {
+	int used;
+	char file[UI_BITMAP_FILENAME_MAX_LEN + 1];
+	const char *file_ext;
+	const char *suffix = "_focus";
+	const size_t image_name_len = strlen(image_name);
 	struct directory *dir;
-	VB2_TRY(get_graphic_archive(&dir));
-	return find_bitmap_in_archive(dir, image_name, bitmap);
-}
 
-vb2_error_t ui_get_localized_bitmap(const char *image_name,
-				    const char *locale_code,
-				    struct ui_bitmap *bitmap)
-{
-	struct directory *dir;
-	VB2_TRY(get_localized_graphic_archive(locale_code, &dir));
-	return find_bitmap_in_archive(dir, image_name, bitmap);
+	if (image_name_len + strlen(suffix) >= sizeof(file)) {
+		UI_ERROR("Image name %s too long\n", image_name);
+		return VB2_ERROR_INVALID_PARAMETER;
+	}
+
+	file_ext = strrchr(image_name, '.');
+	if (file_ext)
+		used = file_ext - image_name;
+	else
+		used = image_name_len;
+	strncpy(file, image_name, used);
+
+	if (focused)
+		used += snprintf(file + used, sizeof(file) - used, suffix);
+	snprintf(file + used, sizeof(file) - used, file_ext);
+
+	if (locale_code)
+		VB2_TRY(get_localized_graphic_archive(locale_code, &dir));
+	else
+		VB2_TRY(get_graphic_archive(&dir));
+	return find_bitmap_in_archive(dir, file, bitmap);
 }
 
 vb2_error_t ui_get_char_bitmap(const char c, enum ui_char_style style,
@@ -322,34 +339,5 @@ vb2_error_t ui_get_step_icon_bitmap(int step, int focused,
 	char filename[UI_BITMAP_FILENAME_MAX_LEN + 1];
 	const char *pattern = focused ? "ic_%d-done.bmp" : "ic_%d.bmp";
 	snprintf(filename, sizeof(filename), pattern, step);
-	return ui_get_bitmap(filename, bitmap);
-}
-
-vb2_error_t ui_get_menu_item_bitmap(const char *image_name,
-				    const char *locale_code,
-				    int focused, struct ui_bitmap *bitmap)
-{
-	int used;
-	char file[UI_BITMAP_FILENAME_MAX_LEN + 1];
-	const char *file_ext;
-	const char *suffix = "_focus";
-	const size_t image_name_len = strlen(image_name);
-
-	if (image_name_len + strlen(suffix) >= sizeof(file)) {
-		UI_ERROR("Image name %s too long\n", image_name);
-		return VB2_ERROR_INVALID_PARAMETER;
-	}
-
-	file_ext = strrchr(image_name, '.');
-	if (file_ext)
-		used = file_ext - image_name;
-	else
-		used = image_name_len;
-	strncpy(file, image_name, used);
-
-	if (focused)
-		used += snprintf(file + used, sizeof(file) - used, suffix);
-	snprintf(file + used, sizeof(file) - used, file_ext);
-
-	return ui_get_localized_bitmap(file, locale_code, bitmap);
+	return ui_get_bitmap(filename, NULL, 0, bitmap);
 }

@@ -75,9 +75,28 @@ static const struct ui_screen_info broken_screen = {
 	.title = "broken_title.bmp",
 	.desc = UI_FILES(broken_desc),
 	.menu = UI_FILES(empty_files),
+	.has_advanced_options = 1,
 	.mesg = "Something is wrong.\n"
 		"Please remove all connected devices and hold down Esc,\n"
 		"Refresh, and Power to initiate recovery.",
+};
+
+/******************************************************************************/
+/* VB2_SCREEN_ADVANCED_OPTIONS */
+
+static const char *const advanced_options_menu[] = {
+	"btn_dev_mode.bmp",
+	/* TODO(yupingso): Add debug info & firmware log items. */
+	"btn_back.bmp",
+};
+
+static const struct ui_screen_info advanced_options_screen = {
+	.id = VB2_SCREEN_ADVANCED_OPTIONS,
+	.icon = UI_ICON_TYPE_NONE,
+	.title = "adv_options_title.bmp",
+	.desc = UI_FILES(empty_files),
+	.menu = UI_FILES(advanced_options_menu),
+	.mesg = "Advanced options",
 };
 
 /******************************************************************************/
@@ -99,6 +118,7 @@ static const struct ui_screen_info recovery_select_screen = {
 	.title = "rec_sel_title.bmp",
 	.desc = UI_FILES(recovery_select_desc),
 	.menu = UI_FILES(recovery_select_menu),
+	.has_advanced_options = 1,
 	.mesg = "Select how you'd like to recover.\n"
 		"You can recover using a USB drive or an SD card.",
 };
@@ -199,6 +219,7 @@ static const struct ui_screen_info *const screens[] = {
 	&blank_screen,
 	&firmware_sync_screen,
 	&broken_screen,
+	&advanced_options_screen,
 	&recovery_select_screen,
 	&recovery_disk_step1_screen,
 	&recovery_disk_step2_screen,
