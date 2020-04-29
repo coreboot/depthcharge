@@ -26,3 +26,4 @@ depthcharge-$(CONFIG_DRIVER_SOC_QCOM_QUP_SE) += qcom_qup_se.c
 depthcharge-$(CONFIG_DRIVER_SOC_JASPERLAKE) += intel_common.c
 depthcharge-$(CONFIG_DRIVER_SOC_TIGERLAKE) += tigerlake.c
 depthcharge-$(CONFIG_DRIVER_SOC_TIGERLAKE) += intel_common.c
+depthcharge-$(CONFIG_DRIVER_SOC_TIGERLAKE_PMC) += tigerlake_pmc.c

@@ -63,3 +63,13 @@ config DRIVER_SOC_TIGERLAKE
 	default n
 	select DRIVER_GPIO_TIGERLAKE
 	select INTEL_COMMON_I2S_CAVS_2_5
+
+config DRIVER_SOC_TIGERLAKE_PMC
+	bool "Tigerlake PMC subsystem driver"
+	default n
+	depends on DRIVER_SOC_TIGERLAKE
+
+config DRIVER_SOC_TIGERLAKE_PMC_DEBUG
+	bool "Enable Tigerlake PMC driver debugging"
+	default n
+	depends on DRIVER_SOC_TIGERLAKE_PMC
