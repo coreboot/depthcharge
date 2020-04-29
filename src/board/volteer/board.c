@@ -31,10 +31,38 @@
 #include "drivers/tpm/spi.h"
 #include "drivers/tpm/tpm.h"
 
+#include "drivers/bus/usb/tigerlake_tcss.h"
+
 #define AUD_VOLUME	4000
 #define AUD_BITDEPTH	16
 #define AUD_SAMPLE_RATE	48000
 #define SDMODE_PIN	GPP_A10
+
+/*
+ * Each USB Type-C port consists of a TCP (USB3) and a USB2 port from
+ * the SoC. This table captures the mapping.
+ *
+ * SoC USB2 ports are numbered 1..10
+ * SoC USB3.1 ports are numbered 1..4 (not used here)
+ * SoC TCP (USB3) ports are numbered 0..3
+ */
+#define USBC_PORT_0_USB2_NUM	9
+#define USBC_PORT_0_USB3_NUM	0
+#define USBC_PORT_1_USB2_NUM	4
+#define USBC_PORT_1_USB3_NUM	1
+
+static const struct tcss_port_map typec_map[] = {
+	[0] = { USBC_PORT_0_USB3_NUM, USBC_PORT_0_USB2_NUM },
+	[1] = { USBC_PORT_1_USB3_NUM, USBC_PORT_1_USB2_NUM },
+};
+
+int board_tcss_get_port_mapping(const struct tcss_port_map **map)
+{
+	if (map)
+		*map = typec_map;
+
+	return ARRAY_SIZE(typec_map);
+}
 
 static int cr50_irq_status(void)
 {
