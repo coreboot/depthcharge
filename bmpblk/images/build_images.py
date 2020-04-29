@@ -113,19 +113,28 @@ class Converter(object):
     'ic_2-done': STEP_ICON_SCALE,
     'ic_3': STEP_ICON_SCALE,
     'ic_3-done': STEP_ICON_SCALE,
+    'ic_dropleft': BUTTON_ARROW_SCALE,
+    'ic_dropleft_focus': BUTTON_ARROW_SCALE,
+    'ic_dropright': BUTTON_ARROW_SCALE,
+    'ic_dropright_focus': BUTTON_ARROW_SCALE,
   }
 
   TEXT_SCALES = {
     'firmware_sync_title': TITLE_SCALE,
     'broken_title': TITLE_SCALE,
+    'adv_options_title': TITLE_SCALE,
     'rec_sel_title': TITLE_SCALE,
     'rec_disk_step1_title': TITLE_SCALE,
     'rec_disk_step2_title': TITLE_SCALE,
     'rec_disk_step3_title': TITLE_SCALE,
+    'btn_dev_mode': BUTTON_SCALE,
+    'btn_dev_mode_focus': BUTTON_SCALE,
     'btn_rec_by_phone': BUTTON_SCALE,
     'btn_rec_by_phone_focus': BUTTON_SCALE,
     'btn_rec_by_disk': BUTTON_SCALE,
     'btn_rec_by_disk_focus': BUTTON_SCALE,
+    'btn_adv_options': BUTTON_SCALE,
+    'btn_adv_options_focus': BUTTON_SCALE,
     'btn_next': BUTTON_SCALE,
     'btn_next_focus': BUTTON_SCALE,
     'btn_back': BUTTON_SCALE,
@@ -141,13 +150,13 @@ class Converter(object):
   # background colors
   DEFAULT_BACKGROUND = (0x20, 0x21, 0x24)
   LANGUAGE_SELECTED_BACKGROUND = (0xcc, 0xcc, 0xcc)
-  BUTTON_SELECTED_BACKGROUND = (0x8a, 0xb4, 0xf8)
+  LINK_SELECTED_BACKGROUND = (0x2a, 0x2f, 0x39)
   ASSET_MAX_COLORS = 128
 
   BACKGROUND_COLORS = {
-    'ic_dropdown_sel': LANGUAGE_SELECTED_BACKGROUND,
-    'ic_dropleft_sel': BUTTON_SELECTED_BACKGROUND,
-    'ic_dropright_sel': BUTTON_SELECTED_BACKGROUND,
+    'ic_dropdown_focus': LANGUAGE_SELECTED_BACKGROUND,
+    'ic_dropleft_focus': LINK_SELECTED_BACKGROUND,
+    'ic_dropright_focus': LINK_SELECTED_BACKGROUND,
   }
 
   def __init__(self, board, config):

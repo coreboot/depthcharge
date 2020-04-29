@@ -13,6 +13,9 @@ inputs:
   - broken_title
   - broken_desc0
   - broken_desc1
+  # advanced options
+  - adv_options_title
+  - btn_dev_mode
   # recovery screen
   - rec_sel_title
   - rec_sel_desc0
@@ -36,6 +39,7 @@ inputs:
   - rec_disk_step3_title
   - rec_disk_step3_desc0
   # generic buttons
+  - btn_adv_options
   - btn_next
   - btn_back
   # footer
@@ -57,6 +61,10 @@ files:
   broken_title:
   broken_desc0:
   broken_desc1:
+  # advanced options
+  adv_options_title:
+  btn_dev_mode:
+  btn_dev_mode_focus: [btn_dev_mode]
   # recovery screen
   rec_sel_title:
   rec_sel_desc0:
@@ -82,6 +90,8 @@ files:
   rec_disk_step3_title:
   rec_disk_step3_desc0:
   # generic buttons
+  btn_adv_options:
+  btn_adv_options_focus: [btn_adv_options]
   btn_next:
   btn_next_focus: [btn_next]
   btn_back:
@@ -100,6 +110,8 @@ aliases:
   - &dark_color_left_align '--align=left --color=9AA0A6 --bgcolor=202124'
   - &button_color '--color=8AB4F8 --bgcolor=202124'
   - &button_focused_color '--color=202124 --bgcolor=8AB4F8'
+  - &link_color '--color=8AB4F8 --bgcolor=202124'
+  - &link_focused_color '--color=8AB4F8 --bgcolor=2a2f39'
 
 styles:
   language: '--color=CCCCCC --bgcolor=161719'
@@ -110,6 +122,10 @@ styles:
   broken_title: *base_color
   broken_desc0: *base_color
   broken_desc1: *base_color
+  # advanced options
+  adv_options_title: *base_color
+  btn_dev_mode: *button_color
+  btn_dev_mode_focus: *button_focused_color
   # recovery screen
   rec_sel_title: *base_color
   rec_sel_desc0: *base_color
@@ -135,6 +151,8 @@ styles:
   rec_disk_step3_title: *base_color
   rec_disk_step3_desc0: *base_color
   # generic buttons
+  btn_adv_options: *link_color
+  btn_adv_options_focus: *link_focused_color
   btn_next: *button_color
   btn_next_focus: *button_focused_color
   btn_back: *button_color
