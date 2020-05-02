@@ -25,6 +25,11 @@ External disk setup
 3. Click next when your external disk is ready with the recovery image
 Do you have your external disk ready?
 If your external disk is ready with a recovery image, plug it into the device to start the recovery process.
+No valid image detected
+Make sure your phone is running the Chrome OS recovery app, or that your external
+disk has a valid recovery image on it. Re-insert the cable or disk when ready.
+Make sure your external disk has a valid recovery image, and re-insert the disk
+when ready.
 Advanced options
 Next
 Back
