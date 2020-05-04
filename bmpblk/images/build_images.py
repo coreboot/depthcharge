@@ -93,10 +93,14 @@ class Converter(object):
   # These are supposed to be kept in sync with the numbers set in depthcharge
   # to avoid runtime scaling, which makes images blurry.
   DEFAULT_ASSET_SCALE = (0, 30)
-  DEFAULT_TEXT_SCALE = (0, 36)
+  DEFAULT_TEXT_SCALE = (0, 30)
   DEFAULT_FONT_SCALE = (0, 36)
   ICON_SCALE = (0, 45)
   STEP_ICON_SCALE = (0, 28)
+  TITLE_SCALE = (0, 56)
+  BUTTON_SCALE = (0, 26)
+  BUTTON_ARROW_SCALE = (0, 20)
+  FOOTER_TEXT_SCALE = (0, 24)
 
   ASSET_SCALES = {
     'separator': None,
@@ -111,7 +115,28 @@ class Converter(object):
     'ic_3-done': STEP_ICON_SCALE,
   }
 
-  TEXT_SCALES = {}
+  TEXT_SCALES = {
+    'firmware_sync_title': TITLE_SCALE,
+    'broken_title': TITLE_SCALE,
+    'rec_sel_title': TITLE_SCALE,
+    'rec_disk_step1_title': TITLE_SCALE,
+    'rec_disk_step2_title': TITLE_SCALE,
+    'rec_disk_step3_title': TITLE_SCALE,
+    'btn_rec_by_phone': BUTTON_SCALE,
+    'btn_rec_by_phone_focus': BUTTON_SCALE,
+    'btn_rec_by_disk': BUTTON_SCALE,
+    'btn_rec_by_disk_focus': BUTTON_SCALE,
+    'btn_next': BUTTON_SCALE,
+    'btn_next_focus': BUTTON_SCALE,
+    'btn_back': BUTTON_SCALE,
+    'btn_back_focus': BUTTON_SCALE,
+    'model': FOOTER_TEXT_SCALE,
+    'help_center': FOOTER_TEXT_SCALE,
+    'rec_url': FOOTER_TEXT_SCALE,
+    'to_navigate': FOOTER_TEXT_SCALE,
+    'navigate': FOOTER_TEXT_SCALE,
+    'navigate_tablet': FOOTER_TEXT_SCALE,
+  }
 
   # background colors
   DEFAULT_BACKGROUND = (0x20, 0x21, 0x24)
@@ -341,15 +366,15 @@ class Converter(object):
       if locale_info.hi_res:
         scales = defaultdict(lambda: self.DEFAULT_TEXT_SCALE)
         scales.update(self.TEXT_SCALES)
+        sys.stderr.write(' ' + locale)
       else:
         # We use low-res images for these locales and turn off scaling
         # to make the files fit in a ROM. Note that these text images will
         # be scaled by Depthcharge to be the same height as hi-res texts.
-        locale += '/lo'
         scales = defaultdict(lambda: None)
-      sys.stderr.write(' ' + locale)
+        sys.stderr.write(' ' + locale + '/lo')
       os.makedirs(output_dir)
-      self.convert(glob.glob(os.path.join(locale_dir, locale, PNG_FILES)),
+      self.convert(glob.glob(os.path.join(locale_dir, locale, SVG_FILES)),
                    output_dir, scales, self.text_max_colors)
     sys.stderr.write('\n')
 
@@ -532,6 +557,29 @@ class LegacyConverter(Converter):
     scales = defaultdict(lambda: self.DEFAULT_TEXT_SCALE)
     files = glob.glob(os.path.join(self.stage_dir, PNG_FILES))
     self.convert(files, self.output_dir, scales, self.text_max_colors)
+
+  def convert_texts(self):
+    """Convert localized texts"""
+    locale_dir = os.path.join(self.stage_dir, LOCALE_DIR)
+    # Using stderr to report progress synchronously
+    sys.stderr.write('  processing:')
+    for locale_info in self.locales:
+      locale = locale_info.code
+      output_dir = os.path.join(self.output_dir, LOCALE_DIR, locale)
+      if locale_info.hi_res:
+        scales = defaultdict(lambda: self.DEFAULT_TEXT_SCALE)
+        scales.update(self.TEXT_SCALES)
+      else:
+        # We use low-res images for these locales and turn off scaling
+        # to make the files fit in a ROM. Note that these text images will
+        # be scaled by Depthcharge to be the same height as hi-res texts.
+        locale += '/lo'
+        scales = defaultdict(lambda: None)
+      sys.stderr.write(' ' + locale)
+      os.makedirs(output_dir)
+      self.convert(glob.glob(os.path.join(locale_dir, locale, PNG_FILES)),
+                   output_dir, scales, self.text_max_colors)
+    sys.stderr.write('\n')
 
   def build_image(self):
     """Builds all images required by a board"""
