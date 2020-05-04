@@ -332,8 +332,12 @@ struct ui_screen_info {
 	enum vb2_screen id;
 	/* Icon type */
 	enum ui_icon_type icon;
-	/* Step icons */
+	/*
+	 * Current step number; valid only if icon is UI_ICON_TYPE_STEP. A
+	 * negative value indicates an error in the abs(step)-th step.
+	 */
 	int step;
+	/* Total number of steps; valid only if icon is UI_ICON_TYPE_STEP */
 	int num_steps;
 	/* File for screen title. Required if (draw == NULL). */
 	const char *title;
@@ -353,9 +357,27 @@ struct ui_screen_info {
 	vb2_error_t (*draw)(const struct ui_screen_info *screen,
 			    const struct ui_state *state,
 			    const struct ui_state *prev_state);
+	/* Custom description drawing function */
+	vb2_error_t (*draw_desc)(const struct ui_screen_info *screen,
+				 const struct ui_state *state,
+				 const struct ui_state *prev_state,
+				 int32_t *height);
 	/* Fallback message */
 	const char *mesg;
 };
+
+/*
+ * Draw screen descriptions.
+ *
+ * @param desc		List of description files.
+ * @param state		UI state.
+ * @param height	Description height to be calculated.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_draw_desc(const struct ui_files *desc,
+			 const struct ui_state *state,
+			 int32_t *height);
 
 /*
  * Default drawing function.

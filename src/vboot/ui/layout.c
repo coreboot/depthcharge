@@ -35,7 +35,8 @@ static vb2_error_t ui_draw_step_icons(const struct ui_screen_info *screen,
 				      const struct ui_state *prev_state)
 {
 	struct ui_bitmap bitmap;
-	const int cur_step = screen->step;
+	const int has_error = screen->step < 0;
+	const int cur_step = screen->step >= 0 ? screen->step : -screen->step;
 	const int num_steps = screen->num_steps;
 	int step;
 	int32_t x = UI_MARGIN_H;
@@ -47,7 +48,10 @@ static vb2_error_t ui_draw_step_icons(const struct ui_screen_info *screen,
 	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_CENTER;
 
 	for (step = 1; step <= num_steps; step++) {
-		if (step < cur_step)
+		if (has_error && step == cur_step)
+			VB2_TRY(ui_get_bitmap("ic_error.bmp", NULL, 0,
+					      &bitmap));
+		else if (step < cur_step)
 			VB2_TRY(ui_get_bitmap("ic_done.bmp", NULL, 0, &bitmap));
 		else
 			VB2_TRY(ui_get_step_icon_bitmap(step, step == cur_step,
@@ -293,6 +297,35 @@ static vb2_error_t ui_draw_link(const char *image_name,
 	return VB2_SUCCESS;
 }
 
+vb2_error_t ui_draw_desc(const struct ui_files *desc,
+			 const struct ui_state *state,
+			 int32_t *height)
+{
+	int i;
+	struct ui_bitmap bitmap;
+	const char *locale_code = state->locale->code;
+	const int reverse = state->locale->rtl;
+	int32_t x, y;
+	const int32_t w = UI_SIZE_AUTO;
+	const int32_t h = UI_DESC_TEXT_HEIGHT;
+	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
+
+	x = UI_MARGIN_H;
+	y = UI_MARGIN_TOP + UI_LANG_BOX_HEIGHT + UI_LANG_MARGIN_BOTTOM +
+		UI_ICON_HEIGHT + UI_ICON_MARGIN_BOTTOM +
+		UI_TITLE_TEXT_HEIGHT + UI_TITLE_MARGIN_BOTTOM;
+	*height = 0;
+
+	for (i = 0; i < desc->count; i++) {
+		VB2_TRY(ui_get_bitmap(desc->files[i], locale_code, 0, &bitmap));
+		VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, h, flags, reverse));
+		y += h + UI_DESC_TEXT_LINE_SPACING;
+		*height += h + UI_DESC_TEXT_LINE_SPACING;
+	}
+
+	return VB2_SUCCESS;
+}
+
 vb2_error_t ui_draw_default(const struct ui_screen_info *screen,
 			    const struct ui_state *state,
 			    const struct ui_state *prev_state)
@@ -300,11 +333,10 @@ vb2_error_t ui_draw_default(const struct ui_screen_info *screen,
 	int i;
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
-	int32_t x, y, h;
+	int32_t x, y, desc_height;
 	const int32_t w = UI_SIZE_AUTO;
 	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
 	const char *icon_file;
-	const struct ui_files *desc = &screen->desc;
 	const struct ui_files *menu = &screen->menu;
 	struct ui_bitmap bitmap;
 
@@ -367,13 +399,12 @@ vb2_error_t ui_draw_default(const struct ui_screen_info *screen,
 	y += UI_TITLE_TEXT_HEIGHT + UI_TITLE_MARGIN_BOTTOM;
 
 	/* Description */
-	h = UI_DESC_TEXT_HEIGHT;
-	for (i = 0; i < desc->count; i++) {
-		VB2_TRY(ui_get_bitmap(desc->files[i], locale_code, 0, &bitmap));
-		VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, h, flags, reverse));
-		y += h + UI_DESC_TEXT_LINE_SPACING;
-	}
-	y += UI_DESC_MARGIN_BOTTOM;
+	if (screen->draw_desc)
+		VB2_TRY(screen->draw_desc(screen, state, prev_state,
+					  &desc_height));
+	else
+		VB2_TRY(ui_draw_desc(&screen->desc, state, &desc_height));
+	y += desc_height + UI_DESC_MARGIN_BOTTOM;
 
 	/* Buttons */
 	int32_t button_width;

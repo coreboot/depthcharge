@@ -20,6 +20,7 @@
 #include <vb2_api.h>
 
 #include "vboot/ui.h"
+#include "vboot/util/commonparams.h"
 
 #define UI_FILES(a) ((struct ui_files) {	\
 	.files = a,				\
@@ -208,6 +209,44 @@ static const struct ui_screen_info recovery_disk_step3_screen = {
 };
 
 /******************************************************************************/
+/* VB2_SCREEN_RECOVERY_INVALID */
+
+static vb2_error_t draw_recovery_invalid_desc(
+	const struct ui_screen_info *screen,
+	const struct ui_state *state,
+	const struct ui_state *prev_state,
+	int32_t *height)
+{
+	struct vb2_context *ctx = vboot_get_context();
+	static const char *const desc_files[] = {
+		"rec_invalid_desc0.bmp",
+		"rec_invalid_desc1.bmp",
+	};
+	static const char *const desc_no_phone_files[] = {
+		"rec_invalid_disk_desc0.bmp",
+		"rec_invalid_disk_desc1.bmp",
+	};
+	const struct ui_files desc = vb2api_phone_recovery_enabled(ctx) ?
+		UI_FILES(desc_files) : UI_FILES(desc_no_phone_files);
+
+	return ui_draw_desc(&desc, state, height);
+}
+
+static const struct ui_screen_info recovery_invalid_screen = {
+	.id = VB2_SCREEN_RECOVERY_INVALID,
+	.icon = UI_ICON_TYPE_STEP,
+	.step = -3,
+	.num_steps = 3,
+	.title = "rec_invalid_title.bmp",
+	.desc = UI_FILES(empty_files),
+	.menu = UI_FILES(empty_files),
+	.draw_desc = draw_recovery_invalid_desc,
+	.mesg = "No valid image detected.\n"
+		"Make sure your external disk has a valid recovery image,\n"
+		"and re-insert the disk when ready.",
+};
+
+/******************************************************************************/
 /*
  * TODO(chromium:1035800): Refactor UI code across vboot and depthcharge.
  * Currently vboot and depthcharge maintain their own copies of menus/screens.
@@ -224,6 +263,7 @@ static const struct ui_screen_info *const screens[] = {
 	&recovery_disk_step1_screen,
 	&recovery_disk_step2_screen,
 	&recovery_disk_step3_screen,
+	&recovery_invalid_screen,
 };
 
 const struct ui_screen_info *ui_get_screen_info(enum vb2_screen screen_id)
