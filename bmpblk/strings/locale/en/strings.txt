@@ -30,9 +30,16 @@ Make sure your phone is running the Chrome OS recovery app, or that your externa
 disk has a valid recovery image on it. Re-insert the cable or disk when ready.
 Make sure your external disk has a valid recovery image, and re-insert the disk
 when ready.
+You are attempting to enable developer mode
+This involves erasing all data from your device, and will make your device insecure.
+Select “Cancel” to remain protected.
+Press the RECOVERY button to enable developer mode, or select “Cancel” to remain protected.
+Press the POWER button to enable developer mode, or select “Cancel” to remain protected.
+Enable developer mode
 Advanced options
 Next
 Back
+Cancel
 Model:
 Help center:
 http://google.com/chromeos/recovery

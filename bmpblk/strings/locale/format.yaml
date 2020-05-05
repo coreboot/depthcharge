@@ -44,10 +44,18 @@ inputs:
   - rec_invalid_desc1
   - rec_invalid_disk_desc0
   - rec_invalid_disk_desc1
+  # to-dev screen
+  - rec_to_dev_title
+  - rec_to_dev_desc0
+  - rec_to_dev_desc1
+  - rec_to_dev_desc1_phyrec
+  - rec_to_dev_desc1_power
+  - btn_confirm_to_dev
   # generic buttons
   - btn_adv_options
   - btn_next
   - btn_back
+  - btn_cancel
   # footer
   - model
   - help_center
@@ -101,6 +109,14 @@ files:
   rec_invalid_desc1:
   rec_invalid_disk_desc0:
   rec_invalid_disk_desc1:
+  # to-dev screen
+  rec_to_dev_title:
+  rec_to_dev_desc0:
+  rec_to_dev_desc1:
+  rec_to_dev_desc1_phyrec:
+  rec_to_dev_desc1_power:
+  btn_confirm_to_dev:
+  btn_confirm_to_dev_focus: [btn_confirm_to_dev]
   # generic buttons
   btn_adv_options:
   btn_adv_options_focus: [btn_adv_options]
@@ -108,6 +124,8 @@ files:
   btn_next_focus: [btn_next]
   btn_back:
   btn_back_focus: [btn_back]
+  btn_cancel:
+  btn_cancel_focus: [btn_cancel]
   # footer
   model:
   help_center:
@@ -168,6 +186,14 @@ styles:
   rec_invalid_desc1: *base_color
   rec_invalid_disk_desc0: *base_color
   rec_invalid_disk_desc1: *base_color
+  # to-dev screen
+  rec_to_dev_title: *base_color
+  rec_to_dev_desc0: *base_color
+  rec_to_dev_desc1: *base_color
+  rec_to_dev_desc1_phyrec: *base_color
+  rec_to_dev_desc1_power: *base_color
+  btn_confirm_to_dev: *button_color
+  btn_confirm_to_dev_focus: *button_focused_color
   # generic buttons
   btn_adv_options: *link_color
   btn_adv_options_focus: *link_focused_color
@@ -175,6 +201,8 @@ styles:
   btn_next_focus: *button_focused_color
   btn_back: *button_color
   btn_back_focus: *button_focused_color
+  btn_cancel: *button_color
+  btn_cancel_focus: *button_focused_color
   # footer
   model: *dark_color
   help_center: *dark_color

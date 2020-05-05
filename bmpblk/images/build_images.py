@@ -81,6 +81,8 @@ class Converter(object):
     'rec_sel_desc1_no_sd': '',
     'rec_sel_desc1_no_phone_no_sd': '',
     'rec_disk_step1_desc0_no_sd': '',
+    'rec_to_dev_desc1_phyrec': '',
+    'rec_to_dev_desc1_power': '',
     'navigate_tablet': '',
     'nav-button_power': '',
     'nav-button_volume_up': '',
@@ -129,6 +131,7 @@ class Converter(object):
     'rec_disk_step2_title': TITLE_SCALE,
     'rec_disk_step3_title': TITLE_SCALE,
     'rec_invalid_title': TITLE_SCALE,
+    'rec_to_dev_title': TITLE_SCALE,
     'btn_dev_mode': BUTTON_SCALE,
     'btn_dev_mode_focus': BUTTON_SCALE,
     'btn_rec_by_phone': BUTTON_SCALE,
@@ -137,10 +140,14 @@ class Converter(object):
     'btn_rec_by_disk_focus': BUTTON_SCALE,
     'btn_adv_options': BUTTON_SCALE,
     'btn_adv_options_focus': BUTTON_SCALE,
+    'btn_confirm_to_dev': BUTTON_SCALE,
+    'btn_confirm_to_dev_focus': BUTTON_SCALE,
     'btn_next': BUTTON_SCALE,
     'btn_next_focus': BUTTON_SCALE,
     'btn_back': BUTTON_SCALE,
     'btn_back_focus': BUTTON_SCALE,
+    'btn_cancel': BUTTON_SCALE,
+    'btn_cancel_focus': BUTTON_SCALE,
     'model': FOOTER_TEXT_SCALE,
     'help_center': FOOTER_TEXT_SCALE,
     'rec_url': FOOTER_TEXT_SCALE,
@@ -222,6 +229,15 @@ class Converter(object):
         'nav-key_down': 'nav-button_volume_down',
         'navigate': 'navigate_tablet',
       })
+
+    physical_presence = os.getenv('PHYSICAL_PRESENCE')
+    if physical_presence == 'recovery':
+      replace_map['rec_to_dev_desc1'] = 'rec_to_dev_desc1_phyrec'
+    elif physical_presence == 'power':
+      replace_map['rec_to_dev_desc1'] = 'rec_to_dev_desc1_power'
+    elif physical_presence != 'keyboard':
+      raise BuildImageError('Invalid physical presence setting %s for board %s'
+                            % (physical_presence, self.board))
 
     if not self.config[SDCARD_KEY]:
       replace_map.update({
