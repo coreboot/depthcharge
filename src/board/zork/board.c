@@ -165,12 +165,16 @@ static void audio_setup(CrosEc *cros_ec)
 {
 	CrosECTunnelI2c *cros_ec_i2c_tunnel;
 
-	if (!is_dalboz())
-		cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec,
-							    /* i2c bus */ 8);
-	else
+	/* I2C bus 5 for older version of Dalboz. Dalboz whose board version
+	 * is not defined are assumed to be older version.
+	*/
+	if (is_dalboz() && (lib_sysinfo.board_id == UNDEFINED_STRAPPING_ID ||
+				lib_sysinfo.board_id < 2))
 		cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec,
 							    /* i2c bus */ 5);
+	else
+		cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec,
+							    /* i2c bus */ 8);
 
 	rt5682Codec *rt5682 = new_rt5682_codec(&cros_ec_i2c_tunnel->ops, 0x1a);
 	if (rt5682_enable(rt5682)) {
