@@ -51,6 +51,13 @@ inputs:
   - rec_to_dev_desc1_phyrec
   - rec_to_dev_desc1_power
   - btn_confirm_to_dev
+  # developer screen
+  - dev_title
+  - dev_desc0
+  - dev_desc1
+  - btn_secure_mode
+  - btn_int_disk
+  - btn_ext_disk
   # generic buttons
   - btn_adv_options
   - btn_next
@@ -117,6 +124,16 @@ files:
   rec_to_dev_desc1_power:
   btn_confirm_to_dev:
   btn_confirm_to_dev_focus: [btn_confirm_to_dev]
+  # developer screen
+  dev_title:
+  dev_desc0:
+  dev_desc1:
+  btn_secure_mode:
+  btn_secure_mode_focus: [btn_secure_mode]
+  btn_int_disk:
+  btn_int_disk_focus: [btn_int_disk]
+  btn_ext_disk:
+  btn_ext_disk_focus: [btn_ext_disk]
   # generic buttons
   btn_adv_options:
   btn_adv_options_focus: [btn_adv_options]
@@ -194,6 +211,16 @@ styles:
   rec_to_dev_desc1_power: *base_color
   btn_confirm_to_dev: *button_color
   btn_confirm_to_dev_focus: *button_focused_color
+  # developer screen
+  dev_title: *base_color
+  dev_desc0: *base_color
+  dev_desc1: *base_color
+  btn_secure_mode: *button_color
+  btn_secure_mode_focus: *button_focused_color
+  btn_int_disk: *button_color
+  btn_int_disk_focus: *button_focused_color
+  btn_ext_disk: *button_color
+  btn_ext_disk_focus: *button_focused_color
   # generic buttons
   btn_adv_options: *link_color
   btn_adv_options_focus: *link_focused_color

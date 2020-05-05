@@ -36,6 +36,12 @@ Select “Cancel” to remain protected.
 Press the RECOVERY button to enable developer mode, or select “Cancel” to remain protected.
 Press the POWER button to enable developer mode, or select “Cancel” to remain protected.
 Enable developer mode
+You are now in developer mode
+To return to the recommended secure mode, select “Return to secure mode” below.
+After timeout, the device will automatically boot from the internal disk.
+Return to secure mode
+Boot from internal disk
+Boot from external disk
 Advanced options
 Next
 Back
