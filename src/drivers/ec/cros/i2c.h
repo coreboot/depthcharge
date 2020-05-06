@@ -20,7 +20,6 @@
 #define __DRIVERS_EC_CROS_I2C_H__
 
 #include "drivers/bus/i2c/i2c.h"
-#include "drivers/ec/cros/message.h"
 #include "drivers/ec/cros/ec.h"
 
 struct I2cOps;
