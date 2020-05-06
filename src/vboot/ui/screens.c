@@ -274,6 +274,34 @@ static const struct ui_screen_info recovery_invalid_screen = {
 };
 
 /******************************************************************************/
+/* VB2_SCREEN_DEVELOPER_MODE */
+
+static const char *const developer_mode_desc[] = {
+	"dev_desc0.bmp",
+	"dev_desc1.bmp",
+};
+
+static const char *const developer_mode_menu[] = {
+	"btn_secure_mode.bmp",
+	"btn_int_disk.bmp",
+	"btn_ext_disk.bmp",
+};
+
+static const struct ui_screen_info developer_mode_screen = {
+	.id = VB2_SCREEN_DEVELOPER_MODE,
+	.icon = UI_ICON_TYPE_DEV_MODE,
+	.title = "dev_title.bmp",
+	.desc = UI_FILES(developer_mode_desc),
+	.menu = UI_FILES(developer_mode_menu),
+	.has_advanced_options = 1,
+	.mesg = "You are in developer mode\n"
+		"To return to the recommended secure mode,\n"
+		"select \"Return to secure mode\" below.\n"
+		"After timeout, the device will automatically boot from\n"
+		"the default boot target.",
+};
+
+/******************************************************************************/
 /* VB2_SCREEN_DEVELOPER_TO_NORM */
 
 static const char *const developer_to_norm_desc[] = {
@@ -317,6 +345,7 @@ static const struct ui_screen_info *const screens[] = {
 	&recovery_disk_step2_screen,
 	&recovery_disk_step3_screen,
 	&recovery_invalid_screen,
+	&developer_mode_screen,
 	&developer_to_norm_screen,
 };
 
