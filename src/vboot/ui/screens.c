@@ -101,6 +101,33 @@ static const struct ui_screen_info advanced_options_screen = {
 };
 
 /******************************************************************************/
+/* VB2_SCREEN_RECOVERY_TO_DEV */
+
+static const char *const recovery_to_dev_desc[] = {
+	"rec_to_dev_desc0.bmp",
+	"rec_to_dev_desc1.bmp",
+};
+
+static const char *const recovery_to_dev_menu[] = {
+	"btn_confirm_to_dev.bmp",
+	"btn_cancel.bmp",
+};
+
+static const struct ui_screen_info recovery_to_dev_screen = {
+	.id = VB2_SCREEN_RECOVERY_TO_DEV,
+	.icon = UI_ICON_TYPE_INFO,
+	.title = "rec_to_dev_title.bmp",
+	.desc = UI_FILES(recovery_to_dev_desc),
+	.menu = UI_FILES(recovery_to_dev_menu),
+	.mesg = "You are attempting to enable developer mode\n"
+		"This involves erasing all data from your device,\n"
+		"and will make your device insecure.\n"
+		"Select \"Confirm\" or press the RECOVERY/POWER button to\n"
+		"enable developer mode,\n"
+		"or select \"Cancel\" to remain protected",
+};
+
+/******************************************************************************/
 /* VB2_SCREEN_RECOVERY_SELECT */
 
 static const char *const recovery_select_desc[] = {
@@ -259,6 +286,7 @@ static const struct ui_screen_info *const screens[] = {
 	&firmware_sync_screen,
 	&broken_screen,
 	&advanced_options_screen,
+	&recovery_to_dev_screen,
 	&recovery_select_screen,
 	&recovery_disk_step1_screen,
 	&recovery_disk_step2_screen,
