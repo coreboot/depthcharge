@@ -31,7 +31,6 @@
 #include "base/container_of.h"
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/ec/cros/commands.h"
-#include "drivers/ec/cros/message.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/power/power.h"
 

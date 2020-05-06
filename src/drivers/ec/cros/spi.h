@@ -19,8 +19,9 @@
 #ifndef __DRIVERS_EC_CROS_SPI_H__
 #define __DRIVERS_EC_CROS_SPI_H__
 
+#include <stdint.h>
+
 #include "drivers/bus/spi/spi.h"
-#include "drivers/ec/cros/message.h"
 #include "drivers/ec/cros/ec.h"
 
 struct SpiOps;

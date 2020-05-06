@@ -19,7 +19,6 @@
 #ifndef __DRIVERS_EC_CROS_LPC_H__
 #define __DRIVERS_EC_CROS_LPC_H__
 
-#include "drivers/ec/cros/message.h"
 #include "drivers/ec/cros/ec.h"
 
 typedef struct
