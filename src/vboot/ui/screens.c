@@ -109,7 +109,7 @@ static const char *const recovery_to_dev_desc[] = {
 };
 
 static const char *const recovery_to_dev_menu[] = {
-	"btn_confirm_to_dev.bmp",
+	"btn_confirm.bmp",
 	"btn_cancel.bmp",
 };
 
@@ -274,6 +274,31 @@ static const struct ui_screen_info recovery_invalid_screen = {
 };
 
 /******************************************************************************/
+/* VB2_SCREEN_DEVELOPER_TO_NORM */
+
+static const char *const developer_to_norm_desc[] = {
+	"dev_to_norm_desc0.bmp",
+	"dev_to_norm_desc1.bmp",
+};
+
+static const char *const developer_to_norm_menu[] = {
+	"btn_confirm.bmp",
+	"btn_cancel.bmp",
+};
+
+static const struct ui_screen_info developer_to_norm_screen = {
+	.id = VB2_SCREEN_DEVELOPER_TO_NORM,
+	.icon = UI_ICON_TYPE_RESTART,
+	.title = "dev_to_norm_title.bmp",
+	.desc = UI_FILES(developer_to_norm_desc),
+	.menu = UI_FILES(developer_to_norm_menu),
+	.mesg = "Confirm returning to secure mode.\n"
+		"This option will disable developer mode and restore your\n"
+		"device to its original state.\n"
+		"Your user data will be wiped in the process.",
+};
+
+/******************************************************************************/
 /*
  * TODO(chromium:1035800): Refactor UI code across vboot and depthcharge.
  * Currently vboot and depthcharge maintain their own copies of menus/screens.
@@ -292,6 +317,7 @@ static const struct ui_screen_info *const screens[] = {
 	&recovery_disk_step2_screen,
 	&recovery_disk_step3_screen,
 	&recovery_invalid_screen,
+	&developer_to_norm_screen,
 };
 
 const struct ui_screen_info *ui_get_screen_info(enum vb2_screen screen_id)

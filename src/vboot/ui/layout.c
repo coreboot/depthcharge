@@ -376,6 +376,9 @@ vb2_error_t ui_draw_default(const struct ui_screen_info *screen,
 	case UI_ICON_TYPE_INFO:
 		icon_file = "ic_info.bmp";
 		break;
+	case UI_ICON_TYPE_RESTART:
+		icon_file = "ic_restart.bmp";
+		break;
 	default:
 		icon_file = NULL;
 		break;

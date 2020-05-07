@@ -318,6 +318,7 @@ struct ui_state {
 enum ui_icon_type {
 	UI_ICON_TYPE_NONE = 0,
 	UI_ICON_TYPE_INFO,
+	UI_ICON_TYPE_RESTART,
 	UI_ICON_TYPE_STEP,
 };
 
