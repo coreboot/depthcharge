@@ -552,6 +552,10 @@ class Converter(object):
     self.locales = [LocaleInfo(code, code in rtl_locales)
                     for code in locales]
 
+  def _to_px(self, length, num_lines=1):
+    """Converts the relative coordinate to absolute one in pixels."""
+    return int(self.canvas_px * length / self.SCALE_BASE) * num_lines
+
   def _get_png_height(self, png_file):
     with Image.open(png_file) as image:
       return image.size[1]
@@ -584,7 +588,7 @@ class Converter(object):
                '--dpi-x', '72',
                '--dpi-y', '72',
                '-o', png_file]
-    height_px = int(self.canvas_px * height / self.SCALE_BASE) * num_lines
+    height_px = self._to_px(height, num_lines)
     if height_px <= 0:
       raise BuildImageError('Height of %r <= 0 (%dpx)' %
                             (os.path.basename(svg_file), height_px))
@@ -611,7 +615,7 @@ class Converter(object):
       target = image
 
     width_px, height_px = image.size
-    max_height_px = int(self.canvas_px * height / self.SCALE_BASE) * num_lines
+    max_height_px = self._to_px(height, num_lines)
     # If the image size is larger than what will be displayed at runtime,
     # downscale it.
     if height_px > max_height_px:
@@ -703,6 +707,25 @@ class Converter(object):
     self.convert(files, self.output_dir, heights, max_widths,
                  self.text_max_colors)
 
+  def _check_text_width(self, output_dir, heights, max_widths):
+    """Check if the width of text image will exceed canvas boundary."""
+    for filename in glob.glob(os.path.join(output_dir,
+                                           '*' + self.DEFAULT_OUTPUT_EXT)):
+      name, _ = os.path.splitext(os.path.basename(filename))
+      max_width = max_widths[name]
+      if not max_width:
+        continue
+      max_width_px = self._to_px(max_width)
+      with open(filename, 'rb') as f:
+        f.seek(BMP_HEADER_OFFSET_NUM_LINES)
+        num_lines = f.read(1)[0]
+      height_px = self._to_px(heights[name] * num_lines)
+      with Image.open(filename) as image:
+        width_px = height_px * image.size[0] // image.size[1]
+      if width_px > max_width_px:
+        raise BuildImageError('%s: Image width %dpx greater than max width '
+                              '%dpx' % (filename, width_px, max_width_px))
+
   def convert_localized_strings(self):
     """Converts localized strings."""
     names = self.formats[KEY_LOCALIZED_FILES].copy()
@@ -728,6 +751,7 @@ class Converter(object):
           glob.glob(os.path.join(stage_locale_dir, PNG_FILES)),
           ro_locale_dir, heights, max_widths, self.text_max_colors,
           one_line_dir=os.path.join(stage_locale_dir, ONE_LINE_DIR))
+      self._check_text_width(ro_locale_dir, heights, max_widths)
     print(file=sys.stderr)
 
   def move_language_images(self):
