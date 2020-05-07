@@ -50,7 +50,6 @@ inputs:
   - rec_to_dev_desc1
   - rec_to_dev_desc1_phyrec
   - rec_to_dev_desc1_power
-  - btn_confirm_to_dev
   # developer screen
   - dev_title
   - dev_desc0
@@ -58,10 +57,15 @@ inputs:
   - btn_secure_mode
   - btn_int_disk
   - btn_ext_disk
+  # to-norm screen
+  - dev_to_norm_title
+  - dev_to_norm_desc0
+  - dev_to_norm_desc1
   # generic buttons
   - btn_adv_options
   - btn_next
   - btn_back
+  - btn_confirm
   - btn_cancel
   # footer
   - model
@@ -122,8 +126,6 @@ files:
   rec_to_dev_desc1:
   rec_to_dev_desc1_phyrec:
   rec_to_dev_desc1_power:
-  btn_confirm_to_dev:
-  btn_confirm_to_dev_focus: [btn_confirm_to_dev]
   # developer screen
   dev_title:
   dev_desc0:
@@ -134,6 +136,10 @@ files:
   btn_int_disk_focus: [btn_int_disk]
   btn_ext_disk:
   btn_ext_disk_focus: [btn_ext_disk]
+  # to-norm screen
+  dev_to_norm_title:
+  dev_to_norm_desc0:
+  dev_to_norm_desc1:
   # generic buttons
   btn_adv_options:
   btn_adv_options_focus: [btn_adv_options]
@@ -141,6 +147,8 @@ files:
   btn_next_focus: [btn_next]
   btn_back:
   btn_back_focus: [btn_back]
+  btn_confirm:
+  btn_confirm_focus: [btn_confirm]
   btn_cancel:
   btn_cancel_focus: [btn_cancel]
   # footer
@@ -209,8 +217,6 @@ styles:
   rec_to_dev_desc1: *base_color
   rec_to_dev_desc1_phyrec: *base_color
   rec_to_dev_desc1_power: *base_color
-  btn_confirm_to_dev: *button_color
-  btn_confirm_to_dev_focus: *button_focused_color
   # developer screen
   dev_title: *base_color
   dev_desc0: *base_color
@@ -221,6 +227,10 @@ styles:
   btn_int_disk_focus: *button_focused_color
   btn_ext_disk: *button_color
   btn_ext_disk_focus: *button_focused_color
+  # to-norm screen
+  dev_to_norm_title: *base_color
+  dev_to_norm_desc0: *base_color
+  dev_to_norm_desc1: *base_color
   # generic buttons
   btn_adv_options: *link_color
   btn_adv_options_focus: *link_focused_color
@@ -228,6 +238,8 @@ styles:
   btn_next_focus: *button_focused_color
   btn_back: *button_color
   btn_back_focus: *button_focused_color
+  btn_confirm: *button_color
+  btn_confirm_focus: *button_focused_color
   btn_cancel: *button_color
   btn_cancel_focus: *button_focused_color
   # footer

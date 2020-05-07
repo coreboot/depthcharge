@@ -4,7 +4,7 @@ Something is wrong
 Please remove all connected devices and hold down Escape, Refresh, and Power to
 initiate recovery.
 Advanced options
-Developer mode
+Enable developer mode
 Let’s step you through the recovery process
 Select how you’d like to recover.
 You can recover using external storage such as a USB drive, an SD card, or using your Android phone.
@@ -35,16 +35,19 @@ This involves erasing all data from your device, and will make your device insec
 Select “Cancel” to remain protected.
 Press the RECOVERY button to enable developer mode, or select “Cancel” to remain protected.
 Press the POWER button to enable developer mode, or select “Cancel” to remain protected.
-Enable developer mode
 You are in developer mode
 To return to the recommended secure mode, select “Return to secure mode” below.
 After timeout, the device will automatically boot from the internal disk.
 Return to secure mode
 Boot from internal disk
 Boot from external disk
+Confirm returning to secure mode
+This option will disable developer mode and restore your device to its original state.
+Your user data will be wiped in the process.
 Advanced options
 Next
 Back
+Confirm
 Cancel
 Model:
 Help center:
