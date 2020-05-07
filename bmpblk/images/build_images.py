@@ -102,6 +102,7 @@ class Converter(object):
   TITLE_SCALE = (0, 56)
   BUTTON_SCALE = (0, 26)
   BUTTON_ARROW_SCALE = (0, 20)
+  QR_CODE_SCALE = (0, 108)
   FOOTER_TEXT_SCALE = (0, 24)
 
   ASSET_SCALES = {
@@ -122,6 +123,7 @@ class Converter(object):
     'ic_dropleft_focus': BUTTON_ARROW_SCALE,
     'ic_dropright': BUTTON_ARROW_SCALE,
     'ic_dropright_focus': BUTTON_ARROW_SCALE,
+    'qr_code': QR_CODE_SCALE,
   }
 
   TEXT_SCALES = {
