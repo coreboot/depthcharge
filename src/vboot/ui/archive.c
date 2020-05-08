@@ -146,6 +146,16 @@ vb2_error_t ui_get_locale_info(uint32_t locale_id,
 	return VB2_SUCCESS;
 }
 
+uint32_t ui_get_locale_count(void)
+{
+	const struct locale_data *locale_data = get_locale_data();
+
+	if (!locale_data)
+		return 0;
+
+	return locale_data->count;
+}
+
 static vb2_error_t load_archive(const char *name, struct directory **dest)
 {
 	struct cbfs_media *ro_cbfs;

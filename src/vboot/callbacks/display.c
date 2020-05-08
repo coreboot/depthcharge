@@ -24,6 +24,10 @@ _Static_assert(CONFIG(MENU_UI), "MENU_UI must be set");
 _Static_assert(!CONFIG(LEGACY_MENU_UI), "LEGACY_MENU_UI not allowed");
 _Static_assert(!CONFIG(LEGACY_CLAMSHELL_UI), "LEGACY_CLAMSHELL_UI not allowed");
 
+uint32_t vb2ex_get_locale_count(void) {
+	return ui_get_locale_count();
+}
+
 vb2_error_t vb2ex_display_ui(enum vb2_screen screen,
 			     uint32_t locale_id,
 			     uint32_t selected_item,

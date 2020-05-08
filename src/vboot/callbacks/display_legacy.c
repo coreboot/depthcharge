@@ -164,10 +164,7 @@ vb2_error_t VbExDisplayDebugInfo(const char *info_str, int full_info)
 	return vboot_print_string(buf);
 }
 
-vb2_error_t VbExGetLocalizationCount(uint32_t *count)
+uint32_t vb2ex_get_locale_count(void)
 {
-	*count = vboot_get_locale_count();
-	if (*count == 0)
-		return VB2_ERROR_UNKNOWN;
-	return VB2_SUCCESS;
+	return vboot_get_locale_count();
 }

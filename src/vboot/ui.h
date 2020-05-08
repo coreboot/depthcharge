@@ -154,6 +154,15 @@ vb2_error_t ui_get_locale_info(uint32_t locale_id,
 			       struct ui_locale const **locale);
 
 /*
+ * Get the number of supported locales.
+ *
+ * Returns the number of locales available in CBFS.
+ *
+ * @returns Number of locales.  0 if none or on error.
+ */
+uint32_t ui_get_locale_count(void);
+
+/*
  * Get bitmap.
  *
  * @param image_name	Image file name.
