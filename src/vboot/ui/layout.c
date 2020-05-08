@@ -340,18 +340,14 @@ vb2_error_t ui_draw_default(const struct ui_screen_info *screen,
 	const struct ui_files *menu = &screen->menu;
 	struct ui_bitmap bitmap;
 
-	if (!prev_state) {
+	if (!prev_state || prev_state->locale != state->locale) {
 		/*
-		 * Clear the whole screen if previous drawing failed or there
-		 * is no previous screen.
+		 * Clear the whole screen if previous drawing failed, if there
+		 * is no previous screen, or if locale changed.
 		 */
 		clear_screen(&ui_color_bg);
-	} else if (prev_state->screen != state->screen ||
-		   prev_state->locale != state->locale) {
-		/*
-		 * Clear everything above the footer for new screen or if locale
-		 * changed.
-		 */
+	} else if (prev_state->screen != state->screen) {
+		/* Clear everything above the footer for new screen. */
 		const int32_t box_height = UI_SCALE - UI_MARGIN_BOTTOM -
 			UI_FOOTER_HEIGHT;
 		VB2_TRY(ui_draw_box(0, 0, UI_SCALE, box_height,
