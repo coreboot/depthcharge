@@ -79,15 +79,16 @@ static vb2_error_t vboot_hash_image(VbootEcOps *vbec,
 				    const uint8_t **hash, int *hash_size)
 {
 	WilcoEc *ec = container_of(vbec, WilcoEc, vboot);
-	static struct vb2_sha256_context ctx;
+	struct vb2_digest_context ctx;
+	static u8 output_hash[VB2_SHA256_DIGEST_SIZE];
 	WilcoEcImageHeader *header;
 	uint8_t *image;
 	uint32_t ec_offset, image_offset;
 	size_t image_size;
 
 	/* Default to empty hash to force update on VB2_SUCCESS */
-	*hash = ctx.block;
-	*hash_size = VB2_SHA256_DIGEST_SIZE;
+	*hash = output_hash;
+	*hash_size = sizeof(output_hash);
 
 	/* Start of EC region in flash */
 	ec_offset = ec->flash_offset;
@@ -126,10 +127,10 @@ static vb2_error_t vboot_hash_image(VbootEcOps *vbec,
 	image = flash_read(image_offset, image_size);
 
 	/* Generate SHA-256 digest of the header and image */
-	vb2_sha256_init(&ctx);
-	vb2_sha256_update(&ctx, (uint8_t *)header, sizeof(*header));
-	vb2_sha256_update(&ctx, image, image_size);
-	vb2_sha256_finalize(&ctx, (uint8_t *)*hash);
+	vb2_digest_init(&ctx, VB2_HASH_SHA256);
+	vb2_digest_extend(&ctx, (uint8_t *)header, sizeof(*header));
+	vb2_digest_extend(&ctx, image, image_size);
+	vb2_digest_finalize(&ctx, (uint8_t *)*hash, *hash_size);
 
 	return VB2_SUCCESS;
 }
