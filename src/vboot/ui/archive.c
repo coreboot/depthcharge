@@ -325,10 +325,21 @@ vb2_error_t ui_get_bitmap(const char *image_name, const char *locale_code,
 	return find_bitmap_in_archive(dir, file, bitmap);
 }
 
+vb2_error_t ui_get_language_name_bitmap(const char *locale_code,
+					int for_header, int focused,
+					struct ui_bitmap *bitmap)
+{
+	char filename[UI_BITMAP_FILENAME_MAX_LEN + 1];
+	const char *pattern = for_header ? "lang_header_%s.bmp" :
+		"lang_menu_%s.bmp";
+	snprintf(filename, sizeof(filename), pattern, locale_code);
+	return ui_get_bitmap(filename, NULL, focused, bitmap);
+}
+
 vb2_error_t ui_get_char_bitmap(const char c, enum ui_char_style style,
 			       struct ui_bitmap *bitmap)
 {
-	static char image_name[32];
+	char filename[UI_BITMAP_FILENAME_MAX_LEN + 1];
 	const char pattern_default[] = "idx%03d_%02x.bmp";
 	const char pattern_dark[] = "idx%03d_%02x-dark.bmp";
 	const char *pattern;
@@ -339,8 +350,8 @@ vb2_error_t ui_get_char_bitmap(const char c, enum ui_char_style style,
 	/* Compose file name */
 	pattern = (style == UI_CHAR_STYLE_DARK) ?
 		pattern_dark : pattern_default;
-	snprintf(image_name, sizeof(image_name), pattern, c, c);
-	return find_bitmap_in_archive(dir, image_name, bitmap);
+	snprintf(filename, sizeof(filename), pattern, c, c);
+	return find_bitmap_in_archive(dir, filename, bitmap);
 }
 
 vb2_error_t ui_get_step_icon_bitmap(int step, int focused,

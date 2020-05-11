@@ -50,9 +50,25 @@
 #define UI_MARGIN_BOTTOM			70
 #define UI_MARGIN_H				50
 
-/* For language item */
+/* For language dropdown header */
 #define UI_LANG_BOX_HEIGHT			40
+#define UI_LANG_ICON_MARGIN_H			15
+#define UI_LANG_ICON_GLOBE_SIZE			20
+#define UI_LANG_TEXT_WIDTH			240
+#define UI_LANG_TEXT_HEIGHT			30
+#define UI_LANG_ICON_ARROW_SIZE			24
+#define UI_LANG_BORDER_THICKNESS		3
+#define UI_LANG_BORDER_RADIUS			8
 #define UI_LANG_MARGIN_BOTTOM			120
+
+/* For language dropdown menu content */
+#define UI_LANG_MENU_MARGIN_TOP			15
+#define UI_LANG_MENU_BOX_HEIGHT			48
+#define UI_LANG_MENU_TEXT_HEIGHT		36
+#define UI_LANG_MENU_BORDER_THICKNESS		2
+#define UI_LANG_MENU_SCROLLBAR_MARGIN_RIGHT	2
+#define UI_LANG_MENU_SCROLLBAR_WIDTH		10
+#define UI_LANG_MENU_SCROLLBAR_CORNER_RADIUS	2
 
 /* For screen icon */
 #define UI_ICON_HEIGHT				45
@@ -120,6 +136,12 @@
 
 static const struct rgb_color ui_color_bg		= { 0x20, 0x21, 0x24 };
 static const struct rgb_color ui_color_fg		= { 0xcc, 0xcc, 0xcc };
+static const struct rgb_color ui_color_lang_header_bg	= { 0x16, 0x17, 0x19 };
+static const struct rgb_color ui_color_lang_header_border
+	= { 0x52, 0x68, 0x8a };
+static const struct rgb_color ui_color_lang_menu_bg	= { 0x2d, 0x2e, 0x30 };
+static const struct rgb_color ui_color_lang_menu_border	= { 0x49, 0x57, 0x70 };
+static const struct rgb_color ui_color_lang_scrollbar	= { 0x6c, 0x6d, 0x6e };
 static const struct rgb_color ui_color_button		= { 0x8a, 0xb4, 0xf8 };
 static const struct rgb_color ui_color_link_bg		= { 0x2a, 0x2f, 0x39 };
 static const struct rgb_color ui_color_link_border	= { 0x52, 0x68, 0x8a };
@@ -175,6 +197,20 @@ uint32_t ui_get_locale_count(void);
  */
 vb2_error_t ui_get_bitmap(const char *image_name, const char *locale_code,
 			  int focused, struct ui_bitmap *bitmap);
+
+/*
+ * Get bitmap of language name.
+ *
+ * @param locale_code	Language code of locale.
+ * @param for_header	1 for dropdown header and 0 for dropdown menu content.
+ * @param focused	1 for focused and 0 for non-focused.
+ * @param bitmap	Bitmap struct to be filled.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_get_language_name_bitmap(const char *locale_code,
+					int for_header, int focused,
+					struct ui_bitmap *bitmap);
 
 /* Character style. */
 enum ui_char_style {
@@ -332,9 +368,33 @@ enum ui_icon_type {
 	UI_ICON_TYPE_STEP,
 };
 
-/* List of image files */
-struct ui_files {
+/* List of description files. */
+struct ui_desc {
 	const char *const *files;
+	size_t count;
+};
+
+/* Menu item type. */
+enum ui_menu_item_type {
+	/* Primary button. */
+	UI_MENU_ITEM_TYPE_PRIMARY = 0,
+	/* Secondary button. */
+	UI_MENU_ITEM_TYPE_SECONDARY,
+	/* Language selection. */
+	UI_MENU_ITEM_TYPE_LANGUAGE,
+};
+
+/* Menu item. */
+struct ui_menu_item {
+	const char *file;
+	/* If UI_MENU_ITEM_TYPE_LANGUAGE, the 'file' field will be ignored. */
+	enum ui_menu_item_type type;
+};
+
+/* List of menu items. */
+struct ui_menu {
+	/* Only the first item allowed to be UI_MENU_ITEM_TYPE_LANGUAGE. */
+	const struct ui_menu_item *items;
 	size_t count;
 };
 
@@ -350,17 +410,14 @@ struct ui_screen_info {
 	int step;
 	/* Total number of steps; valid only if icon is UI_ICON_TYPE_STEP */
 	int num_steps;
-	/* File for screen title. Required if (draw == NULL). */
+	/* File for screen title. */
 	const char *title;
-	/* Files for screen descriptions */
-	struct ui_files desc;
-	/*
-	 * Files for menu items on the screen, excluding language selection and
-	 * advanced options.
-	 */
-	struct ui_files menu;
-	/* Presence of the advanced options menu item */
-	int has_advanced_options;
+	/* Files for screen descriptions. */
+	struct ui_desc desc;
+	/* Menu items. */
+	struct ui_menu menu;
+	/* Absence of footer */
+	int no_footer;
 	/*
 	 * Custom drawing function. When it is NULL, the default drawing
 	 * function ui_draw_default() will be called instead.
@@ -378,6 +435,18 @@ struct ui_screen_info {
 };
 
 /*
+ * Draw language dropdown header.
+ *
+ * @param locale	Locale of which name to be drawn.
+ * @param state		UI state.
+ * @param focused	1 for focused and 0 for non-focused.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_draw_language_header(const struct ui_locale *locale,
+				    const struct ui_state *state, int focused);
+
+/*
  * Draw screen descriptions.
  *
  * @param desc		List of description files.
@@ -386,7 +455,7 @@ struct ui_screen_info {
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t ui_draw_desc(const struct ui_files *desc,
+vb2_error_t ui_draw_desc(const struct ui_desc *desc,
 			 const struct ui_state *state,
 			 int32_t *height);
 
