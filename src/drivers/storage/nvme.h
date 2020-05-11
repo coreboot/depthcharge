@@ -188,11 +188,18 @@ typedef uint32_t NVME_CQHDBL;
 #define NVME_ADMIN_CRIOCQ_QID(x)	(x)
 #define NVME_ADMIN_CRIOCQ_QSIZE(x)	(((x)-1) << 16)
 
+#define NVME_ADMIN_GET_LOG_PAGE	2
 #define NVME_ADMIN_IDENTIFY_OPC	6
 
 #define NVME_IO_FLUSH_OPC	0
 #define NVME_IO_WRITE_OPC	1
 #define NVME_IO_READ_OPC	2
+
+/* NVMe log page ID */
+#define NVME_LOG_SMART	0x02
+
+/* NVMe namespace ID */
+#define NVME_NSID_ALL	0xffffffff
 
 /* Submission Queue */
 typedef struct {

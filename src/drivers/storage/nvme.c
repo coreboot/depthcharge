@@ -54,6 +54,7 @@
 #include "base/cleanup_funcs.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/nvme.h"
+#include "drivers/storage/health.h"
 
 /* Read 64bits from register space */
 static uint64_t readll(uintptr_t _a)
@@ -673,6 +674,62 @@ static lba_t nvme_write(BlockDevOps *me, lba_t start, lba_t count,
 	return orig_count - count;
 }
 
+static NVME_STATUS nvme_read_log_page(NvmeDrive *drive, int log_page_id,
+				      void *data, size_t size)
+{
+	NVME_SQ *sq;
+	NvmeCtrlr *ctrlr = drive->ctrlr;
+
+	if (data == NULL)
+		return NVME_INVALID_PARAMETER;
+
+	// Read log page command only support read Dwords, and it is 0-based
+	// value, that is we have to read at least 1 Dword.
+	if ((size == 0) || (size % sizeof(uint32_t) != 0))
+		return NVME_INVALID_PARAMETER;
+
+	sq = ctrlr->sq_buffer[NVME_ADMIN_QUEUE_INDEX] +
+	     ctrlr->sq_t_dbl[NVME_ADMIN_QUEUE_INDEX];
+
+	memset(sq, 0, sizeof(*sq));
+
+	sq->opc = NVME_ADMIN_GET_LOG_PAGE;
+
+	sq->cid = ctrlr->cid[NVME_ADMIN_QUEUE_INDEX]++;
+	sq->nsid = NVME_NSID_ALL; // NSID_ALL for controller.
+
+	// Number of Dwords is 0-based.
+	uint32_t dword_len = size / sizeof(uint32_t) - 1;
+
+	// 31:16  Number of Dwords Lower (NUMDL)
+	// 07:00  Log Page Identifier (LID)
+	uint32_t dword_len_l = dword_len & (BIT(16) - 1);
+	sq->cdw10 = (dword_len_l << 16) | log_page_id;
+
+	// 15:00 Number of Dwords Upper (NUMDU)
+	uint32_t dword_len_u = dword_len >> 16;
+	sq->cdw11 = dword_len_u;
+
+	NVME_STATUS status =
+		nvme_fill_prp(ctrlr->prp_list[sq->cid], sq->prp, data, size);
+	if (NVME_ERROR(status)) {
+		printf("%s: error %d generating PRP(s)\n", __func__, status);
+		return status;
+	}
+
+	status = nvme_do_one_cmd_synchronous(ctrlr, NVME_ADMIN_QUEUE_INDEX,
+					     NVME_ASQ_SIZE, NVME_ACQ_SIZE,
+					     NVME_GENERIC_TIMEOUT);
+
+	if (NVME_ERROR(status)) {
+		printf("%s: error %d of nvme_do_one_cmd_synchronous\n",
+		       __func__, status);
+		return status;
+	}
+
+	return status;
+}
+
 /* Sends the Identify command, saves result in ctrlr->controller_data*/
 static NVME_STATUS nvme_identify(NvmeCtrlr *ctrlr) {
 	NVME_SQ *sq;
@@ -723,6 +780,24 @@ static NVME_STATUS nvme_identify(NvmeCtrlr *ctrlr) {
 	return status;
 }
 
+static int nvme_read_smart_log(BlockDevOps *me, HealthInfo *smart)
+{
+	NvmeDrive *drive = container_of(me, NvmeDrive, dev.ops);
+
+	assert(sizeof(NVME_SMART_LOG_DATA) == 512);
+
+	smart->type = HEALTH_NVME;
+	NVME_STATUS status = nvme_read_log_page(drive, NVME_LOG_SMART,
+						&smart->data.nvme_data,
+						sizeof(smart->data.nvme_data));
+	if (NVME_ERROR(status)) {
+		printf("%s: fail to read log page: %d\n", __func__, status);
+		return status;
+	}
+
+	return NVME_SUCCESS;
+}
+
 static NVME_STATUS nvme_create_drive(NvmeCtrlr *ctrlr, uint32_t namespace_id,
 				     unsigned int block_size, lba_t block_count)
 {
@@ -734,6 +809,7 @@ static NVME_STATUS nvme_create_drive(NvmeCtrlr *ctrlr, uint32_t namespace_id,
 	nvme_drive->dev.ops.read = &nvme_read;
 	nvme_drive->dev.ops.write = &nvme_write;
 	nvme_drive->dev.ops.new_stream = &new_simple_stream;
+	nvme_drive->dev.ops.get_health_info = &nvme_read_smart_log;
 	nvme_drive->dev.name = name;
 	nvme_drive->dev.removable = 0;
 	nvme_drive->dev.block_size = block_size;
