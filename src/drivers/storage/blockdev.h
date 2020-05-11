@@ -25,6 +25,7 @@
 
 typedef uint64_t lba_t;
 
+struct HealthInfo;
 typedef struct BlockDevOps {
 	lba_t (*read)(struct BlockDevOps *me, lba_t start, lba_t count,
 		      void *buffer);
@@ -35,6 +36,8 @@ typedef struct BlockDevOps {
 	lba_t (*erase)(struct BlockDevOps *me, lba_t start, lba_t count);
 	StreamOps *(*new_stream)(struct BlockDevOps *me, lba_t start,
 				 lba_t count);
+	// Return 0 = success, 1 = error.
+	int (*get_health_info)(struct BlockDevOps *me, struct HealthInfo *info);
 } BlockDevOps;
 
 typedef struct BlockDev {
