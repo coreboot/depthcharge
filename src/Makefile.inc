@@ -11,7 +11,7 @@
 ## GNU General Public License for more details.
 ##
 
-subdirs-y := arch base board boot debug drivers image net netboot vboot
+subdirs-y := arch base board boot debug diag drivers image net netboot vboot
 
 DEPTHCHARGE = $(obj)/depthcharge
 NETBOOT = $(obj)/netboot
