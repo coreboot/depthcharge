@@ -77,8 +77,9 @@ inputs:
 
 files:
   # pre-generated
-  language:
-  language_focus: [language]
+  lang_header: [language]
+  lang_menu: [language]
+  lang_menu_focus: [language]
   # firmware sync
   firmware_sync_title:
   firmware_sync_desc:
@@ -169,8 +170,10 @@ aliases:
   - &link_focused_color '--color=8AB4F8 --bgcolor=2a2f39'
 
 styles:
-  language: '--color=CCCCCC --bgcolor=161719'
-  language_focus: '--color=161719 --bgcolor=CCCCCC'
+  # pre-generated
+  lang_header: '--color=CCCCCC --bgcolor=161719'
+  lang_menu: '--color=CCCCCC --bgcolor=2D2E30'
+  lang_menu_focus: '--color=2D2E30 --bgcolor=8AB4F8'
   firmware_sync_title: *base_color
   firmware_sync_desc: *base_color
   # broken screen

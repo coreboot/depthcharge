@@ -97,6 +97,7 @@ class Converter(object):
   DEFAULT_ASSET_SCALE = (0, 30)
   DEFAULT_TEXT_SCALE = (0, 30)
   DEFAULT_FONT_SCALE = (0, 36)
+  LANG_MENU_SCALE = (0, 36)
   ICON_SCALE = (0, 45)
   STEP_ICON_SCALE = (0, 28)
   TITLE_SCALE = (0, 56)
@@ -107,6 +108,8 @@ class Converter(object):
 
   ASSET_SCALES = {
     'separator': None,
+    'ic_globe': (0, 20),
+    'ic_dropdown': (0, 24),
     'ic_info': ICON_SCALE,
     'ic_warning': ICON_SCALE,
     'ic_dev_mode': ICON_SCALE,
@@ -127,6 +130,8 @@ class Converter(object):
   }
 
   TEXT_SCALES = {
+    'lang_menu': LANG_MENU_SCALE,
+    'lang_menu_focus': LANG_MENU_SCALE,
     'firmware_sync_title': TITLE_SCALE,
     'broken_title': TITLE_SCALE,
     'adv_options_title': TITLE_SCALE,
@@ -170,12 +175,12 @@ class Converter(object):
 
   # background colors
   DEFAULT_BACKGROUND = (0x20, 0x21, 0x24)
-  LANGUAGE_SELECTED_BACKGROUND = (0xcc, 0xcc, 0xcc)
+  LANG_HEADER_BACKGROUND = (0x16, 0x17, 0x19)
   LINK_SELECTED_BACKGROUND = (0x2a, 0x2f, 0x39)
   ASSET_MAX_COLORS = 128
 
   BACKGROUND_COLORS = {
-    'ic_dropdown_focus': LANGUAGE_SELECTED_BACKGROUND,
+    'ic_dropdown': LANG_HEADER_BACKGROUND,
     'ic_dropleft_focus': LINK_SELECTED_BACKGROUND,
     'ic_dropright_focus': LINK_SELECTED_BACKGROUND,
   }
@@ -415,16 +420,27 @@ class Converter(object):
       os.makedirs(output_dir)
       self.convert(glob.glob(os.path.join(locale_dir, locale, SVG_FILES)),
                    output_dir, scales, self.text_max_colors)
-      # Rename language.bmp to lang_${LOCALE}.bmp and move to self.output_dir,
-      # which will be used for creating vbgfx.bin by archive_images.py.
-      for suffix in ['', '_focus']:
-        lang_file = os.path.join(self.output_dir,
-                                 'lang_%s%s.bmp' % (locale, suffix))
-        if os.path.exists(lang_file):
-          raise BuildImageError('File already exists: ' % lang_file)
-        shutil.move(os.path.join(output_dir, 'language%s.bmp' % suffix),
-                    lang_file)
     sys.stderr.write('\n')
+
+  def move_language_images(self):
+    """Rename language bitmaps and move to self.output_dir.
+
+    The directory self.output_dir contains locale-independent images, and is
+    used for creating vbgfx.bin by archive_images.py.
+    """
+    for locale_info in self.locales:
+      locale = locale_info.code
+      locale_output_dir = os.path.join(self.output_dir, LOCALE_DIR, locale)
+      for old_name, new_name in [
+        ('lang_header', 'lang_header_%s' % locale),
+        ('lang_menu', 'lang_menu_%s' % locale),
+        ('lang_menu_focus', 'lang_menu_%s_focus' % locale),
+      ]:
+        old_file = os.path.join(locale_output_dir, old_name + '.bmp')
+        new_file = os.path.join(self.output_dir, new_name + '.bmp')
+        if os.path.exists(new_file):
+          raise BuildImageError('File already exists: ' % new_file)
+        shutil.move(old_file, new_file)
 
   def convert_fonts(self):
     """Convert font images"""
@@ -467,6 +483,9 @@ class Converter(object):
 
     print 'Converting localized text images...'
     self.convert_texts()
+
+    print 'Moving language images to locale-independent directory...'
+    self.move_language_images()
 
     print 'Creating locale list file...'
     self.create_locale_list()
@@ -628,6 +647,11 @@ class LegacyConverter(Converter):
       self.convert(glob.glob(os.path.join(locale_dir, locale, PNG_FILES)),
                    output_dir, scales, self.text_max_colors)
     sys.stderr.write('\n')
+
+  def move_language_images(self):
+    """Rename language bitmaps and move to self.output_dir."""
+    # Do nothing for legacy UIs
+    pass
 
   def build_image(self):
     """Builds all images required by a board"""
