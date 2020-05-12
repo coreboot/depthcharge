@@ -415,6 +415,15 @@ class Converter(object):
       os.makedirs(output_dir)
       self.convert(glob.glob(os.path.join(locale_dir, locale, SVG_FILES)),
                    output_dir, scales, self.text_max_colors)
+      # Rename language.bmp to lang_${LOCALE}.bmp and move to self.output_dir,
+      # which will be used for creating vbgfx.bin by archive_images.py.
+      for suffix in ['', '_focus']:
+        lang_file = os.path.join(self.output_dir,
+                                 'lang_%s%s.bmp' % (locale, suffix))
+        if os.path.exists(lang_file):
+          raise BuildImageError('File already exists: ' % lang_file)
+        shutil.move(os.path.join(output_dir, 'language%s.bmp' % suffix),
+                    lang_file)
     sys.stderr.write('\n')
 
   def convert_fonts(self):
