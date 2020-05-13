@@ -55,7 +55,7 @@ const char uri[]	= "https://google.com/chromeos/recovery_android";
 
 static int aoa_recovery_connect(GenericUsbDevice *dev)
 {
-	struct cros_aoa_info_block info_block;
+	struct cros_aoa_info_block info_block = { 0 };
 	struct vb2_context *ctx = vboot_get_context();
 	uint32_t hwid_size = VB2_GBB_HWID_MAX_SIZE;
 
