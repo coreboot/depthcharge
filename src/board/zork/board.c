@@ -250,14 +250,6 @@ static int board_setup(void)
 		printf("Failed to find SD card reader\n");
 	}
 
-	SdhciHost *emmc = new_mem_sdhci_host(
-		EMMCCFG,
-		/* Can't enable HS200 or HS400 until tuning is fixed */
-		SDHCI_PLATFORM_NO_EMMC_HS200 | SDHCI_PLATFORM_EMMC_1V8_POWER, 0,
-		0, 0);
-	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
-			  &fixed_block_dev_controllers);
-
 	/* PCI Bridge for NVMe */
 	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x01, 0x07));
 	list_insert_after(&nvme->ctrlr.list_node,
@@ -266,6 +258,14 @@ static int board_setup(void)
 	NvmeCtrlr *nvme_dal = new_nvme_ctrlr(PCI_DEV(0, 0x01, 0x02));
 	list_insert_after(&nvme_dal->ctrlr.list_node,
 				&fixed_block_dev_controllers);
+
+	SdhciHost *emmc = new_mem_sdhci_host(
+		EMMCCFG,
+		/* Can't enable HS200 or HS400 until tuning is fixed */
+		SDHCI_PLATFORM_NO_EMMC_HS200 | SDHCI_PLATFORM_EMMC_1V8_POWER, 0,
+		0, 0);
+	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+			  &fixed_block_dev_controllers);
 
 	/* Set up h1 on I2C3 */
 	DesignwareI2c *i2c_h1 = new_designware_i2c(
