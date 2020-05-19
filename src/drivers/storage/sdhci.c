@@ -509,14 +509,27 @@ static int sdhci_is_clock_enabled(SdhciHost *host)
 	return !!(sdhci_readw(host, SDHCI_CLOCK_CONTROL) & SDHCI_CLOCK_CARD_EN);
 }
 
-static int sdhci_set_clock(SdhciHost *host, unsigned int clock)
+static int sdhci_set_clock(MmcCtrlr *mmc_ctrlr, unsigned int clock)
 {
 	unsigned int div, clk, timeout;
+	uint32_t timing = mmc_ctrlr->timing;
+	SdhciHost *host = container_of(mmc_ctrlr,
+				       SdhciHost, mmc_ctrlr);
 
 	sdhci_writew(host, 0, SDHCI_CLOCK_CONTROL);
 
 	if (clock == 0)
 		return 0;
+
+	/* Quirk: Some controller (Eg. qcom SDHC) needs double the input clock
+	 * for DDR modes. So to get the right divider, double the clock during
+	 *  divider calculation */
+	if ((host->quirks & SDHCI_QUIRK_NEED_2X_CLK_FOR_DDR_MODE) &&
+	    ((timing == MMC_TIMING_UHS_DDR50) ||
+	     (timing == MMC_TIMING_MMC_DDR52) ||
+	     (timing == MMC_TIMING_MMC_HS400) ||
+	     (timing == MMC_TIMING_MMC_HS400ES)))
+		clock *= 2;
 
 	if ((host->version & SDHCI_SPEC_VER_MASK) >= SDHCI_SPEC_300) {
 		/* Version 3.00 divisors must be a multiple of 2. */
@@ -679,7 +692,7 @@ void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 	 * we cannot rely only on previously configured clock value.
 	 */
 	if (!sdhci_is_clock_enabled(host) || mmc_ctrlr->bus_hz != host->clock)
-		sdhci_set_clock(host, mmc_ctrlr->bus_hz);
+		sdhci_set_clock(mmc_ctrlr, mmc_ctrlr->bus_hz);
 
 	/* Switch to 1.8 volt for HS200 */
 	if (mmc_ctrlr->caps & MMC_CAPS_1V8_VDD)
