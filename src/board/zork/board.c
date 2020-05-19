@@ -255,10 +255,6 @@ static int board_setup(void)
 	list_insert_after(&nvme->ctrlr.list_node,
 				&fixed_block_dev_controllers);
 
-	NvmeCtrlr *nvme_dal = new_nvme_ctrlr(PCI_DEV(0, 0x01, 0x02));
-	list_insert_after(&nvme_dal->ctrlr.list_node,
-				&fixed_block_dev_controllers);
-
 	SdhciHost *emmc = new_mem_sdhci_host(
 		EMMCCFG,
 		/* Can't enable HS200 or HS400 until tuning is fixed */
