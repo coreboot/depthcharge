@@ -30,68 +30,17 @@
 #define AOA_STRING_DESCRIPTION	2
 #define AOA_STRING_VERSION	3
 #define AOA_STRING_URI		4
-#define AOA_STRING_SERIAL	5	/* no longer used since version 1.1 */
-
-#define CROS_AOA_INFO_MAGIC "CrOSaoa1"
-#define CROS_AOA_INFO_FLAG_IS_DEV_SIGNED	BIT(0)
-#define CROS_AOA_INFO_FLAG_IN_DEVELOPER_MODE	BIT(1)
-
-/* All values in little-endian. */
-struct cros_aoa_info_block {
-	uint8_t magic[8];
-	uint16_t size;
-	uint8_t flags;
-	uint8_t recovery_reason;
-	uint32_t kernel_rollback_version;
-	uint32_t gbb_flags;
-	char hwid[VB2_GBB_HWID_MAX_SIZE];	/* packet cuts off after '\0' */
-};
+#define AOA_STRING_SERIAL	5
 
 const char manufacturer[] = "Google";
 const char model[]	= "Chrome OS Recovery";
 const char description[] = "Chrome OS device in Recovery Mode";
-const char version[]	= "1.1";
+const char version[]	= "1.0";
 const char uri[]	= "https://google.com/chromeos/recovery_android";
 
 static int aoa_recovery_connect(GenericUsbDevice *dev)
 {
-	struct cros_aoa_info_block info_block = { 0 };
-	struct vb2_context *ctx = vboot_get_context();
-	uint32_t hwid_size = VB2_GBB_HWID_MAX_SIZE;
-
 	printf("USB device %d connected in AOA mode!\n", dev->dev->address);
-
-	memcpy(info_block.magic, CROS_AOA_INFO_MAGIC, sizeof(info_block.magic));
-	if (ctx->flags & VB2_CONTEXT_DEVELOPER_MODE)
-		info_block.flags |= CROS_AOA_INFO_FLAG_IN_DEVELOPER_MODE;
-	info_block.recovery_reason = 0;
-	info_block.kernel_rollback_version = 0;
-	info_block.gbb_flags = htole32(vb2api_gbb_get_flags(ctx));
-	if (vb2api_gbb_read_hwid(ctx, info_block.hwid, &hwid_size)) {
-		info_block.hwid[0] = '\0';
-		hwid_size = 1;
-	}
-
-	size_t size = offsetof(struct cros_aoa_info_block, hwid) + hwid_size;
-	info_block.size = htole16(size);
-
-	endpoint_t *ep;
-	for (ep = dev->dev->endpoints;
-	     ep < dev->dev->endpoints + dev->dev->num_endp; ep++) {
-		if (ep->type == BULK && ep->direction == OUT)
-			break;
-	}
-	if (ep >= dev->dev->endpoints + dev->dev->num_endp) {
-		printf("ERROR: Cannot find BULK_OUT EP for AOA device %d\n",
-		       dev->dev->address);
-		return 0;
-	}
-	if (dev->dev->controller->bulk(ep, size, (void *)&info_block, 0)
-								!= size) {
-		printf("ERROR: Cannot send CrOS AOA info block to device %d\n",
-		       dev->dev->address);
-		return 0;
-	}
 
 	usb_msc_force_init(dev->dev,
 			   USB_MSC_QUIRK_NO_LUNS | USB_MSC_QUIRK_NO_RESET);
@@ -177,6 +126,9 @@ static int aoa_start(GenericUsbDevice *dev)
 
 static int aoa_try_enter(GenericUsbDevice *dev)
 {
+	char hwid[VB2_GBB_HWID_MAX_SIZE];
+	uint32_t hwid_size = sizeof(hwid);
+
 	// Ideally we'd just check the return code, but libpayload's USB HC
 	// drivers don't share common return codes... so if we want to check for
 	// timeout we'll have to do it manually.
@@ -189,6 +141,9 @@ static int aoa_try_enter(GenericUsbDevice *dev)
 		return -1; // Doesn't support AOA (probably no Android device)
 	}
 
+	if (vb2api_gbb_read_hwid(vboot_get_context(), hwid, &hwid_size))
+		hwid[0] = '\0';
+
 	printf("USB device %d supports Android Open Accessory! "
 	       "Trying to connect to Chrome OS Recovery app...\n",
 	       dev->dev->address);
@@ -197,7 +152,8 @@ static int aoa_try_enter(GenericUsbDevice *dev)
 	    aoa_set_string(dev, AOA_STRING_MODEL, model) < 0 ||
 	    aoa_set_string(dev, AOA_STRING_DESCRIPTION, description) < 0 ||
 	    aoa_set_string(dev, AOA_STRING_VERSION, version) < 0 ||
-	    aoa_set_string(dev, AOA_STRING_URI, uri) < 0) {
+	    aoa_set_string(dev, AOA_STRING_URI, uri) < 0 ||
+	    aoa_set_string(dev, AOA_STRING_SERIAL, hwid) < 0) {
 		printf("Error sending AOA identification strings\n");
 		return -1;
 	}
