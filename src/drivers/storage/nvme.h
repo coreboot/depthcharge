@@ -335,6 +335,42 @@ typedef struct NvmeModelData {
 	ListNode list_node;
 } NvmeModelData;
 
+/* NVMe S.M.A.R.T Log Data */
+// Reference linux kernel v5.7 (include/linux/nvme.h)
+typedef struct {
+	uint8_t  critical_warning;
+	uint16_t temperature;
+	uint8_t  avail_spare;
+	uint8_t  spare_thresh;
+	uint8_t  percent_used;
+	uint8_t  endu_grp_crit_warn_sumry;
+	uint8_t  rsvd7[25];
+	//
+	// 128bit integers
+	//
+	uint8_t  data_units_read[16];
+	uint8_t  data_units_written[16];
+	uint8_t  host_reads[16];
+	uint8_t  host_writes[16];
+	uint8_t  ctrl_busy_time[16];
+	uint8_t  power_cycles[16];
+	uint8_t  power_on_hours[16];
+	uint8_t  unsafe_shutdowns[16];
+	uint8_t  media_errors[16];
+	uint8_t  num_err_log_entries[16];
+
+	uint32_t warning_temp_time;
+	uint32_t critical_comp_time;
+	uint16_t temp_sensor[8];
+
+	uint32_t thm_temp1_trans_count;
+	uint32_t thm_temp2_trans_count;
+	uint32_t thm_temp1_total_time;
+	uint32_t thm_temp2_total_time;
+
+	uint8_t  rsvd232[280];
+} __attribute__((packed)) NVME_SMART_LOG_DATA;
+
 /*
  * Driver Types
  */
