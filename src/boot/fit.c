@@ -81,16 +81,16 @@ static void fit_add_default_compats(void)
 		fit_add_compat(strdup(compat));
 	}
 
-	if (sku != UNDEFINED_STRAPPING_ID) {
+	if (rev != UNDEFINED_STRAPPING_ID) {
 		ret = snprintf(compat, sizeof(compat),
-			       "%s%s", base, sku_string);
+			       "%s%s", base, rev_string);
 		assert(ret < sizeof(compat));
 		fit_add_compat(strdup(compat));
 	}
 
-	if (rev != UNDEFINED_STRAPPING_ID) {
+	if (sku != UNDEFINED_STRAPPING_ID) {
 		ret = snprintf(compat, sizeof(compat),
-			       "%s%s", base, rev_string);
+			       "%s%s", base, sku_string);
 		assert(ret < sizeof(compat));
 		fit_add_compat(strdup(compat));
 	}
