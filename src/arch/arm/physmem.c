@@ -18,21 +18,20 @@
 #include <assert.h>
 #include <libpayload.h>
 #include <stddef.h>
-#include <string.h>
 
 #include <arch/cache.h>
 #include "base/physmem.h"
 
 // arch_phys_memset but with the guarantee that the range doesn't wrap around
 // the end of the address space.
-static uint64_t arch_phys_memset_nowrap(uint64_t start, int c, uint64_t size)
+static void arch_phys_map_nowrap(uint64_t start, uint64_t size,
+				 PhysMapFunc func, void *data)
 {
-	uint64_t max_addr = (uint64_t)~(uintptr_t)0;
-	uint64_t orig_start = start;
+	uint64_t max_addr = (uint64_t) ~(uintptr_t)0;
 
 	// If there's nothing to do, just return.
 	if (!size)
-		return orig_start;
+		return;
 
 	// Set memory we can address normally using standard memset.
 	if (start <= max_addr) {
@@ -44,41 +43,41 @@ static uint64_t arch_phys_memset_nowrap(uint64_t start, int c, uint64_t size)
 			low_size = (size_t)size;
 			assert(low_size == size);
 		}
-		memset((void *)(uintptr_t)start, c, low_size);
+		func(start, (void *)(uintptr_t)start, low_size, data);
 		start += low_size;
 		size -= low_size;
 	}
 
 	// If we're done, return.
 	if (!size)
-		return orig_start;
+		return;
 
 	// memset above 4GB.
 	do {
 		void *buf;
-		int len = MIN(size, 2*MiB);
+		int len = MIN(size, 2 * MiB);
 		/* writeback is ~4 times as fast as writethrough on T124 */
 		buf = lpae_map_phys_addr(start / MiB, DCACHE_WRITEBACK);
-		memset(buf, c, len);
+		func(start, buf, len, data);
 		start += len;
 		size -= len;
 	} while (size > 0);
 
 	lpae_restore_map();
-	return orig_start;
+	return;
 }
 
-uint64_t arch_phys_memset(uint64_t start, int c, uint64_t size)
+void arch_phys_map(uint64_t start, uint64_t size, PhysMapFunc func, void *data)
 {
 	uint64_t end = start + size;
 
 	if (end && end < start) {
 		// If the range wraps around 0, set the upper and lower parts
 		// separately.
-		arch_phys_memset_nowrap(0, c, end);
-		return arch_phys_memset_nowrap(start, c, 0 - start);
+		arch_phys_map_nowrap(0, end, func, data);
+		arch_phys_map_nowrap(start, 0 - start, func, data);
 	} else {
 		// No wrap, set everything at once.
-		return arch_phys_memset_nowrap(start, c, size);
+		arch_phys_map_nowrap(start, size, func, data);
 	}
 }

@@ -157,81 +157,56 @@ static void x86_phys_exit_paging(void)
 	);
 }
 
-/*
- * Set physical memory to a particular value when the whole region fits on one
- * page.
- *
- * @param map_addr	The address that starts the physical page.
- * @param offset	How far into that page to start setting a value.
- * @param c		The value to set memory to.
- * @param size		The size in bytes of the area to set.
- */
-static void x86_phys_memset_page(uint64_t map_addr, uintptr_t offset, int c,
-				 unsigned size)
+void arch_phys_map(uint64_t start, uint64_t size, PhysMapFunc func, void *data)
 {
-	/*
-	 * Depthcharge should be far away from the beginning of memory, so
-	 * that's a good region to map our window on top of.
-	 */
-	const uintptr_t window = LARGE_PAGE_SIZE;
-
-	/* Make sure the window is below Depthcharge. */
-	assert(window + LARGE_PAGE_SIZE < (uintptr_t)&_start);
-	/* Map the page into the window and then memset the appropriate part. */
-	x86_phys_map_page(window, map_addr, 1);
-	memset((void *)(window + offset), c, size);
-}
-
-/*
- * A physical memory anologue to memset with matching parameters and return
- * value.
- */
-uint64_t arch_phys_memset(uint64_t start, int c, uint64_t size)
-{
-	const uint64_t max_addr = (uint64_t)~(uintptr_t)0;
-	const uint64_t orig_start = start;
-
-	if (!size)
-		return orig_start;
+	if (size <= 0)
+		return;
 
 	/* Handle memory below 4GB. */
+	const uint64_t max_addr = (uint64_t) ~(uintptr_t)0;
 	if (start <= max_addr) {
-		uint64_t low_size = MIN(max_addr + 1 - start, size);
+		uint64_t cur_size = MIN(max_addr + 1 - start, size);
+
 		void *start_ptr = (void *)(uintptr_t)start;
 
 		assert(((uint64_t)(uintptr_t)start) == start);
-		memset(start_ptr, c, low_size);
-		start += low_size;
-		size -= low_size;
+		func(start, start_ptr, cur_size, data);
+
+		start += cur_size;
+		size -= cur_size;
 	}
+
+	if (size <= 0)
+		return;
 
 	/* Use paging and PAE to handle memory above 4GB up to 64GB. */
-	if (size) {
-		uint64_t map_addr = start & ~(LARGE_PAGE_SIZE - 1);
-		uint64_t offset = start - map_addr;
+	x86_phys_enter_paging();
 
-		x86_phys_enter_paging();
+	/*
+	 * Use virtuall address [LARGE_PAGE_SIZE, 2*LARGE_PAGE_SIZE) for
+	 * mapping.
+	 *
+	 * Depthcharge should be far away from the beginning of memory, so
+	 * that's a good region to map on top of, and make sure the virt_page
+	 * will not overlap the Depthcharge.
+	 */
+	const uintptr_t virt_page = LARGE_PAGE_SIZE;
+	assert(virt_page + LARGE_PAGE_SIZE < (uintptr_t)&_start);
 
-		/* Handle the first partial page. */
-		if (offset) {
-			uint64_t end =
-				MIN(map_addr + LARGE_PAGE_SIZE, start + size);
-			uint64_t cur_size = end - start;
-			x86_phys_memset_page(map_addr, offset, c, cur_size);
-			size -= cur_size;
-			map_addr += LARGE_PAGE_SIZE;
-		}
-		/* Handle the complete pages. */
-		while (size > LARGE_PAGE_SIZE) {
-			x86_phys_memset_page(map_addr, 0, c, LARGE_PAGE_SIZE);
-			size -= LARGE_PAGE_SIZE;
-			map_addr += LARGE_PAGE_SIZE;
-		}
-		/* Handle the last partial page. */
-		if (size)
-			x86_phys_memset_page(map_addr, 0, c, size);
+	while (size > 0) {
+		uintptr_t offset = start & (LARGE_PAGE_SIZE - 1);
+		uint64_t phys_page = start - offset;
 
-		x86_phys_exit_paging();
+		uint64_t end = MIN(phys_page + LARGE_PAGE_SIZE, start + size);
+		uint64_t cur_size = end - start;
+
+		/* Map the phys_page into the virt_page and then apply func. */
+		x86_phys_map_page(virt_page, phys_page, 1);
+		func(start, (void *)(virt_page + offset), cur_size, data);
+
+		start += cur_size;
+		size -= cur_size;
 	}
-	return orig_start;
+
+	x86_phys_exit_paging();
 }

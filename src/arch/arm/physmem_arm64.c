@@ -23,16 +23,14 @@
 #include <arch/cache.h>
 #include "base/physmem.h"
 
-uint64_t arch_phys_memset(uint64_t start, int c, uint64_t size)
+void arch_phys_map(uint64_t start, uint64_t size, PhysMapFunc func, void *data)
 {
 	uint64_t max_addr = (uint64_t)((1ULL << 48) - 1);
 	uint64_t end = start + size;
-	assert(start <= max_addr);
+	assert(end <= max_addr);
 
 	if (end < start || end > max_addr)
 		size = max_addr - start;
 
-	memset((void *)(uintptr_t)start, c, size);
-
-	return start;
+	func(start, (void *)(uintptr_t)start, size, data);
 }

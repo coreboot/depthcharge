@@ -47,8 +47,19 @@ void memory_mark_used(uint64_t start, uint64_t end)
 	ranges_add(&used, start, end);
 }
 
+static void arch_phys_memset_map_func(uint64_t phys_addr, void *s, uint64_t n,
+				      void *data)
+{
+	memset(s, *((int *)data), n);
+}
 
-static void unused_memset(uint64_t start, uint64_t end, void *data)
+static inline uint64_t arch_phys_memset(uint64_t s, int c, uint64_t n)
+{
+	arch_phys_map(s, n, arch_phys_memset_map_func, &c);
+	return s;
+}
+
+static inline void unused_memset(uint64_t start, uint64_t end, void *data)
 {
 	printf("\t[%#016llx, %#016llx)\n", start, end);
 	arch_phys_memset(start, 0, end - start);

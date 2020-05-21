@@ -19,17 +19,24 @@
 #define __BASE_PHYSMEM_H__
 
 #include <stdint.h>
+#include <libpayload.h>
+
+typedef void (*PhysMapFunc)(uint64_t phys_addr, void *s, uint64_t n,
+			    void *data);
 
 /*
- * These functions work like memset but operate on physical memory which may
- * not be accessible directly.
+ * Run a function on physical memory which may not be accessible directly.
  *
- * @param s	The physical address to start setting memory at.
- * @param c	The character to set each byte of the region to.
- * @param n	The number of bytes to set.
+ * In this function, it will remapping physical memory when needed and then pass
+ * then accessible pointer to the function. Due to the mapping limitation, this
+ * function may split physical memory to multiple segment and call `callback`
+ * multiple times separately.
  *
- * @return	The physical address of the memory which was set.
+ * @param s			The physical address to start.
+ * @param n			The number of bytes to operate.
+ * @param func	The function which do the actually work.
+ * @param data	The data that can be used in func.
  */
-uint64_t arch_phys_memset(uint64_t s, int c, uint64_t n);
+void arch_phys_map(uint64_t s, uint64_t n, PhysMapFunc func, void *data);
 
 #endif /* __BASE_PHYSMEM_H__ */
