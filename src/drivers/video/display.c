@@ -39,17 +39,20 @@ void display_set_ops(DisplayOps *ops)
 {
 	die_if(display_ops, "%s: Display ops already set.\n", __func__);
 	display_ops = ops;
-
-	/* Call stop() when exiting depthcharge. */
-	list_insert_after(&display_cleanup_func.list_node, &cleanup_funcs);
 }
 
 int display_init(void)
 {
-	if (display_ops && display_ops->init)
-		return display_ops->init(display_ops);
+	if (!display_ops || !display_ops->init) {
+		printf("display: %s called but not implemented.\n", __func__);
+		return 0;
+	}
 
-	printf("display: %s called but not implemented.\n", __func__);
+	if (display_ops->init(display_ops))
+		return -1;
+
+	/* Call stop() when exiting depthcharge, only if we initialized it. */
+	list_insert_after(&display_cleanup_func.list_node, &cleanup_funcs);
 	return 0;
 }
 
