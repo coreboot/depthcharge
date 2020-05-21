@@ -19,7 +19,9 @@
 #define __VBOOT_UTIL_MEMORY_H__
 
 #include <stdint.h>
+#include "base/ranges.h"
 
+int memory_range_init_and_get_unused(Ranges *ranges);
 int memory_wipe_unused(void);
 void memory_mark_used(uint64_t start, uint64_t end);
 

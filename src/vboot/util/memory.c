@@ -59,19 +59,18 @@ static void remove_range(uint64_t start, uint64_t end, void *data)
 	ranges_sub((Ranges *)data, start, end);
 }
 
-int memory_wipe_unused(void)
+int memory_range_init_and_get_unused(Ranges *ranges)
 {
-	Ranges ranges;
+	ranges_init(ranges);
 
 	// Process the memory map from coreboot.
-	ranges_init(&ranges);
 	for (int i = 0; i < lib_sysinfo.n_memranges; i++) {
 		struct memrange *range = &lib_sysinfo.memrange[i];
 		uint64_t start = range->base;
 		uint64_t end = range->base + range->size;
 		switch (range->type) {
 		case CB_MEM_RAM:
-			ranges_add(&ranges, start, end);
+			ranges_add(ranges, start, end);
 			break;
 		case CB_MEM_RESERVED:
 		case CB_MEM_ACPI:
@@ -79,22 +78,33 @@ int memory_wipe_unused(void)
 		case CB_MEM_UNUSABLE:
 		case CB_MEM_VENDOR_RSVD:
 		case CB_MEM_TABLE:
-			ranges_sub(&ranges, start, end);
+			ranges_sub(ranges, start, end);
 			break;
 		default:
-			printf("Unrecognized memory type %d!\n",
-				range->type);
+			printf("Unrecognized memory type %d!\n", range->type);
 			return 1;
 		}
 	}
 
 	// Exclude memory that's being used.
 	used_list_initialize();
-	ranges_for_each(&used, &remove_range, &ranges);
+	ranges_for_each(&used, &remove_range, ranges);
+
+	return 0;
+}
+
+int memory_wipe_unused(void)
+{
+	Ranges ranges;
+	int result = memory_range_init_and_get_unused(&ranges);
+	if (result) {
+		ranges_teardown(&ranges);
+		return result;
+	}
 
 	// Do the wipe.
 	printf("Wipe memory regions:\n");
 	ranges_for_each(&ranges, &unused_memset, NULL);
 	ranges_teardown(&ranges);
-	return 0;
+	return result;
 }
