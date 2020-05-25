@@ -21,6 +21,7 @@
 #include <vb2_api.h>
 
 #include "drivers/video/display.h"
+#include "vboot/ui_legacy.h"
 
 vb2_error_t VbExDisplayScreen(uint32_t screen_type, uint32_t locale,
 			      const VbScreenData *data)
@@ -46,4 +47,9 @@ int video_console_init(void)
 {
 	printf("%s:%d invoked\n", __func__, __LINE__);
 	return 0;
+}
+
+uint32_t vb2ex_get_locale_count(void)
+{
+	return vboot_get_locale_count();
 }
