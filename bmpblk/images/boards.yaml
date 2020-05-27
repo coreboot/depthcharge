@@ -380,3 +380,6 @@ tglrvp:
   screen:   [2400, 1600]
   hi_res:   [en]
   text_colors:  4
+
+trogdor:
+  screen:   [1920, 1080]
