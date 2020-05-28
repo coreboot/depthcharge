@@ -70,7 +70,7 @@ vb2_error_t VbExSetVendorData(const char *vendor_data_value)
 
 	if (fmap_find_area("RO_VPD", &vpd_area_descriptor)) {
 		printf("%s: failed to find RO_VPD area\n", __func__);
-		return VBERROR_VPD_WRITE;
+		return VB2_ERROR_EX_SET_VENDOR_DATA;
 	}
 
 	/* Read RO VPD from flash */
@@ -79,17 +79,17 @@ vb2_error_t VbExSetVendorData(const char *vendor_data_value)
 
 	if (!ro_vpd) {
 		printf("%s: failed to read RO_VPD area\n", __func__);
-		return VBERROR_VPD_WRITE;
+		return VB2_ERROR_EX_SET_VENDOR_DATA;
 	}
 
 	/* Find the vendor data value */
 	if (!vpd_find(CONFIG_VENDOR_DATA_KEY, ro_vpd, &offset, &size) ||
 	    size != CONFIG_VENDOR_DATA_LENGTH)
-		return VBERROR_VPD_WRITE;
+		return VB2_ERROR_EX_SET_VENDOR_DATA;
 
 	if (flash_write_status(0x00)) {
 		printf("%s: failed to disable wp\n", __func__);
-		return VBERROR_VPD_WRITE;
+		return VB2_ERROR_EX_SET_VENDOR_DATA;
 	}
 
 	/* Set vendor data to new value */
@@ -97,18 +97,18 @@ vb2_error_t VbExSetVendorData(const char *vendor_data_value)
 			  CONFIG_VENDOR_DATA_LENGTH, vendor_data_value) !=
 			  CONFIG_VENDOR_DATA_LENGTH) {
 		printf("%s: failed to rewrite RO_VPD area\n", __func__);
-		return VBERROR_VPD_WRITE;
+		return VB2_ERROR_EX_SET_VENDOR_DATA;
 	}
 
 	/* Clear GBB flags */
 	if (gbb_clear_flags()) {
 		printf("%s: failed to clear GBB flags\n", __func__);
-		return VBERROR_VPD_WRITE;
+		return VB2_ERROR_EX_SET_VENDOR_DATA;
 	}
 
 	if (flash_set_wp_enabled()) {
 		printf("%s: failed to enable wp\n", __func__);
-		return VBERROR_VPD_WRITE;
+		return VB2_ERROR_EX_SET_VENDOR_DATA;
 	}
 
 	return VB2_SUCCESS;
