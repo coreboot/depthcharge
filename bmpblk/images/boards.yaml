@@ -123,7 +123,7 @@ chell,glados:
   screen:   [1920, 1080]
   hi_res:   [en]
 
-fizz,guado,kalista,mccloud,ninja,panther,puff,rikku,tidus,tricky:
+fizz,guado,kalista,mccloud,ninja,panther,rikku,tidus,tricky:
   # Using VESA graphics mode 1024x768 (0x0117).
   # A chromebox without built-in panel/keyboard.
   # Assume the display is a modern 16:9 (1920x1080) monitor.
@@ -335,6 +335,10 @@ hatch,palkia:
   screen:   [2400, 1600]
   hi_res:   [en]
   text_colors:  4
+
+puff:
+  # 2400x1600, boots recovery image on USB ports.
+  screen:   [2400, 1600]
 
 mushu:
   # 2400x1600, boots recovery image on USB ports.
