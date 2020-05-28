@@ -36,6 +36,7 @@ vb2_error_t vb2ex_display_ui(enum vb2_screen screen,
 {
 	vb2_error_t rv;
 	const struct ui_locale *locale = NULL;
+	const struct ui_screen_info *screen_info;
 	printf("%s: screen=%#x, locale=%u, selected_item=%u, "
 	       "disabled_item_mask=%#x\n", __func__,
 	       screen, locale_id, selected_item, disabled_item_mask);
@@ -46,9 +47,18 @@ vb2_error_t vb2ex_display_ui(enum vb2_screen screen,
 		       locale_id);
 		rv = ui_get_locale_info(0, &locale);
 	}
+	if (rv)
+		goto fail;
+
+	screen_info = ui_get_screen_info(screen);
+	if (!screen_info) {
+		printf("%s: Not a valid screen: %#x\n", __func__, screen);
+		rv = VB2_ERROR_UI_INVALID_SCREEN;
+		goto fail;
+	}
 
 	struct ui_state state = {
-		.screen = screen,
+		.screen = screen_info,
 		.locale = locale,
 		.selected_item = selected_item,
 		.disabled_item_mask = disabled_item_mask,
@@ -56,21 +66,17 @@ vb2_error_t vb2ex_display_ui(enum vb2_screen screen,
 	static struct ui_state prev_state;
 	static int has_prev_state = 0;
 
-	if (rv == VB2_SUCCESS)
-		rv = ui_display_screen(&state,
-				       has_prev_state ? &prev_state : NULL);
-
-	if (rv) {
-		has_prev_state = 0;
-		/*
-		 * TODO(yupingso): Add fallback display when drawing
-		 * fails.
-		 */
-		return rv;
-	}
+	rv = ui_display_screen(&state, has_prev_state ? &prev_state : NULL);
+	if (rv)
+		goto fail;
 
 	memcpy(&prev_state, &state, sizeof(struct ui_state));
 	has_prev_state = 1;
 
 	return VB2_SUCCESS;
+
+ fail:
+	has_prev_state = 0;
+	/* TODO(yupingso): Add fallback display when drawing fails. */
+	return rv;
 }

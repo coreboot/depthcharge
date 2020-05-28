@@ -351,9 +351,11 @@ vb2_error_t ui_draw_box(int32_t x, int32_t y,
 /******************************************************************************/
 /* layout.c */
 
+struct ui_screen_info;  /* Forward declaration */
+
 /* UI state for display. */
 struct ui_state {
-	enum vb2_screen screen;
+	const struct ui_screen_info *screen;
 	const struct ui_locale *locale;
 	uint32_t selected_item;
 	uint32_t disabled_item_mask;
@@ -422,12 +424,10 @@ struct ui_screen_info {
 	 * Custom drawing function. When it is NULL, the default drawing
 	 * function ui_draw_default() will be called instead.
 	 */
-	vb2_error_t (*draw)(const struct ui_screen_info *screen,
-			    const struct ui_state *state,
+	vb2_error_t (*draw)(const struct ui_state *state,
 			    const struct ui_state *prev_state);
 	/* Custom description drawing function */
-	vb2_error_t (*draw_desc)(const struct ui_screen_info *screen,
-				 const struct ui_state *state,
+	vb2_error_t (*draw_desc)(const struct ui_state *state,
 				 const struct ui_state *prev_state,
 				 int32_t *height);
 	/* Fallback message */
@@ -462,14 +462,12 @@ vb2_error_t ui_draw_desc(const struct ui_desc *desc,
 /*
  * Default drawing function.
  *
- * @param screen	Screen information such as title and descriptions.
  * @param state		UI state.
  * @param prev_state	Previous UI state.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t ui_draw_default(const struct ui_screen_info *screen,
-			    const struct ui_state *state,
+vb2_error_t ui_draw_default(const struct ui_state *state,
 			    const struct ui_state *prev_state);
 
 /******************************************************************************/

@@ -77,17 +77,16 @@ vb2_error_t ui_draw_language_header(const struct ui_locale *locale,
 /*
  * Draw step icons.
  *
- * @param screen	Screen information such as title and descriptions.
  * @param state		Current UI state.
  * @param prev_state	Previous UI state.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-static vb2_error_t ui_draw_step_icons(const struct ui_screen_info *screen,
-				      const struct ui_state *state,
+static vb2_error_t ui_draw_step_icons(const struct ui_state *state,
 				      const struct ui_state *prev_state)
 {
 	struct ui_bitmap bitmap;
+	const struct ui_screen_info *screen = state->screen;
 	const int has_error = screen->step < 0;
 	const int cur_step = screen->step >= 0 ? screen->step : -screen->step;
 	const int num_steps = screen->num_steps;
@@ -381,12 +380,12 @@ vb2_error_t ui_draw_desc(const struct ui_desc *desc,
 	return VB2_SUCCESS;
 }
 
-vb2_error_t ui_draw_default(const struct ui_screen_info *screen,
-			    const struct ui_state *state,
+vb2_error_t ui_draw_default(const struct ui_state *state,
 			    const struct ui_state *prev_state)
 {
 	int i;
-	const struct ui_screen_info *prev_screen = NULL;
+	const struct ui_screen_info *screen = state->screen;
+	const struct ui_menu *menu = &screen->menu;
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
 	int focused;
@@ -394,7 +393,6 @@ vb2_error_t ui_draw_default(const struct ui_screen_info *screen,
 	const int32_t w = UI_SIZE_AUTO;
 	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
 	const char *icon_file;
-	const struct ui_menu *menu = &screen->menu;
 	struct ui_bitmap bitmap;
 
 	if (!prev_state || prev_state->locale != state->locale) {
@@ -429,13 +427,10 @@ vb2_error_t ui_draw_default(const struct ui_screen_info *screen,
 	 * Draw the footer if previous screen doesn't have a footer, or if
 	 * locale changed.
 	 */
-	/* TODO(yupingso): Add screen pointer to ui_state. */
-	if (prev_state)
-		prev_screen = ui_get_screen_info(prev_state->screen);
-	if ((!prev_state || !prev_screen ||
-	     prev_screen->no_footer ||
-	     prev_state->locale != state->locale) &&
-	    !screen->no_footer)
+	if (!screen->no_footer &&
+	    (!prev_state ||
+	     prev_state->screen->no_footer ||
+	     prev_state->locale != state->locale))
 		VB2_TRY(draw_footer(state));
 
 	/* Icon */
@@ -457,7 +452,7 @@ vb2_error_t ui_draw_default(const struct ui_screen_info *screen,
 	x = UI_MARGIN_H;
 	y = UI_MARGIN_TOP + UI_LANG_BOX_HEIGHT + UI_LANG_MARGIN_BOTTOM;
 	if (screen->icon == UI_ICON_TYPE_STEP) {
-		VB2_TRY(ui_draw_step_icons(screen, state, prev_state));
+		VB2_TRY(ui_draw_step_icons(state, prev_state));
 	} else if (icon_file) {
 		VB2_TRY(ui_get_bitmap(icon_file, NULL, 0, &bitmap));
 		VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, UI_ICON_HEIGHT,
@@ -475,8 +470,7 @@ vb2_error_t ui_draw_default(const struct ui_screen_info *screen,
 
 	/* Description */
 	if (screen->draw_desc)
-		VB2_TRY(screen->draw_desc(screen, state, prev_state,
-					  &desc_height));
+		VB2_TRY(screen->draw_desc(state, prev_state, &desc_height));
 	else
 		VB2_TRY(ui_draw_desc(&screen->desc, state, &desc_height));
 	y += desc_height + UI_DESC_MARGIN_BOTTOM;

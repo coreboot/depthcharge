@@ -133,27 +133,20 @@ vb2_error_t ui_display_screen(struct ui_state *state,
 			      const struct ui_state *prev_state)
 {
 	vb2_error_t rv;
-	const enum vb2_screen screen_id = state->screen;
-	const struct ui_screen_info *screen;
+	const struct ui_screen_info *screen = state->screen;
 
 	VB2_TRY(init_screen());
 
 	/* If the screen is blank, turn off the backlight; else turn it on. */
-	backlight_update(screen_id != VB2_SCREEN_BLANK);
-
-	screen = ui_get_screen_info(screen_id);
-	if (!screen) {
-		UI_ERROR("Not a valid screen %#x\n", screen_id);
-		return VB2_ERROR_UI_INVALID_SCREEN;
-	}
+	backlight_update(screen->id != VB2_SCREEN_BLANK);
 
 	if (screen->draw)
-		rv = screen->draw(screen, state, prev_state);
+		rv = screen->draw(state, prev_state);
 	else
-		rv = ui_draw_default(screen, state, prev_state);
+		rv = ui_draw_default(state, prev_state);
 
 	if (rv) {
-		UI_ERROR("Drawing screen %#x failed: %#x", screen_id, rv);
+		UI_ERROR("Drawing screen %#x failed: %#x", screen->id, rv);
 		/* Print fallback message if drawing failed. */
 		if (screen->mesg)
 			print_fallback_message(screen->mesg);

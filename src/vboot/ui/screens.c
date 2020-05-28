@@ -45,8 +45,7 @@
 /******************************************************************************/
 /* VB2_SCREEN_BLANK */
 
-static vb2_error_t draw_blank(const struct ui_screen_info *screen,
-			      const struct ui_state *state,
+static vb2_error_t draw_blank(const struct ui_state *state,
 			      const struct ui_state *prev_state)
 {
 	clear_screen(&ui_color_bg);
@@ -80,8 +79,7 @@ static const struct ui_screen_info firmware_sync_screen = {
 /******************************************************************************/
 /* VB2_SCREEN_LANGUAGE_SELECT */
 
-static vb2_error_t draw_language_select(const struct ui_screen_info *screen,
-					const struct ui_state *state,
+static vb2_error_t draw_language_select(const struct ui_state *state,
 					const struct ui_state *prev_state)
 {
 	int id;
@@ -101,7 +99,7 @@ static vb2_error_t draw_language_select(const struct ui_screen_info *screen,
 	 * Call default drawing function to clear the screen if necessary, and
 	 * draw the footer.
 	 */
-	VB2_TRY(ui_draw_default(screen, state, prev_state));
+	VB2_TRY(ui_draw_default(state, prev_state));
 
 	x_begin = UI_MARGIN_H;
 	x_end = UI_SCALE - UI_MARGIN_H;
@@ -397,7 +395,6 @@ static const struct ui_screen_info recovery_disk_step3_screen = {
 /* VB2_SCREEN_RECOVERY_INVALID */
 
 static vb2_error_t draw_recovery_invalid_desc(
-	const struct ui_screen_info *screen,
 	const struct ui_state *state,
 	const struct ui_state *prev_state,
 	int32_t *height)
