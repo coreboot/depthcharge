@@ -170,7 +170,7 @@ static int aoa_recovery_probe(GenericUsbDevice *dev)
 		// time but only the first serves a valid image. It's very hard
 		// to avoid, so... uhh... just don't do that?
 		char param[32];
-		snprintf(param, sizeof(param), "cros_aoa=%.4x:%.4x",
+		snprintf(param, sizeof(param), "ums-cros-aoa.bind=%.4x:%.4x",
 			 dd->idVendor, dd->idProduct);
 		commandline_append(param);
 		// If the AOA device disconnects and reconnects again after this
