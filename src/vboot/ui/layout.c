@@ -146,7 +146,7 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 	/* Column 1 */
 	x = UI_MARGIN_H;
 	y = footer_y;
-	VB2_TRY(ui_get_bitmap("qr_code.bmp", NULL, 0, &bitmap));
+	VB2_TRY(ui_get_bitmap("qr_rec.bmp", NULL, 0, &bitmap));
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, footer_height, footer_height,
 			       flags, reverse));
 	x += footer_height + UI_FOOTER_COL1_MARGIN_RIGHT;

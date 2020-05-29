@@ -305,14 +305,100 @@ static const struct ui_screen_info recovery_select_screen = {
 };
 
 /******************************************************************************/
+/* VB2_SCREEN_RECOVERY_PHONE_STEP1 */
+
+static const char *const recovery_phone_step1_desc[] = {
+	"rec_phone_step1_desc0.bmp",
+	"rec_phone_step1_desc1.bmp",
+	/* TODO(yupingso): Draw rec_step1_desc2_low_bat.bmp if battery is
+	   low. */
+	"rec_step1_desc2.bmp",
+};
+
+static const struct ui_menu_item recovery_phone_step1_items[] = {
+	LANGUAGE_SELECT_ITEM,
+	{ "btn_next.bmp" },
+	{ "btn_back.bmp" },
+};
+
+static const struct ui_screen_info recovery_phone_step1_screen = {
+	.id = VB2_SCREEN_RECOVERY_PHONE_STEP1,
+	.icon = UI_ICON_TYPE_STEP,
+	.step = 1,
+	.num_steps = 3,
+	.title = "rec_step1_title.bmp",
+	.desc = UI_DESC(recovery_phone_step1_desc),
+	.menu = UI_MENU(recovery_phone_step1_items),
+	.mesg = "To proceed with the recovery process, you’ll need\n"
+		"1. An Android phone with internet access\n"
+		"2. A USB cable which connects your phone and this device\n"
+		"We also recommend that you connect to a power source during\n"
+		"the recovery process.",
+};
+
+/******************************************************************************/
+/* VB2_SCREEN_RECOVERY_PHONE_STEP2 */
+
+static vb2_error_t draw_recovery_phone_step2(
+	const struct ui_screen_info *screen,
+	const struct ui_state *state,
+	const struct ui_state *prev_state)
+{
+	const int32_t x = UI_SCALE - UI_MARGIN_H - UI_REC_QR_MARGIN_R;
+	const int32_t y = UI_MARGIN_TOP + UI_LANG_BOX_HEIGHT +
+		UI_LANG_MARGIN_BOTTOM + UI_ICON_HEIGHT + UI_ICON_MARGIN_BOTTOM +
+		UI_TITLE_TEXT_HEIGHT + UI_TITLE_MARGIN_BOTTOM;
+	const int32_t w = UI_SIZE_AUTO;
+	/* Match height from top of descriptions to bottom of "Back" button. */
+	const int32_t h = (UI_DESC_TEXT_HEIGHT
+			   + UI_DESC_TEXT_LINE_SPACING) * 4 +
+		UI_DESC_MARGIN_BOTTOM + UI_BUTTON_HEIGHT;
+	uint32_t flags = PIVOT_H_RIGHT | PIVOT_V_TOP;
+	const int reverse = state->locale->rtl;
+	struct ui_bitmap bitmap;
+
+	VB2_TRY(ui_draw_default(screen, state, prev_state));
+	VB2_TRY(ui_get_bitmap("qr_rec_phone.bmp", NULL, 0, &bitmap));
+	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, h, flags, reverse));
+	return VB2_SUCCESS;
+}
+
+static const char *const recovery_phone_step2_desc[] = {
+	"rec_phone_step2_desc0.bmp",
+	"rec_phone_step2_desc1.bmp",
+	"rec_phone_step2_desc2.bmp",
+	"rec_phone_step2_desc3.bmp",
+};
+
+static const struct ui_menu_item recovery_phone_step2_items[] = {
+	LANGUAGE_SELECT_ITEM,
+	{ "btn_back.bmp" },
+};
+
+static const struct ui_screen_info recovery_phone_step2_screen = {
+	.id = VB2_SCREEN_RECOVERY_PHONE_STEP2,
+	.icon = UI_ICON_TYPE_STEP,
+	.step = 2,
+	.num_steps = 3,
+	.title = "rec_phone_step2_title.bmp",
+	.desc = UI_DESC(recovery_phone_step2_desc),
+	.menu = UI_MENU(recovery_phone_step2_items),
+	.draw = draw_recovery_phone_step2,
+	.mesg = "Download the Chrome OS recovery app on your Android phone\n"
+		"by plugging in your phone or by scanning the QR code on the\n"
+		"screen. Once you launch the app, connect your phone to your\n"
+		"device and recovery will start automatically."
+};
+
+/******************************************************************************/
 /* VB2_SCREEN_RECOVERY_DISK_STEP1 */
 
 static const char *const recovery_disk_step1_desc[] = {
 	"rec_disk_step1_desc0.bmp",
 	"rec_disk_step1_desc1.bmp",
-	/* TODO(yupingso): Draw rec_disk_step1_desc2_low_bat.bmp if battery is
+	/* TODO(yupingso): Draw rec_step1_desc2_low_bat.bmp if battery is
 	   low. */
-	"rec_disk_step1_desc2.bmp",
+	"rec_step1_desc2.bmp",
 };
 
 static const struct ui_menu_item recovery_disk_step1_items[] = {
@@ -326,7 +412,7 @@ static const struct ui_screen_info recovery_disk_step1_screen = {
 	.icon = UI_ICON_TYPE_STEP,
 	.step = 1,
 	.num_steps = 3,
-	.title = "rec_disk_step2_title.bmp",
+	.title = "rec_step1_title.bmp",
 	.desc = UI_DESC(recovery_disk_step1_desc),
 	.menu = UI_MENU(recovery_disk_step1_items),
 	.mesg = "To proceed with the recovery process, you'll need\n"
@@ -497,6 +583,8 @@ static const struct ui_screen_info *const screens[] = {
 	&advanced_options_screen,
 	&recovery_to_dev_screen,
 	&recovery_select_screen,
+	&recovery_phone_step1_screen,
+	&recovery_phone_step2_screen,
 	&recovery_disk_step1_screen,
 	&recovery_disk_step2_screen,
 	&recovery_disk_step3_screen,
