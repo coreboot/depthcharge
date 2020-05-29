@@ -87,23 +87,25 @@ void dc_usb_initialize(void)
 	static const char *const hc_types[] = {[UHCI] = "UHCI", [OHCI] = "OHCI",
 		[EHCI] = "EHCI", [XHCI] = "XHCI", [DWC2] = "DWC2"
 	};
+	static int need_init = 1;
 	static CleanupFunc cleanup = {
 		&dc_usb_shutdown,
 		CleanupOnHandoff | CleanupOnLegacy,
 		NULL
 	};
 
-	usb_initialize();
-	list_insert_after(&cleanup.list_node, &cleanup_funcs);
+	if (need_init) {
+		usb_initialize();
+		need_init = 0;
+		list_insert_after(&cleanup.list_node, &cleanup_funcs);
 
-	UsbHostController *hc;
-	list_for_each(hc, usb_host_controllers, list_node) {
-		printf("Initializing %s USB controller at %p.\n",
-		       hc_types[hc->type], hc->bar);
-		usb_add_mmio_hc(hc->type, hc->bar);
-		if (hc->init_callback)
-			hc->init_callback(hc);
+		UsbHostController *hc;
+		list_for_each(hc, usb_host_controllers, list_node) {
+			printf("Initializing %s USB controller at %p.\n",
+			       hc_types[hc->type], hc->bar);
+			usb_add_mmio_hc(hc->type, hc->bar);
+			if (hc->init_callback)
+				hc->init_callback(hc);
+		}
 	}
-
-	usb_poll();
 }

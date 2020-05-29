@@ -96,6 +96,7 @@ void usbdisk_remove(usbdev_t *dev)
 
 static int usb_ctrlr_update(BlockDevCtrlrOps *me)
 {
+	dc_usb_initialize();
 	usb_poll();
 
 	if (remove_me) {

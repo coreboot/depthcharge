@@ -55,10 +55,11 @@ int main(void)
 	if (common_params_init())
 		halt();
 
-	// Wipe memory and enable USB if necessary (dev/rec mode). This *must*
-	// happen before vboot init funcs to satisfy assumptions in AOA driver.
+	/* Wipe memory, and enable input, if necessary. */
+	/* TODO(kitching): Check that moving input_enable() call to a vboot
+	   init func would not cause any delays.  Relocate. */
 	vboot_check_wipe_memory();
-	vboot_check_enable_usb();
+	vboot_check_enable_input();
 
 	if (CONFIG_CLI)
 		console_loop();

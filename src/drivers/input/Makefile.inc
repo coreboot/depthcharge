@@ -15,3 +15,4 @@ subdirs-y += mkbp pseudo
 
 depthcharge-y += input.c
 depthcharge-$(CONFIG_DRIVER_INPUT_PS2) += ps2.c
+depthcharge-$(CONFIG_DRIVER_INPUT_USB) += usb.c

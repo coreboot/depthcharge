@@ -30,9 +30,9 @@
 #include "boot/multiboot.h"
 #include "drivers/ec/vboot_ec.h"
 #include "drivers/flash/flash.h"
+#include "drivers/input/input.h"
 #include "drivers/power/power.h"
 #include "drivers/storage/blockdev.h"
-#include "drivers/bus/usb/usb.h"
 #include "image/fmap.h"
 #include "image/symbols.h"
 #include "vboot/boot.h"
@@ -66,11 +66,15 @@ int vboot_check_wipe_memory(void)
 	return 0;
 }
 
-int vboot_check_enable_usb(void)
+int vboot_check_enable_input(void)
 {
-	/* Initialize USB in developer or recovery mode, skip in normal mode. */
+	/*
+	 * If in developer mode or recovery mode, assume we're going to need
+	 * input. We'll want it up and responsive by the time we present
+	 * prompts to the user, so get it going ahead of time.
+	 */
 	if (vboot_in_recovery() || vboot_in_developer())
-		dc_usb_initialize();
+		input_enable();
 	return 0;
 }
 

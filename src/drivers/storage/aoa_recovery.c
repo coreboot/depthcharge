@@ -207,7 +207,7 @@ static int aoa_recovery_driver_register(VbootInitFunc *unused)
 /*
  * This is intentionally registered in a VBOOT_INIT_FUNC(), not a normal
  * INIT_FUNC(). This means that it will not be available during the first
- * usb_poll() that's triggered by vboot_check_enable_usb().
+ * usb_poll() that's triggered by input_init() (called by common_params_init()).
  * We only want this driver to run on devices that get plugged in after we're up
  * and running in recovery mode, not on anything that was already plugged in
  * during boot, to reduce the chance of sending AOA probe commands to devices

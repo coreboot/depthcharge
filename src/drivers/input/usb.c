@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Google Inc.
+ * Copyright 2013 Google Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -10,26 +10,31 @@
  * the License, or (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * but without any warranty; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
  */
-#ifndef __DRIVERS_INPUT_INPUT_H__
-#define __DRIVERS_INPUT_INPUT_H__
 
-#include "base/list.h"
+#include "base/init_funcs.h"
+#include "drivers/bus/usb/usb.h"
+#include "drivers/input/input.h"
 
-typedef struct OnDemandInput {
-	void (*init)(void);
-	int need_init;
+static void usb_input_init(void)
+{
+	dc_usb_initialize();
+	usb_poll();
+}
 
-	ListNode list_node;
-} OnDemandInput;
+static int dc_usb_install_on_demand_input(void)
+{
+	static OnDemandInput dev =
+	{
+		&usb_input_init,
+		1
+	};
 
-extern ListNode on_demand_input_devices;
+	list_insert_after(&dev.list_node, &on_demand_input_devices);
+	return 0;
+}
 
-void input_enable(void);
-void input_init(void);
-
-#endif /* __DRIVERS_INPUT_INPUT_H__ */
+INIT_FUNC(dc_usb_install_on_demand_input);
