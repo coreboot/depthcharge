@@ -14,11 +14,18 @@ You can recover using external storage such as a USB drive.
 Recovery using phone
 Recovery using external disk
 To proceed with the recovery process, you’ll need
+We also recommend that you connect to a power source during the recovery process.
+3. A power source for this device
+1. An Android phone with internet access
+2. A USB cable which connects your phone and this device
+Recovery using phone
+Download the Chrome OS recovery app on your Android phone by
+plugging in your phone or by scanning the QR code on the right.
+Once you launch the app, connect your phone to your device and
+recovery will start automatically.
 1. An external storage disk such as a USB drive or an SD card
 1. An external storage disk such as a USB drive
 2. An additional device with internet access
-We also recommend that you connect to a power source during the recovery process.
-3. A power source for this device
 External disk setup
 1. Go to google.com/chromeos/recovery on another computer and install the Chrome extension
 2. Follow instructions on the Chrome extension, and download the recovery image onto an external disk
