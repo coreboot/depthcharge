@@ -12,10 +12,10 @@
 #include <usb/usbmsc.h>
 #include <vb2_api.h>
 
+#include "base/init_funcs.h"
 #include "boot/commandline.h"
 #include "drivers/bus/usb/usb.h"
 #include "vboot/util/commonparams.h"
-#include "vboot/util/init_funcs.h"
 
 #define USB_VID_GOOGLE		0x18d1
 #define USB_PID_AOA		0x2d00
@@ -129,17 +129,8 @@ static int aoa_try_enter(GenericUsbDevice *dev)
 	char hwid[VB2_GBB_HWID_MAX_SIZE];
 	uint32_t hwid_size = sizeof(hwid);
 
-	// Ideally we'd just check the return code, but libpayload's USB HC
-	// drivers don't share common return codes... so if we want to check for
-	// timeout we'll have to do it manually.
-	uint64_t time = timer_us(0);
-	if (aoa_get_protocol(dev) <= 0) {
-		device_descriptor_t *dd = dev->dev->descriptor;
-		if (timer_us(time) >= USB_MAX_PROCESSING_TIME_US)
-			printf("ERROR: AOA probe timed out on USB #%d (%04x:%04x).\n",
-			       dev->dev->address, dd->idVendor, dd->idProduct);
+	if (aoa_get_protocol(dev) <= 0)
 		return -1; // Doesn't support AOA (probably no Android device)
-	}
 
 	if (vb2api_gbb_read_hwid(vboot_get_context(), hwid, &hwid_size))
 		hwid[0] = '\0';
@@ -198,19 +189,10 @@ static GenericUsbDriver aoa_recovery_driver = {
 	.probe = &aoa_recovery_probe,
 };
 
-static int aoa_recovery_driver_register(VbootInitFunc *unused)
+static int aoa_recovery_driver_register(void)
 {
 	list_insert_after(&aoa_recovery_driver.list_node, &generic_usb_drivers);
 	return 0;
 }
 
-/*
- * This is intentionally registered in a VBOOT_INIT_FUNC(), not a normal
- * INIT_FUNC(). This means that it will not be available during the first
- * usb_poll() that's triggered by input_init() (called by common_params_init()).
- * We only want this driver to run on devices that get plugged in after we're up
- * and running in recovery mode, not on anything that was already plugged in
- * during boot, to reduce the chance of sending AOA probe commands to devices
- * that don't expect it and cause unintended behavior.
- */
-VBOOT_INIT_FUNC(aoa_recovery_driver_register);
+INIT_FUNC(aoa_recovery_driver_register);
