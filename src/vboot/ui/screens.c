@@ -23,13 +23,13 @@
 #include "vboot/util/commonparams.h"
 
 #define UI_DESC(a) ((struct ui_desc){	\
-	.files = a,			\
 	.count = ARRAY_SIZE(a),		\
+	.files = a,			\
 })
 
 #define UI_MENU(a) ((struct ui_menu){	\
+	.num_items = ARRAY_SIZE(a),		\
 	.items = a,			\
-	.count = ARRAY_SIZE(a),		\
 })
 
 #define LANGUAGE_SELECT_ITEM ((struct ui_menu_item){	\

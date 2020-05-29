@@ -372,8 +372,8 @@ enum ui_icon_type {
 
 /* List of description files. */
 struct ui_desc {
-	const char *const *files;
 	size_t count;
+	const char *const *files;
 };
 
 /* Menu item type. */
@@ -395,9 +395,9 @@ struct ui_menu_item {
 
 /* List of menu items. */
 struct ui_menu {
+	size_t num_items;
 	/* Only the first item allowed to be UI_MENU_ITEM_TYPE_LANGUAGE. */
 	const struct ui_menu_item *items;
-	size_t count;
 };
 
 struct ui_screen_info {

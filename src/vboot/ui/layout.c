@@ -222,7 +222,7 @@ static vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 	int32_t text_width;
 	int32_t max_text_width = 0;
 
-	for (i = 0; i < menu->count; i++) {
+	for (i = 0; i < menu->num_items; i++) {
 		if (state->disabled_item_mask & (1 << i))
 			continue;
 		if (menu->items[i].type != UI_MENU_ITEM_TYPE_PRIMARY)
@@ -411,7 +411,7 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 	}
 
 	/* Language dropdown header */
-	if (menu->count > 0 &&
+	if (menu->num_items > 0 &&
 	    menu->items[0].type == UI_MENU_ITEM_TYPE_LANGUAGE) {
 		focused = state->selected_item == 0;
 		if (!prev_state ||
@@ -479,7 +479,7 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 	int32_t button_width;
 	VB2_TRY(ui_get_button_width(menu, state, &button_width));
 
-	for (i = 0; i < menu->count; i++) {
+	for (i = 0; i < menu->num_items; i++) {
 		if (state->disabled_item_mask & (1 << i))
 			continue;
 		if (menu->items[i].type != UI_MENU_ITEM_TYPE_PRIMARY)
@@ -498,7 +498,7 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 	x = UI_MARGIN_H - UI_LINK_TEXT_PADDING_LEFT;
 	y = UI_SCALE - UI_MARGIN_BOTTOM - UI_FOOTER_HEIGHT -
 		UI_FOOTER_MARGIN_TOP - UI_BUTTON_HEIGHT;
-	for (i = 0; i < menu->count; i++) {
+	for (i = 0; i < menu->num_items; i++) {
 		if (state->disabled_item_mask & (1 << i))
 			continue;
 		if (menu->items[i].type != UI_MENU_ITEM_TYPE_SECONDARY)
