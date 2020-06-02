@@ -44,14 +44,16 @@
 #include "vboot/util/memory.h"
 #include "vboot/vbnv.h"
 
+static uint32_t vboot_out_flags;
+
 int vboot_in_recovery(void)
 {
-	return !!(vboot_get_context()->flags & VB2_CONTEXT_RECOVERY_MODE);
+	return vboot_out_flags & VB_INIT_OUT_ENABLE_RECOVERY;
 }
 
 int vboot_in_developer(void)
 {
-	return !!(vboot_get_context()->flags & VB2_CONTEXT_DEVELOPER_MODE);
+	return vboot_out_flags & VB_INIT_OUT_ENABLE_DEVELOPER;
 }
 
 void vboot_update_recovery(uint32_t request)
@@ -59,22 +61,23 @@ void vboot_update_recovery(uint32_t request)
 	vbnv_write(VB2_NV_RECOVERY_REQUEST, request);
 }
 
-int vboot_check_wipe_memory(void)
+int vboot_do_init_out_flags(uint32_t out_flags)
 {
-	if (vboot_in_recovery() || vboot_in_developer())
-		return memory_wipe_unused();
-	return 0;
-}
-
-int vboot_check_enable_input(void)
-{
+	if (out_flags & VB_INIT_OUT_CLEAR_RAM) {
+		if (memory_wipe_unused())
+			return 1;
+	}
 	/*
 	 * If in developer mode or recovery mode, assume we're going to need
 	 * input. We'll want it up and responsive by the time we present
 	 * prompts to the user, so get it going ahead of time.
 	 */
-	if (vboot_in_recovery() || vboot_in_developer())
+	if (out_flags & (VB_INIT_OUT_ENABLE_DEVELOPER |
+			 VB_INIT_OUT_ENABLE_RECOVERY))
 		input_enable();
+
+	vboot_out_flags = out_flags;
+
 	return 0;
 }
 
