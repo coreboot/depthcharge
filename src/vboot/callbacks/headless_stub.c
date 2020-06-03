@@ -29,7 +29,8 @@ uint32_t vb2ex_get_locale_count(void)
 vb2_error_t vb2ex_display_ui(enum vb2_screen screen, uint32_t locale_id,
 			     uint32_t selected_item,
 			     uint32_t disabled_item_mask,
-			     enum vb2_error error_code)
+			     int timer_disabled,
+			     enum vb2_ui_error error_code)
 {
 	/* TODO(b/151200757): Support headless devices */
 	return VB2_SUCCESS;

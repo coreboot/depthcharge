@@ -510,7 +510,7 @@ static const struct ui_screen_info recovery_disk_step3_screen = {
 static vb2_error_t draw_recovery_invalid_desc(
 	const struct ui_state *state,
 	const struct ui_state *prev_state,
-	int32_t *height)
+	int32_t *y)
 {
 	struct vb2_context *ctx = vboot_get_context();
 	static const char *const desc_files[] = {
@@ -524,7 +524,7 @@ static vb2_error_t draw_recovery_invalid_desc(
 	const struct ui_desc desc = vb2api_phone_recovery_ui_enabled(ctx) ?
 		UI_DESC(desc_files) : UI_DESC(desc_no_phone_files);
 
-	return ui_draw_desc(&desc, state, height);
+	return ui_draw_desc(&desc, state, y);
 }
 
 static const struct ui_menu_item recovery_invalid_items[] = {
@@ -548,26 +548,69 @@ static const struct ui_screen_info recovery_invalid_screen = {
 /******************************************************************************/
 /* VB2_SCREEN_DEVELOPER_MODE */
 
-static const char *const developer_mode_desc[] = {
-	"dev_desc0.bmp",
-	"dev_desc1.bmp",
-};
+#define DEVELOPER_MODE_ITEM_RETURN_TO_SECURE 1
 
 static const struct ui_menu_item developer_mode_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	{ "btn_secure_mode.bmp" },
+	[DEVELOPER_MODE_ITEM_RETURN_TO_SECURE] = { "btn_secure_mode.bmp" },
 	{ "btn_int_disk.bmp" },
 	{ "btn_ext_disk.bmp" },
 	ADVANCED_OPTIONS_ITEM,
 	POWER_OFF_ITEM,
 };
 
+static vb2_error_t draw_developer_mode_desc(
+	const struct ui_state *state,
+	const struct ui_state *prev_state,
+	int32_t *y)
+{
+	struct ui_bitmap bitmap;
+	const char *locale_code = state->locale->code;
+	const int reverse = state->locale->rtl;
+	int32_t x;
+	const int32_t w = UI_SIZE_AUTO;
+	const int32_t h = UI_DESC_TEXT_HEIGHT;
+	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
+
+	x = UI_MARGIN_H;
+
+	/*
+	 * Description about returning to secure mode. When the "Return to
+	 * secure mode" button is hidden, hide this description line.
+	 */
+	if (!(state->disabled_item_mask &
+	      (1 << DEVELOPER_MODE_ITEM_RETURN_TO_SECURE))) {
+		VB2_TRY(ui_get_bitmap("dev_desc0.bmp", locale_code, 0,
+				      &bitmap));
+		VB2_TRY(ui_draw_bitmap(&bitmap, x, *y, w, h, flags, reverse));
+		*y += h + UI_DESC_TEXT_LINE_SPACING;
+	}
+
+	/*
+	 * Description about automatically booting from the default boot target.
+	 * After the timer in developer mode is disabled, this description no
+	 * longer makes sense, so hide it.
+	 */
+	if (state->timer_disabled) {
+		/* Clear previously drawn line. */
+		VB2_TRY(ui_draw_box(x, *y, UI_SCALE - x, h, &ui_color_bg,
+				    reverse));
+	} else {
+		VB2_TRY(ui_get_bitmap("dev_desc1.bmp", locale_code, 0,
+				      &bitmap));
+		VB2_TRY(ui_draw_bitmap(&bitmap, x, *y, w, h, flags, reverse));
+	}
+	*y += h;
+
+	return VB2_SUCCESS;
+}
+
 static const struct ui_screen_info developer_mode_screen = {
 	.id = VB2_SCREEN_DEVELOPER_MODE,
 	.icon = UI_ICON_TYPE_DEV_MODE,
 	.title = "dev_title.bmp",
-	.desc = UI_DESC(developer_mode_desc),
 	.menu = UI_MENU(developer_mode_items),
+	.draw_desc = draw_developer_mode_desc,
 	.mesg = "You are in developer mode\n"
 		"To return to the recommended secure mode,\n"
 		"select \"Return to secure mode\" below.\n"

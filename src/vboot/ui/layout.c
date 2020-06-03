@@ -370,28 +370,25 @@ static vb2_error_t ui_draw_link(const struct ui_menu_item *item,
 
 vb2_error_t ui_draw_desc(const struct ui_desc *desc,
 			 const struct ui_state *state,
-			 int32_t *height)
+			 int32_t *y)
 {
 	int i;
 	struct ui_bitmap bitmap;
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
-	int32_t x, y;
+	int32_t x;
 	const int32_t w = UI_SIZE_AUTO;
 	const int32_t h = UI_DESC_TEXT_HEIGHT;
 	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
 
 	x = UI_MARGIN_H;
-	y = UI_MARGIN_TOP + UI_LANG_BOX_HEIGHT + UI_LANG_MARGIN_BOTTOM +
-		UI_ICON_HEIGHT + UI_ICON_MARGIN_BOTTOM +
-		UI_TITLE_TEXT_HEIGHT + UI_TITLE_MARGIN_BOTTOM;
-	*height = 0;
 
 	for (i = 0; i < desc->count; i++) {
+		if (i > 0)
+			*y += UI_DESC_TEXT_LINE_SPACING;
 		VB2_TRY(ui_get_bitmap(desc->files[i], locale_code, 0, &bitmap));
-		VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, h, flags, reverse));
-		y += h + UI_DESC_TEXT_LINE_SPACING;
-		*height += h + UI_DESC_TEXT_LINE_SPACING;
+		VB2_TRY(ui_draw_bitmap(&bitmap, x, *y, w, h, flags, reverse));
+		*y += h;
 	}
 
 	return VB2_SUCCESS;
@@ -406,7 +403,7 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
 	int focused;
-	int32_t x, y, desc_height;
+	int32_t x, y;
 	const int32_t w = UI_SIZE_AUTO;
 	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
 	const char *icon_file;
@@ -494,10 +491,10 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 
 	/* Description */
 	if (screen->draw_desc)
-		VB2_TRY(screen->draw_desc(state, prev_state, &desc_height));
+		VB2_TRY(screen->draw_desc(state, prev_state, &y));
 	else
-		VB2_TRY(ui_draw_desc(&screen->desc, state, &desc_height));
-	y += desc_height + UI_DESC_MARGIN_BOTTOM;
+		VB2_TRY(ui_draw_desc(&screen->desc, state, &y));
+	y += UI_DESC_MARGIN_BOTTOM;
 
 	/* Primary buttons */
 	int32_t button_width;

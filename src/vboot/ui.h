@@ -371,6 +371,7 @@ struct ui_state {
 	const struct ui_locale *locale;
 	uint32_t selected_item;
 	uint32_t disabled_item_mask;
+	int timer_disabled;
 	enum vb2_ui_error error_code;
 };
 
@@ -453,7 +454,7 @@ struct ui_screen_info {
 	/* Custom description drawing function */
 	vb2_error_t (*draw_desc)(const struct ui_state *state,
 				 const struct ui_state *prev_state,
-				 int32_t *height);
+				 int32_t *y);
 	/* Fallback message */
 	const char *mesg;
 };
@@ -475,13 +476,15 @@ vb2_error_t ui_draw_language_header(const struct ui_locale *locale,
  *
  * @param desc		List of description files.
  * @param state		UI state.
- * @param height	Description height to be calculated.
+ * @param y		Starting y-coordicate of the descriptions. On return,
+ *			the value will be the ending coordinate, excluding the
+ *			margin below the descriptions.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
 vb2_error_t ui_draw_desc(const struct ui_desc *desc,
 			 const struct ui_state *state,
-			 int32_t *height);
+			 int32_t *y);
 
 /*
  * Default drawing function.
