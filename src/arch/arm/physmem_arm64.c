@@ -32,7 +32,7 @@ uint64_t arch_phys_memset(uint64_t start, int c, uint64_t size)
 	if (end < start || end > max_addr)
 		size = max_addr - start;
 
-        memset((void *)(uintptr_t)start, c, size);
+	memset((void *)(uintptr_t)start, c, size);
 
 	return start;
 }
