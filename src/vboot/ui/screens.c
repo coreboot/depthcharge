@@ -340,7 +340,6 @@ static const struct ui_screen_info recovery_phone_step1_screen = {
 /* VB2_SCREEN_RECOVERY_PHONE_STEP2 */
 
 static vb2_error_t draw_recovery_phone_step2(
-	const struct ui_screen_info *screen,
 	const struct ui_state *state,
 	const struct ui_state *prev_state)
 {
@@ -357,7 +356,7 @@ static vb2_error_t draw_recovery_phone_step2(
 	const int reverse = state->locale->rtl;
 	struct ui_bitmap bitmap;
 
-	VB2_TRY(ui_draw_default(screen, state, prev_state));
+	VB2_TRY(ui_draw_default(state, prev_state));
 	VB2_TRY(ui_get_bitmap("qr_rec_phone.bmp", NULL, 0, &bitmap));
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, h, flags, reverse));
 	return VB2_SUCCESS;
