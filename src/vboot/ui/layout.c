@@ -136,7 +136,8 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
 	const uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
-	int32_t x, y, text_height;
+	const int32_t text_height = UI_FOOTER_TEXT_HEIGHT;
+	int32_t x, y, vspacing;
 	int32_t col2_width;
 	const int32_t w = UI_SIZE_AUTO;
 	const int32_t footer_y = UI_SCALE - UI_MARGIN_BOTTOM - UI_FOOTER_HEIGHT;
@@ -153,16 +154,17 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 
 	/* Column 2: 4 lines of text */
 	y = footer_y;
-	text_height = (footer_height - UI_FOOTER_COL2_PARA_SPACING) / 4;
+	vspacing = footer_height - text_height * 4 -
+		UI_FOOTER_COL2_LINE_SPACING * 2;
 	VB2_TRY(ui_get_bitmap("model.bmp", locale_code, 0, &bitmap));
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, text_height, flags, reverse));
-	y += text_height;
+	y += text_height + UI_FOOTER_COL2_LINE_SPACING;
 	VB2_TRY(ui_draw_text(hwid, x, y, text_height, flags, UI_CHAR_STYLE_DARK,
 			     reverse));
-	y += text_height + UI_FOOTER_COL2_PARA_SPACING;
+	y += text_height + vspacing;
 	VB2_TRY(ui_get_bitmap("help_center.bmp", locale_code, 0, &bitmap));
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, text_height, flags, reverse));
-	y += text_height;
+	y += text_height + UI_FOOTER_COL2_LINE_SPACING;
 	VB2_TRY(ui_get_bitmap("rec_url.bmp", locale_code, 0, &bitmap));
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, text_height, flags, reverse));
 	VB2_TRY(ui_get_bitmap_width(&bitmap, text_height, &col2_width));
@@ -177,15 +179,15 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 	const int32_t icon_height = UI_FOOTER_COL3_ICON_HEIGHT;
 	x += UI_FOOTER_COL3_MARGIN_LEFT;
 	y = footer_y;
-	text_height = (footer_height - UI_FOOTER_COL3_LINE_SPACING -
-		       UI_FOOTER_COL3_ICON_MARGIN_TOP - icon_height) / 2;
+	vspacing = footer_height - text_height * 2 - icon_height -
+		UI_FOOTER_COL3_PARA_SPACING;
 	VB2_TRY(ui_get_bitmap("to_navigate.bmp", locale_code, 0, &bitmap));
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, text_height, flags, reverse));
-	y += text_height + UI_FOOTER_COL3_LINE_SPACING;
+	y += text_height + vspacing;
 
 	VB2_TRY(ui_get_bitmap("navigate.bmp", locale_code, 0, &bitmap));
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, text_height, flags, reverse));
-	y += text_height + UI_FOOTER_COL3_ICON_MARGIN_TOP;
+	y += text_height + UI_FOOTER_COL3_PARA_SPACING;
 
 	const char *const icon_files[] = {
 		"nav-key_enter.bmp",
