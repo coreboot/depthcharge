@@ -152,7 +152,7 @@ vb2_error_t ui_display_screen(struct ui_state *state,
 		rv = ui_draw_default(state, prev_state);
 
 	if (rv) {
-		UI_ERROR("Drawing screen %#x failed: %#x", screen->id, rv);
+		UI_ERROR("Drawing screen %#x failed: %#x\n", screen->id, rv);
 		/* Print fallback message if drawing failed. */
 		if (screen->mesg)
 			print_fallback_message(screen->mesg);

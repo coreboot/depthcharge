@@ -24,10 +24,6 @@
 #include "drivers/flash/cbfs.h"
 #include "vboot/ui.h"
 
-#define UI_LOCALE_CODE_MAX_LEN 8
-#define UI_CBFS_FILENAME_MAX_LEN 256
-#define UI_BITMAP_FILENAME_MAX_LEN 32
-
 static struct cbfs_media *get_ro_cbfs(void)
 {
 	static struct cbfs_media *cached_ro_cbfs;
@@ -283,6 +279,8 @@ static vb2_error_t find_bitmap_in_archive(const struct directory *dir,
 			return VB2_ERROR_UI_INVALID_ARCHIVE;
 		}
 
+		bitmap->name[UI_BITMAP_FILENAME_MAX_LEN] = '\0';
+		strncpy(bitmap->name, name, UI_BITMAP_FILENAME_MAX_LEN);
 		bitmap->data = (uint8_t *)dir + entry[i].offset;
 		bitmap->size = entry[i].size;
 		return VB2_SUCCESS;

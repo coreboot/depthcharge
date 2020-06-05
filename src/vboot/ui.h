@@ -39,6 +39,11 @@
 #define UI_WARN(...) _UI_PRINT(__VA_ARGS__)
 #define UI_ERROR(...) _UI_PRINT(__VA_ARGS__)
 
+/* Maximum lengths */
+#define UI_LOCALE_CODE_MAX_LEN 8
+#define UI_CBFS_FILENAME_MAX_LEN 256
+#define UI_BITMAP_FILENAME_MAX_LEN 32
+
 /*
  * This is the base used to specify the size and the coordinate of the image.
  * For example, height = 40 means 4.0% of the canvas height.
@@ -152,6 +157,7 @@ static const struct rgb_color ui_color_link_bg		= { 0x2a, 0x2f, 0x39 };
 static const struct rgb_color ui_color_border		= { 0x3f, 0x40, 0x42 };
 
 struct ui_bitmap {
+	char name[UI_BITMAP_FILENAME_MAX_LEN + 1];
 	const void *data;
 	size_t size;
 };

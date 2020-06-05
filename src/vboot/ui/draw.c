@@ -42,6 +42,8 @@ vb2_error_t ui_draw_bitmap(const struct ui_bitmap *bitmap,
 			   int32_t x, int32_t y, int32_t width, int32_t height,
 			   uint32_t flags, int reverse)
 {
+	int ret;
+
 	if (reverse) {
 		x = UI_SCALE - x;
 		flags = reverse_pivot(flags);
@@ -59,8 +61,13 @@ vb2_error_t ui_draw_bitmap(const struct ui_bitmap *bitmap,
 	if (get_bitmap_dimension(bitmap->data, bitmap->size, &dim))
 		return VB2_ERROR_UI_DRAW_FAILURE;
 
-	if (draw_bitmap(bitmap->data, bitmap->size, &pos, &dim, flags))
+	ret = draw_bitmap(bitmap->data, bitmap->size, &pos, &dim, flags);
+	if (ret) {
+		UI_ERROR("Drawing bitmap '%s' (x=%d, y=%d, w=%d, h=%d, f=%#x) "
+			 "failed: %#x\n", bitmap->name,
+			 x, y, width, height, flags, ret);
 		return VB2_ERROR_UI_DRAW_FAILURE;
+	}
 
 	return VB2_SUCCESS;
 }
