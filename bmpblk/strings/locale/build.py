@@ -207,6 +207,8 @@ def ConvertPngFile(locale, file_name, styles, fonts, output_dir):
   font_size = os.getenv("FONTSIZE")
   if font_size is not None:
     command.append('--point=%r' % font_size)
+  if UI == UIType.MENU:
+    command.append('--margin="0 0"')
   command.append(input_file)
 
   if subprocess.call(' '.join(command), shell=True,

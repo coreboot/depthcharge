@@ -99,17 +99,17 @@ class Converter(object):
   # These are supposed to be kept in sync with the numbers set in depthcharge
   # to avoid runtime scaling, which makes images blurry.
   DEFAULT_ASSET_SCALE = (0, 30)
-  DEFAULT_TEXT_SCALE = (0, 30)
+  DEFAULT_TEXT_SCALE = (0, 24)
   DEFAULT_FONT_SCALE = (0, 36)
-  LANG_MENU_SCALE = (0, 36)
+  LANG_MENU_SCALE = (0, 26)
   ICON_SCALE = (0, 45)
   STEP_ICON_SCALE = (0, 28)
-  TITLE_SCALE = (0, 56)
-  BUTTON_SCALE = (0, 26)
+  TITLE_SCALE = (0, 42)
+  BUTTON_SCALE = (0, 20)
   BUTTON_ARROW_SCALE = (0, 20)
   QR_FOOTER_SCALE = (0, 108)
-  QR_DESC_SCALE = (0, 230)
-  FOOTER_TEXT_SCALE = (0, 24)
+  QR_DESC_SCALE = (0, 228)
+  FOOTER_TEXT_SCALE = (0, 20)
 
   ASSET_SCALES = {
     'separator': None,
