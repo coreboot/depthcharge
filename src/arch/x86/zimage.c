@@ -22,6 +22,9 @@
 #include "vboot/boot_policy.h"
 #include "vboot/util/acpi.h"
 
+/* See "The Linux/x86 Boot Protocol" in kernel docs */
+#define INITRD_MAX_ADDRESS 0x37FFFFFF
+
 int boot(struct boot_info *bi)
 {
 	/*
@@ -44,6 +47,30 @@ int boot(struct boot_info *bi)
 
 		// Find the kernel header.
 		struct setup_header *header = &bparams->hdr;
+
+		// Add ramdisk if provided
+		if (bi->ramdisk_addr) {
+			uint32_t initrd_addr_max = header->initrd_addr_max;
+
+			if (initrd_addr_max > INITRD_MAX_ADDRESS)
+				initrd_addr_max = INITRD_MAX_ADDRESS;
+
+			void *ramdisk = (void*)ALIGN_DOWN(
+				initrd_addr_max - bi->ramdisk_size, 4096);
+
+			unsigned long kernel_size = header->syssize * 16;
+
+			if (((uintptr_t)bi->kernel + kernel_size) >
+			    (uintptr_t)ramdisk) {
+				printf("Not enough space for initrd\n");
+				return -1;
+			}
+
+			memcpy(ramdisk, bi->ramdisk_addr, bi->ramdisk_size);
+			header->ramdisk_image = (uintptr_t)ramdisk;
+			header->ramdisk_size = bi->ramdisk_size;
+		}
+
 		uintptr_t header_start = (uintptr_t)header;
 		uintptr_t header_end = (uintptr_t)&header->jump +
 			((header->jump >> 8) & 0xff);
