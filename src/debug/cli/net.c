@@ -33,15 +33,17 @@ int do_tftpboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	char *address;
 	char *bootfile;
 	char *argsfile;
+	char *ramdiskfile;
 	uip_ipaddr_t tftp_ip;
 	uip_ipaddr_t *tftp_ip_arg;
 
-	if (argc != 4)
+	if (argc < 4)
 		return CMD_RET_USAGE;
 
 	address = argv[1];
 	bootfile = (!strcmp(argv[2], DHCP)) ? NULL : argv[2];
 	argsfile = argv[3];
+	ramdiskfile = (argc == 5) ? argv[4] : NULL;
 
 	if (!strcmp(address, DHCP)) {
 		tftp_ip_arg = NULL;
@@ -52,7 +54,7 @@ int do_tftpboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		tftp_ip_arg = &tftp_ip;
 	}
 
-	netboot(tftp_ip_arg, bootfile, argsfile, NULL, NULL);
+	netboot(tftp_ip_arg, bootfile, argsfile, NULL, ramdiskfile);
 
 	/* netboot() only returns if it failed */
 
@@ -60,9 +62,9 @@ int do_tftpboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 }
 
 U_BOOT_CMD(
-	tftpboot,	4,	1,
+	tftpboot,	5,	1,
 	"boot image via network using TFTP protocol",
-	"[host IP addr] [boot file] [args file]\n"
+	"[host IP addr] [boot file] [args file] [ramdisk file]\n"
 	"\n"
 	"The IP address and boot file can take the \"dhcp\" special value\n"
 	"to send DHCP requests rather than using static values."
