@@ -100,7 +100,8 @@ int try_dhcp(uip_ipaddr_t *my_ip,
 	return 0;
 }
 
-void netboot(uip_ipaddr_t *tftp_ip, char *bootfile, char *argsfile, char *args)
+void netboot(uip_ipaddr_t *tftp_ip, char *bootfile, char *argsfile, char *args,
+	     char *ramdiskfile)
 {
 	net_wait_for_link();
 
@@ -138,6 +139,26 @@ void netboot(uip_ipaddr_t *tftp_ip, char *bootfile, char *argsfile, char *args)
 		halt();
 	}
 	printf("The bootfile was %d bytes long.\n", size);
+
+	void *ramdisk = NULL;
+	uint32_t ramdisk_size = 0;
+
+	if (ramdiskfile) {
+		ramdisk = (void *)(uintptr_t)ALIGN_UP(
+			CONFIG_KERNEL_START + size, 4096);
+		size = (uintptr_t)ramdisk - CONFIG_KERNEL_START;
+
+		if (size >= MaxPayloadSize) {
+			printf("No space left for ramdisk\n");
+			ramdisk = NULL;
+		} else if (tftp_read(ramdisk, tftp_ip, ramdiskfile,
+				     &ramdisk_size, MaxPayloadSize - size)) {
+			printf("TFTP failed for ramdisk.\n");
+			ramdisk = NULL;
+			ramdisk_size = 0;
+		}
+
+	}
 
 	// Try to download command line file via TFTP if argsfile is specified
 	if (argsfile && !(tftp_read(cmd_line, tftp_ip, argsfile, &size,
@@ -179,6 +200,8 @@ void netboot(uip_ipaddr_t *tftp_ip, char *bootfile, char *argsfile, char *args)
 	struct boot_info bi = {
 		.kernel = payload,
 		.cmd_line = cmd_line,
+		.ramdisk_addr = ramdisk,
+		.ramdisk_size = ramdisk_size,
 	};
 
 	if (crossystem_setup(FIRMWARE_TYPE_NETBOOT))
@@ -228,7 +251,7 @@ int netboot_entry(void)
 				&bootfile, &argsfile))
 		printf("ERROR: Failed to read netboot parameters from flash\n");
 
-	netboot(tftp_ip, bootfile, argsfile, cmd_line);
+	netboot(tftp_ip, bootfile, argsfile, cmd_line, NULL);
 
 	// We should never get here.
 	printf("Got to the end!\n");

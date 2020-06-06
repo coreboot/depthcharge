@@ -46,5 +46,5 @@ void dc_dev_netboot(void)
 				&bootfile, &argsfile))
 		printf("ERROR: Failed to read netboot parameters from flash\n");
 
-	netboot(tftp_ip, bootfile, argsfile, NULL);
+	netboot(tftp_ip, bootfile, argsfile, NULL, NULL);
 }

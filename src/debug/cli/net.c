@@ -52,7 +52,7 @@ int do_tftpboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		tftp_ip_arg = &tftp_ip;
 	}
 
-	netboot(tftp_ip_arg, bootfile, argsfile, NULL);
+	netboot(tftp_ip_arg, bootfile, argsfile, NULL, NULL);
 
 	/* netboot() only returns if it failed */
 

@@ -18,7 +18,8 @@
 #include "net/uip.h"
 
 /* argsfile takes precedence before args. All parameters can be NULL. */
-void netboot(uip_ipaddr_t *tftp_ip, char *bootfile, char *argsfile, char *args);
+void netboot(uip_ipaddr_t *tftp_ip, char *bootfile, char *argsfile, char *args,
+	     char *ramdiskfile);
 int netboot_entry(void);
 int try_dhcp(uip_ipaddr_t *my_ip,
 	     uip_ipaddr_t *next_ip,
