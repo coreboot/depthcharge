@@ -40,17 +40,17 @@ static vb2_error_t init_screen(void)
 static int count_lines(const char *str)
 {
 	const char *c = str;
-	int lines;
-	if (!str)
+	int num_lines;
+	if (!str || *c == '\0')
 		return 0;
 
-	lines = 1;
-	while (*c) {
+	num_lines = 1;
+	while (*c != '\0') {
 		if (*c == '\n')
-			lines++;
+			num_lines++;
 		c++;
 	}
-	return lines;
+	return num_lines;
 }
 
 /*
@@ -70,7 +70,8 @@ static vb2_error_t print_fallback_message(const char *str)
 	int32_t x, y;
 	int32_t max_height = UI_BOX_TEXT_HEIGHT;
 	int num_lines;
-	int32_t max_total_text_height, box_width, box_height;
+	int32_t max_content_height, content_width, line_spacing = 0;
+	int32_t box_width, box_height;
 	char *buf, *end, *line;
 	const enum ui_char_style style = UI_CHAR_STYLE_DEFAULT;
 
@@ -82,16 +83,21 @@ static vb2_error_t print_fallback_message(const char *str)
 	}
 
 	num_lines = count_lines(buf);
-	max_total_text_height = UI_SCALE - UI_BOX_MARGIN_V * 2 -
+	if (num_lines < 1)
+		num_lines = 1;
+	max_content_height = UI_SCALE - UI_BOX_MARGIN_V * 2 -
 		UI_BOX_PADDING_V * 2;
+	line_spacing = UI_BOX_TEXT_LINE_SPACING * (num_lines - 1);
 
-	if (max_height * num_lines > max_total_text_height)
-		max_height = max_total_text_height / num_lines;
+	if (max_height * num_lines + line_spacing > max_content_height)
+		max_height = (max_content_height - line_spacing) / num_lines;
 
 	x = UI_MARGIN_H;
 	y = UI_BOX_MARGIN_V;
 	box_width = UI_SCALE - UI_MARGIN_H * 2;
-	box_height = max_height * num_lines + UI_BOX_PADDING_V * 2;
+	content_width = box_width - UI_BOX_PADDING_H * 2;
+	box_height = max_height * num_lines + line_spacing +
+		UI_BOX_PADDING_V * 2;
 
 	/* Clear printing area. */
 	ui_draw_rounded_box(x, y, box_width, box_height, &ui_color_bg, 0, 0, 0);
@@ -115,11 +121,11 @@ static vb2_error_t print_fallback_message(const char *str)
 				rv = line_rv;
 			continue;
 		}
-		if (width > box_width)
-			height = height * box_width / width;
+		if (width > content_width)
+			height = height * content_width / width;
 		line_rv = ui_draw_text(line, x, y, height,
 				       PIVOT_H_LEFT | PIVOT_V_TOP, style, 0);
-		y += height;
+		y += height + UI_BOX_TEXT_LINE_SPACING;
 		/* Save the first error in rv */
 		if (line_rv && rv == VB2_SUCCESS)
 			rv = line_rv;
