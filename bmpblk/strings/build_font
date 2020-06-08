@@ -20,7 +20,7 @@ else
   FGCOLOR_DARK="#9aa0a6"
   BGCOLOR="#202124"
   FONT="Noto Sans Mono"
-  MARGIN="0"
+  MARGIN="-3 0 -1 0"
 fi
 
 die() {
@@ -54,14 +54,14 @@ main() {
   echo "Converting glyph images..."
 
   "$SCRIPT_DIR/text_to_png_svg" --font="$FONT" --color="$FGCOLOR" \
-    --bgcolor="$BGCOLOR" --margin="$MARGIN 0" --outdir="$output" \
+    --bgcolor="$BGCOLOR" --margin="$MARGIN" --outdir="$output" \
     $fontsize "$txt_dir_regular/*.txt"
 
   # MENU_UI needs a different set of fonts with darker colors
   if [ ! -z "${MENU_UI}" ]; then
     "$SCRIPT_DIR/text_to_png_svg" --font="$FONT" \
       --color="$FGCOLOR_DARK" --bgcolor="$BGCOLOR" \
-      --margin="$MARGIN 0" --outdir="$output" \
+      --margin="$MARGIN" --outdir="$output" \
       $fontsize "$txt_dir_dark/*.txt"
   fi
 }

@@ -100,7 +100,7 @@ class Converter(object):
   # to avoid runtime scaling, which makes images blurry.
   DEFAULT_ASSET_SCALE = (0, 30)
   DEFAULT_TEXT_SCALE = (0, 24)
-  DEFAULT_FONT_SCALE = (0, 36)
+  DEFAULT_FONT_SCALE = (0, 20)
   LANG_MENU_SCALE = (0, 26)
   ICON_SCALE = (0, 45)
   STEP_ICON_SCALE = (0, 28)
@@ -459,7 +459,7 @@ class Converter(object):
     """Convert font images"""
     scales = defaultdict(lambda: self.DEFAULT_FONT_SCALE)
     font_dir = os.path.join(self.stage_dir, FONT_DIR)
-    files = glob.glob(os.path.join(font_dir, PNG_FILES))
+    files = glob.glob(os.path.join(font_dir, SVG_FILES))
     font_output_dir = os.path.join(self.output_dir, FONT_DIR)
     os.makedirs(font_output_dir)
     self.convert(files, font_output_dir, scales, self.text_max_colors)
