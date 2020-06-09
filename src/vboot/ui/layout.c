@@ -290,7 +290,7 @@ static vb2_error_t ui_draw_button(const char *image_name,
 /*
  * Draw a link button, where the style is different from a primary button.
  *
- * @param image_name	Image name.
+ * @param item		Menu item.
  * @param locale_code	Language code of current locale.
  * @param x		x-coordinate of the top-left corner.
  * @param y		y-coordinate of the top-left corner.
@@ -301,7 +301,7 @@ static vb2_error_t ui_draw_button(const char *image_name,
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-static vb2_error_t ui_draw_link(const char *image_name,
+static vb2_error_t ui_draw_link(const struct ui_menu_item *item,
 				const char *locale_code,
 				int32_t x, int32_t y, int32_t height,
 				int reverse, int focused)
@@ -314,11 +314,14 @@ static vb2_error_t ui_draw_link(const char *image_name,
 	const char *arrow_file;
 
 	/* Get button width */
-	VB2_TRY(ui_get_bitmap(image_name, locale_code, focused, &bitmap));
+	VB2_TRY(ui_get_bitmap(item->file, locale_code, focused, &bitmap));
 	VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
 				    &text_width));
-	width = UI_LINK_TEXT_PADDING_LEFT + text_width +
-		UI_LINK_ARROW_SIZE + UI_LINK_ARRAW_MARGIN_H * 2;
+	width = UI_LINK_TEXT_PADDING_LEFT +
+		UI_LINK_ICON_SIZE + UI_LINK_ICON_MARGIN_R +
+		text_width + UI_LINK_ARROW_MARGIN_H;
+	if (!item->no_arrow)
+		width += UI_LINK_ARROW_SIZE + UI_LINK_ARROW_MARGIN_H;
 
 	/* Clear button area */
 	VB2_TRY(ui_draw_rounded_box(x_base, y, width, height,
@@ -327,21 +330,33 @@ static vb2_error_t ui_draw_link(const char *image_name,
 				    0, UI_BUTTON_BORDER_RADIUS,
 				    reverse));
 
-	/* Draw button text */
+	/* Draw button icon */
 	x += UI_LINK_TEXT_PADDING_LEFT;
+	if (item->icon_file) {
+		VB2_TRY(ui_get_bitmap(item->icon_file, NULL, focused, &bitmap));
+		VB2_TRY(ui_draw_bitmap(&bitmap, x, y_center,
+				       UI_LINK_ICON_SIZE, UI_LINK_ICON_SIZE,
+				       flags, reverse));
+	}
+	x += UI_LINK_ICON_SIZE + UI_LINK_ICON_MARGIN_R;
+
+	/* Draw button text */
+	VB2_TRY(ui_get_bitmap(item->file, locale_code, focused, &bitmap));
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y_center,
 			       UI_SIZE_AUTO, UI_BUTTON_TEXT_HEIGHT,
 			       flags, reverse));
 	x += text_width;
 
 	/* Draw arrow */
-	x += UI_LINK_ARRAW_MARGIN_H;
-	arrow_file = reverse ? "ic_dropleft.bmp" : "ic_dropright.bmp";
-	VB2_TRY(ui_get_bitmap(arrow_file, NULL, focused, &bitmap));
-	VB2_TRY(ui_draw_bitmap(&bitmap, x, y_center,
-			       UI_LINK_ARROW_SIZE, UI_LINK_ARROW_SIZE,
-			       flags, reverse));
-	x += UI_LINK_ARROW_SIZE + UI_LINK_ARRAW_MARGIN_H;
+	x += UI_LINK_ARROW_MARGIN_H;
+	if (!item->no_arrow) {
+		arrow_file = reverse ? "ic_dropleft.bmp" : "ic_dropright.bmp";
+		VB2_TRY(ui_get_bitmap(arrow_file, NULL, focused, &bitmap));
+		VB2_TRY(ui_draw_bitmap(&bitmap, x, y_center,
+				       UI_LINK_ARROW_SIZE, UI_LINK_ARROW_SIZE,
+				       flags, reverse));
+		x += UI_LINK_ARROW_SIZE + UI_LINK_ARROW_MARGIN_H;
+	}
 
 	/* Draw button borders */
 	if (focused)
@@ -480,7 +495,7 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 		VB2_TRY(ui_draw_desc(&screen->desc, state, &desc_height));
 	y += desc_height + UI_DESC_MARGIN_BOTTOM;
 
-	/* Buttons */
+	/* Primary buttons */
 	int32_t button_width;
 	VB2_TRY(ui_get_button_width(menu, state, &button_width));
 
@@ -496,22 +511,22 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 		VB2_TRY(ui_draw_button(menu->items[i].file, locale_code,
 				       x, y, button_width, UI_BUTTON_HEIGHT,
 				       reverse, state->selected_item == i));
-		y += UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_BOTTOM;
+		y += UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
 	}
 
-	/* Advanced options */
+	/* Secondary (link) buttons */
 	x = UI_MARGIN_H - UI_LINK_TEXT_PADDING_LEFT;
 	y = UI_SCALE - UI_MARGIN_BOTTOM - UI_FOOTER_HEIGHT -
 		UI_FOOTER_MARGIN_TOP - UI_BUTTON_HEIGHT;
-	for (i = 0; i < menu->num_items; i++) {
+	for (i = menu->num_items - 1; i >= 0; i--) {
 		if (state->disabled_item_mask & (1 << i))
 			continue;
 		if (menu->items[i].type != UI_MENU_ITEM_TYPE_SECONDARY)
 			continue;
-		VB2_TRY(ui_draw_link(menu->items[i].file, locale_code,
+		VB2_TRY(ui_draw_link(&menu->items[i], locale_code,
 				     x, y, UI_BUTTON_HEIGHT, reverse,
 				     state->selected_item == i));
-		y += UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_BOTTOM;
+		y -= UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
 	}
 
 	return VB2_SUCCESS;

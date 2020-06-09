@@ -100,12 +100,14 @@
 #define UI_BUTTON_TEXT_PADDING_H		40
 #define UI_BUTTON_BORDER_THICKNESS		2
 #define UI_BUTTON_BORDER_RADIUS			8
-#define UI_BUTTON_MARGIN_BOTTOM			10
+#define UI_BUTTON_MARGIN_V			10
 
 /* For secondary (link) buttons */
-#define UI_LINK_TEXT_PADDING_LEFT		20
+#define UI_LINK_TEXT_PADDING_LEFT		16
+#define UI_LINK_ICON_SIZE			24
+#define UI_LINK_ICON_MARGIN_R			20
 #define UI_LINK_ARROW_SIZE			20
-#define UI_LINK_ARRAW_MARGIN_H			15
+#define UI_LINK_ARROW_MARGIN_H			15
 #define UI_LINK_BORDER_THICKNESS		3
 
 /* For footer */
@@ -402,6 +404,10 @@ struct ui_menu_item {
 	const char *file;
 	/* If UI_MENU_ITEM_TYPE_LANGUAGE, the 'file' field will be ignored. */
 	enum ui_menu_item_type type;
+	/* Icon file for UI_MENU_ITEM_TYPE_SECONDARY only. */
+	const char *icon_file;
+	/* No arrow; valid for UI_MENU_ITEM_TYPE_SECONDARY only. */
+	int no_arrow;
 };
 
 /* List of menu items. */

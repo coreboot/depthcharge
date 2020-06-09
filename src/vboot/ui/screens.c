@@ -45,6 +45,14 @@
 #define ADVANCED_OPTIONS_ITEM ((struct ui_menu_item){	\
 	.file = "btn_adv_options.bmp",			\
 	.type = UI_MENU_ITEM_TYPE_SECONDARY,		\
+	.icon_file = "ic_settings.bmp",			\
+})
+
+#define POWER_OFF_ITEM ((struct ui_menu_item){	\
+	.file = "btn_power_off.bmp",		\
+	.type = UI_MENU_ITEM_TYPE_SECONDARY,	\
+	.icon_file = "ic_power.bmp",		\
+	.no_arrow = 1,				\
 })
 
 /******************************************************************************/
@@ -226,6 +234,7 @@ static const char *const broken_desc[] = {
 static const struct ui_menu_item broken_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	ADVANCED_OPTIONS_ITEM,
+	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info broken_screen = {
@@ -252,6 +261,7 @@ static const struct ui_menu_item advanced_options_items[] = {
 	{ "btn_dev_mode.bmp" },
 	/* TODO(yupingso): Add debug info & firmware log items. */
 	BACK_ITEM,
+	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info advanced_options_screen = {
@@ -274,6 +284,7 @@ static const struct ui_menu_item recovery_to_dev_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	{ "btn_confirm.bmp" },
 	{ "btn_cancel.bmp" },
+	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info recovery_to_dev_screen = {
@@ -303,6 +314,7 @@ static const struct ui_menu_item recovery_select_items[] = {
 	{ "btn_rec_by_phone.bmp" },
 	{ "btn_rec_by_disk.bmp" },
 	ADVANCED_OPTIONS_ITEM,
+	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info recovery_select_screen = {
@@ -330,6 +342,7 @@ static const struct ui_menu_item recovery_phone_step1_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	{ "btn_next.bmp" },
 	BACK_ITEM,
+	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info recovery_phone_step1_screen = {
@@ -383,6 +396,7 @@ static const char *const recovery_phone_step2_desc[] = {
 static const struct ui_menu_item recovery_phone_step2_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	BACK_ITEM,
+	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info recovery_phone_step2_screen = {
@@ -415,6 +429,7 @@ static const struct ui_menu_item recovery_disk_step1_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	{ "btn_next.bmp" },
 	BACK_ITEM,
+	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info recovery_disk_step1_screen = {
@@ -445,6 +460,7 @@ static const struct ui_menu_item recovery_disk_step2_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	{ "btn_next.bmp" },
 	BACK_ITEM,
+	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info recovery_disk_step2_screen = {
@@ -472,6 +488,7 @@ static const char *const recovery_disk_step3_desc[] = {
 static const struct ui_menu_item recovery_disk_step3_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	BACK_ITEM,
+	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info recovery_disk_step3_screen = {
@@ -512,6 +529,7 @@ static vb2_error_t draw_recovery_invalid_desc(
 
 static const struct ui_menu_item recovery_invalid_items[] = {
 	LANGUAGE_SELECT_ITEM,
+	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info recovery_invalid_screen = {
@@ -541,6 +559,7 @@ static const struct ui_menu_item developer_mode_items[] = {
 	{ "btn_int_disk.bmp" },
 	{ "btn_ext_disk.bmp" },
 	ADVANCED_OPTIONS_ITEM,
+	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info developer_mode_screen = {
@@ -568,6 +587,7 @@ static const struct ui_menu_item developer_to_norm_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	{ "btn_confirm.bmp" },
 	{ "btn_cancel.bmp" },
+	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info developer_to_norm_screen = {
@@ -592,6 +612,7 @@ static const char *const developer_boot_external_desc[] = {
 static const struct ui_menu_item developer_boot_external_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	BACK_ITEM,
+	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info developer_boot_external_screen = {
@@ -615,6 +636,7 @@ static const char *const developer_invalid_disk_desc[] = {
 static const struct ui_menu_item developer_invalid_disk_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	BACK_ITEM,
+	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info developer_invalid_disk_screen = {
