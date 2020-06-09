@@ -80,11 +80,12 @@ inputs:
   - dev_invalid_disk_title
   - dev_invalid_disk_desc0
   # generic buttons
-  - btn_adv_options
   - btn_next
   - btn_back
   - btn_confirm
   - btn_cancel
+  - btn_adv_options
+  - btn_power_off
   # footer
   - model
   - help_center
@@ -178,8 +179,6 @@ files:
   dev_invalid_disk_title:
   dev_invalid_disk_desc0:
   # generic buttons
-  btn_adv_options:
-  btn_adv_options_focus: [btn_adv_options]
   btn_next:
   btn_next_focus: [btn_next]
   btn_back:
@@ -188,6 +187,10 @@ files:
   btn_confirm_focus: [btn_confirm]
   btn_cancel:
   btn_cancel_focus: [btn_cancel]
+  btn_adv_options:
+  btn_adv_options_focus: [btn_adv_options]
+  btn_power_off:
+  btn_power_off_focus: [btn_power_off]
   # footer
   model:
   help_center:
@@ -292,8 +295,6 @@ styles:
   dev_invalid_disk_title: *base_color
   dev_invalid_disk_desc0: *base_color
   # generic buttons
-  btn_adv_options: *link_color
-  btn_adv_options_focus: *link_focused_color
   btn_next: *button_color
   btn_next_focus: *button_focused_color
   btn_back: *button_color
@@ -302,6 +303,10 @@ styles:
   btn_confirm_focus: *button_focused_color
   btn_cancel: *button_color
   btn_cancel_focus: *button_focused_color
+  btn_adv_options: *link_color
+  btn_adv_options_focus: *link_focused_color
+  btn_power_off: *link_color
+  btn_power_off_focus: *link_focused_color
   # footer
   model: *dark_color
   help_center: *dark_color

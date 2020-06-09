@@ -295,9 +295,6 @@ No valid image detected
       <message name="dev_invalid_disk_desc0" desc="String1 for screen that appears when user plugs in a USB/SD card with an invalid image on it.">
 Make sure your external disk has a valid Chrome OS image, and re-insert the disk when ready.
       </message>
-      <message name="btn_adv_options" desc="String for the advanced options button.">
-Advanced options
-      </message>
       <message name="btn_next" desc="String for the next button.">
 Next
       </message>
@@ -309,6 +306,12 @@ Confirm
       </message>
       <message name="btn_cancel" desc="String for the canel button.">
 Cancel
+      </message>
+      <message name="btn_adv_options" desc="String for the advanced options button.">
+Advanced options
+      </message>
+      <message name="btn_power_off" desc="String for the power off button.">
+Power off
       </message>
       <message name="model" desc="String for the model label.">
 Model:

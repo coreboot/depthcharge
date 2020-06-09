@@ -106,6 +106,7 @@ class Converter(object):
   STEP_ICON_SCALE = (0, 28)
   TITLE_SCALE = (0, 42)
   BUTTON_SCALE = (0, 20)
+  BUTTON_ICON_SCALE = (0, 24)
   BUTTON_ARROW_SCALE = (0, 20)
   QR_FOOTER_SCALE = (0, 108)
   QR_DESC_SCALE = (0, 228)
@@ -127,6 +128,10 @@ class Converter(object):
     'ic_3': STEP_ICON_SCALE,
     'ic_3-done': STEP_ICON_SCALE,
     'ic_done': STEP_ICON_SCALE,
+    'ic_settings': BUTTON_ICON_SCALE,
+    'ic_settings_focus': BUTTON_ICON_SCALE,
+    'ic_power': BUTTON_ICON_SCALE,
+    'ic_power_focus': BUTTON_ICON_SCALE,
     'ic_dropleft': BUTTON_ARROW_SCALE,
     'ic_dropleft_focus': BUTTON_ARROW_SCALE,
     'ic_dropright': BUTTON_ARROW_SCALE,
@@ -192,6 +197,8 @@ class Converter(object):
     'ic_dropdown': LANG_HEADER_BACKGROUND,
     'ic_dropleft_focus': LINK_SELECTED_BACKGROUND,
     'ic_dropright_focus': LINK_SELECTED_BACKGROUND,
+    'ic_settings_focus': LINK_SELECTED_BACKGROUND,
+    'ic_power_focus': LINK_SELECTED_BACKGROUND,
   }
 
   def __init__(self, board, config):
