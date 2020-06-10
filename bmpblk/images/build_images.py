@@ -87,6 +87,10 @@ class Converter(object):
     'nav-button_power': '',
     'nav-button_volume_up': '',
     'nav-button_volume_down': '',
+    'broken_desc0_phyrec': '',
+    'broken_desc1_phyrec': '',
+    'broken_desc0_detach': '',
+    'broken_desc1_detach': '',
   }
 
   # scales
@@ -248,11 +252,15 @@ class Converter(object):
         'nav-key_up': 'nav-button_volume_up',
         'nav-key_down': 'nav-button_volume_down',
         'navigate': 'navigate_tablet',
+        'broken_desc0': 'broken_desc0_detach',
+        'broken_desc1': 'broken_desc1_detach',
       })
 
     physical_presence = os.getenv('PHYSICAL_PRESENCE')
     if physical_presence == 'recovery':
       replace_map['rec_to_dev_desc1'] = 'rec_to_dev_desc1_phyrec'
+      replace_map['broken_desc0'] = 'broken_desc0_phyrec'
+      replace_map['broken_desc1'] = 'broken_desc1_phyrec'
     elif physical_presence == 'power':
       replace_map['rec_to_dev_desc1'] = 'rec_to_dev_desc1_power'
     elif physical_presence != 'keyboard':

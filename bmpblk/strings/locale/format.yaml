@@ -13,6 +13,10 @@ inputs:
   - broken_title
   - broken_desc0
   - broken_desc1
+  - broken_desc0_phyrec
+  - broken_desc1_phyrec
+  - broken_desc0_detach
+  - broken_desc1_detach
   # advanced options
   - adv_options_title
   - btn_dev_mode
@@ -96,6 +100,10 @@ files:
   broken_title:
   broken_desc0:
   broken_desc1:
+  broken_desc0_phyrec:
+  broken_desc1_phyrec:
+  broken_desc0_detach:
+  broken_desc1_detach:
   # advanced options
   adv_options_title:
   btn_dev_mode:
@@ -198,6 +206,10 @@ styles:
   broken_title: *base_color
   broken_desc0: *base_color
   broken_desc1: *base_color
+  broken_desc0_phyrec: *base_color
+  broken_desc1_phyrec: *base_color
+  broken_desc0_detach: *base_color
+  broken_desc1_detach: *base_color
   # advanced options
   adv_options_title: *base_color
   btn_dev_mode: *button_color

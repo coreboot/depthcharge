@@ -3,6 +3,10 @@ Your system is applying a critical update.
 Something is wrong
 Please remove all connected devices and hold down Escape, Refresh, and Power to
 initiate recovery.
+Please remove all connected devices. Then, hold down the Recovery button,
+press Power, and release the Recovery button to initiate recovery.
+Please remove all connected devices and hold down Volume Up, Volume Down,
+and Power to initiate recovery.
 Advanced options
 Enable developer mode
 Let’s step you through the recovery process
