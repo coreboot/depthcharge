@@ -219,6 +219,7 @@ static const char *const broken_desc[] = {
 };
 
 static const struct ui_menu_item broken_items[] = {
+	LANGUAGE_SELECT_ITEM,
 	ADVANCED_OPTIONS_ITEM,
 };
 
@@ -504,6 +505,10 @@ static vb2_error_t draw_recovery_invalid_desc(
 	return ui_draw_desc(&desc, state, height);
 }
 
+static const struct ui_menu_item recovery_invalid_items[] = {
+	LANGUAGE_SELECT_ITEM,
+};
+
 static const struct ui_screen_info recovery_invalid_screen = {
 	.id = VB2_SCREEN_RECOVERY_INVALID,
 	.icon = UI_ICON_TYPE_STEP,
@@ -511,6 +516,7 @@ static const struct ui_screen_info recovery_invalid_screen = {
 	.num_steps = 3,
 	.title = "rec_invalid_title.bmp",
 	.draw_desc = draw_recovery_invalid_desc,
+	.menu = UI_MENU(recovery_invalid_items),
 	.mesg = "No valid image detected.\n"
 		"Make sure your external disk has a valid recovery image,\n"
 		"and re-insert the disk when ready.",
