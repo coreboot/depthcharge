@@ -43,12 +43,6 @@ vb2_error_t VbExDisplayDebugInfo(const char *info_str, int full_info)
 	return VB2_SUCCESS;
 }
 
-int video_console_init(void)
-{
-	printf("%s:%d invoked\n", __func__, __LINE__);
-	return 0;
-}
-
 uint32_t vb2ex_get_locale_count(void)
 {
 	return vboot_get_locale_count();

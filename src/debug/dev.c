@@ -39,7 +39,8 @@ void dc_dev_netboot(void)
 	uip_ipaddr_t *tftp_ip;
 	char *bootfile, *argsfile;
 
-	video_console_init();
+	if (!CONFIG(HEADLESS))
+		video_console_init();
 
 	if (netboot_params_read(&tftp_ip, NULL, 0,
 				&bootfile, &argsfile))

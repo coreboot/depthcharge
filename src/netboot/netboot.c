@@ -197,7 +197,8 @@ int netboot_entry(void)
 	// Initialize some consoles.
 	serial_console_init();
 	cbmem_console_init();
-	video_console_init();
+	if (!CONFIG(HEADLESS))
+		video_console_init();
 	input_init();
 
 	const char *mb_part_string = cb_mb_part_string(lib_sysinfo.mainboard);
