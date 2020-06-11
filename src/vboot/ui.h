@@ -59,7 +59,7 @@
 #define UI_LANG_ICON_ARROW_SIZE			24
 #define UI_LANG_BORDER_THICKNESS		3
 #define UI_LANG_BORDER_RADIUS			8
-#define UI_LANG_MARGIN_BOTTOM			120
+#define UI_LANG_MARGIN_BOTTOM			110
 
 /* For language dropdown menu content */
 #define UI_LANG_MENU_MARGIN_TOP			15
@@ -146,9 +146,9 @@ static const struct rgb_color ui_color_lang_menu_bg	= { 0x2d, 0x2e, 0x30 };
 static const struct rgb_color ui_color_lang_menu_border	= { 0x49, 0x57, 0x70 };
 static const struct rgb_color ui_color_lang_scrollbar	= { 0x6c, 0x6d, 0x6e };
 static const struct rgb_color ui_color_button		= { 0x8a, 0xb4, 0xf8 };
+static const struct rgb_color ui_color_button_border	= { 0x4a, 0x5b, 0x78 };
 static const struct rgb_color ui_color_link_bg		= { 0x2a, 0x2f, 0x39 };
-static const struct rgb_color ui_color_link_border	= { 0x52, 0x68, 0x8a };
-static const struct rgb_color ui_color_border		= { 0x43, 0x44, 0x46 };
+static const struct rgb_color ui_color_border		= { 0x3f, 0x40, 0x42 };
 
 struct ui_bitmap {
 	const void *data;

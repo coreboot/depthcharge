@@ -280,7 +280,7 @@ static vb2_error_t ui_draw_button(const char *image_name,
 
 	/* Draw button borders */
 	VB2_TRY(ui_draw_rounded_box(x, y, width, height,
-				    &ui_color_border,
+				    &ui_color_button_border,
 				    UI_BUTTON_BORDER_THICKNESS,
 				    UI_BUTTON_BORDER_RADIUS, reverse));
 
@@ -346,7 +346,7 @@ static vb2_error_t ui_draw_link(const char *image_name,
 	/* Draw button borders */
 	if (focused)
 		VB2_TRY(ui_draw_rounded_box(x_base, y, width, height,
-					    &ui_color_link_border,
+					    &ui_color_button_border,
 					    UI_LINK_BORDER_THICKNESS,
 					    UI_BUTTON_BORDER_RADIUS, reverse));
 
