@@ -228,9 +228,14 @@ static const struct ui_screen_info broken_screen = {
 	.title = "broken_title.bmp",
 	.desc = UI_DESC(broken_desc),
 	.menu = UI_MENU(broken_items),
-	.mesg = "Something is wrong.\n"
-		"Please remove all connected devices and hold down Esc,\n"
-		"Refresh, and Power to initiate recovery.",
+	.mesg = "Something is wrong. Please remove all connected devices.\n"
+		"To initiate recovery on a:\n"
+		"* Chromebook: Hold down Escape, Refresh, and Power buttons\n"
+		"* Chromebox/Chromebit: Hold down the Recovery button, press "
+		"Power, release\n"
+		"  the Recovery button\n"
+		"* Tablet: Hold down Power, Volume Up, Volume Down buttons for "
+		"10 secs",
 };
 
 /******************************************************************************/
