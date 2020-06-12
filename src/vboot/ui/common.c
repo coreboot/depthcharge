@@ -22,6 +22,28 @@
 #include "drivers/video/display.h"
 #include "vboot/ui.h"
 
+static const struct ui_error_item error_map[] = {
+	[VB2_UI_ERROR_NONE] = {
+		.body = NULL,
+	},
+	[VB2_UI_ERROR_DEV_MODE_ALREADY_ENABLED] = {
+		.body = "Dev mode already enabled?",
+	},
+	[VB2_UI_ERROR_DEV_INTERNAL_NOT_ALLOWED] = {
+		.body = "Dev mode internal boot not allowed",
+	},
+	/*
+	 * These next two errors are taken care of by additional
+	 * screens, thus don't need error strings.
+	 */
+	[VB2_UI_ERROR_DEV_EXTERNAL_NOT_ALLOWED] = {
+		.body = NULL,
+	},
+	[VB2_UI_ERROR_DEV_EXTERNAL_BOOT_FAILED] = {
+		.body = NULL,
+	},
+};
+
 static vb2_error_t init_screen(void)
 {
 	static int initialized = 0;
@@ -129,6 +151,7 @@ vb2_error_t ui_display_screen(struct ui_state *state,
 {
 	vb2_error_t rv;
 	const struct ui_screen_info *screen = state->screen;
+	const char *error_body;
 
 	VB2_TRY(init_screen());
 
@@ -145,6 +168,20 @@ vb2_error_t ui_display_screen(struct ui_state *state,
 		/* Print fallback message if drawing failed. */
 		if (screen->mesg)
 			print_fallback_message(screen->mesg);
+	}
+
+	/*
+	 * If there's an error message to be printed, print it out.
+	 * If we're already printing out a fallback message, give it
+	 * priority and don't print out more error messages.  Also,
+	 * print out the error message to the AP console.
+	 */
+	error_body = error_map[state->error_code].body;
+	if (!rv &&
+	    state->error_code != VB2_UI_ERROR_NONE &&
+	    error_body != NULL) {
+		print_fallback_message(error_body);
+		UI_ERROR("%s\n", error_body);
 	}
 
 	return rv;

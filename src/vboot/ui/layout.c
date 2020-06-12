@@ -412,7 +412,9 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 	const char *icon_file;
 	struct ui_bitmap bitmap;
 
-	if (!prev_state || prev_state->locale != state->locale) {
+	if (!prev_state ||
+	    prev_state->locale != state->locale ||
+	    prev_state->error_code != state->error_code) {
 		/*
 		 * Clear the whole screen if previous drawing failed, if there
 		 * is no previous screen, or if locale changed.
@@ -434,6 +436,7 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 		if (!prev_state ||
 		    prev_state->screen != state->screen ||
 		    prev_state->locale != state->locale ||
+		    prev_state->error_code != state->error_code ||
 		    (prev_state->selected_item == 0) != focused) {
 			VB2_TRY(ui_draw_language_header(state->locale, state,
 							focused));
@@ -447,7 +450,8 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 	if (!screen->no_footer &&
 	    (!prev_state ||
 	     prev_state->screen->no_footer ||
-	     prev_state->locale != state->locale))
+	     prev_state->locale != state->locale ||
+	     prev_state->error_code != state->error_code))
 		VB2_TRY(draw_footer(state));
 
 	/* Icon */

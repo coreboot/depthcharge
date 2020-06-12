@@ -371,6 +371,13 @@ struct ui_state {
 	const struct ui_locale *locale;
 	uint32_t selected_item;
 	uint32_t disabled_item_mask;
+	enum vb2_ui_error error_code;
+};
+
+/* For displaying error messages. */
+struct ui_error_item {
+	/* Error message body */
+	const char *body;
 };
 
 /* Icon type. */

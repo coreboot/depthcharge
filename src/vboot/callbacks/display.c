@@ -35,14 +35,16 @@ uint32_t vb2ex_get_locale_count(void)
 vb2_error_t vb2ex_display_ui(enum vb2_screen screen,
 			     uint32_t locale_id,
 			     uint32_t selected_item,
-			     uint32_t disabled_item_mask)
+			     uint32_t disabled_item_mask,
+			     enum vb2_ui_error error)
 {
 	vb2_error_t rv;
 	const struct ui_locale *locale = NULL;
 	const struct ui_screen_info *screen_info;
 	printf("%s: screen=%#x, locale=%u, selected_item=%u, "
-	       "disabled_item_mask=%#x\n", __func__,
-	       screen, locale_id, selected_item, disabled_item_mask);
+	       "disabled_item_mask=%#x, error=%#x\n", __func__,
+	       screen, locale_id, selected_item, disabled_item_mask,
+	       error);
 
 	rv = ui_get_locale_info(locale_id, &locale);
 	if (rv == VB2_ERROR_UI_INVALID_LOCALE) {
@@ -65,6 +67,7 @@ vb2_error_t vb2ex_display_ui(enum vb2_screen screen,
 		.locale = locale,
 		.selected_item = selected_item,
 		.disabled_item_mask = disabled_item_mask,
+		.error_code = error,
 	};
 	static struct ui_state prev_state;
 	static int has_prev_state = 0;
