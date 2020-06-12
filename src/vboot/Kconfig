@@ -148,12 +148,12 @@ config CROSSYSTEM_FDT
 
 endchoice
 
-config USB_BOOT_ON_DEV
-	bool "Enable USB boot when switching to dev mode"
+config BOOT_EXTERNAL_ON_DEV
+	bool "Enable boot from external disk when switching to dev mode"
 	default n
 	help
-	  When switching to dev from normal, set the NVRAM flag which allows
-	  booting from USB.  (Suitable for headless devices.)
+	  When switching to dev from normal, set the nvdata flag which allows
+	  booting from external disk.  (Suitable for headless devices.)
 
 config VENDOR_DATA_LENGTH
 	int "The exact number of characters of the vendor data value"
