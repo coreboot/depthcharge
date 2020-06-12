@@ -58,7 +58,7 @@
 
 #define GENESYS_PCI_VID		0x17a0
 #define GL9755S_PCI_DID		0x9755
-#define GL9750S_PCI_DID		TODO
+#define GL9750S_PCI_DID		0x9750
 
 /* I2S Beep GPIOs */
 #define I2S_LRCLK_GPIO		8
@@ -237,9 +237,15 @@ static int board_setup(void)
 				SDHCI_PLATFORM_REMOVABLE,
 				0, 0);
 	} else if (pci_find_device(GENESYS_PCI_VID, GL9755S_PCI_DID,
-				   &pci_dev)) {
-		sd = new_pci_sdhci_host(pci_dev, SDHCI_PLATFORM_REMOVABLE, 0,
-					0);
+				&pci_dev)) {
+		sd = new_pci_sdhci_host(pci_dev,
+				SDHCI_PLATFORM_REMOVABLE,
+				0, 0);
+	} else if (pci_find_device(GENESYS_PCI_VID, GL9750S_PCI_DID,
+				&pci_dev)) {
+		sd = new_pci_sdhci_host(pci_dev,
+				SDHCI_PLATFORM_REMOVABLE,
+				0, 0);
 	}
 
 	if (sd) {
