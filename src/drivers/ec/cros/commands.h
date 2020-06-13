@@ -8,6 +8,7 @@
 #ifndef __CROS_EC_COMMANDS_H
 #define __CROS_EC_COMMANDS_H
 
+#include <libpayload.h>
 #include <ec_commands.h>
 
 #endif  /* __CROS_EC_COMMANDS_H */
