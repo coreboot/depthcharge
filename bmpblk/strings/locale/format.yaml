@@ -74,6 +74,11 @@ inputs:
   - dev_to_norm_title
   - dev_to_norm_desc0
   - dev_to_norm_desc1
+  # developer: boot from external disk
+  - dev_boot_ext_title
+  - dev_boot_ext_desc0
+  - dev_invalid_disk_title
+  - dev_invalid_disk_desc0
   # generic buttons
   - btn_adv_options
   - btn_next
@@ -167,6 +172,11 @@ files:
   dev_to_norm_title:
   dev_to_norm_desc0:
   dev_to_norm_desc1:
+  # developer: boot from external disk
+  dev_boot_ext_title:
+  dev_boot_ext_desc0:
+  dev_invalid_disk_title:
+  dev_invalid_disk_desc0:
   # generic buttons
   btn_adv_options:
   btn_adv_options_focus: [btn_adv_options]
@@ -276,6 +286,11 @@ styles:
   dev_to_norm_title: *base_color
   dev_to_norm_desc0: *base_color
   dev_to_norm_desc1: *base_color
+  # developer: boot from external disk
+  dev_boot_ext_title: *base_color
+  dev_boot_ext_desc0: *base_color
+  dev_invalid_disk_title: *base_color
+  dev_invalid_disk_desc0: *base_color
   # generic buttons
   btn_adv_options: *link_color
   btn_adv_options_focus: *link_focused_color

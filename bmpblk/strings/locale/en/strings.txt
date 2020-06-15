@@ -55,6 +55,10 @@ Boot from external disk
 Confirm returning to secure mode
 This option will disable developer mode and restore your device to its original state.
 Your user data will be wiped in the process.
+Plug in your external disk
+If your external disk is ready with a Chrome OS image, plug it into the device to boot.
+No valid image detected
+Make sure your external disk has a valid Chrome OS image, and re-insert the disk when ready.
 Advanced options
 Next
 Back
