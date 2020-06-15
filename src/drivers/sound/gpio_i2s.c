@@ -69,8 +69,11 @@ static void gpio_i2s_sync_send_data(GpioI2s *i2s, uint16_t *data, size_t length)
 		while (gpio_get(i2s->sfrm_gpio) == lr0 && timeout--)
 			continue;
 		/* bit-bang out data word as fast as possible */
-		for (int i = 15; i >= 0; i--)
-			gpio_set(i2s->data_gpio, !!(*data & (1 << i)));
+		for (int i = 15; i >= 0; i--) {
+			int val = !!(*data & (1 << i));
+			if (i == 15 || val != !!(*data & (1 << (i + 1))))
+				gpio_set(i2s->data_gpio, val);
+		}
 	}
 }
 
