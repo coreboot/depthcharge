@@ -440,6 +440,9 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 	case UI_ICON_TYPE_INFO:
 		icon_file = "ic_info.bmp";
 		break;
+	case UI_ICON_TYPE_ERROR:
+		icon_file = "ic_error.bmp";
+		break;
 	case UI_ICON_TYPE_DEV_MODE:
 		icon_file = "ic_dev_mode.bmp";
 		break;

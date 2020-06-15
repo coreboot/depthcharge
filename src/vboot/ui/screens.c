@@ -37,6 +37,11 @@
 	.type = UI_MENU_ITEM_TYPE_LANGUAGE,		\
 })
 
+#define BACK_ITEM ((struct ui_menu_item){	\
+	.file = "btn_back.bmp",			\
+	.type = UI_MENU_ITEM_TYPE_PRIMARY,	\
+})
+
 #define ADVANCED_OPTIONS_ITEM ((struct ui_menu_item){	\
 	.file = "btn_adv_options.bmp",			\
 	.type = UI_MENU_ITEM_TYPE_SECONDARY,		\
@@ -246,7 +251,7 @@ static const struct ui_menu_item advanced_options_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	{ "btn_dev_mode.bmp" },
 	/* TODO(yupingso): Add debug info & firmware log items. */
-	{ "btn_back.bmp" },
+	BACK_ITEM,
 };
 
 static const struct ui_screen_info advanced_options_screen = {
@@ -324,7 +329,7 @@ static const char *const recovery_phone_step1_desc[] = {
 static const struct ui_menu_item recovery_phone_step1_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	{ "btn_next.bmp" },
-	{ "btn_back.bmp" },
+	BACK_ITEM,
 };
 
 static const struct ui_screen_info recovery_phone_step1_screen = {
@@ -377,7 +382,7 @@ static const char *const recovery_phone_step2_desc[] = {
 
 static const struct ui_menu_item recovery_phone_step2_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	{ "btn_back.bmp" },
+	BACK_ITEM,
 };
 
 static const struct ui_screen_info recovery_phone_step2_screen = {
@@ -409,7 +414,7 @@ static const char *const recovery_disk_step1_desc[] = {
 static const struct ui_menu_item recovery_disk_step1_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	{ "btn_next.bmp" },
-	{ "btn_back.bmp" },
+	BACK_ITEM,
 };
 
 static const struct ui_screen_info recovery_disk_step1_screen = {
@@ -439,7 +444,7 @@ static const char *const recovery_disk_step2_desc[] = {
 static const struct ui_menu_item recovery_disk_step2_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	{ "btn_next.bmp" },
-	{ "btn_back.bmp" },
+	BACK_ITEM,
 };
 
 static const struct ui_screen_info recovery_disk_step2_screen = {
@@ -466,7 +471,7 @@ static const char *const recovery_disk_step3_desc[] = {
 
 static const struct ui_menu_item recovery_disk_step3_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	{ "btn_back.bmp" },
+	BACK_ITEM,
 };
 
 static const struct ui_screen_info recovery_disk_step3_screen = {
@@ -578,6 +583,52 @@ static const struct ui_screen_info developer_to_norm_screen = {
 };
 
 /******************************************************************************/
+/* VB2_SCREEN_DEVELOPER_BOOT_EXTERNAL */
+
+static const char *const developer_boot_external_desc[] = {
+	"dev_boot_ext_desc0.bmp",
+};
+
+static const struct ui_menu_item developer_boot_external_items[] = {
+	LANGUAGE_SELECT_ITEM,
+	BACK_ITEM,
+};
+
+static const struct ui_screen_info developer_boot_external_screen = {
+	.id = VB2_SCREEN_DEVELOPER_BOOT_EXTERNAL,
+	.icon = UI_ICON_TYPE_NONE,
+	.title = "dev_boot_ext_title.bmp",
+	.desc = UI_DESC(developer_boot_external_desc),
+	.menu = UI_MENU(developer_boot_external_items),
+	.mesg = "Plug in your external disk\n"
+		"If your external disk is ready with a Chrome OS image,\n"
+		"plug it into the device to boot."
+};
+
+/******************************************************************************/
+/* VB2_SCREEN_DEVELOPER_INVALID_DISK */
+
+static const char *const developer_invalid_disk_desc[] = {
+	"dev_invalid_disk_desc0.bmp",
+};
+
+static const struct ui_menu_item developer_invalid_disk_items[] = {
+	LANGUAGE_SELECT_ITEM,
+	BACK_ITEM,
+};
+
+static const struct ui_screen_info developer_invalid_disk_screen = {
+	.id = VB2_SCREEN_DEVELOPER_INVALID_DISK,
+	.icon = UI_ICON_TYPE_ERROR,
+	.title = "dev_invalid_disk_title.bmp",
+	.desc = UI_DESC(developer_invalid_disk_desc),
+	.menu = UI_MENU(developer_invalid_disk_items),
+	.mesg = "No valid image detected\n"
+		"Make sure your external disk has a valid Chrome OS image,\n"
+		"and re-insert the disk when ready."
+};
+
+/******************************************************************************/
 /*
  * TODO(chromium:1035800): Refactor UI code across vboot and depthcharge.
  * Currently vboot and depthcharge maintain their own copies of menus/screens.
@@ -601,6 +652,8 @@ static const struct ui_screen_info *const screens[] = {
 	&recovery_invalid_screen,
 	&developer_mode_screen,
 	&developer_to_norm_screen,
+	&developer_boot_external_screen,
+	&developer_invalid_disk_screen,
 };
 
 const struct ui_screen_info *ui_get_screen_info(enum vb2_screen screen_id)
