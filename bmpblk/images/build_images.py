@@ -731,4 +731,4 @@ if __name__ == '__main__':
   try:
     main(sys.argv[1:])
   except BuildImageError, err:
-    sys.stderr.write("ERROR: %s\n" % err)
+    exit("ERROR: %s\n" % err)
