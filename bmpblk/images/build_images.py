@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -241,8 +241,8 @@ class Converter(object):
       raise BuildImageError('Panel aspect ratio (%f) is smaller than screen '
                             'aspect ratio (%f). It indicates screen will be '
                             'shrunk horizontally. It is currently unsupported.'
-                            % (float(panel_width) / panel_height,
-                               float(self.screen_width) / self.screen_height))
+                            % (panel_width / panel_height,
+                               self.screen_width / self.screen_height))
 
     # Set up square drawing area
     # TODO: Depthcharge should narrow the canvas if the screen is stretched.
@@ -316,15 +316,15 @@ class Converter(object):
       if scale_x == 0 and scale_y == 0:
         raise BuildImageError('Invalid scale parameter: %s' % (scale))
       if scale_x > 0:
-        dim_width = self.canvas_px * scale_x / self.SCALE_BASE
+        dim_width = int(self.canvas_px * scale_x / self.SCALE_BASE)
       if scale_y > 0:
-        dim_height = self.canvas_px * scale_y / self.SCALE_BASE
+        dim_height = int(self.canvas_px * scale_y / self.SCALE_BASE)
       if scale_x == 0:
-        dim_width = org_width * dim_height / org_height
+        dim_width = org_width * dim_height // org_height
       if scale_y == 0:
-        dim_height = org_height * dim_width / org_width
+        dim_height = org_height * dim_width // org_width
 
-      dim_width = dim_width * self.stretch[0] / self.stretch[1]
+      dim_width = int(dim_width * self.stretch[0] / self.stretch[1])
 
       return (dim_width, dim_height)
 
@@ -373,12 +373,12 @@ class Converter(object):
     if scale:
       new_size = self.calculate_dimension(image.size, scale)
       if new_size[0] == 0 or new_size[1] == 0:
-        print 'Scaling', input
-        print 'Warning: width or height is 0 after resizing:',
-        print 'scale=%s size=%s stretch=%s new_size=%s' % (
-              scale, image.size, self.stretch, new_size)
+        print('Scaling', input)
+        print('Warning: width or height is 0 after resizing: '
+              'scale=%s size=%s stretch=%s new_size=%s' % (
+              scale, image.size, self.stretch, new_size))
         return
-      target = target.resize(new_size, Image.ANTIALIAS)
+      target = target.resize(new_size, Image.BICUBIC)
 
     # Export and downsample color space.
     target.convert('P', dither=None, colors=max_colors, palette=Image.ADAPTIVE
@@ -400,7 +400,7 @@ class Converter(object):
         name = self.replace_map[name]
         if not name:
           continue
-        print 'Replace: %s => %s' % (file, name)
+        print('Replace: %s => %s' % (file, name))
         file = os.path.join(os.path.dirname(file), name + ext)
 
       if ext == '.svg':
@@ -423,24 +423,24 @@ class Converter(object):
     """Convert localized texts"""
     locale_dir = os.path.join(self.stage_dir, LOCALE_DIR)
     # Using stderr to report progress synchronously
-    sys.stderr.write('  processing:')
+    print('  processing:', end='', file=sys.stderr, flush=True)
     for locale_info in self.locales:
       locale = locale_info.code
       output_dir = os.path.join(self.output_dir, LOCALE_DIR, locale)
       if locale_info.hi_res:
         scales = defaultdict(lambda: self.DEFAULT_TEXT_SCALE)
         scales.update(self.TEXT_SCALES)
-        sys.stderr.write(' ' + locale)
+        print(' ' + locale, end='', file=sys.stderr, flush=True)
       else:
         # We use low-res images for these locales and turn off scaling
         # to make the files fit in a ROM. Note that these text images will
         # be scaled by Depthcharge to be the same height as hi-res texts.
         scales = defaultdict(lambda: None)
-        sys.stderr.write(' ' + locale + '/lo')
+        print(' ' + locale + '/lo', end='', file=sys.stderr, flush=True)
       os.makedirs(output_dir)
       self.convert(glob.glob(os.path.join(locale_dir, locale, SVG_FILES)),
                    output_dir, scales, self.text_max_colors)
-    sys.stderr.write('\n')
+    print(file=sys.stderr)
 
   def move_language_images(self):
     """Rename language bitmaps and move to self.output_dir.
@@ -498,19 +498,19 @@ class Converter(object):
       shutil.rmtree(self.temp_dir)
     os.makedirs(self.temp_dir)
 
-    print 'Converting asset images...'
+    print('Converting asset images...')
     self.convert_assets()
 
-    print 'Converting localized text images...'
+    print('Converting localized text images...')
     self.convert_texts()
 
-    print 'Moving language images to locale-independent directory...'
+    print('Moving language images to locale-independent directory...')
     self.move_language_images()
 
-    print 'Creating locale list file...'
+    print('Creating locale list file...')
     self.create_locale_list()
 
-    print 'Converting fonts...'
+    print('Converting fonts...')
     self.convert_fonts()
 
 
@@ -649,7 +649,7 @@ class LegacyConverter(Converter):
     """Convert localized texts"""
     locale_dir = os.path.join(self.stage_dir, LOCALE_DIR)
     # Using stderr to report progress synchronously
-    sys.stderr.write('  processing:')
+    print('  processing:', end='', file=sys.stderr, flush=True)
     for locale_info in self.locales:
       locale = locale_info.code
       output_dir = os.path.join(self.output_dir, LOCALE_DIR, locale)
@@ -662,11 +662,11 @@ class LegacyConverter(Converter):
         # be scaled by Depthcharge to be the same height as hi-res texts.
         locale += '/lo'
         scales = defaultdict(lambda: None)
-      sys.stderr.write(' ' + locale)
+      print(' ' + locale, end='', file=sys.stderr, flush=True)
       os.makedirs(output_dir)
       self.convert(glob.glob(os.path.join(locale_dir, locale, PNG_FILES)),
                    output_dir, scales, self.text_max_colors)
-    sys.stderr.write('\n')
+    print(file=sys.stderr)
 
   def move_language_images(self):
     """Rename language bitmaps and move to self.output_dir."""
@@ -677,7 +677,7 @@ class LegacyConverter(Converter):
     """Builds all images required by a board"""
     super(LegacyConverter, self).build_image()
 
-    print 'Converting URL images...'
+    print('Converting URL images...')
     self.convert_url()
 
 
@@ -690,14 +690,14 @@ def load_boards_config(filename):
   Returns:
     A dictionary with keys as board names and values as config parameters.
   """
-  with open(filename, 'r') as file:
+  with open(filename, 'rb') as file:
     raw = yaml.load(file)
 
   configs = {}
   default = raw[DEFAULT_NAME]
   if not default:
     raise BuildImageError('Default configuration is not found')
-  for boards, params in raw.iteritems():
+  for boards, params in raw.items():
     if boards == DEFAULT_NAME:
       continue
     config = copy.deepcopy(default)
@@ -719,14 +719,14 @@ def main(args):
 
   targets = args
   if not targets or targets == ['ALL']:
-    targets = configs.keys()
+    targets = list(configs.keys())
 
-  print 'Building for', ', '.join(targets)
+  print('Building for', ', '.join(targets))
 
   for board in targets:
     if board not in configs:
       raise BuildImageError('%s not found in %s' % (board, BOARDS_CONFIG))
-    print 'Building for', board
+    print('Building for', board)
     if os.getenv('MENU_UI') == '1':
       converter = Converter(board, configs[board])
     else:
@@ -737,5 +737,5 @@ def main(args):
 if __name__ == '__main__':
   try:
     main(sys.argv[1:])
-  except BuildImageError, err:
+  except BuildImageError as err:
     exit("ERROR: %s\n" % err)

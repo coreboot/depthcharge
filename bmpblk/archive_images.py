@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # Copyright 2015 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -56,7 +56,7 @@ def archive(archiver, output):
       locale_images[locale].append(file)
 
   # create archives of localized images
-  for locale, images in locale_images.iteritems():
+  for locale, images in locale_images.items():
     archive_images(archiver, output, 'locale_%s.bin' % locale, images)
 
 def main(args):

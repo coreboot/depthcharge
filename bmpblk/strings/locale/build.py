@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 # Copyright (c) 2013 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -12,7 +12,6 @@ Usage:
 import signal
 import enum
 import glob
-import io
 import json
 import multiprocessing
 import os
@@ -90,7 +89,7 @@ def ParseLocaleInputFile(locale_dir, strings_file, input_format):
     A dictionary for mapping of "name to content" for files to be generated.
   """
   input_file = os.path.join(locale_dir, strings_file)
-  with io.open(input_file, 'r', encoding='utf-8-sig') as f:
+  with open(input_file, 'r', encoding='utf-8-sig') as f:
     input_data = f.readlines()
   if len(input_data) != len(input_format):
     raise DataError('Input file <%s> for locale <%s> '
@@ -115,7 +114,7 @@ def ParseLocaleInputJsonFile(locale, strings_json_file_tmpl, json_dir):
   for tag in original:
     if not tag in result:
       # Use original English text, in case translation is not yet available
-      print 'WARNING: locale "' + locale + '", missing entry ' + tag
+      print('WARNING: locale "%s", missing entry %s' % (locale, tag))
       result[tag] = original[tag]
 
   return result
@@ -123,7 +122,7 @@ def ParseLocaleInputJsonFile(locale, strings_json_file_tmpl, json_dir):
 def LoadLocaleJsonFile(locale, strings_json_file_tmpl, json_dir):
   result = {}
   filename = os.path.join(json_dir, strings_json_file_tmpl.format(locale))
-  with io.open(filename, encoding='utf-8-sig') as input_file:
+  with open(filename, encoding='utf-8-sig') as input_file:
     for tag, msgdict in json.load(input_file).items():
       msgtext = msgdict['message']
       msgtext = re.sub(CRLF_PATTERN, '\n', msgtext)
@@ -164,14 +163,14 @@ def ParseLocaleInputFiles(locale_dir, legacy_input_format,
 
   # Now parse legacy menu strings
   if UI == UIType.LEGACY_MENU:
-    print " (legacy_menu_ui enabled)"
+    print(' (legacy_menu_ui enabled)')
     result.update(ParseLocaleInputFile(locale_dir,
                                        LEGACY_MENU_STRINGS_FILE,
                                        legacy_menu_format))
 
   # Parse vendor files if enabled
   if VENDOR_STRINGS:
-    print " (vendor specific strings)"
+    print(' (vendor specific strings)')
     result.update(
       ParseLocaleInputFile(os.path.join(VENDOR_STRINGS_DIR, locale_dir),
                                         VENDOR_STRINGS_FILE,
@@ -184,7 +183,7 @@ def ParseLocaleInputFiles(locale_dir, legacy_input_format,
         os.path.basename(input_file) == VENDOR_STRINGS_FILE):
       continue
     name, _ = os.path.splitext(os.path.basename(input_file))
-    with io.open(input_file, 'r', encoding='utf-8-sig') as f:
+    with open(input_file, 'r', encoding='utf-8-sig') as f:
       result[name] = f.read().strip()
 
   return result
@@ -199,7 +198,7 @@ def CreateFile(file_name, contents, output_dir):
     output_dir: The directory to store output file.
   """
   output_name = os.path.join(output_dir, file_name + '.txt')
-  with io.open(output_name, 'w', encoding='utf-8-sig') as f:
+  with open(output_name, 'w', encoding='utf-8-sig') as f:
     f.write('\n'.join(contents) + '\n')
 
 
@@ -227,7 +226,7 @@ def BuildTextFiles(inputs, files, output_dir):
     files: List of file records: [name, content].
     output_dir: Directory to generate text files.
   """
-  for file_name, file_content in files.iteritems():
+  for file_name, file_content in files.items():
     if file_content is None:
       CreateFile(file_name, [inputs[file_name]], output_dir)
     else:
@@ -274,11 +273,13 @@ def ConvertPngFile(locale, file_name, styles, fonts, output_dir):
   return True
 
 def main(argv):
-  with open(FORMAT_FILE if UI == UIType.MENU else LEGACY_FORMAT_FILE) as f:
+  with open(FORMAT_FILE if UI == UIType.MENU else LEGACY_FORMAT_FILE,
+            encoding='utf-8') as f:
     formats = yaml.load(f)
 
   if VENDOR_STRINGS:
-    with open(os.path.join(VENDOR_STRINGS_DIR, VENDOR_FORMAT_FILE)) as f:
+    with open(os.path.join(VENDOR_STRINGS_DIR, VENDOR_FORMAT_FILE),
+              encoding='utf-8') as f:
       formats.update(yaml.load(f))
 
   json_dir = None
@@ -319,7 +320,7 @@ def main(argv):
 
   results = []
   for locale in locales:
-    print locale,
+    print(locale, end=' ', flush=True)
     inputs = ParseLocaleInputFiles(locale, formats[KEY_INPUTS],
                                    formats.get(LEGACY_MENU_INPUTS),
                                    formats[VENDOR_INPUTS] if VENDOR_STRINGS
@@ -351,7 +352,7 @@ def main(argv):
   pool.close()
   if json_dir is not None:
     shutil.rmtree(json_dir)
-  print ""
+  print()
 
   try:
     success = [r.get() for r in results]
