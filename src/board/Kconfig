@@ -126,4 +126,7 @@ endif
 if BOARD_DIR = "veyron_shark"
 source src/board/veyron_shark/Kconfig
 endif
+if BOARD_DIR = "volteer"
+source src/board/volteer/Kconfig
+endif
 endmenu

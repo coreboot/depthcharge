@@ -46,10 +46,10 @@
  * SoC USB3.1 ports are numbered 1..4 (not used here)
  * SoC TCP (USB3) ports are numbered 0..3
  */
-#define USBC_PORT_0_USB2_NUM	9
-#define USBC_PORT_0_USB3_NUM	0
-#define USBC_PORT_1_USB2_NUM	4
-#define USBC_PORT_1_USB3_NUM	1
+#define USBC_PORT_0_USB2_NUM	CONFIG_VOLTEER_USBC_PORT_0_USB2_NUM
+#define USBC_PORT_0_USB3_NUM	CONFIG_VOLTEER_USBC_PORT_0_USB3_NUM
+#define USBC_PORT_1_USB2_NUM	CONFIG_VOLTEER_USBC_PORT_1_USB2_NUM
+#define USBC_PORT_1_USB3_NUM	CONFIG_VOLTEER_USBC_PORT_1_USB3_NUM
 
 static const struct tcss_port_map typec_map[] = {
 	[0] = { USBC_PORT_0_USB3_NUM, USBC_PORT_0_USB2_NUM },
