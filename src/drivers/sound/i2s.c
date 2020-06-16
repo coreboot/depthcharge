@@ -51,7 +51,8 @@ static void sound_square_wave(uint16_t *data, int channels,
 static void finish_delay(uint64_t start, uint32_t msec)
 {
 	uint32_t passed = timer_us(start) / 1000;
-	mdelay(msec - passed);
+	if (msec > passed)
+		mdelay(msec - passed);
 }
 
 static int i2s_source_play(SoundOps *me, uint32_t msec, uint32_t frequency)

@@ -263,8 +263,10 @@ static void set_ssp_i2s_hw(I2sRegs *regs, const I2sSettings *settings, int bps)
  */
 static int i2s_init(I2s *bus)
 {
-	if (enable_DSP_SSP(bus))
+	if (enable_DSP_SSP(bus)) {
+		printf("%s : Error during DSP initialization\n", __func__);
 		return -1;
+	}
 	i2s_disable(bus->regs);
 	set_ssp_i2s_hw(bus->regs,
 		       bus->settings,
@@ -283,7 +285,7 @@ static int i2s_init(I2s *bus)
 static int i2s_send(I2sOps *me, unsigned int *data, unsigned int length)
 {
 	int i;
-	uint64_t start;
+	uint64_t last_activity;
 	I2s *bus = container_of(me, I2s, ops);
 	struct I2sRegs *i2s_reg = bus->regs;
 
@@ -306,13 +308,14 @@ static int i2s_send(I2sOps *me, unsigned int *data, unsigned int length)
 	i2s_enable(bus->regs);
 	length -= LPE_SSP_FIFO_SIZE;
 
+	last_activity = timer_us(0);
 	while (length > 0) {
-		start = timer_us(0);
 		if (read_SSSR(bus->regs) & TX_FIFO_NOT_FULL) {
 			writel(*data++, &i2s_reg->ssdr);
 			length--;
+			last_activity = timer_us(0);
 		} else {
-			if (timer_us(start) > 100000) {
+			if (timer_us(last_activity) > 100000) {
 				i2s_disable(bus->regs);
 				gpio_set(bus->sdmode_gpio, 0);
 				printf("I2S Transfer Timeout\n");
