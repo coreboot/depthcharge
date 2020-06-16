@@ -35,12 +35,20 @@
 #include "drivers/sound/hda_codec.h"
 #include "drivers/sound/sound.h"
 #include "drivers/storage/ahci.h"
+#include "drivers/storage/bayhub.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/nvme.h"
+#include "drivers/storage/sdhci.h"
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/cr50_switches.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
+
+#define EMMC_SD_CLOCK_MIN       400000
+#define EMMC_CLOCK_MAX          200000000
+
+#define BH720_PCI_VID           0x1217
+#define BH720_PCI_DID           0x8620
 
 enum {
 	EC_HOST_BASE = 0x940,
@@ -129,6 +137,22 @@ static int board_setup(void)
 	/* SATA AHCI */
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 0x17, 0));
 	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
+
+	SdhciHost *emmc = NULL;
+	pcidev_t pci_dev;
+	if (pci_find_device(BH720_PCI_VID, BH720_PCI_DID, &pci_dev)) {
+		emmc = new_bayhub_sdhci_host(pci_dev,
+			SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD,
+			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
+		emmc->name = "eMMC";
+	} else {
+		printf("Failed to find BH720 with VID/DID %04x:%04x\n",
+				BH720_PCI_VID, BH720_PCI_DID);
+	}
+	if (emmc) {
+		list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+			&fixed_block_dev_controllers);
+	}
 
 	/* M.2 2280 SSD x4 */
 	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x1d, 4));
