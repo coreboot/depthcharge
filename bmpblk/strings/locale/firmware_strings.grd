@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grit base_dir="." latest_public_release="0" current_release="1"
+      source_lang_id="en-US" enc_check="möl">
+  <outputs>
+    <!-- Generate output in chrome_message_json format. The resulting JSON
+         files are processed by make_images to render the translated message
+         text to PNG image files. These are used by the recovery installer
+         script to display messages on screen. -->
+    <output filename="ar.json" type="chrome_messages_json" lang="ar" />
+    <output filename="bg.json" type="chrome_messages_json" lang="bg" />
+    <output filename="bn.json" type="chrome_messages_json" lang="bn" />
+    <output filename="ca.json" type="chrome_messages_json" lang="ca" />
+    <output filename="cs.json" type="chrome_messages_json" lang="cs" />
+    <output filename="da.json" type="chrome_messages_json" lang="da" />
+    <output filename="de.json" type="chrome_messages_json" lang="de" />
+    <output filename="el.json" type="chrome_messages_json" lang="el" />
+    <output filename="en.json" type="chrome_messages_json" lang="en" />
+    <output filename="es.json" type="chrome_messages_json" lang="es" />
+    <output filename="es-419.json" type="chrome_messages_json" lang="es-419" />
+    <output filename="et.json" type="chrome_messages_json" lang="et" />
+    <output filename="fa.json" type="chrome_messages_json" lang="fa" />
+    <output filename="fi.json" type="chrome_messages_json" lang="fi" />
+    <output filename="fil.json" type="chrome_messages_json" lang="fil" />
+    <output filename="fr.json" type="chrome_messages_json" lang="fr" />
+    <output filename="gu.json" type="chrome_messages_json" lang="gu" />
+    <output filename="hi.json" type="chrome_messages_json" lang="hi" />
+    <output filename="hr.json" type="chrome_messages_json" lang="hr" />
+    <output filename="hu.json" type="chrome_messages_json" lang="hu" />
+    <output filename="id.json" type="chrome_messages_json" lang="id" />
+    <output filename="it.json" type="chrome_messages_json" lang="it" />
+    <output filename="iw.json" type="chrome_messages_json" lang="iw" />
+    <output filename="ja.json" type="chrome_messages_json" lang="ja" />
+    <output filename="kn.json" type="chrome_messages_json" lang="kn" />
+    <output filename="ko.json" type="chrome_messages_json" lang="ko" />
+    <output filename="lt.json" type="chrome_messages_json" lang="lt" />
+    <output filename="lv.json" type="chrome_messages_json" lang="lv" />
+    <output filename="ml.json" type="chrome_messages_json" lang="ml" />
+    <output filename="mr.json" type="chrome_messages_json" lang="mr" />
+    <output filename="ms.json" type="chrome_messages_json" lang="ms" />
+    <output filename="nl.json" type="chrome_messages_json" lang="nl" />
+    <output filename="no.json" type="chrome_messages_json" lang="no" />
+    <output filename="pl.json" type="chrome_messages_json" lang="pl" />
+    <output filename="pt-BR.json" type="chrome_messages_json" lang="pt-BR" />
+    <output filename="pt-PT.json" type="chrome_messages_json" lang="pt-PT" />
+    <output filename="ro.json" type="chrome_messages_json" lang="ro" />
+    <output filename="ru.json" type="chrome_messages_json" lang="ru" />
+    <output filename="sk.json" type="chrome_messages_json" lang="sk" />
+    <output filename="sl.json" type="chrome_messages_json" lang="sl" />
+    <output filename="sr.json" type="chrome_messages_json" lang="sr" />
+    <output filename="sv.json" type="chrome_messages_json" lang="sv" />
+    <output filename="sw.json" type="chrome_messages_json" lang="sw" />
+    <output filename="ta.json" type="chrome_messages_json" lang="ta" />
+    <output filename="te.json" type="chrome_messages_json" lang="te" />
+    <output filename="th.json" type="chrome_messages_json" lang="th" />
+    <output filename="tr.json" type="chrome_messages_json" lang="tr" />
+    <output filename="uk.json" type="chrome_messages_json" lang="uk" />
+    <output filename="vi.json" type="chrome_messages_json" lang="vi" />
+    <output filename="zh-CN.json" type="chrome_messages_json" lang="zh-CN" />
+    <output filename="zh-TW.json" type="chrome_messages_json" lang="zh-TW" />
+  </outputs>
+  <translations>
+    <file path="firmware_strings_ar.xtb" lang="ar" />
+    <file path="firmware_strings_bg.xtb" lang="bg" />
+    <file path="firmware_strings_bn.xtb" lang="bn" />
+    <file path="firmware_strings_ca.xtb" lang="ca" />
+    <file path="firmware_strings_cs.xtb" lang="cs" />
+    <file path="firmware_strings_da.xtb" lang="da" />
+    <file path="firmware_strings_de.xtb" lang="de" />
+    <file path="firmware_strings_el.xtb" lang="el" />
+    <file path="firmware_strings_es.xtb" lang="es" />
+    <file path="firmware_strings_es-419.xtb" lang="es-419" />
+    <file path="firmware_strings_et.xtb" lang="et" />
+    <file path="firmware_strings_fa.xtb" lang="fa" />
+    <file path="firmware_strings_fi.xtb" lang="fi" />
+    <file path="firmware_strings_fil.xtb" lang="fil" />
+    <file path="firmware_strings_fr.xtb" lang="fr" />
+    <file path="firmware_strings_gu.xtb" lang="gu" />
+    <file path="firmware_strings_hi.xtb" lang="hi" />
+    <file path="firmware_strings_hr.xtb" lang="hr" />
+    <file path="firmware_strings_hu.xtb" lang="hu" />
+    <file path="firmware_strings_id.xtb" lang="id" />
+    <file path="firmware_strings_it.xtb" lang="it" />
+    <file path="firmware_strings_iw.xtb" lang="iw" />
+    <file path="firmware_strings_ja.xtb" lang="ja" />
+    <file path="firmware_strings_kn.xtb" lang="kn" />
+    <file path="firmware_strings_ko.xtb" lang="ko" />
+    <file path="firmware_strings_lt.xtb" lang="lt" />
+    <file path="firmware_strings_lv.xtb" lang="lv" />
+    <file path="firmware_strings_ml.xtb" lang="ml" />
+    <file path="firmware_strings_mr.xtb" lang="mr" />
+    <file path="firmware_strings_ms.xtb" lang="ms" />
+    <file path="firmware_strings_nl.xtb" lang="nl" />
+    <file path="firmware_strings_no.xtb" lang="no" />
+    <file path="firmware_strings_pl.xtb" lang="pl" />
+    <file path="firmware_strings_pt-BR.xtb" lang="pt-BR" />
+    <file path="firmware_strings_pt-PT.xtb" lang="pt-PT" />
+    <file path="firmware_strings_ro.xtb" lang="ro" />
+    <file path="firmware_strings_ru.xtb" lang="ru" />
+    <file path="firmware_strings_sk.xtb" lang="sk" />
+    <file path="firmware_strings_sl.xtb" lang="sl" />
+    <file path="firmware_strings_sr.xtb" lang="sr" />
+    <file path="firmware_strings_sv.xtb" lang="sv" />
+    <file path="firmware_strings_sw.xtb" lang="sw" />
+    <file path="firmware_strings_ta.xtb" lang="ta" />
+    <file path="firmware_strings_te.xtb" lang="te" />
+    <file path="firmware_strings_th.xtb" lang="th" />
+    <file path="firmware_strings_tr.xtb" lang="tr" />
+    <file path="firmware_strings_uk.xtb" lang="uk" />
+    <file path="firmware_strings_vi.xtb" lang="vi" />
+    <file path="firmware_strings_zh-CN.xtb" lang="zh-CN" />
+    <file path="firmware_strings_zh-TW.xtb" lang="zh-TW" />
+  </translations>
+  <release seq="1">
+    <messages fallback_to_english="true">
+      <message name="firmware_sync_title" desc="Title of screen shown when chromebook is updating the firmware on the embedded chip.">
+Please do not power off your device
+      </message>
+      <message name="firmware_sync_desc" desc="Description of screen shown when chromebook is updating the firmware on the embedded chip.">
+Your system is applying a critical update.
+      </message>
+      <message name="broken_title" desc="Title of screen shown when chromebook is in broken screen.">
+Something is wrong
+      </message>
+      <message name="broken_desc0" desc="line 1 of description of screen shown when chromebook is in broken screen.  String continues to broken_desc1 string.">
+Please remove all connected devices and hold down Escape, Refresh, and Power to
+      </message>
+      <message name="broken_desc1" desc="line 2 of screen shown when chromebook is in broken screen.  This is a continuation of the broken_desc0 string.">
+initiate recovery.
+      </message>
+      <message name="broken_desc0_phyrec" desc="line 1 of description of screen shown when chromebox/chromebit is in broken screen.  String continued to broken_desc1_phyrec string.">
+Please remove all connected devices. Then, hold down the Recovery button,
+      </message>
+      <message name="broken_desc1_phyrec" desc="line 2 of screen shown when chromebox/chromebit is in broken screen.  This is a continuation of the broken_desc0_phyrec string.">
+press Power, and release the Recovery button to initiate recovery.
+      </message>
+      <message name="broken_desc0_detach" desc="line 1 of description of screen shown when chromeos tablet is in broken screen.  String continues to broken_desc1_tablet string.">
+Please remove all connected devices and hold down Volume Up, Volume Down,
+      </message>
+      <message name="broken_desc1_detach" desc="line 2 of screen shown when chromeos tablet is in broken screen.  This is a continuation of broken_desc0_tablet string.">
+and Power to initiate recovery.
+      </message>
+      <message name="adv_options_title" desc="Title for the advanced options screen.">
+Advanced options
+      </message>
+      <message name="btn_dev_mode" desc="String for button to initiate the transition of the device into developer mode">
+Enable developer mode
+      </message>
+      <message name="rec_sel_title" desc="Title for the recovery screen (after user presses three finger salute, ie: ctrl + refresh + power).">
+Let’s step you through the recovery process
+      </message>
+      <message name="rec_sel_desc0" desc="Description string0 for the recovery screen (after user presses three finger salute, ie: ctrl + refresh + power).">
+Select how you’d like to recover.
+      </message>
+      <message name="rec_sel_desc1" desc="Description string1 for the recovery screen (after user presses three finger salue, ie: ctrl + refresh + power).">
+You can recover using external storage such as a USB drive, an SD card, or using your Android phone.
+      </message>
+      <message name="rec_sel_desc1_no_sd" desc="Description string1 for the recovery screen (after user presses three finger salue, ie: ctrl + refresh + power) when no SD card is present in the device.">
+You can recover using external storage such as a USB drive, or using your Android phone.
+      </message>
+      <message name="rec_sel_desc1_no_phone" desc="Description string1 for the recovery screen (after user presses three finger salue, ie: ctrl + refresh + power) when no phone recovery is available on the device.">
+You can recover using external storage such as a USB drive or an SD card.
+      </message>
+      <message name="rec_sel_desc1_no_phone_no_sd" desc="Description string1 for the recovery screen (after user presses three finger salue, ie: ctrl + refresh + power) when no phone recovery or SD card are available on the device.">
+You can recover using external storage such as a USB drive.
+      </message>
+      <message name="btn_rec_by_phone" desc="Button to select phone recovery.">
+Recovery using phone
+      </message>
+      <message name="btn_rec_by_disk" desc="Button to select recovery through external disk.">
+Recovery using external disk
+      </message>
+      <message name="rec_step1_title" desc="Title for Step1 in the recovery process.">
+To proceed with the recovery process, you’ll need
+      </message>
+      <message name="rec_step1_desc2" desc="String1 for Step1 in the recovery process.">
+We also recommend that you connect to a power source during the recovery process.
+      </message>
+      <message name="rec_step1_desc2_low_bat" desc="String2 for Step1 in the recovery process.  This is shown when the device has low battery">
+3. A power source for this device
+      </message>
+      <message name="rec_phone_step1_desc0" desc="String1 for Step1 in the recovery process.  This is shown when the phone is selected as the recovery method.">
+1. An Android phone with internet access
+      </message>
+      <message name="rec_phone_step1_desc1" desc="String2 for Step1 in the recovery process.">
+2. A USB cable which connects your phone and this device
+      </message>
+      <message name="rec_phone_step2_title" desc="Title for using the phone as a recovery method.">
+Recovery using phone
+      </message>
+      <message name="rec_phone_step2_desc0" desc="String1 for instructions using the phone as a recovery method.  This string should be translated in the order: rec_phone_step2_desc0, rec_phone_step2_desc1, rec_phone_step2_desc2, rec_phone_step2_desc3.">
+Download the Chrome OS recovery app on your Android phone by
+      </message>
+      <message name="rec_phone_step2_desc1" desc="String2 for instructions using the phone as a recovery method.  This string should be translated in the order: rec_phone_step2_desc0, rec_phone_step2_desc1, rec_phone_step2_desc2, rec_phone_step2_desc3.">
+plugging in your phone or by scanning the QR code on the right.
+      </message>
+      <message name="rec_phone_step2_desc2" desc="String3 for instructions using the phone as a recovery method.  This string should be translated in the order: rec_phone_step2_desc0, rec_phone_step2_desc1, rec_phone_step2_desc2, rec_phone_step2_desc3.">
+Once you launch the app, connect your phone to your device and
+      </message>
+      <message name="rec_phone_step2_desc3" desc="String4 for instructions using the phone as a recovery method.  This string should be translated in the order: rec_phone_step2_desc0, rec_phone_step2_desc1, rec_phone_step2_desc2, rec_phone_step2_desc3..">
+recovery will start automatically.
+      </message>
+      <message name="rec_disk_step1_desc0" desc="Description string0 for step1 in the recovery process.">
+1. An external storage disk such as a USB drive or an SD card
+      </message>
+      <message name="rec_disk_step1_desc0_no_sd" desc="Description string0 for step1 in the recovery process when no SD card is present on the device.">
+1. An external storage disk such as a USB drive
+      </message>
+      <message name="rec_disk_step1_desc1" desc="Description string1 for step1 in the recovery process.">
+2. An additional device with internet access
+      </message>
+      <message name="rec_disk_step2_title" desc="Title for step2 in the recovery process.">
+External disk setup
+      </message>
+      <message name="rec_disk_step2_desc0" desc="Description string0 for step2 in the recovery process.">
+1. Go to google.com/chromeos/recovery on another computer and install the Chrome extension
+      </message>
+      <message name="rec_disk_step2_desc1" desc="Description string1 for step2 in the recovery process.">
+2. Follow instructions on the Chrome extension, and download the recovery image onto an external disk
+      </message>
+      <message name="rec_disk_step2_desc2" desc="Description string2 for step2 in the recovery process.">
+3. Click next when your external disk is ready with the recovery image
+      </message>
+      <message name="rec_disk_step3_title" desc="Title for step3 in the recovery process.">
+Do you have your external disk ready?
+      </message>
+      <message name="rec_disk_step3_desc0" desc="Description string0 for step3 in the recovery process.">
+If your external disk is ready with a recovery image, plug it into the device to start the recovery process.
+      </message>
+      <message name="rec_invalid_title" desc="Title for invalid disk plugged inserted.">
+No valid image detected
+      </message>
+      <message name="rec_invalid_desc0" desc="String0 for invalid disk or phone plugged inserted.">
+Make sure your phone is running the Chrome OS recovery app, or that your external
+      </message>
+      <message name="rec_invalid_desc1" desc="String1 for invalid disk or phone plugged inserted.">
+disk has a valid recovery image on it. Re-insert the cable or disk when ready.
+      </message>
+      <message name="rec_invalid_disk_desc0" desc="String0 for invalid disk plugged inserted.">
+Make sure your external disk has a valid recovery image, and re-insert the disk
+      </message>
+      <message name="rec_invalid_disk_desc1" desc="String1 for invalid disk plugged inserted.">
+when ready.
+      </message>
+      <message name="rec_to_dev_title" desc="Title for transition to dev mode.">
+You are attempting to enable developer mode
+      </message>
+      <message name="rec_to_dev_desc0" desc="String0 for transition to dev mode.">
+This involves erasing all data from your device, and will make your device insecure.
+      </message>
+      <message name="rec_to_dev_desc1" desc="String1 for transition to dev mode.">
+Select “Cancel” to remain protected.
+      </message>
+      <message name="rec_to_dev_desc1_phyrec" desc="String1 for transition to dev mode for chromeboxes.">
+Press the RECOVERY button to enable developer mode, or select “Cancel” to remain protected.
+      </message>
+      <message name="rec_to_dev_desc1_power" desc="String1 for transition to dev mode for detachables and tablets.">
+Press the POWER button to enable developer mode, or select “Cancel” to remain protected.
+      </message>
+      <message name="dev_title" desc="Title for the developer warning screen.">
+You are in developer mode
+      </message>
+      <message name="dev_desc0" desc="String0 for developer warning screen.">
+To return to the recommended secure mode, select “Return to secure mode” below.
+      </message>
+      <message name="dev_desc1" desc="String1 for developer warning screen.">
+After timeout, the device will automatically boot from the internal disk.
+      </message>
+      <message name="btn_secure_mode" desc="Button for going back to secure mode.">
+Return to secure mode
+      </message>
+      <message name="btn_int_disk" desc="Button for booting into internal disk.">
+Boot from internal disk
+      </message>
+      <message name="btn_ext_disk" desc="Button for booting into the external disk.">
+Boot from external disk
+      </message>
+      <message name="dev_to_norm_title" desc="Title for screen for transition from developer to normal mode.">
+Confirm returning to secure mode
+      </message>
+      <message name="dev_to_norm_desc0" desc="String0 for screen for transition from developer to normal mode.">
+This option will disable developer mode and restore your device to its original state.
+      </message>
+      <message name="dev_to_norm_desc1" desc="String1 for screen for transition from developer to normal mode.">
+Your user data will be wiped in the process.
+      </message>
+      <message name="dev_boot_ext_title" desc="Title for screen instructing user to plug in their USB/SD card containing a ChromeOS recovery image.">
+Plug in your external disk
+      </message>
+      <message name="dev_boot_ext_desc0" desc="String1 for screen instructing user to plug in their USB/SD card containing a CHromeOS recovery image.">
+If your external disk is ready with a Chrome OS image, plug it into the device to boot.
+      </message>
+      <message name="dev_invalid_disk_title" desc="Title for screen that appears when user plugs in a USB/SD card with an invalid image on it.">
+No valid image detected
+      </message>
+      <message name="dev_invalid_disk_desc0" desc="String1 for screen that appears when user plugs in a USB/SD card with an invalid image on it.">
+Make sure your external disk has a valid Chrome OS image, and re-insert the disk when ready.
+      </message>
+      <message name="btn_adv_options" desc="String for the advanced options button.">
+Advanced options
+      </message>
+      <message name="btn_next" desc="String for the next button.">
+Next
+      </message>
+      <message name="btn_back" desc="String for the back button.">
+Back
+      </message>
+      <message name="btn_confirm" desc="String for the confirm button.">
+Confirm
+      </message>
+      <message name="btn_cancel" desc="String for the canel button.">
+Cancel
+      </message>
+      <message name="model" desc="String for the model label.">
+Model:
+      </message>
+      <message name="help_center" desc="String for the help center label.">
+Help center:
+      </message>
+      <message name="rec_url" desc="String for the help center url.">
+http://google.com/chromeos/recovery
+      </message>
+      <message name="to_navigate" desc="Navigation Instructions label.">
+To navigate:
+      </message>
+      <message name="navigate" desc="Instructions for navigating on a chromebook or chromebox.">
+Use enter key and up and down arrow keys.
+      </message>
+      <message name="navigate_tablet" desc="Instructions for navigating on a tablet or detachable.">
+Use power button and volume buttons on the side of the device.
+      </message>
+    </messages>
+  </release>
+</grit>

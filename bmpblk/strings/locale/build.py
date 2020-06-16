@@ -9,16 +9,18 @@ Usage:
    ./build.py <locale-list>
 """
 
-# TODO(hungte) Read, write and handle UTF8 BOM.
-
 import signal
 import enum
 import glob
+import io
+import json
 import multiprocessing
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 
 from PIL import Image
 import yaml
@@ -36,7 +38,8 @@ VENDOR_INPUTS = 'vendor_inputs'
 VENDOR_FILES = 'vendor_files'
 DIAGNOSTIC_FILES = 'diagnostic_files'
 
-STRINGS_FILE = 'strings.txt'
+STRINGS_GRD_FILE = 'firmware_strings.grd'
+STRINGS_JSON_FILE_TMPL = '{}.json'
 LEGACY_STRINGS_FILE = 'legacy_strings.txt'
 LEGACY_MENU_STRINGS_FILE = 'legacy_menu_strings.txt'
 VENDOR_STRINGS_FILE = 'vendor_strings.txt'
@@ -50,6 +53,13 @@ OUTPUT_DIR = os.path.join(os.getenv('OUTPUT', os.path.join(SCRIPT_BASE, '..',
 
 VENDOR_STRINGS_DIR = os.getenv("VENDOR_STRINGS_DIR")
 VENDOR_STRINGS = VENDOR_STRINGS_DIR != None
+
+# Regular expressions used to eliminate spurious spaces and newlines in
+# translation strings.
+NEWLINE_PATTERN = re.compile(r'([^\n])\n([^\n])')
+NEWLINE_REPLACEMENT = r'\1 \2'
+CRLF_PATTERN = re.compile(r'\r\n')
+MULTIBLANK_PATTERN = re.compile(r'   *')
 
 class UIType(enum.Enum):
   MENU = 1
@@ -80,7 +90,7 @@ def ParseLocaleInputFile(locale_dir, strings_file, input_format):
     A dictionary for mapping of "name to content" for files to be generated.
   """
   input_file = os.path.join(locale_dir, strings_file)
-  with open(input_file, 'r') as f:
+  with io.open(input_file, 'r', encoding='utf-8-sig') as f:
     input_data = f.readlines()
   if len(input_data) != len(input_format):
     raise DataError('Input file <%s> for locale <%s> '
@@ -89,26 +99,69 @@ def ParseLocaleInputFile(locale_dir, strings_file, input_format):
   input_data = [s.strip() for s in input_data]
   return dict(zip(input_format, input_data))
 
-def ParseLocaleInputFiles(locale_dir, input_format,
-                          legacy_menu_format, vendor_format):
+def ParseLocaleInputJsonFile(locale, strings_json_file_tmpl, json_dir):
+  """Parses given firmware string json file for BuildTextFiles
+
+  Args:
+    locale: The name of the locale, e.g. "da" or "pt-BR".
+    strings_json_file_tmpl: The template for the json input file name.
+    json_dir: Directory containing json output from grit.
+
+  Returns:
+    A dictionary for mapping of "name to content" for files to be generated.
+  """
+  result = LoadLocaleJsonFile(locale, strings_json_file_tmpl, json_dir)
+  original = LoadLocaleJsonFile("en", strings_json_file_tmpl, json_dir)
+  for tag in original:
+    if not tag in result:
+      # Use original English text, in case translation is not yet available
+      print 'WARNING: locale "' + locale + '", missing entry ' + tag
+      result[tag] = original[tag]
+
+  return result
+
+def LoadLocaleJsonFile(locale, strings_json_file_tmpl, json_dir):
+  result = {}
+  filename = os.path.join(json_dir, strings_json_file_tmpl.format(locale))
+  with io.open(filename, encoding='utf-8-sig') as input_file:
+    for tag, msgdict in json.load(input_file).items():
+      msgtext = msgdict['message']
+      msgtext = re.sub(CRLF_PATTERN, '\n', msgtext)
+      msgtext = re.sub(NEWLINE_PATTERN, NEWLINE_REPLACEMENT, msgtext)
+      msgtext = re.sub(MULTIBLANK_PATTERN, ' ', msgtext)
+      # Strip any trailing whitespace.  A trailing newline appears to make
+      # Pango report a larger layout size than what's actually visible.
+      msgtext = msgtext.strip()
+      result[tag] = msgtext
+  return result
+
+def ParseLocaleInputFiles(locale_dir, legacy_input_format,
+                          legacy_menu_format, vendor_format, json_dir):
   """Parses all firmware string files in given locale directory for
   BuildTextFiles
 
   Args:
     locale: The locale folder with firmware string files.
-    input_format: Format description for each line in LEGACY_STRINGS_FILE.
+    legacy_input_format: Format description for each line
+                         in LEGACY_STRINGS_FILE.
     legacy_menu_format: Format description for each line in
       LEGACY_MENU_STRINGS_FILE.
     vendor_format: Format description for each line in VENDOR_STRINGS_FILE.
+    json_dir: Directory containing json output from grit.
 
   Returns:
     A dictionary for mapping of "name to content" for files to be generated.
   """
   result = dict()
-  result.update(ParseLocaleInputFile(locale_dir,
-                                     STRINGS_FILE if UI == UIType.MENU
-                                     else LEGACY_STRINGS_FILE,
-                                     input_format))
+  if UI == UIType.MENU:
+    result.update(ParseLocaleInputJsonFile(locale_dir,
+                                           STRINGS_JSON_FILE_TMPL,
+                                           json_dir))
+  else:
+    result.update(ParseLocaleInputFile(locale_dir,
+                                       LEGACY_STRINGS_FILE,
+                                       legacy_input_format))
+
   # Now parse legacy menu strings
   if UI == UIType.LEGACY_MENU:
     print " (legacy_menu_ui enabled)"
@@ -131,7 +184,7 @@ def ParseLocaleInputFiles(locale_dir, input_format,
         os.path.basename(input_file) == VENDOR_STRINGS_FILE):
       continue
     name, _ = os.path.splitext(os.path.basename(input_file))
-    with open(input_file, "r") as f:
+    with io.open(input_file, 'r', encoding='utf-8-sig') as f:
       result[name] = f.read().strip()
 
   return result
@@ -146,7 +199,7 @@ def CreateFile(file_name, contents, output_dir):
     output_dir: The directory to store output file.
   """
   output_name = os.path.join(output_dir, file_name + '.txt')
-  with open(output_name, 'w') as f:
+  with io.open(output_name, 'w', encoding='utf-8-sig') as f:
     f.write('\n'.join(contents) + '\n')
 
 
@@ -228,6 +281,29 @@ def main(argv):
     with open(os.path.join(VENDOR_STRINGS_DIR, VENDOR_FORMAT_FILE)) as f:
       formats.update(yaml.load(f))
 
+  json_dir = None
+  if UI == UIType.MENU:
+    # Sources are one .grd file with identifiers chosen by engineers and
+    # corresponding English texts, as well as a set of .xlt files (one for each
+    # language other than US english) with a mapping from hash to translation.
+    # Because the keys in the xlt files are a hash of the English source text,
+    # rather than our identifiers, such as "btn_cancel", we use the "grit"
+    # command line tool to process the .grd and .xlt files, producing a set of
+    # .json files mapping our identifier to the translated string, one for every
+    # language including US English.
+
+    # Create a temporary directory to place the translation output from grit in.
+    json_dir = tempfile.mkdtemp()
+    # This invokes the grit build command to generate JSON files from the XTB
+    # files containing translations.  The results are placed in `json_dir` as
+    # specified in firmware_strings.grd, i.e. one JSON file per locale.
+    subprocess.check_call([
+        'grit',
+        '-i', STRINGS_GRD_FILE,
+        'build',
+        '-o', os.path.join(json_dir)
+    ])
+
   # Decide locales to build.
   if len(argv) > 0:
     locales = argv
@@ -247,7 +323,8 @@ def main(argv):
     inputs = ParseLocaleInputFiles(locale, formats[KEY_INPUTS],
                                    formats.get(LEGACY_MENU_INPUTS),
                                    formats[VENDOR_INPUTS] if VENDOR_STRINGS
-                                                          else None)
+                                                          else None,
+                                   json_dir)
     output_dir = os.path.normpath(os.path.join(OUTPUT_DIR, locale))
     if not os.path.exists(output_dir):
       os.makedirs(output_dir)
@@ -272,6 +349,8 @@ def main(argv):
                                   output_dir))
                 for file_name in formats[KEY_FILES]]
   pool.close()
+  if json_dir is not None:
+    shutil.rmtree(json_dir)
   print ""
 
   try:
