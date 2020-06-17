@@ -133,10 +133,10 @@ Please remove all connected devices. Then, hold down the Recovery button,
       <message name="broken_desc1_phyrec" desc="line 2 of screen shown when chromebox/chromebit is in broken screen.  This is a continuation of the broken_desc0_phyrec string.">
 press Power, and release the Recovery button to initiate recovery.
       </message>
-      <message name="broken_desc0_detach" desc="line 1 of description of screen shown when chromeos tablet is in broken screen.  String continues to broken_desc1_tablet string.">
+      <message name="broken_desc0_detach" desc="line 1 of description of screen shown when chromeos tablet is in broken screen.  String continues to broken_desc1_detach string.">
 Please remove all connected devices and hold down Volume Up, Volume Down,
       </message>
-      <message name="broken_desc1_detach" desc="line 2 of screen shown when chromeos tablet is in broken screen.  This is a continuation of broken_desc0_tablet string.">
+      <message name="broken_desc1_detach" desc="line 2 of screen shown when chromeos tablet is in broken screen.  This is a continuation of broken_desc0_detach string.">
 and Power to initiate recovery.
       </message>
       <message name="adv_options_title" desc="Title for the advanced options screen.">
