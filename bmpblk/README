@@ -2,9 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-This directory contains the sources for the new-style BIOS bitmaps, and a
-simple (and ugly) tool to view the configuration file that describes how
-each screen is displayed.
+This directory contains the sources for the new-style BIOS bitmaps.
 
 Note:
 
@@ -122,17 +120,6 @@ Example:
 
   make LOCALES="en ja es" make link
 
-Note if you want to use the "bitmap viewer" utility, since we don't have
-wxWidgets and X environment inside SDK, it's currently only available OUTSIDE
-chroot and you have to install these packages manually.  For example, on
-Ubuntu systems, do:
-
-  sudo apt-get install python-yaml python-wxgtk2.8
-
-And then you can preview the bitmaps by following commands (outside chroot):
-
-  ./bitmapviewer build/$BOARD/DEFAULT.yaml 1366x768
-
 -------------------
 Adding a new target:
 
@@ -222,65 +209,27 @@ Now to build images for the new target (as $BOARD) run:
 
   $ make "$BOARD"
 
-The bitmaps and output binary (bmpblk.bin) can be found in ./build/$BOARD.
-
-You can preview the images by running Bitmap Viewer OUTSIDE chroot:
-  $ ./bitmap_viewer build/$BOARD/DEFAULT.yaml
-
-Information about integrating new bitmaps into the firmware images can
-be found in http://goo.gl/yXBvz
-
 
 ------------------------------------
-Handling generated bitmaps:
+Bitmaps in firmware image.
 
-You can use futility to modify your BIOS to contain this new set of bitmaps:
+After emerging chromeos-bmpblk, bitmaps will be stored in the following files:
+1. vbgfx.bin: archive of generic (locale-independent) bitmaps
+2. locale_${LOCALE}.bin: archive of bitmaps for locale ${LOCALE}
+3. font.bin: archive of character bitmaps
 
-  futility gbb -s -b PATH/TO/YOUR/bmpblk.bin OLDBIOS.bin NEWBIOS.bin
+These archive files for Chromium OS firmware will be created using the 'archive'
+command from Coreboot utils (`src/third_party/coreboot/util/archive`). These
+files will end up being stored in the FMAP region COREBOOT in the image.
 
+To show these files in an image ${IMAGE}, run
 
+  cbfstool ${IMAGE} print -r COREBOOT
 
-You can do that last step on the chromebook device itself, provided that the
-BIOS write-protection is disabled. futility should be in the rootfs:
+To extract an archive ${NAME} from an image as ${FILE}, run
 
-  Become root:
+  cbfstool ${IMAGE} extract -r COREBOOT -n ${NAME} -f {FILE}
 
-    sudo bash
-
-  Copy your new bmpblock over:
-
-    cd /mnt/stateful_partition
-    scp USER@SOMEHOST:/SOMEPATH/bmpblk.bin .
-
-  Get a copy of the current BIOS:
-
-    flashrom -p host -r bios.bin
-
-  Put the new bmpblock in the copy of the BIOS:
-
-    futility gbb -s -b bmpblk.bin bios.bin
-
-  Reflash the BIOS with the new content
-
-    flashrom -p host -w bios.bin
-
-  Reboot. You should see your new bitmaps appear whenever the BIOS screens
-  are displayed. If you have more than one localization, you should be able
-  to cycle among them with the arrow keys.
-
-
-If you want to examine a binary bmpblock that you've pulled from a BIOS
-image, the bmpblk_utility has options to display or unpack the binary.
-
-  bmpblk_utility bmpblk.bin
-
-  bmpblk_utility -y bmpblk.bin
-
-  bmpblk_utility -x -d /SOME/SCRATCH/DIR bmpblk.bin
-
-Once you've unpacked it you can use the bitmap_viewer on the unpacked
-config.yaml file to see what it looks like. There's not (yet) a single tool
-that directly displays the raw binary.
 
 ------------------------------------------------------------------------------
 If you want to build OUTSIDE chroot, here's some information:
@@ -302,10 +251,6 @@ Currently Ubuntu Trusty (14.04) does not have some of required font files
   sudo tar -xvf noto-cjk-20140912.tar.bz2 -C /usr/share/fonts/truetype
   sudo fc-cache  # Reload font cache.
 
-If you want to use the "bitmap viewer" utility, add these packages:
-
-  sudo apt-get install python-yaml python-wxgtk2.8
-
 We also need some utilities from ChromiumOS source tree. You need to install
 dependency libraries for them:
 
@@ -313,13 +258,3 @@ dependency libraries for them:
 
 On older Ubuntu installations you would also need liblzml-dev, on newer ones -
 liblzma-dev, try installing both, one at a time, at least one must succeed.
-
-Now, time to build the utilities in vboot_reference outside of the chroot:
-
-  cd src/platform/vboot_reference
-  make
-
-Once you've built vboot_reference you'll find the executables in
-./build/utility/bmpblk*. If they were built in the standard place they
-will be found by this tool automatically. If not, their location must be added
-to your $PATH.
