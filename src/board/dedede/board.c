@@ -5,8 +5,14 @@
  * Board file for Dedede.
  */
 
+#include <pci.h>
+#include <pci/pci.h>
+#include <sysinfo.h>
+
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "drivers/bus/i2c/designware.h"
+#include "drivers/bus/i2c/i2c.h"
 #include "drivers/bus/i2s/cavs-regs.h"
 #include "drivers/bus/i2s/intel_common/max98357a.h"
 #include "drivers/bus/spi/intel_gspi.h"
@@ -21,6 +27,7 @@
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/max98357a.h"
 #include "drivers/sound/route.h"
+#include "drivers/sound/rt1015.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
 #include "drivers/tpm/spi.h"
@@ -40,6 +47,8 @@
 #define AUD_SAMPLE_RATE		48000
 #define EN_SPK_PIN		GPP_D17
 #define AUD_NUM_CHANNELS	2
+#define AUD_I2C4		PCI_DEV(0, 0x19, 0)
+#define SPEED_HZ		400000
 
 static int cr50_irq_status(void)
 {
@@ -61,6 +70,15 @@ static void dedede_setup_tpm(void)
 		tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0_params),
 					 cr50_irq_status)->ops);
 	}
+}
+
+static int is_board_waddledee(void)
+{
+	static const char * const board_str = "Waddledee";
+	struct cb_mainboard *mainboard = lib_sysinfo.mainboard;
+
+	return strncmp(cb_mb_part_string(mainboard),
+			board_str, strlen(board_str)) == 0;
 }
 
 static int board_setup(void)
@@ -96,21 +114,43 @@ static int board_setup(void)
 			&removable_block_dev_controllers);
 
 	/* Audio Beep Support */
-	GpioOps *spk_en = &new_jasperlake_gpio_output(EN_SPK_PIN, 0)->ops;
-	/* Use common i2s settings */
-	I2s *i2s = new_i2s_structure(&max98357a_settings, AUD_BITDEPTH, spk_en,
-				     SSP_I2S1_START_ADDRESS);
-	I2sSource *i2s_source = new_i2s_source(&i2s->ops, AUD_SAMPLE_RATE,
-					       AUD_NUM_CHANNELS, AUD_VOLUME);
+	if (is_board_waddledee()) {
+		/*
+		 * ALC1015 codec uses internal control to shut down, so we can
+		 * leave EN_SPK_PIN/SDB gpio pad alone.
+		 * max98357a_settings is the common I2sSettings for cAVS i2s.
+		 */
+		I2s *i2s = new_i2s_structure(&max98357a_settings, AUD_BITDEPTH, 0,
+					     SSP_I2S1_START_ADDRESS);
+		I2sSource *i2s_source = new_i2s_source(&i2s->ops, AUD_SAMPLE_RATE,
+						       AUD_NUM_CHANNELS, AUD_VOLUME);
+		SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+		/* Setup i2c */
+		DesignwareI2c *i2c = new_pci_designware_i2c(AUD_I2C4, SPEED_HZ,
+							    JASPERLAKE_DW_I2C_MHZ);
+		rt1015Codec *speaker_amp = new_rt1015_codec(&i2c->ops,
+							    AUD_RT1015_DEVICE_ADDR);
 
-	/* Connect the Codec to the I2S source */
-	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
-	/* Re-use max98357aCodec for max98360a */
-	max98357aCodec *speaker_amp = new_max98357a_codec(spk_en);
+		list_insert_after(&speaker_amp->component.list_node,
+				  &sound_route->components);
+		sound_set_ops(&sound_route->ops);
+	} else {
+		GpioOps *spk_en = &new_jasperlake_gpio_output(EN_SPK_PIN, 0)->ops;
+		/* Use common i2s settings */
+		I2s *i2s = new_i2s_structure(&max98357a_settings, AUD_BITDEPTH, spk_en,
+					     SSP_I2S1_START_ADDRESS);
+		I2sSource *i2s_source = new_i2s_source(&i2s->ops, AUD_SAMPLE_RATE,
+						       AUD_NUM_CHANNELS, AUD_VOLUME);
 
-	list_insert_after(&speaker_amp->component.list_node,
-			  &sound_route->components);
-	sound_set_ops(&sound_route->ops);
+		/* Connect the Codec to the I2S source */
+		SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+		/* Re-use max98357aCodec for max98360a */
+		max98357aCodec *speaker_amp = new_max98357a_codec(spk_en);
+
+		list_insert_after(&speaker_amp->component.list_node,
+				  &sound_route->components);
+		sound_set_ops(&sound_route->ops);
+	}
 
 	return 0;
 }
