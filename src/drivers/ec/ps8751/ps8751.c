@@ -147,6 +147,8 @@
 #define PARADE_PS8805_BROKEN_PRODUCT_ID	0x8803
 #define PARADE_PS8805_PRODUCT_ID	0x8805
 #define PARADE_PS8815_PRODUCT_ID	0x8815
+#define PARADE_PS8815_A0_DEVICE_ID	0x0001
+#define PARADE_PS8815_A1_DEVICE_ID	0x0002
 
 enum ps8751_device_state {
 	PS8751_DEVICE_MISSING = -2,
@@ -1487,9 +1489,16 @@ static const VbootAuxfwOps ps8805_fw_ops = {
 	.update_image = ps8751_update_image,
 };
 
-static const VbootAuxfwOps ps8815_fw_ops = {
+static const VbootAuxfwOps ps8815_a0_fw_ops = {
 	.fw_image_name = "ps8815_a0.bin",
 	.fw_hash_name = "ps8815_a0.hash",
+	.check_hash = ps8751_check_hash,
+	.update_image = ps8751_update_image,
+};
+
+static const VbootAuxfwOps ps8815_a1_fw_ops = {
+	.fw_image_name = "ps8815_a1.bin",
+	.fw_hash_name = "ps8815_a1.hash",
 	.check_hash = ps8751_check_hash,
 	.update_image = ps8751_update_image,
 };
@@ -1533,17 +1542,28 @@ Ps8751 *new_ps8805(CrosECTunnelI2c *bus, int ec_pd_id)
 	return me;
 }
 
-Ps8751 *new_ps8815(CrosECTunnelI2c *bus, int ec_pd_id)
+static Ps8751 *new_ps8815(CrosECTunnelI2c *bus, int ec_pd_id,
+			  const VbootAuxfwOps *fw_ops)
 {
 	Ps8751 *me = xzalloc(sizeof(*me));
 
 	me->bus = bus;
 	me->ec_pd_id = ec_pd_id;
-	me->fw_ops = ps8815_fw_ops;
+	me->fw_ops = *fw_ops;
 	me->chip_type = CHIP_PS8815;
 	snprintf(me->chip_name, sizeof(me->chip_name), "ps8815.%d", ec_pd_id);
 
 	return me;
+}
+
+Ps8751 *new_ps8815_a0(CrosECTunnelI2c *bus, int ec_pd_id)
+{
+	return new_ps8815(bus, ec_pd_id, &ps8815_a0_fw_ops);
+}
+
+Ps8751 *new_ps8815_a1(CrosECTunnelI2c *bus, int ec_pd_id)
+{
+	return new_ps8815(bus, ec_pd_id, &ps8815_a1_fw_ops);
 }
 
 static const VbootAuxfwOps *new_ps8xxx_from_chip_info(
@@ -1559,10 +1579,19 @@ static const VbootAuxfwOps *new_ps8xxx_from_chip_info(
 		ps8751 = new_ps8805(NULL, ec_pd_id);
 		break;
 	case PARADE_PS8815_PRODUCT_ID:
-		ps8751 = new_ps8815(NULL, ec_pd_id);
+		switch (r->device_id) {
+		case PARADE_PS8815_A0_DEVICE_ID:
+			ps8751 = new_ps8815_a0(NULL, ec_pd_id);
+			break;
+		case PARADE_PS8815_A1_DEVICE_ID:
+			ps8751 = new_ps8815_a1(NULL, ec_pd_id);
+			break;
+		default:
+			return NULL;
+		}
 		break;
 	default:
-		return 0;
+		return NULL;
 	}
 	ps8751->chip.vendor = r->vendor_id;
 	ps8751->chip.product = r->product_id;
@@ -1580,15 +1609,15 @@ static CrosEcAuxfwChipInfo aux_fw_ps8751_info = {
 	.new_chip_aux_fw_ops = new_ps8xxx_from_chip_info,
 };
 
-static CrosEcAuxfwChipInfo aux_fw_ps8815_info = {
-	.vid = PARADE_VENDOR_ID,
-	.pid = PARADE_PS8815_PRODUCT_ID,
-	.new_chip_aux_fw_ops = new_ps8xxx_from_chip_info,
-};
-
 static CrosEcAuxfwChipInfo aux_fw_ps8805_info = {
 	.vid = PARADE_VENDOR_ID,
 	.pid = PARADE_PS8805_PRODUCT_ID,
+	.new_chip_aux_fw_ops = new_ps8xxx_from_chip_info,
+};
+
+static CrosEcAuxfwChipInfo aux_fw_ps8815_info = {
+	.vid = PARADE_VENDOR_ID,
+	.pid = PARADE_PS8815_PRODUCT_ID,
 	.new_chip_aux_fw_ops = new_ps8xxx_from_chip_info,
 };
 
