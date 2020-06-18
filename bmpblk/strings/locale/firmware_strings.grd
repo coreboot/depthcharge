@@ -28,7 +28,7 @@
     <output filename="hu.json" type="chrome_messages_json" lang="hu" />
     <output filename="id.json" type="chrome_messages_json" lang="id" />
     <output filename="it.json" type="chrome_messages_json" lang="it" />
-    <output filename="iw.json" type="chrome_messages_json" lang="iw" />
+    <output filename="he.json" type="chrome_messages_json" lang="iw" />
     <output filename="ja.json" type="chrome_messages_json" lang="ja" />
     <output filename="kn.json" type="chrome_messages_json" lang="kn" />
     <output filename="ko.json" type="chrome_messages_json" lang="ko" />
@@ -38,7 +38,7 @@
     <output filename="mr.json" type="chrome_messages_json" lang="mr" />
     <output filename="ms.json" type="chrome_messages_json" lang="ms" />
     <output filename="nl.json" type="chrome_messages_json" lang="nl" />
-    <output filename="no.json" type="chrome_messages_json" lang="no" />
+    <output filename="nb.json" type="chrome_messages_json" lang="no" />
     <output filename="pl.json" type="chrome_messages_json" lang="pl" />
     <output filename="pt-BR.json" type="chrome_messages_json" lang="pt-BR" />
     <output filename="pt-PT.json" type="chrome_messages_json" lang="pt-PT" />

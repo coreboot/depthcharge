@@ -288,10 +288,23 @@ class Converter(object):
   def set_locales(self):
     """Set a list of locales for which localized images are converted"""
     # LOCALES environment variable can overwrite boards.yaml
+    env_locales = os.getenv('LOCALES')
     rtl_locales = set(self.config[RTL_KEY])
     hi_res_locales = set(self.config[HI_RES_KEY])
-    # TODO(b/144969853): Support all locales for MENU_UI.
-    locales = ['en']
+    if env_locales:
+      locales = env_locales.split()
+    else:
+      locales = self.config[LOCALES_KEY]
+      # Check rtl_locales are contained in locales.
+      unknown_rtl_locales = rtl_locales - set(locales)
+      if unknown_rtl_locales:
+        raise BuildImageError('Unknown locales %s in %s' %
+                              (list(unknown_rtl_locales), RTL_KEY))
+      # Check hi_res_locales are contained in locales.
+      unknown_hi_res_locales = hi_res_locales - set(locales)
+      if unknown_hi_res_locales:
+        raise BuildImageError('Unknown locales %s in %s' %
+                              (list(unknown_hi_res_locales), HI_RES_KEY))
     self.locales = [LocaleInfo(code, code in rtl_locales,
                                code in hi_res_locales)
                     for code in locales]
@@ -613,30 +626,6 @@ class LegacyConverter(Converter):
 
     if os.getenv("LEGACY_MENU_UI") == "1":
       self.replace_map['VerificationOff'] = ''
-
-  def set_locales(self):
-    """Set a list of locales for which localized images are converted"""
-    # LOCALES environment variable can overwrite boards.yaml
-    env_locales = os.getenv('LOCALES')
-    rtl_locales = set(self.config[RTL_KEY])
-    hi_res_locales = set(self.config[HI_RES_KEY])
-    if env_locales:
-      locales = env_locales.split()
-    else:
-      locales = self.config[LOCALES_KEY]
-      # Check rtl_locales are contained in locales.
-      unknown_rtl_locales = rtl_locales - set(locales)
-      if unknown_rtl_locales:
-        raise BuildImageError('Unknown locales %s in %s' %
-                              (list(unknown_rtl_locales), RTL_KEY))
-      # Check hi_res_locales are contained in locales.
-      unknown_hi_res_locales = hi_res_locales - set(locales)
-      if unknown_hi_res_locales:
-        raise BuildImageError('Unknown locales %s in %s' %
-                              (list(unknown_hi_res_locales), HI_RES_KEY))
-    self.locales = [LocaleInfo(code, code in rtl_locales,
-                               code in hi_res_locales)
-                    for code in locales]
 
   def convert_url(self):
     """Convert URL and arrows"""
