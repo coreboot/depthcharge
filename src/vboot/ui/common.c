@@ -53,18 +53,7 @@ static int count_lines(const char *str)
 	return num_lines;
 }
 
-/*
- * Print a fallback message on the top of the screen.
- *
- * A box around the message will also be drawn. The printed text is
- * guaranteed to fit on the screen by adjusting the height of the box,
- * and by resizing individual lines horizontally to fit.
- *
- * @param str		Message to be printed, which may contain newlines.
- *
- * @return VB2_SUCCESS on success, non-zero on error.
- */
-static vb2_error_t print_fallback_message(const char *str)
+vb2_error_t print_fallback_message(const char *str)
 {
 	vb2_error_t rv = VB2_SUCCESS;
 	int32_t x, y;

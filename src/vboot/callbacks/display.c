@@ -18,6 +18,9 @@
 
 #include <vb2_api.h>
 
+#include "drivers/ec/cros/ec.h"  /* TODO(b/144969088): VbExDisplayDebugInfo */
+#include "drivers/tpm/tpm.h"  /* TODO(b/144969088): VbExDisplayDebugInfo */
+#include "vboot/firmware_id.h"  /* TODO(b/144969088): VbExDisplayDebugInfo */
 #include "vboot/ui.h"
 
 _Static_assert(CONFIG(MENU_UI), "MENU_UI must be set");
@@ -79,4 +82,46 @@ vb2_error_t vb2ex_display_ui(enum vb2_screen screen,
 	has_prev_state = 0;
 	/* TODO(yupingso): Add fallback display when drawing fails. */
 	return rv;
+}
+
+/* TODO(b/144969088): Rewrite for proper debug screen implementation. */
+vb2_error_t VbExDisplayDebugInfo(const char *info_str, int full_info)
+{
+	char buf[1024];
+
+	if (!full_info) {
+		strncpy(buf, info_str, sizeof(buf) - 2);
+		buf[sizeof(buf) - 1] = '\0';
+	} else {
+		char *tpm_str = NULL;
+		char batt_pct_str[16];
+
+		if (CONFIG(MOCK_TPM))
+			tpm_str = "MOCK TPM";
+		else if (CONFIG(DRIVER_TPM))
+			tpm_str = tpm_report_state();
+
+		if (!tpm_str)
+			tpm_str = "(unsupported)";
+
+		if (!CONFIG(DRIVER_EC_CROS))
+			strcpy(batt_pct_str, "(unsupported)");
+		else {
+			uint32_t batt_pct;
+			if (cros_ec_read_batt_state_of_charge(&batt_pct))
+				strcpy(batt_pct_str, "(read failure)");
+			else
+				snprintf(batt_pct_str, sizeof(batt_pct_str),
+					 "%u%%", batt_pct);
+		}
+		snprintf(buf, sizeof(buf),
+			 "%s"	// vboot output includes newline
+			 "read-only firmware id: %s\n"
+			 "active firmware id: %s\n"
+			 "battery level: %s\n"
+			 "TPM state: %s",
+			 info_str, get_ro_fw_id(), get_active_fw_id(),
+			 batt_pct_str, tpm_str);
+	}
+	return print_fallback_message((const char *)buf);
 }

@@ -497,6 +497,19 @@ const struct ui_screen_info *ui_get_screen_info(enum vb2_screen screen_id);
 /* common.c */
 
 /*
+ * Print a fallback message on the top of the screen.
+ *
+ * A box around the message will also be drawn. The printed text is
+ * guaranteed to fit on the screen by adjusting the height of the box,
+ * and by resizing individual lines horizontally to fit.
+ *
+ * @param str		Message to be printed, which may contain newlines.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t print_fallback_message(const char *str);
+
+/*
  * Display the UI state on the screen.
  *
  * When part of the screen remains unchanged, screen redrawing should be kept as
