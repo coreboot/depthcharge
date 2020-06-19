@@ -29,7 +29,7 @@
 })
 
 #define UI_MENU(a) ((struct ui_menu){	\
-	.num_items = ARRAY_SIZE(a),		\
+	.num_items = ARRAY_SIZE(a),	\
 	.items = a,			\
 })
 
@@ -53,7 +53,7 @@
 	.file = "btn_power_off.bmp",		\
 	.type = UI_MENU_ITEM_TYPE_SECONDARY,	\
 	.icon_file = "ic_power.bmp",		\
-	.no_arrow = 1,				\
+	.flags = UI_MENU_ITEM_FLAG_NO_ARROW,	\
 })
 
 /******************************************************************************/
@@ -290,6 +290,47 @@ static const struct ui_screen_info advanced_options_screen = {
 	.title = "adv_options_title.bmp",
 	.menu = UI_MENU(advanced_options_items),
 	.mesg = "Advanced options",
+};
+
+/******************************************************************************/
+/* VB2_SCREEN_DEBUG_INFO */
+
+static vb2_error_t draw_debug_info_desc(const struct ui_state *state,
+					const struct ui_state *prev_state,
+					int32_t *y)
+{
+	char *buf;
+
+	buf = ui_log_get_page_content(state->log, state->current_page);
+	if (!buf)
+		return VB2_ERROR_UI_DRAW_FAILURE;
+	VB2_TRY(ui_draw_log_textbox(buf, y));
+	free(buf);
+
+	return VB2_SUCCESS;
+}
+
+static const struct ui_menu_item debug_info_items[] = {
+	LANGUAGE_SELECT_ITEM,
+	{
+		.file = "btn_page_up.bmp",
+		.flags = UI_MENU_ITEM_FLAG_BLANK,
+	},
+	{
+		.file = "btn_page_down.bmp",
+		.flags = UI_MENU_ITEM_FLAG_BLANK,
+	},
+	BACK_ITEM,
+	POWER_OFF_ITEM,
+};
+
+static const struct ui_screen_info debug_info_screen = {
+	.id = VB2_SCREEN_DEBUG_INFO,
+	.icon = UI_ICON_TYPE_NONE,
+	.title = "debug_info_title.bmp",
+	.menu = UI_MENU(debug_info_items),
+	.draw_desc = draw_debug_info_desc,
+	.mesg = "Debug info",
 };
 
 /******************************************************************************/
@@ -765,6 +806,7 @@ static const struct ui_screen_info *const screens[] = {
 	&language_select_screen,
 	&broken_screen,
 	&advanced_options_screen,
+	&debug_info_screen,
 	&recovery_to_dev_screen,
 	&recovery_select_screen,
 	&recovery_phone_step1_screen,
