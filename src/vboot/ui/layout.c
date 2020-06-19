@@ -214,18 +214,9 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 	return VB2_SUCCESS;
 }
 
-/*
- * Get button width, based on the longest text of all the buttons.
- *
- * @param menu			Menu items.
- * @param state			UI state.
- * @param button_width		Button width to be calculated.
- *
- * @return VB2_SUCCESS on success, non-zero on error.
- */
-static vb2_error_t ui_get_button_width(const struct ui_menu *menu,
-				       const struct ui_state *state,
-				       int32_t *button_width)
+vb2_error_t ui_get_button_width(const struct ui_menu *menu,
+				const struct ui_state *state,
+				int32_t *button_width)
 {
 	int i;
 	struct ui_bitmap bitmap;
@@ -233,9 +224,10 @@ static vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 	int32_t max_text_width = 0;
 
 	for (i = 0; i < menu->num_items; i++) {
-		if (state->disabled_item_mask & (1 << i))
-			continue;
 		if (menu->items[i].type != UI_MENU_ITEM_TYPE_PRIMARY)
+			continue;
+		if (!(menu->items[i].flags & UI_MENU_ITEM_FLAG_BLANK) &&
+		    state->disabled_item_mask & (1 << i))
 			continue;
 		VB2_TRY(ui_get_bitmap(menu->items[i].file, state->locale->code,
 				      0, &bitmap));
@@ -313,7 +305,7 @@ static vb2_error_t ui_draw_link(const struct ui_menu_item *item,
 	width = UI_LINK_TEXT_PADDING_LEFT +
 		UI_LINK_ICON_SIZE + UI_LINK_ICON_MARGIN_R +
 		text_width + UI_LINK_ARROW_MARGIN_H;
-	if (!item->no_arrow)
+	if (!(item->flags & UI_MENU_ITEM_FLAG_NO_ARROW))
 		width += UI_LINK_ARROW_SIZE + UI_LINK_ARROW_MARGIN_H;
 
 	/* Clear button area */
@@ -342,7 +334,7 @@ static vb2_error_t ui_draw_link(const struct ui_menu_item *item,
 
 	/* Draw arrow */
 	x += UI_LINK_ARROW_MARGIN_H;
-	if (!item->no_arrow) {
+	if (!(item->flags & UI_MENU_ITEM_FLAG_NO_ARROW)) {
 		arrow_file = reverse ? "ic_dropleft.bmp" : "ic_dropright.bmp";
 		VB2_TRY(ui_get_bitmap(arrow_file, NULL, focused, &bitmap));
 		VB2_TRY(ui_draw_bitmap(&bitmap, x, y_center,
@@ -385,6 +377,136 @@ vb2_error_t ui_draw_desc(const struct ui_desc *desc,
 	}
 
 	return VB2_SUCCESS;
+}
+
+static int count_lines(const char *str)
+{
+	const char *c = str;
+	int num_lines;
+	if (!str || *c == '\0')
+		return 0;
+
+	num_lines = 1;
+	while (*c != '\0') {
+		if (*c == '\n')
+			num_lines++;
+		c++;
+	}
+	return num_lines;
+}
+
+vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines)
+{
+	vb2_error_t rv = VB2_SUCCESS;
+	int32_t x;
+	int32_t y_base = *y;
+	int32_t max_height = UI_BOX_TEXT_HEIGHT;
+	int num_lines;
+	int32_t max_content_height, content_width, line_spacing = 0;
+	int32_t box_width, box_height;
+	char *buf, *end, *line;
+	const enum ui_char_style style = UI_CHAR_STYLE_DEFAULT;
+
+	/* Copy str to buf since strsep() will modify the string. */
+	buf = strdup(str);
+	if (!buf) {
+		UI_ERROR("Failed to malloc string buffer\n");
+		return VB2_ERROR_UI_MEMORY_ALLOC;
+	}
+
+	num_lines = MAX(count_lines(buf), min_lines);
+	max_content_height = UI_SCALE - UI_BOX_MARGIN_V * 2 -
+		UI_BOX_PADDING_V * 2;
+	line_spacing = UI_BOX_TEXT_LINE_SPACING * (num_lines - 1);
+
+	if (max_height * num_lines + line_spacing > max_content_height)
+		max_height = (max_content_height - line_spacing) / num_lines;
+
+	x = UI_MARGIN_H;
+	box_width = UI_SCALE - UI_MARGIN_H * 2;
+	content_width = box_width - UI_BOX_PADDING_H * 2;
+	box_height = max_height * num_lines + line_spacing +
+		UI_BOX_PADDING_V * 2;
+
+	/* Clear printing area. */
+	ui_draw_rounded_box(x, *y, box_width, box_height,
+			    &ui_color_bg, 0, 0, 0);
+	/* Draw the border of a box. */
+	ui_draw_rounded_box(x, *y, box_width, box_height, &ui_color_fg,
+			    UI_BOX_BORDER_THICKNESS, UI_BOX_BORDER_RADIUS, 0);
+
+	x += UI_BOX_PADDING_H;
+	*y += UI_BOX_PADDING_V;
+
+	end = buf;
+	while ((line = strsep(&end, "\n"))) {
+		vb2_error_t line_rv;
+		int32_t line_width;
+		int32_t line_height = max_height;
+		/* Ensure the text width is no more than box width */
+		line_rv = ui_get_text_width(line, line_height, style,
+					    &line_width);
+		if (line_rv) {
+			/* Save the first error in rv */
+			if (rv == VB2_SUCCESS)
+				rv = line_rv;
+			continue;
+		}
+		if (line_width > content_width)
+			line_height = line_height * content_width / line_width;
+		line_rv = ui_draw_text(line, x, *y, line_height,
+				       PIVOT_H_LEFT | PIVOT_V_TOP, style, 0);
+		*y += line_height + UI_BOX_TEXT_LINE_SPACING;
+		/* Save the first error in rv */
+		if (line_rv && rv == VB2_SUCCESS)
+			rv = line_rv;
+	}
+
+	*y = y_base + box_height;
+	free(buf);
+	return rv;
+}
+
+vb2_error_t ui_get_log_textbox_dimensions(uint32_t *lines_per_page,
+					  uint32_t *chars_per_line)
+{
+	int32_t textbox_height;
+	int32_t char_width;
+
+	/* Calculate textbox height by subtracting the height of other items
+	   from UI_SCALE. */
+	textbox_height = UI_SCALE -
+		UI_MARGIN_TOP -
+		UI_LANG_BOX_HEIGHT - UI_LANG_MARGIN_BOTTOM -
+		UI_TITLE_TEXT_HEIGHT - UI_TITLE_MARGIN_BOTTOM -
+		/* Page up, page down, back, and power off button */
+		(UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V) * 4 -
+		UI_DESC_MARGIN_BOTTOM -
+		UI_FOOTER_MARGIN_TOP - UI_FOOTER_HEIGHT -
+		UI_MARGIN_BOTTOM;
+
+	*lines_per_page = (textbox_height - UI_BOX_PADDING_V * 2) /
+			  (UI_BOX_TEXT_HEIGHT + UI_BOX_TEXT_LINE_SPACING);
+
+	VB2_TRY(ui_get_text_width("?", UI_BOX_TEXT_HEIGHT,
+				  UI_CHAR_STYLE_DEFAULT, &char_width));
+
+	*chars_per_line = (UI_SCALE - UI_MARGIN_H * 2 - UI_BOX_PADDING_H * 2) /
+			  char_width;
+
+	UI_INFO("Calculate log textbox dimensions, "
+		"lines_per_page: %u, chars_per_line: %u\n",
+		*lines_per_page, *chars_per_line);
+
+	return VB2_SUCCESS;
+}
+
+vb2_error_t ui_draw_log_textbox(const char *str, int32_t *y)
+{
+	uint32_t lines_per_page, chars_per_line;
+	VB2_TRY(ui_get_log_textbox_dimensions(&lines_per_page,
+					      &chars_per_line));
+	return ui_draw_textbox(str, y, lines_per_page);
 }
 
 vb2_error_t ui_draw_default(const struct ui_state *state,
@@ -497,10 +619,18 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 	VB2_TRY(ui_get_button_width(menu, state, &button_width));
 
 	for (i = 0; i < menu->num_items; i++) {
-		if (state->disabled_item_mask & (1 << i))
-			continue;
 		if (menu->items[i].type != UI_MENU_ITEM_TYPE_PRIMARY)
 			continue;
+		if (state->disabled_item_mask & (1 << i)) {
+			if (menu->items[i].flags & UI_MENU_ITEM_FLAG_BLANK) {
+				/* Clear button area */
+				VB2_TRY(ui_draw_box(x, y, button_width,
+						    UI_BUTTON_HEIGHT,
+						    &ui_color_bg, reverse));
+				y += UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
+			}
+			continue;
+		}
 		/*
 		 * TODO(b/147424699): No need to redraw every button when
 		 * navigating between menu.

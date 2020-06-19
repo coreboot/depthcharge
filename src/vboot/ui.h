@@ -180,6 +180,129 @@ struct ui_locale {
 	int rtl;		/* Whether locale is right-to-left */
 };
 
+/* Forward declarations. */
+struct ui_screen_info;
+struct ui_log_info;
+
+/* UI state for display. */
+struct ui_state {
+	const struct ui_screen_info *screen;
+	const struct ui_locale *locale;
+	uint32_t selected_item;
+	uint32_t disabled_item_mask;
+	int timer_disabled;
+	const struct ui_log_info *log;
+	int32_t current_page;
+	enum vb2_ui_error error_code;
+};
+
+/* For displaying error messages. */
+struct ui_error_item {
+	/* Error message body */
+	const char *body;
+};
+
+/* Icon type. */
+enum ui_icon_type {
+	/* No reserved space for any icon. */
+	UI_ICON_TYPE_NONE = 0,
+	UI_ICON_TYPE_INFO,
+	UI_ICON_TYPE_ERROR,
+	UI_ICON_TYPE_DEV_MODE,
+	UI_ICON_TYPE_RESTART,
+	UI_ICON_TYPE_STEP,
+};
+
+/* List of description files. */
+struct ui_desc {
+	size_t count;
+	const char *const *files;
+};
+
+/* Menu item type. */
+enum ui_menu_item_type {
+	/* Primary button. */
+	UI_MENU_ITEM_TYPE_PRIMARY = 0,
+	/* Secondary button. */
+	UI_MENU_ITEM_TYPE_SECONDARY,
+	/* Language selection. */
+	UI_MENU_ITEM_TYPE_LANGUAGE,
+};
+
+enum ui_menu_item_flag {
+	/* No arrow; valid for UI_MENU_ITEM_TYPE_SECONDARY only. */
+	UI_MENU_ITEM_FLAG_NO_ARROW		= 1 << 0,
+	/* Leaves blank when the button is disabled;
+	   valid for UI_MENU_ITEM_TYPE_PRIMARY only. */
+	UI_MENU_ITEM_FLAG_BLANK			= 1 << 1,
+};
+
+/* Menu item. */
+struct ui_menu_item {
+	const char *file;
+	/* If UI_MENU_ITEM_TYPE_LANGUAGE, the 'file' field will be ignored. */
+	enum ui_menu_item_type type;
+	/* Icon file for UI_MENU_ITEM_TYPE_SECONDARY only. */
+	const char *icon_file;
+	/* Flags are defined in enum ui_menu_item_flag. */
+	uint8_t flags;
+};
+
+/* List of menu items. */
+struct ui_menu {
+	size_t num_items;
+	/* Only the first item allowed to be UI_MENU_ITEM_TYPE_LANGUAGE. */
+	const struct ui_menu_item *items;
+};
+
+struct ui_screen_info {
+	/* Screen id */
+	enum vb2_screen id;
+	/* Icon type */
+	enum ui_icon_type icon;
+	/*
+	 * Current step number; valid only if icon is UI_ICON_TYPE_STEP. A
+	 * negative value indicates an error in the abs(step)-th step.
+	 */
+	int step;
+	/* Total number of steps; valid only if icon is UI_ICON_TYPE_STEP */
+	int num_steps;
+	/* File for screen title. */
+	const char *title;
+	/* Files for screen descriptions. */
+	struct ui_desc desc;
+	/* Menu items. */
+	struct ui_menu menu;
+	/* Absence of footer */
+	int no_footer;
+	/*
+	 * Custom drawing function. When it is NULL, the default drawing
+	 * function ui_draw_default() will be called instead.
+	 */
+	vb2_error_t (*draw)(const struct ui_state *state,
+			    const struct ui_state *prev_state);
+	/* Custom description drawing function */
+	vb2_error_t (*draw_desc)(const struct ui_state *state,
+				 const struct ui_state *prev_state,
+				 int32_t *y);
+	/* Fallback message */
+	const char *mesg;
+};
+
+/* Log string and its pages information. */
+struct ui_log_info {
+	/* Full log content. */
+	const char *str;
+	/* Total number of pages. */
+	uint32_t page_count;
+	/*
+	 * Array of (page_count + 1) pointers. For i < page_count, page_start[i]
+	 * is the start position of the i-th page. page_start[page_count] is the
+	 * position of the '\0' character at the end of the log string.
+	 */
+	const char **page_start;
+};
+
 /******************************************************************************/
 /* archive.c */
 
@@ -273,7 +396,7 @@ vb2_error_t ui_get_step_icon_bitmap(int step, int focused,
  *
  * @param bitmap	Bitmap to draw.
  * @param x		x-coordinate of the top-left corner.
- * @param y		y-coordicate of the top-left corner.
+ * @param y		y-coordinate of the top-left corner.
  * @param width		Width of the image.
  * @param height	Height of the image.
  * @param flags		Flags passed to draw_bitmap() in libpayload.
@@ -319,7 +442,7 @@ vb2_error_t ui_get_text_width(const char *text, int32_t height,
  * @param text		Text to be drawn, which should contain only printable
  *			characters, including spaces, but excluding tabs.
  * @param x		x-coordinate of the top-left corner.
- * @param y		y-coordicate of the top-left corner.
+ * @param y		y-coordinate of the top-left corner.
  * @param height	Height of the text.
  * @param flags		Flags passed to draw_bitmap() in libpayload.
  * @param style		Style of the text.
@@ -389,102 +512,6 @@ vb2_error_t ui_draw_h_line(int32_t x, int32_t y,
 /******************************************************************************/
 /* layout.c */
 
-struct ui_screen_info;  /* Forward declaration */
-
-/* UI state for display. */
-struct ui_state {
-	const struct ui_screen_info *screen;
-	const struct ui_locale *locale;
-	uint32_t selected_item;
-	uint32_t disabled_item_mask;
-	int timer_disabled;
-	enum vb2_ui_error error_code;
-};
-
-/* For displaying error messages. */
-struct ui_error_item {
-	/* Error message body */
-	const char *body;
-};
-
-/* Icon type. */
-enum ui_icon_type {
-	UI_ICON_TYPE_NONE = 0,
-	UI_ICON_TYPE_INFO,
-	UI_ICON_TYPE_ERROR,
-	UI_ICON_TYPE_DEV_MODE,
-	UI_ICON_TYPE_RESTART,
-	UI_ICON_TYPE_STEP,
-};
-
-/* List of description files. */
-struct ui_desc {
-	size_t count;
-	const char *const *files;
-};
-
-/* Menu item type. */
-enum ui_menu_item_type {
-	/* Primary button. */
-	UI_MENU_ITEM_TYPE_PRIMARY = 0,
-	/* Secondary button. */
-	UI_MENU_ITEM_TYPE_SECONDARY,
-	/* Language selection. */
-	UI_MENU_ITEM_TYPE_LANGUAGE,
-};
-
-/* Menu item. */
-struct ui_menu_item {
-	const char *file;
-	/* If UI_MENU_ITEM_TYPE_LANGUAGE, the 'file' field will be ignored. */
-	enum ui_menu_item_type type;
-	/* Icon file for UI_MENU_ITEM_TYPE_SECONDARY only. */
-	const char *icon_file;
-	/* No arrow; valid for UI_MENU_ITEM_TYPE_SECONDARY only. */
-	int no_arrow;
-};
-
-/* List of menu items. */
-struct ui_menu {
-	size_t num_items;
-	/* Only the first item allowed to be UI_MENU_ITEM_TYPE_LANGUAGE. */
-	const struct ui_menu_item *items;
-};
-
-struct ui_screen_info {
-	/* Screen id */
-	enum vb2_screen id;
-	/* Icon type */
-	enum ui_icon_type icon;
-	/*
-	 * Current step number; valid only if icon is UI_ICON_TYPE_STEP. A
-	 * negative value indicates an error in the abs(step)-th step.
-	 */
-	int step;
-	/* Total number of steps; valid only if icon is UI_ICON_TYPE_STEP */
-	int num_steps;
-	/* File for screen title. */
-	const char *title;
-	/* Files for screen descriptions. */
-	struct ui_desc desc;
-	/* Menu items. */
-	struct ui_menu menu;
-	/* Absence of footer */
-	int no_footer;
-	/*
-	 * Custom drawing function. When it is NULL, the default drawing
-	 * function ui_draw_default() will be called instead.
-	 */
-	vb2_error_t (*draw)(const struct ui_state *state,
-			    const struct ui_state *prev_state);
-	/* Custom description drawing function */
-	vb2_error_t (*draw_desc)(const struct ui_state *state,
-				 const struct ui_state *prev_state,
-				 int32_t *y);
-	/* Fallback message */
-	const char *mesg;
-};
-
 /*
  * Draw language dropdown header.
  *
@@ -496,6 +523,22 @@ struct ui_screen_info {
  */
 vb2_error_t ui_draw_language_header(const struct ui_locale *locale,
 				    const struct ui_state *state, int focused);
+
+/*
+ * Get button width, based on the longest text of all the visible buttons.
+ *
+ * Menu items specified in disabled_item_mask are only considered when they have
+ * the UI_MENU_ITEM_BLANK flag set.
+ *
+ * @param menu			Menu items.
+ * @param state			UI state.
+ * @param button_width		Button width to be calculated.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_get_button_width(const struct ui_menu *menu,
+				const struct ui_state *state,
+				int32_t *button_width);
 
 /*
  * Draw a button.
@@ -534,6 +577,49 @@ vb2_error_t ui_draw_desc(const struct ui_desc *desc,
 			 int32_t *y);
 
 /*
+ * Draw a rounded textbox with multi-line text.
+ *
+ * The printed text is guaranteed to fit on the screen by adjusting the height
+ * of the box, and by resizing individual lines horizontally to fit. The box
+ * will take up the full width of the canvas.
+ *
+ * @param str		Texts to be printed, which may contain line breaks.
+ * @param y		Starting y-coordinate of the box. On return, the value
+ *			will be the ending coordinate, excluding the margin
+ *			below the box.
+ * @param min_lines	Minimum number of lines the textbox should contain. Pad
+ *			with empty lines if str does not reach this limit.
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines);
+
+/*
+ * Get the dimensions of the log textbox.
+ *
+ * The log textbox can fit lines_per_page * chars_per_line characters.
+ *
+ * @param lines_per_page	On return, the value will be maximum number of
+ *				lines per page.
+ * @param chars_per_line	On return, the value will be maximum number of
+ *				characters per line.
+ *
+ * @return VB2_SUCCESS on success, no-zero on error.
+ */
+vb2_error_t ui_get_log_textbox_dimensions(uint32_t *lines_per_page,
+					  uint32_t *chars_per_line);
+
+/*
+ * Draw a textbox for displaying the log screen.
+ *
+ * @param str		The full log string, which may contain line breaks.
+ * @param y		Starting y-coordinate of the box. On return, the value
+ *			will be the ending coordinate, excluding the margin
+ *			below the box.
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_draw_log_textbox(const char *str, int32_t *y);
+
+/*
  * Default drawing function.
  *
  * @param state		UI state.
@@ -557,20 +643,31 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 const struct ui_screen_info *ui_get_screen_info(enum vb2_screen screen_id);
 
 /******************************************************************************/
-/* common.c */
+/* log.c */
 
 /*
- * Print a fallback message on the top of the screen.
+ * Initialize log info struct with a string.
  *
- * A box around the message will also be drawn. The printed text is
- * guaranteed to fit on the screen by adjusting the height of the box,
- * and by resizing individual lines horizontally to fit.
- *
- * @param str		Message to be printed, which may contain newlines.
+ * @param log			Log info struct to be initialized.
+ * @param str			The full log string.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t print_fallback_message(const char *str);
+vb2_error_t ui_log_init(struct ui_log_info *log, const char *str);
+
+/*
+ * Retrieve the content of specified page.
+ * The caller owns the string and should call free() when finished with it.
+ *
+ * @param log		Log info.
+ * @param page		Page number.
+ *
+ * @return The pointer to the page content, NULL on error.
+ */
+char *ui_log_get_page_content(const struct ui_log_info *log, uint32_t page);
+
+/******************************************************************************/
+/* common.c */
 
 /*
  * Display the UI state on the screen.

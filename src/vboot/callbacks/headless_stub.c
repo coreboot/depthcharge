@@ -30,14 +30,9 @@ vb2_error_t vb2ex_display_ui(enum vb2_screen screen, uint32_t locale_id,
 			     uint32_t selected_item,
 			     uint32_t disabled_item_mask,
 			     int timer_disabled,
+			     uint32_t current_page,
 			     enum vb2_ui_error error_code)
 {
 	/* TODO(b/151200757): Support headless devices */
-	return VB2_SUCCESS;
-}
-
-/* TODO(b/144969088): Rewrite for proper debug screen implementation. */
-vb2_error_t VbExDisplayDebugInfo(const char *info_str, int full_info)
-{
 	return VB2_SUCCESS;
 }

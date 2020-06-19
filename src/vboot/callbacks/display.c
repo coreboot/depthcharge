@@ -18,18 +18,90 @@
 
 #include <vb2_api.h>
 
-#include "drivers/ec/cros/ec.h"  /* TODO(b/144969088): VbExDisplayDebugInfo */
-#include "drivers/tpm/tpm.h"  /* TODO(b/144969088): VbExDisplayDebugInfo */
-#include "vboot/firmware_id.h"  /* TODO(b/144969088): VbExDisplayDebugInfo */
+#include "drivers/ec/cros/ec.h"
+#include "drivers/tpm/tpm.h"
+#include "vboot/firmware_id.h"
 #include "vboot/ui.h"
 
 _Static_assert(CONFIG(MENU_UI), "MENU_UI must be set");
 _Static_assert(!CONFIG(LEGACY_MENU_UI), "LEGACY_MENU_UI not allowed");
 _Static_assert(!CONFIG(LEGACY_CLAMSHELL_UI), "LEGACY_CLAMSHELL_UI not allowed");
 
+static struct ui_log_info log;
+
+uint32_t vb2ex_prepare_log_screen(const char *str)
+{
+	if (ui_log_init(&log, str))
+		return 0;
+	return log.page_count;
+}
+
 uint32_t vb2ex_get_locale_count(void)
 {
 	return ui_get_locale_count();
+}
+
+#define DEBUG_INFO_EXTRA_LENGTH 256
+
+const char *vb2ex_get_debug_info(struct vb2_context *ctx)
+{
+	static char *buf;
+	size_t buf_size;
+
+	char *vboot_buf;
+	char *tpm_str = NULL;
+	char batt_pct_str[16];
+
+	/* Check if cache exists. */
+	if (buf)
+		return buf;
+
+	/* Debug info from the vboot context. */
+	vboot_buf = vb2api_get_debug_info(ctx);
+
+	buf_size = strlen(vboot_buf) + DEBUG_INFO_EXTRA_LENGTH + 1;
+	buf = malloc(buf_size);
+	if (buf == NULL) {
+		printf("%s: Failed to malloc string buffer\n", __func__);
+		free(vboot_buf);
+		return NULL;
+	}
+
+	/* States owned by firmware. */
+	if (CONFIG(MOCK_TPM))
+		tpm_str = "MOCK TPM";
+	else if (CONFIG(DRIVER_TPM))
+		tpm_str = tpm_report_state();
+
+	if (!tpm_str)
+		tpm_str = "(unsupported)";
+
+	if (!CONFIG(DRIVER_EC_CROS)) {
+		strncpy(batt_pct_str, "(unsupported)", sizeof(batt_pct_str));
+	} else {
+		uint32_t batt_pct;
+		if (cros_ec_read_batt_state_of_charge(&batt_pct))
+			strncpy(batt_pct_str, "(read failure)",
+				sizeof(batt_pct_str));
+		else
+			snprintf(batt_pct_str, sizeof(batt_pct_str),
+				 "%u%%", batt_pct);
+	}
+	snprintf(buf, buf_size,
+		 "%s\n"  /* vboot output does not include newline. */
+		 "read-only firmware id: %s\n"
+		 "active firmware id: %s\n"
+		 "battery level: %s\n"
+		 "TPM state: %s",
+		 vboot_buf,
+		 get_ro_fw_id(), get_active_fw_id(),
+		 batt_pct_str, tpm_str);
+
+	free(vboot_buf);
+
+	buf[buf_size - 1] = '\0';
+	printf("debug info: %s\n", buf);
+	return buf;
 }
 
 vb2_error_t vb2ex_display_ui(enum vb2_screen screen,
@@ -37,16 +109,18 @@ vb2_error_t vb2ex_display_ui(enum vb2_screen screen,
 			     uint32_t selected_item,
 			     uint32_t disabled_item_mask,
 			     int timer_disabled,
+			     uint32_t current_page,
 			     enum vb2_ui_error error_code)
 {
 	vb2_error_t rv;
 	const struct ui_locale *locale = NULL;
 	const struct ui_screen_info *screen_info;
 	printf("%s: screen=%#x, locale=%u, selected_item=%u, "
-	       "disabled_item_mask=%#x, timer_disabled=%d, error=%#x\n",
+	       "disabled_item_mask=%#x, timer_disabled=%d, "
+	       "current_page=%u, error=%#x\n",
 	       __func__,
 	       screen, locale_id, selected_item, disabled_item_mask,
-	       timer_disabled, error_code);
+	       timer_disabled, current_page, error_code);
 
 	rv = ui_get_locale_info(locale_id, &locale);
 	if (rv == VB2_ERROR_UI_INVALID_LOCALE) {
@@ -70,6 +144,8 @@ vb2_error_t vb2ex_display_ui(enum vb2_screen screen,
 		.selected_item = selected_item,
 		.disabled_item_mask = disabled_item_mask,
 		.timer_disabled = timer_disabled,
+		.log = &log,
+		.current_page = current_page,
 		.error_code = error_code,
 	};
 
@@ -89,46 +165,4 @@ vb2_error_t vb2ex_display_ui(enum vb2_screen screen,
 	has_prev_state = 0;
 	/* TODO(yupingso): Add fallback display when drawing fails. */
 	return rv;
-}
-
-/* TODO(b/144969088): Rewrite for proper debug screen implementation. */
-vb2_error_t VbExDisplayDebugInfo(const char *info_str, int full_info)
-{
-	char buf[1024];
-
-	if (!full_info) {
-		strncpy(buf, info_str, sizeof(buf) - 2);
-		buf[sizeof(buf) - 1] = '\0';
-	} else {
-		char *tpm_str = NULL;
-		char batt_pct_str[16];
-
-		if (CONFIG(MOCK_TPM))
-			tpm_str = "MOCK TPM";
-		else if (CONFIG(DRIVER_TPM))
-			tpm_str = tpm_report_state();
-
-		if (!tpm_str)
-			tpm_str = "(unsupported)";
-
-		if (!CONFIG(DRIVER_EC_CROS))
-			strcpy(batt_pct_str, "(unsupported)");
-		else {
-			uint32_t batt_pct;
-			if (cros_ec_read_batt_state_of_charge(&batt_pct))
-				strcpy(batt_pct_str, "(read failure)");
-			else
-				snprintf(batt_pct_str, sizeof(batt_pct_str),
-					 "%u%%", batt_pct);
-		}
-		snprintf(buf, sizeof(buf),
-			 "%s"	// vboot output includes newline
-			 "read-only firmware id: %s\n"
-			 "active firmware id: %s\n"
-			 "battery level: %s\n"
-			 "TPM state: %s",
-			 info_str, get_ro_fw_id(), get_active_fw_id(),
-			 batt_pct_str, tpm_str);
-	}
-	return print_fallback_message((const char *)buf);
 }
