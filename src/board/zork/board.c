@@ -215,32 +215,6 @@ static void audio_setup(CrosEc *cros_ec)
 	sound_set_ops(&sound_route->ops);
 }
 
-/* AMD sdhci reset dll register. */
-#define SDHCI_AMD_RESET_DLL_REGISTER    0x908
-static void sdhci_amd_hs400_dll(SdhciHost *host)
-{
-	/* AMD Platform requires dll setting */
-	sdhci_writel(host, 0x40003210, SDHCI_AMD_RESET_DLL_REGISTER);
-	udelay(20);
-	sdhci_writel(host, 0x40033210, SDHCI_AMD_RESET_DLL_REGISTER);
-}
-
-static void amd_set_ios(MmcCtrlr *mmc_ctrlr)
-{
-	SdhciHost *host = container_of(mmc_ctrlr,
-				       SdhciHost, mmc_ctrlr);
-
-	sdhci_set_ios(mmc_ctrlr);
-
-	if (mmc_ctrlr->timing == MMC_TIMING_MMC_HS400 ||
-	    mmc_ctrlr->timing == MMC_TIMING_MMC_HS400ES) {
-		u16 ctrl_2 = SDHCI_CTRL_VDD_180;
-		ctrl_2 |= SDHCI_CTRL_TUNED_CLK | SDHCI_CTRL_HS400;
-		sdhci_amd_hs400_dll(host);
-		sdhci_writew(host, ctrl_2, SDHCI_HOST_CONTROL2);
-	}
-}
-
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
@@ -287,21 +261,11 @@ static int board_setup(void)
 	list_insert_after(&nvme->ctrlr.list_node,
 				&fixed_block_dev_controllers);
 
-	SdhciHost *emmc = NULL;
-	// older dalboz cannot operate on HS400
-	if (is_dalboz() && (lib_sysinfo.board_id == UNDEFINED_STRAPPING_ID ||
-				lib_sysinfo.board_id < 2)) {
-		emmc = new_mem_sdhci_host(EMMCCFG,
-					  SDHCI_PLATFORM_NO_EMMC_HS200 |
-					  SDHCI_PLATFORM_EMMC_1V8_POWER,
-					  0, 0, 0);
-	} else {
-		emmc = new_mem_sdhci_host(EMMCCFG,
-					  SDHCI_PLATFORM_SUPPORTS_HS400ES,
-					  0, 0, 0);
-	}
-	emmc->mmc_ctrlr.set_ios = amd_set_ios;
-
+	SdhciHost *emmc = new_mem_sdhci_host(
+		EMMCCFG,
+		/* Can't enable HS200 or HS400 until tuning is fixed */
+		SDHCI_PLATFORM_NO_EMMC_HS200 | SDHCI_PLATFORM_EMMC_1V8_POWER, 0,
+		0, 0);
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
 
