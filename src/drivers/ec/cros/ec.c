@@ -1466,7 +1466,8 @@ void cros_ec_probe_aux_fw_chips(void)
 				continue;
 
 			ops = chip->new_chip_aux_fw_ops(&pd_chip_r, i);
-			register_vboot_auxfw(ops);
+			if (ops)
+				register_vboot_auxfw(ops);
 			break;
 		}
 	}
