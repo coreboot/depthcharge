@@ -521,7 +521,7 @@ static vb2_error_t draw_recovery_invalid_desc(
 		"rec_invalid_disk_desc0.bmp",
 		"rec_invalid_disk_desc1.bmp",
 	};
-	const struct ui_desc desc = vb2api_phone_recovery_enabled(ctx) ?
+	const struct ui_desc desc = vb2api_phone_recovery_ui_enabled(ctx) ?
 		UI_DESC(desc_files) : UI_DESC(desc_no_phone_files);
 
 	return ui_draw_desc(&desc, state, height);
