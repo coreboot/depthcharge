@@ -18,6 +18,7 @@
 #include "drivers/net/mii.h"
 #include "drivers/net/r8152.h"
 #include "drivers/net/usb_eth.h"
+#include "net/net.h"
 
 static R8152Dev r8152_dev;
 
@@ -842,36 +843,43 @@ static int rtl8152_recv(NetDevice *net_dev, void *buf, uint16_t *len,
 	uint32_t rx_desc[6];
 	int32_t packet_len;
 	static int32_t buf_size = 0;
-	static uint8_t msg[RxUrbSize + sizeof(rx_desc)];
-	static int32_t offset;
+	static uint8_t msg[ETHERNET_MAX_FRAME_SIZE + sizeof(rx_desc)];
+	static int32_t offset, partial;
 
-	if (offset >= buf_size) {
+	if (partial || offset >= buf_size) {
 		offset = 0;
 		buf_size = usb_dev->controller->bulk(r8152_dev.bulk_in,
-						     RxUrbSize, msg, 0);
+				sizeof(msg) - partial, msg + partial, 0);
 		if (buf_size < 0) {
 			printf("R8152: Bulk read error %#x\n", buf_size);
 			return 1;
 		}
+		buf_size += partial;
+		partial = 0;
 	}
 
-	if (!buf_size) {
-		*len = 0;
+	*len = 0;
+	if (buf_size < offset + sizeof(rx_desc))
 		return 0;
-	}
 
 	memcpy(&rx_desc, msg + offset, sizeof(rx_desc));
 	packet_len = le32toh(rx_desc[0]) & 0x7fff;
 	packet_len -= 4;
 
-	*len = packet_len;
-	if ((packet_len > maxlen) || (offset + packet_len > buf_size)) {
+	if (packet_len > maxlen ||
+	    offset + sizeof(rx_desc) + packet_len > sizeof(msg)) {
 		buf_size = 0;
 		offset = 0;
 		printf("R8152: Packet is too large.\n");
 		return 1;
 	}
 
+	if  (offset == 0 && packet_len > buf_size) {
+		partial = buf_size;
+		return 0;
+	}
+
+	*len = packet_len;
 	memcpy(buf, msg + offset + sizeof(rx_desc), packet_len);
 	offset += sizeof(rx_desc) + packet_len + 4;
 	offset = ALIGN_UP(offset, 8);

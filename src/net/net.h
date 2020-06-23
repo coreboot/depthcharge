@@ -18,6 +18,9 @@
 #ifndef __NET_NET_H__
 #define __NET_NET_H__
 
+/* Common maximum supported jumbo frame size according to Wikipedia. */
+#define ETHERNET_MAX_FRAME_SIZE 9216
+
 typedef void (*NetCallback)(void);
 
 void net_set_callback(NetCallback func);
