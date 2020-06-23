@@ -279,7 +279,8 @@ static int i2s_send(I2sOps *me, unsigned int *data, unsigned int length)
 		return -1;
 	}
 
-	gpio_set(bus->sdmode_gpio, 1);
+	if (bus->sdmode_gpio)
+		gpio_set(bus->sdmode_gpio, 1);
 
 	for (i = 0; i < LPE_SSP_FIFO_SIZE; i++)
 		writel(*data++, &i2s_reg->ssdr);
@@ -295,7 +296,8 @@ static int i2s_send(I2sOps *me, unsigned int *data, unsigned int length)
 		} else {
 			if (timer_us(start) > 100000) {
 				i2s_disable(bus->regs);
-				gpio_set(bus->sdmode_gpio, 0);
+				if (bus->sdmode_gpio)
+					gpio_set(bus->sdmode_gpio, 0);
 				printf("I2S Transfer Timeout\n");
 				return -1;
 			}
@@ -303,7 +305,8 @@ static int i2s_send(I2sOps *me, unsigned int *data, unsigned int length)
 	}
 
 	mdelay(1);
-	gpio_set(bus->sdmode_gpio, 0);
+	if (bus->sdmode_gpio)
+		gpio_set(bus->sdmode_gpio, 0);
 	i2s_disable(bus->regs);
 	return 0;
 }
@@ -312,6 +315,7 @@ static int i2s_send(I2sOps *me, unsigned int *data, unsigned int length)
  * new_i2s_structure - Allocate new I2s data structures.
  * @settings: Codec settigns
  * @bps: Bits per sample
+ * @sdmode: Codec shut-down and mode pin
  * @ssp_i2s_start_address: I2S register start address.
  *
  * Allocate new I2s data structures.
