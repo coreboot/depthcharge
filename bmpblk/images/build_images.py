@@ -83,7 +83,8 @@ class Converter(object):
     'rec_disk_step1_desc0_no_sd': '',
     'rec_to_dev_desc1_phyrec': '',
     'rec_to_dev_desc1_power': '',
-    'navigate_tablet': '',
+    'navigate0_tablet': '',
+    'navigate1_tablet': '',
     'nav-button_power': '',
     'nav-button_volume_up': '',
     'nav-button_volume_down': '',
@@ -182,9 +183,10 @@ class Converter(object):
     'model': FOOTER_TEXT_SCALE,
     'help_center': FOOTER_TEXT_SCALE,
     'rec_url': FOOTER_TEXT_SCALE,
-    'to_navigate': FOOTER_TEXT_SCALE,
-    'navigate': FOOTER_TEXT_SCALE,
-    'navigate_tablet': FOOTER_TEXT_SCALE,
+    'navigate0': FOOTER_TEXT_SCALE,
+    'navigate1': FOOTER_TEXT_SCALE,
+    'navigate0_tablet': FOOTER_TEXT_SCALE,
+    'navigate1_tablet': FOOTER_TEXT_SCALE,
   }
 
   # background colors
@@ -260,7 +262,8 @@ class Converter(object):
         'nav-key_enter': 'nav-button_power',
         'nav-key_up': 'nav-button_volume_up',
         'nav-key_down': 'nav-button_volume_down',
-        'navigate': 'navigate_tablet',
+        'navigate0': 'navigate0_tablet',
+        'navigate1': 'navigate1_tablet',
         'broken_desc0': 'broken_desc0_detach',
         'broken_desc1': 'broken_desc1_detach',
       })

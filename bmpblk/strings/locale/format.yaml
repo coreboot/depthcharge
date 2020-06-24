@@ -92,9 +92,10 @@ inputs:
   - model
   - help_center
   - rec_url
-  - to_navigate
-  - navigate
-  - navigate_tablet
+  - navigate0
+  - navigate1
+  - navigate0_tablet
+  - navigate1_tablet
 
 files:
   # pre-generated
@@ -197,9 +198,10 @@ files:
   model:
   help_center:
   rec_url:
-  to_navigate:
-  navigate:
-  navigate_tablet:
+  navigate0:
+  navigate1:
+  navigate0_tablet:
+  navigate1_tablet:
 
 aliases:
   - &base_color '--color=CCCCCC --bgcolor=202124'
@@ -313,9 +315,10 @@ styles:
   model: *dark_color
   help_center: *dark_color
   rec_url: *dark_color
-  to_navigate: *dark_color_left_align
-  navigate: *dark_color_left_align
-  navigate_tablet: *dark_color_left_align
+  navigate0: *dark_color_left_align
+  navigate1: *dark_color_left_align
+  navigate0_tablet: *dark_color_left_align
+  navigate1_tablet: *dark_color_left_align
 
 fonts:
   # All fonts should be provided and selected by 'ui-sans' family defined in

@@ -286,8 +286,8 @@ Your user data will be wiped in the process.
       <message name="dev_boot_ext_title" desc="Title for screen instructing user to plug in their USB/SD card containing a ChromeOS recovery image.">
 Plug in your external disk
       </message>
-      <message name="dev_boot_ext_desc0" desc="String1 for screen instructing user to plug in their USB/SD card containing a CHromeOS recovery image.">
-If your external disk is ready with a Chrome OS image, plug it into the device to boot.
+      <message name="dev_boot_ext_desc0" desc="String1 for screen instructing user to plug in their USB/SD card containing a ChromeOS recovery image.">
+Plug in your external disk with a Chrome OS image. It will be booted automatically.
       </message>
       <message name="dev_invalid_disk_title" desc="Title for screen that appears when user plugs in a USB/SD card with an invalid image on it.">
 No valid image detected
@@ -322,14 +322,17 @@ Help center:
       <message name="rec_url" desc="String for the help center url.">
 http://google.com/chromeos/recovery
       </message>
-      <message name="to_navigate" desc="Navigation Instructions label.">
-To navigate:
+      <message name="navigate0" desc="Instruction0 for navigating on a chromebook or chromebox.">
+Use the arrow keys to navigate up or down.
       </message>
-      <message name="navigate" desc="Instructions for navigating on a chromebook or chromebox.">
-Use enter key and up and down arrow keys.
+      <message name="navigate1" desc="Instruction1 for navigating on a chromebook or chromebox.">
+Use the enter key to select an option.
       </message>
-      <message name="navigate_tablet" desc="Instructions for navigating on a tablet or detachable.">
-Use power button and volume buttons on the side of the device.
+      <message name="navigate0_tablet" desc="Instruction0 for navigating on a tablet or detachable.">
+Use the volume buttons to navigate up or down.
+      </message>
+      <message name="navigate1_tablet" desc="Instruction1 for navigating on a tablet or detachable.">
+Use the power button to select an option.
       </message>
     </messages>
   </release>
