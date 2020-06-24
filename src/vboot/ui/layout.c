@@ -181,11 +181,11 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 	y = footer_y;
 	vspacing = footer_height - text_height * 2 - icon_height -
 		UI_FOOTER_COL3_PARA_SPACING;
-	VB2_TRY(ui_get_bitmap("to_navigate.bmp", locale_code, 0, &bitmap));
+	VB2_TRY(ui_get_bitmap("navigate0.bmp", locale_code, 0, &bitmap));
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, text_height, flags, reverse));
 	y += text_height + vspacing;
 
-	VB2_TRY(ui_get_bitmap("navigate.bmp", locale_code, 0, &bitmap));
+	VB2_TRY(ui_get_bitmap("navigate1.bmp", locale_code, 0, &bitmap));
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, text_height, flags, reverse));
 	y += text_height + UI_FOOTER_COL3_PARA_SPACING;
 
