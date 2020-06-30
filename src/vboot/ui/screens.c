@@ -19,6 +19,7 @@
 #include <libpayload.h>
 #include <vb2_api.h>
 
+#include "drivers/ec/cros/ec.h"
 #include "vboot/ui.h"
 #include "vboot/util/commonparams.h"
 
@@ -54,6 +55,28 @@
 	.icon_file = "ic_power.bmp",		\
 	.no_arrow = 1,				\
 })
+
+/******************************************************************************/
+/* Helper functions */
+
+static int is_battery_low(void)
+{
+	static uint32_t batt_pct;
+	static int batt_pct_initialized = 0;
+
+	if (!batt_pct_initialized) {
+		if (!CONFIG(DRIVER_EC_CROS)) {
+			UI_WARN("No EC support to get battery level; "
+				"assuming low battery\n");
+		} else if (cros_ec_read_batt_state_of_charge(&batt_pct)) {
+			UI_WARN("Failed to get battery level; "
+				"assuming low battery\n");
+			batt_pct = 0;
+		}
+		batt_pct_initialized = 1;
+	}
+	return batt_pct < 10;
+}
 
 /******************************************************************************/
 /* VB2_SCREEN_BLANK */
@@ -345,13 +368,26 @@ static const struct ui_screen_info recovery_select_screen = {
 /******************************************************************************/
 /* VB2_SCREEN_RECOVERY_PHONE_STEP1 */
 
-static const char *const recovery_phone_step1_desc[] = {
-	"rec_phone_step1_desc0.bmp",
-	"rec_phone_step1_desc1.bmp",
-	/* TODO(yupingso): Draw rec_step1_desc2_low_bat.bmp if battery is
-	   low. */
-	"rec_step1_desc2.bmp",
-};
+static vb2_error_t draw_recovery_phone_step1_desc(
+	const struct ui_state *state,
+	const struct ui_state *prev_state,
+	int32_t *y)
+{
+	static const char *const desc_files[] = {
+		"rec_phone_step1_desc0.bmp",
+		"rec_phone_step1_desc1.bmp",
+		"rec_step1_desc2.bmp",
+	};
+	static const char *const desc_low_battery_files[] = {
+		"rec_phone_step1_desc0.bmp",
+		"rec_phone_step1_desc1.bmp",
+		"rec_step1_desc2_low_bat.bmp",
+	};
+	const struct ui_desc desc = is_battery_low() ?
+		UI_DESC(desc_low_battery_files) : UI_DESC(desc_files);
+
+	return ui_draw_desc(&desc, state, y);
+}
 
 static const struct ui_menu_item recovery_phone_step1_items[] = {
 	LANGUAGE_SELECT_ITEM,
@@ -366,7 +402,7 @@ static const struct ui_screen_info recovery_phone_step1_screen = {
 	.step = 1,
 	.num_steps = 3,
 	.title = "rec_step1_title.bmp",
-	.desc = UI_DESC(recovery_phone_step1_desc),
+	.draw_desc = draw_recovery_phone_step1_desc,
 	.menu = UI_MENU(recovery_phone_step1_items),
 	.mesg = "To proceed with the recovery process, you’ll need\n"
 		"1. An Android phone with internet access\n"
@@ -432,13 +468,26 @@ static const struct ui_screen_info recovery_phone_step2_screen = {
 /******************************************************************************/
 /* VB2_SCREEN_RECOVERY_DISK_STEP1 */
 
-static const char *const recovery_disk_step1_desc[] = {
-	"rec_disk_step1_desc0.bmp",
-	"rec_disk_step1_desc1.bmp",
-	/* TODO(yupingso): Draw rec_step1_desc2_low_bat.bmp if battery is
-	   low. */
-	"rec_step1_desc2.bmp",
-};
+static vb2_error_t draw_recovery_disk_step1_desc(
+	const struct ui_state *state,
+	const struct ui_state *prev_state,
+	int32_t *y)
+{
+	static const char *const desc_files[] = {
+		"rec_disk_step1_desc0.bmp",
+		"rec_disk_step1_desc1.bmp",
+		"rec_step1_desc2.bmp",
+	};
+	static const char *const desc_low_battery_files[] = {
+		"rec_disk_step1_desc0.bmp",
+		"rec_disk_step1_desc1.bmp",
+		"rec_step1_desc2_low_bat.bmp",
+	};
+	const struct ui_desc desc = is_battery_low() ?
+		UI_DESC(desc_low_battery_files) : UI_DESC(desc_files);
+
+	return ui_draw_desc(&desc, state, y);
+}
 
 static const struct ui_menu_item recovery_disk_step1_items[] = {
 	LANGUAGE_SELECT_ITEM,
@@ -453,7 +502,7 @@ static const struct ui_screen_info recovery_disk_step1_screen = {
 	.step = 1,
 	.num_steps = 3,
 	.title = "rec_step1_title.bmp",
-	.desc = UI_DESC(recovery_disk_step1_desc),
+	.draw_desc = draw_recovery_disk_step1_desc,
 	.menu = UI_MENU(recovery_disk_step1_items),
 	.mesg = "To proceed with the recovery process, you'll need\n"
 		"1. An external storage disk such as a USB drive or an SD card"
