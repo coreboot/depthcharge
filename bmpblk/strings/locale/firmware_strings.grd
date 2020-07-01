@@ -145,6 +145,27 @@ Advanced options
       <message name="btn_dev_mode" desc="String for button to initiate the transition of the device into developer mode">
 Enable developer mode
       </message>
+      <message name="view_logs_heading" desc="Heading for the button group of different kinds of logs.">
+View logs
+      </message>
+      <message name="btn_debug_info" desc="String for button to view the logs of debug info.">
+Debug info
+      </message>
+      <message name="btn_firmware_log" desc="String for button to view the firmware log.">
+Firmware log
+      </message>
+      <message name="debug_info_title" desc="Title for the debug info screen.">
+Debug info
+      </message>
+      <message name="firmware_log_title" desc="Title for the firmware log screen.">
+Firmware log
+      </message>
+      <message name="btn_page_up" desc="String for the page up button.">
+Page up
+      </message>
+      <message name="btn_page_down" desc="String for the page down button.">
+Page down
+      </message>
       <message name="rec_sel_title" desc="Title for the recovery screen (after user presses three finger salute, ie: ctrl + refresh + power).">
 Let’s step you through the recovery process
       </message>
