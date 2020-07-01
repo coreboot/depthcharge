@@ -296,7 +296,7 @@ vb2_error_t ui_get_bitmap(const char *image_name, const char *locale_code,
 	int used;
 	char file[UI_BITMAP_FILENAME_MAX_LEN + 1];
 	const char *file_ext;
-	const char *suffix = "_focus";
+	const char *suffix = focused ? "_focus" : "";
 	const size_t image_name_len = strlen(image_name);
 	struct directory *dir;
 
@@ -312,8 +312,7 @@ vb2_error_t ui_get_bitmap(const char *image_name, const char *locale_code,
 		used = image_name_len;
 	strncpy(file, image_name, used);
 
-	if (focused)
-		used += snprintf(file + used, sizeof(file) - used, suffix);
+	used += snprintf(file + used, sizeof(file) - used, suffix);
 	snprintf(file + used, sizeof(file) - used, file_ext);
 
 	if (locale_code)
