@@ -240,26 +240,11 @@ static vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 	return VB2_SUCCESS;
 }
 
-/*
- * Draw a button.
- *
- * @param image_name	Image name.
- * @param locale_code	Language code of current locale.
- * @param x		x-coordinate of the top-left corner.
- * @param y		y-coordinate of the top-left corner.
- * @param width		Width of the box.
- * @param height	Height of the box.
- * @param reverse	Whether to reverse the x-coordinate relative to the
- *			canvas.
- * @param focused	1 for focused and 0 for non-focused.
- *
- * @return VB2_SUCCESS on success, non-zero on error.
- */
-static vb2_error_t ui_draw_button(const char *image_name,
-				  const char *locale_code,
-				  int32_t x, int32_t y,
-				  int32_t width, int32_t height,
-				  int reverse, int focused)
+vb2_error_t ui_draw_button(const char *image_name,
+			   const char *locale_code,
+			   int32_t x, int32_t y,
+			   int32_t width, int32_t height,
+			   int reverse, int focused)
 {
 	struct ui_bitmap bitmap;
 	const int32_t x_center = x + width / 2;

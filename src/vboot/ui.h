@@ -122,6 +122,15 @@
 #define UI_FOOTER_COL3_ICON_HEIGHT		30
 #define UI_FOOTER_COL3_ICON_SPACING		5
 
+/* For error box */
+#define UI_ERROR_BOX_RADIUS                     12
+#define UI_ERROR_BOX_HEIGHT                     280
+#define UI_ERROR_BOX_WIDTH                      500
+#define UI_ERROR_BOX_PADDING_H                  30
+#define UI_ERROR_BOX_PADDING_V                  30
+#define UI_ERROR_BOX_SECTION_SPACING            20
+#define UI_ERROR_BOX_ICON_HEIGHT                40
+
 /*
  * UI_BOX_* constants define a large textbox taking up the width of the screen.
  * They are used for
@@ -157,6 +166,7 @@ static const struct rgb_color ui_color_button		= { 0x8a, 0xb4, 0xf8 };
 static const struct rgb_color ui_color_button_border	= { 0x4a, 0x5b, 0x78 };
 static const struct rgb_color ui_color_link_bg		= { 0x2a, 0x2f, 0x39 };
 static const struct rgb_color ui_color_border		= { 0x3f, 0x40, 0x42 };
+static const struct rgb_color ui_color_error_box	= { 0x2d, 0x2e, 0x30 };
 
 struct ui_bitmap {
 	char name[UI_BITMAP_FILENAME_MAX_LEN + 1];
@@ -359,6 +369,27 @@ vb2_error_t ui_draw_box(int32_t x, int32_t y,
 			int32_t width, int32_t height,
 			const struct rgb_color *rgb,
 			int reverse);
+
+/*
+ * Draw a button.
+ *
+ * @param image_name	Image name.
+ * @param locale_code	Language code of current locale.
+ * @param x		x-coordinate of the top-left corner.
+ * @param y		y-coordinate of the top-left corner.
+ * @param width		Width of the button.
+ * @param height	Height of the button.
+ * @param reverse	Whether to reverse the x-coordinate relative to the
+ *			canvas.
+ * @param focused	1 for focused and 0 for non-focused.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_draw_button(const char *image_name,
+			   const char *locale_code,
+			   int32_t x, int32_t y,
+			   int32_t width, int32_t height,
+			   int reverse, int focused);
 
 /******************************************************************************/
 /* layout.c */
