@@ -390,6 +390,12 @@ static const struct ui_menu_item recovery_select_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	{ "btn_rec_by_phone.bmp" },
 	{ "btn_rec_by_disk.bmp" },
+	{
+		.file = "btn_launch_diag.bmp",
+		.type = UI_MENU_ITEM_TYPE_SECONDARY,
+		.icon_file = "ic_search.bmp",
+		.flags = UI_MENU_ITEM_FLAG_NO_ARROW,
+	},
 	ADVANCED_OPTIONS_ITEM,
 	POWER_OFF_ITEM,
 };
