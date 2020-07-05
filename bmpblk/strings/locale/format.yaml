@@ -80,6 +80,9 @@ inputs:
   - dev_boot_ext_desc0
   - dev_invalid_disk_title
   - dev_invalid_disk_desc0
+  # diagnostics
+  - btn_launch_diag
+  - btn_launch_diag_focus
   # generic buttons
   - btn_next
   - btn_back
@@ -205,6 +208,11 @@ files:
   navigate0_tablet:
   navigate1_tablet:
 
+diagnostic_files:
+  # diagnostics
+  btn_launch_diag:
+  btn_launch_diag_focus: [btn_launch_diag]
+
 aliases:
   - &base_color '--color=CCCCCC --bgcolor=202124'
   - &dark_color '--color=9AA0A6 --bgcolor=202124'
@@ -303,6 +311,9 @@ styles:
   dev_boot_ext_desc0: *base_color
   dev_invalid_disk_title: *base_color
   dev_invalid_disk_desc0: *base_color
+  # diagnostics
+  btn_launch_diag: *link_color
+  btn_launch_diag_focus: *link_focused_color
   # generic buttons
   btn_next: *button_color
   btn_next_focus: *button_focused_color

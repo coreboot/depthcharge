@@ -289,6 +289,9 @@ No valid image detected
       <message name="dev_invalid_disk_desc0" desc="String1 for screen that appears when user plugs in a USB/SD card with an invalid image on it.">
 Make sure your external disk has a valid Chrome OS image, and re-insert the disk when ready.
       </message>
+      <message name="btn_launch_diag" desc="String for the button to enter diagnostics.">
+Launch diagnostics
+      </message>
       <message name="btn_next" desc="String for the next button.">
 Next
       </message>
