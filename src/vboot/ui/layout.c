@@ -129,10 +129,7 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 {
 	char hwid[VB2_GBB_HWID_MAX_SIZE];
 	uint32_t size = sizeof(hwid);
-	if (vb2api_gbb_read_hwid(vboot_get_context(), hwid, &size) !=
-	    VB2_SUCCESS)
-		strcpy(hwid, "NOT FOUND");
-
+	char *p;
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
 	const uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
@@ -143,6 +140,17 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 	const int32_t footer_y = UI_SCALE - UI_MARGIN_BOTTOM - UI_FOOTER_HEIGHT;
 	const int32_t footer_height = UI_FOOTER_HEIGHT;
 	struct ui_bitmap bitmap;
+
+	/* hwid */
+	if (vb2api_gbb_read_hwid(vboot_get_context(), hwid, &size) ==
+	    VB2_SUCCESS) {
+		/* Truncate everything after the first whitespace. */
+		p = strchr(hwid, ' ');
+		if (p)
+			*p = '\0';
+	} else {
+		strcpy(hwid, "NOT FOUND");
+	}
 
 	/* Column 1 */
 	x = UI_MARGIN_H;
