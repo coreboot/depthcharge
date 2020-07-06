@@ -209,6 +209,7 @@ class Converter(object):
     'ic_dropdown': LANG_HEADER_BACKGROUND,
     'ic_dropleft_focus': LINK_SELECTED_BACKGROUND,
     'ic_dropright_focus': LINK_SELECTED_BACKGROUND,
+    'ic_globe': LANG_HEADER_BACKGROUND,
     'ic_settings_focus': LINK_SELECTED_BACKGROUND,
     'ic_power_focus': LINK_SELECTED_BACKGROUND,
   }
