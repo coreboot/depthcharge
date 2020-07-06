@@ -18,29 +18,28 @@
 #include <libpayload.h>
 #include <tss_constants.h>
 #include <vb2_api.h>
-#include <vboot_api.h>
 
 #include "drivers/tpm/tpm.h"
 #include "vboot/secdata_tpm.h"
 #include "vboot/util/commonparams.h"
 
-vb2_error_t VbExTpmInit(void)
+vb2_error_t vb2ex_tpm_init(void)
 {
 	return VB2_SUCCESS;
 }
 
-vb2_error_t VbExTpmClose(void)
+vb2_error_t vb2ex_tpm_close(void)
 {
 	return VB2_SUCCESS;
 }
 
-vb2_error_t VbExTpmOpen(void)
+vb2_error_t vb2ex_tpm_open(void)
 {
 	return VB2_SUCCESS;
 }
 
-uint32_t VbExTpmSendReceive(const uint8_t *request, uint32_t request_length,
-			    uint8_t *response, uint32_t *response_length)
+uint32_t vb2ex_tpm_send_recv(const uint8_t *request, uint32_t request_length,
+			     uint8_t *response, uint32_t *response_length)
 {
 	size_t len = *response_length;
 	if (tpm_xmit(request, request_length, response, &len))
