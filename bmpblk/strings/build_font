@@ -14,7 +14,7 @@ if [ -z "${MENU_UI}" ]; then
   FGCOLOR_DARK="$FGCOLOR"
   BGCOLOR="#ffffff"
   FONT="Noto Sans"
-  MARGIN="3"
+  MARGIN="3 0"
 else
   FGCOLOR="#cccccc"
   FGCOLOR_DARK="#9aa0a6"
