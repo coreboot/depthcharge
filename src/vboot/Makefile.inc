@@ -38,7 +38,7 @@ TLCL_LIB = $(VBOOT_BUILD_DIR)/tlcl.a
 .PHONY: $(TLCL_LIB)
 
 # The vboot and TLCL library sources are external to depthcharge.
-$(VBOOT_LIB):
+$(VBOOT_LIB): $(LIBPAYLOAD_DIR)/include/kconfig.h $(KCONFIG_AUTOHEADER)
 ifndef VB_SOURCE
 	$(error Set VB_SOURCE to point to the vboot source directory)
 else
