@@ -1366,8 +1366,7 @@ static const struct vboot_ui_descriptor vboot_screens[] = {
 	{
 		.id = VB_SCREEN_RECOVERY_INSERT,
 		.draw = vboot_draw_recovery_insert,
-		.mesg = "Chrome OS is missing or damaged.\n"
-			"Please insert a recovery USB stick or SD card.\n",
+		.mesg = "Please insert a recovery USB stick or SD card.\n",
 	},
 	{
 		.id = VB_SCREEN_RECOVERY_TO_DEV,
@@ -1399,8 +1398,8 @@ static const struct vboot_ui_descriptor vboot_screens[] = {
 	{
 		.id = VB_SCREEN_OS_BROKEN,
 		.draw = vboot_draw_os_broken,
-		.mesg = "Chrome OS may be broken.\n"
-			"Remove media and initiate recovery.\n",
+		.mesg = "Chrome OS is missing or damaged.\n"
+			"Please remove all connected devices and start recovery.\n",
 	},
 	{
 		.id = VB_SCREEN_DEVELOPER_WARNING_MENU,
