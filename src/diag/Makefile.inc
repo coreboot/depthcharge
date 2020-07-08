@@ -12,3 +12,4 @@
 ##
 
 depthcharge-y += health_info.c
+depthcharge-y += pattern.c memory.c
