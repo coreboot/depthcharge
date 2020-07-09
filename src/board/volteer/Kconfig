@@ -10,6 +10,14 @@
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
 
+config VOLTEER_MAX98373_I2S_PORT
+	int "Set the I2S port number"
+	range 1 2
+	default 1
+	depends on DRIVER_SOUND_MAX98373
+	help
+	  This is the I2S port number routed to MAX98373.
+
 config VOLTEER_USBC_PORT_0_USB3_NUM
 	int
 	range 0 3

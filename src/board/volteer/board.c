@@ -12,6 +12,7 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2s/cavs-regs.h"
 #include "drivers/bus/i2s/intel_common/max98357a.h"
 #include "drivers/bus/spi/intel_gspi.h"
@@ -24,6 +25,7 @@
 #include "drivers/power/pch.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/max98357a.h"
+#include "drivers/sound/max98373.h"
 #include "drivers/soc/tigerlake.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
@@ -37,6 +39,18 @@
 #define AUD_BITDEPTH	16
 #define AUD_SAMPLE_RATE	48000
 #define SDMODE_PIN	GPP_A10
+
+#define AUD_I2C0	PCI_DEV(0, 0x15, 0)
+#define AUD_I2C_ADDR	0x32
+#define I2C_FS_HZ	400000
+
+#if CONFIG_VOLTEER_MAX98373_I2S_PORT == 1
+	#define AUD_GPIO_BCLK	GPP_A23
+	#define AUD_GPIO_LRCLK	GPP_R7
+#elif CONFIG_VOLTEER_MAX98373_I2S_PORT == 2
+	#define AUD_GPIO_BCLK   GPP_A7
+	#define AUD_GPIO_LRCLK  GPP_A8
+#endif
 
 /*
  * Each USB Type-C port consists of a TCP (USB3) and a USB2 port from
@@ -84,6 +98,27 @@ static void volteer_setup_tpm(void)
 		cr50_irq_status)->ops);
 }
 
+#if CONFIG_DRIVER_SOUND_MAX98373
+static void volteer_setup_max98373(void)
+{
+	/* Use GPIOs to provide a BCLK+LRCLK to the codec */
+	GpioCfg *boot_beep_bclk = new_tigerlake_gpio_output(AUD_GPIO_BCLK, 0);
+	GpioCfg *boot_beep_lrclk = new_tigerlake_gpio_output(AUD_GPIO_LRCLK, 0);
+
+	/* Speaker amp is Maxim 98373 codec on I2C0 */
+	DesignwareI2c *i2c0 = new_pci_designware_i2c(
+			AUD_I2C0,
+			I2C_FS_HZ, TIGERLAKE_DW_I2C_MHZ);
+
+	Max98373Codec *tone_generator =
+		new_max98373_tone_generator(&i2c0->ops, AUD_I2C_ADDR,
+				AUD_SAMPLE_RATE,
+				&boot_beep_bclk->ops,
+				&boot_beep_lrclk->ops);
+	sound_set_ops(&tone_generator->ops);
+}
+#endif
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
@@ -104,6 +139,7 @@ static int board_setup(void)
 	power_set_ops(&tigerlake_power_ops);
 
 	/* Audio Setup (for boot beep) */
+#if CONFIG_DRIVER_SOUND_MAX98357A
 	GpioOps *sdmode = &new_tigerlake_gpio_output(SDMODE_PIN, 0)->ops;
 	I2s *i2s = new_i2s_structure(&max98357a_settings, AUD_BITDEPTH,
 			sdmode, SSP_I2S1_START_ADDRESS);
@@ -115,6 +151,10 @@ static int board_setup(void)
 	list_insert_after(&speaker_amp->component.list_node,
 			&sound_route->components);
 	sound_set_ops(&sound_route->ops);
+#endif
+#if CONFIG_DRIVER_SOUND_MAX98373
+	volteer_setup_max98373();
+#endif
 
 	/* NVME SSD */
 	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x1d, 0));
