@@ -58,10 +58,29 @@ vb2_error_t ui_draw_bitmap(const struct ui_bitmap *bitmap,
 		.y = { .n = height, .d = UI_SCALE, },
 	};
 
-	if (get_bitmap_dimension(bitmap->data, bitmap->size, &dim))
-		return VB2_ERROR_UI_DRAW_FAILURE;
-
 	ret = draw_bitmap(bitmap->data, bitmap->size, &pos, &dim, flags);
+
+	if (ret == CBGFX_ERROR_BOUNDARY) {
+		/*
+		 * Fallback mechanism: try again with smaller width.
+		 * WARNING: The following message might be grepped in FAFT.
+		 * DO NOT MODIFY it.
+		 */
+		UI_WARN("Drawing bitmap '%s' (x=%d, y=%d, w=%d, h=%d, f=%#x) "
+			"exceeded canvas; try scaling\n", bitmap->name,
+			 x, y, width, height, flags);
+		if (flags & PIVOT_H_LEFT)
+			width = UI_SCALE - UI_MARGIN_H - x;
+		else if (flags & PIVOT_H_RIGHT)
+			width = x - UI_MARGIN_H;
+		else
+			width = MIN(UI_SCALE - UI_MARGIN_H - x,
+				    x - UI_MARGIN_H) * 2;
+		dim.x.n = width;
+		ret = draw_bitmap(bitmap->data, bitmap->size, &pos, &dim,
+				  flags);
+	}
+
 	if (ret) {
 		UI_ERROR("Drawing bitmap '%s' (x=%d, y=%d, w=%d, h=%d, f=%#x) "
 			 "failed: %#x\n", bitmap->name,
