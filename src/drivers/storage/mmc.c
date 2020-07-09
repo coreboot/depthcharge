@@ -658,20 +658,15 @@ static int mmc_select_hs200(MmcMedia *media)
 	return ret;
 }
 
-static int mmc_change_freq(MmcMedia *media)
+static int mmc_change_freq(MmcMedia *media, unsigned char *ext_csd)
 {
 	int err;
-	ALLOC_CACHE_ALIGN_BUFFER(unsigned char, ext_csd, 512);
 
 	media->caps = 0;
 
 	/* Only version 4 supports high-speed */
 	if (media->version < MMC_VERSION_4)
 		return 0;
-
-	err = mmc_send_ext_csd(media->ctrlr, ext_csd);
-	if (err)
-		return err;
 
 	if ((media->ctrlr->caps & MMC_CAPS_HS400ES) &&
 	    (ext_csd[EXT_CSD_CARD_TYPE] & EXT_CSD_CARD_TYPE_HS400_1_8V) &&
@@ -990,7 +985,7 @@ static int mmc_startup(MmcMedia *media)
 	if (IS_SD(media))
 		err = sd_change_freq(media);
 	else
-		err = mmc_change_freq(media);
+		err = mmc_change_freq(media, ext_csd);
 	if (err)
 		return err;
 
