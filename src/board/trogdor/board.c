@@ -78,12 +78,14 @@ static int board_setup(void)
 				SDHCI_PLATFORM_NO_EMMC_HS200 |
 				SDHCI_PLATFORM_SUPPORTS_HS400ES;
 
-	/* Trogdor rev1 and Lazor rev2 use off-AVL eMMC parts that do not
-	   support HS400-ES. */
+	/* Some specific board/revision combinations use off-AVL eMMC parts
+	   that do not support HS400-ES. */
 	if ((lib_sysinfo.board_id == 1 &&
 	     !strcmp(cb_mb_part_string(lib_sysinfo.mainboard), "Trogdor")) ||
 	    (lib_sysinfo.board_id == 2 &&
-	     !strcmp(cb_mb_part_string(lib_sysinfo.mainboard), "Lazor")))
+	     !strcmp(cb_mb_part_string(lib_sysinfo.mainboard), "Lazor")) ||
+	    (lib_sysinfo.board_id == 0 &&
+	     !strcmp(cb_mb_part_string(lib_sysinfo.mainboard), "Pompom")))
 		emmc_platfm_flags &= ~SDHCI_PLATFORM_SUPPORTS_HS400ES;
 
 	SdhciHost *emmc = new_sdhci_msm_host(SDC1_HC_BASE,
