@@ -250,6 +250,14 @@ vb2_error_t ui_display_screen(struct ui_state *state,
 	/* If the screen is blank, turn off the backlight; else turn it on. */
 	backlight_update(screen->id != VB2_SCREEN_BLANK);
 
+	/*
+	 * Dim the screen.  Basically, if we're going to show a
+	 * dialog, we need to dim the background colors so it's not so
+	 * distracting.
+	 */
+	if (error_body != NULL)
+		set_blend(&ui_color_black, ALPHA(60));
+
 	if (screen->draw)
 		rv = screen->draw(state, prev_state);
 	else
@@ -261,7 +269,9 @@ vb2_error_t ui_display_screen(struct ui_state *state,
 		if (screen->mesg)
 			print_fallback_message(screen->mesg);
 	}
-
+	/* Disable screen dimming. */
+	if (error_body != NULL)
+		clear_blend();
 	/*
 	 * If there's an error message to be printed, print it out.
 	 * If we're already printing out a fallback message, give it

@@ -166,7 +166,8 @@ static const struct rgb_color ui_color_button		= { 0x8a, 0xb4, 0xf8 };
 static const struct rgb_color ui_color_button_border	= { 0x4a, 0x5b, 0x78 };
 static const struct rgb_color ui_color_link_bg		= { 0x2a, 0x2f, 0x39 };
 static const struct rgb_color ui_color_border		= { 0x3f, 0x40, 0x42 };
-static const struct rgb_color ui_color_error_box	= { 0x2d, 0x2e, 0x30 };
+static const struct rgb_color ui_color_error_box	= { 0x20, 0x21, 0x24 };
+static const struct rgb_color ui_color_black            = { 0x00, 0x00, 0x00 };
 
 struct ui_bitmap {
 	char name[UI_BITMAP_FILENAME_MAX_LEN + 1];
