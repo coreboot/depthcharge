@@ -19,6 +19,7 @@
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
+#include "drivers/bus/i2c/mtk_i2c.h"
 #include "drivers/bus/i2s/mtk.h"
 #include "drivers/bus/spi/mtk.h"
 #include "drivers/bus/usb/usb.h"
@@ -30,6 +31,7 @@
 #include "drivers/power/psci.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/max98357a.h"
+#include "drivers/sound/rt1015.h"
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/tpm/spi.h"
 #include "vboot/util/flag.h"
@@ -43,13 +45,24 @@ static void sound_setup(void)
 	I2sSource *i2s_source = new_i2s_source(&i2s2->ops, 48000, 2, 8000);
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
 
+	ListNode *speaker_amp = NULL;
 	GpioOps *sdmode_gpio = sysinfo_lookup_gpio("speaker enable", 1,
 						   new_mtk_gpio_output);
+	if (sdmode_gpio == NULL) {
+		/*
+		 * RT1015 is dual channel and AUD_RT1015_DEVICE_ADDR is only
+		 * left (0x28) but that is fine for firmware to beep.
+		 */
+		MTKI2c *i2c6 = new_mtk_i2c(0x11005000, 0x11000600);
+		rt1015Codec *codec = new_rt1015_codec(&i2c6->ops,
+						      AUD_RT1015_DEVICE_ADDR);
+		speaker_amp = &codec->component.list_node;
+	} else {
+		max98357aCodec *codec = new_max98357a_codec(sdmode_gpio);
+		speaker_amp = &codec->component.list_node;
+	}
 
-	max98357aCodec *speaker_amp = new_max98357a_codec(sdmode_gpio);
-	list_insert_after(&speaker_amp->component.list_node,
-			  &sound_route->components);
-
+	list_insert_after(speaker_amp, &sound_route->components);
 	list_insert_after(&i2s2->component.list_node,
 			  &sound_route->components);
 
