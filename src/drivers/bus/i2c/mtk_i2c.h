@@ -44,7 +44,7 @@ enum {
 };
 
 /* I2C DMA Registers */
-struct mt8173_i2c_dma_regs {
+struct mtk_i2c_dma_regs {
 	uint32_t dma_int_flag;
 	uint32_t dma_int_en;
 	uint32_t dma_en;
@@ -58,44 +58,18 @@ struct mt8173_i2c_dma_regs {
 	uint32_t dma_rx_len;
 };
 
-check_member(mt8173_i2c_dma_regs, dma_tx_len, 0x24);
+check_member(mtk_i2c_dma_regs, dma_tx_len, 0x24);
 
-/* I2C Register */
-struct mt8173_i2c_regs {
-	uint32_t data_port;
-	uint32_t slave_addr;
-	uint32_t intr_mask;
-	uint32_t intr_stat;
-	uint32_t control;
-	uint32_t transfer_len;
-	uint32_t transac_len;
-	uint32_t delay_len;
-	uint32_t timing;
-	uint32_t start;
-	uint32_t ext_conf;
-	uint32_t reserved1;
-	uint32_t fifo_stat;
-	uint32_t fifo_thresh;
-	uint32_t fifo_addr_clr;
-	uint32_t reserved2;
-	uint32_t io_config;
-	uint32_t debug;
-	uint32_t hs;
-	uint32_t reserved3;
-	uint32_t softreset;
-	uint32_t dcm;
-	uint32_t reserved4[3];
-	uint32_t debug_stat;
-	uint32_t debug_ctrl;
-	uint32_t transfer_aux_len;
-};
-
-check_member(mt8173_i2c_regs, debug_stat, 0x64);
+#if CONFIG(DRIVER_BUS_I2C_MT8173)
+#include "drivers/bus/i2c/mt8173.h"
+#else
+#error "Unsupported I2C for MediaTek"
+#endif
 
 typedef struct MTKI2c {
 	I2cOps ops;
-	struct mt8173_i2c_regs *base;
-	struct mt8173_i2c_dma_regs *dma_base;
+	struct mtk_i2c_regs *base;
+	struct mtk_i2c_dma_regs *dma_base;
 	uint8_t *write_buffer;
 	uint8_t *read_buffer;
 } MTKI2c;
