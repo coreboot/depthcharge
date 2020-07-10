@@ -337,7 +337,7 @@ def main(argv):
       files.update(formats[LEGACY_CLAMSHELL_FILES])
 
     # Now parse strings for optional features
-    if os.getenv("DIAGNOSTIC_UI") == "1":
+    if os.getenv("DIAGNOSTIC_UI") == "1" and DIAGNOSTIC_FILES in formats:
       files.update(formats[DIAGNOSTIC_FILES])
 
     if VENDOR_STRINGS:
