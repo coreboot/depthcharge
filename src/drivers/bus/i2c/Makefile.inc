@@ -27,6 +27,7 @@ depthcharge-$(CONFIG_DRIVER_BUS_I2C_QCS405) += qcs405_blsp.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_QCS405) += qcs405_i2c.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_QCS405) += qcs405_qup.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_MT8173) += mtk_i2c.c
+depthcharge-$(CONFIG_DRIVER_BUS_I2C_MT8183) += mtk_i2c.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_ROCKCHIP) += rockchip.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_S3C24X0) += s3c24x0.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_TEGRA) += tegra.c
