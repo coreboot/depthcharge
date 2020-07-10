@@ -30,7 +30,7 @@
 
 #define I2CERR(fmt, arg...)   printf(I2CTAG fmt, ##arg)
 
-static inline void i2c_dma_reset(struct mt8173_i2c_dma_regs *dma_regs)
+static inline void i2c_dma_reset(struct mtk_i2c_dma_regs *dma_regs)
 {
 	write32(&dma_regs->dma_rst, 0x1);
 	udelay(50);
@@ -43,7 +43,7 @@ static inline void i2c_dma_reset(struct mt8173_i2c_dma_regs *dma_regs)
 static inline void mtk_i2c_dump_info(MTKI2c *bus)
 {
 #if DEBUG_I2C
-	struct mt8173_i2c_regs *regs = bus->base;
+	struct mtk_i2c_regs *regs = bus->base;
 
 	I2CLOG("I2C register:\nSLAVE_ADDR %x\nINTR_MASK %x\nINTR_STAT %x\n"
 	       "CONTROL %x\nTRANSFER_LEN %x\nTRANSAC_LEN %x\nDELAY_LEN %x\n"
@@ -77,8 +77,8 @@ static uint32_t mtk_i2c_transfer(MTKI2c *bus, I2cSeg *seg, enum i2c_modes read)
 	uint8_t *write_buffer = NULL;
 	uint8_t *read_buffer = NULL;
 	uint64_t start;
-	struct mt8173_i2c_regs *regs;
-	struct mt8173_i2c_dma_regs *dma_regs;
+	struct mtk_i2c_regs *regs;
+	struct mtk_i2c_dma_regs *dma_regs;
 
 	regs = bus->base;
 	dma_regs = bus->dma_base;
@@ -276,8 +276,8 @@ MTKI2c *new_mtk_i2c(uintptr_t base, uintptr_t dma_base)
 	MTKI2c *bus = xzalloc(sizeof(*bus));
 
 	bus->ops.transfer = &i2c_transfer;
-	bus->base = (struct mt8173_i2c_regs *)base;
-	bus->dma_base = (struct mt8173_i2c_dma_regs *)dma_base;
+	bus->base = (struct mtk_i2c_regs *)base;
+	bus->dma_base = (struct mtk_i2c_dma_regs *)dma_base;
 	bus->write_buffer = dma_malloc(MAX_TRANSFER_LEN);
 	bus->read_buffer = dma_malloc(MAX_TRANSFER_LEN);
 
