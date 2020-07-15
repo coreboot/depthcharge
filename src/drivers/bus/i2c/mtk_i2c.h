@@ -62,6 +62,8 @@ check_member(mtk_i2c_dma_regs, dma_tx_len, 0x24);
 
 #if CONFIG(DRIVER_BUS_I2C_MT8173)
 #include "drivers/bus/i2c/mt8173.h"
+#elif CONFIG(DRIVER_BUS_I2C_MT8183)
+#include "drivers/bus/i2c/mt8183.h"
 #else
 #error "Unsupported I2C for MediaTek"
 #endif
