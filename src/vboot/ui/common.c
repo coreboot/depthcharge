@@ -29,19 +29,6 @@ static const struct ui_error_item error_map[] = {
 	[VB2_UI_ERROR_DEV_MODE_ALREADY_ENABLED] = {
 		.body = "Dev mode already enabled?",
 	},
-	[VB2_UI_ERROR_DEV_INTERNAL_NOT_ALLOWED] = {
-		.body = "Dev mode internal boot not allowed",
-	},
-	/*
-	 * These next two errors are taken care of by additional
-	 * screens, thus don't need error strings.
-	 */
-	[VB2_UI_ERROR_DEV_EXTERNAL_NOT_ALLOWED] = {
-		.body = NULL,
-	},
-	[VB2_UI_ERROR_DEV_EXTERNAL_BOOT_FAILED] = {
-		.body = NULL,
-	},
 };
 
 static vb2_error_t init_screen(void)
