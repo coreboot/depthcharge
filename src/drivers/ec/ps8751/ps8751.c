@@ -720,6 +720,8 @@ static int __must_check ps8751_spi_flash_identify(Ps8751 *me)
 	 */
 	switch (flash_id) {
 	case 0x1c11:		/* "EN25F20" */
+	case 0x1c12:		/* "EN25F40" */
+	case 0xc811:		/* "GD25Q20C" */
 	case 0xbf43:		/* "25LF020A" */
 	case 0xef11:		/* "W25X20" */
 	case 0xef15:		/* "W25X32" */
