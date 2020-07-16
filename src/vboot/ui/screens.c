@@ -279,7 +279,8 @@ static const struct ui_screen_info broken_screen = {
 static const struct ui_menu_item advanced_options_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	{ "btn_dev_mode.bmp" },
-	/* TODO(yupingso): Add debug info & firmware log items. */
+	{ "btn_debug_info.bmp" },
+	/* TODO(b/146105976): add firmware log item. */
 	BACK_ITEM,
 	POWER_OFF_ITEM,
 };
