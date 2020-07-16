@@ -202,12 +202,10 @@ static vb2_error_t draw_language_select(const struct ui_state *state,
 					    0, 0, reverse));
 		/* Separator between languages */
 		if (id > id_begin)
-			/* TODO(yupingso): Ensure consistent thickness */
-			/* TODO(b/147424699): Reduce redraw of separator */
-			VB2_TRY(ui_draw_rounded_box(x_begin, y, box_width,
-						    border_thickness,
-						    &ui_color_lang_menu_border,
-						    0, 0, reverse));
+			/* TODO(b/160249415): Reduce redraw of separator */
+			VB2_TRY(ui_draw_h_line(x_begin, y, box_width,
+					       border_thickness,
+					       &ui_color_lang_menu_border));
 		/* Text */
 		y_center = y + box_height / 2;
 		VB2_TRY(ui_get_locale_info(id, &locale));

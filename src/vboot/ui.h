@@ -372,25 +372,19 @@ vb2_error_t ui_draw_box(int32_t x, int32_t y,
 			int reverse);
 
 /*
- * Draw a button.
+ * Draw a horizontal line segment.
  *
- * @param image_name	Image name.
- * @param locale_code	Language code of current locale.
- * @param x		x-coordinate of the top-left corner.
- * @param y		y-coordinate of the top-left corner.
- * @param width		Width of the button.
- * @param height	Height of the button.
- * @param reverse	Whether to reverse the x-coordinate relative to the
- *			canvas.
- * @param focused	1 for focused and 0 for non-focused.
+ * @param x		x-coordinate of the left endpoint.
+ * @param y		y-coordinate of the line.
+ * @param length	Length of the line.
+ * @param thickness	Thickness of the line.
+ * @param rgb		Color of the line.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t ui_draw_button(const char *image_name,
-			   const char *locale_code,
-			   int32_t x, int32_t y,
-			   int32_t width, int32_t height,
-			   int reverse, int focused);
+vb2_error_t ui_draw_h_line(int32_t x, int32_t y,
+			   int32_t length, int32_t thickness,
+			   const struct rgb_color *rgb);
 
 /******************************************************************************/
 /* layout.c */
@@ -502,6 +496,27 @@ struct ui_screen_info {
  */
 vb2_error_t ui_draw_language_header(const struct ui_locale *locale,
 				    const struct ui_state *state, int focused);
+
+/*
+ * Draw a button.
+ *
+ * @param image_name	Image name.
+ * @param locale_code	Language code of current locale.
+ * @param x		x-coordinate of the top-left corner.
+ * @param y		y-coordinate of the top-left corner.
+ * @param width		Width of the button.
+ * @param height	Height of the button.
+ * @param reverse	Whether to reverse the x-coordinate relative to the
+ *			canvas.
+ * @param focused	1 for focused and 0 for non-focused.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_draw_button(const char *image_name,
+			   const char *locale_code,
+			   int32_t x, int32_t y,
+			   int32_t width, int32_t height,
+			   int reverse, int focused);
 
 /*
  * Draw screen descriptions.
