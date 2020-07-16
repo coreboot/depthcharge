@@ -21,6 +21,16 @@
 
 #include "vboot/ui.h"
 
+#define SCREEN_FRACTION(numerator) ((struct fraction){	\
+	.n = numerator,					\
+	.d = UI_SCALE,					\
+})
+
+#define SCALE(x_rel, y_rel) ((struct scale){	\
+	.x = SCREEN_FRACTION(x_rel),		\
+	.y = SCREEN_FRACTION(y_rel),		\
+})
+
 static uint32_t reverse_pivot(uint32_t pivot) {
 	uint32_t left = pivot & PIVOT_H_LEFT;
 
@@ -49,14 +59,8 @@ vb2_error_t ui_draw_bitmap(const struct ui_bitmap *bitmap,
 		flags = reverse_pivot(flags);
 	}
 
-	struct scale pos = {
-		.x = { .n = x, .d = UI_SCALE, },
-		.y = { .n = y, .d = UI_SCALE, },
-	};
-	struct scale dim = {
-		.x = { .n = width, .d = UI_SCALE, },
-		.y = { .n = height, .d = UI_SCALE, },
-	};
+	struct scale pos = SCALE(x, y);
+	struct scale dim = SCALE(width, height);
 
 	ret = draw_bitmap(bitmap->data, bitmap->size, &pos, &dim, flags);
 
@@ -212,22 +216,10 @@ vb2_error_t ui_draw_rounded_box(int32_t x, int32_t y,
 	if (reverse)
 		x = UI_SCALE - x - width;
 
-	struct scale pos_rel = {
-		.x = { .n = x, .d = UI_SCALE },
-		.y = { .n = y, .d = UI_SCALE },
-	};
-	struct scale dim_rel = {
-		.x = { .n = width, .d = UI_SCALE },
-		.y = { .n = height, .d = UI_SCALE },
-	};
-	struct fraction thickness_rel = {
-		.n = thickness,
-		.d = UI_SCALE,
-	};
-	struct fraction radius_rel = {
-		.n = radius,
-		.d = UI_SCALE,
-	};
+	struct scale pos_rel = SCALE(x, y);
+	struct scale dim_rel = SCALE(width, height);
+	struct fraction thickness_rel = SCREEN_FRACTION(thickness);
+	struct fraction radius_rel = SCREEN_FRACTION(radius);
 
 	/* Convert CBGFX errors to vboot error. */
 	if (draw_rounded_box(&pos_rel, &dim_rel, rgb,
@@ -243,4 +235,19 @@ vb2_error_t ui_draw_box(int32_t x, int32_t y,
 			int reverse)
 {
 	return ui_draw_rounded_box(x, y, width, height, rgb, 0, 0, reverse);
+}
+
+vb2_error_t ui_draw_h_line(int32_t x, int32_t y,
+			   int32_t length, int32_t thickness,
+			   const struct rgb_color *rgb)
+{
+	struct scale pos1 = SCALE(x, y);
+	struct scale pos2 = SCALE(x + length, y);
+	struct fraction thickness_rel = SCREEN_FRACTION(thickness);
+
+	/* Convert CBGFX errors to vboot error. */
+	if (draw_line(&pos1, &pos2, &thickness_rel, rgb))
+		return VB2_ERROR_UI_DRAW_FAILURE;
+
+	return VB2_SUCCESS;
 }
