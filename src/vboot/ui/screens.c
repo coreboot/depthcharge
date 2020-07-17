@@ -327,10 +327,25 @@ static const struct ui_screen_info recovery_to_dev_screen = {
 /******************************************************************************/
 /* VB2_SCREEN_RECOVERY_SELECT */
 
-static const char *const recovery_select_desc[] = {
-	"rec_sel_desc0.bmp",
-	"rec_sel_desc1.bmp",
-};
+static vb2_error_t draw_recovery_select_desc(
+	const struct ui_state *state,
+	const struct ui_state *prev_state,
+	int32_t *y)
+{
+	static const char *const desc_files[] = {
+		"rec_sel_desc0.bmp",
+		"rec_sel_desc1.bmp",
+	};
+	static const char *const desc_no_phone_files[] = {
+		"rec_sel_desc0.bmp",
+		"rec_sel_desc1_no_phone.bmp",
+	};
+	struct vb2_context *ctx = vboot_get_context();
+	const struct ui_desc desc = vb2api_phone_recovery_ui_enabled(ctx) ?
+		UI_DESC(desc_files) : UI_DESC(desc_no_phone_files);
+
+	return ui_draw_desc(&desc, state, y);
+}
 
 static const struct ui_menu_item recovery_select_items[] = {
 	LANGUAGE_SELECT_ITEM,
@@ -344,7 +359,7 @@ static const struct ui_screen_info recovery_select_screen = {
 	.id = VB2_SCREEN_RECOVERY_SELECT,
 	.icon = UI_ICON_TYPE_INFO,
 	.title = "rec_sel_title.bmp",
-	.desc = UI_DESC(recovery_select_desc),
+	.draw_desc = draw_recovery_select_desc,
 	.menu = UI_MENU(recovery_select_items),
 	.mesg = "Select how you'd like to recover.\n"
 		"You can recover using a USB drive or an SD card.",
