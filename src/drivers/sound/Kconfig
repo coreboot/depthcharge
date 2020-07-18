@@ -109,3 +109,7 @@ config DRIVER_SOUND_SSM4567
 config DRIVER_SOUND_TEGRA_AUDIO_HUB
 	bool "Tegra Audio Hub driver"
 	default n
+
+config DRIVER_SOUND_MAX98373_SNDW
+	bool "MAX98373 SNDW codec driver"
+	default n

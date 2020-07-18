@@ -22,6 +22,7 @@ depthcharge-$(CONFIG_DRIVER_SOUND_IPQ806X) += ipq806x.c
 depthcharge-$(CONFIG_DRIVER_SOUND_MAX98090) += max98090.c
 depthcharge-$(CONFIG_DRIVER_SOUND_MAX98095) += max98095.c
 depthcharge-$(CONFIG_DRIVER_SOUND_MAX98373) += max98373.c
+depthcharge-$(CONFIG_DRIVER_SOUND_MAX98373_SNDW) += max98373_sndw.c
 depthcharge-$(CONFIG_DRIVER_SOUND_MAX98390) += max98390.c
 depthcharge-$(CONFIG_DRIVER_SOUND_MAX98927) += max98927.c
 depthcharge-$(CONFIG_DRIVER_SOUND_PCAT_BEEP) += pcat_beep.c
