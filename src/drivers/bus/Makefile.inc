@@ -11,4 +11,4 @@
 ## GNU General Public License for more details.
 ##
 
-subdirs-y += i2c i2s spi usb
+subdirs-y += i2c i2s spi usb soundwire
