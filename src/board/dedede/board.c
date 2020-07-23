@@ -5,6 +5,7 @@
  * Board file for Dedede.
  */
 
+#include <assert.h>
 #include <pci.h>
 #include <pci/pci.h>
 #include <sysinfo.h>
@@ -72,6 +73,20 @@ static void dedede_setup_tpm(void)
 	}
 }
 
+static void dedede_setup_flash(void)
+{
+	/* Flash is mapped at the end of 4GiB */
+	uintptr_t flash_start;
+	uint32_t flash_size = lib_sysinfo.spi_flash.size;
+	MemMappedFlash *flash;
+
+	assert(flash_size != 0);
+
+	flash_start = 4ULL * GiB - flash_size;
+	flash = new_mem_mapped_flash(flash_start, flash_size);
+	flash_set_ops(&flash->ops);
+}
+
 static int is_board_waddledee(void)
 {
 	static const char * const board_str = "Waddledee";
@@ -85,8 +100,8 @@ static int board_setup(void)
 {
 	sysinfo_install_flags(new_jasperlake_gpio_input_from_coreboot);
 
-	/* 32MB SPI Flash */
-	flash_set_ops(&new_mem_mapped_flash(0xfe000000, 0x2000000)->ops);
+	/* 16MB/32MB SPI Flash */
+	dedede_setup_flash();
 
 	/* TPM */
 	dedede_setup_tpm();
