@@ -54,10 +54,18 @@ HOSTASFLAGS :=
 
 UNIT_TEST:=
 ifneq ($(filter %-test %-tests,$(MAKECMDGOALS)),)
-ifneq ($(filter-out %-test %-tests, $(MAKECMDGOALS)),)
+ifneq ($(filter-out %-test %-tests %screenshot, $(MAKECMDGOALS)),)
 $(error Cannot mix unit-tests targets with other targets)
 endif
 UNIT_TEST:=1
+endif
+
+SCREENSHOT :=
+ifneq ($(filter %screenshot,$(MAKECMDGOALS)),)
+ifneq ($(filter-out %screenshot, $(MAKECMDGOALS)),)
+$(error Cannot mix screenshot targets with other targets)
+endif
+SCREENSHOT := 1
 endif
 
 LIBPAYLOAD_DIR ?= ../libpayload/install/libpayload
@@ -77,7 +85,7 @@ $(shell [ -d "$(obj)" ] || mkdir -p "$(obj)")
 
 run_kconfig_tool = KCONFIG_CONFIG="$(KCONFIG_CONFIG)" $(1)
 
-ifneq ($(UNIT_TEST),1)
+ifeq ($(UNIT_TEST)$(SCREENSHOT),)
 _ := $(shell $(call run_kconfig_tool, \
 	genconfig --header-path "$(KCONFIG_AUTOHEADER).unused" \
 	--config-out "$(KCONFIG_CONFIG_OUT)" "$(KCONFIG_FILE)"))
@@ -206,10 +214,12 @@ evaluate_subdirs= \
 # collect all object files eligible for building
 subdirs:=$(src)
 
-ifneq ($(UNIT_TEST),1)
-$(eval $(call evaluate_subdirs))
-else
+ifneq ($(UNIT_TEST),)
 include tests/Makefile.inc
+else ifneq ($(SCREENSHOT),)
+include screenshot/Makefile.inc
+else
+$(eval $(call evaluate_subdirs))
 endif
 
 # Eliminate duplicate mentions of source files in a class
