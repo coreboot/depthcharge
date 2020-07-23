@@ -43,6 +43,24 @@ const char *vb2ex_get_firmware_log(void)
 	return "";
 }
 
+const char *vb2ex_get_diagnostic_storage(void)
+{
+	/* TODO(b/151200757): Support headless devices */
+	return "";
+}
+
+vb2_error_t vb2ex_diag_memory_quick_test(int reset, const char **out)
+{
+	/* TODO(b/151200757): Support headless devices */
+	return VB2_SUCCESS;
+}
+
+vb2_error_t vb2ex_diag_memory_full_test(int reset, const char **out)
+{
+	/* TODO(b/151200757): Support headless devices */
+	return VB2_SUCCESS;
+}
+
 vb2_error_t vb2ex_display_ui(enum vb2_screen screen, uint32_t locale_id,
 			     uint32_t selected_item,
 			     uint32_t disabled_item_mask,

@@ -118,6 +118,23 @@ const char *vb2ex_get_firmware_log(void)
 	return buf;
 }
 
+const char *vb2ex_get_diagnostic_storage(void)
+{
+	return "Empty storage diagnostic implementation";
+}
+
+vb2_error_t vb2ex_diag_memory_quick_test(int reset, const char **out)
+{
+	*out = "Empty memory diagnostic implementation (quick)";
+	return VB2_SUCCESS;
+}
+
+vb2_error_t vb2ex_diag_memory_full_test(int reset, const char **out)
+{
+	*out = "Empty memory diagnostic implementation (full)";
+	return VB2_SUCCESS;
+}
+
 vb2_error_t vb2ex_display_ui(enum vb2_screen screen,
 			     uint32_t locale_id,
 			     uint32_t selected_item,
