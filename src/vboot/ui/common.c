@@ -46,6 +46,10 @@ static const struct ui_error_item error_map[] = {
 			"developer mode.\n"
 			"Can't use USB keyboard.",
 	},
+	[VB2_UI_ERROR_DIAGNOSTICS] = {
+		.body = "Couldn’t get diagnostic result.\n"
+			"Go back and try again.",
+	},
 };
 
 static vb2_error_t init_screen(void)
