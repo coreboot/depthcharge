@@ -39,6 +39,10 @@ SdhciHost *new_mem_sdhci_host(uintptr_t ioaddr, int platform_info,
 	if (platform_info & SDHCI_PLATFORM_EMMC_1V8_POWER)
 		host->quirks |= SDHCI_QUIRK_EMMC_1V8_POWER;
 
+	if (platform_info & SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD)
+		host->quirks |=
+			SDHCI_QUIRK_CLEAR_TRANSFER_BEFORE_CMD;
+
 	if (platform_info & SDHCI_PLATFORM_NO_CLK_BASE) {
 		host->quirks |= SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN;
 		host->clock_base = clock_base;
