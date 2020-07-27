@@ -262,14 +262,10 @@ static int board_setup(void)
 	list_insert_after(&nvme->ctrlr.list_node,
 				&fixed_block_dev_controllers);
 
-	SdhciHost *emmc = new_mem_sdhci_host(
-		EMMCCFG,
-		/* Can't enable HS200 or HS400 until tuning is fixed */
-		SDHCI_PLATFORM_NO_EMMC_HS200 | SDHCI_PLATFORM_EMMC_1V8_POWER, 0,
-		0, 0);
+	SdhciHost *emmc = new_mem_sdhci_host(EMMCCFG, 0, 0, 0, 0);
 
 	emmc->name = "eMMC";
-
+	emmc->mmc_ctrlr.execute_tuning = sdhci_execute_tuning;
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
 
