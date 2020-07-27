@@ -20,6 +20,7 @@
 #define EMMCHC 0xFEDD5000
 
 void emmc_set_ios(MmcCtrlr *mmc_ctrlr);
+int emmc_supports_hs400(void);
 
 /* I2C definitions */
 

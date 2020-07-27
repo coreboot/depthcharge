@@ -76,3 +76,17 @@ void emmc_set_ios(MmcCtrlr *mmc_ctrlr)
 	if (mmc_ctrlr->timing == MMC_TIMING_MMC_HS400)
 		enable_emmc_dll(host);
 }
+
+int emmc_supports_hs400(void)
+{
+	u32 reg = readl(EMMCHC + SDHCI_CAPABILITIES_1);
+
+	/*
+	 * There is no standard way of describing HS400 support. AMD FSP uses
+	 * the DDR50 flag as an indicator to signal HS400 support.
+	 */
+	if (reg & SDHCI_SUPPORT_DDR50)
+		return 1;
+
+	return 0;
+}
