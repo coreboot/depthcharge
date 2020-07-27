@@ -329,6 +329,76 @@ int sdhci_send_hs200_tuning_cmd(MmcCtrlr *mmc_ctrlr)
 	return ret;
 }
 
+int sdhci_execute_tuning(struct MmcMedia *media)
+{
+	int ret;
+	u16 reg;
+	u32 ctrl;
+	uint64_t start;
+	unsigned int blocks = 0;
+
+	SdhciHost *host = container_of(media->ctrlr, SdhciHost, mmc_ctrlr);
+
+	host->tuned_clock = 0;
+
+	if (media->ctrlr->timing != MMC_TIMING_MMC_HS200) {
+		printf("%s: Tuning only supports HS200\n", host->name);
+		return MMC_SUPPORT_ERR;
+	}
+
+	/* Start tuning */
+	reg = sdhci_readw(host, SDHCI_HOST_CONTROL2);
+	reg |= SDHCI_CTRL_EXEC_TUNING;
+	sdhci_writew(host, reg, SDHCI_HOST_CONTROL2);
+
+	/* Wait for tuning to finish */
+	start = timer_us(0);
+	while (1) {
+		blocks++;
+
+		ret = sdhci_send_hs200_tuning_cmd(media->ctrlr);
+		if (ret) {
+			printf("%s: Failed to send tuning command\n",
+			       host->name);
+			goto tuning_failed;
+		}
+
+		ctrl = sdhci_readl(host, SDHCI_HOST_CONTROL2);
+		if (!(ctrl & SDHCI_CTRL_EXEC_TUNING))
+			break;
+
+		if (timer_us(start) > SDHCI_TUNING_MAX_US) {
+			printf("%s: Tuning timed out\n", host->name);
+			ret = MMC_TIMEOUT;
+			goto tuning_failed;
+		}
+	}
+
+	if (!(ctrl & SDHCI_CTRL_TUNED_CLK)) {
+		printf("%s: HW tuning failed\n", host->name);
+		ret = MMC_UNUSABLE_ERR;
+		goto tuning_failed;
+	}
+
+	printf("%s: Tuning complete after %llu us, %d blocks\n", host->name,
+	       timer_us(start), blocks);
+
+	host->tuned_clock = host->clock;
+	return 0;
+
+ tuning_failed:
+	printf("%s: Tuning failed after %llu us, %d blocks\n", host->name,
+	       timer_us(start), blocks);
+
+	/* Tuning has timed out or failed. */
+	reg = sdhci_readw(host, SDHCI_HOST_CONTROL2);
+	reg &= ~SDHCI_CTRL_TUNED_CLK;
+	reg &= ~SDHCI_CTRL_EXEC_TUNING;
+	sdhci_writew(host, reg, SDHCI_HOST_CONTROL2);
+
+	return ret;
+}
+
 static int sdhci_send_command_bounced(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
 				      MmcData *data,
 				      struct bounce_buffer *bbstate)

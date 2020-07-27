@@ -306,6 +306,7 @@ struct sdhci_host {
 	unsigned clock_f_min;
 	unsigned clock_f_max;
 	unsigned clock_base; /* controller base clock */
+	unsigned tuned_clock; /* frequency of the clock that was tuned */
 	int removable;
 	unsigned voltages;
 
@@ -364,6 +365,13 @@ static inline u8 sdhci_readb(SdhciHost *host, int reg)
 void add_sdhci(SdhciHost *host);
 void sdhci_set_ios(MmcCtrlr *mmc_ctrlr);
 int sdhci_send_hs200_tuning_cmd(MmcCtrlr *mmc_ctrlr);
+
+/**
+ * Executes the standard SDHCI tuning procedure.
+ *
+ * If your board requires tuning, set this function on your MmcCtrlr.
+ */
+int sdhci_execute_tuning(struct MmcMedia *media);
 
 /* Add SDHCI controller from PCI */
 SdhciHost *new_pci_sdhci_host(pcidev_t dev,
