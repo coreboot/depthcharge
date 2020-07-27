@@ -518,6 +518,7 @@ static void mmc_recalculate_clock(MmcMedia *media)
 	} else {
 		if (media->caps & MMC_CAPS_HS) {
 			if ((media->caps & MMC_CAPS_HS200) ||
+			    (media->caps & MMC_CAPS_HS400) ||
 			    (media->caps & MMC_CAPS_HS400ES))
 				clock = MMC_CLOCK_200MHZ;
 			else if (media->caps & MMC_CAPS_HS_52MHz)
@@ -658,6 +659,66 @@ static int mmc_select_hs200(MmcMedia *media)
 	return ret;
 }
 
+/**
+ * HS400 tuning sequence:
+ *   1) Switch to HS200
+ *   2) Perform HS200 tuning
+ *   3) Switch to HS with clock at 52MHz or less
+ *   4) Set bus width to 8x without ES
+ *   5) Set timing interface to HS400
+ */
+static int mmc_select_hs400(MmcMedia *media)
+{
+	int ret;
+
+	/* Switch card to HS200 mode and perform tuning */
+	ret = mmc_select_hs200(media);
+	if (ret) {
+		mmc_error("switch to HS200 failed\n");
+		return ret;
+	}
+
+	/*
+	 * We need to clear out the HS200 cap so we don't use a 200MHz clock in
+	 * HS mode. Ideally mmc_recalculate_clock would be using ctrlr->timing
+	 * instead of caps to compute the clock.
+	 */
+	media->caps &= ~(MMC_CAPS_HS200);
+
+	/* Switch card to HS mode */
+	ret = mmc_select_hs(media);
+	if (ret) {
+		mmc_error("switch to high-speed failed\n");
+		return ret;
+	}
+
+	/* Switch card to DDR without strobe bit */
+	ret = mmc_switch(media, EXT_CSD_CMD_SET_NORMAL,
+			 EXT_CSD_BUS_WIDTH,
+			 EXT_CSD_DDR_BUS_WIDTH_8);
+	if (ret) {
+		mmc_error("switch to bus width for hs400 failed\n");
+		return ret;
+	}
+
+	/* Switch card to HS400 */
+	ret = mmc_switch(media, EXT_CSD_CMD_SET_NORMAL,
+			   EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS400);
+	if (ret) {
+		mmc_error("switch to hs400es failed\n");
+		return ret;
+	}
+
+	/* Set host controller to HS400 timing and frequency */
+	mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_HS400);
+	media->caps |= MMC_CAPS_HS400;
+
+	mmc_recalculate_clock(media);
+
+	ret = mmc_send_status(media, MMC_IO_RETRIES);
+	return ret;
+}
+
 static int mmc_change_freq(MmcMedia *media, unsigned char *ext_csd)
 {
 	int err;
@@ -672,6 +733,9 @@ static int mmc_change_freq(MmcMedia *media, unsigned char *ext_csd)
 	    (ext_csd[EXT_CSD_CARD_TYPE] & EXT_CSD_CARD_TYPE_HS400_1_8V) &&
 	    ext_csd[EXT_CSD_STROBE_SUPPORT])
 		err = mmc_select_hs400es(media);
+	else if ((media->ctrlr->caps & MMC_CAPS_HS400) &&
+	    (ext_csd[EXT_CSD_CARD_TYPE] & EXT_CSD_CARD_TYPE_HS400_1_8V))
+		err = mmc_select_hs400(media);
 	else if ((media->ctrlr->caps & MMC_CAPS_HS200) &&
 		 (ext_csd[EXT_CSD_CARD_TYPE] & EXT_CSD_CARD_TYPE_HS200_1_8V))
 		err = mmc_select_hs200(media);
@@ -1017,6 +1081,7 @@ static int mmc_startup(MmcMedia *media)
 		for (width = EXT_CSD_BUS_WIDTH_8; width >= 0; width--) {
 			/* If HS200 is switched, Bus Width has been 8-bit */
 			if ((media->caps & MMC_CAPS_HS200) ||
+			    (media->caps & MMC_CAPS_HS400) ||
 			    (media->caps & MMC_CAPS_HS400ES) ||
 			    (media->caps & MMC_CAPS_DDR52))
 				break;

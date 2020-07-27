@@ -239,6 +239,7 @@
 #define SDHCI_PLATFORM_NO_CLK_BASE	(1 << 3)
 #define SDHCI_PLATFORM_SUPPORTS_HS400ES	(1 << 4)
 #define SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD	(1 << 5)
+#define SDHCI_PLATFORM_SUPPORTS_HS400	(1 << 6)
 /*
  * quirks
  */
@@ -256,6 +257,7 @@
 #define SDHCI_QUIRK_SUPPORTS_HS400ES	(1 << 11)
 #define SDHCI_QUIRK_CLEAR_TRANSFER_BEFORE_CMD	(1 << 12)
 #define SDHCI_QUIRK_NEED_2X_CLK_FOR_DDR_MODE	(1 << 13)
+#define SDHCI_QUIRK_SUPPORTS_HS400	(1 << 14)
 
 /* JEDEC 84-B51A: The Device is guaranteed to complete a
  * sequence of 40 times CMD21 executions within 150ms. */
