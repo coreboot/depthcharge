@@ -1017,6 +1017,8 @@ static int mmc_startup(MmcMedia *media)
 	mmc_debug("mmc media info: version=%#x, tran_speed=%d\n",
 	      media->version, (int)media->tran_speed);
 
+	mmc_set_clock(media->ctrlr, media->tran_speed);
+
 	/* Select the card, and put it into Transfer Mode */
 	cmd.cmdidx = MMC_CMD_SELECT_CARD;
 	cmd.resp_type = MMC_RSP_R1;
