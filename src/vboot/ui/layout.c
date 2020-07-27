@@ -444,35 +444,38 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 	     prev_state->error_code != state->error_code))
 		VB2_TRY(draw_footer(state));
 
-	/* Icon */
-	switch (screen->icon) {
-	case UI_ICON_TYPE_INFO:
-		icon_file = "ic_info.bmp";
-		break;
-	case UI_ICON_TYPE_ERROR:
-		icon_file = "ic_error.bmp";
-		break;
-	case UI_ICON_TYPE_DEV_MODE:
-		icon_file = "ic_dev_mode.bmp";
-		break;
-	case UI_ICON_TYPE_RESTART:
-		icon_file = "ic_restart.bmp";
-		break;
-	default:
-		icon_file = NULL;
-		break;
-	}
-
 	x = UI_MARGIN_H;
 	y = UI_MARGIN_TOP + UI_LANG_BOX_HEIGHT + UI_LANG_MARGIN_BOTTOM;
-	if (screen->icon == UI_ICON_TYPE_STEP) {
-		VB2_TRY(ui_draw_step_icons(state, prev_state));
-	} else if (icon_file) {
-		VB2_TRY(ui_get_bitmap(icon_file, NULL, 0, &bitmap));
-		VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, UI_ICON_HEIGHT,
-				       flags, reverse));
+
+	/* Icon */
+	if (screen->icon != UI_ICON_TYPE_NONE) {
+		switch (screen->icon) {
+		case UI_ICON_TYPE_INFO:
+			icon_file = "ic_info.bmp";
+			break;
+		case UI_ICON_TYPE_ERROR:
+			icon_file = "ic_error.bmp";
+			break;
+		case UI_ICON_TYPE_DEV_MODE:
+			icon_file = "ic_dev_mode.bmp";
+			break;
+		case UI_ICON_TYPE_RESTART:
+			icon_file = "ic_restart.bmp";
+			break;
+		default:
+			icon_file = NULL;
+			break;
+		}
+
+		if (screen->icon == UI_ICON_TYPE_STEP) {
+			VB2_TRY(ui_draw_step_icons(state, prev_state));
+		} else if (icon_file) {
+			VB2_TRY(ui_get_bitmap(icon_file, NULL, 0, &bitmap));
+			VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, UI_ICON_HEIGHT,
+					       flags, reverse));
+		}
+		y += UI_ICON_HEIGHT + UI_ICON_MARGIN_BOTTOM;
 	}
-	y += UI_ICON_HEIGHT + UI_ICON_MARGIN_BOTTOM;
 
 	/* Title */
 	if (screen->title) {
