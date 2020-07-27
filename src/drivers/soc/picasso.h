@@ -15,7 +15,11 @@
 #ifndef __DRIVERS_SOC_PICASSO_H__
 #define __DRIVERS_SOC_PICASSO_H__
 
+#include "drivers/storage/mmc.h"
+
 #define EMMCHC 0xFEDD5000
+
+void emmc_set_ios(MmcCtrlr *mmc_ctrlr);
 
 /* I2C definitions */
 
