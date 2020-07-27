@@ -15,7 +15,7 @@
 #ifndef __DRIVERS_SOC_PICASSO_H__
 #define __DRIVERS_SOC_PICASSO_H__
 
-#define EMMCCFG 0xFEDD5000
+#define EMMCHC 0xFEDD5000
 
 /* I2C definitions */
 
