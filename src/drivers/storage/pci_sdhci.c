@@ -20,64 +20,62 @@
 
 #include "drivers/storage/sdhci.h"
 
-typedef struct {
-	SdhciHost sdhci_host;
-	pcidev_t sdhci_dev;
-	char dev_name[0x20];
-} PciSdhciHost;
+#define SDHCI_NAME_LENGTH 20
 
 /* Discover the register file address of the PCI SDHCI device. */
-static int attach_device(SdhciHost *host)
+static int get_pci_bar(pcidev_t dev, uintptr_t *bar)
 {
-	PciSdhciHost *pci_host;
 	uint32_t addr;
 
-	pci_host = container_of(host, PciSdhciHost, sdhci_host);
-	addr = pci_read_config32(pci_host->sdhci_dev, PCI_BASE_ADDRESS_0);
+	addr = pci_read_config32(dev, PCI_BASE_ADDRESS_0);
 
-	if (addr == ((uint32_t)~0)) {
-		printf("%s: Error: %s not found\n",
-		       __func__, pci_host->dev_name);
+	if (addr == ((uint32_t)~0))
 		return -1;
-	}
 
-	host->ioaddr = (void *) (addr & ~0xf);
+	*bar = (uintptr_t)(addr & ~0xf);
 
 	return 0;
 }
 
 /* Initialize an HDHCI port */
-SdhciHost *new_pci_sdhci_host(pcidev_t dev, int platform_info,
-			      int clock_min, int clock_max)
+SdhciHost *new_pci_sdhci_host(pcidev_t dev, int platform_info, int clock_min,
+			      int clock_max)
 {
-	PciSdhciHost *host;
+	SdhciHost *host;
+	uintptr_t bar;
 	int removable = platform_info & SDHCI_PLATFORM_REMOVABLE;
 
-	host = xzalloc(sizeof(*host));
+	if (get_pci_bar(dev, &bar)) {
+		printf("Failed to get BAR for PCI SDHCI %d.%d.%d", PCI_BUS(dev),
+		       PCI_SLOT(dev), PCI_FUNC(dev));
+		return NULL;
+	}
 
-	host->sdhci_dev = dev;
-	snprintf(host->dev_name, sizeof(host->dev_name), "PCI SDHCI %d.%d.%d",
+	host = xzalloc(sizeof(*host));
+	host->name = xzalloc(SDHCI_NAME_LENGTH);
+
+	snprintf(host->name, SDHCI_NAME_LENGTH, "PCI SDHCI %d.%d.%d",
 		 PCI_BUS(dev), PCI_SLOT(dev), PCI_FUNC(dev));
 
-	host->sdhci_host.quirks = SDHCI_QUIRK_NO_SIMULT_VDD_AND_POWER;
+	host->quirks = SDHCI_QUIRK_NO_SIMULT_VDD_AND_POWER;
 
 	if (platform_info & SDHCI_PLATFORM_NO_EMMC_HS200)
-		host->sdhci_host.quirks |= SDHCI_QUIRK_NO_EMMC_HS200;
+		host->quirks |= SDHCI_QUIRK_NO_EMMC_HS200;
 
 	if (platform_info & SDHCI_PLATFORM_SUPPORTS_HS400ES)
-		host->sdhci_host.quirks |= SDHCI_QUIRK_SUPPORTS_HS400ES;
+		host->quirks |= SDHCI_QUIRK_SUPPORTS_HS400ES;
 
 	if (platform_info & SDHCI_PLATFORM_EMMC_1V8_POWER)
-		host->sdhci_host.quirks |= SDHCI_QUIRK_EMMC_1V8_POWER;
+		host->quirks |= SDHCI_QUIRK_EMMC_1V8_POWER;
 
 	if (platform_info & SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD)
-		host->sdhci_host.quirks |=
-				SDHCI_QUIRK_CLEAR_TRANSFER_BEFORE_CMD;
+		host->quirks |=
+			SDHCI_QUIRK_CLEAR_TRANSFER_BEFORE_CMD;
 
-	host->sdhci_host.attach = attach_device;
-	host->sdhci_host.clock_f_min = clock_min;
-	host->sdhci_host.clock_f_max = clock_max;
-	host->sdhci_host.removable = removable;
+	host->clock_f_min = clock_min;
+	host->clock_f_max = clock_max;
+	host->removable = removable;
+	host->ioaddr = (void *)bar;
 
 	if (!removable)
 		/*
@@ -85,14 +83,9 @@ SdhciHost *new_pci_sdhci_host(pcidev_t dev, int platform_info,
 		 * 1.7..1.95 and 2.7..3.6 voltage ranges, which is typical for
 		 * eMMC devices.
 		 */
-		host->sdhci_host.mmc_ctrlr.hardcoded_voltage = 0x40ff8080;
+		host->mmc_ctrlr.hardcoded_voltage = 0x40ff8080;
 
-	/*
-	 * Need to program host->ioaddr for SD/MMC read/write operation
-	 */
-	attach_device(&host->sdhci_host);
+	add_sdhci(host);
 
-	add_sdhci(&host->sdhci_host);
-
-	return &host->sdhci_host;
+	return host;
 }
