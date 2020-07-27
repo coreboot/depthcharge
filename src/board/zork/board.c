@@ -262,9 +262,13 @@ static int board_setup(void)
 	list_insert_after(&nvme->ctrlr.list_node,
 				&fixed_block_dev_controllers);
 
-	SdhciHost *emmc = new_mem_sdhci_host(EMMCHC, 0, 0, 0, 0);
+	SdhciHost *emmc = new_mem_sdhci_host(
+		EMMCHC,
+		emmc_supports_hs400() ? SDHCI_PLATFORM_SUPPORTS_HS400 : 0, 0, 0,
+		0);
 
 	emmc->name = "eMMC";
+	emmc->mmc_ctrlr.set_ios = emmc_set_ios;
 	emmc->mmc_ctrlr.execute_tuning = sdhci_execute_tuning;
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
