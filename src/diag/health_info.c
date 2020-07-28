@@ -271,3 +271,44 @@ char *stringify_health_info(char *buf, const char *end, const HealthInfo *info)
 		return NULL;
 	}
 }
+
+char *dump_all_health_info(char *buf, const char *end)
+{
+	ListNode *devs;
+	int n = get_all_bdevs(BLOCKDEV_FIXED, &devs);
+	if (!n) {
+		buf += snprintf(buf, end - buf, "No disk found.\n\n");
+		return buf;
+	}
+
+	buf += snprintf(buf, end - buf, "Total %d storage device%s.\n\n", n,
+			n > 1 ? "s" : "");
+
+	// Fill them from the BlockDev structures.
+	BlockDev *bdev;
+	int idx = 1;
+	list_for_each(bdev, *devs, list_node)
+	{
+		if (bdev->ops.get_health_info) {
+			HealthInfo info = {0};
+
+			int res = bdev->ops.get_health_info(&bdev->ops, &info);
+			if (res) {
+				buf += snprintf(
+					buf, end - buf,
+					"%s: Get Health info error: %d\n",
+					bdev->name, res);
+				continue;
+			}
+
+			buf += snprintf(buf, end - buf,
+					"Health info of the block device '%s' "
+					"(%d/%d):\n",
+					bdev->name, idx, n);
+
+			buf = stringify_health_info(buf, end, &info);
+			idx += 1;
+		}
+	}
+	return buf;
+}
