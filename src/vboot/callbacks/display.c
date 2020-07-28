@@ -19,6 +19,7 @@
 #include <libpayload.h>
 #include <vb2_api.h>
 
+#include "diag/health_info.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/firmware_id.h"
@@ -118,9 +119,20 @@ const char *vb2ex_get_firmware_log(void)
 	return buf;
 }
 
+#define DEFAULT_DIAGNOSTIC_OUTPUT_SIZE (64 * KiB)
+
 const char *vb2ex_get_diagnostic_storage(void)
 {
-	return "Empty storage diagnostic implementation";
+	static char *buf;
+	if (!buf) {
+		buf = malloc(DEFAULT_DIAGNOSTIC_OUTPUT_SIZE);
+		if (!buf)
+			return NULL;
+	}
+
+	dump_all_health_info(buf, buf + DEFAULT_DIAGNOSTIC_OUTPUT_SIZE);
+
+	return buf;
 }
 
 vb2_error_t vb2ex_diag_memory_quick_test(int reset, const char **out)
