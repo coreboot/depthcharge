@@ -608,7 +608,7 @@ static int mmc_select_hs400es(MmcMedia *media)
 
 	/* Adjust Host Bus With to 8-bit */
 	mmc_set_bus_width(media->ctrlr, 8);
-	media->caps |= EXT_CSD_BUS_WIDTH_8;
+	media->caps |= MMC_CAPS_8BIT;
 
 	/* Switch card to HS400 */
 	ret = mmc_switch(media, EXT_CSD_CMD_SET_NORMAL,
@@ -638,7 +638,7 @@ static int mmc_select_hs200(MmcMedia *media)
 
 	/* Adjust host bus width to 8-bit */
 	mmc_set_bus_width(media->ctrlr, 8);
-	media->caps |= EXT_CSD_BUS_WIDTH_8;
+	media->caps |= MMC_CAPS_8BIT;
 
 	/* Switch to HS200 */
 	ret = mmc_switch(media, EXT_CSD_CMD_SET_NORMAL,
