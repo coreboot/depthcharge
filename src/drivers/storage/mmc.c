@@ -1175,7 +1175,7 @@ int mmc_setup_media(MmcCtrlr *ctrlr)
 	media->ctrlr = ctrlr;
 
 	mmc_set_bus_width(ctrlr, 1);
-	mmc_set_clock(ctrlr, 1);
+	mmc_set_clock(ctrlr, MMC_CLOCK_400KHZ);
 
 	/* Reset the Card */
 	err = mmc_go_idle(media);
