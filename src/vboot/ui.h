@@ -424,6 +424,16 @@ vb2_error_t ui_get_bitmap_width(const struct ui_bitmap *bitmap,
 				int32_t height, int32_t *width);
 
 /*
+ * Get the number of lines in a bitmap containing text.
+ *
+ * @param bitmap	Pointer to the bitmap struct.
+ *
+ * @return A strictly positive number of lines.  If bitmap does not contain
+ *         text or is invalid, a value of 1 is returned.
+ */
+uint32_t ui_get_bitmap_num_lines(const struct ui_bitmap *bitmap);
+
+/*
  * Get text width.
  *
  * @param text		Text.

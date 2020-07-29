@@ -673,7 +673,7 @@ static vb2_error_t draw_developer_mode_desc(
 	const int reverse = state->locale->rtl;
 	int32_t x;
 	const int32_t w = UI_SIZE_AUTO;
-	const int32_t h = UI_DESC_TEXT_HEIGHT;
+	int32_t h;
 	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
 
 	x = UI_MARGIN_H;
@@ -686,6 +686,7 @@ static vb2_error_t draw_developer_mode_desc(
 	      (1 << DEVELOPER_MODE_ITEM_RETURN_TO_SECURE))) {
 		VB2_TRY(ui_get_bitmap("dev_desc0.bmp", locale_code, 0,
 				      &bitmap));
+                h = UI_DESC_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
 		VB2_TRY(ui_draw_bitmap(&bitmap, x, *y, w, h, flags, reverse));
 		*y += h + UI_DESC_TEXT_LINE_SPACING;
 	}
@@ -695,13 +696,14 @@ static vb2_error_t draw_developer_mode_desc(
 	 * After the timer in developer mode is disabled, this description no
 	 * longer makes sense, so hide it.
 	 */
+        VB2_TRY(ui_get_bitmap("dev_desc1.bmp", locale_code, 0,
+                              &bitmap));
+        h = UI_DESC_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
 	if (state->timer_disabled) {
 		/* Clear previously drawn line. */
 		VB2_TRY(ui_draw_box(x, *y, UI_SCALE - x, h, &ui_color_bg,
 				    reverse));
 	} else {
-		VB2_TRY(ui_get_bitmap("dev_desc1.bmp", locale_code, 0,
-				      &bitmap));
 		VB2_TRY(ui_draw_bitmap(&bitmap, x, *y, w, h, flags, reverse));
 	}
 	*y += h;

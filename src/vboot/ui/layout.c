@@ -363,15 +363,16 @@ vb2_error_t ui_draw_desc(const struct ui_desc *desc,
 	const int reverse = state->locale->rtl;
 	int32_t x;
 	const int32_t w = UI_SIZE_AUTO;
-	const int32_t h = UI_DESC_TEXT_HEIGHT;
 	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
 
 	x = UI_MARGIN_H;
 
 	for (i = 0; i < desc->count; i++) {
+		int32_t h;
 		if (i > 0)
 			*y += UI_DESC_TEXT_LINE_SPACING;
 		VB2_TRY(ui_get_bitmap(desc->files[i], locale_code, 0, &bitmap));
+		h = UI_DESC_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
 		VB2_TRY(ui_draw_bitmap(&bitmap, x, *y, w, h, flags, reverse));
 		*y += h;
 	}
