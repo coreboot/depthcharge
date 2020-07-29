@@ -20,6 +20,7 @@
 #include <vb2_api.h>
 
 #include "diag/health_info.h"
+#include "diag/memory.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/firmware_id.h"
@@ -137,14 +138,18 @@ const char *vb2ex_get_diagnostic_storage(void)
 
 vb2_error_t vb2ex_diag_memory_quick_test(int reset, const char **out)
 {
-	*out = "Empty memory diagnostic implementation (quick)";
-	return VB2_SUCCESS;
+	*out = NULL;
+	if (reset)
+		VB2_TRY(memory_test_init(MEMORY_TEST_MODE_QUICK));
+	return memory_test_run(out);
 }
 
 vb2_error_t vb2ex_diag_memory_full_test(int reset, const char **out)
 {
-	*out = "Empty memory diagnostic implementation (full)";
-	return VB2_SUCCESS;
+	*out = NULL;
+	if (reset)
+		VB2_TRY(memory_test_init(MEMORY_TEST_MODE_FULL));
+	return memory_test_run(out);
 }
 
 vb2_error_t vb2ex_display_ui(enum vb2_screen screen,
