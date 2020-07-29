@@ -338,7 +338,7 @@ hatch,palkia:
 puff:
   # 1920x1200, boots recovery image on USB ports.
   screen:   [1920, 1200]
-  hi_res:   [en, zh-CN, es-419]  # Flash size limited.
+  hi_res:   [en]
 
 mushu:
   # 2400x1600, boots recovery image on USB ports.
