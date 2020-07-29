@@ -83,8 +83,19 @@ inputs:
   - dev_invalid_disk_desc0
   # developer: select bootloader
   - dev_select_bootloader_title
-  # diagnostics
+  # diagnostic tools - menu
   - btn_launch_diag
+  - diag_menu_title
+  - diag_menu_desc0
+  - btn_diag_storage
+  - btn_diag_memory_quick
+  - btn_diag_memory_full
+  # diagnostic tools - storage
+  - diag_storage_title
+  # diagnostic tools - memory
+  - diag_memory_quick_title
+  - diag_memory_full_title
+  - btn_diag_cancel
   # generic buttons
   - btn_next
   - btn_back
@@ -198,8 +209,19 @@ files:
   navigate1_tablet:
 
 diagnostic_files:
-  # diagnostics
+  # diagnostic tools - menu
   btn_launch_diag:
+  diag_menu_title:
+  diag_menu_desc0:
+  btn_diag_storage:
+  btn_diag_memory_quick:
+  btn_diag_memory_full:
+  # diagnostic tools - storage
+  diag_storage_title:
+  # diagnostic tools - memory
+  diag_memory_quick_title:
+  diag_memory_full_title:
+  btn_diag_cancel:
 
 aliases:
   - &base_color '--color=CCCCCC --bgcolor=202124'
@@ -290,8 +312,19 @@ styles:
   dev_invalid_disk_desc0: *base_color
   # developer: select bootloader
   dev_select_bootloader_title: *base_color
-  # diagnostics
+  # diagnostic tools - menu
   btn_launch_diag: *link_color
+  diag_menu_title: *base_color
+  diag_menu_desc0: *base_color
+  btn_diag_storage: *button_color
+  btn_diag_memory_quick: *button_color
+  btn_diag_memory_full: *button_color
+  # diagnostic tools - storage
+  diag_storage_title: *base_color
+  # diagnostic tools - memory
+  diag_memory_quick_title: *base_color
+  diag_memory_full_title: *base_color
+  btn_diag_cancel: *button_color
   # generic buttons
   btn_next: *button_color
   btn_back: *button_color

@@ -298,6 +298,33 @@ Launch diagnostics
       <message name="dev_select_bootloader_title" desc="Title for screen to select alternate bootloader.">
 Select alternate bootloader
       </message>
+      <message name="diag_menu_title" desc="Title for diagnostic entry menu.">
+Diagnostic tools
+      </message>
+      <message name="diag_menu_desc0" desc="String for diagnostic entry menu.">
+Select the component you'd like to check.
+      </message>
+      <message name="diag_storage_title" desc="Title for storage diagnostic screen.">
+Storage
+      </message>
+      <message name="diag_memory_quick_title" desc="Title for quick memory diagnostic screen.">
+Quick memory check
+      </message>
+      <message name="diag_memory_full_title" desc="Title for full memory diagnostic screen.">
+Full memory check
+      </message>
+      <message name="btn_diag_storage" desc="String for the button to enter storage diagnostic.">
+Storage
+      </message>
+      <message name="btn_diag_memory_quick" desc="String for the button to enter quick memory diagnostic screen.">
+Quick memory check
+      </message>
+      <message name="btn_diag_memory_full" desc="String for the button to enter full memory diagnostic screen.">
+Full memory check
+      </message>
+      <message name="btn_diag_cancel" desc="String for the button to cancel memory diagnostic and go back.">
+Cancel and go back
+      </message>
       <message name="btn_next" desc="String for the next button.">
 Next
       </message>
