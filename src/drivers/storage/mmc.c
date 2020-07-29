@@ -939,7 +939,7 @@ static int mmc_startup(MmcMedia *media)
 	/*
 	 * For MMC cards, set the Relative Address.
 	 * For SD cards, get the Relatvie Address.
-	 * This also puts the cards into Standby State
+	 * This also puts the card into Data Transfer Mode / Standby State.
 	 */
 	cmd.cmdidx = SD_CMD_SEND_RELATIVE_ADDR;
 	cmd.cmdarg = media->rca << 16;
@@ -1019,7 +1019,7 @@ static int mmc_startup(MmcMedia *media)
 
 	mmc_set_clock(media->ctrlr, media->tran_speed);
 
-	/* Select the card, and put it into Transfer Mode */
+	/* Select the card, and put it into Transfer State */
 	cmd.cmdidx = MMC_CMD_SELECT_CARD;
 	cmd.resp_type = MMC_RSP_R1;
 	cmd.cmdarg = media->rca << 16;
