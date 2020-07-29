@@ -42,6 +42,8 @@ RTL_KEY = 'rtl'
 HI_RES_KEY = 'hi_res'
 TEXT_COLORS_KEY = 'text_colors'
 
+BMP_HEADER_OFFSET_NUM_LINES = 6
+
 LocaleInfo = namedtuple('LocaleInfo', ['code', 'rtl', 'hi_res'])
 
 
@@ -323,7 +325,7 @@ class Converter(object):
                                code in hi_res_locales)
                     for code in locales]
 
-  def calculate_dimension(self, original, scale):
+  def calculate_dimension(self, original, scale, num_lines):
       """Calculate scaled width and height
 
       This imitates the function of Depthcharge with the same name.
@@ -332,12 +334,14 @@ class Converter(object):
         original: (width, height) of the original image
         scale: (x, y) scale parameter relative to the canvas size using
             SCALE_BASE as a base.
+        num_lines: multiplication factor for the y-dimension
 
       Returns:
         (width, height) of the scaled image
       """
       dim_width, dim_height = (0, 0)
-      scale_x, scale_y = scale
+      scale_x = scale[0]
+      scale_y = scale[1] * num_lines
       org_width, org_height = original
 
       if scale_x == 0 and scale_y == 0:
@@ -357,6 +361,13 @@ class Converter(object):
 
   def convert_svg_to_png(self, svg_file, png_file, scale, background):
     """Convert .svg file to .png file"""
+    # Determine how many lines the string was broken into, by counting <g>
+    # tags in the svg file.
+    line_count_cmd = ('grep -q "glyph0-0" "%s" '
+                      '&& (grep "^<g style" "%s" | wc -l) '
+                      '|| echo 1') % (svg_file, svg_file)
+    num_lines = int(subprocess.check_output(line_count_cmd, shell=True))
+
     background_hex = ''.join(format(x, '02x') for x in background)
     # If the width/height of the SVG file is specified in points, the
     # rsvg-convert command with default 90DPI will potentially cause the pixels
@@ -371,15 +382,17 @@ class Converter(object):
                '-o', png_file]
     if scale:
         width = int(self.canvas_px * scale[0] / self.SCALE_BASE)
-        height = int(self.canvas_px * scale[1] / self.SCALE_BASE)
+        height = int(self.canvas_px * scale[1] / self.SCALE_BASE) * num_lines
         if width:
             command.extend(['--width', '%d' % width])
         if height:
             command.extend(['--height', '%d' % height])
     command.append(svg_file)
     subprocess.check_call(' '.join(command), shell=True)
+    return num_lines
 
-  def convert_to_bitmap(self, input, scale, background, output, max_colors):
+  def convert_to_bitmap(self, input, scale, num_lines, background, output,
+                        max_colors):
     """Convert an image file to the bitmap format"""
     image = Image.open(input)
 
@@ -398,7 +411,7 @@ class Converter(object):
 
     # Process scaling
     if scale:
-      new_size = self.calculate_dimension(image.size, scale)
+      new_size = self.calculate_dimension(image.size, scale, num_lines)
       if new_size[0] == 0 or new_size[1] == 0:
         print('Scaling', input)
         print('Warning: width or height is 0 after resizing: '
@@ -410,6 +423,10 @@ class Converter(object):
     # Export and downsample color space.
     target.convert('P', dither=None, colors=max_colors, palette=Image.ADAPTIVE
                    ).save(output)
+
+    with open(output, 'rb+') as f:
+        f.seek(BMP_HEADER_OFFSET_NUM_LINES)
+        f.write(bytearray([num_lines]))
 
   def convert(self, files, output_dir, scales, max_colors):
     """Convert file(s) to bitmap format"""
@@ -429,13 +446,15 @@ class Converter(object):
           continue
         print('Replace: %s => %s' % (file, name))
         file = os.path.join(os.path.dirname(file), name + ext)
+      num_lines = 1
 
       if ext == '.svg':
         png_file = os.path.join(self.temp_dir, name + '.png')
-        self.convert_svg_to_png(file, png_file, scale, background)
+        num_lines = self.convert_svg_to_png(file, png_file, scale, background)
         file = png_file
 
-      self.convert_to_bitmap(file, scale, background, output, max_colors)
+      self.convert_to_bitmap(
+          file, scale, num_lines, background, output, max_colors)
 
   def convert_assets(self):
     """Convert images in assets folder"""

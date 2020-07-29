@@ -14,7 +14,8 @@
 #    --margin=MARGIN    Set different margin (usually for font bitmaps)
 #    --color=COLOR      Override foreground color (in '#ffffff' format)
 #    --bgcolor=COLOR    Override background color (in '#ffffff' format)
-#    --align=ALING      Override align settings (default: center)
+#    --align=ALIGN      Override align settings (default: left)
+#    --width=POINT      Width of resulting image, multiple lines if text longer
 #    --markup           Render text as pango-view markup file
 #    --outdir=OUTDIR    Directory for output files
 #
@@ -22,7 +23,8 @@ font="Noto Sans"
 language=""
 pointsize=14
 margin=3
-align="center"
+align="left"
+width=""
 bgcolor="#ffffff"
 color="#000000"
 params=""
@@ -69,6 +71,10 @@ while true ; do
       ;;
     --margin=*)
       margin="${1##*=}"
+      shift
+      ;;
+    --width=*)
+      width="${1##*=}"
       shift
       ;;
     --outdir=*)
@@ -123,6 +129,7 @@ for txtfile in $*; do
     '--background=$bgcolor' '--foreground=$color' \
     '--font=$font $pointsize' \
     '--margin=$margin' \
+    ${width:+'--width=$width'} \
     '--align=$align' \
     $params $file_opt"
 
