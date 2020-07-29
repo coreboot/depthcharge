@@ -31,6 +31,8 @@
 	.y = SCREEN_FRACTION(y_rel),		\
 })
 
+#define BMP_HEADER_OFFSET_NUM_LINES 6
+
 static uint32_t reverse_pivot(uint32_t pivot) {
 	uint32_t left = pivot & PIVOT_H_LEFT;
 
@@ -135,6 +137,24 @@ vb2_error_t ui_get_bitmap_width(const struct ui_bitmap *bitmap,
 	*width = UI_SIZE_AUTO;
 	VB2_TRY(ui_get_bitmap_size(bitmap, width, &height));
 	return VB2_SUCCESS;
+}
+
+/*
+ * The BMP header leaves bytes at offsets 6-9 as "Reserved; actual
+ * value depends on the application that creates the image". So
+ * as the bmpblk scripts create these images, they will store the number of
+ * text lines at offset 6.
+ * See b/158634754 for discussion of alternatives. 
+ * https://en.wikipedia.org/wiki/BMP_file_format#Bitmap_file_header
+ */
+uint32_t ui_get_bitmap_num_lines(const struct ui_bitmap *bitmap)
+{
+	/* We use first reserved byte of bitmap_file_header. */
+	uint8_t num_lines = ((const uint8_t *)bitmap->data)
+			    [BMP_HEADER_OFFSET_NUM_LINES];
+	if (!num_lines)
+		return 1;
+	return num_lines;
 }
 
 static vb2_error_t get_char_width(const char c, int32_t height,
