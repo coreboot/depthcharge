@@ -154,7 +154,7 @@ static int sdhci_msm_init(SdhciHost *host)
 	 * Explicitly enable the capabilities which are not advertised
 	 * by default
 	 */
-	if (host->removable)
+	if (host->mmc_ctrlr.slot_type == MMC_SLOT_TYPE_REMOVABLE)
 		vendor_caps |= SDHCI_CAN_VDD_300;
 	else
 		vendor_caps |= SDHCI_CAN_VDD_180 | SDHCI_CAN_DO_8BIT;
@@ -232,7 +232,7 @@ SdhciHost *new_sdhci_msm_host(uintptr_t ioaddr, int platform_info, int clock_max
 	host->mmc_ctrlr.set_ios = &sdhci_msm_set_ios;
 
 	/* Configure drive strengths of interface lines */
-	if (host->removable)
+	if (host->mmc_ctrlr.slot_type == MMC_SLOT_TYPE_REMOVABLE)
 		writel(SDC2_TLMM_CONFIG, (void *)tlmmAddr);
 	else
 		writel(SDC1_TLMM_CONFIG, (void *)tlmmAddr);

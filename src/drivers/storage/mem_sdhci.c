@@ -53,8 +53,11 @@ SdhciHost *new_mem_sdhci_host(uintptr_t ioaddr, int platform_info,
 
 	host->clock_f_min = clock_min;
 	host->clock_f_max = clock_max;
-	host->removable = removable;
 	host->ioaddr = (void *)ioaddr;
+
+	/* TODO: Can we use the SDHCI SLOT register instead? */
+	host->mmc_ctrlr.slot_type =
+		removable ? MMC_SLOT_TYPE_REMOVABLE : MMC_SLOT_TYPE_EMBEDDED;
 
 	if (!removable)
 		/*

@@ -936,7 +936,7 @@ static int sdhci_update(BlockDevCtrlrOps *me)
 	SdhciHost *host = container_of
 		(me, SdhciHost, mmc_ctrlr.ctrlr.ops);
 
-	if (host->removable) {
+	if (host->mmc_ctrlr.slot_type == MMC_SLOT_TYPE_REMOVABLE) {
 		int present;
 
 		if (host->cd_gpio)
@@ -987,7 +987,8 @@ static int sdhci_update(BlockDevCtrlrOps *me)
 		host->mmc_ctrlr.ctrlr.need_update = 0;
 	}
 
-	host->mmc_ctrlr.media->dev.removable = host->removable;
+	host->mmc_ctrlr.media->dev.removable =
+		host->mmc_ctrlr.slot_type == MMC_SLOT_TYPE_REMOVABLE;
 	host->mmc_ctrlr.media->dev.ops.read = block_mmc_read;
 	host->mmc_ctrlr.media->dev.ops.write = block_mmc_write;
 	host->mmc_ctrlr.media->dev.ops.fill_write = block_mmc_fill_write;

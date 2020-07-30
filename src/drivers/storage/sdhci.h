@@ -309,7 +309,6 @@ struct sdhci_host {
 	unsigned clock_f_max;
 	unsigned clock_base; /* controller base clock */
 	unsigned tuned_clock; /* frequency of the clock that was tuned */
-	int removable;
 	unsigned voltages;
 
 	/*
