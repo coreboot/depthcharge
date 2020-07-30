@@ -336,8 +336,7 @@ class Converter(object):
         (width, height) of the scaled image
       """
       dim_width, dim_height = (0, 0)
-      scale_x = scale[0]
-      scale_y = scale[1] * num_lines
+      scale_x, scale_y = scale
       org_width, org_height = original
 
       if scale_x == 0 and scale_y == 0:
@@ -345,7 +344,7 @@ class Converter(object):
       if scale_x > 0:
         dim_width = int(self.canvas_px * scale_x / self.SCALE_BASE)
       if scale_y > 0:
-        dim_height = int(self.canvas_px * scale_y / self.SCALE_BASE)
+        dim_height = int(self.canvas_px * scale_y / self.SCALE_BASE) * num_lines
       if scale_x == 0:
         dim_width = org_width * dim_height // org_height
       if scale_y == 0:
