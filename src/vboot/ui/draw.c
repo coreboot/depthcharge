@@ -16,6 +16,7 @@
  * GNU General Public License for more details.
  */
 
+#include <ctype.h>
 #include <libpayload.h>
 #include <vb2_api.h>
 
@@ -228,7 +229,9 @@ vb2_error_t ui_draw_text(const char *text,
 	}
 
 	while (*text) {
-		VB2_TRY(ui_get_char_bitmap(*text, &bitmap));
+		/* Replace a non-printable character with a "?". */
+		VB2_TRY(ui_get_char_bitmap(isprint(*text) ? *text : '?',
+					   &bitmap));
 		VB2_TRY(ui_get_bitmap_width(&bitmap, height, &char_width));
 		VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y,
 					      UI_SIZE_AUTO, height,

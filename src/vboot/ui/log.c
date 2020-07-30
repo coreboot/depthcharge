@@ -42,6 +42,7 @@ vb2_error_t ui_log_init(struct ui_log_info *log, const char *str)
 	free(log->page_start);
 	memset(log, 0, sizeof(*log));
 
+	/* TODO(b/166741235): Replace <TAB> with 8 spaces. */
 	/* Count number of characters and lines. */
 	lines = 0;
 	ptr = str;
@@ -68,8 +69,7 @@ vb2_error_t ui_log_init(struct ui_log_info *log, const char *str)
 	log->page_start = malloc((log->page_count + 1) * sizeof(const char *));
 	if (!log->page_start) {
 		UI_ERROR("Failed to malloc page_start array, "
-			 "page_count: %u, log_string: %s\n",
-			 log->page_count, log->str);
+			 "page_count: %u\n", log->page_count);
 		return VB2_ERROR_UI_MEMORY_ALLOC;
 	}
 
