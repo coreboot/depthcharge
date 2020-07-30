@@ -1184,14 +1184,19 @@ int mmc_setup_media(MmcCtrlr *ctrlr)
 		return err;
 	}
 
-	/* Test for SD version 2 */
-	err = mmc_send_if_cond(media);
+	/* If the slot_type is unknown or removable we try SD first then MMC. */
+	if (ctrlr->slot_type == MMC_SLOT_TYPE_UNKNOWN ||
+	    ctrlr->slot_type == MMC_SLOT_TYPE_REMOVABLE) {
+		/* Test for SD version 2 */
+		err = mmc_send_if_cond(media);
 
-	/* Get SD card operating condition */
-	err = sd_send_op_cond(media);
+		/* Get SD card operating condition */
+		err = sd_send_op_cond(media);
+	}
 
-	/* If the command timed out, we check for an MMC card */
-	if (err == MMC_TIMEOUT) {
+	/* If the slot is embedded or the SD command timed out, we check for an
+	 * MMC card */
+	if (ctrlr->slot_type == MMC_SLOT_TYPE_EMBEDDED || err == MMC_TIMEOUT) {
 		err = mmc_send_op_cond(media);
 
 		if (err && err != MMC_IN_PROGRESS) {
