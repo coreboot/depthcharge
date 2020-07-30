@@ -13,12 +13,9 @@ inputs:
   - firmware_sync_desc
   # broken screen
   - broken_title
-  - broken_desc0
-  - broken_desc1
-  - broken_desc0_phyrec
-  - broken_desc1_phyrec
-  - broken_desc0_detach
-  - broken_desc1_detach
+  - broken_desc
+  - broken_desc_phyrec
+  - broken_desc_detach
   # advanced options
   - adv_options_title
   - btn_dev_mode
@@ -47,10 +44,7 @@ inputs:
   - rec_phone_step1_desc0
   - rec_phone_step1_desc1
   - rec_phone_step2_title
-  - rec_phone_step2_desc0
-  - rec_phone_step2_desc1
-  - rec_phone_step2_desc2
-  - rec_phone_step2_desc3
+  - rec_phone_step2_desc
   # recovery - disk
   - rec_disk_step1_desc0
   - rec_disk_step1_desc0_no_sd
@@ -63,10 +57,8 @@ inputs:
   - rec_disk_step3_desc0
   # recovery - error
   - rec_invalid_title
-  - rec_invalid_desc0
-  - rec_invalid_desc1
-  - rec_invalid_disk_desc0
-  - rec_invalid_disk_desc1
+  - rec_invalid_desc
+  - rec_invalid_disk_desc
   # to-dev screen
   - rec_to_dev_title
   - rec_to_dev_desc0
@@ -115,12 +107,9 @@ files:
   firmware_sync_desc:
   # broken screen
   broken_title:
-  broken_desc0:
-  broken_desc1:
-  broken_desc0_phyrec:
-  broken_desc1_phyrec:
-  broken_desc0_detach:
-  broken_desc1_detach:
+  broken_desc:
+  broken_desc_phyrec:
+  broken_desc_detach:
   # advanced options
   adv_options_title:
   btn_dev_mode:
@@ -156,10 +145,7 @@ files:
   rec_phone_step1_desc0:
   rec_phone_step1_desc1:
   rec_phone_step2_title:
-  rec_phone_step2_desc0:
-  rec_phone_step2_desc1:
-  rec_phone_step2_desc2:
-  rec_phone_step2_desc3:
+  rec_phone_step2_desc:
   # recovery - disk
   rec_disk_step1_desc0:
   rec_disk_step1_desc0_no_sd:
@@ -172,10 +158,8 @@ files:
   rec_disk_step3_desc0:
   # recovery - error
   rec_invalid_title:
-  rec_invalid_desc0:
-  rec_invalid_desc1:
-  rec_invalid_disk_desc0:
-  rec_invalid_disk_desc1:
+  rec_invalid_desc:
+  rec_invalid_disk_desc:
   # to-dev screen
   rec_to_dev_title:
   rec_to_dev_desc0:
@@ -241,12 +225,9 @@ styles:
   firmware_sync_desc: *base_color
   # broken screen
   broken_title: *base_color
-  broken_desc0: *base_color
-  broken_desc1: *base_color
-  broken_desc0_phyrec: *base_color
-  broken_desc1_phyrec: *base_color
-  broken_desc0_detach: *base_color
-  broken_desc1_detach: *base_color
+  broken_desc: *base_color
+  broken_desc_phyrec: *base_color
+  broken_desc_detach: *base_color
   # advanced options
   adv_options_title: *base_color
   btn_dev_mode: *button_color
@@ -282,10 +263,7 @@ styles:
   rec_phone_step1_desc0: *base_color
   rec_phone_step1_desc1: *base_color
   rec_phone_step2_title: *base_color
-  rec_phone_step2_desc0: *base_color
-  rec_phone_step2_desc1: *base_color
-  rec_phone_step2_desc2: *base_color
-  rec_phone_step2_desc3: *base_color
+  rec_phone_step2_desc: *base_color
   # recovery - disk
   rec_disk_step1_title: *base_color
   rec_disk_step1_desc0: *base_color
@@ -301,10 +279,8 @@ styles:
   rec_disk_step3_desc0: *base_color
   # recovery - error
   rec_invalid_title: *base_color
-  rec_invalid_desc0: *base_color
-  rec_invalid_desc1: *base_color
-  rec_invalid_disk_desc0: *base_color
-  rec_invalid_disk_desc1: *base_color
+  rec_invalid_desc: *base_color
+  rec_invalid_disk_desc: *base_color
   # to-dev screen
   rec_to_dev_title: *base_color
   rec_to_dev_desc0: *base_color

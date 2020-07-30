@@ -121,23 +121,14 @@ Your system is applying a critical update.
       <message name="broken_title" desc="Title of screen shown when chromebook is in broken screen.">
 Something is wrong
       </message>
-      <message name="broken_desc0" desc="line 1 of description of screen shown when chromebook is in broken screen.  String continues to broken_desc1 string.">
-Please remove all connected devices and hold down Escape, Refresh, and Power to
+      <message name="broken_desc" desc="Description of screen shown when chromebook is in broken screen.">
+Please remove all connected devices and hold down Escape, Refresh, and Power to initiate recovery.
       </message>
-      <message name="broken_desc1" desc="line 2 of screen shown when chromebook is in broken screen.  This is a continuation of the broken_desc0 string.">
-initiate recovery.
+      <message name="broken_desc_phyrec" desc="Description of screen shown when chromebox/chromebit is in broken screen.">
+Please remove all connected devices. Then, hold down the Recovery button, press Power, and release the Recovery button to initiate recovery.
       </message>
-      <message name="broken_desc0_phyrec" desc="line 1 of description of screen shown when chromebox/chromebit is in broken screen.  String continued to broken_desc1_phyrec string.">
-Please remove all connected devices. Then, hold down the Recovery button,
-      </message>
-      <message name="broken_desc1_phyrec" desc="line 2 of screen shown when chromebox/chromebit is in broken screen.  This is a continuation of the broken_desc0_phyrec string.">
-press Power, and release the Recovery button to initiate recovery.
-      </message>
-      <message name="broken_desc0_detach" desc="line 1 of description of screen shown when chromeos tablet is in broken screen.  String continues to broken_desc1_detach string.">
-Please remove all connected devices and hold down Volume Up, Volume Down,
-      </message>
-      <message name="broken_desc1_detach" desc="line 2 of screen shown when chromeos tablet is in broken screen.  This is a continuation of broken_desc0_detach string.">
-and Power to initiate recovery.
+      <message name="broken_desc_detach" desc="Description of screen shown when chromeos tablet is in broken screen.">
+Please remove all connected devices and hold down Volume Up, Volume Down, and Power to initiate recovery.
       </message>
       <message name="adv_options_title" desc="Title for the advanced options screen.">
 Advanced options
@@ -208,17 +199,8 @@ We also recommend that you connect to a power source during the recovery process
       <message name="rec_phone_step2_title" desc="Title for using the phone as a recovery method.">
 Recovery using phone
       </message>
-      <message name="rec_phone_step2_desc0" desc="String1 for instructions using the phone as a recovery method.  This string should be translated in the order: rec_phone_step2_desc0, rec_phone_step2_desc1, rec_phone_step2_desc2, rec_phone_step2_desc3.">
-Download the Chrome OS recovery app on your Android phone by
-      </message>
-      <message name="rec_phone_step2_desc1" desc="String2 for instructions using the phone as a recovery method.  This string should be translated in the order: rec_phone_step2_desc0, rec_phone_step2_desc1, rec_phone_step2_desc2, rec_phone_step2_desc3.">
-plugging in your phone or by scanning the QR code on the right.
-      </message>
-      <message name="rec_phone_step2_desc2" desc="String3 for instructions using the phone as a recovery method.  This string should be translated in the order: rec_phone_step2_desc0, rec_phone_step2_desc1, rec_phone_step2_desc2, rec_phone_step2_desc3.">
-Once you launch the app, connect your phone to your device and
-      </message>
-      <message name="rec_phone_step2_desc3" desc="String4 for instructions using the phone as a recovery method.  This string should be translated in the order: rec_phone_step2_desc0, rec_phone_step2_desc1, rec_phone_step2_desc2, rec_phone_step2_desc3..">
-recovery will start automatically.
+      <message name="rec_phone_step2_desc" desc="Instructions using the phone as a recovery method.">
+Download the Chrome OS recovery app on your Android phone by plugging in your phone or by scanning the QR code on the right. Once you launch the app, connect your phone to your device and recovery will start automatically.
       </message>
       <message name="rec_disk_step1_desc0" desc="Description string0 for step1 in the recovery process.">
 1. An external storage disk such as a USB drive or an SD card
@@ -250,17 +232,11 @@ If your external disk is ready with a recovery image, plug it into the device to
       <message name="rec_invalid_title" desc="Title for invalid disk plugged inserted.">
 No valid image detected
       </message>
-      <message name="rec_invalid_desc0" desc="String0 for invalid disk or phone plugged inserted.">
-Make sure your phone is running the Chrome OS recovery app, or that your external
+      <message name="rec_invalid_desc" desc="Description for invalid disk or phone plugged inserted.">
+Make sure your phone is running the Chrome OS recovery app, or that your external disk has a valid recovery image on it. Re-insert the cable or disk when ready.
       </message>
-      <message name="rec_invalid_desc1" desc="String1 for invalid disk or phone plugged inserted.">
-disk has a valid recovery image on it. Re-insert the cable or disk when ready.
-      </message>
-      <message name="rec_invalid_disk_desc0" desc="String0 for invalid disk plugged inserted.">
-Make sure your external disk has a valid recovery image, and re-insert the disk
-      </message>
-      <message name="rec_invalid_disk_desc1" desc="String1 for invalid disk plugged inserted.">
-when ready.
+      <message name="rec_invalid_disk_desc" desc="Description for invalid disk plugged inserted.">
+Make sure your external disk has a valid recovery image, and re-insert the disk when ready.
       </message>
       <message name="rec_to_dev_title" desc="Title for transition to dev mode.">
 You are attempting to enable developer mode
