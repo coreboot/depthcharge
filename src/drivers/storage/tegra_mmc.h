@@ -152,7 +152,6 @@ typedef struct {
 	GpioOps *power_gpio;	// Enable Power GPIO
 
 	int initialized;
-	int removable;
 } TegraMmcHost;
 
 TegraMmcHost *new_tegra_mmc_host(uintptr_t ioaddr, int bus_width,

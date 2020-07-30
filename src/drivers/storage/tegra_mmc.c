@@ -533,7 +533,7 @@ static int tegra_mmc_update(BlockDevCtrlrOps *me)
 		return -1;
 	host->initialized = 1;
 
-	if (host->removable) {
+	if (host->mmc.slot_type == MMC_SLOT_TYPE_REMOVABLE) {
 		int present = gpio_get(host->cd_gpio);
 		if (present && !host->mmc.media) {
 			// A card is present and not set up yet. Get it ready.
@@ -600,10 +600,11 @@ TegraMmcHost *new_tegra_mmc_host(uintptr_t ioaddr, int bus_width,
 	ctrlr->mmc.caps |= MMC_CAPS_HS | MMC_CAPS_HS_52MHz | MMC_CAPS_HC;
 	ctrlr->mmc.send_cmd = &tegra_mmc_send_cmd;
 	ctrlr->mmc.set_ios = &tegra_mmc_set_ios;
+	ctrlr->mmc.slot_type =
+		removable ? MMC_SLOT_TYPE_REMOVABLE : MMC_SLOT_TYPE_EMBEDDED;
 
 	ctrlr->src_hz = TegraMmcSourceClock;
 	ctrlr->reg = (TegraMmcReg *)ioaddr;
-	ctrlr->removable = removable;
 
 	ctrlr->cd_gpio = card_detect;
 	ctrlr->power_gpio = enable_power;
