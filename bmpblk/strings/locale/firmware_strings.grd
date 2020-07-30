@@ -245,13 +245,13 @@ You are attempting to enable developer mode
 This involves erasing all data from your device, and will make your device insecure.
       </message>
       <message name="rec_to_dev_desc1" desc="String1 for transition to dev mode.">
-Select “Cancel” to remain protected.
+Select Cancel to remain protected.
       </message>
       <message name="rec_to_dev_desc1_phyrec" desc="String1 for transition to dev mode for chromeboxes.">
-Press the Recovery button on your Chromebox to enable developer mode, or select “Cancel” to remain protected.
+Press the Recovery button on your Chromebox to enable developer mode, or select Cancel to remain protected.
       </message>
       <message name="rec_to_dev_desc1_power" desc="String1 for transition to dev mode for detachables and tablets.">
-Press the Power button to enable developer mode, or select “Cancel” to remain protected.
+Press the Power button to enable developer mode, or select Cancel to remain protected.
       </message>
       <message name="dev_title" desc="Title for the developer warning screen.">
 You are in developer mode
