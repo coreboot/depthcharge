@@ -776,6 +776,7 @@ QcomMmcHost *new_qcom_mmc_host(unsigned slot, uint32_t base, int bus_width)
 		new_host->mmc.send_cmd = mmc_boot_send_command;
 		new_host->mmc.f_max = 52000000;
 		new_host->mmc.f_min = 400000;
+		new_host->mmc.slot_type = MMC_SLOT_TYPE_EMBEDDED;
 
 		new_host->mmc.hardcoded_voltage = 0x40FF8080;
 		new_host->mmc.voltages = 0x40FF8080;
