@@ -746,6 +746,7 @@ QcomMmcHost *new_qcom_mmc_host(unsigned slot, uint32_t base, int bus_width)
 		new_host->mmc.bus_hz = MMC_CLK_400KHZ;
 		new_host->mmc.f_max = MMC_CLK_48MHZ;
 		new_host->mmc.f_min = MMC_CLK_400KHZ;
+		new_host->mmc.slot_type = MMC_SLOT_TYPE_EMBEDDED;
 		new_host->mmc.hardcoded_voltage =
 			MMC_BOOT_OCR_27_36 | MMC_BOOT_OCR_SEC_MODE;
 		new_host->mmc.voltages = MMC_BOOT_OCR_27_36;
