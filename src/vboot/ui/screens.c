@@ -248,8 +248,7 @@ static const struct ui_screen_info language_select_screen = {
 /* VB2_SCREEN_RECOVERY_BROKEN */
 
 static const char *const broken_desc[] = {
-	"broken_desc0.bmp",
-	"broken_desc1.bmp",
+	"broken_desc.bmp",
 };
 
 static const struct ui_menu_item broken_items[] = {
@@ -478,10 +477,7 @@ static vb2_error_t draw_recovery_phone_step2(
 }
 
 static const char *const recovery_phone_step2_desc[] = {
-	"rec_phone_step2_desc0.bmp",
-	"rec_phone_step2_desc1.bmp",
-	"rec_phone_step2_desc2.bmp",
-	"rec_phone_step2_desc3.bmp",
+	"rec_phone_step2_desc.bmp",
 };
 
 static const struct ui_menu_item recovery_phone_step2_items[] = {
@@ -618,12 +614,10 @@ static vb2_error_t draw_recovery_invalid_desc(
 {
 	struct vb2_context *ctx = vboot_get_context();
 	static const char *const desc_files[] = {
-		"rec_invalid_desc0.bmp",
-		"rec_invalid_desc1.bmp",
+		"rec_invalid_desc.bmp",
 	};
 	static const char *const desc_no_phone_files[] = {
-		"rec_invalid_disk_desc0.bmp",
-		"rec_invalid_disk_desc1.bmp",
+		"rec_invalid_disk_desc.bmp",
 	};
 	const struct ui_desc desc = vb2api_phone_recovery_ui_enabled(ctx) ?
 		UI_DESC(desc_files) : UI_DESC(desc_no_phone_files);
