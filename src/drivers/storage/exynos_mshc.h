@@ -170,7 +170,6 @@ typedef struct MshciHost {
 	uint32_t clksel_val;
 
 	int initialized;
-	int removable;
 } MshciHost;
 
 MshciHost *new_mshci_host(uintptr_t ioaddr, uint32_t src_hz, int bus_width,

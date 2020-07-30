@@ -476,7 +476,7 @@ static int s5p_mshc_update(BlockDevCtrlrOps *me)
 
 	host->initialized = 1;
 
-	if (host->removable) {
+	if (host->mmc.slot_type == MMC_SLOT_TYPE_REMOVABLE) {
 		// cdetect is active low
 		int present = !readl(&host->regs->cdetect);
 
@@ -539,11 +539,12 @@ MshciHost *new_mshci_host(uintptr_t ioaddr, uint32_t src_hz, int bus_width,
 	ctrlr->mmc.caps |= MMC_CAPS_HS_52MHz | MMC_CAPS_HS | MMC_CAPS_HC;
 	ctrlr->mmc.send_cmd = &s5p_mshci_send_command;
 	ctrlr->mmc.set_ios = &s5p_mshci_set_ios;
+	ctrlr->mmc.slot_type =
+		removable ? MMC_SLOT_TYPE_REMOVABLE : MMC_SLOT_TYPE_EMBEDDED;
 
 	ctrlr->regs = (void *)ioaddr;
 	ctrlr->src_hz = src_hz;
 	ctrlr->clksel_val = clksel_val;
-	ctrlr->removable = removable;
 
 	return ctrlr;
 }
