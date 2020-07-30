@@ -94,7 +94,6 @@ typedef struct {
 	GpioOps *cd_gpio;	/* Change Detect GPIO */
 
 	int initialized;
-	int removable;
 
 	MtkMmcIpVersion version;
 } MtkMmcHost;

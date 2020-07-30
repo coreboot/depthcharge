@@ -432,7 +432,7 @@ static int mtk_mmc_update(BlockDevCtrlrOps *me)
 		return -1;
 	host->initialized = 1;
 
-	if (host->removable) {
+	if (host->mmc.slot_type == MMC_SLOT_TYPE_REMOVABLE) {
 		int present = host->cd_gpio->get(host->cd_gpio);
 		mmc_debug("SD card present: %d\n", present);
 		if (present && !host->mmc.media) {
@@ -503,10 +503,11 @@ MtkMmcHost *new_mtk_mmc_host(uintptr_t ioaddr, uint32_t src_hz, uint32_t max_fre
 	ctrlr->mmc.caps |= MMC_CAPS_HS | MMC_CAPS_HS_52MHz | MMC_CAPS_HC;
 	ctrlr->mmc.send_cmd = &mtk_mmc_send_cmd;
 	ctrlr->mmc.set_ios = &mtk_mmc_set_ios;
+	ctrlr->mmc.slot_type =
+		removable ? MMC_SLOT_TYPE_REMOVABLE : MMC_SLOT_TYPE_EMBEDDED;
 
 	ctrlr->src_hz = src_hz;
 	ctrlr->reg = (MtkMmcReg *)ioaddr;
-	ctrlr->removable = removable;
 	ctrlr->cd_gpio = card_detect;
 	ctrlr->version = version;
 
