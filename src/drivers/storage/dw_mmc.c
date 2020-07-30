@@ -357,7 +357,7 @@ static int dwmci_update(BlockDevCtrlrOps *me)
 
 	host->initialized = 1;
 
-	if (host->removable) {
+	if (host->mmc.slot_type == MMC_SLOT_TYPE_REMOVABLE) {
 		int present = 0;
 
 		if (host->cd_gpio)	//use gpio detect
@@ -431,11 +431,12 @@ DwmciHost *new_dwmci_host(uintptr_t ioaddr, uint32_t src_hz,
 	ctrlr->mmc.caps |= MMC_CAPS_HS | MMC_CAPS_HS_52MHz | MMC_CAPS_HC;
 	ctrlr->mmc.send_cmd = &dwmci_send_cmd;
 	ctrlr->mmc.set_ios = &dwmci_set_ios;
+	ctrlr->mmc.slot_type =
+		removable ? MMC_SLOT_TYPE_REMOVABLE : MMC_SLOT_TYPE_EMBEDDED;
 
 	ctrlr->ioaddr = (void *)ioaddr;
 	ctrlr->src_hz = src_hz;
 	ctrlr->clksel_val = clksel_val;
-	ctrlr->removable = removable;
 
 	ctrlr->cd_gpio = card_detect;
 	ctrlr->set_clk = dwmci_set_clock;

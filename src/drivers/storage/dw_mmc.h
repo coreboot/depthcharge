@@ -166,7 +166,6 @@ typedef struct DwmciHost {
 	uint32_t fifoth_val;
 
 	int initialized;
-	int removable;
 
 	GpioOps *cd_gpio;/*if NULL,use internal card detect,
 				else use gpio detect*/
