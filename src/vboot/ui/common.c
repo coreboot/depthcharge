@@ -32,6 +32,9 @@ static const struct ui_error_item error_map[] = {
 	[VB2_UI_ERROR_DEBUG_LOG] = {
 		.body = "Failed to retrieve debug info.",
 	},
+	[VB2_UI_ERROR_FIRMWARE_LOG] = {
+		.body = "Failed to retrieve firmware log.",
+	},
 };
 
 static vb2_error_t init_screen(void)

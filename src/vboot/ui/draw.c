@@ -216,11 +216,15 @@ vb2_error_t ui_draw_text(const char *text, int32_t x, int32_t y,
 	}
 
 	while (*text) {
-		VB2_TRY(ui_get_char_bitmap(*text, style, &bitmap));
-		VB2_TRY(ui_get_bitmap_width(&bitmap, height, &char_width));
-		VB2_TRY(ui_draw_bitmap(&bitmap, x, y, UI_SIZE_AUTO, height,
-				       flags, 0));
-		x += char_width;
+		/* Ignore non-printable characters */
+		if (*text >= 0x20 && *text <= 0x7e) {
+			VB2_TRY(ui_get_char_bitmap(*text, style, &bitmap));
+			VB2_TRY(ui_get_bitmap_width(&bitmap, height,
+						    &char_width));
+			VB2_TRY(ui_draw_bitmap(&bitmap, x, y, UI_SIZE_AUTO,
+					       height, flags, 0));
+			x += char_width;
+		}
 		text++;
 	}
 

@@ -38,6 +38,16 @@
 	.type = UI_MENU_ITEM_TYPE_LANGUAGE,		\
 })
 
+#define PAGE_UP_ITEM ((struct ui_menu_item) {		\
+	.file = "btn_page_up.bmp",			\
+	.flags = UI_MENU_ITEM_FLAG_BLANK,		\
+})
+
+#define PAGE_DOWN_ITEM ((struct ui_menu_item) {		\
+	.file = "btn_page_down.bmp",			\
+	.flags = UI_MENU_ITEM_FLAG_BLANK,		\
+})
+
 #define BACK_ITEM ((struct ui_menu_item){	\
 	.file = "btn_back.bmp",			\
 	.type = UI_MENU_ITEM_TYPE_PRIMARY,	\
@@ -76,6 +86,21 @@ static int is_battery_low(void)
 		batt_pct_initialized = 1;
 	}
 	return batt_pct < 10;
+}
+
+static vb2_error_t draw_log_info_desc(const struct ui_state *state,
+				      const struct ui_state *prev_state,
+				      int32_t *y)
+{
+	char *buf;
+
+	buf = ui_log_get_page_content(state->log, state->current_page);
+	if (!buf)
+		return VB2_ERROR_UI_DRAW_FAILURE;
+	VB2_TRY(ui_draw_log_textbox(buf, y));
+	free(buf);
+
+	return VB2_SUCCESS;
 }
 
 /******************************************************************************/
@@ -280,7 +305,7 @@ static const struct ui_menu_item advanced_options_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	{ "btn_dev_mode.bmp" },
 	{ "btn_debug_info.bmp" },
-	/* TODO(b/146105976): add firmware log item. */
+	{ "btn_firmware_log.bmp" },
 	BACK_ITEM,
 	POWER_OFF_ITEM,
 };
@@ -296,31 +321,10 @@ static const struct ui_screen_info advanced_options_screen = {
 /******************************************************************************/
 /* VB2_SCREEN_DEBUG_INFO */
 
-static vb2_error_t draw_debug_info_desc(const struct ui_state *state,
-					const struct ui_state *prev_state,
-					int32_t *y)
-{
-	char *buf;
-
-	buf = ui_log_get_page_content(state->log, state->current_page);
-	if (!buf)
-		return VB2_ERROR_UI_DRAW_FAILURE;
-	VB2_TRY(ui_draw_log_textbox(buf, y));
-	free(buf);
-
-	return VB2_SUCCESS;
-}
-
 static const struct ui_menu_item debug_info_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	{
-		.file = "btn_page_up.bmp",
-		.flags = UI_MENU_ITEM_FLAG_BLANK,
-	},
-	{
-		.file = "btn_page_down.bmp",
-		.flags = UI_MENU_ITEM_FLAG_BLANK,
-	},
+	PAGE_UP_ITEM,
+	PAGE_DOWN_ITEM,
 	BACK_ITEM,
 	POWER_OFF_ITEM,
 };
@@ -330,8 +334,28 @@ static const struct ui_screen_info debug_info_screen = {
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "debug_info_title.bmp",
 	.menu = UI_MENU(debug_info_items),
-	.draw_desc = draw_debug_info_desc,
+	.draw_desc = draw_log_info_desc,
 	.mesg = "Debug info",
+};
+
+/******************************************************************************/
+/* VB2_SCREEN_FIRMWARE_LOG */
+
+static const struct ui_menu_item firmware_log_items[] = {
+	LANGUAGE_SELECT_ITEM,
+	PAGE_UP_ITEM,
+	PAGE_DOWN_ITEM,
+	BACK_ITEM,
+	POWER_OFF_ITEM,
+};
+
+static const struct ui_screen_info firmware_log_screen = {
+	.id = VB2_SCREEN_FIRMWARE_LOG,
+	.icon = UI_ICON_TYPE_NONE,
+	.title = "firmware_log_title.bmp",
+	.menu = UI_MENU(firmware_log_items),
+	.draw_desc = draw_log_info_desc,
+	.mesg = "Firmware log",
 };
 
 /******************************************************************************/
@@ -808,6 +832,7 @@ static const struct ui_screen_info *const screens[] = {
 	&broken_screen,
 	&advanced_options_screen,
 	&debug_info_screen,
+	&firmware_log_screen,
 	&recovery_to_dev_screen,
 	&recovery_select_screen,
 	&recovery_phone_step1_screen,

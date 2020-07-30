@@ -42,6 +42,7 @@ vb2_error_t ui_log_init(struct ui_log_info *log, const char *str)
 	free(log->page_start);
 	memset(log, 0, sizeof(*log));
 
+	/* TODO(b/146105976): Replace <TAB> with 8 spaces. */
 	/* Count number of characters and lines. */
 	lines = 0;
 	ptr = str;
