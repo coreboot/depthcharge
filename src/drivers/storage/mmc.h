@@ -284,6 +284,12 @@ typedef struct MmcCtrlr {
 #define MMC_TIMING_MMC_HS400	10
 #define MMC_TIMING_MMC_HS400ES	11
 
+	enum mmc_slot_type {
+		MMC_SLOT_TYPE_UNKNOWN,
+		MMC_SLOT_TYPE_REMOVABLE,
+		MMC_SLOT_TYPE_EMBEDDED,
+	} slot_type;
+
 	/*
 	 * Some eMMC devices do not support iterative OCR setting, they need
 	 * to be programmed with the required/expected value. This field is
