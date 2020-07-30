@@ -16,6 +16,7 @@
  * GNU General Public License for more details.
  */
 
+#include <libpayload.h>
 #include <vb2_api.h>
 
 #include "drivers/ec/cros/ec.h"
@@ -101,6 +102,19 @@ const char *vb2ex_get_debug_info(struct vb2_context *ctx)
 
 	buf[buf_size - 1] = '\0';
 	printf("debug info: %s\n", buf);
+	return buf;
+}
+
+const char *vb2ex_get_firmware_log(void)
+{
+	static const char *buf;
+	if (!buf) {
+		buf = cbmem_console_snapshot();
+		if (buf)
+			printf("Read cbmem console: size=%zu\n", strlen(buf));
+		else
+			printf("Failed to read cbmem console\n");
+	}
 	return buf;
 }
 

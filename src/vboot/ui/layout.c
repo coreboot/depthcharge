@@ -412,7 +412,7 @@ vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines)
 	int num_lines;
 	int32_t max_content_height, content_width, line_spacing = 0;
 	int32_t box_width, box_height;
-	char *buf, *end, *line;
+	char *buf, *end, *line, *ptr;
 
 	/* Copy str to buf since strsep() will modify the string. */
 	buf = strdup(str);
@@ -420,6 +420,15 @@ vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines)
 		UI_ERROR("Failed to malloc string buffer\n");
 		return VB2_ERROR_UI_MEMORY_ALLOC;
 	}
+
+	/*
+	 * TODO(b/166741235): Replace <TAB> with 8 spaces instead of 1.
+	 * This change should be done in log.c, and remove the following lines
+	 * here.
+	 */
+	for (ptr = buf; *ptr != '\0'; ptr++)
+		if (*ptr =='\t')
+			*ptr = ' ';
 
 	num_lines = MAX(count_lines(buf), min_lines);
 	max_content_height = UI_SCALE - UI_BOX_MARGIN_V * 2 -
