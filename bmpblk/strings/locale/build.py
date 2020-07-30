@@ -261,6 +261,21 @@ def ConvertPngFile(locale, file_name, styles, fonts, output_dir):
     command.append('--point=%r' % font_size)
   if UI == UIType.MENU:
     command.append('--margin="0 0"')
+    # TODO(b/159399377): Set different widths for titles and descriptions.
+    # Currently only wrap lines for descriptions.
+    if '_desc' in file_name:
+      # Without the --width option set, the minimum height of the output SVG
+      # image is roughly 22px (for locale 'en'). With --width=WIDTH passed to
+      # pango-view, the width of the output seems to always be (WIDTH * 4 / 3),
+      # regardless of the font being used. Therefore, set the max_width in
+      # points as follows to prevent drawing from exceeding canvas boundary in
+      # depthcharge runtime.
+      # Some of the numbers below are from depthcharge:
+      # - 1000: UI_SCALE
+      # - 50: UI_MARGIN_H
+      # - 24: UI_DESC_TEXT_HEIGHT
+      max_width = int(22 * (1000 - 50 * 2) / 24 / (4 / 3))
+      command.append('--width=%d' % max_width)
   command.append(input_file)
 
   if subprocess.call(' '.join(command), shell=True,
