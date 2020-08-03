@@ -136,9 +136,6 @@ Advanced options
       <message name="btn_dev_mode" desc="String for button to initiate the transition of the device into developer mode">
 Enable developer mode
       </message>
-      <message name="view_logs_heading" desc="Heading for the button group of different kinds of logs.">
-View logs
-      </message>
       <message name="btn_debug_info" desc="String for button to view the logs of debug info.">
 Debug info
       </message>

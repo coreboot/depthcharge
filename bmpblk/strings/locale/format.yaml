@@ -19,7 +19,6 @@ inputs:
   # advanced options
   - adv_options_title
   - btn_dev_mode
-  - view_logs_heading
   - btn_debug_info
   - btn_firmware_log
   # debug info and firmware log
@@ -114,7 +113,6 @@ files:
   adv_options_title:
   btn_dev_mode:
   btn_dev_mode_focus: [btn_dev_mode]
-  view_logs_heading:
   btn_debug_info:
   btn_debug_info_focus: [btn_debug_info]
   btn_firmware_log:
@@ -232,7 +230,6 @@ styles:
   adv_options_title: *base_color
   btn_dev_mode: *button_color
   btn_dev_mode_focus: *button_focused_color
-  view_logs_heading: *base_color
   btn_debug_info: *button_color
   btn_debug_info_focus: *button_focused_color
   btn_firmware_log: *button_color
