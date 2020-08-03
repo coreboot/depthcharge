@@ -10,6 +10,24 @@
 #include <string.h>
 #include "lkc.h"
 
+int custom_mkstemp(const char *path, char *tmpfile, size_t tmpfile_size)
+{
+	int fd;
+	if (snprintf(tmpfile, tmpfile_size, "%s.tmp.XXXXXX", path) >=
+	    tmpfile_size) {
+		printf("%s: Failed writing template\n", __func__);
+		errno = EOVERFLOW;
+		return -1;
+	}
+
+	fd = mkstemp(tmpfile);
+
+	if (fd == -1)
+		printf("%s: Failed creating temp file %s\n", __func__, tmpfile);
+
+	return fd;
+}
+
 /* file already present in list? If not add it */
 struct file *file_lookup(const char *name)
 {
@@ -39,11 +57,12 @@ int file_write_dep(const char *name)
 	struct file *file;
 	FILE *out;
 	int i;
+	char config_tmp_name[PATH_MAX];
 
 	if (!name)
 		name = ".kconfig.d";
-	char *config_tmp_name = strdup("..config.tmp.XXXXXX");
-	if ((i = mkstemp(config_tmp_name)) == -1)
+	if ((i = custom_mkstemp(name, config_tmp_name,
+				sizeof(config_tmp_name))) == -1)
 		return 1;
 	out = fdopen(i, "w");
 	if (!out)

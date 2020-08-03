@@ -123,6 +123,8 @@ void menu_finalize(struct menu *parent);
 void menu_set_type(int type);
 
 /* util.c */
+/* Makes the temp file in the same directory as the path. */
+int custom_mkstemp(const char *path, char *tmpfile, size_t tmpfile_size);
 struct file *file_lookup(const char *name);
 int file_write_dep(const char *name);
 void *xmalloc(size_t size);
