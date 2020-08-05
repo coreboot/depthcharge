@@ -61,6 +61,7 @@ class Converter(object):
     DEFAULT_REPLACE_MAP (dict): Default mapping of file replacement. For
       {'a': 'b'}, "a.*" will be converted to "b.*".
     SCALE_BASE (int): See ASSET_SCALES below.
+    DEFAULT_FONT_SCALE (tuple): Scale (width and height) of the font images.
     ASSET_SCALES (dict): Scale of each image asset. Key is the image name and
       value is a tuple (w, h), which are the width and height relative to the
       screen resolution. For example, if SCALE_BASE is 1000, (500, 100) means
@@ -588,6 +589,7 @@ class LegacyConverter(Converter):
   # These are supposed to be kept in sync with the numbers set in depthcharge
   LEGACY_TEXT_HEIGHT = 36   #   3.6%
   DEFAULT_TEXT_SCALE = (0, LEGACY_TEXT_HEIGHT)
+  DEFAULT_FONT_SCALE = (0, LEGACY_TEXT_HEIGHT)
   DEFAULT_ASSET_SCALE = (0, 169)
 
   ASSET_SCALES = {
