@@ -27,6 +27,7 @@ import yaml
 
 LOCALE_DIR = 'locale'
 FONT_DIR = 'font'
+ONE_LINE_DIR = 'one_line'
 PNG_FILES = '*.png'
 SVG_FILES = '*.svg'
 
@@ -360,15 +361,24 @@ class Converter(object):
 
       return (dim_width, dim_height)
 
-  def convert_svg_to_png(self, svg_file, png_file, scale, background):
-    """Convert .svg file to .png file"""
-    # Determine how many lines the string was broken into, by counting <g>
-    # tags in the svg file.
-    line_count_cmd = ('grep -q "glyph0-0" "%s" '
-                      '&& (grep "^<g style" "%s" | wc -l) '
-                      '|| echo 1') % (svg_file, svg_file)
-    num_lines = int(subprocess.check_output(line_count_cmd, shell=True))
+  def get_num_lines(self, file, one_line_dir):
+    """Get the number of lines of text in |file|."""
+    name, ext = os.path.splitext(os.path.basename(file))
+    png_name = name + '.png'
+    png_file = os.path.join(os.path.dirname(file), png_name)
+    one_line_png_file = os.path.join(one_line_dir, png_name)
+    # The number of lines id determined by comparing the height of |png_file|
+    # with |one_line_png_file|, where the latter is generated without the
+    # '--width' option passed to pango-view.
+    with Image.open(png_file) as image:
+      height = image.size[1]
+    with Image.open(one_line_png_file) as image:
+      line_height = image.size[1]
+    return int(round(height / line_height))
 
+  def convert_svg_to_png(self, svg_file, png_file, scale, num_lines,
+                         background):
+    """Convert .svg file to .png file"""
     background_hex = ''.join(format(x, '02x') for x in background)
     # If the width/height of the SVG file is specified in points, the
     # rsvg-convert command with default 90DPI will potentially cause the pixels
@@ -390,7 +400,6 @@ class Converter(object):
             command.extend(['--height', '%d' % height])
     command.append(svg_file)
     subprocess.check_call(' '.join(command), shell=True)
-    return num_lines
 
   def convert_to_bitmap(self, input, scale, num_lines, background, output,
                         max_colors):
@@ -429,7 +438,7 @@ class Converter(object):
         f.seek(BMP_HEADER_OFFSET_NUM_LINES)
         f.write(bytearray([num_lines]))
 
-  def convert(self, files, output_dir, scales, max_colors):
+  def convert(self, files, output_dir, scales, max_colors, one_line_dir=None):
     """Convert file(s) to bitmap format"""
     if not files:
       raise BuildImageError('Unable to find file(s) to convert')
@@ -447,11 +456,17 @@ class Converter(object):
           continue
         print('Replace: %s => %s' % (file, name))
         file = os.path.join(os.path.dirname(file), name + ext)
-      num_lines = 1
+
+      # Determine num_lines in order to scale the image
+      # TODO(b/159399377): Wrap lines for texts other than descriptions.
+      if one_line_dir and '_desc' in name:
+        num_lines = self.get_num_lines(file, one_line_dir)
+      else:
+        num_lines = 1
 
       if ext == '.svg':
         png_file = os.path.join(self.temp_dir, name + '.png')
-        num_lines = self.convert_svg_to_png(file, png_file, scale, background)
+        self.convert_svg_to_png(file, png_file, scale, num_lines, background)
         file = png_file
 
       self.convert_to_bitmap(
@@ -486,7 +501,8 @@ class Converter(object):
         print(' ' + locale + '/lo', end='', file=sys.stderr, flush=True)
       os.makedirs(output_dir)
       self.convert(glob.glob(os.path.join(locale_dir, locale, SVG_FILES)),
-                   output_dir, scales, self.text_max_colors)
+                   output_dir, scales, self.text_max_colors,
+                   one_line_dir=os.path.join(locale_dir, locale, ONE_LINE_DIR))
     print(file=sys.stderr)
 
   def move_language_images(self):

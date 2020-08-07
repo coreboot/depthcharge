@@ -25,6 +25,7 @@ pointsize=14
 margin=3
 align="left"
 width=""
+dpi="180"
 bgcolor="#ffffff"
 color="#000000"
 params=""
@@ -100,6 +101,7 @@ bgcolor="${bgcolor###}"
 
 if [ -n "$outdir" ] && [ -n "$language" ]; then
   mkdir -p "${outdir%/}/lo"
+  mkdir -p "${outdir%/}/one_line"
 fi
 
 for txtfile in $*; do
@@ -110,6 +112,7 @@ for txtfile in $*; do
   if [ -n "$outdir" ]; then
     pngfile="${outdir%/}/$(basename "$pngfile")"
     pngfile_lo="${outdir%/}/lo/$(basename "$pngfile")"
+    pngfile_one_line="${outdir%/}/one_line/$(basename "$pngfile")"
   fi
   svgfile="${pngfile%.*}".svg
   file_opt=""
@@ -129,14 +132,19 @@ for txtfile in $*; do
     '--background=$bgcolor' '--foreground=$color' \
     '--font=$font $pointsize' \
     '--margin=$margin' \
-    ${width:+'--width=$width'} \
     '--align=$align' \
     $params $file_opt"
+  width_opt="${width:+'--width=$width'}"
 
-  eval pango-view $pango_opt --hinting=full --dpi=180 --output "$pngfile" "$txtfile"
+  eval pango-view $pango_opt --hinting=full --dpi=$dpi $width_opt \
+    --output "$pngfile" "$txtfile"
   if [ -n "$language" ]; then
-    eval pango-view $pango_opt --hinting=full --dpi=90 --output "$pngfile_lo" "$txtfile"
+    eval pango-view $pango_opt --hinting=full --dpi=90 $width_opt \
+      --output "$pngfile_lo" "$txtfile"
+    eval pango-view $pango_opt --hinting=full --dpi=$dpi \
+      --output "$pngfile_one_line" "$txtfile"
   fi
-  eval pango-view $pango_opt --hinting=none --output "$svgfile" "$txtfile"
+  eval pango-view $pango_opt --hinting=none $width_opt \
+    --output "$svgfile" "$txtfile"
   echo "wrote $pngfile,svg"
 done
