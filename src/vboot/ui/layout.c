@@ -251,17 +251,21 @@ vb2_error_t ui_draw_button(const char *image_name,
 	const int32_t x_center = x + width / 2;
 	const int32_t y_center = y + height / 2;
 	const uint32_t flags = PIVOT_H_CENTER | PIVOT_V_CENTER;
+	const struct rgb_color *bg_color, *fg_color;
+
+	bg_color = focused ? &ui_color_button : &ui_color_bg;
+	fg_color = focused ? &ui_color_bg : &ui_color_button;
 
 	/* Clear button area */
 	VB2_TRY(ui_draw_rounded_box(x, y, width, height,
-				    focused ? &ui_color_button : &ui_color_bg,
-				    0, UI_BUTTON_BORDER_RADIUS, reverse));
+				    bg_color, 0, UI_BUTTON_BORDER_RADIUS,
+				    reverse));
 
 	/* Draw button text */
-	VB2_TRY(ui_get_bitmap(image_name, locale_code, focused, &bitmap));
-	VB2_TRY(ui_draw_bitmap(&bitmap, x_center, y_center,
-			       UI_SIZE_AUTO, UI_BUTTON_TEXT_HEIGHT,
-			       flags, reverse));
+	VB2_TRY(ui_get_bitmap(image_name, locale_code, 0, &bitmap));
+	VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x_center, y_center,
+				      UI_SIZE_AUTO, UI_BUTTON_TEXT_HEIGHT,
+				      bg_color, fg_color, flags, reverse));
 
 	/* Draw button borders */
 	VB2_TRY(ui_draw_rounded_box(x, y, width, height,
@@ -297,9 +301,12 @@ static vb2_error_t ui_draw_link(const struct ui_menu_item *item,
 	const int32_t y_center = y + height / 2;
 	const uint32_t flags = PIVOT_H_LEFT | PIVOT_V_CENTER;
 	const char *arrow_file;
+	const struct rgb_color *bg_color;
+
+	bg_color = focused ? &ui_color_link_bg : &ui_color_bg;
 
 	/* Get button width */
-	VB2_TRY(ui_get_bitmap(item->file, locale_code, focused, &bitmap));
+	VB2_TRY(ui_get_bitmap(item->file, locale_code, 0, &bitmap));
 	VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
 				    &text_width));
 	width = UI_LINK_TEXT_PADDING_LEFT +
@@ -310,9 +317,7 @@ static vb2_error_t ui_draw_link(const struct ui_menu_item *item,
 
 	/* Clear button area */
 	VB2_TRY(ui_draw_rounded_box(x_base, y, width, height,
-				    focused ? &ui_color_link_bg :
-				    &ui_color_bg,
-				    0, UI_BUTTON_BORDER_RADIUS,
+				    bg_color, 0, UI_BUTTON_BORDER_RADIUS,
 				    reverse));
 
 	/* Draw button icon */
@@ -326,10 +331,11 @@ static vb2_error_t ui_draw_link(const struct ui_menu_item *item,
 	x += UI_LINK_ICON_SIZE + UI_LINK_ICON_MARGIN_R;
 
 	/* Draw button text */
-	VB2_TRY(ui_get_bitmap(item->file, locale_code, focused, &bitmap));
-	VB2_TRY(ui_draw_bitmap(&bitmap, x, y_center,
-			       UI_SIZE_AUTO, UI_BUTTON_TEXT_HEIGHT,
-			       flags, reverse));
+	VB2_TRY(ui_get_bitmap(item->file, locale_code, 0, &bitmap));
+	VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,
+				      UI_SIZE_AUTO, UI_BUTTON_TEXT_HEIGHT,
+				      bg_color, &ui_color_button,
+				      flags, reverse));
 	x += text_width;
 
 	/* Draw arrow */
