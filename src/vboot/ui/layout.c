@@ -346,7 +346,7 @@ static vb2_error_t ui_draw_link(const struct ui_menu_item *item,
 	/* Draw button borders */
 	if (focused)
 		VB2_TRY(ui_draw_rounded_box(x_base, y, width, height,
-					    &ui_color_button_border,
+					    &ui_color_link_border,
 					    UI_LINK_BORDER_THICKNESS,
 					    UI_BUTTON_BORDER_RADIUS, reverse));
 
