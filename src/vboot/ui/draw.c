@@ -97,6 +97,21 @@ vb2_error_t ui_draw_bitmap(const struct ui_bitmap *bitmap,
 	return VB2_SUCCESS;
 }
 
+vb2_error_t ui_draw_mapped_bitmap(const struct ui_bitmap *bitmap,
+				  int32_t x, int32_t y,
+				  int32_t width, int32_t height,
+				  const struct rgb_color *bg_color,
+				  const struct rgb_color *fg_color,
+				  uint32_t flags, int reverse)
+{
+	vb2_error_t rv;
+	if (set_color_map(bg_color, fg_color))
+		return VB2_ERROR_UI_DRAW_FAILURE;
+	rv = ui_draw_bitmap(bitmap, x, y, width, height, flags, reverse);
+	clear_color_map();
+	return rv;
+}
+
 /*
  * Get bitmap size.
  *

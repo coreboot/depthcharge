@@ -415,6 +415,30 @@ vb2_error_t ui_draw_bitmap(const struct ui_bitmap *bitmap,
 			   uint32_t flags, int reverse);
 
 /*
+ * Draw bitmap with color mappings.
+ *
+ * @param bitmap	Bitmap to draw.
+ * @param x		x-coordinate of the top-left corner.
+ * @param y		y-coordinate of the top-left corner.
+ * @param width		Width of the image.
+ * @param height	Height of the image.
+ * @param bg_color	Background color, which is passed to set_color_map() in
+ *			libpayload.
+ * @param fg_color	Foreground color passed to set_color_map().
+ * @param flags		Flags passed to draw_bitmap() in libpayload.
+ * @param reverse	Whether to reverse the x-coordinate relative to the
+ *			canvas.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_draw_mapped_bitmap(const struct ui_bitmap *bitmap,
+				  int32_t x, int32_t y,
+				  int32_t width, int32_t height,
+				  const struct rgb_color *bg_color,
+				  const struct rgb_color *fg_color,
+				  uint32_t flags, int reverse);
+
+/*
  * Get bitmap width.
  *
  * @param bitmap	Pointer to the bitmap struct.

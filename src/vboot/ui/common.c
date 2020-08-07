@@ -125,7 +125,7 @@ static vb2_error_t print_error_message(const char *str, const char *locale_code)
 	free(buf);
 
 	/* Insert "Back" button */
-	VB2_TRY(ui_get_bitmap("btn_back.bmp", locale_code, 1, &bitmap));
+	VB2_TRY(ui_get_bitmap("btn_back.bmp", locale_code, 0, &bitmap));
 	int32_t text_width;
 	VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
 				    &text_width));
