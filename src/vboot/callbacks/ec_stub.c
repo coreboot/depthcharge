@@ -75,11 +75,6 @@ vb2_error_t vb2ex_ec_vboot_done(struct vb2_context *ctx)
 	return VB2_SUCCESS;
 }
 
-vb2_error_t vb2ex_ec_battery_cutoff(void) {
-	printf("EC battery cut-off not supported, ignored.\n");
-	return VB2_SUCCESS;
-}
-
 vb2_error_t VbExCheckAuxfw(enum vb2_auxfw_update_severity *severity)
 {
 	*severity = VB2_AUXFW_NO_UPDATE;

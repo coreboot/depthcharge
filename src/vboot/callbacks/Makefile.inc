@@ -36,6 +36,8 @@ else
 depthcharge-y += ec_stub.c
 endif
 
+depthcharge-y += ec_util.c
+
 ifeq ($(CONFIG_AUXFW_SOFTWARE_SYNC),y)
 depthcharge-y += auxfw.c
 else

@@ -195,10 +195,3 @@ vb2_error_t vb2ex_ec_vboot_done(struct vb2_context *ctx)
 	timestamp_add_now(TS_VB_EC_VBOOT_DONE);
 	return VB2_SUCCESS;
 }
-
-vb2_error_t vb2ex_ec_battery_cutoff(void)
-{
-	VbootEcOps *ec = vboot_get_ec();
-	return (ec->battery_cutoff(ec) == 0
-		 ? VB2_SUCCESS : VB2_ERROR_UNKNOWN);
-}
