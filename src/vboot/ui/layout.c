@@ -515,6 +515,30 @@ vb2_error_t ui_draw_log_textbox(const char *str, int32_t *y)
 	return ui_draw_textbox(str, y, lines_per_page);
 }
 
+static vb2_error_t ui_draw_dev_signed_warning(void)
+{
+	struct vb2_context *ctx = vboot_get_context();
+
+	/* Dev-mode boots everything anyway, this is only interesting in rec. */
+	if (!(ctx->flags & VB2_CONTEXT_RECOVERY_MODE))
+		return VB2_SUCCESS;
+	if (!vb2api_is_developer_signed(ctx))
+		return VB2_SUCCESS;
+
+	const int32_t x = UI_MARGIN_H;
+	const int32_t y = UI_MARGIN_TOP + UI_LANG_BOX_HEIGHT +
+		UI_LANG_MARGIN_BOTTOM / 2;
+
+	VB2_TRY(ui_draw_text("This firmware is developer-signed. "
+			     "MP-signed recovery images will not work!",
+			     x, y,
+			     UI_BOX_TEXT_HEIGHT,
+			     PIVOT_H_LEFT | PIVOT_V_CENTER,
+			     UI_CHAR_STYLE_DARK,
+			     0));
+	return VB2_SUCCESS;
+}
+
 vb2_error_t ui_draw_default(const struct ui_state *state,
 			    const struct ui_state *prev_state)
 {
@@ -546,6 +570,9 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 		VB2_TRY(ui_draw_box(0, 0, UI_SCALE, box_height,
 				    &ui_color_bg, 0));
 	}
+
+	/* Warning if we are in recovery and using dev signed keys. */
+	VB2_TRY(ui_draw_dev_signed_warning());
 
 	/* Language dropdown header */
 	if (menu->num_items > 0 &&
