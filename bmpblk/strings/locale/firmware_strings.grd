@@ -119,16 +119,16 @@ Please do not power off your device
 Your system is applying a critical update.
       </message>
       <message name="broken_title" desc="Title of screen shown when chromebook is in broken screen.">
-Something is wrong
+Something went wrong
       </message>
       <message name="broken_desc" desc="Description of screen shown when chromebook is in broken screen.">
-Please remove all connected devices and hold down Escape, Refresh, and Power to initiate recovery.
+To try and fix the issue, start the recovery process. Remove all connected devices, then hold down Esc, Refresh, and Power.
       </message>
       <message name="broken_desc_phyrec" desc="Description of screen shown when chromebox/chromebit is in broken screen.">
-Please remove all connected devices. Then, hold down the Recovery button, press Power, and release the Recovery button to initiate recovery.
+To try and fix the issue, start the recovery process. Remove all connected devices, then hold down the Recovery button, press and release the Power button, release the Recovery button.
       </message>
       <message name="broken_desc_detach" desc="Description of screen shown when chromeos tablet is in broken screen.">
-Please remove all connected devices and hold down Volume Up, Volume Down, and Power to initiate recovery.
+To try and fix the issue, start the recovery process. Remove all connected devices, then hold down Volume Up, Volume Down, and the Power button for at least 10 seconds.
       </message>
       <message name="adv_options_title" desc="Title for the advanced options screen.">
 Advanced options
@@ -148,10 +148,10 @@ Debug info
       <message name="firmware_log_title" desc="Title for the firmware log screen.">
 Firmware log
       </message>
-      <message name="btn_page_up" desc="String for the page up button.">
+      <message name="btn_page_up" desc="String for the page up button (please translate this)." meaning="verb">
 Page up
       </message>
-      <message name="btn_page_down" desc="String for the page down button.">
+      <message name="btn_page_down" desc="String for the page down button (please translate this)." meaning="verb">
 Page down
       </message>
       <message name="rec_sel_title" desc="Title for the recovery screen (after user presses three finger salute, ie: ctrl + refresh + power).">
@@ -176,13 +176,13 @@ You can recover using external storage such as a USB drive.
 Recovery using phone
       </message>
       <message name="btn_rec_by_disk" desc="Button to select recovery through external disk.">
-Recovery using external disk
+Recovery using external storage
       </message>
       <message name="rec_step1_title" desc="Title for Step1 in the recovery process.">
-To proceed with the recovery process, you’ll need
+Get ready to recover your device. You'll need:
       </message>
       <message name="rec_step1_desc2" desc="String1 for Step1 in the recovery process.">
-We also recommend that you connect to a power source during the recovery process.
+Connecting your device to a power source is recommended.
       </message>
       <message name="rec_step1_desc2_low_bat" desc="String2 for Step1 in the recovery process.  This is shown when the device has low battery">
 3. A power source for this device
@@ -200,31 +200,31 @@ Recovery using phone
 Download the Chrome OS recovery app on your Android phone by plugging in your phone or by scanning the QR code on the right. Once you launch the app, connect your phone to your device and recovery will start automatically.
       </message>
       <message name="rec_disk_step1_desc0" desc="Description string0 for step1 in the recovery process.">
-1. An external storage disk such as a USB drive or an SD card
+1. An external storage device such as a USB drive or an SD card
       </message>
       <message name="rec_disk_step1_desc0_no_sd" desc="Description string0 for step1 in the recovery process when no SD card is present on the device.">
-1. An external storage disk such as a USB drive
+1. An external storage device such as a USB drive
       </message>
       <message name="rec_disk_step1_desc1" desc="Description string1 for step1 in the recovery process.">
-2. An additional device with internet access
+2. Another device with internet access
       </message>
       <message name="rec_disk_step2_title" desc="Title for step2 in the recovery process.">
-External disk setup
+Set up your external storage
       </message>
       <message name="rec_disk_step2_desc0" desc="Description string0 for step2 in the recovery process.">
-1. Go to google.com/chromeos/recovery on another computer and install the Chrome extension
+1. Go to google.com/chromeos/recovery on the other device and install the Chrome extension
       </message>
       <message name="rec_disk_step2_desc1" desc="Description string1 for step2 in the recovery process.">
-2. Follow instructions on the Chrome extension, and download the recovery image onto an external disk
+2. Follow instructions on the Chrome extension, and download the recovery image onto external storage
       </message>
       <message name="rec_disk_step2_desc2" desc="Description string2 for step2 in the recovery process.">
-3. Click next when your external disk is ready with the recovery image
+3. Click next when your external storage device is ready with the recovery image
       </message>
       <message name="rec_disk_step3_title" desc="Title for step3 in the recovery process.">
-Do you have your external disk ready?
+Connect your external storage device
       </message>
       <message name="rec_disk_step3_desc0" desc="Description string0 for step3 in the recovery process.">
-If your external disk is ready with a recovery image, plug it into the device to start the recovery process.
+If your external storage device is ready with a recovery image, plug it into this device to start the recovery process.
       </message>
       <message name="rec_invalid_title" desc="Title for invalid disk plugged inserted.">
 No valid image detected
@@ -323,7 +323,7 @@ Model:
 Help center:
       </message>
       <message name="rec_url" desc="String for the help center url.">
-http://google.com/chromeos/recovery
+https://google.com/chromeos/recovery
       </message>
       <message name="navigate0" desc="Instruction0 for navigating on a chromebook or chromebox.">
 Use the arrow keys to navigate up or down.
