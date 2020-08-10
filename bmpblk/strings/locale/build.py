@@ -25,6 +25,7 @@ from PIL import Image
 import yaml
 
 SCRIPT_BASE = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_NAME = '_DEFAULT_'
 KEY_LOCALES = 'locales'
 KEY_INPUTS = 'inputs'
 KEY_FILES = 'files'
@@ -247,15 +248,19 @@ def ConvertPngFile(locale, file_name, styles, fonts, output_dir):
     locale: Locale (language) to select implicit rendering options.
     file_name: String of input file name to generate.
     styles: Dictionary to get associated per-file style options.
-    fonts: Dictionary to get associated per-file font options.
+    fonts: Dictionary to get associated per-file font options. The value at
+      DEFAULT_NAME is used when |locale| is not in the dict, and the '--font'
+      option is omitted when neither exist.
     output_dir: Directory to generate image files.
   """
   input_file = os.path.join(output_dir, file_name + '.txt')
   command = [TXT_TO_PNG_SVG, "--lan=%s" % locale, "--outdir=%s" % output_dir]
   if file_name in styles:
     command.append(styles[file_name])
-  if locale in fonts:
-    command.append("--font='%s'" % fonts[locale])
+  default_font = fonts.get(DEFAULT_NAME)
+  font = fonts.get(locale, default_font)
+  if font:
+    command.append("--font='%s'" % font)
   font_size = os.getenv("FONTSIZE")
   if font_size is not None:
     command.append('--point=%r' % font_size)

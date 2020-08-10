@@ -337,7 +337,23 @@ styles:
   navigate1_tablet: *dark_color_left_align
 
 fonts:
-  # All fonts should be provided and selected by 'ui-sans' family defined in
-  # ChromiumOS SDK (/etc/fonts/local.conf).  The following list is made by
-  #   fc-match 'ui-sans:lang=$locale' for locales we have.
-  en:     'Roboto'
+  _DEFAULT_: 'Roboto'
+  # The following contains all the locales 'Roboto' doesn't support. All
+  # the supported locales can be found by
+  #   fc-match -f "%{lang}\n" "Roboto"
+  ar:     'Noto Sans Arabic UI'
+  bn:     'Noto Sans Bengali UI'
+  fa:     'Noto Sans Arabic UI'
+  gu:     'Noto Sans Gujarati UI'
+  he:     'Noto Sans Hebrew'
+  hi:     'Noto Sans Devanagari UI'
+  ja:     'Noto Sans CJK JP'
+  kn:     'Noto Sans Kannada UI'
+  ko:     'Noto Sans CJK KR'
+  ml:     'Noto Sans Malayalam UI'
+  mr:     'Noto Sans Devanagari UI'
+  ta:     'Noto Sans Tamil UI'
+  te:     'Noto Sans Telugu UI'
+  th:     'Noto Sans Thai UI'
+  zh-CN:  'Noto Sans CJK SC'
+  zh-TW:  'Noto Sans CJK TC'
