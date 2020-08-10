@@ -35,6 +35,7 @@
 #include "drivers/soc/picasso.h"
 #include "drivers/sound/gpio_i2s.h"
 #include "drivers/sound/max98357a.h"
+#include "drivers/sound/rt1015.h"
 #include "drivers/sound/route.h"
 #include "drivers/sound/rt5682.h"
 #include "drivers/storage/ahci.h"
@@ -162,6 +163,15 @@ static int is_dalboz(void)
 			   dalboz_str, strlen(dalboz_str)) == 0;
 }
 
+static int is_vilboz(void)
+{
+	const char * const vilboz_str = "Vilboz";
+	struct cb_mainboard *mainboard = lib_sysinfo.mainboard;
+
+	return strncasecmp(cb_mb_part_string(mainboard),
+			vilboz_str, strlen(vilboz_str)) == 0;
+}
+
 static void audio_setup(CrosEc *cros_ec)
 {
 	CrosECTunnelI2c *cros_ec_i2c_tunnel;
@@ -204,14 +214,23 @@ static void audio_setup(CrosEc *cros_ec)
 	 */
 	gpio_i2s_play = i2s->ops.play;
 	i2s->ops.play = amd_gpio_i2s_play;
+	if (is_vilboz()) {
+		/* Codec for RT1015 work with Zork */
+		rt1015Codec *speaker_amp = new_rt1015_codec(
+						&cros_ec_i2c_tunnel->ops,
+						AUD_RT1015_DEVICE_ADDR);
+		list_insert_after(&speaker_amp->component.list_node,
+				  &sound_route->components);
+	} else {
 
-	KernGpio *spk_pa_en = new_kern_fch_gpio_output(EN_SPKR, 1);
+		KernGpio *spk_pa_en = new_kern_fch_gpio_output(EN_SPKR, 1);
+		/* Codec for Grunt, should work with Zork */
+		max98357aCodec *speaker_amp = new_max98357a_codec(
+						&spk_pa_en->ops);
+		list_insert_after(&speaker_amp->component.list_node,
+				  &sound_route->components);
 
-	/* Codec for Grunt, should work with Zork */
-	max98357aCodec *speaker_amp = new_max98357a_codec(&spk_pa_en->ops);
-
-	list_insert_after(&speaker_amp->component.list_node,
-			  &sound_route->components);
+	}
 
 	sound_set_ops(&sound_route->ops);
 }
