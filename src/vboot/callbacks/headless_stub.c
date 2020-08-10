@@ -19,11 +19,22 @@
 #include <libpayload.h>
 #include <vb2_api.h>
 
-#include "vboot/ui.h"
+uint32_t vb2ex_prepare_log_screen(const char *str)
+{
+	/* TODO(b/151200757): Support headless devices */
+	return 0;
+}
 
 uint32_t vb2ex_get_locale_count(void)
 {
-	return ui_get_locale_count();
+	/* TODO(b/151200757): Support headless devices */
+	return 0;
+}
+
+const char *vb2ex_get_debug_info(struct vb2_context *ctx)
+{
+	/* TODO(b/151200757): Support headless devices */
+	return "";
 }
 
 vb2_error_t vb2ex_display_ui(enum vb2_screen screen, uint32_t locale_id,
