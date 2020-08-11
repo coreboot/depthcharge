@@ -134,9 +134,14 @@ static vb2_error_t print_error_message(const char *str, const char *locale_code)
 	}
 
 	free(buf);
+	if (rv)
+		return rv;
 
 	/* Insert "Back" button */
-	VB2_TRY(ui_get_bitmap("btn_back.bmp", locale_code, 0, &bitmap));
+	const struct ui_menu_item back_item = {
+		.file = "btn_back.bmp",
+	};
+	VB2_TRY(ui_get_bitmap(back_item.file, locale_code, 0, &bitmap));
 	int32_t text_width;
 	VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
 				    &text_width));
@@ -147,11 +152,12 @@ static vb2_error_t print_error_message(const char *str, const char *locale_code)
 		UI_ERROR_BOX_PADDING_H - button_width;
 	y = (UI_SCALE + UI_ERROR_BOX_HEIGHT) / 2 -
 		UI_ERROR_BOX_PADDING_V - UI_BUTTON_HEIGHT;
-	ui_draw_button("btn_back.bmp", locale_code,
-		       x, y,
-		       button_width,
-		       UI_BUTTON_HEIGHT,
-		       0, 1);
+	VB2_TRY(ui_draw_button(&back_item,
+			       locale_code,
+			       x, y,
+			       button_width,
+			       UI_BUTTON_HEIGHT,
+			       0, 1));
 
 	return rv;
 }

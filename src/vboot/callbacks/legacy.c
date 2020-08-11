@@ -22,6 +22,25 @@
 #include "base/list.h"
 #include "boot/payload.h"
 
+uint32_t vb2ex_get_bootloader_count(void)
+{
+	struct altfw_info *node;
+	uint32_t count = 0;
+	ListNode *head;
+
+	head = payload_get_altfw_list();
+	if (head) {
+		list_for_each(node, *head, list_node) {
+			/* Discount default seqnum=0, since it is duplicated. */
+			if (node->seqnum)
+				count += 1;
+		}
+	}
+
+	return count;
+}
+
+/* TODO(b/167643628): Remove this after legacy UIs are deprecated. */
 uint32_t VbExGetAltFwIdxMask(void)
 {
 	struct altfw_info *node;
