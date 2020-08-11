@@ -41,6 +41,9 @@ oldconfig: $(objk)/conf
 silentoldconfig: $(objk)/conf
 	$< --$@ $(Kconfig)
 
+olddefconfig: $(objk)/conf
+	$< --olddefconfig $(Kconfig)
+
 # --- UNUSED, ignore ----------------------------------------------------------
 localyesconfig localmodconfig: $(obj)/streamline_config.pl $(obj)/conf
 	$(Q)mkdir -p include/generated
