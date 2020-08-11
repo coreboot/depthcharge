@@ -61,8 +61,20 @@ static int cr50_irq_status(void)
 	return gpio_get(tpm_int);
 }
 
-int board_backlight_update(DisplayOps *me, uint8_t enable)
+static int board_backlight_update(DisplayOps *me, uint8_t enable)
 {
+	static GpioOps *disp_pwm, *backlight_en;
+
+	if (!backlight_en) {
+		disp_pwm = new_mtk_gpio_output(PAD_DISP_PWM);
+		backlight_en = new_mtk_gpio_output(PAD_KPROW1);
+	}
+
+	/* Enforce enable to be either 0 or 1. */
+	enable = !!enable;
+
+	gpio_set(disp_pwm, enable);
+	gpio_set(backlight_en, enable);
 	return 0;
 }
 
