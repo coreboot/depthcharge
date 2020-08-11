@@ -229,10 +229,18 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 		if (!(menu->items[i].flags & UI_MENU_ITEM_FLAG_BLANK) &&
 		    state->disabled_item_mask & (1 << i))
 			continue;
-		VB2_TRY(ui_get_bitmap(menu->items[i].file, state->locale->code,
-				      0, &bitmap));
-		VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
-					    &text_width));
+		if (menu->items[i].file) {
+			VB2_TRY(ui_get_bitmap(menu->items[i].file,
+					      state->locale->code, 0, &bitmap));
+			VB2_TRY(ui_get_bitmap_width(&bitmap,
+						    UI_BUTTON_TEXT_HEIGHT,
+						    &text_width));
+		} else {
+			VB2_TRY(ui_get_text_width(menu->items[i].text,
+						  UI_BUTTON_TEXT_HEIGHT,
+						  UI_CHAR_STYLE_DEFAULT,
+						  &text_width));
+		}
 		max_text_width = MAX(text_width, max_text_width);
 	}
 
@@ -262,6 +270,36 @@ vb2_error_t ui_draw_button(const char *image_name,
 	VB2_TRY(ui_draw_bitmap(&bitmap, x_center, y_center,
 			       UI_SIZE_AUTO, UI_BUTTON_TEXT_HEIGHT,
 			       flags, reverse));
+
+	/* Draw button borders */
+	VB2_TRY(ui_draw_rounded_box(x, y, width, height,
+				    &ui_color_button_border,
+				    UI_BUTTON_BORDER_THICKNESS,
+				    UI_BUTTON_BORDER_RADIUS, reverse));
+
+	return VB2_SUCCESS;
+}
+
+/* Draw a button with monospace font text. */
+static vb2_error_t ui_draw_mono_button(const char *text,
+				       const char *locale_code,
+				       int32_t x, int32_t y,
+				       int32_t width, int32_t height,
+				       int reverse, int focused)
+{
+	const int32_t x_center = x + width / 2;
+	const int32_t y_center = y + height / 2;
+	const uint32_t flags = PIVOT_H_CENTER | PIVOT_V_CENTER;
+
+	/* Clear button area */
+	VB2_TRY(ui_draw_rounded_box(x, y, width, height,
+				    focused ? &ui_color_button : &ui_color_bg,
+				    0, UI_BUTTON_BORDER_RADIUS,
+				    reverse));
+
+	/* Draw button text */
+	VB2_TRY(ui_draw_text(text, x_center, y_center, UI_BUTTON_TEXT_HEIGHT,
+			     flags, UI_CHAR_STYLE_DEFAULT, reverse));
 
 	/* Draw button borders */
 	VB2_TRY(ui_draw_rounded_box(x, y, width, height,
@@ -669,9 +707,17 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 		 * TODO(b/147424699): No need to redraw every button when
 		 * navigating between menu.
 		 */
-		VB2_TRY(ui_draw_button(menu->items[i].file, locale_code,
-				       x, y, button_width, UI_BUTTON_HEIGHT,
-				       reverse, state->selected_item == i));
+		if (menu->items[i].file)
+			VB2_TRY(ui_draw_button(menu->items[i].file, locale_code,
+					       x, y, button_width,
+					       UI_BUTTON_HEIGHT, reverse,
+					       state->selected_item == i));
+		else
+			VB2_TRY(ui_draw_mono_button(menu->items[i].text,
+						    locale_code, x, y,
+						    button_width,
+						    UI_BUTTON_HEIGHT, reverse,
+						    state->selected_item == i));
 		y += UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
 	}
 

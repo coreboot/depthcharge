@@ -240,7 +240,10 @@ enum ui_menu_item_flag {
 
 /* Menu item. */
 struct ui_menu_item {
+	/* Pre-generated bitmap containing button text. */
 	const char *file;
+	/* Button text. Drawn with monospace font if 'file' is not specified. */
+	const char *text;
 	/* If UI_MENU_ITEM_TYPE_LANGUAGE, the 'file' field will be ignored. */
 	enum ui_menu_item_type type;
 	/* Icon file for UI_MENU_ITEM_TYPE_SECONDARY only. */

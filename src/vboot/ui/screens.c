@@ -19,6 +19,8 @@
 #include <libpayload.h>
 #include <vb2_api.h>
 
+#include "base/list.h"
+#include "boot/payload.h"
 #include "drivers/ec/cros/ec.h"
 #include "vboot/ui.h"
 #include "vboot/util/commonparams.h"
@@ -677,6 +679,7 @@ static const struct ui_menu_item developer_mode_items[] = {
 	[DEVELOPER_MODE_ITEM_RETURN_TO_SECURE] = { "btn_secure_mode.bmp" },
 	{ "btn_int_disk.bmp" },
 	{ "btn_ext_disk.bmp" },
+	{ "btn_alt_bootloader.bmp" },
 	ADVANCED_OPTIONS_ITEM,
 	POWER_OFF_ITEM,
 };
@@ -817,6 +820,114 @@ static const struct ui_screen_info developer_invalid_disk_screen = {
 };
 
 /******************************************************************************/
+/* VB2_SCREEN_DEVELOPER_SELECT_BOOTLOADER */
+
+static const struct ui_menu_item developer_select_bootloader_items[] = {
+	LANGUAGE_SELECT_ITEM,
+	BACK_ITEM,
+	POWER_OFF_ITEM,
+};
+
+/* Forward declaration */
+static vb2_error_t draw_developer_select_bootloader(
+	const struct ui_state *state,
+	const struct ui_state *prev_state);
+
+static struct ui_screen_info developer_select_bootloader_screen = {
+	.id = VB2_SCREEN_DEVELOPER_SELECT_BOOTLOADER,
+	.icon = UI_ICON_TYPE_NONE,
+	.title = "dev_select_bootloader_title.bmp",
+	.menu = UI_MENU(developer_select_bootloader_items),
+	.draw = draw_developer_select_bootloader,
+	.mesg = "Select an alternate bootloader.",
+};
+
+static vb2_error_t get_bootloader_menu(void)
+{
+	struct altfw_info *node;
+	ListNode *head;
+	uint32_t num_bootloaders = 0, num_items;
+	uint32_t i;
+	struct ui_menu_item *items;
+	static const struct ui_menu_item menu_prefixes[] = {
+		LANGUAGE_SELECT_ITEM,
+	};
+	static const struct ui_menu_item menu_postfixes[] = {
+		BACK_ITEM,
+		POWER_OFF_ITEM,
+	};
+
+	if (ARRAY_SIZE(developer_select_bootloader_items) >
+	    ARRAY_SIZE(menu_prefixes) + ARRAY_SIZE(menu_postfixes))
+		return VB2_SUCCESS;
+
+	head = payload_get_altfw_list();
+	if (!head) {
+		UI_ERROR("Failed to get altfw list\n");
+		return VB2_SUCCESS;
+	}
+
+	list_for_each(node, *head, list_node) {
+		/* Discount default seqnum=0, since it is duplicated. */
+		if (node->seqnum)
+			num_bootloaders++;
+	}
+
+	num_items = num_bootloaders + ARRAY_SIZE(menu_prefixes) +
+		    ARRAY_SIZE(menu_postfixes);
+	items = malloc(num_items * sizeof(struct ui_menu_item));
+	if (!items) {
+		UI_ERROR("Failed to malloc menu items for bootloaders\n");
+		return VB2_ERROR_UI_MEMORY_ALLOC;
+	}
+
+	/* Copy prefix items to the begin. */
+	memcpy(&items[0], menu_prefixes, sizeof(menu_prefixes));
+
+	/* Copy bootloaders. */
+	i = ARRAY_SIZE(menu_prefixes);
+	list_for_each(node, *head, list_node) {
+		/* Discount default seqnum=0, since it is duplicated. */
+		if (!node->seqnum)
+			continue;
+		UI_INFO("Bootloader: filename=%s, name=%s, "
+			"desc=%s, seqnum=%d\n",
+			node->filename, node->name,
+			node->desc, node->seqnum);
+		items[i] = (struct ui_menu_item){
+			.text = node->filename,
+		};
+		i++;
+	}
+
+	/* Copy postfix items to the end. */
+	memcpy(&items[i], menu_postfixes, sizeof(menu_postfixes));
+
+	developer_select_bootloader_screen.menu.num_items = num_items;
+	developer_select_bootloader_screen.menu.items = items;
+
+	return VB2_SUCCESS;
+}
+
+/* TODO: Consider creating a hook function for overriding only primary
+   buttons, instead of drawing the entire screen. */
+static vb2_error_t draw_developer_select_bootloader(
+	const struct ui_state *state,
+	const struct ui_state *prev_state)
+{
+
+	VB2_TRY(get_bootloader_menu());
+
+	/*
+	 * Call default drawing function to clear the screen if necessary,
+	 * draw the title and desc lines, and draw the footer.
+	 */
+	VB2_TRY(ui_draw_default(state, prev_state));
+
+	return VB2_SUCCESS;
+}
+
+/******************************************************************************/
 /*
  * TODO(chromium:1035800): Refactor UI code across vboot and depthcharge.
  * Currently vboot and depthcharge maintain their own copies of menus/screens.
@@ -844,6 +955,7 @@ static const struct ui_screen_info *const screens[] = {
 	&developer_to_norm_screen,
 	&developer_boot_external_screen,
 	&developer_invalid_disk_screen,
+	&developer_select_bootloader_screen,
 };
 
 const struct ui_screen_info *ui_get_screen_info(enum vb2_screen screen_id)
