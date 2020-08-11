@@ -230,10 +230,20 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 		if (!(menu->items[i].flags & UI_MENU_ITEM_FLAG_TRANSIENT) &&
 		    state->disabled_item_mask & (1 << i))
 			continue;
-		VB2_TRY(ui_get_bitmap(menu->items[i].file, state->locale->code,
-				      0, &bitmap));
-		VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
-					    &text_width));
+		if (menu->items[i].file) {
+			VB2_TRY(ui_get_bitmap(menu->items[i].file,
+					      state->locale->code, 0, &bitmap));
+			VB2_TRY(ui_get_bitmap_width(&bitmap,
+						    UI_BUTTON_TEXT_HEIGHT,
+						    &text_width));
+		} else if (menu->items[i].text) {
+			VB2_TRY(ui_get_text_width(menu->items[i].text,
+						  UI_BUTTON_TEXT_HEIGHT,
+						  &text_width));
+		} else {
+			UI_ERROR("Menu item #%d: no .file or .text\n", i);
+			return VB2_ERROR_UI_DRAW_FAILURE;
+		}
 		max_text_width = MAX(text_width, max_text_width);
 	}
 
@@ -241,7 +251,7 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 	return VB2_SUCCESS;
 }
 
-vb2_error_t ui_draw_button(const char *image_name,
+vb2_error_t ui_draw_button(const struct ui_menu_item *item,
 			   const char *locale_code,
 			   int32_t x, int32_t y,
 			   int32_t width, int32_t height,
@@ -258,20 +268,33 @@ vb2_error_t ui_draw_button(const char *image_name,
 
 	/* Clear button area */
 	VB2_TRY(ui_draw_rounded_box(x, y, width, height,
-				    bg_color, 0, UI_BUTTON_BORDER_RADIUS,
+				    focused ? &ui_color_button : &ui_color_bg,
+				    0, UI_BUTTON_BORDER_RADIUS,
 				    reverse));
-
-	/* Draw button text */
-	VB2_TRY(ui_get_bitmap(image_name, locale_code, 0, &bitmap));
-	VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x_center, y_center,
-				      UI_SIZE_AUTO, UI_BUTTON_TEXT_HEIGHT,
-				      bg_color, fg_color, flags, reverse));
 
 	/* Draw button borders */
 	VB2_TRY(ui_draw_rounded_box(x, y, width, height,
 				    &ui_color_button_border,
 				    UI_BUTTON_BORDER_THICKNESS,
 				    UI_BUTTON_BORDER_RADIUS, reverse));
+
+	/* Draw button text */
+	if (item->file) {
+		VB2_TRY(ui_get_bitmap(item->file, locale_code, 0, &bitmap));
+		VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x_center, y_center,
+					      UI_SIZE_AUTO,
+					      UI_BUTTON_TEXT_HEIGHT,
+					      bg_color, fg_color,
+					      flags, reverse));
+	} else if (item->text) {
+		VB2_TRY(ui_draw_text(item->text, x_center, y_center,
+				     UI_BUTTON_TEXT_HEIGHT,
+				     bg_color, fg_color,
+				     flags, reverse));
+	} else {
+		UI_ERROR("No button image filename or text\n");
+		return VB2_ERROR_UI_DRAW_FAILURE;
+	}
 
 	return VB2_SUCCESS;
 }
@@ -571,8 +594,10 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 		 * TODO(b/147424699): No need to redraw every button when
 		 * navigating between menu.
 		 */
-		VB2_TRY(ui_draw_button(menu->items[i].file, locale_code,
-				       x, y, button_width, UI_BUTTON_HEIGHT,
+		VB2_TRY(ui_draw_button(&menu->items[i],
+				       locale_code,
+				       x, y,
+				       button_width, UI_BUTTON_HEIGHT,
 				       reverse, state->selected_item == i));
 		y += UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
 	}

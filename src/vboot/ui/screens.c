@@ -19,6 +19,8 @@
 #include <libpayload.h>
 #include <vb2_api.h>
 
+#include "base/list.h"
+#include "boot/payload.h"
 #include "drivers/ec/cros/ec.h"
 #include "vboot/ui.h"
 #include "vboot/util/commonparams.h"
@@ -697,6 +699,7 @@ static const struct ui_menu_item developer_mode_items[] = {
 	[DEVELOPER_MODE_ITEM_RETURN_TO_SECURE] = { "btn_secure_mode.bmp" },
 	{ "btn_int_disk.bmp" },
 	{ "btn_ext_disk.bmp" },
+	{ "btn_alt_bootloader.bmp" },
 	ADVANCED_OPTIONS_ITEM,
 	POWER_OFF_ITEM,
 };
@@ -837,6 +840,131 @@ static const struct ui_screen_info developer_invalid_disk_screen = {
 };
 
 /******************************************************************************/
+/* VB2_SCREEN_DEVELOPER_SELECT_BOOTLOADER */
+
+static const struct ui_menu_item developer_select_bootloader_items[] = {
+	LANGUAGE_SELECT_ITEM,
+};
+
+static vb2_error_t get_bootloader_menu(struct ui_menu *ret_menu)
+{
+	struct altfw_info *node;
+	ListNode *head;
+	uint32_t num_bootloaders = 0;
+	static struct ui_menu_item *items;
+	static struct ui_menu menu;
+	uint32_t i;
+	static const struct ui_menu_item menu_before[] = {
+		LANGUAGE_SELECT_ITEM,
+	};
+	static const struct ui_menu_item menu_after[] = {
+		BACK_ITEM,
+		POWER_OFF_ITEM,
+	};
+
+	*ret_menu = menu;
+
+	/* Cached */
+	if (menu.num_items > 0) {
+		UI_INFO("Cached with %zu item(s)\n", menu.num_items);
+		return VB2_SUCCESS;
+	}
+
+	if (ARRAY_SIZE(developer_select_bootloader_items) >
+	    ARRAY_SIZE(menu_before) + ARRAY_SIZE(menu_after))
+		return VB2_SUCCESS;
+
+	head = payload_get_altfw_list();
+	if (!head) {
+		UI_ERROR("Failed to get altfw list\n");
+		return VB2_SUCCESS;
+	}
+
+	list_for_each(node, *head, list_node) {
+		/* Discount default seqnum=0, since it is duplicated. */
+		if (node->seqnum)
+			num_bootloaders++;
+	}
+
+	menu.num_items = num_bootloaders + ARRAY_SIZE(menu_before) +
+			 ARRAY_SIZE(menu_after);
+	items = malloc(menu.num_items * sizeof(struct ui_menu_item));
+	if (!items) {
+		UI_ERROR("Failed to malloc menu items for bootloaders\n");
+		return VB2_ERROR_UI_MEMORY_ALLOC;
+	}
+
+	/* Copy prefix items to the begin. */
+	memcpy(&items[0], menu_before, sizeof(menu_before));
+
+	/* Copy bootloaders. */
+	i = ARRAY_SIZE(menu_before);
+	list_for_each(node, *head, list_node) {
+		/* Discount default seqnum=0, since it is duplicated. */
+		if (!node->seqnum)
+			continue;
+		UI_INFO("Bootloader: filename=%s, name=%s, "
+			"desc=%s, seqnum=%d\n",
+			node->filename, node->name,
+			node->desc, node->seqnum);
+		const char *name = node->name;
+		if (!name || strlen(name) == 0) {
+			UI_WARN("Failed to get bootloader name with "
+				"seqnum=%d, use filename instead\n",
+				node->seqnum);
+			name = node->filename;
+		}
+		items[i] = (struct ui_menu_item){
+			.text = name,
+		};
+		i++;
+	}
+
+	/* Copy postfix items to the end. */
+	memcpy(&items[i], menu_after, sizeof(menu_after));
+
+	menu.items = items;
+	*ret_menu = menu;
+
+	UI_INFO("Returned with %zu item(s)\n", menu.num_items);
+	return VB2_SUCCESS;
+}
+
+static vb2_error_t draw_developer_select_bootloader(
+	const struct ui_state *state,
+	const struct ui_state *prev_state)
+{
+	struct ui_menu menu;
+	int32_t y;
+	vb2_error_t rv;
+
+	/*
+	 * Call default drawing function to clear the screen if necessary,
+	 * draw the language dropdown header, draw the title and desc lines,
+	 * and draw the footer.
+	 */
+	VB2_TRY(ui_draw_default(state, prev_state));
+
+	/* Draw bootloaders and secondary buttons. */
+	y = UI_MARGIN_TOP + UI_LANG_BOX_HEIGHT + UI_LANG_MARGIN_BOTTOM +
+	    UI_TITLE_TEXT_HEIGHT + UI_TITLE_MARGIN_BOTTOM +
+	    UI_DESC_MARGIN_BOTTOM;
+	VB2_TRY(get_bootloader_menu(&menu));
+	rv = ui_draw_menu_items(&menu, state, prev_state, y);
+
+	return rv;
+}
+
+static const struct ui_screen_info developer_select_bootloader_screen = {
+	.id = VB2_SCREEN_DEVELOPER_SELECT_BOOTLOADER,
+	.icon = UI_ICON_TYPE_NONE,
+	.title = "dev_select_bootloader_title.bmp",
+	.menu = UI_MENU(developer_select_bootloader_items),
+	.draw = draw_developer_select_bootloader,
+	.mesg = "Select an alternate bootloader.",
+};
+
+/******************************************************************************/
 /* VB2_SCREEN_DIAGNOSTICS */
 
 static const char *const diagnostics_desc[] = {
@@ -943,6 +1071,7 @@ static const struct ui_screen_info *const screens[] = {
 	&developer_to_norm_screen,
 	&developer_boot_external_screen,
 	&developer_invalid_disk_screen,
+	&developer_select_bootloader_screen,
 	&diagnostics_screen,
 	&diagnostics_storage_screen,
 	&diagnostics_memory_quick_screen,

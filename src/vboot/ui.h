@@ -242,7 +242,10 @@ enum ui_menu_item_flag {
 
 /* Menu item. */
 struct ui_menu_item {
+	/* Pre-generated bitmap containing button text. */
 	const char *file;
+	/* Button text, drawn with monospace font if 'file' is not specified. */
+	const char *text;
 	/* If UI_MENU_ITEM_TYPE_LANGUAGE, the 'file' field will be ignored. */
 	enum ui_menu_item_type type;
 	/* Icon file for UI_MENU_ITEM_TYPE_SECONDARY only. */
@@ -571,9 +574,11 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 				int32_t *button_width);
 
 /*
- * Draw a button.
+ * Draw a button with image.
  *
- * @param image_name	Image name.
+ * Menu item should specify either .file or .text for button text.
+ *
+ * @param item		Menu item.
  * @param locale_code	Language code of current locale.
  * @param x		x-coordinate of the top-left corner.
  * @param y		y-coordinate of the top-left corner.
@@ -585,7 +590,7 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t ui_draw_button(const char *image_name,
+vb2_error_t ui_draw_button(const struct ui_menu_item *item,
 			   const char *locale_code,
 			   int32_t x, int32_t y,
 			   int32_t width, int32_t height,
