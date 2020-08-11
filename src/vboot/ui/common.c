@@ -35,6 +35,10 @@ static const struct ui_error_item error_map[] = {
 	[VB2_UI_ERROR_FIRMWARE_LOG] = {
 		.body = "Failed to retrieve firmware log.",
 	},
+	[VB2_UI_ERROR_UNTRUSTED_CONFIRMATION] = {
+		.body = "Please use internal keyboard to\n"
+			"confirm."
+	},
 };
 
 static vb2_error_t init_screen(void)
