@@ -45,16 +45,37 @@ endif
 
 HOSTCC = gcc
 HOSTCXX = g++
+HOSTAR = ar
 HOSTCFLAGS :=
 HOSTCXXFLAGS :=
+HOSTARFLAGS :=
+
+UNIT_TEST:=
+ifneq ($(filter %-test %-tests,$(MAKECMDGOALS)),)
+ifneq ($(filter-out %-test %-tests, $(MAKECMDGOALS)),)
+$(error Cannot mix unit-tests targets with other targets)
+endif
+UNIT_TEST:=1
+endif
 
 LIBPAYLOAD_DIR ?= ../libpayload/install/libpayload
+
+# Path for depthcharge in coreboot/payloads
+VB_SOURCE = ../../3rdparty/vboot
+ifeq ($(wildcard $(VB_SOURCE)),)
+# Path for depthcharge in Chromium OS SDK src/platform
+VB_SOURCE = ../vboot_reference
+endif
+ifeq ($(wildcard $(VB_SOURCE)),)
+$(error Please set VB_SOURCE= to the vboot source directory!)
+endif
 
 # Run genconfig before including the config
 $(shell [ -d "$(obj)" ] || mkdir -p "$(obj)")
 
 run_kconfig_tool = KCONFIG_CONFIG="$(KCONFIG_CONFIG)" $(1)
 
+ifneq ($(UNIT_TEST),1)
 _ := $(shell $(call run_kconfig_tool, \
 	genconfig --config-out "$(KCONFIG_CONFIG_OUT)" "$(KCONFIG_FILE)"))
 _ := $(shell $(call run_kconfig_tool, \
@@ -124,6 +145,8 @@ else
 CFLAGS += -Os
 endif
 
+endif
+
 all:
 	@echo  'You must specify one of the following targets to build:'
 	@echo
@@ -178,7 +201,12 @@ evaluate_subdirs= \
 
 # collect all object files eligible for building
 subdirs:=$(src)
+
+ifneq ($(UNIT_TEST),1)
 $(eval $(call evaluate_subdirs))
+else
+include tests/Makefile.inc
+endif
 
 # Eliminate duplicate mentions of source files in a class
 $(foreach class,$(classes),$(eval $(class)-srcs:=$(sort $($(class)-srcs))))
@@ -199,7 +227,9 @@ printall:
 	@$(foreach class,$(special-classes),echo $(class):='$($(class))'; )
 
 ifndef NOMKDIR
+ifneq ($(alldirs),)
 $(shell mkdir -p $(alldirs))
+endif
 endif
 
 # macro to define template macros that are used by use_template macro
