@@ -32,6 +32,10 @@ static const struct ui_error_item error_map[] = {
 	[VB2_UI_ERROR_DEBUG_LOG] = {
 		.body = "Failed to retrieve debug info.",
 	},
+	[VB2_UI_ERROR_UNTRUSTED_CONFIRMATION] = {
+		.body = "Please use internal keyboard to\n"
+			"confirm."
+	},
 };
 
 static vb2_error_t init_screen(void)
