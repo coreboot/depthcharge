@@ -268,6 +268,9 @@ Boot from internal disk
       <message name="btn_ext_disk" desc="Button for booting into the external disk.">
 Boot from external disk
       </message>
+      <message name="btn_alt_bootloader" desc="Button for selecting an alternate bootloader.">
+Select alternate bootloader
+      </message>
       <message name="dev_to_norm_title" desc="Title for screen for transition from developer to normal mode.">
 Confirm returning to secure mode
       </message>
@@ -291,6 +294,9 @@ Make sure your external disk has a valid Chrome OS image, and re-insert the disk
       </message>
       <message name="btn_launch_diag" desc="String for the button to enter diagnostics.">
 Launch diagnostics
+      </message>
+      <message name="dev_select_bootloader_title" desc="Title for screen to select alternate bootloader.">
+Select alternate bootloader
       </message>
       <message name="btn_next" desc="String for the next button.">
 Next
