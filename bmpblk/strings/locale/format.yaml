@@ -85,7 +85,6 @@ inputs:
   - dev_select_bootloader_title
   # diagnostics
   - btn_launch_diag
-  - btn_launch_diag_focus
   # generic buttons
   - btn_next
   - btn_back
@@ -118,18 +117,13 @@ files:
   # advanced options
   adv_options_title:
   btn_dev_mode:
-  btn_dev_mode_focus: [btn_dev_mode]
   btn_debug_info:
-  btn_debug_info_focus: [btn_debug_info]
   btn_firmware_log:
-  btn_firmware_log_focus: [btn_firmware_log]
   # debug info and firmware log
   debug_info_title:
   firmware_log_title:
   btn_page_up:
-  btn_page_up_focus: [btn_page_up]
   btn_page_down:
-  btn_page_down_focus: [btn_page_down]
   # recovery screen
   rec_sel_title:
   rec_sel_desc0:
@@ -138,9 +132,7 @@ files:
   rec_sel_desc1_no_phone:
   rec_sel_desc1_no_phone_no_sd:
   btn_rec_by_phone:
-  btn_rec_by_phone_focus: [btn_rec_by_phone]
   btn_rec_by_disk:
-  btn_rec_by_disk_focus: [btn_rec_by_disk]
   # recovery - common
   rec_step1_title:
   rec_step1_desc2:
@@ -175,13 +167,9 @@ files:
   dev_desc0:
   dev_desc1:
   btn_secure_mode:
-  btn_secure_mode_focus: [btn_secure_mode]
   btn_int_disk:
-  btn_int_disk_focus: [btn_int_disk]
   btn_ext_disk:
-  btn_ext_disk_focus: [btn_ext_disk]
   btn_alt_bootloader:
-  btn_alt_bootloader_focus: [btn_alt_bootloader]
   # to-norm screen
   dev_to_norm_title:
   dev_to_norm_desc0:
@@ -195,17 +183,11 @@ files:
   dev_select_bootloader_title:
   # generic buttons
   btn_next:
-  btn_next_focus: [btn_next]
   btn_back:
-  btn_back_focus: [btn_back]
   btn_confirm:
-  btn_confirm_focus: [btn_confirm]
   btn_cancel:
-  btn_cancel_focus: [btn_cancel]
   btn_adv_options:
-  btn_adv_options_focus: [btn_adv_options]
   btn_power_off:
-  btn_power_off_focus: [btn_power_off]
   # footer
   model:
   help_center:
@@ -218,15 +200,13 @@ files:
 diagnostic_files:
   # diagnostics
   btn_launch_diag:
-  btn_launch_diag_focus: [btn_launch_diag]
 
 aliases:
   - &base_color '--color=CCCCCC --bgcolor=202124'
   - &dark_color '--color=9AA0A6 --bgcolor=202124'
-  - &button_color '--color=8AB4F8 --bgcolor=202124'
-  - &button_focused_color '--color=202124 --bgcolor=8AB4F8'
-  - &link_color '--color=8AB4F8 --bgcolor=202124'
-  - &link_focused_color '--color=8AB4F8 --bgcolor=2a2f39'
+  # The colors of buttons and links will be adjusted at runtime.
+  - &button_color '--color=FFFFFF --bgcolor=000000'
+  - &link_color '--color=FFFFFF --bgcolor=000000'
 
 styles:
   # pre-generated
@@ -243,18 +223,13 @@ styles:
   # advanced options
   adv_options_title: *base_color
   btn_dev_mode: *button_color
-  btn_dev_mode_focus: *button_focused_color
   btn_debug_info: *button_color
-  btn_debug_info_focus: *button_focused_color
   btn_firmware_log: *button_color
-  btn_firmware_log_focus: *button_focused_color
   # debug info and firmware log
   debug_info_title: *base_color
   firmware_log_title: *base_color
   btn_page_up: *button_color
-  btn_page_up_focus: *button_focused_color
   btn_page_down: *button_color
-  btn_page_down_focus: *button_focused_color
   # recovery screen
   rec_sel_title: *base_color
   rec_sel_desc0: *base_color
@@ -263,9 +238,7 @@ styles:
   rec_sel_desc1_no_phone: *base_color
   rec_sel_desc1_no_phone_no_sd: *base_color
   btn_rec_by_phone: *button_color
-  btn_rec_by_phone_focus: *button_focused_color
   btn_rec_by_disk: *button_color
-  btn_rec_by_disk_focus: *button_focused_color
   # recovery - common
   rec_step1_title: *base_color
   rec_step1_desc2: *base_color
@@ -303,13 +276,9 @@ styles:
   dev_desc0: *base_color
   dev_desc1: *base_color
   btn_secure_mode: *button_color
-  btn_secure_mode_focus: *button_focused_color
   btn_int_disk: *button_color
-  btn_int_disk_focus: *button_focused_color
   btn_ext_disk: *button_color
-  btn_ext_disk_focus: *button_focused_color
   btn_alt_bootloader: *button_color
-  btn_alt_bootloader_focus: *button_focused_color
   # to-norm screen
   dev_to_norm_title: *base_color
   dev_to_norm_desc0: *base_color
@@ -323,20 +292,13 @@ styles:
   dev_select_bootloader_title: *base_color
   # diagnostics
   btn_launch_diag: *link_color
-  btn_launch_diag_focus: *link_focused_color
   # generic buttons
   btn_next: *button_color
-  btn_next_focus: *button_focused_color
   btn_back: *button_color
-  btn_back_focus: *button_focused_color
   btn_confirm: *button_color
-  btn_confirm_focus: *button_focused_color
   btn_cancel: *button_color
-  btn_cancel_focus: *button_focused_color
   btn_adv_options: *link_color
-  btn_adv_options_focus: *link_focused_color
   btn_power_off: *link_color
-  btn_power_off_focus: *link_focused_color
   # footer
   model: *dark_color
   help_center: *dark_color
