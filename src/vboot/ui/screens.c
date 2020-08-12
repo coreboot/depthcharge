@@ -504,7 +504,7 @@ static const struct ui_screen_info recovery_phone_step2_screen = {
 	.mesg = "Download the Chrome OS recovery app on your Android phone\n"
 		"by plugging in your phone or by scanning the QR code on the\n"
 		"screen. Once you launch the app, connect your phone to your\n"
-		"device and recovery will start automatically."
+		"device and recovery will start automatically.",
 };
 
 /******************************************************************************/
@@ -686,7 +686,7 @@ static vb2_error_t draw_developer_mode_desc(
 	      (1 << DEVELOPER_MODE_ITEM_RETURN_TO_SECURE))) {
 		VB2_TRY(ui_get_bitmap("dev_desc0.bmp", locale_code, 0,
 				      &bitmap));
-                h = UI_DESC_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
+		h = UI_DESC_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
 		VB2_TRY(ui_draw_bitmap(&bitmap, x, *y, w, h, flags, reverse));
 		*y += h + UI_DESC_TEXT_LINE_SPACING;
 	}
@@ -696,16 +696,15 @@ static vb2_error_t draw_developer_mode_desc(
 	 * After the timer in developer mode is disabled, this description no
 	 * longer makes sense, so hide it.
 	 */
-        VB2_TRY(ui_get_bitmap("dev_desc1.bmp", locale_code, 0,
-                              &bitmap));
-        h = UI_DESC_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
-	if (state->timer_disabled) {
-		/* Clear previously drawn line. */
+	VB2_TRY(ui_get_bitmap("dev_desc1.bmp", locale_code, 0,
+			      &bitmap));
+	h = UI_DESC_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
+	/* Either clear the desc line, or draw it again. */
+	if (state->timer_disabled)
 		VB2_TRY(ui_draw_box(x, *y, UI_SCALE - x, h, &ui_color_bg,
 				    reverse));
-	} else {
+	else
 		VB2_TRY(ui_draw_bitmap(&bitmap, x, *y, w, h, flags, reverse));
-	}
 	*y += h;
 
 	return VB2_SUCCESS;
@@ -772,7 +771,7 @@ static const struct ui_screen_info developer_boot_external_screen = {
 	.menu = UI_MENU(developer_boot_external_items),
 	.mesg = "Plug in your external disk\n"
 		"If your external disk is ready with a Chrome OS image,\n"
-		"plug it into the device to boot."
+		"plug it into the device to boot.",
 };
 
 /******************************************************************************/
@@ -796,7 +795,7 @@ static const struct ui_screen_info developer_invalid_disk_screen = {
 	.menu = UI_MENU(developer_invalid_disk_items),
 	.mesg = "No valid image detected\n"
 		"Make sure your external disk has a valid Chrome OS image,\n"
-		"and re-insert the disk when ready."
+		"and re-insert the disk when ready.",
 };
 
 /******************************************************************************/
