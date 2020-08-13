@@ -216,7 +216,6 @@ diagnostic_files:
 aliases:
   - &base_color '--color=CCCCCC --bgcolor=202124'
   - &dark_color '--color=9AA0A6 --bgcolor=202124'
-  - &dark_color_left_align '--align=left --color=9AA0A6 --bgcolor=202124'
   - &button_color '--color=8AB4F8 --bgcolor=202124'
   - &button_focused_color '--color=202124 --bgcolor=8AB4F8'
   - &link_color '--color=8AB4F8 --bgcolor=202124'
@@ -331,10 +330,10 @@ styles:
   model: *dark_color
   help_center: *dark_color
   rec_url: *dark_color
-  navigate0: *dark_color_left_align
-  navigate1: *dark_color_left_align
-  navigate0_tablet: *dark_color_left_align
-  navigate1_tablet: *dark_color_left_align
+  navigate0: *dark_color
+  navigate1: *dark_color
+  navigate0_tablet: *dark_color
+  navigate1_tablet: *dark_color
 
 fonts:
   _DEFAULT_: 'Roboto'
