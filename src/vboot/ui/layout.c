@@ -567,7 +567,8 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 	}
 
 	/* Warning if we are in recovery and using dev signed keys. */
-	VB2_TRY(ui_draw_dev_signed_warning());
+	if (screen->id != VB2_SCREEN_LANGUAGE_SELECT)
+		VB2_TRY(ui_draw_dev_signed_warning());
 
 	/* Language dropdown header */
 	if (menu->num_items > 0 &&
