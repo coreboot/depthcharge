@@ -201,9 +201,6 @@ atlas:
   # 3840x2160, boots recovery image on USB ports.
   sdcard:   False
 
-octopus:
-  # 1366x768, boots recovery image on USB ports or SD card.
-
 nocturne:
   # 2400x1600, boots recovery image on USB ports.
 
