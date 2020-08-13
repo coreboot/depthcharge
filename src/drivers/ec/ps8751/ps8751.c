@@ -128,6 +128,8 @@
 
 #define PARADE_VENDOR_ID		0x1DA0
 #define PARADE_PS8751_PRODUCT_ID	0x8751
+#define PARADE_PS8755_PRODUCT_ID	0x8755
+#define PARADE_PS8805_BROKEN_PRODUCT_ID	0x8803
 #define PARADE_PS8805_PRODUCT_ID	0x8805
 
 enum ps8751_device_state {
@@ -527,6 +529,7 @@ static int __must_check ps8751_spi_flash_lock(Ps8751 *me)
 		wp_reg = PS8751_P1_SPI_WP;
 		wp_en = PS8751_P1_SPI_WP_EN;
 		break;
+	case CHIP_PS8755:
 	case CHIP_PS8805:
 		slave = SLAVE2;
 		wp_reg = PS8805_P2_SPI_WP;
@@ -565,6 +568,7 @@ static int __must_check ps8751_spi_flash_unlock(Ps8751 *me)
 		slave = SLAVE1;
 		wp_reg = PS8751_P1_SPI_WP;
 		break;
+	case CHIP_PS8755:
 	case CHIP_PS8805:
 		slave = SLAVE2;
 		wp_reg = PS8805_P2_SPI_WP;
@@ -718,9 +722,19 @@ static int __must_check ps8751_get_hw_version(Ps8751 *me, uint8_t *version)
 	return 0;
 }
 
-static int is_corrupted_tcpc(const struct ec_response_pd_chip_info *const info)
+static int is_corrupted_tcpc(const struct ec_response_pd_chip_info *const info,
+			     const enum ParadeChipType chip)
 {
-	return info->vendor_id == 0 && info->product_id == 0;
+	switch (chip) {
+	case CHIP_PS8751:
+		return info->vendor_id == 0 && info->product_id == 0;
+	case CHIP_PS8755:
+	case CHIP_PS8805:
+		return info->vendor_id == PARADE_VENDOR_ID &&
+		       info->product_id == PARADE_PS8805_BROKEN_PRODUCT_ID;
+	default:
+		return 0;
+	}
 }
 
 static int is_parade_chip(const struct ec_response_pd_chip_info *const info,
@@ -732,6 +746,8 @@ static int is_parade_chip(const struct ec_response_pd_chip_info *const info,
 	switch (chip) {
 	case CHIP_PS8751:
 		return info->product_id == PARADE_PS8751_PRODUCT_ID;
+	case CHIP_PS8755:
+		return info->product_id == PARADE_PS8755_PRODUCT_ID;
 	case CHIP_PS8805:
 		return info->product_id == PARADE_PS8805_PRODUCT_ID;
 	default:
@@ -773,7 +789,7 @@ static enum ps8751_device_state __must_check ps8751_capture_device_id(
 	printf("%s: vendor 0x%04x product 0x%04x "
 	       "device 0x%04x fw_rev 0x%02x\n",
 	       me->chip_name, vendor, product, device, fw_rev);
-	if (is_corrupted_tcpc(&r)) {
+	if (is_corrupted_tcpc(&r, me->chip_type)) {
 		/* vendor 0 likely due to "missing/corrupted" firmware */
 		printf("%s: MCU must be down!\n", me->chip_name);
 	} else if (!is_parade_chip(&r, me->chip_type)) {
@@ -824,6 +840,7 @@ static int __must_check ps8751_is_fw_compatible(Ps8751 *me, const uint8_t *fw)
 	case CHIP_PS8751:
 		fw_chip_version = ps8751_blob_hw_version(fw);
 		break;
+	case CHIP_PS8755:
 	case CHIP_PS8805:
 		fw_chip_version = me->blob_hw_version;
 		break;
@@ -1373,6 +1390,13 @@ static const VbootAuxFwOps ps8751_fw_ops = {
 	.update_image = ps8751_update_image,
 };
 
+static const VbootAuxFwOps ps8755_fw_ops = {
+	.fw_image_name = "ps8755_a2.bin",
+	.fw_hash_name = "ps8755_a2.hash",
+	.check_hash = ps8751_check_hash,
+	.update_image = ps8751_update_image,
+};
+
 static const VbootAuxFwOps ps8805_fw_ops = {
 	.fw_image_name = "ps8805_a2.bin",
 	.fw_hash_name = "ps8805_a2.hash",
@@ -1393,6 +1417,19 @@ Ps8751 *new_ps8751(CrosECTunnelI2c *bus, int ec_pd_id)
 	return me;
 }
 
+Ps8751 *new_ps8755(CrosECTunnelI2c *bus, int ec_pd_id)
+{
+	Ps8751 *me = xzalloc(sizeof(*me));
+
+	me->bus = bus;
+	me->ec_pd_id = ec_pd_id;
+	me->fw_ops = ps8755_fw_ops;
+	me->chip_type = CHIP_PS8755;
+	snprintf(me->chip_name, sizeof(me->chip_name), "ps8755.%d", ec_pd_id);
+
+	return me;
+}
+
 Ps8751 *new_ps8805(CrosECTunnelI2c *bus, int ec_pd_id)
 {
 	Ps8751 *me = xzalloc(sizeof(*me));
@@ -1406,10 +1443,24 @@ Ps8751 *new_ps8805(CrosECTunnelI2c *bus, int ec_pd_id)
 	return me;
 }
 
-static const VbootAuxFwOps *new_ps8751_from_chip_info(
-			struct ec_response_pd_chip_info *r, uint8_t ec_pd_id)
+static const VbootAuxFwOps *new_ps8xxx_from_chip_info(
+	struct ec_response_pd_chip_info *r, uint8_t ec_pd_id)
 {
-	Ps8751 *ps8751 = new_ps8751(NULL, ec_pd_id);
+	Ps8751 *ps8751;
+
+	switch (r->product_id) {
+	case PARADE_PS8751_PRODUCT_ID:
+		ps8751 = new_ps8751(NULL, ec_pd_id);
+		break;
+	case PARADE_PS8755_PRODUCT_ID:
+		ps8751 = new_ps8755(NULL, ec_pd_id);
+		break;
+	case PARADE_PS8805_PRODUCT_ID:
+		ps8751 = new_ps8805(NULL, ec_pd_id);
+		break;
+	default:
+		return NULL;
+	}
 
 	ps8751->chip.vendor = r->vendor_id;
 	ps8751->chip.product = r->product_id;
@@ -1421,16 +1472,32 @@ static const VbootAuxFwOps *new_ps8751_from_chip_info(
 	return &ps8751->fw_ops;
 }
 
-static CrosEcAuxFwChipInfo aux_fw_chip_info = {
+static CrosEcAuxFwChipInfo aux_fw_ps8751_info = {
 	.vid = PARADE_VENDOR_ID,
 	.pid = PARADE_PS8751_PRODUCT_ID,
-	.new_chip_aux_fw_ops = new_ps8751_from_chip_info,
+	.new_chip_aux_fw_ops = new_ps8xxx_from_chip_info,
+};
+
+static CrosEcAuxFwChipInfo aux_fw_ps8755_info = {
+	.vid = PARADE_VENDOR_ID,
+	.pid = PARADE_PS8755_PRODUCT_ID,
+	.new_chip_aux_fw_ops = new_ps8xxx_from_chip_info,
+};
+
+static CrosEcAuxFwChipInfo aux_fw_ps8805_info = {
+	.vid = PARADE_VENDOR_ID,
+	.pid = PARADE_PS8805_PRODUCT_ID,
+	.new_chip_aux_fw_ops = new_ps8xxx_from_chip_info,
 };
 
 static int ps8751_register(void)
 {
-	list_insert_after(&aux_fw_chip_info.list_node,
-					&ec_aux_fw_chip_list);
+	list_insert_after(&aux_fw_ps8751_info.list_node,
+			  &ec_aux_fw_chip_list);
+	list_insert_after(&aux_fw_ps8755_info.list_node,
+			  &ec_aux_fw_chip_list);
+	list_insert_after(&aux_fw_ps8805_info.list_node,
+			  &ec_aux_fw_chip_list);
 	return 0;
 }
 
