@@ -26,6 +26,7 @@ typedef enum  ParadeChipType {
 	CHIP_PS8751,
 	CHIP_PS8805,
 	CHIP_PS8815,
+	CHIP_PS8705,
 } ParadeChipType;
 
 typedef struct Ps8751
