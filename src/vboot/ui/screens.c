@@ -92,14 +92,31 @@ static vb2_error_t draw_log_desc(const struct ui_state *state,
 				 const struct ui_state *prev_state,
 				 int32_t *y)
 {
+	static char *prev_buf;
+	static size_t prev_buf_len;
+	static int32_t prev_y;
 	char *buf;
-	vb2_error_t rv;
+	size_t buf_len;
+	vb2_error_t rv = VB2_SUCCESS;
 
 	buf = ui_log_get_page_content(state->log, state->current_page);
 	if (!buf)
 		return VB2_ERROR_UI_LOG_INIT;
-	rv = ui_draw_log_textbox(buf, y);
-	free(buf);
+	buf_len = strlen(buf);
+	/* Redraw only if screen or text changed. */
+	if (!prev_state || state->screen->id != prev_state->screen->id ||
+	    state->error_code != prev_state->error_code ||
+	    !prev_buf || buf_len != prev_buf_len ||
+	    strncmp(buf, prev_buf, buf_len))
+		rv = ui_draw_log_textbox(buf, y);
+	else
+		*y = prev_y;
+
+	if (prev_buf)
+		free(prev_buf);
+	prev_buf = buf;
+	prev_buf_len = buf_len;
+	prev_y = *y;
 
 	return rv;
 }
