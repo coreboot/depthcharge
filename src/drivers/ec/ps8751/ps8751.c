@@ -144,6 +144,7 @@
 
 #define PARADE_VENDOR_ID		0x1DA0
 #define PARADE_PS8751_PRODUCT_ID	0x8751
+#define PARADE_PS8755_PRODUCT_ID	0x8755
 #define PARADE_PS8705_PRODUCT_ID	0x8705
 #define PARADE_PS8805_BROKEN_PRODUCT_ID	0x8803
 #define PARADE_PS8805_PRODUCT_ID	0x8805
@@ -294,6 +295,7 @@ static int __must_check ps8751_wake_i2c(Ps8751 *me)
 
 	switch (me->chip_type) {
 	case CHIP_PS8751:
+	case CHIP_PS8755:
 	case CHIP_PS8705:
 	case CHIP_PS8805:
 		debug_reg = PS8751_P3_I2C_DEBUG;
@@ -342,6 +344,7 @@ static int __must_check ps8751_hide_i2c(Ps8751 *me)
 
 	switch (me->chip_type) {
 	case CHIP_PS8751:
+	case CHIP_PS8755:
 	case CHIP_PS8705:
 	case CHIP_PS8805:
 		debug_reg = PS8751_P3_I2C_DEBUG;
@@ -586,6 +589,7 @@ static int __must_check ps8751_spi_flash_lock(Ps8751 *me)
 		wp_en = PS8751_P1_SPI_WP_EN;
 		break;
 	case CHIP_PS8705:
+	case CHIP_PS8755:
 	case CHIP_PS8805:
 		page = PAGE_2;
 		wp_reg = PS8805_P2_SPI_WP;
@@ -633,6 +637,7 @@ static int __must_check ps8751_spi_flash_unlock(Ps8751 *me)
 		wp_dis = PS8751_P1_SPI_WP_DIS;
 		break;
 	case CHIP_PS8705:
+	case CHIP_PS8755:
 	case CHIP_PS8805:
 		page = PAGE_2;
 		wp_reg = PS8805_P2_SPI_WP;
@@ -802,6 +807,7 @@ static int is_corrupted_tcpc(const struct ec_response_pd_chip_info *const info,
 	case CHIP_PS8751:
 		return info->vendor_id == 0 && info->product_id == 0;
 	case CHIP_PS8705:
+	case CHIP_PS8755:
 	case CHIP_PS8805:
 		return info->vendor_id == PARADE_VENDOR_ID &&
 		       info->product_id == PARADE_PS8805_BROKEN_PRODUCT_ID;
@@ -819,6 +825,8 @@ static int is_parade_chip(const struct ec_response_pd_chip_info *const info,
 	switch (chip) {
 	case CHIP_PS8751:
 		return info->product_id == PARADE_PS8751_PRODUCT_ID;
+	case CHIP_PS8755:
+		return info->product_id == PARADE_PS8755_PRODUCT_ID;
 	case CHIP_PS8705:
 		return info->product_id == PARADE_PS8705_PRODUCT_ID;
 	case CHIP_PS8805:
@@ -916,6 +924,7 @@ static int __must_check ps8751_is_fw_compatible(Ps8751 *me, const uint8_t *fw)
 		fw_chip_version = ps8751_blob_hw_version(fw);
 		break;
 	case CHIP_PS8705:
+	case CHIP_PS8755:
 	case CHIP_PS8805:
 		fw_chip_version = me->blob_hw_version;
 		break;
@@ -1494,6 +1503,13 @@ static const VbootAuxfwOps ps8751_fw_canary_ops = {
 	.update_image = ps8751_update_image,
 };
 
+static const VbootAuxfwOps ps8755_fw_ops = {
+	.fw_image_name = "ps8755_a2.bin",
+	.fw_hash_name = "ps8755_a2.hash",
+	.check_hash = ps8751_check_hash,
+	.update_image = ps8751_update_image,
+};
+
 static const VbootAuxfwOps ps8705_fw_ops = {
 	.fw_image_name = "ps8705_a2.bin",
 	.fw_hash_name = "ps8705_a2.hash",
@@ -1544,6 +1560,19 @@ Ps8751 *new_ps8751_canary(CrosECTunnelI2c *bus, int ec_pd_id)
 	me->fw_ops = ps8751_fw_canary_ops;
 	me->chip_type = CHIP_PS8751;
 	snprintf(me->chip_name, sizeof(me->chip_name), "ps8751.%d", ec_pd_id);
+
+	return me;
+}
+
+Ps8751 *new_ps8755(CrosECTunnelI2c *bus, int ec_pd_id)
+{
+	Ps8751 *me = xzalloc(sizeof(*me));
+
+	me->bus = bus;
+	me->ec_pd_id = ec_pd_id;
+	me->fw_ops = ps8755_fw_ops;
+	me->chip_type = CHIP_PS8755;
+	snprintf(me->chip_name, sizeof(me->chip_name), "ps8755.%d", ec_pd_id);
 
 	return me;
 }
@@ -1607,9 +1636,11 @@ static const VbootAuxfwOps *new_ps8xxx_from_chip_info(
 	case PARADE_PS8751_PRODUCT_ID:
 		ps8751 = new_ps8751(NULL, ec_pd_id);
 		break;
+	case PARADE_PS8755_PRODUCT_ID:
+		ps8751 = new_ps8755(NULL, ec_pd_id);
+		break;
 	case PARADE_PS8705_PRODUCT_ID:
 		ps8751 = new_ps8705(NULL, ec_pd_id);
-		break;
 	case PARADE_PS8805_PRODUCT_ID:
 		ps8751 = new_ps8805(NULL, ec_pd_id);
 		break;
@@ -1644,6 +1675,12 @@ static CrosEcAuxfwChipInfo aux_fw_ps8751_info = {
 	.new_chip_aux_fw_ops = new_ps8xxx_from_chip_info,
 };
 
+static CrosEcAuxfwChipInfo aux_fw_ps8755_info = {
+	.vid = PARADE_VENDOR_ID,
+	.pid = PARADE_PS8755_PRODUCT_ID,
+	.new_chip_aux_fw_ops = new_ps8xxx_from_chip_info,
+};
+
 static CrosEcAuxfwChipInfo aux_fw_ps8705_info = {
 	.vid = PARADE_VENDOR_ID,
 	.pid = PARADE_PS8705_PRODUCT_ID,
@@ -1665,6 +1702,8 @@ static CrosEcAuxfwChipInfo aux_fw_ps8815_info = {
 static int ps8751_register(void)
 {
 	list_insert_after(&aux_fw_ps8751_info.list_node,
+			  &ec_aux_fw_chip_list);
+	list_insert_after(&aux_fw_ps8755_info.list_node,
 			  &ec_aux_fw_chip_list);
 	list_insert_after(&aux_fw_ps8705_info.list_node,
 			  &ec_aux_fw_chip_list);
