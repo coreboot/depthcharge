@@ -22,8 +22,8 @@
 #include "base/list.h"
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/flash/fast_spi.h"
 #include "drivers/flash/flash.h"
-#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -75,15 +75,13 @@ static void puff_setup_tpm(void)
 
 static void puff_setup_flash(void)
 {
-	/* Flash is mapped at the end of 4GiB */
-	uintptr_t flash_start;
-	uint32_t flash_size = lib_sysinfo.spi_flash.size;
-	MemMappedFlash *flash;
+	FastSpiFlash *flash;
 
-	assert(flash_size != 0);
+	uintptr_t mmio_base = pci_read_config32(PCI_DEV(0, 0x1f, 5),
+						PCI_BASE_ADDRESS_0);
+	mmio_base &= PCI_BASE_ADDRESS_MEM_MASK;
 
-	flash_start = 4ULL * GiB - flash_size;
-	flash = new_mem_mapped_flash(flash_start, flash_size);
+	flash = new_fast_spi_flash(mmio_base);
 	flash_set_ops(&flash->ops);
 }
 
