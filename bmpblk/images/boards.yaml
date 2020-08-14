@@ -33,7 +33,7 @@ _DEFAULT_:
   panel:       []
   sdcard:      True
   bad_usb3:    False
-  text_colors: 4
+  text_colors: 3
   locales:     [en, es-419, pt-BR, fr, es, pt-PT, ca, it, de,
                 el, nl, da, nb, sv, fi, et, lv, lt, ru, pl, cs, sk, hu, sl, sr, hr, bg, ro,
                 uk, tr, he, ar, fa, hi, th, ms, vi, id, fil, zh-CN, zh-TW, ko, ja,
@@ -231,17 +231,17 @@ flapjack,kukui:
 volteer:
   # 3840x2160, boots recovery image on USB ports.
   screen:   [1280, 720]  # Flash size limited - resized from native resolution.
-  text_colors: 7  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
+  text_colors: 5  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
   sdcard:   False
 
 zork:
   # 1920x1080, boots recovery image on any SD card or USB ports.
-  screen:   [854, 480]  # Flash size limited - resized from native resolution.
+  screen:   [800, 450]  # Flash size limited - resized from native resolution.
   text_colors: 4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 dedede:
   # 2400x1600, boots recovery image on USB ports.
-  screen:   [854, 480]  # Flash size limited - resized from native resolution.
+  screen:   [800, 450]  # Flash size limited - resized from native resolution.
   text_colors: 4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 jacuzzi:
