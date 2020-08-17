@@ -63,6 +63,7 @@
 #define GL9750S_PCI_DID		0x9750
 
 /* I2S Beep GPIOs */
+#define I2S_BCLK_GPIO		139
 #define I2S_LRCLK_GPIO		8
 #define I2S_DATA_GPIO		135
 #define EN_SPKR			91
@@ -197,15 +198,17 @@ static void audio_setup(CrosEc *cros_ec)
 		return;
 	}
 
+	KernGpio *i2s_bclk = new_kern_fch_gpio_input(I2S_BCLK_GPIO);
 	KernGpio *i2s_lrclk = new_kern_fch_gpio_input(I2S_LRCLK_GPIO);
 	KernGpio *i2s2_data = new_kern_fch_gpio_output(I2S_DATA_GPIO, 0);
 	GpioI2s *i2s = new_gpio_i2s(
-			NULL,			/* Use RT5682 to give clks */
+			&i2s_bclk->ops,		/* Use RT5682 to give clks */
 			&i2s_lrclk->ops,	/* I2S Frame Sync GPIO */
 			&i2s2_data->ops,	/* I2S Data GPIO */
 			8000,			/* Sample rate */
 			2,			/* Channels */
-			0x1FFF);		/* Volume */
+			0x1FFF,			/* Volume */
+			1);			/* BCLK sync */
 	SoundRoute *sound_route = new_sound_route(&i2s->ops);
 
 	/*

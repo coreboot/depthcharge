@@ -154,7 +154,8 @@ static void audio_setup(void)
 			&i2s2_data->ops,	/* I2S Data GPIO */
 			24000,			/* Sample rate, measured */
 			2,			/* Channels */
-			0x1FFF);		/* Volume */
+			0x1FFF,			/* Volume */
+			0);			/* BCLK sync */
 	SoundRoute *sound_route = new_sound_route(&i2s->ops);
 
 	/*

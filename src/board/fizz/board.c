@@ -163,7 +163,8 @@ static int board_setup(void)
 			&i2s2_txd->ops,     /* I2S Data GPIO */
 			16000,              /* Sample rate */
 			2,                  /* Channels */
-			0x1FFF);            /* Volume */
+			0x1FFF,             /* Volume */
+			0);                 /* BCLK sync */
 		SoundRoute *sound = new_sound_route(&i2s->ops);
 		board_audio_init(sound);
 		sound_set_ops(&sound->ops);

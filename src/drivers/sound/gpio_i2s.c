@@ -13,6 +13,7 @@
  */
 
 #include <libpayload.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <sysinfo.h>
 
@@ -65,11 +66,15 @@ static void gpio_i2s_sync_send_frame(GpioI2s *i2s, int channel_select,
 	while (gpio_get(i2s->sfrm_gpio) != channel_select && timeout--)
 		continue;
 
-	/* bit-bang out data word as fast as possible */
-	for (int i = 15; i >= 0; i--) {
-		int val = !!(frame & (1 << i));
-		if (i == 15 || val != !!(frame & (1 << (i + 1))))
-			gpio_set(i2s->data_gpio, val);
+	/*
+	 * Only consider the bits larger than 1 << 7 to avoid missing
+	 * next lrclk cycle.
+	 */
+	for (int i = 15; i >= 8; i--) {
+		timeout = 200;
+		while(!gpio_get(i2s->bclk_gpio) && timeout--)
+			continue;
+		gpio_set(i2s->data_gpio, !!(frame & (1 << i)));
 	}
 }
 
@@ -124,7 +129,7 @@ static int gpio_i2s_set_volume(struct SoundOps *me, uint32_t volume)
 
 GpioI2s *new_gpio_i2s(GpioOps *bclk_gpio, GpioOps *sfrm_gpio,
 		      GpioOps *data_gpio, uint16_t sample_rate,
-		      uint8_t channels, int16_t volume)
+		      uint8_t channels, int16_t volume, bool sync)
 {
 	GpioI2s *i2s = xzalloc(sizeof(*i2s));
 
@@ -138,7 +143,7 @@ GpioI2s *new_gpio_i2s(GpioOps *bclk_gpio, GpioOps *sfrm_gpio,
 	i2s->channels		= channels;
 	i2s->volume		= volume;
 
-	if (i2s->bclk_gpio)
+	if (!sync)
 		i2s->send = &gpio_i2s_send;
 	else
 		i2s->send = &gpio_i2s_sync_send_data;
