@@ -21,6 +21,8 @@ import os
 import shutil
 import subprocess
 import sys
+import re
+from xml.etree import ElementTree
 
 from PIL import Image
 import yaml
@@ -361,19 +363,25 @@ class Converter(object):
 
       return (dim_width, dim_height)
 
+  def _get_svg_height(self, svg_file):
+    tree = ElementTree.parse(svg_file)
+    height = tree.getroot().attrib['height']
+    m = re.match('([0-9]+)pt', height)
+    if not m:
+      raise BuildImageError('Cannot get height from %s' % svg_file)
+    return int(m.group(1))
+
   def get_num_lines(self, file, one_line_dir):
     """Get the number of lines of text in |file|."""
     name, ext = os.path.splitext(os.path.basename(file))
-    png_name = name + '.png'
-    png_file = os.path.join(os.path.dirname(file), png_name)
-    one_line_png_file = os.path.join(one_line_dir, png_name)
-    # The number of lines id determined by comparing the height of |png_file|
-    # with |one_line_png_file|, where the latter is generated without the
-    # '--width' option passed to pango-view.
-    with Image.open(png_file) as image:
-      height = image.size[1]
-    with Image.open(one_line_png_file) as image:
-      line_height = image.size[1]
+    svg_name = name + '.svg'
+    multi_line_file = os.path.join(os.path.dirname(file), svg_name)
+    one_line_file = os.path.join(one_line_dir, svg_name)
+    # The number of lines id determined by comparing the height of
+    # |multi_line_file| with |one_line_file|, where the latter is generated
+    # without the '--width' option passed to pango-view.
+    height = self._get_svg_height(multi_line_file)
+    line_height = self._get_svg_height(one_line_file)
     return int(round(height / line_height))
 
   def convert_svg_to_png(self, svg_file, png_file, scale, num_lines,

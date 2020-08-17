@@ -29,7 +29,7 @@ dpi="180"
 bgcolor="#ffffff"
 color="#000000"
 params=""
-outdir=""
+outdir="."
 
 while true ; do
   case "$1" in
@@ -99,22 +99,22 @@ bgcolor="${bgcolor###}"
 [ -z "$color" ] || color="#$color"
 [ -z "$bgcolor" ] || bgcolor="#$bgcolor"
 
-if [ -n "$outdir" ] && [ -n "$language" ]; then
-  mkdir -p "${outdir%/}/lo"
-  mkdir -p "${outdir%/}/one_line"
+outdir="${outdir%/}"
+if [ -n "$language" ]; then
+  mkdir -p "${outdir}/lo"
+  mkdir -p "${outdir}/one_line"
 fi
 
 for txtfile in $*; do
   # pango-view does not support assigning output format options for bitmap, so
   # we must create images in PNG format and then post-process it (ex, convert
   # into BMP by ImageMagick).
-  pngfile="${txtfile%.*}".png
-  if [ -n "$outdir" ]; then
-    pngfile="${outdir%/}/$(basename "$pngfile")"
-    pngfile_lo="${outdir%/}/lo/$(basename "$pngfile")"
-    pngfile_one_line="${outdir%/}/one_line/$(basename "$pngfile")"
-  fi
-  svgfile="${pngfile%.*}".svg
+  name="$(basename "${txtfile%.*}")"
+  pngfile="${outdir}/${name}.png"
+  pngfile_lo="${outdir}/lo/${name}.png"
+  svgfile="${outdir}/${name}.svg"
+  svgfile_one_line="${outdir}/one_line/${name}.svg"
+
   file_opt=""
   case "$txtfile" in
     *.txt)
@@ -136,15 +136,21 @@ for txtfile in $*; do
     $params $file_opt"
   width_opt="${width:+'--width=$width'}"
 
+  # Generate PNGs.
   eval pango-view $pango_opt --hinting=full --dpi=$dpi $width_opt \
     --output "$pngfile" "$txtfile"
   if [ -n "$language" ]; then
     eval pango-view $pango_opt --hinting=full --dpi=90 $width_opt \
       --output "$pngfile_lo" "$txtfile"
-    eval pango-view $pango_opt --hinting=full --dpi=$dpi \
-      --output "$pngfile_one_line" "$txtfile"
   fi
+
+  # Generate SVGs.
   eval pango-view $pango_opt --hinting=none $width_opt \
     --output "$svgfile" "$txtfile"
+  if [ -n "$language" ]; then
+    eval pango-view $pango_opt --hinting=none \
+      --output "$svgfile_one_line" "$txtfile"
+  fi
+
   echo "wrote $pngfile,svg"
 done
