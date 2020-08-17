@@ -41,6 +41,11 @@ static const struct ui_error_item error_map[] = {
 		.body = "Couldn't get firmware log.\n"
 			"Go back and try again.",
 	},
+	[VB2_UI_ERROR_EXTERNAL_BOOT_NOT_ENABLED] = {
+		.body = "External boot is disabled.\n"
+			"For more information, see\n"
+			"developer mode documentation.",
+	},
 	[VB2_UI_ERROR_UNTRUSTED_CONFIRMATION] = {
 		.body = "Use built-in keyboard to confirm\n"
 			"developer mode.\n"
