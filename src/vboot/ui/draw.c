@@ -157,30 +157,25 @@ uint32_t ui_get_bitmap_num_lines(const struct ui_bitmap *bitmap)
 	return num_lines;
 }
 
-static vb2_error_t get_char_width(const char c, int32_t height,
-				  enum ui_char_style style,
-				  int32_t *width)
+static vb2_error_t get_char_width(const char c, int32_t height, int32_t *width)
 {
 	struct ui_bitmap bitmap;
-	VB2_TRY(ui_get_char_bitmap(c, style, &bitmap));
+	VB2_TRY(ui_get_char_bitmap(c, &bitmap));
 	VB2_TRY(ui_get_bitmap_width(&bitmap, height, width));
 	return VB2_SUCCESS;
 }
 
-vb2_error_t ui_get_text_width(const char *text, int32_t height,
-			      enum ui_char_style style, int32_t *width)
+vb2_error_t ui_get_text_width(const char *text, int32_t height, int32_t *width)
 {
 	*width = 0;
 	while (*text) {
 		int32_t char_width;
-		vb2_error_t rv = get_char_width(*text, height, style,
-						&char_width);
+		vb2_error_t rv = get_char_width(*text, height, &char_width);
 		if (rv) {
 			UI_WARN("Failed to retrieve character bitmap of %#.2x, "
 				"use '?' to get character width instead\n",
 				*text);
-			VB2_TRY(get_char_width('?', height, style,
-					       &char_width));
+			VB2_TRY(get_char_width('?', height, &char_width));
 		}
 		*width += char_width;
 		text++;
@@ -188,12 +183,14 @@ vb2_error_t ui_get_text_width(const char *text, int32_t height,
 	return VB2_SUCCESS;
 }
 
-vb2_error_t ui_draw_text(const char *text, int32_t x, int32_t y,
-			 int32_t height, uint32_t flags,
-			 enum ui_char_style style, int reverse)
+vb2_error_t ui_draw_text(const char *text, int32_t x, int32_t y, int32_t height,
+			 const struct rgb_color *bg, const struct rgb_color *fg,
+			 uint32_t flags, int reverse)
 {
 	int32_t char_width;
 	struct ui_bitmap bitmap;
+	vb2_error_t rv;
+
 
 	if (reverse) {
 		x = UI_SCALE - x;
@@ -202,7 +199,7 @@ vb2_error_t ui_draw_text(const char *text, int32_t x, int32_t y,
 
 	if (flags & PIVOT_H_CENTER || flags & PIVOT_H_RIGHT) {
 		char_width = UI_SIZE_AUTO;
-		VB2_TRY(ui_get_text_width(text, height, style, &char_width));
+		VB2_TRY(ui_get_text_width(text, height, &char_width));
 
 		if (flags & PIVOT_H_CENTER) {
 			flags &= ~(PIVOT_H_CENTER);
@@ -218,11 +215,17 @@ vb2_error_t ui_draw_text(const char *text, int32_t x, int32_t y,
 	while (*text) {
 		/* Ignore non-printable characters */
 		if (*text >= 0x20 && *text <= 0x7e) {
-			VB2_TRY(ui_get_char_bitmap(*text, style, &bitmap));
+			VB2_TRY(ui_get_char_bitmap(*text, &bitmap));
 			VB2_TRY(ui_get_bitmap_width(&bitmap, height,
 						    &char_width));
-			VB2_TRY(ui_draw_bitmap(&bitmap, x, y, UI_SIZE_AUTO,
-					       height, flags, 0));
+			if (set_color_map(bg, fg))
+				return VB2_ERROR_UI_DRAW_FAILURE;
+			rv = ui_draw_bitmap(&bitmap, x, y, UI_SIZE_AUTO,
+					    height, flags, 0);
+			clear_color_map();
+			if (rv)
+				return rv;
+
 			x += char_width;
 		}
 		text++;

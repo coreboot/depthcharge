@@ -333,20 +333,15 @@ vb2_error_t ui_get_language_name_bitmap(const char *locale_code,
 	return ui_get_bitmap(filename, NULL, focused, bitmap);
 }
 
-vb2_error_t ui_get_char_bitmap(const char c, enum ui_char_style style,
-			       struct ui_bitmap *bitmap)
+vb2_error_t ui_get_char_bitmap(const char c, struct ui_bitmap *bitmap)
 {
 	char filename[UI_BITMAP_FILENAME_MAX_LEN + 1];
-	const char pattern_default[] = "idx%03d_%02x.bmp";
-	const char pattern_dark[] = "idx%03d_%02x-dark.bmp";
-	const char *pattern;
+	const char pattern[] = "idx%03d_%02x.bmp";
 	struct directory *dir;
 
 	VB2_TRY(get_font_archive(&dir));
 
 	/* Compose file name */
-	pattern = (style == UI_CHAR_STYLE_DARK) ?
-		pattern_dark : pattern_default;
 	snprintf(filename, sizeof(filename), pattern, c, c);
 	return find_bitmap_in_archive(dir, filename, bitmap);
 }

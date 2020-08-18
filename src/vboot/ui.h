@@ -157,6 +157,7 @@
 
 static const struct rgb_color ui_color_bg		= { 0x20, 0x21, 0x24 };
 static const struct rgb_color ui_color_fg		= { 0xcc, 0xcc, 0xcc };
+static const struct rgb_color ui_color_footer_fg	= { 0x9a, 0xa0, 0xa6 };
 static const struct rgb_color ui_color_lang_header_bg	= { 0x16, 0x17, 0x19 };
 static const struct rgb_color ui_color_lang_header_border
 	= { 0x52, 0x68, 0x8a };
@@ -360,23 +361,15 @@ vb2_error_t ui_get_language_name_bitmap(const char *locale_code,
 					int for_header, int focused,
 					struct ui_bitmap *bitmap);
 
-/* Character style. */
-enum ui_char_style {
-	UI_CHAR_STYLE_DEFAULT = 0,	/* foreground color */
-	UI_CHAR_STYLE_DARK = 1,		/* darker color */
-};
-
 /*
  * Get character bitmap.
  *
  * @param c		Character.
- * @param style		Style of the character.
  * @param bitmap	Bitmap struct to be filled.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t ui_get_char_bitmap(const char c, enum ui_char_style style,
-			       struct ui_bitmap *bitmap);
+vb2_error_t ui_get_char_bitmap(const char c, struct ui_bitmap *bitmap);
 
 /*
  * Get bitmap of step icon.
@@ -440,13 +433,11 @@ uint32_t ui_get_bitmap_num_lines(const struct ui_bitmap *bitmap);
  *
  * @param text		Text.
  * @param height	Text height.
- * @param style		Style of the text.
  * @param width		Text width to be calculated.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t ui_get_text_width(const char *text, int32_t height,
-			      enum ui_char_style style, int32_t *width);
+vb2_error_t ui_get_text_width(const char *text, int32_t height, int32_t *width);
 
 /*
  * Draw a line of text.
@@ -456,16 +447,17 @@ vb2_error_t ui_get_text_width(const char *text, int32_t height,
  * @param x		x-coordinate of the top-left corner.
  * @param y		y-coordinate of the top-left corner.
  * @param height	Height of the text.
+ * @param bg		Background color of the text.
+ * @param fg		Foreground color of the text.
  * @param flags		Flags passed to draw_bitmap() in libpayload.
- * @param style		Style of the text.
  * @param reverse	Whether to reverse the x-coordinate relative to the
  *			canvas.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t ui_draw_text(const char *text, int32_t x, int32_t y,
-			 int32_t height, uint32_t flags,
-			 enum ui_char_style style, int reverse);
+vb2_error_t ui_draw_text(const char *text, int32_t x, int32_t y, int32_t height,
+			 const struct rgb_color *bg, const struct rgb_color *fg,
+			 uint32_t flags, int reverse);
 
 /*
  * Draw a box with rounded corners.
