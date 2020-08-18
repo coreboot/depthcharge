@@ -61,7 +61,6 @@ static vb2_error_t print_error_message(const char *str, const char *locale_code)
 	int32_t box_width;
 	int32_t button_width;
 	char *buf, *end, *line;
-	const enum ui_char_style style = UI_CHAR_STYLE_DEFAULT;
 
 	/* Copy str to buf since strsep() will modify the string. */
 	buf = strdup(str);
@@ -105,7 +104,7 @@ static vb2_error_t print_error_message(const char *str, const char *locale_code)
 		int32_t width;
 		int32_t height = UI_BOX_TEXT_HEIGHT;
 		/* Ensure the text width is no more than box width */
-		line_rv = ui_get_text_width(line, height, style, &width);
+		line_rv = ui_get_text_width(line, height, &width);
 		if (line_rv) {
 			/* Save the first error in rv */
 			if (rv == VB2_SUCCESS)
@@ -115,7 +114,8 @@ static vb2_error_t print_error_message(const char *str, const char *locale_code)
 		if (width > content_width)
 			height = height * content_width / width;
 		line_rv = ui_draw_text(line, x, y, height,
-				       PIVOT_H_LEFT | PIVOT_V_TOP, style, 0);
+				       &ui_color_bg, &ui_color_fg,
+				       PIVOT_H_LEFT | PIVOT_V_TOP, 0);
 		y += height + UI_BOX_TEXT_LINE_SPACING;
 		/* Save the first error in rv */
 		if (line_rv && rv == VB2_SUCCESS)
