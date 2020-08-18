@@ -237,6 +237,9 @@ enum ui_menu_item_flag {
 	/* Leaves blank when the button is disabled;
 	   valid for UI_MENU_ITEM_TYPE_PRIMARY only. */
 	UI_MENU_ITEM_FLAG_BLANK			= 1 << 1,
+	/* Button may disappear/reappear, so include in button width
+	 * calculation; valid for UI_MENU_ITEM_TYPE_PRIMARY only. */
+	UI_MENU_ITEM_FLAG_TRANSIENT		= 1 << 2,
 };
 
 /* Menu item. */
