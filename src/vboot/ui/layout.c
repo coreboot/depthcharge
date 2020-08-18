@@ -167,8 +167,9 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 	VB2_TRY(ui_get_bitmap("model.bmp", locale_code, 0, &bitmap));
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, text_height, flags, reverse));
 	y += text_height + UI_FOOTER_COL2_LINE_SPACING;
-	VB2_TRY(ui_draw_text(hwid, x, y, text_height, flags, UI_CHAR_STYLE_DARK,
-			     reverse));
+	VB2_TRY(ui_draw_text(hwid, x, y, text_height,
+			     &ui_color_bg, &ui_color_footer_fg,
+			     flags, reverse));
 	y += text_height + vspacing;
 	VB2_TRY(ui_get_bitmap("help_center.bmp", locale_code, 0, &bitmap));
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, text_height, flags, reverse));
@@ -412,7 +413,6 @@ vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines)
 	int32_t max_content_height, content_width, line_spacing = 0;
 	int32_t box_width, box_height;
 	char *buf, *end, *line;
-	const enum ui_char_style style = UI_CHAR_STYLE_DEFAULT;
 
 	/* Copy str to buf since strsep() will modify the string. */
 	buf = strdup(str);
@@ -451,8 +451,7 @@ vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines)
 		int32_t line_width;
 		int32_t line_height = max_height;
 		/* Ensure the text width is no more than box width */
-		line_rv = ui_get_text_width(line, line_height, style,
-					    &line_width);
+		line_rv = ui_get_text_width(line, line_height, &line_width);
 		if (line_rv) {
 			/* Save the first error in rv */
 			if (rv == VB2_SUCCESS)
@@ -462,7 +461,8 @@ vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines)
 		if (line_width > content_width)
 			line_height = line_height * content_width / line_width;
 		line_rv = ui_draw_text(line, x, *y, line_height,
-				       PIVOT_H_LEFT | PIVOT_V_TOP, style, 0);
+				       &ui_color_bg, &ui_color_fg,
+				       PIVOT_H_LEFT | PIVOT_V_TOP, 0);
 		*y += line_height + UI_BOX_TEXT_LINE_SPACING;
 		/* Save the first error in rv */
 		if (line_rv && rv == VB2_SUCCESS)
@@ -495,8 +495,7 @@ vb2_error_t ui_get_log_textbox_dimensions(uint32_t *lines_per_page,
 	*lines_per_page = (textbox_height - UI_BOX_PADDING_V * 2) /
 			  (UI_BOX_TEXT_HEIGHT + UI_BOX_TEXT_LINE_SPACING);
 
-	VB2_TRY(ui_get_text_width("?", UI_BOX_TEXT_HEIGHT,
-				  UI_CHAR_STYLE_DEFAULT, &char_width));
+	VB2_TRY(ui_get_text_width("?", UI_BOX_TEXT_HEIGHT, &char_width));
 
 	*chars_per_line = (UI_SCALE - UI_MARGIN_H * 2 - UI_BOX_PADDING_H * 2) /
 			  char_width;
@@ -534,9 +533,10 @@ static vb2_error_t ui_draw_dev_signed_warning(void)
 			     "MP-signed recovery images will not work!",
 			     x, y,
 			     UI_BOX_TEXT_HEIGHT,
+			     &ui_color_bg, &ui_color_fg,
 			     PIVOT_H_LEFT | PIVOT_V_CENTER,
-			     UI_CHAR_STYLE_DARK,
 			     0));
+
 	return VB2_SUCCESS;
 }
 
