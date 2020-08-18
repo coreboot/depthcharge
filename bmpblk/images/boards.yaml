@@ -222,6 +222,7 @@ puff:
   screen:   [1920, 1200]  # Flash size limited - resized from native resolution.
   hi_res:   [en]  # Flash size limited.
   text_colors: 5
+  sdcard:   False  # Some variants do not have SD card - disable globally.
 
 mushu:
   # 2400x1600, boots recovery image on USB ports.
