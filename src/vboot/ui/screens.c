@@ -42,12 +42,10 @@
 
 #define PAGE_UP_ITEM ((struct ui_menu_item) {		\
 	.file = "btn_page_up.bmp",			\
-	.flags = UI_MENU_ITEM_FLAG_BLANK,		\
 })
 
 #define PAGE_DOWN_ITEM ((struct ui_menu_item) {		\
 	.file = "btn_page_down.bmp",			\
-	.flags = UI_MENU_ITEM_FLAG_BLANK,		\
 })
 
 #define BACK_ITEM ((struct ui_menu_item){	\

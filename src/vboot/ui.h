@@ -233,9 +233,6 @@ enum ui_menu_item_type {
 enum ui_menu_item_flag {
 	/* No arrow; valid for UI_MENU_ITEM_TYPE_SECONDARY only. */
 	UI_MENU_ITEM_FLAG_NO_ARROW		= 1 << 0,
-	/* Leaves blank when the button is disabled;
-	   valid for UI_MENU_ITEM_TYPE_PRIMARY only. */
-	UI_MENU_ITEM_FLAG_BLANK			= 1 << 1,
 };
 
 /* Menu item. */
@@ -541,8 +538,7 @@ vb2_error_t ui_draw_language_header(const struct ui_locale *locale,
 /*
  * Get button width, based on the longest text of all the visible buttons.
  *
- * Menu items specified in disabled_item_mask are only considered when they have
- * the UI_MENU_ITEM_BLANK flag set.
+ * Menu items specified in disabled_item_mask are ignored.
  *
  * @param menu			Menu items.
  * @param state			UI state.
