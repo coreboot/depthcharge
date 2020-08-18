@@ -227,6 +227,7 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 		if (menu->items[i].type != UI_MENU_ITEM_TYPE_PRIMARY)
 			continue;
 		if (!(menu->items[i].flags & UI_MENU_ITEM_FLAG_BLANK) &&
+		    !(menu->items[i].flags & UI_MENU_ITEM_FLAG_TRANSIENT) &&
 		    state->disabled_item_mask & (1 << i))
 			continue;
 		VB2_TRY(ui_get_bitmap(menu->items[i].file, state->locale->code,
@@ -254,8 +255,7 @@ vb2_error_t ui_draw_button(const char *image_name,
 	/* Clear button area */
 	VB2_TRY(ui_draw_rounded_box(x, y, width, height,
 				    focused ? &ui_color_button : &ui_color_bg,
-				    0, UI_BUTTON_BORDER_RADIUS,
-				    reverse));
+				    0, UI_BUTTON_BORDER_RADIUS, reverse));
 
 	/* Draw button text */
 	VB2_TRY(ui_get_bitmap(image_name, locale_code, focused, &bitmap));
