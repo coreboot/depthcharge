@@ -40,12 +40,10 @@
 
 #define PAGE_UP_ITEM ((struct ui_menu_item) {	\
 	.file = "btn_page_up.bmp",		\
-	.flags = UI_MENU_ITEM_FLAG_BLANK,	\
 })
 
 #define PAGE_DOWN_ITEM ((struct ui_menu_item) {	\
 	.file = "btn_page_down.bmp",		\
-	.flags = UI_MENU_ITEM_FLAG_BLANK,	\
 })
 
 #define BACK_ITEM ((struct ui_menu_item){	\
@@ -88,6 +86,10 @@ static int is_battery_low(void)
 	return batt_pct < 10;
 }
 
+/*
+ * TODO(b/163301076): Reconsider the functionalities of page up/down buttons
+ * when reaching the start/end of the log.
+ */
 static vb2_error_t draw_log_desc(const struct ui_state *state,
 				 const struct ui_state *prev_state,
 				 int32_t *y)
