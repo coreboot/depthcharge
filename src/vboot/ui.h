@@ -92,7 +92,8 @@
 #define UI_DESC_MARGIN_BOTTOM			44
 
 /* For custom screens */
-#define UI_REC_QR_MARGIN_R			50
+#define UI_REC_QR_SIZE				228
+#define UI_REC_QR_MARGIN_H			24
 
 /* For primary buttons */
 #define UI_BUTTON_HEIGHT			40
