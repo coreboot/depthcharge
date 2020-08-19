@@ -278,9 +278,15 @@ def ConvertPngFile(locale, file_name, styles, fonts, output_dir):
       # Some of the numbers below are from depthcharge:
       # - 1000: UI_SCALE
       # - 50: UI_MARGIN_H
+      # - 228: UI_REC_QR_SIZE
+      # - 24: UI_REC_QR_MARGIN_H
       # - 24: UI_DESC_TEXT_HEIGHT
-      max_width = int(22 * (1000 - 50 * 2) / 24 / (4 / 3))
-      command.append('--width=%d' % max_width)
+      if file_name == 'rec_phone_step2_desc':
+        max_width = 1000 - 50 * 2 - 228 - 24 * 2
+      else:
+        max_width = 1000 - 50 * 2
+      max_width_pt = int(22 * max_width / 24 / (4 / 3))
+      command.append('--width=%d' % max_width_pt)
   command.append(input_file)
 
   if subprocess.call(' '.join(command), shell=True,
