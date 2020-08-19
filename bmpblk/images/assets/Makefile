@@ -14,7 +14,7 @@ API_URL = https://api.qrserver.com/v1/create-qr-code/
 PARAMS = color=202124&bgcolor=CCCCCC&qzone=2&format=svg
 
 qr_rec.svg:
-	curl "$(API_URL)?$(PARAMS)&data=http://google.com/chromeos/recovery" -o $@
+	curl "$(API_URL)?$(PARAMS)&data=https://google.com/chromeos/recovery" -o $@
 
 qr_rec_phone.svg:
-	curl "$(API_URL)?$(PARAMS)&data=http://google.com/chromeos/recovery_android_qr" -o $@
+	curl "$(API_URL)?$(PARAMS)&data=https://google.com/chromeos/recovery_android_qr" -o $@
