@@ -11,14 +11,13 @@ FIRST_ASCII_GLYPH="32" # space
 LAST_ASCII_GLYPH="127" # delete
 if [ -z "${MENU_UI}" ]; then
   FGCOLOR="#505050"
-  FGCOLOR_DARK="$FGCOLOR"
   BGCOLOR="#ffffff"
   FONT="Noto Sans"
   MARGIN="3 0"
 else
-  FGCOLOR="#cccccc"
-  FGCOLOR_DARK="#9aa0a6"
-  BGCOLOR="#202124"
+  # The colors will be adjusted at runtime.
+  FGCOLOR="#ffffff"
+  BGCOLOR="#000000"
   FONT="Noto Sans Mono"
   MARGIN="-3 0 -1 0"
 fi
@@ -31,10 +30,7 @@ die() {
 main() {
   [ "$#" = "1" ] || die "Usage: $0 output_dir"
   local output="$1"
-  local txt_dir_regular="$output/regular"
-  local txt_dir_dark="$output/dark"
-  mkdir -p "$txt_dir_regular"
-  mkdir -p "$txt_dir_dark"
+  mkdir -p "$output"
 
   local glyph="$FIRST_ASCII_GLYPH"
   local c=''
@@ -44,8 +40,7 @@ main() {
   while [[ "$glyph"  != "$LAST_ASCII_GLYPH" ]]; do
     c=$(printf "\x$(printf %x $glyph)")
     name="idx$(printf "%03d" $glyph)_$(printf "%x" $glyph)"
-    echo "$c" >"$txt_dir_regular/$name.txt"
-    echo "$c" >"$txt_dir_dark/$name-dark.txt"
+    echo "$c" >"$output/$name.txt"
     glyph=$((glyph + 1))
   done
 
@@ -55,15 +50,7 @@ main() {
 
   "$SCRIPT_DIR/text_to_png_svg" --font="$FONT" --color="$FGCOLOR" \
     --bgcolor="$BGCOLOR" --margin="$MARGIN" --outdir="$output" \
-    $fontsize "$txt_dir_regular/*.txt"
-
-  # MENU_UI needs a different set of fonts with darker colors
-  if [ ! -z "${MENU_UI}" ]; then
-    "$SCRIPT_DIR/text_to_png_svg" --font="$FONT" \
-      --color="$FGCOLOR_DARK" --bgcolor="$BGCOLOR" \
-      --margin="$MARGIN" --outdir="$output" \
-      $fontsize "$txt_dir_dark/*.txt"
-  fi
+    $fontsize "$output/*.txt"
 }
 
 set -e
