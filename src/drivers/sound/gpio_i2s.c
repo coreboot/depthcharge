@@ -22,16 +22,16 @@
 
 /* Generate square wave sound data for 1 second. */
 static void i2s_square_wave(uint16_t *data, uint16_t samples,
-		uint32_t frequency, int16_t volume)
+			    uint32_t frequency, int16_t volume)
 {
 	unsigned period = samples / frequency;
 	unsigned half = period / 2;
 
 	while (samples) {
 		for (int i = 0; samples && i < half; samples--, i++)
-				*data++ = volume;
+			*data++ = volume;
 		for (int i = 0; samples && i < period - half; samples--, i++)
-				*data++ = -volume;
+			*data++ = -volume;
 	}
 }
 
@@ -97,8 +97,7 @@ static int gpio_i2s_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 	uint16_t *data = xmalloc(bytes);
 
 	/* Generate a square wave */
-	i2s_square_wave(data, i2s->sample_rate,
-			frequency, i2s->volume);
+	i2s_square_wave(data, i2s->sample_rate, frequency, i2s->volume);
 
 	/* Send 1 second chunks */
 	while (msec >= 1000) {
@@ -136,12 +135,12 @@ GpioI2s *new_gpio_i2s(GpioOps *bclk_gpio, GpioOps *sfrm_gpio,
 	i2s->ops.play = &gpio_i2s_play;
 	i2s->ops.set_volume = &gpio_i2s_set_volume;
 
-	i2s->bclk_gpio		= bclk_gpio;
-	i2s->sfrm_gpio		= sfrm_gpio;
-	i2s->data_gpio		= data_gpio;
-	i2s->sample_rate	= sample_rate;
-	i2s->channels		= channels;
-	i2s->volume		= volume;
+	i2s->bclk_gpio = bclk_gpio;
+	i2s->sfrm_gpio = sfrm_gpio;
+	i2s->data_gpio = data_gpio;
+	i2s->sample_rate = sample_rate;
+	i2s->channels = channels;
+	i2s->volume = volume;
 
 	if (!sync)
 		i2s->send = &gpio_i2s_send;
