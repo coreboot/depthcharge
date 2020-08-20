@@ -600,7 +600,7 @@ vb2_error_t ui_draw_button(const char *image_name,
  *
  * @param desc		List of description files.
  * @param state		UI state.
- * @param y		Starting y-coordicate of the descriptions. On return,
+ * @param y		Starting y-coordinate of the descriptions. On return,
  *			the value will be the ending coordinate, excluding the
  *			margin below the descriptions.
  *
@@ -652,6 +652,21 @@ vb2_error_t ui_get_log_textbox_dimensions(uint32_t *lines_per_page,
  * @return VB2_SUCCESS on success, non-zero on error.
  */
 vb2_error_t ui_draw_log_textbox(const char *str, int32_t *y);
+
+/*
+ * Draw primary and secondary buttons; ignore the language dropdown header.
+ *
+ * @param menu			Menu items.
+ * @param state			UI state.
+ * @param prev_state		Previous UI state.
+ * @param y			Starting y-coordinate of the descriptions.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
+			       const struct ui_state *state,
+			       const struct ui_state *prev_state,
+			       int32_t y);
 
 /*
  * Default drawing function.

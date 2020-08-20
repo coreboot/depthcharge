@@ -549,10 +549,64 @@ static vb2_error_t ui_draw_dev_signed_warning(void)
 	return VB2_SUCCESS;
 }
 
+vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
+			       const struct ui_state *state,
+			       const struct ui_state *prev_state,
+			       int32_t y)
+{
+	int i;
+	const char *locale_code = state->locale->code;
+	const int reverse = state->locale->rtl;
+	int32_t x;
+	int32_t button_width;
+
+	/* Primary buttons */
+	x = UI_MARGIN_H;
+	VB2_TRY(ui_get_button_width(menu, state, &button_width));
+	for (i = 0; i < menu->num_items; i++) {
+		if (menu->items[i].type != UI_MENU_ITEM_TYPE_PRIMARY)
+			continue;
+		if (state->disabled_item_mask & (1 << i)) {
+			if (menu->items[i].flags & UI_MENU_ITEM_FLAG_BLANK) {
+				/* Clear button area */
+				VB2_TRY(ui_draw_box(x, y, button_width,
+						    UI_BUTTON_HEIGHT,
+						    &ui_color_bg, reverse));
+				y += UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
+			}
+			continue;
+		}
+		/*
+		 * TODO(b/147424699): No need to redraw every button when
+		 * navigating between menu.
+		 */
+		VB2_TRY(ui_draw_button(menu->items[i].file, locale_code,
+				       x, y, button_width, UI_BUTTON_HEIGHT,
+				       reverse, state->selected_item == i));
+		y += UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
+	}
+
+	/* Secondary (link) buttons */
+	x = UI_MARGIN_H - UI_LINK_TEXT_PADDING_LEFT;
+	y = UI_SCALE - UI_MARGIN_BOTTOM - UI_FOOTER_HEIGHT -
+		UI_FOOTER_MARGIN_TOP - UI_BUTTON_HEIGHT;
+	for (i = menu->num_items - 1; i >= 0; i--) {
+		if (state->disabled_item_mask & (1 << i))
+			continue;
+		if (menu->items[i].type != UI_MENU_ITEM_TYPE_SECONDARY)
+			continue;
+		VB2_TRY(ui_draw_link(&menu->items[i], locale_code,
+				     x, y, UI_BUTTON_HEIGHT, reverse,
+				     state->selected_item == i));
+		y -= UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
+	}
+
+	return VB2_SUCCESS;
+}
+
 vb2_error_t ui_draw_default(const struct ui_state *state,
 			    const struct ui_state *prev_state)
 {
-	int i;
 	const struct ui_screen_info *screen = state->screen;
 	const struct ui_menu *menu = &screen->menu;
 	const char *locale_code = state->locale->code;
@@ -658,47 +712,8 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 		VB2_TRY(ui_draw_desc(&screen->desc, state, &y));
 	y += UI_DESC_MARGIN_BOTTOM;
 
-	/* Primary buttons */
-	int32_t button_width;
-	VB2_TRY(ui_get_button_width(menu, state, &button_width));
-
-	for (i = 0; i < menu->num_items; i++) {
-		if (menu->items[i].type != UI_MENU_ITEM_TYPE_PRIMARY)
-			continue;
-		if (state->disabled_item_mask & (1 << i)) {
-			if (menu->items[i].flags & UI_MENU_ITEM_FLAG_BLANK) {
-				/* Clear button area */
-				VB2_TRY(ui_draw_box(x, y, button_width,
-						    UI_BUTTON_HEIGHT,
-						    &ui_color_bg, reverse));
-				y += UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
-			}
-			continue;
-		}
-		/*
-		 * TODO(b/147424699): No need to redraw every button when
-		 * navigating between menu.
-		 */
-		VB2_TRY(ui_draw_button(menu->items[i].file, locale_code,
-				       x, y, button_width, UI_BUTTON_HEIGHT,
-				       reverse, state->selected_item == i));
-		y += UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
-	}
-
-	/* Secondary (link) buttons */
-	x = UI_MARGIN_H - UI_LINK_TEXT_PADDING_LEFT;
-	y = UI_SCALE - UI_MARGIN_BOTTOM - UI_FOOTER_HEIGHT -
-		UI_FOOTER_MARGIN_TOP - UI_BUTTON_HEIGHT;
-	for (i = menu->num_items - 1; i >= 0; i--) {
-		if (state->disabled_item_mask & (1 << i))
-			continue;
-		if (menu->items[i].type != UI_MENU_ITEM_TYPE_SECONDARY)
-			continue;
-		VB2_TRY(ui_draw_link(&menu->items[i], locale_code,
-				     x, y, UI_BUTTON_HEIGHT, reverse,
-				     state->selected_item == i));
-		y -= UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
-	}
+	/* Primary and secondary buttons */
+	VB2_TRY(ui_draw_menu_items(menu, state, prev_state, y));
 
 	return VB2_SUCCESS;
 }
