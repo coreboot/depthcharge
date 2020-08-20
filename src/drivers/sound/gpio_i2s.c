@@ -56,24 +56,31 @@ static void gpio_i2s_send(GpioI2s *i2s, uint16_t *data, size_t length)
 	}
 }
 
+static void gpio_i2s_sync_send_frame(GpioI2s *i2s, int channel_select,
+				     uint16_t frame)
+{
+	int timeout = 200; /* Avoids infinte loop */
+
+	/* Wait for LRCLK to transition */
+	while (gpio_get(i2s->sfrm_gpio) != channel_select && timeout--)
+		continue;
+
+	/* bit-bang out data word as fast as possible */
+	for (int i = 15; i >= 0; i--) {
+		int val = !!(frame & (1 << i));
+		if (i == 15 || val != !!(frame & (1 << (i + 1))))
+			gpio_set(i2s->data_gpio, val);
+	}
+}
+
 /* Send only I2S data */
 static void gpio_i2s_sync_send_data(GpioI2s *i2s, uint16_t *data, size_t length)
 {
-	int lr0;
-	int timeout;
-
 	for (; length > 0; length--, data++) {
-		/* Wait for LRCLK to transition */
-		lr0 = gpio_get(i2s->sfrm_gpio);
-		timeout = 200; /* Avoids infinte loop */
-		while (gpio_get(i2s->sfrm_gpio) == lr0 && timeout--)
-			continue;
-		/* bit-bang out data word as fast as possible */
-		for (int i = 15; i >= 0; i--) {
-			int val = !!(*data & (1 << i));
-			if (i == 15 || val != !!(*data & (1 << (i + 1))))
-				gpio_set(i2s->data_gpio, val);
-		}
+		/* Left channel */
+		gpio_i2s_sync_send_frame(i2s, 0, *data);
+		/* Right channel */
+		gpio_i2s_sync_send_frame(i2s, 1, *data);
 	}
 }
 
