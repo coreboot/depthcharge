@@ -492,7 +492,7 @@ int rt5682_set_clock(rt5682Codec *codec, uint32_t mclk, uint32_t lrclk)
 	/* Enable Clocks */
 	rt5682_i2c_writew(codec, RT5682_GLB_CLK, 0x4000);
 	rt5682_i2c_writew(codec, RT5682_ADDA_CLK_1, 0x0120);
-	rt5682_i2c_writew(codec, RT5682_TDM_TCON_CTRL, 0x0201);
+	rt5682_i2c_writew(codec, RT5682_TDM_TCON_CTRL, 0x0001);
 	rt5682_i2c_writew(codec, RT5682_ADDA_CLK_1, 0x0121);
 	rt5682_i2c_writew(codec, RT5682_PLL_TRACK_2, 0x0100);
 	rt5682_i2c_writew(codec, RT5682_DMIC_CTRL_1, 0x1A10);

@@ -203,7 +203,7 @@ static void audio_setup(CrosEc *cros_ec)
 			NULL,			/* Use RT5682 to give clks */
 			&i2s_lrclk->ops,	/* I2S Frame Sync GPIO */
 			&i2s2_data->ops,	/* I2S Data GPIO */
-			16000,			/* Sample rate */
+			8000,			/* Sample rate */
 			2,			/* Channels */
 			0x1FFF);		/* Volume */
 	SoundRoute *sound_route = new_sound_route(&i2s->ops);
