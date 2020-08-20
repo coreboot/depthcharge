@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
-<translation id="1041985745423354926">Du kan gendanne ved hjælp af en ekstern lagerplads som f.eks. et USB-drev eller et SD-kort.</translation>
-<translation id="1159332245309393502">Konfigurer din eksterne lagerplads</translation>
+<translation id="1041985745423354926">Du kan gendanne ved hjælp af en ekstern lagerenhed som f.eks. et USB-drev eller et SD-kort.</translation>
+<translation id="1159332245309393502">Konfigurer din eksterne lagerenhed</translation>
 <translation id="1201402288615127009">Næste</translation>
 <translation id="1252150473073837888">Bekræft, at du vil vende tilbage til sikker tilstand</translation>
 <translation id="1389402762514302384">Vælg "Annuller" for at forblive beskyttet.</translation>
@@ -12,10 +12,10 @@
 <translation id="1977020597896356883">https://google.com/chromeos/recovery</translation>
 <translation id="1995660704900986789">Sluk</translation>
 <translation id="2022309272630265316">Der blev ikke registreret noget gyldigt billede</translation>
-<translation id="2076174287070071207">Du kan gendanne ved hjælp af en ekstern lagerdisk som f.eks. et USB-drev eller et SD-kort eller ved hjælp af din Android-telefon.</translation>
+<translation id="2076174287070071207">Du kan gendanne ved hjælp af en ekstern lagerenhed som f.eks. et USB-drev eller et SD-kort eller ved hjælp af din Android-telefon.</translation>
 <translation id="2164852388827548816">Firmware-log</translation>
 <translation id="2176647394998805208">Genstart fra ekstern disk</translation>
-<translation id="2188090550242711688">2. Følg vejledningen i Chrome-udvidelsen, og download systembilledet til gendannelse på den eksterne lagerplads</translation>
+<translation id="2188090550242711688">2. Følg vejledningen i Chrome-udvidelsen, og download systembilledet til gendannelse på den eksterne lagerenhed</translation>
 <translation id="2270126560545545577">Du er i udviklertilstand</translation>
 <translation id="2360163367862409346">Dette medfører bl.a., at alle data ryddes fra din enhed, og at din enhed bliver usikker.</translation>
 <translation id="2531345960369431549">Denne valgmulighed deaktiverer udviklertilstand og gendanner din enhed til dens oprindelige tilstand.</translation>
@@ -23,14 +23,14 @@
 <translation id="2904079386864173492">Model:</translation>
 <translation id="3174560100798162637">Det anbefales, at du slutter din enhed til en strømkilde.</translation>
 <translation id="3235458304027619499">1. En ekstern lagerenhed som f.eks. et USB-drev eller et SD-kort</translation>
-<translation id="328213018570216625">Gendannelse via ekstern lagerplads</translation>
+<translation id="328213018570216625">Gendannelse via ekstern lagerenhed</translation>
 <translation id="3289365543955953678">Tilslut din eksterne disk</translation>
 <translation id="385051799172605136">Tilbage</translation>
 <translation id="3964506597604121312">Dine brugerdata ryddes under processen.</translation>
 <translation id="4002335453596341558">Side ned</translation>
 <translation id="4152977630022273265">Sørg for, at din eksterne disk har en gyldig afbildning af Chrome OS, og indsæt disken igen, når du er klar.</translation>
 <translation id="4410491068110727276">Brug lydstyrkeknapperne til at navigere op eller ned.</translation>
-<translation id="4497270882390086583">Du kan gendanne ved hjælp af en ekstern lagerdisk som f.eks. et USB-drev eller ved hjælp af din Android-telefon.</translation>
+<translation id="4497270882390086583">Du kan gendanne ved hjælp af en ekstern lagerenhed som f.eks. et USB-drev eller ved hjælp af din Android-telefon.</translation>
 <translation id="4773280894882892048">Fejlretningsoplysninger</translation>
 <translation id="4834079235849774599">2. En anden enhed med internetadgang</translation>
 <translation id="4989087579517177148">Vælg, hvordan du vil gendanne.</translation>
@@ -47,7 +47,7 @@
 <translation id="6172915643608608639">Genstart fra intern disk</translation>
 <translation id="6191358901427525316">Gør klar til at gendanne din enhed. Du skal bruge:</translation>
 <translation id="635783852215913562">Brug piletasterne til at navigere op eller ned.</translation>
-<translation id="6448938863276324156">Du kan gendanne ved hjælp af en ekstern lagerdisk som f.eks. et USB-drev.</translation>
+<translation id="6448938863276324156">Du kan gendanne ved hjælp af en ekstern lagerenhed som f.eks. et USB-drev.</translation>
 <translation id="6972383785688794804">Side op</translation>
 <translation id="7065553583078443466">Vælg alternativ bootloader</translation>
 <translation id="7126032376876878896">Brug afbryderknappen til at vælge en mulighed.</translation>
@@ -69,5 +69,5 @@
 <translation id="8297243793472061482">Start gendannelsesprocessen for at prøve at løse problemet. Fjern alle tilsluttede enheder. Hold derefter knappen til gendannelse inde, mens du trykker på afbryderknappen og slipper den igen. Slip derefter knappen til gendannelse.</translation>
 <translation id="8767579394810359800">Start gendannelsesprocessen for at prøve at løse problemet. Fjern alle tilsluttede enheder, og hold derefter Esc, Opdater og afbryderknappen inde.</translation>
 <translation id="8789686976863801203">Du forsøger at aktivere udviklertilstand</translation>
-<translation id="9040266428058825675">Hvis din eksterne lagerenhed er klar med et systembillede til gendannelse, skal du slutte den til den enhed, du bruger, for at starte gendannelsesprocessen.</translation>
+<translation id="9040266428058825675">Hvis din eksterne lagerenhed er klar med et systembillede til gendannelse, skal du slutte den til denne enhed for at starte gendannelsesprocessen.</translation>
 </translationbundle>
