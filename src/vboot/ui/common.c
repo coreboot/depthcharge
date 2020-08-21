@@ -27,7 +27,7 @@ static const struct ui_error_item error_map[] = {
 		.body = NULL,
 	},
 	[VB2_UI_ERROR_DEV_MODE_ALREADY_ENABLED] = {
-		.body = "Dev mode already enabled?",
+		.body = "Dev mode already enabled.",
 	},
 	[VB2_UI_ERROR_DEBUG_LOG] = {
 		.body = "Failed to retrieve debug info.",
