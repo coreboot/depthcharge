@@ -216,7 +216,7 @@ hatch,palkia:
 
 puff:
   # External monitor, boots recovery image on USB ports.
-  screen:   [1360, 850]  # Flash size limited - CHECK BEFORE COPY-PASTING.
+  screen:   [1320, 825]  # Flash size limited - CHECK BEFORE COPY-PASTING.
   text_colors: 4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
   sdcard:   False  # Some variants do not have SD card - disable globally.
 
