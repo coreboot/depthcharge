@@ -44,7 +44,7 @@ static const struct locale_data *get_locale_data(void)
 	static int cache_initialized = 0;
 	static struct locale_data cached_locales;
 	struct cbfs_media *ro_cbfs;
-	char *locales, *loc;
+	char *locales, *loc, *tmp;
 	size_t size;
 
 	if (cache_initialized)
@@ -67,12 +67,20 @@ static const struct locale_data *get_locale_data(void)
 	}
 
 	/* Copy the file and null-terminate it */
-	locales = realloc(locales, size + 1);
+	/*
+	 * Intentionally avoid using realloc() here because it fails to
+	 * correctly copy the range of memory when the original and the newly
+	 * allocated buffers overlap.
+	 */
+	tmp = locales;
+	locales = malloc(size + 1);
 	if (!locales) {
 		UI_ERROR("Out of memory\n");
-		free(locales);
+		free(tmp);
 		return NULL;
 	}
+	memcpy(locales, tmp, size);
+	free(tmp);
 	locales[size] = '\0';
 
 	/* Parse the list */
