@@ -52,6 +52,7 @@ static vb2_error_t init_screen(void)
 	if (display_init())
 		return VB2_ERROR_UI_DISPLAY_INIT;
 
+	enable_graphics_buffer();
 	initialized = 1;
 	return VB2_SUCCESS;
 }

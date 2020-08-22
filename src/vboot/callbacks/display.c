@@ -167,6 +167,7 @@ vb2_error_t vb2ex_display_ui(enum vb2_screen screen,
 	static int has_prev_state = 0;
 
 	rv = ui_display_screen(&state, has_prev_state ? &prev_state : NULL);
+	flush_graphics_buffer();
 	if (rv)
 		goto fail;
 
