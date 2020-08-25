@@ -158,7 +158,8 @@ static int amd_gpio_i2s_play(struct SoundOps *me, uint32_t msec,
 static int is_dalboz(void)
 {
 	const char * const dalboz_str = "Dalboz";
-	struct cb_mainboard *mainboard = lib_sysinfo.mainboard;
+	struct cb_mainboard *mainboard =
+		phys_to_virt(lib_sysinfo.cb_mainboard);
 
 	return strncasecmp(cb_mb_part_string(mainboard),
 			   dalboz_str, strlen(dalboz_str)) == 0;
@@ -167,7 +168,8 @@ static int is_dalboz(void)
 static int is_vilboz(void)
 {
 	const char * const vilboz_str = "Vilboz";
-	struct cb_mainboard *mainboard = lib_sysinfo.mainboard;
+	struct cb_mainboard *mainboard =
+		phys_to_virt(lib_sysinfo.cb_mainboard);
 
 	return strncasecmp(cb_mb_part_string(mainboard),
 			vilboz_str, strlen(vilboz_str)) == 0;

@@ -95,7 +95,8 @@ static void hatch_setup_flash(void)
 static int is_board_helios(void)
 {
 	static const char * const helios_str = "Helios";
-	struct cb_mainboard *mainboard = lib_sysinfo.mainboard;
+	struct cb_mainboard *mainboard =
+		phys_to_virt(lib_sysinfo.cb_mainboard);
 
 	return strncmp(cb_mb_part_string(mainboard),
 			helios_str, strlen(helios_str)) == 0;

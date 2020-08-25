@@ -52,9 +52,10 @@ static int install_coreboot_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 	u64 reg_sizes[2];
 
 	// First 'reg' address range is the coreboot table.
-	reg_addrs[0] = (uintptr_t)lib_sysinfo.header;
-	reg_sizes[0] = lib_sysinfo.header->header_bytes +
-		       lib_sysinfo.header->table_bytes;
+	struct cb_header *header = phys_to_virt(lib_sysinfo.cb_header);
+	reg_addrs[0] = (intptr_t)header;
+	reg_sizes[0] = header->header_bytes +
+		       header->table_bytes;
 
 	// Second is the CBMEM area (which usually includes the coreboot table).
 	reg_addrs[1] = cbmem_range->base;

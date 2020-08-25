@@ -60,7 +60,9 @@ static void fit_add_default_compats(void)
 	done = 1;
 
 	int ret;
-	const char *mb_part_string = cb_mb_part_string(lib_sysinfo.mainboard);
+	struct cb_mainboard *mainboard =
+		phys_to_virt(lib_sysinfo.cb_mainboard);
+	const char *mb_part_string = cb_mb_part_string(mainboard);
 	ret = snprintf(base, sizeof(base), "google,%s", mb_part_string);
 	assert(ret < sizeof(base));
 	sprintf(rev_string, "-rev%u", rev);

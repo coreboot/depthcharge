@@ -90,7 +90,8 @@ static void dedede_setup_flash(void)
 static int is_board_waddledee(void)
 {
 	static const char * const board_str = "Waddledee";
-	struct cb_mainboard *mainboard = lib_sysinfo.mainboard;
+	struct cb_mainboard *mainboard =
+		phys_to_virt(lib_sysinfo.cb_mainboard);
 
 	return strncmp(cb_mb_part_string(mainboard),
 			board_str, strlen(board_str)) == 0;
