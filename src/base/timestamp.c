@@ -34,7 +34,7 @@ static struct timestamp_table *ts_table;
 
 void timestamp_init(void)
 {
-	ts_table = lib_sysinfo.tstamp_table;
+	ts_table = phys_to_virt(lib_sysinfo.tstamp_table);
 	timestamp_add_now(TS_START);
 }
 

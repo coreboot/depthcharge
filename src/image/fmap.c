@@ -31,7 +31,7 @@ static int fmap_check_signature(Fmap *fmap)
 }
 
 static void *get_fmap_cache(void) {
-	Fmap *fmap = lib_sysinfo.fmap_cache;
+	Fmap *fmap = phys_to_virt(lib_sysinfo.fmap_cache);
 	if (fmap && fmap_check_signature(fmap)) {
 		printf("Bad signature on the FMAP.\n");
 		fmap = NULL;

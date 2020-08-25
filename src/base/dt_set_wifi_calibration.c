@@ -81,7 +81,7 @@ int dt_set_wifi_calibration(DeviceTree *tree, const DtPathMap *maps)
 	struct calibration_entry *cal_entry;
 	struct calibration_blob *cal_blob;
 
-	cal_entry = lib_sysinfo.wifi_calibration;
+	cal_entry = phys_to_virt(lib_sysinfo.wifi_calibration);
 
 	if (!cal_entry)
 		return 0;	/* No calibration data was found. */
