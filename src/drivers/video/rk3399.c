@@ -78,7 +78,7 @@ static int rk3399_backlight_update(DisplayOps *me, uint8_t enable)
 
 static int rockchip_display_init(DisplayOps *me)
 {
-	uintptr_t phys_addr = lib_sysinfo.framebuffer->physical_address;
+	uintptr_t phys_addr = lib_sysinfo.framebuffer.physical_address;
 	RkDisplay *display = container_of(me, RkDisplay, ops);
 
 	if (display->uses_edp)

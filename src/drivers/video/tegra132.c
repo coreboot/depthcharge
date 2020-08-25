@@ -22,7 +22,7 @@ static void * const win_t_win_options = (void *)(uintptr_t)0x54201c00;
 
 int tegra132_display_init(DisplayOps *me)
 {
-	uintptr_t phys_addr = lib_sysinfo.framebuffer->physical_address;
+	uintptr_t phys_addr = lib_sysinfo.framebuffer.physical_address;
 
 	/* Set the framebuffer address and enable the T window. */
 	writel(phys_addr, winbuf_t_start_addr);

@@ -139,7 +139,7 @@ static int board_setup(void)
 	sound_setup();
 
 	/* Set display ops */
-	if (lib_sysinfo.framebuffer)
+	if (lib_sysinfo.framebuffer.physical_address != 0)
 		display_set_ops(new_mtk_display(kukui_backlight_update,
 						0x14008000, 2));
 	return 0;

@@ -167,8 +167,8 @@ int bootdata_prepare(struct boot_info *bi)
 	}
 
 	// Add framebuffer descriptor
-	if (lib_sysinfo.framebuffer->physical_address > 0) {
-		struct cb_framebuffer *fb = lib_sysinfo.framebuffer;
+	if (lib_sysinfo.framebuffer.physical_address != 0) {
+		struct cb_framebuffer *fb = &lib_sysinfo.framebuffer;
 		bootdata_swfb_t swfb = {
 			.phys_base = fb->physical_address,
 			.width = fb->x_resolution,

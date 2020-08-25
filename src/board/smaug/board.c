@@ -226,8 +226,7 @@ static DisplayOps smaug_display_ops = {
 
 static int display_setup(void)
 {
-	if (lib_sysinfo.framebuffer == NULL ||
-		lib_sysinfo.framebuffer->physical_address == 0)
+	if (lib_sysinfo.framebuffer.physical_address == 0)
 		return 0;
 
 	display_set_ops(&smaug_display_ops);

@@ -158,9 +158,7 @@ int dc_corebootfb_draw_bitmap(uint32_t x, uint32_t y, void *bitmap)
 		return -1;
 	}
 
-	struct cb_framebuffer *fbinfo = lib_sysinfo.framebuffer;
-	if (!fbinfo)
-		return 0;
+	struct cb_framebuffer *fbinfo = &lib_sysinfo.framebuffer;
 	unsigned char *fbaddr =
 		(unsigned char *)(uintptr_t)(fbinfo->physical_address);
 	if (!fbaddr)

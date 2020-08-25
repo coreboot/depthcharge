@@ -33,7 +33,7 @@ enum {
 
 static int mtk_display_init(DisplayOps *me)
 {
-	uintptr_t phys_addr = lib_sysinfo.framebuffer->physical_address;
+	uintptr_t phys_addr = lib_sysinfo.framebuffer.physical_address;
 	MtkDisplay *mtk = container_of(me, MtkDisplay, ops);
 
 	writel(phys_addr, (void *)(mtk->ovl_base + DISP_REG_OVL_L0_ADDR));
