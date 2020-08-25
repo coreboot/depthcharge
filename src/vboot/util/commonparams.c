@@ -57,11 +57,11 @@ struct vb2_context *vboot_get_context(void)
 	if (ctx)
 		return ctx;
 
-	die_if(lib_sysinfo.vboot_workbuf == NULL,
-	       "vboot workbuf pointer is NULL\n");
+	die_if(lib_sysinfo.vboot_workbuf == 0,
+	       "vboot workbuf pointer is not set\n");
 
 	/* Use the firmware verification workbuf from coreboot. */
-	rv = vb2api_reinit(lib_sysinfo.vboot_workbuf, &ctx);
+	rv = vb2api_reinit(phys_to_virt(lib_sysinfo.vboot_workbuf), &ctx);
 
 	die_if(rv, "vboot workbuf could not be initialized, error: %#x\n", rv);
 
