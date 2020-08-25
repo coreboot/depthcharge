@@ -151,10 +151,11 @@ int bootdata_prepare(struct boot_info *bi)
 	}
 
 	// Add serial console descriptor
-	if (lib_sysinfo.serial) {
+	if (lib_sysinfo.cb_serial) {
+		struct cb_serial *serial = phys_to_virt(lib_sysinfo.cb_serial);
 		bootdata_uart_t uart = {
-			.type = lib_sysinfo.serial->type,
-			.base = lib_sysinfo.serial->baseaddr,
+			.type = serial->type,
+			.base = serial->baseaddr,
 		};
 		hdr.type = BOOTDATA_DEBUG_UART;
 		hdr.length = sizeof(uart);
