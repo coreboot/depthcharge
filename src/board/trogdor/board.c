@@ -64,7 +64,9 @@ static int board_setup(void)
 
 	power_set_ops(&psci_power_ops);
 
-	if (!strcmp(cb_mb_part_string(lib_sysinfo.mainboard), "Bubs"))
+	struct cb_mainboard *mainboard =
+		phys_to_virt(lib_sysinfo.cb_mainboard);
+	if (!strcmp(cb_mb_part_string(mainboard), "Bubs"))
 		fit_add_compat("qcom,sc7180-idp");
 
 	dt_register_vpd_mac_fixup(vpd_dt_map);
@@ -81,11 +83,11 @@ static int board_setup(void)
 	/* Some specific board/revision combinations use off-AVL eMMC parts
 	   that do not support HS400-ES. */
 	if ((lib_sysinfo.board_id == 1 &&
-	     !strcmp(cb_mb_part_string(lib_sysinfo.mainboard), "Trogdor")) ||
+	     !strcmp(cb_mb_part_string(mainboard), "Trogdor")) ||
 	    (lib_sysinfo.board_id == 2 &&
-	     !strcmp(cb_mb_part_string(lib_sysinfo.mainboard), "Lazor")) ||
+	     !strcmp(cb_mb_part_string(mainboard), "Lazor")) ||
 	    (lib_sysinfo.board_id == 0 &&
-	     !strcmp(cb_mb_part_string(lib_sysinfo.mainboard), "Pompom")))
+	     !strcmp(cb_mb_part_string(mainboard), "Pompom")))
 		emmc_platfm_flags &= ~SDHCI_PLATFORM_SUPPORTS_HS400ES;
 
 	SdhciHost *emmc = new_sdhci_msm_host(SDC1_HC_BASE,
@@ -112,7 +114,7 @@ static int board_setup(void)
 
 	/* Trogdor rev0 had EC and TPM QUP swapped. */
 	if (lib_sysinfo.board_id < 1 &&
-	    !strcmp(cb_mb_part_string(lib_sysinfo.mainboard), "Trogdor")) {
+	    !strcmp(cb_mb_part_string(mainboard), "Trogdor")) {
 		ec_spi = spi_qup0se0;
 		tpm_spi = spi_qup1se0;
 	}

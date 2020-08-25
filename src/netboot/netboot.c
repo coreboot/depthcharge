@@ -224,7 +224,9 @@ int netboot_entry(void)
 		video_console_init();
 	input_init();
 
-	const char *mb_part_string = cb_mb_part_string(lib_sysinfo.mainboard);
+	struct cb_mainboard *mainboard =
+		phys_to_virt(lib_sysinfo.cb_mainboard);
+	const char *mb_part_string = cb_mb_part_string(mainboard);
 	printf("\n\nStarting netboot on %s...\n", mb_part_string);
 
 	// Set up time keeping.

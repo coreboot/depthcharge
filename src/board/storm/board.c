@@ -369,7 +369,8 @@ static int board_setup(void)
 int get_mach_id(void)
 {
 	int i;
-	struct cb_mainboard *mainboard = lib_sysinfo.mainboard;
+	struct cb_mainboard *mainboard =
+		phys_to_virt(lib_sysinfo.cb_mainboard);
 	const char *part_number = (const char *)mainboard->strings +
 		mainboard->part_number_idx;
 
