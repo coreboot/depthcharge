@@ -37,9 +37,9 @@
 #define SDC2_HC_BASE 0x08804000
 
 static const VpdDeviceTreeMap vpd_dt_map[] = {
-         { "bluetooth_mac0", "bluetooth0/local-bd-address" },
-         { "wifi_mac0", "wifi0/local-mac-address" },
-         {}
+	{ "bluetooth_mac0", "bluetooth0/local-bd-address" },
+	{ "wifi_mac0", "wifi0/local-mac-address" },
+	{}
 };
 
 static int trogdor_tpm_irq_status(void)
@@ -86,7 +86,7 @@ static int board_setup(void)
 	     !strcmp(cb_mb_part_string(mainboard), "Trogdor")) ||
 	    (lib_sysinfo.board_id == 2 &&
 	     !strcmp(cb_mb_part_string(mainboard), "Lazor")) ||
-	    (lib_sysinfo.board_id == 0 &&
+	    (lib_sysinfo.board_id < 2 &&
 	     !strcmp(cb_mb_part_string(mainboard), "Pompom")))
 		emmc_platfm_flags &= ~SDHCI_PLATFORM_SUPPORTS_HS400ES;
 
