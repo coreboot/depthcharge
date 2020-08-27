@@ -20,6 +20,7 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "boot/commandline.h"
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
@@ -304,6 +305,14 @@ static int board_setup(void)
 
 	power_set_ops(&kern_power_ops);
 	display_set_ops(&zork_display_ops);
+
+	/*
+	 * Disable IOMMU in kernel by appending `amd_iommu=off` to kernel
+	 * command line args. This is done here so that IOMMU can be reenabled
+	 * easily for testing by dropping this from kernel command line. This
+	 * is currently required until all IOMMU issues are fixed (b/162078163).
+	 */
+	commandline_append("amd_iommu=off");
 
 	return 0;
 }
