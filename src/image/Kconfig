@@ -52,7 +52,7 @@ config BASE_ADDRESS
 
 config HEAP_SIZE
 	hex "The size of the heap in bytes"
-	default 0x200000
+	default 0x1000000  # 16 MiB
 	help
 	  The size of the heap in bytes, minus any padding needed to align it
 	  to a 16 byte boundary.
