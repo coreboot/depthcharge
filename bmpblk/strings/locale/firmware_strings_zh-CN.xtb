@@ -15,13 +15,13 @@
 <translation id="2076174287070071207">您可以使用外部存储设备（例如 U 盘或 SD 卡）或 Android 手机进行恢复。</translation>
 <translation id="2164852388827548816">固件日志</translation>
 <translation id="2176647394998805208">从外部磁盘启动</translation>
-<translation id="2188090550242711688">2. 按照 Chrome 扩展程序中显示的说明操作，并将恢复映像下载到外部存储设备上</translation>
+<translation id="2188090550242711688">2. 按照 Chrome 扩展程序中显示的说明操作，将恢复映像下载到外部存储设备上</translation>
 <translation id="2270126560545545577">您现在处于开发者模式</translation>
 <translation id="2360163367862409346">此操作会清空您设备中的所有数据，并会使此设备变得不安全。</translation>
 <translation id="2531345960369431549">此选项会停用开发者模式，并会将您的设备恢复到初始状态。</translation>
 <translation id="2603025384438397887">使用手机进行恢复</translation>
 <translation id="2904079386864173492">型号：</translation>
-<translation id="3174560100798162637">建议您将设备连接到电源。</translation>
+<translation id="3174560100798162637">建议您将本设备连接到电源。</translation>
 <translation id="3235458304027619499">1. 一个外部存储设备（例如 U 盘或 SD 卡）</translation>
 <translation id="328213018570216625">使用外部存储设备进行恢复</translation>
 <translation id="3289365543955953678">插入您的外部磁盘</translation>
@@ -69,5 +69,5 @@
 <translation id="8297243793472061482">若要尝试解决此问题，请启动恢复流程。请移除所有已连接的设备，然后先按住“恢复”按钮，再按下“电源”按钮并松开，最后松开“恢复”按钮。</translation>
 <translation id="8767579394810359800">若要尝试解决此问题，请启动恢复流程。请移除所有已连接的设备，然后同时按住 Esc 键、“刷新”键和“电源”按钮。</translation>
 <translation id="8789686976863801203">您正在尝试启用开发者模式</translation>
-<translation id="9040266428058825675">如果您的外部存储设备已装有恢复映像，请将其插入此设备中以启动恢复流程。</translation>
+<translation id="9040266428058825675">如果您的外部存储设备已装有恢复映像，请将其插入本设备中以启动恢复流程。</translation>
 </translationbundle>
