@@ -46,6 +46,17 @@ static const struct ui_error_item error_map[] = {
 			"developer mode.\n"
 			"Can't use USB keyboard.",
 	},
+	/* TOOD(roccochen): Add proper help center URLs. */
+	[VB2_UI_ERROR_ALTERNATE_BOOT_DISABLED] = {
+		.body = "Alternate bootloaders are disabled.",
+	},
+	[VB2_UI_ERROR_NO_BOOTLOADER] = {
+		.body = "Couldn't find alternate bootloader.",
+	},
+	[VB2_UI_ERROR_ALTERNATE_BOOT_FAILED] = {
+		.body = "Something went wrong launching the\n"
+			"alternate bootloader.",
+	},
 	[VB2_UI_ERROR_DIAGNOSTICS] = {
 		.body = "Couldn’t get diagnostic result.\n"
 			"Go back and try again.",
