@@ -819,6 +819,30 @@ static const struct ui_screen_info developer_invalid_disk_screen = {
 };
 
 /******************************************************************************/
+/* VB2_SCREEN_DIAGNOSTICS */
+
+static const char *const diagnostics_desc[] = {
+	"diag_menu_desc0.bmp",
+};
+
+static const struct ui_menu_item diagnostics_items[] = {
+	LANGUAGE_SELECT_ITEM,
+	{ "btn_diag_storage.bmp" },
+	{ "btn_diag_memory_quick.bmp" },
+	{ "btn_diag_memory_full.bmp" },
+	POWER_OFF_ITEM,
+};
+
+static const struct ui_screen_info diagnostics_screen = {
+	.id = VB2_SCREEN_DIAGNOSTICS,
+	.icon = UI_ICON_TYPE_INFO,
+	.title = "diag_menu_title.bmp",
+	.desc = UI_DESC(diagnostics_desc),
+	.menu = UI_MENU(diagnostics_items),
+	.mesg = "Select the component you'd like to check",
+};
+
+/******************************************************************************/
 /*
  * TODO(chromium:1035800): Refactor UI code across vboot and depthcharge.
  * Currently vboot and depthcharge maintain their own copies of menus/screens.
@@ -846,6 +870,7 @@ static const struct ui_screen_info *const screens[] = {
 	&developer_to_norm_screen,
 	&developer_boot_external_screen,
 	&developer_invalid_disk_screen,
+	&diagnostics_screen,
 };
 
 const struct ui_screen_info *ui_get_screen_info(enum vb2_screen screen_id)
