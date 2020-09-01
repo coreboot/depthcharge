@@ -118,7 +118,7 @@ static int board_setup(void)
 
 	/* eMMC */
 	SdhciHost *emmc = new_pci_sdhci_host((PCH_DEV_EMMC),
-			SDHCI_PLATFORM_SUPPORTS_HS400ES,
+			SDHCI_PLATFORM_NO_EMMC_HS200,
 			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			&fixed_block_dev_controllers);
