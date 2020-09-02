@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="mr">
 <translation id="1041985745423354926">तुम्ही USB ड्राइव्ह किंवा SD कार्ड यांसारखे बाह्य स्टोरेज वापरून रिकव्हर करू शकता.</translation>
-<translation id="1159332245309393502">तुमचे बाह्य स्टोरेज सेट करा</translation>
+<translation id="1159332245309393502">तुमचे बाह्य स्टोरेज सेटअप करा</translation>
 <translation id="1201402288615127009">पुढील</translation>
 <translation id="1252150473073837888">सुरक्षित मोडवर परत जाणे निश्चित करा</translation>
 <translation id="1389402762514302384">संरक्षित केलेले राहण्यासाठी “रद्द करा” निवडा.</translation>
@@ -15,7 +15,7 @@
 <translation id="2076174287070071207">तुम्ही USB ड्राइव्ह किंवा SD कार्ड यांसारखे बाह्य स्टोरेज वापरून किंवा तुमचा Android फोन वापरून रिकव्हर करू शकता.</translation>
 <translation id="2164852388827548816">फर्मवेयर लॉग</translation>
 <translation id="2176647394998805208">बाह्य डिस्कवरून बूट करा</translation>
-<translation id="2188090550242711688">२. Chrome विस्तार यावरील सूचना फॉलो करा आणि बाह्य स्टोरेजवर रिकव्‍हरी इमेज डाउनलोड करा</translation>
+<translation id="2188090550242711688">२. Chrome एक्स्टेंशन वरील सूचना फॉलो करा आणि बाह्य स्टोरेजवर रिकव्‍हरी इमेज डाउनलोड करा</translation>
 <translation id="2270126560545545577">तुम्ही डेव्हलपर मोडमध्ये आहात</translation>
 <translation id="2360163367862409346">यामध्ये तुमच्या डिव्हाइसवरून सर्व डेटा मिटवणे समाविष्ट आहे आणि त्यामुळे तुमचे डिव्हाइस असुरक्षित होईल.</translation>
 <translation id="2531345960369431549">हा पर्याय डेव्हलपर मोड बंद करेल आणि तुमचे डिव्हाइस त्याच्या मूळ स्थितीमध्ये रिस्टोअर करेल.</translation>
@@ -36,7 +36,7 @@
 <translation id="4989087579517177148">तुम्हाला कसे रिकव्हर करायचे आहे ते निवडा.</translation>
 <translation id="5019112228955634706">३. या डिव्हाइससाठी पॉवर स्रोत</translation>
 <translation id="5175612852476047443">कृपया तुमचे डिव्हाइस बंद करू नका</translation>
-<translation id="5232488980254489397">निदान लाँच करा</translation>
+<translation id="5232488980254489397">निदान चाचणी लाँच करा</translation>
 <translation id="5341719174140776704">१. इंटरनेट अ‍ॅक्सेस असलेला Android फोन</translation>
 <translation id="5592705604979238266">मदत केंद्र:</translation>
 <translation id="5649741817431380014">तुमचा फोन Chrome OS रिकव्हरी अ‍ॅप रन करत आहे किंवा तुमच्या बाह्य डिस्कवर योग्य रिकव्हरी इमेज असल्याची खात्री करा. तयार असल्यावर केबल किंवा डिस्क पुन्हा घाला.</translation>
@@ -58,7 +58,7 @@
 <translation id="7352651011704765696">काहीतरी चूक झाली</translation>
 <translation id="7365121631770711723">२. तुमचा फोन आणि या डिव्हाइसला कनेक्ट करणारी USB केबल</translation>
 <translation id="7420576176825630019">डेव्हलपर मोड सुरू करा</translation>
-<translation id="7638747526774710781">१. दुसऱ्या डिव्हाइसवर google.com/chromeos/recovery वर जा आणि Chrome विस्तार इंस्टॉल करा</translation>
+<translation id="7638747526774710781">१. दुसऱ्या डिव्हाइसवर google.com/chromeos/recovery वर जा आणि Chrome एक्स्टेंशन इंस्टॉल करा</translation>
 <translation id="7658239707568436148">रद्द करा</translation>
 <translation id="7939062555109487992">प्रगत पर्याय</translation>
 <translation id="8011335065515332253">टाइमआउटनंतर, डिव्हाइस खालील निवडीवरून आपोआप बूट होईल.</translation>
