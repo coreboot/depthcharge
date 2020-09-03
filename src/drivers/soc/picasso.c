@@ -83,11 +83,19 @@ unsigned int emmc_get_platform_info(void)
 	unsigned int platform_info = 0;
 
 	/*
-	 * There is no standard way of describing HS400 support. AMD FSP uses
-	 * the DDR50 flag as an indicator to signal HS400 support.
+	 * SDHCI does not define a way of describing HS200/HS400 support.
+	 *
+	 * AMD FSP uses the SDR104 flag as an indicator to signal HS200 support.
 	 */
-	if (reg & SDHCI_SUPPORT_DDR50)
-		platform_info |= SDHCI_PLATFORM_SUPPORTS_HS400;
+	if (reg & SDHCI_SUPPORT_SDR104) {
+		/* AMD FSP uses the SDR104 + DDR50 flag as an indicator to
+		 * signal HS400 support. */
+		if (reg & SDHCI_SUPPORT_DDR50)
+			platform_info |= SDHCI_PLATFORM_SUPPORTS_HS400;
+
+	} else {
+		platform_info |= SDHCI_PLATFORM_NO_EMMC_HS200;
+	}
 
 	return platform_info;
 }
