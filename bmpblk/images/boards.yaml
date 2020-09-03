@@ -250,6 +250,5 @@ tglrvp:
   # 2400x1600, boots recovery image on any SD card or USB ports.
 
 trogdor:
-  # 1920x1080
-  screen:   [1280, 720]  # Flash size limited - resized from native resolution.
-  text_colors: 7  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
+  # 1920x1080, boots recovery image on any SD card or USB ports.
+  screen:   [1920, 1080]  # Use native resolution - CHECK BEFORE COPY-PASTING.
