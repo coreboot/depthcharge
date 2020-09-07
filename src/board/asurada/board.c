@@ -40,6 +40,11 @@ static int cr50_irq_status(void)
 	return gpio_get(tpm_int);
 }
 
+int board_backlight_update(DisplayOps *me, uint8_t enable)
+{
+	return 0;
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_mtk_gpio_input);
@@ -78,6 +83,11 @@ static int board_setup(void)
 
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11200000);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+
+	/* Set display ops */
+	if (lib_sysinfo.framebuffer.physical_address != 0)
+		display_set_ops(new_mtk_display(board_backlight_update,
+						0x14005000, 2));
 
 	return 0;
 }
