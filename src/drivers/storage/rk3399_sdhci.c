@@ -143,8 +143,9 @@ SdhciHost *new_rk_sdhci_host(uintptr_t ioaddr, unsigned int platform_info,
 			      int clock_min, int clock_max, int clock_base)
 {
 	SdhciHost *host;
-	host = new_mem_sdhci_host(ioaddr, platform_info,
-				clock_min, clock_max, clock_base);
+	host = new_mem_sdhci_host(ioaddr, platform_info, clock_min, clock_max);
+	host->quirks |= SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN;
+	host->clock_base = clock_base;
 	host->mmc_ctrlr.set_ios = &rk3399_sdhci_set_ios;
 
 	return host;
