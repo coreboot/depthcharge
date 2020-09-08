@@ -822,7 +822,7 @@ static int sdhci_pre_init(SdhciHost *host)
 	if (host->platform_info & SDHCI_PLATFORM_SUPPORTS_HS400)
 		host->host_caps |= MMC_CAPS_HS400;
 
-	if (host->quirks & SDHCI_QUIRK_SUPPORTS_HS400ES)
+	if (host->platform_info & SDHCI_PLATFORM_SUPPORTS_HS400ES)
 		host->host_caps |= MMC_CAPS_HS400ES;
 
 	if (caps_1 & SDHCI_SUPPORT_DDR50)
