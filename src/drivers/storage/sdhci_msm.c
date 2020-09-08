@@ -200,8 +200,9 @@ static int sdhci_msm_init(SdhciHost *host)
 /*
  * This function will get invoked from board_setup()
  */
-SdhciHost *new_sdhci_msm_host(uintptr_t ioaddr, int platform_info, int clock_max,
-			      uintptr_t tlmmAddr, GpioOps *cd_gpio)
+SdhciHost *new_sdhci_msm_host(uintptr_t ioaddr, unsigned int platform_info,
+			      int clock_max, uintptr_t tlmmAddr,
+			      GpioOps *cd_gpio)
 {
 	SdhciHost *host;
 

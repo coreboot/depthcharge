@@ -17,6 +17,6 @@
 
 #include "drivers/storage/sdhci.h"
 
-SdhciHost *new_rk_sdhci_host(uintptr_t ioaddr, int platform_info,
+SdhciHost *new_rk_sdhci_host(uintptr_t ioaddr, unsigned int platform_info,
 			      int clock_min, int clock_max, int clock_base);
 #endif

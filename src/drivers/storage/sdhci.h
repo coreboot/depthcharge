@@ -376,13 +376,13 @@ int sdhci_execute_tuning(struct MmcMedia *media);
 
 /* Add SDHCI controller from PCI */
 SdhciHost *new_pci_sdhci_host(pcidev_t dev,
-			      int platform_info,
+			      unsigned int platform_info,
 			      int clock_min,
 			      int clock_max);
 
 /* Add SDHCI controller with memory address */
 SdhciHost *new_mem_sdhci_host(uintptr_t ioaddr,
-			      int platform_info,
+			      unsigned int platform_info,
 			      int clock_min,
 			      int clock_max,
 			      int clock_base);

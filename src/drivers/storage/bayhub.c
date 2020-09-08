@@ -82,7 +82,7 @@ static int bh720_execute_tuning(struct MmcMedia *media)
 	return ret;
 }
 
-SdhciHost *new_bayhub_sdhci_host(pcidev_t dev, int platform_info,
+SdhciHost *new_bayhub_sdhci_host(pcidev_t dev, unsigned int platform_info,
 			      int clock_min, int clock_max)
 {
 	SdhciHost *host;

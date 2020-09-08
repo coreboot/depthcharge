@@ -61,7 +61,8 @@
 #define SDCC_HC_VENDOR_SPECIFIC_DDR200_CFG	0x224
 #define CMDIN_RCLK_EN		(1 << 1)
 
-SdhciHost *new_sdhci_msm_host(uintptr_t ioaddr, int platform_info, int clock_max,
-			      uintptr_t tlmmAddr, GpioOps *cd_gpio);
+SdhciHost *new_sdhci_msm_host(uintptr_t ioaddr, unsigned int platform_info,
+			      int clock_max, uintptr_t tlmmAddr,
+			      GpioOps *cd_gpio);
 
 #endif /* __DRIVERS_STORAGE_SDHCI_MSM_H__ */
