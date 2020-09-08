@@ -141,31 +141,36 @@ static int nor_write(MtkNorFlash *flash, uint32_t addr, const u8 *buf,
 static void *mtk_nor_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
 {
 	MtkNorFlash *flash = container_of(me, MtkNorFlash, ops);
-	uint8_t *data = NULL;
+	uint8_t *data;
 	int ret;
 
 	assert((offset + size) <= flash->rom_size);
 	data = flash->buffer + offset;
 
 	ret = nor_read(flash, offset, data, size);
-	if (ret)
-		printf("nor_read fail!\n");
+	if (ret) {
+		printf("nor_read failed!\n");
+		return NULL;
+	}
 
 	return data;
 }
 
+/* Return the number of successfully written bytes */
 static int mtk_nor_flash_write(FlashOps *me, const void *buffer,
 			       uint32_t offset, uint32_t size)
 {
-	uint32_t ret;
 	MtkNorFlash *flash = container_of(me, MtkNorFlash, ops);
+	int ret;
 
 	assert((offset + size) <= flash->rom_size);
 	ret = nor_write(flash, offset, (const u8 *)buffer, size);
-	if (ret)
-		printf("nor_write fail!\n");
+	if (ret) {
+		printf("nor_write failed!\n");
+		return -1;
+	}
 
-	return ret;
+	return size;
 }
 
 MtkNorFlash *new_mtk_nor_flash(uintptr_t reg_addr)
