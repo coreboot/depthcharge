@@ -38,8 +38,8 @@ static int get_pci_bar(pcidev_t dev, uintptr_t *bar)
 }
 
 /* Initialize an HDHCI port */
-SdhciHost *new_pci_sdhci_host(pcidev_t dev, int platform_info, int clock_min,
-			      int clock_max)
+SdhciHost *new_pci_sdhci_host(pcidev_t dev, unsigned int platform_info,
+			      int clock_min, int clock_max)
 {
 	SdhciHost *host;
 	uintptr_t bar;

@@ -20,7 +20,7 @@
 #include "drivers/storage/sdhci.h"
 
 /* Initialize an SDHCI port with memory address */
-SdhciHost *new_mem_sdhci_host(uintptr_t ioaddr, int platform_info,
+SdhciHost *new_mem_sdhci_host(uintptr_t ioaddr, unsigned int platform_info,
 			      int clock_min, int clock_max, int clock_base)
 {
 	SdhciHost *host;
