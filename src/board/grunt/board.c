@@ -254,10 +254,11 @@ static int board_setup(void)
 	if (lib_sysinfo.board_id > 0) {
 		pcidev_t pci_dev;
 		if (pci_find_device(BH720_PCI_VID, BH720_PCI_DID, &pci_dev)) {
-			emmc = new_bayhub_sdhci_host(pci_dev,
-				SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD,
-				EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
+			emmc = new_bayhub_sdhci_host(
+				pci_dev, 0, EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
 			emmc->name = "eMMC";
+			// TODO(b/168211204): Remove this quirk
+			emmc->quirks |= SDHCI_QUIRK_CLEAR_TRANSFER_BEFORE_CMD;
 		} else {
 			printf("Failed to find BH720 with VID/DID %04x:%04x\n",
 				BH720_PCI_VID, BH720_PCI_DID);
@@ -265,17 +266,17 @@ static int board_setup(void)
 
 		SdhciHost *sd;
 		sd = new_pci_sdhci_host(PCI_DEV(0, 0x14, 7),
-				SDHCI_PLATFORM_REMOVABLE |
-				SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD,
+				SDHCI_PLATFORM_REMOVABLE,
 				EMMC_SD_CLOCK_MIN, SD_CLOCK_MAX);
 		sd->name = "SD";
+		sd->quirks |= SDHCI_QUIRK_CLEAR_TRANSFER_BEFORE_CMD;
 		list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
 				&removable_block_dev_controllers);
 	} else {
 		emmc = new_pci_sdhci_host(PCI_DEV(0, 0x14, 7),
-				SDHCI_PLATFORM_NO_EMMC_HS200 |
-				SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD,
+				SDHCI_PLATFORM_NO_EMMC_HS200,
 				EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
+		emmc->quirks |= SDHCI_QUIRK_CLEAR_TRANSFER_BEFORE_CMD;
 	}
 	if (emmc) {
 		list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,

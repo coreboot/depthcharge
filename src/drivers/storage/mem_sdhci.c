@@ -32,10 +32,6 @@ SdhciHost *new_mem_sdhci_host(uintptr_t ioaddr, unsigned int platform_info,
 
 	host->quirks = SDHCI_QUIRK_NO_SIMULT_VDD_AND_POWER;
 
-	if (platform_info & SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD)
-		host->quirks |=
-			SDHCI_QUIRK_CLEAR_TRANSFER_BEFORE_CMD;
-
 	host->clock_f_min = clock_min;
 	host->clock_f_max = clock_max;
 	host->ioaddr = (void *)ioaddr;
