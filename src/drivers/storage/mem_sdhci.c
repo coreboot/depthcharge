@@ -32,9 +32,6 @@ SdhciHost *new_mem_sdhci_host(uintptr_t ioaddr, unsigned int platform_info,
 
 	host->quirks = SDHCI_QUIRK_NO_SIMULT_VDD_AND_POWER;
 
-	if (platform_info & SDHCI_PLATFORM_NO_EMMC_HS200)
-		host->quirks |= SDHCI_QUIRK_NO_EMMC_HS200;
-
 	if (platform_info & SDHCI_PLATFORM_EMMC_1V8_POWER)
 		host->quirks |= SDHCI_QUIRK_EMMC_1V8_POWER;
 
