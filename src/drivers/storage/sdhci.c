@@ -874,7 +874,7 @@ static int sdhci_pre_init(SdhciHost *host)
 	if (host->quirks & SDHCI_QUIRK_BROKEN_VOLTAGE)
 		host->mmc_ctrlr.voltages |= host->voltages;
 
-	if (host->quirks & SDHCI_QUIRK_NO_EMMC_HS200)
+	if (host->platform_info & SDHCI_PLATFORM_NO_EMMC_HS200)
 		host->mmc_ctrlr.caps = MMC_CAPS_HS | MMC_CAPS_HS_52MHz |
 			MMC_CAPS_4BIT | MMC_CAPS_HC;
 	else
