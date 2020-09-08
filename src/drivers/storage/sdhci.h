@@ -303,6 +303,7 @@ struct sdhci_host {
 	void *ioaddr;
 
 	int initialized;
+	unsigned platform_info;
 	unsigned quirks;
 	unsigned host_caps;
 	unsigned version;
