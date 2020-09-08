@@ -35,9 +35,6 @@ SdhciHost *new_mem_sdhci_host(uintptr_t ioaddr, unsigned int platform_info,
 	if (platform_info & SDHCI_PLATFORM_NO_EMMC_HS200)
 		host->quirks |= SDHCI_QUIRK_NO_EMMC_HS200;
 
-	if (platform_info & SDHCI_PLATFORM_SUPPORTS_HS400)
-		host->quirks |= SDHCI_QUIRK_SUPPORTS_HS400;
-
 	if (platform_info & SDHCI_PLATFORM_SUPPORTS_HS400ES)
 		host->quirks |= SDHCI_QUIRK_SUPPORTS_HS400ES;
 
