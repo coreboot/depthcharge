@@ -21,7 +21,7 @@
 
 /* Initialize an SDHCI port with memory address */
 SdhciHost *new_mem_sdhci_host(uintptr_t ioaddr, unsigned int platform_info,
-			      int clock_min, int clock_max, int clock_base)
+			      int clock_min, int clock_max)
 {
 	SdhciHost *host;
 	int removable = platform_info & SDHCI_PLATFORM_REMOVABLE;
@@ -38,11 +38,6 @@ SdhciHost *new_mem_sdhci_host(uintptr_t ioaddr, unsigned int platform_info,
 	if (platform_info & SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD)
 		host->quirks |=
 			SDHCI_QUIRK_CLEAR_TRANSFER_BEFORE_CMD;
-
-	if (platform_info & SDHCI_PLATFORM_NO_CLK_BASE) {
-		host->quirks |= SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN;
-		host->clock_base = clock_base;
-	}
 
 	host->clock_f_min = clock_min;
 	host->clock_f_max = clock_max;

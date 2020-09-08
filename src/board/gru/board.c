@@ -102,8 +102,7 @@ static int board_setup(void)
 	power_set_ops(&psci_power_ops);
 
 	SdhciHost *emmc = new_rk_sdhci_host(0xfe330000,
-					     SDHCI_PLATFORM_SUPPORTS_HS400ES |
-					     SDHCI_PLATFORM_NO_CLK_BASE,
+					     SDHCI_PLATFORM_SUPPORTS_HS400ES,
 					     emmc_sd_clock_min,
 					     emmc_clock_max, 149);
 

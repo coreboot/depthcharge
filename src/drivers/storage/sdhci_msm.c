@@ -208,6 +208,9 @@ SdhciHost *new_sdhci_msm_host(uintptr_t ioaddr, unsigned int platform_info,
 
 	mmc_debug("Max-Clock = %dMHz, Platform-Info = 0x%08x\n",
 		  clock_max/MHz, platform_info);
+
+	host = new_mem_sdhci_host(ioaddr, platform_info, 400*KHz, clock_max);
+
 	/*
 	 * The base clock frequency field for SDHC Capability register can't be
 	 * used for base clock > 255Mhz. On Qcom SDHC, base clock needed for
@@ -215,10 +218,8 @@ SdhciHost *new_sdhci_msm_host(uintptr_t ioaddr, unsigned int platform_info,
 	 * of speed mode. This is a common property applicable to all targets.
 	 * So set it here instead of passing from board file of every platform.
 	 */
-	platform_info |= SDHCI_PLATFORM_NO_CLK_BASE;
-
-	host = new_mem_sdhci_host(ioaddr, platform_info, 400*KHz, clock_max,
-					clock_max/MHz);
+	host->quirks |= SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN;
+	host->clock_base = clock_max/MHz;
 
 	host->attach = sdhci_msm_init;
 	host->cd_gpio = cd_gpio;

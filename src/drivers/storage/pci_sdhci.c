@@ -50,8 +50,7 @@ SdhciHost *new_pci_sdhci_host(pcidev_t dev, unsigned int platform_info,
 		return NULL;
 	}
 
-	host = new_mem_sdhci_host(bar, platform_info, clock_min, clock_max,
-				  0 /* clock_base */);
+	host = new_mem_sdhci_host(bar, platform_info, clock_min, clock_max);
 
 	host->name = xzalloc(SDHCI_NAME_LENGTH);
 

@@ -287,8 +287,7 @@ static int board_setup(void)
 
 	SdhciHost *emmc = new_mem_sdhci_host(
 		EMMCHC,
-		emmc_get_platform_info(), 0, 0,
-		0);
+		emmc_get_platform_info(), 0, 0);
 
 	emmc->name = "eMMC";
 	emmc->mmc_ctrlr.set_ios = emmc_set_ios;

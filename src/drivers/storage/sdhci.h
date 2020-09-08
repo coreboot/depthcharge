@@ -238,7 +238,6 @@
 #define SDHCI_PLATFORM_REMOVABLE	(1 << 0)
 #define SDHCI_PLATFORM_NO_EMMC_HS200	(1 << 1)
 #define SDHCI_PLATFORM_EMMC_1V8_POWER	(1 << 2)
-#define SDHCI_PLATFORM_NO_CLK_BASE	(1 << 3)
 #define SDHCI_PLATFORM_SUPPORTS_HS400ES	(1 << 4)
 #define SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD	(1 << 5)
 #define SDHCI_PLATFORM_SUPPORTS_HS400	(1 << 6)
@@ -384,7 +383,6 @@ SdhciHost *new_pci_sdhci_host(pcidev_t dev,
 SdhciHost *new_mem_sdhci_host(uintptr_t ioaddr,
 			      unsigned int platform_info,
 			      int clock_min,
-			      int clock_max,
-			      int clock_base);
+			      int clock_max);
 
 #endif
