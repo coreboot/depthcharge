@@ -188,7 +188,7 @@ static int sdhci_msm_init(SdhciHost *host)
 	udelay(10);
 
 	/* Write DLL registers with POR values */
-	if (host->quirks & SDHCI_QUIRK_SUPPORTS_HS400ES) {
+	if (host->platform_info & SDHCI_PLATFORM_SUPPORTS_HS400ES) {
 		sdhci_writel(host, config, SDCC_HC_REG_DLL_CONFIG);
 		sdhci_writel(host, config, SDCC_HC_REG_DLL_CONFIG_2);
 	}
