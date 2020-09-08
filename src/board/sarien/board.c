@@ -140,10 +140,11 @@ static int board_setup(void)
 	SdhciHost *emmc = NULL;
 	pcidev_t pci_dev;
 	if (pci_find_device(BH720_PCI_VID, BH720_PCI_DID, &pci_dev)) {
-		emmc = new_bayhub_sdhci_host(pci_dev,
-			SDHCI_PLATFORM_CLEAR_TRANSFER_BEFORE_CMD,
+		emmc = new_bayhub_sdhci_host(pci_dev, 0,
 			EMMC_SD_CLOCK_MIN, EMMC_CLOCK_MAX);
 		emmc->name = "eMMC";
+		// TODO(b/168211204): Remove this quirk
+		emmc->quirks |= SDHCI_QUIRK_CLEAR_TRANSFER_BEFORE_CMD;
 	} else {
 		printf("Failed to find BH720 with VID/DID %04x:%04x\n",
 				BH720_PCI_VID, BH720_PCI_DID);
