@@ -27,17 +27,20 @@ static const struct ui_error_item error_map[] = {
 		.body = NULL,
 	},
 	[VB2_UI_ERROR_DEV_MODE_ALREADY_ENABLED] = {
-		.body = "Dev mode already enabled.",
+		.body = "Developer mode is already enabled.",
 	},
 	[VB2_UI_ERROR_DEBUG_LOG] = {
-		.body = "Failed to retrieve debug info.",
+		.body = "Couldn't get debug info.\n"
+			"Go back and try again.",
 	},
 	[VB2_UI_ERROR_FIRMWARE_LOG] = {
-		.body = "Failed to retrieve firmware log.",
+		.body = "Couldn't get firmware log.\n"
+			"Go back and try again.",
 	},
 	[VB2_UI_ERROR_UNTRUSTED_CONFIRMATION] = {
-		.body = "Please use internal keyboard to\n"
-			"confirm."
+		.body = "Use built-in keyboard to confirm\n"
+			"developer mode.\n"
+			"Can't use USB keyboard.",
 	},
 };
 
