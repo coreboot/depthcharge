@@ -881,7 +881,7 @@ static int sdhci_pre_init(SdhciHost *host)
 		host->mmc_ctrlr.caps = MMC_CAPS_HS | MMC_CAPS_HS_52MHz |
 			MMC_CAPS_4BIT | MMC_CAPS_HC | MMC_CAPS_HS200;
 
-	if (host->quirks & SDHCI_QUIRK_EMMC_1V8_POWER)
+	if (host->platform_info & SDHCI_PLATFORM_EMMC_1V8_POWER)
 		host->mmc_ctrlr.caps |= MMC_CAPS_1V8_VDD;
 
 	if (caps & SDHCI_CAN_DO_8BIT)
