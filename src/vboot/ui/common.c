@@ -29,6 +29,10 @@ static const struct ui_error_item error_map[] = {
 	[VB2_UI_ERROR_DEV_MODE_ALREADY_ENABLED] = {
 		.body = "Developer mode is already enabled.",
 	},
+	[VB2_UI_ERROR_TO_NORM_NOT_ALLOWED] = {
+		.body = "Returning to secure mode is not\n"
+			"allowed. Check the GBB flags.",
+	},
 	[VB2_UI_ERROR_DEBUG_LOG] = {
 		.body = "Couldn't get debug info.\n"
 			"Go back and try again.",
