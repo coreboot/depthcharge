@@ -577,6 +577,9 @@ static int mmc_select_hs(MmcMedia *media)
 
 	ret = mmc_send_status(media, MMC_IO_RETRIES);
 
+	if (!ret)
+		printf("Switched to eMMC HS\n");
+
 	return ret;
 }
 
@@ -659,6 +662,9 @@ static int mmc_select_hs400es(MmcMedia *media)
 
 	ret = mmc_send_status(media, MMC_IO_RETRIES);
 
+	if (!ret)
+		printf("Switched to HS400ES\n");
+
 	return ret;
 }
 
@@ -690,6 +696,9 @@ static int mmc_select_hs200(MmcMedia *media)
 
 	if (media->ctrlr->execute_tuning)
 		ret = media->ctrlr->execute_tuning(media);
+
+	if (!ret)
+		printf("Switched to HS200\n");
 
 	return ret;
 }
@@ -742,7 +751,7 @@ static int mmc_select_hs400(MmcMedia *media)
 		EXT_CSD_TIMING_HS400 |
 			ext_driver_strength(media, MMC_TIMING_MMC_HS400));
 	if (ret) {
-		mmc_error("switch to hs400es failed\n");
+		mmc_error("switch to hs400 failed\n");
 		return ret;
 	}
 
@@ -753,6 +762,10 @@ static int mmc_select_hs400(MmcMedia *media)
 	mmc_recalculate_clock(media);
 
 	ret = mmc_send_status(media, MMC_IO_RETRIES);
+
+	if (!ret)
+		printf("Switched to HS400\n");
+
 	return ret;
 }
 
