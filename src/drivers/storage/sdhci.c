@@ -582,7 +582,7 @@ static int sdhci_is_clock_enabled(SdhciHost *host)
 static int sdhci_set_clock(MmcCtrlr *mmc_ctrlr, unsigned int clock)
 {
 	unsigned int div, clk, timeout;
-	uint32_t timing = mmc_ctrlr->timing;
+	enum mmc_timing timing = mmc_ctrlr->timing;
 	SdhciHost *host = container_of(mmc_ctrlr,
 				       SdhciHost, mmc_ctrlr);
 
@@ -709,7 +709,7 @@ static void sdhci_set_power(SdhciHost *host, unsigned short power)
 	sdhci_writeb(host, pwr, SDHCI_POWER_CONTROL);
 }
 
-void sdhci_set_uhs_signaling(SdhciHost *host, uint32_t timing)
+static void sdhci_set_uhs_signaling(SdhciHost *host, enum mmc_timing timing)
 {
 	u16 ctrl_2;
 

@@ -194,6 +194,8 @@
 #define EXT_CSD_TIMING_HS200	2	/* HS200 */
 #define EXT_CSD_TIMING_HS400	3	/* HS400 */
 
+#define EXT_CSD_DRIVER_STRENGTH_SHIFT	4
+
 #define EXT_CSD_REV_1_0		0	/* Revision 1.0 for MMC v4.0 */
 #define EXT_CSD_REV_1_1		1	/* Revision 1.1 for MMC v4.1 */
 #define EXT_CSD_REV_1_2		2	/* Revision 1.2 for MMC v4.2 */
@@ -236,6 +238,13 @@
 
 #define EXT_CSD_SIZE	(512)
 
+enum mmc_driver_strength {
+	MMC_DRIVER_STRENGTH_B = 0, /* 1x */
+	MMC_DRIVER_STRENGTH_A = 1, /* 1.5x */
+	MMC_DRIVER_STRENGTH_C = 2, /* 0.75x */
+	MMC_DRIVER_STRENGTH_D = 3, /* 1.2x */
+};
+
 typedef struct MmcCommand {
 	uint16_t cmdidx;
 	uint32_t resp_type;
@@ -269,20 +278,21 @@ typedef struct MmcCtrlr {
 	uint32_t bus_hz;
 	uint32_t caps;
 	uint32_t b_max;
-	uint32_t timing;
 
-#define MMC_TIMING_LEGACY	0
-#define MMC_TIMING_MMC_HS	1
-#define MMC_TIMING_SD_HS	2
-#define MMC_TIMING_UHS_SDR12	3
-#define MMC_TIMING_UHS_SDR25	4
-#define MMC_TIMING_UHS_SDR50	5
-#define MMC_TIMING_UHS_SDR104	6
-#define MMC_TIMING_UHS_DDR50	7
-#define MMC_TIMING_MMC_DDR52	8
-#define MMC_TIMING_MMC_HS200	9
-#define MMC_TIMING_MMC_HS400	10
-#define MMC_TIMING_MMC_HS400ES	11
+	enum mmc_timing {
+		MMC_TIMING_LEGACY	= 0,
+		MMC_TIMING_MMC_HS	= 1,
+		MMC_TIMING_SD_HS	= 2,
+		MMC_TIMING_UHS_SDR12	= 3,
+		MMC_TIMING_UHS_SDR25	= 4,
+		MMC_TIMING_UHS_SDR50	= 5,
+		MMC_TIMING_UHS_SDR104	= 6,
+		MMC_TIMING_UHS_DDR50	= 7,
+		MMC_TIMING_MMC_DDR52	= 8,
+		MMC_TIMING_MMC_HS200	= 9,
+		MMC_TIMING_MMC_HS400	= 10,
+		MMC_TIMING_MMC_HS400ES	= 11,
+	} timing;
 
 	enum mmc_slot_type {
 		MMC_SLOT_TYPE_UNKNOWN,
@@ -300,6 +310,13 @@ typedef struct MmcCtrlr {
 	int (*send_cmd)(struct MmcCtrlr *me, MmcCommand *cmd, MmcData *data);
 	void (*set_ios)(struct MmcCtrlr *me);
 	int (*execute_tuning)(MmcMedia *media);
+
+	/*
+	 * Returns the driver strength that should be set on the card for
+	 * the specific timing.
+	 */
+	enum mmc_driver_strength (*card_driver_strength)(
+		MmcMedia *media, enum mmc_timing timing);
 } MmcCtrlr;
 
 typedef struct MmcMedia {
