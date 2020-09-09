@@ -250,8 +250,6 @@ static char *stringify_nvme_smart(char *buf, const char *end,
 		buf += snprintf(buf, end - buf,
 				"Thermal Temp. 2 Total Time:         %d\n",
 				smart_log->thm_temp2_total_time);
-	buf += snprintf(buf, end - buf, "\n");
-
 	return buf;
 }
 
@@ -307,6 +305,10 @@ char *dump_all_health_info(char *buf, const char *end)
 					bdev->name, idx, n);
 
 			buf = stringify_health_info(buf, end, &info);
+
+			if (idx < n)
+				buf += snprintf(buf, end - buf, "\n");
+
 			idx += 1;
 		}
 	}
