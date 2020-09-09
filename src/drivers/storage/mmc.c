@@ -1045,6 +1045,9 @@ static int mmc_startup(MmcMedia *media)
 
 			if ((capacity >> 20) > 2 * 1024)
 				media->capacity = capacity;
+
+			media->supported_driver_strengths =
+				ext_csd[EXT_CSD_DRIVER_STRENGTH];
 		}
 	}
 

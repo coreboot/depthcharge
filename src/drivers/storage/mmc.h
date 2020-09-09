@@ -163,6 +163,7 @@
 #define EXT_CSD_HS_TIMING		185	/* R/W */
 #define EXT_CSD_REV			192	/* RO */
 #define EXT_CSD_CARD_TYPE		196	/* RO */
+#define EXT_CSD_DRIVER_STRENGTH		197	/* RO */
 #define EXT_CSD_SEC_CNT			212	/* RO, 4 bytes */
 #define EXT_CSD_HC_ERASE_GRP_SIZE	224	/* RO */
 #define EXT_CSD_TRIM_MULT		232     /* RO */
@@ -325,6 +326,9 @@ typedef struct MmcMedia {
 	uint32_t cid[4];
 
 	uint32_t op_cond_response; // The response byte from the last op_cond
+
+	/* BIT(0) = B, BIT(1) = A, BIT(2) = C, BIT(3) = D */
+	uint8_t supported_driver_strengths;
 } MmcMedia;
 
 int mmc_busy_wait_io(volatile uint32_t *address, uint32_t *output,
