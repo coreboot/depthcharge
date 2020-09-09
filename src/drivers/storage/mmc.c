@@ -531,11 +531,42 @@ static void mmc_recalculate_clock(MmcMedia *media)
 	mmc_set_clock(media->ctrlr, clock);
 }
 
+static uint8_t
+ext_driver_strength(MmcMedia *media, enum mmc_timing timing)
+{
+	enum mmc_driver_strength driver_strength;
+
+	if (media->ctrlr->card_driver_strength) {
+		driver_strength =
+			media->ctrlr->card_driver_strength(media, timing);
+		/* Verify card supports driver strength */
+		if (!(media->supported_driver_strengths &
+		      (1 << driver_strength))) {
+			mmc_error("Driver Strength %u is not supported by "
+				  "card.\n",
+				  driver_strength);
+			mmc_error("supported_driver_strengths: %#x.\n",
+				  media->supported_driver_strengths);
+			driver_strength = MMC_DRIVER_STRENGTH_B;
+		}
+	} else {
+		/*
+		 * According to the eMMC spec, driver strength B is the default
+		 * and is required to be supported by all MMC cards.
+		 */
+		driver_strength = MMC_DRIVER_STRENGTH_B;
+	}
+
+	return (uint8_t)driver_strength << EXT_CSD_DRIVER_STRENGTH_SHIFT;
+}
+
 static int mmc_select_hs(MmcMedia *media)
 {
 	int ret;
-	ret = mmc_switch(media, EXT_CSD_CMD_SET_NORMAL,
-		 EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS);
+
+	ret = mmc_switch(media, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING,
+			 EXT_CSD_TIMING_HS |
+				 ext_driver_strength(media, MMC_TIMING_MMC_HS));
 
 	if (ret)
 		return ret;
@@ -612,8 +643,10 @@ static int mmc_select_hs400es(MmcMedia *media)
 	media->caps |= MMC_CAPS_8BIT;
 
 	/* Switch card to HS400 */
-	ret = mmc_switch(media, EXT_CSD_CMD_SET_NORMAL,
-			   EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS400);
+	ret = mmc_switch(
+		media, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING,
+		EXT_CSD_TIMING_HS400 |
+			ext_driver_strength(media, MMC_TIMING_MMC_HS400ES));
 	if (ret) {
 		mmc_error("switch to hs400es failed\n");
 		return ret;
@@ -642,8 +675,10 @@ static int mmc_select_hs200(MmcMedia *media)
 	media->caps |= MMC_CAPS_8BIT;
 
 	/* Switch to HS200 */
-	ret = mmc_switch(media, EXT_CSD_CMD_SET_NORMAL,
-		 EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS200);
+	ret = mmc_switch(
+		media, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING,
+		EXT_CSD_TIMING_HS200 |
+			ext_driver_strength(media, MMC_TIMING_MMC_HS200));
 
 	if (ret)
 		return ret;
@@ -702,8 +737,10 @@ static int mmc_select_hs400(MmcMedia *media)
 	}
 
 	/* Switch card to HS400 */
-	ret = mmc_switch(media, EXT_CSD_CMD_SET_NORMAL,
-			   EXT_CSD_HS_TIMING, EXT_CSD_TIMING_HS400);
+	ret = mmc_switch(
+		media, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING,
+		EXT_CSD_TIMING_HS400 |
+			ext_driver_strength(media, MMC_TIMING_MMC_HS400));
 	if (ret) {
 		mmc_error("switch to hs400es failed\n");
 		return ret;
