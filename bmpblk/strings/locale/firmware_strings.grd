@@ -302,7 +302,7 @@ Select alternate bootloader
 Diagnostic tools
       </message>
       <message name="diag_menu_desc0" desc="String for diagnostic entry menu.">
-Select the component you'd like to check.
+Select the component you’d like to check.
       </message>
       <message name="diag_storage_title" desc="Title for storage diagnostic screen.">
 Storage
