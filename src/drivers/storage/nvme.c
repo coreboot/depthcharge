@@ -827,10 +827,10 @@ static NVME_STATUS nvme_create_drive(NvmeCtrlr *ctrlr, uint32_t namespace_id,
 	return NVME_SUCCESS;
 }
 
-
 /* Sends the Identify Namespace command, creates NvmeDrives for each namespace */
 static NVME_STATUS nvme_identify_namespaces(NvmeCtrlr *ctrlr) {
 	NVME_SQ *sq;
+	uint32_t *active_namespaces = NULL;
 	NVME_ADMIN_NAMESPACE_DATA *namespace_data = NULL;
 	int status = NVME_SUCCESS;
 
@@ -839,13 +839,52 @@ static NVME_STATUS nvme_identify_namespaces(NvmeCtrlr *ctrlr) {
 		return NVME_INVALID_PARAMETER;
 	}
 
-	namespace_data = dma_memalign(NVME_PAGE_SIZE, sizeof(NVME_ADMIN_NAMESPACE_DATA));
-	if (namespace_data == NULL) {
+	active_namespaces = dma_memalign(NVME_PAGE_SIZE, NVME_PAGE_SIZE);
+	if (active_namespaces == NULL) {
 		printf("nvme_identify_namespaces: ERROR - out of memory\n");
 		return NVME_OUT_OF_RESOURCES;
 	}
 
-	for (uint32_t index = 1; index <= ctrlr->controller_data->nn; index++) {
+	namespace_data = dma_memalign(NVME_PAGE_SIZE, sizeof(NVME_ADMIN_NAMESPACE_DATA));
+	if (namespace_data == NULL) {
+		free(active_namespaces);
+		printf("nvme_identify_namespaces: ERROR - out of memory\n");
+		return NVME_OUT_OF_RESOURCES;
+	}
+
+	DEBUG(printf("nvme_identify_namespaces: Querying active namespaces");)
+	sq  = ctrlr->sq_buffer[NVME_ADMIN_QUEUE_INDEX] + ctrlr->sq_t_dbl[NVME_ADMIN_QUEUE_INDEX];
+	memset(sq, 0, sizeof(NVME_SQ));
+	sq->opc = NVME_ADMIN_IDENTIFY_OPC;
+	sq->cid = ctrlr->cid[NVME_ADMIN_QUEUE_INDEX]++;
+	sq->nsid = 0;
+	sq->cdw10 = NVME_ID_CNS_NS_ACTIVE_LIST;
+	/* Active namespaces list is 4Kb in size. Fits in 1 aligned PAGE */
+	sq->prp[0] = (uintptr_t)virt_to_phys(active_namespaces);
+	status = nvme_do_one_cmd_synchronous(ctrlr,
+			NVME_ADMIN_QUEUE_INDEX,
+			NVME_ASQ_SIZE,
+			NVME_ACQ_SIZE,
+			NVME_GENERIC_TIMEOUT);
+	if (NVME_ERROR(status))
+		goto exit;
+
+	for (uint32_t *ptr = active_namespaces;
+	     ptr < active_namespaces + (NVME_PAGE_SIZE / sizeof(uint32_t));
+	     ptr++) {
+		uint32_t index = *ptr;
+		/* The list contains active namespaces IDs and zeroes to fill up the rest.
+		 * The standard doesn't guarantee the list is contiguous, only that valid
+		 * IDs are in an increasing order, thus just ignore zeroes, the same way
+		 * as nvme-cli does. */
+		if (!index)
+			continue;
+		if (index > ctrlr->controller_data->nn) {
+			printf("nvme_identify_namespaces: ERROR - index [%d] exceeds the maximum [%d]\n",
+				index, ctrlr->controller_data->nn);
+			status = NVME_DEVICE_ERROR;
+			goto exit;
+		}
 		DEBUG(printf("nvme_identify_namespaces: Working on namespace %d\n",index);)
 
 		sq  = ctrlr->sq_buffer[NVME_ADMIN_QUEUE_INDEX] + ctrlr->sq_t_dbl[NVME_ADMIN_QUEUE_INDEX];
@@ -874,8 +913,8 @@ static NVME_STATUS nvme_identify_namespaces(NvmeCtrlr *ctrlr) {
 		DEBUG(printf("    NUSE        : 0x%llx\n", namespace_data->nuse);)
 		DEBUG(printf("    LBAF0.LBADS : 0x%x\n", (namespace_data->lba_format[0].lbads));)
 
-		if (namespace_data->ncap == 0) {
-			printf("nvme_identify_namespaces: ERROR - namespace %d has zero capacity\n", index);
+		if (namespace_data->nsze == 0) {
+			printf("nvme_identify_namespaces: ERROR - namespace %d has zero size\n", index);
 			status = NVME_DEVICE_ERROR;
 			goto exit;
 		} else {
@@ -890,6 +929,8 @@ static NVME_STATUS nvme_identify_namespaces(NvmeCtrlr *ctrlr) {
 	}
 
  exit:
+	if (active_namespaces != NULL)
+		free(active_namespaces);
 	if (namespace_data != NULL)
 		free(namespace_data);
 
