@@ -709,6 +709,58 @@ static void sdhci_set_power(SdhciHost *host, unsigned short power)
 	sdhci_writeb(host, pwr, SDHCI_POWER_CONTROL);
 }
 
+static enum mmc_driver_strength sdhci_preset_driver_strength(
+	SdhciHost *host, enum mmc_timing timing)
+{
+	u16 preset, driver_strength;
+
+	/*
+	 * This table should match the UHS modes in sdhci_set_uhs_signaling.
+	 * SD timings are not listed since we currently only use presets for
+	 * eMMC.
+	 */
+	switch (timing) {
+	/*
+	 * There is no official HS400 preset register in the SDHCI spec. We
+	 * use the HS200 presets since HS400 requires tuning at HS200, so
+	 * we should use the same drive strength.
+	 */
+	case MMC_TIMING_MMC_HS400ES:
+	case MMC_TIMING_MMC_HS400:
+	case MMC_TIMING_MMC_HS200:
+		preset = sdhci_readw(host, SDHCI_PRESET_VALUE_SDR104);
+		break;
+	case MMC_TIMING_MMC_DDR52:
+		preset = sdhci_readw(host, SDHCI_PRESET_VALUE_DDR50);
+		break;
+	case MMC_TIMING_MMC_HS:
+		preset = sdhci_readw(host, SDHCI_PRESET_VALUE_SDR25);
+		break;
+	case MMC_TIMING_LEGACY:
+		preset = sdhci_readw(host, SDHCI_PRESET_VALUE_DEFAULT_SPEED);
+		break;
+	default:
+		printf("Error: Unknown preset for timing %u\n", timing);
+		return MMC_DRIVER_STRENGTH_B;
+	}
+
+	driver_strength = preset & SDHCI_PRESET_VALUE_DRIVE_STRENGTH_MASK;
+	driver_strength >>= SDHCI_PRESET_VALUE_DRIVE_STRENGTH_SHIFT;
+
+	return (enum mmc_driver_strength)driver_strength;
+}
+
+static enum mmc_driver_strength sdhci_card_driver_strength(
+	MmcMedia *media, enum mmc_timing timing)
+{
+	SdhciHost *host = container_of(media->ctrlr, SdhciHost, mmc_ctrlr);
+
+	if (!(host->platform_info & SDHCI_PLATFORM_VALID_PRESETS))
+		return MMC_DRIVER_STRENGTH_B;
+
+	return sdhci_preset_driver_strength(host, timing);
+}
+
 static void sdhci_set_uhs_signaling(SdhciHost *host, enum mmc_timing timing)
 {
 	u16 ctrl_2;
@@ -1001,6 +1053,7 @@ void add_sdhci(SdhciHost *host)
 {
 	host->mmc_ctrlr.send_cmd = &sdhci_send_command;
 	host->mmc_ctrlr.set_ios = &sdhci_set_ios;
+	host->mmc_ctrlr.card_driver_strength = &sdhci_card_driver_strength;
 
 	host->mmc_ctrlr.ctrlr.ops.is_bdev_owned = block_mmc_is_bdev_owned;
 	host->mmc_ctrlr.ctrlr.ops.update = &sdhci_update;
