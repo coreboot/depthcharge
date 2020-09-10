@@ -97,5 +97,7 @@ unsigned int emmc_get_platform_info(void)
 		platform_info |= SDHCI_PLATFORM_NO_EMMC_HS200;
 	}
 
+	platform_info |= SDHCI_PLATFORM_VALID_PRESETS;
+
 	return platform_info;
 }
