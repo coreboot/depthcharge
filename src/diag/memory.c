@@ -298,6 +298,8 @@ vb2_error_t memory_test_init(MemoryTestMode mode)
 
 	OUTPUT("This test may take a few minutes.\n\n");
 
+	OUTPUT("Free memory (will be tested): %lld.%03lld GiB\n",
+	       state.num_bytes / GiB, (1000 * state.num_bytes / GiB) % 1000);
 	OUTPUT("Loaded test patterns:");
 	list_for_each(pattern, *state.patterns, list_node)
 	{
