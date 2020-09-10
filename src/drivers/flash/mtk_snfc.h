@@ -15,14 +15,14 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __DRIVERS_FLASH_MTK_NOR_H__
-#define __DRIVERS_FLASH_MTK_NOR_H__
+#ifndef __DRIVERS_FLASH_MTK_SNFC_H__
+#define __DRIVERS_FLASH_MTK_SNFC_H__
 
 #include <stdint.h>
 #include "drivers/flash/flash.h"
 #include "drivers/storage/blockdev.h"
 
-/* register Offset */
+/* SPI-NOR Flash Controller (SNFC) register */
 typedef struct {
 	uint32_t cmd;
 	uint32_t cnt;
@@ -53,11 +53,11 @@ typedef struct {
 	uint32_t radr3;
 	uint32_t read_dual;
 	uint32_t delsel[3];
-} mt8173_nor_regs;
+} mtk_snfc_regs;
 
 typedef struct {
 	FlashOps ops;
-	mt8173_nor_regs *reg;
+	mtk_snfc_regs *reg;
 	uint32_t rom_size;
 	uint8_t *buffer;
 } MtkNorFlash;
