@@ -165,6 +165,7 @@
 #define   SDHCI_CTRL_UHS_DDR50          0x0004
 #define   SDHCI_CTRL_HS400		0x0005 /* reserved value in SDIO spec */
 #define  SDHCI_CTRL_VDD_180             0x0008
+#define  SDHCI_CTRL_DRV_TYPE_SHIFT      4
 #define  SDHCI_CTRL_DRV_TYPE_MASK       0x0030
 #define   SDHCI_CTRL_DRV_TYPE_B         0x0000
 #define   SDHCI_CTRL_DRV_TYPE_A         0x0010

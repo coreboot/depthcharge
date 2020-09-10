@@ -761,6 +761,28 @@ static enum mmc_driver_strength sdhci_card_driver_strength(
 	return sdhci_preset_driver_strength(host, timing);
 }
 
+static u16 sdhci_ctrlr_driver_strength(SdhciHost *host, enum mmc_timing timing)
+{
+	enum mmc_driver_strength driver_strength;
+
+	if (host->platform_info & SDHCI_PLATFORM_VALID_PRESETS) {
+		driver_strength = sdhci_preset_driver_strength(host, timing);
+	} else {
+		switch (timing) {
+		case MMC_TIMING_MMC_HS200:
+		case MMC_TIMING_UHS_SDR104:
+		case MMC_TIMING_MMC_HS400:
+		case MMC_TIMING_MMC_HS400ES:
+			driver_strength = MMC_DRIVER_STRENGTH_A;
+			break;
+		default:
+			driver_strength = MMC_DRIVER_STRENGTH_B;
+		}
+	}
+
+	return (u16)driver_strength << SDHCI_CTRL_DRV_TYPE_SHIFT;
+}
+
 static void sdhci_set_uhs_signaling(SdhciHost *host, enum mmc_timing timing)
 {
 	u16 ctrl_2;
@@ -768,6 +790,7 @@ static void sdhci_set_uhs_signaling(SdhciHost *host, enum mmc_timing timing)
 	ctrl_2 = sdhci_readw(host, SDHCI_HOST_CONTROL2);
 	/* Select Bus Speed Mode for host */
 	ctrl_2 &= ~SDHCI_CTRL_UHS_MASK;
+	ctrl_2 &= ~SDHCI_CTRL_DRV_TYPE_MASK;
 
 	if ((timing != MMC_TIMING_LEGACY) &&
 	    (timing != MMC_TIMING_MMC_HS) &&
@@ -777,7 +800,7 @@ static void sdhci_set_uhs_signaling(SdhciHost *host, enum mmc_timing timing)
 	switch (timing) {
 	case MMC_TIMING_MMC_HS200:
 	case MMC_TIMING_UHS_SDR104:
-		ctrl_2 |= SDHCI_CTRL_UHS_SDR104 | SDHCI_CTRL_DRV_TYPE_A;
+		ctrl_2 |= SDHCI_CTRL_UHS_SDR104;
 		break;
 	case MMC_TIMING_UHS_SDR12:
 		ctrl_2 |= SDHCI_CTRL_UHS_SDR12;
@@ -795,7 +818,7 @@ static void sdhci_set_uhs_signaling(SdhciHost *host, enum mmc_timing timing)
 		break;
 	case MMC_TIMING_MMC_HS400:
 	case MMC_TIMING_MMC_HS400ES:
-		ctrl_2 |= SDHCI_CTRL_HS400 | SDHCI_CTRL_DRV_TYPE_A;
+		ctrl_2 |= SDHCI_CTRL_HS400;
 		break;
 	case MMC_TIMING_SD_HS:
 	case MMC_TIMING_LEGACY:
@@ -803,6 +826,8 @@ static void sdhci_set_uhs_signaling(SdhciHost *host, enum mmc_timing timing)
 	default:
 		mmc_error("%s: Unknown timing %u\n", __func__, timing);
 	}
+
+	ctrl_2 |= sdhci_ctrlr_driver_strength(host, timing);
 
 	sdhci_writew(host, ctrl_2, SDHCI_HOST_CONTROL2);
 }
