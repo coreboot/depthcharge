@@ -37,6 +37,9 @@ enum {
 	SFLASH_AUTOINC		  = 1 << 7,
 	/* NOR flash commands */
 	SFLASH_OP_WREN		  = 0x6,
+	/* Dual read commands */
+	SFLASH_READ_DUAL_EN	  = 0x1,
+	SFLASH_1_1_2_READ	  = 0x3b,
 };
 
 #define get_nth_byte(d, n)	((d >> (8 * n)) & 0xff)
@@ -105,6 +108,9 @@ static int nor_read(MtkNorFlash *flash, uint32_t addr, uint8_t *buf,
 		    uint32_t length)
 {
 	mtk_snfc_regs *mtk_snfc = flash->reg;
+
+	setbits8(&mtk_snfc->read_dual, SFLASH_READ_DUAL_EN);
+	write8(&mtk_snfc->prgdata[3], SFLASH_1_1_2_READ);
 
 	set_sfpaddr(flash, addr);
 
