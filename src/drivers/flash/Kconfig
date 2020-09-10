@@ -20,8 +20,8 @@ config DRIVER_FLASH_MEMMAPPED
 	select DRIVER_FLASH
 	default n
 
-config DRIVER_FLASH_NOR_MT8173
-	bool "MT8173 NOR"
+config DRIVER_FLASH_MTK_SNFC
+	bool "Mediatek SPI-NOR flash controller (SNFC)"
 	select DRIVER_FLASH
 	default n
 

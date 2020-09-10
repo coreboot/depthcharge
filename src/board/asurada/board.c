@@ -15,7 +15,7 @@
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/cros/spi.h"
 #include "drivers/flash/spi.h"
-#include "drivers/flash/mtk_nor_flash.h"
+#include "drivers/flash/mtk_snfc.h"
 #include "drivers/gpio/mtk_gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"

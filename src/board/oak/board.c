@@ -35,7 +35,7 @@
 #include "drivers/sound/rt5645.h"
 #include "drivers/sound/rt5677.h"
 #include "drivers/storage/mtk_mmc.h"
-#include "drivers/flash/mtk_nor_flash.h"
+#include "drivers/flash/mtk_snfc.h"
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/slb9635_i2c.h"
 #include "drivers/tpm/tpm.h"

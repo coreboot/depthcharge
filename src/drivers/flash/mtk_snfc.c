@@ -15,12 +15,14 @@
  * GNU General Public License for more details.
  */
 
+/* Mediatek SPI-NOR Flash Controller (SNFC) */
+
 #include <assert.h>
 #include <libpayload.h>
 #include <stdint.h>
 #include "base/container_of.h"
 #include "drivers/flash/flash.h"
-#include "mtk_nor_flash.h"
+#include "mtk_snfc.h"
 
 enum {
 	SFLASH_POLLINGREG_COUNTER = 5000000,
@@ -42,20 +44,20 @@ enum {
 /* set serial flash program address */
 static void set_sfpaddr(MtkNorFlash *flash, u32 addr)
 {
-	mt8173_nor_regs *mt8173_nor = flash->reg;
+	mtk_snfc_regs *mtk_snfc = flash->reg;
 
-	write8(&mt8173_nor->radr[2], get_nth_byte(addr, 2));
-	write8(&mt8173_nor->radr[1], get_nth_byte(addr, 1));
-	write8(&mt8173_nor->radr[0], get_nth_byte(addr, 0));
+	write8(&mtk_snfc->radr[2], get_nth_byte(addr, 2));
+	write8(&mtk_snfc->radr[1], get_nth_byte(addr, 1));
+	write8(&mtk_snfc->radr[0], get_nth_byte(addr, 0));
 }
 
 static int polling_cmd(MtkNorFlash *flash, uint32_t val)
 {
 	uint64_t start = timer_us(0);
-	mt8173_nor_regs *mt8173_nor = flash->reg;
+	mtk_snfc_regs *mtk_snfc = flash->reg;
 
 	do {
-		if (!(read32(&mt8173_nor->cmd) & val))
+		if (!(read32(&mtk_snfc->cmd) & val))
 			return 0;
 
 	} while (timer_us(start) < SFLASH_POLLINGREG_COUNTER);
@@ -63,23 +65,23 @@ static int polling_cmd(MtkNorFlash *flash, uint32_t val)
 	return -1;
 }
 
-static int mt8173_nor_execute_cmd(MtkNorFlash *flash, u8 cmdval)
+static int mtk_snfc_execute_cmd(MtkNorFlash *flash, u8 cmdval)
 {
 	u8 val = cmdval & ~(SFLASH_AUTOINC);
-	mt8173_nor_regs *mt8173_nor = flash->reg;
+	mtk_snfc_regs *mtk_snfc = flash->reg;
 
-	write8(&mt8173_nor->cmd, cmdval);
+	write8(&mtk_snfc->cmd, cmdval);
 	return polling_cmd(flash, val);
 }
 
 static int sflashhw_read_flash_status(MtkNorFlash *flash, uint8_t *value)
 {
-	mt8173_nor_regs *mt8173_nor = flash->reg;
+	mtk_snfc_regs *mtk_snfc = flash->reg;
 
-	if (mt8173_nor_execute_cmd(flash, SFLASH_READSTATUS))
+	if (mtk_snfc_execute_cmd(flash, SFLASH_READSTATUS))
 		return -1;
 
-	*value = read8(&mt8173_nor->rdsr);
+	*value = read8(&mtk_snfc->rdsr);
 	return 0;
 }
 
@@ -102,16 +104,16 @@ static int wait_for_write_done(MtkNorFlash *flash)
 static int nor_read(MtkNorFlash *flash, uint32_t addr, uint8_t *buf,
 		    uint32_t length)
 {
-	mt8173_nor_regs *mt8173_nor = flash->reg;
+	mtk_snfc_regs *mtk_snfc = flash->reg;
 
 	set_sfpaddr(flash, addr);
 
 	while (length) {
-		if (mt8173_nor_execute_cmd(flash, SFLASH_RD_TRIGGER |
-					   SFLASH_AUTOINC))
+		if (mtk_snfc_execute_cmd(flash, SFLASH_RD_TRIGGER |
+					 SFLASH_AUTOINC))
 			return -1;
 
-		*buf++ = read8(&mt8173_nor->rdata);
+		*buf++ = read8(&mtk_snfc->rdata);
 		length--;
 	}
 	return 0;
@@ -120,14 +122,14 @@ static int nor_read(MtkNorFlash *flash, uint32_t addr, uint8_t *buf,
 static int nor_write(MtkNorFlash *flash, uint32_t addr, const u8 *buf,
 		     uint32_t len)
 {
-	mt8173_nor_regs *mt8173_nor = flash->reg;
+	mtk_snfc_regs *mtk_snfc = flash->reg;
 
 	set_sfpaddr(flash, addr);
 	while (len) {
-		write8(&mt8173_nor->wdata, *buf);
+		write8(&mtk_snfc->wdata, *buf);
 
-		if (mt8173_nor_execute_cmd(flash, SFLASH_WR_TRIGGER |
-					   SFLASH_AUTOINC))
+		if (mtk_snfc_execute_cmd(flash, SFLASH_WR_TRIGGER |
+					 SFLASH_AUTOINC))
 			return -1;
 
 		if (wait_for_write_done(flash))
@@ -184,7 +186,7 @@ MtkNorFlash *new_mtk_nor_flash(uintptr_t reg_addr)
 	flash->ops.write = mtk_nor_flash_write;
 	flash->ops.sector_size = sector_size;
 	flash->rom_size = rom_size;
-	flash->reg = (mt8173_nor_regs *)reg_addr;
+	flash->reg = (mtk_snfc_regs *)reg_addr;
 
 	/* Provide sufficient alignment on the cache buffer so that the
 	   underlying SPI controllers can perform optimal DMA transfers. */
