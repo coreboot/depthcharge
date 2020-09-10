@@ -191,6 +191,9 @@ typedef uint32_t NVME_CQHDBL;
 #define NVME_ADMIN_GET_LOG_PAGE	2
 #define NVME_ADMIN_IDENTIFY_OPC	6
 
+/* NVMe Admin Identify sub-command */
+#define NVME_ID_CNS_NS_ACTIVE_LIST 0x02
+
 #define NVME_IO_FLUSH_OPC	0
 #define NVME_IO_WRITE_OPC	1
 #define NVME_IO_READ_OPC	2
