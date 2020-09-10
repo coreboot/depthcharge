@@ -774,22 +774,35 @@ static void sdhci_set_uhs_signaling(SdhciHost *host, enum mmc_timing timing)
 	    (timing != MMC_TIMING_SD_HS))
 		ctrl_2 |= SDHCI_CTRL_VDD_180;
 
-	if ((timing == MMC_TIMING_MMC_HS200) ||
-	    (timing == MMC_TIMING_UHS_SDR104))
+	switch (timing) {
+	case MMC_TIMING_MMC_HS200:
+	case MMC_TIMING_UHS_SDR104:
 		ctrl_2 |= SDHCI_CTRL_UHS_SDR104 | SDHCI_CTRL_DRV_TYPE_A;
-	else if (timing == MMC_TIMING_UHS_SDR12)
+		break;
+	case MMC_TIMING_UHS_SDR12:
 		ctrl_2 |= SDHCI_CTRL_UHS_SDR12;
-	else if ((timing == MMC_TIMING_UHS_SDR25) ||
-		(timing == MMC_TIMING_MMC_HS))
+		break;
+	case MMC_TIMING_UHS_SDR25:
+	case MMC_TIMING_MMC_HS:
 		ctrl_2 |= SDHCI_CTRL_UHS_SDR25;
-	else if (timing == MMC_TIMING_UHS_SDR50)
+		break;
+	case MMC_TIMING_UHS_SDR50:
 		ctrl_2 |= SDHCI_CTRL_UHS_SDR50;
-	else if ((timing == MMC_TIMING_UHS_DDR50) ||
-		 (timing == MMC_TIMING_MMC_DDR52))
+		break;
+	case MMC_TIMING_UHS_DDR50:
+	case MMC_TIMING_MMC_DDR52:
 		ctrl_2 |= SDHCI_CTRL_UHS_DDR50;
-	else if (timing == MMC_TIMING_MMC_HS400 ||
-		 timing == MMC_TIMING_MMC_HS400ES)
+		break;
+	case MMC_TIMING_MMC_HS400:
+	case MMC_TIMING_MMC_HS400ES:
 		ctrl_2 |= SDHCI_CTRL_HS400 | SDHCI_CTRL_DRV_TYPE_A;
+		break;
+	case MMC_TIMING_SD_HS:
+	case MMC_TIMING_LEGACY:
+		break;
+	default:
+		mmc_error("%s: Unknown timing %u\n", __func__, timing);
+	}
 
 	sdhci_writew(host, ctrl_2, SDHCI_HOST_CONTROL2);
 }
