@@ -67,7 +67,7 @@ static int do_draw_image(int argc, char * const argv[])
 
 static int do_print_info(void)
 {
-	struct cb_framebuffer *fbinfo = lib_sysinfo.framebuffer;
+	struct cb_framebuffer *fbinfo = &lib_sysinfo.framebuffer;
 	if (!fbinfo) {
 		printf("Invalid address for framebuffer info\n");
 		return -1;
