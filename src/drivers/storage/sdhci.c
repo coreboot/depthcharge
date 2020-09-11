@@ -798,11 +798,6 @@ static void sdhci_set_uhs_signaling(SdhciHost *host, enum mmc_timing timing)
 	ctrl_2 &= ~SDHCI_CTRL_UHS_MASK;
 	ctrl_2 &= ~SDHCI_CTRL_DRV_TYPE_MASK;
 
-	if ((timing != MMC_TIMING_LEGACY) &&
-	    (timing != MMC_TIMING_MMC_HS) &&
-	    (timing != MMC_TIMING_SD_HS))
-		ctrl_2 |= SDHCI_CTRL_VDD_180;
-
 	switch (timing) {
 	case MMC_TIMING_MMC_HS200:
 	case MMC_TIMING_UHS_SDR104:
@@ -994,6 +989,7 @@ static int sdhci_pre_init(SdhciHost *host)
 
 static int sdhci_init(SdhciHost *host)
 {
+	u16 reg;
 	int rv = sdhci_pre_init(host);
 
 	if (rv)
@@ -1012,6 +1008,19 @@ static int sdhci_init(SdhciHost *host)
 		    (!(status & SDHCI_CARD_STATE_STABLE)) ||
 		    (!(status & SDHCI_CARD_DETECT_PIN_LEVEL)))
 			status = sdhci_readl(host, SDHCI_PRESENT_STATE);
+	}
+
+	/*
+	 * eMMC VCCQ (I/O Signaling) is typically hard wired. Unlike SD cards,
+	 * There is no protocol to negotiate signal voltage switching,
+	 * We need to configure the controllers signaling level before
+	 * performing any transactions to avoid a voltage mismatch.
+	 */
+	if (host->mmc_ctrlr.slot_type == MMC_SLOT_TYPE_EMBEDDED &&
+	    !(host->platform_info & SDHCI_PLATFORM_EMMC_33V_VCCQ)) {
+		reg = sdhci_readw(host, SDHCI_HOST_CONTROL2);
+		reg |= SDHCI_CTRL_180V_SIGNALING_ENABLE;
+		sdhci_writew(host, reg, SDHCI_HOST_CONTROL2);
 	}
 
 	/* Enable only interrupts served by the SD controller */

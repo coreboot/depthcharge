@@ -156,24 +156,24 @@
 
 #define SDHCI_ACMD12_ERR	0x3C
 
-#define SDHCI_HOST_CONTROL2             0x3E
-#define  SDHCI_CTRL_UHS_MASK            0x0007
-#define   SDHCI_CTRL_UHS_SDR12          0x0000
-#define   SDHCI_CTRL_UHS_SDR25          0x0001
-#define   SDHCI_CTRL_UHS_SDR50          0x0002
-#define   SDHCI_CTRL_UHS_SDR104         0x0003
-#define   SDHCI_CTRL_UHS_DDR50          0x0004
-#define   SDHCI_CTRL_HS400		0x0005 /* reserved value in SDIO spec */
-#define  SDHCI_CTRL_VDD_180             0x0008
-#define  SDHCI_CTRL_DRV_TYPE_SHIFT      4
-#define  SDHCI_CTRL_DRV_TYPE_MASK       0x0030
-#define   SDHCI_CTRL_DRV_TYPE_B         0x0000
-#define   SDHCI_CTRL_DRV_TYPE_A         0x0010
-#define   SDHCI_CTRL_DRV_TYPE_C         0x0020
-#define   SDHCI_CTRL_DRV_TYPE_D         0x0030
-#define  SDHCI_CTRL_EXEC_TUNING         0x0040
-#define  SDHCI_CTRL_TUNED_CLK           0x0080
-#define  SDHCI_CTRL_PRESET_VAL_ENABLE   0x8000
+#define SDHCI_HOST_CONTROL2			0x3E
+#define  SDHCI_CTRL_UHS_MASK			0x0007
+#define   SDHCI_CTRL_UHS_SDR12			0x0000
+#define   SDHCI_CTRL_UHS_SDR25			0x0001
+#define   SDHCI_CTRL_UHS_SDR50			0x0002
+#define   SDHCI_CTRL_UHS_SDR104			0x0003
+#define   SDHCI_CTRL_UHS_DDR50			0x0004
+#define   SDHCI_CTRL_HS400			0x0005 /* reserved value in SDIO spec */
+#define  SDHCI_CTRL_180V_SIGNALING_ENABLE	0x0008
+#define  SDHCI_CTRL_DRV_TYPE_SHIFT		4
+#define  SDHCI_CTRL_DRV_TYPE_MASK		0x0030
+#define   SDHCI_CTRL_DRV_TYPE_B			0x0000
+#define   SDHCI_CTRL_DRV_TYPE_A			0x0010
+#define   SDHCI_CTRL_DRV_TYPE_C			0x0020
+#define   SDHCI_CTRL_DRV_TYPE_D			0x0030
+#define  SDHCI_CTRL_EXEC_TUNING			0x0040
+#define  SDHCI_CTRL_TUNED_CLK			0x0080
+#define  SDHCI_CTRL_PRESET_VAL_ENABLE		0x8000
 
 #define SDHCI_CAPABILITIES	0x40
 #define  SDHCI_TIMEOUT_CLK_MASK	0x0000003F
@@ -253,6 +253,8 @@
 #define SDHCI_PLATFORM_SUPPORTS_HS400ES	(1 << 4)
 #define SDHCI_PLATFORM_SUPPORTS_HS400	(1 << 6)
 #define SDHCI_PLATFORM_VALID_PRESETS	(1 << 7)
+/* The platform uses 3.3 V VCCQ (I/O signaling) */
+#define SDHCI_PLATFORM_EMMC_33V_VCCQ	(1 << 8)
 /*
  * quirks
  */
