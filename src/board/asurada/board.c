@@ -28,6 +28,27 @@
 #include "drivers/video/display.h"
 #include "drivers/video/mtk_ddp.h"
 
+static void sound_setup(void)
+{
+	GpioOps *sdmode_gpio = sysinfo_lookup_gpio("speaker enable", 1,
+						   new_mtk_gpio_output);
+	if (!sdmode_gpio)
+		return;
+
+	MtkI2s *i2s2 = new_mtk_i2s(0x11210000, 2, 48000, AFE_I2S2_I2S3);
+	I2sSource *i2s_source = new_i2s_source(&i2s2->ops, 48000, 2, 8000);
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+
+	/* The real codec is RT1015P but it's compatible with MAX98357A. */
+	max98357aCodec *codec = new_max98357a_codec(sdmode_gpio);
+	ListNode *speaker_amp = &codec->component.list_node;
+
+	list_insert_after(speaker_amp, &sound_route->components);
+	list_insert_after(&i2s2->component.list_node,
+			  &sound_route->components);
+
+	sound_set_ops(&sound_route->ops);
+}
 
 static int cr50_irq_status(void)
 {
@@ -83,6 +104,8 @@ static int board_setup(void)
 
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11200000);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+
+	sound_setup();
 
 	/* Set display ops */
 	if (lib_sysinfo.framebuffer.physical_address != 0)
