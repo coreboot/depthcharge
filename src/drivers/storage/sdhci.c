@@ -731,9 +731,15 @@ static enum mmc_driver_strength sdhci_preset_driver_strength(
 		preset = sdhci_readw(host, SDHCI_PRESET_VALUE_SDR104);
 		break;
 	case MMC_TIMING_MMC_DDR52:
-		preset = sdhci_readw(host, SDHCI_PRESET_VALUE_DDR50);
+		/*
+		 * TODO: Switch this to DDR50 when zork presets are fixed.
+		 */
+		preset = sdhci_readw(host, SDHCI_PRESET_VALUE_SDR25);
 		break;
 	case MMC_TIMING_MMC_HS:
+		/*
+		 * TODO: Switch this to SDR50 when zork presets are fixed.
+		 */
 		preset = sdhci_readw(host, SDHCI_PRESET_VALUE_SDR25);
 		break;
 	case MMC_TIMING_LEGACY:
