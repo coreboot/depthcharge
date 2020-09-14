@@ -589,9 +589,23 @@ static int mmc_select_ddr52(MmcMedia *media)
 	uint8_t width;
 
 	/* Switch card to HS mode */
-	ret = mmc_select_hs(media);
+	ret = mmc_switch(
+		media, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING,
+		EXT_CSD_TIMING_HS |
+			ext_driver_strength(media, MMC_TIMING_MMC_DDR52));
+
 	if (ret) {
-		mmc_error("switch to high-speed failed\n");
+		mmc_error("%s: Failed to switch card to HS\n", __func__);
+		return ret;
+	}
+
+	mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_HS);
+	media->caps |= MMC_CAPS_HS_52MHz | MMC_CAPS_HS;
+	mmc_recalculate_clock(media);
+
+	ret = mmc_send_status(media, MMC_IO_RETRIES);
+	if (ret) {
+		mmc_error("%s: Failed switching host to HS\n", __func__);
 		return ret;
 	}
 
@@ -617,6 +631,10 @@ static int mmc_select_ddr52(MmcMedia *media)
 	mmc_set_bus_width(media->ctrlr, width);
 	media->caps |= MMC_CAPS_DDR52;
 	mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_DDR52);
+
+	ret = mmc_send_status(media, MMC_IO_RETRIES);
+	if (!ret)
+		printf("Switched to eMMC DDR52\n");
 
 	return ret;
 }
