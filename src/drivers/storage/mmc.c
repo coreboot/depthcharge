@@ -560,9 +560,11 @@ ext_driver_strength(MmcMedia *media, enum mmc_timing timing)
 	return (uint8_t)driver_strength << EXT_CSD_DRIVER_STRENGTH_SHIFT;
 }
 
-static int mmc_select_hs(MmcMedia *media)
+static int mmc_select_hs(MmcMedia *media, unsigned char *ext_csd)
 {
 	int ret;
+	unsigned int width;
+	ALLOC_CACHE_ALIGN_BUFFER(unsigned char, test_csd, EXT_CSD_SIZE);
 
 	ret = mmc_switch(media, EXT_CSD_CMD_SET_NORMAL, EXT_CSD_HS_TIMING,
 			 EXT_CSD_TIMING_HS |
@@ -579,6 +581,41 @@ static int mmc_select_hs(MmcMedia *media)
 
 	if (!ret)
 		printf("Switched to eMMC HS\n");
+
+	for (width = EXT_CSD_BUS_WIDTH_8; width >= 0; width--) {
+		ret = mmc_switch(media, EXT_CSD_CMD_SET_NORMAL,
+				 EXT_CSD_BUS_WIDTH, width);
+		if (ret)
+			continue;
+
+		if (!width) {
+			mmc_set_bus_width(media->ctrlr, 1);
+			break;
+		} else
+			mmc_set_bus_width(media->ctrlr, 4 * width);
+
+		/*
+		 * TODO(b/168714083): This doesn't use the recommended pattern
+		 * defined in the eMMC spec. See `JEDEC Standard No. 84-B51A
+		 * section A.6.3 - Changing the data bus width` for the correct
+		 * procedure.
+		 */
+		ret = mmc_send_ext_csd(media->ctrlr, test_csd);
+		if (!ret &&
+		    (ext_csd[EXT_CSD_PARTITIONING_SUPPORT] ==
+		    test_csd[EXT_CSD_PARTITIONING_SUPPORT]) &&
+		    (ext_csd[EXT_CSD_ERASE_GROUP_DEF] ==
+		    test_csd[EXT_CSD_ERASE_GROUP_DEF]) &&
+		    (ext_csd[EXT_CSD_REV] ==
+		    test_csd[EXT_CSD_REV]) &&
+		    (ext_csd[EXT_CSD_HC_ERASE_GRP_SIZE] ==
+		    test_csd[EXT_CSD_HC_ERASE_GRP_SIZE]) &&
+		    memcmp(&ext_csd[EXT_CSD_SEC_CNT],
+			   &test_csd[EXT_CSD_SEC_CNT], sizeof(u32)) == 0) {
+			media->caps |= width;
+			break;
+		}
+	}
 
 	return ret;
 }
@@ -841,7 +878,7 @@ static int mmc_change_freq(MmcMedia *media, unsigned char *ext_csd)
 		  EXT_CSD_CARD_TYPE_DDR52_1_8V_3V))
 		err = mmc_select_ddr52(media);
 	else
-		err = mmc_select_hs(media);
+		err = mmc_select_hs(media, ext_csd);
 
 	return err;
 }
@@ -1015,12 +1052,11 @@ static uint32_t mmc_calculate_transfer_speed(uint32_t csd0)
 
 static int mmc_startup(MmcMedia *media)
 {
-	int err, width;
+	int err;
 	uint64_t cmult, csize, capacity;
 
 	MmcCommand cmd;
 	ALLOC_CACHE_ALIGN_BUFFER(unsigned char, ext_csd, EXT_CSD_SIZE);
-	ALLOC_CACHE_ALIGN_BUFFER(unsigned char, test_csd, EXT_CSD_SIZE);
 
 	/* Put the Card in Identify Mode */
 	cmd.cmdidx = MMC_CMD_ALL_SEND_CID;
@@ -1177,43 +1213,6 @@ static int mmc_startup(MmcMedia *media)
 				return err;
 
 			mmc_set_bus_width(media->ctrlr, 4);
-		}
-	} else {
-		for (width = EXT_CSD_BUS_WIDTH_8; width >= 0; width--) {
-			/* If HS200 is switched, Bus Width has been 8-bit */
-			if ((media->caps & MMC_CAPS_HS200) ||
-			    (media->caps & MMC_CAPS_HS400) ||
-			    (media->caps & MMC_CAPS_HS400ES) ||
-			    (media->caps & MMC_CAPS_DDR52))
-				break;
-
-			/* Set the card to use 4 bit*/
-			err = mmc_switch(media, EXT_CSD_CMD_SET_NORMAL,
-					 EXT_CSD_BUS_WIDTH, width);
-			if (err)
-				continue;
-
-			if (!width) {
-				mmc_set_bus_width(media->ctrlr, 1);
-				break;
-			} else
-				mmc_set_bus_width(media->ctrlr, 4 * width);
-
-			err = mmc_send_ext_csd(media->ctrlr, test_csd);
-			if (!err &&
-			    (ext_csd[EXT_CSD_PARTITIONING_SUPPORT] ==
-			    test_csd[EXT_CSD_PARTITIONING_SUPPORT]) &&
-			    (ext_csd[EXT_CSD_ERASE_GROUP_DEF] ==
-			    test_csd[EXT_CSD_ERASE_GROUP_DEF]) &&
-			    (ext_csd[EXT_CSD_REV] ==
-			    test_csd[EXT_CSD_REV]) &&
-			    (ext_csd[EXT_CSD_HC_ERASE_GRP_SIZE] ==
-			    test_csd[EXT_CSD_HC_ERASE_GRP_SIZE]) &&
-			    memcmp(&ext_csd[EXT_CSD_SEC_CNT],
-				   &test_csd[EXT_CSD_SEC_CNT], 4) == 0) {
-				media->caps |= width;
-				break;
-			}
 		}
 	}
 
