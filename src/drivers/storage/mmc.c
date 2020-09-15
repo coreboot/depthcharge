@@ -963,9 +963,6 @@ static int sd_change_freq(MmcMedia *media)
 			break;
 	}
 
-	if (media->scr[0] & SD_DATA_4BIT)
-		media->caps |= MMC_CAPS_4BIT;
-
 	/* Version 1.0 doesn't support switching */
 	if (media->version == SD_VERSION_1_0)
 		goto out;
@@ -1008,6 +1005,29 @@ static int sd_change_freq(MmcMedia *media)
 
  out:
 	mmc_recalculate_clock(media);
+
+	if (media->ctrlr->caps & MMC_CAPS_4BIT &&
+	    media->scr[0] & SD_DATA_4BIT) {
+		cmd.cmdidx = MMC_CMD_APP_CMD;
+		cmd.resp_type = MMC_RSP_R1;
+		cmd.cmdarg = media->rca << 16;
+		cmd.flags = 0;
+
+		err = mmc_send_cmd(media->ctrlr, &cmd, NULL);
+		if (err)
+			return err;
+
+		cmd.cmdidx = SD_CMD_APP_SET_BUS_WIDTH;
+		cmd.resp_type = MMC_RSP_R1;
+		cmd.cmdarg = 2;
+		cmd.flags = 0;
+		err = mmc_send_cmd(media->ctrlr, &cmd, NULL);
+		if (err)
+			return err;
+
+		mmc_set_bus_width(media->ctrlr, 4);
+	}
+
 	return 0;
 }
 
@@ -1192,29 +1212,6 @@ static int mmc_startup(MmcMedia *media)
 
 	/* Restrict card's capabilities by what the host can do */
 	media->caps &= media->ctrlr->caps;
-
-	if (IS_SD(media)) {
-		if (media->caps & MMC_CAPS_4BIT) {
-			cmd.cmdidx = MMC_CMD_APP_CMD;
-			cmd.resp_type = MMC_RSP_R1;
-			cmd.cmdarg = media->rca << 16;
-			cmd.flags = 0;
-
-			err = mmc_send_cmd(media->ctrlr, &cmd, NULL);
-			if (err)
-				return err;
-
-			cmd.cmdidx = SD_CMD_APP_SET_BUS_WIDTH;
-			cmd.resp_type = MMC_RSP_R1;
-			cmd.cmdarg = 2;
-			cmd.flags = 0;
-			err = mmc_send_cmd(media->ctrlr, &cmd, NULL);
-			if (err)
-				return err;
-
-			mmc_set_bus_width(media->ctrlr, 4);
-		}
-	}
 
 	media->dev.block_count = media->capacity / media->read_bl_len;
 	media->dev.block_size = media->read_bl_len;
