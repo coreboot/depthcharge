@@ -275,7 +275,7 @@ char *dump_all_health_info(char *buf, const char *end)
 	ListNode *devs;
 	int n = get_all_bdevs(BLOCKDEV_FIXED, &devs);
 	if (!n) {
-		buf += snprintf(buf, end - buf, "No disk found.\n\n");
+		buf += snprintf(buf, end - buf, "No storage device found.\n\n");
 		return buf;
 	}
 
@@ -300,9 +300,8 @@ char *dump_all_health_info(char *buf, const char *end)
 			}
 
 			buf += snprintf(buf, end - buf,
-					"Health info of the block device '%s' "
-					"(%d/%d):\n",
-					bdev->name, idx, n);
+					"(%d/%d) Block device '%s':\n", idx, n,
+					bdev->name);
 
 			buf = stringify_health_info(buf, end, &info);
 
@@ -310,6 +309,11 @@ char *dump_all_health_info(char *buf, const char *end)
 				buf += snprintf(buf, end - buf, "\n");
 
 			idx += 1;
+		} else {
+			buf += snprintf(buf, end - buf,
+					"(%d/%d) Block device '%s' does not "
+					"provide health info.\n",
+					idx, n, bdev->name);
 		}
 	}
 	return buf;
