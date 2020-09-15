@@ -37,7 +37,7 @@ const char *vb2ex_get_debug_info(struct vb2_context *ctx)
 	return "";
 }
 
-const char *vb2ex_get_firmware_log(void)
+const char *vb2ex_get_firmware_log(int reset)
 {
 	/* TODO(b/151200757): Support headless devices */
 	return "";

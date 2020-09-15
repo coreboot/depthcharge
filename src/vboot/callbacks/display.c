@@ -107,10 +107,11 @@ const char *vb2ex_get_debug_info(struct vb2_context *ctx)
 	return buf;
 }
 
-const char *vb2ex_get_firmware_log(void)
+const char *vb2ex_get_firmware_log(int reset)
 {
-	static const char *buf;
-	if (!buf) {
+	static char *buf;
+	if (!buf || reset) {
+		free(buf);
 		buf = cbmem_console_snapshot();
 		if (buf)
 			printf("Read cbmem console: size=%zu\n", strlen(buf));
