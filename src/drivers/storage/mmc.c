@@ -491,12 +491,6 @@ static void mmc_set_bus_width(MmcCtrlr *ctrlr, uint32_t width)
 	ctrlr->set_ios(ctrlr);
 }
 
-static void mmc_set_timing(MmcCtrlr *ctrlr, uint32_t timing)
-{
-	ctrlr->timing = timing;
-	ctrlr->set_ios(ctrlr);
-}
-
 static void mmc_set_clock(MmcCtrlr *ctrlr, uint32_t clock)
 {
 	clock = MIN(clock, ctrlr->f_max);
@@ -506,11 +500,11 @@ static void mmc_set_clock(MmcCtrlr *ctrlr, uint32_t clock)
 	ctrlr->set_ios(ctrlr);
 }
 
-static void mmc_recalculate_clock(MmcMedia *media)
+static void mmc_recalculate_clock(MmcCtrlr *ctrlr)
 {
 	uint32_t clock = 1;
 
-	switch (media->ctrlr->timing) {
+	switch (ctrlr->timing) {
 	case MMC_TIMING_INITIALIZATION:
 		clock = MMC_CLOCK_400KHZ;
 		break;
@@ -539,10 +533,18 @@ static void mmc_recalculate_clock(MmcMedia *media)
 	case MMC_TIMING_UHS_DDR50:
 	default:
 		mmc_error("%s: Unknown timing %u\n", __func__,
-			  media->ctrlr->timing);
+			  ctrlr->timing);
 	}
 
-	mmc_set_clock(media->ctrlr, clock);
+	mmc_set_clock(ctrlr, clock);
+}
+
+static void mmc_set_timing(MmcCtrlr *ctrlr, uint32_t timing)
+{
+	ctrlr->timing = timing;
+	ctrlr->set_ios(ctrlr);
+
+	mmc_recalculate_clock(ctrlr);
 }
 
 static uint8_t
@@ -588,7 +590,6 @@ static int mmc_select_hs(MmcMedia *media, unsigned char *ext_csd)
 		return ret;
 
 	mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_HS);
-	mmc_recalculate_clock(media);
 
 	ret = mmc_send_status(media, MMC_IO_RETRIES);
 
@@ -649,7 +650,6 @@ static int mmc_select_ddr52(MmcMedia *media)
 	}
 
 	mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_HS);
-	mmc_recalculate_clock(media);
 
 	ret = mmc_send_status(media, MMC_IO_RETRIES);
 	if (ret) {
@@ -702,7 +702,6 @@ static int mmc_select_hs400es(MmcMedia *media)
 	}
 
 	mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_HS);
-	mmc_recalculate_clock(media);
 
 	ret = mmc_send_status(media, MMC_IO_RETRIES);
 	if (ret) {
@@ -733,7 +732,6 @@ static int mmc_select_hs400es(MmcMedia *media)
 	}
 	/* Set host controller to HS400 timing and frequency */
 	mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_HS400ES);
-	mmc_recalculate_clock(media);
 
 	ret = mmc_send_status(media, MMC_IO_RETRIES);
 
@@ -764,8 +762,6 @@ static int mmc_select_hs200(MmcMedia *media)
 		return ret;
 
 	mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_HS200);
-
-	mmc_recalculate_clock(media);
 
 	if (media->ctrlr->execute_tuning)
 		ret = media->ctrlr->execute_tuning(media);
@@ -807,7 +803,6 @@ static int mmc_select_hs400(MmcMedia *media)
 	}
 
 	mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_HS);
-	mmc_recalculate_clock(media);
 
 	ret = mmc_send_status(media, MMC_IO_RETRIES);
 	if (ret) {
@@ -836,8 +831,6 @@ static int mmc_select_hs400(MmcMedia *media)
 
 	/* Set host controller to HS400 timing and frequency */
 	mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_HS400);
-
-	mmc_recalculate_clock(media);
 
 	ret = mmc_send_status(media, MMC_IO_RETRIES);
 
@@ -1000,8 +993,6 @@ static int sd_change_freq(MmcMedia *media)
 	}
 
  out:
-	mmc_recalculate_clock(media);
-
 	if (media->ctrlr->caps & MMC_CAPS_4BIT &&
 	    media->scr[0] & SD_DATA_4BIT) {
 		cmd.cmdidx = MMC_CMD_APP_CMD;
