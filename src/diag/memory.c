@@ -26,6 +26,7 @@
 	}
 
 #define DEFAULT_DIAGNOSTIC_OUTPUT_SIZE (64 * KiB)
+#define PATTERN_CACHE_SIZE (1 * KiB)
 #define CHUNK_SIZE (256 * MiB)
 
 typedef enum {
@@ -35,7 +36,7 @@ typedef enum {
 
 typedef struct {
 	// Cyclic memory test pattern. To Speedup via memcpy/memcmp and cache.
-	uint32_t pattern[1 * KiB];
+	uint32_t pattern[PATTERN_CACHE_SIZE];
 
 	// Check Result
 	TestResult result;
@@ -269,11 +270,10 @@ vb2_error_t memory_test_init(MemoryTestMode mode)
 			DEBUG("Fail to allocate memory for operation data.\n");
 			return VB2_ERROR_UI_MEMORY_ALLOC;
 		}
-
-		memset(state.single_operation_data, 0,
-		       sizeof(*state.single_operation_data));
-		state.single_operation_data->result = TEST_SUCCESS;
 	}
+	memset(state.single_operation_data, 0,
+	       sizeof(*state.single_operation_data));
+	state.single_operation_data->result = TEST_SUCCESS;
 
 	// Memory range initialization
 	if (!state.ranges.head.next) {
