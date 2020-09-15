@@ -585,7 +585,6 @@ static int mmc_select_hs(MmcMedia *media, unsigned char *ext_csd)
 		return ret;
 
 	mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_HS);
-	media->caps |= MMC_CAPS_HS_52MHz | MMC_CAPS_HS;
 	mmc_recalculate_clock(media);
 
 	ret = mmc_send_status(media, MMC_IO_RETRIES);
@@ -623,7 +622,6 @@ static int mmc_select_hs(MmcMedia *media, unsigned char *ext_csd)
 		    test_csd[EXT_CSD_HC_ERASE_GRP_SIZE]) &&
 		    memcmp(&ext_csd[EXT_CSD_SEC_CNT],
 			   &test_csd[EXT_CSD_SEC_CNT], sizeof(u32)) == 0) {
-			media->caps |= width;
 			break;
 		}
 	}
@@ -648,7 +646,6 @@ static int mmc_select_ddr52(MmcMedia *media)
 	}
 
 	mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_HS);
-	media->caps |= MMC_CAPS_HS_52MHz | MMC_CAPS_HS;
 	mmc_recalculate_clock(media);
 
 	ret = mmc_send_status(media, MMC_IO_RETRIES);
@@ -677,7 +674,6 @@ static int mmc_select_ddr52(MmcMedia *media)
 		return ret;
 
 	mmc_set_bus_width(media->ctrlr, width);
-	media->caps |= MMC_CAPS_DDR52;
 	mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_DDR52);
 
 	ret = mmc_send_status(media, MMC_IO_RETRIES);
@@ -703,7 +699,6 @@ static int mmc_select_hs400es(MmcMedia *media)
 	}
 
 	mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_HS);
-	media->caps |= MMC_CAPS_HS_52MHz | MMC_CAPS_HS;
 	mmc_recalculate_clock(media);
 
 	ret = mmc_send_status(media, MMC_IO_RETRIES);
@@ -723,7 +718,6 @@ static int mmc_select_hs400es(MmcMedia *media)
 
 	/* Adjust Host Bus With to 8-bit */
 	mmc_set_bus_width(media->ctrlr, 8);
-	media->caps |= MMC_CAPS_8BIT;
 
 	/* Switch card to HS400 */
 	ret = mmc_switch(
@@ -736,8 +730,6 @@ static int mmc_select_hs400es(MmcMedia *media)
 	}
 	/* Set host controller to HS400 timing and frequency */
 	mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_HS400ES);
-	media->caps |= MMC_CAPS_HS400ES | MMC_CAPS_HS_52MHz | MMC_CAPS_HS;
-
 	mmc_recalculate_clock(media);
 
 	ret = mmc_send_status(media, MMC_IO_RETRIES);
@@ -758,7 +750,6 @@ static int mmc_select_hs200(MmcMedia *media)
 
 	/* Adjust host bus width to 8-bit */
 	mmc_set_bus_width(media->ctrlr, 8);
-	media->caps |= MMC_CAPS_8BIT;
 
 	/* Switch to HS200 */
 	ret = mmc_switch(
@@ -770,7 +761,6 @@ static int mmc_select_hs200(MmcMedia *media)
 		return ret;
 
 	mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_HS200);
-	media->caps |= MMC_CAPS_HS200 | MMC_CAPS_HS_52MHz | MMC_CAPS_HS;
 
 	mmc_recalculate_clock(media);
 
@@ -814,7 +804,6 @@ static int mmc_select_hs400(MmcMedia *media)
 	}
 
 	mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_HS);
-	media->caps |= MMC_CAPS_HS_52MHz | MMC_CAPS_HS;
 	mmc_recalculate_clock(media);
 
 	ret = mmc_send_status(media, MMC_IO_RETRIES);
@@ -844,7 +833,6 @@ static int mmc_select_hs400(MmcMedia *media)
 
 	/* Set host controller to HS400 timing and frequency */
 	mmc_set_timing(media->ctrlr, MMC_TIMING_MMC_HS400);
-	media->caps |= MMC_CAPS_HS400;
 
 	mmc_recalculate_clock(media);
 
@@ -859,8 +847,6 @@ static int mmc_select_hs400(MmcMedia *media)
 static int mmc_change_freq(MmcMedia *media, unsigned char *ext_csd)
 {
 	int err;
-
-	media->caps = 0;
 
 	/* Only version 4 supports high-speed */
 	if (media->version < MMC_VERSION_4)
@@ -914,8 +900,6 @@ static int sd_change_freq(MmcMedia *media)
 	MmcData data;
 	ALLOC_CACHE_ALIGN_BUFFER(uint32_t, scr, 2);
 	ALLOC_CACHE_ALIGN_BUFFER(uint32_t, switch_status, 16);
-
-	media->caps = 0;
 
 	/* Read the SCR to find out if this card supports higher speeds */
 	cmd.cmdidx = MMC_CMD_APP_CMD;
@@ -1003,7 +987,6 @@ static int sd_change_freq(MmcMedia *media)
 		return err;
 
 	if ((ntohl(switch_status[4]) & 0x0f000000) == 0x01000000) {
-		media->caps |= MMC_CAPS_HS;
 		mmc_set_timing(media->ctrlr, MMC_TIMING_SD_HS);
 	}
 
@@ -1213,9 +1196,6 @@ static int mmc_startup(MmcMedia *media)
 		err = mmc_change_freq(media, ext_csd);
 	if (err)
 		return err;
-
-	/* Restrict card's capabilities by what the host can do */
-	media->caps &= media->ctrlr->caps;
 
 	media->dev.block_count = media->capacity / media->read_bl_len;
 	media->dev.block_size = media->read_bl_len;
