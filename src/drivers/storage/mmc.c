@@ -510,22 +510,33 @@ static void mmc_recalculate_clock(MmcMedia *media)
 {
 	uint32_t clock = 1;
 
-	if (IS_SD(media)) {
-		if (media->caps & MMC_CAPS_HS)
-			clock = MMC_CLOCK_50MHZ;
-		else
+	switch (media->ctrlr->timing) {
+	case MMC_TIMING_LEGACY:
+		if (IS_SD(media))
 			clock = MMC_CLOCK_25MHZ;
-	} else {
-		if (media->caps & MMC_CAPS_HS) {
-			if ((media->caps & MMC_CAPS_HS200) ||
-			    (media->caps & MMC_CAPS_HS400) ||
-			    (media->caps & MMC_CAPS_HS400ES))
-				clock = MMC_CLOCK_200MHZ;
-			else if (media->caps & MMC_CAPS_HS_52MHz)
-				clock = MMC_CLOCK_52MHZ;
-			else
-				clock = MMC_CLOCK_26MHZ;
-		}
+		else
+			clock = MMC_CLOCK_26MHZ;
+		break;
+	case MMC_TIMING_SD_HS:
+		clock = MMC_CLOCK_50MHZ;
+		break;
+	case MMC_TIMING_MMC_HS:
+	case MMC_TIMING_MMC_DDR52:
+		clock = MMC_CLOCK_52MHZ;
+		break;
+	case MMC_TIMING_MMC_HS200:
+	case MMC_TIMING_MMC_HS400:
+	case MMC_TIMING_MMC_HS400ES:
+		clock = MMC_CLOCK_200MHZ;
+		break;
+	case MMC_TIMING_UHS_SDR12:
+	case MMC_TIMING_UHS_SDR25:
+	case MMC_TIMING_UHS_SDR50:
+	case MMC_TIMING_UHS_SDR104:
+	case MMC_TIMING_UHS_DDR50:
+	default:
+		mmc_error("%s: Unknown timing %u\n", __func__,
+			  media->ctrlr->timing);
 	}
 
 	mmc_set_clock(media->ctrlr, clock);
@@ -790,13 +801,6 @@ static int mmc_select_hs400(MmcMedia *media)
 		mmc_error("switch to HS200 failed\n");
 		return ret;
 	}
-
-	/*
-	 * We need to clear out the HS200 cap so we don't use a 200MHz clock in
-	 * HS mode. Ideally mmc_recalculate_clock would be using ctrlr->timing
-	 * instead of caps to compute the clock.
-	 */
-	media->caps &= ~(MMC_CAPS_HS200);
 
 	/* Switch card to HS mode */
 	ret = mmc_switch(
