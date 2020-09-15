@@ -324,7 +324,6 @@ typedef struct MmcMedia {
 
 	MmcCtrlr *ctrlr;
 
-	uint32_t caps;
 	uint32_t version;
 	uint32_t read_bl_len;
 	uint32_t write_bl_len;
