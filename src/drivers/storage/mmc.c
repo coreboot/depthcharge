@@ -952,8 +952,10 @@ static int sd_change_freq(MmcMedia *media)
 	}
 
 	/* Version 1.0 doesn't support switching */
-	if (media->version == SD_VERSION_1_0)
+	if (media->version == SD_VERSION_1_0) {
+		mmc_set_timing(media->ctrlr, MMC_TIMING_LEGACY);
 		goto out;
+	}
 
 	timeout = 4;
 	while (timeout--) {
@@ -968,8 +970,10 @@ static int sd_change_freq(MmcMedia *media)
 	}
 
 	/* If high-speed isn't supported, we return */
-	if (!(ntohl(switch_status[3]) & SD_HIGHSPEED_SUPPORTED))
+	if (!(ntohl(switch_status[3]) & SD_HIGHSPEED_SUPPORTED)) {
+		mmc_set_timing(media->ctrlr, MMC_TIMING_LEGACY);
 		goto out;
+	}
 
 	/*
 	 * If the host doesn't support SD_HIGHSPEED, do not switch card to
@@ -978,8 +982,10 @@ static int sd_change_freq(MmcMedia *media)
 	 * mode between the host.
 	 */
 	if (!((media->ctrlr->caps & MMC_CAPS_HS_52MHz) &&
-		(media->ctrlr->caps & MMC_CAPS_HS)))
+	      (media->ctrlr->caps & MMC_CAPS_HS))) {
+		mmc_set_timing(media->ctrlr, MMC_TIMING_LEGACY);
 		goto out;
+	}
 
 	err = sd_switch(media->ctrlr, SD_SWITCH_SWITCH, 0, 1,
 			(uint8_t *)switch_status);
