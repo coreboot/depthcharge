@@ -25,6 +25,7 @@
 #include <libpayload.h>
 #include <stdint.h>
 
+#include "drivers/storage/health.h"
 #include "drivers/storage/mmc.h"
 
 /* Set block count limit because of 16 bit register limit on some hardware*/
@@ -1521,6 +1522,36 @@ lba_t block_mmc_fill_write(BlockDevOps *me, lba_t start, lba_t count,
  cleanup:
 	free(buffer);
 	return ret;
+}
+
+int block_mmc_get_health_info(BlockDevOps *me, HealthInfo *health)
+{
+	MmcMedia *media = mmc_media(me);
+	MmcCtrlr *ctrlr = mmc_ctrlr(media);
+
+	int err;
+	ALLOC_CACHE_ALIGN_BUFFER(unsigned char, ext_csd, EXT_CSD_SIZE);
+
+	err = mmc_send_ext_csd(ctrlr, ext_csd);
+	if (err)
+		return 1;
+
+	MMC_HEALTH_DATA *data = &health->data.mmc_data;
+	data->csd_rev = ext_csd[EXT_CSD_REV];
+	data->device_life_time_est_type_a =
+		ext_csd[EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_A];
+	data->device_life_time_est_type_b =
+		ext_csd[EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_B];
+	data->pre_eol_info = ext_csd[EXT_CSD_PRE_EOL_INFO];
+	assert(sizeof(data->vendor_proprietary_health_report) ==
+	       EXT_CSD_VENDOR_HEALTH_REPORT_SIZE);
+	memcpy(data->vendor_proprietary_health_report,
+	       &ext_csd[EXT_CSD_VENDOR_HEALTH_REPORT_FIRST],
+	       sizeof(data->vendor_proprietary_health_report));
+
+	health->type = HEALTH_MMC;
+
+	return 0;
 }
 
 int block_mmc_is_bdev_owned(BlockDevCtrlrOps *me, BlockDev *bdev)
