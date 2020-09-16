@@ -900,30 +900,28 @@ void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 			ctrl &= ~SDHCI_CTRL_4BITBUS;
 	}
 
-	if (!(host->quirks & SDHCI_QUIRK_NO_HISPD_BIT)) {
-		switch (mmc_ctrlr->timing) {
-		case MMC_TIMING_LEGACY:
-		case MMC_TIMING_SD_DS:
+	switch (mmc_ctrlr->timing) {
+	case MMC_TIMING_LEGACY:
+	case MMC_TIMING_SD_DS:
+		ctrl &= ~SDHCI_CTRL_HISPD;
+		break;
+	case MMC_TIMING_SD_HS:
+		ctrl |= SDHCI_CTRL_HISPD;
+		break;
+	/*
+	 * The high speed enable flag only has an effect when UHS-I
+	 * (1.8V signaling) is disabled.
+	 */
+	case MMC_TIMING_MMC_LEGACY:
+		if (host->platform_info & SDHCI_PLATFORM_EMMC_33V_VCCQ)
 			ctrl &= ~SDHCI_CTRL_HISPD;
-			break;
-		case MMC_TIMING_SD_HS:
+		break;
+	case MMC_TIMING_MMC_HS:
+		if (host->platform_info & SDHCI_PLATFORM_EMMC_33V_VCCQ)
 			ctrl |= SDHCI_CTRL_HISPD;
-			break;
-		/*
-		 * The high speed enable flag only has an effect when UHS-I
-		 * (1.8V signaling) is disabled.
-		 */
-		case MMC_TIMING_MMC_LEGACY:
-			if (host->platform_info & SDHCI_PLATFORM_EMMC_33V_VCCQ)
-				ctrl &= ~SDHCI_CTRL_HISPD;
-			break;
-		case MMC_TIMING_MMC_HS:
-			if (host->platform_info & SDHCI_PLATFORM_EMMC_33V_VCCQ)
-				ctrl |= SDHCI_CTRL_HISPD;
-			break;
-		default:
-			break;
-		}
+		break;
+	default:
+		break;
 	}
 
 	sdhci_set_uhs_signaling(host, mmc_ctrlr->timing);
