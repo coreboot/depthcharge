@@ -511,11 +511,8 @@ static void mmc_recalculate_clock(MmcMedia *media)
 	uint32_t clock = 1;
 
 	switch (media->ctrlr->timing) {
-	case MMC_TIMING_LEGACY:
-		if (IS_SD(media))
-			clock = MMC_CLOCK_25MHZ;
-		else
-			clock = MMC_CLOCK_26MHZ;
+	case MMC_TIMING_INITIALIZATION:
+		clock = MMC_CLOCK_400KHZ;
 		break;
 	case MMC_TIMING_SD_DS:
 		clock = MMC_CLOCK_25MHZ;
