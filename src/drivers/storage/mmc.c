@@ -517,8 +517,14 @@ static void mmc_recalculate_clock(MmcMedia *media)
 		else
 			clock = MMC_CLOCK_26MHZ;
 		break;
+	case MMC_TIMING_SD_DS:
+		clock = MMC_CLOCK_25MHZ;
+		break;
 	case MMC_TIMING_SD_HS:
 		clock = MMC_CLOCK_50MHZ;
+		break;
+	case MMC_TIMING_MMC_LEGACY:
+		clock = MMC_CLOCK_26MHZ;
 		break;
 	case MMC_TIMING_MMC_HS:
 	case MMC_TIMING_MMC_DDR52:
