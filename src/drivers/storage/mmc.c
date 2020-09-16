@@ -959,7 +959,7 @@ static int sd_change_freq(MmcMedia *media)
 
 	/* Version 1.0 doesn't support switching */
 	if (media->version == SD_VERSION_1_0) {
-		mmc_set_timing(media->ctrlr, MMC_TIMING_LEGACY);
+		mmc_set_timing(media->ctrlr, MMC_TIMING_SD_DS);
 		goto out;
 	}
 
@@ -977,7 +977,7 @@ static int sd_change_freq(MmcMedia *media)
 
 	/* If high-speed isn't supported, we return */
 	if (!(ntohl(switch_status[3]) & SD_HIGHSPEED_SUPPORTED)) {
-		mmc_set_timing(media->ctrlr, MMC_TIMING_LEGACY);
+		mmc_set_timing(media->ctrlr, MMC_TIMING_SD_DS);
 		goto out;
 	}
 
@@ -989,7 +989,7 @@ static int sd_change_freq(MmcMedia *media)
 	 */
 	if (!((media->ctrlr->caps & MMC_CAPS_HS_52MHz) &&
 	      (media->ctrlr->caps & MMC_CAPS_HS))) {
-		mmc_set_timing(media->ctrlr, MMC_TIMING_LEGACY);
+		mmc_set_timing(media->ctrlr, MMC_TIMING_SD_DS);
 		goto out;
 	}
 
