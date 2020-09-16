@@ -447,6 +447,8 @@ static int mtk_mmc_update(BlockDevCtrlrOps *me)
 				&block_mmc_fill_write;
 			host->mmc.media->dev.ops.new_stream =
 						&new_simple_stream;
+			host->mmc.media->dev.ops.get_health_info =
+				block_mmc_get_health_info;
 			list_insert_after(&host->mmc.media->dev.list_node,
 			                  &removable_block_devices);
 		} else if (!present && host->mmc.media) {
@@ -464,6 +466,8 @@ static int mtk_mmc_update(BlockDevCtrlrOps *me)
 		host->mmc.media->dev.ops.write = &block_mmc_write;
 		host->mmc.media->dev.ops.fill_write = &block_mmc_fill_write;
 		host->mmc.media->dev.ops.new_stream = &new_simple_stream;
+		host->mmc.media->dev.ops.get_health_info =
+			block_mmc_get_health_info;
 		list_insert_after(&host->mmc.media->dev.list_node,
 		                  &fixed_block_devices);
 		host->mmc.ctrlr.need_update = 0;
