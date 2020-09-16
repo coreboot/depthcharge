@@ -19,12 +19,13 @@
 #ifndef __DRIVERS_STORAGE_HEALTH_H__
 #define __DRIVERS_STORAGE_HEALTH_H__
 
+#include "drivers/storage/mmc.h"
 #include "drivers/storage/nvme.h"
 
 typedef enum {
 	HEALTH_UNKNOWN = 0,
 	HEALTH_NVME,
-	// TODO(b/156692539): Support eMMC health info and SMART for SATA
+	HEALTH_MMC,
 } HealthDataFormat;
 
 typedef struct HealthInfo {
@@ -34,8 +35,9 @@ typedef struct HealthInfo {
 #ifdef CONFIG_DRIVER_STORAGE_NVME
 		NVME_SMART_LOG_DATA nvme_data;
 #endif
+#ifdef CONFIG_DRIVER_STORAGE_MMC
+		MMC_HEALTH_DATA mmc_data;
+#endif
 	} data;
-
 } HealthInfo;
-
 #endif

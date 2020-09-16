@@ -253,21 +253,120 @@ static char *stringify_nvme_smart(char *buf, const char *end,
 	return buf;
 }
 
+static inline char *stringify_mmc_device_lifetime(char *buf, size_t len,
+						  uint8_t life_used)
+{
+	switch (life_used) {
+	case 0x0:
+		buf += snprintf(buf, len, "Not defined");
+		break;
+	case 0x1 ... 0xa:
+		buf += snprintf(buf, len, "%d%% - %d%% device life time used",
+				(life_used - 1) * 10, life_used * 10);
+		break;
+	case 0xb:
+		buf += snprintf(
+			buf, len,
+			"Exceeded its maximum estimated device life time");
+		break;
+	default:
+		buf += snprintf(buf, len, "Unknown");
+		break;
+	}
+	return buf;
+}
+
+static inline const char *mmc_eol_info_to_str(uint8_t eol_info)
+{
+	switch (eol_info) {
+	case 0x0:
+		return "Not defined";
+	case 0x1:
+		return "Normal";
+	case 0x2:
+		return "Warning (Consumed 80% of reserved blocks)";
+	case 0x3:
+		return "Urgent";
+	default:
+		return "Unknown";
+	}
+}
+
+static char *stringify_mmc_health(char *buf, const char *end,
+				  const MMC_HEALTH_DATA *data)
+{
+	const char *const ver_str[] = {
+		"4.0",	    /* 0 */
+		"4.1",	    /* 1 */
+		"4.2",	    /* 2 */
+		"4.3",	    /* 3 */
+		"Obsolete", /* 4 */
+		"4.41",	    /* 5 */
+		"4.5",	    /* 6 */
+		"5.0",	    /* 7 */
+		"5.1",	    /* 8 */
+	};
+
+	if (data->csd_rev >= ARRAY_SIZE(ver_str) || data->csd_rev == 4) {
+		buf += snprintf(buf, end - buf,
+				"Unsupported Extended CSD rev 1.%d\n",
+				data->csd_rev);
+		return buf;
+	}
+
+	buf += snprintf(buf, end - buf, "Extended CSD rev 1.%d (MMC %s)\n",
+			data->csd_rev, ver_str[data->csd_rev]);
+
+	/* eMMC 5.0 */
+	if (data->csd_rev >= 7) {
+		buf += snprintf(buf, end - buf,
+				"eMMC Life Time Estimation A "
+				"[EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_A]: %#02x\n"
+				"  i.e. ",
+				data->device_life_time_est_type_a);
+		buf = stringify_mmc_device_lifetime(
+			buf, end - buf, data->device_life_time_est_type_a);
+		buf += snprintf(buf, end - buf, "\n");
+
+		buf += snprintf(buf, end - buf,
+				"eMMC Life Time Estimation B "
+				"[EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_B]: %#02x\n"
+				"  i.e. ",
+				data->device_life_time_est_type_b);
+		buf = stringify_mmc_device_lifetime(
+			buf, end - buf, data->device_life_time_est_type_b);
+		buf += snprintf(buf, end - buf, "\n");
+
+		buf += snprintf(buf, end - buf,
+				"eMMC Pre EOL information "
+				"[EXT_CSD_PRE_EOL_INFO]: %#02x\n"
+				"  i.e. %s\n",
+				data->pre_eol_info,
+				mmc_eol_info_to_str(data->pre_eol_info));
+	}
+
+	return buf;
+}
+
 // Append the stringified health_info to string str and return the pointer of
 // next available address.
 char *stringify_health_info(char *buf, const char *end, const HealthInfo *info)
 {
 	switch (info->type) {
-#ifdef CONFIG_DRIVER_STORAGE_NVME
 	case HEALTH_NVME:
+		if (!CONFIG(DRIVER_STORAGE_NVME))
+			break;
 		return stringify_nvme_smart(buf, end, &info->data.nvme_data);
-#endif
-	case HEALTH_UNKNOWN:
+	case HEALTH_MMC:
+		if (!CONFIG(DRIVER_STORAGE_MMC))
+			break;
+		return stringify_mmc_health(buf, end, &info->data.mmc_data);
 	default:
-		printf("%s: stringify a unknown data.", __func__);
-		assert(0);
-		return NULL;
+		break;
 	}
+	printf("%s: unsupported data type: %d\n", __func__, info->type);
+	assert(0);
+	return NULL;
 }
 
 char *dump_all_health_info(char *buf, const char *end)

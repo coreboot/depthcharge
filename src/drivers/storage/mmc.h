@@ -166,7 +166,25 @@
 #define EXT_CSD_DRIVER_STRENGTH		197	/* RO */
 #define EXT_CSD_SEC_CNT			212	/* RO, 4 bytes */
 #define EXT_CSD_HC_ERASE_GRP_SIZE	224	/* RO */
-#define EXT_CSD_TRIM_MULT		232     /* RO */
+#define EXT_CSD_TRIM_MULT		232	/* RO */
+
+#define EXT_CSD_PRE_EOL_INFO			267	/* RO */
+#define EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_A	268	/* RO */
+#define EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_B	269	/* RO */
+#define EXT_CSD_VENDOR_HEALTH_REPORT_FIRST	270	/* RO */
+#define EXT_CSD_VENDOR_HEALTH_REPORT_LAST	301	/* RO */
+
+#define EXT_CSD_VENDOR_HEALTH_REPORT_SIZE                                      \
+	(EXT_CSD_VENDOR_HEALTH_REPORT_LAST -                                   \
+	 EXT_CSD_VENDOR_HEALTH_REPORT_FIRST + 1)
+typedef struct {
+	uint8_t csd_rev;
+	uint8_t device_life_time_est_type_a;
+	uint8_t device_life_time_est_type_b;
+	uint8_t pre_eol_info;
+	uint8_t vendor_proprietary_health_report
+		[EXT_CSD_VENDOR_HEALTH_REPORT_SIZE];
+} MMC_HEALTH_DATA;
 
 /*
  * EXT_CSD field definitions
@@ -364,6 +382,7 @@ lba_t block_mmc_write(BlockDevOps *me, lba_t start, lba_t count,
 lba_t block_mmc_erase(BlockDevOps *me, lba_t start, lba_t count);
 lba_t block_mmc_fill_write(BlockDevOps *me, lba_t start, lba_t count,
 			   uint32_t fill_pattern);
+int block_mmc_get_health_info(BlockDevOps *me, struct HealthInfo *health);
 int block_mmc_is_bdev_owned(BlockDevCtrlrOps *me, BlockDev *bdev);
 
 // Debug functions.
