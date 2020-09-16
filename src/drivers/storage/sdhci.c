@@ -754,8 +754,8 @@ static enum mmc_driver_strength sdhci_preset_driver_strength(
 		else
 			preset = sdhci_readw(host, SDHCI_PRESET_VALUE_SDR25);
 		break;
-	case MMC_TIMING_LEGACY:
-		preset = sdhci_readw(host, SDHCI_PRESET_VALUE_DEFAULT_SPEED);
+	case MMC_TIMING_INITIALIZATION:
+		preset = sdhci_readw(host, SDHCI_PRESET_VALUE_INIT);
 		break;
 	default:
 		printf("Error: Unknown preset for timing %u\n", timing);
@@ -847,7 +847,7 @@ static void sdhci_set_uhs_signaling(SdhciHost *host, enum mmc_timing timing)
 		break;
 	case MMC_TIMING_SD_DS:
 	case MMC_TIMING_SD_HS:
-	case MMC_TIMING_LEGACY:
+	case MMC_TIMING_INITIALIZATION:
 		break;
 	default:
 		mmc_error("%s: Unknown timing %u\n", __func__, timing);
@@ -901,7 +901,7 @@ void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 	}
 
 	switch (mmc_ctrlr->timing) {
-	case MMC_TIMING_LEGACY:
+	case MMC_TIMING_INITIALIZATION:
 	case MMC_TIMING_SD_DS:
 		ctrl &= ~SDHCI_CTRL_HISPD;
 		break;
