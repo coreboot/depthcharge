@@ -722,6 +722,8 @@ static int qcom_mmc_update(BlockDevCtrlrOps *me)
 	mmc_host->mmc.media->dev.ops.read = &block_mmc_read;
 	mmc_host->mmc.media->dev.ops.write = &block_mmc_write;
 	mmc_host->mmc.media->dev.ops.new_stream = &new_simple_stream;
+	mmc_host->mmc.media->dev.ops.get_health_info =
+		block_mmc_get_health_info;
 
 	list_insert_after(&(mmc_host->mmc.media->dev.list_node),
 				  &fixed_block_devices);
