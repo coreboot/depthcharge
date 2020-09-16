@@ -739,8 +739,20 @@ static enum mmc_driver_strength sdhci_preset_driver_strength(
 	case MMC_TIMING_MMC_HS:
 		/*
 		 * TODO: Switch this to SDR50 when zork presets are fixed.
+		 * TODO: Depends on signaling voltage.
 		 */
 		preset = sdhci_readw(host, SDHCI_PRESET_VALUE_SDR25);
+		break;
+	case MMC_TIMING_MMC_LEGACY:
+		/*
+		 * UHS-I presets can only be used with 1.8V VCCQ. Otherwise
+		 * we need to use the 3.3V presets.
+		 */
+		if (host->platform_info & SDHCI_PLATFORM_EMMC_33V_VCCQ)
+			preset = sdhci_readw(host,
+					     SDHCI_PRESET_VALUE_DEFAULT_SPEED);
+		else
+			preset = sdhci_readw(host, SDHCI_PRESET_VALUE_SDR25);
 		break;
 	case MMC_TIMING_LEGACY:
 		preset = sdhci_readw(host, SDHCI_PRESET_VALUE_DEFAULT_SPEED);
@@ -807,6 +819,10 @@ static void sdhci_set_uhs_signaling(SdhciHost *host, enum mmc_timing timing)
 		ctrl_2 |= SDHCI_CTRL_UHS_SDR12;
 		break;
 	case MMC_TIMING_UHS_SDR25:
+	/*
+	 * TODO: Switch this to SDR50.
+	 * TODO: Depends on signaling voltage.
+	 */
 	case MMC_TIMING_MMC_HS:
 		ctrl_2 |= SDHCI_CTRL_UHS_SDR25;
 		break;
@@ -821,6 +837,15 @@ static void sdhci_set_uhs_signaling(SdhciHost *host, enum mmc_timing timing)
 	case MMC_TIMING_MMC_HS400ES:
 		ctrl_2 |= SDHCI_CTRL_HS400;
 		break;
+	case MMC_TIMING_MMC_LEGACY:
+		/*
+		 * UHS-I timings will only be used with 1.8V VCCQ. Otherwise the
+		 * High Speed Enabled bit determines the timing.
+		 */
+		if (!(host->platform_info & SDHCI_PLATFORM_EMMC_33V_VCCQ))
+			ctrl_2 |= SDHCI_CTRL_UHS_SDR25;
+		break;
+	case MMC_TIMING_SD_DS:
 	case MMC_TIMING_SD_HS:
 	case MMC_TIMING_LEGACY:
 		break;
@@ -875,11 +900,31 @@ void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 			ctrl &= ~SDHCI_CTRL_4BITBUS;
 	}
 
-	if (!(mmc_ctrlr->timing == MMC_TIMING_LEGACY) &&
-	    !(host->quirks & SDHCI_QUIRK_NO_HISPD_BIT))
-		ctrl |= SDHCI_CTRL_HISPD;
-	else
-		ctrl &= ~SDHCI_CTRL_HISPD;
+	if (!(host->quirks & SDHCI_QUIRK_NO_HISPD_BIT)) {
+		switch (mmc_ctrlr->timing) {
+		case MMC_TIMING_LEGACY:
+		case MMC_TIMING_SD_DS:
+			ctrl &= ~SDHCI_CTRL_HISPD;
+			break;
+		case MMC_TIMING_SD_HS:
+			ctrl |= SDHCI_CTRL_HISPD;
+			break;
+		/*
+		 * The high speed enable flag only has an effect when UHS-I
+		 * (1.8V signaling) is disabled.
+		 */
+		case MMC_TIMING_MMC_LEGACY:
+			if (host->platform_info & SDHCI_PLATFORM_EMMC_33V_VCCQ)
+				ctrl &= ~SDHCI_CTRL_HISPD;
+			break;
+		case MMC_TIMING_MMC_HS:
+			if (host->platform_info & SDHCI_PLATFORM_EMMC_33V_VCCQ)
+				ctrl |= SDHCI_CTRL_HISPD;
+			break;
+		default:
+			break;
+		}
+	}
 
 	sdhci_set_uhs_signaling(host, mmc_ctrlr->timing);
 
