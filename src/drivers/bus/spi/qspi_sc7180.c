@@ -202,7 +202,10 @@ static void queue_data(Sc7180Qspi *qspi_bus, uint8_t *data, uint32_t data_bytes,
 
 static void chip_assert(int value)
 {
-	Sc7180GpioCfg *gpio_cfg = new_sc7180_gpio_output(GPIO(68));
+	static Sc7180GpioCfg *gpio_cfg = NULL;
+
+	if (!gpio_cfg)
+		gpio_cfg = new_sc7180_gpio_output(GPIO(68));
 
 	gpio_cfg->ops.set(&gpio_cfg->ops, value);
 }
