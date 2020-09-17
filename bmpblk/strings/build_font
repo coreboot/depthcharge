@@ -9,18 +9,12 @@ SCRIPT="$(readlink -f "$0")"
 SCRIPT_DIR="$(dirname "$SCRIPT")"
 FIRST_ASCII_GLYPH="32" # space
 LAST_ASCII_GLYPH="127" # delete
-if [ -z "${MENU_UI}" ]; then
-  FGCOLOR="#505050"
-  BGCOLOR="#ffffff"
-  FONT="Noto Sans"
-  MARGIN="3 0"
-else
-  # The colors will be adjusted at runtime.
-  FGCOLOR="#ffffff"
-  BGCOLOR="#000000"
-  FONT="Noto Sans Mono"
-  MARGIN="-3 0 -1 0"
-fi
+
+# The colors will be adjusted at runtime.
+FGCOLOR="#ffffff"
+BGCOLOR="#000000"
+FONT="Noto Sans Mono"
+MARGIN="-3 0 -1 0"
 
 die() {
   echo "ERROR: $*" >&2

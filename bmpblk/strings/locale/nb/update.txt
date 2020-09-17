@@ -1,2 +1,0 @@
-Systemet innstallerer en kritisk oppdatering.
-Ikke slå av maskinen.

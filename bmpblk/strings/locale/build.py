@@ -31,20 +31,14 @@ KEY_INPUTS = 'inputs'
 KEY_FILES = 'files'
 KEY_FONTS = 'fonts'
 KEY_STYLES = 'styles'
-LEGACY_MENU_INPUTS = 'legacy_menu_inputs'
-LEGACY_MENU_FILES = 'legacy_menu_files'
-LEGACY_CLAMSHELL_FILES = 'legacy_clamshell_files'
 VENDOR_INPUTS = 'vendor_inputs'
 VENDOR_FILES = 'vendor_files'
 DIAGNOSTIC_FILES = 'diagnostic_files'
 
 STRINGS_GRD_FILE = 'firmware_strings.grd'
 STRINGS_JSON_FILE_TMPL = '{}.json'
-LEGACY_STRINGS_FILE = 'legacy_strings.txt'
-LEGACY_MENU_STRINGS_FILE = 'legacy_menu_strings.txt'
 VENDOR_STRINGS_FILE = 'vendor_strings.txt'
 FORMAT_FILE = 'format.yaml'
-LEGACY_FORMAT_FILE = 'legacy_format.yaml'
 VENDOR_FORMAT_FILE = 'vendor_format.yaml'
 TXT_TO_PNG_SVG = os.path.join(SCRIPT_BASE, '..', 'text_to_png_svg')
 OUTPUT_DIR = os.path.join(os.getenv('OUTPUT', os.path.join(SCRIPT_BASE, '..',
@@ -61,14 +55,6 @@ NEWLINE_REPLACEMENT = r'\1 \2'
 CRLF_PATTERN = re.compile(r'\r\n')
 MULTIBLANK_PATTERN = re.compile(r'   *')
 
-class UIType(enum.Enum):
-  MENU = 1
-  LEGACY_MENU = 2
-  LEGACY_CLAMSHELL = 3
-
-UI = (UIType.MENU if os.getenv("MENU_UI") == "1" else
-      UIType.LEGACY_MENU if os.getenv("LEGACY_MENU_UI") == "1" else
-      UIType.LEGACY_CLAMSHELL)
 
 class DataError(Exception):
   pass
@@ -135,17 +121,12 @@ def LoadLocaleJsonFile(locale, strings_json_file_tmpl, json_dir):
       result[tag] = msgtext
   return result
 
-def ParseLocaleInputFiles(locale_dir, legacy_input_format,
-                          legacy_menu_format, vendor_format, json_dir):
+def ParseLocaleInputFiles(locale_dir, vendor_format, json_dir):
   """Parses all firmware string files in given locale directory for
   BuildTextFiles
 
   Args:
     locale: The locale folder with firmware string files.
-    legacy_input_format: Format description for each line
-                         in LEGACY_STRINGS_FILE.
-    legacy_menu_format: Format description for each line in
-      LEGACY_MENU_STRINGS_FILE.
     vendor_format: Format description for each line in VENDOR_STRINGS_FILE.
     json_dir: Directory containing json output from grit.
 
@@ -153,21 +134,9 @@ def ParseLocaleInputFiles(locale_dir, legacy_input_format,
     A dictionary for mapping of "name to content" for files to be generated.
   """
   result = dict()
-  if UI == UIType.MENU:
-    result.update(ParseLocaleInputJsonFile(locale_dir,
-                                           STRINGS_JSON_FILE_TMPL,
-                                           json_dir))
-  else:
-    result.update(ParseLocaleInputFile(locale_dir,
-                                       LEGACY_STRINGS_FILE,
-                                       legacy_input_format))
-
-  # Now parse legacy menu strings
-  if UI == UIType.LEGACY_MENU:
-    print(' (legacy_menu_ui enabled)')
-    result.update(ParseLocaleInputFile(locale_dir,
-                                       LEGACY_MENU_STRINGS_FILE,
-                                       legacy_menu_format))
+  result.update(ParseLocaleInputJsonFile(locale_dir,
+                                         STRINGS_JSON_FILE_TMPL,
+                                         json_dir))
 
   # Parse vendor files if enabled
   if VENDOR_STRINGS:
@@ -179,9 +148,7 @@ def ParseLocaleInputFiles(locale_dir, legacy_input_format,
 
   # Walk locale directory to add pre-generated items.
   for input_file in glob.glob(os.path.join(locale_dir, "*.txt")):
-    if (os.path.basename(input_file) == LEGACY_STRINGS_FILE or
-        os.path.basename(input_file) == LEGACY_MENU_STRINGS_FILE or
-        os.path.basename(input_file) == VENDOR_STRINGS_FILE):
+    if os.path.basename(input_file) == VENDOR_STRINGS_FILE:
       continue
     name, _ = os.path.splitext(os.path.basename(input_file))
     with open(input_file, 'r', encoding='utf-8-sig') as f:
@@ -264,29 +231,28 @@ def ConvertPngFile(locale, file_name, styles, fonts, output_dir):
   font_size = os.getenv("FONTSIZE")
   if font_size is not None:
     command.append('--point=%r' % font_size)
-  if UI == UIType.MENU:
-    command.append('--margin="0 0"')
-    # TODO(b/159399377): Set different widths for titles and descriptions.
-    # Currently only wrap lines for descriptions.
-    if '_desc' in file_name:
-      # Without the --width option set, the minimum height of the output SVG
-      # image is roughly 22px (for locale 'en'). With --width=WIDTH passed to
-      # pango-view, the width of the output seems to always be (WIDTH * 4 / 3),
-      # regardless of the font being used. Therefore, set the max_width in
-      # points as follows to prevent drawing from exceeding canvas boundary in
-      # depthcharge runtime.
-      # Some of the numbers below are from depthcharge:
-      # - 1000: UI_SCALE
-      # - 50: UI_MARGIN_H
-      # - 228: UI_REC_QR_SIZE
-      # - 24: UI_REC_QR_MARGIN_H
-      # - 24: UI_DESC_TEXT_HEIGHT
-      if file_name == 'rec_phone_step2_desc':
-        max_width = 1000 - 50 * 2 - 228 - 24 * 2
-      else:
-        max_width = 1000 - 50 * 2
-      max_width_pt = int(22 * max_width / 24 / (4 / 3))
-      command.append('--width=%d' % max_width_pt)
+  command.append('--margin="0 0"')
+  # TODO(b/159399377): Set different widths for titles and descriptions.
+  # Currently only wrap lines for descriptions.
+  if '_desc' in file_name:
+    # Without the --width option set, the minimum height of the output SVG
+    # image is roughly 22px (for locale 'en'). With --width=WIDTH passed to
+    # pango-view, the width of the output seems to always be (WIDTH * 4 / 3),
+    # regardless of the font being used. Therefore, set the max_width in
+    # points as follows to prevent drawing from exceeding canvas boundary in
+    # depthcharge runtime.
+    # Some of the numbers below are from depthcharge:
+    # - 1000: UI_SCALE
+    # - 50: UI_MARGIN_H
+    # - 228: UI_REC_QR_SIZE
+    # - 24: UI_REC_QR_MARGIN_H
+    # - 24: UI_DESC_TEXT_HEIGHT
+    if file_name == 'rec_phone_step2_desc':
+      max_width = 1000 - 50 * 2 - 228 - 24 * 2
+    else:
+      max_width = 1000 - 50 * 2
+    max_width_pt = int(22 * max_width / 24 / (4 / 3))
+    command.append('--width=%d' % max_width_pt)
   command.append(input_file)
 
   if subprocess.call(' '.join(command), shell=True,
@@ -299,8 +265,7 @@ def ConvertPngFile(locale, file_name, styles, fonts, output_dir):
   return True
 
 def main(argv):
-  with open(FORMAT_FILE if UI == UIType.MENU else LEGACY_FORMAT_FILE,
-            encoding='utf-8') as f:
+  with open(FORMAT_FILE, encoding='utf-8') as f:
     formats = yaml.load(f)
 
   if VENDOR_STRINGS:
@@ -309,27 +274,26 @@ def main(argv):
       formats.update(yaml.load(f))
 
   json_dir = None
-  if UI == UIType.MENU:
-    # Sources are one .grd file with identifiers chosen by engineers and
-    # corresponding English texts, as well as a set of .xlt files (one for each
-    # language other than US english) with a mapping from hash to translation.
-    # Because the keys in the xlt files are a hash of the English source text,
-    # rather than our identifiers, such as "btn_cancel", we use the "grit"
-    # command line tool to process the .grd and .xlt files, producing a set of
-    # .json files mapping our identifier to the translated string, one for every
-    # language including US English.
+  # Sources are one .grd file with identifiers chosen by engineers and
+  # corresponding English texts, as well as a set of .xlt files (one for each
+  # language other than US english) with a mapping from hash to translation.
+  # Because the keys in the xlt files are a hash of the English source text,
+  # rather than our identifiers, such as "btn_cancel", we use the "grit"
+  # command line tool to process the .grd and .xlt files, producing a set of
+  # .json files mapping our identifier to the translated string, one for every
+  # language including US English.
 
-    # Create a temporary directory to place the translation output from grit in.
-    json_dir = tempfile.mkdtemp()
-    # This invokes the grit build command to generate JSON files from the XTB
-    # files containing translations.  The results are placed in `json_dir` as
-    # specified in firmware_strings.grd, i.e. one JSON file per locale.
-    subprocess.check_call([
-        'grit',
-        '-i', STRINGS_GRD_FILE,
-        'build',
-        '-o', os.path.join(json_dir)
-    ])
+  # Create a temporary directory to place the translation output from grit in.
+  json_dir = tempfile.mkdtemp()
+  # This invokes the grit build command to generate JSON files from the XTB
+  # files containing translations.  The results are placed in `json_dir` as
+  # specified in firmware_strings.grd, i.e. one JSON file per locale.
+  subprocess.check_call([
+      'grit',
+      '-i', STRINGS_GRD_FILE,
+      'build',
+      '-o', os.path.join(json_dir)
+  ])
 
   # Decide locales to build.
   if len(argv) > 0:
@@ -347,8 +311,7 @@ def main(argv):
   results = []
   for locale in locales:
     print(locale, end=' ', flush=True)
-    inputs = ParseLocaleInputFiles(locale, formats[KEY_INPUTS],
-                                   formats.get(LEGACY_MENU_INPUTS),
+    inputs = ParseLocaleInputFiles(locale,
                                    formats[VENDOR_INPUTS] if VENDOR_STRINGS
                                                           else None,
                                    json_dir)
@@ -357,10 +320,6 @@ def main(argv):
       os.makedirs(output_dir)
     files = formats[KEY_FILES]
     styles = formats[KEY_STYLES]
-    if UI == UIType.LEGACY_MENU:
-      files.update(formats[LEGACY_MENU_FILES])
-    elif UI == UIType.LEGACY_CLAMSHELL:
-      files.update(formats[LEGACY_CLAMSHELL_FILES])
 
     # Now parse strings for optional features
     if os.getenv("DIAGNOSTIC_UI") == "1" and DIAGNOSTIC_FILES in formats:
