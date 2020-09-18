@@ -42,21 +42,24 @@ static const struct ui_error_item error_map[] = {
 			"Go back and try again.",
 	},
 	[VB2_UI_ERROR_EXTERNAL_BOOT_NOT_ENABLED] = {
-		.body = "External boot is disabled.\n"
-			"For more information, see\n"
-			"developer mode documentation.",
+		.body = "External boot is disabled. For more\n"
+			"information, see\n"
+			"google.com/chromeos/devmode.",
 	},
 	[VB2_UI_ERROR_UNTRUSTED_CONFIRMATION] = {
 		.body = "Use built-in keyboard to confirm\n"
 			"developer mode.\n"
 			"Can't use USB keyboard.",
 	},
-	/* TOOD(roccochen): Add proper help center URLs. */
 	[VB2_UI_ERROR_ALTERNATE_BOOT_DISABLED] = {
-		.body = "Alternate bootloaders are disabled.",
+		.body = "Alternate bootloaders are disabled. For\n"
+			"more information, see\n"
+			"google.com/chromeos/devmode.",
 	},
 	[VB2_UI_ERROR_NO_BOOTLOADER] = {
-		.body = "Couldn't find alternate bootloader.",
+		.body = "Couldn't find alternate bootloader. To\n"
+			"learn how to install one, see\n"
+			"google.com/chromeos/devmode.",
 	},
 	[VB2_UI_ERROR_ALTERNATE_BOOT_FAILED] = {
 		.body = "Something went wrong launching the\n"
