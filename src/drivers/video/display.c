@@ -20,14 +20,19 @@
 
 #include "base/cleanup_funcs.h"
 #include "drivers/video/display.h"
+#include "vboot/ui.h"
 
 static DisplayOps *display_ops;
 
 static int display_cleanup(struct CleanupFunc *cleanup, CleanupType type)
 {
+	int err = 0;
+	disable_graphics_buffer();
+	err |= clear_screen(&ui_color_black);
+	err |= backlight_update(0);
 	if (display_ops && display_ops->stop)
-		return display_ops->stop(display_ops);
-	return 0;
+		err |= display_ops->stop(display_ops);
+	return err ? -1 : 0;
 }
 
 static CleanupFunc display_cleanup_func = {
@@ -43,13 +48,12 @@ void display_set_ops(DisplayOps *ops)
 
 int display_init(void)
 {
-	if (!display_ops || !display_ops->init) {
+	if (display_ops && display_ops->init) {
+		if (display_ops->init(display_ops))
+			return -1;
+	} else {
 		printf("display: %s called but not implemented.\n", __func__);
-		return 0;
 	}
-
-	if (display_ops->init(display_ops))
-		return -1;
 
 	/* Call stop() when exiting depthcharge, only if we initialized it. */
 	list_insert_after(&display_cleanup_func.list_node, &cleanup_funcs);
