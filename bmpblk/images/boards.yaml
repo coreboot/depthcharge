@@ -245,8 +245,8 @@ zork:
 
 dedede:
   # 2400x1600, boots recovery image on USB ports.
-  screen:   [800, 450]  # Flash size limited - resized from native resolution.
-  text_colors: 4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
+  screen:   [1280, 720]  # Flash size limited - resized from native resolution.
+  text_colors: 5  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
 
 jacuzzi:
   # 1366x768, boots recovery image on USB ports or SD card.
