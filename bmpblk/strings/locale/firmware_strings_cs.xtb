@@ -7,7 +7,6 @@
 <translation id="1252150473073837888">Potvrďte návrat do bezpečného režimu</translation>
 <translation id="1389402762514302384">Pokud chcete zůstat chráněni, vyberte Zrušit.</translation>
 <translation id="1483971085438511843">Pomocí klávesy Enter vyberte možnost.</translation>
-<translation id="1676063359707328155">Pokud problém chcete zkusit odstranit, spusťte proces obnovení. Odstraňte všechna připojená zařízení a potom minimálně 10 sekund podržte současně tlačítka zvýšení hlasitosti, snížení hlasitosti a vypínač.</translation>
 <translation id="1931763245382489971">3. Až budete mít připravené externí úložné zařízení s obrazem pro obnovení, klikněte na Další</translation>
 <translation id="1977020597896356883">https://google.com/chromeos/recovery</translation>
 <translation id="1995660704900986789">Vypnout</translation>
@@ -18,6 +17,7 @@
 <translation id="2188090550242711688">2. Postupujte podle pokynů v rozšíření pro Chrome a na externí úložiště stáhněte obraz pro obnovení</translation>
 <translation id="2270126560545545577">Jste v režimu pro vývojáře</translation>
 <translation id="2360163367862409346">Ze zařízení se vymažou všechna data a nebude zabezpečeno.</translation>
+<translation id="2445391421565214706">Pokud problém chcete zkusit odstranit, spusťte proces obnovení. Odstraňte všechna připojená zařízení a potom minimálně 10 sekund podržte současně tlačítka zvýšení hlasitosti, snížení hlasitosti a vypínač ( ⏻ ).</translation>
 <translation id="2531345960369431549">Tato možnost vypne režim pro vývojáře a obnoví zařízení do původního stavu.</translation>
 <translation id="2603025384438397887">Obnovení pomocí telefonu</translation>
 <translation id="2904079386864173492">Model:</translation>
@@ -25,6 +25,7 @@
 <translation id="3235458304027619499">1. Externí úložné zařízení, například jednotku USB nebo SD kartu</translation>
 <translation id="328213018570216625">Obnovit pomocí externího úložiště</translation>
 <translation id="3289365543955953678">Připojte externí disk</translation>
+<translation id="3635226996169670741">Pokud problém chcete zkusit odstranit, spusťte proces obnovení. Odstraňte všechna připojená zařízení a potom podržte klávesy Esc, Obnovit ( ⟳ ) a vypínač ( ⏻ ).</translation>
 <translation id="385051799172605136">Zpět</translation>
 <translation id="3964506597604121312">Během procesu se vymažou vaše uživatelská data.</translation>
 <translation id="4002335453596341558">O stránku dolů</translation>
@@ -58,6 +59,7 @@
 <translation id="7352651011704765696">Něco se pokazilo</translation>
 <translation id="7365121631770711723">2. Kabel USB na propojení telefonu a tohoto zařízení</translation>
 <translation id="7420576176825630019">Zapnout režim pro vývojáře</translation>
+<translation id="7567414219298075193">Pokud problém chcete zkusit odstranit, spusťte proces obnovení. Odstraňte všechna připojená zařízení a potom podržte tlačítko Obnovit, stiskněte vypínač ( ⏻ ) a uvolněte tlačítko Obnovit.</translation>
 <translation id="7638747526774710781">1. Na jiném zařízení přejděte na stránku google.com/chromeos/recovery a nainstalujte rozšíření pro Chrome</translation>
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7939062555109487992">Upřesnit možnosti</translation>
@@ -66,8 +68,6 @@
 <translation id="8101391381992690790">Zkontrolujte, zda na externím disku máte platný obraz pro obnovení systému, a až budete připraveni, znovu ho vložte.</translation>
 <translation id="8131740175452115882">Potvrdit</translation>
 <translation id="8199613549817472219">Provedeme vás procesem obnovení</translation>
-<translation id="8297243793472061482">Pokud problém chcete zkusit odstranit, spusťte proces obnovení. Odstraňte všechna připojená zařízení a potom podržte tlačítko Obnovit, stiskněte vypínač a uvolněte tlačítko Obnovit.</translation>
-<translation id="8767579394810359800">Pokud chcete zkusit problém odstranit, spusťte proces obnovení. Odstraňte všechna připojená zařízení a potom podržte klávesy Esc, Obnovit a vypínač.</translation>
 <translation id="8789686976863801203">Pokoušíte se zapnout režim pro vývojáře</translation>
 <translation id="9040266428058825675">Pokud máte připravené externí úložné zařízení s obrazem pro obnovení, připojte ho k zařízení a spusťte proces obnovení</translation>
 </translationbundle>

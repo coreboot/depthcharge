@@ -7,7 +7,6 @@
 <translation id="1252150473073837888">Bekræft, at du vil vende tilbage til sikker tilstand</translation>
 <translation id="1389402762514302384">Vælg "Annuller" for at forblive beskyttet.</translation>
 <translation id="1483971085438511843">Brug Enter-tasten til at vælge en mulighed.</translation>
-<translation id="1676063359707328155">Start gendannelsesprocessen for at prøve at løse problemet. Fjern alle tilsluttede enheder. Hold derefter Lydstyrke op, Lydstyrke ned og afbryderknappen inde i mindst 10 sekunder.</translation>
 <translation id="1931763245382489971">3. Klik på næste, når din eksterne lagerenhed er klar med systembilledet til gendannelse</translation>
 <translation id="1977020597896356883">https://google.com/chromeos/recovery</translation>
 <translation id="1995660704900986789">Sluk</translation>
@@ -18,6 +17,7 @@
 <translation id="2188090550242711688">2. Følg vejledningen i Chrome-udvidelsen, og download systembilledet til gendannelse på den eksterne lagerenhed</translation>
 <translation id="2270126560545545577">Du er i udviklertilstand</translation>
 <translation id="2360163367862409346">Dette medfører bl.a., at alle data ryddes fra din enhed, og at din enhed bliver usikker.</translation>
+<translation id="2445391421565214706">Start gendannelsesprocessen for at prøve at løse problemet. Fjern alle tilsluttede enheder. Hold derefter Lydstyrke op, Lydstyrke ned og afbryderknappen ( ⏻ ) inde i mindst 10 sekunder.</translation>
 <translation id="2531345960369431549">Denne valgmulighed deaktiverer udviklertilstand og gendanner din enhed til dens oprindelige tilstand.</translation>
 <translation id="2603025384438397887">Gendannelse via telefon</translation>
 <translation id="2904079386864173492">Model:</translation>
@@ -25,6 +25,7 @@
 <translation id="3235458304027619499">1. En ekstern lagerenhed som f.eks. et USB-drev eller et SD-kort</translation>
 <translation id="328213018570216625">Gendannelse via ekstern lagerenhed</translation>
 <translation id="3289365543955953678">Tilslut din eksterne disk</translation>
+<translation id="3635226996169670741">Start gendannelsesprocessen for at prøve at løse problemet. Fjern alle tilsluttede enheder, og hold derefter Esc, Opdater (⟳) og afbryderknappen ( ⏻ ) inde.</translation>
 <translation id="385051799172605136">Tilbage</translation>
 <translation id="3964506597604121312">Dine brugerdata ryddes under processen.</translation>
 <translation id="4002335453596341558">Side ned</translation>
@@ -58,6 +59,7 @@
 <translation id="7352651011704765696">Der opstod en fejl</translation>
 <translation id="7365121631770711723">2. Et USB-kabel, der opretter forbindelse mellem din telefon og denne enhed</translation>
 <translation id="7420576176825630019">Aktivér udviklertilstand</translation>
+<translation id="7567414219298075193">Start gendannelsesprocessen for at prøve at løse problemet. Fjern alle tilsluttede enheder. Hold derefter gendannelsesknappen inde, mens du trykker på afbryderknappen ( ⏻ ) og slipper den igen. Slip derefter gendannelsesknappen.</translation>
 <translation id="7638747526774710781">1. Gå til google.com/chromeos/recovery på den anden enhed, og installer Chrome-udvidelsen</translation>
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7939062555109487992">Avancerede valgmuligheder</translation>
@@ -66,8 +68,6 @@
 <translation id="8101391381992690790">Sørg for, at din eksterne disk har et gyldigt systembillede til gendannelse, og indsæt disken igen, når du er klar.</translation>
 <translation id="8131740175452115882">Bekræft</translation>
 <translation id="8199613549817472219">Lad os gennemgå gendannelsesprocessen</translation>
-<translation id="8297243793472061482">Start gendannelsesprocessen for at prøve at løse problemet. Fjern alle tilsluttede enheder. Hold derefter knappen til gendannelse inde, mens du trykker på afbryderknappen og slipper den igen. Slip derefter knappen til gendannelse.</translation>
-<translation id="8767579394810359800">Start gendannelsesprocessen for at prøve at løse problemet. Fjern alle tilsluttede enheder, og hold derefter Esc, Opdater og afbryderknappen inde.</translation>
 <translation id="8789686976863801203">Du forsøger at aktivere udviklertilstand</translation>
 <translation id="9040266428058825675">Hvis din eksterne lagerenhed er klar med et systembillede til gendannelse, skal du slutte den til denne enhed for at starte gendannelsesprocessen.</translation>
 </translationbundle>

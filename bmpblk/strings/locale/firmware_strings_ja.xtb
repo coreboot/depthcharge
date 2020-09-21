@@ -7,7 +7,6 @@
 <translation id="1252150473073837888">セキュアモードに戻ってもよろしいですか？</translation>
 <translation id="1389402762514302384">保護された状態を維持する場合は [キャンセル] を選択します。</translation>
 <translation id="1483971085438511843">Enter キーを押すことで、項目を選択できます。</translation>
-<translation id="1676063359707328155">問題の修復を試すには、復元プロセスを開始してください。接続されているすべてのデバイスを取り外し、音量大キー、音量小キー、電源ボタンを 10 秒以上長押しします。</translation>
 <translation id="1931763245382489971">3. 外部ストレージ デバイスにリカバリ イメージをダウンロードしたら、[次へ] をクリックします</translation>
 <translation id="1977020597896356883">https://google.com/chromeos/recovery</translation>
 <translation id="1995660704900986789">電源を切る</translation>
@@ -18,6 +17,7 @@
 <translation id="2188090550242711688">2. Chrome OS リカバリ アプリの手順に沿って、外部ストレージにリカバリ イメージをダウンロードします</translation>
 <translation id="2270126560545545577">デベロッパー（開発者専用）モードです</translation>
 <translation id="2360163367862409346">この操作を行うと、デバイスのデータがすべて消去され、デバイスは保護されていない状態になります。</translation>
+<translation id="2445391421565214706">問題の修復を試すには、復元プロセスを開始してください。接続されているすべてのデバイスを取り外し、音量大キー、音量小キー、電源ボタン（ ⏻ ）を 10 秒以上長押しします。</translation>
 <translation id="2531345960369431549">このオプションを選択すると、デベロッパー モードが無効になり、デバイスが初期状態に復元されます。</translation>
 <translation id="2603025384438397887">スマートフォンを使用して修復</translation>
 <translation id="2904079386864173492">モデル:</translation>
@@ -25,6 +25,8 @@
 <translation id="3235458304027619499">1. USB メモリや SD カードなどの外部ストレージディスク（8GB 以上の容量があり、中のデータが消去されてもかまわないもの）</translation>
 <translation id="328213018570216625">外部ストレージを使用して修復</translation>
 <translation id="3289365543955953678">外部ディスクの接続</translation>
+<translation id="3635226996169670741">問題の修復を試すには、復元プロセスを開始してください。接続されているすべてのデバイスを取り外した後、Esc キー、更新キー（ ⟳ ）、電源ボタン（ ⏻ ）を長押しします。</translation>
+
 <translation id="385051799172605136">戻る</translation>
 <translation id="3964506597604121312">このプロセスではユーザーデータがすべて消去されます。</translation>
 <translation id="4002335453596341558">次のページ</translation>
@@ -58,6 +60,7 @@
 <translation id="7352651011704765696">問題が発生しました</translation>
 <translation id="7365121631770711723">2. スマートフォンとこのデバイスを接続する USB ケーブル</translation>
 <translation id="7420576176825630019">デベロッパー モードを有効にする</translation>
+<translation id="7567414219298075193">問題の修復を試すには、復元プロセスを開始してください。接続されているすべてのデバイスを取り外し、リカバリボタンを押したまま電源ボタン（ ⏻ ）を押して放し、さらにリカバリボタンを放します。</translation>
 <translation id="7638747526774710781">1. 別のデバイスで google.com/chromeos/recovery にアクセスして、Chrome OS リカバリ アプリをインストールします</translation>
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7939062555109487992">詳細オプション</translation>
@@ -66,8 +69,6 @@
 <translation id="8101391381992690790">外部ディスクに有効なリカバリ イメージがあることを確認し、準備ができたらディスクをもう一度接続してください。</translation>
 <translation id="8131740175452115882">確認</translation>
 <translation id="8199613549817472219">デバイスの修復を行う手順をご案内します</translation>
-<translation id="8297243793472061482">問題の修復を試すには、復元プロセスを開始してください。接続されているすべてのデバイスを取り外し、リカバリボタンを押したまま電源ボタンを押して放し、さらにリカバリボタンを放します。</translation>
-<translation id="8767579394810359800">問題の修復を試すには、復元プロセスを開始してください。接続されているすべてのデバイスを取り外した後、Esc キー、更新キー、電源ボタンを長押しします。</translation>
 <translation id="8789686976863801203">デベロッパー モードを有効にしようとしています</translation>
 <translation id="9040266428058825675">リカバリ イメージをダウンロードしたら、外部ストレージ デバイスをこのデバイスに接続して復元プロセスを開始します。</translation>
 </translationbundle>

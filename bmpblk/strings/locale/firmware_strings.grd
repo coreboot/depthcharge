@@ -121,14 +121,14 @@ Your system is applying a critical update.
       <message name="broken_title" desc="Title of screen shown when chromebook is in broken screen.">
 Something went wrong
       </message>
-      <message name="broken_desc" desc="Description of screen shown when chromebook is in broken screen.">
-To try and fix the issue, start the recovery process. Remove all connected devices, then hold down Esc, Refresh, and Power.
+      <message name="broken_desc" desc="Description of screen shown when chromebook is in broken screen. Adding icons.  Please keep old translations and just place the icons appropriately.">
+To try and fix the issue, start the recovery process. Remove all connected devices, then hold down Esc, Refresh ( ⟳ ), and Power ( ⏻ ).
       </message>
-      <message name="broken_desc_phyrec" desc="Description of screen shown when chromebox/chromebit is in broken screen.">
-To try and fix the issue, start the recovery process. Remove all connected devices, then hold down the Recovery button, press and release the Power button, release the Recovery button.
+      <message name="broken_desc_phyrec" desc="Description of screen shown when chromebox/chromebit is in broken screen. Adding icons.  Please keep old translations and just place the icons appropriately.">
+To try and fix the issue, start the recovery process. Remove all connected devices, then hold down the Recovery button, press and release the Power button ( ⏻ ), release the Recovery button.
       </message>
-      <message name="broken_desc_detach" desc="Description of screen shown when chromeos tablet is in broken screen.">
-To try and fix the issue, start the recovery process. Remove all connected devices, then hold down Volume Up, Volume Down, and the Power button for at least 10 seconds.
+      <message name="broken_desc_detach" desc="Description of screen shown when chromeos tablet is in broken screen. Adding icons.  Please keep old translations and just place the icons appropriately.">
+To try and fix the issue, start the recovery process. Remove all connected devices, then hold down Volume Up, Volume Down, and the Power button ( ⏻ ) for at least 10 seconds.
       </message>
       <message name="adv_options_title" desc="Title for the advanced options screen.">
 Advanced options

@@ -7,7 +7,6 @@
 <translation id="1252150473073837888">Zurückkehren in den sicheren Modus bestätigen</translation>
 <translation id="1389402762514302384">Wählen Sie "Abbrechen" aus, um geschützt zu bleiben.</translation>
 <translation id="1483971085438511843">Drücken Sie die Eingabetaste, um eine Option auszuwählen.</translation>
-<translation id="1676063359707328155">Bitte starten Sie die Wiederherstellung, um das Problem zu beheben. Entfernen Sie alle verbundenen Geräte und halten Sie dann die Lauter- und die Leisertaste sowie die Ein-/Aus-Taste für mindestens 10 Sekunden gedrückt.</translation>
 <translation id="1931763245382489971">3. Wenn das externe Speichermedium mit dem Wiederherstellungsimage bereit ist, klicken Sie auf "Weiter"</translation>
 <translation id="1977020597896356883">https://google.com/chromeos/recovery</translation>
 <translation id="1995660704900986789">Ausschalten</translation>
@@ -18,6 +17,7 @@
 <translation id="2188090550242711688">2. Der Anleitung in der Chrome-Erweiterung folgen und das Wiederherstellungsimage auf ein externes Speichermedium herunterladen</translation>
 <translation id="2270126560545545577">Sie befinden sich im Entwicklermodus</translation>
 <translation id="2360163367862409346">Hierbei werden alle Daten von Ihrem Gerät gelöscht und Ihr Gerät wird unsicher.</translation>
+<translation id="2445391421565214706">Bitte starten Sie die Wiederherstellung, um das Problem zu beheben. Entfernen Sie alle verbundenen Geräte und halten Sie dann die Lauter- und die Leisertaste sowie die Ein-/Aus-Taste ( ⏻ ) für mindestens 10 Sekunden gedrückt.</translation>
 <translation id="2531345960369431549">Mit dieser Option wird der Entwicklermodus deaktiviert und Ihr Gerät auf den ursprünglichen Zustand zurückgesetzt.</translation>
 <translation id="2603025384438397887">Wiederherstellung mit dem Mobiltelefon</translation>
 <translation id="2904079386864173492">Modell:</translation>
@@ -25,6 +25,7 @@
 <translation id="3235458304027619499">1. Ein externes Speichermedium, wie z. B. einen USB-Stick oder eine SD-Karte</translation>
 <translation id="328213018570216625">Wiederherstellung mithilfe eines externen Speichermediums</translation>
 <translation id="3289365543955953678">Externes Speichermedium anschließen</translation>
+<translation id="3635226996169670741">Bitte starten Sie die Wiederherstellung, um das Problem zu beheben. Entfernen Sie alle verbundenen Geräte und halten Sie dann die Esc-Taste, die Aktualisierungstaste ( ⟳ ) sowie die Ein-/Aus-Taste ( ⏻ ) gedrückt.</translation>
 <translation id="385051799172605136">Zurück</translation>
 <translation id="3964506597604121312">Ihre Daten werden während des Vorgangs gelöscht.</translation>
 <translation id="4002335453596341558">Seite nach unten</translation>
@@ -58,6 +59,7 @@
 <translation id="7352651011704765696">Ein Problem ist aufgetreten</translation>
 <translation id="7365121631770711723">2. Ein USB-Kabel, mit dem Sie Ihr Mobiltelefon an dieses Gerät anschließen</translation>
 <translation id="7420576176825630019">Entwicklermodus aktivieren</translation>
+<translation id="7567414219298075193">Bitte starten Sie die Wiederherstellung, um das Problem zu beheben. Entfernen Sie alle verbundenen Geräte, halten Sie die Wiederherstellungstaste gedrückt, drücken Sie dann die Ein-/Aus-Taste ( ⏻ ) einmal und lassen Sie danach die Wiederherstellungstaste wieder los.</translation>
 <translation id="7638747526774710781">1. Rufen Sie google.com/chromeos/recovery auf dem anderen Gerät auf, um die Chrome-Erweiterung zu installieren</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="7939062555109487992">Erweiterte Optionen</translation>
@@ -66,8 +68,6 @@
 <translation id="8101391381992690790">Prüfen Sie, ob Ihr externes Speichermedium ein gültiges Wiederherstellungsimage enthält und schließen Sie dann das Speichermedium wieder an.</translation>
 <translation id="8131740175452115882">Bestätigen</translation>
 <translation id="8199613549817472219">Den Wiederherstellungs-Prozess starten</translation>
-<translation id="8297243793472061482">Bitte starten Sie die Wiederherstellung, um das Problem zu beheben. Entfernen Sie alle verbundenen Geräte, halten Sie die Wiederherstellungstaste gedrückt, drücken Sie dann die Ein-/Aus-Taste einmal und lassen Sie danach die Wiederherstellungstaste wieder los.</translation>
-<translation id="8767579394810359800">Bitte starten Sie die Wiederherstellung, um das Problem zu beheben. Entfernen Sie alle verbundenen Geräte und halten Sie dann die Esc-Taste, die Aktualisierungstaste sowie die Ein-/Aus-Taste gedrückt.</translation>
 <translation id="8789686976863801203">Sie sind im Begriff, den Entwicklermodus zu aktivieren</translation>
 <translation id="9040266428058825675">Wenn das externe Speichermedium mit dem Wiederherstellungsimage bereit ist, schließen Sie dieses an das Gerät an, um die Wiederherstellung zu starten.</translation>
 </translationbundle>

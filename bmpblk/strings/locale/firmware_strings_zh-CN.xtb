@@ -7,7 +7,6 @@
 <translation id="1252150473073837888">确认返回到安全模式</translation>
 <translation id="1389402762514302384">选择“取消”可保持受保护状态。</translation>
 <translation id="1483971085438511843">使用 Enter 键可选择选项。</translation>
-<translation id="1676063359707328155">若要尝试解决此问题，请启动恢复流程。请移除所有已连接的设备，然后同时按住“音量调高”按钮、“音量调低”按钮和“电源”按钮至少 10 秒钟。</translation>
 <translation id="1931763245382489971">3. 若您的外部存储设备已装有恢复映像，请点击“下一步”</translation>
 <translation id="1977020597896356883">https://google.com/chromeos/recovery</translation>
 <translation id="1995660704900986789">关机</translation>
@@ -18,6 +17,7 @@
 <translation id="2188090550242711688">2. 按照 Chrome 扩展程序中显示的说明操作，将恢复映像下载到外部存储设备上</translation>
 <translation id="2270126560545545577">您现在处于开发者模式</translation>
 <translation id="2360163367862409346">此操作会清空您设备中的所有数据，并会使此设备变得不安全。</translation>
+<translation id="2445391421565214706">若要尝试解决此问题，请启动恢复流程。请移除所有已连接的设备，然后同时按住“音量调高”按钮、“音量调低”按钮和“电源”按钮 ( ⏻ ) 至少 10 秒钟。</translation>
 <translation id="2531345960369431549">此选项会停用开发者模式，并会将您的设备恢复到初始状态。</translation>
 <translation id="2603025384438397887">使用手机进行恢复</translation>
 <translation id="2904079386864173492">型号：</translation>
@@ -25,6 +25,7 @@
 <translation id="3235458304027619499">1. 一个外部存储设备（例如 U 盘或 SD 卡）</translation>
 <translation id="328213018570216625">使用外部存储设备进行恢复</translation>
 <translation id="3289365543955953678">插入您的外部磁盘</translation>
+<translation id="3635226996169670741">若要尝试解决此问题，请启动恢复流程。请移除所有已连接的设备，然后同时按住 Esc 键、“刷新”键 ( ⟳ ) 和“电源”按钮 ( ⏻ )。</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3964506597604121312">在此过程中，系统会擦除您的用户数据。</translation>
 <translation id="4002335453596341558">向下翻页</translation>
@@ -58,6 +59,7 @@
 <translation id="7352651011704765696">出了点问题</translation>
 <translation id="7365121631770711723">2. 一条用于连接您的手机和该设备的 USB 线</translation>
 <translation id="7420576176825630019">启用开发者模式</translation>
+<translation id="7567414219298075193">若要尝试解决此问题，请启动恢复流程。请移除所有已连接的设备，然后先按住“恢复”按钮，再按下“电源”按钮 ( ⏻ ) 并松开，最后松开“恢复”按钮。</translation>
 <translation id="7638747526774710781">1. 在另一部设备上，访问 google.com/chromeos/recovery，并安装所需的 Chrome 扩展程序</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7939062555109487992">高级选项</translation>
@@ -66,8 +68,6 @@
 <translation id="8101391381992690790">请确保您的外部磁盘包含有效的恢复映像，并在准备就绪后重新插入该磁盘。</translation>
 <translation id="8131740175452115882">确认</translation>
 <translation id="8199613549817472219">下面我们会引导您完成恢复流程</translation>
-<translation id="8297243793472061482">若要尝试解决此问题，请启动恢复流程。请移除所有已连接的设备，然后先按住“恢复”按钮，再按下“电源”按钮并松开，最后松开“恢复”按钮。</translation>
-<translation id="8767579394810359800">若要尝试解决此问题，请启动恢复流程。请移除所有已连接的设备，然后同时按住 Esc 键、“刷新”键和“电源”按钮。</translation>
 <translation id="8789686976863801203">您正在尝试启用开发者模式</translation>
 <translation id="9040266428058825675">如果您的外部存储设备已装有恢复映像，请将其插入本设备中以启动恢复流程。</translation>
 </translationbundle>

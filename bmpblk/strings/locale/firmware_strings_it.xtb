@@ -7,7 +7,6 @@
 <translation id="1252150473073837888">Conferma il ritorno alla modalità protetta</translation>
 <translation id="1389402762514302384">Seleziona "Annulla" per mantenere attiva la protezione.</translation>
 <translation id="1483971085438511843">Utilizza il tasto Invio per selezionare un'opzione.</translation>
-<translation id="1676063359707328155">Per provare a risolvere il problema, avvia la procedura di ripristino. Rimuovi tutti i dispositivi collegati, quindi tieni premuti il pulsante Alza il volume, il pulsante Abbassa il volume e il tasto di accensione per almeno 10 secondi.</translation>
 <translation id="1931763245382489971">3. Quando l'immagine di ripristino è pronta sul dispositivo di archiviazione esterno, fai clic su Avanti</translation>
 <translation id="1977020597896356883">https://google.com/chromeos/recovery</translation>
 <translation id="1995660704900986789">Spegni</translation>
@@ -18,6 +17,7 @@
 <translation id="2188090550242711688">2. Segui le istruzioni nell'estensione di Chrome e scarica l'immagine di ripristino su un'unità di archiviazione esterna</translation>
 <translation id="2270126560545545577">Modalità sviluppatore attiva</translation>
 <translation id="2360163367862409346">Verranno cancellati tutti i dati dal tuo dispositivo, che non sarà più protetto.</translation>
+<translation id="2445391421565214706">Per provare a risolvere il problema, avvia la procedura di ripristino. Rimuovi tutti i dispositivi collegati, quindi tieni premuti il tasto Alza il volume, il tasto Abbassa il volume e il tasto di accensione ( ⏻ ) per almeno 10 secondi.</translation>
 <translation id="2531345960369431549">Questa opzione disattiverà la modalità sviluppatore e ripristinerà lo stato originario del dispositivo.</translation>
 <translation id="2603025384438397887">Ripristino usando il telefono</translation>
 <translation id="2904079386864173492">Modello:</translation>
@@ -25,6 +25,7 @@
 <translation id="3235458304027619499">1. Un dispositivo di archiviazione esterno, ad esempio un'unità USB o una scheda SD</translation>
 <translation id="328213018570216625">Ripristina usando un'unità di archiviazione esterna</translation>
 <translation id="3289365543955953678">Collega il disco esterno</translation>
+<translation id="3635226996169670741">Per provare a risolvere il problema, avvia la procedura di ripristino. Rimuovi tutti i dispositivi collegati, quindi tieni premuti il tasto Esc, il tasto Aggiorna ( ⟳ ) e il tasto di accensione ( ⏻ ).</translation>
 <translation id="385051799172605136">Indietro</translation>
 <translation id="3964506597604121312">I tuoi dati utente verranno cancellati.</translation>
 <translation id="4002335453596341558">Pagina giù</translation>
@@ -58,6 +59,7 @@
 <translation id="7352651011704765696">Si è verificato un problema</translation>
 <translation id="7365121631770711723">2. Un cavo USB che connette il telefono a questo dispositivo</translation>
 <translation id="7420576176825630019">Attiva modalità sviluppatore</translation>
+<translation id="7567414219298075193">Per provare a risolvere il problema, avvia la procedura di ripristino. Rimuovi tutti i dispositivi collegati, quindi tieni premuto il tasto di ripristino, premi e rilascia il tasto di accensione ( ⏻ ), quindi rilascia il tasto di ripristino.</translation>
 <translation id="7638747526774710781">1. Visita la pagina google.com/chromeos/recovery sull'altro dispositivo e installa l'estensione di Chrome</translation>
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7939062555109487992">Opzioni avanzate</translation>
@@ -66,8 +68,6 @@
 <translation id="8101391381992690790">Assicurati che sul disco esterno sia presente un'immagine di ripristino valida dopodiché inserisci di nuovo il disco.</translation>
 <translation id="8131740175452115882">Conferma</translation>
 <translation id="8199613549817472219">Svolgiamo la procedura di ripristino guidata</translation>
-<translation id="8297243793472061482">Per provare a risolvere il problema, avvia la procedura di ripristino. Rimuovi tutti i dispositivi collegati, quindi tieni premuto il tasto di ripristino, premi e rilascia il tasto di accensione, quindi rilascia il tasto di ripristino.</translation>
-<translation id="8767579394810359800">Per provare a correggere l'errore, avvia la procedura di ripristino. Rimuovi tutti i dispositivi collegati, quindi tieni premuti il tasto Esc, il tasto Aggiorna e il tasto di accensione.</translation>
 <translation id="8789686976863801203">Stai cercando di attivare la modalità sviluppatore</translation>
 <translation id="9040266428058825675">Se l'immagine di ripristino è pronta sul dispositivo di archiviazione esterno, collega quest'ultimo a questo dispositivo per avviare la procedura di ripristino.</translation>
 </translationbundle>

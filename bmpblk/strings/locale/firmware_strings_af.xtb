@@ -7,7 +7,6 @@
 <translation id="1252150473073837888">Bevestig terugkeer na veilige modus</translation>
 <translation id="1389402762514302384">Kies Kanselleer om beskermd te bly.</translation>
 <translation id="1483971085438511843">Gebruik die Enter-sleutel om 'n opsie te kies.</translation>
-<translation id="1676063359707328155">Begin die terugstellingproses om die kwessie te probeer regstel. Verwyder alle gekoppelde toestelle, en hou dan volume harder, volume sagter en die aan/af-skakelaar minstens 10 sekondes lank in.</translation>
 <translation id="1931763245382489971">3. Klik "volgende" wanneer jou eksterne berging gereed is met die terugstellingstelselkopie</translation>
 <translation id="1977020597896356883">https://google.com/chromeos/recovery</translation>
 <translation id="1995660704900986789">Skakel af</translation>
@@ -18,6 +17,7 @@
 <translation id="2188090550242711688">2. Volg die instruksies in die Chrome-uitbreiding en laai die terugstelstelselkopie af na eksterne berging</translation>
 <translation id="2270126560545545577">Jy is in ontwikkelaarmodus</translation>
 <translation id="2360163367862409346">Dit behels dat alle data op jou toestel uitgevee word, en dit sal jou toestel onveilig maak.</translation>
+<translation id="2445391421565214706">Begin die terugstellingproses om die kwessie te probeer regstel. Verwyder alle gekoppelde toestelle, en hou dan volume harder, volume sagter en die aan/af-skakelaar ( ⏻ ) minstens 10 sekondes lank in.</translation>
 <translation id="2531345960369431549">Hierdie opsie sal ontwikkelaarmodus deaktiveer en jou toestel na die oorspronklike toestand terugstel.</translation>
 <translation id="2603025384438397887">Terugstelling met foon</translation>
 <translation id="2904079386864173492">Model:</translation>
@@ -25,6 +25,7 @@
 <translation id="3235458304027619499">1. 'n Eksterne bergingtoestel, soos 'n USB-datastokkie of 'n SD-kaart</translation>
 <translation id="328213018570216625">Terugstelling met eksterne berging</translation>
 <translation id="3289365543955953678">Prop jou eksterne skyf in</translation>
+<translation id="3635226996169670741">Begin die terugstellingproses om die kwessie te probeer regstel. Verwyder alle gekoppelde toestelle, en hou dan Esc, Herlaai ( ⟳ ) en die aan/af-skakelaar ( ⏻ ) in.</translation>
 <translation id="385051799172605136">Terug</translation>
 <translation id="3964506597604121312">Jou gebruikerdata sal in die proses uitgevee word.</translation>
 <translation id="4002335453596341558">Blaai af</translation>
@@ -58,6 +59,7 @@
 <translation id="7352651011704765696">Iets het verkeerd geloop</translation>
 <translation id="7365121631770711723">2. 'n USB-kabel wat jou foon en hierdie toestel verbind</translation>
 <translation id="7420576176825630019">Aktiveer ontwikkelaarmodus</translation>
+<translation id="7567414219298075193">Begin die terugstellingproses om die kwessie te probeer regstel. Verwyder alle gekoppelde toestelle, en hou dan die terugstellingknoppie in, druk en los die aan/af-skakelaar ( ⏻ ), en los die terugstellingknoppie.</translation>
 <translation id="7638747526774710781">1. Gaan op die ander toestel na google.com/chromeos/recovery en installeer die Chrome-uitbreiding</translation>
 <translation id="7658239707568436148">Kanselleer</translation>
 <translation id="7939062555109487992">Gevorderde opsies</translation>
@@ -66,8 +68,6 @@
 <translation id="8101391381992690790">Maak seker dat jou eksterne skyf 'n geldige terugstellingstelselkopie het, en sit die skyf weer in wanneer dit gereed is.</translation>
 <translation id="8131740175452115882">Bevestig</translation>
 <translation id="8199613549817472219">Kom ons begelei jou deur die terugstellingproses</translation>
-<translation id="8297243793472061482">Begin die terugstellingproses om die kwessie te probeer regstel. Verwyder alle gekoppelde toestelle, en hou dan die terugstellingknoppie in, druk en los die aan/af-skakelaar, en los die terugstellingknoppie.</translation>
-<translation id="8767579394810359800">Begin die terugstellingproses om die kwessie te probeer regstel. Verwyder alle gekoppelde toestelle, en hou dan Esc, Refresh en die aan/af-skakelaar in.</translation>
 <translation id="8789686976863801203">Jy probeer tans om ontwikkelaarmodus te aktiveer</translation>
 <translation id="9040266428058825675">As jou eksterne bergingtoestel 'n terugstellingstelselkopie gereed het, moet jy dit by hierdie toestel inprop om die terugstellingproses te begin.</translation>
 </translationbundle>

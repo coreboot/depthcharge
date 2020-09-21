@@ -7,7 +7,6 @@
 <translation id="1252150473073837888">Konfirmo kthimin në modalitetin e sigurt</translation>
 <translation id="1389402762514302384">Zgjidh "Anulo" për të qëndruar i mbrojtur.</translation>
 <translation id="1483971085438511843">Përdor tastin "Enter" për të zgjedhur një opsion.</translation>
-<translation id="1676063359707328155">Për të provuar ta rregullosh problemin, fillo procesin e rikuperimit. Hiq të gjitha pajisjet e lidhura dhe më pas mbaj të shtypur "Volumi lart", "Volumi poshtë" dhe butonin e "Energjisë" për të paktën 10 sekonda.</translation>
 <translation id="1931763245382489971">3. Kliko "Para" kur pajisja ruajtëse e jashtme të jetë gati me imazhin e rikuperimit</translation>
 <translation id="1977020597896356883">https://google.com/chromeos/recovery</translation>
 <translation id="1995660704900986789">Fik</translation>
@@ -18,6 +17,7 @@
 <translation id="2188090550242711688">2. Ndiq udhëzimet në shtesën e Chrome dhe shkarko imazhin e rikuperimit në një hapësirë ruajtëse të jashtme</translation>
 <translation id="2270126560545545577">Je në modalitetin si zhvillues</translation>
 <translation id="2360163367862409346">Kjo përfshin spastrimin e të gjitha të dhënave nga pajisja jote dhe do ta bëjë pajisjen tënde të pasigurt.</translation>
+<translation id="2445391421565214706">Për të provuar ta rregullosh problemin, fillo procesin e rikuperimit. Hiq të gjitha pajisjet e lidhura dhe më pas mbaj të shtypur "Volumi lart", "Volumi poshtë" dhe butonin e "Energjisë" ( ⏻ ) për të paktën 10 sekonda.</translation>
 <translation id="2531345960369431549">Ky opsion do të çaktivizojë modalitetin si zhvillues dhe do të restaurojë pajisjen tënde në gjendjen fillestare.</translation>
 <translation id="2603025384438397887">Rikuperimi duke përdorur telefonin</translation>
 <translation id="2904079386864173492">Modeli:</translation>
@@ -25,6 +25,7 @@
 <translation id="3235458304027619499">1. Një pajisje ruajtëse e jashtme, si p.sh. një njësi USB ose kartë SD</translation>
 <translation id="328213018570216625">Rikuperimi duke përdorur hapësirën ruajtëse të jashtme</translation>
 <translation id="3289365543955953678">Lidh diskun e jashtëm</translation>
+<translation id="3635226996169670741">Për të provuar ta rregullosh problemin, fillo procesin e rikuperimit. Hiq të gjitha pajisjet e lidhura dhe më pas mbaj të shtypur "Esc", "Refresh" ( ⟳ ), dhe butonin e "Energjisë" ( ⏻ ).</translation>
 <translation id="385051799172605136">Prapa</translation>
 <translation id="3964506597604121312">Të dhënat e tua të përdoruesit do të fshihen gjatë procesit.</translation>
 <translation id="4002335453596341558">Faqja poshtë</translation>
@@ -58,6 +59,7 @@
 <translation id="7352651011704765696">Diçka shkoi keq</translation>
 <translation id="7365121631770711723">2. Një kabllo USB që lidh telefonin tënd dhe këtë pajisje</translation>
 <translation id="7420576176825630019">Aktivizo modalitetin si zhvillues</translation>
+<translation id="7567414219298075193">Për të provuar ta rregullosh problemin, fillo procesin e rikuperimit. Hiq të gjitha pajisjet e lidhura dhe më pas mbaj të shtypur butonin e "Rikuperimit", shtyp dhe lësho butonin e "Energjisë" ( ⏻ ) dhe lësho butonin e "Rikuperimit".</translation>
 <translation id="7638747526774710781">1. Shko te google.com/chromeos/recovery në një pajisje tjetër dhe instalo shtesën e Chrome</translation>
 <translation id="7658239707568436148">Anulo</translation>
 <translation id="7939062555109487992">Opsionet e përparuara</translation>
@@ -66,8 +68,6 @@
 <translation id="8101391381992690790">Sigurohu që disku yt i jashtëm të ketë një imazh të vlefshëm rikuperimi dhe rifut diskun kur të jesh gati.</translation>
 <translation id="8131740175452115882">Konfirmo</translation>
 <translation id="8199613549817472219">Le të të shoqërojmë përmes procesit të rikuperimit</translation>
-<translation id="8297243793472061482">Për të provuar ta rregullosh problemin, fillo procesin e rikuperimit. Hiq të gjitha pajisjet e lidhura dhe më pas mbaj të shtypur butonin e "Rikuperimit", shtyp dhe lësho butonin e "Energjisë" dhe lësho butonin e "Rikuperimit".</translation>
-<translation id="8767579394810359800">Për të provuar ta rregullosh problemin, fillo procesin e rikuperimit. Hiq të gjitha pajisjet e lidhura dhe më pas mbaj të shtypur "Esc", "Refresh" dhe butonin e "Energjisë".</translation>
 <translation id="8789686976863801203">Po përpiqesh të aktivizosh modalitetin si zhvillues</translation>
 <translation id="9040266428058825675">Nëse pajisja ruajtëse e jashtme është gati me një imazh rikuperimi, lidhe me këtë pajisje për të nisur procesin e rikuperimit.</translation>
 </translationbundle>

@@ -7,7 +7,6 @@
 <translation id="1252150473073837888">確認返回安全模式</translation>
 <translation id="1389402762514302384">選擇 [取消] 可維持受保護的狀態。</translation>
 <translation id="1483971085438511843">請使用 Enter 鍵選取所需選項。</translation>
-<translation id="1676063359707328155">如要嘗試修正問題，請啟動還原程序。請移除所有外接裝置，然後按住調高音量鍵、調低音量鍵和電源按鈕至少 10 秒。</translation>
 <translation id="1931763245382489971">3. 確認外部儲存空間裝置包含所需的復原映像檔後，請點選 [下一步]</translation>
 <translation id="1977020597896356883">https://google.com/chromeos/recovery</translation>
 <translation id="1995660704900986789">關機</translation>
@@ -18,6 +17,7 @@
 <translation id="2188090550242711688">2. 依照 Chrome 擴充功能的指示操作，並將復原映像檔下載至外部儲存空間</translation>
 <translation id="2270126560545545577">目前處於開發人員模式</translation>
 <translation id="2360163367862409346">這麼做會清除裝置中的所有資料，並讓裝置處於不安全的狀態。</translation>
+<translation id="2445391421565214706">如要嘗試修正問題，請啟動還原程序。請移除所有外接裝置，然後按住調高音量鍵、調低音量鍵和電源按鈕 ( ⏻ ) 至少 10 秒。</translation>
 <translation id="2531345960369431549">這個選項會停用開發人員模式，並將裝置復原為原始狀態。</translation>
 <translation id="2603025384438397887">使用手機進行還原</translation>
 <translation id="2904079386864173492">型號：</translation>
@@ -25,6 +25,7 @@
 <translation id="3235458304027619499">1. 備妥外部儲存空間裝置，例如 USB 隨身碟或 SD 卡</translation>
 <translation id="328213018570216625">使用外部儲存空間進行還原</translation>
 <translation id="3289365543955953678">插入外部磁碟</translation>
+<translation id="3635226996169670741">如要嘗試修正問題，請啟動還原程序。請移除所有外接裝置，然後按住 Esc 鍵、重新整理鍵 ( ⟳ ) 和電源按鈕 ( ⏻ )。</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3964506597604121312">你的使用者資料將在這項程序中遭到清除。</translation>
 <translation id="4002335453596341558">下一頁</translation>
@@ -58,6 +59,7 @@
 <translation id="7352651011704765696">發生錯誤</translation>
 <translation id="7365121631770711723">2. 可連結手機和這部裝置的 USB 傳輸線</translation>
 <translation id="7420576176825630019">啟用開發人員模式</translation>
+<translation id="7567414219298075193">如要嘗試修正問題，請啟動還原程序。請移除所有外接裝置，然後按住還原按鈕、按下並放開電源按鈕 ( ⏻ )，再放開還原按鈕。</translation>
 <translation id="7638747526774710781">1. 在另外一部裝置上前往 google.com/chromeos/recovery，並安裝 Chrome 擴充功能</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7939062555109487992">進階選項</translation>
@@ -66,8 +68,6 @@
 <translation id="8101391381992690790">請確認你的外部磁碟包含有效的復原映像檔，並且在準備就緒時重新插入磁碟。</translation>
 <translation id="8131740175452115882">確認</translation>
 <translation id="8199613549817472219">我們會逐步引導你完成還原程序</translation>
-<translation id="8297243793472061482">如要嘗試修正問題，請啟動還原程序。請移除所有外接裝置，然後按住還原按鈕、按下並放開電源按鈕，再放開還原按鈕。</translation>
-<translation id="8767579394810359800">如要嘗試修正問題，請啟動還原程序。請移除所有外接裝置，然後按住 Esc 鍵、重新整理鍵和電源按鈕。</translation>
 <translation id="8789686976863801203">你正在嘗試啟用開發人員模式</translation>
 <translation id="9040266428058825675">如果外部儲存空間裝置包含所需的復原映像檔，將其插入這部裝置即可啟動還原程序。</translation>
 </translationbundle>

@@ -7,7 +7,6 @@
 <translation id="1252150473073837888">Potvrdite povratak na bezbedni režim</translation>
 <translation id="1389402762514302384">Izaberite Otkaži da biste ostali u bezbednom režimu.</translation>
 <translation id="1483971085438511843">Koristite taster enter da biste izabrali opciju.</translation>
-<translation id="1676063359707328155">Pokrenite proces oporavka da biste probali da rešite problem. Uklonite sve povezane uređaje, pa zadržite dugmad za pojačavanje zvuka, smanjivanje zvuka i napajanje najmanje 10 sekundi.</translation>
 <translation id="1931763245382489971">3. Kliknite na Dalje kada spoljni memorijski uređaj sa slikom rezervne kopije sistema bude spreman</translation>
 <translation id="1977020597896356883">https://google.com/chromeos/recovery</translation>
 <translation id="1995660704900986789">Isključi</translation>
@@ -18,6 +17,7 @@
 <translation id="2188090550242711688">2. Pratite uputstva u vezi sa dodatkom za Chrome i preuzmite sliku za oporavak na spoljnu memoriju</translation>
 <translation id="2270126560545545577">Nalazite se u režimu programera</translation>
 <translation id="2360163367862409346">Ovo obuhvata brisanje svih podataka sa uređaja i učiniće uređaj nebezbednim.</translation>
+<translation id="2445391421565214706">Pokrenite proces oporavka da biste probali da rešite problem. Uklonite sve povezane uređaje, pa zadržite dugmad za pojačavanje zvuka, smanjivanje zvuka i napajanje ( ⏻ ) najmanje 10 sekundi.</translation>
 <translation id="2531345960369431549">Ova opcija će onemogućiti režim programera i vratiti uređaj u prvobitno stanje.</translation>
 <translation id="2603025384438397887">Oporavak pomoću telefona</translation>
 <translation id="2904079386864173492">Model:</translation>
@@ -25,6 +25,7 @@
 <translation id="3235458304027619499">1. Spoljni memorijski uređaj kao što je USB disk ili SD kartica</translation>
 <translation id="328213018570216625">Oporavak pomoću spoljne memorije</translation>
 <translation id="3289365543955953678">Priključite spoljni disk</translation>
+<translation id="3635226996169670741">Pokrenite proces oporavka da biste probali da rešite problem. Uklonite sve povezane uređaje, pa zadržite Esc, Refresh ( ⟳ ) i dugme za napajanje ( ⏻ ).</translation>
 <translation id="385051799172605136">Nazad</translation>
 <translation id="3964506597604121312">Podaci korisnika će se izbrisati tokom procesa.</translation>
 <translation id="4002335453596341558">Stranica nadole</translation>
@@ -58,6 +59,7 @@
 <translation id="7352651011704765696">Nešto nije u redu</translation>
 <translation id="7365121631770711723">2. USB kabl koji povezuje telefon i ovaj uređaj</translation>
 <translation id="7420576176825630019">Omogući režim programera</translation>
+<translation id="7567414219298075193">Pokrenite proces oporavka da biste probali da rešite problem. Uklonite sve povezane uređaje, pa zadržite dugme za oporavak, pritisnite i otpustite dugme za napajanje ( ⏻ ) i otpustite dugme za oporavak.</translation>
 <translation id="7638747526774710781">1. Idite na google.com/chromeos/recovery na drugom uređaju i instalirajte dodatak za Chrome</translation>
 <translation id="7658239707568436148">Otkaži</translation>
 <translation id="7939062555109487992">Napredne opcije</translation>
@@ -66,8 +68,6 @@
 <translation id="8101391381992690790">Proverite da li spoljni disk sadrži ispravnu sliku rezervne kopije sistema i ponovo priključite disk kada budete spremni.</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8199613549817472219">Vodićemo vas kroz proces oporavka</translation>
-<translation id="8297243793472061482">Pokrenite proces oporavka da biste probali da rešite problem. Uklonite sve povezane uređaje, pa zadržite dugme za oporavak, pritisnite i otpustite dugme za napajanje i otpustite dugme za oporavak.</translation>
-<translation id="8767579394810359800">Pokrenite proces oporavka da biste probali da rešite problem. Uklonite sve povezane uređaje, pa zadržite Esc, Refresh i dugme za napajanje.</translation>
 <translation id="8789686976863801203">Pokušavate da omogućite režim programera</translation>
 <translation id="9040266428058825675">Ako je spoljni memorijski uređaj sa slikom rezervne kopije sistema spreman, povežite ga sa ovim uređajem da biste pokrenuli proces oporavka.</translation>
 </translationbundle>

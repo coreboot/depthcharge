@@ -7,7 +7,6 @@
 <translation id="1252150473073837888">Confirmez que vous souhaitez revenir au mode sécurisé</translation>
 <translation id="1389402762514302384">Sélectionnez "Annuler" pour maintenir la protection.</translation>
 <translation id="1483971085438511843">Utilisez la touche Entrée pour sélectionner une option.</translation>
-<translation id="1676063359707328155">Pour tenter de résoudre le problème, lancez le processus de récupération. Retirez tous les périphériques connectés, puis maintenez les touches volume+ et volume- ainsi que le bouton Marche/Arrêt enfoncés pendant au moins 10 secondes.</translation>
 <translation id="1931763245382489971">3. Cliquez sur "Suivant" une fois que l'image de récupération a bien été installée sur le périphérique de stockage externe</translation>
 <translation id="1977020597896356883">https://google.com/chromeos/recovery</translation>
 <translation id="1995660704900986789">Éteindre</translation>
@@ -18,6 +17,7 @@
 <translation id="2188090550242711688">2. Suivez les instructions sur l'extension Chrome, puis téléchargez l'image de récupération pour l'installer sur un espace de stockage externe</translation>
 <translation id="2270126560545545577">Vous êtes en mode développeur</translation>
 <translation id="2360163367862409346">Cette opération entraîne la suppression de toutes les données de votre appareil et le rendra non sécurisé.</translation>
+<translation id="2445391421565214706">Pour tenter de résoudre le problème, lancez le processus de récupération. Retirez tous les appareils connectés, puis maintenez les touches volume+ et volume- ainsi que le bouton Marche/Arrêt ( ⏻ ) enfoncés pendant au moins 10 secondes.</translation>
 <translation id="2531345960369431549">Cette option permet de désactiver le mode développeur et de restaurer l'état d'origine de votre appareil.</translation>
 <translation id="2603025384438397887">Récupération à l'aide d'un téléphone</translation>
 <translation id="2904079386864173492">Modèle :</translation>
@@ -25,6 +25,7 @@
 <translation id="3235458304027619499">1. Un périphérique de stockage externe, comme une clé USB ou une carte SD</translation>
 <translation id="328213018570216625">Récupération avec un espace de stockage externe</translation>
 <translation id="3289365543955953678">Brancher votre disque externe</translation>
+<translation id="3635226996169670741">Pour tenter de résoudre le problème, lancez le processus de récupération. Retirez tous les appareils connectés, puis maintenez les touches Échap et Actualiser ( ⟳ ) ainsi que le bouton Marche/Arrêt ( ⏻ ) enfoncés.</translation>
 <translation id="385051799172605136">Retour</translation>
 <translation id="3964506597604121312">Vos données utilisateur seront effacées pendant le processus.</translation>
 <translation id="4002335453596341558">Page suivante</translation>
@@ -58,6 +59,7 @@
 <translation id="7352651011704765696">Un problème est survenu</translation>
 <translation id="7365121631770711723">2. Un câble USB pour connecter votre téléphone et cet appareil</translation>
 <translation id="7420576176825630019">Activer le mode développeur</translation>
+<translation id="7567414219298075193">Pour tenter de résoudre le problème, lancez le processus de récupération. Retirez tous les périphériques connectés. Ensuite, maintenez le bouton de récupération enfoncé, appuyez sur le bouton Marche/Arrêt ( ⏻ ) et relâchez-le, puis relâchez le bouton de récupération.</translation>
 <translation id="7638747526774710781">1. Accédez à google.com/chromeos/recovery sur l'autre appareil et installez l'extension Chrome</translation>
 <translation id="7658239707568436148">Annuler</translation>
 <translation id="7939062555109487992">Options avancées</translation>
@@ -66,8 +68,6 @@
 <translation id="8101391381992690790">Assurez-vous que votre disque externe contient une image de récupération valide, et réinsérez-le quand vous êtes prêt.</translation>
 <translation id="8131740175452115882">Confirmer</translation>
 <translation id="8199613549817472219">Voici les étapes du processus de récupération</translation>
-<translation id="8297243793472061482">Pour tenter de résoudre le problème, lancez le processus de récupération. Retirez tous les périphériques connectés. Ensuite, maintenez le bouton de récupération enfoncé, appuyez sur le bouton Marche/Arrêt et relâchez-le, puis relâchez le bouton de récupération.</translation>
-<translation id="8767579394810359800">Pour tenter de résoudre le problème, lancez le processus de récupération. Retirez tous les appareils connectés, puis maintenez les touches Échap et Actualiser ainsi que le bouton Marche/Arrêt enfoncés.</translation>
 <translation id="8789686976863801203">Vous tentez d'activer le mode développeur</translation>
 <translation id="9040266428058825675">Si une image de récupération est déjà installée sur votre périphérique de stockage externe, branchez celui-ci à cet appareil pour lancer le processus de récupération.</translation>
 </translationbundle>

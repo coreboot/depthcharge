@@ -7,7 +7,6 @@
 <translation id="1252150473073837888">Grįžimo į saugų režimą patvirtinimas</translation>
 <translation id="1389402762514302384">Pasirinkite „Atšaukti“, kad toliau būtų taikoma apsauga.</translation>
 <translation id="1483971085438511843">Naudodami klavišą „Enter“ pasirinkite parinktį.</translation>
-<translation id="1676063359707328155">Jei norite išbandyti ir išspręsti problemą, pradėkite atkūrimo procesą. Atjunkite visus prijungtus įrenginius, tada palaikykite paspaudę garsumo padidinimo, garsumo sumažinimo ir maitinimo mygtukus bent 10 sekundžių.</translation>
 <translation id="1931763245382489971">3. Kai išorinės saugyklos įrenginys su atkuriamąja turinio kopija bus paruošta, spustelėkite „Kitas“</translation>
 <translation id="1977020597896356883">https://google.com/chromeos/recovery</translation>
 <translation id="1995660704900986789">Išjungti maitinimą</translation>
@@ -18,6 +17,7 @@
 <translation id="2188090550242711688">2. Vadovaukitės „Chrome“ plėtinio instrukcijomis ir atsisiųskite atkuriamąją turinio kopiją į išorinę saugyklą</translation>
 <translation id="2270126560545545577">Įjungtas kūrėjo režimas</translation>
 <translation id="2360163367862409346">Bus ištrinti visi duomenys iš įrenginio ir įrenginys bus nesaugus.</translation>
+<translation id="2445391421565214706">Jei norite išbandyti ir išspręsti problemą, pradėkite atkūrimo procesą. Atjunkite visus prijungtus įrenginius, tada palaikykite paspaudę garsumo padidinimo, garsumo sumažinimo ir maitinimo ( ⏻ ) mygtukus bent 10 sekundžių.</translation>
 <translation id="2531345960369431549">Pasirinkus šią parinktį bus išjungtas kūrėjo režimas ir atkurta pradinė įrenginio būsena.</translation>
 <translation id="2603025384438397887">Atkūrimas telefonu</translation>
 <translation id="2904079386864173492">Modelis:</translation>
@@ -25,6 +25,7 @@
 <translation id="3235458304027619499">1. Išorinės saugyklos įrenginys, pvz., atmintukas arba SD kortelė</translation>
 <translation id="328213018570216625">Atkūrimas naudojant išorinę saugyklą</translation>
 <translation id="3289365543955953678">Prijunkite išorinį diską</translation>
+<translation id="3635226996169670741">Jei norite išbandyti ir išspręsti problemą, pradėkite atkūrimo procesą. Atjunkite visus prijungtus įrenginius, tada palaikykite paspaudę klavišą „Esc“, atnaujinimo ( ⟳ ) ir maitinimo ( ⏻ ) mygtukus.</translation>
 <translation id="385051799172605136">Atgal</translation>
 <translation id="3964506597604121312">Vykdant procesą duomenys bus išvalyti.</translation>
 <translation id="4002335453596341558">Puslapiu žemyn</translation>
@@ -58,6 +59,7 @@
 <translation id="7352651011704765696">Kažkas negerai</translation>
 <translation id="7365121631770711723">2. USB laidas, kuriuo telefonas prijungiamas prie šio įrenginio</translation>
 <translation id="7420576176825630019">Įgalinti kūrėjo režimą</translation>
+<translation id="7567414219298075193">Jei norite išbandyti ir išspręsti problemą, pradėkite atkūrimo procesą. Atjunkite visus prijungtus įrenginius, tada palaikykite paspaudę atkūrimo mygtuką, paspauskite ir atleiskite maitinimo mygtuką ( ⏻ ), tada atleiskite atkūrimo mygtuką.</translation>
 <translation id="7638747526774710781">1. Eikite adresu google.com/chromeos/recovery naudodami kitą įrenginį ir įdiekite „Chrome“ plėtinį</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="7939062555109487992">Išplėstinės parinktys</translation>
@@ -66,8 +68,6 @@
 <translation id="8101391381992690790">Įsitikinkite, kad išoriniame diske yra tinkama atkuriamoji turinio kopija ir, kai būsite pasiruošę, įdėkite diską iš naujo.</translation>
 <translation id="8131740175452115882">Patvirtinti</translation>
 <translation id="8199613549817472219">Peržiūrėkime atkūrimo proceso veiksmus</translation>
-<translation id="8297243793472061482">Jei norite išbandyti ir išspręsti problemą, pradėkite atkūrimo procesą. Atjunkite visus prijungtus įrenginius, tada palaikykite paspaudę atkūrimo mygtuką, paspauskite ir atleiskite maitinimo mygtuką, tada atleiskite atkūrimo mygtuką.</translation>
-<translation id="8767579394810359800">Jei norite išbandyti ir išspręsti problemą, pradėkite atkūrimo procesą. Atjunkite visus prijungtus įrenginius, tada palaikykite paspaudę klavišą „Esc“, atnaujinimo ir maitinimo mygtukus.</translation>
 <translation id="8789686976863801203">Bandote įgalinti kūrėjo režimą</translation>
 <translation id="9040266428058825675">Jei išorinės saugyklos įrenginyje yra atkuriamoji turinio kopija, įdėkite ją į šį įrenginį ir pradėkite atkūrimo procesą</translation>
 </translationbundle>

@@ -7,7 +7,6 @@
 <translation id="1252150473073837888">Terugkeren naar beveiligde modus bevestigen</translation>
 <translation id="1389402762514302384">Selecteer Annuleren om beschermd te blijven.</translation>
 <translation id="1483971085438511843">Gebruik de Enter-toets om een optie te selecteren.</translation>
-<translation id="1676063359707328155">Start het herstelproces om het probleem op te lossen. Verwijder alle gekoppelde apparaten en houd daarna de knop voor volume omhoog, de knop voor volume omlaag en de aan/uit-knop minimaal tien seconden ingedrukt.</translation>
 <translation id="1931763245382489971">3. Als je externe opslagapparaat met de herstelimage klaar is voor gebruik, klik je op Volgende</translation>
 <translation id="1977020597896356883">https://google.com/chromeos/recovery</translation>
 <translation id="1995660704900986789">Uitschakelen</translation>
@@ -18,6 +17,7 @@
 <translation id="2188090550242711688">2. Volg de instructies in de Chrome-extensie en download de herstelimage naar een externe opslag</translation>
 <translation id="2270126560545545577">Je gebruikt de ontwikkelaarsmodus</translation>
 <translation id="2360163367862409346">Alle gegevens op je apparaat worden gewist en je apparaat is niet meer beveiligd.</translation>
+<translation id="2445391421565214706">Start het herstelproces om het probleem op te lossen. Verwijder alle gekoppelde apparaten en houd daarna de knop voor volume omhoog, de knop voor volume omlaag en de aan/uit-knop ( ⏻ ) minimaal tien seconden ingedrukt.</translation>
 <translation id="2531345960369431549">Met deze optie wordt de ontwikkelaarsmodus uitgeschakeld en wordt je apparaat teruggezet naar de oorspronkelijke status.</translation>
 <translation id="2603025384438397887">Herstellen met telefoon</translation>
 <translation id="2904079386864173492">Model:</translation>
@@ -25,10 +25,11 @@
 <translation id="3235458304027619499">1. Een extern opslagapparaat, zoals een USB-drive of een SD-kaart</translation>
 <translation id="328213018570216625">Herstellen met externe opslag</translation>
 <translation id="3289365543955953678">Je externe schijf aansluiten</translation>
+<translation id="3635226996169670741">Start het herstelproces om het probleem op te lossen. Verwijder alle gekoppelde apparaten en houd Esc, Vernieuwen ( ⟳ ) en de aan/uit-knop ( ⏻ ) ingedrukt.</translation>
 <translation id="385051799172605136">Terug</translation>
 <translation id="3964506597604121312">Je gebruikersgegevens worden gewist tijdens dit proces.</translation>
 <translation id="4002335453596341558">Pagina omlaag</translation>
-<translation id="4152977630022273265">Zorg ervoor dat je externe schijf een geldige Chrome OS-image heeft en plaats de schijf opnieuw als hij gereed is.</translation>
+<translation id="4152977630022273265">Zorg ervoor dat je externe schijf een geldige Chrome OS-image heeft en plaats de schijf opnieuw als hij klaar is.</translation>
 <translation id="4410491068110727276">Gebruik de volumeknoppen om omhoog of omlaag te navigeren.</translation>
 <translation id="4497270882390086583">Je kunt herstellen met een extern opslagapparaat, zoals een USB-drive, of met je Android-telefoon.</translation>
 <translation id="4773280894882892048">Foutopsporingsinfo</translation>
@@ -58,16 +59,15 @@
 <translation id="7352651011704765696">Er is iets misgegaan</translation>
 <translation id="7365121631770711723">2. Een USB-kabel waarmee je telefoon en dit apparaat op elkaar worden aangesloten</translation>
 <translation id="7420576176825630019">Ontwikkelaarsmodus inschakelen</translation>
+<translation id="7567414219298075193">Start het herstelproces om het probleem op te lossen. Verwijder alle gekoppelde apparaten en houd daarna de herstelknop ingedrukt, druk kort op de aan/uit-knop ( ⏻ ) en laat de herstelknop los.</translation>
 <translation id="7638747526774710781">1. Ga op het andere apparaat naar google.com/chromeos/recovery en installeer de Chrome-extensie</translation>
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="7939062555109487992">Geavanceerde opties</translation>
 <translation id="8011335065515332253">Na de time-out wordt het apparaat automatisch opgestart vanaf de onderstaande selectie.</translation>
 <translation id="8027199195649765326">Druk op de herstelknop op je Chromebox om de ontwikkelaarsmodus in te schakelen of selecteer Annuleren om beschermd te blijven.</translation>
-<translation id="8101391381992690790">Zorg ervoor dat je externe schijf een geldige herstelimage heeft en plaats de schijf opnieuw als deze gereed is.</translation>
+<translation id="8101391381992690790">Zorg ervoor dat je externe schijf een geldige herstelimage heeft en plaats de schijf opnieuw als deze klaar is.</translation>
 <translation id="8131740175452115882">Bevestigen</translation>
 <translation id="8199613549817472219">We begeleiden je tijdens het herstelproces</translation>
-<translation id="8297243793472061482">Start het herstelproces om het probleem op te lossen. Verwijder alle gekoppelde apparaten en houd daarna de herstelknop ingedrukt, druk kort op de aan/uit-knop en laat de herstelknop los.</translation>
-<translation id="8767579394810359800">Start het herstelproces om het probleem op te lossen. Verwijder alle gekoppelde apparaten en houd Esc, Vernieuwen en de aan/uit-knop ingedrukt.</translation>
 <translation id="8789686976863801203">Je probeert de ontwikkelaarsmodus in te schakelen</translation>
 <translation id="9040266428058825675">Als je externe opslagapparaat met de herstelimage klaar is voor gebruik, sluit je deze aan op dit apparaat om het herstelproces te starten.</translation>
 </translationbundle>

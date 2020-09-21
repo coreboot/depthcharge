@@ -7,7 +7,6 @@
 <translation id="1252150473073837888">Confirm returning to secure mode</translation>
 <translation id="1389402762514302384">Select Cancel to remain protected.</translation>
 <translation id="1483971085438511843">Use the enter key to select an option.</translation>
-<translation id="1676063359707328155">To try and fix the issue, start the recovery process. Remove all connected devices, then hold down volume up, volume down, and the power button for at least 10 seconds.</translation>
 <translation id="1931763245382489971">3. Click next when your external storage device is ready with the recovery image</translation>
 <translation id="1977020597896356883">https://google.com/chromeos/recovery</translation>
 <translation id="1995660704900986789">Power off</translation>
@@ -18,6 +17,7 @@
 <translation id="2188090550242711688">2. Follow instructions on the Chrome extension, and download the recovery image onto external storage</translation>
 <translation id="2270126560545545577">You are in developer mode</translation>
 <translation id="2360163367862409346">This involves erasing all data from your device, and will make your device insecure.</translation>
+<translation id="2445391421565214706">To try and fix the issue, start the recovery process. Remove all connected devices, then hold down the volume up, volume down and power button ( ⏻ ) for at least 10 seconds.</translation>
 <translation id="2531345960369431549">This option will disable developer mode and restore your device to its original state.</translation>
 <translation id="2603025384438397887">Recovery using phone</translation>
 <translation id="2904079386864173492">Model:</translation>
@@ -25,6 +25,7 @@
 <translation id="3235458304027619499">1. An external storage device such as a USB drive or an SD card</translation>
 <translation id="328213018570216625">Recovery using external storage</translation>
 <translation id="3289365543955953678">Plug in your external disk</translation>
+<translation id="3635226996169670741">To try and fix the issue, start the recovery process. Remove all connected devices, then hold down Esc, refresh ( ⟳ ) and power ( ⏻ ).</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="3964506597604121312">Your user data will be wiped in the process.</translation>
 <translation id="4002335453596341558">Page down</translation>
@@ -58,6 +59,7 @@
 <translation id="7352651011704765696">Something went wrong</translation>
 <translation id="7365121631770711723">2. A USB cable which connects your phone and this device</translation>
 <translation id="7420576176825630019">Enable developer mode</translation>
+<translation id="7567414219298075193">To try and fix the issue, start the recovery process. Remove all connected devices, then hold down the recovery button, press and release the power button ( ⏻ ) and then release the recovery button.</translation>
 <translation id="7638747526774710781">1. Go to google.com/chromeos/recovery on the other device and install the Chrome extension</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7939062555109487992">Advanced options</translation>
@@ -66,8 +68,6 @@
 <translation id="8101391381992690790">Make sure that your external disk has a valid recovery image, and re-insert the disk when ready.</translation>
 <translation id="8131740175452115882">Confirm</translation>
 <translation id="8199613549817472219">Let’s guide you through the recovery process</translation>
-<translation id="8297243793472061482">To try and fix the issue, start the recovery process. Remove all connected devices, then hold down the recovery button, press and release the power button and then release the recovery button.</translation>
-<translation id="8767579394810359800">To try and fix the issue, start the recovery process. Remove all connected devices, then hold down Esc, Refresh and Power.</translation>
 <translation id="8789686976863801203">You are attempting to enable developer mode</translation>
 <translation id="9040266428058825675">If your external storage device is ready with a recovery image, plug it into this device to start the recovery process.</translation>
 </translationbundle>
