@@ -210,7 +210,7 @@ int vboot_select_and_load_kernel(void)
 		cold_reboot();
 	}
 	if (res != VB2_SUCCESS) {
-		printf("VbSelectAndLoadKernel returned %d, "
+		printf("VbSelectAndLoadKernel returned %#x, "
 		       "Doing a cold reboot.\n", res);
 		cold_reboot();
 	}
