@@ -34,15 +34,20 @@ _DEFAULT_:
   sdcard:      True
   bad_usb3:    False
   text_colors: 3
-  locales:     [en, es-419, pt-BR, fr, es, pt-PT, ca, it, de,
-                el, nl, da, nb, sv, fi, et, lv, lt, ru, pl, cs, sk, hu, sl, sr, hr, bg, ro,
-                uk, tr, he, ar, fa, hi, th, ms, vi, id, fil, zh-CN, zh-TW, ko, ja,
-                bn, gu, kn, ml, mr, ta, te]
-  rtl:         [ar, fa, he]
-  hi_res:      [en, es-419, pt-BR, fr, es, pt-PT, ca, it, de,
-                el, nl, da, nb, sv, fi, et, lv, lt, ru, pl, cs, sk, hu, sl, sr, hr, bg, ro,
-                uk, tr, he, ar, fa, hi, th, ms, vi, id, fil, zh-CN, zh-TW, ko, ja,
-                bn, gu, kn, ml, mr, ta, te]
+  # The order of locales determines the order in the language menu. Aside from
+  # 'en', which is placed at the beginning of the list, the remaining order is
+  # consistent with the Chromebook Help Center
+  # (https://support.google.com/chromebook).
+  # Please modify this with care.
+  locales:     [en, bn, ca, da, de, et, es, es-419, fil, fr, hr, id, it, lv, lt,
+                hu, ms, nl, nb, pl, pt-PT, pt-BR, ro, sk, sl, fi, sv, vi, tr,
+                cs, el, bg, ru, sr, uk, he, ar, fa, mr, hi, gu, ta, te, kn, ml,
+                th, zh-CN, zh-TW, ja, ko]
+  rtl:         [he, ar, fa]
+  hi_res:      [en, bn, ca, da, de, et, es, es-419, fil, fr, hr, id, it, lv, lt,
+                hu, ms, nl, nb, pl, pt-PT, pt-BR, ro, sk, sl, fi, sv, vi, tr,
+                cs, el, bg, ru, sr, uk, he, ar, fa, mr, hi, gu, ta, te, kn, ml,
+                th, zh-CN, zh-TW, ja, ko]
 
 x86-generic,amd64-generic:
   # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
