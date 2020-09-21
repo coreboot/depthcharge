@@ -1641,6 +1641,7 @@ static const VbootAuxfwOps *new_ps8xxx_from_chip_info(
 		break;
 	case PARADE_PS8705_PRODUCT_ID:
 		ps8751 = new_ps8705(NULL, ec_pd_id);
+		break;
 	case PARADE_PS8805_PRODUCT_ID:
 		ps8751 = new_ps8805(NULL, ec_pd_id);
 		break;
