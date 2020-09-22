@@ -91,34 +91,21 @@ bitmap block structure incompatible with previous versions.
 --------------------------------------------
 Instructions for manually rebuilding things:
 
-It is now easier to build bmpblk INSIDE chroot. Just run "make" and everything
-will be regenerated:
-
-  (chroot) cd ~/trunk/src/platform/bmpblk
-  (chroot) make
-
-This should generate BIOS bmpblock file for all platforms cross all locales,
-which takes a long time.
-
-If you simply want to build image for single target with default locales, do:
+It is now easier to build bmpblk INSIDE chroot. To build images for board $BOARD
+with default locales, do:
 
   (chroot) cd ~/trunk/src/platform/bmpblk
   (chroot) make $BOARD
 
-Where $BOARD is the board name of your target, ex: "link". There is one simple
-reference target "std" with fewer locales so you can test the building procedure
-faster: "make std".
-
 The default generated output files are in ./build/$BOARD. To override output
 folder, just specify OUTPUT=/path_to_output in Make variables.
 
-Note if you want to override the default locales list defined in boards.yaml
+Note if you want to override the default locale list defined in boards.yaml
 (for instance, to build with only English locale to speed up testing flow, or
 to try with all available locales), add LOCALES="<locale-list>" when running
-make.
-Example:
+make. For example:
 
-  make LOCALES="en ja es" make link
+  (chroot) make LOCALES="en ja es" make $BOARD
 
 -------------------
 Adding a new target:
@@ -202,10 +189,6 @@ falco,peppy,wolf,leon:
 ------------------------------------------------------------------------------
 
 Now to build images for the new target (as $BOARD) run:
-
-  $ TARGETS="$BOARD" make
-
- or specify the target directly,
 
   $ make "$BOARD"
 

@@ -233,7 +233,7 @@ class Converter(object):
 
   def set_dirs(self):
     """Set output directory and stage directory"""
-    output_base = os.getenv('OUTPUT', os.path.join('..', 'build'))
+    output_base = os.getenv('OUTPUT', os.path.join('build'))
     self.output_dir = os.path.join(output_base, self.board)
     self.stage_dir = os.path.join(output_base, '.stage')
     self.temp_dir = os.path.join(self.stage_dir, 'tmp')

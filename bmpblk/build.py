@@ -40,9 +40,10 @@ STRINGS_JSON_FILE_TMPL = '{}.json'
 VENDOR_STRINGS_FILE = 'vendor_strings.txt'
 FORMAT_FILE = 'format.yaml'
 VENDOR_FORMAT_FILE = 'vendor_format.yaml'
-TXT_TO_PNG_SVG = os.path.join(SCRIPT_BASE, '..', 'text_to_png_svg')
-OUTPUT_DIR = os.path.join(os.getenv('OUTPUT', os.path.join(SCRIPT_BASE, '..',
-                                                           '..', 'build')),
+TXT_TO_PNG_SVG = os.path.join(SCRIPT_BASE, 'text_to_png_svg')
+LOCALE_DIR = os.path.join(SCRIPT_BASE, 'strings', 'locale')
+OUTPUT_DIR = os.path.join(os.getenv('OUTPUT', os.path.join(SCRIPT_BASE,
+                                                           'build')),
                           '.stage', 'locale')
 
 VENDOR_STRINGS_DIR = os.getenv("VENDOR_STRINGS_DIR")
@@ -121,12 +122,12 @@ def LoadLocaleJsonFile(locale, strings_json_file_tmpl, json_dir):
       result[tag] = msgtext
   return result
 
-def ParseLocaleInputFiles(locale_dir, vendor_format, json_dir):
+def ParseLocaleInputFiles(locale, vendor_format, json_dir):
   """Parses all firmware string files in given locale directory for
   BuildTextFiles
 
   Args:
-    locale: The locale folder with firmware string files.
+    locale: The name of the locale, e.g. "da" or "pt-BR".
     vendor_format: Format description for each line in VENDOR_STRINGS_FILE.
     json_dir: Directory containing json output from grit.
 
@@ -134,7 +135,7 @@ def ParseLocaleInputFiles(locale_dir, vendor_format, json_dir):
     A dictionary for mapping of "name to content" for files to be generated.
   """
   result = dict()
-  result.update(ParseLocaleInputJsonFile(locale_dir,
+  result.update(ParseLocaleInputJsonFile(locale,
                                          STRINGS_JSON_FILE_TMPL,
                                          json_dir))
 
@@ -142,12 +143,12 @@ def ParseLocaleInputFiles(locale_dir, vendor_format, json_dir):
   if VENDOR_STRINGS:
     print(' (vendor specific strings)')
     result.update(
-      ParseLocaleInputFile(os.path.join(VENDOR_STRINGS_DIR, locale_dir),
+      ParseLocaleInputFile(os.path.join(VENDOR_STRINGS_DIR, locale),
                                         VENDOR_STRINGS_FILE,
                                         vendor_format))
 
   # Walk locale directory to add pre-generated items.
-  for input_file in glob.glob(os.path.join(locale_dir, "*.txt")):
+  for input_file in glob.glob(os.path.join(LOCALE_DIR, locale, "*.txt")):
     if os.path.basename(input_file) == VENDOR_STRINGS_FILE:
       continue
     name, _ = os.path.splitext(os.path.basename(input_file))
@@ -290,7 +291,7 @@ def main(argv):
   # specified in firmware_strings.grd, i.e. one JSON file per locale.
   subprocess.check_call([
       'grit',
-      '-i', STRINGS_GRD_FILE,
+      '-i', os.path.join(LOCALE_DIR, STRINGS_GRD_FILE),
       'build',
       '-o', os.path.join(json_dir)
   ])
