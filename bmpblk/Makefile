@@ -7,6 +7,7 @@
 OUTPUT ?= build
 STAGE ?= $(OUTPUT)/.stage
 FONTSIZE = 14
+PHYSICAL_PRESENCE ?= keyboard
 
 build:
 	@[ ! -z "$(BOARD)" ] || (echo "Usage: BOARD=\$$BOARD make"; exit 1)
@@ -14,7 +15,9 @@ build:
 	./text_to_png_svg --point="$(FONTSIZE)" --outdir="$(STAGE)" strings/*.TXT
 	FONTSIZE="$(FONTSIZE)" ./build_font "$(STAGE)/font"
 	LOCALES="$(LOCALES)" FONTSIZE="$(FONTSIZE)" ./build.py
-	LOCALES="$(LOCALES)" OUTPUT="$(OUTPUT)" ./build_images.py "$(BOARD)"
+	LOCALES="$(LOCALES)" OUTPUT="$(OUTPUT)" \
+		PHYSICAL_PRESENCE="$(PHYSICAL_PRESENCE)" \
+		./build_images.py "$(BOARD)"
 
 archive:
 	./archive_images.py -a "$(ARCHIVER)" -d "$(OUTPUT)"
