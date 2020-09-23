@@ -28,7 +28,9 @@ vb2_error_t memory_test_init(MemoryTestMode mode);
  * until next call.
  *
  * Return VB2_SUCCESS if the test finished. VB2_ERROR_EX_DIAG_TEST_RUNNING if
- * the test is still running. Other for other errors.
+ * the test is still running but the buffer was unchanged.
+ * VB2_ERROR_EX_DIAG_TEST_UPDATED if the test is still running and the buffer
+ * was updated. Other for other errors.
  */
 vb2_error_t memory_test_run(const char **buf);
 

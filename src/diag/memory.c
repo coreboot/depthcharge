@@ -70,6 +70,10 @@ typedef struct {
 	uint64_t num_bytes;
 	uint64_t num_bytes_processed;
 	int percent; // The percentage of memory test progress.
+
+	// Previous state for checking updates
+	int prev_percent;
+	const char *prev_pattern_name;
 } MemoryTestState;
 
 // Copy and fill dst with cyclic src.
@@ -296,6 +300,10 @@ vb2_error_t memory_test_init(MemoryTestMode mode)
 
 	reset_memory_test();
 
+	// Clear previous state.
+	state.prev_percent = -1;
+	state.prev_pattern_name = NULL;
+
 	OUTPUT("This test may take a few minutes.\n\n");
 
 	OUTPUT("Free memory (will be tested): %lld.%03lld GiB\n",
@@ -370,15 +378,25 @@ static inline vb2_error_t memory_test_run_impl(const char **out)
 
 	memory_test_run_step();
 
+	if (!state.is_running)
+		return VB2_SUCCESS;
+
+	// No updates on the out string.
+	if (state.prev_percent == state.percent &&
+	    state.prev_pattern_name == state.pattern_cur->name)
+		return VB2_ERROR_EX_DIAG_TEST_RUNNING;
+
 	// Append the progress bar. Do not change buf_cur, we expect this string
 	// will be overwritten in next round.
-	if (state.is_running) {
-		snprintf(state.buf_cur, state.buf_end - state.buf_cur,
-			 "\n"
-			 "%3d%% completed ... Running pattern '%s' ...\n",
-			 state.percent, state.pattern_cur->name);
-	}
-	return state.is_running ? VB2_ERROR_EX_DIAG_TEST_RUNNING : VB2_SUCCESS;
+	snprintf(state.buf_cur, state.buf_end - state.buf_cur,
+		 "\n"
+		 "%3d%% completed ... Running pattern '%s' ...\n",
+		 state.percent, state.pattern_cur->name);
+
+	state.prev_percent = state.percent;
+	state.prev_pattern_name = state.pattern_cur->name;
+
+	return VB2_ERROR_EX_DIAG_TEST_UPDATED;
 }
 
 vb2_error_t memory_test_run(const char **out)
