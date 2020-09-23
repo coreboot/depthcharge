@@ -8,6 +8,7 @@ OUTPUT ?= build
 STAGE ?= $(OUTPUT)/.stage
 FONTSIZE = 14
 PHYSICAL_PRESENCE ?= keyboard
+ARCHIVER ?= /usr/bin/archive
 
 build:
 	@[ ! -z "$(BOARD)" ] || (echo "Usage: BOARD=\$$BOARD make"; exit 1)
