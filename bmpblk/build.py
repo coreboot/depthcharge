@@ -30,23 +30,16 @@ KEY_LOCALES = 'locales'
 KEY_FILES = 'files'
 KEY_FONTS = 'fonts'
 KEY_STYLES = 'styles'
-VENDOR_INPUTS = 'vendor_inputs'
-VENDOR_FILES = 'vendor_files'
 DIAGNOSTIC_FILES = 'diagnostic_files'
 
 STRINGS_GRD_FILE = 'firmware_strings.grd'
 STRINGS_JSON_FILE_TMPL = '{}.json'
-VENDOR_STRINGS_FILE = 'vendor_strings.txt'
 FORMAT_FILE = 'format.yaml'
-VENDOR_FORMAT_FILE = 'vendor_format.yaml'
 TXT_TO_PNG_SVG = os.path.join(SCRIPT_BASE, 'text_to_png_svg')
 LOCALE_DIR = os.path.join(SCRIPT_BASE, 'strings', 'locale')
-OUTPUT_DIR = os.path.join(os.getenv('OUTPUT', os.path.join(SCRIPT_BASE,
-                                                           'build')),
-                          '.stage', 'locale')
-
-VENDOR_STRINGS_DIR = os.getenv("VENDOR_STRINGS_DIR")
-VENDOR_STRINGS = VENDOR_STRINGS_DIR != None
+STAGE_DIR = os.path.join(os.getenv('OUTPUT',
+                                   os.path.join(SCRIPT_BASE, 'build')),
+                         '.stage')
 
 # Regular expressions used to eliminate spurious spaces and newlines in
 # translation strings.
@@ -60,55 +53,9 @@ class DataError(Exception):
   pass
 
 
-def GetImageWidth(filename):
-  """Returns the width of given image file."""
-  return Image.open(filename).size[0]
-
-def ParseLocaleInputFile(locale_dir, strings_file, input_format):
-  """Parses firmware string file in given locale directory for BuildTextFiles
-
-  Args:
-    locale: The locale folder with firmware string files.
-    strings_file: The name of the string txt file
-    input_format: Format description for each line in strings_file.
-
-  Returns:
-    A dictionary for mapping of "name to content" for files to be generated.
-  """
-  input_file = os.path.join(locale_dir, strings_file)
-  with open(input_file, 'r', encoding='utf-8-sig') as f:
-    input_data = f.readlines()
-  if len(input_data) != len(input_format):
-    raise DataError('Input file <%s> for locale <%s> '
-                    'does not match input format.' %
-                    (strings_file, locale_dir))
-  input_data = [s.strip() for s in input_data]
-  return dict(zip(input_format, input_data))
-
-def ParseLocaleInputJsonFile(locale, strings_json_file_tmpl, json_dir):
-  """Parses given firmware string json file for BuildTextFiles
-
-  Args:
-    locale: The name of the locale, e.g. "da" or "pt-BR".
-    strings_json_file_tmpl: The template for the json input file name.
-    json_dir: Directory containing json output from grit.
-
-  Returns:
-    A dictionary for mapping of "name to content" for files to be generated.
-  """
-  result = LoadLocaleJsonFile(locale, strings_json_file_tmpl, json_dir)
-  original = LoadLocaleJsonFile("en", strings_json_file_tmpl, json_dir)
-  for tag in original:
-    if not tag in result:
-      # Use original English text, in case translation is not yet available
-      print('WARNING: locale "%s", missing entry %s' % (locale, tag))
-      result[tag] = original[tag]
-
-  return result
-
-def LoadLocaleJsonFile(locale, strings_json_file_tmpl, json_dir):
+def _load_locale_json_file(locale, json_dir):
   result = {}
-  filename = os.path.join(json_dir, strings_json_file_tmpl.format(locale))
+  filename = os.path.join(json_dir, STRINGS_JSON_FILE_TMPL.format(locale))
   with open(filename, encoding='utf-8-sig') as input_file:
     for tag, msgdict in json.load(input_file).items():
       msgtext = msgdict['message']
@@ -121,35 +68,42 @@ def LoadLocaleJsonFile(locale, strings_json_file_tmpl, json_dir):
       result[tag] = msgtext
   return result
 
-def ParseLocaleInputFiles(locale, vendor_format, json_dir):
-  """Parses all firmware string files in given locale directory for
-  BuildTextFiles
+
+def parse_locale_json_file(locale, json_dir):
+  """Parses given firmware string json file for build_text_files.
 
   Args:
     locale: The name of the locale, e.g. "da" or "pt-BR".
-    vendor_format: Format description for each line in VENDOR_STRINGS_FILE.
     json_dir: Directory containing json output from grit.
 
   Returns:
     A dictionary for mapping of "name to content" for files to be generated.
   """
-  result = dict()
-  result.update(ParseLocaleInputJsonFile(locale,
-                                         STRINGS_JSON_FILE_TMPL,
-                                         json_dir))
+  result = _load_locale_json_file(locale, json_dir)
+  original = _load_locale_json_file('en', json_dir)
+  for tag in original:
+    if tag not in result:
+      # Use original English text, in case translation is not yet available
+      print('WARNING: locale "%s", missing entry %s' % (locale, tag))
+      result[tag] = original[tag]
 
-  # Parse vendor files if enabled
-  if VENDOR_STRINGS:
-    print(' (vendor specific strings)')
-    result.update(
-      ParseLocaleInputFile(os.path.join(VENDOR_STRINGS_DIR, locale),
-                                        VENDOR_STRINGS_FILE,
-                                        vendor_format))
+  return result
 
-  # Walk locale directory to add pre-generated items.
+
+def parse_locale_input_files(locale, json_dir):
+  """Parses all firmware string files for the given locale.
+
+  Args:
+    locale: The name of the locale, e.g. "da" or "pt-BR".
+    json_dir: Directory containing json output from grit.
+
+  Returns:
+    A dictionary for mapping of "name to content" for files to be generated.
+  """
+  result = parse_locale_json_file(locale, json_dir)
+
+  # Walk locale directory to add pre-generated texts such as language names.
   for input_file in glob.glob(os.path.join(LOCALE_DIR, locale, "*.txt")):
-    if os.path.basename(input_file) == VENDOR_STRINGS_FILE:
-      continue
     name, _ = os.path.splitext(os.path.basename(input_file))
     with open(input_file, 'r', encoding='utf-8-sig') as f:
       result[name] = f.read().strip()
@@ -157,7 +111,7 @@ def ParseLocaleInputFiles(locale, vendor_format, json_dir):
   return result
 
 
-def CreateFile(file_name, contents, output_dir):
+def create_file(file_name, contents, output_dir):
   """Creates a text file in output directory by given contents.
 
   Args:
@@ -170,23 +124,7 @@ def CreateFile(file_name, contents, output_dir):
     f.write('\n'.join(contents) + '\n')
 
 
-def ModifyContent(input_data, command):
-  """Modifies some input content with given Regex commands.
-
-  Args:
-    input_data: Input string to be modified.
-    command: Regex commands to execute.
-
-  Returns:
-    Processed output string.
-  """
-  if not command.startswith('s/'):
-    raise DataError('Unknown command: %s' % command)
-  _, pattern, repl, _ = command.split('/')
-  return re.sub(pattern, repl, input_data)
-
-
-def BuildTextFiles(inputs, files, output_dir):
+def build_text_files(inputs, files, output_dir):
   """Builds text files from given input data.
 
   Args:
@@ -196,19 +134,15 @@ def BuildTextFiles(inputs, files, output_dir):
   """
   for file_name, file_content in files.items():
     if file_content is None:
-      CreateFile(file_name, [inputs[file_name]], output_dir)
+      create_file(file_name, [inputs[file_name]], output_dir)
     else:
       contents = []
       for data in file_content:
-        if '@' in data:
-          name, _, command = data.partition('@')
-          contents.append(ModifyContent(inputs[name], command))
-        else:
-          contents.append('' if data == '' else inputs[data])
-      CreateFile(file_name, contents, output_dir)
+        contents.append(inputs[data])
+      create_file(file_name, contents, output_dir)
 
 
-def ConvertPngFile(locale, file_name, styles, fonts, output_dir):
+def convert_text_to_png(locale, file_name, styles, fonts, output_dir):
   """Converts text files into PNG image files.
 
   Args:
@@ -268,12 +202,6 @@ def main(argv):
   with open(FORMAT_FILE, encoding='utf-8') as f:
     formats = yaml.load(f)
 
-  if VENDOR_STRINGS:
-    with open(os.path.join(VENDOR_STRINGS_DIR, VENDOR_FORMAT_FILE),
-              encoding='utf-8') as f:
-      formats.update(yaml.load(f))
-
-  json_dir = None
   # Sources are one .grd file with identifiers chosen by engineers and
   # corresponding English texts, as well as a set of .xlt files (one for each
   # language other than US english) with a mapping from hash to translation.
@@ -311,11 +239,8 @@ def main(argv):
   results = []
   for locale in locales:
     print(locale, end=' ', flush=True)
-    inputs = ParseLocaleInputFiles(locale,
-                                   formats[VENDOR_INPUTS] if VENDOR_STRINGS
-                                                          else None,
-                                   json_dir)
-    output_dir = os.path.normpath(os.path.join(OUTPUT_DIR, locale))
+    inputs = parse_locale_input_files(locale, json_dir)
+    output_dir = os.path.normpath(os.path.join(STAGE_DIR, 'locale', locale))
     if not os.path.exists(output_dir):
       os.makedirs(output_dir)
     files = formats[KEY_FILES]
@@ -325,11 +250,9 @@ def main(argv):
     if os.getenv("DIAGNOSTIC_UI") == "1" and DIAGNOSTIC_FILES in formats:
       files.update(formats[DIAGNOSTIC_FILES])
 
-    if VENDOR_STRINGS:
-      files.update(formats[VENDOR_FILES])
-    BuildTextFiles(inputs, files, output_dir)
+    build_text_files(inputs, files, output_dir)
 
-    results += [pool.apply_async(ConvertPngFile,
+    results += [pool.apply_async(convert_text_to_png,
                                  (locale, file_name,
                                   styles, formats[KEY_FONTS],
                                   output_dir))
