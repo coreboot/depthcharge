@@ -27,7 +27,6 @@ import yaml
 SCRIPT_BASE = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_NAME = '_DEFAULT_'
 KEY_LOCALES = 'locales'
-KEY_INPUTS = 'inputs'
 KEY_FILES = 'files'
 KEY_FONTS = 'fonts'
 KEY_STYLES = 'styles'
