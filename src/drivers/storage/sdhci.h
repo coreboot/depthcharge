@@ -321,6 +321,7 @@ struct sdhci_host {
 	unsigned clock_base; /* controller base clock */
 	unsigned tuned_clock; /* frequency of the clock that was tuned */
 	unsigned voltages;
+	enum mmc_timing timing; /* current timing */
 
 	/*
 	 * Dynamically allocated array of ADMA descriptors to use for data

@@ -574,11 +574,6 @@ static int sdhci_send_command(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
 	return ret;
 }
 
-static int sdhci_is_clock_enabled(SdhciHost *host)
-{
-	return !!(sdhci_readw(host, SDHCI_CLOCK_CONTROL) & SDHCI_CLOCK_CARD_EN);
-}
-
 static int sdhci_set_clock(MmcCtrlr *mmc_ctrlr, unsigned int clock)
 {
 	unsigned int div, clk, timeout;
@@ -869,21 +864,22 @@ static void sdhci_set_uhs_signaling(SdhciHost *host, enum mmc_timing timing)
 void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 {
 	u32 ctrl;
+	unsigned int clock_or_timing_changed;
 	SdhciHost *host = container_of(mmc_ctrlr,
 				       SdhciHost, mmc_ctrlr);
 
 	/*
-	 * Clock control register needs to be set if:
-	 * 1. Clock is not enabled, or
-	 * 2. Desired clock frequency is not the same as previously configured
-	 * clock.
+	 * The SDHCI spec says the clock needs to be disabled when modifying
+	 * the HISPD bit, changing the clock frequency, or changing timings
+	 * when presets are enabled.
 	 *
-	 * #1 is important because any time the SD card controller is
-	 * power-gated, it would end up clearing the clock control register. So,
-	 * we cannot rely only on previously configured clock value.
+	 * Note: The HISPD bit is dependent on the timing.
 	 */
-	if (!sdhci_is_clock_enabled(host) || mmc_ctrlr->bus_hz != host->clock)
-		sdhci_set_clock(mmc_ctrlr, mmc_ctrlr->bus_hz);
+	clock_or_timing_changed = mmc_ctrlr->bus_hz != host->clock ||
+				  mmc_ctrlr->timing != host->timing;
+
+	if (clock_or_timing_changed)
+		sdhci_writew(host, 0, SDHCI_CLOCK_CONTROL);
 
 	/* Switch to 1.8 volt for HS200 */
 	if (mmc_ctrlr->caps & MMC_CAPS_1V8_VDD)
@@ -905,6 +901,7 @@ void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 			ctrl &= ~SDHCI_CTRL_4BITBUS;
 	}
 
+	/* Set the High Speed Enable bit */
 	switch (mmc_ctrlr->timing) {
 	case MMC_TIMING_INITIALIZATION:
 	case MMC_TIMING_SD_DS:
@@ -932,6 +929,15 @@ void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 	sdhci_set_uhs_signaling(host, mmc_ctrlr->timing);
 
 	sdhci_writeb(host, ctrl, SDHCI_HOST_CONTROL);
+
+	/*
+	 * Now that the timing and the high speed bit have been set, we can
+	 * enable the clock.
+	 */
+	if (clock_or_timing_changed)
+		sdhci_set_clock(mmc_ctrlr, mmc_ctrlr->bus_hz);
+
+	host->timing = mmc_ctrlr->timing;
 }
 
 /* Prepare SDHCI controller to be initialized */
@@ -1021,6 +1027,8 @@ static int sdhci_pre_init(SdhciHost *host)
 		host->mmc_ctrlr.caps |= host->host_caps;
 	if (caps & SDHCI_CAN_64BIT)
 		host->dma64 = 1;
+
+	host->timing = MMC_TIMING_UNINITIALIZED;
 
 	sdhci_reset(host, SDHCI_RESET_ALL);
 
