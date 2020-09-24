@@ -934,14 +934,6 @@ void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 
 	sdhci_set_uhs_signaling(host, mmc_ctrlr->timing);
 
-	if (host->host_caps & MMC_CAPS_AUTO_CMD12) {
-		ctrl &= ~SDHCI_CTRL_DMA_MASK;
-		if (host->dma64)
-			ctrl |= SDHCI_CTRL_ADMA64;
-		else
-			ctrl |= SDHCI_CTRL_ADMA32;
-	}
-
 	sdhci_writeb(host, ctrl, SDHCI_HOST_CONTROL);
 }
 
@@ -1041,6 +1033,7 @@ static int sdhci_pre_init(SdhciHost *host)
 static int sdhci_init(SdhciHost *host)
 {
 	u16 reg;
+	u32 ctrl;
 	int rv = sdhci_pre_init(host);
 
 	if (rv)
@@ -1073,6 +1066,18 @@ static int sdhci_init(SdhciHost *host)
 		reg |= SDHCI_CTRL_180V_SIGNALING_ENABLE;
 		sdhci_writew(host, reg, SDHCI_HOST_CONTROL2);
 	}
+
+	/* Configure ADMA mode */
+	ctrl = sdhci_readb(host, SDHCI_HOST_CONTROL);
+	if (host->host_caps & MMC_CAPS_AUTO_CMD12) {
+		ctrl &= ~SDHCI_CTRL_DMA_MASK;
+		if (host->dma64)
+			ctrl |= SDHCI_CTRL_ADMA64;
+		else
+			ctrl |= SDHCI_CTRL_ADMA32;
+	}
+
+	sdhci_writeb(host, ctrl, SDHCI_HOST_CONTROL);
 
 	/* Enable only interrupts served by the SD controller */
 	sdhci_writel(host, SDHCI_INT_DATA_MASK | SDHCI_INT_CMD_MASK,
