@@ -342,7 +342,6 @@ struct sdhci_host {
 	GpioOps *cd_gpio;
 
 	int (*attach)(SdhciHost *host);
-	void (*set_control_reg)(SdhciHost *host);
 };
 
 static inline void sdhci_writel(SdhciHost *host, u32 val, int reg)

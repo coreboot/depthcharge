@@ -872,9 +872,6 @@ void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 	SdhciHost *host = container_of(mmc_ctrlr,
 				       SdhciHost, mmc_ctrlr);
 
-	if (host->set_control_reg)
-		host->set_control_reg(host);
-
 	/*
 	 * Clock control register needs to be set if:
 	 * 1. Clock is not enabled, or
