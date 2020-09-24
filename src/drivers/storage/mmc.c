@@ -555,8 +555,6 @@ static void mmc_recalculate_clock(MmcCtrlr *ctrlr)
 static void mmc_set_timing(MmcCtrlr *ctrlr, uint32_t timing)
 {
 	ctrlr->timing = timing;
-	ctrlr->set_ios(ctrlr);
-
 	mmc_recalculate_clock(ctrlr);
 }
 
