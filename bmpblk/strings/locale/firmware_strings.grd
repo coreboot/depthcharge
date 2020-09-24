@@ -154,6 +154,12 @@ Page up
       <message name="btn_page_down" desc="String for the page down button (please translate this)." meaning="verb">
 Page down
       </message>
+      <message name="page_up_disabled_help" desc="Help string which shows next to the page up button when the user is already at the first page">
+You have reached the top
+      </message>
+      <message name="page_down_disabled_help" desc="Help string which shows next to the page down button when the user is already at the last page">
+You have reached the end
+      </message>
       <message name="rec_sel_title" desc="Title for the recovery screen (after user presses three finger salute, ie: ctrl + refresh + power).">
 Let’s step you through the recovery process
       </message>

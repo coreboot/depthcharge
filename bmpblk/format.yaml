@@ -24,8 +24,6 @@ inputs:
   # debug info and firmware log
   - debug_info_title
   - firmware_log_title
-  - btn_page_up
-  - btn_page_down
   # recovery screen
   - rec_sel_title
   - rec_sel_desc0
@@ -103,6 +101,11 @@ inputs:
   - btn_cancel
   - btn_adv_options
   - btn_power_off
+  # log screen
+  - btn_page_up
+  - btn_page_down
+  - page_up_disabled_help
+  - page_down_disabled_help
   # footer
   - model
   - help_center
@@ -133,8 +136,6 @@ files:
   # debug info and firmware log
   debug_info_title:
   firmware_log_title:
-  btn_page_up:
-  btn_page_down:
   # recovery screen
   rec_sel_title:
   rec_sel_desc0:
@@ -199,6 +200,11 @@ files:
   btn_cancel:
   btn_adv_options:
   btn_power_off:
+  # log screen
+  btn_page_up:
+  btn_page_down:
+  page_up_disabled_help:
+  page_down_disabled_help:
   # footer
   model:
   help_center:
@@ -226,9 +232,10 @@ diagnostic_files:
 aliases:
   - &base_color '--color=CCCCCC --bgcolor=202124'
   - &dark_color '--color=9AA0A6 --bgcolor=202124'
-  # The colors of buttons and links will be adjusted at runtime.
+  # The colors of buttons, links, and help texts will be adjusted at runtime.
   - &button_color '--color=FFFFFF --bgcolor=000000'
   - &link_color '--color=FFFFFF --bgcolor=000000'
+  - &help_color '--color=FFFFFF --bgcolor=000000'
 
 styles:
   # pre-generated
@@ -250,8 +257,6 @@ styles:
   # debug info and firmware log
   debug_info_title: *base_color
   firmware_log_title: *base_color
-  btn_page_up: *button_color
-  btn_page_down: *button_color
   # recovery screen
   rec_sel_title: *base_color
   rec_sel_desc0: *base_color
@@ -332,6 +337,11 @@ styles:
   btn_cancel: *button_color
   btn_adv_options: *link_color
   btn_power_off: *link_color
+  # log screen
+  btn_page_up: *button_color
+  btn_page_down: *button_color
+  page_up_disabled_help: *help_color
+  page_down_disabled_help: *help_color
   # footer
   model: *dark_color
   help_center: *dark_color
