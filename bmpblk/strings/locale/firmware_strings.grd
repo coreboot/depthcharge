@@ -304,31 +304,31 @@ Launch diagnostics
       <message name="dev_select_bootloader_title" desc="Title for screen to select alternate bootloader.">
 Select alternate bootloader
       </message>
-      <message name="diag_menu_title" desc="Title for diagnostic entry menu.">
+      <message name="diag_menu_title" desc="Title for diagnostic entry menu. This menu provides several self-diagnostic tools including information about storage status and memory tests.">
 Diagnostic tools
       </message>
-      <message name="diag_menu_desc0" desc="String for diagnostic entry menu.">
+      <message name="diag_menu_desc0" desc="String for diagnostic entry menu. This menu provides several self-diagnostic tools including information about storage status and memory tests. This string shows directly under the title of the menu and guides the user to select the desired tool.">
 Select the component you’d like to check.
       </message>
-      <message name="diag_storage_title" desc="Title for storage diagnostic screen.">
+      <message name="diag_storage_title" desc="Title for storage diagnostic screen. This screen will retrieve health information about the storage (disks) on this device.">
 Storage
       </message>
-      <message name="diag_memory_quick_title" desc="Title for quick memory diagnostic screen.">
+      <message name="diag_memory_quick_title" desc="Title for quick memory diagnostic screen. This screen will verify memory is functioning correctly, and report the results to the user. This quick memory test takes about several seconds to complete.">
 Quick memory check
       </message>
-      <message name="diag_memory_full_title" desc="Title for full memory diagnostic screen.">
+      <message name="diag_memory_full_title" desc="Title for full memory diagnostic screen. This screen will verify memory is functioning correctly, and report the results to the user. This full memory test takes about few minutes to complete.">
 Full memory check
       </message>
-      <message name="btn_diag_storage" desc="String for the button to enter storage diagnostic.">
+      <message name="btn_diag_storage" desc="Menu item to retrieve health information about the storage (disks) on this devices.">
 Storage
       </message>
-      <message name="btn_diag_memory_quick" desc="String for the button to enter quick memory diagnostic screen.">
+      <message name="btn_diag_memory_quick" desc="Menu item to make a Chrome OS device in 'service mode' run a verification of the memory components inside it, and report the results to the user. This quick memory test takes about several seconds to complete.">
 Quick memory check
       </message>
-      <message name="btn_diag_memory_full" desc="String for the button to enter full memory diagnostic screen.">
+      <message name="btn_diag_memory_full" desc="Menu item to make a Chrome OS device in 'service mode' run a verification of the memory components inside it, and report the results to the user. This full memory test takes about few minutes to complete.">
 Full memory check
       </message>
-      <message name="btn_diag_cancel" desc="String for the button to cancel memory diagnostic and go back.">
+      <message name="btn_diag_cancel" desc="String for the button to abort the running memory diagnostic test and go back to the diagnostic entry menu.">
 Cancel and go back
       </message>
       <message name="btn_next" desc="String for the next button.">
