@@ -71,10 +71,12 @@ static int wait_for_frame(CrosEcSpiBus *bus, uint16_t command)
 			accepted = 1;
 			break;
 		case EC_SPI_RX_BAD_DATA:
-			printf("EC: Claims to have received bad data.\n");
+			printf("EC: Received bad data for host command %#x\n",
+			       command);
 			return -EC_RES_BUS_ERROR;
 		case EC_SPI_NOT_READY:
-			printf("EC: Was not ready to receive host command.\n");
+			printf("EC: Not ready to receive host command %#x\n",
+			       command);
 			return -EC_RES_BUSY;
 		default:
 			// Probably EC_SPI_RECEIVING, or random garbage.
@@ -86,11 +88,13 @@ static int wait_for_frame(CrosEcSpiBus *bus, uint16_t command)
 			// Don't spam if waiting to come back up after SW sync.
 			if (command == EC_CMD_HELLO)
 				return -1;
-			printf("EC: Took too long to accept host command.\n");
+			printf("EC: Timeout accepting host command %#x\n",
+			       command);
 			return -EC_RES_TIMEOUT;
 		}
 		if (waited > ProcessTimeoutUs) {
-			printf("EC: Took too long to process host command.\n");
+			printf("EC: Timeout processing host command %#x\n",
+			       command);
 			return -EC_RES_TIMEOUT;
 		}
 	}
