@@ -507,7 +507,19 @@ static void mmc_recalculate_clock(MmcCtrlr *ctrlr)
 
 	switch (ctrlr->timing) {
 	case MMC_TIMING_INITIALIZATION:
-		clock = MMC_CLOCK_400KHZ;
+		/*
+		 * This in theory could be MMC_CLOCK_400KHZ. The reason this is
+		 * set to 1 is because this has been the default since the
+		 * beginning. If we change it to 400 kHz, we risk breaking
+		 * boards that don't support the higher open-drain speed.
+		 *
+		 * There are two options for increasing this value:
+		 * 1) Enable SDHCI_PLATFORM_VALID_PRESETS
+		 * 2) Implement a retry with a slower clock on probe failure.
+		 *    This method has the downside that we will waste time
+		 *    trying different frequencies.
+		 */
+		clock = MMC_CLOCK_1HZ;
 		break;
 	case MMC_TIMING_SD_DS:
 		clock = MMC_CLOCK_25MHZ;
@@ -1254,8 +1266,8 @@ int mmc_setup_media(MmcCtrlr *ctrlr)
 	MmcMedia *media = xzalloc(sizeof(*media));
 	media->ctrlr = ctrlr;
 
+	mmc_set_timing(ctrlr, MMC_TIMING_INITIALIZATION);
 	mmc_set_bus_width(ctrlr, 1);
-	mmc_set_clock(ctrlr, 1);
 
 	/* Reset the Card */
 	err = mmc_go_idle(media);
