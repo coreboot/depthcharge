@@ -261,6 +261,5 @@ void soc_usb_mux_init(void)
  */
 void usb_poll_prepare(void)
 {
-	debug("called...\n");
 	soc_usb_mux_poll();
 }
