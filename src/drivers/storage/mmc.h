@@ -299,6 +299,7 @@ typedef struct MmcCtrlr {
 	uint32_t bus_hz;
 	uint32_t caps;
 	uint32_t b_max;
+	unsigned int presets_enabled : 1;
 
 	enum mmc_timing {
 		MMC_TIMING_UNINITIALIZED,

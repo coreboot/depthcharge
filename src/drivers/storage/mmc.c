@@ -555,7 +555,15 @@ static void mmc_recalculate_clock(MmcCtrlr *ctrlr)
 static void mmc_set_timing(MmcCtrlr *ctrlr, uint32_t timing)
 {
 	ctrlr->timing = timing;
-	mmc_recalculate_clock(ctrlr);
+
+	/*
+	 * If presets are enabled, we let the underlying driver handler the bus
+	 * speed.
+	 */
+	if (ctrlr->presets_enabled)
+		ctrlr->set_ios(ctrlr);
+	else
+		mmc_recalculate_clock(ctrlr);
 }
 
 static uint8_t
