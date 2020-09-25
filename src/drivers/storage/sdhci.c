@@ -1212,6 +1212,8 @@ void add_sdhci(SdhciHost *host)
 	host->mmc_ctrlr.send_cmd = &sdhci_send_command;
 	host->mmc_ctrlr.set_ios = &sdhci_set_ios;
 	host->mmc_ctrlr.card_driver_strength = &sdhci_card_driver_strength;
+	host->mmc_ctrlr.presets_enabled =
+		!!(host->platform_info & SDHCI_PLATFORM_VALID_PRESETS);
 
 	host->mmc_ctrlr.ctrlr.ops.is_bdev_owned = block_mmc_is_bdev_owned;
 	host->mmc_ctrlr.ctrlr.ops.update = &sdhci_update;
