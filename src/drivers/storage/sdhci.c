@@ -731,17 +731,18 @@ static enum mmc_driver_strength sdhci_preset_driver_strength(
 		preset = sdhci_readw(host, SDHCI_PRESET_VALUE_SDR104);
 		break;
 	case MMC_TIMING_MMC_DDR52:
-		/*
-		 * TODO: Switch this to DDR50 when zork presets are fixed.
-		 */
-		preset = sdhci_readw(host, SDHCI_PRESET_VALUE_SDR25);
+		preset = sdhci_readw(host, SDHCI_PRESET_VALUE_DDR50);
 		break;
 	case MMC_TIMING_MMC_HS:
 		/*
-		 * TODO: Switch this to SDR50 when zork presets are fixed.
-		 * TODO: Depends on signaling voltage.
+		 * UHS-I presets can only be used with 1.8V VCCQ. Otherwise
+		 * we need to use the 3.3V presets.
 		 */
-		preset = sdhci_readw(host, SDHCI_PRESET_VALUE_SDR25);
+		if (host->platform_info & SDHCI_PLATFORM_EMMC_33V_VCCQ)
+			preset = sdhci_readw(host,
+					     SDHCI_PRESET_VALUE_HIGH_SPEED);
+		else
+			preset = sdhci_readw(host, SDHCI_PRESET_VALUE_SDR50);
 		break;
 	case MMC_TIMING_MMC_LEGACY:
 		/*
@@ -811,7 +812,6 @@ static void sdhci_set_uhs_signaling(SdhciHost *host, enum mmc_timing timing)
 	ctrl_2 &= ~SDHCI_CTRL_DRV_TYPE_MASK;
 
 	switch (timing) {
-	case MMC_TIMING_MMC_HS200:
 	case MMC_TIMING_UHS_SDR104:
 		ctrl_2 |= SDHCI_CTRL_UHS_SDR104;
 		break;
@@ -819,23 +819,31 @@ static void sdhci_set_uhs_signaling(SdhciHost *host, enum mmc_timing timing)
 		ctrl_2 |= SDHCI_CTRL_UHS_SDR12;
 		break;
 	case MMC_TIMING_UHS_SDR25:
-	/*
-	 * TODO: Switch this to SDR50.
-	 * TODO: Depends on signaling voltage.
-	 */
-	case MMC_TIMING_MMC_HS:
 		ctrl_2 |= SDHCI_CTRL_UHS_SDR25;
 		break;
 	case MMC_TIMING_UHS_SDR50:
 		ctrl_2 |= SDHCI_CTRL_UHS_SDR50;
 		break;
 	case MMC_TIMING_UHS_DDR50:
-	case MMC_TIMING_MMC_DDR52:
 		ctrl_2 |= SDHCI_CTRL_UHS_DDR50;
 		break;
 	case MMC_TIMING_MMC_HS400:
 	case MMC_TIMING_MMC_HS400ES:
 		ctrl_2 |= SDHCI_CTRL_HS400;
+		break;
+	case MMC_TIMING_MMC_HS200:
+		ctrl_2 |= SDHCI_CTRL_UHS_SDR104;
+		break;
+	case MMC_TIMING_MMC_DDR52:
+		ctrl_2 |= SDHCI_CTRL_UHS_DDR50;
+		break;
+	case MMC_TIMING_MMC_HS:
+		/*
+		 * UHS-I timings will only be used with 1.8V VCCQ. Otherwise the
+		 * High Speed Enabled bit determines the timing.
+		 */
+		if (!(host->platform_info & SDHCI_PLATFORM_EMMC_33V_VCCQ))
+			ctrl_2 |= SDHCI_CTRL_UHS_SDR50;
 		break;
 	case MMC_TIMING_MMC_LEGACY:
 		/*
