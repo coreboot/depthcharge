@@ -926,9 +926,10 @@ void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 		break;
 	}
 
-	sdhci_set_uhs_signaling(host, mmc_ctrlr->timing);
-
 	sdhci_writeb(host, ctrl, SDHCI_HOST_CONTROL);
+
+	if (mmc_ctrlr->timing != host->timing)
+		sdhci_set_uhs_signaling(host, mmc_ctrlr->timing);
 
 	/*
 	 * Now that the timing and the high speed bit have been set, we can
