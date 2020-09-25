@@ -704,10 +704,9 @@ static void sdhci_set_power(SdhciHost *host, unsigned short power)
 	sdhci_writeb(host, pwr, SDHCI_POWER_CONTROL);
 }
 
-static enum mmc_driver_strength sdhci_preset_driver_strength(
-	SdhciHost *host, enum mmc_timing timing)
+static u16 sdhci_preset_value(SdhciHost *host, enum mmc_timing timing)
 {
-	u16 preset, driver_strength;
+	u16 preset;
 
 	/*
 	 * This table should match the UHS modes in sdhci_set_uhs_signaling.
@@ -755,8 +754,21 @@ static enum mmc_driver_strength sdhci_preset_driver_strength(
 		break;
 	default:
 		printf("Error: Unknown preset for timing %u\n", timing);
-		return MMC_DRIVER_STRENGTH_B;
+		/*
+		 * Fall back to the initialization clock and driver strength
+		 * since we don't know what mode we are in.
+		 */
+		preset = sdhci_readw(host, SDHCI_PRESET_VALUE_INIT);
 	}
+
+	return preset;
+}
+
+static enum mmc_driver_strength sdhci_preset_driver_strength(
+	SdhciHost *host, enum mmc_timing timing) {
+	u16 preset, driver_strength;
+
+	preset = sdhci_preset_value(host, timing);
 
 	driver_strength = preset & SDHCI_PRESET_VALUE_DRIVE_STRENGTH_MASK;
 	driver_strength >>= SDHCI_PRESET_VALUE_DRIVE_STRENGTH_SHIFT;
