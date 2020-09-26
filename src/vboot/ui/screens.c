@@ -723,8 +723,8 @@ static vb2_error_t draw_developer_mode_desc(
 	 * Description about returning to secure mode. When the "Return to
 	 * secure mode" button is hidden, hide this description line.
 	 */
-	if (!(state->disabled_item_mask &
-	      (1 << DEVELOPER_MODE_ITEM_RETURN_TO_SECURE))) {
+	if (!(state->hidden_item_mask &
+	      ((uint32_t)1 << DEVELOPER_MODE_ITEM_RETURN_TO_SECURE))) {
 		VB2_TRY(ui_get_bitmap("dev_desc0.bmp", locale_code, 0,
 				      &bitmap));
 		h = UI_DESC_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);

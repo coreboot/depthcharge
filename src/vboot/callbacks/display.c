@@ -157,6 +157,7 @@ vb2_error_t vb2ex_display_ui(enum vb2_screen screen,
 			     uint32_t locale_id,
 			     uint32_t selected_item,
 			     uint32_t disabled_item_mask,
+			     uint32_t hidden_item_mask,
 			     int timer_disabled,
 			     uint32_t current_page,
 			     enum vb2_ui_error error_code)
@@ -165,10 +166,11 @@ vb2_error_t vb2ex_display_ui(enum vb2_screen screen,
 	const struct ui_locale *locale = NULL;
 	const struct ui_screen_info *screen_info;
 	printf("%s: screen=%#x, locale=%u, selected_item=%u, "
-	       "disabled_item_mask=%#x, timer_disabled=%d, "
-	       "current_page=%u, error=%#x\n",
+	       "disabled_item_mask=%#x, hidden_item_mask=%#x, "
+	       "timer_disabled=%d, current_page=%u, error=%#x\n",
 	       __func__,
-	       screen, locale_id, selected_item, disabled_item_mask,
+	       screen, locale_id, selected_item,
+	       disabled_item_mask, hidden_item_mask,
 	       timer_disabled, current_page, error_code);
 
 	rv = ui_get_locale_info(locale_id, &locale);
@@ -192,6 +194,7 @@ vb2_error_t vb2ex_display_ui(enum vb2_screen screen,
 		.locale = locale,
 		.selected_item = selected_item,
 		.disabled_item_mask = disabled_item_mask,
+		.hidden_item_mask = hidden_item_mask,
 		.timer_disabled = timer_disabled,
 		.log = &log,
 		.current_page = current_page,

@@ -180,7 +180,7 @@ static vb2_error_t print_error_message(const char *str, const char *locale_code)
 			       x, y,
 			       button_width,
 			       UI_BUTTON_HEIGHT,
-			       0, 1));
+			       0, 1, 0));
 
 	return rv;
 }
