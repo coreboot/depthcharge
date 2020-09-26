@@ -40,12 +40,14 @@
 	.type = UI_MENU_ITEM_TYPE_LANGUAGE,		\
 })
 
-#define PAGE_UP_ITEM ((struct ui_menu_item) {	\
-	.file = "btn_page_up.bmp",		\
+#define PAGE_UP_ITEM ((struct ui_menu_item) {			\
+	.file = "btn_page_up.bmp",				\
+	.disabled_help_text_file = "page_up_disabled_help.bmp",	\
 })
 
-#define PAGE_DOWN_ITEM ((struct ui_menu_item) {	\
-	.file = "btn_page_down.bmp",		\
+#define PAGE_DOWN_ITEM ((struct ui_menu_item) {				\
+	.file = "btn_page_down.bmp",					\
+	.disabled_help_text_file = "page_down_disabled_help.bmp",	\
 })
 
 #define BACK_ITEM ((struct ui_menu_item){	\
@@ -723,8 +725,8 @@ static vb2_error_t draw_developer_mode_desc(
 	 * Description about returning to secure mode. When the "Return to
 	 * secure mode" button is hidden, hide this description line.
 	 */
-	if (!(state->hidden_item_mask &
-	      ((uint32_t)1 << DEVELOPER_MODE_ITEM_RETURN_TO_SECURE))) {
+	if (!VB2_GET_BIT(state->hidden_item_mask,
+			 DEVELOPER_MODE_ITEM_RETURN_TO_SECURE)) {
 		VB2_TRY(ui_get_bitmap("dev_desc0.bmp", locale_code, 0,
 				      &bitmap));
 		h = UI_DESC_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
