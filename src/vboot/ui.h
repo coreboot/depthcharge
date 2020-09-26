@@ -100,6 +100,7 @@
 #define UI_BUTTON_TEXT_HEIGHT			20
 #define UI_BUTTON_TEXT_PADDING_H		40
 #define UI_BUTTON_BORDER_THICKNESS		2
+#define UI_BUTTON_FOCUS_RING_THICKNESS		3
 #define UI_BUTTON_BORDER_RADIUS			8
 #define UI_BUTTON_MARGIN_V			10
 
@@ -168,7 +169,13 @@ static const struct rgb_color ui_color_lang_menu_bg	= { 0x2d, 0x2e, 0x30 };
 static const struct rgb_color ui_color_lang_menu_border	= { 0x49, 0x57, 0x70 };
 static const struct rgb_color ui_color_lang_scrollbar	= { 0x6c, 0x6d, 0x6e };
 static const struct rgb_color ui_color_button		= { 0x8a, 0xb4, 0xf8 };
+static const struct rgb_color ui_color_button_disabled_bg
+	= { 0x3c, 0x40, 0x43 };
+static const struct rgb_color ui_color_button_disabled_fg
+	= { 0x9a, 0xa0, 0xa6 };
 static const struct rgb_color ui_color_button_border	= { 0x4c, 0x4d, 0x4f };
+static const struct rgb_color ui_color_button_focus_ring
+	= { 0x4a, 0x5b, 0x78 };
 static const struct rgb_color ui_color_link_bg		= { 0x2a, 0x2f, 0x39 };
 static const struct rgb_color ui_color_link_border	= { 0x4a, 0x5b, 0x78 };
 static const struct rgb_color ui_color_border		= { 0x3f, 0x40, 0x42 };
@@ -196,6 +203,7 @@ struct ui_state {
 	const struct ui_locale *locale;
 	uint32_t selected_item;
 	uint32_t disabled_item_mask;
+	uint32_t hidden_item_mask;
 	int timer_disabled;
 	const struct ui_log_info *log;
 	int32_t current_page;
@@ -564,7 +572,7 @@ vb2_error_t ui_draw_language_header(const struct ui_locale *locale,
 /*
  * Get button width, based on the longest text of all the visible buttons.
  *
- * Menu items specified in disabled_item_mask are ignored.
+ * Menu items specified in hidden_item_mask are ignored.
  *
  * @param menu			Menu items.
  * @param state			UI state.
@@ -590,6 +598,7 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
  * @param reverse	Whether to reverse the x-coordinate relative to the
  *			canvas.
  * @param focused	1 for focused and 0 for non-focused.
+ * @param disabled	1 for disabled style and 0 for normal style.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
@@ -597,7 +606,7 @@ vb2_error_t ui_draw_button(const struct ui_menu_item *item,
 			   const char *locale_code,
 			   int32_t x, int32_t y,
 			   int32_t width, int32_t height,
-			   int reverse, int focused);
+			   int reverse, int focused, int disabled);
 
 /*
  * Draw screen descriptions.

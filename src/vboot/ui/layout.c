@@ -228,7 +228,7 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 		if (menu->items[i].type != UI_MENU_ITEM_TYPE_PRIMARY)
 			continue;
 		if (!(menu->items[i].flags & UI_MENU_ITEM_FLAG_TRANSIENT) &&
-		    state->disabled_item_mask & (1 << i))
+		    state->hidden_item_mask & ((uint32_t)1 << i))
 			continue;
 		if (menu->items[i].file) {
 			VB2_TRY(ui_get_bitmap(menu->items[i].file,
@@ -255,27 +255,48 @@ vb2_error_t ui_draw_button(const struct ui_menu_item *item,
 			   const char *locale_code,
 			   int32_t x, int32_t y,
 			   int32_t width, int32_t height,
-			   int reverse, int focused)
+			   int reverse, int focused, int disabled)
 {
 	struct ui_bitmap bitmap;
 	const int32_t x_center = x + width / 2;
 	const int32_t y_center = y + height / 2;
 	const uint32_t flags = PIVOT_H_CENTER | PIVOT_V_CENTER;
-	const struct rgb_color *bg_color, *fg_color;
+	const struct rgb_color *bg_color, *fg_color, *border_color;
+	int32_t border_thickness;
 
-	bg_color = focused ? &ui_color_button : &ui_color_bg;
-	fg_color = focused ? &ui_color_bg : &ui_color_button;
+	/* Set button styles */
+	if (focused) {
+		if (disabled) {
+			bg_color = &ui_color_button_disabled_bg;
+			fg_color = &ui_color_button_disabled_fg;
+		} else {
+			bg_color = &ui_color_button;
+			fg_color = &ui_color_bg;
+		}
+		/* Focus ring */
+		border_color = &ui_color_button_focus_ring;
+		border_thickness = UI_BUTTON_FOCUS_RING_THICKNESS;
+	} else {
+		if (disabled) {
+			bg_color = &ui_color_bg;
+			fg_color = &ui_color_button_disabled_fg;
+		} else {
+			bg_color = &ui_color_bg;
+			fg_color = &ui_color_button;
+		}
+		/* Regular button border */
+		border_color = &ui_color_button_border;
+		border_thickness = UI_BUTTON_BORDER_THICKNESS;
+	}
 
 	/* Clear button area */
-	VB2_TRY(ui_draw_rounded_box(x, y, width, height,
-				    focused ? &ui_color_button : &ui_color_bg,
+	VB2_TRY(ui_draw_rounded_box(x, y, width, height, bg_color,
 				    0, UI_BUTTON_BORDER_RADIUS,
 				    reverse));
 
 	/* Draw button borders */
 	VB2_TRY(ui_draw_rounded_box(x, y, width, height,
-				    &ui_color_button_border,
-				    UI_BUTTON_BORDER_THICKNESS,
+				    border_color, border_thickness,
 				    UI_BUTTON_BORDER_RADIUS, reverse));
 
 	/* Draw button text */
@@ -588,7 +609,7 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 	for (i = 0; i < menu->num_items; i++) {
 		if (menu->items[i].type != UI_MENU_ITEM_TYPE_PRIMARY)
 			continue;
-		if (state->disabled_item_mask & (1 << i))
+		if (state->hidden_item_mask & ((uint32_t)1 << i))
 			continue;
 		/*
 		 * TODO(b/147424699): No need to redraw every button when
@@ -598,7 +619,9 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 				       locale_code,
 				       x, y,
 				       button_width, UI_BUTTON_HEIGHT,
-				       reverse, state->selected_item == i));
+				       reverse, state->selected_item == i,
+				       state->disabled_item_mask &
+				       ((uint32_t)1 << i)));
 		y += UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
 	}
 
@@ -607,7 +630,7 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 	y = UI_SCALE - UI_MARGIN_BOTTOM - UI_FOOTER_HEIGHT -
 		UI_FOOTER_MARGIN_TOP - UI_BUTTON_HEIGHT;
 	for (i = menu->num_items - 1; i >= 0; i--) {
-		if (state->disabled_item_mask & (1 << i))
+		if (state->hidden_item_mask & ((uint32_t)1 << i))
 			continue;
 		if (menu->items[i].type != UI_MENU_ITEM_TYPE_SECONDARY)
 			continue;
