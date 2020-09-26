@@ -228,7 +228,7 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 		if (menu->items[i].type != UI_MENU_ITEM_TYPE_PRIMARY)
 			continue;
 		if (!(menu->items[i].flags & UI_MENU_ITEM_FLAG_TRANSIENT) &&
-		    state->hidden_item_mask & ((uint32_t)1 << i))
+		    VB2_GET_BIT(state->hidden_item_mask, i))
 			continue;
 		if (menu->items[i].file) {
 			VB2_TRY(ui_get_bitmap(menu->items[i].file,
@@ -255,7 +255,8 @@ vb2_error_t ui_draw_button(const struct ui_menu_item *item,
 			   const char *locale_code,
 			   int32_t x, int32_t y,
 			   int32_t width, int32_t height,
-			   int reverse, int focused, int disabled)
+			   int reverse, int focused, int disabled,
+			   int clear_help)
 {
 	struct ui_bitmap bitmap;
 	const int32_t x_center = x + width / 2;
@@ -315,6 +316,39 @@ vb2_error_t ui_draw_button(const struct ui_menu_item *item,
 	} else {
 		UI_ERROR("No button image filename or text\n");
 		return VB2_ERROR_UI_DRAW_FAILURE;
+	}
+
+	/* Draw disabled help text if the disabled button is on focus;
+	   clear the area only if needed. */
+	if (item->disabled_help_text_file) {
+		const int32_t x_help = x + width + UI_BUTTON_HELP_TEXT_MARGIN_L;
+		int32_t help_text_width;
+		if (disabled && focused) {
+			VB2_TRY(ui_get_bitmap(
+					item->disabled_help_text_file,
+					locale_code, 0, &bitmap));
+			VB2_TRY(ui_draw_mapped_bitmap(
+					&bitmap,
+					x_help, y_center,
+					UI_SIZE_AUTO, UI_BUTTON_TEXT_HEIGHT,
+					&ui_color_bg, &ui_color_button_help_fg,
+					PIVOT_H_LEFT | PIVOT_V_CENTER,
+					reverse));
+		} else if (clear_help) {
+			VB2_TRY(ui_get_bitmap(
+					item->disabled_help_text_file,
+					locale_code, 0, &bitmap));
+			VB2_TRY(ui_get_bitmap_width(
+					&bitmap,
+					UI_BUTTON_TEXT_HEIGHT,
+					&help_text_width));
+			VB2_TRY(ui_draw_box(
+					x_help,
+					y_center - UI_BUTTON_TEXT_HEIGHT / 2,
+					help_text_width, UI_BUTTON_TEXT_HEIGHT,
+					&ui_color_bg,
+					reverse));
+		}
 	}
 
 	return VB2_SUCCESS;
@@ -602,6 +636,7 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 	const int reverse = state->locale->rtl;
 	int32_t x;
 	int32_t button_width;
+	int clear_help;
 
 	/* Primary buttons */
 	x = UI_MARGIN_H;
@@ -609,19 +644,23 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 	for (i = 0; i < menu->num_items; i++) {
 		if (menu->items[i].type != UI_MENU_ITEM_TYPE_PRIMARY)
 			continue;
-		if (state->hidden_item_mask & ((uint32_t)1 << i))
+		if (VB2_GET_BIT(state->hidden_item_mask, i))
 			continue;
 		/*
 		 * TODO(b/147424699): No need to redraw every button when
 		 * navigating between menu.
 		 */
+		clear_help = prev_state &&
+			     prev_state->selected_item == i &&
+			     VB2_GET_BIT(prev_state->disabled_item_mask, i);
 		VB2_TRY(ui_draw_button(&menu->items[i],
 				       locale_code,
 				       x, y,
 				       button_width, UI_BUTTON_HEIGHT,
 				       reverse, state->selected_item == i,
-				       state->disabled_item_mask &
-				       ((uint32_t)1 << i)));
+				       VB2_GET_BIT(state->disabled_item_mask,
+						   i),
+				       clear_help));
 		y += UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
 	}
 
@@ -630,7 +669,7 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 	y = UI_SCALE - UI_MARGIN_BOTTOM - UI_FOOTER_HEIGHT -
 		UI_FOOTER_MARGIN_TOP - UI_BUTTON_HEIGHT;
 	for (i = menu->num_items - 1; i >= 0; i--) {
-		if (state->hidden_item_mask & ((uint32_t)1 << i))
+		if (VB2_GET_BIT(state->hidden_item_mask, i))
 			continue;
 		if (menu->items[i].type != UI_MENU_ITEM_TYPE_SECONDARY)
 			continue;

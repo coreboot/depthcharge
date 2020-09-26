@@ -103,6 +103,7 @@
 #define UI_BUTTON_FOCUS_RING_THICKNESS		3
 #define UI_BUTTON_BORDER_RADIUS			8
 #define UI_BUTTON_MARGIN_V			10
+#define UI_BUTTON_HELP_TEXT_MARGIN_L		30
 
 /* For secondary (link) buttons */
 #define UI_LINK_TEXT_PADDING_LEFT		16
@@ -176,6 +177,7 @@ static const struct rgb_color ui_color_button_disabled_fg
 static const struct rgb_color ui_color_button_border	= { 0x4c, 0x4d, 0x4f };
 static const struct rgb_color ui_color_button_focus_ring
 	= { 0x4a, 0x5b, 0x78 };
+static const struct rgb_color ui_color_button_help_fg	= { 0xf2, 0x8b, 0x82 };
 static const struct rgb_color ui_color_link_bg		= { 0x2a, 0x2f, 0x39 };
 static const struct rgb_color ui_color_link_border	= { 0x4a, 0x5b, 0x78 };
 static const struct rgb_color ui_color_border		= { 0x3f, 0x40, 0x42 };
@@ -261,6 +263,12 @@ struct ui_menu_item {
 	enum ui_menu_item_type type;
 	/* Icon file for UI_MENU_ITEM_TYPE_SECONDARY only. */
 	const char *icon_file;
+	/*
+	 * Bitmap file of the help text displayed next to the button.
+	 * This field is only for disabled buttons of type
+	 * UI_MENU_ITEM_TYPE_PRIMARY.
+	 */
+	const char *disabled_help_text_file;
 	/* Flags are defined in enum ui_menu_item_flag. */
 	uint8_t flags;
 };
@@ -599,6 +607,7 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
  *			canvas.
  * @param focused	1 for focused and 0 for non-focused.
  * @param disabled	1 for disabled style and 0 for normal style.
+ * @param clear_help	1 to request for clearing the disabled help text area.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
@@ -606,7 +615,8 @@ vb2_error_t ui_draw_button(const struct ui_menu_item *item,
 			   const char *locale_code,
 			   int32_t x, int32_t y,
 			   int32_t width, int32_t height,
-			   int reverse, int focused, int disabled);
+			   int reverse, int focused, int disabled,
+			   int clear_help);
 
 /*
  * Draw screen descriptions.
