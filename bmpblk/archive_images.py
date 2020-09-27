@@ -21,6 +21,12 @@ import os
 import subprocess
 import sys
 
+
+LOCALE_DIR = 'locale'
+LOCALE_RO_DIR = os.path.join(LOCALE_DIR, 'ro')
+LOCALE_RW_DIR = os.path.join(LOCALE_DIR, 'rw')
+
+
 def archive_images(archiver, output, name, files):
   """Archive files.
 
@@ -35,29 +41,41 @@ def archive_images(archiver, output, name, files):
   command = '%s %s create %s' % (archiver, archive, args)
   subprocess.check_call(command, shell=True)
 
-def archive(archiver, output):
-  """Archive base images and localized images
+
+def archive_base(archiver, output):
+  """Archive base (locale-independent) images.
 
   Args:
     archiver: path to the archive tool
     output: path to the output directory
   """
-  base_images = glob.glob(os.path.join(output, "*.bmp"))
+  base_images = glob.glob(os.path.join(output, '*.bmp'))
 
   # create archive of base images
   archive_images(archiver, output, 'vbgfx.bin', base_images)
 
+
+def archive_localized(archiver, output, pattern):
+  """Archive localized images.
+
+  Args:
+    archiver: path to the archive tool
+    output: path to the output directory
+    pattern: filename with a '%s' to fill in the locale code
+  """
   locale_images = defaultdict(lambda: [])
-  dirs = glob.glob(os.path.join(output, "locale/*"))
+  dirs = glob.glob(os.path.join(output, '*'))
+
   for dir in dirs:
-    files = glob.glob(os.path.join(dir, "*.bmp"))
+    files = glob.glob(os.path.join(dir, '*.bmp'))
     locale = os.path.basename(dir)
     for file in files:
       locale_images[locale].append(file)
 
   # create archives of localized images
   for locale, images in locale_images.items():
-    archive_images(archiver, output, 'locale_%s.bin' % locale, images)
+    archive_images(archiver, output, pattern % locale, images)
+
 
 def main(args):
   opts, args = getopt.getopt(args, 'a:d:')
@@ -74,7 +92,16 @@ def main(args):
   if args or not archiver or not output:
     assert False, 'Invalid usage'
 
-  archive(archiver, output)
+  print('Archiving vbfgx.bin', file=sys.stderr, flush=True)
+  archive_base(archiver, output)
+  print('Archiving locales for RO', file=sys.stderr, flush=True)
+  ro_locale_dir = os.path.join(output, LOCALE_RO_DIR)
+  rw_locale_dir = os.path.join(output, LOCALE_RW_DIR)
+  archive_localized(archiver, ro_locale_dir, 'locale_%s.bin')
+  if os.path.exists(rw_locale_dir):
+    print('Archiving locales for RW', file=sys.stderr, flush=True)
+    archive_localized(archiver, rw_locale_dir, 'rw_locale_%s.bin')
+
 
 if __name__ == '__main__':
   main(sys.argv[1:])

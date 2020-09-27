@@ -28,6 +28,8 @@ from PIL import Image
 import yaml
 
 LOCALE_DIR = 'locale'
+LOCALE_RO_DIR = os.path.join(LOCALE_DIR, 'ro')
+LOCALE_RW_DIR = os.path.join(LOCALE_DIR, 'rw')
 FONT_DIR = 'font'
 ONE_LINE_DIR = 'one_line'
 PNG_FILES = '*.png'
@@ -44,6 +46,7 @@ LOCALES_KEY = 'locales'
 RTL_KEY = 'rtl'
 HI_RES_KEY = 'hi_res'
 TEXT_COLORS_KEY = 'text_colors'
+RW_OVERRIDE_KEY = 'rw_override'
 
 BMP_HEADER_OFFSET_NUM_LINES = 6
 
@@ -496,7 +499,7 @@ class Converter(object):
     print('  processing:', end='', file=sys.stderr, flush=True)
     for locale_info in self.locales:
       locale = locale_info.code
-      output_dir = os.path.join(self.output_dir, LOCALE_DIR, locale)
+      ro_locale_dir = os.path.join(self.output_dir, LOCALE_RO_DIR, locale)
       if locale_info.hi_res:
         scales = defaultdict(lambda: self.DEFAULT_TEXT_SCALE)
         scales.update(self.TEXT_SCALES)
@@ -507,10 +510,11 @@ class Converter(object):
         # be scaled by Depthcharge to be the same height as hi-res texts.
         scales = defaultdict(lambda: None)
         print(' ' + locale + '/lo', end='', file=sys.stderr, flush=True)
-      os.makedirs(output_dir)
-      self.convert(glob.glob(os.path.join(locale_dir, locale, SVG_FILES)),
-                   output_dir, scales, self.text_max_colors,
-                   one_line_dir=os.path.join(locale_dir, locale, ONE_LINE_DIR))
+      os.makedirs(ro_locale_dir)
+      self.convert(
+          glob.glob(os.path.join(locale_dir, locale, SVG_FILES)),
+          ro_locale_dir, scales, self.text_max_colors,
+          one_line_dir=os.path.join(locale_dir, locale, ONE_LINE_DIR))
     print(file=sys.stderr)
 
   def move_language_images(self):
@@ -521,13 +525,13 @@ class Converter(object):
     """
     for locale_info in self.locales:
       locale = locale_info.code
-      locale_output_dir = os.path.join(self.output_dir, LOCALE_DIR, locale)
+      ro_locale_dir = os.path.join(self.output_dir, LOCALE_RO_DIR, locale)
       for old_name, new_name in [
         ('lang_header', 'lang_header_%s' % locale),
         ('lang_menu', 'lang_menu_%s' % locale),
         ('lang_menu_focus', 'lang_menu_%s_focus' % locale),
       ]:
-        old_file = os.path.join(locale_output_dir, old_name + '.bmp')
+        old_file = os.path.join(ro_locale_dir, old_name + '.bmp')
         new_file = os.path.join(self.output_dir, new_name + '.bmp')
         if os.path.exists(new_file):
           raise BuildImageError('File already exists: ' % new_file)
@@ -541,6 +545,23 @@ class Converter(object):
     font_output_dir = os.path.join(self.output_dir, FONT_DIR)
     os.makedirs(font_output_dir)
     self.convert(files, font_output_dir, scales, self.text_max_colors)
+
+  def copy_images_to_rw(self):
+    """Copy localized images specified in boards.yaml for RW override"""
+    if not self.config[RW_OVERRIDE_KEY]:
+      print('  No localized images are specified for RW, skipping')
+      return
+
+    for locale_info in self.locales:
+      locale = locale_info.code
+      rw_locale_dir = os.path.join(self.output_dir, LOCALE_RW_DIR, locale)
+      ro_locale_dir = os.path.join(self.output_dir, LOCALE_RO_DIR, locale)
+      os.makedirs(rw_locale_dir)
+
+      for name in self.config[RW_OVERRIDE_KEY]:
+        ro_src = os.path.join(ro_locale_dir, name + self.DEFAULT_OUTPUT_EXT)
+        rw_dst = os.path.join(rw_locale_dir, name + self.DEFAULT_OUTPUT_EXT)
+        shutil.copyfile(ro_src, rw_dst)
 
   def create_locale_list(self):
     """Create locale list as a CSV file
@@ -586,6 +607,9 @@ class Converter(object):
 
     print('Converting fonts...')
     self.convert_fonts()
+
+    print('Copying specified images to RW packing directory...')
+    self.copy_images_to_rw()
 
 
 def load_boards_config(filename):

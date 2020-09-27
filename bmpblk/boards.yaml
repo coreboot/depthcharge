@@ -21,6 +21,10 @@
 #   all locales unless flash space is limited.
 # sdcard: Presence of SD/MMC Card Reader that can boot in recovery mode
 # text_colors: Maximum number of colors for text images.
+# rw_override: List of names of localized bitmaps to be stored in both RW
+#   and RO sections. This field is designed to allow late RW updates to change
+#   or add bitmaps of firmware screens in RW. Currently, there is no support
+#   for updating locale-independent bitmaps in vbgfx.bin and font.bin.
 #
 # Note the locale should be supported (and named) by Chrome browser:
 # https://chromium.googlesource.com/chromium/chromium/+/master/ui/base/l10n/l10n_util.cc
@@ -48,6 +52,7 @@ _DEFAULT_:
                 hu, ms, nl, nb, pl, pt-PT, pt-BR, ro, sk, sl, fi, sv, vi, tr,
                 cs, el, bg, ru, sr, uk, he, ar, fa, mr, hi, gu, ta, te, kn, ml,
                 th, zh-CN, zh-TW, ja, ko]
+  rw_override:  []
 
 x86-generic,amd64-generic:
   # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
