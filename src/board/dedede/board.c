@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <pci.h>
 #include <pci/pci.h>
+#include <stdbool.h>
 #include <sysinfo.h>
 
 #include "base/init_funcs.h"
@@ -87,14 +88,21 @@ static void dedede_setup_flash(void)
 	flash_set_ops(&flash->ops);
 }
 
-static int is_board_waddledee(void)
+static bool is_rt1015_codec(void)
 {
-	static const char * const board_str = "Waddledee";
+	static const char * const board_str[] = {"Boten",
+						 "Magolor",
+						 "Waddledee"};
 	struct cb_mainboard *mainboard =
 		phys_to_virt(lib_sysinfo.cb_mainboard);
+	int i;
 
-	return strncmp(cb_mb_part_string(mainboard),
-			board_str, strlen(board_str)) == 0;
+	for (i = 0; i < ARRAY_SIZE(board_str); i++) {
+		if (!strncmp(cb_mb_part_string(mainboard), board_str[i],
+							strlen(board_str[i])))
+			return true;
+	}
+	return false;
 }
 
 static int board_setup(void)
@@ -130,7 +138,7 @@ static int board_setup(void)
 			&removable_block_dev_controllers);
 
 	/* Audio Beep Support */
-	if (is_board_waddledee()) {
+	if (is_rt1015_codec()) {
 		/*
 		 * ALC1015 codec uses internal control to shut down, so we can
 		 * leave EN_SPK_PIN/SDB gpio pad alone.
