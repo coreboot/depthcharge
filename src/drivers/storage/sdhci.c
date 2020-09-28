@@ -809,6 +809,25 @@ static u16 sdhci_ctrlr_driver_strength(SdhciHost *host, enum mmc_timing timing)
 	return (u16)driver_strength << SDHCI_CTRL_DRV_TYPE_SHIFT;
 }
 
+static unsigned int sdhci_preset_frequency(SdhciHost *host,
+					   enum mmc_timing timing)
+{
+	u16 preset, divisor;
+	unsigned int frequency;
+
+	preset = sdhci_preset_value(host, timing);
+
+	divisor = preset & SDHCI_PRESET_VALUE_DIVISOR_MASK;
+	divisor >>= SDHCI_PRESET_VALUE_DIVISOR_SHIFT;
+
+	if (divisor)
+		frequency = host->clock_base / (divisor << 1);
+	else
+		frequency = host->clock_base;
+
+	return frequency;
+}
+
 static void sdhci_set_uhs_signaling(SdhciHost *host, enum mmc_timing timing)
 {
 	u16 ctrl_2;
@@ -947,8 +966,18 @@ void sdhci_set_ios(MmcCtrlr *mmc_ctrlr)
 	 * Now that the timing and the high speed bit have been set, we can
 	 * enable the clock.
 	 */
-	if (clock_or_timing_changed)
+	if (clock_or_timing_changed) {
+		/*
+		 * If presets are enabled, the MMC layer will leave the
+		 * responsibility of selecting the correct clock on a timing
+		 * change to the SDHCI layer.
+		 */
+		if (mmc_ctrlr->bus_hz == host->clock &&
+		    host->platform_info & SDHCI_PLATFORM_VALID_PRESETS)
+			mmc_ctrlr->bus_hz =
+				sdhci_preset_frequency(host, mmc_ctrlr->timing);
 		sdhci_set_clock(mmc_ctrlr, mmc_ctrlr->bus_hz);
+	}
 
 	host->timing = mmc_ctrlr->timing;
 }
