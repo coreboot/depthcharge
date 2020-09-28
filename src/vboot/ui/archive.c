@@ -23,6 +23,7 @@
 
 #include "drivers/flash/cbfs.h"
 #include "vboot/ui.h"
+#include "vboot/util/commonparams.h"
 
 static struct cbfs_media *get_ro_cbfs(void)
 {
@@ -152,9 +153,11 @@ uint32_t ui_get_locale_count(void)
 	return locale_data->count;
 }
 
-static vb2_error_t load_archive(const char *name, struct directory **dest)
+static vb2_error_t load_archive(const char *name,
+				struct directory **dest,
+				int from_ro)
 {
-	struct cbfs_media *ro_cbfs;
+	struct cbfs_media *media;
 	struct directory *dir;
 	struct dentry *entry;
 	size_t size;
@@ -163,14 +166,17 @@ static vb2_error_t load_archive(const char *name, struct directory **dest)
 	UI_INFO("Loading %s\n", name);
 	*dest = NULL;
 
-	ro_cbfs = get_ro_cbfs();
-	if (!ro_cbfs) {
-		UI_ERROR("No RO CBFS found\n");
-		return VB2_ERROR_UI_INVALID_ARCHIVE;
+	if (from_ro) {
+		media = get_ro_cbfs();
+		if (!media) {
+			UI_ERROR("No RO CBFS found\n");
+			return VB2_ERROR_UI_INVALID_ARCHIVE;
+		}
+	} else {
+		media = CBFS_DEFAULT_MEDIA;
 	}
+	dir = cbfs_get_file_content(media, name, CBFS_TYPE_RAW, &size);
 
-	/* Load archive from cbfs */
-	dir = cbfs_get_file_content(ro_cbfs, name, CBFS_TYPE_RAW, &size);
 	if (!dir || !size) {
 		UI_ERROR("Failed to load %s (dir: %p, size: %zu)\n",
 			 name, dir, size);
@@ -212,47 +218,73 @@ static vb2_error_t load_archive(const char *name, struct directory **dest)
 }
 
 /* Load generic (locale-independent) graphics. */
-static vb2_error_t get_graphic_archive(struct directory **dest) {
-	static struct directory *cache;
-	if (!cache)
-		VB2_TRY(load_archive("vbgfx.bin", &cache));
+static vb2_error_t get_graphic_archive(struct directory **dest)
+{
+	static struct directory *ro_cache;
+	if (!ro_cache)
+		VB2_TRY(load_archive("vbgfx.bin", &ro_cache, 1));
 
-	*dest = cache;
+	*dest = ro_cache;
 	return VB2_SUCCESS;
 }
 
-/* Load locale-dependent graphics. */
+/*
+ * Load locale-dependent graphics.
+ *
+ * On success, *ro_dest is guaranteed to be non-null. *rw_dest will be null
+ * when no RW override is found.
+ */
 static vb2_error_t get_localized_graphic_archive(const char *locale_code,
-						 struct directory **dest) {
-	static struct directory *cache;
+						 struct directory **ro_dest,
+						 struct directory **rw_dest)
+{
+	static struct directory *ro_cache;
+	static struct directory *rw_cache;
+
 	static char cached_code[UI_LOCALE_CODE_MAX_LEN + 1];
 	char name[UI_CBFS_FILENAME_MAX_LEN + 1];
 
-	if (cache) {
+	if (ro_cache) {
 		if (!strncmp(cached_code, locale_code, sizeof(cached_code))) {
-			*dest = cache;
+			*ro_dest = ro_cache;
+			*rw_dest = rw_cache;
 			return VB2_SUCCESS;
 		}
 		/* No need to keep more than one locale graphics at a time */
-		free(cache);
-		cache = NULL;
+		free(ro_cache);
+		free(rw_cache);
+		ro_cache = NULL;
 	}
 
 	snprintf(name, sizeof(name), "locale_%s.bin", locale_code);
-	VB2_TRY(load_archive(name, &cache));
-	strncpy(cached_code, locale_code, sizeof(cached_code) - 1);
-	*dest = cache;
+	VB2_TRY(load_archive(name, &ro_cache, 1));
 
+	/* Try to read from RW region while we are not in recovery mode */
+	rw_cache = NULL;
+	if (!(vboot_get_context()->flags & VB2_CONTEXT_RECOVERY_MODE)) {
+		snprintf(name, sizeof(name), "rw_locale_%s.bin", locale_code);
+		/*
+		 * Silently ignore errors because rw_locale_*.bin may not exist
+		 * in both firmware slots.
+		 */
+		load_archive(name, &rw_cache, 0);
+	}
+
+	strncpy(cached_code, locale_code, sizeof(cached_code) - 1);
+	cached_code[sizeof(cached_code) - 1] = '\0';
+	*ro_dest = ro_cache;
+	*rw_dest = rw_cache;
 	return VB2_SUCCESS;
 }
 
 /* Load font graphics. */
-static vb2_error_t get_font_archive(struct directory **dest) {
-	static struct directory *cache;
-	if (!cache)
-		VB2_TRY(load_archive("font.bin", &cache));
+static vb2_error_t get_font_archive(struct directory **dest)
+{
+	static struct directory *ro_cache;
+	if (!ro_cache)
+		VB2_TRY(load_archive("font.bin", &ro_cache, 1));
 
-	*dest = cache;
+	*dest = ro_cache;
 	return VB2_SUCCESS;
 }
 
@@ -298,7 +330,8 @@ vb2_error_t ui_get_bitmap(const char *image_name, const char *locale_code,
 	const char *file_ext;
 	const char *suffix = focused ? "_focus" : "";
 	const size_t image_name_len = strlen(image_name);
-	struct directory *dir;
+	struct directory *ro_dir;
+	struct directory *rw_dir;
 
 	if (image_name_len + strlen(suffix) >= sizeof(file)) {
 		UI_ERROR("Image name %s too long\n", image_name);
@@ -315,11 +348,20 @@ vb2_error_t ui_get_bitmap(const char *image_name, const char *locale_code,
 	used += snprintf(file + used, sizeof(file) - used, suffix);
 	snprintf(file + used, sizeof(file) - used, file_ext);
 
-	if (locale_code)
-		VB2_TRY(get_localized_graphic_archive(locale_code, &dir));
-	else
-		VB2_TRY(get_graphic_archive(&dir));
-	return find_bitmap_in_archive(dir, file, bitmap);
+	if (locale_code) {
+		VB2_TRY(get_localized_graphic_archive(locale_code,
+						      &ro_dir, &rw_dir));
+
+		if (rw_dir) {
+			UI_INFO("Searching RW override for %s\n", file);
+			if (find_bitmap_in_archive(rw_dir, file, bitmap) ==
+			    VB2_SUCCESS)
+				return VB2_SUCCESS;
+		}
+	} else {
+		VB2_TRY(get_graphic_archive(&ro_dir));
+	}
+	return find_bitmap_in_archive(ro_dir, file, bitmap);
 }
 
 vb2_error_t ui_get_language_name_bitmap(const char *locale_code,
