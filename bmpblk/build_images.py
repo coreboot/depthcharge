@@ -483,8 +483,14 @@ class Converter(object):
     scales.update(self.ASSET_SCALES)
     self.convert(files, self.output_dir, scales, self.ASSET_MAX_COLORS)
 
-  def convert_texts(self):
-    """Convert localized texts"""
+  def convert_generic_strings(self):
+    """Convert generic (locale-independent) strings."""
+    scales = self.TEXT_SCALES.copy()
+    files = glob.glob(os.path.join(self.stage_dir, SVG_FILES))
+    self.convert(files, self.output_dir, scales, self.text_max_colors)
+
+  def convert_localized_strings(self):
+    """Convert localized strings."""
     locale_dir = os.path.join(self.stage_dir, LOCALE_DIR)
     # Using stderr to report progress synchronously
     print('  processing:', end='', file=sys.stderr, flush=True)
@@ -566,8 +572,11 @@ class Converter(object):
     print('Converting asset images...')
     self.convert_assets()
 
-    print('Converting localized text images...')
-    self.convert_texts()
+    print('Converting generic strings...')
+    self.convert_generic_strings()
+
+    print('Converting localized strings...')
+    self.convert_localized_strings()
 
     print('Moving language images to locale-independent directory...')
     self.move_language_images()

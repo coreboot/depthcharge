@@ -355,9 +355,6 @@ Model:
       <message name="help_center" desc="String for the help center label.">
 Help center:
       </message>
-      <message name="rec_url" desc="String for the help center url.">
-https://google.com/chromeos/recovery
-      </message>
       <message name="navigate0" desc="Instruction0 for navigating on a chromebook or chromebox.">
 Use the arrow keys to navigate up or down.
       </message>

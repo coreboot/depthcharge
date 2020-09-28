@@ -20,6 +20,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import copy
 
 from PIL import Image
 import yaml
@@ -36,7 +37,8 @@ STRINGS_GRD_FILE = 'firmware_strings.grd'
 STRINGS_JSON_FILE_TMPL = '{}.json'
 FORMAT_FILE = 'format.yaml'
 TXT_TO_PNG_SVG = os.path.join(SCRIPT_BASE, 'text_to_png_svg')
-LOCALE_DIR = os.path.join(SCRIPT_BASE, 'strings', 'locale')
+STRINGS_DIR = os.path.join(SCRIPT_BASE, 'strings')
+LOCALE_DIR = os.path.join(STRINGS_DIR, 'locale')
 STAGE_DIR = os.path.join(os.getenv('OUTPUT',
                                    os.path.join(SCRIPT_BASE, 'build')),
                          '.stage')
@@ -142,33 +144,32 @@ def build_text_files(inputs, files, output_dir):
       create_file(file_name, contents, output_dir)
 
 
-def convert_text_to_png(locale, file_name, styles, fonts, output_dir):
+def convert_text_to_png(locale, input_file, style, font, output_dir):
   """Converts text files into PNG image files.
 
   Args:
-    locale: Locale (language) to select implicit rendering options.
-    file_name: String of input file name to generate.
-    styles: Dictionary to get associated per-file style options.
-    fonts: Dictionary to get associated per-file font options. The value at
-      DEFAULT_NAME is used when |locale| is not in the dict, and the '--font'
-      option is omitted when neither exist.
+    locale: Locale (language) to select implicit rendering options. None for
+      locale-independent strings.
+    input_file: Path of input text file.
+    style: Style options.
+    font: Font spec.
     output_dir: Directory to generate image files.
   """
-  input_file = os.path.join(output_dir, file_name + '.txt')
-  command = [TXT_TO_PNG_SVG, "--lan=%s" % locale, "--outdir=%s" % output_dir]
-  if file_name in styles:
-    command.append(styles[file_name])
-  default_font = fonts.get(DEFAULT_NAME)
-  font = fonts.get(locale, default_font)
+  name, _ = os.path.splitext(os.path.basename(input_file))
+  command = [TXT_TO_PNG_SVG, '--outdir=%s' % output_dir]
+  if locale:
+    command.append('--lan=%s' % locale)
+  if style:
+    command.append(style)
   if font:
     command.append("--font='%s'" % font)
-  font_size = os.getenv("FONTSIZE")
-  if font_size is not None:
+  font_size = os.getenv('FONTSIZE')
+  if font_size:
     command.append('--point=%r' % font_size)
   command.append('--margin="0 0"')
   # TODO(b/159399377): Set different widths for titles and descriptions.
   # Currently only wrap lines for descriptions.
-  if '_desc' in file_name:
+  if '_desc' in name:
     # Without the --width option set, the minimum height of the output SVG
     # image is roughly 22px (for locale 'en'). With --width=WIDTH passed to
     # pango-view, the width of the output seems to always be (WIDTH * 4 / 3),
@@ -181,7 +182,7 @@ def convert_text_to_png(locale, file_name, styles, fonts, output_dir):
     # - 228: UI_REC_QR_SIZE
     # - 24: UI_REC_QR_MARGIN_H
     # - 24: UI_DESC_TEXT_HEIGHT
-    if file_name == 'rec_phone_step2_desc':
+    if name == 'rec_phone_step2_desc':
       max_width = 1000 - 50 * 2 - 228 - 24 * 2
     else:
       max_width = 1000 - 50 * 2
@@ -189,18 +190,25 @@ def convert_text_to_png(locale, file_name, styles, fonts, output_dir):
     command.append('--width=%d' % max_width_pt)
   command.append(input_file)
 
-  if subprocess.call(' '.join(command), shell=True,
-                     stdout=subprocess.PIPE) != 0:
-    return False
+  return subprocess.call(' '.join(command), shell=True,
+                         stdout=subprocess.PIPE) == 0
 
-  # Check output file size
-  output_file = os.path.join(output_dir, file_name + '.png')
 
-  return True
+def convert_localized_strings(formats, locales):
+  """Converts localized strings for |locales|."""
+  # Make a copy of formats to avoid modifying it
+  formats = copy.deepcopy(formats)
 
-def main(argv):
-  with open(FORMAT_FILE, encoding='utf-8') as f:
-    formats = yaml.load(f)
+  if not locales:
+    env_locales = os.getenv('LOCALES')
+    if env_locales:
+      locales = env_locales.split()
+    else:
+      locales = formats[KEY_LOCALES]
+
+  styles = formats[KEY_STYLES]
+  fonts = formats[KEY_FONTS]
+  default_font = fonts.get(DEFAULT_NAME)
 
   # Sources are one .grd file with identifiers chosen by engineers and
   # corresponding English texts, as well as a set of .xlt files (one for each
@@ -213,6 +221,7 @@ def main(argv):
 
   # Create a temporary directory to place the translation output from grit in.
   json_dir = tempfile.mkdtemp()
+
   # This invokes the grit build command to generate JSON files from the XTB
   # files containing translations.  The results are placed in `json_dir` as
   # specified in firmware_strings.grd, i.e. one JSON file per locale.
@@ -222,14 +231,6 @@ def main(argv):
       'build',
       '-o', os.path.join(json_dir)
   ])
-
-  # Decide locales to build.
-  if len(argv) > 0:
-    locales = argv
-  else:
-    locales = os.getenv('LOCALES', '').split()
-  if not locales:
-    locales = formats[KEY_LOCALES]
 
   # Ignore SIGINT in child processes
   sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
@@ -244,19 +245,20 @@ def main(argv):
     if not os.path.exists(output_dir):
       os.makedirs(output_dir)
     files = formats[KEY_FILES]
-    styles = formats[KEY_STYLES]
 
     # Now parse strings for optional features
-    if os.getenv("DIAGNOSTIC_UI") == "1" and DIAGNOSTIC_FILES in formats:
+    if os.getenv('DIAGNOSTIC_UI') == '1' and DIAGNOSTIC_FILES in formats:
       files.update(formats[DIAGNOSTIC_FILES])
 
     build_text_files(inputs, files, output_dir)
 
     results += [pool.apply_async(convert_text_to_png,
-                                 (locale, file_name,
-                                  styles, formats[KEY_FONTS],
+                                 (locale,
+                                  os.path.join(output_dir, '%s.txt' % name),
+                                  styles.get(name),
+                                  fonts.get(locale, default_font),
                                   output_dir))
-                for file_name in formats[KEY_FILES]]
+                for name in formats[KEY_FILES]]
   pool.close()
   if json_dir is not None:
     shutil.rmtree(json_dir)
@@ -272,6 +274,26 @@ def main(argv):
     pool.join()
     if not all(success):
       exit('Failed to render some locales')
+
+
+def main(argv):
+  with open(FORMAT_FILE, encoding='utf-8') as f:
+    formats = yaml.load(f)
+
+  # Convert generic (locale-independent) strings
+  styles = formats[KEY_STYLES]
+  fonts = formats[KEY_FONTS]
+  default_font = fonts.get(DEFAULT_NAME)
+
+  for input_file in glob.glob(os.path.join(STRINGS_DIR, '*.txt')):
+    name, _ = os.path.splitext(os.path.basename(input_file))
+    style = styles.get(name)
+    if not convert_text_to_png(None, input_file, style, default_font,
+                               STAGE_DIR):
+      exit('Failed to convert text %s' % input_file)
+
+  # Convert localized strings
+  convert_localized_strings(formats, argv)
 
 
 if __name__ == '__main__':

@@ -13,7 +13,6 @@ ARCHIVER ?= /usr/bin/archive
 build:
 	@[ ! -z "$(BOARD)" ] || (echo "Usage: BOARD=\$$BOARD make"; exit 1)
 	mkdir -p "$(STAGE)"
-	./text_to_png_svg --point="$(FONTSIZE)" --outdir="$(STAGE)" strings/*.TXT
 	FONTSIZE="$(FONTSIZE)" ./build_font "$(STAGE)/font"
 	LOCALES="$(LOCALES)" FONTSIZE="$(FONTSIZE)" ./build.py
 	LOCALES="$(LOCALES)" OUTPUT="$(OUTPUT)" \

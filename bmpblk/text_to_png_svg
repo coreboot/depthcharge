@@ -3,8 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 #
-# Render a text file into PNG (bitmap) and SVG (vector) files.  Files named
-# as '*.txt' are normal text files, and '*.TXT' files may contain markup.
+# Render a text file into PNG (bitmap) and SVG (vector) files.
 #
 # Options:
 #
@@ -115,25 +114,12 @@ for txtfile in $*; do
   svgfile="${outdir}/${name}.svg"
   svgfile_one_line="${outdir}/one_line/${name}.svg"
 
-  file_opt=""
-  case "$txtfile" in
-    *.txt)
-      file_opt=""
-      ;;
-    *.TXT)
-      file_opt="--markup "
-      ;;
-    *)
-      echo "Ignoring $txtfile. Filename should end with .txt or .TXT"
-      continue
-      ;;
-  esac
   pango_opt="-q $language \
     '--background=$bgcolor' '--foreground=$color' \
     '--font=$font $pointsize' \
     '--margin=$margin' \
     '--align=$align' \
-    $params $file_opt"
+    $params"
   width_opt="${width:+'--width=$width'}"
 
   # Generate PNGs.

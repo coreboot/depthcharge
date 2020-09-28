@@ -100,7 +100,6 @@ files:
   # footer
   model:
   help_center:
-  rec_url:
   navigate0:
   navigate1:
   navigate0_tablet:
@@ -237,7 +236,7 @@ styles:
   # footer
   model: *dark_color
   help_center: *dark_color
-  rec_url: *dark_color
+  rec_url: *dark_color  # see strings/rec_url.txt
   navigate0: *dark_color
   navigate1: *dark_color
   navigate0_tablet: *dark_color
