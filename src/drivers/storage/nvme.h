@@ -379,7 +379,7 @@ typedef struct {
 	uint32_t thm_temp2_total_time;
 
 	uint8_t  rsvd232[280];
-} __attribute__((packed)) NVME_SMART_LOG_DATA;
+} __attribute__((packed)) NvmeSmartLogData;
 
 /*
  * Driver Types
