@@ -296,18 +296,19 @@ static char *stringify_mmc_health(char *buf, const char *end,
 				  const MmcHealthData *data)
 {
 	const char *const ver_str[] = {
-		"4.0",	    /* 0 */
-		"4.1",	    /* 1 */
-		"4.2",	    /* 2 */
-		"4.3",	    /* 3 */
-		"Obsolete", /* 4 */
-		"4.41",	    /* 5 */
-		"4.5",	    /* 6 */
-		"5.0",	    /* 7 */
-		"5.1",	    /* 8 */
+		[EXT_CSD_REV_1_0] = "4.0",
+		[EXT_CSD_REV_1_1] = "4.1",
+		[EXT_CSD_REV_1_2] = "4.2",
+		[EXT_CSD_REV_1_3] = "4.3",
+		[EXT_CSD_REV_1_4] = "Obsolete",
+		[EXT_CSD_REV_1_5] = "4.41",
+		[EXT_CSD_REV_1_6] = "4.5",
+		[EXT_CSD_REV_1_7] = "5.0",
+		[EXT_CSD_REV_1_8] = "5.1",
 	};
 
-	if (data->csd_rev >= ARRAY_SIZE(ver_str) || data->csd_rev == 4) {
+	if (data->csd_rev >= ARRAY_SIZE(ver_str) ||
+	    data->csd_rev == EXT_CSD_REV_1_4) {
 		buf += snprintf(buf, end - buf,
 				"Unsupported Extended CSD rev 1.%d\n",
 				data->csd_rev);
@@ -317,8 +318,8 @@ static char *stringify_mmc_health(char *buf, const char *end,
 	buf += snprintf(buf, end - buf, "Extended CSD rev 1.%d (MMC %s)\n",
 			data->csd_rev, ver_str[data->csd_rev]);
 
-	/* eMMC 5.0 */
-	if (data->csd_rev >= 7) {
+	/* >= eMMC 5.0 */
+	if (data->csd_rev >= EXT_CSD_REV_1_7) {
 		buf += snprintf(buf, end - buf,
 				"eMMC Life Time Estimation A "
 				"[EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_A]: %#02x\n"
@@ -361,7 +362,7 @@ char *stringify_health_info(char *buf, const char *end, const HealthInfo *info)
 		if (!CONFIG(DRIVER_STORAGE_MMC))
 			break;
 		return stringify_mmc_health(buf, end, &info->data.mmc_data);
-	default:
+	case HEALTH_UNKNOWN:
 		break;
 	}
 	printf("%s: unsupported data type: %d\n", __func__, info->type);
