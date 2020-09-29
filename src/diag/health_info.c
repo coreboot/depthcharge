@@ -293,7 +293,7 @@ static inline const char *mmc_eol_info_to_str(uint8_t eol_info)
 }
 
 static char *stringify_mmc_health(char *buf, const char *end,
-				  const MMC_HEALTH_DATA *data)
+				  const MmcHealthData *data)
 {
 	const char *const ver_str[] = {
 		"4.0",	    /* 0 */
