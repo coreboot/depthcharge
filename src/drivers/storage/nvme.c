@@ -784,7 +784,7 @@ static int nvme_read_smart_log(BlockDevOps *me, HealthInfo *smart)
 {
 	NvmeDrive *drive = container_of(me, NvmeDrive, dev.ops);
 
-	assert(sizeof(NVME_SMART_LOG_DATA) == 512);
+	assert(sizeof(NvmeSmartLogData) == 512);
 
 	smart->type = HEALTH_NVME;
 	NVME_STATUS status = nvme_read_log_page(drive, NVME_LOG_SMART,

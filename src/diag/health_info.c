@@ -145,7 +145,7 @@ static inline int kelvin_to_celsius(int k) {
 }
 
 static char *stringify_nvme_smart(char *buf, const char *end,
-				  const NVME_SMART_LOG_DATA *smart_log)
+				  const NvmeSmartLogData *smart_log)
 {
 	int show_all = 1;
 

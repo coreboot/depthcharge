@@ -33,7 +33,7 @@ typedef struct HealthInfo {
 
 	union {
 #ifdef CONFIG_DRIVER_STORAGE_NVME
-		NVME_SMART_LOG_DATA nvme_data;
+		NvmeSmartLogData nvme_data;
 #endif
 #ifdef CONFIG_DRIVER_STORAGE_MMC
 		MMC_HEALTH_DATA mmc_data;
