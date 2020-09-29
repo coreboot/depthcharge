@@ -36,7 +36,7 @@ typedef struct HealthInfo {
 		NvmeSmartLogData nvme_data;
 #endif
 #ifdef CONFIG_DRIVER_STORAGE_MMC
-		MMC_HEALTH_DATA mmc_data;
+		MmcHealthData mmc_data;
 #endif
 	} data;
 } HealthInfo;

@@ -184,7 +184,7 @@ typedef struct {
 	uint8_t pre_eol_info;
 	uint8_t vendor_proprietary_health_report
 		[EXT_CSD_VENDOR_HEALTH_REPORT_SIZE];
-} MMC_HEALTH_DATA;
+} MmcHealthData;
 
 /*
  * EXT_CSD field definitions

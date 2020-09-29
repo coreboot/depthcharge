@@ -1554,7 +1554,7 @@ int block_mmc_get_health_info(BlockDevOps *me, HealthInfo *health)
 	if (err)
 		return 1;
 
-	MMC_HEALTH_DATA *data = &health->data.mmc_data;
+	MmcHealthData *data = &health->data.mmc_data;
 	data->csd_rev = ext_csd[EXT_CSD_REV];
 	data->device_life_time_est_type_a =
 		ext_csd[EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_A];
