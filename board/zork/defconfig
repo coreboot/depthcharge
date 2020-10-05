@@ -46,3 +46,6 @@ CONFIG_DRIVER_TPM_CR50_I2C=y
 
 # Picasso uses 32 MiB + ~2 MiB for coreboot so place the kernel at 64 MiB
 CONFIG_KERNEL_START=0x4000000
+
+# Timestamp
+CONFIG_TIMESTAMP_RAW=n
