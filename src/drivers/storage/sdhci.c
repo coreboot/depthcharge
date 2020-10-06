@@ -1072,8 +1072,6 @@ static int sdhci_pre_init(SdhciHost *host)
 
 	host->timing = MMC_TIMING_UNINITIALIZED;
 
-	sdhci_reset(host, SDHCI_RESET_ALL);
-
 	return 0;
 }
 
@@ -1081,11 +1079,14 @@ static int sdhci_init(SdhciHost *host)
 {
 	u16 reg;
 	u32 ctrl;
-	int rv = sdhci_pre_init(host);
 
-	if (rv)
-		return rv; /* The error has been already reported */
+	if (!host->mmc_ctrlr.f_max) {
+		int rv = sdhci_pre_init(host);
+		if (rv)
+			return rv; /* The error has been already reported */
+	}
 
+	sdhci_reset(host, SDHCI_RESET_ALL);
 	sdhci_set_power(host, fls(host->mmc_ctrlr.voltages) - 1);
 
 	if (host->quirks & SDHCI_QUIRK_NO_CD) {
