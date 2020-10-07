@@ -15,6 +15,16 @@
 #ifndef __DRIVERS_SOC_ALDERLAKE_H__
 #define __DRIVERS_SOC_ALDERLAKE_H__
 
+#include <stdint.h>
+
+#define PCH_DEV_SATA	PCI_DEV(0, 0x17, 0)
+#define PCH_DEV_CPU_RP0	PCI_DEV(0, 0x06, 0)
+#define PCH_DEV_PCIE0	PCI_DEV(0, 0x1c, 0)
+#define PCH_DEV_PCIE4	PCI_DEV(0, 0x1c, 4)
+#define PCH_DEV_PCIE5	PCI_DEV(0, 0x1c, 5)
+#define PCH_DEV_PCIE8	PCI_DEV(0, 0x1d, 0)
+#define PCH_DEV_GSPI0	PCI_DEV(0, 0x1e, 2)
+
 /* PCR Interface */
 #define PCH_PCR_BASE_ADDRESS	0xfd000000
 #define PCH_PCR_PID_GPIOCOM0	0x6e
