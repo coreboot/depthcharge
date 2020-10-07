@@ -73,3 +73,7 @@ config DRIVER_SOC_TIGERLAKE_PMC_DEBUG
 	bool "Enable Tigerlake PMC driver debugging"
 	default n
 	depends on DRIVER_SOC_TIGERLAKE_PMC
+
+config DRIVER_SOC_ALDERLAKE
+	bool "Alderlake SoC driver"
+	default n

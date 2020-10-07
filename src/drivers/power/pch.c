@@ -332,6 +332,11 @@ PowerOps tigerlake_power_ops = {
 	.power_off = &cannonlake_power_off
 };
 
+PowerOps alderlake_power_ops = {
+	.cold_reboot = &pch_cold_reboot,
+	.power_off = &cannonlake_power_off
+};
+
 PowerOps icelake_power_ops = {
 	.cold_reboot = &pch_cold_reboot,
 	.power_off = &icelake_power_off
