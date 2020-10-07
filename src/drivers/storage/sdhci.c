@@ -1165,18 +1165,22 @@ static int sdhci_update(BlockDevCtrlrOps *me)
 				free(host->mmc_ctrlr.media);
 				host->mmc_ctrlr.media = NULL;
 			}
+			host->detection_tries = 0;
 			return 0;
 		}
+
+		if (host->detection_tries > 3)
+			return 0;
 
 		if (!host->mmc_ctrlr.media) {
 			/*
 			 * A card is present and not set up yet. Get it ready.
 			 */
-			if (sdhci_init(host))
+			if (sdhci_init(host) ||
+			    mmc_setup_media(&host->mmc_ctrlr)) {
+				host->detection_tries++;
 				return -1;
-
-			if (mmc_setup_media(&host->mmc_ctrlr))
-				return -1;
+			}
 			host->mmc_ctrlr.media->dev.name = "SDHCI card";
 			list_insert_after
 				(&host-> mmc_ctrlr.media->dev.list_node,
