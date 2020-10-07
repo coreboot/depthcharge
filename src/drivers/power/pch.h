@@ -22,6 +22,7 @@
 #include "drivers/power/power.h"
 
 PowerOps pch_power_ops;
+PowerOps alderlake_power_ops;
 PowerOps baytrail_power_ops;
 PowerOps braswell_power_ops;
 PowerOps skylake_power_ops;
