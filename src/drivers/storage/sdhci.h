@@ -313,6 +313,7 @@ struct sdhci_host {
 	void *ioaddr;
 
 	int initialized;
+	int detection_tries;
 	unsigned platform_info;
 	unsigned quirks;
 	unsigned host_caps;
