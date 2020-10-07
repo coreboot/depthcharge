@@ -77,3 +77,4 @@ config DRIVER_SOC_TIGERLAKE_PMC_DEBUG
 config DRIVER_SOC_ALDERLAKE
 	bool "Alderlake SoC driver"
 	default n
+	select DRIVER_GPIO_ALDERLAKE

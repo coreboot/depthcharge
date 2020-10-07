@@ -14,6 +14,7 @@
 depthcharge-y += gpio.c
 depthcharge-y += sysinfo.c
 
+depthcharge-$(CONFIG_DRIVER_GPIO_ALDERLAKE) += alderlake.c
 depthcharge-$(CONFIG_DRIVER_GPIO_BAYTRAIL) += baytrail.c
 depthcharge-$(CONFIG_DRIVER_GPIO_BRASWELL) += braswell.c
 depthcharge-$(CONFIG_DRIVER_GPIO_CANNONLAKE) += cannonlake.c
