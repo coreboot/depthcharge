@@ -29,6 +29,8 @@
 #include "drivers/power/pch.h"
 #include "drivers/soc/cannonlake.h"
 #include "drivers/sound/gpio_edge_buzzer.h"
+#include "drivers/sound/i2s.h"
+#include "drivers/sound/rt1015.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/nvme.h"
@@ -38,7 +40,18 @@
 #include "drivers/tpm/tpm.h"
 #include "drivers/gpio/cannonlake.h"
 #include "drivers/gpio/gpio.h"
+#include "drivers/bus/i2c/designware.h"
+#include "drivers/bus/i2c/i2c.h"
+#include "drivers/bus/i2s/intel_common/max98357a.h"
+#include "drivers/bus/i2s/cavs-regs.h"
 #include "vboot/util/flag.h"
+
+#define AUD_VOLUME              4000
+#define AUD_BITDEPTH            16
+#define AUD_SAMPLE_RATE         48000
+#define AUD_NUM_CHANNELS        2
+#define AUD_I2C0                PCI_DEV(0, 0x15, 0)
+#define SPEED_HZ                400000
 
 /* Clock frequencies for eMMC are defined below */
 #define EMMC_CLOCK_MIN	400000
@@ -85,6 +98,16 @@ static void puff_setup_flash(void)
 	flash_set_ops(&flash->ops);
 }
 
+static int is_board_dooly(void)
+{
+	static const char * const board_str = "Dooly";
+	struct cb_mainboard *mainboard =
+		phys_to_virt(lib_sysinfo.cb_mainboard);
+
+	return strncmp(cb_mb_part_string(mainboard),
+			board_str, strlen(board_str)) == 0;
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
@@ -120,10 +143,35 @@ static int board_setup(void)
 		       __func__);
 	}
 
-	/* Audio Setup (for boot beep) - 'PWM_PP3300_BIOZZER' */
-	GpioOps *sound_gpio = &new_cannonlake_gpio_output(GPP_H22, 0)->ops;
-	GpioEdgeBuzzer *buzzer = new_gpio_edge_buzzer(sound_gpio);
-	sound_set_ops(&buzzer->ops);
+	/* Audio Setup (for boot beep) */
+	if (is_board_dooly()) {
+		/*
+		 * ALC1015 codec uses internal control to shut down, so we can
+		 * leave EN_SPK_PIN/SDB gpio pad alone.
+		 * max98357a_settings is the common I2sSettings for cAVS i2s.
+		*/
+		I2s *i2s = new_i2s_structure(&max98357a_settings, AUD_BITDEPTH,
+						0, SSP_I2S1_START_ADDRESS);
+		I2sSource *i2s_source = new_i2s_source(&i2s->ops,
+					AUD_SAMPLE_RATE, AUD_NUM_CHANNELS,
+					AUD_VOLUME);
+		SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+		/* Setup i2c */
+		DesignwareI2c *i2c = new_pci_designware_i2c(AUD_I2C0, SPEED_HZ,
+							CANNONLAKE_DW_I2C_MHZ);
+		rt1015Codec *speaker_amp = new_rt1015_codec(&i2c->ops,
+						AUD_RT1015_DEVICE_ADDR);
+
+		list_insert_after(&speaker_amp->component.list_node,
+				&sound_route->components);
+		sound_set_ops(&sound_route->ops);
+	} else {
+		/* 'PWM_PP3300_BIOZZER' */
+		GpioOps *sound_gpio =
+			&new_cannonlake_gpio_output(GPP_H22, 0)->ops;
+		GpioEdgeBuzzer *buzzer = new_gpio_edge_buzzer(sound_gpio);
+		sound_set_ops(&buzzer->ops);
+	}
 
 	/* SATA AHCI */
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 0x17, 0));
