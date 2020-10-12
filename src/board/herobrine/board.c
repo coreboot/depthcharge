@@ -15,11 +15,14 @@
 
 #include <assert.h>
 #include <libpayload.h>
-
 #include "base/init_funcs.h"
 #include "drivers/gpio/gpio.h"
 #include "vboot/util/flag.h"
 #include "boot/fit.h"
+#include "drivers/storage/sdhci_msm.h"
+
+#define SDC1_HC_BASE          0x007C4000
+#define SDC1_TLMM_CFG_ADDR    0xF1B3000
 
 static int board_setup(void)
 {
@@ -27,6 +30,18 @@ static int board_setup(void)
 	flag_replace(FLAG_LIDSW, new_gpio_high());
 	flag_replace(FLAG_ECINRW,  new_gpio_high());
 	flag_replace(FLAG_PWRSW, new_gpio_low());
+
+	/*eMMC support */
+	u32 emmc_platfm_flags = SDHCI_PLATFORM_EMMC_1V8_POWER |
+				SDHCI_PLATFORM_NO_EMMC_HS200 |
+				SDHCI_PLATFORM_SUPPORTS_HS400ES;
+	SdhciHost *emmc;
+	emmc = new_sdhci_msm_host(SDC1_HC_BASE,
+			emmc_platfm_flags,
+			384*MHz,
+			SDC1_TLMM_CFG_ADDR,NULL);
+	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+		&fixed_block_dev_controllers);
 
 	return 0;
 }
