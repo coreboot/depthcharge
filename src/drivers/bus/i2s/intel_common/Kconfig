@@ -20,6 +20,11 @@ config DRIVER_BUS_I2S_INTEL_COMMON_MAX98357A
 	depends on DRIVER_BUS_I2S_INTEL_COMMON_I2S
 	default n
 
+config DRIVER_BUS_I2S_INTEL_COMMON_MAX98390
+	bool "Common Max98390 I2S driver"
+	depends on DRIVER_BUS_I2S_INTEL_COMMON_I2S
+	default n
+
 config INTEL_COMMON_I2S_CAVS_1_8
 	bool "Intel cAVS1.8 specification"
 	default n
