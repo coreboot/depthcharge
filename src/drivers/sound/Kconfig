@@ -54,6 +54,10 @@ config DRIVER_SOUND_MAX98373
 	bool "MAX98373 codec driver"
 	default n
 
+config DRIVER_SOUND_MAX98390
+	bool "MAX98390 codec driver"
+	default n
+
 config DRIVER_SOUND_MAX98927
 	bool "MAX98927 codec driver"
 	default n
