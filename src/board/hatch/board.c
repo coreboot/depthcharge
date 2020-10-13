@@ -36,11 +36,13 @@
 #include "drivers/tpm/tpm.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/max98357a.h"
+#include "drivers/sound/max98390.h"
 #include "drivers/gpio/cannonlake.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/bus/i2s/intel_common/max98357a.h"
+#include "drivers/bus/i2s/intel_common/max98390.h"
 #include "drivers/bus/i2s/cavs_1_8-regs.h"
 #include "drivers/sound/rt1011.h"
 
@@ -101,6 +103,15 @@ static int is_board_helios(void)
 			helios_str, strlen(helios_str)) == 0;
 }
 
+static int is_board_nightfury(void)
+{
+	static const char * const nightfury_str = "Nightfury";
+	struct cb_mainboard *mainboard = lib_sysinfo.mainboard;
+
+	return strncmp(cb_mb_part_string(mainboard),
+			nightfury_str, strlen(nightfury_str)) == 0;
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
@@ -146,6 +157,26 @@ static int board_setup(void)
 
 		list_insert_after(&codec->component.list_node,
 				&sound_route->components);
+		sound_set_ops(&sound_route->ops);
+	} else if (is_board_nightfury()) {
+		GpioOps *sdmode =
+			&new_cannonlake_gpio_output(SDMODE_PIN, 0)->ops;
+		I2s *i2s = new_i2s_structure(&max98390_settings, 16, sdmode,
+				SSP_I2S1_START_ADDRESS);
+		I2sSource *i2s_source = new_i2s_source(&i2s->ops, 48000, 2,
+							AUD_VOLUME);
+		/* Connect the Codec to the I2S source */
+		SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+
+		DesignwareI2c *i2c = new_pci_designware_i2c(AUD_I2C4,
+					400000, CANNONLAKE_DW_I2C_MHZ);
+		Max98390Codec *speaker_amp0 = new_max98390_codec(&i2c->ops, 0x38);
+		Max98390Codec *speaker_amp1 = new_max98390_codec(&i2c->ops, 0x39);
+
+		list_insert_after(&speaker_amp1->component.list_node,
+			&sound_route->components);
+		list_insert_after(&speaker_amp0->component.list_node,
+			&sound_route->components);
 		sound_set_ops(&sound_route->ops);
 	} else {
 		GpioOps *sdmode =
