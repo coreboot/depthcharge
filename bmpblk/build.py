@@ -50,9 +50,80 @@ NEWLINE_REPLACEMENT = r'\1 \2'
 CRLF_PATTERN = re.compile(r'\r\n')
 MULTIBLANK_PATTERN = re.compile(r'   *')
 
+GLYPH_FONT = 'Noto Sans Mono'
+
 
 class DataError(Exception):
   pass
+
+
+def convert_text_to_png(locale, input_file, font, margin, output_dir,
+                        options=None):
+  """Converts text files into PNG image files.
+
+  Args:
+    locale: Locale (language) to select implicit rendering options. None for
+      locale-independent strings.
+    input_file: Path of input text file.
+    font: Font spec.
+    margin: CSS-style margin.
+    output_dir: Directory to generate image files.
+    options: List of other options to be added.
+  """
+  name, _ = os.path.splitext(os.path.basename(input_file))
+  command = [TXT_TO_PNG_SVG, '--outdir=%s' % output_dir]
+  if locale:
+    command.append('--lan=%s' % locale)
+  if font:
+    command.append("--font='%s'" % font)
+  font_size = os.getenv('FONTSIZE')
+  if font_size:
+    command.append('--point=%r' % font_size)
+  if margin:
+    command.append('--margin="%s"' % margin)
+  # TODO(b/159399377): Set different widths for titles and descriptions.
+  # Currently only wrap lines for descriptions.
+  if '_desc' in name:
+    # Without the --width option set, the minimum height of the output SVG
+    # image is roughly 22px (for locale 'en'). With --width=WIDTH passed to
+    # pango-view, the width of the output seems to always be (WIDTH * 4 / 3),
+    # regardless of the font being used. Therefore, set the max_width in
+    # points as follows to prevent drawing from exceeding canvas boundary in
+    # depthcharge runtime.
+    # Some of the numbers below are from depthcharge:
+    # - 1000: UI_SCALE
+    # - 50: UI_MARGIN_H
+    # - 228: UI_REC_QR_SIZE
+    # - 24: UI_REC_QR_MARGIN_H
+    # - 24: UI_DESC_TEXT_HEIGHT
+    if name == 'rec_phone_step2_desc':
+      max_width = 1000 - 50 * 2 - 228 - 24 * 2
+    else:
+      max_width = 1000 - 50 * 2
+    max_width_pt = int(22 * max_width / 24 / (4 / 3))
+    command.append('--width=%d' % max_width_pt)
+  if options:
+    command.extend(options)
+  command.append(input_file)
+
+  return subprocess.call(' '.join(command), shell=True,
+                         stdout=subprocess.PIPE) == 0
+
+
+def convert_glyphs():
+  """Converts glyphs of ascii characters."""
+  font_dir = os.path.join(STAGE_DIR, 'font')
+  os.makedirs(font_dir, exist_ok=True)
+  # Remove the extra whitespace at the top/bottom within the glyphs
+  margin = '-3 0 -1 0'
+  options = ['--color="#ffffff"', '--bgcolor="#000000"']
+  for c in range(ord(' '), ord('~') + 1):
+    txt_file = os.path.join(font_dir, f'idx{c:03d}_{c:02x}.txt')
+    with open(txt_file, 'w', encoding='ascii') as f:
+      f.write(chr(c))
+      f.write('\n')
+    # TODO(b/163109632): Parallelize the conversion of glyphs
+    convert_text_to_png(None, txt_file, GLYPH_FONT, margin, font_dir, options)
 
 
 def _load_locale_json_file(locale, json_dir):
@@ -144,56 +215,6 @@ def build_text_files(inputs, files, output_dir):
       create_file(file_name, contents, output_dir)
 
 
-def convert_text_to_png(locale, input_file, style, font, output_dir):
-  """Converts text files into PNG image files.
-
-  Args:
-    locale: Locale (language) to select implicit rendering options. None for
-      locale-independent strings.
-    input_file: Path of input text file.
-    style: Style options.
-    font: Font spec.
-    output_dir: Directory to generate image files.
-  """
-  name, _ = os.path.splitext(os.path.basename(input_file))
-  command = [TXT_TO_PNG_SVG, '--outdir=%s' % output_dir]
-  if locale:
-    command.append('--lan=%s' % locale)
-  if style:
-    command.append(style)
-  if font:
-    command.append("--font='%s'" % font)
-  font_size = os.getenv('FONTSIZE')
-  if font_size:
-    command.append('--point=%r' % font_size)
-  command.append('--margin="0 0"')
-  # TODO(b/159399377): Set different widths for titles and descriptions.
-  # Currently only wrap lines for descriptions.
-  if '_desc' in name:
-    # Without the --width option set, the minimum height of the output SVG
-    # image is roughly 22px (for locale 'en'). With --width=WIDTH passed to
-    # pango-view, the width of the output seems to always be (WIDTH * 4 / 3),
-    # regardless of the font being used. Therefore, set the max_width in
-    # points as follows to prevent drawing from exceeding canvas boundary in
-    # depthcharge runtime.
-    # Some of the numbers below are from depthcharge:
-    # - 1000: UI_SCALE
-    # - 50: UI_MARGIN_H
-    # - 228: UI_REC_QR_SIZE
-    # - 24: UI_REC_QR_MARGIN_H
-    # - 24: UI_DESC_TEXT_HEIGHT
-    if name == 'rec_phone_step2_desc':
-      max_width = 1000 - 50 * 2 - 228 - 24 * 2
-    else:
-      max_width = 1000 - 50 * 2
-    max_width_pt = int(22 * max_width / 24 / (4 / 3))
-    command.append('--width=%d' % max_width_pt)
-  command.append(input_file)
-
-  return subprocess.call(' '.join(command), shell=True,
-                         stdout=subprocess.PIPE) == 0
-
-
 def convert_localized_strings(formats, locales):
   """Converts localized strings for |locales|."""
   # Make a copy of formats to avoid modifying it
@@ -255,9 +276,10 @@ def convert_localized_strings(formats, locales):
     results += [pool.apply_async(convert_text_to_png,
                                  (locale,
                                   os.path.join(output_dir, '%s.txt' % name),
-                                  styles.get(name),
                                   fonts.get(locale, default_font),
-                                  output_dir))
+                                  '0',
+                                  output_dir,
+                                  [styles.get(name)]))
                 for name in formats[KEY_FILES]]
   pool.close()
   if json_dir is not None:
@@ -280,6 +302,10 @@ def main(argv):
   with open(FORMAT_FILE, encoding='utf-8') as f:
     formats = yaml.load(f)
 
+  # Convert glyphs
+  print('Converting glyphs...')
+  convert_glyphs()
+
   # Convert generic (locale-independent) strings
   styles = formats[KEY_STYLES]
   fonts = formats[KEY_FONTS]
@@ -288,8 +314,8 @@ def main(argv):
   for input_file in glob.glob(os.path.join(STRINGS_DIR, '*.txt')):
     name, _ = os.path.splitext(os.path.basename(input_file))
     style = styles.get(name)
-    if not convert_text_to_png(None, input_file, style, default_font,
-                               STAGE_DIR):
+    if not convert_text_to_png(None, input_file, default_font, '0',
+                               STAGE_DIR, options=[style]):
       exit('Failed to convert text %s' % input_file)
 
   # Convert localized strings
