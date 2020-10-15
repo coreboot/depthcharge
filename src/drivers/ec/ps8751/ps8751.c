@@ -146,6 +146,10 @@
 #define PARADE_PS8751_PRODUCT_ID	0x8751
 #define PARADE_PS8755_PRODUCT_ID	0x8755
 #define PARADE_PS8705_PRODUCT_ID	0x8705
+/* TODO(b/171422252): Remove the default device ID */
+#define PARADE_PS8705_DEFAULT_DEVICE_ID	0x0001
+#define PARADE_PS8705_A2_DEVICE_ID	0x0004
+#define PARADE_PS8705_A3_DEVICE_ID	0x0005
 #define PARADE_PS8805_BROKEN_PRODUCT_ID	0x8803
 #define PARADE_PS8805_PRODUCT_ID	0x8805
 #define PARADE_PS8815_PRODUCT_ID	0x8815
@@ -1510,9 +1514,16 @@ static const VbootAuxfwOps ps8755_fw_ops = {
 	.update_image = ps8751_update_image,
 };
 
-static const VbootAuxfwOps ps8705_fw_ops = {
+static const VbootAuxfwOps ps8705_a2_fw_ops = {
 	.fw_image_name = "ps8705_a2.bin",
 	.fw_hash_name = "ps8705_a2.hash",
+	.check_hash = ps8751_check_hash,
+	.update_image = ps8751_update_image,
+};
+
+static const VbootAuxfwOps ps8705_a3_fw_ops = {
+	.fw_image_name = "ps8705_a3.bin",
+	.fw_hash_name = "ps8705_a3.hash",
 	.check_hash = ps8751_check_hash,
 	.update_image = ps8751_update_image,
 };
@@ -1577,17 +1588,28 @@ Ps8751 *new_ps8755(CrosECTunnelI2c *bus, int ec_pd_id)
 	return me;
 }
 
-Ps8751 *new_ps8705(CrosECTunnelI2c *bus, int ec_pd_id)
+Ps8751 *new_ps8705(CrosECTunnelI2c *bus, int ec_pd_id,
+		   const VbootAuxfwOps *fw_ops)
 {
 	Ps8751 *me = xzalloc(sizeof(*me));
 
 	me->bus = bus;
 	me->ec_pd_id = ec_pd_id;
-	me->fw_ops = ps8705_fw_ops;
+	me->fw_ops = *fw_ops;
 	me->chip_type = CHIP_PS8705;
 	snprintf(me->chip_name, sizeof(me->chip_name), "ps8705.%d", ec_pd_id);
 
 	return me;
+}
+
+Ps8751 *new_ps8705_a2(CrosECTunnelI2c *bus, int ec_pd_id)
+{
+	return new_ps8705(bus, ec_pd_id, &ps8705_a2_fw_ops);
+}
+
+Ps8751 *new_ps8705_a3(CrosECTunnelI2c *bus, int ec_pd_id)
+{
+	return new_ps8705(bus, ec_pd_id, &ps8705_a3_fw_ops);
 }
 
 Ps8751 *new_ps8805(CrosECTunnelI2c *bus, int ec_pd_id)
@@ -1640,7 +1662,17 @@ static const VbootAuxfwOps *new_ps8xxx_from_chip_info(
 		ps8751 = new_ps8755(NULL, ec_pd_id);
 		break;
 	case PARADE_PS8705_PRODUCT_ID:
-		ps8751 = new_ps8705(NULL, ec_pd_id);
+		switch (r->device_id) {
+		case PARADE_PS8705_A2_DEVICE_ID:
+			ps8751 = new_ps8705_a2(NULL, ec_pd_id);
+			break;
+		case PARADE_PS8705_DEFAULT_DEVICE_ID:
+		case PARADE_PS8705_A3_DEVICE_ID:
+			ps8751 = new_ps8705_a3(NULL, ec_pd_id);
+			break;
+		default:
+			return NULL;
+		}
 		break;
 	case PARADE_PS8805_PRODUCT_ID:
 		ps8751 = new_ps8805(NULL, ec_pd_id);
