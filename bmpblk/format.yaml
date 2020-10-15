@@ -9,9 +9,7 @@ locales: [ ar, bg, ca, cs, da, de, el, en, es, es-419, et, fa, fi, fil, fr,
 
 files:
   # pre-generated
-  lang_header: [language]
-  lang_menu: [language]
-  lang_menu_focus: [language]
+  language:
   # firmware sync
   firmware_sync_title:
   firmware_sync_desc:
@@ -124,15 +122,15 @@ aliases:
   - &base_color '--color=CCCCCC --bgcolor=202124'
   - &dark_color '--color=9AA0A6 --bgcolor=202124'
   # The colors of buttons, links, and help texts will be adjusted at runtime.
+  - &lang_color '--color=FFFFFF --bgcolor=000000'
   - &button_color '--color=FFFFFF --bgcolor=000000'
   - &link_color '--color=FFFFFF --bgcolor=000000'
   - &help_color '--color=FFFFFF --bgcolor=000000'
 
 styles:
   # pre-generated
-  lang_header: '--color=CCCCCC --bgcolor=161719'
-  lang_menu: '--color=CCCCCC --bgcolor=2D2E30'
-  lang_menu_focus: '--color=2D2E30 --bgcolor=8AB4F8'
+  language: *lang_color
+  # firmware sync
   firmware_sync_title: *base_color
   firmware_sync_desc: *base_color
   # broken screen

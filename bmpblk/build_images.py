@@ -109,7 +109,7 @@ class Converter(object):
   DEFAULT_ASSET_SCALE = (0, 30)
   DEFAULT_TEXT_SCALE = (0, 24)
   DEFAULT_FONT_SCALE = (0, 20)
-  LANG_MENU_SCALE = (0, 26)
+  LANG_SCALE = (0, 26)
   ICON_SCALE = (0, 45)
   STEP_ICON_SCALE = (0, 28)
   TITLE_SCALE = (0, 42)
@@ -151,8 +151,7 @@ class Converter(object):
   }
 
   TEXT_SCALES = {
-    'lang_menu': LANG_MENU_SCALE,
-    'lang_menu_focus': LANG_MENU_SCALE,
+    'language': LANG_SCALE,
     'firmware_sync_title': TITLE_SCALE,
     'broken_title': TITLE_SCALE,
     'adv_options_title': TITLE_SCALE,
@@ -526,16 +525,11 @@ class Converter(object):
     for locale_info in self.locales:
       locale = locale_info.code
       ro_locale_dir = os.path.join(self.output_dir, LOCALE_RO_DIR, locale)
-      for old_name, new_name in [
-        ('lang_header', 'lang_header_%s' % locale),
-        ('lang_menu', 'lang_menu_%s' % locale),
-        ('lang_menu_focus', 'lang_menu_%s_focus' % locale),
-      ]:
-        old_file = os.path.join(ro_locale_dir, old_name + '.bmp')
-        new_file = os.path.join(self.output_dir, new_name + '.bmp')
-        if os.path.exists(new_file):
-          raise BuildImageError('File already exists: ' % new_file)
-        shutil.move(old_file, new_file)
+      old_file = os.path.join(ro_locale_dir, 'language.bmp')
+      new_file = os.path.join(self.output_dir, 'language_%s.bmp' % locale)
+      if os.path.exists(new_file):
+        raise BuildImageError('File already exists: %s' % new_file)
+      shutil.move(old_file, new_file)
 
   def convert_fonts(self):
     """Convert font images"""
