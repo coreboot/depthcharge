@@ -49,10 +49,11 @@ vb2_error_t ui_draw_language_header(const struct ui_locale *locale,
 	x += w + UI_LANG_ICON_MARGIN_H;
 
 	/* Draw language text */
-	VB2_TRY(ui_get_language_name_bitmap(locale->code, 1, 0, &bitmap));
-	VB2_TRY(ui_draw_bitmap(&bitmap, x, y_center,
-			       UI_SIZE_AUTO, UI_LANG_TEXT_HEIGHT,
-			       flags, reverse));
+	VB2_TRY(ui_get_language_name_bitmap(locale->code, &bitmap));
+	VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,
+				      UI_SIZE_AUTO, UI_LANG_TEXT_HEIGHT,
+				      &ui_color_lang_header_bg, &ui_color_fg,
+				      flags, reverse));
 	x += UI_LANG_TEXT_WIDTH;
 
 	/* Draw dropdown arrow */

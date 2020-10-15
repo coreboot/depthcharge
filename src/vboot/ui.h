@@ -373,14 +373,11 @@ vb2_error_t ui_get_bitmap(const char *image_name, const char *locale_code,
  * Get bitmap of language name.
  *
  * @param locale_code	Language code of locale.
- * @param for_header	1 for dropdown header and 0 for dropdown menu content.
- * @param focused	1 for focused and 0 for non-focused.
  * @param bitmap	Bitmap struct to be filled.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
 vb2_error_t ui_get_language_name_bitmap(const char *locale_code,
-					int for_header, int focused,
 					struct ui_bitmap *bitmap);
 
 /*
