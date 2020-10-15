@@ -191,3 +191,8 @@ vb2_error_t vb2ex_commit_data(struct vb2_context *ctx)
 
 	return rv;
 }
+
+const char *vb2ex_get_mainboard_name(void)
+{
+	return cb_mb_part_string(phys_to_virt(lib_sysinfo.cb_mainboard));
+}
