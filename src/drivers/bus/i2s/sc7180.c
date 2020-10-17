@@ -23,6 +23,16 @@
 #define ENABLE				0x1
 #define RESET				(0x1 << 31)
 
+#define GDSC_EN_REST_WAIT_MASK		(0xf << 20)
+#define GDSC_EN_FEW_WAIT_MASK		(0xf << 16)
+#define GDSC_CLK_DIS_WAIT_MASK		(0xf << 12)
+#define GDSC_SW_OVERRIDE_MASK		(0x1 << 2)
+#define GDSC_HW_CONTROL_MASK		(0x1 << 1)
+#define GDSC_RETAIN_FF_ENABLE		(0x1 << 11)
+#define GDSC_EN_REST_WAIT_VAL		(0x2 << 20)
+#define GDSC_EN_FEW_WAIT_VAL		(0x8 << 16)
+#define GDSC_CLK_DIS_WAIT_VAL		(0x2 << 12)
+
 #define DIG_PLL_L_VALUE			0x20
 #define PLLOUT_MAIN			1
 #define PLLOUT_ODD			(0x1 << 2)
@@ -100,6 +110,14 @@ static void sc7180_init_registers(Sc7180I2s *bus)
 
 	clrbits_le32(&sc7180_reg->audio_hm_gdscr, ENABLE);
 	clrbits_le32(&sc7180_reg->pdc_hm_gdscr, ENABLE);
+	clrbits_le32(&sc7180_reg->core_hm_gdscr, GDSC_HW_CONTROL_MASK |
+						 GDSC_SW_OVERRIDE_MASK |
+						 GDSC_EN_REST_WAIT_MASK |
+						 GDSC_EN_FEW_WAIT_MASK |
+						 GDSC_CLK_DIS_WAIT_MASK);
+	setbits_le32(&sc7180_reg->core_hm_gdscr, GDSC_EN_REST_WAIT_VAL |
+						 GDSC_EN_FEW_WAIT_VAL |
+						 GDSC_CLK_DIS_WAIT_VAL);
 	clrbits_le32(&sc7180_reg->core_hm_gdscr, ENABLE);
 	setbits_le32(&sc7180_reg->core_hm_gdscr, GDSC_RETAIN_FF_ENABLE);
 
@@ -115,6 +133,7 @@ static void sc7180_init_registers(Sc7180I2s *bus)
 				CFG_SRC_SEL | CFG_MODE);
 
 	write32(&sc7180_reg->bit_cbcr[bus->device_id].lpaif_cmd_rgcr, ENABLE);
+	setbits_le32(&sc7180_reg->core_hm_gdscr, GDSC_RETAIN_FF_ENABLE);
 }
 
 static int lpass_devsetup(Sc7180I2s *bus, uintptr_t buffer, uint32_t length)
