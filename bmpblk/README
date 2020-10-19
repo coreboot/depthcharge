@@ -95,7 +95,7 @@ It is now easier to build bmpblk INSIDE chroot. To build images for board $BOARD
 with default locales, do:
 
   (chroot) cd ~/trunk/src/platform/bmpblk
-  (chroot) make $BOARD
+  (chroot) BOARD="$BOARD" make
 
 The default generated output files are in ./build/$BOARD. To override output
 folder, just specify OUTPUT=/path_to_output in Make variables.
@@ -105,7 +105,7 @@ Note if you want to override the default locale list defined in boards.yaml
 to try with all available locales), add LOCALES="<locale-list>" when running
 make. For example:
 
-  (chroot) make LOCALES="en ja es" make $BOARD
+  (chroot) LOCALES="en ja es" BOARD="$BOARD" make
 
 -------------------
 Adding a new target:
@@ -190,7 +190,7 @@ falco,peppy,wolf,leon:
 
 Now to build images for the new target (as $BOARD) run:
 
-  $ make "$BOARD"
+  $ BOARD="$BOARD" make
 
 
 ------------------------------------

@@ -6,17 +6,18 @@
 
 OUTPUT ?= build
 STAGE ?= $(OUTPUT)/.stage
-FONTSIZE = 14
+FONT_SIZE = 14
 PHYSICAL_PRESENCE ?= keyboard
 ARCHIVER ?= /usr/bin/archive
 
 build:
 	@[ ! -z "$(BOARD)" ] || (echo "Usage: BOARD=\$$BOARD make"; exit 1)
 	mkdir -p "$(STAGE)"
-	LOCALES="$(LOCALES)" FONTSIZE="$(FONTSIZE)" ./build.py
-	LOCALES="$(LOCALES)" OUTPUT="$(OUTPUT)" \
+	LOCALES="$(LOCALES)" \
+		OUTPUT="$(OUTPUT)" \
+		FONT_SIZE="$(FONT_SIZE)" \
 		PHYSICAL_PRESENCE="$(PHYSICAL_PRESENCE)" \
-		./build_images.py "$(BOARD)"
+		./build.py "$(BOARD)"
 
 archive:
 	./archive_images.py -a "$(ARCHIVER)" -d "$(OUTPUT)"
