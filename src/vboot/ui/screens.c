@@ -185,6 +185,12 @@ static vb2_error_t draw_language_select(const struct ui_state *state,
 	 */
 	VB2_TRY(ui_draw_default(state, prev_state));
 
+	num_lang = ui_get_locale_count();
+	if (num_lang == 0) {
+		UI_ERROR("Locale count is 0\n");
+		return VB2_ERROR_UI_INVALID_ARCHIVE;
+	}
+
 	x_begin = UI_MARGIN_H;
 	x_end = UI_SCALE - UI_MARGIN_H;
 	box_width = x_end - x_begin;
@@ -194,16 +200,10 @@ static vb2_error_t draw_language_select(const struct ui_state *state,
 	y_end = UI_SCALE - UI_MARGIN_BOTTOM - UI_FOOTER_HEIGHT -
 		UI_FOOTER_MARGIN_TOP;
 	num_lang_per_page = (y_end - y_begin) / box_height;
-	menu_height = box_height * num_lang_per_page;
+	menu_height = box_height * MIN(num_lang_per_page, num_lang);
 	y_end = y_begin + menu_height;  /* Correct for integer division error */
 
 	/* Get current locale_id */
-	num_lang = ui_get_locale_count();
-	if (num_lang == 0) {
-		UI_ERROR("Locale count is 0\n");
-		return VB2_ERROR_UI_INVALID_ARCHIVE;
-	}
-
 	locale_id = state->selected_item;
 	if (locale_id >= num_lang) {
 		UI_WARN("selected_item (%u) exceeds number of locales (%u); "
