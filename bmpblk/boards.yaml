@@ -61,6 +61,11 @@ x86-generic,amd64-generic:
 
 arm-generic,arm64-generic,mips-generic:
 
+asurada:
+  # 1366x768, boots recovery image on USB ports or SD card.
+  screen:      [1366, 768]
+  text_colors: 7
+
 nyan,nyan_big:
 
 veyron_pinky,veyron_jerry:
