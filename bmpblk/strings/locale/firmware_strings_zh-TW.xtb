@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">你的使用者資料將在這項程序中遭到清除。</translation>
 <translation id="4002335453596341558">下一頁</translation>
 <translation id="4152977630022273265">請確認你的外部磁碟包含有效的 Chrome 作業系統映像檔，並且在準備就緒時重新插入磁碟。</translation>
+<translation id="4242315717915611349">取消並返回</translation>
 <translation id="4410491068110727276">請使用音量按鈕向上或向下瀏覽。</translation>
 <translation id="4497270882390086583">你可以使用 USB 隨身碟等外部儲存裝置或 Android 手機進行還原。</translation>
 <translation id="4773280894882892048">偵錯資訊</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">準備還原裝置。你需要：</translation>
 <translation id="635783852215913562">請使用方向鍵向上或向下瀏覽。</translation>
 <translation id="6448938863276324156">你可以使用 USB 隨身碟等外部儲存裝置進行還原。</translation>
+<translation id="6606028407279698587">完整的記憶體檢查</translation>
 <translation id="6972383785688794804">上一頁</translation>
 <translation id="7065553583078443466">選取替代的系統啟動載入程式</translation>
 <translation id="7126032376876878896">請使用電源按鈕選取所需選項。</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">插入包含 Chrome 作業系統映像檔的外部磁碟。系統將自動啟動該磁碟。</translation>
 <translation id="7187861267433191629">系統正在套用重大更新。</translation>
 <translation id="7236073510654217175">返回安全模式</translation>
+<translation id="7342794948394983731">診斷工具</translation>
 <translation id="7352651011704765696">發生錯誤</translation>
 <translation id="7365121631770711723">2. 可連結手機和這部裝置的 USB 傳輸線</translation>
 <translation id="7420576176825630019">啟用開發人員模式</translation>
 <translation id="7567414219298075193">如要嘗試修正問題，請啟動還原程序。請移除所有外接裝置，然後按住還原按鈕、按下並放開電源按鈕 ( ⏻ )，再放開還原按鈕。</translation>
 <translation id="7638747526774710781">1. 在另外一部裝置上前往 google.com/chromeos/recovery，並安裝 Chrome 擴充功能</translation>
 <translation id="7658239707568436148">取消</translation>
+<translation id="7806571448308475633">快速記憶體檢查</translation>
 <translation id="7939062555109487992">進階選項</translation>
 <translation id="8011335065515332253">如果逾時，裝置會自動從下列選項啟動。</translation>
 <translation id="8027199195649765326">按下 Chromebox 上的還原按鈕會啟用開發人員模式，或選擇 [取消] 以維持受保護的狀態。</translation>
 <translation id="8101391381992690790">請確認你的外部磁碟包含有效的復原映像檔，並且在準備就緒時重新插入磁碟。</translation>
 <translation id="8131740175452115882">確認</translation>
 <translation id="8199613549817472219">我們會逐步引導你完成還原程序</translation>
+<translation id="8377165353588213941">這已經是最後一頁</translation>
+<translation id="8720490351198901261">這已經是第一頁</translation>
 <translation id="8789686976863801203">你正在嘗試啟用開發人員模式</translation>
+<translation id="885701979325669005">儲存空間</translation>
 <translation id="9040266428058825675">如果外部儲存空間裝置包含所需的復原映像檔，將其插入這部裝置即可啟動還原程序。</translation>
+<translation id="9058669020755173331">選取要檢查的元件。</translation>
 </translationbundle>

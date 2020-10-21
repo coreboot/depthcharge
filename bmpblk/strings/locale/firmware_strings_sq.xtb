@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">Të dhënat e tua të përdoruesit do të fshihen gjatë procesit.</translation>
 <translation id="4002335453596341558">Faqja poshtë</translation>
 <translation id="4152977630022273265">Sigurohu që disku yt i jashtëm të ketë një imazh të vlefshëm të Chrome OS dhe rifut diskun kur të jesh gati.</translation>
+<translation id="4242315717915611349">Anulo dhe kthehu pas</translation>
 <translation id="4410491068110727276">Përdor butonat e volumit për të naviguar lart ose poshtë.</translation>
 <translation id="4497270882390086583">Mund të rikuperosh duke përdorur një hapësirë ruajtëse të jashtme, si p.sh. një njësi USB ose duke përdorur telefonin tënd Android.</translation>
 <translation id="4773280894882892048">Informacionet e korrigjimit</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Bëhu gati për rikuperimin e pajisjes sate. Do të të duhet:</translation>
 <translation id="635783852215913562">Përdor tastet e shigjetave për të naviguar lart ose poshtë.</translation>
 <translation id="6448938863276324156">Mund të rikuperosh duke përdorur një hapësirë ruajtëse të jashtme, si p.sh. një njësi USB.</translation>
+<translation id="6606028407279698587">Kontrolli i plotë i memories</translation>
 <translation id="6972383785688794804">Faqja lart</translation>
 <translation id="7065553583078443466">Zgjidh një ngarkues alternativ të sistemit</translation>
 <translation id="7126032376876878896">Përdor butonin e energjisë për të zgjedhur një opsion.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Lidh diskun tënd të jashtëm me një imazh të Chrome OS. Ai do të fillojë automatikisht.</translation>
 <translation id="7187861267433191629">Sistemi yt po zbaton një përditësim kritik.</translation>
 <translation id="7236073510654217175">Kthehu në modalitetin e sigurt</translation>
+<translation id="7342794948394983731">Veglat e diagnostikimit</translation>
 <translation id="7352651011704765696">Diçka shkoi keq</translation>
 <translation id="7365121631770711723">2. Një kabllo USB që lidh telefonin tënd dhe këtë pajisje</translation>
 <translation id="7420576176825630019">Aktivizo modalitetin si zhvillues</translation>
 <translation id="7567414219298075193">Për të provuar ta rregullosh problemin, fillo procesin e rikuperimit. Hiq të gjitha pajisjet e lidhura dhe më pas mbaj të shtypur butonin e "Rikuperimit", shtyp dhe lësho butonin e "Energjisë" ( ⏻ ) dhe lësho butonin e "Rikuperimit".</translation>
 <translation id="7638747526774710781">1. Shko te google.com/chromeos/recovery në një pajisje tjetër dhe instalo shtesën e Chrome</translation>
 <translation id="7658239707568436148">Anulo</translation>
+<translation id="7806571448308475633">Kontrolli i shpejtë i memories</translation>
 <translation id="7939062555109487992">Opsionet e përparuara</translation>
 <translation id="8011335065515332253">Pas kohës së pritjes, pajisja do të ndizet automatikisht nga përzgjedhja e mëposhtme.</translation>
 <translation id="8027199195649765326">Shtyp butonin e "Rikuperimit" në Chromebox për të aktivizuar modalitetin si zhvillues ose zgjidh "Anulo" për të qëndruar i mbrojtur.</translation>
 <translation id="8101391381992690790">Sigurohu që disku yt i jashtëm të ketë një imazh të vlefshëm rikuperimi dhe rifut diskun kur të jesh gati.</translation>
 <translation id="8131740175452115882">Konfirmo</translation>
 <translation id="8199613549817472219">Le të të shoqërojmë përmes procesit të rikuperimit</translation>
+<translation id="8377165353588213941">Ke arritur në fund</translation>
+<translation id="8720490351198901261">Ke arritur në krye</translation>
 <translation id="8789686976863801203">Po përpiqesh të aktivizosh modalitetin si zhvillues</translation>
+<translation id="885701979325669005">Hapësira ruajtëse</translation>
 <translation id="9040266428058825675">Nëse pajisja ruajtëse e jashtme është gati me një imazh rikuperimi, lidhe me këtë pajisje për të nisur procesin e rikuperimit.</translation>
+<translation id="9058669020755173331">Zgjidh përbërësin që dëshiron të kontrollosh.</translation>
 </translationbundle>

@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">O processo vai limpar os seus dados de utilizador.</translation>
 <translation id="4002335453596341558">Página para baixo</translation>
 <translation id="4152977630022273265">Certifique-se de que o disco externo contém uma imagem do Chrome OS válida e volte a inseri-lo quando estiver pronto.</translation>
+<translation id="4242315717915611349">Cancelar e voltar</translation>
 <translation id="4410491068110727276">Utilize os botões de volume para navegar para cima ou para baixo.</translation>
 <translation id="4497270882390086583">Pode efetuar a recuperação com uma unidade de armazenamento externo, como uma unidade USB, ou através do seu telemóvel Android.</translation>
 <translation id="4773280894882892048">Informações de depuração</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Prepare-se para recuperar o seu dispositivo. Necessita de:</translation>
 <translation id="635783852215913562">Utilize as teclas de seta para navegar para cima ou para baixo.</translation>
 <translation id="6448938863276324156">Pode efetuar a recuperação com uma unidade de armazenamento externo, como uma unidade USB.</translation>
+<translation id="6606028407279698587">Verificação completa da memória</translation>
 <translation id="6972383785688794804">Página para cima</translation>
 <translation id="7065553583078443466">Selecionar carregador de arranque alternativo</translation>
 <translation id="7126032376876878896">Utilize o botão ligar/desligar para selecionar uma opção.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Ligue o disco externo com uma imagem do Chrome OS. Irá arrancar automaticamente.</translation>
 <translation id="7187861267433191629">O seu sistema está a aplicar uma atualização crítica.</translation>
 <translation id="7236073510654217175">Regressar ao modo seguro</translation>
+<translation id="7342794948394983731">Ferramentas de diagnóstico</translation>
 <translation id="7352651011704765696">Algo correu mal</translation>
 <translation id="7365121631770711723">2. Um cabo USB que ligue o seu telemóvel a este dispositivo.</translation>
 <translation id="7420576176825630019">Ativar modo de programador</translation>
 <translation id="7567414219298075193">Para tentar corrigir o problema, inicie o processo de recuperação. Remova todos os dispositivos ligados e, em seguida, prima sem soltar o botão Recuperação, prima e solte o botão Ligar/desligar ( ⏻ ), solte o botão Recuperação.</translation>
 <translation id="7638747526774710781">1. Aceda a google.com/chromeos/recovery no outro dispositivo e instale a extensão do Chrome.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
+<translation id="7806571448308475633">Verificação rápida da memória</translation>
 <translation id="7939062555109487992">Opções avançadas</translation>
 <translation id="8011335065515332253">Após o limite de tempo, o dispositivo arranca automaticamente a partir da seleção abaixo.</translation>
 <translation id="8027199195649765326">Prima o botão Recuperação no Chromebox para ativar o modo de programador ou selecione Cancelar para manter a sua proteção.</translation>
 <translation id="8101391381992690790">Certifique-se de que o disco externo contém uma imagem de recuperação válida e volte a inseri-lo quando estiver tudo pronto.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8199613549817472219">Vamos dar-lhe orientações ao longo do processo de recuperação</translation>
+<translation id="8377165353588213941">Chegou ao fim.</translation>
+<translation id="8720490351198901261">Chegou ao topo.</translation>
 <translation id="8789686976863801203">Está a tentar ativar o modo de programador</translation>
+<translation id="885701979325669005">Armazenamento</translation>
 <translation id="9040266428058825675">Se o seu dispositivo de armazenamento externo estiver pronto com uma imagem de recuperação, ligue-o a este dispositivo para iniciar o processo de recuperação.</translation>
+<translation id="9058669020755173331">Selecione o componente que pretende verificar.</translation>
 </translationbundle>

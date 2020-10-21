@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">このプロセスではユーザーデータがすべて消去されます。</translation>
 <translation id="4002335453596341558">次のページ</translation>
 <translation id="4152977630022273265">外部ディスクに有効な Chrome OS イメージがあることを確認し、準備ができたらディスクをもう一度接続してください。</translation>
+<translation id="4242315717915611349">キャンセルして戻る</translation>
 <translation id="4410491068110727276">音量ボタンを使用して、上または下に移動します。</translation>
 <translation id="4497270882390086583">USB メモリなどの外部ストレージや Android スマートフォンを使用して修復できます。</translation>
 <translation id="4773280894882892048">デバッグ情報の表示</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">デバイスの修復を行うには、次のものが必要です。</translation>
 <translation id="635783852215913562">矢印キーを使用して、項目を移動できます。</translation>
 <translation id="6448938863276324156">USB メモリなどの外部ストレージを使用して修復できます。</translation>
+<translation id="6606028407279698587">メモリの詳細チェック</translation>
 <translation id="6972383785688794804">前のページ</translation>
 <translation id="7065553583078443466">別のブートローダーを選択</translation>
 <translation id="7126032376876878896">電源ボタンを使用して、オプションを選択します。</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Chrome OS イメージがある外部ディスクを接続します。イメージが自動的に起動します。</translation>
 <translation id="7187861267433191629">システムに重要なアップデートを適用しています。</translation>
 <translation id="7236073510654217175">通常モードに戻る</translation>
+<translation id="7342794948394983731">診断ツール</translation>
 <translation id="7352651011704765696">問題が発生しました</translation>
 <translation id="7365121631770711723">2. スマートフォンとこのデバイスを接続する USB ケーブル</translation>
 <translation id="7420576176825630019">デベロッパー モードを有効にする</translation>
 <translation id="7567414219298075193">デバイスを修復するには、接続されているすべてのデバイスを取り外した後、リカバリボタンを押したまま電源ボタン（ ⏻ ）を押して放し、さらにリカバリボタンを放します。</translation>
 <translation id="7638747526774710781">1. 別のデバイスで google.com/chromeos/recovery にアクセスして、Chrome OS リカバリ アプリをインストールします</translation>
 <translation id="7658239707568436148">キャンセル</translation>
+<translation id="7806571448308475633">メモリの簡易チェック</translation>
 <translation id="7939062555109487992">詳細オプション</translation>
 <translation id="8011335065515332253">注意：一定時間経過後、デバイスは下で選択したモードで自動的に起動します。</translation>
 <translation id="8027199195649765326">デベロッパー モードを有効にする場合は Chromebox のリカバリボタンを押し、保護された状態を維持する場合は [キャンセル] を選択します。</translation>
 <translation id="8101391381992690790">外部ディスクに有効なリカバリ イメージがあることを確認し、準備ができたらディスクをもう一度接続してください。</translation>
 <translation id="8131740175452115882">確認</translation>
 <translation id="8199613549817472219">デバイスの修復を行う手順をご案内します</translation>
+<translation id="8377165353588213941">最後のページです</translation>
+<translation id="8720490351198901261">最初のページです</translation>
 <translation id="8789686976863801203">デベロッパー モードを有効にしようとしています</translation>
+<translation id="885701979325669005">ストレージ</translation>
 <translation id="9040266428058825675">Chrome OS のリカバリ イメージが含まれる USB メモリまたは SD カードをデバイスに接続してください。システムが自動的に修復作業を開始します。</translation>
+<translation id="9058669020755173331">確認するコンポーネントを選択します。</translation>
 </translationbundle>

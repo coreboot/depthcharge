@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">Idatha yakho yomsebenzisi izosulwa ngenkathi kuqhubeka.</translation>
 <translation id="4002335453596341558">Yehla nekhasi</translation>
 <translation id="4152977630022273265">Qiniseka ukuthi idiski yakho yangaphandle inesithombe se-Chrome OS esivumelekile, bese ufaka kabusha idiski lapho isikulungele.</translation>
+<translation id="4242315717915611349">Khansela futhi ubuyele emuva</translation>
 <translation id="4410491068110727276">Sebenzisa izinkinobho zevolumu ukuze uzulele phezulu noma phansi.</translation>
 <translation id="4497270882390086583">Ungatakula usebenzisa isitoreji sangaphandle esinjengedrayivu ye-USB noma usebenzise ifoni yakho ye-Android.</translation>
 <translation id="4773280894882892048">Ulwazi lokususa iphutha</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Lungela ukutakula idivayisi yakho. Uzodinga:</translation>
 <translation id="635783852215913562">Sebenzisa umugqa wokhiye ukuze uzulele phezulu noma phansi.</translation>
 <translation id="6448938863276324156">Ungatakula usebenzisa isitoreji sangaphandle esinjengedrayivu ye-USB.</translation>
+<translation id="6606028407279698587">Ukuhlola inkumbulo ngokugcwele</translation>
 <translation id="6972383785688794804">Nyuka nekhasi</translation>
 <translation id="7065553583078443466">Khetha enye i-bootloader</translation>
 <translation id="7126032376876878896">Sebenzisa inkinobho yamandla ukuze ukhethe inketho.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Xhuma idiski yakho ngesithombe se-Chrome OS. Kuzoqaliswa ngokuzenzekelayo.</translation>
 <translation id="7187861267433191629">Isistimu yakho isebenzisa isibuyekezo esibucayi.</translation>
 <translation id="7236073510654217175">Buyela kumodi yokuvikela</translation>
+<translation id="7342794948394983731">Amathuluzi okuxilonga</translation>
 <translation id="7352651011704765696">Okuthile akuhambanga kahle</translation>
 <translation id="7365121631770711723">2. Ikhebuli ye-USB exhuma ifoni yakho nale divayisi</translation>
 <translation id="7420576176825630019">Nika amandla imodi yonjiniyela</translation>
 <translation id="7567414219298075193">Ukuze uzame ukulungisa inkinga, qalisa inqubo yokutakula. Susa wonke amadivayisi axhunyiwe, bese ucindezela inkinobho Yokutakula, cindezela bese uyeke inkinobho Yamandla ( ⏻ ), yeka inkinobho Yokutakula.</translation>
 <translation id="7638747526774710781">1. Iya ku-google.com/chromeos/recovery kwenye idivayisi bese ufaka isandiso se-Chrome</translation>
 <translation id="7658239707568436148">Khansela</translation>
+<translation id="7806571448308475633">Ukuhlolwa kwenkumbulo okusheshayo</translation>
 <translation id="7939062555109487992">Izinketho ezithuthukile</translation>
 <translation id="8011335065515332253">Ngemuva kwesikhathi sokuvala, idivayisi izoqalisa ngokuzenzekelayo kusuka kokukhethiwe okungezansi.</translation>
 <translation id="8027199195649765326">Cindezela inkinobho Yokutakula ku-Chromebox yakho ukunika amandla imodi kanjiniyela, noma khetha okuthi Khansela ukuhlala uvikelekile.</translation>
 <translation id="8101391381992690790">Qiniseka ukuthi idiksi lakho langaphandle linesithombe sokutakula, bese ufaka kabusha idiski uma usulungele.</translation>
 <translation id="8131740175452115882">Qinisekisa</translation>
 <translation id="8199613549817472219">Ake sikuhambise kwinqubo yokutakula</translation>
+<translation id="8377165353588213941">Sewufike ekugcineni</translation>
+<translation id="8720490351198901261">Sewufikile phezulu</translation>
 <translation id="8789686976863801203">Uzama ukunika amandla imodi yonjiniyela</translation>
+<translation id="885701979325669005">Ukugcina</translation>
 <translation id="9040266428058825675">Uma idivayisi yakho yesitoreji sangaphandle isilungile ngesithombe sokutakula, ixhume kule divayisi ukuze uqalise inqubo yokutakula.</translation>
+<translation id="9058669020755173331">Khetha ingxenye ongathanda ukuyihlola.</translation>
 </translationbundle>

@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">Vykdant procesą duomenys bus išvalyti.</translation>
 <translation id="4002335453596341558">Puslapiu žemyn</translation>
 <translation id="4152977630022273265">Įsitikinkite, kad ant išorinio disko yra „Chrome“ OS vaizdas ir, kai būsite pasiruošę, įdėkite diską iš naujo.</translation>
+<translation id="4242315717915611349">Atšaukti ir grįžti</translation>
 <translation id="4410491068110727276">Naudodami garsumo mygtukus naršykite aukštyn arba žemyn.</translation>
 <translation id="4497270882390086583">Atkurti galite naudodami išorinę saugyklą, pvz., atmintuką, arba „Android“ telefonu.</translation>
 <translation id="4773280894882892048">Derinimo informacija</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Pasiruošimas atkurti įrenginį. Bus reikalingi toliau nurodyti elementai.</translation>
 <translation id="635783852215913562">Naudodami rodyklių klavišus naršykite aukštyn arba žemyn.</translation>
 <translation id="6448938863276324156">Atkurti galite naudodami išorinę saugyklą, pvz., atmintuką.</translation>
+<translation id="6606028407279698587">Išsamus atminties patikrinimas</translation>
 <translation id="6972383785688794804">Puslapiu aukštyn</translation>
 <translation id="7065553583078443466">Pasirinkite alternatyvią paleidyklę</translation>
 <translation id="7126032376876878896">Naudodami maitinimo mygtuką pasirinkite parinktį.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Prijunkite išorinį diską su „Chrome“ OS atvaizdžiu. Jis bus paleistas automatiškai.</translation>
 <translation id="7187861267433191629">Sistemoje pritaikomas svarbus naujinys.</translation>
 <translation id="7236073510654217175">Grįžti į saugų režimą</translation>
+<translation id="7342794948394983731">Diagnostikos įrankiai</translation>
 <translation id="7352651011704765696">Kažkas negerai</translation>
 <translation id="7365121631770711723">2. USB laidas, kuriuo telefonas prijungiamas prie šio įrenginio</translation>
 <translation id="7420576176825630019">Įgalinti kūrėjo režimą</translation>
 <translation id="7567414219298075193">Jei norite išbandyti ir išspręsti problemą, pradėkite atkūrimo procesą. Atjunkite visus prijungtus įrenginius, tada palaikykite paspaudę atkūrimo mygtuką, paspauskite ir atleiskite maitinimo mygtuką ( ⏻ ), tada atleiskite atkūrimo mygtuką.</translation>
 <translation id="7638747526774710781">1. Eikite adresu google.com/chromeos/recovery naudodami kitą įrenginį ir įdiekite „Chrome“ plėtinį</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
+<translation id="7806571448308475633">Trumpas atminties patikrinimas</translation>
 <translation id="7939062555109487992">Išplėstinės parinktys</translation>
 <translation id="8011335065515332253">Pasibaigus skirtajam laikui įrenginys bus automatiškai paleistas iš toliau pasirinktos vietos.</translation>
 <translation id="8027199195649765326">„Chromebox“ paspauskite atkūrimo mygtuką, kad įgalintumėte kūrėjo režimą, arba pasirinkite „Atšaukti“, kad toliau būtų taikoma apsauga.</translation>
 <translation id="8101391381992690790">Įsitikinkite, kad išoriniame diske yra tinkama atkuriamoji turinio kopija ir, kai būsite pasiruošę, įdėkite diską iš naujo.</translation>
 <translation id="8131740175452115882">Patvirtinti</translation>
 <translation id="8199613549817472219">Peržiūrėkime atkūrimo proceso veiksmus</translation>
+<translation id="8377165353588213941">Pasiekėte paskutinį puslapį</translation>
+<translation id="8720490351198901261">Pasiekėte pirmąjį puslapį</translation>
 <translation id="8789686976863801203">Bandote įgalinti kūrėjo režimą</translation>
+<translation id="885701979325669005">Saugykla</translation>
 <translation id="9040266428058825675">Jei išorinės saugyklos įrenginyje yra atkuriamoji turinio kopija, įdėkite ją į šį įrenginį ir pradėkite atkūrimo procesą</translation>
+<translation id="9058669020755173331">Pasirinkite norimą patikrinti komponentą.</translation>
 </translationbundle>

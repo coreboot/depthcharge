@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">Data pengguna Anda akan dihapus total saat proses berlangsung.</translation>
 <translation id="4002335453596341558">Halaman selanjutnya</translation>
 <translation id="4152977630022273265">Pastikan disk eksternal Anda memiliki image Chrome OS yang valid, dan pasang disk kembali jika sudah siap.</translation>
+<translation id="4242315717915611349">Batalkan dan kembali</translation>
 <translation id="4410491068110727276">Gunakan tombol volume untuk mengarahkan ke atas atau ke bawah.</translation>
 <translation id="4497270882390086583">Anda dapat melakukan pemulihan menggunakan penyimpanan eksternal seperti flash disk atau menggunakan ponsel Android.</translation>
 <translation id="4773280894882892048">Info debug</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Bersiaplah untuk memulihkan perangkat Anda. Anda akan memerlukan:</translation>
 <translation id="635783852215913562">Gunakan tombol panah untuk mengarahkan ke atas atau ke bawah.</translation>
 <translation id="6448938863276324156">Anda dapat melakukan pemulihan menggunakan penyimpanan eksternal seperti flash disk.</translation>
+<translation id="6606028407279698587">Pemeriksaan lengkap memori</translation>
 <translation id="6972383785688794804">Halaman sebelumnya</translation>
 <translation id="7065553583078443466">Pilih bootloader alternatif</translation>
 <translation id="7126032376876878896">Gunakan tombol daya untuk memilih opsi.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Hubungkan disk eksternal yang berisi image Chrome OS. Disk akan booting secara otomatis.</translation>
 <translation id="7187861267433191629">Sistem Anda sedang menerapkan update penting.</translation>
 <translation id="7236073510654217175">Kembali ke mode aman</translation>
+<translation id="7342794948394983731">Alat diagnostik</translation>
 <translation id="7352651011704765696">Ada yang tidak beres</translation>
 <translation id="7365121631770711723">2. Kabel USB yang menghubungkan ponsel Anda dan perangkat ini</translation>
 <translation id="7420576176825630019">Aktifkan mode pengembang</translation>
 <translation id="7567414219298075193">Untuk mencoba memperbaiki masalah tersebut, mulai proses pemulihan. Cabut semua perangkat yang terhubung, lalu tekan dan tahan tombol pemulihan, tekan dan lepaskan tombol daya ( ⏻ ), lalu lepaskan tombol pemulihan.</translation>
 <translation id="7638747526774710781">1. Buka google.com/chromeos/recovery di perangkat lain dan instal ekstensi Chrome</translation>
 <translation id="7658239707568436148">Batal</translation>
+<translation id="7806571448308475633">Pemeriksaan cepat memori</translation>
 <translation id="7939062555109487992">Opsi lanjutan</translation>
 <translation id="8011335065515332253">Setelah waktu tunggu habis, perangkat akan otomatis booting dari pilihan di bawah ini.</translation>
 <translation id="8027199195649765326">Tekan tombol pemulihan di Chromebox untuk mengaktifkan mode pengembang, atau pilih Batal untuk tetap terlindungi.</translation>
 <translation id="8101391381992690790">Pastikan disk eksternal Anda memiliki image pemulihan yang valid, dan pasang disk kembali jika sudah siap.</translation>
 <translation id="8131740175452115882">Konfirmasi</translation>
 <translation id="8199613549817472219">Panduan proses pemulihan</translation>
+<translation id="8377165353588213941">Anda telah mencapai halaman terakhir</translation>
+<translation id="8720490351198901261">Anda berada di halaman teratas</translation>
 <translation id="8789686976863801203">Anda mencoba mengaktifkan mode pengembang</translation>
+<translation id="885701979325669005">Penyimpanan</translation>
 <translation id="9040266428058825675">Jika perangkat penyimpanan eksternal Anda sudah siap dengan image pemulihan, hubungkan ke perangkat Anda untuk memulai proses pemulihan.</translation>
+<translation id="9058669020755173331">Pilih komponen yang ingin Anda periksa.</translation>
 </translationbundle>

@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">Bu işlem, kullanıcı verilerinizi temizler.</translation>
 <translation id="4002335453596341558">Bir sayfa aşağı</translation>
 <translation id="4152977630022273265">Harici diskinizin uygun Chrome OS görüntüsüne sahip olduğundan emin olun ve hazır olduğunda diski yeniden takın.</translation>
+<translation id="4242315717915611349">İptal et ve geri dön</translation>
 <translation id="4410491068110727276">Yukarı veya aşağı gitmek için ses düğmelerini kullanın.</translation>
 <translation id="4497270882390086583">Kurtarma işlemini, USB sürücü gibi harici bir depolama alanı veya Android telefonunuzu kullanarak gerçekleştirebilirsiniz.</translation>
 <translation id="4773280894882892048">Hata ayıklama bilgileri</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Cihazınızı kurtarma işlemine hazırlanın. Şunlar gerekir:</translation>
 <translation id="635783852215913562">Yukarı veya aşağı gitmek için ok tuşlarını kullanın</translation>
 <translation id="6448938863276324156">Kurtarma işlemini, USB sürücü gibi harici bir depolama alanı kullanarak gerçekleştirebilirsiniz.</translation>
+<translation id="6606028407279698587">Tam bellek kontrolü</translation>
 <translation id="6972383785688794804">Bir sayfa yukarı</translation>
 <translation id="7065553583078443466">Alternatif bootloader'ı seçin</translation>
 <translation id="7126032376876878896">Bir seçeneği belirlemek için güç düğmesini kullanın.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Chrome OS görüntüsü içeren harici diskinizi fişe takın. Diskiniz otomatik olarak başlatılır.</translation>
 <translation id="7187861267433191629">Sisteminiz kritik öneme sahip bir güncellemeyi uyguluyor.</translation>
 <translation id="7236073510654217175">Güvenli moda dön</translation>
+<translation id="7342794948394983731">Teşhis araçları</translation>
 <translation id="7352651011704765696">Bir şeyler ters gitti</translation>
 <translation id="7365121631770711723">2. Telefonunuzu ve bu cihazı birbirine bağlamak için bir USB kablosu</translation>
 <translation id="7420576176825630019">Geliştirici modunu etkinleştir</translation>
 <translation id="7567414219298075193">Sorunu düzeltmeyi denemek için kurtarma işlemini başlatın. Tüm bağlı cihazları çıkarın, ardından Kurtarma düğmesini basılı tutun, Güç ( ⏻ ), düğmesine basıp bırakın, Kurtarma düğmesini bırakın.</translation>
 <translation id="7638747526774710781">1. Diğer cihazda google.com/chromeos/recovery adresine gidip Chrome uzantısını yükleyin</translation>
 <translation id="7658239707568436148">İptal</translation>
+<translation id="7806571448308475633">Hızlı bellek kontrolü</translation>
 <translation id="7939062555109487992">Gelişmiş seçenekler</translation>
 <translation id="8011335065515332253">Cihaz, zaman aşımından sonra otomatik olarak aşağıdaki seçimden başlar.</translation>
 <translation id="8027199195649765326">Geliştirici modunu etkinleştirmek için Chromebox'ınızda Kurtarma düğmesine basın veya korunmaya devam etmek üzere İptal'i seçin.</translation>
 <translation id="8101391381992690790">Harici diskinizde geçerli bir kurtarma görüntüsü olduğundan emin olun ve hazır olduğunda diski yeniden takın.</translation>
 <translation id="8131740175452115882">Onayla</translation>
 <translation id="8199613549817472219">Kurtarma işleminde size adım adım yardımcı olalım</translation>
+<translation id="8377165353588213941">Son sayfadasınız</translation>
+<translation id="8720490351198901261">İlk sayfadasınız</translation>
 <translation id="8789686976863801203">Geliştirici modunu etkinleştirmeye çalışıyorsunuz</translation>
+<translation id="885701979325669005">Depolama</translation>
 <translation id="9040266428058825675">Kurtarma görüntüsünün yer aldığı harici depolama cihazınız hazırsa kurtarma işlemini başlatmak için bu cihaza takın.</translation>
+<translation id="9058669020755173331">Kontrol etmek istediğiniz bileşeni seçin.</translation>
 </translationbundle>

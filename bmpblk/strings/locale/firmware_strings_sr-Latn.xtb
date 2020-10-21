@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">Podaci korisnika će se izbrisati tokom procesa.</translation>
 <translation id="4002335453596341558">Stranica nadole</translation>
 <translation id="4152977630022273265">Uverite se da spoljni disk sadrži važeću sliku Chrome operativnog sistema i ponovo priključite disk kada budete spremni.</translation>
+<translation id="4242315717915611349">Otkaži i vrati se</translation>
 <translation id="4410491068110727276">Koristite dugmad za jačinu zvuka da biste se kretali nagore ili nadole.</translation>
 <translation id="4497270882390086583">Oporavak možete da obavite pomoću spoljnog memorijskog prostora, kao što je USB disk, ili pomoću Android telefona.</translation>
 <translation id="4773280894882892048">Informacije o otklanjanju grešaka</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Pripremite se za oporavak uređaja. Potrebno vam je sledeće:</translation>
 <translation id="635783852215913562">Koristite tastere sa strelicama da biste se kretali nagore ili nadole.</translation>
 <translation id="6448938863276324156">Oporavak možete da obavite pomoću spoljnog memorijskog prostora, kao što je USB disk.</translation>
+<translation id="6606028407279698587">Potpuna provera memorije</translation>
 <translation id="6972383785688794804">Stranica nagore</translation>
 <translation id="7065553583078443466">Izaberite alternativni pokretački program</translation>
 <translation id="7126032376876878896">Koristite dugme za napajanje da biste izabrali opciju.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Priključite spoljni disk sa slikom Chrome operativnog sistema. Automatski će se uključiti.</translation>
 <translation id="7187861267433191629">Sistem primenjuje važno ažuriranje.</translation>
 <translation id="7236073510654217175">Nazad na bezbedni režim</translation>
+<translation id="7342794948394983731">Dijagnostičke alatke</translation>
 <translation id="7352651011704765696">Nešto nije u redu</translation>
 <translation id="7365121631770711723">2. USB kabl koji povezuje telefon i ovaj uređaj</translation>
 <translation id="7420576176825630019">Omogući režim programera</translation>
 <translation id="7567414219298075193">Pokrenite proces oporavka da biste probali da rešite problem. Uklonite sve povezane uređaje, pa zadržite dugme za oporavak, pritisnite i otpustite dugme za napajanje ( ⏻ ) i otpustite dugme za oporavak.</translation>
 <translation id="7638747526774710781">1. Idite na google.com/chromeos/recovery na drugom uređaju i instalirajte dodatak za Chrome</translation>
 <translation id="7658239707568436148">Otkaži</translation>
+<translation id="7806571448308475633">Brza provera memorije</translation>
 <translation id="7939062555109487992">Napredne opcije</translation>
 <translation id="8011335065515332253">Posle vremenskog ograničenja uređaj će se automatski uključiti na osnovu stavke izabrane u nastavku.</translation>
 <translation id="8027199195649765326">Pritisnite dugme za oporavak na Chromebox-u da biste omogućili režim programera ili izaberite Otkaži da biste ostali u bezbednom režimu.</translation>
 <translation id="8101391381992690790">Proverite da li spoljni disk sadrži ispravnu sliku rezervne kopije sistema i ponovo priključite disk kada budete spremni.</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8199613549817472219">Vodićemo vas kroz proces oporavka</translation>
+<translation id="8377165353588213941">Došli ste do kraja</translation>
+<translation id="8720490351198901261">Došli ste do vrha</translation>
 <translation id="8789686976863801203">Pokušavate da omogućite režim programera</translation>
+<translation id="885701979325669005">Memorijski prostor</translation>
 <translation id="9040266428058825675">Ako je spoljni memorijski uređaj sa slikom rezervne kopije sistema spreman, povežite ga sa ovim uređajem da biste pokrenuli proces oporavka.</translation>
+<translation id="9058669020755173331">Izaberite komponentu koju želite da proverite.</translation>
 </translationbundle>

@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">Mawa-wipe ang iyong data ng user habang isinasagawa ang proseso.</translation>
 <translation id="4002335453596341558">Pahina pababa</translation>
 <translation id="4152977630022273265">Tiyaking may valid na Chrome OS image ang iyong external na disk, at isaksak ulit ang disk kapag handa na.</translation>
+<translation id="4242315717915611349">Kanselahin at bumalik</translation>
 <translation id="4410491068110727276">Gamitin ang mga button ng volume para mag-navigate pataas o pababa.</translation>
 <translation id="4497270882390086583">Makakapag-recover ka gamit ang external na storage gaya ng USB drive, o gamit ang iyong Android phone.</translation>
 <translation id="4773280894882892048">Impormasyon sa pag-debug</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Maghandang i-recover ang iyong device. Kakailanganin mo ng:</translation>
 <translation id="635783852215913562">Gamitin ang mga arrow key para mag-navigate pataas o pababa.</translation>
 <translation id="6448938863276324156">Makakapag-recover ka gamit ang external na storage gaya ng USB drive.</translation>
+<translation id="6606028407279698587">Kumpletong pagsusuri ng memory</translation>
 <translation id="6972383785688794804">Pahina pataas</translation>
 <translation id="7065553583078443466">Pumili ng alternatibong bootloader</translation>
 <translation id="7126032376876878896">Gamitin ang power button para pumili ng opsyon.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Isaksak ang iyong external na disk na may Chrome OS image. Awtomatiko itong ibu-boot.</translation>
 <translation id="7187861267433191629">Naglalapat ng mahalagang update ang iyong system.</translation>
 <translation id="7236073510654217175">Bumalik sa secure mode</translation>
+<translation id="7342794948394983731">Mga diagnostic tool</translation>
 <translation id="7352651011704765696">Nagkaroon ng problema</translation>
 <translation id="7365121631770711723">2. USB cable na nagkokonekta sa iyong telepono at sa device na ito</translation>
 <translation id="7420576176825630019">I-enable ang developer mode</translation>
 <translation id="7567414219298075193">Para subukang ayusin ang isyu, simulan ang proseso ng pag-recover. Alisin ang lahat ng nakakonektang device, pagkatapos ay pindutin nang matagal ang button na Recovery, pindutin nang isang beses ang Power button ( ⏻ ), bitawan ang button na Recovery.</translation>
 <translation id="7638747526774710781">1. Pumunta sa google.com/chromeos/recovery sa kabilang device at i-install ang extension ng Chrome</translation>
 <translation id="7658239707568436148">Kanselahin</translation>
+<translation id="7806571448308475633">Mabilis na pagsusuri ng memory</translation>
 <translation id="7939062555109487992">Mga advanced na pagpipilian</translation>
 <translation id="8011335065515332253">Kapag nag-timeout na, awtomatikong magbu-boot ang device mula sa napili sa ibaba.</translation>
 <translation id="8027199195649765326">Pindutin ang button na Recovery sa iyong Chromebox para i-enable ang developer mode, o piliin ang Kanselahin para manatiling protektado.</translation>
 <translation id="8101391381992690790">Tiyaking may valid na imahe sa pag-recover ang iyong external na disk, at isaksak ulit ang disk kapag handa na.</translation>
 <translation id="8131740175452115882">Kumpirmahin</translation>
 <translation id="8199613549817472219">Simulan natin ang proseso ng pag-recover</translation>
+<translation id="8377165353588213941">Naabot mo na ang dulo</translation>
+<translation id="8720490351198901261">Naabot mo na ang simula</translation>
 <translation id="8789686976863801203">Sinusubukan mong i-enable ang developer mode</translation>
+<translation id="885701979325669005">Storage</translation>
 <translation id="9040266428058825675">Kung mayroon nang imahe sa pag-recover ang iyong external storage device, isaksak iyon sa device na ito para masimulan ang proseso ng pag-recover.</translation>
+<translation id="9058669020755173331">Piliin ang bahaging gusto mong suriin.</translation>
 </translationbundle>

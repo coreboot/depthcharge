@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">Ihre Daten werden während des Vorgangs gelöscht.</translation>
 <translation id="4002335453596341558">Seite nach unten</translation>
 <translation id="4152977630022273265">Prüfen Sie, ob Ihr externes Speichermedium ein gültiges Chrome OS-Image enthält, und schließen Sie das Speichermedium wieder an, sobald es bereit ist.</translation>
+<translation id="4242315717915611349">Abbrechen und zurück</translation>
 <translation id="4410491068110727276">Mit den Lautstärketasten können Sie nach oben oder unten gehen.</translation>
 <translation id="4497270882390086583">Sie können die Wiederherstellung mithilfe eines externen Speichermediums – etwa eines USB-Sticks – oder mit Ihrem Android-Mobiltelefon vornehmen.</translation>
 <translation id="4773280894882892048">Informationen zur Fehlerbehebung</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Auf die Wiederherstellung des Geräts vorbereiten. Dafür wird Folgendes benötigt:</translation>
 <translation id="635783852215913562">Mit den Pfeiltasten können Sie nach oben oder unten gehen.</translation>
 <translation id="6448938863276324156">Sie können die Wiederherstellung mithilfe eines externen Speichermediums – etwa eines USB-Sticks – vornehmen.</translation>
+<translation id="6606028407279698587">Vollständige Prüfung des Arbeitsspeichers</translation>
 <translation id="6972383785688794804">Seite nach oben</translation>
 <translation id="7065553583078443466">Alternativen Bootloader auswählen</translation>
 <translation id="7126032376876878896">Über die Ein-/Aus-Taste können Sie die gewünschte Option auswählen.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Schließen Sie das externe Speichermedium mit dem Chrome OS-Image an. Der Bootvorgang startet automatisch.</translation>
 <translation id="7187861267433191629">Auf Ihrem System wird ein wichtiges Update installiert.</translation>
 <translation id="7236073510654217175">Zurück zum sicheren Modus</translation>
+<translation id="7342794948394983731">Diagnose-Tools</translation>
 <translation id="7352651011704765696">Ein Problem ist aufgetreten</translation>
 <translation id="7365121631770711723">2. Ein USB-Kabel, mit dem Sie Ihr Mobiltelefon an dieses Gerät anschließen</translation>
 <translation id="7420576176825630019">Entwicklermodus aktivieren</translation>
 <translation id="7567414219298075193">Bitte starten Sie die Wiederherstellung, um das Problem zu beheben. Entfernen Sie alle verbundenen Geräte, halten Sie die Wiederherstellungstaste gedrückt, drücken Sie dann die Ein-/Aus-Taste ( ⏻ ) einmal und lassen Sie danach die Wiederherstellungstaste wieder los.</translation>
 <translation id="7638747526774710781">1. Rufen Sie google.com/chromeos/recovery auf dem anderen Gerät auf, um die Chrome-Erweiterung zu installieren</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
+<translation id="7806571448308475633">Schnelle Prüfung des Arbeitsspeichers</translation>
 <translation id="7939062555109487992">Erweiterte Optionen</translation>
 <translation id="8011335065515332253">Wenn die Zeit abläuft, startet das Gerät automatisch vom unten ausgewählten Laufwerk.</translation>
 <translation id="8027199195649765326">Drücken Sie die Wiederherstellungstaste auf Ihrer Chromebox, um den Entwicklermodus zu aktivieren, oder "Abbrechen", um geschützt zu bleiben.</translation>
 <translation id="8101391381992690790">Prüfen Sie, ob Ihr externes Speichermedium ein gültiges Wiederherstellungsimage enthält und schließen Sie dann das Speichermedium wieder an.</translation>
 <translation id="8131740175452115882">Bestätigen</translation>
 <translation id="8199613549817472219">Den Wiederherstellungs-Prozess starten</translation>
+<translation id="8377165353588213941">Sie sind am Ende angekommen</translation>
+<translation id="8720490351198901261">Sie befinden sich auf der ersten Seite</translation>
 <translation id="8789686976863801203">Sie sind im Begriff, den Entwicklermodus zu aktivieren</translation>
+<translation id="885701979325669005">Speicher</translation>
 <translation id="9040266428058825675">Wenn das externe Speichermedium mit dem Wiederherstellungsimage bereit ist, schließen Sie dieses an das Gerät an, um die Wiederherstellung zu starten.</translation>
+<translation id="9058669020755173331">Wählen Sie die Komponente aus, die Sie prüfen möchten.</translation>
 </translationbundle>

@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">Jarayon vaqtida barcha foydalanuvchi maʼlumotlari oʻchib ketadi.</translation>
 <translation id="4002335453596341558">Bir sahifa pastga</translation>
 <translation id="4152977630022273265">Tashqi diskda yaroqli Chrome OS tasvir fayli borligini tekshiring va diskni qaytadan ulang</translation>
+<translation id="4242315717915611349">Bekor qilish va orqaga qaytish</translation>
 <translation id="4410491068110727276">Bandlarni ovoz balandligi tugmalari orqali kezing.</translation>
 <translation id="4497270882390086583">USB disk kabi tashqi xotira qurilmasi yoki Android telefoni orqali tiklash mumkin.</translation>
 <translation id="4773280894882892048">Nosozliklar axboroti</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Qurilmangizni tiklashga tayyorlaning. Buning uchun quyidagilar zarur:</translation>
 <translation id="635783852215913562">Bandlarni yuqoriga va pastga strelkalar orqali kezing.</translation>
 <translation id="6448938863276324156">USB disk kabi tashqi xotira qurilmasi orqali tiklash mumkin.</translation>
+<translation id="6606028407279698587">Toʻliq xotirani tekshirish</translation>
 <translation id="6972383785688794804">Bir sahifa yuqoriga</translation>
 <translation id="7065553583078443466">Muqobil tizimni yuklash vositasini tanlang</translation>
 <translation id="7126032376876878896">Tanlash uchun quvvat tugmasini ishlating.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Chrome OS tasvir fayli bor tashqi diskni ulang. Tizim avtomatik ishga tushadi.</translation>
 <translation id="7187861267433191629">Tizimga jiddiy xavfsizlik yangilanishlari oʻrnatilmoqda.</translation>
 <translation id="7236073510654217175">Xavfsiz rejimga qaytish</translation>
+<translation id="7342794948394983731">Diagnostika vositalari</translation>
 <translation id="7352651011704765696">Xatolik yuz berdi.</translation>
 <translation id="7365121631770711723">2. Telefonni bu qurilmaga ulash uchun USB kabel</translation>
 <translation id="7420576176825630019">Dasturchi rejimini yoqish</translation>
 <translation id="7567414219298075193">Muammoni tuzatishga urinish uchun tiklash jarayonini boshlang. Barcha ulangan qurilmalarni uzing hamda Tiklash tugmasini bosib turib, Quvvat tugmasini ( ⏻ ) bosing va Tiklash tugmasini qoʻyib yuboring.</translation>
 <translation id="7638747526774710781">1. Boshqa qurilmada google.com/chromeos/recovery sahifasini oching va Chrome kengaytmasini oʻrnating</translation>
 <translation id="7658239707568436148">Bekor qilish</translation>
+<translation id="7806571448308475633">Xotirani tezkor tekshirish</translation>
 <translation id="7939062555109487992">Kengaytirilgan sozlamalar</translation>
 <translation id="8011335065515332253">Kutish vaqti tugaganda qurilma tizimni avtomatik ravishda quyidagi tanlovdan ishga tushiradi.</translation>
 <translation id="8027199195649765326">Chromebox qurilmangizda Dasturchi rejimini yoqish uchun Quvvat tugmasini bosing yoki xavfsiz rejimda qolishni istasangiz, Bekor qilish ustiga bosing.</translation>
 <translation id="8101391381992690790">Tashqi diskda yaroqli tiklash fayli borligini tekshiring va diskni qaytadan ulang.</translation>
 <translation id="8131740175452115882">Tasdiqlash</translation>
 <translation id="8199613549817472219">Qani tizimni tiklashga kirishaylik</translation>
+<translation id="8377165353588213941">Oxiriga yetdingiz</translation>
+<translation id="8720490351198901261">Yuqoriga chiqdingiz</translation>
 <translation id="8789686976863801203">Dasturchi rejimini yoqishga urinyapsiz</translation>
+<translation id="885701979325669005">Ombor</translation>
 <translation id="9040266428058825675">Tiklash fayli joylashgan tashqi xotira tayyor boʻlsa, uni qurilmaga ulang va tiklash jarayoni ishga tushadi.</translation>
+<translation id="9058669020755173331">Tekshiriladigan komponentni tanlang.</translation>
 </translationbundle>

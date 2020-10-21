@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">Brukerdataene dine blir visket ut som en del av denne prosessen.</translation>
 <translation id="4002335453596341558">Ned en side</translation>
 <translation id="4152977630022273265">Kontrollér at den eksterne disken inneholder en gyldig Chrome OS-avbildning. Sett inn disken på nytt når du er klar.</translation>
+<translation id="4242315717915611349">Avbryt og gå tilbake</translation>
 <translation id="4410491068110727276">Bruk volumknappene for å navigere opp eller ned.</translation>
 <translation id="4497270882390086583">Du kan gjenopprette ved bruk av ekstern lagring, som en USB-stasjon, eller med Android-telefonen din.</translation>
 <translation id="4773280894882892048">Feilsøkingsinfo</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Gjør deg klar til å gjenopprette enheten. Du trenger</translation>
 <translation id="635783852215913562">Bruk piltastene for å navigere opp eller ned.</translation>
 <translation id="6448938863276324156">Du kan gjenopprette ved bruk av ekstern lagring, som en USB-stasjon.</translation>
+<translation id="6606028407279698587">Full minnesjekk</translation>
 <translation id="6972383785688794804">Opp en side</translation>
 <translation id="7065553583078443466">Velg en annen oppstartsinnlaster</translation>
 <translation id="7126032376876878896">Bruk av/på-knappen for å velge et alternativ.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Sett inn den eksterne disken med en Chrome OS-avbildning. Den blir startet automatisk.</translation>
 <translation id="7187861267433191629">Systemet installerer en kritisk oppdatering.</translation>
 <translation id="7236073510654217175">Gå tilbake til sikker modus</translation>
+<translation id="7342794948394983731">Diagnostikkverktøy</translation>
 <translation id="7352651011704765696">Noe gikk galt</translation>
 <translation id="7365121631770711723">2. En USB-kabel som kobler telefonen din sammen med denne enheten</translation>
 <translation id="7420576176825630019">Slå på utviklermodus</translation>
 <translation id="7567414219298075193">For å prøve å løse problemet, start gjenopprettingsprosessen. Koble fra alle tilkoblede enheter, hold inne gjenopprettingsknappen, trykk på og slipp av/på-knappen ( ⏻ ), og slipp gjenopprettingsknappen.</translation>
 <translation id="7638747526774710781">1. Gå til google.com/chromeos/recovery på den andre enheten, og installer Chrome-utvidelsen</translation>
 <translation id="7658239707568436148">Avbryt</translation>
+<translation id="7806571448308475633">Rask minnesjekk</translation>
 <translation id="7939062555109487992">Avanserte alternativer</translation>
 <translation id="8011335065515332253">Ved tidsavbrudd starter enheten automatisk opp fra disken som er valgt under.</translation>
 <translation id="8027199195649765326">Trykk på gjenopprettingsknappen på Chromebox for å slå på utviklermodus, eller velg Avbryt for å forbli beskyttet.</translation>
 <translation id="8101391381992690790">Kontrollér at den eksterne disken inneholder en gyldig gjenopprettingsavbildning, og sett inn disken på nytt når den er klar.</translation>
 <translation id="8131740175452115882">Bekreft</translation>
 <translation id="8199613549817472219">La oss hjelpe deg gjennom gjenopprettingsprosessen trinn for trinn</translation>
+<translation id="8377165353588213941">Du har nådd slutten</translation>
+<translation id="8720490351198901261">Du har nådd toppen</translation>
 <translation id="8789686976863801203">Du prøver å slå på utviklermodus</translation>
+<translation id="885701979325669005">Lagring</translation>
 <translation id="9040266428058825675">Hvis den eksterne lagringsenheten er klar med en gjenopprettingsavbildning, kobler du den til denne enheten for å starte gjenopprettingsprosessen.</translation>
+<translation id="9058669020755173331">Velg komponenten du vil sjekke.</translation>
 </translationbundle>

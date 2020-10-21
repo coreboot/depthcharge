@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">I tuoi dati utente verranno cancellati.</translation>
 <translation id="4002335453596341558">Pagina giù</translation>
 <translation id="4152977630022273265">Assicurati che sul disco esterno sia presente un'immagine di Chrome OS valida, dopodiché inserisci di nuovo il disco.</translation>
+<translation id="4242315717915611349">Annulla e torna indietro</translation>
 <translation id="4410491068110727276">Utilizza i pulsanti del volume per spostarti verso l'alto o verso il basso.</translation>
 <translation id="4497270882390086583">Puoi eseguire il ripristino usando una memoria esterna, ad esempio un'unità USB, oppure usando il tuo telefono Android.</translation>
 <translation id="4773280894882892048">Informazioni di debug</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Preparati a ripristinare il dispositivo. Hai bisogno di:</translation>
 <translation id="635783852215913562">Usa i tasti Freccia per spostarti verso l'alto o verso il basso.</translation>
 <translation id="6448938863276324156">Puoi eseguire il ripristino usando una memoria esterna, ad esempio un'unità USB.</translation>
+<translation id="6606028407279698587">Controllo completo della memoria</translation>
 <translation id="6972383785688794804">Pagina su</translation>
 <translation id="7065553583078443466">Seleziona bootloader alternativo</translation>
 <translation id="7126032376876878896">Utilizza il tasto di accensione per selezionare un'opzione.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Collega il disco esterno contenente un'immagine di Chrome OS. Verrà avviato automaticamente.</translation>
 <translation id="7187861267433191629">Il sistema sta eseguendo un importante aggiornamento.</translation>
 <translation id="7236073510654217175">Torna a modalità protetta</translation>
+<translation id="7342794948394983731">Strumenti di diagnostica</translation>
 <translation id="7352651011704765696">Si è verificato un problema</translation>
 <translation id="7365121631770711723">2. Un cavo USB che connette il telefono a questo dispositivo</translation>
 <translation id="7420576176825630019">Attiva modalità sviluppatore</translation>
 <translation id="7567414219298075193">Per provare a risolvere il problema, avvia la procedura di ripristino. Rimuovi tutti i dispositivi collegati, quindi tieni premuto il tasto di ripristino, premi e rilascia il tasto di accensione ( ⏻ ), quindi rilascia il tasto di ripristino.</translation>
 <translation id="7638747526774710781">1. Visita la pagina google.com/chromeos/recovery sull'altro dispositivo e installa l'estensione di Chrome</translation>
 <translation id="7658239707568436148">Annulla</translation>
+<translation id="7806571448308475633">Controllo rapido della memoria</translation>
 <translation id="7939062555109487992">Opzioni avanzate</translation>
 <translation id="8011335065515332253">Dopo il timeout, il dispositivo verrà avviato automaticamente dalla selezione di seguito.</translation>
 <translation id="8027199195649765326">Premi il pulsante di ripristino sul Chromebox per attivare la modalità sviluppatore oppure seleziona "Annulla" per mantenere attiva la protezione.</translation>
 <translation id="8101391381992690790">Assicurati che sul disco esterno sia presente un'immagine di ripristino valida dopodiché inserisci di nuovo il disco.</translation>
 <translation id="8131740175452115882">Conferma</translation>
 <translation id="8199613549817472219">Svolgiamo la procedura di ripristino guidata</translation>
+<translation id="8377165353588213941">Sei già all'ultima pagina</translation>
+<translation id="8720490351198901261">Sei alla prima pagina</translation>
 <translation id="8789686976863801203">Stai cercando di attivare la modalità sviluppatore</translation>
+<translation id="885701979325669005">Dati memorizzati dai siti</translation>
 <translation id="9040266428058825675">Se l'immagine di ripristino è pronta sul dispositivo di archiviazione esterno, collega quest'ultimo a questo dispositivo per avviare la procedura di ripristino.</translation>
+<translation id="9058669020755173331">Seleziona il componente che vuoi controllare.</translation>
 </translationbundle>

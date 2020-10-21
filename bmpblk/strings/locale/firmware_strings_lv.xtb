@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">Procesa laikā tiks notīrīti jūsu lietotāja dati.</translation>
 <translation id="4002335453596341558">Pāriet vienu lapu uz leju</translation>
 <translation id="4152977630022273265">Raugieties, lai ārējā diskā būtu derīgs Chrome OS attēls, un pievienojiet disku atkārtoti, kad esat gatavs.</translation>
+<translation id="4242315717915611349">Atcelt un atgriezties</translation>
 <translation id="4410491068110727276">Izmantojiet skaļuma pogas, lai pārietu uz augšu vai uz leju.</translation>
 <translation id="4497270882390086583">Atkopšanai varat izmantot ārējo krātuvi, piemēram, USB disku, vai savu Android tālruni.</translation>
 <translation id="4773280894882892048">Atkļūdošanas informācija</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Sagatavojieties ierīces atkopšanai. Nepieciešams tālāk norādītais.</translation>
 <translation id="635783852215913562">Lai pārietu uz augšu vai leju, izmantojiet bulttaustiņus.</translation>
 <translation id="6448938863276324156">Atkopšanai varat izmantot ārējo krātuvi, piemēram, USB disku.</translation>
+<translation id="6606028407279698587">Pilnā atmiņas pārbaude</translation>
 <translation id="6972383785688794804">Pāriet vienu lapu uz augšu</translation>
 <translation id="7065553583078443466">Atlasīt alternatīvu operētājsistēmu ielādes rīku</translation>
 <translation id="7126032376876878896">Izmantojiet barošanas pogu, lai atlasītu kādu no opcijām.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Pievienojiet ārējo disku, kurā atrodas Chrome OS attēls. Tas tiks automātiski palaists.</translation>
 <translation id="7187861267433191629">Sistēma veic svarīgu atjauninājumu.</translation>
 <translation id="7236073510654217175">Atgriezties drošajā režīmā</translation>
+<translation id="7342794948394983731">Diagnostikas rīki</translation>
 <translation id="7352651011704765696">Radās problēma</translation>
 <translation id="7365121631770711723">2. USB kabelis, ar ko var savienot jūsu tālruni un šo ierīci</translation>
 <translation id="7420576176825630019">Iespējot izstrādātāja režīmu</translation>
 <translation id="7567414219298075193">Lai novērstu šo problēmu, sāciet atkopšanas procesu. Noņemiet visas pievienotās ierīces un pēc tam nospiediet un turiet atkopšanas pogu. Nospiediet un atlaidiet barošanas pogu ( ⏻ ) un pēc tam atlaidiet atkopšanas pogu.</translation>
 <translation id="7638747526774710781">1. Citā ierīcē atveriet vietni google.com/chromeos/recovery un instalējiet Chrome paplašinājumu.</translation>
 <translation id="7658239707568436148">Atcelt</translation>
+<translation id="7806571448308475633">Ātrā atmiņas pārbaude</translation>
 <translation id="7939062555109487992">Papildopcijas</translation>
 <translation id="8011335065515332253">Pēc noildzes ierīce automātiski tiks palaista no tālāk atlasītā diska.</translation>
 <translation id="8027199195649765326">Nospiediet Chromebox datora atkopšanas pogu, lai iespējotu izstrādātāja režīmu, vai atlasiet Atcelt, lai saglabātu aizsardzību.</translation>
 <translation id="8101391381992690790">Pārbaudiet, vai ārējā diskā atrodas derīgs atkopšanas attēls, un atkārtoti ievietojiet disku, kad viss ir gatavs.</translation>
 <translation id="8131740175452115882">Apstiprināt</translation>
 <translation id="8199613549817472219">Atkopšanas procesa darbības</translation>
+<translation id="8377165353588213941">Ir sasniegtas beigas</translation>
+<translation id="8720490351198901261">Ir sasniegts sākums</translation>
 <translation id="8789686976863801203">Jūs mēģināt iespējot izstrādātāja režīmu</translation>
+<translation id="885701979325669005">Krātuve</translation>
 <translation id="9040266428058825675">Ja ir sagatavota ārējās atmiņas ierīce ar atkopšanas attēlu, pievienojiet to ierīcei, lai sāktu atkopšanas procesu.</translation>
+<translation id="9058669020755173331">Atlasiet komponentu, ko vēlaties pārbaudīt.</translation>
 </translationbundle>

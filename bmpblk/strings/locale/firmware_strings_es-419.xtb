@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">Durante el proceso, se limpiarán tus datos de usuario.</translation>
 <translation id="4002335453596341558">Página siguiente</translation>
 <translation id="4152977630022273265">Asegúrate de que el disco externo tenga una imagen válida del Sistema operativo Chrome y, luego, vuelve a insertarlo.</translation>
+<translation id="4242315717915611349">Cancelar y volver</translation>
 <translation id="4410491068110727276">Usa los botones de volumen para navegar hacia arriba o abajo.</translation>
 <translation id="4497270882390086583">Para la recuperación, puedes usar tu teléfono Android o un almacenamiento externo, como una unidad USB.</translation>
 <translation id="4773280894882892048">Información de depuración</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Prepárate para recuperar el dispositivo. Necesitarás lo siguiente:</translation>
 <translation id="635783852215913562">Usa las flechas para navegar hacia arriba y abajo.</translation>
 <translation id="6448938863276324156">Para la recuperación, puedes usar un almacenamiento externo, como una unidad USB.</translation>
+<translation id="6606028407279698587">Revisión completa de la memoria</translation>
 <translation id="6972383785688794804">Página anterior</translation>
 <translation id="7065553583078443466">Seleccionar el bootloader alternativo</translation>
 <translation id="7126032376876878896">Utiliza el botón de encendido para seleccionar una opción.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Conecta un disco externo que tenga una imagen del Sistema operativo Chrome. Se iniciará automáticamente.</translation>
 <translation id="7187861267433191629">Tu sistema está instalando una actualización importante.</translation>
 <translation id="7236073510654217175">Regresar al modo seguro</translation>
+<translation id="7342794948394983731">Herramientas de diagnóstico</translation>
 <translation id="7352651011704765696">Se produjo un error</translation>
 <translation id="7365121631770711723">2. Un cable USB que conecte tu teléfono y este dispositivo</translation>
 <translation id="7420576176825630019">Habilitar el modo de desarrollador</translation>
 <translation id="7567414219298075193">Para hacer una prueba y solucionar el problema, inicia el proceso de recuperación. Quita todos los dispositivos conectados; a continuación, mantén presionado el botón de recuperación, presiona y suelta el botón de encendido ( ⏻ ) y, luego, suelta el botón de recuperación.</translation>
 <translation id="7638747526774710781">1. En el otro dispositivo, ve a google.com/chromeos/recovery y, luego, instala la extensión de Chrome</translation>
 <translation id="7658239707568436148">Cancelar</translation>
+<translation id="7806571448308475633">Revisión rápida de la memoria</translation>
 <translation id="7939062555109487992">Opciones avanzadas</translation>
 <translation id="8011335065515332253">Cuando finalice el tiempo de espera, se iniciará el dispositivo automáticamente según la opción elegida a continuación.</translation>
 <translation id="8027199195649765326">Presiona el botón Recuperación de tu Chromebox para habilitar el modo de desarrollador o selecciona Cancelar para mantener la protección.</translation>
 <translation id="8101391381992690790">Asegúrate de que el disco externo tenga una imagen de recuperación válida y, luego, vuelve a insertarlo cuando estés listo.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8199613549817472219">Comencemos el proceso de recuperación</translation>
+<translation id="8377165353588213941">Estás en la última página</translation>
+<translation id="8720490351198901261">Estás en la primera página</translation>
 <translation id="8789686976863801203">Estás intentando habilitar el modo de desarrollador</translation>
+<translation id="885701979325669005">Almacenamiento</translation>
 <translation id="9040266428058825675">Si el dispositivo de almacenamiento externo ya tiene una imagen de recuperación, conéctalo a este dispositivo para comenzar el proceso de recuperación.</translation>
+<translation id="9058669020755173331">Selecciona el componente que quieras verificar.</translation>
 </translationbundle>

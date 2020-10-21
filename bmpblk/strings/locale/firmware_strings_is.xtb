@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">Notendagögnum þínum verður eytt meðan á þessu stendur.</translation>
 <translation id="4002335453596341558">Síða niður</translation>
 <translation id="4152977630022273265">Gakktu úr skugga um að gild Chrome stýrikerfismynd sé á ytra drifinu og settu það aftur inn þegar þú ert til.</translation>
+<translation id="4242315717915611349">Hætta við og fara til baka</translation>
 <translation id="4410491068110727276">Notaðu hljóðstyrkshnappana til að fletta upp eða niður.</translation>
 <translation id="4497270882390086583">Hægt er að nota ytri geymslu við endurheimt, t.d. USB-drif eða Android-síma.</translation>
 <translation id="4773280894882892048">Kembiupplýsingar</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Búðu þig undir að endurheimta tækið þitt. Þú þarft:</translation>
 <translation id="635783852215913562">Notaðu örvatakkana til að fletta upp eða niður.</translation>
 <translation id="6448938863276324156">Hægt er að nota ytri geymslu við endurheimt, t.d. USB-drif.</translation>
+<translation id="6606028407279698587">Heildarathugun á minni</translation>
 <translation id="6972383785688794804">Síða upp</translation>
 <translation id="7065553583078443466">Velja annað ræsiforrit</translation>
 <translation id="7126032376876878896">Notaðu aflrofann til að velja valkost.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Settu inn ytra drif með Chrome-stýrikerfismynd. Það ræsist sjálfkrafa.</translation>
 <translation id="7187861267433191629">Kerfið er að setja upp mikilvæga uppfærslu.</translation>
 <translation id="7236073510654217175">Fara aftur í örugga stillingu</translation>
+<translation id="7342794948394983731">Greiningarverkfæri</translation>
 <translation id="7352651011704765696">Eitthvað fór úrskeiðis</translation>
 <translation id="7365121631770711723">2. USB-snúra sem er tengd við símann þinn og þetta tæki</translation>
 <translation id="7420576176825630019">Kveikja á forritarastillingu</translation>
 <translation id="7567414219298075193">Til að reyna að lagfæra vandamálið skaltu hefja endurheimtarferlið. Taktu öll tengd tæki úr sambandi og haltu svo inni hnappinum „Recovery“, ýttu á aflrofann og slepptu honum aftur ( ⏻ ) og slepptu svo hnappinum „Recovery“.</translation>
 <translation id="7638747526774710781">1. Farðu á google.com/chromeos/recovery í hinu tækinu og settu upp Chrome viðbótina</translation>
 <translation id="7658239707568436148">Hætta við</translation>
+<translation id="7806571448308475633">Snögg athugun á minni</translation>
 <translation id="7939062555109487992">Ítarlegir valkostir</translation>
 <translation id="8011335065515332253">Þegar tímamörkin eru liðin mun tækið sjálfkrafa ræsast miðað við valið hér að neðan.</translation>
 <translation id="8027199195649765326">Ýttu á hnappinn „Recovery“ á Chromebox til að kveikja á forritarastillingu eða veldu „Hætta við“ til að hafa áfram vörn.</translation>
 <translation id="8101391381992690790">Gakktu úr skugga um að ytra drifið sé með gilda endurheimtarmynd og settu það aftur inn þegar það er tilbúið.</translation>
 <translation id="8131740175452115882">Staðfesta</translation>
 <translation id="8199613549817472219">Förum í gegnum endurheimtarferlið</translation>
+<translation id="8377165353588213941">Þú ert komin(n) að endanum</translation>
+<translation id="8720490351198901261">Þú ert komin(n) að byrjuninni</translation>
 <translation id="8789686976863801203">Þú ert að reyna að kveikja á forritarastillingu</translation>
+<translation id="885701979325669005">Geymslurými</translation>
 <translation id="9040266428058825675">Ef ytra geymslutækið er með endurheimtarmynd skaltu stinga því í samband við þetta tæki til að hefja endurheimtarferlið</translation>
+<translation id="9058669020755173331">Veldu íhlutinn sem þú vilt athuga.</translation>
 </translationbundle>

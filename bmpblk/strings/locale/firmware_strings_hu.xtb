@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">Felhasználói adatai törlődnek a folyamat során.</translation>
 <translation id="4002335453596341558">Lapozás lefelé</translation>
 <translation id="4152977630022273265">Győződjön meg arról, hogy a külső lemezen érvényes Chrome OS-rendszerkép található, és helyezze be újra a lemezt, amikor készen áll.</translation>
+<translation id="4242315717915611349">Mégse, majd ugrás vissza</translation>
 <translation id="4410491068110727276">A hangerőgombokkal navigálhat fel és le.</translation>
 <translation id="4497270882390086583">A helyreállítás külső tárhely (pl. USB-meghajtó) vagy androidos telefon segítségével lehetséges.</translation>
 <translation id="4773280894882892048">Hibakeresési információ</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Készüljön fel az eszköz helyreállítására. A következőkre lesz szüksége:</translation>
 <translation id="635783852215913562">A nyílbillentyűkkel navigálhat fel és le.</translation>
 <translation id="6448938863276324156">A helyreállítás külső tárhely (pl. USB-meghajtó) segítségével lehetséges.</translation>
+<translation id="6606028407279698587">Teljes memória-ellenőrzés</translation>
 <translation id="6972383785688794804">Lapozás felfelé</translation>
 <translation id="7065553583078443466">Alternatív rendszerindító kiválasztása</translation>
 <translation id="7126032376876878896">A bekapcsológombbal választhat lehetőséget.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Helyezze be a Chrome OS-rendszerképet tartalmazó külső lemezét. Automatikusan elindul majd.</translation>
 <translation id="7187861267433191629">A rendszer fontos frissítést végez.</translation>
 <translation id="7236073510654217175">Vissza a biztonságos módhoz</translation>
+<translation id="7342794948394983731">Diagnosztikai eszközök</translation>
 <translation id="7352651011704765696">Valami nem működik</translation>
 <translation id="7365121631770711723">2. USB-kábel, amellyel telefonját ehhez az eszközhöz csatlakoztathatja</translation>
 <translation id="7420576176825630019">Fejlesztői mód engedélyezése</translation>
 <translation id="7567414219298075193">A probléma megoldásának megkísérléséhez indítsa el a helyreállítási folyamatot. Távolítsa el az összes csatlakoztatott eszközt, majd tartsa lenyomva a Helyreállítás gombot, nyomja meg a Bekapcsológombot ( ⏻ ), végül engedje fel a Helyreállítás gombot.</translation>
 <translation id="7638747526774710781">1. Lépjen a google.com/chromeos/recovery oldalra egy másik eszközön, és telepítse a Chrome-bővítményt</translation>
 <translation id="7658239707568436148">Mégse</translation>
+<translation id="7806571448308475633">Gyors memória-ellenőrzés</translation>
 <translation id="7939062555109487992">Haladó beállítások</translation>
 <translation id="8011335065515332253">Az időkorlát után az eszköz automatikusan elindul a lenti kiválasztás szerint.</translation>
 <translation id="8027199195649765326">A fejlesztői mód engedélyezéséhez nyomja meg a Helyreállítás gombot a Chromeboxán, vagy válassza a Mégse lehetőséget a védelem fenntartásához.</translation>
 <translation id="8101391381992690790">Győződjön meg arról, hogy a külső lemezen érvényes helyreállító képfájl található, és helyezze be újra a lemezt, amikor készen áll.</translation>
 <translation id="8131740175452115882">Megerősítés</translation>
 <translation id="8199613549817472219">Vegyük végig a helyreállítási folyamatot</translation>
+<translation id="8377165353588213941">Elérte a lap alját</translation>
+<translation id="8720490351198901261">Elérte a lap tetejét</translation>
 <translation id="8789686976863801203">A fejlesztői mód engedélyezésére tesz kísérletet</translation>
+<translation id="885701979325669005">Tárolás</translation>
 <translation id="9040266428058825675">Ha készen áll a külső tárolóeszköz a helyreállító képfájllal, csatlakoztassa az eszközhöz a helyreállítási folyamat megkezdése érdekében.</translation>
+<translation id="9058669020755173331">Válassza ki az ellenőrizni kívánt összetevőt.</translation>
 </translationbundle>

@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">Datele utilizatorului se vor șterge în acest proces.</translation>
 <translation id="4002335453596341558">O pagină mai jos</translation>
 <translation id="4152977630022273265">Verifică dacă discul extern are o imagine validă a sistemului de operare Chrome și reintrodu discul când ești gata.</translation>
+<translation id="4242315717915611349">Anulează și revino</translation>
 <translation id="4410491068110727276">Folosește butoanele de volum pentru a naviga în sus sau în jos.</translation>
 <translation id="4497270882390086583">Poți recupera folosind suporturi externe, precum o unitate USB, sau folosind telefonul Android.</translation>
 <translation id="4773280894882892048">Informații de remediere a erorilor</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Pregătește-te să recuperezi dispozitivul. Vei avea nevoie de:</translation>
 <translation id="635783852215913562">Folosește tastele săgeată pentru a naviga în sus sau în jos.</translation>
 <translation id="6448938863276324156">Poți recupera folosind suporturi externe, precum o unitate USB.</translation>
+<translation id="6606028407279698587">Verificare completă a memoriei</translation>
 <translation id="6972383785688794804">O pagină mai sus</translation>
 <translation id="7065553583078443466">Selectează un bootloader alternativ</translation>
 <translation id="7126032376876878896">Folosește butonul de pornire pentru a selecta o opțiune.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Conectează discul extern care conține o imagine a sistemului de operare Chrome. Acesta va porni automat.</translation>
 <translation id="7187861267433191629">Sistemul aplică o actualizare esențială.</translation>
 <translation id="7236073510654217175">Revino la modul sigur</translation>
+<translation id="7342794948394983731">Instrumente de diagnosticare</translation>
 <translation id="7352651011704765696">A apărut o eroare</translation>
 <translation id="7365121631770711723">2. Un cablu USB conectat la telefon și la acest dispozitiv</translation>
 <translation id="7420576176825630019">Activează modul pentru dezvoltatori</translation>
 <translation id="7567414219298075193">Pentru a încerca să remediezi problema, inițiază procesul de recuperare. Elimină toate dispozitivele conectate, ține apăsat butonul de recuperare, apasă și eliberează butonul de pornire ( ⏻ ), apoi eliberează butonul de recuperare.</translation>
 <translation id="7638747526774710781">1. Accesează google.com/chromeos/recovery pe celălalt dispozitiv și instalează extensia Chrome.</translation>
 <translation id="7658239707568436148">Anulează</translation>
+<translation id="7806571448308475633">Verificare rapidă a memoriei</translation>
 <translation id="7939062555109487992">Opțiuni avansate</translation>
 <translation id="8011335065515332253">După expirare, dispozitivul va porni automat folosind opțiunea selectată de mai jos.</translation>
 <translation id="8027199195649765326">Apasă butonul de recuperare de pe Chromebox ca să activezi modul pentru dezvoltatori sau selectează „Anulează” ca să rămâi protejat(ă).</translation>
 <translation id="8101391381992690790">Verifică dacă discul extern are o imagine de recuperare validă și reintrodu discul când ești gata.</translation>
 <translation id="8131740175452115882">Confirmați</translation>
 <translation id="8199613549817472219">Te vom ghida prin procesul de recuperare</translation>
+<translation id="8377165353588213941">Ai ajuns la final</translation>
+<translation id="8720490351198901261">Ai ajuns în partea de sus</translation>
 <translation id="8789686976863801203">Încerci să activezi modul pentru dezvoltatori</translation>
+<translation id="885701979325669005">Stocare</translation>
 <translation id="9040266428058825675">Dacă dispozitivul de stocare extern este pregătit cu o imagine de recuperare, conectează-l la acest dispozitiv ca să începi procesul de recuperare.</translation>
+<translation id="9058669020755173331">Selectează componenta pe care vrei să o verifici.</translation>
 </translationbundle>

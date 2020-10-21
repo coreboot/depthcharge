@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">V rámci procesu sa údaje používateľa trvale vymažú.</translation>
 <translation id="4002335453596341558">Posunúť o stranu nižšie</translation>
 <translation id="4152977630022273265">Skontrolujte, či máte na externom disku platný obraz operačného systému Chrome OS, a keď budete chcieť začať, znova disk vložte.</translation>
+<translation id="4242315717915611349">Zrušiť a prejsť späť</translation>
 <translation id="4410491068110727276">Tlačidlami hlasitosti prechádzajte nahor alebo nadol.</translation>
 <translation id="4497270882390086583">Pri obnovení môžete použiť externé úložisko, napríklad kľúč USB alebo telefón s Androidom.</translation>
 <translation id="4773280894882892048">Informácie o ladení</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Pripravte sa na obnovu zariadenia. Budete potrebovať:</translation>
 <translation id="635783852215913562">Klávesmi so šípkami prechádzajte nahor a nadol.</translation>
 <translation id="6448938863276324156">Pri obnovení môžete použiť externé úložisko, napríklad kľúč USB.</translation>
+<translation id="6606028407279698587">Úplná kontrola pamäte</translation>
 <translation id="6972383785688794804">Posunúť o stranu vyššie</translation>
 <translation id="7065553583078443466">Vybrať alternatívny zavádzací program systému</translation>
 <translation id="7126032376876878896">Vypínačom vyberte požadovanú možnosť.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Pripojte externý disk s obrazom operačného systému Chrome OS. Zapne sa automaticky.</translation>
 <translation id="7187861267433191629">Systém inštaluje dôležitú aktualizáciu.</translation>
 <translation id="7236073510654217175">Vrátiť sa do zabezpečeného režimu</translation>
+<translation id="7342794948394983731">Diagnostické nástroje</translation>
 <translation id="7352651011704765696">Vyskytla sa chyba</translation>
 <translation id="7365121631770711723">2. Kábel USB na prepojenie vášho telefónu s týmto zariadením</translation>
 <translation id="7420576176825630019">Zapnúť režim vývojára</translation>
 <translation id="7567414219298075193">Ak chcete skúsiť problém odstrániť, začnite proces obnovenia. Odstráňte všetky pripojené zariadenia. Potom pridržte tlačidlo obnovy, stlačte a uvoľnite vypínač ( ⏻ ) a nakoniec uvoľnite tlačidlo obnovy.</translation>
 <translation id="7638747526774710781">1. Prejdite v inom zariadení na google.com/chromeos/recovery a nainštalujte si toto rozšírenie pre Chrome</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
+<translation id="7806571448308475633">Rýchla kontrola pamäte</translation>
 <translation id="7939062555109487992">Rozšírené možnosti</translation>
 <translation id="8011335065515332253">Po časovom limite sa zariadenie automaticky zapne z vybraného zdroja nižšie.</translation>
 <translation id="8027199195649765326">Stlačením tlačidla obnovy v Chromeboxe zapnite režim vývojára alebo vyberte Zrušiť, čím zachováte ochranu.</translation>
 <translation id="8101391381992690790">Skontrolujte, či máte na externom disku platný obraz na obnovu, a keď budete chcieť začať, znova disk vložte.</translation>
 <translation id="8131740175452115882">Potvrdiť</translation>
 <translation id="8199613549817472219">Teraz si prejdime proces obnovenia</translation>
+<translation id="8377165353588213941">Ste na konci</translation>
+<translation id="8720490351198901261">Ste na začiatku</translation>
 <translation id="8789686976863801203">Pokúšate sa zapnúť režim vývojára</translation>
+<translation id="885701979325669005">Úložisko</translation>
 <translation id="9040266428058825675">Ak máte v externom úložisku obraz na obnovu, pripojte ho k tomuto zariadeniu a začnite tak proces obnovenia.</translation>
+<translation id="9058669020755173331">Vyberte komponent, ktorý chcete skontrolovať.</translation>
 </translationbundle>

@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">Les teves dades d'usuari s'eliminaran durant el procés.</translation>
 <translation id="4002335453596341558">Av Pàg</translation>
 <translation id="4152977630022273265">Comprova que el disc extern tingui una imatge de Chrome OS vàlida i torna a inserir el disc quan estigui a punt.</translation>
+<translation id="4242315717915611349">Cancel·la i torna</translation>
 <translation id="4410491068110727276">Utilitza els botons de volum per navegar cap amunt o cap avall.</translation>
 <translation id="4497270882390086583">Pots fer la recuperació utilitzant emmagatzematge extern, com ara una unitat USB o un telèfon Android.</translation>
 <translation id="4773280894882892048">Informació de depuració</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Prepara't per a la recuperació del dispositiu. Et caldrà el següent:</translation>
 <translation id="635783852215913562">Fes servir les tecles de fletxa per navegar cap amunt o cap avall.</translation>
 <translation id="6448938863276324156">Pots fer la recuperació utilitzant emmagatzematge extern, com ara una unitat USB.</translation>
+<translation id="6606028407279698587">Comprovació completa de la memòria</translation>
 <translation id="6972383785688794804">Re Pàg</translation>
 <translation id="7065553583078443466">Selecciona un carregador d’arrencada alternatiu</translation>
 <translation id="7126032376876878896">Utilitza el botó d'engegada per seleccionar una opció.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Connecta el disc extern amb una imatge de Chrome OS. S'iniciarà automàticament.</translation>
 <translation id="7187861267433191629">El sistema està aplicant una actualització crítica.</translation>
 <translation id="7236073510654217175">Torna al mode segur</translation>
+<translation id="7342794948394983731">Eines de diagnòstic</translation>
 <translation id="7352651011704765696">S'ha produït un error</translation>
 <translation id="7365121631770711723">2. Un cable USB que connecti el telèfon i aquest dispositiu</translation>
 <translation id="7420576176825630019">Activa el mode de desenvolupador</translation>
 <translation id="7567414219298075193">Per provar de corregir aquest problema, inicia el procés de recuperació. Desconnecta tots els dispositius connectats i mantén premut el botó de recuperació, prem i deixa anar el botó d'engegada ( ⏻ ) i, tot seguit, deixa anar el botó de recuperació.</translation>
 <translation id="7638747526774710781">1. Ves a google.com/chromeos/recovery a l'altre dispositiu i instal·la l'extensió de Chrome</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
+<translation id="7806571448308475633">Comprovació ràpida de la memòria</translation>
 <translation id="7939062555109487992">Opcions avançades</translation>
 <translation id="8011335065515332253">Després del temps d'espera, el dispositiu s'iniciarà automàticament des de la selecció següent.</translation>
 <translation id="8027199195649765326">Prem el botó d'engegada al Chromebook per activar el mode de desenvolupador o selecciona Cancel·la per mantenir la protecció.</translation>
 <translation id="8101391381992690790">Comprova que el disc extern tingui una imatge recuperació vàlida i torna a inserir el disc quan estigui a punt.</translation>
 <translation id="8131740175452115882">Confirma</translation>
 <translation id="8199613549817472219">Començant el procés de recuperació</translation>
+<translation id="8377165353588213941">Has arribat al final</translation>
+<translation id="8720490351198901261">Has arribat al principi</translation>
 <translation id="8789686976863801203">Estàs provant d'activar el mode de desenvolupador</translation>
+<translation id="885701979325669005">Emmagatzematge</translation>
 <translation id="9040266428058825675">Si el dispositiu d'emmagatzematge extern està preparat amb una imatge de recuperació, connecta'l al dispositiu per començar el procés de recuperació.</translation>
+<translation id="9058669020755173331">Selecciona el component que vols comprovar.</translation>
 </translationbundle>

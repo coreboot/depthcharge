@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">Data yako ya mtumiaji itafutwa katika mchakato huu.</translation>
 <translation id="4002335453596341558">Ukurasa mmoja chini</translation>
 <translation id="4152977630022273265">Hakikisha kuwa diski yako ya nje ina nakala sahihi ya Mfumo wa Uendeshaji wa Chrome na uiweke tena ikiwa tayari.</translation>
+<translation id="4242315717915611349">Ghairi na urudi nyuma</translation>
 <translation id="4410491068110727276">Tumia vitufe vya sauti ili kusogeza juu au chini.</translation>
 <translation id="4497270882390086583">Unaweza kurejesha ukitumia hifadhi ya nje kama vile hifadhi ya USB au ukitumia simu yako ya Android.</translation>
 <translation id="4773280894882892048">Maelezo ya utatuzi</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Jitayarishe kurejesha kifaa chako. Utahitaji:</translation>
 <translation id="635783852215913562">Tumia vitufe vya vishale ili kusogeza juu au chini.</translation>
 <translation id="6448938863276324156">Unaweza kurejesha ukitumia hifadhi ya nje kama vile hifadhi ya USB.</translation>
+<translation id="6606028407279698587">Ukaguzi kamili wa hifadhi</translation>
 <translation id="6972383785688794804">Ukurasa mmoja juu</translation>
 <translation id="7065553583078443466">Chagua programu mbadala ya kuwasha mfumo wa uendeshaji</translation>
 <translation id="7126032376876878896">Tumia kitufe cha kuwasha/kuzima ili kuteua chaguo.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Chomeka diski yako ya nje yenye picha ya Mfumo wa Uendeshaji wa Chrome. Itawashwa kiotomatiki.</translation>
 <translation id="7187861267433191629">Mfumo wako unaweka sasisho muhimu.</translation>
 <translation id="7236073510654217175">Rudi kwenye hali salama</translation>
+<translation id="7342794948394983731">Zana za uchunguzi</translation>
 <translation id="7352651011704765696">Hitilafu fulani imetokea</translation>
 <translation id="7365121631770711723">2. Kebo ya USB inayounganisha simu yako na kifaa hiki</translation>
 <translation id="7420576176825630019">Washa hali ya wasanidi programu</translation>
 <translation id="7567414219298075193">Ili ujaribu kurekebisha tatizo, anzisha mchakato wa kurejesha. Ondoa vifaa vyote vilivyounganishwa, bonyeza na ushikilie kitufe cha Kurejesha, bonyeza na uachilie kitufe cha Kuwasha/Kuzima ( ⏻ ), kisha uachilie kitufe cha Kurejesha.</translation>
 <translation id="7638747526774710781">1. Nenda kwenye google.com/chromeos/recovery katika kifaa kingine na usakinishe kiendelezi cha Chrome</translation>
 <translation id="7658239707568436148">Ghairi</translation>
+<translation id="7806571448308475633">Ukaguzi wa haraka wa hifadhi</translation>
 <translation id="7939062555109487992">Chaguo mahiri</translation>
 <translation id="8011335065515332253">Baada ya muda kuisha, kifaa kitawaka kiotomatiki kutoka kwenye chaguo hapa chini.</translation>
 <translation id="8027199195649765326">Bonyeza kitufe cha Kurejesha kwenye Chromebox yako ili uwashe hali ya wasanidi programu au uchague 'Ghairi' ili uendelee kulindwa.</translation>
 <translation id="8101391381992690790">Hakikisha kuwa diski yako ya nje ina picha sahihi ya kurejesha na uiweke tena ikiwa tayari.</translation>
 <translation id="8131740175452115882">Thibitisha</translation>
 <translation id="8199613549817472219">Acha tukuelekeze katika mchakato wa kurejesha</translation>
+<translation id="8377165353588213941">Umefikia ukurasa wa mwisho</translation>
+<translation id="8720490351198901261">Umefikia ukurasa wa kwanza</translation>
 <translation id="8789686976863801203">Unajaribu kuwasha hali ya wasanidi programu</translation>
+<translation id="885701979325669005">Hifadhi</translation>
 <translation id="9040266428058825675">Iwapo kifaa cha hifadhi yako ya nje kiko tayari na picha ya kurejesha, kichomeke kwenye kifaa hiki ili uanzishe mchakato wa kurejesha.</translation>
+<translation id="9058669020755173331">Chagua kipengee ambacho ungependa kukagua.</translation>
 </translationbundle>

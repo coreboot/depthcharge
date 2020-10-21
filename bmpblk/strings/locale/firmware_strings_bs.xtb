@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">Korisnički podaci će se uništiti tokom ovog postupka.</translation>
 <translation id="4002335453596341558">Stranica prema dolje</translation>
 <translation id="4152977630022273265">Provjerite nalazi li se na vašem vanjskom disku važeća slika Chrome OS-a i ponovo umetnite disk kada budete spremni.</translation>
+<translation id="4242315717915611349">Otkaži i vrati se nazad</translation>
 <translation id="4410491068110727276">Koristite dugmad za jačinu zvuka za navigiranje nagore ili nadolje.</translation>
 <translation id="4497270882390086583">Oporavak možete izvršiti koristeći vanjsku pohranu, kao što je USB disk ili pomoću Android telefona.</translation>
 <translation id="4773280894882892048">Informacije o ispravci grešaka</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Spremite se za oporavak uređaja. Trebat će vam sljedeće:</translation>
 <translation id="635783852215913562">Koristite tipke sa strelicama za navigiranje nagore i nadolje.</translation>
 <translation id="6448938863276324156">Oporavak možete izvršiti koristeći vanjsku pohranu, kao što je USB disk.</translation>
+<translation id="6606028407279698587">Provjera cijele memorije</translation>
 <translation id="6972383785688794804">Stranica prema gore</translation>
 <translation id="7065553583078443466">Odaberite alternativni program za učitavanje operativnog sistema</translation>
 <translation id="7126032376876878896">Koristite dugme za uključivanje da odaberete opciju.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Priključite vanjski disk na kojem se nalazi slika Chrome OS-a. Automatski će se pokrenuti.</translation>
 <translation id="7187861267433191629">Sistem primjenjuje važno ažuriranje.</translation>
 <translation id="7236073510654217175">Povratak na sigurni način rada</translation>
+<translation id="7342794948394983731">Dijagnostički alati</translation>
 <translation id="7352651011704765696">Nešto nije uredu</translation>
 <translation id="7365121631770711723">2. USB kabl koji povezuje vaš telefon i ovaj uređaj</translation>
 <translation id="7420576176825630019">Omogući način rada za programere</translation>
 <translation id="7567414219298075193">Da pokušate riješiti problem, započnite proces oporavka. Uklonite sve povezane uređaje, zatim držite pritisnutim dugme za oporavak, pritisnite i pustite dugme za uključivanje ( ⏻ ) te pustite dugme za oporavak.</translation>
 <translation id="7638747526774710781">1. Idite na google.com/chromeos/recovery na drugom uređaju i instalirajte ekstenziju za Chrome</translation>
 <translation id="7658239707568436148">Otkaži</translation>
+<translation id="7806571448308475633">Brza provjera memorije</translation>
 <translation id="7939062555109487992">Napredne opcije</translation>
 <translation id="8011335065515332253">Nakon isteka vremena uređaj će se automatski pokrenuti sa stavke odabrane ispod.</translation>
 <translation id="8027199195649765326">Pritisnite dugme za oporavak na Chromeboxu da omogućite način rada za programere ili odaberite Otkaži da ostanete zaštićeni.</translation>
 <translation id="8101391381992690790">Provjerite nalazi li se na vanjskom disku važeća slika za oporavak te ponovo umetnite disk kada budete spremni.</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8199613549817472219">Prođimo kroz postupak oporavka</translation>
+<translation id="8377165353588213941">Došli ste do kraja</translation>
+<translation id="8720490351198901261">Došli ste do vrha</translation>
 <translation id="8789686976863801203">Pokušavate omogućiti način rada za programere</translation>
+<translation id="885701979325669005">Pohrana</translation>
 <translation id="9040266428058825675">Ako je spreman vanjski uređaj za pohranu sa slikom za oporavak, priključite ga u ovaj uređaj da započnete proces oporavka.</translation>
+<translation id="9058669020755173331">Odaberite komponentu koju želite provjeriti.</translation>
 </translationbundle>

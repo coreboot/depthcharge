@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">Seus dados de usuário serão permanentemente excluídos no processo.</translation>
 <translation id="4002335453596341558">Página abaixo</translation>
 <translation id="4152977630022273265">Verifique se o disco externo tem uma imagem do Chrome OS válida e o reinsira quando estiver tudo pronto.</translation>
+<translation id="4242315717915611349">Cancelar e voltar</translation>
 <translation id="4410491068110727276">Use os botões de volume para navegar para cima ou para baixo.</translation>
 <translation id="4497270882390086583">É possível fazer a recuperação usando um armazenamento externo, como um drive USB ou seu smartphone Android.</translation>
 <translation id="4773280894882892048">Informações de depuração</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Prepare-se para recuperar seu dispositivo. Para isso, tenha em mãos:</translation>
 <translation id="635783852215913562">Use as teclas de seta para navegar para cima ou para baixo.</translation>
 <translation id="6448938863276324156">É possível fazer a recuperação usando um armazenamento externo, como um drive USB.</translation>
+<translation id="6606028407279698587">Verificação de memória cheia</translation>
 <translation id="6972383785688794804">Página acima</translation>
 <translation id="7065553583078443466">Selecione um carregador de inicialização alternativo</translation>
 <translation id="7126032376876878896">Use o botão liga/desliga para selecionar uma opção.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Conecte o disco externo com imagem do Chrome OS. Ele será inicializado automaticamente.</translation>
 <translation id="7187861267433191629">O sistema está aplicando uma atualização crítica.</translation>
 <translation id="7236073510654217175">Voltar ao modo seguro</translation>
+<translation id="7342794948394983731">Ferramentas de diagnósticos</translation>
 <translation id="7352651011704765696">Algo deu errado</translation>
 <translation id="7365121631770711723">2. Um cabo USB que pode conectar o smartphone a este dispositivo</translation>
 <translation id="7420576176825630019">Ativar o modo de desenvolvedor</translation>
 <translation id="7567414219298075193">Para tentar corrigir o problema, inicie o processo de recuperação. Remova todos os dispositivos conectados, mantenha o botão de recuperação pressionado, pressione e solte o botão liga/desliga (⏻) e solte o botão de recuperação.</translation>
 <translation id="7638747526774710781">1. Acesse google.com/chromeos/recovery no outro dispositivo e instale a extensão do Chrome</translation>
 <translation id="7658239707568436148">Cancelar</translation>
+<translation id="7806571448308475633">Verificação rápida de memória</translation>
 <translation id="7939062555109487992">Opções avançadas</translation>
 <translation id="8011335065515332253">Depois do tempo limite, o dispositivo será inicializado automaticamente por meio da seleção abaixo.</translation>
 <translation id="8027199195649765326">Pressione o botão Recuperação no Chromebox para ativar o modo de desenvolvedor ou selecione "Cancelar" para continuar com o dispositivo protegido.</translation>
 <translation id="8101391381992690790">Verifique se o disco externo tem uma imagem de recuperação válida e o reinsira quando estiver tudo pronto.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8199613549817472219">Vamos orientar você pelo processo de recuperação</translation>
+<translation id="8377165353588213941">Você chegou ao fim</translation>
+<translation id="8720490351198901261">Você chegou ao topo</translation>
 <translation id="8789686976863801203">Você está tentando ativar o modo de desenvolvedor</translation>
+<translation id="885701979325669005">Armazenamento</translation>
 <translation id="9040266428058825675">Se o dispositivo de armazenamento externo estiver pronto e tiver uma imagem de recuperação, conecte-o a este dispositivo para iniciar o processo.</translation>
+<translation id="9058669020755173331">Selecionar o componente a ser verificado.</translation>
 </translationbundle>

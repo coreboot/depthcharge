@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">Your user data will be wiped in the process.</translation>
 <translation id="4002335453596341558">Page down</translation>
 <translation id="4152977630022273265">Make sure that your external disk has a valid Chrome OS image, and re-insert the disk when ready.</translation>
+<translation id="4242315717915611349">Cancel and go back</translation>
 <translation id="4410491068110727276">Use the volume buttons to navigate up or down.</translation>
 <translation id="4497270882390086583">You can recover using external storage such as a USB drive, or using your Android phone.</translation>
 <translation id="4773280894882892048">Debug info</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Get ready to recover your device. You'll need:</translation>
 <translation id="635783852215913562">Use the arrow keys to navigate up or down.</translation>
 <translation id="6448938863276324156">You can recover using external storage such as a USB drive.</translation>
+<translation id="6606028407279698587">Full memory check</translation>
 <translation id="6972383785688794804">Page up</translation>
 <translation id="7065553583078443466">Select alternate bootloader</translation>
 <translation id="7126032376876878896">Use the power button to select an option.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Plug in your external disk with a Chrome OS image. It will be booted automatically.</translation>
 <translation id="7187861267433191629">Your system is applying a critical update.</translation>
 <translation id="7236073510654217175">Return to secure mode</translation>
+<translation id="7342794948394983731">Diagnostic tools</translation>
 <translation id="7352651011704765696">Something went wrong</translation>
 <translation id="7365121631770711723">2. A USB cable which connects your phone and this device</translation>
 <translation id="7420576176825630019">Enable developer mode</translation>
 <translation id="7567414219298075193">To try and fix the issue, start the recovery process. Remove all connected devices, then hold down the recovery button, press and release the power button ( ⏻ ) and then release the recovery button.</translation>
 <translation id="7638747526774710781">1. Go to google.com/chromeos/recovery on the other device and install the Chrome extension</translation>
 <translation id="7658239707568436148">Cancel</translation>
+<translation id="7806571448308475633">Quick memory check</translation>
 <translation id="7939062555109487992">Advanced options</translation>
 <translation id="8011335065515332253">After timeout, the device will automatically boot from the selection below.</translation>
 <translation id="8027199195649765326">Press the Recovery button on your Chromebox to enable developer mode, or select Cancel to remain protected.</translation>
 <translation id="8101391381992690790">Make sure that your external disk has a valid recovery image, and re-insert the disk when ready.</translation>
 <translation id="8131740175452115882">Confirm</translation>
 <translation id="8199613549817472219">Let’s guide you through the recovery process</translation>
+<translation id="8377165353588213941">You have reached the end</translation>
+<translation id="8720490351198901261">You have reached the top</translation>
 <translation id="8789686976863801203">You are attempting to enable developer mode</translation>
+<translation id="885701979325669005">Storage</translation>
 <translation id="9040266428058825675">If your external storage device is ready with a recovery image, plug it into this device to start the recovery process.</translation>
+<translation id="9058669020755173331">Select the component that you’d like to check.</translation>
 </translationbundle>

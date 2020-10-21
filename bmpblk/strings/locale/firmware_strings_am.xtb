@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">የተጠቃሚ ውሂብዎ በሂደቱ ጊዜ ይደመሰሳል።</translation>
 <translation id="4002335453596341558">ገጽ ወደ ታች</translation>
 <translation id="4152977630022273265">ውጫዊ ዲስክዎ ትክክለኛ የChrome የስርዓተ ክወና ምስል እንዳለው ያረጋግጡ እና ዝግጁ ሲሆን ዲስኩን ድጋሚ ያስገቡ።</translation>
+<translation id="4242315717915611349">ሰርዝና ተመለስ</translation>
 <translation id="4410491068110727276">ወደ ላይ ወይም ወደ ታች ለማሰስ የድምፅ አዝራሮችን ይጠቀሙ።</translation>
 <translation id="4497270882390086583">እንደ የዩኤስቢ አንጻፊ ያለ ውጫዊ ማከማቻን በመጠቀም ወይም የAndroid ስልክዎን በመጠቀም መልሰው ማግኘት ይችላሉ።</translation>
 <translation id="4773280894882892048">የስህተት ማረሚያ መረጃ</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">መሣሪያዎን መልሰው ለማግኘት ይዘጋጁ። እነዚህ ያስፈልገዎታል፦</translation>
 <translation id="635783852215913562">ወደ ላይ ወይም ወደ ታች ለማሰስ የቀስት ቁልፎቹን ይጠቀሙ።</translation>
 <translation id="6448938863276324156">እንደ የዩኤስቢ አንጻፊ ያለ ውጫዊ ማከማቻን በመጠቀም መልሰው ማግኘት ይችላሉ።</translation>
+<translation id="6606028407279698587">ሙሉ ማህደረ ትውስታ ፍተሻ</translation>
 <translation id="6972383785688794804">ገጽ ወደ ላይ</translation>
 <translation id="7065553583078443466">አምራጭ ማስነሻን ይምረጡ</translation>
 <translation id="7126032376876878896">አንድ አማራጭ ለመምረጥ የማብሪያ/ማጥፊያ ቁልፍ ይጠቀሙ።</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">የChrome OS ምስል ያለው ውጫዊ ዲስክዎን ይሰኩ። በራስ-ሰር ይነሳል።</translation>
 <translation id="7187861267433191629">የእርስዎ ስርዓት ወሳኝ ዝማኔ እየተገበረ ነው።</translation>
 <translation id="7236073510654217175">ወደ ደህንነቱ የተጠበቀ ሁነታ ተመለስ</translation>
+<translation id="7342794948394983731">የምርመራ መሳሪያዎች</translation>
 <translation id="7352651011704765696">የሆነ ችግር ተፈጥሯል</translation>
 <translation id="7365121631770711723">2. ስልክዎን እና ይህን መሣሪያ የሚያገናኝ የዩኤስቢ ገመድ</translation>
 <translation id="7420576176825630019">የገንቢ ሁነታን አንቃ</translation>
 <translation id="7567414219298075193">ችግሩን ለመሞከር እና ለማስተካከል የመልሶ ማግኛ ሂደቱን ይጀምሩ። ሁሉንም የተገናኙ መሣሪያዎችን ያስወግዱ፣ ከዚያ የመልሶ ማግኛ አዝራሩን ይያዙ፣ የኃይል አዝራሩን ( ⏻ ) ይጫኑ እና ይልቀቁ፣ የመልሶ ማግኛ አዝራሩን ይልቀቁ።</translation>
 <translation id="7638747526774710781">1. በሌላ መሣሪያ ላይ ወደ google.com/chromeos/recovery ይሂዱ እና የChrome ቅጥያን ይጫኑ</translation>
 <translation id="7658239707568436148">ይቅር</translation>
+<translation id="7806571448308475633">ፈጣን የማህደረ ትውስታ ፍተሻ</translation>
 <translation id="7939062555109487992">የላቁ አማራጮች</translation>
 <translation id="8011335065515332253">ከእረፍት ጊዜ በኋላ መሣሪያው በራስ-ሰር ከታች ካለው ምርጫ ውስጥ ከአንዱ በራስ-ሰር ይነሳል።</translation>
 <translation id="8027199195649765326">የገንቢ ሁነታን ለማንቃት በእርስዎ Chromebook ላይ ያለውን የመልሶ ማግኛ አዝራር ይጫኑ፣ ወይም ደግሞ እንደተጠበቁ ለመቆየት ይቅርን ይምረጡ።</translation>
 <translation id="8101391381992690790">የእርስዎ ውጫዊ ዲስክ የሚሰራ የመልሶ ማግኛ ምስል እንዳለው ያረጋግጡ፣ ከዚያ ዝግጁ ሲሆን መልሰው ያስገቡ።</translation>
 <translation id="8131740175452115882">አረጋግጥ</translation>
 <translation id="8199613549817472219">ወደ የመልሶ ማግኛ ሂደቱ እንምራዎት</translation>
+<translation id="8377165353588213941">መጨረሻው ላይ ደርሰዋል</translation>
+<translation id="8720490351198901261">ከላይ ደርሰዋል</translation>
 <translation id="8789686976863801203">እርስዎ የገንቢ ሁነታን ለማንቃት እየሞከሩ ነው</translation>
+<translation id="885701979325669005">ማከማቻ</translation>
 <translation id="9040266428058825675">የእርስዎ ውጫዊ ማከማቻ መሣሪያ ከመልሶ ማግኛ ምስል ጋር ዝግጁ ከሆነ የመልሶ ማግኘት ሂደቱን ለመጀመር በዚህ መሣሪያ ላይ ያስገቡት።</translation>
+<translation id="9058669020755173331">ለመፈተሽ የሚፈልጉትን አካል ይምረጡ።</translation>
 </translationbundle>

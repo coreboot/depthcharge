@@ -29,6 +29,7 @@
 <translation id="3964506597604121312">Din användardata rensas från enheten under processen.</translation>
 <translation id="4002335453596341558">En sida ned</translation>
 <translation id="4152977630022273265">Kontrollera att det finns en giltig avbildning av Chrome OS på den externa disken och sätt i disken igen när du är redo.</translation>
+<translation id="4242315717915611349">Avbryt och gå tillbaka</translation>
 <translation id="4410491068110727276">Navigera uppåt eller nedåt med volymknapparna.</translation>
 <translation id="4497270882390086583">Du kan göra en återställning med en Android-telefon eller en extern lagringsenhet, till exempel ett USB-minne.</translation>
 <translation id="4773280894882892048">Felsökningsinformation</translation>
@@ -48,6 +49,7 @@
 <translation id="6191358901427525316">Förbered återställningen av enheten. Du behöver följande:</translation>
 <translation id="635783852215913562">Navigera uppåt eller nedåt med piltangenterna.</translation>
 <translation id="6448938863276324156">Du kan göra en återställning med en extern lagringsenhet, till exempel ett USB-minne.</translation>
+<translation id="6606028407279698587">Fullständig genomsökning av minnet</translation>
 <translation id="6972383785688794804">En sida upp</translation>
 <translation id="7065553583078443466">Välj en alternativ starthanterare</translation>
 <translation id="7126032376876878896">Välj ett alternativ genom att trycka på strömbrytaren.</translation>
@@ -55,18 +57,24 @@
 <translation id="7157640574359006953">Anslut en extern disk med en avbildning av Chrome OS. Den startas automatiskt.</translation>
 <translation id="7187861267433191629">En viktig uppdatering tillämpas av systemet.</translation>
 <translation id="7236073510654217175">Återgå till säkert läge</translation>
+<translation id="7342794948394983731">Verktyg för diagnostik</translation>
 <translation id="7352651011704765696">Något gick fel</translation>
 <translation id="7365121631770711723">2. En USB-kabel som ansluter telefonen till den här enheten</translation>
 <translation id="7420576176825630019">Aktivera utvecklarläget</translation>
 <translation id="7567414219298075193">Starta återställningsprocessen för att försöka åtgärda problemet. Ta bort alla anslutna enheter. Sedan håller du återställningsknappen nedtryckt, trycker på och släpper strömbrytaren ( ⏻ ) och släpper återställningsknappen.</translation>
 <translation id="7638747526774710781">1. Öppna google.com/chromeos/recovery på den andra datorn och installera Chrome-tillägget</translation>
 <translation id="7658239707568436148">Avbryt</translation>
+<translation id="7806571448308475633">Snabb genomsökning av minnet</translation>
 <translation id="7939062555109487992">Avancerade alternativ</translation>
 <translation id="8011335065515332253">När tidsgränsen har uppnåtts startar enheten automatiskt från det du har valt nedan.</translation>
 <translation id="8027199195649765326">Aktivera utvecklarläget genom att trycka på återställningsknappen på Chromebox eller välj Avbryt om du vill behålla skyddet.</translation>
 <translation id="8101391381992690790">Kontrollera att det finns en giltig återställningsavbildning på den externa disken och sätt i disken igen när du är redo.</translation>
 <translation id="8131740175452115882">Bekräfta</translation>
 <translation id="8199613549817472219">Vi går igenom återställningsprocessen</translation>
+<translation id="8377165353588213941">Du har nått slutet av sidan</translation>
+<translation id="8720490351198901261">Du är högst upp på sidan</translation>
 <translation id="8789686976863801203">Du försöker aktivera utvecklarläget</translation>
+<translation id="885701979325669005">Lagring</translation>
 <translation id="9040266428058825675">Om du har förberett det externa lagringsutrymmet med återställningsavbildningen startar du återställningsprocessen genom att ansluta den till enheten.</translation>
+<translation id="9058669020755173331">Välj komponenten som du vill kontrollera.</translation>
 </translationbundle>
