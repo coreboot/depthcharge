@@ -30,7 +30,7 @@ config DETACHABLE
 
 config MENU_UI
 	bool "Enable menu UI"
-	default n
+	default y
 	help
 	  Enable menu UI, which is designed to replace the legacy menu UI
 	  (LEGACY_MENU_UI) and the legacy clamshell UI (LEGACY_CLAMSHELL_UI). It
@@ -47,7 +47,7 @@ config LEGACY_MENU_UI
 config LEGACY_CLAMSHELL_UI
 	bool "Enable legacy clamshell UI"
 	depends on !MENU_UI && !LEGACY_MENU_UI
-	default y
+	default n
 	help
 	  Enable legacy clamshell UI (without menu), which is used with devices
 	  that have a keyboard (non-detachables).
