@@ -1,0 +1,11 @@
+# Don't delete this file if you want to keep keyword_check enabled even if it's
+# empty.
+#
+# See repohooks/README.md for more details.
+
+insane
+\bhe\b
+master
+\bnative
+sane
+sanity
