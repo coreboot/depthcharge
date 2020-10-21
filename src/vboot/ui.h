@@ -52,7 +52,7 @@
 
 /* Margins for all screens. Nothing should be drawn within the margin. */
 #define UI_MARGIN_TOP				30
-#define UI_MARGIN_BOTTOM			70
+#define UI_MARGIN_BOTTOM			50
 #define UI_MARGIN_H				50
 
 /* For language dropdown header */
@@ -115,13 +115,14 @@
 
 /* For footer */
 #define UI_FOOTER_MARGIN_TOP			30
-#define UI_FOOTER_HEIGHT			108
+#define UI_FOOTER_HEIGHT			128
 #define UI_FOOTER_TEXT_HEIGHT			20
 #define UI_FOOTER_COL1_MARGIN_RIGHT		20
 #define UI_FOOTER_COL2_LINE_SPACING		4
 #define UI_FOOTER_COL2_MARGIN_RIGHT		40
 #define UI_FOOTER_COL3_MARGIN_LEFT		40
-#define UI_FOOTER_COL3_PARA_SPACING		28
+#define UI_FOOTER_COL3_SPACING_MIN		5
+#define UI_FOOTER_COL3_PARA_SPACING		48
 #define UI_FOOTER_COL3_ICON_HEIGHT		30
 #define UI_FOOTER_COL3_ICON_SPACING		5
 
