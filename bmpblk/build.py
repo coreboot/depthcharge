@@ -82,6 +82,29 @@ class BuildImageError(Exception):
   """The exception class for all errors generated during build image process."""
 
 
+# Some of the numbers below are from depthcharge:
+# - 1000: UI_SCALE
+# - 50: UI_MARGIN_H
+# - 228: UI_REC_QR_SIZE
+# - 24: UI_REC_QR_MARGIN_H
+# - 24: UI_DESC_TEXT_HEIGHT
+# - 128: UI_FOOTER_HEIGHT
+# - 20: UI_FOOTER_COL1_MARGIN_RIGHT
+# - 282: width of rec_url.bmp
+# - 40: UI_FOOTER_COL2_MARGIN_RIGHT
+# - 40: UI_FOOTER_COL3_MARGIN_LEFT
+# - 20: UI_FOOTER_TEXT_HEIGHT
+
+DEFAULT_MAX_WIDTH = 1000 - 50 * 2
+
+MAX_WIDTH_LOOKUPS = [
+    (re.compile(r'rec_phone_step2_desc'), DEFAULT_MAX_WIDTH - 228 - 24 * 2, 24),
+    (re.compile(r'navigate\w*'), DEFAULT_MAX_WIDTH - 128 - 20 - 282 - 40 - 40,
+     20),
+    (re.compile(r'\w+_desc\w*'), DEFAULT_MAX_WIDTH, 24),
+]
+
+
 def convert_text_to_png(locale, input_file, font, margin, output_dir,
                         options=None):
   """Converts text files into PNG image files.
@@ -107,26 +130,21 @@ def convert_text_to_png(locale, input_file, font, margin, output_dir,
   if margin:
     command.append('--margin="%s"' % margin)
   # TODO(b/159399377): Set different widths for titles and descriptions.
-  # Currently only wrap lines for descriptions.
-  if '_desc' in name:
-    # Without the --width option set, the minimum height of the output SVG
-    # image is roughly 22px (for locale 'en'). With --width=WIDTH passed to
-    # pango-view, the width of the output seems to always be (WIDTH * 4 / 3),
-    # regardless of the font being used. Therefore, set the max_width in
-    # points as follows to prevent drawing from exceeding canvas boundary in
-    # depthcharge runtime.
-    # Some of the numbers below are from depthcharge:
-    # - 1000: UI_SCALE
-    # - 50: UI_MARGIN_H
-    # - 228: UI_REC_QR_SIZE
-    # - 24: UI_REC_QR_MARGIN_H
-    # - 24: UI_DESC_TEXT_HEIGHT
-    if name == 'rec_phone_step2_desc':
-      max_width = 1000 - 50 * 2 - 228 - 24 * 2
-    else:
-      max_width = 1000 - 50 * 2
-    max_width_pt = int(22 * max_width / 24 / (4 / 3))
-    command.append('--width=%d' % max_width_pt)
+  # Currently only wrap lines for descriptions and navigation instructions in
+  # the footer.
+  # Without the --width option set, the minimum height of the output SVG
+  # image is roughly 22px (for locale 'en'). With --width=WIDTH passed to
+  # pango-view, the width of the output seems to always be (WIDTH * 4 / 3),
+  # regardless of the font being used. Therefore, set the max_width in
+  # points as follows to prevent drawing from exceeding canvas boundary in
+  # depthcharge runtime.
+
+  for pattern, max_width, text_height in MAX_WIDTH_LOOKUPS:
+    if pattern.fullmatch(name):
+      max_width_pt = int(22 * max_width / text_height / (4 / 3))
+      command.append('--width=%d' % max_width_pt)
+      break
+
   if options:
     command.extend(options)
   command.append(input_file)
@@ -785,7 +803,7 @@ class Converter(object):
 
       # Determine num_lines in order to scale the image
       # TODO(b/159399377): Wrap lines for texts other than descriptions.
-      if one_line_dir and '_desc' in name:
+      if one_line_dir and ('_desc' in name or name.startswith('navigate')):
         num_lines = self.get_num_lines(file, one_line_dir)
       else:
         num_lines = 1
