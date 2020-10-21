@@ -184,20 +184,44 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 	VB2_TRY(ui_draw_box(x, footer_y, UI_SIZE_MIN, footer_height,
 			    &ui_color_border, reverse));
 
-	/* Column 3: 2 lines of text */
+	/*
+	 * Column 3 contains:
+	 * - Navigation instruction string 1 (possibly multi-line)
+	 * - Navigation instruction string 2 (possibly multi-line)
+	 * - Navigation icons (one line)
+	 * vspacing is the space between 2 navigation strings, while
+	 * para_spacing is the space before the icon line.
+	 */
 	int32_t icon_width;
+	int32_t para_spacing;
+	uint32_t col3_num_lines0, col3_num_lines1;
 	const int32_t icon_height = UI_FOOTER_COL3_ICON_HEIGHT;
+	struct ui_bitmap col3_bitmap0, col3_bitmap1;
+	VB2_TRY(ui_get_bitmap("navigate0.bmp", locale_code, 0, &col3_bitmap0));
+	VB2_TRY(ui_get_bitmap("navigate1.bmp", locale_code, 0, &col3_bitmap1));
+	col3_num_lines0 = ui_get_bitmap_num_lines(&col3_bitmap0);
+	col3_num_lines1 = ui_get_bitmap_num_lines(&col3_bitmap1);
 	x += UI_FOOTER_COL3_MARGIN_LEFT;
 	y = footer_y;
-	vspacing = footer_height - text_height * 2 - icon_height -
-		UI_FOOTER_COL3_PARA_SPACING;
-	VB2_TRY(ui_get_bitmap("navigate0.bmp", locale_code, 0, &bitmap));
-	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, text_height, flags, reverse));
-	y += text_height + vspacing;
+	para_spacing = UI_FOOTER_COL3_PARA_SPACING;
+	vspacing = footer_height -
+		text_height * (col3_num_lines0 + col3_num_lines1) -
+		icon_height - UI_FOOTER_COL3_PARA_SPACING;
+	/* Not enough room for the vspacing; reduce the para_spacing */
+	if (vspacing < 0) {
+		para_spacing = MAX(para_spacing + vspacing -
+				   UI_FOOTER_COL3_SPACING_MIN,
+				   UI_FOOTER_COL3_SPACING_MIN);
+		vspacing = UI_FOOTER_COL3_SPACING_MIN;
+	}
 
-	VB2_TRY(ui_get_bitmap("navigate1.bmp", locale_code, 0, &bitmap));
-	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, text_height, flags, reverse));
-	y += text_height + UI_FOOTER_COL3_PARA_SPACING;
+	VB2_TRY(ui_draw_bitmap(&col3_bitmap0, x, y, w,
+			       text_height * col3_num_lines0, flags, reverse));
+	y += text_height * col3_num_lines0 + vspacing;
+
+	VB2_TRY(ui_draw_bitmap(&col3_bitmap1, x, y, w,
+			       text_height * col3_num_lines1, flags, reverse));
+	y += text_height * col3_num_lines1 + para_spacing;
 
 	const char *const icon_files[] = {
 		"nav-key_enter.bmp",
