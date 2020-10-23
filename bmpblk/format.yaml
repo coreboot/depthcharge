@@ -2,244 +2,160 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# This file is the source of truth for both generic (locale-independent) and
+# localized strings. For sprite bitmaps (image assets), however, all SVG and PNG
+# files under the 'assets' folder will be included.
+# TODO(b/172402906): Explicitly list each sprite bitmap in this file.
+
 locales: [ ar, bg, ca, cs, da, de, el, en, es, es-419, et, fa, fi, fil, fr,
            he, hi, hr, hu, id, it, ja, ko, lt, lv, ms, nl, nb, pl, pt-BR,
            pt-PT, ro, ru, sk, sl, sr, sv, th, tr, uk, vi, zh-CN, zh-TW,
            bn, gu, kn, ml, mr, ta, te ]
 
-files:
+# Generic strings
+# Key is the string name (see strings/*.txt); value is the category of the
+# string.
+generic_files:
+  rec_url: footer  # see strings/rec_url.txt
+
+# Localized strings
+# Key is the name in firmware_strings.grd; value is the category of the string.
+localized_files:
   # pre-generated
-  language:
+  language: language
   # firmware sync
-  firmware_sync_title:
-  firmware_sync_desc:
+  firmware_sync_title: title
+  firmware_sync_desc: desc
   # broken screen
-  broken_title:
-  broken_desc:
-  broken_desc_phyrec:
-  broken_desc_detach:
+  broken_title: title
+  broken_desc: desc
+  broken_desc_phyrec: desc
+  broken_desc_detach: desc
   # advanced options
-  adv_options_title:
-  btn_dev_mode:
-  btn_debug_info:
-  btn_firmware_log:
+  adv_options_title: title
+  btn_dev_mode: primary_button
+  btn_debug_info: primary_button
+  btn_firmware_log: primary_button
   # debug info and firmware log
-  debug_info_title:
-  firmware_log_title:
+  debug_info_title: title
+  firmware_log_title: title
   # recovery screen
-  rec_sel_title:
-  rec_sel_desc0:
-  rec_sel_desc1:
-  rec_sel_desc1_no_sd:
-  rec_sel_desc1_no_phone:
-  rec_sel_desc1_no_phone_no_sd:
-  btn_rec_by_phone:
-  btn_rec_by_disk:
+  rec_sel_title: title
+  rec_sel_desc0: desc
+  rec_sel_desc1: desc
+  rec_sel_desc1_no_sd: desc
+  rec_sel_desc1_no_phone: desc
+  rec_sel_desc1_no_phone_no_sd: desc
+  btn_rec_by_phone: primary_button
+  btn_rec_by_disk: primary_button
   # recovery - common
-  rec_step1_title:
-  rec_step1_desc2:
-  rec_step1_desc2_low_bat:
+  rec_step1_title: title
+  rec_step1_desc2: desc
+  rec_step1_desc2_low_bat: desc
   # recovery - phone
-  rec_phone_step1_desc0:
-  rec_phone_step1_desc1:
-  rec_phone_step2_title:
-  rec_phone_step2_desc:
+  rec_phone_step1_desc0: desc
+  rec_phone_step1_desc1: desc
+  rec_phone_step2_title: title
+  rec_phone_step2_desc: desc
   # recovery - disk
-  rec_disk_step1_desc0:
-  rec_disk_step1_desc0_no_sd:
-  rec_disk_step1_desc1:
-  rec_disk_step2_title:
-  rec_disk_step2_desc0:
-  rec_disk_step2_desc1:
-  rec_disk_step2_desc2:
-  rec_disk_step3_title:
-  rec_disk_step3_desc0:
+  rec_disk_step1_desc0: desc
+  rec_disk_step1_desc0_no_sd: desc
+  rec_disk_step1_desc1: desc
+  rec_disk_step2_title: title
+  rec_disk_step2_desc0: desc
+  rec_disk_step2_desc1: desc
+  rec_disk_step2_desc2: desc
+  rec_disk_step3_title: title
+  rec_disk_step3_desc0: desc
   # recovery - error
-  rec_invalid_title:
-  rec_invalid_desc:
-  rec_invalid_disk_desc:
+  rec_invalid_title: title
+  rec_invalid_desc: desc
+  rec_invalid_disk_desc: desc
   # to-dev screen
-  rec_to_dev_title:
-  rec_to_dev_desc0:
-  rec_to_dev_desc1:
-  rec_to_dev_desc1_phyrec:
-  rec_to_dev_desc1_power:
+  rec_to_dev_title: title
+  rec_to_dev_desc0: desc
+  rec_to_dev_desc1: desc
+  rec_to_dev_desc1_phyrec: desc
+  rec_to_dev_desc1_power: desc
   # developer screen
-  dev_title:
-  dev_desc0:
-  dev_desc1:
-  btn_secure_mode:
-  btn_int_disk:
-  btn_ext_disk:
-  btn_alt_bootloader:
+  dev_title: title
+  dev_desc0: desc
+  dev_desc1: desc
+  btn_secure_mode: primary_button
+  btn_int_disk: primary_button
+  btn_ext_disk: primary_button
+  btn_alt_bootloader: primary_button
   # to-norm screen
-  dev_to_norm_title:
-  dev_to_norm_desc0:
-  dev_to_norm_desc1:
+  dev_to_norm_title: title
+  dev_to_norm_desc0: desc
+  dev_to_norm_desc1: desc
   # developer: boot from external disk
-  dev_boot_ext_title:
-  dev_boot_ext_desc0:
-  dev_invalid_disk_title:
-  dev_invalid_disk_desc0:
+  dev_boot_ext_title: title
+  dev_boot_ext_desc0: desc
+  dev_invalid_disk_title: title
+  dev_invalid_disk_desc0: desc
   # developer: select bootloader
-  dev_select_bootloader_title:
+  dev_select_bootloader_title: title
   # generic buttons
-  btn_next:
-  btn_back:
-  btn_confirm:
-  btn_cancel:
-  btn_adv_options:
-  btn_power_off:
+  btn_next: primary_button
+  btn_back: primary_button
+  btn_confirm: primary_button
+  btn_cancel: primary_button
+  btn_adv_options: secondary_button
+  btn_power_off: secondary_button
   # log screen
-  btn_page_up:
-  btn_page_down:
-  page_up_disabled_help:
-  page_down_disabled_help:
+  btn_page_up: primary_button
+  btn_page_down: primary_button
+  page_up_disabled_help: help
+  page_down_disabled_help: help
   # footer
-  model:
-  help_center:
-  navigate0:
-  navigate1:
-  navigate0_tablet:
-  navigate1_tablet:
+  model: footer
+  help_center: footer
+  navigate0: footer
+  navigate1: footer
+  navigate0_tablet: footer
+  navigate1_tablet: footer
 
 diagnostic_files:
   # diagnostic tools - menu
-  btn_launch_diag:
-  diag_menu_title:
-  diag_menu_desc0:
-  btn_diag_storage:
-  btn_diag_memory_quick:
-  btn_diag_memory_full:
+  btn_launch_diag: secondary_button
+  diag_menu_title: title
+  diag_menu_desc0: desc
+  btn_diag_storage: primary_button
+  btn_diag_memory_quick: primary_button
+  btn_diag_memory_full: primary_button
   # diagnostic tools - storage
-  diag_storage_title:
+  diag_storage_title: title
   # diagnostic tools - memory
-  diag_memory_quick_title:
-  diag_memory_full_title:
-  btn_diag_cancel:
+  diag_memory_quick_title: title
+  diag_memory_full_title: title
+  btn_diag_cancel: primary_button
 
-aliases:
-  - &base_color '--color=#E9EAED --bgcolor=202124'
-  - &dark_color '--color=9AA0A6 --bgcolor=202124'
-  # The colors of buttons, links, and help texts will be adjusted at runtime.
-  - &lang_color '--color=FFFFFF --bgcolor=000000'
-  - &button_color '--color=FFFFFF --bgcolor=000000'
-  - &link_color '--color=FFFFFF --bgcolor=000000'
-  - &help_color '--color=FFFFFF --bgcolor=000000'
+# Google material colors
+# See https://carbon.googleplex.com/cros-ux/pages/color/overview.
+color_aliases:
+  - &grey_900 '#202124'
+  - &grey_500 '#9aa0a6'
+  - &grey_200 '#e9eaed'
 
+# Style of each category
+# Keys and values will be passed to text_to_png_svg as options.
 styles:
-  # pre-generated
-  language: *lang_color
-  # firmware sync
-  firmware_sync_title: *base_color
-  firmware_sync_desc: *base_color
-  # broken screen
-  broken_title: *base_color
-  broken_desc: *base_color
-  broken_desc_phyrec: *base_color
-  broken_desc_detach: *base_color
-  # advanced options
-  adv_options_title: *base_color
-  btn_dev_mode: *button_color
-  btn_debug_info: *button_color
-  btn_firmware_log: *button_color
-  # debug info and firmware log
-  debug_info_title: *base_color
-  firmware_log_title: *base_color
-  # recovery screen
-  rec_sel_title: *base_color
-  rec_sel_desc0: *base_color
-  rec_sel_desc1: *base_color
-  rec_sel_desc1_no_sd: *base_color
-  rec_sel_desc1_no_phone: *base_color
-  rec_sel_desc1_no_phone_no_sd: *base_color
-  btn_rec_by_phone: *button_color
-  btn_rec_by_disk: *button_color
-  # recovery - common
-  rec_step1_title: *base_color
-  rec_step1_desc2: *base_color
-  rec_step1_desc2_low_bat: *base_color
-  # recovery - phone
-  rec_phone_step1_desc0: *base_color
-  rec_phone_step1_desc1: *base_color
-  rec_phone_step2_title: *base_color
-  rec_phone_step2_desc: *base_color
-  # recovery - disk
-  rec_disk_step1_title: *base_color
-  rec_disk_step1_desc0: *base_color
-  rec_disk_step1_desc0_no_sd: *base_color
-  rec_disk_step1_desc1: *base_color
-  rec_disk_step1_desc2: *base_color
-  rec_disk_step1_desc2_low_bat: *base_color
-  rec_disk_step2_title: *base_color
-  rec_disk_step2_desc0: *base_color
-  rec_disk_step2_desc1: *base_color
-  rec_disk_step2_desc2: *base_color
-  rec_disk_step3_title: *base_color
-  rec_disk_step3_desc0: *base_color
-  # recovery - error
-  rec_invalid_title: *base_color
-  rec_invalid_desc: *base_color
-  rec_invalid_disk_desc: *base_color
-  # to-dev screen
-  rec_to_dev_title: *base_color
-  rec_to_dev_desc0: *base_color
-  rec_to_dev_desc1: *base_color
-  rec_to_dev_desc1_phyrec: *base_color
-  rec_to_dev_desc1_power: *base_color
-  # developer screen
-  dev_title: *base_color
-  dev_desc0: *base_color
-  dev_desc1: *base_color
-  btn_secure_mode: *button_color
-  btn_int_disk: *button_color
-  btn_ext_disk: *button_color
-  btn_alt_bootloader: *button_color
-  # to-norm screen
-  dev_to_norm_title: *base_color
-  dev_to_norm_desc0: *base_color
-  dev_to_norm_desc1: *base_color
-  # developer: boot from external disk
-  dev_boot_ext_title: *base_color
-  dev_boot_ext_desc0: *base_color
-  dev_invalid_disk_title: *base_color
-  dev_invalid_disk_desc0: *base_color
-  # developer: select bootloader
-  dev_select_bootloader_title: *base_color
-  # diagnostic tools - menu
-  btn_launch_diag: *link_color
-  diag_menu_title: *base_color
-  diag_menu_desc0: *base_color
-  btn_diag_storage: *button_color
-  btn_diag_memory_quick: *button_color
-  btn_diag_memory_full: *button_color
-  # diagnostic tools - storage
-  diag_storage_title: *base_color
-  # diagnostic tools - memory
-  diag_memory_quick_title: *base_color
-  diag_memory_full_title: *base_color
-  btn_diag_cancel: *button_color
-  # generic buttons
-  btn_next: *button_color
-  btn_back: *button_color
-  btn_confirm: *button_color
-  btn_cancel: *button_color
-  btn_adv_options: *link_color
-  btn_power_off: *link_color
-  # log screen
-  btn_page_up: *button_color
-  btn_page_down: *button_color
-  page_up_disabled_help: *help_color
-  page_down_disabled_help: *help_color
-  # footer
-  model: *dark_color
-  help_center: *dark_color
-  rec_url: *dark_color  # see strings/rec_url.txt
-  navigate0: *dark_color
-  navigate1: *dark_color
-  navigate0_tablet: *dark_color
-  navigate1_tablet: *dark_color
+  # The colors of other bitmaps will be adjusted at runtime.
+  _DEFAULT_:
+    bgcolor: '#000000'
+    color: '#FFFFFF'
+  title:
+    bgcolor: *grey_900
+    color: *grey_200
+  desc:
+    bgcolor: *grey_900
+    color: *grey_200
+  footer:
+    bgcolor: *grey_900
+    color: *grey_500
 
+# Font of each locale
 fonts:
   _DEFAULT_: 'Roboto'
   # The following contains all the locales 'Roboto' doesn't support. All

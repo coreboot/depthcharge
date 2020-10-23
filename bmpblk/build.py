@@ -44,7 +44,8 @@ PNG_FILES = '*.png'
 # String format YAML key names.
 DEFAULT_NAME = '_DEFAULT_'
 KEY_LOCALES = 'locales'
-KEY_FILES = 'files'
+KEY_GENERIC_FILES = 'generic_files'
+KEY_LOCALIZED_FILES = 'localized_files'
 KEY_FONTS = 'fonts'
 KEY_STYLES = 'styles'
 DIAGNOSTIC_FILES = 'diagnostic_files'
@@ -106,7 +107,7 @@ MAX_WIDTH_LOOKUPS = [
 
 
 def convert_text_to_png(locale, input_file, font, margin, output_dir,
-                        options=None):
+                        **options):
   """Converts text files into PNG image files.
 
   Args:
@@ -116,7 +117,7 @@ def convert_text_to_png(locale, input_file, font, margin, output_dir,
     font: Font spec.
     margin: CSS-style margin.
     output_dir: Directory to generate image files.
-    options: List of other options to be added.
+    **options: Other options to be added.
   """
   name, _ = os.path.splitext(os.path.basename(input_file))
   command = [TXT_TO_PNG_SVG, '--outdir=%s' % output_dir]
@@ -145,8 +146,8 @@ def convert_text_to_png(locale, input_file, font, margin, output_dir,
       command.append('--width=%d' % max_width_pt)
       break
 
-  if options:
-    command.extend(options)
+  for k, v in options.items():
+    command.append('--%s="%s"' % (k, v))
   command.append(input_file)
 
   return subprocess.call(' '.join(command), shell=True,
@@ -158,7 +159,10 @@ def convert_glyphs():
   os.makedirs(STAGE_FONT_DIR, exist_ok=True)
   # Remove the extra whitespace at the top/bottom within the glyphs
   margin = '-3 0 -1 0'
-  options = ['--color="#ffffff"', '--bgcolor="#000000"']
+  options = {
+      'bgcolor': '#000000',
+      'color': '#FFFFFF',
+  }
   for c in range(ord(' '), ord('~') + 1):
     txt_file = os.path.join(STAGE_FONT_DIR, f'idx{c:03d}_{c:02x}.txt')
     with open(txt_file, 'w', encoding='ascii') as f:
@@ -166,7 +170,7 @@ def convert_glyphs():
       f.write('\n')
     # TODO(b/163109632): Parallelize the conversion of glyphs
     convert_text_to_png(None, txt_file, GLYPH_FONT, margin, STAGE_FONT_DIR,
-                        options)
+                        **options)
 
 
 def _load_locale_json_file(locale, json_dir):
@@ -186,7 +190,7 @@ def _load_locale_json_file(locale, json_dir):
 
 
 def parse_locale_json_file(locale, json_dir):
-  """Parses given firmware string json file for build_text_files.
+  """Parses given firmware string json file.
 
   Args:
     locale: The name of the locale, e.g. "da" or "pt-BR".
@@ -227,35 +231,18 @@ def parse_locale_input_files(locale, json_dir):
   return result
 
 
-def create_file(file_name, contents, output_dir):
-  """Creates a text file in output directory by given contents.
-
-  Args:
-    file_name: Output file name without extension.
-    contents: A list of strings for file content.
-    output_dir: The directory to store output file.
-  """
-  output_name = os.path.join(output_dir, file_name + '.txt')
-  with open(output_name, 'w', encoding='utf-8-sig') as f:
-    f.write('\n'.join(contents) + '\n')
-
-
 def build_text_files(inputs, files, output_dir):
   """Builds text files from given input data.
 
   Args:
     inputs: Dictionary of contents for given file name.
-    files: List of file records: [name, content].
+    files: List of files.
     output_dir: Directory to generate text files.
   """
-  for file_name, file_content in files.items():
-    if file_content is None:
-      create_file(file_name, [inputs[file_name]], output_dir)
-    else:
-      contents = []
-      for data in file_content:
-        contents.append(inputs[data])
-      create_file(file_name, contents, output_dir)
+  for name in files:
+    file_name = os.path.join(output_dir, name + '.txt')
+    with open(file_name, 'w', encoding='utf-8-sig') as f:
+      f.write(inputs[name] + '\n')
 
 
 def convert_localized_strings(formats):
@@ -269,9 +256,14 @@ def convert_localized_strings(formats):
   else:
     locales = formats[KEY_LOCALES]
 
+  files = formats[KEY_LOCALIZED_FILES]
+  if os.getenv('DIAGNOSTIC_UI') == '1' and DIAGNOSTIC_FILES in formats:
+    files.update(formats[DIAGNOSTIC_FILES])
+
   styles = formats[KEY_STYLES]
+  default_style = styles[DEFAULT_NAME]
   fonts = formats[KEY_FONTS]
-  default_font = fonts.get(DEFAULT_NAME)
+  default_font = fonts[DEFAULT_NAME]
 
   # Sources are one .grd file with identifiers chosen by engineers and
   # corresponding English texts, as well as a set of .xlt files (one for each
@@ -307,22 +299,19 @@ def convert_localized_strings(formats):
     output_dir = os.path.normpath(os.path.join(STAGE_DIR, 'locale', locale))
     if not os.path.exists(output_dir):
       os.makedirs(output_dir)
-    files = formats[KEY_FILES]
-
-    # Now parse strings for optional features
-    if os.getenv('DIAGNOSTIC_UI') == '1' and DIAGNOSTIC_FILES in formats:
-      files.update(formats[DIAGNOSTIC_FILES])
 
     build_text_files(inputs, files, output_dir)
 
-    results += [pool.apply_async(convert_text_to_png,
-                                 (locale,
-                                  os.path.join(output_dir, '%s.txt' % name),
-                                  fonts.get(locale, default_font),
-                                  '0',
-                                  output_dir,
-                                  [styles.get(name)]))
-                for name in formats[KEY_FILES]]
+    for name, category in files.items():
+      style_options = styles.get(category, default_style)
+      res = pool.apply_async(convert_text_to_png,
+                             (locale,
+                              os.path.join(output_dir, '%s.txt' % name),
+                              fonts.get(locale, default_font),
+                              '0',
+                              output_dir),
+                              style_options)
+      results.append(res)
   pool.close()
   if json_dir is not None:
     shutil.rmtree(json_dir)
@@ -350,15 +339,18 @@ def build_strings():
   convert_glyphs()
 
   # Convert generic (locale-independent) strings
+  files = formats[KEY_GENERIC_FILES]
   styles = formats[KEY_STYLES]
+  default_style = styles[DEFAULT_NAME]
   fonts = formats[KEY_FONTS]
-  default_font = fonts.get(DEFAULT_NAME)
+  default_font = fonts[DEFAULT_NAME]
 
   for input_file in glob.glob(os.path.join(STRINGS_DIR, '*.txt')):
     name, _ = os.path.splitext(os.path.basename(input_file))
-    style = styles.get(name)
+    category = files[name]
+    style_options = styles.get(category, default_style)
     if not convert_text_to_png(None, input_file, default_font, '0',
-                               STAGE_DIR, options=[style]):
+                               STAGE_DIR, **style_options):
       exit('Failed to convert text %s' % input_file)
 
   # Convert localized strings
