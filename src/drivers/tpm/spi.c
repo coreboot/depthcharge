@@ -24,10 +24,14 @@
 /************************************************************/
 /*  Plumbing to make porting of the coreboot driver easier. */
 struct spi_slave {};
+
+/* TODO(yupingso): Remove after migration to new libpayload.h with stdbool.h */
+#ifndef false
 enum {
 	false = 0,
 	true
 };
+#endif
 
 struct tpm2_info {
 	uint16_t vendor_id;
@@ -149,6 +153,11 @@ static int tpm_sync(void)
 	}
 	return 1;
 }
+
+enum {
+	SPI_WRITE = 0,
+	SPI_READ
+};
 
 /*
  * Each TPM2 SPI transaction starts the same: CS is asserted, the 4 byte
@@ -311,7 +320,7 @@ static int tpm2_write_reg(unsigned reg_number, const void *buffer, size_t bytes)
 {
 	int result = 1;
 	trace_dump("W", reg_number, bytes, buffer, 0);
-	if (!start_transaction(false, bytes, reg_number)) {
+	if (!start_transaction(SPI_WRITE, bytes, reg_number)) {
 		printf("failed to write tpm reg %#x\n", reg_number);
 		result = 0;
 	} else {
@@ -331,7 +340,7 @@ static int tpm2_write_reg(unsigned reg_number, const void *buffer, size_t bytes)
 static int tpm2_read_reg(unsigned reg_number, void *buffer, size_t bytes)
 {
 	int result = 1;
-	if (!start_transaction(true, bytes, reg_number) ||
+	if (!start_transaction(SPI_READ, bytes, reg_number) ||
 	    read_bytes(buffer, bytes)) {
 		printf("failed to read tpm reg %#x\n", reg_number);
 		memset(buffer, 0, bytes);
@@ -456,7 +465,7 @@ static int tpm2_init(SpiOps *spi_ops)
  * failure.
  */
 #define MAX_STATUS_TIMEOUT 120
-static int wait_for_status(uint32_t status_mask, uint32_t status_expected)
+static bool wait_for_status(uint32_t status_mask, uint32_t status_expected)
 {
 	uint32_t status;
 	struct stopwatch sw;
@@ -476,7 +485,7 @@ static int wait_for_status(uint32_t status_mask, uint32_t status_expected)
 		}
 	} while ((status & status_mask) != status_expected);
 
-	return 1;
+	return true;
 }
 
 enum fifo_transfer_direction {
