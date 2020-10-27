@@ -57,7 +57,6 @@ SDCARD_KEY = 'sdcard'
 BAD_USB3_KEY = 'bad_usb3'
 LOCALES_KEY = 'locales'
 RTL_KEY = 'rtl'
-HI_RES_KEY = 'hi_res'
 TEXT_COLORS_KEY = 'text_colors'
 RW_OVERRIDE_KEY = 'rw_override'
 
@@ -72,7 +71,7 @@ MULTIBLANK_PATTERN = re.compile(r'   *')
 
 GLYPH_FONT = 'Noto Sans Mono'
 
-LocaleInfo = namedtuple('LocaleInfo', ['code', 'rtl', 'hi_res'])
+LocaleInfo = namedtuple('LocaleInfo', ['code', 'rtl'])
 
 
 class DataError(Exception):
@@ -639,7 +638,6 @@ class Converter(object):
     # LOCALES environment variable can overwrite boards.yaml
     env_locales = os.getenv('LOCALES')
     rtl_locales = set(self.config[RTL_KEY])
-    hi_res_locales = set(self.config[HI_RES_KEY])
     if env_locales:
       locales = env_locales.split()
     else:
@@ -649,13 +647,7 @@ class Converter(object):
       if unknown_rtl_locales:
         raise BuildImageError('Unknown locales %s in %s' %
                               (list(unknown_rtl_locales), RTL_KEY))
-      # Check hi_res_locales are contained in locales.
-      unknown_hi_res_locales = hi_res_locales - set(locales)
-      if unknown_hi_res_locales:
-        raise BuildImageError('Unknown locales %s in %s' %
-                              (list(unknown_hi_res_locales), HI_RES_KEY))
-    self.locales = [LocaleInfo(code, code in rtl_locales,
-                               code in hi_res_locales)
+    self.locales = [LocaleInfo(code, code in rtl_locales)
                     for code in locales]
 
   def calculate_dimension(self, original, scale, num_lines):
@@ -831,16 +823,9 @@ class Converter(object):
       locale = locale_info.code
       ro_locale_dir = os.path.join(self.output_ro_dir, locale)
       stage_locale_dir = os.path.join(STAGE_LOCALE_DIR, locale)
-      if locale_info.hi_res:
-        scales = defaultdict(lambda: self.DEFAULT_TEXT_SCALE)
-        scales.update(self.TEXT_SCALES)
-        print(' ' + locale, end='', file=sys.stderr, flush=True)
-      else:
-        # We use low-res images for these locales and turn off scaling
-        # to make the files fit in a ROM. Note that these text images will
-        # be scaled by Depthcharge to be the same height as hi-res texts.
-        scales = defaultdict(lambda: None)
-        print(' ' + locale + '/lo', end='', file=sys.stderr, flush=True)
+      scales = defaultdict(lambda: self.DEFAULT_TEXT_SCALE)
+      scales.update(self.TEXT_SCALES)
+      print(' ' + locale, end='', file=sys.stderr, flush=True)
       os.makedirs(ro_locale_dir)
       self.convert(
           glob.glob(os.path.join(stage_locale_dir, SVG_FILES)),
