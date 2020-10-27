@@ -41,6 +41,8 @@ ONE_LINE_DIR = 'one_line'
 SVG_FILES = '*.svg'
 PNG_FILES = '*.png'
 
+DIAGNOSTIC_UI = os.getenv('DIAGNOSTIC_UI') == '1'
+
 # String format YAML key names.
 DEFAULT_NAME = '_DEFAULT_'
 KEY_LOCALES = 'locales'
@@ -48,6 +50,9 @@ KEY_GENERIC_FILES = 'generic_files'
 KEY_LOCALIZED_FILES = 'localized_files'
 KEY_FONTS = 'fonts'
 KEY_STYLES = 'styles'
+KEY_BGCOLOR = 'bgcolor'
+KEY_FGCOLOR = 'fgcolor'
+KEY_HEIGHT = 'height'
 DIAGNOSTIC_FILES = 'diagnostic_files'
 
 # Board config YAML key names.
@@ -105,8 +110,20 @@ MAX_WIDTH_LOOKUPS = [
 ]
 
 
+def get_config_with_defaults(configs, key):
+  """Gets config of `key` from `configs`.
+
+  If `key` is not present in `configs`, the default config will be returned.
+  Similarly, if some config values are missing for `key`, the default ones will
+  be used.
+  """
+  config = configs[DEFAULT_NAME].copy()
+  config.update(configs.get(key, {}))
+  return config
+
+
 def convert_text_to_png(locale, input_file, font, margin, output_dir,
-                        **options):
+                        bgcolor='#000000', fgcolor='#ffffff', **options):
   """Converts text files into PNG image files.
 
   Args:
@@ -116,6 +133,8 @@ def convert_text_to_png(locale, input_file, font, margin, output_dir,
     font: Font spec.
     margin: CSS-style margin.
     output_dir: Directory to generate image files.
+    bgcolor: Background color (#rrggbb).
+    fgcolor: Foreground color (#rrggbb).
     **options: Other options to be added.
   """
   name, _ = os.path.splitext(os.path.basename(input_file))
@@ -129,6 +148,9 @@ def convert_text_to_png(locale, input_file, font, margin, output_dir,
     command.append('--point=%r' % font_size)
   if margin:
     command.append('--margin="%s"' % margin)
+  command.append('--bgcolor="%s"' % bgcolor)
+  command.append('--color="%s"' % fgcolor)
+
   # TODO(b/159399377): Set different widths for titles and descriptions.
   # Currently only wrap lines for descriptions and navigation instructions in
   # the footer.
@@ -158,18 +180,13 @@ def convert_glyphs():
   os.makedirs(STAGE_FONT_DIR, exist_ok=True)
   # Remove the extra whitespace at the top/bottom within the glyphs
   margin = '-3 0 -1 0'
-  options = {
-      'bgcolor': '#000000',
-      'color': '#FFFFFF',
-  }
   for c in range(ord(' '), ord('~') + 1):
     txt_file = os.path.join(STAGE_FONT_DIR, f'idx{c:03d}_{c:02x}.txt')
     with open(txt_file, 'w', encoding='ascii') as f:
       f.write(chr(c))
       f.write('\n')
     # TODO(b/163109632): Parallelize the conversion of glyphs
-    convert_text_to_png(None, txt_file, GLYPH_FONT, margin, STAGE_FONT_DIR,
-                        **options)
+    convert_text_to_png(None, txt_file, GLYPH_FONT, margin, STAGE_FONT_DIR)
 
 
 def _load_locale_json_file(locale, json_dir):
@@ -256,11 +273,10 @@ def convert_localized_strings(formats):
     locales = formats[KEY_LOCALES]
 
   files = formats[KEY_LOCALIZED_FILES]
-  if os.getenv('DIAGNOSTIC_UI') == '1' and DIAGNOSTIC_FILES in formats:
+  if DIAGNOSTIC_UI:
     files.update(formats[DIAGNOSTIC_FILES])
 
   styles = formats[KEY_STYLES]
-  default_style = styles[DEFAULT_NAME]
   fonts = formats[KEY_FONTS]
   default_font = fonts[DEFAULT_NAME]
 
@@ -302,15 +318,19 @@ def convert_localized_strings(formats):
     build_text_files(inputs, files, output_dir)
 
     for name, category in files.items():
-      style_options = styles.get(category, default_style)
-      res = pool.apply_async(convert_text_to_png,
-                             (locale,
-                              os.path.join(output_dir, '%s.txt' % name),
-                              fonts.get(locale, default_font),
-                              '0',
-                              output_dir),
-                              style_options)
-      results.append(res)
+      style = get_config_with_defaults(styles, category)
+      args = (
+          locale,
+          os.path.join(output_dir, '%s.txt' % name),
+          fonts.get(locale, default_font),
+          '0',
+          output_dir,
+      )
+      kwargs = {
+          'bgcolor': style[KEY_BGCOLOR],
+          'fgcolor': style[KEY_FGCOLOR],
+      }
+      results.append(pool.apply_async(convert_text_to_png, args, kwargs))
   pool.close()
   if json_dir is not None:
     shutil.rmtree(json_dir)
@@ -328,11 +348,8 @@ def convert_localized_strings(formats):
       exit('Failed to render some locales')
 
 
-def build_strings():
+def build_strings(formats):
   """Builds text strings."""
-  with open(FORMAT_FILE, encoding='utf-8') as f:
-    formats = yaml.load(f)
-
   # Convert glyphs
   print('Converting glyphs...')
   convert_glyphs()
@@ -340,16 +357,16 @@ def build_strings():
   # Convert generic (locale-independent) strings
   files = formats[KEY_GENERIC_FILES]
   styles = formats[KEY_STYLES]
-  default_style = styles[DEFAULT_NAME]
   fonts = formats[KEY_FONTS]
   default_font = fonts[DEFAULT_NAME]
 
   for input_file in glob.glob(os.path.join(STRINGS_DIR, '*.txt')):
     name, _ = os.path.splitext(os.path.basename(input_file))
     category = files[name]
-    style_options = styles.get(category, default_style)
-    if not convert_text_to_png(None, input_file, default_font, '0',
-                               STAGE_DIR, **style_options):
+    style = get_config_with_defaults(styles, category)
+    if not convert_text_to_png(None, input_file, default_font, '0', STAGE_DIR,
+                               bgcolor=style[KEY_BGCOLOR],
+                               fgcolor=style[KEY_FGCOLOR]):
       exit('Failed to convert text %s' % input_file)
 
   # Convert localized strings
@@ -392,15 +409,12 @@ class Converter(object):
     DEFAULT_OUTPUT_EXT (str): Default output file extension.
     DEFAULT_REPLACE_MAP (dict): Default mapping of file replacement. For
       {'a': 'b'}, "a.*" will be converted to "b.*".
-    SCALE_BASE (int): See ASSET_SCALES below.
-    DEFAULT_FONT_SCALE (tuple): Scale (width and height) of the font images.
-    ASSET_SCALES (dict): Scale of each image asset. Key is the image name and
-      value is a tuple (w, h), which are the width and height relative to the
-      screen resolution. For example, if SCALE_BASE is 1000, (500, 100) means
-      the image will be scaled to 50% of the screen width and 10% of the screen
-      height.
-    TEXT_SCALES (dict): Scale of each localized text image. The meaning is
-      similar to ASSET_SCALES.
+    SCALE_BASE (int): See ASSET_HEIGHTS below.
+    DEFAULT_FONT_HEIGHT (tuple): Height of the font images.
+    ASSET_HEIGHTS (dict): Height of each image asset. Key is the image name and
+      value is the height relative to the screen resolution. For example, if
+      `SCALE_BASE` is 1000, height = 500 means the image will be scaled to 50%
+      of the screen height.
     ASSET_MAX_COLORS (int): Maximum colors to use for converting image assets
       to bitmaps.
     DEFAULT_BACKGROUND (tuple): Default background color.
@@ -431,99 +445,41 @@ class Converter(object):
 
   # These are supposed to be kept in sync with the numbers set in depthcharge
   # to avoid runtime scaling, which makes images blurry.
-  DEFAULT_ASSET_SCALE = (0, 30)
-  DEFAULT_TEXT_SCALE = (0, 24)
-  DEFAULT_FONT_SCALE = (0, 20)
-  LANG_SCALE = (0, 26)
-  ICON_SCALE = (0, 45)
-  STEP_ICON_SCALE = (0, 28)
-  TITLE_SCALE = (0, 42)
-  BUTTON_SCALE = (0, 20)
-  BUTTON_ICON_SCALE = (0, 24)
-  BUTTON_ARROW_SCALE = (0, 20)
-  QR_FOOTER_SCALE = (0, 128)
-  QR_DESC_SCALE = (0, 228)
-  FOOTER_TEXT_SCALE = (0, 20)
+  DEFAULT_ASSET_HEIGHT = 30
+  DEFAULT_FONT_HEIGHT = 20
+  ICON_HEIGHT = 45
+  STEP_ICON_HEIGHT = 28
+  BUTTON_ICON_HEIGHT = 24
+  BUTTON_ARROW_HEIGHT = 20
+  QR_FOOTER_HEIGHT = 128
+  QR_DESC_HEIGHT = 228
 
-  ASSET_SCALES = {
-      'ic_globe': (0, 20),
-      'ic_dropdown': (0, 24),
-      'ic_info': ICON_SCALE,
-      'ic_error': ICON_SCALE,
-      'ic_dev_mode': ICON_SCALE,
-      'ic_restart': ICON_SCALE,
-      'ic_1': STEP_ICON_SCALE,
-      'ic_1-done': STEP_ICON_SCALE,
-      'ic_2': STEP_ICON_SCALE,
-      'ic_2-done': STEP_ICON_SCALE,
-      'ic_3': STEP_ICON_SCALE,
-      'ic_3-done': STEP_ICON_SCALE,
-      'ic_done': STEP_ICON_SCALE,
-      'ic_search': BUTTON_ICON_SCALE,
-      'ic_search_focus': BUTTON_ICON_SCALE,
-      'ic_settings': BUTTON_ICON_SCALE,
-      'ic_settings_focus': BUTTON_ICON_SCALE,
-      'ic_power': BUTTON_ICON_SCALE,
-      'ic_power_focus': BUTTON_ICON_SCALE,
-      'ic_dropleft': BUTTON_ARROW_SCALE,
-      'ic_dropleft_focus': BUTTON_ARROW_SCALE,
-      'ic_dropright': BUTTON_ARROW_SCALE,
-      'ic_dropright_focus': BUTTON_ARROW_SCALE,
-      'qr_rec': QR_FOOTER_SCALE,
-      'qr_rec_phone': QR_DESC_SCALE,
-  }
-
-  TEXT_SCALES = {
-      'language': LANG_SCALE,
-      'firmware_sync_title': TITLE_SCALE,
-      'broken_title': TITLE_SCALE,
-      'adv_options_title': TITLE_SCALE,
-      'debug_info_title': TITLE_SCALE,
-      'firmware_log_title': TITLE_SCALE,
-      'rec_sel_title': TITLE_SCALE,
-      'rec_step1_title': TITLE_SCALE,
-      'rec_phone_step2_title': TITLE_SCALE,
-      'rec_disk_step2_title': TITLE_SCALE,
-      'rec_disk_step3_title': TITLE_SCALE,
-      'rec_invalid_title': TITLE_SCALE,
-      'rec_to_dev_title': TITLE_SCALE,
-      'dev_title': TITLE_SCALE,
-      'dev_to_norm_title': TITLE_SCALE,
-      'dev_boot_ext_title': TITLE_SCALE,
-      'dev_invalid_disk_title': TITLE_SCALE,
-      'dev_select_bootloader_title': TITLE_SCALE,
-      'diag_menu_title': TITLE_SCALE,
-      'diag_storage_title': TITLE_SCALE,
-      'diag_memory_quick_title': TITLE_SCALE,
-      'diag_memory_full_title': TITLE_SCALE,
-      'btn_dev_mode': BUTTON_SCALE,
-      'btn_debug_info': BUTTON_SCALE,
-      'btn_firmware_log': BUTTON_SCALE,
-      'btn_page_up': BUTTON_SCALE,
-      'btn_page_down': BUTTON_SCALE,
-      'btn_rec_by_phone': BUTTON_SCALE,
-      'btn_rec_by_disk': BUTTON_SCALE,
-      'btn_adv_options': BUTTON_SCALE,
-      'btn_secure_mode': BUTTON_SCALE,
-      'btn_int_disk': BUTTON_SCALE,
-      'btn_ext_disk': BUTTON_SCALE,
-      'btn_alt_bootloader': BUTTON_SCALE,
-      'btn_launch_diag': BUTTON_SCALE,
-      'btn_diag_storage': BUTTON_SCALE,
-      'btn_diag_memory_quick': BUTTON_SCALE,
-      'btn_diag_memory_full': BUTTON_SCALE,
-      'btn_diag_cancel': BUTTON_SCALE,
-      'btn_next': BUTTON_SCALE,
-      'btn_back': BUTTON_SCALE,
-      'btn_confirm': BUTTON_SCALE,
-      'btn_cancel': BUTTON_SCALE,
-      'model': FOOTER_TEXT_SCALE,
-      'help_center': FOOTER_TEXT_SCALE,
-      'rec_url': FOOTER_TEXT_SCALE,
-      'navigate0': FOOTER_TEXT_SCALE,
-      'navigate1': FOOTER_TEXT_SCALE,
-      'navigate0_tablet': FOOTER_TEXT_SCALE,
-      'navigate1_tablet': FOOTER_TEXT_SCALE,
+  ASSET_HEIGHTS = {
+      'ic_globe': 20,
+      'ic_dropdown': 24,
+      'ic_info': ICON_HEIGHT,
+      'ic_error': ICON_HEIGHT,
+      'ic_dev_mode': ICON_HEIGHT,
+      'ic_restart': ICON_HEIGHT,
+      'ic_1': STEP_ICON_HEIGHT,
+      'ic_1-done': STEP_ICON_HEIGHT,
+      'ic_2': STEP_ICON_HEIGHT,
+      'ic_2-done': STEP_ICON_HEIGHT,
+      'ic_3': STEP_ICON_HEIGHT,
+      'ic_3-done': STEP_ICON_HEIGHT,
+      'ic_done': STEP_ICON_HEIGHT,
+      'ic_search': BUTTON_ICON_HEIGHT,
+      'ic_search_focus': BUTTON_ICON_HEIGHT,
+      'ic_settings': BUTTON_ICON_HEIGHT,
+      'ic_settings_focus': BUTTON_ICON_HEIGHT,
+      'ic_power': BUTTON_ICON_HEIGHT,
+      'ic_power_focus': BUTTON_ICON_HEIGHT,
+      'ic_dropleft': BUTTON_ARROW_HEIGHT,
+      'ic_dropleft_focus': BUTTON_ARROW_HEIGHT,
+      'ic_dropright': BUTTON_ARROW_HEIGHT,
+      'ic_dropright_focus': BUTTON_ARROW_HEIGHT,
+      'qr_rec': QR_FOOTER_HEIGHT,
+      'qr_rec_phone': QR_DESC_HEIGHT,
   }
 
   # background colors
@@ -542,16 +498,18 @@ class Converter(object):
       'ic_power_focus': LINK_SELECTED_BACKGROUND,
   }
 
-  def __init__(self, board, config, output):
+  def __init__(self, board, formats, board_config, output):
     """Inits converter.
 
     Args:
       board: Board name.
-      config: A dictionary of configuration parameters.
+      formats: A dictionary of string formats.
+      board_config: A dictionary of board configurations.
       output: Output directory.
     """
     self.board = board
-    self.config = config
+    self.formats = formats
+    self.config = board_config
     self.set_dirs(output)
     self.set_screen()
     self.set_replace_map()
@@ -702,7 +660,7 @@ class Converter(object):
     line_height = self._get_svg_height(one_line_file)
     return int(round(height / line_height))
 
-  def convert_svg_to_png(self, svg_file, png_file, scale, num_lines,
+  def convert_svg_to_png(self, svg_file, png_file, height, num_lines,
                          background):
     """Converts .svg file to .png file."""
     background_hex = ''.join(format(x, '02x') for x in background)
@@ -717,17 +675,13 @@ class Converter(object):
                '--dpi-x', '72',
                '--dpi-y', '72',
                '-o', png_file]
-    if scale:
-      width = int(self.canvas_px * scale[0] / self.SCALE_BASE)
-      height = int(self.canvas_px * scale[1] / self.SCALE_BASE) * num_lines
-      if width:
-        command.extend(['--width', '%d' % width])
-      if height:
-        command.extend(['--height', '%d' % height])
+    if height:
+      height_px = int(self.canvas_px * height / self.SCALE_BASE) * num_lines
+      command.extend(['--height', '%d' % height_px])
     command.append(svg_file)
     subprocess.check_call(' '.join(command), shell=True)
 
-  def convert_to_bitmap(self, input_file, scale, num_lines, background, output,
+  def convert_to_bitmap(self, input_file, height, num_lines, background, output,
                         max_colors):
     """Converts an image file `input_file` to a BMP file `output`."""
     image = Image.open(input_file)
@@ -746,13 +700,13 @@ class Converter(object):
       target = image
 
     # Process scaling
-    if scale:
-      new_size = self.calculate_dimension(image.size, scale, num_lines)
+    if height:
+      new_size = self.calculate_dimension(image.size, (0, height), num_lines)
       if new_size[0] == 0 or new_size[1] == 0:
         print('Scaling', input_file)
         print('Warning: width or height is 0 after resizing: '
-              'scale=%s size=%s stretch=%s new_size=%s' %
-              (scale, image.size, self.stretch, new_size))
+              'height=%d size=%s stretch=%s new_size=%s' %
+              (height, image.size, self.stretch, new_size))
         return
       target = target.resize(new_size, Image.BICUBIC)
 
@@ -764,7 +718,7 @@ class Converter(object):
       f.seek(BMP_HEADER_OFFSET_NUM_LINES)
       f.write(bytearray([num_lines]))
 
-  def convert(self, files, output_dir, scales, max_colors, one_line_dir=None):
+  def convert(self, files, output_dir, heights, max_colors, one_line_dir=None):
     """Converts file(s) to bitmap format."""
     if not files:
       raise BuildImageError('Unable to find file(s) to convert')
@@ -773,15 +727,15 @@ class Converter(object):
       name, ext = os.path.splitext(os.path.basename(file))
       output = os.path.join(output_dir, name + self.DEFAULT_OUTPUT_EXT)
 
-      background = self.BACKGROUND_COLORS.get(name, self.DEFAULT_BACKGROUND)
-      scale = scales[name]
-
       if name in self.replace_map:
         name = self.replace_map[name]
         if not name:
           continue
         print('Replace: %s => %s' % (file, name))
         file = os.path.join(os.path.dirname(file), name + ext)
+
+      background = self.BACKGROUND_COLORS.get(name, self.DEFAULT_BACKGROUND)
+      height = heights[name]
 
       # Determine num_lines in order to scale the image
       # TODO(b/159399377): Wrap lines for texts other than descriptions.
@@ -792,42 +746,55 @@ class Converter(object):
 
       if ext == '.svg':
         png_file = os.path.join(self.temp_dir, name + '.png')
-        self.convert_svg_to_png(file, png_file, scale, num_lines, background)
+        self.convert_svg_to_png(file, png_file, height, num_lines, background)
         file = png_file
 
       self.convert_to_bitmap(
-          file, scale, num_lines, background, output, max_colors)
+          file, height, num_lines, background, output, max_colors)
 
   def convert_assets(self):
     """Converts images in assets folder."""
     files = []
     files.extend(glob.glob(os.path.join(self.ASSET_DIR, SVG_FILES)))
     files.extend(glob.glob(os.path.join(self.ASSET_DIR, PNG_FILES)))
-    scales = defaultdict(lambda: self.DEFAULT_ASSET_SCALE)
-    scales.update(self.ASSET_SCALES)
-    self.convert(files, self.output_dir, scales, self.ASSET_MAX_COLORS)
+    heights = defaultdict(lambda: self.DEFAULT_ASSET_HEIGHT)
+    heights.update(self.ASSET_HEIGHTS)
+    self.convert(files, self.output_dir, heights, self.ASSET_MAX_COLORS)
 
   def convert_generic_strings(self):
     """Converts generic (locale-independent) strings."""
-    scales = self.TEXT_SCALES.copy()
+    names = self.formats[KEY_GENERIC_FILES]
+    styles = self.formats[KEY_STYLES]
+    heights = {}
+    for name, category in names.items():
+      style = get_config_with_defaults(styles, category)
+      heights[name] = style[KEY_HEIGHT]
+
     files = glob.glob(os.path.join(self.stage_dir, SVG_FILES))
-    self.convert(files, self.output_dir, scales, self.text_max_colors)
+    self.convert(files, self.output_dir, heights, self.text_max_colors)
 
   def convert_localized_strings(self):
     """Converts localized strings."""
+    names = self.formats[KEY_LOCALIZED_FILES].copy()
+    if DIAGNOSTIC_UI:
+      names.update(self.formats[DIAGNOSTIC_FILES])
+    styles = self.formats[KEY_STYLES]
+    heights = {}
+    for name, category in names.items():
+      style = get_config_with_defaults(styles, category)
+      heights[name] = style[KEY_HEIGHT]
+
     # Using stderr to report progress synchronously
     print('  processing:', end='', file=sys.stderr, flush=True)
     for locale_info in self.locales:
       locale = locale_info.code
       ro_locale_dir = os.path.join(self.output_ro_dir, locale)
       stage_locale_dir = os.path.join(STAGE_LOCALE_DIR, locale)
-      scales = defaultdict(lambda: self.DEFAULT_TEXT_SCALE)
-      scales.update(self.TEXT_SCALES)
       print(' ' + locale, end='', file=sys.stderr, flush=True)
       os.makedirs(ro_locale_dir)
       self.convert(
           glob.glob(os.path.join(stage_locale_dir, SVG_FILES)),
-          ro_locale_dir, scales, self.text_max_colors,
+          ro_locale_dir, heights, self.text_max_colors,
           one_line_dir=os.path.join(stage_locale_dir, ONE_LINE_DIR))
     print(file=sys.stderr)
 
@@ -848,11 +815,11 @@ class Converter(object):
 
   def convert_fonts(self):
     """Converts font images"""
-    scales = defaultdict(lambda: self.DEFAULT_FONT_SCALE)
+    heights = defaultdict(lambda: self.DEFAULT_FONT_HEIGHT)
     files = glob.glob(os.path.join(STAGE_FONT_DIR, SVG_FILES))
     font_output_dir = os.path.join(self.output_dir, 'font')
     os.makedirs(font_output_dir)
-    self.convert(files, font_output_dir, scales, self.text_max_colors)
+    self.convert(files, font_output_dir, heights, self.text_max_colors)
 
   def copy_images_to_rw(self):
     """Copies localized images specified in boards.yaml for RW override."""
@@ -920,11 +887,11 @@ class Converter(object):
     self.copy_images_to_rw()
 
 
-def build_images(board):
+def build_images(board, formats):
   """Builds images for `board`."""
   configs = load_boards_config(BOARDS_CONFIG_FILE)
   print('Building for ' + board)
-  converter = Converter(board, configs[board], OUTPUT_DIR)
+  converter = Converter(board, formats, configs[board], OUTPUT_DIR)
   converter.build()
 
 
@@ -933,8 +900,11 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('board', help='Target board')
   args = parser.parse_args()
-  build_strings()
-  build_images(args.board)
+
+  with open(FORMAT_FILE, encoding='utf-8') as f:
+    formats = yaml.load(f)
+  build_strings(formats)
+  build_images(args.board, formats)
 
 
 if __name__ == '__main__':

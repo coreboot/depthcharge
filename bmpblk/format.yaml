@@ -139,21 +139,31 @@ color_aliases:
   - &grey_200 '#e8eaed'
 
 # Style of each category
-# Keys and values will be passed to text_to_png_svg as options.
 styles:
-  # The colors of other bitmaps will be adjusted at runtime.
   _DEFAULT_:
+    # The colors of these bitmaps will be adjusted at runtime.
     bgcolor: '#000000'
-    color: '#FFFFFF'
+    fgcolor: '#ffffff'
+    # Height of the generated bitmap relative to the screen resolution specified
+    # in boards.yaml.
+    height: 24
+  language:
+    height: 26
   title:
     bgcolor: *grey_900
-    color: *grey_200
+    fgcolor: *grey_200
+    height: 42
   desc:
     bgcolor: *grey_900
-    color: *grey_200
+    fgcolor: *grey_200
+  primary_button:
+    height: 20
+  secondary_button:
+    height: 20
   footer:
     bgcolor: *grey_900
-    color: *grey_500
+    fgcolor: *grey_500
+    height: 20
 
 # Font of each locale
 fonts:
