@@ -29,6 +29,7 @@
 #include "drivers/soc/tigerlake.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
+#include "drivers/storage/sdhci.h"
 #include "drivers/storage/nvme.h"
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/spi.h"
@@ -38,6 +39,11 @@
 
 #define TPM_I2C1	PCI_DEV(0, 0x15, 1)
 #define TPM_I2C_ADDR	0x50
+
+#define EMMC_CLOCK_MIN  400000
+#define EMMC_CLOCK_MAX  200000000
+#define GENESYS_PCI_VID 0x17a0
+#define GL9763E_PCI_DID 0xe763
 
 #define AUD_VOLUME	4000
 #define AUD_BITDEPTH	16
@@ -178,6 +184,28 @@ static int board_setup(void)
 	/* SATA AHCI */
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 0x17, 0));
 	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
+
+	if (CONFIG(DRIVER_STORAGE_SDHCI_PCI)) {
+		/* GL9763E */
+		SdhciHost *emmc = NULL;
+		pcidev_t pci_dev;
+
+		if (pci_find_device(GENESYS_PCI_VID, GL9763E_PCI_DID,
+				    &pci_dev)) {
+			emmc = new_pci_sdhci_host(pci_dev,
+						  0,
+						  EMMC_CLOCK_MIN,
+						  EMMC_CLOCK_MAX);
+		}
+
+		if (emmc) {
+			emmc->name = "eMMC";
+			list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+					  &fixed_block_dev_controllers);
+		} else {
+			printf("Failed to find eMMC card reader\n");
+		}
+	}
 
 	return 0;
 }
