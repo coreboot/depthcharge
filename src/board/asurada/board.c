@@ -81,6 +81,18 @@ static int board_setup(void)
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
 
+	MtkMmcTuneReg sd_card_tune_reg = {
+		.msdc_iocon = 0x0,
+		.pad_tune = 0x0
+	};
+	GpioOps *card_detect_ops = new_gpio_not(new_mtk_gpio_input(PAD_EINT17));
+	MtkMmcHost *sd_card = new_mtk_mmc_host(
+		0x11f70000, 200 * MHz, 25 * MHz, sd_card_tune_reg, 4, 1,
+		card_detect_ops, MTK_MMC_V2);
+
+	list_insert_after(&sd_card->mmc.ctrlr.list_node,
+			  &removable_block_dev_controllers);
+
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11200000);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
 
