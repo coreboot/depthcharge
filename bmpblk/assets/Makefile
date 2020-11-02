@@ -11,7 +11,7 @@ all: qr_rec.svg qr_rec_phone.svg
 API_URL = https://api.qrserver.com/v1/create-qr-code/
 
 # qzone: Border width in terms of number of squares
-PARAMS = color=202124&bgcolor=CCCCCC&qzone=2&format=svg
+PARAMS = color=202124&bgcolor=e9eaed&qzone=2&format=svg
 
 qr_rec.svg:
 	curl "$(API_URL)?$(PARAMS)&data=https://google.com/chromeos/recovery" -o $@

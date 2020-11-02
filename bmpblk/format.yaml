@@ -119,7 +119,7 @@ diagnostic_files:
   btn_diag_cancel:
 
 aliases:
-  - &base_color '--color=CCCCCC --bgcolor=202124'
+  - &base_color '--color=#E9EAED --bgcolor=202124'
   - &dark_color '--color=9AA0A6 --bgcolor=202124'
   # The colors of buttons, links, and help texts will be adjusted at runtime.
   - &lang_color '--color=FFFFFF --bgcolor=000000'
