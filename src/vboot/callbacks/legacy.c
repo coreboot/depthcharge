@@ -40,24 +40,6 @@ uint32_t vb2ex_get_bootloader_count(void)
 	return count;
 }
 
-/* TODO(b/167643628): Remove this after legacy UIs are deprecated. */
-uint32_t VbExGetAltFwIdxMask(void)
-{
-	struct altfw_info *node;
-	uint32_t mask = 0;
-	ListNode *head;
-
-	head = payload_get_altfw_list();
-	if (head) {
-		list_for_each(node, *head, list_node) {
-			if (node->seqnum)
-				mask |= 1 << node->seqnum;
-		}
-	}
-
-	return mask;
-}
-
 vb2_error_t VbExLegacy(enum VbAltFwIndex_t altfw_num)
 {
 	ListNode *head;

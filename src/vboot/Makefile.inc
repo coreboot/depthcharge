@@ -11,15 +11,11 @@
 ## GNU General Public License for more details.
 ##
 
-subdirs-y := callbacks crossystem nvdata stages util
-subdirs-$(CONFIG_MENU_UI) += ui
+subdirs-y := callbacks crossystem nvdata stages ui util
 
 depthcharge-y += stages.c
 depthcharge-y += boot_policy.c
 depthcharge-y += firmware_id.c
-depthcharge-$(CONFIG_LEGACY_CLAMSHELL_UI) += ui_legacy.c
-depthcharge-$(CONFIG_LEGACY_MENU_UI) += ui_legacy.c
-depthcharge-$(CONFIG_CLI) += ui_legacy.c
 depthcharge-y += nvdata.c
 
 ifeq ($(CONFIG_MOCK_TPM),y)
@@ -54,10 +50,6 @@ else
 		EC_SLOW_UPDATE=$(CONFIG_EC_SLOW_UPDATE) \
 		EC_EFS=$(CONFIG_EC_EFS) \
 		DETACHABLE=$(CONFIG_DETACHABLE) \
-		MENU_UI=$(CONFIG_MENU_UI) \
-		LEGACY_MENU_UI=$(CONFIG_LEGACY_MENU_UI) \
-		LEGACY_CLAMSHELL_UI=$(CONFIG_LEGACY_CLAMSHELL_UI) \
-		VENDOR_DATA_LENGTH=$(CONFIG_VENDOR_DATA_LENGTH) \
 		DIAGNOSTIC_UI=$(CONFIG_DIAGNOSTIC_UI) \
 		PHYSICAL_PRESENCE_KEYBOARD=$(CONFIG_PHYSICAL_PRESENCE_KEYBOARD) \
 		CUSTOM_MUSIC=$(CONFIG_CUSTOM_MUSIC) \

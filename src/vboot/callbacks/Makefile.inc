@@ -14,13 +14,9 @@
 depthcharge-y += debug.c
 depthcharge-y += disk.c
 ifneq ($(CONFIG_HEADLESS),y)
-depthcharge-$(CONFIG_LEGACY_CLAMSHELL_UI) += display_legacy.c
-depthcharge-$(CONFIG_LEGACY_MENU_UI) += display_legacy.c
-depthcharge-$(CONFIG_MENU_UI) += display.c
+depthcharge-y += display.c
 else
-depthcharge-$(CONFIG_LEGACY_CLAMSHELL_UI) += headless_stub_legacy.c
-depthcharge-$(CONFIG_LEGACY_MENU_UI) += headless_stub_legacy.c
-depthcharge-$(CONFIG_MENU_UI) += headless_stub.c
+depthcharge-y += headless_stub.c
 endif
 depthcharge-y += keyboard.c
 depthcharge-y += legacy.c

@@ -11,9 +11,9 @@
 ## GNU General Public License for more details.
 ##
 
-depthcharge-$(CONFIG_MENU_UI) += archive.c
-depthcharge-$(CONFIG_MENU_UI) += common.c
-depthcharge-$(CONFIG_MENU_UI) += draw.c
-depthcharge-$(CONFIG_MENU_UI) += layout.c
-depthcharge-$(CONFIG_MENU_UI) += log.c
-depthcharge-$(CONFIG_MENU_UI) += screens.c
+depthcharge-y += archive.c
+depthcharge-y += common.c
+depthcharge-y += draw.c
+depthcharge-y += layout.c
+depthcharge-y += log.c
+depthcharge-y += screens.c

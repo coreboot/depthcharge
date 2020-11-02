@@ -21,7 +21,6 @@
 #include <vb2_api.h>
 #include <vboot_api.h>
 
-#include "base/vpd_util.h"
 #include "drivers/flash/flash.h"
 #include "vboot/nvdata.h"
 #include "vboot/secdata_tpm.h"
@@ -54,64 +53,6 @@ uint32_t VbExIsShutdownRequested(void)
 	}
 
 	return shutdown_request;
-}
-
-vb2_error_t VbExSetVendorData(const char *vendor_data_value)
-{
-	FmapArea vpd_area_descriptor;
-	uint8_t *ro_vpd;
-	uint32_t size, offset;
-
-	printf("%s: Setting %s to '%s'\n", __func__,
-	       CONFIG_VENDOR_DATA_KEY, vendor_data_value);
-	if (strnlen(vendor_data_value, CONFIG_VENDOR_DATA_LENGTH + 1) !=
-		CONFIG_VENDOR_DATA_LENGTH)
-		return VB2_ERROR_INVALID_PARAMETER;
-
-	if (fmap_find_area("RO_VPD", &vpd_area_descriptor)) {
-		printf("%s: failed to find RO_VPD area\n", __func__);
-		return VB2_ERROR_EX_SET_VENDOR_DATA;
-	}
-
-	/* Read RO VPD from flash */
-	ro_vpd = flash_read(vpd_area_descriptor.offset,
-			    vpd_area_descriptor.size);
-
-	if (!ro_vpd) {
-		printf("%s: failed to read RO_VPD area\n", __func__);
-		return VB2_ERROR_EX_SET_VENDOR_DATA;
-	}
-
-	/* Find the vendor data value */
-	if (!vpd_find(CONFIG_VENDOR_DATA_KEY, ro_vpd, &offset, &size) ||
-	    size != CONFIG_VENDOR_DATA_LENGTH)
-		return VB2_ERROR_EX_SET_VENDOR_DATA;
-
-	if (flash_write_status(0x00)) {
-		printf("%s: failed to disable wp\n", __func__);
-		return VB2_ERROR_EX_SET_VENDOR_DATA;
-	}
-
-	/* Set vendor data to new value */
-	if (flash_rewrite(vpd_area_descriptor.offset + offset,
-			  CONFIG_VENDOR_DATA_LENGTH, vendor_data_value) !=
-			  CONFIG_VENDOR_DATA_LENGTH) {
-		printf("%s: failed to rewrite RO_VPD area\n", __func__);
-		return VB2_ERROR_EX_SET_VENDOR_DATA;
-	}
-
-	/* Clear GBB flags */
-	if (gbb_clear_flags()) {
-		printf("%s: failed to clear GBB flags\n", __func__);
-		return VB2_ERROR_EX_SET_VENDOR_DATA;
-	}
-
-	if (flash_set_wp_enabled()) {
-		printf("%s: failed to enable wp\n", __func__);
-		return VB2_ERROR_EX_SET_VENDOR_DATA;
-	}
-
-	return VB2_SUCCESS;
 }
 
 vb2_error_t vb2ex_read_resource(struct vb2_context *ctx,

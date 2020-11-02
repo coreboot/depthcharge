@@ -7,7 +7,6 @@
 #include <libpayload.h>
 #include <cbfs.h>
 #include <coreboot_tables.h>
-#include <vboot/ui_legacy.h>
 #include "common.h"
 #include "drivers/video/display.h"
 #include "drivers/video/coreboot_fb.h"
@@ -111,15 +110,6 @@ static int do_draw_box(char * const argv[])
 	return draw_box(&box, &rgb);
 }
 
-static int do_draw_screen(int argc, char * const argv[])
-{
-	uint32_t locale = 0;
-
-	if (argc == 4)
-		locale = strtoul(argv[3], NULL, 0);
-	return vboot_draw_legacy_screen(strtoul(argv[2], NULL, 0), locale, NULL);
-}
-
 static int do_draw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	int rv = CMD_RET_SUCCESS;
@@ -138,9 +128,6 @@ static int do_draw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	} else if (argc == 9 && !strcmp("box", argv[1])) {
 		if (do_draw_box(argv))
 			rv = CMD_RET_FAILURE;
-	} else if ((argc == 3 || argc == 4) && !strcmp("screen", argv[1])) {
-		if (do_draw_screen(argc, argv))
-			rv = CMD_RET_FAILURE;
 	} else {
 		printf("Syntax error\n");
 		rv = CMD_RET_USAGE;
@@ -155,5 +142,4 @@ U_BOOT_CMD(
 	   "image <name> <x> <y> [<width> <height>] - draw image in cbfs at (x, y)\n"
 	   "info - print framebuffer information\n"
 	   "box <x> <y> <width> <height> <red> <green> <blue> - draw a box\n"
-	   "screen <id> [<locale>] - draw a preprogrammed screen of ID <id>"
 );

@@ -26,10 +26,6 @@
 #include "vboot/firmware_id.h"
 #include "vboot/ui.h"
 
-_Static_assert(CONFIG(MENU_UI), "MENU_UI must be set");
-_Static_assert(!CONFIG(LEGACY_MENU_UI), "LEGACY_MENU_UI not allowed");
-_Static_assert(!CONFIG(LEGACY_CLAMSHELL_UI), "LEGACY_CLAMSHELL_UI not allowed");
-
 static struct ui_log_info log;
 
 uint32_t vb2ex_prepare_log_screen(enum vb2_screen screen, uint32_t locale_id,

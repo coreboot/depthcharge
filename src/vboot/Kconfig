@@ -28,30 +28,6 @@ config DETACHABLE
 	help
 	  Enable detachable navigation (power button + vol up/down) in menu UI.
 
-config MENU_UI
-	bool "Enable menu UI"
-	default y
-	help
-	  Enable menu UI, which is designed to replace the legacy menu UI
-	  (LEGACY_MENU_UI) and the legacy clamshell UI (LEGACY_CLAMSHELL_UI). It
-	  can be used with both detachables and non-detachables.
-
-config LEGACY_MENU_UI
-	bool "Enable legacy menu UI"
-	default n
-	help
-	  Enable legacy menu UI, which is used with devices that don't have a
-	  keyboard (detachables).  This assumes that user will flip through menu
-	  options with vol up/down and power buttons.
-
-config LEGACY_CLAMSHELL_UI
-	bool "Enable legacy clamshell UI"
-	depends on !MENU_UI && !LEGACY_MENU_UI
-	default n
-	help
-	  Enable legacy clamshell UI (without menu), which is used with devices
-	  that have a keyboard (non-detachables).
-
 config DIAGNOSTIC_UI
 	bool "Enable UI to allow boot of diagnostic rom"
 	default n
@@ -154,16 +130,3 @@ config BOOT_EXTERNAL_ON_DEV
 	help
 	  When switching to dev from normal, set the nvdata flag which allows
 	  booting from external disk.  (Suitable for headless devices.)
-
-config VENDOR_DATA_LENGTH
-	int "The exact number of characters of the vendor data value"
-	default 0
-	help
-	  The length of vendor data value. If this is greater than zero then the
-	  UI for setting vendor data in VPD will be enabled. This will
-	  allow a tech to set VPD data during a mainboard swap as part of
-	  an on-site RMA without a shim.
-
-config VENDOR_DATA_KEY
-	string "The key for the VPD data that can be set in the UI"
-	default serial_number

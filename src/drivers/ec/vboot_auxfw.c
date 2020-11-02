@@ -113,15 +113,9 @@ static vb2_error_t display_firmware_sync_screen(void)
 			locale = vb2api_get_locale_id(ctx);
 			printf("AUXFW is updating. "
 			       "Show firmware sync screen.\n");
-			if (CONFIG(MENU_UI))
-				vb2ex_display_ui(VB2_SCREEN_FIRMWARE_SYNC,
-						 locale, 0, 0, 0, 0, 0,
-						 VB2_UI_ERROR_NONE);
-			else if (CONFIG(LEGACY_MENU_UI))
-				VbExDisplayMenu(VB_SCREEN_WAIT, locale, 0, 0,
-						1);
-			else
-				VbExDisplayScreen(VB_SCREEN_WAIT, locale, NULL);
+			vb2ex_display_ui(VB2_SCREEN_FIRMWARE_SYNC,
+					 locale, 0, 0, 0, 0, 0,
+					 VB2_UI_ERROR_NONE);
 
 			break;
 		}

@@ -80,29 +80,6 @@ static CleanupFunc x86_ec_powerbtn_cleanup = {
 	NULL,
 };
 
-static int vendor_data_settable(void)
-{
-	int i = 0;
-	char vendor_data[CONFIG_VENDOR_DATA_LENGTH + 1];
-
-	if (CONFIG_VENDOR_DATA_LENGTH == 0)
-		return 0;
-
-	if (flash_is_wp_enabled())
-		return 0;
-
-	if (!vpd_gets(CONFIG_VENDOR_DATA_KEY, vendor_data, sizeof(vendor_data)))
-		return 0;
-
-	printf("Vendor data %s is '%s'.\n",
-		CONFIG_VENDOR_DATA_KEY, vendor_data);
-
-	while (i < CONFIG_VENDOR_DATA_LENGTH && vendor_data[i] == ' ')
-		i++;
-
-	return i == CONFIG_VENDOR_DATA_LENGTH;
-}
-
 static int commit_and_lock_cleanup_func(struct CleanupFunc *c, CleanupType t)
 {
 	struct vb2_context *ctx = vboot_get_context();
@@ -164,9 +141,6 @@ int vboot_select_and_load_kernel(void)
 
 	if (CONFIG(EC_SOFTWARE_SYNC))
 		ctx->flags |= VB2_CONTEXT_EC_SYNC_SUPPORTED;
-
-	if (vendor_data_settable())
-		ctx->flags |= VB2_CONTEXT_VENDOR_DATA_SETTABLE;
 
 	/*
 	 * If the lid is closed, kernel selection should not count down the

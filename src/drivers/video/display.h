@@ -18,7 +18,31 @@
 #ifndef __DRIVERS_VIDEO_DISPLAY_H__
 #define __DRIVERS_VIDEO_DISPLAY_H__
 
-#include <vboot_api.h>  /* for VbScreenType_t */
+/* TODO(b/151200757): Support headless devices */
+/* Predefined (default) screens for DisplayOps.display_screen(). */
+enum VbScreenType_t {
+	VB_SCREEN_BLANK = 0,
+	VB_SCREEN_DEVELOPER_WARNING = 0x101,
+	VB_SCREEN_RECOVERY_INSERT   = 0x202,
+	VB_SCREEN_RECOVERY_NO_GOOD  = 0x203,
+	VB_SCREEN_RECOVERY_TO_DEV   = 0x204,
+	VB_SCREEN_DEVELOPER_TO_NORM = 0x205,
+	VB_SCREEN_WAIT              = 0x206,
+	VB_SCREEN_TO_NORM_CONFIRMED = 0x207,
+	VB_SCREEN_OS_BROKEN         = 0x208,
+	VB_SCREEN_DEVELOPER_WARNING_MENU = 0x20a,
+	VB_SCREEN_DEVELOPER_MENU = 0x20b,
+	VB_SCREEN_RECOVERY_TO_DEV_MENU = 0x20d,
+	VB_SCREEN_DEVELOPER_TO_NORM_MENU = 0x20e,
+	VB_SCREEN_LANGUAGES_MENU = 0x20f,
+	VB_SCREEN_OPTIONS_MENU = 0x210,
+	VB_SCREEN_ALT_FW_PICK = 0x212,
+	VB_SCREEN_ALT_FW_MENU = 0x213,
+	VB_COMPLETE_VENDOR_DATA = 0x300,
+	VB_SCREEN_SET_VENDOR_DATA = 0x301,
+	VB_SCREEN_CONFIRM_VENDOR_DATA = 0x302,
+	VB_SCREEN_CONFIRM_DIAG = 0x303,
+};
 
 typedef struct DisplayOps {
 	/**
@@ -46,6 +70,7 @@ typedef struct DisplayOps {
 	 */
 	int (*stop)(struct DisplayOps *me);
 
+	/* TODO(b/151200757): Support headless devices */
 	/**
 	 * Screen display function for headless devices.
 	 *

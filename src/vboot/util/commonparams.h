@@ -22,7 +22,6 @@
 #include <stdint.h>
 #include <vb2_api.h>
 
-int gbb_clear_flags(void);
 struct vb2_context *vboot_get_context(void);
 
 #endif /* __VBOOT_UTIL_COMMONPARAMS_H__ */

@@ -25,30 +25,6 @@
 #include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
 
-int gbb_clear_flags(void)
-{
-	if (flash_is_wp_enabled()) {
-		printf("WP is enabled; can't write to GBB.\n");
-		return 1;
-	}
-
-	FmapArea area;
-	if (fmap_find_area("GBB", &area)) {
-		printf("Couldn't find GBB area.\n");
-		return 1;
-	}
-
-	vb2_gbb_flags_t new_flags = 0;
-	if (sizeof(new_flags) !=
-	    flash_rewrite(area.offset + VB2_GBB_FLAGS_OFFSET,
-			  sizeof(new_flags), &new_flags)) {
-		printf("Write to GBB failed.\n");
-		return 1;
-	}
-
-	return 0;
-}
-
 struct vb2_context *vboot_get_context(void)
 {
 	static struct vb2_context *ctx;
