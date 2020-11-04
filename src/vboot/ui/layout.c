@@ -611,10 +611,6 @@ vb2_error_t ui_get_log_textbox_dimensions(uint32_t *lines_per_page,
 	*chars_per_line = (UI_SCALE - UI_MARGIN_H * 2 - UI_BOX_PADDING_H * 2) /
 			  char_width;
 
-	UI_INFO("Calculate log textbox dimensions, "
-		"lines_per_page: %u, chars_per_line: %u\n",
-		*lines_per_page, *chars_per_line);
-
 	return VB2_SUCCESS;
 }
 

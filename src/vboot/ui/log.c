@@ -33,8 +33,7 @@ vb2_error_t ui_log_init(struct ui_log_info *log, const char *str)
 
 	if (lines_per_page == 0 || chars_per_line == 0 || str == NULL) {
 		UI_ERROR("Failed to initialize log_info, "
-			 "lines_per_page: %u, chars_per_line: %u, "
-			 "str: %s\n",
+			 "dimensions: %ux%u, str: %s\n",
 			 lines_per_page, chars_per_line, str ? str : "NULL");
 		return VB2_ERROR_UI_LOG_INIT;
 	}
@@ -98,8 +97,7 @@ vb2_error_t ui_log_init(struct ui_log_info *log, const char *str)
 	/* Set the last entry to the end of log string. */
 	log->page_start[pages] = ptr;
 
-	UI_INFO("Initialize log_info with page_count: %u, "
-		"lines_per_page: %u, chars_per_line: %u\n",
+	UI_INFO("Initialize log_info, page_count: %u, dimensions: %ux%u\n",
 		log->page_count, lines_per_page, chars_per_line);
 
 	return VB2_SUCCESS;
@@ -114,9 +112,7 @@ char *ui_log_get_page_content(const struct ui_log_info *log, uint32_t page)
 	const char *ptr, *line_start;
 
 	if (ui_get_log_textbox_dimensions(&lines_per_page, &chars_per_line)) {
-		UI_ERROR("Failed to get log textbox dimensions, "
-			 "lines_per_page: %u, chars_per_line: %u\n",
-			 lines_per_page, chars_per_line);
+		UI_ERROR("Failed to get log textbox dimensions\n");
 		return NULL;
 	}
 
@@ -129,7 +125,7 @@ char *ui_log_get_page_content(const struct ui_log_info *log, uint32_t page)
 	buf = malloc((chars_per_line + 1) * lines_per_page + 1);
 	if (!buf) {
 		UI_ERROR("Failed to malloc string buffer, page: %u, "
-			 "lines_per_page: %u, chars_per_line: %u\n",
+			 "dimensions: %ux%u\n",
 			 page, lines_per_page, chars_per_line);
 		return NULL;
 	}
@@ -164,8 +160,6 @@ char *ui_log_get_page_content(const struct ui_log_info *log, uint32_t page)
 	if (i > 0 && buf[i - 1] == '\n')
 		i--;
 	buf[i] = '\0';
-
-	UI_INFO("Get page content from log_info with page: %u\n", page);
 
 	return buf;
 }
