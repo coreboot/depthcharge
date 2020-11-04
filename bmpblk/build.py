@@ -53,6 +53,7 @@ KEY_STYLES = 'styles'
 KEY_BGCOLOR = 'bgcolor'
 KEY_FGCOLOR = 'fgcolor'
 KEY_HEIGHT = 'height'
+KEY_MAX_WIDTH = 'max_width'
 DIAGNOSTIC_FILES = 'diagnostic_files'
 
 # Board config YAML key names.
@@ -87,29 +88,6 @@ class BuildImageError(Exception):
   """The exception class for all errors generated during build image process."""
 
 
-# Some of the numbers below are from depthcharge:
-# - 1000: UI_SCALE
-# - 50: UI_MARGIN_H
-# - 228: UI_REC_QR_SIZE
-# - 24: UI_REC_QR_MARGIN_H
-# - 24: UI_DESC_TEXT_HEIGHT
-# - 128: UI_FOOTER_HEIGHT
-# - 20: UI_FOOTER_COL1_MARGIN_RIGHT
-# - 282: width of rec_url.bmp
-# - 40: UI_FOOTER_COL2_MARGIN_RIGHT
-# - 40: UI_FOOTER_COL3_MARGIN_LEFT
-# - 20: UI_FOOTER_TEXT_HEIGHT
-
-DEFAULT_MAX_WIDTH = 1000 - 50 * 2
-
-MAX_WIDTH_LOOKUPS = [
-    (re.compile(r'rec_phone_step2_desc'), DEFAULT_MAX_WIDTH - 228 - 24 * 2, 24),
-    (re.compile(r'navigate\w*'), DEFAULT_MAX_WIDTH - 128 - 20 - 282 - 40 - 40,
-     20),
-    (re.compile(r'\w+_desc\w*'), DEFAULT_MAX_WIDTH, 24),
-]
-
-
 def get_config_with_defaults(configs, key):
   """Gets config of `key` from `configs`.
 
@@ -122,8 +100,9 @@ def get_config_with_defaults(configs, key):
   return config
 
 
-def convert_text_to_png(locale, input_file, font, margin, output_dir,
-                        bgcolor='#000000', fgcolor='#ffffff', **options):
+def convert_text_to_png(locale, input_file, font, output_dir, height=None,
+                        max_width=None, margin='0', bgcolor='#000000',
+                        fgcolor='#ffffff', **options):
   """Converts text files into PNG image files.
 
   Args:
@@ -131,6 +110,8 @@ def convert_text_to_png(locale, input_file, font, margin, output_dir,
       locale-independent strings.
     input_file: Path of input text file.
     font: Font spec.
+    height: Height.
+    max_width: Maximum width.
     margin: CSS-style margin.
     output_dir: Directory to generate image files.
     bgcolor: Background color (#rrggbb).
@@ -146,26 +127,19 @@ def convert_text_to_png(locale, input_file, font, margin, output_dir,
   font_size = os.getenv('FONT_SIZE')
   if font_size:
     command.append('--point=%r' % font_size)
+  if max_width:
+    # Without the --width option set, the minimum height of the output SVG
+    # image is roughly 22px (for locale 'en'). With --width=WIDTH passed to
+    # pango-view, the width of the output seems to always be (WIDTH * 4 / 3),
+    # regardless of the font being used. Therefore, set the max_width in
+    # points as follows to prevent drawing from exceeding canvas boundary in
+    # depthcharge runtime.
+    max_width_pt = int(22 * max_width / height / (4 / 3))
+    command.append('--width=%d' % max_width_pt)
   if margin:
     command.append('--margin="%s"' % margin)
   command.append('--bgcolor="%s"' % bgcolor)
   command.append('--color="%s"' % fgcolor)
-
-  # TODO(b/159399377): Set different widths for titles and descriptions.
-  # Currently only wrap lines for descriptions and navigation instructions in
-  # the footer.
-  # Without the --width option set, the minimum height of the output SVG
-  # image is roughly 22px (for locale 'en'). With --width=WIDTH passed to
-  # pango-view, the width of the output seems to always be (WIDTH * 4 / 3),
-  # regardless of the font being used. Therefore, set the max_width in
-  # points as follows to prevent drawing from exceeding canvas boundary in
-  # depthcharge runtime.
-
-  for pattern, max_width, text_height in MAX_WIDTH_LOOKUPS:
-    if pattern.fullmatch(name):
-      max_width_pt = int(22 * max_width / text_height / (4 / 3))
-      command.append('--width=%d' % max_width_pt)
-      break
 
   for k, v in options.items():
     command.append('--%s="%s"' % (k, v))
@@ -186,7 +160,8 @@ def convert_glyphs():
       f.write(chr(c))
       f.write('\n')
     # TODO(b/163109632): Parallelize the conversion of glyphs
-    convert_text_to_png(None, txt_file, GLYPH_FONT, margin, STAGE_FONT_DIR)
+    convert_text_to_png(None, txt_file, GLYPH_FONT, STAGE_FONT_DIR,
+                        margin=margin)
 
 
 def _load_locale_json_file(locale, json_dir):
@@ -323,10 +298,11 @@ def convert_localized_strings(formats):
           locale,
           os.path.join(output_dir, '%s.txt' % name),
           fonts.get(locale, default_font),
-          '0',
           output_dir,
       )
       kwargs = {
+          'height': style[KEY_HEIGHT],
+          'max_width': style[KEY_MAX_WIDTH],
           'bgcolor': style[KEY_BGCOLOR],
           'fgcolor': style[KEY_FGCOLOR],
       }
@@ -364,7 +340,9 @@ def build_strings(formats):
     name, _ = os.path.splitext(os.path.basename(input_file))
     category = files[name]
     style = get_config_with_defaults(styles, category)
-    if not convert_text_to_png(None, input_file, default_font, '0', STAGE_DIR,
+    if not convert_text_to_png(None, input_file, default_font, STAGE_DIR,
+                               height=style[KEY_HEIGHT],
+                               max_width=style[KEY_MAX_WIDTH],
                                bgcolor=style[KEY_BGCOLOR],
                                fgcolor=style[KEY_FGCOLOR]):
       exit('Failed to convert text %s' % input_file)
@@ -718,7 +696,8 @@ class Converter(object):
       f.seek(BMP_HEADER_OFFSET_NUM_LINES)
       f.write(bytearray([num_lines]))
 
-  def convert(self, files, output_dir, heights, max_colors, one_line_dir=None):
+  def convert(self, files, output_dir, heights, max_widths, max_colors,
+              one_line_dir=None):
     """Converts file(s) to bitmap format."""
     if not files:
       raise BuildImageError('Unable to find file(s) to convert')
@@ -736,10 +715,10 @@ class Converter(object):
 
       background = self.BACKGROUND_COLORS.get(name, self.DEFAULT_BACKGROUND)
       height = heights[name]
+      max_width = max_widths[name]
 
       # Determine num_lines in order to scale the image
-      # TODO(b/159399377): Wrap lines for texts other than descriptions.
-      if one_line_dir and ('_desc' in name or name.startswith('navigate')):
+      if one_line_dir and max_width:
         num_lines = self.get_num_lines(file, one_line_dir)
       else:
         num_lines = 1
@@ -759,19 +738,24 @@ class Converter(object):
     files.extend(glob.glob(os.path.join(self.ASSET_DIR, PNG_FILES)))
     heights = defaultdict(lambda: self.DEFAULT_ASSET_HEIGHT)
     heights.update(self.ASSET_HEIGHTS)
-    self.convert(files, self.output_dir, heights, self.ASSET_MAX_COLORS)
+    max_widths = defaultdict(lambda: None)
+    self.convert(files, self.output_dir, heights, max_widths,
+                 self.ASSET_MAX_COLORS)
 
   def convert_generic_strings(self):
     """Converts generic (locale-independent) strings."""
     names = self.formats[KEY_GENERIC_FILES]
     styles = self.formats[KEY_STYLES]
     heights = {}
+    max_widths = {}
     for name, category in names.items():
       style = get_config_with_defaults(styles, category)
       heights[name] = style[KEY_HEIGHT]
+      max_widths[name] = style[KEY_MAX_WIDTH]
 
     files = glob.glob(os.path.join(self.stage_dir, SVG_FILES))
-    self.convert(files, self.output_dir, heights, self.text_max_colors)
+    self.convert(files, self.output_dir, heights, max_widths,
+                 self.text_max_colors)
 
   def convert_localized_strings(self):
     """Converts localized strings."""
@@ -780,9 +764,11 @@ class Converter(object):
       names.update(self.formats[DIAGNOSTIC_FILES])
     styles = self.formats[KEY_STYLES]
     heights = {}
+    max_widths = {}
     for name, category in names.items():
       style = get_config_with_defaults(styles, category)
       heights[name] = style[KEY_HEIGHT]
+      max_widths[name] = style[KEY_MAX_WIDTH]
 
     # Using stderr to report progress synchronously
     print('  processing:', end='', file=sys.stderr, flush=True)
@@ -794,7 +780,7 @@ class Converter(object):
       os.makedirs(ro_locale_dir)
       self.convert(
           glob.glob(os.path.join(stage_locale_dir, SVG_FILES)),
-          ro_locale_dir, heights, self.text_max_colors,
+          ro_locale_dir, heights, max_widths, self.text_max_colors,
           one_line_dir=os.path.join(stage_locale_dir, ONE_LINE_DIR))
     print(file=sys.stderr)
 
@@ -816,10 +802,12 @@ class Converter(object):
   def convert_fonts(self):
     """Converts font images"""
     heights = defaultdict(lambda: self.DEFAULT_FONT_HEIGHT)
+    max_widths = defaultdict(lambda: None)
     files = glob.glob(os.path.join(STAGE_FONT_DIR, SVG_FILES))
     font_output_dir = os.path.join(self.output_dir, 'font')
     os.makedirs(font_output_dir)
-    self.convert(files, font_output_dir, heights, self.text_max_colors)
+    self.convert(files, font_output_dir, heights, max_widths,
+                 self.text_max_colors)
 
   def copy_images_to_rw(self):
     """Copies localized images specified in boards.yaml for RW override."""

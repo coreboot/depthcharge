@@ -56,7 +56,7 @@ localized_files:
   rec_phone_step1_desc0: desc
   rec_phone_step1_desc1: desc
   rec_phone_step2_title: title
-  rec_phone_step2_desc: desc
+  rec_phone_step2_desc: rec_phone_step2_desc
   # recovery - disk
   rec_disk_step1_desc0: desc
   rec_disk_step1_desc0_no_sd: desc
@@ -111,10 +111,10 @@ localized_files:
   # footer
   model: footer
   help_center: footer
-  navigate0: footer
-  navigate1: footer
-  navigate0_tablet: footer
-  navigate1_tablet: footer
+  navigate0: footer_nav
+  navigate1: footer_nav
+  navigate0_tablet: footer_nav
+  navigate1_tablet: footer_nav
 
 diagnostic_files:
   # diagnostic tools - menu
@@ -147,6 +147,8 @@ styles:
     # Height of the generated bitmap relative to the screen resolution specified
     # in boards.yaml.
     height: 24
+    # Maximum width of the bitmap for wrapping lines.
+    max_width: null
   language:
     height: 26
   title:
@@ -156,6 +158,17 @@ styles:
   desc:
     bgcolor: *grey_900
     fgcolor: *grey_200
+    # UI_SCALE = 1000
+    # UI_MARGIN_H = 50
+    # UI_SCALE - UI_MARGIN_H * 2
+    max_width: 900
+  rec_phone_step2_desc:
+    bgcolor: *grey_900
+    fgcolor: *grey_200
+    # UI_REC_QR_SIZE = 228
+    # UI_REC_QR_MARGIN_H = 24
+    # UI_SCALE - UI_MARGIN_H * 2 - UI_REC_QR_SIZE - UI_REC_QR_MARGIN_H * 2
+    max_width: 624
   primary_button:
     height: 20
   secondary_button:
@@ -164,6 +177,19 @@ styles:
     bgcolor: *grey_900
     fgcolor: *grey_500
     height: 20
+  footer_nav:
+    bgcolor: *grey_900
+    fgcolor: *grey_500
+    height: 20
+    # UI_FOOTER_HEIGHT = 128
+    # UI_FOOTER_COL1_MARGIN_RIGHT = 20
+    # width of rec_url.bmp = 282
+    # UI_FOOTER_COL2_MARGIN_RIGHT = 40
+    # UI_FOOTER_COL3_MARGIN_LEFT = 40
+    # UI_SCALE - UI_MARGIN_H * 2 - UI_FOOTER_HEIGHT
+    # - UI_FOOTER_COL1_MARGIN_RIGHT - 282
+    # - UI_FOOTER_COL2_MARGIN_RIGHT - UI_FOOTER_COL3_MARGIN_LEFT
+    max_width: 390
 
 # Font of each locale
 fonts:
