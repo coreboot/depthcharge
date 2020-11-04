@@ -54,7 +54,7 @@
 #define PS8815_P2_SPI_WP_DIS	0x10	/* WP disable bit */
 
 #define P0_ROM_CTRL		0xef
-#define P0_ROM_CTRL_LOAD_DONE	0x80	/* MTP load done */
+#define P0_ROM_CTRL_LOAD_DONE	0xc0	/* MTP load done */
 
 #define P1_CHIP_REV_LO		0xf0	/* the 0x03 in "A3" */
 #define P1_CHIP_REV_HI		0xf1	/* the 0x0a in "A3" */
