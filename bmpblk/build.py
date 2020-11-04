@@ -441,7 +441,7 @@ class Converter(object):
   BUTTON_SCALE = (0, 20)
   BUTTON_ICON_SCALE = (0, 24)
   BUTTON_ARROW_SCALE = (0, 20)
-  QR_FOOTER_SCALE = (0, 108)
+  QR_FOOTER_SCALE = (0, 128)
   QR_DESC_SCALE = (0, 228)
   FOOTER_TEXT_SCALE = (0, 20)
 
