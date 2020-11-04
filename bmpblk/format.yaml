@@ -2,10 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This file is the source of truth for both generic (locale-independent) and
-# localized strings. For sprite bitmaps (image assets), however, all SVG and PNG
-# files under the 'assets' folder will be included.
-# TODO(b/172402906): Explicitly list each sprite bitmap in this file.
+# This file is the source of truth for both generic (locale-independent)
+# strings, localized strings and sprite bitmaps (image assets).
 
 locales: [ ar, bg, ca, cs, da, de, el, en, es, es-419, et, fa, fi, fil, fr,
            he, hi, hr, hu, id, it, ja, ko, lt, lv, ms, nl, nb, pl, pt-BR,
@@ -131,6 +129,44 @@ diagnostic_files:
   diag_memory_full_title: title
   btn_diag_cancel: primary_button
 
+sprite_files:
+  # language menu
+  ic_globe: ic_globe
+  ic_dropdown: ic_dropdown
+  # icons
+  ic_info: icon
+  ic_error: icon
+  ic_dev_mode: icon
+  ic_restart: icon
+  ic_1: icon_step
+  ic_1-done: icon_step
+  ic_2: icon_step
+  ic_2-done: icon_step
+  ic_3: icon_step
+  ic_3-done: icon_step
+  ic_done: icon_step
+  # button icons
+  ic_search: button_icon
+  ic_search_focus: button_icon
+  ic_settings: button_icon
+  ic_settings_focus: button_icon
+  ic_power: button_icon
+  ic_power_focus: button_icon
+  ic_dropleft: button_arrow
+  ic_dropleft_focus: button_arrow
+  ic_dropright: button_arrow
+  ic_dropright_focus: button_arrow
+  # QR code
+  qr_rec: qr_rec
+  qr_rec_phone: qr_rec_phone
+  # navigation instructions
+  nav-key_up: nav_icon
+  nav-key_down: nav_icon
+  nav-key_enter: nav_icon
+  nav-button_volume_up: nav_icon
+  nav-button_volume_down: nav_icon
+  nav-button_power: nav_icon
+
 # Google material colors
 # See https://carbon.googleplex.com/cros-ux/pages/color/overview.
 color_aliases:
@@ -145,9 +181,14 @@ styles:
     bgcolor: '#000000'
     fgcolor: '#ffffff'
     # Height of the generated bitmap relative to the screen resolution specified
-    # in boards.yaml.
+    # in boards.yaml, using 1000 as a base. For example, "height: 200" means the
+    # image will be scaled to 20% of the screen height. These scale-related
+    # numbers are supposed to be kept in sync with the those set in depthcharge,
+    # to ensure the size of the generated bitmap will be proportional to the
+    # size that it is displayed at.
     height: 24
-    # Maximum width of the bitmap for wrapping lines.
+    # Maximum width of the bitmap for wrapping lines. Unit is the same as the
+    # "height" option.
     max_width: null
   language:
     height: 26
@@ -190,6 +231,25 @@ styles:
     # - UI_FOOTER_COL1_MARGIN_RIGHT - 282
     # - UI_FOOTER_COL2_MARGIN_RIGHT - UI_FOOTER_COL3_MARGIN_LEFT
     max_width: 390
+  # sprite bitmaps
+  ic_globe:
+    height: 20
+  ic_dropdown:
+    height: 24
+  icon:
+    height: 45
+  icon_step:
+    height: 28
+  button_icon:
+    height: 24
+  button_arrow:
+    height: 20
+  qr_rec:
+    height: 128
+  qr_rec_phone:
+    height: 228
+  nav_icon:
+    height: 30
 
 # Font of each locale
 fonts:

@@ -44,17 +44,18 @@ PNG_FILES = '*.png'
 DIAGNOSTIC_UI = os.getenv('DIAGNOSTIC_UI') == '1'
 
 # String format YAML key names.
-DEFAULT_NAME = '_DEFAULT_'
+KEY_DEFAULT = '_DEFAULT_'
 KEY_LOCALES = 'locales'
 KEY_GENERIC_FILES = 'generic_files'
 KEY_LOCALIZED_FILES = 'localized_files'
-KEY_FONTS = 'fonts'
+KEY_DIAGNOSTIC_FILES = 'diagnostic_files'
+KEY_SPRITE_FILES = 'sprite_files'
 KEY_STYLES = 'styles'
 KEY_BGCOLOR = 'bgcolor'
 KEY_FGCOLOR = 'fgcolor'
 KEY_HEIGHT = 'height'
 KEY_MAX_WIDTH = 'max_width'
-DIAGNOSTIC_FILES = 'diagnostic_files'
+KEY_FONTS = 'fonts'
 
 # Board config YAML key names.
 SCREEN_KEY = 'screen'
@@ -95,7 +96,7 @@ def get_config_with_defaults(configs, key):
   Similarly, if some config values are missing for `key`, the default ones will
   be used.
   """
-  config = configs[DEFAULT_NAME].copy()
+  config = configs[KEY_DEFAULT].copy()
   config.update(configs.get(key, {}))
   return config
 
@@ -249,11 +250,11 @@ def convert_localized_strings(formats):
 
   files = formats[KEY_LOCALIZED_FILES]
   if DIAGNOSTIC_UI:
-    files.update(formats[DIAGNOSTIC_FILES])
+    files.update(formats[KEY_DIAGNOSTIC_FILES])
 
   styles = formats[KEY_STYLES]
   fonts = formats[KEY_FONTS]
-  default_font = fonts[DEFAULT_NAME]
+  default_font = fonts[KEY_DEFAULT]
 
   # Sources are one .grd file with identifiers chosen by engineers and
   # corresponding English texts, as well as a set of .xlt files (one for each
@@ -334,7 +335,7 @@ def build_strings(formats):
   files = formats[KEY_GENERIC_FILES]
   styles = formats[KEY_STYLES]
   fonts = formats[KEY_FONTS]
-  default_font = fonts[DEFAULT_NAME]
+  default_font = fonts[KEY_DEFAULT]
 
   for input_file in glob.glob(os.path.join(STRINGS_DIR, '*.txt')):
     name, _ = os.path.splitext(os.path.basename(input_file))
@@ -364,11 +365,11 @@ def load_boards_config(filename):
     raw = yaml.load(file)
 
   configs = {}
-  default = raw[DEFAULT_NAME]
+  default = raw[KEY_DEFAULT]
   if not default:
     raise BuildImageError('Default configuration is not found')
   for boards, params in raw.items():
-    if boards == DEFAULT_NAME:
+    if boards == KEY_DEFAULT:
       continue
     config = copy.deepcopy(default)
     if params:
@@ -387,12 +388,10 @@ class Converter(object):
     DEFAULT_OUTPUT_EXT (str): Default output file extension.
     DEFAULT_REPLACE_MAP (dict): Default mapping of file replacement. For
       {'a': 'b'}, "a.*" will be converted to "b.*".
-    SCALE_BASE (int): See ASSET_HEIGHTS below.
+    SCALE_BASE (int): The base for bitmap scales, same as UI_SCALE in
+      depthcharge. For example, if `SCALE_BASE` is 1000, then height = 200 means
+      20% of the screen height. Also see the 'styles' section in format.yaml.
     DEFAULT_FONT_HEIGHT (tuple): Height of the font images.
-    ASSET_HEIGHTS (dict): Height of each image asset. Key is the image name and
-      value is the height relative to the screen resolution. For example, if
-      `SCALE_BASE` is 1000, height = 500 means the image will be scaled to 50%
-      of the screen height.
     ASSET_MAX_COLORS (int): Maximum colors to use for converting image assets
       to bitmaps.
     DEFAULT_BACKGROUND (tuple): Default background color.
@@ -419,46 +418,8 @@ class Converter(object):
   }
 
   # scales
-  SCALE_BASE = 1000     # 100.0%
-
-  # These are supposed to be kept in sync with the numbers set in depthcharge
-  # to avoid runtime scaling, which makes images blurry.
-  DEFAULT_ASSET_HEIGHT = 30
+  SCALE_BASE = 1000
   DEFAULT_FONT_HEIGHT = 20
-  ICON_HEIGHT = 45
-  STEP_ICON_HEIGHT = 28
-  BUTTON_ICON_HEIGHT = 24
-  BUTTON_ARROW_HEIGHT = 20
-  QR_FOOTER_HEIGHT = 128
-  QR_DESC_HEIGHT = 228
-
-  ASSET_HEIGHTS = {
-      'ic_globe': 20,
-      'ic_dropdown': 24,
-      'ic_info': ICON_HEIGHT,
-      'ic_error': ICON_HEIGHT,
-      'ic_dev_mode': ICON_HEIGHT,
-      'ic_restart': ICON_HEIGHT,
-      'ic_1': STEP_ICON_HEIGHT,
-      'ic_1-done': STEP_ICON_HEIGHT,
-      'ic_2': STEP_ICON_HEIGHT,
-      'ic_2-done': STEP_ICON_HEIGHT,
-      'ic_3': STEP_ICON_HEIGHT,
-      'ic_3-done': STEP_ICON_HEIGHT,
-      'ic_done': STEP_ICON_HEIGHT,
-      'ic_search': BUTTON_ICON_HEIGHT,
-      'ic_search_focus': BUTTON_ICON_HEIGHT,
-      'ic_settings': BUTTON_ICON_HEIGHT,
-      'ic_settings_focus': BUTTON_ICON_HEIGHT,
-      'ic_power': BUTTON_ICON_HEIGHT,
-      'ic_power_focus': BUTTON_ICON_HEIGHT,
-      'ic_dropleft': BUTTON_ARROW_HEIGHT,
-      'ic_dropleft_focus': BUTTON_ARROW_HEIGHT,
-      'ic_dropright': BUTTON_ARROW_HEIGHT,
-      'ic_dropright_focus': BUTTON_ARROW_HEIGHT,
-      'qr_rec': QR_FOOTER_HEIGHT,
-      'qr_rec_phone': QR_DESC_HEIGHT,
-  }
 
   # background colors
   DEFAULT_BACKGROUND = (0x20, 0x21, 0x24)
@@ -731,13 +692,23 @@ class Converter(object):
       self.convert_to_bitmap(
           file, height, num_lines, background, output, max_colors)
 
-  def convert_assets(self):
-    """Converts images in assets folder."""
+  def convert_sprite_images(self):
+    """Converts sprite images."""
+    names = self.formats[KEY_SPRITE_FILES]
+    styles = self.formats[KEY_STYLES]
+    # Check redundant images
+    for filename in glob.glob(os.path.join(self.ASSET_DIR, SVG_FILES)):
+      name, _ = os.path.splitext(os.path.basename(filename))
+      if name not in names:
+        raise BuildImageError('Sprite image %r not specified in %s' %
+                              (filename, FORMAT_FILE))
+    # Convert images
     files = []
-    files.extend(glob.glob(os.path.join(self.ASSET_DIR, SVG_FILES)))
-    files.extend(glob.glob(os.path.join(self.ASSET_DIR, PNG_FILES)))
-    heights = defaultdict(lambda: self.DEFAULT_ASSET_HEIGHT)
-    heights.update(self.ASSET_HEIGHTS)
+    heights = {}
+    for name, category in names.items():
+      style = get_config_with_defaults(styles, category)
+      files.append(os.path.join(self.ASSET_DIR, name + '.svg'))
+      heights[name] = style[KEY_HEIGHT]
     max_widths = defaultdict(lambda: None)
     self.convert(files, self.output_dir, heights, max_widths,
                  self.ASSET_MAX_COLORS)
@@ -761,7 +732,7 @@ class Converter(object):
     """Converts localized strings."""
     names = self.formats[KEY_LOCALIZED_FILES].copy()
     if DIAGNOSTIC_UI:
-      names.update(self.formats[DIAGNOSTIC_FILES])
+      names.update(self.formats[KEY_DIAGNOSTIC_FILES])
     styles = self.formats[KEY_STYLES]
     heights = {}
     max_widths = {}
@@ -853,8 +824,8 @@ class Converter(object):
       shutil.rmtree(self.temp_dir)
     os.makedirs(self.temp_dir)
 
-    print('Converting asset images...')
-    self.convert_assets()
+    print('Converting sprite images...')
+    self.convert_sprite_images()
 
     print('Converting generic strings...')
     self.convert_generic_strings()
