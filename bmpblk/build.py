@@ -446,11 +446,9 @@ class Converter(object):
   FOOTER_TEXT_SCALE = (0, 20)
 
   ASSET_SCALES = {
-      'separator': None,
       'ic_globe': (0, 20),
       'ic_dropdown': (0, 24),
       'ic_info': ICON_SCALE,
-      'ic_warning': ICON_SCALE,
       'ic_error': ICON_SCALE,
       'ic_dev_mode': ICON_SCALE,
       'ic_restart': ICON_SCALE,
