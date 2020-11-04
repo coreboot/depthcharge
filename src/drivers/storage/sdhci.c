@@ -195,8 +195,11 @@ static int sdhci_setup_adma(SdhciHost *host, MmcData *data,
 			attributes |= SDHCI_ADMA_END;
 
 		if (host->dma64) {
-			host->adma64_descs[i].addr = (uintptr_t) buffer_data;
-			host->adma64_descs[i].addr_hi = 0;
+			uintptr_t lo = (uintptr_t) buffer_data & 0xFFFFFFFF;
+			uintptr_t hi = 0;
+
+			host->adma64_descs[i].addr = lo;
+			host->adma64_descs[i].addr_hi = hi;
 			host->adma64_descs[i].length = desc_length;
 			host->adma64_descs[i].attributes = attributes;
 
@@ -209,12 +212,16 @@ static int sdhci_setup_adma(SdhciHost *host, MmcData *data,
 		buffer_data += desc_length;
 	}
 
-	if (host->dma64)
-		sdhci_writel(host, (uintptr_t) host->adma64_descs,
-			     SDHCI_ADMA_ADDRESS);
-	else
+	if (host->dma64) {
+		uintptr_t lo = (uintptr_t) host->adma64_descs & 0xFFFFFFFF;
+		uintptr_t hi = 0;
+
+		sdhci_writel(host, lo, SDHCI_ADMA_ADDRESS);
+		sdhci_writel(host, hi, SDHCI_ADMA_ADDRESS_HI);
+	} else {
 		sdhci_writel(host, (uintptr_t) host->adma_descs,
 			     SDHCI_ADMA_ADDRESS);
+	}
 
 	return 0;
 }
