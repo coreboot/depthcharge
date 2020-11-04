@@ -53,6 +53,9 @@
 #define PS8815_P2_SPI_WP_EN	0x00	/* WP enable "bit" */
 #define PS8815_P2_SPI_WP_DIS	0x10	/* WP disable bit */
 
+#define P0_ROM_CTRL		0xef
+#define P0_ROM_CTRL_LOAD_DONE	0xc0	/* MTP load done */
+
 #define P1_CHIP_REV_LO		0xf0	/* the 0x03 in "A3" */
 #define P1_CHIP_REV_HI		0xf1	/* the 0x0a in "A3" */
 #define P1_CHIP_ID_LO		0xf2	/* 0x50 */
@@ -390,6 +393,27 @@ static int __must_check ps8751_clear_alerts(Ps8751 *me)
 	};
 	/* yes, page 0 */
 	return write_regs(me, PAGE_0, am, ARRAY_SIZE(am));
+}
+
+/*
+ * protect internal registers
+ *
+ * this is a special step suggested by parade to protect
+ * some internal SPI registers to improve the odds of
+ * reflashing a chip with bad firmware.
+ */
+
+static int __must_check ps8751_rom_ctrl(Ps8751 *me)
+{
+	if (me->chip_type == CHIP_PS8751) {
+		/* the ps8751 does not support this register */
+		return 0;
+	}
+
+	/* mark MTP load done */
+	if (write_reg(me, PAGE_0, P0_ROM_CTRL, P0_ROM_CTRL_LOAD_DONE) != 0)
+		return -1;
+	return 0;
 }
 
 /*
@@ -1419,6 +1443,8 @@ static int ps8751_halt_and_flash(Ps8751 *me,
 {
 	int status = -1;
 
+	if (ps8751_rom_ctrl(me) != 0)
+		return -1;
 	if (ps8751_disable_mpu(me) != 0)
 		return -1;
 	if (ps8751_spi_flash_unlock(me) != 0)
