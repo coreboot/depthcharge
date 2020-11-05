@@ -585,18 +585,27 @@ vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines)
 	return rv;
 }
 
-vb2_error_t ui_get_log_textbox_dimensions(uint32_t *lines_per_page,
+vb2_error_t ui_get_log_textbox_dimensions(enum vb2_screen screen,
+					  const char *locale_code,
+					  uint32_t *lines_per_page,
 					  uint32_t *chars_per_line)
 {
+	const struct ui_screen_info *screen_info;
+	struct ui_bitmap bitmap;
+	int32_t title_height;
 	int32_t textbox_height;
 	int32_t char_width;
+
+	screen_info = ui_get_screen_info(screen);
+	VB2_TRY(ui_get_bitmap(screen_info->title, locale_code, 0, &bitmap));
+	title_height = UI_TITLE_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
 
 	/* Calculate textbox height by subtracting the height of other items
 	   from UI_SCALE. */
 	textbox_height = UI_SCALE -
 		UI_MARGIN_TOP -
 		UI_LANG_BOX_HEIGHT - UI_LANG_MARGIN_BOTTOM -
-		UI_TITLE_TEXT_HEIGHT - UI_TITLE_MARGIN_BOTTOM -
+		title_height - UI_TITLE_MARGIN_BOTTOM -
 		/* Page up, page down, back, and power off button */
 		(UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V) * 4 -
 		UI_DESC_MARGIN_BOTTOM -
@@ -614,10 +623,13 @@ vb2_error_t ui_get_log_textbox_dimensions(uint32_t *lines_per_page,
 	return VB2_SUCCESS;
 }
 
-vb2_error_t ui_draw_log_textbox(const char *str, int32_t *y)
+vb2_error_t ui_draw_log_textbox(const char *str, const struct ui_state *state,
+				int32_t *y)
 {
 	uint32_t lines_per_page, chars_per_line;
-	VB2_TRY(ui_get_log_textbox_dimensions(&lines_per_page,
+	VB2_TRY(ui_get_log_textbox_dimensions(state->screen->id,
+					      state->locale->code,
+					      &lines_per_page,
 					      &chars_per_line));
 	return ui_draw_textbox(str, y, lines_per_page);
 }
@@ -709,6 +721,7 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 	int focused;
 	int32_t x, y;
 	const int32_t w = UI_SIZE_AUTO;
+	int32_t h;
 	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
 	const char *icon_file;
 	struct ui_bitmap bitmap;
@@ -792,12 +805,10 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 	}
 
 	/* Title */
-	if (screen->title) {
-		VB2_TRY(ui_get_bitmap(screen->title, locale_code, 0, &bitmap));
-		VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, UI_TITLE_TEXT_HEIGHT,
-				       flags, reverse));
-	}
-	y += UI_TITLE_TEXT_HEIGHT + UI_TITLE_MARGIN_BOTTOM;
+	VB2_TRY(ui_get_bitmap(screen->title, locale_code, 0, &bitmap));
+	h = UI_TITLE_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
+	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, h, flags, reverse));
+	y += h + UI_TITLE_MARGIN_BOTTOM;
 
 	/* Description */
 	if (screen->draw_desc)

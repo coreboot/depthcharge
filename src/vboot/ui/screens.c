@@ -109,7 +109,7 @@ static vb2_error_t draw_log_desc(const struct ui_state *state,
 	    state->error_code != prev_state->error_code ||
 	    !prev_buf || buf_len != prev_buf_len ||
 	    strncmp(buf, prev_buf, buf_len))
-		rv = ui_draw_log_textbox(buf, y);
+		rv = ui_draw_log_textbox(buf, state, y);
 	else
 		*y = prev_y;
 
@@ -1080,10 +1080,15 @@ static const struct ui_screen_info *const screens[] = {
 
 const struct ui_screen_info *ui_get_screen_info(enum vb2_screen screen_id)
 {
+	static const struct ui_screen_info *screen_info;
 	int i;
+	if (screen_info && screen_info->id == screen_id)
+		return screen_info;
 	for (i = 0; i < ARRAY_SIZE(screens); i++) {
-		if (screens[i]->id == screen_id)
-			return screens[i];
+		if (screens[i]->id == screen_id) {
+			screen_info = screens[i];
+			return screen_info;
+		}
 	}
 	return NULL;
 }

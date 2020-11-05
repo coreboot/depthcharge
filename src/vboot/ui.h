@@ -293,7 +293,7 @@ struct ui_screen_info {
 	int step;
 	/* Total number of steps; valid only if icon is UI_ICON_TYPE_STEP */
 	int num_steps;
-	/* File for screen title. */
+	/* File for screen title; required with ui_draw_default(). */
 	const char *title;
 	/* Files for screen descriptions. */
 	struct ui_desc desc;
@@ -319,6 +319,10 @@ struct ui_screen_info {
 struct ui_log_info {
 	/* Full log content. */
 	const char *str;
+	/* Maximum number of lines per page. */
+	uint32_t lines_per_page;
+	/* Maximum number of characters per line.*/
+	uint32_t chars_per_line;
 	/* Total number of pages. */
 	uint32_t page_count;
 	/*
@@ -653,6 +657,8 @@ vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines);
  *
  * The log textbox can fit lines_per_page * chars_per_line characters.
  *
+ * @param screen		Screen to display the log.
+ * @param locale_code		Language code of locale.
  * @param lines_per_page	On return, the value will be maximum number of
  *				lines per page.
  * @param chars_per_line	On return, the value will be maximum number of
@@ -660,19 +666,23 @@ vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines);
  *
  * @return VB2_SUCCESS on success, no-zero on error.
  */
-vb2_error_t ui_get_log_textbox_dimensions(uint32_t *lines_per_page,
+vb2_error_t ui_get_log_textbox_dimensions(enum vb2_screen screen,
+					  const char *locale_code,
+					  uint32_t *lines_per_page,
 					  uint32_t *chars_per_line);
 
 /*
  * Draw a textbox for displaying the log screen.
  *
  * @param str		The full log string, which may contain line breaks.
+ * @param state		UI state.
  * @param y		Starting y-coordinate of the box. On return, the value
  *			will be the ending coordinate, excluding the margin
  *			below the box.
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t ui_draw_log_textbox(const char *str, int32_t *y);
+vb2_error_t ui_draw_log_textbox(const char *str, const struct ui_state *state,
+				int32_t *y);
 
 /*
  * Draw primary and secondary buttons; ignore the language dropdown header.
@@ -718,16 +728,21 @@ const struct ui_screen_info *ui_get_screen_info(enum vb2_screen screen_id);
 /*
  * Initialize log info struct with a string.
  *
- * @param log			Log info struct to be initialized.
- * @param str			The full log string.
+ * @param screen	Screen to display the log.
+ * @param locale_code	Language code of locale.
+ * @param str		The full log string.
+ * @param log		Log info struct to be initialized.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t ui_log_init(struct ui_log_info *log, const char *str);
+vb2_error_t ui_log_init(enum vb2_screen screen, const char *locale_code,
+			const char *str, struct ui_log_info *log);
 
 /*
  * Retrieve the content of specified page.
- * The caller owns the string and should call free() when finished with it.
+ *
+ * The log must be have been initialized by ui_log_init(). The caller owns the
+ * string and should call free() when finished with it.
  *
  * @param log		Log info.
  * @param page		Page number.
