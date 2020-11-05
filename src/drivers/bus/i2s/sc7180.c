@@ -62,6 +62,8 @@
 
 #define LPAIF_IRQ_ALL(chan)		(7 << (LPAIF_IRQ_BITSTRIDE * (chan)))
 
+#define GDSC_ENABLE_BIT_MASK		BIT(31)
+#define GDSC_RETAIN_FF_ENABLE		BIT(11)
 
 static void sc7180_pll_configure(LpassPllSet *pll_reg)
 {
@@ -93,15 +95,38 @@ static void sc7180_pll_configure(LpassPllSet *pll_reg)
 	}
 }
 
+/*
+ * Enable and check for timeout while polling the GDSC enable status
+ * Returns: 0 on success, -1 value on error
+ */
+static int enable_and_poll_gdsc_status(u32 *gdsc_addr)
+{
+	uint64_t start;
+
+	clrbits_le32(gdsc_addr, ENABLE);
+	start = timer_us(0);
+	while (!(read32(gdsc_addr) & GDSC_ENABLE_BIT_MASK)) {
+		if (timer_us(start) > 100)
+			return -1;
+	}
+
+	return 0;
+}
+
 static void sc7180_init_registers(Sc7180I2s *bus)
 {
-
 	Sc7180LpassReg *sc7180_reg = bus->sc7180_regs;
 
-	clrbits_le32(&sc7180_reg->audio_hm_gdscr, ENABLE);
-	clrbits_le32(&sc7180_reg->pdc_hm_gdscr, ENABLE);
-	clrbits_le32(&sc7180_reg->ssc_gdscr, ENABLE);
-	clrbits_le32(&sc7180_reg->core_hm_gdscr, ENABLE);
+	if(enable_and_poll_gdsc_status(&sc7180_reg->core_hm_gdscr))
+		printf("Failed to enable core_hm_gdscr.\n");
+
+	if(enable_and_poll_gdsc_status(&sc7180_reg->audio_hm_gdscr))
+		printf("Failed to enable audio_hm_gdscr.\n");
+
+	if(enable_and_poll_gdsc_status(&sc7180_reg->pdc_hm_gdscr))
+		printf("Failed to enable pdc_hm_gdscr.\n");
+
+	setbits_le32(&sc7180_reg->core_hm_gdscr, GDSC_RETAIN_FF_ENABLE);
 
 	setbits_le32(&sc7180_reg->qdsp_core_cbcr, ENABLE);
 	setbits_le32(&sc7180_reg->qdsp_spdm_mon_cbcr, ENABLE);
