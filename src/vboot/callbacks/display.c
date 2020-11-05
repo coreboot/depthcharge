@@ -32,9 +32,13 @@ _Static_assert(!CONFIG(LEGACY_CLAMSHELL_UI), "LEGACY_CLAMSHELL_UI not allowed");
 
 static struct ui_log_info log;
 
-uint32_t vb2ex_prepare_log_screen(const char *str)
+uint32_t vb2ex_prepare_log_screen(enum vb2_screen screen, uint32_t locale_id,
+				  const char *str)
 {
-	if (ui_log_init(&log, str))
+	const struct ui_locale *locale;
+	if (ui_get_locale_info(locale_id, &locale))
+		return 0;
+	if (ui_log_init(screen, locale->code, str, &log))
 		return 0;
 	return log.page_count;
 }
