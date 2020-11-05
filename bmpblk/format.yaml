@@ -136,7 +136,7 @@ diagnostic_files:
 color_aliases:
   - &grey_900 '#202124'
   - &grey_500 '#9aa0a6'
-  - &grey_200 '#e9eaed'
+  - &grey_200 '#e8eaed'
 
 # Style of each category
 # Keys and values will be passed to text_to_png_svg as options.
