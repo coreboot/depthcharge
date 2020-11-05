@@ -196,11 +196,13 @@ styles:
     bgcolor: *grey_900
     fgcolor: *grey_200
     height: 42
+    # UI_SCALE = 1000
+    # UI_MARGIN_H = 50
+    # UI_SCALE - UI_MARGIN_H * 2
+    max_width: 900
   desc:
     bgcolor: *grey_900
     fgcolor: *grey_200
-    # UI_SCALE = 1000
-    # UI_MARGIN_H = 50
     # UI_SCALE - UI_MARGIN_H * 2
     max_width: 900
   rec_phone_step2_desc:
