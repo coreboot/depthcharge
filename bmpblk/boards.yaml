@@ -238,7 +238,7 @@ flapjack,kukui:
 
 volteer:
   # 3840x2160, boots recovery image on USB ports.
-  screen:   [1200, 675]  # Flash size limited - resized from native resolution.
+  screen:   [1120, 630]  # Flash size limited - resized from native resolution.
   text_colors: 4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
   sdcard:   False
 
