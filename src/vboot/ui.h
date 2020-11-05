@@ -162,7 +162,7 @@
 #define UI_SIZE_MIN				2
 
 static const struct rgb_color ui_color_bg		= { 0x20, 0x21, 0x24 };
-static const struct rgb_color ui_color_fg		= { 0xe9, 0xea, 0xed };
+static const struct rgb_color ui_color_fg		= { 0xe8, 0xea, 0xed };
 static const struct rgb_color ui_color_footer_fg	= { 0x9a, 0xa0, 0xa6 };
 static const struct rgb_color ui_color_lang_header_bg	= { 0x16, 0x17, 0x19 };
 static const struct rgb_color ui_color_lang_header_border
