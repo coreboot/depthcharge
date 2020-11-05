@@ -1,16 +1,1 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="36px" height="36px" viewBox="0 0 36 36" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <!-- Generator: Sketch 55.2 (78181) - https://sketchapp.com -->
-    <title>ic_dev_mode</title>
-    <desc>Created with Sketch.</desc>
-    <g id="ic_dev_mode" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="developer_mode">
-            <g id="developer_mode_gm2_24px">
-                <g>
-                    <path d="M23.115,24.885 L30,18 L23.115,11.115 L21,13.245 L25.755,18 L21,22.755 L23.115,24.885 Z M15,22.755 L10.245,18 L15,13.245 L12.885,11.115 L6,18 L12.885,24.885 L15,22.755 Z M25.5,27 L10.5,27 L10.5,25.5 L7.5,25.5 L7.5,31.5 C7.5,33.15 8.85,34.5 10.5,34.5 L25.5,34.5 C27.15,34.5 28.5,33.15 28.5,31.5 L28.5,25.5 L25.5,25.5 L25.5,27 Z M10.5,31.5 L10.5,30 L25.5,30 L25.5,31.5 L10.5,31.5 Z M10.5,9 L25.5,9 L25.5,10.5 L28.5,10.5 L28.5,4.5 C28.5,2.85 27.15,1.5 25.5,1.5 L10.5,1.515 C8.85,1.515 7.5,2.85 7.5,4.5 L7.5,10.5 L10.5,10.5 L10.5,9 Z M10.5,4.5 L25.5,4.5 L25.5,6 L10.5,6 L10.5,4.5 Z" id="Shape" fill="#E8EAED"></path>
-                    <polygon id="Path" points="0 0 36 0 36 36 0 36"></polygon>
-                </g>
-            </g>
-        </g>
-    </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" height="36px" viewBox="0 0 24 24" width="36px" fill="#e8eaed"><path d="M0 0h24v24H0z" fill="none"/><path d="M4 5h16v2h2V5c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v2h2V5zm3.55 8.83L4.72 11l2.83-2.83-1.41-1.41L1.89 11l4.24 4.24 1.42-1.41zM20 17H4v-2H2v2c0 1.1.9 2 2 2h4v2h8v-2h4c1.1 0 1.99-.9 1.99-2v-2H20v2zm2-6.01l-4.24-4.24-1.41 1.41L19.17 11l-2.83 2.83 1.41 1.41L22 11.01v-.02z"/></svg>
