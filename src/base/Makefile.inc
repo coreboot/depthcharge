@@ -15,6 +15,7 @@ depthcharge-y += cleanup_funcs.c
 depthcharge-y += device_tree.c
 depthcharge-y += dt_set_macs.c
 depthcharge-y += dt_set_wifi_calibration.c
+depthcharge-y += fw_config.c
 depthcharge-y += gpt.c
 depthcharge-y += init_funcs.c
 depthcharge-y += late_init_funcs.c
