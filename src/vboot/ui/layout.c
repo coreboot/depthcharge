@@ -667,10 +667,6 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 			continue;
 		if (VB2_GET_BIT(state->hidden_item_mask, i))
 			continue;
-		/*
-		 * TODO(b/147424699): No need to redraw every button when
-		 * navigating between menu.
-		 */
 		clear_help = prev_state &&
 			     prev_state->selected_item == i &&
 			     VB2_GET_BIT(prev_state->disabled_item_mask, i);
@@ -729,7 +725,6 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 		/* Clear everything above the footer for new screen. */
 		const int32_t box_height = UI_SCALE - UI_MARGIN_BOTTOM -
 			UI_FOOTER_HEIGHT;
-		/* TODO(b/147424699): Do not clear and redraw language header */
 		VB2_TRY(ui_draw_box(0, 0, UI_SCALE, box_height,
 				    &ui_color_bg, 0));
 	}
