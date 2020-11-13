@@ -55,3 +55,11 @@ config VOLTEER_USBC_PORT_1_USB2_NUM
 	    volteer
 	    trondo
 	    voxel
+
+config MAX98373_I2S_BOOTBEEP
+	bool "Max98373 I2S Boot beep"
+	select DRIVER_BUS_I2S_INTEL_COMMON_I2S
+	select DRIVER_SOUND_I2S
+	select DRIVER_SOUND_MAX98373
+	select DRIVER_SOUND_ROUTE
+	default n

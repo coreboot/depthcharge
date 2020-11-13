@@ -42,19 +42,13 @@
 #define AUD_VOLUME	4000
 #define AUD_BITDEPTH	16
 #define AUD_SAMPLE_RATE	48000
+#define AUD_NUM_CHANNELS 2
 #define SDMODE_PIN	GPP_A10
 
 #define AUD_I2C0	PCI_DEV(0, 0x15, 0)
 #define AUD_I2C_ADDR	0x32
 #define I2C_FS_HZ	400000
 
-#if CONFIG_VOLTEER_MAX98373_I2S_PORT == 1
-	#define AUD_GPIO_BCLK	GPP_A23
-	#define AUD_GPIO_LRCLK	GPP_R7
-#elif CONFIG_VOLTEER_MAX98373_I2S_PORT == 2
-	#define AUD_GPIO_BCLK   GPP_A7
-	#define AUD_GPIO_LRCLK  GPP_A8
-#endif
 
 /*
  * Each USB Type-C port consists of a TCP (USB3) and a USB2 port from
@@ -111,23 +105,32 @@ static void volteer_setup_tpm(void)
 }
 
 #if CONFIG_DRIVER_SOUND_MAX98373
+static uintptr_t get_ssp_base_address(void)
+{
+	switch (CONFIG(VOLTEER_MAX98373_I2S_PORT)) {
+	case 1:
+		return SSP_I2S1_START_ADDRESS;
+	case 2:
+	default:
+		return SSP_I2S2_START_ADDRESS;
+	}
+}
+
 static void volteer_setup_max98373(void)
 {
-	/* Use GPIOs to provide a BCLK+LRCLK to the codec */
-	GpioCfg *boot_beep_bclk = new_tigerlake_gpio_output(AUD_GPIO_BCLK, 0);
-	GpioCfg *boot_beep_lrclk = new_tigerlake_gpio_output(AUD_GPIO_LRCLK, 0);
-
+	I2s *i2s = new_i2s_structure(&max98373_settings, AUD_BITDEPTH, 0,
+			get_ssp_base_address());
+	I2sSource *i2s_source = new_i2s_source(&i2s->ops, AUD_SAMPLE_RATE,
+			AUD_NUM_CHANNELS, AUD_VOLUME);
+	/* Connect Audio codec to the I2S source */
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
 	/* Speaker amp is Maxim 98373 codec on I2C0 */
-	DesignwareI2c *i2c0 = new_pci_designware_i2c(
-			AUD_I2C0,
-			I2C_FS_HZ, TIGERLAKE_DW_I2C_MHZ);
-
-	Max98373Codec *tone_generator =
-		new_max98373_tone_generator(&i2c0->ops, AUD_I2C_ADDR,
-				AUD_SAMPLE_RATE,
-				&boot_beep_bclk->ops,
-				&boot_beep_lrclk->ops);
-	sound_set_ops(&tone_generator->ops);
+	DesignwareI2c *i2c0 = new_pci_designware_i2c(AUD_I2C0, I2C_FS_HZ,
+			TIGERLAKE_DW_I2C_MHZ);
+	Max98373Codec *speaker_amp = new_max98373_codec(&i2c0->ops, AUD_I2C_ADDR);
+	list_insert_after(&speaker_amp->component.list_node,
+			&sound_route->components);
+	sound_set_ops(&sound_route->ops);
 }
 #endif
 
