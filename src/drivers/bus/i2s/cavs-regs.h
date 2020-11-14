@@ -69,6 +69,8 @@
 #define SERIAL_CLOCK_RATE	0x18
 /* I2S1 register start address */
 #define SSP_I2S1_START_ADDRESS	0x11000
+/* I2S2 register start address */
+#define SSP_I2S2_START_ADDRESS	0x12000
 /* MNCSS - M/N clock synthesizer reg block */
 #define MNCSS_REG_BLOCK_START	0x0800
 /* I2S Link Control register */
