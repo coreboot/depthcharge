@@ -1,7 +1,7 @@
 /*
- * max98373.c -- Maxim Integrated 98373 using Tone Generator
+ * max98373.c -- Maxim Integrated 98373 using DSP & I2S driven approach
  *
- * Copyright 2018 Google Inc.
+ * Copyright 2020 Google LLC
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -18,7 +18,9 @@
 // MAX98373 uses 16bit registers
 enum {
 	REG_SOFT_RESET = 0x2000,
+	REG_PCM_INTERFACE = 0x2024,
 	REG_SAMPLE_RATE_2 = 0x2028,
+	REG_DATA_INPUT_EN = 0X202B,
 
 	REG_AMP_VOLUME = 0x203d,
 	REG_AMP_GAIN = 0x203e,
@@ -94,6 +96,32 @@ enum {
 // REG_SOFT_RESET
 enum {
 	SOFT_RESET_TRIGGER = 0x01,
+};
+
+// REG_PCM_INTERFACE
+enum {
+	PCM_INTERFACE = 0x01,
+};
+
+//REG_DATA_INPUT_EN
+enum {
+	DATA_INPUT_EN = 0x01,
+};
+
+/* I2S controller settings for Max98373 codec*/
+const I2sSettings max98373_settings = {
+	/* To set MOD bit in SSC0 - defining as network/normal mode */
+	.mode = SSP_IN_NETWORK_MODE,
+	/* To set FRDC bit in SSC0 - timeslot per frame in network mode */
+	.frame_rate_divider_ctrl = FRAME_RATE_CONTROL_STEREO,
+	/* To set EDMYSTOP bit in SSPSP - number of SCLK cycles after data */
+	.ssp_psp_T4 = 2,
+	/* To set SFRMWDTH bit in SSPSP - frame width */
+	.ssp_psp_T6 = 0x18,
+	/* To set TTSA bit n SSTSA - data transmit timeslot */
+	.ssp_active_tx_slots_map = 3,
+	/* To set RTSA bit n SSRSA - data receive timeslot */
+	.ssp_active_rx_slots_map = 3,
 };
 
 static int max98373_write(Max98373Codec *codec, uint16_t reg, uint8_t data)
@@ -292,3 +320,40 @@ Max98373Codec *new_max98373_tone_generator(I2cOps *i2c, uint8_t chip,
 
 	return codec;
 }
+
+static int max98373_i2s_pcm_format(Max98373Codec *codec)
+{
+	// Set PCM FORMAT to I2S
+	if (max98373_write(codec, REG_PCM_INTERFACE, PCM_INTERFACE))
+		return 1;
+	// Set SPK Rx path enable
+	if (max98373_write(codec, REG_DATA_INPUT_EN, DATA_INPUT_EN))
+		return 1;
+	return 0;
+}
+static int max98373_enable(SoundRouteComponentOps *me)
+{
+	Max98373Codec *codec = container_of(me, Max98373Codec, component.ops);
+	max98373_reset(codec);
+	max98373_power(codec, 1);
+	max98373_i2s_pcm_format(codec);
+	max98373_hw_params(codec);
+	return 0;
+}
+
+static int max98373_disable(SoundRouteComponentOps *me)
+ {
+	Max98373Codec *codec = container_of(me, Max98373Codec, component.ops);
+	max98373_power(codec, 0);
+	return 0;
+ }
+
+Max98373Codec *new_max98373_codec(I2cOps *i2c, uint8_t chip)
+{
+	Max98373Codec *codec = xzalloc(sizeof(*codec));
+	codec->component.ops.enable = &max98373_enable;
+	codec->component.ops.disable = &max98373_disable;
+	codec->i2c = i2c;
+	codec->chip = chip;
+	return codec;
+ }
