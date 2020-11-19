@@ -24,7 +24,7 @@ pointsize=14
 margin=3
 align="left"
 width=""
-dpi="180"
+dpi="96"
 bgcolor="#ffffff"
 color="#000000"
 params=""
@@ -69,6 +69,10 @@ while true ; do
       pointsize="${1##*=}"
       shift
       ;;
+    --dpi=*)
+      dpi="${1##*=}"
+      shift
+      ;;
     --margin=*)
       margin="${1##*=}"
       shift
@@ -110,9 +114,8 @@ for txtfile in $*; do
   # into BMP by ImageMagick).
   name="$(basename "${txtfile%.*}")"
   pngfile="${outdir}/${name}.png"
-  pngfile_lo="${outdir}/lo/${name}.png"
+  pngfile_one_line="${outdir}/one_line/${name}.png"
   svgfile="${outdir}/${name}.svg"
-  svgfile_one_line="${outdir}/one_line/${name}.svg"
 
   pango_opt="-q $language \
     '--background=$bgcolor' '--foreground=$color' \
@@ -126,17 +129,13 @@ for txtfile in $*; do
   eval pango-view $pango_opt --hinting=full --dpi=$dpi $width_opt \
     --output "$pngfile" "$txtfile"
   if [ -n "$language" ]; then
-    eval pango-view $pango_opt --hinting=full --dpi=90 $width_opt \
-      --output "$pngfile_lo" "$txtfile"
+    eval pango-view $pango_opt --hinting=full --dpi=$dpi \
+      --output "$pngfile_one_line" "$txtfile"
   fi
 
   # Generate SVGs.
   eval pango-view $pango_opt --hinting=none $width_opt \
     --output "$svgfile" "$txtfile"
-  if [ -n "$language" ]; then
-    eval pango-view $pango_opt --hinting=none \
-      --output "$svgfile_one_line" "$txtfile"
-  fi
 
   echo "wrote $pngfile,svg"
 done

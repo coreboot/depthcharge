@@ -63,9 +63,10 @@ SCREEN_KEY = 'screen'
 PANEL_KEY = 'panel'
 SDCARD_KEY = 'sdcard'
 BAD_USB3_KEY = 'bad_usb3'
+DPI_KEY = 'dpi'
+TEXT_COLORS_KEY = 'text_colors'
 LOCALES_KEY = 'locales'
 RTL_KEY = 'rtl'
-TEXT_COLORS_KEY = 'text_colors'
 RW_OVERRIDE_KEY = 'rw_override'
 
 BMP_HEADER_OFFSET_NUM_LINES = 6
@@ -103,7 +104,8 @@ def get_config_with_defaults(configs, key):
 
 
 def convert_text_to_png(locale, input_file, font, output_dir, height=None,
-                        max_width=None, bgcolor='#000000', fgcolor='#ffffff',
+                        max_width=None, dpi=None, bgcolor='#000000',
+                        fgcolor='#ffffff',
                         **options):
   """Converts text files into PNG image files.
 
@@ -125,18 +127,22 @@ def convert_text_to_png(locale, input_file, font, output_dir, height=None,
     command.append('--lan=%s' % locale)
   if font:
     command.append("--font='%s'" % font)
-  font_size = os.getenv('FONT_SIZE')
-  if font_size:
+  if height:
+    # Font size should be proportional to the height. Here we use 2 as the
+    # divisor so that setting dpi to 96 (pango-view's default) in boards.yaml
+    # will be roughly equivalent to setting the screen resolution to 1366x768.
+    font_size = height / 2
     command.append('--point=%r' % font_size)
   if max_width:
-    # Without the --width option set, the minimum height of the output SVG
-    # image is roughly 22px (for locale 'en'). With --width=WIDTH passed to
-    # pango-view, the width of the output seems to always be (WIDTH * 4 / 3),
-    # regardless of the font being used. Therefore, set the max_width in
-    # points as follows to prevent drawing from exceeding canvas boundary in
-    # depthcharge runtime.
-    max_width_pt = int(22 * max_width / height / (4 / 3))
+    # When converting text to PNG by pango-view, the ratio of image height to
+    # the font size is usually no more than 1.1875 (with Roboto). Therefore,
+    # set the `max_width_pt` as follows to prevent UI drawing from exceeding
+    # the canvas boundary in depthcharge runtime. The divisor 2 is the same in
+    # the calculation of `font_size` above.
+    max_width_pt = int(max_width / 2 * 1.1875)
     command.append('--width=%d' % max_width_pt)
+  if dpi:
+    command.append('--dpi=%d' % dpi)
   command.append('--margin=0')
   command.append('--bgcolor="%s"' % bgcolor)
   command.append('--color="%s"' % fgcolor)
@@ -234,7 +240,7 @@ def build_text_files(inputs, files, output_dir):
       f.write(inputs[name] + '\n')
 
 
-def convert_localized_strings(formats):
+def convert_localized_strings(formats, dpi):
   """Converts localized strings."""
   # Make a copy of formats to avoid modifying it
   formats = copy.deepcopy(formats)
@@ -301,6 +307,7 @@ def convert_localized_strings(formats):
       kwargs = {
           'height': style[KEY_HEIGHT],
           'max_width': style[KEY_MAX_WIDTH],
+          'dpi': dpi,
           'bgcolor': style[KEY_BGCOLOR],
           'fgcolor': style[KEY_FGCOLOR],
       }
@@ -322,8 +329,10 @@ def convert_localized_strings(formats):
       exit('Failed to render some locales')
 
 
-def build_strings(formats):
+def build_strings(formats, board_config):
   """Builds text strings."""
+  dpi = board_config[DPI_KEY]
+
   # Convert glyphs
   print('Converting glyphs...')
   convert_glyphs()
@@ -341,12 +350,13 @@ def build_strings(formats):
     if not convert_text_to_png(None, input_file, default_font, STAGE_DIR,
                                height=style[KEY_HEIGHT],
                                max_width=style[KEY_MAX_WIDTH],
+                               dpi=dpi,
                                bgcolor=style[KEY_BGCOLOR],
                                fgcolor=style[KEY_FGCOLOR]):
       exit('Failed to convert text %s' % input_file)
 
   # Convert localized strings
-  convert_localized_strings(formats)
+  convert_localized_strings(formats, dpi)
 
 
 def load_boards_config(filename):
@@ -542,25 +552,21 @@ class Converter(object):
     self.locales = [LocaleInfo(code, code in rtl_locales)
                     for code in locales]
 
-  def _get_svg_height(self, svg_file):
-    tree = ElementTree.parse(svg_file)
-    height = tree.getroot().attrib['height']
-    m = re.match('([0-9]+)pt', height)
-    if not m:
-      raise BuildImageError('Cannot get height from %s' % svg_file)
-    return int(m.group(1))
+  def _get_png_height(self, png_file):
+    with Image.open(png_file) as image:
+      return image.size[1]
 
   def get_num_lines(self, file, one_line_dir):
     """Gets the number of lines of text in `file`."""
     name, _ = os.path.splitext(os.path.basename(file))
-    svg_name = name + '.svg'
-    multi_line_file = os.path.join(os.path.dirname(file), svg_name)
-    one_line_file = os.path.join(one_line_dir, svg_name)
-    # The number of lines id determined by comparing the height of
+    png_name = name + '.png'
+    multi_line_file = os.path.join(os.path.dirname(file), png_name)
+    one_line_file = os.path.join(one_line_dir, png_name)
+    # The number of lines is determined by comparing the height of
     # `multi_line_file` with `one_line_file`, where the latter is generated
     # without the '--width' option passed to pango-view.
-    height = self._get_svg_height(multi_line_file)
-    line_height = self._get_svg_height(one_line_file)
+    height = self._get_png_height(multi_line_file)
+    line_height = self._get_png_height(one_line_file)
     return int(round(height / line_height))
 
   def convert_svg_to_png(self, svg_file, png_file, height, num_lines,
@@ -586,7 +592,7 @@ class Converter(object):
     command.append(svg_file)
     subprocess.check_call(' '.join(command), shell=True)
 
-  def convert_to_bitmap(self, input_file, num_lines, background, output,
+  def convert_to_bitmap(self, input_file, height, num_lines, background, output,
                         max_colors):
     """Converts an image file `input_file` to a BMP file `output`."""
     image = Image.open(input_file)
@@ -604,10 +610,18 @@ class Converter(object):
     else:
       target = image
 
-    # Stretch image horizontally for stretched display
+    width_px, height_px = image.size
+    max_height_px = int(self.canvas_px * height / self.SCALE_BASE) * num_lines
+    # If the image size is larger than what will be displayed at runtime,
+    # downscale it.
+    if height_px > max_height_px:
+      height_px = max_height_px
+      width_px = height_px * image.size[0] // image.size[1]
+    # Stretch image horizontally for stretched display.
     if self.panel_stretch != 1:
-      new_width_px = int(image.size[0] * self.panel_stretch)
-      new_size = (new_width_px, image.size[1])
+      width_px = int(width_px * self.panel_stretch)
+    new_size = width_px, height_px
+    if new_size != image.size:
       target = target.resize(new_size, Image.BICUBIC)
 
     # Export and downsample color space.
@@ -650,7 +664,8 @@ class Converter(object):
         self.convert_svg_to_png(file, png_file, height, num_lines, background)
         file = png_file
 
-      self.convert_to_bitmap(file, num_lines, background, output, max_colors)
+      self.convert_to_bitmap(file, height, num_lines, background, output,
+                             max_colors)
 
   def convert_sprite_images(self):
     """Converts sprite images."""
@@ -684,7 +699,7 @@ class Converter(object):
       heights[name] = style[KEY_HEIGHT]
       max_widths[name] = style[KEY_MAX_WIDTH]
 
-    files = glob.glob(os.path.join(self.stage_dir, SVG_FILES))
+    files = glob.glob(os.path.join(self.stage_dir, PNG_FILES))
     self.convert(files, self.output_dir, heights, max_widths,
                  self.text_max_colors)
 
@@ -710,7 +725,7 @@ class Converter(object):
       print(' ' + locale, end='', file=sys.stderr, flush=True)
       os.makedirs(ro_locale_dir)
       self.convert(
-          glob.glob(os.path.join(stage_locale_dir, SVG_FILES)),
+          glob.glob(os.path.join(stage_locale_dir, PNG_FILES)),
           ro_locale_dir, heights, max_widths, self.text_max_colors,
           one_line_dir=os.path.join(stage_locale_dir, ONE_LINE_DIR))
     print(file=sys.stderr)
@@ -806,24 +821,22 @@ class Converter(object):
     self.copy_images_to_rw()
 
 
-def build_images(board, formats):
-  """Builds images for `board`."""
-  configs = load_boards_config(BOARDS_CONFIG_FILE)
-  print('Building for ' + board)
-  converter = Converter(board, formats, configs[board], OUTPUT_DIR)
-  converter.build()
-
-
 def main():
   """Builds bitmaps for firmware screens."""
   parser = argparse.ArgumentParser()
   parser.add_argument('board', help='Target board')
   args = parser.parse_args()
+  board = args.board
 
   with open(FORMAT_FILE, encoding='utf-8') as f:
     formats = yaml.load(f)
-  build_strings(formats)
-  build_images(args.board, formats)
+  board_config = load_boards_config(BOARDS_CONFIG_FILE)[board]
+
+  # TODO(yupingso): Put everything into Converter class
+  print('Building for ' + board)
+  build_strings(formats, board_config)
+  converter = Converter(board, formats, board_config, OUTPUT_DIR)
+  converter.build()
 
 
 if __name__ == '__main__':

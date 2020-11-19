@@ -6,7 +6,6 @@
 
 OUTPUT ?= build
 STAGE ?= $(OUTPUT)/.stage
-FONT_SIZE = 14
 PHYSICAL_PRESENCE ?= keyboard
 ARCHIVER ?= /usr/bin/archive
 
@@ -15,7 +14,6 @@ build:
 	mkdir -p "$(STAGE)"
 	LOCALES="$(LOCALES)" \
 		OUTPUT="$(OUTPUT)" \
-		FONT_SIZE="$(FONT_SIZE)" \
 		PHYSICAL_PRESENCE="$(PHYSICAL_PRESENCE)" \
 		./build.py "$(BOARD)"
 

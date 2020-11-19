@@ -8,17 +8,31 @@
 # name: List of board names for this configuration, separated by comma.
 # keys are as follows:
 #
-# screen: Resolution of the framebuffer where firmware plots pixels
+# screen: Resolution of the framebuffer where firmware plots pixels. If models
+#   of a board have different resolutions, pick the maximum one.
 # panel: Display dimension. This is optional and used as a hint to adjust
 #   image sizes for stretched displays. For a stretched display, narrower
 #   images will be created so that displayed images will look proportional to
 #   the original aspect ratio. If this is omitted, the panel dimension is
 #   assumed to be the same as the framebuffer.
+# sdcard: Presence of SD/MMC Card Reader that can boot in recovery mode
 # bad_usb3: Presence of USB3 ports that cannot boot recovery
+# dpi: The DPI used when generating PNG files. With higher DPI, the generated
+#   bitmaps will be larger and hence will take up more space in RO CBFS. When
+#   adding a new board, please try the default DPI (by not specifying DPI)
+#   first. If chromeos-bootimage fails to build because of bitmap size issue,
+#   binary-search for the best-fitting DPI value, and reduce text_colors as
+#   necessary (see below).
+# text_colors: Maximum number of colors for text images. This should be set
+#   based on the value of DPI. Suggested values are:
+#     - dpi < 64: 2
+#     - 64 <= dpi < 72: 3
+#     - 72 <= dpi < 80: 4
+#     - 80 <= dpi < 96: 5
+#     - 96 <= dpi < 112: 6
+#     - 112 <= dpi: 7
 # locales: List of locales to include
 # rtl: List of right-to-left locales
-# sdcard: Presence of SD/MMC Card Reader that can boot in recovery mode
-# text_colors: Maximum number of colors for text images.
 # rw_override: List of names of localized bitmaps to be stored in both RW
 #   and RO sections. This field is designed to allow late RW updates to change
 #   or add bitmaps of firmware screens in RW. Currently, there is no support
@@ -31,11 +45,12 @@
 # Default configuration
 # These are the values used unless set otherwise in the board specific config
 _DEFAULT_:
-  screen:      [800, 600]
+  screen:      [1366, 768]
   panel:       []
   sdcard:      True
   bad_usb3:    False
-  text_colors: 3
+  dpi: 192
+  text_colors: 7
   # The order of locales determines the order in the language menu. Aside from
   # 'en', which is placed at the beginning of the list, the remaining order is
   # consistent with the Chromebook Help Center
@@ -51,6 +66,7 @@ _DEFAULT_:
 x86-generic,amd64-generic:
   # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
   # Boots recovery image on any SD card and USB ports.
+  screen:   [1024, 768]
   panel:    [1366, 768]
 
 arm-generic,arm64-generic,mips-generic:
@@ -58,7 +74,8 @@ arm-generic,arm64-generic,mips-generic:
 asurada:
   # 1366x768, boots recovery image on USB ports or SD card.
   screen:      [1366, 768]
-  text_colors: 7
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 nyan,nyan_big:
 
@@ -73,35 +90,47 @@ peach_pit,peach_pit-freon:
 falco,peppy,wolf,leon,banjo,orco,gandof,heli:
   # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
   # With card reader. USB3 ports will run in USB2 mode for recovery boot.
+  screen:   [1024, 768]
   panel:    [1366, 768]
 
 squawks,glimmer,clapper,enguarde,expresso,kip,gnawty,winky,quawks,swanky,candy:
   # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
   # With card reader. All USB ports can boot in recovery mode.
+  screen:   [1024, 768]
   panel:    [1366, 768]
 
 auron_paine,auron_yuna,cid,lulu,reks,lars:
   # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
   # With card reader. All USB ports can boot in recovery mode.
+  screen:   [1024, 768]
   panel:    [1366, 768]
 
 chell,glados:
   # 1920x1080, boots recovery image on any SD card or USB ports.
+  screen:   [1920, 1080]
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 fizz,guado,kalista,mccloud,ninja,panther,rikku,tidus,tricky:
   # Using VESA graphics mode 1024x768 (0x0117).
   # A chromebox without built-in panel/keyboard.
   # Assume the display is a modern 16:9 (1920x1080) monitor.
   # With card reader and physical recovery switch.
+  screen:   [1024, 768]
   panel:    [1920, 1080]
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 endeavour:
   # Using VESA graphics mode 1024x768 (0x0117).
   # A chromebox without built-in panel/keyboard.
   # Assume the display is a modern 16:9 (1920x1080) monitor.
   # With physical recovery switch, without card reader.
+  screen:   [1024, 768]
   panel:    [1920, 1080]
   sdcard:   False
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 ambassador:
   # External monitor, boots recovery image on USB ports.
@@ -113,6 +142,7 @@ zako:
   # A chromebox without built-in panel/keyboard.
   # Assume the display is a modern 16:9 (1920x1080) monitor.
   # With card reader and physical recovery switch.
+  screen:   [1024, 768]
   panel:    [1920, 1080]
 
 monroe,sumo:
@@ -120,6 +150,7 @@ monroe,sumo:
   # A chromestation with built-in panel, without built-in keyboard.
   # Display is a modern 16:9 (1920x1080) monitor.
   # With physical recovery switch, without card reader.
+  screen:   [1024, 768]
   panel:    [1920, 1080]
   sdcard:   False
 
@@ -128,12 +159,14 @@ buddy:
   # A chromestation with built-in panel, without built-in keyboard.
   # Display is a modern 16:9 (1920x1080) monitor.
   # With physical recovery switch, with card reader.
+  screen:   [1024, 768]
   panel:    [1920, 1080]
 
 parrot,butterfly:
   # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
   # Can only boot recovery by USB. (No card reader, or not able to recover
   # from card reader.)
+  screen:   [1024, 768]
   panel:    [1366, 768]
   sdcard:   False
 
@@ -141,6 +174,7 @@ stout:
   # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
   # Can only boot recovery by USB2 [not USB3]. (No card reader, or not able
   # to recover from card reader.)
+  screen:   [1024, 768]
   panel:    [1366, 768]
   sdcard:   False
   bad_usb3: True
@@ -150,119 +184,172 @@ link:
   # Can boot recovery by USB and SD card readers.
   # Note its firmware can not contain all default locales so the shipping locale
   # list is specified.
+  screen:   [1280, 850]
   panel:    [2560, 1700]
 
 stumpy:
   # There's no standard panel size for Stumpy -- depends on the monitor user has
   # attached. Let's assume it's a modern LCD panel with 1920x1080 dimension.
+  screen:   [800, 600]
   panel:    [1920, 1080]
   sdcard:   False
 
 lumpy:
   # Lumpy was shipped with old firmware bitmaps and caused its resolution to be
   # 800x600.
+  screen:   [800, 600]
   panel:    [1366, 768]
 
 veyron_mickey:
   # A chromebit with external display only, use low-res "safe" mode.
   # With physical recovery switch, without card reader.
+  screen:   [640, 480]
   panel:    [1920, 1080]
   sdcard:   False
 
 kevin,kevin-tpm2:
   # 2400x1600, boots recovery image on any SD card or USB ports.
+  screen:   [2400, 1600]
 
 scarlet:
   # 1536x2048, "detachable", boots recovery image on any SD card or USB ports.
+  screen:   [1536, 2048]
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 eve:
   # 2400x1600, boots recovery image on USB ports.
+  screen:   [2400, 1600]
   sdcard:   False
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 samus:
+  # 1280x850, boots recovery image on any SD card or USB ports.
+  screen:   [1280, 850]
 
 poppy:
   # 2400x1600, boots recovery image on any SD card or USB ports.
+  screen:   [2400, 1600]
 
 soraka:
   # 2400x1600, boots recovery image on any SD card or USB ports.
+  screen:   [2400, 1600]
 
 dragonegg:
   # 2400x1600, boots recovery image on any SD card or USB ports.
+  screen:   [2400, 1600]
 
 kahlee:
   # Using VESA graphics mode 1024x768 (0x0117), stretched to 1366x768 panel.
   # With card reader. All USB ports can boot in recovery mode.
+  screen:   [1024, 768]
   panel:    [1366, 768]
 
 grunt:
   # Using VESA graphics mode 1920x1080 (0x1D2), downscaled to 1366x768 panel if
   # needed. All USB ports and the SD card reader can be used for recovery.
-  screen:   [720, 540]  # Flash size limited - CHECK BEFORE COPY-PASTING.
+  screen:   [1920, 1080]
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 zoombini:
   # 2400x1600, boots recovery image on any SD card or USB ports.
+  screen:   [2400, 1600]
 
 nautilus:
   # 2400x1600, boots recovery image on any SD card or USB ports.
+  screen:   [2400, 1600]
 
 meowth:
-  # 2400x1600, boots recovery image on USB ports.
+  # 2400x1600, boots recovery image on any SD card or USB ports.
+  screen:   [2400, 1600]
 
 nami:
-  # 2400x1600, boots recovery image on USB ports.
+  # 2400x1600, boots recovery image on any SD card or USB ports.
+  screen:   [2400, 1600]
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 atlas:
   # 3840x2160, boots recovery image on USB ports.
+  screen:   [3840, 2160]
   sdcard:   False
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 nocturne:
-  # 2400x1600, boots recovery image on USB ports.
+  # 2400x1600, boots recovery image on any SD card or USB ports.
+  screen:   [2400, 1600]
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 rammus:
-  # 1920x1080, boots recovery image on USB ports.
+  # 1920x1080, boots recovery image on any SD card or USB ports.
+  screen:   [1920, 1080]
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 sarien,deltaur,drallion:
   # 1920x1080, boots recovery image on USB ports.
+  screen:   [1920, 1080]
   sdcard:   False
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 hatch,palkia:
-  # 2400x1600, boots recovery image on USB ports.
+  # 2400x1600, boots recovery image on any SD card or USB ports.
+  screen:   [2400, 1600]
+  dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  text_colors: 5  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 puff:
   # External monitor, boots recovery image on USB ports.
-  screen:   [1200, 750]  # Flash size limited - CHECK BEFORE COPY-PASTING.
-  text_colors: 4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
+  screen:   [3840, 2400]  # No built-in panel, specify 4K resolution.
+  dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  text_colors: 5  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 mushu:
-  # 2400x1600, boots recovery image on USB ports.
+  # 2400x1600, boots recovery image on any SD card or USB ports.
+  screen:   [2400, 1600]
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 flapjack,kukui:
   # 1920x1200, boots recovery image on USB ports.
+  screen:   [1920, 1200]
   sdcard:   False
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 volteer:
   # 3840x2160, boots recovery image on USB ports.
-  screen:   [1120, 630]  # Flash size limited - resized from native resolution.
-  text_colors: 4  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
+  screen:   [3840, 2160]
   sdcard:   False
+  dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  text_colors: 5  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 zork:
   # 1920x1080, boots recovery image on any SD card or USB ports.
-  screen:   [1920, 1080]  # Use native resolution - CHECK BEFORE COPY-PASTING.
-  text_colors: 7  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
+  screen:   [1920, 1080]
 
 dedede:
   # 2400x1600, boots recovery image on USB ports.
-  screen:   [1280, 720]  # Flash size limited - resized from native resolution.
-  text_colors: 5  # Flash size limited - CHECK YOUR BOARD BEFORE COPY-PASTING.
+  screen:   [2400, 1600]
+  dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  text_colors: 5  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 jacuzzi:
   # 1366x768, boots recovery image on USB ports or SD card.
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 tglrvp:
   # 2400x1600, boots recovery image on any SD card or USB ports.
+  screen:   [2400, 1600]
 
 trogdor:
   # 1920x1080, boots recovery image on any SD card or USB ports.
-  screen:   [1920, 1080]  # Use native resolution - CHECK BEFORE COPY-PASTING.
+  screen:   [1920, 1080]
+  dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  text_colors: 6  # DO NOT COPY-PASTE -- follow instructions at top of file.
