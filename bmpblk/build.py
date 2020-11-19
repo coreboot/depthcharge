@@ -7,6 +7,7 @@
 import argparse
 from collections import defaultdict, namedtuple
 import copy
+import fractions
 import glob
 import json
 import multiprocessing
@@ -471,18 +472,18 @@ class Converter(object):
     """Sets screen width and height."""
     self.screen_width, self.screen_height = self.config[SCREEN_KEY]
 
-    self.stretch = (1, 1)
+    self.panel_stretch = fractions.Fraction(1)
     if self.config[PANEL_KEY]:
-      # Calculate 'stretch'. It's used to shrink images horizontally so that
-      # resulting images will look proportional to the original image on the
-      # stretched display. If the display is not stretched, meaning aspect
-      # ratio is same as the screen where images were rendered (1366x766),
-      # no shrinking is performed.
+      # Calculate `panel_stretch`. It's used to shrink images horizontally so
+      # that the resulting images will look proportional to the original image
+      # on the stretched display. If the display is not stretched, meaning the
+      # aspect ratio is same as the screen where images were rendered, no
+      # shrinking is performed.
       panel_width, panel_height = self.config[PANEL_KEY]
-      self.stretch = (self.screen_width * panel_height,
-                      self.screen_height * panel_width)
+      self.panel_stretch = fractions.Fraction(self.screen_width * panel_height,
+                                              self.screen_height * panel_width)
 
-    if self.stretch[0] > self.stretch[1]:
+    if self.panel_stretch > 1:
       raise BuildImageError('Panel aspect ratio (%f) is smaller than screen '
                             'aspect ratio (%f). It indicates screen will be '
                             'shrunk horizontally. It is currently unsupported.'
@@ -545,39 +546,6 @@ class Converter(object):
     self.locales = [LocaleInfo(code, code in rtl_locales)
                     for code in locales]
 
-  def calculate_dimension(self, original, scale, num_lines):
-    """Calculates scaled width and height.
-
-    This imitates the function of Depthcharge with the same name.
-
-    Args:
-      original: (width, height) of the original image.
-      scale: (x, y) scale parameter relative to the canvas size using
-        SCALE_BASE as a base.
-      num_lines: multiplication factor for the y-dimension.
-
-    Returns:
-      (width, height) of the scaled image.
-    """
-    dim_width, dim_height = (0, 0)
-    scale_x, scale_y = scale
-    org_width, org_height = original
-
-    if scale_x == 0 and scale_y == 0:
-      raise BuildImageError('Invalid scale parameter: %s' % (scale))
-    if scale_x > 0:
-      dim_width = int(self.canvas_px * scale_x / self.SCALE_BASE)
-    if scale_y > 0:
-      dim_height = int(self.canvas_px * scale_y / self.SCALE_BASE) * num_lines
-    if scale_x == 0:
-      dim_width = org_width * dim_height // org_height
-    if scale_y == 0:
-      dim_height = org_height * dim_width // org_width
-
-    dim_width = int(dim_width * self.stretch[0] / self.stretch[1])
-
-    return dim_width, dim_height
-
   def _get_svg_height(self, svg_file):
     tree = ElementTree.parse(svg_file)
     height = tree.getroot().attrib['height']
@@ -614,13 +582,15 @@ class Converter(object):
                '--dpi-x', '72',
                '--dpi-y', '72',
                '-o', png_file]
-    if height:
-      height_px = int(self.canvas_px * height / self.SCALE_BASE) * num_lines
-      command.extend(['--height', '%d' % height_px])
+    height_px = int(self.canvas_px * height / self.SCALE_BASE) * num_lines
+    if height_px <= 0:
+      raise BuildImageError('Height of %r <= 0 (%dpx)' %
+                            (os.path.basename(svg_file), height_px))
+    command.extend(['--height', '%d' % height_px])
     command.append(svg_file)
     subprocess.check_call(' '.join(command), shell=True)
 
-  def convert_to_bitmap(self, input_file, height, num_lines, background, output,
+  def convert_to_bitmap(self, input_file, num_lines, background, output,
                         max_colors):
     """Converts an image file `input_file` to a BMP file `output`."""
     image = Image.open(input_file)
@@ -638,15 +608,10 @@ class Converter(object):
     else:
       target = image
 
-    # Process scaling
-    if height:
-      new_size = self.calculate_dimension(image.size, (0, height), num_lines)
-      if new_size[0] == 0 or new_size[1] == 0:
-        print('Scaling', input_file)
-        print('Warning: width or height is 0 after resizing: '
-              'height=%d size=%s stretch=%s new_size=%s' %
-              (height, image.size, self.stretch, new_size))
-        return
+    # Stretch image horizontally for stretched display
+    if self.panel_stretch != 1:
+      new_width_px = int(image.size[0] * self.panel_stretch)
+      new_size = (new_width_px, image.size[1])
       target = target.resize(new_size, Image.BICUBIC)
 
     # Export and downsample color space.
@@ -689,8 +654,7 @@ class Converter(object):
         self.convert_svg_to_png(file, png_file, height, num_lines, background)
         file = png_file
 
-      self.convert_to_bitmap(
-          file, height, num_lines, background, output, max_colors)
+      self.convert_to_bitmap(file, num_lines, background, output, max_colors)
 
   def convert_sprite_images(self):
     """Converts sprite images."""
