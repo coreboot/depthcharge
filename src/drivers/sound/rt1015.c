@@ -20,10 +20,12 @@ static const struct reg_config config[] = {
 	{ RT1015_PWR4,			0x00B2 },
 	{ RT1015_CLSD_INTERNAL8,	0x2008 },
 	{ RT1015_CLSD_INTERNAL9,	0x0140 },
-	{ RT1015_GAT_BOOST,		0x00FE },
+	{ RT1015_GAT_BOOST,		0x0EFE },
 	{ RT1015_PWR_STATE_CTRL,	0x000E },
 	/* M/N for PLL_0 */
 	{ RT1015_PLL1,			0x10BE },
+	/* Disable Zero detection */
+	{ RT1015_DAC2,                  0x2000 },
 	{ RT1015_TDM_MASTER,		0x0000 },
 };
 
