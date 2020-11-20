@@ -18,6 +18,7 @@
 #define RT1015_RESET				0x0000
 #define RT1015_PLL1				0x000a
 #define RT1015_DEVICE_ID			0x007d
+#define RT1015_DAC2				0x0106
 #define RT1015_TDM_MASTER			0x0111
 #define RT1015_PWR4				0x0328
 #define RT1015_CLSD_INTERNAL8			0x130c
