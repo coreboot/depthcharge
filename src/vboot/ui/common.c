@@ -66,7 +66,7 @@ static const struct ui_error_item error_map[] = {
 			"alternate bootloader.",
 	},
 	[VB2_UI_ERROR_DIAGNOSTICS] = {
-		.body = "Couldn’t get diagnostic result.\n"
+		.body = "Couldn't get diagnostic result.\n"
 			"Go back and try again.",
 	},
 };
