@@ -23,20 +23,21 @@
 vb2_error_t ui_log_init(enum vb2_screen screen, const char *locale_code,
 			const char *str, struct ui_log_info *log)
 {
+	uint32_t lines_per_page, chars_per_line;
 	uint32_t chars_current_line;
 	uint32_t lines;
 	uint32_t pages;
 	const char *ptr;
 
 	VB2_TRY(ui_get_log_textbox_dimensions(screen, locale_code,
-					      &log->lines_per_page,
-					      &log->chars_per_line));
+					      &lines_per_page,
+					      &chars_per_line));
 
-	if (log->lines_per_page == 0 || log->chars_per_line == 0 ||
+	if (lines_per_page == 0 || chars_per_line == 0 ||
 	    str == NULL) {
 		UI_ERROR("Failed to initialize log_info, "
 			 "dimensions: %ux%u, str: %s\n",
-			 log->lines_per_page, log->chars_per_line,
+			 lines_per_page, chars_per_line,
 			 str ? str : "NULL");
 		return VB2_ERROR_UI_LOG_INIT;
 	}
@@ -59,7 +60,7 @@ vb2_error_t ui_log_init(enum vb2_screen screen, const char *locale_code,
 			}
 			/* Wrap current line, put current character into next
 			   line. */
-			if (chars_current_line > log->chars_per_line)
+			if (chars_current_line > chars_per_line)
 				break;
 			ptr++;
 		}
@@ -67,7 +68,9 @@ vb2_error_t ui_log_init(enum vb2_screen screen, const char *locale_code,
 
 	/* Initialize log_info entries. */
 	log->str = str;
-	log->page_count = DIV_ROUND_UP(lines, log->lines_per_page);
+	log->lines_per_page = lines_per_page;
+	log->chars_per_line = chars_per_line;
+	log->page_count = DIV_ROUND_UP(lines, lines_per_page);
 	log->page_start = malloc((log->page_count + 1) * sizeof(const char *));
 	if (!log->page_start) {
 		UI_ERROR("Failed to malloc page_start array, "
