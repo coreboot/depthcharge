@@ -805,9 +805,13 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 	}
 
 	/* Title */
-	VB2_TRY(ui_get_bitmap(screen->title, locale_code, 0, &bitmap));
-	h = UI_TITLE_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
-	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, h, flags, reverse));
+	if (screen->title) {
+		VB2_TRY(ui_get_bitmap(screen->title, locale_code, 0, &bitmap));
+		h = UI_TITLE_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
+		VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, h, flags, reverse));
+	} else {
+		h = UI_TITLE_TEXT_HEIGHT;
+	}
 	y += h + UI_TITLE_MARGIN_BOTTOM;
 
 	/* Description */
