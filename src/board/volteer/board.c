@@ -16,6 +16,8 @@
 #include "drivers/bus/i2s/cavs-regs.h"
 #include "drivers/bus/i2s/intel_common/max98357a.h"
 #include "drivers/bus/spi/intel_gspi.h"
+#include "drivers/bus/i2c/designware.h"
+#include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/sysinfo.h"
@@ -24,6 +26,7 @@
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/max98373.h"
+#include "drivers/sound/rt1011.h"
 #include "drivers/soc/tigerlake.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
@@ -146,6 +149,21 @@ static void volteer_setup_max98373(void)
 }
 #endif
 
+#if CONFIG_DRIVER_SOUND_RT1011
+static void volteer_setup_rt1011(void)
+{
+	DesignwareI2c *i2c = new_pci_designware_i2c(AUD_I2C0,
+				400000, TIGERLAKE_DW_I2C_MHZ);
+	rt1011Codec *codec = new_rt1011_codec(&i2c->ops,
+					AUD_RT1011_DEVICE_ADDR);
+	SoundRoute *sound_route = new_sound_route(&codec->ops);
+
+	list_insert_after(&codec->component.list_node,
+			  &sound_route->components);
+	sound_set_ops(&sound_route->ops);
+}
+#endif
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
@@ -176,6 +194,11 @@ static int board_setup(void)
 			&sound_route->components);
 	sound_set_ops(&sound_route->ops);
 #endif
+
+#if CONFIG_DRIVER_SOUND_RT1011
+	volteer_setup_rt1011();
+#endif
+
 #if CONFIG_DRIVER_SOUND_MAX98373
 	volteer_setup_max98373();
 #endif
