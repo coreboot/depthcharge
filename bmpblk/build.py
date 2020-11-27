@@ -77,7 +77,7 @@ NEWLINE_REPLACEMENT = r'\1 \2'
 CRLF_PATTERN = re.compile(r'\r\n')
 MULTIBLANK_PATTERN = re.compile(r'   *')
 
-GLYPH_FONT = 'Noto Sans Mono'
+GLYPH_FONT = 'Cousine'
 
 LocaleInfo = namedtuple('LocaleInfo', ['code', 'rtl'])
 
@@ -103,8 +103,8 @@ def get_config_with_defaults(configs, key):
 
 
 def convert_text_to_png(locale, input_file, font, output_dir, height=None,
-                        max_width=None, margin='0', bgcolor='#000000',
-                        fgcolor='#ffffff', **options):
+                        max_width=None, bgcolor='#000000', fgcolor='#ffffff',
+                        **options):
   """Converts text files into PNG image files.
 
   Args:
@@ -114,7 +114,6 @@ def convert_text_to_png(locale, input_file, font, output_dir, height=None,
     font: Font spec.
     height: Height.
     max_width: Maximum width.
-    margin: CSS-style margin.
     output_dir: Directory to generate image files.
     bgcolor: Background color (#rrggbb).
     fgcolor: Foreground color (#rrggbb).
@@ -138,8 +137,7 @@ def convert_text_to_png(locale, input_file, font, output_dir, height=None,
     # depthcharge runtime.
     max_width_pt = int(22 * max_width / height / (4 / 3))
     command.append('--width=%d' % max_width_pt)
-  if margin:
-    command.append('--margin="%s"' % margin)
+  command.append('--margin=0')
   command.append('--bgcolor="%s"' % bgcolor)
   command.append('--color="%s"' % fgcolor)
 
@@ -155,15 +153,13 @@ def convert_glyphs():
   """Converts glyphs of ascii characters."""
   os.makedirs(STAGE_FONT_DIR, exist_ok=True)
   # Remove the extra whitespace at the top/bottom within the glyphs
-  margin = '-3 0 -1 0'
   for c in range(ord(' '), ord('~') + 1):
     txt_file = os.path.join(STAGE_FONT_DIR, f'idx{c:03d}_{c:02x}.txt')
     with open(txt_file, 'w', encoding='ascii') as f:
       f.write(chr(c))
       f.write('\n')
     # TODO(b/163109632): Parallelize the conversion of glyphs
-    convert_text_to_png(None, txt_file, GLYPH_FONT, STAGE_FONT_DIR,
-                        margin=margin)
+    convert_text_to_png(None, txt_file, GLYPH_FONT, STAGE_FONT_DIR)
 
 
 def _load_locale_json_file(locale, json_dir):
