@@ -14,6 +14,7 @@
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/bus/i2s/intel_common/i2s.h"
 #include "drivers/gpio/gpio.h"
+#include "drivers/sound/max98373_common_regs.h"
 #include "drivers/sound/route.h"
 #include "drivers/sound/sound.h"
 
