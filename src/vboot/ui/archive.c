@@ -365,12 +365,14 @@ vb2_error_t ui_get_bitmap(const char *image_name, const char *locale_code,
 }
 
 vb2_error_t ui_get_language_name_bitmap(const char *locale_code,
+					int for_header, int focused,
 					struct ui_bitmap *bitmap)
 {
 	char filename[UI_BITMAP_FILENAME_MAX_LEN + 1];
-	const char pattern[] = "language_%s.bmp";
+	const char *pattern = for_header ? "lang_header_%s.bmp" :
+		"lang_menu_%s.bmp";
 	snprintf(filename, sizeof(filename), pattern, locale_code);
-	return ui_get_bitmap(filename, NULL, 0, bitmap);
+	return ui_get_bitmap(filename, NULL, focused, bitmap);
 }
 
 vb2_error_t ui_get_char_bitmap(const char c, struct ui_bitmap *bitmap)
