@@ -29,8 +29,6 @@
 #include "drivers/bus/i2s/broadwell/broadwell-alc5677.h"
 #include "drivers/bus/i2s/i2s.h"
 #include "drivers/ec/cros/lpc.h"
-#include "drivers/flash/flash.h"
-#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/lynxpoint_lp.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -105,8 +103,6 @@ static int board_setup(void)
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);
 	register_vboot_ec(&cros_ec->vboot);
-
-	flash_set_ops(&new_mem_mapped_flash(0xff800000, 0x800000)->ops);
 
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 31, 2));
 	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);

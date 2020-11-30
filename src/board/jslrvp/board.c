@@ -34,8 +34,6 @@
 #include "drivers/sound/max98373.h"
 #include "drivers/sound/route.h"
 #include "drivers/ec/cros/lpc.h"
-#include "drivers/flash/flash.h"
-#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/jasperlake.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -92,9 +90,6 @@ static void jasperlake_setup_tpm(void)
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_jasperlake_gpio_input_from_coreboot);
-
-	/* 16MB SPI Flash */
-	flash_set_ops(&new_mem_mapped_flash(0xff000000, 0x1000000)->ops);
 
 	jasperlake_setup_tpm();
 

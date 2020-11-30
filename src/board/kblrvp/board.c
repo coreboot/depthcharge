@@ -26,8 +26,6 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
-#include "drivers/flash/flash.h"
-#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
 #include "drivers/storage/ahci.h"
@@ -54,9 +52,6 @@
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
-
-	/* 16MB SPI Flash */
-	flash_set_ops(&new_mem_mapped_flash(0xff000000, 0x1000000)->ops);
 
 	/* SPI TPM memory mapped to act like LPC TPM */
 	tpm_set_ops(&new_lpc_tpm((void *)(uintptr_t)0xfed40000)->ops);

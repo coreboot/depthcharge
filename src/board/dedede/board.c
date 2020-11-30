@@ -20,8 +20,6 @@
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/cros/lpc.h"
-#include "drivers/flash/flash.h"
-#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/jasperlake.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -74,20 +72,6 @@ static void dedede_setup_tpm(void)
 	}
 }
 
-static void dedede_setup_flash(void)
-{
-	/* Flash is mapped at the end of 4GiB */
-	uintptr_t flash_start;
-	uint32_t flash_size = lib_sysinfo.spi_flash.size;
-	MemMappedFlash *flash;
-
-	assert(flash_size != 0);
-
-	flash_start = 4ULL * GiB - flash_size;
-	flash = new_mem_mapped_flash(flash_start, flash_size);
-	flash_set_ops(&flash->ops);
-}
-
 static bool is_rt1015_codec(void)
 {
 	static const char * const board_str[] = {"Boten",
@@ -108,9 +92,6 @@ static bool is_rt1015_codec(void)
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_jasperlake_gpio_input_from_coreboot);
-
-	/* 16MB/32MB SPI Flash */
-	dedede_setup_flash();
 
 	/* TPM */
 	dedede_setup_tpm();

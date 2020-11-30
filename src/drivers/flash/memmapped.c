@@ -18,39 +18,56 @@
 #include <libpayload.h>
 
 #include "base/container_of.h"
-#include "drivers/flash/memmapped.h"
+#include "base/init_funcs.h"
+#include "drivers/flash/flash.h"
+
+static const struct flash_mmap_window *find_mmap_window(uint32_t offset,
+							uint32_t size)
+{
+	int i;
+	const struct flash_mmap_window *window;
+
+	window = lib_sysinfo.spi_flash.mmap_table;
+
+	for (i = 0; i < lib_sysinfo.spi_flash.mmap_window_count; i++) {
+		if ((offset >= window->flash_base) &&
+		    ((offset + size) <= (window->flash_base + window->size)))
+			return window;
+		window++;
+	}
+
+	return NULL;
+}
 
 static void *mem_mapped_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
 {
-	MemMappedFlash *flash = container_of(me, MemMappedFlash, ops);
+	uint32_t rel_offset;
+	const struct flash_mmap_window *window = find_mmap_window(offset, size);
 
-	if (offset < flash->base_offset) {
-		printf("Offset out of bounds.\n");
+	if (!window) {
+		printf("ERROR: Offset(0x%x)/size(0x%x) out of bounds!\n",
+		       offset, size);
 		return NULL;
 	}
 
-	offset -= flash->base_offset;
-
-	if (offset > flash->size || offset + size > flash->size) {
-		printf("Out of bounds flash access.\n");
-		return NULL;
-	}
-
-	return (void *)(uintptr_t)(flash->base + offset);
+	/* Convert offset within flash space into an offset within host space */
+	rel_offset = offset - window->flash_base;
+	return (void *)(uintptr_t)(window->host_base + rel_offset);
 }
 
-MemMappedFlash *new_mem_mapped_flash_with_offset(uint32_t base, uint32_t size,
-						 uint32_t base_offset)
+static int flash_setup(void)
 {
-	MemMappedFlash *flash = xzalloc(sizeof(*flash));
-	flash->ops.read = &mem_mapped_flash_read;
-	flash->base = base;
-	flash->size = size;
-	flash->base_offset = base_offset;
-	return flash;
+	FlashOps *flash_ops;
+
+	die_if(!lib_sysinfo.spi_flash.mmap_window_count,
+	       "No MMAP windows for SPI flash!\n");
+
+	flash_ops = xzalloc(sizeof(*flash_ops));
+
+	flash_ops->read = &mem_mapped_flash_read;
+	flash_set_ops(flash_ops);
+
+	return 0;
 }
 
-MemMappedFlash *new_mem_mapped_flash(uint32_t base, uint32_t size)
-{
-	return new_mem_mapped_flash_with_offset(base, size, 0);
-}
+INIT_FUNC(flash_setup);

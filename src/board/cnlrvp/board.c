@@ -29,8 +29,6 @@
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/bus/usb/usb.h"
-#include "drivers/flash/flash.h"
-#include "drivers/flash/memmapped.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -59,9 +57,6 @@ static int board_setup(void)
 	uint8_t secondary_bus;
 
 	sysinfo_install_flags(NULL);
-
-	/* 16MB SPI Flash */
-	flash_set_ops(&new_mem_mapped_flash(0xff000000, 0x1000000)->ops);
 
 	/* PCH Power */
 	power_set_ops(&cannonlake_power_ops);

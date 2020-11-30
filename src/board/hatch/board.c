@@ -22,8 +22,6 @@
 #include "base/list.h"
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/lpc.h"
-#include "drivers/flash/flash.h"
-#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -80,20 +78,6 @@ static void hatch_setup_tpm(void)
 	}
 }
 
-static void hatch_setup_flash(void)
-{
-	/* Flash is mapped at the end of 4GiB */
-	uintptr_t flash_start;
-	uint32_t flash_size = lib_sysinfo.spi_flash.size;
-	MemMappedFlash *flash;
-
-	assert(flash_size != 0);
-
-	flash_start = 4ULL * GiB - flash_size;
-	flash = new_mem_mapped_flash(flash_start, flash_size);
-	flash_set_ops(&flash->ops);
-}
-
 static int is_board_helios(void)
 {
 	static const char * const helios_str = "Helios";
@@ -126,8 +110,6 @@ static int board_setup(void)
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);
 	register_vboot_ec(&cros_ec->vboot);
-
-	hatch_setup_flash();
 
 	/* Cannonlake PCH */
 	power_set_ops(&cannonlake_power_ops);

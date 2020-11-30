@@ -26,8 +26,6 @@
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/ec/anx3429/anx3429.h"
 #include "drivers/ec/ps8751/ps8751.h"
-#include "drivers/flash/flash.h"
-#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/kern.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/fch.h"
@@ -52,9 +50,6 @@
 #define EMMC_SD_CLOCK_MIN	400000
 #define EMMC_CLOCK_MAX		200000000
 #define SD_CLOCK_MAX		52000000
-
-#define FLASH_SIZE		0x1000000
-#define FLASH_START		( 0xffffffff - FLASH_SIZE + 1 )
 
 #define DA7219_I2C_ADDR		0x1a
 
@@ -240,8 +235,6 @@ static int board_setup(void)
 			new_anx3429(cros_ec_i2c_tunnel, EC_USB_PD_PORT_ANX3429);
 		register_vboot_auxfw(&anx3429->fw_ops);
 	}
-
-	flash_set_ops(&new_mem_mapped_flash(FLASH_START, FLASH_SIZE)->ops);
 
 	audio_setup();
 

@@ -22,8 +22,6 @@
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2s/baytrail/baytrail-max98090.h"
 #include "drivers/ec/cros/lpc.h"
-#include "drivers/flash/flash.h"
-#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/baytrail.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -59,8 +57,6 @@ static int board_setup(void)
 	register_vboot_ec(&cros_ec->vboot);
   #endif
 #endif
-
-	flash_set_ops(&new_mem_mapped_flash(0xff800000, 0x800000)->ops);
 
 	power_set_ops(&baytrail_power_ops);
 	tpm_set_ops(&new_lpc_tpm((void *)0xfed40000)->ops);

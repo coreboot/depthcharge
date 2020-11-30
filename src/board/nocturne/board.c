@@ -30,8 +30,6 @@
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/ec/ps8751/ps8751.h"
-#include "drivers/flash/flash.h"
-#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/skylake.h"
 #include "drivers/gpio/sysinfo.h"
@@ -97,9 +95,6 @@ static int board_setup(void)
 	cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec, /* i2c bus */ 2);
 	Ps8751 *ps8805_p1 = new_ps8805(cros_ec_i2c_tunnel, /* ec pd# */ 1);
 	register_vboot_auxfw(&ps8805_p1->fw_ops);
-
-	/* 16MB SPI Flash */
-	flash_set_ops(&new_mem_mapped_flash(0xff000000, 0x1000000)->ops);
 
 	/* PCH Power */
 	power_set_ops(&skylake_power_ops);

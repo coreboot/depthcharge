@@ -26,8 +26,6 @@
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/ec/anx3429/anx3429.h"
 #include "drivers/ec/ps8751/ps8751.h"
-#include "drivers/flash/flash.h"
-#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/kern.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/fch.h"
@@ -70,10 +68,6 @@
 /* Clock frequencies */
 #define MCLK			4800000
 #define LRCLK			8000
-
-/* SPI Flash */
-#define FLASH_SIZE		0x1000000	/* 16MB */
-#define FLASH_START		( 0xffffffff - FLASH_SIZE + 1 )
 
 /* Core boost register */
 #define HW_CONFIG_REG 0xc0010015
@@ -249,8 +243,6 @@ static int board_setup(void)
 
 	flag_replace(FLAG_LIDSW, cros_ec_lid_switch_flag());
 	flag_replace(FLAG_PWRSW, cros_ec_power_btn_flag());
-
-	flash_set_ops(&new_mem_mapped_flash(FLASH_START, FLASH_SIZE)->ops);
 
 	audio_setup(cros_ec);
 

@@ -12,8 +12,6 @@
 #include "base/list.h"
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/lpc.h"
-#include "drivers/flash/flash.h"
-#include "drivers/flash/memmapped.h"
 #include "drivers/soc/alderlake.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/gpio/sysinfo.h"
@@ -63,9 +61,6 @@ static int board_setup(void)
 		CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);
 		register_vboot_ec(&cros_ec->vboot);
 	}
-
-	/* 32MB SPI Flash */
-	flash_set_ops(&new_mem_mapped_flash(0xfe000000, 0x2000000)->ops);
 
 	if (CONFIG(DRIVER_TPM_SPI))
 		alderlake_setup_tpm();

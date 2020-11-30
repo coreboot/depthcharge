@@ -29,8 +29,6 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
-#include "drivers/flash/flash.h"
-#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/icelake.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -55,9 +53,6 @@
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_icelake_gpio_input_from_coreboot);
-
-	/* 16MB SPI Flash */
-	flash_set_ops(&new_mem_mapped_flash(0xff000000, 0x1000000)->ops);
 
 	/* PCH Power */
 	power_set_ops(&icelake_power_ops);

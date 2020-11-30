@@ -35,8 +35,6 @@
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/lpc.h"
-#include "drivers/flash/flash.h"
-#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/icelake.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -129,9 +127,6 @@ static int board_setup(void)
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);
 	register_vboot_ec(&cros_ec->vboot);
-
-	/* 32MB SPI Flash */
-	flash_set_ops(&new_mem_mapped_flash(0xfe000000, 0x2000000)->ops);
 
 	/* PCH Power */
 	power_set_ops(&icelake_power_ops);
