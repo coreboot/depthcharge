@@ -33,7 +33,7 @@
 #include "drivers/power/fch.h"
 #include "drivers/soc/picasso.h"
 #include "drivers/sound/gpio_i2s.h"
-#include "drivers/sound/max98357a.h"
+#include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/rt1015.h"
 #include "drivers/sound/route.h"
 #include "drivers/sound/rt5682.h"
@@ -229,7 +229,7 @@ static void audio_setup(CrosEc *cros_ec)
 
 		KernGpio *spk_pa_en = new_kern_fch_gpio_output(EN_SPKR, 1);
 		/* Codec for Grunt, should work with Zork */
-		max98357aCodec *speaker_amp = new_max98357a_codec(
+		GpioAmpCodec *speaker_amp = new_gpio_amp_codec(
 						&spk_pa_en->ops);
 		list_insert_after(&speaker_amp->component.list_node,
 				  &sound_route->components);

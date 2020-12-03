@@ -24,7 +24,7 @@
 #include "drivers/gpio/tigerlake.h"
 #include "drivers/power/pch.h"
 #include "drivers/sound/i2s.h"
-#include "drivers/sound/max98357a.h"
+#include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/max98373.h"
 #include "drivers/soc/tigerlake.h"
 #include "drivers/storage/ahci.h"
@@ -160,7 +160,7 @@ static int board_setup(void)
 	power_set_ops(&tigerlake_power_ops);
 
 	/* Audio Setup (for boot beep) */
-#if CONFIG_DRIVER_SOUND_MAX98357A
+#if CONFIG_DRIVER_SOUND_GPIO_AMP
 	GpioOps *sdmode = &new_tigerlake_gpio_output(SDMODE_PIN, 0)->ops;
 	I2s *i2s = new_i2s_structure(&max98357a_settings, AUD_BITDEPTH,
 			sdmode, SSP_I2S1_START_ADDRESS);
@@ -168,7 +168,7 @@ static int board_setup(void)
 			2, AUD_VOLUME);
 	/* Connect the Audio codec to the I2s source */
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
-	max98357aCodec *speaker_amp = new_max98357a_codec(sdmode);
+	GpioAmpCodec *speaker_amp = new_gpio_amp_codec(sdmode);
 	list_insert_after(&speaker_amp->component.list_node,
 			&sound_route->components);
 	sound_set_ops(&sound_route->ops);

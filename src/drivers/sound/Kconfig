@@ -10,6 +10,10 @@
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
 
+config DRIVER_SOUND_GPIO_AMP
+	bool "An amplifier controlled by GPIO value"
+	default n
+
 config DRIVER_SOUND_GPIO_I2S
 	bool "I2S driver based on bit-bang GPIO"
 	default n
@@ -44,10 +48,6 @@ config DRIVER_SOUND_MAX98090
 
 config DRIVER_SOUND_MAX98095
 	bool "MAX98095 codec driver"
-	default n
-
-config DRIVER_SOUND_MAX98357A
-	bool "MAX98357A codec driver"
 	default n
 
 config DRIVER_SOUND_MAX98373

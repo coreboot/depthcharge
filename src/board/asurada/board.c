@@ -20,7 +20,7 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
 #include "drivers/sound/i2s.h"
-#include "drivers/sound/max98357a.h"
+#include "drivers/sound/gpio_amp.h"
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/tpm/spi.h"
 #include "vboot/util/flag.h"
@@ -30,17 +30,17 @@
 
 static void sound_setup(void)
 {
-	GpioOps *sdmode_gpio = sysinfo_lookup_gpio("speaker enable", 1,
-						   new_mtk_gpio_output);
-	if (!sdmode_gpio)
+	GpioOps *speaker_en = sysinfo_lookup_gpio("speaker enable", 1,
+						  new_mtk_gpio_output);
+	if (!speaker_en)
 		return;
 
 	MtkI2s *i2s2 = new_mtk_i2s(0x11210000, 2, 48000, AFE_I2S2_I2S3);
 	I2sSource *i2s_source = new_i2s_source(&i2s2->ops, 48000, 2, 8000);
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
 
-	/* The real codec is RT1015P but it's compatible with MAX98357A. */
-	max98357aCodec *codec = new_max98357a_codec(sdmode_gpio);
+	/* RT1015Q/Automode is a GPIO based amplifier. */
+	GpioAmpCodec *codec = new_gpio_amp_codec(speaker_en);
 	ListNode *speaker_amp = &codec->component.list_node;
 
 	list_insert_after(speaker_amp, &sound_route->components);

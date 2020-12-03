@@ -27,7 +27,7 @@
 #include "drivers/power/pch.h"
 #include "drivers/soc/jasperlake.h"
 #include "drivers/sound/i2s.h"
-#include "drivers/sound/max98357a.h"
+#include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/route.h"
 #include "drivers/sound/rt1015.h"
 #include "drivers/storage/blockdev.h"
@@ -168,8 +168,8 @@ static int board_setup(void)
 
 		/* Connect the Codec to the I2S source */
 		SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
-		/* Re-use max98357aCodec for max98360a */
-		max98357aCodec *speaker_amp = new_max98357a_codec(spk_en);
+		/* MAX98360A is a GPIO based amplifier */
+		GpioAmpCodec *speaker_amp = new_gpio_amp_codec(spk_en);
 
 		list_insert_after(&speaker_amp->component.list_node,
 				  &sound_route->components);
