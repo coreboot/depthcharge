@@ -33,7 +33,7 @@
 #include "drivers/power/fch.h"
 #include "drivers/soc/stoneyridge.h"
 #include "drivers/sound/gpio_i2s.h"
-#include "drivers/sound/max98357a.h"
+#include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/route.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
@@ -166,7 +166,7 @@ static void audio_setup(void)
 	i2s->ops.play = amd_gpio_i2s_play;
 
 	KernGpio *spk_pa_en = new_kern_fch_gpio_output(119, 0);
-	max98357aCodec *speaker_amp = new_max98357a_codec(&spk_pa_en->ops);
+	GpioAmpCodec *speaker_amp = new_gpio_amp_codec(&spk_pa_en->ops);
 
 	list_insert_after(&speaker_amp->component.list_node,
 			  &sound_route->components);
