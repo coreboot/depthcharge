@@ -158,11 +158,11 @@
 
 #define SDHCI_HOST_CONTROL2			0x3E
 #define  SDHCI_CTRL_UHS_MASK			0x0007
-#define   SDHCI_CTRL_UHS_SDR12			0x0000
-#define   SDHCI_CTRL_UHS_SDR25			0x0001
-#define   SDHCI_CTRL_UHS_SDR50			0x0002
-#define   SDHCI_CTRL_UHS_SDR104			0x0003
-#define   SDHCI_CTRL_UHS_DDR50			0x0004
+#define   SDHCI_CTRL_UHS_SDR12			0x0000 /* Up to 25 MHz, up to 12.5 MB/sec */
+#define   SDHCI_CTRL_UHS_SDR25			0x0001 /* Up to 50 MHz, up to 25 MB/sec */
+#define   SDHCI_CTRL_UHS_SDR50			0x0002 /* Up to 100 MHz, up to 50 MB/sec */
+#define   SDHCI_CTRL_UHS_SDR104			0x0003 /* Up to 208 MHz, up to 104 MB/sec */
+#define   SDHCI_CTRL_UHS_DDR50			0x0004 /* Up to 50 MHz, up to 50 MB/sec */
 #define   SDHCI_CTRL_HS400			0x0005 /* reserved value in SDIO spec */
 #define  SDHCI_CTRL_180V_SIGNALING_ENABLE	0x0008
 #define  SDHCI_CTRL_DRV_TYPE_SHIFT		4

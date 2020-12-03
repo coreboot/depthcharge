@@ -754,7 +754,7 @@ static u16 sdhci_preset_value(SdhciHost *host, enum mmc_timing timing)
 			preset = sdhci_readw(host,
 					     SDHCI_PRESET_VALUE_DEFAULT_SPEED);
 		else
-			preset = sdhci_readw(host, SDHCI_PRESET_VALUE_SDR25);
+			preset = sdhci_readw(host, SDHCI_PRESET_VALUE_SDR12);
 		break;
 	case MMC_TIMING_INITIALIZATION:
 		preset = sdhci_readw(host, SDHCI_PRESET_VALUE_INIT);
@@ -867,13 +867,20 @@ static void sdhci_set_uhs_signaling(SdhciHost *host, enum mmc_timing timing)
 		ctrl_2 |= SDHCI_CTRL_HS400;
 		break;
 	case MMC_TIMING_MMC_HS:
-	case MMC_TIMING_MMC_LEGACY:
 		/*
 		 * UHS-I timings will only be used with 1.8V VCCQ. Otherwise the
 		 * High Speed Enabled bit determines the timing.
 		 */
 		if (!(host->platform_info & SDHCI_PLATFORM_EMMC_33V_VCCQ))
 			ctrl_2 |= SDHCI_CTRL_UHS_SDR25;
+		break;
+	case MMC_TIMING_MMC_LEGACY:
+		/*
+		 * UHS-I timings will only be used with 1.8V VCCQ. Otherwise the
+		 * High Speed Enabled bit determines the timing.
+		 */
+		if (!(host->platform_info & SDHCI_PLATFORM_EMMC_33V_VCCQ))
+			ctrl_2 |= SDHCI_CTRL_UHS_SDR12;
 		break;
 	case MMC_TIMING_SD_DS:
 	case MMC_TIMING_SD_HS:
