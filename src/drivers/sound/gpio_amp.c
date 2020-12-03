@@ -1,5 +1,5 @@
 /*
- * max98357a.c -- MAX98357A Audio driver
+ * gpio_amp.c -- Audio driver for GPIO based amplifier
  *
  * Copyright (C) 2015 Google Inc.
  * Copyright (C) 2015 Intel Corporation.
@@ -17,25 +17,25 @@
 #include <libpayload.h>
 
 #include "base/container_of.h"
-#include "max98357a.h"
+#include "gpio_amp.h"
 
 static int max98357a_enable(SoundRouteComponentOps *me)
 {
-	max98357aCodec *codec = container_of(me, max98357aCodec, component.ops);
+	GpioAmpCodec *codec = container_of(me, GpioAmpCodec, component.ops);
 
 	return gpio_set(codec->sdmode_gpio, 1);
 }
 
 static int max98357a_disable(SoundRouteComponentOps *me)
 {
-	max98357aCodec *codec = container_of(me, max98357aCodec, component.ops);
+	GpioAmpCodec *codec = container_of(me, GpioAmpCodec, component.ops);
 
 	return gpio_set(codec->sdmode_gpio, 0);
 }
 
-max98357aCodec *new_max98357a_codec(GpioOps *ops)
+GpioAmpCodec *new_gpio_amp_codec(GpioOps *ops)
 {
-	max98357aCodec *codec = xzalloc(sizeof(*codec));
+	GpioAmpCodec *codec = xzalloc(sizeof(*codec));
 
 	codec->sdmode_gpio = ops;
 	codec->component.ops.enable = &max98357a_enable;
