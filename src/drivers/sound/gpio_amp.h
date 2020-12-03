@@ -1,5 +1,5 @@
 /*
- * max98357a.h -- MAX98357A Audio driver
+ * gpio_amp.h -- Audio driver for GPIO based amplifier
  *
  * Copyright (C) 2015 Google Inc.
  * Copyright (C) 2015 Intel Corporation.
@@ -14,8 +14,8 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __DRIVERS_SOUND_MAX98357A_H__
-#define __DRIVERS_SOUND_MAX98357A_H__
+#ifndef __DRIVERS_SOUND_GPIO_AMP_H__
+#define __DRIVERS_SOUND_GPIO_AMP_H__
 
 #include "drivers/gpio/gpio.h"
 #include "drivers/sound/route.h"
@@ -25,8 +25,8 @@ typedef struct
 	SoundRouteComponent component;
 	GpioOps *sdmode_gpio;
 
-} max98357aCodec;
+} GpioAmpCodec;
 
-max98357aCodec *new_max98357a_codec(GpioOps *);
+GpioAmpCodec *new_gpio_amp_codec(GpioOps *ops);
 
-#endif /* __DRIVERS_SOUND_MAX98357A_H__ */
+#endif /* __DRIVERS_SOUND_GPIO_AMP_H__ */

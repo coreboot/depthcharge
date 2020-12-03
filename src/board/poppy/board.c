@@ -35,7 +35,7 @@
 #include "drivers/soc/skylake.h"
 #include "drivers/sound/gpio_i2s.h"
 #include "drivers/sound/max98927.h"
-#include "drivers/sound/max98357a.h"
+#include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/route.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
@@ -98,11 +98,11 @@ static void board_audio_init(SoundRoute *sound)
 			&sound->components);
 		list_insert_after(&speaker_amp_r->component.list_node,
 			&sound->components);
-	} else if (CONFIG(DRIVER_SOUND_MAX98357A)) {
+	} else if (CONFIG(DRIVER_SOUND_GPIO_AMP)) {
 		/* Speaker amp is Maxim 98357a codec*/
 		GpioOps *sdmode_gpio = &new_skylake_gpio_output(GPP_A23, 0)->ops;
-		max98357aCodec *speaker_amp =
-				new_max98357a_codec(sdmode_gpio);
+		GpioAmpCodec *speaker_amp =
+				new_gpio_amp_codec(sdmode_gpio);
 		list_insert_after(&speaker_amp->component.list_node,
 				&sound->components);
 	}

@@ -30,7 +30,7 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
 #include "drivers/sound/i2s.h"
-#include "drivers/sound/max98357a.h"
+#include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/rt1015.h"
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/tpm/spi.h"
@@ -58,7 +58,7 @@ static void sound_setup(void)
 						      AUD_RT1015_DEVICE_ADDR);
 		speaker_amp = &codec->component.list_node;
 	} else {
-		max98357aCodec *codec = new_max98357a_codec(sdmode_gpio);
+		GpioAmpCodec *codec = new_gpio_amp_codec(sdmode_gpio);
 		speaker_amp = &codec->component.list_node;
 	}
 

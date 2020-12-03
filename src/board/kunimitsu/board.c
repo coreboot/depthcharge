@@ -34,7 +34,7 @@
 #include "drivers/power/pch.h"
 #include "drivers/sound/gpio_i2s.h"
 #include "drivers/sound/gpio_pdm.h"
-#include "drivers/sound/max98357a.h"
+#include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/route.h"
 #include "drivers/sound/ssm4567.h"
 #include "drivers/storage/blockdev.h"
@@ -126,8 +126,8 @@ static int board_setup(void)
 	} else {
 		/* Speaker Amp codec MAX98357A */
 		GpioOps *sdmode_gpio = &new_skylake_gpio_output(GPP_E3, 0)->ops;
-		max98357aCodec *speaker_amp =
-			new_max98357a_codec(sdmode_gpio);
+		GpioAmpCodec *speaker_amp =
+			new_gpio_amp_codec(sdmode_gpio);
 
 		GpioI2s *i2s = new_gpio_i2s(
 				&i2s2_bclk->ops,    /* I2S Bit Clock GPIO */

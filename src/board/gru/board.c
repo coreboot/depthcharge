@@ -30,7 +30,7 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
 #include "drivers/sound/i2s.h"
-#include "drivers/sound/max98357a.h"
+#include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/route.h"
 #include "drivers/storage/dw_mmc.h"
 #include "drivers/storage/rk_dwmmc.h"
@@ -117,7 +117,7 @@ static int board_setup(void)
 						CONFIG_GRU_SPEAKER_VOLUME);
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
 
-	max98357aCodec *speaker_amp = new_max98357a_codec(
+	GpioAmpCodec *speaker_amp = new_gpio_amp_codec(
 			sysinfo_lookup_gpio("speaker enable", 1,
 					    new_rk_gpio_output_from_coreboot));
 

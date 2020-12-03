@@ -35,7 +35,7 @@
 #include "drivers/tpm/spi.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/sound/i2s.h"
-#include "drivers/sound/max98357a.h"
+#include "drivers/sound/gpio_amp.h"
 #include "drivers/gpio/cannonlake.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/bus/i2c/designware.h"
@@ -156,7 +156,7 @@ static int board_setup(void)
 							AUD_VOLUME);
 		/* Connect the Codec to the I2S source */
 		SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
-		max98357aCodec *speaker_amp = new_max98357a_codec(sdmode);
+		GpioAmpCodec *speaker_amp = new_gpio_amp_codec(sdmode);
 
 		list_insert_after(&speaker_amp->component.list_node,
 			&sound_route->components);

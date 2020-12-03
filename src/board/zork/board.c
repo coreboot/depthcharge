@@ -34,6 +34,7 @@
 #include "drivers/soc/stoneyridge.h"
 #include "drivers/sound/gpio_i2s.h"
 #include "drivers/sound/max98357a.h"
+#include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/route.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
