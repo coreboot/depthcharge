@@ -127,13 +127,12 @@
 #define UI_FOOTER_COL3_ICON_SPACING		5
 
 /* For error box */
-#define UI_ERROR_BOX_RADIUS                     12
-#define UI_ERROR_BOX_HEIGHT                     280
-#define UI_ERROR_BOX_WIDTH                      500
-#define UI_ERROR_BOX_PADDING_H                  30
-#define UI_ERROR_BOX_PADDING_V                  30
-#define UI_ERROR_BOX_SECTION_SPACING            20
-#define UI_ERROR_BOX_ICON_HEIGHT                40
+#define UI_ERROR_BOX_RADIUS			12
+#define UI_ERROR_BOX_HEIGHT			280
+#define UI_ERROR_BOX_WIDTH			500
+#define UI_ERROR_BOX_PADDING			30
+#define UI_ERROR_BOX_SECTION_SPACING		20
+#define UI_ERROR_BOX_ICON_HEIGHT		40
 
 /*
  * UI_BOX_* constants define a large textbox taking up the width of the screen.
@@ -183,7 +182,7 @@ static const struct rgb_color ui_color_link_bg		= { 0x2a, 0x2f, 0x39 };
 static const struct rgb_color ui_color_link_border	= { 0x4a, 0x5b, 0x78 };
 static const struct rgb_color ui_color_border		= { 0x3f, 0x40, 0x42 };
 static const struct rgb_color ui_color_error_box	= { 0x20, 0x21, 0x24 };
-static const struct rgb_color ui_color_black            = { 0x00, 0x00, 0x00 };
+static const struct rgb_color ui_color_black		= { 0x00, 0x00, 0x00 };
 
 struct ui_bitmap {
 	char name[UI_BITMAP_FILENAME_MAX_LEN + 1];
@@ -211,12 +210,6 @@ struct ui_state {
 	const struct ui_log_info *log;
 	int32_t current_page;
 	enum vb2_ui_error error_code;
-};
-
-/* For displaying error messages. */
-struct ui_error_item {
-	/* Error message body */
-	const char *body;
 };
 
 /* Icon type. */

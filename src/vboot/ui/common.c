@@ -22,53 +22,41 @@
 #include "drivers/video/display.h"
 #include "vboot/ui.h"
 
-static const struct ui_error_item error_map[] = {
-	[VB2_UI_ERROR_NONE] = {
-		.body = NULL,
-	},
-	[VB2_UI_ERROR_DEV_MODE_ALREADY_ENABLED] = {
-		.body = "Developer mode is already enabled.",
-	},
-	[VB2_UI_ERROR_TO_NORM_NOT_ALLOWED] = {
-		.body = "Returning to secure mode is not\n"
-			"allowed. Check the GBB flags.",
-	},
-	[VB2_UI_ERROR_DEBUG_LOG] = {
-		.body = "Couldn't get debug info.\n"
-			"Go back and try again.",
-	},
-	[VB2_UI_ERROR_FIRMWARE_LOG] = {
-		.body = "Couldn't get firmware log.\n"
-			"Go back and try again.",
-	},
-	[VB2_UI_ERROR_EXTERNAL_BOOT_NOT_ENABLED] = {
-		.body = "External boot is disabled. For more\n"
-			"information, see\n"
-			"google.com/chromeos/devmode.",
-	},
-	[VB2_UI_ERROR_UNTRUSTED_CONFIRMATION] = {
-		.body = "Use built-in keyboard to confirm\n"
-			"developer mode.\n"
-			"Can't use USB keyboard.",
-	},
-	[VB2_UI_ERROR_ALTERNATE_BOOT_DISABLED] = {
-		.body = "Alternate bootloaders are disabled. For\n"
-			"more information, see\n"
-			"google.com/chromeos/devmode.",
-	},
-	[VB2_UI_ERROR_NO_BOOTLOADER] = {
-		.body = "Couldn't find alternate bootloader. To\n"
-			"learn how to install one, see\n"
-			"google.com/chromeos/devmode.",
-	},
-	[VB2_UI_ERROR_ALTERNATE_BOOT_FAILED] = {
-		.body = "Something went wrong launching the\n"
-			"alternate bootloader.",
-	},
-	[VB2_UI_ERROR_DIAGNOSTICS] = {
-		.body = "Couldn't get diagnostic result.\n"
-			"Go back and try again.",
-	},
+static const char * const error_messages[] = {
+	[VB2_UI_ERROR_NONE] = NULL,
+	[VB2_UI_ERROR_DEV_MODE_ALREADY_ENABLED] =
+		"Developer mode is already enabled.",
+	[VB2_UI_ERROR_TO_NORM_NOT_ALLOWED] =
+		"Returning to secure mode is not\n"
+		"allowed. Check the GBB flags.",
+	[VB2_UI_ERROR_DEBUG_LOG] =
+		"Couldn't get debug info.\n"
+		"Go back and try again.",
+	[VB2_UI_ERROR_FIRMWARE_LOG] =
+		"Couldn't get firmware log.\n"
+		"Go back and try again.",
+	[VB2_UI_ERROR_EXTERNAL_BOOT_NOT_ENABLED] =
+		"External boot is disabled. For more\n"
+		"information, see\n"
+		"google.com/chromeos/devmode.",
+	[VB2_UI_ERROR_UNTRUSTED_CONFIRMATION] =
+		"Use built-in keyboard to confirm\n"
+		"developer mode.\n"
+		"Can't use USB keyboard.",
+	[VB2_UI_ERROR_ALTERNATE_BOOT_DISABLED] =
+		"Alternate bootloaders are disabled. For\n"
+		"more information, see\n"
+		"google.com/chromeos/devmode.",
+	[VB2_UI_ERROR_NO_BOOTLOADER] =
+		"Couldn't find alternate bootloader. To\n"
+		"learn how to install one, see\n"
+		"google.com/chromeos/devmode.",
+	[VB2_UI_ERROR_ALTERNATE_BOOT_FAILED] =
+		"Something went wrong launching the\n"
+		"alternate bootloader.",
+	[VB2_UI_ERROR_DIAGNOSTICS] =
+		"Couldn't get diagnostic result.\n"
+		"Go back and try again.",
 };
 
 static vb2_error_t init_screen(void)
@@ -87,16 +75,15 @@ static vb2_error_t init_screen(void)
 	return VB2_SUCCESS;
 }
 
-static vb2_error_t print_error_message(const char *str, const char *locale_code)
+static vb2_error_t show_error_box(const char *str, const char *locale_code)
 {
 	vb2_error_t rv = VB2_SUCCESS;
 	int32_t x, y;
 	int32_t content_width;
-	int32_t box_width;
 	int32_t button_width;
 	char *buf, *end, *line;
 
-	/* Copy str to buf since strsep() will modify the string. */
+	/* Copy str to buf since strsep() will modify the string */
 	buf = strdup(str);
 	if (!buf) {
 		UI_ERROR("Failed to malloc string buffer\n");
@@ -106,10 +93,8 @@ static vb2_error_t print_error_message(const char *str, const char *locale_code)
 	/* Center the box on the screen */
 	x = (UI_SCALE - UI_ERROR_BOX_WIDTH) / 2;
 	y = (UI_SCALE - UI_ERROR_BOX_HEIGHT) / 2;
-	box_width = UI_SCALE - UI_MARGIN_H * 2;
-	content_width = box_width - UI_BOX_PADDING_H * 2;
 
-	/* Clear printing area. */
+	/* Clear printing area */
 	ui_draw_rounded_box(x, y,
 			    UI_ERROR_BOX_WIDTH,
 			    UI_ERROR_BOX_HEIGHT,
@@ -118,10 +103,11 @@ static vb2_error_t print_error_message(const char *str, const char *locale_code)
 			    UI_ERROR_BOX_RADIUS,
 			    0);
 
-	x += UI_ERROR_BOX_PADDING_H;
-	y += UI_ERROR_BOX_PADDING_V;
+	x += UI_ERROR_BOX_PADDING;
+	y += UI_ERROR_BOX_PADDING;
+	content_width = UI_ERROR_BOX_WIDTH - UI_ERROR_BOX_PADDING * 2;
 
-	/* Insert icon. */
+	/* Insert icon */
 	struct ui_bitmap bitmap;
 	VB2_TRY(ui_get_bitmap("ic_info.bmp", NULL, 0, &bitmap));
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y,
@@ -137,7 +123,6 @@ static vb2_error_t print_error_message(const char *str, const char *locale_code)
 		vb2_error_t line_rv;
 		int32_t width;
 		int32_t height = UI_BOX_TEXT_HEIGHT;
-		/* Ensure the text width is no more than box width */
 		line_rv = ui_get_text_width(line, height, &width);
 		if (line_rv) {
 			/* Save the first error in rv */
@@ -145,6 +130,7 @@ static vb2_error_t print_error_message(const char *str, const char *locale_code)
 				rv = line_rv;
 			continue;
 		}
+		/* Ensure the text width is no more than content width */
 		if (width > content_width)
 			height = height * content_width / width;
 		line_rv = ui_draw_text(line, x, y, height,
@@ -172,9 +158,9 @@ static vb2_error_t print_error_message(const char *str, const char *locale_code)
 	button_width = text_width + (UI_BUTTON_TEXT_PADDING_H * 2);
 	/* x and y are top-left corner of the button */
 	x = (UI_SCALE + UI_ERROR_BOX_WIDTH) / 2 -
-		UI_ERROR_BOX_PADDING_H - button_width;
+		UI_ERROR_BOX_PADDING - button_width;
 	y = (UI_SCALE + UI_ERROR_BOX_HEIGHT) / 2 -
-		UI_ERROR_BOX_PADDING_V - UI_BUTTON_HEIGHT;
+		UI_ERROR_BOX_PADDING - UI_BUTTON_HEIGHT;
 	VB2_TRY(ui_draw_button(&back_item,
 			       locale_code,
 			       x, y,
@@ -250,7 +236,7 @@ vb2_error_t ui_display_screen(struct ui_state *state,
 	vb2_error_t rv;
 	int32_t y = UI_BOX_MARGIN_V;
 	const struct ui_screen_info *screen = state->screen;
-	const char *error_body = error_map[state->error_code].body;
+	const char *error_msg = error_messages[state->error_code];
 
 	VB2_TRY(init_screen());
 
@@ -262,7 +248,7 @@ vb2_error_t ui_display_screen(struct ui_state *state,
 	 * dialog, we need to dim the background colors so it's not so
 	 * distracting.
 	 */
-	if (error_body != NULL)
+	if (error_msg != NULL)
 		set_blend(&ui_color_black, ALPHA(60));
 
 	if (screen->draw)
@@ -279,7 +265,7 @@ vb2_error_t ui_display_screen(struct ui_state *state,
 		draw_fallback_stripes(screen->id, state->selected_item);
 	}
 	/* Disable screen dimming. */
-	if (error_body != NULL)
+	if (error_msg != NULL)
 		clear_blend();
 	/*
 	 * If there's an error message to be printed, print it out.
@@ -289,9 +275,9 @@ vb2_error_t ui_display_screen(struct ui_state *state,
 	 */
 	if (!rv &&
 	    state->error_code != VB2_UI_ERROR_NONE &&
-	    error_body != NULL) {
-		print_error_message(error_body, state->locale->code);
-		UI_ERROR("%s\n", error_body);
+	    error_msg != NULL) {
+		show_error_box(error_msg, state->locale->code);
+		UI_ERROR("%s\n", error_msg);
 	}
 
 	return rv;
