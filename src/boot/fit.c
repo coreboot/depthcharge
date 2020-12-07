@@ -314,7 +314,7 @@ static void *get_fdt_data(FitImageNode *fdt)
 	// Reuse the output FDT buffer as a convenient, guaranteed FDT-sized
 	// scratchpad that is still unused (for it's real purpose) right now.
 	void *buffer = (void *)&_fit_fdt_start;
-	size_t size = &_fit_fdt_end - &_fit_fdt_start;
+	size_t size = _fit_fdt_end - _fit_fdt_start;
 
 	size = fit_decompress(fdt, buffer, size);
 	if (!size)
