@@ -125,8 +125,8 @@ int vboot_select_and_load_kernel(void)
 	struct vb2_context *ctx = vboot_get_context();
 
 	VbSelectAndLoadKernelParams kparams = {
-		.kernel_buffer = &_kernel_start,
-		.kernel_buffer_size = &_kernel_end - &_kernel_start,
+		.kernel_buffer = _kernel_start,
+		.kernel_buffer_size = _kernel_end - _kernel_start,
 	};
 	VbootEcOps *ec = vboot_get_ec();
 

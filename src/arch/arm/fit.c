@@ -101,7 +101,7 @@ int boot(struct boot_info *bi)
 	// Allocate a spot for the FDT in memory.
 	void *fdt = &_fit_fdt_start;
 	uint32_t size = dt_flat_size(tree);
-	if (&_fit_fdt_start + size > &_fit_fdt_end) {
+	if (_fit_fdt_start + size > _fit_fdt_end) {
 		printf("ERROR: FDT image overflows buffer!\n");
 		return 1;
 	}
