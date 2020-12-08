@@ -23,7 +23,7 @@
 typedef struct
 {
 	SoundRouteComponent component;
-	GpioOps *sdmode_gpio;
+	GpioOps *enable_speaker;
 
 } GpioAmpCodec;
 
