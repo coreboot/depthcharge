@@ -22,7 +22,6 @@ config ARCH_X86
 
 config ARCH_ARM
 	bool "ARM"
-	select KERNEL_FIT
 
 endchoice
 
