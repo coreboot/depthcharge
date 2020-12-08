@@ -23,18 +23,9 @@ export override src := $(abspath $(src))
 obj ?= $(src)/build
 export override obj := $(abspath $(obj))
 
-export srck ?= $(src)/util/kconfig
-export objk ?= $(obj)/util/kconfig
-
-export KERNELVERSION      := 0.1.0
-
-export KCONFIG_AUTOHEADER := $(obj)/config.h
-export KCONFIG_AUTOCONFIG := $(obj)/auto.conf
-export KCONFIG_DEPENDENCIES := $(obj)/auto.conf.cmd
-export KCONFIG_SPLITCONFIG := $(obj)/config
-export KCONFIG_TRISTATE := $(obj)/tristate.conf
-export KCONFIG_NEGATIVES := 1
-export KCONFIG_STRICT := 1
+KCONFIG_AUTOHEADER := $(obj)/config.h
+KCONFIG_CONFIG_OUT := $(obj)/config
+KCONFIG_FILE := $(src)/Kconfig
 DOTCONFIG ?= .config
 export KCONFIG_CONFIG = $(DOTCONFIG)
 
@@ -44,7 +35,6 @@ ifdef BOARD
 KBUILD_DEFCONFIG := $(src)/board/$(BOARD)/defconfig
 endif
 UNAME_RELEASE := $(shell uname -r)
-HAVE_DOTCONFIG := $(wildcard $(DOTCONFIG))
 MAKEFLAGS += -rR --no-print-directory
 
 # Make is silent per default, but 'make V=1' will show all compiler calls.
@@ -55,18 +45,23 @@ endif
 
 HOSTCC = gcc
 HOSTCXX = g++
-HOSTCFLAGS := -I$(srck) -I$(objk)
-HOSTCXXFLAGS := -I$(srck) -I$(objk)
-
-ifeq ($(strip $(HAVE_DOTCONFIG)),)
-
-all: help
-
-else
+HOSTCFLAGS :=
+HOSTCXXFLAGS :=
 
 LIBPAYLOAD_DIR ?= ../libpayload/install/libpayload
 
-include $(DOTCONFIG)
+# Run genconfig before including the config
+$(shell [ -d "$(obj)" ] || mkdir -p "$(obj)")
+
+run_kconfig_tool = KCONFIG_CONFIG="$(KCONFIG_CONFIG)" $(1)
+
+_ := $(shell $(call run_kconfig_tool, \
+	genconfig --config-out "$(KCONFIG_CONFIG_OUT)" "$(KCONFIG_FILE)"))
+_ := $(shell $(call run_kconfig_tool, \
+	"$(src)/util/autoheader.py" --header-path "$(KCONFIG_AUTOHEADER)" \
+	"$(KCONFIG_FILE)"))
+
+include $(KCONFIG_CONFIG_OUT)
 include $(LIBPAYLOAD_DIR)/libpayload.config
 include $(LIBPAYLOAD_DIR)/libpayload.xcompile
 
@@ -140,11 +135,6 @@ all:
 	@echo  '  clean			- Delete final output binaries'
 	@echo  '  distclean		- Delete whole build directory'
 
-endif
-
-$(KCONFIG_AUTOHEADER): $(KCONFIG_CONFIG)
-	$(MAKE) oldconfig
-
 strip_quotes = $(subst ",,$(subst \",,$(1)))
 
 # Add a new class of source/object files to the build system
@@ -209,7 +199,7 @@ printall:
 	@$(foreach class,$(special-classes),echo $(class):='$($(class))'; )
 
 ifndef NOMKDIR
-$(shell mkdir -p $(obj) $(KCONFIG_SPLITCONFIG) $(objk)/lxdialog $(additional-dirs) $(alldirs))
+$(shell mkdir -p $(alldirs))
 endif
 
 # macro to define template macros that are used by use_template macro
@@ -238,8 +228,15 @@ $(eval $(foreach class,$(classes),$(call foreach-src,$(class))))
 DEPENDENCIES = $(allobjs:.o=.d)
 -include $(DEPENDENCIES)
 
-prepare:
-	$(Q)mkdir -p $(obj)/util/kconfig/lxdialog
+configuration_uis := menuconfig guiconfig
+PHONY += $(configuration_uis)
+$(configuration_uis):
+	$(Q)$(call run_kconfig_tool, $@ "$(KCONFIG_FILE)")
+
+PHONY += defconfig
+defconfig:
+	$(Q)$(call run_kconfig_tool, defconfig --kconfig "$(KCONFIG_FILE)" \
+		"$(KBUILD_DEFCONFIG)")
 
 clean:
 	$(Q)rm -rf $(obj)/*.elf $(obj)/*.o
@@ -248,7 +245,5 @@ distclean: clean
 	$(Q)rm -rf $(obj)
 	$(Q)rm -f .config .config.old ..config.tmp .kconfig.d .tmpconfig*
 
-include util/kconfig/Makefile
-
-.PHONY: $(PHONY) prepare clean distclean
+.PHONY: $(PHONY) clean distclean
 
