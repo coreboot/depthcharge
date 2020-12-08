@@ -106,4 +106,4 @@ config DRIVER_STORAGE_SDHCI_MSM
 	bool "MMC driver for Qcom MSM platforms"
 	default n
 
-source src/drivers/storage/mtd/Kconfig
+source "src/drivers/storage/mtd/Kconfig"

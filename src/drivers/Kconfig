@@ -10,20 +10,20 @@
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
 
-source src/drivers/bus/Kconfig
-source src/drivers/dma/Kconfig
-source src/drivers/ec/anx3429/Kconfig
-source src/drivers/ec/anx7688/Kconfig
-source src/drivers/ec/ps8751/Kconfig
-source src/drivers/ec/cros/Kconfig
-source src/drivers/ec/wilco/Kconfig
-source src/drivers/flash/Kconfig
-source src/drivers/gpio/Kconfig
-source src/drivers/input/Kconfig
-source src/drivers/net/Kconfig
-source src/drivers/power/Kconfig
-source src/drivers/soc/Kconfig
-source src/drivers/sound/Kconfig
-source src/drivers/storage/Kconfig
-source src/drivers/tpm/Kconfig
-source src/drivers/video/Kconfig
+source "src/drivers/bus/Kconfig"
+source "src/drivers/dma/Kconfig"
+source "src/drivers/ec/anx3429/Kconfig"
+source "src/drivers/ec/anx7688/Kconfig"
+source "src/drivers/ec/ps8751/Kconfig"
+source "src/drivers/ec/cros/Kconfig"
+source "src/drivers/ec/wilco/Kconfig"
+source "src/drivers/flash/Kconfig"
+source "src/drivers/gpio/Kconfig"
+source "src/drivers/input/Kconfig"
+source "src/drivers/net/Kconfig"
+source "src/drivers/power/Kconfig"
+source "src/drivers/soc/Kconfig"
+source "src/drivers/sound/Kconfig"
+source "src/drivers/storage/Kconfig"
+source "src/drivers/tpm/Kconfig"
+source "src/drivers/video/Kconfig"

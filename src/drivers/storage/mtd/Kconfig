@@ -2,4 +2,4 @@ config DRIVER_STORAGE_MTD_STREAM
 	bool "Flash stream support"
 	default n
 
-source src/drivers/storage/mtd/nand/Kconfig
+source "src/drivers/storage/mtd/nand/Kconfig"

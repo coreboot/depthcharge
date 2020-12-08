@@ -41,27 +41,27 @@ config ARCH_ARM_V8
 
 endchoice
 
-source src/base/Kconfig
-source src/board/Kconfig
-source src/boot/Kconfig
-source src/debug/Kconfig
+source "src/base/Kconfig"
+source "src/board/Kconfig"
+source "src/boot/Kconfig"
+source "src/debug/Kconfig"
 
 menu "UIP network stack"
-source src/net/Kconfig
+source "src/net/Kconfig"
 endmenu
 
 menu "Netboot"
-source src/netboot/Kconfig
+source "src/netboot/Kconfig"
 endmenu
 
 menu "Image layout"
-source src/image/Kconfig
+source "src/image/Kconfig"
 endmenu
 
 menu "Vboot"
-source src/vboot/Kconfig
+source "src/vboot/Kconfig"
 endmenu
 
 menu "Drivers"
-source src/drivers/Kconfig
+source "src/drivers/Kconfig"
 endmenu

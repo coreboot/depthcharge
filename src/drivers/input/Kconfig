@@ -30,4 +30,4 @@ config DRIVER_INPUT_PSEUDO
 	help
 	  A pseudo keyboard driver for embedded systems with other forms of input.
 
-source src/drivers/input/mkbp/Kconfig
+source "src/drivers/input/mkbp/Kconfig"
