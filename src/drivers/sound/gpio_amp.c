@@ -19,27 +19,27 @@
 #include "base/container_of.h"
 #include "gpio_amp.h"
 
-static int max98357a_enable(SoundRouteComponentOps *me)
+static int gpio_amp_enable(SoundRouteComponentOps *me)
 {
 	GpioAmpCodec *codec = container_of(me, GpioAmpCodec, component.ops);
 
-	return gpio_set(codec->sdmode_gpio, 1);
+	return gpio_set(codec->enable_speaker, 1);
 }
 
-static int max98357a_disable(SoundRouteComponentOps *me)
+static int gpio_amp_disable(SoundRouteComponentOps *me)
 {
 	GpioAmpCodec *codec = container_of(me, GpioAmpCodec, component.ops);
 
-	return gpio_set(codec->sdmode_gpio, 0);
+	return gpio_set(codec->enable_speaker, 0);
 }
 
 GpioAmpCodec *new_gpio_amp_codec(GpioOps *ops)
 {
 	GpioAmpCodec *codec = xzalloc(sizeof(*codec));
 
-	codec->sdmode_gpio = ops;
-	codec->component.ops.enable = &max98357a_enable;
-	codec->component.ops.disable = &max98357a_disable;
+	codec->enable_speaker = ops;
+	codec->component.ops.enable = &gpio_amp_enable;
+	codec->component.ops.disable = &gpio_amp_disable;
 
 	return codec;
 }
