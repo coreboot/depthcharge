@@ -18,20 +18,11 @@ config BOARD_DIR
 if BOARD_DIR = "auron"
 source src/board/auron/Kconfig
 endif
-if BOARD_DIR = "bayleybay"
-source src/board/bayleybay/Kconfig
-endif
-if BOARD_DIR = "bolt"
-source src/board/bolt/Kconfig
-endif
 if BOARD_DIR = "trogdor"
 source src/board/trogdor/Kconfig
 endif
 if BOARD_DIR = "cheza"
 source src/board/cheza/Kconfig
-endif
-if BOARD_DIR = "mistral"
-source src/board/mistral/Kconfig
 endif
 if BOARD_DIR = "cyan"
 source src/board/cyan/Kconfig
@@ -45,9 +36,6 @@ endif
 if BOARD_DIR = "foster"
 source src/board/foster/Kconfig
 endif
-if BOARD_DIR = "gizmo"
-source src/board/gizmo/Kconfig
-endif
 if BOARD_DIR = "glados"
 source src/board/glados/Kconfig
 endif
@@ -59,9 +47,6 @@ source src/board/grunt/Kconfig
 endif
 if BOARD_DIR = "jecht"
 source src/board/jecht/Kconfig
-endif
-if BOARD_DIR = "kukui"
-source src/board/kukui/Kconfig
 endif
 if BOARD_DIR = "link"
 source src/board/link/Kconfig
@@ -90,17 +75,8 @@ endif
 if BOARD_DIR = "rambi"
 source src/board/rambi/Kconfig
 endif
-if BOARD_DIR = "rush"
-source src/board/rush/Kconfig
-endif
-if BOARD_DIR = "rush_ryu"
-source src/board/rush_ryu/Kconfig
-endif
 if BOARD_DIR = "samus"
 source src/board/samus/Kconfig
-endif
-if BOARD_DIR = "slippy"
-source src/board/slippy/Kconfig
 endif
 if BOARD_DIR = "smaug"
 source src/board/smaug/Kconfig
@@ -108,23 +84,14 @@ endif
 if BOARD_DIR = "storm"
 source src/board/storm/Kconfig
 endif
-if BOARD_DIR = "cyclone"
-source src/board/cyclone/Kconfig
-endif
 if BOARD_DIR = "strago"
 source src/board/strago/Kconfig
-endif
-if BOARD_DIR = "urara"
-source src/board/urara/Kconfig
 endif
 if BOARD_DIR = "veyron"
 source src/board/veyron/Kconfig
 endif
 if BOARD_DIR = "veyron_rialto"
 source src/board/veyron_rialto/Kconfig
-endif
-if BOARD_DIR = "veyron_shark"
-source src/board/veyron_shark/Kconfig
 endif
 if BOARD_DIR = "volteer"
 source src/board/volteer/Kconfig
