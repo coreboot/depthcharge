@@ -25,10 +25,20 @@ typedef struct
 	SoundRouteComponent component;
 	GpioOps *sdb;
 
+	u64 early_init_time_us;
+	int early_init;
 	int calibrated;
 
 } rt1015pCodec;
 
 rt1015pCodec *new_rt1015p_codec(GpioOps *ops);
+
+/*
+ * Early init (pre-calibrate) RT1015P to prevent extra delay in first play.
+ *
+ * Call this after you have setup all components in route (especially I2S source
+ * and RT1015P itself).
+ */
+void rt1015p_early_init(SoundRouteComponentOps *me, SoundRoute *route);
 
 #endif /* __DRIVERS_SOUND_RT1015P_H__ */
