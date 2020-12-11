@@ -40,21 +40,24 @@
 #include "drivers/video/display.h"
 #include "drivers/video/mtk_ddp.h"
 
-static ListNode *get_speaker_amp(void)
+static SoundRouteComponent *get_speaker_amp(int *pre_init)
 {
 	GpioOps *spk_en = sysinfo_lookup_gpio("speaker enable", 1,
 					      new_mtk_gpio_output);
+	*pre_init = 0;
+
 	if (spk_en) {
 		/* MAX98357A, or a GPIO AMP. */
 		GpioAmpCodec *codec = new_gpio_amp_codec(spk_en);
-		return &codec->component.list_node;
+		return &codec->component;
 	}
 
 	spk_en = sysinfo_lookup_gpio("rt1015p sdb", 1, new_mtk_gpio_output);
 	if (spk_en) {
 		/* RT1015Q in auto mode (rt1015p). */
 		rt1015pCodec *codec = new_rt1015p_codec(spk_en);
-		return &codec->component.list_node;
+		*pre_init = 1;
+		return &codec->component;
 	}
 
 	/*
@@ -66,21 +69,27 @@ static ListNode *get_speaker_amp(void)
 	MTKI2c *i2c6 = new_mtk_i2c(0x11005000, 0x11000600);
 	rt1015Codec *codec = new_rt1015_codec(&i2c6->ops,
 					      AUD_RT1015_DEVICE_ADDR);
-	return &codec->component.list_node;
+	return &codec->component;
 }
 
 static void sound_setup(void)
 {
+	int pre_init = 0;
+
 	MtkI2s *i2s2 = new_mtk_i2s(0x11220000, 2, 48000, AFE_I2S2_I2S3);
 	I2sSource *i2s_source = new_i2s_source(&i2s2->ops, 48000, 2, 8000);
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
 
-	ListNode *speaker_amp = get_speaker_amp();
-	list_insert_after(speaker_amp, &sound_route->components);
+	SoundRouteComponent *speaker_amp = get_speaker_amp(&pre_init);
+	list_insert_after(&speaker_amp->list_node, &sound_route->components);
 	list_insert_after(&i2s2->component.list_node,
 			  &sound_route->components);
 
 	sound_set_ops(&sound_route->ops);
+
+	/* If we know there will be display and beep, pre-initialize. */
+	if (lib_sysinfo.framebuffer.physical_address && pre_init)
+		rt1015p_pre_calibrate(&speaker_amp->ops, sound_route);
 }
 
 static int cr50_irq_status(void)
