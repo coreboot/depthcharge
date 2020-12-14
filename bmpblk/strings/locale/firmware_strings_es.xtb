@@ -8,6 +8,7 @@
 <translation id="1389402762514302384">Selecciona Cancelar para conservar la protección.</translation>
 <translation id="1483971085438511843">Usa la tecla Intro para seleccionar una opción.</translation>
 <translation id="1931763245382489971">3. Haz clic en Siguiente cuando tengas el dispositivo de memoria externa preparado con la imagen de recuperación</translation>
+<translation id="1932315467893966859">El modo desarrollador ya está activado.</translation>
 <translation id="1995660704900986789">Apagar</translation>
 <translation id="2022309272630265316">No se ha detectado ninguna imagen válida</translation>
 <translation id="2076174287070071207">Puedes llevar a cabo la recuperación usando un dispositivo de almacenamiento externo, como una unidad USB o una tarjeta SD, o utilizando tu teléfono Android.</translation>
@@ -16,6 +17,7 @@
 <translation id="2188090550242711688">2. Sigue las instrucciones de la extensión de Chrome y descarga la imagen de recuperación en una memoria externa</translation>
 <translation id="2270126560545545577">Estás en el modo desarrollador</translation>
 <translation id="2360163367862409346">Se eliminarán todos los datos de tu dispositivo y este quedará desprotegido.</translation>
+<translation id="2398688843544960326">No se ha podido encontrar un bootloader alternativo. Para aprender a instalar uno, visita:</translation>
 <translation id="2445391421565214706">Para intentar solucionar el problema, inicia el proceso de recuperación. Quita todos los dispositivos conectados y, después, mantén pulsados los botones de subir volumen, bajar volumen y encendido ( ⏻ ) durante al menos 10 segundos.</translation>
 <translation id="2531345960369431549">Esta opción inhabilita el modo desarrollador y restaura el estado original del dispositivo.</translation>
 <translation id="2603025384438397887">Recuperación con teléfono</translation>
@@ -24,12 +26,15 @@
 <translation id="3235458304027619499">1. Un dispositivo de memoria externa, como una unidad USB o una tarjeta SD</translation>
 <translation id="328213018570216625">Recuperación mediante memoria externa</translation>
 <translation id="3289365543955953678">Conecta tu disco externo</translation>
+<translation id="3294574173405124634">Las marcas GBB no permiten volver al modo seguro.</translation>
+<translation id="3416523611207622897">El inicio externo está inhabilitado. Para obtener más información, visita:</translation>
 <translation id="3635226996169670741">Para intentar solucionar el problema, inicia el proceso de recuperación. Quita todos los dispositivos conectados y, después, mantén pulsadas las teclas de escape, actualización ( ⟳ ) y encendido ( ⏻ ).</translation>
 <translation id="385051799172605136">Volver</translation>
 <translation id="3964506597604121312">Tus datos de usuario se borrarán durante el proceso.</translation>
 <translation id="4002335453596341558">Avanzar página</translation>
 <translation id="4152977630022273265">Comprueba que el disco externo tenga una imagen de Chrome OS válida y vuelve a insertarlo cuando esté listo.</translation>
 <translation id="4242315717915611349">Cancelar y volver</translation>
+<translation id="4403160275309808255">Los bootloaders alternativos están inhabilitados. Para obtener más información, visita:</translation>
 <translation id="4410491068110727276">Usa los botones de volumen para desplazarte hacia arriba o hacia abajo.</translation>
 <translation id="4497270882390086583">Puedes llevar a cabo la recuperación usando un dispositivo de almacenamiento externo, como una unidad USB, o utilizando tu teléfono Android.</translation>
 <translation id="4773280894882892048">Información de depuración</translation>
@@ -39,6 +44,7 @@
 <translation id="5175612852476047443">No apagues el dispositivo</translation>
 <translation id="5232488980254489397">Iniciar diagnóstico</translation>
 <translation id="5341719174140776704">1. Un teléfono Android con acceso a Internet</translation>
+<translation id="5477875595374685515">No se ha podido obtener el registro de firmware.</translation>
 <translation id="5592705604979238266">Centro de Ayuda:</translation>
 <translation id="5649741817431380014">Comprueba que se esté ejecutando la aplicación de recuperación de Chrome OS en tu teléfono, o que tu disco externo tenga una imagen de recuperación válida. Vuelve a insertar el cable o el disco cuando esté preparado.</translation>
 <translation id="5809240698077875994">Pulsa el botón de encendido para habilitar el modo desarrollador o selecciona Cancelar para conservar la protección.</translation>
@@ -69,12 +75,16 @@
 <translation id="8011335065515332253">Después del tiempo de espera, el dispositivo se iniciará automáticamente desde la opción elegida más abajo:</translation>
 <translation id="8027199195649765326">Pulsa el botón de recuperación de tu Chromebox para habilitar el modo desarrollador, o selecciona Cancelar para conservar la protección.</translation>
 <translation id="8101391381992690790">Comprueba que el disco externo tenga una imagen de recuperación válida y vuelve a insertar el disco cuando esté listo.</translation>
+<translation id="8116993605321079294">No se ha podido lanzar el bootloader alternativo. Consulta el registro de firmware para obtener más información.</translation>
 <translation id="8131740175452115882">Confirmar</translation>
 <translation id="8199613549817472219">Pasos del proceso de recuperación</translation>
 <translation id="8377165353588213941">Has llegado al final</translation>
+<translation id="8569584079758810124">No se ha podido obtener la información de depuración.</translation>
 <translation id="8720490351198901261">Has llegado al inicio</translation>
 <translation id="8789686976863801203">Estás intentando habilitar el modo desarrollador</translation>
+<translation id="8848124168564939055">No puedes usar un teclado externo para activar el modo de desarrollador. Usa los botones del dispositivo indicados en las instrucciones de navegación.</translation>
 <translation id="885701979325669005">Almacenamiento</translation>
+<translation id="9004305007436435169">No se ha podido obtener la información de diagnóstico.</translation>
 <translation id="9040266428058825675">Si tienes un dispositivo de memoria externa con una imagen de recuperación, conéctalo a este dispositivo para iniciar el proceso de recuperación.</translation>
 <translation id="9058669020755173331">Selecciona el componente que quieras comprobar.</translation>
 </translationbundle>

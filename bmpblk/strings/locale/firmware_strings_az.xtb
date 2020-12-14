@@ -8,6 +8,7 @@
 <translation id="1389402762514302384">Yenə də qorunmaq üçün “Ləğv edin” seçimini edin.</translation>
 <translation id="1483971085438511843">Seçim etmək üçün Enter düyməsindən istifadə edin.</translation>
 <translation id="1931763245382489971">3. Xarici yaddaş cihazınızda bərpa təsviri hazır olduqda "növbəti" düyməsinə klikləyin</translation>
+<translation id="1932315467893966859">Developer rejimi hazırda aktivdir.</translation>
 <translation id="1995660704900986789">Söndürün</translation>
 <translation id="2022309272630265316">Doğru şəkil aşkarlanmadı</translation>
 <translation id="2076174287070071207">USB diski və ya SD kart kimi xarici yaddaş cihazı və ya Android telefonunuz ilə bərpa edə bilərsiniz.</translation>
@@ -16,6 +17,7 @@
 <translation id="2188090550242711688">2. Chrome artırmasının üzərindəki təlimatlara əməl edin və bərpa şəklini xarici yaddaşa endirin</translation>
 <translation id="2270126560545545577">Developer rejimindəsiniz</translation>
 <translation id="2360163367862409346">Bununla cihazınızdan bütün data silinəcək və cihazınız güvənsiz olacaq.</translation>
+<translation id="2398688843544960326">Alternativ yükləyici tapılmadı. Quraşdırma qaydasını öyrənmək üçün bura baxın:</translation>
 <translation id="2445391421565214706">Sınamaq və problemi həll etmək üçün bərpa prosesini başladın. Bütün qoşulmuş cihazları silin, sonra Səs Artırma, Səs Azaltma və Yandırıb-söndürmə düyməsini ( ⏻ ) minimum 10 saniyə basıb saxlayın.</translation>
 <translation id="2531345960369431549">Bu seçim developer rejimini deaktiv edəcək və cihazınızı ilkin vəziyyətinə bərpa edəcək.</translation>
 <translation id="2603025384438397887">Telefon ilə bərpa</translation>
@@ -24,12 +26,15 @@
 <translation id="3235458304027619499">1. USB diski və ya SD kart kimi xarici yaddaş cihazı</translation>
 <translation id="328213018570216625">Xarici yaddaş ilə bərpa</translation>
 <translation id="3289365543955953678">Xarici diski daxil edin</translation>
+<translation id="3294574173405124634">Təhlükəsiz rejimə qayıtmağa GBB bayraqları icazə vermir.</translation>
+<translation id="3416523611207622897">Xarici yükləmə deaktiv edilib. Ətraflı məlumat üçün bura baxın:</translation>
 <translation id="3635226996169670741">Sınamaq və problemi həll etmək üçün bərpa prosesini başladın. Bütün qoşulmuş cihazları silin, sonra Esc, Yeniləyin ( ⟳ ) və Yandırıb-söndürmə düyməsini ( ⏻ ) basıb saxlayın.</translation>
 <translation id="385051799172605136">Geri</translation>
 <translation id="3964506597604121312">İstifadəçi datası proses zamanı silinəcək.</translation>
 <translation id="4002335453596341558">Bir səhifə aşağı</translation>
 <translation id="4152977630022273265">Xarici diskin üzərində doğru Chome ƏS şəklinin olduğuna əmin olun və hazır olduqda diski yenidən daxil edin.</translation>
 <translation id="4242315717915611349">Ləğv edin və geri qayıdın</translation>
+<translation id="4403160275309808255">Alternativ yükləyicilər deaktiv edilib. Ətraflı məlumat üçün bura baxın:</translation>
 <translation id="4410491068110727276">Yuxarı və ya aşağı keçmək üçün səs düymələrindən istifadə edin.</translation>
 <translation id="4497270882390086583">USB diski kimi xarici yaddaş cihazı və ya Android telefonunuz ilə bərpa edə bilərsiniz.</translation>
 <translation id="4773280894882892048">Debaq məlumatı</translation>
@@ -39,6 +44,7 @@
 <translation id="5175612852476047443">Cihazınızı söndürməyin</translation>
 <translation id="5232488980254489397">Diaqnostikanı başladın</translation>
 <translation id="5341719174140776704">1. İnternetə girişi olan Android telefonu</translation>
+<translation id="5477875595374685515">Proqram jurnalını əldə etmək mümkün olmadı.</translation>
 <translation id="5592705604979238266">Yardım mərkəzi:</translation>
 <translation id="5649741817431380014">Telefonda Chrome OS bərpa tətbiqinin işlədiyinə və diskin üzərində doğru bərpa şəkli olduğuna əmin olun. Hazır olduqda kabeli və ya diski yenidən daxil edin.</translation>
 <translation id="5809240698077875994">Developer rejimini aktiv etmək üçün Enerji düyməsini basın və ya yenə də qorunmaq üçün “Ləğv edin” seçimini edin.</translation>
@@ -69,12 +75,16 @@
 <translation id="8011335065515332253">Vaxt limitindən sonra cihaz avtomatik olaraq aşağıdakı seçimdən yüklənəcək.</translation>
 <translation id="8027199195649765326">Developer rejimini aktiv etmək üçün Chromebox'da Bərpa düyməsini basınvə ya yenə də qorunmaq üçün “Ləğv edin” seçimini edin.</translation>
 <translation id="8101391381992690790">Xarici diskin üzərində doğru bərpa şəklinin olduğuna əmin olun və hazır olduqda diski yenidən daxil edin.</translation>
+<translation id="8116993605321079294">Alternativ yükləyicini başladarkən xəta oldu. Detallar üçün proqram jurnalına baxın.</translation>
 <translation id="8131740175452115882">Təsdiq edin</translation>
 <translation id="8199613549817472219">Gəlin, bərpa prosesinə başlayaq</translation>
 <translation id="8377165353588213941">Sona çatmısınız</translation>
+<translation id="8569584079758810124">Sazlama məlumatını əldə etmək mümkün olmadə.</translation>
 <translation id="8720490351198901261">Yuxarıya çatmısınız</translation>
 <translation id="8789686976863801203">Developer rejimini aktiv etməyə çalışırsınız</translation>
+<translation id="8848124168564939055">Developer rejimini aktiv etmək üçün xarici klaviaturadan istifadə edə bilməzsiniz. Naviqasiya təlimatlarında qeyd olunan cihazdakı düymələrdən istifadə edin.</translation>
 <translation id="885701979325669005">Yaddaş</translation>
+<translation id="9004305007436435169">Diaqnostika məlumatlarını əldə etmək mümkün olmadı.</translation>
 <translation id="9040266428058825675">Xarici yaddaş cihazınızda bərpa təsviri hazır olduqda, bərpa prosesini başlatmaq üçün onu bu cihaza taxın.</translation>
 <translation id="9058669020755173331">Yoxlamaq istədiyiniz komponenti seçin.</translation>
 </translationbundle>

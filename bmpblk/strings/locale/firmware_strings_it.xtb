@@ -8,6 +8,7 @@
 <translation id="1389402762514302384">Seleziona "Annulla" per mantenere attiva la protezione.</translation>
 <translation id="1483971085438511843">Utilizza il tasto Invio per selezionare un'opzione.</translation>
 <translation id="1931763245382489971">3. Quando l'immagine di ripristino è pronta sul dispositivo di archiviazione esterno, fai clic su Avanti</translation>
+<translation id="1932315467893966859">La modalità sviluppatore è già attiva.</translation>
 <translation id="1995660704900986789">Spegni</translation>
 <translation id="2022309272630265316">Nessuna immagine valida rilevata</translation>
 <translation id="2076174287070071207">Puoi eseguire il ripristino usando una memoria esterna, ad esempio un'unità USB o una scheda SD, oppure usando il tuo telefono Android.</translation>
@@ -16,6 +17,7 @@
 <translation id="2188090550242711688">2. Segui le istruzioni nell'estensione di Chrome e scarica l'immagine di ripristino su un'unità di archiviazione esterna</translation>
 <translation id="2270126560545545577">Modalità sviluppatore attiva</translation>
 <translation id="2360163367862409346">Verranno cancellati tutti i dati dal tuo dispositivo, che non sarà più protetto.</translation>
+<translation id="2398688843544960326">Impossibile trovare un bootloader alternativo. Per scoprire come installarne uno, visita la pagina:</translation>
 <translation id="2445391421565214706">Per provare a risolvere il problema, avvia la procedura di ripristino. Rimuovi tutti i dispositivi collegati, quindi tieni premuti il tasto Alza il volume, il tasto Abbassa il volume e il tasto di accensione ( ⏻ ) per almeno 10 secondi.</translation>
 <translation id="2531345960369431549">Questa opzione disattiverà la modalità sviluppatore e ripristinerà lo stato originario del dispositivo.</translation>
 <translation id="2603025384438397887">Ripristino usando il telefono</translation>
@@ -24,12 +26,15 @@
 <translation id="3235458304027619499">1. Un dispositivo di archiviazione esterno, ad esempio un'unità USB o una scheda SD</translation>
 <translation id="328213018570216625">Ripristina usando un'unità di archiviazione esterna</translation>
 <translation id="3289365543955953678">Collega il disco esterno</translation>
+<translation id="3294574173405124634">I flag GBB non consentono di tornare alla modalità protetta.</translation>
+<translation id="3416523611207622897">L'avvio esterno è disattivato. Per ulteriori informazioni, visita la pagina:</translation>
 <translation id="3635226996169670741">Per provare a risolvere il problema, avvia la procedura di ripristino. Rimuovi tutti i dispositivi collegati, quindi tieni premuti il tasto Esc, il tasto Aggiorna ( ⟳ ) e il tasto di accensione ( ⏻ ).</translation>
 <translation id="385051799172605136">Indietro</translation>
 <translation id="3964506597604121312">I tuoi dati utente verranno cancellati.</translation>
 <translation id="4002335453596341558">Pagina giù</translation>
 <translation id="4152977630022273265">Assicurati che sul disco esterno sia presente un'immagine di Chrome OS valida, dopodiché inserisci di nuovo il disco.</translation>
 <translation id="4242315717915611349">Annulla e torna indietro</translation>
+<translation id="4403160275309808255">I bootloader alternativi sono disattivati. Per ulteriori informazioni, visita la pagina:</translation>
 <translation id="4410491068110727276">Utilizza i pulsanti del volume per spostarti verso l'alto o verso il basso.</translation>
 <translation id="4497270882390086583">Puoi eseguire il ripristino usando una memoria esterna, ad esempio un'unità USB, oppure usando il tuo telefono Android.</translation>
 <translation id="4773280894882892048">Informazioni di debug</translation>
@@ -39,6 +44,7 @@
 <translation id="5175612852476047443">Non spegnere il dispositivo</translation>
 <translation id="5232488980254489397">Avvia Diagnostica</translation>
 <translation id="5341719174140776704">1. Un telefono android con accesso a Internet</translation>
+<translation id="5477875595374685515">Impossibile recuperare il log del firmware.</translation>
 <translation id="5592705604979238266">Centro assistenza:</translation>
 <translation id="5649741817431380014">Assicurati che sul telefono sia installata l'app per il ripristino di Chrome OS o che sul disco esterno sia presente un'immagine di ripristino valida. Dopodiché inserisci di nuovo il cavo o il disco.</translation>
 <translation id="5809240698077875994">Premi il tasto di accensione per attivare la modalità sviluppatore oppure seleziona "Annulla" per mantenere attiva la protezione.</translation>
@@ -69,12 +75,16 @@
 <translation id="8011335065515332253">Dopo il timeout, il dispositivo verrà avviato automaticamente dalla selezione di seguito.</translation>
 <translation id="8027199195649765326">Premi il pulsante di ripristino sul Chromebox per attivare la modalità sviluppatore oppure seleziona "Annulla" per mantenere attiva la protezione.</translation>
 <translation id="8101391381992690790">Assicurati che sul disco esterno sia presente un'immagine di ripristino valida dopodiché inserisci di nuovo il disco.</translation>
+<translation id="8116993605321079294">Si è verificato un problema durante l'avvio del bootloader alternativo. Per informazioni dettagliate, visualizza il log del firmware.</translation>
 <translation id="8131740175452115882">Conferma</translation>
 <translation id="8199613549817472219">Svolgiamo la procedura di ripristino guidata</translation>
 <translation id="8377165353588213941">Sei già all'ultima pagina</translation>
+<translation id="8569584079758810124">Impossibile recuperare le informazioni di debug.</translation>
 <translation id="8720490351198901261">Sei alla prima pagina</translation>
 <translation id="8789686976863801203">Stai cercando di attivare la modalità sviluppatore</translation>
+<translation id="8848124168564939055">Non è possibile usare una tastiera esterna per attivare la modalità sviluppatore. Usa i pulsanti sul dispositivo indicati nelle istruzioni di navigazione.</translation>
 <translation id="885701979325669005">Dati memorizzati dai siti</translation>
+<translation id="9004305007436435169">Impossibile recuperare le informazioni diagnostiche.</translation>
 <translation id="9040266428058825675">Se l'immagine di ripristino è pronta sul dispositivo di archiviazione esterno, collega quest'ultimo a questo dispositivo per avviare la procedura di ripristino.</translation>
 <translation id="9058669020755173331">Seleziona il componente che vuoi controllare.</translation>
 </translationbundle>

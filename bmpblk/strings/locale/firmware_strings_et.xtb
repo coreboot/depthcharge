@@ -8,6 +8,7 @@
 <translation id="1389402762514302384">Kaitse säilitamiseks tehke valik „Tühista“.</translation>
 <translation id="1483971085438511843">Kasutage valiku tegemiseks sisestusklahvi.</translation>
 <translation id="1931763245382489971">3. Kui taastekujutis on välisele salvestusseadmele alla laaditud, klõpsake nupul Järgmine.</translation>
+<translation id="1932315467893966859">Arendaja režiim on juba sisse lülitatud.</translation>
 <translation id="1995660704900986789">Lülita välja</translation>
 <translation id="2022309272630265316">Ühtegi sobilikku kujutist ei tuvastatud</translation>
 <translation id="2076174287070071207">Taastamiseks saab kasutada välist salvestusseadet, nt USB-ketast, SD-kaarti või oma Android-telefoni.</translation>
@@ -16,6 +17,7 @@
 <translation id="2188090550242711688">2. Järgige Chrome'i laienduse juhiseid ja laadige taastekujutis alla välisele salvestusseadmele</translation>
 <translation id="2270126560545545577">Olete arendaja režiimis</translation>
 <translation id="2360163367862409346">See hõlmab kõigi andmete kustutamist seadmest ja muudab teie seadme ebaturvaliseks.</translation>
+<translation id="2398688843544960326">Alternatiivset käivituslaadurit ei õnnestunud leida. Installimisjuhiseid vaadake siit:</translation>
 <translation id="2445391421565214706">Probleemi lahendamiseks alustage taastamist. Eemaldage kõik ühendatud seadmed, seejärel hoidke vähemalt 10 sekundit all helitugevuse suurendamise nuppu, helitugevuse vähendamise nuppu ja toitenuppu ( ⏻ ).</translation>
 <translation id="2531345960369431549">See valik keelab arendaja režiimi ja taastab seadme algse oleku.</translation>
 <translation id="2603025384438397887">Taastamine telefoni abil</translation>
@@ -24,12 +26,15 @@
 <translation id="3235458304027619499">1. Väline salvestusseade, nt USB-ketas või SD-kaart</translation>
 <translation id="328213018570216625">Taastamine välise salvestusseadme abil</translation>
 <translation id="3289365543955953678">Ühendage väline ketas</translation>
+<translation id="3294574173405124634">Turvarežiimi naasmine on GBB lippudega keelatud.</translation>
+<translation id="3416523611207622897">Väline käivitamine on keelatud. Lisateavet vaadake siit:</translation>
 <translation id="3635226996169670741">Probleemi lahendamiseks alustage taastamist. Eemaldage kõik ühendatud seadmed, seejärel hoidke all paoklahvi, värskendamisnuppu ( ⟳ ) ja toitenuppu ( ⏻ ).</translation>
 <translation id="385051799172605136">Tagasi</translation>
 <translation id="3964506597604121312">Teie kasutajaandmed kustutatakse selle protsessi käigus.</translation>
 <translation id="4002335453596341558">Lehe võrra alla</translation>
 <translation id="4152977630022273265">Veenduge, et teie välisel kettal oleks sobilik Chrome OS-i kujutis, seejärel sisestage ketas uuesti.</translation>
 <translation id="4242315717915611349">Tühista ja mine tagasi</translation>
+<translation id="4403160275309808255">Alternatiivsed käivituslaadurid on keelatud. Lisateavet vaadake siit:</translation>
 <translation id="4410491068110727276">Kasutage üles või alla liikumiseks helitugevuse nuppe.</translation>
 <translation id="4497270882390086583">Taastamiseks saab kasutada välist salvestusseadet, nt USB-ketast või oma Android-telefoni.</translation>
 <translation id="4773280894882892048">Silumisteave</translation>
@@ -39,6 +44,7 @@
 <translation id="5175612852476047443">Ärge lülitage seadet välja</translation>
 <translation id="5232488980254489397">Käivita diagnostika</translation>
 <translation id="5341719174140776704">1. Internetiühendusega Android-telefon</translation>
+<translation id="5477875595374685515">Püsivara logi ei õnnestunud hankida.</translation>
 <translation id="5592705604979238266">Abikeskus:</translation>
 <translation id="5649741817431380014">Kontrollige, kas teie telefonis töötab Chrome OS-i taasterakendus ja kas välisel kettal on sobiv taastekujutis. Kui olete valmis, ühendage kaabel või ketas uuesti.</translation>
 <translation id="5809240698077875994">Arendaja režiimi lubamiseks vajutage toitenuppu või tehke valik „Tühista“, et kaitse säilitada.</translation>
@@ -69,12 +75,16 @@
 <translation id="8011335065515332253">Pärast ajalõppu käivitub seade automaatselt alloleva valiku alusel.</translation>
 <translation id="8027199195649765326">Arendaja režiimi lubamiseks vajutage Chromeboxi taastamisnuppu või tehke valik Tühista, et kaitse säilitada.</translation>
 <translation id="8101391381992690790">Veenduge, et teie välisel kettal oleks sobilik taastekujutis, seejärel sisestage ketas uuesti.</translation>
+<translation id="8116993605321079294">Miski läks alternatiivse käivituslaaduri käivitamisel valesti. Üksikasju vaadake püsivara logist.</translation>
 <translation id="8131740175452115882">Kinnita</translation>
 <translation id="8199613549817472219">Aitame teil taasteprotsessi läbida</translation>
 <translation id="8377165353588213941">Jõudsite lõppu</translation>
+<translation id="8569584079758810124">Silumisteavet ei õnnestunud hankida.</translation>
 <translation id="8720490351198901261">Jõudsite algusesse</translation>
 <translation id="8789686976863801203">Üritate lubada arendaja režiimi</translation>
+<translation id="8848124168564939055">Te ei saa arendaja režiimi sisselülitamiseks välist klaviatuuri kasutada. Kasutage navigeerimisjuhistes märgitud seadmel olevaid nuppe.</translation>
 <translation id="885701979325669005">Salvestamine</translation>
+<translation id="9004305007436435169">Diagnostikateavet ei õnnestunud hankida.</translation>
 <translation id="9040266428058825675">Kui taastekujutis on teie välisel salvestusseadmel valmis, ühendage see selle seadmega, et alustada taasteprotsessi.</translation>
 <translation id="9058669020755173331">Valige komponent, mida soovite kontrollida.</translation>
 </translationbundle>

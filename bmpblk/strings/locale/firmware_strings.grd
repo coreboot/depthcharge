@@ -367,6 +367,40 @@ Use the volume buttons to navigate up or down.
       <message name="navigate1_tablet" desc="Instruction1 for navigating on a tablet or detachable.">
 Use the power button to select an option.
       </message>
+      <message name="error_dev_mode_enabled" desc="Error message when developer mode is already turned on">
+Developer mode is already turned on.
+      </message>
+      <message name="error_untrusted_confirm"
+               desc="Error for untrusted confirmation for turning on developer mode">
+You cannot use an external keyboard to turn on developer mode. Please use the on-device buttons noted in the navigation instructions.
+      </message>
+      <message name="error_to_norm_not_allowed" desc="Error when to-norm transition is not allowed">
+Returning to secure mode disallowed by GBB flags.
+      </message>
+      <message name="error_ext_boot_disabled"
+               desc="Error when external boot is disabled. A URL will be shown below this line.">
+External boot is disabled. For more information, see:
+      </message>
+      <message name="error_alt_boot_disabled"
+               desc="Error when alternate bootloaders are disabled. A URL will be shown below this line.">
+Alternate bootloaders are disabled. For more information, see:
+      </message>
+      <message name="error_no_alt_bootloader"
+               desc="Error when no alternate bootloader is found. A URL will be shown below this line.">
+Could not find an alternate bootloader. To learn how to install one, see:
+      </message>
+      <message name="error_alt_boot_failed" desc="Error when alternate boot failed">
+Something went wrong launching the alternate bootloader. View firmware log for details.
+      </message>
+      <message name="error_debug_info" desc="Error of showing debug info">
+Could not get debug info.
+      </message>
+      <message name="error_firmware_log" desc="Error of showing firmware log">
+Could not get firmware log.
+      </message>
+      <message name="error_diagnostics" desc="Error of showing diagnostic information">
+Could not get diagnostic information.
+      </message>
     </messages>
   </release>
 </grit>

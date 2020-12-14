@@ -14,7 +14,8 @@ locales: [ ar, bg, ca, cs, da, de, el, en, es, es-419, et, fa, fi, fil, fr,
 # Key is the string name (see strings/*.txt); value is the category of the
 # string.
 generic_files:
-  rec_url: footer  # see strings/rec_url.txt
+  rec_url: footer     # see strings/rec_url.txt
+  dev_mode_url: error # see strings/dev_mode_url.txt
 
 # Localized strings
 # Key is the name in firmware_strings.grd; value is the category of the string.
@@ -113,6 +114,17 @@ localized_files:
   navigate1: footer_nav
   navigate0_tablet: footer_nav
   navigate1_tablet: footer_nav
+  # errors
+  error_dev_mode_enabled: error
+  error_untrusted_confirm: error
+  error_to_norm_not_allowed: error
+  error_ext_boot_disabled: error
+  error_alt_boot_disabled: error
+  error_no_alt_bootloader: error
+  error_alt_boot_failed: error
+  error_debug_info: error
+  error_firmware_log: error
+  error_diagnostics: error
 
 diagnostic_files:
   # diagnostic tools - menu
@@ -233,6 +245,11 @@ styles:
     # - UI_FOOTER_COL1_MARGIN_RIGHT - 282
     # - UI_FOOTER_COL2_MARGIN_RIGHT - UI_FOOTER_COL3_MARGIN_LEFT
     max_width: 390
+  error:
+    bgcolor: *grey_900
+    fgcolor: *grey_200
+    # UI_ERROR_BOX_WIDTH - UI_ERROR_BOX_PADDING * 2
+    max_width: 440
   # sprite bitmaps
   ic_globe:
     height: 20

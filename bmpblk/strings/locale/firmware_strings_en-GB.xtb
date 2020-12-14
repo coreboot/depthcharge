@@ -8,6 +8,7 @@
 <translation id="1389402762514302384">Select Cancel to remain protected.</translation>
 <translation id="1483971085438511843">Use the enter key to select an option.</translation>
 <translation id="1931763245382489971">3. Click next when your external storage device is ready with the recovery image</translation>
+<translation id="1932315467893966859">Developer mode is already turned on.</translation>
 <translation id="1995660704900986789">Power off</translation>
 <translation id="2022309272630265316">No valid image detected</translation>
 <translation id="2076174287070071207">You can recover using external storage such as a USB drive, an SD card or using your Android phone.</translation>
@@ -16,6 +17,7 @@
 <translation id="2188090550242711688">2. Follow instructions on the Chrome extension, and download the recovery image onto external storage</translation>
 <translation id="2270126560545545577">You are in developer mode</translation>
 <translation id="2360163367862409346">This involves erasing all data from your device, and will make your device insecure.</translation>
+<translation id="2398688843544960326">Could not find an alternative bootloader. To learn how to install one, see:</translation>
 <translation id="2445391421565214706">To try and fix the issue, start the recovery process. Remove all connected devices, then hold down the volume up, volume down and power button ( ⏻ ) for at least 10 seconds.</translation>
 <translation id="2531345960369431549">This option will disable developer mode and restore your device to its original state.</translation>
 <translation id="2603025384438397887">Recovery using phone</translation>
@@ -24,12 +26,15 @@
 <translation id="3235458304027619499">1. An external storage device such as a USB drive or an SD card</translation>
 <translation id="328213018570216625">Recovery using external storage</translation>
 <translation id="3289365543955953678">Plug in your external disk</translation>
+<translation id="3294574173405124634">Returning to secure mode disallowed by GBB flags.</translation>
+<translation id="3416523611207622897">External boot is disabled. For more information, see:</translation>
 <translation id="3635226996169670741">To try and fix the issue, start the recovery process. Remove all connected devices, then hold down Esc, refresh ( ⟳ ) and power ( ⏻ ).</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="3964506597604121312">Your user data will be wiped in the process.</translation>
 <translation id="4002335453596341558">Page down</translation>
 <translation id="4152977630022273265">Make sure that your external disk has a valid Chrome OS image, and re-insert the disk when ready.</translation>
 <translation id="4242315717915611349">Cancel and go back</translation>
+<translation id="4403160275309808255">Alternative bootloaders are disabled. For more information, see:</translation>
 <translation id="4410491068110727276">Use the volume buttons to navigate up or down.</translation>
 <translation id="4497270882390086583">You can recover using external storage such as a USB drive, or using your Android phone.</translation>
 <translation id="4773280894882892048">Debug info</translation>
@@ -39,6 +44,7 @@
 <translation id="5175612852476047443">Please do not power off your device</translation>
 <translation id="5232488980254489397">Launch diagnostics</translation>
 <translation id="5341719174140776704">1. An Android phone with Internet access</translation>
+<translation id="5477875595374685515">Could not get firmware log.</translation>
 <translation id="5592705604979238266">Help Centre:</translation>
 <translation id="5649741817431380014">Make sure that your phone is running the Chrome OS recovery app, or that your external disk has a valid recovery image on it. Re-insert the cable or disk when ready.</translation>
 <translation id="5809240698077875994">Press the Power button to enable developer mode, or select Cancel to remain protected.</translation>
@@ -69,12 +75,16 @@
 <translation id="8011335065515332253">After timeout, the device will automatically boot from the selection below.</translation>
 <translation id="8027199195649765326">Press the Recovery button on your Chromebox to enable developer mode, or select Cancel to remain protected.</translation>
 <translation id="8101391381992690790">Make sure that your external disk has a valid recovery image, and re-insert the disk when ready.</translation>
+<translation id="8116993605321079294">Something went wrong launching the alternative bootloader. View firmware log for details.</translation>
 <translation id="8131740175452115882">Confirm</translation>
 <translation id="8199613549817472219">Let’s guide you through the recovery process</translation>
 <translation id="8377165353588213941">You have reached the end</translation>
+<translation id="8569584079758810124">Could not get debug info.</translation>
 <translation id="8720490351198901261">You have reached the top</translation>
 <translation id="8789686976863801203">You are attempting to enable developer mode</translation>
+<translation id="8848124168564939055">You cannot use an external keyboard to turn on developer mode. Please use the on-device buttons noted in the navigation instructions.</translation>
 <translation id="885701979325669005">Storage</translation>
+<translation id="9004305007436435169">Could not get diagnostic information.</translation>
 <translation id="9040266428058825675">If your external storage device is ready with a recovery image, plug it into this device to start the recovery process.</translation>
 <translation id="9058669020755173331">Select the component that you’d like to check.</translation>
 </translationbundle>

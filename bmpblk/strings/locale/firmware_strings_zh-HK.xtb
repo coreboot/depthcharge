@@ -8,7 +8,8 @@
 <translation id="1389402762514302384">請選取 [取消] 來維持受保護的狀態。</translation>
 <translation id="1483971085438511843">請使用 Enter 鍵選取所需選項。</translation>
 <translation id="1931763245382489971">3. 當您的外部儲存裝置準備好復原映像檔後，請按 [下一步]</translation>
-<translation id="1995660704900986789">關閉電源</translation>
+<translation id="1932315467893966859">開發人員模式已啟用。</translation>
+<translation id="1995660704900986789">關機</translation>
 <translation id="2022309272630265316">偵測不到任何有效的映像檔</translation>
 <translation id="2076174287070071207">您可使用 USB 磁碟、SD 卡等外置儲存磁碟或 Android 手機進行復原。</translation>
 <translation id="2164852388827548816">韌體記錄</translation>
@@ -16,6 +17,7 @@
 <translation id="2188090550242711688">2. 按照 Chrome 擴充功能的指示操作，並將復原映像檔下載至外部儲存空間</translation>
 <translation id="2270126560545545577">您目前處於開發人員模式</translation>
 <translation id="2360163367862409346">此操作會清除裝置中的所有資料，讓裝置變得不安全。</translation>
+<translation id="2398688843544960326">找不到替代的啟動程式。如要瞭解安裝方式，請參閱：</translation>
 <translation id="2445391421565214706">如要嘗試並解決問題，請開始復原程序。請移除所有已連接的裝置，然後按住 [調高音量] 鍵、[調低音量] 鍵和開關按鈕 ( ⏻ ) 最少 10 秒。</translation>
 <translation id="2531345960369431549">此選項將停用開發人員模式，並將裝置還原至原始狀態。</translation>
 <translation id="2603025384438397887">使用手機執行復原程序</translation>
@@ -24,12 +26,15 @@
 <translation id="3235458304027619499">1. 備妥外部儲存裝置，例如 USB 磁碟或 SD 卡</translation>
 <translation id="328213018570216625">使用外部儲存空間執行復原程序</translation>
 <translation id="3289365543955953678">插入外置磁碟</translation>
+<translation id="3294574173405124634">GBB 標記禁止改回安全模式。</translation>
+<translation id="3416523611207622897">外部開機功能已停用。詳情請參閱：</translation>
 <translation id="3635226996169670741">如要嘗試並解決問題，請開始復原程序。移除所有已連接的裝置，然後按住 Esc 鍵、重新整理鍵 ( ⟳ ) 和開關按鈕 ( ⏻ )。</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3964506597604121312">您的使用者資料將在過程中清除。</translation>
 <translation id="4002335453596341558">下一頁</translation>
 <translation id="4152977630022273265">請確認您的外置磁碟包含有效的 Chrome 作業系統映像檔，並在準備就緒後重新插入磁碟。</translation>
 <translation id="4242315717915611349">取消並返回</translation>
+<translation id="4403160275309808255">替代的啟動程式已停用。詳情請參閱：</translation>
 <translation id="4410491068110727276">使用音量按鈕向上或向下導覽。</translation>
 <translation id="4497270882390086583">您可使用 USB 磁碟等外置儲存裝置或 Android 手機進行復原。</translation>
 <translation id="4773280894882892048">偵錯資訊</translation>
@@ -39,6 +44,7 @@
 <translation id="5175612852476047443">請勿關閉裝置電源</translation>
 <translation id="5232488980254489397">啟動診斷</translation>
 <translation id="5341719174140776704">1. 可連接互聯網的 Android 手機</translation>
+<translation id="5477875595374685515">無法取得韌體記錄。</translation>
 <translation id="5592705604979238266">說明中心：</translation>
 <translation id="5649741817431380014">請確認手機正在執行 Chrome 作業系統復原應用程式，或外置磁碟包含有效的復原映像檔。準備好後，請重新插入連接線或磁碟。</translation>
 <translation id="5809240698077875994">請按下開關按鈕來啟用開發人員模式，或選取 [取消] 來維持受保護的狀態。</translation>
@@ -69,12 +75,16 @@
 <translation id="8011335065515332253">逾時後，裝置會自動從下列選項啟動。</translation>
 <translation id="8027199195649765326">請按下 Chromebox 上的 [復原] 按鈕來啟用開發人員模式，或選取 [取消] 來維持受保護的狀態。</translation>
 <translation id="8101391381992690790">請確認您的外置磁碟包含有效的復原映像檔，並在準備就緒後重新插入磁碟。</translation>
+<translation id="8116993605321079294">啟動替代的啟動程式時發生錯誤。詳情請參閱韌體記錄。</translation>
 <translation id="8131740175452115882">確定</translation>
 <translation id="8199613549817472219">讓我們協助您逐步完成復原程序</translation>
 <translation id="8377165353588213941">這已是最後一頁</translation>
+<translation id="8569584079758810124">無法取得偵錯資訊。</translation>
 <translation id="8720490351198901261">這已是第一頁</translation>
 <translation id="8789686976863801203">您正在嘗試啟用開發人員模式</translation>
+<translation id="8848124168564939055">您無法透過外置鍵盤啟用開發人員模式。請使用導覽指示中提及的裝置按鈕。</translation>
 <translation id="885701979325669005">儲存設備</translation>
+<translation id="9004305007436435169">無法取得診斷資料。</translation>
 <translation id="9040266428058825675">如果外部儲存裝置已準備好復原映像檔，請將其插入此裝置以啟動復原程序。</translation>
 <translation id="9058669020755173331">選取您想檢查的組件。</translation>
 </translationbundle>
