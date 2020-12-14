@@ -4,7 +4,7 @@
  * found in the LICENSE file.
  *
  * This is a copy from upstream:
- * https://chromium.googlesource.com/chromiumos/platform/vpd/+/master/lib/vpd_decode.c
+ * https://chromium.googlesource.com/chromiumos/platform/vpd/+/main/lib/vpd_decode.c
  */
 #include "vpd_decode.h"
 
