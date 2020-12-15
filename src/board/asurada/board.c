@@ -20,7 +20,7 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
 #include "drivers/sound/i2s.h"
-#include "drivers/sound/gpio_amp.h"
+#include "drivers/sound/rt1015p.h"
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/tpm/spi.h"
 #include "vboot/util/flag.h"
@@ -39,8 +39,7 @@ static void sound_setup(void)
 	I2sSource *i2s_source = new_i2s_source(&i2s2->ops, 48000, 2, 8000);
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
 
-	/* RT1015Q/Automode is a GPIO based amplifier. */
-	GpioAmpCodec *codec = new_gpio_amp_codec(speaker_en);
+	rt1015pCodec *codec = new_rt1015p_codec(speaker_en);
 	ListNode *speaker_amp = &codec->component.list_node;
 
 	list_insert_after(speaker_amp, &sound_route->components);
@@ -48,6 +47,10 @@ static void sound_setup(void)
 			  &sound_route->components);
 
 	sound_set_ops(&sound_route->ops);
+
+	/* If we know there will be display, initialize speaker amp. */
+	if (lib_sysinfo.framebuffer.physical_address)
+		rt1015p_early_init(&codec->component.ops, sound_route);
 }
 
 static int cr50_irq_status(void)
