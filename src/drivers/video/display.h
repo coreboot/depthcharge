@@ -95,6 +95,10 @@ void display_set_ops(DisplayOps *ops);
  * Returns 0 on success or if unimplemented, and non-zero on failure.
  */
 int display_init(void);
+
+/* Returns 1 if init is required (framebuffer is available), otherwise 0. */
+int display_init_required(void);
+
 int backlight_update(uint8_t enable);
 int display_screen(enum VbScreenType_t screen);
 

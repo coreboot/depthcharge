@@ -135,7 +135,7 @@ static int board_setup(void)
 	sound_setup();
 
 	/* Set display ops */
-	if (lib_sysinfo.framebuffer.physical_address != 0)
+	if (display_init_required())
 		display_set_ops(new_mtk_display(board_backlight_update,
 						0x14005000, 2));
 

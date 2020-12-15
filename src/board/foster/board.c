@@ -233,7 +233,7 @@ static DisplayOps ryu_display_ops = {
 
 static int display_setup(void)
 {
-	if (lib_sysinfo.framebuffer.physical_address == 0)
+	if (!display_init_required())
 		return 0;
 
 	display_set_ops(&ryu_display_ops);

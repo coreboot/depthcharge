@@ -156,7 +156,7 @@ static int board_setup(void)
 	list_insert_after(&uhst1_xhci->list_node, &usb_host_controllers);
 
 	// turn on the backlight
-	if (lib_sysinfo.framebuffer.physical_address != 0) {
+	if (display_init_required()) {
 		GpioOps *backlight = NULL;
 		if (CONFIG(GRU_SCARLET))
 			backlight = sysinfo_lookup_gpio("backlight", 1,

@@ -62,7 +62,7 @@ static int trogdor_tpm_irq_status(void)
 
 static int init_display_ops(void)
 {
-	if (lib_sysinfo.framebuffer.physical_address == 0) {
+	if (!display_init_required()) {
 		printf("%s: No framebuffer provided by coreboot\n", __func__);
 		return -1;
 	}

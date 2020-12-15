@@ -166,7 +166,7 @@ static int board_setup(void)
 			  &removable_block_dev_controllers);
 
 	/* Set display ops */
-	if (lib_sysinfo.framebuffer)
+	if (display_init_required())
 		display_set_ops(new_mtk_display(
 				oak_backlight_update, 0x1400c000, 1));
 

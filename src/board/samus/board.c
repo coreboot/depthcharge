@@ -124,7 +124,7 @@ static int board_setup(void)
 			  &sound_route->components);
 	sound_set_ops(&sound_route->ops);
 
-	if (lib_sysinfo.framebuffer != NULL) {
+	if (display_init_required()) {
 		uintptr_t i915_base = pci_read_config32(PCI_DEV(0, 2, 0),
 						PCI_BASE_ADDRESS_0) & ~0xf;
 		display_set_ops(new_intel_i915_display(i915_base));

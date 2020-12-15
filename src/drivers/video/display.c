@@ -60,6 +60,11 @@ int display_init(void)
 	return 0;
 }
 
+int display_init_required(void)
+{
+	return lib_sysinfo.framebuffer.physical_address != 0;
+}
+
 int backlight_update(uint8_t enable)
 {
 	if (display_ops && display_ops->backlight_update)

@@ -88,7 +88,7 @@ static int board_setup(void)
 	UsbHostController *usb_otg = new_usb_hc(DWC2, 0xff580000);
 	list_insert_after(&usb_otg->list_node, &usb_host_controllers);
 
-	if (lib_sysinfo.framebuffer != NULL) {
+	if (display_init_required()) {
 		GpioOps *backlight_gpio = sysinfo_lookup_gpio("backlight", 1,
 			new_rk_gpio_output_from_coreboot);
 		display_set_ops(new_rk3288_display(backlight_gpio));
