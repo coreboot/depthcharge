@@ -33,6 +33,10 @@ typedef struct DisplayOps {
 } DisplayOps;
 
 int display_init(void);
+
+/* Returns 1 if init is required (framebuffer is available), otherwise 0. */
+int display_init_required(void);
+
 int backlight_update(uint8_t enable);
 void display_set_ops(DisplayOps *ops);
 int display_screen(enum VbScreenType_t screen);

@@ -72,7 +72,7 @@ static int board_setup(void)
 	// Claim that we have an power key to satisfy vboot.
 	flag_replace(FLAG_PWRSW, new_gpio_low());
 
-	if (lib_sysinfo.framebuffer != NULL)
+	if (display_init_required())
 		display_set_ops(NULL);
 
 	return 0;
