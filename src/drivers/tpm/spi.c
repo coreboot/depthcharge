@@ -6,8 +6,8 @@
  * This is a driver for a SPI interfaced TPM2 device.
  *
  * It assumes that the required SPI interface has been initialized before the
- * driver is started. A 'sruct spi_slave' pointer passed at initialization is
- * used to direct traffic to the correct SPI interface. This dirver does not
+ * driver is started. A 'sruct spi_peripheral' pointer passed at initialization
+ * is used to direct traffic to the correct SPI interface. This dirver does not
  * provide a way to instantiate multiple TPM devices. Also, to keep things
  * simple, the driver unconditionally uses of TPM locality zero.
  *
@@ -23,7 +23,7 @@
 
 /************************************************************/
 /*  Plumbing to make porting of the coreboot driver easier. */
-struct spi_slave {};
+struct spi_peripheral {};
 
 /* TODO(yupingso): Remove after migration to new libpayload.h with stdbool.h */
 #ifndef false
@@ -45,17 +45,17 @@ struct tpm2_info {
  */
 static SpiTpm spi_tpm;
 
-static int spi_claim_bus(struct spi_slave *unused)
+static int spi_claim_bus(struct spi_peripheral *unused)
 {
 	return spi_tpm.bus->start(spi_tpm.bus);
 }
 
-static void spi_release_bus(struct spi_slave *unused)
+static void spi_release_bus(struct spi_peripheral *unused)
 {
 	spi_tpm.bus->stop(spi_tpm.bus);
 }
 
-static int spi_xfer(struct spi_slave *unused, const void *dout,
+static int spi_xfer(struct spi_peripheral *unused, const void *dout,
 		    unsigned bytesout, void *din, unsigned bytesin)
 {
 	unsigned count;
@@ -92,10 +92,10 @@ static uint32_t read_be32(const void *ptr)
 
 /* SPI Interface descriptor used by the driver. */
 struct tpm_spi_if {
-	struct spi_slave *slave;
-	int (*cs_assert)(struct spi_slave *slave);
-	void (*cs_deassert)(struct spi_slave *slave);
-	int  (*xfer)(struct spi_slave *slave, const void *dout,
+	struct spi_peripheral *peripheral;
+	int (*cs_assert)(struct spi_peripheral *peripheral);
+	void (*cs_deassert)(struct spi_peripheral *peripheral);
+	int  (*xfer)(struct spi_peripheral *peripheral, const void *dout,
 		     unsigned bytesout, void *din,
 		     unsigned bytesin);
 };
@@ -161,7 +161,7 @@ enum {
 
 /*
  * Each TPM2 SPI transaction starts the same: CS is asserted, the 4 byte
- * header is sent to the TPM, the master waits til TPM is ready to continue.
+ * header is sent to the TPM, the controller waits til TPM is ready to continue.
  *
  * Returns 1 on success, 0 on failure (TPM2 flow control timeout).
  */
@@ -176,9 +176,9 @@ static int start_transaction(int read_write, size_t bytes, unsigned addr)
 	tpm_sync();
 
 	/* Try to wake cr50 if it is asleep. */
-	tpm_if.cs_assert(tpm_if.slave);
+	tpm_if.cs_assert(tpm_if.peripheral);
 	udelay(1);
-	tpm_if.cs_deassert(tpm_if.slave);
+	tpm_if.cs_deassert(tpm_if.peripheral);
 	udelay(100);
 
 	/*
@@ -192,24 +192,24 @@ static int start_transaction(int read_write, size_t bytes, unsigned addr)
 	for (i = 0; i < 3; i++)
 		header.body[i + 1] = (addr >> (8 * (2 - i))) & 0xff;
 
-	/* CS assert wakes up the slave. */
-	tpm_if.cs_assert(tpm_if.slave);
+	/* CS assert wakes up the peripheral. */
+	tpm_if.cs_assert(tpm_if.peripheral);
 
 	/*
 	 * The TCG TPM over SPI specification introduces the notion of SPI
 	 * flow control (Section "6.4.5 Flow Control").
 	 *
-	 * Again, the slave (TPM device) expects each transaction to start
-	 * with a 4 byte header trasmitted by master. The header indicates if
-	 * the master needs to read or write a register, and the register
+	 * Again, the peripheral (TPM device) expects each transaction to start
+	 * with a 4 byte header trasmitted by controller. The header indicates
+	 * if the controller needs to read or write a register, and the register
 	 * address.
 	 *
-	 * If the slave needs to stall the transaction (for instance it is not
-	 * ready to send the register value to the master), it sets the MOSI
-	 * line to 0 during the last clock of the 4 byte header. In this case
-	 * the master is supposed to start polling the SPI bus, one byte at
-	 * time, until the last bit in the received byte (transferred during
-	 * the last clock of the byte) is set to 1.
+	 * If the peripheral needs to stall the transaction (for instance it is
+	 * not ready to send the register value to the controller), it sets the
+	 * SDO (Serial Data Out) line to 0 during the last clock of the 4 byte
+	 * header. In this case the controller is supposed to start polling the
+	 * SPI bus, one byte at time, until the last bit in the received byte
+	 * (transferred during the last clock of the byte) is set to 1.
 	 *
 	 * Due to some SPI controllers' shortcomings (Rockchip comes to
 	 * mind...) we trasmit the 4 byte header without checking the byte
@@ -217,16 +217,17 @@ static int start_transaction(int read_write, size_t bytes, unsigned addr)
 	 *
 	 * We know that cr50 is guaranteed to set the flow control bit to 0
 	 * during the header transfer, but real TPM2 might be fast enough not
-	 * to require to stall the master, this would present an issue.
+	 * to require to stall the controller, this would present an issue.
 	 * crosbug.com/p/52132 has been opened to track this.
 	 */
-	tpm_if.xfer(tpm_if.slave, header.body, sizeof(header.body), NULL, 0);
+	tpm_if.xfer(tpm_if.peripheral, header.body, sizeof(header.body),
+		    NULL, 0);
 
 	/* Now poll the bus until TPM removes the stall bit. */
 	stopwatch_init_msecs_expire(&sw, 10);
 	do {
 		byte = 0;
-		tpm_if.xfer(tpm_if.slave, NULL, 0, &byte, 1);
+		tpm_if.xfer(tpm_if.peripheral, NULL, 0, &byte, 1);
 		if (stopwatch_expired(&sw)) {
 			printf("TPM flow control failure\n");
 			return 0;
@@ -297,7 +298,7 @@ static void trace_dump(const char *prefix, uint32_t reg,
  */
 static void write_bytes(const void *buffer, size_t bytes)
 {
-	tpm_if.xfer(tpm_if.slave, buffer, bytes, NULL, 0);
+	tpm_if.xfer(tpm_if.peripheral, buffer, bytes, NULL, 0);
 }
 
 /*
@@ -306,7 +307,7 @@ static void write_bytes(const void *buffer, size_t bytes)
  */
 static int read_bytes(void *buffer, size_t bytes)
 {
-	return tpm_if.xfer(tpm_if.slave, NULL, 0, buffer, bytes);
+	return tpm_if.xfer(tpm_if.peripheral, NULL, 0, buffer, bytes);
 }
 
 /*
@@ -326,7 +327,7 @@ static int tpm2_write_reg(unsigned reg_number, const void *buffer, size_t bytes)
 	} else {
 		write_bytes(buffer, bytes);
 	}
-	tpm_if.cs_deassert(tpm_if.slave);
+	tpm_if.cs_deassert(tpm_if.peripheral);
 	return result;
 }
 
@@ -346,7 +347,7 @@ static int tpm2_read_reg(unsigned reg_number, void *buffer, size_t bytes)
 		memset(buffer, 0, bytes);
 		result = 0;
 	}
-	tpm_if.cs_deassert(tpm_if.slave);
+	tpm_if.cs_deassert(tpm_if.peripheral);
 	trace_dump("R", reg_number, bytes, buffer, 0);
 	return result;
 }
