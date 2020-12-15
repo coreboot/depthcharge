@@ -152,7 +152,7 @@ advance:
  - set of locales the device boot screen is required to support
 
   Country locales can be found in
-  https://chromium.googlesource.com/chromium/src.git/+/master/ui/base/l10n/l10n_util.cc
+  https://chromium.googlesource.com/chromium/chromium/+/trunk/ui/base/l10n/l10n_util.cc
   or http://www.science.co.il/language/locale-codes.asp
 
 

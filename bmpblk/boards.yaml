@@ -25,7 +25,7 @@
 #   for updating locale-independent bitmaps in vbgfx.bin and font.bin.
 #
 # Note the locale should be supported (and named) by Chrome browser:
-# https://chromium.googlesource.com/chromium/chromium/+/master/ui/base/l10n/l10n_util.cc
+# https://chromium.googlesource.com/chromium/chromium/+/trunk/ui/base/l10n/l10n_util.cc
 # In other words, iw should be 'he', and no should be 'nb'.
 
 # Default configuration
