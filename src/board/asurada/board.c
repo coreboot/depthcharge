@@ -28,6 +28,10 @@
 #include "drivers/video/display.h"
 #include "drivers/video/mtk_ddp.h"
 
+#define GPIO_BL_PWM_1V8 PAD_DISP_PWM
+#define GPIO_AP_EDP_BKLTEN PAD_KPROW1
+#define GPIO_SD_CD_ODL PAD_EINT17
+
 static void sound_setup(void)
 {
 	GpioOps *speaker_en = sysinfo_lookup_gpio("speaker enable", 1,
@@ -49,7 +53,7 @@ static void sound_setup(void)
 	sound_set_ops(&sound_route->ops);
 
 	/* If we know there will be display, initialize speaker amp. */
-	if (lib_sysinfo.framebuffer.physical_address)
+	if (display_init_required())
 		rt1015p_early_init(&codec->component.ops, sound_route);
 }
 
@@ -69,8 +73,8 @@ static int board_backlight_update(DisplayOps *me, uint8_t enable)
 	static GpioOps *disp_pwm, *backlight_en;
 
 	if (!backlight_en) {
-		disp_pwm = new_mtk_gpio_output(PAD_DISP_PWM);
-		backlight_en = new_mtk_gpio_output(PAD_KPROW1);
+		disp_pwm = new_mtk_gpio_output(GPIO_BL_PWM_1V8);
+		backlight_en = new_mtk_gpio_output(GPIO_AP_EDP_BKLTEN);
 	}
 
 	/* Enforce enable to be either 0 or 1. */
@@ -121,7 +125,8 @@ static int board_setup(void)
 		.msdc_iocon = 0x0,
 		.pad_tune = 0x0
 	};
-	GpioOps *card_detect_ops = new_gpio_not(new_mtk_gpio_input(PAD_EINT17));
+	GpioOps *card_detect_ops = new_gpio_not(
+			new_mtk_gpio_input(GPIO_SD_CD_ODL));
 	MtkMmcHost *sd_card = new_mtk_mmc_host(
 		0x11f70000, 200 * MHz, 25 * MHz, sd_card_tune_reg, 4, 1,
 		card_detect_ops, MTK_MMC_V2);

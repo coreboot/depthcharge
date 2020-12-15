@@ -88,7 +88,7 @@ static void sound_setup(void)
 	sound_set_ops(&sound_route->ops);
 
 	/* If we know there will be display (and beep), do early init. */
-	if (lib_sysinfo.framebuffer.physical_address && early_init)
+	if (display_init_required() && early_init)
 		rt1015p_early_init(&speaker_amp->ops, sound_route);
 }
 
