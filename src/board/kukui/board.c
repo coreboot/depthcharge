@@ -88,7 +88,8 @@ static void sound_setup(void)
 	sound_set_ops(&sound_route->ops);
 
 	/* If we know there will be display and beep, pre-initialize. */
-	if (lib_sysinfo.framebuffer.physical_address && pre_init)
+	if (lib_sysinfo.framebuffer &&
+	    lib_sysinfo.framebuffer->physical_address && pre_init)
 		rt1015p_pre_calibrate(&speaker_amp->ops, sound_route);
 }
 
@@ -162,7 +163,8 @@ static int board_setup(void)
 	sound_setup();
 
 	/* Set display ops */
-	if (lib_sysinfo.framebuffer)
+	if (lib_sysinfo.framebuffer &&
+	    lib_sysinfo.framebuffer->physical_address)
 		display_set_ops(new_mtk_display(kukui_backlight_update,
 						0x14008000, 2));
 	return 0;
