@@ -25,20 +25,10 @@ typedef struct
 	SoundRouteComponent component;
 	GpioOps *sdb;
 
-	u64 first_enabled_us;
-	int pre_calibrate;
 	int calibrated;
 
 } rt1015pCodec;
 
 rt1015pCodec *new_rt1015p_codec(GpioOps *ops);
-
-/*
- * Pre-calibrate RT1015P to prevent extra delay during security beeps.
- *
- * Call this after you have setup all components in route (especially I2S source
- * and RT1015P itself).
- * */
-void rt1015p_pre_calibrate(SoundRouteComponentOps *me, SoundRoute *route);
 
 #endif /* __DRIVERS_SOUND_RT1015P_H__ */

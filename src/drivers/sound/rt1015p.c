@@ -26,27 +26,14 @@ static int rt1015p_enable(SoundRouteComponentOps *me)
 
 	r = gpio_set(codec->sdb, 1);
 
-	if (codec->calibrated)
-		return r;
-
 	/*
 	 * When the system first boots, SDB and BCLK (from I2S) are set,
 	 * rt1015p needs 500ms for calibration.
 	 */
-	int delay_ms = 500;
-
-	if (codec->pre_calibrate) {
-		/* Don't wait for calibration to be finished. */
-		if (!codec->first_enabled_us) {
-			codec->first_enabled_us = timer_us(0);
-			return r;
-		}
-		delay_ms -= MIN(delay_ms,
-				timer_us(codec->first_enabled_us) /
-				USECS_PER_MSEC);
+	if (!codec->calibrated) {
+		mdelay(500);
+		codec->calibrated = 1;
 	}
-	mdelay(delay_ms);
-	codec->calibrated = 1;
 	return r;
 }
 
@@ -77,23 +64,4 @@ rt1015pCodec *new_rt1015p_codec(GpioOps *ops)
 	codec->component.ops.disable = &rt1015p_disable;
 
 	return codec;
-}
-
-void rt1015p_pre_calibrate(SoundRouteComponentOps *me, SoundRoute *route)
-{
-	rt1015pCodec *rt1015p = container_of(me, rt1015pCodec, component.ops);
-
-	if (rt1015p->calibrated || rt1015p->pre_calibrate)
-		return;
-
-	rt1015p->pre_calibrate = 1;
-
-	/* We need to enable I2S source and RT1015P. */
-	SoundRouteComponent *component;
-	list_for_each(component, route->components, list_node) {
-		component->ops.enable(&component->ops);
-	}
-
-	/* Force re-enable rt1015p (for the delay) on next play. */
-	rt1015p->component.enabled = 0;
 }
