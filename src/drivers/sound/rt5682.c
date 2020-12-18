@@ -361,6 +361,40 @@
 #define RT5682_R_EQ_POST_VOL			0x03f3
 #define RT5682_I2C_MODE				0xffff
 
+/* ADC/DAC Clock Control 1 (0x0073) */
+#define RT5682_I2S_M_DIV_MASK                  (0xf << 8)
+#define RT5682_I2S_M_DIV_SFT                   8
+#define RT5682_I2S_M_D_1                       (0x0 << 8)
+#define RT5682_I2S_M_D_2                       (0x1 << 8)
+#define RT5682_I2S_M_D_3                       (0x2 << 8)
+#define RT5682_I2S_M_D_4                       (0x3 << 8)
+#define RT5682_I2S_M_D_6                       (0x4 << 8)
+#define RT5682_I2S_M_D_8                       (0x5 << 8)
+#define RT5682_I2S_M_D_12                      (0x6 << 8)
+#define RT5682_I2S_M_D_16                      (0x7 << 8)
+#define RT5682_I2S_M_D_24                      (0x8 << 8)
+#define RT5682_I2S_M_D_32                      (0x9 << 8)
+#define RT5682_I2S_M_D_48                      (0x10 << 8)
+#define RT5682_I2S_CLK_SRC_MASK                (0x7 << 4)
+#define RT5682_I2S_CLK_SRC_SFT                 4
+#define RT5682_I2S_CLK_SRC_MCLK                (0x0 << 4)
+#define RT5682_I2S_CLK_SRC_PLL1                (0x1 << 4)
+#define RT5682_I2S_CLK_SRC_PLL2                (0x2 << 4)
+#define RT5682_I2S_CLK_SRC_SDW                 (0x3 << 4)
+#define RT5682_I2S_CLK_SRC_RCCLK               (0x4 << 4) /* 25M */
+#define RT5682_DAC_OSR_MASK                    (0xf << 0)
+#define RT5682_DAC_OSR_SFT                     0
+#define RT5682_DAC_OSR_D_1                     (0x0 << 0)
+#define RT5682_DAC_OSR_D_2                     (0x1 << 0)
+#define RT5682_DAC_OSR_D_4                     (0x2 << 0)
+#define RT5682_DAC_OSR_D_6                     (0x3 << 0)
+#define RT5682_DAC_OSR_D_8                     (0x4 << 0)
+#define RT5682_DAC_OSR_D_12                    (0x5 << 0)
+#define RT5682_DAC_OSR_D_16                    (0x6 << 0)
+#define RT5682_DAC_OSR_D_24                    (0x7 << 0)
+#define RT5682_DAC_OSR_D_32                    (0x8 << 0)
+#define RT5682_DAC_OSR_D_48                    (0x9 << 0)
+
 /* PLL2 M/N/K Code Control 1 (0x009b) */
 #define RT5682_PLL2F_K_MASK			(0x1f << 8)
 #define RT5682_PLL2F_K_SFT			8
@@ -398,7 +432,7 @@ static const struct rt5682_pll_code pll_preset_table[] = {
 	{19200000,  4096000,  23, 14, 1, false},
 	{19200000,  24576000,  3, 30, 3, false},
 	{3840000,   24576000,  3, 30, 0, true},
-	{4800000,   3840000,  18,  6, 3, false},
+	{4800000,   3840000,  23,  2, 0, false},
 	{3840000,   8192000,   3, 30, 1, false},
 	{3840000,   4096000,   8, 30, 1, false},
 };
@@ -460,6 +494,7 @@ static const struct rt5682_pll_code *rt5682_pll_calc(uint32_t freq_in,
 int rt5682_set_clock(rt5682Codec *codec, uint32_t mclk, uint32_t lrclk)
 {
 	const struct rt5682_pll_code *pll2f_code, *pll2b_code;
+	uint16_t i2s1_master_div_val;
 
 	/* PLL2 comprises of 2 PLLs, we keep front PLL output at 3.84MHz */
 	pll2f_code = rt5682_pll_calc(mclk, 3840000);
@@ -467,10 +502,23 @@ int rt5682_set_clock(rt5682Codec *codec, uint32_t mclk, uint32_t lrclk)
 		printf("%s: Error! mclk=%d not supported\n", __func__, mclk);
 		return 1;
 	}
-	pll2b_code = rt5682_pll_calc(3840000, lrclk * 512);
+	pll2b_code = rt5682_pll_calc(3840000, 24576000);
 	if (!pll2b_code) {
-		printf("%s: Error! lrclk=%d not supported\n", __func__, lrclk);
+		printf("%s: Error! sysclk=24576000 not supported\n", __func__);
 		return 1;
+	}
+
+	switch(lrclk) {
+	case 8000:
+		i2s1_master_div_val = RT5682_I2S_M_D_12;
+		break;
+	case 16000:
+		i2s1_master_div_val = RT5682_I2S_M_D_6;
+		break;
+	case 48000:
+	default:
+		i2s1_master_div_val = RT5682_I2S_M_D_2;
+		break;
 	}
 
 	/* Configure PLL2 */
@@ -491,9 +539,13 @@ int rt5682_set_clock(rt5682Codec *codec, uint32_t mclk, uint32_t lrclk)
 
 	/* Enable Clocks */
 	rt5682_i2c_writew(codec, RT5682_GLB_CLK, 0x4000);
-	rt5682_i2c_writew(codec, RT5682_ADDA_CLK_1, 0x0120);
+	rt5682_update_bits(codec, RT5682_ADDA_CLK_1,
+			RT5682_I2S_M_DIV_MASK | RT5682_I2S_CLK_SRC_MASK |
+			RT5682_DAC_OSR_MASK,
+			i2s1_master_div_val | RT5682_I2S_CLK_SRC_PLL2);
 	rt5682_i2c_writew(codec, RT5682_TDM_TCON_CTRL, 0x0001);
-	rt5682_i2c_writew(codec, RT5682_ADDA_CLK_1, 0x0121);
+	rt5682_update_bits(codec, RT5682_ADDA_CLK_1,
+			RT5682_DAC_OSR_MASK, RT5682_DAC_OSR_D_2);
 	rt5682_i2c_writew(codec, RT5682_PLL_TRACK_2, 0x0100);
 	rt5682_i2c_writew(codec, RT5682_DMIC_CTRL_1, 0x1A10);
 
@@ -522,9 +574,11 @@ static int rt5682_device_init(rt5682Codec *codec)
 		return 1;
 	}
 
-	rt5682_i2c_writew(codec, RT5682_PLL2_INTERNAL, 0xa266);
+	rt5682_i2c_writew(codec, RT5682_PLL2_INTERNAL, 0x8266);
 	rt5682_i2c_writew(codec, RT5682_PWR_ANLG_3, 0x0030);
-	rt5682_i2c_writew(codec, RT5682_PWR_ANLG_1, 0x02ac);
+	rt5682_i2c_writew(codec, RT5682_PWR_ANLG_1, 0x22ac);
+	mdelay(60);
+	rt5682_i2c_writew(codec, RT5682_PWR_ANLG_1, 0x32ac);
 	rt5682_i2c_writew(codec, RT5682_PWR_DIG_1, 0x8001);
 
 	return 0;
