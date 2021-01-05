@@ -330,3 +330,9 @@ strongbad:
   # 1920x1080, boots recovery image on any SD card or USB ports.
   screen:   [1920, 1080]
   dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+brya:
+  # 3840x2160, boots recovery image on USB ports.
+  screen:   [3840, 2160]
+  sdcard:   False
+  dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
