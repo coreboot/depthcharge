@@ -12,7 +12,6 @@
 #include "base/list.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"
-#include "drivers/flash/memmapped.h"
 #include "drivers/soc/alderlake.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/gpio/sysinfo.h"
