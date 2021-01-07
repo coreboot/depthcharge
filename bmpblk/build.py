@@ -64,7 +64,6 @@ PANEL_KEY = 'panel'
 SDCARD_KEY = 'sdcard'
 BAD_USB3_KEY = 'bad_usb3'
 DPI_KEY = 'dpi'
-TEXT_COLORS_KEY = 'text_colors'
 LOCALES_KEY = 'locales'
 RTL_KEY = 'rtl'
 RW_OVERRIDE_KEY = 'rw_override'
@@ -460,7 +459,7 @@ class Converter(object):
     self.set_screen()
     self.set_replace_map()
     self.set_locales()
-    self.text_max_colors = self.config[TEXT_COLORS_KEY]
+    self.text_max_colors = self.get_text_colors(self.config[DPI_KEY])
 
   def set_dirs(self, output):
     """Sets board output directory and stage directory.
@@ -551,6 +550,22 @@ class Converter(object):
                               (list(unknown_rtl_locales), RTL_KEY))
     self.locales = [LocaleInfo(code, code in rtl_locales)
                     for code in locales]
+
+  @classmethod
+  def get_text_colors(cls, dpi):
+    """Derive maximum text colors from `dpi`."""
+    if dpi < 64:
+      return 2
+    elif dpi < 72:
+      return 3
+    elif dpi < 80:
+      return 4
+    elif dpi < 96:
+      return 5
+    elif dpi < 112:
+      return 6
+    else:
+      return 7
 
   def _to_px(self, length, num_lines=1):
     """Converts the relative coordinate to absolute one in pixels."""

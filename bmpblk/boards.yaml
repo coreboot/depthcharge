@@ -21,16 +21,7 @@
 #   bitmaps will be larger and hence will take up more space in RO CBFS. When
 #   adding a new board, please try the default DPI (by not specifying DPI)
 #   first. If chromeos-bootimage fails to build because of bitmap size issue,
-#   binary-search for the best-fitting DPI value, and reduce text_colors as
-#   necessary (see below).
-# text_colors: Maximum number of colors for text images. This should be set
-#   based on the value of DPI. Suggested values are:
-#     - dpi < 64: 2
-#     - 64 <= dpi < 72: 3
-#     - 72 <= dpi < 80: 4
-#     - 80 <= dpi < 96: 5
-#     - 96 <= dpi < 112: 6
-#     - 112 <= dpi: 7
+#   binary-search for the best-fitting DPI value.
 # locales: List of locales to include
 # rtl: List of right-to-left locales
 # rw_override: List of names of localized bitmaps to be stored in both RW
@@ -50,7 +41,6 @@ _DEFAULT_:
   sdcard:      True
   bad_usb3:    False
   dpi: 192
-  text_colors: 7
   # The order of locales determines the order in the language menu. Aside from
   # 'en', which is placed at the beginning of the list, the remaining order is
   # consistent with the Chromebook Help Center
@@ -75,7 +65,6 @@ asurada:
   # 1366x768, boots recovery image on USB ports or SD card.
   screen:      [1366, 768]
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 nyan,nyan_big:
 
@@ -109,7 +98,6 @@ chell,glados:
   # 1920x1080, boots recovery image on any SD card or USB ports.
   screen:   [1920, 1080]
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 fizz,guado,kalista,mccloud,ninja,panther,rikku,tidus,tricky:
   # Using VESA graphics mode 1024x768 (0x0117).
@@ -119,7 +107,6 @@ fizz,guado,kalista,mccloud,ninja,panther,rikku,tidus,tricky:
   screen:   [1024, 768]
   panel:    [1920, 1080]
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 endeavour:
   # Using VESA graphics mode 1024x768 (0x0117).
@@ -130,13 +117,11 @@ endeavour:
   panel:    [1920, 1080]
   sdcard:   False
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 ambassador:
   # External monitor, boots recovery image on USB ports.
   screen:   [3840, 2400]  # No built-in panel, specify 4K resolution.
   dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 5  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 zako:
   # Using VESA graphics mode 1024x768 (0x0117).
@@ -216,14 +201,12 @@ scarlet:
   # 1536x2048, "detachable", boots recovery image on any SD card or USB ports.
   screen:   [1536, 2048]
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 eve:
   # 2400x1600, boots recovery image on USB ports.
   screen:   [2400, 1600]
   sdcard:   False
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 samus:
   # 1280x850, boots recovery image on any SD card or USB ports.
@@ -237,7 +220,6 @@ soraka:
   # 2400x1600, boots recovery image on any SD card or USB ports.
   screen:   [2400, 1600]
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 dragonegg:
   # 2400x1600, boots recovery image on any SD card or USB ports.
@@ -254,7 +236,6 @@ grunt:
   # needed. All USB ports and the SD card reader can be used for recovery.
   screen:   [1920, 1080]
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 zoombini:
   # 2400x1600, boots recovery image on any SD card or USB ports.
@@ -264,7 +245,6 @@ nautilus:
   # 2400x1600, boots recovery image on any SD card or USB ports.
   screen:   [2400, 1600]
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 meowth:
   # 2400x1600, boots recovery image on any SD card or USB ports.
@@ -274,65 +254,55 @@ nami:
   # 2400x1600, boots recovery image on any SD card or USB ports.
   screen:   [2400, 1600]
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 atlas:
   # 3840x2160, boots recovery image on USB ports.
   screen:   [3840, 2160]
   sdcard:   False
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 nocturne:
   # 2400x1600, boots recovery image on any SD card or USB ports.
   screen:   [2400, 1600]
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 rammus:
   # 1920x1080, boots recovery image on any SD card or USB ports.
   screen:   [1920, 1080]
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 sarien,deltaur,drallion:
   # 1920x1080, boots recovery image on USB ports.
   screen:   [1920, 1080]
   sdcard:   False
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 hatch,palkia:
   # 2400x1600, boots recovery image on any SD card or USB ports.
   screen:   [2400, 1600]
   dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 5  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 puff:
   # External monitor, boots recovery image on USB ports.
   screen:   [3840, 2400]  # No built-in panel, specify 4K resolution.
   dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 5  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 mushu:
   # 2400x1600, boots recovery image on any SD card or USB ports.
   screen:   [2400, 1600]
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 flapjack,kukui:
   # 1920x1200, boots recovery image on USB ports.
   screen:   [1920, 1200]
   sdcard:   False
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 volteer:
   # 3840x2160, boots recovery image on USB ports.
   screen:   [3840, 2160]
   sdcard:   False
   dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 5  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 zork:
   # 1920x1080, boots recovery image on any SD card or USB ports.
@@ -342,12 +312,10 @@ dedede:
   # 2400x1600, boots recovery image on USB ports.
   screen:   [2400, 1600]
   dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 5  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 jacuzzi:
   # 1366x768, boots recovery image on USB ports or SD card.
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 4  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 tglrvp:
   # 2400x1600, boots recovery image on any SD card or USB ports.
@@ -357,10 +325,8 @@ trogdor:
   # 1920x1080, boots recovery image on any SD card or USB ports.
   screen:   [1920, 1080]
   dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 6  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 strongbad:
   # 1920x1080, boots recovery image on any SD card or USB ports.
   screen:   [1920, 1080]
   dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  text_colors: 6  # DO NOT COPY-PASTE -- follow instructions at top of file.
