@@ -460,6 +460,7 @@ class Converter(object):
     self.set_replace_map()
     self.set_locales()
     self.text_max_colors = self.get_text_colors(self.config[DPI_KEY])
+    self.dpi_warning_printed = False
 
   def set_dirs(self, output):
     """Sets board output directory and stage directory.
@@ -634,6 +635,10 @@ class Converter(object):
     # If the image size is larger than what will be displayed at runtime,
     # downscale it.
     if height_px > max_height_px:
+      if not self.dpi_warning_printed:
+        print('Reducing effective DPI to %d, limited by screen resolution' %
+              (self.config[DPI_KEY] * max_height_px // height_px))
+        self.dpi_warning_printed = True
       height_px = max_height_px
       width_px = height_px * image.size[0] // image.size[1]
     # Stretch image horizontally for stretched display.
