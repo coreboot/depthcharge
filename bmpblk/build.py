@@ -167,7 +167,16 @@ def convert_glyphs():
     convert_text_to_png(None, txt_file, GLYPH_FONT, STAGE_FONT_DIR)
 
 
-def _load_locale_json_file(locale, json_dir):
+def parse_locale_json_file(locale, json_dir):
+  """Parses given firmware string json file.
+
+  Args:
+    locale: The name of the locale, e.g. "da" or "pt-BR".
+    json_dir: Directory containing json output from grit.
+
+  Returns:
+    A dictionary for mapping of "name to content" for files to be generated.
+  """
   result = {}
   filename = os.path.join(json_dir, STRINGS_JSON_FILE_TMPL.format(locale))
   with open(filename, encoding='utf-8-sig') as input_file:
@@ -180,27 +189,6 @@ def _load_locale_json_file(locale, json_dir):
       # Pango report a larger layout size than what's actually visible.
       msgtext = msgtext.strip()
       result[tag] = msgtext
-  return result
-
-
-def parse_locale_json_file(locale, json_dir):
-  """Parses given firmware string json file.
-
-  Args:
-    locale: The name of the locale, e.g. "da" or "pt-BR".
-    json_dir: Directory containing json output from grit.
-
-  Returns:
-    A dictionary for mapping of "name to content" for files to be generated.
-  """
-  result = _load_locale_json_file(locale, json_dir)
-  original = _load_locale_json_file('en', json_dir)
-  for tag in original:
-    if tag not in result:
-      # Use original English text, in case translation is not yet available
-      print('WARNING: locale "%s", missing entry %s' % (locale, tag))
-      result[tag] = original[tag]
-
   return result
 
 
@@ -223,20 +211,6 @@ def parse_locale_input_files(locale, json_dir):
       result[name] = f.read().strip()
 
   return result
-
-
-def build_text_files(inputs, files, output_dir):
-  """Builds text files from given input data.
-
-  Args:
-    inputs: Dictionary of contents for given file name.
-    files: List of files.
-    output_dir: Directory to generate text files.
-  """
-  for name in files:
-    file_name = os.path.join(output_dir, name + '.txt')
-    with open(file_name, 'w', encoding='utf-8-sig') as f:
-      f.write(inputs[name] + '\n')
 
 
 def convert_localized_strings(formats, dpi):
@@ -293,9 +267,17 @@ def convert_localized_strings(formats, dpi):
     if not os.path.exists(output_dir):
       os.makedirs(output_dir)
 
-    build_text_files(inputs, files, output_dir)
-
     for name, category in files.items():
+      # Ignore missing translation
+      if locale != 'en' and name not in inputs:
+        continue
+
+      # Write to text file
+      text_file = os.path.join(output_dir, name + '.txt')
+      with open(text_file, 'w', encoding='utf-8-sig') as f:
+        f.write(inputs[name] + '\n')
+
+      # Convert to PNG file
       style = get_config_with_defaults(styles, category)
       args = (
           locale,
@@ -746,6 +728,22 @@ class Converter(object):
         raise BuildImageError('%s: Image width %dpx greater than max width '
                               '%dpx' % (filename, width_px, max_width_px))
 
+  def _copy_missing_bitmaps(self):
+    """Copy missing (not yet translated) strings from locale 'en'."""
+    en_files = glob.glob(os.path.join(self.output_ro_dir, 'en',
+                                      '*' + self.DEFAULT_OUTPUT_EXT))
+    for locale_info in self.locales:
+      locale = locale_info.code
+      if locale == 'en':
+        continue
+      ro_locale_dir = os.path.join(self.output_ro_dir, locale)
+      for en_file in en_files:
+        filename = os.path.basename(en_file)
+        locale_file = os.path.join(ro_locale_dir, filename)
+        if not os.path.isfile(locale_file):
+          print("WARNING: Locale '%s': copying '%s'" % (locale, filename))
+          shutil.copyfile(en_file, locale_file)
+
   def convert_localized_strings(self):
     """Converts localized strings."""
     names = self.formats[KEY_LOCALIZED_FILES].copy()
@@ -773,6 +771,7 @@ class Converter(object):
           one_line_dir=os.path.join(stage_locale_dir, ONE_LINE_DIR))
       self._check_text_width(ro_locale_dir, heights, max_widths)
     print(file=sys.stderr)
+    self._copy_missing_bitmaps()
 
   def move_language_images(self):
     """Renames language bitmaps and move to self.output_dir.
