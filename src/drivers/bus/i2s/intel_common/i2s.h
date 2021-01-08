@@ -143,4 +143,11 @@ typedef struct {
 I2s *new_i2s_structure(const I2sSettings *settings, int bps, GpioOps *sdmode,
 	uintptr_t ssp_i2s_start_address);
 
+/*
+ * SSP port index for the speaker amp
+ */
+#if CONFIG(INTEL_COMMON_I2S_CAVS_2_0) || CONFIG(INTEL_COMMON_I2S_CAVS_2_5)
+int board_get_ssp_port_index(void);
+#endif
+
 #endif
