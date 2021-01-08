@@ -140,6 +140,16 @@ static uint32_t calculate_sscr2(void)
 }
 
 /*
+ * get ssp port index for non max98373 amp's
+ */
+#if CONFIG(INTEL_COMMON_I2S_CAVS_2_0) || CONFIG(INTEL_COMMON_I2S_CAVS_2_5)
+int __attribute__((weak)) board_get_ssp_port_index(void)
+{
+	return AMP_SSP_PORT_INDEX;
+}
+#endif
+
+/*
 * Power on DSP and Enable SSP for data transmission
 */
 static int enable_DSP_SSP(I2s *bus)
@@ -196,14 +206,14 @@ static int enable_DSP_SSP(I2s *bus)
 #if CONFIG(INTEL_COMMON_I2S_CAVS_2_0) || CONFIG(INTEL_COMMON_I2S_CAVS_2_5)
 	/* In cAVS 2.0 or cAVS 2.5, need to set I2S MDIV and NDIV */
 	writel(1, (bus->lpe_bar4 +
-			(MNCSS_REG_BLOCK_START + MDIV_M_VAL(AMP_SSP_PORT_INDEX))));
+			(MNCSS_REG_BLOCK_START + MDIV_M_VAL(board_get_ssp_port_index()))));
 	writel(1, (bus->lpe_bar4 +
-			(MNCSS_REG_BLOCK_START + MDIV_N_VAL(AMP_SSP_PORT_INDEX))));
+			(MNCSS_REG_BLOCK_START + MDIV_N_VAL(board_get_ssp_port_index()))));
 #endif
 
 #if (CONFIG(INTEL_COMMON_I2S_CAVS_2_5))
 	/* SPA register should be set for each I2S port */
-	writel(readl(bus->lpe_bar4 + I2SLCTL) | BIT(AMP_SSP_PORT_INDEX),
+	writel(readl(bus->lpe_bar4 + I2SLCTL) | BIT(board_get_ssp_port_index()),
 			(bus->lpe_bar4 + I2SLCTL));
 #endif
 	return 0;
