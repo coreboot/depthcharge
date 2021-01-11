@@ -85,3 +85,8 @@ config DRIVER_SOC_ALDERLAKE
 	bool "Alderlake SoC driver"
 	default n
 	select DRIVER_GPIO_ALDERLAKE
+
+config DRIVER_SOC_CEZANNE
+	bool "Cezanne SoC driver"
+	default n
+	select DRIVER_GPIO_KERN
