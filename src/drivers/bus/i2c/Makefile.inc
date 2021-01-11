@@ -33,3 +33,4 @@ depthcharge-$(CONFIG_DRIVER_BUS_I2C_S3C24X0) += s3c24x0.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_TEGRA) += tegra.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_ARMADA38X) += armada38x_i2c.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2C_SC7180) += qcom_qupv3_i2c.c
+depthcharge-$(CONFIG_DRIVER_BUS_I2C_SC7280) += qcom_qupv3_i2c.c

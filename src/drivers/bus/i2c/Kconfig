@@ -69,3 +69,7 @@ config DRIVER_BUS_I2C_CROS_EC_TUNNEL
 config DRIVER_BUS_I2C_SC7180
 	bool "Qualcomm SC7180 I2C driver"
 	default n
+
+config DRIVER_BUS_I2C_SC7280
+	bool "Qualcomm SC7280 I2C driver"
+	default n
