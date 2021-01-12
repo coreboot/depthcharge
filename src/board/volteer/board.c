@@ -27,7 +27,7 @@
 #include "drivers/soc/tigerlake.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
-#include "drivers/storage/sdhci.h"
+#include "drivers/storage/sdhci_gli.h"
 #include "drivers/storage/nvme.h"
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/spi.h"
@@ -187,10 +187,10 @@ static int board_setup(void)
 
 		if (pci_find_device(GENESYS_PCI_VID, GL9763E_PCI_DID,
 				    &pci_dev)) {
-			emmc = new_pci_sdhci_host(pci_dev,
-						  0,
-						  EMMC_CLOCK_MIN,
-						  EMMC_CLOCK_MAX);
+			emmc = new_gl9763e_sdhci_host(pci_dev,
+						SDHCI_PLATFORM_SUPPORTS_HS400ES,
+						EMMC_CLOCK_MIN,
+						EMMC_CLOCK_MAX);
 		}
 
 		if (emmc) {
