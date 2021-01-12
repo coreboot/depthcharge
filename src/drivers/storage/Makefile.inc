@@ -26,6 +26,7 @@ depthcharge-$(CONFIG_DRIVER_STORAGE_MSHC_S5P) += s5p_mshc.c
 depthcharge-y += usb.c
 depthcharge-$(CONFIG_DRIVER_SDHCI) += sdhci.c mem_sdhci.c bouncebuf.c
 depthcharge-$(CONFIG_DRIVER_STORAGE_BAYHUB) += bayhub.c
+depthcharge-$(CONFIG_DRIVER_STORAGE_GENESYSLOGIC) += sdhci_gli.c
 depthcharge-$(CONFIG_DRIVER_STORAGE_SDHCI_PCI) += pci_sdhci.c
 depthcharge-$(CONFIG_DRIVER_STORAGE_SPI_GPT) += spi_gpt.c
 depthcharge-$(CONFIG_DRIVER_STORAGE_NVME) += nvme.c
