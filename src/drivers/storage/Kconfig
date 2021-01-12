@@ -92,6 +92,11 @@ config DRIVER_STORAGE_BAYHUB
         bool "Bayhub SD/eMMC driver"
         default n
 
+config DRIVER_STORAGE_GENESYSLOGIC
+        depends on DRIVER_STORAGE_SDHCI_PCI
+        bool "Genesys Logic SD/eMMC driver"
+        default n
+
 config DRIVER_STORAGE_SPI_GPT
 	bool "Look up a kernel partition from a GPT on SPI"
 	default n
