@@ -18,7 +18,6 @@ depthcharge-y += audio.c
 depthcharge-y += cbfs.c
 depthcharge-y += command.c
 depthcharge-y += console_main.c
-depthcharge-y += display.c
 ifneq ($(CONFIG_HEADLESS),y)
 depthcharge-y += draw.c
 endif
