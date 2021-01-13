@@ -132,10 +132,13 @@ diagnostic_files:
   diag_menu_title: title
   diag_menu_desc0: desc
   btn_diag_storage: primary_button
+  btn_diag_storage_short_test: primary_button
+  btn_diag_storage_ext_test: primary_button
   btn_diag_memory_quick: primary_button
   btn_diag_memory_full: primary_button
   # diagnostic tools - storage
   diag_storage_title: title
+  diag_storage_test_title: title
   # diagnostic tools - memory
   diag_memory_quick_title: title
   diag_memory_full_title: title
