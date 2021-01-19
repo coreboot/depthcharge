@@ -25,7 +25,7 @@
 #include <libpayload.h>
 #include <stdint.h>
 
-#include "drivers/storage/health.h"
+#include "drivers/storage/info.h"
 #include "drivers/storage/mmc.h"
 
 /* Set block count limit because of 16 bit register limit on some hardware*/
@@ -1567,7 +1567,7 @@ int block_mmc_get_health_info(BlockDevOps *me, HealthInfo *health)
 	       &ext_csd[EXT_CSD_VENDOR_HEALTH_REPORT_FIRST],
 	       sizeof(data->vendor_proprietary_health_report));
 
-	health->type = HEALTH_MMC;
+	health->type = STORAGE_INFO_TYPE_MMC;
 
 	return 0;
 }

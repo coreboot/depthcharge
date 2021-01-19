@@ -6,7 +6,7 @@
 #ifndef __DIAG_HEALTH_INFO_H__
 #define __DIAG_HEALTH_INFO_H__
 
-#include "drivers/storage/health.h"
+#include "drivers/storage/info.h"
 
 // Append the stringified health_info to string buf and return the pointer of
 // the next available address of buf.

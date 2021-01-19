@@ -16,20 +16,20 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __DRIVERS_STORAGE_HEALTH_H__
-#define __DRIVERS_STORAGE_HEALTH_H__
+#ifndef __DRIVERS_STORAGE_INFO_H__
+#define __DRIVERS_STORAGE_INFO_H__
 
 #include "drivers/storage/mmc.h"
 #include "drivers/storage/nvme.h"
 
 typedef enum {
-	HEALTH_UNKNOWN = 0,
-	HEALTH_NVME,
-	HEALTH_MMC,
-} HealthDataFormat;
+	STORAGE_INFO_TYPE_UNKNOWN = 0,
+	STORAGE_INFO_TYPE_NVME,
+	STORAGE_INFO_TYPE_MMC,
+} StorageInfoType;
 
 typedef struct HealthInfo {
-	HealthDataFormat type;
+	StorageInfoType type;
 
 	union {
 #ifdef CONFIG_DRIVER_STORAGE_NVME
@@ -40,4 +40,5 @@ typedef struct HealthInfo {
 #endif
 	} data;
 } HealthInfo;
+
 #endif
