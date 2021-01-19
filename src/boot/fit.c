@@ -28,8 +28,10 @@
 #include "base/ranges.h"
 #include "base/timestamp.h"
 #include "boot/fit.h"
+#include "drivers/power/power.h"
 #include "image/symbols.h"
 #include "vboot/stages.h"
+#include "vboot/util/commonparams.h"
 
 
 
@@ -349,9 +351,16 @@ static void update_chosen(DeviceTree *tree, char *cmd_line)
 
 	ret = TlclGetRandom(seed->tpm_buf, sizeof(seed->tpm_buf), &size);
 	if (ret || size != sizeof(seed->tpm_buf)) {
-		printf("Failed to populate tpm buffer.\n");
-		die_if(!vboot_in_recovery(), "System runs without KASLR.\n");
-		return;
+		printf("TPM failed to populate kASLR seed buffer.\n");
+		if (!vboot_in_recovery()) {
+			struct vb2_context *ctx = vboot_get_context();
+			vb2api_fail(ctx, VB2_RECOVERY_RW_TPM_R_ERROR, ret);
+			vb2ex_commit_data(ctx);
+			cold_reboot();
+		}
+		/* In recovery we'd rather continue with a weak seed than risk
+		   tripping up the kernel. We don't expect untrusted code to run
+		   there anyway, so kernel exploits are less of a concern. */
 	}
 
 	timestamp_mix_in_randomness(seed->tpm_buf, sizeof(seed->tpm_buf));
