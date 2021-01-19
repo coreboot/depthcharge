@@ -20,9 +20,15 @@
 #include "vboot/util/flag.h"
 #include "boot/fit.h"
 #include "drivers/storage/sdhci_msm.h"
+#include "drivers/gpio/gpio.h"
+#include "drivers/gpio/qcom_gpio.h"
+#include "drivers/gpio/sysinfo.h"
 
 #define SDC1_HC_BASE          0x007C4000
 #define SDC1_TLMM_CFG_ADDR    0xF1B3000
+
+#define SDC2_TLMM_CFG_ADDR 0xF1B4000
+#define SDC2_HC_BASE 0x08804000
 
 static int board_setup(void)
 {
@@ -42,6 +48,16 @@ static int board_setup(void)
 			SDC1_TLMM_CFG_ADDR,NULL);
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 		&fixed_block_dev_controllers);
+
+	/* SD card support */
+	GpioOps *sd_cd = sysinfo_lookup_gpio("SD card detect", 1,
+					new_gpio_input_from_coreboot);
+
+	SdhciHost *sd = new_sdhci_msm_host(SDC2_HC_BASE,
+					SDHCI_PLATFORM_REMOVABLE,
+					50*MHz, SDC2_TLMM_CFG_ADDR, sd_cd);
+	list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
+				&removable_block_dev_controllers);
 
 	return 0;
 }
