@@ -11,7 +11,7 @@
 #include <libpayload.h>
 
 #include "drivers/storage/blockdev.h"
-#include "drivers/storage/health.h"
+#include "drivers/storage/info.h"
 
 typedef struct {
 	uint64_t lo;
@@ -354,15 +354,15 @@ static char *stringify_mmc_health(char *buf, const char *end,
 char *stringify_health_info(char *buf, const char *end, const HealthInfo *info)
 {
 	switch (info->type) {
-	case HEALTH_NVME:
+	case STORAGE_INFO_TYPE_NVME:
 		if (!CONFIG(DRIVER_STORAGE_NVME))
 			break;
 		return stringify_nvme_smart(buf, end, &info->data.nvme_data);
-	case HEALTH_MMC:
+	case STORAGE_INFO_TYPE_MMC:
 		if (!CONFIG(DRIVER_STORAGE_MMC))
 			break;
 		return stringify_mmc_health(buf, end, &info->data.mmc_data);
-	case HEALTH_UNKNOWN:
+	case STORAGE_INFO_TYPE_UNKNOWN:
 		break;
 	}
 	printf("%s: unsupported data type: %d\n", __func__, info->type);

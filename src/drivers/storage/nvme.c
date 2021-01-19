@@ -53,8 +53,8 @@
 
 #include "base/cleanup_funcs.h"
 #include "drivers/storage/blockdev.h"
+#include "drivers/storage/info.h"
 #include "drivers/storage/nvme.h"
-#include "drivers/storage/health.h"
 
 /* Read 64bits from register space */
 static uint64_t readll(uintptr_t _a)
@@ -786,7 +786,7 @@ static int nvme_read_smart_log(BlockDevOps *me, HealthInfo *smart)
 
 	assert(sizeof(NvmeSmartLogData) == 512);
 
-	smart->type = HEALTH_NVME;
+	smart->type = STORAGE_INFO_TYPE_NVME;
 	NVME_STATUS status = nvme_read_log_page(drive, NVME_LOG_SMART,
 						&smart->data.nvme_data,
 						sizeof(smart->data.nvme_data));
