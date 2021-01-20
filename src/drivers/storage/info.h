@@ -41,4 +41,14 @@ typedef struct HealthInfo {
 	} data;
 } HealthInfo;
 
+typedef struct StorageTestLog {
+	StorageInfoType type;
+
+	union {
+#ifdef CONFIG_DRIVER_STORAGE_NVME
+		NvmeTestLogData nvme_data;
+#endif
+	} data;
+} StorageTestLog;
+
 #endif

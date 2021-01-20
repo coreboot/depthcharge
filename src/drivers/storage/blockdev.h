@@ -25,7 +25,14 @@
 
 typedef uint64_t lba_t;
 
+typedef enum BlockDevTestOpsType {
+	BLOCKDEV_TEST_OPS_TYPE_STOP = 0,
+	BLOCKDEV_TEST_OPS_TYPE_SHORT,
+	BLOCKDEV_TEST_OPS_TYPE_EXTENDED,
+} BlockDevTestOpsType;
+
 struct HealthInfo;
+struct StorageTestLog;
 typedef struct BlockDevOps {
 	lba_t (*read)(struct BlockDevOps *me, lba_t start, lba_t count,
 		      void *buffer);
@@ -38,6 +45,12 @@ typedef struct BlockDevOps {
 				 lba_t count);
 	// Return 0 = success, 1 = error.
 	int (*get_health_info)(struct BlockDevOps *me, struct HealthInfo *info);
+	// Return 0 = success, 1 = error.
+	int (*get_test_log)(struct BlockDevOps *me,
+			    struct StorageTestLog *result);
+	// Return 0 = success, 1 = error.
+	int (*test_control)(struct BlockDevOps *me,
+			    enum BlockDevTestOpsType ops);
 } BlockDevOps;
 
 typedef struct BlockDev {
