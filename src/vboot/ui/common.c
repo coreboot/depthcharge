@@ -43,15 +43,15 @@ static const char * const error_messages[] = {
 		"Use built-in keyboard to confirm\n"
 		"developer mode.\n"
 		"Can't use USB keyboard.",
-	[VB2_UI_ERROR_ALTERNATE_BOOT_DISABLED] =
+	[VB2_UI_ERROR_ALTFW_DISABLED] =
 		"Alternate bootloaders are disabled. For\n"
 		"more information, see\n"
 		"google.com/chromeos/devmode.",
-	[VB2_UI_ERROR_NO_BOOTLOADER] =
+	[VB2_UI_ERROR_ALTFW_EMPTY] =
 		"Couldn't find alternate bootloader. To\n"
 		"learn how to install one, see\n"
 		"google.com/chromeos/devmode.",
-	[VB2_UI_ERROR_ALTERNATE_BOOT_FAILED] =
+	[VB2_UI_ERROR_ALTFW_FAILED] =
 		"Something went wrong launching the\n"
 		"alternate bootloader.",
 	[VB2_UI_ERROR_DIAGNOSTICS] =

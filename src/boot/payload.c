@@ -29,7 +29,7 @@
 #include "boot/payload.h"
 #include "vboot/crossystem/crossystem.h"
 
-/* List of available bootloaders */
+/* List of alternate bootloaders */
 static ListNode *altfw_head;
 
 /* Media to use for reading payloads */
@@ -239,7 +239,7 @@ static struct ListNode *get_altfw_list(struct cbfs_media *media)
 	ListNode *head, *tail;
 	size_t size;
 
-	/* Load bootloader list from cbfs */
+	/* Load alternate bootloader list from cbfs */
 	loaders = cbfs_get_file_content(media, "altfw/list", CBFS_TYPE_RAW,
 					&size);
 	if (!loaders || !size) {
@@ -247,7 +247,7 @@ static struct ListNode *get_altfw_list(struct cbfs_media *media)
 		return NULL;
 	}
 
-	printf("%s: Supported altfw boot loaders:\n", __func__);
+	printf("%s: Supported alternate bootloaders:\n", __func__);
 	ptr = loaders;
 	head = xzalloc(sizeof (*head));
 	tail = head;
