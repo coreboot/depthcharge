@@ -22,7 +22,7 @@
 #include "base/list.h"
 #include "boot/payload.h"
 
-uint32_t vb2ex_get_bootloader_count(void)
+uint32_t vb2ex_get_altfw_count(void)
 {
 	struct altfw_info *node;
 	uint32_t count = 0;
@@ -40,15 +40,9 @@ uint32_t vb2ex_get_bootloader_count(void)
 	return count;
 }
 
-vb2_error_t VbExLegacy(enum VbAltFwIndex_t altfw_num)
+vb2_error_t vb2ex_run_altfw(uint32_t altfw_id)
 {
 	ListNode *head;
-
-	if (altfw_num == VB_ALTFW_DIAGNOSTIC) {
-		printf("Running diagnostic bootloader\n");
-		return payload_run("altfw/diag", 1) ?
-			VB2_ERROR_UNKNOWN : VB2_SUCCESS;
-	}
 
 	/* If we don't have a particular one to boot, use 0. */
 	head = payload_get_altfw_list();
@@ -56,7 +50,7 @@ vb2_error_t VbExLegacy(enum VbAltFwIndex_t altfw_num)
 		struct altfw_info *node;
 
 		list_for_each(node, *head, list_node) {
-			if (node->seqnum == altfw_num) {
+			if (node->seqnum == altfw_id) {
 				printf("Running bootloader '%s: %s'\n",
 				       node->name, node->desc);
 				return payload_run(node->filename, 0) ?
@@ -71,8 +65,8 @@ vb2_error_t VbExLegacy(enum VbAltFwIndex_t altfw_num)
 	 * altfw.
 	 */
 	if (payload_run("payload", 0))
-		printf("%s: Could not find default legacy payload\n", __func__);
-	printf("%s: Could not find bootloader #%d\n", __func__, altfw_num);
+		printf("%s: Could not find default altfw payload\n", __func__);
+	printf("%s: Could not find bootloader #%u\n", __func__, altfw_id);
 
 	return VB2_ERROR_UNKNOWN;
 }

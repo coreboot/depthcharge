@@ -840,7 +840,7 @@ static const struct ui_screen_info developer_invalid_disk_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_DEVELOPER_SELECT_BOOTLOADER */
+/* VB2_SCREEN_DEVELOPER_SELECT_ALTFW */
 
 static const struct ui_menu_item developer_select_bootloader_items[] = {
 	LANGUAGE_SELECT_ITEM,
@@ -956,7 +956,7 @@ static vb2_error_t draw_developer_select_bootloader(
 }
 
 static const struct ui_screen_info developer_select_bootloader_screen = {
-	.id = VB2_SCREEN_DEVELOPER_SELECT_BOOTLOADER,
+	.id = VB2_SCREEN_DEVELOPER_SELECT_ALTFW,
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "dev_select_bootloader_title.bmp",
 	.menu = UI_MENU(developer_select_bootloader_items),
