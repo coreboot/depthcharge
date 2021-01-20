@@ -1019,11 +1019,11 @@ static const struct ui_menu_item diagnostics_test_items[] = {
 	PAGE_UP_ITEM,
 	PAGE_DOWN_ITEM,
 	{
-		.file = "btn_cancel.bmp",
+		.file = "btn_back.bmp",
 		.flags = UI_MENU_ITEM_FLAG_TRANSIENT,
 	},
 	{
-		.file = "btn_back.bmp",
+		.file = "btn_cancel.bmp",
 		.flags = UI_MENU_ITEM_FLAG_TRANSIENT,
 	},
 	POWER_OFF_ITEM,
