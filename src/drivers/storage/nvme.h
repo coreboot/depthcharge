@@ -188,11 +188,17 @@ typedef uint32_t NVME_CQHDBL;
 #define NVME_ADMIN_CRIOCQ_QID(x)	(x)
 #define NVME_ADMIN_CRIOCQ_QSIZE(x)	(((x)-1) << 16)
 
-#define NVME_ADMIN_GET_LOG_PAGE	2
-#define NVME_ADMIN_IDENTIFY_OPC	6
+#define NVME_ADMIN_GET_LOG_PAGE	0x02
+#define NVME_ADMIN_IDENTIFY_OPC	0x06
+#define NVME_ADMIN_DEV_SELF_TEST	0x14
 
 /* NVMe Admin Identify sub-command */
 #define NVME_ID_CNS_NS_ACTIVE_LIST 0x02
+
+/* NVMe Admin Device Self Test sub-command */
+#define NVME_SELF_TEST_SHORT	0x1
+#define NVME_SELF_TEST_EXTENDED	0x2
+#define NVME_SELF_TEST_ABORT	0xf
 
 #define NVME_IO_FLUSH_OPC	0
 #define NVME_IO_WRITE_OPC	1
@@ -200,6 +206,7 @@ typedef uint32_t NVME_CQHDBL;
 
 /* NVMe log page ID */
 #define NVME_LOG_SMART	0x02
+#define NVME_LOG_SELF_TEST	0x06
 
 /* NVMe namespace ID */
 #define NVME_NSID_ALL	0xffffffff
@@ -380,6 +387,23 @@ typedef struct {
 
 	uint8_t  rsvd232[280];
 } __attribute__((packed)) NvmeSmartLogData;
+
+/* NVMe Self Test Result Log Data as of Nvm Express 1.4 Spec */
+typedef struct {
+	uint8_t  current_operation;
+	uint8_t  current_completion;
+	uint8_t  rsvd1[2]; /* Reserved as of Nvm Express 1.4 Spec */
+	uint8_t  status;
+	uint8_t  segment_number;
+	uint8_t  valid_diag_info;
+	uint8_t  rsvd2[1]; /* Reserved as of Nvm Express 1.4 Spec */
+	uint64_t poh;
+	uint32_t nsid;
+	uint64_t failing_lba;
+	uint8_t  status_code_type;
+	uint8_t  status_code;
+	uint16_t vendor_specific;
+} __attribute__((packed)) NvmeTestLogData;
 
 /*
  * Driver Types

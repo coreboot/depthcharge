@@ -780,6 +780,36 @@ static NVME_STATUS nvme_identify(NvmeCtrlr *ctrlr) {
 	return status;
 }
 
+static int nvme_device_self_test(BlockDevOps *me, uint32_t cmd)
+{
+	NvmeDrive *drive = container_of(me, NvmeDrive, dev.ops);
+	NVME_SQ *sq;
+	NvmeCtrlr *ctrlr = drive->ctrlr;
+
+	sq = ctrlr->sq_buffer[NVME_ADMIN_QUEUE_INDEX] +
+	     ctrlr->sq_t_dbl[NVME_ADMIN_QUEUE_INDEX];
+
+	memset(sq, 0, sizeof(*sq));
+
+	sq->opc = NVME_ADMIN_DEV_SELF_TEST;
+
+	sq->cid = ctrlr->cid[NVME_ADMIN_QUEUE_INDEX]++;
+	sq->nsid = NVME_NSID_ALL; // NSID_ALL for controller.
+	sq->cdw10 = cmd;
+
+	NVME_STATUS status = nvme_do_one_cmd_synchronous(
+		ctrlr, NVME_ADMIN_QUEUE_INDEX, NVME_ASQ_SIZE, NVME_ACQ_SIZE,
+		NVME_GENERIC_TIMEOUT);
+
+	if (NVME_ERROR(status)) {
+		printf("%s: error %d of nvme_do_one_cmd_synchronous\n",
+		       __func__, status);
+		return status;
+	}
+
+	return status;
+}
+
 static int nvme_read_smart_log(BlockDevOps *me, HealthInfo *smart)
 {
 	NvmeDrive *drive = container_of(me, NvmeDrive, dev.ops);
@@ -798,6 +828,48 @@ static int nvme_read_smart_log(BlockDevOps *me, HealthInfo *smart)
 	return NVME_SUCCESS;
 }
 
+static int nvme_read_test_log(BlockDevOps *me, StorageTestLog *result)
+{
+	NvmeDrive *drive = container_of(me, NvmeDrive, dev.ops);
+
+	_Static_assert(sizeof(NvmeTestLogData) == 32, "NvmeTestLogData");
+
+	result->type = STORAGE_INFO_TYPE_NVME;
+	NVME_STATUS status = nvme_read_log_page(drive, NVME_LOG_SELF_TEST,
+						&result->data.nvme_data,
+						sizeof(result->data.nvme_data));
+	if (NVME_ERROR(status)) {
+		printf("%s: fail to read log page: %d\n", __func__, status);
+		return status;
+	}
+
+	return NVME_SUCCESS;
+}
+
+static int nvme_test_control(BlockDevOps *me, BlockDevTestOpsType ops)
+{
+	uint32_t cmd;
+	switch (ops) {
+	case BLOCKDEV_TEST_OPS_TYPE_SHORT:
+		cmd = NVME_SELF_TEST_SHORT;
+		break;
+	case BLOCKDEV_TEST_OPS_TYPE_EXTENDED:
+		cmd = NVME_SELF_TEST_EXTENDED;
+		break;
+	case BLOCKDEV_TEST_OPS_TYPE_STOP:
+		cmd = NVME_SELF_TEST_ABORT;
+		break;
+	default:
+		return NVME_UNSUPPORTED;
+	}
+	NVME_STATUS status = nvme_device_self_test(me, cmd);
+	if (NVME_ERROR(status)) {
+		printf("%s: cmd: %x, fail: %d\n", __func__, cmd, status);
+		return status;
+	}
+	return NVME_SUCCESS;
+}
+
 static NVME_STATUS nvme_create_drive(NvmeCtrlr *ctrlr, uint32_t namespace_id,
 				     unsigned int block_size, lba_t block_count)
 {
@@ -810,6 +882,8 @@ static NVME_STATUS nvme_create_drive(NvmeCtrlr *ctrlr, uint32_t namespace_id,
 	nvme_drive->dev.ops.write = &nvme_write;
 	nvme_drive->dev.ops.new_stream = &new_simple_stream;
 	nvme_drive->dev.ops.get_health_info = &nvme_read_smart_log;
+	nvme_drive->dev.ops.get_test_log = &nvme_read_test_log;
+	nvme_drive->dev.ops.test_control = &nvme_test_control;
 	nvme_drive->dev.name = name;
 	nvme_drive->dev.removable = 0;
 	nvme_drive->dev.block_size = block_size;
