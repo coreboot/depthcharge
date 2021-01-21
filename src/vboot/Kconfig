@@ -85,6 +85,14 @@ config MOCK_TPM
 	  development, or when the current TPM is known to be broken somehow.
 	  THIS SHOULD NOT BE LEFT ON FOR PRODUCTION DEVICES.
 
+config VBOOT_X86_SHA256_ACCELERATION
+	bool "Use sha extension for sha256 hash calculation"
+	default n
+	depends on ARCH_X86
+	help
+	  Use sha256msg1, sha256msg2, sha256rnds2 instruction to accelerate
+	  SHA hash calculation in vboot.
+
 choice
 	prompt "Type of vboot nvdata backend"
 	help
