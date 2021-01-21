@@ -41,6 +41,9 @@
 #include "drivers/sound/route.h"
 #include "drivers/sound/sound.h"
 #include "drivers/sound/gpio_amp.h"
+#include "drivers/storage/nvme.h"
+#include <pci.h>
+#include <pci/pci.h>
 
 #define PMIC_CORE_REGISTERS_ADDR 0x0C600000
 #define PMIC_REG_CHAN0_ADDR 0x0C440900
@@ -146,6 +149,11 @@ static int board_setup(void)
 					   50*MHz, cd_wrapper);
 	list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
 				&removable_block_dev_controllers);
+
+	/* NVMe */
+	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0x1, 0, 0));
+	list_insert_after(&nvme->ctrlr.list_node,
+			&fixed_block_dev_controllers);
 
 	/* SPI-NOR Flash driver - GPIO_15 as Chip Select */
 	QcomQspi *spi_flash = new_qcom_qspi(0x088DC000, (GpioOps *)&new_gpio_output(GPIO(15))->ops);
