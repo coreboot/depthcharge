@@ -14,8 +14,16 @@ config DRIVER_BUS_I2S_EXYNOS5
 	bool "Exynos5 I2S driver"
 	default n
 
-config DRIVER_BUS_I2S_MTK
-	bool "MediaTek I2S driver"
+config DRIVER_BUS_I2S_MT8173
+	bool "MediaTek MT8173 I2S driver"
+	default n
+
+config DRIVER_BUS_I2S_MT8183
+	bool "MediaTek MT8183 I2S driver"
+	default n
+
+config DRIVER_BUS_I2S_MT8192
+	bool "MediaTek MT8192 I2S driver"
 	default n
 
 config DRIVER_BUS_I2S_TEGRA

@@ -18,38 +18,17 @@
 #include "drivers/bus/i2s/i2s.h"
 #include "drivers/sound/route.h"
 
-/* AFE */
-typedef struct {
-	uint32_t top_con0;	/* 0x0000: AUDIO_TOP_CON0 */
-	uint32_t _rsv0[3];
-	uint32_t dac_con0;	/* 0x0010: AFE_DAC_CON0 */
-	uint32_t dac_con1;	/* 0x0014: AFE_DAC_CON1 */
-	uint32_t i2s_con0;	/* 0x0018: AFE_I2S_CON */
-	uint32_t _rsv1[1];
-	uint32_t conn0;		/* 0x0020: AFE_CONN0 */
-	uint32_t conn1;		/* 0x0024: AFE_CONN1 */
-	uint32_t conn2;		/* 0x0028: AFE_CONN2 */
-	uint32_t _rsv2[2];
-	uint32_t i2s_con1;	/* 0x0034: AFE_I2S_CON1 */
-	uint32_t i2s_con2;	/* 0x0038: AFE_I2S_CON2 */
-	uint32_t _rsv3[1];
-	uint32_t dl1_base;	/* 0x0040: AFE_DL1_BASE */
-	uint32_t dl1_cur;	/* 0x0044: AFE_DL1_CUR */
-	uint32_t dl1_end;	/* 0x0048: AFE_DL1_END */
-	uint32_t i2s_con3;	/* 0x004c: AFE_I2S_CON3 */
-	uint32_t _rsv4[7];
-	uint32_t conn_24bit;	/* 0x006c: AFE_CONN_24BIT */
-	uint32_t _rsv5[0xe0];
-	uint32_t apll1_cfg;	/* 0x03f0: AFE_APLL1_TUNER_CFG */
-	uint32_t apll2_cfg;	/* 0x03f4: AFE_APLL2_TUNER_CFG */
-} __attribute__((packed)) MtkI2sRegs;
+#if CONFIG(DRIVER_BUS_I2S_MT8173)
+#include "drivers/bus/i2s/mt8173.h"
+#elif CONFIG(DRIVER_BUS_I2S_MT8183)
+#include "drivers/bus/i2s/mt8183.h"
+#elif CONFIG(DRIVER_BUS_I2S_MT8192)
+#include "drivers/bus/i2s/mt8192.h"
+#else
+#error "Unsupported BUS I2S config for MediaTek"
+#endif
 
-/* AFE_DAC_CON1 */
-enum {
-	AFE_DAC_CON1_DL1_CH_SHIFT = 21,
-};
-
-/* AFE_I2S_CON */
+/* AFE_I2S_CON0 */
 enum {
 	AFE_I2S_CON0_LOW_JITTER_CLOCK = 1 << 12,
 	AFE_I2S_CON0_FORMAT_I2S = 1 << 3,

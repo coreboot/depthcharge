@@ -63,11 +63,13 @@ static int mtk_i2s_init(MtkI2s *bus)
 
 	/* The reg value is: 0=stereo(2 channels), 1=mono(1 channel). */
 	assert(bus->channels == 1 || bus->channels == 2);
-	clrsetbits_le32(&regs->dac_con1, 1 << AFE_DAC_CON1_DL1_CH_SHIFT,
-			(bus->channels == 1) << AFE_DAC_CON1_DL1_CH_SHIFT);
+	clrsetbits_le32(&MTK_MEMIF_CHANNEL(regs), 1 << MTK_MEMIF_CHANNEL_SFT,
+			(bus->channels == 1) << MTK_MEMIF_CHANNEL_SFT);
 
 	/* set rate */
-	clrsetbits_le32(&regs->dac_con1, 0xf, rate);
+	clrsetbits_le32(&MTK_MEMIF_RATE(regs),
+			0xf << MTK_MEMIF_RATE_SFT,
+			rate << MTK_MEMIF_RATE_SFT);
 
 	switch (bus->i2s_num) {
 	case AFE_I2S1:
@@ -196,13 +198,13 @@ static int mtk_i2s_send(I2sOps *me, uint32_t *data, unsigned int length)
 	writel(buf_base + buf_size - 1, &regs->dl1_end);
 
 	/* enable DL1 */
-	setbits_le32(&regs->dac_con0, 1 << 1);
+	setbits_le32(&regs->dac_con0, 1 << MTK_MEMIF_ENABLE_SFT);
 
 	while (readl(&regs->dl1_cur) <= data_end)
 		;  /* wait until HW read pointer pass the end of data */
 
 	/* stop DL1 */
-	clrbits_le32(&regs->dac_con0, 1 << 1);
+	clrbits_le32(&regs->dac_con0, 1 << MTK_MEMIF_ENABLE_SFT);
 
 	free(buffer);
 	return 0;
