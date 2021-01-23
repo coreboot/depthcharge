@@ -26,6 +26,7 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
 #include "drivers/tpm/cr50_i2c.h"
+#include "drivers/bus/usb/usb.h"
 
 #define SDC1_HC_BASE          0x007C4000
 
@@ -54,6 +55,10 @@ static int board_setup(void)
 	flag_replace(FLAG_PWRSW, new_gpio_low());
 
 	power_set_ops(&psci_power_ops);
+
+	/* Support USB3.0 XHCI controller in firmware. */
+	UsbHostController *usb_host = new_usb_hc(XHCI, 0xa600000);
+	list_insert_after(&usb_host->list_node, &usb_host_controllers);
 
 	dt_register_vpd_mac_fixup(vpd_dt_map);
 
