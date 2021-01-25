@@ -34,7 +34,7 @@ $ cp blaze-genfiles/googleclient/chrome/transconsole_resources/strings/cros/firm
 ```
 
 5. Create a code review that updates the corresponding files in this
-directory. Do a sanity check to verify that your review only contains string
+directory. Do a readiness check to verify that your review only contains string
 changes (i.e. no unexpected message ID changes).
 
 6. Have your code change reviewed and submit it as usual.

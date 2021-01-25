@@ -69,7 +69,7 @@ asurada:
 nyan,nyan_big:
 
 veyron_pinky,veyron_jerry:
-  # Using native graphics mode 1366x768.
+  # Using built-in graphics mode 1366x768.
   # Boots recovery image on any SD card and USB ports.
 
 peach_pit,peach_pit-freon:

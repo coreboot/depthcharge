@@ -3,9 +3,5 @@
 #
 # See repohooks/README.md for more details.
 
-insane
+# 'he' is the ISO 639-1 language code for Hebrew.
 \bhe\b
-master
-\bnative
-sane
-sanity
