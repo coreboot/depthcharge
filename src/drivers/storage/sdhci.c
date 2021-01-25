@@ -1014,14 +1014,14 @@ static int sdhci_pre_init(SdhciHost *host)
 		else
 			host->clock_base = (caps & SDHCI_CLOCK_BASE_MASK)
 				>> SDHCI_CLOCK_BASE_SHIFT;
+
+		host->clock_base *= 1000000;
 	}
 
 	if (host->clock_base == 0) {
 		printf("Hardware doesn't specify base clock frequency\n");
 		return -1;
 	}
-
-	host->clock_base *= 1000000;
 
 	if (host->clock_f_max)
 		host->mmc_ctrlr.f_max = host->clock_f_max;
@@ -1068,6 +1068,8 @@ static int sdhci_pre_init(SdhciHost *host)
 
 	host->timing = MMC_TIMING_UNINITIALIZED;
 
+	sdhci_reset(host, SDHCI_RESET_ALL);
+
 	return 0;
 }
 
@@ -1075,14 +1077,12 @@ static int sdhci_init(SdhciHost *host)
 {
 	u16 reg;
 	u32 ctrl;
+	int rv;
 
-	if (!host->mmc_ctrlr.f_max) {
-		int rv = sdhci_pre_init(host);
-		if (rv)
-			return rv; /* The error has been already reported */
-	}
+	rv = sdhci_pre_init(host);
+	if (rv)
+		return rv; /* The error has been already reported */
 
-	sdhci_reset(host, SDHCI_RESET_ALL);
 	sdhci_set_power(host, fls(host->mmc_ctrlr.voltages) - 1);
 
 	if (host->quirks & SDHCI_QUIRK_NO_CD) {

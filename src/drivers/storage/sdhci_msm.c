@@ -219,7 +219,7 @@ SdhciHost *new_sdhci_msm_host(uintptr_t ioaddr, unsigned int platform_info,
 	 * So set it here instead of passing from board file of every platform.
 	 */
 	host->quirks |= SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN;
-	host->clock_base = clock_max/MHz;
+	host->clock_base = clock_max;
 
 	host->attach = sdhci_msm_init;
 	host->cd_gpio = cd_gpio;
