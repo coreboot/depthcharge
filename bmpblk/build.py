@@ -30,7 +30,6 @@ STRINGS_JSON_FILE_TMPL = '{}.json'
 FORMAT_FILE = 'format.yaml'
 BOARDS_CONFIG_FILE = 'boards.yaml'
 
-TXT_TO_PNG_SVG = os.path.join(SCRIPT_BASE, 'text_to_png_svg')
 STRINGS_DIR = os.path.join(SCRIPT_BASE, 'strings')
 LOCALE_DIR = os.path.join(STRINGS_DIR, 'locale')
 OUTPUT_DIR = os.getenv('OUTPUT', os.path.join(SCRIPT_BASE, 'build'))
@@ -108,36 +107,20 @@ def get_config_with_defaults(configs, key):
   return config
 
 
-def convert_text_to_png(locale, input_file, font, output_dir, height=None,
-                        max_width=None, dpi=None, bgcolor='#000000',
-                        fgcolor='#ffffff',
-                        **options):
-  """Converts text files into PNG image files.
-
-  Args:
-    locale: Locale (language) to select implicit rendering options. None for
-      locale-independent strings.
-    input_file: Path of input text file.
-    font: Font spec.
-    height: Height.
-    max_width: Maximum width.
-    output_dir: Directory to generate image files.
-    bgcolor: Background color (#rrggbb).
-    fgcolor: Foreground color (#rrggbb).
-    **options: Other options to be added.
-  """
-  name, _ = os.path.splitext(os.path.basename(input_file))
-  command = [TXT_TO_PNG_SVG, '--outdir=%s' % output_dir]
+def run_pango_view(input_file, output_file, locale, font, height, max_width,
+                   dpi, bgcolor, fgcolor, hinting='full'):
+  """Run pango-view."""
+  command = ['pango-view', '-q']
   if locale:
-    command.append('--lan=%s' % locale)
-  if font:
-    command.append("--font='%s'" % font)
-  if height:
-    # Font size should be proportional to the height. Here we use 2 as the
-    # divisor so that setting dpi to 96 (pango-view's default) in boards.yaml
-    # will be roughly equivalent to setting the screen resolution to 1366x768.
-    font_size = height / 2
-    command.append('--point=%r' % font_size)
+    command += ['--language', locale]
+
+  # Font size should be proportional to the height. Here we use 2 as the
+  # divisor so that setting dpi to 96 (pango-view's default) in boards.yaml
+  # will be roughly equivalent to setting the screen resolution to 1366x768.
+  font_size = height / 2
+  font_spec = '%s %r' % (font, font_size)
+  command += ['--font', font_spec]
+
   if max_width:
     # When converting text to PNG by pango-view, the ratio of image height to
     # the font size is usually no more than 1.1875 (with Roboto). Therefore,
@@ -149,15 +132,52 @@ def convert_text_to_png(locale, input_file, font, output_dir, height=None,
   if dpi:
     command.append('--dpi=%d' % dpi)
   command.append('--margin=0')
-  command.append('--bgcolor="%s"' % bgcolor)
-  command.append('--color="%s"' % fgcolor)
+  command += ['--background', bgcolor]
+  command += ['--foreground', fgcolor]
+  command += ['--hinting',  hinting]
 
-  for k, v in options.items():
-    command.append('--%s="%s"' % (k, v))
+  command += ['--output', output_file]
   command.append(input_file)
 
-  return subprocess.call(' '.join(command), shell=True,
-                         stdout=subprocess.PIPE) == 0
+  subprocess.check_call(command, stdout=subprocess.PIPE)
+
+
+def convert_text_to_image(locale, input_file, font, output_dir, height=None,
+                          max_width=None, dpi=None, bgcolor='#000000',
+                          fgcolor='#ffffff', use_svg=False):
+  """Converts text file `input_file` into image file(s).
+
+  Because pango-view does not support assigning output format options for
+  bitmap, we must create images in SVG/PNG format and then post-process them
+  (e.g. convert into BMP by ImageMagick).
+
+  Args:
+    locale: Locale (language) to select implicit rendering options. None for
+      locale-independent strings.
+    input_file: Path of input text file.
+    font: Font name.
+    height: Image height relative to the screen resolution.
+    max_width: Maximum image width relative to the screen resolution.
+    output_dir: Directory to generate image files.
+    bgcolor: Background color (#rrggbb).
+    fgcolor: Foreground color (#rrggbb).
+    use_svg: If set to True, generate SVG file. Otherwise, generate PNG file.
+  """
+  os.makedirs(os.path.join(output_dir, ONE_LINE_DIR), exist_ok=True)
+  name, _ = os.path.splitext(os.path.basename(input_file))
+  svg_file = os.path.join(output_dir, name + '.svg')
+  png_file = os.path.join(output_dir, name + '.png')
+  png_file_one_line = os.path.join(output_dir, ONE_LINE_DIR, name + '.png')
+
+  if use_svg:
+    run_pango_view(input_file, svg_file, locale, font, height, 0, dpi,
+                   bgcolor, fgcolor, hinting='none')
+  else:
+    run_pango_view(input_file, png_file, locale, font, height, max_width, dpi,
+                   bgcolor, fgcolor)
+    if locale:
+      run_pango_view(input_file, png_file_one_line, locale, font, height, 0,
+                     dpi, bgcolor, fgcolor)
 
 
 def convert_glyphs():
@@ -170,8 +190,16 @@ def convert_glyphs():
       f.write(chr(c))
       f.write('\n')
     # TODO(b/163109632): Parallelize the conversion of glyphs
-    convert_text_to_png(None, txt_file, GLYPH_FONT, STAGE_FONT_DIR,
-                        height=DEFAULT_GLYPH_HEIGHT)
+    convert_text_to_image(None, txt_file, GLYPH_FONT, STAGE_FONT_DIR,
+                          height=DEFAULT_GLYPH_HEIGHT, use_svg=True)
+
+
+def check_fonts(fonts):
+    """Check if all fonts are available."""
+    for locale, font in fonts.items():
+      if subprocess.run(['fc-list', '-q', font]).returncode != 0:
+        raise BuildImageError('Font %r not found for locale %r'
+                              % (font, locale))
 
 
 def parse_locale_json_file(locale, json_dir):
@@ -299,22 +327,21 @@ def convert_localized_strings(formats, dpi):
           'bgcolor': style[KEY_BGCOLOR],
           'fgcolor': style[KEY_FGCOLOR],
       }
-      results.append(pool.apply_async(convert_text_to_png, args, kwargs))
+      results.append(pool.apply_async(convert_text_to_image, args, kwargs))
   pool.close()
   if json_dir is not None:
     shutil.rmtree(json_dir)
   print()
 
   try:
-    success = [r.get() for r in results]
+    for r in results:
+      r.get()
   except KeyboardInterrupt:
     pool.terminate()
     pool.join()
     exit('Aborted by user')
   else:
     pool.join()
-    if not all(success):
-      exit('Failed to render some locales')
 
 
 def build_strings(formats, board_config):
@@ -331,17 +358,18 @@ def build_strings(formats, board_config):
   fonts = formats[KEY_FONTS]
   default_font = fonts[KEY_DEFAULT]
 
+  check_fonts(fonts)
+
   for input_file in glob.glob(os.path.join(STRINGS_DIR, '*.txt')):
     name, _ = os.path.splitext(os.path.basename(input_file))
     category = files[name]
     style = get_config_with_defaults(styles, category)
-    if not convert_text_to_png(None, input_file, default_font, STAGE_DIR,
-                               height=style[KEY_HEIGHT],
-                               max_width=style[KEY_MAX_WIDTH],
-                               dpi=dpi,
-                               bgcolor=style[KEY_BGCOLOR],
-                               fgcolor=style[KEY_FGCOLOR]):
-      exit('Failed to convert text %s' % input_file)
+    convert_text_to_image(None, input_file, default_font, STAGE_DIR,
+                          height=style[KEY_HEIGHT],
+                          max_width=style[KEY_MAX_WIDTH],
+                          dpi=dpi,
+                          bgcolor=style[KEY_BGCOLOR],
+                          fgcolor=style[KEY_FGCOLOR])
 
   # Convert localized strings
   convert_localized_strings(formats, dpi)
