@@ -37,6 +37,14 @@ static void sdhci_msm_init_dll(SdhciHost *host)
 	config |= DLL_PDN;
 	sdhci_writel(host, config, SDCC_HC_REG_DLL_CONFIG);
 
+	if (CONFIG(DRIVER_STORAGE_SET_DLL_USER_CTL)) {
+		/* Ensure DLL_CONFIG3 set to 0 for DDR (HS400) mode */
+		sdhci_writel(host, DLL_CFG3_DDR_VAL, SDCC_HC_REG_DLL_CONFIG_3);
+
+		/* Set DLL_USR_CTL to PoR value */
+		sdhci_writel(host, DLL_USER_CTL_POR_VAL, SDCC_HC_REG_DLL_DLL_USER_CTL);
+	}
+
 	/* Program MCLK frequencey */
 	config = sdhci_readl(host, SDCC_HC_REG_DLL_CONFIG_2);
 	if (config & FLL_CYCLE_CNT)

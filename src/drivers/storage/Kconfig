@@ -111,4 +111,10 @@ config DRIVER_STORAGE_SDHCI_MSM
 	bool "MMC driver for Qcom MSM platforms"
 	default n
 
+config DRIVER_STORAGE_SET_DLL_USER_CTL
+	depends on DRIVER_STORAGE_MMC
+	depends on DRIVER_SDHCI
+	bool "Set MMC DLL user control and dll config3 registers for Qcom MSM platforms"
+	default n
+
 source "src/drivers/storage/mtd/Kconfig"
