@@ -77,6 +77,12 @@ NEWLINE_REPLACEMENT = r'\1 \2'
 CRLF_PATTERN = re.compile(r'\r\n')
 MULTIBLANK_PATTERN = re.compile(r'   *')
 
+# The base for bitmap scales, same as UI_SCALE in depthcharge. For example, if
+# `SCALE_BASE` is 1000, then height = 200 means 20% of the screen height. Also
+# see the 'styles' section in format.yaml.
+SCALE_BASE = 1000
+DEFAULT_GLYPH_HEIGHT = 20
+
 GLYPH_FONT = 'Cousine'
 
 LocaleInfo = namedtuple('LocaleInfo', ['code', 'rtl'])
@@ -164,7 +170,8 @@ def convert_glyphs():
       f.write(chr(c))
       f.write('\n')
     # TODO(b/163109632): Parallelize the conversion of glyphs
-    convert_text_to_png(None, txt_file, GLYPH_FONT, STAGE_FONT_DIR)
+    convert_text_to_png(None, txt_file, GLYPH_FONT, STAGE_FONT_DIR,
+                        height=DEFAULT_GLYPH_HEIGHT)
 
 
 def parse_locale_json_file(locale, json_dir):
@@ -376,10 +383,6 @@ class Converter(object):
     DEFAULT_OUTPUT_EXT (str): Default output file extension.
     DEFAULT_REPLACE_MAP (dict): Default mapping of file replacement. For
       {'a': 'b'}, "a.*" will be converted to "b.*".
-    SCALE_BASE (int): The base for bitmap scales, same as UI_SCALE in
-      depthcharge. For example, if `SCALE_BASE` is 1000, then height = 200 means
-      20% of the screen height. Also see the 'styles' section in format.yaml.
-    DEFAULT_FONT_HEIGHT (tuple): Height of the font images.
     ASSET_MAX_COLORS (int): Maximum colors to use for converting image assets
       to bitmaps.
     DEFAULT_BACKGROUND (tuple): Default background color.
@@ -404,10 +407,6 @@ class Converter(object):
       'broken_desc_phyrec': '',
       'broken_desc_detach': '',
   }
-
-  # scales
-  SCALE_BASE = 1000
-  DEFAULT_FONT_HEIGHT = 20
 
   # background colors
   DEFAULT_BACKGROUND = (0x20, 0x21, 0x24)
@@ -552,7 +551,7 @@ class Converter(object):
 
   def _to_px(self, length, num_lines=1):
     """Converts the relative coordinate to absolute one in pixels."""
-    return int(self.canvas_px * length / self.SCALE_BASE) * num_lines
+    return int(self.canvas_px * length / SCALE_BASE) * num_lines
 
   def _get_png_height(self, png_file):
     with Image.open(png_file) as image:
@@ -790,7 +789,7 @@ class Converter(object):
 
   def convert_fonts(self):
     """Converts font images"""
-    heights = defaultdict(lambda: self.DEFAULT_FONT_HEIGHT)
+    heights = defaultdict(lambda: DEFAULT_GLYPH_HEIGHT)
     max_widths = defaultdict(lambda: None)
     files = glob.glob(os.path.join(STAGE_FONT_DIR, SVG_FILES))
     font_output_dir = os.path.join(self.output_dir, 'font')
