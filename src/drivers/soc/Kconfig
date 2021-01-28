@@ -52,6 +52,13 @@ config DRIVER_SOC_QCOM_QUP_SE
 	bool "Qcom QUPV3 common driver"
 	default n
 
+config DRIVER_SOC_QCOM_SPMI
+	bool "Qualcomm SPMI arbitrator driver"
+	default n
+	help
+	  You ordinarily shouldn't need this unless you need to hack voltage
+	  regulators in depthcharge to work around hardware issues.
+
 config DRIVER_SOC_JASPERLAKE
 	bool "Jasperlake SoC driver"
 	default n
