@@ -19,6 +19,7 @@
 #include <vb2_api.h>
 
 #include "base/init_funcs.h"
+#include "base/late_init_funcs.h"
 #include "base/timestamp.h"
 #include "debug/cli/common.h"
 #include "drivers/input/input.h"
@@ -244,6 +245,10 @@ int netboot_entry(void)
 
 	if (CONFIG_CLI)
 		console_loop();
+
+	// Run any late initialization functions before netboot takes control.
+	if (run_late_init_funcs())
+		halt();
 
 	srand(timer_raw_value());
 
