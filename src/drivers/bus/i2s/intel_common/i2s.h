@@ -120,9 +120,9 @@ typedef struct {
 	/* I2S ops structure.*/
 	I2sOps ops;
 	/* Intel HD Audio Lower Base Address.*/
-	uintptr_t lpe_bar0;
+	void *lpe_bar0;
 	/* Audio DSP Lower Base Address.*/
-	uintptr_t lpe_bar4;
+	void *lpe_bar4;
 	/* I2S registers.*/
 	struct I2sRegs *regs;
 	/* Configuration-dependent settings. */

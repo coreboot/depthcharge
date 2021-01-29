@@ -27,7 +27,7 @@ enum {
 	BLC_PCH_PWM_ENABLE = (1 << 31),
 };
 
-static uintptr_t reg_base;
+static void *reg_base;
 
 static int intel_i915_display_stop(DisplayOps *me)
 {
@@ -48,6 +48,6 @@ static DisplayOps intel_i915_display_ops= {
 
 DisplayOps *new_intel_i915_display(uintptr_t reg_addr)
 {
-	reg_base = reg_addr;
+	reg_base = (void *)reg_addr;
 	return &intel_i915_display_ops;
 }

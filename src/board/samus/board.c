@@ -61,23 +61,23 @@ enum {
 static void device_enable(int sio_index)
 {
 	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + GNVS_DEVICE_NVS_OFFSET;
-	uint32_t reg_pcs = nvs->bar1[sio_index] + PCH_REG_PCS;
+	void *reg_pcs = (void *)nvs->bar1[sio_index] + PCH_REG_PCS;
 
 	/* Put device in D0 state */
 	write32(reg_pcs, read32(reg_pcs) & ~PCH_VAL_PCS_D3HOT);
-	(void) read32(reg_pcs);
+	(void)read32(reg_pcs);
 }
 
 static DesignwareI2c *i2c_enable(int sio_index)
 {
 	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + GNVS_DEVICE_NVS_OFFSET;
-	uint32_t reg_ppr = nvs->bar0[sio_index] + SIO_REG_PPR_CLOCK;
+	void *reg_ppr = (void *)nvs->bar0[sio_index] + SIO_REG_PPR_CLOCK;
 
 	device_enable(sio_index);
 
 	/* Enable clock to the device */
 	write32(reg_ppr, read32(reg_ppr) | SIO_BIT_PPR_CLOCK_EN);
-	(void) read32(reg_ppr);
+	(void)read32(reg_ppr);
 
 	return new_designware_i2c(nvs->bar0[sio_index], I2C_BUS_SPEED, 166);
 }

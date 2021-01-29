@@ -57,7 +57,7 @@
 #include "drivers/storage/health.h"
 
 /* Read 64bits from register space as two 32bit reads */
-static uint64_t read32x2le(uintptr_t _a)
+static uint64_t read32x2le(void *_a)
 {
 	uint64_t _v;
 
@@ -67,7 +67,7 @@ static uint64_t read32x2le(uintptr_t _a)
 }
 
 /* Write 64bits to register space as two 32 bit writes */
-static void write32x2le(volatile uintptr_t _a, uint64_t _v)
+static void write32x2le(volatile void *_a, uint64_t _v)
 {
 	_v = htole64(_v);
 	write32(_a, _v & 0xffffffff);
@@ -1037,8 +1037,7 @@ static int nvme_ctrlr_init(BlockDevCtrlrOps *me)
 	pci_set_bus_master(dev);
 
 	/* Read the Controller Capabilities register */
-	ctrlr->ctrlr_regs = pci_read_resource(dev,0);
-	ctrlr->ctrlr_regs = ctrlr->ctrlr_regs & ~0x7;
+	ctrlr->ctrlr_regs = (void *)(uintptr_t)(pci_read_resource(dev,0) & ~0x7);
 	ctrlr->cap = read32x2le(ctrlr->ctrlr_regs + NVME_CAP_OFFSET);
 
 	/* Verify that the NVM command set is supported */

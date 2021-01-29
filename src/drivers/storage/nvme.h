@@ -390,7 +390,7 @@ typedef struct NvmeCtrlr {
 
 	int enabled;
 	pcidev_t dev;
-	uint32_t ctrlr_regs;
+	void *ctrlr_regs;
 
 	/* static namespace data */
 	ListNode static_model_data;

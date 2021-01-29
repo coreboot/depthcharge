@@ -146,7 +146,7 @@ typedef union {
 /* Soundwire codec information */
 typedef struct {
 	sndw_codec_id codecid;
-	uint32_t sndwlinkaddr;
+	void *sndwlinkaddr;
 	uint32_t deviceindex;
 } sndw_codec_info;
 

@@ -358,8 +358,8 @@ I2s *new_i2s_structure(const I2sSettings *settings, int bps, GpioOps *sdmode,
 	I2s *bus = xzalloc(sizeof(*bus));
 	pcidev_t lpe_pcidev = PCI_DEV(0, AUDIO_DEV, AUDIO_FUNC);
 
-	bus->lpe_bar0 = pci_read_config32(lpe_pcidev, REG_BAR0) & (~0xf);
-	bus->lpe_bar4 = pci_read_config32(lpe_pcidev, REG_BAR4) & (~0xf);
+	bus->lpe_bar0 = (void *)(uintptr_t)(pci_read_config32(lpe_pcidev, REG_BAR0) & (~0xf));
+	bus->lpe_bar4 = (void *)(uintptr_t)(pci_read_config32(lpe_pcidev, REG_BAR4) & (~0xf));
 	bus->ops.send = &i2s_send;
 	bus->regs = (I2sRegs *)(bus->lpe_bar4 + ssp_i2s_start_address);
 	bus->settings = settings;

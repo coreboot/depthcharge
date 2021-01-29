@@ -54,7 +54,7 @@
  * Wait 50usec for the codec to indicate it is ready. No response would
  * imply that the codec is non-operative.
  */
-static int wait_for_ready(uint32_t base)
+static int wait_for_ready(void *base)
 {
 	// Use a 50 usec timeout - the Linux kernel uses the same duration.
 	int timeout = 50;
@@ -75,7 +75,7 @@ static int wait_for_ready(uint32_t base)
  * Wait 50usec for the codec to indicate that it accepted the previous
  * command. No response would imply that the code is non-operative.
  */
-static int wait_for_response(uint32_t base, uint32_t *response)
+static int wait_for_response(void *base, uint32_t *response)
 {
 	uint32_t reg32;
 
@@ -107,7 +107,7 @@ static int wait_for_response(uint32_t base, uint32_t *response)
  * Wait for the codec to be ready, write the verb, then wait for the
  * codec to send a valid response.
  */
-static int exec_one_verb(uint32_t base, uint32_t val, uint32_t *response)
+static int exec_one_verb(void *base, uint32_t val, uint32_t *response)
 {
 	if (wait_for_ready(base) == -1)
 		return -1;
@@ -121,7 +121,7 @@ static int exec_one_verb(uint32_t base, uint32_t val, uint32_t *response)
 }
 
 /* Write one verb and ignore the response. */
-static int write_one_verb(uint32_t base, uint32_t val)
+static int write_one_verb(void *base, uint32_t val)
 {
 	return exec_one_verb(base, val, NULL);
 }
@@ -160,26 +160,26 @@ static struct pci_device_id supported[] = {
 };
 
 /* Find the base address to talk to the HDA codec. */
-static uint32_t get_hda_base(void)
+static void *get_hda_base(void)
 {
 	pcidev_t hda_dev;
 
 	for (int i = 0; i < ARRAY_SIZE(supported); i++) {
 		if (pci_find_device(supported[i].vendor, supported[i].device,
 			            &hda_dev)) {
-			return pci_read_resource(hda_dev, 0) & ~0xf;
+			return (void *)(pci_read_resource(hda_dev, 0) & ~0xf);
 		}
 	}
 
 	printf("Audio: Controller not found!\n");
-	return 0;
+	return NULL;
 }
 
 /*
  * Gets the count of sub-nodes and node id they start at for the given
  * super-node.
  */
-static uint32_t get_subnode_info(uint32_t base,
+static uint32_t get_subnode_info(void *base,
 				 uint32_t nid,
 				 uint32_t *num_sub_nodes,
 				 uint32_t *start_sub_node_nid)
@@ -203,7 +203,7 @@ static uint32_t get_subnode_info(uint32_t base,
 }
 
 /* Searches the audio group for a node that supports beeping. */
-static uint32_t find_beep_node_in_group(uint32_t base, uint32_t group_nid)
+static uint32_t find_beep_node_in_group(void *base, uint32_t group_nid)
 {
 	int rc;
 	uint32_t node_count = 0;
@@ -237,7 +237,7 @@ static uint32_t find_beep_node_in_group(uint32_t base, uint32_t group_nid)
 }
 
 /* Checks if the given audio group contains a beep generator. */
-static int audio_group_has_beep_node(uint32_t base, uint32_t nid)
+static int audio_group_has_beep_node(void *base, uint32_t nid)
 {
 	int rc;
 	uint32_t response;
@@ -261,7 +261,7 @@ static int audio_group_has_beep_node(uint32_t base, uint32_t nid)
  * the group contains a beep node, polls each node in the group until it is
  * found.
  */
-static uint32_t get_hda_beep_nid(HdaCodec *codec, uint32_t base)
+static uint32_t get_hda_beep_nid(HdaCodec *codec, void *base)
 {
 	int rc;
 	uint32_t node_count = 0;
@@ -290,10 +290,14 @@ static uint32_t get_hda_beep_nid(HdaCodec *codec, uint32_t base)
 /* Sets the beep generator with the given divisor. Pass 0 to disable beep. */
 static int set_beep_divisor(HdaCodec *codec, uint8_t divider)
 {
-	uint32_t base;
+	void *base;
 	uint32_t beep_nid;
 
 	base = get_hda_base();
+	if (base == NULL) {
+		printf("Audio: Failed to find HDA controller.\n");
+		return -1;
+	}
 	beep_nid = get_hda_beep_nid(codec, base);
 	if (beep_nid <= 0) {
 		printf("Audio: Failed to find a beep-capable node.\n");

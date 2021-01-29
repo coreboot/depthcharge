@@ -29,13 +29,13 @@ typedef struct {
         /* Soundwire ops structure.*/
         SndwOps ops;
         /* Intel HD Audio Lower Base Address.*/
-        uintptr_t hdabar;
+        void *hdabar;
         /* Audio DSP Lower Base Address.*/
-        uintptr_t dspbar;
+        void *dspbar;
 	/* Sndw Link Number */
 	int sndwlinkindex;
 	/* Sndw Link address */
-	uint32_t sndwlinkaddr;
+	void *sndwlinkaddr;
 } Soundwire;
 
 /*

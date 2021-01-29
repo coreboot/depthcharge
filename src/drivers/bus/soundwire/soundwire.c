@@ -45,7 +45,7 @@ static const sndw_cmd mipi_sndw_read_endpointid_cmds[] = {
  * pollingmask - The bit mapping for polling.
  * pollingdata - The Data for polling.
  */
-static int poll_status(uint32_t reg, uint32_t pollingmask, uint32_t pollingdata)
+static int poll_status(void *reg, uint32_t pollingmask, uint32_t pollingdata)
 {
 	struct stopwatch sw;
 	uint32_t data;
@@ -103,7 +103,7 @@ static void printrxcmd(uint32_t rxcmd)
  * txcmds - Pointer to send messages.
  * numofmsgs - Size of messages to send.
  */
-static void send(uint32_t sndwlinkaddr, sndw_cmd *txcmds, uint32_t devaddr, uint32_t numofmsgs)
+static void send(void *sndwlinkaddr, sndw_cmd *txcmds, uint32_t devaddr, uint32_t numofmsgs)
 {
 	uint32_t fifofree, txmsg, txindex;
 
@@ -126,7 +126,7 @@ static void send(uint32_t sndwlinkaddr, sndw_cmd *txcmds, uint32_t devaddr, uint
 /*
  * get_fifo_avail - This function returns number of available responses in the Response FIFO.
  */
-static unsigned int get_fifo_avail(uint32_t sndwlinkaddr)
+static unsigned int get_fifo_avail(void *sndwlinkaddr)
 {
 	return (read32(sndwlinkaddr + SNDW_MEM_FIFOSTAT) & SNDW_MEM_FIFOSTAT_AVAIL_MASK)
 			>> SNDW_MEM_FIFOSTAT_AVAIL;
@@ -137,7 +137,7 @@ static unsigned int get_fifo_avail(uint32_t sndwlinkaddr)
  * rxcmds - Pointer to pointer to received messages.
  * rxsize - Size of received messages.
  */
-static int receive(uint32_t sndwlinkaddr, uint32_t **rxcmds, uint32_t *rxsize)
+static int receive(void *sndwlinkaddr, uint32_t **rxcmds, uint32_t *rxsize)
 {
 	uint32_t fifoavailable, i, rxmsg, rxindex;
 	rxindex = 0;
@@ -175,7 +175,7 @@ static int receive(uint32_t sndwlinkaddr, uint32_t **rxcmds, uint32_t *rxsize)
  * sndwlinkaddr - Soundwire controller link address.
  * codecinfo - Pointer to the codec information.
  */
-static int read_endpointid(uint32_t sndwlinkaddr, uint32_t deviceindex,
+static int read_endpointid(void *sndwlinkaddr, uint32_t deviceindex,
 							sndw_codec_info *codecinfo)
 {
 	uint32_t i, fifostatavail, count, rxsize;
@@ -311,7 +311,7 @@ static int enable_sndwcodec(Soundwire *bus, sndw_codec_info *codecinfo)
  * sndwmasterinit - Function initializes Sndw master for enumerating connected codecs.
  * sndwlinkaddr - Soundwire link controller address.
  */
-static int sndwmasterinit(uint32_t sndwlinkaddr)
+static int sndwmasterinit(void *sndwlinkaddr)
 {
 	/* Program MCP_ClockCtrl.Master Clock Divider to configure the Soundwire
 	   clock frequency */
@@ -509,7 +509,7 @@ static int sndw_enable(struct SndwOps *me, sndw_codec_info *codecinfo)
  * txcmd - Message to send.
  * sndwindex - Index of the Soudnwire endpoint device.
  */
-static int sndw_sendwack(uint32_t sndwlinkaddr, sndw_cmd txcmd, uint32_t deviceindex)
+static int sndw_sendwack(void *sndwlinkaddr, sndw_cmd txcmd, uint32_t deviceindex)
 {
 	uint32_t rxsize;
 	uint32_t *rxcmd;
@@ -567,8 +567,8 @@ Soundwire *new_soundwire(int sndwlinkindex)
 	bus->ops.sndw_enable = &sndw_enable;
 	bus->ops.sndw_sendwack = &sndw_sendwack;
 	bus->ops.sndw_disable = &sndw_disable;
-	bus->hdabar = pci_read_config32(lpe_pcidev, REG_BAR0) & (~0xf);
-	bus->dspbar = pci_read_config32(lpe_pcidev, REG_BAR4) & (~0xf);
+	bus->hdabar = (void *)(uintptr_t)(pci_read_config32(lpe_pcidev, REG_BAR0) & (~0xf));
+	bus->dspbar = (void *)(uintptr_t)(pci_read_config32(lpe_pcidev, REG_BAR4) & (~0xf));
 	bus->sndwlinkindex = sndwlinkindex;
 
 	return bus;
