@@ -114,8 +114,8 @@ static uint32_t vendor_dev_id;
 static uint16_t burst_count(TpmLocality *dev)
 {
 	uint16_t value;
-	value = readb(&dev->burst_count[0]);
-	value |= readb(&dev->burst_count[1]) << 8;
+	value = read8(&dev->burst_count[0]);
+	value |= read8(&dev->burst_count[1]) << 8;
 	return value;
 }
 
@@ -135,7 +135,7 @@ static int lpctpm_wait_reg(uint8_t *reg, uint8_t mask, uint8_t expected)
 {
 	uint64_t start = timer_us(0);
 	do {
-		if ((readb(reg) & mask) == expected)
+		if ((read8(reg) & mask) == expected)
 			return 0;
 	} while (timer_us(start) < 1000 * 1000);
 	return -1;
@@ -162,14 +162,14 @@ static int lpctpm_command_ready(LpcTpm *tpm)
 	uint8_t *status = &tpm->regs->localities[0].tpm_status;
 
 	// 1st attempt to set command ready.
-	writeb(TpmStsCommandReady, status);
+	write8(status, TpmStsCommandReady);
 
 	// Check if command ready is set yet.
-	if (readb(status) & TpmStsCommandReady)
+	if (read8(status) & TpmStsCommandReady)
 		return 0;
 
 	// 2nd attempt to set command ready.
-	writeb(TpmStsCommandReady, status);
+	write8(status, TpmStsCommandReady);
 
 	// Wait for command ready to get set.
 	return lpctpm_wait_reg(status, TpmStsCommandReady, TpmStsCommandReady);
@@ -223,11 +223,11 @@ static uint32_t lpctpm_senddata(LpcTpm *tpm, const uint8_t * const data,
 		 */
 		unsigned count = MIN(burst, len - offset - 1);
 		while (count--)
-			writeb(data[offset++], &tpm->regs->localities[0].data);
+			write8(&tpm->regs->localities[0].data, data[offset++]);
 
 		if (lpctpm_wait_reg(&tpm->regs->localities[0].tpm_status,
 				    TpmStsValid, TpmStsValid) ||
-		    !(readb(&tpm->regs->localities[0].tpm_status) &
+		    !(read8(&tpm->regs->localities[0].tpm_status) &
 		      TpmStsDataExpect)) {
 			printf("%s:%d TPM command feed overflow\n",
 			       __FILE__, __LINE__);
@@ -246,22 +246,22 @@ static uint32_t lpctpm_senddata(LpcTpm *tpm, const uint8_t * const data,
 	}
 
 	// Send the last byte.
-	writeb(data[offset++], &tpm->regs->localities[0].data);
+	write8(&tpm->regs->localities[0].data, data[offset++]);
 	/*
 	 * Verify that TPM does not expect any more data as part of this
 	 * command.
 	 */
 	if (lpctpm_wait_reg(&tpm->regs->localities[0].tpm_status,
 			    TpmStsValid, TpmStsValid) ||
-	    (readb(&tpm->regs->localities[0].tpm_status) & TpmStsDataExpect)) {
+	    (read8(&tpm->regs->localities[0].tpm_status) & TpmStsDataExpect)) {
 		printf("%s:%d unexpected TPM status 0x%x\n",
 		       __FILE__, __LINE__,
-		       readb(&tpm->regs->localities[0].tpm_status));
+		       read8(&tpm->regs->localities[0].tpm_status));
 		return -1;
 	}
 
 	// OK, sitting pretty, let's start the command execution.
-	writeb(TpmStsGo, &tpm->regs->localities[0].tpm_status);
+	write8(&tpm->regs->localities[0].tpm_status, TpmStsGo);
 	return 0;
 }
 
@@ -304,7 +304,7 @@ static uint32_t lpctpm_readresponse(LpcTpm *tpm, uint8_t *buffer, size_t *len)
 
 		while (burst-- && (offset < expected_count)) {
 			buffer[offset++] =
-				readb(&tpm->regs->localities[0].data);
+				read8(&tpm->regs->localities[0].data);
 
 			if (offset == 6) {
 				/*
@@ -341,17 +341,17 @@ static uint32_t lpctpm_readresponse(LpcTpm *tpm, uint8_t *buffer, size_t *len)
 		if (offset == expected_count)
 			break;	// We got all we needed.
 
-	} while ((readb(&tpm->regs->localities[0].tpm_status) & has_data)
+	} while ((read8(&tpm->regs->localities[0].tpm_status) & has_data)
 	         == has_data);
 
 	/*
 	 * Make sure we indeed read all there was. The TpmStsValid bit is
 	 * known to be set.
 	 */
-	if (readb(&tpm->regs->localities[0].tpm_status) & TpmStsDataAvail) {
+	if (read8(&tpm->regs->localities[0].tpm_status) & TpmStsDataAvail) {
 		printf("%s:%d wrong receive status %x\n",
 		       __FILE__, __LINE__,
-		       readb(&tpm->regs->localities[0].tpm_status));
+		       read8(&tpm->regs->localities[0].tpm_status));
 		return -1;
 	}
 
@@ -367,8 +367,8 @@ int lpctpm_close(LpcTpm *tpm)
 {
 	uint8_t *access = &tpm->regs->localities[0].access;
 
-	if (readb(access) & TpmAccessActiveLocality) {
-		writeb(TpmAccessActiveLocality, access);
+	if (read8(access) & TpmAccessActiveLocality) {
+		write8(access, TpmAccessActiveLocality);
 
 		if (lpctpm_wait_reg(access, TpmAccessActiveLocality, 0)) {
 			printf("%s:%d - failed to release locality 0\n",
@@ -402,7 +402,7 @@ int lpctpm_init(LpcTpm *tpm)
 	if (vendor_dev_id)
 		return 0;
 
-	uint32_t didvid = readl(&tpm->regs->localities[0].did_vid);
+	uint32_t didvid = read32(&tpm->regs->localities[0].did_vid);
 	if (!didvid || (didvid == 0xffffffff)) {
 		printf("%s: No TPM device found\n", __func__);
 		return -1;
@@ -434,7 +434,7 @@ int lpctpm_init(LpcTpm *tpm)
 		return -1;
 
 	// Now request access to locality.
-	writeb(TpmAccessRequestUse, access);
+	write8(access, TpmAccessRequestUse);
 
 	// Did we get a lock?
 	if (lpctpm_wait_reg(access, TpmAccessActiveLocality,

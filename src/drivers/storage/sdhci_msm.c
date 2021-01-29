@@ -235,9 +235,9 @@ SdhciHost *new_sdhci_msm_host(uintptr_t ioaddr, unsigned int platform_info,
 
 	/* Configure drive strengths of interface lines */
 	if (host->mmc_ctrlr.slot_type == MMC_SLOT_TYPE_REMOVABLE)
-		writel(SDC2_TLMM_CONFIG, (void *)tlmmAddr);
+		write32((void *)tlmmAddr, SDC2_TLMM_CONFIG);
 	else
-		writel(SDC1_TLMM_CONFIG, (void *)tlmmAddr);
+		write32((void *)tlmmAddr, SDC1_TLMM_CONFIG);
 
 	return host;
 }

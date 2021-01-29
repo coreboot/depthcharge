@@ -62,7 +62,7 @@ static int ich9_spi_get_lock(IchFlash *me)
 	const uint16_t ich9_spibar_offset = 0x3800;
 	Ich9SpiRegs *ich9_spi = (Ich9SpiRegs *)(rcrb + ich9_spibar_offset);
 
-	return readw(&ich9_spi->hsfs) & HSFS_FLOCKDN;
+	return read16(&ich9_spi->hsfs) & HSFS_FLOCKDN;
 }
 
 IchFlash *new_ich9_spi_flash(uint32_t rom_size)

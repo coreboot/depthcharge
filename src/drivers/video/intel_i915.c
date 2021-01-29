@@ -31,12 +31,12 @@ static uintptr_t reg_base;
 
 static int intel_i915_display_stop(DisplayOps *me)
 {
-	uint32_t blc = readl(reg_base + BLC_PCH_PWM_CTL1);
+	uint32_t blc = read32(reg_base + BLC_PCH_PWM_CTL1);
 
 	/* Turn off backlight if enabled */
 	if (blc & BLC_PCH_PWM_ENABLE) {
 		blc &= ~BLC_PCH_PWM_ENABLE;
-		writel(blc, reg_base + BLC_PCH_PWM_CTL1);
+		write32(reg_base + BLC_PCH_PWM_CTL1, blc);
 	}
 
 	return 0;

@@ -54,8 +54,8 @@
 /*
  * Register access macros
  */
-#define REG_RD(x)	readl(x)
-#define REG_WR(x, y)	writel((y), (x))
+#define REG_RD(x)	read32(x)
+#define REG_WR(x, y)	write32((x), (y))
 #define REG_CLR(x, y)	REG_WR((x), REG_RD(x) & ~(y))
 #define REG_SET(x, y)	REG_WR((x), REG_RD(x) | (y))
 

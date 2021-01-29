@@ -48,9 +48,9 @@ static unsigned gsbi_qup_base[] = {
 static qup_return_t qup_i2c_master_status(gsbi_id_t gsbi_id, int repor_err)
 {
 	qup_return_t ret = QUP_SUCCESS;
-	uint32_t reg_val = readl(QUP_ADDR(gsbi_id, QUP_I2C_MASTER_STATUS));
+	uint32_t reg_val = read32(QUP_ADDR(gsbi_id, QUP_I2C_MASTER_STATUS));
 
-	if (readl(QUP_ADDR(gsbi_id, QUP_ERROR_FLAGS)))
+	if (read32(QUP_ADDR(gsbi_id, QUP_ERROR_FLAGS)))
 		ret = QUP_ERR_XFER_FAIL;
 	else if (reg_val & QUP_I2C_XFER_FAIL_BITS) {
 
@@ -89,7 +89,7 @@ static qup_return_t qup_wait_for_state(gsbi_id_t gsbi_id, unsigned wait_for)
 
 	start_ts = timer_raw_value();
 	do {
-		val = readl(QUP_ADDR(gsbi_id, QUP_STATE));
+		val = read32(QUP_ADDR(gsbi_id, QUP_STATE));
 		final_state = ((val & (QUP_STATE_VALID_MASK|QUP_STATE_MASK))
 						 == (QUP_STATE_VALID|wait_for));
 	} while ((!final_state) && (start_ts > (timer_raw_value() - d)));
@@ -115,31 +115,26 @@ static qup_return_t qup_i2c_write(gsbi_id_t gsbi_id, uint8_t mode,
 		unsigned data_len = p_tx_obj->p.iic.data_len;
 		unsigned idx = 0;
 
-		writel(0x7C, QUP_ADDR(gsbi_id, QUP_ERROR_FLAGS));
-		writel(0x7C, QUP_ADDR(gsbi_id, QUP_ERROR_FLAGS_EN));
+		write32(QUP_ADDR(gsbi_id, QUP_ERROR_FLAGS), 0x7C);
+		write32(QUP_ADDR(gsbi_id, QUP_ERROR_FLAGS_EN), 0x7C);
 		qup_reset_i2c_master_status(gsbi_id);
 		qup_set_state(gsbi_id, QUP_STATE_RUN);
 
-		writel((QUP_I2C_START_SEQ | QUP_I2C_ADDR(addr)),
-			QUP_ADDR(gsbi_id, QUP_OUTPUT_FIFO));
+		write32(QUP_ADDR(gsbi_id, QUP_OUTPUT_FIFO),
+			(QUP_I2C_START_SEQ | QUP_I2C_ADDR(addr)));
 
 		while (data_len) {
 			if (data_len == 1 && stop_seq) {
-				writel((QUP_I2C_STOP_SEQ |
-					QUP_I2C_DATA(data_ptr[idx])),
-					QUP_ADDR(gsbi_id,
-						 QUP_OUTPUT_FIFO));
+				write32(QUP_ADDR(gsbi_id, QUP_OUTPUT_FIFO),
+					(QUP_I2C_STOP_SEQ | QUP_I2C_DATA(data_ptr[idx])));
 			} else {
-				writel((QUP_I2C_DATA_SEQ |
-					QUP_I2C_DATA(data_ptr[idx])),
-					QUP_ADDR(gsbi_id,
-						 QUP_OUTPUT_FIFO));
+				write32(QUP_ADDR(gsbi_id, QUP_OUTPUT_FIFO),
+					(QUP_I2C_DATA_SEQ | QUP_I2C_DATA(data_ptr[idx])));
 			}
 			data_len--;
 			idx++;
 			start_ts = timer_raw_value();
-			while (data_len && readl(QUP_ADDR(gsbi_id,
-						  QUP_OPERATIONAL)) &
+			while (data_len && read32(QUP_ADDR(gsbi_id, QUP_OPERATIONAL)) &
 						  OUTPUT_FIFO_FULL) {
 				ret = qup_i2c_master_status(gsbi_id,
 							    write_errmsg_on);
@@ -158,16 +153,15 @@ static qup_return_t qup_i2c_write(gsbi_id_t gsbi_id, uint8_t mode,
 			means that software knows to return to fill the output
 			FIFO with data.
 			*/
-			if (readl(QUP_ADDR(gsbi_id, QUP_OPERATIONAL)) &
+			if (read32(QUP_ADDR(gsbi_id, QUP_OPERATIONAL)) &
 					      OUTPUT_SERVICE_FLAG) {
-				writel(OUTPUT_SERVICE_FLAG,
-				       QUP_ADDR(gsbi_id,
-				       QUP_OPERATIONAL));
+				write32(QUP_ADDR(gsbi_id, QUP_OPERATIONAL),
+					OUTPUT_SERVICE_FLAG);
 			}
 		}
 
 		start_ts = timer_raw_value();
-		while (((readl(QUP_ADDR(gsbi_id, QUP_OPERATIONAL))) &
+		while (((read32(QUP_ADDR(gsbi_id, QUP_OPERATIONAL))) &
 					 OUTPUT_FIFO_NOT_EMPTY)) {
 			ret = qup_i2c_master_status(gsbi_id, write_errmsg_on);
 			if (QUP_SUCCESS != ret)
@@ -215,21 +209,19 @@ static qup_return_t qup_i2c_read(gsbi_id_t gsbi_id, uint8_t mode,
 		unsigned data_len = p_tx_obj->p.iic.data_len;
 		unsigned idx = 0;
 
-		writel(0x7C, QUP_ADDR(gsbi_id, QUP_ERROR_FLAGS));
-		writel(0x7C, QUP_ADDR(gsbi_id, QUP_ERROR_FLAGS_EN));
+		write32(QUP_ADDR(gsbi_id, QUP_ERROR_FLAGS), 0x7C);
+		write32(QUP_ADDR(gsbi_id, QUP_ERROR_FLAGS_EN), 0x7C);
 		qup_reset_i2c_master_status(gsbi_id);
 		qup_set_state(gsbi_id, QUP_STATE_RUN);
 
-		writel((QUP_I2C_START_SEQ |
-		       (QUP_I2C_ADDR(addr)|
-			QUP_I2C_SLAVE_READ)),
-			QUP_ADDR(gsbi_id, QUP_OUTPUT_FIFO));
+		write32(QUP_ADDR(gsbi_id, QUP_OUTPUT_FIFO),
+			(QUP_I2C_START_SEQ | (QUP_I2C_ADDR(addr) | QUP_I2C_SLAVE_READ)));
 
-		writel((QUP_I2C_RECV_SEQ | data_len),
-			QUP_ADDR(gsbi_id, QUP_OUTPUT_FIFO));
+		write32(QUP_ADDR(gsbi_id, QUP_OUTPUT_FIFO),
+			(QUP_I2C_RECV_SEQ | data_len));
 
 		start_ts = timer_raw_value();
-		while ((readl(QUP_ADDR(gsbi_id, QUP_OPERATIONAL)) &
+		while ((read32(QUP_ADDR(gsbi_id, QUP_OPERATIONAL)) &
 				 OUTPUT_FIFO_NOT_EMPTY)) {
 			ret = qup_i2c_master_status(gsbi_id, 1);
 			if (QUP_SUCCESS != ret)
@@ -240,13 +232,13 @@ static qup_return_t qup_i2c_read(gsbi_id_t gsbi_id, uint8_t mode,
 			}
 		}
 
-		writel(OUTPUT_SERVICE_FLAG,
-		       QUP_ADDR(gsbi_id, QUP_OPERATIONAL));
+		write32(QUP_ADDR(gsbi_id, QUP_OPERATIONAL),
+			OUTPUT_SERVICE_FLAG);
 
 		while (data_len) {
 			unsigned data;
 			start_ts = timer_raw_value();
-			while ((!((readl(QUP_ADDR(gsbi_id, QUP_OPERATIONAL))) &
+			while ((!((read32(QUP_ADDR(gsbi_id, QUP_OPERATIONAL))) &
 				   INPUT_SERVICE_FLAG))) {
 				ret = qup_i2c_master_status(gsbi_id, 1);
 				if (QUP_SUCCESS != ret)
@@ -257,7 +249,7 @@ static qup_return_t qup_i2c_read(gsbi_id_t gsbi_id, uint8_t mode,
 				}
 			}
 
-			data = readl(QUP_ADDR(gsbi_id, QUP_INPUT_FIFO));
+			data = read32(QUP_ADDR(gsbi_id, QUP_INPUT_FIFO));
 
 			/*Process tag and corresponding data value.
 			For I2C master mini-core, data in FIFO is composed of
@@ -271,8 +263,8 @@ static qup_return_t qup_i2c_read(gsbi_id_t gsbi_id, uint8_t mode,
 				data_ptr[idx] = QUP_I2C_DATA(data);
 				idx++;
 				data_len--;
-				writel(INPUT_SERVICE_FLAG, QUP_ADDR(gsbi_id,
-				       QUP_OPERATIONAL));
+				write32(QUP_ADDR(gsbi_id, QUP_OPERATIONAL),
+					INPUT_SERVICE_FLAG);
 			} else if (QUP_I2C_MI_TAG(data) ==
 							QUP_I2C_MISTOP_SEQ) {
 				/* Tag: MISTOP: Last byte of master input. */
@@ -286,8 +278,8 @@ static qup_return_t qup_i2c_read(gsbi_id_t gsbi_id, uint8_t mode,
 			}
 		}
  recv_done:
-		writel(INPUT_SERVICE_FLAG,
-		       QUP_ADDR(gsbi_id, QUP_OPERATIONAL));
+		write32(QUP_ADDR(gsbi_id, QUP_OPERATIONAL),
+			INPUT_SERVICE_FLAG);
 		p_tx_obj->p.iic.data_len = idx;
 		qup_set_state(gsbi_id, QUP_STATE_PAUSE);
 		ret = QUP_SUCCESS;
@@ -313,7 +305,7 @@ qup_return_t qup_init(gsbi_id_t gsbi_id, qup_config_t *config_ptr)
 	uint32_t reg_val;
 
 	/* Reset the QUP core.*/
-	writel(0x1, QUP_ADDR(gsbi_id, QUP_SW_RESET));
+	write32(QUP_ADDR(gsbi_id, QUP_SW_RESET), 0x1);
 
 	/*Wait till the reset takes effect */
 	ret = qup_wait_for_state(gsbi_id, QUP_STATE_RESET);
@@ -322,7 +314,7 @@ qup_return_t qup_init(gsbi_id_t gsbi_id, qup_config_t *config_ptr)
 		return ret;
 
 	/*Reset the config*/
-	writel(0, QUP_ADDR(gsbi_id, QUP_CONFIG));
+	write32(QUP_ADDR(gsbi_id, QUP_CONFIG), 0);
 
 	/*Program the config register*/
 	/*Set N value*/
@@ -340,10 +332,10 @@ qup_return_t qup_init(gsbi_id_t gsbi_id, qup_config_t *config_ptr)
 		goto bailout;
 		}
 	}
-	writel(reg_val, QUP_ADDR(gsbi_id, QUP_CONFIG));
+	write32(QUP_ADDR(gsbi_id, QUP_CONFIG), reg_val);
 
 	/*Reset i2c clk cntl register*/
-	writel(0, QUP_ADDR(gsbi_id, QUP_I2C_MASTER_CLK_CTL));
+	write32(QUP_ADDR(gsbi_id, QUP_I2C_MASTER_CLK_CTL), 0);
 
 	/*Set QUP IO Mode*/
 	switch (config_ptr->mode) {
@@ -360,14 +352,14 @@ qup_return_t qup_init(gsbi_id_t gsbi_id, qup_config_t *config_ptr)
 		goto bailout;
 		}
 	}
-	writel(reg_val, QUP_ADDR(gsbi_id, QUP_IO_MODES));
+	write32(QUP_ADDR(gsbi_id, QUP_IO_MODES), reg_val);
 
 	/*Set i2c clk cntl*/
 	reg_val = (QUP_DIVIDER_MIN_VAL << QUP_HS_DIVIDER_SHFT);
 	reg_val |= ((((config_ptr->src_frequency / config_ptr->clk_frequency)
 			/ 2) - QUP_DIVIDER_MIN_VAL) &
 				QUP_FS_DIVIDER_MASK);
-	writel(reg_val, QUP_ADDR(gsbi_id, QUP_I2C_MASTER_CLK_CTL));
+	write32(QUP_ADDR(gsbi_id, QUP_I2C_MASTER_CLK_CTL), reg_val);
 
  bailout:
 	if (QUP_SUCCESS != ret)
@@ -379,7 +371,7 @@ qup_return_t qup_init(gsbi_id_t gsbi_id, qup_config_t *config_ptr)
 qup_return_t qup_set_state(gsbi_id_t gsbi_id, uint32_t state)
 {
 	qup_return_t ret = QUP_ERR_UNDEFINED;
-	unsigned curr_state = readl(QUP_ADDR(gsbi_id, QUP_STATE));
+	unsigned curr_state = read32(QUP_ADDR(gsbi_id, QUP_STATE));
 
 	if ((state >= QUP_STATE_RESET && state <= QUP_STATE_PAUSE)
 		&& (curr_state & QUP_STATE_VALID_MASK)) {
@@ -390,10 +382,10 @@ qup_return_t qup_set_state(gsbi_id_t gsbi_id, uint32_t state)
 		*/
 		if (QUP_STATE_PAUSE == curr_state &&
 		    QUP_STATE_RESET == state) {
-			writel(0x2, QUP_ADDR(gsbi_id, QUP_STATE));
-			writel(0x2, QUP_ADDR(gsbi_id, QUP_STATE));
+			write32(QUP_ADDR(gsbi_id, QUP_STATE), 0x2);
+			write32(QUP_ADDR(gsbi_id, QUP_STATE), 0x2);
 		} else {
-			writel(state, QUP_ADDR(gsbi_id, QUP_STATE));
+			write32(QUP_ADDR(gsbi_id, QUP_STATE), state);
 		}
 		ret = qup_wait_for_state(gsbi_id, state);
 	}
@@ -407,7 +399,7 @@ qup_return_t qup_reset_i2c_master_status(gsbi_id_t gsbi_id)
 	 * Bit31-25, Bit1 and Bit0 are reserved.
 	 */
 	//TODO: Define each status bit. OR all status bits in a single macro.
-	writel(0x3FFFFFC, QUP_ADDR(gsbi_id, QUP_I2C_MASTER_STATUS));
+	write32(QUP_ADDR(gsbi_id, QUP_I2C_MASTER_STATUS), 0x3FFFFFC);
 	return QUP_SUCCESS;
 }
 
@@ -416,13 +408,12 @@ qup_return_t qup_send_data(gsbi_id_t gsbi_id, qup_data_t *p_tx_obj,
 {
 	qup_return_t ret = QUP_ERR_UNDEFINED;
 
-	if (p_tx_obj->protocol == ((readl(QUP_ADDR(gsbi_id, QUP_CONFIG)) >>
+	if (p_tx_obj->protocol == ((read32(QUP_ADDR(gsbi_id, QUP_CONFIG)) >>
 						    QUP_MINI_CORE_PROTO_SHFT) &
 						    QUP_MINI_CORE_PROTO_MASK)) {
 		switch (p_tx_obj->protocol) {
 		case QUP_MINICORE_I2C_MASTER: {
-			uint8_t mode = (readl(QUP_ADDR(gsbi_id,
-						       QUP_IO_MODES)) >>
+			uint8_t mode = (read32(QUP_ADDR(gsbi_id, QUP_IO_MODES)) >>
 					      QUP_OUTPUT_MODE_SHFT) &
 					QUP_MODE_MASK;
 			ret = qup_i2c_write(gsbi_id, mode, p_tx_obj, stop_seq,
@@ -449,13 +440,12 @@ qup_return_t qup_send_data(gsbi_id_t gsbi_id, qup_data_t *p_tx_obj,
 qup_return_t qup_recv_data(gsbi_id_t gsbi_id, qup_data_t *p_rx_obj)
 {
 	qup_return_t ret = QUP_ERR_UNDEFINED;
-	if (p_rx_obj->protocol == ((readl(QUP_ADDR(gsbi_id, QUP_CONFIG)) >>
+	if (p_rx_obj->protocol == ((read32(QUP_ADDR(gsbi_id, QUP_CONFIG)) >>
 						QUP_MINI_CORE_PROTO_SHFT) &
 						QUP_MINI_CORE_PROTO_MASK)) {
 		switch (p_rx_obj->protocol) {
 		case QUP_MINICORE_I2C_MASTER: {
-			uint8_t mode = (readl(QUP_ADDR(gsbi_id,
-						       QUP_IO_MODES)) >>
+			uint8_t mode = (read32(QUP_ADDR(gsbi_id, QUP_IO_MODES)) >>
 						QUP_INPUT_MODE_SHFT) &
 						QUP_MODE_MASK;
 			ret = qup_i2c_read(gsbi_id, mode, p_rx_obj);

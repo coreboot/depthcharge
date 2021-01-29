@@ -43,9 +43,9 @@ static void rk3399_emmc_phy_power_on(uint32_t clock)
 	u32 caldone, dllrdy, freqsel;
 	uint64_t start_us;
 
-	writel(RK_CLRSETBITS(7 << 4, 0), &emmc_phy->emmcphy_con[6]);
-	writel(RK_CLRSETBITS(1 << 11, 1 << 11), &emmc_phy->emmcphy_con[0]);
-	writel(RK_CLRSETBITS(0xf << 7, 4 << 7), &emmc_phy->emmcphy_con[0]);
+	write32(&emmc_phy->emmcphy_con[6], RK_CLRSETBITS(7 << 4, 0));
+	write32(&emmc_phy->emmcphy_con[0], RK_CLRSETBITS(1 << 11, 1 << 11));
+	write32(&emmc_phy->emmcphy_con[0], RK_CLRSETBITS(0xf << 7, 4 << 7));
 
 	/*
 	 * According to the user manual, calpad calibration
@@ -53,7 +53,7 @@ static void rk3399_emmc_phy_power_on(uint32_t clock)
 	 * value, so we may need a little margin here
 	 */
 	udelay(3);
-	writel(RK_CLRSETBITS(1, 1), &emmc_phy->emmcphy_con[6]);
+	write32(&emmc_phy->emmcphy_con[6], RK_CLRSETBITS(1, 1));
 
 	/*
 	 * According to the user manual, it asks driver to wait 5us for
@@ -65,7 +65,7 @@ static void rk3399_emmc_phy_power_on(uint32_t clock)
 	start_us = timer_us(0);
 	do {
 		udelay(1);
-		caldone = readl(&emmc_phy->emmcphy_status);
+		caldone = read32(&emmc_phy->emmcphy_status);
 		caldone = (caldone >> PHYCTRL_CALDONE_SHIFT) &
 			PHYCTRL_CALDONE_MASK;
 		if (caldone == PHYCTRL_CALDONE_DONE)
@@ -86,15 +86,15 @@ static void rk3399_emmc_phy_power_on(uint32_t clock)
 	else
 		freqsel = PHYCTRL_FREQSEL_200M;
 
-	writel(RK_CLRSETBITS(3 << 12, freqsel << 12),
-	       &emmc_phy->emmcphy_con[0]);
-	writel(RK_CLRSETBITS(1 << 1, 1 << 1), &emmc_phy->emmcphy_con[6]);
+	write32(&emmc_phy->emmcphy_con[0],
+		RK_CLRSETBITS(3 << 12, freqsel << 12));
+	write32(&emmc_phy->emmcphy_con[6], RK_CLRSETBITS(1 << 1, 1 << 1));
 
 	start_us = timer_us(0);
 
 	do {
 		udelay(1);
-		dllrdy = readl(&emmc_phy->emmcphy_status);
+		dllrdy = read32(&emmc_phy->emmcphy_status);
 		dllrdy = (dllrdy >> PHYCTRL_DLLRDY_SHIFT) & PHYCTRL_DLLRDY_MASK;
 		if (dllrdy == PHYCTRL_DLLRDY_DONE)
 			break;
@@ -107,8 +107,8 @@ static void rk3399_emmc_phy_power_on(uint32_t clock)
 
 static void rk3399_emmc_phy_power_off(void)
 {
-	writel(RK_CLRSETBITS(1, 0), &emmc_phy->emmcphy_con[6]);
-	writel(RK_CLRSETBITS(1 << 1, 0), &emmc_phy->emmcphy_con[6]);
+	write32(&emmc_phy->emmcphy_con[6], RK_CLRSETBITS(1, 0));
+	write32(&emmc_phy->emmcphy_con[6], RK_CLRSETBITS(1 << 1, 0));
 }
 
 #define SDHCI_ARASAN_VENDOR_REGISTER	0x78

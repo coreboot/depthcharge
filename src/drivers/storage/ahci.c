@@ -36,7 +36,7 @@ typedef struct SataDrive {
 	AhciIoPort *port;
 } SataDrive;
 
-#define writel_with_flush(a,b)	do { writel(a, b); readl(b); } while (0)
+#define writel_with_flush(a,b)	do { write32(b, a); read32(b); } while (0)
 
 /* Maximum timeouts for each event */
 static const int wait_ms_spinup = 10000;
@@ -95,7 +95,7 @@ static void ahci_print_info(AhciCtrlr *ctrlr)
 	uint32_t cap, cap2;
 
 	cap = ctrlr->cap;
-	cap2 = readl(mmio + HOST_CAP2);
+	cap2 = read32(mmio + HOST_CAP2);
 
 	uint8_t *vers = (uint8_t *)mmio + HOST_VERSION;
 	printf("AHCI %02x%02x.%02x%02x", vers[3], vers[2], vers[1], vers[0]);
@@ -169,7 +169,7 @@ static int ahci_port_start(AhciIoPort *port, int index)
 
 	port->index = index;
 
-	uint32_t status = readl(port_mmio + PORT_SCR_STAT);
+	uint32_t status = read32(port_mmio + PORT_SCR_STAT);
 	printf("Port %d status: %x\n", index, status);
 	if ((status & 0xf) != 0x3) {
 		printf("No link on this port!\n");
@@ -224,7 +224,7 @@ static int ahci_device_data_io(AhciIoPort *port, void *fis, int fis_len,
 
 	uint8_t *port_mmio = port->port_mmio;
 
-	uint32_t port_status = readl(port_mmio + PORT_SCR_STAT);
+	uint32_t port_status = read32(port_mmio + PORT_SCR_STAT);
 	if ((port_status & 0xf) != 0x3) {
 		printf("No link on port %d!\n", port->index);
 		return -1;
@@ -241,7 +241,7 @@ static int ahci_device_data_io(AhciIoPort *port, void *fis, int fis_len,
 	writel_with_flush(1, port_mmio + PORT_CMD_ISSUE);
 
 	// Wait for the command to complete.
-	if (WAIT_WHILE((readl(port_mmio + PORT_CMD_ISSUE) & 0x1), wait)) {
+	if (WAIT_WHILE((read32(port_mmio + PORT_CMD_ISSUE) & 0x1), wait)) {
 		printf("AHCI: I/O timeout!\n");
 		return -1;
 	}
@@ -448,12 +448,12 @@ static int ahci_exit(struct CleanupFunc *cleanup, CleanupType type)
 		return 0;
 	}
 
-	host_impl_bitmap = readl(mmio + HOST_PORTS_IMPL);
+	host_impl_bitmap = read32(mmio + HOST_PORTS_IMPL);
 
 	printf("Clear pending AHCI interrupt status.\n");
 
 	/* disable interrupt in GHC */
-	writel(readl(mmio + HOST_CTL) & ~(2), mmio + HOST_CTL);
+	write32(mmio + HOST_CTL, read32(mmio + HOST_CTL) & ~(2));
 
 	while (host_impl_bitmap) {
 		/* Skip ports that are not enabled. */
@@ -465,21 +465,21 @@ static int ahci_exit(struct CleanupFunc *cleanup, CleanupType type)
 		uint8_t *port_mmio = (uint8_t *)ahci_port_base(mmio, i);
 
 		/* disable all port interrupts */
-		writel(0, port_mmio + PORT_IRQ_MASK);
+		write32(port_mmio + PORT_IRQ_MASK, 0);
 
 		/* clear any pending irq events for this port */
-		irq_stat = readl(port_mmio + PORT_IRQ_STAT);
+		irq_stat = read32(port_mmio + PORT_IRQ_STAT);
 		if (irq_stat)
-			writel(irq_stat, port_mmio + PORT_IRQ_STAT);
+			write32(port_mmio + PORT_IRQ_STAT, irq_stat);
 
 		host_impl_bitmap >>= 1;
 		i += 1;
 	}
 
 	/* Clear pending irq events in host controller */
-	irq_stat = readl(mmio + HOST_IRQ_STAT);
+	irq_stat = read32(mmio + HOST_IRQ_STAT);
 	if (irq_stat)
-		writel(irq_stat, mmio + HOST_IRQ_STAT);
+		write32(mmio + HOST_IRQ_STAT, irq_stat);
 	return 0;
 }
 
@@ -505,28 +505,28 @@ static int ahci_ctrlr_init(BlockDevCtrlrOps *me)
 	pcidev_t pdev = ctrlr->dev;
 	void *mmio = ctrlr->mmio_base;
 
-	uint32_t cap_save = readl(mmio + HOST_CAP);
+	uint32_t cap_save = read32(mmio + HOST_CAP);
 	cap_save &= ((1 << 28) | (1 << 17));
 	cap_save |= (1 << 27);
 
 	// Global controller reset.
-	uint32_t host_ctl = readl(mmio + HOST_CTL);
+	uint32_t host_ctl = read32(mmio + HOST_CTL);
 	if ((host_ctl & HOST_RESET) == 0)
 		writel_with_flush(host_ctl | HOST_RESET,
 			(uintptr_t)mmio + HOST_CTL);
 
 	// Reset must complete within 1 second.
-	if (WAIT_WHILE((readl(mmio + HOST_CTL) & HOST_RESET), 1000)) {
+	if (WAIT_WHILE((read32(mmio + HOST_CTL) & HOST_RESET), 1000)) {
 		printf("Controller reset failed.\n");
 		return -1;
 	}
 
 	writel_with_flush(HOST_AHCI_EN, mmio + HOST_CTL);
-	writel(cap_save, mmio + HOST_CAP);
+	write32(mmio + HOST_CAP, cap_save);
 	writel_with_flush(0xf, mmio + HOST_PORTS_IMPL);
 
-	ctrlr->cap = readl(mmio + HOST_CAP);
-	host_impl_bitmap = ctrlr->port_map = readl(mmio + HOST_PORTS_IMPL);
+	ctrlr->cap = read32(mmio + HOST_CAP);
+	host_impl_bitmap = ctrlr->port_map = read32(mmio + HOST_PORTS_IMPL);
 	/* ABAR+0x0 (GHC_CAP) reports number of SATA ports, its always read as
 	 * +1 means if '0' which means number of enabled SATA port is 1.
 	 * ABAR+0xC (GHC_PI) provides port bit map, hence relied on Port Map
@@ -551,7 +551,7 @@ static int ahci_ctrlr_init(BlockDevCtrlrOps *me)
 		ahci_setup_port(&ctrlr->ports[i], mmio, i);
 
 		/* make sure port is not active */
-		uint32_t port_cmd = readl(port_mmio + PORT_CMD);
+		uint32_t port_cmd = read32(port_mmio + PORT_CMD);
 		uint32_t port_cmd_bits =
 			PORT_CMD_LIST_ON | PORT_CMD_FIS_ON |
 			PORT_CMD_FIS_RX | PORT_CMD_START;
@@ -573,7 +573,7 @@ static int ahci_ctrlr_init(BlockDevCtrlrOps *me)
 		int j;
 		uint32_t tmp;
 		for (j = 0; j < wait_ms_linkup; j++) {
-			tmp = readl(port_mmio + PORT_SCR_STAT);
+			tmp = read32(port_mmio + PORT_SCR_STAT);
 			if ((tmp & 0xf) == 0x3)
 				break;
 			mdelay(1);
@@ -586,15 +586,15 @@ static int ahci_ctrlr_init(BlockDevCtrlrOps *me)
 		}
 
 		/* Clear error status */
-		uint32_t port_scr_err = readl(port_mmio + PORT_SCR_ERR);
+		uint32_t port_scr_err = read32(port_mmio + PORT_SCR_ERR);
 		if (port_scr_err)
-			writel(port_scr_err, port_mmio + PORT_SCR_ERR);
+			write32(port_mmio + PORT_SCR_ERR, port_scr_err);
 
 		/* Wait for SATA device to complete spin-up. */
 		printf("Waiting for device on port %d... ", i);
 
 		for (j = 0; j < wait_ms_spinup; j++) {
-			tmp = readl(port_mmio + PORT_TFDATA);
+			tmp = read32(port_mmio + PORT_TFDATA);
 			if (!(tmp & (ATA_STAT_BUSY | ATA_STAT_DRQ)))
 				break;
 			mdelay(1);
@@ -605,34 +605,34 @@ static int ahci_ctrlr_init(BlockDevCtrlrOps *me)
 			printf("ok. Target spinup took %d ms.\n", j);
 
 		/* Clear error status */
-		port_scr_err = readl(port_mmio + PORT_SCR_ERR);
+		port_scr_err = read32(port_mmio + PORT_SCR_ERR);
 		if (port_scr_err) {
 			printf("PORT_SCR_ERR %#x\n", port_scr_err);
-			writel(port_scr_err, port_mmio + PORT_SCR_ERR);
+			write32(port_mmio + PORT_SCR_ERR, port_scr_err);
 		}
 
 		/* ack any pending irq events for this port */
-		uint32_t port_irq_stat = readl(port_mmio + PORT_IRQ_STAT);
+		uint32_t port_irq_stat = read32(port_mmio + PORT_IRQ_STAT);
 		if (port_irq_stat) {
 			printf("PORT_IRQ_STAT 0x%x\n", port_irq_stat);
-			writel(port_irq_stat, port_mmio + PORT_IRQ_STAT);
+			write32(port_mmio + PORT_IRQ_STAT, port_irq_stat);
 		}
 
-		writel(1 << i, mmio + HOST_IRQ_STAT);
+		write32(mmio + HOST_IRQ_STAT, 1 << i);
 
 		/* set irq mask (enables interrupts) */
-		writel(DEF_PORT_IRQ, port_mmio + PORT_IRQ_MASK);
+		write32(port_mmio + PORT_IRQ_MASK, DEF_PORT_IRQ);
 
 		/* register linkup ports */
-		uint32_t port_scr_stat = readl(port_mmio + PORT_SCR_STAT);
+		uint32_t port_scr_stat = read32(port_mmio + PORT_SCR_STAT);
 		printf("Port %d status: 0x%x\n", i, port_scr_stat);
 		if ((port_scr_stat & 0xf) == 0x3)
 			ctrlr->link_port_map |= (0x1 << i);
 	}
 
-	host_ctl = readl(mmio + HOST_CTL);
-	writel(host_ctl | HOST_IRQ_EN, mmio + HOST_CTL);
-	host_ctl = readl(mmio + HOST_CTL);
+	host_ctl = read32(mmio + HOST_CTL);
+	write32(mmio + HOST_CTL, host_ctl | HOST_IRQ_EN);
+	host_ctl = read32(mmio + HOST_CTL);
 	printf("HOST_CTL 0x%x\n", host_ctl);
 
 	pci_write_config16(pdev, REG_COMMAND,

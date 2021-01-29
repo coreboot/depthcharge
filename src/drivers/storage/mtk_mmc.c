@@ -191,16 +191,16 @@ static inline u32 mtk_mmc_prepare_raw_cmd(MtkMmcHost *host,
 
 		mtk_mmc_dma_on(host);	/* always use basic DMA */
 
-		writel(data->blocks, &reg->sdc_blk_num);
+		write32(&reg->sdc_blk_num, data->blocks);
 	}
 	return rawcmd.full;
 }
 
 static inline u32 mtk_mmc_get_irq_status(MtkMmcHost *host, u32 mask)
 {
-	u32 status = readl(&host->reg->msdc_int);
+	u32 status = read32(&host->reg->msdc_int);
 	if (status)
-		writel(status, &host->reg->msdc_int);
+		write32(&host->reg->msdc_int, status);
 	return status & mask;
 }
 
@@ -217,13 +217,13 @@ static int mtk_mmc_cmd_done(MtkMmcHost *host, int events, MmcCommand *cmd)
 		case MMC_RSP_NONE:
 			break;
 		case MMC_RSP_R2:
-			cmd->response[0] = readl(&reg->sdc_resp3);
-			cmd->response[1] = readl(&reg->sdc_resp2);
-			cmd->response[2] = readl(&reg->sdc_resp1);
-			cmd->response[3] = readl(&reg->sdc_resp0);
+			cmd->response[0] = read32(&reg->sdc_resp3);
+			cmd->response[1] = read32(&reg->sdc_resp2);
+			cmd->response[2] = read32(&reg->sdc_resp1);
+			cmd->response[3] = read32(&reg->sdc_resp0);
 			break;
 		default:	/* Response types 1, 3, 4, 5, 6, 7(1b) */
-			cmd->response[0] = readl(&reg->sdc_resp0);
+			cmd->response[0] = read32(&reg->sdc_resp0);
 			break;
 
 		}
@@ -258,8 +258,8 @@ static void mtk_mmc_prepare_data(MtkMmcHost *host, MmcData *data,
 {
 	MtkMmcReg *reg = host->reg;
 
-	writel((uintptr_t) bbstate->bounce_buffer, &reg->dma_sa);
-	writel(data->blocks * data->blocksize, &reg->dma_length);
+	write32(&reg->dma_sa, (uintptr_t)bbstate->bounce_buffer);
+	write32(&reg->dma_length, data->blocks * data->blocksize);
 	clrsetbits_le32(&reg->dma_ctrl, MSDC_DMA_CTRL_MODE,
 			MSDC_DMA_CTRL_LASTBUF);
 }
@@ -307,8 +307,8 @@ static int mtk_mmc_send_cmd_bounced(MmcCtrlr *ctrlr, MmcCommand *cmd,
 
 	rawcmd = mtk_mmc_prepare_raw_cmd(host, cmd, data);
 
-	writel(cmd->cmdarg, &reg->sdc_arg);
-	writel(rawcmd, &reg->sdc_cmd);
+	write32(&reg->sdc_arg, cmd->cmdarg);
+	write32(&reg->sdc_cmd, rawcmd);
 
 	ret = mtk_mmc_cmd_do_poll(host, cmd);
 	if (ret < 0) {
@@ -412,14 +412,14 @@ static int mtk_mmc_init(BlockDevCtrlrOps *me)
 	/* Disable card detection */
 	clrbits_le32(&reg->msdc_ps, MSDC_PS_CDEN);
 	/* Disable and clear all interrupts */
-	writel(0, &reg->msdc_inten);
+	write32(&reg->msdc_inten, 0);
 	/* All the bits in msdc_int are WIC (write 1 to clear),
 	 * so writing the value we just read should clear all bits. */
-	writel(readl(&reg->msdc_int), &reg->msdc_int);
+	write32(&reg->msdc_int, read32(&reg->msdc_int));
 	/* Configure to default data timeout */
 	clrsetbits_le32(&reg->sdc_cfg, SDC_CFG_DTOC, DEFAULT_DTOC << 24);
-	writel(tune_reg.msdc_iocon, &reg->msdc_iocon);
-	writel(tune_reg.pad_tune, &reg->pad_tune);
+	write32(&reg->msdc_iocon, tune_reg.msdc_iocon);
+	write32(&reg->pad_tune, tune_reg.pad_tune);
 	mtk_mmc_set_buswidth(host, 1);
 
 	return 0;

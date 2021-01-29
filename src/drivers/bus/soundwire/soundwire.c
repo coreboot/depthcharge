@@ -52,7 +52,7 @@ static int poll_status(uint32_t reg, uint32_t pollingmask, uint32_t pollingdata)
 
 	stopwatch_init_usecs_expire(&sw, SNDW_POLL_TIME_US);
 	do {
-		data = readl(reg);
+		data = read32(reg);
 		if ((data & pollingmask) == pollingdata)
 			return 0;
 		udelay(SNDW_WAIT_PERIOD);
@@ -107,7 +107,7 @@ static void send(uint32_t sndwlinkaddr, sndw_cmd *txcmds, uint32_t devaddr, uint
 {
 	uint32_t fifofree, txmsg, txindex;
 
-	fifofree = (readl(sndwlinkaddr + SNDW_MEM_FIFOSTAT) & SNDW_MEM_FIFOSTAT_FREE_MASK)
+	fifofree = (read32(sndwlinkaddr + SNDW_MEM_FIFOSTAT) & SNDW_MEM_FIFOSTAT_FREE_MASK)
 				>> SNDW_MEM_FIFOSTAT_FREE;
 
 	for (txindex = 0; txindex < fifofree && txindex < numofmsgs; txindex++) {
@@ -119,7 +119,7 @@ static void send(uint32_t sndwlinkaddr, sndw_cmd *txcmds, uint32_t devaddr, uint
 #if DEBUG_SNDW
 		printtxcmd(txmsg);
 #endif
-		writel(txmsg, sndwlinkaddr + SNDW_MEM_COMMAND);
+		write32(sndwlinkaddr + SNDW_MEM_COMMAND, txmsg);
 	}
 }
 
@@ -128,7 +128,7 @@ static void send(uint32_t sndwlinkaddr, sndw_cmd *txcmds, uint32_t devaddr, uint
  */
 static unsigned int get_fifo_avail(uint32_t sndwlinkaddr)
 {
-	return (readl(sndwlinkaddr + SNDW_MEM_FIFOSTAT) & SNDW_MEM_FIFOSTAT_AVAIL_MASK)
+	return (read32(sndwlinkaddr + SNDW_MEM_FIFOSTAT) & SNDW_MEM_FIFOSTAT_AVAIL_MASK)
 			>> SNDW_MEM_FIFOSTAT_AVAIL;
 }
 
@@ -150,7 +150,7 @@ static int receive(uint32_t sndwlinkaddr, uint32_t **rxcmds, uint32_t *rxsize)
 	*rxcmds = xzalloc(sizeof(uint32_t) * fifoavailable);
 
 	for (i = 0; i < fifoavailable; i++) {
-		rxmsg = readl(sndwlinkaddr + SNDW_MEM_COMMAND);
+		rxmsg = read32(sndwlinkaddr + SNDW_MEM_COMMAND);
 		mdelay(SNDW_WAIT_PERIOD);
 #if DEBUG_SNDW
 		printrxcmd(rxmsg);
@@ -165,7 +165,7 @@ static int receive(uint32_t sndwlinkaddr, uint32_t **rxcmds, uint32_t *rxsize)
 	*rxsize = rxindex;
 
 	/* Clear the RXNE interrupt. */
-	writel(SNDW_MEM_INTMASK_RXNE, sndwlinkaddr + SNDW_MEM_INTMASK);
+	write32(sndwlinkaddr + SNDW_MEM_INTMASK, SNDW_MEM_INTMASK_RXNE);
 
 	return 0;
 }
@@ -228,7 +228,7 @@ static int read_endpointid(uint32_t sndwlinkaddr, uint32_t deviceindex,
 static uint32_t getsndwlinkaddress(Soundwire *bus)
 {
 	uint32_t linkaddress;
-	linkaddress = (readl(bus->dspbar + DSP_MEM_SNDW_SNDWIPPTR) & DSP_MEM_SNDW_SNDWIPPTR_PRT)
+	linkaddress = (read32(bus->dspbar + DSP_MEM_SNDW_SNDWIPPTR) & DSP_MEM_SNDW_SNDWIPPTR_PRT)
 			+ (bus->sndwlinkindex * DSP_MEM_SNDW_OFFSETS);
 
 	if (linkaddress == 0) {
@@ -246,7 +246,7 @@ static uint32_t getsndwlinkaddress(Soundwire *bus)
 static uint32_t getnumofsndwlinks(Soundwire *bus)
 {
 	/* Get the number of the supported Soundwire links */
-	uint32_t numofsndwlinks = readl(bus->dspbar + DSP_MEM_SNDW_SNDWLCAP)
+	uint32_t numofsndwlinks = read32(bus->dspbar + DSP_MEM_SNDW_SNDWLCAP)
 								& DSP_MEM_SNDW_SNDWSC;
 	return numofsndwlinks;
 }
@@ -264,7 +264,7 @@ static uint32_t sndwcodecstatus(Soundwire *bus, uint32_t *endpointstatus)
 
 	stopwatch_init_usecs_expire(&sw, SNDW_POLL_TIME_US);
 	do {
-		status = readl(bus->dspbar + sndwlinkaddress + SNDW_MEM_ENDPOINTSTAT);
+		status = read32(bus->dspbar + sndwlinkaddress + SNDW_MEM_ENDPOINTSTAT);
 		if (status != 0) {
 			*endpointstatus = status;
 			return 0;
@@ -315,19 +315,20 @@ static int sndwmasterinit(uint32_t sndwlinkaddr)
 {
 	/* Program MCP_ClockCtrl.Master Clock Divider to configure the Soundwire
 	   clock frequency */
-	writel(CLK_DIVIDER, sndwlinkaddr + SNDW_MEM_CLK_CTRL0);
-	writel(CLK_DIVIDER, sndwlinkaddr + SNDW_MEM_CLK_CTRL1);
+	write32(sndwlinkaddr + SNDW_MEM_CLK_CTRL0, CLK_DIVIDER);
+	write32(sndwlinkaddr + SNDW_MEM_CLK_CTRL1, CLK_DIVIDER);
 
 	/* Program MCP_Config.CMDMode to access the commands/responses via AHB mode */
-	writel((readl(sndwlinkaddr + SNDW_MEM_CONFIG) & ~SNDW_MEM_CONFIG_MODE_AHB),
-							sndwlinkaddr + SNDW_MEM_CONFIG);
+	write32(sndwlinkaddr + SNDW_MEM_CONFIG,
+		(read32(sndwlinkaddr + SNDW_MEM_CONFIG) & ~SNDW_MEM_CONFIG_MODE_AHB));
 
 	/* Write 0 to MCP_Config.OperationMode to bring the master into normal mode */
-	writel((readl(sndwlinkaddr + SNDW_MEM_CONFIG) & ~SNDW_MEM_CONFIG_OM_NORMAL),
-							sndwlinkaddr + SNDW_MEM_CONFIG);
+	write32(sndwlinkaddr + SNDW_MEM_CONFIG,
+		(read32(sndwlinkaddr + SNDW_MEM_CONFIG) & ~SNDW_MEM_CONFIG_OM_NORMAL));
 
 	/* Write 0 to MCP_ConfigUpdate to update controller settings */
-	writel(SNDW_MEM_CONFIGUPDATE_UPDATE_DONE, sndwlinkaddr + SNDW_MEM_CONFIGUPDATE);
+	write32(sndwlinkaddr + SNDW_MEM_CONFIGUPDATE,
+		SNDW_MEM_CONFIGUPDATE_UPDATE_DONE);
 
 	/* Waiting for FIFO to be ready to send MCP message */
 	if (poll_status(sndwlinkaddr + SNDW_MEM_STAT, SNDW_MEM_STAT_TXE,
@@ -350,18 +351,18 @@ static int sndwlink_poweron(Soundwire *bus)
 
 	/* Set SPA = 1 to power on the SoundWire link */
 	value = DSP_MEM_SNDW_SNDWLCTL_SPA << bus->sndwlinkindex;
-	writel((readl(bus->dspbar + DSP_MEM_SNDW_SNDWLCTL) | value),
-						bus->dspbar + DSP_MEM_SNDW_SNDWLCTL);
+	write32(bus->dspbar + DSP_MEM_SNDW_SNDWLCTL,
+		(read32(bus->dspbar + DSP_MEM_SNDW_SNDWLCTL) | value));
 
 	value = DSP_MEM_SNDW_SNDWLCTL_CPA << bus->sndwlinkindex;
 	/* Wait till current active power bit is set */
 	for (int i = 0; i < RETRY_COUNT; i++) {
-		if ((readl(bus->dspbar + DSP_MEM_SNDW_SNDWLCTL) & value) == value)
+		if ((read32(bus->dspbar + DSP_MEM_SNDW_SNDWLCTL) & value) == value)
 			break;
 		mdelay(1);
 	}
 
-	if ((readl(bus->dspbar + DSP_MEM_SNDW_SNDWLCTL) & value) != value) {
+	if ((read32(bus->dspbar + DSP_MEM_SNDW_SNDWLCTL) & value) != value) {
 		printf("Failed to poweron the Soundwire link.\n");
 		return -1;
 	}
@@ -370,14 +371,16 @@ static int sndwlink_poweron(Soundwire *bus)
 	 * Enable Data AC Timing Qualifier in preparation for Master IP being
 	 * put into "Normal" Operation
 	 */
-	rwval = readw(bus->dspbar + DSP_MEM_SNDW_SNDWxACTMCTL(bus->sndwlinkindex))
+	rwval = read16(bus->dspbar + DSP_MEM_SNDW_SNDWxACTMCTL(bus->sndwlinkindex))
 						| DSP_MEM_SNDW_SNDWxACTMCTL_DACTQE;
-	writew(rwval, bus->dspbar + DSP_MEM_SNDW_SNDWxACTMCTL(bus->sndwlinkindex));
+	write16(bus->dspbar + DSP_MEM_SNDW_SNDWxACTMCTL(bus->sndwlinkindex),
+		rwval);
 
 	/* Enable the Master IP Flowthrough */
-	rwval = readw(bus->dspbar + DSP_MEM_SNDW_SNDWxIOCTL(bus->sndwlinkindex))
+	rwval = read16(bus->dspbar + DSP_MEM_SNDW_SNDWxIOCTL(bus->sndwlinkindex))
 			| DSP_MEM_SNDW_SNDWxIOCTL_MIF;
-	writew(rwval, bus->dspbar + DSP_MEM_SNDW_SNDWxIOCTL(bus->sndwlinkindex));
+	write16(bus->dspbar + DSP_MEM_SNDW_SNDWxIOCTL(bus->sndwlinkindex),
+		rwval);
 
 	return 0;
 }
@@ -404,7 +407,7 @@ static int sndwlink_init(Soundwire *bus)
 	bus->sndwlinkaddr = bus->dspbar + sndwlinkaddress;
 
 	/* Function to check access to Sndw controller */
-	if (readl((bus->sndwlinkaddr) + SNDW_MEM_CONFIG) == 0xffffffff) {
+	if (read32((bus->sndwlinkaddr) + SNDW_MEM_CONFIG) == 0xffffffff) {
 		printf("Failed to enable access to Sndw controller.\n");
 		return -1;
 	}
@@ -424,50 +427,50 @@ static int sndwlink_init(Soundwire *bus)
 static int enable_hda_dsp(Soundwire *bus)
 {
 	/* Set the CRST bit to get the HDA controller out of reset state */
-	writel(HDA_MEM_GCTL_CRST, bus->hdabar + HDA_MEM_GCTL);
+	write32(bus->hdabar + HDA_MEM_GCTL, HDA_MEM_GCTL_CRST);
 	for (int i = 0; i < RETRY_COUNT; i++) {
-		if (readl(bus->hdabar + HDA_MEM_GCTL) == HDA_MEM_GCTL_CRST)
+		if (read32(bus->hdabar + HDA_MEM_GCTL) == HDA_MEM_GCTL_CRST)
 			break;
 		mdelay(1);
 	}
 
-	if (readl(bus->hdabar + HDA_MEM_GCTL) != HDA_MEM_GCTL_CRST) {
+	if (read32(bus->hdabar + HDA_MEM_GCTL) != HDA_MEM_GCTL_CRST) {
 		printf("HDA controller in reset state.\n");
 		return -1;
 	}
 
 	/*  Enable Audio DSP for operation. */
-	writel(HDA_MEM_PPCTL_DSPEN, bus->hdabar + HDA_MEM_PPCTL);
+	write32(bus->hdabar + HDA_MEM_PPCTL, HDA_MEM_PPCTL_DSPEN);
 	for (int i = 0; i < RETRY_COUNT; i++) {
-		if (readl(bus->hdabar + HDA_MEM_PPCTL) == HDA_MEM_PPCTL_DSPEN)
+		if (read32(bus->hdabar + HDA_MEM_PPCTL) == HDA_MEM_PPCTL_DSPEN)
 			break;
 		mdelay(1);
 	}
 
-	if (readl(bus->hdabar + HDA_MEM_PPCTL) != HDA_MEM_PPCTL_DSPEN) {
+	if (read32(bus->hdabar + HDA_MEM_PPCTL) != HDA_MEM_PPCTL_DSPEN) {
 		printf("Failed to enable ADSP for operation \n");
 		return -1;
 	}
 
 	/* Set power active to get DSP subsystem out of reset. */
-	writel((readl(bus->dspbar + DSP_MEM_ADSPCS) | DSP_MEM_ADSPCS_SPA),
-						bus->dspbar + DSP_MEM_ADSPCS);
+	write32(bus->dspbar + DSP_MEM_ADSPCS,
+		(read32(bus->dspbar + DSP_MEM_ADSPCS) | DSP_MEM_ADSPCS_SPA));
 	/* Wait till current power active bit is set */
 	for (int i = 0; i < RETRY_COUNT; i++) {
-		if ((readl(bus->dspbar + DSP_MEM_ADSPCS) &
+		if ((read32(bus->dspbar + DSP_MEM_ADSPCS) &
 						DSP_MEM_ADSPCS_CPA) == DSP_MEM_ADSPCS_CPA)
 			break;
 		mdelay(1);
 	}
 
-	if ((readl(bus->dspbar + DSP_MEM_ADSPCS) & DSP_MEM_ADSPCS_CPA) != DSP_MEM_ADSPCS_CPA) {
+	if ((read32(bus->dspbar + DSP_MEM_ADSPCS) & DSP_MEM_ADSPCS_CPA) != DSP_MEM_ADSPCS_CPA) {
 		printf("Failed to get the ADSP out of reset \n");
 		return -1;
 	}
 
 	/* Enable the Host interrupt generation for SNDW interface */
-	writel((readl(bus->dspbar + DSP_MEM_ADSPIC2) | DSP_MEM_ADSPIC2_SNDW),
-							bus->dspbar + DSP_MEM_ADSPIC2);
+	write32(bus->dspbar + DSP_MEM_ADSPIC2,
+		(read32(bus->dspbar + DSP_MEM_ADSPIC2) | DSP_MEM_ADSPIC2_SNDW));
 
 	return 0;
 }
@@ -535,15 +538,16 @@ static int sndw_disable(SndwOps *me)
 {
 	Soundwire *bus = container_of(me, Soundwire, ops);
 	/* Set SPA=0 to reset ADSP subsystem. */
-	writel((readl(bus->dspbar + DSP_MEM_ADSPCS) & ~DSP_MEM_ADSPCS_SPA), bus->dspbar + DSP_MEM_ADSPCS);
+	write32(bus->dspbar + DSP_MEM_ADSPCS,
+		(read32(bus->dspbar + DSP_MEM_ADSPCS) & ~DSP_MEM_ADSPCS_SPA));
 	/* Wait till current power active bit is set */
 	for (int i = 0; i < RETRY_COUNT; i++) {
-		if ((readl(bus->dspbar + DSP_MEM_ADSPCS) &
+		if ((read32(bus->dspbar + DSP_MEM_ADSPCS) &
 						DSP_MEM_ADSPCS_CPA) == 0)
 			break;
 		mdelay(1);
 	}
-	if ((readl(bus->dspbar + DSP_MEM_ADSPCS) & DSP_MEM_ADSPCS_CPA) != 0) {
+	if ((read32(bus->dspbar + DSP_MEM_ADSPCS) & DSP_MEM_ADSPCS_CPA) != 0) {
 		printf("Failed to reset the ADSP.\n");
 		return -1;
 	}

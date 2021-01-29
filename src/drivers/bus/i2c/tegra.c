@@ -19,9 +19,9 @@
 
 static void tegra_i2c_reset(TegraI2c *bus)
 {
-	writel(bus->reset_bit, bus->set_reset_reg);
+	write32(bus->set_reset_reg, bus->reset_bit);
 	udelay(1);
-	writel(bus->reset_bit, bus->clear_reset_reg);
+	write32(bus->clear_reset_reg, bus->reset_bit);
 	bus->initialized = 0;
 }
 
@@ -32,14 +32,14 @@ static int tegra_i2c_send_recv(TegraI2c *bus, int read,
 	TegraI2cRegs *regs = bus->regs;
 
 	while (data_len) {
-		uint32_t status = readl(&regs->fifo_status);
+		uint32_t status = read32(&regs->fifo_status);
 		int tx_empty = status & I2C_FIFO_STATUS_TX_FIFO_EMPTY_CNT_MASK;
 		tx_empty >>= I2C_FIFO_STATUS_TX_FIFO_EMPTY_CNT_SHIFT;
 		int rx_full = status & I2C_FIFO_STATUS_RX_FIFO_FULL_CNT_MASK;
 		rx_full >>= I2C_FIFO_STATUS_RX_FIFO_FULL_CNT_SHIFT;
 
 		while (header_words && tx_empty) {
-			writel(*headers++, &regs->tx_packet_fifo);
+			write32(&regs->tx_packet_fifo, *headers++);
 			header_words--;
 			tx_empty--;
 		}
@@ -47,7 +47,7 @@ static int tegra_i2c_send_recv(TegraI2c *bus, int read,
 		if (!header_words) {
 			if (read) {
 				while (data_len && rx_full) {
-					uint32_t word = readl(&regs->rx_fifo);
+					uint32_t word = read32(&regs->rx_fifo);
 					int todo = MIN(data_len, sizeof(word));
 
 					memcpy(data, &word, todo);
@@ -61,7 +61,7 @@ static int tegra_i2c_send_recv(TegraI2c *bus, int read,
 					int todo = MIN(data_len, sizeof(word));
 
 					memcpy(&word, data, todo);
-					writel(word, &regs->tx_packet_fifo);
+					write32(&regs->tx_packet_fifo, word);
 					data_len -= todo;
 					data += sizeof(word);
 					tx_empty--;
@@ -70,7 +70,7 @@ static int tegra_i2c_send_recv(TegraI2c *bus, int read,
 		}
 
 		uint32_t transfer_status =
-			readl(&regs->packet_transfer_status);
+			read32(&regs->packet_transfer_status);
 
 		if (transfer_status & I2C_PKT_STATUS_NOACK_ADDR) {
 			printf("%s: The address was not acknowledged.\n",
@@ -145,7 +145,7 @@ static int i2c_transfer_segment(TegraI2c *bus, uint8_t chip,
 static void i2c_init(TegraI2c *bus)
 {
 	TegraI2cRegs *regs = bus->regs;
-	writel(I2C_CNFG_PACKET_MODE_EN, &regs->cnfg);
+	write32(&regs->cnfg, I2C_CNFG_PACKET_MODE_EN);
 	bus->initialized = 1;
 }
 

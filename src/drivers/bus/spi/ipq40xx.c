@@ -27,14 +27,14 @@ static void write_force_cs(SpiOps *ops, int assert);
 static int check_bit_state(void *reg_addr, int bit_num, int val, int us_delay)
 {
 	unsigned int count = TIMEOUT_CNT;
-	unsigned int bit_val = ((readl(reg_addr) >> bit_num) & 0x01);
+	unsigned int bit_val = ((read32(reg_addr) >> bit_num) & 0x01);
 
 	while (bit_val != val) {
 		count--;
 		if (count == 0)
 			return -ETIMEDOUT;
 		udelay(us_delay);
-		bit_val = ((readl(reg_addr) >> bit_num) & 0x01);
+		bit_val = ((read32(reg_addr) >> bit_num) & 0x01);
 	}
 
 	return SUCCESS;
@@ -66,9 +66,9 @@ static int config_spi_state(struct ipq_spi_slave *ds, unsigned int state)
 	switch (state) {
 	case SPI_RUN_STATE:
 		/* Set the state to RUN */
-		val = ((readl(ds->regs->qup_state) & ~QUP_STATE_MASK)
+		val = ((read32(ds->regs->qup_state) & ~QUP_STATE_MASK)
 				| QUP_STATE_RUN_STATE);
-		writel(val, ds->regs->qup_state);
+		write32(ds->regs->qup_state, val);
 		ret = check_qup_state_valid(ds);
 		if (ret != SUCCESS)
 			return ret;
@@ -76,9 +76,9 @@ static int config_spi_state(struct ipq_spi_slave *ds, unsigned int state)
 		break;
 	case SPI_RESET_STATE:
 		/* Set the state to RESET */
-		val = ((readl(ds->regs->qup_state) & ~QUP_STATE_MASK)
+		val = ((read32(ds->regs->qup_state) & ~QUP_STATE_MASK)
 				| QUP_STATE_RESET_STATE);
-		writel(val, ds->regs->qup_state);
+		write32(ds->regs->qup_state, val);
 		ret = check_qup_state_valid(ds);
 		if (ret != SUCCESS)
 			return ret;
@@ -124,24 +124,24 @@ static void spi_set_mode(struct ipq_spi_slave *ds, unsigned int mode)
 		return;
 	}
 
-	val = readl(ds->regs->spi_config);
+	val = read32(ds->regs->spi_config);
 	val |= input_first_mode;
-	writel(val, ds->regs->spi_config);
+	write32(ds->regs->spi_config, val);
 
-	val = readl(ds->regs->io_control);
+	val = read32(ds->regs->io_control);
 	if (clk_idle_state)
 		val |= SPI_IO_CONTROL_CLOCK_IDLE_HIGH;
 	else
 		val &= ~SPI_IO_CONTROL_CLOCK_IDLE_HIGH;
 
-	writel(val, ds->regs->io_control);
+	write32(ds->regs->io_control, val);
 }
 /*
  * Reset entire QUP and all mini cores
  */
 static void spi_reset(struct ipq_spi_slave *ds)
 {
-	writel(0x1, ds->regs->qup_sw_reset);
+	write32(ds->regs->qup_sw_reset, 0x1);
 	udelay(5);
 }
 
@@ -229,8 +229,7 @@ static int spi_hw_init(struct ipq_spi_slave *ds)
 	 * MX_CS_MODE = 0
 	 * NO_TRI_STATE = 1
 	 */
-	writel((CLK_ALWAYS_ON | NO_TRI_STATE),
-				ds->regs->io_control);
+	write32(ds->regs->io_control, (CLK_ALWAYS_ON | NO_TRI_STATE));
 
 	/*
 	 * Configure SPI IO Modes.
@@ -248,10 +247,10 @@ static int spi_hw_init(struct ipq_spi_slave *ds)
 	spi_set_mode(ds, ds->mode);
 
 	/* Disable Error mask */
-	writel(0, ds->regs->error_flags_en);
-	writel(0, ds->regs->qup_error_flags_en);
+	write32(ds->regs->error_flags_en, 0);
+	write32(ds->regs->qup_error_flags_en, 0);
 
-	writel(0, ds->regs->qup_deassert_wait);
+	write32(ds->regs->qup_deassert_wait, 0);
 
 	ds->initialized = 1;
 
@@ -310,11 +309,11 @@ static void write_force_cs(SpiOps *ops, int assert)
 static void spi_write_byte(struct ipq_spi_slave *ds, unsigned char data)
 {
 	/* Wait for space in the FIFO */
-	while ((readl(ds->regs->qup_operational) & QUP_OUTPUT_FIFO_FULL))
+	while ((read32(ds->regs->qup_operational) & QUP_OUTPUT_FIFO_FULL))
 		udelay(1);
 
 	/* Write the byte of data */
-	writel(data, ds->regs->qup_output_fifo);
+	write32(ds->regs->qup_output_fifo, data);
 }
 
 /*
@@ -323,13 +322,13 @@ static void spi_write_byte(struct ipq_spi_slave *ds, unsigned char data)
 static unsigned char spi_read_byte(struct ipq_spi_slave *ds)
 {
 	/* Wait for Data in FIFO */
-	while (!(readl(ds->regs->qup_operational) &
+	while (!(read32(ds->regs->qup_operational) &
 			QUP_DATA_AVAILABLE_FOR_READ)) {
 		udelay(1);
 	}
 
 	/* Read a byte of data */
-	return readl(ds->regs->qup_input_fifo) & 0xff;
+	return read32(ds->regs->qup_input_fifo) & 0xff;
 }
 
 /*
@@ -343,7 +342,7 @@ static int check_fifo_status(void *reg_addr)
 	unsigned int val;
 
 	do {
-		val = readl(reg_addr);
+		val = read32(reg_addr);
 		count--;
 		if (count == 0)
 			return -ETIMEDOUT;
@@ -399,7 +398,7 @@ static int __blsp_spi_read(struct ipq_spi_slave *ds, u8 *data_buffer,
 	/* Configure input and output enable */
 	enable_io_config(ds, 0, read_bytes);
 
-	writel(bytes, ds->regs->qup_mx_input_count);
+	write32(ds->regs->qup_mx_input_count, bytes);
 
 	state_config = config_spi_state(ds, SPI_RUN_STATE);
 	if (state_config)
@@ -410,14 +409,14 @@ static int __blsp_spi_read(struct ipq_spi_slave *ds, u8 *data_buffer,
 		if (ret != SUCCESS)
 			goto out;
 
-		val = readl(ds->regs->qup_operational);
+		val = read32(ds->regs->qup_operational);
 		if (val & INPUT_SERVICE_FLAG) {
 			/*
 			 * acknowledge to hw that software will
 			 * read input data
 			 */
 			val &= INPUT_SERVICE_FLAG;
-			writel(val, ds->regs->qup_operational);
+			write32(ds->regs->qup_operational, val);
 
 			fifo_count = ((read_bytes > SPI_INPUT_BLOCK_SIZE) ?
 					SPI_INPUT_BLOCK_SIZE : read_bytes);
@@ -479,8 +478,8 @@ static int __blsp_spi_write(struct ipq_spi_slave *ds, const u8 *cmd_buffer,
 		return state_config;
 
 	/* No of bytes to be written in Output FIFO */
-	writel(bytes, ds->regs->qup_mx_output_count);
-	writel(bytes, ds->regs->qup_mx_input_count);
+	write32(ds->regs->qup_mx_output_count, bytes);
+	write32(ds->regs->qup_mx_input_count, bytes);
 	state_config = config_spi_state(ds, SPI_RUN_STATE);
 	if (state_config)
 		return state_config;
@@ -499,14 +498,14 @@ static int __blsp_spi_write(struct ipq_spi_slave *ds, const u8 *cmd_buffer,
 		if (ret != SUCCESS)
 			goto out;
 
-		val = readl(ds->regs->qup_operational);
+		val = read32(ds->regs->qup_operational);
 		if (val & OUTPUT_SERVICE_FLAG) {
 			/*
 			 * acknowledge to hw that software will write
 			 * expected output data
 			 */
 			val &= OUTPUT_SERVICE_FLAG;
-			writel(val, ds->regs->qup_operational);
+			write32(ds->regs->qup_operational, val);
 
 			if (write_len > SPI_OUTPUT_BLOCK_SIZE)
 				fifo_count = SPI_OUTPUT_BLOCK_SIZE;
@@ -526,7 +525,7 @@ static int __blsp_spi_write(struct ipq_spi_slave *ds, const u8 *cmd_buffer,
 			 * will read input data
 			 */
 			val &= INPUT_SERVICE_FLAG;
-			writel(val, ds->regs->qup_operational);
+			write32(ds->regs->qup_operational, val);
 
 			if (read_len > SPI_INPUT_BLOCK_SIZE)
 				fifo_count = SPI_INPUT_BLOCK_SIZE;

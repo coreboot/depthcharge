@@ -139,7 +139,7 @@ static int usi_i2c_get_clk_details(UsiI2cRegs *regs, int *div, int *cycle,
 	 * temp0 = (CLK_DIV + 1) * (TSCLK_L + TSCLK_H + 2)
 	 * temp1 = (TSCLK_L + TSCLK_H + 2)
 	 */
-	uint32_t flt_cycle = (readl(&regs->i2c_conf) >> 16) & 0x7;
+	uint32_t flt_cycle = (read32(&regs->i2c_conf) >> 16) & 0x7;
 	int temp = (clkin / op_clk) - 8 - 2 * flt_cycle;
 
 	// CLK_DIV max is 256.
@@ -176,25 +176,25 @@ static void exynos5_usi_i2c_ch_init(UsiI2cRegs *regs, unsigned frequency)
 	uint32_t timing_sla = data_hd << 0;
 
 	// Currently operating in fast speed mode.
-	writel(timing_fs1, &regs->i2c_timing_fs1);
-	writel(timing_fs2, &regs->i2c_timing_fs2);
-	writel(timing_fs3, &regs->i2c_timing_fs3);
-	writel(timing_sla, &regs->i2c_timing_sla);
+	write32(&regs->i2c_timing_fs1, timing_fs1);
+	write32(&regs->i2c_timing_fs2, timing_fs2);
+	write32(&regs->i2c_timing_fs3, timing_fs3);
+	write32(&regs->i2c_timing_sla, timing_sla);
 
 	// Clear to enable timeout.
-	writel(readl(&regs->i2c_timeout) & ~HSI2C_TIMEOUT_EN,
-	       &regs->i2c_timeout);
+	write32(&regs->i2c_timeout,
+		read32(&regs->i2c_timeout) & ~HSI2C_TIMEOUT_EN);
 
-	writel(HSI2C_TRAILING_COUNT, &regs->usi_trailing_ctl);
-	writel(HSI2C_RXFIFO_EN | HSI2C_TXFIFO_EN, &regs->usi_fifo_ctl);
-	writel(readl(&regs->i2c_conf) | HSI2C_AUTO_MODE, &regs->i2c_conf);
+	write32(&regs->usi_trailing_ctl, HSI2C_TRAILING_COUNT);
+	write32(&regs->usi_fifo_ctl, HSI2C_RXFIFO_EN | HSI2C_TXFIFO_EN);
+	write32(&regs->i2c_conf, read32(&regs->i2c_conf) | HSI2C_AUTO_MODE);
 }
 
 static void exynos5_usi_i2c_reset(UsiI2cRegs *regs, unsigned frequency)
 {
 	// Set and clear the bit for reset.
-	writel(readl(&regs->usi_ctl) | HSI2C_SW_RST, &regs->usi_ctl);
-	writel(readl(&regs->usi_ctl) & ~HSI2C_SW_RST, &regs->usi_ctl);
+	write32(&regs->usi_ctl, read32(&regs->usi_ctl) | HSI2C_SW_RST);
+	write32(&regs->usi_ctl, read32(&regs->usi_ctl) & ~HSI2C_SW_RST);
 
 	exynos5_usi_i2c_ch_init(regs, frequency);
 }
@@ -208,7 +208,7 @@ static void exynos5_usi_i2c_reset(UsiI2cRegs *regs, unsigned frequency)
  */
 static int exynos5_usi_i2c_check_transfer(UsiI2cRegs *regs)
 {
-	uint32_t status = readl(&regs->i2c_trans_status);
+	uint32_t status = read32(&regs->i2c_trans_status);
 	if (status & (HSI2C_TRANS_ABORT | HSI2C_NO_DEV_ACK |
 		      HSI2C_NO_DEV | HSI2C_TIMEOUT_AUTO)) {
 		if (status & HSI2C_TRANS_ABORT)
@@ -245,8 +245,8 @@ static int exynos5_usi_i2c_wait_for_transfer(UsiI2cRegs *regs)
 static int exynos5_usi_i2c_senddata(UsiI2cRegs *regs, uint8_t *data, int len)
 {
 	while (!exynos5_usi_i2c_check_transfer(regs) && len) {
-		if (!(readl(&regs->usi_fifo_stat) & HSI2C_TX_FIFO_FULL)) {
-			writel(*data++, &regs->usi_txdata);
+		if (!(read32(&regs->usi_fifo_stat) & HSI2C_TX_FIFO_FULL)) {
+			write32(&regs->usi_txdata, *data++);
 			len--;
 		}
 	}
@@ -256,8 +256,8 @@ static int exynos5_usi_i2c_senddata(UsiI2cRegs *regs, uint8_t *data, int len)
 static int exynos5_usi_i2c_recvdata(UsiI2cRegs *regs, uint8_t *data, int len)
 {
 	while (!exynos5_usi_i2c_check_transfer(regs) && len) {
-		if (!(readl(&regs->usi_fifo_stat) & HSI2C_RX_FIFO_EMPTY)) {
-			*data++ = readl(&regs->usi_rxdata);
+		if (!(read32(&regs->usi_fifo_stat) & HSI2C_RX_FIFO_EMPTY)) {
+			*data++ = read32(&regs->usi_rxdata);
 			len--;
 		}
 	}
@@ -268,7 +268,7 @@ static int exynos5_usi_i2c_segment(I2cSeg *seg, UsiI2cRegs *regs, int stop)
 {
 	const uint32_t usi_ctl = HSI2C_FUNC_MODE_I2C | HSI2C_MASTER;
 
-	writel(HSI2C_SLV_ADDR_MAS(seg->chip), &regs->i2c_addr);
+	write32(&regs->i2c_addr, HSI2C_SLV_ADDR_MAS(seg->chip));
 
 	/*
 	 * We really only want to stop after this transaction (I think) if the
@@ -281,14 +281,14 @@ static int exynos5_usi_i2c_segment(I2cSeg *seg, UsiI2cRegs *regs, int stop)
 		seg->len | HSI2C_MASTER_RUN | HSI2C_STOP_AFTER_TRANS;
 
 	if (seg->read) {
-		writel(usi_ctl | HSI2C_RXCHON, &regs->usi_ctl);
-		writel(autoconf | HSI2C_READ_WRITE, &regs->i2c_auto_conf);
+		write32(&regs->usi_ctl, usi_ctl | HSI2C_RXCHON);
+		write32(&regs->i2c_auto_conf, autoconf | HSI2C_READ_WRITE);
 
 		if (exynos5_usi_i2c_recvdata(regs, seg->buf, seg->len))
 			return -1;
 	} else {
-		writel(usi_ctl | HSI2C_TXCHON, &regs->usi_ctl);
-		writel(autoconf, &regs->i2c_auto_conf);
+		write32(&regs->usi_ctl, usi_ctl | HSI2C_TXCHON);
+		write32(&regs->i2c_auto_conf, autoconf);
 
 		if (exynos5_usi_i2c_senddata(regs, seg->buf, seg->len))
 			return -1;
@@ -297,7 +297,7 @@ static int exynos5_usi_i2c_segment(I2cSeg *seg, UsiI2cRegs *regs, int stop)
 	if (exynos5_usi_i2c_wait_for_transfer(regs) != 1)
 		return -1;
 
-	writel(HSI2C_FUNC_MODE_I2C, &regs->usi_ctl);
+	write32(&regs->usi_ctl, HSI2C_FUNC_MODE_I2C);
 	return 0;
 }
 

@@ -29,18 +29,18 @@
 
 static void tegra_i2s_transmit_enable(TegraI2sRegs *regs, int on)
 {
-	uint32_t ctrl = readl(&regs->ctrl);
+	uint32_t ctrl = read32(&regs->ctrl);
 	if (on)
 		ctrl |= I2S_CTRL_XFER_EN_TX;
 	else
 		ctrl &= ~I2S_CTRL_XFER_EN_TX;
-	writel(ctrl, &regs->ctrl);
+	write32(&regs->ctrl, ctrl);
 }
 
 static int tegra_i2s_init(TegraI2s *bus)
 {
 	uint32_t audio_bits = (bus->bits_per_sample >> 2) - 1;
-	uint32_t ctrl = readl(&bus->regs->ctrl);
+	uint32_t ctrl = read32(&bus->regs->ctrl);
 
 	// Set format to LRCK / Left Low.
 	ctrl &= ~(I2S_CTRL_FRAME_FORMAT_MASK | I2S_CTRL_LRCK_MASK);
@@ -56,18 +56,18 @@ static int tegra_i2s_init(TegraI2s *bus)
 	// Configure audio bits size.
 	ctrl &= ~I2S_CTRL_BIT_SIZE_MASK;
 	ctrl |= audio_bits << I2S_CTRL_BIT_SIZE_SHIFT;
-	writel(ctrl, &bus->regs->ctrl);
+	write32(&bus->regs->ctrl, ctrl);
 
 	// Timing in LRCK mode:
-	writel(bus->bits_per_sample, &bus->regs->timing);
+	write32(&bus->regs->timing, bus->bits_per_sample);
 
 	// I2S mode has [TX/RX]_DATA_OFFSET both set to 1.
-	writel(((1 << I2S_OFFSET_RX_DATA_OFFSET_SHIFT) |
-		(1 << I2S_OFFSET_TX_DATA_OFFSET_SHIFT)), &bus->regs->offset);
+	write32(&bus->regs->offset,
+		((1 << I2S_OFFSET_RX_DATA_OFFSET_SHIFT) | (1 << I2S_OFFSET_TX_DATA_OFFSET_SHIFT)));
 
 	// FSYNC_WIDTH = 2 clocks wide, TOTAL_SLOTS = 2 slots per fsync.
-	writel((2 - 1) << I2S_CH_CTRL_FSYNC_WIDTH_SHIFT, &bus->regs->ch_ctrl);
-	writel((2 - 1), &bus->regs->slot_ctrl);
+	write32(&bus->regs->ch_ctrl, (2 - 1) << I2S_CH_CTRL_FSYNC_WIDTH_SHIFT);
+	write32(&bus->regs->slot_ctrl, (2 - 1));
 	return 0;
 }
 
@@ -99,7 +99,7 @@ int tegra_i2s_set_cif_tx_ctrl(TegraI2s *i2s, uint32_t value)
 	// the interface between I2S and Audio Hub.  However since it's put in
 	// I2S registers domain instead of Audio Hub, we need to export this as
 	// a function.
-	writel(value, &i2s->regs->cif_tx_ctrl);
+	write32(&i2s->regs->cif_tx_ctrl, value);
 	return 0;
 }
 

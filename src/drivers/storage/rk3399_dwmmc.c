@@ -62,11 +62,11 @@ void rkclk_configure_sdmmc(DwmciHost *host, unsigned int freq)
 
 	if (src_clk_div > 0x3f) {
 		src_clk_div = (24000000 / 2 + freq - 1) / freq;
-		writel(RK_CLRSETBITS(0x7ff, 5 << 8 | (src_clk_div - 1)),
-				     &cru_ptr->clksel_con[16]);
+		write32(&cru_ptr->clksel_con[16],
+		        RK_CLRSETBITS(0x7ff, 5 << 8 | (src_clk_div - 1)));
 	} else
-		writel(RK_CLRSETBITS(0x7ff, 1 << 8 | (src_clk_div - 1)),
-				     &cru_ptr->clksel_con[16]);
+		write32(&cru_ptr->clksel_con[16],
+		        RK_CLRSETBITS(0x7ff, 1 << 8 | (src_clk_div - 1)));
 }
 
 DwmciHost *new_rkdwmci_host(uintptr_t ioaddr, uint32_t src_hz,

@@ -53,32 +53,32 @@ enum {
 
 static int i2c_int_pending(I2cRegs *regs)
 {
-	return readb(&regs->con) & I2cConIntPending;
+	return read8(&regs->con) & I2cConIntPending;
 }
 
 static void i2c_clear_int(I2cRegs *regs)
 {
-	writeb(readb(&regs->con) & ~I2cConIntPending, &regs->con);
+	write8(&regs->con, read8(&regs->con) & ~I2cConIntPending);
 }
 
 static void i2c_ack_enable(I2cRegs *regs)
 {
-	writeb(readb(&regs->con) | I2cConAckGen, &regs->con);
+	write8(&regs->con, read8(&regs->con) | I2cConAckGen);
 }
 
 static void i2c_ack_disable(I2cRegs *regs)
 {
-	writeb(readb(&regs->con) & ~I2cConAckGen, &regs->con);
+	write8(&regs->con, read8(&regs->con) & ~I2cConAckGen);
 }
 
 static int i2c_got_ack(I2cRegs *regs)
 {
-	return !(readb(&regs->stat) & I2cStatAck);
+	return !(read8(&regs->stat) & I2cStatAck);
 }
 
 static int i2c_init(I2cRegs *regs)
 {
-	writeb(I2cConIntEn | I2cConIntPending | 0x42, &regs->con);
+	write8(&regs->con, I2cConIntEn | I2cConIntPending | 0x42);
 	return 0;
 }
 
@@ -86,7 +86,7 @@ static int i2c_wait_for_idle(I2cRegs *regs)
 {
 	int timeout = 1000 * 100; // 1s.
 	while (timeout--) {
-		if (!(readb(&regs->stat) & I2cStatBusy))
+		if (!(read8(&regs->stat) & I2cStatBusy))
 			return 0;
 		udelay(10);
 	}
@@ -111,17 +111,17 @@ static int i2c_wait_for_int(I2cRegs *regs)
 
 static int i2c_send_stop(I2cRegs *regs)
 {
-	uint8_t mode = readb(&regs->stat) & (I2cStatModeMask);
-	writeb(mode | I2cStatEnable, &regs->stat);
+	uint8_t mode = read8(&regs->stat) & (I2cStatModeMask);
+	write8(&regs->stat, mode | I2cStatEnable);
 	i2c_clear_int(regs);
 	return i2c_wait_for_idle(regs);
 }
 
 static int i2c_send_start(I2cRegs *regs, int read, int chip)
 {
-	writeb(chip << 1, &regs->ds);
+	write8(&regs->ds, chip << 1);
 	uint8_t mode = read ? I2cStatMasterRecv : I2cStatMasterXmit;
-	writeb(mode | I2cStatStartStop | I2cStatEnable, &regs->stat);
+	write8(&regs->stat, mode | I2cStatStartStop | I2cStatEnable);
 	i2c_clear_int(regs);
 
 	if (i2c_wait_for_int(regs))
@@ -142,7 +142,7 @@ static int i2c_xmit_buf(I2cRegs *regs, uint8_t *data, int len)
 	i2c_ack_enable(regs);
 
 	for (int i = 0; i < len; i++) {
-		writeb(data[i], &regs->ds);
+		write8(&regs->ds, data[i]);
 
 		i2c_clear_int(regs);
 		if (i2c_wait_for_int(regs))
@@ -171,7 +171,7 @@ static int i2c_recv_buf(I2cRegs *regs, uint8_t *data, int len)
 		if (i2c_wait_for_int(regs))
 			return 1;
 
-		data[i] = readb(&regs->ds);
+		data[i] = read8(&regs->ds);
 	}
 
 	return 0;
@@ -192,7 +192,7 @@ static int i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
 	if (!regs || i2c_wait_for_idle(regs))
 		return 1;
 
-	writeb(I2cStatMasterXmit | I2cStatEnable, &regs->stat);
+	write8(&regs->stat, I2cStatMasterXmit | I2cStatEnable);
 
 	for (int i = 0; i < seg_count; i++) {
 		I2cSeg *seg = &segments[i];

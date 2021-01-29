@@ -656,15 +656,15 @@ static int byt_i2s_send(I2sOps *me, unsigned int *data, unsigned int length)
 
 	i2s_enable(bus->regs, bus->settings, SSP_DATA_TX);
 	for (i = 0; i < LPE_SSP_FIFO_SIZE; i++)
-		writel(*data++, &i2s_reg->ssdr);
+		write32(&i2s_reg->ssdr, *data++);
 
 	length -= LPE_SSP_FIFO_SIZE;
 	set_SSCR3_reg(i2s_reg, I2S_TX_EN);
 
 	while (length > 0) {
 		start = timer_us(0);
-		if (readl(&i2s_reg->sssr) & 0x4) {
-			writel(*data++, &i2s_reg->ssdr);
+		if (read32(&i2s_reg->sssr) & 0x4) {
+			write32(&i2s_reg->ssdr, *data++);
 			length--;
 		} else {
 			if (timer_us(start) > 100000) {

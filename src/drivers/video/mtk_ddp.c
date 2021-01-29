@@ -36,10 +36,10 @@ static int mtk_display_init(DisplayOps *me)
 	uintptr_t phys_addr = lib_sysinfo.framebuffer.physical_address;
 	MtkDisplay *mtk = container_of(me, MtkDisplay, ops);
 
-	writel(phys_addr, (void *)(mtk->ovl_base + DISP_REG_OVL_L0_ADDR));
-	writel(1, (void *)(mtk->ovl_base + DISP_REG_OVL_EN));
+	write32((void *)(mtk->ovl_base + DISP_REG_OVL_L0_ADDR), phys_addr);
+	write32((void *)(mtk->ovl_base + DISP_REG_OVL_EN), 1);
 	if (mtk->lanes == 2)
-		writel(1, (void *)(mtk->ovl_base + DISP_REG_OVL0_2L_EN));
+		write32((void *)(mtk->ovl_base + DISP_REG_OVL0_2L_EN), 1);
 
 	return 0;
 }
@@ -48,9 +48,9 @@ static int mtk_display_stop(DisplayOps *me)
 {
 	MtkDisplay *mtk = container_of(me, MtkDisplay, ops);
 
-	writel(0, (void *)(mtk->ovl_base + DISP_REG_OVL_EN));
+	write32((void *)(mtk->ovl_base + DISP_REG_OVL_EN), 0);
 	if (mtk->lanes == 2)
-		writel(0, (void *)(mtk->ovl_base + DISP_REG_OVL0_2L_EN));
+		write32((void *)(mtk->ovl_base + DISP_REG_OVL0_2L_EN), 0);
 
 	return 0;
 }

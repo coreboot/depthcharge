@@ -116,19 +116,19 @@ static int tegra_ahub_xbar_enable_i2s(TegraAudioHubXbar *xbar, int i2s_id)
 	// i2s?_rx0.
 	switch (i2s_id) {
 	case 0:
-		writel(1, &xbar->regs->i2s0_rx0);
+		write32(&xbar->regs->i2s0_rx0, 1);
 		break;
 	case 1:
-		writel(1, &xbar->regs->i2s1_rx0);
+		write32(&xbar->regs->i2s1_rx0, 1);
 		break;
 	case 2:
-		writel(1, &xbar->regs->i2s2_rx0);
+		write32(&xbar->regs->i2s2_rx0, 1);
 		break;
 	case 3:
-		writel(1, &xbar->regs->i2s3_rx0);
+		write32(&xbar->regs->i2s3_rx0, 1);
 		break;
 	case 4:
-		writel(1, &xbar->regs->i2s4_rx0);
+		write32(&xbar->regs->i2s4_rx0, 1);
 		break;
 	default:
 		printf("%s: Invalid I2S component id: %d\n", __func__, i2s_id);
@@ -150,7 +150,7 @@ static size_t tegra_ahub_apbif_capacity(TxFifoOps *me)
 static int tegra_ahub_apbif_is_full(TxFifoOps *me)
 {
 	TegraAudioHubApbif *apbif = container_of(me, TegraAudioHubApbif, ops);
-	return readl(&apbif->regs->apbdma_live_stat) & apbif->full_mask;
+	return read32(&apbif->regs->apbdma_live_stat) & apbif->full_mask;
 }
 
 static ssize_t tegra_ahub_apbif_send(TxFifoOps *me, const void *buf, size_t len)
@@ -165,7 +165,7 @@ static ssize_t tegra_ahub_apbif_send(TxFifoOps *me, const void *buf, size_t len)
 	}
 	while (written < len) {
 		while (tegra_ahub_apbif_is_full(me));
-		writel(*data++, &regs->channel0_txfifo);
+		write32(&regs->channel0_txfifo, *data++);
 		written += sizeof(*data);
 	}
 	return written;
@@ -173,7 +173,7 @@ static ssize_t tegra_ahub_apbif_send(TxFifoOps *me, const void *buf, size_t len)
 
 static void tegra_ahub_apbif_set_cif(TegraAudioHubApbif *apbif, uint32_t value)
 {
-	writel(value, &apbif->regs->channel0_cif_tx0_ctrl);
+	write32(&apbif->regs->channel0_cif_tx0_ctrl, value);
 }
 
 static void tegra_ahub_apbif_enable_channel0(TegraAudioHubApbif *apbif,
@@ -184,7 +184,7 @@ static void tegra_ahub_apbif_enable_channel0(TegraAudioHubApbif *apbif,
 			TEGRA_AHUB_CHANNEL_CTRL_TX_EN);
 	fifo_threshold--; // fifo_threshold starts from 1.
 	ctrl |= (fifo_threshold << TEGRA_AHUB_CHANNEL_CTRL_TX_THRESHOLD_SHIFT);
-	writel(ctrl, &apbif->regs->channel0_ctrl);
+	write32(&apbif->regs->channel0_ctrl, ctrl);
 }
 
 static int tegra_ahub_apbif_set_fifo_mask(TegraAudioHubApbif *apbif)

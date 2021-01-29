@@ -41,7 +41,7 @@ static int ich7_spi_get_lock(IchFlash *me)
 	const uint16_t ich7_spibar_offset = 0x3020;
 	Ich7SpiRegs *ich7_spi = (Ich7SpiRegs *)(rcrb + ich7_spibar_offset);
 
-	return readw(&ich7_spi->spis) & SPIS_LOCK;
+	return read16(&ich7_spi->spis) & SPIS_LOCK;
 }
 
 IchFlash *new_ich7_spi_flash(uint32_t rom_size)

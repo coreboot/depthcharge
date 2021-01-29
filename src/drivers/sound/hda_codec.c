@@ -60,7 +60,7 @@ static int wait_for_ready(uint32_t base)
 	int timeout = 50;
 
 	while (timeout--) {
-		uint32_t reg32 = readl(base +  HDA_ICII_ICS_REG);
+		uint32_t reg32 = read32(base + HDA_ICII_ICS_REG);
 		asm("" ::: "memory");
 		if (!(reg32 & HDA_ICII_ICS_BUSY))
 			return 0;
@@ -80,20 +80,20 @@ static int wait_for_response(uint32_t base, uint32_t *response)
 	uint32_t reg32;
 
 	// Send the verb to the codec.
-	reg32 = readl(base + HDA_ICII_ICS_REG);
+	reg32 = read32(base + HDA_ICII_ICS_REG);
 	reg32 |= HDA_ICII_ICS_BUSY | HDA_ICII_ICS_VALID;
-	writel(reg32, base + HDA_ICII_ICS_REG);
+	write32(base + HDA_ICII_ICS_REG, reg32);
 
 	// Use a 50 usec timeout - the Linux kernel uses the same duration.
 
 	int timeout = 50;
 	while (timeout--) {
-		reg32 = readl(base + HDA_ICII_ICS_REG);
+		reg32 = read32(base + HDA_ICII_ICS_REG);
 		asm("" ::: "memory");
 		if ((reg32 & (HDA_ICII_ICS_VALID | HDA_ICII_ICS_BUSY)) ==
 				HDA_ICII_ICS_VALID) {
 			if (response != NULL)
-				*response = readl(base + HDA_ICII_RESPONSE_REG);
+				*response = read32(base + HDA_ICII_RESPONSE_REG);
 			return 0;
 		}
 		udelay(1);
@@ -112,7 +112,7 @@ static int exec_one_verb(uint32_t base, uint32_t val, uint32_t *response)
 	if (wait_for_ready(base) == -1)
 		return -1;
 
-	writel(val, base + HDA_ICII_COMMAND_REG);
+	write32(base + HDA_ICII_COMMAND_REG, val);
 
 	if (wait_for_response(base, response) == -1)
 		return -1;

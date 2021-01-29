@@ -35,29 +35,29 @@ void clock_config_mmc(MmcCtrlr *ctrlr, int mode)
 {
 	printf("%s : %d\n",__func__,mode);
 	/* Select SDCC clock source as DDR_PLL_SDCC1_CLK  192MHz */
-	writel(0x100, GCC_SDCC1_APPS_RCGR);
+	write32(GCC_SDCC1_APPS_RCGR, 0x100);
 	/* Update APPS_CMD_RCGR to reflect source selection */
-	writel(0x1, GCC_SDCC1_APPS_CMD_RCGR);
+	write32(GCC_SDCC1_APPS_CMD_RCGR, 0x1);
 	udelay(10);
 
 	if (mode == MMC_IDENTIFY_MODE) {
 		/* Set root clock generator to bypass mode */
-		writel(0x0, GCC_SDCC1_APPS_CBCR);
+		write32(GCC_SDCC1_APPS_CBCR, 0x0);
 		udelay(10);
 		/* Choose divider for 400KHz */
-		writel(0x1e4 , GCC_SDCC1_MISC);
+		write32(GCC_SDCC1_MISC, 0x1e4);
 		/* Enable root clock generator */
-		writel(0x1, GCC_SDCC1_APPS_CBCR);
+		write32(GCC_SDCC1_APPS_CBCR, 0x1);
 		udelay(10);
 	}
 	if (mode == MMC_DATA_TRANSFER_MODE) {
 		/* Set root clock generator to bypass mode */
-		writel(0x0, GCC_SDCC1_APPS_CBCR);
+		write32(GCC_SDCC1_APPS_CBCR, 0x0);
 		udelay(10);
 		/* Choose divider for 48MHz */
-		writel(0x3, GCC_SDCC1_MISC);
+		write32(GCC_SDCC1_MISC, 0x3);
 		/* Enable root clock generator */
-		writel(0x1, GCC_SDCC1_APPS_CBCR);
+		write32(GCC_SDCC1_APPS_CBCR, 0x1);
 		udelay(10);
 	}
 	//  mmc_boot_mci_clk_enable(ctrlr);
@@ -66,5 +66,5 @@ void clock_config_mmc(MmcCtrlr *ctrlr, int mode)
 void clock_disable_mmc(void)
 {
 	/* Clear divider */
-	writel(0x0, GCC_SDCC1_MISC);
+	write32(GCC_SDCC1_MISC, 0x0);
 }

@@ -57,13 +57,11 @@ void rkclk_configure_emmc(DwmciHost *host, unsigned int freq)
 
 	if (src_clk_div > 0x3f) {
 		src_clk_div = (24000000 / 2 + freq - 1) / freq;
-		writel(RK_CLRSETBITS(0xff << 8 , 2 << 14 |
-				((src_clk_div - 1) << 8)),
-				&cru_ptr->cru_clksel_con[12]);
+		write32(&cru_ptr->cru_clksel_con[12],
+		        RK_CLRSETBITS(0xff << 8, 2 << 14 | ((src_clk_div - 1) << 8)));
 	} else
-		writel(RK_CLRSETBITS(0xff << 8 , 1 << 14 |
-				((src_clk_div - 1) << 8)),
-				&cru_ptr->cru_clksel_con[12]);
+		write32(&cru_ptr->cru_clksel_con[12],
+		        RK_CLRSETBITS(0xff << 8, 1 << 14 | ((src_clk_div - 1) << 8)));
 }
 
 void rkclk_configure_sdmmc(DwmciHost *host, unsigned int freq)
@@ -75,11 +73,11 @@ void rkclk_configure_sdmmc(DwmciHost *host, unsigned int freq)
 
 	if (src_clk_div > 0x3f) {
 		src_clk_div = (24000000 / 2 + freq - 1) / freq;
-		writel(RK_CLRSETBITS(0xff, 2 << 6 | (src_clk_div - 1)),
-				     &cru_ptr->cru_clksel_con[11]);
+		write32(&cru_ptr->cru_clksel_con[11],
+		        RK_CLRSETBITS(0xff, 2 << 6 | (src_clk_div - 1)));
 	} else
-		writel(RK_CLRSETBITS(0xff, 1 << 6 | (src_clk_div - 1)),
-				     &cru_ptr->cru_clksel_con[11]);
+		write32(&cru_ptr->cru_clksel_con[11],
+		        RK_CLRSETBITS(0xff, 1 << 6 | (src_clk_div - 1)));
 }
 
 DwmciHost *new_rkdwmci_host(uintptr_t ioaddr, uint32_t src_hz,

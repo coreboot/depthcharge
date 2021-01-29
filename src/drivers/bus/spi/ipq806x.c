@@ -182,14 +182,14 @@ static unsigned int qup_apps_clk_state[NUM_PORTS] = {
 static int check_bit_state(void *reg_addr, int bit_num, int val, int us_delay)
 {
 	unsigned int count = TIMEOUT_CNT;
-	unsigned int bit_val = ((readl(reg_addr) >> bit_num) & 0x01);
+	unsigned int bit_val = ((read32(reg_addr) >> bit_num) & 0x01);
 
 	while (bit_val != val) {
 		count--;
 		if (count == 0)
 			return -ETIMEDOUT;
 		udelay(us_delay);
-		bit_val = ((readl(reg_addr) >> bit_num) & 0x01);
+		bit_val = ((read32(reg_addr) >> bit_num) & 0x01);
 	}
 
 	return SUCCESS;
@@ -238,9 +238,9 @@ static int config_spi_state(IpqSpiSlave *ds, unsigned int state)
 	}
 
 	/* Set the state as requested */
-	val = (readl(ds->regs->qup_state) & ~QUP_STATE_MASK)
+	val = (read32(ds->regs->qup_state) & ~QUP_STATE_MASK)
 		| new_state;
-	writel(val, ds->regs->qup_state);
+	write32(ds->regs->qup_state, val);
 	return check_qup_state_valid(ds);
 }
 
@@ -275,17 +275,17 @@ static void spi_set_mode(IpqSpiSlave *ds, unsigned int mode)
 		return;
 	}
 
-	val = readl(ds->regs->spi_config);
+	val = read32(ds->regs->spi_config);
 	val |= input_first_mode;
-	writel(val, ds->regs->spi_config);
+	write32(ds->regs->spi_config, val);
 
-	val = readl(ds->regs->io_control);
+	val = read32(ds->regs->io_control);
 	if (clk_idle_state)
 		val |= SPI_IO_CONTROL_CLOCK_IDLE_HIGH;
 	else
 		val &= ~SPI_IO_CONTROL_CLOCK_IDLE_HIGH;
 
-	writel(val, ds->regs->io_control);
+	write32(ds->regs->io_control, val);
 }
 
 /*
@@ -313,12 +313,12 @@ static void CS_change(int port_num, int cs_num, int enable)
 {
 	unsigned int cs_gpio = cs_gpio_array[port_num][cs_num];
 	void *addr = GPIO_IN_OUT_ADDR(cs_gpio);
-	uint32_t val = readl(addr);
+	uint32_t val = read32(addr);
 
 	val &= (~(1 << GPIO_OUTPUT));
 	if (!enable)
 		val |= (1 << GPIO_OUTPUT);
-	writel(val, addr);
+	write32(addr, val);
 }
 
 /*
@@ -451,7 +451,7 @@ static int gsbi_clock_init(IpqSpiSlave *ds)
  */
 static void spi_reset(IpqSpiSlave *ds)
 {
-	writel(0x1, ds->regs->qup_sw_reset);
+	write32(ds->regs->qup_sw_reset, 0x1);
 	udelay(5);
 }
 
@@ -600,8 +600,8 @@ static int spi_hw_init(IpqSpiSlave *ds)
 	 * MX_CS_MODE = 0
 	 * NO_TRI_STATE = 1
 	 */
-	writel((CLK_ALWAYS_ON | MX_CS_MODE | NO_TRI_STATE),
-				ds->regs->io_control);
+	write32(ds->regs->io_control,
+		(CLK_ALWAYS_ON | MX_CS_MODE | NO_TRI_STATE));
 
 	/*
 	 * Configure SPI IO Modes.
@@ -619,8 +619,8 @@ static int spi_hw_init(IpqSpiSlave *ds)
 	spi_set_mode(ds, ds->mode);
 
 	/* Disable Error mask */
-	writel(0, ds->regs->error_flags_en);
-	writel(0, ds->regs->qup_error_flags_en);
+	write32(ds->regs->error_flags_en, 0);
+	write32(ds->regs->qup_error_flags_en, 0);
 
 	ds->initialized = 1;
 
@@ -691,7 +691,7 @@ static int spi_xfer(SpiOps *ops, void *din, const void *dout, uint32_t bytes)
 	clrsetbits_le32(ds->regs->qup_config, SPI_QUP_CONF_OUTPUT_MSK,
 			  SPI_QUP_CONF_OUTPUT_ENA);
 
-	writel(out_bytes, ds->regs->qup_mx_output_count);
+	write32(ds->regs->qup_mx_output_count, out_bytes);
 
 	ret = config_spi_state(ds, SPI_RUN_STATE);
 	if (ret)
@@ -700,15 +700,15 @@ static int spi_xfer(SpiOps *ops, void *din, const void *dout, uint32_t bytes)
 	dobuf = dout; /* Alias to make it possible to use pointer autoinc. */
 
 	while (out_bytes) {
-		if (readl(ds->regs->qup_operational) & QUP_OUTPUT_FIFO_FULL)
+		if (read32(ds->regs->qup_operational) & QUP_OUTPUT_FIFO_FULL)
 			continue;
 
-		writel(*dobuf++, ds->regs->qup_output_fifo);
+		write32(ds->regs->qup_output_fifo, *dobuf++);
 		out_bytes--;
 
 		/* Wait for output FIFO to drain. */
 		if (!out_bytes)
-			while (readl(ds->regs->qup_operational) &
+			while (read32(ds->regs->qup_operational) &
 			       QUP_OUTPUT_FIFO_NOT_EMPTY)
 				;
 	}
@@ -725,24 +725,24 @@ static int spi_xfer(SpiOps *ops, void *din, const void *dout, uint32_t bytes)
 	clrsetbits_le32(ds->regs->qup_config, SPI_QUP_CONF_INPUT_MSK,
 			  SPI_QUP_CONF_INPUT_ENA);
 
-	writel(in_bytes, ds->regs->qup_mx_input_count);
-	writel(in_bytes, ds->regs->qup_mx_output_count);
+	write32(ds->regs->qup_mx_input_count, in_bytes);
+	write32(ds->regs->qup_mx_output_count, in_bytes);
 
 	ret = config_spi_state(ds, SPI_RUN_STATE);
 	if (ret)
 		goto out;
 
 	/* Seed clocking */
-	writel(0xff, ds->regs->qup_output_fifo);
+	write32(ds->regs->qup_output_fifo, 0xff);
 	dbuf = din;  /* Alias for pointer autoincrement again. */
 	while (in_bytes) {
-		if (!(readl(ds->regs->qup_operational) &
+		if (!(read32(ds->regs->qup_operational) &
 		      QUP_INPUT_FIFO_NOT_EMPTY))
 			continue;
 		/* Keep it clocking */
-		writel(0xff, ds->regs->qup_output_fifo);
+		write32(ds->regs->qup_output_fifo, 0xff);
 
-		*dbuf++ = readl(ds->regs->qup_input_fifo) & 0xff;
+		*dbuf++ = read32(ds->regs->qup_input_fifo) & 0xff;
 		in_bytes--;
 	}
 

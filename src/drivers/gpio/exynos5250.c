@@ -124,10 +124,10 @@ static int exynos5250_gpio_use(Exynos5250Gpio *me, unsigned use)
 {
 	GpioRegs *regs = exynos5250_get_regs(me);
 
-	uint32_t con = readl(&regs->con);
+	uint32_t con = read32(&regs->con);
 	con &= ~(0xf << (me->index * 4));
 	con |= ((use & 0xf) << (me->index * 4));
-	writel(con, &regs->con);
+	write32(&regs->con, con);
 
 	return 0;
 }
@@ -136,10 +136,10 @@ static int exynos5250_gpio_set_pud(Exynos5250Gpio *me, unsigned value)
 {
 	GpioRegs *regs = exynos5250_get_regs(me);
 
-	uint32_t pud = readl(&regs->pud);
+	uint32_t pud = read32(&regs->pud);
 	pud &= ~(0x3 << (me->index * 2));
 	pud |= ((value & 0x3) << (me->index * 2));
-	writel(pud, &regs->pud);
+	write32(&regs->pud, pud);
 
 	return 0;
 }
@@ -156,7 +156,7 @@ static int exynos5250_gpio_get_value(GpioOps *me)
 		gpio->dir_set = 1;
 	}
 
-	return (readl(&regs->dat) >> gpio->index) & 0x1;
+	return (read32(&regs->dat) >> gpio->index) & 0x1;
 }
 
 static int exynos5250_gpio_set_value(GpioOps *me, unsigned value)
@@ -171,10 +171,10 @@ static int exynos5250_gpio_set_value(GpioOps *me, unsigned value)
 		gpio->dir_set = 1;
 	}
 
-	uint32_t dat = readl(&regs->dat);
+	uint32_t dat = read32(&regs->dat);
 	dat &= ~(0x1 << gpio->index);
 	dat |= ((value & 0x1) << gpio->index);
-	writel(dat, &regs->dat);
+	write32(&regs->dat, dat);
 	return 0;
 }
 

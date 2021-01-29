@@ -227,28 +227,24 @@
 /*
  * Register access macros - NAND flash controller
  */
-#define NAND_REG_RD(x)		readl(ctrl.nand_regs + (x))
-#define NAND_REG_WR(x, y)	writel((y), ctrl.nand_regs + (x))
+#define NAND_REG_RD(x)		read32(ctrl.nand_regs + (x))
+#define NAND_REG_WR(x, y)	write32(ctrl.nand_regs + (x), (y))
 #define NAND_REG_CLR(x, y)	NAND_REG_WR((x), NAND_REG_RD(x) & ~(y))
 #define NAND_REG_SET(x, y)	NAND_REG_WR((x), NAND_REG_RD(x) | (y))
 
 /*
  * IRQ operations
  */
-#define NAND_ACK_IRQ(bit) writel(1, ((u32 *)ctrl.nand_intr_regs) + (bit))
-#define NAND_TEST_IRQ(bit) (readl(((u32 *)ctrl.nand_intr_regs) + (bit)) & 1)
+#define NAND_ACK_IRQ(bit) write32(((u32 *)ctrl.nand_intr_regs) + (bit), 1)
+#define NAND_TEST_IRQ(bit) (read32(((u32 *)ctrl.nand_intr_regs) + (bit)) & 1)
 
 /*
  * Data access macros (APB access is big endian by default)
  */
 #define NAND_BEGIN_DATA_ACCESS()					\
-	writel(readl(ctrl.nand_idm_io_ctrl_direct_reg) |		\
-	       IDMFLD_NAND_IO_CONTROL_DIRECT_APB_LE_MODE,		\
-	       ctrl.nand_idm_io_ctrl_direct_reg)
+	write32(ctrl.nand_idm_io_ctrl_direct_reg, read32(ctrl.nand_idm_io_ctrl_direct_reg) | IDMFLD_NAND_IO_CONTROL_DIRECT_APB_LE_MODE)
 #define NAND_END_DATA_ACCESS()						\
-	writel(readl(ctrl.nand_idm_io_ctrl_direct_reg) &		\
-	       ~IDMFLD_NAND_IO_CONTROL_DIRECT_APB_LE_MODE,		\
-	       ctrl.nand_idm_io_ctrl_direct_reg)
+	write32(ctrl.nand_idm_io_ctrl_direct_reg, read32(ctrl.nand_idm_io_ctrl_direct_reg) & ~IDMFLD_NAND_IO_CONTROL_DIRECT_APB_LE_MODE)
 /*
  * Misc NAND controller configuration/status macros
  */
@@ -761,9 +757,9 @@ static int nand_init(void)
 	NAND_REG_WR(NCREG_SEMAPHORE, 0);
 
 	/* Reset the NAND controller */
-	writel(1, ctrl.nand_idm_regs + IDMREG_RESET_CONTROL);
+	write32(ctrl.nand_idm_regs + IDMREG_RESET_CONTROL, 1);
 	udelay(1);
-	writel(0, ctrl.nand_idm_regs + IDMREG_RESET_CONTROL);
+	write32(ctrl.nand_idm_regs + IDMREG_RESET_CONTROL, 0);
 	udelay(10);
 
 	/* Execute controller auto configuration */

@@ -25,13 +25,13 @@ static int tegra_apb_dma_busy(TegraApbDmaChannel *me)
 	 * as the channel is enabled. So for this function we'll use the
 	 * DMA_ACTIVITY bit.
 	 */
-	return readl(&me->regs->sta) & APBDMACHAN_STA_DMA_ACTIVITY ? 1 : 0;
+	return read32(&me->regs->sta) & APBDMACHAN_STA_DMA_ACTIVITY ? 1 : 0;
 }
 
 static TegraApbDmaChannel *tegra_apb_dma_claim(TegraApbDmaController *me)
 {
-	writel(readl(&me->regs->command) | APBDMA_COMMAND_GEN,
-	       &me->regs->command);
+	write32(&me->regs->command,
+		read32(&me->regs->command) | APBDMA_COMMAND_GEN);
 
 	for (int i = 0; i < me->count; i++) {
 		TegraApbDmaChannel *channel = &me->channels[i];
@@ -62,16 +62,16 @@ static int tegra_apb_dma_release(TegraApbDmaController *me,
 
 static int tegra_apb_dma_start(TegraApbDmaChannel *me)
 {
-	uint32_t csr = readl(&me->regs->csr);
-	writel(csr | APBDMACHAN_CSR_ENB, &me->regs->csr);
+	uint32_t csr = read32(&me->regs->csr);
+	write32(&me->regs->csr, csr | APBDMACHAN_CSR_ENB);
 	return 0;
 }
 
 static int tegra_apb_dma_finish(TegraApbDmaChannel *me)
 {
-	uint32_t csr = readl(&me->regs->csr);
-	writel(csr | APBDMACHAN_CSR_HOLD, &me->regs->csr);
-	writel(csr & ~APBDMACHAN_CSR_ENB, &me->regs->csr);
+	uint32_t csr = read32(&me->regs->csr);
+	write32(&me->regs->csr, csr | APBDMACHAN_CSR_HOLD);
+	write32(&me->regs->csr, csr & ~APBDMACHAN_CSR_ENB);
 	return 0;
 }
 

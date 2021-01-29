@@ -71,7 +71,7 @@ void gpio_tlmm_config_set(gpio_t gpio, unsigned func,
 	val |= (drvstr & GPIO_CFG_DRV_MASK) << GPIO_CFG_DRV_SHIFT;
 	val |= (enable & GPIO_CFG_OE_MASK) << GPIO_CFG_OE_SHIFT;
 
-	writel(val, GPIO_CONFIG_ADDR(gpio));
+	write32(GPIO_CONFIG_ADDR(gpio), val);
 }
 /*******************************************************
 Function description: configure GPIO functinality
@@ -102,15 +102,15 @@ void gpio_tlmm_config(unsigned int gpio, unsigned int func,
 	val |= gpio_od_en << 12;
 	val |= gpio_pu_res << 13;
 
-	writel(val, addr);
+	write32(addr, val);
 
 	/* Output value is only relevant if GPIO has been configured for fixed
 	 * output setting - i.e. func == 0 */
 	if (func == 0) {
 		addr = (unsigned int *)GPIO_IN_OUT_ADDR(gpio);
-		val = readl(addr);
+		val = read32(addr);
 		val |= out << 1;
-		writel(val, addr);
+		write32(addr, val);
 	}
 }
 
@@ -137,7 +137,7 @@ void gpio_tlmm_config_get(gpio_t gpio, unsigned *func,
 	if (gpio_not_valid(gpio))
 		return;
 
-	val = readl(addr);
+	val = read32(addr);
 
 	*pull = (val >> GPIO_CFG_PULL_SHIFT) & GPIO_CFG_PULL_MASK;
 	*func = (val >> GPIO_CFG_FUNC_SHIFT) & GPIO_CFG_FUNC_MASK;
@@ -160,7 +160,7 @@ int gpio_get_in_value(gpio_t gpio)
 		return -1;
 
 
-	return (readl(GPIO_IN_OUT_ADDR(gpio)) >> GPIO_IO_IN_SHIFT) &
+	return (read32(GPIO_IN_OUT_ADDR(gpio)) >> GPIO_IO_IN_SHIFT) &
 		GPIO_IO_IN_MASK;
 }
 
@@ -169,7 +169,7 @@ void gpio_set_out_value(gpio_t gpio, unsigned value)
 	if (gpio_not_valid(gpio))
 		return;
 
-	writel((value & 1) << GPIO_IO_OUT_SHIFT, GPIO_IN_OUT_ADDR(gpio));
+	write32(GPIO_IN_OUT_ADDR(gpio), (value & 1) << GPIO_IO_OUT_SHIFT);
 }
 
 void gpio_input_pulldown(gpio_t gpio)

@@ -26,8 +26,8 @@ static int exynos_cold_reboot(PowerOps *me)
 	uint32_t *inform1 = (uint32_t *)(uintptr_t)0x10040804;
 	uint32_t *swreset = (uint32_t *)(uintptr_t)0x10040400;
 
-	writel(0, inform1);
-	writel(readl(swreset) | 1, swreset);
+	write32(inform1, 0);
+	write32(swreset, read32(swreset) | 1);
 
 	halt();
 }
@@ -35,7 +35,7 @@ static int exynos_cold_reboot(PowerOps *me)
 static int exynos_power_off(PowerOps *me)
 {
 	uint32_t *pshold = (uint32_t *)(uintptr_t)0x1004330c;
-	writel(readl(pshold) & ~(1 << 8), pshold);
+	write32(pshold, read32(pshold) & ~(1 << 8));
 	halt();
 }
 

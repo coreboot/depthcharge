@@ -55,8 +55,8 @@ static int get_eth_mac_address(u8 *enetaddr)
 		printf("Will use default MAC address\n");
 
 		/* Read 8 bytes of HW provided unique value. */
-		soc_unique[0] = readl(QFPROM_CORR_PTE_ROW0_LSB);
-		soc_unique[1] = readl(QFPROM_CORR_PTE_ROW0_MSB);
+		soc_unique[0] = read32(QFPROM_CORR_PTE_ROW0_LSB);
+		soc_unique[1] = read32(QFPROM_CORR_PTE_ROW0_MSB);
 
 		/* calculate its sha1. */
 		sha1((const u8 *)soc_unique, sizeof(soc_unique), scramble);
@@ -109,8 +109,7 @@ static void get_phy_speed_duplexity(NetDevice *dev)
 	start = timer_us(0);
 	while (timer_us(start) < timeout) {
 
-		phy_status = readl(QSGMII_REG_BASE +
-				PCS_QSGMII_MAC_STAT);
+		phy_status = read32(QSGMII_REG_BASE + PCS_QSGMII_MAC_STAT);
 
 		if (PCS_QSGMII_MAC_LINK(phy_status, priv->mac_unit)) {
 
@@ -147,8 +146,8 @@ static int ipq_eth_wr_macaddr(IpqEthDev *eth_dev )
 		   (mac_id[2] << 16) + (mac_id[3] << 24);
 	macid_hi = mac_id[4] + (mac_id[5] << 8);
 
-	writel(macid_hi, &mac_p->macaddr0hi);
-	writel(macid_lo, &mac_p->macaddr0lo);
+	write32(&mac_p->macaddr0hi, macid_hi);
+	write32(&mac_p->macaddr0lo, macid_lo);
 
 	return 0;
 }
@@ -158,10 +157,10 @@ static void ipq_mac_reset(IpqEthDev *eth_dev)
 	struct eth_dma_regs *dma_reg = eth_dev->dma_regs_p;
 	u32 val;
 
-	writel(DMAMAC_SRST, &dma_reg->busmode);
+	write32(&dma_reg->busmode, DMAMAC_SRST);
 	do {
 		udelay(10);
-		val = readl(&dma_reg->busmode);
+		val = read32(&dma_reg->busmode);
 	} while (val & DMAMAC_SRST);
 
 }
@@ -178,7 +177,7 @@ static void ipq_eth_mac_cfg(IpqEthDev *priv)
 
 	ipq_mac_cfg |= (FRAME_BURST_ENABLE | TX_ENABLE | RX_ENABLE);
 
-	writel(ipq_mac_cfg, &mac_reg->conf);
+	write32(&mac_reg->conf, ipq_mac_cfg);
 }
 
 static void ipq_eth_dma_cfg(IpqEthDev *priv)
@@ -193,8 +192,8 @@ static void ipq_eth_dma_cfg(IpqEthDev *priv)
 				DmaDescriptorSkip0 | DmaDescriptor8Words |
 				DmaArbitPr;
 
-	writel(ipq_dma_bus_mode, &dma_reg->busmode);
-	writel(ipq_dma_op_mode, &dma_reg->opmode);
+	write32(&dma_reg->busmode, ipq_dma_bus_mode);
+	write32(&dma_reg->opmode, ipq_dma_op_mode);
 }
 
 static void ipq_eth_flw_cntl_cfg(IpqEthDev *priv)
@@ -262,7 +261,7 @@ static int ipq_gmac_rx_desc_setup(IpqEthDev  *priv)
 	}
 
 	/* Assign Descriptor base address to dmadesclist addr reg */
-	writel((unsigned)priv->desc_rx[0], &dma_reg->rxdesclistaddr);
+	write32(&dma_reg->rxdesclistaddr, (unsigned)priv->desc_rx[0]);
 
 	return 0;
 }
@@ -351,14 +350,14 @@ static int ipq_eth_start(IpqEthDev *priv)
 	ipq_eth_flw_cntl_cfg(priv);
 
 	/* clear all pending interrupts if any */
-	data = readl(&dma_reg->status);
-	writel(data, &dma_reg->status);
+	data = read32(&dma_reg->status);
+	write32(&dma_reg->status, data);
 
 	/* Setup Rx fifos and assign base address to */
 	if (ipq_gmac_rx_desc_setup(priv))
 		return -1;
 
-	writel((unsigned)priv->desc_tx[0], &dma_reg->txdesclistaddr);
+	write32(&dma_reg->txdesclistaddr, (unsigned)priv->desc_tx[0]);
 	setbits_le32(&dma_reg->opmode, (RXSTART));
 	setbits_le32(&dma_reg->opmode, (TXSTART));
 
@@ -392,7 +391,7 @@ static int ipq_eth_send(NetDevice *dev, void *packet, u16 length)
 	dcache_clean_invalidate_by_mva((void const *)(txdesc->buffer1), length);
 
 	/* Start the transmission */
-	writel(POLL_DATA, &dma_p->txpolldemand);
+	write32(&dma_p->txpolldemand, POLL_DATA);
 
 	for (i = 0; i < MAX_WAIT; i++) {
 		udelay(10);
@@ -481,7 +480,7 @@ static int ipq_eth_recv(NetDevice *dev, void *buf, uint16_t *len, int maxlen)
 		dcache_clean_invalidate_by_mva((void const *)rxdesc,
 			DESC_FLUSH_SIZE);
 
-		writel(POLL_DATA, &dma_p->rxpolldemand);
+		write32(&dma_p->rxpolldemand, POLL_DATA);
 	}
 	return 0;
 }
@@ -500,7 +499,7 @@ static void gmac_sgmii_clk_init(unsigned mac_unit, unsigned clk_div,
 				GMACn_GMII_TX_CLK(mac_unit) |
 				GMACn_PTP_CLK(mac_unit));
 
-	writel(gmac_ctl_val, (NSS_REG_BASE + NSS_GMACn_CTL(mac_unit)));
+	write32((NSS_REG_BASE + NSS_GMACn_CTL(mac_unit)), gmac_ctl_val);
 
 	switch (mac_unit) {
 	case GMAC_UNIT1:
@@ -587,8 +586,8 @@ static void ipq_gmac_mii_clk_init(IpqEthDev *priv, unsigned clk_div,
 				nss_eth_clk_gate_ctl_val);
 		setbits_le32((NSS_REG_BASE + NSS_ETH_CLK_SRC_CTL),
 				(0x1 << gmac_idx));
-		writel((NSS_ETH_CLK_DIV(1, gmac_idx)),
-				(NSS_REG_BASE + NSS_ETH_CLK_DIV0));
+		write32((NSS_REG_BASE + NSS_ETH_CLK_DIV0),
+			(NSS_ETH_CLK_DIV(1, gmac_idx)));
 		break;
 	case PHY_INTERFACE_MODE_SGMII:
 		gmac_sgmii_clk_init(gmac_idx, clk_div, gmac_cfg);
@@ -690,12 +689,12 @@ static NetDevice *ipq_gmac_init(const ipq_gmac_board_cfg_t *gmac_cfg)
 
 static void ipq_gmac_core_reset(const ipq_gmac_board_cfg_t *gmac_cfg)
 {
-	writel(0, GMAC_CORE_RESET(gmac_cfg->unit));
+	write32(GMAC_CORE_RESET(gmac_cfg->unit), 0);
 	if (gmac_cfg->is_macsec)
-		writel(0, GMACSEC_CORE_RESET(gmac_cfg->unit));
+		write32(GMACSEC_CORE_RESET(gmac_cfg->unit), 0);
 
-	writel(0, (void *)GMAC_AHB_RESET);
-	writel(0, (MSM_TCSR_BASE + TCSR_PXO_SEL));
+	write32((void *)GMAC_AHB_RESET, 0);
+	write32((MSM_TCSR_BASE + TCSR_PXO_SEL), 0);
 }
 
 unsigned ipq_mdio_read(unsigned phy_addr,
@@ -711,7 +710,7 @@ unsigned ipq_mdio_read(unsigned phy_addr,
 				((reg_offset << MIIREGSHIFT) & MII_REGMSK));
 
 	miiaddr |= (MII_BUSY | MII_CLKRANGE_250_300M);
-	writel(miiaddr, (reg_base + MII_ADDR_REG_ADDR));
+	write32((reg_base + MII_ADDR_REG_ADDR), miiaddr);
 	udelay(10);
 
 	/* Convert to microseconds. */
@@ -719,8 +718,8 @@ unsigned ipq_mdio_read(unsigned phy_addr,
 	cycles = (MII_MDIO_TIMEOUT * 1000) / poll_period;
 
 	while (cycles--) {
-		if (!(readl(reg_base + MII_ADDR_REG_ADDR) & MII_BUSY)) {
-			ret_val = readl(reg_base + MII_DATA_REG_ADDR);
+		if (!(read32(reg_base + MII_ADDR_REG_ADDR) & MII_BUSY)) {
+			ret_val = read32(reg_base + MII_DATA_REG_ADDR);
 			*data = ret_val;
 			return 0;
 		}
@@ -739,21 +738,21 @@ unsigned ipq_mdio_write(unsigned phy_addr, unsigned reg_offset, u16 data)
 	int poll_period;
 	u32 cycles;
 
-	writel(data, (reg_base + MII_DATA_REG_ADDR));
+	write32((reg_base + MII_DATA_REG_ADDR), data);
 
 	miiaddr = (((phy_addr << MIIADDRSHIFT) & MII_ADDRMSK) |
 			((reg_offset << MIIREGSHIFT) & MII_REGMSK) |
 			(MII_WRITE));
 
 	miiaddr |= (MII_BUSY | MII_CLKRANGE_250_300M);
-	writel(miiaddr, (reg_base + MII_ADDR_REG_ADDR));
+	write32((reg_base + MII_ADDR_REG_ADDR), miiaddr);
 	udelay(10);
 
 	poll_period = 1000;
 	cycles = (MII_MDIO_TIMEOUT * 1000) / poll_period;
 
 	while (cycles--) {
-		if (!(readl(reg_base + MII_ADDR_REG_ADDR) & MII_BUSY))
+		if (!(read32(reg_base + MII_ADDR_REG_ADDR) & MII_BUSY))
 			return 0;
 
 		udelay(1000);
@@ -767,7 +766,7 @@ void ipq_gmac_common_init(const ipq_gmac_board_cfg_t *gmac_cfg)
 	unsigned pcs_mode_ctl_val;
 
 	/* Take the switch out of reset */
-	writel(0, GPIO_IN_OUT_ADDR(gmac_cfg->switch_reset_gpio));
+	write32(GPIO_IN_OUT_ADDR(gmac_cfg->switch_reset_gpio), 0);
 
 	pcs_mode_ctl_val = (PCS_CHn_ANEG_EN(GMAC_UNIT1) |
 				PCS_CHn_ANEG_EN(GMAC_UNIT2) |
@@ -789,12 +788,12 @@ void ipq_gmac_common_init(const ipq_gmac_board_cfg_t *gmac_cfg)
 				PCS_CHn_SERDES_SN_DETECT_2(2) |
 				PCS_CHn_SERDES_SN_DETECT_2(3));
 
-	writel(MACSEC_BYPASS_EXT_EN,(NSS_REG_BASE + NSS_MACSEC_CTL));
-	writel(0, (QSGMII_REG_BASE + QSGMII_PHY_MODE_CTL));
-	writel(0, (QSGMII_REG_BASE + PCS_QSGMII_SGMII_MODE));
+	write32((NSS_REG_BASE + NSS_MACSEC_CTL), MACSEC_BYPASS_EXT_EN);
+	write32((QSGMII_REG_BASE + QSGMII_PHY_MODE_CTL), 0);
+	write32((QSGMII_REG_BASE + PCS_QSGMII_SGMII_MODE), 0);
 
 	setbits_le32((QSGMII_REG_BASE + NSS_PCS_MODE_CTL), pcs_mode_ctl_val);
-	writel(pcs_qsgmii_ctl_val, (QSGMII_REG_BASE + PCS_QSGMII_CTL));
+	write32((QSGMII_REG_BASE + PCS_QSGMII_CTL), pcs_qsgmii_ctl_val);
 
 	/*
 	 * MDIO lines for all the MACs are connected through MAC0.
@@ -802,7 +801,7 @@ void ipq_gmac_common_init(const ipq_gmac_board_cfg_t *gmac_cfg)
 	 * out of reset. Else, MDIO writes to configure other MACs
 	 * will fail.
 	 */
-	writel(0, GMAC_CORE_RESET(0));
+	write32(GMAC_CORE_RESET(0), 0);
 
 	/*
 	 * Pull out of reset the MACs that are applicable to the

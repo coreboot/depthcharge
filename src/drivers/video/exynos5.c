@@ -38,12 +38,12 @@ static int disable_fimd_dma(struct CleanupFunc *cleanup, CleanupType type)
 	uint32_t *fimd_shadowcon = (uint32_t *)(regs + 0x34);
 
 	// Disable video output and control signals.
-	uint32_t vidcon0 = readl(fimd_vidcon0);
+	uint32_t vidcon0 = read32(fimd_vidcon0);
 	vidcon0 &= ~(FIMD_VIDCON0_ENVID | FIMD_VIDCON0_ENVID_F);
-	writel(vidcon0, fimd_vidcon0);
+	write32(fimd_vidcon0, vidcon0);
 
 	// Disable all channels.
-	writel(0, fimd_shadowcon);
+	write32(fimd_shadowcon, 0);
 
 	return 0;
 }

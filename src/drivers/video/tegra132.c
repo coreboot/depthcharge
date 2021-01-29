@@ -25,8 +25,8 @@ int tegra132_display_init(DisplayOps *me)
 	uintptr_t phys_addr = lib_sysinfo.framebuffer.physical_address;
 
 	/* Set the framebuffer address and enable the T window. */
-	writel(phys_addr, winbuf_t_start_addr);
-	writel(readl(win_t_win_options) | WIN_ENABLE, win_t_win_options);
+	write32(winbuf_t_start_addr, phys_addr);
+	write32(win_t_win_options, read32(win_t_win_options) | WIN_ENABLE);
 
 	return 0;
 }
@@ -34,7 +34,7 @@ int tegra132_display_init(DisplayOps *me)
 int tegra132_display_stop(DisplayOps *me)
 {
 	/* Disable the T Window. */
-	writel(readl(win_t_win_options) & ~WIN_ENABLE, win_t_win_options);
+	write32(win_t_win_options, read32(win_t_win_options) & ~WIN_ENABLE);
 	return 0;
 }
 

@@ -343,7 +343,7 @@ static void mem2hwcpy(void *dest, const void *src, size_t n)
 	assert(words * sizeof(uint32_t) == n);
 
 	for (i = 0; i < words; i++)
-		writel(src32[i], &dest32[i]);
+		write32(&dest32[i], src32[i]);
 }
 
 /*
@@ -362,7 +362,7 @@ static void hw2memcpy(void *dest, const void *src, size_t n)
 	assert(words * sizeof(uint32_t) == n);
 
 	for (i = 0; i < words; i++)
-		dest32[i] = readl(&src32[i]);
+		dest32[i] = read32(&src32[i]);
 }
 
 /*
@@ -392,8 +392,8 @@ static void ipq_init_rw_pageno(MtdDev *mtd, int pageno)
 	row1 = PAGENO_ROW1(pageno);
 	row2 = PAGENO_ROW2(pageno);
 
-	writel(ADDR_CYC_ROW0(row0) | ADDR_CYC_ROW1(row1), &regs->addr0);
-	writel(ADDR_CYC_ROW2(row2), &regs->addr1);
+	write32(&regs->addr0, ADDR_CYC_ROW0(row0) | ADDR_CYC_ROW1(row1));
+	write32(&regs->addr1, ADDR_CYC_ROW2(row2));
 }
 
 /*
@@ -412,8 +412,8 @@ static void ipq_init_erased_page_detector(MtdDev *mtd)
 	reset = ERASED_CW_ECC_MASK(1) | AUTO_DETECT_RES(1);
 	enable = ERASED_CW_ECC_MASK(1) | AUTO_DETECT_RES(0);
 
-	writel(reset, &regs->erased_cw_detect_cfg);
-	writel(enable, &regs->erased_cw_detect_cfg);
+	write32(&regs->erased_cw_detect_cfg, reset);
+	write32(&regs->erased_cw_detect_cfg, enable);
 }
 
 /*
@@ -425,8 +425,8 @@ static void ipq_enter_raw_mode(MtdDev *mtd)
 	struct ipq_nand_dev *dev = MTD_IPQ_NAND_DEV(mtd);
 	struct ebi2nd_regs *regs = dev->regs;
 
-	writel(dev->dev_cfg0_raw, &regs->dev0_cfg0);
-	writel(dev->dev_cfg1_raw, &regs->dev0_cfg1);
+	write32(&regs->dev0_cfg0, dev->dev_cfg0_raw);
+	write32(&regs->dev0_cfg1, dev->dev_cfg1_raw);
 
 	dev->read_cmd = IPQ_CMD_PAGE_READ;
 	dev->write_cmd = IPQ_CMD_PAGE_PROG;
@@ -443,9 +443,9 @@ static void ipq_exit_raw_mode(MtdDev *mtd)
 	struct ipq_nand_dev *dev = MTD_IPQ_NAND_DEV(mtd);
 	struct ebi2nd_regs *regs = dev->regs;
 
-	writel(dev->dev_cfg0, &regs->dev0_cfg0);
-	writel(dev->dev_cfg1, &regs->dev0_cfg1);
-	writel(dev->dev_ecc_cfg, &regs->dev0_ecc_cfg);
+	write32(&regs->dev0_cfg0, dev->dev_cfg0);
+	write32(&regs->dev0_cfg1, dev->dev_cfg1);
+	write32(&regs->dev0_ecc_cfg, dev->dev_ecc_cfg);
 
 	dev->read_cmd = IPQ_CMD_PAGE_READ_ALL;
 	dev->write_cmd = IPQ_CMD_PAGE_PROG_ALL;
@@ -464,7 +464,7 @@ static int ipq_wait_ready(MtdDev *mtd, uint32_t *status)
 	struct ebi2nd_regs *regs = dev->regs;
 
 	while (count < NAND_READY_TIMEOUT) {
-		*status = readl(&regs->flash_status);
+		*status = read32(&regs->flash_status);
 		op_status = *status & OPER_STATUS_MASK;
 		if (op_status == OPER_STATUS_IDLE_STATE)
 			break;
@@ -473,7 +473,7 @@ static int ipq_wait_ready(MtdDev *mtd, uint32_t *status)
 		count++;
 	}
 
-	writel(READY_BSY_N_EXTERNAL_FLASH_IS_READY, &regs->flash_status);
+	write32(&regs->flash_status, READY_BSY_N_EXTERNAL_FLASH_IS_READY);
 
 	if (count >= NAND_READY_TIMEOUT)
 		return -ETIMEDOUT;
@@ -490,8 +490,8 @@ static int ipq_exec_cmd(MtdDev *mtd, uint32_t cmd, uint32_t *status)
 	struct ipq_nand_dev *dev = MTD_IPQ_NAND_DEV(mtd);
 	struct ebi2nd_regs *regs = dev->regs;
 
-	writel(cmd, &regs->flash_cmd);
-	writel(EXEC_CMD(1), &regs->exec_cmd);
+	write32(&regs->flash_cmd, cmd);
+	write32(&regs->exec_cmd, EXEC_CMD(1));
 
 	ret = ipq_wait_ready(mtd, status);
 	if (ret < 0)
@@ -513,10 +513,10 @@ static int ipq_check_read_status(MtdDev *mtd, uint32_t status)
 
 	ipq_debug("Read Status: %08x\n", status);
 
-	cw_erased = readl(&regs->erased_cw_detect_status);
+	cw_erased = read32(&regs->erased_cw_detect_status);
 	cw_erased &= CODEWORD_ERASED_MASK;
 
-	num_errors = readl(&regs->buffer_status);
+	num_errors = read32(&regs->buffer_status);
 	num_errors &= NUM_ERRORS_MASK;
 
 	if (status & MPU_ERROR_MASK)
@@ -1102,7 +1102,7 @@ static int ipq_nand_erase_block(MtdDev *mtd, int blockno)
 
 	offs = blockno << dev->phys_erase_shift;
 	pageno = offs >> dev->page_shift;
-	writel(pageno, &regs->addr0);
+	write32(&regs->addr0, pageno);
 
 	ret = ipq_exec_cmd(mtd, IPQ_CMD_BLOCK_ERASE, &status);
 	if (ret < 0)
@@ -1173,12 +1173,12 @@ static int ipq_nand_onfi_probe(MtdDev *mtd, uint32_t *onfi_id)
 	struct ipq_nand_dev *dev = MTD_IPQ_NAND_DEV(mtd);
 	struct ebi2nd_regs *regs = dev->regs;
 
-	writel(ONFI_READ_ID_ADDR, &regs->addr0);
+	write32(&regs->addr0, ONFI_READ_ID_ADDR);
 	ret = ipq_exec_cmd(mtd, IPQ_CMD_FETCH_ID, &status);
 	if (ret < 0)
 		return ret;
 
-	*onfi_id = readl(&regs->flash_read_id);
+	*onfi_id = read32(&regs->flash_read_id);
 
 	return 0;
 }
@@ -1194,10 +1194,10 @@ int ipq_nand_get_info_onfi(MtdDev *mtd)
 
 	ipq_enter_raw_mode(mtd);
 
-	writel(0, &regs->addr0);
-	writel(0, &regs->addr1);
+	write32(&regs->addr0, 0);
+	write32(&regs->addr1, 0);
 
-	dev_cmd_vld_orig = readl(&regs->dev_cmd_vld);
+	dev_cmd_vld_orig = read32(&regs->dev_cmd_vld);
 	clrsetbits_le32(&regs->dev_cmd_vld, READ_START_VLD_MASK,
 			READ_START_VLD(0));
 
@@ -1231,7 +1231,7 @@ int ipq_nand_get_info_onfi(MtdDev *mtd)
 	clrsetbits_le32(&regs->dev_cmd1, READ_ADDR_MASK,
 			READ_ADDR(NAND_CMD_READ0));
 
-	writel(dev_cmd_vld_orig, &regs->dev_cmd_vld);
+	write32(&regs->dev_cmd_vld, dev_cmd_vld_orig);
 
 	return 0;
 }
@@ -1246,13 +1246,13 @@ static int ipq_nand_probe(MtdDev *mtd, uint32_t *id)
 	struct ipq_nand_dev *dev = MTD_IPQ_NAND_DEV(mtd);
 	struct ebi2nd_regs *regs = dev->regs;
 
-	writel(0, &regs->addr0);
+	write32(&regs->addr0, 0);
 
 	ret = ipq_exec_cmd(mtd, IPQ_CMD_FETCH_ID, &status);
 	if (ret < 0)
 		return ret;
 
-	*id = readl(&regs->flash_read_id);
+	*id = read32(&regs->flash_read_id);
 
 	return 0;
 }
@@ -1497,14 +1497,14 @@ static void ipq_nand_hw_config(MtdDev *mtd, struct ipq_config *cfg)
 	dev->curr_page_layout = dev->ecc_page_layout;
 	dev->oob_per_page = mtd->oobavail;
 
-	writel(dev->dev_cfg0, &regs->dev0_cfg0);
-	writel(dev->dev_cfg1, &regs->dev0_cfg1);
-	writel(dev->dev_ecc_cfg, &regs->dev0_ecc_cfg);
-	writel(dev->main_per_cw - 1, &regs->ebi2_ecc_buf_cfg);
+	write32(&regs->dev0_cfg0, dev->dev_cfg0);
+	write32(&regs->dev0_cfg1, dev->dev_cfg1);
+	write32(&regs->dev0_ecc_cfg, dev->dev_ecc_cfg);
+	write32(&regs->ebi2_ecc_buf_cfg, dev->main_per_cw - 1);
 
 	dev_cmd_vld = (SEQ_READ_START_VLD(1) | ERASE_START_VLD(1)
 		       | WRITE_START_VLD(1) | READ_START_VLD(1));
-	writel(dev_cmd_vld, &regs->dev_cmd_vld);
+	write32(&regs->dev_cmd_vld, dev_cmd_vld);
 }
 
 /*

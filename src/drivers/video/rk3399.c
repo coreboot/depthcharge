@@ -46,11 +46,11 @@ static int edp_is_video_stream_on(void)
 	u64 start = timer_us(0);
 
 	do {
-		val = readl(edp_sys_ctl_3);
+		val = read32(edp_sys_ctl_3);
 
 		/* must write value to update STRM_VALID bit status */
-		writel(val, edp_sys_ctl_3);
-		val = readl(edp_sys_ctl_3);
+		write32(edp_sys_ctl_3, val);
+		val = read32(edp_sys_ctl_3);
 		if (!(val & STRM_VALID))
 			return 0;
 	} while (timer_us(start) < 100 * 1000);
@@ -85,10 +85,10 @@ static int rockchip_display_init(DisplayOps *me)
 		if (edp_enable())
 			return -1;
 
-	writel(phys_addr, vop0_win0_yrgb_mst);
+	write32(vop0_win0_yrgb_mst, phys_addr);
 
 	/* enable reg config */
-	writel(0xffff, vop0_reg_cfg_done);
+	write32(vop0_reg_cfg_done, 0xffff);
 
 	return 0;
 }

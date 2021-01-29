@@ -129,20 +129,20 @@ static void flush_fifos(TegraSpiRegs *regs)
 {
 	const uint32_t flush_mask = SPI_FIFO_STATUS_RX_FIFO_FLUSH |
 				    SPI_FIFO_STATUS_TX_FIFO_FLUSH;
-	uint32_t status = readl(&regs->fifo_status);
+	uint32_t status = read32(&regs->fifo_status);
 
 	status |= flush_mask;
-	writel(status, &regs->fifo_status);
+	write32(&regs->fifo_status, status);
 
 	while (status & flush_mask)
-		status = readl(&regs->fifo_status);
+		status = read32(&regs->fifo_status);
 }
 
 static int tegra_spi_init(TegraSpi *bus)
 {
 	TegraSpiRegs *regs = bus->reg_addr;
 
-	uint32_t command1 = readl(&regs->command1);
+	uint32_t command1 = read32(&regs->command1);
 	// Software drives chip-select, set value to high.
 	command1 |= SPI_CMD1_CS_SW_HW | SPI_CMD1_CS_SW_VAL;
 
@@ -150,7 +150,7 @@ static int tegra_spi_init(TegraSpi *bus)
 	command1 &= ~(SPI_CMD1_BIT_LEN_MASK | SPI_CMD1_PACKED);
 	command1 |= (7 << SPI_CMD1_BIT_LEN_SHIFT);
 
-	writel(command1, &regs->command1);
+	write32(&regs->command1, command1);
 
 	flush_fifos(regs);
 
@@ -174,7 +174,7 @@ static int tegra_spi_start(SpiOps *me)
 	// Force chip select 0 for now.
 	int cs = 0;
 
-	uint32_t command1 = readl(&regs->command1);
+	uint32_t command1 = read32(&regs->command1);
 
 	// Select appropriate chip-select line.
 	command1 &= ~SPI_CMD1_CS_SEL_MASK;
@@ -183,7 +183,7 @@ static int tegra_spi_start(SpiOps *me)
 	// Drive chip-select low.
 	command1 &= ~SPI_CMD1_CS_SW_VAL;
 
-	writel(command1, &regs->command1);
+	write32(&regs->command1, command1);
 
 	bus->started = 1;
 
@@ -192,13 +192,13 @@ static int tegra_spi_start(SpiOps *me)
 
 static void clear_fifo_status(TegraSpiRegs *regs)
 {
-	uint32_t status = readl(&regs->fifo_status);
+	uint32_t status = read32(&regs->fifo_status);
 	status &= ~(SPI_FIFO_STATUS_ERR |
 		    SPI_FIFO_STATUS_TX_FIFO_OVF |
 		    SPI_FIFO_STATUS_TX_FIFO_UNR |
 		    SPI_FIFO_STATUS_RX_FIFO_OVF |
 		    SPI_FIFO_STATUS_RX_FIFO_UNR);
-	writel(status, &regs->fifo_status);
+	write32(&regs->fifo_status, status);
 }
 
 static int tegra_spi_dma_config(TegraApbDmaChannel *dma, void *ahb_ptr,
@@ -207,9 +207,9 @@ static int tegra_spi_dma_config(TegraApbDmaChannel *dma, void *ahb_ptr,
 {
 	TegraApbDmaRegs *regs = dma->regs;
 
-	uint32_t apb_seq = readl(&regs->apb_seq);
-	uint32_t ahb_seq = readl(&regs->ahb_seq);
-	uint32_t csr = readl(&regs->csr);
+	uint32_t apb_seq = read32(&regs->apb_seq);
+	uint32_t ahb_seq = read32(&regs->ahb_seq);
+	uint32_t csr = read32(&regs->csr);
 
 	// Set APB bus width, address wrap for each word.
 	uint32_t new_apb_seq = apb_seq;
@@ -238,23 +238,23 @@ static int tegra_spi_dma_config(TegraApbDmaChannel *dma, void *ahb_ptr,
 	new_csr |= APBDMACHAN_CSR_FLOW;
 
 	if (apb_seq != new_apb_seq)
-		writel(new_apb_seq, &regs->apb_seq);
+		write32(&regs->apb_seq, new_apb_seq);
 	if (ahb_seq != new_ahb_seq)
-		writel(new_ahb_seq, &regs->ahb_seq);
+		write32(&regs->ahb_seq, new_ahb_seq);
 	if (csr != new_csr)
-		writel(new_csr, &regs->csr);
+		write32(&regs->csr, new_csr);
 
-	writel((uintptr_t)ahb_ptr, &regs->ahb_ptr);
-	writel((uintptr_t)apb_ptr, &regs->apb_ptr);
+	write32(&regs->ahb_ptr, (uintptr_t)ahb_ptr);
+	write32(&regs->apb_ptr, (uintptr_t)apb_ptr);
 
-	writel(size - 1, &regs->wcount);
+	write32(&regs->wcount, size - 1);
 
 	return 0;
 }
 
 static void wait_for_transfer(TegraSpiRegs *regs, uint32_t packets)
 {
-	while ((readl(&regs->trans_status) & SPI_STATUS_RDY) != SPI_STATUS_RDY);
+	while ((read32(&regs->trans_status) & SPI_STATUS_RDY) != SPI_STATUS_RDY);
 }
 
 static int tegra_spi_dma_transfer(TegraSpi *bus, void *in, const void *out,
@@ -270,19 +270,19 @@ static int tegra_spi_dma_transfer(TegraSpi *bus, void *in, const void *out,
 	TegraApbDmaChannel *cin = NULL;
 	TegraApbDmaChannel *cout = NULL;
 
-	uint32_t command1 = readl(&regs->command1);
+	uint32_t command1 = read32(&regs->command1);
 
 	// Set transfer width.
 	command1 &= ~SPI_CMD1_BIT_LEN_MASK;
 	command1 |= ((SPI_PACKET_SIZE_BYTES * 8 - 1) << SPI_CMD1_BIT_LEN_SHIFT);
-	writel(command1, &regs->command1);
+	write32(&regs->command1, command1);
 
 	// Specify BLOCK_SIZE in SPI_DMA_BLK.
-	writel((size >> SPI_PACKET_LOG_SIZE_BYTES) - 1, &regs->dma_blk);
+	write32(&regs->dma_blk, (size >> SPI_PACKET_LOG_SIZE_BYTES) - 1);
 
 	// Write to SPI_TRANS_STATUS RDY bit to clear it.
-	uint32_t trans_status = readl(&regs->trans_status);
-	writel(trans_status | SPI_STATUS_RDY, &regs->trans_status);
+	uint32_t trans_status = read32(&regs->trans_status);
+	write32(&regs->trans_status, trans_status | SPI_STATUS_RDY);
 
 	if (out) {
 		assert(((SPI_PACKET_SIZE_BYTES - 1) & (uintptr_t)out) == 0);
@@ -293,7 +293,7 @@ static int tegra_spi_dma_transfer(TegraSpi *bus, void *in, const void *out,
 			return -1;
 
 		command1 |= SPI_CMD1_TX_EN;
-		writel(command1, &regs->command1);
+		write32(&regs->command1, command1);
 	}
 	if (in) {
 		assert(((SPI_PACKET_SIZE_BYTES - 1) & (uintptr_t)in) == 0);
@@ -306,18 +306,18 @@ static int tegra_spi_dma_transfer(TegraSpi *bus, void *in, const void *out,
 		}
 
 		command1 |= SPI_CMD1_RX_EN;
-		writel(command1, &regs->command1);
+		write32(&regs->command1, command1);
 	}
 
 	if (cout)
 		cout->start(cout);
 
 	// Set DMA bit in SPI_DMA_CTL to start.
-	uint32_t dma_ctl = readl(&regs->dma_ctl) | SPI_DMA_CTL_DMA;
+	uint32_t dma_ctl = read32(&regs->dma_ctl) | SPI_DMA_CTL_DMA;
 	dma_ctl &= ~(SPI_DMA_CTL_RX_TRIG_MASK | SPI_DMA_CTL_TX_TRIG_MASK);
 	dma_ctl |= (0 << SPI_DMA_CTL_RX_TRIG_SHIFT);
 	dma_ctl |= (0 << SPI_DMA_CTL_TX_TRIG_SHIFT);
-	writel(dma_ctl, &regs->dma_ctl);
+	write32(&regs->dma_ctl, dma_ctl);
 
 	if (cin)
 		cin->start(cin);
@@ -334,9 +334,9 @@ static int tegra_spi_dma_transfer(TegraSpi *bus, void *in, const void *out,
 	}
 
 	command1 &= ~(SPI_CMD1_TX_EN | SPI_CMD1_RX_EN);
-	writel(command1, &regs->command1);
+	write32(&regs->command1, command1);
 
-	uint32_t status = readl(&regs->fifo_status);
+	uint32_t status = read32(&regs->fifo_status);
 	if (status & SPI_FIFO_STATUS_ERR) {
 		printf("%s: Error in fifo status %#x.\n", __func__, status);
 		clear_fifo_status(regs);
@@ -356,30 +356,30 @@ static int tegra_spi_pio_transfer(TegraSpi *bus, uint8_t *in,
 
 	flush_fifos(regs);
 
-	uint32_t command1 = readl(&regs->command1);
+	uint32_t command1 = read32(&regs->command1);
 
 	// Set transfer width.
 	command1 &= ~SPI_CMD1_BIT_LEN_MASK;
 	command1 |= (7 << SPI_CMD1_BIT_LEN_SHIFT);
-	writel(command1, &regs->command1);
+	write32(&regs->command1, command1);
 
 	// Specify BLOCK_SIZE in SPI_DMA_BLK.
-	writel(size - 1, &regs->dma_blk);
+	write32(&regs->dma_blk, size - 1);
 
 	// Write to SPI_TRANS_STATUS RDY bit to clear it.
-	uint32_t trans_status = readl(&regs->trans_status);
-	writel(trans_status | SPI_STATUS_RDY, &regs->trans_status);
+	uint32_t trans_status = read32(&regs->trans_status);
+	write32(&regs->trans_status, trans_status | SPI_STATUS_RDY);
 
 	if (out)
 		command1 |= SPI_CMD1_TX_EN;
 	if (in)
 		command1 |= SPI_CMD1_RX_EN;
-	writel(command1, &regs->command1);
+	write32(&regs->command1, command1);
 
 	uint32_t out_bytes = out ? size : 0;
 	while (out_bytes) {
 		uint32_t data = *out++;
-		writel(data, &regs->tx_fifo);
+		write32(&regs->tx_fifo, data);
 		out_bytes--;
 	}
 
@@ -396,19 +396,19 @@ static int tegra_spi_pio_transfer(TegraSpi *bus, uint8_t *in,
 	 */
 	udelay(2);
 
-	writel(command1 | SPI_CMD1_GO, &regs->command1);
+	write32(&regs->command1, command1 | SPI_CMD1_GO);
 
 	/* Need to wait a few cycles before command1 register is read */
 	udelay(1);
 
 	// Make sure the write to command1 completes.
-	readl(&regs->command1);
+	read32(&regs->command1);
 	wait_for_transfer(regs, size);
 
 	command1 &= ~(SPI_CMD1_TX_EN | SPI_CMD1_RX_EN);
-	writel(command1, &regs->command1);
+	write32(&regs->command1, command1);
 
-	uint32_t status = readl(&regs->fifo_status);
+	uint32_t status = read32(&regs->fifo_status);
 	if (status & SPI_FIFO_STATUS_ERR) {
 		printf("%s: Error in fifo status %#x.\n", __func__, status);
 		clear_fifo_status(regs);
@@ -417,7 +417,7 @@ static int tegra_spi_pio_transfer(TegraSpi *bus, uint8_t *in,
 
 	uint32_t in_bytes = in ? size : 0;
 	while (in_bytes) {
-		uint32_t data = readl(&regs->rx_fifo);
+		uint32_t data = read32(&regs->rx_fifo);
 		*in++ = data;
 		in_bytes--;
 	}
@@ -515,7 +515,7 @@ static int tegra_spi_stop(SpiOps *me)
 		return -1;
 	}
 
-	writel(readl(&regs->command1) ^ SPI_CMD1_CS_SW_VAL, &regs->command1);
+	write32(&regs->command1, read32(&regs->command1) ^ SPI_CMD1_CS_SW_VAL);
 
 	bus->started = 0;
 

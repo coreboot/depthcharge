@@ -221,7 +221,7 @@ static int board_setup(void)
 
 	/* eMMC support */
 	/* DATA pins are muxed between NAND and EMMC, configure them to eMMC */
-	writel(EMMC_BOOT, (uint32_t *)TLMM_BOOT_SEL);
+	write32((uint32_t *)TLMM_BOOT_SEL, EMMC_BOOT);
 
 	SdhciHost *emmc = new_sdhci_msm_host((void *)SDC1_HC_BASE,
 					SDHCI_PLATFORM_EMMC_1V8_POWER |

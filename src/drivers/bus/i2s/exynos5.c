@@ -58,7 +58,7 @@ typedef struct __attribute__((packed)) Exynos5I2sMultiRegs {
 
 static void i2s_transmit_enable(uint32_t *control_ptr, int on)
 {
-	uint32_t control = readl(control_ptr);
+	uint32_t control = read32(control_ptr);
 	if (on) {
 		control |= CON_ACTIVE;
 		control &= ~CON_TXCH_PAUSE;
@@ -66,14 +66,14 @@ static void i2s_transmit_enable(uint32_t *control_ptr, int on)
 		control |=  CON_TXCH_PAUSE;
 		control &= ~CON_ACTIVE;
 	}
-	writel(control, control_ptr);
+	write32(control_ptr, control);
 }
 
 static void i2s_flush_tx_fifo(uint32_t *fifo_control_ptr)
 {
-	uint32_t fifo_control = readl(fifo_control_ptr);
-	writel(fifo_control | FIC_TXFLUSH, fifo_control_ptr);
-	writel(fifo_control & ~FIC_TXFLUSH, fifo_control_ptr);
+	uint32_t fifo_control = read32(fifo_control_ptr);
+	write32(fifo_control_ptr, fifo_control | FIC_TXFLUSH);
+	write32(fifo_control_ptr, fifo_control & ~FIC_TXFLUSH);
 }
 
 static int i2s_send_generic(uint32_t *data, unsigned int length,
@@ -81,14 +81,14 @@ static int i2s_send_generic(uint32_t *data, unsigned int length,
 {
 	// Prefill the tx fifo
 	for (int i = 0; i < MIN(64, length); i++)
-		writel(*data++, tx_data);
+		write32(tx_data, *data++);
 
 	length -= MIN(64, length);
 	i2s_transmit_enable(control, 1);
 
 	while (length) {
-		if (!(readl(control) & CON_TXFIFO_FULL)) {
-			writel(*data++, tx_data);
+		if (!(read32(control) & CON_TXFIFO_FULL)) {
+			write32(tx_data, *data++);
 			length--;
 		}
 	}
@@ -103,7 +103,7 @@ static int i2s_init(Exynos5I2s *bus)
 {
 	Exynos5I2sRegs *regs = bus->regs;
 
-	uint32_t mode = readl(&regs->mode);
+	uint32_t mode = read32(&regs->mode);
 
 	// Set transmit only mode.
 	mode &= ~MOD_MASK;
@@ -170,7 +170,7 @@ static int i2s_init(Exynos5I2s *bus)
 		return 1;
 	}
 
-	writel(mode, &regs->mode);
+	write32(&regs->mode, mode);
 
 	i2s_transmit_enable(&regs->control, 0);
 	i2s_flush_tx_fifo(&regs->fifo_control);
@@ -214,13 +214,13 @@ static int i2s_init_multi(Exynos5I2s *bus)
 	Exynos5I2sMultiRegs *regs = bus->regs;
 
 	// Reset the bus.
-	writel(0, &regs->control);
-	writel(CON_MULTI_RSTCLR, &regs->control);
+	write32(&regs->control, 0);
+	write32(&regs->control, CON_MULTI_RSTCLR);
 
 	uint32_t mode = MOD_MULTI_OP_CLK_AUDIO | MOD_MULTI_RCLKSRC;
 
 	unsigned int magic_prescaler = 0x3;
-	writel(PSR_MULTI_PSREN | (magic_prescaler << 8), &regs->prescaler);
+	write32(&regs->prescaler, PSR_MULTI_PSREN | (magic_prescaler << 8));
 
 	mode |= MOD_MULTI_SDF_IIS;
 
@@ -284,7 +284,7 @@ static int i2s_init_multi(Exynos5I2s *bus)
 		return 1;
 	}
 
-	writel(mode, &regs->mode);
+	write32(&regs->mode, mode);
 
 	i2s_transmit_enable(&regs->control, 0);
 	i2s_flush_tx_fifo(&regs->fifo_control);

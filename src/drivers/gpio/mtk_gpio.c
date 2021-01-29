@@ -74,10 +74,10 @@ static int mt_eint_irq_status(GpioOps *me)
 	pos = pin / MAX_EINT_REG_BITS;
 	bit = pin % MAX_EINT_REG_BITS;
 
-	status = (((readl(&reg->sta[pos]) & (1L << bit)) != 0) ? 1 : 0);
+	status = (((read32(&reg->sta[pos]) & (1L << bit)) != 0) ? 1 : 0);
 
 	if (status)
-		writel(1L << bit, &reg->ack[pos]);
+		write32(&reg->ack[pos], 1L << bit);
 
 	return status;
 }

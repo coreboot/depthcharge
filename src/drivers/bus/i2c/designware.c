@@ -243,26 +243,26 @@ static void i2c_print_status_registers(DesignwareI2cRegs *regs)
 	       "RX FIFO Level: %u, TX FIFO Level: %u\n"
 	       "Enable: %#x, Enable Status: %#x\n"
 	       "Abort Source: %#x\n",
-	       readl(&regs->status), readl(&regs->raw_intr_stat),
-	       readl(&regs->rx_fifo_level), readl(&regs->tx_fifo_level),
-	       readl(&regs->enable), readl(&regs->enable_status),
-	       readl(&regs->tx_abort_source));
+	       read32(&regs->status), read32(&regs->raw_intr_stat),
+	       read32(&regs->rx_fifo_level), read32(&regs->tx_fifo_level),
+	       read32(&regs->enable), read32(&regs->enable_status),
+	       read32(&regs->tx_abort_source));
 }
 
 static void i2c_enable(DesignwareI2cRegs *regs)
 {
-	if (!(readl(&regs->enable) & ENABLE_0B))
-		writel(ENABLE_0B, &regs->enable);
+	if (!(read32(&regs->enable) & ENABLE_0B))
+		write32(&regs->enable, ENABLE_0B);
 	else
 		printf("%s: i2s bus is already enabled.\n", __func__ );
 }
 
 static int i2c_disable(DesignwareI2cRegs *regs)
 {
-	if (readl(&regs->enable) & ENABLE_0B) {
+	if (read32(&regs->enable) & ENABLE_0B) {
 		uint64_t start;
 
-		writel(0, &regs->enable);
+		write32(&regs->enable, 0);
 
 		/* Wait for enable status bit to clear */
 		start = timer_us(0);
@@ -298,13 +298,13 @@ static inline void set_speed_regs(DesignwareI2c *bus, uint32_t cntl_mask,
 	DesignwareI2cRegs *regs = bus->regs;
 	uint32_t cntl;
 
-	writel(bus->clk_mhz * high_time / 1000, high_reg);
-	writel(bus->clk_mhz * low_time / 1000, low_reg);
-	writel(bus->clk_mhz * DEFAULT_SDA_HOLD_TIME / 1000, &regs->sda_hold);
+	write32(high_reg, bus->clk_mhz * high_time / 1000);
+	write32(low_reg, bus->clk_mhz * low_time / 1000);
+	write32(&regs->sda_hold, bus->clk_mhz * DEFAULT_SDA_HOLD_TIME / 1000);
 
-	cntl = (readl(&regs->control) & (~CONTROL_SPEED_MASK));
+	cntl = (read32(&regs->control) & (~CONTROL_SPEED_MASK));
 	cntl |= CONTROL_RE;
-	writel(cntl | cntl_mask, &regs->control);
+	write32(&regs->control, cntl | cntl_mask);
 }
 
 /*
@@ -347,7 +347,7 @@ static int i2c_speed_init_done(uint32_t *high_reg, uint32_t *low_reg)
 	 * If both high_reg and low_reg are set to non-zero value, assume that
 	 * the bus speed is already configured.
 	 */
-	return readl(high_reg) && readl(low_reg);
+	return read32(high_reg) && read32(low_reg);
 }
 
 /*
@@ -395,11 +395,11 @@ static void i2c_init(DesignwareI2c *bus)
 	/* Disable controller. */
 	i2c_disable(regs);
 
-	writel(CONTROL_SD | CONTROL_SPEED_FS | CONTROL_MM, &regs->control);
-	writel(RX_THRESH, &regs->rx_thresh);
-	writel(TX_THRESH, &regs->tx_thresh);
+	write32(&regs->control, CONTROL_SD | CONTROL_SPEED_FS | CONTROL_MM);
+	write32(&regs->rx_thresh, RX_THRESH);
+	write32(&regs->tx_thresh, TX_THRESH);
 	i2c_set_bus_speed(bus);
-	writel(INTR_STOP_DET, &regs->intr_mask);
+	write32(&regs->intr_mask, INTR_STOP_DET);
 
 	bus->initialized = 1;
 }
@@ -414,9 +414,9 @@ static void i2c_flush_rxfifo(DesignwareI2cRegs *regs)
 {
 	unsigned int cnt = 0;
 
-	while (readl(&regs->status) & STATUS_RFNE) {
+	while (read32(&regs->status) & STATUS_RFNE) {
 		cnt++;
-		readl(&regs->cmd_data);
+		read32(&regs->cmd_data);
 	}
 
 	if (cnt)
@@ -435,7 +435,7 @@ static int i2c_wait_for_bus_idle(DesignwareI2cRegs *regs)
 	uint64_t start = timer_us(0);
 
 	do {
-		unsigned int status = readl(&regs->status);
+		unsigned int status = read32(&regs->status);
 
 		if (!(status & STATUS_MA) && (status & STATUS_TFE))
 			return 0;
@@ -457,32 +457,32 @@ static int i2c_wait_for_bus_idle(DesignwareI2cRegs *regs)
  */
 static int process_fatal_interrupts(DesignwareI2cRegs *regs)
 {
-	unsigned int intr_stat = readl(&regs->raw_intr_stat);
+	unsigned int intr_stat = read32(&regs->raw_intr_stat);
 
 	int ret = 0;
 
 	if ((intr_stat & INTR_TX_ABRT)) {
 		print_tx_aborted(regs);
 
-		readl(&regs->clear_tx_abrt_intr);
+		read32(&regs->clear_tx_abrt_intr);
 		ret = 1;
 	}
 
 	if ((intr_stat & INTR_RX_UNDER)) {
 		printf("%s: RX FIFO Underflow!\n", __func__);
-		readl(&regs->clear_rx_under_intr);
+		read32(&regs->clear_rx_under_intr);
 		ret = 1;
 	}
 
 	if ((intr_stat & INTR_RX_OVER)) {
 		printf("%s: RX FIFO Overflow!\n", __func__);
-		readl(&regs->clear_rx_over_intr);
+		read32(&regs->clear_rx_over_intr);
 		ret = 1;
 	}
 
 	if ((intr_stat & INTR_TX_OVER)) {
 		printf("%s: TX FIFO Overflow!\n", __func__);
-		readl(&regs->clear_tx_over_intr);
+		read32(&regs->clear_tx_over_intr);
 		ret = 1;
 	}
 
@@ -504,7 +504,7 @@ static int i2c_wait_for_stop_condition(DesignwareI2cRegs *regs)
 			return -1;
 		}
 
-		if (readl(&regs->raw_intr_stat) & INTR_STOP_DET)
+		if (read32(&regs->raw_intr_stat) & INTR_STOP_DET)
 			return 0;
 
 	} while (timer_us(start) <= TIMEOUT_US);
@@ -531,7 +531,7 @@ static int i2c_wait_for_tx_fifo_not_full(DesignwareI2cRegs *regs)
 			return -1;
 		}
 
-		if (readl(&regs->status) & STATUS_TFNF)
+		if (read32(&regs->status) & STATUS_TFNF)
 			return 0;
 
 	} while (timer_us(start) <= TIMEOUT_US);
@@ -559,7 +559,7 @@ static int i2c_wait_for_rx_fifo_not_empty(DesignwareI2cRegs *regs)
 			return -1;
 		}
 
-		if (readl(&regs->status) & STATUS_RFNE)
+		if (read32(&regs->status) & STATUS_RFNE)
 			return 0;
 
 	} while (timer_us(start) <= TIMEOUT_US);
@@ -629,19 +629,19 @@ static int i2c_transfer_segment(DesignwareI2cRegs *regs,
 		if (segment->read) {
 			cmd |= CMD_DATA_CMD;
 
-			writel(cmd, &regs->cmd_data);
+			write32(&regs->cmd_data, cmd);
 
 			if (i2c_wait_for_rx_fifo_not_empty(regs))
 				goto err;
 
-			segment->buf[i] = (uint8_t)readl(&regs->cmd_data);
+			segment->buf[i] = (uint8_t) read32(&regs->cmd_data);
 		} else {
 			cmd |= segment->buf[i];
 
 			if (i2c_wait_for_tx_fifo_not_full(regs))
 				goto err;
 
-			writel(cmd, &regs->cmd_data);
+			write32(&regs->cmd_data, cmd);
 		}
 	}
 
@@ -672,7 +672,7 @@ static int i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
 
 	/* Set target address first, while i2c is still disabled. */
 	last_tar = segments[0].chip;
-	writel(last_tar, &regs->target_addr);
+	write32(&regs->target_addr, last_tar);
 
 	i2c_enable(regs);
 
@@ -705,7 +705,7 @@ static int i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
 				       last_tar, segments[i].chip);
 			i2c_disable(regs);
 			/* Target address must be set when i2c is disabled. */
-			writel(segments[i].chip, &regs->target_addr);
+			write32(&regs->target_addr, segments[i].chip);
 			last_tar = segments[i].chip;
 			i2c_enable(regs);
 		}
@@ -728,7 +728,7 @@ static int i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
 
 	ret = i2c_xfer_finish(regs);
  out:
-	readl(&regs->clear_intr);
+	read32(&regs->clear_intr);
 	i2c_disable(regs);
 	return ret;
 }

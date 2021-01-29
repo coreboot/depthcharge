@@ -28,12 +28,12 @@
 
 static void setbits32(uint32_t *data, uint32_t bits)
 {
-	writel(readl(data) | bits, data);
+	write32(data, read32(data) | bits);
 }
 
 static void clrbits32(uint32_t *data, uint32_t bits)
 {
-	writel(readl(data) & ~bits, data);
+	write32(data, read32(data) & ~bits);
 }
 
 static int mshci_setbits(MshciHost *host, unsigned int bits)
@@ -130,14 +130,14 @@ static int mshci_prepare_data(MshciHost *host, MmcData *data)
 	data_len = data->blocks * data->blocksize;
 	dcache_clean_invalidate_by_mva(data_start, data_len);
 
-	writel((uintptr_t)virt_to_phys(idmac_desc), &host->regs->dbaddr);
+	write32(&host->regs->dbaddr, (uintptr_t)virt_to_phys(idmac_desc));
 
 	// Enable the Internal DMA Controller.
 	setbits32(&host->regs->ctrl, ENABLE_IDMAC | DMA_ENABLE);
 	setbits32(&host->regs->bmod, BMOD_IDMAC_ENABLE | BMOD_IDMAC_FB);
 
-	writel(data->blocksize, &host->regs->blksiz);
-	writel(data->blocksize * data->blocks, &host->regs->bytcnt);
+	write32(&host->regs->blksiz, data->blocksize);
+	write32(&host->regs->bytcnt, data->blocksize * data->blocks);
 	return 0;
 }
 
@@ -166,7 +166,7 @@ static int s5p_mshci_send_command(MmcCtrlr *ctrlr, MmcCommand *cmd,
 	 * command, as controller will internally send a STOP command after
 	 * every block read/write
 	 */
-	if ((readl(&host->regs->ctrl) & SEND_AS_CCSD) &&
+	if ((read32(&host->regs->ctrl) & SEND_AS_CCSD) &&
 			(cmd->cmdidx == MMC_CMD_STOP_TRANSMISSION))
 		return 0;
 
@@ -180,15 +180,15 @@ static int s5p_mshci_send_command(MmcCtrlr *ctrlr, MmcCommand *cmd,
 		return -1;
 	}
 
-	if ((readl(&host->regs->rintsts) & (INTMSK_CDONE | INTMSK_ACD)) == 0) {
-		uint32_t rintsts = readl(&host->regs->rintsts);
+	if ((read32(&host->regs->rintsts) & (INTMSK_CDONE | INTMSK_ACD)) == 0) {
+		uint32_t rintsts = read32(&host->regs->rintsts);
 		if (rintsts) {
 			mmc_debug("there're pending interrupts %#x\n", rintsts);
 		}
 	}
 
 	// Clear all pending interrupts before sending a command.
-	writel(INTMSK_ALL, &host->regs->rintsts);
+	write32(&host->regs->rintsts, INTMSK_ALL);
 
 	if (data) {
 		if (mshci_prepare_data(host, data)) {
@@ -197,7 +197,7 @@ static int s5p_mshci_send_command(MmcCtrlr *ctrlr, MmcCommand *cmd,
 		}
 	}
 
-	writel(cmd->cmdarg, &host->regs->cmdarg);
+	write32(&host->regs->cmdarg, cmd->cmdarg);
 
 	if (data)
 		flags = mshci_set_transfer_mode(host, data);
@@ -220,19 +220,19 @@ static int s5p_mshci_send_command(MmcCtrlr *ctrlr, MmcCommand *cmd,
 	flags |= (cmd->cmdidx | CMD_STRT_BIT | CMD_USE_HOLD_REG |
 		  CMD_WAIT_PRV_DAT_BIT);
 
-	mask = readl(&host->regs->cmd);
+	mask = read32(&host->regs->cmd);
 	if (mask & CMD_STRT_BIT) {
 		mmc_error("cmd busy, current cmd: %d", cmd->cmdidx);
 		return -1;
 	}
 
-	writel(flags, &host->regs->cmd);
+	write32(&host->regs->cmd, flags);
 	/* wait for command complete by busy waiting. */
 	for (i = 0; i < S5P_MSHC_COMMAND_TIMEOUT; i++) {
-		mask = readl(&host->regs->rintsts);
+		mask = read32(&host->regs->rintsts);
 		if (mask & INTMSK_CDONE) {
 			if (!data)
-				writel(mask, &host->regs->rintsts);
+				write32(&host->regs->rintsts, mask);
 			break;
 		}
 	}
@@ -253,12 +253,12 @@ static int s5p_mshci_send_command(MmcCtrlr *ctrlr, MmcCommand *cmd,
 	if (cmd->resp_type & MMC_RSP_PRESENT) {
 		if (cmd->resp_type & MMC_RSP_136) {
 			// CRC is stripped so we need to do some shifting.
-			cmd->response[0] = readl(&host->regs->resp3);
-			cmd->response[1] = readl(&host->regs->resp2);
-			cmd->response[2] = readl(&host->regs->resp1);
-			cmd->response[3] = readl(&host->regs->resp0);
+			cmd->response[0] = read32(&host->regs->resp3);
+			cmd->response[1] = read32(&host->regs->resp2);
+			cmd->response[2] = read32(&host->regs->resp1);
+			cmd->response[3] = read32(&host->regs->resp0);
 		} else {
-			cmd->response[0] = readl(&host->regs->resp0);
+			cmd->response[0] = read32(&host->regs->resp0);
 			mmc_debug("\tcmd->response[0]: %#08x\n",
 				  cmd->response[0]);
 		}
@@ -273,7 +273,7 @@ static int s5p_mshci_send_command(MmcCtrlr *ctrlr, MmcCommand *cmd,
 			return -1;
 		}
 		mmc_debug("%s: writel(mask, rintsts)\n", __func__);
-		writel(mask, &host->regs->rintsts);
+		write32(&host->regs->rintsts, mask);
 
 		if (data->flags & MMC_DATA_READ) {
 			size_t data_len = data->blocks * data->blocksize;
@@ -285,7 +285,7 @@ static int s5p_mshci_send_command(MmcCtrlr *ctrlr, MmcCommand *cmd,
 		if (mask & (DATA_ERR | DATA_TOUT)) {
 			mmc_error("error during transfer: %#x\n", mask);
 			// mask all interrupt source of IDMAC.
-			writel(0, &host->regs->idinten);
+			write32(&host->regs->idinten, 0);
 			return -1;
 		} else if (mask & INTMSK_DTO) {
 			mmc_debug("mshci dma interrupt end\n");
@@ -295,7 +295,7 @@ static int s5p_mshci_send_command(MmcCtrlr *ctrlr, MmcCommand *cmd,
 		}
 		clrbits32(&host->regs->ctrl, DMA_ENABLE | ENABLE_IDMAC);
 		/* mask all interrupt source of IDMAC */
-		writel(0, &host->regs->idinten);
+		write32(&host->regs->idinten, 0);
 	}
 
 	/* TODO(alim.akhtar@samsung.com): check why we need this delay */
@@ -306,12 +306,12 @@ static int s5p_mshci_send_command(MmcCtrlr *ctrlr, MmcCommand *cmd,
 static int mshci_clock_onoff(MshciHost *host, int val)
 {
 	if (val)
-		writel(CLK_ENABLE, &host->regs->clkena);
+		write32(&host->regs->clkena, CLK_ENABLE);
 	else
-		writel(CLK_DISABLE, &host->regs->clkena);
+		write32(&host->regs->clkena, CLK_DISABLE);
 
-	writel(0, &host->regs->cmd);
-	writel(CMD_ONLY_CLK, &host->regs->cmd);
+	write32(&host->regs->cmd, 0);
+	write32(&host->regs->cmd, CMD_ONLY_CLK);
 
 	/* wait till command is taken by CIU, when this bit is set
 	 * host should not attempted to write to any command registers.
@@ -348,15 +348,15 @@ static int mshci_change_clock(MshciHost *host, uint32_t clock)
 	int div;
 	for (div = 1 ; div <= 0xff; div++) {
 		if (((sclk_mshc / 4) / (2 * div)) <= clock) {
-			writel(div, &host->regs->clkdiv);
+			write32(&host->regs->clkdiv, div);
 			break;
 		}
 	}
 
-	writel(div, &host->regs->clkdiv);
+	write32(&host->regs->clkdiv, div);
 
-	writel(0, &host->regs->cmd);
-	writel(CMD_ONLY_CLK, &host->regs->cmd);
+	write32(&host->regs->cmd, 0);
+	write32(&host->regs->cmd, CMD_ONLY_CLK);
 
 	/*
 	 * wait till command is taken by CIU, when this bit is set
@@ -388,32 +388,32 @@ static void s5p_mshci_set_ios(MmcCtrlr *ctrlr)
 		mmc_debug("mshci_change_clock failed\n");
 
 	if (ctrlr->bus_width == 8)
-		writel(PORT0_CARD_WIDTH8, &host->regs->ctype);
+		write32(&host->regs->ctype, PORT0_CARD_WIDTH8);
 	else if (ctrlr->bus_width == 4)
-		writel(PORT0_CARD_WIDTH4, &host->regs->ctype);
+		write32(&host->regs->ctype, PORT0_CARD_WIDTH4);
 	else
-		writel(PORT0_CARD_WIDTH1, &host->regs->ctype);
+		write32(&host->regs->ctype, PORT0_CARD_WIDTH1);
 
-	writel(host->clksel_val, &host->regs->clksel);
+	write32(&host->regs->clksel, host->clksel_val);
 }
 
 static void mshci_fifo_init(MshciHost *host)
 {
 	int fifo_val, fifo_depth, fifo_threshold;
 
-	fifo_val = readl(&host->regs->fifoth);
+	fifo_val = read32(&host->regs->fifoth);
 
 	fifo_depth = 0x80;
 	fifo_threshold = fifo_depth / 2;
 
 	fifo_val &= ~(RX_WMARK | TX_WMARK | MSIZE_MASK);
 	fifo_val |= (fifo_threshold | (fifo_threshold << 16) | MSIZE_8);
-	writel(fifo_val, &host->regs->fifoth);
+	write32(&host->regs->fifoth, fifo_val);
 }
 
 static int mshci_init(MshciHost *host)
 {
-	writel(POWER_ENABLE, &host->regs->pwren);
+	write32(&host->regs->pwren, POWER_ENABLE);
 
 	if (mshci_reset_all(host)) {
 		mmc_error("mshci_reset_all() failed\n");
@@ -423,10 +423,10 @@ static int mshci_init(MshciHost *host)
 	mshci_fifo_init(host);
 
 	/* clear all pending interrupts */
-	writel(INTMSK_ALL, &host->regs->rintsts);
+	write32(&host->regs->rintsts, INTMSK_ALL);
 
 	/* interrupts are not used, disable all */
-	writel(0, &host->regs->intmask);
+	write32(&host->regs->intmask, 0);
 	return 0;
 }
 
@@ -447,22 +447,22 @@ static int s5p_mshci_init(BlockDevCtrlrOps *me)
 	}
 
 	/* set auto stop command */
-	ier = readl(&host->regs->ctrl);
+	ier = read32(&host->regs->ctrl);
 	ier |= SEND_AS_CCSD;
-	writel(ier, &host->regs->ctrl);
+	write32(&host->regs->ctrl, ier);
 
 	/* set 1bit card mode */
-	writel(PORT0_CARD_WIDTH1, &host->regs->ctype);
+	write32(&host->regs->ctype, PORT0_CARD_WIDTH1);
 
-	writel(0xfffff, &host->regs->debnce);
+	write32(&host->regs->debnce, 0xfffff);
 
 	/* set bus mode register for IDMAC */
-	writel(BMOD_IDMAC_RESET, &host->regs->bmod);
+	write32(&host->regs->bmod, BMOD_IDMAC_RESET);
 
-	writel(0x0, &host->regs->idinten);
+	write32(&host->regs->idinten, 0x0);
 
 	/* set the max timeout for data and response */
-	writel(TMOUT_MAX, &host->regs->tmout);
+	write32(&host->regs->tmout, TMOUT_MAX);
 
 	return 0;
 }
@@ -478,7 +478,7 @@ static int s5p_mshc_update(BlockDevCtrlrOps *me)
 
 	if (host->mmc.slot_type == MMC_SLOT_TYPE_REMOVABLE) {
 		// cdetect is active low
-		int present = !readl(&host->regs->cdetect);
+		int present = !read32(&host->regs->cdetect);
 
 		if (present && !host->mmc.media) {
 			// A card is present and not set up yet. Get it ready.

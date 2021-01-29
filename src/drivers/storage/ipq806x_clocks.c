@@ -32,7 +32,7 @@
 void clock_init_mmc(unsigned instance)
 {
 	/* Enable h/w gating */
-	writel(1<<6, SDCn_HCLK_CTL_REG(instance));
+	write32(SDCn_HCLK_CTL_REG(instance), 1 << 6);
 }
 
 static void clock_set_m_n_d(uint32_t instance, uint32_t m,
@@ -46,20 +46,20 @@ static void clock_set_m_n_d(uint32_t instance, uint32_t m,
 	reg &= 0xFF;
 
 	reg |= (m << 16);
-	writel(reg, SDCn_APPS_CLK_MD_REG(instance));
+	write32(SDCn_APPS_CLK_MD_REG(instance), reg);
 
 	reg = (((~(n-m)) << 16) & 0xFFFF0000)|1<<11|s;
-	writel(reg, SDCn_APPS_CLK_NS_REG(instance));
+	write32(SDCn_APPS_CLK_NS_REG(instance), reg);
 
 	/* enable m n d counters. */
 	reg |= (2 << 5) | (pre << 3);
-	writel(reg, SDCn_APPS_CLK_NS_REG(instance));
+	write32(SDCn_APPS_CLK_NS_REG(instance), reg);
 
 	reg |= (1 << 8);
-	writel(reg, SDCn_APPS_CLK_NS_REG(instance));
+	write32(SDCn_APPS_CLK_NS_REG(instance), reg);
 
 	/* enable clock */
-	writel(reg | 1<<9, SDCn_APPS_CLK_NS_REG(instance));
+	write32(SDCn_APPS_CLK_NS_REG(instance), reg | 1 << 9);
 }
 
 void clock_config_mmc(MmcCtrlr *ctrlr, unsigned freq)
@@ -70,9 +70,9 @@ void clock_config_mmc(MmcCtrlr *ctrlr, unsigned freq)
 	uint32_t instance = mmc_host->instance;
 
 	/*Disable the clk */
-	reg = readl(SDCn_APPS_CLK_NS_REG(instance));
+	reg = read32(SDCn_APPS_CLK_NS_REG(instance));
 	reg &= ~(1<<9);
-	writel(reg, SDCn_APPS_CLK_NS_REG(instance));
+	write32(SDCn_APPS_CLK_NS_REG(instance), reg);
 
 	switch (freq) {
 	case 144000:

@@ -131,7 +131,7 @@ static int ipq806x_sound_init(Ipq806xSound *sound)
 		return 1;
 	}
 
-	writel(regval, &ctrl_regs->control);
+	write32(&ctrl_regs->control, regval);
 
 	regval = 0;
 	regval |= LPAIF_DMACTL_BURST_EN;
@@ -190,7 +190,7 @@ static int ipq806x_sound_init(Ipq806xSound *sound)
 		return 1;
 	}
 
-	writel(regval, &dma_regs->control);
+	write32(&dma_regs->control, regval);
 
 	/* Initialize the GPIOs required for the board */
 	board_dac_gpio_config();
@@ -225,17 +225,17 @@ static int ipq806x_sound_start(SoundOps *me, uint32_t frequency)
 	buffer_val = (uint32_t)sound->buffer;
 	length_val = (audio_length & 0xFFFFFFF0) >> 2;
 
-	writel(buffer_val, &dma_regs->base_address);
-	writel(length_val - 1, &dma_regs->buffer_length);
-	writel(length_val + 1, &dma_regs->period_length);
+	write32(&dma_regs->base_address, buffer_val);
+	write32(&dma_regs->buffer_length, length_val - 1);
+	write32(&dma_regs->period_length, length_val + 1);
 
-	regval = readl(&dma_regs->control);
+	regval = read32(&dma_regs->control);
 	regval |= LPAIF_DMACTL_ENABLE;
-	writel(regval, &dma_regs->control);
+	write32(&dma_regs->control, regval);
 
-	regval = readl(&ctrl_regs->control);
+	regval = read32(&ctrl_regs->control);
 	regval |= LPAIF_MI2SCTL_SPKEN;
-	writel(regval, &ctrl_regs->control);
+	write32(&ctrl_regs->control, regval);
 
 	mdelay(2);
 
@@ -259,13 +259,13 @@ static int ipq806x_sound_stop(SoundOps *me)
 
 	mdelay(1);
 
-	regval = readl(&ctrl_regs->control);
+	regval = read32(&ctrl_regs->control);
 	regval &= ~LPAIF_MI2SCTL_SPKEN;
-	writel(regval, &ctrl_regs->control);
+	write32(&ctrl_regs->control, regval);
 
-	regval = readl(&dma_regs->control);
+	regval = read32(&dma_regs->control);
 	regval &= ~LPAIF_DMACTL_ENABLE;
-	writel(regval, &dma_regs->control);
+	write32(&dma_regs->control, regval);
 
 	return 0;
 }
@@ -305,14 +305,14 @@ static int ipq806x_sound_shutdown(struct CleanupFunc *cleanup, CleanupType type)
 	uint32_t regval;
 
 	printf("Shutting off the MI2S audio clock.\n");
-	regval = readl(&mi2s_regs->ns);
+	regval = read32(&mi2s_regs->ns);
 	regval &= ~LCC_MI2S_NS_OSR_CXC_ENABLE;
 	regval &= ~LCC_MI2S_NS_BIT_CXC_ENABLE;
-	writel(regval, &mi2s_regs->ns);
+	write32(&mi2s_regs->ns, regval);
 
 	udelay(10);
 
-	regval = readl(&mi2s_regs->status);
+	regval = read32(&mi2s_regs->status);
 	if (!(regval & LCC_MI2S_STAT_OSR_CLK_MASK))
 		if (!(regval & LCC_MI2S_STAT_BIT_CLK_MASK))
 			return 0;

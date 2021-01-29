@@ -85,7 +85,7 @@ static int mtk_i2s_init(MtkI2s *bus)
 		      ((rate & AFE_I2S_RATE_MASK) << AFE_I2S_RATE_SHIFT) |
 		      AFE_I2S_CON1_FORMAT_I2S | AFE_I2S_CON1_WLEN_32BITS |
 		      AFE_I2S_CON1_ENABLE;
-		writel(val, &regs->i2s_con1);
+		write32(&regs->i2s_con1, val);
 		break;
 
 	case AFE_I2S3:
@@ -99,7 +99,7 @@ static int mtk_i2s_init(MtkI2s *bus)
 		/* config I2S3 output */
 		val = ((rate & AFE_I2S_RATE_MASK) << AFE_I2S_RATE_SHIFT) |
 			AFE_I2S_CON3_FORMAT_I2S | AFE_I2S_CON3_WLEN_32BITS;
-		writel(val, &regs->i2s_con3);
+		write32(&regs->i2s_con3, val);
 
 		/* enable I2S3*/
 		setbits_le32(&regs->i2s_con3, AFE_I2S_CON3_ENABLE);
@@ -116,12 +116,12 @@ static int mtk_i2s_init(MtkI2s *bus)
 		/* config I2S0 input */
 		val = ((rate & AFE_I2S_RATE_MASK) << AFE_I2S_RATE_SHIFT) |
 			AFE_I2S_CON0_FORMAT_I2S | AFE_I2S_CON0_WLEN_32BITS;
-		writel(val, &regs->i2s_con0);
+		write32(&regs->i2s_con0, val);
 
 		/* config I2S1 output */
 		val = ((rate & AFE_I2S_RATE_MASK) << AFE_I2S_RATE_SHIFT) |
 			AFE_I2S_CON1_FORMAT_I2S | AFE_I2S_CON1_WLEN_32BITS;
-		writel(val, &regs->i2s_con1);
+		write32(&regs->i2s_con1, val);
 
 		/* enable I2S0 */
 		setbits_le32(&regs->i2s_con0, AFE_I2S_CON0_ENABLE);
@@ -141,12 +141,12 @@ static int mtk_i2s_init(MtkI2s *bus)
 		/* config I2S2 input */
 		val = ((rate & AFE_I2S_RATE_MASK) << AFE_I2S_RATE_SHIFT) |
 			AFE_I2S_CON2_FORMAT_I2S | AFE_I2S_CON2_WLEN_32BITS;
-		writel(val, &regs->i2s_con2);
+		write32(&regs->i2s_con2, val);
 
 		/* config I2S3 output */
 		val = ((rate & AFE_I2S_RATE_MASK) << AFE_I2S_RATE_SHIFT) |
 			AFE_I2S_CON3_FORMAT_I2S | AFE_I2S_CON3_WLEN_32BITS;
-		writel(val, &regs->i2s_con3);
+		write32(&regs->i2s_con3, val);
 
 		/* enable I2S2*/
 		setbits_le32(&regs->i2s_con2, AFE_I2S_CON2_ENABLE);
@@ -194,13 +194,13 @@ static int mtk_i2s_send(I2sOps *me, uint32_t *data, unsigned int length)
 		length, buffer, buf_base, buf_base + buf_size - 1, data_end);
 
 	memcpy((void *)buf_base, data, length * sizeof(uint32_t));
-	writel(buf_base, &regs->dl1_base);
-	writel(buf_base + buf_size - 1, &regs->dl1_end);
+	write32(&regs->dl1_base, buf_base);
+	write32(&regs->dl1_end, buf_base + buf_size - 1);
 
 	/* enable DL1 */
 	setbits_le32(&regs->dac_con0, 1 << MTK_MEMIF_ENABLE_SFT);
 
-	while (readl(&regs->dl1_cur) <= data_end)
+	while (read32(&regs->dl1_cur) <= data_end)
 		;  /* wait until HW read pointer pass the end of data */
 
 	/* stop DL1 */

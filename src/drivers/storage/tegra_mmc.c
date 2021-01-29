@@ -65,13 +65,13 @@ static void tegra_mmc_set_power(TegraMmcHost *host, uint16_t power)
 	mmc_debug("%s: pwr = %X\n", __func__, pwr);
 
 	// Set the bus voltage first (if any)
-	writeb(pwr, &host->reg->pwrcon);
+	write8(&host->reg->pwrcon, pwr);
 	if (pwr == 0)
 		return;
 
 	// Now enable bus power
 	pwr |= TEGRA_MMC_PWRCTL_SD_BUS_POWER;
-	writeb(pwr, &host->reg->pwrcon);
+	write8(&host->reg->pwrcon, pwr);
 }
 
 static void tegra_mmc_prepare_data(TegraMmcHost *host, MmcData *data,
@@ -83,7 +83,7 @@ static void tegra_mmc_prepare_data(TegraMmcHost *host, MmcData *data,
 		  __func__, bbstate->bounce_buffer, bbstate->user_buffer,
 		  data->blocks, data->blocksize);
 
-	writel((uintptr_t)bbstate->bounce_buffer, &host->reg->sysad);
+	write32(&host->reg->sysad, (uintptr_t)bbstate->bounce_buffer);
 	/*
 	 * DMASEL[4:3]
 	 * 00 = Selects SDMA
@@ -91,14 +91,14 @@ static void tegra_mmc_prepare_data(TegraMmcHost *host, MmcData *data,
 	 * 10 = Selects 32-bit Address ADMA2
 	 * 11 = Selects 64-bit Address ADMA2
 	 */
-	ctrl = readb(&host->reg->hostctl);
+	ctrl = read8(&host->reg->hostctl);
 	ctrl &= ~TEGRA_MMC_HOSTCTL_DMASEL_MASK;
 	ctrl |= TEGRA_MMC_HOSTCTL_DMASEL_SDMA;
-	writeb(ctrl, &host->reg->hostctl);
+	write8(&host->reg->hostctl, ctrl);
 
 	// We do not handle DMA boundaries, so set it to max (512 KiB)
-	writew((7 << 12) | (data->blocksize & 0xFFF), &host->reg->blksize);
-	writew(data->blocks, &host->reg->blkcnt);
+	write16(&host->reg->blksize, (7 << 12) | (data->blocksize & 0xFFF));
+	write16(&host->reg->blkcnt, data->blocks);
 }
 
 static void tegra_mmc_set_transfer_mode(TegraMmcHost *host, MmcData *data)
@@ -124,7 +124,7 @@ static void tegra_mmc_set_transfer_mode(TegraMmcHost *host, MmcData *data)
 	if (data->flags & MMC_DATA_READ)
 		mode |= TEGRA_MMC_TRNMOD_DATA_XFER_DIR_SEL_READ;
 
-	writew(mode, &host->reg->trnmod);
+	write16(&host->reg->trnmod, mode);
 }
 
 static int tegra_mmc_wait_inhibit(TegraMmcHost *host,
@@ -146,7 +146,7 @@ static int tegra_mmc_wait_inhibit(TegraMmcHost *host,
 	if ((data == NULL) && (cmd->resp_type & MMC_RSP_BUSY))
 		mask |= TEGRA_MMC_PRNSTS_CMD_INHIBIT_DAT;
 
-	while (readl(&host->reg->prnsts) & mask) {
+	while (read32(&host->reg->prnsts) & mask) {
 		if (timeout == 0) {
 			mmc_error("%s: timeout error\n", __func__);
 			return -1;
@@ -177,7 +177,7 @@ static int tegra_mmc_send_cmd_bounced(MmcCtrlr *ctrlr, MmcCommand *cmd,
 		tegra_mmc_prepare_data(host, data, bbstate);
 
 	mmc_debug("cmd->arg: %08x\n", cmd->cmdarg);
-	writel(cmd->cmdarg, &host->reg->argument);
+	write32(&host->reg->argument, cmd->cmdarg);
 
 	if (data)
 		tegra_mmc_set_transfer_mode(host, data);
@@ -215,33 +215,33 @@ static int tegra_mmc_send_cmd_bounced(MmcCtrlr *ctrlr, MmcCommand *cmd,
 
 	mmc_debug("cmd: %d\n", cmd->cmdidx);
 
-	writew((cmd->cmdidx << 8) | flags, &host->reg->cmdreg);
+	write16(&host->reg->cmdreg, (cmd->cmdidx << 8) | flags);
 
 	for (i = 0; i < retry; i++) {
-		mask = readl(&host->reg->norintsts);
+		mask = read32(&host->reg->norintsts);
 		// Command Complete
 		if (mask & TEGRA_MMC_NORINTSTS_CMD_COMPLETE) {
 			if (!data)
-				writel(mask, &host->reg->norintsts);
+				write32(&host->reg->norintsts, mask);
 			break;
 		}
 	}
 
 	if (i == retry) {
 		mmc_error("%s: waiting for status update\n", __func__);
-		writel(mask, &host->reg->norintsts);
+		write32(&host->reg->norintsts, mask);
 		return MMC_TIMEOUT;
 	}
 
 	if (mask & TEGRA_MMC_NORINTSTS_CMD_TIMEOUT) {
 		// Timeout Error
 		mmc_debug("timeout: %08x cmd %d\n", mask, cmd->cmdidx);
-		writel(mask, &host->reg->norintsts);
+		write32(&host->reg->norintsts, mask);
 		return MMC_TIMEOUT;
 	} else if (mask & TEGRA_MMC_NORINTSTS_ERR_INTERRUPT) {
 		// Error Interrupt
 		mmc_error("%08x cmd %d\n", mask, cmd->cmdidx);
-		writel(mask, &host->reg->norintsts);
+		write32(&host->reg->norintsts, mask);
 		return -1;
 	}
 
@@ -250,11 +250,11 @@ static int tegra_mmc_send_cmd_bounced(MmcCtrlr *ctrlr, MmcCommand *cmd,
 			// CRC is stripped so we need to do some shifting.
 			for (i = 0; i < 4; i++) {
 				uint32_t *offset = &host->reg->rspreg3 - i;
-				cmd->response[i] = readl(offset) << 8;
+				cmd->response[i] = read32(offset) << 8;
 
 				if (i != 3) {
 					cmd->response[i] |=
-						readb((uint8_t *)offset - 1);
+						read8((uint8_t *)offset - 1);
 				}
 				mmc_debug("cmd->resp[%d]: %08x\n",
 						i, cmd->response[i]);
@@ -262,21 +262,21 @@ static int tegra_mmc_send_cmd_bounced(MmcCtrlr *ctrlr, MmcCommand *cmd,
 		} else if (cmd->resp_type & MMC_RSP_BUSY) {
 			for (i = 0; i < retry; i++) {
 				// PRNTDATA[23:20] : DAT[3:0] Line Signal
-				if (readl(&host->reg->prnsts)
+				if (read32(&host->reg->prnsts)
 					& (1 << 20))	// DAT[0]
 					break;
 			}
 
 			if (i == retry) {
 				mmc_error("%s: card is still busy\n", __func__);
-				writel(mask, &host->reg->norintsts);
+				write32(&host->reg->norintsts, mask);
 				return MMC_TIMEOUT;
 			}
 
-			cmd->response[0] = readl(&host->reg->rspreg0);
+			cmd->response[0] = read32(&host->reg->rspreg0);
 			mmc_debug("cmd->resp[0]: %08x\n", cmd->response[0]);
 		} else {
-			cmd->response[0] = readl(&host->reg->rspreg0);
+			cmd->response[0] = read32(&host->reg->rspreg0);
 			mmc_debug("cmd->resp[0]: %08x\n", cmd->response[0]);
 		}
 	}
@@ -286,11 +286,11 @@ static int tegra_mmc_send_cmd_bounced(MmcCtrlr *ctrlr, MmcCommand *cmd,
 		uint64_t timeout_ms = 2000;
 
 		while (1) {
-			mask = readl(&host->reg->norintsts);
+			mask = read32(&host->reg->norintsts);
 
 			if (mask & TEGRA_MMC_NORINTSTS_ERR_INTERRUPT) {
 				// Error Interrupt
-				writel(mask, &host->reg->norintsts);
+				write32(&host->reg->norintsts, mask);
 				mmc_error("%s: error during transfer: 0x%08x\n",
 						__func__, mask);
 				return -1;
@@ -299,31 +299,31 @@ static int tegra_mmc_send_cmd_bounced(MmcCtrlr *ctrlr, MmcCommand *cmd,
 				 * DMA Interrupt, restart the transfer where
 				 * it was interrupted.
 				 */
-				unsigned int address = readl(&host->reg->sysad);
+				unsigned int address = read32(&host->reg->sysad);
 
 				mmc_debug("DMA end\n");
-				writel(TEGRA_MMC_NORINTSTS_DMA_INTERRUPT,
-				       &host->reg->norintsts);
-				writel(address, &host->reg->sysad);
+				write32(&host->reg->norintsts,
+					TEGRA_MMC_NORINTSTS_DMA_INTERRUPT);
+				write32(&host->reg->sysad, address);
 			} else if (mask & TEGRA_MMC_NORINTSTS_XFER_COMPLETE) {
 				// Transfer Complete
 				mmc_debug("r/w is done\n");
 				break;
 			} else if (timer_us(start) / 1000 > timeout_ms) {
-				writel(mask, &host->reg->norintsts);
+				write32(&host->reg->norintsts, mask);
 				mmc_error("%s: MMC Timeout\n"
 				       "    Interrupt status        0x%08x\n"
 				       "    Interrupt status enable 0x%08x\n"
 				       "    Interrupt signal enable 0x%08x\n"
 				       "    Present status          0x%08x\n",
 				       __func__, mask,
-				       readl(&host->reg->norintstsen),
-				       readl(&host->reg->norintsigen),
-				       readl(&host->reg->prnsts));
+				       read32(&host->reg->norintstsen),
+				       read32(&host->reg->norintsigen),
+				       read32(&host->reg->prnsts));
 				return -1;
 			}
 		}
-		writel(mask, &host->reg->norintsts);
+		write32(&host->reg->norintsts, mask);
 	}
 
 	udelay(1000);
@@ -374,7 +374,7 @@ static void tegra_mmc_change_clock(TegraMmcHost *host, uint32_t clock)
 	}
 
 	// Clear clock settings and stop SD clock.
-	writew(0, &host->reg->clkcon);
+	write16(&host->reg->clkcon, 0);
 
 	// Try to change clock by SD clock divisor (base clock is already
 	// specified in src_hz).
@@ -391,11 +391,11 @@ static void tegra_mmc_change_clock(TegraMmcHost *host, uint32_t clock)
 	div >>= 1;
 	clk = ((div << TEGRA_MMC_CLKCON_SDCLK_FREQ_SEL_SHIFT) |
 	       TEGRA_MMC_CLKCON_INTERNAL_CLOCK_ENABLE);
-	writew(clk, &host->reg->clkcon);
+	write16(&host->reg->clkcon, clk);
 
 	// Wait max 10 ms
 	timeout = 10;
-	while (!(readw(&host->reg->clkcon) &
+	while (!(read16(&host->reg->clkcon) &
 		 TEGRA_MMC_CLKCON_INTERNAL_CLOCK_STABLE)) {
 		if (timeout == 0) {
 			mmc_error("%s: timeout error\n", __func__);
@@ -406,7 +406,7 @@ static void tegra_mmc_change_clock(TegraMmcHost *host, uint32_t clock)
 	}
 
 	clk |= TEGRA_MMC_CLKCON_SD_CLOCK_ENABLE;
-	writew(clk, &host->reg->clkcon);
+	write16(&host->reg->clkcon, clk);
 
 	mmc_debug("%s: clkcon = %08X\n", __func__, clk);
 
@@ -423,7 +423,7 @@ static void tegra_mmc_set_ios(MmcCtrlr *ctrlr)
 
 	// Change clock first
 	tegra_mmc_change_clock(host, ctrlr->bus_hz);
-	ctrl = readb(&host->reg->hostctl);
+	ctrl = read8(&host->reg->hostctl);
 
 	/*
 	 * WIDE8[5]
@@ -440,7 +440,7 @@ static void tegra_mmc_set_ios(MmcCtrlr *ctrlr)
 	else
 		ctrl &= ~(1 << 1);
 
-	writeb(ctrl, &host->reg->hostctl);
+	write8(&host->reg->hostctl, ctrl);
 	mmc_debug("%s: hostctl = %08X\n", __func__, ctrl);
 }
 
@@ -454,7 +454,7 @@ static void tegra_mmc_reset(TegraMmcHost *host)
 	 * 1 = reset
 	 * 0 = work
 	 */
-	writeb(TEGRA_MMC_SWRST_SW_RESET_FOR_ALL, &host->reg->swrst);
+	write8(&host->reg->swrst, TEGRA_MMC_SWRST_SW_RESET_FOR_ALL);
 
 	host->clock = 0;
 
@@ -462,7 +462,7 @@ static void tegra_mmc_reset(TegraMmcHost *host)
 	timeout = 100;
 
 	// hw clears the bit when it's done
-	while (readb(&host->reg->swrst) & TEGRA_MMC_SWRST_SW_RESET_FOR_ALL) {
+	while (read8(&host->reg->swrst) & TEGRA_MMC_SWRST_SW_RESET_FOR_ALL) {
 		if (timeout == 0) {
 			mmc_error("%s: timeout error\n", __func__);
 			return;
@@ -474,7 +474,7 @@ static void tegra_mmc_reset(TegraMmcHost *host)
 	// Set SD bus voltage & enable bus power
 	tegra_mmc_set_power(host, TegraMmcVoltagesMsb - 1);
 	mmc_debug("%s: power control = %02X, host control = %02X\n", __func__,
-		readb(&host->reg->pwrcon), readb(&host->reg->hostctl));
+		read8(&host->reg->pwrcon), read8(&host->reg->hostctl));
 }
 
 static int tegra_mmc_init(BlockDevCtrlrOps *me)
@@ -489,13 +489,13 @@ static int tegra_mmc_init(BlockDevCtrlrOps *me)
 
 	tegra_mmc_reset(host);
 
-	mmc_debug("host version = %x\n", readw(&host->reg->hcver));
+	mmc_debug("host version = %x\n", read16(&host->reg->hcver));
 
 	// mask all
-	writel(0xffffffff, &host->reg->norintstsen);
-	writel(0xffffffff, &host->reg->norintsigen);
+	write32(&host->reg->norintstsen, 0xffffffff);
+	write32(&host->reg->norintsigen, 0xffffffff);
 
-	writeb(0xe, &host->reg->timeoutcon);	// TMCLK * 2^27
+	write8(&host->reg->timeoutcon, 0xe);	// TMCLK * 2^27
 	/*
 	 * NORMAL Interrupt Status Enable Register init
 	 * [5] ENSTABUFRDRDY : Buffer Read Ready Status Enable
@@ -504,23 +504,23 @@ static int tegra_mmc_init(BlockDevCtrlrOps *me)
 	 * [1] ENSTASTANSCMPLT : Transfre Complete Status Enable
 	 * [0] ENSTACMDCMPLT : Command Complete Status Enable
 	*/
-	mask = readl(&host->reg->norintstsen);
+	mask = read32(&host->reg->norintstsen);
 	mask &= ~(0xffff);
 	mask |= (TEGRA_MMC_NORINTSTSEN_CMD_COMPLETE |
 		 TEGRA_MMC_NORINTSTSEN_XFER_COMPLETE |
 		 TEGRA_MMC_NORINTSTSEN_DMA_INTERRUPT |
 		 TEGRA_MMC_NORINTSTSEN_BUFFER_WRITE_READY |
 		 TEGRA_MMC_NORINTSTSEN_BUFFER_READ_READY);
-	writel(mask, &host->reg->norintstsen);
+	write32(&host->reg->norintstsen, mask);
 
 	/*
 	 * NORMAL Interrupt Signal Enable Register init
 	 * [1] ENSTACMDCMPLT : Transfer Complete Signal Enable
 	 */
-	mask = readl(&host->reg->norintsigen);
+	mask = read32(&host->reg->norintsigen);
 	mask &= ~(0xffff);
 	mask |= TEGRA_MMC_NORINTSIGEN_XFER_COMPLETE;
-	writel(mask, &host->reg->norintsigen);
+	write32(&host->reg->norintsigen, mask);
 
 	return 0;
 }

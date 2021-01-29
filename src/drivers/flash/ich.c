@@ -30,11 +30,11 @@ static void read_reg(const void *src, void *value, uint32_t size)
 	uint8_t *bvalue = value;
 
 	while (size >= 4) {
-		*(uint32_t *)bvalue = readl(bsrc);
+		*(uint32_t *)bvalue = read32(bsrc);
 		bsrc += 4; bvalue += 4; size -= 4;
 	}
 	while (size) {
-		*bvalue = readb(bsrc);
+		*bvalue = read8(bsrc);
 		bsrc++; bvalue++; size--;
 	}
 }
@@ -59,10 +59,10 @@ static int spi_setup_opcode(IchFlash *flash, uint8_t type, uint8_t opcode)
 {
 	if (!flash->locked) {
 		// The lock is off, so just use index 0.
-		writeb(opcode, flash->opmenu);
-		uint16_t optypes = readw(flash->optype);
+		write8(flash->opmenu, opcode);
+		uint16_t optypes = read16(flash->optype);
 		optypes = (optypes & 0xfffc) | (type & 0x3);
-		writew(optypes, flash->optype);
+		write16(flash->optype, optypes);
 		return 0;
 	} else {
 		// The lock is on. See if what we need is on the menu.
@@ -82,7 +82,7 @@ static int spi_setup_opcode(IchFlash *flash, uint8_t type, uint8_t opcode)
 			return -1;
 		}
 
-		uint16_t optypes = readw(flash->optype);
+		uint16_t optypes = read16(flash->optype);
 		uint8_t optype = (optypes >> (opcode_index * 2)) & 0x3;
 		if (optype != type) {
 			printf("ICH SPI: Transaction doesn't fit type %d\n",
@@ -107,10 +107,10 @@ static int32_t ich_status_poll(IchFlash *flash, uint16_t bitmask,
 	uint16_t status = 0;
 
 	while (timeout--) {
-		status = readw(flash->status);
+		status = read16(flash->status);
 		if (wait_til_set ^ ((status & bitmask) == 0)) {
 			if (wait_til_set)
-				writew((status & bitmask), flash->status);
+				write16(flash->status, (status & bitmask));
 			return status;
 		}
 		udelay(1);
@@ -129,7 +129,7 @@ static void *flash_read_op(IchFlash *flash, uint8_t opcode,
 	if (ich_status_poll(flash, SPIS_SCIP, 0) == -1)
 		return NULL;
 
-	writew(SPIS_CDS | SPIS_FCERR, flash->status);
+	write16(flash->status, SPIS_CDS | SPIS_FCERR);
 
 	uint8_t type = SPI_OPCODE_TYPE_READ_WITH_ADDRESS;
 	int16_t opcode_index;
@@ -143,7 +143,7 @@ static void *flash_read_op(IchFlash *flash, uint8_t opcode,
 		uint32_t data_length;
 
 		// SPI addresses are 24 bits long.
-		writel(offset & 0x00FFFFFF, flash->addr);
+		write32(flash->addr, offset & 0x00FFFFFF);
 
 		data_length = MIN(size, flash->databytes);
 
@@ -153,7 +153,7 @@ static void *flash_read_op(IchFlash *flash, uint8_t opcode,
 		control |= (data_length - 1) << 8;
 
 		/* write it */
-		writew(control, flash->control);
+		write16(flash->control, control);
 
 		/* Wait for Cycle Done Status or Flash Cycle Error. */
 		int32_t status =
@@ -189,9 +189,9 @@ static void ich_spi_init(IchFlash *flash)
 
 	uint32_t minaddr = 0;
 	minaddr &= bbar_mask;
-	ichspi_bbar = readl(flash->bbar) & ~bbar_mask;
+	ichspi_bbar = read32(flash->bbar) & ~bbar_mask;
 	ichspi_bbar |= minaddr;
-	writel(ichspi_bbar, flash->bbar);
+	write32(flash->bbar, ichspi_bbar);
 
 	uint8_t bios_cntl = pci_read_config8(dev, 0xdc);
 	bios_cntl &= ~flash->bios_cntl_clear;

@@ -23,7 +23,7 @@ static int rk_gpio_get_value(GpioOps *me)
 {
 	assert(me);
 	RkGpio *gpio = container_of(me, RkGpio, ops);
-	return (readl(&gpio_port[gpio->gpioindex.port]->ext_porta)
+	return (read32(&gpio_port[gpio->gpioindex.port]->ext_porta)
 		>> gpio->gpioindex.num) & 0x01;
 }
 

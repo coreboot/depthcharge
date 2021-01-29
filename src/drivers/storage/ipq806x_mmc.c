@@ -58,7 +58,7 @@ static int wait_on_reg(void *reg_addr, uint32_t mask,
 	start_ts = timer_raw_value(); /* Get initial time stamp. */
 
 	do {
-		value = readl(reg_addr);
+		value = read32(reg_addr);
 
 		if ((timer_raw_value() - start_ts) > d) {
 			mmc_error("Timeout waiting on %p for %#x:%#x\n",
@@ -96,14 +96,14 @@ void mmc_boot_mci_clk_enable(MmcCtrlr *ctrlr)
 	reg = (MMC_BOOT_MCI_CLK_ENABLE | MMC_BOOT_MCI_CLK_ENA_FLOW |
 		MMC_BOOT_MCI_CLK_IN_FEEDBACK);
 
-	writel(reg, MMC_BOOT_MCI_CLK(mmc_host->mci_base));
+	write32(MMC_BOOT_MCI_CLK(mmc_host->mci_base), reg);
 
 	/* Wait for the MMC_BOOT_MCI_CLK write to go through. */
 	mmc_mclk_reg_wr_delay(ctrlr);
 
 	/* Enable power save */
 	reg |= MMC_BOOT_MCI_CLK_PWRSAVE;
-	writel(reg, MMC_BOOT_MCI_CLK(mmc_host->mci_base));
+	write32(MMC_BOOT_MCI_CLK(mmc_host->mci_base), reg);
 
 	/* Wait for the MMC_BOOT_MCI_CLK write to go through. */
 	mmc_mclk_reg_wr_delay(ctrlr);
@@ -119,7 +119,7 @@ static int mmc_boot_set_bus_width(MmcCtrlr *ctrlr, unsigned width)
 	uint32_t mmc_reg;
 
 	/* set MCI_CLK accordingly */
-	mmc_reg = readl(MMC_BOOT_MCI_CLK(mmc_host->mci_base));
+	mmc_reg = read32(MMC_BOOT_MCI_CLK(mmc_host->mci_base));
 	mmc_reg &= ~MMC_BOOT_MCI_CLK_WIDEBUS_MODE;
 
 	switch (width) {
@@ -137,7 +137,7 @@ static int mmc_boot_set_bus_width(MmcCtrlr *ctrlr, unsigned width)
 		return MMC_UNUSABLE_ERR;
 	}
 
-	writel(mmc_reg, MMC_BOOT_MCI_CLK(mmc_host->mci_base));
+	write32(MMC_BOOT_MCI_CLK(mmc_host->mci_base), mmc_reg);
 
 	/* Wait for the MMC_BOOT_MCI_CLK write to go through. */
 	mmc_mclk_reg_wr_delay(ctrlr);
@@ -214,7 +214,7 @@ static int mmc_boot_fifo_read(MmcCtrlr *ctrlr, MmcData *data)
 	 * Continue the reads until the whole transfer data is received
 	 */
 	while (1) {
-		mmc_status = readl(MMC_BOOT_MCI_STATUS(mmc_host->mci_base));
+		mmc_status = read32(MMC_BOOT_MCI_STATUS(mmc_host->mci_base));
 		mmc_ret = mmc_boot_data_status_decode(mmc_status);
 		if (mmc_ret != MMC_BOOT_E_SUCCESS)
 			break;
@@ -230,10 +230,7 @@ static int mmc_boot_fifo_read(MmcCtrlr *ctrlr, MmcData *data)
 				 * FIFO contains 16 32-bit data buffer on
 				 * 16 sequential addresses.
 				 */
-				*mmc_ptr = readl
-					(MMC_BOOT_MCI_FIFO(mmc_host->mci_base)
-					 +
-					 (mmc_count % MMC_BOOT_MCI_FIFO_SIZE));
+				*mmc_ptr = read32(MMC_BOOT_MCI_FIFO(mmc_host->mci_base) + (mmc_count % MMC_BOOT_MCI_FIFO_SIZE));
 				mmc_ptr++;
 				/* increase mmc_count by word size */
 				mmc_count += sizeof(uint32_t);
@@ -280,14 +277,14 @@ static int mmc_boot_fifo_write(MmcCtrlr *ctrlr, MmcData *data)
 	 * MODE bit.
 	 */
 	mmc_reg |= ctrlr->media->write_bl_len << MMC_BOOT_MCI_BLKSIZE_POS;
-	writel(mmc_reg, MMC_BOOT_MCI_DATA_CTL(mmc_host->mci_base));
+	write32(MMC_BOOT_MCI_DATA_CTL(mmc_host->mci_base), mmc_reg);
 
 	/* Wait for the MMC_BOOT_MCI_DATA_CTL write to go through. */
 	mmc_mclk_reg_wr_delay(ctrlr);
 
 	/* Write the transfer data to SDCC3 FIFO */
 	while (1) {
-		mmc_status = readl(MMC_BOOT_MCI_STATUS(mmc_host->mci_base));
+		mmc_status = read32(MMC_BOOT_MCI_STATUS(mmc_host->mci_base));
 
 		/* Bytes left to write */
 		count = data_len - mmc_count;
@@ -308,8 +305,8 @@ static int mmc_boot_fifo_write(MmcCtrlr *ctrlr, MmcData *data)
 				? MMC_BOOT_MCI_HFIFO_COUNT : (count >> 2);
 
 			for (int i = 0; i < sz; i++) {
-				writel(*mmc_ptr,
-				       MMC_BOOT_MCI_FIFO(mmc_host->mci_base));
+				write32(MMC_BOOT_MCI_FIFO(mmc_host->mci_base),
+					*mmc_ptr);
 				mmc_ptr++;
 				/* increase mmc_count by word size */
 				mmc_count += sizeof(uint32_t);
@@ -318,7 +315,7 @@ static int mmc_boot_fifo_write(MmcCtrlr *ctrlr, MmcData *data)
 	}
 
 	do {
-		mmc_status = readl(MMC_BOOT_MCI_STATUS(mmc_host->mci_base));
+		mmc_status = read32(MMC_BOOT_MCI_STATUS(mmc_host->mci_base));
 		mmc_ret = mmc_boot_data_status_decode(mmc_status);
 		if (mmc_ret != MMC_BOOT_E_SUCCESS)
 			break;
@@ -332,10 +329,10 @@ static void mmc_boot_setup_data_transfer(MmcCtrlr *ctrlr, MmcData *data)
 {
 	QcomMmcHost *mmc_host = container_of(ctrlr, QcomMmcHost, mmc);
 	/* Set the FLOW_ENA bit of MCI_CLK register to 1 */
-	uint32_t mmc_reg = readl(MMC_BOOT_MCI_CLK(mmc_host->mci_base));
+	uint32_t mmc_reg = read32(MMC_BOOT_MCI_CLK(mmc_host->mci_base));
 
 	mmc_reg |= MMC_BOOT_MCI_CLK_ENA_FLOW;
-	writel(mmc_reg, MMC_BOOT_MCI_CLK(mmc_host->mci_base));
+	write32(MMC_BOOT_MCI_CLK(mmc_host->mci_base), mmc_reg);
 	mmc_mclk_reg_wr_delay(ctrlr);
 
 	/*
@@ -345,15 +342,15 @@ static void mmc_boot_setup_data_transfer(MmcCtrlr *ctrlr, MmcData *data)
 	 * Data timeout period should be in card bus clock periods
 	 */
 	mmc_reg = 0xFFFFFFFF;
-	writel(mmc_reg, MMC_BOOT_MCI_DATA_TIMER(mmc_host->mci_base));
+	write32(MMC_BOOT_MCI_DATA_TIMER(mmc_host->mci_base), mmc_reg);
 
 	/*
 	 * Write the total size of the transfer data to MCI_DATA_LENGTH
 	 * register. For block xfer it must be multiple of the block
 	 * size.
 	 */
-	writel(data->blocks * data->blocksize,
-	       MMC_BOOT_MCI_DATA_LENGTH(mmc_host->mci_base));
+	write32(MMC_BOOT_MCI_DATA_LENGTH(mmc_host->mci_base),
+		data->blocks * data->blocksize);
 
 	if (data->flags & MMC_DATA_READ) {
 		uint32_t mmc_reg;
@@ -374,7 +371,7 @@ static void mmc_boot_setup_data_transfer(MmcCtrlr *ctrlr, MmcData *data)
 		 * BLOCKSIZE field
 		 */
 		mmc_reg |= (data->blocksize << MMC_BOOT_MCI_BLKSIZE_POS);
-		writel(mmc_reg, MMC_BOOT_MCI_DATA_CTL(mmc_host->mci_base));
+		write32(MMC_BOOT_MCI_DATA_CTL(mmc_host->mci_base), mmc_reg);
 
 		/* Wait for the MMC_BOOT_MCI_DATA_CTL write to go through. */
 		mmc_mclk_reg_wr_delay(ctrlr);
@@ -416,7 +413,7 @@ static int mmc_boot_wait_cmd_exec(MmcCtrlr *ctrlr,
 			    MMC_BOOT_MCI_STAT_CMD_ACTIVE,
 			    0, NULL);
 
-		mmc_status = readl(MMC_BOOT_MCI_STATUS(mmc_host->mci_base));
+		mmc_status = read32(MMC_BOOT_MCI_STATUS(mmc_host->mci_base));
 
 		/*
 		 * 3b. CMD_SENT bit supposed to be set to 1 only after
@@ -448,8 +445,7 @@ static int mmc_boot_wait_cmd_exec(MmcCtrlr *ctrlr,
 			 * 3i. Read MCI_RESP_CMD register to verify
 			 * that response index is equal to command index.
 			 */
-			mmc_resp = readl
-				(MMC_BOOT_MCI_RESP_CMD(mmc_host->mci_base)) &
+			mmc_resp = read32(MMC_BOOT_MCI_RESP_CMD(mmc_host->mci_base)) &
 				0x3F;
 
 			/*
@@ -475,14 +471,11 @@ static int mmc_boot_wait_cmd_exec(MmcCtrlr *ctrlr,
 					 */
 					for (i = 0; i < 4; i++) {
 						cmd->response[i] =
-						    readl(MMC_BOOT_MCI_RESP_0
-						    (mmc_host->mci_base)
-						    + (i * 4));
+						    read32(MMC_BOOT_MCI_RESP_0(mmc_host->mci_base) + (i * 4));
 					}
 				} else {
 					cmd->response[0] =
-					    readl(MMC_BOOT_MCI_RESP_0
-					    (mmc_host->mci_base));
+					    read32(MMC_BOOT_MCI_RESP_0(mmc_host->mci_base));
 				}
 			} else {
 				/* command index mis-match. */
@@ -499,8 +492,7 @@ static int mmc_boot_wait_cmd_exec(MmcCtrlr *ctrlr,
 		if ((mmc_status & MMC_BOOT_MCI_STAT_CMD_CRC_FAIL)) {
 			if (cmd_index == SD_CMD_APP_SEND_OP_COND)
 				cmd->response[0] =
-				readl
-				(MMC_BOOT_MCI_RESP_0(mmc_host->mci_base));
+				read32(MMC_BOOT_MCI_RESP_0(mmc_host->mci_base));
 			else
 				mmc_return = MMC_COMM_ERR;
 			break;
@@ -535,7 +527,7 @@ static int mmc_boot_send_command(MmcCtrlr *ctrlr,
 		}
 
 	/* 1. Write command argument to MMC_BOOT_MCI_ARGUMENT register */
-	writel(cmd->cmdarg, MMC_BOOT_MCI_ARGUMENT(mmc_host->mci_base));
+	write32(MMC_BOOT_MCI_ARGUMENT(mmc_host->mci_base), cmd->cmdarg);
 
 	/*
 	 * 2. Set appropriate fields and write MMC_BOOT_MCI_CMD.
@@ -579,11 +571,11 @@ static int mmc_boot_send_command(MmcCtrlr *ctrlr,
 	 * CE-ATA device is enabled.
 	 * 2j. clear all static status bits.
 	 */
-	writel(MMC_BOOT_MCI_STATIC_STATUS,
-	       MMC_BOOT_MCI_CLEAR(mmc_host->mci_base));
+	write32(MMC_BOOT_MCI_CLEAR(mmc_host->mci_base),
+		MMC_BOOT_MCI_STATIC_STATUS);
 
 	/* 2k. Write to MMC_BOOT_MCI_CMD register. */
-	writel(mmc_cmd, MMC_BOOT_MCI_CMD(mmc_host->mci_base));
+	write32(MMC_BOOT_MCI_CMD(mmc_host->mci_base), mmc_cmd);
 
 	/* Wait for the MMC_BOOT_MCI_CMD write to go through. */
 	mmc_mclk_reg_wr_delay(ctrlr);
@@ -639,14 +631,14 @@ static int mmc_boot_send_command(MmcCtrlr *ctrlr,
 		}
 
 		/* Reset DPSM. */
-		writel(0, MMC_BOOT_MCI_DATA_CTL(mmc_host->mci_base));
+		write32(MMC_BOOT_MCI_DATA_CTL(mmc_host->mci_base), 0);
 
 		/* Wait for the MMC_BOOT_MCI_DATA_CTL write to go through. */
 		mmc_mclk_reg_wr_delay(ctrlr);
 	}
 
 	/* 2k. Write to MMC_BOOT_MCI_CMD register. */
-	writel(0, MMC_BOOT_MCI_CMD(mmc_host->mci_base));
+	write32(MMC_BOOT_MCI_CMD(mmc_host->mci_base), 0);
 
 	/* Wait for the MMC_BOOT_MCI_CMD write to go through. */
 	mmc_mclk_reg_wr_delay(ctrlr);
@@ -680,20 +672,20 @@ static int mmc_boot_init(QcomMmcHost *host)
 	board_mmc_gpio_config();
 
 	/* Save the version of the mmc controller. */
-	host->mmc_cont_version = readl(MMC_BOOT_MCI_VERSION(host->mci_base));
+	host->mmc_cont_version = read32(MMC_BOOT_MCI_VERSION(host->mci_base));
 
 	/* Setup initial freq to 400KHz. */
 	clock_config_mmc(&(host->mmc), MMC_CLK_400KHZ);
 
 	/* set power mode. */
 	mmc_pwr = (MMC_BOOT_MCI_PWR_ON | MMC_BOOT_MCI_PWR_UP);
-	writel(mmc_pwr, MMC_BOOT_MCI_POWER(host->mci_base));
+	write32(MMC_BOOT_MCI_POWER(host->mci_base), mmc_pwr);
 
 	/* Wait for the MMC_BOOT_MCI_POWER write to go through. */
 	mmc_mclk_reg_wr_delay(&(host->mmc));
 
 	/* Clear interrupt in mci status. */
-	writel(0xFFFFFFFF, MMC_BOOT_MCI_CLEAR(host->mci_base));
+	write32(MMC_BOOT_MCI_CLEAR(host->mci_base), 0xFFFFFFFF);
 
 	return MMC_BOOT_E_SUCCESS;
 }

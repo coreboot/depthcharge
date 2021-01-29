@@ -30,9 +30,9 @@
 
 static int ipq40xx_cold_reboot(struct PowerOps *me)
 {
-	writel(0, TCSR_BOOT_MISC_DETECT);
-	writel(0, TCSR_RESET_DEBUG_SW_ENTRY);
-	writel(0, GCNT_PSHOLD);
+	write32(TCSR_BOOT_MISC_DETECT, 0);
+	write32(TCSR_RESET_DEBUG_SW_ENTRY, 0);
+	write32(GCNT_PSHOLD, 0);
 
 	for (;;)
 		;

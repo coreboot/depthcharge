@@ -58,7 +58,7 @@ static int rockchip_i2s_init(RockchipI2s *bus)
 		bus->bits_per_sample,
 		bus->lr_frame_size, bus->channels);
 	clrbits_le32(&regs->xfer, I2S_TX_TRAN_BIT);
-	mode = readl(&regs->txcr) & ~(0x1F);
+	mode = read32(&regs->txcr) & ~(0x1F);
 	switch (bus->bits_per_sample) {
 	case 16:
 		mode |= I2S_DATA_WIDTH(15);
@@ -71,14 +71,14 @@ static int rockchip_i2s_init(RockchipI2s *bus)
 			__func__, bus->bits_per_sample);
 		return 1;
 	}
-	writel(mode, &regs->txcr);
+	write32(&regs->txcr, mode);
 
-	mode = readl(&regs->ckr) & ~I2S_MCLK_DIV_MASK;
+	mode = read32(&regs->ckr) & ~I2S_MCLK_DIV_MASK;
 	mode |= I2S_MCLK_DIV((lrf / (bps * chn) - 1));
 
 	mode &= ~I2S_TX_SCLK_DIV_MASK;
 	mode |= I2S_TX_SCLK_DIV((bus->bits_per_sample * bus->channels - 1));
-	writel(mode, &regs->ckr);
+	write32(&regs->ckr, mode);
 	return 0;
 }
 
@@ -86,21 +86,21 @@ static int i2s_send_data(uint32_t *data, unsigned int length,
 			    RockchipI2sRegs *regs)
 {
 	for (int i = 0; i < MIN(32, length); i++)
-		writel(*data++, &regs->txdr);
+		write32(&regs->txdr, *data++);
 
 	length -= MIN(32, length);
 
 	setbits_le32(&regs->xfer, I2S_TRAN_MASK);//enable both tx and rx
 	while (length) {
-		if ((readl(&regs->fifolr) & 0x3f) < 0x20) {
-			writel(*data++, &regs->txdr);
+		if ((read32(&regs->fifolr) & 0x3f) < 0x20) {
+			write32(&regs->txdr, *data++);
 			length--;
 		}
 	}
-	while (readl(&regs->fifolr) & 0x3f)
+	while (read32(&regs->fifolr) & 0x3f)
 		/* wait until FIFO empty */;
 	clrbits_le32(&regs->xfer, I2S_TRAN_MASK);
-	writel(0, &regs->clr);
+	write32(&regs->clr, 0);
 	return 0;
 }
 

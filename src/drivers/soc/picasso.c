@@ -79,7 +79,7 @@ void emmc_set_ios(MmcCtrlr *mmc_ctrlr)
 
 unsigned int emmc_get_platform_info(void)
 {
-	u32 reg = readl(EMMCHC + SDHCI_CAPABILITIES_1);
+	u32 reg = read32(EMMCHC + SDHCI_CAPABILITIES_1);
 	unsigned int platform_info = 0;
 
 	/*

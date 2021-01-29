@@ -59,7 +59,7 @@ static int tegra_gpio_get(GpioOps *me)
 	int bank = gpio->port / GPIO_PORTS_PER_BANK;
 	int port = gpio->port - bank * GPIO_PORTS_PER_BANK;
 
-	uint32_t reg = readl(&gpio_banks[bank].in_value[port]);
+	uint32_t reg = read32(&gpio_banks[bank].in_value[port]);
 	return (reg & (1 << gpio->index)) != 0;
 }
 
@@ -68,12 +68,12 @@ static int tegra_gpio_set(GpioOps *me, unsigned value)
 	TegraGpio *gpio = container_of(me, TegraGpio, ops);
 	int bank = gpio->port / GPIO_PORTS_PER_BANK;
 	int port = gpio->port - bank * GPIO_PORTS_PER_BANK;
-	uint32_t reg = readl(&gpio_banks[bank].out_value[port]);
+	uint32_t reg = read32(&gpio_banks[bank].out_value[port]);
 	uint32_t new_reg = value ? (reg | (0x1 << gpio->index)) :
 				   (reg & ~(0x1 << gpio->index));
 
 	if (new_reg != reg)
-		writel(new_reg, &gpio_banks[bank].out_value[port]);
+		write32(&gpio_banks[bank].out_value[port], new_reg);
 
 	return 0;
 }

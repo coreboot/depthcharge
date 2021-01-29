@@ -20,7 +20,7 @@
 
 static void init_shim_csr(BdwI2s *bus)
 {
-	uint32_t shim_cs = readl(&bus->shim->csr);
+	uint32_t shim_cs = read32(&bus->shim->csr);
 
 	/*
 	 * Select SSP clock
@@ -37,12 +37,12 @@ static void init_shim_csr(BdwI2s *bus)
 		SHIM_CS_STALL |
 		SHIM_CS_DCS_DSP32_AF32;
 
-	writel(shim_cs, &bus->shim->csr);
+	write32(&bus->shim->csr, shim_cs);
 }
 
 static void init_shim_clkctl(BdwI2s *bus)
 {
-	uint32_t clkctl = readl(&bus->shim->clkctl);
+	uint32_t clkctl = read32(&bus->shim->clkctl);
 
 	/* Set 24mhz mclk, prevent local clock gating, enable SSP0 clock */
 	clkctl &= SHIM_CLKCTL_RESERVED;
@@ -54,7 +54,7 @@ static void init_shim_clkctl(BdwI2s *bus)
 	else
 		clkctl |= SHIM_CLKCTL_SCOE_SSP0 | SHIM_CLKCTL_SFLCGB_SSP0_CGD;
 
-	writel(clkctl, &bus->shim->clkctl);
+	write32(&bus->shim->clkctl, clkctl);
 }
 
 static void init_sscr0(BdwI2s *bus)
@@ -81,12 +81,12 @@ static void init_sscr0(BdwI2s *bus)
 	/* Scale 24MHz MCLK */
 	sscr0 |= SSP_SSC0_SCR(bus->settings->sclk_rate);
 
-	writel(sscr0, &bus->regs->sscr0);
+	write32(&bus->regs->sscr0, sscr0);
 }
 
 static void init_sscr1(BdwI2s *bus)
 {
-	uint32_t sscr1 = readl(&bus->regs->sscr1);
+	uint32_t sscr1 = read32(&bus->regs->sscr1);
 
 	sscr1 &= SSP_SSC1_RESERVED;
 
@@ -110,12 +110,12 @@ static void init_sscr1(BdwI2s *bus)
 	sscr1 &= ~(SSP_SSC1_EBCEI | SSP_SSC1_TINTE | SSP_SSC1_PINTE);
 	sscr1 &= ~(SSP_SSC1_LBM | SSP_SSC1_RWOT);
 
-	writel(sscr1, &bus->regs->sscr1);
+	write32(&bus->regs->sscr1, sscr1);
 }
 
 static void init_sspsp(BdwI2s *bus)
 {
-	uint32_t sspsp = readl(&bus->regs->sspsp);
+	uint32_t sspsp = read32(&bus->regs->sspsp);
 
 	sspsp &= SSP_PSP_RESERVED;
 	sspsp |= SSP_PSP_SCMODE(bus->settings->sclk_mode);
@@ -140,13 +140,13 @@ static void init_sspsp(BdwI2s *bus)
 	else
 		sspsp |= SSP_PSP_ETDS;
 
-	writel(sspsp, &bus->regs->sspsp);
+	write32(&bus->regs->sspsp, sspsp);
 }
 
 static void init_ssp_time_slot(BdwI2s *bus)
 {
-	writel(SSP_SSTSA(3), &bus->regs->sstsa);
-	writel(SSP_SSTSA(3), &bus->regs->ssrsa);
+	write32(&bus->regs->sstsa, SSP_SSTSA(3));
+	write32(&bus->regs->ssrsa, SSP_SSTSA(3));
 }
 
 static int bdw_i2s_init(BdwI2s *bus)
@@ -165,26 +165,26 @@ static void bdw_i2s_enable(BdwI2s *bus)
 {
 	uint32_t value;
 
-	value = readl(&bus->regs->sscr0);
+	value = read32(&bus->regs->sscr0);
 	value |= SSP_SSC0_SSE;
-	writel(value, &bus->regs->sscr0);
+	write32(&bus->regs->sscr0, value);
 
-	value = readl(&bus->regs->sstsa);
+	value = read32(&bus->regs->sstsa);
 	value |= SSP_SSTSA_EN;
-	writel(value, &bus->regs->sstsa);
+	write32(&bus->regs->sstsa, value);
 }
 
 static void bdw_i2s_disable(BdwI2s *bus)
 {
 	uint32_t value;
 
-	value = readl(&bus->regs->sstsa);
+	value = read32(&bus->regs->sstsa);
 	value &= ~SSP_SSTSA_EN;
-	writel(value, &bus->regs->sstsa);
+	write32(&bus->regs->sstsa, value);
 
-	value = readl(&bus->regs->sscr0);
+	value = read32(&bus->regs->sscr0);
 	value &= ~SSP_SSC0_SSE;
-	writel(value, &bus->regs->sscr0);
+	write32(&bus->regs->sscr0, value);
 }
 
 static int bdw_i2s_send(I2sOps *me, unsigned int *data, unsigned int length)
@@ -210,8 +210,8 @@ static int bdw_i2s_send(I2sOps *me, unsigned int *data, unsigned int length)
 		uint64_t start = timer_us(0);
 
 		/* Write data if transmit FIFO has room */
-		if (readl(&bus->regs->sssr) & SSP_SSS_TNF) {
-			writel(*data++, &bus->regs->ssdr);
+		if (read32(&bus->regs->sssr) & SSP_SSS_TNF) {
+			write32(&bus->regs->ssdr, *data++);
 			length--;
 		} else {
 			if (timer_us(start) > 100000) {

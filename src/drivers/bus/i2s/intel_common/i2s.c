@@ -155,35 +155,35 @@ int __attribute__((weak)) board_get_ssp_port_index(void)
 static int enable_DSP_SSP(I2s *bus)
 {
 	/* Power On Audio Controller and wait till its powered on */
-	writel(0x1, bus->lpe_bar0 + POWER_OFFSET);
+	write32(bus->lpe_bar0 + POWER_OFFSET, 0x1);
 	for (int i = 0; i < RETRY_COUNT; i++) {
-		if (readl(bus->lpe_bar0 + POWER_OFFSET) == 0x1)
+		if (read32(bus->lpe_bar0 + POWER_OFFSET) == 0x1)
 			break;
 		mdelay(1);
 	}
 
-	if (readl(bus->lpe_bar0 + POWER_OFFSET) != 0x1)
+	if (read32(bus->lpe_bar0 + POWER_OFFSET) != 0x1)
 		return -1;
 
 	/* Enable the ADSP bar fuctionality */
-	writel(ENABLE_ADSP_BAR, bus->lpe_bar0 + BAR_OFFSET);
+	write32(bus->lpe_bar0 + BAR_OFFSET, ENABLE_ADSP_BAR);
 	for (int i = 0; i < RETRY_COUNT; i++) {
-		if (readl(bus->lpe_bar0 + BAR_OFFSET) == ENABLE_ADSP_BAR)
+		if (read32(bus->lpe_bar0 + BAR_OFFSET) == ENABLE_ADSP_BAR)
 			break;
 		mdelay(1);
 	}
-	if (readl(bus->lpe_bar0 + BAR_OFFSET) != ENABLE_ADSP_BAR)
+	if (read32(bus->lpe_bar0 + BAR_OFFSET) != ENABLE_ADSP_BAR)
 		return -1;
 
 	/* power on dsp core to access ssp registeres*/
-	writel(DSP_POWER_ON, bus->lpe_bar4 + DSP_POWER_OFFSET);
+	write32(bus->lpe_bar4 + DSP_POWER_OFFSET, DSP_POWER_ON);
 	/* wait till the DSP powers on */
 	for (int i = 0; i < RETRY_COUNT; i++) {
-		if (readl(bus->lpe_bar4 + DSP_POWER_OFFSET) == DSP_POWERED_UP)
+		if (read32(bus->lpe_bar4 + DSP_POWER_OFFSET) == DSP_POWERED_UP)
 			break;
 		mdelay(1);
 	}
-	if (readl(bus->lpe_bar4 + DSP_POWER_OFFSET) != DSP_POWERED_UP)
+	if (read32(bus->lpe_bar4 + DSP_POWER_OFFSET) != DSP_POWERED_UP)
 		return -1;
 
 /*
@@ -192,29 +192,29 @@ static int enable_DSP_SSP(I2s *bus)
  */
 #if CONFIG(INTEL_COMMON_I2S_CAVS_1_5)
 	/* setup the clock to disable dynamic clock gating of SSP */
-	writel(DISABLE_CLOCK_GATING, bus->lpe_bar4 + CLOCK_GATING_OFFSET);
+	write32(bus->lpe_bar4 + CLOCK_GATING_OFFSET, DISABLE_CLOCK_GATING);
 	for (int i = 0; i < RETRY_COUNT; i++) {
-		if (readl(bus->lpe_bar4 + CLOCK_GATING_OFFSET) ==
+		if (read32(bus->lpe_bar4 + CLOCK_GATING_OFFSET) ==
 						DISABLED_CLOCK_GATING)
 			break;
 		mdelay(1);
 	}
-	if (readl(bus->lpe_bar4 + CLOCK_GATING_OFFSET) != DISABLED_CLOCK_GATING)
+	if (read32(bus->lpe_bar4 + CLOCK_GATING_OFFSET) != DISABLED_CLOCK_GATING)
 		return -1;
 #endif
 
 #if CONFIG(INTEL_COMMON_I2S_CAVS_2_0) || CONFIG(INTEL_COMMON_I2S_CAVS_2_5)
 	/* In cAVS 2.0 or cAVS 2.5, need to set I2S MDIV and NDIV */
-	writel(1, (bus->lpe_bar4 +
-			(MNCSS_REG_BLOCK_START + MDIV_M_VAL(board_get_ssp_port_index()))));
-	writel(1, (bus->lpe_bar4 +
-			(MNCSS_REG_BLOCK_START + MDIV_N_VAL(board_get_ssp_port_index()))));
+	write32((bus->lpe_bar4 + (MNCSS_REG_BLOCK_START + MDIV_M_VAL(board_get_ssp_port_index()))),
+		1);
+	write32((bus->lpe_bar4 + (MNCSS_REG_BLOCK_START + MDIV_N_VAL(board_get_ssp_port_index()))),
+		1);
 #endif
 
 #if (CONFIG(INTEL_COMMON_I2S_CAVS_2_5))
 	/* SPA register should be set for each I2S port */
-	writel(readl(bus->lpe_bar4 + I2SLCTL) | BIT(board_get_ssp_port_index()),
-			(bus->lpe_bar4 + I2SLCTL));
+	write32((bus->lpe_bar4 + I2SLCTL),
+		read32(bus->lpe_bar4 + I2SLCTL) | BIT(board_get_ssp_port_index()));
 #endif
 	return 0;
 }
@@ -314,7 +314,7 @@ static int i2s_send(I2sOps *me, unsigned int *data, unsigned int length)
 		gpio_set(bus->sdmode_gpio, 1);
 
 	for (i = 0; i < LPE_SSP_FIFO_SIZE; i++)
-		writel(*data++, &i2s_reg->ssdr);
+		write32(&i2s_reg->ssdr, *data++);
 
 	i2s_enable(bus->regs);
 	length -= LPE_SSP_FIFO_SIZE;
@@ -322,7 +322,7 @@ static int i2s_send(I2sOps *me, unsigned int *data, unsigned int length)
 	last_activity = timer_us(0);
 	while (length > 0) {
 		if (read_SSSR(bus->regs) & TX_FIFO_NOT_FULL) {
-			writel(*data++, &i2s_reg->ssdr);
+			write32(&i2s_reg->ssdr, *data++);
 			length--;
 			last_activity = timer_us(0);
 		} else {

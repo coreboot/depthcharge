@@ -61,8 +61,8 @@ static uint64_t readll(uintptr_t _a)
 {
 	uint64_t _v;
 
-	_v = readl(_a);
-	_v |= ((uint64_t)readl(_a + sizeof(uint32_t)) << 32);
+	_v = read32(_a);
+	_v |= ((uint64_t) read32(_a + sizeof(uint32_t)) << 32);
 	return le64toh(_v);
 }
 
@@ -70,8 +70,8 @@ static uint64_t readll(uintptr_t _a)
 static void writell(uint64_t _v, volatile const uintptr_t _a)
 {
 	_v = htole64(_v);
-	writel(_v & 0xffffffff, _a);
-	writel(_v >> 32, _a + sizeof(uint32_t));
+	write32(_a, _v & 0xffffffff);
+	write32(_a + sizeof(uint32_t), _v >> 32);
 }
 
 DEBUG(
@@ -97,7 +97,7 @@ static NVME_STATUS nvme_disable_controller(NvmeCtrlr *ctrlr) {
 	uint32_t timeout;
 
 	/* Read controller configuration */
-	cc = readl(ctrlr->ctrlr_regs + NVME_CC_OFFSET);
+	cc = read32(ctrlr->ctrlr_regs + NVME_CC_OFFSET);
 	CLR(cc, NVME_CC_EN);
 	/* Write controller configuration */
 	writel_with_flush(cc, ctrlr->ctrlr_regs + NVME_CC_OFFSET);
@@ -108,7 +108,7 @@ static NVME_STATUS nvme_disable_controller(NvmeCtrlr *ctrlr) {
 		timeout = NVME_CAP_TO(ctrlr->cap);
 
 	if (WAIT_WHILE(
-		((readl(ctrlr->ctrlr_regs + NVME_CSTS_OFFSET) & NVME_CSTS_RDY) == 1),
+		((read32(ctrlr->ctrlr_regs + NVME_CSTS_OFFSET) & NVME_CSTS_RDY) == 1),
 		timeout)) {
 		return NVME_TIMEOUT;
 	}
@@ -134,7 +134,7 @@ static NVME_STATUS nvme_enable_controller(NvmeCtrlr *ctrlr) {
 		timeout = NVME_CAP_TO(ctrlr->cap);
 
 	if (WAIT_WHILE(
-		((readl(ctrlr->ctrlr_regs + NVME_CSTS_OFFSET) & NVME_CSTS_RDY) == 0),
+		((read32(ctrlr->ctrlr_regs + NVME_CSTS_OFFSET) & NVME_CSTS_RDY) == 0),
 		timeout)) {
 		return NVME_TIMEOUT;
 	}
@@ -148,7 +148,7 @@ static NVME_STATUS nvme_shutdown_controller(NvmeCtrlr *ctrlr) {
 	uint32_t timeout;
 
 	/* Read controller configuration */
-	cc = readl(ctrlr->ctrlr_regs + NVME_CC_OFFSET);
+	cc = read32(ctrlr->ctrlr_regs + NVME_CC_OFFSET);
 
 	/* Indicate normal shutdown */
 	CLR(cc, NVME_CC_SHN_MASK);
@@ -164,12 +164,12 @@ static NVME_STATUS nvme_shutdown_controller(NvmeCtrlr *ctrlr) {
 		timeout = NVME_CAP_TO(ctrlr->cap);
 
 	if (WAIT_WHILE(
-		((readl(ctrlr->ctrlr_regs + NVME_CSTS_OFFSET) &
+		((read32(ctrlr->ctrlr_regs + NVME_CSTS_OFFSET) &
 		  NVME_CSTS_SHST_MASK) != NVME_CSTS_SHST_COMPLETE),
 		timeout)) {
 
 		/* Send abrupt shutdown notification */
-		cc = readl(ctrlr->ctrlr_regs + NVME_CC_OFFSET);
+		cc = read32(ctrlr->ctrlr_regs + NVME_CC_OFFSET);
 		CLR(cc, NVME_CC_SHN_MASK);
 		SET(cc, NVME_CC_SHN_ABRUPT);
 		writel_with_flush(cc, ctrlr->ctrlr_regs + NVME_CC_OFFSET);
@@ -252,7 +252,7 @@ static NVME_STATUS nvme_complete_cmds_polled(NvmeCtrlr *ctrlr,
 		cq  = ctrlr->cq_buffer[qid] + ctrlr->cq_h_dbl[qid];
 		/* Wait for phase to change (or timeout) */
 		if (WAIT_WHILE(
-			((readw(&(cq->flags)) & NVME_CQ_FLAGS_PHASE) == ctrlr->pt[qid]),
+			((read16(&(cq->flags)) & NVME_CQ_FLAGS_PHASE) == ctrlr->pt[qid]),
 			timeout_ms)) {
 				printf("nvme_complete_cmds_polled: ERROR - timeout\n");
 				return NVME_TIMEOUT;
@@ -1127,7 +1127,7 @@ static int nvme_ctrlr_init(BlockDevCtrlrOps *me)
 	DEBUG(printf("I/O   Completion Queue (cq_buffer[NVME_IO_QUEUE]) = [%p]\n", (void *)virt_to_phys(ctrlr->cq_buffer[NVME_IO_QUEUE_INDEX]));)
 
 	/* Write AQA */
-	writel(aqa, ctrlr->ctrlr_regs + NVME_AQA_OFFSET);
+	write32(ctrlr->ctrlr_regs + NVME_AQA_OFFSET, aqa);
 	/* Write ASQ */
 	writell(asq, ctrlr->ctrlr_regs + NVME_ASQ_OFFSET);
 	/* Write ACQ */
