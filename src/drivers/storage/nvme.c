@@ -56,8 +56,8 @@
 #include "drivers/storage/nvme.h"
 #include "drivers/storage/health.h"
 
-/* Read 64bits from register space */
-static uint64_t readll(uintptr_t _a)
+/* Read 64bits from register space as two 32bit reads */
+static uint64_t read32x2le(uintptr_t _a)
 {
 	uint64_t _v;
 
@@ -66,8 +66,8 @@ static uint64_t readll(uintptr_t _a)
 	return le64toh(_v);
 }
 
-/* Write 64bits to register space */
-static void writell(uint64_t _v, volatile const uintptr_t _a)
+/* Write 64bits to register space as two 32 bit writes */
+static void write32x2le(volatile uintptr_t _a, uint64_t _v)
 {
 	_v = htole64(_v);
 	write32(_a, _v & 0xffffffff);
@@ -1039,7 +1039,7 @@ static int nvme_ctrlr_init(BlockDevCtrlrOps *me)
 	/* Read the Controller Capabilities register */
 	ctrlr->ctrlr_regs = pci_read_resource(dev,0);
 	ctrlr->ctrlr_regs = ctrlr->ctrlr_regs & ~0x7;
-	ctrlr->cap = readll(ctrlr->ctrlr_regs + NVME_CAP_OFFSET);
+	ctrlr->cap = read32x2le(ctrlr->ctrlr_regs + NVME_CAP_OFFSET);
 
 	/* Verify that the NVM command set is supported */
 	if (NVME_CAP_CSS(ctrlr->cap) != NVME_CAP_CSS_NVM) {
@@ -1129,9 +1129,9 @@ static int nvme_ctrlr_init(BlockDevCtrlrOps *me)
 	/* Write AQA */
 	write32(ctrlr->ctrlr_regs + NVME_AQA_OFFSET, aqa);
 	/* Write ASQ */
-	writell(asq, ctrlr->ctrlr_regs + NVME_ASQ_OFFSET);
+	write32x2le(ctrlr->ctrlr_regs + NVME_ASQ_OFFSET, asq);
 	/* Write ACQ */
-	writell(acq, ctrlr->ctrlr_regs + NVME_ACQ_OFFSET);
+	write32x2le(ctrlr->ctrlr_regs + NVME_ACQ_OFFSET, acq);
 
 	/* Enable controller */
 	status = nvme_enable_controller(ctrlr);
