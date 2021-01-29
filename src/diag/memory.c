@@ -27,7 +27,7 @@
 
 #define DEFAULT_DIAGNOSTIC_OUTPUT_SIZE (64 * KiB)
 #define PATTERN_CACHE_SIZE (1 * KiB)
-#define CHUNK_SIZE (256 * MiB)
+#define CHUNK_SIZE (32 * MiB)
 
 typedef enum {
 	TEST_SUCCESS = 0,
