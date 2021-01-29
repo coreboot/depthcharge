@@ -30,12 +30,7 @@ STRINGS_JSON_FILE_TMPL = '{}.json'
 FORMAT_FILE = 'format.yaml'
 BOARDS_CONFIG_FILE = 'boards.yaml'
 
-STRINGS_DIR = os.path.join(SCRIPT_BASE, 'strings')
-LOCALE_DIR = os.path.join(STRINGS_DIR, 'locale')
 OUTPUT_DIR = os.getenv('OUTPUT', os.path.join(SCRIPT_BASE, 'build'))
-STAGE_DIR = os.path.join(OUTPUT_DIR, '.stage')
-STAGE_LOCALE_DIR = os.path.join(STAGE_DIR, 'locale')
-STAGE_FONT_DIR = os.path.join(STAGE_DIR, 'font')
 
 ONE_LINE_DIR = 'one_line'
 SVG_FILES = '*.svg'
@@ -105,6 +100,42 @@ def get_config_with_defaults(configs, key):
   config = configs[KEY_DEFAULT].copy()
   config.update(configs.get(key, {}))
   return config
+
+
+def load_boards_config(filename):
+  """Loads the configuration of all boards from `filename`.
+
+  Args:
+    filename: File name of a YAML config file.
+
+  Returns:
+    A dictionary mapping each board name to its config.
+  """
+  with open(filename, 'rb') as file:
+    raw = yaml.load(file)
+
+  configs = {}
+  default = raw[KEY_DEFAULT]
+  if not default:
+    raise BuildImageError('Default configuration is not found')
+  for boards, params in raw.items():
+    if boards == KEY_DEFAULT:
+      continue
+    config = copy.deepcopy(default)
+    if params:
+      config.update(params)
+    for board in boards.replace(',', ' ').split():
+      configs[board] = config
+
+  return configs
+
+
+def check_fonts(fonts):
+    """Check if all fonts are available."""
+    for locale, font in fonts.items():
+      if subprocess.run(['fc-list', '-q', font]).returncode != 0:
+        raise BuildImageError('Font %r not found for locale %r'
+                              % (font, locale))
 
 
 def run_pango_view(input_file, output_file, locale, font, height, max_width,
@@ -180,28 +211,6 @@ def convert_text_to_image(locale, input_file, font, output_dir, height=None,
                      dpi, bgcolor, fgcolor)
 
 
-def convert_glyphs():
-  """Converts glyphs of ascii characters."""
-  os.makedirs(STAGE_FONT_DIR, exist_ok=True)
-  # Remove the extra whitespace at the top/bottom within the glyphs
-  for c in range(ord(' '), ord('~') + 1):
-    txt_file = os.path.join(STAGE_FONT_DIR, f'idx{c:03d}_{c:02x}.txt')
-    with open(txt_file, 'w', encoding='ascii') as f:
-      f.write(chr(c))
-      f.write('\n')
-    # TODO(b/163109632): Parallelize the conversion of glyphs
-    convert_text_to_image(None, txt_file, GLYPH_FONT, STAGE_FONT_DIR,
-                          height=DEFAULT_GLYPH_HEIGHT, use_svg=True)
-
-
-def check_fonts(fonts):
-    """Check if all fonts are available."""
-    for locale, font in fonts.items():
-      if subprocess.run(['fc-list', '-q', font]).returncode != 0:
-        raise BuildImageError('Font %r not found for locale %r'
-                              % (font, locale))
-
-
 def parse_locale_json_file(locale, json_dir):
   """Parses given firmware string json file.
 
@@ -225,182 +234,6 @@ def parse_locale_json_file(locale, json_dir):
       msgtext = msgtext.strip()
       result[tag] = msgtext
   return result
-
-
-def parse_locale_input_files(locale, json_dir):
-  """Parses all firmware string files for the given locale.
-
-  Args:
-    locale: The name of the locale, e.g. "da" or "pt-BR".
-    json_dir: Directory containing json output from grit.
-
-  Returns:
-    A dictionary for mapping of "name to content" for files to be generated.
-  """
-  result = parse_locale_json_file(locale, json_dir)
-
-  # Walk locale directory to add pre-generated texts such as language names.
-  for input_file in glob.glob(os.path.join(LOCALE_DIR, locale, "*.txt")):
-    name, _ = os.path.splitext(os.path.basename(input_file))
-    with open(input_file, 'r', encoding='utf-8-sig') as f:
-      result[name] = f.read().strip()
-
-  return result
-
-
-def convert_localized_strings(formats, dpi):
-  """Converts localized strings."""
-  # Make a copy of formats to avoid modifying it
-  formats = copy.deepcopy(formats)
-
-  env_locales = os.getenv('LOCALES')
-  if env_locales:
-    locales = env_locales.split()
-  else:
-    locales = formats[KEY_LOCALES]
-
-  files = formats[KEY_LOCALIZED_FILES]
-  if DIAGNOSTIC_UI:
-    files.update(formats[KEY_DIAGNOSTIC_FILES])
-
-  styles = formats[KEY_STYLES]
-  fonts = formats[KEY_FONTS]
-  default_font = fonts[KEY_DEFAULT]
-
-  # Sources are one .grd file with identifiers chosen by engineers and
-  # corresponding English texts, as well as a set of .xlt files (one for each
-  # language other than US english) with a mapping from hash to translation.
-  # Because the keys in the xlt files are a hash of the English source text,
-  # rather than our identifiers, such as "btn_cancel", we use the "grit"
-  # command line tool to process the .grd and .xlt files, producing a set of
-  # .json files mapping our identifier to the translated string, one for every
-  # language including US English.
-
-  # Create a temporary directory to place the translation output from grit in.
-  json_dir = tempfile.mkdtemp()
-
-  # This invokes the grit build command to generate JSON files from the XTB
-  # files containing translations.  The results are placed in `json_dir` as
-  # specified in firmware_strings.grd, i.e. one JSON file per locale.
-  subprocess.check_call([
-      'grit',
-      '-i', os.path.join(LOCALE_DIR, STRINGS_GRD_FILE),
-      'build',
-      '-o', os.path.join(json_dir)
-  ])
-
-  # Ignore SIGINT in child processes
-  sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
-  pool = multiprocessing.Pool(multiprocessing.cpu_count())
-  signal.signal(signal.SIGINT, sigint_handler)
-
-  results = []
-  for locale in locales:
-    print(locale, end=' ', flush=True)
-    inputs = parse_locale_input_files(locale, json_dir)
-    output_dir = os.path.normpath(os.path.join(STAGE_DIR, 'locale', locale))
-    if not os.path.exists(output_dir):
-      os.makedirs(output_dir)
-
-    for name, category in files.items():
-      # Ignore missing translation
-      if locale != 'en' and name not in inputs:
-        continue
-
-      # Write to text file
-      text_file = os.path.join(output_dir, name + '.txt')
-      with open(text_file, 'w', encoding='utf-8-sig') as f:
-        f.write(inputs[name] + '\n')
-
-      # Convert to PNG file
-      style = get_config_with_defaults(styles, category)
-      args = (
-          locale,
-          os.path.join(output_dir, '%s.txt' % name),
-          fonts.get(locale, default_font),
-          output_dir,
-      )
-      kwargs = {
-          'height': style[KEY_HEIGHT],
-          'max_width': style[KEY_MAX_WIDTH],
-          'dpi': dpi,
-          'bgcolor': style[KEY_BGCOLOR],
-          'fgcolor': style[KEY_FGCOLOR],
-      }
-      results.append(pool.apply_async(convert_text_to_image, args, kwargs))
-  pool.close()
-  if json_dir is not None:
-    shutil.rmtree(json_dir)
-  print()
-
-  try:
-    for r in results:
-      r.get()
-  except KeyboardInterrupt:
-    pool.terminate()
-    pool.join()
-    exit('Aborted by user')
-  else:
-    pool.join()
-
-
-def build_strings(formats, board_config):
-  """Builds text strings."""
-  dpi = board_config[DPI_KEY]
-
-  # Convert glyphs
-  print('Converting glyphs...')
-  convert_glyphs()
-
-  # Convert generic (locale-independent) strings
-  files = formats[KEY_GENERIC_FILES]
-  styles = formats[KEY_STYLES]
-  fonts = formats[KEY_FONTS]
-  default_font = fonts[KEY_DEFAULT]
-
-  check_fonts(fonts)
-
-  for input_file in glob.glob(os.path.join(STRINGS_DIR, '*.txt')):
-    name, _ = os.path.splitext(os.path.basename(input_file))
-    category = files[name]
-    style = get_config_with_defaults(styles, category)
-    convert_text_to_image(None, input_file, default_font, STAGE_DIR,
-                          height=style[KEY_HEIGHT],
-                          max_width=style[KEY_MAX_WIDTH],
-                          dpi=dpi,
-                          bgcolor=style[KEY_BGCOLOR],
-                          fgcolor=style[KEY_FGCOLOR])
-
-  # Convert localized strings
-  convert_localized_strings(formats, dpi)
-
-
-def load_boards_config(filename):
-  """Loads the configuration of all boards from `filename`.
-
-  Args:
-    filename: File name of a YAML config file.
-
-  Returns:
-    A dictionary mapping each board name to its config.
-  """
-  with open(filename, 'rb') as file:
-    raw = yaml.load(file)
-
-  configs = {}
-  default = raw[KEY_DEFAULT]
-  if not default:
-    raise BuildImageError('Default configuration is not found')
-  for boards, params in raw.items():
-    if boards == KEY_DEFAULT:
-      continue
-    config = copy.deepcopy(default)
-    if params:
-      config.update(params)
-    for board in boards.replace(',', ' ').split():
-      configs[board] = config
-
-  return configs
 
 
 class Converter(object):
@@ -477,10 +310,14 @@ class Converter(object):
     Args:
       output: Output directory.
     """
+    self.strings_dir = os.path.join(SCRIPT_BASE, 'strings')
+    self.locale_dir = os.path.join(self.strings_dir, 'locale')
     self.output_dir = os.path.join(output, self.board)
     self.output_ro_dir = os.path.join(self.output_dir, 'locale', 'ro')
     self.output_rw_dir = os.path.join(self.output_dir, 'locale', 'rw')
     self.stage_dir = os.path.join(output, '.stage')
+    self.stage_locale_dir = os.path.join(self.stage_dir, 'locale')
+    self.stage_font_dir = os.path.join(self.stage_dir, 'font')
     self.temp_dir = os.path.join(self.stage_dir, 'tmp')
 
   def set_screen(self):
@@ -721,18 +558,31 @@ class Converter(object):
     self.convert(files, self.output_dir, heights, max_widths,
                  self.ASSET_MAX_COLORS)
 
-  def convert_generic_strings(self):
-    """Converts generic (locale-independent) strings."""
+  def build_generic_strings(self):
+    """Builds images of generic (locale-independent) strings."""
+    dpi = self.config[DPI_KEY]
+
     names = self.formats[KEY_GENERIC_FILES]
     styles = self.formats[KEY_STYLES]
+    fonts = self.formats[KEY_FONTS]
+    default_font = fonts[KEY_DEFAULT]
+
+    files = []
     heights = {}
     max_widths = {}
-    for name, category in names.items():
+    for txt_file in glob.glob(os.path.join(self.strings_dir, '*.txt')):
+      name, _ = os.path.splitext(os.path.basename(txt_file))
+      category = names[name]
       style = get_config_with_defaults(styles, category)
+      convert_text_to_image(None, txt_file, default_font, self.stage_dir,
+                            height=style[KEY_HEIGHT],
+                            max_width=style[KEY_MAX_WIDTH],
+                            dpi=dpi,
+                            bgcolor=style[KEY_BGCOLOR],
+                            fgcolor=style[KEY_FGCOLOR])
+      files.append(os.path.join(self.stage_dir, name + '.png'))
       heights[name] = style[KEY_HEIGHT]
       max_widths[name] = style[KEY_MAX_WIDTH]
-
-    files = glob.glob(os.path.join(self.stage_dir, PNG_FILES))
     self.convert(files, self.output_dir, heights, max_widths,
                  self.text_max_colors)
 
@@ -771,12 +621,79 @@ class Converter(object):
           print("WARNING: Locale '%s': copying '%s'" % (locale, filename))
           shutil.copyfile(en_file, locale_file)
 
-  def convert_localized_strings(self):
-    """Converts localized strings."""
-    names = self.formats[KEY_LOCALIZED_FILES].copy()
-    if DIAGNOSTIC_UI:
-      names.update(self.formats[KEY_DIAGNOSTIC_FILES])
+  def generate_localized_pngs(self, names, json_dir):
+    """Generates PNG files for localized strings."""
     styles = self.formats[KEY_STYLES]
+    fonts = self.formats[KEY_FONTS]
+    default_font = fonts[KEY_DEFAULT]
+    dpi = self.config[DPI_KEY]
+
+    # Ignore SIGINT in child processes
+    sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
+    pool = multiprocessing.Pool(multiprocessing.cpu_count())
+    signal.signal(signal.SIGINT, sigint_handler)
+
+    results = []
+    for locale_info in self.locales:
+      locale = locale_info.code
+      print(locale, end=' ', flush=True)
+      inputs = parse_locale_json_file(locale, json_dir)
+
+      # Walk locale directory to add pre-generated texts such as language names.
+      for txt_file in glob.glob(os.path.join(self.locale_dir, locale, '*.txt')):
+        name, _ = os.path.splitext(os.path.basename(txt_file))
+        with open(txt_file, 'r', encoding='utf-8-sig') as f:
+          inputs[name] = f.read().strip()
+
+      output_dir = os.path.join(self.stage_locale_dir, locale)
+      os.makedirs(output_dir, exist_ok=True)
+
+      for name, category in names.items():
+        # Ignore missing translation
+        if locale != 'en' and name not in inputs:
+          continue
+
+        # Write to text file
+        text_file = os.path.join(output_dir, name + '.txt')
+        with open(text_file, 'w', encoding='utf-8-sig') as f:
+          f.write(inputs[name] + '\n')
+
+        # Convert to PNG file
+        style = get_config_with_defaults(styles, category)
+        args = (
+            locale,
+            os.path.join(output_dir, '%s.txt' % name),
+            fonts.get(locale, default_font),
+            output_dir,
+        )
+        kwargs = {
+            'height': style[KEY_HEIGHT],
+            'max_width': style[KEY_MAX_WIDTH],
+            'dpi': dpi,
+            'bgcolor': style[KEY_BGCOLOR],
+            'fgcolor': style[KEY_FGCOLOR],
+        }
+        results.append(pool.apply_async(convert_text_to_image, args, kwargs))
+
+    print()
+    pool.close()
+
+    try:
+      for r in results:
+        r.get()
+    except KeyboardInterrupt:
+      pool.terminate()
+      pool.join()
+      exit('Aborted by user')
+    else:
+      pool.join()
+
+  def convert_localized_pngs(self, names):
+    """Converts PNGs of localized strings to BMPs."""
+    styles = self.formats[KEY_STYLES]
+    fonts = self.formats[KEY_FONTS]
+    default_font = fonts[KEY_DEFAULT]
+
     heights = {}
     max_widths = {}
     for name, category in names.items():
@@ -789,7 +706,7 @@ class Converter(object):
     for locale_info in self.locales:
       locale = locale_info.code
       ro_locale_dir = os.path.join(self.output_ro_dir, locale)
-      stage_locale_dir = os.path.join(STAGE_LOCALE_DIR, locale)
+      stage_locale_dir = os.path.join(self.stage_locale_dir, locale)
       print(' ' + locale, end='', file=sys.stderr, flush=True)
       os.makedirs(ro_locale_dir)
       self.convert(
@@ -798,6 +715,42 @@ class Converter(object):
           one_line_dir=os.path.join(stage_locale_dir, ONE_LINE_DIR))
       self._check_text_width(ro_locale_dir, heights, max_widths)
     print(file=sys.stderr)
+
+  def build_localized_strings(self):
+    """Builds images of localized strings."""
+    # Sources are one .grd file with identifiers chosen by engineers and
+    # corresponding English texts, as well as a set of .xlt files (one for each
+    # language other than US English) with a mapping from hash to translation.
+    # Because the keys in the xlt files are a hash of the English source text,
+    # rather than our identifiers, such as "btn_cancel", we use the "grit"
+    # command line tool to process the .grd and .xlt files, producing a set of
+    # .json files mapping our identifier to the translated string, one for every
+    # language including US English.
+
+    # Create a temporary directory to place the translation output from grit in.
+    json_dir = tempfile.mkdtemp()
+
+    # This invokes the grit build command to generate JSON files from the XTB
+    # files containing translations.  The results are placed in `json_dir` as
+    # specified in firmware_strings.grd, i.e. one JSON file per locale.
+    subprocess.check_call([
+        'grit',
+        '-i', os.path.join(self.locale_dir, STRINGS_GRD_FILE),
+        'build',
+        '-o', os.path.join(json_dir),
+    ])
+
+    # Make a copy to avoid modifying `self.formats`
+    names = copy.deepcopy(self.formats[KEY_LOCALIZED_FILES])
+    if DIAGNOSTIC_UI:
+      names.update(self.formats[KEY_DIAGNOSTIC_FILES])
+
+    # TODO(b/163109632): Merge generate_localized_pngs() and
+    # convert_localized_pngs(), and parallelize them altogether.
+    self.generate_localized_pngs(names, json_dir)
+    shutil.rmtree(json_dir)
+
+    self.convert_localized_pngs(names)
     self._copy_missing_bitmaps()
 
   def move_language_images(self):
@@ -815,11 +768,22 @@ class Converter(object):
         raise BuildImageError('File already exists: %s' % new_file)
       shutil.move(old_file, new_file)
 
-  def convert_fonts(self):
-    """Converts font images"""
+  def build_glyphs(self):
+    """Builds glyphs of ascii characters."""
+    os.makedirs(self.stage_font_dir, exist_ok=True)
+    files = []
+    # TODO(b/163109632): Parallelize the conversion of glyphs
+    for c in range(ord(' '), ord('~') + 1):
+      name = f'idx{c:03d}_{c:02x}'
+      txt_file = os.path.join(self.stage_font_dir, name + '.txt')
+      with open(txt_file, 'w', encoding='ascii') as f:
+        f.write(chr(c))
+        f.write('\n')
+      convert_text_to_image(None, txt_file, GLYPH_FONT, self.stage_font_dir,
+                            height=DEFAULT_GLYPH_HEIGHT, use_svg=True)
+      files.append(os.path.join(self.stage_font_dir, name + '.svg'))
     heights = defaultdict(lambda: DEFAULT_GLYPH_HEIGHT)
     max_widths = defaultdict(lambda: None)
-    files = glob.glob(os.path.join(STAGE_FONT_DIR, SVG_FILES))
     font_output_dir = os.path.join(self.output_dir, 'font')
     os.makedirs(font_output_dir)
     self.convert(files, font_output_dir, heights, max_widths,
@@ -872,11 +836,11 @@ class Converter(object):
     print('Converting sprite images...')
     self.convert_sprite_images()
 
-    print('Converting generic strings...')
-    self.convert_generic_strings()
+    print('Building generic strings...')
+    self.build_generic_strings()
 
-    print('Converting localized strings...')
-    self.convert_localized_strings()
+    print('Building localized strings...')
+    self.build_localized_strings()
 
     print('Moving language images to locale-independent directory...')
     self.move_language_images()
@@ -884,8 +848,8 @@ class Converter(object):
     print('Creating locale list file...')
     self.create_locale_list()
 
-    print('Converting fonts...')
-    self.convert_fonts()
+    print('Building glyphs...')
+    self.build_glyphs()
 
     print('Copying specified images to RW packing directory...')
     self.copy_images_to_rw()
@@ -902,9 +866,9 @@ def main():
     formats = yaml.load(f)
   board_config = load_boards_config(BOARDS_CONFIG_FILE)[board]
 
-  # TODO(yupingso): Put everything into Converter class
   print('Building for ' + board)
-  build_strings(formats, board_config)
+  check_fonts(formats[KEY_FONTS])
+  print('Output dir: ' + OUTPUT_DIR)
   converter = Converter(board, formats, board_config, OUTPUT_DIR)
   converter.build()
 
