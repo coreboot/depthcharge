@@ -10,12 +10,21 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "drivers/bus/i2c/designware.h"
+#include "drivers/bus/i2c/i2c.h"
+#include "drivers/bus/i2s/cavs-regs.h"
+#include "drivers/bus/i2s/intel_common/max98357a.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"
-#include "drivers/soc/alderlake.h"
-#include "drivers/storage/ahci.h"
+#include "drivers/gpio/alderlake.h"
+#include "drivers/gpio/gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
+#include "drivers/sound/i2s.h"
+#include "drivers/sound/gpio_amp.h"
+#include "drivers/sound/max98373.h"
+#include "drivers/soc/alderlake.h"
+#include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/nvme.h"
 #include "drivers/tpm/cr50_i2c.h"
@@ -25,6 +34,8 @@
 
 #define TPM_I2C3	PCI_DEV(0, 0x15, 3)
 #define TPM_I2C_ADDR	0x50
+
+#define I2C_FS_HZ	400000
 
 #define AUD_VOLUME	4000
 #define AUD_BITDEPTH	16
@@ -40,8 +51,6 @@ static int cr50_irq_status(void)
 
 static int board_setup(void)
 {
-	uint8_t secondary_bus;
-
 	sysinfo_install_flags(NULL);
 
 	/* Chrome EC (eSPI) */
