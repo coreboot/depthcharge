@@ -189,16 +189,6 @@ static void audio_setup(CrosEc *cros_ec)
 		cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec,
 							    /* i2c bus */ 8);
 
-	rt5682Codec *rt5682 = new_rt5682_codec(&cros_ec_i2c_tunnel->ops, 0x1a);
-	if (rt5682_enable(rt5682)) {
-		printf("%s: error in enabling codec\n", __func__);
-		return;
-	}
-	if (rt5682_set_clock(rt5682, MCLK, LRCLK)) {
-		printf("%s: error in setting up clocks\n", __func__);
-		return;
-	}
-
 	KernGpio *i2s_bclk = new_kern_fch_gpio_input(I2S_BCLK_GPIO);
 	KernGpio *i2s_lrclk = new_kern_fch_gpio_input(I2S_LRCLK_GPIO);
 	KernGpio *i2s2_data = new_kern_fch_gpio_output(I2S_DATA_GPIO, 0);
@@ -211,6 +201,12 @@ static void audio_setup(CrosEc *cros_ec)
 			0x1FFF,			/* Volume */
 			1);			/* BCLK sync */
 	SoundRoute *sound_route = new_sound_route(&i2s->ops);
+
+	rt5682Codec *rt5682 =
+		new_rt5682_codec(&cros_ec_i2c_tunnel->ops, 0x1a, MCLK, LRCLK);
+
+	list_insert_after(&rt5682->component.list_node,
+			  &sound_route->components);
 
 	/*
 	 * Override gpio_i2s play() op with our own that disbles CPU boost

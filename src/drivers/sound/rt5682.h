@@ -15,16 +15,16 @@
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/sound/route.h"
 
-typedef struct
-{
+typedef struct {
 	SoundRouteComponent component;
 
 	I2cOps *i2c;
 	uint8_t chip;
+	uint32_t mclk;
+	uint32_t lrclk;
 } rt5682Codec;
 
-rt5682Codec *new_rt5682_codec(I2cOps *i2c, uint8_t chip);
-int rt5682_enable(rt5682Codec *codec);
-int rt5682_set_clock(rt5682Codec *codec, uint32_t mclk, uint32_t lrclk);
+rt5682Codec *new_rt5682_codec(I2cOps *i2c, uint8_t chip, uint32_t mclk,
+			      uint32_t lrclk);
 
 #endif /* __DRIVERS_SOUND_RT5682_H__ */
