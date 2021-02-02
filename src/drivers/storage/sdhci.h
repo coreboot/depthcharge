@@ -258,6 +258,13 @@
 /* The platform uses 3.3 V VCCQ (I/O signaling) */
 #define SDHCI_PLATFORM_EMMC_33V_VCCQ	(1 << 8)
 /*
+ * The platform has Vcc hardwired to always be on in S0.
+ *
+ * This allows skipping a 10ms delay waiting for the eMMC power rail to
+ * stabilize after enabling bus power.
+ */
+#define SDHCI_PLATFORM_EMMC_HARDWIRED_VCC	(1 << 9)
+/*
  * quirks
  */
 #define SDHCI_QUIRK_32BIT_DMA_ADDR	(1 << 0)

@@ -19,6 +19,7 @@
  * Murray.Jensen@cmst.csiro.au, 27-Jan-01.
  */
 
+#include <assert.h>
 #include <libpayload.h>
 
 #include "drivers/storage/blockdev.h"
@@ -1132,7 +1133,9 @@ static int sdhci_init(SdhciHost *host)
 	/* Set timeout to maximum, shouldn't happen if everything's right. */
 	sdhci_writeb(host, 0xe, SDHCI_TIMEOUT_CONTROL);
 
-	udelay(10000);
+	if (!(host->platform_info & SDHCI_PLATFORM_EMMC_HARDWIRED_VCC))
+		udelay(10000);
+
 	return 0;
 }
 
@@ -1222,4 +1225,7 @@ void add_sdhci(SdhciHost *host)
 
 	/* TODO(vbendeb): check if SDHCI spec allows to retrieve this value. */
 	host->mmc_ctrlr.b_max = 65535;
+
+	assert(host->mmc_ctrlr.slot_type == MMC_SLOT_TYPE_EMBEDDED ||
+	       !(host->platform_info & SDHCI_PLATFORM_EMMC_HARDWIRED_VCC));
 }
