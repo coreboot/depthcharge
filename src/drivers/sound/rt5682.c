@@ -491,15 +491,16 @@ static const struct rt5682_pll_code *rt5682_pll_calc(uint32_t freq_in,
 	return NULL;
 }
 
-int rt5682_set_clock(rt5682Codec *codec, uint32_t mclk, uint32_t lrclk)
+static int rt5682_set_clock(rt5682Codec *codec)
 {
 	const struct rt5682_pll_code *pll2f_code, *pll2b_code;
 	uint16_t i2s1_master_div_val;
 
 	/* PLL2 comprises of 2 PLLs, we keep front PLL output at 3.84MHz */
-	pll2f_code = rt5682_pll_calc(mclk, 3840000);
+	pll2f_code = rt5682_pll_calc(codec->mclk, 3840000);
 	if (!pll2f_code) {
-		printf("%s: Error! mclk=%d not supported\n", __func__, mclk);
+		printf("%s: Error! mclk=%d not supported\n", __func__,
+		       codec->mclk);
 		return 1;
 	}
 	pll2b_code = rt5682_pll_calc(3840000, 24576000);
@@ -508,7 +509,7 @@ int rt5682_set_clock(rt5682Codec *codec, uint32_t mclk, uint32_t lrclk)
 		return 1;
 	}
 
-	switch(lrclk) {
+	switch(codec->lrclk) {
 	case 8000:
 		i2s1_master_div_val = RT5682_I2S_M_D_12;
 		break;
@@ -584,9 +585,10 @@ static int rt5682_device_init(rt5682Codec *codec)
 	return 0;
 }
 
-int rt5682_enable(rt5682Codec *codec)
+static int rt5682_enable(struct SoundRouteComponentOps *me)
 {
 	int ret;
+	rt5682Codec *codec = container_of(me, rt5682Codec, component.ops);
 
 	ret = rt5682_device_init(codec);
 
@@ -597,17 +599,28 @@ int rt5682_enable(rt5682Codec *codec)
 
 	printf("%s: exit w/ret code %d\n", __func__, ret);
 #endif
+
+	if (ret)
+		return ret;
+
+	ret = rt5682_set_clock(codec);
+
 	return ret;
 }
 
-rt5682Codec *new_rt5682_codec(I2cOps *i2c, uint8_t chip)
+rt5682Codec *new_rt5682_codec(I2cOps *i2c, uint8_t chip, uint32_t mclk,
+			      uint32_t lrclk)
 {
 	printf("%s: chip = 0x%02X\n", __func__, chip);
 
 	rt5682Codec *codec = xzalloc(sizeof(*codec));
 
+	codec->component.ops.enable = &rt5682_enable;
+
 	codec->i2c = i2c;
 	codec->chip = chip;
+	codec->mclk = mclk;
+	codec->lrclk = lrclk;
 
 	return codec;
 }
