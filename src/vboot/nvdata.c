@@ -27,8 +27,6 @@ vb2_error_t nvdata_read(struct vb2_context *ctx)
 {
 	if (CONFIG(NVDATA_CMOS))
 		return nvdata_cmos_read(ctx->nvdata);
-	else if (CONFIG(NVDATA_CROS_EC))
-		return nvdata_cros_ec_read(ctx->nvdata);
 	else if (CONFIG(NVDATA_FLASH))
 		return nvdata_flash_read(ctx->nvdata);
 	else
@@ -50,8 +48,6 @@ vb2_error_t nvdata_write(struct vb2_context *ctx)
 
 	if (CONFIG(NVDATA_CMOS))
 		ret = nvdata_cmos_write(ctx->nvdata);
-	else if (CONFIG(NVDATA_CROS_EC))
-		ret = nvdata_cros_ec_write(ctx->nvdata);
 	else if (CONFIG(NVDATA_FLASH))
 		ret = nvdata_flash_write(ctx->nvdata);
 	else
