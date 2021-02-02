@@ -68,6 +68,8 @@
 /* BITS 8:19 (SCR) of  SSxCO reg is used to configure BCLK */
 #define SERIAL_CLOCK_RATE	0x18
 /* I2S1 register start address */
+#define SSP_I2S0_START_ADDRESS	0x10000
+/* I2S1 register start address */
 #define SSP_I2S1_START_ADDRESS	0x11000
 /* I2S2 register start address */
 #define SSP_I2S2_START_ADDRESS	0x12000
