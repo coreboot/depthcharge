@@ -183,31 +183,31 @@ typedef struct {
 
 static inline void dwmci_writel(DwmciHost *host, int reg, uint32_t val)
 {
-	writel(val, host->ioaddr + reg);
+	write32(host->ioaddr + reg, val);
 }
 
 static inline void dwmci_writew(DwmciHost *host, int reg, uint16_t val)
 {
-	writew(val, host->ioaddr + reg);
+	write16(host->ioaddr + reg, val);
 }
 
 static inline void dwmci_writeb(DwmciHost *host, int reg, uint8_t val)
 {
-	writeb(val, host->ioaddr + reg);
+	write8(host->ioaddr + reg, val);
 }
 static inline uint32_t dwmci_readl(DwmciHost *host, int reg)
 {
-	return readl(host->ioaddr + reg);
+	return read32(host->ioaddr + reg);
 }
 
 static inline uint16_t dwmci_readw(DwmciHost *host, int reg)
 {
-	return readw(host->ioaddr + reg);
+	return read16(host->ioaddr + reg);
 }
 
 static inline uint8_t dwmci_readb(DwmciHost *host, int reg)
 {
-	return readb(host->ioaddr + reg);
+	return read8(host->ioaddr + reg);
 }
 
 static inline void *dwmci_get_ioaddr(DwmciHost *host, int reg)

@@ -100,7 +100,7 @@ static NVME_STATUS nvme_disable_controller(NvmeCtrlr *ctrlr) {
 	cc = read32(ctrlr->ctrlr_regs + NVME_CC_OFFSET);
 	CLR(cc, NVME_CC_EN);
 	/* Write controller configuration */
-	writel_with_flush(cc, ctrlr->ctrlr_regs + NVME_CC_OFFSET);
+	write32_with_flush(ctrlr->ctrlr_regs + NVME_CC_OFFSET, cc);
 	/* Delay up to CAP.TO ms for CSTS.RDY to clear*/
 	if (NVME_CAP_TO(ctrlr->cap) == 0)
 		timeout = 1;
@@ -125,7 +125,7 @@ static NVME_STATUS nvme_enable_controller(NvmeCtrlr *ctrlr) {
 	cc |= NVME_CC_IOSQES(6); /* Spec. recommended values */
 	cc |= NVME_CC_IOCQES(4); /* Spec. recommended values */
 	/* Write controller configuration. */
-	writel_with_flush(cc, ctrlr->ctrlr_regs + NVME_CC_OFFSET);
+	write32_with_flush(ctrlr->ctrlr_regs + NVME_CC_OFFSET, cc);
 
 	/* Delay up to CAP.TO ms for CSTS.RDY to set*/
 	if (NVME_CAP_TO(ctrlr->cap) == 0)
@@ -155,7 +155,7 @@ static NVME_STATUS nvme_shutdown_controller(NvmeCtrlr *ctrlr) {
 	SET(cc, NVME_CC_SHN_NORMAL);
 
 	/* Write controller configuration */
-	writel_with_flush(cc, ctrlr->ctrlr_regs + NVME_CC_OFFSET);
+	write32_with_flush(ctrlr->ctrlr_regs + NVME_CC_OFFSET, cc);
 
 	/* Delay up to CAP.TO ms for CSTS.SHST to indicate complete */
 	if (NVME_CAP_TO(ctrlr->cap) == 0)
@@ -172,7 +172,7 @@ static NVME_STATUS nvme_shutdown_controller(NvmeCtrlr *ctrlr) {
 		cc = read32(ctrlr->ctrlr_regs + NVME_CC_OFFSET);
 		CLR(cc, NVME_CC_SHN_MASK);
 		SET(cc, NVME_CC_SHN_ABRUPT);
-		writel_with_flush(cc, ctrlr->ctrlr_regs + NVME_CC_OFFSET);
+		write32_with_flush(ctrlr->ctrlr_regs + NVME_CC_OFFSET, cc);
 
 		printf("NVMe: shutdown timeout, sent abrupt notification\n");
 		return NVME_TIMEOUT;
@@ -213,9 +213,8 @@ static NVME_STATUS nvme_ring_sq_doorbell(NvmeCtrlr *ctrlr, uint16_t qid) {
 		return NVME_INVALID_PARAMETER;
 
 	/* Ring SQ doorbell by writing SQ tail index to controller */
-	writel_with_flush(ctrlr->sq_t_dbl[qid],
-				ctrlr->ctrlr_regs +
-				NVME_SQTDBL_OFFSET(qid, NVME_CAP_DSTRD(ctrlr->cap)));
+	write32_with_flush(ctrlr->ctrlr_regs + NVME_SQTDBL_OFFSET(qid, NVME_CAP_DSTRD(ctrlr->cap)),
+			   ctrlr->sq_t_dbl[qid]);
 
 	return NVME_SUCCESS;
 }
@@ -271,7 +270,8 @@ static NVME_STATUS nvme_complete_cmds_polled(NvmeCtrlr *ctrlr,
 	}
 
 	/* Ring the completion queue doorbell register*/
-	writel_with_flush(ctrlr->cq_h_dbl[qid], ctrlr->ctrlr_regs + NVME_CQHDBL_OFFSET(qid, NVME_CAP_DSTRD(ctrlr->cap)));
+	write32_with_flush(ctrlr->ctrlr_regs + NVME_CQHDBL_OFFSET(qid, NVME_CAP_DSTRD(ctrlr->cap)),
+			   ctrlr->cq_h_dbl[qid]);
 
 	/* If the SQ is empty, reset cid to zero */
 	if (ctrlr->sq_t_dbl[qid] == ctrlr->sqhd[qid])

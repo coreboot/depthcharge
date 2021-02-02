@@ -272,7 +272,7 @@ static int s5p_mshci_send_command(MmcCtrlr *ctrlr, MmcCommand *cmd,
 			mmc_debug("timeout on data error\n");
 			return -1;
 		}
-		mmc_debug("%s: writel(mask, rintsts)\n", __func__);
+		mmc_debug("%s: write32(rintsts, mask)\n", __func__);
 		write32(&host->regs->rintsts, mask);
 
 		if (data->flags & MMC_DATA_READ) {

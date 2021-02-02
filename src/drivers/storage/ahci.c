@@ -36,7 +36,7 @@ typedef struct SataDrive {
 	AhciIoPort *port;
 } SataDrive;
 
-#define writel_with_flush(a,b)	do { write32(b, a); read32(b); } while (0)
+#define write32_with_flush(addr, val) do { write32(addr, val); read32(addr); } while (0)
 
 /* Maximum timeouts for each event */
 static const int wait_ms_spinup = 10000;
@@ -204,15 +204,15 @@ static int ahci_port_start(AhciIoPort *port, int index)
 	mem += AHCI_CMD_TBL_HDR;
 
 	port->cmd_tbl_sg = (AhciSg *)mem;
-	writel_with_flush((uintptr_t)port->cmd_slot, port_mmio + PORT_LST_ADDR);
-	writel_with_flush((uintptr_t)0, port_mmio + PORT_LST_ADDR_HI);
+	write32_with_flush(port_mmio + PORT_LST_ADDR,
+			   (uintptr_t)port->cmd_slot);
+	write32_with_flush(port_mmio + PORT_LST_ADDR_HI, (uintptr_t)0);
 
-	writel_with_flush((uintptr_t)port->rx_fis, port_mmio + PORT_FIS_ADDR);
-	writel_with_flush((uintptr_t)0, port_mmio + PORT_FIS_ADDR_HI);
+	write32_with_flush(port_mmio + PORT_FIS_ADDR, (uintptr_t)port->rx_fis);
+	write32_with_flush(port_mmio + PORT_FIS_ADDR_HI, (uintptr_t)0);
 
-	writel_with_flush(PORT_CMD_ICC_ACTIVE | PORT_CMD_FIS_RX |
-			  PORT_CMD_POWER_ON | PORT_CMD_SPIN_UP |
-			  PORT_CMD_START, port_mmio + PORT_CMD);
+	write32_with_flush(port_mmio + PORT_CMD,
+			   PORT_CMD_ICC_ACTIVE | PORT_CMD_FIS_RX | PORT_CMD_POWER_ON | PORT_CMD_SPIN_UP | PORT_CMD_START);
 
 	return 0;
 }
@@ -238,7 +238,7 @@ static int ahci_device_data_io(AhciIoPort *port, void *fis, int fis_len,
 	uint32_t opts = (fis_len >> 2) | (sg_count << 16) | (is_write << 6);
 	ahci_fill_cmd_slot(port, opts);
 
-	writel_with_flush(1, port_mmio + PORT_CMD_ISSUE);
+	write32_with_flush(port_mmio + PORT_CMD_ISSUE, 1);
 
 	// Wait for the command to complete.
 	if (WAIT_WHILE((read32(port_mmio + PORT_CMD_ISSUE) & 0x1), wait)) {
@@ -512,8 +512,8 @@ static int ahci_ctrlr_init(BlockDevCtrlrOps *me)
 	// Global controller reset.
 	uint32_t host_ctl = read32(mmio + HOST_CTL);
 	if ((host_ctl & HOST_RESET) == 0)
-		writel_with_flush(host_ctl | HOST_RESET,
-			(uintptr_t)mmio + HOST_CTL);
+		write32_with_flush(mmio + HOST_CTL,
+				   host_ctl | HOST_RESET);
 
 	// Reset must complete within 1 second.
 	if (WAIT_WHILE((read32(mmio + HOST_CTL) & HOST_RESET), 1000)) {
@@ -521,9 +521,9 @@ static int ahci_ctrlr_init(BlockDevCtrlrOps *me)
 		return -1;
 	}
 
-	writel_with_flush(HOST_AHCI_EN, mmio + HOST_CTL);
+	write32_with_flush(mmio + HOST_CTL, HOST_AHCI_EN);
 	write32(mmio + HOST_CAP, cap_save);
-	writel_with_flush(0xf, mmio + HOST_PORTS_IMPL);
+	write32_with_flush(mmio + HOST_PORTS_IMPL, 0xf);
 
 	ctrlr->cap = read32(mmio + HOST_CAP);
 	host_impl_bitmap = ctrlr->port_map = read32(mmio + HOST_PORTS_IMPL);
@@ -558,7 +558,7 @@ static int ahci_ctrlr_init(BlockDevCtrlrOps *me)
 		if (port_cmd & port_cmd_bits) {
 			printf("Port %d is active. Deactivating.\n", i);
 			port_cmd &= ~port_cmd_bits;
-			writel_with_flush(port_cmd, port_mmio + PORT_CMD);
+			write32_with_flush(port_mmio + PORT_CMD, port_cmd);
 
 			/* spec says 500 msecs for each bit, so
 			 * this is slightly incorrect.
@@ -568,7 +568,7 @@ static int ahci_ctrlr_init(BlockDevCtrlrOps *me)
 
 		/* Bring up SATA link. */
 		port_cmd = PORT_CMD_SPIN_UP | PORT_CMD_FIS_RX;
-		writel_with_flush(port_cmd, port_mmio + PORT_CMD);
+		write32_with_flush(port_mmio + PORT_CMD, port_cmd);
 
 		int j;
 		uint32_t tmp;

@@ -65,7 +65,7 @@
 /* Command timeout measured in milliseconds */
 #define NVME_GENERIC_TIMEOUT	5000
 
-#define writel_with_flush(a,b)	do { writel(a, b); readl(b); } while (0)
+#define write32_with_flush(addr, val) do { write32(addr, val); read32(addr); } while (0)
 
 typedef int NVME_STATUS;
 #define NVME_SUCCESS							0

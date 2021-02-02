@@ -105,9 +105,9 @@ enum {
 #define DEFINE_REG(reg, offset) \
 	const uint8_t OFFSET_ ## reg = offset; \
 	static inline uint32_t read_ ## reg(void *p) \
-		{ return readl(p + (OFFSET_ ## reg)); } \
+		{ return read32(p + (OFFSET_ ## reg)); } \
 	static inline void write_ ## reg(uint32_t v, void *p) \
-		{ writel(v, p + (OFFSET_ ## reg)); }
+		{ write32(p + (OFFSET_ ## reg), v); }
 
 #define DEFINE_FIELD(reg, field, mask, shift) \
 	const uint32_t reg ## _ ## field ## _MASK = (uint32_t)(mask);  \

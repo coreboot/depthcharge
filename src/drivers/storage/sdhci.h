@@ -358,31 +358,31 @@ struct sdhci_host {
 
 static inline void sdhci_writel(SdhciHost *host, u32 val, int reg)
 {
-	writel(val, host->ioaddr + reg);
+	write32(host->ioaddr + reg, val);
 }
 
 static inline void sdhci_writew(SdhciHost *host, u16 val, int reg)
 {
-	writew(val, host->ioaddr + reg);
+	write16(host->ioaddr + reg, val);
 }
 
 static inline void sdhci_writeb(SdhciHost *host, u8 val, int reg)
 {
-	writeb(val, host->ioaddr + reg);
+	write8(host->ioaddr + reg, val);
 }
 static inline u32 sdhci_readl(SdhciHost *host, int reg)
 {
-	return readl(host->ioaddr + reg);
+	return read32(host->ioaddr + reg);
 }
 
 static inline u16 sdhci_readw(SdhciHost *host, int reg)
 {
-	return readw(host->ioaddr + reg);
+	return read16(host->ioaddr + reg);
 }
 
 static inline u8 sdhci_readb(SdhciHost *host, int reg)
 {
-	return readb(host->ioaddr + reg);
+	return read8(host->ioaddr + reg);
 }
 
 void add_sdhci(SdhciHost *host);
