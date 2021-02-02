@@ -27,9 +27,6 @@ endif
 if BOARD_DIR = "cyan"
 source "src/board/cyan/Kconfig"
 endif
-if BOARD_DIR = "daisy"
-source "src/board/daisy/Kconfig"
-endif
 if BOARD_DIR = "falco"
 source "src/board/falco/Kconfig"
 endif
@@ -51,23 +48,11 @@ endif
 if BOARD_DIR = "link"
 source "src/board/link/Kconfig"
 endif
-if BOARD_DIR = "nyan"
-source "src/board/nyan/Kconfig"
-endif
-if BOARD_DIR = "nyan_big"
-source "src/board/nyan_big/Kconfig"
-endif
-if BOARD_DIR = "nyan_blaze"
-source "src/board/nyan_blaze/Kconfig"
-endif
 if BOARD_DIR = "oak"
 source "src/board/oak/Kconfig"
 endif
 if BOARD_DIR = "panther"
 source "src/board/panther/Kconfig"
-endif
-if BOARD_DIR = "peach_pit"
-source "src/board/peach_pit/Kconfig"
 endif
 if BOARD_DIR = "peppy"
 source "src/board/peppy/Kconfig"
