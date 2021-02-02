@@ -248,15 +248,6 @@ void cros_ec_dump_data(const char *name, int cmd, const void *data, int len);
 uint8_t cros_ec_calc_checksum(const void *data, int size);
 
 /**
- * Read/write nvdata from/to a ChromeOS EC device.
- *
- * @param block		Buffer of VbNvContext to be read/write
- * @return VB2_SUCCESS, or error code on error.
- */
-vb2_error_t nvdata_cros_ec_read(uint8_t *block);
-vb2_error_t nvdata_cros_ec_write(const uint8_t *block);
-
-/**
  * Enable / disable motion sense activity.
  *
  * @param activity	indicating the activity to set.

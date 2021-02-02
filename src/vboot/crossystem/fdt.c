@@ -48,9 +48,6 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 	if (CONFIG_NVDATA_CMOS) {
 		dt_add_string_prop(node, "nonvolatile-context-storage",
 				   "nvram");
-	} else if (CONFIG_NVDATA_CROS_EC) {
-		dt_add_string_prop(node, "nonvolatile-context-storage",
-				   "cros-ec");
 	} else if (CONFIG_NVDATA_FLASH) {
 		dt_add_string_prop(node, "nonvolatile-context-storage",
 				   "flash");

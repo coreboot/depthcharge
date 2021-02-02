@@ -971,38 +971,6 @@ static vb2_error_t vboot_protect(VbootEcOps *vbec,
 	return vboot_set_region_protection(me, select, 1);
 }
 
-vb2_error_t nvdata_cros_ec_read(uint8_t *block)
-{
-	struct ec_params_vbnvcontext p;
-	int len;
-
-	p.op = EC_VBNV_CONTEXT_OP_READ;
-
-	len = ec_command(cros_ec_get(), EC_CMD_VBNV_CONTEXT,
-			 EC_VER_VBNV_CONTEXT, &p, sizeof(p),
-			 block, EC_VBNV_BLOCK_SIZE);
-	if (len < EC_VBNV_BLOCK_SIZE)
-		return VB2_ERROR_NV_READ;
-
-	return VB2_SUCCESS;
-}
-
-vb2_error_t nvdata_cros_ec_write(const uint8_t *block)
-{
-	struct ec_params_vbnvcontext p;
-	int len;
-
-	p.op = EC_VBNV_CONTEXT_OP_WRITE;
-	memcpy(p.block, block, sizeof(p.block));
-
-	len = ec_command(cros_ec_get(), EC_CMD_VBNV_CONTEXT,
-			 EC_VER_VBNV_CONTEXT, &p, sizeof(p), NULL, 0);
-	if (len < 0)
-		return VB2_ERROR_NV_WRITE;
-
-	return VB2_SUCCESS;
-}
-
 int cros_ec_battery_cutoff(uint8_t flags)
 {
 	struct ec_params_battery_cutoff p;

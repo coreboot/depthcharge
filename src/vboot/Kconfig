@@ -94,11 +94,6 @@ config NVDATA_CMOS
 	help
 	  nvdata is stored in CMOS.
 
-config NVDATA_CROS_EC
-	bool "ChromeOS EC"
-	help
-	  nvdata is stored by the ChromeOS EC.
-
 config NVDATA_FLASH
 	bool "Flash"
 	help
