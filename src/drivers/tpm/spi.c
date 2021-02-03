@@ -569,7 +569,7 @@ static size_t tpm2_process_command(const void *tpm2_command,
 	/* Skip the two byte tag, read the size field. */
 	payload_size = read_be32(cmd_body + 2);
 
-	/* Sanity check. */
+	/* Confidence check. */
 	if (payload_size != command_size) {
 		printf("Command size mismatch: encoded %zd != requested %zd\n",
 		       payload_size, command_size);

@@ -51,7 +51,7 @@ static int do_enet(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		if (!ready)
 			return CMD_RET_FAILURE;
 
-		/* We might want to chek these for sanity. */
+		/* We might want to check these for validity. */
 		addr = strtoul(argv[2], 0, 16);
 		length = strtoul(argv[1], 0, 0);
 

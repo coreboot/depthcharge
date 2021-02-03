@@ -7,9 +7,6 @@
 dummy
 \bhe\b
 \bshe\b
-\bhis\b
 master
 \bnative
-sane
-sanity
 slave

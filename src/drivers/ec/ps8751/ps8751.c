@@ -1355,7 +1355,7 @@ static int ps8751_reflash(Ps8751 *me, const uint8_t *data, size_t data_size)
 		return -1;
 	}
 	/*
-	 * quick sanity check to see if we modified flash
+	 * quick confidence check to see if we modified flash
 	 * we'll do a full verify after programming
 	 */
 	status = ps8751_verify(me, PARADE_FW_START,

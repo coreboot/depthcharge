@@ -165,7 +165,7 @@ static int complete_cmdv(int argc, char * const argv[],
 	int n_found = 0;
 	const char *cmd;
 
-	/* sanity? */
+	/* confidence check */
 	if (maxv < 2)
 		return -2;
 

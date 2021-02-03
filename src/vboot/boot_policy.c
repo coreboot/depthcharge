@@ -206,8 +206,8 @@ static const struct {
 };
 
 /* Returns 0 if img type allows given command line location, else -1 */
-static int sanity_check_policy(kernel_img_type_t type,
-			       cmd_line_loc_t cmd_line_loc)
+static int check_policy(kernel_img_type_t type,
+			cmd_line_loc_t cmd_line_loc)
 {
 	/*
 	 * If given location for cmd line is allowed for this image type, return
@@ -234,8 +234,8 @@ int set_boot_policy(const struct boot_policy *policy, size_t count)
 	int i;
 
 	for (i = 0; i < count; i++) {
-		if (sanity_check_policy(policy[i].img_type,
-					policy[i].cmd_line_loc) == -1) {
+		if (check_policy(policy[i].img_type,
+				 policy[i].cmd_line_loc) == -1) {
 			printf("Boot Policy: Invalid type-cmdline combo\n");
 			return -1;
 		}

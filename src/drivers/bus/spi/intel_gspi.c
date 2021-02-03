@@ -438,7 +438,7 @@ static int gspi_xfer(SpiOps *me, void *in, const void *out, uint32_t size)
 		.bytesout = size,
 	};
 
-	/* Sanity-check to ensure both in and out are not NULL. */
+	/* Confidence-check to ensure both in and out are not NULL. */
 	if (!in && !out) {
 		printf("%s: ERROR! Both in and out can't be NULL!\n", __func__);
 		return -1;

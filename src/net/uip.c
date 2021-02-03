@@ -1262,7 +1262,7 @@ uip_process(uint8_t flag)
       if(uip_connr->nrtx == 0) {
 	signed char m;
 	m = uip_connr->rto - uip_connr->timer;
-	/* This is taken directly from VJs original code in his paper */
+	/* This is taken directly from VJs original code in their paper */
 	m = m - (uip_connr->sa >> 3);
 	uip_connr->sa += m;
 	if(m < 0) {

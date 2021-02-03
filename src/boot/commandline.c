@@ -82,7 +82,7 @@ int commandline_subst(const char *src, char *dest, size_t dest_size,
 	int devnum = info->devnum;
 	int partnum = info->partnum;
 
-	/* sanity check on dest size */
+	/* Confidence check on dest size */
 	if (dest_size > 10000)
 		return 1;
 
@@ -124,7 +124,7 @@ int commandline_subst(const char *src, char *dest, size_t dest_size,
 			printf("update_cmdline: Input ended with '%%'\n");
 			return 1;
 		case 'D':
-			/* Sanity check */
+			/* Confidence check */
 			if (devnum < 0 || devnum > 25)
 				return 1;
 			/*
@@ -142,7 +142,7 @@ int commandline_subst(const char *src, char *dest, size_t dest_size,
 			}
 			break;
 		case 'P':
-			/* Sanity check */
+			/* Confidence check */
 			if (partnum < 1 || partnum > 99)
 				return 1;
 			CHECK_SPACE(3);
@@ -159,7 +159,7 @@ int commandline_subst(const char *src, char *dest, size_t dest_size,
 			 * If booting from disk, PARTUUID=%U/PARTNROFF=1
 			 */
 			if (info->external_gpt) {
-				/* Sanity check */
+				/* Confidence check */
 				if (partnum < 1 || partnum > 99)
 					return 1;
 				char start[] = "/dev/ubiblock", end[] = "_0";

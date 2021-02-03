@@ -62,7 +62,7 @@ static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 		bus->buf = xmalloc(MSG_BYTES);
 
 	/*
-	 * Sanity-check I/O sizes given transaction overhead in internal
+	 * Confidence-check I/O sizes given transaction overhead in internal
 	 * buffers.
 	 */
 	if (out_bytes > MSG_BYTES) {

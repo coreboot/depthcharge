@@ -1608,7 +1608,7 @@ int ipq_nand_init(void *ebi2nd_base, MtdDev **mtd_out)
 		return ret;
 	}
 
-	/* Set some sane HW configuration, for ID read. */
+	/* Set some valid HW configuration, for ID read. */
 	ipq_nand_hw_config(mtd, ipq_configs[0]);
 
 	/* Reset Flash Memory */
