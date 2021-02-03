@@ -408,4 +408,10 @@ SdhciHost *new_mem_sdhci_host(uintptr_t ioaddr,
 			      int clock_min,
 			      int clock_max);
 
+/*
+ * Look for a known SDHCI controller at @dev. If @dev is a PCI bridge, the
+ * first device connected to the bridge will be checked.
+ */
+SdhciHost *probe_pci_sdhci_host(pcidev_t dev, unsigned int platform_info);
+
 #endif

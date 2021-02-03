@@ -22,6 +22,41 @@
 
 #define SDHCI_NAME_LENGTH 20
 
+#define GENESYS_PCI_VID 0x17a0
+#define GL9755S_PCI_DID 0x9755
+#define GL9750S_PCI_DID 0x9750
+
+static const struct sdhci_pci_match {
+	u16 vendor_id;
+	u16 device_id;
+	unsigned int quirks;
+} sdhci_pci_table[] = {
+	{GENESYS_PCI_VID, GL9755S_PCI_DID},
+	{GENESYS_PCI_VID, GL9750S_PCI_DID},
+};
+
+static const struct sdhci_pci_match *sdhci_find_match(pcidev_t dev)
+{
+	u16 vendor_id = pci_read_config16(dev, REG_VENDOR_ID);
+	u16 device_id = pci_read_config16(dev, REG_DEVICE_ID);
+
+	for (unsigned int i = 0; i < ARRAY_SIZE(sdhci_pci_table); ++i) {
+		const struct sdhci_pci_match *match = &sdhci_pci_table[i];
+		if (match->vendor_id == vendor_id &&
+		    match->device_id == device_id)
+			return match;
+	}
+
+	return NULL;
+}
+
+static int is_pci_bridge(pcidev_t dev)
+{
+	uint8_t header_type = pci_read_config8(dev, REG_HEADER_TYPE);
+	header_type &= 0x7f;
+	return header_type == HEADER_TYPE_BRIDGE;
+}
+
 /* Discover the register file address of the PCI SDHCI device. */
 static int get_pci_bar(pcidev_t dev, uintptr_t *bar)
 {
@@ -58,4 +93,99 @@ SdhciHost *new_pci_sdhci_host(pcidev_t dev, unsigned int platform_info,
 		 PCI_BUS(dev), PCI_SLOT(dev), PCI_FUNC(dev));
 
 	return host;
+}
+
+typedef struct sdhci_pci_host {
+	SdhciHost host;
+	pcidev_t dev;
+	int (*update)(BlockDevCtrlrOps *me);
+
+} SdhciPciHost;
+
+static int sdhci_pci_init(BlockDevCtrlrOps *me) {
+
+	SdhciPciHost *pci_host =
+		container_of(me, SdhciPciHost, host.mmc_ctrlr.ctrlr.ops);
+	SdhciHost *host = &pci_host->host;
+	BlockDevCtrlr *block_ctrlr = &host->mmc_ctrlr.ctrlr;
+	pcidev_t dev = pci_host->dev;
+	const struct sdhci_pci_match *match;
+	uintptr_t bar;
+
+	if (is_pci_bridge(dev)) {
+		uint32_t bus = pci_read_config32(dev, REG_PRIMARY_BUS);
+		bus = (bus >> 8) & 0xff;
+		dev = PCI_DEV(bus, 0, 0);
+	}
+
+	match = sdhci_find_match(dev);
+	if (!match) {
+		printf("No known SDHCI device found at %d:%d.%d", PCI_BUS(dev),
+		       PCI_SLOT(dev), PCI_FUNC(dev));
+		block_ctrlr->ops.update = NULL;
+		block_ctrlr->need_update = 0;
+		return -1;
+	}
+
+	printf("Found SDHCI %hx:%hx at %d:%d.%d\n", match->vendor_id,
+	       match->device_id, PCI_BUS(dev), PCI_SLOT(dev), PCI_FUNC(dev));
+
+	if (get_pci_bar(dev, &bar)) {
+		printf("Failed to get BAR for PCI SDHCI %d:%d.%d", PCI_BUS(dev),
+		       PCI_SLOT(dev), PCI_FUNC(dev));
+		block_ctrlr->ops.update = NULL;
+		block_ctrlr->need_update = 0;
+		return -1;
+	}
+
+	host->quirks |= match->quirks;
+	host->ioaddr = (void *)bar;
+
+	host->name = xzalloc(SDHCI_NAME_LENGTH);
+
+	snprintf(host->name, SDHCI_NAME_LENGTH, "PCI SDHCI %d:%d.%d",
+		 PCI_BUS(dev), PCI_SLOT(dev), PCI_FUNC(dev));
+
+	/*
+	 * Replace the update method with the original so sdhci_pci_init never
+	 * gets called again.
+	 */
+	block_ctrlr->ops.update = pci_host->update;
+	pci_host->update = NULL;
+
+	return block_ctrlr->ops.update(me);
+}
+
+SdhciHost *probe_pci_sdhci_host(pcidev_t dev, unsigned int platform_info)
+{
+
+	SdhciPciHost *pci_host;
+	int removable = platform_info & SDHCI_PLATFORM_REMOVABLE;
+
+	pci_host = xzalloc(sizeof(*pci_host));
+
+	pci_host->dev = dev;
+	pci_host->host.platform_info = platform_info;
+
+	pci_host->host.mmc_ctrlr.slot_type =
+		removable ? MMC_SLOT_TYPE_REMOVABLE : MMC_SLOT_TYPE_EMBEDDED;
+
+	if (!removable)
+		pci_host->host.mmc_ctrlr.hardcoded_voltage =
+			OCR_HCS | MMC_VDD_165_195 | MMC_VDD_27_28 |
+			MMC_VDD_28_29 | MMC_VDD_29_30 | MMC_VDD_30_31 |
+			MMC_VDD_31_32 | MMC_VDD_32_33 | MMC_VDD_33_34 |
+			MMC_VDD_34_35 | MMC_VDD_35_36;
+
+	add_sdhci(&pci_host->host);
+
+	/* We temporarily replace the sdhci_update call with the sdhci_pci_init
+	 * call. */
+	pci_host->update = pci_host->host.mmc_ctrlr.ctrlr.ops.update;
+	pci_host->host.mmc_ctrlr.ctrlr.ops.update = sdhci_pci_init;
+
+	/*
+	 * We return SdhciHost because SdhciPciHost is an implementation detail
+	 */
+	return &pci_host->host;
 }
