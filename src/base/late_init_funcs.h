@@ -15,20 +15,30 @@
  * GNU General Public License for more details.
  */
 
-#include <assert.h>
+#ifndef __LATE_INIT_FUNCS_H__
+#define __LATE_INIT_FUNCS_H__
 
+#include "base/init_funcs.h"
 #include "base/list.h"
-#include "vboot/util/init_funcs.h"
 
-ListNode vboot_init_funcs;
-
-int run_vboot_init_funcs(void)
+typedef struct LateInitFunc
 {
-	VbootInitFunc *init_func;
-	list_for_each(init_func, vboot_init_funcs, list_node) {
-		assert(init_func->init);
-		if (init_func->init(init_func))
-			return 1;
-	}
-	return 0;
-}
+	int (*init)(struct LateInitFunc *init);
+	void *data;
+	ListNode list_node;
+} LateInitFunc;
+
+extern ListNode late_init_funcs;
+
+int run_late_init_funcs(void);
+
+/* Shorthand macro to register a LateInitFunc like a normal INIT_FUNC(). */
+#define LATE_INIT_FUNC(func) \
+	static LateInitFunc func##_data_ = { .init = &func }; \
+	static int func##_setup_(void) { \
+		list_insert_after(&func##_data_.list_node, &late_init_funcs); \
+		return 0; \
+	} \
+	INIT_FUNC(func##_setup_)
+
+#endif /* __LATE_INIT_FUNCS_H__ */

@@ -12,10 +12,10 @@
 #include <usb/usbmsc.h>
 #include <vb2_api.h>
 
+#include "base/late_init_funcs.h"
 #include "boot/commandline.h"
 #include "drivers/bus/usb/usb.h"
 #include "vboot/util/commonparams.h"
-#include "vboot/util/init_funcs.h"
 
 #define USB_VID_GOOGLE		0x18d1
 #define USB_PID_AOA		0x2d00
@@ -271,7 +271,7 @@ static GenericUsbDriver aoa_recovery_driver = {
 	.remove = &aoa_recovery_remove,
 };
 
-static int aoa_recovery_driver_register(VbootInitFunc *unused)
+static int aoa_recovery_driver_register(LateInitFunc *unused)
 {
 	if (vb2api_phone_recovery_enabled(vboot_get_context()))
 		list_insert_after(&aoa_recovery_driver.list_node,
@@ -280,7 +280,7 @@ static int aoa_recovery_driver_register(VbootInitFunc *unused)
 }
 
 /*
- * This is intentionally registered in a VBOOT_INIT_FUNC(), not a normal
+ * This is intentionally registered in a LATE_INIT_FUNC(), not a normal
  * INIT_FUNC(). This means that it will not be available during the first
  * usb_poll() that's triggered by vboot_check_enable_usb().
  * We only want this driver to run on devices that get plugged in after we're up
@@ -288,4 +288,4 @@ static int aoa_recovery_driver_register(VbootInitFunc *unused)
  * during boot, to reduce the chance of sending AOA probe commands to devices
  * that don't expect it and cause unintended behavior.
  */
-VBOOT_INIT_FUNC(aoa_recovery_driver_register);
+LATE_INIT_FUNC(aoa_recovery_driver_register);
