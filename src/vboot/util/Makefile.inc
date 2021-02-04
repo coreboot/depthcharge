@@ -14,4 +14,3 @@
 depthcharge-y += commonparams.c
 depthcharge-y += flag.c
 depthcharge-y += memory.c
-depthcharge-y += init_funcs.c

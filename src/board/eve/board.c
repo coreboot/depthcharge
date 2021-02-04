@@ -24,6 +24,7 @@
 #include <vb2_api.h>
 
 #include "base/init_funcs.h"
+#include "base/late_init_funcs.h"
 #include "base/list.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
@@ -46,7 +47,6 @@
 #include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
-#include "vboot/util/init_funcs.h"
 
 /*
  * Clock frequencies for the eMMC and SD ports are defined below. The minimum
@@ -88,7 +88,7 @@ static int read_rt5514_id(DesignwareI2c *i2c, uint32_t *id)
 	return i2c->ops.transfer(&i2c->ops, seg, ARRAY_SIZE(seg));
 }
 
-static int board_check_audio(VbootInitFunc *init)
+static int board_check_audio(LateInitFunc *init)
 {
 	DesignwareI2c *i2c = init->data;
 	uint8_t reset_reg = nvram_read(CMOS_RESET_REG);
@@ -135,7 +135,7 @@ static int board_check_audio(VbootInitFunc *init)
 	return 0;
 }
 
-static VbootInitFunc audio_init_func = {
+static LateInitFunc audio_init_func = {
 	.init = &board_check_audio
 };
 
@@ -194,7 +194,7 @@ static int board_setup(void)
 
 	/* Check audio health before vboot takes control */
 	audio_init_func.data = i2c4;
-	list_insert_after(&audio_init_func.list_node, &vboot_init_funcs);
+	list_insert_after(&audio_init_func.list_node, &late_init_funcs);
 
 	/* Activate buffer to disconnect I2S from PCH and allow GPIO */
 	GpioCfg *i2s_buffer = new_skylake_gpio_output(GPP_D22, 1);
