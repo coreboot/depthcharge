@@ -19,9 +19,9 @@
 #include <vb2_api.h>
 
 #include "base/init_funcs.h"
+#include "base/late_init_funcs.h"
 #include "drivers/ec/cros/ec.h"
 #include "vboot/util/commonparams.h"
-#include "vboot/util/init_funcs.h"
 
 int cros_ec_get_lid_shutdown_mask(void)
 {
@@ -53,7 +53,7 @@ int cros_ec_set_lid_shutdown_mask(int enable)
 	return 0;
 }
 
-static int cros_ec_disable_lid_shutdown_at_startup(VbootInitFunc *init)
+static int cros_ec_disable_lid_shutdown_at_startup(LateInitFunc *init)
 {
 	if (!(vb2api_gbb_get_flags(vboot_get_context())
 	    & VB2_GBB_FLAG_DISABLE_LID_SHUTDOWN))
@@ -65,4 +65,4 @@ static int cros_ec_disable_lid_shutdown_at_startup(VbootInitFunc *init)
 }
 
 /* Needs to run at vboot time to ensure board_init() has set up EC driver. */
-VBOOT_INIT_FUNC(cros_ec_disable_lid_shutdown_at_startup);
+LATE_INIT_FUNC(cros_ec_disable_lid_shutdown_at_startup);
