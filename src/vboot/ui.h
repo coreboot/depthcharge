@@ -133,6 +133,8 @@
 #define UI_ERROR_BOX_PADDING			30
 #define UI_ERROR_BOX_SECTION_SPACING		20
 #define UI_ERROR_BOX_ICON_HEIGHT		40
+#define UI_ERROR_BOX_TEXT_HEIGHT		24
+#define UI_ERROR_BOX_TEXT_LINE_SPACING		12
 
 /*
  * UI_BOX_* constants define a large textbox taking up the width of the screen.

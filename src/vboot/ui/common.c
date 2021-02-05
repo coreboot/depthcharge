@@ -22,41 +22,65 @@
 #include "drivers/video/display.h"
 #include "vboot/ui.h"
 
-static const char * const error_messages[] = {
-	[VB2_UI_ERROR_NONE] = NULL,
-	[VB2_UI_ERROR_DEV_MODE_ALREADY_ENABLED] =
-		"Developer mode is already enabled.",
-	[VB2_UI_ERROR_TO_NORM_NOT_ALLOWED] =
-		"Returning to secure mode is not\n"
-		"allowed. Check the GBB flags.",
-	[VB2_UI_ERROR_DEBUG_LOG] =
-		"Couldn't get debug info.\n"
-		"Go back and try again.",
-	[VB2_UI_ERROR_FIRMWARE_LOG] =
-		"Couldn't get firmware log.\n"
-		"Go back and try again.",
-	[VB2_UI_ERROR_EXTERNAL_BOOT_NOT_ENABLED] =
-		"External boot is disabled. For more\n"
-		"information, see\n"
-		"google.com/chromeos/devmode.",
-	[VB2_UI_ERROR_UNTRUSTED_CONFIRMATION] =
-		"Use built-in keyboard to confirm\n"
-		"developer mode.\n"
-		"Can't use USB keyboard.",
-	[VB2_UI_ERROR_ALTFW_DISABLED] =
-		"Alternate bootloaders are disabled. For\n"
-		"more information, see\n"
-		"google.com/chromeos/devmode.",
-	[VB2_UI_ERROR_ALTFW_EMPTY] =
-		"Couldn't find alternate bootloader. To\n"
-		"learn how to install one, see\n"
-		"google.com/chromeos/devmode.",
-	[VB2_UI_ERROR_ALTFW_FAILED] =
-		"Something went wrong launching the\n"
-		"alternate bootloader.",
-	[VB2_UI_ERROR_DIAGNOSTICS] =
-		"Couldn't get diagnostic result.\n"
-		"Go back and try again.",
+struct ui_error {
+	/* File name of error strings. */
+	const char *file;
+	/* Whether to show dev mode URL below the error strings. */
+	int show_dev_url;
+	/* Fallback message */
+	const char *mesg;
+};
+
+static const struct ui_error errors[] = {
+	[VB2_UI_ERROR_DEV_MODE_ALREADY_ENABLED] = {
+		.file = "error_dev_mode_enabled.bmp",
+		.mesg = "Developer mode is already turned on.",
+	},
+	[VB2_UI_ERROR_UNTRUSTED_CONFIRMATION] = {
+		.file = "error_untrusted_confirm.bmp",
+		.mesg = "You cannot use an external keyboard to turn on\n"
+			"developer mode. Please use the on-device buttons\n"
+			"noted in the navigation instructions.",
+	},
+	[VB2_UI_ERROR_TO_NORM_NOT_ALLOWED] = {
+		.file = "error_to_norm_not_allowed.bmp",
+		.mesg = "Returning to secure mode disallowed by GBB flags.",
+	},
+	[VB2_UI_ERROR_EXTERNAL_BOOT_DISABLED] = {
+		.file = "error_ext_boot_disabled.bmp",
+		.show_dev_url = 1,
+		.mesg = "External boot is disabled. For more information,\n"
+			"see: google.com/chromeos/devmode",
+	},
+	[VB2_UI_ERROR_ALTFW_DISABLED] = {
+		.file = "error_alt_boot_disabled.bmp",
+		.show_dev_url = 1,
+		.mesg = "Alternate bootloaders are disabled. For more\n"
+			"information, see: google.com/chromeos/devmode",
+	},
+	[VB2_UI_ERROR_ALTFW_EMPTY] = {
+		.file = "error_no_alt_bootloader.bmp",
+		.show_dev_url = 1,
+		.mesg = "Could not find an alternate bootloader. To learn how\n"
+			"to install one, see: google.com/chromeos/devmode",
+	},
+	[VB2_UI_ERROR_ALTFW_FAILED] = {
+		.file = "error_alt_boot_failed.bmp",
+		.mesg = "Something went wrong launching the alternate\n"
+			"bootloader. View firmware log for details.",
+	},
+	[VB2_UI_ERROR_DEBUG_LOG] = {
+		.file = "error_debug_info.bmp",
+		.mesg = "Could not get debug info.",
+	},
+	[VB2_UI_ERROR_FIRMWARE_LOG] = {
+		.file = "error_firmware_log.bmp",
+		.mesg = "Could not get firmware log.",
+	},
+	[VB2_UI_ERROR_DIAGNOSTICS] = {
+		.file = "error_diagnostics.bmp",
+		.mesg = "Could not get diagnostic information.",
+	},
 };
 
 static vb2_error_t init_screen(void)
@@ -75,20 +99,16 @@ static vb2_error_t init_screen(void)
 	return VB2_SUCCESS;
 }
 
-static vb2_error_t show_error_box(const char *str, const char *locale_code)
+static vb2_error_t show_error_box(const struct ui_error *error,
+				  const struct ui_locale *locale)
 {
 	vb2_error_t rv = VB2_SUCCESS;
 	int32_t x, y;
-	int32_t content_width;
+	const int32_t w = UI_SIZE_AUTO;
+	int32_t h;
 	int32_t button_width;
-	char *buf, *end, *line;
-
-	/* Copy str to buf since strsep() will modify the string */
-	buf = strdup(str);
-	if (!buf) {
-		UI_ERROR("Failed to malloc string buffer\n");
-		return VB2_ERROR_UI_MEMORY_ALLOC;
-	}
+	const uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
+	const int reverse = locale->rtl;
 
 	/* Center the box on the screen */
 	x = (UI_SCALE - UI_ERROR_BOX_WIDTH) / 2;
@@ -101,11 +121,10 @@ static vb2_error_t show_error_box(const char *str, const char *locale_code)
 			    &ui_color_error_box,
 			    0,
 			    UI_ERROR_BOX_RADIUS,
-			    0);
+			    reverse);
 
 	x += UI_ERROR_BOX_PADDING;
 	y += UI_ERROR_BOX_PADDING;
-	content_width = UI_ERROR_BOX_WIDTH - UI_ERROR_BOX_PADDING * 2;
 
 	/* Insert icon */
 	struct ui_bitmap bitmap;
@@ -113,44 +132,27 @@ static vb2_error_t show_error_box(const char *str, const char *locale_code)
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y,
 			       UI_ERROR_BOX_ICON_HEIGHT,
 			       UI_ERROR_BOX_ICON_HEIGHT,
-			       PIVOT_H_LEFT | PIVOT_V_TOP,
-			       0));
+			       flags, reverse));
 
 	/* Insert in the body */
 	y += UI_ERROR_BOX_SECTION_SPACING + UI_ERROR_BOX_ICON_HEIGHT;
-	end = buf;
-	while ((line = strsep(&end, "\n"))) {
-		vb2_error_t line_rv;
-		int32_t width;
-		int32_t height = UI_BOX_TEXT_HEIGHT;
-		line_rv = ui_get_text_width(line, height, &width);
-		if (line_rv) {
-			/* Save the first error in rv */
-			if (rv == VB2_SUCCESS)
-				rv = line_rv;
-			continue;
-		}
-		/* Ensure the text width is no more than content width */
-		if (width > content_width)
-			height = height * content_width / width;
-		line_rv = ui_draw_text(line, x, y, height,
-				       &ui_color_bg, &ui_color_fg,
-				       PIVOT_H_LEFT | PIVOT_V_TOP, 0);
-		y += height + UI_BOX_TEXT_LINE_SPACING;
-		/* Save the first error in rv */
-		if (line_rv && rv == VB2_SUCCESS)
-			rv = line_rv;
+	VB2_TRY(ui_get_bitmap(error->file, locale->code, 0, &bitmap));
+	h = UI_ERROR_BOX_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
+	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, h, flags, reverse));
+	y += h;
+	if (error->show_dev_url) {
+		y += UI_ERROR_BOX_TEXT_LINE_SPACING;
+		VB2_TRY(ui_get_bitmap("dev_mode_url.bmp", NULL, 0, &bitmap));
+		h = UI_ERROR_BOX_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
+		VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, h, flags, reverse));
+		y += h;
 	}
-
-	free(buf);
-	if (rv)
-		return rv;
 
 	/* Insert "Back" button */
 	const struct ui_menu_item back_item = {
 		.file = "btn_back.bmp",
 	};
-	VB2_TRY(ui_get_bitmap(back_item.file, locale_code, 0, &bitmap));
+	VB2_TRY(ui_get_bitmap(back_item.file, locale->code, 0, &bitmap));
 	int32_t text_width;
 	VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
 				    &text_width));
@@ -162,11 +164,11 @@ static vb2_error_t show_error_box(const char *str, const char *locale_code)
 	y = (UI_SCALE + UI_ERROR_BOX_HEIGHT) / 2 -
 		UI_ERROR_BOX_PADDING - UI_BUTTON_HEIGHT;
 	VB2_TRY(ui_draw_button(&back_item,
-			       locale_code,
+			       locale->code,
 			       x, y,
 			       button_width,
 			       UI_BUTTON_HEIGHT,
-			       0, 1, 0, 0));
+			       reverse, 1, 0, 0));
 
 	return rv;
 }
@@ -236,19 +238,22 @@ vb2_error_t ui_display_screen(struct ui_state *state,
 	vb2_error_t rv;
 	int32_t y = UI_BOX_MARGIN_V;
 	const struct ui_screen_info *screen = state->screen;
-	const char *error_msg = error_messages[state->error_code];
+	const struct ui_error *error = NULL;
 
 	VB2_TRY(init_screen());
 
 	/* If the screen is blank, turn off the backlight; else turn it on. */
 	backlight_update(screen->id != VB2_SCREEN_BLANK);
 
+	if (state->error_code != VB2_UI_ERROR_NONE)
+		error = &errors[state->error_code];
+
 	/*
 	 * Dim the screen.  Basically, if we're going to show a
 	 * dialog, we need to dim the background colors so it's not so
 	 * distracting.
 	 */
-	if (error_msg != NULL)
+	if (error)
 		set_blend(&ui_color_black, ALPHA(60));
 
 	if (screen->draw)
@@ -265,19 +270,18 @@ vb2_error_t ui_display_screen(struct ui_state *state,
 		draw_fallback_stripes(screen->id, state->selected_item);
 	}
 	/* Disable screen dimming. */
-	if (error_msg != NULL)
+	if (error)
 		clear_blend();
 	/*
 	 * If there's an error message to be printed, print it out.
 	 * If we're already printing out a fallback message, give it
-	 * priority and don't print out more error messages.  Also,
-	 * print out the error message to the AP console.
+	 * priority and don't show the error box. Also, print out the
+	 * error message to the AP console.
 	 */
-	if (!rv &&
-	    state->error_code != VB2_UI_ERROR_NONE &&
-	    error_msg != NULL) {
-		show_error_box(error_msg, state->locale->code);
-		UI_ERROR("%s\n", error_msg);
+	if (rv == VB2_SUCCESS && error) {
+		show_error_box(error, state->locale);
+		if (error->mesg)
+			UI_WARN("%s\n", error->mesg);
 	}
 
 	return rv;
