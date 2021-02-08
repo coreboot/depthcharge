@@ -5,7 +5,7 @@
 """Script to generate bitmaps for firmware screens."""
 
 import argparse
-from collections import defaultdict, namedtuple
+from collections import namedtuple
 import copy
 import fractions
 import glob
@@ -16,9 +16,7 @@ import re
 import shutil
 import signal
 import subprocess
-import sys
 import tempfile
-from xml.etree import ElementTree
 
 import yaml
 from PIL import Image
@@ -173,44 +171,6 @@ def run_pango_view(input_file, output_file, locale, font, height, max_width,
   subprocess.check_call(command, stdout=subprocess.PIPE)
 
 
-def convert_text_to_image(locale, input_file, font, output_dir, height=None,
-                          max_width=None, dpi=None, bgcolor='#000000',
-                          fgcolor='#ffffff', use_svg=False):
-  """Converts text file `input_file` into image file(s).
-
-  Because pango-view does not support assigning output format options for
-  bitmap, we must create images in SVG/PNG format and then post-process them
-  (e.g. convert into BMP by ImageMagick).
-
-  Args:
-    locale: Locale (language) to select implicit rendering options. None for
-      locale-independent strings.
-    input_file: Path of input text file.
-    font: Font name.
-    height: Image height relative to the screen resolution.
-    max_width: Maximum image width relative to the screen resolution.
-    output_dir: Directory to generate image files.
-    bgcolor: Background color (#rrggbb).
-    fgcolor: Foreground color (#rrggbb).
-    use_svg: If set to True, generate SVG file. Otherwise, generate PNG file.
-  """
-  os.makedirs(os.path.join(output_dir, ONE_LINE_DIR), exist_ok=True)
-  name, _ = os.path.splitext(os.path.basename(input_file))
-  svg_file = os.path.join(output_dir, name + '.svg')
-  png_file = os.path.join(output_dir, name + '.png')
-  png_file_one_line = os.path.join(output_dir, ONE_LINE_DIR, name + '.png')
-
-  if use_svg:
-    run_pango_view(input_file, svg_file, locale, font, height, 0, dpi,
-                   bgcolor, fgcolor, hinting='none')
-  else:
-    run_pango_view(input_file, png_file, locale, font, height, max_width, dpi,
-                   bgcolor, fgcolor)
-    if locale:
-      run_pango_view(input_file, png_file_one_line, locale, font, height, 0,
-                     dpi, bgcolor, fgcolor)
-
-
 def parse_locale_json_file(locale, json_dir):
   """Parses given firmware string json file.
 
@@ -285,7 +245,6 @@ class Converter(object):
     self.set_rename_map()
     self.set_locales()
     self.text_max_colors = self.get_text_colors(self.config[DPI_KEY])
-    self.dpi_warning_printed = False
 
   def set_dirs(self, output):
     """Sets board output directory and stage directory.
@@ -510,11 +469,9 @@ class Converter(object):
     max_height_px = self._to_px(height, num_lines)
     # If the image size is larger than what will be displayed at runtime,
     # downscale it.
+    effective_dpi = None
     if height_px > max_height_px:
-      if not self.dpi_warning_printed:
-        print('Reducing effective DPI to %d, limited by screen resolution' %
-              (self.config[DPI_KEY] * max_height_px // height_px))
-        self.dpi_warning_printed = True
+      effective_dpi = self.config[DPI_KEY] * max_height_px // height_px
       height_px = max_height_px
       width_px = height_px * image.size[0] // image.size[1]
     # Stretch image horizontally for stretched display.
@@ -532,40 +489,85 @@ class Converter(object):
       f.seek(BMP_HEADER_OFFSET_NUM_LINES)
       f.write(bytearray([num_lines]))
 
-  def convert(self, files, output_dir, heights, max_widths, max_colors,
+    return effective_dpi
+
+  def convert(self, file, output_dir, height, max_width, max_colors,
               one_line_dir=None):
-    """Converts file(s) to bitmap format."""
-    if not files:
-      raise BuildImageError('Unable to find file(s) to convert')
+    """Converts image `file` to bitmap format."""
+    name, ext = os.path.splitext(os.path.basename(file))
 
-    for file in files:
-      name, ext = os.path.splitext(os.path.basename(file))
+    if name in self.rename_map:
+      new_name = self.rename_map[name]
+      if not new_name:
+        return
+    else:
+      new_name = name
+    output = os.path.join(output_dir, new_name + self.DEFAULT_OUTPUT_EXT)
 
-      if name in self.rename_map:
-        new_name = self.rename_map[name]
-        if not new_name:
-          continue
-      else:
-        new_name = name
-      output = os.path.join(output_dir, new_name + self.DEFAULT_OUTPUT_EXT)
+    background = self.BACKGROUND_COLORS.get(name, self.DEFAULT_BACKGROUND)
 
-      background = self.BACKGROUND_COLORS.get(name, self.DEFAULT_BACKGROUND)
-      height = heights[name]
-      max_width = max_widths[name]
+    # Determine num_lines in order to scale the image
+    if one_line_dir and max_width:
+      num_lines = self.get_num_lines(file, one_line_dir)
+    else:
+      num_lines = 1
 
-      # Determine num_lines in order to scale the image
-      if one_line_dir and max_width:
-        num_lines = self.get_num_lines(file, one_line_dir)
-      else:
-        num_lines = 1
+    if ext == '.svg':
+      png_file = os.path.join(self.temp_dir, name + '.png')
+      self.convert_svg_to_png(file, png_file, height, num_lines, background)
+      file = png_file
 
-      if ext == '.svg':
-        png_file = os.path.join(self.temp_dir, name + '.png')
-        self.convert_svg_to_png(file, png_file, height, num_lines, background)
-        file = png_file
+    return self.convert_to_bitmap(file, height, num_lines, background, output,
+                                  max_colors)
 
-      self.convert_to_bitmap(file, height, num_lines, background, output,
-                             max_colors)
+  def convert_text_to_image(self, locale, input_file, font, stage_dir,
+                            output_dir, height=None, max_width=None, dpi=None,
+                            bgcolor='#000000', fgcolor='#ffffff',
+                            use_svg=False):
+    """Converts text file `input_file` into image file.
+
+    Because pango-view does not support assigning output format options for
+    bitmap, we must create images in SVG/PNG format and then post-process them
+    (e.g. convert into BMP by ImageMagick).
+
+    Args:
+      locale: Locale (language) to select implicit rendering options. None for
+        locale-independent strings.
+      input_file: Path of input text file.
+      font: Font name.
+      stage_dir: Directory to store intermediate file(s).
+      output_dir: Directory to store output image file.
+      height: Image height relative to the screen resolution.
+      max_width: Maximum image width relative to the screen resolution.
+      dpi: DPI value passed to pango-view.
+      bgcolor: Background color (#rrggbb).
+      fgcolor: Foreground color (#rrggbb).
+      use_svg: If set to True, generate SVG file. Otherwise, generate PNG file.
+
+    Returns:
+      Effective DPI, or `None` when not applicable.
+    """
+    one_line_dir = os.path.join(stage_dir, ONE_LINE_DIR)
+    os.makedirs(one_line_dir, exist_ok=True)
+    name, _ = os.path.splitext(os.path.basename(input_file))
+    svg_file = os.path.join(stage_dir, name + '.svg')
+    png_file = os.path.join(stage_dir, name + '.png')
+    png_file_one_line = os.path.join(one_line_dir, name + '.png')
+
+    if use_svg:
+      run_pango_view(input_file, svg_file, locale, font, height, 0, dpi,
+                     bgcolor, fgcolor, hinting='none')
+      return self.convert(svg_file, output_dir, height, max_width,
+                          self.text_max_colors)
+    else:
+      run_pango_view(input_file, png_file, locale, font, height, max_width, dpi,
+                     bgcolor, fgcolor)
+      if locale:
+        run_pango_view(input_file, png_file_one_line, locale, font, height, 0,
+                       dpi, bgcolor, fgcolor)
+      return self.convert(png_file, output_dir, height, max_width,
+                          self.text_max_colors,
+                          one_line_dir=one_line_dir if locale else None)
 
   def convert_sprite_images(self):
     """Converts sprite images."""
@@ -578,15 +580,11 @@ class Converter(object):
         raise BuildImageError('Sprite image %r not specified in %s' %
                               (filename, FORMAT_FILE))
     # Convert images
-    files = []
-    heights = {}
     for name, category in names.items():
       style = get_config_with_defaults(styles, category)
-      files.append(os.path.join(self.ASSET_DIR, name + '.svg'))
-      heights[name] = style[KEY_HEIGHT]
-    max_widths = defaultdict(lambda: None)
-    self.convert(files, self.output_dir, heights, max_widths,
-                 self.ASSET_MAX_COLORS)
+      file = os.path.join(self.ASSET_DIR, name + '.svg')
+      height = style[KEY_HEIGHT]
+      self.convert(file, self.output_dir, height, None, self.ASSET_MAX_COLORS)
 
   def build_generic_strings(self):
     """Builds images of generic (locale-independent) strings."""
@@ -597,24 +595,17 @@ class Converter(object):
     fonts = self.formats[KEY_FONTS]
     default_font = fonts[KEY_DEFAULT]
 
-    files = []
-    heights = {}
-    max_widths = {}
     for txt_file in glob.glob(os.path.join(self.strings_dir, '*.txt')):
       name, _ = os.path.splitext(os.path.basename(txt_file))
       category = names[name]
       style = get_config_with_defaults(styles, category)
-      convert_text_to_image(None, txt_file, default_font, self.stage_dir,
-                            height=style[KEY_HEIGHT],
-                            max_width=style[KEY_MAX_WIDTH],
-                            dpi=dpi,
-                            bgcolor=style[KEY_BGCOLOR],
-                            fgcolor=style[KEY_FGCOLOR])
-      files.append(os.path.join(self.stage_dir, name + '.png'))
-      heights[name] = style[KEY_HEIGHT]
-      max_widths[name] = style[KEY_MAX_WIDTH]
-    self.convert(files, self.output_dir, heights, max_widths,
-                 self.text_max_colors)
+      self.convert_text_to_image(None, txt_file, default_font, self.stage_dir,
+                                 self.output_dir,
+                                 height=style[KEY_HEIGHT],
+                                 max_width=style[KEY_MAX_WIDTH],
+                                 dpi=dpi,
+                                 bgcolor=style[KEY_BGCOLOR],
+                                 fgcolor=style[KEY_FGCOLOR])
 
   def _check_text_width(self, output_dir, heights, max_widths):
     """Check if the width of text image will exceed canvas boundary."""
@@ -651,8 +642,35 @@ class Converter(object):
           print("WARNING: Locale '%s': copying '%s'" % (locale, filename))
           shutil.copyfile(en_file, locale_file)
 
-  def generate_localized_pngs(self, names, json_dir):
-    """Generates PNG files for localized strings."""
+  def build_localized_strings(self):
+    """Builds images of localized strings."""
+    # Sources are one .grd file with identifiers chosen by engineers and
+    # corresponding English texts, as well as a set of .xtb files (one for each
+    # language other than US English) with a mapping from hash to translation.
+    # Because the keys in the .xtb files are a hash of the English source text,
+    # rather than our identifiers, such as "btn_cancel", we use the "grit"
+    # command line tool to process the .grd and .xtb files, producing a set of
+    # .json files mapping our identifier to the translated string, one for every
+    # language including US English.
+
+    # Create a temporary directory to place the translation output from grit in.
+    json_dir = tempfile.mkdtemp()
+
+    # This invokes the grit build command to generate JSON files from the XTB
+    # files containing translations.  The results are placed in `json_dir` as
+    # specified in firmware_strings.grd, i.e. one JSON file per locale.
+    subprocess.check_call([
+        'grit',
+        '-i', os.path.join(self.locale_dir, STRINGS_GRD_FILE),
+        'build',
+        '-o', os.path.join(json_dir),
+    ])
+
+    # Make a copy to avoid modifying `self.formats`
+    names = copy.deepcopy(self.formats[KEY_LOCALIZED_FILES])
+    if DIAGNOSTIC_UI:
+      names.update(self.formats[KEY_DIAGNOSTIC_FILES])
+
     styles = self.formats[KEY_STYLES]
     fonts = self.formats[KEY_FONTS]
     default_font = fonts[KEY_DEFAULT]
@@ -677,6 +695,8 @@ class Converter(object):
 
       output_dir = os.path.join(self.stage_locale_dir, locale)
       os.makedirs(output_dir, exist_ok=True)
+      ro_locale_dir = os.path.join(self.output_ro_dir, locale)
+      os.makedirs(ro_locale_dir, exist_ok=True)
 
       for name, category in names.items():
         # Ignore missing translation
@@ -695,6 +715,7 @@ class Converter(object):
             os.path.join(output_dir, '%s.txt' % name),
             fonts.get(locale, default_font),
             output_dir,
+            ro_locale_dir,
         )
         kwargs = {
             'height': style[KEY_HEIGHT],
@@ -703,14 +724,14 @@ class Converter(object):
             'bgcolor': style[KEY_BGCOLOR],
             'fgcolor': style[KEY_FGCOLOR],
         }
-        results.append(pool.apply_async(convert_text_to_image, args, kwargs))
+        results.append(pool.apply_async(self.convert_text_to_image,
+                                        args, kwargs))
 
     print()
     pool.close()
 
     try:
-      for r in results:
-        r.get()
+      effective_dpi = [r.get() for r in results]
     except KeyboardInterrupt:
       pool.terminate()
       pool.join()
@@ -718,69 +739,12 @@ class Converter(object):
     else:
       pool.join()
 
-  def convert_localized_pngs(self, names):
-    """Converts PNGs of localized strings to BMPs."""
-    styles = self.formats[KEY_STYLES]
-    fonts = self.formats[KEY_FONTS]
-    default_font = fonts[KEY_DEFAULT]
+    effective_dpi = [dpi for dpi in effective_dpi if dpi]
+    if effective_dpi:
+      print('Reducing effective DPI to %d, limited by screen resolution' %
+            max(effective_dpi))
 
-    heights = {}
-    max_widths = {}
-    for name, category in names.items():
-      style = get_config_with_defaults(styles, category)
-      heights[name] = style[KEY_HEIGHT]
-      max_widths[name] = style[KEY_MAX_WIDTH]
-
-    # Using stderr to report progress synchronously
-    print('  processing:', end='', file=sys.stderr, flush=True)
-    for locale_info in self.locales:
-      locale = locale_info.code
-      ro_locale_dir = os.path.join(self.output_ro_dir, locale)
-      stage_locale_dir = os.path.join(self.stage_locale_dir, locale)
-      print(' ' + locale, end='', file=sys.stderr, flush=True)
-      os.makedirs(ro_locale_dir)
-      self.convert(
-          glob.glob(os.path.join(stage_locale_dir, PNG_FILES)),
-          ro_locale_dir, heights, max_widths, self.text_max_colors,
-          one_line_dir=os.path.join(stage_locale_dir, ONE_LINE_DIR))
-      self._check_text_width(ro_locale_dir, heights, max_widths)
-    print(file=sys.stderr)
-
-  def build_localized_strings(self):
-    """Builds images of localized strings."""
-    # Sources are one .grd file with identifiers chosen by engineers and
-    # corresponding English texts, as well as a set of .xlt files (one for each
-    # language other than US English) with a mapping from hash to translation.
-    # Because the keys in the xlt files are a hash of the English source text,
-    # rather than our identifiers, such as "btn_cancel", we use the "grit"
-    # command line tool to process the .grd and .xlt files, producing a set of
-    # .json files mapping our identifier to the translated string, one for every
-    # language including US English.
-
-    # Create a temporary directory to place the translation output from grit in.
-    json_dir = tempfile.mkdtemp()
-
-    # This invokes the grit build command to generate JSON files from the XTB
-    # files containing translations.  The results are placed in `json_dir` as
-    # specified in firmware_strings.grd, i.e. one JSON file per locale.
-    subprocess.check_call([
-        'grit',
-        '-i', os.path.join(self.locale_dir, STRINGS_GRD_FILE),
-        'build',
-        '-o', os.path.join(json_dir),
-    ])
-
-    # Make a copy to avoid modifying `self.formats`
-    names = copy.deepcopy(self.formats[KEY_LOCALIZED_FILES])
-    if DIAGNOSTIC_UI:
-      names.update(self.formats[KEY_DIAGNOSTIC_FILES])
-
-    # TODO(b/163109632): Merge generate_localized_pngs() and
-    # convert_localized_pngs(), and parallelize them altogether.
-    self.generate_localized_pngs(names, json_dir)
     shutil.rmtree(json_dir)
-
-    self.convert_localized_pngs(names)
     self._copy_missing_bitmaps()
 
   def move_language_images(self):
@@ -801,7 +765,8 @@ class Converter(object):
   def build_glyphs(self):
     """Builds glyphs of ascii characters."""
     os.makedirs(self.stage_font_dir, exist_ok=True)
-    files = []
+    font_output_dir = os.path.join(self.output_dir, 'font')
+    os.makedirs(font_output_dir)
     # TODO(b/163109632): Parallelize the conversion of glyphs
     for c in range(ord(' '), ord('~') + 1):
       name = f'idx{c:03d}_{c:02x}'
@@ -809,15 +774,10 @@ class Converter(object):
       with open(txt_file, 'w', encoding='ascii') as f:
         f.write(chr(c))
         f.write('\n')
-      convert_text_to_image(None, txt_file, GLYPH_FONT, self.stage_font_dir,
-                            height=DEFAULT_GLYPH_HEIGHT, use_svg=True)
-      files.append(os.path.join(self.stage_font_dir, name + '.svg'))
-    heights = defaultdict(lambda: DEFAULT_GLYPH_HEIGHT)
-    max_widths = defaultdict(lambda: None)
-    font_output_dir = os.path.join(self.output_dir, 'font')
-    os.makedirs(font_output_dir)
-    self.convert(files, font_output_dir, heights, max_widths,
-                 self.text_max_colors)
+      self.convert_text_to_image(None, txt_file, GLYPH_FONT,
+                                 self.stage_font_dir, font_output_dir,
+                                 height=DEFAULT_GLYPH_HEIGHT,
+                                 use_svg=True)
 
   def copy_images_to_rw(self):
     """Copies localized images specified in boards.yaml for RW override."""
