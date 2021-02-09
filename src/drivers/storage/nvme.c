@@ -530,8 +530,8 @@ static lba_t nvme_read(BlockDevOps *me, lba_t start, lba_t count, void *buffer)
 	if (ctrlr->controller_data->mdts != 0)
 		max_transfer_blocks = ((1 << (ctrlr->controller_data->mdts)) * (1 << NVME_CAP_MPSMIN(ctrlr->cap))) / block_size;
 	/* Artificially limit max_transfer_blocks to 1 PRP List */
-	if ( (max_transfer_blocks == 0) ||
-			(max_transfer_blocks > (NVME_MAX_XFER_BYTES * block_size)))
+	if ((max_transfer_blocks == 0) ||
+	    (max_transfer_blocks > NVME_MAX_XFER_BYTES / block_size))
 		max_transfer_blocks = NVME_MAX_XFER_BYTES / block_size;
 
 	while (count > 0) {
@@ -635,8 +635,8 @@ static lba_t nvme_write(BlockDevOps *me, lba_t start, lba_t count,
 	if (ctrlr->controller_data->mdts != 0)
 		max_transfer_blocks = ((1 << (ctrlr->controller_data->mdts)) * (1 << NVME_CAP_MPSMIN(ctrlr->cap))) / block_size;
 	/* Artificially limit max_transfer_blocks to 1 PRP List */
-	if ( (max_transfer_blocks == 0) ||
-			(max_transfer_blocks > (NVME_MAX_XFER_BYTES * block_size)))
+	if ((max_transfer_blocks == 0) ||
+	    (max_transfer_blocks > NVME_MAX_XFER_BYTES / block_size))
 		max_transfer_blocks = NVME_MAX_XFER_BYTES / block_size;
 
 	while (count > 0) {
