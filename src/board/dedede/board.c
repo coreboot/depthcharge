@@ -52,6 +52,9 @@
 #define AUD_I2C4		PCI_DEV(0, 0x19, 0)
 #define SPEED_HZ		400000
 
+#define MAX98360A_AMP_SRC	1
+#define ALC1015_AMP_SRC		2
+
 static int cr50_irq_status(void)
 {
 	return jasperlake_get_gpe(GPE0_DW0_04); /* GPP_B4 */
@@ -88,21 +91,66 @@ static void dedede_setup_flash(void)
 	flash_set_ops(&flash->ops);
 }
 
-static bool is_rt1015_codec(void)
+static void setup_rt1015_amp(void)
 {
-	static const char * const board_str[] = {"Boten",
-						 "Magolor",
-						 "Waddledee"};
-	struct cb_mainboard *mainboard =
-		phys_to_virt(lib_sysinfo.cb_mainboard);
-	int i;
+	/*
+	 * ALC1015 codec uses internal control to shut down, so we can
+	 * leave EN_SPK_PIN/SDB gpio pad alone.
+	 * max98357a_settings is the common I2sSettings for cAVS i2s.
+	 */
+	I2s *i2s = new_i2s_structure(&max98357a_settings, AUD_BITDEPTH, 0,
+				     SSP_I2S1_START_ADDRESS);
+	I2sSource *i2s_source = new_i2s_source(&i2s->ops, AUD_SAMPLE_RATE,
+					       AUD_NUM_CHANNELS, AUD_VOLUME);
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+	/* Setup i2c */
+	DesignwareI2c *i2c = new_pci_designware_i2c(AUD_I2C4, SPEED_HZ,
+						    JASPERLAKE_DW_I2C_MHZ);
+	rt1015Codec *speaker_amp = new_rt1015_codec(&i2c->ops,
+						    AUD_RT1015_DEVICE_ADDR);
 
-	for (i = 0; i < ARRAY_SIZE(board_str); i++) {
-		if (!strncmp(cb_mb_part_string(mainboard), board_str[i],
-							strlen(board_str[i])))
-			return true;
+	list_insert_after(&speaker_amp->component.list_node,
+			  &sound_route->components);
+	sound_set_ops(&sound_route->ops);
+}
+
+static void setup_gpio_amp(void)
+{
+	GpioOps *spk_en = &new_jasperlake_gpio_output(EN_SPK_PIN, 0)->ops;
+	/* Use common i2s settings */
+	I2s *i2s = new_i2s_structure(&max98357a_settings, AUD_BITDEPTH, spk_en,
+				     SSP_I2S1_START_ADDRESS);
+	I2sSource *i2s_source = new_i2s_source(&i2s->ops, AUD_SAMPLE_RATE,
+					       AUD_NUM_CHANNELS, AUD_VOLUME);
+
+	/* Connect the Codec to the I2S source */
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+	/* MAX98360A is a GPIO based amplifier */
+	GpioAmpCodec *speaker_amp = new_gpio_amp_codec(spk_en);
+
+	list_insert_after(&speaker_amp->component.list_node,
+			  &sound_route->components);
+	sound_set_ops(&sound_route->ops);
+}
+
+static void setup_audio_amp(void)
+{
+	uint8_t amp_source = CONFIG_DEFAULT_AMP_SOURCE;
+
+	/*
+	 * TODO (b/179257031): Check if amplifier source is provisioned in
+	 * FW_CONFIG.
+	 */
+	switch (amp_source) {
+	case MAX98360A_AMP_SRC:
+		setup_gpio_amp();
+		break;
+	case ALC1015_AMP_SRC:
+		setup_rt1015_amp();
+		break;
+	default:
+		printf("%s: Unsupported amp id %d\n", __func__, amp_source);
 	}
-	return false;
 }
 
 static int board_setup(void)
@@ -138,43 +186,7 @@ static int board_setup(void)
 			&removable_block_dev_controllers);
 
 	/* Audio Beep Support */
-	if (is_rt1015_codec()) {
-		/*
-		 * ALC1015 codec uses internal control to shut down, so we can
-		 * leave EN_SPK_PIN/SDB gpio pad alone.
-		 * max98357a_settings is the common I2sSettings for cAVS i2s.
-		 */
-		I2s *i2s = new_i2s_structure(&max98357a_settings, AUD_BITDEPTH, 0,
-					     SSP_I2S1_START_ADDRESS);
-		I2sSource *i2s_source = new_i2s_source(&i2s->ops, AUD_SAMPLE_RATE,
-						       AUD_NUM_CHANNELS, AUD_VOLUME);
-		SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
-		/* Setup i2c */
-		DesignwareI2c *i2c = new_pci_designware_i2c(AUD_I2C4, SPEED_HZ,
-							    JASPERLAKE_DW_I2C_MHZ);
-		rt1015Codec *speaker_amp = new_rt1015_codec(&i2c->ops,
-							    AUD_RT1015_DEVICE_ADDR);
-
-		list_insert_after(&speaker_amp->component.list_node,
-				  &sound_route->components);
-		sound_set_ops(&sound_route->ops);
-	} else {
-		GpioOps *spk_en = &new_jasperlake_gpio_output(EN_SPK_PIN, 0)->ops;
-		/* Use common i2s settings */
-		I2s *i2s = new_i2s_structure(&max98357a_settings, AUD_BITDEPTH, spk_en,
-					     SSP_I2S1_START_ADDRESS);
-		I2sSource *i2s_source = new_i2s_source(&i2s->ops, AUD_SAMPLE_RATE,
-						       AUD_NUM_CHANNELS, AUD_VOLUME);
-
-		/* Connect the Codec to the I2S source */
-		SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
-		/* MAX98360A is a GPIO based amplifier */
-		GpioAmpCodec *speaker_amp = new_gpio_amp_codec(spk_en);
-
-		list_insert_after(&speaker_amp->component.list_node,
-				  &sound_route->components);
-		sound_set_ops(&sound_route->ops);
-	}
+	setup_audio_amp();
 
 	return 0;
 }
