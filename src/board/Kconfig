@@ -27,6 +27,9 @@ endif
 if BOARD_DIR = "cyan"
 source "src/board/cyan/Kconfig"
 endif
+if BOARD_DIR = "dedede"
+source "src/board/dedede/Kconfig"
+endif
 if BOARD_DIR = "falco"
 source "src/board/falco/Kconfig"
 endif
