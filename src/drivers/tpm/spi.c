@@ -25,14 +25,6 @@
 /*  Plumbing to make porting of the coreboot driver easier. */
 struct spi_peripheral {};
 
-/* TODO(yupingso): Remove after migration to new libpayload.h with stdbool.h */
-#ifndef false
-enum {
-	false = 0,
-	true
-};
-#endif
-
 struct tpm2_info {
 	uint16_t vendor_id;
 	uint16_t device_id;
