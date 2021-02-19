@@ -247,7 +247,6 @@ static vb2_error_t draw_language_select(const struct ui_state *state,
 					    bg_color, 0, 0, reverse));
 		/* Separator between languages */
 		if (id > id_begin)
-			/* TODO(b/160249415): Reduce redraw of separator */
 			VB2_TRY(ui_draw_h_line(x_begin, y, box_width,
 					       border_thickness,
 					       &ui_color_lang_menu_border));
