@@ -310,8 +310,8 @@ Diagnostic tools
       <message name="diag_menu_desc0" desc="String for diagnostic entry menu. This menu provides several self-diagnostic tools including information about storage status and memory tests. This string shows directly under the title of the menu and guides the user to select the desired tool.">
 Select the component you’d like to check.
       </message>
-      <message name="diag_storage_title" desc="Title for storage diagnostic screen. This screen will retrieve health information about the storage (disks) on this device.">
-Storage
+      <message name="diag_storage_health_title" desc="Title for storage diagnostic screen. This screen will retrieve health information about the storage (disks) on this device.">
+Storage health info
       </message>
       <message name="diag_storage_test_title" desc="Title for storage self-test screen. This screen provides storage self-test status of the storage (disks) on this device.">
 Storage self-test
@@ -322,8 +322,8 @@ Quick memory check
       <message name="diag_memory_full_title" desc="Title for full memory diagnostic screen. This screen will verify memory is functioning correctly, and report the results to the user. This full memory test takes about few minutes to complete.">
 Full memory check
       </message>
-      <message name="btn_diag_storage" desc="Menu item to retrieve health information about the storage (disks) on this devices.">
-Storage
+      <message name="btn_diag_storage_health" desc="Menu item to retrieve health information about the storage (disks) on this devices.">
+Storage health info
       </message>
       <message name="btn_diag_storage_short_test" desc="Menu item for short storage self-test. This will start a storage self-test and will show the status on the screen. Short self-test usually completes in 2 minutes.">
 Storage self-test - short
