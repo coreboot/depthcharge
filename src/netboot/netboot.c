@@ -36,7 +36,6 @@
 #include "vboot/crossystem/crossystem.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/nvdata.h"
-#include "vboot/util/init_funcs.h"
 
 static void enable_graphics(void)
 {
@@ -245,11 +244,6 @@ int netboot_entry(void)
 
 	if (CONFIG_CLI)
 		console_loop();
-
-	// Run initialization functions that need to be run after board setup.
-	// Example disabling the lid close event after EC driver is initialized.
-	if (run_vboot_init_funcs())
-		halt();
 
 	srand(timer_raw_value());
 
