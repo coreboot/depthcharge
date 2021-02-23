@@ -32,6 +32,7 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
 #include "drivers/tpm/cr50_i2c.h"
+#include "drivers/soc/qcom_sd_tray.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/bus/spi/qcom_qspi.h"
 #include "drivers/gpio/sc7280.h"
@@ -40,6 +41,17 @@
 #include "drivers/sound/route.h"
 #include "drivers/sound/sound.h"
 #include "drivers/sound/gpio_amp.h"
+
+#define PMIC_CORE_REGISTERS_ADDR 0x0C600000
+#define PMIC_REG_CHAN0_ADDR 0x0C440900
+#define PMIC_REG_LAST_CHAN_ADDR 0x1100
+#define PMIC_REG_FIRST_CHAN_ADDR 0x900
+
+#define LDO09_EN_CTL 0xC946
+#define SID 0x02
+
+#define REG_ENABLE_ADDR ((SID << 16) | LDO09_EN_CTL)
+#define ENABLE_REG_DATA 0x80
 
 #define SDC1_HC_BASE          0x007C4000
 
@@ -120,12 +132,18 @@ static int board_setup(void)
 		&fixed_block_dev_controllers);
 
 	/* SD card support */
+	QcomSpmi *pmic_spmi = new_qcom_spmi(PMIC_CORE_REGISTERS_ADDR,
+					    PMIC_REG_CHAN0_ADDR,
+					    PMIC_REG_LAST_CHAN_ADDR - PMIC_REG_FIRST_CHAN_ADDR);
 	GpioOps *sd_cd = sysinfo_lookup_gpio("SD card detect", 1,
-					new_gpio_input_from_coreboot);
+					     new_gpio_input_from_coreboot);
 
+	GpioOps *cd_wrapper = new_qcom_sd_tray_cd_wrapper(sd_cd, pmic_spmi,
+							  REG_ENABLE_ADDR,
+							  ENABLE_REG_DATA);
 	SdhciHost *sd = new_sdhci_msm_host(SDC2_HC_BASE,
-					SDHCI_PLATFORM_REMOVABLE,
-					50*MHz, sd_cd);
+					   SDHCI_PLATFORM_REMOVABLE,
+					   50*MHz, cd_wrapper);
 	list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
 				&removable_block_dev_controllers);
 

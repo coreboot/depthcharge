@@ -59,6 +59,14 @@ config DRIVER_SOC_QCOM_SPMI
 	  You ordinarily shouldn't need this unless you need to hack voltage
 	  regulators in depthcharge to work around hardware issues.
 
+config DRIVER_SOC_QCOM_SDTRAY
+	bool "Qualcomm SD TRAY arbitrator driver"
+	default n
+	depends on DRIVER_SOC_QCOM_SPMI
+	help
+	  You ordinarily shouldn't need this unless you need to hack voltage
+	  regulators in depthcharge to work around hardware issues.
+
 config DRIVER_SOC_JASPERLAKE
 	bool "Jasperlake SoC driver"
 	default n

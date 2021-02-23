@@ -31,7 +31,7 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/tpm/spi.h"
 #include "drivers/sound/gpio_amp.h"
-#include "drivers/soc/qcom_spmi.h"
+#include "drivers/soc/qcom_sd_tray.h"
 #include "drivers/bus/i2s/qcom_lpass.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/route.h"
@@ -39,6 +39,17 @@
 #include "drivers/video/ec_pwm_backlight.h"
 #include "drivers/video/display.h"
 #include "drivers/video/sc7180.h"
+
+#define PMIC_CORE_REGISTERS_ADDR 0x0C600000
+#define PMIC_REG_CHAN0_ADDR 0x0C440900
+#define PMIC_REG_LAST_CHAN_ADDR 0x1100
+#define PMIC_REG_FIRST_CHAN_ADDR 0x900
+
+#define LDO09_EN_CTL 0x4846
+#define SID 0x05
+
+#define REG_ENABLE_ADDR ((SID << 16) | LDO09_EN_CTL)
+#define ENABLE_REG_DATA 0x80
 
 #define SDC1_HC_BASE          0x7C4000
 #define SDC2_HC_BASE 0x08804000
@@ -48,46 +59,6 @@ static const VpdDeviceTreeMap vpd_dt_map[] = {
 	{ "wifi_mac0", "wifi0/local-mac-address" },
 	{}
 };
-
-// Some Trogdor boards have an amazing hardware feature, where the SD card and
-// the SIM card are packed together in a little "tray" in such a way that when
-// you pull the tray out of the device, the SIM card may drag over the exposed
-// SD connector pins from the board, potentially shorting or overvolting things.
-// In order to support this ingenious design, Qualcomm programmed one of their
-// asynchronous agents on the SoC (MPM = modem power manager) to listen to the
-// card detect pin and always force the SD voltage regulator off when it
-// disconnects. Unfortunately, it doesn't do the same in reverse -- it's up to
-// the OS (or, in this case, us) to reenable the regulator whenever card detect
-// gets reasserted. The below is a hacky way to hook into the card detect GPIO
-// handling to do just that without having to muck with core SDHCI code.
-static int trogdor_get_sd_cd(GpioOps *unused)
-{
-	static GpioOps *underlying = NULL;
-	static int prev = -1;
-
-	if (!underlying)
-		underlying = sysinfo_lookup_gpio("SD card detect", 1,
-				new_gpio_input_from_coreboot);
-
-	int val = gpio_get(underlying);
-	if (val != prev) {
-		if (val) {
-			// We used to be disconnected but now have an SD card.
-			// Need to force the regulator on.
-			static QcomSpmi *spmi = NULL;
-
-			if (!spmi)
-				spmi = new_qcom_spmi(0x0c600000, 0x0c440900,
-						     0x1100 - 0x900);
-
-			spmi->write8(spmi, 0x054846, 0x80);
-			mdelay(10);  // give it some ramp-up time to stabilize
-		}
-		prev = val;
-	}
-
-	return val;
-}
 
 static int trogdor_tpm_irq_status(void)
 {
@@ -166,12 +137,18 @@ static int board_setup(void)
 			&fixed_block_dev_controllers);
 
 	/* SD card support */
-	static GpioOps sd_cd = {
-		.get = trogdor_get_sd_cd,
-	};
+	QcomSpmi *pmic_spmi = new_qcom_spmi(PMIC_CORE_REGISTERS_ADDR,
+					    PMIC_REG_CHAN0_ADDR,
+					    PMIC_REG_LAST_CHAN_ADDR - PMIC_REG_FIRST_CHAN_ADDR);
+	GpioOps *sd_cd = sysinfo_lookup_gpio("SD card detect", 1,
+					     new_gpio_input_from_coreboot);
+
+	GpioOps *cd_wrapper = new_qcom_sd_tray_cd_wrapper(sd_cd, pmic_spmi,
+							  REG_ENABLE_ADDR,
+							  ENABLE_REG_DATA);
 	SdhciHost *sd = new_sdhci_msm_host(SDC2_HC_BASE,
 					   SDHCI_PLATFORM_REMOVABLE,
-					   50*MHz, &sd_cd);
+					   50*MHz, cd_wrapper);
 	list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
 			  &removable_block_dev_controllers);
 
