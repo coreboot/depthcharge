@@ -19,18 +19,18 @@ config DRIVER_LYNXPOINT_NO_EHCI
 	  route all USB ports to the XHCI controller and disable the EHCI
 	  controller to save power.
 
-config DRIVER_USB_TIGERLAKE_TCSS
-	bool "Enable Tiger Lake TCSS driver"
+config DRIVER_USB_INTEL_TCSS
+	bool "Enable Intel TCSS driver"
 	default n
 	depends on DRIVER_EC_CROS
-	depends on DRIVER_SOC_TIGERLAKE_PMC
+	depends on DRIVER_SOC_INTEL_PMC
 	help
-	  Select this to enable support for the Intel Tiger Lake USB
-	  Type-C subsystem (TCSS). A board_tcss_get_port_mapping()
-	  function must be provided to determine the system port
-	  mapping.
+	  Select this to enable support for the Intel USB Type-C subsystem
+	  (TCSS). A board_tcss_get_port_mapping() function must be provided to
+	  determine the system port mapping. Currently, this driver is
+	  applicable to Tiger Lake and Alder Lake systems.
 
-config DRIVER_USB_TIGERLAKE_TCSS_DEBUG
-	bool "Enable Tiger Lake TCSS driver debugging"
+config DRIVER_USB_INTEL_TCSS_DEBUG
+	bool "Enable Intel TCSS driver debugging"
 	default n
-	depends on DRIVER_USB_TIGERLAKE_TCSS
+	depends on DRIVER_USB_INTEL_TCSS

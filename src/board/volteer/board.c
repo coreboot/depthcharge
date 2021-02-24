@@ -18,6 +18,7 @@
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
+#include "drivers/bus/usb/intel_tcss.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/sysinfo.h"
@@ -35,8 +36,6 @@
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/spi.h"
 #include "drivers/tpm/tpm.h"
-
-#include "drivers/bus/usb/tigerlake_tcss.h"
 
 #define TPM_I2C1	PCI_DEV(0, 0x15, 1)
 #define TPM_I2C_ADDR	0x50

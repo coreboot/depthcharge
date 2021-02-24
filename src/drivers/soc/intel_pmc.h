@@ -1,11 +1,11 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * Copyright (c) 2020, Intel Corporation.
- * Copyright 2020 Google LLC.
+ * Copyright (c) 2021, Intel Corporation.
+ * Copyright 2021 Google LLC.
  */
 
-#ifndef __DRIVERS_SOC_TIGERLAKE_PMC_H__
-#define __DRIVERS_SOC_TIGERLAKE_PMC_H__
+#ifndef __DRIVERS_SOC_INTEL_PMC_H__
+#define __DRIVERS_SOC_INTEL_PMC_H__
 
 #include <stdint.h>
 
@@ -41,4 +41,4 @@ struct pmc_ipc_buffer {
 int pmc_send_cmd(uint32_t cmd, const struct pmc_ipc_buffer *wbuf,
 		 struct pmc_ipc_buffer *rbuf);
 
-#endif /* __DRIVERS_SOC_TIGERLAKE_PMC_H__ */
+#endif /* __DRIVERS_SOC_INTEL_PMC_H__ */

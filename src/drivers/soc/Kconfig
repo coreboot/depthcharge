@@ -65,21 +65,26 @@ config DRIVER_SOC_JASPERLAKE
 	select DRIVER_GPIO_JASPERLAKE
 	select INTEL_COMMON_I2S_CAVS_2_0
 
+config DRIVER_SOC_INTEL_PMC
+	bool
+	default n
+	help
+	  A driver for Intel's PMC IPC API.
+
+config DRIVER_SOC_INTEL_PMC_DEBUG
+	bool "Enable Intel PMC driver debugging"
+	default n
+	depends on DRIVER_SOC_INTEL_PMC
+
 config DRIVER_SOC_TIGERLAKE
 	bool "Tigerlake SoC driver"
 	default n
 	select DRIVER_GPIO_TIGERLAKE
 	select INTEL_COMMON_I2S_CAVS_2_5
-
-config DRIVER_SOC_TIGERLAKE_PMC
-	bool "Tigerlake PMC subsystem driver"
-	default n
-	depends on DRIVER_SOC_TIGERLAKE
-
-config DRIVER_SOC_TIGERLAKE_PMC_DEBUG
-	bool "Enable Tigerlake PMC driver debugging"
-	default n
-	depends on DRIVER_SOC_TIGERLAKE_PMC
+	select DRIVER_USB_INTEL_TCSS if DRIVER_EC_CROS
+	select DRIVER_USB_INTEL_TCSS_DEBUG if DRIVER_EC_CROS
+	select DRIVER_SOC_INTEL_PMC
+	select DRIVER_SOC_INTEL_PMC_DEBUG
 
 config DRIVER_SOC_ALDERLAKE
 	bool "Alderlake SoC driver"

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright (c) 2020, Intel Corporation.
- * Copyright 2020 Google LLC.
+ * Copyright (c) 2021, Intel Corporation.
+ * Copyright 2021 Google LLC.
  */
 
 #include <assert.h>
@@ -10,11 +10,11 @@
 #include <stdint.h>
 
 #include "drivers/ec/cros/ec.h"
-#include "drivers/bus/usb/tigerlake_tcss.h"
+#include "drivers/bus/usb/intel_tcss.h"
 #include "drivers/bus/usb/usb.h"
-#include "drivers/soc/tigerlake_pmc.h"
+#include "drivers/soc/intel_pmc.h"
 
-#if CONFIG(DRIVER_USB_TIGERLAKE_TCSS_DEBUG)
+#if CONFIG(DRIVER_USB_INTEL_TCSS_DEBUG)
 #define debug(msg, args...)	printf("%s: " msg, __func__, ##args)
 #else
 #define debug(msg, args...)
@@ -27,13 +27,8 @@
 
 #define PMC_IPC_CONN_DISC_REQ_SIZE	2
 
-/*
- * From TGL EDS vol2a s3.6.
- */
-#define IOM_BASE_ADDRESS		0xfbc10000
-#define IOM_PORT_STATUS_OFFSET		0x0560
-#define IOM_REG_LEN			4	/* Register length in bytes */
 #define IOM_PORT_STATUS_CONNECTED	BIT(31)
+#define REGBAR_PID_SHIFT		16
 
 #define TCSS_CONN_REQ_RES		0
 #define TCSS_DISC_REQ_RES		1
@@ -88,19 +83,19 @@ static uint32_t tcss_make_cmd(int u, int u3, int u2, int ufp, int hsl, int sbu,
 static int tcss_port_count;
 static const struct tcss_port_map *tcss_port_map;
 
-static void *iom_reg(unsigned int iom_reg_offset)
-{
-	const uintptr_t iombase = IOM_BASE_ADDRESS;
-
-	return (void *)(iombase + iom_reg_offset);
-}
-
 static const void *port_status_reg(int port)
 {
-	uintptr_t sts_offset;
+	static const TcssConfig *tcss_config;
+	if (!tcss_config) {
+		tcss_config = platform_get_tcss_config();
+	}
 
-	sts_offset = IOM_PORT_STATUS_OFFSET + IOM_REG_LEN * port;
-	return (const void *)iom_reg(sts_offset);
+	assert(tcss_config);
+
+	const uintptr_t status_reg = tcss_config->regbar +
+		(tcss_config->iom_pid << REGBAR_PID_SHIFT) +
+		(tcss_config->iom_status_offset + port * sizeof(uint32_t));
+	return (const void *)status_reg;
 }
 
 static bool is_port_connected(int port)
