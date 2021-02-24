@@ -13,7 +13,7 @@
 
 depthcharge-y += usb.c
 depthcharge-$(CONFIG_DRIVER_LYNXPOINT_NO_EHCI) += lynxpoint.c
-depthcharge-$(CONFIG_DRIVER_USB_TIGERLAKE_TCSS) += tigerlake_tcss.c
+depthcharge-$(CONFIG_DRIVER_USB_INTEL_TCSS) += intel_tcss.c
 
 # Not worth a Kconfig, let's just rely on --gc-sections
 depthcharge-y += exynos.c

@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright (c) 2020, Intel Corporation.
- * Copyright 2020 Google LLC.
+ * Copyright (c) 2021, Intel Corporation.
+ * Copyright 2021 Google LLC.
  */
 
 #include <libpayload.h>
 
-#include "drivers/soc/tigerlake_pmc.h"
+#include "drivers/soc/intel_pmc.h"
 #include "drivers/timer/timer.h"
 
-#if CONFIG(DRIVER_SOC_TIGERLAKE_PMC_DEBUG)
+#if CONFIG(DRIVER_SOC_INTEL_PMC_DEBUG)
 #define debug(msg, args...)	printf("%s: " msg, __func__, ##args)
 #else
 #define debug(msg, args...)

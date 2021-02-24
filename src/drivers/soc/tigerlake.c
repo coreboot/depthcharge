@@ -15,6 +15,7 @@
 #include "drivers/soc/common/iomap.h"
 #include "drivers/soc/intel_common.h"
 #include "drivers/soc/tigerlake.h"
+#include "drivers/bus/usb/intel_tcss.h"
 
 static const SocGpeConfig cfg = {
 	.gpe_max = GPE_MAX,
@@ -25,4 +26,15 @@ static const SocGpeConfig cfg = {
 int tigerlake_get_gpe(int gpe)
 {
 	return soc_get_gpe(gpe, &cfg);
+}
+
+static TcssConfig tcss_cfg = {
+	.regbar = 0xfb000000,
+	.iom_pid = 0xc1,
+	.iom_status_offset = 0x560
+};
+
+const TcssConfig *platform_get_tcss_config(void)
+{
+	return &tcss_cfg;
 }
