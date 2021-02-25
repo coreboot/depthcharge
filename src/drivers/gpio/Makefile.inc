@@ -27,6 +27,7 @@ depthcharge-$(CONFIG_DRIVER_GPIO_LYNXPOINT_LP) += lynxpoint_lp.c
 depthcharge-$(CONFIG_DRIVER_GPIO_MT8173) += mtk_gpio.c
 depthcharge-$(CONFIG_DRIVER_GPIO_MT8183) += mtk_gpio.c
 depthcharge-$(CONFIG_DRIVER_GPIO_MT8192) += mtk_gpio.c
+depthcharge-$(CONFIG_DRIVER_GPIO_MT8195) += mtk_gpio.c
 depthcharge-$(CONFIG_DRIVER_GPIO_MVMAP2315) += mvmap2315.c
 depthcharge-$(CONFIG_DRIVER_GPIO_PANTHERPOINT) += pantherpoint.c
 depthcharge-$(CONFIG_DRIVER_GPIO_PCH) += pch.c
