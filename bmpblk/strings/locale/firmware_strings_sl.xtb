@@ -8,6 +8,7 @@
 <translation id="1389402762514302384">Izberite »Prekliči«, če želite ohraniti zaščito.</translation>
 <translation id="1483971085438511843">Uporabite tipko Enter za izbiro možnosti.</translation>
 <translation id="1931763245382489971">3. Ko je v zunanji napravi za shranjevanje pripravljena slika za obnovitev, kliknite »Naprej«.</translation>
+<translation id="1932315467893966859">Razvijalski način je že vklopljen.</translation>
 <translation id="1995660704900986789">Izklop</translation>
 <translation id="2022309272630265316">Nobena veljavna slika ni zaznana</translation>
 <translation id="2076174287070071207">Napravo lahko obnovite prek zunanje naprave za shranjevanje, kot je pogon USB ali kartica SD, oziroma s telefonom Android.</translation>
@@ -16,6 +17,7 @@
 <translation id="2188090550242711688">2. Upoštevajte navodila za razširitev za Chrome in prenesite sliko za obnovitev v zunanjo shrambo.</translation>
 <translation id="2270126560545545577">Trenutno ste v načinu za razvijalce</translation>
 <translation id="2360163367862409346">S tem boste iz naprave izbrisali vse podatke, naprava pa tako ne bo varna.</translation>
+<translation id="2398688843544960326">Ni bilo mogoče najti drugega zagonskega nalagalnika. Če želite izvedeti, kako ga namestite, glejte:</translation>
 <translation id="2445391421565214706">Če želite poskusiti odpraviti težavo, začnite postopek obnovitve. Odstranite vse povezane naprave, nato vsaj 10 sekund pridržite gumbe za povečanje glasnosti, zmanjšanje glasnosti in vklop ( ⏻ ).</translation>
 <translation id="2531345960369431549">Ta možnost bo onemogočila način za razvijalce in obnovila vašo napravo v prvotno stanje.</translation>
 <translation id="2603025384438397887">Obnovitev s telefonom</translation>
@@ -24,12 +26,15 @@
 <translation id="3235458304027619499">1. Zunanja naprava za shranjevanje, kot je pogon USB ali kartica SD.</translation>
 <translation id="328213018570216625">Obnovitev prek zunanje shrambe</translation>
 <translation id="3289365543955953678">Priključitev zunanjega diska</translation>
+<translation id="3294574173405124634">Vrnitev v varni način so onemogočile zastavice GBB.</translation>
+<translation id="3416523611207622897">Zunanji zagon je onemogočen. Več informacij je na voljo tu:</translation>
 <translation id="3635226996169670741">Če želite poskusiti odpraviti težavo, začnite postopek obnovitve. Odstranite vse povezane naprave, nato pridržite tipko Esc, tipko za osvežitev zaslona ( ⟳ ) in tipko za vklop/izklop ( ⏻ ).</translation>
 <translation id="385051799172605136">Nazaj</translation>
 <translation id="3964506597604121312">Uporabniški podatki bodo pri tem izbrisani.</translation>
 <translation id="4002335453596341558">Stran navzdol</translation>
 <translation id="4152977630022273265">Poskrbite, da je na vašem zunanjem disku veljaven posnetek operacijskega sistema Chrome OS, in disk znova vstavite, ko boste pripravljeni.</translation>
 <translation id="4242315717915611349">Preklic in vrnitev</translation>
+<translation id="4403160275309808255">Drugi zagonski nalagalniki so onemogočeni. Več informacij je na voljo tu:</translation>
 <translation id="4410491068110727276">Uporabite gumba za glasnost za pomikanje gor ali dol.</translation>
 <translation id="4497270882390086583">Napravo lahko obnovite prek zunanje naprave za shranjevanje, kot je pogon USB, ali s telefonom Android.</translation>
 <translation id="4773280894882892048">Informacije o iskanju napak</translation>
@@ -39,6 +44,7 @@
 <translation id="5175612852476047443">Ne izklopite naprave</translation>
 <translation id="5232488980254489397">Zaženi diagnostiko</translation>
 <translation id="5341719174140776704">1. Telefon Android z dostopom do interneta.</translation>
+<translation id="5477875595374685515">Ni bilo mogoče dobiti dnevnika vdelane programske opreme.</translation>
 <translation id="5592705604979238266">Center za pomoč:</translation>
 <translation id="5649741817431380014">Prepričajte se, da je v telefonu nameščena aplikacija za obnovitev sistema Chrome OS ali da je na vašem zunanjem disku veljaven posnetek za obnovitev. Ko boste pripravljeni, znova vstavite kabel ali disk.</translation>
 <translation id="5809240698077875994">Pritisnite gumb za vklop, če želite omogočiti način za razvijalce, ali izberite »Prekliči«, če želite ohraniti zaščito.</translation>
@@ -69,12 +75,16 @@
 <translation id="8011335065515332253">Po preteku časovne omejitve se bo naprava samodejno zagnala s spodaj izbrane možnosti.</translation>
 <translation id="8027199195649765326">Na Chromebooku pritisnite gumb za obnovitev, če želite omogočiti način za razvijalce, ali izberite »Prekliči«, če želite ohraniti zaščito.</translation>
 <translation id="8101391381992690790">Poskrbite, da je na vašem zunanjem disku veljaven posnetek za obnovitev, in disk znova vstavite, ko boste pripravljeni.</translation>
+<translation id="8116993605321079294">Pri zagonu drugega zagonskega nalagalnika je prišlo do napake. Če želite podrobnosti, glejte dnevnik vdelane programske opreme.</translation>
 <translation id="8131740175452115882">Potrdi</translation>
 <translation id="8199613549817472219">Postopek obnovitve korak za korakom</translation>
 <translation id="8377165353588213941">Prišli ste do konca</translation>
+<translation id="8569584079758810124">Ni bilo mogoče dobiti podatkov o odpravljanju napak.</translation>
 <translation id="8720490351198901261">Prišli ste na vrh</translation>
 <translation id="8789686976863801203">Poskus omogočanja načina za razvijalce</translation>
+<translation id="8848124168564939055">Razvijalskega načina ni mogoče vklopiti z zunanjo tipkovnico. Uporabite gumbe na napravi, ki so navedeni v navodilih za krmarjenje.</translation>
 <translation id="885701979325669005">Shramba</translation>
+<translation id="9004305007436435169">Ni bilo mogoče dobiti diagnostičnih podatkov.</translation>
 <translation id="9040266428058825675">Če je v vaši zunanji napravi za shranjevanje pripravljena slika za obnovitev, jo priključite v to napravo in začnite postopek obnovitve.</translation>
 <translation id="9058669020755173331">Izberite komponento, ki jo želite preveriti.</translation>
 </translationbundle>

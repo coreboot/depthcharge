@@ -8,6 +8,7 @@
 <translation id="1389402762514302384">Selecciona Cancel·la per mantenir la protecció.</translation>
 <translation id="1483971085438511843">Utilitza la tecla Retorn per seleccionar una opció.</translation>
 <translation id="1931763245382489971">3. Fes clic a Següent quan el dispositiu d'emmagatzematge extern estigui preparat amb la imatge de recuperació</translation>
+<translation id="1932315467893966859">El mode de desenvolupador ja està activat.</translation>
 <translation id="1995660704900986789">Apaga</translation>
 <translation id="2022309272630265316">No s'ha detectat cap imatge vàlida</translation>
 <translation id="2076174287070071207">Pots fer la recuperació utilitzant emmagatzematge extern, com ara una unitat USB, una targeta SD o un telèfon Android.</translation>
@@ -16,6 +17,7 @@
 <translation id="2188090550242711688">2. Segueix les instruccions de l'extensió de Chrome i baixa la imatge de recuperació a un emmagatzematge extern</translation>
 <translation id="2270126560545545577">Ets en mode de desenvolupador</translation>
 <translation id="2360163367862409346">Amb aquesta acció s'esborraran totes les dades del dispositiu i deixarà de ser segur.</translation>
+<translation id="2398688843544960326">No s'ha trobat cap bootloader alternatiu. Per saber com pots instal·lar-ne un, consulta:</translation>
 <translation id="2445391421565214706">Per provar de corregir aquest problema, inicia el procés de recuperació. Retira tots els dispositius connectats i mantén premudes les tecles pujar i baixar el volum i el botó d'engegada ( ⏻ ) durant almenys 10 segons.</translation>
 <translation id="2531345960369431549">Aquesta opció desactivarà el mode de desenvolupador i restaurarà el teu dispositiu al seu estat original.</translation>
 <translation id="2603025384438397887">Fes la recuperació mitjançant un telèfon</translation>
@@ -24,12 +26,15 @@
 <translation id="3235458304027619499">1. Un dispositiu d'emmagatzematge extern, com ara una unitat USB o una targeta SD</translation>
 <translation id="328213018570216625">Fes la recuperació mitjançant l'emmagatzematge extern</translation>
 <translation id="3289365543955953678">Connecta el disc extern</translation>
+<translation id="3294574173405124634">Les marques GBB no permeten tornar al mode segur.</translation>
+<translation id="3416523611207622897">L'inici extern està desactivat. Per obtenir més informació, consulta:</translation>
 <translation id="3635226996169670741">Per provar de corregir aquest problema, inicia el procés de recuperació. Desconnecta tots els dispositius i mantén premudes les tecles d'escapada, actualització ( ⟳ ) i engegada ( ⏻ ).</translation>
 <translation id="385051799172605136">Enrere</translation>
 <translation id="3964506597604121312">Les teves dades d'usuari s'eliminaran durant el procés.</translation>
 <translation id="4002335453596341558">Av Pàg</translation>
 <translation id="4152977630022273265">Comprova que el disc extern tingui una imatge de Chrome OS vàlida i torna a inserir el disc quan estigui a punt.</translation>
 <translation id="4242315717915611349">Cancel·la i torna</translation>
+<translation id="4403160275309808255">Els bootloaders alternatius estan desactivats. Per obtenir més informació, consulta:</translation>
 <translation id="4410491068110727276">Utilitza els botons de volum per navegar cap amunt o cap avall.</translation>
 <translation id="4497270882390086583">Pots fer la recuperació utilitzant emmagatzematge extern, com ara una unitat USB o un telèfon Android.</translation>
 <translation id="4773280894882892048">Informació de depuració</translation>
@@ -39,6 +44,7 @@
 <translation id="5175612852476047443">No apaguis el dispositiu</translation>
 <translation id="5232488980254489397">Diagnòstics de llançament</translation>
 <translation id="5341719174140776704">1. Un telèfon Android amb accés a Internet</translation>
+<translation id="5477875595374685515">No s'ha pogut obtenir el registre del microprogramari.</translation>
 <translation id="5592705604979238266">Centre d’ajuda:</translation>
 <translation id="5649741817431380014">Comprova que el telèfon estigui executant l'aplicació de recuperació de Chrome OS o que el disc extern hi tingui una imatge de recuperació vàlida. Torna a connectar el cable o el disc quan hagis acabat.</translation>
 <translation id="5809240698077875994">Prem el botó d'engegada per activar el mode de desenvolupador o selecciona Cancel·la per mantenir la protecció.</translation>
@@ -69,12 +75,16 @@
 <translation id="8011335065515332253">Després del temps d'espera, el dispositiu s'iniciarà automàticament des de la selecció següent.</translation>
 <translation id="8027199195649765326">Prem el botó d'engegada al Chromebook per activar el mode de desenvolupador o selecciona Cancel·la per mantenir la protecció.</translation>
 <translation id="8101391381992690790">Comprova que el disc extern tingui una imatge recuperació vàlida i torna a inserir el disc quan estigui a punt.</translation>
+<translation id="8116993605321079294">S'ha produït un error en iniciar el bootloader alternatiu. Consulta el registre del microprogramari per obtenir més informació.</translation>
 <translation id="8131740175452115882">Confirma</translation>
 <translation id="8199613549817472219">Començant el procés de recuperació</translation>
 <translation id="8377165353588213941">Has arribat al final</translation>
+<translation id="8569584079758810124">No s'ha pogut obtenir informació de depuració.</translation>
 <translation id="8720490351198901261">Has arribat al principi</translation>
 <translation id="8789686976863801203">Estàs provant d'activar el mode de desenvolupador</translation>
+<translation id="8848124168564939055">No pots utilitzar un teclat extern per activar el mode de desenvolupador. Fes servir els botons del dispositiu que s'indiquen a les instruccions de navegació.</translation>
 <translation id="885701979325669005">Emmagatzematge</translation>
+<translation id="9004305007436435169">No s'ha pogut obtenir informació de diagnòstic.</translation>
 <translation id="9040266428058825675">Si el dispositiu d'emmagatzematge extern està preparat amb una imatge de recuperació, connecta'l al dispositiu per començar el procés de recuperació.</translation>
 <translation id="9058669020755173331">Selecciona el component que vols comprovar.</translation>
 </translationbundle>

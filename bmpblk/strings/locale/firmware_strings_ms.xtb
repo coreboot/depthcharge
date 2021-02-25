@@ -8,6 +8,7 @@
 <translation id="1389402762514302384">Pilih Batal untuk kekal dilindungi.</translation>
 <translation id="1483971085438511843">Gunakan kekunci enter untuk membuat pilihan.</translation>
 <translation id="1931763245382489971">3. Klik seterusnya apabila peranti storan luaran anda sudah sedia dengan imej pemulihan</translation>
+<translation id="1932315467893966859">Mod pembangun telah pun dihidupkan.</translation>
 <translation id="1995660704900986789">Matikan kuasa</translation>
 <translation id="2022309272630265316">Tiada imej yang sah dikesan</translation>
 <translation id="2076174287070071207">Anda boleh membuat pemulihan menggunakan storan luaran seperti pemacu USB, kad SD atau menggunakan telefon Android anda.</translation>
@@ -16,6 +17,7 @@
 <translation id="2188090550242711688">2. Ikut arahan pada sambungan Chrome dan muat turun imej pemulihan pada storan luaran</translation>
 <translation id="2270126560545545577">Anda dalam mod pembangun</translation>
 <translation id="2360163367862409346">Hal ini melibatkan pemadaman semua data daripada peranti anda dan akan menjadikan peranti anda tidak selamat.</translation>
+<translation id="2398688843544960326">Tidak dapat menemukan pemuat but alternatif. Untuk mengetahui cara memasang pemuat but alternatif, lihat:</translation>
 <translation id="2445391421565214706">Untuk cuba menyelesaikan isu ini, mulakan proses pemulihan. Tanggalkan semua peranti yang disambungkan, kemudian tekan dan tahan butang Naikkan Kelantangan, Kurangkan Kelantangan dan Kuasa ( ⏻ ) selama sekurang-kurangnya 10 saat.</translation>
 <translation id="2531345960369431549">Pilihan ini akan melumpuhkan mod pembangun dan memulihkan peranti anda kepada keadaan asalnya.</translation>
 <translation id="2603025384438397887">Pemulihan menggunakan telefon</translation>
@@ -24,12 +26,15 @@
 <translation id="3235458304027619499">1. Peranti storan luaran seperti pemacu USB atau kad SD</translation>
 <translation id="328213018570216625">Pemulihan menggunakan storan luaran</translation>
 <translation id="3289365543955953678">Palamkan cakera luaran anda</translation>
+<translation id="3294574173405124634">Tindakan kembali kepada mod selamat tidak dibenarkan oleh bendera GBB.</translation>
+<translation id="3416523611207622897">But luaran dilumpuhkan. Untuk mendapatkan maklumat lanjut, lihat:</translation>
 <translation id="3635226996169670741">Untuk cuba menyelesaikan isu ini, mulakan proses pemulihan. Tanggalkan semua peranti yang disambungkan, kemudian tekan dan tahan kekunci Esc, Muat Semula ( ⟳ ) dan Kuasa ( ⏻ ).</translation>
 <translation id="385051799172605136">Kembali</translation>
 <translation id="3964506597604121312">Data pengguna anda akan dihapuskan dalam proses ini.</translation>
 <translation id="4002335453596341558">Ke bahagian bawah halaman</translation>
 <translation id="4152977630022273265">Pastikan cakera luaran anda mempunyai imej OS Chrome, kemudian masukkan semula cakera itu apabila sudah sedia.</translation>
 <translation id="4242315717915611349">Batalkan dan kembali</translation>
+<translation id="4403160275309808255">Pemuat but alternatif dilumpuhkan. Untuk mendapatkan maklumat lanjut, lihat:</translation>
 <translation id="4410491068110727276">Gunakan butang kelantangan untuk menavigasi ke atas atau ke bawah.</translation>
 <translation id="4497270882390086583">Anda boleh membuat pemulihan menggunakan storan luaran seperti pemacu USB atau menggunakan telefon Android anda.</translation>
 <translation id="4773280894882892048">Maklumat nyahpepijat</translation>
@@ -39,6 +44,7 @@
 <translation id="5175612852476047443">Jangan matikan kuasa peranti anda</translation>
 <translation id="5232488980254489397">Lancarkan diagnostik</translation>
 <translation id="5341719174140776704">1. Peranti Android dengan akses Internet</translation>
+<translation id="5477875595374685515">Gagal mendapatkan log perisian tegar.</translation>
 <translation id="5592705604979238266">Pusat bantuan:</translation>
 <translation id="5649741817431380014">Pastikan telefon anda menjalankan apl pemulihan OS Chrome atau cakera luaran anda mempunyai imej pemulihan yang sah. Masukkan semula kabel atau cakera apabila sudah sedia.</translation>
 <translation id="5809240698077875994">Tekan butang Kuasa untuk mendayakan mod pembangun atau pilih Batal untuk kekal dilindungi.</translation>
@@ -69,12 +75,16 @@
 <translation id="8011335065515332253">Selepas tamat masa, peranti akan dibut secara automatik daripada pilihan di bawah.</translation>
 <translation id="8027199195649765326">Tekan butang Pemulihan pada Chromebox anda untuk mendayakan mod pembangun atau pilih Batal untuk kekal dilindungi.</translation>
 <translation id="8101391381992690790">Pastikan cakera luaran anda mempunyai imej pemulihan yang sah, kemudian masukkan semula cakera itu apabila sudah sedia.</translation>
+<translation id="8116993605321079294">Kesilapan telah berlaku semasa melancarkan pemuat but alternatif. Lihat log perisian tegar untuk mendapatkan butiran.</translation>
 <translation id="8131740175452115882">Sahkan</translation>
 <translation id="8199613549817472219">Mari teruskan proses pemulihan</translation>
 <translation id="8377165353588213941">Anda sudah sampai ke penghujung</translation>
+<translation id="8569584079758810124">Gagal mendapatkan maklumat nyahpepijat.</translation>
 <translation id="8720490351198901261">Anda sudah sampai ke bahagian teratas</translation>
 <translation id="8789686976863801203">Anda cuba mendayakan mod pembangun</translation>
+<translation id="8848124168564939055">Anda tidak boleh menggunakan papan kekunci luaran untuk menghidupkan mod pembangun. Sila gunakan butang pada peranti yang dinyatakan dalam arahan navigasi.</translation>
 <translation id="885701979325669005">Storan</translation>
+<translation id="9004305007436435169">Gagal mendapatkan maklumat diagnostik.</translation>
 <translation id="9040266428058825675">Jika peranti storan luaran sudah sedia dengan imej pemulihan, palamkan ke dalam peranti ini untuk memulakan proses pemulihan.</translation>
 <translation id="9058669020755173331">Pilih komponen yang ingin disemak.</translation>
 </translationbundle>

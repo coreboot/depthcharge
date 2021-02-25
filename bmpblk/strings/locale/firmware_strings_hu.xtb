@@ -8,6 +8,7 @@
 <translation id="1389402762514302384">Válassza a Mégse lehetőséget a védelem fenntartásához.</translation>
 <translation id="1483971085438511843">Az Enter billentyűvel választhatja ki a kívánt lehetőséget.</translation>
 <translation id="1931763245382489971">3. Kattintson a Tovább gombra, amint készen áll a külső tárolóeszköz a helyreállító képfájllal</translation>
+<translation id="1932315467893966859">A fejlesztői mód már be van kapcsolva.</translation>
 <translation id="1995660704900986789">Kikapcsolás</translation>
 <translation id="2022309272630265316">Nem található érvényes rendszerkép</translation>
 <translation id="2076174287070071207">A helyreállítás külső tárhely (pl. USB-meghajtó vagy SD-kártya), illetve androidos telefon segítségével lehetséges.</translation>
@@ -16,6 +17,7 @@
 <translation id="2188090550242711688">2. Kövesse a Chrome-bővítménynél megjelenő utasításokat, és töltse le a helyreállítási rendszerképet külső tárhelyre.</translation>
 <translation id="2270126560545545577">Ön fejlesztői módban van</translation>
 <translation id="2360163367862409346">Ezzel törli az eszköz összes adatát, és az eszköz kevésbé lesz biztonságos.</translation>
+<translation id="2398688843544960326">Nem található alternatív rendszerindító. A telepítés módjáról itt tájékozódhat:</translation>
 <translation id="2445391421565214706">A probléma megoldásának megkísérléséhez indítsa el a helyreállítási folyamatot. Távolítsa el az összes csatlakoztatott eszközt, majd tartsa lenyomva a Hangerő növelése, a Hangerő csökkentése és a Bekapcsológombot ( ⏻ ) legalább tíz másodpercen keresztül.</translation>
 <translation id="2531345960369431549">Ez a lehetőség letiltja a fejlesztői módot, és eredeti állapotba állítja vissza az eszközt.</translation>
 <translation id="2603025384438397887">Helyreállítás telefonnal</translation>
@@ -24,12 +26,15 @@
 <translation id="3235458304027619499">1. Külső tárolóeszköz (pl. USB-meghajtó vagy SD-kártya)</translation>
 <translation id="328213018570216625">Helyreállítás külső tárhely használatával</translation>
 <translation id="3289365543955953678">Csatlakoztassa a külső lemezt</translation>
+<translation id="3294574173405124634">A biztonságos módhoz való visszatérést nem engedélyezik a GBB-jelzők.</translation>
+<translation id="3416523611207622897">A külső indítás le van tiltva. További információ:</translation>
 <translation id="3635226996169670741">A probléma megoldásának megkísérléséhez indítsa el a helyreállítási folyamatot. Távolítsa el az összes csatlakoztatott eszközt, majd tartsa lenyomva az Esc, a Frissítés ( ⟳ ) és a Bekapcsológombot ( ⏻ ).</translation>
 <translation id="385051799172605136">Vissza</translation>
 <translation id="3964506597604121312">Felhasználói adatai törlődnek a folyamat során.</translation>
 <translation id="4002335453596341558">Lapozás lefelé</translation>
 <translation id="4152977630022273265">Győződjön meg arról, hogy a külső lemezen érvényes Chrome OS-rendszerkép található, és helyezze be újra a lemezt, amikor készen áll.</translation>
 <translation id="4242315717915611349">Mégse, majd ugrás vissza</translation>
+<translation id="4403160275309808255">Az alternatív rendszerindítók le vannak tiltva. További információ:</translation>
 <translation id="4410491068110727276">A hangerőgombokkal navigálhat fel és le.</translation>
 <translation id="4497270882390086583">A helyreállítás külső tárhely (pl. USB-meghajtó) vagy androidos telefon segítségével lehetséges.</translation>
 <translation id="4773280894882892048">Hibakeresési információ</translation>
@@ -39,6 +44,7 @@
 <translation id="5175612852476047443">Kérjük, ne kapcsolja ki az eszközt</translation>
 <translation id="5232488980254489397">Diagnosztika indítása</translation>
 <translation id="5341719174140776704">1. Internet-hozzáféréssel rendelkező androidos telefon</translation>
+<translation id="5477875595374685515">Nem sikerült lekérni a firmware-naplót.</translation>
 <translation id="5592705604979238266">Súgó:</translation>
 <translation id="5649741817431380014">Győződjön meg arról, hogy telefonján fut a Chrome OS-helyreállítási alkalmazás, illetve hogy a külső lemezen érvényes helyreállító képfájl található. Ha készen áll, csatlakoztassa újra a kábelt vagy a lemezt.</translation>
 <translation id="5809240698077875994">A fejlesztői mód engedélyezéséhez nyomja meg a bekapcsológombot, vagy válassza a Mégse lehetőséget a védelem fenntartásához.</translation>
@@ -69,12 +75,16 @@
 <translation id="8011335065515332253">Az időkorlát után az eszköz automatikusan elindul a lenti kiválasztás szerint.</translation>
 <translation id="8027199195649765326">A fejlesztői mód engedélyezéséhez nyomja meg a Helyreállítás gombot a Chromeboxán, vagy válassza a Mégse lehetőséget a védelem fenntartásához.</translation>
 <translation id="8101391381992690790">Győződjön meg arról, hogy a külső lemezen érvényes helyreállító képfájl található, és helyezze be újra a lemezt, amikor készen áll.</translation>
+<translation id="8116993605321079294">Hiba történt az alternatív rendszerindító program indítása közben. További információért tekintse meg a firmware-naplót.</translation>
 <translation id="8131740175452115882">Megerősítés</translation>
 <translation id="8199613549817472219">Vegyük végig a helyreállítási folyamatot</translation>
 <translation id="8377165353588213941">Elérte a lap alját</translation>
+<translation id="8569584079758810124">Nem sikerült lekérni a hibakeresési információkat.</translation>
 <translation id="8720490351198901261">Elérte a lap tetejét</translation>
 <translation id="8789686976863801203">A fejlesztői mód engedélyezésére tesz kísérletet</translation>
+<translation id="8848124168564939055">Nem használhat külső billentyűzetet a fejlesztői mód bekapcsolásához. Használja az eszközön lévő gombokat a navigációs utasítások szerint.</translation>
 <translation id="885701979325669005">Tárolás</translation>
+<translation id="9004305007436435169">Nem sikerült lekérni a diagnosztikai információkat.</translation>
 <translation id="9040266428058825675">Ha készen áll a külső tárolóeszköz a helyreállító képfájllal, csatlakoztassa az eszközhöz a helyreállítási folyamat megkezdése érdekében.</translation>
 <translation id="9058669020755173331">Válassza ki az ellenőrizni kívánt összetevőt.</translation>
 </translationbundle>

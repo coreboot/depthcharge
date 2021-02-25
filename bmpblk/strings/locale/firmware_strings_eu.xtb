@@ -8,6 +8,7 @@
 <translation id="1389402762514302384">Babestuta jarraitzeko, sakatu Utzi.</translation>
 <translation id="1483971085438511843">Erabili Sartu tekla aukera bat hautatzeko.</translation>
 <translation id="1931763245382489971">3. Kanpoko biltegiratze-gailua berreskuratze-irudiarekin prest dagoenean, sakatu Hurrengoa.</translation>
+<translation id="1932315467893966859">Aktibatuta dago garatzaileen modua.</translation>
 <translation id="1995660704900986789">Itzali</translation>
 <translation id="2022309272630265316">Ez da hauteman balio duen irudirik</translation>
 <translation id="2076174287070071207">Kanpoko memoria bat erabil dezakezu edukia berreskuratzeko; adibidez, USB bidezko unitate bat edo SD txartel bat. Android-eko telefonoa ere erabil dezakezu.</translation>
@@ -16,6 +17,7 @@
 <translation id="2188090550242711688">2. Jarraitu Chrome-rako luzapeneko argibideei, eta deskargatu berreskuratze-irudia kanpoko memoria batera.</translation>
 <translation id="2270126560545545577">Garatzaileen moduan zaude</translation>
 <translation id="2360163367862409346">Prozesu honekin, gailuko datu guztiak ezabatuko dira, eta gailuak seguru izateari utziko dio.</translation>
+<translation id="2398688843544960326">Ezin izan da aurkitu sistema eragilearen ordezko abiarazle bat. Bat instalatzeari buruzko argibideak lortzeko, joan hona:</translation>
 <translation id="2445391421565214706">Arazoa konpontzen saiatzeko, ekin berreskuratze-prozesuari. Kendu konektatutako gailu guztiak. Ondoren, eduki sakatuta hamar segundoz gutxienez bolumena igotzeko eta jaisteko botoiak, eta etengailua ( ⏻ ).</translation>
 <translation id="2531345960369431549">Aukera honekin, garatzaileen modua desgaituko da, eta gailua jatorrizko egoerara itzuliko.</translation>
 <translation id="2603025384438397887">Berreskuratu telefonoaren bidez</translation>
@@ -24,12 +26,15 @@
 <translation id="3235458304027619499">1. Kanpoko biltegiratze-gailu bat; adibidez, USB bidezko unitate bat edo SD txartel bat.</translation>
 <translation id="328213018570216625">Berreskuratu kanpoko memoria baten bidez</translation>
 <translation id="3289365543955953678">Konektatu kanpoko diskoa</translation>
+<translation id="3294574173405124634">GBB eginbide esperimentalek modu segurura itzultzea debekatzen dute.</translation>
+<translation id="3416523611207622897">Kanpoko abioa desgaituta dago. Informazio gehiago lortzeko, joan hona:</translation>
 <translation id="3635226996169670741">Arazoa konpontzen saiatzeko, ekin berreskuratze-prozesuari. Kendu konektatutako gailu guztiak. Ondoren, eduki sakatuta Ihes eta Freskatu ( ⟳ ) botoiak, baita etengailua ( ⏻ ) ere.</translation>
 <translation id="385051799172605136">Atzera</translation>
 <translation id="3964506597604121312">Zure erabiltzaile-datuak xahutu egingo dira prozesuan.</translation>
 <translation id="4002335453596341558">Orrian behera</translation>
 <translation id="4152977630022273265">Ziurtatu kanpoko diskoak Chrome OS sistema eragilearen baliozko irudi bat duela eta, prest dagoenean, sartu diskoa berriz ere.</translation>
 <translation id="4242315717915611349">Utzi eta egin atzera</translation>
+<translation id="4403160275309808255">Sistema eragilearen ordezko abiarazleak desgaituta daude. Informazio gehiago lortzeko, joan hona:</translation>
 <translation id="4410491068110727276">Erabili bolumen-botoiak gora edo behera joateko.</translation>
 <translation id="4497270882390086583">Kanpoko memoria bat erabil dezakezu edukia berreskuratzeko; adibidez, USB bidezko unitate bat. Android-eko telefonoa ere erabil dezakezu.</translation>
 <translation id="4773280894882892048">Arazketa-informazioa</translation>
@@ -39,6 +44,7 @@
 <translation id="5175612852476047443">Ez itzali gailua</translation>
 <translation id="5232488980254489397">Abiarazi diagnostikoak</translation>
 <translation id="5341719174140776704">1. Interneterako sarbidea duen Android-eko telefono bat.</translation>
+<translation id="5477875595374685515">Ezin izan da lortu firmwarearen erregistroa.</translation>
 <translation id="5592705604979238266">Laguntza-zentroa:</translation>
 <translation id="5649741817431380014">Ziurtatu telefonoan Chrome OS sistema eragilearen berreskuratze-aplikazioa exekutatzen ari dela edo kanpoko diskoak baliozko berreskuratze-irudi bat daukala. Prest dagoenean, sartu berriro kablea edo diskoa.</translation>
 <translation id="5809240698077875994">Garatzaileen modua gaitzeko, sakatu etengailua; babestuta jarraitzeko, berriz, sakatu Utzi.</translation>
@@ -69,12 +75,16 @@
 <translation id="8011335065515332253">Denbora-muga igaro ondoren, gailua automatikoki abiaraziko da behean hautatzen duzun aukeran oinarrituta.</translation>
 <translation id="8027199195649765326">Garatzaileen modua gaitzeko, sakatu Chromebox-eko Berreskuratu botoia; babestuta jarraitzeko, berriz, sakatu Utzi.</translation>
 <translation id="8101391381992690790">Ziurtatu kanpoko diskoak baliozko berreskuratze-irudi bat duela eta, prest dagoenean, sartu diskoa berriz ere.</translation>
+<translation id="8116993605321079294">Arazoren bat izan da sistema eragilearen ordezko abiarazlea exekutatzean. Xehetasun gehiago ikusteko, joan firmwarearen erregistrora.</translation>
 <translation id="8131740175452115882">Berretsi</translation>
 <translation id="8199613549817472219">Berreskuratze-prozesuan gidatuko zaitugu</translation>
 <translation id="8377165353588213941">Amaierara iritsi zara</translation>
+<translation id="8569584079758810124">Ezin izan da lortu arazketa-informaziorik.</translation>
 <translation id="8720490351198901261">Hasierara iritsi zara</translation>
 <translation id="8789686976863801203">Garatzaileen modua gaitu nahian zabiltza</translation>
+<translation id="8848124168564939055">Ezin duzu erabili kanpoko teklatu bat garatzaileen modua aktibatzeko. Erabili nabigazio-argibideetan adierazitako gailuko botoiak.</translation>
 <translation id="885701979325669005">Biltegia</translation>
+<translation id="9004305007436435169">Ezin izan da eskuratu diagnostikoari buruzko informaziorik.</translation>
 <translation id="9040266428058825675">Kanpoko biltegiratze-gailua prest badago berreskuratze-irudi batekin, konekta ezazu gailu honetara berreskuratze-prozesua has dadin.</translation>
 <translation id="9058669020755173331">Hautatu egiaztatu nahi duzun osagarria.</translation>
 </translationbundle>

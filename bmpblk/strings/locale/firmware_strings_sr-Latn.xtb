@@ -8,6 +8,7 @@
 <translation id="1389402762514302384">Izaberite Otkaži da biste ostali u bezbednom režimu.</translation>
 <translation id="1483971085438511843">Koristite taster enter da biste izabrali opciju.</translation>
 <translation id="1931763245382489971">3. Kliknite na Dalje kada spoljni memorijski uređaj sa slikom rezervne kopije sistema bude spreman</translation>
+<translation id="1932315467893966859">Režim programera je već uključen.</translation>
 <translation id="1995660704900986789">Isključi</translation>
 <translation id="2022309272630265316">Nije otkrivena važeća slika</translation>
 <translation id="2076174287070071207">Oporavak možete da obavite pomoću spoljnog memorijskog prostora kao što je USB disk, SD kartica ili pomoću Android telefona.</translation>
@@ -16,6 +17,7 @@
 <translation id="2188090550242711688">2. Pratite uputstva u vezi sa dodatkom za Chrome i preuzmite sliku za oporavak na spoljnu memoriju</translation>
 <translation id="2270126560545545577">Nalazite se u režimu programera</translation>
 <translation id="2360163367862409346">Ovo obuhvata brisanje svih podataka sa uređaja i učiniće uređaj nebezbednim.</translation>
+<translation id="2398688843544960326">Nismo uspeli da pronađemo alternativni pokretački program. Da biste saznali kako da ga instalirate, pogledajte:</translation>
 <translation id="2445391421565214706">Pokrenite proces oporavka da biste probali da rešite problem. Uklonite sve povezane uređaje, pa zadržite dugmad za pojačavanje zvuka, smanjivanje zvuka i napajanje ( ⏻ ) najmanje 10 sekundi.</translation>
 <translation id="2531345960369431549">Ova opcija će onemogućiti režim programera i vratiti uređaj u prvobitno stanje.</translation>
 <translation id="2603025384438397887">Oporavak pomoću telefona</translation>
@@ -24,12 +26,15 @@
 <translation id="3235458304027619499">1. Spoljni memorijski uređaj kao što je USB disk ili SD kartica</translation>
 <translation id="328213018570216625">Oporavak pomoću spoljne memorije</translation>
 <translation id="3289365543955953678">Priključite spoljni disk</translation>
+<translation id="3294574173405124634">GBB oznake ne dozvoljavaju vraćanje u bezbedni režim.</translation>
+<translation id="3416523611207622897">Spoljno pokretanje je onemogućeno. Više informacija potražite u:</translation>
 <translation id="3635226996169670741">Pokrenite proces oporavka da biste probali da rešite problem. Uklonite sve povezane uređaje, pa zadržite Esc, Refresh ( ⟳ ) i dugme za napajanje ( ⏻ ).</translation>
 <translation id="385051799172605136">Nazad</translation>
 <translation id="3964506597604121312">Podaci korisnika će se izbrisati tokom procesa.</translation>
 <translation id="4002335453596341558">Stranica nadole</translation>
 <translation id="4152977630022273265">Uverite se da spoljni disk sadrži važeću sliku Chrome operativnog sistema i ponovo priključite disk kada budete spremni.</translation>
 <translation id="4242315717915611349">Otkaži i vrati se</translation>
+<translation id="4403160275309808255">Alternativni pokretački programi su onemogućeni. Više informacija potražite u:</translation>
 <translation id="4410491068110727276">Koristite dugmad za jačinu zvuka da biste se kretali nagore ili nadole.</translation>
 <translation id="4497270882390086583">Oporavak možete da obavite pomoću spoljnog memorijskog prostora, kao što je USB disk, ili pomoću Android telefona.</translation>
 <translation id="4773280894882892048">Informacije o otklanjanju grešaka</translation>
@@ -39,6 +44,7 @@
 <translation id="5175612852476047443">Ne isključujte uređaj</translation>
 <translation id="5232488980254489397">Pokreni dijagnostiku</translation>
 <translation id="5341719174140776704">1. Android telefon sa pristupom internetu</translation>
+<translation id="5477875595374685515">Preuzimanje evidencije firmvera nije uspelo.</translation>
 <translation id="5592705604979238266">Centar za pomoć:</translation>
 <translation id="5649741817431380014">Uverite se da telefon koristi aplikaciju za oporavak Chrome OS-a ili da spoljni disk sadrži ispravnu sliku rezervne kopije sistema. Ponovo priključite kabl ili disk kada budete spremni.</translation>
 <translation id="5809240698077875994">Pritisnite dugme za napajanje da biste omogućili režim programera ili izaberite Otkaži da biste ostali u bezbednom režimu.</translation>
@@ -69,12 +75,16 @@
 <translation id="8011335065515332253">Posle vremenskog ograničenja uređaj će se automatski uključiti na osnovu stavke izabrane u nastavku.</translation>
 <translation id="8027199195649765326">Pritisnite dugme za oporavak na Chromebox-u da biste omogućili režim programera ili izaberite Otkaži da biste ostali u bezbednom režimu.</translation>
 <translation id="8101391381992690790">Proverite da li spoljni disk sadrži ispravnu sliku rezervne kopije sistema i ponovo priključite disk kada budete spremni.</translation>
+<translation id="8116993605321079294">Došlo je do greške pri aktiviranju alternativnog pokretačkog programa. Potražite detalje u evidenciji firmvera.</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8199613549817472219">Vodićemo vas kroz proces oporavka</translation>
 <translation id="8377165353588213941">Došli ste do kraja</translation>
+<translation id="8569584079758810124">Preuzimanje informacija o otklanjanju grešaka nije uspelo.</translation>
 <translation id="8720490351198901261">Došli ste do vrha</translation>
 <translation id="8789686976863801203">Pokušavate da omogućite režim programera</translation>
+<translation id="8848124168564939055">Ne možete da koristite spoljnu tastaturu za uključivanje režima programera. Koristite dugmad na uređaju koja su navedena u uputstvima za navigaciju.</translation>
 <translation id="885701979325669005">Memorijski prostor</translation>
+<translation id="9004305007436435169">Preuzimanje dijagnostičkih informacija nije uspelo.</translation>
 <translation id="9040266428058825675">Ako je spoljni memorijski uređaj sa slikom rezervne kopije sistema spreman, povežite ga sa ovim uređajem da biste pokrenuli proces oporavka.</translation>
 <translation id="9058669020755173331">Izaberite komponentu koju želite da proverite.</translation>
 </translationbundle>

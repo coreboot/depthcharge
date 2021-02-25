@@ -8,6 +8,7 @@
 <translation id="1389402762514302384">Pokud chcete zůstat chráněni, vyberte Zrušit.</translation>
 <translation id="1483971085438511843">Pomocí klávesy Enter vyberte možnost.</translation>
 <translation id="1931763245382489971">3. Až budete mít připravené externí úložné zařízení s obrazem pro obnovení, klikněte na Další</translation>
+<translation id="1932315467893966859">Režim vývojáře je už zapnutý.</translation>
 <translation id="1995660704900986789">Vypnout</translation>
 <translation id="2022309272630265316">Nebyl nalezen žádný platný obraz</translation>
 <translation id="2076174287070071207">Obnovení můžete provést pomocí externího úložiště, jako je jednotka USB či SD karta, nebo pomocí telefonu Android.</translation>
@@ -16,6 +17,7 @@
 <translation id="2188090550242711688">2. Postupujte podle pokynů v rozšíření pro Chrome a na externí úložiště stáhněte obraz pro obnovení</translation>
 <translation id="2270126560545545577">Jste v režimu pro vývojáře</translation>
 <translation id="2360163367862409346">Ze zařízení se vymažou všechna data a nebude zabezpečeno.</translation>
+<translation id="2398688843544960326">Nepodařilo se najít alternativní bootloader. Pokyny, jak ho nainstalovat, najdete zde:</translation>
 <translation id="2445391421565214706">Pokud problém chcete zkusit odstranit, spusťte proces obnovení. Odstraňte všechna připojená zařízení a potom minimálně 10 sekund podržte současně tlačítka zvýšení hlasitosti, snížení hlasitosti a vypínač ( ⏻ ).</translation>
 <translation id="2531345960369431549">Tato možnost vypne režim pro vývojáře a obnoví zařízení do původního stavu.</translation>
 <translation id="2603025384438397887">Obnovení pomocí telefonu</translation>
@@ -24,12 +26,15 @@
 <translation id="3235458304027619499">1. Externí úložné zařízení, například jednotku USB nebo SD kartu</translation>
 <translation id="328213018570216625">Obnovit pomocí externího úložiště</translation>
 <translation id="3289365543955953678">Připojte externí disk</translation>
+<translation id="3294574173405124634">Návrat do bezpečného režimu zakazují příznaky GBB.</translation>
+<translation id="3416523611207622897">Externí spuštění je zakázáno. Další informace naleznete zde:</translation>
 <translation id="3635226996169670741">Pokud problém chcete zkusit odstranit, spusťte proces obnovení. Odstraňte všechna připojená zařízení a potom podržte klávesy Esc, Obnovit ( ⟳ ) a vypínač ( ⏻ ).</translation>
 <translation id="385051799172605136">Zpět</translation>
 <translation id="3964506597604121312">Během procesu se vymažou vaše uživatelská data.</translation>
 <translation id="4002335453596341558">O stránku dolů</translation>
 <translation id="4152977630022273265">Zkontrolujte, zda na externím disku máte platný obraz pro obnovení systému Chrome OS, a až budete připraveni, znovu ho vložte.</translation>
 <translation id="4242315717915611349">Zrušit a vrátit se zpět</translation>
+<translation id="4403160275309808255">Alternativní bootloadery jsou zakázány. Další informace naleznete zde:</translation>
 <translation id="4410491068110727276">Pomocí tlačítek hlasitosti se pohybujte nahoru a dolů.</translation>
 <translation id="4497270882390086583">Obnovení můžete provést pomocí externího úložiště, jako je jednotka USB, nebo pomocí telefonu Android.</translation>
 <translation id="4773280894882892048">Informace o ladění</translation>
@@ -39,6 +44,7 @@
 <translation id="5175612852476047443">Nevypínejte zařízení</translation>
 <translation id="5232488980254489397">Spustit diagnostiku</translation>
 <translation id="5341719174140776704">1. Na telefonu Android s přístupem k internetu</translation>
+<translation id="5477875595374685515">Protokol firmwaru se nepodařilo načíst.</translation>
 <translation id="5592705604979238266">Centrum nápovědy:</translation>
 <translation id="5649741817431380014">Zkontrolujte, zda v telefonu máte spuštěnou aplikaci pro obnovení systému Chrome OS nebo je na externím disku platná bitová kopie pro obnovení systému. Až budete připraveni, znovu připojte kabel nebo vložte disk.</translation>
 <translation id="5809240698077875994">Pokud chcete zapnout režim pro vývojáře, stiskněte vypínač. Jestliže chcete zůstat chráněni, vyberete Zrušit.</translation>
@@ -69,12 +75,16 @@
 <translation id="8011335065515332253">Po časovém limitu se zařízení automaticky spustí pomocí níže vybraného zdroje.</translation>
 <translation id="8027199195649765326">Pokud chcete zapnout režim pro vývojáře, stiskněte na ChromeBoxu tlačítko Obnovit. Jestliže chcete zůstat chráněni, vyberete Zrušit.</translation>
 <translation id="8101391381992690790">Zkontrolujte, zda na externím disku máte platný obraz pro obnovení systému, a až budete připraveni, znovu ho vložte.</translation>
+<translation id="8116993605321079294">Při spouštění alternativního bootloaderu se něco pokazilo. Podrobnosti naleznete v protokolu firmwaru.</translation>
 <translation id="8131740175452115882">Potvrdit</translation>
 <translation id="8199613549817472219">Provedeme vás procesem obnovení</translation>
 <translation id="8377165353588213941">Jste na konci</translation>
+<translation id="8569584079758810124">Informace o ladění nelze načíst.</translation>
 <translation id="8720490351198901261">Jste na začátku</translation>
 <translation id="8789686976863801203">Pokoušíte se zapnout režim pro vývojáře</translation>
+<translation id="8848124168564939055">Režim vývojáře nelze zapnout pomocí externí klávesnice. Použijte tlačítka na zařízení uvedená v pokynech k navigaci.</translation>
 <translation id="885701979325669005">Úložiště</translation>
+<translation id="9004305007436435169">Diagnostické informace se nepodařilo načíst.</translation>
 <translation id="9040266428058825675">Pokud máte připravené externí úložné zařízení s obrazem pro obnovení, připojte ho k zařízení a spusťte proces obnovení</translation>
 <translation id="9058669020755173331">Vyberte komponentu, kterou chcete zkontrolovat.</translation>
 </translationbundle>

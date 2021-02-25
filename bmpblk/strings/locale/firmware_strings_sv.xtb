@@ -8,6 +8,7 @@
 <translation id="1389402762514302384">Välj Avbryt för att behålla skyddet.</translation>
 <translation id="1483971085438511843">Använd returtangenten till tv:n och välj ett alternativ.</translation>
 <translation id="1931763245382489971">3. Klicka på Nästa när det externa lagringsutrymmet har förberetts med återställningsavbildningen</translation>
+<translation id="1932315467893966859">Utvecklarläget är redan aktiverat.</translation>
 <translation id="1995660704900986789">Stäng av</translation>
 <translation id="2022309272630265316">Ingen giltig avbildning identifierades</translation>
 <translation id="2076174287070071207">Du kan göra en återställning med en Android-telefon eller en extern lagringsenhet, till exempel ett USB-minne eller SD-kort.</translation>
@@ -16,6 +17,7 @@
 <translation id="2188090550242711688">2. Följ anvisningarna för Chrome-tillägget och ladda ned återställningsavbildningen på ett externt lagringsutrymme</translation>
 <translation id="2270126560545545577">Utvecklarläget är aktiverat</translation>
 <translation id="2360163367862409346">Detta innebär att all data rensas från enheten och enheten inte längre är säker.</translation>
+<translation id="2398688843544960326">Det gick inte att hitta en alternativ starthanterare. Ta reda på hur du installerar en här:</translation>
 <translation id="2445391421565214706">Starta återställningsprocessen för att försöka åtgärda problemet. Ta bort alla anslutna enheter och håll sedan båda volymknapparna och strömbrytaren ( ⏻ ) nedtryckta i minst 10 sekunder.</translation>
 <translation id="2531345960369431549">Med det här alternativet inaktiveras utvecklarläget och enheten återställs till sitt ursprungliga läge.</translation>
 <translation id="2603025384438397887">Återställning med telefonen</translation>
@@ -24,12 +26,15 @@
 <translation id="3235458304027619499">1. En extern lagringsenhet, till exempel ett USB-minne eller ett SD-kort</translation>
 <translation id="328213018570216625">Återställ med externt lagringsutrymme</translation>
 <translation id="3289365543955953678">Anslut den externa disken</translation>
+<translation id="3294574173405124634">Att återgå till säkert läge tillåts inte av GBB-flaggor.</translation>
+<translation id="3416523611207622897">Extern start har inaktiverats. Mer information finns här:</translation>
 <translation id="3635226996169670741">Starta återställningsprocessen för att försöka åtgärda problemet. Ta bort alla anslutna enheter och håll sedan Esc, uppdateringsknappen ( ⟳ ) och strömbrytaren nedtryckta ( ⏻ ).</translation>
 <translation id="385051799172605136">Föregående</translation>
 <translation id="3964506597604121312">Din användardata rensas från enheten under processen.</translation>
 <translation id="4002335453596341558">En sida ned</translation>
 <translation id="4152977630022273265">Kontrollera att det finns en giltig avbildning av Chrome OS på den externa disken och sätt i disken igen när du är redo.</translation>
 <translation id="4242315717915611349">Avbryt och gå tillbaka</translation>
+<translation id="4403160275309808255">Alternativa starthanterare har inaktiverats. Mer information finns här:</translation>
 <translation id="4410491068110727276">Navigera uppåt eller nedåt med volymknapparna.</translation>
 <translation id="4497270882390086583">Du kan göra en återställning med en Android-telefon eller en extern lagringsenhet, till exempel ett USB-minne.</translation>
 <translation id="4773280894882892048">Felsökningsinformation</translation>
@@ -39,6 +44,7 @@
 <translation id="5175612852476047443">Stäng inte av enheten</translation>
 <translation id="5232488980254489397">Starta diagnostik</translation>
 <translation id="5341719174140776704">1. En Android-telefon med internetåtkomst</translation>
+<translation id="5477875595374685515">Det gick inte att hämta firmware-loggen.</translation>
 <translation id="5592705604979238266">Hjälpcenter:</translation>
 <translation id="5649741817431380014">Kontrollera att återställningsappen för Chrome OS körs på telefonen och att den externa disken har en giltig återställningsavbildning. Sätt i kabeln eller disken igen när du är redo.</translation>
 <translation id="5809240698077875994">Aktivera utvecklarläget genom att trycka på strömbrytaren eller välj Avbryt om du vill behålla skyddet.</translation>
@@ -69,12 +75,16 @@
 <translation id="8011335065515332253">När tidsgränsen har uppnåtts startar enheten automatiskt från det du har valt nedan.</translation>
 <translation id="8027199195649765326">Aktivera utvecklarläget genom att trycka på återställningsknappen på Chromebox eller välj Avbryt om du vill behålla skyddet.</translation>
 <translation id="8101391381992690790">Kontrollera att det finns en giltig återställningsavbildning på den externa disken och sätt i disken igen när du är redo.</translation>
+<translation id="8116993605321079294">Det gick inte att starta den alternativa starthanteraren. Mer information finns i firmware-loggen.</translation>
 <translation id="8131740175452115882">Bekräfta</translation>
 <translation id="8199613549817472219">Vi går igenom återställningsprocessen</translation>
 <translation id="8377165353588213941">Du har nått slutet av sidan</translation>
+<translation id="8569584079758810124">Det gick inte att hämta felsökningsinformation.</translation>
 <translation id="8720490351198901261">Du är högst upp på sidan</translation>
 <translation id="8789686976863801203">Du försöker aktivera utvecklarläget</translation>
+<translation id="8848124168564939055">Du kan inte aktivera utvecklarläget med ett externt tangentbord. Använd knapparna på enheten som anges i navigeringsanvisningarna.</translation>
 <translation id="885701979325669005">Lagring</translation>
+<translation id="9004305007436435169">Det gick inte att hämta diagnostisk information.</translation>
 <translation id="9040266428058825675">Om du har förberett det externa lagringsutrymmet med återställningsavbildningen startar du återställningsprocessen genom att ansluta den till enheten.</translation>
 <translation id="9058669020755173331">Välj komponenten som du vill kontrollera.</translation>
 </translationbundle>

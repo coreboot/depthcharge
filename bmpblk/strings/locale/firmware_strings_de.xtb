@@ -8,6 +8,7 @@
 <translation id="1389402762514302384">Wählen Sie "Abbrechen" aus, um geschützt zu bleiben.</translation>
 <translation id="1483971085438511843">Drücken Sie die Eingabetaste, um eine Option auszuwählen.</translation>
 <translation id="1931763245382489971">3. Wenn das externe Speichermedium mit dem Wiederherstellungsimage bereit ist, klicken Sie auf "Weiter"</translation>
+<translation id="1932315467893966859">Der Entwicklermodus ist bereits aktiviert.</translation>
 <translation id="1995660704900986789">Ausschalten</translation>
 <translation id="2022309272630265316">Kein gültiges Image erkannt</translation>
 <translation id="2076174287070071207">Sie können die Wiederherstellung mithilfe eines externen Speichermediums – etwa eines USB-Sticks oder einer SD-Karte – oder mit Ihrem Android-Mobiltelefon vornehmen.</translation>
@@ -16,6 +17,7 @@
 <translation id="2188090550242711688">2. Der Anleitung in der Chrome-Erweiterung folgen und das Wiederherstellungsimage auf ein externes Speichermedium herunterladen</translation>
 <translation id="2270126560545545577">Sie befinden sich im Entwicklermodus</translation>
 <translation id="2360163367862409346">Hierbei werden alle Daten von Ihrem Gerät gelöscht und Ihr Gerät wird unsicher.</translation>
+<translation id="2398688843544960326">Es wurde kein alternativer Bootloader gefunden. Weitere Informationen zum Installieren eines Bootloaders:</translation>
 <translation id="2445391421565214706">Bitte starten Sie die Wiederherstellung, um das Problem zu beheben. Entfernen Sie alle verbundenen Geräte und halten Sie dann die Lauter- und die Leisertaste sowie die Ein-/Aus-Taste ( ⏻ ) für mindestens 10 Sekunden gedrückt.</translation>
 <translation id="2531345960369431549">Mit dieser Option wird der Entwicklermodus deaktiviert und Ihr Gerät auf den ursprünglichen Zustand zurückgesetzt.</translation>
 <translation id="2603025384438397887">Wiederherstellung mit dem Mobiltelefon</translation>
@@ -24,12 +26,15 @@
 <translation id="3235458304027619499">1. Ein externes Speichermedium, wie z. B. einen USB-Stick oder eine SD-Karte</translation>
 <translation id="328213018570216625">Wiederherstellung mithilfe eines externen Speichermediums</translation>
 <translation id="3289365543955953678">Externes Speichermedium anschließen</translation>
+<translation id="3294574173405124634">GBB-Meldungen verhindern Rückkehr in den sicheren Modus.</translation>
+<translation id="3416523611207622897">Externer Start ist deaktiviert. Weitere Informationen:</translation>
 <translation id="3635226996169670741">Bitte starten Sie die Wiederherstellung, um das Problem zu beheben. Entfernen Sie alle verbundenen Geräte und halten Sie dann die Esc-Taste, die Aktualisierungstaste ( ⟳ ) sowie die Ein-/Aus-Taste ( ⏻ ) gedrückt.</translation>
 <translation id="385051799172605136">Zurück</translation>
 <translation id="3964506597604121312">Ihre Daten werden während des Vorgangs gelöscht.</translation>
 <translation id="4002335453596341558">Seite nach unten</translation>
 <translation id="4152977630022273265">Prüfen Sie, ob Ihr externes Speichermedium ein gültiges Chrome OS-Image enthält, und schließen Sie das Speichermedium wieder an, sobald es bereit ist.</translation>
 <translation id="4242315717915611349">Abbrechen und zurück</translation>
+<translation id="4403160275309808255">Alternative Bootloader sind deaktiviert. Weitere Informationen:</translation>
 <translation id="4410491068110727276">Mit den Lautstärketasten können Sie nach oben oder unten gehen.</translation>
 <translation id="4497270882390086583">Sie können die Wiederherstellung mithilfe eines externen Speichermediums – etwa eines USB-Sticks – oder mit Ihrem Android-Mobiltelefon vornehmen.</translation>
 <translation id="4773280894882892048">Informationen zur Fehlerbehebung</translation>
@@ -39,6 +44,7 @@
 <translation id="5175612852476047443">Bitte schalten Sie Ihr Gerät nicht aus</translation>
 <translation id="5232488980254489397">Diagnose starten</translation>
 <translation id="5341719174140776704">1. Ein Android-Mobiltelefon mit Internetzugang</translation>
+<translation id="5477875595374685515">Firmware-Protokoll konnte nicht geladen werden.</translation>
 <translation id="5592705604979238266">Hilfe:</translation>
 <translation id="5649741817431380014">Prüfen Sie, ob auf Ihrem Mobiltelefon die App für die Chrome OS-Wiederherstellung ausgeführt wird oder Ihr externes Speichermedium ein gültiges Wiederherstellungsimage enthält. Schließen Sie dann das Kabel bzw. das Speichermedium wieder an.</translation>
 <translation id="5809240698077875994">Drücken Sie die Ein-/Aus-Taste, um den Entwicklermodus zu aktivieren, oder "Abbrechen", um geschützt zu bleiben.</translation>
@@ -69,12 +75,16 @@
 <translation id="8011335065515332253">Wenn die Zeit abläuft, startet das Gerät automatisch vom unten ausgewählten Laufwerk.</translation>
 <translation id="8027199195649765326">Drücken Sie die Wiederherstellungstaste auf Ihrer Chromebox, um den Entwicklermodus zu aktivieren, oder "Abbrechen", um geschützt zu bleiben.</translation>
 <translation id="8101391381992690790">Prüfen Sie, ob Ihr externes Speichermedium ein gültiges Wiederherstellungsimage enthält und schließen Sie dann das Speichermedium wieder an.</translation>
+<translation id="8116993605321079294">Beim Starten des alternativen Bootloaders ist ein Fehler aufgetreten. Weitere Informationen finden Sie im Firmware-Protokoll.</translation>
 <translation id="8131740175452115882">Bestätigen</translation>
 <translation id="8199613549817472219">Den Wiederherstellungs-Prozess starten</translation>
 <translation id="8377165353588213941">Sie sind am Ende angekommen</translation>
+<translation id="8569584079758810124">Informationen zur Fehlerbehebung konnten nicht geladen werden.</translation>
 <translation id="8720490351198901261">Sie befinden sich auf der ersten Seite</translation>
 <translation id="8789686976863801203">Sie sind im Begriff, den Entwicklermodus zu aktivieren</translation>
+<translation id="8848124168564939055">Der Entwicklermodus kann nicht über eine externe Tastatur aktiviert werden. Bitte verwenden Sie die in den Hinweisen zur Bedienung angegebenen Gerätetasten.</translation>
 <translation id="885701979325669005">Speicher</translation>
+<translation id="9004305007436435169">Diagnosedaten konnten nicht abgerufen werden.</translation>
 <translation id="9040266428058825675">Wenn das externe Speichermedium mit dem Wiederherstellungsimage bereit ist, schließen Sie dieses an das Gerät an, um die Wiederherstellung zu starten.</translation>
 <translation id="9058669020755173331">Wählen Sie die Komponente aus, die Sie prüfen möchten.</translation>
 </translationbundle>

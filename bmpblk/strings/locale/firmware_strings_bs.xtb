@@ -8,6 +8,7 @@
 <translation id="1389402762514302384">Odaberite Otkaži da ostanete zaštićeni.</translation>
 <translation id="1483971085438511843">Koristite tipku Enter da odaberete opciju.</translation>
 <translation id="1931763245382489971">3. Kliknite na Naprijed kada vanjski uređaj za pohranu sa slikom za oporavak bude spreman</translation>
+<translation id="1932315467893966859">Način rada za programere je već uključen.</translation>
 <translation id="1995660704900986789">Isključi</translation>
 <translation id="2022309272630265316">Nije pronađena važeća slika</translation>
 <translation id="2076174287070071207">Oporavak možete izvršiti koristeći vanjsku pohranu, kao što su USB disk i SD kartica, ili pomoću Android telefona.</translation>
@@ -16,6 +17,7 @@
 <translation id="2188090550242711688">2. Slijedite uputstva na ekstenziji za Chrome i preuzmite sliku za oporavak na vanjsku pohranu</translation>
 <translation id="2270126560545545577">Nalazite se u načinu rada za programere</translation>
 <translation id="2360163367862409346">Ovo uključuje brisanje svih podataka s uređaja koji više neće biti zaštićen.</translation>
+<translation id="2398688843544960326">Nije moguće pronaći alternativni program za učitavanje operativnog sistema. Da saznate kako ga instalirati, pogledajte:</translation>
 <translation id="2445391421565214706">Da pokušate riješiti problem, započnite proces oporavka. Uklonite sve povezane uređaje, zatim najmanje 10 sekundi držite pritisnutim dugme za pojačavanje zvuka, dugme za stišavanje zvuka i dugme za uključivanje ( ⏻ ).</translation>
 <translation id="2531345960369431549">Ova opcija će onemogućiti način rada za programere i vratiti uređaj u prvobitno stanje.</translation>
 <translation id="2603025384438397887">Oporavak pomoću telefona</translation>
@@ -24,12 +26,15 @@
 <translation id="3235458304027619499">1. Vanjski uređaj za pohranu, kao što je USB disk ili SD kartica</translation>
 <translation id="328213018570216625">Oporavak pomoću vanjske pohrane</translation>
 <translation id="3289365543955953678">Priključite vanjski disk</translation>
+<translation id="3294574173405124634">GBB oznake ne dozvoljavaju povratak na sigurni način rada.</translation>
+<translation id="3416523611207622897">Vanjsko pokretanje je onemogućeno. Za više informacija pogledajte:</translation>
 <translation id="3635226996169670741">Da pokušate riješiti problem, započnite proces oporavka. Uklonite sve povezane uređaje, zatim držite pritisnutim dugme Esc, dugme za osvježavanje ( ⟳ ) i dugme za uključivanje ( ⏻ ).</translation>
 <translation id="385051799172605136">Nazad</translation>
 <translation id="3964506597604121312">Korisnički podaci će se uništiti tokom ovog postupka.</translation>
 <translation id="4002335453596341558">Stranica prema dolje</translation>
 <translation id="4152977630022273265">Provjerite nalazi li se na vašem vanjskom disku važeća slika Chrome OS-a i ponovo umetnite disk kada budete spremni.</translation>
 <translation id="4242315717915611349">Otkaži i vrati se nazad</translation>
+<translation id="4403160275309808255">Alternativni programi za učitavanje operativnog sistema su onemogućeni. Za više informacija pogledajte:</translation>
 <translation id="4410491068110727276">Koristite dugmad za jačinu zvuka za navigiranje nagore ili nadolje.</translation>
 <translation id="4497270882390086583">Oporavak možete izvršiti koristeći vanjsku pohranu, kao što je USB disk ili pomoću Android telefona.</translation>
 <translation id="4773280894882892048">Informacije o ispravci grešaka</translation>
@@ -39,6 +44,7 @@
 <translation id="5175612852476047443">Nemojte isključivati uređaj</translation>
 <translation id="5232488980254489397">Pokreni dijagnostiku</translation>
 <translation id="5341719174140776704">1. Android telefon s pristupom internetu</translation>
+<translation id="5477875595374685515">Preuzimanje zapisnika firmvera nije uspjelo.</translation>
 <translation id="5592705604979238266">Centar za pomoć:</translation>
 <translation id="5649741817431380014">Provjerite je li na vašem telefonu pokrenuta aplikacija za oporavak Chrome OS-a ili nalazi li se na vanjskom disku važeća slika za oporavak. Ponovo umetnite kabl ili disk kada budete spremni.</translation>
 <translation id="5809240698077875994">Pritisnite dugme za uključivanje da omogućite način rada za programere ili odaberite Otkaži da ostanete zaštićeni.</translation>
@@ -69,12 +75,16 @@
 <translation id="8011335065515332253">Nakon isteka vremena uređaj će se automatski pokrenuti sa stavke odabrane ispod.</translation>
 <translation id="8027199195649765326">Pritisnite dugme za oporavak na Chromeboxu da omogućite način rada za programere ili odaberite Otkaži da ostanete zaštićeni.</translation>
 <translation id="8101391381992690790">Provjerite nalazi li se na vanjskom disku važeća slika za oporavak te ponovo umetnite disk kada budete spremni.</translation>
+<translation id="8116993605321079294">Došlo je do problema prilikom pokretanja alternativnog programa za učitavanje operativnog sistema. Pogledajte detalje u zapisniku firmvera.</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8199613549817472219">Prođimo kroz postupak oporavka</translation>
 <translation id="8377165353588213941">Došli ste do kraja</translation>
+<translation id="8569584079758810124">Nije moguće preuzeti informacije o ispravci grešaka.</translation>
 <translation id="8720490351198901261">Došli ste do vrha</translation>
 <translation id="8789686976863801203">Pokušavate omogućiti način rada za programere</translation>
+<translation id="8848124168564939055">Ne možete koristiti vanjsku tastaturu da uključite način rada za programere. Koristite dugmad na uređaju koja su navedena u uputama za navigaciju.</translation>
 <translation id="885701979325669005">Pohrana</translation>
+<translation id="9004305007436435169">Preuzimanje dijagnostičkih informacija nije uspjelo.</translation>
 <translation id="9040266428058825675">Ako je spreman vanjski uređaj za pohranu sa slikom za oporavak, priključite ga u ovaj uređaj da započnete proces oporavka.</translation>
 <translation id="9058669020755173331">Odaberite komponentu koju želite provjeriti.</translation>
 </translationbundle>

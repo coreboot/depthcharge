@@ -8,6 +8,7 @@
 <translation id="1389402762514302384">Veldu „Hætta við“ til að halda vörn.</translation>
 <translation id="1483971085438511843">Notaðu færslulykilinn til að velja valkost.</translation>
 <translation id="1931763245382489971">3. Smelltu á „Áfram“ þegar ytra geymslutækið er tilbúið með endurheimtarmyndina</translation>
+<translation id="1932315467893966859">Þegar kveikt er á forritarastillingu.</translation>
 <translation id="1995660704900986789">Slökkva</translation>
 <translation id="2022309272630265316">Engin gild mynd fannst</translation>
 <translation id="2076174287070071207">Hægt er að nota ytri geymslu við endurheimt, t.d. USB-drif, SD-kort eða Android-síma.</translation>
@@ -16,6 +17,7 @@
 <translation id="2188090550242711688">2. Fylgdu upplýsingunum í Chrome viðbótinni og sæktu endurheimtarmyndina í ytri geymslu</translation>
 <translation id="2270126560545545577">Kveikt er á forritarastillingu</translation>
 <translation id="2360163367862409346">Þetta felur í sér að eyða öllum gögnum úr tækinu og mun gera tækið óöruggt.</translation>
+<translation id="2398688843544960326">Annað ræsiforrit fannst ekki. Til að kynna þér hvernig hægt er að setja upp ræsiforrit skaltu skoða:</translation>
 <translation id="2445391421565214706">Til að reyna að lagfæra vandamálið skaltu hefja endurheimtarferlið. Taktu öll tengd tæki úr sambandi og haltu svo niðri hnöppunum til að hækka og lækka hljóðstyrk og aflrofanum ( ⏻ ) í a.m.k. 10 sekúndur.</translation>
 <translation id="2531345960369431549">Þessi valkostur mun slökkva á forritarastillingu og stilla tækið á upphaflegar stillingar.</translation>
 <translation id="2603025384438397887">Endurheimt með síma</translation>
@@ -24,12 +26,15 @@
 <translation id="3235458304027619499">1. Ytra geymslutæki, t.d. USB-drif eða SD-kort</translation>
 <translation id="328213018570216625">Endurheimt með ytri geymslu</translation>
 <translation id="3289365543955953678">Tengdu ytra drifið</translation>
+<translation id="3294574173405124634">GBB-flögg koma í veg fyrir að hægt sé að fara aftur í örugga stillingu.</translation>
+<translation id="3416523611207622897">Slökkt er á ytri ræsingu. Frekari upplýsingar má finna í:</translation>
 <translation id="3635226996169670741">Til að reyna að lagfæra vandamálið skaltu hefja endurheimtarferlið. Taktu öll tengd tæki úr sambandi og haltu svo inni „Esc“, „Refresh“ ( ⟳ ) og aflrofanum ( ⏻ ).</translation>
 <translation id="385051799172605136">Til baka</translation>
 <translation id="3964506597604121312">Notendagögnum þínum verður eytt meðan á þessu stendur.</translation>
 <translation id="4002335453596341558">Síða niður</translation>
 <translation id="4152977630022273265">Gakktu úr skugga um að gild Chrome stýrikerfismynd sé á ytra drifinu og settu það aftur inn þegar þú ert til.</translation>
 <translation id="4242315717915611349">Hætta við og fara til baka</translation>
+<translation id="4403160275309808255">Slökkt er á öðrum ræsiforritum. Frekari upplýsingar má finna í:</translation>
 <translation id="4410491068110727276">Notaðu hljóðstyrkshnappana til að fletta upp eða niður.</translation>
 <translation id="4497270882390086583">Hægt er að nota ytri geymslu við endurheimt, t.d. USB-drif eða Android-síma.</translation>
 <translation id="4773280894882892048">Kembiupplýsingar</translation>
@@ -39,6 +44,7 @@
 <translation id="5175612852476047443">Ekki slökkva á tækinu</translation>
 <translation id="5232488980254489397">Opna greiningu</translation>
 <translation id="5341719174140776704">1. Android sími með netaðgang</translation>
+<translation id="5477875595374685515">Ekki var hægt að sækja fastbúnaðarskrá.</translation>
 <translation id="5592705604979238266">Hjálparmiðstöð:</translation>
 <translation id="5649741817431380014">Gakktu úr skugga um að síminn keyri Chrome OS endurheimtarforritið eða að ytra drifið sé með gilda endurheimtarmynd. Stingdu snúrunni eða drifinu aftur í samband þegar allt er tilbúið.</translation>
 <translation id="5809240698077875994">Ýttu á aflrofann til að kveikja á forritarastillingu eða veldu „Hætta við“ til að halda vörn.</translation>
@@ -69,12 +75,16 @@
 <translation id="8011335065515332253">Þegar tímamörkin eru liðin mun tækið sjálfkrafa ræsast miðað við valið hér að neðan.</translation>
 <translation id="8027199195649765326">Ýttu á hnappinn „Recovery“ á Chromebox til að kveikja á forritarastillingu eða veldu „Hætta við“ til að hafa áfram vörn.</translation>
 <translation id="8101391381992690790">Gakktu úr skugga um að ytra drifið sé með gilda endurheimtarmynd og settu það aftur inn þegar það er tilbúið.</translation>
+<translation id="8116993605321079294">Eitthvað fór úrskeiðis við að ræsa hitt ræsiforritið. Skoðaðu fastbúnaðarskrána til að fá frekari upplýsingar.</translation>
 <translation id="8131740175452115882">Staðfesta</translation>
 <translation id="8199613549817472219">Förum í gegnum endurheimtarferlið</translation>
 <translation id="8377165353588213941">Þú ert komin(n) að endanum</translation>
+<translation id="8569584079758810124">Ekki var hægt að sækja upplýsingar villuleitar.</translation>
 <translation id="8720490351198901261">Þú ert komin(n) að byrjuninni</translation>
 <translation id="8789686976863801203">Þú ert að reyna að kveikja á forritarastillingu</translation>
+<translation id="8848124168564939055">Ekki er hægt að nota ytra lyklaborð til að kveikja á forritarastillingu. Notaðu hnappa tækisins sem er fjallað um í flettingarleiðbeiningunum.</translation>
 <translation id="885701979325669005">Geymslurými</translation>
+<translation id="9004305007436435169">Ekki var hægt að sækja greiningargögn.</translation>
 <translation id="9040266428058825675">Ef ytra geymslutækið er með endurheimtarmynd skaltu stinga því í samband við þetta tæki til að hefja endurheimtarferlið</translation>
 <translation id="9058669020755173331">Veldu íhlutinn sem þú vilt athuga.</translation>
 </translationbundle>

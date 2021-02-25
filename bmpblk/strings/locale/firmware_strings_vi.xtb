@@ -8,6 +8,7 @@
 <translation id="1389402762514302384">Chọn Hủy để tiếp tục được bảo vệ.</translation>
 <translation id="1483971085438511843">Dùng phím Enter để chọn một tùy chọn.</translation>
 <translation id="1931763245382489971">3. Nhấp vào tiếp theo khi thiết bị lưu trữ ngoài đã sẵn sàng với hình ảnh khôi phục</translation>
+<translation id="1932315467893966859">Chế độ nhà phát triển đã bật.</translation>
 <translation id="1995660704900986789">Tắt nguồn</translation>
 <translation id="2022309272630265316">Không phát hiện thấy hình ảnh hợp lệ</translation>
 <translation id="2076174287070071207">Bạn có thể khôi phục bằng thiết bị lưu trữ bên ngoài, chẳng hạn như ổ đĩa USB, thẻ SD hoặc bằng cách dùng điện thoại Android.</translation>
@@ -16,6 +17,7 @@
 <translation id="2188090550242711688">2. Làm theo hướng dẫn trên tiện ích của Chrome rồi tải hình ảnh khôi phục xuống bộ nhớ ngoài</translation>
 <translation id="2270126560545545577">Bạn đang dùng chế độ nhà phát triển</translation>
 <translation id="2360163367862409346">Thao tác này sẽ xóa tất cả dữ liệu khỏi thiết bị của bạn, đồng thời làm thiết bị của bạn không an toàn.</translation>
+<translation id="2398688843544960326">Không tìm thấy trình tải khởi động thay thế. Để tìm hiểu cách cài đặt trình tải khởi động, hãy xem trang web sau đây:</translation>
 <translation id="2445391421565214706">Để thử và khắc phục sự cố, hãy bắt đầu quy trình khôi phục. Tháo mọi thiết bị đã kết nối, sau đó nhấn và giữ nút Tăng âm lượng, Giảm âm lượng và nút Nguồn ( ⏻ ) trong ít nhất 10 giây.</translation>
 <translation id="2531345960369431549">Tùy chọn này sẽ tắt chế độ nhà phát triển và khôi phục thiết bị của bạn về trạng thái ban đầu.</translation>
 <translation id="2603025384438397887">Khôi phục bằng điện thoại</translation>
@@ -24,12 +26,15 @@
 <translation id="3235458304027619499">1. Thiết bị lưu trữ ngoài, chẳng hạn như ổ đĩa USB hoặc thẻ SD</translation>
 <translation id="328213018570216625">Khôi phục bằng bộ nhớ ngoài</translation>
 <translation id="3289365543955953678">Cắm ổ đĩa ngoài</translation>
+<translation id="3294574173405124634">Các cờ GBB không cho phép quay lại chế độ bảo mật.</translation>
+<translation id="3416523611207622897">Tính năng khởi động từ thiết bị ngoài đã tắt. Để biết thêm thông tin, hãy xem trang web sau đây:</translation>
 <translation id="3635226996169670741">Để thử và khắc phục sự cố, hãy bắt đầu quy trình khôi phục. Tháo mọi thiết bị đã kết nối, sau đó nhấn và giữ phím Esc, Làm mới ( ⟳ ) và nút Nguồn ( ⏻ ).</translation>
 <translation id="385051799172605136">Quay lại</translation>
 <translation id="3964506597604121312">Dữ liệu người dùng của bạn sẽ bị xóa trong quá trình này.</translation>
 <translation id="4002335453596341558">Trang dưới</translation>
 <translation id="4152977630022273265">Đảm bảo ổ đĩa ngoài của bạn có hình ảnh Chrome OS hợp lệ rồi cắm lại ổ đĩa này khi đã sẵn sàng.</translation>
 <translation id="4242315717915611349">Hủy và quay lại</translation>
+<translation id="4403160275309808255">Trình tải khởi động thay thế đã tắt. Để biết thêm thông tin, hãy xem trang web sau đây:</translation>
 <translation id="4410491068110727276">Dùng các nút âm lượng để di chuyển lên trên hoặc xuống dưới.</translation>
 <translation id="4497270882390086583">Bạn có thể khôi phục bằng thiết bị lưu trữ bên ngoài, chẳng hạn như ổ đĩa USB hoặc sử dụng điện thoại Android.</translation>
 <translation id="4773280894882892048">Thông tin gỡ lỗi</translation>
@@ -39,6 +44,7 @@
 <translation id="5175612852476047443">Vui lòng không tắt nguồn thiết bị</translation>
 <translation id="5232488980254489397">Chạy tính năng chẩn đoán</translation>
 <translation id="5341719174140776704">1. Điện thoại Android có quyền truy cập Internet</translation>
+<translation id="5477875595374685515">Không nhận được nhật ký của chương trình cơ sở.</translation>
 <translation id="5592705604979238266">Trung tâm trợ giúp:</translation>
 <translation id="5649741817431380014">Đảm bảo điện thoại của bạn đang chạy ứng dụng khôi phục Chrome OS, hoặc ổ đĩa ngoài của bạn có hình ảnh khôi phục hợp lệ. Hãy cắm lại cáp hoặc ổ đĩa khi đã sẵn sàng.</translation>
 <translation id="5809240698077875994">Nhấn nút Nguồn để bật chế độ nhà phát triển hoặc chọn Hủy để tiếp tục được bảo vệ.</translation>
@@ -69,12 +75,16 @@
 <translation id="8011335065515332253">Sau khi hết thời gian chờ, thiết bị sẽ tự động khởi động theo tùy chọn được chọn ở bên dưới.</translation>
 <translation id="8027199195649765326">Nhấn nút Khôi phục trên Chromebox để bật chế độ nhà phát triển hoặc chọn Hủy để tiếp tục được bảo vệ.</translation>
 <translation id="8101391381992690790">Đảm bảo ổ đĩa ngoài của bạn có hình ảnh khôi phục hợp lệ rồi cắm lại ổ đĩa này khi đã sẵn sàng.</translation>
+<translation id="8116993605321079294">Đã xảy ra lỗi khi chạy trình tải khởi động thay thế. Xem nhật ký của chương trình cơ sở để biết thông tin chi tiết.</translation>
 <translation id="8131740175452115882">Xác nhận</translation>
 <translation id="8199613549817472219">Chúng tôi sẽ hướng dẫn bạn thực hiện quy trình khôi phục</translation>
 <translation id="8377165353588213941">Bạn đã ở trang cuối cùng</translation>
+<translation id="8569584079758810124">Không nhận được thông tin gỡ lỗi.</translation>
 <translation id="8720490351198901261">Bạn đã ở trang đầu tiên</translation>
 <translation id="8789686976863801203">Bạn đang cố bật chế độ nhà phát triển</translation>
+<translation id="8848124168564939055">Bạn không thể sử dụng bàn phím ngoài để bật chế độ nhà phát triển. Vui lòng sử dụng các nút trên thiết bị như đã ghi chú trong phần hướng dẫn thao tác.</translation>
 <translation id="885701979325669005">Bộ nhớ</translation>
+<translation id="9004305007436435169">Không nhận được thông tin chẩn đoán.</translation>
 <translation id="9040266428058825675">Nếu thiết bị lưu trữ ngoài của bạn đã sẵn sàng với hình ảnh khôi phục, hãy cắm vào thiết bị này để bắt đầu quy trình khôi phục.</translation>
 <translation id="9058669020755173331">Chọn thành phần mà bạn muốn kiểm tra.</translation>
 </translationbundle>

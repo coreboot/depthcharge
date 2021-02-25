@@ -8,6 +8,7 @@
 <translation id="1389402762514302384">Kies Kanselleer om beskermd te bly.</translation>
 <translation id="1483971085438511843">Gebruik die Enter-sleutel om 'n opsie te kies.</translation>
 <translation id="1931763245382489971">3. Klik "volgende" wanneer jou eksterne berging gereed is met die terugstellingstelselkopie</translation>
+<translation id="1932315467893966859">Ontwikkelaarmodus is reeds aangeskakel.</translation>
 <translation id="1995660704900986789">Skakel af</translation>
 <translation id="2022309272630265316">Geen geldige stelselkopie bespeur nie</translation>
 <translation id="2076174287070071207">Jy kan met eksterne berging, soos 'n USB-datastokkie of 'n SD-kaart terugstel, of jy kan jou Android-foon gebruik.</translation>
@@ -16,6 +17,7 @@
 <translation id="2188090550242711688">2. Volg die instruksies in die Chrome-uitbreiding en laai die terugstelstelselkopie af na eksterne berging</translation>
 <translation id="2270126560545545577">Jy is in ontwikkelaarmodus</translation>
 <translation id="2360163367862409346">Dit behels dat alle data op jou toestel uitgevee word, en dit sal jou toestel onveilig maak.</translation>
+<translation id="2398688843544960326">Kon nie 'n alternatiewe selflaaiprogram kry nie. Om uit te vind hoe om een te installeer:</translation>
 <translation id="2445391421565214706">Begin die terugstellingproses om die kwessie te probeer regstel. Verwyder alle gekoppelde toestelle, en hou dan volume harder, volume sagter en die aan/af-skakelaar ( ⏻ ) minstens 10 sekondes lank in.</translation>
 <translation id="2531345960369431549">Hierdie opsie sal ontwikkelaarmodus deaktiveer en jou toestel na die oorspronklike toestand terugstel.</translation>
 <translation id="2603025384438397887">Terugstelling met foon</translation>
@@ -24,12 +26,15 @@
 <translation id="3235458304027619499">1. 'n Eksterne bergingtoestel, soos 'n USB-datastokkie of 'n SD-kaart</translation>
 <translation id="328213018570216625">Terugstelling met eksterne berging</translation>
 <translation id="3289365543955953678">Prop jou eksterne skyf in</translation>
+<translation id="3294574173405124634">GBB-vlae laat nie terugkeer na veilige modus toe nie.</translation>
+<translation id="3416523611207622897">Eksterne selflaai is gedeaktiveer. Vir meer inligting:</translation>
 <translation id="3635226996169670741">Begin die terugstellingproses om die kwessie te probeer regstel. Verwyder alle gekoppelde toestelle, en hou dan Esc, Herlaai ( ⟳ ) en die aan/af-skakelaar ( ⏻ ) in.</translation>
 <translation id="385051799172605136">Terug</translation>
 <translation id="3964506597604121312">Jou gebruikerdata sal in die proses uitgevee word.</translation>
 <translation id="4002335453596341558">Blaai af</translation>
 <translation id="4152977630022273265">Maak seker dat jou eksterne skyf 'n geldige Chrome-bedryfstelselkopie het, en sit die skyf weer in wanneer dit gereed is.</translation>
 <translation id="4242315717915611349">Kanselleer en gaan terug</translation>
+<translation id="4403160275309808255">Alternatiewe selflaaiprogramme is gedeaktiveer. Vir meer inligting:</translation>
 <translation id="4410491068110727276">Gebruik die volumeknoppies om op of af te beweeg.</translation>
 <translation id="4497270882390086583">Jy kan met eksterne berging, soos 'n USB-datastokkie, terugstel, of jy kan jou Android-foon gebruik.</translation>
 <translation id="4773280894882892048">Ontfoutinligting</translation>
@@ -39,6 +44,7 @@
 <translation id="5175612852476047443">Moet asseblief nie jou toestel afskakel nie</translation>
 <translation id="5232488980254489397">Begin diagnostiek</translation>
 <translation id="5341719174140776704">1. 'n Android-foon met internettoegang</translation>
+<translation id="5477875595374685515">Kon nie fermwareloglêer kry nie.</translation>
 <translation id="5592705604979238266">Hulpsentrum:</translation>
 <translation id="5649741817431380014">Maak seker dat jou foon Chrome-bedryfstelsel se terugstellingprogram gebruik, of dat jou eksterne skyf 'n geldige terugstellingstelselkopie op het. Sit die kabel of skyf weer in wanneer jy gereed is.</translation>
 <translation id="5809240698077875994">Druk die aan/af-skakelaar om ontwikkelaarmodus te aktiveer, of kies Kanselleer om beskermd te bly.</translation>
@@ -69,12 +75,16 @@
 <translation id="8011335065515332253">Die toestel sal ná die uitteltyd outomaties van die keuse hieronder af selflaai.</translation>
 <translation id="8027199195649765326">Druk die Recovery-knoppie op jou Chromebox om ontwikkelaarmodus te aktiveer, of kies Kanselleer om beskermd te bly.</translation>
 <translation id="8101391381992690790">Maak seker dat jou eksterne skyf 'n geldige terugstellingstelselkopie het, en sit die skyf weer in wanneer dit gereed is.</translation>
+<translation id="8116993605321079294">Iets het verkeerd gegaan met die laai van die alternatiewe selflaaiprogram. Bekyk fermwareloglêer vir besonderhede.</translation>
 <translation id="8131740175452115882">Bevestig</translation>
 <translation id="8199613549817472219">Kom ons begelei jou deur die terugstellingproses</translation>
 <translation id="8377165353588213941">Jy het die einde bereik</translation>
+<translation id="8569584079758810124">Kon nie ontfoutinginligting kry nie.</translation>
 <translation id="8720490351198901261">Jy het die bokant bereik</translation>
 <translation id="8789686976863801203">Jy probeer tans om ontwikkelaarmodus te aktiveer</translation>
+<translation id="8848124168564939055">Jy kan nie 'n eksterne sleutelbord gebruik om ontwikkelaarmodus aan te skakel nie. Gebruik asseblief die knoppies op die skerm wat in die navigasieinstruksies genoem word.</translation>
 <translation id="885701979325669005">Berging</translation>
+<translation id="9004305007436435169">Kon nie diagnostiese inligting kry nie.</translation>
 <translation id="9040266428058825675">As jou eksterne bergingtoestel 'n terugstellingstelselkopie gereed het, moet jy dit by hierdie toestel inprop om die terugstellingproses te begin.</translation>
 <translation id="9058669020755173331">Kies die komponent wat jy wil nagaan.</translation>
 </translationbundle>

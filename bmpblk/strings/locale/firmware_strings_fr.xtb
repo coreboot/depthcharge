@@ -8,6 +8,7 @@
 <translation id="1389402762514302384">Sélectionnez "Annuler" pour maintenir la protection.</translation>
 <translation id="1483971085438511843">Utilisez la touche Entrée pour sélectionner une option.</translation>
 <translation id="1931763245382489971">3. Cliquez sur "Suivant" une fois que l'image de récupération a bien été installée sur le périphérique de stockage externe</translation>
+<translation id="1932315467893966859">Le mode développeur est déjà activé.</translation>
 <translation id="1995660704900986789">Éteindre</translation>
 <translation id="2022309272630265316">Aucune image valide détectée</translation>
 <translation id="2076174287070071207">Vous pouvez récupérer le contenu de votre appareil à l'aide d'un disque de stockage externe, comme une clé USB ou une carte SD, ou avec votre téléphone Android.</translation>
@@ -16,6 +17,7 @@
 <translation id="2188090550242711688">2. Suivez les instructions sur l'extension Chrome, puis téléchargez l'image de récupération pour l'installer sur un espace de stockage externe</translation>
 <translation id="2270126560545545577">Vous êtes en mode développeur</translation>
 <translation id="2360163367862409346">Cette opération entraîne la suppression de toutes les données de votre appareil et le rendra non sécurisé.</translation>
+<translation id="2398688843544960326">Impossible de trouver un autre bootloader. Pour savoir comment en installer un, consultez :</translation>
 <translation id="2445391421565214706">Pour tenter de résoudre le problème, lancez le processus de récupération. Retirez tous les appareils connectés, puis maintenez les touches volume+ et volume- ainsi que le bouton Marche/Arrêt ( ⏻ ) enfoncés pendant au moins 10 secondes.</translation>
 <translation id="2531345960369431549">Cette option permet de désactiver le mode développeur et de restaurer l'état d'origine de votre appareil.</translation>
 <translation id="2603025384438397887">Récupération à l'aide d'un téléphone</translation>
@@ -24,12 +26,15 @@
 <translation id="3235458304027619499">1. Un périphérique de stockage externe, comme une clé USB ou une carte SD</translation>
 <translation id="328213018570216625">Récupération avec un espace de stockage externe</translation>
 <translation id="3289365543955953678">Brancher votre disque externe</translation>
+<translation id="3294574173405124634">Les indicateurs GBB n'autorisent pas le retour au mode sécurisé.</translation>
+<translation id="3416523611207622897">Le démarrage externe est désactivé. Pour en savoir plus, consultez :</translation>
 <translation id="3635226996169670741">Pour tenter de résoudre le problème, lancez le processus de récupération. Retirez tous les appareils connectés, puis maintenez les touches Échap et Actualiser ( ⟳ ) ainsi que le bouton Marche/Arrêt ( ⏻ ) enfoncés.</translation>
 <translation id="385051799172605136">Retour</translation>
 <translation id="3964506597604121312">Vos données utilisateur seront effacées pendant le processus.</translation>
 <translation id="4002335453596341558">Page suivante</translation>
 <translation id="4152977630022273265">Vérifiez que votre disque externe contient une image de récupération Chrome OS valide, et réinsérez-le quand vous êtes prêt.</translation>
 <translation id="4242315717915611349">Annuler et revenir en arrière</translation>
+<translation id="4403160275309808255">Les autres bootloaders sont désactivés. Pour en savoir plus, consultez :</translation>
 <translation id="4410491068110727276">Utilisez les boutons de volume pour vous déplacer vers le haut ou vers le bas.</translation>
 <translation id="4497270882390086583">Vous pouvez récupérer le contenu de votre appareil à l'aide d'un disque de stockage externe, comme une clé USB, ou avec votre téléphone Android.</translation>
 <translation id="4773280894882892048">Informations de débogage</translation>
@@ -39,6 +44,7 @@
 <translation id="5175612852476047443">Veuillez ne pas éteindre votre appareil</translation>
 <translation id="5232488980254489397">Lancer le diagnostic</translation>
 <translation id="5341719174140776704">1. Un téléphone Android avec accès à Internet</translation>
+<translation id="5477875595374685515">Impossible d'obtenir le journal du micrologiciel.</translation>
 <translation id="5592705604979238266">Centre d'aide :</translation>
 <translation id="5649741817431380014">Assurez-vous que l'application de récupération de Chrome OS s'exécute sur votre téléphone ou que votre disque externe contient une image de récupération valide. Réinsérez-le câble ou le disque quand vous êtes prêt.</translation>
 <translation id="5809240698077875994">Appuyez sur le bouton Marche/Arrêt pour activer le mode développeur, ou sélectionnez "Annuler" pour maintenir la protection.</translation>
@@ -69,12 +75,16 @@
 <translation id="8011335065515332253">Après le délai d'inactivité, l'appareil démarrera automatiquement à partir de la source sélectionnée ci-dessous.</translation>
 <translation id="8027199195649765326">Appuyez sur le bouton de récupération de votre Chromebox pour activer le mode développeur, ou sélectionnez "Annuler" pour maintenir la protection.</translation>
 <translation id="8101391381992690790">Assurez-vous que votre disque externe contient une image de récupération valide, et réinsérez-le quand vous êtes prêt.</translation>
+<translation id="8116993605321079294">Un problème est survenu lors du démarrage de l'autre bootloader. Pour plus d'informations, affichez le journal du micrologiciel.</translation>
 <translation id="8131740175452115882">Confirmer</translation>
 <translation id="8199613549817472219">Voici les étapes du processus de récupération</translation>
 <translation id="8377165353588213941">Vous avez atteint la dernière page</translation>
+<translation id="8569584079758810124">Impossible d'obtenir les informations de débogage.</translation>
 <translation id="8720490351198901261">Vous avez atteint la première page</translation>
 <translation id="8789686976863801203">Vous tentez d'activer le mode développeur</translation>
+<translation id="8848124168564939055">Vous ne pouvez pas utiliser de clavier externe pour activer le mode développeur. Veuillez utiliser les boutons de l'appareil indiqués dans les instructions de navigation.</translation>
 <translation id="885701979325669005">Données stockées</translation>
+<translation id="9004305007436435169">Impossible de charger les informations de diagnostic.</translation>
 <translation id="9040266428058825675">Si une image de récupération est déjà installée sur votre périphérique de stockage externe, branchez celui-ci à cet appareil pour lancer le processus de récupération.</translation>
 <translation id="9058669020755173331">Sélectionnez le composant à vérifier.</translation>
 </translationbundle>
