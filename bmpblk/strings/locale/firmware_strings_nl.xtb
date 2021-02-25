@@ -8,7 +8,6 @@
 <translation id="1389402762514302384">Selecteer Annuleren om beschermd te blijven.</translation>
 <translation id="1483971085438511843">Gebruik de Enter-toets om een optie te selecteren.</translation>
 <translation id="1931763245382489971">3. Als je externe opslagapparaat met de herstelimage klaar is voor gebruik, klik je op Volgende</translation>
-<translation id="1932315467893966859">De ontwikkelaarsmodus staat al aan.</translation>
 <translation id="1995660704900986789">Uitschakelen</translation>
 <translation id="2022309272630265316">Geen geldige afbeelding gedetecteerd</translation>
 <translation id="2076174287070071207">Je kunt herstellen met een extern opslagapparaat, zoals een USB-drive of SD-kaart, of met je Android-telefoon.</translation>
@@ -17,7 +16,6 @@
 <translation id="2188090550242711688">2. Volg de instructies in de Chrome-extensie en download de herstelimage naar een externe opslag</translation>
 <translation id="2270126560545545577">Je gebruikt de ontwikkelaarsmodus</translation>
 <translation id="2360163367862409346">Alle gegevens op je apparaat worden gewist en je apparaat is niet meer beveiligd.</translation>
-<translation id="2398688843544960326">Kan geen alternatieve bootloader vinden. Voor meer informatie over hoe je er een installeert, ga je naar:</translation>
 <translation id="2445391421565214706">Start het herstelproces om het probleem op te lossen. Verwijder alle gekoppelde apparaten en houd daarna de knop voor volume omhoog, de knop voor volume omlaag en de aan/uit-knop ( ⏻ ) minimaal tien seconden ingedrukt.</translation>
 <translation id="2531345960369431549">Met deze optie wordt de ontwikkelaarsmodus uitgeschakeld en wordt je apparaat teruggezet naar de oorspronkelijke status.</translation>
 <translation id="2603025384438397887">Herstellen met telefoon</translation>
@@ -26,15 +24,12 @@
 <translation id="3235458304027619499">1. Een extern opslagapparaat, zoals een USB-drive of een SD-kaart</translation>
 <translation id="328213018570216625">Herstellen met externe opslag</translation>
 <translation id="3289365543955953678">Je externe schijf aansluiten</translation>
-<translation id="3294574173405124634">Teruggaan naar de beveiligde modus is niet toegestaan op basis van de GBB-flags.</translation>
-<translation id="3416523611207622897">Extern opstarten staat uit. Meer informatie:</translation>
 <translation id="3635226996169670741">Start het herstelproces om het probleem op te lossen. Verwijder alle gekoppelde apparaten en houd Esc, Vernieuwen ( ⟳ ) en de aan/uit-knop ( ⏻ ) ingedrukt.</translation>
 <translation id="385051799172605136">Terug</translation>
 <translation id="3964506597604121312">Je gebruikersgegevens worden gewist tijdens dit proces.</translation>
 <translation id="4002335453596341558">Pagina omlaag</translation>
 <translation id="4152977630022273265">Zorg ervoor dat je externe schijf een geldige Chrome OS-image heeft en plaats de schijf opnieuw als hij klaar is.</translation>
 <translation id="4242315717915611349">Annuleren en teruggaan</translation>
-<translation id="4403160275309808255">Alternatieve bootloaders staan uit. Meer informatie:</translation>
 <translation id="4410491068110727276">Gebruik de volumeknoppen om omhoog of omlaag te navigeren.</translation>
 <translation id="4497270882390086583">Je kunt herstellen met een extern opslagapparaat, zoals een USB-drive, of met je Android-telefoon.</translation>
 <translation id="4773280894882892048">Foutopsporingsinfo</translation>
@@ -44,7 +39,6 @@
 <translation id="5175612852476047443">Schakel je apparaat niet uit</translation>
 <translation id="5232488980254489397">Diagnostische gegevens openen</translation>
 <translation id="5341719174140776704">1. Een Android-telefoon met internettoegang</translation>
-<translation id="5477875595374685515">Kan firmwarelogboek niet ophalen.</translation>
 <translation id="5592705604979238266">Helpcentrum:</translation>
 <translation id="5649741817431380014">Zorg dat de Chrome OS-herstel-app op je telefoon is geïnstalleerd of dat je externe schijf een geldige herstelimage bevat. Plaats de kabel of schijf opnieuw als je klaar bent.</translation>
 <translation id="5809240698077875994">Druk op de aan/uit-knop om de ontwikkelaarsmodus in te schakelen of selecteer Annuleren om beschermd te blijven.</translation>
@@ -75,16 +69,12 @@
 <translation id="8011335065515332253">Na de time-out wordt het apparaat automatisch opgestart vanaf de onderstaande selectie.</translation>
 <translation id="8027199195649765326">Druk op de herstelknop op je Chromebox om de ontwikkelaarsmodus in te schakelen of selecteer Annuleren om beschermd te blijven.</translation>
 <translation id="8101391381992690790">Zorg ervoor dat je externe schijf een geldige herstelimage heeft en plaats de schijf opnieuw als deze klaar is.</translation>
-<translation id="8116993605321079294">Er is een probleem opgetreden bij het starten van de alternatieve bootloader. Bekijk het firmwarelogboek voor meer informatie.</translation>
 <translation id="8131740175452115882">Bevestigen</translation>
 <translation id="8199613549817472219">We begeleiden je tijdens het herstelproces</translation>
 <translation id="8377165353588213941">Je bent bij het einde</translation>
-<translation id="8569584079758810124">Kan foutopsporingsinfo niet ophalen.</translation>
 <translation id="8720490351198901261">Je bent bij het begin</translation>
 <translation id="8789686976863801203">Je probeert de ontwikkelaarsmodus in te schakelen</translation>
-<translation id="8848124168564939055">Met een extern toetsenbord kun je de ontwikkelaarsmodus niet aanzetten. Gebruik de apparaatknoppen die worden vermeld in de navigatie-instructies.</translation>
 <translation id="885701979325669005">Opslag</translation>
-<translation id="9004305007436435169">Kan geen diagnostische informatie ophalen.</translation>
 <translation id="9040266428058825675">Als je externe opslagapparaat met de herstelimage klaar is voor gebruik, sluit je deze aan op dit apparaat om het herstelproces te starten.</translation>
 <translation id="9058669020755173331">Selecteer de component die je wilt checken.</translation>
 </translationbundle>

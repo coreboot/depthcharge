@@ -8,7 +8,6 @@
 <translation id="1389402762514302384">Selectează „Anulează” ca să rămâi protejat(ă).</translation>
 <translation id="1483971085438511843">Folosește tasta Enter pentru a selecta o opțiune.</translation>
 <translation id="1931763245382489971">3. Dă clic pe „Înainte” când dispozitivul de stocare extern este pregătit cu imaginea de recuperare.</translation>
-<translation id="1932315467893966859">Modul pentru dezvoltatori este deja activat.</translation>
 <translation id="1995660704900986789">Oprește alimentarea</translation>
 <translation id="2022309272630265316">Nu s-a detectat nicio imagine validă</translation>
 <translation id="2076174287070071207">Poți recupera folosind suporturi externe, precum o unitate USB ori un card SD, sau folosind telefonul Android.</translation>
@@ -17,7 +16,6 @@
 <translation id="2188090550242711688">2. Urmează instrucțiunile pentru extensia Chrome și descarcă imaginea de recuperare pe un dispozitiv de stocare externă.</translation>
 <translation id="2270126560545545577">Ești în modul pentru dezvoltatori</translation>
 <translation id="2360163367862409346">Astfel, vor fi șterse toate datele de pe dispozitiv, iar dispozitivul va deveni nesigur.</translation>
-<translation id="2398688843544960326">Nu s-a găsit un bootloader alternativ. Pentru a afla cum să instalezi unul, accesează:</translation>
 <translation id="2445391421565214706">Pentru a încerca să remediezi problema, inițiază procesul de recuperare. Elimină toate dispozitivele conectate, apoi apasă lung butonul de creștere a volumului, butonul de reducere a volumului și butonul de pornire ( ⏻ ) timp de minimum 10 secunde.</translation>
 <translation id="2531345960369431549">Opțiunea va dezactiva modul pentru dezvoltatori și va restabili dispozitivul la starea inițială.</translation>
 <translation id="2603025384438397887">Recuperare folosind telefonul</translation>
@@ -26,15 +24,12 @@
 <translation id="3235458304027619499">1. Un dispozitiv de stocare extern, precum o unitate USB sau un card SD.</translation>
 <translation id="328213018570216625">Recuperare cu un dispozitiv de stocare externă</translation>
 <translation id="3289365543955953678">Conectează discul extern</translation>
-<translation id="3294574173405124634">Revenirea la modul sigur nu este permisă din cauza semnalelor GBB.</translation>
-<translation id="3416523611207622897">Pornirea externă este dezactivată. Pentru mai multe informații, accesează:</translation>
 <translation id="3635226996169670741">Pentru a încerca să remediezi problema, inițiază procesul de recuperare. Elimină toate dispozitivele conectate și apasă lung Esc, tasta de actualizare ( ⟳ ) și butonul de pornire ( ⏻ ).</translation>
 <translation id="385051799172605136">Înapoi</translation>
 <translation id="3964506597604121312">Datele utilizatorului se vor șterge în acest proces.</translation>
 <translation id="4002335453596341558">O pagină mai jos</translation>
 <translation id="4152977630022273265">Verifică dacă discul extern are o imagine validă a sistemului de operare Chrome și reintrodu discul când ești gata.</translation>
 <translation id="4242315717915611349">Anulează și revino</translation>
-<translation id="4403160275309808255">Bootloaderele alternative sunt dezactivate. Pentru mai multe informații, accesează:</translation>
 <translation id="4410491068110727276">Folosește butoanele de volum pentru a naviga în sus sau în jos.</translation>
 <translation id="4497270882390086583">Poți recupera folosind suporturi externe, precum o unitate USB, sau folosind telefonul Android.</translation>
 <translation id="4773280894882892048">Informații de remediere a erorilor</translation>
@@ -44,7 +39,6 @@
 <translation id="5175612852476047443">Nu închide dispozitivul</translation>
 <translation id="5232488980254489397">Lansează diagnosticarea</translation>
 <translation id="5341719174140776704">1. Un telefon Android cu acces la internet</translation>
-<translation id="5477875595374685515">Nu s-a putut obține jurnalul de firmware.</translation>
 <translation id="5592705604979238266">Centrul de ajutor:</translation>
 <translation id="5649741817431380014">Verifică dacă telefonul rulează aplicația de recuperare a sistemului de operare Chrome sau dacă discul extern are o imagine de recuperare validă pe el. Reintrodu cablul sau discul când ești gata.</translation>
 <translation id="5809240698077875994">Apasă butonul de pornire ca să activezi modul pentru dezvoltatori sau selectează „Anulează” ca să rămâi protejat(ă).</translation>
@@ -75,16 +69,12 @@
 <translation id="8011335065515332253">După expirare, dispozitivul va porni automat folosind opțiunea selectată de mai jos.</translation>
 <translation id="8027199195649765326">Apasă butonul de recuperare de pe Chromebox ca să activezi modul pentru dezvoltatori sau selectează „Anulează” ca să rămâi protejat(ă).</translation>
 <translation id="8101391381992690790">Verifică dacă discul extern are o imagine de recuperare validă și reintrodu discul când ești gata.</translation>
-<translation id="8116993605321079294">A apărut o eroare la lansarea bootloaderului alternativ. Consultă jurnalul de firmware pentru detalii.</translation>
 <translation id="8131740175452115882">Confirmați</translation>
 <translation id="8199613549817472219">Te vom ghida prin procesul de recuperare</translation>
 <translation id="8377165353588213941">Ai ajuns la final</translation>
-<translation id="8569584079758810124">Nu s-au putut obține informații de remediere a erorilor.</translation>
 <translation id="8720490351198901261">Ai ajuns în partea de sus</translation>
 <translation id="8789686976863801203">Încerci să activezi modul pentru dezvoltatori</translation>
-<translation id="8848124168564939055">Nu poți folosi o tastatură externă ca să activezi modul pentru dezvoltatori. Folosește butoanele dispozitivului indicate în instrucțiunile de navigare.</translation>
 <translation id="885701979325669005">Stocare</translation>
-<translation id="9004305007436435169">Nu s-au putut obține informații de diagnosticare.</translation>
 <translation id="9040266428058825675">Dacă dispozitivul de stocare extern este pregătit cu o imagine de recuperare, conectează-l la acest dispozitiv ca să începi procesul de recuperare.</translation>
 <translation id="9058669020755173331">Selectează componenta pe care vrei să o verifici.</translation>
 </translationbundle>

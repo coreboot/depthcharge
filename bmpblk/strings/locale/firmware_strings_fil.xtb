@@ -8,7 +8,6 @@
 <translation id="1389402762514302384">Piliin ang Kanselahin para manatiling protektado.</translation>
 <translation id="1483971085438511843">Gamitin ang enter key para pumili ng opsyon.</translation>
 <translation id="1931763245382489971">3. I-click ang susunod kapag mayroon nang imahe sa pag-recover ang iyong external storage device</translation>
-<translation id="1932315467893966859">Naka-on na ang developer mode.</translation>
 <translation id="1995660704900986789">I-off</translation>
 <translation id="2022309272630265316">Walang na-detect na valid na imahe</translation>
 <translation id="2076174287070071207">Makakapag-recover ka gamit ang external na storage gaya ng USB drive, SD card, o gamit ang iyong Android phone.</translation>
@@ -17,7 +16,6 @@
 <translation id="2188090550242711688">2. Sundin ang mga tagubilin sa extension ng Chrome, at i-download ang imahe sa pag-recover sa external storage</translation>
 <translation id="2270126560545545577">Nasa developer mode ka</translation>
 <translation id="2360163367862409346">Kasama rito ang pagbubura ng lahat ng data sa iyong device, at gagawin nitong hindi secure ang device mo.</translation>
-<translation id="2398688843544960326">Hindi makahanap ng alternatibong bootloader. Para matuto kung paano mag-install nito, tingnan ang:</translation>
 <translation id="2445391421565214706">Para subukang ayusin ang isyu, simulan ang proseso ng pag-recover. Alisin ang lahat ng nakakonektang device, pagkatapos ay pindutin nang matagal ang Pataas na Volume, Pababang Volume, at ang Power button ( ⏻ ) nang hindi bababa sa 10 segundo.</translation>
 <translation id="2531345960369431549">Idi-disable ng opsyong ito ang developer mode at ire-restore nito ang iyong device sa orihinal na status nito.</translation>
 <translation id="2603025384438397887">Pag-recover gamit ang telepono</translation>
@@ -26,15 +24,12 @@
 <translation id="3235458304027619499">1. Isang external storage device gaya ng USB drive o SD card</translation>
 <translation id="328213018570216625">Pag-recover gamit ang external storage</translation>
 <translation id="3289365543955953678">Isaksak ang iyong external na disk</translation>
-<translation id="3294574173405124634">Hindi pinapayagan ng mga GBB flag ang pagbalik sa secure mode.</translation>
-<translation id="3416523611207622897">Naka-disable ang external na pag-boot. Para sa higit pang impormasyon, tingnan ang:</translation>
 <translation id="3635226996169670741">Para subukang ayusin ang isyu, simulan ang proseso ng pag-recover. Alisin ang lahat ng nakakonektang device, pagkatapos ay pindutin nang matagal ang Esc, Refresh ( ⟳ ), at Power ( ⏻ ).</translation>
 <translation id="385051799172605136">Bumalik</translation>
 <translation id="3964506597604121312">Mawa-wipe ang iyong data ng user habang isinasagawa ang proseso.</translation>
-<translation id="4002335453596341558">Page down</translation>
+<translation id="4002335453596341558">Pahina pababa</translation>
 <translation id="4152977630022273265">Tiyaking may valid na Chrome OS image ang iyong external na disk, at isaksak ulit ang disk kapag handa na.</translation>
 <translation id="4242315717915611349">Kanselahin at bumalik</translation>
-<translation id="4403160275309808255">Naka-disable ang mga alternatibong bootloader. Para sa higit pang impormasyon, tingnan ang:</translation>
 <translation id="4410491068110727276">Gamitin ang mga button ng volume para mag-navigate pataas o pababa.</translation>
 <translation id="4497270882390086583">Makakapag-recover ka gamit ang external na storage gaya ng USB drive, o gamit ang iyong Android phone.</translation>
 <translation id="4773280894882892048">Impormasyon sa pag-debug</translation>
@@ -44,7 +39,6 @@
 <translation id="5175612852476047443">Huwag i-off ang iyong device</translation>
 <translation id="5232488980254489397">Ilunsad ang mga diagnostic</translation>
 <translation id="5341719174140776704">1. Android phone na may access sa internet</translation>
-<translation id="5477875595374685515">Hindi makuha ang log ng firmware.</translation>
 <translation id="5592705604979238266">Help center:</translation>
 <translation id="5649741817431380014">Tiyaking tumatakbo sa telepono mo ang Chrome OS recovery app, o may valid na imahe sa pag-recover ang iyong external na disk. Isaksak ulit ang cable o disk kapag handa na.</translation>
 <translation id="5809240698077875994">Pindutin ang Power button para i-enable ang developer mode, o piliin ang Kanselahin para manatiling protektado.</translation>
@@ -56,7 +50,7 @@
 <translation id="635783852215913562">Gamitin ang mga arrow key para mag-navigate pataas o pababa.</translation>
 <translation id="6448938863276324156">Makakapag-recover ka gamit ang external na storage gaya ng USB drive.</translation>
 <translation id="6606028407279698587">Kumpletong pagsusuri ng memory</translation>
-<translation id="6972383785688794804">Page up</translation>
+<translation id="6972383785688794804">Pahina pataas</translation>
 <translation id="7065553583078443466">Pumili ng alternatibong bootloader</translation>
 <translation id="7126032376876878896">Gamitin ang power button para pumili ng opsyon.</translation>
 <translation id="7154775592215462674">1. Isang external storage device gaya ng USB drive</translation>
@@ -75,16 +69,12 @@
 <translation id="8011335065515332253">Kapag nag-timeout na, awtomatikong magbu-boot ang device mula sa napili sa ibaba.</translation>
 <translation id="8027199195649765326">Pindutin ang button na Recovery sa iyong Chromebox para i-enable ang developer mode, o piliin ang Kanselahin para manatiling protektado.</translation>
 <translation id="8101391381992690790">Tiyaking may valid na imahe sa pag-recover ang iyong external na disk, at isaksak ulit ang disk kapag handa na.</translation>
-<translation id="8116993605321079294">Nagkaproblema sa pag-launch sa alternatibong bootloader. Tingnan ang log ng firmware para sa mga detalye.</translation>
 <translation id="8131740175452115882">Kumpirmahin</translation>
 <translation id="8199613549817472219">Simulan natin ang proseso ng pag-recover</translation>
 <translation id="8377165353588213941">Naabot mo na ang dulo</translation>
-<translation id="8569584079758810124">Hindi makuha ang impormasyon sa pag-debug.</translation>
 <translation id="8720490351198901261">Naabot mo na ang simula</translation>
 <translation id="8789686976863801203">Sinusubukan mong i-enable ang developer mode</translation>
-<translation id="8848124168564939055">Hindi ka puwedeng gumamit ng external na keyboard para i-on ang developer mode. Pakigamit ang mga button na nasa device na binabanggit sa mga tagubilin sa pag-navigate.</translation>
 <translation id="885701979325669005">Storage</translation>
-<translation id="9004305007436435169">Hindi makuha ang impormasyon ng diagnostic.</translation>
 <translation id="9040266428058825675">Kung mayroon nang imahe sa pag-recover ang iyong external storage device, isaksak iyon sa device na ito para masimulan ang proseso ng pag-recover.</translation>
 <translation id="9058669020755173331">Piliin ang bahaging gusto mong suriin.</translation>
 </translationbundle>

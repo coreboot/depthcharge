@@ -8,7 +8,6 @@
 <translation id="1389402762514302384">Xavfsiz rejimda qolish uchun Bekor qilish ustiga bosing.</translation>
 <translation id="1483971085438511843">Tanlash uchun Enter tugmasini bosing.</translation>
 <translation id="1931763245382489971">3. Tiklash fayli bor tashqi xotira tayyor boʻlsa, Keyingisi ustiga bosing</translation>
-<translation id="1932315467893966859">Dasturchi rejimi allaqachon yoqilgan.</translation>
 <translation id="1995660704900986789">O‘chirish</translation>
 <translation id="2022309272630265316">Yaroqli tiklash fayli topilmadi</translation>
 <translation id="2076174287070071207">USB disk va SD karta kabi tashqi xotira qurilmalari yoki Android telefoni orqali tiklash mumkin.</translation>
@@ -17,7 +16,6 @@
 <translation id="2188090550242711688">2. Chrome kengaytmasi koʻrsatmalarini bajaring va tiklash faylini tashqi xotiraga yuklab oling.</translation>
 <translation id="2270126560545545577">Dasturchi rejimidasiz</translation>
 <translation id="2360163367862409346">Bunda qurilmadagi barcha maʼlumotlaringiz oʻchib ketishi mumkin va qurilmangiz xavfsiz rejimda chiqariladi.</translation>
-<translation id="2398688843544960326">Muqobil OT yuklagich topilmadi. Qanday oʻrnatish haqida batafsil:</translation>
 <translation id="2445391421565214706">Muammoni tuzatishga urinish uchun tiklash jarayonini boshlang. Barcha ulangan qurilmalarni uzing hamda tovushni balandlatish, pasaytirish va Quvvat tugmalarini ( ⏻ ) kamida 10 soniya bosib turing.</translation>
 <translation id="2531345960369431549">Bu tanlovda dasturchi rejimidan chiqiladi va qurilmangiz asl holiga qaytariladi.</translation>
 <translation id="2603025384438397887">Telefon orqali tiklash</translation>
@@ -26,15 +24,12 @@
 <translation id="3235458304027619499">1. USB disk yoki SD karta kabi tashqi xotira qurilmasi</translation>
 <translation id="328213018570216625">Tashqi xotira orqali tiklash</translation>
 <translation id="3289365543955953678">Tashqi diskni ulang</translation>
-<translation id="3294574173405124634">GBB tajribaviy funksiyalari bilan taqiqlangan xavfsiz rejimga qaytish.</translation>
-<translation id="3416523611207622897">Tashqi yuklanish faolsizlantirilgan. Batafsil:</translation>
 <translation id="3635226996169670741">Muammoni tuzatishga urinish uchun tiklash jarayonini boshlang. Barcha ulangan qurilmalarni uzing va Escape, Yangilash ( ⟳ ) va Quvvat tugmalarini ( ⏻ ) birga bosib turing.</translation>
 <translation id="385051799172605136">Orqaga</translation>
 <translation id="3964506597604121312">Jarayon vaqtida barcha foydalanuvchi maʼlumotlari oʻchib ketadi.</translation>
 <translation id="4002335453596341558">Bir sahifa pastga</translation>
 <translation id="4152977630022273265">Tashqi diskda yaroqli Chrome OS tasvir fayli borligini tekshiring va diskni qaytadan ulang</translation>
 <translation id="4242315717915611349">Bekor qilish va orqaga qaytish</translation>
-<translation id="4403160275309808255">Muqobil OT yuklagichlar faolsizlantirilgan. Batafsil:</translation>
 <translation id="4410491068110727276">Bandlarni ovoz balandligi tugmalari orqali kezing.</translation>
 <translation id="4497270882390086583">USB disk kabi tashqi xotira qurilmasi yoki Android telefoni orqali tiklash mumkin.</translation>
 <translation id="4773280894882892048">Nosozliklar axboroti</translation>
@@ -44,7 +39,6 @@
 <translation id="5175612852476047443">Qurilmani oʻchirmay turing</translation>
 <translation id="5232488980254489397">Diagnostikani ishga tushirish</translation>
 <translation id="5341719174140776704">1. Internetga ulangan Android telefoni</translation>
-<translation id="5477875595374685515">Mikrodastur jurnali olinmadi.</translation>
 <translation id="5592705604979238266">Yordam markazi:</translation>
 <translation id="5649741817431380014">Telefonda Chrome OS tiklash ilovasi ishga tushgani yoki tashqi diskda yaroqli tiklash fayli borligini tekshiring Tayyor boʻlganda kabel yoki diskni qayta ulang.</translation>
 <translation id="5809240698077875994">Dasturchi rejimini yoqish uchun Quvvat tugmasini bosing yoki xavfsiz rejimda qolishni istasangiz, Bekor qilish ustiga bosing.</translation>
@@ -75,16 +69,12 @@
 <translation id="8011335065515332253">Kutish vaqti tugaganda qurilma tizimni avtomatik ravishda quyidagi tanlovdan ishga tushiradi.</translation>
 <translation id="8027199195649765326">Chromebox qurilmangizda Dasturchi rejimini yoqish uchun Quvvat tugmasini bosing yoki xavfsiz rejimda qolishni istasangiz, Bekor qilish ustiga bosing.</translation>
 <translation id="8101391381992690790">Tashqi diskda yaroqli tiklash fayli borligini tekshiring va diskni qaytadan ulang.</translation>
-<translation id="8116993605321079294">Muqobil OT yuklagichni ishga tushirishda nimadir xato ketdi. Tafsilotlar uchun mikrodastur jurnalini oching.</translation>
 <translation id="8131740175452115882">Tasdiqlash</translation>
 <translation id="8199613549817472219">Qani tizimni tiklashga kirishaylik</translation>
 <translation id="8377165353588213941">Oxiriga yetdingiz</translation>
-<translation id="8569584079758810124">Nosozliklar axboroti olinmadi.</translation>
 <translation id="8720490351198901261">Yuqoriga chiqdingiz</translation>
 <translation id="8789686976863801203">Dasturchi rejimini yoqishga urinyapsiz</translation>
-<translation id="8848124168564939055">Dasturchi rejimini yoqish uchun tashqi klaviaturadan foydalanish imkonsiz. Navigatsiya koʻrsatmalarida aytilganidek qurilmadagi tugmalardan foydalaning.</translation>
 <translation id="885701979325669005">Ombor</translation>
-<translation id="9004305007436435169">Diagnostika axboroti olinmadi.</translation>
 <translation id="9040266428058825675">Tiklash fayli joylashgan tashqi xotira tayyor boʻlsa, uni qurilmaga ulang va tiklash jarayoni ishga tushadi.</translation>
 <translation id="9058669020755173331">Tekshiriladigan komponentni tanlang.</translation>
 </translationbundle>

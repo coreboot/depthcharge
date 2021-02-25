@@ -8,7 +8,6 @@
 <translation id="1389402762514302384">Odaberite "Odustani" da biste ostali zaštićeni.</translation>
 <translation id="1483971085438511843">Za odabir opcije koristite se tipkom Enter.</translation>
 <translation id="1931763245382489971">3. Kliknite sljedeće kad vaš uređaj za vanjsku pohranu bude spreman sa slikom za oporavak</translation>
-<translation id="1932315467893966859">Način rada razvojnog programera već je uključen.</translation>
 <translation id="1995660704900986789">Isključi</translation>
 <translation id="2022309272630265316">Nije otkrivena valjana slika</translation>
 <translation id="2076174287070071207">Oporavak možete izvršiti upotrebom vanjske pohrane kao što je USB disk, SD kartica ili Android telefona.</translation>
@@ -17,8 +16,7 @@
 <translation id="2188090550242711688">2. Slijedite upute na Chromeovom proširenju i preuzmite sliku za oporavak na vanjsku pohranu</translation>
 <translation id="2270126560545545577">Nalazite se u načinu rada razvojnog programera</translation>
 <translation id="2360163367862409346">To uključuje brisanje svih podataka s vašeg uređaja i vaš uređaj više neće biti siguran.</translation>
-<translation id="2398688843544960326">Alternativni početni program za pokretanje nije pronađen. Da biste saznali kako ga instalirati, pogledajte:</translation>
-<translation id="2445391421565214706">Za rješavanje problema započnite postupak oporavka. Uklonite sve povezane uređaje, a zatim na deset sekundi pritisnite tipku za pojačavanje glasnoće, tipku za stišavanje glasnoće i tipku za uključivanje/isključivanje (⏻).</translation>
+<translation id="2445391421565214706">Za rješavanje problema započnite postupak oporavka. Uklonite sve povezane uređaje, a zatim na deset sekundi pritisnite tipku za pojačavanje glasnoće, tipku za stišavanje glasnoće i tipku za uključivanje/isključivanje ( ⏻ ).</translation>
 <translation id="2531345960369431549">Ova opcija onemogućit će način rada razvojnog programera i vratiti vaš uređaj u izvorno stanje.</translation>
 <translation id="2603025384438397887">Oporavak pomoću telefona</translation>
 <translation id="2904079386864173492">Model:</translation>
@@ -26,15 +24,12 @@
 <translation id="3235458304027619499">1. Uređaj za vanjsku pohranu kao što je USB disk ili SD kartica</translation>
 <translation id="328213018570216625">Oporavak pomoću vanjske pohrane</translation>
 <translation id="3289365543955953678">Priključite vanjski disk</translation>
-<translation id="3294574173405124634">Povratak u sigurni način zabranjen je pomoću GBB oznaka.</translation>
-<translation id="3416523611207622897">Vanjsko je pokretanje onemogućeno. Za više informacija pogledajte:</translation>
-<translation id="3635226996169670741">Za rješavanje problema započnite postupak oporavka. Uklonite sve povezane uređaje, a zatim pritisnite tipku Esc, tipku za osvježavanje (⟳) tipku za uključivanje/isključivanje (⏻).</translation>
+<translation id="3635226996169670741">Za rješavanje problema započnite postupak oporavka. Uklonite sve povezane uređaje, a zatim pritisnite tipku Esc, tipku za osvježavanje ( ⟳ ) tipku za uključivanje/isključivanje ( ⏻ ).</translation>
 <translation id="385051799172605136">Natrag</translation>
 <translation id="3964506597604121312">Tijekom postupka vaši će se korisnički podaci izbrisati.</translation>
 <translation id="4002335453596341558">Stranica prema dolje</translation>
 <translation id="4152977630022273265">Provjerite ima li vaš vanjski disk valjanu sliku Chrome OS-a i ponovno umetnite disk kad budete spremni.</translation>
 <translation id="4242315717915611349">Odustani i vrati se</translation>
-<translation id="4403160275309808255">Alternativni početni programi za pokretanje su onemogućeni. Za više informacija pogledajte:</translation>
 <translation id="4410491068110727276">Za kretanje prema gore ili dolje koristite se tipkama za glasnoću.</translation>
 <translation id="4497270882390086583">Možete oporaviti pomoću vanjske pohrane kao što je USB disk ili Android telefona.</translation>
 <translation id="4773280894882892048">Informacije o otklanjanju pogrešaka</translation>
@@ -44,7 +39,6 @@
 <translation id="5175612852476047443">Nemojte isključiti uređaj</translation>
 <translation id="5232488980254489397">Pokretanje dijagnostike</translation>
 <translation id="5341719174140776704">1. Android telefon s pristupom internetu</translation>
-<translation id="5477875595374685515">Dohvaćanje zapisnika opreme nije uspjelo.</translation>
 <translation id="5592705604979238266">Centar za pomoć:</translation>
 <translation id="5649741817431380014">Provjerite izvodi li se na telefonu aplikacija za oporavak OS-a Chrome i sadrži li vanjski disk valjanu sliku za oporavak. Ponovno umetnite kabel ili disk kad budete spremni.</translation>
 <translation id="5809240698077875994">Pritisnite tipku za uključivanje/isključivanje da biste omogućili način rada razvojnog programera ili odaberite "Odustani" da biste ostali zaštićeni.</translation>
@@ -67,7 +61,7 @@
 <translation id="7352651011704765696">Nešto nije u redu</translation>
 <translation id="7365121631770711723">2. USB kabel koji povezuje vaš telefon i ovaj uređaj</translation>
 <translation id="7420576176825630019">Omogućivanje načina rada razvojnog programera</translation>
-<translation id="7567414219298075193">Za rješavanje problema započnite postupak oporavka. Uklonite sve povezane uređaje, zatim pritisnite gumb za oporavak, pritisnite i otpustite tipku za uključivanje/isključivanje i otpustite gumb za oporavak (⏻).</translation>
+<translation id="7567414219298075193">Za rješavanje problema započnite postupak oporavka. Uklonite sve povezane uređaje, zatim pritisnite gumb za oporavak, pritisnite i otpustite tipku za uključivanje/isključivanje i otpustite gumb za oporavak ( ⏻ ).</translation>
 <translation id="7638747526774710781">1. Idite na google.com/chromeos/recovery na drugom uređaju i instalirajte Chromeovo proširenje</translation>
 <translation id="7658239707568436148">Odustani</translation>
 <translation id="7806571448308475633">Brza provjera memorije</translation>
@@ -75,16 +69,12 @@
 <translation id="8011335065515332253">Nakon vremena čekanja uređaj će se automatski pokrenuti u skladu s opcijom odabranom u nastavku.</translation>
 <translation id="8027199195649765326">Pritisnite tipku za oporavak na Chromeboxu biste omogućili način rada razvojnog programera ili odaberite "Odustani" da biste ostali zaštićeni.</translation>
 <translation id="8101391381992690790">Provjerite ima li vaš vanjski disk valjanu sliku za oporavak i ponovno umetnite disk kad budete spremni.</translation>
-<translation id="8116993605321079294">Došlo je do pogreške prilikom pokretanja alternativnog početnog programa za pokretanje. Pojedinosti potražite u zapisniku opreme.</translation>
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8199613549817472219">Provest ćemo vas kroz postupak oporavka</translation>
 <translation id="8377165353588213941">Stigli ste do kraja</translation>
-<translation id="8569584079758810124">Dohvaćanje informacija o otklanjanju pogrešaka nije uspjelo.</translation>
 <translation id="8720490351198901261">Stigli ste do vrha</translation>
 <translation id="8789686976863801203">Pokušavate omogućiti način rada razvojnog programera</translation>
-<translation id="8848124168564939055">Način rada razvojnog programera ne može se uključiti pomoću vanjske tipkovnice. Koristite tipke na uređaju navedene u uputama za kretanje.</translation>
 <translation id="885701979325669005">Prostor za pohranu</translation>
-<translation id="9004305007436435169">Dohvaćanje dijagnostičkih podataka nije uspjelo.</translation>
 <translation id="9040266428058825675">Ako je vaš uređaj za vanjsku pohranu spreman sa slikom za oporavak, priključite ga u uređaj da biste započeli oporavak.</translation>
 <translation id="9058669020755173331">Odaberite komponentu koju želite provjeriti.</translation>
 </translationbundle>
