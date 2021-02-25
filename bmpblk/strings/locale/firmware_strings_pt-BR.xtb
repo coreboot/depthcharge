@@ -18,7 +18,7 @@
 <translation id="2270126560545545577">Você está no modo de desenvolvedor</translation>
 <translation id="2360163367862409346">Todos os dados do seu dispositivo serão apagados, e ele ficará desprotegido.</translation>
 <translation id="2398688843544960326">Não foi possível encontrar um carregador de inicialização alternativo. Para aprender a instalar um, acesse:</translation>
-<translation id="2445391421565214706">Para tentar corrigir o problema, inicie o processo de recuperação. Remova todos os dispositivos conectados e mantenha os botões de aumentar volume, diminuir volume e liga/desliga (⏻) pressionados por pelo menos 10 segundos.</translation>
+<translation id="2445391421565214706">Para tentar corrigir o problema, inicie o processo de recuperação. Remova todos os dispositivos conectados e mantenha os botões de aumentar volume, diminuir volume e liga/desliga ( ⏻ ) pressionados por pelo menos 10 segundos.</translation>
 <translation id="2531345960369431549">Essa opção desativará o modo de desenvolvedor e restaurará o dispositivo ao estado original.</translation>
 <translation id="2603025384438397887">Recuperar usando um smartphone</translation>
 <translation id="2904079386864173492">Modelo:</translation>
@@ -28,7 +28,7 @@
 <translation id="3289365543955953678">Conecte o disco externo</translation>
 <translation id="3294574173405124634">As sinalizações GBB não permitem que você volte ao modo seguro.</translation>
 <translation id="3416523611207622897">A inicialização externa está desativada. Para mais informações, consulte:</translation>
-<translation id="3635226996169670741">Para tentar corrigir o problema, inicie o processo de recuperação. Remova todos os dispositivos conectados, depois mantenha as teclas "Esc", "Atualizar" (⟳) e o botão liga/desliga (⏻) pressionados.</translation>
+<translation id="3635226996169670741">Para tentar corrigir o problema, inicie o processo de recuperação. Remova todos os dispositivos conectados, depois mantenha as teclas "Esc", "Atualizar" ( ⟳ ) e o botão liga/desliga ( ⏻ ) pressionados.</translation>
 <translation id="385051799172605136">Voltar</translation>
 <translation id="3964506597604121312">Seus dados de usuário serão permanentemente excluídos no processo.</translation>
 <translation id="4002335453596341558">Página abaixo</translation>
@@ -67,7 +67,7 @@
 <translation id="7352651011704765696">Algo deu errado</translation>
 <translation id="7365121631770711723">2. Um cabo USB que pode conectar o smartphone a este dispositivo</translation>
 <translation id="7420576176825630019">Ativar o modo de desenvolvedor</translation>
-<translation id="7567414219298075193">Para tentar corrigir o problema, inicie o processo de recuperação. Remova todos os dispositivos conectados, mantenha o botão de recuperação pressionado, pressione e solte o botão liga/desliga (⏻) e solte o botão de recuperação.</translation>
+<translation id="7567414219298075193">Para tentar corrigir o problema, inicie o processo de recuperação. Remova todos os dispositivos conectados, mantenha o botão de recuperação pressionado, pressione e solte o botão liga/desliga ( ⏻ ) e solte o botão de recuperação.</translation>
 <translation id="7638747526774710781">1. Acesse google.com/chromeos/recovery no outro dispositivo e instale a extensão do Chrome</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7806571448308475633">Verificação rápida de memória</translation>
