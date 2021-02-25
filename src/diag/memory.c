@@ -304,7 +304,7 @@ vb2_error_t memory_test_init(MemoryTestMode mode)
 	state.prev_percent = -1;
 	state.prev_pattern_name = NULL;
 
-	OUTPUT("This test may take a few minutes.\n\n");
+	OUTPUT("This test may take a few minutes\n\n");
 
 	OUTPUT("Free memory (will be tested): %lld.%03lld GiB\n",
 	       state.num_bytes / GiB, (1000 * state.num_bytes / GiB) % 1000);

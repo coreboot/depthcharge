@@ -375,11 +375,11 @@ char *dump_all_health_info(char *buf, const char *end)
 	ListNode *devs;
 	int n = get_all_bdevs(BLOCKDEV_FIXED, &devs);
 	if (!n) {
-		buf += snprintf(buf, end - buf, "No storage device found.\n\n");
+		buf += snprintf(buf, end - buf, "No storage device found\n\n");
 		return buf;
 	}
 
-	buf += snprintf(buf, end - buf, "Total %d storage device%s.\n\n", n,
+	buf += snprintf(buf, end - buf, "Total %d storage device%s\n\n", n,
 			n > 1 ? "s" : "");
 
 	// Fill them from the BlockDev structures.
