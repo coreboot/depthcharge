@@ -972,7 +972,7 @@ static const char *const diagnostics_desc[] = {
 
 static const struct ui_menu_item diagnostics_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	{ "btn_diag_storage.bmp" },
+	{ "btn_diag_storage_health.bmp" },
 	{ "btn_diag_memory_quick.bmp" },
 	{ "btn_diag_memory_full.bmp" },
 	POWER_OFF_ITEM,
@@ -988,22 +988,22 @@ static const struct ui_screen_info diagnostics_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_DIAGNOSTIC_STORAGE */
+/* VB2_SCREEN_DIAGNOSTICS_STORAGE_HEALTH */
 
-static const struct ui_menu_item diagnostics_storage_items[] = {
+static const struct ui_menu_item diagnostics_storage_health_items[] = {
 	PAGE_UP_ITEM,
 	PAGE_DOWN_ITEM,
 	BACK_ITEM,
 	POWER_OFF_ITEM,
 };
 
-static const struct ui_screen_info diagnostics_storage_screen = {
-	.id = VB2_SCREEN_DIAGNOSTICS_STORAGE,
+static const struct ui_screen_info diagnostics_storage_health_screen = {
+	.id = VB2_SCREEN_DIAGNOSTICS_STORAGE_HEALTH,
 	.icon = UI_ICON_TYPE_NONE,
-	.title = "diag_storage_title.bmp",
-	.menu = UI_MENU(diagnostics_storage_items),
+	.title = "diag_storage_health_title.bmp",
+	.menu = UI_MENU(diagnostics_storage_health_items),
 	.draw_desc = draw_log_desc,
-	.mesg = "Storage",
+	.mesg = "Storage health info",
 };
 
 /******************************************************************************/
@@ -1072,7 +1072,7 @@ static const struct ui_screen_info *const screens[] = {
 	&developer_invalid_disk_screen,
 	&developer_select_bootloader_screen,
 	&diagnostics_screen,
-	&diagnostics_storage_screen,
+	&diagnostics_storage_health_screen,
 	&diagnostics_memory_quick_screen,
 	&diagnostics_memory_full_screen,
 };

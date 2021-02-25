@@ -123,18 +123,18 @@ const char *vb2ex_get_firmware_log(int reset)
 
 #define DEFAULT_DIAGNOSTIC_OUTPUT_SIZE (64 * KiB)
 
-const char *vb2ex_get_diagnostic_storage(void)
+vb2_error_t vb2ex_diag_get_storage_health(const char **out)
 {
 	static char *buf;
-	if (!buf) {
+	if (!buf)
 		buf = malloc(DEFAULT_DIAGNOSTIC_OUTPUT_SIZE);
-		if (!buf)
-			return NULL;
-	}
+	*out = buf;
+	if (!buf)
+		return VB2_ERROR_UI_MEMORY_ALLOC;
 
 	dump_all_health_info(buf, buf + DEFAULT_DIAGNOSTIC_OUTPUT_SIZE);
 
-	return buf;
+	return VB2_SUCCESS;
 }
 
 vb2_error_t vb2ex_diag_memory_quick_test(int reset, const char **out)

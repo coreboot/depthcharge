@@ -44,10 +44,10 @@ const char *vb2ex_get_firmware_log(int reset)
 	return "";
 }
 
-const char *vb2ex_get_diagnostic_storage(void)
+vb2_error_t vb2ex_diag_get_storage_health(const char **out)
 {
 	/* TODO(b/151200757): Support headless devices */
-	return "";
+	return VB2_SUCCESS;
 }
 
 vb2_error_t vb2ex_diag_memory_quick_test(int reset, const char **out)
