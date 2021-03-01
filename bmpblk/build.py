@@ -242,8 +242,6 @@ class Converter(object):
   Attributes:
     ASSET_DIR (str): Directory of image assets.
     DEFAULT_OUTPUT_EXT (str): Default output file extension.
-    DEFAULT_REPLACE_MAP (dict): Default mapping of file replacement. For
-      {'a': 'b'}, "a.*" will be converted to "b.*".
     ASSET_MAX_COLORS (int): Maximum colors to use for converting image assets
       to bitmaps.
     DEFAULT_BACKGROUND (tuple): Default background color.
@@ -253,21 +251,6 @@ class Converter(object):
 
   ASSET_DIR = 'assets'
   DEFAULT_OUTPUT_EXT = '.bmp'
-
-  DEFAULT_REPLACE_MAP = {
-      'rec_sel_desc1_no_sd': '',
-      'rec_sel_desc1_no_phone_no_sd': '',
-      'rec_disk_step1_desc0_no_sd': '',
-      'rec_to_dev_desc1_phyrec': '',
-      'rec_to_dev_desc1_power': '',
-      'navigate0_tablet': '',
-      'navigate1_tablet': '',
-      'nav-button_power': '',
-      'nav-button_volume_up': '',
-      'nav-button_volume_down': '',
-      'broken_desc_phyrec': '',
-      'broken_desc_detach': '',
-  }
 
   # background colors
   DEFAULT_BACKGROUND = (0x20, 0x21, 0x24)
@@ -299,7 +282,7 @@ class Converter(object):
     self.config = board_config
     self.set_dirs(output)
     self.set_screen()
-    self.set_replace_map()
+    self.set_rename_map()
     self.set_locales()
     self.text_max_colors = self.get_text_colors(self.config[DPI_KEY])
     self.dpi_warning_printed = False
@@ -345,41 +328,88 @@ class Converter(object):
     # Set up square drawing area
     self.canvas_px = min(self.screen_width, self.screen_height)
 
-  def set_replace_map(self):
-    """Sets a map replacing images.
+  def set_rename_map(self):
+    """Initializes a dict `self.rename_map` for image renaming.
 
-    For each (key, value), image 'key' will be replaced by image 'value'.
+    For each items in the dict, image `key` will be renamed to `value`.
     """
-    replace_map = self.DEFAULT_REPLACE_MAP.copy()
-
-    if os.getenv('DETACHABLE') == '1':
-      replace_map.update({
-          'nav-key_enter': 'nav-button_power',
-          'nav-key_up': 'nav-button_volume_up',
-          'nav-key_down': 'nav-button_volume_down',
-          'navigate0': 'navigate0_tablet',
-          'navigate1': 'navigate1_tablet',
-          'broken_desc': 'broken_desc_detach',
-      })
-
+    is_detachable = os.getenv('DETACHABLE') == '1'
     physical_presence = os.getenv('PHYSICAL_PRESENCE')
-    if physical_presence == 'recovery':
-      replace_map['rec_to_dev_desc1'] = 'rec_to_dev_desc1_phyrec'
-      replace_map['broken_desc'] = 'broken_desc_phyrec'
-    elif physical_presence == 'power':
-      replace_map['rec_to_dev_desc1'] = 'rec_to_dev_desc1_power'
-    elif physical_presence != 'keyboard':
-      raise BuildImageError('Invalid physical presence setting %s for board %s'
-                            % (physical_presence, self.board))
+    rename_map = {}
 
-    if not self.config[SDCARD_KEY]:
-      replace_map.update({
-          'rec_sel_desc1': 'rec_sel_desc1_no_sd',
-          'rec_sel_desc1_no_phone': 'rec_sel_desc1_no_phone_no_sd',
-          'rec_disk_step1_desc0': 'rec_disk_step1_desc0_no_sd',
+    # Navigation instructions
+    if is_detachable:
+      rename_map.update({
+          'nav-button_power': 'nav-key_enter',
+          'nav-button_volume_up': 'nav-key_up',
+          'nav-button_volume_down': 'nav-key_down',
+          'navigate0_tablet': 'navigate0',
+          'navigate1_tablet': 'navigate1',
+      })
+    else:
+      rename_map.update({
+          'nav-button_power': None,
+          'nav-button_volume_up': None,
+          'nav-button_volume_down': None,
+          'navigate0_tablet': None,
+          'navigate1_tablet': None,
       })
 
-    self.replace_map = replace_map
+    # Physical presence confirmation
+    if physical_presence == 'recovery':
+      rename_map['rec_to_dev_desc1_phyrec'] = 'rec_to_dev_desc1'
+      rename_map['rec_to_dev_desc1_power'] = None
+    elif physical_presence == 'power':
+      rename_map['rec_to_dev_desc1_phyrec'] = None
+      rename_map['rec_to_dev_desc1_power'] = 'rec_to_dev_desc1'
+    else:
+      rename_map['rec_to_dev_desc1_phyrec'] = None
+      rename_map['rec_to_dev_desc1_power'] = None
+      if physical_presence != 'keyboard':
+        raise BuildImageError('Invalid physical presence setting %s for board '
+                              '%s' % (physical_presence, self.board))
+
+    # Broken screen
+    if physical_presence == 'recovery':
+      rename_map['broken_desc_phyrec'] = 'broken_desc'
+      rename_map['broken_desc_detach'] = None
+    elif is_detachable:
+      rename_map['broken_desc_phyrec'] = None
+      rename_map['broken_desc_detach'] = 'broken_desc'
+    else:
+      rename_map['broken_desc_phyrec'] = None
+      rename_map['broken_desc_detach'] = None
+
+    # SD card
+    if not self.config[SDCARD_KEY]:
+      rename_map.update({
+          'rec_sel_desc1_no_sd': 'rec_sel_desc1',
+          'rec_sel_desc1_no_phone_no_sd': 'rec_sel_desc1_no_phone',
+          'rec_disk_step1_desc0_no_sd': 'rec_disk_step1_desc0',
+      })
+    else:
+      rename_map.update({
+          'rec_sel_desc1_no_sd': None,
+          'rec_sel_desc1_no_phone_no_sd': None,
+          'rec_disk_step1_desc0_no_sd': None,
+      })
+
+    # Check for duplicate new names
+    new_names = list(new_name for new_name in rename_map.values() if new_name)
+    if len(set(new_names)) != len(new_names):
+      raise BuildImageError('Duplicate values found in rename_map')
+
+    # Map new_name to None to skip image generation for it
+    for new_name in new_names:
+      if new_name not in rename_map:
+        rename_map[new_name] = None
+
+    # Print mapping
+    print('Rename map:')
+    for name, new_name in sorted(rename_map.items()):
+      print('  %s => %s' % (name, new_name))
+
+    self.rename_map = rename_map
 
   def set_locales(self):
     """Sets a list of locales for which localized images are converted."""
@@ -510,14 +540,14 @@ class Converter(object):
 
     for file in files:
       name, ext = os.path.splitext(os.path.basename(file))
-      output = os.path.join(output_dir, name + self.DEFAULT_OUTPUT_EXT)
 
-      if name in self.replace_map:
-        name = self.replace_map[name]
-        if not name:
+      if name in self.rename_map:
+        new_name = self.rename_map[name]
+        if not new_name:
           continue
-        print('Replace: %s => %s' % (file, name))
-        file = os.path.join(os.path.dirname(file), name + ext)
+      else:
+        new_name = name
+      output = os.path.join(output_dir, new_name + self.DEFAULT_OUTPUT_EXT)
 
       background = self.BACKGROUND_COLORS.get(name, self.DEFAULT_BACKGROUND)
       height = heights[name]
