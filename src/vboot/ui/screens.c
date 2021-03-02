@@ -956,6 +956,8 @@ static const char *const diagnostics_desc[] = {
 static const struct ui_menu_item diagnostics_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	{ "btn_diag_storage_health.bmp" },
+	{ "btn_diag_storage_short_test.bmp" },
+	{ "btn_diag_storage_ext_test.bmp" },
 	{ "btn_diag_memory_quick.bmp" },
 	{ "btn_diag_memory_full.bmp" },
 	POWER_OFF_ITEM,
@@ -990,10 +992,12 @@ static const struct ui_screen_info diagnostics_storage_health_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_DIAGNOSTICS_MEMORY_QUICK,
+/* VB2_SCREEN_DIAGNOSTICS_STORAGE_TEST_SHORT,
+   VB2_SCREEN_DIAGNOSTICS_STORAGE_TEST_EXTENDED,
+   VB2_SCREEN_DIAGNOSTICS_MEMORY_QUICK,
    VB2_SCREEN_DIAGNOSTICS_MEMORY_FULL */
 
-static const struct ui_menu_item diagnostics_memory_items[] = {
+static const struct ui_menu_item diagnostics_test_items[] = {
 	PAGE_UP_ITEM,
 	PAGE_DOWN_ITEM,
 	{
@@ -1007,11 +1011,29 @@ static const struct ui_menu_item diagnostics_memory_items[] = {
 	POWER_OFF_ITEM,
 };
 
+static const struct ui_screen_info diagnostics_storage_test_short_screen = {
+	.id = VB2_SCREEN_DIAGNOSTICS_STORAGE_TEST_SHORT,
+	.icon = UI_ICON_TYPE_NONE,
+	.title = "diag_storage_srt_test_title.bmp",
+	.menu = UI_MENU(diagnostics_test_items),
+	.draw_desc = draw_log_desc,
+	.mesg = "Storage self test (short)",
+};
+
+static const struct ui_screen_info diagnostics_storage_test_extended_screen = {
+	.id = VB2_SCREEN_DIAGNOSTICS_STORAGE_TEST_EXTENDED,
+	.icon = UI_ICON_TYPE_NONE,
+	.title = "diag_storage_ext_test_title.bmp",
+	.menu = UI_MENU(diagnostics_test_items),
+	.draw_desc = draw_log_desc,
+	.mesg = "Storage self test (extended)",
+};
+
 static const struct ui_screen_info diagnostics_memory_quick_screen = {
 	.id = VB2_SCREEN_DIAGNOSTICS_MEMORY_QUICK,
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "diag_memory_quick_title.bmp",
-	.menu = UI_MENU(diagnostics_memory_items),
+	.menu = UI_MENU(diagnostics_test_items),
 	.draw_desc = draw_log_desc,
 	.mesg = "Memory check (quick)",
 };
@@ -1020,7 +1042,7 @@ static const struct ui_screen_info diagnostics_memory_full_screen = {
 	.id = VB2_SCREEN_DIAGNOSTICS_MEMORY_FULL,
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "diag_memory_full_title.bmp",
-	.menu = UI_MENU(diagnostics_memory_items),
+	.menu = UI_MENU(diagnostics_test_items),
 	.draw_desc = draw_log_desc,
 	.mesg = "Memory check (full)",
 };
@@ -1055,6 +1077,8 @@ static const struct ui_screen_info *const screens[] = {
 	&developer_select_bootloader_screen,
 	&diagnostics_screen,
 	&diagnostics_storage_health_screen,
+	&diagnostics_storage_test_short_screen,
+	&diagnostics_storage_test_extended_screen,
 	&diagnostics_memory_quick_screen,
 	&diagnostics_memory_full_screen,
 };

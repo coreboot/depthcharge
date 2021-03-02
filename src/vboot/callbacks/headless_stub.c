@@ -50,6 +50,12 @@ vb2_error_t vb2ex_diag_get_storage_health(const char **out)
 	return VB2_SUCCESS;
 }
 
+vb2_error_t vb2ex_diag_get_storage_test_log(const char **out)
+{
+	/* TODO(b/151200757): Support headless devices */
+	return VB2_ERROR_EX_UNIMPLEMENTED;
+}
+
 vb2_error_t vb2ex_diag_memory_quick_test(int reset, const char **out)
 {
 	/* TODO(b/151200757): Support headless devices */

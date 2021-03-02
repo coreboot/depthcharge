@@ -12,6 +12,7 @@
 ##
 
 depthcharge-y += debug.c
+depthcharge-y += diag.c
 depthcharge-y += disk.c
 ifneq ($(CONFIG_HEADLESS),y)
 depthcharge-y += display.c

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright 2020 Google Inc.
+ * Copyright 2020 Google LLC.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -21,6 +21,7 @@
 
 #include "diag/health_info.h"
 #include "diag/memory.h"
+#include "diag/storage_test.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/firmware_id.h"
@@ -135,6 +136,19 @@ vb2_error_t vb2ex_diag_get_storage_health(const char **out)
 	dump_all_health_info(buf, buf + DEFAULT_DIAGNOSTIC_OUTPUT_SIZE);
 
 	return VB2_SUCCESS;
+}
+
+vb2_error_t vb2ex_diag_get_storage_test_log(const char **out)
+{
+	static char *buf;
+	if (!buf)
+		buf = malloc(DEFAULT_DIAGNOSTIC_OUTPUT_SIZE);
+	*out = buf;
+	if (!buf)
+		return VB2_ERROR_UI_MEMORY_ALLOC;
+
+	return diag_dump_storage_test_log(buf,
+					  buf + DEFAULT_DIAGNOSTIC_OUTPUT_SIZE);
 }
 
 vb2_error_t vb2ex_diag_memory_quick_test(int reset, const char **out)
