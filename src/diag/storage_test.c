@@ -153,12 +153,12 @@ static char *print_test_completion(char *buf, const char *end,
 		if (remain_sec > 60) {
 			int32_t remain_min = remain_sec / 60;
 			buf += snprintf(buf, end - buf,
-					", %d minutes remaining.", remain_min);
+					", %d minutes remaining", remain_min);
 		} else
 			buf += snprintf(buf, end - buf,
-					", %d seconds remaining.", remain_sec);
+					", %d seconds remaining", remain_sec);
 	}
-	buf += snprintf(buf, end - buf, ".\n\n");
+	buf += snprintf(buf, end - buf, "...\n\n");
 	return buf;
 }
 
