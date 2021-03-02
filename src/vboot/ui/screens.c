@@ -1007,7 +1007,7 @@ static const struct ui_screen_info diagnostics_storage_health_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_DIAGNOSTIC_MEMORY_QUICK,
+/* VB2_SCREEN_DIAGNOSTICS_MEMORY_QUICK,
    VB2_SCREEN_DIAGNOSTICS_MEMORY_FULL */
 
 static const struct ui_menu_item diagnostics_memory_items[] = {
