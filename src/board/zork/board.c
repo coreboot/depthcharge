@@ -20,6 +20,7 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "boot/commandline.h"
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
@@ -171,6 +172,16 @@ static int is_vilboz(void)
 			vilboz_str, strlen(vilboz_str)) == 0;
 }
 
+static int is_woomax(void)
+{
+	const char * const woomax_str = "Woomax";
+	struct cb_mainboard *mainboard =
+		phys_to_virt(lib_sysinfo.cb_mainboard);
+
+	return strncasecmp(cb_mb_part_string(mainboard),
+			woomax_str, strlen(woomax_str)) == 0;
+}
+
 static void audio_setup(CrosEc *cros_ec)
 {
 	CrosECTunnelI2c *cros_ec_i2c_tunnel;
@@ -294,6 +305,10 @@ static int board_setup(void)
 
 	power_set_ops(&kern_power_ops);
 	display_set_ops(&zork_display_ops);
+
+	/* woomax doesn't support PSR, and need change in fw */
+	if (is_woomax())
+		commandline_append("amdgpu.dcfeaturemask=0x0");
 
 	return 0;
 }
