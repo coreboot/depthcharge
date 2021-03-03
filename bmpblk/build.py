@@ -5,7 +5,7 @@
 """Script to generate bitmaps for firmware screens."""
 
 import argparse
-from collections import namedtuple
+from collections import defaultdict, namedtuple, Counter
 import copy
 import fractions
 import glob
@@ -408,6 +408,9 @@ class Converter(object):
     return int(self.canvas_px * length / SCALE_BASE) * num_lines
 
   def _get_png_height(self, png_file):
+    # With small DPI, pango-view may generate an empty file
+    if os.path.getsize(png_file) == 0:
+      return 0
     with Image.open(png_file) as image:
       return image.size[1]
 
@@ -447,7 +450,7 @@ class Converter(object):
     command.append(svg_file)
     subprocess.check_call(' '.join(command), shell=True)
 
-  def convert_to_bitmap(self, input_file, height, num_lines, background, output,
+  def convert_to_bitmap(self, input_file, num_lines, background, output,
                         max_colors):
     """Converts an image file `input_file` to a BMP file `output`."""
     image = Image.open(input_file)
@@ -466,20 +469,10 @@ class Converter(object):
       target = image
 
     width_px, height_px = image.size
-    max_height_px = self._to_px(height, num_lines)
-    # If the image size is larger than what will be displayed at runtime,
-    # downscale it.
-    effective_dpi = None
-    if height_px > max_height_px:
-      effective_dpi = self.config[DPI_KEY] * max_height_px // height_px
-      height_px = max_height_px
-      width_px = height_px * image.size[0] // image.size[1]
     # Stretch image horizontally for stretched display.
     if self.panel_stretch != 1:
       width_px = int(width_px * self.panel_stretch)
-    new_size = width_px, height_px
-    if new_size != image.size:
-      target = target.resize(new_size, Image.BICUBIC)
+      target = target.resize((width_px, height_px), Image.BICUBIC)
 
     # Export and downsample color space.
     target.convert('P', dither=None, colors=max_colors, palette=Image.ADAPTIVE
@@ -488,8 +481,6 @@ class Converter(object):
     with open(output, 'rb+') as f:
       f.seek(BMP_HEADER_OFFSET_NUM_LINES)
       f.write(bytearray([num_lines]))
-
-    return effective_dpi
 
   def convert(self, file, output_dir, height, max_width, max_colors,
               one_line_dir=None):
@@ -517,11 +508,66 @@ class Converter(object):
       self.convert_svg_to_png(file, png_file, height, num_lines, background)
       file = png_file
 
-    return self.convert_to_bitmap(file, height, num_lines, background, output,
+    return self.convert_to_bitmap(file, num_lines, background, output,
                                   max_colors)
 
+  def _bisect_dpi(self, max_dpi, initial_dpi, max_height_px, get_height):
+    """Bisects to find the DPI that produces image height `max_height_px`.
+
+    Args:
+      max_dpi: Maximum DPI for binary search.
+      initial_dpi: Initial DPI to try with in binary search.
+        If specified, the value must be no larger than `max_dpi`.
+      max_height_px: Maximum (target) height to search for.
+      get_height: A function converting DPI to height. The function is called
+        once before returning.
+
+    Returns:
+      The best integer DPI within [1, `max_dpi`].
+    """
+
+    min_dpi = 1
+    first_iter = True
+
+    min_height_px = get_height(min_dpi)
+    if min_height_px > max_height_px:
+      # For some font such as "Noto Sans CJK SC", the generated height cannot
+      # go below a certain value. In this case, find max DPI with
+      # height_px <= min_height_px.
+      while min_dpi < max_dpi:
+        if first_iter and initial_dpi:
+          mid_dpi = initial_dpi
+        else:
+          mid_dpi = (min_dpi + max_dpi + 1) // 2
+        height_px = get_height(mid_dpi)
+        if height_px > min_height_px:
+          max_dpi = mid_dpi - 1
+        else:
+          min_dpi = mid_dpi
+        first_iter = False
+      get_height(max_dpi)
+      return max_dpi
+
+    # Find min DPI with height_px == max_height_px
+    while min_dpi < max_dpi:
+      if first_iter and initial_dpi:
+        mid_dpi = initial_dpi
+      else:
+        mid_dpi = (min_dpi + max_dpi) // 2
+      height_px = get_height(mid_dpi)
+      if height_px == max_height_px:
+        return mid_dpi
+      elif height_px < max_height_px:
+        min_dpi = mid_dpi + 1
+      else:
+        max_dpi = mid_dpi
+      first_iter = False
+    get_height(min_dpi)
+    return min_dpi
+
   def convert_text_to_image(self, locale, input_file, font, stage_dir,
-                            output_dir, height=None, max_width=None, dpi=None,
+                            output_dir, height=None, max_width=None,
+                            dpi=None, initial_dpi=None,
                             bgcolor='#000000', fgcolor='#ffffff',
                             use_svg=False):
     """Converts text file `input_file` into image file.
@@ -540,6 +586,7 @@ class Converter(object):
       height: Image height relative to the screen resolution.
       max_width: Maximum image width relative to the screen resolution.
       dpi: DPI value passed to pango-view.
+      initial_dpi: Initial DPI to try with in binary search.
       bgcolor: Background color (#rrggbb).
       fgcolor: Foreground color (#rrggbb).
       use_svg: If set to True, generate SVG file. Otherwise, generate PNG file.
@@ -549,10 +596,17 @@ class Converter(object):
     """
     one_line_dir = os.path.join(stage_dir, ONE_LINE_DIR)
     os.makedirs(one_line_dir, exist_ok=True)
+
     name, _ = os.path.splitext(os.path.basename(input_file))
     svg_file = os.path.join(stage_dir, name + '.svg')
     png_file = os.path.join(stage_dir, name + '.png')
     png_file_one_line = os.path.join(one_line_dir, name + '.png')
+
+    def get_one_line_png_height(dpi):
+      """Generates a one-line PNG using DPI `dpi` and returns its height."""
+      run_pango_view(input_file, png_file_one_line, locale, font, height, 0,
+                     dpi, bgcolor, fgcolor)
+      return self._get_png_height(png_file_one_line)
 
     if use_svg:
       run_pango_view(input_file, svg_file, locale, font, height, 0, dpi,
@@ -560,14 +614,27 @@ class Converter(object):
       return self.convert(svg_file, output_dir, height, max_width,
                           self.text_max_colors)
     else:
-      run_pango_view(input_file, png_file, locale, font, height, max_width, dpi,
-                     bgcolor, fgcolor)
+      if not dpi:
+        raise BuildImageError('DPI must be specified with use_svg=False')
+
+      eff_dpi = dpi
       if locale:
-        run_pango_view(input_file, png_file_one_line, locale, font, height, 0,
-                       dpi, bgcolor, fgcolor)
-      return self.convert(png_file, output_dir, height, max_width,
-                          self.text_max_colors,
-                          one_line_dir=one_line_dir if locale else None)
+        max_height_px = self._to_px(height)
+        height_px = get_one_line_png_height(dpi)
+        if height_px > max_height_px:
+          eff_dpi = self._bisect_dpi(dpi, initial_dpi, max_height_px,
+                                     get_one_line_png_height)
+      # NOTE: With the same DPI, the height of multi-line PNG is not necessarily
+      # a multiple of the height of one-line PNG.  Therefore, even with the
+      # binary search, the height of the resulting multi-line PNG might be
+      # less than "one_line_height * num_lines".  We cannot binary-search DPI
+      # for multi-line PNGs because "num_lines" is dependent on DPI.
+      run_pango_view(input_file, png_file, locale, font, height, max_width,
+                     eff_dpi, bgcolor, fgcolor)
+      self.convert(png_file, output_dir, height, max_width,
+                   self.text_max_colors,
+                   one_line_dir=one_line_dir if locale else None)
+      return eff_dpi
 
   def convert_sprite_images(self):
     """Converts sprite images."""
@@ -606,6 +673,66 @@ class Converter(object):
                                  dpi=dpi,
                                  bgcolor=style[KEY_BGCOLOR],
                                  fgcolor=style[KEY_FGCOLOR])
+
+  def build_locale(self, locale, names, json_dir):
+    """Builds images of strings for `locale`."""
+    dpi = self.config[DPI_KEY]
+    styles = self.formats[KEY_STYLES]
+    fonts = self.formats[KEY_FONTS]
+    font = fonts.get(locale, fonts[KEY_DEFAULT])
+    inputs = parse_locale_json_file(locale, json_dir)
+
+    # Walk locale directory to add pre-generated texts such as language names.
+    for txt_file in glob.glob(os.path.join(self.locale_dir, locale, '*.txt')):
+      name, _ = os.path.splitext(os.path.basename(txt_file))
+      with open(txt_file, 'r', encoding='utf-8-sig') as f:
+        inputs[name] = f.read().strip()
+
+    output_dir = os.path.join(self.stage_locale_dir, locale)
+    os.makedirs(output_dir, exist_ok=True)
+    ro_locale_dir = os.path.join(self.output_ro_dir, locale)
+    os.makedirs(ro_locale_dir, exist_ok=True)
+
+    eff_dpi_counters = defaultdict(Counter)
+    results = []
+    for name, category in sorted(names.items()):
+      # Ignore missing translation
+      if locale != 'en' and name not in inputs:
+        continue
+
+      # Write to text file
+      text_file = os.path.join(output_dir, name + '.txt')
+      with open(text_file, 'w', encoding='utf-8-sig') as f:
+        f.write(inputs[name] + '\n')
+
+      # Convert text to image
+      style = get_config_with_defaults(styles, category)
+      height = style[KEY_HEIGHT]
+      eff_dpi_counter = eff_dpi_counters[height]
+      if eff_dpi_counter:
+        # Find the effective DPI that appears most times for `height`. This
+        # avoid doing the same binary search again and again. In case of a tie,
+        # pick the largest DPI.
+        best_eff_dpi = max(eff_dpi_counter,
+                           key=lambda dpi: (eff_dpi_counter[dpi], dpi))
+      else:
+        best_eff_dpi = None
+      eff_dpi = self.convert_text_to_image(locale,
+                                           text_file,
+                                           font,
+                                           output_dir,
+                                           ro_locale_dir,
+                                           height=height,
+                                           max_width=style[KEY_MAX_WIDTH],
+                                           dpi=dpi,
+                                           initial_dpi=best_eff_dpi,
+                                           bgcolor=style[KEY_BGCOLOR],
+                                           fgcolor=style[KEY_FGCOLOR])
+      eff_dpi_counter[eff_dpi] += 1
+      assert eff_dpi <= dpi
+      if eff_dpi != dpi:
+        results.append(eff_dpi)
+    return results
 
   def _check_text_width(self, output_dir, heights, max_widths):
     """Check if the width of text image will exceed canvas boundary."""
@@ -671,11 +798,6 @@ class Converter(object):
     if DIAGNOSTIC_UI:
       names.update(self.formats[KEY_DIAGNOSTIC_FILES])
 
-    styles = self.formats[KEY_STYLES]
-    fonts = self.formats[KEY_FONTS]
-    default_font = fonts[KEY_DEFAULT]
-    dpi = self.config[DPI_KEY]
-
     # Ignore SIGINT in child processes
     sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
     pool = multiprocessing.Pool(multiprocessing.cpu_count())
@@ -685,53 +807,18 @@ class Converter(object):
     for locale_info in self.locales:
       locale = locale_info.code
       print(locale, end=' ', flush=True)
-      inputs = parse_locale_json_file(locale, json_dir)
-
-      # Walk locale directory to add pre-generated texts such as language names.
-      for txt_file in glob.glob(os.path.join(self.locale_dir, locale, '*.txt')):
-        name, _ = os.path.splitext(os.path.basename(txt_file))
-        with open(txt_file, 'r', encoding='utf-8-sig') as f:
-          inputs[name] = f.read().strip()
-
-      output_dir = os.path.join(self.stage_locale_dir, locale)
-      os.makedirs(output_dir, exist_ok=True)
-      ro_locale_dir = os.path.join(self.output_ro_dir, locale)
-      os.makedirs(ro_locale_dir, exist_ok=True)
-
-      for name, category in names.items():
-        # Ignore missing translation
-        if locale != 'en' and name not in inputs:
-          continue
-
-        # Write to text file
-        text_file = os.path.join(output_dir, name + '.txt')
-        with open(text_file, 'w', encoding='utf-8-sig') as f:
-          f.write(inputs[name] + '\n')
-
-        # Convert to PNG file
-        style = get_config_with_defaults(styles, category)
-        args = (
-            locale,
-            os.path.join(output_dir, '%s.txt' % name),
-            fonts.get(locale, default_font),
-            output_dir,
-            ro_locale_dir,
-        )
-        kwargs = {
-            'height': style[KEY_HEIGHT],
-            'max_width': style[KEY_MAX_WIDTH],
-            'dpi': dpi,
-            'bgcolor': style[KEY_BGCOLOR],
-            'fgcolor': style[KEY_FGCOLOR],
-        }
-        results.append(pool.apply_async(self.convert_text_to_image,
-                                        args, kwargs))
+      args = (
+          locale,
+          names,
+          json_dir,
+      )
+      results.append(pool.apply_async(self.build_locale, args))
 
     print()
     pool.close()
 
     try:
-      effective_dpi = [r.get() for r in results]
+      results = [r.get() for r in results]
     except KeyboardInterrupt:
       pool.terminate()
       pool.join()
@@ -739,7 +826,7 @@ class Converter(object):
     else:
       pool.join()
 
-    effective_dpi = [dpi for dpi in effective_dpi if dpi]
+    effective_dpi = [dpi for r in results for dpi in r if dpi]
     if effective_dpi:
       print('Reducing effective DPI to %d, limited by screen resolution' %
             max(effective_dpi))
