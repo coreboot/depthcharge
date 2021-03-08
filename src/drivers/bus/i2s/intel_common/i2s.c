@@ -309,6 +309,10 @@ static int i2s_send(I2sOps *me, unsigned int *data, unsigned int length)
 	i2s_enable(bus->regs);
 	length -= LPE_SSP_FIFO_SIZE;
 
+#if CONFIG_DRIVER_SOUND_RT1015
+	mdelay(200);
+#endif
+
 	last_activity = timer_us(0);
 	while (length > 0) {
 		if (read_SSSR(bus->regs) & TX_FIFO_NOT_FULL) {
