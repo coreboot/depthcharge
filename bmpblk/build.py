@@ -734,24 +734,32 @@ class Converter(object):
         results.append(eff_dpi)
     return results
 
-  def _check_text_width(self, output_dir, heights, max_widths):
-    """Check if the width of text image will exceed canvas boundary."""
-    for filename in glob.glob(os.path.join(output_dir,
-                                           '*' + self.DEFAULT_OUTPUT_EXT)):
-      name, _ = os.path.splitext(os.path.basename(filename))
-      max_width = max_widths[name]
-      if not max_width:
-        continue
-      max_width_px = self._to_px(max_width)
-      with open(filename, 'rb') as f:
-        f.seek(BMP_HEADER_OFFSET_NUM_LINES)
-        num_lines = f.read(1)[0]
-      height_px = self._to_px(heights[name] * num_lines)
-      with Image.open(filename) as image:
-        width_px = height_px * image.size[0] // image.size[1]
-      if width_px > max_width_px:
-        raise BuildImageError('%s: Image width %dpx greater than max width '
-                              '%dpx' % (filename, width_px, max_width_px))
+  def _check_text_width(self, names):
+    """Checks if text image will exceed the expected drawing area at runtime."""
+    styles = self.formats[KEY_STYLES]
+
+    for locale_info in self.locales:
+      locale = locale_info.code
+      ro_locale_dir = os.path.join(self.output_ro_dir, locale)
+      for filename in glob.glob(os.path.join(ro_locale_dir,
+                                             '*' + self.DEFAULT_OUTPUT_EXT)):
+        name, _ = os.path.splitext(os.path.basename(filename))
+        category = names[name]
+        style = get_config_with_defaults(styles, category)
+        height = style[KEY_HEIGHT]
+        max_width = style[KEY_MAX_WIDTH]
+        if not max_width:
+          continue
+        max_width_px = self._to_px(max_width)
+        with open(filename, 'rb') as f:
+          f.seek(BMP_HEADER_OFFSET_NUM_LINES)
+          num_lines = f.read(1)[0]
+        height_px = self._to_px(height * num_lines)
+        with Image.open(filename) as image:
+          width_px = height_px * image.size[0] // image.size[1]
+        if width_px > max_width_px:
+          raise BuildImageError('%s: Image width %dpx greater than max width '
+                                '%dpx' % (filename, width_px, max_width_px))
 
   def _copy_missing_bitmaps(self):
     """Copy missing (not yet translated) strings from locale 'en'."""
@@ -832,6 +840,7 @@ class Converter(object):
             max(effective_dpi))
 
     shutil.rmtree(json_dir)
+    self._check_text_width(names)
     self._copy_missing_bitmaps()
 
   def move_language_images(self):
