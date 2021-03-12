@@ -116,7 +116,7 @@ static int board_setup(void)
 	}
 
 	/* PCI Bridge for NVMe */
-	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x01, 0x07));
+	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x01, 0x04));
 	list_insert_after(&nvme->ctrlr.list_node,
 				&fixed_block_dev_controllers);
 
