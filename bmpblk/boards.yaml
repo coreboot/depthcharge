@@ -338,3 +338,7 @@ brya:
   screen:   [3840, 2160]
   sdcard:   False
   dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+cherry:
+  # TODO: Add screen config here
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
