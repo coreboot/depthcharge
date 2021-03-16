@@ -14,8 +14,8 @@ locales: [ ar, bg, ca, cs, da, de, el, en, es, es-419, et, fa, fi, fil, fr,
 # Key is the string name (see strings/*.txt); value is the category of the
 # string.
 generic_files:
-  rec_url: footer     # see strings/rec_url.txt
-  dev_mode_url: error # see strings/dev_mode_url.txt
+  rec_url: footer         # see strings/rec_url.txt
+  dev_mode_url: error_url # see strings/dev_mode_url.txt
 
 # Localized strings
 # Key is the name in firmware_strings.grd; value is the category of the string.
@@ -253,6 +253,9 @@ styles:
     fgcolor: *grey_200
     # UI_ERROR_BOX_WIDTH - UI_ERROR_BOX_PADDING * 2
     max_width: 440
+  error_url:
+    bgcolor: *grey_900
+    fgcolor: *grey_200
   # sprite bitmaps
   ic_globe:
     height: 20
