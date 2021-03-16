@@ -68,7 +68,7 @@ static SoundRouteComponent *get_speaker_amp(int *early_init)
 	 */
 	MTKI2c *i2c6 = new_mtk_i2c(0x11005000, 0x11000600);
 	rt1015Codec *codec = new_rt1015_codec(&i2c6->ops,
-					      AUD_RT1015_DEVICE_ADDR);
+					      AUD_RT1015_DEVICE_ADDR, 0);
 	return &codec->component;
 }
 

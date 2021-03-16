@@ -17,6 +17,7 @@
 
 #define RT1015_RESET				0x0000
 #define RT1015_PLL1				0x000a
+#define RT1015_PLL2				0x000c
 #define RT1015_DEVICE_ID			0x007d
 #define RT1015_DAC2				0x0106
 #define RT1015_TDM_MASTER			0x0111
@@ -30,9 +31,9 @@ typedef struct {
 	SoundRouteComponent component;
 	SoundOps ops;
 	I2cOps *i2c;
-	uint8_t chip;
+	uint8_t chip, boost;
 } rt1015Codec;
 
-rt1015Codec *new_rt1015_codec(I2cOps *i2c, uint8_t chip);
+rt1015Codec *new_rt1015_codec(I2cOps *i2c, uint8_t chip, uint8_t boost_mode);
 
 #endif /* __DRIVERS_SOUND_RT1015_H__ */

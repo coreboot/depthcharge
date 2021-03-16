@@ -15,7 +15,7 @@ struct reg_config {
 	uint16_t data;
 };
 
-static const struct reg_config config[] = {
+static const struct reg_config config_no_boost[] = {
 	/* No Boost mode */
 	{ RT1015_PWR4,			0x00B2 },
 	{ RT1015_CLSD_INTERNAL8,	0x2008 },
@@ -29,10 +29,29 @@ static const struct reg_config config[] = {
 	{ RT1015_TDM_MASTER,		0x0000 },
 };
 
+static const struct reg_config config_boost[] = {
+	/* Boost mode 48K, 50fs, BCLK=2.4M */
+	{ RT1015_RESET, 0x0000 },
+	{ RT1015_PLL1,  0x30FE },
+	{ RT1015_PLL2,  0x0008 },
+	{ RT1015_DAC2,  0x2000 },
+};
+
 static int rt1015_enable(SoundRouteComponentOps *me)
 {
 	rt1015Codec *codec = container_of(me, rt1015Codec, component.ops);
 	uint16_t val;
+
+	const struct reg_config *config;
+	size_t config_size;
+
+	if (codec->boost) {
+		config = config_boost;
+		config_size = ARRAY_SIZE(config_boost);
+	} else {
+		config = config_no_boost;
+		config_size = ARRAY_SIZE(config_no_boost);
+	}
 
 	if (i2c_addrw_readw(codec->i2c, codec->chip, RT1015_DEVICE_ID, &val)) {
 		printf("%s: Error reading reg 0x%02x!\n", __func__, RT1015_DEVICE_ID);
@@ -43,7 +62,7 @@ static int rt1015_enable(SoundRouteComponentOps *me)
 		return 1;
 	}
 
-	for (int i = 0; i < ARRAY_SIZE(config); i++) {
+	for (int i = 0; i < config_size; i++) {
 		if (i2c_addrw_writew(codec->i2c, codec->chip,
 				     config[i].addr, config[i].data))
 			return 1;
@@ -65,7 +84,7 @@ static int rt1015_disable(SoundRouteComponentOps *me)
 	return 0;
 }
 
-rt1015Codec *new_rt1015_codec(I2cOps *i2c, uint8_t chip)
+rt1015Codec *new_rt1015_codec(I2cOps *i2c, uint8_t chip, uint8_t boost_mode)
 {
 	rt1015Codec *codec = xzalloc(sizeof(*codec));
 
@@ -74,6 +93,7 @@ rt1015Codec *new_rt1015_codec(I2cOps *i2c, uint8_t chip)
 
 	codec->i2c = i2c;
 	codec->chip = chip;
+	codec->boost = boost_mode;
 
 	return codec;
 }

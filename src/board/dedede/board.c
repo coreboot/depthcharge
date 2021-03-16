@@ -91,7 +91,7 @@ static void setup_rt1015_amp(void)
 	DesignwareI2c *i2c = new_pci_designware_i2c(AUD_I2C4, SPEED_HZ,
 						    JASPERLAKE_DW_I2C_MHZ);
 	rt1015Codec *speaker_amp = new_rt1015_codec(&i2c->ops,
-						    AUD_RT1015_DEVICE_ADDR);
+						    AUD_RT1015_DEVICE_ADDR, 0);
 
 	list_insert_after(&speaker_amp->component.list_node,
 			  &sound_route->components);

@@ -220,7 +220,7 @@ static void audio_setup(CrosEc *cros_ec)
 		/* Codec for RT1015 work with Zork */
 		rt1015Codec *speaker_amp = new_rt1015_codec(
 						&cros_ec_i2c_tunnel->ops,
-						AUD_RT1015_DEVICE_ADDR);
+						AUD_RT1015_DEVICE_ADDR, 0);
 		list_insert_after(&speaker_amp->component.list_node,
 				  &sound_route->components);
 	} else {
