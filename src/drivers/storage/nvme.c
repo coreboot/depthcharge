@@ -51,6 +51,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "arch/cache.h"
 #include "base/cleanup_funcs.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/info.h"
@@ -499,6 +500,13 @@ static NVME_STATUS nvme_internal_read(NvmeDrive *drive, void *buffer, lba_t star
 	sq->cid = ctrlr->cid[NVME_IO_QUEUE_INDEX]++;
 	sq->nsid = drive->namespace_id;
 
+	/* we need to invalidate cache before posting the command to submission
+	 * queue to ensure once the nvme controller had finished DMA, the CPU
+	 * would read the new contents from memory.
+	 */
+	if (!dma_coherent(buffer))
+		dcache_invalidate_by_mva(buffer, count*drive->dev.block_size);
+
 	status = nvme_fill_prp(ctrlr->prp_list[sq->cid], sq->prp, buffer, count * drive->dev.block_size);
 	if (NVME_ERROR(status)) {
 		printf("nvme_internal_read: error %d generating PRP(s)\n",status);
@@ -602,6 +610,13 @@ static NVME_STATUS nvme_internal_write(NvmeDrive *drive, void *buffer, lba_t sta
 	sq->opc = NVME_IO_WRITE_OPC;
 	sq->cid = ctrlr->cid[NVME_IO_QUEUE_INDEX]++;
 	sq->nsid = drive->namespace_id;
+
+	/* we need to clean cache before posting the command to submission
+	 * queue to ensure data from the cache would be updated in memory
+	 * and be visible to the DMA transfer.
+	 */
+	if (!dma_coherent(buffer))
+		dcache_clean_by_mva(buffer, count*drive->dev.block_size);
 
 	status = nvme_fill_prp(ctrlr->prp_list[sq->cid], sq->prp, buffer, count * drive->dev.block_size);
 	if (NVME_ERROR(status)) {
