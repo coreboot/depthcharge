@@ -308,7 +308,7 @@ Select alternate bootloader
 Diagnostic tools
       </message>
       <message name="diag_menu_desc0" desc="String for diagnostic entry menu. This menu provides several self-diagnostic tools including information about storage status and memory tests. This string shows directly under the title of the menu and guides the user to select the desired tool.">
-Select the component you’d like to check.
+Select the test you'd like to run.
       </message>
       <message name="diag_storage_health_title" desc="Title for storage diagnostic screen. This screen will retrieve health information about the storage (disks) on this device.">
 Storage health info

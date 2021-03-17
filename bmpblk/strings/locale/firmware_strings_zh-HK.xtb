@@ -5,6 +5,7 @@
 <translation id="1159332245309393502">設定外部儲存空間</translation>
 <translation id="1201402288615127009">下一個</translation>
 <translation id="1252150473073837888">確認返回安全模式</translation>
+<translation id="1321620357351949170">選取要執行的測試。</translation>
 <translation id="1389402762514302384">請選取 [取消] 來維持受保護的狀態。</translation>
 <translation id="1483971085438511843">請使用 Enter 鍵選取所需選項。</translation>
 <translation id="1931763245382489971">3. 當您的外部儲存裝置準備好復原映像檔後，請按 [下一步]</translation>
@@ -86,5 +87,4 @@
 <translation id="885701979325669005">儲存設備</translation>
 <translation id="9004305007436435169">無法取得診斷資料。</translation>
 <translation id="9040266428058825675">如果外部儲存裝置已準備好復原映像檔，請將其插入此裝置以啟動復原程序。</translation>
-<translation id="9058669020755173331">選取您想檢查的組件。</translation>
 </translationbundle>

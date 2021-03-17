@@ -5,6 +5,7 @@
 <translation id="1159332245309393502">외부 저장소 설정</translation>
 <translation id="1201402288615127009">다음</translation>
 <translation id="1252150473073837888">보안 모드로 돌아갈지 확인하세요</translation>
+<translation id="1321620357351949170">실행하려는 테스트를 선택하세요.</translation>
 <translation id="1389402762514302384">보안 상태를 유지하려면 취소를 선택합니다.</translation>
 <translation id="1483971085438511843">Enter 키를 사용하여 옵션을 선택하세요.</translation>
 <translation id="1931763245382489971">3. 외부 저장소 기기에 복구 이미지가 다운로드 되었으면 '다음'을 클릭합니다.</translation>
@@ -86,5 +87,4 @@
 <translation id="885701979325669005">저장소</translation>
 <translation id="9004305007436435169">진단 정보를 가져올 수 없습니다.</translation>
 <translation id="9040266428058825675">외부 저장소 기기에 복구 이미지가 다운로드 되었으면 이 기기에 연결하여 복구 프로세스를 시작합니다.</translation>
-<translation id="9058669020755173331">확인할 구성요소를 선택하세요.</translation>
 </translationbundle>

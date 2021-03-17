@@ -5,6 +5,7 @@
 <translation id="1159332245309393502">Set up your external storage</translation>
 <translation id="1201402288615127009">Next</translation>
 <translation id="1252150473073837888">Confirm returning to secure mode</translation>
+<translation id="1321620357351949170">Select the test that you'd like to run.</translation>
 <translation id="1389402762514302384">Select Cancel to remain protected.</translation>
 <translation id="1483971085438511843">Use the enter key to select an option.</translation>
 <translation id="1931763245382489971">3. Click next when your external storage device is ready with the recovery image</translation>
@@ -86,5 +87,4 @@
 <translation id="885701979325669005">Storage</translation>
 <translation id="9004305007436435169">Could not get diagnostic information.</translation>
 <translation id="9040266428058825675">If your external storage device is ready with a recovery image, plug it into this device to start the recovery process.</translation>
-<translation id="9058669020755173331">Select the component that you’d like to check.</translation>
 </translationbundle>

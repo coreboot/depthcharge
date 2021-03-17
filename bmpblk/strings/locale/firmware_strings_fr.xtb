@@ -5,6 +5,7 @@
 <translation id="1159332245309393502">Configurez votre espace de stockage externe</translation>
 <translation id="1201402288615127009">Suivant</translation>
 <translation id="1252150473073837888">Confirmez que vous souhaitez revenir au mode sécurisé</translation>
+<translation id="1321620357351949170">Sélectionnez le test à exécuter.</translation>
 <translation id="1389402762514302384">Sélectionnez "Annuler" pour maintenir la protection.</translation>
 <translation id="1483971085438511843">Utilisez la touche Entrée pour sélectionner une option.</translation>
 <translation id="1931763245382489971">3. Cliquez sur "Suivant" une fois que l'image de récupération a bien été installée sur le périphérique de stockage externe</translation>
@@ -86,5 +87,4 @@
 <translation id="885701979325669005">Données stockées</translation>
 <translation id="9004305007436435169">Impossible de charger les informations de diagnostic.</translation>
 <translation id="9040266428058825675">Si une image de récupération est déjà installée sur votre périphérique de stockage externe, branchez celui-ci à cet appareil pour lancer le processus de récupération.</translation>
-<translation id="9058669020755173331">Sélectionnez le composant à vérifier.</translation>
 </translationbundle>

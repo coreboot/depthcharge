@@ -5,6 +5,7 @@
 <translation id="1159332245309393502">הגדרה של התקן אחסון חיצוני</translation>
 <translation id="1201402288615127009">הבא</translation>
 <translation id="1252150473073837888">אישור חזרה למצב מאובטח</translation>
+<translation id="1321620357351949170">יש לבחור את הבדיקה שרוצים להפעיל.</translation>
 <translation id="1389402762514302384">יש לבחור באפשרות 'ביטול' כדי לא לפגוע באבטחת החשבון.</translation>
 <translation id="1483971085438511843">‏יש להקיש על Enter כדי לבחור.</translation>
 <translation id="1931763245382489971">3. כשהתקן האחסון החיצוני יהיה מוכן עם תמונת השחזור, יש ללחוץ על 'הבא'</translation>
@@ -86,5 +87,4 @@
 <translation id="885701979325669005">אחסון</translation>
 <translation id="9004305007436435169">לא ניתן לקבל מידע על האבחון.</translation>
 <translation id="9040266428058825675">אם התקן האחסון החיצוני מוכן עם תמונה לשחזור, יש לחבר אותו אל המכשיר כדי להתחיל בתהליך השחזור.</translation>
-<translation id="9058669020755173331">יש לבחור את הרכיב שברצונך לבדוק.</translation>
 </translationbundle>

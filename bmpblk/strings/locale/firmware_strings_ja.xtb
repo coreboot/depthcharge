@@ -5,6 +5,7 @@
 <translation id="1159332245309393502">外部ストレージをセットアップする</translation>
 <translation id="1201402288615127009">次へ</translation>
 <translation id="1252150473073837888">通常モードに戻ってもよろしいですか？</translation>
+<translation id="1321620357351949170">実施するテストを選択してください。</translation>
 <translation id="1389402762514302384">保護された状態を維持する場合は [キャンセル] を選択します。</translation>
 <translation id="1483971085438511843">Enter キーを押すことで、項目を選択できます。</translation>
 <translation id="1931763245382489971">3. 外部ストレージ デバイスにリカバリ イメージをダウンロードしたら、[次へ] をクリックします</translation>
@@ -86,5 +87,4 @@
 <translation id="885701979325669005">ストレージ</translation>
 <translation id="9004305007436435169">診断情報を取得できませんでした。</translation>
 <translation id="9040266428058825675">Chrome OS のリカバリ イメージが含まれる USB メモリまたは SD カードをデバイスに接続してください。システムが自動的に修復作業を開始します。</translation>
-<translation id="9058669020755173331">確認するコンポーネントを選択します。</translation>
 </translationbundle>
