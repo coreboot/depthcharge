@@ -19,6 +19,7 @@
 #include <libpayload.h>
 
 #include "base/cleanup_funcs.h"
+#include "base/timestamp.h"
 #include "debug/dev.h"
 
 ListNode cleanup_funcs;
@@ -39,5 +40,5 @@ void run_cleanup_funcs(CleanupType type)
 	dc_dev_gdb_exit(type);
 
 	printf("Exiting depthcharge with code %d at timestamp: %llu\n",
-	       type, timer_us(0));
+	       type, get_us_since_boot());
 }
