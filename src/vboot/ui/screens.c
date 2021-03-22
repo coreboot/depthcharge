@@ -1031,7 +1031,7 @@ static const struct ui_screen_info diagnostics_memory_quick_screen = {
 	.title = "diag_memory_quick_title.bmp",
 	.menu = UI_MENU(diagnostics_memory_items),
 	.draw_desc = draw_log_desc,
-	.mesg = "Quick memory check",
+	.mesg = "Memory check (quick)",
 };
 
 static const struct ui_screen_info diagnostics_memory_full_screen = {
@@ -1040,7 +1040,7 @@ static const struct ui_screen_info diagnostics_memory_full_screen = {
 	.title = "diag_memory_full_title.bmp",
 	.menu = UI_MENU(diagnostics_memory_items),
 	.draw_desc = draw_log_desc,
-	.mesg = "Full memory check",
+	.mesg = "Memory check (full)",
 };
 
 /******************************************************************************/
