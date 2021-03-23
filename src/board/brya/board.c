@@ -37,6 +37,7 @@
 
 #define I2C_FS_HZ	400000
 
+#define SSP_PORT_SPKR	2
 #define AUD_VOLUME	4000
 #define AUD_BITDEPTH	16
 #define AUD_SAMPLE_RATE	48000
@@ -47,6 +48,11 @@ static int cr50_irq_status(void)
 {
 	/* FIX ME: Confirm GSC_PCH_INT_ODL PIN GPE assume route to DW0 */
 	return alderlake_get_gpe(GPE0_DW0_13); /* GPP_A13 */
+}
+
+int board_get_ssp_port_index(void)
+{
+	return SSP_PORT_SPKR;
 }
 
 static int board_setup(void)
@@ -74,7 +80,7 @@ static int board_setup(void)
 #if CONFIG_DRIVER_SOUND_GPIO_AMP
 	GpioOps *sdmode = &new_alderlake_gpio_output(SDMODE_PIN, 0)->ops;
 	I2s *i2s = new_i2s_structure(&max98357a_settings, AUD_BITDEPTH,
-			sdmode, SSP_I2S0_START_ADDRESS);
+			sdmode, SSP_I2S2_START_ADDRESS);
 	I2sSource *i2s_source = new_i2s_source(&i2s->ops, AUD_SAMPLE_RATE,
 			AUD_NUM_CHANNELS, AUD_VOLUME);
 	/* Connect the Audio codec to the I2s source */
