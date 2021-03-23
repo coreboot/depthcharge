@@ -81,6 +81,10 @@
 /* eDP backlight */
 #define GPIO_BACKLIGHT		85
 
+/* FW_CONFIG for AMP */
+#define FW_CONFIG_MASK_AMP	0x1
+#define FW_CONFIG_SHIFT_AMP	35
+
 static int cr50_irq_status(void)
 {
 	static KernGpio *tpm_gpio;
@@ -176,6 +180,17 @@ static int is_woomax(void)
 			woomax_str, strlen(woomax_str)) == 0;
 }
 
+/*
+ * vilboz has two audio amps:
+ * RT1015(I2C_MODE):  audio_amp = 0
+ * RT1015P(AUTO_MODE): audio_amp = 1
+ */
+static int gets_audio_amp_type_config(void)
+{
+	return (lib_sysinfo.fw_config >> FW_CONFIG_SHIFT_AMP)
+		& FW_CONFIG_MASK_AMP;
+}
+
 static void audio_setup(CrosEc *cros_ec)
 {
 	CrosECTunnelI2c *cros_ec_i2c_tunnel;
@@ -216,7 +231,7 @@ static void audio_setup(CrosEc *cros_ec)
 	 */
 	gpio_i2s_play = i2s->ops.play;
 	i2s->ops.play = amd_gpio_i2s_play;
-	if (is_vilboz()) {
+	if (is_vilboz() && !gets_audio_amp_type_config()) {
 		/* Codec for RT1015 work with Zork */
 		rt1015Codec *speaker_amp = new_rt1015_codec(
 						&cros_ec_i2c_tunnel->ops,
