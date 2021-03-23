@@ -85,6 +85,7 @@ config DRIVER_SOC_ALDERLAKE
 	bool "Alderlake SoC driver"
 	default n
 	select DRIVER_GPIO_ALDERLAKE
+	select INTEL_COMMON_I2S_CAVS_2_5
 
 config DRIVER_SOC_CEZANNE
 	bool "Cezanne SoC driver"
