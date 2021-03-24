@@ -204,6 +204,7 @@ class Converter(object):
     DEFAULT_OUTPUT_EXT (str): Default output file extension.
     ASSET_MAX_COLORS (int): Maximum colors to use for converting image assets
       to bitmaps.
+    GLYPH_MAX_COLORS (int): Maximum colors to use for glyph bitmaps.
     DEFAULT_BACKGROUND (tuple): Default background color.
     BACKGROUND_COLORS (dict): Background color of each image. Key is the image
       name and value is a tuple of RGB values.
@@ -217,6 +218,7 @@ class Converter(object):
   LANG_HEADER_BACKGROUND = (0x16, 0x17, 0x19)
   LINK_SELECTED_BACKGROUND = (0x2a, 0x2f, 0x39)
   ASSET_MAX_COLORS = 128
+  GLYPH_MAX_COLORS = 7
 
   BACKGROUND_COLORS = {
       'ic_dropdown': LANG_HEADER_BACKGROUND,
@@ -558,7 +560,7 @@ class Converter(object):
     return min_dpi
 
   def convert_text_to_image(self, locale, input_file, output_file, font,
-                            stage_dir, height=None, max_width=None,
+                            stage_dir, max_colors, height=None, max_width=None,
                             dpi=None, initial_dpi=None,
                             bgcolor='#000000', fgcolor='#ffffff',
                             use_svg=False):
@@ -575,6 +577,7 @@ class Converter(object):
       output_file: Path of output image file.
       font: Font name.
       stage_dir: Directory to store intermediate file(s).
+      max_colors: Maximum colors to convert to bitmap.
       height: Image height relative to the screen resolution.
       max_width: Maximum image width relative to the screen resolution.
       dpi: DPI value passed to pango-view.
@@ -603,8 +606,7 @@ class Converter(object):
     if use_svg:
       run_pango_view(input_file, svg_file, locale, font, height, 0, dpi,
                      bgcolor, fgcolor, hinting='none')
-      return self.convert(svg_file, output_file, height, max_width,
-                          self.text_max_colors)
+      return self.convert(svg_file, output_file, height, max_width, max_colors)
     else:
       if not dpi:
         raise BuildImageError('DPI must be specified with use_svg=False')
@@ -623,8 +625,7 @@ class Converter(object):
       # for multi-line PNGs because "num_lines" is dependent on DPI.
       run_pango_view(input_file, png_file, locale, font, height, max_width,
                      eff_dpi, bgcolor, fgcolor)
-      self.convert(png_file, output_file, height, max_width,
-                   self.text_max_colors,
+      self.convert(png_file, output_file, height, max_width, max_colors,
                    one_line_dir=one_line_dir if locale else None)
       return eff_dpi
 
@@ -668,7 +669,7 @@ class Converter(object):
       category = names[name]
       style = get_config_with_defaults(styles, category)
       self.convert_text_to_image(None, txt_file, output_file, default_font,
-                                 self.stage_dir,
+                                 self.stage_dir, self.text_max_colors,
                                  height=style[KEY_HEIGHT],
                                  max_width=style[KEY_MAX_WIDTH],
                                  dpi=dpi,
@@ -728,6 +729,7 @@ class Converter(object):
                                            output_file,
                                            font,
                                            stage_dir,
+                                           self.text_max_colors,
                                            height=height,
                                            max_width=style[KEY_MAX_WIDTH],
                                            dpi=dpi,
@@ -879,7 +881,7 @@ class Converter(object):
       output_file = os.path.join(font_output_dir,
                                  name + self.DEFAULT_OUTPUT_EXT)
       self.convert_text_to_image(None, txt_file, output_file, GLYPH_FONT,
-                                 self.stage_font_dir,
+                                 self.stage_font_dir, self.GLYPH_MAX_COLORS,
                                  height=DEFAULT_GLYPH_HEIGHT,
                                  use_svg=True)
 
