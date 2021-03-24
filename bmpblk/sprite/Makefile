@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# This makefile lets you MANUALLY generate the QR code assets, and should NOT be
+# This makefile lets you MANUALLY generate the QR code images, and should NOT be
 # run automatically.
 
 all: qr_rec.svg qr_rec_phone.svg

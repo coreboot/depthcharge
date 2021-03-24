@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 # This file is the source of truth for both generic (locale-independent)
-# strings, localized strings and sprite bitmaps (image assets).
+# strings, localized strings and sprite bitmaps.
 
 locales: [ ar, bg, ca, cs, da, de, el, en, es, es-419, et, fa, fi, fil, fr,
            he, hi, hr, hu, id, it, ja, ko, lt, lv, ms, nl, nb, pl, pt-BR,

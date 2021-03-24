@@ -197,12 +197,11 @@ def parse_locale_json_file(locale, json_dir):
 
 
 class Converter(object):
-  """Converter from assets, texts, URLs, and fonts to bitmap images.
+  """Converter for converting sprites, texts, and glyphs to bitmaps.
 
   Attributes:
-    ASSET_DIR (str): Directory of image assets.
     DEFAULT_OUTPUT_EXT (str): Default output file extension.
-    ASSET_MAX_COLORS (int): Maximum colors to use for converting image assets
+    SPRITE_MAX_COLORS (int): Maximum colors to use for converting image sprites
       to bitmaps.
     GLYPH_MAX_COLORS (int): Maximum colors to use for glyph bitmaps.
     DEFAULT_BACKGROUND (tuple): Default background color.
@@ -210,14 +209,13 @@ class Converter(object):
       name and value is a tuple of RGB values.
   """
 
-  ASSET_DIR = 'assets'
   DEFAULT_OUTPUT_EXT = '.bmp'
 
   # background colors
   DEFAULT_BACKGROUND = (0x20, 0x21, 0x24)
   LANG_HEADER_BACKGROUND = (0x16, 0x17, 0x19)
   LINK_SELECTED_BACKGROUND = (0x2a, 0x2f, 0x39)
-  ASSET_MAX_COLORS = 128
+  SPRITE_MAX_COLORS = 128
   GLYPH_MAX_COLORS = 7
 
   BACKGROUND_COLORS = {
@@ -255,6 +253,7 @@ class Converter(object):
       output: Output directory.
     """
     self.strings_dir = os.path.join(SCRIPT_BASE, 'strings')
+    self.sprite_dir = os.path.join(SCRIPT_BASE, 'sprite')
     self.locale_dir = os.path.join(self.strings_dir, 'locale')
     self.output_dir = os.path.join(output, self.board)
     self.output_ro_dir = os.path.join(self.output_dir, 'locale', 'ro')
@@ -634,7 +633,7 @@ class Converter(object):
     names = self.formats[KEY_SPRITE_FILES]
     styles = self.formats[KEY_STYLES]
     # Check redundant images
-    for filename in glob.glob(os.path.join(self.ASSET_DIR, SVG_FILES)):
+    for filename in glob.glob(os.path.join(self.sprite_dir, SVG_FILES)):
       name, _ = os.path.splitext(os.path.basename(filename))
       if name not in names:
         raise BuildImageError('Sprite image %r not specified in %s' %
@@ -645,10 +644,10 @@ class Converter(object):
       if not new_name:
         continue
       style = get_config_with_defaults(styles, category)
-      file = os.path.join(self.ASSET_DIR, name + '.svg')
+      file = os.path.join(self.sprite_dir, name + '.svg')
       output = os.path.join(self.output_dir, new_name + self.DEFAULT_OUTPUT_EXT)
       height = style[KEY_HEIGHT]
-      self.convert(file, output, height, None, self.ASSET_MAX_COLORS)
+      self.convert(file, output, height, None, self.SPRITE_MAX_COLORS)
 
   def build_generic_strings(self):
     """Builds images of generic (locale-independent) strings."""
