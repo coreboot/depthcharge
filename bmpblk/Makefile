@@ -19,7 +19,7 @@ build:
 
 archive:
 	./archive_images.py -a "$(ARCHIVER)" -d "$(OUTPUT)"
-	"$(ARCHIVER)" "$(OUTPUT)/font.bin" create "$(OUTPUT)"/font/*.bmp
+	"$(ARCHIVER)" "$(OUTPUT)/font.bin" create "$(OUTPUT)"/glyph/*.bmp
 
 clean:
 	rm -rf $(OUTPUT)

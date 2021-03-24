@@ -261,7 +261,7 @@ class Converter(object):
     self.output_rw_dir = os.path.join(self.output_dir, 'locale', 'rw')
     self.stage_dir = os.path.join(output, '.stage')
     self.stage_locale_dir = os.path.join(self.stage_dir, 'locale')
-    self.stage_font_dir = os.path.join(self.stage_dir, 'font')
+    self.stage_glyph_dir = os.path.join(self.stage_dir, 'glyph')
     self.temp_dir = os.path.join(self.stage_dir, 'tmp')
 
   def set_screen(self):
@@ -868,20 +868,19 @@ class Converter(object):
 
   def build_glyphs(self):
     """Builds glyphs of ascii characters."""
-    os.makedirs(self.stage_font_dir, exist_ok=True)
-    font_output_dir = os.path.join(self.output_dir, 'font')
-    os.makedirs(font_output_dir)
+    os.makedirs(self.stage_glyph_dir, exist_ok=True)
+    output_dir = os.path.join(self.output_dir, 'glyph')
+    os.makedirs(output_dir)
     # TODO(b/163109632): Parallelize the conversion of glyphs
     for c in range(ord(' '), ord('~') + 1):
       name = f'idx{c:03d}_{c:02x}'
-      txt_file = os.path.join(self.stage_font_dir, name + '.txt')
+      txt_file = os.path.join(self.stage_glyph_dir, name + '.txt')
       with open(txt_file, 'w', encoding='ascii') as f:
         f.write(chr(c))
         f.write('\n')
-      output_file = os.path.join(font_output_dir,
-                                 name + self.DEFAULT_OUTPUT_EXT)
+      output_file = os.path.join(output_dir, name + self.DEFAULT_OUTPUT_EXT)
       self.convert_text_to_image(None, txt_file, output_file, GLYPH_FONT,
-                                 self.stage_font_dir, self.GLYPH_MAX_COLORS,
+                                 self.stage_glyph_dir, self.GLYPH_MAX_COLORS,
                                  height=DEFAULT_GLYPH_HEIGHT,
                                  use_svg=True)
 
