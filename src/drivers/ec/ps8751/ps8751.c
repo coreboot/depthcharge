@@ -158,6 +158,7 @@
 #define PARADE_PS8815_PRODUCT_ID	0x8815
 #define PARADE_PS8815_A0_DEVICE_ID	0x0001
 #define PARADE_PS8815_A1_DEVICE_ID	0x0002
+#define PARADE_PS8815_A2_DEVICE_ID	0x0003
 
 enum ps8751_device_state {
 	PS8751_DEVICE_MISSING = -2,
@@ -1575,6 +1576,13 @@ static const VbootAuxfwOps ps8815_a1_fw_ops = {
 	.update_image = ps8751_update_image,
 };
 
+static const VbootAuxfwOps ps8815_a2_fw_ops = {
+	.fw_image_name = "ps8815_a2.bin",
+	.fw_hash_name = "ps8815_a2.hash",
+	.check_hash = ps8751_check_hash,
+	.update_image = ps8751_update_image,
+};
+
 Ps8751 *new_ps8751(CrosECTunnelI2c *bus, int ec_pd_id)
 {
 	Ps8751 *me = xzalloc(sizeof(*me));
@@ -1675,6 +1683,11 @@ Ps8751 *new_ps8815_a1(CrosECTunnelI2c *bus, int ec_pd_id)
 	return new_ps8815(bus, ec_pd_id, &ps8815_a1_fw_ops);
 }
 
+Ps8751 *new_ps8815_a2(CrosECTunnelI2c *bus, int ec_pd_id)
+{
+	return new_ps8815(bus, ec_pd_id, &ps8815_a2_fw_ops);
+}
+
 static const VbootAuxfwOps *new_ps8xxx_from_chip_info(
 	struct ec_response_pd_chip_info *r, uint8_t ec_pd_id)
 {
@@ -1710,6 +1723,9 @@ static const VbootAuxfwOps *new_ps8xxx_from_chip_info(
 			break;
 		case PARADE_PS8815_A1_DEVICE_ID:
 			ps8751 = new_ps8815_a1(NULL, ec_pd_id);
+			break;
+		case PARADE_PS8815_A2_DEVICE_ID:
+			ps8751 = new_ps8815_a2(NULL, ec_pd_id);
 			break;
 		default:
 			return NULL;
