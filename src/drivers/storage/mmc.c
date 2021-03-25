@@ -1265,6 +1265,40 @@ static int mmc_send_if_cond(MmcMedia *media)
 	return 0;
 }
 
+static int mmc_early_init(MmcMedia *media)
+{
+	int err;
+
+	/* Reset the Card */
+	err = mmc_go_idle(media);
+	if (err)
+		return err;
+
+	/* If the slot_type is unknown or removable we try SD first then MMC. */
+	if (media->ctrlr->slot_type == MMC_SLOT_TYPE_UNKNOWN ||
+	    media->ctrlr->slot_type == MMC_SLOT_TYPE_REMOVABLE) {
+		/* Test for SD version 2 */
+		err = mmc_send_if_cond(media);
+
+		/* Get SD card operating condition */
+		err = sd_send_op_cond(media);
+	}
+
+	/* If the slot is embedded or the SD command timed out, we check for an
+	 * MMC card */
+	if (media->ctrlr->slot_type == MMC_SLOT_TYPE_EMBEDDED ||
+	    err == MMC_TIMEOUT) {
+		err = mmc_send_op_cond(media);
+
+		if (err && err != MMC_IN_PROGRESS) {
+			printf("MMC did not respond to voltage select!\n");
+			return MMC_UNUSABLE_ERR;
+		}
+	}
+
+	return err;
+}
+
 int mmc_setup_media(MmcCtrlr *ctrlr)
 {
 	int err;
@@ -1275,33 +1309,21 @@ int mmc_setup_media(MmcCtrlr *ctrlr)
 	mmc_set_timing(ctrlr, MMC_TIMING_INITIALIZATION);
 	mmc_set_bus_width(ctrlr, 1);
 
-	/* Reset the Card */
-	err = mmc_go_idle(media);
-	if (err) {
-		free(media);
-		return err;
-	}
-
-	/* If the slot_type is unknown or removable we try SD first then MMC. */
-	if (ctrlr->slot_type == MMC_SLOT_TYPE_UNKNOWN ||
-	    ctrlr->slot_type == MMC_SLOT_TYPE_REMOVABLE) {
-		/* Test for SD version 2 */
-		err = mmc_send_if_cond(media);
-
-		/* Get SD card operating condition */
-		err = sd_send_op_cond(media);
-	}
-
-	/* If the slot is embedded or the SD command timed out, we check for an
-	 * MMC card */
-	if (ctrlr->slot_type == MMC_SLOT_TYPE_EMBEDDED || err == MMC_TIMEOUT) {
-		err = mmc_send_op_cond(media);
-
-		if (err && err != MMC_IN_PROGRESS) {
-			printf("MMC did not respond to voltage select!\n");
-			free(media);
-			return MMC_UNUSABLE_ERR;
+	if (ctrlr->slot_type == MMC_SLOT_TYPE_EMBEDDED &&
+	    lib_sysinfo.mmc_early_wake_status) {
+		switch (lib_sysinfo.mmc_early_wake_status) {
+		case MMC_STATUS_CMD1_READY:
+			err = 0;
+			break;
+		case MMC_STATUS_CMD1_IN_PROGRESS:
+			err = MMC_IN_PROGRESS;
+			break;
+		default:
+			err = mmc_early_init(media);
+			break;
 		}
+	} else {
+		err = mmc_early_init(media);
 	}
 
 	if (err && err != MMC_IN_PROGRESS) {

@@ -66,6 +66,14 @@
 #define MMC_IN_PROGRESS		-20 /* operation is in progress */
 #define MMC_INVALID_ERR		-21 /* A catch all case. */
 
+/* MMC status in CBMEM_ID_MMC_STATUS */
+enum {
+	MMC_STATUS_NEED_RESET = 0,
+	MMC_STATUS_CMD1_READY_OR_IN_PROGRESS,
+	MMC_STATUS_CMD1_READY,
+	MMC_STATUS_CMD1_IN_PROGRESS,
+};
+
 #define MMC_CMD_GO_IDLE_STATE		0
 #define MMC_CMD_SEND_OP_COND		1
 #define MMC_CMD_ALL_SEND_CID		2
