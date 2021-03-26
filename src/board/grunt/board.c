@@ -73,6 +73,8 @@
 #define EC_USB_PD_PORT_PS8751	1
 #define EC_I2C_PORT_PS8751	2
 
+int is_barla_alc5682(uint32_t id);
+
 static int cr50_irq_status(void)
 {
 	static KernGpio *tpm_gpio;
@@ -119,23 +121,25 @@ static int amd_gpio_i2s_play(struct SoundOps *me, uint32_t msec,
 	return ret;
 }
 
-static void audio_setup(void)
+static void audio_setup(uint32_t skuid)
 {
-	/* Setup da7219 on I2C0 */
-	DesignwareI2c *i2c0 = new_designware_i2c(AP_I2C0_ADDR, 400000,
-						 AP_I2C_CLK_MHZ);
+	if (!is_barla_alc5682(skuid)) {
+		/* Setup da7219 on I2C0 */
+		DesignwareI2c *i2c0 = new_designware_i2c(AP_I2C0_ADDR, 400000,
+						 	 AP_I2C_CLK_MHZ);
 
-	/* Clear DAI_CLK_MODE.dai_clk_en to set BCLK/WCLK pins as inputs */
-	int ret = i2c_clear_bits(&i2c0->ops, DA7219_I2C_ADDR,
-				 DA7219_DAI_CLK_MODE, DAI_CLK_EN);
-	/*
-	 * If we cannot clear DAI_CLK_EN, we may be fighting with it for
-	 * control of BCLK/WCLK, so skip audio initialization.
-	 */
-	if (ret < 0) {
-		printf("Failed to clear dai_clk_en (%d), skipping bit-bang i2s config\n",
-		       ret);
-		return;
+		/* Clear DAI_CLK_MODE.dai_clk_en to set BCLK/WCLK pins as inputs */
+		int ret = i2c_clear_bits(&i2c0->ops, DA7219_I2C_ADDR,
+				 	 DA7219_DAI_CLK_MODE, DAI_CLK_EN);
+		/*
+		 * If we cannot clear DAI_CLK_EN, we may be fighting with it for
+		 * control of BCLK/WCLK, so skip audio initialization.
+		 */
+		if (ret < 0) {
+			printf("Failed to clear dai_clk_en (%d), skipping bit-bang i2s config\n",
+			       ret);
+			return;
+		}
 	}
 
 	audio_bt_i2s_setup();
@@ -205,6 +209,20 @@ int is_nuwani(uint32_t id)
 		return 1;
 }
 
+int is_barla_alc5682(uint32_t id)
+{
+	switch(id) {
+	case 0x2c:
+	case 0x2d:
+	case 0x2e:
+	case 0x2f:
+		return 1;
+	default:
+		return 0;
+
+	}
+}
+
 static int board_setup(void)
 {
 	CrosECTunnelI2c *cros_ec_i2c_tunnel;
@@ -236,7 +254,7 @@ static int board_setup(void)
 		register_vboot_auxfw(&anx3429->fw_ops);
 	}
 
-	audio_setup();
+	audio_setup(lib_sysinfo.sku_id);
 
 	SdhciHost *emmc = NULL;
 	/* The proto version of Grunt has the FT4's SDHCI pins wired up to
