@@ -1013,7 +1013,7 @@ static const struct ui_menu_item diagnostics_memory_items[] = {
 	PAGE_UP_ITEM,
 	PAGE_DOWN_ITEM,
 	{
-		.file = "btn_diag_cancel.bmp",
+		.file = "btn_cancel.bmp",
 		.flags = UI_MENU_ITEM_FLAG_TRANSIENT,
 	},
 	{
