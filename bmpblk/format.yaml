@@ -142,7 +142,6 @@ diagnostic_files:
   # diagnostic tools - memory
   diag_memory_quick_title: title
   diag_memory_full_title: title
-  btn_diag_cancel: primary_button
 
 sprite_files:
   # language menu

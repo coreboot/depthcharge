@@ -337,9 +337,6 @@ Quick memory check
       <message name="btn_diag_memory_full" desc="Menu item to make a Chrome OS device in 'service mode' run a verification of the memory components inside it, and report the results to the user. This full memory test takes about few minutes to complete.">
 Full memory check
       </message>
-      <message name="btn_diag_cancel" desc="String for the button to abort the running memory diagnostic test and go back to the diagnostic entry menu.">
-Cancel and go back
-      </message>
       <message name="btn_next" desc="String for the next button.">
 Next
       </message>
