@@ -7,6 +7,7 @@
 <translation id="1252150473073837888">Kumpirmahin ang pagbalik sa secure mode</translation>
 <translation id="1321620357351949170">Piliin ang pagsubok na gusto mong patakbuhin.</translation>
 <translation id="1389402762514302384">Piliin ang Kanselahin para manatiling protektado.</translation>
+<translation id="1428255359211557126">Pagsusuri ng memory (mabilis)</translation>
 <translation id="1483971085438511843">Gamitin ang enter key para pumili ng opsyon.</translation>
 <translation id="1931763245382489971">3. I-click ang susunod kapag mayroon nang imahe sa pag-recover ang iyong external storage device</translation>
 <translation id="1932315467893966859">Naka-on na ang developer mode.</translation>
@@ -30,6 +31,7 @@
 <translation id="3294574173405124634">Hindi pinapayagan ng mga GBB flag ang pagbalik sa secure mode.</translation>
 <translation id="3416523611207622897">Naka-disable ang external na pag-boot. Para sa higit pang impormasyon, tingnan ang:</translation>
 <translation id="3635226996169670741">Para subukang ayusin ang isyu, simulan ang proseso ng pag-recover. Alisin ang lahat ng nakakonektang device, pagkatapos ay pindutin nang matagal ang Esc, Refresh ( ⟳ ), at Power ( ⏻ ).</translation>
+<translation id="3697087251845525042">Self-test ng storage (maikli)</translation>
 <translation id="385051799172605136">Bumalik</translation>
 <translation id="3964506597604121312">Mawa-wipe ang iyong data ng user habang isinasagawa ang proseso.</translation>
 <translation id="4002335453596341558">Pahina pababa</translation>
@@ -38,6 +40,7 @@
 <translation id="4410491068110727276">Gamitin ang mga button ng volume para mag-navigate pataas o pababa.</translation>
 <translation id="4497270882390086583">Makakapag-recover ka gamit ang external na storage gaya ng USB drive, o gamit ang iyong Android phone.</translation>
 <translation id="4773280894882892048">Impormasyon sa pag-debug</translation>
+<translation id="4815374450404670311">Pagsusuri ng memory (buo)</translation>
 <translation id="4834079235849774599">2. Isa pang device na may access sa internet</translation>
 <translation id="4989087579517177148">Piliin kung paano mo gustong mag-recover.</translation>
 <translation id="5019112228955634706">3. Isang power source para sa device na ito</translation>
@@ -55,7 +58,6 @@
 <translation id="6191358901427525316">Maghandang i-recover ang iyong device. Kakailanganin mo ng:</translation>
 <translation id="635783852215913562">Gamitin ang mga arrow key para mag-navigate pataas o pababa.</translation>
 <translation id="6448938863276324156">Makakapag-recover ka gamit ang external na storage gaya ng USB drive.</translation>
-<translation id="6606028407279698587">Kumpletong pagsusuri ng memory</translation>
 <translation id="6972383785688794804">Pahina pataas</translation>
 <translation id="7065553583078443466">Pumili ng alternatibong bootloader</translation>
 <translation id="7126032376876878896">Gamitin ang power button para pumili ng opsyon.</translation>
@@ -63,6 +65,7 @@
 <translation id="7157640574359006953">Isaksak ang iyong external na disk na may Chrome OS image. Awtomatiko itong ibu-boot.</translation>
 <translation id="7187861267433191629">Naglalapat ng mahalagang update ang iyong system.</translation>
 <translation id="7236073510654217175">Bumalik sa secure mode</translation>
+<translation id="7321387134821904291">Impormasyon sa status ng storage</translation>
 <translation id="7342794948394983731">Mga diagnostic tool</translation>
 <translation id="7352651011704765696">Nagkaroon ng problema</translation>
 <translation id="7365121631770711723">2. USB cable na nagkokonekta sa iyong telepono at sa device na ito</translation>
@@ -70,7 +73,6 @@
 <translation id="7567414219298075193">Para subukang ayusin ang isyu, simulan ang proseso ng pag-recover. Alisin ang lahat ng nakakonektang device, pagkatapos ay pindutin nang matagal ang button na Recovery, pindutin nang isang beses ang Power button ( ⏻ ), bitawan ang button na Recovery.</translation>
 <translation id="7638747526774710781">1. Pumunta sa google.com/chromeos/recovery sa kabilang device at i-install ang extension ng Chrome</translation>
 <translation id="7658239707568436148">Kanselahin</translation>
-<translation id="7806571448308475633">Mabilis na pagsusuri ng memory</translation>
 <translation id="7939062555109487992">Mga advanced na pagpipilian</translation>
 <translation id="8011335065515332253">Kapag nag-timeout na, awtomatikong magbu-boot ang device mula sa napili sa ibaba.</translation>
 <translation id="8027199195649765326">Pindutin ang button na Recovery sa iyong Chromebox para i-enable ang developer mode, o piliin ang Kanselahin para manatiling protektado.</translation>
@@ -83,7 +85,7 @@
 <translation id="8720490351198901261">Naabot mo na ang simula</translation>
 <translation id="8789686976863801203">Sinusubukan mong i-enable ang developer mode</translation>
 <translation id="8848124168564939055">Hindi ka puwedeng gumamit ng external na keyboard para i-on ang developer mode. Pakigamit ang mga button na nasa device na binabanggit sa mga tagubilin sa pag-navigate.</translation>
-<translation id="885701979325669005">Storage</translation>
+<translation id="8878311588372127478">Self-test ng storage (pinalawak)</translation>
 <translation id="9004305007436435169">Hindi makuha ang impormasyon ng diagnostic.</translation>
 <translation id="9040266428058825675">Kung mayroon nang imahe sa pag-recover ang iyong external storage device, isaksak iyon sa device na ito para masimulan ang proseso ng pag-recover.</translation>
 </translationbundle>

@@ -7,6 +7,7 @@
 <translation id="1252150473073837888">Vahvista palaaminen suojattuun tilaan</translation>
 <translation id="1321620357351949170">Valitse suoritettavat testit.</translation>
 <translation id="1389402762514302384">Valitse "Peruuta", jos haluat pysyä suojattuna.</translation>
+<translation id="1428255359211557126">Muistitarkistus (nopea)</translation>
 <translation id="1483971085438511843">Valitse vaihtoehto Enter-painikkeella.</translation>
 <translation id="1931763245382489971">3. Valitse "Seuraava", kun palautusnäköistiedosto on valmiina ulkoisella tallennuslaitteella</translation>
 <translation id="1932315467893966859">Kehittäjätila on jo päällä.</translation>
@@ -30,6 +31,7 @@
 <translation id="3294574173405124634">GBB-asetukset eivät salli suojattuun tilaan palaamista.</translation>
 <translation id="3416523611207622897">Ulkoinen käynnistys on poistettu käytöstä. Lue lisää täältä:</translation>
 <translation id="3635226996169670741">Aloita palautusprosessi ongelman korjaamiseksi. Irrota kaikki yhdistetyt laitteet ja paina pitkään Esc-, Päivitys- ( ⟳ ) ja virtapainikkeita ( ⏻ ).</translation>
+<translation id="3697087251845525042">Tallennustilan testaus (lyhyt)</translation>
 <translation id="385051799172605136">Takaisin</translation>
 <translation id="3964506597604121312">Käyttäjädatasi pyyhitään prosessin aikana.</translation>
 <translation id="4002335453596341558">Sivu alas</translation>
@@ -38,6 +40,7 @@
 <translation id="4410491068110727276">Siirry ylös tai alas äänenvoimakkuuspainikkeilla.</translation>
 <translation id="4497270882390086583">Voit tehdä palautuksen ulkoisen tallennustilan, esim. USB-muistin, tai Android-puhelimen avulla.</translation>
 <translation id="4773280894882892048">Virheenkorjaustiedot</translation>
+<translation id="4815374450404670311">Muistitarkistus (täysi)</translation>
 <translation id="4834079235849774599">2. Toinen laite, joka on yhteydessä internetiin</translation>
 <translation id="4989087579517177148">Valitse, miten haluat palauttaa.</translation>
 <translation id="5019112228955634706">3. Virtalähde tälle laitteelle</translation>
@@ -55,7 +58,6 @@
 <translation id="6191358901427525316">Valmistaudu laitteen palauttamiseen. Tarvitset</translation>
 <translation id="635783852215913562">Siirry ylös tai alas nuolinäppäimillä.</translation>
 <translation id="6448938863276324156">Voit tehdä palautuksen ulkoisen tallennustilan, esim. USB-muistin avulla.</translation>
-<translation id="6606028407279698587">Täysi muistitarkistus</translation>
 <translation id="6972383785688794804">Sivu ylös</translation>
 <translation id="7065553583078443466">Valitse vaihtoehtoinen käynnistysohjelma</translation>
 <translation id="7126032376876878896">Valitse vaihtoehto virtapainikkeella.</translation>
@@ -63,6 +65,7 @@
 <translation id="7157640574359006953">Liitä ulkoinen levy, jossa on Chrome-käyttöjärjestelmän näköistiedosto. Se käynnistetään automaattisesti.</translation>
 <translation id="7187861267433191629">Järjestelmäsi asentaa tärkeää päivitystä.</translation>
 <translation id="7236073510654217175">Palaa suojattuun tilaan</translation>
+<translation id="7321387134821904291">Tietoja tallennustilan kunnosta</translation>
 <translation id="7342794948394983731">Diagnostiikkatyökalut</translation>
 <translation id="7352651011704765696">Tapahtui jokin virhe</translation>
 <translation id="7365121631770711723">2. USB-johto, joka on yhdistetty puhelimeen ja tähän laitteeseen</translation>
@@ -70,7 +73,6 @@
 <translation id="7567414219298075193">Aloita palautusprosessi ongelman korjaamiseksi. Irrota kaikki yhdistetyt laitteet ja paina palautuspainiketta pitkään. Paina sitten virtapainiketta ( ⏻ ) ja vapauta palautuspainike.</translation>
 <translation id="7638747526774710781">1. Siirry toisella laitteella osoitteeseen google.com/chromeos/recovery ja asenna Chrome-laajennus</translation>
 <translation id="7658239707568436148">Peruuta</translation>
-<translation id="7806571448308475633">Nopea muistitarkistus</translation>
 <translation id="7939062555109487992">Lisäasetukset</translation>
 <translation id="8011335065515332253">Aikakatkaisun jälkeen laite käynnistyy automaattisesti alla olevan valinnan mukaan.</translation>
 <translation id="8027199195649765326">Paina Chromeboxin palautuspainiketta siirtyäksesi kehittäjätilaan tai valitse "Peruuta", jos haluat pysyä jatkossakin suojattuna.</translation>
@@ -83,7 +85,7 @@
 <translation id="8720490351198901261">Ylemmäs ei pääse</translation>
 <translation id="8789686976863801203">Yrität ottaa käyttöön kehittäjätilan</translation>
 <translation id="8848124168564939055">Et voi laittaa kehittäjätilaa päälle käyttämällä ulkoista näppäimistöä. Käytä siirtymisohjeissa kuvattuja laitteen painikkeita.</translation>
-<translation id="885701979325669005">Tallennus</translation>
+<translation id="8878311588372127478">Tallennustilan testaus (laajennettu)</translation>
 <translation id="9004305007436435169">Diagnostiikkatietojen noutaminen ei onnistunut.</translation>
 <translation id="9040266428058825675">Jos palautusnäköistiedosto on valmiina ulkoisessa tallennuslaitteessa, liitä tallennustila laitteeseen palautusta varten.</translation>
 </translationbundle>

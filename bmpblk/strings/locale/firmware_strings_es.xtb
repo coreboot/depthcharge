@@ -7,6 +7,7 @@
 <translation id="1252150473073837888">Confirmar volver al modo seguro</translation>
 <translation id="1321620357351949170">Selecciona la prueba que quieras ejecutar.</translation>
 <translation id="1389402762514302384">Selecciona Cancelar para conservar la protección.</translation>
+<translation id="1428255359211557126">Comprobación de la memoria (rápida)</translation>
 <translation id="1483971085438511843">Usa la tecla Intro para seleccionar una opción.</translation>
 <translation id="1931763245382489971">3. Haz clic en Siguiente cuando tengas el dispositivo de memoria externa preparado con la imagen de recuperación</translation>
 <translation id="1932315467893966859">El modo desarrollador ya está activado.</translation>
@@ -30,6 +31,7 @@
 <translation id="3294574173405124634">Las marcas GBB no permiten volver al modo seguro.</translation>
 <translation id="3416523611207622897">El inicio externo está inhabilitado. Para obtener más información, visita:</translation>
 <translation id="3635226996169670741">Para intentar solucionar el problema, inicia el proceso de recuperación. Quita todos los dispositivos conectados y, después, mantén pulsadas las teclas de escape, actualización ( ⟳ ) y encendido ( ⏻ ).</translation>
+<translation id="3697087251845525042">Prueba automática de almacenamiento (breve)</translation>
 <translation id="385051799172605136">Volver</translation>
 <translation id="3964506597604121312">Tus datos de usuario se borrarán durante el proceso.</translation>
 <translation id="4002335453596341558">Avanzar página</translation>
@@ -38,6 +40,7 @@
 <translation id="4410491068110727276">Usa los botones de volumen para desplazarte hacia arriba o hacia abajo.</translation>
 <translation id="4497270882390086583">Puedes llevar a cabo la recuperación usando un dispositivo de almacenamiento externo, como una unidad USB, o utilizando tu teléfono Android.</translation>
 <translation id="4773280894882892048">Información de depuración</translation>
+<translation id="4815374450404670311">Comprobación de la memoria (completa)</translation>
 <translation id="4834079235849774599">2. Otro dispositivo con acceso a Internet</translation>
 <translation id="4989087579517177148">Indica cómo quieres llevar a cabo la recuperación.</translation>
 <translation id="5019112228955634706">3. Una fuente de alimentación para el dispositivo</translation>
@@ -55,7 +58,6 @@
 <translation id="6191358901427525316">Prepárate para realizar la recuperación del dispositivo. Necesitarás lo siguiente:</translation>
 <translation id="635783852215913562">Usa las teclas de flecha para desplazarte hacia arriba o hacia abajo.</translation>
 <translation id="6448938863276324156">Puedes llevar a cabo la recuperación usando un dispositivo de almacenamiento externo, como una unidad USB.</translation>
-<translation id="6606028407279698587">Comprobación de toda la memoria</translation>
 <translation id="6972383785688794804">Retroceder página</translation>
 <translation id="7065553583078443466">Seleccionar bootloader alternativo</translation>
 <translation id="7126032376876878896">Usa el botón de encendido para seleccionar una opción.</translation>
@@ -63,6 +65,7 @@
 <translation id="7157640574359006953">Conecta el disco externo con la imagen de Chrome OS. Se iniciará automáticamente.</translation>
 <translation id="7187861267433191629">El sistema está instalando una actualización importante.</translation>
 <translation id="7236073510654217175">Volver al modo seguro</translation>
+<translation id="7321387134821904291">Información de salud de almacenamiento</translation>
 <translation id="7342794948394983731">Herramientas de diagnóstico</translation>
 <translation id="7352651011704765696">Se ha producido un problema</translation>
 <translation id="7365121631770711723">2. Un cable USB para conectar tu teléfono y este dispositivo</translation>
@@ -70,7 +73,6 @@
 <translation id="7567414219298075193">Para intentar solucionar el problema, inicia el proceso de recuperación. Quita todos los dispositivos conectados y, después, mantén pulsado el botón de recuperación, pulsa y suelta el botón de encendido ( ⏻ ), y suelta el botón de recuperación.</translation>
 <translation id="7638747526774710781">1. Accede a google.com/chromeos/recovery desde el otro dispositivo e instala la extensión de Chrome</translation>
 <translation id="7658239707568436148">Cancelar</translation>
-<translation id="7806571448308475633">Comprobación rápida de la memoria</translation>
 <translation id="7939062555109487992">Opciones avanzadas</translation>
 <translation id="8011335065515332253">Después del tiempo de espera, el dispositivo se iniciará automáticamente desde la opción elegida más abajo:</translation>
 <translation id="8027199195649765326">Pulsa el botón de recuperación de tu Chromebox para habilitar el modo desarrollador, o selecciona Cancelar para conservar la protección.</translation>
@@ -83,7 +85,7 @@
 <translation id="8720490351198901261">Has llegado al inicio</translation>
 <translation id="8789686976863801203">Estás intentando habilitar el modo desarrollador</translation>
 <translation id="8848124168564939055">No puedes usar un teclado externo para activar el modo de desarrollador. Usa los botones del dispositivo indicados en las instrucciones de navegación.</translation>
-<translation id="885701979325669005">Almacenamiento</translation>
+<translation id="8878311588372127478">Prueba automática de almacenamiento (ampliada)</translation>
 <translation id="9004305007436435169">No se ha podido obtener la información de diagnóstico.</translation>
 <translation id="9040266428058825675">Si tienes un dispositivo de memoria externa con una imagen de recuperación, conéctalo a este dispositivo para iniciar el proceso de recuperación.</translation>
 </translationbundle>

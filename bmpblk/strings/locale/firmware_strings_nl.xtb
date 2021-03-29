@@ -7,6 +7,7 @@
 <translation id="1252150473073837888">Terugkeren naar beveiligde modus bevestigen</translation>
 <translation id="1321620357351949170">Selecteer de test die je wilt uitvoeren.</translation>
 <translation id="1389402762514302384">Selecteer Annuleren om beschermd te blijven.</translation>
+<translation id="1428255359211557126">Geheugencheck (snel)</translation>
 <translation id="1483971085438511843">Gebruik de Enter-toets om een optie te selecteren.</translation>
 <translation id="1931763245382489971">3. Als je externe opslagapparaat met de herstelimage klaar is voor gebruik, klik je op Volgende</translation>
 <translation id="1932315467893966859">De ontwikkelaarsmodus staat al aan.</translation>
@@ -30,6 +31,7 @@
 <translation id="3294574173405124634">Teruggaan naar de beveiligde modus is niet toegestaan op basis van de GBB-flags.</translation>
 <translation id="3416523611207622897">Extern opstarten staat uit. Meer informatie:</translation>
 <translation id="3635226996169670741">Start het herstelproces om het probleem op te lossen. Verwijder alle gekoppelde apparaten en houd Esc, Vernieuwen ( ⟳ ) en de aan/uit-knop ( ⏻ ) ingedrukt.</translation>
+<translation id="3697087251845525042">Zelfcontrole voor opslag (kort)</translation>
 <translation id="385051799172605136">Terug</translation>
 <translation id="3964506597604121312">Je gebruikersgegevens worden gewist tijdens dit proces.</translation>
 <translation id="4002335453596341558">Pagina omlaag</translation>
@@ -38,6 +40,7 @@
 <translation id="4410491068110727276">Gebruik de volumeknoppen om omhoog of omlaag te navigeren.</translation>
 <translation id="4497270882390086583">Je kunt herstellen met een extern opslagapparaat, zoals een USB-drive, of met je Android-telefoon.</translation>
 <translation id="4773280894882892048">Foutopsporingsinfo</translation>
+<translation id="4815374450404670311">Geheugencheck (volledig)</translation>
 <translation id="4834079235849774599">2. Nog een apparaat met internettoegang</translation>
 <translation id="4989087579517177148">Selecteer hoe je wilt herstellen.</translation>
 <translation id="5019112228955634706">3. Een voedingsbron voor dit apparaat</translation>
@@ -55,7 +58,6 @@
 <translation id="6191358901427525316">Bereid het herstellen van je apparaat voor. Je hebt het volgende nodig:</translation>
 <translation id="635783852215913562">Gebruik de pijltoetsen om omhoog of omlaag te navigeren.</translation>
 <translation id="6448938863276324156">Je kunt herstellen met een extern opslagapparaat, zoals een USB-drive.</translation>
-<translation id="6606028407279698587">Volledige geheugencheck</translation>
 <translation id="6972383785688794804">Pagina omhoog</translation>
 <translation id="7065553583078443466">Alternatieve bootloader selecteren</translation>
 <translation id="7126032376876878896">Gebruik de aan/uit-knop om een optie te selecteren.</translation>
@@ -63,6 +65,7 @@
 <translation id="7157640574359006953">Sluit je externe schijf met de Chrome OS-image aan. Deze wordt automatisch gestart.</translation>
 <translation id="7187861267433191629">Het systeem voert een essentiële update uit.</translation>
 <translation id="7236073510654217175">Terug naar beveiligde modus</translation>
+<translation id="7321387134821904291">Statusinformatie over opslag</translation>
 <translation id="7342794948394983731">Diagnostische tools</translation>
 <translation id="7352651011704765696">Er is iets misgegaan</translation>
 <translation id="7365121631770711723">2. Een USB-kabel waarmee je telefoon en dit apparaat op elkaar worden aangesloten</translation>
@@ -70,7 +73,6 @@
 <translation id="7567414219298075193">Start het herstelproces om het probleem op te lossen. Verwijder alle gekoppelde apparaten en houd daarna de herstelknop ingedrukt, druk kort op de aan/uit-knop ( ⏻ ) en laat de herstelknop los.</translation>
 <translation id="7638747526774710781">1. Ga op het andere apparaat naar google.com/chromeos/recovery en installeer de Chrome-extensie</translation>
 <translation id="7658239707568436148">Annuleren</translation>
-<translation id="7806571448308475633">Snelle geheugencheck</translation>
 <translation id="7939062555109487992">Geavanceerde opties</translation>
 <translation id="8011335065515332253">Na de time-out wordt het apparaat automatisch opgestart vanaf de onderstaande selectie.</translation>
 <translation id="8027199195649765326">Druk op de herstelknop op je Chromebox om de ontwikkelaarsmodus in te schakelen of selecteer Annuleren om beschermd te blijven.</translation>
@@ -83,7 +85,7 @@
 <translation id="8720490351198901261">Je bent bij het begin</translation>
 <translation id="8789686976863801203">Je probeert de ontwikkelaarsmodus in te schakelen</translation>
 <translation id="8848124168564939055">Met een extern toetsenbord kun je de ontwikkelaarsmodus niet aanzetten. Gebruik de apparaatknoppen die worden vermeld in de navigatie-instructies.</translation>
-<translation id="885701979325669005">Opslag</translation>
+<translation id="8878311588372127478">Zelfcontrole voor opslag (uitgebreid)</translation>
 <translation id="9004305007436435169">Kan geen diagnostische informatie ophalen.</translation>
 <translation id="9040266428058825675">Als je externe opslagapparaat met de herstelimage klaar is voor gebruik, sluit je deze aan op dit apparaat om het herstelproces te starten.</translation>
 </translationbundle>

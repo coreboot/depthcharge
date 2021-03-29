@@ -7,6 +7,7 @@
 <translation id="1252150473073837888">通常モードに戻ってもよろしいですか？</translation>
 <translation id="1321620357351949170">実施するテストを選択してください。</translation>
 <translation id="1389402762514302384">保護された状態を維持する場合は [キャンセル] を選択します。</translation>
+<translation id="1428255359211557126">メモリのチェック（簡易）</translation>
 <translation id="1483971085438511843">Enter キーを押すことで、項目を選択できます。</translation>
 <translation id="1931763245382489971">3. 外部ストレージ デバイスにリカバリ イメージをダウンロードしたら、[次へ] をクリックします</translation>
 <translation id="1932315467893966859">デベロッパー モードはすでにオンになっています。</translation>
@@ -30,6 +31,7 @@
 <translation id="3294574173405124634">セキュアモードに戻ることは GBB フラグによって禁止されています。</translation>
 <translation id="3416523611207622897">外部ブートが無効になっています。詳しくは以下をご覧ください。</translation>
 <translation id="3635226996169670741">デバイスを修復するには、接続されているすべてのデバイスを取り外した後、Esc キー、更新キー（ ⟳ ）、電源ボタン（ ⏻ ）を長押しします。</translation>
+<translation id="3697087251845525042">ストレージのセルフテスト（簡易）</translation>
 <translation id="385051799172605136">戻る</translation>
 <translation id="3964506597604121312">このプロセスではユーザーデータがすべて消去されます。</translation>
 <translation id="4002335453596341558">次のページ</translation>
@@ -38,6 +40,7 @@
 <translation id="4410491068110727276">音量ボタンを使用して、上または下に移動します。</translation>
 <translation id="4497270882390086583">USB メモリなどの外部ストレージや Android スマートフォンを使用して修復できます。</translation>
 <translation id="4773280894882892048">デバッグ情報の表示</translation>
+<translation id="4815374450404670311">メモリのチェック（詳細）</translation>
 <translation id="4834079235849774599">2. インターネットに接続されているもう 1 台のデバイス</translation>
 <translation id="4989087579517177148">デバイスの修復方法を選択してください。</translation>
 <translation id="5019112228955634706">3. このデバイスの修復作業中の電池切れを防ぐためにデバイスを電源に接続してください</translation>
@@ -55,7 +58,6 @@
 <translation id="6191358901427525316">デバイスの修復を行うには、次のものが必要です。</translation>
 <translation id="635783852215913562">矢印キーを使用して、項目を移動できます。</translation>
 <translation id="6448938863276324156">USB メモリなどの外部ストレージを使用して修復できます。</translation>
-<translation id="6606028407279698587">メモリの詳細チェック</translation>
 <translation id="6972383785688794804">前のページ</translation>
 <translation id="7065553583078443466">別のブートローダーを選択</translation>
 <translation id="7126032376876878896">電源ボタンを使用して、オプションを選択します。</translation>
@@ -63,6 +65,7 @@
 <translation id="7157640574359006953">Chrome OS イメージがある外部ディスクを接続します。イメージが自動的に起動します。</translation>
 <translation id="7187861267433191629">システムに重要なアップデートを適用しています。</translation>
 <translation id="7236073510654217175">通常モードに戻る</translation>
+<translation id="7321387134821904291">ストレージの健全性に関する情報</translation>
 <translation id="7342794948394983731">診断ツール</translation>
 <translation id="7352651011704765696">問題が発生しました</translation>
 <translation id="7365121631770711723">2. スマートフォンとこのデバイスを接続する USB ケーブル</translation>
@@ -70,7 +73,6 @@
 <translation id="7567414219298075193">デバイスを修復するには、接続されているすべてのデバイスを取り外した後、リカバリボタンを押したまま電源ボタン（ ⏻ ）を押して放し、さらにリカバリボタンを放します。</translation>
 <translation id="7638747526774710781">1. 別のデバイスで google.com/chromeos/recovery にアクセスして、Chrome OS リカバリ アプリをインストールします</translation>
 <translation id="7658239707568436148">キャンセル</translation>
-<translation id="7806571448308475633">メモリの簡易チェック</translation>
 <translation id="7939062555109487992">詳細オプション</translation>
 <translation id="8011335065515332253">注意：一定時間経過後、デバイスは下で選択したモードで自動的に起動します。</translation>
 <translation id="8027199195649765326">デベロッパー モードを有効にする場合は Chromebox のリカバリボタンを押し、保護された状態を維持する場合は [キャンセル] を選択します。</translation>
@@ -83,7 +85,7 @@
 <translation id="8720490351198901261">最初のページです</translation>
 <translation id="8789686976863801203">デベロッパー モードを有効にしようとしています</translation>
 <translation id="8848124168564939055">外部キーボードを使用してデベロッパー モードをオンにすることはできません。操作手順に記載されているデバイス上のボタンを使用してください。</translation>
-<translation id="885701979325669005">ストレージ</translation>
+<translation id="8878311588372127478">ストレージのセルフテスト（詳細）</translation>
 <translation id="9004305007436435169">診断情報を取得できませんでした。</translation>
 <translation id="9040266428058825675">Chrome OS のリカバリ イメージが含まれる USB メモリまたは SD カードをデバイスに接続してください。システムが自動的に修復作業を開始します。</translation>
 </translationbundle>

@@ -7,6 +7,7 @@
 <translation id="1252150473073837888">Potvrďte návrat do zabezpečeného režimu</translation>
 <translation id="1321620357351949170">Vyberte test, ktorý chcete spustiť.</translation>
 <translation id="1389402762514302384">Ak chcete zachovať ochranu, vyberte Zrušiť.</translation>
+<translation id="1428255359211557126">Kontrola pamäte (rýchla)</translation>
 <translation id="1483971085438511843">Klávesom Enter vyberte požadovanú možnosť.</translation>
 <translation id="1931763245382489971">3. Keď budete mať externé úložisko s obrazom na obnovu pripravené, kliknite na Ďalej</translation>
 <translation id="1932315467893966859">Režim vývojára je už zapnutý.</translation>
@@ -30,6 +31,7 @@
 <translation id="3294574173405124634">Experimentálne funkcie GBB nepovolili návrat do zabezpečeného režimu.</translation>
 <translation id="3416523611207622897">Externé zapínanie je deaktivované. Viac sa dozviete tu:</translation>
 <translation id="3635226996169670741">Ak chcete skúsiť problém odstrániť, začnite proces obnovenia. Odstráňte všetky pripojené zariadenia. Potom pridržte klávesy Esc, tlačidlo obnovy ( ⟳ ) a vypínač ( ⏻ ).</translation>
+<translation id="3697087251845525042">Autonómny test ukladacieho priestoru (krátky)</translation>
 <translation id="385051799172605136">Späť</translation>
 <translation id="3964506597604121312">V rámci procesu sa údaje používateľa trvale vymažú.</translation>
 <translation id="4002335453596341558">Posunúť o stranu nižšie</translation>
@@ -38,6 +40,7 @@
 <translation id="4410491068110727276">Tlačidlami hlasitosti prechádzajte nahor alebo nadol.</translation>
 <translation id="4497270882390086583">Pri obnovení môžete použiť externé úložisko, napríklad kľúč USB alebo telefón s Androidom.</translation>
 <translation id="4773280894882892048">Informácie o ladení</translation>
+<translation id="4815374450404670311">Kontrola pamäte (úplná)</translation>
 <translation id="4834079235849774599">2. Ďalšie zariadenie s prístupom k internetu</translation>
 <translation id="4989087579517177148">Vyberte spôsob obnovenia.</translation>
 <translation id="5019112228955634706">3. Zdroj napájania tohto zariadenia</translation>
@@ -55,7 +58,6 @@
 <translation id="6191358901427525316">Pripravte sa na obnovu zariadenia. Budete potrebovať:</translation>
 <translation id="635783852215913562">Klávesmi so šípkami prechádzajte nahor a nadol.</translation>
 <translation id="6448938863276324156">Pri obnovení môžete použiť externé úložisko, napríklad kľúč USB.</translation>
-<translation id="6606028407279698587">Úplná kontrola pamäte</translation>
 <translation id="6972383785688794804">Posunúť o stranu vyššie</translation>
 <translation id="7065553583078443466">Vybrať alternatívny zavádzací program systému</translation>
 <translation id="7126032376876878896">Vypínačom vyberte požadovanú možnosť.</translation>
@@ -63,6 +65,7 @@
 <translation id="7157640574359006953">Pripojte externý disk s obrazom operačného systému Chrome OS. Zapne sa automaticky.</translation>
 <translation id="7187861267433191629">Systém inštaluje dôležitú aktualizáciu.</translation>
 <translation id="7236073510654217175">Vrátiť sa do zabezpečeného režimu</translation>
+<translation id="7321387134821904291">Informácie o stave ukladacieho priestoru</translation>
 <translation id="7342794948394983731">Diagnostické nástroje</translation>
 <translation id="7352651011704765696">Vyskytla sa chyba</translation>
 <translation id="7365121631770711723">2. Kábel USB na prepojenie vášho telefónu s týmto zariadením</translation>
@@ -70,7 +73,6 @@
 <translation id="7567414219298075193">Ak chcete skúsiť problém odstrániť, začnite proces obnovenia. Odstráňte všetky pripojené zariadenia. Potom pridržte tlačidlo obnovy, stlačte a uvoľnite vypínač ( ⏻ ) a nakoniec uvoľnite tlačidlo obnovy.</translation>
 <translation id="7638747526774710781">1. Prejdite v inom zariadení na google.com/chromeos/recovery a nainštalujte si toto rozšírenie pre Chrome</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
-<translation id="7806571448308475633">Rýchla kontrola pamäte</translation>
 <translation id="7939062555109487992">Rozšírené možnosti</translation>
 <translation id="8011335065515332253">Po časovom limite sa zariadenie automaticky zapne z vybraného zdroja nižšie.</translation>
 <translation id="8027199195649765326">Stlačením tlačidla obnovy v Chromeboxe zapnite režim vývojára alebo vyberte Zrušiť, čím zachováte ochranu.</translation>
@@ -83,7 +85,7 @@
 <translation id="8720490351198901261">Ste na začiatku</translation>
 <translation id="8789686976863801203">Pokúšate sa zapnúť režim vývojára</translation>
 <translation id="8848124168564939055">Režim vývojára nemôžete zapnúť pomocou externej klávesnice. Použite tlačidlá zariadenia uvedené v pokynoch na navigáciu.</translation>
-<translation id="885701979325669005">Úložisko</translation>
+<translation id="8878311588372127478">Autonómny test ukladacieho priestoru (rozšírený)</translation>
 <translation id="9004305007436435169">Diagnostické údaje sa nepodarilo získať.</translation>
 <translation id="9040266428058825675">Ak máte v externom úložisku obraz na obnovu, pripojte ho k tomuto zariadeniu a začnite tak proces obnovenia.</translation>
 </translationbundle>

@@ -313,29 +313,32 @@ Select the test you'd like to run.
       <message name="diag_storage_health_title" desc="Title for storage diagnostic screen. This screen will retrieve health information about the storage (disks) on this device.">
 Storage health info
       </message>
-      <message name="diag_storage_test_title" desc="Title for storage self-test screen. This screen provides storage self-test status of the storage (disks) on this device.">
-Storage self-test
+      <message name="diag_storage_srt_test_title" desc="Title for storage self-test screen. This screen provides storage self-test status of the storage (disks) on this device. Short self-test usually completes in 2 minutes.">
+Storage self-test (short)
+      </message>
+      <message name="diag_storage_ext_test_title" desc="Title for storage self-test screen. This screen provides storage self-test status of the storage (disks) on this device. Extended self-test may spend from several minutes to hours to complete.">
+Storage self-test (extended)
       </message>
       <message name="diag_memory_quick_title" desc="Title for quick memory diagnostic screen. This screen will verify memory is functioning correctly, and report the results to the user. This quick memory test takes about several seconds to complete.">
-Quick memory check
+Memory check (quick)
       </message>
       <message name="diag_memory_full_title" desc="Title for full memory diagnostic screen. This screen will verify memory is functioning correctly, and report the results to the user. This full memory test takes about few minutes to complete.">
-Full memory check
+Memory check (full)
       </message>
       <message name="btn_diag_storage_health" desc="Menu item to retrieve health information about the storage (disks) on this devices.">
 Storage health info
       </message>
       <message name="btn_diag_storage_short_test" desc="Menu item for short storage self-test. This will start a storage self-test and will show the status on the screen. Short self-test usually completes in 2 minutes.">
-Storage self-test - short
+Storage self-test (short)
       </message>
       <message name="btn_diag_storage_ext_test" desc="Menu item for extended storage self-test. This will start a storage self-test and will show the status on the screen. Extended self-test may spend from several minutes to hours to complete.">
-Storage self-test - extended
+Storage self-test (extended)
       </message>
       <message name="btn_diag_memory_quick" desc="Menu item to make a Chrome OS device in 'service mode' run a verification of the memory components inside it, and report the results to the user. This quick memory test takes about several seconds to complete.">
-Quick memory check
+Memory check (quick)
       </message>
       <message name="btn_diag_memory_full" desc="Menu item to make a Chrome OS device in 'service mode' run a verification of the memory components inside it, and report the results to the user. This full memory test takes about few minutes to complete.">
-Full memory check
+Memory check (full)
       </message>
       <message name="btn_next" desc="String for the next button.">
 Next

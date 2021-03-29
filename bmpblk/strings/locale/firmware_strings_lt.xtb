@@ -7,6 +7,7 @@
 <translation id="1252150473073837888">Grįžimo į saugų režimą patvirtinimas</translation>
 <translation id="1321620357351949170">Pasirinkite norimą vykdyti testą.</translation>
 <translation id="1389402762514302384">Pasirinkite „Atšaukti“, kad toliau būtų taikoma apsauga.</translation>
+<translation id="1428255359211557126">Atminties patikra (sparti)</translation>
 <translation id="1483971085438511843">Naudodami klavišą „Enter“ pasirinkite parinktį.</translation>
 <translation id="1931763245382489971">3. Kai išorinės saugyklos įrenginys su atkuriamąja turinio kopija bus paruošta, spustelėkite „Kitas“</translation>
 <translation id="1932315467893966859">Kūrėjo režimas jau įjungtas.</translation>
@@ -30,6 +31,7 @@
 <translation id="3294574173405124634">Dėl GBB žymų neleidžiama grįžti į saugų režimą.</translation>
 <translation id="3416523611207622897">Išorinio paleidimo funkcija išjungta. Jei reikia daugiau informacijos, žr. toliau nurodytas skiltis.</translation>
 <translation id="3635226996169670741">Jei norite išbandyti ir išspręsti problemą, pradėkite atkūrimo procesą. Atjunkite visus prijungtus įrenginius, tada palaikykite paspaudę klavišą „Esc“, atnaujinimo ( ⟳ ) ir maitinimo ( ⏻ ) mygtukus.</translation>
+<translation id="3697087251845525042">Saugyklos savarankiškas testavimas (trumpas)</translation>
 <translation id="385051799172605136">Atgal</translation>
 <translation id="3964506597604121312">Vykdant procesą duomenys bus išvalyti.</translation>
 <translation id="4002335453596341558">Puslapiu žemyn</translation>
@@ -38,6 +40,7 @@
 <translation id="4410491068110727276">Naudodami garsumo mygtukus naršykite aukštyn arba žemyn.</translation>
 <translation id="4497270882390086583">Atkurti galite naudodami išorinę saugyklą, pvz., atmintuką, arba „Android“ telefonu.</translation>
 <translation id="4773280894882892048">Derinimo informacija</translation>
+<translation id="4815374450404670311">Atminties patikra (išsami)</translation>
 <translation id="4834079235849774599">2. Kitas įrenginys su prieiga prie interneto</translation>
 <translation id="4989087579517177148">Pasirinkite, kaip norite atkurti.</translation>
 <translation id="5019112228955634706">3. Šio įrenginio maitinimo šaltinis</translation>
@@ -55,7 +58,6 @@
 <translation id="6191358901427525316">Pasiruošimas atkurti įrenginį. Bus reikalingi toliau nurodyti elementai.</translation>
 <translation id="635783852215913562">Naudodami rodyklių klavišus naršykite aukštyn arba žemyn.</translation>
 <translation id="6448938863276324156">Atkurti galite naudodami išorinę saugyklą, pvz., atmintuką.</translation>
-<translation id="6606028407279698587">Išsamus atminties patikrinimas</translation>
 <translation id="6972383785688794804">Puslapiu aukštyn</translation>
 <translation id="7065553583078443466">Pasirinkite alternatyvią paleidyklę</translation>
 <translation id="7126032376876878896">Naudodami maitinimo mygtuką pasirinkite parinktį.</translation>
@@ -63,6 +65,7 @@
 <translation id="7157640574359006953">Prijunkite išorinį diską su „Chrome“ OS atvaizdžiu. Jis bus paleistas automatiškai.</translation>
 <translation id="7187861267433191629">Sistemoje pritaikomas svarbus naujinys.</translation>
 <translation id="7236073510654217175">Grįžti į saugų režimą</translation>
+<translation id="7321387134821904291">Saugyklos būsenos informacija</translation>
 <translation id="7342794948394983731">Diagnostikos įrankiai</translation>
 <translation id="7352651011704765696">Kažkas negerai</translation>
 <translation id="7365121631770711723">2. USB laidas, kuriuo telefonas prijungiamas prie šio įrenginio</translation>
@@ -70,7 +73,6 @@
 <translation id="7567414219298075193">Jei norite išbandyti ir išspręsti problemą, pradėkite atkūrimo procesą. Atjunkite visus prijungtus įrenginius, tada palaikykite paspaudę atkūrimo mygtuką, paspauskite ir atleiskite maitinimo mygtuką ( ⏻ ), tada atleiskite atkūrimo mygtuką.</translation>
 <translation id="7638747526774710781">1. Eikite adresu google.com/chromeos/recovery naudodami kitą įrenginį ir įdiekite „Chrome“ plėtinį</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
-<translation id="7806571448308475633">Trumpas atminties patikrinimas</translation>
 <translation id="7939062555109487992">Išplėstinės parinktys</translation>
 <translation id="8011335065515332253">Pasibaigus skirtajam laikui įrenginys bus automatiškai paleistas iš toliau pasirinktos vietos.</translation>
 <translation id="8027199195649765326">„Chromebox“ paspauskite atkūrimo mygtuką, kad įgalintumėte kūrėjo režimą, arba pasirinkite „Atšaukti“, kad toliau būtų taikoma apsauga.</translation>
@@ -83,7 +85,7 @@
 <translation id="8720490351198901261">Pasiekėte pirmąjį puslapį</translation>
 <translation id="8789686976863801203">Bandote įgalinti kūrėjo režimą</translation>
 <translation id="8848124168564939055">Negalite įjungti kūrėjo režimo išorine klaviatūra. Naudokite įrenginio mygtukus, nurodytus naršymo instrukcijose.</translation>
-<translation id="885701979325669005">Saugykla</translation>
+<translation id="8878311588372127478">Saugyklos savarankiškas testavimas (išplėstas)</translation>
 <translation id="9004305007436435169">Nepavyko gauti diagnostikos informacijos.</translation>
 <translation id="9040266428058825675">Jei išorinės saugyklos įrenginyje yra atkuriamoji turinio kopija, įdėkite ją į šį įrenginį ir pradėkite atkūrimo procesą</translation>
 </translationbundle>

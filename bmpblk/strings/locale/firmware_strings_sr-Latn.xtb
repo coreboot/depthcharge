@@ -7,6 +7,7 @@
 <translation id="1252150473073837888">Potvrdite povratak na bezbedni režim</translation>
 <translation id="1321620357351949170">Izaberite test koji želite da pokrenete.</translation>
 <translation id="1389402762514302384">Izaberite Otkaži da biste ostali u bezbednom režimu.</translation>
+<translation id="1428255359211557126">Provera memorije (brza)</translation>
 <translation id="1483971085438511843">Koristite taster enter da biste izabrali opciju.</translation>
 <translation id="1931763245382489971">3. Kliknite na Dalje kada spoljni memorijski uređaj sa slikom rezervne kopije sistema bude spreman</translation>
 <translation id="1932315467893966859">Režim programera je već uključen.</translation>
@@ -30,6 +31,7 @@
 <translation id="3294574173405124634">GBB oznake ne dozvoljavaju vraćanje u bezbedni režim.</translation>
 <translation id="3416523611207622897">Spoljno pokretanje je onemogućeno. Više informacija potražite u:</translation>
 <translation id="3635226996169670741">Pokrenite proces oporavka da biste probali da rešite problem. Uklonite sve povezane uređaje, pa zadržite Esc, Refresh ( ⟳ ) i dugme za napajanje ( ⏻ ).</translation>
+<translation id="3697087251845525042">Samostalno testiranje memorijskog prostora (kratko)</translation>
 <translation id="385051799172605136">Nazad</translation>
 <translation id="3964506597604121312">Podaci korisnika će se izbrisati tokom procesa.</translation>
 <translation id="4002335453596341558">Stranica nadole</translation>
@@ -38,6 +40,7 @@
 <translation id="4410491068110727276">Koristite dugmad za jačinu zvuka da biste se kretali nagore ili nadole.</translation>
 <translation id="4497270882390086583">Oporavak možete da obavite pomoću spoljnog memorijskog prostora, kao što je USB disk, ili pomoću Android telefona.</translation>
 <translation id="4773280894882892048">Informacije o otklanjanju grešaka</translation>
+<translation id="4815374450404670311">Provera memorije (potpuna)</translation>
 <translation id="4834079235849774599">2. Drugi uređaj sa pristupom internetu</translation>
 <translation id="4989087579517177148">Izaberite način oporavka.</translation>
 <translation id="5019112228955634706">3. Izvor napajanja za ovaj uređaj</translation>
@@ -55,7 +58,6 @@
 <translation id="6191358901427525316">Pripremite se za oporavak uređaja. Potrebno vam je sledeće:</translation>
 <translation id="635783852215913562">Koristite tastere sa strelicama da biste se kretali nagore ili nadole.</translation>
 <translation id="6448938863276324156">Oporavak možete da obavite pomoću spoljnog memorijskog prostora, kao što je USB disk.</translation>
-<translation id="6606028407279698587">Potpuna provera memorije</translation>
 <translation id="6972383785688794804">Stranica nagore</translation>
 <translation id="7065553583078443466">Izaberite alternativni pokretački program</translation>
 <translation id="7126032376876878896">Koristite dugme za napajanje da biste izabrali opciju.</translation>
@@ -63,6 +65,7 @@
 <translation id="7157640574359006953">Priključite spoljni disk sa slikom Chrome operativnog sistema. Automatski će se uključiti.</translation>
 <translation id="7187861267433191629">Sistem primenjuje važno ažuriranje.</translation>
 <translation id="7236073510654217175">Nazad na bezbedni režim</translation>
+<translation id="7321387134821904291">Podaci o stanju memorijskog prostora</translation>
 <translation id="7342794948394983731">Dijagnostičke alatke</translation>
 <translation id="7352651011704765696">Nešto nije u redu</translation>
 <translation id="7365121631770711723">2. USB kabl koji povezuje telefon i ovaj uređaj</translation>
@@ -70,7 +73,6 @@
 <translation id="7567414219298075193">Pokrenite proces oporavka da biste probali da rešite problem. Uklonite sve povezane uređaje, pa zadržite dugme za oporavak, pritisnite i otpustite dugme za napajanje ( ⏻ ) i otpustite dugme za oporavak.</translation>
 <translation id="7638747526774710781">1. Idite na google.com/chromeos/recovery na drugom uređaju i instalirajte dodatak za Chrome</translation>
 <translation id="7658239707568436148">Otkaži</translation>
-<translation id="7806571448308475633">Brza provera memorije</translation>
 <translation id="7939062555109487992">Napredne opcije</translation>
 <translation id="8011335065515332253">Posle vremenskog ograničenja uređaj će se automatski uključiti na osnovu stavke izabrane u nastavku.</translation>
 <translation id="8027199195649765326">Pritisnite dugme za oporavak na Chromebox-u da biste omogućili režim programera ili izaberite Otkaži da biste ostali u bezbednom režimu.</translation>
@@ -83,7 +85,7 @@
 <translation id="8720490351198901261">Došli ste do vrha</translation>
 <translation id="8789686976863801203">Pokušavate da omogućite režim programera</translation>
 <translation id="8848124168564939055">Ne možete da koristite spoljnu tastaturu za uključivanje režima programera. Koristite dugmad na uređaju koja su navedena u uputstvima za navigaciju.</translation>
-<translation id="885701979325669005">Memorijski prostor</translation>
+<translation id="8878311588372127478">Samostalno testiranje memorijskog prostora (prošireno)</translation>
 <translation id="9004305007436435169">Preuzimanje dijagnostičkih informacija nije uspelo.</translation>
 <translation id="9040266428058825675">Ako je spoljni memorijski uređaj sa slikom rezervne kopije sistema spreman, povežite ga sa ovim uređajem da biste pokrenuli proces oporavka.</translation>
 </translationbundle>

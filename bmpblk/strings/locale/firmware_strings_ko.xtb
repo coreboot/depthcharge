@@ -7,6 +7,7 @@
 <translation id="1252150473073837888">보안 모드로 돌아갈지 확인하세요</translation>
 <translation id="1321620357351949170">실행하려는 테스트를 선택하세요.</translation>
 <translation id="1389402762514302384">보안 상태를 유지하려면 취소를 선택합니다.</translation>
+<translation id="1428255359211557126">빠른 메모리 확인</translation>
 <translation id="1483971085438511843">Enter 키를 사용하여 옵션을 선택하세요.</translation>
 <translation id="1931763245382489971">3. 외부 저장소 기기에 복구 이미지가 다운로드 되었으면 '다음'을 클릭합니다.</translation>
 <translation id="1932315467893966859">개발자 모드가 이미 사용 설정되어 있습니다.</translation>
@@ -30,6 +31,7 @@
 <translation id="3294574173405124634">GBB 플래그에 따라 보안 모드로 돌아갈 수 없습니다.</translation>
 <translation id="3416523611207622897">외부 부팅이 사용 중지되었습니다. 자세한 내용은 다음을 참고하세요.</translation>
 <translation id="3635226996169670741">문제 해결을 시도해 보려면 복구 프로세스를 시작하세요. 연결된 기기를 모두 제거하고 Esc, 새로고침( ⟳ ), 전원 버튼( ⏻ )을 길게 누르세요.</translation>
+<translation id="3697087251845525042">짧은 저장용량 자동 테스트</translation>
 <translation id="385051799172605136">뒤로</translation>
 <translation id="3964506597604121312">복구 과정에서 사용자 데이터가 삭제됩니다.</translation>
 <translation id="4002335453596341558">페이지 아래로</translation>
@@ -38,6 +40,7 @@
 <translation id="4410491068110727276">볼륨 버튼을 사용하여 위아래로 이동하세요.</translation>
 <translation id="4497270882390086583">USB 드라이브와 같은 외부 저장소를 사용하거나 Android 휴대전화를 사용하여 복구할 수 있습니다.</translation>
 <translation id="4773280894882892048">디버그 정보</translation>
+<translation id="4815374450404670311">메모리 확인(전체 버전)</translation>
 <translation id="4834079235849774599">2. 인터넷이 연결된 다른 기기</translation>
 <translation id="4989087579517177148">복구 방법을 선택합니다.</translation>
 <translation id="5019112228955634706">3. 기기에서 사용할 전원</translation>
@@ -55,7 +58,6 @@
 <translation id="6191358901427525316">기기 복구 준비하기 이때 필요한 사항은 다음과 같습니다.</translation>
 <translation id="635783852215913562">화살표 키를 사용하여 위아래로 이동하세요.</translation>
 <translation id="6448938863276324156">USB 드라이브와 같은 외부 저장소를 사용하여 복구할 수 있습니다.</translation>
-<translation id="6606028407279698587">전체 메모리 확인</translation>
 <translation id="6972383785688794804">페이지 위로</translation>
 <translation id="7065553583078443466">대체 부트로더 선택</translation>
 <translation id="7126032376876878896">전원 버튼을 사용하여 옵션을 선택하세요.</translation>
@@ -63,6 +65,7 @@
 <translation id="7157640574359006953">Chrome OS 이미지가 포함된 외부 디스크를 연결합니다. 그러면 자동으로 부팅됩니다.</translation>
 <translation id="7187861267433191629">시스템에서 중요한 업데이트를 적용 중입니다.</translation>
 <translation id="7236073510654217175">보안 모드로 돌아가기</translation>
+<translation id="7321387134821904291">저장용량 상태 정보</translation>
 <translation id="7342794948394983731">진단 도구</translation>
 <translation id="7352651011704765696">문제가 발생한 경우</translation>
 <translation id="7365121631770711723">2. 내 휴대전화와 이 기기를 연결하는 USB 케이블</translation>
@@ -70,7 +73,6 @@
 <translation id="7567414219298075193">문제 해결을 시도해 보려면 복구 프로세스를 시작하세요. 연결된 기기를 모두 제거한 다음, 복구 버튼을 누른 상태에서 전원 버튼( ⏻ )을 눌렀다가 놓습니다. 그러고 나서 복구 버튼에서 손을 떼세요.</translation>
 <translation id="7638747526774710781">1. 다른 기기에서 google.com/chromeos/recovery로 이동한 다음 Chrome 확장 프로그램을 설치합니다.</translation>
 <translation id="7658239707568436148">취소</translation>
-<translation id="7806571448308475633">빠른 메모리 확인</translation>
 <translation id="7939062555109487992">고급 옵션</translation>
 <translation id="8011335065515332253">시간이 초과되면 기기가 자동으로 아래의 선택사항에 따라 부팅됩니다.</translation>
 <translation id="8027199195649765326">Chromebox에서 복구 버튼을 눌러 개발자 모드를 사용 설정합니다. 보안 상태를 유지하려면 취소를 선택하세요.</translation>
@@ -83,7 +85,7 @@
 <translation id="8720490351198901261">첫 부분입니다.</translation>
 <translation id="8789686976863801203">개발자 모드를 사용하려고 합니다</translation>
 <translation id="8848124168564939055">외부 키보드로 개발자 모드를 사용 설정할 수 없습니다. 탐색 안내에 명시된 기기 버튼을 사용하세요.</translation>
-<translation id="885701979325669005">저장소</translation>
+<translation id="8878311588372127478">확장된 저장용량 자동 테스트</translation>
 <translation id="9004305007436435169">진단 정보를 가져올 수 없습니다.</translation>
 <translation id="9040266428058825675">외부 저장소 기기에 복구 이미지가 다운로드 되었으면 이 기기에 연결하여 복구 프로세스를 시작합니다.</translation>
 </translationbundle>
