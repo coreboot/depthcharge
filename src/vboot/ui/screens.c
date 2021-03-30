@@ -123,23 +123,6 @@ static vb2_error_t draw_log_desc(const struct ui_state *state,
 }
 
 /******************************************************************************/
-/* VB2_SCREEN_BLANK */
-
-static vb2_error_t draw_blank(const struct ui_state *state,
-			      const struct ui_state *prev_state)
-{
-	clear_screen(&ui_color_bg);
-	return VB2_SUCCESS;
-}
-
-static const struct ui_screen_info blank_screen = {
-	.id = VB2_SCREEN_BLANK,
-	.no_footer = 1,
-	.draw = draw_blank,
-	.mesg = NULL,
-};
-
-/******************************************************************************/
 /* VB2_SCREEN_FIRMWARE_SYNC */
 
 static const char *const firmware_sync_desc[] = {
@@ -1051,7 +1034,6 @@ static const struct ui_screen_info diagnostics_memory_full_screen = {
  * screen, based on the menu information passed from vboot.
  */
 static const struct ui_screen_info *const screens[] = {
-	&blank_screen,
 	&firmware_sync_screen,
 	&language_select_screen,
 	&broken_screen,

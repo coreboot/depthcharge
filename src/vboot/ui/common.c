@@ -95,6 +95,8 @@ static vb2_error_t init_screen(void)
 		return VB2_ERROR_UI_DISPLAY_INIT;
 
 	enable_graphics_buffer();
+	backlight_update(1);
+
 	initialized = 1;
 	return VB2_SUCCESS;
 }
@@ -241,9 +243,6 @@ vb2_error_t ui_display_screen(struct ui_state *state,
 	const struct ui_error *error = NULL;
 
 	VB2_TRY(init_screen());
-
-	/* If the screen is blank, turn off the backlight; else turn it on. */
-	backlight_update(screen->id != VB2_SCREEN_BLANK);
 
 	if (state->error_code != VB2_UI_ERROR_NONE)
 		error = &errors[state->error_code];
