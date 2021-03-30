@@ -29,8 +29,13 @@ into your Chromium OS local branch.
 ```shell
 $ prodaccess
 $ g4d localization   # cd's into the g4 client.
+$ g4 sync            # Make sure the workspace is synced.
 $ blaze build //googleclient/chrome/transconsole_resources:all_xtbs
-$ cp blaze-genfiles/googleclient/chrome/transconsole_resources/strings/cros/firmware_strings_*.xtb $CROS/src/platform/bmpblk/strings/locale/
+# Get the diff of message ID diff of en-GB. This can help to find the message ID
+# related to the change.
+$ python3 $CROS/src/platform/bmpblk/update_xtb.py diff en-GB
+# Merge the strings with those message ID
+$ python3 $CROS/src/platform/bmpblk/update_xtb.py merge ID1 ID2 ....
 ```
 
 5. Create a code review that updates the corresponding files in this
