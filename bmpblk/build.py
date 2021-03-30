@@ -10,11 +10,10 @@ import copy
 import fractions
 import glob
 import json
-import multiprocessing
+from concurrent.futures import ProcessPoolExecutor
 import os
 import re
 import shutil
-import signal
 import subprocess
 import tempfile
 
@@ -811,33 +810,23 @@ class Converter(object):
     if DIAGNOSTIC_UI:
       names.update(self.formats[KEY_DIAGNOSTIC_FILES])
 
-    # Ignore SIGINT in child processes
-    sigint_handler = signal.signal(signal.SIGINT, signal.SIG_IGN)
-    pool = multiprocessing.Pool(multiprocessing.cpu_count())
-    signal.signal(signal.SIGINT, sigint_handler)
-
-    results = []
+    executor = ProcessPoolExecutor()
+    futures = []
     for locale_info in self.locales:
       locale = locale_info.code
       print(locale, end=' ', flush=True)
-      args = (
-          locale,
-          names,
-          json_dir,
-      )
-      results.append(pool.apply_async(self.build_locale, args))
+      futures.append(executor.submit(self.build_locale, locale, names,
+                                     json_dir))
 
     print()
-    pool.close()
 
     try:
-      results = [r.get() for r in results]
+      results = [future.result() for future in futures]
     except KeyboardInterrupt:
-      pool.terminate()
-      pool.join()
+      executor.shutdown(wait=False)
       exit('Aborted by user')
     else:
-      pool.join()
+      executor.shutdown()
 
     effective_dpi = [dpi for r in results for dpi in r if dpi]
     if effective_dpi:
@@ -868,7 +857,8 @@ class Converter(object):
     os.makedirs(self.stage_glyph_dir, exist_ok=True)
     output_dir = os.path.join(self.output_dir, 'glyph')
     os.makedirs(output_dir)
-    # TODO(b/163109632): Parallelize the conversion of glyphs
+    executor = ProcessPoolExecutor()
+    futures = []
     for c in range(ord(' '), ord('~') + 1):
       name = f'idx{c:03d}_{c:02x}'
       txt_file = os.path.join(self.stage_glyph_dir, name + '.txt')
@@ -876,10 +866,15 @@ class Converter(object):
         f.write(chr(c))
         f.write('\n')
       output_file = os.path.join(output_dir, name + self.DEFAULT_OUTPUT_EXT)
-      self.convert_text_to_image(None, txt_file, output_file, GLYPH_FONT,
-                                 self.stage_glyph_dir, self.GLYPH_MAX_COLORS,
-                                 height=DEFAULT_GLYPH_HEIGHT,
-                                 use_svg=True)
+      futures.append(executor.submit(self.convert_text_to_image, None, txt_file,
+                                     output_file, GLYPH_FONT,
+                                     self.stage_glyph_dir,
+                                     self.GLYPH_MAX_COLORS,
+                                     height=DEFAULT_GLYPH_HEIGHT,
+                                     use_svg=True))
+    for future in futures:
+      future.result()
+    executor.shutdown()
 
   def copy_images_to_rw(self):
     """Copies localized images specified in boards.yaml for RW override."""
