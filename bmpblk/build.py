@@ -501,8 +501,7 @@ class Converter(object):
       self.convert_svg_to_png(file, png_file, height, num_lines, background)
       file = png_file
 
-    return self.convert_to_bitmap(file, num_lines, background, output,
-                                  max_colors)
+    self.convert_to_bitmap(file, num_lines, background, output, max_colors)
 
   def _bisect_dpi(self, max_dpi, initial_dpi, max_height_px, get_height):
     """Bisects to find the DPI that produces image height `max_height_px`.
@@ -605,7 +604,8 @@ class Converter(object):
     if use_svg:
       run_pango_view(input_file, svg_file, locale, font, height, 0, dpi,
                      bgcolor, fgcolor, hinting='none')
-      return self.convert(svg_file, output_file, height, max_width, max_colors)
+      self.convert(svg_file, output_file, height, max_width, max_colors)
+      return None
     else:
       if not dpi:
         raise BuildImageError('DPI must be specified with use_svg=False')
