@@ -51,13 +51,12 @@ KEY_MAX_WIDTH = 'max_width'
 KEY_FONTS = 'fonts'
 
 # Board config YAML key names.
-SCREEN_KEY = 'screen'
-PANEL_KEY = 'panel'
-SDCARD_KEY = 'sdcard'
-DPI_KEY = 'dpi'
-LOCALES_KEY = 'locales'
-RTL_KEY = 'rtl'
-RW_OVERRIDE_KEY = 'rw_override'
+KEY_SCREEN = 'screen'
+KEY_PANEL = 'panel'
+KEY_SDCARD = 'sdcard'
+KEY_DPI = 'dpi'
+KEY_RTL = 'rtl'
+KEY_RW_OVERRIDE = 'rw_override'
 
 BMP_HEADER_OFFSET_NUM_LINES = 6
 
@@ -243,7 +242,7 @@ class Converter(object):
     self.set_screen()
     self.set_rename_map()
     self.set_locales()
-    self.text_max_colors = self.get_text_colors(self.config[DPI_KEY])
+    self.text_max_colors = self.get_text_colors(self.config[KEY_DPI])
 
   def set_dirs(self, output):
     """Sets board output directory and stage directory.
@@ -264,16 +263,16 @@ class Converter(object):
 
   def set_screen(self):
     """Sets screen width and height."""
-    self.screen_width, self.screen_height = self.config[SCREEN_KEY]
+    self.screen_width, self.screen_height = self.config[KEY_SCREEN]
 
     self.panel_stretch = fractions.Fraction(1)
-    if self.config[PANEL_KEY]:
+    if self.config[KEY_PANEL]:
       # Calculate `panel_stretch`. It's used to shrink images horizontally so
       # that the resulting images will look proportional to the original image
       # on the stretched display. If the display is not stretched, meaning the
       # aspect ratio is same as the screen where images were rendered, no
       # shrinking is performed.
-      panel_width, panel_height = self.config[PANEL_KEY]
+      panel_width, panel_height = self.config[KEY_PANEL]
       self.panel_stretch = fractions.Fraction(self.screen_width * panel_height,
                                               self.screen_height * panel_width)
 
@@ -340,7 +339,7 @@ class Converter(object):
       rename_map['broken_desc_detach'] = None
 
     # SD card
-    if not self.config[SDCARD_KEY]:
+    if not self.config[KEY_SDCARD]:
       rename_map.update({
           'rec_sel_desc1_no_sd': 'rec_sel_desc1',
           'rec_sel_desc1_no_phone_no_sd': 'rec_sel_desc1_no_phone',
@@ -374,16 +373,16 @@ class Converter(object):
     """Sets a list of locales for which localized images are converted."""
     # LOCALES environment variable can overwrite boards.yaml
     env_locales = os.getenv('LOCALES')
-    rtl_locales = set(self.config[RTL_KEY])
+    rtl_locales = set(self.config[KEY_RTL])
     if env_locales:
       locales = env_locales.split()
     else:
-      locales = self.config[LOCALES_KEY]
+      locales = self.config[KEY_LOCALES]
       # Check rtl_locales are contained in locales.
       unknown_rtl_locales = rtl_locales - set(locales)
       if unknown_rtl_locales:
         raise BuildImageError('Unknown locales %s in %s' %
-                              (list(unknown_rtl_locales), RTL_KEY))
+                              (list(unknown_rtl_locales), KEY_RTL))
     self.locales = [LocaleInfo(code, code in rtl_locales)
                     for code in locales]
 
@@ -650,7 +649,7 @@ class Converter(object):
 
   def build_generic_strings(self):
     """Builds images of generic (locale-independent) strings."""
-    dpi = self.config[DPI_KEY]
+    dpi = self.config[KEY_DPI]
 
     names = self.formats[KEY_GENERIC_FILES]
     styles = self.formats[KEY_STYLES]
@@ -676,7 +675,7 @@ class Converter(object):
 
   def build_locale(self, locale, names, json_dir):
     """Builds images of strings for `locale`."""
-    dpi = self.config[DPI_KEY]
+    dpi = self.config[KEY_DPI]
     styles = self.formats[KEY_STYLES]
     fonts = self.formats[KEY_FONTS]
     font = fonts.get(locale, fonts[KEY_DEFAULT])
@@ -884,7 +883,7 @@ class Converter(object):
 
   def copy_images_to_rw(self):
     """Copies localized images specified in boards.yaml for RW override."""
-    if not self.config[RW_OVERRIDE_KEY]:
+    if not self.config[KEY_RW_OVERRIDE]:
       print('  No localized images are specified for RW, skipping')
       return
 
@@ -894,7 +893,7 @@ class Converter(object):
       ro_locale_dir = os.path.join(self.output_rw_dir, locale)
       os.makedirs(rw_locale_dir)
 
-      for name in self.config[RW_OVERRIDE_KEY]:
+      for name in self.config[KEY_RW_OVERRIDE]:
         ro_src = os.path.join(ro_locale_dir, name + self.DEFAULT_OUTPUT_EXT)
         rw_dst = os.path.join(rw_locale_dir, name + self.DEFAULT_OUTPUT_EXT)
         shutil.copyfile(ro_src, rw_dst)

@@ -5,11 +5,6 @@
 # This file is the source of truth for both generic (locale-independent)
 # strings, localized strings and sprite bitmaps.
 
-locales: [ ar, bg, ca, cs, da, de, el, en, es, es-419, et, fa, fi, fil, fr,
-           he, hi, hr, hu, id, it, ja, ko, lt, lv, ms, nl, nb, pl, pt-BR,
-           pt-PT, ro, ru, sk, sl, sr, sv, th, tr, uk, vi, zh-CN, zh-TW,
-           bn, gu, kn, ml, mr, ta, te ]
-
 # Generic strings
 # Key is the string name (see strings/*.txt); value is the category of the
 # string.
