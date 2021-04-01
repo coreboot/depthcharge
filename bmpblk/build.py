@@ -889,8 +889,8 @@ class Converter(object):
 
     for locale_info in self.locales:
       locale = locale_info.code
-      rw_locale_dir = os.path.join(self.output_ro_dir, locale)
-      ro_locale_dir = os.path.join(self.output_rw_dir, locale)
+      ro_locale_dir = os.path.join(self.output_ro_dir, locale)
+      rw_locale_dir = os.path.join(self.output_rw_dir, locale)
       os.makedirs(rw_locale_dir)
 
       for name in self.config[KEY_RW_OVERRIDE]:
