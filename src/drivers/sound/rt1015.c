@@ -75,6 +75,7 @@ static int rt1015_disable(SoundRouteComponentOps *me)
 {
 	rt1015Codec *codec = container_of(me, rt1015Codec, component.ops);
 
+	mdelay(10);
 	/* Reset and put power state to shut-down mode */
 	if (i2c_addrw_writew(codec->i2c, codec->chip, RT1015_RESET, 0)) {
 		printf("%s: Error resetting codec!\n", __func__);
