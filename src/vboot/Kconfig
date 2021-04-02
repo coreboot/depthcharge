@@ -34,13 +34,15 @@ config DIAGNOSTIC_UI
 	help
 	  Enable option to run a diagnostic rom at boot.
 
-config EC_SOFTWARE_SYNC
-	bool "Enable EC software sync"
+config EC_VBOOT_SUPPORT
+	bool "Enable EC vboot support"
 	default n
 	help
-	  EC software sync is a mechanism where the AP helps the EC verify its
-	  firmware similar to how vboot verifies the main system firmware. This
-	  option selects whether depthcharge should support EC software sync.
+	  Vboot can do several things for/with the EC in the system. It can
+	  help the EC verify its firmware/software ("EC software sync"), which
+	  is a similar mechanism to how vboot verifies the main system firmware.
+	  For recovery mode, Vboot also needs to know if the EC can be trusted
+	  or not when handling user input from the keyboard.
 
 config AUXFW_SOFTWARE_SYNC
 	bool "Enable auxiliary FW software sync"
@@ -54,7 +56,7 @@ config AUXFW_SOFTWARE_SYNC
 config EC_SLOW_UPDATE
 	bool "EC update is slow and needs to display a screen"
 	default n
-	depends on EC_SOFTWARE_SYNC
+	depends on EC_VBOOT_SUPPORT
 	help
 	  Whether the EC (or PD) is slow to update and needs to display a
 	  screen that informs the user the update is happening.
@@ -62,7 +64,7 @@ config EC_SLOW_UPDATE
 config EC_EFS
 	bool "Early-firmware selection (EFS) EC"
 	default n
-	depends on EC_SOFTWARE_SYNC
+	depends on EC_VBOOT_SUPPORT
 	help
 	  CrosEC can support EFS: Early Firmware Selection. If it's enabled,
 	  software sync need to also support it. This setting tells vboot to

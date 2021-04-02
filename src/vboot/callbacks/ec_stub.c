@@ -32,6 +32,12 @@ int vb2ex_ec_trusted(void)
 	return 1;
 }
 
+vb2_error_t vb2ex_ec_battery_cutoff(void)
+{
+	printf("EC battery cut-off not supported, ignored.\n");
+	return VB2_SUCCESS;
+}
+
 vb2_error_t vb2ex_ec_running_rw(int *in_rw)
 {
 	no_ec_soft_sync();

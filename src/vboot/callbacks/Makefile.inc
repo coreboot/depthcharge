@@ -26,13 +26,11 @@ depthcharge-y += switches.c
 depthcharge-y += time.c
 depthcharge-y += tpm.c
 
-ifeq ($(CONFIG_EC_SOFTWARE_SYNC),y)
+ifeq ($(CONFIG_EC_VBOOT_SUPPORT),y)
 depthcharge-y += ec.c
 else
 depthcharge-y += ec_stub.c
 endif
-
-depthcharge-y += ec_util.c
 
 ifeq ($(CONFIG_AUXFW_SOFTWARE_SYNC),y)
 depthcharge-y += auxfw.c

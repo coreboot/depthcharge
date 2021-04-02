@@ -75,7 +75,7 @@ int crossystem_setup(int firmware_type)
 	acpi_table->main_fw = main_fw;
 
 	// Use the value set by coreboot if we don't want to change it.
-	if (CONFIG_EC_SOFTWARE_SYNC) {
+	if (CONFIG_EC_VBOOT_SUPPORT) {
 		int in_rw = 0;
 
 		if (vb2ex_ec_running_rw(&in_rw)) {
