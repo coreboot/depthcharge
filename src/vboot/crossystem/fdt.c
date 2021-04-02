@@ -107,7 +107,7 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 	if (!vb2api_gbb_read_hwid(vboot_get_context(), hwid, &hwid_size))
 		dt_add_bin_prop(node, "hardware-id", hwid, hwid_size);
 
-	if (CONFIG_EC_SOFTWARE_SYNC) {
+	if (CONFIG_EC_VBOOT_SUPPORT) {
 		int in_rw = 0;
 
 		if (vb2ex_ec_running_rw(&in_rw)) {
