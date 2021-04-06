@@ -30,6 +30,7 @@
 #include "drivers/sound/rt1015.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
+#include "drivers/tpm/lpc.h"
 #include "drivers/tpm/spi.h"
 
 /*
@@ -73,6 +74,10 @@ static void dedede_setup_tpm(void)
 		tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0_params),
 					 cr50_irq_status)->ops);
 	}
+
+	/* Keeby's TPM is on the FSPI bus */
+	if (CONFIG(DRIVER_TPM_LPC))
+		tpm_set_ops(&new_lpc_tpm((void *)(uintptr_t)0xfed40000)->ops);
 }
 
 static void setup_rt1015_amp(void)
