@@ -9,6 +9,7 @@
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
+#include "drivers/bus/i2c/mtk_i2c.h"
 #include "drivers/bus/spi/mtk.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/ec.h"
@@ -19,7 +20,20 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
 #include "drivers/storage/mtk_mmc.h"
+#include "drivers/tpm/cr50_i2c.h"
+#include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
+
+static int cr50_irq_status(void)
+{
+	static GpioOps *cr50_irq;
+
+	if (!cr50_irq)
+		cr50_irq = sysinfo_lookup_gpio("TPM interrupt", 1,
+						new_mtk_eint);
+
+	return cr50_irq->get(cr50_irq);
+}
 
 static int board_setup(void)
 {
@@ -29,6 +43,10 @@ static int board_setup(void)
 		flag_replace(FLAG_PWRSW, cros_ec_power_btn_flag());
 
 	power_set_ops(&psci_power_ops);
+
+	MTKI2c *i2c3 = new_mtk_i2c(0x11E03000, 0x10220480, I2C_APDMA_ASYNC);
+	tpm_set_ops(&new_cr50_i2c(&i2c3->ops, 0x50,
+				  &cr50_irq_status)->base.ops);
 
 	GpioOps *spi0_cs = new_gpio_not(new_mtk_gpio_output(PAD_SPIM0_CSB));
 	MtkSpi *spi0 = new_mtk_spi(0x1100A000, spi0_cs);
