@@ -16,6 +16,7 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/fch.h"
 #include "drivers/soc/cezanne.h"
+#include "drivers/sound/rt1019.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
@@ -50,6 +51,11 @@
 /* eDP backlight */
 #define GPIO_BACKLIGHT		129
 
+/* Audio Configuration */
+#define AUDIO_I2C_MMIO_ADDR	0xfedc4000
+#define AUDIO_I2C_SPEED		400000
+#define I2C_DESIGNWARE_CLK_MHZ	150
+
 static int cr50_irq_status(void)
 {
 	static KernGpio *tpm_gpio;
@@ -71,6 +77,19 @@ static int guybrush_backlight_update(DisplayOps *me, uint8_t enable)
 		backlight->ops.set(&backlight->ops, !enable);
 
 	return 0;
+}
+
+static void setup_rt1019_amp(void)
+{
+	DesignwareI2c *i2c = new_designware_i2c((uintptr_t)AUDIO_I2C_MMIO_ADDR,
+				       AUDIO_I2C_SPEED, I2C_DESIGNWARE_CLK_MHZ);
+	rt1019Codec *speaker_amp = new_rt1019_codec(&i2c->ops,
+							AUD_RT1019_DEVICE_ADDR);
+	SoundRoute *sound_route = new_sound_route(&speaker_amp->ops);
+
+	list_insert_after(&speaker_amp->component.list_node,
+						&sound_route->components);
+	sound_set_ops(&sound_route->ops);
 }
 
 static DisplayOps guybrush_display_ops = {
@@ -104,7 +123,7 @@ static int board_setup(void)
 	flag_replace(FLAG_PWRSW, cros_ec_power_btn_flag());
 	setup_ec_in_rw_gpio();
 
-	// TODO: add audio_setup
+	setup_rt1019_amp();
 
 	SdhciHost *sd = NULL;
 	pcidev_t pci_dev;
