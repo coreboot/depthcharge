@@ -30,14 +30,34 @@
 
 #define I2CERR(fmt, arg...)   printf(I2CTAG fmt, ##arg)
 
-static inline void i2c_dma_reset(struct mtk_i2c_dma_regs *dma_regs)
+static inline void i2c_hw_reset(MTKI2c *bus)
 {
-	write32(&dma_regs->dma_rst, 0x1);
-	udelay(50);
-	write32(&dma_regs->dma_rst, 0x2);
-	udelay(50);
-	write32(&dma_regs->dma_rst, 0x0);
-	udelay(50);
+	struct mtk_i2c_regs *regs;
+	struct mtk_i2c_dma_regs *dma_regs;
+
+	regs = bus->base;
+	dma_regs = bus->dma_base;
+
+	if (bus->flag == I2C_APDMA_ASYNC) {
+		write32(&dma_regs->dma_rst, I2C_DMA_WARM_RST);
+		udelay(10);
+		write32(&dma_regs->dma_rst, I2C_DMA_CLR_FLAG);
+		udelay(10);
+		write32(&dma_regs->dma_rst,
+			I2C_DMA_HARD_RST | I2C_DMA_HANDSHAKE_RST);
+		write32(&regs->softreset, I2C_SOFT_RST | I2C_HANDSHAKE_RST);
+		udelay(10);
+		write32(&dma_regs->dma_rst, I2C_DMA_CLR_FLAG);
+		write32(&regs->softreset, I2C_CLR_FLAG);
+	} else {
+		write32(&regs->softreset, I2C_SOFT_RST);
+		write32(&dma_regs->dma_rst, I2C_DMA_WARM_RST);
+		udelay(50);
+		write32(&dma_regs->dma_rst, I2C_DMA_HARD_RST);
+		udelay(50);
+		write32(&dma_regs->dma_rst, I2C_DMA_CLR_FLAG);
+		udelay(50);
+	}
 }
 
 static inline void mtk_i2c_dump_info(MTKI2c *bus)
@@ -77,6 +97,7 @@ static uint32_t mtk_i2c_transfer(MTKI2c *bus, I2cSeg *seg, enum i2c_modes read)
 	uint8_t *write_buffer = NULL;
 	uint8_t *read_buffer = NULL;
 	uint64_t start;
+	uint16_t dma_sync = 0;
 	struct mtk_i2c_regs *regs;
 	struct mtk_i2c_dma_regs *dma_regs;
 
@@ -86,6 +107,12 @@ static uint32_t mtk_i2c_transfer(MTKI2c *bus, I2cSeg *seg, enum i2c_modes read)
 	read_buffer = bus->read_buffer;
 
 	addr = seg[0].chip;
+
+	if (bus->flag == I2C_APDMA_ASYNC) {
+		dma_sync = I2C_DMA_SKIP_CONFIG | I2C_DMA_ASYNC_MODE;
+		if (read == I2C_WRITE_READ_MODE)
+			dma_sync |= I2C_DMA_DIR_CHANGE;
+	}
 
 	switch (read) {
 	case I2C_WRITE_MODE:
@@ -132,7 +159,7 @@ static uint32_t mtk_i2c_transfer(MTKI2c *bus, I2cSeg *seg, enum i2c_modes read)
 		write32(&regs->slave_addr, addr << 1);
 
 		/* Prepare buffer data to start transfer */
-		write32(&dma_regs->dma_con, I2C_DMA_CON_TX);
+		write32(&dma_regs->dma_con, I2C_DMA_CON_TX | dma_sync);
 		write32(&dma_regs->dma_tx_mem_addr, (uintptr_t)write_buffer);
 		write32(&dma_regs->dma_tx_len, write_len);
 		break;
@@ -150,7 +177,7 @@ static uint32_t mtk_i2c_transfer(MTKI2c *bus, I2cSeg *seg, enum i2c_modes read)
 		write32(&regs->slave_addr, (addr << 1 | 0x1));
 
 		/* Prepare buffer data to start transfer */
-		write32(&dma_regs->dma_con, I2C_DMA_CON_RX);
+		write32(&dma_regs->dma_con, I2C_DMA_CON_RX | dma_sync);
 		write32(&dma_regs->dma_rx_mem_addr, (uintptr_t)read_buffer);
 		write32(&dma_regs->dma_rx_len, read_len);
 		break;
@@ -170,7 +197,7 @@ static uint32_t mtk_i2c_transfer(MTKI2c *bus, I2cSeg *seg, enum i2c_modes read)
 		write32(&regs->slave_addr, addr << 1);
 
 		/* Prepare buffer data to start transfer */
-		write32(&dma_regs->dma_con, I2C_DMA_CLR_FLAG);
+		write32(&dma_regs->dma_con, I2C_DMA_CLR_FLAG | dma_sync);
 		write32(&dma_regs->dma_tx_mem_addr, (uintptr_t)write_buffer);
 		write32(&dma_regs->dma_tx_len, write_len);
 		write32(&dma_regs->dma_rx_mem_addr, (uintptr_t)read_buffer);
@@ -228,9 +255,7 @@ static uint32_t mtk_i2c_transfer(MTKI2c *bus, I2cSeg *seg, enum i2c_modes read)
 		mtk_i2c_dump_info(bus);
 
 		/* reset the i2c controller for next i2c transfer. */
-		write32(&regs->softreset, 0x1);
-
-		i2c_dma_reset(dma_regs);
+		i2c_hw_reset(bus);
 	}
 
 	return ret_code;
@@ -271,7 +296,7 @@ static int i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
 	return ret;
 }
 
-MTKI2c *new_mtk_i2c(uintptr_t base, uintptr_t dma_base)
+MTKI2c *new_mtk_i2c(uintptr_t base, uintptr_t dma_base, uint32_t flag)
 {
 	MTKI2c *bus = xzalloc(sizeof(*bus));
 
@@ -280,6 +305,7 @@ MTKI2c *new_mtk_i2c(uintptr_t base, uintptr_t dma_base)
 	bus->dma_base = (struct mtk_i2c_dma_regs *)dma_base;
 	bus->write_buffer = dma_malloc(MAX_TRANSFER_LEN);
 	bus->read_buffer = dma_malloc(MAX_TRANSFER_LEN);
+	bus->flag = flag;
 
 	return bus;
 }

@@ -66,7 +66,7 @@ static SoundRouteComponent *get_speaker_amp(int *early_init)
 	 * RT1015 is dual channel and AUD_RT1015_DEVICE_ADDR is only
 	 * left (0x28) but that is fine for firmware to beep.
 	 */
-	MTKI2c *i2c6 = new_mtk_i2c(0x11005000, 0x11000600);
+	MTKI2c *i2c6 = new_mtk_i2c(0x11005000, 0x11000600, I2C_APDMA_NOASYNC);
 	rt1015Codec *codec = new_rt1015_codec(&i2c6->ops,
 					      AUD_RT1015_DEVICE_ADDR, 0);
 	return &codec->component;

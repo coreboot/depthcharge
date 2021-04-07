@@ -25,7 +25,7 @@
 
 /* I2C Configuration */
 enum {
-	I2C_TRANSFER_TIMEOUT_US  = 100 * 1000,
+	I2C_TRANSFER_TIMEOUT_US	= 100 * 1000,
 };
 
 enum i2c_modes {
@@ -35,12 +35,18 @@ enum i2c_modes {
 };
 
 enum {
-	I2C_DMA_CON_TX          = 0x0,
-	I2C_DMA_CON_RX          = 0x1,
-	I2C_DMA_START_EN        = 0x1,
-	I2C_DMA_INT_FLAG_NONE   = 0x0,
-	I2C_DMA_CLR_FLAG        = 0x0,
-	I2C_DMA_FLUSH_FLAG      = 0x1,
+	I2C_DMA_CON_TX		= 0x0,
+	I2C_DMA_CON_RX		= 0x1,
+	I2C_DMA_START_EN	= 0x1,
+	I2C_DMA_INT_FLAG_NONE	= 0x0,
+	I2C_DMA_CLR_FLAG	= 0x0,
+	I2C_DMA_FLUSH_FLAG	= 0x1,
+	I2C_DMA_ASYNC_MODE	= 0x0004,
+	I2C_DMA_SKIP_CONFIG	= 0x0010,
+	I2C_DMA_DIR_CHANGE	= 0x0200,
+	I2C_DMA_WARM_RST	= 0x1,
+	I2C_DMA_HARD_RST	= 0x2,
+	I2C_DMA_HANDSHAKE_RST	= 0x4,
 };
 
 /* I2C DMA Registers */
@@ -74,41 +80,53 @@ typedef struct MTKI2c {
 	struct mtk_i2c_dma_regs *dma_base;
 	uint8_t *write_buffer;
 	uint8_t *read_buffer;
+	uint32_t flag;
 } MTKI2c;
 
 enum {
-	I2C_TRANS_LEN_MASK = (0xff),
-	I2C_TRANS_AUX_LEN_MASK = (0x1f << 8),
-	I2C_CONTROL_MASK = (0x3f << 1)
+	I2C_TRANS_LEN_MASK	= (0xff),
+	I2C_TRANS_AUX_LEN_MASK	= (0x1f << 8),
+	I2C_CONTROL_MASK	= (0x3f << 1)
+};
+
+enum {
+	I2C_APDMA_NOASYNC	= 0,
+	I2C_APDMA_ASYNC		= 1,
 };
 
 /* Register mask */
 enum {
-	I2C_HS_NACKERR = (1 << 2),
-	I2C_ACKERR = (1 << 1),
-	I2C_TRANSAC_COMP = (1 << 0),
+	I2C_HS_NACKERR		= (1 << 2),
+	I2C_ACKERR		= (1 << 1),
+	I2C_TRANSAC_COMP	= (1 << 0),
+};
+
+/* reset bits */
+enum {
+	I2C_CLR_FLAG		= 0x0,
+	I2C_SOFT_RST		= 0x1,
+	I2C_HANDSHAKE_RST	= 0x20,
 };
 
 /* i2c control bits */
 enum {
-	ACK_ERR_DET_EN = (1 << 5),
-	DIR_CHG = (1 << 4),
-	CLK_EXT = (1 << 3),
-	DMA_EN = (1 << 2),
-	REPEATED_START_FLAG = (1 << 1),
-	STOP_FLAG = (0 << 1)
+	ACK_ERR_DET_EN		= (1 << 5),
+	DIR_CHG			= (1 << 4),
+	CLK_EXT			= (1 << 3),
+	DMA_EN			= (1 << 2),
+	REPEATED_START_FLAG	= (1 << 1),
+	STOP_FLAG		= (0 << 1)
 };
 
 /* I2C Status Code */
-
 enum {
-	I2C_OK = 0x0000,
-	I2C_SET_SPEED_FAIL_OVER_SPEED = 0xA001,
-	I2C_TRANSFER_INVALID_LENGTH = 0xA002,
-	I2C_TRANSFER_FAIL_HS_NACKERR = 0xA003,
-	I2C_TRANSFER_FAIL_ACKERR = 0xA004,
-	I2C_TRANSFER_FAIL_TIMEOUT = 0xA005,
-	I2C_TRANSFER_INVALID_ARGUMENT = 0xA006
+	I2C_OK				= 0x0000,
+	I2C_SET_SPEED_FAIL_OVER_SPEED	= 0xA001,
+	I2C_TRANSFER_INVALID_LENGTH	= 0xA002,
+	I2C_TRANSFER_FAIL_HS_NACKERR	= 0xA003,
+	I2C_TRANSFER_FAIL_ACKERR	= 0xA004,
+	I2C_TRANSFER_FAIL_TIMEOUT	= 0xA005,
+	I2C_TRANSFER_INVALID_ARGUMENT	= 0xA006
 };
 
 /* -----------------------------------------------------------------------
@@ -116,6 +134,6 @@ enum {
  *   i2c:    I2C chip config.
  *   Returns: bus
  */
-MTKI2c *new_mtk_i2c(uintptr_t base, uintptr_t dma_base);
+MTKI2c *new_mtk_i2c(uintptr_t base, uintptr_t dma_base, uint32_t flag);
 
 #endif /* __MTK_I2C_H__ */

@@ -93,7 +93,7 @@ static int sound_setup(void)
 	MtkI2s *i2s0 = new_mtk_i2s(0x11220000, 2, 48000, AFE_I2S1);
 	I2sSource *i2s_source = new_i2s_source(&i2s0->ops, 48000, 2, 8000);
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
-	MTKI2c *i2c0 = new_mtk_i2c(0x11007000, 0x11000100);
+	MTKI2c *i2c0 = new_mtk_i2c(0x11007000, 0x11000100, I2C_APDMA_NOASYNC);
 	rt5645Codec *rt5645 = new_rt5645_codec(&i2c0->ops, 0x1a);
 
 	list_insert_after(&rt5645->component.list_node, &sound_route->components);
@@ -134,7 +134,7 @@ static int board_setup(void)
 
 	sysinfo_install_flags(new_mtk_gpio_input);
 
-	MTKI2c *i2c2 = new_mtk_i2c(0x11009000, 0x11000200);
+	MTKI2c *i2c2 = new_mtk_i2c(0x11009000, 0x11000200, I2C_APDMA_NOASYNC);
 
 	if (CONFIG_DRIVER_TPM_CR50_I2C)
 		tpm_set_ops(&new_cr50_i2c(&i2c2->ops, 0x50,
