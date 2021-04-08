@@ -311,6 +311,11 @@ dedede:
   screen:   [2400, 1600]
   dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
+keeby:
+  # 2400x1600, boots recovery image on USB ports.
+  screen:   [2400, 1600]
+  dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
 jacuzzi:
   # 1366x768, boots recovery image on USB ports or SD card.
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
