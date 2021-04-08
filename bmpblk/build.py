@@ -480,18 +480,10 @@ class Converter(object):
       f.seek(BMP_HEADER_OFFSET_NUM_LINES)
       f.write(bytearray([num_lines]))
 
-  def convert(self, file, output, height, max_width, max_colors,
-              one_line_dir=None):
+  def convert(self, file, output, height, max_colors, num_lines=1):
     """Converts image `file` to bitmap format."""
     name, ext = os.path.splitext(os.path.basename(file))
-
     background = self.BACKGROUND_COLORS.get(name, self.DEFAULT_BACKGROUND)
-
-    # Determine num_lines in order to scale the image
-    if one_line_dir and max_width:
-      num_lines = self.get_num_lines(file, one_line_dir)
-    else:
-      num_lines = 1
 
     if ext == '.svg':
       png_file = os.path.join(self.temp_dir, name + '.png')
@@ -601,28 +593,33 @@ class Converter(object):
     if use_svg:
       run_pango_view(input_file, svg_file, locale, font, height, 0, dpi,
                      bgcolor, fgcolor, hinting='none')
-      self.convert(svg_file, output_file, height, max_width, max_colors)
+      self.convert(svg_file, output_file, height, max_colors)
       return None
     else:
       if not dpi:
         raise BuildImageError('DPI must be specified with use_svg=False')
 
       eff_dpi = dpi
-      if locale:
-        max_height_px = self._to_px(height)
-        height_px = get_one_line_png_height(dpi)
-        if height_px > max_height_px:
-          eff_dpi = self._bisect_dpi(dpi, initial_dpi, max_height_px,
-                                     get_one_line_png_height)
-      # NOTE: With the same DPI, the height of multi-line PNG is not necessarily
-      # a multiple of the height of one-line PNG.  Therefore, even with the
-      # binary search, the height of the resulting multi-line PNG might be
-      # less than "one_line_height * num_lines".  We cannot binary-search DPI
-      # for multi-line PNGs because "num_lines" is dependent on DPI.
-      run_pango_view(input_file, png_file, locale, font, height, max_width,
-                     eff_dpi, bgcolor, fgcolor)
-      self.convert(png_file, output_file, height, max_width, max_colors,
-                   one_line_dir=one_line_dir if locale else None)
+      max_height_px = self._to_px(height)
+      height_px = get_one_line_png_height(dpi)
+      if height_px > max_height_px:
+        eff_dpi = self._bisect_dpi(dpi, initial_dpi, max_height_px,
+                                   get_one_line_png_height)
+      if max_width:
+        # NOTE: With the same DPI, the height of multi-line PNG is not
+        # necessarily a multiple of the height of one-line PNG.  Therefore, even
+        # with the binary search, the height of the resulting multi-line PNG
+        # might be less than "one_line_height * num_lines".  We cannot
+        # binary-search DPI for multi-line PNGs because "num_lines" is dependent
+        # on DPI.
+        run_pango_view(input_file, png_file, locale, font, height, max_width,
+                       eff_dpi, bgcolor, fgcolor)
+        num_lines = self.get_num_lines(png_file, one_line_dir)
+      else:
+        png_file = png_file_one_line
+        num_lines = 1
+      self.convert(png_file, output_file, height, max_colors,
+                   num_lines=num_lines)
       return eff_dpi
 
   def convert_sprite_images(self):
@@ -644,7 +641,7 @@ class Converter(object):
       file = os.path.join(self.sprite_dir, name + '.svg')
       output = os.path.join(self.output_dir, new_name + self.DEFAULT_OUTPUT_EXT)
       height = style[KEY_HEIGHT]
-      self.convert(file, output, height, None, self.SPRITE_MAX_COLORS)
+      self.convert(file, output, height, self.SPRITE_MAX_COLORS)
 
   def build_generic_strings(self):
     """Builds images of generic (locale-independent) strings."""
@@ -664,10 +661,16 @@ class Converter(object):
                                  new_name + self.DEFAULT_OUTPUT_EXT)
       category = names[name]
       style = get_config_with_defaults(styles, category)
+      if style[KEY_MAX_WIDTH]:
+        # Setting max_width causes left/right alignment of the text. However,
+        # generic strings are locale independent, and hence shouldn't have text
+        # alignment within the bitmap.
+        raise BuildImageError('{}: {!r} should be null for generic strings'
+                              .format(name, KEY_MAX_WIDTH))
       self.convert_text_to_image(None, txt_file, output_file, default_font,
                                  self.stage_dir, self.text_max_colors,
                                  height=style[KEY_HEIGHT],
-                                 max_width=style[KEY_MAX_WIDTH],
+                                 max_width=None,
                                  dpi=dpi,
                                  bgcolor=style[KEY_BGCOLOR],
                                  fgcolor=style[KEY_FGCOLOR])
