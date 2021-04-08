@@ -197,33 +197,14 @@ class Converter(object):
   """Converter for converting sprites, texts, and glyphs to bitmaps.
 
   Attributes:
-    DEFAULT_OUTPUT_EXT (str): Default output file extension.
     SPRITE_MAX_COLORS (int): Maximum colors to use for converting image sprites
       to bitmaps.
     GLYPH_MAX_COLORS (int): Maximum colors to use for glyph bitmaps.
-    DEFAULT_BACKGROUND (tuple): Default background color.
-    BACKGROUND_COLORS (dict): Background color of each image. Key is the image
-      name and value is a tuple of RGB values.
   """
 
-  DEFAULT_OUTPUT_EXT = '.bmp'
-
-  # background colors
-  DEFAULT_BACKGROUND = (0x20, 0x21, 0x24)
-  LANG_HEADER_BACKGROUND = (0x16, 0x17, 0x19)
-  LINK_SELECTED_BACKGROUND = (0x2a, 0x2f, 0x39)
+  # Max colors
   SPRITE_MAX_COLORS = 128
   GLYPH_MAX_COLORS = 7
-
-  BACKGROUND_COLORS = {
-      'ic_dropdown': LANG_HEADER_BACKGROUND,
-      'ic_dropleft_focus': LINK_SELECTED_BACKGROUND,
-      'ic_dropright_focus': LINK_SELECTED_BACKGROUND,
-      'ic_globe': LANG_HEADER_BACKGROUND,
-      'ic_search_focus': LINK_SELECTED_BACKGROUND,
-      'ic_settings_focus': LINK_SELECTED_BACKGROUND,
-      'ic_power_focus': LINK_SELECTED_BACKGROUND,
-  }
 
   def __init__(self, board, formats, board_config, output):
     """Inits converter.
@@ -425,10 +406,9 @@ class Converter(object):
     line_height = self._get_png_height(one_line_file)
     return int(round(height / line_height))
 
-  def convert_svg_to_png(self, svg_file, png_file, height, num_lines,
-                         background):
-    """Converts .svg file to .png file."""
-    background_hex = ''.join(format(x, '02x') for x in background)
+  def convert_svg_to_png(self, svg_file, png_file, height, bgcolor,
+                         num_lines=1):
+    """Converts SVG to PNG file."""
     # If the width/height of the SVG file is specified in points, the
     # rsvg-convert command with default 90DPI will potentially cause the pixels
     # at the right/bottom border of the output image to be transparent (or
@@ -436,7 +416,7 @@ class Converter(object):
     # rsvg-convert issue regarding image scaling.  Therefore, use 72DPI here
     # to avoid the scaling.
     command = ['rsvg-convert',
-               '--background-color', "'#%s'" % background_hex,
+               '--background-color', "'%s'" % bgcolor,
                '--dpi-x', '72',
                '--dpi-y', '72',
                '-o', png_file]
@@ -448,19 +428,15 @@ class Converter(object):
     command.append(svg_file)
     subprocess.check_call(' '.join(command), shell=True)
 
-  def convert_to_bitmap(self, input_file, num_lines, background, output,
-                        max_colors):
-    """Converts an image file `input_file` to a BMP file `output`."""
-    image = Image.open(input_file)
+  def convert_png_to_bmp(self, png_file, bmp_file, max_colors, num_lines=1):
+    """Converts PNG to BMP file."""
+    image = Image.open(png_file)
 
     # Process alpha channel and transparency.
     if image.mode == 'RGBA':
-      target = Image.new('RGB', image.size, background)
-      image.load()  # required for image.split()
-      mask = image.split()[-1]
-      target.paste(image, mask=mask)
-    elif (image.mode == 'P') and ('transparency' in image.info):
-      exit('Sorry, PNG with RGBA palette is not supported.')
+      raise BuildImageError('PNG with RGBA mode is not supported')
+    elif image.mode == 'P' and 'transparency' in image.info:
+      raise BuildImageError('PNG with RGBA palette is not supported')
     elif image.mode != 'RGB':
       target = image.convert('RGB')
     else:
@@ -473,24 +449,14 @@ class Converter(object):
       target = target.resize((width_px, height_px), Image.BICUBIC)
 
     # Export and downsample color space.
-    target.convert('P', dither=None, colors=max_colors, palette=Image.ADAPTIVE
-                   ).save(output)
+    target.convert('P',
+                   dither=None,
+                   colors=max_colors,
+                   palette=Image.ADAPTIVE).save(bmp_file)
 
-    with open(output, 'rb+') as f:
+    with open(bmp_file, 'rb+') as f:
       f.seek(BMP_HEADER_OFFSET_NUM_LINES)
       f.write(bytearray([num_lines]))
-
-  def convert(self, file, output, height, max_colors, num_lines=1):
-    """Converts image `file` to bitmap format."""
-    name, ext = os.path.splitext(os.path.basename(file))
-    background = self.BACKGROUND_COLORS.get(name, self.DEFAULT_BACKGROUND)
-
-    if ext == '.svg':
-      png_file = os.path.join(self.temp_dir, name + '.png')
-      self.convert_svg_to_png(file, png_file, height, num_lines, background)
-      file = png_file
-
-    self.convert_to_bitmap(file, num_lines, background, output, max_colors)
 
   def _bisect_dpi(self, max_dpi, initial_dpi, max_height_px, get_height):
     """Bisects to find the DPI that produces image height `max_height_px`.
@@ -593,7 +559,8 @@ class Converter(object):
     if use_svg:
       run_pango_view(input_file, svg_file, locale, font, height, 0, dpi,
                      bgcolor, fgcolor, hinting='none')
-      self.convert(svg_file, output_file, height, max_colors)
+      self.convert_svg_to_png(svg_file, png_file, height, bgcolor)
+      self.convert_png_to_bmp(png_file, output_file, max_colors)
       return None
     else:
       if not dpi:
@@ -618,8 +585,8 @@ class Converter(object):
       else:
         png_file = png_file_one_line
         num_lines = 1
-      self.convert(png_file, output_file, height, max_colors,
-                   num_lines=num_lines)
+      self.convert_png_to_bmp(png_file, output_file, max_colors,
+                              num_lines=num_lines)
       return eff_dpi
 
   def convert_sprite_images(self):
@@ -638,10 +605,13 @@ class Converter(object):
       if not new_name:
         continue
       style = get_config_with_defaults(styles, category)
-      file = os.path.join(self.sprite_dir, name + '.svg')
-      output = os.path.join(self.output_dir, new_name + self.DEFAULT_OUTPUT_EXT)
+      svg_file = os.path.join(self.sprite_dir, name + '.svg')
+      png_file = os.path.join(self.temp_dir, name + '.png')
+      bmp_file = os.path.join(self.output_dir, new_name + '.bmp')
       height = style[KEY_HEIGHT]
-      self.convert(file, output, height, self.SPRITE_MAX_COLORS)
+      bgcolor = style[KEY_BGCOLOR]
+      self.convert_svg_to_png(svg_file, png_file, height, bgcolor)
+      self.convert_png_to_bmp(png_file, bmp_file, self.SPRITE_MAX_COLORS)
 
   def build_generic_strings(self):
     """Builds images of generic (locale-independent) strings."""
@@ -657,8 +627,7 @@ class Converter(object):
       new_name = self.rename_map.get(name, name)
       if not new_name:
         continue
-      output_file = os.path.join(self.output_dir,
-                                 new_name + self.DEFAULT_OUTPUT_EXT)
+      bmp_file = os.path.join(self.output_dir, new_name + '.bmp')
       category = names[name]
       style = get_config_with_defaults(styles, category)
       if style[KEY_MAX_WIDTH]:
@@ -667,7 +636,7 @@ class Converter(object):
         # alignment within the bitmap.
         raise BuildImageError('{}: {!r} should be null for generic strings'
                               .format(name, KEY_MAX_WIDTH))
-      self.convert_text_to_image(None, txt_file, output_file, default_font,
+      self.convert_text_to_image(None, txt_file, bmp_file, default_font,
                                  self.stage_dir, self.text_max_colors,
                                  height=style[KEY_HEIGHT],
                                  max_width=None,
@@ -704,7 +673,7 @@ class Converter(object):
       new_name = self.rename_map.get(name, name)
       if not new_name:
         continue
-      output_file = os.path.join(output_dir, new_name + self.DEFAULT_OUTPUT_EXT)
+      output_file = os.path.join(output_dir, new_name + '.bmp')
 
       # Write to text file
       text_file = os.path.join(stage_dir, name + '.txt')
@@ -748,8 +717,7 @@ class Converter(object):
     for locale_info in self.locales:
       locale = locale_info.code
       ro_locale_dir = os.path.join(self.output_ro_dir, locale)
-      for filename in glob.glob(os.path.join(ro_locale_dir,
-                                             '*' + self.DEFAULT_OUTPUT_EXT)):
+      for filename in glob.glob(os.path.join(ro_locale_dir, '*.bmp')):
         name, _ = os.path.splitext(os.path.basename(filename))
         category = names[name]
         style = get_config_with_defaults(styles, category)
@@ -770,8 +738,7 @@ class Converter(object):
 
   def _copy_missing_bitmaps(self):
     """Copy missing (not yet translated) strings from locale 'en'."""
-    en_files = glob.glob(os.path.join(self.output_ro_dir, 'en',
-                                      '*' + self.DEFAULT_OUTPUT_EXT))
+    en_files = glob.glob(os.path.join(self.output_ro_dir, 'en', '*.bmp'))
     for locale_info in self.locales:
       locale = locale_info.code
       if locale == 'en':
@@ -868,7 +835,7 @@ class Converter(object):
       with open(txt_file, 'w', encoding='ascii') as f:
         f.write(chr(c))
         f.write('\n')
-      output_file = os.path.join(output_dir, name + self.DEFAULT_OUTPUT_EXT)
+      output_file = os.path.join(output_dir, name + '.bmp')
       futures.append(executor.submit(self.convert_text_to_image, None, txt_file,
                                      output_file, GLYPH_FONT,
                                      self.stage_glyph_dir,
@@ -892,8 +859,8 @@ class Converter(object):
       os.makedirs(rw_locale_dir)
 
       for name in self.config[KEY_RW_OVERRIDE]:
-        ro_src = os.path.join(ro_locale_dir, name + self.DEFAULT_OUTPUT_EXT)
-        rw_dst = os.path.join(rw_locale_dir, name + self.DEFAULT_OUTPUT_EXT)
+        ro_src = os.path.join(ro_locale_dir, name + '.bmp')
+        rw_dst = os.path.join(rw_locale_dir, name + '.bmp')
         shutil.copyfile(ro_src, rw_dst)
 
   def create_locale_list(self):

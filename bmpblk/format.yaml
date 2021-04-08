@@ -156,15 +156,15 @@ sprite_files:
   ic_done: icon_step
   # button icons
   ic_search: button_icon
-  ic_search_focus: button_icon
+  ic_search_focus: button_icon_focus
   ic_settings: button_icon
-  ic_settings_focus: button_icon
+  ic_settings_focus: button_icon_focus
   ic_power: button_icon
-  ic_power_focus: button_icon
+  ic_power_focus: button_icon_focus
   ic_dropleft: button_arrow
-  ic_dropleft_focus: button_arrow
+  ic_dropleft_focus: button_arrow_focus
   ic_dropright: button_arrow
-  ic_dropright_focus: button_arrow
+  ic_dropright_focus: button_arrow_focus
   # QR code
   qr_rec: qr_rec
   qr_rec_phone: qr_rec_phone
@@ -252,22 +252,37 @@ styles:
     fgcolor: *grey_200
   # sprite bitmaps
   ic_globe:
+    bgcolor: '#161719'
     height: 20
   ic_dropdown:
+    bgcolor: '#161719'
     height: 24
   icon:
+    bgcolor: *grey_900
     height: 45
   icon_step:
+    bgcolor: *grey_900
     height: 28
   button_icon:
+    bgcolor: *grey_900
+    height: 24
+  button_icon_focus:
+    bgcolor: '#2a2f39'
     height: 24
   button_arrow:
+    bgcolor: *grey_900
+    height: 20
+  button_arrow_focus:
+    bgcolor: '#2a2f39'
     height: 20
   qr_rec:
+    bgcolor: *grey_900
     height: 128
   qr_rec_phone:
+    bgcolor: *grey_900
     height: 228
   nav_icon:
+    bgcolor: *grey_900
     height: 30
 
 # Font of each locale
