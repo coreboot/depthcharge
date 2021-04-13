@@ -20,7 +20,7 @@
 #include <stdlib.h>
 
 #include "base/cleanup_funcs.h"
-#include "boot/bootdata.h"
+#include "boot/zbi.h"
 #include "boot/multiboot.h"
 #include "base/timestamp.h"
 #include "vboot/boot_policy.h"
@@ -314,11 +314,11 @@ int multiboot_boot(struct boot_info *bi)
 		return -1;
 	}
 
-	// Add bootdata info structures if a bootdata kernel is found.
+	// Add zbi info structures if a ZBI kernel is found.
 	// This can change bi->ramdisk_size, so do it before setting up
 	// the Multiboot structures that describe the ramdisk.
-	if (CONFIG(KERNEL_MULTIBOOT_BOOTDATA))
-		bootdata_prepare(bi);
+	if (CONFIG(KERNEL_MULTIBOOT_ZBI))
+		zbi_prepare(bi);
 
 	// Load multiboot data into proper locations for boot
 	if (multiboot_load(bi) < 0)

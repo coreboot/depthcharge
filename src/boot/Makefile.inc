@@ -11,6 +11,7 @@
 ## GNU General Public License for more details.
 ##
 
+subdirs-y := zbi
 depthcharge-y += commandline.c payload.c
 depthcharge-$(CONFIG_KERNEL_DUMMY) += dummy.c
 depthcharge-$(CONFIG_KERNEL_FIT) += fit.c
@@ -19,5 +20,5 @@ depthcharge-$(CONFIG_KERNEL_FIT) += ramoops.c
 depthcharge-$(CONFIG_KERNEL_LEGACY) += legacy_boot.c
 depthcharge-$(CONFIG_KERNEL_LEGACY) += crc32.c
 depthcharge-$(CONFIG_KERNEL_MULTIBOOT) += multiboot.c
-depthcharge-$(CONFIG_KERNEL_MULTIBOOT_BOOTDATA) += bootdata.c
+depthcharge-$(CONFIG_KERNEL_MULTIBOOT_ZBI) += zbi.c
 depthcharge-$(CONFIG_ANDROID_DT_FIXUP) += android_dt.c

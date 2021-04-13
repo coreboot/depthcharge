@@ -35,8 +35,8 @@ config KERNEL_MULTIBOOT
 	bool "Allow alternative(multiboot) kernels"
 	default n
 
-config KERNEL_MULTIBOOT_BOOTDATA
-	bool "Allow alternative(bootdata) multiboot kernels"
+config KERNEL_MULTIBOOT_ZBI
+	bool "Allow alternative(multiboot-wrapped zbi) kernels"
 	default n
 
 config MACHID
