@@ -97,11 +97,12 @@ def get_config_with_defaults(configs, key):
   return config
 
 
-def load_boards_config(filename):
-  """Loads the configuration of all boards from `filename`.
+def load_board_config(filename, board):
+  """Loads the configuration of `board` from `filename`.
 
   Args:
     filename: File name of a YAML config file.
+    board: Board name.
 
   Returns:
     A dictionary mapping each board name to its config.
@@ -109,20 +110,19 @@ def load_boards_config(filename):
   with open(filename, 'rb') as file:
     raw = yaml.load(file)
 
-  configs = {}
-  default = raw[KEY_DEFAULT]
-  if not default:
-    raise BuildImageError('Default configuration is not found')
+  config = copy.deepcopy(raw[KEY_DEFAULT])
   for boards, params in raw.items():
     if boards == KEY_DEFAULT:
       continue
-    config = copy.deepcopy(default)
+    if board not in boards.split(','):
+      continue
     if params:
       config.update(params)
-    for board in boards.replace(',', ' ').split():
-      configs[board] = config
+    break
+  else:
+    raise BuildImageError('Board config not found for ' + board)
 
-  return configs
+  return config
 
 
 def check_fonts(fonts):
@@ -921,7 +921,7 @@ def main():
 
   with open(FORMAT_FILE, encoding='utf-8') as f:
     formats = yaml.load(f)
-  board_config = load_boards_config(BOARDS_CONFIG_FILE)[board]
+  board_config = load_board_config(BOARDS_CONFIG_FILE, board)
 
   print('Building for ' + board)
   check_fonts(formats[KEY_FONTS])
