@@ -26,7 +26,7 @@ config VOLTEER_USBC_PORT_0_USB3_NUM
 	  This is the SoC TCP port number routed to Type-C port C0.
 
 config VOLTEER_USBC_PORT_0_USB2_NUM
-	int
+	int "Set the USBC port 0 USB2 number"
 	range 1 10
 	default 9
 	help
@@ -45,7 +45,7 @@ config VOLTEER_USBC_PORT_1_USB3_NUM
 	  This is the SoC TCP port number routed to Type-C port C1.
 
 config VOLTEER_USBC_PORT_1_USB2_NUM
-	int
+	int "Set the USBC port 1 USB2 number"
 	range 1 10
 	default 4
 	help
