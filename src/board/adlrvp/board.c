@@ -57,15 +57,15 @@ static int cr50_irq_status(void)
 static void alderlake_setup_tpm(void)
 {
 	/* SPI TPM */
-	const IntelGspiSetupParams gspi0_params = {
-		.dev = PCH_DEV_GSPI0,
+	const IntelGspiSetupParams gspi1_params = {
+		.dev = PCH_DEV_GSPI1,
 		.cs_polarity = SPI_POLARITY_LOW,
 		.clk_phase = SPI_CLOCK_PHASE_FIRST,
 		.clk_polarity = SPI_POLARITY_LOW,
 		.ref_clk_mhz = 100,
 		.gspi_clk_mhz = 1,
 	};
-	tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0_params),
+	tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi1_params),
 		cr50_irq_status)->ops);
 }
 
