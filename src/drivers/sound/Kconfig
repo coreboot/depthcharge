@@ -78,6 +78,10 @@ config DRIVER_SOUND_RT1015P
 	bool "RT1015Q auto mode speaker amp driver (known as RT1015P)"
 	default n
 
+config DRIVER_SOUND_RT1019
+	bool "RT1019 speaker amp driver"
+	default n
+
 config DRIVER_SOUND_RT5645
 	bool "RT5645 codec driver"
 	default n
