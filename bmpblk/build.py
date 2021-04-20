@@ -245,7 +245,7 @@ class Converter:
         self.stage_grit_dir = os.path.join(self.stage_dir, 'grit')
         self.stage_locale_dir = os.path.join(self.stage_dir, 'locale')
         self.stage_glyph_dir = os.path.join(self.stage_dir, 'glyph')
-        self.temp_dir = os.path.join(self.stage_dir, 'tmp')
+        self.stage_sprite_dir = os.path.join(self.stage_dir, 'sprite')
 
     def set_screen(self):
         """Sets screen width and height."""
@@ -636,13 +636,14 @@ class Converter:
                 raise BuildImageError('Sprite image %r not specified in %s' %
                                       (filename, FORMAT_FILE))
         # Convert images
+        os.makedirs(self.stage_sprite_dir, exist_ok=True)
         for name, category in names.items():
             new_name = self.rename_map.get(name, name)
             if not new_name:
                 continue
             style = get_config_with_defaults(styles, category)
             svg_file = os.path.join(self.sprite_dir, name + '.svg')
-            png_file = os.path.join(self.temp_dir, name + '.png')
+            png_file = os.path.join(self.stage_sprite_dir, name + '.png')
             bmp_file = os.path.join(self.output_dir, new_name + '.bmp')
             height = style[KEY_HEIGHT]
             bgcolor = style[KEY_BGCOLOR]
@@ -928,19 +929,12 @@ class Converter:
 
     def build(self):
         """Builds all images required by a board."""
-        # Clean up output directory
-        if os.path.exists(self.output_dir):
-            shutil.rmtree(self.output_dir)
+        # Clean up output/stage directories
+        for path in (self.output_dir, self.stage_dir):
+            if os.path.exists(path):
+                shutil.rmtree(path)
         os.makedirs(self.output_dir)
-
-        if not os.path.exists(self.stage_dir):
-            raise BuildImageError(
-                'Missing stage folder. Run make in strings dir.')
-
-        # Clean up temp directory
-        if os.path.exists(self.temp_dir):
-            shutil.rmtree(self.temp_dir)
-        os.makedirs(self.temp_dir)
+        os.makedirs(self.stage_dir)
 
         print('Converting sprite images...')
         self.convert_sprite_images()
