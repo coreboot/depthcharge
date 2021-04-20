@@ -76,6 +76,36 @@ int i2c_writew(I2cOps *ops, uint8_t chip, uint8_t reg, uint16_t data)
 	return ops->transfer(ops, &seg, 1);
 }
 
+int i2c_addrw_readb(I2cOps *ops, uint8_t chip, uint16_t reg, uint8_t *data)
+{
+	I2cSeg seg[2];
+	uint8_t reg_addr[2] = {reg >> 8, reg & 0xFF};
+
+	seg[0].read = 0;
+	seg[0].chip = chip;
+	seg[0].buf = reg_addr;
+	seg[0].len = ARRAY_SIZE(reg_addr);
+	seg[1].read = 1;
+	seg[1].chip = chip;
+	seg[1].buf = data;
+	seg[1].len = sizeof(*data);
+
+	return ops->transfer(ops, seg, ARRAY_SIZE(seg));
+}
+
+int i2c_addrw_writeb(I2cOps *ops, uint8_t chip, uint16_t reg, uint8_t data)
+{
+	I2cSeg seg;
+	uint8_t buf[3] = {reg >> 8, reg & 0xFF, data};
+
+	seg.read = 0;
+	seg.chip = chip;
+	seg.buf = buf;
+	seg.len = ARRAY_SIZE(buf);
+
+	return ops->transfer(ops, &seg, 1);
+}
+
 int i2c_addrw_readw(I2cOps *ops, uint8_t chip, uint16_t reg, uint16_t *data)
 {
 	I2cSeg seg[2];

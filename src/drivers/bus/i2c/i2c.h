@@ -102,6 +102,23 @@ int i2c_readw(I2cOps *ops, uint8_t chip, uint8_t reg, uint16_t *data);
 int i2c_writew(I2cOps *ops, uint8_t chip, uint8_t reg, uint16_t data);
 
 /**
+ * Read a byte by 2 segments in one frame
+ * Read interface for 16-bit address and 8-bit data
+ *
+ * [start][slave addr][w][register addr high][register addr low]
+ * [start][slave addr][r][data][stop]
+ */
+int i2c_addrw_readb(I2cOps *ops, uint8_t chip, uint16_t reg, uint8_t *data);
+
+/**
+ * Write a byte by one segment in one frame
+ * Write interface for 16-bit address and 8-bit data
+ *
+ * [start][slave addr][w][register addr high][register addr low][data][stop]
+ */
+int i2c_addrw_writeb(I2cOps *ops, uint8_t chip, uint16_t reg, uint8_t data);
+
+/**
  * Read a word by 2 segments in one frame
  * Read interface for 16-bit address and 16-bit data
  *
