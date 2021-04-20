@@ -200,6 +200,8 @@ styles:
     # Maximum width of the bitmap for wrapping lines. Unit is the same as the
     # "height" option.
     max_width: null
+  _GLYPH_:
+    height: 20
   language:
     height: 26
   title:
@@ -289,6 +291,7 @@ styles:
 # Font of each locale
 fonts:
   _DEFAULT_: 'Roboto'
+  _GLYPH_: 'Cousine'
   # The following contains all the locales 'Roboto' doesn't support. All
   # the supported locales can be found by
   #   fc-match -f "%{lang}\n" "Roboto"

@@ -37,6 +37,7 @@ DIAGNOSTIC_UI = os.getenv('DIAGNOSTIC_UI') == '1'
 
 # String format YAML key names.
 KEY_DEFAULT = '_DEFAULT_'
+KEY_GLYPH = '_GLYPH_'
 KEY_LOCALES = 'locales'
 KEY_GENERIC_FILES = 'generic_files'
 KEY_LOCALIZED_FILES = 'localized_files'
@@ -65,14 +66,6 @@ NEWLINE_PATTERN = re.compile(r'([^\n])\n([^\n])')
 NEWLINE_REPLACEMENT = r'\1 \2'
 CRLF_PATTERN = re.compile(r'\r\n')
 MULTIBLANK_PATTERN = re.compile(r'   *')
-
-# The base for bitmap scales, same as UI_SCALE in depthcharge. For example, if
-# `SCALE_BASE` is 1000, then height = 200 means 20% of the screen height. Also
-# see the 'styles' section in format.yaml.
-SCALE_BASE = 1000
-DEFAULT_GLYPH_HEIGHT = 20
-
-GLYPH_FONT = 'Cousine'
 
 LocaleInfo = namedtuple('LocaleInfo', ['code', 'rtl'])
 
@@ -202,10 +195,15 @@ class Converter:
     """Converter for converting sprites, texts, and glyphs to bitmaps.
 
     Attributes:
+        SCALE_BASE (int): The base for bitmap scales, same as UI_SCALE in
+            depthcharge. For example, if SCALE_BASE is 1000, then height = 200
+            means 20% of the screen height. Also see the 'styles' section in
+            format.yaml.
         SPRITE_MAX_COLORS (int): Maximum colors to use for converting image
             sprites to bitmaps.
         GLYPH_MAX_COLORS (int): Maximum colors to use for glyph bitmaps.
     """
+    SCALE_BASE = 1000
 
     # Max colors
     SPRITE_MAX_COLORS = 128
@@ -397,7 +395,7 @@ class Converter:
 
     def _to_px(self, length, num_lines=1):
         """Converts the relative coordinate to absolute one in pixels."""
-        return int(self.canvas_px * length / SCALE_BASE) * num_lines
+        return int(self.canvas_px * length / self.SCALE_BASE) * num_lines
 
     @classmethod
     def _get_png_height(cls, png_file):
@@ -875,6 +873,10 @@ class Converter:
         os.makedirs(self.stage_glyph_dir, exist_ok=True)
         output_dir = os.path.join(self.output_dir, 'glyph')
         os.makedirs(output_dir)
+        styles = self.formats[KEY_STYLES]
+        style = get_config_with_defaults(styles, KEY_GLYPH)
+        height = style[KEY_HEIGHT]
+        font = self.formats[KEY_FONTS][KEY_GLYPH]
         executor = ProcessPoolExecutor()
         futures = []
         for c in range(ord(' '), ord('~') + 1):
@@ -889,10 +891,10 @@ class Converter:
                                 None,
                                 txt_file,
                                 output_file,
-                                GLYPH_FONT,
+                                font,
                                 self.stage_glyph_dir,
                                 self.GLYPH_MAX_COLORS,
-                                height=DEFAULT_GLYPH_HEIGHT,
+                                height=height,
                                 use_svg=True))
         for future in futures:
             future.result()
