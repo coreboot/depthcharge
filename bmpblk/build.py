@@ -16,7 +16,6 @@ import re
 import shutil
 import subprocess
 import sys
-import tempfile
 
 import yaml
 from PIL import Image
@@ -243,6 +242,7 @@ class Converter:
         self.output_ro_dir = os.path.join(self.output_dir, 'locale', 'ro')
         self.output_rw_dir = os.path.join(self.output_dir, 'locale', 'rw')
         self.stage_dir = os.path.join(output, '.stage')
+        self.stage_grit_dir = os.path.join(self.stage_dir, 'grit')
         self.stage_locale_dir = os.path.join(self.stage_dir, 'locale')
         self.stage_glyph_dir = os.path.join(self.stage_dir, 'glyph')
         self.temp_dir = os.path.join(self.stage_dir, 'tmp')
@@ -685,13 +685,13 @@ class Converter:
                                        bgcolor=style[KEY_BGCOLOR],
                                        fgcolor=style[KEY_FGCOLOR])
 
-    def build_locale(self, locale, names, json_dir):
+    def build_locale(self, locale, names):
         """Builds images of strings for `locale`."""
         dpi = self.config[KEY_DPI]
         styles = self.formats[KEY_STYLES]
         fonts = self.formats[KEY_FONTS]
         font = fonts.get(locale, fonts[KEY_DEFAULT])
-        inputs = parse_locale_json_file(locale, json_dir)
+        inputs = parse_locale_json_file(locale, self.stage_grit_dir)
 
         # Walk locale dir to add pre-generated texts such as language names.
         for txt_file in glob.glob(
@@ -808,20 +808,18 @@ class Converter:
         # and .xtb files, producing a set of .json files mapping our identifier
         # to the translated string, one for every language including US English.
 
-        # Create a temporary dir to place the translation output from grit in.
-        json_dir = tempfile.mkdtemp()
-
         # This invokes the grit build command to generate JSON files from the
         # XTB files containing translations.  The results are placed in
-        # `json_dir` as specified in firmware_strings.grd, i.e. one JSON file
-        # per locale.
+        # `self.stage_grit_dir` as specified in firmware_strings.grd, i.e. one
+        # JSON file per locale.
+        os.makedirs(self.stage_grit_dir, exist_ok=True)
         subprocess.check_call([
             'grit',
             '-i',
             os.path.join(self.locale_dir, STRINGS_GRD_FILE),
             'build',
             '-o',
-            os.path.join(json_dir),
+            self.stage_grit_dir,
         ])
 
         # Make a copy to avoid modifying `self.formats`
@@ -834,8 +832,7 @@ class Converter:
         for locale_info in self.locales:
             locale = locale_info.code
             print(locale, end=' ', flush=True)
-            futures.append(
-                executor.submit(self.build_locale, locale, names, json_dir))
+            futures.append(executor.submit(self.build_locale, locale, names))
 
         print()
 
@@ -853,7 +850,6 @@ class Converter:
                 'Reducing effective DPI to %d, limited by screen resolution' %
                 max(effective_dpi))
 
-        shutil.rmtree(json_dir)
         self._check_text_width(names)
         self._copy_missing_bitmaps()
 
