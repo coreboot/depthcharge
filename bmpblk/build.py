@@ -7,7 +7,6 @@
 import argparse
 from collections import defaultdict, namedtuple, Counter
 import copy
-import fractions
 import glob
 import json
 from concurrent.futures import ProcessPoolExecutor
@@ -52,7 +51,6 @@ KEY_FONTS = 'fonts'
 
 # Board config YAML key names.
 KEY_SCREEN = 'screen'
-KEY_PANEL = 'panel'
 KEY_SDCARD = 'sdcard'
 KEY_DPI = 'dpi'
 KEY_RTL = 'rtl'
@@ -248,27 +246,6 @@ class Converter:
     def set_screen(self):
         """Sets screen width and height."""
         self.screen_width, self.screen_height = self.config[KEY_SCREEN]
-
-        self.panel_stretch = fractions.Fraction(1)
-        if self.config[KEY_PANEL]:
-            # Calculate `panel_stretch`. It's used to shrink images horizontally
-            # so that the resulting images will look proportional to the
-            # original image on the stretched display. If the display is not
-            # stretched, meaning the aspect ratio is same as the screen where
-            # images were rendered, no shrinking is performed.
-            panel_width, panel_height = self.config[KEY_PANEL]
-            self.panel_stretch = fractions.Fraction(
-                self.screen_width * panel_height,
-                self.screen_height * panel_width)
-
-        if self.panel_stretch > 1:
-            raise BuildImageError(
-                'Panel aspect ratio (%f) is smaller than screen '
-                'aspect ratio (%f). It indicates screen will be '
-                'shrunk horizontally. It is currently unsupported.' %
-                (panel_width / panel_height,
-                 self.screen_width / self.screen_height))
-
         # Set up square drawing area
         self.canvas_px = min(self.screen_width, self.screen_height)
 
@@ -453,21 +430,13 @@ class Converter:
         if image.mode == 'P' and 'transparency' in image.info:
             raise BuildImageError('PNG with RGBA palette is not supported')
         if image.mode != 'RGB':
-            target = image.convert('RGB')
-        else:
-            target = image
-
-        width_px, height_px = image.size
-        # Stretch image horizontally for stretched display.
-        if self.panel_stretch != 1:
-            width_px = int(width_px * self.panel_stretch)
-            target = target.resize((width_px, height_px), Image.BICUBIC)
+            image = image.convert('RGB')
 
         # Export and downsample color space.
-        target.convert('P',
-                       dither=None,
-                       colors=max_colors,
-                       palette=Image.ADAPTIVE).save(bmp_file)
+        image.convert('P',
+                      dither=None,
+                      colors=max_colors,
+                      palette=Image.ADAPTIVE).save(bmp_file)
 
         with open(bmp_file, 'rb+') as f:
             f.seek(BMP_HEADER_OFFSET_NUM_LINES)
