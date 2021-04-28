@@ -155,15 +155,24 @@
 #define PARADE_BINVERSION_OFFSET	0x501c
 #define PARADE_CHIPVERSION_OFFSET	0x503a
 
-#if (PS8751_DEBUG >= 2)
-#define PARADE_BASE_FW_START	0x38000
-#else
-#define PARADE_BASE_FW_START	0x30000
-#endif
-#define PARADE_BASE_FW_END	0x40000
-#define PARADE_FW_SECTOR	0x01000		/* erase sector size */
+#define PS8815_BOOTLOADER_OFFSET	0x00f00
+#define PS8815_BL_MARKER_OFFSET		0x00f03
+#define PS8815_APP_MARKER_CHECK_SIZE	32
 
-#define PARADE_TEST_FW_SIZE	0x01000
+#if (PS8751_DEBUG >= 2)
+#define PARADE_BASE_FW_START		0x38000
+#else
+#define PARADE_BASE_FW_START		0x30000
+#endif
+#define PARADE_BASE_FW_END		0x40000
+#define PARADE_FW_SECTOR		0x01000		/* erase sector size */
+
+#define PARADE_APP_FW_START		0x20000
+#define PARADE_APP_FW_END		0x30000
+
+#define PARADE_BOOT_HEADER_START	0x02000
+
+#define PARADE_TEST_FW_SIZE		0x01000
 
 #define PARADE_VENDOR_ID		0x1DA0
 #define PARADE_PS8751_PRODUCT_ID	0x8751
@@ -194,6 +203,132 @@ static const uint8_t erased_bytes[] = {
 };
 _Static_assert(sizeof(erased_bytes) == PS_FW_RD_CHUNK,
 	       "erased_bytes initializer size mismatch");
+
+static const uint8_t fw_bootloader_marker[] = "Parade Bootloader";
+
+/*
+ * Determine if the blob looks like a base firmware image.
+ *
+ * @param image		pointer to blob
+ * @param image_size	size of blob
+ * @return true IFF blob looks like base FW
+ */
+
+static int __must_check ps8751_is_base_fw(const uint8_t *image,
+					  size_t image_size)
+{
+	const size_t bl_marker_offset = PS8815_BL_MARKER_OFFSET;
+
+	if (image_size < bl_marker_offset + sizeof(fw_bootloader_marker))
+		return 0;
+
+	/*
+	 * Only the base firmware includes a bootloader. Check for its
+	 * marker.
+	 */
+
+	if (memcmp(image + bl_marker_offset,
+		   fw_bootloader_marker, sizeof(fw_bootloader_marker)) != 0)
+		return 0;
+
+	return 1;
+}
+
+/*
+ * Determine if the blob looks like an application firmware image.
+ *
+ * @param image		pointer to blob
+ * @param image_size	size of blob
+ * @return true IFF blob looks like app FW
+ */
+
+static int __must_check ps8751_is_app_fw(const uint8_t *image,
+					  size_t image_size)
+{
+	const size_t bl_offset = PS8815_BOOTLOADER_OFFSET;
+	const uint8_t *marker;
+	uint8_t filler;
+
+	if (image_size < bl_offset + PS8815_APP_MARKER_CHECK_SIZE)
+		return 0;
+
+	/*
+	 * The app firmware has a blank bootloader area. This should
+	 * ideally be 0xff filled, but 0x00 is also possible.
+	 */
+
+	marker = image + bl_offset;
+	filler = marker[0];
+
+	if (filler != 0x00 && filler != 0xff)
+		return 0;
+
+	for (size_t i = 1; i < PS8815_APP_MARKER_CHECK_SIZE; ++i) {
+		if (marker[i] != filler)
+			return 0;
+	}
+
+	return 1;
+}
+
+/*
+ * Determine if this chip supports application firmware images.
+ *
+ * @param me	device context
+ * @return true IFF chip supports application FW
+ */
+
+static int __must_check ps8751_is_app_capable(Ps8751 *me)
+{
+	switch (me->chip_type) {
+	case CHIP_PS8815:
+		return 1;
+	default:
+		return 0;
+	}
+}
+
+/**
+ * Determine image type and set up device region parameters
+ * accordingly. The blob is either a base firmware image or an
+ * application firmware image - each goes in a different region.
+ *
+ * @param me		device context
+ * @param image		firmware blob address
+ * @param image_size	firmware blob size
+ * @return 0 if ok, -1 on error
+ */
+
+static int __must_check ps8751_check_fw_type(
+	Ps8751 *me, const uint8_t *image, size_t image_size)
+{
+	if (!ps8751_is_app_capable(me)) {
+		debug("chip does not support app FW, assuming base FW image\n");
+		me->fw_type = PARADE_FW_BASE;
+		me->fw_start = PARADE_BASE_FW_START;
+		me->fw_end = PARADE_BASE_FW_END;
+		return 0;
+	}
+
+	if (ps8751_is_base_fw(image, image_size)) {
+		debug("blob is a base FW image\n");
+		me->fw_type = PARADE_FW_BASE;
+		me->fw_start = PARADE_BASE_FW_START;
+		me->fw_end = PARADE_BASE_FW_END;
+		return 0;
+	}
+
+	if (ps8751_is_app_fw(image, image_size)) {
+		debug("blob is an application FW image\n");
+		me->fw_type = PARADE_FW_APP;
+		me->fw_start = PARADE_APP_FW_START;
+		me->fw_end = PARADE_APP_FW_END;
+		return 0;
+	}
+
+	printf("%s: Did not recognize FW blob type\n", me->chip_name);
+	return -1;
+}
 
 /**
  * write a single byte to a register of an i2c page
@@ -1531,6 +1666,33 @@ static int ps8751_reflash(Ps8751 *me, const uint8_t *data, size_t data_size)
 	if (PS8751_DEBUG >= 2)
 		ps8751_dump_flash(me, me->fw_start, me->fw_end - me->fw_start);
 
+	if ((PS8751_DEBUG > 0) &&
+	    (me->fw_type == PARADE_FW_APP) &&
+	    (data_size == (PARADE_APP_FW_END - PARADE_APP_FW_START))) {
+		uint8_t sum_xor = 0;
+		uint8_t sum_add = 0;
+		const size_t sz = PARADE_APP_FW_END - PARADE_APP_FW_START - 2;
+
+		for (int i = 0 ; i < sz; ++i) {
+			sum_xor ^= data[i];
+			sum_add += data[i];
+		}
+		if ((sum_xor != data[sz + 0]) || (sum_add != data[sz + 1])) {
+			printf("%s: XOR 0x%02x vs. 0x%02x\n",
+			       me->chip_name, sum_xor, data[sz+0]);
+			printf("%s: ADD 0x%02x vs. 0x%02x\n",
+			       me->chip_name, sum_add, data[sz+1]);
+			printf("%s: MISMATCH\n", me->chip_name);
+			return -1;
+		}
+	}
+
+	status = ps8751_erase(me, PARADE_BOOT_HEADER_START, PARADE_FW_SECTOR);
+	if (status != 0) {
+		printf("%s: boot header erase failed\n", me->chip_name);
+		return -1;
+	}
+
 	status = ps8751_erase(me, me->fw_start, data_size);
 	if (status != 0) {
 		printf("%s: FW erase failed\n", me->chip_name);
@@ -1571,6 +1733,29 @@ static int ps8751_reflash(Ps8751 *me, const uint8_t *data, size_t data_size)
 		return -1;
 	}
 
+	if (me->fw_type == PARADE_FW_APP) {
+		static const uint8_t header[] = {
+			0x55,
+			0xaa,
+			PARADE_APP_FW_START >> 16
+		};
+
+		/*
+		 * Program a boot header pointing to the app for the
+		 * bootloader to follow.
+		 */
+		status = ps8751_program(me, PARADE_BOOT_HEADER_START,
+					header, sizeof(header));
+		if (status != 0) {
+			printf("%s: boot header program failed\n",
+			       me->chip_name);
+			return -1;
+		}
+		if (ps8751_verify(me, PARADE_BOOT_HEADER_START,
+				  header, sizeof(header)) != 0)
+			return -1;
+	}
+
 	return 0;
 }
 
@@ -1609,6 +1794,10 @@ static vb2_error_t ps8751_check_hash(const VbootAuxfwOps *vbaux,
 		*severity = VB2_AUXFW_NO_UPDATE;
 		return VB2_SUCCESS;
 	}
+
+	printf("%s: need to update FW from 0x%02x to 0x%02x\n", me->chip_name,
+	       me->chip.fw_rev, hash[1]);
+
 	*severity = VB2_AUXFW_SLOW_UPDATE;
 
 	switch (ps8751_ec_pd_suspend(me)) {
@@ -1663,8 +1852,8 @@ static vb2_error_t ps8751_update_image(const VbootAuxfwOps *vbaux,
 
 	debug("call...\n");
 
-	me->fw_start = PARADE_BASE_FW_START;
-	me->fw_end = PARADE_BASE_FW_END;
+	if (ps8751_check_fw_type(me, image, image_size) != 0)
+		return VB2_ERROR_UNKNOWN;
 
 	/* If the I2C tunnel is not known, probe EC for that */
 	if (!me->bus && ps8751_construct_i2c_tunnel(me)) {

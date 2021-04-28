@@ -22,13 +22,26 @@
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/vboot_auxfw.h"
 
-typedef enum  ParadeChipType {
+typedef enum ParadeChipType {
 	CHIP_PS8751,
 	CHIP_PS8755,
 	CHIP_PS8805,
 	CHIP_PS8815,
 	CHIP_PS8705,
 } ParadeChipType;
+
+/*
+ * The base firmware consists of a bootloader+application and is
+ * equivalent to the factory firmware image. The base firmware checks
+ * for a valid alternate application image in a dedicated location and
+ * boots into it. Only the ps8815 firmware supports this feature.
+ */
+
+typedef enum ParadeFwType {
+	PARADE_FW_UNKNOWN,
+	PARADE_FW_BASE,
+	PARADE_FW_APP,
+} ParadeFwType;
 
 typedef struct Ps8751
 {
@@ -50,6 +63,7 @@ typedef struct Ps8751
 	uint8_t last_a16_a23;	/* cached flash window addr bits */
 	uint8_t last_a8_a15;	/* cached flash window addr bits */
 
+	ParadeFwType fw_type;
 	size_t fw_start;	/* selected FW start addr in flash */
 	size_t fw_end;		/* selected FW end addr in flash */
 } Ps8751;
