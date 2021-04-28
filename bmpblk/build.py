@@ -23,7 +23,7 @@ from PIL import Image
 SCRIPT_BASE = os.path.dirname(os.path.abspath(__file__))
 
 STRINGS_GRD_FILE = 'firmware_strings.grd'
-STRINGS_JSON_FILE_TMPL = '{}.json'
+STRINGS_JSON_FILE_TMPL = '%s.json'
 FORMAT_FILE = 'format.yaml'
 BOARDS_CONFIG_FILE = 'boards.yaml'
 
@@ -177,7 +177,7 @@ def parse_locale_json_file(locale, json_dir):
         A dictionary for mapping of "name to content" for files to be generated.
     """
     result = {}
-    filename = os.path.join(json_dir, STRINGS_JSON_FILE_TMPL.format(locale))
+    filename = os.path.join(json_dir, STRINGS_JSON_FILE_TMPL % locale)
     with open(filename, encoding='utf-8-sig') as input_file:
         for tag, msgdict in json.load(input_file).items():
             msgtext = msgdict['message']
@@ -669,9 +669,8 @@ class Converter:
                 # Setting max_width causes left/right alignment of the text.
                 # However, generic strings are locale independent, and hence
                 # shouldn't have text alignment within the bitmap.
-                raise BuildImageError(
-                    '{}: {!r} should be null for generic strings'.format(
-                        name, KEY_MAX_WIDTH))
+                raise BuildImageError(f'{name}: {KEY_MAX_WIDTH!r} should be '
+                                      'null for generic strings')
             self.convert_text_to_image(None,
                                        txt_file,
                                        bmp_file,
@@ -926,8 +925,7 @@ class Converter:
         """
         with open(os.path.join(self.output_dir, 'locales'), 'w') as f:
             for locale_info in self.locales:
-                f.write('{},{}\n'.format(locale_info.code,
-                                         int(locale_info.rtl)))
+                f.write(f'{locale_info.code},{locale_info.rtl:d}\n')
 
     def build(self):
         """Builds all images required by a board."""
