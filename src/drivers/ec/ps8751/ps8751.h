@@ -46,6 +46,9 @@ typedef struct Ps8751
 	uint8_t blob_hw_version;
 	ParadeChipType chip_type;
 	char chip_name[16];
+
+	uint8_t last_a16_a23;	/* cached flash window addr bits */
+	uint8_t last_a8_a15;	/* cached flash window addr bits */
 } Ps8751;
 
 Ps8751 *new_ps8751(CrosECTunnelI2c *bus, int ec_pd_id);

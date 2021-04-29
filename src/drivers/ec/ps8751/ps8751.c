@@ -39,6 +39,7 @@
 #define PAGE_1		(0x12 >> 1)
 #define PAGE_2		(0x14 >> 1)
 #define PAGE_3		(0x16 >> 1)	/* primary TCPCI registers */
+#define PAGE_7		(0x1e >> 1)	/* mapped flash page */
 
 #define P0_ROM_CTRL		0xef
 #define P0_ROM_CTRL_LOAD_DONE	0xc0	/* MTP load done */
@@ -63,6 +64,8 @@
 
 #define P2_ALERT_LOW		0x10
 #define P2_ALERT_HIGH		0x11
+#define P2_FLASH_A8_A15		0x8e	/* SPI flash addr[8:15] */
+#define P2_FLASH_A16_A23	0x8f	/* SPI flash addr[16:23] */
 #define P2_WR_FIFO		0x90
 #define P2_RD_FIFO		0x91
 #define P2_SPI_LEN		0x92
@@ -72,6 +75,10 @@
 #define P2_SPI_CTRL_TRIGGER	0x01
 #define P2_SPI_STATUS		0x9e
 #define P2_CLK_CTRL		0xd6
+
+#define P2_PROG_WIN_UNLOCK	0xda
+#define P2_PROG_WIN_UNLOCK_LOCK	0x00
+#define P2_PROG_WIN_UNLOCK_ACK	0x01
 
 #define P3_VENDOR_ID_LOW	0x00
 #define P3_CHIP_WAKEUP		0xa0
@@ -92,6 +99,10 @@
 
 #define PS_FW_RD_CHUNK		16
 #define PS_FW_WR_CHUNK		12
+
+#define PS_FW_I2C_WINDOW_SIZE	256
+/* stay under I2C tunnel message size limit */
+#define PS_FW_I2C_IO_CHUNK	240
 
 #define SPI_CMD_WRITE_STATUS_REG	0x01
 #define SPI_CMD_PROG_PAGE		0x02
@@ -220,6 +231,31 @@ static int __must_check read_reg(Ps8751 *me,
 				 uint8_t page, uint8_t reg, uint8_t *data)
 {
 	return i2c_readb(&me->bus->ops, page, reg, data);
+}
+
+/**
+ * read a block of contiguous bytes from a SPI target
+ *
+ * @param me	device context
+ * @param page	i2c device address
+ * @param reg	starting i2c register on target device
+ * @param data	pointer to return data buffer
+ * @param count	number of bytes to read
+ * @return 0 if ok, -1 on error
+ */
+
+static int __must_check read_block(Ps8751 *me,
+				   uint8_t page, uint8_t reg,
+				   uint8_t *data, size_t count)
+{
+	return i2c_readblock(&me->bus->ops, page, reg, data, count);
+}
+
+static int __must_check write_block(Ps8751 *me,
+				    uint8_t page, uint8_t reg,
+				    const uint8_t *data, size_t count)
+{
+	return i2c_writeblock(&me->bus->ops, page, reg, data, count);
 }
 
 /**
@@ -1028,6 +1064,133 @@ static int __must_check ps8751_erase(Ps8751 *me,
 	       data_size >> 10,
 	       (unsigned)USEC_TO_MSEC(timer_us(t0_us)));
 	return rval;
+}
+
+static void ps8751_flash_window_start(Ps8751 *me)
+{
+	me->last_a16_a23 = -1;
+	me->last_a8_a15 = -1;
+}
+
+static int ps8751_flash_window_write_enable(Ps8751 *me)
+{
+	uint8_t wr_status;
+	uint64_t t0_us;
+
+	t0_us = timer_us(0);
+	do {
+		static const I2cWriteVec wr[] = {
+			{ P2_PROG_WIN_UNLOCK, 0xaa },
+			{ P2_PROG_WIN_UNLOCK, 0x55 },
+			{ P2_PROG_WIN_UNLOCK, 0x50 }, /* P */
+			{ P2_PROG_WIN_UNLOCK, 0x41 }, /* A */
+			{ P2_PROG_WIN_UNLOCK, 0x52 }, /* R */
+			{ P2_PROG_WIN_UNLOCK, 0x44 }  /* D */
+		};
+
+		if (timer_us(t0_us) >= PS_SPI_TIMEOUT_US) {
+			printf("%s: window write enable timeout after %ums\n",
+			       me->chip_name, USEC_TO_MSEC(PS_SPI_TIMEOUT_US));
+			return -1;
+		}
+
+		if (write_regs(me, PAGE_2, wr, ARRAY_SIZE(wr)) != 0)
+			return -1;
+
+		if (read_reg(me, PAGE_2, P2_PROG_WIN_UNLOCK, &wr_status) != 0)
+			return -1;
+
+	} while (wr_status != P2_PROG_WIN_UNLOCK_ACK);
+
+	return 0;
+}
+
+static int ps8751_flash_window_write_disable(Ps8751 *me)
+{
+	if (write_reg(me, PAGE_2,
+		      P2_PROG_WIN_UNLOCK, P2_PROG_WIN_UNLOCK_LOCK) != 0)
+		return -1;
+
+	return 0;
+}
+
+static ssize_t __must_check ps8751_flash_window_read(Ps8751 *me,
+				uint8_t * const data, const size_t count,
+				const uint32_t a24)
+{
+	ssize_t chunk;
+
+	const uint32_t a16_a23 = (a24 >> 16) & 0xff;
+	const uint32_t a8_a15 = (a24 >> 8) & 0xff;
+	const uint32_t a0_a7 = a24 & 0xff;
+
+	/* clip at EC message size limit */
+	chunk = MIN(count, PS_FW_I2C_IO_CHUNK);
+	/* clip at I2C window boundary */
+	chunk = MIN(chunk, PS_FW_I2C_WINDOW_SIZE - a0_a7);
+
+	if (a16_a23 != me->last_a16_a23) {
+		if (write_reg(me, PAGE_2, P2_FLASH_A16_A23, a16_a23) != 0)
+			return -1;
+		me->last_a16_a23 = a16_a23;
+	}
+
+	if (a8_a15 != me->last_a8_a15) {
+		if (write_reg(me, PAGE_2, P2_FLASH_A8_A15, a8_a15) != 0)
+			return -1;
+		me->last_a8_a15 = a8_a15;
+	}
+
+	if (read_block(me, PAGE_7, a0_a7, data, chunk) != 0)
+		return -1;
+
+	return chunk;
+}
+
+/**
+ * write bytes to flash using the I2C mapped window
+ *
+ * actual number of bytes written may be less than requested if the
+ * window size is exceeded.
+ *
+ * @param me		device context
+ * @param data		addr of data to write
+ * @param count		number of bytes to write
+ * @param a24		flash addr to write
+ * @return number of bytes written, -1 on error
+ */
+
+static ssize_t __must_check ps8751_flash_window_write(Ps8751 *me,
+				const uint8_t * const data, const size_t count,
+				const uint32_t a24)
+{
+	ssize_t chunk;
+
+	const uint32_t a16_a23 = (a24 >> 16) & 0xff;
+	const uint32_t a8_a15 = (a24 >> 8) & 0xff;
+	const uint32_t a0_a7 = a24 & 0xff;
+
+	/* clip at EC message size limit */
+	chunk = MIN(count, PS_FW_I2C_IO_CHUNK);
+	/* clip at I2C window boundary */
+	chunk = MIN(chunk, PS_FW_I2C_WINDOW_SIZE - a0_a7);
+
+	if (a16_a23 != me->last_a16_a23) {
+		if (write_reg(me, PAGE_2, P2_FLASH_A16_A23, a16_a23) != 0)
+			return -1;
+		me->last_a16_a23 = a16_a23;
+	}
+
+	if (a8_a15 != me->last_a8_a15) {
+		if (write_reg(me, PAGE_2, P2_FLASH_A8_A15, a8_a15) != 0)
+			return -1;
+		me->last_a8_a15 = a8_a15;
+	}
+
+	if (write_block(me, PAGE_7, a0_a7, data, chunk) != 0)
+		return -1;
+
+	return chunk;
 }
 
 /**
