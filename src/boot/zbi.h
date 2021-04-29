@@ -30,5 +30,6 @@
 
 struct boot_info;
 int zbi_prepare(struct boot_info *bi);
+int zbi_fill_boot_info(struct boot_info *bi);
 
 #endif // __BOOT_LIBZBI_H__

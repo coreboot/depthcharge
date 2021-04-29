@@ -28,6 +28,7 @@
 #include <libpayload.h>
 #include <stdlib.h>
 
+#include "boot/commandline.h"
 #include "vboot/boot.h"
 #include "vboot/boot_policy.h"
 #include "boot/zbi/driver-config.h"
@@ -56,6 +57,52 @@ static int zbi_framebuffer_format(struct cb_framebuffer *fb)
 		return ZX_PIXEL_FORMAT_RGB_2220;
 
 	return ZX_PIXEL_FORMAT_NONE;
+}
+
+struct zbi_find_cmdline_ctx {
+	void *cmdline_payload;
+	uint32_t cmdline_size;
+};
+static zbi_result_t zbi_find_cmdline(zbi_header_t *hdr, void *payload, void *cookie)
+{
+	struct zbi_find_cmdline_ctx *ctx = (struct zbi_find_cmdline_ctx*) cookie;
+	if (hdr->type != ZBI_TYPE_CMDLINE)
+		return ZBI_RESULT_OK;
+
+	if (ctx->cmdline_payload != NULL) {
+		printf("%s: found more than one cmdline item\n", __func__);
+		return ZBI_RESULT_TOO_BIG;
+	}
+	// Mark the ZBI_TYPE_CMDLINE as discarded.
+	hdr->type = ZBI_TYPE_DISCARD;
+	ctx->cmdline_size = hdr->length;
+	ctx->cmdline_payload = payload;
+	return ZBI_RESULT_OK;
+}
+
+int zbi_fill_boot_info(struct boot_info *bi)
+{
+	// Find the ZBI cmdline so we can do string substitution on it.
+	// We assume that the ZBI only has one ZBI_TYPE_CMDLINE entry that will
+	// need substitution, and we ignore all the others.
+	zbi_header_t *image = bi->ramdisk_addr;
+	zbi_result_t result = zbi_check(image, NULL);
+	if (result != ZBI_RESULT_OK) {
+		// This is not a fatal error.
+		return 0;
+	}
+
+	struct zbi_find_cmdline_ctx ctx = {
+		.cmdline_payload = NULL,
+		.cmdline_size = 0,
+	};
+	result = zbi_for_each(image, zbi_find_cmdline, &ctx);
+	if (result != ZBI_RESULT_OK) {
+		printf("%s: will only modify first cmdline.\n", __func__);
+	}
+	bi->cmd_line = ctx.cmdline_payload;
+
+	return 0;
 }
 
 int zbi_prepare(struct boot_info *bi)
@@ -138,5 +185,19 @@ int zbi_prepare(struct boot_info *bi)
 			       (unsigned long)lastlog.length);
 	}
 
+	// Put the cmdline into the ZBI.
+	if (bi->cmd_line) {
+		result = zbi_create_entry_with_payload(image, max_length, ZBI_TYPE_CMDLINE, 0, 0, bi->cmd_line, strlen(bi->cmd_line) + 1);
+		if (result != ZBI_RESULT_OK) {
+			printf("%s: Failed to add new cmdline: %d\n", __func__, result);
+		} else {
+			printf("%s: Set ZBI cmdline to %s\n", __func__, bi->cmd_line);
+			// Don't add it to the multiboot header.
+			bi->cmd_line = NULL;
+		}
+	}
+
 	return 0;
 }
+
+

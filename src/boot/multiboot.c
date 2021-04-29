@@ -165,6 +165,8 @@ int multiboot_fill_boot_info(struct boot_info *bi)
 	else
 		bi->loader = (void *)ALIGN_UP(header->load_end_addr, 4096);
 
+	if (CONFIG(KERNEL_MULTIBOOT_ZBI))
+		zbi_fill_boot_info(bi);
 	dump_boot_info(bi);
 
 	return 0;
