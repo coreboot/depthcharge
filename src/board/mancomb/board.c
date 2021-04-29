@@ -52,6 +52,7 @@ static int board_setup(void)
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);
 	register_vboot_ec(&cros_ec->vboot);
 
+	flag_replace(FLAG_LIDSW, new_gpio_high());
 	flag_replace(FLAG_PWRSW, cros_ec_power_btn_flag());
 
 	SdhciHost *sd = NULL;
