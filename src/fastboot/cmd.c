@@ -16,6 +16,7 @@
  */
 
 #include "fastboot/cmd.h"
+#include "fastboot/disk.h"
 #include "fastboot/fastboot.h"
 #include "fastboot/vars.h"
 #include "gpt_misc.h"
@@ -73,6 +74,39 @@ static void fastboot_cmd_download(fastboot_session_t *fb, const char *arg,
 	fastboot_data(fb, size);
 }
 
+static void fastboot_cmd_flash(fastboot_session_t *fb, const char *arg,
+			       uint64_t arg_len)
+{
+	if (!fb->has_download) {
+		fastboot_fail(fb, "No data staged to flash");
+		return;
+	}
+
+	struct fastboot_disk disk;
+	if (!fastboot_disk_init(&disk)) {
+		fastboot_fail(fb, "Failed to init disk");
+		return;
+	}
+
+	uint64_t data_len;
+	void *data = fastboot_get_download_buffer(fb, &data_len);
+	fastboot_write(fb, &disk, arg, arg_len, data, (uint32_t)data_len);
+	fastboot_disk_destroy(&disk);
+}
+
+static void fastboot_cmd_erase(fastboot_session_t *fb, const char *arg,
+			       uint64_t arg_len)
+{
+	struct fastboot_disk disk;
+	if (!fastboot_disk_init(&disk)) {
+		fastboot_fail(fb, "Failed to init disk");
+		return;
+	}
+
+	fastboot_erase(fb, &disk, arg, arg_len);
+	fastboot_disk_destroy(&disk);
+}
+
 static void fastboot_cmd_reboot(fastboot_session_t *fb, const char *arg,
 				uint64_t arg_len)
 {
@@ -91,6 +125,8 @@ static void fastboot_cmd_reboot(fastboot_session_t *fb, const char *arg,
 struct fastboot_cmd fastboot_cmds[] = {
 	CMD_NO_ARGS("continue", fastboot_cmd_continue),
 	CMD_ARGS("download", ':', fastboot_cmd_download),
+	CMD_ARGS("erase", ':', fastboot_cmd_erase),
+	CMD_ARGS("flash", ':', fastboot_cmd_flash),
 	CMD_ARGS("getvar", ':', fastboot_cmd_getvar),
 	CMD_NO_ARGS("reboot", fastboot_cmd_reboot),
 	{
