@@ -21,5 +21,6 @@
 void dc_dev_gdb_enter(void);
 void dc_dev_gdb_exit(int exit_code);
 void dc_dev_netboot(void);
+void dc_dev_fastboot(void);
 
 #endif /* __DEBUG_DEV_H__ */

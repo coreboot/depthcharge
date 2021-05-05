@@ -77,6 +77,7 @@ uint32_t VbExKeyboardRead(void)
 	// These two cases only work on developer images (empty stubs otherwise)
 	case 'N' & 0x1f: dc_dev_netboot();	// CTRL+N: netboot
 	case 'G' & 0x1f: dc_dev_gdb_enter();	// CTRL+G: remote GDB mode
+	case 'F' & 0x1f: dc_dev_fastboot(); // CTRL+F: fastboot
 	// fall through for non-developer images as if these didn't exist
 	default:
 		return ch;

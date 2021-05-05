@@ -11,7 +11,7 @@
 ## GNU General Public License for more details.
 ##
 
-subdirs-y := arch base board boot debug diag drivers image net netboot vboot
+subdirs-y := arch base board boot debug diag drivers fastboot image net netboot vboot
 
 DEPTHCHARGE = $(obj)/depthcharge
 NETBOOT = $(obj)/netboot
@@ -60,5 +60,5 @@ $(eval $(call declare_payload,$(NETBOOT),$$$$(depthcharge-objs) \
 	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs),))
 
 $(eval $(call declare_payload,$(DEV),$$$$(depthcharge-objs) \
-	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs) $$$$(dev-objs) \
+	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs) $$$$(dev-objs) $$$$(fastboot-objs) \
 	$$$$(vboot-objs),$(DONT_GC_NETBOOT)))

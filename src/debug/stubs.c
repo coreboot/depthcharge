@@ -26,3 +26,6 @@ void dc_dev_gdb_exit(int exit_code) { (void)exit_code; /* do nothing */ }
 
 void dc_dev_netboot(void) __attribute__((weak));
 void dc_dev_netboot(void) { /* do nothing */ }
+
+void dc_dev_fastboot(void) __attribute__((weak));
+void dc_dev_fastboot(void) { /* do nothing */ }

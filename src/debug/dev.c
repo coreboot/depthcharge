@@ -18,6 +18,7 @@
 #include "netboot/params.h"
 #include "net/uip.h"
 #include "vboot/crossystem/crossystem.h"
+#include "fastboot/fastboot.h"
 
 /*
  * These are the real implementations for developer-build features that override
@@ -47,4 +48,21 @@ void dc_dev_netboot(void)
 		printf("ERROR: Failed to read netboot parameters from flash\n");
 
 	netboot(tftp_ip, bootfile, argsfile, NULL, NULL);
+}
+
+void dc_dev_fastboot(void)
+{
+	if (!CONFIG(HEADLESS))
+		video_console_init();
+
+	fastboot();
+
+	// The only way to get here is via "fastboot continue". Drain any
+	// pending characters (because the user probably spammed ctrl-f).
+	while (havechar())
+		getchar();
+
+	if (!CONFIG(HEADLESS)) {
+		console_remove_output_driver(video_console_putchar);
+	}
 }
