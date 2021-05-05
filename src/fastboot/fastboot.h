@@ -75,6 +75,8 @@ bool fastboot_is_finished(fastboot_session_t *fb);
 void fastboot_handle_packet(fastboot_session_t *fb, void *data, uint64_t len);
 // Run fastboot.
 void fastboot(void);
+// Get the download buffer and the length of the download if a download exists.
+void *fastboot_get_download_buffer(fastboot_session_t *fb, uint64_t *len);
 
 // Responses to the client.
 void fastboot_fail(fastboot_session_t *fb, const char *msg);

@@ -220,6 +220,37 @@ static void fastboot_tcp_recv(struct fastboot_tcp_session *tcp, char *buf,
 	fastboot_handle_packet(&tcp->fb_session, buf, available);
 }
 
+// Handle a packet received while in the PACKET_INCOMPLETE state.
+static void fastboot_tcp_recv_incomplete(struct fastboot_tcp_session *tcp)
+{
+	FB_TRACE_IO("[from host] incomplete %u/%llu bytes\n", uip_datalen(),
+		    tcp->data_left_to_receive);
+	uint64_t data_to_handle = uip_datalen();
+	// If we receive too much data, just handle the chunk we expected in
+	// this fastboot packet first. The rest is the start of the next
+	// fastboot packet.
+	if (data_to_handle > tcp->data_left_to_receive) {
+		FB_DEBUG("got too much data! (%u received, expecting only "
+			 "%llu, read %llu, underlying session wanted %llu)\n",
+			 uip_datalen(), tcp->data_left_to_receive,
+			 tcp->fb_session.download_progress,
+			 tcp->fb_session.download_len);
+		data_to_handle = tcp->data_left_to_receive;
+	}
+	tcp->data_left_to_receive -= data_to_handle;
+	fastboot_handle_packet(&tcp->fb_session, uip_appdata, data_to_handle);
+	if (tcp->data_left_to_receive == 0) {
+		tcp->state = WAIT_FOR_PACKET;
+	}
+
+	char *buf = uip_appdata;
+	// Was there any data left over? If yes, start handling the next packet.
+	if (uip_datalen() > data_to_handle && tcp->state == WAIT_FOR_PACKET) {
+		fastboot_tcp_recv(tcp, &buf[data_to_handle],
+				  ((uint64_t)uip_datalen()) - data_to_handle);
+	}
+}
+
 // Net callback, called when there's network work to do.
 static void fastboot_tcp_net_callback(void)
 {
@@ -273,6 +304,8 @@ static void fastboot_tcp_net_callback(void)
 		fastboot_tcp_recv(tcp, uip_appdata, uip_datalen());
 		break;
 	case PACKET_INCOMPLETE:
+		fastboot_tcp_recv_incomplete(tcp);
+		break;
 	default:
 		// Should never happen.
 		die("invalid tcp session state\n");

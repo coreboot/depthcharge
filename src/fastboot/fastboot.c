@@ -70,7 +70,35 @@ bool fastboot_is_finished(fastboot_session_t *fb)
 	return fb->state == FINISHED || fb->state == REBOOT;
 }
 
+void *fastboot_get_download_buffer(fastboot_session_t *fb, uint64_t *len)
+{
+	if (len)
+		*len = fb->download_len;
+	return &_kernel_start;
+}
+
 /***************************** PROTOCOL HANDLING *****************************/
+
+static void fastboot_handle_download(fastboot_session_t *fb, void *data,
+				     uint64_t len)
+{
+	uint64_t left = fb->download_len - fb->download_progress;
+	if (len > left) {
+		fastboot_fail(fb, "Too much data");
+		fb->state = COMMAND;
+		return;
+	}
+
+	void *buf = fastboot_get_download_buffer(fb, NULL);
+	memcpy(buf + fb->download_progress, data, len);
+	fb->download_progress += len;
+	if (len == left) {
+		fb->has_download = true;
+		fb->download_progress = 0;
+		fb->state = COMMAND;
+		fastboot_succeed(fb);
+	}
+}
 
 static void fastboot_handle_command(fastboot_session_t *fb, void *data,
 				    uint64_t len)
@@ -122,6 +150,8 @@ void fastboot_handle_packet(fastboot_session_t *fb, void *data, uint64_t len)
 		fastboot_handle_command(fb, data, len);
 		break;
 	case DOWNLOAD:
+		fastboot_handle_download(fb, data, len);
+		break;
 	case FINISHED:
 	case REBOOT:
 		break;
