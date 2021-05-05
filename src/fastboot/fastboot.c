@@ -19,6 +19,7 @@
 
 #include <stdlib.h>
 #include "die.h"
+#include "fastboot/cmd.h"
 #include "fastboot/tcp.h"
 #include "image/symbols.h"
 #include "stdarg.h"
@@ -74,6 +75,43 @@ bool fastboot_is_finished(fastboot_session_t *fb)
 static void fastboot_handle_command(fastboot_session_t *fb, void *data,
 				    uint64_t len)
 {
+	// "data" contains a command, which is essentially freeform text.
+	const char *cmd = (const char *)data;
+	for (int i = 0; fastboot_cmds[i].name != NULL; i++) {
+		fastboot_cmd_t *cur = &fastboot_cmds[i];
+		// See if the command's name matches.
+		int name_strlen = strlen(cur->name);
+		if (name_strlen > len)
+			continue;
+		if (strncmp(cur->name, cmd, name_strlen))
+			continue;
+
+		// Name matched - move past the name, and check arguments (if
+		// any are expected). At this point the string will start with
+		// the separator (e.g. "flash:kern-a" would match the "flash"
+		// command above, and so after this we have ":kern-a" left in
+		// `cmd`).
+		cmd += name_strlen;
+		len -= name_strlen;
+
+		if (cur->has_args) {
+			if (len < 1 || cmd[0] != cur->sep) {
+				// Command expected arguments, but has none.
+				// Try and see if there is a better match.
+				cmd -= name_strlen;
+				len += name_strlen;
+				continue;
+			}
+			// Move past the separator, so that the command doesn't
+			// see a leading separator in its arguments. This takes
+			// ":kern-a" from above and makes it just "kern-a".
+			cmd++;
+			len--;
+		}
+
+		cur->fn(fb, cmd, len);
+		return;
+	}
 	fastboot_fail(fb, "Unknown command");
 }
 

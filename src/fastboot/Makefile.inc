@@ -11,5 +11,6 @@
 ## GNU General Public License for more details.
 ##
 
+fastboot-y += cmd.c
 fastboot-y += fastboot.c
 fastboot-y += tcp.c
