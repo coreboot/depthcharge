@@ -14,3 +14,4 @@
 fastboot-y += cmd.c
 fastboot-y += fastboot.c
 fastboot-y += tcp.c
+fastboot-y += vars.c

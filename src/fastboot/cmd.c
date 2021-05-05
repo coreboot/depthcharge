@@ -17,6 +17,7 @@
 
 #include "fastboot/cmd.h"
 #include "fastboot/fastboot.h"
+#include "fastboot/vars.h"
 #include "gpt_misc.h"
 #include <stdlib.h>
 
@@ -44,6 +45,7 @@ static void fastboot_cmd_reboot(fastboot_session_t *fb, const char *arg,
 	}
 struct fastboot_cmd fastboot_cmds[] = {
 	CMD_NO_ARGS("continue", fastboot_cmd_continue),
+	CMD_ARGS("getvar", ':', fastboot_cmd_getvar),
 	CMD_NO_ARGS("reboot", fastboot_cmd_reboot),
 	{
 		.name = NULL,
