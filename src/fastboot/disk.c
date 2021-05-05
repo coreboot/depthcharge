@@ -175,3 +175,122 @@ void fastboot_erase(fastboot_session_t *fb, struct fastboot_disk *disk,
 	}
 	fastboot_succeed(fb);
 }
+
+/************************* SLOT LOGIC ******************************/
+
+// Returns 0 if the partition is not valid.
+char get_slot_for_partition_name(GptEntry *e, char *partition_name)
+{
+	const Guid cros_kernel_guid = GPT_ENT_TYPE_CHROMEOS_KERNEL;
+	if (memcmp(&e->type, &cros_kernel_guid, sizeof(cros_kernel_guid)) != 0)
+		return 0;
+	int len = strlen(partition_name);
+	// expect partition names ending with -X or _x
+	if (partition_name[len - 2] != '-' && partition_name[len - 2] != '_') {
+		FB_DEBUG("ignoring kernel name '%s' - missing suffix\n",
+			 partition_name);
+		return 0;
+	}
+
+	if (!isalpha(partition_name[len - 1])) {
+		FB_DEBUG("ignoring kernel name '%s' - slot is not a letter\n",
+			 partition_name);
+		return 0;
+	}
+
+	// make all slots lowercase.
+	char slot = partition_name[len - 1];
+	if (slot < 'a')
+		slot += ('a' - 'A');
+	return slot;
+}
+
+struct kpi_ctx {
+	int kernel_count;
+	// bitmap of present slots.
+	// bit 0 = slot a
+	// bit 1 = slot b
+	// ...
+	// bit 26 = slot z
+	uint32_t present;
+};
+static bool check_kernel_partition_info(void *ctx, int index, GptEntry *e,
+					char *partition_name)
+{
+	struct kpi_ctx *info = (struct kpi_ctx *)ctx;
+	char slot = get_slot_for_partition_name(e, partition_name);
+	if (slot == 0)
+		return false;
+
+	FB_DEBUG("kernel name '%s' => slot %c or %d\n", partition_name, slot,
+		 slot - 'a');
+	uint32_t bit = 1 << (slot - 'a');
+	if (info->present & bit) {
+		FB_DEBUG("Multiple slots for '%c'!\n", slot);
+	}
+	info->present |= bit;
+	info->kernel_count++;
+
+	return false;
+}
+int fastboot_get_slot_count(struct fastboot_disk *disk)
+{
+	struct kpi_ctx result = {
+		.kernel_count = 0,
+	};
+	fastboot_disk_foreach_partition(disk, check_kernel_partition_info,
+					&result);
+	return result.kernel_count;
+}
+
+struct find_slot_ctx {
+	GptEntry *target_entry;
+	int count;
+	int desired_slot;
+};
+static bool find_slot_callback(void *ctx, int index, GptEntry *e,
+			       char *partition_name)
+{
+	if (get_slot_for_partition_name(e, partition_name) == 0)
+		return false;
+
+	struct find_slot_ctx *fs = (struct find_slot_ctx *)ctx;
+	fs->count++;
+	if (fs->count == fs->desired_slot) {
+		fs->target_entry = e;
+		return true;
+	}
+
+	return false;
+}
+
+GptEntry *fastboot_get_kernel_for_slot(struct fastboot_disk *disk, char slot)
+{
+
+	if (slot < 'a') {
+		return NULL;
+	}
+	struct find_slot_ctx ctx = {
+		.target_entry = NULL,
+		.count = 0,
+		.desired_slot = 1 + (slot - 'a'),
+	};
+	if (fastboot_disk_foreach_partition(disk, find_slot_callback, &ctx)) {
+		return ctx.target_entry;
+	}
+	return NULL;
+}
+
+static bool disable_all_callback(void *ctx, int index, GptEntry *e,
+				 char *partition_name)
+{
+	if (get_slot_for_partition_name(e, partition_name) == 0)
+		return false;
+
+	GptUpdateKernelWithEntry((GptData *)ctx, e, GPT_UPDATE_ENTRY_INVALID);
+	return false;
+}
+void fastboot_slots_disable_all(struct fastboot_disk *disk)
+{
+	fastboot_disk_foreach_partition(disk, disable_all_callback, disk->gpt);
+}

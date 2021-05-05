@@ -19,6 +19,7 @@
 
 #include <arch/virtual.h>
 #include <sysinfo.h>
+#include "fastboot/disk.h"
 #include "fastboot/fastboot.h"
 
 #include <string.h>
@@ -35,6 +36,7 @@ static fastboot_getvar_info_t fastboot_vars[] = {
 	VAR_NO_ARGS("max-download-size", VAR_DOWNLOAD_SIZE),
 	VAR_NO_ARGS("product", VAR_PRODUCT),
 	VAR_NO_ARGS("secure", VAR_SECURE),
+	VAR_NO_ARGS("slot-count", VAR_SLOT_COUNT),
 	VAR_NO_ARGS("version", VAR_VERSION),
 	{.name = NULL},
 };
@@ -116,6 +118,15 @@ fastboot_getvar_result_t fastboot_getvar(fastboot_var_t var, const char *arg,
 			phys_to_virt(lib_sysinfo.cb_mainboard);
 		const char *mb_part_string = cb_mb_part_string(mainboard);
 		used_len = snprintf(outbuf, *outbuf_len, "%s", mb_part_string);
+		break;
+	}
+	case VAR_SLOT_COUNT: {
+		struct fastboot_disk disk;
+		if (!fastboot_disk_init(&disk))
+			return STATE_DISK_ERROR;
+		used_len = snprintf(outbuf, *outbuf_len, "%d",
+				    fastboot_get_slot_count(&disk));
+		fastboot_disk_destroy(&disk);
 		break;
 	}
 	case VAR_SECURE:

@@ -107,11 +107,80 @@ static void fastboot_cmd_erase(fastboot_session_t *fb, const char *arg,
 	fastboot_disk_destroy(&disk);
 }
 
+// `fastboot oem get-kernels` returns a list of slot letter:kernel mapping.
+// This is useful for us because the partition tables are more flexible than on
+// more traditional devices, so there could be many kernels.
+// For instance, installing Fuchsia on a Chromebook will result in the device
+// having five kernel partitions:
+// KERN-A
+// KERN-B
+// zircon-a
+// zircon-b
+// zircon-r
+//
+// We map them to fastboot slots by having the first slot be the first partition
+// we found.
+struct get_kernels_ctx {
+	fastboot_session_t *fb;
+	int cur_kernel;
+};
+static bool get_kernels_cb(void *ctx, int index, GptEntry *e,
+			   char *partition_name)
+{
+	if (get_slot_for_partition_name(e, partition_name) == 0)
+		return false;
+
+	struct get_kernels_ctx *gk = (struct get_kernels_ctx *)ctx;
+	char fastboot_slot = gk->cur_kernel + 'a';
+	fastboot_info(gk->fb, "%c:%s:prio=%d", fastboot_slot, partition_name,
+		      GetEntryPriority(e));
+	gk->cur_kernel++;
+	return false;
+}
+static void fastboot_cmd_oem_get_kernels(fastboot_session_t *fb,
+					 const char *arg, uint64_t arg_len)
+{
+	struct fastboot_disk disk;
+	if (!fastboot_disk_init(&disk)) {
+		fastboot_fail(fb, "Failed to init disk");
+		return;
+	}
+	struct get_kernels_ctx ctx = {
+		.fb = fb,
+		.cur_kernel = 0,
+	};
+	fastboot_disk_foreach_partition(&disk, get_kernels_cb, &ctx);
+	fastboot_disk_destroy(&disk);
+	fastboot_succeed(fb);
+}
+
 static void fastboot_cmd_reboot(fastboot_session_t *fb, const char *arg,
 				uint64_t arg_len)
 {
 	fastboot_succeed(fb);
 	fb->state = REBOOT;
+}
+
+static void fastboot_cmd_set_active(fastboot_session_t *fb, const char *arg,
+				    uint64_t arg_len)
+{
+	struct fastboot_disk disk;
+	if (!fastboot_disk_init(&disk)) {
+		fastboot_fail(fb, "Failed to init disk");
+		return;
+	}
+	GptEntry *slot = fastboot_get_kernel_for_slot(&disk, arg[0]);
+	if (slot == NULL) {
+		fastboot_fail(fb, "Could not find slot");
+		goto out;
+	}
+
+	fastboot_slots_disable_all(&disk);
+	GptUpdateKernelWithEntry(disk.gpt, slot, GPT_UPDATE_ENTRY_ACTIVE);
+
+	fastboot_succeed(fb);
+out:
+	fastboot_disk_destroy(&disk);
 }
 
 #define CMD_ARGS(_name, _sep, _fn)                                             \
@@ -128,7 +197,9 @@ struct fastboot_cmd fastboot_cmds[] = {
 	CMD_ARGS("erase", ':', fastboot_cmd_erase),
 	CMD_ARGS("flash", ':', fastboot_cmd_flash),
 	CMD_ARGS("getvar", ':', fastboot_cmd_getvar),
+	CMD_NO_ARGS("oem get-kernels", fastboot_cmd_oem_get_kernels),
 	CMD_NO_ARGS("reboot", fastboot_cmd_reboot),
+	CMD_ARGS("set_active", ':', fastboot_cmd_set_active),
 	{
 		.name = NULL,
 	},
