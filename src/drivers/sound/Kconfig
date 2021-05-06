@@ -82,6 +82,10 @@ config DRIVER_SOUND_RT1019
 	bool "RT1019 speaker amp driver"
 	default n
 
+config DRIVER_SOUND_RT1019_BEEP
+	bool "RT1019 auto mode speaker beep driver"
+	default n
+
 config DRIVER_SOUND_RT5645
 	bool "RT5645 codec driver"
 	default n

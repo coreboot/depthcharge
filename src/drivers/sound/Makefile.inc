@@ -30,6 +30,7 @@ depthcharge-$(CONFIG_DRIVER_SOUND_RT1011) += rt1011.c
 depthcharge-$(CONFIG_DRIVER_SOUND_RT1015) += rt1015.c
 depthcharge-$(CONFIG_DRIVER_SOUND_RT1015P) += rt1015p.c
 depthcharge-$(CONFIG_DRIVER_SOUND_RT1019) += rt1019.c
+depthcharge-$(CONFIG_DRIVER_SOUND_RT1019_BEEP) += rt1019b.c
 depthcharge-$(CONFIG_DRIVER_SOUND_RT5645) += rt5645.c
 depthcharge-$(CONFIG_DRIVER_SOUND_RT5677) += rt5677.c
 depthcharge-$(CONFIG_DRIVER_SOUND_RT5682) += rt5682.c
