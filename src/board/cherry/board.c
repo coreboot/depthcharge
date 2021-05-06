@@ -19,10 +19,32 @@
 #include "drivers/gpio/mtk_gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
+#include "drivers/sound/rt1019b.h"
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
+
+static void sound_setup(void)
+{
+	GpioOps *beep_en = sysinfo_lookup_gpio("beep enable", 1,
+					       new_mtk_gpio_output);
+	if (!beep_en) {
+		printf("no beep gpio\n");
+		return;
+	}
+
+	GpioOps *speaker_en = sysinfo_lookup_gpio("speaker enable", 1,
+						  new_mtk_gpio_output);
+	if (!speaker_en) {
+		printf("no speaker gpio\n");
+		return;
+	}
+
+	rt1019bCodec *codec = new_rt1019b_codec(speaker_en, beep_en);
+
+	sound_set_ops(&codec->ops);
+}
 
 static int cr50_irq_status(void)
 {
@@ -85,6 +107,8 @@ static int board_setup(void)
 
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11200000);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+
+	sound_setup();
 
 	return 0;
 }
