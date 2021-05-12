@@ -40,6 +40,13 @@
 #include "drivers/video/display.h"
 #include "drivers/video/mtk_ddp.h"
 
+/* Map schematics net names to SoC ball names. */
+#define GPIO_DISP_PWM PAD_DISP_PWM
+#define GPIO_EN_LCD_BL PAD_PERIPHERAL_EN13
+#define GPIO_SPI0_CSB PAD_SPI_CSB
+#define GPIO_SPI2_CSB PAD_EINT0
+#define GPIO_AP_SPI_FLASH_CS_L PAD_SPI1_CSB
+
 static SoundRouteComponent *get_speaker_amp(int *early_init)
 {
 	GpioOps *spk_en = sysinfo_lookup_gpio("speaker enable", 1,
@@ -108,8 +115,8 @@ int kukui_backlight_update(DisplayOps *me, uint8_t enable)
 	static GpioOps *disp_pwm0, *backlight_en;
 
 	if (!backlight_en) {
-		disp_pwm0 = new_mtk_gpio_output(43);
-		backlight_en = new_mtk_gpio_output(176);
+		disp_pwm0 = new_mtk_gpio_output(GPIO_DISP_PWM);
+		backlight_en = new_mtk_gpio_output(GPIO_EN_LCD_BL);
 	}
 
 	/* Enforce enable to be either 0 or 1. */
@@ -129,11 +136,11 @@ static int board_setup(void)
 
 	power_set_ops(&psci_power_ops);
 
-	GpioOps *spi0_cs = new_gpio_not(new_mtk_gpio_output(PAD_SPI_CSB));
+	GpioOps *spi0_cs = new_gpio_not(new_mtk_gpio_output(GPIO_SPI0_CSB));
 	MtkSpi *spi0 = new_mtk_spi(0x1100A000, spi0_cs);
 	tpm_set_ops(&new_tpm_spi(&spi0->ops, cr50_irq_status)->ops);
 
-	GpioOps *spi2_cs = new_gpio_not(new_mtk_gpio_output(PAD_EINT0));
+	GpioOps *spi2_cs = new_gpio_not(new_mtk_gpio_output(GPIO_SPI2_CSB));
 	MtkSpi *spi2 = new_mtk_spi(0x11012000, spi2_cs);
 	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spi2->ops);
 	GpioOps *ec_int = sysinfo_lookup_gpio("EC interrupt", 1,
@@ -141,7 +148,8 @@ static int board_setup(void)
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, ec_int);
 	register_vboot_ec(&cros_ec->vboot);
 
-	GpioOps *spi1_cs = new_gpio_not(new_mtk_gpio_output(PAD_SPI1_CSB));
+	GpioOps *spi1_cs = new_gpio_not(
+			new_mtk_gpio_output(GPIO_AP_SPI_FLASH_CS_L));
 	MtkSpi *spi1 = new_mtk_spi(0x11010000, spi1_cs);
 	flash_set_ops(&new_spi_flash(&spi1->ops)->ops);
 
