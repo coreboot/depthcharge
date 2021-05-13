@@ -25,6 +25,11 @@
 #include <libpayload.h>
 #include <sysinfo.h>
 
+#include "drivers/bus/i2c/designware.h"
+#include "drivers/bus/i2s/cavs-regs.h"
+#include "drivers/sound/i2s.h"
+#include "drivers/sound/max98373.h"
+
 #include <libpayload.h>
 #include <sysinfo.h>
 
@@ -34,6 +39,14 @@ static const struct tcss_map typec_map[] = {
 	{ .usb2_port = 3, .usb3_port = 2, .ec_port = 2 },
 	{ .usb2_port = 5, .usb3_port = 3, .ec_port = 3 },
 };
+
+#define AUD_VOLUME	4000
+#define AUD_BITDEPTH	16
+#define AUD_SAMPLE_RATE	48000
+#define AUD_NUM_CHANNELS 2
+#define AUD_I2C0	PCI_DEV(0, 0x15, 0)
+#define AUD_I2C_ADDR	0x32
+#define I2C_FS_HZ	400000
 
 static int cr50_irq_status(void)
 {
@@ -55,6 +68,44 @@ static void alderlake_setup_tpm(void)
 	tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0_params),
 		cr50_irq_status)->ops);
 }
+
+#if CONFIG_DRIVER_SOUND_MAX98373
+static uintptr_t get_ssp_base_address(void)
+{
+	switch (CONFIG(ADLRVP_MAX98373_I2S_PORT)) {
+	case 1:
+		return SSP_I2S1_START_ADDRESS;
+	case 2:
+	default:
+		return SSP_I2S2_START_ADDRESS;
+	}
+}
+
+/*
+ * get ssp port index for this particular config
+ */
+int board_get_ssp_port_index(void)
+{
+	return CONFIG_ADLRVP_MAX98373_I2S_PORT;
+}
+
+static void adlrvp_setup_max98373_i2s(void)
+{
+	I2s *i2s = new_i2s_structure(&max98373_settings, AUD_BITDEPTH, 0,
+			get_ssp_base_address());
+	I2sSource *i2s_source = new_i2s_source(&i2s->ops, AUD_SAMPLE_RATE,
+			AUD_NUM_CHANNELS, AUD_VOLUME);
+	/* Connect Audio codec to the I2S source */
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+	/* Speaker amp is Maxim 98373 codec on I2C0 */
+	DesignwareI2c *i2c0 = new_pci_designware_i2c(AUD_I2C0, I2C_FS_HZ,
+			ALDERLAKE_DW_I2C_MHZ);
+	Max98373Codec *speaker_amp = new_max98373_codec(&i2c0->ops, AUD_I2C_ADDR);
+	list_insert_after(&speaker_amp->component.list_node,
+			&sound_route->components);
+	sound_set_ops(&sound_route->ops);
+}
+#endif
 
 static int board_setup(void)
 {
@@ -108,6 +159,10 @@ static int board_setup(void)
 	/* TCSS ports */
 	if (CONFIG(DRIVER_EC_CROS))
 		register_tcss_ports(typec_map, ARRAY_SIZE(typec_map));
+
+#if CONFIG_DRIVER_SOUND_MAX98373
+	adlrvp_setup_max98373_i2s();
+#endif
 
 	return 0;
 }

@@ -10,3 +10,18 @@
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
 
+config ADLRVP_MAX98373_I2S_PORT
+	int "Set the I2S port number"
+	range 1 2
+	default 1
+	depends on DRIVER_SOUND_MAX98373
+	help
+	 This is the I2S port number routed to MAX98373.
+
+config MAX98373_I2S_BOOTBEEP
+	bool "Max98373 I2S Boot beep"
+	select DRIVER_BUS_I2S_INTEL_COMMON_I2S
+	select DRIVER_SOUND_I2S
+	select DRIVER_SOUND_MAX98373
+	select DRIVER_SOUND_ROUTE
+	default n
