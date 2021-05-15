@@ -21,9 +21,6 @@ endif
 if BOARD_DIR = "trogdor"
 source "src/board/trogdor/Kconfig"
 endif
-if BOARD_DIR = "cheza"
-source "src/board/cheza/Kconfig"
-endif
 if BOARD_DIR = "cyan"
 source "src/board/cyan/Kconfig"
 endif
