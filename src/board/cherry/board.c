@@ -23,6 +23,8 @@
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/tpm.h"
+#include "drivers/video/display.h"
+#include "drivers/video/mtk_ddp.h"
 #include "vboot/util/flag.h"
 
 static void sound_setup(void)
@@ -55,6 +57,23 @@ static int cr50_irq_status(void)
 						new_mtk_eint);
 
 	return cr50_irq->get(cr50_irq);
+}
+
+int board_backlight_update(DisplayOps *me, uint8_t enable)
+{
+	static GpioOps *disp_pwm0, *backlight_en;
+
+	if (!backlight_en) {
+		disp_pwm0 = new_mtk_gpio_output(PAD_DISP_PWM0);
+		backlight_en = new_mtk_gpio_output(PAD_DGI_D5);
+	}
+
+	/* Enforce enable to be either 0 or 1. */
+	enable = !!enable;
+
+	gpio_set(disp_pwm0, enable);
+	gpio_set(backlight_en, enable);
+	return 0;
 }
 
 static int board_setup(void)
@@ -109,6 +128,13 @@ static int board_setup(void)
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
 
 	sound_setup();
+
+	/* Set display ops */
+	if (display_init_required())
+		display_set_ops(new_mtk_display(board_backlight_update,
+						0x1C000000, 2));
+	else
+		printf("[%s] no display_init_required()!\n", __func__);
 
 	return 0;
 }
