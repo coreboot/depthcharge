@@ -12,6 +12,7 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/fch.h"
 #include "drivers/soc/cezanne.h"
+#include "drivers/sound/gpio_edge_buzzer.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
@@ -33,6 +34,7 @@
 /* cr50 / Ti50 interrupt is attached to GPIO_3 */
 #define CR50_INT		3
 
+#define BUZZER_GPIO		91
 
 static int cr50_irq_status(void)
 {
@@ -42,6 +44,14 @@ static int cr50_irq_status(void)
 		tpm_gpio = new_kern_fch_gpio_latched(CR50_INT);
 
 	return gpio_get(&tpm_gpio->ops);
+}
+
+static void setup_buzzer(void)
+{
+	/* 'PWM_PP3300_BUZZER' */
+	GpioOps *sound_gpio = &new_kern_fch_gpio_output(BUZZER_GPIO, 0)->ops;
+	GpioEdgeBuzzer *buzzer = new_gpio_edge_buzzer(sound_gpio);
+	sound_set_ops(&buzzer->ops);
 }
 
 static int board_setup(void)
@@ -91,6 +101,9 @@ static int board_setup(void)
 		AP_I2C3_ADDR, 400000, AP_I2C_CLK_MHZ);
 	tpm_set_ops(&new_cr50_i2c(&i2c_h1->ops, 0x50,
 				  &cr50_irq_status)->base.ops);
+
+	/* Bootbeep setup */
+	setup_buzzer();
 
 	power_set_ops(&kern_power_ops);
 
