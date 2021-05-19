@@ -1,0 +1,5 @@
+config DRIVER_EC_CCGXXF
+	bool "Cypress CCGXXF USB Type-C Power Delivery Controller"
+	help
+	  Add firmware upgrade support for Cypress USB Type-C Power Delivery
+	  Controller CCGXXF.
