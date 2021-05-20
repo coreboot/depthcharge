@@ -9,6 +9,7 @@
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
+#include "base/late_init_funcs.h"
 #include "drivers/bus/i2s/mtk.h"
 #include "drivers/bus/spi/mtk.h"
 #include "drivers/bus/usb/usb.h"
@@ -31,6 +32,7 @@
 #define GPIO_BL_PWM_1V8 PAD_DISP_PWM
 #define GPIO_AP_EDP_BKLTEN PAD_KPROW1
 #define GPIO_SD_CD_ODL PAD_EINT17
+#define GPIO_XHCI_DONE PAD_CAM_PDN5
 
 static void sound_setup(void)
 {
@@ -148,3 +150,17 @@ static int board_setup(void)
 }
 
 INIT_FUNC(board_setup);
+
+static int enable_usb_vbus(struct LateInitFunc *init)
+{
+	/*
+	 * To avoid USB detection issue (b/187149602), assert GPIO
+	 * AP_XHCI_INIT_DONE to notify EC to enable USB VBUS when xHCI is
+	 * initialized.
+	 */
+	GpioOps *pdn = new_mtk_gpio_output(GPIO_XHCI_DONE);
+	gpio_set(pdn, 1);
+	return 0;
+}
+
+LATE_INIT_FUNC(enable_usb_vbus);
