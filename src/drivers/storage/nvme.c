@@ -882,8 +882,10 @@ static NVME_STATUS nvme_create_drive(NvmeCtrlr *ctrlr, uint32_t namespace_id,
 	nvme_drive->dev.ops.write = &nvme_write;
 	nvme_drive->dev.ops.new_stream = &new_simple_stream;
 	nvme_drive->dev.ops.get_health_info = &nvme_read_smart_log;
-	nvme_drive->dev.ops.get_test_log = &nvme_read_test_log;
-	nvme_drive->dev.ops.test_control = &nvme_test_control;
+	if (ISSET(ctrlr->controller_data->oacs, NVME_OACS_DEVICE_SELF_TEST)) {
+		nvme_drive->dev.ops.get_test_log = &nvme_read_test_log;
+		nvme_drive->dev.ops.test_control = &nvme_test_control;
+	}
 	nvme_drive->dev.name = name;
 	nvme_drive->dev.removable = 0;
 	nvme_drive->dev.block_size = block_size;
