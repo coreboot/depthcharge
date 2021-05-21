@@ -252,6 +252,8 @@ typedef struct {
 #define NVME_MODEL_NUMBER_LEN	40
 #define NVME_SERIAL_NUMBER_LEN	20
 
+#define NVME_OACS_DEVICE_SELF_TEST	(1 << 4)
+
 /* Identify Controller Data */
 typedef struct {
 	/* Controller Capabilities and Features 0-255 */
