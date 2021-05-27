@@ -214,7 +214,12 @@ static int board_setup(void)
 
 	Sc7180I2s *soundq = new_sc7180_i2s(48000, 2, 16, LPASS_SECONDARY,
 				           0x62000000);
-	I2sSource *i2s_source = new_i2s_source(&soundq->ops, 48000, 2, 0x500);
+	uint16_t volume;
+	if (!strcmp(cb_mb_part_string(mainboard), "Homestar"))
+		volume = 0x5050;
+	else
+		volume = 0x500;
+	I2sSource *i2s_source = new_i2s_source(&soundq->ops, 48000, 2, volume);
 	SoundRoute *sound = new_sound_route(&i2s_source->ops);
 	list_insert_after(&speaker_amp->component.list_node,
 					  &sound->components);
