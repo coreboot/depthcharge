@@ -18,7 +18,7 @@
 #include <libpayload.h>
 #include "base/container_of.h"
 #include "drivers/bus/spi/qspi_sc7180.h"
-#include "drivers/gpio/sc7180.h"
+#include "drivers/gpio/qcom_gpio.h"
 #include <assert.h>
 
 #define DMA_BYTES_PER_WORD 4
@@ -202,10 +202,10 @@ static void queue_data(Sc7180Qspi *qspi_bus, uint8_t *data, uint32_t data_bytes,
 
 static void chip_assert(int value)
 {
-	static Sc7180GpioCfg *gpio_cfg = NULL;
+	static GpioCfg *gpio_cfg = NULL;
 
 	if (!gpio_cfg)
-		gpio_cfg = new_sc7180_gpio_output(GPIO(68));
+		gpio_cfg = new_gpio_output(GPIO(68));
 
 	gpio_cfg->ops.set(&gpio_cfg->ops, value);
 }

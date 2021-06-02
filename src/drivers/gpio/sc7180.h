@@ -18,51 +18,14 @@
 
 #include "gpio.h"
 
-typedef union {
-	uint32_t addr;
-} Sc7180GpioSpec;
-
-typedef struct {
-	uint32_t _res1;
-	uint32_t in_out;
-	uint32_t _res2;
-	uint32_t intr_status;
-} TlmmGpio;
-
-typedef struct {
-	GpioOps ops;
-	Sc7180GpioSpec gpio;
-} Sc7180GpioCfg;
-
-#define TLMM_TILE_SIZE		0x00300000
-#define TLMM_GPIO_OFF_DELTA	0x00001000
-#define TLMM_GPIO_TILE_NUM	3
-
 #define TLMM_WEST_TILE_BASE	0x3500000
 #define TLMM_NORTH_TILE_BASE	0x3900000
 #define TLMM_SOUTH_TILE_BASE	0x3D00000
 
-/* GPIO TLMM: Status */
-#define GPIO_DISABLE		0
-#define GPIO_ENABLE		1
+#define TLMM_GPIO_OFF_DELTA     0x1000
 
-/* GPIO IO: Mask */
-#define GPIO_IO_IN_BMSK		0x1
-#define GPIO_IO_OUT_BMSK	0x1
-
-/* GPIO IO: Shift */
-#define GPIO_IO_IN_SHFT		0
-#define GPIO_IO_OUT_SHFT	1
-
-/* GPIO ID STATUS: Mask */
-#define GPIO_ID_STATUS_BMSK	0x1
-
-/* GPIO MAX Valid # */
-#define GPIO_NUM_MAX		118
-
-#define GPIO(num)	((Sc7180GpioSpec){.addr = GPIO##num##_ADDR})
 #define PIN(index, tlmm) \
-GPIO##index##_ADDR = TLMM_##tlmm##_TILE_BASE + index * TLMM_GPIO_OFF_DELTA
+	GPIO##index##_ADDR = TLMM_##tlmm##_TILE_BASE + index * TLMM_GPIO_OFF_DELTA
 
 enum {
 	PIN(0, SOUTH),
@@ -185,13 +148,5 @@ enum {
 	PIN(117, WEST),
 	PIN(118, WEST),
 };
-
-Sc7180GpioCfg *new_sc7180_gpio_input(Sc7180GpioSpec gpio);
-Sc7180GpioCfg *new_sc7180_gpio_output(Sc7180GpioSpec gpio);
-Sc7180GpioCfg *new_sc7180_gpio_latched(Sc7180GpioSpec gpio);
-
-GpioOps *new_sc7180_gpio_input_from_coreboot(uint32_t gpio);
-GpioOps *new_sc7180_gpio_output_from_coreboot(uint32_t gpio);
-GpioOps *new_sc7180_gpio_latched_from_coreboot(uint32_t gpio);
 
 #endif // _SOC_QUALCOMM_SC7180_GPIO_H_

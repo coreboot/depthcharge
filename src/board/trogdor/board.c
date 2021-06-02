@@ -27,7 +27,7 @@
 #include "drivers/bus/spi/qspi_sc7180.h"
 #include "drivers/storage/sdhci_msm.h"
 #include "drivers/bus/usb/usb.h"
-#include "drivers/gpio/sc7180.h"
+#include "drivers/gpio/qcom_gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/tpm/spi.h"
 #include "drivers/sound/gpio_amp.h"
@@ -69,7 +69,7 @@ static int trogdor_get_sd_cd(GpioOps *unused)
 
 	if (!underlying)
 		underlying = sysinfo_lookup_gpio("SD card detect", 1,
-				new_sc7180_gpio_input_from_coreboot);
+				new_gpio_input_from_coreboot);
 
 	int val = gpio_get(underlying);
 	if (val != prev) {
@@ -97,7 +97,7 @@ static int trogdor_tpm_irq_status(void)
 
 	if (!tpm_int)
 		tpm_int = sysinfo_lookup_gpio("TPM interrupt", 1,
-					new_sc7180_gpio_latched_from_coreboot);
+					new_gpio_latched_from_coreboot);
 	return gpio_get(tpm_int);
 }
 
@@ -111,7 +111,7 @@ static int init_display_ops(void)
 	/* This just needs to be turned on >80ms after eDP intialization, so
 	   just do it here rather than passing through the DisplayOps stack. */
 	GpioOps *bl_en = sysinfo_lookup_gpio("backlight", 1,
-					new_sc7180_gpio_output_from_coreboot);
+					new_gpio_output_from_coreboot);
 	gpio_set(bl_en, 1);
 
 	GpioOps *backlight = NULL;
@@ -126,7 +126,7 @@ static int init_display_ops(void)
 
 static int board_setup(void)
 {
-	sysinfo_install_flags(new_sc7180_gpio_input_from_coreboot);
+	sysinfo_install_flags(new_gpio_input_from_coreboot);
 	flag_replace(FLAG_PWRSW, new_gpio_low());	/* handled by EC */
 
 	if (CONFIG(DRIVER_EC_CROS))
@@ -198,7 +198,7 @@ static int board_setup(void)
 	if (CONFIG(DRIVER_EC_CROS)) {
 		CrosEcBusOps *ec_bus = &new_cros_ec_spi_bus(ec_spi)->ops;
 		GpioOps *ec_int = sysinfo_lookup_gpio("EC interrupt", 1,
-					new_sc7180_gpio_input_from_coreboot);
+					new_gpio_input_from_coreboot);
 		CrosEc *ec = new_cros_ec(ec_bus, ec_int);
 		register_vboot_ec(&ec->vboot);
 	}
@@ -209,7 +209,7 @@ static int board_setup(void)
 	flash_set_ops(&flash->ops);
 
 	GpioOps *amp_enable = sysinfo_lookup_gpio("speaker enable", 1,
-				new_sc7180_gpio_output_from_coreboot);
+				new_gpio_output_from_coreboot);
 	GpioAmpCodec *speaker_amp = new_gpio_amp_codec(amp_enable);
 
 	Sc7180I2s *soundq = new_sc7180_i2s(48000, 2, 16, LPASS_SECONDARY,
