@@ -41,4 +41,5 @@ depthcharge-$(CONFIG_DRIVER_GPIO_ICELAKE) += icelake.c
 depthcharge-$(CONFIG_DRIVER_GPIO_KERN) += kern.c
 depthcharge-$(CONFIG_DRIVER_GPIO_QCS405) += qcs405.c
 depthcharge-$(CONFIG_DRIVER_GPIO_SC7180) += qcom_gpio.c
+depthcharge-$(CONFIG_DRIVER_GPIO_SC7280) += qcom_gpio.c
 depthcharge-$(CONFIG_DRIVER_GPIO_JASPERLAKE) += jasperlake.c

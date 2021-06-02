@@ -20,6 +20,8 @@
 
 #if CONFIG(DRIVER_GPIO_SC7180)
 #include "sc7180.h"
+#elif CONFIG(DRIVER_GPIO_SC7280)
+#include "sc7280.h"
 #endif
 
 #define GPIO(num)	((GpioSpec){.addr = GPIO##num##_ADDR})
