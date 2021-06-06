@@ -32,6 +32,28 @@ static void * const CmdLineBuff = (void *)(uintptr_t)0x2000;
 static const uint32_t KernelV2Magic = 0x53726448;
 static const uint16_t MinProtocol = 0x0202;
 
+static uint32_t lb_mem_type_to_e820(uint32_t lb_mem_type) {
+	switch(lb_mem_type) {
+	case 1: /* LB_MEM_RAM */
+		return E820_RAM;
+	case 2: /* LB_MEM_RESERVED */
+		return E820_RESERVED;
+	case 3: /* LB_MEM_ACPI */
+		return E820_ACPI;
+	case 4: /* LB_MEM_NVS */
+		return E820_NVS;
+	case 5: /* LB_MEM_UNUSABLE */
+		return E820_UNUSABLE;
+	case 6: /* LB_MEM_VENDOR_RSVD */
+		return E820_RESERVED;
+	case 16: /* LB_MEM_TABLE */
+		return E820_RESERVED;
+	default:
+		printf("ERROR: Unknown lb mem type: %u\n", lb_mem_type);
+		return E820_RESERVED;
+	}
+}
+
 int boot_x86_linux(struct boot_params *boot_params, char *cmd_line, void *entry)
 {
 	// Move the boot_params structure and the command line to where Linux
@@ -66,7 +88,7 @@ int boot_x86_linux(struct boot_params *boot_params, char *cmd_line, void *entry)
 
 		e820_entry->addr = memrange->base;
 		e820_entry->size = memrange->size;
-		e820_entry->type = memrange->type;
+		e820_entry->type = lb_mem_type_to_e820(memrange->type);
 	}
 
 	// Loader type is undefined.
