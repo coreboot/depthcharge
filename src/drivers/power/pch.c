@@ -95,11 +95,19 @@ static void busmaster_disable_on_bus(int bus, struct power_off_args *args)
 			hdr &= 0x7f;
 			if (hdr == HEADER_TYPE_BRIDGE ||
 			    hdr == HEADER_TYPE_CARDBUS) {
-				uint32_t busses;
-				busses = pci_read_config32(
-						dev, REG_PRIMARY_BUS);
-				busmaster_disable_on_bus((busses >> 8) & 0xff,
-							 args);
+				/*
+				 * If secondary bus is equal to current bus
+				 * bypass the bridge because it's likely
+				 * unconfigured and would cause infinite
+				 * recursion.
+				 */
+				int secbus = pci_read_config8(dev,
+							REG_SECONDARY_BUS);
+
+				if (secbus == bus)
+					continue;
+
+				busmaster_disable_on_bus(secbus, args);
 			}
 		}
 	}
