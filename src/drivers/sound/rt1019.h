@@ -12,7 +12,10 @@
 #include "drivers/sound/route.h"
 #include "drivers/sound/sound.h"
 
-#define AUD_RT1019_DEVICE_ADDR		0x28
+#define AUD_RT1019_DEVICE_ADDR_L	0x28
+#define AUD_RT1019_DEVICE_ADDR_R	0x29
+#define AUD_RT1019_DEVICE_ADDR_L1	0x2A
+#define AUD_RT1019_DEVICE_ADDR_R1	0x2B
 
 typedef struct {
 	SoundRouteComponent component;
