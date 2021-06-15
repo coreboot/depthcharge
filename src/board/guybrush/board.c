@@ -84,7 +84,7 @@ static void setup_rt1019_amp(void)
 	DesignwareI2c *i2c = new_designware_i2c((uintptr_t)AUDIO_I2C_MMIO_ADDR,
 				       AUDIO_I2C_SPEED, I2C_DESIGNWARE_CLK_MHZ);
 	rt1019Codec *speaker_amp = new_rt1019_codec(&i2c->ops,
-							AUD_RT1019_DEVICE_ADDR);
+						AUD_RT1019_DEVICE_ADDR_R);
 	SoundRoute *sound_route = new_sound_route(&speaker_amp->ops);
 
 	list_insert_after(&speaker_amp->component.list_node,
