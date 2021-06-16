@@ -58,6 +58,6 @@
 #define   RST_CPU		(1 << 2)
 #define   FULL_RST		(1 << 3)
 
-PowerOps kern_power_ops;
+extern PowerOps kern_power_ops;
 
 #endif /* __DRIVERS_POWER_PCH_H__ */

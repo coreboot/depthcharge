@@ -21,15 +21,15 @@
 
 #include "drivers/power/power.h"
 
-PowerOps pch_power_ops;
-PowerOps alderlake_power_ops;
-PowerOps baytrail_power_ops;
-PowerOps braswell_power_ops;
-PowerOps skylake_power_ops;
-PowerOps cannonlake_power_ops;
-PowerOps tigerlake_power_ops;
-PowerOps icelake_power_ops;
-PowerOps apollolake_power_ops;
-PowerOps jasperlake_power_ops;
+extern PowerOps pch_power_ops;
+extern PowerOps alderlake_power_ops;
+extern PowerOps baytrail_power_ops;
+extern PowerOps braswell_power_ops;
+extern PowerOps skylake_power_ops;
+extern PowerOps cannonlake_power_ops;
+extern PowerOps tigerlake_power_ops;
+extern PowerOps icelake_power_ops;
+extern PowerOps apollolake_power_ops;
+extern PowerOps jasperlake_power_ops;
 
 #endif /* __DRIVERS_POWER_PCH_H__ */
