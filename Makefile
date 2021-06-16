@@ -140,6 +140,7 @@ ABI_FLAGS := $(ARCH_ABI_FLAGS) -ffreestanding -fno-builtin \
 LINK_FLAGS = $(ARCH_LINK_FLAGS) $(ABI_FLAGS) -fuse-ld=bfd \
 	-Wl,-T,$(LDSCRIPT_OBJ) -Wl,--gc-sections -Wl,-Map=$@.map
 CFLAGS := $(ARCH_CFLAGS) -Wall -Werror -Wstrict-prototypes -Wshadow \
+	-Wno-address-of-packed-member \
 	$(INCLUDES) -std=gnu99 $(ABI_FLAGS) -ffunction-sections -fdata-sections -ggdb3
 
 ifneq ($(SOURCE_DEBUG),)
