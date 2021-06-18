@@ -43,9 +43,11 @@ static const int emmc_sd_clock_min = 400 * 1000;
 static const int emmc_clock_max = 200 * 1000 * 1000;
 static const int sd_clock_max = 52 * 1000 * 1000;
 
+#define DEVICE_NVS_OFFSET		64
+
 static int board_setup(void)
 {
-	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + GNVS_DEVICE_NVS_OFFSET;
+	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + DEVICE_NVS_OFFSET;
 	sysinfo_install_flags(NULL);
 
 	/* ECRW GPIO: SCGPIO59 */

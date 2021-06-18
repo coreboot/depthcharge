@@ -32,8 +32,7 @@ _Static_assert(VB2_VBSD_SIZE <= ARRAY_SIZE(((chromeos_acpi_t *)0)->vdat),
 int crossystem_setup(int firmware_type)
 {
 	struct vb2_context *ctx = vboot_get_context();
-	chromeos_acpi_t *acpi_table =
-		phys_to_virt(lib_sysinfo.acpi_gnvs) + GNVS_CHROMEOS_ACPI_OFFSET;
+	chromeos_acpi_t *acpi_table = phys_to_virt(lib_sysinfo.acpi_cnvs);
 	int size;
 
 	/* Write VbSharedDataHeader to ACPI vdat for userspace access. */

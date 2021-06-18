@@ -44,6 +44,8 @@
 #include "vboot/util/acpi.h"
 #include "vboot/util/flag.h"
 
+#define DEVICE_NVS_OFFSET		48
+
 enum {
 	/* Power Control and Status to enable/disable D3Hot */
 	PCH_REG_PCS = 0x84,
@@ -60,7 +62,7 @@ enum {
 /* Put device in D0 state */
 static void device_enable(int sio_index)
 {
-	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + GNVS_DEVICE_NVS_OFFSET;
+	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + DEVICE_NVS_OFFSET;
 	void *reg_pcs = (void *)nvs->bar1[sio_index] + PCH_REG_PCS;
 
 	/* Put device in D0 state */
@@ -70,7 +72,7 @@ static void device_enable(int sio_index)
 
 static DesignwareI2c *i2c_enable(int sio_index)
 {
-	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + GNVS_DEVICE_NVS_OFFSET;
+	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + DEVICE_NVS_OFFSET;
 	void *reg_ppr = (void *)nvs->bar0[sio_index] + SIO_REG_PPR_CLOCK;
 
 	device_enable(sio_index);
@@ -84,7 +86,7 @@ static DesignwareI2c *i2c_enable(int sio_index)
 
 static BdwI2s *i2s_enable(int ssp)
 {
-	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + GNVS_DEVICE_NVS_OFFSET;
+	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + DEVICE_NVS_OFFSET;
 
 	device_enable(SIO_NVS_ADSP);
 
