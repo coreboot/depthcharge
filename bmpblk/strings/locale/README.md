@@ -7,7 +7,14 @@ firmware UI.
 The message translation process works as follows:
 
 1. If you make a code change that requires message changes, adjust the English
-strings in the firmware_strings.grd file.
+strings in the firmware_strings.grd file. During the development period,
+limits the locale to en to skip the missing translations.
+
+```
+(chroot) LOCALES=en BOARD="$BOARD" make
+# Or
+(chroot) LOCALES=en emerge-$BOARD chromeos-bmpblk
+```
 
 2. To trigger translation of updated messages, take the the current version of
 firmware_strings.grd and update the [copy in Google's internal code repository
@@ -31,10 +38,10 @@ $ prodaccess
 $ g4d localization   # cd's into the g4 client.
 $ g4 sync            # Make sure the workspace is synced.
 $ blaze build //googleclient/chrome/transconsole_resources:all_xtbs
-# Get the diff of message ID diff of en-GB. This can help to find the message ID
+# Get the diff of message ID of en-GB. This can help you find the message ID
 # related to the change.
 $ python3 $CROS/src/platform/bmpblk/update_xtb.py diff en-GB
-# Merge the strings with those message ID
+# Merge the strings with those message ID.
 $ python3 $CROS/src/platform/bmpblk/update_xtb.py merge ID1 ID2 ....
 ```
 

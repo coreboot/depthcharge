@@ -676,9 +676,9 @@ class Converter:
         eff_dpi_counter = None
         results = []
         for name, category in sorted(names.items()):
-            # Ignore missing translation
-            if locale != 'en' and name not in inputs:
-                continue
+            if name not in inputs:
+                raise BuildImageError(f'Locale {locale!r}: '
+                                      f'missing translation: {name!r}')
 
             new_name = self.rename_map.get(name, name)
             if not new_name:
@@ -748,22 +748,6 @@ class Converter:
                         '%s: Image width %dpx greater than max width '
                         '%dpx' % (filename, width_px, max_width_px))
 
-    def _copy_missing_bitmaps(self):
-        """Copies missing (not yet translated) strings from locale 'en'."""
-        en_files = glob.glob(os.path.join(self.output_ro_dir, 'en', '*.bmp'))
-        for locale_info in self.locales:
-            locale = locale_info.code
-            if locale == 'en':
-                continue
-            ro_locale_dir = os.path.join(self.output_ro_dir, locale)
-            for en_file in en_files:
-                filename = os.path.basename(en_file)
-                locale_file = os.path.join(ro_locale_dir, filename)
-                if not os.path.isfile(locale_file):
-                    print("WARNING: Locale '%s': copying '%s'" %
-                          (locale, filename))
-                    shutil.copyfile(en_file, locale_file)
-
     def build_localized_strings(self):
         """Builds images of localized strings."""
         # Sources are one .grd file with identifiers chosen by engineers and
@@ -818,7 +802,6 @@ class Converter:
                 max(effective_dpi))
 
         self._check_text_width(names)
-        self._copy_missing_bitmaps()
 
     def move_language_images(self):
         """Renames language bitmaps and move to self.output_dir.
