@@ -198,8 +198,8 @@ static int board_setup(void)
 		register_vboot_ec(&ec->vboot);
 	}
 
-	/* SPI-NOR Flash driver */
-	QcomQspi *spi_flash = new_qcom_qspi(0x088DC000);
+       /* SPI-NOR Flash driver - GPIO_68 as Chip Select */
+	QcomQspi *spi_flash = new_qcom_qspi(0x088DC000, (GpioOps *)&new_gpio_output(GPIO(68))->ops);
 	SpiFlash *flash = new_spi_flash(&spi_flash->ops);
 	flash_set_ops(&flash->ops);
 

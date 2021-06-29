@@ -22,5 +22,5 @@ depthcharge-$(CONFIG_DRIVER_BUS_SPI_TEGRA) += tegra.c
 depthcharge-$(CONFIG_DRIVER_BUS_SPI_BCM_QSPI) += bcm_qspi.c
 depthcharge-$(CONFIG_DRIVER_BUS_SPI_MTK) += mtk.c
 depthcharge-$(CONFIG_DRIVER_BUS_SPI_ARMADA38X_SPI) += armada38x_spi.c
-depthcharge-$(CONFIG_DRIVER_BUS_QSPI_SC7180) += qcom_qspi.c
+depthcharge-$(CONFIG_DRIVER_BUS_QSPI_QUP_QCOM) += qcom_qspi.c
 depthcharge-$(CONFIG_DRIVER_BUS_SPI_QUP_QCOM) += qcom_qupv3_spi.c

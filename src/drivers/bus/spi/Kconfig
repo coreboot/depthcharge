@@ -60,8 +60,8 @@ config DRIVER_BUS_SPI_ARMADA38X_SPI
 	bool "ARMADA38X SPI driver"
 	default n
 
-config DRIVER_BUS_QSPI_SC7180
-	bool "SC7180 SPI driver"
+config DRIVER_BUS_QSPI_QUP_QCOM 
+	bool "QCOM SPI driver"
 	default n
 
 config DRIVER_BUS_SPI_QUP_QCOM

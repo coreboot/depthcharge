@@ -202,24 +202,22 @@ static void queue_data(QcomQspi *qspi_bus, uint8_t *data, uint32_t data_bytes,
 
 static void chip_assert(int value)
 {
-	static GpioCfg *gpio_cfg = NULL;
-
-	if (!gpio_cfg)
-		gpio_cfg = new_gpio_output(QSPI_CS_GPIO);
-
-	gpio_cfg->ops.set(&gpio_cfg->ops, value);
+	/* we can remove this completely if spi_stat/stop looks fine below */
+	return;
 }
 
 int spi_start(SpiOps *me)
 {
 	chip_assert(CS_DEASSERT);
-	return 0;
+	QcomQspi *qspi = container_of(me, QcomQspi, ops);
+	return qspi->gpio_ops->set(qspi->gpio_ops, CS_DEASSERT);
 }
 
 int spi_stop(SpiOps *me)
 {
 	chip_assert(CS_ASSERT);
-	return 0;
+	QcomQspi *qspi = container_of(me, QcomQspi, ops);
+	return qspi->gpio_ops->set(qspi->gpio_ops, CS_ASSERT);
 }
 
 int spi_xfer(SpiOps *me, void *in, const void *out, uint32_t size)
@@ -246,7 +244,7 @@ int spi_xfer(SpiOps *me, void *in, const void *out, uint32_t size)
 	return 0;
 }
 
-QcomQspi *new_qcom_qspi(uintptr_t base)
+QcomQspi *new_qcom_qspi(uintptr_t base, GpioOps *cs)
 {
 	QcomQspi *qspi_bus = xzalloc(sizeof(*qspi_bus));
 
@@ -254,5 +252,6 @@ QcomQspi *new_qcom_qspi(uintptr_t base)
 	qspi_bus->ops.stop  = &spi_stop;
 	qspi_bus->ops.transfer = &spi_xfer;
 	qspi_bus->qspi_base = (QcomQspiRegs *)base;
+	qspi_bus->gpio_ops = cs;
 	return qspi_bus;
 }

@@ -20,6 +20,7 @@
 #include "vboot/util/flag.h"
 #include "boot/fit.h"
 #include "drivers/bus/i2c/qcom_qupv3_i2c.h"
+#include "drivers/flash/spi.h"
 #include "drivers/storage/sdhci_msm.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/qcom_gpio.h"
@@ -27,6 +28,7 @@
 #include "drivers/power/psci.h"
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/bus/usb/usb.h"
+#include "drivers/bus/spi/qcom_qspi.h"
 
 #define SDC1_HC_BASE          0x007C4000
 
@@ -91,6 +93,11 @@ static int board_setup(void)
 						herobrine_tpm_irq_status);
 		tpm_set_ops(&tpm_bus->base.ops);
 	}
+
+	/* SPI-NOR Flash driver - GPIO_15 as Chip Select */
+	QcomQspi *spi_flash = new_qcom_qspi(0x088DC000, (GpioOps *)&new_gpio_output(GPIO(15))->ops);
+	SpiFlash *flash = new_spi_flash(&spi_flash->ops);
+	flash_set_ops(&flash->ops);
 
 	return 0;
 }

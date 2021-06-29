@@ -19,10 +19,7 @@
 
 #include <stdbool.h>
 #include "drivers/bus/spi/spi.h"
-
-#if CONFIG(DRIVER_BUS_QSPI_SC7180)
-#define QSPI_CS_GPIO GPIO(68)
-#endif
+#include "drivers/gpio/gpio.h"
 
 typedef struct {
 	u32 mstr_cfg;
@@ -66,8 +63,8 @@ typedef struct {
 	QcomQspiRegs *qspi_base;
 	QcomQspiDescriptor *first_descriptor;
 	QcomQspiDescriptor *last_descriptor;
+	GpioOps *gpio_ops;
 } QcomQspi;
 
-QcomQspi *new_qcom_qspi(uintptr_t base);
-
+QcomQspi *new_qcom_qspi(uintptr_t base, struct GpioOps *cs);
 #endif  /* __DRIVERS_BUS_SPI_QCOM_QSPI_H__ */
