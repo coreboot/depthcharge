@@ -12,6 +12,7 @@
 #include <sysinfo.h>
 
 #include "base/init_funcs.h"
+#include "base/fw_config.h"
 #include "base/list.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
@@ -122,14 +123,26 @@ static void setup_gpio_amp(void)
 	sound_set_ops(&sound_route->ops);
 }
 
+static uint8_t get_amp_source(void)
+{
+	if (!fw_config_is_provisioned() ||
+	    fw_config_probe(FW_CONFIG(AUDIO_AMP, UNPROVISIONED)))
+		return CONFIG_DEFAULT_AMP_SOURCE;
+
+	if (fw_config_probe(FW_CONFIG(AUDIO_AMP, MAX98360)) ||
+	    fw_config_probe(FW_CONFIG(AUDIO_AMP, RT1015P_AUTO)))
+		return MAX98360A_AMP_SRC;
+
+	if (fw_config_probe(FW_CONFIG(AUDIO_AMP, RT1015_I2C)))
+		return ALC1015_AMP_SRC;
+
+	return CONFIG_DEFAULT_AMP_SOURCE;
+}
+
 static void setup_audio_amp(void)
 {
-	uint8_t amp_source = CONFIG_DEFAULT_AMP_SOURCE;
+	uint8_t amp_source = get_amp_source();
 
-	/*
-	 * TODO (b/179257031): Check if amplifier source is provisioned in
-	 * FW_CONFIG.
-	 */
 	switch (amp_source) {
 	case MAX98360A_AMP_SRC:
 		setup_gpio_amp();
