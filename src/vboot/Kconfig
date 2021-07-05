@@ -28,12 +28,6 @@ config DETACHABLE
 	help
 	  Enable detachable navigation (power button + vol up/down) in menu UI.
 
-config DIAGNOSTIC_UI
-	bool "Enable UI to allow boot of diagnostic rom"
-	default n
-	help
-	  Enable option to run a diagnostic rom at boot.
-
 config EC_VBOOT_SUPPORT
 	bool "Enable EC vboot support"
 	default n
