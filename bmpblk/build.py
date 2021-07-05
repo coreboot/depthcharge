@@ -32,15 +32,12 @@ ONE_LINE_DIR = 'one_line'
 SVG_FILES = '*.svg'
 PNG_FILES = '*.png'
 
-DIAGNOSTIC_UI = os.getenv('DIAGNOSTIC_UI') == '1'
-
 # String format YAML key names.
 KEY_DEFAULT = '_DEFAULT_'
 KEY_GLYPH = '_GLYPH_'
 KEY_LOCALES = 'locales'
 KEY_GENERIC_FILES = 'generic_files'
 KEY_LOCALIZED_FILES = 'localized_files'
-KEY_DIAGNOSTIC_FILES = 'diagnostic_files'
 KEY_SPRITE_FILES = 'sprite_files'
 KEY_STYLES = 'styles'
 KEY_BGCOLOR = 'bgcolor'
@@ -773,10 +770,7 @@ class Converter:
             self.stage_grit_dir,
         ])
 
-        # Make a copy to avoid modifying `self.formats`
-        names = copy.deepcopy(self.formats[KEY_LOCALIZED_FILES])
-        if DIAGNOSTIC_UI:
-            names.update(self.formats[KEY_DIAGNOSTIC_FILES])
+        names = self.formats[KEY_LOCALIZED_FILES]
 
         executor = ProcessPoolExecutor()
         futures = []

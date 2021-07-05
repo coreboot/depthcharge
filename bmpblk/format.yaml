@@ -120,8 +120,6 @@ localized_files:
   error_debug_info: error
   error_firmware_log: error
   error_diagnostics: error
-
-diagnostic_files:
   # diagnostic tools - menu
   btn_launch_diag: secondary_button
   diag_menu_title: title
