@@ -11,6 +11,7 @@
 #include "base/init_funcs.h"
 #include "base/list.h"
 #include "drivers/bus/spi/intel_gspi.h"
+#include "drivers/bus/usb/intel_tcss.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/soc/alderlake.h"
 #include "drivers/storage/ahci.h"
@@ -26,6 +27,42 @@
 
 #include <libpayload.h>
 #include <sysinfo.h>
+
+/*
+ * Each USB Type-C port consists of a TCP (USB3) and a USB2 port from
+ * the SoC. This table captures the mapping.
+ *
+ * SoC USB2 ports are numbered 1..10
+ * SoC TCP (USB3) ports are numbered 0..3
+ */
+#define USBC_PORT_0_USB2_NUM    1
+#define USBC_PORT_0_USB3_NUM    0
+
+#define USBC_PORT_1_USB2_NUM    2
+#define USBC_PORT_1_USB3_NUM    1
+
+#define USBC_PORT_2_USB2_NUM    3
+#define USBC_PORT_2_USB3_NUM    2
+
+#define USBC_PORT_3_USB2_NUM    5
+#define USBC_PORT_3_USB3_NUM    3
+
+static const struct tcss_port_map typec_map[] = {
+	[0] = { USBC_PORT_0_USB3_NUM, USBC_PORT_0_USB2_NUM },
+	[1] = { USBC_PORT_1_USB3_NUM, USBC_PORT_1_USB2_NUM },
+	[2] = { USBC_PORT_2_USB3_NUM, USBC_PORT_2_USB2_NUM },
+	[3] = { USBC_PORT_3_USB3_NUM, USBC_PORT_3_USB2_NUM },
+};
+
+int board_tcss_get_port_mapping(const struct tcss_port_map **map)
+{
+	if (map) {
+		*map = typec_map;
+		return ARRAY_SIZE(typec_map);
+	}
+
+	return 0;
+}
 
 static int cr50_irq_status(void)
 {
