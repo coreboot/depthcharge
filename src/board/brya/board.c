@@ -14,6 +14,7 @@
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/bus/i2s/cavs-regs.h"
 #include "drivers/bus/i2s/intel_common/max98357a.h"
+#include "drivers/bus/i2s/intel_common/max98390.h"
 #include "drivers/bus/usb/intel_tcss.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"
@@ -24,6 +25,7 @@
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/max98373.h"
+#include "drivers/sound/max98390.h"
 #include "drivers/soc/alderlake.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
@@ -44,6 +46,12 @@
 #define AUD_SAMPLE_RATE	48000
 #define AUD_NUM_CHANNELS 2
 #define SDMODE_PIN	GPP_A11
+
+#define AUD_I2C0	PCI_DEV(0, 0x15, 0)
+#define AUD_I2C_ADDR1 0x70
+#define AUD_I2C_ADDR2 0x72
+
+
 
 /*
  * Each USB Type-C port consists of a TCP (USB3) and a USB2 port from
@@ -88,6 +96,30 @@ int board_get_ssp_port_index(void)
 	return SSP_PORT_SPKR;
 }
 
+#if CONFIG_DRIVER_SOUND_MAX98390
+static void brya_setup_max98390(void)
+{
+	GpioOps *sdmode = &new_alderlake_gpio_output(SDMODE_PIN, 0)->ops;
+	I2s *i2s = new_i2s_structure(&max98390_settings, AUD_BITDEPTH,
+			sdmode, SSP_I2S2_START_ADDRESS);
+	I2sSource *i2s_source = new_i2s_source(&i2s->ops, AUD_SAMPLE_RATE,
+			AUD_NUM_CHANNELS, AUD_VOLUME);
+	/* Connect Audio codec to the I2S source */
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+	/* Speaker amp is Maxim 98390 codec on I2C0 */
+	DesignwareI2c *i2c0 = new_pci_designware_i2c(AUD_I2C0, I2C_FS_HZ,
+			ALDERLAKE_DW_I2C_MHZ);
+	Max98390Codec *speaker_amp0 = new_max98390_codec(&i2c0->ops, AUD_I2C_ADDR1);
+	Max98390Codec *speaker_amp1 = new_max98390_codec(&i2c0->ops, AUD_I2C_ADDR2);
+
+	list_insert_after(&speaker_amp1->component.list_node,
+		&sound_route->components);
+	list_insert_after(&speaker_amp0->component.list_node,
+		&sound_route->components);
+	sound_set_ops(&sound_route->ops);
+}
+#endif
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
@@ -123,6 +155,11 @@ static int board_setup(void)
 			&sound_route->components);
 	sound_set_ops(&sound_route->ops);
 #endif
+
+#if CONFIG_DRIVER_SOUND_MAX98390
+	brya_setup_max98390();
+#endif
+
 	/* PCH Power */
 	power_set_ops(&alderlake_power_ops);
 
