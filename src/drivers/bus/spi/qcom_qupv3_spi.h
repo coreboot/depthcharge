@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __DRIVERS_BUS_SPI_SC7180_SPI_H__
-#define __DRIVERS_BUS_SPI_SC7180_SPI_H__
+#ifndef __DRIVERS_BUS_SPI_QUP_H__
+#define __DRIVERS_BUS_SPI_QUP_H__
 
 #include "drivers/bus/spi/spi.h"
 #include "drivers/soc/qcom_qup_se.h"
@@ -22,9 +22,9 @@
 typedef struct {
 	SpiOps ops;
 	QupRegs *reg_addr;
-} Sc7180QupSpi;
+} QupSpi;
 
-Sc7180QupSpi *new_sc7180_Qup_spi(uintptr_t reg_addr);
+QupSpi *new_qup_spi(uintptr_t reg_addr);
 
-#endif /* __DRIVERS_BUS_SPI_SC7180_SPI_H__ */
+#endif /* __DRIVERS_BUS_SPI_QUP_H__ */
 

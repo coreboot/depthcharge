@@ -175,8 +175,8 @@ static int board_setup(void)
 	list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
 			  &removable_block_dev_controllers);
 
-	SpiOps *spi_qup0se0 = &new_sc7180_Qup_spi(0x880000)->ops;
-	SpiOps *spi_qup1se0 = &new_sc7180_Qup_spi(0xa80000)->ops;
+	SpiOps *spi_qup0se0 = &new_qup_spi(0x880000)->ops;
+	SpiOps *spi_qup1se0 = &new_qup_spi(0xa80000)->ops;
 	SpiOps *ec_spi = spi_qup1se0;
 	SpiOps *tpm_spi = spi_qup0se0;
 

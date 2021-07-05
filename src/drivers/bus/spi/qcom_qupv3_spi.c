@@ -72,7 +72,7 @@ static void qup_setup_m_cmd(QupRegs *regs, u32 cmd, u32 params)
 
 static int qup_spi_xfer(SpiOps *me, void *in, const void *out, uint32_t size)
 {
-	Sc7180QupSpi *bus = container_of(me, Sc7180QupSpi, ops);
+	QupSpi *bus = container_of(me, QupSpi, ops);
 	u32 m_cmd = 0;
 	u32 m_param = M_CMD_FRAGMENTATION;
 	QupRegs *regs = bus->reg_addr;
@@ -135,7 +135,7 @@ static int spi_qup_set_cs(QupRegs *regs, bool enable)
 
 static int qup_spi_start_bus(SpiOps *me)
 {
-	Sc7180QupSpi *bus = container_of(me, Sc7180QupSpi, ops);
+	QupSpi *bus = container_of(me, QupSpi, ops);
 	QupRegs *regs = bus->reg_addr;
 
 	return spi_qup_set_cs(regs, 1);
@@ -143,15 +143,15 @@ static int qup_spi_start_bus(SpiOps *me)
 
 static int qup_spi_stop_bus(SpiOps *me)
 {
-	Sc7180QupSpi *bus = container_of(me, Sc7180QupSpi, ops);
+	QupSpi *bus = container_of(me, QupSpi, ops);
 	QupRegs *regs = bus->reg_addr;
 
 	return spi_qup_set_cs(regs, 0);
 }
 
-Sc7180QupSpi *new_sc7180_Qup_spi(uintptr_t reg_addr)
+QupSpi *new_qup_spi(uintptr_t reg_addr)
 {
-	Sc7180QupSpi *bus = xzalloc(sizeof(*bus));
+	QupSpi *bus = xzalloc(sizeof(*bus));
 
 	bus->reg_addr = (QupRegs *)reg_addr;
 	bus->ops.start = &qup_spi_start_bus;
