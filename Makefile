@@ -46,9 +46,11 @@ endif
 HOSTCC = gcc
 HOSTCXX = g++
 HOSTAR = ar
+HOSTAS = as
 HOSTCFLAGS :=
 HOSTCXXFLAGS :=
 HOSTARFLAGS :=
+HOSTASFLAGS :=
 
 UNIT_TEST:=
 ifneq ($(filter %-test %-tests,$(MAKECMDGOALS)),)

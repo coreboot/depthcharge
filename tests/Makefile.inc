@@ -187,7 +187,8 @@ $(LIBPAYLOAD_KCONFIG_AUTOHEADER): $(LIBPAYLOAD_DOTCONFIG)
 
 $(LIBPAYLOAD_LIB): $(LIBPAYLOAD_KCONFIG_AUTOHEADER)
 	@printf "    MAKE       $(subst $(obj)/,,$(@))\n"
-	+$(MAKE) CC=$(HOSTCC) CXX=$(HOSTCXX) AR=$(HOSTAR) -C $(libpayloadsrc) \
+	+unset CFLAGS && $(MAKE) -C $(libpayloadsrc) \
+		HOSTCC=$(HOSTCC) CC=$(HOSTCC) CXX=$(HOSTCXX) AR=$(HOSTAR) AS=$(HOSTAS) \
 		EXTRA_CFLAGS=-m32 obj=$(libpayloadobj) \
 		DOTCONFIG=$(LIBPAYLOAD_DOTCONFIG) V=$(V)
 
