@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __DRIVERS_BUS_I2C_SC7180_I2C_H__
-#define __DRIVERS_BUS_I2C_SC7180_I2C_H__
+#ifndef __DRIVERS_BUS_I2C_QUP_H__
+#define __DRIVERS_BUS_I2C_QUP_H__
 
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/soc/qcom_qup_se.h"
@@ -22,8 +22,8 @@
 typedef struct {
 	I2cOps ops;
 	QupRegs *reg_addr;
-} Sc7180I2c;
+} QupI2c;
 
-Sc7180I2c *new_sc7180_i2c(uintptr_t regs);
+QupI2c *new_Qup_i2c(uintptr_t regs);
 
-#endif /* __DRIVERS_BUS_I2C_SC7180_I2C_H__ */
+#endif /* __DRIVERS_BUS_I2C_QUP_H__ */

@@ -38,7 +38,7 @@ static int i2c_do_xfer(QupRegs *reg_addr, I2cSeg segment, unsigned int prams)
 
 static int i2c_transfer(struct I2cOps *me, I2cSeg *segments, int seg_count)
 {
-	Sc7180I2c *bus = container_of(me, Sc7180I2c, ops);
+	QupI2c *bus = container_of(me, QupI2c, ops);
 	I2cSeg *seg = segments;
 	int ret = 0;
 
@@ -59,9 +59,9 @@ static int i2c_transfer(struct I2cOps *me, I2cSeg *segments, int seg_count)
 	return ret;
 }
 
-Sc7180I2c *new_sc7180_i2c(uintptr_t regs)
+QupI2c *new_Qup_i2c(uintptr_t regs)
 {
-	Sc7180I2c *bus = xzalloc(sizeof(*bus));
+	QupI2c *bus = xzalloc(sizeof(*bus));
 
 	bus->reg_addr = (QupRegs *)regs;
 	bus->ops.transfer = &i2c_transfer;
