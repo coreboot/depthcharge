@@ -310,6 +310,12 @@ strongbad:
   screen:   [2160, 1440]
   dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
+brask:
+  # External monitor, boots recovery image on USB ports.
+  screen:   [3840, 2400]  # No built-in panel, specify 4K resolution.
+  sdcard:   False
+  dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
 brya:
   # 3840x2160, boots recovery image on USB ports.
   screen:   [3840, 2160]
