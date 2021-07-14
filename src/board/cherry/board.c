@@ -26,6 +26,7 @@
 #include "drivers/sound/rt1011.h"
 #include "drivers/sound/rt1019b.h"
 #include "drivers/storage/mtk_mmc.h"
+#include "drivers/storage/nvme.h"
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/video/display.h"
@@ -188,6 +189,11 @@ static int board_setup(void)
 
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11200000);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+
+	/* NVMe SSD */
+	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(1, 0x00, 0));
+	list_insert_after(&nvme->ctrlr.list_node,
+			  &fixed_block_dev_controllers);
 
 	sound_setup();
 
