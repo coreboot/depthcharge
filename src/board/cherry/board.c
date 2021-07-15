@@ -27,6 +27,11 @@
 #include "drivers/video/mtk_ddp.h"
 #include "vboot/util/flag.h"
 
+#define GPIO_SD_CD_ODL		PAD_I2SO1_D1
+#define GPIO_AP_EDP_BKLTEN	PAD_DGI_D5
+#define GPIO_BL_PWM_1V8		PAD_DISP_PWM0
+#define GPIO_AP_SPI_EC_CS_L	PAD_SPIM0_CSB
+
 static void sound_setup(void)
 {
 	GpioOps *beep_en = sysinfo_lookup_gpio("beep enable", 1,
@@ -64,8 +69,8 @@ int board_backlight_update(DisplayOps *me, uint8_t enable)
 	static GpioOps *disp_pwm0, *backlight_en;
 
 	if (!backlight_en) {
-		disp_pwm0 = new_mtk_gpio_output(PAD_DISP_PWM0);
-		backlight_en = new_mtk_gpio_output(PAD_DGI_D5);
+		disp_pwm0 = new_mtk_gpio_output(GPIO_BL_PWM_1V8);
+		backlight_en = new_mtk_gpio_output(GPIO_AP_EDP_BKLTEN);
 	}
 
 	/* Enforce enable to be either 0 or 1. */
@@ -89,7 +94,8 @@ static int board_setup(void)
 	tpm_set_ops(&new_cr50_i2c(&i2c3->ops, 0x50,
 				  &cr50_irq_status)->base.ops);
 
-	GpioOps *spi0_cs = new_gpio_not(new_mtk_gpio_output(PAD_SPIM0_CSB));
+	GpioOps *spi0_cs = new_gpio_not(
+		new_mtk_gpio_output(GPIO_AP_SPI_EC_CS_L));
 	MtkSpi *spi0 = new_mtk_spi(0x1100A000, spi0_cs);
 	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spi0->ops);
 	GpioOps *ec_int = sysinfo_lookup_gpio("EC interrupt", 1,
@@ -116,7 +122,8 @@ static int board_setup(void)
 		.msdc_iocon = 0x0,
 		.pad_tune = 0x0
 	};
-	GpioOps *card_detect_ops = new_gpio_not(new_mtk_gpio_input(PAD_I2SO1_D1));
+	GpioOps *card_detect_ops = new_gpio_not(
+		new_mtk_gpio_input(GPIO_SD_CD_ODL));
 	MtkMmcHost *sd_card = new_mtk_mmc_host(
 		0x11240000, 200 * MHz, 25 * MHz, sd_card_tune_reg, 4, 1,
 		card_detect_ops, MTK_MMC_V2);
