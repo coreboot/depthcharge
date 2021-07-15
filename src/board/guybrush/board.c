@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 /* Copyright 2021 Google LLC.  */
 
+#include <arch/msr.h>
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
@@ -12,11 +13,14 @@
 #include "drivers/ec/anx3429/anx3429.h"
 #include "drivers/ec/ps8751/ps8751.h"
 #include "drivers/gpio/gpio.h"
+#include "drivers/sound/gpio_amp.h"
+#include "drivers/sound/gpio_i2s.h"
 #include "drivers/gpio/kern.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/fch.h"
 #include "drivers/soc/cezanne.h"
 #include "drivers/sound/rt1019.h"
+#include "drivers/sound/rt5682.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
@@ -55,6 +59,23 @@
 #define AUDIO_I2C_MMIO_ADDR	0xfedc4000
 #define AUDIO_I2C_SPEED		400000
 #define I2C_DESIGNWARE_CLK_MHZ	150
+
+/* I2S Beep GPIOs */
+#define I2S_BCLK_GPIO		88
+#define I2S_LRCLK_GPIO		75
+#define I2S_DATA_GPIO		87
+#define EN_SPKR			31
+
+/* ACP Device */
+#define AMD_PCI_VID		0x1022
+#define AMD_FAM17H_ACP_PCI_DID	0x15E2
+
+/* ACP pin control registers */
+#define ACP_I2S_PIN_CONFIG              0x1400
+#define ACP_PAD_PULLUP_PULLDOWN_CTRL    0x1404
+
+/* FW_CONFIG for beep banging */
+#define FW_CONFIG_BIT_BANGING (1 << 9)
 
 static int cr50_irq_status(void)
 {
@@ -111,6 +132,77 @@ static void setup_ec_in_rw_gpio(void)
 		flag_replace(FLAG_ECINRW, new_gpio_low());
 }
 
+static int (*gpio_i2s_play)(struct SoundOps *me, uint32_t msec,
+		uint32_t frequency);
+
+static int amd_gpio_i2s_play(struct SoundOps *me, uint32_t msec,
+		uint32_t frequency)
+{
+	int ret;
+	uint32_t pin_config, pad_ctrl;
+	uint64_t cur;
+	pcidev_t pci_dev;
+	uintptr_t acp_base;
+	if (pci_find_device(AMD_PCI_VID, AMD_FAM17H_ACP_PCI_DID, &pci_dev))
+		acp_base = pci_read_config32(pci_dev, PCI_BASE_ADDRESS_0);
+	else
+		return -1;
+	cur = _rdmsr(HW_CONFIG_REG);
+	pin_config = read32((void *)(acp_base + ACP_I2S_PIN_CONFIG));
+	pad_ctrl = read32((void *)(acp_base + ACP_PAD_PULLUP_PULLDOWN_CTRL));
+	/* Disable Core Boost while bit-banging I2S */
+	_wrmsr(HW_CONFIG_REG, cur | HW_CONFIG_CPBDIS);
+	/* tri-state ACP pins */
+	write32((void *)(acp_base + ACP_I2S_PIN_CONFIG), 7);
+	write32((void *)(acp_base + ACP_PAD_PULLUP_PULLDOWN_CTRL), 0);
+	ret = gpio_i2s_play(me, msec, frequency);
+	/* Restore previous Core Boost setting */
+	_wrmsr(HW_CONFIG_REG, cur);
+	/* Restore ACP reg settings */
+	write32((void *)(acp_base + ACP_I2S_PIN_CONFIG), pin_config);
+	write32((void *)(acp_base + ACP_PAD_PULLUP_PULLDOWN_CTRL), pad_ctrl);
+	return ret;
+}
+
+static void setup_bit_banging(void)
+{
+	KernGpio *i2s_bclk = new_kern_fch_gpio_input(I2S_BCLK_GPIO);
+	KernGpio *i2s_lrclk = new_kern_fch_gpio_input(I2S_LRCLK_GPIO);
+	KernGpio *i2s_data = new_kern_fch_gpio_output(I2S_DATA_GPIO, 0);
+	KernGpio *spk_pa_en = new_kern_fch_gpio_output(EN_SPKR, 1);
+
+	DesignwareI2c *i2c = new_designware_i2c((uintptr_t)AUDIO_I2C_MMIO_ADDR,
+				       AUDIO_I2C_SPEED, I2C_DESIGNWARE_CLK_MHZ);
+
+	GpioI2s *i2s = new_gpio_i2s(
+			&i2s_bclk->ops,		/* Use RT5682 to give clks */
+			&i2s_lrclk->ops,	/* I2S Frame Sync GPIO */
+			&i2s_data->ops,		/* I2S Data GPIO */
+			8000,			/* Sample rate */
+			2,			/* Channels */
+			0x1FFF,			/* Volume */
+			1);			/* BCLK sync */
+	/*
+	 * Override gpio_i2s play() op with our own that disbles CPU boost
+	 * before GPIO bit-banging I2S.
+	 */
+	gpio_i2s_play = i2s->ops.play;
+	i2s->ops.play = amd_gpio_i2s_play;
+
+	SoundRoute *sound_route = new_sound_route(&i2s->ops);
+
+	rt5682Codec *rt5682 = new_rt5682_codec(&i2c->ops, 0x1a, MCLK, LRCLK);
+
+	list_insert_after(&rt5682->component.list_node,
+			  &sound_route->components);
+
+	GpioAmpCodec *enable_spk = new_gpio_amp_codec(&spk_pa_en->ops);
+	list_insert_after(&enable_spk->component.list_node,
+			  &sound_route->components);
+
+	sound_set_ops(&sound_route->ops);
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
@@ -123,7 +215,10 @@ static int board_setup(void)
 	flag_replace(FLAG_PWRSW, cros_ec_power_btn_flag());
 	setup_ec_in_rw_gpio();
 
-	setup_rt1019_amp();
+	if (lib_sysinfo.fw_config & FW_CONFIG_BIT_BANGING)
+		setup_bit_banging();
+	else
+		setup_rt1019_amp();
 
 	SdhciHost *sd = NULL;
 	pcidev_t pci_dev;
