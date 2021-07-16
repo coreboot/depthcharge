@@ -21,7 +21,7 @@
  */
 typedef struct SndwOps {
 	int (*sndw_enable)(struct SndwOps *me, sndw_codec_info *codecinfo);
-        int (*sndw_sendwack)(uint32_t sndwlinkaddr, sndw_cmd txcmd, uint32_t deviceindex);
+        int (*sndw_sendwack)(void *sndwlinkaddr, sndw_cmd txcmd, uint32_t deviceindex);
 	int (*sndw_disable)(struct SndwOps *me);
 } SndwOps;
 
