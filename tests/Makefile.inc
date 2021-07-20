@@ -119,8 +119,8 @@ $($(1)-objs): TEST_CFLAGS += -include $$($(1)-config-file)
 $($(1)-objs): $(obj)/$(1)/%.o: $$$$*.c $$($(1)-config-file) $(LIBPAYLOAD_CONFIG)
 	@printf "    CC       $$(subst $$(obj)/,,$$(@))\n"
 	mkdir -p $$(dir $$@)
-	$(HOSTCC) $(HOSTCFLAGS) $$(TEST_CFLAGS) $($(1)-cflags)  -MMD \
-		-MT $$@ -c $$< -o $$@.orig
+	$(HOSTCC) $(HOSTCFLAGS) $$(TEST_CFLAGS) $($(1)-cflags) -MMD \
+		-MF $$(basename $$@).d -MT $$@ -c $$< -o $$@.orig
 	@printf "    OBJCOPY  $$(subst $$(obj)/,,$$(@))\n"
 	$(OBJCOPY) $$@.orig $$(OBJCOPY_FLAGS) $$@
 
