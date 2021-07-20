@@ -115,7 +115,7 @@ $$($(1)-config-file):
 
 $($(1)-srcobjs): OBJCOPY_FLAGS += $$(foreach mock,$$($(1)-mocks), \
 	--globalize-symbol=$$(mock) --weaken-symbol=$$(mock))
-$($(1)-objs): TEST_CFLAGS += -I$$(dir $$($(1)-config-file))
+$($(1)-objs): TEST_CFLAGS += -include $$($(1)-config-file)
 $($(1)-objs): $(obj)/$(1)/%.o: $$$$*.c $$($(1)-config-file) $(LIBPAYLOAD_CONFIG)
 	@printf "    CC       $$(subst $$(obj)/,,$$(@))\n"
 	mkdir -p $$(dir $$@)
