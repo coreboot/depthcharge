@@ -108,7 +108,7 @@ static void setup_ec_in_rw_gpio(void)
 	if (!strcmp(cb_mb_part_string(mainboard), mb) &&
 	    (lib_sysinfo.board_id == UNDEFINED_STRAPPING_ID ||
 	     lib_sysinfo.board_id < 3))
-		flag_install(FLAG_ECINRW, new_gpio_low());
+		flag_replace(FLAG_ECINRW, new_gpio_low());
 }
 
 static int board_setup(void)
