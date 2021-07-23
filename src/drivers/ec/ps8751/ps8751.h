@@ -51,7 +51,8 @@ typedef struct Ps8751
 Ps8751 *new_ps8751(CrosECTunnelI2c *bus, int ec_pd_id);
 Ps8751 *new_ps8751_canary(CrosECTunnelI2c *bus, int ec_pd_id);
 Ps8751 *new_ps8755(CrosECTunnelI2c *bus, int ec_pd_id);
-Ps8751 *new_ps8805(CrosECTunnelI2c *bus, int ec_pd_id);
+Ps8751 *new_ps8805_a2(CrosECTunnelI2c *bus, int ec_pd_id);
+Ps8751 *new_ps8805_a3(CrosECTunnelI2c *bus, int ec_pd_id);
 Ps8751 *new_ps8815_a0(CrosECTunnelI2c *bus, int ec_pd_id);
 Ps8751 *new_ps8815_a1(CrosECTunnelI2c *bus, int ec_pd_id);
 
