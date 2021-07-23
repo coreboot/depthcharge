@@ -89,11 +89,11 @@ static int board_setup(void)
 
 	/* EC I2C Tunnel for TCPCs */
 	cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec, /* i2c bus */ 1);
-	Ps8751 *ps8805_p0 = new_ps8805(cros_ec_i2c_tunnel, /* ec pd# */ 0);
+	Ps8751 *ps8805_p0 = new_ps8805_a2(cros_ec_i2c_tunnel, /* ec pd# */ 0);
 	register_vboot_auxfw(&ps8805_p0->fw_ops);
 
 	cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec, /* i2c bus */ 2);
-	Ps8751 *ps8805_p1 = new_ps8805(cros_ec_i2c_tunnel, /* ec pd# */ 1);
+	Ps8751 *ps8805_p1 = new_ps8805_a2(cros_ec_i2c_tunnel, /* ec pd# */ 1);
 	register_vboot_auxfw(&ps8805_p1->fw_ops);
 
 	/* PCH Power */
