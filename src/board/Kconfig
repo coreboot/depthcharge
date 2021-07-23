@@ -15,6 +15,9 @@ menu "Board"
 config BOARD_DIR
 	string "Board directory"
 
+config VARIANT_NAME
+	string "Variant name"
+
 if BOARD_DIR = "auron"
 source "src/board/auron/Kconfig"
 endif
