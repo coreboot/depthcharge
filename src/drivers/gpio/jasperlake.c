@@ -298,10 +298,21 @@ GpioCfg *new_jasperlake_gpio_output(int gpio_num, unsigned value)
 	/* Restore this GPIO to original state on exit */
 	register_jasperlake_gpio_cleanup(gpio);
 
-	/* Configure the GPIO as a standard output pin */
-	struct pad_config pad = PAD_CFG_GPO(gpio_num, value, DEEP, NONE,
-								DISABLE);
-	gpio_configure_pad(&pad);
+	/*
+	 * If pad is configured as Native Function or output is disabled,
+	 * reconfigure the pad as GPO. Otherwise re-use the configuration from
+	 * coreboot.
+	 */
+	if ((gpio->save_dw0 & (PMODE_MASK << PMODE_SHIFT)) ||
+	    (gpio->save_dw0 & (GPIOTXDIS_MASK << GPIOTXDIS_SHIFT))) {
+		/* Configure the GPIO as a standard output pin */
+		struct pad_config pad = PAD_CFG_GPO(gpio_num, value, DEEP, NONE,
+								       DISABLE);
+		gpio_configure_pad(&pad);
+	} else {
+		/* Set the TX State to value */
+		__jasperlake_gpio_set(gpio_num, value);
+	}
 
 	/* Store the current DW0 register state */
 	gpio->current_dw0 = read32(&gpio->dw_regs[0]);
