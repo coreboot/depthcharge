@@ -127,6 +127,7 @@ static vb2_error_t ui_draw_step_icons(const struct ui_state *state,
 
 static vb2_error_t draw_footer(const struct ui_state *state)
 {
+	vb2_error_t rv;
 	char hwid[VB2_GBB_HWID_MAX_SIZE];
 	uint32_t size = sizeof(hwid);
 	char *p;
@@ -174,7 +175,11 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 	VB2_TRY(ui_get_bitmap("help_center.bmp", locale_code, 0, &bitmap));
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, text_height, flags, reverse));
 	y += text_height + UI_FOOTER_COL2_LINE_SPACING;
-	VB2_TRY(ui_get_bitmap("rec_url.bmp", locale_code, 0, &bitmap));
+	rv = ui_get_bitmap("rec_url.bmp", NULL, 0, &bitmap);
+	if (rv == VB2_ERROR_UI_MISSING_IMAGE)
+		VB2_TRY(ui_get_bitmap("rec_url.bmp", locale_code, 0, &bitmap));
+	else if (rv)
+		return rv;
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, text_height, flags, reverse));
 	VB2_TRY(ui_get_bitmap_width(&bitmap, text_height, &col2_width));
 	x += col2_width + UI_FOOTER_COL2_MARGIN_RIGHT;
