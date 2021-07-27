@@ -68,6 +68,9 @@
 /* !fatal means retry */
 #define TCSS_STATUS_IS_FATAL(s)		GET_TCSS_CD_FIELD(FATAL, s)
 
+static ListNode tcss_ports;
+static const TcssCtrlr *ctrlr;
+
 static uint32_t tcss_make_cmd(int u, int u3, int u2, int ufp, int hsl, int sbu,
 			      int acc)
 {
@@ -80,21 +83,13 @@ static uint32_t tcss_make_cmd(int u, int u3, int u2, int ufp, int hsl, int sbu,
 		TCSS_CD_FIELD(ACC, acc);
 }
 
-static int tcss_port_count;
-static const struct tcss_port_map *tcss_port_map;
-
 static const void *port_status_reg(int port)
 {
-	static const TcssConfig *tcss_config;
-	if (!tcss_config) {
-		tcss_config = platform_get_tcss_config();
-	}
+	assert(ctrlr);
 
-	assert(tcss_config);
-
-	const uintptr_t status_reg = tcss_config->regbar +
-		(tcss_config->iom_pid << REGBAR_PID_SHIFT) +
-		(tcss_config->iom_status_offset + port * sizeof(uint32_t));
+	const uintptr_t status_reg = ctrlr->regbar +
+		(ctrlr->iom_pid << REGBAR_PID_SHIFT) +
+		(ctrlr->iom_status_offset + port * sizeof(uint32_t));
 	return (const void *)status_reg;
 }
 
@@ -144,29 +139,27 @@ static int send_conn_disc_msg(const struct pmc_ipc_buffer *req,
  * Query the EC for USB port connection status and update the TCSS
  * accordingly.
  */
-static int update_port_state(int port)
+static int update_port_state(const struct tcss_port *port_info)
 {
-	uint8_t mux_state;
-	int ufp, dbg_acc;
-	int r;
-	bool usb_enabled;
-	const struct tcss_port_map *map;
-
-	assert(tcss_port_map);
-
+	const unsigned int usb2 = port_info->usb2_port;
+	const unsigned int usb3 = port_info->usb3_port;
+	const unsigned int ec_port = port_info->ec_port;
 	struct pmc_ipc_buffer req = { 0 };
 	struct pmc_ipc_buffer res = { 0 };
+	uint8_t mux_state;
+	bool usb_enabled;
+	int ufp, dbg_acc;
 	uint32_t cmd;
+	int r;
 
-	r = cros_ec_get_usb_pd_mux_info(port, &mux_state);
+	r = cros_ec_get_usb_pd_mux_info(ec_port, &mux_state);
 	if (r < 0) {
-		error("port C%d: get_usb_pd_mux_info failed\n", port);
+		error("port C%d: get_usb_pd_mux_info failed\n", ec_port);
 		return -1;
 	}
 
 	usb_enabled = !!(mux_state & USB_PD_MUX_USB_ENABLED);
-	map = &tcss_port_map[port];
-	if (is_port_connected(map->usb3) == usb_enabled) {
+	if (is_port_connected(usb3) == usb_enabled) {
 		/*
 		 * The TCSS USB port mux state matches the observed
 		 * state of the Type-C USB port.
@@ -174,12 +167,12 @@ static int update_port_state(int port)
 		return 0;
 	}
 
-	debug("port C%d state: usb enable %d mux conn %d\n",
-	      port, usb_enabled, is_port_connected(map->usb3));
+	debug("port C%d state: usb enable %d mux conn %d, usb2 %u, usb3 %u\n",
+	      ec_port, usb_enabled, is_port_connected(usb3), usb2, usb3);
 
-	r = cros_ec_get_usb_pd_control(port, &ufp, &dbg_acc);
+	r = cros_ec_get_usb_pd_control(ec_port, &ufp, &dbg_acc);
 	if (r < 0) {
-		error("port C%d: pd_control failed\n", port);
+		error("port C%d: pd_control failed\n", ec_port);
 		return -1;
 	}
 
@@ -192,8 +185,8 @@ static int update_port_state(int port)
 	if (usb_enabled) {
 		cmd = tcss_make_cmd(
 			TCSS_CONN_REQ_RES,
-			map->usb3 + 1,
-			map->usb2,
+			usb3 + 1,
+			usb2,
 			!!ufp,
 			!!(mux_state & USB_PD_MUX_POLARITY_INVERTED),
 			!!(mux_state & USB_PD_MUX_POLARITY_INVERTED),
@@ -201,8 +194,8 @@ static int update_port_state(int port)
 	} else {
 		cmd = tcss_make_cmd(
 			TCSS_DISC_REQ_RES,
-			map->usb3 + 1,
-			map->usb2,
+			usb3 + 1,
+			usb2,
 			0,
 			0,
 			0,
@@ -212,7 +205,7 @@ static int update_port_state(int port)
 
 	debug("port C%d req: usage %d usb3 %d usb2 %d "
 	      "ufp %d ori_hsl %d ori_sbu %d dbg_acc %d\n",
-	      port,
+	      ec_port,
 	      GET_TCSS_CD_FIELD(USAGE, cmd),
 	      GET_TCSS_CD_FIELD(USB3, cmd),
 	      GET_TCSS_CD_FIELD(USB2, cmd),
@@ -228,14 +221,15 @@ static void soc_usb_mux_poll(void)
 {
 	static uint64_t last_us = 0;
 	uint64_t now_us;
-	int i;
+	TcssPort *port;
 
 	now_us = timer_us(0);
 	if (now_us < last_us + MUX_POLL_PERIOD_US)
 		return;
 	last_us = now_us;
-	for (i = 0; i < tcss_port_count; i++)
-		update_port_state(i);
+
+	list_for_each(port, tcss_ports, list_node)
+		update_port_state(port);
 }
 
 /*
@@ -244,8 +238,6 @@ static void soc_usb_mux_poll(void)
  */
 void soc_usb_mux_init(void)
 {
-	tcss_port_count = board_tcss_get_port_mapping(&tcss_port_map);
-
 	soc_usb_mux_poll();
 	mdelay(100);		/* TODO(b/157721366): why is this needed */
 }
@@ -257,4 +249,31 @@ void soc_usb_mux_init(void)
 void usb_poll_prepare(void)
 {
 	soc_usb_mux_poll();
+}
+
+void register_tcss_ctrlr(const TcssCtrlr *tcss_ctrlr)
+{
+	ctrlr = tcss_ctrlr;
+}
+
+TcssPort *new_tcss_port(unsigned int usb2_port_num, unsigned int usb3_port_num,
+			unsigned int ec_port)
+{
+	TcssPort *port = xzalloc(sizeof(*port));
+	port->usb2_port = usb2_port_num;
+	port->usb3_port = usb3_port_num;
+	port->ec_port = ec_port;
+
+	return port;
+}
+
+void register_tcss_ports(const struct tcss_map *map, size_t num_ports)
+{
+	for (size_t i = 0; i < num_ports; i++) {
+		TcssPort *port = new_tcss_port(map[i].usb2_port,
+					       map[i].usb3_port,
+					       map[i].ec_port);
+
+		list_insert_after(&port->list_node, &tcss_ports);
+	}
 }

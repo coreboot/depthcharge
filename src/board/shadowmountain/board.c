@@ -67,18 +67,10 @@
 #define USBC_PORT_1_USB2_NUM	CONFIG_SHADOWMOUNTAIN_USBC_PORT_1_USB2_NUM
 #define USBC_PORT_1_USB3_NUM	CONFIG_SHADOWMOUNTAIN_USBC_PORT_1_USB3_NUM
 
-static const struct tcss_port_map typec_map[] = {
-	[0] = { USBC_PORT_0_USB3_NUM, USBC_PORT_0_USB2_NUM },
-	[1] = { USBC_PORT_1_USB3_NUM, USBC_PORT_1_USB2_NUM },
+static const struct tcss_map typec_map[] = {
+	{ USBC_PORT_0_USB2_NUM, USBC_PORT_0_USB3_NUM, 0 },
+	{ USBC_PORT_1_USB2_NUM, USBC_PORT_1_USB3_NUM, 1 },
 };
-
-int board_tcss_get_port_mapping(const struct tcss_port_map **map)
-{
-	if (map)
-		*map = typec_map;
-
-	return ARRAY_SIZE(typec_map);
-}
 
 static int cr50_irq_status(void)
 {
@@ -164,6 +156,9 @@ static int board_setup(void)
 	/* SATA AHCI */
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 0x17, 0));
 	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
+
+	/* TCSS ports */
+	register_tcss_ports(typec_map, ARRAY_SIZE(typec_map));
 
 	return 0;
 }

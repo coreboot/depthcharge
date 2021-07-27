@@ -12,6 +12,7 @@
  * GNU General Public License for more details.
  */
 
+#include "base/init_funcs.h"
 #include "drivers/soc/common/iomap.h"
 #include "drivers/soc/intel_common.h"
 #include "drivers/soc/tigerlake.h"
@@ -28,13 +29,18 @@ int tigerlake_get_gpe(int gpe)
 	return soc_get_gpe(gpe, &cfg);
 }
 
-static TcssConfig tcss_cfg = {
+static const TcssCtrlr tgl_tcss_ctrlr = {
 	.regbar = 0xfb000000,
 	.iom_pid = 0xc1,
 	.iom_status_offset = 0x560
 };
 
-const TcssConfig *platform_get_tcss_config(void)
+static int register_tcss(void)
 {
-	return &tcss_cfg;
+	if (CONFIG(DRIVER_USB_INTEL_TCSS))
+		register_tcss_ctrlr(&tgl_tcss_ctrlr);
+
+	return 0;
 }
+
+INIT_FUNC(register_tcss);

@@ -51,8 +51,6 @@
 #define AUD_I2C_ADDR1 0x70
 #define AUD_I2C_ADDR2 0x72
 
-
-
 /*
  * Each USB Type-C port consists of a TCP (USB3) and a USB2 port from
  * the SoC. This table captures the mapping.
@@ -60,30 +58,11 @@
  * SoC USB2 ports are numbered 1..10
  * SoC TCP (USB3) ports are numbered 0..3
  */
-#define USBC_PORT_0_USB2_NUM    1
-#define USBC_PORT_0_USB3_NUM    0
-
-#define USBC_PORT_1_USB2_NUM    2
-#define USBC_PORT_1_USB3_NUM    1
-
-#define USBC_PORT_2_USB2_NUM    3
-#define USBC_PORT_2_USB3_NUM    2
-
-static const struct tcss_port_map typec_map[] = {
-	[0] = { USBC_PORT_0_USB3_NUM, USBC_PORT_0_USB2_NUM },
-	[1] = { USBC_PORT_1_USB3_NUM, USBC_PORT_1_USB2_NUM },
-	[2] = { USBC_PORT_2_USB3_NUM, USBC_PORT_2_USB2_NUM },
+static const struct tcss_map typec_map[] = {
+	{ .usb2_port = 1, .usb3_port = 0, .ec_port = 0 },
+	{ .usb2_port = 2, .usb3_port = 1, .ec_port = 1 },
+	{ .usb2_port = 3, .usb3_port = 2, .ec_port = 2 },
 };
-
-int board_tcss_get_port_mapping(const struct tcss_port_map **map)
-{
-	if (map) {
-		*map = typec_map;
-		return ARRAY_SIZE(typec_map);
-	}
-
-	return 0;
-}
 
 static int cr50_irq_status(void)
 {
@@ -170,6 +149,9 @@ static int board_setup(void)
 	/* NVME SSD */
 	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x1d, 0));
 	list_insert_after(&nvme->ctrlr.list_node, &fixed_block_dev_controllers);
+
+	/* TCSS ports */
+	register_tcss_ports(typec_map, ARRAY_SIZE(typec_map));
 
 	return 0;
 }
