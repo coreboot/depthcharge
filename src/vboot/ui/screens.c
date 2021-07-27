@@ -162,6 +162,7 @@ static const struct ui_screen_info firmware_sync_screen = {
 static vb2_error_t draw_language_select(const struct ui_state *state,
 					const struct ui_state *prev_state)
 {
+	vb2_error_t rv;
 	int id;
 	const int reverse = state->locale->rtl;
 	uint32_t num_lang;
@@ -173,6 +174,7 @@ static vb2_error_t draw_language_select(const struct ui_state *state,
 	const uint32_t flags = PIVOT_H_LEFT | PIVOT_V_CENTER;
 	int focused;
 	const struct ui_locale *locale;
+	const struct rgb_color *bg_color, *fg_color;
 	struct ui_bitmap bitmap;
 
 	/*
@@ -239,11 +241,11 @@ static vb2_error_t draw_language_select(const struct ui_state *state,
 	y = y_begin;
 	for (id = id_begin; id < id_end; id++) {
 		focused = id == locale_id;
+		bg_color = focused ? &ui_color_button : &ui_color_lang_menu_bg;
+		fg_color = focused ? &ui_color_lang_menu_bg : &ui_color_fg;
 		/* Solid box */
 		VB2_TRY(ui_draw_rounded_box(x_begin, y, box_width, box_height,
-					    focused ? &ui_color_button :
-					    &ui_color_lang_menu_bg,
-					    0, 0, reverse));
+					    bg_color, 0, 0, reverse));
 		/* Separator between languages */
 		if (id > id_begin)
 			/* TODO(b/160249415): Reduce redraw of separator */
@@ -253,11 +255,24 @@ static vb2_error_t draw_language_select(const struct ui_state *state,
 		/* Text */
 		y_center = y + box_height / 2;
 		VB2_TRY(ui_get_locale_info(id, &locale));
-		VB2_TRY(ui_get_language_name_bitmap(locale->code, 0, focused,
-						    &bitmap));
-		VB2_TRY(ui_draw_bitmap(&bitmap, x, y_center,
-				       UI_SIZE_AUTO, UI_LANG_MENU_TEXT_HEIGHT,
-				       flags, reverse));
+		rv = ui_get_language_name_bitmap(locale->code, &bitmap);
+		if (rv == VB2_SUCCESS) {
+			VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,
+						      UI_SIZE_AUTO,
+						      UI_LANG_MENU_TEXT_HEIGHT,
+						      bg_color, fg_color,
+						      flags, reverse));
+		} else if (rv == VB2_ERROR_UI_MISSING_IMAGE) {
+			VB2_TRY(ui_get_language_name_old_bitmap(locale->code, 0,
+								focused,
+								&bitmap));
+			VB2_TRY(ui_draw_bitmap(&bitmap, x, y_center,
+					       UI_SIZE_AUTO,
+					       UI_LANG_MENU_TEXT_HEIGHT,
+					       flags, reverse));
+		} else {
+			return rv;
+		}
 		y += box_height;
 	}
 

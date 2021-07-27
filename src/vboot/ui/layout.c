@@ -24,6 +24,7 @@
 vb2_error_t ui_draw_language_header(const struct ui_locale *locale,
 				    const struct ui_state *state, int focused)
 {
+	vb2_error_t rv;
 	int32_t x, y, y_center, w;
 	const int reverse = state->locale->rtl;
 	const int32_t box_width = UI_LANG_ICON_GLOBE_SIZE +
@@ -49,10 +50,21 @@ vb2_error_t ui_draw_language_header(const struct ui_locale *locale,
 	x += w + UI_LANG_ICON_MARGIN_H;
 
 	/* Draw language text */
-	VB2_TRY(ui_get_language_name_bitmap(locale->code, 1, 0, &bitmap));
-	VB2_TRY(ui_draw_bitmap(&bitmap, x, y_center,
-			       UI_SIZE_AUTO, UI_LANG_TEXT_HEIGHT,
-			       flags, reverse));
+	rv = ui_get_language_name_bitmap(locale->code, &bitmap);
+	if (rv == VB2_SUCCESS) {
+		VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,
+					      UI_SIZE_AUTO, UI_LANG_TEXT_HEIGHT,
+					      &ui_color_lang_header_bg,
+					      &ui_color_fg, flags, reverse));
+	} else if (rv == VB2_ERROR_UI_MISSING_IMAGE) {
+		VB2_TRY(ui_get_language_name_old_bitmap(locale->code, 1, 0,
+							&bitmap));
+		VB2_TRY(ui_draw_bitmap(&bitmap, x, y_center,
+				       UI_SIZE_AUTO, UI_LANG_TEXT_HEIGHT,
+				       flags, reverse));
+	} else {
+		return rv;
+	}
 	x += UI_LANG_TEXT_WIDTH;
 
 	/* Draw dropdown arrow */

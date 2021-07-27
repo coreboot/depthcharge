@@ -374,15 +374,27 @@ vb2_error_t ui_get_bitmap(const char *image_name, const char *locale_code,
  * Get bitmap of language name.
  *
  * @param locale_code	Language code of locale.
+ * @param bitmap	Bitmap struct to be filled.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_get_language_name_bitmap(const char *locale_code,
+					struct ui_bitmap *bitmap);
+
+/*
+ * Get old bitmap of language name. This is needed to work with RO version with
+ * old language name bitmaps. See b/176942478.
+ *
+ * @param locale_code	Language code of locale.
  * @param for_header	1 for dropdown header and 0 for dropdown menu content.
  * @param focused	1 for focused and 0 for non-focused.
  * @param bitmap	Bitmap struct to be filled.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t ui_get_language_name_bitmap(const char *locale_code,
-					int for_header, int focused,
-					struct ui_bitmap *bitmap);
+vb2_error_t ui_get_language_name_old_bitmap(const char *locale_code,
+					    int for_header, int focused,
+					    struct ui_bitmap *bitmap);
 
 /*
  * Get character bitmap.
