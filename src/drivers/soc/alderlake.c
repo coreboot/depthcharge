@@ -12,6 +12,7 @@
  * GNU General Public License for more details.
  */
 
+#include "base/init_funcs.h"
 #include "drivers/soc/alderlake.h"
 #include "drivers/soc/common/iomap.h"
 #include "drivers/soc/intel_common.h"
@@ -26,3 +27,19 @@ int alderlake_get_gpe(int gpe)
 {
 	return soc_get_gpe(gpe, &cfg);
 }
+
+static const TcssCtrlr adl_tcss_ctrlr = {
+	.regbar = 0xfb000000,
+	.iom_pid = 0xc1,
+	.iom_status_offset = 0x160
+};
+
+static int register_tcss(void)
+{
+	if (CONFIG(DRIVER_USB_INTEL_TCSS))
+		register_tcss_ctrlr(&adl_tcss_ctrlr);
+
+	return 0;
+}
+
+INIT_FUNC(register_tcss);

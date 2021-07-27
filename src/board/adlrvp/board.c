@@ -27,6 +27,13 @@
 #include <libpayload.h>
 #include <sysinfo.h>
 
+static const struct tcss_map typec_map[] = {
+	{ .usb2_port = 1, .usb3_port = 0, .ec_port = 0 },
+	{ .usb2_port = 2, .usb3_port = 1, .ec_port = 1 },
+	{ .usb2_port = 3, .usb3_port = 2, .ec_port = 2 },
+	{ .usb2_port = 5, .usb3_port = 3, .ec_port = 3 },
+};
+
 static int cr50_irq_status(void)
 {
 	/* FIX ME: Confirm H1_PCH_INT_L PIN GPE */
@@ -96,6 +103,10 @@ static int board_setup(void)
 	secondary_bus = pci_read_config8(PCH_DEV_PCIE8, REG_SECONDARY_BUS);
 	NvmeCtrlr *nvme_5 = new_nvme_ctrlr(PCI_DEV(secondary_bus, 0, 0));
 	list_insert_after(&nvme_5->ctrlr.list_node, &fixed_block_dev_controllers);
+
+	/* TCSS ports */
+	if (CONFIG(DRIVER_EC_CROS))
+		register_tcss_ports(typec_map, ARRAY_SIZE(typec_map));
 
 	return 0;
 }
