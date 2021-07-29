@@ -12,9 +12,15 @@
 
 #define MAX_CODEC	4
 
+enum audio_bus_type {
+	AUDIO_I2S,
+	AUDIO_SNDW,
+};
+
 enum audio_codec_type {
 	AUDIO_CODEC_NONE,
 	AUDIO_MAX98357,
+	AUDIO_MAX98373,
 	AUDIO_MAX98390,
 };
 
@@ -24,14 +30,20 @@ enum audio_amp_type {
 };
 
 struct audio_bus {
-	struct {
-		size_t address;
-	struct {
-		unsigned int pad;
-		bool active_low;
-	} enable_gpio;
-	const I2sSettings *settings;
-	} i2s;
+	enum audio_bus_type type;
+	union {
+		struct {
+			size_t address;
+			struct {
+				unsigned int pad;
+				bool active_low;
+			} enable_gpio;
+			const I2sSettings *settings;
+		} i2s;
+		struct {
+			unsigned int link;
+		} sndw;
+	};
 };
 
 struct audio_amp {
