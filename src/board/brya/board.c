@@ -19,8 +19,6 @@
 #include "drivers/gpio/gpio.h"
 #include "drivers/power/pch.h"
 #include "drivers/soc/alderlake.h"
-#include "drivers/storage/blockdev.h"
-#include "drivers/storage/nvme.h"
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include <libpayload.h>
@@ -31,6 +29,17 @@
 #define I2C_FS_HZ	400000
 
 #define SSP_PORT_SPKR	2
+
+__weak const struct storage_config *variant_get_storage_configs(size_t *count)
+{
+	static const struct storage_config storage_configs[] = {
+		{ .media = STORAGE_NVME, .pci_dev = PCH_DEV_PCIE8 },
+		{ .media = STORAGE_SDHCI, .pci_dev = PCH_DEV_PCIE7 },
+	};
+
+	*count = ARRAY_SIZE(storage_configs);
+	return storage_configs;
+}
 
 static int cr50_irq_status(void)
 {
@@ -56,17 +65,7 @@ static void tpm_setup(void)
 		TPM_I2C3,
 		I2C_FS_HZ, ALDERLAKE_DW_I2C_MHZ);
 	tpm_set_ops(&new_cr50_i2c(&i2c3->ops, TPM_I2C_ADDR,
-				  &cr50_irq_status)->base.ops);}
-
-static void fixed_storage_setup(void)
-{
-	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x1d, 0));
-	list_insert_after(&nvme->ctrlr.list_node, &fixed_block_dev_controllers);
-}
-
-static void removable_storage_setup(void)
-{
-	/* e.g., SD initialization would go here */
+				  &cr50_irq_status)->base.ops);
 }
 
 static void audio_setup(void)
@@ -87,8 +86,6 @@ static int board_setup(void)
 	ec_setup();
 	tpm_setup();
 	power_set_ops(&alderlake_power_ops);
-	fixed_storage_setup();
-	removable_storage_setup();
 	audio_setup();
 	tcss_setup();
 

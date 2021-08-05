@@ -8,6 +8,7 @@
 #include "board/brya/include/variant.h"
 #include "drivers/bus/usb/intel_tcss.h"
 #include "drivers/gpio/alderlake.h"
+#include "drivers/soc/alderlake.h"
 
 const struct audio_config *variant_probe_audio_config(void)
 {

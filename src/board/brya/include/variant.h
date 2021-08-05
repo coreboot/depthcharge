@@ -52,8 +52,19 @@ struct audio_config {
 	struct audio_codec codec;
 };
 
+enum storage_media {
+	STORAGE_NVME,
+	STORAGE_SDHCI,
+};
+
+struct storage_config {
+	enum storage_media media;
+	pcidev_t pci_dev;
+};
+
 const struct tcss_map *variant_get_tcss_map(size_t *count);
 const struct audio_config *variant_probe_audio_config(void);
+const struct storage_config *variant_get_storage_configs(size_t *count);
 
 void brya_configure_audio(const struct audio_config *config);
 
