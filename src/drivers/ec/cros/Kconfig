@@ -38,3 +38,8 @@ config CROS_EC_PROBE_AUX_FW_INFO
 	bool "Enable support to probe EC for auxfw chip info"
 	default n
 	depends on DRIVER_EC_CROS
+
+config CROS_EC_ENABLE_MEC
+	bool "Enable MEC instead of GENERIC LPC Interface"
+	default n
+	depends on DRIVER_EC_CROS_LPC

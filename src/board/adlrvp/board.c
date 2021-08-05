@@ -109,8 +109,16 @@ static int board_setup(void)
 
 	/* Chrome EC (eSPI) */
 	if (CONFIG(DRIVER_EC_CROS_LPC)) {
-		CrosEcLpcBus *cros_ec_lpc_bus =
-				new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
+		CrosEcLpcBus *cros_ec_lpc_bus;
+		if (CONFIG(CROS_EC_ENABLE_MEC)) {
+			cros_ec_lpc_bus =
+					new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_MEC);
+		}
+		else {
+			cros_ec_lpc_bus =
+					new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
+		}
+	
 		CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);
 		register_vboot_ec(&cros_ec->vboot);
 	}
