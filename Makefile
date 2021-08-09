@@ -79,7 +79,8 @@ run_kconfig_tool = KCONFIG_CONFIG="$(KCONFIG_CONFIG)" $(1)
 
 ifneq ($(UNIT_TEST),1)
 _ := $(shell $(call run_kconfig_tool, \
-	genconfig --config-out "$(KCONFIG_CONFIG_OUT)" "$(KCONFIG_FILE)"))
+	genconfig --header-path "$(KCONFIG_AUTOHEADER).unused" \
+	--config-out "$(KCONFIG_CONFIG_OUT)" "$(KCONFIG_FILE)"))
 _ := $(shell $(call run_kconfig_tool, \
 	"$(src)/util/autoheader.py" --header-path "$(KCONFIG_AUTOHEADER)" \
 	"$(KCONFIG_FILE)"))
