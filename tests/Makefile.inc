@@ -183,7 +183,7 @@ $(LIBPAYLOAD_KCONFIG_AUTOHEADER): $(LIBPAYLOAD_DOTCONFIG)
 	+$(MAKE) $(LIBPAYLOAD_KCONFIG_FLAGS) -C $(libpayloadsrc) \
 		obj=$(libpayloadobj) olddefconfig
 	+$(MAKE) $(LIBPAYLOAD_KCONFIG_FLAGS) -C $(libpayloadsrc) \
-		obj=$(libpayloadobj) silentoldconfig
+		obj=$(libpayloadobj) oldconfig
 
 $(LIBPAYLOAD_LIB): $(LIBPAYLOAD_KCONFIG_AUTOHEADER)
 	@printf "    MAKE       $(subst $(obj)/,,$(@))\n"
