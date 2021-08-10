@@ -15,7 +15,6 @@
  * GNU General Public License for more details.
  */
 
-#include <arch/msr.h>
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
@@ -31,6 +30,7 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/fch.h"
 #include "drivers/soc/picasso.h"
+#include "drivers/sound/amd_i2s_support.h"
 #include "drivers/sound/gpio_i2s.h"
 #include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/rt1015.h"
@@ -47,10 +47,6 @@
 #include "drivers/bus/usb/usb.h"
 #include "pci.h"
 #include "vboot/util/flag.h"
-
-/* ACP Device */
-#define AMD_PCI_VID		0x1022
-#define AMD_FAM17H_ACP_PCI_DID	0x15E2
 
 /* SD Controllers */
 #define BH720_PCI_VID		0x1217
@@ -69,14 +65,6 @@
 /* Clock frequencies */
 #define MCLK			4800000
 #define LRCLK			8000
-
-/* Core boost register */
-#define HW_CONFIG_REG 0xc0010015
-#define   HW_CONFIG_CPBDIS (1 << 25)
-
-/* ACP pin control registers */
-#define ACP_I2S_PIN_CONFIG              0x1400
-#define ACP_PAD_PULLUP_PULLDOWN_CTRL    0x1404
 
 /* cr50's interrupt is attached to GPIO_3 */
 #define CR50_INT		3
@@ -114,44 +102,6 @@ static int zork_backlight_update(DisplayOps *me, uint8_t enable)
 static DisplayOps zork_display_ops = {
 	.backlight_update = &zork_backlight_update,
 };
-
-static int (*gpio_i2s_play)(struct SoundOps *me, uint32_t msec,
-		uint32_t frequency);
-
-static int amd_gpio_i2s_play(struct SoundOps *me, uint32_t msec,
-		uint32_t frequency)
-{
-	int ret;
-	uint32_t pin_config, pad_ctrl;
-	uint64_t cur;
-	pcidev_t pci_dev;
-	uintptr_t acp_base;
-
-	if (pci_find_device(AMD_PCI_VID, AMD_FAM17H_ACP_PCI_DID, &pci_dev))
-		acp_base = pci_read_config32(pci_dev, PCI_BASE_ADDRESS_0);
-	else
-		return -1;
-
-	cur = _rdmsr(HW_CONFIG_REG);
-	pin_config = read32((void *)(acp_base + ACP_I2S_PIN_CONFIG));
-	pad_ctrl = read32((void *)(acp_base + ACP_PAD_PULLUP_PULLDOWN_CTRL));
-
-	/* Disable Core Boost while bit-banging I2S */
-	_wrmsr(HW_CONFIG_REG, cur | HW_CONFIG_CPBDIS);
-	/* tri-state ACP pins */
-	write32((void *)(acp_base + ACP_I2S_PIN_CONFIG), 7);
-	write32((void *)(acp_base + ACP_PAD_PULLUP_PULLDOWN_CTRL), 0);
-
-	ret = gpio_i2s_play(me, msec, frequency);
-
-	/* Restore previous Core Boost setting */
-	_wrmsr(HW_CONFIG_REG, cur);
-	/* Restore ACP reg settings */
-	write32((void *)(acp_base + ACP_I2S_PIN_CONFIG), pin_config);
-	write32((void *)(acp_base + ACP_PAD_PULLUP_PULLDOWN_CTRL), pad_ctrl);
-
-	return ret;
-}
 
 static int is_dalboz(void)
 {
@@ -228,12 +178,6 @@ static void audio_setup(CrosEc *cros_ec)
 	list_insert_after(&rt5682->component.list_node,
 			  &sound_route->components);
 
-	/*
-	 * Override gpio_i2s play() op with our own that disbles CPU boost
-	 * before GPIO bit-banging I2S.
-	 */
-	gpio_i2s_play = i2s->ops.play;
-	i2s->ops.play = amd_gpio_i2s_play;
 	if (is_vilboz() && !gets_audio_amp_type_config()) {
 		/* Codec for RT1015 work with Zork */
 		rt1015Codec *speaker_amp = new_rt1015_codec(
@@ -251,6 +195,10 @@ static void audio_setup(CrosEc *cros_ec)
 				  &sound_route->components);
 
 	}
+
+	amdI2sSupport *amdI2s = new_amd_i2s_support();
+	list_insert_after(&amdI2s->component.list_node,
+			  &sound_route->components);
 
 	sound_set_ops(&sound_route->ops);
 }

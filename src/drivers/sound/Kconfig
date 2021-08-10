@@ -10,6 +10,10 @@
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
 
+config DRIVER_SOUND_AMD_I2S_SUPPORT
+	bool "AMD I2S support"
+	default n
+
 config DRIVER_SOUND_GPIO_AMP
 	bool "An amplifier controlled by GPIO value"
 	default n
