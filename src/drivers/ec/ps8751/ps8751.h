@@ -49,6 +49,9 @@ typedef struct Ps8751
 
 	uint8_t last_a16_a23;	/* cached flash window addr bits */
 	uint8_t last_a8_a15;	/* cached flash window addr bits */
+
+	size_t fw_start;	/* selected FW start addr in flash */
+	size_t fw_end;		/* selected FW end addr in flash */
 } Ps8751;
 
 Ps8751 *new_ps8751(CrosECTunnelI2c *bus, int ec_pd_id);

@@ -156,14 +156,14 @@
 #define PARADE_CHIPVERSION_OFFSET	0x503a
 
 #if (PS8751_DEBUG >= 2)
-#define PARADE_FW_START		0x38000
+#define PARADE_BASE_FW_START	0x38000
 #else
-#define PARADE_FW_START		0x30000
+#define PARADE_BASE_FW_START	0x30000
 #endif
-#define PARADE_FW_END		0x40000
-#define PARADE_FW_SECTOR	 0x1000		/* erase sector size */
+#define PARADE_BASE_FW_END	0x40000
+#define PARADE_FW_SECTOR	0x01000		/* erase sector size */
 
-#define PARADE_TEST_FW_SIZE	0x1000
+#define PARADE_TEST_FW_SIZE	0x01000
 
 #define PARADE_VENDOR_ID		0x1DA0
 #define PARADE_PS8751_PRODUCT_ID	0x8751
@@ -1525,13 +1525,13 @@ static int ps8751_reflash(Ps8751 *me, const uint8_t *data, size_t data_size)
 {
 	int status;
 
-	debug("data %8p len %zu\n", data, data_size);
+	debug("data %8p len %zu fw_start 0x%06zx\n",
+	      data, data_size, me->fw_start);
 
 	if (PS8751_DEBUG >= 2)
-		ps8751_dump_flash(me, PARADE_FW_START,
-				  PARADE_FW_END - PARADE_FW_START);
+		ps8751_dump_flash(me, me->fw_start, me->fw_end - me->fw_start);
 
-	status = ps8751_erase(me, PARADE_FW_START, data_size);
+	status = ps8751_erase(me, me->fw_start, data_size);
 	if (status != 0) {
 		printf("%s: FW erase failed\n", me->chip_name);
 		return -1;
@@ -1540,7 +1540,7 @@ static int ps8751_reflash(Ps8751 *me, const uint8_t *data, size_t data_size)
 	 * quick confidence check to see if we modified flash
 	 * we'll do a full verify after programming
 	 */
-	status = ps8751_verify(me, PARADE_FW_START,
+	status = ps8751_verify(me, me->fw_start,
 			       erased_bytes,
 			       MIN(data_size, sizeof(erased_bytes)));
 	if (status != 0) {
@@ -1555,19 +1555,19 @@ static int ps8751_reflash(Ps8751 *me, const uint8_t *data, size_t data_size)
 	}
 
 	if (PS8751_DEBUG >= 2)
-		ps8751_dump_flash(me, PARADE_FW_START,
-				  PARADE_FW_END - PARADE_FW_START);
-	status = ps8751_program(me, PARADE_FW_START, data, data_size);
+		ps8751_dump_flash(me, me->fw_start,
+				  me->fw_end - me->fw_start);
+	status = ps8751_program(me, me->fw_start, data, data_size);
 	if (PS8751_DEBUG >= 2)
-		ps8751_dump_flash(me, PARADE_FW_START, PARADE_TEST_FW_SIZE);
+		ps8751_dump_flash(me, me->fw_start, PARADE_TEST_FW_SIZE);
 	if (status != 0) {
 		printf("%s: FW program failed\n", me->chip_name);
 		return -1;
 	}
 
-	if (ps8751_verify(me, PARADE_FW_START, data, data_size) != 0) {
+	if (ps8751_verify(me, me->fw_start, data, data_size) != 0) {
 		if (PS8751_DEBUG > 0)
-			ps8751_dump_flash(me, PARADE_FW_START, data_size);
+			ps8751_dump_flash(me, me->fw_start, data_size);
 		return -1;
 	}
 
@@ -1662,6 +1662,9 @@ static vb2_error_t ps8751_update_image(const VbootAuxfwOps *vbaux,
 	int timeout;
 
 	debug("call...\n");
+
+	me->fw_start = PARADE_BASE_FW_START;
+	me->fw_end = PARADE_BASE_FW_END;
 
 	/* If the I2C tunnel is not known, probe EC for that */
 	if (!me->bus && ps8751_construct_i2c_tunnel(me)) {
