@@ -20,13 +20,51 @@
 #include "drivers/storage/mtk_mmc_private.h"
 #include "drivers/storage/mtk_mmc.h"
 
+#define PAD_DELAY_MAX 32
+
+struct msdc_delay_phase {
+	u8 maxlen;
+	u8 start;
+	u8 final_phase;
+};
+
+static const u8 tuning_blk_pattern_4bit[] = {
+	0xff, 0x0f, 0xff, 0x00, 0xff, 0xcc, 0xc3, 0xcc,
+	0xc3, 0x3c, 0xcc, 0xff, 0xfe, 0xff, 0xfe, 0xef,
+	0xff, 0xdf, 0xff, 0xdd, 0xff, 0xfb, 0xff, 0xfb,
+	0xbf, 0xff, 0x7f, 0xff, 0x77, 0xf7, 0xbd, 0xef,
+	0xff, 0xf0, 0xff, 0xf0, 0x0f, 0xfc, 0xcc, 0x3c,
+	0xcc, 0x33, 0xcc, 0xcf, 0xff, 0xef, 0xff, 0xee,
+	0xff, 0xfd, 0xff, 0xfd, 0xdf, 0xff, 0xbf, 0xff,
+	0xbb, 0xff, 0xf7, 0xff, 0xf7, 0x7f, 0x7b, 0xde,
+};
+
+static const u8 tuning_blk_pattern_8bit[] = {
+	0xff, 0xff, 0x00, 0xff, 0xff, 0xff, 0x00, 0x00,
+	0xff, 0xff, 0xcc, 0xcc, 0xcc, 0x33, 0xcc, 0xcc,
+	0xcc, 0x33, 0x33, 0xcc, 0xcc, 0xcc, 0xff, 0xff,
+	0xff, 0xee, 0xff, 0xff, 0xff, 0xee, 0xee, 0xff,
+	0xff, 0xff, 0xdd, 0xff, 0xff, 0xff, 0xdd, 0xdd,
+	0xff, 0xff, 0xff, 0xbb, 0xff, 0xff, 0xff, 0xbb,
+	0xbb, 0xff, 0xff, 0xff, 0x77, 0xff, 0xff, 0xff,
+	0x77, 0x77, 0xff, 0x77, 0xbb, 0xdd, 0xee, 0xff,
+	0xff, 0xff, 0xff, 0x00, 0xff, 0xff, 0xff, 0x00,
+	0x00, 0xff, 0xff, 0xcc, 0xcc, 0xcc, 0x33, 0xcc,
+	0xcc, 0xcc, 0x33, 0x33, 0xcc, 0xcc, 0xcc, 0xff,
+	0xff, 0xff, 0xee, 0xff, 0xff, 0xff, 0xee, 0xee,
+	0xff, 0xff, 0xff, 0xdd, 0xff, 0xff, 0xff, 0xdd,
+	0xdd, 0xff, 0xff, 0xff, 0xbb, 0xff, 0xff, 0xff,
+	0xbb, 0xbb, 0xff, 0xff, 0xff, 0x77, 0xff, 0xff,
+	0xff, 0x77, 0x77, 0xff, 0x77, 0xbb, 0xdd, 0xee,
+};
+
 enum {
 	/* For card identification, and also the highest low-speed SDOI card */
 	/* frequency (actually 400Khz). */
 	MtkMmcMinFreq = 375 * KHz,
 
-	/* Highest HS eMMC clock as per the SD/MMC spec (actually 52MHz). */
-	MtkMmcMaxFreq = 50 * MHz,
+	/* Highest HS eMMC clock as per the SD/MMC spec. */
+	MtkMmcMaxFreq = 200 * MHz,
 
 	MtkMmcVoltages = (MMC_VDD_32_33 | MMC_VDD_33_34),
 };
@@ -298,6 +336,8 @@ static int mtk_mmc_send_cmd_bounced(MmcCtrlr *ctrlr, MmcCommand *cmd,
 	int ret = 0;
 	u32 rawcmd;
 	u32 ints;
+	int cmd_err = 0;
+
 	mmc_debug("%s called\n", __func__);
 
 	ret = sdc_wait_ready(host, cmd, data);
@@ -312,7 +352,11 @@ static int mtk_mmc_send_cmd_bounced(MmcCtrlr *ctrlr, MmcCommand *cmd,
 
 	ret = mtk_mmc_cmd_do_poll(host, cmd);
 	if (ret < 0) {
-		return ret;
+		if (cmd->cmdidx == MMC_SEND_TUNING_BLOCK_HS200 &&
+		    ret == MMC_COMM_ERR)
+			cmd_err = MMC_COMM_ERR;
+		else
+			return ret;
 	}
 
 	if (data) {
@@ -328,7 +372,7 @@ static int mtk_mmc_send_cmd_bounced(MmcCtrlr *ctrlr, MmcCommand *cmd,
 		mtk_mmc_dma_stop(host);
 
 		if (ints & MSDC_INT_XFER_COMPL) {
-			return 0;
+			return cmd_err;
 		} else {
 			if (ints & MSDC_INT_DATTMO)
 				mmc_error("Data timeout, ints: %x\n", ints);
@@ -340,7 +384,7 @@ static int mtk_mmc_send_cmd_bounced(MmcCtrlr *ctrlr, MmcCommand *cmd,
 
 	mmc_debug("cmd->arg: %08x\n", cmd->cmdarg);
 
-	return 0;
+	return cmd_err;
 }
 
 static int mtk_mmc_send_cmd(MmcCtrlr *ctrlr, MmcCommand *cmd, MmcData *data)
@@ -384,6 +428,187 @@ static void mtk_mmc_set_ios(MmcCtrlr *ctrlr)
 	mtk_mmc_set_buswidth(host, ctrlr->bus_width);
 }
 
+static int get_delay_len(u32 delay, u32 start_bit)
+{
+	int i;
+
+	for (i = 0; i < PAD_DELAY_MAX - start_bit; i++) {
+		if (!(delay & BIT(start_bit + i)))
+			break;
+	}
+	return i;
+}
+
+static struct msdc_delay_phase get_best_delay(MtkMmcHost *host, u32 delay)
+{
+	int start = 0, len = 0;
+	int start_final = 0, len_final = 0;
+	u8 final_phase;
+	struct msdc_delay_phase delay_phase = { 0 };
+
+	if (delay == 0) {
+		mmc_error("phase error: [map:%x]\n", delay);
+		delay_phase.final_phase = 0xff;
+		return delay_phase;
+	}
+
+	while (start < PAD_DELAY_MAX) {
+		len = get_delay_len(delay, start);
+		if (len_final < len) {
+			start_final = start;
+			len_final = len;
+		}
+		start += len ? len : 1;
+		if (len_final >= 12 && start_final < 4)
+			break;
+	}
+
+	/* The goal is to find the smallest delay cell */
+	if (start_final == 0)
+		final_phase = (start_final + len_final / 3) % PAD_DELAY_MAX;
+	else
+		final_phase = (start_final + len_final / 2) % PAD_DELAY_MAX;
+	printf("phase: [map:%x] [maxlen:%d] [final:%d]\n",
+	       delay, len_final, final_phase);
+
+	delay_phase.maxlen = len_final;
+	delay_phase.start = start_final;
+	delay_phase.final_phase = final_phase;
+	return delay_phase;
+}
+
+static inline void msdc_set_cmd_delay(MtkMmcHost *host, u32 val)
+{
+	MtkMmcTopReg *top_reg = host->top_reg;
+	MtkMmcReg *reg = host->reg;
+
+	if (top_reg)
+		clrsetbits_le32(&top_reg->emmc_top_cmd, PAD_CMD_RXDLY,
+				val << 5);
+	else
+		clrsetbits_le32(&reg->pad_tune, MSDC_PAD_TUNE_CMDRDLY,
+				val << 16);
+}
+
+static inline void msdc_set_data_delay(MtkMmcHost *host, u32 val)
+{
+	MtkMmcTopReg *top_reg = host->top_reg;
+	MtkMmcReg *reg = host->reg;
+
+	if (top_reg)
+		clrsetbits_le32(&top_reg->emmc_top_control, PAD_DAT_RD_RXDLY,
+				val << 7);
+	else
+		clrsetbits_le32(&reg->pad_tune, MSDC_PAD_TUNE_DATRRDLY,
+				val << 8);
+}
+
+static int mtk_mmc_send_tuning(MmcCtrlr *ctrlr, u32 opcode)
+{
+	int ret;
+	char *buf;
+	const u8 *tuning_block_pattern;
+	MmcCommand cmd = {
+		.cmdidx = opcode,
+		.resp_type = MMC_RSP_R1,
+		.cmdarg = 0,
+		.flags = 0,
+	};
+
+	MmcData data;
+	data.blocks = 1;
+	switch (ctrlr->bus_width) {
+	case 4:
+		data.blocksize = sizeof(tuning_blk_pattern_4bit);
+		tuning_block_pattern = tuning_blk_pattern_4bit;
+		break;
+	case 8:
+		data.blocksize = sizeof(tuning_blk_pattern_8bit);
+		tuning_block_pattern = tuning_blk_pattern_8bit;
+		break;
+	default:
+		mmc_error("Unsupported bus width: %d\n", ctrlr->bus_width);
+		return MMC_SUPPORT_ERR;
+	}
+	buf = xmalloc(data.blocksize);
+	data.dest = buf;
+	data.flags = MMC_DATA_READ;
+
+	ret = mtk_mmc_send_cmd(ctrlr, &cmd, &data);
+	if (ret)
+		goto out;
+
+	if (memcmp(buf, tuning_block_pattern, data.blocksize))
+		ret = -1;
+
+out:
+	free(buf);
+	return ret;
+}
+
+static u32 mtk_mmc_tuning_together(MmcCtrlr *ctrlr)
+{
+	MtkMmcHost *host = container_of(ctrlr, MtkMmcHost, mmc);
+	u32 delay = 0;
+	int i, ret;
+
+	for (i = 0; i < PAD_DELAY_MAX; i++) {
+		msdc_set_cmd_delay(host, i);
+		msdc_set_data_delay(host, i);
+		ret = mtk_mmc_send_tuning(ctrlr, MMC_SEND_TUNING_BLOCK_HS200);
+		if (!ret)
+			delay |= BIT(i);
+	}
+
+	return delay;
+}
+
+static int mtk_mmc_execute_tuning(MmcMedia *media)
+{
+	MmcCtrlr *ctrlr = media->ctrlr;
+	MtkMmcHost *host = container_of(ctrlr, MtkMmcHost, mmc);
+	MtkMmcReg *reg = host->reg;
+	u32 rise_delay = 0, fall_delay = 0;
+	struct msdc_delay_phase final_rise_delay, final_fall_delay = { 0 };
+	u8 final_delay;
+
+	clrbits_le32(&reg->msdc_iocon, MSDC_IOCON_RSPL);
+	clrbits_le32(&reg->msdc_iocon, MSDC_IOCON_DSPL);
+	clrbits_le32(&reg->msdc_iocon, MSDC_IOCON_W_DSPL);
+
+	rise_delay = mtk_mmc_tuning_together(ctrlr);
+	final_rise_delay = get_best_delay(host, rise_delay);
+	/* if rising edge has enough margin, then do not scan falling edge */
+	if (final_rise_delay.maxlen >= 12 ||
+	    (final_rise_delay.start == 0 && final_rise_delay.maxlen >= 4))
+		goto skip_fall;
+
+	setbits_le32(&reg->msdc_iocon, MSDC_IOCON_RSPL);
+	setbits_le32(&reg->msdc_iocon, MSDC_IOCON_DSPL);
+	setbits_le32(&reg->msdc_iocon, MSDC_IOCON_W_DSPL);
+	fall_delay = mtk_mmc_tuning_together(ctrlr);
+	final_fall_delay = get_best_delay(host, fall_delay);
+
+skip_fall:
+	if (final_rise_delay.maxlen >= final_fall_delay.maxlen) {
+		clrbits_le32(&reg->msdc_iocon, MSDC_IOCON_RSPL);
+		clrbits_le32(&reg->msdc_iocon, MSDC_IOCON_DSPL);
+		clrbits_le32(&reg->msdc_iocon, MSDC_IOCON_W_DSPL);
+		final_delay = final_rise_delay.final_phase;
+	} else {
+		setbits_le32(&reg->msdc_iocon, MSDC_IOCON_RSPL);
+		setbits_le32(&reg->msdc_iocon, MSDC_IOCON_DSPL);
+		setbits_le32(&reg->msdc_iocon, MSDC_IOCON_W_DSPL);
+		final_delay = final_fall_delay.final_phase;
+	}
+
+	msdc_set_cmd_delay(host, final_delay);
+	msdc_set_data_delay(host, final_delay);
+
+	printf("Final pad delay: %x\n", final_delay);
+	return final_delay == 0xff ? MMC_COMM_ERR : 0;
+}
+
 static void mtk_mmc_reset_hw(MtkMmcHost *host)
 {
 	MtkMmcReg *reg = host->reg;
@@ -402,6 +627,7 @@ static int mtk_mmc_init(BlockDevCtrlrOps *me)
 {
 	MtkMmcHost *host = container_of(me, MtkMmcHost, mmc.ctrlr.ops);
 	MtkMmcReg *reg = host->reg;
+	MtkMmcTopReg *top_reg = host->top_reg;
 	MtkMmcTuneReg tune_reg = host->tune_reg;
 	mmc_debug("%s called\n", __func__);
 
@@ -420,6 +646,51 @@ static int mtk_mmc_init(BlockDevCtrlrOps *me)
 	clrsetbits_le32(&reg->sdc_cfg, SDC_CFG_DTOC, DEFAULT_DTOC << 24);
 	write32(&reg->msdc_iocon, tune_reg.msdc_iocon);
 	write32(&reg->pad_tune, tune_reg.pad_tune);
+
+	if (host->version == MTK_MMC_V2) {
+		write32(&reg->msdc_iocon, 0);
+		write32(&reg->patch_bit0, 0x403c0446);
+		write32(&reg->patch_bit1, 0xffff4089);
+		setbits_le32(&reg->emmc50_cfg0, EMMC50_CFG_CFCSTS_SEL);
+
+		if (top_reg) {
+			write32(&top_reg->emmc_top_control, 0);
+			write32(&top_reg->emmc_top_cmd, 0);
+		} else {
+			write32(&reg->pad_tune0, 0);
+		}
+
+		/* Stop clk fix */
+		clrsetbits_le32(&reg->patch_bit1, MSDC_PATCH_BIT1_STOP_DLY,
+				3 << 8);
+		clrbits_le32(&reg->sdc_fifo_cfg, SDC_FIFO_CFG_WRVALIDSEL);
+		clrbits_le32(&reg->sdc_fifo_cfg, SDC_FIFO_CFG_RDVALIDSEL);
+
+		/* Async fifo */
+		clrsetbits_le32(&reg->patch_bit2, MSDC_PB2_RESPWAIT, 3 << 2);
+		clrbits_le32(&reg->patch_bit2, MSDC_PATCH_BIT2_CFGRESP);
+		setbits_le32(&reg->patch_bit2, MSDC_PATCH_BIT2_CFGCRCSTS);
+
+		/* Enhance rx */
+		if (top_reg)
+			setbits_le32(&top_reg->emmc_top_control, SDC_RX_ENH_EN);
+		else
+			setbits_le32(&reg->sdc_adv_cfg0, SDC_RX_ENHANCE_EN);
+
+		/* Tune data */
+		if (top_reg) {
+			setbits_le32(&top_reg->emmc_top_control,
+				     PAD_DAT_RD_RXDLY_SEL);
+			clrbits_le32(&top_reg->emmc_top_control,
+				     DATA_K_VALUE_SEL);
+			setbits_le32(&top_reg->emmc_top_cmd,
+				     PAD_CMD_RD_RXDLY_SEL);
+		} else {
+			setbits_le32(&reg->pad_tune0, MSDC_PAD_TUNE_RD_SEL);
+			setbits_le32(&reg->pad_tune0, MSDC_PAD_TUNE_CMD_SEL);
+		}
+	}
+
 	mtk_mmc_set_buswidth(host, 1);
 
 	return 0;
@@ -475,9 +746,11 @@ static int mtk_mmc_update(BlockDevCtrlrOps *me)
 	return 0;
 }
 
-MtkMmcHost *new_mtk_mmc_host(uintptr_t ioaddr, uint32_t src_hz, uint32_t max_freq,
-			     MtkMmcTuneReg tune_reg, int bus_width, int removable,
-			     GpioOps *card_detect, MtkMmcIpVersion version)
+MtkMmcHost *new_mtk_mmc_host(uintptr_t ioaddr, uintptr_t top_ioaddr,
+			     uint32_t src_hz, uint32_t max_freq,
+			     MtkMmcTuneReg tune_reg, int bus_width,
+			     int removable, GpioOps *card_detect,
+			     MtkMmcIpVersion version)
 {
 	MtkMmcHost *ctrlr = xzalloc(sizeof(*ctrlr));
 
@@ -505,13 +778,17 @@ MtkMmcHost *new_mtk_mmc_host(uintptr_t ioaddr, uint32_t src_hz, uint32_t max_fre
 		ctrlr->mmc.caps &= ~MMC_CAPS_8BIT;
 	}
 	ctrlr->mmc.caps |= MMC_CAPS_HS | MMC_CAPS_HS_52MHz | MMC_CAPS_HC;
+	if (max_freq > 100 * MHz && !removable)
+		ctrlr->mmc.caps |= MMC_CAPS_HS200;
 	ctrlr->mmc.send_cmd = &mtk_mmc_send_cmd;
 	ctrlr->mmc.set_ios = &mtk_mmc_set_ios;
+	ctrlr->mmc.execute_tuning = &mtk_mmc_execute_tuning;
 	ctrlr->mmc.slot_type =
 		removable ? MMC_SLOT_TYPE_REMOVABLE : MMC_SLOT_TYPE_EMBEDDED;
 
 	ctrlr->src_hz = src_hz;
 	ctrlr->reg = (MtkMmcReg *)ioaddr;
+	ctrlr->top_reg = (MtkMmcTopReg *)top_ioaddr;
 	ctrlr->cd_gpio = card_detect;
 	ctrlr->version = version;
 

@@ -44,7 +44,8 @@ typedef struct {
 	uint32_t sdc_csts;
 	uint32_t sdc_csts_en;
 	uint32_t sdc_datcrc_sts;
-	uint8_t reserve2[0x0c];
+	uint32_t sdc_adv_cfg0;
+	uint8_t reserve2[0x08];
 	uint32_t emmc_cfg0;
 	uint32_t emmc_cfg1;
 	uint32_t emmc_sts;
@@ -63,15 +64,22 @@ typedef struct {
 	uint32_t reserve4;
 	uint32_t patch_bit0;
 	uint32_t patch_bit1;
-	uint8_t reserve5[0x34];
+	uint32_t patch_bit2;
+	uint8_t reserve5[0x30];
 	uint32_t pad_tune;
-	uint32_t dat_rd_dly0;
-	uint32_t dat_rd_dly1;
-	uint32_t hw_dbg_sel;
-	uint32_t dummy10;
-	uint32_t main_ver;
-	uint32_t eco_ver;
+	uint32_t pad_tune0;
+	uint8_t reserve6[0x114];
+	uint32_t emmc50_cfg0;
+	uint8_t reserve7[0x1c];
+	uint32_t sdc_fifo_cfg;
 } MtkMmcReg;
+
+typedef struct {
+	uint32_t emmc_top_control;
+	uint32_t emmc_top_cmd;
+	uint32_t emmc50_pad_ctl0;
+	uint32_t emmc50_pad_ds_tune;
+} MtkMmcTopReg;
 
 typedef enum {
 	MTK_MMC_V1,
@@ -87,6 +95,7 @@ typedef struct {
 	MmcCtrlr mmc;
 
 	MtkMmcReg *reg;
+	MtkMmcTopReg *top_reg;
 	MtkMmcTuneReg tune_reg;
 	uint32_t clock;         /* Current clock (MHz) */
 	uint32_t src_hz;        /* Source clock (hz) */
@@ -98,8 +107,9 @@ typedef struct {
 	MtkMmcIpVersion version;
 } MtkMmcHost;
 
-MtkMmcHost *new_mtk_mmc_host(uintptr_t ioaddr, uint32_t src_hz,
-			     uint32_t max_freq, MtkMmcTuneReg tune_reg,
-			     int bus_width, int removable, GpioOps *card_detect,
+MtkMmcHost *new_mtk_mmc_host(uintptr_t ioaddr, uintptr_t top_ioaddr,
+			     uint32_t src_hz, uint32_t max_freq,
+			     MtkMmcTuneReg tune_reg, int bus_width,
+			     int removable, GpioOps *card_detect,
 			     MtkMmcIpVersion version);
 #endif // __DRIVERS_STORAGE_MTK_MMC_H_

@@ -114,7 +114,7 @@ static int board_setup(void)
 		.pad_tune = 0x10 << 16
 	};
 	MtkMmcHost *emmc = new_mtk_mmc_host(
-		0x11230000, 400 * MHz, 50 * MHz, emmc_tune_reg, 8, 0, NULL,
+		0x11230000, 0x11f50000, 400 * MHz, 50 * MHz, emmc_tune_reg, 8, 0, NULL,
 		MTK_MMC_V2);
 
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
@@ -127,7 +127,7 @@ static int board_setup(void)
 	GpioOps *card_detect_ops = new_gpio_not(
 		new_mtk_gpio_input(GPIO_SD_CD_ODL));
 	MtkMmcHost *sd_card = new_mtk_mmc_host(
-		0x11240000, 200 * MHz, 25 * MHz, sd_card_tune_reg, 4, 1,
+		0x11240000, 0x11c70000, 200 * MHz, 25 * MHz, sd_card_tune_reg, 4, 1,
 		card_detect_ops, MTK_MMC_V2);
 
 	list_insert_after(&sd_card->mmc.ctrlr.list_node,

@@ -141,6 +141,11 @@ enum {
 };
 
 enum {
+	/* SDC_ADV_CFG0 mask */
+	SDC_RX_ENHANCE_EN	= (0x1 << 20),	/* RW */
+};
+
+enum {
 	/* EMMC_CFG0 mask */
 	EMMC_CFG0_BOOTSTART	= (0x1  << 0),	/* W */
 	EMMC_CFG0_BOOTSTOP	= (0x1  << 1),	/* W */
@@ -217,6 +222,17 @@ enum {
 	MSDC_PATCH_BIT1_WRDAT_CRCS	= (0x7 << 0),
 	MSDC_PATCH_BIT1_CMD_RSP		= (0x7 << 3),
 	MSDC_PATCH_BIT1_GET_CRC_MARGIN	= (0x01 << 7),	/* RW */
+	MSDC_PATCH_BIT1_STOP_DLY	= (0xf << 8),	/* RW */
+};
+
+enum {
+	/* MSDC_PATCH_BIT2 mask */
+	MSDC_PB2_SUPPORT_64G		= (0x1 << 1),	/* RW */
+	MSDC_PB2_RESPWAIT		= (0x3 << 2),	/* RW */
+	MSDC_PATCH_BIT2_CFGRESP		= (0x1 << 15),	/* RW */
+	MSDC_PB2_RESPSTSENSEL		= (0x1 << 16),	/* RW */
+	MSDC_PATCH_BIT2_CFGCRCSTS	= (0x1 << 28),	/* RW */
+	MSDC_PB2_CRCSTSENSEL		= (0x1 << 29),	/* RW */
 };
 
 enum {
@@ -262,7 +278,10 @@ enum {
 	/* MSDC_PAD_TUNE mask */
 	MSDC_PAD_TUNE_DATWRDLY	= (0x1F << 0),	/* RW */
 	MSDC_PAD_TUNE_DATRRDLY	= (0x1F << 8),	/* RW */
+	MSDC_PAD_TUNE_RD_SEL	= (0x1 << 13),	/* RW */
+	MSDC_PAD_TUNE_RXDLYSEL	= (0x1 << 15),	/* RW */
 	MSDC_PAD_TUNE_CMDRDLY	= (0x1F << 16),	/* RW */
+	MSDC_PAD_TUNE_CMD_SEL	= (0x1 << 21),	/* RW */
 	MSDC_PAD_TUNE_CMDRRDLY	= (0x1FUL << 22),	/* RW */
 	MSDC_PAD_TUNE_CLKTXDLY	= (0x1FUL << 27),	/* RW */
 };
@@ -280,6 +299,38 @@ enum {
 	MSDC_DAT_RDDLY1_D6	= (0x1F << 8),	/* RW */
 	MSDC_DAT_RDDLY1_D5	= (0x1F << 16),	/* RW */
 	MSDC_DAT_RDDLY1_D4	= (0x1FUL << 24),	/* RW */
+};
+
+enum {
+	/* EMMC50_CFG0 mask */
+	EMMC50_CFG_CFCSTS_SEL	= (0x1 << 4),	/* RW */
+};
+
+enum {
+	/* SDC_FIFO_CFG mask */
+	SDC_FIFO_CFG_WRVALIDSEL	= (0x1 << 24),	/* RW */
+	SDC_FIFO_CFG_RDVALIDSEL	= (0x1 << 25),	/* RW */
+};
+
+enum {
+	/* EMMC_TOP_CONTROL mask */
+	PAD_RXDLY_SEL		= (0x1 << 0),	/* RW */
+	DELAY_EN		= (0x1 << 1),	/* RW */
+	PAD_DAT_RD_RXDLY2	= (0x1f << 2),	/* RW */
+	PAD_DAT_RD_RXDLY	= (0x1f << 7),	/* RW */
+	PAD_DAT_RD_RXDLY2_SEL	= (0x1 << 12),	/* RW */
+	PAD_DAT_RD_RXDLY_SEL	= (0x1 << 13),	/* RW */
+	DATA_K_VALUE_SEL	= (0x1 << 14),	/* RW */
+	SDC_RX_ENH_EN		= (0x1 << 15),	/* TW */
+};
+
+enum {
+	/* EMMC_TOP_CMD mask */
+	PAD_CMD_RXDLY2		= (0x1f << 0),	/* RW */
+	PAD_CMD_RXDLY		= (0x1f << 5),	/* RW */
+	PAD_CMD_RD_RXDLY2_SEL	= (0x1 << 10),	/* RW */
+	PAD_CMD_RD_RXDLY_SEL	= (0x1 << 11),	/* RW */
+	PAD_CMD_TX_DLY		= (0x1f << 12),	/* RW */
 };
 
 enum {
