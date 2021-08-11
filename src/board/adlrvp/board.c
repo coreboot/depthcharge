@@ -36,8 +36,10 @@
 static const struct tcss_map typec_map[] = {
 	{ .usb2_port = 1, .usb3_port = 0, .ec_port = 0 },
 	{ .usb2_port = 2, .usb3_port = 1, .ec_port = 1 },
+#if CONFIG_BOARD_ADLRVP_P
 	{ .usb2_port = 3, .usb3_port = 2, .ec_port = 2 },
 	{ .usb2_port = 5, .usb3_port = 3, .ec_port = 3 },
+#endif
 };
 
 #define AUD_VOLUME	4000
