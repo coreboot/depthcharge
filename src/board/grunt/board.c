@@ -74,6 +74,7 @@
 #define EC_I2C_PORT_PS8751	2
 
 int is_barla_alc5682(uint32_t id);
+int is_treeya_alc5682(uint32_t id);
 
 static int cr50_irq_status(void)
 {
@@ -123,7 +124,7 @@ static int amd_gpio_i2s_play(struct SoundOps *me, uint32_t msec,
 
 static void audio_setup(uint32_t skuid)
 {
-	if (!is_barla_alc5682(skuid)) {
+	if (!is_barla_alc5682(skuid) || !is_treeya_alc5682(skuid)) {
 		/* Setup da7219 on I2C0 */
 		DesignwareI2c *i2c0 = new_designware_i2c(AP_I2C0_ADDR, 400000,
 						 	 AP_I2C_CLK_MHZ);
@@ -220,6 +221,17 @@ int is_barla_alc5682(uint32_t id)
 	default:
 		return 0;
 
+	}
+}
+
+int is_treeya_alc5682(uint32_t id)
+{
+	switch(id) {
+	case 0xbe:
+	case 0xbf:
+		return 1;
+	default:
+		return 0;
 	}
 }
 
