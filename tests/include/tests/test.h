@@ -21,4 +21,23 @@
 #define _UINTPTR_T_DEFINED
 #include <cmocka.h>
 
+/*
+ * Set symbol value and make it global.
+ */
+#define TEST_SYMBOL(symbol, value) \
+	asm(".set " #symbol ", " #value "\n\t.globl " #symbol)
+
+/*
+ * Define memory region for testing purpose.
+ *
+ * Create buffer with specified name and size.
+ * Create end symbol for it.
+ */
+#define TEST_REGION(region, size) \
+	__weak extern uint8_t _##region[]; \
+	__weak extern uint8_t _e##region[]; \
+	uint8_t _##region[size]; \
+	TEST_SYMBOL(_e##region, _##region + size); \
+	TEST_SYMBOL(_##region##_size, size)
+
 #endif /* _TESTS_TEST_H */
