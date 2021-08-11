@@ -30,7 +30,6 @@ libpayloadobj = $(objext)/libpayload
 vbootobj = $(objext)/vboot
 
 LIBPAYLOAD_LIB = $(libpayloadobj)/libpayload.a
-LIBPAYLOAD_LIBC_LIB = $(libpayloadobj)/libc.a
 VBOOT_LIB = $(vbootobj)/vboot_fw.a
 TLCL_LIB = $(vbootobj)/tlcl.a
 
@@ -136,7 +135,13 @@ $$($(1)-tlcl): $(TLCL_LIB)
 	$(OBJCOPY) $$^ $$(foreach mock,$$($(1)-mocks), \
 		--globalize-symbol=$$(mock) --weaken-symbol=$$(mock)) $$@
 
-$($(1)-bin): $($(1)-objs) $(LIBPAYLOAD_LIB) $$($(1)-vboot) $$($(1)-tlcl) $(LIBPAYLOAD_LIBC_LIB)
+$(1)-libpayload := $(obj)/$(1)/$$(notdir $(LIBPAYLOAD_LIB))
+$$($(1)-libpayload): $(LIBPAYLOAD_LIB)
+	mkdir -p $$(dir $$@)
+	$(OBJCOPY) $$^ $$(foreach mock,$$($(1)-mocks), \
+		--globalize-symbol=$$(mock) --weaken-symbol=$$(mock)) $$@
+
+$($(1)-bin): $($(1)-objs) $$($(1)-vboot) $$($(1)-tlcl) $$($(1)-libpayload)
 	@printf "    CC       $$(subst $$(obj)/,,$$(@))\n"
 	mkdir -p $$(dir $$@)
 	$(HOSTCC) $$(TEST_LDFLAGS) -lcmocka $$^ \
@@ -195,8 +200,6 @@ $(LIBPAYLOAD_LIB): $(LIBPAYLOAD_KCONFIG_AUTOHEADER)
 $(LIBPAYLOAD_CONFIG): $(LIBPAYLOAD_KCONFIG_AUTOHEADER)
 	mkdir -p $(dir $@)
 	cp $< $@
-
-$(LIBPAYLOAD_LIBC_LIB): $(LIBPAYLOAD_LIB)
 
 # Build vboot
 $(VBOOT_LIB):
