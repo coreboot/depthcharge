@@ -22,32 +22,21 @@
 
 #define SDHCI_NAME_LENGTH 20
 
-#define GENESYS_PCI_VID 0x17a0
-#define GL9755S_PCI_DID 0x9755
-#define GL9750S_PCI_DID 0x9750
+#define PCI_CLASS_SYSTEM_PERIPHERAL		0x08
+#define PCI_SUBCLASS_SD_HOST_CONTROLLER		0x05
+#define PCI_SDHCI_PROG_IF_DMA			0x01
 
-static const struct sdhci_pci_match {
-	u16 vendor_id;
-	u16 device_id;
-	unsigned int quirks;
-} sdhci_pci_table[] = {
-	{GENESYS_PCI_VID, GL9755S_PCI_DID},
-	{GENESYS_PCI_VID, GL9750S_PCI_DID},
-};
+#define SDHCI_NAME_LENGTH			20
 
-static const struct sdhci_pci_match *sdhci_find_match(pcidev_t dev)
+static bool is_sdhci_ctrlr(pcidev_t dev)
 {
-	u16 vendor_id = pci_read_config16(dev, REG_VENDOR_ID);
-	u16 device_id = pci_read_config16(dev, REG_DEVICE_ID);
+	const uint8_t class = pci_read_config8(dev, REG_CLASS);
+	const uint8_t subclass = pci_read_config8(dev, REG_SUBCLASS);
+	const uint8_t prog_if = pci_read_config8(dev, REG_PROG_IF);
 
-	for (unsigned int i = 0; i < ARRAY_SIZE(sdhci_pci_table); ++i) {
-		const struct sdhci_pci_match *match = &sdhci_pci_table[i];
-		if (match->vendor_id == vendor_id &&
-		    match->device_id == device_id)
-			return match;
-	}
-
-	return NULL;
+	return class == PCI_CLASS_SYSTEM_PERIPHERAL &&
+		subclass == PCI_SUBCLASS_SD_HOST_CONTROLLER &&
+		prog_if == PCI_SDHCI_PROG_IF_DMA;
 }
 
 static int is_pci_bridge(pcidev_t dev)
@@ -109,7 +98,6 @@ static int sdhci_pci_init(BlockDevCtrlrOps *me) {
 	SdhciHost *host = &pci_host->host;
 	BlockDevCtrlr *block_ctrlr = &host->mmc_ctrlr.ctrlr;
 	pcidev_t dev = pci_host->dev;
-	const struct sdhci_pci_match *match;
 	uintptr_t bar;
 
 	if (is_pci_bridge(dev)) {
@@ -118,8 +106,7 @@ static int sdhci_pci_init(BlockDevCtrlrOps *me) {
 		dev = PCI_DEV(bus, 0, 0);
 	}
 
-	match = sdhci_find_match(dev);
-	if (!match) {
+	if (!is_sdhci_ctrlr(dev)) {
 		printf("No known SDHCI device found at %d:%d.%d", PCI_BUS(dev),
 		       PCI_SLOT(dev), PCI_FUNC(dev));
 		block_ctrlr->ops.update = NULL;
@@ -127,8 +114,8 @@ static int sdhci_pci_init(BlockDevCtrlrOps *me) {
 		return -1;
 	}
 
-	printf("Found SDHCI %hx:%hx at %d:%d.%d\n", match->vendor_id,
-	       match->device_id, PCI_BUS(dev), PCI_SLOT(dev), PCI_FUNC(dev));
+	printf("Found SDHCI at %d:%d.%d\n", PCI_BUS(dev), PCI_SLOT(dev),
+	       PCI_FUNC(dev));
 
 	if (get_pci_bar(dev, &bar)) {
 		printf("Failed to get BAR for PCI SDHCI %d:%d.%d", PCI_BUS(dev),
@@ -138,9 +125,7 @@ static int sdhci_pci_init(BlockDevCtrlrOps *me) {
 		return -1;
 	}
 
-	host->quirks |= match->quirks;
 	host->ioaddr = (void *)bar;
-
 	host->name = xzalloc(SDHCI_NAME_LENGTH);
 
 	snprintf(host->name, SDHCI_NAME_LENGTH, "PCI SDHCI %d:%d.%d",
