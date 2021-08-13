@@ -196,10 +196,10 @@ static DisplayOps grunt_display_ops = {
 
 int is_treeya(uint32_t id)
 {
-	if ((id < 0xa0) || (id > 0xaf))
-		return 0;
-	else
+	if (((id >= 0xa0) && (id <= 0xaf)) || ((id >= 0xb8) && (id <= 0xbf)))
 		return 1;
+	else
+		return 0;
 }
 
 int is_nuwani(uint32_t id)
@@ -256,7 +256,8 @@ static int board_setup(void)
 
 	/* Treeya variant use anx3447 which do not have on board OCM and does
 	 * not support firmware update. Treeya && Treeya360 sku id range is:
-	 * 0xa0 - 0xaf. Nuwani and Nuwani360 sku id range is: 0xd0 - 0xdf
+	 * 0xa0 - 0xaf & 0xb8 - 0xbf.
+	 * Nuwani and Nuwani360 sku id range is: 0xd0 - 0xdf
 	 */
 	if (!is_treeya(lib_sysinfo.sku_id) && !is_nuwani(lib_sysinfo.sku_id)) {
 		cros_ec_i2c_tunnel =
