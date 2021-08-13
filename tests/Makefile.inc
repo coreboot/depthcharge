@@ -101,6 +101,9 @@ copy-test = $(foreach attr,$(attributes), \
 $(call add-special-class, tests)
 $(call evaluate_subdirs)
 
+default_mocks-srcs := tests/mocks/halt.c
+default_mocks := halt
+
 # Create actual targets for unit test binaries
 # $1 - test name
 #
@@ -118,6 +121,8 @@ $$($(1)-config-file):
 		printf '#undef %s\n' "$$$$key" >> $$@; \
 		printf '#define %s %s\n\n' "$$$$key" "$$$$value" >> $$@; \
 	done
+
+$(1)-mocks += $(default_mocks)
 
 # Weaken symbols listed as mocks to enable overriding in the code
 $($(1)-srcobjs): OBJCOPY_FLAGS += $$(foreach mock,$$($(1)-mocks), \
@@ -177,7 +182,7 @@ $(foreach test, $(alltests), \
 	$(eval $(test)-objs := $(addprefix $(obj)/$(test)/, \
 		$(patsubst %.c,%.o,$($(test)-srcs))))\
 	$(eval $(test)-objs += $(addprefix $(obj)/$(test)/, \
-		$(patsubst %.c,%.o,tests/stubs/die.c tests/stubs/heap.c))))
+		$(patsubst %.c,%.o,tests/stubs/heap.c $(default_mocks-srcs)))))
 $(foreach test, $(alltests), \
 	$(eval $(test)-bin := $(obj)/$(test)/run))
 $(foreach test, $(alltests), \

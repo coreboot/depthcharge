@@ -21,6 +21,9 @@
 #define _UINTPTR_T_DEFINED
 #include <cmocka.h>
 
+/* Ensure that die()/halt() is called. */
+#define expect_die(expression) expect_assert_failure(expression)
+
 /*
  * Set symbol value and make it global.
  */
