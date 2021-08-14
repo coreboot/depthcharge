@@ -40,6 +40,14 @@
 #define PAGE_2		(0x14 >> 1)
 #define PAGE_3		(0x16 >> 1)	/* primary TCPCI registers */
 
+#define P0_ROM_CTRL		0xef
+#define P0_ROM_CTRL_LOAD_DONE	0xc0	/* MTP load done */
+
+#define P1_CHIP_REV_LO		0xf0	/* the 0x03 in "A3" */
+#define P1_CHIP_REV_HI		0xf1	/* the 0x0a in "A3" */
+#define P1_CHIP_ID_LO		0xf2	/* 0x51, etc. */
+#define P1_CHIP_ID_HI		0xf3	/* 0x87, 0x88 */
+
 #define PS8751_P1_SPI_WP	0x4b
 /* NOTE: on 8751 A3 silicon, P1_SPI_WP_EN reads back inverted! */
 #define PS8751_P1_SPI_WP_EN	0x10	/* WP enable bit */
@@ -52,14 +60,6 @@
 #define PS8815_P2_SPI_WP	0x2a
 #define PS8815_P2_SPI_WP_EN	0x00	/* WP enable "bit" */
 #define PS8815_P2_SPI_WP_DIS	0x10	/* WP disable bit */
-
-#define P0_ROM_CTRL		0xef
-#define P0_ROM_CTRL_LOAD_DONE	0xc0	/* MTP load done */
-
-#define P1_CHIP_REV_LO		0xf0	/* the 0x03 in "A3" */
-#define P1_CHIP_REV_HI		0xf1	/* the 0x0a in "A3" */
-#define P1_CHIP_ID_LO		0xf2	/* 0x50 */
-#define P1_CHIP_ID_HI		0xf3	/* 0x87 */
 
 #define P2_ALERT_LOW		0x10
 #define P2_ALERT_HIGH		0x11
