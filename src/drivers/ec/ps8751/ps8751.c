@@ -1398,7 +1398,13 @@ static int ps8751_reflash(Ps8751 *me, const uint8_t *data, size_t data_size)
 		return -1;
 	}
 
-	return ps8751_verify(me, PARADE_FW_START, data, data_size);
+	if (ps8751_verify(me, PARADE_FW_START, data, data_size) != 0) {
+		if (PS8751_DEBUG > 0)
+			ps8751_dump_flash(me, PARADE_FW_START, data_size);
+		return -1;
+	}
+
+	return 0;
 }
 
 /*
