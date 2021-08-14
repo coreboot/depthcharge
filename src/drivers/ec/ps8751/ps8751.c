@@ -1236,65 +1236,55 @@ static int __must_check ps8751_program(Ps8751 *me,
 	uint32_t data_offset;
 	uint64_t t0_us;
 	int chunk;
-	int chunk_mods;
 	int bytes_skipped = 0;
+	int status = 0;
 
 	printf("%s: programming %uKB...\n", me->chip_name, data_size >> 10);
+
+	ps8751_flash_window_start(me);
+	if (ps8751_flash_window_write_enable(me) < 0)
+		return -1;
 
 	t0_us = timer_us(0);
 	for (data_offset = 0;
 	     data_offset < data_size;
 	     data_offset += chunk) {
-		chunk = MIN(PS_FW_WR_CHUNK, data_size - data_offset);
-		/* clip at flash page boundary */
-		int page_offset = (fw_start + data_offset) & SPI_PAGE_MASK;
-		chunk = MIN(chunk, SPI_PAGE_SIZE - page_offset);
+		int skips;
 
-		/* any changes in this chunk? */
-		chunk_mods = 0;
-		for (int i = 0; i < chunk; ++i) {
-			if (data[data_offset + i] != 0xff) {
-				++chunk_mods;
+		chunk = MIN(PS_FW_I2C_IO_CHUNK, data_size - data_offset);
+
+		/* skip leading 0xff bytes and potentially the entire chunk */
+		for (skips = 0; skips < chunk; ++skips) {
+			if (data[data_offset + skips] != 0xff)
 				break;
-			}
 		}
-		if (chunk_mods == 0) {
-			bytes_skipped += chunk;
+		bytes_skipped += skips;
+
+		if (skips == chunk)
 			continue;
-		}
 
-		if (ps8751_spi_cmd_enable_writes(me) != 0)
-			return -1;
+		data_offset += skips;
+		chunk -= skips;
 
-		if (ps8751_spi_setup_cmd24(me,
-					   SPI_CMD_PROG_PAGE,
-					   fw_start + data_offset) != 0) {
-			return -1;
+		chunk = ps8751_flash_window_write(me,
+					data + data_offset, chunk,
+					fw_start + data_offset);
+		if (chunk < 0) {
+			status = -1;
+			break;
 		}
-		for (int i = 0; i < chunk; ++i) {
-			if (write_reg(me, PAGE_2,
-				      P2_WR_FIFO, data[data_offset + i]) != 0)
-				return -1;
-		}
-
-		const I2cWriteVec wr[] = {
-			{ P2_SPI_LEN, (4 + chunk - 1) },
-			{ P2_SPI_CTRL,
-			  P2_SPI_CTRL_NOREAD|P2_SPI_CTRL_TRIGGER },
-		};
-		if (write_regs(me, PAGE_2, wr, ARRAY_SIZE(wr)) != 0)
-			return -1;
-		if (ps8751_spi_fifo_wait_busy(me) != 0)
-			return -1;
-		if (ps8751_spi_wait_rom_ready(me) != 0)
-			return -1;
 	}
-	printf("%s: programmed %uKB in %us (%uB skipped)\n",
+
+	printf("%s: programmed %uKB in %ums (%uB skipped)\n",
 	       me->chip_name,
 	       data_size >> 10,
-	       (unsigned int)USEC_TO_SEC(timer_us(t0_us)),
+	       (unsigned int)USEC_TO_MSEC(timer_us(t0_us)),
 	       bytes_skipped);
-	return 0;
+
+	if (ps8751_flash_window_write_disable(me) < 0)
+		return -1;
+
+	return status;
 }
 
 /**
@@ -1313,10 +1303,12 @@ static int __must_check ps8751_verify(Ps8751 *me,
 				      const uint8_t * const data,
 				      const size_t data_size)
 {
-	uint8_t readback;
+	uint8_t rd_block[PS_FW_I2C_WINDOW_SIZE];
 	uint64_t t0_us;
 	uint32_t data_offset;
 	int chunk;
+
+	ps8751_flash_window_start(me);
 
 	debug("offset 0x%06x size %zu\n", fw_addr, data_size);
 
@@ -1324,39 +1316,28 @@ static int __must_check ps8751_verify(Ps8751 *me,
 	for (data_offset = 0;
 	     data_offset < data_size;
 	     data_offset += chunk) {
-		chunk = MIN(PS_FW_RD_CHUNK, data_size - data_offset);
+		const uint32_t a24 = fw_addr + data_offset;
 
-		if (ps8751_spi_setup_cmd24(me, SPI_CMD_READ_DATA,
-					   fw_addr + data_offset) != 0) {
+		chunk = MIN(sizeof(rd_block), data_size - data_offset);
+		chunk = ps8751_flash_window_read(me, rd_block, chunk, a24);
+		if (chunk < 0)
 			return -1;
-		}
 
-		const I2cWriteVec rd[] = {
-			{ P2_SPI_LEN,
-			  ((chunk - 1) << 4) | (4 - 1) },
-			{ P2_SPI_CTRL, P2_SPI_CTRL_TRIGGER },
-		};
-		if (write_regs(me, PAGE_2, rd, ARRAY_SIZE(rd)) != 0)
-			return -1;
-		if (ps8751_spi_fifo_wait_busy(me) != 0)
-			return -1;
 		for (int i = 0; i < chunk; ++i) {
-			if (read_reg(me, PAGE_2, P2_RD_FIFO, &readback) != 0)
-				return -1;
-			if (readback != data[data_offset + i]) {
+			if (rd_block[i] != data[data_offset + i]) {
 				printf("%s: mismatch at offset 0x%06x "
 				       "0x%02x != 0x%02x (expected)\n",
 				       me->chip_name,
-				       fw_addr + data_offset + i,
-				       readback, data[data_offset + i]);
+				       a24 + i,
+				       rd_block[i], data[data_offset + i]);
 				return -1;
 			}
 		}
 	}
-	printf("%s: verified %zuKB in %us\n",
+	printf("%s: verified %zuKB in %ums\n",
 	       me->chip_name,
 	       data_size >> 10,
-	       (unsigned)USEC_TO_SEC(timer_us(t0_us)));
+	       (unsigned int)USEC_TO_MSEC(timer_us(t0_us)));
 	return 0;
 }
 
@@ -1444,34 +1425,24 @@ static void ps8751_dump_flash(Ps8751 *me,
 	printf("================================"
 	       "================================\n{\n");
 
+	ps8751_flash_window_start(me);
+
 	for (offset = offset_start;
 	     offset < offset_end;
 	     offset += sizeof(buf)) {
-		/* construct a SPI read PS_FW_CHUNK bytes @ offset command */
-		if (ps8751_spi_setup_cmd24(me,
-					   SPI_CMD_READ_DATA, offset) != 0) {
-			debug("could not set up addr\n");
-			break;
-		}
+		size_t chunk;
+		ssize_t cc;
 
-		static const I2cWriteVec trig[] = {
-			{ P2_SPI_LEN,
-			  ((PS_FW_RD_CHUNK - 1) << 4) | (4 - 1) },
-			{ P2_SPI_CTRL, P2_SPI_CTRL_TRIGGER },
-		};
-		if (write_regs(me, PAGE_2, trig, ARRAY_SIZE(trig)) != 0) {
-			debug("could not issue SPI_CTRL\n");
-			break;
+		for (chunk = 0; chunk < sizeof(buf); chunk += cc) {
+			cc = ps8751_flash_window_read(me,
+					buf + chunk, sizeof(buf) - chunk,
+					offset + chunk);
+			if (cc < 0) {
+				printf("%s: flash window read failed!\n",
+				       me->chip_name);
+				return;
+			}
 		}
-		if (ps8751_spi_fifo_wait_busy(me) != 0)
-			return;
-
-		for (i = 0; i < sizeof(buf); ++i) {
-			if (read_reg(me, PAGE_2, P2_RD_FIFO, &buf[i]) != 0)
-				break;
-		}
-		if (i != sizeof(buf))
-			break;
 
 		if (offset > offset_start &&
 		    memcmp(buf, prev_buf, sizeof(buf)) == 0) {
@@ -1623,6 +1594,8 @@ static int ps8751_halt_and_flash(Ps8751 *me,
 	if (ps8751_spi_flash_unlock(me) != 0)
 		goto enable_mpu;
 	debug("unlock_spi_bus returned\n");
+	if (ps8751_flash_window_enable(me) != 0)
+		goto enable_mpu;
 	if (ps8751_spi_flash_identify(me) == 0 &&
 	    ps8751_reflash(me, image, image_size) == 0)
 		status = 0;
