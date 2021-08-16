@@ -192,7 +192,7 @@ static void test_loop_shutdown_if_requested(void **state)
 	will_return_always(VbExKeyboardReadWithFlags, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	WILL_SHUTDOWN_IN(10);
-	EXPECT_DISPLAY_UI(MOCK_SCREEN_BASE, MOCK_IGNORE, MOCK_IGNORE);
+	EXPECT_DISPLAY_UI(MOCK_SCREEN_BASE);
 
 	assert_int_equal(ui_loop(ui->ctx, MOCK_SCREEN_BASE, NULL),
 			 VB2_REQUEST_SHUTDOWN);
@@ -239,7 +239,7 @@ static void test_loop_global_action_can_change_screen(void **state)
 	will_return_always(VbExKeyboardReadWithFlags, 0);
 	WILL_SHUTDOWN_IN(10);
 	EXPECT_DISPLAY_UI_ANY();
-	EXPECT_DISPLAY_UI(MOCK_SCREEN_BASE, MOCK_IGNORE, MOCK_IGNORE);
+	EXPECT_DISPLAY_UI(MOCK_SCREEN_BASE);
 
 	assert_int_equal(
 		ui_loop(ui->ctx, MOCK_SCREEN_BLANK, mock_action_screen_change),
@@ -324,7 +324,7 @@ static void test_loop_navigation(void **state)
 	EXPECT_DISPLAY_UI(MOCK_SCREEN_MENU, MOCK_IGNORE, 4);
 	EXPECT_DISPLAY_UI(MOCK_SCREEN_MENU, MOCK_IGNORE, 3);
 	EXPECT_DISPLAY_UI(MOCK_SCREEN_MENU, MOCK_IGNORE, 2);
-	EXPECT_DISPLAY_UI(MOCK_SCREEN_TARGET2, MOCK_IGNORE, MOCK_IGNORE);
+	EXPECT_DISPLAY_UI(MOCK_SCREEN_TARGET2);
 
 	assert_int_equal(ui_loop(ui->ctx, MOCK_SCREEN_MENU, NULL),
 			 VB2_REQUEST_SHUTDOWN);
@@ -360,7 +360,7 @@ static void test_loop_detachable_navigation(void **state)
 	EXPECT_DISPLAY_UI(MOCK_SCREEN_MENU, MOCK_IGNORE, 4);
 	EXPECT_DISPLAY_UI(MOCK_SCREEN_MENU, MOCK_IGNORE, 3);
 	EXPECT_DISPLAY_UI(MOCK_SCREEN_MENU, MOCK_IGNORE, 2);
-	EXPECT_DISPLAY_UI(MOCK_SCREEN_TARGET2, MOCK_IGNORE, MOCK_IGNORE);
+	EXPECT_DISPLAY_UI(MOCK_SCREEN_TARGET2);
 
 	assert_int_equal(ui_loop(ui->ctx, MOCK_SCREEN_MENU, NULL),
 			 VB2_REQUEST_SHUTDOWN);

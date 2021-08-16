@@ -43,5 +43,8 @@ vb2_error_t vb2ex_display_ui(enum vb2_screen screen, uint32_t locale_id,
 	check_expected(screen);
 	check_expected(locale_id);
 	check_expected(selected_item);
+	check_expected(disabled_item_mask);
+	check_expected(hidden_item_mask);
+	check_expected(current_page);
 	return VB2_SUCCESS;
 }
