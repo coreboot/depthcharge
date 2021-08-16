@@ -62,6 +62,12 @@
 	.action = ui_screen_back,		\
 })
 
+#define NEXT_ITEM(target_screen) ((struct ui_menu_item){	\
+	.name = "Next",						\
+	.file = "btn_next.bmp",					\
+	.target = (target_screen),				\
+})
+
 #define ADVANCED_OPTIONS_ITEM ((struct ui_menu_item){	\
 	.name = "Advanced options",			\
 	.file = "btn_adv_options.bmp",			\
@@ -644,24 +650,138 @@ static const struct ui_screen_info firmware_log_screen = {
 /******************************************************************************/
 /* VB2_SCREEN_RECOVERY_TO_DEV */
 
+#define RECOVERY_TO_DEV_ITEM_CONFIRM 1
+#define RECOVERY_TO_DEV_ITEM_CANCEL 2
+
 static const char *const recovery_to_dev_desc[] = {
 	"rec_to_dev_desc0.bmp",
 	"rec_to_dev_desc1.bmp",
 };
 
+static vb2_error_t recovery_to_dev_init(struct ui_context *ui)
+{
+	if (ui->ctx->flags & VB2_CONTEXT_DEVELOPER_MODE) {
+		/* Notify the user that they are already in dev mode */
+		UI_WARN("Already in dev mode\n");
+		return set_ui_error_and_go_back(
+			ui, VB2_UI_ERROR_DEV_MODE_ALREADY_ENABLED);
+	}
+
+	if (!CONFIG(PHYSICAL_PRESENCE_KEYBOARD) &&
+	    vb2ex_physical_presence_pressed()) {
+		UI_INFO("Physical presence button stuck?\n");
+		return ui_screen_back(ui);
+	}
+
+
+	if (CONFIG(PHYSICAL_PRESENCE_KEYBOARD)) {
+		ui->state->selected_item = RECOVERY_TO_DEV_ITEM_CONFIRM;
+	} else {
+		/*
+		 * Disable "Confirm" button for other physical presence types.
+		 */
+		VB2_SET_BIT(ui->state->hidden_item_mask,
+			    RECOVERY_TO_DEV_ITEM_CONFIRM);
+		ui->state->selected_item = RECOVERY_TO_DEV_ITEM_CANCEL;
+	}
+
+	ui->physical_presence_button_pressed = 0;
+
+	return VB2_SUCCESS;
+}
+
+static vb2_error_t recovery_to_dev_finalize(struct ui_context *ui)
+{
+	UI_INFO("Physical presence confirmed!\n");
+
+	/* Validity check, should never happen. */
+	if (ui->state->screen->id != VB2_SCREEN_RECOVERY_TO_DEV ||
+	    (ui->ctx->flags & VB2_CONTEXT_DEVELOPER_MODE) ||
+	    !vb2api_allow_recovery(ui->ctx)) {
+		UI_ERROR("ERROR: Dev transition validity check failed\n");
+		return VB2_SUCCESS;
+	}
+
+	UI_INFO("Enabling dev mode and rebooting...\n");
+
+	if (vb2api_enable_developer_mode(ui->ctx) != VB2_SUCCESS) {
+		UI_WARN("Failed to enable developer mode\n");
+		return VB2_SUCCESS;
+	}
+
+	return VB2_REQUEST_REBOOT_EC_TO_RO;
+}
+
+static vb2_error_t recovery_to_dev_confirm_action(struct ui_context *ui)
+{
+	if (!ui->key_trusted) {
+		UI_INFO("Reject untrusted %s confirmation\n",
+			ui->key == VB_KEY_ENTER ? "ENTER" : "POWER");
+		/*
+		 * If physical presence is confirmed using the keyboard,
+		 * beep and notify the user when the ENTER key comes
+		 * from an untrusted keyboard.
+		 */
+		if (CONFIG(PHYSICAL_PRESENCE_KEYBOARD) &&
+		    ui->key == VB_KEY_ENTER)
+			return set_ui_error(
+				ui, VB2_UI_ERROR_UNTRUSTED_CONFIRMATION);
+		return VB2_SUCCESS;
+	}
+	return recovery_to_dev_finalize(ui);
+}
+
+static vb2_error_t recovery_to_dev_action(struct ui_context *ui)
+{
+	int pressed;
+
+	if (ui->key == ' ') {
+		UI_INFO("SPACE means cancel dev mode transition\n");
+		return ui_screen_back(ui);
+	}
+
+	/* Keyboard physical presence case covered by "Confirm" action. */
+	if (CONFIG(PHYSICAL_PRESENCE_KEYBOARD))
+		return VB2_SUCCESS;
+
+	pressed = vb2ex_physical_presence_pressed();
+	if (pressed) {
+		UI_INFO("Physical presence button pressed, "
+			"awaiting release\n");
+		ui->physical_presence_button_pressed = 1;
+		return VB2_SUCCESS;
+	}
+	if (!ui->physical_presence_button_pressed)
+		return VB2_SUCCESS;
+	UI_INFO("Physical presence button released\n");
+
+	return recovery_to_dev_finalize(ui);
+}
+
 static const struct ui_menu_item recovery_to_dev_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	{ .file = "btn_confirm.bmp" },
-	{ .file = "btn_cancel.bmp" },
+	[RECOVERY_TO_DEV_ITEM_CONFIRM] = {
+		.name = "Confirm",
+		.file = "btn_confirm.bmp",
+		.action = recovery_to_dev_confirm_action,
+	},
+	[RECOVERY_TO_DEV_ITEM_CANCEL] = {
+		.name = "Cancel",
+		.file = "btn_cancel.bmp",
+		.action = ui_screen_back,
+	},
 	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info recovery_to_dev_screen = {
 	.id = VB2_SCREEN_RECOVERY_TO_DEV,
+	.name = "Transition to developer mode",
 	.icon = UI_ICON_TYPE_INFO,
 	.title = "rec_to_dev_title.bmp",
 	.desc = UI_DESC(recovery_to_dev_desc),
 	.menu = UI_MENU(recovery_to_dev_items),
+	.init = recovery_to_dev_init,
+	.action = recovery_to_dev_action,
 	.mesg = "You are attempting to enable developer mode\n"
 		"This involves erasing all data from your device,\n"
 		"and will make your device insecure.\n"
@@ -672,6 +792,10 @@ static const struct ui_screen_info recovery_to_dev_screen = {
 
 /******************************************************************************/
 /* VB2_SCREEN_RECOVERY_SELECT */
+
+#define RECOVERY_SELECT_ITEM_PHONE 1
+#define RECOVERY_SELECT_ITEM_EXTERNAL_DISK 2
+#define RECOVERY_SELECT_ITEM_DIAGNOSTICS 3
 
 static vb2_error_t draw_recovery_select_desc(
 	const struct ui_state *state,
@@ -693,15 +817,49 @@ static vb2_error_t draw_recovery_select_desc(
 	return ui_draw_desc(&desc, state, y);
 }
 
+/* Set VB2_NV_DIAG_REQUEST and reboot. */
+static vb2_error_t launch_diagnostics_action(struct ui_context *ui)
+{
+	vb2api_request_diagnostics(ui->ctx);
+	return VB2_REQUEST_REBOOT;
+}
+
+vb2_error_t recovery_select_init(struct ui_context *ui)
+{
+	ui->state->selected_item = RECOVERY_SELECT_ITEM_PHONE;
+	if (!vb2api_phone_recovery_ui_enabled(ui->ctx)) {
+		UI_WARN("WARNING: Phone recovery not available\n");
+		VB2_SET_BIT(ui->state->hidden_item_mask,
+			    RECOVERY_SELECT_ITEM_PHONE);
+		ui->state->selected_item = RECOVERY_SELECT_ITEM_EXTERNAL_DISK;
+	}
+
+	if (!vb2api_diagnostic_ui_enabled(ui->ctx))
+		VB2_SET_BIT(ui->state->hidden_item_mask,
+			    RECOVERY_SELECT_ITEM_DIAGNOSTICS);
+
+	return VB2_SUCCESS;
+}
+
 static const struct ui_menu_item recovery_select_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	{ .file = "btn_rec_by_phone.bmp" },
-	{ .file = "btn_rec_by_disk.bmp" },
-	{
+	[RECOVERY_SELECT_ITEM_PHONE] = {
+		.name = "Recovery using phone",
+		.file = "btn_rec_by_phone.bmp",
+		.target = VB2_SCREEN_RECOVERY_PHONE_STEP1,
+	},
+	[RECOVERY_SELECT_ITEM_EXTERNAL_DISK] = {
+		.name = "Recovery using external disk",
+		.file = "btn_rec_by_disk.bmp",
+		.target = VB2_SCREEN_RECOVERY_DISK_STEP1,
+	},
+	[RECOVERY_SELECT_ITEM_DIAGNOSTICS] = {
+		.name = "Launch diagnostics",
 		.file = "btn_launch_diag.bmp",
 		.type = UI_MENU_ITEM_TYPE_SECONDARY,
 		.icon_file = "ic_search.bmp",
 		.flags = UI_MENU_ITEM_FLAG_NO_ARROW,
+		.action = launch_diagnostics_action,
 	},
 	ADVANCED_OPTIONS_ITEM,
 	POWER_OFF_ITEM,
@@ -709,10 +867,12 @@ static const struct ui_menu_item recovery_select_items[] = {
 
 static const struct ui_screen_info recovery_select_screen = {
 	.id = VB2_SCREEN_RECOVERY_SELECT,
+	.name = "Recovery method selection",
 	.icon = UI_ICON_TYPE_INFO,
 	.title = "rec_sel_title.bmp",
 	.draw_desc = draw_recovery_select_desc,
 	.menu = UI_MENU(recovery_select_items),
+	.init = recovery_select_init,
 	.mesg = "Select how you'd like to recover.\n"
 		"You can recover using a USB drive or an SD card.",
 };
@@ -743,19 +903,20 @@ static vb2_error_t draw_recovery_phone_step1_desc(
 
 static const struct ui_menu_item recovery_phone_step1_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	{ .file = "btn_next.bmp" },
+	NEXT_ITEM(VB2_SCREEN_RECOVERY_PHONE_STEP2),
 	BACK_ITEM,
 	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info recovery_phone_step1_screen = {
 	.id = VB2_SCREEN_RECOVERY_PHONE_STEP1,
+	.name = "Phone recovery step 1",
 	.icon = UI_ICON_TYPE_STEP,
 	.step = 1,
 	.num_steps = 3,
 	.title = "rec_step1_title.bmp",
-	.draw_desc = draw_recovery_phone_step1_desc,
 	.menu = UI_MENU(recovery_phone_step1_items),
+	.draw_desc = draw_recovery_phone_step1_desc,
 	.mesg = "To proceed with the recovery process, you’ll need\n"
 		"1. An Android phone with internet access\n"
 		"2. A USB cable which connects your phone and this device\n"
@@ -797,12 +958,13 @@ static const struct ui_menu_item recovery_phone_step2_items[] = {
 
 static const struct ui_screen_info recovery_phone_step2_screen = {
 	.id = VB2_SCREEN_RECOVERY_PHONE_STEP2,
+	.name = "Phone recovery step 2",
 	.icon = UI_ICON_TYPE_STEP,
 	.step = 2,
 	.num_steps = 3,
 	.title = "rec_phone_step2_title.bmp",
-	.draw_desc = draw_recovery_phone_step2_desc,
 	.menu = UI_MENU(recovery_phone_step2_items),
+	.draw_desc = draw_recovery_phone_step2_desc,
 	.mesg = "Download the Chrome OS recovery app on your Android phone\n"
 		"by plugging in your phone or by scanning the QR code on the\n"
 		"right. Once you launch the app, connect your phone to your\n"
@@ -835,19 +997,20 @@ static vb2_error_t draw_recovery_disk_step1_desc(
 
 static const struct ui_menu_item recovery_disk_step1_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	{ .file = "btn_next.bmp" },
+	NEXT_ITEM(VB2_SCREEN_RECOVERY_DISK_STEP2),
 	BACK_ITEM,
 	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info recovery_disk_step1_screen = {
 	.id = VB2_SCREEN_RECOVERY_DISK_STEP1,
+	.name = "Disk recovery step 1",
 	.icon = UI_ICON_TYPE_STEP,
 	.step = 1,
 	.num_steps = 3,
 	.title = "rec_step1_title.bmp",
-	.draw_desc = draw_recovery_disk_step1_desc,
 	.menu = UI_MENU(recovery_disk_step1_items),
+	.draw_desc = draw_recovery_disk_step1_desc,
 	.mesg = "To proceed with the recovery process, you'll need\n"
 		"1. An external storage disk such as a USB drive or an SD card"
 		"\n2. An additional device with internet access\n"
@@ -866,13 +1029,14 @@ static const char *const recovery_disk_step2_desc[] = {
 
 static const struct ui_menu_item recovery_disk_step2_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	{ .file = "btn_next.bmp" },
+	NEXT_ITEM(VB2_SCREEN_RECOVERY_DISK_STEP3),
 	BACK_ITEM,
 	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info recovery_disk_step2_screen = {
 	.id = VB2_SCREEN_RECOVERY_DISK_STEP2,
+	.name = "Disk recovery step 2",
 	.icon = UI_ICON_TYPE_STEP,
 	.step = 2,
 	.num_steps = 3,
@@ -901,6 +1065,7 @@ static const struct ui_menu_item recovery_disk_step3_items[] = {
 
 static const struct ui_screen_info recovery_disk_step3_screen = {
 	.id = VB2_SCREEN_RECOVERY_DISK_STEP3,
+	.name = "Disk recovery step 3",
 	.icon = UI_ICON_TYPE_STEP,
 	.step = 3,
 	.num_steps = 3,
@@ -944,8 +1109,8 @@ static const struct ui_screen_info recovery_invalid_screen = {
 	.step = -3,
 	.num_steps = 3,
 	.title = "rec_invalid_title.bmp",
-	.draw_desc = draw_recovery_invalid_desc,
 	.menu = UI_MENU(recovery_invalid_items),
+	.draw_desc = draw_recovery_invalid_desc,
 	.mesg = "No valid image detected.\n"
 		"Make sure your external disk has a valid recovery image,\n"
 		"and re-insert the disk when ready.",

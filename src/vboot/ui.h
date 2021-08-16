@@ -165,6 +165,9 @@
 /* Time-related constants */
 #define UI_KEY_DELAY_MS 20  /* Delay between key scans in UI loops */
 
+/* Pre-defined key for UI action functions */
+#define UI_KEY_REC_TO_DEV VB_KEY_CTRL('D')
+
 static const struct rgb_color ui_color_bg		= { 0x20, 0x21, 0x24 };
 static const struct rgb_color ui_color_fg		= { 0xe8, 0xea, 0xed };
 static const struct rgb_color ui_color_footer_fg	= { 0x9a, 0xa0, 0xa6 };

@@ -7,6 +7,9 @@
 
 uint32_t mock_time_ms;
 
+char firmware_log_buf[FIRMWARE_LOG_BUFFER_LEN];
+int firmware_log_snapshots_count;
+
 uint32_t VbExIsShutdownRequested(void)
 {
 	return mock_type(uint32_t);
@@ -57,4 +60,23 @@ uint32_t vb2ex_get_locale_count(void)
 const char *vb2ex_get_debug_info(struct vb2_context *ctx)
 {
 	return "mock debug info";
+}
+
+int vb2ex_physical_presence_pressed(void)
+{
+	return mock();
+}
+
+/*
+ * This mock function uses firmware_log_snapshots_count to decide what will be
+ * written into the buffer and returned. Each time the reset parameter is
+ * non-zero, the snapshot count will increase by one.
+ */
+const char *vb2ex_get_firmware_log(int reset)
+{
+	if (reset)
+		firmware_log_snapshots_count++;
+	snprintf(firmware_log_buf, sizeof(firmware_log_buf), "%d",
+		 firmware_log_snapshots_count);
+	return firmware_log_buf;
 }

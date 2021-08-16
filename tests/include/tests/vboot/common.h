@@ -33,4 +33,8 @@
 		will_return(VbExIsShutdownRequested, 1); \
 	} while (0)
 
+/* Add return value to vb2ex_physical_presence_pressed. */
+#define WILL_PRESS_PHYSICAL_PRESENCE(pressed) \
+	will_return(vb2ex_physical_presence_pressed, (pressed))
+
 #endif /* _TESTS_VBOOT_COMMON_H */

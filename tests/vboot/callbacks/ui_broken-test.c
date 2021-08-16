@@ -9,16 +9,20 @@
 #include <vb2_api.h>
 #include <vboot/util/commonparams.h>
 
+struct ui_context test_ui_ctx;
+
 static int setup_context(void **state)
 {
+	memset(&test_ui_ctx, 0, sizeof(test_ui_ctx));
 	reset_mock_workbuf = 1;
-	*state = vboot_get_context();
+	test_ui_ctx.ctx = vboot_get_context();
+	*state = &test_ui_ctx;
 	return 0;
 }
 
 static void test_broken_ui_shortcuts_ignored(void **state)
 {
-	struct vb2_context *ctx = *state;
+	struct ui_context *ui = *state;
 
 	will_return_maybe(vb2api_get_locale_id, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
@@ -32,12 +36,12 @@ static void test_broken_ui_shortcuts_ignored(void **state)
 	will_return_always(VbExKeyboardReadWithFlags, 0);
 	EXPECT_DISPLAY_UI_ANY();
 
-	assert_int_equal(vb2ex_broken_screen_ui(ctx), VB2_REQUEST_SHUTDOWN);
+	assert_int_equal(vb2ex_broken_screen_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
 }
 
 static void test_broken_ui_debug_info(void **state)
 {
-	struct vb2_context *ctx = *state;
+	struct ui_context *ui = *state;
 
 	will_return_maybe(vb2api_get_locale_id, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
@@ -47,12 +51,12 @@ static void test_broken_ui_debug_info(void **state)
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_BROKEN);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO);
 
-	assert_int_equal(vb2ex_broken_screen_ui(ctx), VB2_REQUEST_SHUTDOWN);
+	assert_int_equal(vb2ex_broken_screen_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
 }
 
 static void test_broken_ui_disabled_and_hidden_item_mask(void **state)
 {
-	struct vb2_context *ctx = *state;
+	struct ui_context *ui = *state;
 
 	will_return_maybe(vb2api_get_locale_id, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
@@ -61,12 +65,12 @@ static void test_broken_ui_disabled_and_hidden_item_mask(void **state)
 			  0x0, 0x0);
 	will_return_always(VbExKeyboardReadWithFlags, 0);
 
-	assert_int_equal(vb2ex_broken_screen_ui(ctx), VB2_REQUEST_SHUTDOWN);
+	assert_int_equal(vb2ex_broken_screen_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
 }
 
 static void test_broken_ui_screen(void **state)
 {
-	struct vb2_context *ctx = *state;
+	struct ui_context *ui = *state;
 
 	WILL_SHUTDOWN_IN(7);
 	will_return_maybe(vb2api_get_locale_id, 0);
@@ -91,7 +95,7 @@ static void test_broken_ui_screen(void **state)
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_BROKEN, MOCK_IGNORE, 1);
 	WILL_PRESS_KEY(0, 0);
 
-	assert_int_equal(vb2ex_broken_screen_ui(ctx), VB2_REQUEST_SHUTDOWN);
+	assert_int_equal(vb2ex_broken_screen_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
 }
 
 static void test_broken_ui_power_button_shutdown(void **state)
@@ -99,7 +103,7 @@ static void test_broken_ui_power_button_shutdown(void **state)
 	if (CONFIG(DETACHABLE))
 		skip();
 
-	struct vb2_context *ctx = *state;
+	struct ui_context *ui = *state;
 
 	will_return_maybe(vb2api_get_locale_id, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
@@ -107,7 +111,7 @@ static void test_broken_ui_power_button_shutdown(void **state)
 	WILL_PRESS_KEY(VB_BUTTON_POWER_SHORT_PRESS, 0);
 	EXPECT_DISPLAY_UI_ANY();
 
-	assert_int_equal(vb2ex_broken_screen_ui(ctx), VB2_REQUEST_SHUTDOWN);
+	assert_int_equal(vb2ex_broken_screen_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
 }
 
 #define UI_TEST(test_function_name) \
@@ -116,6 +120,7 @@ static void test_broken_ui_power_button_shutdown(void **state)
 int main(void)
 {
 	const struct CMUnitTest tests[] = {
+		/* Broken screen ui */
 		UI_TEST(test_broken_ui_shortcuts_ignored),
 		UI_TEST(test_broken_ui_debug_info),
 		UI_TEST(test_broken_ui_disabled_and_hidden_item_mask),

@@ -17,3 +17,24 @@ int vb2api_allow_recovery(struct vb2_context *ctx)
 {
 	return mock();
 }
+
+int vb2api_phone_recovery_ui_enabled(struct vb2_context *ctx)
+{
+	return mock();
+}
+
+int vb2api_diagnostic_ui_enabled(struct vb2_context *ctx)
+{
+	return mock();
+}
+
+vb2_error_t vb2api_enable_developer_mode(struct vb2_context *ctx)
+{
+	function_called();
+	return VB2_SUCCESS;
+}
+
+void vb2api_request_diagnostics(struct vb2_context *ctx)
+{
+	function_called();
+}
