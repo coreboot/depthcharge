@@ -92,6 +92,12 @@ $(foreach attribute,$(attributes),
 	$(eval $(2)-$(attribute) := ))
 endef
 
+# Copy attributes of one test to another.
+# $1 - input test name
+# $2 - output test name
+copy-test = $(foreach attr,$(attributes), \
+		$(eval $(strip $(2))-$(attr) := $($(strip $(1))-$(attr))))
+
 $(call add-special-class, tests)
 $(call evaluate_subdirs)
 
