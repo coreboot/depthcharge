@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: GPL-2.0
 
-testsrc = $(src)/tests
-testobj = $(obj)/tests
-objutil = $(obj)/util
-objext = $(obj)/external
+testsrc := $(src)/tests
+testobj := $(obj)/tests
+objutil := $(obj)/util
+objext := $(obj)/external
 
 # Set default path for EC_HEADERS if provided does not contain ec_headers.h
 EC_HEADERS ?= ../../src/ec/google/chromeec
 ifeq ($(wildcard $(EC_HEADERS)/ec_commands.h),)
-EC_HEADERS = ../ec/include
+EC_HEADERS := ../ec/include
 endif
 ifeq ($(wildcard $(EC_HEADERS)/ec_commands.h),)
 $(error Please set EC_HEADERS= to directory containing ec_commands.h!)
@@ -19,19 +19,19 @@ LP_SOURCE ?= ../libpayload
 ifeq ($(wildcard $(LP_SOURCE)),)
 # If directory pointed by LP_SOURCE is empty then assume libpayload
 # is in the Chromium OS SDK coreboot directory
-LP_SOURCE = ../../third_party/coreboot/payloads/libpayload
+LP_SOURCE := ../../third_party/coreboot/payloads/libpayload
 endif
 ifeq ($(wildcard $(LP_SOURCE)),)
 $(error Please set LP_SOURCE= to directory containing libpayload sources!)
 endif
 
-libpayloadsrc = $(LP_SOURCE)
-libpayloadobj = $(objext)/libpayload
-vbootobj = $(objext)/vboot
+libpayloadsrc := $(LP_SOURCE)
+libpayloadobj := $(objext)/libpayload
+vbootobj := $(objext)/vboot
 
-LIBPAYLOAD_LIB = $(libpayloadobj)/libpayload.a
-VBOOT_LIB = $(vbootobj)/vboot_fw.a
-TLCL_LIB = $(vbootobj)/tlcl.a
+LIBPAYLOAD_LIB := $(libpayloadobj)/libpayload.a
+VBOOT_LIB := $(vbootobj)/vboot_fw.a
+TLCL_LIB := $(vbootobj)/tlcl.a
 
 LIBPAYLOAD_DEFCONFIG := $(libpayloadsrc)/configs/defconfig
 LIBPAYLOAD_DOTCONFIG := $(libpayloadobj)/.config
@@ -45,8 +45,8 @@ LIBPAYLOAD_CONFIG := $(libpayloadobj)/libpayload-config.h
 CMAKE := cmake
 OBJCOPY ?= objcopy
 
-TEST_CFLAGS = -m32
-TEST_LDFLAGS = -m32
+TEST_CFLAGS := -m32
+TEST_LDFLAGS := -m32
 
 # Include generic test mock headers, before original ones
 TEST_CFLAGS += -I$(testsrc)/include/mocks -I$(testsrc)/include
@@ -88,7 +88,7 @@ alltests += $(1)$(2)
 $(foreach attribute,$(attributes),
 	$(eval $(1)$(2)-$(attribute) += $($(2)-$(attribute))))
 $(foreach attribute,$(attributes),
-	$(eval $(2)-$(attribute):= ))
+	$(eval $(2)-$(attribute) := ))
 endef
 
 $(call add-special-class, tests)
@@ -174,7 +174,7 @@ $(LIBPAYLOAD_DOTCONFIG):
 	printf '\nCONFIG_LP_CHROMEOS=y\n' >> $@
 	printf '\nCONFIG_LP_ARCH_X86=y\n' >> $@
 
-$(LIBPAYLOAD_KCONFIG_AUTOHEADER): LIBPAYLOAD_KCONFIG_FLAGS:= \
+$(LIBPAYLOAD_KCONFIG_AUTOHEADER): LIBPAYLOAD_KCONFIG_FLAGS := \
 	DOTCONFIG=$(LIBPAYLOAD_DOTCONFIG) \
 	KCONFIG_AUTOHEADER=$(LIBPAYLOAD_KCONFIG_AUTOHEADER) \
 	KCONFIG_AUTOCONFIG=$(LIBPAYLOAD_KCONFIG_AUTOCONFIG) \
@@ -214,7 +214,6 @@ $(VBOOT_LIB):
 		EC_EFS= \
 		DETACHABLE= \
 		PHYSICAL_PRESENCE_KEYBOARD=1 \
-		CUSTOM_MUSIC=n \
 		UNROLL_LOOPS=1 \
 		BUILD=$(vbootobj) \
 		V=$(V) \
