@@ -44,6 +44,7 @@ LIBPAYLOAD_CONFIG := $(libpayloadobj)/libpayload-config.h
 
 CMAKE := cmake
 OBJCOPY ?= objcopy
+OBJDUMP ?= objdump
 
 TEST_CFLAGS := -m32
 TEST_LDFLAGS := -m32
@@ -112,8 +113,13 @@ $$($(1)-config-file):
 		printf '#define %s %s\n\n' "$$$$key" "$$$$value" >> $$@; \
 	done
 
+# Weaken symbols listed as mocks to enable overriding in the code
 $($(1)-srcobjs): OBJCOPY_FLAGS += $$(foreach mock,$$($(1)-mocks), \
 	--globalize-symbol=$$(mock) --weaken-symbol=$$(mock))
+
+# Compile sources and apply mocking/wrapping of selected symbols.
+# For each listed mock add new symbol with prefix `__real_`,
+# and pointing to the same section:address.
 $($(1)-objs): TEST_CFLAGS += -include $$($(1)-config-file)
 $($(1)-objs): $(obj)/$(1)/%.o: $$$$*.c $$($(1)-config-file) $(LIBPAYLOAD_CONFIG)
 	@printf "    CC       $$(subst $$(obj)/,,$$(@))\n"
@@ -121,7 +127,18 @@ $($(1)-objs): $(obj)/$(1)/%.o: $$$$*.c $$($(1)-config-file) $(LIBPAYLOAD_CONFIG)
 	$(HOSTCC) $(HOSTCFLAGS) $$(TEST_CFLAGS) $($(1)-cflags) -MMD \
 		-MF $$(basename $$@).d -MT $$@ -c $$< -o $$@.orig
 	@printf "    OBJCOPY  $$(subst $$(obj)/,,$$(@))\n"
-	$(OBJCOPY) $$@.orig $$(OBJCOPY_FLAGS) $$@
+	$(OBJCOPY) $$@.orig $$(OBJCOPY_FLAGS) $$@.orig2
+	objcopy_wrap_flags=''; \
+	for sym in $$($(1)-mocks); do \
+		 sym_line="$$$$($(OBJDUMP) -t $$@.orig2 | grep -E "[0-9a-fA-F]+\\s+w\\s+F\\s+.*\\s$$$$sym$$$$")"; \
+		if [ ! -z "$$$$sym_line" ] ; then \
+			addr="$$$$(echo \"$$$$sym_line\" | awk '{ print $$$$1 }')"; \
+			section="$$$$(echo \"$$$$sym_line\" | awk '{ print $$$$(NF - 2) }')"; \
+			objcopy_wrap_flags="$$$$objcopy_wrap_flags --add-symbol __real_$$$${sym}=$$$${section}:0x$$$${addr},function,global"; \
+		fi \
+	done ;\
+	$(OBJCOPY) $$@.orig2 $$$$objcopy_wrap_flags $$@
+
 
 $(1)-vboot := $(obj)/$(1)/$$(notdir $(VBOOT_LIB))
 $$($(1)-vboot): $(VBOOT_LIB)
