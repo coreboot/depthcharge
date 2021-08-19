@@ -24,6 +24,7 @@
 #define PCH_DEV_PCIE5	PCI_DEV(0, 0x1c, 5)
 #define PCH_DEV_PCIE8	PCI_DEV(0, 0x1d, 0)
 #define PCH_DEV_GSPI0	PCI_DEV(0, 0x1e, 2)
+#define PCH_DEV_GSPI1	PCI_DEV(0, 0x1e, 3)
 
 /* PCR Interface */
 #define PCH_PCR_BASE_ADDRESS	0xfd000000
