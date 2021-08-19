@@ -74,6 +74,7 @@
 #define P2_SPI_CTRL_FIFO_RESET	0x02
 #define P2_SPI_CTRL_TRIGGER	0x01
 #define P2_SPI_STATUS		0x9e
+#define P2_MUX_HPD		0xd0
 #define P2_CLK_CTRL		0xd6
 
 #define P2_PROG_WIN_UNLOCK	0xda
@@ -734,6 +735,26 @@ static int __must_check ps8751_spi_flash_unlock(Ps8751 *me)
 		       "SRP|BP (0x%02x)\n", me->chip_name, status);
 		return -1;
 	}
+	return 0;
+}
+
+static int __must_check ps8751_flash_window_enable(Ps8751 *me)
+{
+	switch (me->chip_type) {
+	case CHIP_PS8751:
+		/*
+		 * the datasheet claims the reg 0xd0 reset value is
+		 * 0x00, but it's actually 0x07 on the ps8751. bit 2
+		 * needs to be cleared to use page 7 to access on-board
+		 * flash. parade recommends clearing the register.
+		 */
+		if (write_reg(me, PAGE_2, P2_MUX_HPD, 0x00) != 0)
+			return -1;
+		break;
+	default:
+		break;
+	}
+
 	return 0;
 }
 
