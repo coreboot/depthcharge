@@ -49,7 +49,7 @@ const struct audio_config *variant_probe_audio_config(void)
  */
 static const struct tcss_map typec_map[] = {
 	{ .usb2_port = 1, .usb3_port = 0, .ec_port = 0 },
-	{ .usb2_port = 2, .usb3_port = 1, .ec_port = 1 },
+	{ .usb2_port = 2, .usb3_port = 2, .ec_port = 1 },
 };
 
 const struct tcss_map *variant_get_tcss_map(size_t *count)
