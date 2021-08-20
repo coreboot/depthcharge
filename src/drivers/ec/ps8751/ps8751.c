@@ -1381,7 +1381,7 @@ static int ps8751_reflash(Ps8751 *me, const uint8_t *data, size_t data_size)
 		return -1;
 	}
 
-	if (PS8751_DEBUG > 0) {
+	if (PS8751_DEBUG >= 2) {
 		debug("start post erase 7s delay...\n");
 		mdelay(7 * 1000);
 		debug("end post erase delay\n");
