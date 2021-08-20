@@ -126,7 +126,6 @@
 
 #define USEC_TO_SEC(us)		((us) / 1000000)
 #define USEC_TO_MSEC(us)	((us) / 1000)
-#define PS_REFRESH_INTERVAL_US	(500 * 1000)		/* 500 ms */
 #define PS_SPI_TIMEOUT_US	(1 * 1000 * 1000)	/* 1s */
 #define PS_WIP_TIMEOUT_US	(1 * 1000 * 1000)	/* 1s */
 #define PS_MPU_BOOT_DELAY_MS	(50)
@@ -781,32 +780,6 @@ static int __must_check ps8751_spi_flash_identify(Ps8751 *me)
 }
 
 /**
- * access the chip periodically so it doesn't fall asleep.  a simple
- * i2c read every second or so from PAGE_3 is sufficient.
- *
- * @param me		device context
- * @param deadline	pointer to time of next needed access
- *			use deadline of 0 for first call
- * @return 0 if ok, -1 on error
- */
-
-static int __must_check ps8751_keep_awake(Ps8751 *me, uint64_t *deadline)
-{
-	uint64_t now_us = timer_us(0);
-	uint8_t dummy;
-
-	if (now_us >= *deadline) {
-		*deadline = now_us + PS_REFRESH_INTERVAL_US;
-		int status = read_reg(me, PAGE_3, P3_CHIP_WAKEUP, &dummy);
-		if (status != 0) {
-			printf("%s: chip dozed off!\n", me->chip_name);
-			return -1;
-		}
-	}
-	return 0;
-}
-
-/**
  * get chip hardware version.  result of 0xa3 means it's an A3 chip.
  *
  * @param me		device context
@@ -1142,6 +1115,7 @@ static int __must_check ps8751_program(Ps8751 *me,
 
 /**
  * verify flash content matches given data
+ * note: MPU must be off
  *
  * @param me		device context
  * @param fw_start	flash device offset to verify
@@ -1155,7 +1129,6 @@ static int __must_check ps8751_verify(Ps8751 *me,
 				      const uint8_t * const data,
 				      const size_t data_size)
 {
-	uint64_t deadline = 0;
 	uint8_t readback;
 	uint64_t t0_us;
 	uint32_t data_offset;
@@ -1169,8 +1142,6 @@ static int __must_check ps8751_verify(Ps8751 *me,
 	     data_offset += chunk) {
 		chunk = MIN(PS_FW_RD_CHUNK, data_size - data_offset);
 
-		if (ps8751_keep_awake(me, &deadline) != 0)
-			return -1;
 		if (ps8751_spi_setup_cmd24(me, SPI_CMD_READ_DATA,
 					   fw_addr + data_offset) != 0) {
 			return -1;
@@ -1268,6 +1239,7 @@ static int ps8751_ec_pd_resume(Ps8751 *me)
 
 /**
  * dump flash content
+ * note: MPU must be off
  *
  * @param me		device context
  * @param offset_start	flash device offset to dump
@@ -1281,7 +1253,6 @@ static void ps8751_dump_flash(Ps8751 *me,
 	uint32_t offset_end  = offset_start + size;
 	uint8_t prev_buf[PS_FW_RD_CHUNK];
 	uint8_t buf[PS_FW_RD_CHUNK];
-	uint64_t deadline = 0;
 	uint32_t offset;
 	int dot3 = 0;
 	int i;
@@ -1292,9 +1263,6 @@ static void ps8751_dump_flash(Ps8751 *me,
 	for (offset = offset_start;
 	     offset < offset_end;
 	     offset += sizeof(buf)) {
-		if (ps8751_keep_awake(me, &deadline) != 0)
-			break;
-
 		/* construct a SPI read PS_FW_CHUNK bytes @ offset command */
 		if (ps8751_spi_setup_cmd24(me,
 					   SPI_CMD_READ_DATA, offset) != 0) {
