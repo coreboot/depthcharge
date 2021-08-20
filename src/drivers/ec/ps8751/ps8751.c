@@ -1266,13 +1266,18 @@ static int ps8751_ec_pd_resume(Ps8751 *me)
 	return status;
 }
 
+/**
+ * dump flash content
+ *
+ * @param me		device context
+ * @param offset_start	flash device offset to dump
+ * @param size		size of data to dump
+ */
+
 static void ps8751_dump_flash(Ps8751 *me,
 			      const uint32_t offset_start,
 			      const uint32_t size)
 {
-	printf("================================"
-	       "================================\n{\n");
-
 	uint32_t offset_end  = offset_start + size;
 	uint8_t prev_buf[PS_FW_RD_CHUNK];
 	uint8_t buf[PS_FW_RD_CHUNK];
@@ -1280,6 +1285,9 @@ static void ps8751_dump_flash(Ps8751 *me,
 	uint32_t offset;
 	int dot3 = 0;
 	int i;
+
+	printf("================================"
+	       "================================\n{\n");
 
 	for (offset = offset_start;
 	     offset < offset_end;
