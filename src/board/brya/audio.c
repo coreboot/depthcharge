@@ -60,7 +60,8 @@ static void setup_gpio_amp(const struct audio_amp *amp, SoundRoute *route)
 
 static I2sSource *setup_i2s(const struct audio_bus *bus)
 {
-	GpioCfg *gpio = new_alderlake_gpio_output(bus->i2s.enable_gpio, 0);
+	GpioCfg *gpio = new_alderlake_gpio_output(bus->i2s.enable_gpio.pad, 
+						  bus->i2s.enable_gpio.active_low);
 	I2s *i2s = new_i2s_structure(bus->i2s.settings, AUD_BITDEPTH,
 				     &gpio->ops, bus->i2s.address);
 	I2sSource *i2s_source = new_i2s_source(&i2s->ops, AUD_SAMPLE_RATE,

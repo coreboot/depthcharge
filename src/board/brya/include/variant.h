@@ -26,8 +26,11 @@ enum audio_amp_type {
 struct audio_bus {
 	struct {
 		size_t address;
-		unsigned int enable_gpio;
-		const I2sSettings *settings;
+	struct {
+		unsigned int pad;
+		bool active_low;
+	} enable_gpio;
+	const I2sSettings *settings;
 	} i2s;
 };
 

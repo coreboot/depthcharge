@@ -14,6 +14,7 @@
 #define AUD_I2C_ADDR1		0x38
 #define AUD_I2C_ADDR2		0x3c
 #define SDMODE_PIN		GPP_A11
+#define SDMODE_ENABLE		1
 
 const struct audio_config *variant_probe_audio_config(void)
 {
@@ -23,7 +24,8 @@ const struct audio_config *variant_probe_audio_config(void)
 		config = (struct audio_config){
 			.bus = {
 				.i2s.address = SSP_I2S2_START_ADDRESS,
-				.i2s.enable_gpio = SDMODE_PIN,
+				.i2s.enable_gpio.pad = SDMODE_PIN,
+				.i2s.enable_gpio.active_low = SDMODE_ENABLE,
 				.i2s.settings = &max98390_settings,
 			},
 			.amp = {
