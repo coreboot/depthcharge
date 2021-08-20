@@ -1360,6 +1360,10 @@ static int ps8751_reflash(Ps8751 *me, const uint8_t *data, size_t data_size)
 
 	debug("data %8p len %zu\n", data, data_size);
 
+	if (PS8751_DEBUG >= 2)
+		ps8751_dump_flash(me, PARADE_FW_START,
+				  PARADE_FW_END - PARADE_FW_START);
+
 	status = ps8751_erase(me, PARADE_FW_START, data_size);
 	if (status != 0) {
 		printf("%s: FW erase failed\n", me->chip_name);
