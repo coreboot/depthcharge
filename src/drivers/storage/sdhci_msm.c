@@ -201,8 +201,7 @@ static int sdhci_msm_init(SdhciHost *host)
  * This function will get invoked from board_setup()
  */
 SdhciHost *new_sdhci_msm_host(uintptr_t ioaddr, unsigned int platform_info,
-			      int clock_max, uintptr_t tlmmAddr,
-			      GpioOps *cd_gpio)
+			      int clock_max, GpioOps *cd_gpio)
 {
 	SdhciHost *host;
 
@@ -232,12 +231,6 @@ SdhciHost *new_sdhci_msm_host(uintptr_t ioaddr, unsigned int platform_info,
 
 	/* Assign our own callback for set_ios */
 	host->mmc_ctrlr.set_ios = &sdhci_msm_set_ios;
-
-	/* Configure drive strengths of interface lines */
-	if (host->mmc_ctrlr.slot_type == MMC_SLOT_TYPE_REMOVABLE)
-		writel(SDC2_TLMM_CONFIG, (void *)tlmmAddr);
-	else
-		writel(SDC1_TLMM_CONFIG, (void *)tlmmAddr);
 
 	return host;
 }

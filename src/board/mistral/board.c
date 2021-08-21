@@ -41,7 +41,6 @@
 #define TLMM_BOOT_SEL		0x010C1000
 #define EMMC_BOOT		0x8000000
 #define SDC1_HC_BASE		0x07804000
-#define SDC1_TLMM_CFG_ADDR	0x10C2000
 
 
 static const VpdDeviceTreeMap vpd_dt_map[] = {
@@ -227,7 +226,6 @@ static int board_setup(void)
 					SDHCI_PLATFORM_EMMC_1V8_POWER |
 					SDHCI_PLATFORM_NO_EMMC_HS200,
 					100*MHz,
-					(void *)SDC1_TLMM_CFG_ADDR,
 					NULL);
 	assert(emmc);
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,

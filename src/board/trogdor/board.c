@@ -41,8 +41,6 @@
 #include "drivers/video/sc7180.h"
 
 #define SDC1_HC_BASE          0x7C4000
-#define SDC1_TLMM_CFG_ADDR    0x3D7A000
-#define SDC2_TLMM_CFG_ADDR 0x3D7B000
 #define SDC2_HC_BASE 0x08804000
 
 static const VpdDeviceTreeMap vpd_dt_map[] = {
@@ -165,7 +163,7 @@ static int board_setup(void)
 	SdhciHost *emmc = new_sdhci_msm_host(SDC1_HC_BASE,
 					     emmc_platfm_flags,
 					     384*MHz,
-					     SDC1_TLMM_CFG_ADDR, NULL);
+					     NULL);
 
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			&fixed_block_dev_controllers);
@@ -176,7 +174,7 @@ static int board_setup(void)
 	};
 	SdhciHost *sd = new_sdhci_msm_host(SDC2_HC_BASE,
 					   SDHCI_PLATFORM_REMOVABLE,
-					   50*MHz, SDC2_TLMM_CFG_ADDR, &sd_cd);
+					   50*MHz, &sd_cd);
 	list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
 			  &removable_block_dev_controllers);
 
