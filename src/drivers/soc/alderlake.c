@@ -12,6 +12,8 @@
  * GNU General Public License for more details.
  */
 
+#include <libpayload.h>
+
 #include "base/init_funcs.h"
 #include "drivers/soc/alderlake.h"
 #include "drivers/soc/common/iomap.h"
@@ -34,6 +36,12 @@ static const TcssCtrlr adl_tcss_ctrlr = {
 	.iom_pid = 0xc1,
 	.iom_status_offset = 0x160
 };
+
+const SocPcieRpGroup adl_rp_groups[] = {
+	{ .slot = 0x1c, .first_fn = 0, .count = 8 },
+	{ .slot = 0x1d, .first_fn = 0, .count = 4 },
+};
+const unsigned int adl_rp_groups_count = ARRAY_SIZE(adl_rp_groups);
 
 static int register_tcss(void)
 {

@@ -17,6 +17,8 @@
 
 #include <stdint.h>
 
+#include "drivers/soc/intel_common.h"
+
 #define PCH_DEV_SATA	PCI_DEV(0, 0x17, 0)
 #define PCH_DEV_CPU_RP0	PCI_DEV(0, 0x06, 0)
 #define PCH_DEV_PCIE0	PCI_DEV(0, 0x1c, 0)
@@ -37,6 +39,9 @@
 
 /* I2C Designware Controller runs at 133MHz */
 #define ALDERLAKE_DW_I2C_MHZ	133
+
+extern const SocPcieRpGroup adl_rp_groups[];
+extern const unsigned int adl_rp_groups_count;
 
 /* GPE definitions */
 
