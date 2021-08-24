@@ -215,6 +215,10 @@ vb2_error_t vb2ex_display_ui(enum vb2_screen screen,
 		.error_code = error_code,
 	};
 
+	/*
+	 * TODO(b/172339016): After merging the vb2_screen_state, ui_state now
+	 * have prev field. Remove prev_state here and use prev field instead.
+	 */
 	static struct ui_state prev_state;
 	static int has_prev_state = 0;
 

@@ -200,8 +200,8 @@ struct ui_locale {
 /* Forward declarations. */
 struct ui_screen_info;
 struct ui_log_info;
+struct ui_context;
 
-/* UI state for display. */
 struct ui_state {
 	const struct ui_screen_info *screen;
 	const struct ui_locale *locale;
@@ -210,8 +210,10 @@ struct ui_state {
 	uint32_t hidden_item_mask;
 	int timer_disabled;
 	const struct ui_log_info *log;
-	int32_t current_page;
+	uint32_t page_count;
+	uint32_t current_page;
 	enum vb2_ui_error error_code;
+	struct ui_state *prev;
 };
 
 /* Icon type. */
@@ -251,10 +253,14 @@ enum ui_menu_item_flag {
 
 /* Menu item. */
 struct ui_menu_item {
+	/*
+	 * Item name for printing to console, required for all menu items.
+	 * When 'file' is not specified, the string will be used to draw the
+	 * button text with monospace font.
+	 */
+	const char *name;
 	/* Pre-generated bitmap containing button text. */
 	const char *file;
-	/* Button text, drawn with monospace font if 'file' is not specified. */
-	const char *text;
 	/* If UI_MENU_ITEM_TYPE_LANGUAGE, the 'file' field will be ignored. */
 	enum ui_menu_item_type type;
 	/* Icon file for UI_MENU_ITEM_TYPE_SECONDARY only. */
@@ -267,6 +273,10 @@ struct ui_menu_item {
 	const char *disabled_help_text_file;
 	/* Flags are defined in enum ui_menu_item_flag. */
 	uint8_t flags;
+	/* Target screen */
+	enum vb2_screen target;
+	/* Action function takes precedence over target screen if non-NULL. */
+	vb2_error_t (*action)(struct ui_context *ui);
 };
 
 /* List of menu items. */
@@ -276,9 +286,56 @@ struct ui_menu {
 	const struct ui_menu_item *items;
 };
 
+/* States of power button. */
+enum ui_power_button {
+	UI_POWER_BUTTON_HELD_SINCE_BOOT = 0,
+	UI_POWER_BUTTON_RELEASED,
+	UI_POWER_BUTTON_PRESSED,  /* Must have been previously released */
+};
+
+struct ui_context {
+	struct vb2_context *ctx;
+	struct ui_state *state;
+	uint32_t locale_id;
+	uint32_t key;
+	int key_trusted;
+
+	/* For check_shutdown_request. */
+	enum ui_power_button power_button;
+
+	/* For developer mode. */
+	int disable_timer;
+	uint32_t start_time_ms;
+	int beep_count;
+
+	/* For manual recovery. */
+	vb2_error_t recovery_rv;
+
+	/* For to_dev transition flow. */
+	int physical_presence_button_pressed;
+
+	/* For language selection screen. */
+	struct ui_menu language_menu;
+
+	/* For bootloader selection screen. */
+	struct ui_menu bootloader_menu;
+
+	/* For error beep sound. */
+	int error_beep;
+
+	/* For displaying error messages. */
+	enum vb2_ui_error error_code;
+
+	/* Force calling vb2ex_display_ui for refreshing the screen. This flag
+	   will be reset after done. */
+	int force_display;
+};
+
 struct ui_screen_info {
 	/* Screen id */
 	enum vb2_screen id;
+	/* Screen name for printing to console only */
+	const char *name;
 	/* Icon type */
 	enum ui_icon_type icon;
 	/*
@@ -297,6 +354,19 @@ struct ui_screen_info {
 	/* Absence of footer */
 	int no_footer;
 	/*
+	 * Init function runs once when changing to the screen which is not in
+	 * the history stack.
+	 */
+	vb2_error_t (*init)(struct ui_context *ui);
+	/*
+	 * Re-init function runs once when changing to the screen which is
+	 * already in the history stack, for example, when going back to the
+	 * screen. Exactly one of init() and reinit() will be called.
+	 */
+	vb2_error_t (*reinit)(struct ui_context *ui);
+	/* Action function runs repeatedly while on the screen. */
+	vb2_error_t (*action)(struct ui_context *ui);
+	/*
 	 * Custom drawing function. When it is NULL, the default drawing
 	 * function ui_draw_default() will be called instead.
 	 */
@@ -308,6 +378,11 @@ struct ui_screen_info {
 				 int32_t *y);
 	/* Fallback message */
 	const char *mesg;
+	/*
+	 * Custom function for getting menu items. If non-null, field 'menu'
+	 * will be ignored.
+	 */
+	const struct ui_menu *(*get_menu)(struct ui_context *ui);
 };
 
 /* Log string and its pages information. */

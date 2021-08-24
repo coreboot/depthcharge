@@ -306,9 +306,9 @@ static const struct ui_screen_info broken_screen = {
 
 static const struct ui_menu_item advanced_options_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	{ "btn_dev_mode.bmp" },
-	{ "btn_debug_info.bmp" },
-	{ "btn_firmware_log.bmp" },
+	{ .file = "btn_dev_mode.bmp" },
+	{ .file = "btn_debug_info.bmp" },
+	{ .file = "btn_firmware_log.bmp" },
 	BACK_ITEM,
 	POWER_OFF_ITEM,
 };
@@ -371,8 +371,8 @@ static const char *const recovery_to_dev_desc[] = {
 
 static const struct ui_menu_item recovery_to_dev_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	{ "btn_confirm.bmp" },
-	{ "btn_cancel.bmp" },
+	{ .file = "btn_confirm.bmp" },
+	{ .file = "btn_cancel.bmp" },
 	POWER_OFF_ITEM,
 };
 
@@ -415,8 +415,8 @@ static vb2_error_t draw_recovery_select_desc(
 
 static const struct ui_menu_item recovery_select_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	{ "btn_rec_by_phone.bmp" },
-	{ "btn_rec_by_disk.bmp" },
+	{ .file = "btn_rec_by_phone.bmp" },
+	{ .file = "btn_rec_by_disk.bmp" },
 	{
 		.file = "btn_launch_diag.bmp",
 		.type = UI_MENU_ITEM_TYPE_SECONDARY,
@@ -463,7 +463,7 @@ static vb2_error_t draw_recovery_phone_step1_desc(
 
 static const struct ui_menu_item recovery_phone_step1_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	{ "btn_next.bmp" },
+	{ .file = "btn_next.bmp" },
 	BACK_ITEM,
 	POWER_OFF_ITEM,
 };
@@ -555,7 +555,7 @@ static vb2_error_t draw_recovery_disk_step1_desc(
 
 static const struct ui_menu_item recovery_disk_step1_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	{ "btn_next.bmp" },
+	{ .file = "btn_next.bmp" },
 	BACK_ITEM,
 	POWER_OFF_ITEM,
 };
@@ -586,7 +586,7 @@ static const char *const recovery_disk_step2_desc[] = {
 
 static const struct ui_menu_item recovery_disk_step2_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	{ "btn_next.bmp" },
+	{ .file = "btn_next.bmp" },
 	BACK_ITEM,
 	POWER_OFF_ITEM,
 };
@@ -678,10 +678,12 @@ static const struct ui_screen_info recovery_invalid_screen = {
 
 static const struct ui_menu_item developer_mode_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	[DEVELOPER_MODE_ITEM_RETURN_TO_SECURE] = { "btn_secure_mode.bmp" },
-	{ "btn_int_disk.bmp" },
-	{ "btn_ext_disk.bmp" },
-	{ "btn_alt_bootloader.bmp" },
+	[DEVELOPER_MODE_ITEM_RETURN_TO_SECURE] = {
+		.file = "btn_secure_mode.bmp"
+	},
+	{ .file = "btn_int_disk.bmp" },
+	{ .file = "btn_ext_disk.bmp" },
+	{ .file = "btn_alt_bootloader.bmp" },
 	ADVANCED_OPTIONS_ITEM,
 	POWER_OFF_ITEM,
 };
@@ -756,8 +758,8 @@ static const char *const developer_to_norm_desc[] = {
 
 static const struct ui_menu_item developer_to_norm_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	{ "btn_confirm.bmp" },
-	{ "btn_cancel.bmp" },
+	{ .file = "btn_confirm.bmp" },
+	{ .file = "btn_cancel.bmp" },
 	POWER_OFF_ITEM,
 };
 
@@ -897,7 +899,7 @@ static vb2_error_t get_bootloader_menu(struct ui_menu *ret_menu)
 			name = node->filename;
 		}
 		items[i] = (struct ui_menu_item){
-			.text = name,
+			.name = name,
 		};
 		i++;
 	}
@@ -955,11 +957,11 @@ static const char *const diagnostics_desc[] = {
 
 static const struct ui_menu_item diagnostics_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	{ "btn_diag_storage_health.bmp" },
-	{ "btn_diag_storage_short_test.bmp" },
-	{ "btn_diag_storage_ext_test.bmp" },
-	{ "btn_diag_memory_quick.bmp" },
-	{ "btn_diag_memory_full.bmp" },
+	{ .file = "btn_diag_storage_health.bmp" },
+	{ .file = "btn_diag_storage_short_test.bmp" },
+	{ .file = "btn_diag_storage_ext_test.bmp" },
+	{ .file = "btn_diag_memory_quick.bmp" },
+	{ .file = "btn_diag_memory_full.bmp" },
 	POWER_OFF_ITEM,
 };
 

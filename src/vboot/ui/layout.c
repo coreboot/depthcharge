@@ -261,8 +261,8 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 			VB2_TRY(ui_get_bitmap_width(&bitmap,
 						    UI_BUTTON_TEXT_HEIGHT,
 						    &text_width));
-		} else if (menu->items[i].text) {
-			VB2_TRY(ui_get_text_width(menu->items[i].text,
+		} else if (menu->items[i].name) {
+			VB2_TRY(ui_get_text_width(menu->items[i].name,
 						  UI_BUTTON_TEXT_HEIGHT,
 						  &text_width));
 		} else {
@@ -333,8 +333,8 @@ vb2_error_t ui_draw_button(const struct ui_menu_item *item,
 					      UI_BUTTON_TEXT_HEIGHT,
 					      bg_color, fg_color,
 					      flags, reverse));
-	} else if (item->text) {
-		VB2_TRY(ui_draw_text(item->text, x_center, y_center,
+	} else if (item->name) {
+		VB2_TRY(ui_draw_text(item->name, x_center, y_center,
 				     UI_BUTTON_TEXT_HEIGHT,
 				     bg_color, fg_color,
 				     flags, reverse));

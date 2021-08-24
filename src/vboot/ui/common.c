@@ -22,7 +22,7 @@
 #include "drivers/video/display.h"
 #include "vboot/ui.h"
 
-struct ui_error {
+struct ui_error_message {
 	/* File name of error strings. */
 	const char *file;
 	/* Whether to show dev mode URL below the error strings. */
@@ -31,7 +31,7 @@ struct ui_error {
 	const char *mesg;
 };
 
-static const struct ui_error errors[] = {
+static const struct ui_error_message errors[] = {
 	[VB2_UI_ERROR_DEV_MODE_ALREADY_ENABLED] = {
 		.file = "error_dev_mode_enabled.bmp",
 		.mesg = "Developer mode is already turned on.",
@@ -107,7 +107,7 @@ static vb2_error_t init_screen(void)
 	return VB2_SUCCESS;
 }
 
-static vb2_error_t show_error_box(const struct ui_error *error,
+static vb2_error_t show_error_box(const struct ui_error_message *error,
 				  const struct ui_locale *locale)
 {
 	vb2_error_t rv = VB2_SUCCESS;
@@ -246,7 +246,7 @@ vb2_error_t ui_display_screen(struct ui_state *state,
 	vb2_error_t rv;
 	int32_t y = UI_BOX_MARGIN_V;
 	const struct ui_screen_info *screen = state->screen;
-	const struct ui_error *error = NULL;
+	const struct ui_error_message *error = NULL;
 
 	VB2_TRY(init_screen());
 
