@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0
 
+subdirs-y := ui
+
 tests-y += secdata_tpm-test
 
 secdata_tpm-test-srcs += tests/vboot/secdata_tpm-test.c

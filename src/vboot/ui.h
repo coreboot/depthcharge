@@ -839,4 +839,45 @@ char *ui_log_get_page_content(const struct ui_log_info *log, uint32_t page);
 vb2_error_t ui_display_screen(struct ui_state *state,
 			      const struct ui_state *prev_state);
 
+/******************************************************************************/
+/* menu.c */
+
+const struct ui_menu *ui_get_menu(struct ui_context *ui);
+
+vb2_error_t ui_menu_prev(struct ui_context *ui);
+
+vb2_error_t ui_menu_next(struct ui_context *ui);
+
+vb2_error_t ui_menu_select(struct ui_context *ui);
+
+/******************************************************************************/
+/* navigation.c */
+
+/*
+ * NOTE: This function never returns VB2_SUCCUSS by design. Instead,
+ * VB2_REQUEST_UI_CONTINUE is returned on success for the following
+ * reason.
+ *
+ * The screen would have been changed when this function returns.
+ * Therefore, any call to this function should return immediately afterwards.
+ * Otherwise, code underneath it might operate under the assumption that
+ * the screen has not been changed (see b/181087237). The same rule also
+ * applies to any indirect call to this function, but that would include
+ * many UI functions (action, init, reinit functions).
+ *
+ * Instead of checking whether the screen has been changed after each
+ * call, we rely on VB2_REQUEST_UI_CONTINUE to ensure that all direct
+ * and indirect calls to this function will immediately return all the
+ * way back to ui_loop(), where VB2_REQUEST_UI_CONTINUE is ignored to
+ * stay in the loop (see CL:2714502). This solution also allows us to
+ * utilize the VB2_TRY macro as much as possible.
+ */
+vb2_error_t ui_screen_change(struct ui_context *ui, enum vb2_screen id);
+
+/*
+ * NOTE: This function never returns VB2_SUCCUSS by design. See the
+ * comments before ui_screen_change().
+ */
+vb2_error_t ui_screen_back(struct ui_context *ui);
+
 #endif /* __VBOOT_UI_H__ */

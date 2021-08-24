@@ -25,6 +25,22 @@
 #define expect_die(expression) expect_assert_failure(expression)
 
 /*
+ * CMocka doesn't support printing custom message on assertion failure. When a
+ * helper macro has multiple assertion calls (such as ASSERT_SCREEN_STATE), it's
+ * impossible for us to tell the failing call because the file names and line
+ * numbers are the same for these calls. The following macro will print given
+ * message and fail the test when the given integers are not equal.
+ */
+#define assert_int_equal_msg(a, b, msg) \
+	do { \
+		intmax_t _assert_local_a = (a), _assert_local_b = (b); \
+		if (_assert_local_a != _assert_local_b) { \
+			fail_msg("%#llx != %#llx: %s", _assert_local_a, \
+				 _assert_local_b, (msg)); \
+		} \
+	} while (0)
+
+/*
  * Set symbol value and make it global.
  */
 #define TEST_SYMBOL(symbol, value) \
