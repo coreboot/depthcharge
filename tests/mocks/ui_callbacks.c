@@ -48,3 +48,8 @@ vb2_error_t vb2ex_display_ui(enum vb2_screen screen, uint32_t locale_id,
 	check_expected(current_page);
 	return VB2_SUCCESS;
 }
+
+uint32_t vb2ex_get_locale_count(void)
+{
+	return mock_type(uint32_t);
+}

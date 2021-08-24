@@ -142,6 +142,24 @@ static const struct ui_screen_info firmware_sync_screen = {
 /******************************************************************************/
 /* VB2_SCREEN_LANGUAGE_SELECT */
 
+static vb2_error_t language_select_init(struct ui_context *ui)
+{
+	const struct ui_menu *menu = ui_get_menu(ui);
+	if (menu->num_items == 0) {
+		UI_ERROR("ERROR: No menu items found; "
+			 "rejecting entering language selection screen\n");
+		return ui_screen_back(ui);
+	}
+	if (ui->locale_id < menu->num_items) {
+		ui->state->selected_item = ui->locale_id;
+	} else {
+		UI_WARN("WARNING: Current locale not found in menu items; "
+			"initializing selected_item to 0\n");
+		ui->state->selected_item = 0;
+	}
+	return VB2_SUCCESS;
+}
+
 static vb2_error_t draw_language_select(const struct ui_state *state,
 					const struct ui_state *prev_state)
 {
@@ -266,10 +284,62 @@ static vb2_error_t draw_language_select(const struct ui_state *state,
 	return VB2_SUCCESS;
 }
 
+static vb2_error_t language_select_action(struct ui_context *ui)
+{
+	vb2_error_t rv;
+	ui->locale_id = ui->state->selected_item;
+	UI_INFO("Locale changed to %u\n", ui->locale_id);
+
+	/* Write locale id back to nvdata. */
+	vb2api_set_locale_id(ui->ctx, ui->locale_id);
+
+	/* Commit nvdata changes immediately, in case of three-finger salute
+	   reboot. Ignore commit errors in recovery mode. */
+	rv = vb2ex_commit_data(ui->ctx);
+	if (rv && !(ui->ctx->flags & VB2_CONTEXT_RECOVERY_MODE))
+		return rv;
+
+	return ui_screen_back(ui);
+}
+
+const struct ui_menu *get_language_menu(struct ui_context *ui)
+{
+	int i;
+	uint32_t num_locales;
+	struct ui_menu_item *items;
+
+	if (ui->language_menu.num_items > 0)
+		return &ui->language_menu;
+
+	num_locales = vb2ex_get_locale_count();
+	if (num_locales == 0) {
+		UI_WARN("WARNING: No locales available; assuming 1 locale\n");
+		num_locales = 1;
+	}
+
+	items = malloc(num_locales * sizeof(struct ui_menu_item));
+	if (!items) {
+		UI_ERROR("ERROR: malloc failed for language items\n");
+		return NULL;
+	}
+
+	for (i = 0; i < num_locales; i++) {
+		items[i].name = "Some language";
+		items[i].action = language_select_action;
+	}
+
+	ui->language_menu.num_items = num_locales;
+	ui->language_menu.items = items;
+	return &ui->language_menu;
+}
+
 static const struct ui_screen_info language_select_screen = {
 	.id = VB2_SCREEN_LANGUAGE_SELECT,
+	.name = "Language selection screen",
+	.init = language_select_init,
 	.draw = draw_language_select,
 	.mesg = "Language selection",
+	.get_menu = get_language_menu,
 };
 
 /******************************************************************************/
