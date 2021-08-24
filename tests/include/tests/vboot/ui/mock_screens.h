@@ -40,4 +40,17 @@ vb2_error_t mock_action_flag0(struct ui_context *ui);
 vb2_error_t mock_action_flag1(struct ui_context *ui);
 vb2_error_t mock_action_flag2(struct ui_context *ui);
 
+/*
+ * Add will_return to mock_action_countdown. mock_action_countdown will
+ * 1. Return VB2_SUCCESS for iterations - 1 times, and then
+ * 2. Return VB2_REQUEST_UI_EXIT once.
+ */
+#define WILL_MOCK_ACTION_COUNTDOWN(iterations)                                 \
+	do {                                                                   \
+		if ((iterations) > 1)                                          \
+			will_return_count(mock_action_countdown, VB2_SUCCESS,  \
+					  (iterations) - 1);                   \
+		will_return(mock_action_countdown, VB2_REQUEST_UI_EXIT);       \
+	} while (0)
+
 #endif /* _TESTS_VBOOT_UI_MOCK_SCREENS_H */

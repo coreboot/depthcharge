@@ -162,6 +162,9 @@
  */
 #define UI_SIZE_MIN				2
 
+/* Time-related constants */
+#define UI_KEY_DELAY_MS 20  /* Delay between key scans in UI loops */
+
 static const struct rgb_color ui_color_bg		= { 0x20, 0x21, 0x24 };
 static const struct rgb_color ui_color_fg		= { 0xe8, 0xea, 0xed };
 static const struct rgb_color ui_color_footer_fg	= { 0x9a, 0xa0, 0xa6 };
@@ -838,6 +841,19 @@ char *ui_log_get_page_content(const struct ui_log_info *log, uint32_t page);
  */
 vb2_error_t ui_display_screen(struct ui_state *state,
 			      const struct ui_state *prev_state);
+
+/******************************************************************************/
+/* loop.c */
+
+/*
+ * The entry of main UI loop.
+ *
+ * @param ctx			Vboot2 context.
+ * @param root_screen_id	Root screen id.
+ * @param global_action		The entry of action function.
+ */
+vb2_error_t ui_loop(struct vb2_context *ctx, enum vb2_screen root_screen_id,
+		    vb2_error_t (*global_action)(struct ui_context *ui));
 
 /******************************************************************************/
 /* menu.c */

@@ -16,6 +16,7 @@ depthcharge-y += common.c
 depthcharge-y += draw.c
 depthcharge-y += layout.c
 depthcharge-y += log.c
+depthcharge-y += loop.c
 depthcharge-y += menu.c
 depthcharge-y += navigation.c
 depthcharge-y += screens.c

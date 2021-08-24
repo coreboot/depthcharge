@@ -28,4 +28,33 @@
 					     "hidden_item_mask"); \
 	} while (0)
 
+/*
+ * Add events to check the parameters of vb2ex_display_ui(). Pass MOCK_IGNORE to
+ * ignore the value of the parameter.
+ */
+#define EXPECT_DISPLAY_UI(_screen, _locale_id, _selected_item) \
+	do { \
+		if ((_screen) == MOCK_IGNORE) \
+			expect_any(vb2ex_display_ui, screen); \
+		else \
+			expect_value(vb2ex_display_ui, screen, (_screen)); \
+		if ((_locale_id) == MOCK_IGNORE) \
+			expect_any(vb2ex_display_ui, locale_id); \
+		else \
+			expect_value(vb2ex_display_ui, locale_id, \
+				     (_locale_id)); \
+		if ((_selected_item) == MOCK_IGNORE) \
+			expect_any(vb2ex_display_ui, selected_item); \
+		else \
+			expect_value(vb2ex_display_ui, selected_item, \
+				     (_selected_item)); \
+	} while (0)
+
+/*
+ * Add events to check if vb2ex_display_ui() has been called by using expect_any
+ * to all checked parameters.
+ */
+#define EXPECT_DISPLAY_UI_ANY() \
+	EXPECT_DISPLAY_UI(MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE)
+
 #endif /* _TESTS_VBOOT_UI_COMMON_H */
