@@ -36,35 +36,53 @@
 })
 
 #define LANGUAGE_SELECT_ITEM ((struct ui_menu_item){	\
+	.name = "Language selection",			\
 	.file = NULL,					\
 	.type = UI_MENU_ITEM_TYPE_LANGUAGE,		\
+	.target = VB2_SCREEN_LANGUAGE_SELECT,		\
 })
 
-#define PAGE_UP_ITEM ((struct ui_menu_item) {			\
+#define PAGE_UP_ITEM ((struct ui_menu_item){			\
+	.name = "Page up",					\
 	.file = "btn_page_up.bmp",				\
 	.disabled_help_text_file = "page_up_disabled_help.bmp",	\
+	.action = log_page_prev_action,				\
 })
 
-#define PAGE_DOWN_ITEM ((struct ui_menu_item) {				\
+#define PAGE_DOWN_ITEM ((struct ui_menu_item){				\
+	.name = "Page down",						\
 	.file = "btn_page_down.bmp",					\
 	.disabled_help_text_file = "page_down_disabled_help.bmp",	\
+	.action = log_page_next_action,					\
 })
 
 #define BACK_ITEM ((struct ui_menu_item){	\
+	.name = "Back",				\
 	.file = "btn_back.bmp",			\
+	.action = ui_screen_back,		\
 })
 
 #define ADVANCED_OPTIONS_ITEM ((struct ui_menu_item){	\
+	.name = "Advanced options",			\
 	.file = "btn_adv_options.bmp",			\
 	.type = UI_MENU_ITEM_TYPE_SECONDARY,		\
 	.icon_file = "ic_settings.bmp",			\
+	.target = VB2_SCREEN_ADVANCED_OPTIONS,		\
 })
 
+/* Action that will power off the device. */
+static vb2_error_t power_off_action(struct ui_context *ui)
+{
+	return VB2_REQUEST_SHUTDOWN;
+}
+
 #define POWER_OFF_ITEM ((struct ui_menu_item){	\
+	.name = "Power off",			\
 	.file = "btn_power_off.bmp",		\
 	.type = UI_MENU_ITEM_TYPE_SECONDARY,	\
 	.icon_file = "ic_power.bmp",		\
 	.flags = UI_MENU_ITEM_FLAG_NO_ARROW,	\
+	.action = power_off_action,		\
 })
 
 /******************************************************************************/
@@ -120,6 +138,100 @@ static vb2_error_t draw_log_desc(const struct ui_state *state,
 	prev_y = *y;
 
 	return rv;
+}
+
+/******************************************************************************/
+/* Functions for ui error handling */
+
+static vb2_error_t set_ui_error(struct ui_context *ui,
+				enum vb2_ui_error error_code)
+{
+	/* Keep the first occurring error. */
+	if (ui->error_code)
+		UI_INFO("When handling ui error %#x, another ui error "
+			"occurred: %#x",
+			ui->error_code, error_code);
+	else
+		ui->error_code = error_code;
+	/* Return to the ui loop to show the error code. */
+	return VB2_REQUEST_UI_CONTINUE;
+}
+
+static vb2_error_t set_ui_error_and_go_back(struct ui_context *ui,
+					    enum vb2_ui_error error_code)
+{
+	set_ui_error(ui, error_code);
+	return ui_screen_back(ui);
+}
+
+/******************************************************************************/
+/*
+ * Functions used for log screens
+ *
+ * Expects that the page_count is valid and page_up_item and page_down_item are
+ * assigned to correct menu item indices in all three functions, the
+ * current_page is valid in prev and next actions, and the back_item is assigned
+ * to a correct menu item index.
+ */
+
+/* TODO(b/167514343): Make log screen API more consistent */
+static vb2_error_t log_page_update(struct ui_context *ui,
+				   const char *new_log_string)
+{
+	const struct ui_screen_info *screen = ui->state->screen;
+
+	if (new_log_string) {
+		ui->state->page_count = vb2ex_prepare_log_screen(
+			screen->id, ui->locale_id, new_log_string);
+		if (ui->state->page_count == 0) {
+			UI_INFO("vb2ex_prepare_log_screen failed\n");
+			return VB2_ERROR_UI_LOG_INIT;
+		}
+		if (ui->state->current_page >= ui->state->page_count)
+			ui->state->current_page = ui->state->page_count - 1;
+		ui->force_display = 1;
+	}
+	VB2_CLR_BIT(ui->state->disabled_item_mask, screen->page_up_item);
+	VB2_CLR_BIT(ui->state->disabled_item_mask, screen->page_down_item);
+	if (ui->state->current_page == 0)
+		VB2_SET_BIT(ui->state->disabled_item_mask,
+			    screen->page_up_item);
+	if (ui->state->current_page == ui->state->page_count - 1)
+		VB2_SET_BIT(ui->state->disabled_item_mask,
+			    screen->page_down_item);
+
+	return VB2_SUCCESS;
+}
+
+static vb2_error_t log_page_reset_to_top(struct ui_context *ui)
+{
+	const struct ui_screen_info *screen = ui->state->screen;
+
+	ui->state->current_page = 0;
+	ui->state->selected_item = ui->state->page_count > 1
+					   ? screen->page_down_item
+					   : screen->back_item;
+	return log_page_update(ui, NULL);
+}
+
+static vb2_error_t log_page_prev_action(struct ui_context *ui)
+{
+	/* Validity check. */
+	if (ui->state->current_page == 0)
+		return VB2_SUCCESS;
+
+	ui->state->current_page--;
+	return log_page_update(ui, NULL);
+}
+
+static vb2_error_t log_page_next_action(struct ui_context *ui)
+{
+	/* Validity check. */
+	if (ui->state->current_page == ui->state->page_count - 1)
+		return VB2_SUCCESS;
+
+	ui->state->current_page++;
+	return log_page_update(ui, NULL);
 }
 
 /******************************************************************************/
@@ -357,6 +469,7 @@ static const struct ui_menu_item broken_items[] = {
 
 static const struct ui_screen_info broken_screen = {
 	.id = VB2_SCREEN_RECOVERY_BROKEN,
+	.name = "Recover broken device",
 	.icon = UI_ICON_TYPE_INFO,
 	.title = "broken_title.bmp",
 	.desc = UI_DESC(broken_desc),
@@ -374,61 +487,158 @@ static const struct ui_screen_info broken_screen = {
 /******************************************************************************/
 /* VB2_SCREEN_ADVANCED_OPTIONS */
 
+#define ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE 1
+#define ADVANCED_OPTIONS_ITEM_DEBUG_INFO 2
+
+vb2_error_t advanced_options_init(struct ui_context *ui)
+{
+	ui->state->selected_item = ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE;
+	if ((ui->ctx->flags & VB2_CONTEXT_DEVELOPER_MODE) ||
+	    !vb2api_allow_recovery(ui->ctx)) {
+		VB2_SET_BIT(ui->state->hidden_item_mask,
+			    ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE);
+		ui->state->selected_item = ADVANCED_OPTIONS_ITEM_DEBUG_INFO;
+	}
+
+	return VB2_SUCCESS;
+}
+
 static const struct ui_menu_item advanced_options_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	{ .file = "btn_dev_mode.bmp" },
-	{ .file = "btn_debug_info.bmp" },
-	{ .file = "btn_firmware_log.bmp" },
+	[ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE] = {
+		.name = "Enable developer mode",
+		.file = "btn_dev_mode.bmp",
+		.target = VB2_SCREEN_RECOVERY_TO_DEV,
+	},
+	[ADVANCED_OPTIONS_ITEM_DEBUG_INFO] = {
+		.name = "Debug info",
+		.file = "btn_debug_info.bmp",
+		.target = VB2_SCREEN_DEBUG_INFO,
+	},
+	{
+		.name = "Firmware log",
+		.file = "btn_firmware_log.bmp",
+		.target = VB2_SCREEN_FIRMWARE_LOG,
+	},
 	BACK_ITEM,
 	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info advanced_options_screen = {
 	.id = VB2_SCREEN_ADVANCED_OPTIONS,
+	.name = "Advanced options",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "adv_options_title.bmp",
-	.menu = UI_MENU(advanced_options_items),
+	.init = advanced_options_init,
 	.mesg = "Advanced options",
+	.menu = UI_MENU(advanced_options_items),
 };
 
 /******************************************************************************/
 /* VB2_SCREEN_DEBUG_INFO */
 
+#define DEBUG_INFO_ITEM_PAGE_UP 1
+#define DEBUG_INFO_ITEM_PAGE_DOWN 2
+#define DEBUG_INFO_ITEM_BACK 3
+
+static vb2_error_t debug_info_set_content(struct ui_context *ui)
+{
+	const char *log_string = vb2ex_get_debug_info(ui->ctx);
+	if (!log_string)
+		return set_ui_error_and_go_back(ui, VB2_UI_ERROR_DEBUG_LOG);
+	if (vb2_is_error(log_page_update(ui, log_string)))
+		return set_ui_error_and_go_back(ui, VB2_UI_ERROR_DEBUG_LOG);
+	return VB2_SUCCESS;
+}
+
+static vb2_error_t debug_info_init(struct ui_context *ui)
+{
+	VB2_TRY(debug_info_set_content(ui));
+	if (vb2_is_error(log_page_reset_to_top(ui)))
+		return set_ui_error_and_go_back(ui, VB2_UI_ERROR_DEBUG_LOG);
+	return VB2_SUCCESS;
+}
+
+static vb2_error_t debug_info_reinit(struct ui_context *ui)
+{
+	return debug_info_set_content(ui);
+}
+
 static const struct ui_menu_item debug_info_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	PAGE_UP_ITEM,
-	PAGE_DOWN_ITEM,
-	BACK_ITEM,
+	[DEBUG_INFO_ITEM_PAGE_UP] = PAGE_UP_ITEM,
+	[DEBUG_INFO_ITEM_PAGE_DOWN] = PAGE_DOWN_ITEM,
+	[DEBUG_INFO_ITEM_BACK] = BACK_ITEM,
 	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info debug_info_screen = {
 	.id = VB2_SCREEN_DEBUG_INFO,
+	.name = "Debug info",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "debug_info_title.bmp",
 	.menu = UI_MENU(debug_info_items),
+	.init = debug_info_init,
+	.reinit = debug_info_reinit,
 	.draw_desc = draw_log_desc,
 	.mesg = "Debug info",
+	.page_up_item = DEBUG_INFO_ITEM_PAGE_UP,
+	.page_down_item = DEBUG_INFO_ITEM_PAGE_DOWN,
+	.back_item = DEBUG_INFO_ITEM_BACK,
 };
 
 /******************************************************************************/
 /* VB2_SCREEN_FIRMWARE_LOG */
 
+#define FIRMWARE_LOG_ITEM_PAGE_UP 1
+#define FIRMWARE_LOG_ITEM_PAGE_DOWN 2
+#define FIRMWARE_LOG_ITEM_BACK 3
+
+static vb2_error_t firmware_log_set_content(struct ui_context *ui,
+					    int reset)
+{
+	const char *log_string = vb2ex_get_firmware_log(reset);
+	if (!log_string)
+		return set_ui_error_and_go_back(ui, VB2_UI_ERROR_FIRMWARE_LOG);
+	if (vb2_is_error(log_page_update(ui, log_string)))
+		return set_ui_error_and_go_back(ui, VB2_UI_ERROR_FIRMWARE_LOG);
+	return VB2_SUCCESS;
+}
+
+static vb2_error_t firmware_log_init(struct ui_context *ui)
+{
+	VB2_TRY(firmware_log_set_content(ui, 1));
+	if (vb2_is_error(log_page_reset_to_top(ui)))
+		return set_ui_error_and_go_back(ui, VB2_UI_ERROR_FIRMWARE_LOG);
+	return VB2_SUCCESS;
+}
+
+static vb2_error_t firmware_log_reinit(struct ui_context *ui)
+{
+	return firmware_log_set_content(ui, 0);
+}
+
 static const struct ui_menu_item firmware_log_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	PAGE_UP_ITEM,
-	PAGE_DOWN_ITEM,
-	BACK_ITEM,
+	[FIRMWARE_LOG_ITEM_PAGE_UP] = PAGE_UP_ITEM,
+	[FIRMWARE_LOG_ITEM_PAGE_DOWN] = PAGE_DOWN_ITEM,
+	[FIRMWARE_LOG_ITEM_BACK] = BACK_ITEM,
 	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info firmware_log_screen = {
 	.id = VB2_SCREEN_FIRMWARE_LOG,
+	.name = "Firmware log",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "firmware_log_title.bmp",
 	.menu = UI_MENU(firmware_log_items),
+	.init = firmware_log_init,
+	.reinit = firmware_log_reinit,
 	.draw_desc = draw_log_desc,
 	.mesg = "Firmware log",
+	.page_up_item = FIRMWARE_LOG_ITEM_PAGE_UP,
+	.page_down_item = FIRMWARE_LOG_ITEM_PAGE_DOWN,
+	.back_item = FIRMWARE_LOG_ITEM_BACK,
 };
 
 /******************************************************************************/

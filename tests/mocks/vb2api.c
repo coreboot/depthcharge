@@ -12,3 +12,8 @@ uint32_t vb2api_get_locale_id(struct vb2_context *ctx)
 {
 	return mock_type(uint32_t);
 }
+
+int vb2api_allow_recovery(struct vb2_context *ctx)
+{
+	return mock();
+}

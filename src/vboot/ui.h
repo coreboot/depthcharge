@@ -386,6 +386,14 @@ struct ui_screen_info {
 	 * will be ignored.
 	 */
 	const struct ui_menu *(*get_menu)(struct ui_context *ui);
+	/*
+	 * Indices of menu items;
+	 * used by log_page_* functions in ui/screens.c.
+	 */
+	uint32_t page_up_item;
+	uint32_t page_down_item;
+	uint32_t back_item;
+	uint32_t cancel_item;
 };
 
 /* Log string and its pages information. */

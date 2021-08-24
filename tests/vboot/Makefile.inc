@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: GPL-2.0
 
-subdirs-y := ui
+subdirs-y := ui callbacks
 
 tests-y += secdata_tpm-test
 

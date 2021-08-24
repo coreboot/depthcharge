@@ -53,3 +53,8 @@ uint32_t vb2ex_get_locale_count(void)
 {
 	return mock_type(uint32_t);
 }
+
+const char *vb2ex_get_debug_info(struct vb2_context *ctx)
+{
+	return "mock debug info";
+}
