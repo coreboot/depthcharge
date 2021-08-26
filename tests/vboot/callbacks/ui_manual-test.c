@@ -570,6 +570,96 @@ static void test_recovery_select_screen(void **state)
 			 VB2_REQUEST_SHUTDOWN);
 }
 
+static void test_advanced_options_screen_disabled_and_hidden_mask(void **state)
+{
+	struct ui_context *ui = *state;
+
+	setup_will_return_common();
+	WILL_SHUTDOWN_IN(5);
+	will_return_maybe(vb2ex_get_locale_count, 10);
+
+	EXPECT_DISPLAY_UI_ANY();
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	EXPECT_DISPLAY_UI_ANY();
+	EXPECT_DISPLAY_UI_ANY();
+	EXPECT_DISPLAY_UI_ANY();
+	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, MOCK_IGNORE,
+			  0x0, 0x0);
+
+	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	IGNORE_VB_TRY_LOAD_KERNEL();
+
+	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+			 VB2_REQUEST_SHUTDOWN);
+}
+
+static void test_advanced_options_screen(void **state)
+{
+	struct ui_context *ui = *state;
+
+	setup_will_return_common();
+	WILL_SHUTDOWN_IN(30);
+	will_return_maybe(vb2ex_get_locale_count, 10);
+
+	EXPECT_DISPLAY_UI_ANY();
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	EXPECT_DISPLAY_UI_ANY();
+	EXPECT_DISPLAY_UI_ANY();
+	EXPECT_DISPLAY_UI_ANY();
+	EXPECT_DISPLAY_UI_ANY();
+	/* #0: Language menu */
+	WILL_PRESS_KEY(VB_KEY_UP, 0);
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 0);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_LANGUAGE_SELECT);
+	/* #1: Enable dev mode */
+	WILL_PRESS_KEY(VB_KEY_ESC, 0);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	EXPECT_DISPLAY_UI_ANY();
+	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 1);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_TO_DEV);
+	/* #2: Debug info */
+	WILL_PRESS_KEY(VB_KEY_ESC, 0);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	EXPECT_DISPLAY_UI_ANY();
+	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 2);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO);
+	/* #3: Firmware log */
+	WILL_PRESS_KEY(VB_KEY_ESC, 0);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	EXPECT_DISPLAY_UI_ANY();
+	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 3);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_FIRMWARE_LOG);
+	/* #4: Back */
+	WILL_PRESS_KEY(VB_KEY_ESC, 0);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	EXPECT_DISPLAY_UI_ANY();
+	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 4);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
+	/* End of menu */
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	EXPECT_DISPLAY_UI_ANY();
+	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 2);
+
+	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(vb2ex_physical_presence_pressed, 0);
+	IGNORE_VB_TRY_LOAD_KERNEL();
+
+	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+			 VB2_REQUEST_SHUTDOWN);
+}
+
 #define UI_TEST(test_function_name) \
 	cmocka_unit_test_setup(test_function_name, setup_context)
 
@@ -604,6 +694,9 @@ int main(void)
 		/* Recovery select screen */
 		UI_TEST(test_recovery_select_screen_disabled_and_hidden_mask),
 		UI_TEST(test_recovery_select_screen),
+		/* Advanced options screen */
+		UI_TEST(test_advanced_options_screen_disabled_and_hidden_mask),
+		UI_TEST(test_advanced_options_screen),
 	};
 	return cmocka_run_group_tests(tests, NULL, NULL);
 }
