@@ -106,6 +106,8 @@ One unit test can be compiled and run by invoking `make tests/<module>/<test>`,
 for example `make tests/vboot/secdata_tpm-test`.
 To run all unit-tests (whole suite) invoke `make unit-tests`.
 
+Console output of UUT is not shown by default. Pass `TEST_PRINT=1` to `make` to
+enable it.
 
 ## Analysis of unit under test
 First, it is necessary to precisely establish what we want to test in

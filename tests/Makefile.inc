@@ -75,6 +75,10 @@ TEST_CFLAGS += -Wall -Werror -Wundef -Wstrict-prototypes
 TEST_CFLAGS += -std=gnu11 -Os
 TEST_CFLAGS += -ffunction-sections -fdata-sections -fno-builtin
 
+ifneq ($(filter-out 0,$(TEST_PRINT)),)
+TEST_CFLAGS += -D__TEST_PRINT__=1
+endif
+
 TEST_LDFLAGS += -Wl,--gc-sections -no-pie
 
 # Extra attributes for unit tests, declared per test
@@ -101,8 +105,9 @@ copy-test = $(foreach attr,$(attributes), \
 $(call add-special-class, tests)
 $(call evaluate_subdirs)
 
-default_mocks-srcs := tests/mocks/halt.c tests/mocks/util/commonparams.c
-default_mocks := halt commonparams
+default_mocks-srcs := tests/mocks/halt.c tests/mocks/util/commonparams.c \
+	tests/mocks/console.c
+default_mocks := halt commonparams console_write
 
 # Create actual targets for unit test binaries
 # $1 - test name
