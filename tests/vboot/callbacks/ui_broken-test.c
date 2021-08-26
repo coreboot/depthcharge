@@ -43,6 +43,7 @@ static void test_broken_ui_debug_info(void **state)
 	struct ui_context *ui = *state;
 
 	will_return_maybe(vb2api_gbb_get_flags, 0);
+	will_return_maybe(vb2ex_prepare_log_screen, 1);
 	WILL_SHUTDOWN_IN(5);
 	WILL_PRESS_KEY('\t', 0);
 	will_return_always(VbExKeyboardReadWithFlags, 0);

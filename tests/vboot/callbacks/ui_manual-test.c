@@ -603,6 +603,7 @@ static void test_advanced_options_screen(void **state)
 	setup_will_return_common();
 	WILL_SHUTDOWN_IN(30);
 	will_return_maybe(vb2ex_get_locale_count, 10);
+	will_return_maybe(vb2ex_prepare_log_screen, 1);
 
 	EXPECT_DISPLAY_UI_ANY();
 	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
@@ -710,6 +711,103 @@ static void test_language_ui_locale_count_0(void **state)
 	assert_int_equal(mock_locale_id, 0);
 }
 
+static void test_debug_info(void **state)
+{
+	struct ui_context *ui = *state;
+
+	setup_will_return_common();
+
+	WILL_SHUTDOWN_IN(5);
+	WILL_PRESS_KEY(0, 0);
+	WILL_PRESS_KEY('\t', 0);
+	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_always(vb2ex_prepare_log_screen, 1);
+	EXPECT_DISPLAY_UI_ANY();
+	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO);
+	IGNORE_VB_TRY_LOAD_KERNEL();
+
+	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+			 VB2_REQUEST_SHUTDOWN);
+}
+
+static void test_debug_info_enter_failed(void **state)
+{
+	struct ui_context *ui = *state;
+
+	setup_will_return_common();
+
+	WILL_SHUTDOWN_IN(5);
+	WILL_PRESS_KEY(0, 0);
+	WILL_PRESS_KEY('\t', 0);
+	will_return_always(vb2ex_prepare_log_screen, 0);
+	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	EXPECT_DISPLAY_UI_ANY();
+	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
+	IGNORE_VB_TRY_LOAD_KERNEL();
+
+	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+			 VB2_REQUEST_SHUTDOWN);
+}
+
+static void test_debug_info_one_page(void **state)
+{
+	struct ui_context *ui = *state;
+
+	setup_will_return_common();
+
+	WILL_SHUTDOWN_IN(8);
+	WILL_PRESS_KEY(0, 0);
+	WILL_PRESS_KEY('\t', 0);
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	will_return_always(vb2ex_prepare_log_screen, 1);
+	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	EXPECT_DISPLAY_UI_ANY();
+	/* 0x6 = 0b110 */
+	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO, MOCK_IGNORE, 3, 0x6, 0x0, 0);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
+	IGNORE_VB_TRY_LOAD_KERNEL();
+
+	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+			 VB2_REQUEST_SHUTDOWN);
+}
+
+static void test_debug_info_three_pages(void **state)
+{
+	struct ui_context *ui = *state;
+
+	setup_will_return_common();
+
+	WILL_SHUTDOWN_IN(15);
+	WILL_PRESS_KEY(0, 0);
+	WILL_PRESS_KEY('\t', 0);
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);	/* page 0, select page down */
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);	/* page 1, select page down */
+	WILL_PRESS_KEY(VB_KEY_UP, 0);		/* page 2, select page down */
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);	/* page 2, select page up */
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);	/* page 1, select page up */
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);		/* page 0, select page up */
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);	/* page 0, select page down */
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);		/* page 1, select page down */
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);	/* page 1, select back */
+	will_return_always(vb2ex_prepare_log_screen, 3);
+	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	EXPECT_DISPLAY_UI_ANY();
+	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO, MOCK_IGNORE, 2, 0x2, 0x0, 0);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO, MOCK_IGNORE, 2, 0x0, 0x0, 1);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO, MOCK_IGNORE, 2, 0x4, 0x0, 2);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO, MOCK_IGNORE, 1, 0x4, 0x0, 2);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO, MOCK_IGNORE, 1, 0x0, 0x0, 1);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO, MOCK_IGNORE, 1, 0x2, 0x0, 0);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO, MOCK_IGNORE, 2, 0x2, 0x0, 0);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO, MOCK_IGNORE, 2, 0x0, 0x0, 1);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO, MOCK_IGNORE, 3, 0x0, 0x0, 1);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
+	IGNORE_VB_TRY_LOAD_KERNEL();
+
+	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+			 VB2_REQUEST_SHUTDOWN);
+}
+
 #define UI_TEST(test_function_name) \
 	cmocka_unit_test_setup(test_function_name, setup_context)
 
@@ -750,6 +848,11 @@ int main(void)
 		/* Language select screen */
 		UI_TEST(test_language_ui_change_language),
 		UI_TEST(test_language_ui_locale_count_0),
+		/* Debug info screen */
+		UI_TEST(test_debug_info),
+		UI_TEST(test_debug_info_enter_failed),
+		UI_TEST(test_debug_info_one_page),
+		UI_TEST(test_debug_info_three_pages),
 	};
 	return cmocka_run_group_tests(tests, NULL, NULL);
 }

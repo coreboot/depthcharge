@@ -80,3 +80,9 @@ const char *vb2ex_get_firmware_log(int reset)
 		 firmware_log_snapshots_count);
 	return firmware_log_buf;
 }
+
+uint32_t vb2ex_prepare_log_screen(enum vb2_screen screen, uint32_t locale_id,
+				  const char *str)
+{
+	return mock_type(uint32_t);
+}
