@@ -653,6 +653,7 @@ static void test_advanced_options_screen(void **state)
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 2);
 
+	expect_any_always(vb2ex_prepare_log_screen, str);
 	will_return_maybe(VbExKeyboardReadWithFlags, 0);
 	will_return_maybe(vb2ex_physical_presence_pressed, 0);
 	IGNORE_VB_TRY_LOAD_KERNEL();
@@ -722,6 +723,7 @@ static void test_debug_info(void **state)
 	WILL_PRESS_KEY('\t', 0);
 	will_return_maybe(VbExKeyboardReadWithFlags, 0);
 	will_return_always(vb2ex_prepare_log_screen, 1);
+	expect_any_always(vb2ex_prepare_log_screen, str);
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO);
 	IGNORE_VB_TRY_LOAD_KERNEL();
@@ -741,6 +743,7 @@ static void test_debug_info_enter_failed(void **state)
 	WILL_PRESS_KEY('\t', 0);
 	will_return_always(vb2ex_prepare_log_screen, 0);
 	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	expect_any_always(vb2ex_prepare_log_screen, str);
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	IGNORE_VB_TRY_LOAD_KERNEL();
@@ -766,6 +769,7 @@ static void test_debug_info_one_page(void **state)
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO, MOCK_IGNORE, 3, 0x6, 0x0, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	IGNORE_VB_TRY_LOAD_KERNEL();
+	expect_any_always(vb2ex_prepare_log_screen, str);
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_SHUTDOWN);
@@ -802,6 +806,90 @@ static void test_debug_info_three_pages(void **state)
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO, MOCK_IGNORE, 2, 0x0, 0x0, 1);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO, MOCK_IGNORE, 3, 0x0, 0x0, 1);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
+	expect_any_always(vb2ex_prepare_log_screen, str);
+	IGNORE_VB_TRY_LOAD_KERNEL();
+
+	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+			 VB2_REQUEST_SHUTDOWN);
+}
+
+static void test_firmware_log(void **state)
+{
+	struct ui_context *ui = *state;
+
+	setup_will_return_common();
+
+	firmware_log_snapshots_count = 0;
+	WILL_SHUTDOWN_IN(10);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	will_return_maybe(vb2ex_prepare_log_screen, 1);
+	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	expect_string(vb2ex_prepare_log_screen, str, "1");
+	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	IGNORE_VB_TRY_LOAD_KERNEL();
+
+	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+			 VB2_REQUEST_SHUTDOWN);
+}
+
+static void test_firmware_log_again_reacquire_new_one(void **state)
+{
+	struct ui_context *ui = *state;
+
+	setup_will_return_common();
+
+	firmware_log_snapshots_count = 0;
+	WILL_SHUTDOWN_IN(10);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	WILL_PRESS_KEY(VB_KEY_ESC, 0);
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	will_return_maybe(vb2ex_prepare_log_screen, 1);
+	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	expect_string(vb2ex_prepare_log_screen, str, "1");
+	expect_string(vb2ex_prepare_log_screen, str, "2");
+	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	IGNORE_VB_TRY_LOAD_KERNEL();
+
+	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+			 VB2_REQUEST_SHUTDOWN);
+}
+
+static void test_firmware_log_back_not_reacquire_new_one(void **state)
+{
+	struct ui_context *ui = *state;
+
+	setup_will_return_common();
+
+	firmware_log_snapshots_count = 0;
+	WILL_SHUTDOWN_IN(10);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	WILL_PRESS_KEY('\t', 0); /* enter debug info screen */
+	WILL_PRESS_KEY(VB_KEY_ESC, 0);
+	will_return_maybe(vb2ex_prepare_log_screen, 1);
+	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	expect_string(vb2ex_prepare_log_screen, str, "1");
+	/* Skip the one entry, which is for preparing debug info */
+	expect_any(vb2ex_prepare_log_screen, str);
+	expect_string(vb2ex_prepare_log_screen, str, "1");
+	EXPECT_DISPLAY_UI_ANY_ALWAYS();
 	IGNORE_VB_TRY_LOAD_KERNEL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
@@ -853,6 +941,10 @@ int main(void)
 		UI_TEST(test_debug_info_enter_failed),
 		UI_TEST(test_debug_info_one_page),
 		UI_TEST(test_debug_info_three_pages),
+		/* Firmware log */
+		UI_TEST(test_firmware_log),
+		UI_TEST(test_firmware_log_again_reacquire_new_one),
+		UI_TEST(test_firmware_log_back_not_reacquire_new_one),
 	};
 	return cmocka_run_group_tests(tests, NULL, NULL);
 }

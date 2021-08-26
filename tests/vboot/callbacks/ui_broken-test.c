@@ -49,6 +49,7 @@ static void test_broken_ui_debug_info(void **state)
 	will_return_always(VbExKeyboardReadWithFlags, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_BROKEN);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO);
+	expect_any_always(vb2ex_prepare_log_screen, str);
 
 	assert_int_equal(vb2ex_broken_screen_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
 }
