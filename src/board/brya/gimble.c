@@ -11,8 +11,8 @@
 #include "drivers/bus/i2s/cavs-regs.h"
 #include "drivers/bus/i2s/intel_common/max98390.h"
 
-#define AUD_I2C_ADDR1		0x70
-#define AUD_I2C_ADDR2		0x72
+#define AUD_I2C_ADDR1		0x38
+#define AUD_I2C_ADDR2		0x3c
 #define SDMODE_PIN		GPP_A11
 
 const struct audio_config *variant_probe_audio_config(void)
