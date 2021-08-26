@@ -24,7 +24,6 @@ static void test_broken_ui_shortcuts_ignored(void **state)
 {
 	struct ui_context *ui = *state;
 
-	will_return_maybe(vb2api_get_locale_id, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	WILL_SHUTDOWN_IN(10);
 	WILL_PRESS_KEY(VB_KEY_CTRL('D'), 1);
@@ -43,7 +42,6 @@ static void test_broken_ui_debug_info(void **state)
 {
 	struct ui_context *ui = *state;
 
-	will_return_maybe(vb2api_get_locale_id, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	WILL_SHUTDOWN_IN(5);
 	WILL_PRESS_KEY('\t', 0);
@@ -58,7 +56,6 @@ static void test_broken_ui_disabled_and_hidden_item_mask(void **state)
 {
 	struct ui_context *ui = *state;
 
-	will_return_maybe(vb2api_get_locale_id, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	WILL_SHUTDOWN_IN(5);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_BROKEN, MOCK_IGNORE, MOCK_IGNORE,
@@ -73,7 +70,6 @@ static void test_broken_ui_screen(void **state)
 	struct ui_context *ui = *state;
 
 	WILL_SHUTDOWN_IN(7);
-	will_return_maybe(vb2api_get_locale_id, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_always(vb2ex_get_locale_count, 10);
 	will_return_maybe(vb2api_allow_recovery, 1);
@@ -105,7 +101,6 @@ static void test_broken_ui_power_button_shutdown(void **state)
 
 	struct ui_context *ui = *state;
 
-	will_return_maybe(vb2api_get_locale_id, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(VbExIsShutdownRequested, 0);
 	WILL_PRESS_KEY(VB_BUTTON_POWER_SHORT_PRESS, 0);

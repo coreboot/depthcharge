@@ -5,6 +5,7 @@
 #include <tests/vboot/ui/common.h>
 #include <mocks/callbacks.h>
 #include <mocks/util/commonparams.h>
+#include <mocks/vb2api.h>
 #include <vboot_api.h>
 #include <vb2_api.h>
 #include <vboot/util/commonparams.h>
@@ -32,7 +33,6 @@ static int setup_context(void **state)
 
 static void setup_will_return_common(void)
 {
-	will_return_maybe(vb2api_get_locale_id, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(vb2api_phone_recovery_ui_enabled, 1);
 	will_return_maybe(vb2api_diagnostic_ui_enabled, 1);
@@ -660,6 +660,56 @@ static void test_advanced_options_screen(void **state)
 			 VB2_REQUEST_SHUTDOWN);
 }
 
+static void test_language_ui_change_language(void **state)
+{
+	struct ui_context *ui = *state;
+
+	setup_will_return_common();
+	WILL_SHUTDOWN_IN(8);
+	will_return_maybe(vb2ex_get_locale_count, 100);
+	WILL_PRESS_KEY(VB_KEY_UP, 0);
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);	/* select language */
+	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);	/* select locale 24 */
+	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	IGNORE_VB_TRY_LOAD_KERNEL();
+	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, 23);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, 23, 0);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_LANGUAGE_SELECT, 23, 23);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_LANGUAGE_SELECT, 23, 24);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, 24);
+	mock_locale_id = 23;
+
+	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+			 VB2_REQUEST_SHUTDOWN);
+
+	assert_int_equal(mock_locale_id, 24);
+}
+
+static void test_language_ui_locale_count_0(void **state)
+{
+	struct ui_context *ui = *state;
+
+	setup_will_return_common();
+	WILL_SHUTDOWN_IN(8);
+	will_return_maybe(vb2ex_get_locale_count, 0);
+	WILL_PRESS_KEY(VB_KEY_UP, 0);
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);	/* select language */
+	WILL_PRESS_KEY(VB_KEY_ENTER, 0);	/* select locale 0 */
+	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	IGNORE_VB_TRY_LOAD_KERNEL();
+	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, 23);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, 23, 0);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_LANGUAGE_SELECT, 23, 0);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, 0);
+	mock_locale_id = 23;
+
+	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+			 VB2_REQUEST_SHUTDOWN);
+
+	assert_int_equal(mock_locale_id, 0);
+}
+
 #define UI_TEST(test_function_name) \
 	cmocka_unit_test_setup(test_function_name, setup_context)
 
@@ -697,6 +747,9 @@ int main(void)
 		/* Advanced options screen */
 		UI_TEST(test_advanced_options_screen_disabled_and_hidden_mask),
 		UI_TEST(test_advanced_options_screen),
+		/* Language select screen */
+		UI_TEST(test_language_ui_change_language),
+		UI_TEST(test_language_ui_locale_count_0),
 	};
 	return cmocka_run_group_tests(tests, NULL, NULL);
 }

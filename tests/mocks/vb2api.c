@@ -1,7 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0
 
 #include <tests/test.h>
+#include <mocks/vb2api.h>
 #include <vb2_api.h>
+
+uint32_t mock_locale_id;
 
 vb2_gbb_flags_t vb2api_gbb_get_flags(struct vb2_context *ctx)
 {
@@ -10,7 +13,12 @@ vb2_gbb_flags_t vb2api_gbb_get_flags(struct vb2_context *ctx)
 
 uint32_t vb2api_get_locale_id(struct vb2_context *ctx)
 {
-	return mock_type(uint32_t);
+	return mock_locale_id;
+}
+
+void vb2api_set_locale_id(struct vb2_context *ctx, uint32_t locale_id)
+{
+	mock_locale_id = locale_id;
 }
 
 int vb2api_allow_recovery(struct vb2_context *ctx)

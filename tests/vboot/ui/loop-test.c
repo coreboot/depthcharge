@@ -30,11 +30,6 @@ static int setup_common(void **state)
 	return 0;
 }
 
-static void setup_common_mocks(void)
-{
-	will_return_maybe(vb2api_get_locale_id, 0);
-}
-
 static void test_shutdown_detachable_ignore_power_button(void **state)
 {
 	if (!CONFIG(DETACHABLE))
@@ -179,15 +174,12 @@ static void test_loop_die_if_no_screen(void **state)
 {
 	struct ui_context *ui = *state;
 
-	setup_common_mocks();
 	expect_die(ui_loop(ui->ctx, MOCK_SCREEN_INVALID, NULL));
 }
 
 static void test_loop_shutdown_if_requested(void **state)
 {
 	struct ui_context *ui = *state;
-
-	setup_common_mocks();
 
 	will_return_always(VbExKeyboardReadWithFlags, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
@@ -202,8 +194,6 @@ static void test_loop_screen_action_request_ui_exit(void **state)
 {
 	struct ui_context *ui = *state;
 
-	setup_common_mocks();
-
 	will_return_always(VbExIsShutdownRequested, 0);
 	will_return_always(VbExKeyboardReadWithFlags, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
@@ -216,8 +206,6 @@ static void test_loop_screen_action_request_ui_exit(void **state)
 static void test_loop_global_action_request_ui_exit(void **state)
 {
 	struct ui_context *ui = *state;
-
-	setup_common_mocks();
 
 	will_return_always(VbExIsShutdownRequested, 0);
 	will_return_always(VbExKeyboardReadWithFlags, 0);
@@ -232,8 +220,6 @@ static void test_loop_global_action_request_ui_exit(void **state)
 static void test_loop_global_action_can_change_screen(void **state)
 {
 	struct ui_context *ui = *state;
-
-	setup_common_mocks();
 
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_always(VbExKeyboardReadWithFlags, 0);
@@ -250,8 +236,6 @@ static void test_loop_screen_action_success(void **state)
 {
 	struct ui_context *ui = *state;
 
-	setup_common_mocks();
-
 	will_return_always(VbExIsShutdownRequested, 0);
 	will_return_always(mock_action_flag0, VB2_REQUEST_UI_EXIT);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
@@ -265,8 +249,6 @@ static void test_loop_screen_action_success(void **state)
 static void test_loop_item_target_action_success(void **state)
 {
 	struct ui_context *ui = *state;
-
-	setup_common_mocks();
 
 	will_return_always(VbExIsShutdownRequested, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
@@ -283,8 +265,6 @@ static void test_loop_global_action_success(void **state)
 {
 	struct ui_context *ui = *state;
 
-	setup_common_mocks();
-
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_always(VbExIsShutdownRequested, 0);
 	will_return(mock_action_flag0, VB2_SUCCESS);
@@ -300,8 +280,6 @@ static void test_loop_global_action_success(void **state)
 static void test_loop_navigation(void **state)
 {
 	struct ui_context *ui = *state;
-
-	setup_common_mocks();
 
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	WILL_SHUTDOWN_IN(11);
@@ -337,8 +315,6 @@ static void test_loop_detachable_navigation(void **state)
 
 	struct ui_context *ui = *state;
 
-	setup_common_mocks();
-
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	WILL_SHUTDOWN_IN(11);
 	WILL_PRESS_KEY(VB_BUTTON_VOL_UP_SHORT_PRESS, 0);
@@ -371,8 +347,6 @@ static void test_loop_delay_sleep_20_ms(void **state)
 	struct ui_context *ui = *state;
 	const uint32_t mock_time_start_ms = mock_time_ms;
 
-	setup_common_mocks();
-
 	will_return(mock_action_msleep, 0);
 	will_return_maybe(VbExKeyboardReadWithFlags, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
@@ -388,8 +362,6 @@ static void test_loop_delay_complement_to_20_ms(void **state)
 {
 	struct ui_context *ui = *state;
 	const uint32_t mock_time_start_ms = mock_time_ms;
-
-	setup_common_mocks();
 
 	will_return(mock_action_msleep, UI_KEY_DELAY_MS / 2);
 	will_return_maybe(VbExKeyboardReadWithFlags, 0);
@@ -407,8 +379,6 @@ static void test_loop_delay_no_sleep_if_time_too_long(void **state)
 	struct ui_context *ui = *state;
 	const uint32_t mock_time_start_ms = mock_time_ms;
 
-	setup_common_mocks();
-
 	will_return_always(mock_action_msleep, 1234);
 	will_return_always(VbExKeyboardReadWithFlags, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
@@ -424,8 +394,6 @@ static void test_loop_delay_overflow_sleep_20_ms(void **state)
 {
 	struct ui_context *ui = *state;
 	const uint32_t mock_time_start_ms = mock_time_ms = UINT32_MAX;
-
-	setup_common_mocks();
 
 	will_return_maybe(VbExKeyboardReadWithFlags, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
@@ -443,8 +411,6 @@ static void test_loop_delay_overflow_complement_to_20_ms(void **state)
 	struct ui_context *ui = *state;
 	const uint32_t mock_time_start_ms = mock_time_ms = UINT32_MAX;
 
-	setup_common_mocks();
-
 	will_return(mock_action_msleep, UI_KEY_DELAY_MS / 2);
 	will_return_maybe(VbExKeyboardReadWithFlags, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
@@ -460,8 +426,6 @@ static void test_loop_delay_overflow_no_sleep_if_time_too_long(void **state)
 {
 	struct ui_context *ui = *state;
 	const uint32_t mock_time_start_ms = mock_time_ms = UINT32_MAX;
-
-	setup_common_mocks();
 
 	will_return(mock_action_msleep, 1234);
 	will_return_maybe(VbExKeyboardReadWithFlags, 0);
