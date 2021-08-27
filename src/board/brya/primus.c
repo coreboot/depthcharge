@@ -48,3 +48,15 @@ const struct tcss_map *variant_get_tcss_map(size_t *count)
 	*count = ARRAY_SIZE(typec_map);
 	return typec_map;
 }
+
+static const struct storage_config storage_configs[] = {
+	{ .media = STORAGE_NVME, .pci_dev = PCH_DEV_PCIE8 },
+	{ .media = STORAGE_NVME, .pci_dev = PCH_DEV_PCIE2 },
+	{ .media = STORAGE_SDHCI, .pci_dev = PCH_DEV_PCIE7 },
+};
+
+const struct storage_config *variant_get_storage_configs(size_t *count)
+{
+	*count = ARRAY_SIZE(storage_configs);
+	return storage_configs;
+}
