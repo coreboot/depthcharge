@@ -22,6 +22,7 @@
 #define PCH_DEV_SATA	PCI_DEV(0, 0x17, 0)
 #define PCH_DEV_CPU_RP0	PCI_DEV(0, 0x06, 0)
 #define PCH_DEV_PCIE0	PCI_DEV(0, 0x1c, 0)
+#define PCH_DEV_PCIE2	PCI_DEV(0, 0x1c, 2)
 #define PCH_DEV_PCIE4	PCI_DEV(0, 0x1c, 4)
 #define PCH_DEV_PCIE5	PCI_DEV(0, 0x1c, 5)
 #define PCH_DEV_PCIE7	PCI_DEV(0, 0x1c, 7)
