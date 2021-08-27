@@ -17,6 +17,10 @@
 #ifndef __BOOT_PAYLOAD_H__
 #define __BOOT_PAYLOAD_H__
 
+#include <libpayload.h>
+
+#include "base/list.h"
+
 /**
  * Holds information about each supported bootloader
  *
