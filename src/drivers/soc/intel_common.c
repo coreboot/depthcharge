@@ -71,7 +71,7 @@ static int get_original_pn(pcidev_t rp, const SocPcieRpGroup *groups,
 			continue;
 		}
 
-		idx += rp_func - rp_start_fn(group) + 1;
+		idx += rp_func - rp_start_fn(group);
 		return idx;
 	}
 
