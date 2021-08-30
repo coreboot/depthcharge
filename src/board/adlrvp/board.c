@@ -83,14 +83,6 @@ static uintptr_t get_ssp_base_address(void)
 	}
 }
 
-/*
- * get ssp port index for this particular config
- */
-int board_get_ssp_port_index(void)
-{
-	return CONFIG_ADLRVP_MAX98373_I2S_PORT;
-}
-
 static void adlrvp_setup_max98373_i2s(void)
 {
 	I2s *i2s = new_i2s_structure(&max98373_settings, AUD_BITDEPTH, 0,

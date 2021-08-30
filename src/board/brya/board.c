@@ -46,11 +46,6 @@ static int cr50_irq_status(void)
 	return alderlake_get_gpe(GPE0_DW0_13); /* GPP_A13 */
 }
 
-int board_get_ssp_port_index(void)
-{
-	return SSP_PORT_SPKR;
-}
-
 static void ec_setup(void)
 {
 	CrosEcLpcBus *cros_ec_lpc_bus =

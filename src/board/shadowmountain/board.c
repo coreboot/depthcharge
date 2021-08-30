@@ -104,14 +104,6 @@ static uintptr_t get_ssp_base_address(void)
 	}
 }
 
-/*
- * get ssp port index for this particular config
- */
-int board_get_ssp_port_index(void)
-{
-	return CONFIG_SHADOWMOUNTAIN_MAX98373_I2S_PORT;
-}
-
 static void shadowmountain_setup_max98373(void)
 {
 	I2s *i2s = new_i2s_structure(&max98373_settings, AUD_BITDEPTH, 0,

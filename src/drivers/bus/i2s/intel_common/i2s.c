@@ -14,6 +14,7 @@
 
 #include <arch/io.h>
 #include "base/container_of.h"
+#include "drivers/bus/i2s/cavs-regs.h"
 #include "drivers/bus/i2s/i2s.h"
 #include "drivers/bus/i2s/intel_common/i2s.h"
 #include "drivers/bus/i2s/intel_common/i2s-regs.h"
@@ -140,16 +141,6 @@ static uint32_t calculate_sscr2(void)
 }
 
 /*
- * get ssp port index for non max98373 amp's
- */
-#if CONFIG(INTEL_COMMON_I2S_CAVS_2_0) || CONFIG(INTEL_COMMON_I2S_CAVS_2_5)
-int __attribute__((weak)) board_get_ssp_port_index(void)
-{
-	return AMP_SSP_PORT_INDEX;
-}
-#endif
-
-/*
 * Power on DSP and Enable SSP for data transmission
 */
 static int enable_DSP_SSP(I2s *bus)
@@ -205,16 +196,14 @@ static int enable_DSP_SSP(I2s *bus)
 
 #if CONFIG(INTEL_COMMON_I2S_CAVS_2_0) || CONFIG(INTEL_COMMON_I2S_CAVS_2_5)
 	/* In cAVS 2.0 or cAVS 2.5, need to set I2S MDIV and NDIV */
-	write32((bus->lpe_bar4 + (MNCSS_REG_BLOCK_START + MDIV_M_VAL(board_get_ssp_port_index()))),
-		1);
-	write32((bus->lpe_bar4 + (MNCSS_REG_BLOCK_START + MDIV_N_VAL(board_get_ssp_port_index()))),
-		1);
+	write32((bus->lpe_bar4 + (MNCSS_REG_BLOCK_START + MDIV_M_VAL(bus->ssp_port))), 1);
+	write32((bus->lpe_bar4 + (MNCSS_REG_BLOCK_START + MDIV_N_VAL(bus->ssp_port))), 1);
 #endif
 
-#if (CONFIG(INTEL_COMMON_I2S_CAVS_2_5))
+#if CONFIG(INTEL_COMMON_I2S_CAVS_2_5)
 	/* SPA register should be set for each I2S port */
 	write32((bus->lpe_bar4 + I2SLCTL),
-		read32(bus->lpe_bar4 + I2SLCTL) | BIT(board_get_ssp_port_index()));
+	read32(bus->lpe_bar4 + I2SLCTL) | BIT(bus->ssp_port));
 #endif
 	return 0;
 }
@@ -365,6 +354,9 @@ I2s *new_i2s_structure(const I2sSettings *settings, int bps, GpioOps *sdmode,
 	bus->settings = settings;
 	bus->bits_per_sample = bps;
 	bus->sdmode_gpio = sdmode;
+#if CONFIG(INTEL_COMMON_I2S_CAVS_2_0) || CONFIG(INTEL_COMMON_I2S_CAVS_2_5)
+	bus->ssp_port = (ssp_i2s_start_address - SSP_I2S0_START_ADDRESS) / 0x1000;
+#endif
 
 	return bus;
 }

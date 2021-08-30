@@ -48,6 +48,8 @@
 #define AUDIO_DEV		0x1f
 #define AUDIO_FUNC		3
 #define SERIAL_CLOCK_RATE	0x18
+/* I2S0 register start address */
+#define SSP_I2S0_START_ADDRESS	0x10000
 /* I2S1 register start address */
 #define SSP_I2S1_START_ADDRESS	0x11000
 /* MNCSS - M/N clock synthesizer reg block */
@@ -67,7 +69,7 @@
 #define AUDIO_FUNC		3
 /* BITS 8:19 (SCR) of  SSxCO reg is used to configure BCLK */
 #define SERIAL_CLOCK_RATE	0x18
-/* I2S1 register start address */
+/* I2S0 register start address */
 #define SSP_I2S0_START_ADDRESS	0x10000
 /* I2S1 register start address */
 #define SSP_I2S1_START_ADDRESS	0x11000
