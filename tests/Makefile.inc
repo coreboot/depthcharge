@@ -101,8 +101,8 @@ copy-test = $(foreach attr,$(attributes), \
 $(call add-special-class, tests)
 $(call evaluate_subdirs)
 
-default_mocks-srcs := tests/mocks/halt.c
-default_mocks := halt
+default_mocks-srcs := tests/mocks/halt.c tests/mocks/util/commonparams.c
+default_mocks := halt commonparams
 
 # Create actual targets for unit test binaries
 # $1 - test name
