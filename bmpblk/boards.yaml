@@ -323,5 +323,5 @@ brya:
   dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 cherry:
-  # TODO: Add screen config here
-  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  screen:   [2256, 1504]
+  dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
