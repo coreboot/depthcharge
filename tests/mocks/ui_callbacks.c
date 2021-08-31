@@ -87,3 +87,14 @@ uint32_t vb2ex_prepare_log_screen(enum vb2_screen screen, uint32_t locale_id,
 	check_expected(str);
 	return mock_type(uint32_t);
 }
+
+vb2_error_t vb2ex_run_altfw(uint32_t altfw_id)
+{
+	check_expected(altfw_id);
+	return VB2_SUCCESS;
+}
+
+uint32_t vb2ex_get_altfw_count(void)
+{
+	return mock_type(uint32_t);
+}

@@ -1271,42 +1271,79 @@ static const struct ui_screen_info developer_invalid_disk_screen = {
 /******************************************************************************/
 /* VB2_SCREEN_DEVELOPER_SELECT_ALTFW */
 
-static const struct ui_menu_item developer_select_bootloader_items[] = {
+static const struct ui_menu_item developer_select_altfw_items_before[] = {
 	LANGUAGE_SELECT_ITEM,
 };
 
-static vb2_error_t get_bootloader_menu(struct ui_menu *ret_menu)
+static const struct ui_menu_item developer_select_altfw_items_after[] = {
+	BACK_ITEM,
+	POWER_OFF_ITEM,
+};
+
+static vb2_error_t developer_select_bootloader_init(struct ui_context *ui)
+{
+	if (ui_get_menu(ui)->num_items == 0)
+		return set_ui_error_and_go_back(ui, VB2_UI_ERROR_ALTFW_EMPTY);
+	/* Select the first bootloader. */
+	ui->state->selected_item =
+		ARRAY_SIZE(developer_select_altfw_items_before);
+	return VB2_SUCCESS;
+}
+
+static vb2_error_t developer_mode_boot_altfw_action(
+	struct ui_context *ui)
+{
+	uint32_t altfw_id;
+	const size_t menu_before_len =
+		ARRAY_SIZE(developer_select_altfw_items_before);
+
+	if (!(ui->ctx->flags & VB2_CONTEXT_DEVELOPER_MODE) ||
+	    !(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALLOWED) ||
+	    !(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALTFW_ALLOWED)) {
+		UI_ERROR("ERROR: Dev mode alternate bootloader not allowed\n");
+		return set_ui_error(ui, VB2_UI_ERROR_ALTFW_DISABLED);
+	}
+
+	if (vb2ex_get_altfw_count() == 0) {
+		UI_ERROR("ERROR: No alternate bootloader was found\n");
+		return set_ui_error(ui, VB2_UI_ERROR_ALTFW_EMPTY);
+	}
+
+	if (ui->key == UI_KEY_DEV_BOOT_ALTFW) {
+		altfw_id = 0;
+		UI_INFO("Try booting from default bootloader\n");
+	} else {
+		altfw_id = ui->state->selected_item - menu_before_len + 1;
+		UI_INFO("Try booting from bootloader #%u\n", altfw_id);
+	}
+
+	/* vb2ex_run_altfw will not return if successful. */
+	vb2ex_run_altfw(altfw_id);
+
+	UI_ERROR("ERROR: Alternate bootloader failed\n");
+	return set_ui_error(ui, VB2_UI_ERROR_ALTFW_FAILED);
+}
+
+static const struct ui_menu *get_bootloader_menu(struct ui_context *ui)
 {
 	struct altfw_info *node;
 	ListNode *head;
 	uint32_t num_bootloaders = 0;
-	static struct ui_menu_item *items;
-	static struct ui_menu menu;
+	struct ui_menu_item *items;
+	size_t num_items;
 	uint32_t i;
-	static const struct ui_menu_item menu_before[] = {
-		LANGUAGE_SELECT_ITEM,
-	};
-	static const struct ui_menu_item menu_after[] = {
-		BACK_ITEM,
-		POWER_OFF_ITEM,
-	};
-
-	*ret_menu = menu;
 
 	/* Cached */
-	if (menu.num_items > 0) {
-		UI_INFO("Cached with %zu item(s)\n", menu.num_items);
-		return VB2_SUCCESS;
+	if (ui->bootloader_menu.num_items > 0) {
+		UI_INFO("Cached with %zu item(s)\n",
+			ui->bootloader_menu.num_items);
+		return &ui->bootloader_menu;
 	}
-
-	if (ARRAY_SIZE(developer_select_bootloader_items) >
-	    ARRAY_SIZE(menu_before) + ARRAY_SIZE(menu_after))
-		return VB2_SUCCESS;
 
 	head = payload_get_altfw_list();
 	if (!head) {
-		UI_ERROR("Failed to get altfw list\n");
-		return VB2_SUCCESS;
+		UI_ERROR("ERROR: Failed to get altfw list\n");
+		return NULL;
 	}
 
 	list_for_each(node, *head, list_node) {
@@ -1315,19 +1352,28 @@ static vb2_error_t get_bootloader_menu(struct ui_menu *ret_menu)
 			num_bootloaders++;
 	}
 
-	menu.num_items = num_bootloaders + ARRAY_SIZE(menu_before) +
-			 ARRAY_SIZE(menu_after);
-	items = malloc(menu.num_items * sizeof(struct ui_menu_item));
+	if (num_bootloaders == 0) {
+		UI_WARN("No bootloader was found\n");
+		return NULL;
+	}
+
+	UI_INFO("num_bootloaders: %u\n", num_bootloaders);
+
+	num_items = num_bootloaders +
+		    ARRAY_SIZE(developer_select_altfw_items_before) +
+		    ARRAY_SIZE(developer_select_altfw_items_after);
+	items = malloc(num_items * sizeof(struct ui_menu_item));
 	if (!items) {
 		UI_ERROR("Failed to malloc menu items for bootloaders\n");
-		return VB2_ERROR_UI_MEMORY_ALLOC;
+		return NULL;
 	}
 
 	/* Copy prefix items to the begin. */
-	memcpy(&items[0], menu_before, sizeof(menu_before));
+	memcpy(&items[0], developer_select_altfw_items_before,
+	       sizeof(developer_select_altfw_items_before));
 
 	/* Copy bootloaders. */
-	i = ARRAY_SIZE(menu_before);
+	i = ARRAY_SIZE(developer_select_altfw_items_before);
 	list_for_each(node, *head, list_node) {
 		/* Discount default seqnum=0, since it is duplicated. */
 		if (!node->seqnum)
@@ -1345,27 +1391,31 @@ static vb2_error_t get_bootloader_menu(struct ui_menu *ret_menu)
 		}
 		items[i] = (struct ui_menu_item){
 			.name = name,
+			.action = developer_mode_boot_altfw_action,
 		};
 		i++;
 	}
 
 	/* Copy postfix items to the end. */
-	memcpy(&items[i], menu_after, sizeof(menu_after));
+	memcpy(&items[i], developer_select_altfw_items_after,
+	       sizeof(developer_select_altfw_items_after));
 
-	menu.items = items;
-	*ret_menu = menu;
+	ui->bootloader_menu.num_items = num_items;
+	ui->bootloader_menu.items = items;
 
-	UI_INFO("Returned with %zu item(s)\n", menu.num_items);
-	return VB2_SUCCESS;
+	return &ui->bootloader_menu;
 }
 
 static vb2_error_t draw_developer_select_bootloader(
 	const struct ui_state *state,
 	const struct ui_state *prev_state)
 {
-	struct ui_menu menu;
+	static const struct ui_menu empty_menu = {
+		.num_items = 0,
+		.items = NULL,
+	};
+	const struct ui_menu *menu;
 	int32_t y;
-	vb2_error_t rv;
 
 	/*
 	 * Call default drawing function to clear the screen if necessary,
@@ -1378,19 +1428,27 @@ static vb2_error_t draw_developer_select_bootloader(
 	y = UI_MARGIN_TOP + UI_LANG_BOX_HEIGHT + UI_LANG_MARGIN_BOTTOM +
 	    UI_TITLE_TEXT_HEIGHT + UI_TITLE_MARGIN_BOTTOM +
 	    UI_DESC_MARGIN_BOTTOM;
-	VB2_TRY(get_bootloader_menu(&menu));
-	rv = ui_draw_menu_items(&menu, state, prev_state, y);
 
-	return rv;
+	/*
+	 * TODO(b/172339016): make ui_context available in this function, so
+	 * that we can use ui_get_menu(ui) here.
+	 */
+	menu = state->screen->get_menu(NULL);
+	if (!menu)
+		menu = &empty_menu;
+
+	return ui_draw_menu_items(menu, state, prev_state, y);
 }
 
 static const struct ui_screen_info developer_select_bootloader_screen = {
 	.id = VB2_SCREEN_DEVELOPER_SELECT_ALTFW,
+	.name = "Select alternate bootloader",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "dev_select_bootloader_title.bmp",
-	.menu = UI_MENU(developer_select_bootloader_items),
+	.init = developer_select_bootloader_init,
 	.draw = draw_developer_select_bootloader,
 	.mesg = "Select an alternate bootloader.",
+	.get_menu = get_bootloader_menu,
 };
 
 /******************************************************************************/
