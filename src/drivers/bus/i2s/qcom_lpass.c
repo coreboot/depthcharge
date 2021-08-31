@@ -17,7 +17,7 @@
 #include <inttypes.h>
 #include <malloc.h>
 #include "base/container_of.h"
-#include "drivers/bus/i2s/sc7180.h"
+#include "drivers/bus/i2s/qcom_lpass.h"
 
 #define DISABLE				0x0
 #define ENABLE				0x1
@@ -65,7 +65,7 @@
 #define GDSC_ENABLE_BIT_MASK		BIT(31)
 #define GDSC_RETAIN_FF_ENABLE		BIT(11)
 
-static void sc7180_pll_configure(LpassPllSet *pll_reg)
+static void lpass_pll_configure(LpassPllSet *pll_reg)
 {
 	uint64_t start;
 	write32(&pll_reg->dig_pll_mode, DISABLE);
@@ -89,7 +89,7 @@ static void sc7180_pll_configure(LpassPllSet *pll_reg)
 	while ((((read32(&pll_reg->dig_pll_mode) & PLL_LOCK_DET)) >> 0x1f)
 						!= PLL_OUT_CTRL) {
 		if (timer_us(start) > 5 * USECS_PER_MSEC) {
-			printf("ERROR: SC7180 audio PLL did not lock!\n");
+			printf("ERROR: lpass audio PLL did not lock!\n");
 			break;
 		}
 	}
@@ -113,83 +113,83 @@ static int enable_and_poll_gdsc_status(u32 *gdsc_addr)
 	return 0;
 }
 
-static void sc7180_init_registers(Sc7180I2s *bus)
+static void lpass_init_registers(LpassI2s *bus)
 {
-	Sc7180LpassReg *sc7180_reg = bus->sc7180_regs;
+	LpassReg *lpass_reg = bus->lpass_regs;
 
-	if(enable_and_poll_gdsc_status(&sc7180_reg->core_hm_gdscr))
+	if (enable_and_poll_gdsc_status(&lpass_reg->core_hm_gdscr))
 		printf("Failed to enable core_hm_gdscr.\n");
 
-	if(enable_and_poll_gdsc_status(&sc7180_reg->audio_hm_gdscr))
+	if (enable_and_poll_gdsc_status(&lpass_reg->audio_hm_gdscr))
 		printf("Failed to enable audio_hm_gdscr.\n");
 
-	if(enable_and_poll_gdsc_status(&sc7180_reg->pdc_hm_gdscr))
+	if (enable_and_poll_gdsc_status(&lpass_reg->pdc_hm_gdscr))
 		printf("Failed to enable pdc_hm_gdscr.\n");
 
-	setbits_le32(&sc7180_reg->core_hm_gdscr, GDSC_RETAIN_FF_ENABLE);
+	setbits_le32(&lpass_reg->core_hm_gdscr, GDSC_RETAIN_FF_ENABLE);
 
-	setbits_le32(&sc7180_reg->ext_mclk0, ENABLE);
-	setbits_le32(&sc7180_reg->core, ENABLE);
-	setbits_le32(&sc7180_reg->core_ext_mclk0, ENABLE);
-	setbits_le32(&sc7180_reg->sysnoc_mport, ENABLE);
-	setbits_le32(&sc7180_reg->sysnoc_sway, ENABLE);
+	setbits_le32(&lpass_reg->ext_mclk0, ENABLE);
+	setbits_le32(&lpass_reg->core, ENABLE);
+	setbits_le32(&lpass_reg->core_ext_mclk0, ENABLE);
+	setbits_le32(&lpass_reg->sysnoc_mport, ENABLE);
+	setbits_le32(&lpass_reg->sysnoc_sway, ENABLE);
 
-	sc7180_pll_configure(&sc7180_reg->pll_config);
+	lpass_pll_configure(&lpass_reg->pll_config);
 
-	write32(&sc7180_reg->bit_cbcr[bus->device_id].lpaif_cfg_rgcr, SRC_DIV |
+	write32(&lpass_reg->bit_cbcr[bus->device_id].lpaif_cfg_rgcr, SRC_DIV |
 				CFG_SRC_SEL | CFG_MODE);
 
-	write32(&sc7180_reg->bit_cbcr[bus->device_id].lpaif_cmd_rgcr, ENABLE);
+	write32(&lpass_reg->bit_cbcr[bus->device_id].lpaif_cmd_rgcr, ENABLE);
 }
 
-static int lpass_devsetup(Sc7180I2s *bus, uintptr_t buffer, uint32_t length)
+static int lpass_devsetup(LpassI2s *bus, uintptr_t buffer, uint32_t length)
 {
 
-	Sc7180LpassReg *sc7180_reg = bus->sc7180_regs;
+	LpassReg *lpass_reg = bus->lpass_regs;
 
-	write32(&sc7180_reg->lmm[bus->device_id].mode_mux, DISABLE);
+	write32(&lpass_reg->lmm[bus->device_id].mode_mux, DISABLE);
 
 	/* Clear Read DMA registers */
-	write32(&sc7180_reg->dma_rd_reg[bus->device_id].rddma_ctl, DISABLE);
-	write32(&sc7180_reg->dma_rd_reg[bus->device_id].rddma_base, DISABLE);
-	write32(&sc7180_reg->dma_rd_reg[bus->device_id].rddma_buf_len, DISABLE);
-	write32(&sc7180_reg->dma_rd_reg[bus->device_id].rddma_per_len, DISABLE);
+	write32(&lpass_reg->dma_rd_reg[bus->device_id].rddma_ctl, DISABLE);
+	write32(&lpass_reg->dma_rd_reg[bus->device_id].rddma_base, DISABLE);
+	write32(&lpass_reg->dma_rd_reg[bus->device_id].rddma_buf_len, DISABLE);
+	write32(&lpass_reg->dma_rd_reg[bus->device_id].rddma_per_len, DISABLE);
 
 	/* Reset control register */
-	write32(&sc7180_reg->dma_rd_reg[bus->device_id].rddma_ctl, RESET);
-	write32(&sc7180_reg->dma_rd_reg[bus->device_id].rddma_ctl, DISABLE);
+	write32(&lpass_reg->dma_rd_reg[bus->device_id].rddma_ctl, RESET);
+	write32(&lpass_reg->dma_rd_reg[bus->device_id].rddma_ctl, DISABLE);
 
 	/* Congfigure I2S for playback */
-	write32(&sc7180_reg->i2s_reg[bus->device_id].pcm_i2s_sel, DISABLE);
+	write32(&lpass_reg->i2s_reg[bus->device_id].pcm_i2s_sel, DISABLE);
 
 
-	write32(&sc7180_reg->i2s_reg[bus->device_id].i2s_ctl, SPKR_MODE |
+	write32(&lpass_reg->i2s_reg[bus->device_id].i2s_ctl, SPKR_MODE |
 				LONG_RATE_SHIFT | RESET);
 
-	clrbits_le32(&sc7180_reg->i2s_reg[bus->device_id].i2s_ctl, RESET);
+	clrbits_le32(&lpass_reg->i2s_reg[bus->device_id].i2s_ctl, RESET);
 
 	/* Configure Read DMA registers */
-	write32(&sc7180_reg->dma_rd_reg[bus->device_id].rddma_base, buffer);
-	write32(&sc7180_reg->dma_rd_reg[bus->device_id].rddma_buf_len,
+	write32(&lpass_reg->dma_rd_reg[bus->device_id].rddma_base, buffer);
+	write32(&lpass_reg->dma_rd_reg[bus->device_id].rddma_buf_len,
 								length-1);
-	write32(&sc7180_reg->dma_rd_reg[bus->device_id].rddma_per_len,
+	write32(&lpass_reg->dma_rd_reg[bus->device_id].rddma_per_len,
 							 (length / 2)-1);
 
-	write32(&sc7180_reg->dma_rd_reg[bus->device_id].rddma_ctl, WPSCNT |
+	write32(&lpass_reg->dma_rd_reg[bus->device_id].rddma_ctl, WPSCNT |
 				FIFO_WATERMARK | AUDIO_INTF_SHIFT |
 				BURST_EN | DYNAMIC_CLK_EN);
 
-	setbits_le32(&sc7180_reg->dma_rd_reg[bus->device_id].rddma_ctl,
+	setbits_le32(&lpass_reg->dma_rd_reg[bus->device_id].rddma_ctl,
 						ENABLE);
-	write32(&sc7180_reg->irq_reg[bus->device_id].irq_en,
+	write32(&lpass_reg->irq_reg[bus->device_id].irq_en,
 						LPAIF_IRQ_ALL(bus->device_id));
 
 	return 0;
 }
 
-static int sc7180_set_bitclock(Sc7180I2s *bus)
+static int lpass_set_bitclock(LpassI2s *bus)
 {
-	Sc7180LpassReg *sc7180_reg = bus->sc7180_regs;
+	LpassReg *lpass_reg = bus->lpass_regs;
 	uint32_t data_m = 0;
 	uint32_t data_n = 0;
 	uint32_t data_d = 0;
@@ -225,29 +225,29 @@ static int sc7180_set_bitclock(Sc7180I2s *bus)
 		return 1;
 	}
 
-	write32(&sc7180_reg->bit_cbcr[bus->device_id].lpaif_m, data_m);
-	write32(&sc7180_reg->bit_cbcr[bus->device_id].lpaif_n, data_n);
-	write32(&sc7180_reg->bit_cbcr[bus->device_id].lpaif_d, data_d);
+	write32(&lpass_reg->bit_cbcr[bus->device_id].lpaif_m, data_m);
+	write32(&lpass_reg->bit_cbcr[bus->device_id].lpaif_n, data_n);
+	write32(&lpass_reg->bit_cbcr[bus->device_id].lpaif_d, data_d);
 
-	write32(&sc7180_reg->bit_cbcr[bus->device_id].lpaif_cfg_rgcr,
+	write32(&lpass_reg->bit_cbcr[bus->device_id].lpaif_cfg_rgcr,
 			CFG_MODE | CFG_SRC_SEL);
 
-	write32(&sc7180_reg->bit_cbcr[bus->device_id].lpaif_cmd_rgcr, ENABLE);
+	write32(&lpass_reg->bit_cbcr[bus->device_id].lpaif_cmd_rgcr, ENABLE);
 
 	return 0;
 }
-static int sc7180_i2s_send(I2sOps *me, uint32_t *data, unsigned int length)
+static int lpass_i2s_send(I2sOps *me, uint32_t *data, unsigned int length)
 {
-	Sc7180I2s *bus = container_of(me, Sc7180I2s, ops);
-	Sc7180LpassReg *sc7180_reg = bus->sc7180_regs;
+	LpassI2s *bus = container_of(me, LpassI2s, ops);
+	LpassReg *lpass_reg = bus->lpass_regs;
 	uint32_t *buffer;
 	uint32_t bus_length = length * sizeof(uint32_t);
 	int irq_status;
 	int ret = 0;
 
 	if (!bus->initialized) {
-		sc7180_init_registers(bus);
-		if (sc7180_set_bitclock(bus))
+		lpass_init_registers(bus);
+		if (lpass_set_bitclock(bus))
 			return 1;
 		bus->initialized = 1;
 	}
@@ -260,36 +260,36 @@ static int sc7180_i2s_send(I2sOps *me, uint32_t *data, unsigned int length)
 
 
 	/* Play tone for playback_time_ms */
-	write32(&sc7180_reg->bit_cbcr[bus->device_id].ibit_cbcr, ENABLE);
-	setbits_le32(&sc7180_reg->i2s_reg[bus->device_id].i2s_ctl, SPKR_EN);
-	irq_status = read32(&sc7180_reg->irq_reg[bus->device_id].irq_raw_stat);
+	write32(&lpass_reg->bit_cbcr[bus->device_id].ibit_cbcr, ENABLE);
+	setbits_le32(&lpass_reg->i2s_reg[bus->device_id].i2s_ctl, SPKR_EN);
+	irq_status = read32(&lpass_reg->irq_reg[bus->device_id].irq_raw_stat);
 	while ( irq_status != LPAIF_IRQ_PER(bus->device_id)) {
 		if( irq_status ==  LPAIF_IRQ_ERR(bus->device_id)) {
 			ret = 1;
 			break;
 		}
-		irq_status = read32(&sc7180_reg->irq_reg[bus->device_id].
+		irq_status = read32(&lpass_reg->irq_reg[bus->device_id].
 								irq_raw_stat);
 	}
 
-	clrbits_le32(&sc7180_reg->i2s_reg[bus->device_id].i2s_ctl, SPKR_EN);
-	write32(&sc7180_reg->irq_reg[bus->device_id].irq_clear,
+	clrbits_le32(&lpass_reg->i2s_reg[bus->device_id].i2s_ctl, SPKR_EN);
+	write32(&lpass_reg->irq_reg[bus->device_id].irq_clear,
 		LPAIF_IRQ_ALL(bus->device_id));
-	clrbits_le32(&sc7180_reg->bit_cbcr[bus->device_id].ibit_cbcr, ENABLE);
+	clrbits_le32(&lpass_reg->bit_cbcr[bus->device_id].ibit_cbcr, ENABLE);
 
 	free(buffer);
 
 	return ret;
 }
 
-Sc7180I2s *new_sc7180_i2s(uint32_t sample_rate, uint32_t channels,
+LpassI2s *new_lpass_i2s(uint32_t sample_rate, uint32_t channels,
 				uint32_t bitwidth, uint8_t device_id,
 				uintptr_t base_addr)
 {
-	Sc7180I2s *bus = xzalloc(sizeof(*bus));
+	LpassI2s *bus = xzalloc(sizeof(*bus));
 
-	bus->ops.send = &sc7180_i2s_send;
-	bus->sc7180_regs = (Sc7180LpassReg *)base_addr;
+	bus->ops.send = &lpass_i2s_send;
+	bus->lpass_regs = (LpassReg *)base_addr;
 	bus->device_id = device_id;
 	bus->bclk_rate = channels * bitwidth * sample_rate;
 

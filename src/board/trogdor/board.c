@@ -32,7 +32,7 @@
 #include "drivers/tpm/spi.h"
 #include "drivers/sound/gpio_amp.h"
 #include "drivers/soc/qcom_spmi.h"
-#include "drivers/bus/i2s/sc7180.h"
+#include "drivers/bus/i2s/qcom_lpass.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/route.h"
 #include "drivers/sound/sound.h"
@@ -207,7 +207,7 @@ static int board_setup(void)
 				new_gpio_output_from_coreboot);
 	GpioAmpCodec *speaker_amp = new_gpio_amp_codec(amp_enable);
 
-	Sc7180I2s *soundq = new_sc7180_i2s(48000, 2, 16, LPASS_SECONDARY,
+	LpassI2s *soundq = new_lpass_i2s(48000, 2, 16, LPASS_SECONDARY,
 				           0x62000000);
 	uint16_t volume;
 	if (!strcmp(cb_mb_part_string(mainboard), "Homestar"))

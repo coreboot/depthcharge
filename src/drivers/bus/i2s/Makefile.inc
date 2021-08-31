@@ -20,4 +20,4 @@ depthcharge-$(CONFIG_DRIVER_BUS_I2S_MT8186) += mtk.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2S_MT8192) += mtk.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2S_TEGRA) += tegra.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2S_ROCKCHIP) += rockchip.c
-depthcharge-$(CONFIG_DRIVER_BUS_I2S_SC7180) += sc7180.c
+depthcharge-$(CONFIG_DRIVER_BUS_I2S_QCOM) += qcom_lpass.c

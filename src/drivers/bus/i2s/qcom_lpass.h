@@ -99,7 +99,7 @@ typedef struct {
 	uint8_t reserved2[0xff0];
 } LpaifIrq;
 
-struct Sc7180LpassReg {
+struct LpassReg {
 	uint8_t _reserved1[0x400020];
 	uint32_t qdsp_core_cbcr;
 	uint8_t _reserved2[0x400038 - 0x400024];
@@ -285,24 +285,24 @@ struct Sc7180LpassReg {
 	uint32_t top_cc_lpass_core_sway_ahb;
 };
 
-typedef struct Sc7180LpassReg Sc7180LpassReg;
+typedef struct LpassReg LpassReg;
 
-check_member(Sc7180LpassReg, sampling, 0x713000);
-check_member(Sc7180LpassReg, bus_alt, 0x789048);
-check_member(Sc7180LpassReg, avsync_stc, 0xd1c000);
-check_member(Sc7180LpassReg, lpass_cc_pll_test, 0xd4e014);
-check_member(Sc7180LpassReg, top_cc_lpass_core_sway_ahb, 0x1009000);
+check_member(LpassReg, sampling, 0x713000);
+check_member(LpassReg, bus_alt, 0x789048);
+check_member(LpassReg, avsync_stc, 0xd1c000);
+check_member(LpassReg, lpass_cc_pll_test, 0xd4e014);
+check_member(LpassReg, top_cc_lpass_core_sway_ahb, 0x1009000);
 
 
 typedef struct {
 	I2sOps ops;
-	Sc7180LpassReg *sc7180_regs;
+	LpassReg *lpass_regs;
 	uint8_t device_id;
 	uint8_t initialized;
 	uint32_t bclk_rate;
-} Sc7180I2s;
+} LpassI2s;
 
-Sc7180I2s *new_sc7180_i2s(uint32_t sample_rate, uint32_t channels,
+LpassI2s *new_lpass_i2s(uint32_t sample_rate, uint32_t channels,
 				uint32_t bitwidth, uint8_t device_id,
 				uintptr_t base_addr);
 

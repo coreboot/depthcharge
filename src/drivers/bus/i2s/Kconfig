@@ -38,8 +38,8 @@ config DRIVER_BUS_I2S_ROCKCHIP
 	bool "Rockchip I2S driver"
 	default n
 
-config DRIVER_BUS_I2S_SC7180
-	bool "SC7180 I2S driver"
+config DRIVER_BUS_I2S_QCOM
+	bool "QCOM I2S driver"
 	default n
 
 source "src/drivers/bus/i2s/baytrail/Kconfig"
