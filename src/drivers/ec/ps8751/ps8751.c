@@ -45,6 +45,14 @@
 #define PS8751_P1_SPI_WP_EN	0x10	/* WP enable bit */
 #define PS8751_P1_SPI_WP_DIS	0x00	/* WP disable "bit" */
 
+/*
+ * PS8805 register to distinguish chip revision
+ * bit 7-4: 1010b is A3 chip, 0000b is A2 chip
+ */
+#define PS8805_P0_REG_CHIP_REVISION	0x62
+#define PS8805_P0_CHIP_REVISION_A2	0x00
+#define PS8805_P0_CHIP_REVISION_A3	0x0a
+
 #define PS8805_P2_SPI_WP	0x2a
 #define PS8805_P2_SPI_WP_EN	0x10	/* WP enable bit */
 #define PS8805_P2_SPI_WP_DIS	0x00	/* WP disable "bit" */
@@ -818,6 +826,7 @@ static int __must_check ps8751_get_hw_version(Ps8751 *me, uint8_t *version)
 	int status;
 	uint8_t low;
 	uint8_t high;
+	uint8_t p0_chip_rev;
 
 	status = read_reg(me, PAGE_1, P1_CHIP_REV_LO, &low);
 	if (status == 0)
@@ -827,6 +836,16 @@ static int __must_check ps8751_get_hw_version(Ps8751 *me, uint8_t *version)
 		return status;
 	}
 	*version = (high << 4) | low;
+
+	/*
+	 * add PS8805 chip revision to assign correct A3 version
+	 */
+	if (me->chip.product == PARADE_PS8805_PRODUCT_ID) {
+		status = read_reg(me, PAGE_0, PS8805_P0_REG_CHIP_REVISION,
+				  &p0_chip_rev);
+		if (status == 0 && p0_chip_rev == PS8805_P0_CHIP_REVISION_A3)
+			*version = 0xa3;
+	}
 	return 0;
 }
 
