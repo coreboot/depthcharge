@@ -55,3 +55,37 @@ vb2_error_t vb2ex_manual_recovery_ui(struct vb2_context *ctx)
 	return ui_loop(ctx, VB2_SCREEN_RECOVERY_SELECT,
 		       ui_manual_recovery_action);
 }
+
+static vb2_error_t developer_action(struct ui_context *ui)
+{
+	/* Developer mode keyboard shortcuts */
+	if (ui->key == '\t')
+		return ui_screen_change(ui, VB2_SCREEN_DEBUG_INFO);
+
+	/* Ignore other shortcuts */
+	if (!(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALLOWED))
+		return VB2_REQUEST_UI_CONTINUE;
+
+	if (ui->key == UI_KEY_DEV_TO_NORM)
+		return ui_screen_change(ui, VB2_SCREEN_DEVELOPER_TO_NORM);
+	if (ui->key == UI_KEY_DEV_BOOT_EXTERNAL ||
+	    (CONFIG(DETACHABLE) && ui->key == VB_BUTTON_VOL_UP_LONG_PRESS))
+		return ui_developer_mode_boot_external_action(ui);
+	if (ui->key == UI_KEY_DEV_BOOT_INTERNAL ||
+	    (CONFIG(DETACHABLE) && ui->key == VB_BUTTON_VOL_DOWN_LONG_PRESS))
+		return ui_developer_mode_boot_internal_action(ui);
+	if (ui->key == UI_KEY_DEV_BOOT_ALTFW)
+		return ui_developer_mode_boot_altfw_action(ui);
+
+	return VB2_SUCCESS;
+}
+
+vb2_error_t vb2ex_developer_ui(struct vb2_context *ctx)
+{
+	enum vb2_screen root_screen_id = VB2_SCREEN_DEVELOPER_MODE;
+	if (!(ctx->flags & VB2_CONTEXT_DEV_BOOT_ALLOWED)) {
+		UI_WARN("WARNING: Dev boot not allowed; forcing to-norm\n");
+		root_screen_id = VB2_SCREEN_DEVELOPER_TO_NORM;
+	}
+	return ui_loop(ctx, root_screen_id, developer_action);
+}

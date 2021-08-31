@@ -46,3 +46,15 @@ void vb2api_request_diagnostics(struct vb2_context *ctx)
 {
 	function_called();
 }
+
+enum vb2_dev_default_boot_target
+vb2api_get_dev_default_boot_target(struct vb2_context *ctx)
+{
+	return mock_type(enum vb2_dev_default_boot_target);
+}
+
+vb2_error_t vb2api_disable_developer_mode(struct vb2_context *ctx)
+{
+	function_called();
+	return VB2_SUCCESS;
+}

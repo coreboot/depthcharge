@@ -9,6 +9,10 @@
 #include <vb2_api.h>
 #include <vboot/util/commonparams.h>
 
+/* Mock functions */
+uint32_t VbExIsShutdownRequested(void) { return mock_type(uint32_t); }
+
+/* Tests */
 struct ui_context test_ui_ctx;
 
 static int setup_context(void **state)

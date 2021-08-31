@@ -20,6 +20,10 @@
 				   WILL_RETURN_ALWAYS); \
 	} while (0)
 
+/* Mock functions */
+uint32_t VbExIsShutdownRequested(void) { return mock_type(uint32_t); }
+
+/* Tests */
 struct ui_context test_ui_ctx;
 
 static int setup_context(void **state)
@@ -28,6 +32,9 @@ static int setup_context(void **state)
 	reset_mock_workbuf = 1;
 	test_ui_ctx.ctx = vboot_get_context();
 	*state = &test_ui_ctx;
+
+	mock_time_ms = 31ULL * MSECS_PER_SEC;
+
 	return 0;
 }
 
@@ -348,6 +355,7 @@ static void test_manual_ui_confirm_by_untrusted_fails_ppkeyboard(void **state)
 	will_return_maybe(VbExKeyboardReadWithFlags, 0);
 	will_return_maybe(vb2ex_physical_presence_pressed, 0);
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_BEEP(250, 400, mock_time_ms + 3 * UI_KEY_DELAY_MS);
 	IGNORE_VB_TRY_LOAD_KERNEL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
@@ -369,6 +377,7 @@ static void test_manual_ui_cannot_enable_dev_enabled(void **state)
 	will_return_maybe(VbExKeyboardReadWithFlags, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
+	EXPECT_BEEP(250, 400, mock_time_ms + 2 * UI_KEY_DELAY_MS);
 	IGNORE_VB_TRY_LOAD_KERNEL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
@@ -392,6 +401,7 @@ static void test_manual_ui_cannot_enable_dev_enabled_ppkeyboard(void **state)
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
+	EXPECT_BEEP(250, 400, mock_time_ms + 2 * UI_KEY_DELAY_MS);
 	IGNORE_VB_TRY_LOAD_KERNEL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
@@ -746,6 +756,7 @@ static void test_debug_info_enter_failed(void **state)
 	expect_any_always(vb2ex_prepare_log_screen, str);
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
+	EXPECT_BEEP(250, 400, mock_time_ms + 2 * UI_KEY_DELAY_MS);
 	IGNORE_VB_TRY_LOAD_KERNEL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),

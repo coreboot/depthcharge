@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 
 #include <tests/test.h>
+#include <tests/vboot/common.h>
 #include <mocks/callbacks.h>
 #include <vboot_api.h>
 #include <vb2_api.h>
@@ -9,11 +10,6 @@ uint32_t mock_time_ms;
 
 char firmware_log_buf[FIRMWARE_LOG_BUFFER_LEN];
 int firmware_log_snapshots_count;
-
-uint32_t VbExIsShutdownRequested(void)
-{
-	return mock_type(uint32_t);
-}
 
 uint32_t VbExKeyboardRead(void)
 {
@@ -97,4 +93,20 @@ vb2_error_t vb2ex_run_altfw(uint32_t altfw_id)
 uint32_t vb2ex_get_altfw_count(void)
 {
 	return mock_type(uint32_t);
+}
+
+/*
+ * This mock function requires a mock value as expected called time, and has two
+ * check_expected calls for the two parameters. The expected_time checking is
+ * done by ASSERT_TIME_RANGE.
+ */
+void vb2ex_beep(uint32_t msec, uint32_t frequency)
+{
+	uint32_t expected_time = mock_type(uint32_t);
+
+	check_expected(msec);
+	check_expected(frequency);
+	ASSERT_TIME_RANGE(mock_time_ms, expected_time);
+
+	mock_time_ms += msec;
 }

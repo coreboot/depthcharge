@@ -164,11 +164,21 @@
 
 /* Time-related constants */
 #define UI_KEY_DELAY_MS 20  /* Delay between key scans in UI loops */
+#define DEV_DELAY_SHORT_MS (2 * MSECS_PER_SEC)		/* 2 seconds */
+#define DEV_DELAY_NORMAL_MS (30 * MSECS_PER_SEC)	/* 30 seconds */
+#define DEV_DELAY_BEEP1_MS (20 * MSECS_PER_SEC)		/* 20 seconds */
+#define DEV_DELAY_BEEP2_MS (20 * MSECS_PER_SEC + 500)	/* 20.5 seconds */
 
 /* Pre-defined key for UI action functions */
-#define UI_KEY_REC_TO_DEV	VB_KEY_CTRL('D')
+#define UI_KEY_REC_TO_DEV		VB_KEY_CTRL('D')
+/* S for secure mode (normal mode) */
+#define UI_KEY_DEV_TO_NORM		VB_KEY_CTRL('S')
+/* D for internal Disk */
+#define UI_KEY_DEV_BOOT_INTERNAL	VB_KEY_CTRL('D')
+/* U for USB disk */
+#define UI_KEY_DEV_BOOT_EXTERNAL	VB_KEY_CTRL('U')
 /* L for aLtfw (formerly Legacy) */
-#define UI_KEY_DEV_BOOT_ALTFW	VB_KEY_CTRL('L')
+#define UI_KEY_DEV_BOOT_ALTFW		VB_KEY_CTRL('L')
 
 static const struct rgb_color ui_color_bg		= { 0x20, 0x21, 0x24 };
 static const struct rgb_color ui_color_fg		= { 0xe8, 0xea, 0xed };
@@ -807,6 +817,11 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
  * @return UI descriptor on success, NULL on error.
  */
 const struct ui_screen_info *ui_get_screen_info(enum vb2_screen screen_id);
+
+/* Expose these boot action functions for developer_action. */
+vb2_error_t ui_developer_mode_boot_internal_action(struct ui_context *ui);
+vb2_error_t ui_developer_mode_boot_external_action(struct ui_context *ui);
+vb2_error_t ui_developer_mode_boot_altfw_action(struct ui_context *ui);
 
 /******************************************************************************/
 /* log.c */

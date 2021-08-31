@@ -9,6 +9,10 @@
 #include <vboot_api.h>
 #include <vboot/ui/loop.c>
 
+/* Mock functions */
+uint32_t VbExIsShutdownRequested(void) { return mock_type(uint32_t); }
+
+/* Tests */
 struct ui_context test_ui_ctx;
 
 static vb2_error_t mock_action_msleep(struct ui_context *ui)

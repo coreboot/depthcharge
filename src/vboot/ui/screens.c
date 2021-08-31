@@ -1120,18 +1120,140 @@ static const struct ui_screen_info recovery_invalid_screen = {
 /* VB2_SCREEN_DEVELOPER_MODE */
 
 #define DEVELOPER_MODE_ITEM_RETURN_TO_SECURE 1
+#define DEVELOPER_MODE_ITEM_BOOT_INTERNAL 2
+#define DEVELOPER_MODE_ITEM_BOOT_EXTERNAL 3
+#define DEVELOPER_MODE_ITEM_SELECT_ALTFW 4
 
-static const struct ui_menu_item developer_mode_items[] = {
-	LANGUAGE_SELECT_ITEM,
-	[DEVELOPER_MODE_ITEM_RETURN_TO_SECURE] = {
-		.file = "btn_secure_mode.bmp"
-	},
-	{ .file = "btn_int_disk.bmp" },
-	{ .file = "btn_ext_disk.bmp" },
-	{ .file = "btn_alt_bootloader.bmp" },
-	ADVANCED_OPTIONS_ITEM,
-	POWER_OFF_ITEM,
-};
+static vb2_error_t developer_mode_init(struct ui_context *ui)
+{
+	enum vb2_dev_default_boot_target default_boot =
+		vb2api_get_dev_default_boot_target(ui->ctx);
+
+	/* Hide "Return to secure mode" button if GBB forces dev mode. */
+	if (vb2api_gbb_get_flags(ui->ctx) & VB2_GBB_FLAG_FORCE_DEV_SWITCH_ON)
+		VB2_SET_BIT(ui->state->hidden_item_mask,
+			    DEVELOPER_MODE_ITEM_RETURN_TO_SECURE);
+
+	/* Hide "Boot from external disk" button if not allowed. */
+	if (!(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED))
+		VB2_SET_BIT(ui->state->hidden_item_mask,
+			    DEVELOPER_MODE_ITEM_BOOT_EXTERNAL);
+
+	/* Hide "Select alternate bootloader" button if not allowed. */
+	if (!(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALTFW_ALLOWED))
+		VB2_SET_BIT(ui->state->hidden_item_mask,
+			    DEVELOPER_MODE_ITEM_SELECT_ALTFW);
+
+	/* Choose the default selection. */
+	switch (default_boot) {
+	case VB2_DEV_DEFAULT_BOOT_TARGET_EXTERNAL:
+		ui->state->selected_item = DEVELOPER_MODE_ITEM_BOOT_EXTERNAL;
+		break;
+	case VB2_DEV_DEFAULT_BOOT_TARGET_ALTFW:
+		ui->state->selected_item =
+			DEVELOPER_MODE_ITEM_SELECT_ALTFW;
+		break;
+	default:
+		ui->state->selected_item = DEVELOPER_MODE_ITEM_BOOT_INTERNAL;
+		break;
+	}
+
+	ui->start_time_ms = vb2ex_mtime();
+
+	return VB2_SUCCESS;
+}
+
+vb2_error_t ui_developer_mode_boot_internal_action(struct ui_context *ui)
+{
+	vb2_error_t rv;
+
+	/* Validity check, should never happen. */
+	if (!(ui->ctx->flags & VB2_CONTEXT_DEVELOPER_MODE) ||
+	    !(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALLOWED)) {
+		UI_ERROR("ERROR: Dev mode internal boot not allowed\n");
+		return VB2_SUCCESS;
+	}
+
+	rv = VbTryLoadKernel(ui->ctx, VB_DISK_FLAG_FIXED);
+	if (rv == VB2_SUCCESS)
+		return VB2_REQUEST_UI_EXIT;
+
+	UI_ERROR("ERROR: Failed to boot from internal disk: %#x\n", rv);
+	ui->error_beep = 1;
+	return set_ui_error(ui, VB2_UI_ERROR_INTERNAL_BOOT_FAILED);
+}
+
+vb2_error_t ui_developer_mode_boot_external_action(struct ui_context *ui)
+{
+	vb2_error_t rv;
+
+	if (!(ui->ctx->flags & VB2_CONTEXT_DEVELOPER_MODE) ||
+	    !(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALLOWED) ||
+	    !(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED)) {
+		UI_ERROR("ERROR: Dev mode external boot not allowed\n");
+		ui->error_beep = 1;
+		return set_ui_error(ui, VB2_UI_ERROR_EXTERNAL_BOOT_DISABLED);
+	}
+
+	rv = VbTryLoadKernel(ui->ctx, VB_DISK_FLAG_REMOVABLE);
+	if (rv == VB2_SUCCESS) {
+		return VB2_REQUEST_UI_EXIT;
+	} else if (rv == VB2_ERROR_LK_NO_DISK_FOUND) {
+		if (ui->state->screen->id !=
+		    VB2_SCREEN_DEVELOPER_BOOT_EXTERNAL) {
+			UI_WARN("No external disk found\n");
+			ui->error_beep = 1;
+		}
+		return ui_screen_change(
+			ui, VB2_SCREEN_DEVELOPER_BOOT_EXTERNAL);
+	} else {
+		if (ui->state->screen->id !=
+		    VB2_SCREEN_DEVELOPER_INVALID_DISK) {
+			UI_WARN("Invalid external disk: %#x\n", rv);
+			ui->error_beep = 1;
+		}
+		return ui_screen_change(
+			ui, VB2_SCREEN_DEVELOPER_INVALID_DISK);
+	}
+}
+
+static vb2_error_t developer_mode_action(struct ui_context *ui)
+{
+	const int use_short = vb2api_gbb_get_flags(ui->ctx) &
+			      VB2_GBB_FLAG_DEV_SCREEN_SHORT_DELAY;
+	uint64_t elapsed_ms;
+
+	/* Once any user interaction occurs, stop the timer. */
+	if (ui->key)
+		ui->disable_timer = 1;
+	if (ui->disable_timer)
+		return VB2_SUCCESS;
+
+	elapsed_ms = vb2ex_mtime() - ui->start_time_ms;
+
+	/* If we're using short delay, wait 2 seconds and don't beep. */
+	if (use_short && elapsed_ms > DEV_DELAY_SHORT_MS) {
+		UI_INFO("Booting default target after 2s\n");
+		ui->disable_timer = 1;
+		return ui_menu_select(ui);
+	}
+
+	/* Otherwise, beep at 20 and 20.5 seconds. */
+	if ((ui->beep_count == 0 && elapsed_ms > DEV_DELAY_BEEP1_MS) ||
+	    (ui->beep_count == 1 && elapsed_ms > DEV_DELAY_BEEP2_MS)) {
+		vb2ex_beep(250, 400);
+		ui->beep_count++;
+	}
+
+	/* Stop after 30 seconds. */
+	if (elapsed_ms > DEV_DELAY_NORMAL_MS) {
+		UI_INFO("Booting default target after 30s\n");
+		ui->disable_timer = 1;
+		return ui_menu_select(ui);
+	}
+
+	return VB2_SUCCESS;
+}
 
 static vb2_error_t draw_developer_mode_desc(
 	const struct ui_state *state,
@@ -1180,11 +1302,40 @@ static vb2_error_t draw_developer_mode_desc(
 	return VB2_SUCCESS;
 }
 
+static const struct ui_menu_item developer_mode_items[] = {
+	LANGUAGE_SELECT_ITEM,
+	[DEVELOPER_MODE_ITEM_RETURN_TO_SECURE] = {
+		.name = "Return to secure mode",
+		.file = "btn_secure_mode.bmp",
+		.target = VB2_SCREEN_DEVELOPER_TO_NORM,
+	},
+	[DEVELOPER_MODE_ITEM_BOOT_INTERNAL] = {
+		.name = "Boot from internal disk",
+		.file = "btn_int_disk.bmp",
+		.action = ui_developer_mode_boot_internal_action,
+	},
+	[DEVELOPER_MODE_ITEM_BOOT_EXTERNAL] = {
+		.name = "Boot from external disk",
+		.file = "btn_ext_disk.bmp",
+		.action = ui_developer_mode_boot_external_action,
+	},
+	[DEVELOPER_MODE_ITEM_SELECT_ALTFW] = {
+		.name = "Select alternate bootloader",
+		.file = "btn_alt_bootloader.bmp",
+		.target = VB2_SCREEN_DEVELOPER_SELECT_ALTFW,
+	},
+	ADVANCED_OPTIONS_ITEM,
+	POWER_OFF_ITEM,
+};
+
 static const struct ui_screen_info developer_mode_screen = {
 	.id = VB2_SCREEN_DEVELOPER_MODE,
+	.name = "Developer mode",
 	.icon = UI_ICON_TYPE_DEV_MODE,
 	.title = "dev_title.bmp",
 	.menu = UI_MENU(developer_mode_items),
+	.init = developer_mode_init,
+	.action = developer_mode_action,
 	.draw_desc = draw_developer_mode_desc,
 	.mesg = "You are in developer mode\n"
 		"To return to the recommended secure mode,\n"
@@ -1196,6 +1347,33 @@ static const struct ui_screen_info developer_mode_screen = {
 /******************************************************************************/
 /* VB2_SCREEN_DEVELOPER_TO_NORM */
 
+#define DEVELOPER_TO_NORM_ITEM_CONFIRM 1
+#define DEVELOPER_TO_NORM_ITEM_CANCEL 2
+
+static vb2_error_t developer_to_norm_init(struct ui_context *ui)
+{
+	/* Don't allow to-norm if GBB forces dev mode */
+	if (vb2api_gbb_get_flags(ui->ctx) & VB2_GBB_FLAG_FORCE_DEV_SWITCH_ON) {
+		UI_ERROR("ERROR: to-norm not allowed\n");
+		return set_ui_error_and_go_back(
+			ui, VB2_UI_ERROR_TO_NORM_NOT_ALLOWED);
+	}
+	ui->state->selected_item = DEVELOPER_TO_NORM_ITEM_CONFIRM;
+	/* Hide "Cancel" button if dev boot is not allowed */
+	if (!(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALLOWED))
+		VB2_SET_BIT(ui->state->hidden_item_mask,
+			    DEVELOPER_TO_NORM_ITEM_CANCEL);
+	return VB2_SUCCESS;
+}
+
+vb2_error_t developer_to_norm_action(struct ui_context *ui)
+{
+	if (vb2api_disable_developer_mode(ui->ctx) == VB2_SUCCESS)
+		return VB2_REQUEST_REBOOT;
+	else
+		return VB2_SUCCESS;
+}
+
 static const char *const developer_to_norm_desc[] = {
 	"dev_to_norm_desc0.bmp",
 	"dev_to_norm_desc1.bmp",
@@ -1203,17 +1381,27 @@ static const char *const developer_to_norm_desc[] = {
 
 static const struct ui_menu_item developer_to_norm_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	{ .file = "btn_confirm.bmp" },
-	{ .file = "btn_cancel.bmp" },
+	[DEVELOPER_TO_NORM_ITEM_CONFIRM] = {
+		.name = "Confirm",
+		.file = "btn_confirm.bmp",
+		.action = developer_to_norm_action,
+	},
+	[DEVELOPER_TO_NORM_ITEM_CANCEL] = {
+		.name = "Cancel",
+		.file = "btn_cancel.bmp",
+		.action = ui_screen_back,
+	},
 	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info developer_to_norm_screen = {
 	.id = VB2_SCREEN_DEVELOPER_TO_NORM,
+	.name = "Transition to normal mode",
 	.icon = UI_ICON_TYPE_RESTART,
 	.title = "dev_to_norm_title.bmp",
 	.desc = UI_DESC(developer_to_norm_desc),
 	.menu = UI_MENU(developer_to_norm_items),
+	.init = developer_to_norm_init,
 	.mesg = "Confirm returning to secure mode.\n"
 		"This option will disable developer mode and restore your\n"
 		"device to its original state.\n"
@@ -1235,10 +1423,12 @@ static const struct ui_menu_item developer_boot_external_items[] = {
 
 static const struct ui_screen_info developer_boot_external_screen = {
 	.id = VB2_SCREEN_DEVELOPER_BOOT_EXTERNAL,
+	.name = "Developer boot from external disk",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "dev_boot_ext_title.bmp",
 	.desc = UI_DESC(developer_boot_external_desc),
 	.menu = UI_MENU(developer_boot_external_items),
+	.action = ui_developer_mode_boot_external_action,
 	.mesg = "Plug in your external disk\n"
 		"If your external disk is ready with a Chrome OS image,\n"
 		"plug it into the device to boot.",
@@ -1259,10 +1449,12 @@ static const struct ui_menu_item developer_invalid_disk_items[] = {
 
 static const struct ui_screen_info developer_invalid_disk_screen = {
 	.id = VB2_SCREEN_DEVELOPER_INVALID_DISK,
+	.name = "Invalid external disk in dev mode",
 	.icon = UI_ICON_TYPE_ERROR,
 	.title = "dev_invalid_disk_title.bmp",
 	.desc = UI_DESC(developer_invalid_disk_desc),
 	.menu = UI_MENU(developer_invalid_disk_items),
+	.action = ui_developer_mode_boot_external_action,
 	.mesg = "No valid image detected\n"
 		"Make sure your external disk has a valid Chrome OS image,\n"
 		"and re-insert the disk when ready.",
@@ -1290,8 +1482,7 @@ static vb2_error_t developer_select_bootloader_init(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
-static vb2_error_t developer_mode_boot_altfw_action(
-	struct ui_context *ui)
+vb2_error_t ui_developer_mode_boot_altfw_action(struct ui_context *ui)
 {
 	uint32_t altfw_id;
 	const size_t menu_before_len =
@@ -1391,7 +1582,7 @@ static const struct ui_menu *get_bootloader_menu(struct ui_context *ui)
 		}
 		items[i] = (struct ui_menu_item){
 			.name = name,
-			.action = developer_mode_boot_altfw_action,
+			.action = ui_developer_mode_boot_altfw_action,
 		};
 		i++;
 	}

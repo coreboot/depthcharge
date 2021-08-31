@@ -6,6 +6,10 @@
 #include <vboot/ui.h>
 #include <vboot/ui/screens.c>
 
+/* Mock functions */
+uint32_t VbExIsShutdownRequested(void) { return mock_type(uint32_t); }
+
+/* Tests */
 struct ui_context test_ui_ctx;
 struct ui_state test_ui_state;
 
@@ -66,7 +70,7 @@ static void test_dev_altfw_action_allowed(void **state)
 	expect_value(vb2ex_run_altfw, altfw_id, 2);
 	will_return_maybe(vb2ex_get_altfw_count, 2);
 
-	assert_int_equal(developer_mode_boot_altfw_action(ui),
+	assert_int_equal(ui_developer_mode_boot_altfw_action(ui),
 			 VB2_REQUEST_UI_CONTINUE);
 }
 
@@ -81,7 +85,7 @@ static void test_dev_altfw_action_default_bootloader(void **state)
 	expect_value(vb2ex_run_altfw, altfw_id, 0);
 	will_return_maybe(vb2ex_get_altfw_count, 2);
 
-	assert_int_equal(developer_mode_boot_altfw_action(ui),
+	assert_int_equal(ui_developer_mode_boot_altfw_action(ui),
 			 VB2_REQUEST_UI_CONTINUE);
 }
 
