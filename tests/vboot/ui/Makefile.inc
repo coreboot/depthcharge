@@ -19,7 +19,6 @@ navigation-test-srcs += tests/vboot/ui/navigation-test.c
 navigation-test-srcs += tests/vboot/ui/mock_screens.c
 navigation-test-srcs += src/vboot/ui/navigation.c
 navigation-test-srcs += src/vboot/ui/menu.c
-navigation-test-srcs += src/vboot/callbacks/debug.c
 
 loop-test-srcs += tests/vboot/ui/loop-test.c
 loop-test-srcs += tests/vboot/ui/mock_screens.c

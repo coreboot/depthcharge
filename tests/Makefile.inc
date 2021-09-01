@@ -105,9 +105,11 @@ copy-test = $(foreach attr,$(attributes), \
 $(call add-special-class, tests)
 $(call evaluate_subdirs)
 
-default_mocks-srcs := tests/mocks/halt.c tests/mocks/util/commonparams.c \
-	tests/mocks/console.c
-default_mocks := halt commonparams console_write
+default_mocks-srcs := src/vboot/callbacks/debug.c \
+	tests/mocks/console.c \
+	tests/mocks/halt.c \
+	tests/mocks/util/commonparams.c
+default_mocks := commonparams console_write halt vb2ex_abort vb2ex_printf
 
 # Create actual targets for unit test binaries
 # $1 - test name

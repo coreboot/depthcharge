@@ -19,7 +19,6 @@ ui-test-common-srcs += tests/stubs/vboot/ui/archive.c
 ui-test-common-srcs += tests/stubs/vboot/ui/draw.c
 ui-test-common-srcs += tests/stubs/vboot/ui/layout.c
 ui-test-common-srcs += tests/stubs/vboot/ui/log.c
-ui-test-common-srcs += src/vboot/callbacks/debug.c
 ui-test-common-srcs += src/vboot/ui/loop.c
 ui-test-common-srcs += src/vboot/ui/menu.c
 ui-test-common-srcs += src/vboot/ui/navigation.c
