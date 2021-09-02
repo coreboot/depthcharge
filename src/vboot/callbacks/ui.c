@@ -89,3 +89,8 @@ vb2_error_t vb2ex_developer_ui(struct vb2_context *ctx)
 	}
 	return ui_loop(ctx, root_screen_id, developer_action);
 }
+
+vb2_error_t vb2ex_diagnostic_ui(struct vb2_context *ctx)
+{
+	return ui_loop(ctx, VB2_SCREEN_DIAGNOSTICS, NULL);
+}

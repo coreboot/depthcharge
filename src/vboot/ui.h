@@ -231,6 +231,10 @@ struct ui_state {
 	uint32_t page_count;
 	uint32_t current_page;
 	enum vb2_ui_error error_code;
+
+	/* For minidiag test screens. */
+	int test_finished;  /* Do not update screen if the content is done */
+
 	struct ui_state *prev;
 };
 
