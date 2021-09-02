@@ -26,9 +26,9 @@ typedef enum FlagIndex {
 	/* FLAG_RECSW was here */
 	FLAG_LIDSW = 2,
 	FLAG_PWRSW,
-	FLAG_ECINRW,
+	/* FLAG_ECINRW was here */
 	/* FLAG_OPROM was here */
-	FLAG_PHYS_PRESENCE = FLAG_ECINRW + 2,
+	FLAG_PHYS_PRESENCE = FLAG_PWRSW + 3,
 
 	FLAG_MAX_FLAG
 } FlagIndex;

@@ -57,19 +57,6 @@ static void *get_file_from_cbfs(
 				     CBFS_TYPE_RAW, size);
 }
 
-int vb2ex_ec_trusted(void)
-{
-	int val;
-
-	val = flag_fetch(FLAG_ECINRW);
-	if (val < 0) {
-		printf("Couldn't tell if the EC is running RW firmware.\n");
-		return 0;
-	}
-	// Trust the EC if it's NOT in its RW firmware.
-	return !val;
-}
-
 vb2_error_t vb2ex_ec_running_rw(int *in_rw)
 {
 	VbootEcOps *ec = vboot_get_ec();
