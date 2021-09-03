@@ -993,7 +993,7 @@ static int sd_change_freq(MmcMedia *media)
 	/*
 	 * If the host doesn't support SD_HIGHSPEED, do not switch card to
 	 * HIGHSPEED mode even if the card support SD_HIGHSPPED.
-	 * This can avoid furthur problem when the card runs in different
+	 * This can avoid further problem when the card runs in different
 	 * mode between the host.
 	 */
 	if (!((media->ctrlr->caps & MMC_CAPS_HS_52MHz) &&
