@@ -21,8 +21,8 @@ const struct audio_config *variant_probe_audio_config(void)
 	config = (struct audio_config){
 		.bus = {
 			.i2s.address		= SSP_I2S1_START_ADDRESS,
-			.i2s.enable_gpio.pad	= SDMODE_PIN,
-			.i2s.enable_gpio.active_low = SDMODE_ENABLE,
+			.i2s.enable_gpio	= { .pad = SDMODE_PIN,
+						    .active_low = SDMODE_ENABLE },
 			.i2s.settings		= &max98357a_settings,
 		},
 		.amp = {
