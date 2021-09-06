@@ -21,6 +21,7 @@
 
 #include "base/list.h"
 #include "boot/payload.h"
+#include "diag/storage_test.h"
 #include "drivers/ec/cros/ec.h"
 #include "vboot/ui.h"
 #include "vboot/util/commonparams.h"
@@ -1814,9 +1815,9 @@ static vb2_error_t diagnostics_storage_test_update(struct ui_context *ui)
 }
 
 static vb2_error_t diagnostics_storage_test_control(
-	struct ui_context *ui, enum vb2_diag_storage_test op)
+	struct ui_context *ui, enum BlockDevTestOpsType op)
 {
-	if (vb2_is_error(vb2ex_diag_storage_test_control(op)))
+	if (vb2_is_error(diag_storage_test_control(op)))
 		return set_ui_error_and_go_back(ui, VB2_UI_ERROR_DIAGNOSTICS);
 	return VB2_SUCCESS;
 }
@@ -1833,9 +1834,9 @@ static vb2_error_t diagnostics_storage_test_short_init(
 	struct ui_context *ui)
 {
 	VB2_TRY(diagnostics_storage_test_control(ui,
-						 VB2_DIAG_STORAGE_TEST_STOP));
+						 BLOCKDEV_TEST_OPS_TYPE_STOP));
 	VB2_TRY(diagnostics_storage_test_control(ui,
-						 VB2_DIAG_STORAGE_TEST_SHORT));
+						 BLOCKDEV_TEST_OPS_TYPE_SHORT));
 	return diagnostics_storage_test_init(ui);
 }
 
@@ -1843,16 +1844,16 @@ static vb2_error_t diagnostics_storage_test_extended_init(
 	struct ui_context *ui)
 {
 	VB2_TRY(diagnostics_storage_test_control(ui,
-						 VB2_DIAG_STORAGE_TEST_STOP));
+						 BLOCKDEV_TEST_OPS_TYPE_STOP));
 	VB2_TRY(diagnostics_storage_test_control(
-		ui, VB2_DIAG_STORAGE_TEST_EXTENDED));
+		ui, BLOCKDEV_TEST_OPS_TYPE_EXTENDED));
 	return diagnostics_storage_test_init(ui);
 }
 
 static vb2_error_t diagnostics_storage_test_cancel(struct ui_context *ui)
 {
 	VB2_TRY(diagnostics_storage_test_control(ui,
-						 VB2_DIAG_STORAGE_TEST_STOP));
+						 BLOCKDEV_TEST_OPS_TYPE_STOP));
 	return ui_screen_back(ui);
 }
 
