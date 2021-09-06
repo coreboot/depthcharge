@@ -32,7 +32,7 @@ void test_prev_valid_action(void **state)
 
 	ui->state->screen = &mock_screen_menu;
 	ui->state->selected_item = 2;
-	ui->key = VB_KEY_UP;
+	ui->key = UI_KEY_UP;
 
 	ASSERT_VB2_SUCCESS(ui_menu_prev(ui));
 	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 1, MOCK_IGNORE);
@@ -45,7 +45,7 @@ void test_prev_valid_action_with_hidden_mask(void **state)
 	ui->state->screen = &mock_screen_menu;
 	ui->state->selected_item = 2;
 	ui->state->hidden_item_mask = 0x0a; /* 0b01010 */
-	ui->key = VB_KEY_UP;
+	ui->key = UI_KEY_UP;
 
 	ASSERT_VB2_SUCCESS(ui_menu_prev(ui));
 	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 0, MOCK_IGNORE);
@@ -58,7 +58,7 @@ void test_prev_disable_mask_does_not_affect(void **state)
 	ui->state->screen = &mock_screen_menu;
 	ui->state->selected_item = 2;
 	ui->state->disabled_item_mask = 0x0a; /* 0b01010 */
-	ui->key = VB_KEY_UP;
+	ui->key = UI_KEY_UP;
 
 	ASSERT_VB2_SUCCESS(ui_menu_prev(ui));
 	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 1, MOCK_IGNORE);
@@ -70,7 +70,7 @@ void test_prev_invalid_action_blocked(void **state)
 
 	ui->state->screen = &mock_screen_menu;
 	ui->state->selected_item = 0;
-	ui->key = VB_KEY_UP;
+	ui->key = UI_KEY_UP;
 
 	ASSERT_VB2_SUCCESS(ui_menu_prev(ui));
 	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 0, MOCK_IGNORE);
@@ -83,7 +83,7 @@ void test_prev_invalid_action_blocked_by_mask(void **state)
 	ui->state->screen = &mock_screen_menu;
 	ui->state->selected_item = 2;
 	ui->state->hidden_item_mask = 0x0b; /* 0b01011 */
-	ui->key = VB_KEY_UP;
+	ui->key = UI_KEY_UP;
 
 	ASSERT_VB2_SUCCESS(ui_menu_prev(ui));
 	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 2, MOCK_IGNORE);
@@ -98,7 +98,7 @@ void test_prev_ignore_up_for_non_detachable(void **state)
 
 	ui->state->screen = &mock_screen_menu;
 	ui->state->selected_item = 2;
-	ui->key = VB_BUTTON_VOL_UP_SHORT_PRESS;
+	ui->key = UI_BUTTON_VOL_UP_SHORT_PRESS;
 
 	ASSERT_VB2_SUCCESS(ui_menu_prev(ui));
 	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 2, MOCK_IGNORE);
@@ -110,7 +110,7 @@ void test_next_valid_action(void **state)
 
 	ui->state->screen = &mock_screen_menu;
 	ui->state->selected_item = 2;
-	ui->key = VB_KEY_DOWN;
+	ui->key = UI_KEY_DOWN;
 
 	ASSERT_VB2_SUCCESS(ui_menu_next(ui));
 	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 3, MOCK_IGNORE);
@@ -123,7 +123,7 @@ void test_next_valid_action_with_hidden_mask(void **state)
 	ui->state->screen = &mock_screen_menu;
 	ui->state->selected_item = 2;
 	ui->state->hidden_item_mask = 0x0a; /* 0b01010 */
-	ui->key = VB_KEY_DOWN;
+	ui->key = UI_KEY_DOWN;
 
 	ASSERT_VB2_SUCCESS(ui_menu_next(ui));
 	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 4, MOCK_IGNORE);
@@ -136,7 +136,7 @@ void test_next_disable_mask_does_not_affect(void **state)
 	ui->state->screen = &mock_screen_menu;
 	ui->state->selected_item = 2;
 	ui->state->disabled_item_mask = 0x0a; /* 0b01010 */
-	ui->key = VB_KEY_DOWN;
+	ui->key = UI_KEY_DOWN;
 
 	ASSERT_VB2_SUCCESS(ui_menu_next(ui));
 	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 3, MOCK_IGNORE);
@@ -148,7 +148,7 @@ void test_next_invalid_action_blocked(void **state)
 
 	ui->state->screen = &mock_screen_menu;
 	ui->state->selected_item = 4;
-	ui->key = VB_KEY_DOWN;
+	ui->key = UI_KEY_DOWN;
 
 	ASSERT_VB2_SUCCESS(ui_menu_next(ui));
 	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 4, MOCK_IGNORE);
@@ -161,7 +161,7 @@ void test_next_invalid_action_blocked_by_mask(void **state)
 	ui->state->screen = &mock_screen_menu;
 	ui->state->selected_item = 2;
 	ui->state->hidden_item_mask = 0x1a; /* 0b11010 */
-	ui->key = VB_KEY_DOWN;
+	ui->key = UI_KEY_DOWN;
 
 	ASSERT_VB2_SUCCESS(ui_menu_next(ui));
 	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 2, MOCK_IGNORE);
@@ -176,7 +176,7 @@ void test_next_ignore_up_for_non_detachable(void **state)
 
 	ui->state->screen = &mock_screen_menu;
 	ui->state->selected_item = 2;
-	ui->key = VB_BUTTON_VOL_DOWN_SHORT_PRESS;
+	ui->key = UI_BUTTON_VOL_DOWN_SHORT_PRESS;
 
 	ASSERT_VB2_SUCCESS(ui_menu_next(ui));
 	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 2, MOCK_IGNORE);
@@ -187,7 +187,7 @@ void test_select_action_with_no_item_screen(void **state)
 	struct ui_context *ui = *state;
 
 	ui->state->screen = &mock_screen_base;
-	ui->key = VB_KEY_ENTER;
+	ui->key = UI_KEY_ENTER;
 
 	ASSERT_VB2_SUCCESS(ui_menu_select(ui));
 	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_BASE, 0, MOCK_IGNORE);
@@ -199,7 +199,7 @@ void test_select_item_with_target(void **state)
 
 	ui->state->screen = &mock_screen_menu;
 	ui->state->selected_item = 2;
-	ui->key = VB_KEY_ENTER;
+	ui->key = UI_KEY_ENTER;
 	expect_value(ui_screen_change, id, MOCK_SCREEN_TARGET2);
 
 	assert_int_equal(ui_menu_select(ui), VB2_ERROR_MOCK);
@@ -211,7 +211,7 @@ void test_select_item_with_action(void **state)
 
 	ui->state->screen = &mock_screen_menu;
 	ui->state->selected_item = 3;
-	ui->key = VB_KEY_ENTER;
+	ui->key = UI_KEY_ENTER;
 	expect_function_call(mock_action_base);
 
 	ASSERT_VB2_SUCCESS(ui_menu_select(ui));
@@ -223,7 +223,7 @@ void test_select_item_with_no_target_and_action(void **state)
 
 	ui->state->screen = &mock_screen_menu;
 	ui->state->selected_item = 4;
-	ui->key = VB_KEY_ENTER;
+	ui->key = UI_KEY_ENTER;
 
 	ASSERT_VB2_SUCCESS(ui_menu_select(ui));
 	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 4, MOCK_IGNORE);
@@ -236,7 +236,7 @@ void test_select_item_disabled(void **state)
 	ui->state->screen = &mock_screen_menu;
 	ui->state->selected_item = 3;
 	ui->state->disabled_item_mask = 0x08; /* 0b01000 */
-	ui->key = VB_KEY_ENTER;
+	ui->key = UI_KEY_ENTER;
 
 	ASSERT_VB2_SUCCESS(ui_menu_select(ui));
 }
@@ -250,7 +250,7 @@ void test_select_ignore_power_button_for_non_detachable(void **state)
 
 	ui->state->screen = &mock_screen_menu;
 	ui->state->selected_item = 1;
-	ui->key = VB_BUTTON_POWER_SHORT_PRESS;
+	ui->key = UI_BUTTON_POWER_SHORT_PRESS;
 
 	ASSERT_VB2_SUCCESS(ui_menu_select(ui));
 	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 1, MOCK_IGNORE);

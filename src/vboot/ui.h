@@ -169,16 +169,21 @@
 #define DEV_DELAY_BEEP1_MS (20 * MSECS_PER_SEC)		/* 20 seconds */
 #define DEV_DELAY_BEEP2_MS (20 * MSECS_PER_SEC + 500)	/* 20.5 seconds */
 
+/* Key code for CTRL + letter */
+#define UI_KEY_CTRL(letter) (letter & 0x1f)
+/* Key code for fn keys */
+#define UI_KEY_F(num) (num + 0x108)
+
 /* Pre-defined key for UI action functions */
-#define UI_KEY_REC_TO_DEV		VB_KEY_CTRL('D')
+#define UI_KEY_REC_TO_DEV		UI_KEY_CTRL('D')
 /* S for secure mode (normal mode) */
-#define UI_KEY_DEV_TO_NORM		VB_KEY_CTRL('S')
+#define UI_KEY_DEV_TO_NORM		UI_KEY_CTRL('S')
 /* D for internal Disk */
-#define UI_KEY_DEV_BOOT_INTERNAL	VB_KEY_CTRL('D')
+#define UI_KEY_DEV_BOOT_INTERNAL	UI_KEY_CTRL('D')
 /* U for USB disk */
-#define UI_KEY_DEV_BOOT_EXTERNAL	VB_KEY_CTRL('U')
+#define UI_KEY_DEV_BOOT_EXTERNAL	UI_KEY_CTRL('U')
 /* L for aLtfw (formerly Legacy) */
-#define UI_KEY_DEV_BOOT_ALTFW		VB_KEY_CTRL('L')
+#define UI_KEY_DEV_BOOT_ALTFW		UI_KEY_CTRL('L')
 
 static const struct rgb_color ui_color_bg		= { 0x20, 0x21, 0x24 };
 static const struct rgb_color ui_color_fg		= { 0xe8, 0xea, 0xed };
@@ -203,6 +208,43 @@ static const struct rgb_color ui_color_link_border	= { 0x4a, 0x5b, 0x78 };
 static const struct rgb_color ui_color_border		= { 0x3f, 0x40, 0x42 };
 static const struct rgb_color ui_color_error_box	= { 0x20, 0x21, 0x24 };
 static const struct rgb_color ui_color_black		= { 0x00, 0x00, 0x00 };
+
+/*
+ * Flags for additional information.
+ * TODO(semenzato): consider adding flags for modifiers instead of
+ * making up some of the key codes below.
+ */
+enum ui_key_flag {
+	UI_KEY_FLAG_TRUSTED_KEYBOARD = 1 << 0,
+};
+
+/* Key codes for required non-printable-ASCII characters. */
+enum ui_key_code {
+	UI_KEY_ENTER = '\r',
+	UI_KEY_ESC = 0x1b,
+	UI_KEY_BACKSPACE = 0x8,
+	UI_KEY_UP = 0x100,
+	UI_KEY_DOWN = 0x101,
+	UI_KEY_LEFT = 0x102,
+	UI_KEY_RIGHT = 0x103,
+	UI_KEY_CTRL_ENTER = 0x104,
+};
+
+/*
+ * WARNING!!! Before updating the codes in enum ui_button_code, ensure that the
+ * code does not overlap the values in ui_key_code unless the button action is
+ * the same as key action.
+ */
+enum ui_button_code {
+	/* Volume up/down short press match the values in 8042 driver. */
+	UI_BUTTON_VOL_UP_SHORT_PRESS = 0x62,
+	UI_BUTTON_VOL_DOWN_SHORT_PRESS = 0x63,
+	/* Random values used below. */
+	UI_BUTTON_POWER_SHORT_PRESS = 0x90,
+	UI_BUTTON_VOL_UP_LONG_PRESS = 0x91,
+	UI_BUTTON_VOL_DOWN_LONG_PRESS = 0x92,
+	UI_BUTTON_VOL_UP_DOWN_COMBO_PRESS = 0x93,
+};
 
 struct ui_bitmap {
 	char name[UI_BITMAP_FILENAME_MAX_LEN + 1];
@@ -873,6 +915,36 @@ char *ui_log_get_page_content(const struct ui_log_info *log, uint32_t page);
  */
 vb2_error_t ui_display_screen(struct ui_state *state,
 			      const struct ui_state *prev_state);
+
+/******************************************************************************/
+/* keyboard.c */
+
+/*
+ * Read the next keypress from the keyboard buffer.
+ *
+ * Returns the keypress, or zero if no keypress is pending or error.
+ *
+ * The following keys must be returned as ASCII character codes:
+ *    0x08          Backspace
+ *    0x09          Tab
+ *    0x0D          Enter (carriage return)
+ *    0x01 - 0x1A   Ctrl+A - Ctrl+Z (yes, those alias with backspace/tab/enter)
+ *    0x1B          Esc (UI_KEY_ESC)
+ *    0x20          Space
+ *    0x30 - 0x39   '0' - '9'
+ *    0x60 - 0x7A   'a' - 'z'
+ *
+ * Some extended keys must also be supported; see the UI_KEY_* defines above.
+ *
+ * Keys ('/') or key-chords (Fn+Q) not defined above may be handled in any of
+ * the following ways:
+ *    1. Filter (don't report anything if one of these keys is pressed).
+ *    2. Report as ASCII (if a well-defined ASCII value exists for the key).
+ *    3. Report as any other value in the range 0x200 - 0x2FF.
+ * It is not permitted to report a key as a multi-byte code (for example,
+ * sending an arrow key as the sequence of keys '\x1b', '[', '1', 'A').
+ */
+uint32_t ui_keyboard_read(uint32_t *flags_ptr);
 
 /******************************************************************************/
 /* loop.c */

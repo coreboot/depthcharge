@@ -25,22 +25,22 @@ static vb2_error_t ui_menu_navigation_action(struct ui_context *ui)
 
 	/* Map detachable button presses for simplicity. */
 	if (CONFIG(DETACHABLE)) {
-		if (key == VB_BUTTON_VOL_UP_SHORT_PRESS)
-			key = VB_KEY_UP;
-		else if (key == VB_BUTTON_VOL_DOWN_SHORT_PRESS)
-			key = VB_KEY_DOWN;
-		else if (key == VB_BUTTON_POWER_SHORT_PRESS)
-			key = VB_KEY_ENTER;
+		if (key == UI_BUTTON_VOL_UP_SHORT_PRESS)
+			key = UI_KEY_UP;
+		else if (key == UI_BUTTON_VOL_DOWN_SHORT_PRESS)
+			key = UI_KEY_DOWN;
+		else if (key == UI_BUTTON_POWER_SHORT_PRESS)
+			key = UI_KEY_ENTER;
 	}
 
 	switch (key) {
-	case VB_KEY_UP:
+	case UI_KEY_UP:
 		return ui_menu_prev(ui);
-	case VB_KEY_DOWN:
+	case UI_KEY_DOWN:
 		return ui_menu_next(ui);
-	case VB_KEY_ENTER:
+	case UI_KEY_ENTER:
 		return ui_menu_select(ui);
-	case VB_KEY_ESC:
+	case UI_KEY_ESC:
 		return ui_screen_back(ui);
 	default:
 		if (key != 0)
@@ -71,7 +71,7 @@ static vb2_error_t check_shutdown_request(struct ui_context *ui)
 		ui->power_button = UI_POWER_BUTTON_RELEASED;
 	}
 
-	if (ui->key == VB_BUTTON_POWER_SHORT_PRESS)
+	if (ui->key == UI_BUTTON_POWER_SHORT_PRESS)
 		shutdown_request |= VB_SHUTDOWN_REQUEST_POWER_BUTTON;
 
 	/* If desired, ignore shutdown request due to lid closure. */
@@ -164,8 +164,8 @@ static vb2_error_t ui_loop_impl(
 		}
 
 		/* Grab new keyboard input. */
-		ui.key = VbExKeyboardReadWithFlags(&key_flags);
-		ui.key_trusted = !!(key_flags & VB_KEY_FLAG_TRUSTED_KEYBOARD);
+		ui.key = ui_keyboard_read(&key_flags);
+		ui.key_trusted = !!(key_flags & UI_KEY_FLAG_TRUSTED_KEYBOARD);
 
 		/* Check for shutdown request. */
 		rv = check_shutdown_request(&ui);

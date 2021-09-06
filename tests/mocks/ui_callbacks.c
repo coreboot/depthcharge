@@ -11,17 +11,6 @@ uint32_t mock_time_ms;
 char firmware_log_buf[FIRMWARE_LOG_BUFFER_LEN];
 int firmware_log_snapshots_count;
 
-uint32_t VbExKeyboardRead(void)
-{
-	return mock_type(uint32_t);
-}
-
-uint32_t VbExKeyboardReadWithFlags(uint32_t *key_flags)
-{
-	*key_flags = mock_type(uint32_t);
-	return mock_type(uint32_t);
-}
-
 uint32_t vb2ex_mtime(void)
 {
 	return mock_time_ms;

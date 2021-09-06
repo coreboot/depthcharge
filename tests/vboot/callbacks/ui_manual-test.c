@@ -77,7 +77,7 @@ static void test_manual_action_invalid_kernel(void **state)
 
 	will_return(VbTryLoadKernel, VB2_ERROR_LK_INVALID_KERNEL_FOUND);
 	expect_value(VbTryLoadKernel, disk_flags, VB_DISK_FLAG_REMOVABLE);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 
 	assert_int_equal(ui_manual_recovery_action(ui),
 			 VB2_REQUEST_UI_CONTINUE);
@@ -91,7 +91,7 @@ static void test_manual_ui_no_disk_found_invalid_kernel(void **state)
 
 	setup_will_return_common();
 
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(VbExIsShutdownRequested, 0);
 	will_return(VbTryLoadKernel, VB2_ERROR_LK_NO_DISK_FOUND);
 	will_return(VbTryLoadKernel, VB2_ERROR_LK_INVALID_KERNEL_FOUND);
@@ -110,7 +110,7 @@ static void test_manual_ui_invalid_kernel_no_disk_found(void **state)
 
 	setup_will_return_common();
 
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(VbExIsShutdownRequested, 0);
 	will_return(VbTryLoadKernel, VB2_ERROR_LK_INVALID_KERNEL_FOUND);
 	will_return(VbTryLoadKernel, VB2_ERROR_LK_NO_DISK_FOUND);
@@ -127,7 +127,7 @@ static void test_manual_ui_timeout(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	WILL_SHUTDOWN_IN(3);
 	EXPECT_DISPLAY_UI_ANY();
 	IGNORE_VB_TRY_LOAD_KERNEL();
@@ -144,7 +144,7 @@ static void test_manual_ui_power_button_shutdown(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	WILL_SHUTDOWN_IN(3);
 	EXPECT_DISPLAY_UI_ANY();
 	IGNORE_VB_TRY_LOAD_KERNEL();
@@ -159,7 +159,7 @@ static void test_manual_ui_boot_with_valid_image(void **state)
 
 	setup_will_return_common();
 	will_return_maybe(VbExIsShutdownRequested, 0);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	will_return(VbTryLoadKernel, VB2_SUCCESS);
 	expect_value(VbTryLoadKernel, disk_flags, VB_DISK_FLAG_REMOVABLE);
 	EXPECT_DISPLAY_UI_ANY();
@@ -172,7 +172,7 @@ static void test_manual_ui_boot_with_valid_image_later(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(VbExIsShutdownRequested, 0);
 	will_return(VbTryLoadKernel, VB2_ERROR_LK_NO_DISK_FOUND);
 	will_return(VbTryLoadKernel, VB2_ERROR_LK_NO_DISK_FOUND);
@@ -190,7 +190,7 @@ static void test_manual_ui_boot_invalid_remove_valid(void **state)
 
 	setup_will_return_common();
 	will_return_maybe(VbExIsShutdownRequested, 0);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	will_return(VbTryLoadKernel, VB2_ERROR_MOCK);
 	will_return_count(VbTryLoadKernel, VB2_ERROR_LK_NO_DISK_FOUND, 2);
 	will_return(VbTryLoadKernel, VB2_SUCCESS);
@@ -215,7 +215,7 @@ static void test_manual_ui_keyboard_to_dev_and_cancel(void **state)
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
 	WILL_PRESS_KEY(' ', 0);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	WILL_PRESS_PHYSICAL_PRESENCE(0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_TO_DEV);
@@ -238,7 +238,7 @@ static void test_manual_ui_keyboard_to_dev_and_cancel_ppkeyboard(void **state)
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
 	WILL_PRESS_KEY(' ', 0);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_TO_DEV);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
@@ -259,9 +259,9 @@ static void test_manual_ui_cancel_to_dev(void **state)
 	WILL_SHUTDOWN_IN(5);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 1);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 1);
 	will_return_maybe(vb2ex_physical_presence_pressed, 0);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
 	IGNORE_VB_TRY_LOAD_KERNEL();
 
@@ -280,10 +280,10 @@ static void test_manual_ui_cancel_to_dev_ppkeyboard(void **state)
 	WILL_SHUTDOWN_IN(5);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 1);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 1);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 1);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 1);
 	will_return_maybe(vb2ex_physical_presence_pressed, 0);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
 	IGNORE_VB_TRY_LOAD_KERNEL();
 
@@ -307,7 +307,7 @@ static void test_manual_ui_confirm_to_dev(void **state)
 	WILL_PRESS_PHYSICAL_PRESENCE(1);
 	WILL_PRESS_PHYSICAL_PRESENCE(1);
 	WILL_PRESS_PHYSICAL_PRESENCE(0);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2ex_physical_presence_pressed, 0);
 	expect_function_call(vb2api_enable_developer_mode);
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
@@ -329,8 +329,8 @@ static void test_manual_ui_confirm_to_dev_ppkeyboard(void **state)
 	will_return_maybe(VbExIsShutdownRequested, 0);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 1);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 1);
+	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2ex_physical_presence_pressed, 0);
 	expect_function_call(vb2api_enable_developer_mode);
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
@@ -351,8 +351,8 @@ static void test_manual_ui_confirm_by_untrusted_fails_ppkeyboard(void **state)
 	WILL_SHUTDOWN_IN(5);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2ex_physical_presence_pressed, 0);
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
 	EXPECT_BEEP(250, 400, mock_time_ms + 3 * UI_KEY_DELAY_MS);
@@ -374,7 +374,7 @@ static void test_manual_ui_cannot_enable_dev_enabled(void **state)
 	WILL_SHUTDOWN_IN(5);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	EXPECT_BEEP(250, 400, mock_time_ms + 2 * UI_KEY_DELAY_MS);
@@ -396,8 +396,8 @@ static void test_manual_ui_cannot_enable_dev_enabled_ppkeyboard(void **state)
 	WILL_SHUTDOWN_IN(5);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 1);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 1);
+	will_return_maybe(ui_keyboard_read, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
@@ -420,7 +420,7 @@ static void test_manual_ui_pp_button_stuck(void **state)
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
 	WILL_PRESS_PHYSICAL_PRESENCE(1); /* Hold since boot */
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2ex_physical_presence_pressed, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	IGNORE_VB_TRY_LOAD_KERNEL();
@@ -445,7 +445,7 @@ static void test_manual_ui_pp_button_stuck_press(void **state)
 	WILL_PRESS_PHYSICAL_PRESENCE(0);
 	WILL_PRESS_PHYSICAL_PRESENCE(1); /* Press again */
 	WILL_PRESS_PHYSICAL_PRESENCE(0);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2ex_physical_presence_pressed, 0);
 	expect_function_call(vb2api_enable_developer_mode);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
@@ -481,7 +481,7 @@ static void test_manual_ui_pp_button_cancel_enter_again(void **state)
 	WILL_PRESS_PHYSICAL_PRESENCE(0);
 	WILL_PRESS_PHYSICAL_PRESENCE(1);
 	WILL_PRESS_PHYSICAL_PRESENCE(0);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2ex_physical_presence_pressed, 0);
 	expect_function_call(vb2api_enable_developer_mode);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
@@ -503,9 +503,9 @@ static void test_manual_ui_enter_diagnostics(void **state)
 
 	setup_will_return_common();
 	will_return_maybe(VbExIsShutdownRequested, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
 	expect_function_call(vb2api_request_diagnostics);
 	IGNORE_VB_TRY_LOAD_KERNEL();
@@ -519,7 +519,7 @@ static void test_recovery_select_screen_disabled_and_hidden_mask(void **state)
 
 	setup_will_return_common();
 	WILL_SHUTDOWN_IN(2);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, MOCK_IGNORE,
 			  0x0, 0x0);
 	IGNORE_VB_TRY_LOAD_KERNEL();
@@ -538,42 +538,42 @@ static void test_recovery_select_screen(void **state)
 
 	EXPECT_DISPLAY_UI_ANY();
 	/* #0: Language menu */
-	WILL_PRESS_KEY(VB_KEY_UP, 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_UP, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_LANGUAGE_SELECT);
 	/* #1: Phone recovery */
-	WILL_PRESS_KEY(VB_KEY_ESC, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_ESC, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 1);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_PHONE_STEP1);
 	/* #2: External disk recovery */
-	WILL_PRESS_KEY(VB_KEY_ESC, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
-	WILL_PRESS_KEY(VB_KEY_ESC, 0);
+	WILL_PRESS_KEY(UI_KEY_ESC, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 2);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_DISK_STEP1);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 2);
 	/* #3: Launch diagnostics */
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 3);
 	/* #4: Advanced options */
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 4);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS);
 	/* End of menu */
-	WILL_PRESS_KEY(VB_KEY_ESC, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);  /* Blocked */
+	WILL_PRESS_KEY(UI_KEY_ESC, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);  /* Blocked */
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 5);
 
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	IGNORE_VB_TRY_LOAD_KERNEL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
@@ -589,17 +589,17 @@ static void test_advanced_options_screen_disabled_and_hidden_mask(void **state)
 	will_return_maybe(vb2ex_get_locale_count, 10);
 
 	EXPECT_DISPLAY_UI_ANY();
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, MOCK_IGNORE,
 			  0x0, 0x0);
 
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	IGNORE_VB_TRY_LOAD_KERNEL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
@@ -616,55 +616,55 @@ static void test_advanced_options_screen(void **state)
 	will_return_maybe(vb2ex_prepare_log_screen, 1);
 
 	EXPECT_DISPLAY_UI_ANY();
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI_ANY();
 	/* #0: Language menu */
-	WILL_PRESS_KEY(VB_KEY_UP, 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_UP, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_LANGUAGE_SELECT);
 	/* #1: Enable dev mode */
-	WILL_PRESS_KEY(VB_KEY_ESC, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_ESC, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 1);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_TO_DEV);
 	/* #2: Debug info */
-	WILL_PRESS_KEY(VB_KEY_ESC, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_ESC, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 2);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO);
 	/* #3: Firmware log */
-	WILL_PRESS_KEY(VB_KEY_ESC, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_ESC, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 3);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_FIRMWARE_LOG);
 	/* #4: Back */
-	WILL_PRESS_KEY(VB_KEY_ESC, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_ESC, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 4);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	/* End of menu */
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 2);
 
 	expect_any_always(vb2ex_prepare_log_screen, str);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2ex_physical_presence_pressed, 0);
 	IGNORE_VB_TRY_LOAD_KERNEL();
 
@@ -679,11 +679,11 @@ static void test_language_ui_change_language(void **state)
 	setup_will_return_common();
 	WILL_SHUTDOWN_IN(8);
 	will_return_maybe(vb2ex_get_locale_count, 100);
-	WILL_PRESS_KEY(VB_KEY_UP, 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);	/* select language */
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);	/* select locale 24 */
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	WILL_PRESS_KEY(UI_KEY_UP, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* select language */
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* select locale 24 */
+	will_return_maybe(ui_keyboard_read, 0);
 	IGNORE_VB_TRY_LOAD_KERNEL();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, 23);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, 23, 0);
@@ -705,10 +705,10 @@ static void test_language_ui_locale_count_0(void **state)
 	setup_will_return_common();
 	WILL_SHUTDOWN_IN(8);
 	will_return_maybe(vb2ex_get_locale_count, 0);
-	WILL_PRESS_KEY(VB_KEY_UP, 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);	/* select language */
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);	/* select locale 0 */
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	WILL_PRESS_KEY(UI_KEY_UP, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* select language */
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* select locale 0 */
+	will_return_maybe(ui_keyboard_read, 0);
 	IGNORE_VB_TRY_LOAD_KERNEL();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, 23);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, 23, 0);
@@ -731,7 +731,7 @@ static void test_debug_info(void **state)
 	WILL_SHUTDOWN_IN(5);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY('\t', 0);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	will_return_always(vb2ex_prepare_log_screen, 1);
 	expect_any_always(vb2ex_prepare_log_screen, str);
 	EXPECT_DISPLAY_UI_ANY();
@@ -752,7 +752,7 @@ static void test_debug_info_enter_failed(void **state)
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY('\t', 0);
 	will_return_always(vb2ex_prepare_log_screen, 0);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	expect_any_always(vb2ex_prepare_log_screen, str);
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
@@ -772,9 +772,9 @@ static void test_debug_info_one_page(void **state)
 	WILL_SHUTDOWN_IN(8);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY('\t', 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	will_return_always(vb2ex_prepare_log_screen, 1);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	EXPECT_DISPLAY_UI_ANY();
 	/* 0x6 = 0b110 */
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO, MOCK_IGNORE, 3, 0x6, 0x0, 0);
@@ -795,17 +795,17 @@ static void test_debug_info_three_pages(void **state)
 	WILL_SHUTDOWN_IN(15);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY('\t', 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);	/* page 0, select page down */
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);	/* page 1, select page down */
-	WILL_PRESS_KEY(VB_KEY_UP, 0);		/* page 2, select page down */
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);	/* page 2, select page up */
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);	/* page 1, select page up */
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);		/* page 0, select page up */
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);	/* page 0, select page down */
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);		/* page 1, select page down */
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);	/* page 1, select back */
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* page 0, select page down */
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* page 1, select page down */
+	WILL_PRESS_KEY(UI_KEY_UP, 0);		/* page 2, select page down */
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* page 2, select page up */
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* page 1, select page up */
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* page 0, select page up */
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* page 0, select page down */
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* page 1, select page down */
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* page 1, select back */
 	will_return_always(vb2ex_prepare_log_screen, 3);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO, MOCK_IGNORE, 2, 0x2, 0x0, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO, MOCK_IGNORE, 2, 0x0, 0x0, 1);
@@ -832,15 +832,15 @@ static void test_firmware_log(void **state)
 
 	firmware_log_snapshots_count = 0;
 	WILL_SHUTDOWN_IN(10);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	will_return_maybe(vb2ex_prepare_log_screen, 1);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	expect_string(vb2ex_prepare_log_screen, str, "1");
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
 	IGNORE_VB_TRY_LOAD_KERNEL();
@@ -857,17 +857,17 @@ static void test_firmware_log_again_reacquire_new_one(void **state)
 
 	firmware_log_snapshots_count = 0;
 	WILL_SHUTDOWN_IN(10);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
-	WILL_PRESS_KEY(VB_KEY_ESC, 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_ESC, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	will_return_maybe(vb2ex_prepare_log_screen, 1);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	expect_string(vb2ex_prepare_log_screen, str, "1");
 	expect_string(vb2ex_prepare_log_screen, str, "2");
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
@@ -885,17 +885,17 @@ static void test_firmware_log_back_not_reacquire_new_one(void **state)
 
 	firmware_log_snapshots_count = 0;
 	WILL_SHUTDOWN_IN(10);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_DOWN, 0);
-	WILL_PRESS_KEY(VB_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	WILL_PRESS_KEY('\t', 0); /* enter debug info screen */
-	WILL_PRESS_KEY(VB_KEY_ESC, 0);
+	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	will_return_maybe(vb2ex_prepare_log_screen, 1);
-	will_return_maybe(VbExKeyboardReadWithFlags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
 	expect_string(vb2ex_prepare_log_screen, str, "1");
 	/* Skip the one entry, which is for preparing debug info */
 	expect_any(vb2ex_prepare_log_screen, str);

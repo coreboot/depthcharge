@@ -21,13 +21,13 @@
 #include <libpayload.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <vboot_api.h>
 
 #include "base/init_funcs.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/input/input.h"
 #include "drivers/input/mkbp/keymatrix.h"
 #include "drivers/input/mkbp/layout.h"
+#include "vboot/ui.h"
 
 typedef enum Modifier {
 	ModifierNone = 0x0,
@@ -464,17 +464,17 @@ static void more_keys(void)
 			else if (code == 0x69)
 				add_key(KEY_LEFT);
 			else if (code == VOL_DOWN_SHORT_PRESS)
-				add_key(VB_BUTTON_VOL_DOWN_SHORT_PRESS);
+				add_key(UI_BUTTON_VOL_DOWN_SHORT_PRESS);
 			else if (code == VOL_UP_SHORT_PRESS)
-				add_key(VB_BUTTON_VOL_UP_SHORT_PRESS);
+				add_key(UI_BUTTON_VOL_UP_SHORT_PRESS);
 			else if (code == POWER_SHORT_PRESS)
-				add_key(VB_BUTTON_POWER_SHORT_PRESS);
+				add_key(UI_BUTTON_POWER_SHORT_PRESS);
 			else if (code == VOL_DOWN_LONG_PRESS)
-				add_key(VB_BUTTON_VOL_DOWN_LONG_PRESS);
+				add_key(UI_BUTTON_VOL_DOWN_LONG_PRESS);
 			else if (code == VOL_UP_LONG_PRESS)
-				add_key(VB_BUTTON_VOL_UP_LONG_PRESS);
+				add_key(UI_BUTTON_VOL_UP_LONG_PRESS);
 			else if (code == VOL_UP_DOWN_COMBO_PRESS)
-				add_key(VB_BUTTON_VOL_UP_DOWN_COMBO_PRESS);
+				add_key(UI_BUTTON_VOL_UP_DOWN_COMBO_PRESS);
 
 			// Make sure the next check will prevent us from
 			// recognizing this key twice.

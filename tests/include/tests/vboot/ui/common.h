@@ -102,4 +102,15 @@
 		expect_any_always(vb2ex_display_ui, current_page); \
 	} while (0)
 
+/*
+ * Add return value to ui_keyboard_read.
+ * SetUI_KEY_FLAG_TRUSTED_KEYBOARD flag if the passed trusted is non-zero.
+ */
+#define WILL_PRESS_KEY(key, trusted) \
+	do { \
+		will_return(ui_keyboard_read, \
+			    (trusted) ? UI_KEY_FLAG_TRUSTED_KEYBOARD : 0); \
+		will_return(ui_keyboard_read, (key)); \
+	} while (0)
+
 #endif /* _TESTS_VBOOT_UI_COMMON_H */

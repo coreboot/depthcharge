@@ -9,6 +9,7 @@ tests-y += ui_developer-test
 tests-y += ui_developer-detachable-test
 tests-y += ui_diagnostic-test
 
+ui-test-common-srcs += tests/mocks/ui.c
 ui-test-common-srcs += tests/mocks/ui_callbacks.c
 ui-test-common-srcs += tests/mocks/vb2api.c
 ui-test-common-srcs += tests/mocks/vboot_api.c

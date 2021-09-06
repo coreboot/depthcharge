@@ -16,7 +16,7 @@
  */
 
 #include <libpayload.h>
-#include <vboot_api.h>
+#include <vboot/ui.h>
 #include <vboot/util/flag.h>
 
 #include "debug/dev.h"
@@ -32,7 +32,7 @@
 
 #define TIMEOUT_US (10 * 1000)	// 10ms
 
-uint32_t VbExKeyboardRead(void)
+static uint32_t keyboard_get_key(void)
 {
 	uint64_t timer_start;
 
@@ -49,10 +49,10 @@ uint32_t VbExKeyboardRead(void)
 	uint32_t ch = getchar();
 	switch (ch) {
 	case '\n': return '\r';
-	case KEY_UP: return VB_KEY_UP;
-	case KEY_DOWN: return VB_KEY_DOWN;
-	case KEY_RIGHT: return VB_KEY_RIGHT;
-	case KEY_LEFT: return VB_KEY_LEFT;
+	case KEY_UP: return UI_KEY_UP;
+	case KEY_DOWN: return UI_KEY_DOWN;
+	case KEY_RIGHT: return UI_KEY_RIGHT;
+	case KEY_LEFT: return UI_KEY_LEFT;
 
 	case CSI_0:
 		timer_start = timer_us(0);
@@ -67,37 +67,45 @@ uint32_t VbExKeyboardRead(void)
 
 		// Translate the arrow keys, and ignore everything else.
 		switch (getchar()) {
-		case 'A': return VB_KEY_UP;
-		case 'B': return VB_KEY_DOWN;
-		case 'C': return VB_KEY_RIGHT;
-		case 'D': return VB_KEY_LEFT;
+		case 'A': return UI_KEY_UP;
+		case 'B': return UI_KEY_DOWN;
+		case 'C': return UI_KEY_RIGHT;
+		case 'D': return UI_KEY_LEFT;
 		default: return 0;
 		}
 
 	// These two cases only work on developer images (empty stubs otherwise)
-	case 'N' & 0x1f: dc_dev_netboot();	// CTRL+N: netboot
-	case 'G' & 0x1f: dc_dev_gdb_enter();	// CTRL+G: remote GDB mode
-	case 'F' & 0x1f: dc_dev_fastboot(); // CTRL+F: fastboot
+	case UI_KEY_CTRL('N'):
+		dc_dev_netboot();	// CTRL+N: netboot
+		__attribute__((fallthrough));
+	case UI_KEY_CTRL('G'):
+		dc_dev_gdb_enter();	// CTRL+G: remote GDB mode
+		__attribute__((fallthrough));
+	case UI_KEY_CTRL('F'):
+		dc_dev_fastboot();	// CTRL+F: fastboot
+		__attribute__((fallthrough));
 	// fall through for non-developer images as if these didn't exist
 	default:
 		return ch;
 	}
 }
 
-uint32_t VbExKeyboardReadWithFlags(uint32_t *flags_ptr)
+uint32_t ui_keyboard_read(uint32_t *flags_ptr)
 {
-	uint32_t c = VbExKeyboardRead();
-	if (flags_ptr) {
-		*flags_ptr = 0;
-		console_input_type input_type = last_key_input_type();
-		// Always trust UART and GPIO keyboards, and only trust
-		// EC-based keyboards when coming from a trusted EC.
-		// All other keyboards, including USB, are untrusted.
-		if (input_type == CONSOLE_INPUT_TYPE_UART ||
-		    input_type == CONSOLE_INPUT_TYPE_GPIO ||
-		    (CONFIG_DRIVER_EC_CROS &&
-		     input_type == CONSOLE_INPUT_TYPE_EC))
-			*flags_ptr |= VB_KEY_FLAG_TRUSTED_KEYBOARD;
-	}
+	uint32_t c = keyboard_get_key();
+
+	if (!flags_ptr)
+		return c;
+
+	*flags_ptr = 0;
+	console_input_type input_type = last_key_input_type();
+	// Always trust UART and GPIO keyboards, and only trust
+	// EC-based keyboards when coming from a trusted EC.
+	// All other keyboards, including USB, are untrusted.
+	if (input_type == CONSOLE_INPUT_TYPE_UART ||
+	    input_type == CONSOLE_INPUT_TYPE_GPIO ||
+	    (CONFIG_DRIVER_EC_CROS &&
+	     input_type == CONSOLE_INPUT_TYPE_EC))
+		*flags_ptr |= UI_KEY_FLAG_TRUSTED_KEYBOARD;
 	return c;
 }

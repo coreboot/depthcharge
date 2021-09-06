@@ -14,6 +14,7 @@
 depthcharge-y += archive.c
 depthcharge-y += common.c
 depthcharge-y += draw.c
+depthcharge-y += keyboard.c
 depthcharge-y += layout.c
 depthcharge-y += log.c
 depthcharge-y += loop.c

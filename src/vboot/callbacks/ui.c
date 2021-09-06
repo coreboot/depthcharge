@@ -40,7 +40,7 @@ static vb2_error_t ui_manual_recovery_action(struct ui_context *ui)
 	/* Manual recovery keyboard shortcuts */
 	if (ui->key == UI_KEY_REC_TO_DEV ||
 	    (CONFIG(DETACHABLE) &&
-	     ui->key == VB_BUTTON_VOL_UP_DOWN_COMBO_PRESS)) {
+	     ui->key == UI_BUTTON_VOL_UP_DOWN_COMBO_PRESS)) {
 		return ui_screen_change(ui, VB2_SCREEN_RECOVERY_TO_DEV);
 	}
 
@@ -69,10 +69,10 @@ static vb2_error_t developer_action(struct ui_context *ui)
 	if (ui->key == UI_KEY_DEV_TO_NORM)
 		return ui_screen_change(ui, VB2_SCREEN_DEVELOPER_TO_NORM);
 	if (ui->key == UI_KEY_DEV_BOOT_EXTERNAL ||
-	    (CONFIG(DETACHABLE) && ui->key == VB_BUTTON_VOL_UP_LONG_PRESS))
+	    (CONFIG(DETACHABLE) && ui->key == UI_BUTTON_VOL_UP_LONG_PRESS))
 		return ui_developer_mode_boot_external_action(ui);
 	if (ui->key == UI_KEY_DEV_BOOT_INTERNAL ||
-	    (CONFIG(DETACHABLE) && ui->key == VB_BUTTON_VOL_DOWN_LONG_PRESS))
+	    (CONFIG(DETACHABLE) && ui->key == UI_BUTTON_VOL_DOWN_LONG_PRESS))
 		return ui_developer_mode_boot_internal_action(ui);
 	if (ui->key == UI_KEY_DEV_BOOT_ALTFW)
 		return ui_developer_mode_boot_altfw_action(ui);
