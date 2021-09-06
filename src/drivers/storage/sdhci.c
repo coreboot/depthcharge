@@ -1096,8 +1096,9 @@ static int sdhci_init(SdhciHost *host)
 	if (host->quirks & SDHCI_QUIRK_NO_CD) {
 		unsigned int status;
 
-		sdhci_writel(host, SDHCI_CTRL_CD_TEST_INS | SDHCI_CTRL_CD_TEST,
-			SDHCI_HOST_CONTROL);
+		ctrl = sdhci_readl(host, SDHCI_HOST_CONTROL);
+		ctrl |= SDHCI_CTRL_CD_TEST_INS | SDHCI_CTRL_CD_TEST;
+		sdhci_writel(host, ctrl, SDHCI_HOST_CONTROL);
 
 		status = sdhci_readl(host, SDHCI_PRESENT_STATE);
 		while ((!(status & SDHCI_CARD_PRESENT)) ||
