@@ -53,7 +53,22 @@ static vb2_error_t ui_menu_navigation_action(struct ui_context *ui)
 
 static vb2_error_t check_shutdown_request(struct ui_context *ui)
 {
-	uint32_t shutdown_request = VbExIsShutdownRequested();
+	int shutdown_power;
+
+	/* If desired, ignore shutdown request due to lid closure. */
+	if (!(vb2api_gbb_get_flags(ui->ctx) &
+	      VB2_GBB_FLAG_DISABLE_LID_SHUTDOWN) &&
+	    !ui_is_lid_open())
+		return VB2_REQUEST_SHUTDOWN;
+
+	/*
+	 * In detachables, power button is used for menu selection.
+	 * Therefore, return early to skip processing power button states.
+	 */
+	if (CONFIG(DETACHABLE))
+		return VB2_SUCCESS;
+
+	shutdown_power = ui_is_power_pressed();
 
 	/*
 	 * Ignore power button push until after we have seen it released.
@@ -61,34 +76,20 @@ static vb2_error_t check_shutdown_request(struct ui_context *ui)
 	 * being held on startup. After we've recognized a valid power button
 	 * push then don't report the event until after the button is released.
 	 */
-	if (shutdown_request & VB_SHUTDOWN_REQUEST_POWER_BUTTON) {
-		shutdown_request &= ~VB_SHUTDOWN_REQUEST_POWER_BUTTON;
+	if (shutdown_power) {
+		shutdown_power = 0;
 		if (ui->power_button == UI_POWER_BUTTON_RELEASED)
 			ui->power_button = UI_POWER_BUTTON_PRESSED;
 	} else {
 		if (ui->power_button == UI_POWER_BUTTON_PRESSED)
-			shutdown_request |= VB_SHUTDOWN_REQUEST_POWER_BUTTON;
+			shutdown_power = 1;
 		ui->power_button = UI_POWER_BUTTON_RELEASED;
 	}
 
 	if (ui->key == UI_BUTTON_POWER_SHORT_PRESS)
-		shutdown_request |= VB_SHUTDOWN_REQUEST_POWER_BUTTON;
+		shutdown_power = 1;
 
-	/* If desired, ignore shutdown request due to lid closure. */
-	if (vb2api_gbb_get_flags(ui->ctx) & VB2_GBB_FLAG_DISABLE_LID_SHUTDOWN)
-		shutdown_request &= ~VB_SHUTDOWN_REQUEST_LID_CLOSED;
-
-	/*
-	 * In detachables, disable shutdown due to power button.
-	 * It is used for menu selection instead.
-	 */
-	if (CONFIG(DETACHABLE))
-		shutdown_request &= ~VB_SHUTDOWN_REQUEST_POWER_BUTTON;
-
-	if (shutdown_request)
-		return VB2_REQUEST_SHUTDOWN;
-
-	return VB2_SUCCESS;
+	return shutdown_power ? VB2_REQUEST_SHUTDOWN : VB2_SUCCESS;
 }
 
 static vb2_error_t ui_loop_impl(

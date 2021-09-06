@@ -102,3 +102,25 @@ uint32_t ui_keyboard_read(uint32_t *flags_ptr)
 		*flags_ptr |= UI_KEY_FLAG_TRUSTED_KEYBOARD;
 	return c;
 }
+
+int ui_is_lid_open(void)
+{
+	int lidsw = flag_fetch(FLAG_LIDSW);
+	if (lidsw < 0) {
+		// TODO(edisonhello): handle the error.
+		UI_ERROR("failed to fetch lid switch flag.\n");
+		halt();
+	}
+	return lidsw;
+}
+
+int ui_is_power_pressed(void)
+{
+	int pwrsw = flag_fetch(FLAG_PWRSW);
+	if (pwrsw < 0) {
+		// TODO(edisonhello): handle the error.
+		UI_ERROR("failed to fetch power switch flag.\n");
+		halt();
+	}
+	return pwrsw;
+}

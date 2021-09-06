@@ -113,4 +113,19 @@
 		will_return(ui_keyboard_read, (key)); \
 	} while (0)
 
+/*
+ * Add will_return to ui_is_lid_open.
+ * ui_is_lid_open will
+ * 1. Return 1 for iterations - 1 times, and then
+ * 2. Return 0 once.
+ */
+#define WILL_CLOSE_LID_IN(iterations) \
+	do { \
+		if ((iterations) > 1) { \
+			will_return_count(ui_is_lid_open, 1, \
+					  (iterations) - 1); \
+		} \
+		will_return(ui_is_lid_open, 0); \
+	} while (0)
+
 #endif /* _TESTS_VBOOT_UI_COMMON_H */

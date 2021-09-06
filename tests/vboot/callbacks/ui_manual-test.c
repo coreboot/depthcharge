@@ -12,7 +12,15 @@
 #include <vboot/callbacks/ui.c>
 
 /* Mock functions */
-uint32_t VbExIsShutdownRequested(void) { return mock_type(uint32_t); }
+int ui_is_power_pressed(void)
+{
+	return 0;
+}
+
+int ui_is_lid_open(void)
+{
+	return mock();
+}
 
 /* Tests */
 struct ui_context test_ui_ctx;
@@ -80,7 +88,8 @@ static void test_manual_ui_no_disk_found_invalid_kernel(void **state)
 	setup_will_return_common();
 
 	will_return_maybe(ui_keyboard_read, 0);
-	will_return_maybe(VbExIsShutdownRequested, 0);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_maybe(ui_is_lid_open, 1);
 	WILL_LOAD_EXTERNAL(VB2_ERROR_LK_NO_DISK_FOUND);
 	WILL_LOAD_EXTERNAL(VB2_ERROR_LK_INVALID_KERNEL_FOUND);
 	WILL_LOAD_EXTERNAL(VB2_SUCCESS);
@@ -97,7 +106,8 @@ static void test_manual_ui_invalid_kernel_no_disk_found(void **state)
 	setup_will_return_common();
 
 	will_return_maybe(ui_keyboard_read, 0);
-	will_return_maybe(VbExIsShutdownRequested, 0);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_maybe(ui_is_lid_open, 1);
 	WILL_LOAD_EXTERNAL(VB2_ERROR_LK_INVALID_KERNEL_FOUND);
 	WILL_LOAD_EXTERNAL(VB2_ERROR_LK_NO_DISK_FOUND);
 	WILL_LOAD_EXTERNAL(VB2_SUCCESS);
@@ -114,7 +124,8 @@ static void test_manual_ui_internet_recovery_shortcut(void **state)
 
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_INTERNET_RECOVERY, 0);
-	will_return_maybe(VbExIsShutdownRequested, 0);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_maybe(ui_is_lid_open, 1);
 	WILL_LOAD_EXTERNAL_MAYBE(VB2_ERROR_LK_NO_DISK_FOUND);
 	expect_value(VbTryLoadMiniOsKernel, minios_flags, 0);
 	will_return(VbTryLoadMiniOsKernel, VB2_SUCCESS);
@@ -128,7 +139,7 @@ static void test_manual_ui_internet_recovery_menu(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	WILL_SHUTDOWN_IN(10);
+	WILL_CLOSE_LID_IN(10);
 
 	/* Fail to boot from MiniOS */
 	WILL_PRESS_KEY(0, 0);			/* #1: Phone recovery */
@@ -164,7 +175,8 @@ static void test_manual_ui_internet_recovery_menu_old(void **state)
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #3: Firmware log*/
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #4: Internet recovery */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	will_return_maybe(VbExIsShutdownRequested, 0);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_maybe(ui_is_lid_open, 1);
 	WILL_LOAD_EXTERNAL_MAYBE(VB2_ERROR_LK_NO_DISK_FOUND);
 	expect_value(VbTryLoadMiniOsKernel, minios_flags,
 		     VB_MINIOS_FLAG_NON_ACTIVE);
@@ -180,7 +192,7 @@ static void test_manual_ui_timeout(void **state)
 
 	setup_will_return_common();
 	will_return_maybe(ui_keyboard_read, 0);
-	WILL_SHUTDOWN_IN(3);
+	WILL_CLOSE_LID_IN(3);
 	EXPECT_DISPLAY_UI_ANY();
 	WILL_HAVE_NO_EXTERNAL();
 
@@ -197,7 +209,7 @@ static void test_manual_ui_power_button_shutdown(void **state)
 
 	setup_will_return_common();
 	will_return_maybe(ui_keyboard_read, 0);
-	WILL_SHUTDOWN_IN(3);
+	WILL_CLOSE_LID_IN(3);
 	EXPECT_DISPLAY_UI_ANY();
 	WILL_HAVE_NO_EXTERNAL();
 
@@ -210,7 +222,8 @@ static void test_manual_ui_boot_with_valid_image(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	will_return_maybe(VbExIsShutdownRequested, 0);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_maybe(ui_is_lid_open, 1);
 	will_return_maybe(ui_keyboard_read, 0);
 	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_DISPLAY_UI_ANY();
@@ -224,7 +237,8 @@ static void test_manual_ui_boot_with_valid_image_later(void **state)
 
 	setup_will_return_common();
 	will_return_maybe(ui_keyboard_read, 0);
-	will_return_maybe(VbExIsShutdownRequested, 0);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_maybe(ui_is_lid_open, 1);
 	WILL_LOAD_EXTERNAL_COUNT(VB2_ERROR_LK_NO_DISK_FOUND, 2);
 	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_DISPLAY_UI_ANY();
@@ -237,7 +251,8 @@ static void test_manual_ui_boot_invalid_remove_valid(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	will_return_maybe(VbExIsShutdownRequested, 0);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_maybe(ui_is_lid_open, 1);
 	will_return_maybe(ui_keyboard_read, 0);
 	WILL_LOAD_EXTERNAL(VB2_ERROR_MOCK);
 	WILL_LOAD_EXTERNAL_COUNT(VB2_ERROR_LK_NO_DISK_FOUND, 2);
@@ -257,7 +272,7 @@ static void test_manual_ui_keyboard_to_dev_and_cancel(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	WILL_SHUTDOWN_IN(5);
+	WILL_CLOSE_LID_IN(5);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
 	WILL_PRESS_KEY(' ', 0);
@@ -280,7 +295,7 @@ static void test_manual_ui_keyboard_to_dev_and_cancel_ppkeyboard(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	WILL_SHUTDOWN_IN(5);
+	WILL_CLOSE_LID_IN(5);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
 	WILL_PRESS_KEY(' ', 0);
@@ -302,7 +317,7 @@ static void test_manual_ui_cancel_to_dev(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	WILL_SHUTDOWN_IN(5);
+	WILL_CLOSE_LID_IN(5);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 1);
@@ -323,7 +338,7 @@ static void test_manual_ui_cancel_to_dev_ppkeyboard(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	WILL_SHUTDOWN_IN(5);
+	WILL_CLOSE_LID_IN(5);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 1);
@@ -346,7 +361,8 @@ static void test_manual_ui_confirm_to_dev(void **state)
 
 	setup_will_return_common();
 
-	will_return_maybe(VbExIsShutdownRequested, 0);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_maybe(ui_is_lid_open, 1);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
 	WILL_PRESS_PHYSICAL_PRESENCE(0);
@@ -372,7 +388,8 @@ static void test_manual_ui_confirm_to_dev_ppkeyboard(void **state)
 
 	setup_will_return_common();
 
-	will_return_maybe(VbExIsShutdownRequested, 0);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_maybe(ui_is_lid_open, 1);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 1);
@@ -394,7 +411,7 @@ static void test_manual_ui_confirm_by_untrusted_fails_ppkeyboard(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	WILL_SHUTDOWN_IN(5);
+	WILL_CLOSE_LID_IN(5);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
@@ -417,7 +434,7 @@ static void test_manual_ui_cannot_enable_dev_enabled(void **state)
 
 	ui->ctx->flags |= VB2_CONTEXT_DEVELOPER_MODE;
 	setup_will_return_common();
-	WILL_SHUTDOWN_IN(5);
+	WILL_CLOSE_LID_IN(5);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
 	will_return_maybe(ui_keyboard_read, 0);
@@ -439,7 +456,7 @@ static void test_manual_ui_cannot_enable_dev_enabled_ppkeyboard(void **state)
 
 	ui->ctx->flags |= VB2_CONTEXT_DEVELOPER_MODE;
 	setup_will_return_common();
-	WILL_SHUTDOWN_IN(5);
+	WILL_CLOSE_LID_IN(5);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 1);
@@ -462,7 +479,7 @@ static void test_manual_ui_pp_button_stuck(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	WILL_SHUTDOWN_IN(5);
+	WILL_CLOSE_LID_IN(5);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
 	WILL_PRESS_PHYSICAL_PRESENCE(1); /* Hold since boot */
@@ -483,7 +500,8 @@ static void test_manual_ui_pp_button_stuck_press(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	will_return_maybe(VbExIsShutdownRequested, 0);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_maybe(ui_is_lid_open, 1);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
@@ -510,7 +528,8 @@ static void test_manual_ui_pp_button_cancel_enter_again(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	will_return_maybe(VbExIsShutdownRequested, 0);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_maybe(ui_is_lid_open, 1);
 	WILL_PRESS_KEY(0, 0);
 	/* Enter to_dev */
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
@@ -548,7 +567,8 @@ static void test_manual_ui_enter_diagnostics(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	will_return_maybe(VbExIsShutdownRequested, 0);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_maybe(ui_is_lid_open, 1);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -565,7 +585,7 @@ static void test_recovery_select_screen_disabled_and_hidden_mask(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	WILL_SHUTDOWN_IN(2);
+	WILL_CLOSE_LID_IN(2);
 	will_return_maybe(ui_keyboard_read, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, MOCK_IGNORE,
 			  0x0, 0x0);
@@ -580,7 +600,7 @@ static void test_recovery_select_screen(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	WILL_SHUTDOWN_IN(20);
+	WILL_CLOSE_LID_IN(20);
 	will_return_maybe(vb2ex_get_locale_count, 10);
 
 	EXPECT_DISPLAY_UI_ANY();
@@ -634,7 +654,7 @@ static void test_advanced_options_screen_disabled_and_hidden_mask(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	WILL_SHUTDOWN_IN(10);
+	WILL_CLOSE_LID_IN(10);
 	will_return_maybe(vb2ex_get_locale_count, 10);
 
 	EXPECT_DISPLAY_UI_ANY();
@@ -662,7 +682,7 @@ static void test_advanced_options_screen(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	WILL_SHUTDOWN_IN(30);
+	WILL_CLOSE_LID_IN(30);
 	will_return_maybe(vb2ex_get_locale_count, 10);
 	will_return_maybe(vb2ex_prepare_log_screen, 1);
 
@@ -732,7 +752,7 @@ static void test_language_ui_change_language(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	WILL_SHUTDOWN_IN(8);
+	WILL_CLOSE_LID_IN(8);
 	will_return_maybe(vb2ex_get_locale_count, 100);
 	WILL_PRESS_KEY(UI_KEY_UP, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* select language */
@@ -758,7 +778,7 @@ static void test_language_ui_locale_count_0(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	WILL_SHUTDOWN_IN(8);
+	WILL_CLOSE_LID_IN(8);
 	will_return_maybe(vb2ex_get_locale_count, 0);
 	WILL_PRESS_KEY(UI_KEY_UP, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* select language */
@@ -783,7 +803,7 @@ static void test_debug_info(void **state)
 
 	setup_will_return_common();
 
-	WILL_SHUTDOWN_IN(5);
+	WILL_CLOSE_LID_IN(5);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY('\t', 0);
 	will_return_maybe(ui_keyboard_read, 0);
@@ -803,7 +823,7 @@ static void test_debug_info_enter_failed(void **state)
 
 	setup_will_return_common();
 
-	WILL_SHUTDOWN_IN(5);
+	WILL_CLOSE_LID_IN(5);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY('\t', 0);
 	will_return_always(vb2ex_prepare_log_screen, 0);
@@ -824,7 +844,7 @@ static void test_debug_info_one_page(void **state)
 
 	setup_will_return_common();
 
-	WILL_SHUTDOWN_IN(8);
+	WILL_CLOSE_LID_IN(8);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY('\t', 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
@@ -847,7 +867,7 @@ static void test_debug_info_three_pages(void **state)
 
 	setup_will_return_common();
 
-	WILL_SHUTDOWN_IN(15);
+	WILL_CLOSE_LID_IN(15);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY('\t', 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* page 0, select page down */
@@ -886,7 +906,7 @@ static void test_firmware_log(void **state)
 	setup_will_return_common();
 
 	firmware_log_snapshots_count = 0;
-	WILL_SHUTDOWN_IN(10);
+	WILL_CLOSE_LID_IN(10);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -912,7 +932,7 @@ static void test_firmware_log_again_reacquire_new_one(void **state)
 	setup_will_return_common();
 
 	firmware_log_snapshots_count = 0;
-	WILL_SHUTDOWN_IN(20);
+	WILL_CLOSE_LID_IN(20);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -941,7 +961,7 @@ static void test_firmware_log_back_not_reacquire_new_one(void **state)
 	setup_will_return_common();
 
 	firmware_log_snapshots_count = 0;
-	WILL_SHUTDOWN_IN(20);
+	WILL_CLOSE_LID_IN(20);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);

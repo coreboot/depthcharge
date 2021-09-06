@@ -10,23 +10,28 @@
 /* Mock functions */
 
 /*
- * Set countdown for VbExIsShutdownRequested.
- * -1: Never shutdown (always returns 0).
+ * Set countdown for ui_is_lid_open.
+ * -1: Never close (always returns 1).
  * 0: Shouldn't be called (fails the test).
- * positive value x: Returns 1 at the x-th call. Returns 0 for first (x - 1)
- * calls, fails the test at the (x + 1)-th call.
+ * positive value x: Returns 1 for first (x - 1) calls, returns 0 at the x-th
+ * call, and fails the test at the (x + 1)-th call.
  */
-int mock_shutdown_countdown;
+int mock_close_lid_countdown;
 
-uint32_t VbExIsShutdownRequested(void)
+int ui_is_lid_open(void)
 {
-	if (mock_shutdown_countdown == 0)
+	if (mock_close_lid_countdown == 0)
 		fail_msg("%s called when countdown is 0.", __func__);
 
-	if (mock_shutdown_countdown > 0)
-		--mock_shutdown_countdown;
+	if (mock_close_lid_countdown > 0)
+		--mock_close_lid_countdown;
 
-	return mock_shutdown_countdown == 0;
+	return mock_close_lid_countdown != 0;
+}
+
+int ui_is_power_pressed(void)
+{
+	return 0;
 }
 
 /* Tests */
@@ -46,7 +51,7 @@ static int setup_context(void **state)
 
 	mock_time_ms = 31ULL * MSECS_PER_SEC;
 	/* Larger than DEV_DELAY_NORMAL_MS / UI_KEY_DELAY_MS */
-	mock_shutdown_countdown = 3000;
+	mock_close_lid_countdown = 3000;
 
 	return 0;
 }
@@ -88,7 +93,7 @@ static void test_developer_ui_dev_disallowed_no_boot_altfw(void **state)
 	struct ui_context *ui = *state;
 
 	ui->ctx->flags &= ~VB2_CONTEXT_DEV_BOOT_ALLOWED;
-	mock_shutdown_countdown = 5;
+	mock_close_lid_countdown = 5;
 	WILL_PRESS_KEY(UI_KEY_DEV_BOOT_ALTFW, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(ui_keyboard_read, 0);
@@ -102,7 +107,7 @@ static void test_developer_ui_dev_disallowed_no_boot_internal(void **state)
 	struct ui_context *ui = *state;
 
 	ui->ctx->flags &= ~VB2_CONTEXT_DEV_BOOT_ALLOWED;
-	mock_shutdown_countdown = 5;
+	mock_close_lid_countdown = 5;
 	WILL_PRESS_KEY(UI_KEY_DEV_BOOT_INTERNAL, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(ui_keyboard_read, 0);

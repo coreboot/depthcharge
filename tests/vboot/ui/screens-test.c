@@ -7,7 +7,15 @@
 #include <vboot/ui/screens.c>
 
 /* Mock functions */
-uint32_t VbExIsShutdownRequested(void) { return mock_type(uint32_t); }
+int ui_is_power_pressed(void)
+{
+	return 0;
+}
+
+int ui_is_lid_open(void)
+{
+	return mock();
+}
 
 /* Tests */
 struct ui_context test_ui_ctx;

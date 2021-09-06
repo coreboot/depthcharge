@@ -944,7 +944,7 @@ vb2_error_t ui_display_screen(struct ui_state *state,
 			      const struct ui_state *prev_state);
 
 /******************************************************************************/
-/* keyboard.c */
+/* input.c */
 
 /*
  * Read the next keypress from the keyboard buffer.
@@ -972,6 +972,10 @@ vb2_error_t ui_display_screen(struct ui_state *state,
  * sending an arrow key as the sequence of keys '\x1b', '[', '1', 'A').
  */
 uint32_t ui_keyboard_read(uint32_t *flags_ptr);
+
+int ui_is_lid_open(void);
+
+int ui_is_power_pressed(void);
 
 /******************************************************************************/
 /* loop.c */

@@ -10,7 +10,15 @@
 #include <vboot/ui/loop.c>
 
 /* Mock functions */
-uint32_t VbExIsShutdownRequested(void) { return mock_type(uint32_t); }
+int ui_is_power_pressed(void)
+{
+	return mock();
+}
+
+int ui_is_lid_open(void)
+{
+	return mock();
+}
 
 /* Tests */
 struct ui_context test_ui_ctx;
@@ -41,8 +49,8 @@ static void test_shutdown_detachable_ignore_power_button(void **state)
 
 	struct ui_context *ui = *state;
 
-	will_return_always(VbExIsShutdownRequested,
-			   VB_SHUTDOWN_REQUEST_POWER_BUTTON);
+	will_return_maybe(ui_is_power_pressed, 1);
+	will_return_maybe(ui_is_lid_open, 1);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 
 	ASSERT_VB2_SUCCESS(check_shutdown_request(ui));
@@ -56,7 +64,8 @@ static void test_shutdown_detachable_ignore_power_button_press(void **state)
 
 	struct ui_context *ui = *state;
 
-	will_return_always(VbExIsShutdownRequested, 0);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_maybe(ui_is_lid_open, 1);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	ui->key = UI_BUTTON_POWER_SHORT_PRESS;
 
@@ -70,10 +79,11 @@ static void test_shutdown_release_press_hold_release(void **state)
 
 	struct ui_context *ui = *state;
 
-	will_return(VbExIsShutdownRequested, 0);
-	will_return(VbExIsShutdownRequested, VB_SHUTDOWN_REQUEST_POWER_BUTTON);
-	will_return(VbExIsShutdownRequested, VB_SHUTDOWN_REQUEST_POWER_BUTTON);
-	will_return_always(VbExIsShutdownRequested, 0);
+	will_return_maybe(ui_is_lid_open, 1);
+	will_return(ui_is_power_pressed, 0);
+	will_return(ui_is_power_pressed, 1);
+	will_return(ui_is_power_pressed, 1);
+	will_return_always(ui_is_power_pressed, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 
 	ASSERT_VB2_SUCCESS(check_shutdown_request(ui));
@@ -89,8 +99,8 @@ static void test_shutdown_press_ignored_if_held_since_boot(void **state)
 
 	struct ui_context *ui = *state;
 
-	will_return_always(VbExIsShutdownRequested,
-			   VB_SHUTDOWN_REQUEST_POWER_BUTTON);
+	will_return_always(ui_is_power_pressed, 1);
+	will_return_maybe(ui_is_lid_open, 1);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 
 	ASSERT_VB2_SUCCESS(check_shutdown_request(ui));
@@ -104,7 +114,8 @@ static void test_shutdown_power_button_short_press_from_key(void **state)
 
 	struct ui_context *ui = *state;
 
-	will_return_always(VbExIsShutdownRequested, 0);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_maybe(ui_is_lid_open, 1);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	ui->key = UI_BUTTON_POWER_SHORT_PRESS;
 
@@ -118,8 +129,8 @@ static void test_shutdown_button_short_pressed_when_lid_ignored(void **state)
 
 	struct ui_context *ui = *state;
 
-	will_return_always(VbExIsShutdownRequested,
-			   VB_SHUTDOWN_REQUEST_LID_CLOSED);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_maybe(ui_is_lid_open, 0);
 	will_return_always(vb2api_gbb_get_flags,
 			   VB2_GBB_FLAG_DISABLE_LID_SHUTDOWN);
 	ui->key = UI_BUTTON_POWER_SHORT_PRESS;
@@ -134,11 +145,10 @@ static void test_shutdown_button_while_lid_ignored_by_gbb(void **state)
 
 	struct ui_context *ui = *state;
 
-	will_return(VbExIsShutdownRequested, 0);
-	will_return(VbExIsShutdownRequested,
-		    VB_SHUTDOWN_REQUEST_LID_CLOSED |
-			    VB_SHUTDOWN_REQUEST_POWER_BUTTON);
-	will_return_always(VbExIsShutdownRequested, 0);
+	will_return_maybe(ui_is_lid_open, 0);
+	will_return(ui_is_power_pressed, 0);
+	will_return(ui_is_power_pressed, 1);
+	will_return_maybe(ui_is_power_pressed, 0);
 	will_return_always(vb2api_gbb_get_flags,
 			   VB2_GBB_FLAG_DISABLE_LID_SHUTDOWN);
 
@@ -151,8 +161,8 @@ static void test_shutdown_if_lid_closure(void **state)
 {
 	struct ui_context *ui = *state;
 
-	will_return_always(VbExIsShutdownRequested,
-			   VB_SHUTDOWN_REQUEST_LID_CLOSED);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_always(ui_is_lid_open, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 
 	assert_int_equal(check_shutdown_request(ui), VB2_REQUEST_SHUTDOWN);
@@ -166,8 +176,8 @@ static void test_shutdown_lid_ignored_by_gbb_flags(void **state)
 {
 	struct ui_context *ui = *state;
 
-	will_return_always(VbExIsShutdownRequested,
-			   VB_SHUTDOWN_REQUEST_LID_CLOSED);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_maybe(ui_is_lid_open, 0);
 	will_return_always(vb2api_gbb_get_flags,
 			   VB2_GBB_FLAG_DISABLE_LID_SHUTDOWN);
 
@@ -187,7 +197,8 @@ static void test_loop_shutdown_if_requested(void **state)
 
 	will_return_always(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	WILL_SHUTDOWN_IN(10);
+	WILL_CLOSE_LID_IN(10);
+	will_return_maybe(ui_is_power_pressed, 0);
 	EXPECT_DISPLAY_UI(MOCK_SCREEN_BASE);
 
 	assert_int_equal(ui_loop(ui->ctx, MOCK_SCREEN_BASE, NULL),
@@ -198,7 +209,8 @@ static void test_loop_screen_action_request_ui_exit(void **state)
 {
 	struct ui_context *ui = *state;
 
-	will_return_always(VbExIsShutdownRequested, 0);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_maybe(ui_is_lid_open, 1);
 	will_return_always(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	WILL_MOCK_ACTION_COUNTDOWN(10);
@@ -211,7 +223,8 @@ static void test_loop_global_action_request_ui_exit(void **state)
 {
 	struct ui_context *ui = *state;
 
-	will_return_always(VbExIsShutdownRequested, 0);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_maybe(ui_is_lid_open, 1);
 	will_return_always(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	WILL_MOCK_ACTION_COUNTDOWN(10);
@@ -227,7 +240,8 @@ static void test_loop_global_action_can_change_screen(void **state)
 
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_always(ui_keyboard_read, 0);
-	WILL_SHUTDOWN_IN(10);
+	WILL_CLOSE_LID_IN(10);
+	will_return_maybe(ui_is_power_pressed, 0);
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI(MOCK_SCREEN_BASE);
 
@@ -240,7 +254,8 @@ static void test_loop_screen_action_success(void **state)
 {
 	struct ui_context *ui = *state;
 
-	will_return_always(VbExIsShutdownRequested, 0);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_maybe(ui_is_lid_open, 1);
 	will_return_always(mock_action_flag0, VB2_REQUEST_UI_EXIT);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_always(ui_keyboard_read, 0);
@@ -254,7 +269,8 @@ static void test_loop_item_target_action_success(void **state)
 {
 	struct ui_context *ui = *state;
 
-	will_return_always(VbExIsShutdownRequested, 0);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_maybe(ui_is_lid_open, 1);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(mock_action_flag0, VB2_SUCCESS);
 	will_return(mock_action_flag1, VB2_REQUEST_UI_EXIT);
@@ -269,8 +285,9 @@ static void test_loop_global_action_success(void **state)
 {
 	struct ui_context *ui = *state;
 
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_maybe(ui_is_lid_open, 1);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_always(VbExIsShutdownRequested, 0);
 	will_return(mock_action_flag0, VB2_SUCCESS);
 	will_return(mock_action_flag1, VB2_SUCCESS);
 	will_return(mock_action_flag2, VB2_REQUEST_UI_EXIT);
@@ -286,7 +303,8 @@ static void test_loop_navigation(void **state)
 	struct ui_context *ui = *state;
 
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	WILL_SHUTDOWN_IN(11);
+	WILL_CLOSE_LID_IN(11);
+	will_return_maybe(ui_is_power_pressed, 0);
 	WILL_PRESS_KEY(UI_KEY_UP, 0);
 	WILL_PRESS_KEY(UI_KEY_UP, 0); /* (blocked) */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -320,7 +338,8 @@ static void test_loop_detachable_navigation(void **state)
 	struct ui_context *ui = *state;
 
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	WILL_SHUTDOWN_IN(11);
+	WILL_CLOSE_LID_IN(11);
+	will_return_maybe(ui_is_power_pressed, 0);
 	WILL_PRESS_KEY(UI_BUTTON_VOL_UP_SHORT_PRESS, 0);
 	WILL_PRESS_KEY(UI_BUTTON_VOL_UP_SHORT_PRESS, 0);
 	WILL_PRESS_KEY(UI_BUTTON_VOL_DOWN_SHORT_PRESS, 0);
@@ -354,7 +373,8 @@ static void test_loop_delay_sleep_20_ms(void **state)
 	will_return(mock_action_msleep, 0);
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	WILL_SHUTDOWN_IN(2);
+	WILL_CLOSE_LID_IN(2);
+	will_return_maybe(ui_is_power_pressed, 0);
 	EXPECT_DISPLAY_UI_ANY();
 
 	assert_int_equal(ui_loop(ui->ctx, MOCK_SCREEN_BASE, mock_action_msleep),
@@ -370,7 +390,8 @@ static void test_loop_delay_complement_to_20_ms(void **state)
 	will_return(mock_action_msleep, UI_KEY_DELAY_MS / 2);
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	WILL_SHUTDOWN_IN(2);
+	WILL_CLOSE_LID_IN(2);
+	will_return_maybe(ui_is_power_pressed, 0);
 	EXPECT_DISPLAY_UI_ANY();
 
 	assert_int_equal(ui_loop(ui->ctx, MOCK_SCREEN_BASE, mock_action_msleep),
@@ -386,7 +407,8 @@ static void test_loop_delay_no_sleep_if_time_too_long(void **state)
 	will_return_always(mock_action_msleep, 1234);
 	will_return_always(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	WILL_SHUTDOWN_IN(2);
+	WILL_CLOSE_LID_IN(2);
+	will_return_maybe(ui_is_power_pressed, 0);
 	EXPECT_DISPLAY_UI_ANY();
 
 	assert_int_equal(ui_loop(ui->ctx, MOCK_SCREEN_BASE, mock_action_msleep),
@@ -402,7 +424,8 @@ static void test_loop_delay_overflow_sleep_20_ms(void **state)
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return(mock_action_msleep, 0);
-	WILL_SHUTDOWN_IN(2);
+	WILL_CLOSE_LID_IN(2);
+	will_return_maybe(ui_is_power_pressed, 0);
 	EXPECT_DISPLAY_UI_ANY();
 
 	assert_int_equal(ui_loop(ui->ctx, MOCK_SCREEN_BASE, mock_action_msleep),
@@ -418,7 +441,8 @@ static void test_loop_delay_overflow_complement_to_20_ms(void **state)
 	will_return(mock_action_msleep, UI_KEY_DELAY_MS / 2);
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	WILL_SHUTDOWN_IN(2);
+	WILL_CLOSE_LID_IN(2);
+	will_return_maybe(ui_is_power_pressed, 0);
 	EXPECT_DISPLAY_UI_ANY();
 
 	assert_int_equal(ui_loop(ui->ctx, MOCK_SCREEN_BASE, mock_action_msleep),
@@ -434,7 +458,8 @@ static void test_loop_delay_overflow_no_sleep_if_time_too_long(void **state)
 	will_return(mock_action_msleep, 1234);
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	WILL_SHUTDOWN_IN(2);
+	WILL_CLOSE_LID_IN(2);
+	will_return_maybe(ui_is_power_pressed, 0);
 	EXPECT_DISPLAY_UI_ANY();
 
 	assert_int_equal(ui_loop(ui->ctx, MOCK_SCREEN_BASE, mock_action_msleep),

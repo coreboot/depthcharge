@@ -8,7 +8,15 @@
 #include <vboot/util/commonparams.h>
 
 /* Mock functions */
-uint32_t VbExIsShutdownRequested(void) { return mock_type(uint32_t); }
+int ui_is_power_pressed(void)
+{
+	return 0;
+}
+
+int ui_is_lid_open(void)
+{
+	return mock();
+}
 
 /* Tests */
 struct ui_context test_ui_ctx;
@@ -29,7 +37,7 @@ static void test_diagnostics_screen_hisabled_and_hidden(void **state)
 {
 	struct ui_context *ui = *state;
 
-	WILL_SHUTDOWN_IN(3);
+	WILL_CLOSE_LID_IN(3);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DIAGNOSTICS, MOCK_IGNORE, MOCK_IGNORE,
 			  0x0, 0x0);
 	will_return_maybe(ui_keyboard_read, 0);
@@ -91,7 +99,7 @@ static void test_diagnostics_screen(void **state)
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DIAGNOSTICS, MOCK_IGNORE, 6);
 
-	will_return_maybe(VbExIsShutdownRequested, 0);
+	will_return_maybe(ui_is_lid_open, 1);
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(vb2ex_get_locale_count, 10);
@@ -106,7 +114,7 @@ static void test_diagnostics_screen_no_nvme(void **state)
 {
 	struct ui_context *ui = *state;
 
-	WILL_SHUTDOWN_IN(3);
+	WILL_CLOSE_LID_IN(3);
 	will_return_always(vb2ex_diag_get_storage_test_log,
 			   VB2_ERROR_EX_UNIMPLEMENTED);
 	will_return_maybe(ui_keyboard_read, 0);

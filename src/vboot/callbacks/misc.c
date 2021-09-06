@@ -19,41 +19,10 @@
 #include <libpayload.h>
 #include <lzma.h>
 #include <vb2_api.h>
-#include <vboot_api.h>
 
 #include "drivers/flash/flash.h"
 #include "vboot/nvdata.h"
 #include "vboot/secdata_tpm.h"
-#include "vboot/util/commonparams.h"
-#include "vboot/util/flag.h"
-
-uint32_t VbExIsShutdownRequested(void)
-{
-	int lidsw = flag_fetch(FLAG_LIDSW);
-	int pwrsw = 0;
-	uint32_t shutdown_request = 0;
-
-	// Power button is always handled as a keyboard key on detachables.
-	if (!CONFIG(DETACHABLE))
-		pwrsw = flag_fetch(FLAG_PWRSW);
-
-	if (lidsw < 0 || pwrsw < 0) {
-		// There isn't any way to return an error, so just hang.
-		printf("Failed to fetch lid or power switch flag.\n");
-		halt();
-	}
-
-	if (!lidsw) {
-		printf("Lid is closed.\n");
-		shutdown_request |= VB_SHUTDOWN_REQUEST_LID_CLOSED;
-	}
-	if (pwrsw) {
-		printf("Power key pressed.\n");
-		shutdown_request |= VB_SHUTDOWN_REQUEST_POWER_BUTTON;
-	}
-
-	return shutdown_request;
-}
 
 vb2_error_t vb2ex_read_resource(struct vb2_context *ctx,
 			enum vb2_resource_index index,

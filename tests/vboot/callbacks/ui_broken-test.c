@@ -10,7 +10,15 @@
 #include <vboot/util/commonparams.h>
 
 /* Mock functions */
-uint32_t VbExIsShutdownRequested(void) { return mock_type(uint32_t); }
+int ui_is_power_pressed(void)
+{
+	return 0;
+}
+
+int ui_is_lid_open(void)
+{
+	return mock();
+}
 
 /* Tests */
 struct ui_context test_ui_ctx;
@@ -29,7 +37,7 @@ static void test_broken_ui_shortcuts_ignored(void **state)
 	struct ui_context *ui = *state;
 
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	WILL_SHUTDOWN_IN(10);
+	WILL_CLOSE_LID_IN(10);
 	WILL_PRESS_KEY(UI_KEY_CTRL('D'), 1);
 	WILL_PRESS_KEY(UI_KEY_CTRL('U'), 1);
 	WILL_PRESS_KEY(UI_KEY_CTRL('L'), 1);
@@ -48,7 +56,7 @@ static void test_broken_ui_debug_info(void **state)
 
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(vb2ex_prepare_log_screen, 1);
-	WILL_SHUTDOWN_IN(5);
+	WILL_CLOSE_LID_IN(5);
 	WILL_PRESS_KEY('\t', 0);
 	will_return_always(ui_keyboard_read, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_BROKEN);
@@ -63,7 +71,7 @@ static void test_broken_ui_disabled_and_hidden_item_mask(void **state)
 	struct ui_context *ui = *state;
 
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	WILL_SHUTDOWN_IN(5);
+	WILL_CLOSE_LID_IN(5);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_BROKEN, MOCK_IGNORE, MOCK_IGNORE,
 			  0x0, 0x0);
 	will_return_always(ui_keyboard_read, 0);
@@ -75,7 +83,7 @@ static void test_broken_ui_screen(void **state)
 {
 	struct ui_context *ui = *state;
 
-	WILL_SHUTDOWN_IN(7);
+	WILL_CLOSE_LID_IN(7);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_always(vb2ex_get_locale_count, 10);
 	will_return_maybe(vb2api_allow_recovery, 1);
@@ -108,7 +116,8 @@ static void test_broken_ui_power_button_shutdown(void **state)
 	struct ui_context *ui = *state;
 
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_maybe(VbExIsShutdownRequested, 0);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_maybe(ui_is_lid_open, 1);
 	WILL_PRESS_KEY(UI_BUTTON_POWER_SHORT_PRESS, 0);
 	EXPECT_DISPLAY_UI_ANY();
 
