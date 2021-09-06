@@ -5,6 +5,7 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "board/guybrush/include/variant.h"
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
@@ -23,23 +24,12 @@
 #include "drivers/sound/rt5682.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
-#include "drivers/storage/sdhci.h"
-#include "drivers/storage/bayhub.h"
-#include "drivers/storage/nvme.h"
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/video/display.h"
 #include "drivers/bus/usb/usb.h"
 #include "pci.h"
 #include "vboot/util/flag.h"
-
-/* SD Controllers */
-#define BH720_PCI_VID		0x1217
-#define BH720_PCI_DID		0x8621
-
-#define GENESYS_PCI_VID		0x17a0
-#define GL9755S_PCI_DID		0x9755
-#define GL9750S_PCI_DID		0x9750
 
 /* Clock frequencies */
 #define MCLK			4800000
@@ -64,6 +54,17 @@
 
 /* FW_CONFIG for beep banging */
 #define FW_CONFIG_BIT_BANGING (1 << 9)
+
+__weak const struct storage_config *variant_get_storage_configs(size_t *count)
+{
+	static const struct storage_config storage_configs[] = {
+		{ .media = STORAGE_NVME, .pci_dev = PCI_DEV(0, 0x02, 0x04)},
+		{ .media = STORAGE_SDHCI, .pci_dev = PCI_DEV(0, 0x02, 0x02)},
+	};
+
+	*count = ARRAY_SIZE(storage_configs);
+	return storage_configs;
+}
 
 static int cr50_irq_status(void)
 {
@@ -157,37 +158,6 @@ static int board_setup(void)
 		setup_bit_banging();
 	else
 		setup_rt1019_amp();
-
-	SdhciHost *sd = NULL;
-	pcidev_t pci_dev;
-	if (pci_find_device(BH720_PCI_VID, BH720_PCI_DID, &pci_dev)) {
-		sd = new_bayhub_sdhci_host(pci_dev,
-				SDHCI_PLATFORM_REMOVABLE,
-				0, 0);
-	} else if (pci_find_device(GENESYS_PCI_VID, GL9755S_PCI_DID,
-				&pci_dev)) {
-		sd = new_pci_sdhci_host(pci_dev,
-				SDHCI_PLATFORM_REMOVABLE,
-				0, 0);
-	} else if (pci_find_device(GENESYS_PCI_VID, GL9750S_PCI_DID,
-				&pci_dev)) {
-		sd = new_pci_sdhci_host(pci_dev,
-				SDHCI_PLATFORM_REMOVABLE,
-				0, 0);
-	}
-
-	if (sd) {
-		sd->name = "SD";
-		list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
-				&removable_block_dev_controllers);
-	} else {
-		printf("Failed to find SD card reader\n");
-	}
-
-	/* PCI Bridge for NVMe */
-	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x02, 0x04));
-	list_insert_after(&nvme->ctrlr.list_node,
-				&fixed_block_dev_controllers);
 
 	/* Set up H1 / Dauntless on I2C3 */
 	DesignwareI2c *i2c_h1 = new_designware_i2c(
