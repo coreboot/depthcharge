@@ -19,13 +19,6 @@
 #include <libpayload.h>
 #include <vb2_api.h>
 
-uint32_t vb2ex_prepare_log_screen(enum vb2_screen screen, uint32_t locale_id,
-				  const char *str)
-{
-	/* TODO(b/151200757): Support headless devices */
-	return 0;
-}
-
 uint32_t vb2ex_get_locale_count(void)
 {
 	/* TODO(b/151200757): Support headless devices */

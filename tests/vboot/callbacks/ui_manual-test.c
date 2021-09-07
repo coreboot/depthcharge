@@ -684,7 +684,7 @@ static void test_advanced_options_screen(void **state)
 	setup_will_return_common();
 	WILL_CLOSE_LID_IN(30);
 	will_return_maybe(vb2ex_get_locale_count, 10);
-	will_return_maybe(vb2ex_prepare_log_screen, 1);
+	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
 
 	EXPECT_UI_DISPLAY_ANY();
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -738,7 +738,7 @@ static void test_advanced_options_screen(void **state)
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 2);
 
-	expect_any_always(vb2ex_prepare_log_screen, str);
+	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2ex_physical_presence_pressed, 0);
 	WILL_HAVE_NO_EXTERNAL();
@@ -807,8 +807,8 @@ static void test_debug_info(void **state)
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY('\t', 0);
 	will_return_maybe(ui_keyboard_read, 0);
-	will_return_always(vb2ex_prepare_log_screen, 1);
-	expect_any_always(vb2ex_prepare_log_screen, str);
+	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
+	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY(VB2_SCREEN_DEBUG_INFO);
 	WILL_HAVE_NO_EXTERNAL();
@@ -826,9 +826,9 @@ static void test_debug_info_enter_failed(void **state)
 	WILL_CLOSE_LID_IN(5);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY('\t', 0);
-	will_return_always(vb2ex_prepare_log_screen, 0);
 	will_return_maybe(ui_keyboard_read, 0);
-	expect_any_always(vb2ex_prepare_log_screen, str);
+	WILL_CALL_UI_LOG_INIT_ALWAYS(0);
+	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY(VB2_SCREEN_RECOVERY_SELECT);
 	EXPECT_BEEP(250, 400, mock_time_ms + 2 * UI_KEY_DELAY_MS);
@@ -848,14 +848,14 @@ static void test_debug_info_one_page(void **state)
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY('\t', 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	will_return_always(vb2ex_prepare_log_screen, 1);
+	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
 	will_return_maybe(ui_keyboard_read, 0);
 	EXPECT_UI_DISPLAY_ANY();
 	/* 0x6 = 0b110 */
 	EXPECT_UI_DISPLAY(VB2_SCREEN_DEBUG_INFO, MOCK_IGNORE, 3, 0x6, 0x0, 0);
 	EXPECT_UI_DISPLAY(VB2_SCREEN_RECOVERY_SELECT);
 	WILL_HAVE_NO_EXTERNAL();
-	expect_any_always(vb2ex_prepare_log_screen, str);
+	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_SHUTDOWN);
@@ -879,7 +879,7 @@ static void test_debug_info_three_pages(void **state)
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* page 0, select page down */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* page 1, select page down */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* page 1, select back */
-	will_return_always(vb2ex_prepare_log_screen, 3);
+	WILL_CALL_UI_LOG_INIT_ALWAYS(3);
 	will_return_maybe(ui_keyboard_read, 0);
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY(VB2_SCREEN_DEBUG_INFO, MOCK_IGNORE, 2, 0x2, 0x0, 0);
@@ -892,7 +892,7 @@ static void test_debug_info_three_pages(void **state)
 	EXPECT_UI_DISPLAY(VB2_SCREEN_DEBUG_INFO, MOCK_IGNORE, 2, 0x0, 0x0, 1);
 	EXPECT_UI_DISPLAY(VB2_SCREEN_DEBUG_INFO, MOCK_IGNORE, 3, 0x0, 0x0, 1);
 	EXPECT_UI_DISPLAY(VB2_SCREEN_RECOVERY_SELECT);
-	expect_any_always(vb2ex_prepare_log_screen, str);
+	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
 	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
@@ -915,9 +915,11 @@ static void test_firmware_log(void **state)
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	will_return_maybe(vb2ex_prepare_log_screen, 1);
 	will_return_maybe(ui_keyboard_read, 0);
-	expect_string(vb2ex_prepare_log_screen, str, "1");
+	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
+	expect_string(ui_log_init, str, "1");
+	expect_any_always(ui_log_init, screen);
+	expect_any_always(ui_log_init, locale_code);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_HAVE_NO_EXTERNAL();
 
@@ -943,10 +945,12 @@ static void test_firmware_log_again_reacquire_new_one(void **state)
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	will_return_maybe(vb2ex_prepare_log_screen, 1);
+	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
 	will_return_maybe(ui_keyboard_read, 0);
-	expect_string(vb2ex_prepare_log_screen, str, "1");
-	expect_string(vb2ex_prepare_log_screen, str, "2");
+	expect_string(ui_log_init, str, "1");
+	expect_string(ui_log_init, str, "2");
+	expect_any_always(ui_log_init, screen);
+	expect_any_always(ui_log_init, locale_code);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_HAVE_NO_EXTERNAL();
 
@@ -972,12 +976,14 @@ static void test_firmware_log_back_not_reacquire_new_one(void **state)
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	WILL_PRESS_KEY('\t', 0); /* enter debug info screen */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
-	will_return_maybe(vb2ex_prepare_log_screen, 1);
 	will_return_maybe(ui_keyboard_read, 0);
-	expect_string(vb2ex_prepare_log_screen, str, "1");
+	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
+	expect_string(ui_log_init, str, "1");
 	/* Skip the one entry, which is for preparing debug info */
-	expect_any(vb2ex_prepare_log_screen, str);
-	expect_string(vb2ex_prepare_log_screen, str, "1");
+	expect_any(ui_log_init, str);
+	expect_string(ui_log_init, str, "1");
+	expect_any_always(ui_log_init, screen);
+	expect_any_always(ui_log_init, locale_code);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_HAVE_NO_EXTERNAL();
 

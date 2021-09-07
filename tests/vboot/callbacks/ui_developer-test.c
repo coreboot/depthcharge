@@ -740,8 +740,8 @@ static void test_developer_screen_advanced_options_screen(void **state)
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(vb2api_allow_recovery, 0);
 	will_return_maybe(vb2ex_get_locale_count, 10);
-	expect_any_always(vb2ex_prepare_log_screen, str);
-	will_return_maybe(vb2ex_prepare_log_screen, 1);
+	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
+	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
 
 	EXPECT_UI_DISPLAY_ANY();
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -797,8 +797,8 @@ static void test_developer_screen_debug_info(void **state)
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	expect_any_always(vb2ex_prepare_log_screen, str);
-	will_return_maybe(vb2ex_prepare_log_screen, 1);
+	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
+	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
 	will_return_maybe(ui_keyboard_read, 0);
 
 	assert_int_equal(vb2ex_developer_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);

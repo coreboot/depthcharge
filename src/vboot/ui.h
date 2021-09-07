@@ -476,7 +476,7 @@ struct ui_log_info {
 	const char **page_start;
 };
 
-/* Log info for vb2ex_prepare_log_screen and ui_display */
+/* Log info for ui_display */
 extern struct ui_log_info global_ui_log_info;
 
 /******************************************************************************/

@@ -27,17 +27,6 @@
 #include "vboot/firmware_id.h"
 #include "vboot/ui.h"
 
-uint32_t vb2ex_prepare_log_screen(enum vb2_screen screen, uint32_t locale_id,
-				  const char *str)
-{
-	const struct ui_locale *locale;
-	if (ui_get_locale_info(locale_id, &locale))
-		return 0;
-	if (ui_log_init(screen, locale->code, str, &global_ui_log_info))
-		return 0;
-	return global_ui_log_info.page_count;
-}
-
 uint32_t vb2ex_get_locale_count(void)
 {
 	return ui_get_locale_count();

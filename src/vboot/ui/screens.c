@@ -185,15 +185,26 @@ static vb2_error_t set_ui_error_and_go_back(struct ui_context *ui,
 static vb2_error_t log_page_update(struct ui_context *ui,
 				   const char *new_log_string)
 {
+	const struct ui_locale *locale;
 	const struct ui_screen_info *screen = ui->state->screen;
 
+	if (CONFIG(HEADLESS)) {
+		/* TODO(b/151200757): Support headless devices */
+		global_ui_log_info.page_count = 0;
+		return VB2_SUCCESS;
+	}
+
 	if (new_log_string) {
-		ui->state->page_count = vb2ex_prepare_log_screen(
-			screen->id, ui->locale_id, new_log_string);
-		if (ui->state->page_count == 0) {
-			UI_INFO("vb2ex_prepare_log_screen failed\n");
+		VB2_TRY(ui_get_locale_info(ui->locale_id, &locale));
+		VB2_TRY(ui_log_init(screen->id, locale->code, new_log_string,
+				    &global_ui_log_info));
+		if (global_ui_log_info.page_count == 0) {
+			UI_ERROR("page_count is 0\n");
 			return VB2_ERROR_UI_LOG_INIT;
 		}
+
+		ui->state->page_count = global_ui_log_info.page_count;
+
 		if (ui->state->current_page >= ui->state->page_count)
 			ui->state->current_page = ui->state->page_count - 1;
 		ui->force_display = 1;

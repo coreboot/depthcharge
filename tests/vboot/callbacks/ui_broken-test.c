@@ -55,13 +55,13 @@ static void test_broken_ui_debug_info(void **state)
 	struct ui_context *ui = *state;
 
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_maybe(vb2ex_prepare_log_screen, 1);
+	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
 	WILL_CLOSE_LID_IN(5);
 	WILL_PRESS_KEY('\t', 0);
 	will_return_always(ui_keyboard_read, 0);
 	EXPECT_UI_DISPLAY(VB2_SCREEN_RECOVERY_BROKEN);
 	EXPECT_UI_DISPLAY(VB2_SCREEN_DEBUG_INFO);
-	expect_any_always(vb2ex_prepare_log_screen, str);
+	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
 
 	assert_int_equal(vb2ex_broken_screen_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
 }

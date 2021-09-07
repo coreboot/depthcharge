@@ -128,4 +128,37 @@
 		will_return(ui_is_lid_open, 0); \
 	} while (0)
 
+#define EXPECT_UI_LOG_INIT_ANY_ALWAYS() \
+	do { \
+		expect_any_always(ui_log_init, screen); \
+		expect_any_always(ui_log_init, locale_code); \
+		expect_any_always(ui_log_init, str); \
+	} while (0)
+
+#define _WILL_CALL_UI_LOG_INIT_ALWAYS(log_page_count, rv, ...) \
+	do { \
+		intmax_t _log_page_count = (log_page_count), \
+			 _rv = (rv); \
+		if (_log_page_count == MOCK_IGNORE) \
+			will_return_always(ui_log_init_log_page_count, 1); \
+		else \
+			will_return_always(ui_log_init_log_page_count, \
+					   (_log_page_count)); \
+		if (_rv == MOCK_IGNORE) \
+			will_return_always(ui_log_init, VB2_SUCCESS); \
+		else \
+			will_return_always(ui_log_init, _rv); \
+	} while (0)
+
+/*
+ * Call will_return_always for ui_log_init_log_page_count and ui_log_init.
+ * The first argument passed to this macro will be treated as the value that
+ * will be set into log->page_count, and the second argument passed to this
+ * macro is the return value of ui_log_init. If the first argument is
+ * MOCK_IGNORE, the page_count will be set to 1. If the second argument is
+ * omitted or is MOCK_IGNORE, the return value will be VB2_SUCCESS.
+ */
+#define WILL_CALL_UI_LOG_INIT_ALWAYS(...) \
+	_WILL_CALL_UI_LOG_INIT_ALWAYS(__VA_ARGS__, MOCK_IGNORE)
+
 #endif /* _TESTS_VBOOT_UI_COMMON_H */

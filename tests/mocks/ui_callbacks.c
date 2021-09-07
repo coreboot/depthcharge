@@ -51,13 +51,6 @@ const char *vb2ex_get_firmware_log(int reset)
 	return firmware_log_buf;
 }
 
-uint32_t vb2ex_prepare_log_screen(enum vb2_screen screen, uint32_t locale_id,
-				  const char *str)
-{
-	check_expected(str);
-	return mock_type(uint32_t);
-}
-
 vb2_error_t vb2ex_run_altfw(uint32_t altfw_id)
 {
 	vb2_error_t rv;

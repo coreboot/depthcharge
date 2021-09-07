@@ -103,8 +103,8 @@ static void test_diagnostics_screen(void **state)
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(vb2ex_get_locale_count, 10);
-	expect_any_always(vb2ex_prepare_log_screen, str);
-	will_return_maybe(vb2ex_prepare_log_screen, 1);
+	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
+	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
 	will_return_maybe(vb2ex_diag_get_storage_test_log, VB2_SUCCESS);
 
 	assert_int_equal(vb2ex_diagnostic_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
