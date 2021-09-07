@@ -141,13 +141,11 @@ static vb2_error_t ui_loop_impl(
 					? menu->items[ui.state->selected_item]
 						  .name
 					: "null");
-			vb2ex_display_ui(ui.state->screen->id, ui.locale_id,
-					 ui.state->selected_item,
-					 ui.state->disabled_item_mask,
-					 ui.state->hidden_item_mask,
-					 ui.disable_timer,
-					 ui.state->current_page,
-					 ui.error_code);
+			ui_display(ui.state->screen->id, ui.locale_id,
+				   ui.state->selected_item,
+				   ui.state->disabled_item_mask,
+				   ui.state->hidden_item_mask, ui.disable_timer,
+				   ui.state->current_page, ui.error_code);
 			if (ui.error_beep ||
 			    (ui.error_code &&
 			     prev_error_code != ui.error_code)) {

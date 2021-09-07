@@ -13,7 +13,13 @@
 
 depthcharge-y += archive.c
 depthcharge-y += bitmap.c
-depthcharge-y += common.c
+
+ifneq ($(CONFIG_HEADLESS),y)
+depthcharge-y += display.c
+else
+depthcharge-y += display_headless.c
+endif
+
 depthcharge-y += draw.c
 depthcharge-y += input.c
 depthcharge-y += layout.c

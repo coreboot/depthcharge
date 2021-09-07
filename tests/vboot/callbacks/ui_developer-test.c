@@ -70,7 +70,7 @@ static void test_developer_ui_shutdown_timeout(void **state)
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 
 	assert_int_equal(vb2ex_developer_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
 }
@@ -79,7 +79,7 @@ static void test_developer_ui_shutdown_menu(void **state)
 {
 	struct ui_context *ui = *state;
 
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -100,7 +100,7 @@ static void test_developer_ui_dev_disallowed_no_boot_altfw(void **state)
 	WILL_PRESS_KEY(UI_KEY_DEV_BOOT_ALTFW, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(ui_keyboard_read, 0);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_TO_NORM);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_TO_NORM);
 
 	assert_int_equal(vb2ex_developer_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
 }
@@ -114,7 +114,7 @@ static void test_developer_ui_dev_disallowed_no_boot_internal(void **state)
 	WILL_PRESS_KEY(UI_KEY_DEV_BOOT_INTERNAL, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(ui_keyboard_read, 0);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_TO_NORM);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_TO_NORM);
 
 	assert_int_equal(vb2ex_developer_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
 }
@@ -132,7 +132,7 @@ static void test_developer_ui_dev_disallowed_default_internal(void **state)
 	 * Should not display VB2_SCREEN_DEVELOPER_MODE, and should not boot
 	 * from default boot target after timeout.
 	 */
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_TO_NORM);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_TO_NORM);
 
 	assert_int_equal(vb2ex_developer_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
 }
@@ -146,7 +146,7 @@ static void test_developer_ui_dev_disallowed_default_external(void **state)
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_EXTERNAL);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_TO_NORM);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_TO_NORM);
 
 	assert_int_equal(vb2ex_developer_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
 }
@@ -162,7 +162,7 @@ static void test_developer_ui_dev_disallowed_to_norm_confirm(void **state)
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(vb2ex_get_locale_count, 10);
 	will_return_maybe(ui_keyboard_read, 0);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_TO_NORM);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_TO_NORM);
 	expect_function_call(vb2api_disable_developer_mode);
 
 	assert_int_equal(vb2ex_developer_ui(ui->ctx), VB2_REQUEST_REBOOT);
@@ -180,7 +180,7 @@ static void test_developer_ui_internal_timeout(void **state)
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 
 	assert_int_equal(vb2ex_developer_ui(ui->ctx), VB2_SUCCESS);
 
@@ -195,7 +195,7 @@ static void test_developer_ui_internal_fail_no_disk(void **state)
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_NORMAL_MS);
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
@@ -210,7 +210,7 @@ static void test_developer_ui_select_internal_menu(void **state)
 	struct ui_context *ui = *state;
 
 	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
@@ -226,7 +226,7 @@ static void test_developer_ui_select_internal_keyboard(void **state)
 	struct ui_context *ui = *state;
 
 	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_PRESS_KEY(UI_KEY_DEV_BOOT_INTERNAL, 0);
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
@@ -244,7 +244,7 @@ static void test_developer_ui_select_internal_button(void **state)
 	struct ui_context *ui = *state;
 
 	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_PRESS_KEY(UI_BUTTON_VOL_DOWN_LONG_PRESS, 0);
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
@@ -258,7 +258,7 @@ static void test_developer_ui_external_disallowed_default_boot(void **state)
 {
 	struct ui_context *ui = *state;
 
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_NORMAL_MS);
@@ -277,7 +277,7 @@ static void test_developer_ui_external_timeout(void **state)
 
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED;
 	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	EXPECT_BEEP(250, 400, start_time + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, start_time + DEV_DELAY_BEEP2_MS);
 	will_return_maybe(ui_keyboard_read, 0);
@@ -295,7 +295,7 @@ static void test_developer_ui_external_fail_no_disk(void **state)
 	struct ui_context *ui = *state;
 
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED;
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_NORMAL_MS);
@@ -314,7 +314,7 @@ static void test_developer_ui_select_external_keyboard(void **state)
 
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED;
 	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_PRESS_KEY(UI_KEY_DEV_BOOT_EXTERNAL, 0);
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
@@ -329,7 +329,7 @@ static void test_developer_ui_select_external_menu(void **state)
 	struct ui_context *ui = *state;
 
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED;
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
@@ -348,7 +348,7 @@ static void test_developer_ui_select_external_button(void **state)
 	struct ui_context *ui = *state;
 
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED;
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
 	WILL_PRESS_KEY(UI_BUTTON_VOL_UP_LONG_PRESS, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
@@ -363,7 +363,7 @@ static void test_developer_ui_select_altfw_keyboard(void **state)
 	struct ui_context *ui = *state;
 
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_ALTFW_ALLOWED;
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_PRESS_KEY(UI_KEY_DEV_BOOT_ALTFW, 0);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
@@ -380,7 +380,7 @@ static void test_developer_ui_select_altfw_keyboard_disallowed(void **state)
 {
 	struct ui_context *ui = *state;
 
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	EXPECT_BEEP(250, 400, mock_time_ms);
 	WILL_PRESS_KEY(UI_KEY_DEV_BOOT_ALTFW, 0);
 	will_return_maybe(ui_keyboard_read, 0);
@@ -401,13 +401,13 @@ static void test_developer_ui_select_altfw_menu(void **state)
 			  VB2_DEV_DEFAULT_BOOT_TARGET_ALTFW);
 	will_return_maybe(vb2ex_get_altfw_count, 5);
 
-	EXPECT_DISPLAY_UI_ANY();
+	EXPECT_UI_DISPLAY_ANY();
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_SELECT_ALTFW, MOCK_IGNORE, 1);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_SELECT_ALTFW, MOCK_IGNORE, 1);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_SELECT_ALTFW, MOCK_IGNORE, 2);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_SELECT_ALTFW, MOCK_IGNORE, 2);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_SELECT_ALTFW, MOCK_IGNORE, 3);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_SELECT_ALTFW, MOCK_IGNORE, 3);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	will_return_maybe(ui_keyboard_read, 0);
 
@@ -421,7 +421,7 @@ static void test_developer_ui_select_to_norm(void **state)
 {
 	struct ui_context *ui = *state;
 
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	expect_function_call(vb2api_disable_developer_mode);
 	WILL_PRESS_KEY(UI_KEY_UP, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
@@ -437,7 +437,7 @@ static void test_developer_ui_select_to_norm_cancel(void **state)
 {
 	struct ui_context *ui = *state;
 
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_PRESS_KEY(UI_KEY_UP, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -454,7 +454,7 @@ static void test_developer_ui_select_to_norm_keyboard(void **state)
 {
 	struct ui_context *ui = *state;
 
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	expect_function_call(vb2api_disable_developer_mode);
 	WILL_PRESS_KEY(UI_KEY_DEV_TO_NORM, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
@@ -469,7 +469,7 @@ static void test_developer_ui_to_norm_dev_forced_by_gbb(void **state)
 {
 	struct ui_context *ui = *state;
 
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	EXPECT_BEEP(250, 400, mock_time_ms);
 	WILL_PRESS_KEY(UI_KEY_DEV_TO_NORM, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
@@ -487,7 +487,7 @@ static void test_developer_ui_short_delay(void **state)
 	struct ui_context *ui = *state;
 	const uint32_t start_time = mock_time_ms;
 
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_gbb_get_flags,
@@ -510,7 +510,7 @@ static void test_developer_ui_stop_timer_on_input_normal_delay(void **state)
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 
 	assert_int_equal(vb2ex_developer_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
 
@@ -528,7 +528,7 @@ static void test_developer_ui_stop_timer_on_input_short_delay(void **state)
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags,
 			  VB2_GBB_FLAG_DEV_SCREEN_SHORT_DELAY);
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 
 	assert_int_equal(vb2ex_developer_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
 
@@ -542,7 +542,7 @@ static void test_developer_screen_default_boot_internal(void **state)
 	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 2);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 2);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
@@ -559,7 +559,7 @@ static void test_developer_screen_default_boot_external(void **state)
 	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 3);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 3);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_EXTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
@@ -576,7 +576,7 @@ static void test_developer_screen_default_boot_altfw(void **state)
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_ALTFW_ALLOWED;
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 4);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 4);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_ALTFW);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
@@ -597,7 +597,7 @@ static void test_developer_screen_disabled_and_hidden_altfw(void **state)
 	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, MOCK_IGNORE,
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, MOCK_IGNORE,
 			  0x0, 0x0);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
@@ -616,7 +616,7 @@ static void test_developer_screen_disabled_and_hidden_force_dev(void **state)
 	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, MOCK_IGNORE,
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, MOCK_IGNORE,
 			  0x0, 0x2);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
@@ -636,7 +636,7 @@ static void test_developer_screen_disabled_and_hidden_only_altfw(void **state)
 	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, MOCK_IGNORE,
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, MOCK_IGNORE,
 			  0x0, 0x8);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
@@ -656,26 +656,26 @@ static void test_developer_screen(void **state)
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(vb2ex_get_locale_count, 10);
 
-	EXPECT_DISPLAY_UI_ANY();
+	EXPECT_UI_DISPLAY_ANY();
 	/* #0: Language menu */
 	WILL_PRESS_KEY(UI_KEY_UP, 0);
 	WILL_PRESS_KEY(UI_KEY_UP, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_DISPLAY_UI_ANY();
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 0);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_LANGUAGE_SELECT);
+	EXPECT_UI_DISPLAY_ANY();
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 0);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_LANGUAGE_SELECT);
 	/* #1: Return to secure mode */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_DISPLAY_UI_ANY();
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 1);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_TO_NORM);
+	EXPECT_UI_DISPLAY_ANY();
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 1);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_TO_NORM);
 	/* #2: Boot internal */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	EXPECT_DISPLAY_UI_ANY();
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 2);
+	EXPECT_UI_DISPLAY_ANY();
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 2);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 
 	ASSERT_VB2_SUCCESS(vb2ex_developer_ui(ui->ctx));
@@ -694,7 +694,7 @@ static void test_developer_screen_external_default(void **state)
 
 	/* #3: Boot external */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 3);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 3);
 
 	ASSERT_VB2_SUCCESS(vb2ex_developer_ui(ui->ctx));
 }
@@ -709,21 +709,21 @@ static void test_developer_screen_advanced_options(void **state)
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(vb2api_allow_recovery, 0);
 
-	EXPECT_DISPLAY_UI_ANY();
+	EXPECT_UI_DISPLAY_ANY();
 	/* #5: Advanced options */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_DISPLAY_UI_ANY();
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 5);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, MOCK_IGNORE,
+	EXPECT_UI_DISPLAY_ANY();
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 5);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, MOCK_IGNORE,
 			  0x0, 0x12);
 	/* End of menu */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0); /* Blocked */
-	EXPECT_DISPLAY_UI_ANY();
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 6);
+	EXPECT_UI_DISPLAY_ANY();
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 6);
 
 	will_return_maybe(ui_keyboard_read, 0);
 
@@ -743,44 +743,44 @@ static void test_developer_screen_advanced_options_screen(void **state)
 	expect_any_always(vb2ex_prepare_log_screen, str);
 	will_return_maybe(vb2ex_prepare_log_screen, 1);
 
-	EXPECT_DISPLAY_UI_ANY();
+	EXPECT_UI_DISPLAY_ANY();
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_DISPLAY_UI_ANY();
-	EXPECT_DISPLAY_UI_ANY();
-	EXPECT_DISPLAY_UI_ANY();
+	EXPECT_UI_DISPLAY_ANY();
+	EXPECT_UI_DISPLAY_ANY();
+	EXPECT_UI_DISPLAY_ANY();
 	/* #0: Language menu */
 	WILL_PRESS_KEY(UI_KEY_UP, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 0);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_LANGUAGE_SELECT);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 0);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_LANGUAGE_SELECT);
 	/* #1: (Hidden) */
 	/* #2: Debug info */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_DISPLAY_UI_ANY();
-	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 2);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO);
+	EXPECT_UI_DISPLAY_ANY();
+	EXPECT_UI_DISPLAY(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 2);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEBUG_INFO);
 	/* #3: Firmware log */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_DISPLAY_UI_ANY();
-	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 3);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_FIRMWARE_LOG);
+	EXPECT_UI_DISPLAY_ANY();
+	EXPECT_UI_DISPLAY(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 3);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_FIRMWARE_LOG);
 	/* #4: (Hidden) */
 	/* #5: Back */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_DISPLAY_UI_ANY();
-	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 5);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE);
+	EXPECT_UI_DISPLAY_ANY();
+	EXPECT_UI_DISPLAY(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 5);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_MODE);
 	/* End of menu */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 2);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 2);
 
 	will_return_maybe(ui_keyboard_read, 0);
 
@@ -792,8 +792,8 @@ static void test_developer_screen_debug_info(void **state)
 	struct ui_context *ui = *state;
 
 	WILL_PRESS_KEY('\t', 0);
-	EXPECT_DISPLAY_UI_ANY();
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO);
+	EXPECT_UI_DISPLAY_ANY();
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEBUG_INFO);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
@@ -813,24 +813,24 @@ static void test_developer_screen_invalid_external_disk(void **state)
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_MODE);
 
 	/* Try to boot from an invalid external disk */
 	WILL_PRESS_KEY(UI_KEY_DEV_BOOT_EXTERNAL, 0);
 	/* The 1st for init(); the 2nd for action() */
 	WILL_LOAD_EXTERNAL_COUNT(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 2);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_INVALID_DISK);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_INVALID_DISK);
 	EXPECT_BEEP(250, 400);
 
 	/* Unplug the invalid external disk */
 	WILL_PRESS_KEY(0, 0);
 	WILL_LOAD_EXTERNAL_ALWAYS(VB2_ERROR_LK_NO_DISK_FOUND);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_BOOT_EXTERNAL);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_BOOT_EXTERNAL);
 	EXPECT_BEEP(250, 400);
 
 	/* Press ESC to make sure we can get out of the polling screens */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEVELOPER_MODE);
 
 	will_return_maybe(ui_keyboard_read, 0);
 

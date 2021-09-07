@@ -27,6 +27,7 @@
 #include "drivers/flash/flash.h"
 #include "drivers/flash/cbfs.h"
 #include "image/fmap.h"
+#include "vboot/ui.h"
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 
@@ -123,8 +124,8 @@ vb2_error_t vb2ex_ec_update_image(enum vb2_firmware_selection select)
 			return VB2_REQUEST_REBOOT;
 		locale = vb2api_get_locale_id(ctx);
 		printf("EC is updating. Show firmware sync screen.\n");
-		vb2ex_display_ui(VB2_SCREEN_FIRMWARE_SYNC, locale,
-				 0, 0, 0, 0, 0, VB2_UI_ERROR_NONE);
+		ui_display(VB2_SCREEN_FIRMWARE_SYNC, locale,
+			   0, 0, 0, 0, 0, VB2_UI_ERROR_NONE);
 	}
 
 	VbootEcOps *ec = vboot_get_ec();

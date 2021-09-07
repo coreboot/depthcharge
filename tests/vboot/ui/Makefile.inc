@@ -25,6 +25,7 @@ loop-test-srcs += tests/vboot/ui/loop-test.c
 loop-test-srcs += tests/vboot/ui/mock_screens.c
 loop-test-srcs += tests/mocks/ui.c
 loop-test-srcs += tests/mocks/ui_callbacks.c
+loop-test-srcs += tests/mocks/ui_display.c
 loop-test-srcs += tests/mocks/vb2api.c
 loop-test-srcs += src/vboot/ui/navigation.c
 loop-test-srcs += src/vboot/ui/menu.c

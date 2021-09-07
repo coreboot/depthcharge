@@ -391,7 +391,7 @@ struct ui_context {
 	/* For displaying error messages. */
 	enum vb2_ui_error error_code;
 
-	/* Force calling vb2ex_display_ui for refreshing the screen. This flag
+	/* Force calling ui_display for refreshing the screen. This flag
 	   will be reset after done. */
 	int force_display;
 };
@@ -475,6 +475,9 @@ struct ui_log_info {
 	 */
 	const char **page_start;
 };
+
+/* Log info for vb2ex_prepare_log_screen and ui_display */
+extern struct ui_log_info global_ui_log_info;
 
 /******************************************************************************/
 /* archive.c */
@@ -926,22 +929,36 @@ vb2_error_t ui_log_init(enum vb2_screen screen, const char *locale_code,
 char *ui_log_get_page_content(const struct ui_log_info *log, uint32_t page);
 
 /******************************************************************************/
-/* common.c */
+/* display.c */
 
 /*
- * Display the UI state on the screen.
+ * Display UI screen.
  *
- * When part of the screen remains unchanged, screen redrawing should be kept as
- * minimal as possible.
- *
- * @param state		Current UI state.
- * @param prev_state	Previous UI state, or NULL if previous menu drawing was
- *			unsuccessful or there's no previous state.
- *
- * @return VB2_SUCCESS on success, non-zero on error.
+ * @param screen		Screen to display.
+ * @param locale_id		Id of current locale.
+ * @param selected_item		Index of the selected menu item. If the screen
+ *				doesn't have a menu, this value will be ignored.
+ * @param disabled_item_mask	Mask for disabled menu items. Bit (1 << idx)
+ *				indicates whether item 'idx' is disabled.
+ *				A disabled menu item is visible and selectable,
+ *				with a different button style.
+ * @param hidden_item_mask	Mask for hidden menu items. Bit (1 << idx)
+ *				indicates whether item 'idx' is hidden.
+ *				A hidden menu item is neither visible nor
+ *				selectable.
+ * @param timer_disabled	Whether timer is disabled or not. Some screen
+ *				descriptions will depend on this value.
+ * @param current_page		Current page number for a log screen. If the
+ *				screen doesn't show logs, this value will be
+ *				ignored.
+ * @param error_code		Error code if an error occurred.
+ * @return VB2_SUCCESS, or error code on error.
  */
-vb2_error_t ui_display_screen(struct ui_state *state,
-			      const struct ui_state *prev_state);
+
+vb2_error_t ui_display(enum vb2_screen screen, uint32_t locale_id,
+		       uint32_t selected_item, uint32_t disabled_item_mask,
+		       uint32_t hidden_item_mask, int timer_disabled,
+		       uint32_t current_page, enum vb2_ui_error error_code);
 
 /******************************************************************************/
 /* input.c */

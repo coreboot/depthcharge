@@ -45,7 +45,7 @@ static void test_broken_ui_shortcuts_ignored(void **state)
 	WILL_PRESS_KEY(UI_BUTTON_VOL_UP_LONG_PRESS, 1);
 	WILL_PRESS_KEY(UI_BUTTON_VOL_DOWN_LONG_PRESS, 1);
 	will_return_always(ui_keyboard_read, 0);
-	EXPECT_DISPLAY_UI_ANY();
+	EXPECT_UI_DISPLAY_ANY();
 
 	assert_int_equal(vb2ex_broken_screen_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
 }
@@ -59,8 +59,8 @@ static void test_broken_ui_debug_info(void **state)
 	WILL_CLOSE_LID_IN(5);
 	WILL_PRESS_KEY('\t', 0);
 	will_return_always(ui_keyboard_read, 0);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_BROKEN);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_RECOVERY_BROKEN);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_DEBUG_INFO);
 	expect_any_always(vb2ex_prepare_log_screen, str);
 
 	assert_int_equal(vb2ex_broken_screen_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
@@ -72,7 +72,7 @@ static void test_broken_ui_disabled_and_hidden_item_mask(void **state)
 
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	WILL_CLOSE_LID_IN(5);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_BROKEN, MOCK_IGNORE, MOCK_IGNORE,
+	EXPECT_UI_DISPLAY(VB2_SCREEN_RECOVERY_BROKEN, MOCK_IGNORE, MOCK_IGNORE,
 			  0x0, 0x0);
 	will_return_always(ui_keyboard_read, 0);
 
@@ -87,22 +87,22 @@ static void test_broken_ui_screen(void **state)
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_always(vb2ex_get_locale_count, 10);
 	will_return_maybe(vb2api_allow_recovery, 1);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_BROKEN, MOCK_IGNORE, 1);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_RECOVERY_BROKEN, MOCK_IGNORE, 1);
 	/* #0: Language menu */
 	WILL_PRESS_KEY(UI_KEY_UP, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_BROKEN, MOCK_IGNORE, 0);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_LANGUAGE_SELECT, MOCK_IGNORE, 0);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_RECOVERY_BROKEN, MOCK_IGNORE, 0);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_LANGUAGE_SELECT, MOCK_IGNORE, 0);
 	/* #1: Advanced options */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_BROKEN, MOCK_IGNORE, 0);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_BROKEN, MOCK_IGNORE, 1);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_RECOVERY_BROKEN, MOCK_IGNORE, 0);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_RECOVERY_BROKEN, MOCK_IGNORE, 1);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_ADVANCED_OPTIONS);
 	/* End of menu */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
-	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_BROKEN, MOCK_IGNORE, 1);
+	EXPECT_UI_DISPLAY(VB2_SCREEN_RECOVERY_BROKEN, MOCK_IGNORE, 1);
 	WILL_PRESS_KEY(0, 0);
 
 	assert_int_equal(vb2ex_broken_screen_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
@@ -119,7 +119,7 @@ static void test_broken_ui_power_button_shutdown(void **state)
 	will_return_maybe(ui_is_power_pressed, 0);
 	will_return_maybe(ui_is_lid_open, 1);
 	WILL_PRESS_KEY(UI_BUTTON_POWER_SHORT_PRESS, 0);
-	EXPECT_DISPLAY_UI_ANY();
+	EXPECT_UI_DISPLAY_ANY();
 
 	assert_int_equal(vb2ex_broken_screen_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
 }

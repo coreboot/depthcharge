@@ -34,37 +34,13 @@ struct sysinfo_t lib_sysinfo = {
 
 int main(int argc, char *argv[])
 {
-	static struct ui_log_info log;
-	const struct ui_screen_info *screen_info;
-	struct ui_locale locale = {
-		.code = "en",
-		.rtl = 0,
-	};
-	screen_info = ui_get_screen_info(__SCREEN__);
-	printf("Generating screenshot: %dx%d\n", __WIDTH__, __HEIGHT__);
-	printf("- screen: %s (%#x)\n", STRINGIFY(__SCREEN__), __SCREEN__);
-	printf("- selected_item: %d\n", __ITEM__);
-	printf("- disabled_item_mask: %#x\n", __DISABLED_ITEM_MASK__);
-	printf("- hidden_item_mask: %#x\n", __HIDDEN_ITEM_MASK__);
-	if (!screen_info) {
-		printf("ERROR: screen_info is null\n");
-		return -1;
-	}
-	struct ui_state state = {
-		.screen = screen_info,
-		.locale = &locale,
-		.selected_item = __ITEM__,
-		.disabled_item_mask = __DISABLED_ITEM_MASK__,
-		.hidden_item_mask = __HIDDEN_ITEM_MASK__,
-		.timer_disabled = 0,
-		.log = &log,
-		.current_page = 0,
-		.error_code = 0,
-	};
 	if (strlen(__LOG__))
-		VB2_TRY(ui_log_init(__SCREEN__, locale.code, __LOG__, &log));
-	VB2_TRY(ui_display_screen(&state, NULL));
-	flush_graphics_buffer();
+		VB2_TRY(ui_log_init(__SCREEN__, "en", __LOG__,
+				    &global_ui_log_info));
+
+	VB2_TRY(ui_display(__SCREEN__, 0, __ITEM__, __DISABLED_ITEM_MASK__,
+			   __HIDDEN_ITEM_MASK__, 0, 0, 0));
+
 	if (argc < 2) {
 		printf("ERROR: No output path specified\n");
 		return -1;
