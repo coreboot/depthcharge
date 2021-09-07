@@ -585,7 +585,7 @@ vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines)
 	return rv;
 }
 
-vb2_error_t ui_get_log_textbox_dimensions(enum vb2_screen screen,
+vb2_error_t ui_get_log_textbox_dimensions(enum ui_screen screen,
 					  const char *locale_code,
 					  uint32_t *lines_per_page,
 					  uint32_t *chars_per_line)
@@ -743,7 +743,7 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 	}
 
 	/* Warning if we are in recovery and using dev signed keys. */
-	if (screen->id != VB2_SCREEN_LANGUAGE_SELECT)
+	if (screen->id != UI_SCREEN_LANGUAGE_SELECT)
 		VB2_TRY(ui_draw_dev_signed_warning());
 
 	/* Language dropdown header */

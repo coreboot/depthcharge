@@ -186,6 +186,83 @@
 /* L for aLtfw (formerly Legacy) */
 #define UI_KEY_DEV_BOOT_ALTFW		UI_KEY_CTRL('L')
 
+/* Screens. */
+enum ui_screen {
+	/* Wait screen for EC sync and AUXFW sync */
+	UI_SCREEN_FIRMWARE_SYNC				= 0x100,
+	/* Broken screen */
+	UI_SCREEN_RECOVERY_BROKEN			= 0x110,
+	/* Advanced options */
+	UI_SCREEN_ADVANCED_OPTIONS			= 0x120,
+	/* Language selection screen */
+	UI_SCREEN_LANGUAGE_SELECT			= 0x130,
+	/* Debug info */
+	UI_SCREEN_DEBUG_INFO				= 0x140,
+	/* Firmware log */
+	UI_SCREEN_FIRMWARE_LOG				= 0x150,
+	/* First recovery screen to select recovering from disk or phone */
+	UI_SCREEN_RECOVERY_SELECT			= 0x200,
+	/* Invalid recovery media inserted */
+	UI_SCREEN_RECOVERY_INVALID			= 0x201,
+	/* Confirm transition to developer mode */
+	UI_SCREEN_RECOVERY_TO_DEV			= 0x202,
+	/* Recovery using phone */
+	UI_SCREEN_RECOVERY_PHONE_STEP1			= 0x210,
+	UI_SCREEN_RECOVERY_PHONE_STEP2			= 0x211,
+	/* Recovery using disk */
+	UI_SCREEN_RECOVERY_DISK_STEP1			= 0x220,
+	UI_SCREEN_RECOVERY_DISK_STEP2			= 0x221,
+	UI_SCREEN_RECOVERY_DISK_STEP3			= 0x222,
+	/* Developer mode screen */
+	UI_SCREEN_DEVELOPER_MODE			= 0x300,
+	/* Confirm transition to normal mode */
+	UI_SCREEN_DEVELOPER_TO_NORM			= 0x310,
+	/* Developer boot from external disk */
+	UI_SCREEN_DEVELOPER_BOOT_EXTERNAL		= 0x320,
+	/* Invalid external disk inserted */
+	UI_SCREEN_DEVELOPER_INVALID_DISK		= 0x330,
+	/* Select alternate bootloader ("altfw") */
+	UI_SCREEN_DEVELOPER_SELECT_ALTFW		= 0x340,
+	/* Diagnostic tools */
+	UI_SCREEN_DIAGNOSTICS				= 0x400,
+	/* Storage diagnostic screen */
+	UI_SCREEN_DIAGNOSTICS_STORAGE_HEALTH		= 0x410,
+	UI_SCREEN_DIAGNOSTICS_STORAGE_TEST_SHORT	= 0x411,
+	UI_SCREEN_DIAGNOSTICS_STORAGE_TEST_EXTENDED	= 0x412,
+	/* Memory diagnostic screens */
+	UI_SCREEN_DIAGNOSTICS_MEMORY_QUICK		= 0x420,
+	UI_SCREEN_DIAGNOSTICS_MEMORY_FULL		= 0x421,
+};
+
+enum ui_error {
+	/* No error */
+	UI_ERROR_NONE = 0,
+	/* MiniOS boot failed */
+	UI_ERROR_MINIOS_BOOT_FAILED,
+	/* Dev mode already enabled */
+	UI_ERROR_DEV_MODE_ALREADY_ENABLED,
+	/* Untrusted confirmation */
+	UI_ERROR_UNTRUSTED_CONFIRMATION,
+	/* To-norm not allowed */
+	UI_ERROR_TO_NORM_NOT_ALLOWED,
+	/* Internal boot failed */
+	UI_ERROR_INTERNAL_BOOT_FAILED,
+	/* External boot is disabled */
+	UI_ERROR_EXTERNAL_BOOT_DISABLED,
+	/* Alternate bootloader is disabled */
+	UI_ERROR_ALTFW_DISABLED,
+	/* No alternate bootloader was found */
+	UI_ERROR_ALTFW_EMPTY,
+	/* Alternate bootloader failed */
+	UI_ERROR_ALTFW_FAILED,
+	/* Debug info screen initialization failed */
+	UI_ERROR_DEBUG_LOG,
+	/* Firmware log screen initialization failed */
+	UI_ERROR_FIRMWARE_LOG,
+	/* Diagnostics internal failure */
+	UI_ERROR_DIAGNOSTICS,
+};
+
 static const struct rgb_color ui_color_bg		= { 0x20, 0x21, 0x24 };
 static const struct rgb_color ui_color_fg		= { 0xe8, 0xea, 0xed };
 static const struct rgb_color ui_color_footer_fg	= { 0x9a, 0xa0, 0xa6 };
@@ -273,7 +350,7 @@ struct ui_state {
 	const struct ui_log_info *log;
 	uint32_t page_count;
 	uint32_t current_page;
-	enum vb2_ui_error error_code;
+	enum ui_error error_code;
 
 	/* For minidiag test screens. */
 	int test_finished;  /* Do not update screen if the content is done */
@@ -339,7 +416,7 @@ struct ui_menu_item {
 	/* Flags are defined in enum ui_menu_item_flag. */
 	uint8_t flags;
 	/* Target screen */
-	enum vb2_screen target;
+	enum ui_screen target;
 	/* Action function takes precedence over target screen if non-NULL. */
 	vb2_error_t (*action)(struct ui_context *ui);
 };
@@ -389,7 +466,7 @@ struct ui_context {
 	int error_beep;
 
 	/* For displaying error messages. */
-	enum vb2_ui_error error_code;
+	enum ui_error error_code;
 
 	/* Force calling ui_display for refreshing the screen. This flag
 	   will be reset after done. */
@@ -398,7 +475,7 @@ struct ui_context {
 
 struct ui_screen_info {
 	/* Screen id */
-	enum vb2_screen id;
+	enum ui_screen id;
 	/* Screen name for printing to console only */
 	const char *name;
 	/* Icon type */
@@ -835,7 +912,7 @@ vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines);
  *
  * @return VB2_SUCCESS on success, no-zero on error.
  */
-vb2_error_t ui_get_log_textbox_dimensions(enum vb2_screen screen,
+vb2_error_t ui_get_log_textbox_dimensions(enum ui_screen screen,
 					  const char *locale_code,
 					  uint32_t *lines_per_page,
 					  uint32_t *chars_per_line);
@@ -889,7 +966,7 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
  *
  * @return UI descriptor on success, NULL on error.
  */
-const struct ui_screen_info *ui_get_screen_info(enum vb2_screen screen_id);
+const struct ui_screen_info *ui_get_screen_info(enum ui_screen screen_id);
 
 /* Expose these boot action functions for recovery_action. */
 vb2_error_t ui_recovery_mode_boot_minios_action(struct ui_context *ui);
@@ -912,7 +989,7 @@ vb2_error_t ui_developer_mode_boot_altfw_action(struct ui_context *ui);
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t ui_log_init(enum vb2_screen screen, const char *locale_code,
+vb2_error_t ui_log_init(enum ui_screen screen, const char *locale_code,
 			const char *str, struct ui_log_info *log);
 
 /*
@@ -955,10 +1032,10 @@ char *ui_log_get_page_content(const struct ui_log_info *log, uint32_t page);
  * @return VB2_SUCCESS, or error code on error.
  */
 
-vb2_error_t ui_display(enum vb2_screen screen, uint32_t locale_id,
+vb2_error_t ui_display(enum ui_screen screen, uint32_t locale_id,
 		       uint32_t selected_item, uint32_t disabled_item_mask,
 		       uint32_t hidden_item_mask, int timer_disabled,
-		       uint32_t current_page, enum vb2_ui_error error_code);
+		       uint32_t current_page, enum ui_error error_code);
 
 /******************************************************************************/
 /* input.c */
@@ -1004,7 +1081,7 @@ int ui_is_power_pressed(void);
  * @param root_screen_id	Root screen id.
  * @param global_action		The entry of action function.
  */
-vb2_error_t ui_loop(struct vb2_context *ctx, enum vb2_screen root_screen_id,
+vb2_error_t ui_loop(struct vb2_context *ctx, enum ui_screen root_screen_id,
 		    vb2_error_t (*global_action)(struct ui_context *ui));
 
 /******************************************************************************/
@@ -1040,7 +1117,7 @@ vb2_error_t ui_menu_select(struct ui_context *ui);
  * stay in the loop (see CL:2714502). This solution also allows us to
  * utilize the VB2_TRY macro as much as possible.
  */
-vb2_error_t ui_screen_change(struct ui_context *ui, enum vb2_screen id);
+vb2_error_t ui_screen_change(struct ui_context *ui, enum ui_screen id);
 
 /*
  * NOTE: This function never returns VB2_SUCCUSS by design. See the

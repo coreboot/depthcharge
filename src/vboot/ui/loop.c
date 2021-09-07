@@ -13,7 +13,7 @@ static vb2_error_t ui_error_exit_action(struct ui_context *ui)
 	 * not processed by other action functions.
 	 */
 	if (ui->key && ui->error_code) {
-		ui->error_code = VB2_UI_ERROR_NONE;
+		ui->error_code = UI_ERROR_NONE;
 		ui->key = 0;
 	}
 	return VB2_SUCCESS;
@@ -93,13 +93,13 @@ static vb2_error_t check_shutdown_request(struct ui_context *ui)
 }
 
 static vb2_error_t ui_loop_impl(
-	struct vb2_context *ctx, enum vb2_screen root_screen_id,
+	struct vb2_context *ctx, enum ui_screen root_screen_id,
 	vb2_error_t (*global_action)(struct ui_context *ui))
 {
 	struct ui_context ui;
 	struct ui_state prev_state;
 	int prev_disable_timer;
-	enum vb2_ui_error prev_error_code;
+	enum ui_error prev_error_code;
 	const struct ui_menu *menu;
 	const struct ui_screen_info *root_info;
 	uint32_t key_flags;
@@ -119,7 +119,7 @@ static vb2_error_t ui_loop_impl(
 
 	memset(&prev_state, 0, sizeof(prev_state));
 	prev_disable_timer = 0;
-	prev_error_code = VB2_UI_ERROR_NONE;
+	prev_error_code = UI_ERROR_NONE;
 
 	while (1) {
 		start_time_ms = vb2ex_mtime();
@@ -211,7 +211,7 @@ static vb2_error_t ui_loop_impl(
 	return VB2_SUCCESS;
 }
 
-vb2_error_t ui_loop(struct vb2_context *ctx, enum vb2_screen root_screen_id,
+vb2_error_t ui_loop(struct vb2_context *ctx, enum ui_screen root_screen_id,
 		    vb2_error_t (*global_action)(struct ui_context *ui))
 {
 	vb2_error_t rv = ui_loop_impl(ctx, root_screen_id, global_action);

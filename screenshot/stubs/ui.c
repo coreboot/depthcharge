@@ -14,7 +14,7 @@ vb2_error_t ui_menu_select(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
-vb2_error_t ui_screen_change(struct ui_context *ui, enum vb2_screen id)
+vb2_error_t ui_screen_change(struct ui_context *ui, enum ui_screen id)
 {
 	return VB2_SUCCESS;
 }

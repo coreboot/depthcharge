@@ -12,7 +12,7 @@ static vb2_error_t default_screen_init(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
-vb2_error_t ui_screen_change(struct ui_context *ui, enum vb2_screen id)
+vb2_error_t ui_screen_change(struct ui_context *ui, enum ui_screen id)
 {
 	const struct ui_screen_info *new_screen_info;
 	struct ui_state *cur_state;

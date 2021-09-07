@@ -20,7 +20,7 @@
 
 #include "vboot/ui.h"
 
-vb2_error_t ui_log_init(enum vb2_screen screen, const char *locale_code,
+vb2_error_t ui_log_init(enum ui_screen screen, const char *locale_code,
 			const char *str, struct ui_log_info *log)
 {
 	uint32_t lines_per_page, chars_per_line;

@@ -34,62 +34,62 @@ struct ui_error_message {
 };
 
 static const struct ui_error_message errors[] = {
-	[VB2_UI_ERROR_MINIOS_BOOT_FAILED] = {
+	[UI_ERROR_MINIOS_BOOT_FAILED] = {
 		.file = "error_internet_recovery.bmp",
 		.mesg = "Internet recovery partition corrupted or missing.\n"
 			"Please recover using external storage instead.",
 	},
-	[VB2_UI_ERROR_DEV_MODE_ALREADY_ENABLED] = {
+	[UI_ERROR_DEV_MODE_ALREADY_ENABLED] = {
 		.file = "error_dev_mode_enabled.bmp",
 		.mesg = "Developer mode is already turned on.",
 	},
-	[VB2_UI_ERROR_UNTRUSTED_CONFIRMATION] = {
+	[UI_ERROR_UNTRUSTED_CONFIRMATION] = {
 		.file = "error_untrusted_confirm.bmp",
 		.mesg = "You cannot use an external keyboard to turn on\n"
 			"developer mode. Please use the on-device buttons\n"
 			"noted in the navigation instructions.",
 	},
-	[VB2_UI_ERROR_TO_NORM_NOT_ALLOWED] = {
+	[UI_ERROR_TO_NORM_NOT_ALLOWED] = {
 		.file = "error_to_norm_not_allowed.bmp",
 		.mesg = "Returning to secure mode disallowed by GBB flags.",
 	},
-	[VB2_UI_ERROR_INTERNAL_BOOT_FAILED] = {
+	[UI_ERROR_INTERNAL_BOOT_FAILED] = {
 		.file = "error_int_boot_failed.bmp",
 		.mesg = "Something went wrong booting from internal disk.\n"
 			"View firmware log for details.",
 	},
-	[VB2_UI_ERROR_EXTERNAL_BOOT_DISABLED] = {
+	[UI_ERROR_EXTERNAL_BOOT_DISABLED] = {
 		.file = "error_ext_boot_disabled.bmp",
 		.show_dev_url = 1,
 		.mesg = "External boot is disabled. For more information,\n"
 			"see: google.com/chromeos/devmode",
 	},
-	[VB2_UI_ERROR_ALTFW_DISABLED] = {
+	[UI_ERROR_ALTFW_DISABLED] = {
 		.file = "error_alt_boot_disabled.bmp",
 		.show_dev_url = 1,
 		.mesg = "Alternate bootloaders are disabled. For more\n"
 			"information, see: google.com/chromeos/devmode",
 	},
-	[VB2_UI_ERROR_ALTFW_EMPTY] = {
+	[UI_ERROR_ALTFW_EMPTY] = {
 		.file = "error_no_alt_bootloader.bmp",
 		.show_dev_url = 1,
 		.mesg = "Could not find an alternate bootloader. To learn how\n"
 			"to install one, see: google.com/chromeos/devmode",
 	},
-	[VB2_UI_ERROR_ALTFW_FAILED] = {
+	[UI_ERROR_ALTFW_FAILED] = {
 		.file = "error_alt_boot_failed.bmp",
 		.mesg = "Something went wrong launching the alternate\n"
 			"bootloader. View firmware log for details.",
 	},
-	[VB2_UI_ERROR_DEBUG_LOG] = {
+	[UI_ERROR_DEBUG_LOG] = {
 		.file = "error_debug_info.bmp",
 		.mesg = "Could not get debug info.",
 	},
-	[VB2_UI_ERROR_FIRMWARE_LOG] = {
+	[UI_ERROR_FIRMWARE_LOG] = {
 		.file = "error_firmware_log.bmp",
 		.mesg = "Could not get firmware log.",
 	},
-	[VB2_UI_ERROR_DIAGNOSTICS] = {
+	[UI_ERROR_DIAGNOSTICS] = {
 		.file = "error_diagnostics.bmp",
 		.mesg = "Could not get diagnostic information.",
 	},
@@ -212,7 +212,7 @@ static const struct rgb_color colors[] = {
  * very top of the screen to avoid covering up anything that was drawn
  * successfully.
  */
-static void draw_fallback_stripes(enum vb2_screen screen,
+static void draw_fallback_stripes(enum ui_screen screen,
 				  uint32_t selected_item)
 {
 	int i, shift;
@@ -268,7 +268,7 @@ static vb2_error_t ui_display_screen(struct ui_state *state,
 
 	VB2_TRY(init_screen());
 
-	if (state->error_code != VB2_UI_ERROR_NONE)
+	if (state->error_code != UI_ERROR_NONE)
 		error = &errors[state->error_code];
 
 	/*
@@ -310,10 +310,10 @@ static vb2_error_t ui_display_screen(struct ui_state *state,
 	return rv;
 }
 
-vb2_error_t ui_display(enum vb2_screen screen, uint32_t locale_id,
+vb2_error_t ui_display(enum ui_screen screen, uint32_t locale_id,
 		       uint32_t selected_item, uint32_t disabled_item_mask,
 		       uint32_t hidden_item_mask, int timer_disabled,
-		       uint32_t current_page, enum vb2_ui_error error_code)
+		       uint32_t current_page, enum ui_error error_code)
 {
 	vb2_error_t rv;
 	const struct ui_locale *locale = NULL;

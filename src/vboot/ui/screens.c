@@ -40,7 +40,7 @@
 	.name = "Language selection",			\
 	.file = NULL,					\
 	.type = UI_MENU_ITEM_TYPE_LANGUAGE,		\
-	.target = VB2_SCREEN_LANGUAGE_SELECT,		\
+	.target = UI_SCREEN_LANGUAGE_SELECT,		\
 })
 
 #define PAGE_UP_ITEM ((struct ui_menu_item){			\
@@ -74,7 +74,7 @@
 	.file = "btn_adv_options.bmp",			\
 	.type = UI_MENU_ITEM_TYPE_SECONDARY,		\
 	.icon_file = "ic_settings.bmp",			\
-	.target = VB2_SCREEN_ADVANCED_OPTIONS,		\
+	.target = UI_SCREEN_ADVANCED_OPTIONS,		\
 })
 
 /* Action that will power off the device. */
@@ -151,7 +151,7 @@ static vb2_error_t draw_log_desc(const struct ui_state *state,
 /* Functions for ui error handling */
 
 static vb2_error_t set_ui_error(struct ui_context *ui,
-				enum vb2_ui_error error_code)
+				enum ui_error error_code)
 {
 	/* Keep the first occurring error. */
 	if (ui->error_code)
@@ -165,7 +165,7 @@ static vb2_error_t set_ui_error(struct ui_context *ui,
 }
 
 static vb2_error_t set_ui_error_and_go_back(struct ui_context *ui,
-					    enum vb2_ui_error error_code)
+					    enum ui_error error_code)
 {
 	set_ui_error(ui, error_code);
 	return ui_screen_back(ui);
@@ -272,14 +272,14 @@ static vb2_error_t log_page_next_action(struct ui_context *ui)
 }
 
 /******************************************************************************/
-/* VB2_SCREEN_FIRMWARE_SYNC */
+/* UI_SCREEN_FIRMWARE_SYNC */
 
 static const char *const firmware_sync_desc[] = {
 	"firmware_sync_desc.bmp",
 };
 
 static const struct ui_screen_info firmware_sync_screen = {
-	.id = VB2_SCREEN_FIRMWARE_SYNC,
+	.id = UI_SCREEN_FIRMWARE_SYNC,
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "firmware_sync_title.bmp",
 	.desc = UI_DESC(firmware_sync_desc),
@@ -289,7 +289,7 @@ static const struct ui_screen_info firmware_sync_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_LANGUAGE_SELECT */
+/* UI_SCREEN_LANGUAGE_SELECT */
 
 static vb2_error_t language_select_init(struct ui_context *ui)
 {
@@ -483,7 +483,7 @@ const struct ui_menu *get_language_menu(struct ui_context *ui)
 }
 
 static const struct ui_screen_info language_select_screen = {
-	.id = VB2_SCREEN_LANGUAGE_SELECT,
+	.id = UI_SCREEN_LANGUAGE_SELECT,
 	.name = "Language selection screen",
 	.init = language_select_init,
 	.draw = draw_language_select,
@@ -492,7 +492,7 @@ static const struct ui_screen_info language_select_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_RECOVERY_BROKEN */
+/* UI_SCREEN_RECOVERY_BROKEN */
 
 static const char *const broken_desc[] = {
 	"broken_desc.bmp",
@@ -505,7 +505,7 @@ static const struct ui_menu_item broken_items[] = {
 };
 
 static const struct ui_screen_info broken_screen = {
-	.id = VB2_SCREEN_RECOVERY_BROKEN,
+	.id = UI_SCREEN_RECOVERY_BROKEN,
 	.name = "Recover broken device",
 	.icon = UI_ICON_TYPE_INFO,
 	.title = "broken_title.bmp",
@@ -522,7 +522,7 @@ static const struct ui_screen_info broken_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_ADVANCED_OPTIONS */
+/* UI_SCREEN_ADVANCED_OPTIONS */
 
 #define ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE 1
 #define ADVANCED_OPTIONS_ITEM_DEBUG_INFO 2
@@ -539,7 +539,7 @@ static vb2_error_t boot_minios_impl(struct ui_context *ui, int non_active_only)
 	vb2_error_t rv = VbTryLoadMiniOsKernel(ui->ctx, !!non_active_only);
 	if (rv) {
 		UI_ERROR("ERROR: Failed to boot from MiniOS: %#x\n", rv);
-		return set_ui_error(ui, VB2_UI_ERROR_MINIOS_BOOT_FAILED);
+		return set_ui_error(ui, UI_ERROR_MINIOS_BOOT_FAILED);
 	}
 	return VB2_REQUEST_UI_EXIT;
 }
@@ -571,17 +571,17 @@ static const struct ui_menu_item advanced_options_items[] = {
 	[ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE] = {
 		.name = "Enable developer mode",
 		.file = "btn_dev_mode.bmp",
-		.target = VB2_SCREEN_RECOVERY_TO_DEV,
+		.target = UI_SCREEN_RECOVERY_TO_DEV,
 	},
 	[ADVANCED_OPTIONS_ITEM_DEBUG_INFO] = {
 		.name = "Debug info",
 		.file = "btn_debug_info.bmp",
-		.target = VB2_SCREEN_DEBUG_INFO,
+		.target = UI_SCREEN_DEBUG_INFO,
 	},
 	{
 		.name = "Firmware log",
 		.file = "btn_firmware_log.bmp",
-		.target = VB2_SCREEN_FIRMWARE_LOG,
+		.target = UI_SCREEN_FIRMWARE_LOG,
 	},
 	[ADVANCED_OPTIONS_ITEM_INTERNET_RECOVERY] = {
 		.name = "Internet recovery (older version)",
@@ -593,7 +593,7 @@ static const struct ui_menu_item advanced_options_items[] = {
 };
 
 static const struct ui_screen_info advanced_options_screen = {
-	.id = VB2_SCREEN_ADVANCED_OPTIONS,
+	.id = UI_SCREEN_ADVANCED_OPTIONS,
 	.name = "Advanced options",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "adv_options_title.bmp",
@@ -603,7 +603,7 @@ static const struct ui_screen_info advanced_options_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_DEBUG_INFO */
+/* UI_SCREEN_DEBUG_INFO */
 
 #define DEBUG_INFO_ITEM_PAGE_UP 1
 #define DEBUG_INFO_ITEM_PAGE_DOWN 2
@@ -613,9 +613,9 @@ static vb2_error_t debug_info_set_content(struct ui_context *ui)
 {
 	const char *log_string = vb2ex_get_debug_info(ui->ctx);
 	if (!log_string)
-		return set_ui_error_and_go_back(ui, VB2_UI_ERROR_DEBUG_LOG);
+		return set_ui_error_and_go_back(ui, UI_ERROR_DEBUG_LOG);
 	if (vb2_is_error(log_page_update(ui, log_string)))
-		return set_ui_error_and_go_back(ui, VB2_UI_ERROR_DEBUG_LOG);
+		return set_ui_error_and_go_back(ui, UI_ERROR_DEBUG_LOG);
 	return VB2_SUCCESS;
 }
 
@@ -623,7 +623,7 @@ static vb2_error_t debug_info_init(struct ui_context *ui)
 {
 	VB2_TRY(debug_info_set_content(ui));
 	if (vb2_is_error(log_page_reset_to_top(ui)))
-		return set_ui_error_and_go_back(ui, VB2_UI_ERROR_DEBUG_LOG);
+		return set_ui_error_and_go_back(ui, UI_ERROR_DEBUG_LOG);
 	return VB2_SUCCESS;
 }
 
@@ -641,7 +641,7 @@ static const struct ui_menu_item debug_info_items[] = {
 };
 
 static const struct ui_screen_info debug_info_screen = {
-	.id = VB2_SCREEN_DEBUG_INFO,
+	.id = UI_SCREEN_DEBUG_INFO,
 	.name = "Debug info",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "debug_info_title.bmp",
@@ -656,7 +656,7 @@ static const struct ui_screen_info debug_info_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_FIRMWARE_LOG */
+/* UI_SCREEN_FIRMWARE_LOG */
 
 #define FIRMWARE_LOG_ITEM_PAGE_UP 1
 #define FIRMWARE_LOG_ITEM_PAGE_DOWN 2
@@ -667,9 +667,9 @@ static vb2_error_t firmware_log_set_content(struct ui_context *ui,
 {
 	const char *log_string = vb2ex_get_firmware_log(reset);
 	if (!log_string)
-		return set_ui_error_and_go_back(ui, VB2_UI_ERROR_FIRMWARE_LOG);
+		return set_ui_error_and_go_back(ui, UI_ERROR_FIRMWARE_LOG);
 	if (vb2_is_error(log_page_update(ui, log_string)))
-		return set_ui_error_and_go_back(ui, VB2_UI_ERROR_FIRMWARE_LOG);
+		return set_ui_error_and_go_back(ui, UI_ERROR_FIRMWARE_LOG);
 	return VB2_SUCCESS;
 }
 
@@ -677,7 +677,7 @@ static vb2_error_t firmware_log_init(struct ui_context *ui)
 {
 	VB2_TRY(firmware_log_set_content(ui, 1));
 	if (vb2_is_error(log_page_reset_to_top(ui)))
-		return set_ui_error_and_go_back(ui, VB2_UI_ERROR_FIRMWARE_LOG);
+		return set_ui_error_and_go_back(ui, UI_ERROR_FIRMWARE_LOG);
 	return VB2_SUCCESS;
 }
 
@@ -695,7 +695,7 @@ static const struct ui_menu_item firmware_log_items[] = {
 };
 
 static const struct ui_screen_info firmware_log_screen = {
-	.id = VB2_SCREEN_FIRMWARE_LOG,
+	.id = UI_SCREEN_FIRMWARE_LOG,
 	.name = "Firmware log",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "firmware_log_title.bmp",
@@ -710,7 +710,7 @@ static const struct ui_screen_info firmware_log_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_RECOVERY_TO_DEV */
+/* UI_SCREEN_RECOVERY_TO_DEV */
 
 #define RECOVERY_TO_DEV_ITEM_CONFIRM 1
 #define RECOVERY_TO_DEV_ITEM_CANCEL 2
@@ -726,7 +726,7 @@ static vb2_error_t recovery_to_dev_init(struct ui_context *ui)
 		/* Notify the user that they are already in dev mode */
 		UI_WARN("Already in dev mode\n");
 		return set_ui_error_and_go_back(
-			ui, VB2_UI_ERROR_DEV_MODE_ALREADY_ENABLED);
+			ui, UI_ERROR_DEV_MODE_ALREADY_ENABLED);
 	}
 
 	if (!CONFIG(PHYSICAL_PRESENCE_KEYBOARD) &&
@@ -757,7 +757,7 @@ static vb2_error_t recovery_to_dev_finalize(struct ui_context *ui)
 	UI_INFO("Physical presence confirmed!\n");
 
 	/* Validity check, should never happen. */
-	if (ui->state->screen->id != VB2_SCREEN_RECOVERY_TO_DEV ||
+	if (ui->state->screen->id != UI_SCREEN_RECOVERY_TO_DEV ||
 	    (ui->ctx->flags & VB2_CONTEXT_DEVELOPER_MODE) ||
 	    !vb2api_allow_recovery(ui->ctx)) {
 		UI_ERROR("ERROR: Dev transition validity check failed\n");
@@ -787,7 +787,7 @@ static vb2_error_t recovery_to_dev_confirm_action(struct ui_context *ui)
 		if (CONFIG(PHYSICAL_PRESENCE_KEYBOARD) &&
 		    ui->key == UI_KEY_ENTER)
 			return set_ui_error(
-				ui, VB2_UI_ERROR_UNTRUSTED_CONFIRMATION);
+				ui, UI_ERROR_UNTRUSTED_CONFIRMATION);
 		return VB2_SUCCESS;
 	}
 	return recovery_to_dev_finalize(ui);
@@ -836,7 +836,7 @@ static const struct ui_menu_item recovery_to_dev_items[] = {
 };
 
 static const struct ui_screen_info recovery_to_dev_screen = {
-	.id = VB2_SCREEN_RECOVERY_TO_DEV,
+	.id = UI_SCREEN_RECOVERY_TO_DEV,
 	.name = "Transition to developer mode",
 	.icon = UI_ICON_TYPE_INFO,
 	.title = "rec_to_dev_title.bmp",
@@ -853,7 +853,7 @@ static const struct ui_screen_info recovery_to_dev_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_RECOVERY_SELECT */
+/* UI_SCREEN_RECOVERY_SELECT */
 
 #define RECOVERY_SELECT_ITEM_PHONE 1
 #define RECOVERY_SELECT_ITEM_EXTERNAL_DISK 2
@@ -914,12 +914,12 @@ static const struct ui_menu_item recovery_select_items[] = {
 	[RECOVERY_SELECT_ITEM_PHONE] = {
 		.name = "Recovery using phone",
 		.file = "btn_rec_by_phone.bmp",
-		.target = VB2_SCREEN_RECOVERY_PHONE_STEP1,
+		.target = UI_SCREEN_RECOVERY_PHONE_STEP1,
 	},
 	[RECOVERY_SELECT_ITEM_EXTERNAL_DISK] = {
 		.name = "Recovery using external disk",
 		.file = "btn_rec_by_disk.bmp",
-		.target = VB2_SCREEN_RECOVERY_DISK_STEP1,
+		.target = UI_SCREEN_RECOVERY_DISK_STEP1,
 	},
 	[RECOVERY_SELECT_ITEM_INTERNET] = {
 		.name = "Recovery using internet connection",
@@ -939,7 +939,7 @@ static const struct ui_menu_item recovery_select_items[] = {
 };
 
 static const struct ui_screen_info recovery_select_screen = {
-	.id = VB2_SCREEN_RECOVERY_SELECT,
+	.id = UI_SCREEN_RECOVERY_SELECT,
 	.name = "Recovery method selection",
 	.icon = UI_ICON_TYPE_INFO,
 	.title = "rec_sel_title.bmp",
@@ -951,7 +951,7 @@ static const struct ui_screen_info recovery_select_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_RECOVERY_PHONE_STEP1 */
+/* UI_SCREEN_RECOVERY_PHONE_STEP1 */
 
 static vb2_error_t draw_recovery_phone_step1_desc(
 	const struct ui_state *state,
@@ -976,13 +976,13 @@ static vb2_error_t draw_recovery_phone_step1_desc(
 
 static const struct ui_menu_item recovery_phone_step1_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	NEXT_ITEM(VB2_SCREEN_RECOVERY_PHONE_STEP2),
+	NEXT_ITEM(UI_SCREEN_RECOVERY_PHONE_STEP2),
 	BACK_ITEM,
 	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info recovery_phone_step1_screen = {
-	.id = VB2_SCREEN_RECOVERY_PHONE_STEP1,
+	.id = UI_SCREEN_RECOVERY_PHONE_STEP1,
 	.name = "Phone recovery step 1",
 	.icon = UI_ICON_TYPE_STEP,
 	.step = 1,
@@ -998,7 +998,7 @@ static const struct ui_screen_info recovery_phone_step1_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_RECOVERY_PHONE_STEP2 */
+/* UI_SCREEN_RECOVERY_PHONE_STEP2 */
 
 static vb2_error_t draw_recovery_phone_step2_desc(
 	const struct ui_state *state,
@@ -1030,7 +1030,7 @@ static const struct ui_menu_item recovery_phone_step2_items[] = {
 };
 
 static const struct ui_screen_info recovery_phone_step2_screen = {
-	.id = VB2_SCREEN_RECOVERY_PHONE_STEP2,
+	.id = UI_SCREEN_RECOVERY_PHONE_STEP2,
 	.name = "Phone recovery step 2",
 	.icon = UI_ICON_TYPE_STEP,
 	.step = 2,
@@ -1045,7 +1045,7 @@ static const struct ui_screen_info recovery_phone_step2_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_RECOVERY_DISK_STEP1 */
+/* UI_SCREEN_RECOVERY_DISK_STEP1 */
 
 static vb2_error_t draw_recovery_disk_step1_desc(
 	const struct ui_state *state,
@@ -1070,13 +1070,13 @@ static vb2_error_t draw_recovery_disk_step1_desc(
 
 static const struct ui_menu_item recovery_disk_step1_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	NEXT_ITEM(VB2_SCREEN_RECOVERY_DISK_STEP2),
+	NEXT_ITEM(UI_SCREEN_RECOVERY_DISK_STEP2),
 	BACK_ITEM,
 	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info recovery_disk_step1_screen = {
-	.id = VB2_SCREEN_RECOVERY_DISK_STEP1,
+	.id = UI_SCREEN_RECOVERY_DISK_STEP1,
 	.name = "Disk recovery step 1",
 	.icon = UI_ICON_TYPE_STEP,
 	.step = 1,
@@ -1092,7 +1092,7 @@ static const struct ui_screen_info recovery_disk_step1_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_RECOVERY_DISK_STEP2 */
+/* UI_SCREEN_RECOVERY_DISK_STEP2 */
 
 static const char *const recovery_disk_step2_desc[] = {
 	"rec_disk_step2_desc0.bmp",
@@ -1102,13 +1102,13 @@ static const char *const recovery_disk_step2_desc[] = {
 
 static const struct ui_menu_item recovery_disk_step2_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	NEXT_ITEM(VB2_SCREEN_RECOVERY_DISK_STEP3),
+	NEXT_ITEM(UI_SCREEN_RECOVERY_DISK_STEP3),
 	BACK_ITEM,
 	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info recovery_disk_step2_screen = {
-	.id = VB2_SCREEN_RECOVERY_DISK_STEP2,
+	.id = UI_SCREEN_RECOVERY_DISK_STEP2,
 	.name = "Disk recovery step 2",
 	.icon = UI_ICON_TYPE_STEP,
 	.step = 2,
@@ -1124,7 +1124,7 @@ static const struct ui_screen_info recovery_disk_step2_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_RECOVERY_DISK_STEP3 */
+/* UI_SCREEN_RECOVERY_DISK_STEP3 */
 
 static const char *const recovery_disk_step3_desc[] = {
 	"rec_disk_step3_desc0.bmp",
@@ -1137,7 +1137,7 @@ static const struct ui_menu_item recovery_disk_step3_items[] = {
 };
 
 static const struct ui_screen_info recovery_disk_step3_screen = {
-	.id = VB2_SCREEN_RECOVERY_DISK_STEP3,
+	.id = UI_SCREEN_RECOVERY_DISK_STEP3,
 	.name = "Disk recovery step 3",
 	.icon = UI_ICON_TYPE_STEP,
 	.step = 3,
@@ -1151,7 +1151,7 @@ static const struct ui_screen_info recovery_disk_step3_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_RECOVERY_INVALID */
+/* UI_SCREEN_RECOVERY_INVALID */
 
 static vb2_error_t draw_recovery_invalid_desc(
 	const struct ui_state *state,
@@ -1177,7 +1177,7 @@ static const struct ui_menu_item recovery_invalid_items[] = {
 };
 
 static const struct ui_screen_info recovery_invalid_screen = {
-	.id = VB2_SCREEN_RECOVERY_INVALID,
+	.id = UI_SCREEN_RECOVERY_INVALID,
 	.icon = UI_ICON_TYPE_STEP,
 	.step = -3,
 	.num_steps = 3,
@@ -1190,7 +1190,7 @@ static const struct ui_screen_info recovery_invalid_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_DEVELOPER_MODE */
+/* UI_SCREEN_DEVELOPER_MODE */
 
 #define DEVELOPER_MODE_ITEM_RETURN_TO_SECURE 1
 #define DEVELOPER_MODE_ITEM_BOOT_INTERNAL 2
@@ -1253,7 +1253,7 @@ vb2_error_t ui_developer_mode_boot_internal_action(struct ui_context *ui)
 
 	UI_ERROR("ERROR: Failed to boot from internal disk: %#x\n", rv);
 	ui->error_beep = 1;
-	return set_ui_error(ui, VB2_UI_ERROR_INTERNAL_BOOT_FAILED);
+	return set_ui_error(ui, UI_ERROR_INTERNAL_BOOT_FAILED);
 }
 
 vb2_error_t ui_developer_mode_boot_external_action(struct ui_context *ui)
@@ -1265,7 +1265,7 @@ vb2_error_t ui_developer_mode_boot_external_action(struct ui_context *ui)
 	    !(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED)) {
 		UI_ERROR("ERROR: Dev mode external boot not allowed\n");
 		ui->error_beep = 1;
-		return set_ui_error(ui, VB2_UI_ERROR_EXTERNAL_BOOT_DISABLED);
+		return set_ui_error(ui, UI_ERROR_EXTERNAL_BOOT_DISABLED);
 	}
 
 	rv = VbTryLoadKernel(ui->ctx, VB_DISK_FLAG_REMOVABLE);
@@ -1273,20 +1273,20 @@ vb2_error_t ui_developer_mode_boot_external_action(struct ui_context *ui)
 		return VB2_REQUEST_UI_EXIT;
 	} else if (rv == VB2_ERROR_LK_NO_DISK_FOUND) {
 		if (ui->state->screen->id !=
-		    VB2_SCREEN_DEVELOPER_BOOT_EXTERNAL) {
+		    UI_SCREEN_DEVELOPER_BOOT_EXTERNAL) {
 			UI_WARN("No external disk found\n");
 			ui->error_beep = 1;
 		}
 		return ui_screen_change(
-			ui, VB2_SCREEN_DEVELOPER_BOOT_EXTERNAL);
+			ui, UI_SCREEN_DEVELOPER_BOOT_EXTERNAL);
 	} else {
 		if (ui->state->screen->id !=
-		    VB2_SCREEN_DEVELOPER_INVALID_DISK) {
+		    UI_SCREEN_DEVELOPER_INVALID_DISK) {
 			UI_WARN("Invalid external disk: %#x\n", rv);
 			ui->error_beep = 1;
 		}
 		return ui_screen_change(
-			ui, VB2_SCREEN_DEVELOPER_INVALID_DISK);
+			ui, UI_SCREEN_DEVELOPER_INVALID_DISK);
 	}
 }
 
@@ -1384,7 +1384,7 @@ static const struct ui_menu_item developer_mode_items[] = {
 	[DEVELOPER_MODE_ITEM_RETURN_TO_SECURE] = {
 		.name = "Return to secure mode",
 		.file = "btn_secure_mode.bmp",
-		.target = VB2_SCREEN_DEVELOPER_TO_NORM,
+		.target = UI_SCREEN_DEVELOPER_TO_NORM,
 	},
 	[DEVELOPER_MODE_ITEM_BOOT_INTERNAL] = {
 		.name = "Boot from internal disk",
@@ -1399,14 +1399,14 @@ static const struct ui_menu_item developer_mode_items[] = {
 	[DEVELOPER_MODE_ITEM_SELECT_ALTFW] = {
 		.name = "Select alternate bootloader",
 		.file = "btn_alt_bootloader.bmp",
-		.target = VB2_SCREEN_DEVELOPER_SELECT_ALTFW,
+		.target = UI_SCREEN_DEVELOPER_SELECT_ALTFW,
 	},
 	ADVANCED_OPTIONS_ITEM,
 	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info developer_mode_screen = {
-	.id = VB2_SCREEN_DEVELOPER_MODE,
+	.id = UI_SCREEN_DEVELOPER_MODE,
 	.name = "Developer mode",
 	.icon = UI_ICON_TYPE_DEV_MODE,
 	.title = "dev_title.bmp",
@@ -1422,7 +1422,7 @@ static const struct ui_screen_info developer_mode_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_DEVELOPER_TO_NORM */
+/* UI_SCREEN_DEVELOPER_TO_NORM */
 
 #define DEVELOPER_TO_NORM_ITEM_CONFIRM 1
 #define DEVELOPER_TO_NORM_ITEM_CANCEL 2
@@ -1433,7 +1433,7 @@ static vb2_error_t developer_to_norm_init(struct ui_context *ui)
 	if (vb2api_gbb_get_flags(ui->ctx) & VB2_GBB_FLAG_FORCE_DEV_SWITCH_ON) {
 		UI_ERROR("ERROR: to-norm not allowed\n");
 		return set_ui_error_and_go_back(
-			ui, VB2_UI_ERROR_TO_NORM_NOT_ALLOWED);
+			ui, UI_ERROR_TO_NORM_NOT_ALLOWED);
 	}
 	ui->state->selected_item = DEVELOPER_TO_NORM_ITEM_CONFIRM;
 	/* Hide "Cancel" button if dev boot is not allowed */
@@ -1472,7 +1472,7 @@ static const struct ui_menu_item developer_to_norm_items[] = {
 };
 
 static const struct ui_screen_info developer_to_norm_screen = {
-	.id = VB2_SCREEN_DEVELOPER_TO_NORM,
+	.id = UI_SCREEN_DEVELOPER_TO_NORM,
 	.name = "Transition to normal mode",
 	.icon = UI_ICON_TYPE_RESTART,
 	.title = "dev_to_norm_title.bmp",
@@ -1486,7 +1486,7 @@ static const struct ui_screen_info developer_to_norm_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_DEVELOPER_BOOT_EXTERNAL */
+/* UI_SCREEN_DEVELOPER_BOOT_EXTERNAL */
 
 #define DEVELOPER_BOOT_EXTERNAL_ITEM_BACK 1
 
@@ -1508,7 +1508,7 @@ static vb2_error_t developer_boot_external_check(struct ui_context *ui)
 		UI_ERROR("ERROR: Dev mode external boot not allowed\n");
 		ui->error_beep = 1;
 		return set_ui_error_and_go_back(
-			ui, VB2_UI_ERROR_EXTERNAL_BOOT_DISABLED);
+			ui, UI_ERROR_EXTERNAL_BOOT_DISABLED);
 	}
 	return VB2_SUCCESS;
 }
@@ -1528,7 +1528,7 @@ static vb2_error_t developer_boot_external_init(struct ui_context *ui)
 }
 
 static const struct ui_screen_info developer_boot_external_screen = {
-	.id = VB2_SCREEN_DEVELOPER_BOOT_EXTERNAL,
+	.id = UI_SCREEN_DEVELOPER_BOOT_EXTERNAL,
 	.name = "Developer boot from external disk",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "dev_boot_ext_title.bmp",
@@ -1543,7 +1543,7 @@ static const struct ui_screen_info developer_boot_external_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_DEVELOPER_INVALID_DISK */
+/* UI_SCREEN_DEVELOPER_INVALID_DISK */
 
 #define DEVELOPER_INVALID_DISK_ITEM_BACK 1
 
@@ -1572,7 +1572,7 @@ static vb2_error_t developer_invalid_disk_init(struct ui_context *ui)
 }
 
 static const struct ui_screen_info developer_invalid_disk_screen = {
-	.id = VB2_SCREEN_DEVELOPER_INVALID_DISK,
+	.id = UI_SCREEN_DEVELOPER_INVALID_DISK,
 	.name = "Invalid external disk in dev mode",
 	.icon = UI_ICON_TYPE_ERROR,
 	.title = "dev_invalid_disk_title.bmp",
@@ -1587,7 +1587,7 @@ static const struct ui_screen_info developer_invalid_disk_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_DEVELOPER_SELECT_ALTFW */
+/* UI_SCREEN_DEVELOPER_SELECT_ALTFW */
 
 static const struct ui_menu_item developer_select_altfw_items_before[] = {
 	LANGUAGE_SELECT_ITEM,
@@ -1601,7 +1601,7 @@ static const struct ui_menu_item developer_select_altfw_items_after[] = {
 static vb2_error_t developer_select_bootloader_init(struct ui_context *ui)
 {
 	if (ui_get_menu(ui)->num_items == 0)
-		return set_ui_error_and_go_back(ui, VB2_UI_ERROR_ALTFW_EMPTY);
+		return set_ui_error_and_go_back(ui, UI_ERROR_ALTFW_EMPTY);
 	/* Select the first bootloader. */
 	ui->state->selected_item =
 		ARRAY_SIZE(developer_select_altfw_items_before);
@@ -1615,12 +1615,12 @@ static vb2_error_t developer_boot_altfw_impl(struct ui_context *ui,
 	    !(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALLOWED) ||
 	    !(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALTFW_ALLOWED)) {
 		UI_ERROR("ERROR: Dev mode alternate bootloader not allowed\n");
-		return set_ui_error(ui, VB2_UI_ERROR_ALTFW_DISABLED);
+		return set_ui_error(ui, UI_ERROR_ALTFW_DISABLED);
 	}
 
 	if (vb2ex_get_altfw_count() == 0) {
 		UI_ERROR("ERROR: No alternate bootloader was found\n");
-		return set_ui_error(ui, VB2_UI_ERROR_ALTFW_EMPTY);
+		return set_ui_error(ui, UI_ERROR_ALTFW_EMPTY);
 	}
 
 	UI_INFO("Try booting from bootloader #%u\n", altfw_id);
@@ -1629,13 +1629,13 @@ static vb2_error_t developer_boot_altfw_impl(struct ui_context *ui,
 	vb2ex_run_altfw(altfw_id);
 
 	UI_ERROR("ERROR: Alternate bootloader failed\n");
-	return set_ui_error(ui, VB2_UI_ERROR_ALTFW_FAILED);
+	return set_ui_error(ui, UI_ERROR_ALTFW_FAILED);
 }
 
 static vb2_error_t developer_boot_altfw_id_action(struct ui_context *ui)
 {
 	/* Validity check, should never happen. */
-	if (ui->state->screen->id != VB2_SCREEN_DEVELOPER_SELECT_ALTFW) {
+	if (ui->state->screen->id != UI_SCREEN_DEVELOPER_SELECT_ALTFW) {
 		UI_ERROR("ERROR: Boot altfw id from wrong screen: %#x\n",
 			 ui->state->screen->id);
 		return VB2_SUCCESS;
@@ -1770,7 +1770,7 @@ static vb2_error_t draw_developer_select_bootloader(
 }
 
 static const struct ui_screen_info developer_select_bootloader_screen = {
-	.id = VB2_SCREEN_DEVELOPER_SELECT_ALTFW,
+	.id = UI_SCREEN_DEVELOPER_SELECT_ALTFW,
 	.name = "Select alternate bootloader",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "dev_select_bootloader_title.bmp",
@@ -1781,7 +1781,7 @@ static const struct ui_screen_info developer_select_bootloader_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_DIAGNOSTICS */
+/* UI_SCREEN_DIAGNOSTICS */
 
 #define DIAGNOSTICS_ITEM_STORAGE_HEALTH 1
 #define DIAGNOSTICS_ITEM_STORAGE_TEST_SHORT 2
@@ -1810,33 +1810,33 @@ static const struct ui_menu_item diagnostics_items[] = {
 	[DIAGNOSTICS_ITEM_STORAGE_HEALTH] = {
 		.name = "Storage health info",
 		.file = "btn_diag_storage_health.bmp",
-		.target = VB2_SCREEN_DIAGNOSTICS_STORAGE_HEALTH,
+		.target = UI_SCREEN_DIAGNOSTICS_STORAGE_HEALTH,
 	},
 	[DIAGNOSTICS_ITEM_STORAGE_TEST_SHORT] = {
 		.name = "Storage self-test (short)",
 		.file = "btn_diag_storage_short_test.bmp",
-		.target = VB2_SCREEN_DIAGNOSTICS_STORAGE_TEST_SHORT,
+		.target = UI_SCREEN_DIAGNOSTICS_STORAGE_TEST_SHORT,
 	},
 	[DIAGNOSTICS_ITEM_STORAGE_TEST_EXTENDED] = {
 		.name = "Storage self-test (Extended)",
 		.file = "btn_diag_storage_ext_test.bmp",
-		.target = VB2_SCREEN_DIAGNOSTICS_STORAGE_TEST_EXTENDED,
+		.target = UI_SCREEN_DIAGNOSTICS_STORAGE_TEST_EXTENDED,
 	},
 	{
 		.name = "Memory check (quick)",
 		.file = "btn_diag_memory_quick.bmp",
-		.target = VB2_SCREEN_DIAGNOSTICS_MEMORY_QUICK,
+		.target = UI_SCREEN_DIAGNOSTICS_MEMORY_QUICK,
 	},
 	{
 		.name = "Memory check (full)",
 		.file = "btn_diag_memory_full.bmp",
-		.target = VB2_SCREEN_DIAGNOSTICS_MEMORY_FULL,
+		.target = UI_SCREEN_DIAGNOSTICS_MEMORY_FULL,
 	},
 	POWER_OFF_ITEM,
 };
 
 static const struct ui_screen_info diagnostics_screen = {
-	.id = VB2_SCREEN_DIAGNOSTICS,
+	.id = UI_SCREEN_DIAGNOSTICS,
 	.name = "Diagnostic tools",
 	.icon = UI_ICON_TYPE_INFO,
 	.title = "diag_menu_title.bmp",
@@ -1847,7 +1847,7 @@ static const struct ui_screen_info diagnostics_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_DIAGNOSTICS_STORAGE_HEALTH */
+/* UI_SCREEN_DIAGNOSTICS_STORAGE_HEALTH */
 
 #define DIAGNOSTICS_STORAGE_HEALTH_ITEM_PAGE_UP 0
 #define DIAGNOSTICS_STORAGE_HEALTH_ITEM_PAGE_DOWN 1
@@ -1872,12 +1872,12 @@ static vb2_error_t diagnostics_storage_health_init_impl(
 static vb2_error_t diagnostics_storage_health_init(struct ui_context *ui)
 {
 	if (vb2_is_error(diagnostics_storage_health_init_impl(ui)))
-		return set_ui_error_and_go_back(ui, VB2_UI_ERROR_DIAGNOSTICS);
+		return set_ui_error_and_go_back(ui, UI_ERROR_DIAGNOSTICS);
 	return VB2_SUCCESS;
 }
 
 static const struct ui_screen_info diagnostics_storage_health_screen = {
-	.id = VB2_SCREEN_DIAGNOSTICS_STORAGE_HEALTH,
+	.id = UI_SCREEN_DIAGNOSTICS_STORAGE_HEALTH,
 	.name = "Storage health info",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "diag_storage_health_title.bmp",
@@ -1891,8 +1891,8 @@ static const struct ui_screen_info diagnostics_storage_health_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_DIAGNOSTICS_STORAGE_TEST_SHORT */
-/* VB2_SCREEN_DIAGNOSTICS_STORAGE_TEST_EXTENDED */
+/* UI_SCREEN_DIAGNOSTICS_STORAGE_TEST_SHORT */
+/* UI_SCREEN_DIAGNOSTICS_STORAGE_TEST_EXTENDED */
 
 #define DIAGNOSTICS_STORAGE_TEST_ITEM_PAGE_UP 0
 #define DIAGNOSTICS_STORAGE_TEST_ITEM_PAGE_DOWN 1
@@ -1928,7 +1928,7 @@ static vb2_error_t diagnostics_storage_test_update_impl(
 static vb2_error_t diagnostics_storage_test_update(struct ui_context *ui)
 {
 	if (vb2_is_error(diagnostics_storage_test_update_impl(ui)))
-		return set_ui_error_and_go_back(ui, VB2_UI_ERROR_DIAGNOSTICS);
+		return set_ui_error_and_go_back(ui, UI_ERROR_DIAGNOSTICS);
 	return VB2_SUCCESS;
 }
 
@@ -1936,7 +1936,7 @@ static vb2_error_t diagnostics_storage_test_control(
 	struct ui_context *ui, enum BlockDevTestOpsType op)
 {
 	if (vb2_is_error(diag_storage_test_control(op)))
-		return set_ui_error_and_go_back(ui, VB2_UI_ERROR_DIAGNOSTICS);
+		return set_ui_error_and_go_back(ui, UI_ERROR_DIAGNOSTICS);
 	return VB2_SUCCESS;
 }
 
@@ -1944,7 +1944,7 @@ static vb2_error_t diagnostics_storage_test_init(struct ui_context *ui)
 {
 	VB2_TRY(diagnostics_storage_test_update(ui));
 	if (vb2_is_error(log_page_reset_to_top(ui)))
-		return set_ui_error_and_go_back(ui, VB2_UI_ERROR_DIAGNOSTICS);
+		return set_ui_error_and_go_back(ui, UI_ERROR_DIAGNOSTICS);
 	return VB2_SUCCESS;
 }
 
@@ -1994,7 +1994,7 @@ static const struct ui_menu_item diagnostics_storage_test_items[] = {
 };
 
 static const struct ui_screen_info diagnostics_storage_test_short_screen = {
-	.id = VB2_SCREEN_DIAGNOSTICS_STORAGE_TEST_SHORT,
+	.id = UI_SCREEN_DIAGNOSTICS_STORAGE_TEST_SHORT,
 	.name = "Storage self-test (short)",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "diag_storage_srt_test_title.bmp",
@@ -2010,7 +2010,7 @@ static const struct ui_screen_info diagnostics_storage_test_short_screen = {
 };
 
 static const struct ui_screen_info diagnostics_storage_test_extended_screen = {
-	.id = VB2_SCREEN_DIAGNOSTICS_STORAGE_TEST_EXTENDED,
+	.id = UI_SCREEN_DIAGNOSTICS_STORAGE_TEST_EXTENDED,
 	.name = "Storage self-test (extended)",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "diag_storage_ext_test_title.bmp",
@@ -2026,8 +2026,8 @@ static const struct ui_screen_info diagnostics_storage_test_extended_screen = {
 };
 
 /******************************************************************************/
-/* VB2_SCREEN_DIAGNOSTICS_MEMORY_QUICK */
-/* VB2_SCREEN_DIAGNOSTICS_MEMORY_FULL */
+/* UI_SCREEN_DIAGNOSTICS_MEMORY_QUICK */
+/* UI_SCREEN_DIAGNOSTICS_MEMORY_FULL */
 
 #define DIAGNOSTICS_MEMORY_ITEM_PAGE_UP 0
 #define DIAGNOSTICS_MEMORY_ITEM_PAGE_DOWN 1
@@ -2070,7 +2070,7 @@ static vb2_error_t diagnostics_memory_update_screen(struct ui_context *ui,
 						    int reset)
 {
 	if (vb2_is_error(diagnostics_memory_update_screen_impl(ui, op, reset)))
-		return set_ui_error_and_go_back(ui, VB2_UI_ERROR_DIAGNOSTICS);
+		return set_ui_error_and_go_back(ui, UI_ERROR_DIAGNOSTICS);
 	return VB2_SUCCESS;
 }
 
@@ -2079,7 +2079,7 @@ static vb2_error_t diagnostics_memory_init_quick(struct ui_context *ui)
 	VB2_TRY(diagnostics_memory_update_screen(
 		ui, &vb2ex_diag_memory_quick_test, 1));
 	if (vb2_is_error(log_page_reset_to_top(ui)))
-		return set_ui_error_and_go_back(ui, VB2_UI_ERROR_DIAGNOSTICS);
+		return set_ui_error_and_go_back(ui, UI_ERROR_DIAGNOSTICS);
 	return VB2_SUCCESS;
 }
 
@@ -2088,7 +2088,7 @@ static vb2_error_t diagnostics_memory_init_full(struct ui_context *ui)
 	VB2_TRY(diagnostics_memory_update_screen(
 		ui, &vb2ex_diag_memory_full_test, 1));
 	if (vb2_is_error(log_page_reset_to_top(ui)))
-		return set_ui_error_and_go_back(ui, VB2_UI_ERROR_DIAGNOSTICS);
+		return set_ui_error_and_go_back(ui, UI_ERROR_DIAGNOSTICS);
 	return VB2_SUCCESS;
 }
 
@@ -2123,7 +2123,7 @@ static const struct ui_menu_item diagnostics_memory_items[] = {
 };
 
 static const struct ui_screen_info diagnostics_memory_quick_screen = {
-	.id = VB2_SCREEN_DIAGNOSTICS_MEMORY_QUICK,
+	.id = UI_SCREEN_DIAGNOSTICS_MEMORY_QUICK,
 	.name = "Memory check (quick)",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "diag_memory_quick_title.bmp",
@@ -2139,7 +2139,7 @@ static const struct ui_screen_info diagnostics_memory_quick_screen = {
 };
 
 static const struct ui_screen_info diagnostics_memory_full_screen = {
-	.id = VB2_SCREEN_DIAGNOSTICS_MEMORY_FULL,
+	.id = UI_SCREEN_DIAGNOSTICS_MEMORY_FULL,
 	.name = "Memory check (full)",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "diag_memory_full_title.bmp",
@@ -2183,7 +2183,7 @@ static const struct ui_screen_info *const screens[] = {
 	&diagnostics_memory_full_screen,
 };
 
-const struct ui_screen_info *ui_get_screen_info(enum vb2_screen screen_id)
+const struct ui_screen_info *ui_get_screen_info(enum ui_screen screen_id)
 {
 	static const struct ui_screen_info *screen_info;
 	int i;

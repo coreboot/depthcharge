@@ -116,14 +116,14 @@ static const struct ui_screen_info *screens[] = {
 	&mock_screen_root,
 };
 
-const struct ui_screen_info *ui_get_screen_info(enum vb2_screen screen)
+const struct ui_screen_info *ui_get_screen_info(enum ui_screen screen)
 {
 	for (int i = 0; i < ARRAY_SIZE(screens); ++i) {
 		if (screens[i]->id == screen)
 			return screens[i];
 	}
 
-	if (screen == (enum vb2_screen)MOCK_SCREEN_INVALID)
+	if (screen == (enum ui_screen)MOCK_SCREEN_INVALID)
 		return NULL;
 
 	fail_msg("%s: screen %#x not found", __func__, screen);

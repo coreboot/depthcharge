@@ -24,7 +24,7 @@ static vb2_error_t try_back_helper(struct ui_context *ui)
 }
 
 static vb2_error_t try_change_helper(struct ui_context *ui,
-				     enum vb2_screen screen_id)
+				     enum ui_screen screen_id)
 {
 	VB2_TRY(ui_screen_change(ui, screen_id));
 	return VB2_ERROR_MOCK;

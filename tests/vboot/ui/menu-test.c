@@ -11,7 +11,7 @@
 struct ui_context test_ui_ctx;
 struct ui_state test_ui_state;
 
-vb2_error_t ui_screen_change(struct ui_context *ui, enum vb2_screen id)
+vb2_error_t ui_screen_change(struct ui_context *ui, enum ui_screen id)
 {
 	check_expected(id);
 	return VB2_ERROR_MOCK;

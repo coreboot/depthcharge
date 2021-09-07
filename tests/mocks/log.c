@@ -14,7 +14,7 @@ static uint32_t ui_log_init_log_page_count(void)
  * retrieve the value that will be set to log->page_count. Use a will_return to
  * that function to specify the value.
  */
-vb2_error_t ui_log_init(enum vb2_screen screen, const char *locale_code,
+vb2_error_t ui_log_init(enum ui_screen screen, const char *locale_code,
 			const char *str, struct ui_log_info *log)
 {
 	assert_non_null(log);
