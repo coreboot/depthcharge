@@ -114,6 +114,41 @@ static int is_battery_low(void)
 	return batt_pct < 10;
 }
 
+/*
+ * Draw the scrollbar for log screen.
+ *
+ * @param state		UI state.
+ * @param begin_y	Starting y-coordinate of the box of the log screen.
+ */
+static vb2_error_t draw_log_scrollbar(const struct ui_state *state,
+				      int32_t begin_y)
+{
+	const uint32_t page_count = state->log->page_count;
+	const int32_t log_box_width = UI_SCALE - UI_MARGIN_H * 2;
+	const int32_t x = UI_MARGIN_H + log_box_width - UI_BOX_PADDING_H -
+		UI_SCROLLBAR_WIDTH;
+	int32_t log_box_inside_height;
+	uint32_t lines_per_page, chars_per_line;
+
+	/* No scrollbar if there is only one page. */
+	if (page_count <= 1)
+		return VB2_SUCCESS;
+
+	VB2_TRY(ui_get_log_textbox_dimensions(
+		state->screen->id, state->locale->code, &lines_per_page,
+		&chars_per_line));
+
+	log_box_inside_height =
+		UI_BOX_TEXT_HEIGHT * lines_per_page +
+		UI_BOX_TEXT_LINE_SPACING * (lines_per_page - 1);
+
+	VB2_TRY(ui_draw_scrollbar(x, begin_y + UI_BOX_PADDING_V,
+				  log_box_inside_height, state->current_page,
+				  page_count, 1));
+
+	return VB2_SUCCESS;
+}
+
 static vb2_error_t draw_log_desc(const struct ui_state *state,
 				 const struct ui_state *prev_state,
 				 int32_t *y)
@@ -124,6 +159,7 @@ static vb2_error_t draw_log_desc(const struct ui_state *state,
 	char *buf;
 	size_t buf_len;
 	vb2_error_t rv = VB2_SUCCESS;
+	int32_t begin_y = *y;
 
 	buf = ui_log_get_page_content(state->log, state->current_page);
 	if (!buf)
@@ -133,10 +169,15 @@ static vb2_error_t draw_log_desc(const struct ui_state *state,
 	if (!prev_state || state->screen->id != prev_state->screen->id ||
 	    state->error_code != prev_state->error_code ||
 	    !prev_buf || buf_len != prev_buf_len ||
-	    strncmp(buf, prev_buf, buf_len))
+	    strncmp(buf, prev_buf, buf_len) ||
+	    state->current_page != prev_state->current_page) {
 		rv = ui_draw_log_textbox(buf, state, y);
-	else
+
+		if (rv == VB2_SUCCESS)
+			rv = draw_log_scrollbar(state, begin_y);
+	} else {
 		*y = prev_y;
+	}
 
 	if (prev_buf)
 		free(prev_buf);
@@ -316,7 +357,7 @@ static vb2_error_t draw_language_select(const struct ui_state *state,
 	const int reverse = state->locale->rtl;
 	uint32_t num_lang;
 	uint32_t locale_id;
-	int32_t x, x_begin, x_end, y, y_begin, y_end, y_center, menu_height, h;
+	int32_t x, x_begin, x_end, y, y_begin, y_end, y_center, menu_height;
 	int num_lang_per_page, target_pos, id_begin, id_end;
 	int32_t box_width, box_height;
 	const int32_t border_thickness = UI_LANG_MENU_BORDER_THICKNESS;
@@ -421,14 +462,12 @@ static vb2_error_t draw_language_select(const struct ui_state *state,
 		return VB2_SUCCESS;
 
 	/* Draw scrollbar */
-	x = x_end - UI_LANG_MENU_SCROLLBAR_MARGIN_RIGHT -
-		UI_LANG_MENU_SCROLLBAR_WIDTH;
-	y = y_begin + id_begin * menu_height / num_lang;
-	h = num_lang_per_page * menu_height / num_lang;
-	VB2_TRY(ui_draw_rounded_box(x, y, UI_LANG_MENU_SCROLLBAR_WIDTH, h,
-				    &ui_color_lang_scrollbar,
-				    0, UI_LANG_MENU_SCROLLBAR_CORNER_RADIUS,
-				    reverse));
+	x = x_end - UI_LANG_MENU_SCROLLBAR_MARGIN_RIGHT - UI_SCROLLBAR_WIDTH;
+	if (reverse)
+		x = UI_SCALE - x - UI_SCROLLBAR_WIDTH +
+		    UI_LANG_MENU_SCROLLBAR_MARGIN_RIGHT;
+	VB2_TRY(ui_draw_scrollbar(x, y_begin, menu_height, id_begin, num_lang,
+				  num_lang_per_page));
 
 	return VB2_SUCCESS;
 }

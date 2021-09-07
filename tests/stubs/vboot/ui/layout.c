@@ -35,3 +35,10 @@ vb2_error_t ui_draw_log_textbox(const char *str, const struct ui_state *state,
 {
 	return VB2_SUCCESS;
 }
+
+vb2_error_t ui_draw_scrollbar(int32_t begin_x, int32_t begin_y, int32_t total_h,
+			      int32_t first_item_index, size_t items_count,
+			      size_t items_per_page)
+{
+	return VB2_SUCCESS;
+}

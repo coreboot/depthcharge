@@ -49,3 +49,11 @@ vb2_error_t ui_draw_box(int32_t x, int32_t y,
 {
 	return VB2_SUCCESS;
 }
+
+vb2_error_t ui_get_log_textbox_dimensions(enum ui_screen screen,
+					  const char *locale_code,
+					  uint32_t *lines_per_page,
+					  uint32_t *chars_per_line)
+{
+	return VB2_SUCCESS;
+}

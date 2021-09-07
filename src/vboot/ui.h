@@ -72,8 +72,11 @@
 #define UI_LANG_MENU_TEXT_HEIGHT		26
 #define UI_LANG_MENU_BORDER_THICKNESS		2
 #define UI_LANG_MENU_SCROLLBAR_MARGIN_RIGHT	2
-#define UI_LANG_MENU_SCROLLBAR_WIDTH		10
-#define UI_LANG_MENU_SCROLLBAR_CORNER_RADIUS	2
+
+/* For scrollbar */
+#define UI_SCROLLBAR_WIDTH			10
+#define UI_SCROLLBAR_MIN_HEIGHT			20
+#define UI_SCROLLBAR_CORNER_RADIUS		2
 
 /* For screen icon */
 #define UI_ICON_HEIGHT				45
@@ -929,6 +932,24 @@ vb2_error_t ui_get_log_textbox_dimensions(enum ui_screen screen,
  */
 vb2_error_t ui_draw_log_textbox(const char *str, const struct ui_state *state,
 				int32_t *y);
+
+/*
+ * Draw a scrollbar based on given current_page and page_count. The height of
+ * the scrollbar will be auto calculated.
+ *
+ * @param begin_x		The left-most x-coordinate of the scrollbar.
+ * @param begin_y		The top-most y-coordinate of the scrollbar.
+ * @param total_h		The total vertical space the scrollbar can move.
+ * @param first_item_index	The index of the first item in the page,
+ *				starting from 0.
+ * @param items_count		Number of the items.
+ * @param items_per_page	Number of items in the same page, used when
+ *				calculating the height of the scrollbar.
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+vb2_error_t ui_draw_scrollbar(int32_t begin_x, int32_t begin_y, int32_t total_h,
+			      int32_t first_item_index, size_t items_count,
+			      size_t items_per_page);
 
 /*
  * Draw primary and secondary buttons; ignore the language dropdown header.

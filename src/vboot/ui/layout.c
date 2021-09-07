@@ -617,7 +617,8 @@ vb2_error_t ui_get_log_textbox_dimensions(enum ui_screen screen,
 
 	VB2_TRY(ui_get_text_width("?", UI_BOX_TEXT_HEIGHT, &char_width));
 
-	*chars_per_line = (UI_SCALE - UI_MARGIN_H * 2 - UI_BOX_PADDING_H * 2) /
+	*chars_per_line = (UI_SCALE - UI_MARGIN_H * 2 - UI_BOX_PADDING_H * 2 -
+			   UI_SCROLLBAR_WIDTH) /
 			  char_width;
 
 	return VB2_SUCCESS;
@@ -632,6 +633,43 @@ vb2_error_t ui_draw_log_textbox(const char *str, const struct ui_state *state,
 					      &lines_per_page,
 					      &chars_per_line));
 	return ui_draw_textbox(str, y, lines_per_page);
+}
+
+vb2_error_t ui_draw_scrollbar(int32_t begin_x, int32_t begin_y, int32_t total_h,
+			      int32_t first_item_index, size_t items_count,
+			      size_t items_per_page)
+{
+	int32_t h, y, movable_height;
+	if (items_count <= 1)
+		return VB2_SUCCESS;
+
+	if (first_item_index + items_per_page > items_count) {
+		UI_WARN("Scrollbar first_item_index + items_count > "
+			"items_per_page (%d + %zu > %zu), change "
+			"first_item_idx to items_count - items_per_page (%zu)\n",
+			first_item_index, items_count, items_per_page,
+			items_count - items_per_page);
+		first_item_index = items_count - items_per_page;
+	}
+
+	/*
+	 * Make sure the height of the scrollbar won't be too small. If total_h
+	 * is less than or equal to UI_SCROLLBAR_MIN_HEIGHT, the movable_height
+	 * will be 0, and the following code will draw a full scrollbar which
+	 * can't be moved.
+	 */
+	h = MIN(MAX(total_h * items_per_page / items_count,
+		    UI_SCROLLBAR_MIN_HEIGHT),
+		total_h);
+	movable_height = total_h - h;
+	y = begin_y +
+	    movable_height * first_item_index / (items_count - items_per_page);
+
+	VB2_TRY(ui_draw_rounded_box(begin_x, y, UI_SCROLLBAR_WIDTH, h,
+				    &ui_color_lang_scrollbar, 0,
+				    UI_SCROLLBAR_CORNER_RADIUS, 0));
+
+	return VB2_SUCCESS;
 }
 
 static vb2_error_t ui_draw_dev_signed_warning(void)
