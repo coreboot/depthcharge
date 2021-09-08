@@ -10,7 +10,7 @@
 
 #define I2C0	PCI_DEV(0, 0x15, 0)
 
-#define MAX_CODEC	2
+#define MAX_CODEC	4
 
 enum audio_codec_type {
 	AUDIO_CODEC_NONE,
