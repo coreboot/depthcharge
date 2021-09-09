@@ -28,7 +28,7 @@ const struct tcss_map *variant_get_tcss_map(size_t *count)
 }
 
 static const struct storage_config storage_configs[] = {
-	{ .media = STORAGE_NVME, .pci_dev = PCH_DEV_CPU_RP0 },
+	{ .media = STORAGE_NVME, .pci_dev = SA_DEV_CPU_RP0 },
 };
 
 const struct storage_config *variant_get_storage_configs(size_t *count)

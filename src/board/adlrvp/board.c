@@ -126,7 +126,7 @@ static int board_setup(void)
 	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
 
 	/* CPU NVME SSD */
-	secondary_bus = pci_read_config8(PCH_DEV_CPU_RP0, REG_SECONDARY_BUS);
+	secondary_bus = pci_read_config8(SA_DEV_CPU_RP0, REG_SECONDARY_BUS);
 	NvmeCtrlr *nvme_1 = new_nvme_ctrlr(PCI_DEV(secondary_bus, 0, 0));
 	list_insert_after(&nvme_1->ctrlr.list_node, &fixed_block_dev_controllers);
 
