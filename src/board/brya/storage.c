@@ -45,9 +45,18 @@ static int configure_storage(void)
 		return 0;
 
 	for (size_t i = 0; i < count; i++) {
-		pcidev_t remapped = intel_remap_pcie_rp(config[i].pci_dev,
-							adl_rp_groups,
-							adl_rp_groups_count);
+		const SocPcieRpGroup *group;
+		size_t group_count;
+		const pcidev_t dev = config[i].pci_dev;
+
+		group = soc_get_rp_group(dev, &group_count);
+		if (!group || !group_count) {
+			printf("No PCIe RP group found for %2x:%x\n", PCI_SLOT(dev),
+								      PCI_FUNC(dev));
+			continue;
+		}
+
+		pcidev_t remapped = intel_remap_pcie_rp(dev, group, group_count);
 		if (remapped == (pcidev_t)-1)
 			continue;
 
