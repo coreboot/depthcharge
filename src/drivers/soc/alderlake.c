@@ -20,6 +20,11 @@
 #include "drivers/soc/intel_common.h"
 #include "drivers/bus/usb/intel_tcss.h"
 
+#define CPU_PCIE_RP_SLOT_0          1
+#define CPU_PCIE_RP_SLOT_1          6
+#define PCH_PCIE_RP_SLOT_0          0x1c
+#define PCH_PCIE_RP_SLOT_1          0x1d
+
 static const SocGpeConfig cfg = {
 	.gpe_max = GPE_MAX,
 	.acpi_base = ACPI_BASE_ADDRESS,
@@ -37,11 +42,37 @@ static const TcssCtrlr adl_tcss_ctrlr = {
 	.iom_status_offset = 0x160
 };
 
-const SocPcieRpGroup adl_rp_groups[] = {
+const SocPcieRpGroup adl_cpu_rp_groups[] = {
+	{ .slot = 0x1, .first_fn = 0, .count = 1 },
+	{ .slot = 0x6, .first_fn = 0, .count = 1 },
+	{ .slot = 0x6, .first_fn = 2, .count = 1 },
+};
+const unsigned int adl_cpu_rp_groups_count = ARRAY_SIZE(adl_cpu_rp_groups);
+
+const SocPcieRpGroup adl_pch_rp_groups[] = {
 	{ .slot = 0x1c, .first_fn = 0, .count = 8 },
 	{ .slot = 0x1d, .first_fn = 0, .count = 4 },
 };
-const unsigned int adl_rp_groups_count = ARRAY_SIZE(adl_rp_groups);
+const unsigned int adl_pch_rp_groups_count = ARRAY_SIZE(adl_pch_rp_groups);
+
+const SocPcieRpGroup *soc_get_rp_group(pcidev_t dev, size_t *count)
+{
+	switch (PCI_SLOT(dev)) {
+	case CPU_PCIE_RP_SLOT_0: /* fallthrough */
+	case CPU_PCIE_RP_SLOT_1:
+		*count = adl_cpu_rp_groups_count;
+		return adl_cpu_rp_groups;
+
+	case PCH_PCIE_RP_SLOT_0: /* fallthrough */
+	case PCH_PCIE_RP_SLOT_1:
+		*count = adl_pch_rp_groups_count;
+		return adl_pch_rp_groups;
+
+	default:
+		*count = 0;
+		return NULL;
+	}
+}
 
 static int register_tcss(void)
 {
