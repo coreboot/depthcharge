@@ -20,6 +20,8 @@
 #include "vboot/util/flag.h"
 #include "boot/fit.h"
 #include "drivers/bus/i2c/qcom_qupv3_i2c.h"
+#include "drivers/bus/spi/qcom_qupv3_spi.h"
+#include "drivers/ec/cros/spi.h"
 #include "drivers/flash/spi.h"
 #include "drivers/storage/sdhci_msm.h"
 #include "drivers/gpio/gpio.h"
@@ -98,6 +100,15 @@ static int board_setup(void)
 	QcomQspi *spi_flash = new_qcom_qspi(0x088DC000, (GpioOps *)&new_gpio_output(GPIO(15))->ops);
 	SpiFlash *flash = new_spi_flash(&spi_flash->ops);
 	flash_set_ops(&flash->ops);
+
+	if (CONFIG(DRIVER_EC_CROS)) {
+		SpiOps *ec_spi = &new_qup_spi(0xA88000)->ops;
+		CrosEcBusOps *ec_bus = &new_cros_ec_spi_bus(ec_spi)->ops;
+		GpioOps *ec_int = sysinfo_lookup_gpio("EC interrupt", 1,
+					new_gpio_input_from_coreboot);
+		CrosEc *ec = new_cros_ec(ec_bus, ec_int);
+		register_vboot_ec(&ec->vboot);
+	}
 
 	return 0;
 }
