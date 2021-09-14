@@ -123,7 +123,7 @@ def run_pango_view(input_file,
                    locale,
                    font,
                    height,
-                   max_width,
+                   width_pt,
                    dpi,
                    bgcolor,
                    fgcolor,
@@ -140,14 +140,8 @@ def run_pango_view(input_file,
     font_spec = '%s %r' % (font, font_size)
     command += ['--font', font_spec]
 
-    if max_width:
-        # When converting text to PNG by pango-view, the ratio of image height
-        # to the font size is usually no more than 1.1875 (with Roboto).
-        # Therefore, set the `max_width_pt` as follows to prevent UI drawing
-        # from exceeding the canvas boundary in depthcharge runtime. The divisor
-        # 2 is the same in the calculation of `font_size` above.
-        max_width_pt = int(max_width / 2 * 1.1875)
-        command.append('--width=%d' % max_width_pt)
+    if width_pt:
+        command.append('--width=%d' % width_pt)
     if dpi:
         command.append('--dpi=%d' % dpi)
     command.append('--margin=0')
@@ -371,6 +365,13 @@ class Converter:
         """Converts the relative coordinate to absolute one in pixels."""
         return int(self.canvas_px * length / self.SCALE_BASE) * num_lines
 
+    def _get_runtime_width_px(self, height, num_lines, file):
+        """Gets the width in pixels `file` will be rendered at runtime."""
+        # This is different from _to_px(height, num_lines)
+        height_px = self._to_px(height * num_lines)
+        with Image.open(file) as image:
+            return height_px * image.size[0] // image.size[1]
+
     @classmethod
     def _get_png_height(cls, png_file):
         # With small DPI, pango-view may generate an empty file
@@ -493,6 +494,41 @@ class Converter:
         get_height(min_dpi)
         return min_dpi
 
+    @classmethod
+    def _bisect_width(cls, initial_width_pt, max_width_px, get_width_px):
+        """Bisects to find the width that produces image width `max_width_px`.
+
+        Args:
+            initial_width_pt: Initial width_pt to try with in binary search.
+            max_width_px: Maximum (target) width to search for.
+            get_width_px: A function converting width_pt to width_px. The
+                function is called once before returning.
+
+        Returns:
+            The best integer width_pt.
+        """
+        min_width_pt = 1
+        width_pt = initial_width_pt
+        width_px = get_width_px(width_pt)
+        while width_px < max_width_px:
+            min_width_pt = width_pt
+            width_pt *= 2
+            width_px = get_width_px(width_pt)
+        if width_px == max_width_px:
+            return width_pt
+
+        max_width_pt = width_pt
+        # Find maximum width_pt with get_width_px(width_pt) <= max_width_px
+        while min_width_pt < max_width_pt:
+            width_pt = (min_width_pt + max_width_pt + 1) // 2
+            width_px = get_width_px(width_pt)
+            if width_px > max_width_px:
+                max_width_pt = width_pt - 1
+            else:
+                min_width_pt = width_pt
+        get_width_px(max_width_pt)
+        return max_width_pt
+
     def convert_text_to_image(self,
                               locale,
                               input_file,
@@ -502,6 +538,7 @@ class Converter:
                               max_colors,
                               height=None,
                               max_width=None,
+                              initial_width_pt=None,
                               dpi=None,
                               initial_dpi=None,
                               bgcolor='#000000',
@@ -523,6 +560,7 @@ class Converter:
             max_colors: Maximum colors to convert to bitmap.
             height: Image height relative to the screen resolution.
             max_width: Maximum image width relative to the screen resolution.
+            initial_width_pt: Initial width_pt to try with in binary search.
             dpi: DPI value passed to pango-view.
             initial_dpi: Initial DPI to try with in binary search.
             bgcolor: Background color (#rrggbb).
@@ -531,7 +569,9 @@ class Converter:
                 file.
 
         Returns:
-            Effective DPI, or `None` when not applicable.
+            A tuple (`eff_dpi`, `width_pt`) of effective DPI and the width
+            passed to pango-view. Both `eff_dpi` and `width_pt` might be `None`
+            when not applicable.
         """
         one_line_dir = os.path.join(stage_dir, ONE_LINE_DIR)
         os.makedirs(one_line_dir, exist_ok=True)
@@ -560,7 +600,7 @@ class Converter:
                            hinting='none')
             self.convert_svg_to_png(svg_file, png_file, height, bgcolor)
             self.convert_png_to_bmp(png_file, output_file, max_colors)
-            return None
+            return None, None
 
         if not dpi:
             raise BuildImageError('DPI must be specified with use_svg=False')
@@ -570,6 +610,13 @@ class Converter:
         if height_px > max_height_px:
             eff_dpi = self._bisect_dpi(dpi, initial_dpi, max_height_px,
                                        get_one_line_png_height)
+
+        def get_width_px(width_pt):
+            run_pango_view(input_file, png_file, locale, font, height,
+                           width_pt, eff_dpi, bgcolor, fgcolor)
+            num_lines = self.get_num_lines(png_file, one_line_dir)
+            return self._get_runtime_width_px(height, num_lines, png_file)
+
         if max_width:
             # NOTE: With the same DPI, the height of multi-line PNG is not
             # necessarily a multiple of the height of one-line PNG. Therefore,
@@ -577,17 +624,23 @@ class Converter:
             # multi-line PNG might be less than "one_line_height * num_lines".
             # We cannot binary-search DPI for multi-line PNGs because
             # "num_lines" is dependent on DPI.
-            run_pango_view(input_file, png_file, locale, font, height,
-                           max_width, eff_dpi, bgcolor, fgcolor)
+            max_width_px = self._to_px(max_width)
+            if not initial_width_pt:
+                # max_width is not in points, but this should be good enough
+                # as an initial value.
+                initial_width_pt = max_width
+            width_pt = self._bisect_width(initial_width_pt, max_width_px,
+                                          get_width_px)
             num_lines = self.get_num_lines(png_file, one_line_dir)
         else:
+            width_pt = None
             png_file = png_file_one_line
             num_lines = 1
         self.convert_png_to_bmp(png_file,
                                 output_file,
                                 max_colors,
                                 num_lines=num_lines)
-        return eff_dpi
+        return eff_dpi, width_pt
 
     def convert_sprite_images(self):
         """Converts sprite images."""
@@ -645,6 +698,7 @@ class Converter:
                                        self.text_max_colors,
                                        height=style[KEY_HEIGHT],
                                        max_width=None,
+                                       initial_width_pt=None,
                                        dpi=dpi,
                                        bgcolor=style[KEY_BGCOLOR],
                                        fgcolor=style[KEY_FGCOLOR])
@@ -671,6 +725,8 @@ class Converter:
 
         eff_dpi_counters = defaultdict(Counter)
         eff_dpi_counter = None
+        width_pt_counters = defaultdict(Counter)
+        width_pt_counter = None
         results = []
         for name, category in sorted(names.items()):
             if name not in inputs:
@@ -690,6 +746,7 @@ class Converter:
             # Convert text to image
             style = get_config_with_defaults(styles, category)
             height = style[KEY_HEIGHT]
+            max_width = style[KEY_MAX_WIDTH]
             eff_dpi_counter = eff_dpi_counters[height]
             if eff_dpi_counter:
                 # Find the effective DPI that appears most times for `height`.
@@ -699,7 +756,16 @@ class Converter:
                                    key=lambda dpi: (eff_dpi_counter[dpi], dpi))
             else:
                 best_eff_dpi = None
-            eff_dpi = self.convert_text_to_image(
+            width_pt_counter = (width_pt_counters[(height, max_width)]
+                                if max_width else None)
+            if width_pt_counter:
+                # Similarly, find the most frequently used `width_pt`. In case
+                # of a tie, pick the largest width.
+                best_width_pt = max(width_pt_counter,
+                                    key=lambda w: (width_pt_counter[w], w))
+            else:
+                best_width_pt = None
+            eff_dpi, width_pt = self.convert_text_to_image(
                 locale,
                 text_file,
                 output_file,
@@ -707,12 +773,15 @@ class Converter:
                 stage_dir,
                 self.text_max_colors,
                 height=height,
-                max_width=style[KEY_MAX_WIDTH],
+                max_width=max_width,
+                initial_width_pt=best_width_pt,
                 dpi=dpi,
                 initial_dpi=best_eff_dpi,
                 bgcolor=style[KEY_BGCOLOR],
                 fgcolor=style[KEY_FGCOLOR])
             eff_dpi_counter[eff_dpi] += 1
+            if width_pt:
+                width_pt_counter[width_pt] += 1
             assert eff_dpi <= dpi
             if eff_dpi != dpi:
                 results.append(eff_dpi)
@@ -737,9 +806,8 @@ class Converter:
                 with open(filename, 'rb') as f:
                     f.seek(BMP_HEADER_OFFSET_NUM_LINES)
                     num_lines = f.read(1)[0]
-                height_px = self._to_px(height * num_lines)
-                with Image.open(filename) as image:
-                    width_px = height_px * image.size[0] // image.size[1]
+                width_px = self._get_runtime_width_px(height, num_lines,
+                                                      filename)
                 if width_px > max_width_px:
                     raise BuildImageError(
                         '%s: Image width %dpx greater than max width '
