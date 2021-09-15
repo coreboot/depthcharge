@@ -175,6 +175,7 @@
 #define UI_KEY_F(num) (num + 0x108)
 
 /* Pre-defined key for UI action functions */
+#define UI_KEY_NETWORK_RECOVERY		UI_KEY_CTRL('R')
 #define UI_KEY_REC_TO_DEV		UI_KEY_CTRL('D')
 /* S for secure mode (normal mode) */
 #define UI_KEY_DEV_TO_NORM		UI_KEY_CTRL('S')

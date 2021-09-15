@@ -44,6 +44,12 @@ static vb2_error_t ui_manual_recovery_action(struct ui_context *ui)
 		return ui_screen_change(ui, VB2_SCREEN_RECOVERY_TO_DEV);
 	}
 
+	if (ui->key == UI_KEY_NETWORK_RECOVERY) {
+		rv = VbTryLoadMiniOsKernel(ui->ctx);
+		if (rv == VB2_SUCCESS)
+			return VB2_REQUEST_UI_EXIT;
+	}
+
 	if (ui->key == '\t')
 		return ui_screen_change(ui, VB2_SCREEN_DEBUG_INFO);
 

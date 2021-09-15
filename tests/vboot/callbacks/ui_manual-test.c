@@ -122,6 +122,24 @@ static void test_manual_ui_invalid_kernel_no_disk_found(void **state)
 	ASSERT_VB2_SUCCESS(vb2ex_manual_recovery_ui(ui->ctx));
 }
 
+static void test_manual_ui_network_recovery_shortcut(void **state)
+{
+	struct ui_context *ui = *state;
+
+	setup_will_return_common();
+
+	WILL_PRESS_KEY(0, 0);
+	WILL_PRESS_KEY(UI_KEY_NETWORK_RECOVERY, 0);
+	will_return_maybe(VbExIsShutdownRequested, 0);
+	will_return_maybe(VbTryLoadKernel, VB2_ERROR_LK_NO_DISK_FOUND);
+	expect_value_count(VbTryLoadKernel, disk_flags, VB_DISK_FLAG_REMOVABLE,
+			   WILL_RETURN_ALWAYS);
+	will_return(VbTryLoadMiniOsKernel, VB2_SUCCESS);
+	EXPECT_DISPLAY_UI_ANY_ALWAYS();
+
+	ASSERT_VB2_SUCCESS(vb2ex_manual_recovery_ui(ui->ctx));
+}
+
 static void test_manual_ui_timeout(void **state)
 {
 	struct ui_context *ui = *state;
@@ -920,6 +938,7 @@ int main(void)
 		/* Manual recovery ui */
 		UI_TEST(test_manual_ui_no_disk_found_invalid_kernel),
 		UI_TEST(test_manual_ui_invalid_kernel_no_disk_found),
+		UI_TEST(test_manual_ui_network_recovery_shortcut),
 		UI_TEST(test_manual_ui_timeout),
 		UI_TEST(test_manual_ui_power_button_shutdown),
 		UI_TEST(test_manual_ui_boot_with_valid_image),
