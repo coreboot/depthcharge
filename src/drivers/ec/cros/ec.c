@@ -387,8 +387,7 @@ static vb2_error_t vboot_running_rw(VbootEcOps *vbec, int *in_rw)
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
 	struct ec_response_get_version r;
 
-	if (ec_command(me, EC_CMD_GET_VERSION, 0,
-		       NULL, 0, &r, sizeof(r)) != sizeof(r))
+	if (ec_command(me, EC_CMD_GET_VERSION, 0, NULL, 0, &r, sizeof(r)) < 0)
 		return VB2_ERROR_UNKNOWN;
 
 	switch (r.current_image) {
