@@ -45,20 +45,22 @@ static int configure_storage(void)
 		return 0;
 
 	for (size_t i = 0; i < count; i++) {
+		const pcidev_t dev = config[i].pci_dev;
 		const SocPcieRpGroup *group;
 		size_t group_count;
-		const pcidev_t dev = config[i].pci_dev;
+		pcidev_t remapped;
 
 		group = soc_get_rp_group(dev, &group_count);
-		if (!group || !group_count) {
-			printf("No PCIe RP group found for %2x:%x\n", PCI_SLOT(dev),
-								      PCI_FUNC(dev));
+		if (group)
+			remapped = intel_remap_pcie_rp(dev, group, group_count);
+		else
+			remapped = dev;
+
+		if (remapped == (pcidev_t)-1) {
+			printf("%s: Failed to remap %2X:%X\n",
+			       __func__, PCI_SLOT(dev), PCI_FUNC(dev));
 			continue;
 		}
-
-		pcidev_t remapped = intel_remap_pcie_rp(dev, group, group_count);
-		if (remapped == (pcidev_t)-1)
-			continue;
 
 		switch (config[i].media) {
 		case STORAGE_NVME:
