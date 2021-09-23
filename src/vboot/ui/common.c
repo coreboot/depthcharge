@@ -47,8 +47,7 @@ static const struct ui_error_message errors[] = {
 		.mesg = "Returning to secure mode disallowed by GBB flags.",
 	},
 	[VB2_UI_ERROR_INTERNAL_BOOT_FAILED] = {
-		/* TODO(b/197911901): Support localized error message */
-		.file = NULL,
+		.file = "error_int_boot_failed.bmp",
 		.mesg = "Something went wrong booting from internal disk.\n"
 			"View firmware log for details.",
 	},
@@ -284,12 +283,7 @@ vb2_error_t ui_display_screen(struct ui_state *state,
 	 * error message to the AP console.
 	 */
 	if (rv == VB2_SUCCESS && error) {
-		/* TODO(b/197911901): Support localized error message */
-		if (state->error_code == VB2_UI_ERROR_INTERNAL_BOOT_FAILED)
-			ui_draw_textbox("Failed to boot from internal disk",
-					&y, 1);
-		else
-			show_error_box(error, state->locale);
+		show_error_box(error, state->locale);
 		if (error->mesg)
 			UI_WARN("%s\n", error->mesg);
 	}
