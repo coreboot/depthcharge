@@ -31,4 +31,15 @@ config DRIVER_EC_PS8751_FLASH_WINDOW
 	  being able to adjust the I2C bus speed at runtime, so make
 	  sure this capability is supported by the EC.
 
+config DRIVER_EC_PS8751_I2C_SPEED_CONTROL
+	bool "PS8xxx I2C bus speed control"
+	default y if DRIVER_EC_PS8751_FLASH_WINDOW
+	default n
+	help
+	  Enable controlling the I2C bus speed between the EC and the
+	  TCPC. This is needed to potentially decrease the bus speed to
+	  400 KHz to support the window based firmware update scheme.
+	  If the I2C bus is normally configured to run at (or below) 400
+	  KHz, this is not required.
+
 endif # DRIVER_EC_PS8751

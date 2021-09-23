@@ -153,6 +153,7 @@
 #define PS_SPI_TIMEOUT_US	(1 * 1000 * 1000)	/* 1s */
 #define PS_WIP_TIMEOUT_US	(1 * 1000 * 1000)	/* 1s */
 
+#define PS_I2C_WINDOW_SPEED_KHZ	400
 
 /**
  * read a single byte from a register of a SPI target
