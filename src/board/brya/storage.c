@@ -12,6 +12,29 @@
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/nvme.h"
 #include "drivers/storage/sdhci.h"
+#include "drivers/storage/sdhci_gli.h"
+
+static void setup_emmc(pcidev_t dev, const struct emmc_config *config)
+{
+	if (!CONFIG(DRIVER_STORAGE_SDHCI_PCI))
+		return;
+
+	if (CONFIG(DRIVER_STORAGE_GENESYSLOGIC)) {
+		/* GL9763E */
+		SdhciHost *emmc;
+
+		emmc = new_gl9763e_sdhci_host(dev,
+					config->platform_flags,
+					config->clock_min, config->clock_max);
+		if (emmc) {
+			emmc->name = "eMMC";
+			list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+					  &fixed_block_dev_controllers);
+		} else {
+			printf("Failed to find eMMC card reader\n");
+		}
+	}
+}
 
 static void setup_sdhci(pcidev_t dev)
 {
@@ -68,6 +91,9 @@ static int configure_storage(void)
 			break;
 		case STORAGE_SDHCI:
 			setup_sdhci(remapped);
+			break;
+		case STORAGE_EMMC:
+			setup_emmc(remapped, &config[i].emmc);
 			break;
 		default:
 			break;

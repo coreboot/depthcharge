@@ -70,11 +70,19 @@ struct audio_config {
 enum storage_media {
 	STORAGE_NVME,
 	STORAGE_SDHCI,
+	STORAGE_EMMC,
+};
+
+struct emmc_config {
+	unsigned int platform_flags;
+	unsigned int clock_min;
+	unsigned int clock_max;
 };
 
 struct storage_config {
 	enum storage_media media;
 	pcidev_t pci_dev;
+	struct emmc_config emmc;
 };
 
 const struct tcss_map *variant_get_tcss_map(size_t *count);
