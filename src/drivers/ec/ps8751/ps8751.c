@@ -142,6 +142,8 @@
 #define PS_MPU_BOOT_DELAY_MS	(50)
 #define PS_RESTART_DELAY_CS	(6)			/* 6cs / 60 ms */
 
+#define PS_I2C_WINDOW_SPEED_KHZ	400
+
 #define PARADE_BINVERSION_OFFSET	0x501c
 #define PARADE_CHIPVERSION_OFFSET	0x503a
 
@@ -1281,6 +1283,53 @@ static vb2_error_t ps8751_ec_tunnel_status(const VbootAuxfwOps *vbaux,
 	return VB2_SUCCESS;
 }
 
+static int ps8751_set_i2c_speed(Ps8751 *me)
+{
+	uint16_t old_speed_khz;
+	int status;
+
+	if (!CONFIG(DRIVER_EC_PS8751_I2C_SPEED_CONTROL))
+		return 0;
+
+	status = cros_ec_i2c_set_speed(me->bus->remote_bus,
+				       PS_I2C_WINDOW_SPEED_KHZ,
+				       &old_speed_khz);
+	if (status < 0) {
+		printf("%s: Could not set I2C bus speed to %u kHz!\n",
+		       me->chip_name, PS_I2C_WINDOW_SPEED_KHZ);
+		return status;
+	}
+	if (old_speed_khz != EC_I2C_CONTROL_SPEED_UNKNOWN)
+		me->saved_i2c_speed_khz = old_speed_khz;
+
+	return 0;
+}
+
+static int ps8751_restore_i2c_speed(Ps8751 *me)
+{
+	int status;
+
+	if (!CONFIG(DRIVER_EC_PS8751_I2C_SPEED_CONTROL))
+		return 0;
+
+	if (me->saved_i2c_speed_khz != 0) {
+		/*
+		 * some implementations support setting the I2C speed
+		 * without supporting getting the current speed. only
+		 * restore the speed if it was reported previously.
+		 */
+		status = cros_ec_i2c_set_speed(me->bus->remote_bus,
+					       me->saved_i2c_speed_khz, 0);
+		if (status != 0) {
+			printf("%s: Could not restore I2C speed to %u kHz!\n",
+			       me->chip_name, me->saved_i2c_speed_khz);
+			return status;
+		}
+	}
+
+	return 0;
+}
+
 static int ps8751_ec_pd_suspend(Ps8751 *me)
 {
 	int status;
@@ -1486,11 +1535,18 @@ static int ps8751_halt_and_flash(Ps8751 *me,
 
 	if (ps8751_rom_ctrl(me) != 0)
 		return -1;
+
 	if (ps8751_disable_mpu(me) != 0)
 		return -1;
-	if (ps8751_spi_flash_unlock(me) != 0)
+
+	if (ps8751_set_i2c_speed(me) != 0)
 		goto enable_mpu;
+
+	if (ps8751_spi_flash_unlock(me) != 0)
+		goto restore_i2c;
+
 	debug("unlock_spi_bus returned\n");
+
 	if (ps8751_spi_flash_identify(me) == 0 &&
 	    ps8751_reflash(me, image, image_size) == 0)
 		status = 0;
@@ -1498,9 +1554,14 @@ static int ps8751_halt_and_flash(Ps8751 *me,
 	if (ps8751_spi_flash_lock(me) != 0)
 		status = -1;
 
+ restore_i2c:
+	if (ps8751_restore_i2c_speed(me) != 0)
+		status = -1;
+
  enable_mpu:
 	if (ps8751_enable_mpu(me) != 0)
 		return -1;
+
 	return status;
 }
 

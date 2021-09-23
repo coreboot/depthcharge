@@ -46,6 +46,9 @@ typedef struct Ps8751
 	uint8_t blob_hw_version;
 	ParadeChipType chip_type;
 	char chip_name[16];
+
+	/* Used for DRIVER_EC_PS8751_I2C_SPEED_CONTROL. */
+	uint16_t saved_i2c_speed_khz;
 } Ps8751;
 
 Ps8751 *new_ps8751(CrosECTunnelI2c *bus, int ec_pd_id);
