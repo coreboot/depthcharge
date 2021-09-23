@@ -158,6 +158,32 @@ int cros_ec_cbi_get_oem_id(uint32_t *id);
 int cros_ec_pd_control(uint8_t pd_port, enum ec_pd_control_cmd cmd);
 
 /**
+ * Get the EC I2C bus speed.
+ *
+ * @param i2c__port	The I2C port number
+ * @param speed		Pointer to speed return value in kHz. Speed value
+ *			of EC_I2C_CONTROL_SPEED_UNKNOWN is returned if the
+ *			speed is not known or tracked.
+ * @return 0 if ok, negative (EC return code) on error
+ */
+int cros_ec_i2c_get_speed(uint8_t i2c_port, uint16_t *speed_khz);
+
+/**
+ * Set the EC I2C bus speed, returning the previous speed.
+ *
+ * @param i2c__port	The I2C port number
+ * @param new_speed	The new I2C speed to configure in kHz
+ * @param old_speed	If non-null, pointer to previous speed return
+ *			value in kHz.  EC_I2C_CONTROL_SPEED_UNKNOWN is
+ *			returned if the previous speed is not known or
+ *			tracked.
+ * @return 0 if ok, negative (EC return code) on error
+ */
+int cros_ec_i2c_set_speed(uint8_t i2c_port,
+			  uint16_t new_speed_khz,
+			  uint16_t *old_speed_khz);
+
+/**
  * Read a keyboard scan from the ChromeOS EC device
  *
  * @param scan		Place to put the scan results

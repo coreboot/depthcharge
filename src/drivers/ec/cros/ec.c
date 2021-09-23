@@ -365,6 +365,50 @@ int cros_ec_pd_control(uint8_t pd_port, enum ec_pd_control_cmd cmd)
 	return rv < 0 ? rv : 0;
 }
 
+int cros_ec_i2c_get_speed(uint8_t i2c_port, uint16_t *speed_khz)
+{
+	const struct ec_params_i2c_control p = {
+		.port = i2c_port,
+		.cmd = EC_I2C_CONTROL_GET_SPEED,
+	};
+	struct ec_response_i2c_control r;
+	int rv;
+
+	rv = ec_command(cros_ec_get(), EC_CMD_I2C_CONTROL, 0,
+			&p, sizeof(p), &r, sizeof(r));
+	if (rv < 0)
+		return rv;
+	if (rv != sizeof(r))
+		return -1;
+
+	*speed_khz = r.cmd_response.speed_khz;
+	return 0;
+}
+
+int cros_ec_i2c_set_speed(uint8_t i2c_port,
+			  uint16_t new_speed_khz,
+			  uint16_t *old_speed_khz)
+{
+	const struct ec_params_i2c_control p = {
+		.port = i2c_port,
+		.cmd = EC_I2C_CONTROL_SET_SPEED,
+		.cmd_params.speed_khz = new_speed_khz,
+	};
+	struct ec_response_i2c_control r;
+	int rv;
+
+	rv = ec_command(cros_ec_get(), EC_CMD_I2C_CONTROL, 0,
+			&p, sizeof(p), &r, sizeof(r));
+	if (rv < 0)
+		return rv;
+	if (rv != sizeof(r))
+		return -1;
+
+	if (old_speed_khz)
+		*old_speed_khz = r.cmd_response.speed_khz;
+	return 0;
+}
+
 int cros_ec_scan_keyboard(struct cros_ec_keyscan *scan)
 {
 	if (ec_command(cros_ec_get(), EC_CMD_MKBP_STATE, 0, NULL, 0,
