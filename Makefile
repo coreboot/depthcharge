@@ -279,4 +279,3 @@ distclean: clean
 	$(Q)rm -f .config .config.old ..config.tmp .kconfig.d .tmpconfig*
 
 .PHONY: $(PHONY) clean distclean
-
