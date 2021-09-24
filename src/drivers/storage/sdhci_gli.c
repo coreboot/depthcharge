@@ -29,8 +29,10 @@ SdhciHost *new_gl9763e_sdhci_host(pcidev_t dev, unsigned int platform_info,
 {
 	SdhciHost *host;
 
-	host = new_pci_sdhci_host(dev, platform_info, clock_min, clock_max);
+	host = probe_pci_sdhci_host(dev, platform_info);
 	host->mmc_ctrlr.set_ios = &gl9763e_set_ios;
+	host->clock_f_min = clock_min;
+	host->clock_f_max = clock_max;
 
 	return host;
 }
