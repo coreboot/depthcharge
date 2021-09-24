@@ -17,6 +17,7 @@
  * GNU General Public License for more details.
  */
 
+#include <assert.h>
 #include <libpayload.h>
 
 #include "base/container_of.h"
@@ -71,7 +72,10 @@ typedef struct {
 	uint32_t comp_param1;		// 0xac
 	uint32_t comp_version;		// 0xb0
 	uint32_t comp_type;		// 0xb4
-} __attribute__((packed)) DesignwareI2cRegs;
+} DesignwareI2cRegs;
+
+_Static_assert(offsetof(DesignwareI2cRegs, comp_type) == 0xb4,
+	"DesignwareI2cRegs misaligned");
 
 #define TX_ABORT_SOURCE_TX_FLUSH_CNT_SHIFT 24
 #define TX_ABORT_SOURCE_TX_FLUSH_CNT_MASK                                      \
