@@ -51,7 +51,7 @@ x86-generic,amd64-generic,arm-generic,arm64-generic,mips-generic:
 asurada:
   # 1920x1080, boots recovery image on USB ports or SD card.
   screen:   [1920, 1080]
-  dpi: 112  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 nyan,nyan_big:
 
