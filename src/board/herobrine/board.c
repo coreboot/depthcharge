@@ -38,6 +38,7 @@ static int board_setup(void)
 
 	/*eMMC support */
 	u32 emmc_platfm_flags = SDHCI_PLATFORM_EMMC_1V8_POWER |
+				SDHCI_PLATFORM_EMMC_HARDWIRED_VCC |
 				SDHCI_PLATFORM_NO_EMMC_HS200 |
 				SDHCI_PLATFORM_SUPPORTS_HS400ES;
 	SdhciHost *emmc;
