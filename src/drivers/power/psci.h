@@ -20,6 +20,6 @@
 
 #include "drivers/power/power.h"
 
-PowerOps psci_power_ops;
+extern PowerOps psci_power_ops;
 
 #endif /* __DRIVERS_POWER_PSCI_H__ */
