@@ -1441,6 +1441,32 @@ static const struct ui_menu_item developer_boot_external_items[] = {
 	POWER_OFF_ITEM,
 };
 
+static vb2_error_t developer_boot_external_check(struct ui_context *ui)
+{
+	if (!(ui->ctx->flags & VB2_CONTEXT_DEVELOPER_MODE) ||
+	    !(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALLOWED) ||
+	    !(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED)) {
+		UI_ERROR("ERROR: Dev mode external boot not allowed\n");
+		ui->error_beep = 1;
+		return set_ui_error_and_go_back(
+			ui, VB2_UI_ERROR_EXTERNAL_BOOT_DISABLED);
+	}
+	return VB2_SUCCESS;
+}
+
+static vb2_error_t developer_boot_external_init(struct ui_context *ui)
+{
+	vb2_error_t rv;
+
+	VB2_TRY(developer_boot_external_check(ui));
+	rv = VbTryLoadKernel(ui->ctx, VB_DISK_FLAG_REMOVABLE);
+	/* If the status of the external disk doesn't match, skip the screen. */
+	if (rv != VB2_ERROR_LK_NO_DISK_FOUND)
+		return ui_screen_back(ui);
+
+	return VB2_SUCCESS;
+}
+
 static const struct ui_screen_info developer_boot_external_screen = {
 	.id = VB2_SCREEN_DEVELOPER_BOOT_EXTERNAL,
 	.name = "Developer boot from external disk",
@@ -1448,6 +1474,8 @@ static const struct ui_screen_info developer_boot_external_screen = {
 	.title = "dev_boot_ext_title.bmp",
 	.desc = UI_DESC(developer_boot_external_desc),
 	.menu = UI_MENU(developer_boot_external_items),
+	.init = developer_boot_external_init,
+	.reinit = developer_boot_external_init,
 	.action = ui_developer_mode_boot_external_action,
 	.mesg = "Plug in your external disk\n"
 		"If your external disk is ready with a Chrome OS image,\n"
@@ -1467,6 +1495,19 @@ static const struct ui_menu_item developer_invalid_disk_items[] = {
 	POWER_OFF_ITEM,
 };
 
+static vb2_error_t developer_invalid_disk_init(struct ui_context *ui)
+{
+	vb2_error_t rv;
+
+	VB2_TRY(developer_boot_external_check(ui));
+	rv = VbTryLoadKernel(ui->ctx, VB_DISK_FLAG_REMOVABLE);
+	/* If the status of the external disk doesn't match, skip the screen. */
+	if (rv == VB2_SUCCESS || rv == VB2_ERROR_LK_NO_DISK_FOUND)
+		return ui_screen_back(ui);
+
+	return VB2_SUCCESS;
+}
+
 static const struct ui_screen_info developer_invalid_disk_screen = {
 	.id = VB2_SCREEN_DEVELOPER_INVALID_DISK,
 	.name = "Invalid external disk in dev mode",
@@ -1474,6 +1515,8 @@ static const struct ui_screen_info developer_invalid_disk_screen = {
 	.title = "dev_invalid_disk_title.bmp",
 	.desc = UI_DESC(developer_invalid_disk_desc),
 	.menu = UI_MENU(developer_invalid_disk_items),
+	.init = developer_invalid_disk_init,
+	.reinit = developer_invalid_disk_init,
 	.action = ui_developer_mode_boot_external_action,
 	.mesg = "No valid image detected\n"
 		"Make sure your external disk has a valid Chrome OS image,\n"

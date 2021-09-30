@@ -781,6 +781,42 @@ static void test_developer_screen_debug_info(void **state)
 	assert_int_equal(vb2ex_developer_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
 }
 
+static void test_developer_screen_invalid_external_disk(void **state)
+{
+	struct ui_context *ui = *state;
+
+	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED;
+	will_return_maybe(vb2api_get_dev_default_boot_target,
+			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
+	will_return_maybe(vb2api_gbb_get_flags, 0);
+
+	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE);
+
+	/* Try to boot from an invalid external disk */
+	WILL_PRESS_KEY(UI_KEY_DEV_BOOT_EXTERNAL, 0);
+	will_return_count(VbTryLoadKernel, VB2_ERROR_LK_INVALID_KERNEL_FOUND,
+			  2);  /* The 1st for init(); the 2nd for action() */
+	expect_value_count(VbTryLoadKernel, disk_flags, VB_DISK_FLAG_REMOVABLE,
+			   2);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_INVALID_DISK);
+	EXPECT_BEEP(250, 400);
+
+	/* Unplug the invalid external disk */
+	WILL_PRESS_KEY(0, 0);
+	SETUP_VB_TRY_LOAD_KERNEL(VB2_ERROR_LK_NO_DISK_FOUND,
+				 VB_DISK_FLAG_REMOVABLE);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_BOOT_EXTERNAL);
+	EXPECT_BEEP(250, 400);
+
+	/* Press ESC to make sure we can get out of the polling screens */
+	WILL_PRESS_KEY(UI_KEY_ESC, 0);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE);
+
+	will_return_maybe(ui_keyboard_read, 0);
+
+	assert_int_equal(vb2ex_developer_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
+}
+
 #define UI_TEST(test_function_name) \
 	cmocka_unit_test_setup(test_function_name, setup_context)
 
@@ -827,6 +863,7 @@ int main(void)
 		UI_TEST(test_developer_screen_advanced_options),
 		UI_TEST(test_developer_screen_advanced_options_screen),
 		UI_TEST(test_developer_screen_debug_info),
+		UI_TEST(test_developer_screen_invalid_external_disk),
 	};
 	return cmocka_run_group_tests(tests, NULL, NULL);
 }
