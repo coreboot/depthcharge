@@ -179,17 +179,22 @@ static vb2_error_t ui_loop_impl(
 		if (rv && rv != VB2_REQUEST_UI_CONTINUE)
 			return rv;
 
+		/*
+		 * Run menu navigation action. This has to be run before
+		 * functions that may change the screen (such as screen actions
+		 * and global actions). Otherwise menu navigation action would
+		 * run on the new screen instead of the one shown to the user.
+		 */
+		rv = ui_menu_navigation_action(&ui);
+		if (rv && rv != VB2_REQUEST_UI_CONTINUE)
+			return rv;
+
 		/* Run screen action. */
 		if (ui.state->screen->action) {
 			rv = ui.state->screen->action(&ui);
 			if (rv && rv != VB2_REQUEST_UI_CONTINUE)
 				return rv;
 		}
-
-		/* Run menu navigation action. */
-		rv = ui_menu_navigation_action(&ui);
-		if (rv && rv != VB2_REQUEST_UI_CONTINUE)
-			return rv;
 
 		/* Run global action function if available. */
 		if (global_action) {

@@ -243,7 +243,7 @@ static void test_loop_screen_action_success(void **state)
 	will_return_always(VbExIsShutdownRequested, 0);
 	will_return_always(mock_action_flag0, VB2_REQUEST_UI_EXIT);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	will_return_always(ui_keyboard_read, 0);
 	EXPECT_DISPLAY_UI_ANY();
 
 	ASSERT_VB2_SUCCESS(
@@ -256,7 +256,7 @@ static void test_loop_item_target_action_success(void **state)
 
 	will_return_always(VbExIsShutdownRequested, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return(mock_action_flag0, VB2_SUCCESS);
+	will_return_maybe(mock_action_flag0, VB2_SUCCESS);
 	will_return(mock_action_flag1, VB2_REQUEST_UI_EXIT);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_DISPLAY_UI_ANY();
