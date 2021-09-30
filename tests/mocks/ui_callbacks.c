@@ -2,6 +2,7 @@
 
 #include <tests/test.h>
 #include <tests/vboot/common.h>
+#include <tests/vboot/ui/common.h>
 #include <mocks/callbacks.h>
 #include <vboot_api.h>
 #include <vb2_api.h>
@@ -95,7 +96,8 @@ void vb2ex_beep(uint32_t msec, uint32_t frequency)
 
 	check_expected(msec);
 	check_expected(frequency);
-	ASSERT_TIME_RANGE(mock_time_ms, expected_time);
+	if (expected_time != MOCK_IGNORE)
+		ASSERT_TIME_RANGE(mock_time_ms, expected_time);
 
 	mock_time_ms += msec;
 }
