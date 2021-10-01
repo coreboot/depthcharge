@@ -24,6 +24,10 @@ else
 depthcharge-y += secdata_tpm.c
 endif
 
+ifneq ($(CONFIG_TPM2_MODE),)
+CFLAGS += -DTPM2_MODE
+endif
+
 # Where "main" lives.
 vboot-y += main.c
 
