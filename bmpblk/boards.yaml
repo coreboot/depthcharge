@@ -325,3 +325,8 @@ brya:
 cherry:
   screen:   [2256, 1504]
   dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+guybrush:
+  # 1920x1080
+  screen: [1920, 1080]
+  dpi: 96 # DO NOT COPY-PASTE. follow instructions above.
