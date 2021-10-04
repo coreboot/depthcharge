@@ -7,13 +7,6 @@
 #include <mocks/util/commonparams.h>
 #include <vboot/util/commonparams.h>
 
-#define SETUP_VB_TRY_LOAD_KERNEL(_rv, _disk_flags) \
-	do { \
-		will_return_always(VbTryLoadKernel, (_rv)); \
-		expect_value_count(VbTryLoadKernel, disk_flags, \
-				   (_disk_flags), WILL_RETURN_ALWAYS); \
-	} while (0)
-
 /* Mock functions */
 uint32_t VbExIsShutdownRequested(void) { return mock_type(uint32_t); }
 

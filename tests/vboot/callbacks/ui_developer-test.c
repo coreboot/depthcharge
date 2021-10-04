@@ -7,13 +7,6 @@
 #include <mocks/util/commonparams.h>
 #include <vboot/util/commonparams.h>
 
-#define SETUP_VB_TRY_LOAD_KERNEL(_rv, _disk_flags) \
-	do { \
-		will_return_always(VbTryLoadKernel, (_rv)); \
-		expect_value_count(VbTryLoadKernel, disk_flags, \
-				   (_disk_flags), WILL_RETURN_ALWAYS); \
-	} while (0)
-
 /* Mock functions */
 
 /*
@@ -172,7 +165,7 @@ static void test_developer_ui_internal_timeout(void **state)
 	struct ui_context *ui = *state;
 	const uint32_t start_time = mock_time_ms;
 
-	SETUP_VB_TRY_LOAD_KERNEL(VB2_SUCCESS, VB_DISK_FLAG_FIXED);
+	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_BEEP(250, 400, start_time + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, start_time + DEV_DELAY_BEEP2_MS);
 	will_return_maybe(ui_keyboard_read, 0);
@@ -190,8 +183,7 @@ static void test_developer_ui_internal_fail_no_disk(void **state)
 {
 	struct ui_context *ui = *state;
 
-	SETUP_VB_TRY_LOAD_KERNEL(VB2_ERROR_LK_NO_DISK_FOUND,
-				 VB_DISK_FLAG_FIXED);
+	WILL_LOAD_INTERNAL_ALWAYS(VB2_ERROR_LK_NO_DISK_FOUND);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_NORMAL_MS);
@@ -209,7 +201,7 @@ static void test_developer_ui_select_internal_menu(void **state)
 {
 	struct ui_context *ui = *state;
 
-	SETUP_VB_TRY_LOAD_KERNEL(VB2_SUCCESS, VB_DISK_FLAG_FIXED);
+	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	will_return_maybe(ui_keyboard_read, 0);
@@ -225,7 +217,7 @@ static void test_developer_ui_select_internal_keyboard(void **state)
 {
 	struct ui_context *ui = *state;
 
-	SETUP_VB_TRY_LOAD_KERNEL(VB2_SUCCESS, VB_DISK_FLAG_FIXED);
+	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
 	WILL_PRESS_KEY(UI_KEY_DEV_BOOT_INTERNAL, 0);
 	will_return_maybe(ui_keyboard_read, 0);
@@ -243,7 +235,7 @@ static void test_developer_ui_select_internal_button(void **state)
 
 	struct ui_context *ui = *state;
 
-	SETUP_VB_TRY_LOAD_KERNEL(VB2_SUCCESS, VB_DISK_FLAG_FIXED);
+	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
 	WILL_PRESS_KEY(UI_BUTTON_VOL_DOWN_LONG_PRESS, 0);
 	will_return_maybe(ui_keyboard_read, 0);
@@ -276,7 +268,7 @@ static void test_developer_ui_external_timeout(void **state)
 	const uint32_t start_time = mock_time_ms;
 
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED;
-	SETUP_VB_TRY_LOAD_KERNEL(VB2_SUCCESS, VB_DISK_FLAG_REMOVABLE);
+	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
 	EXPECT_BEEP(250, 400, start_time + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, start_time + DEV_DELAY_BEEP2_MS);
@@ -299,8 +291,7 @@ static void test_developer_ui_external_fail_no_disk(void **state)
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_NORMAL_MS);
-	SETUP_VB_TRY_LOAD_KERNEL(VB2_ERROR_LK_NO_DISK_FOUND,
-				 VB_DISK_FLAG_REMOVABLE);
+	WILL_LOAD_EXTERNAL_ALWAYS(VB2_ERROR_LK_NO_DISK_FOUND);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_EXTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
@@ -314,7 +305,7 @@ static void test_developer_ui_select_external_keyboard(void **state)
 	struct ui_context *ui = *state;
 
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED;
-	SETUP_VB_TRY_LOAD_KERNEL(VB2_SUCCESS, VB_DISK_FLAG_REMOVABLE);
+	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
 	WILL_PRESS_KEY(UI_KEY_DEV_BOOT_EXTERNAL, 0);
 	will_return_maybe(ui_keyboard_read, 0);
@@ -331,8 +322,7 @@ static void test_developer_ui_select_external_menu(void **state)
 
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED;
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
-	SETUP_VB_TRY_LOAD_KERNEL(VB2_SUCCESS,
-				 VB_DISK_FLAG_REMOVABLE);
+	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_EXTERNAL);
@@ -351,7 +341,7 @@ static void test_developer_ui_select_external_button(void **state)
 
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED;
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
-	SETUP_VB_TRY_LOAD_KERNEL(VB2_SUCCESS, VB_DISK_FLAG_REMOVABLE);
+	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
 	WILL_PRESS_KEY(UI_BUTTON_VOL_UP_LONG_PRESS, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
@@ -464,7 +454,7 @@ static void test_developer_ui_short_delay(void **state)
 	const uint32_t start_time = mock_time_ms;
 
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
-	SETUP_VB_TRY_LOAD_KERNEL(VB2_SUCCESS, VB_DISK_FLAG_FIXED);
+	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_gbb_get_flags,
 			  VB2_GBB_FLAG_DEV_SCREEN_SHORT_DELAY);
@@ -515,7 +505,7 @@ static void test_developer_screen_default_select_item_internal(void **state)
 {
 	struct ui_context *ui = *state;
 
-	SETUP_VB_TRY_LOAD_KERNEL(VB2_SUCCESS, VB_DISK_FLAG_FIXED);
+	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 2);
@@ -532,7 +522,7 @@ static void test_developer_screen_default_select_item_external(void **state)
 	struct ui_context *ui = *state;
 
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED;
-	SETUP_VB_TRY_LOAD_KERNEL(VB2_SUCCESS, VB_DISK_FLAG_REMOVABLE);
+	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 3);
@@ -550,7 +540,7 @@ static void test_developer_screen_disabled_and_hidden_altfw(void **state)
 
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_ALTFW_ALLOWED;
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED;
-	SETUP_VB_TRY_LOAD_KERNEL(VB2_SUCCESS, VB_DISK_FLAG_FIXED);
+	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, MOCK_IGNORE,
@@ -569,7 +559,7 @@ static void test_developer_screen_disabled_and_hidden_force_dev(void **state)
 
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_ALTFW_ALLOWED;
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED;
-	SETUP_VB_TRY_LOAD_KERNEL(VB2_SUCCESS, VB_DISK_FLAG_FIXED);
+	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, MOCK_IGNORE,
@@ -589,7 +579,7 @@ static void test_developer_screen_disabled_and_hidden_only_altfw(void **state)
 
 	ui->ctx->flags &= ~VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED;
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_ALTFW_ALLOWED;
-	SETUP_VB_TRY_LOAD_KERNEL(VB2_SUCCESS, VB_DISK_FLAG_FIXED);
+	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, MOCK_IGNORE,
@@ -606,7 +596,7 @@ static void test_developer_screen(void **state)
 {
 	struct ui_context *ui = *state;
 
-	SETUP_VB_TRY_LOAD_KERNEL(VB2_SUCCESS, VB_DISK_FLAG_FIXED);
+	WILL_LOAD_INTERNAL_ALWAYS(VB2_SUCCESS);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
@@ -642,7 +632,7 @@ static void test_developer_screen_external_default(void **state)
 	struct ui_context *ui = *state;
 
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED;
-	SETUP_VB_TRY_LOAD_KERNEL(VB2_SUCCESS, VB_DISK_FLAG_REMOVABLE);
+	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_EXTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
@@ -794,17 +784,14 @@ static void test_developer_screen_invalid_external_disk(void **state)
 
 	/* Try to boot from an invalid external disk */
 	WILL_PRESS_KEY(UI_KEY_DEV_BOOT_EXTERNAL, 0);
-	will_return_count(VbTryLoadKernel, VB2_ERROR_LK_INVALID_KERNEL_FOUND,
-			  2);  /* The 1st for init(); the 2nd for action() */
-	expect_value_count(VbTryLoadKernel, disk_flags, VB_DISK_FLAG_REMOVABLE,
-			   2);
+	/* The 1st for init(); the 2nd for action() */
+	WILL_LOAD_EXTERNAL_COUNT(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 2);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_INVALID_DISK);
 	EXPECT_BEEP(250, 400);
 
 	/* Unplug the invalid external disk */
 	WILL_PRESS_KEY(0, 0);
-	SETUP_VB_TRY_LOAD_KERNEL(VB2_ERROR_LK_NO_DISK_FOUND,
-				 VB_DISK_FLAG_REMOVABLE);
+	WILL_LOAD_EXTERNAL_ALWAYS(VB2_ERROR_LK_NO_DISK_FOUND);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_BOOT_EXTERNAL);
 	EXPECT_BEEP(250, 400);
 

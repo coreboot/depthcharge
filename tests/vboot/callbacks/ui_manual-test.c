@@ -11,15 +11,6 @@
 #include <vboot/util/commonparams.h>
 #include <vboot/callbacks/ui.c>
 
-#define IGNORE_VB_TRY_LOAD_KERNEL() \
-	do { \
-		will_return_always(VbTryLoadKernel, \
-				   VB2_ERROR_LK_NO_DISK_FOUND); \
-		expect_value_count(VbTryLoadKernel, disk_flags, \
-				   VB_DISK_FLAG_REMOVABLE, \
-				   WILL_RETURN_ALWAYS); \
-	} while (0)
-
 /* Mock functions */
 uint32_t VbExIsShutdownRequested(void) { return mock_type(uint32_t); }
 
@@ -50,8 +41,7 @@ static void test_manual_action_success(void **state)
 {
 	struct ui_context *ui = *state;
 
-	will_return(VbTryLoadKernel, VB2_SUCCESS);
-	expect_value(VbTryLoadKernel, disk_flags, VB_DISK_FLAG_REMOVABLE);
+	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
 
 	assert_int_equal(ui_manual_recovery_action(ui), VB2_REQUEST_UI_EXIT);
 }
@@ -62,8 +52,7 @@ static void test_manual_action_no_disk_found(void **state)
 
 	setup_will_return_common();
 
-	will_return(VbTryLoadKernel, VB2_ERROR_LK_NO_DISK_FOUND);
-	expect_value(VbTryLoadKernel, disk_flags, VB_DISK_FLAG_REMOVABLE);
+	WILL_LOAD_EXTERNAL_ALWAYS(VB2_ERROR_LK_NO_DISK_FOUND);
 
 	assert_int_equal(ui_manual_recovery_action(ui),
 			 VB2_REQUEST_UI_CONTINUE);
@@ -75,8 +64,7 @@ static void test_manual_action_invalid_kernel(void **state)
 {
 	struct ui_context *ui = *state;
 
-	will_return(VbTryLoadKernel, VB2_ERROR_LK_INVALID_KERNEL_FOUND);
-	expect_value(VbTryLoadKernel, disk_flags, VB_DISK_FLAG_REMOVABLE);
+	WILL_LOAD_EXTERNAL_ALWAYS(VB2_ERROR_LK_INVALID_KERNEL_FOUND);
 	will_return_maybe(ui_keyboard_read, 0);
 
 	assert_int_equal(ui_manual_recovery_action(ui),
@@ -93,11 +81,9 @@ static void test_manual_ui_no_disk_found_invalid_kernel(void **state)
 
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(VbExIsShutdownRequested, 0);
-	will_return(VbTryLoadKernel, VB2_ERROR_LK_NO_DISK_FOUND);
-	will_return(VbTryLoadKernel, VB2_ERROR_LK_INVALID_KERNEL_FOUND);
-	will_return(VbTryLoadKernel, VB2_SUCCESS);
-	expect_value_count(VbTryLoadKernel, disk_flags, VB_DISK_FLAG_REMOVABLE,
-			   WILL_RETURN_ALWAYS);
+	WILL_LOAD_EXTERNAL(VB2_ERROR_LK_NO_DISK_FOUND);
+	WILL_LOAD_EXTERNAL(VB2_ERROR_LK_INVALID_KERNEL_FOUND);
+	WILL_LOAD_EXTERNAL(VB2_SUCCESS);
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
 
 	ASSERT_VB2_SUCCESS(vb2ex_manual_recovery_ui(ui->ctx));
@@ -112,11 +98,9 @@ static void test_manual_ui_invalid_kernel_no_disk_found(void **state)
 
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(VbExIsShutdownRequested, 0);
-	will_return(VbTryLoadKernel, VB2_ERROR_LK_INVALID_KERNEL_FOUND);
-	will_return(VbTryLoadKernel, VB2_ERROR_LK_NO_DISK_FOUND);
-	will_return(VbTryLoadKernel, VB2_SUCCESS);
-	expect_value_count(VbTryLoadKernel, disk_flags, VB_DISK_FLAG_REMOVABLE,
-			   WILL_RETURN_ALWAYS);
+	WILL_LOAD_EXTERNAL(VB2_ERROR_LK_INVALID_KERNEL_FOUND);
+	WILL_LOAD_EXTERNAL(VB2_ERROR_LK_NO_DISK_FOUND);
+	WILL_LOAD_EXTERNAL(VB2_SUCCESS);
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
 
 	ASSERT_VB2_SUCCESS(vb2ex_manual_recovery_ui(ui->ctx));
@@ -131,9 +115,7 @@ static void test_manual_ui_network_recovery_shortcut(void **state)
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_NETWORK_RECOVERY, 0);
 	will_return_maybe(VbExIsShutdownRequested, 0);
-	will_return_maybe(VbTryLoadKernel, VB2_ERROR_LK_NO_DISK_FOUND);
-	expect_value_count(VbTryLoadKernel, disk_flags, VB_DISK_FLAG_REMOVABLE,
-			   WILL_RETURN_ALWAYS);
+	WILL_LOAD_EXTERNAL_MAYBE(VB2_ERROR_LK_NO_DISK_FOUND);
 	will_return(VbTryLoadMiniOsKernel, VB2_SUCCESS);
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
 
@@ -148,7 +130,7 @@ static void test_manual_ui_timeout(void **state)
 	will_return_maybe(ui_keyboard_read, 0);
 	WILL_SHUTDOWN_IN(3);
 	EXPECT_DISPLAY_UI_ANY();
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_SHUTDOWN);
@@ -165,7 +147,7 @@ static void test_manual_ui_power_button_shutdown(void **state)
 	will_return_maybe(ui_keyboard_read, 0);
 	WILL_SHUTDOWN_IN(3);
 	EXPECT_DISPLAY_UI_ANY();
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_SHUTDOWN);
@@ -178,8 +160,7 @@ static void test_manual_ui_boot_with_valid_image(void **state)
 	setup_will_return_common();
 	will_return_maybe(VbExIsShutdownRequested, 0);
 	will_return_maybe(ui_keyboard_read, 0);
-	will_return(VbTryLoadKernel, VB2_SUCCESS);
-	expect_value(VbTryLoadKernel, disk_flags, VB_DISK_FLAG_REMOVABLE);
+	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_DISPLAY_UI_ANY();
 
 	ASSERT_VB2_SUCCESS(vb2ex_manual_recovery_ui(ui->ctx));
@@ -192,11 +173,8 @@ static void test_manual_ui_boot_with_valid_image_later(void **state)
 	setup_will_return_common();
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(VbExIsShutdownRequested, 0);
-	will_return(VbTryLoadKernel, VB2_ERROR_LK_NO_DISK_FOUND);
-	will_return(VbTryLoadKernel, VB2_ERROR_LK_NO_DISK_FOUND);
-	will_return(VbTryLoadKernel, VB2_SUCCESS);
-	expect_value_count(VbTryLoadKernel, disk_flags, VB_DISK_FLAG_REMOVABLE,
-			   WILL_RETURN_ALWAYS);
+	WILL_LOAD_EXTERNAL_COUNT(VB2_ERROR_LK_NO_DISK_FOUND, 2);
+	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_DISPLAY_UI_ANY();
 
 	ASSERT_VB2_SUCCESS(vb2ex_manual_recovery_ui(ui->ctx));
@@ -209,11 +187,9 @@ static void test_manual_ui_boot_invalid_remove_valid(void **state)
 	setup_will_return_common();
 	will_return_maybe(VbExIsShutdownRequested, 0);
 	will_return_maybe(ui_keyboard_read, 0);
-	will_return(VbTryLoadKernel, VB2_ERROR_MOCK);
-	will_return_count(VbTryLoadKernel, VB2_ERROR_LK_NO_DISK_FOUND, 2);
-	will_return(VbTryLoadKernel, VB2_SUCCESS);
-	expect_value_count(VbTryLoadKernel, disk_flags, VB_DISK_FLAG_REMOVABLE,
-			   WILL_RETURN_ALWAYS);
+	WILL_LOAD_EXTERNAL(VB2_ERROR_MOCK);
+	WILL_LOAD_EXTERNAL_COUNT(VB2_ERROR_LK_NO_DISK_FOUND, 2);
+	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_INVALID);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
@@ -238,7 +214,7 @@ static void test_manual_ui_keyboard_to_dev_and_cancel(void **state)
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_TO_DEV);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_SHUTDOWN);
@@ -260,7 +236,7 @@ static void test_manual_ui_keyboard_to_dev_and_cancel_ppkeyboard(void **state)
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_TO_DEV);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_SHUTDOWN);
@@ -281,7 +257,7 @@ static void test_manual_ui_cancel_to_dev(void **state)
 	will_return_maybe(vb2ex_physical_presence_pressed, 0);
 	will_return_maybe(ui_keyboard_read, 0);
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_SHUTDOWN);
@@ -303,7 +279,7 @@ static void test_manual_ui_cancel_to_dev_ppkeyboard(void **state)
 	will_return_maybe(vb2ex_physical_presence_pressed, 0);
 	will_return_maybe(ui_keyboard_read, 0);
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_SHUTDOWN);
@@ -329,7 +305,7 @@ static void test_manual_ui_confirm_to_dev(void **state)
 	will_return_maybe(vb2ex_physical_presence_pressed, 0);
 	expect_function_call(vb2api_enable_developer_mode);
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_REBOOT_EC_TO_RO);
@@ -352,7 +328,7 @@ static void test_manual_ui_confirm_to_dev_ppkeyboard(void **state)
 	will_return_maybe(vb2ex_physical_presence_pressed, 0);
 	expect_function_call(vb2api_enable_developer_mode);
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_REBOOT_EC_TO_RO);
@@ -374,7 +350,7 @@ static void test_manual_ui_confirm_by_untrusted_fails_ppkeyboard(void **state)
 	will_return_maybe(vb2ex_physical_presence_pressed, 0);
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
 	EXPECT_BEEP(250, 400, mock_time_ms + 3 * UI_KEY_DELAY_MS);
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_SHUTDOWN);
@@ -396,7 +372,7 @@ static void test_manual_ui_cannot_enable_dev_enabled(void **state)
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	EXPECT_BEEP(250, 400, mock_time_ms + 2 * UI_KEY_DELAY_MS);
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_SHUTDOWN);
@@ -420,7 +396,7 @@ static void test_manual_ui_cannot_enable_dev_enabled_ppkeyboard(void **state)
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	EXPECT_BEEP(250, 400, mock_time_ms + 2 * UI_KEY_DELAY_MS);
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_SHUTDOWN);
@@ -441,7 +417,7 @@ static void test_manual_ui_pp_button_stuck(void **state)
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2ex_physical_presence_pressed, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_SHUTDOWN);
@@ -468,7 +444,7 @@ static void test_manual_ui_pp_button_stuck_press(void **state)
 	expect_function_call(vb2api_enable_developer_mode);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_TO_DEV);
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_REBOOT_EC_TO_RO);
@@ -506,7 +482,7 @@ static void test_manual_ui_pp_button_cancel_enter_again(void **state)
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_TO_DEV);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_TO_DEV);
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_REBOOT_EC_TO_RO);
@@ -526,7 +502,7 @@ static void test_manual_ui_enter_diagnostics(void **state)
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
 	expect_function_call(vb2api_request_diagnostics);
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx), VB2_REQUEST_REBOOT);
 }
@@ -540,7 +516,7 @@ static void test_recovery_select_screen_disabled_and_hidden_mask(void **state)
 	will_return_maybe(ui_keyboard_read, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, MOCK_IGNORE,
 			  0x0, 0x0);
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_SHUTDOWN);
@@ -592,7 +568,7 @@ static void test_recovery_select_screen(void **state)
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 5);
 
 	will_return_maybe(ui_keyboard_read, 0);
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_SHUTDOWN);
@@ -618,7 +594,7 @@ static void test_advanced_options_screen_disabled_and_hidden_mask(void **state)
 			  0x0, 0x0);
 
 	will_return_maybe(ui_keyboard_read, 0);
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_SHUTDOWN);
@@ -684,7 +660,7 @@ static void test_advanced_options_screen(void **state)
 	expect_any_always(vb2ex_prepare_log_screen, str);
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2ex_physical_presence_pressed, 0);
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_SHUTDOWN);
@@ -702,7 +678,7 @@ static void test_language_ui_change_language(void **state)
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* select locale 24 */
 	will_return_maybe(ui_keyboard_read, 0);
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, 23);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, 23, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_LANGUAGE_SELECT, 23, 23);
@@ -727,7 +703,7 @@ static void test_language_ui_locale_count_0(void **state)
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* select language */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* select locale 0 */
 	will_return_maybe(ui_keyboard_read, 0);
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, 23);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT, 23, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_LANGUAGE_SELECT, 23, 0);
@@ -754,7 +730,7 @@ static void test_debug_info(void **state)
 	expect_any_always(vb2ex_prepare_log_screen, str);
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO);
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_SHUTDOWN);
@@ -775,7 +751,7 @@ static void test_debug_info_enter_failed(void **state)
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	EXPECT_BEEP(250, 400, mock_time_ms + 2 * UI_KEY_DELAY_MS);
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_SHUTDOWN);
@@ -797,7 +773,7 @@ static void test_debug_info_one_page(void **state)
 	/* 0x6 = 0b110 */
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO, MOCK_IGNORE, 3, 0x6, 0x0, 0);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 	expect_any_always(vb2ex_prepare_log_screen, str);
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
@@ -836,7 +812,7 @@ static void test_debug_info_three_pages(void **state)
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DEBUG_INFO, MOCK_IGNORE, 3, 0x0, 0x0, 1);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_RECOVERY_SELECT);
 	expect_any_always(vb2ex_prepare_log_screen, str);
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_SHUTDOWN);
@@ -861,7 +837,7 @@ static void test_firmware_log(void **state)
 	will_return_maybe(ui_keyboard_read, 0);
 	expect_string(vb2ex_prepare_log_screen, str, "1");
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_SHUTDOWN);
@@ -889,7 +865,7 @@ static void test_firmware_log_again_reacquire_new_one(void **state)
 	expect_string(vb2ex_prepare_log_screen, str, "1");
 	expect_string(vb2ex_prepare_log_screen, str, "2");
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_SHUTDOWN);
@@ -919,7 +895,7 @@ static void test_firmware_log_back_not_reacquire_new_one(void **state)
 	expect_any(vb2ex_prepare_log_screen, str);
 	expect_string(vb2ex_prepare_log_screen, str, "1");
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
-	IGNORE_VB_TRY_LOAD_KERNEL();
+	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
 			 VB2_REQUEST_SHUTDOWN);
