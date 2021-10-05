@@ -26,6 +26,8 @@ endif
 
 ifneq ($(CONFIG_TPM2_MODE),)
 CFLAGS += -DTPM2_MODE
+else
+CFLAGS += -DTPM1_MODE
 endif
 
 # Where "main" lives.
