@@ -14,11 +14,15 @@
  */
 
 
-#ifndef __DRIVERS_BUS_SPI_QSPI_SC7180_H__
-#define __DRIVERS_BUS_SPI_QSPI_SC7180_H__
+#ifndef __DRIVERS_BUS_SPI_QCOM_QSPI_H__
+#define __DRIVERS_BUS_SPI_QCOM_QSPI_H__
 
 #include <stdbool.h>
 #include "drivers/bus/spi/spi.h"
+
+#if CONFIG(DRIVER_BUS_QSPI_SC7180)
+#define QSPI_CS_GPIO GPIO(68)
+#endif
 
 typedef struct {
 	u32 mstr_cfg;
@@ -40,7 +44,7 @@ typedef struct {
 	u32 current_mem_addr;
 	u32 hw_version;
 	u32 rd_fifo[16];
-} Sc7180QspiRegs;
+} QcomQspiRegs;
 
 typedef struct {
 	uint32_t data_address;
@@ -55,15 +59,15 @@ typedef struct {
 	uint32_t bounce_dst;
 	uint32_t bounce_length;
 	uint64_t padding[5];
-} Sc7180QspiDescriptor;
+} QcomQspiDescriptor;
 
 typedef struct {
 	SpiOps ops;
-	Sc7180QspiRegs *qspi_base;
-	Sc7180QspiDescriptor *first_descriptor;
-	Sc7180QspiDescriptor *last_descriptor;
-} Sc7180Qspi;
+	QcomQspiRegs *qspi_base;
+	QcomQspiDescriptor *first_descriptor;
+	QcomQspiDescriptor *last_descriptor;
+} QcomQspi;
 
-Sc7180Qspi *new_sc7180_qspi(uintptr_t base);
+QcomQspi *new_qcom_qspi(uintptr_t base);
 
-#endif  /* __DRIVERS_BUS_SPI_QSPI_SC7180_H__ */
+#endif  /* __DRIVERS_BUS_SPI_QCOM_QSPI_H__ */

@@ -17,7 +17,7 @@
 #include <arch/cache.h>
 #include <libpayload.h>
 #include "base/container_of.h"
-#include "drivers/bus/spi/qspi_sc7180.h"
+#include "drivers/bus/spi/qcom_qspi.h"
 #include "drivers/gpio/qcom_gpio.h"
 #include <assert.h>
 
@@ -45,9 +45,9 @@ enum {
 	MASTER_WRITE = 1,
 };
 
-static Sc7180QspiDescriptor *allocate_descriptor(Sc7180Qspi *qspi_bus)
+static QcomQspiDescriptor *allocate_descriptor(QcomQspi *qspi_bus)
 {
-	Sc7180QspiDescriptor *next;
+	QcomQspiDescriptor *next;
 
 	next = dma_malloc(sizeof(*next));
 	next->data_address = 0;
@@ -78,26 +78,26 @@ static Sc7180QspiDescriptor *allocate_descriptor(Sc7180Qspi *qspi_bus)
 	return next;
 }
 
-static void dma_transfer_chain(Sc7180Qspi *qspi_bus,
-				Sc7180QspiDescriptor *chain)
+static void dma_transfer_chain(QcomQspi *qspi_bus,
+				QcomQspiDescriptor *chain)
 {
-	Sc7180QspiRegs *sc7180_qspi = qspi_bus->qspi_base;
+	QcomQspiRegs *qcom_qspi = qspi_bus->qspi_base;
 	uint32_t mstr_int_status;
 
-	write32(&sc7180_qspi->mstr_int_sts, 0xFFFFFFFF);
-	write32(&sc7180_qspi->next_dma_desc_addr, (uint32_t)(uintptr_t)chain);
+	write32(&qcom_qspi->mstr_int_sts, 0xFFFFFFFF);
+	write32(&qcom_qspi->next_dma_desc_addr, (uint32_t)(uintptr_t)chain);
 
 	while (1) {
-		mstr_int_status = read32(&sc7180_qspi->mstr_int_sts);
+		mstr_int_status = read32(&qcom_qspi->mstr_int_sts);
 		if (mstr_int_status & DMA_CHAIN_DONE)
 			break;
 	}
 }
 
-static void queue_direct_data(Sc7180Qspi *qspi_bus, uint8_t *data,
+static void queue_direct_data(QcomQspi *qspi_bus, uint8_t *data,
 			uint32_t data_bytes, QspiMode data_mode, bool write)
 {
-	Sc7180QspiDescriptor *desc;
+	QcomQspiDescriptor *desc;
 
 	desc = allocate_descriptor(qspi_bus);
 	desc->direction = write;
@@ -111,10 +111,10 @@ static void queue_direct_data(Sc7180Qspi *qspi_bus, uint8_t *data,
 		dcache_invalidate_by_mva(data, data_bytes);
 }
 
-static void queue_bounce_data(Sc7180Qspi *qspi_bus, uint8_t *data,
+static void queue_bounce_data(QcomQspi *qspi_bus, uint8_t *data,
 			uint32_t data_bytes, QspiMode data_mode, bool write)
 {
-	Sc7180QspiDescriptor *desc;
+	QcomQspiDescriptor *desc;
 	uint8_t *ptr;
 
 	desc = allocate_descriptor(qspi_bus);
@@ -139,11 +139,11 @@ static void queue_bounce_data(Sc7180Qspi *qspi_bus, uint8_t *data,
 	desc->length = data_bytes;
 }
 
-static void flush_chain(Sc7180Qspi *qspi_bus)
+static void flush_chain(QcomQspi *qspi_bus)
 {
-	Sc7180QspiDescriptor *desc = qspi_bus->first_descriptor;
+	QcomQspiDescriptor *desc = qspi_bus->first_descriptor;
 	uint8_t *data_addr = (void *)(uintptr_t)desc->data_address;
-	Sc7180QspiDescriptor *curr_desc;
+	QcomQspiDescriptor *curr_desc;
 	uint8_t *src;
 	uint8_t *dst;
 
@@ -171,7 +171,7 @@ static void flush_chain(Sc7180Qspi *qspi_bus)
 	qspi_bus->first_descriptor = qspi_bus->last_descriptor = NULL;
 }
 
-static void queue_data(Sc7180Qspi *qspi_bus, uint8_t *data, uint32_t data_bytes,
+static void queue_data(QcomQspi *qspi_bus, uint8_t *data, uint32_t data_bytes,
 	QspiMode data_mode, bool write)
 {
 	uint8_t *aligned_ptr;
@@ -205,7 +205,7 @@ static void chip_assert(int value)
 	static GpioCfg *gpio_cfg = NULL;
 
 	if (!gpio_cfg)
-		gpio_cfg = new_gpio_output(GPIO(68));
+		gpio_cfg = new_gpio_output(QSPI_CS_GPIO);
 
 	gpio_cfg->ops.set(&gpio_cfg->ops, value);
 }
@@ -226,7 +226,7 @@ int spi_xfer(SpiOps *me, void *in, const void *out, uint32_t size)
 {
 	QspiMode mode = SDR_1BIT;
 	uint8_t *data = (uint8_t *)(out ? out : in);
-	Sc7180Qspi *qspi_bus = container_of(me, Sc7180Qspi, ops);
+	QcomQspi *qspi_bus = container_of(me, QcomQspi, ops);
 
 	/* Full duplex transfer is not supported */
 	if (in && out)
@@ -246,13 +246,13 @@ int spi_xfer(SpiOps *me, void *in, const void *out, uint32_t size)
 	return 0;
 }
 
-Sc7180Qspi *new_sc7180_qspi(uintptr_t base)
+QcomQspi *new_qcom_qspi(uintptr_t base)
 {
-	Sc7180Qspi *qspi_bus = xzalloc(sizeof(*qspi_bus));
+	QcomQspi *qspi_bus = xzalloc(sizeof(*qspi_bus));
 
 	qspi_bus->ops.start = &spi_start;
 	qspi_bus->ops.stop  = &spi_stop;
 	qspi_bus->ops.transfer = &spi_xfer;
-	qspi_bus->qspi_base = (Sc7180QspiRegs *)base;
+	qspi_bus->qspi_base = (QcomQspiRegs *)base;
 	return qspi_bus;
 }

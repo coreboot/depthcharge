@@ -20,11 +20,11 @@
 #include "drivers/gpio/gpio.h"
 #include "vboot/util/flag.h"
 #include "boot/fit.h"
+#include "drivers/bus/spi/qcom_qspi.h"
 #include "drivers/bus/spi/qcom_qupv3_spi.h"
 #include "drivers/ec/cros/spi.h"
 #include "drivers/power/psci.h"
 #include "drivers/flash/spi.h"
-#include "drivers/bus/spi/qspi_sc7180.h"
 #include "drivers/storage/sdhci_msm.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/gpio/qcom_gpio.h"
@@ -204,7 +204,7 @@ static int board_setup(void)
 	}
 
 	/* SPI-NOR Flash driver */
-	Sc7180Qspi *spi_flash = new_sc7180_qspi(0x088DC000);
+	QcomQspi *spi_flash = new_qcom_qspi(0x088DC000);
 	SpiFlash *flash = new_spi_flash(&spi_flash->ops);
 	flash_set_ops(&flash->ops);
 
