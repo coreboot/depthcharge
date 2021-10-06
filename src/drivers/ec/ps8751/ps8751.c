@@ -1842,6 +1842,11 @@ static int ps8751_halt_and_flash(Ps8751 *me,
 	return status;
 }
 
+/*
+ * update_image() is always called after check_hash(), so this function
+ * assumes that pd_suspend() has already been performed.
+ */
+
 static vb2_error_t ps8751_update_image(const VbootAuxfwOps *vbaux,
 				       const uint8_t *image, size_t image_size)
 {
@@ -1858,16 +1863,20 @@ static vb2_error_t ps8751_update_image(const VbootAuxfwOps *vbaux,
 	/* If the I2C tunnel is not known, probe EC for that */
 	if (!me->bus && ps8751_construct_i2c_tunnel(me)) {
 		printf("%s: Error constructing i2c tunnel\n", me->chip_name);
-		return VB2_ERROR_UNKNOWN;
+		goto pd_resume;
 	}
 
 	if (ps8751_ec_tunnel_status(vbaux, &protected) != 0)
-		return VB2_ERROR_UNKNOWN;
-	if (protected)
+		goto pd_resume;
+	if (protected) {
+		/* force reboot to RO, no need for pd_resume */
 		return VB2_REQUEST_REBOOT_EC_TO_RO;
+	}
 
-	if (image == NULL || image_size == 0)
-		return VB2_ERROR_INVALID_PARAMETER;
+	if (image == NULL || image_size == 0) {
+		status = VB2_ERROR_INVALID_PARAMETER;
+		goto pd_resume;
+	}
 
 	if (ps8751_wake_i2c(me) != 0)
 		goto pd_resume;
