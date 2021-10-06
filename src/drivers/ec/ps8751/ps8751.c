@@ -21,122 +21,7 @@
 
 #include "base/container_of.h"
 #include "base/init_funcs.h"
-#include "drivers/ec/ps8751/ps8751.h"
-
-#define PS8751_DEBUG	0
-
-#if (PS8751_DEBUG > 0)
-#define debug(msg, args...)	printf("%s: " msg, __func__, ##args)
-#else
-#define debug(msg, args...)
-#endif
-
-#ifndef __must_check
-#define __must_check	__attribute__((warn_unused_result))
-#endif
-
-#define PAGE_0		(0x10 >> 1)
-#define PAGE_1		(0x12 >> 1)
-#define PAGE_2		(0x14 >> 1)
-#define PAGE_3		(0x16 >> 1)	/* primary TCPCI registers */
-#define PAGE_7		(0x1e >> 1)	/* mapped flash page */
-
-#define P0_REG_SM		0x06
-#define P0_REG_REV		0x62
-#define P0_REG_REV_MASK		0xf0
-#define P0_REG_REV_SHIFT	4
-#define P0_ROM_CTRL		0xef
-#define P0_ROM_CTRL_LOAD_DONE	0xc0	/* MTP load done */
-
-#define P1_CHIP_REV_LO		0xf0	/* the 0x03 in "A3" */
-#define P1_CHIP_REV_HI		0xf1	/* the 0x0a in "A3" */
-#define P1_CHIP_ID_LO		0xf2	/* 0x51, etc. */
-#define P1_CHIP_ID_HI		0xf3	/* 0x87, 0x88 */
-
-#define PS8751_P1_SPI_WP	0x4b
-/* NOTE: on 8751 A3 silicon, P1_SPI_WP_EN reads back inverted! */
-#define PS8751_P1_SPI_WP_EN	0x10	/* WP enable bit */
-#define PS8751_P1_SPI_WP_DIS	0x00	/* WP disable "bit" */
-
-#define PS8805_P0_REG_REV_CHIP_REVISION_A2	0x0
-#define PS8805_P0_REG_REV_CHIP_REVISION_A3	0xA
-
-#define PS8805_P2_SPI_WP	0x2a
-#define PS8805_P2_SPI_WP_EN	0x10	/* WP enable bit */
-#define PS8805_P2_SPI_WP_DIS	0x00	/* WP disable "bit" */
-
-#define PS8815_P2_SPI_WP	0x2a
-#define PS8815_P2_SPI_WP_EN	0x00	/* WP enable "bit" */
-#define PS8815_P2_SPI_WP_DIS	0x10	/* WP disable bit */
-
-#define P2_ALERT_LOW		0x10
-#define P2_ALERT_HIGH		0x11
-#define P2_FLASH_A8_A15		0x8e	/* SPI flash addr[8:15] */
-#define P2_FLASH_A16_A23	0x8f	/* SPI flash addr[16:23] */
-#define P2_WR_FIFO		0x90
-#define P2_RD_FIFO		0x91
-#define P2_SPI_LEN		0x92
-#define P2_SPI_CTRL		0x93
-#define P2_SPI_CTRL_NOREAD	0x04
-#define P2_SPI_CTRL_FIFO_RESET	0x02
-#define P2_SPI_CTRL_TRIGGER	0x01
-#define P2_SPI_STATUS		0x9e
-#define P2_MUX_HPD		0xd0
-#define P2_CLK_CTRL		0xd6
-
-#define P2_PROG_WIN_UNLOCK	0xda
-#define P2_PROG_WIN_UNLOCK_LOCK	0x00
-#define P2_PROG_WIN_UNLOCK_ACK	0x01
-
-#define P3_VENDOR_ID_LOW	0x00
-#define P3_CHIP_WAKEUP		0xa0
-
-#define PS8751_P0_REG_SM_CHIP_REVISION_A3	0x80
-
-#define PS8751_P3_I2C_DEBUG		0xa0
-#define PS8751_P3_I2C_DEBUG_DEFAULT	0x31
-#define PS8751_P3_I2C_DEBUG_ENABLE	0x30
-#define PS8751_P3_I2C_DEBUG_DISABLE	PS8751_P3_I2C_DEBUG_DEFAULT
-
-#define PS8815_P3_I2C_DEBUG		0x9b
-#define PS8815_P3_I2C_DEBUG_DEFAULT	0x00
-#define PS8815_P3_I2C_DEBUG_ENABLE	0x01
-#define PS8815_P3_I2C_DEBUG_DISABLE	0x02
-
-/*
- * bytes of SPI FIFO depth after command overhead
- */
-
-#define PS_FW_RD_CHUNK		16
-#define PS_FW_WR_CHUNK		12
-
-#define PS_FW_I2C_WINDOW_SIZE	256
-/* stay under I2C tunnel message size limit */
-#define PS_FW_I2C_IO_CHUNK	240
-
-#define SPI_CMD_WRITE_STATUS_REG	0x01
-#define SPI_CMD_PROG_PAGE		0x02
-#define SPI_CMD_READ_DATA		0x03
-#define SPI_CMD_WRITE_DISABLE		0x04
-#define SPI_CMD_READ_STATUS_REG		0x05
-#define SPI_CMD_WRITE_ENABLE		0x06
-
-/*
- * EN25F20:
- *	  64 x   4KB erase sectors
- *	   4 x  64KB erase blocks
- *	1024 x 256B  write pages
- */
-
-#define SPI_CMD_ERASE_SECTOR	0x20		/* sector erase, 4KB */
-#define SPI_CMD_READ_DEVICE_ID	0x90
-#define SPI_PAGE_SIZE		(1 << 8)	/* 256B, always 2^n */
-#define SPI_PAGE_MASK		(SPI_PAGE_SIZE - 1)
-
-#define SPI_STATUS_WIP		0x01
-#define SPI_STATUS_WEL		0x02
-#define SPI_STATUS_BP		0x0c
-#define SPI_STATUS_SRP		0x80
+#include "drivers/ec/ps8751/ps8751_priv.h"
 
 /*
  * period of issuing reads on the primary I2C page to keep the chip awake
@@ -145,10 +30,6 @@
  * chip goes to sleep when I2C is idle for 2 secs
  */
 
-#define USEC_TO_SEC(us)		((us) / 1000000)
-#define USEC_TO_MSEC(us)	((us) / 1000)
-#define PS_SPI_TIMEOUT_US	(1 * 1000 * 1000)	/* 1s */
-#define PS_WIP_TIMEOUT_US	(1 * 1000 * 1000)	/* 1s */
 #define PS_MPU_BOOT_DELAY_MS	(50)
 #define PS_RESTART_DELAY_CS	(6)			/* 6cs / 60 ms */
 
@@ -330,118 +211,39 @@ static int __must_check ps8751_check_fw_type(
 	return -1;
 }
 
-/**
- * write a single byte to a register of an i2c page
- *
- * @param me	device context
- * @param page	i2c device address
- * @param reg	i2c register on target device
- * @param data	byte to write to register
- * @return 0 if ok, -1 on error
- */
-
-static int __must_check write_reg(Ps8751 *me,
+int __must_check ps8751_write_reg(Ps8751 *me,
 				  uint8_t page, uint8_t reg, uint8_t data)
 {
 	return i2c_writeb(&me->bus->ops, page, reg, data);
 }
 
-/**
- * issue a series of i2c writes
- *
- * @param me	device context
- * @param page	i2c device address
- * @param cmds	vector of i2c reg write commands
- * @param count	number of elements in ops vector
- * @return 0 if ok, -1 on error
- */
-
-static int __must_check write_regs(Ps8751 *me, uint8_t page,
+int __must_check ps8751_write_regs(Ps8751 *me, uint8_t page,
 				   const I2cWriteVec *cmds, const size_t count)
 {
 	return i2c_write_regs(&me->bus->ops, page, cmds, count);
 }
 
-/**
- * read a single byte from a register of a SPI target
- *
- * @param me	device context
- * @param page	i2c device address
- * @param reg	i2c register on target device
- * @param data	pointer to return byte
- * @return 0 if ok, -1 on error
- */
-
-static int __must_check read_reg(Ps8751 *me,
+int __must_check ps8751_read_reg(Ps8751 *me,
 				 uint8_t page, uint8_t reg, uint8_t *data)
 {
 	return i2c_readb(&me->bus->ops, page, reg, data);
 }
 
-/**
- * read a block of contiguous bytes from a SPI target
- *
- * @param me	device context
- * @param page	i2c device address
- * @param reg	starting i2c register on target device
- * @param data	pointer to return data buffer
- * @param count	number of bytes to read
- * @return 0 if ok, -1 on error
- */
-
-static int __must_check read_block(Ps8751 *me,
-				   uint8_t page, uint8_t reg,
-				   uint8_t *data, size_t count)
-{
-	return i2c_readblock(&me->bus->ops, page, reg, data, count);
-}
-
-static int __must_check write_block(Ps8751 *me,
-				    uint8_t page, uint8_t reg,
-				    const uint8_t *data, size_t count)
-{
-	return i2c_writeblock(&me->bus->ops, page, reg, data, count);
-}
-
-/**
- * issue a series of i2c reads
- *
- * @param me	device context
- * @param regs	vector of i2c regs to read read
- * @param count	number of elements in regs array
- * @param data	pointer to read bytes
- * @return 0 if ok, -1 on error
- */
-
-static int __must_check read_regs(Ps8751 *me,
-				  uint8_t chip,
-				  const uint8_t *regs,
-				  const size_t count,
-				  uint8_t *data)
+int __must_check ps8751_read_regs(Ps8751 *me,
+				  uint8_t chip, const uint8_t *regs,
+				  const size_t count, uint8_t *data)
 {
 	return i2c_read_regs(&me->bus->ops, chip, regs, count, data);
 }
 
-/**
- * wait for SPI interface FIFOs to become ready
- * this means the requested command bytes have been written and
- * result bytes have been captured
- *
- * SPI bus timeout can happen if the SPI CLK isn't
- * running as expected.
- *
- * @param me	device context
- * @return 0 if ok, -1 on error
- */
-
-static int __must_check ps8751_spi_fifo_wait_busy(Ps8751 *me)
+int __must_check ps8751_spi_fifo_wait_busy(Ps8751 *me)
 {
 	uint8_t status;
 	uint64_t t0_us;
 
 	t0_us = timer_us(0);
 	do {
-		if (read_reg(me, PAGE_2, P2_SPI_CTRL, &status) != 0)
+		if (ps8751_read_reg(me, PAGE_2, P2_SPI_CTRL, &status) != 0)
 			return -1;
 		if (timer_us(t0_us) >= PS_SPI_TIMEOUT_US) {
 			printf("%s: SPI bus timeout after %ums\n",
@@ -461,7 +263,8 @@ static int __must_check ps8751_spi_fifo_wait_busy(Ps8751 *me)
 
 static int __must_check ps8751_spi_fifo_reset(Ps8751 *me)
 {
-	if (write_reg(me, PAGE_2, P2_SPI_CTRL, P2_SPI_CTRL_FIFO_RESET) != 0)
+	if (ps8751_write_reg(me, PAGE_2,
+			     P2_SPI_CTRL, P2_SPI_CTRL_FIFO_RESET) != 0)
 		return -1;
 	return 0;
 }
@@ -500,7 +303,7 @@ static int __must_check ps8751_wake_i2c(Ps8751 *me)
 		return -1;
 	}
 
-	status = read_reg(me, PAGE_3, P3_CHIP_WAKEUP, &dummy);
+	status = ps8751_read_reg(me, PAGE_3, P3_CHIP_WAKEUP, &dummy);
 	if (status != 0) {
 		/* wait for device to wake up... */
 		mdelay(10);
@@ -510,7 +313,7 @@ static int __must_check ps8751_wake_i2c(Ps8751 *me)
 	 * this enables 7 additional i2c chip addrs:
 	 * 0x10, 0x12, 0x14, 0x18, 0x1a, 0x1c, 0x1f
 	 */
-	status = write_reg(me, PAGE_3, debug_reg, debug_ena);
+	status = ps8751_write_reg(me, PAGE_3, debug_reg, debug_ena);
 	if (status == 0)
 		status = ps8751_spi_fifo_reset(me);
 	if (status != 0)
@@ -550,12 +353,12 @@ static int __must_check ps8751_hide_i2c(Ps8751 *me)
 	}
 
 	/* make sure chip is awake (is this needed?) */
-	status = read_reg(me, PAGE_3, P3_CHIP_WAKEUP, &dummy);
+	status = ps8751_read_reg(me, PAGE_3, P3_CHIP_WAKEUP, &dummy);
 	if (status != 0) {
 		/* wait for device to wake up... */
 		mdelay(10);
 	}
-	status = write_reg(me, PAGE_3, debug_reg, debug_dis);
+	status = ps8751_write_reg(me, PAGE_3, debug_reg, debug_dis);
 	return status;
 }
 
@@ -575,7 +378,7 @@ static int __must_check ps8751_clear_alerts(Ps8751 *me)
 		{ P2_ALERT_HIGH, 0xff },
 	};
 	/* yes, page 0 */
-	return write_regs(me, PAGE_0, am, ARRAY_SIZE(am));
+	return ps8751_write_regs(me, PAGE_0, am, ARRAY_SIZE(am));
 }
 
 /*
@@ -594,7 +397,8 @@ static int __must_check ps8751_rom_ctrl(Ps8751 *me)
 	}
 
 	/* mark MTP load done */
-	if (write_reg(me, PAGE_0, P0_ROM_CTRL, P0_ROM_CTRL_LOAD_DONE) != 0)
+	if (ps8751_write_reg(me, PAGE_0,
+			     P0_ROM_CTRL, P0_ROM_CTRL_LOAD_DONE) != 0)
 		return -1;
 	return 0;
 }
@@ -612,10 +416,10 @@ static int __must_check ps8751_rom_ctrl(Ps8751 *me)
 static int __must_check ps8751_disable_mpu(Ps8751 *me)
 {
 	/* turn off SPI|MPU clocks */
-	if (write_reg(me, PAGE_2, P2_CLK_CTRL, 0xc0) != 0)
+	if (ps8751_write_reg(me, PAGE_2, P2_CLK_CTRL, 0xc0) != 0)
 		return -1;
 	/* SPI clock on, MPU clock stays off */
-	if (write_reg(me, PAGE_2, P2_CLK_CTRL, 0x40) != 0)
+	if (ps8751_write_reg(me, PAGE_2, P2_CLK_CTRL, 0x40) != 0)
 		return -1;
 	/* clear residual alerts */
 	if (ps8751_clear_alerts(me) != 0)
@@ -640,7 +444,7 @@ static int __must_check ps8751_disable_mpu(Ps8751 *me)
 static int __must_check ps8751_enable_mpu(Ps8751 *me)
 {
 	/* SPI|MPU clk on */
-	if (write_reg(me, PAGE_2, P2_CLK_CTRL, 0x00) != 0)
+	if (ps8751_write_reg(me, PAGE_2, P2_CLK_CTRL, 0x00) != 0)
 		return -1;
 	mdelay(PS_MPU_BOOT_DELAY_MS);
 	if (ps8751_wake_i2c(me) != 0)
@@ -648,17 +452,7 @@ static int __must_check ps8751_enable_mpu(Ps8751 *me)
 	return 0;
 }
 
-/**
- * send a SPI write-enable cmd
- *
- * WRITE_ENABLE must be issued before every
- * PROGRAM, ERASE, WRITE_STATUS_REGISTER command
- *
- * @param me	device context
- * @return 0 if ok, -1 on error
- */
-
-static int __must_check ps8751_spi_cmd_enable_writes(Ps8751 *me)
+int __must_check ps8751_spi_cmd_enable_writes(Ps8751 *me)
 {
 	static const I2cWriteVec we[] = {
 		{ P2_WR_FIFO, SPI_CMD_WRITE_ENABLE },
@@ -666,7 +460,7 @@ static int __must_check ps8751_spi_cmd_enable_writes(Ps8751 *me)
 		{ P2_SPI_CTRL, P2_SPI_CTRL_NOREAD|P2_SPI_CTRL_TRIGGER },
 	};
 
-	if (write_regs(me, PAGE_2, we, ARRAY_SIZE(we)) != 0)
+	if (ps8751_write_regs(me, PAGE_2, we, ARRAY_SIZE(we)) != 0)
 		return -1;
 	if (ps8751_spi_fifo_wait_busy(me) != 0)
 		return -1;
@@ -684,7 +478,7 @@ static int __must_check ps8751_spi_wait_prog_cmd(Ps8751 *me)
 
 	t0_us = timer_us(0);
 	do {
-		if (read_reg(me, PAGE_2, P2_SPI_STATUS, &busy) != 0)
+		if (ps8751_read_reg(me, PAGE_2, P2_SPI_STATUS, &busy) != 0)
 			return -1;
 		if ((busy & 0x3f) == 0x00) {
 			/* {chip,sector} erase, program cmd finished */
@@ -711,11 +505,11 @@ static int __must_check ps8751_spi_cmd_read_status(Ps8751 *me, uint8_t *status)
 		{ P2_SPI_CTRL, P2_SPI_CTRL_TRIGGER },
 	};
 
-	if (write_regs(me, PAGE_2, rs, ARRAY_SIZE(rs)) != 0)
+	if (ps8751_write_regs(me, PAGE_2, rs, ARRAY_SIZE(rs)) != 0)
 		return -1;
 	if (ps8751_spi_fifo_wait_busy(me) != 0)
 		return -1;
-	if (read_reg(me, PAGE_2, P2_RD_FIFO, status) != 0)
+	if (ps8751_read_reg(me, PAGE_2, P2_RD_FIFO, status) != 0)
 		return -1;
 	return 0;
 }
@@ -765,7 +559,7 @@ static int __must_check ps8751_spi_cmd_write_status(Ps8751 *me, uint8_t val)
 		{ P2_SPI_CTRL, P2_SPI_CTRL_NOREAD|P2_SPI_CTRL_TRIGGER },
 	};
 
-	if (write_regs(me, PAGE_2, ws, ARRAY_SIZE(ws)) != 0)
+	if (ps8751_write_regs(me, PAGE_2, ws, ARRAY_SIZE(ws)) != 0)
 		return -1;
 	if (ps8751_spi_fifo_wait_busy(me) != 0)
 		return -1;
@@ -816,7 +610,7 @@ static int __must_check ps8751_spi_flash_lock(Ps8751 *me)
 		return -1;
 	}
 	/* assert SPI flash WP# */
-	if (write_reg(me, page, wp_reg, wp_en) != 0)
+	if (ps8751_write_reg(me, page, wp_reg, wp_en) != 0)
 		status = -1;
 
 	return status;
@@ -864,7 +658,7 @@ static int __must_check ps8751_spi_flash_unlock(Ps8751 *me)
 		return -1;
 	}
 	/* deassert SPI flash WP# */
-	if (write_reg(me, page, wp_reg, wp_dis) != 0)
+	if (ps8751_write_reg(me, page, wp_reg, wp_dis) != 0)
 		return -1;
 
 	/* clear the SRP, BP bits */
@@ -882,6 +676,13 @@ static int __must_check ps8751_spi_flash_unlock(Ps8751 *me)
 	return 0;
 }
 
+/**
+ * Enable the I2C PAGE_7 window to internal flash. This is a quirk of
+ * the ps8751.
+ *
+ * @param me	device context
+ */
+
 static int __must_check ps8751_flash_window_enable(Ps8751 *me)
 {
 	switch (me->chip_type) {
@@ -892,7 +693,7 @@ static int __must_check ps8751_flash_window_enable(Ps8751 *me)
 		 * needs to be cleared to use page 7 to access on-board
 		 * flash. parade recommends clearing the register.
 		 */
-		if (write_reg(me, PAGE_2, P2_MUX_HPD, 0x00) != 0)
+		if (ps8751_write_reg(me, PAGE_2, P2_MUX_HPD, 0x00) != 0)
 			return -1;
 		break;
 	default:
@@ -902,15 +703,7 @@ static int __must_check ps8751_flash_window_enable(Ps8751 *me)
 	return 0;
 }
 
-/*
- * wait for "erase/program command finished" as seen by the ps8751
- * then, wait for the WIP (write-in-progress) bit to clear on the
- * flash part itself.
- *
- * @param me	device context
- */
-
-static int __must_check ps8751_spi_wait_rom_ready(Ps8751 *me)
+int __must_check ps8751_spi_wait_rom_ready(Ps8751 *me)
 {
 	if (ps8751_spi_wait_prog_cmd(me) != 0)
 		return -1;
@@ -939,7 +732,7 @@ static int __must_check ps8751_spi_flash_identify(Ps8751 *me)
 		{ P2_SPI_LEN, 0x13 },
 		{ P2_SPI_CTRL, P2_SPI_CTRL_TRIGGER },
 	};
-	if (write_regs(me, PAGE_2, read_id, ARRAY_SIZE(read_id)) != 0)
+	if (ps8751_write_regs(me, PAGE_2, read_id, ARRAY_SIZE(read_id)) != 0)
 		return -1;
 	if (ps8751_spi_fifo_wait_busy(me) != 0)
 		return -1;
@@ -948,7 +741,7 @@ static int __must_check ps8751_spi_flash_identify(Ps8751 *me)
 		P2_RD_FIFO,
 		P2_RD_FIFO,
 	};
-	if (read_regs(me, PAGE_2, get_id, ARRAY_SIZE(buf), buf) != 0)
+	if (ps8751_read_regs(me, PAGE_2, get_id, ARRAY_SIZE(buf), buf) != 0)
 		return -1;
 	flash_id = be16dec(buf);
 
@@ -994,9 +787,9 @@ static int __must_check ps8751_get_hw_version(Ps8751 *me, uint8_t *version)
 	uint8_t low;
 	uint8_t high;
 
-	status = read_reg(me, PAGE_1, P1_CHIP_REV_LO, &low);
+	status = ps8751_read_reg(me, PAGE_1, P1_CHIP_REV_LO, &low);
 	if (status == 0)
-		status = read_reg(me, PAGE_1, P1_CHIP_REV_HI, &high);
+		status = ps8751_read_reg(me, PAGE_1, P1_CHIP_REV_HI, &high);
 	if (status < 0) {
 		printf("%s: read P1_CHIP_REV_* failed\n", me->chip_name);
 		return status;
@@ -1013,7 +806,7 @@ static int __must_check ps8751_get_hw_version(Ps8751 *me, uint8_t *version)
 	 */
 	if (me->chip_type == CHIP_PS8805 && *version == 0xA2) {
 		uint8_t reg_rev;
-		status = read_reg(me, PAGE_0, P0_REG_REV, &reg_rev);
+		status = ps8751_read_reg(me, PAGE_0, P0_REG_REV, &reg_rev);
 		if (status < 0) {
 			printf("%s: read P0_REG_REV failed\n", me->chip_name);
 			return status;
@@ -1170,17 +963,7 @@ static int __must_check ps8751_is_fw_compatible(Ps8751 *me, const uint8_t *fw)
 	return 0;
 }
 
-/**
- * write a SPI command plus a 24 bit addr to the SPI interface FIFO
- *
- * @param me	device context
- * @cmd		SPI command to issue
- * @param a24	SPI command address bits (24)
- * @return 0 if ok, -1 on error
- */
-
-static int __must_check ps8751_spi_setup_cmd24(Ps8751 *me,
-					       uint8_t cmd, uint32_t a24)
+int __must_check ps8751_spi_setup_cmd24(Ps8751 *me, uint8_t cmd, uint32_t a24)
 {
 	const I2cWriteVec sa[] = {
 		{ P2_WR_FIFO, cmd },
@@ -1188,7 +971,7 @@ static int __must_check ps8751_spi_setup_cmd24(Ps8751 *me,
 		{ P2_WR_FIFO, a24 >>  8 },
 		{ P2_WR_FIFO, a24 },
 	};
-	return write_regs(me, PAGE_2, sa, ARRAY_SIZE(sa));
+	return ps8751_write_regs(me, PAGE_2, sa, ARRAY_SIZE(sa));
 }
 
 /**
@@ -1212,7 +995,7 @@ static int __must_check ps8751_sector_erase(Ps8751 *me, uint32_t offset)
 		{ P2_SPI_LEN, 0x03 },
 		{ P2_SPI_CTRL, P2_SPI_CTRL_NOREAD|P2_SPI_CTRL_TRIGGER },
 	};
-	if (write_regs(me, PAGE_2, se, ARRAY_SIZE(se)) != 0)
+	if (ps8751_write_regs(me, PAGE_2, se, ARRAY_SIZE(se)) != 0)
 		return -1;
 	if (ps8751_spi_fifo_wait_busy(me) != 0)
 		return -1;
@@ -1254,133 +1037,6 @@ static int __must_check ps8751_erase(Ps8751 *me,
 	return rval;
 }
 
-static void ps8751_flash_window_start(Ps8751 *me)
-{
-	me->last_a16_a23 = -1;
-	me->last_a8_a15 = -1;
-}
-
-static int ps8751_flash_window_write_enable(Ps8751 *me)
-{
-	uint8_t wr_status;
-	uint64_t t0_us;
-
-	t0_us = timer_us(0);
-	do {
-		static const I2cWriteVec wr[] = {
-			{ P2_PROG_WIN_UNLOCK, 0xaa },
-			{ P2_PROG_WIN_UNLOCK, 0x55 },
-			{ P2_PROG_WIN_UNLOCK, 0x50 }, /* P */
-			{ P2_PROG_WIN_UNLOCK, 0x41 }, /* A */
-			{ P2_PROG_WIN_UNLOCK, 0x52 }, /* R */
-			{ P2_PROG_WIN_UNLOCK, 0x44 }  /* D */
-		};
-
-		if (timer_us(t0_us) >= PS_SPI_TIMEOUT_US) {
-			printf("%s: window write enable timeout after %ums\n",
-			       me->chip_name, USEC_TO_MSEC(PS_SPI_TIMEOUT_US));
-			return -1;
-		}
-
-		if (write_regs(me, PAGE_2, wr, ARRAY_SIZE(wr)) != 0)
-			return -1;
-
-		if (read_reg(me, PAGE_2, P2_PROG_WIN_UNLOCK, &wr_status) != 0)
-			return -1;
-
-	} while (wr_status != P2_PROG_WIN_UNLOCK_ACK);
-
-	return 0;
-}
-
-static int ps8751_flash_window_write_disable(Ps8751 *me)
-{
-	if (write_reg(me, PAGE_2,
-		      P2_PROG_WIN_UNLOCK, P2_PROG_WIN_UNLOCK_LOCK) != 0)
-		return -1;
-
-	return 0;
-}
-
-static ssize_t __must_check ps8751_flash_window_read(Ps8751 *me,
-				uint8_t * const data, const size_t count,
-				const uint32_t a24)
-{
-	ssize_t chunk;
-
-	const uint32_t a16_a23 = (a24 >> 16) & 0xff;
-	const uint32_t a8_a15 = (a24 >> 8) & 0xff;
-	const uint32_t a0_a7 = a24 & 0xff;
-
-	/* clip at EC message size limit */
-	chunk = MIN(count, PS_FW_I2C_IO_CHUNK);
-	/* clip at I2C window boundary */
-	chunk = MIN(chunk, PS_FW_I2C_WINDOW_SIZE - a0_a7);
-
-	if (a16_a23 != me->last_a16_a23) {
-		if (write_reg(me, PAGE_2, P2_FLASH_A16_A23, a16_a23) != 0)
-			return -1;
-		me->last_a16_a23 = a16_a23;
-	}
-
-	if (a8_a15 != me->last_a8_a15) {
-		if (write_reg(me, PAGE_2, P2_FLASH_A8_A15, a8_a15) != 0)
-			return -1;
-		me->last_a8_a15 = a8_a15;
-	}
-
-	if (read_block(me, PAGE_7, a0_a7, data, chunk) != 0)
-		return -1;
-
-	return chunk;
-}
-
-/**
- * write bytes to flash using the I2C mapped window
- *
- * actual number of bytes written may be less than requested if the
- * window size is exceeded.
- *
- * @param me		device context
- * @param data		addr of data to write
- * @param count		number of bytes to write
- * @param a24		flash addr to write
- * @return number of bytes written, -1 on error
- */
-
-static ssize_t __must_check ps8751_flash_window_write(Ps8751 *me,
-				const uint8_t * const data, const size_t count,
-				const uint32_t a24)
-{
-	ssize_t chunk;
-
-	const uint32_t a16_a23 = (a24 >> 16) & 0xff;
-	const uint32_t a8_a15 = (a24 >> 8) & 0xff;
-	const uint32_t a0_a7 = a24 & 0xff;
-
-	/* clip at EC message size limit */
-	chunk = MIN(count, PS_FW_I2C_IO_CHUNK);
-	/* clip at I2C window boundary */
-	chunk = MIN(chunk, PS_FW_I2C_WINDOW_SIZE - a0_a7);
-
-	if (a16_a23 != me->last_a16_a23) {
-		if (write_reg(me, PAGE_2, P2_FLASH_A16_A23, a16_a23) != 0)
-			return -1;
-		me->last_a16_a23 = a16_a23;
-	}
-
-	if (a8_a15 != me->last_a8_a15) {
-		if (write_reg(me, PAGE_2, P2_FLASH_A8_A15, a8_a15) != 0)
-			return -1;
-		me->last_a8_a15 = a8_a15;
-	}
-
-	if (write_block(me, PAGE_7, a0_a7, data, chunk) != 0)
-		return -1;
-
-	return chunk;
-}
-
 /**
  * program flash with new data
  *
@@ -1408,8 +1064,8 @@ static int __must_check ps8751_program(Ps8751 *me,
 
 	printf("%s: programming %uKB...\n", me->chip_name, data_size >> 10);
 
-	ps8751_flash_window_start(me);
-	if (ps8751_flash_window_write_enable(me) < 0)
+	me->flash_start(me);
+	if (me->flash_write_enable(me) < 0)
 		return -1;
 
 	t0_us = timer_us(0);
@@ -1418,7 +1074,7 @@ static int __must_check ps8751_program(Ps8751 *me,
 	     data_offset += chunk) {
 		int skips;
 
-		chunk = MIN(PS_FW_I2C_IO_CHUNK, data_size - data_offset);
+		chunk = data_size - data_offset;
 
 		/* skip leading 0xff bytes and potentially the entire chunk */
 		for (skips = 0; skips < chunk; ++skips) {
@@ -1433,7 +1089,7 @@ static int __must_check ps8751_program(Ps8751 *me,
 		data_offset += skips;
 		chunk -= skips;
 
-		chunk = ps8751_flash_window_write(me,
+		chunk = me->flash_write(me,
 					data + data_offset, chunk,
 					fw_start + data_offset);
 		if (chunk < 0) {
@@ -1448,7 +1104,7 @@ static int __must_check ps8751_program(Ps8751 *me,
 	       (unsigned int)USEC_TO_MSEC(timer_us(t0_us)),
 	       bytes_skipped);
 
-	if (ps8751_flash_window_write_disable(me) < 0)
+	if (me->flash_write_disable(me) < 0)
 		return -1;
 
 	return status;
@@ -1475,7 +1131,7 @@ static int __must_check ps8751_verify(Ps8751 *me,
 	uint32_t data_offset;
 	int chunk;
 
-	ps8751_flash_window_start(me);
+	me->flash_start(me);
 
 	debug("offset 0x%06x size %zu\n", fw_addr, data_size);
 
@@ -1485,8 +1141,9 @@ static int __must_check ps8751_verify(Ps8751 *me,
 	     data_offset += chunk) {
 		const uint32_t a24 = fw_addr + data_offset;
 
-		chunk = MIN(sizeof(rd_block), data_size - data_offset);
-		chunk = ps8751_flash_window_read(me, rd_block, chunk, a24);
+		chunk = data_size - data_offset;
+		chunk = MIN(chunk, sizeof(rd_block));
+		chunk = me->flash_read(me, rd_block, chunk, a24);
 		if (chunk < 0)
 			return -1;
 
@@ -1592,7 +1249,7 @@ static void ps8751_dump_flash(Ps8751 *me,
 	printf("================================"
 	       "================================\n{\n");
 
-	ps8751_flash_window_start(me);
+	me->flash_start(me);
 
 	for (offset = offset_start;
 	     offset < offset_end;
@@ -1601,11 +1258,11 @@ static void ps8751_dump_flash(Ps8751 *me,
 		ssize_t cc;
 
 		for (chunk = 0; chunk < sizeof(buf); chunk += cc) {
-			cc = ps8751_flash_window_read(me,
-					buf + chunk, sizeof(buf) - chunk,
-					offset + chunk);
+			cc = me->flash_read(me,
+					    buf + chunk, sizeof(buf) - chunk,
+					    offset + chunk);
 			if (cc < 0) {
-				printf("%s: flash window read failed!\n",
+				printf("%s: flash read failed!\n",
 				       me->chip_name);
 				return;
 			}
@@ -2065,6 +1722,8 @@ static Ps8751 *new_ps8815(CrosECTunnelI2c *bus, int ec_pd_id,
 	me->fw_ops = *fw_ops;
 	me->chip_type = CHIP_PS8815;
 	snprintf(me->chip_name, sizeof(me->chip_name), "ps8815.%d", ec_pd_id);
+
+	ps8751_init_flash_window_ops(me);
 
 	return me;
 }

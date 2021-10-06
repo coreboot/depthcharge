@@ -43,8 +43,7 @@ typedef enum ParadeFwType {
 	PARADE_FW_APP,
 } ParadeFwType;
 
-typedef struct Ps8751
-{
+typedef struct Ps8751 {
 	VbootAuxfwOps fw_ops;
 	CrosECTunnelI2c *bus;
 	int ec_pd_id;
@@ -66,6 +65,62 @@ typedef struct Ps8751
 	ParadeFwType fw_type;
 	size_t fw_start;	/* selected FW start addr in flash */
 	size_t fw_end;		/* selected FW end addr in flash */
+
+	/**
+	 * Initialize device context state for subsequent flash
+	 * operations.
+	 *
+	 * @param me		device context
+	 */
+	void (*flash_start)(struct Ps8751 *me);
+
+	/**
+	 * Read data from flash. The actual number of bytes read may be
+	 * less than requested due to device or implementation
+	 * limitations.
+	 *
+	 * @param me		device context
+	 * @param data		destination address of data to read
+	 * @param count		number of bytes to read
+	 * @param a24		flash address to read
+	 * @return number of bytes read, -1 on error
+	 */
+	ssize_t (*flash_read)(struct Ps8751 *me,
+			      uint8_t * const data,
+			      const size_t count,
+			      const uint32_t a24);
+
+	/**
+	 * Write data to flash. The actual number of bytes written may
+	 * be less than requested due to device or implementation
+	 * limitations.
+	 *
+	 * @param me		device context
+	 * @param data		source address of data to write
+	 * @param count		number of bytes to write
+	 * @param a24		flash address to write
+	 * @return number of bytes written, -1 on error
+	 */
+	ssize_t (*flash_write)(struct Ps8751 *me,
+			       const uint8_t * const data,
+			       const size_t count,
+			       const uint32_t a24);
+
+	/**
+	 * Additional step to enable writes to flash.
+	 *
+	 * @param me		device context
+	 * @return 0 if ok, -1 on error
+	 */
+	int (*flash_write_enable)(struct Ps8751 *me);
+
+	/**
+	 * Additional step to disable writes to flash.
+	 *
+	 * @param me		device context
+	 * @return 0 if ok, -1 on error
+	 */
+	int (*flash_write_disable)(struct Ps8751 *me);
 } Ps8751;
 
 Ps8751 *new_ps8751(CrosECTunnelI2c *bus, int ec_pd_id);
