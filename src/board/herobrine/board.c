@@ -23,6 +23,7 @@
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/qcom_gpio.h"
 #include "drivers/gpio/sysinfo.h"
+#include "drivers/power/psci.h"
 
 #define SDC1_HC_BASE          0x007C4000
 #define SDC1_TLMM_CFG_ADDR    0xF1B3000
@@ -36,6 +37,8 @@ static int board_setup(void)
 	flag_replace(FLAG_LIDSW, new_gpio_high());
 	flag_replace(FLAG_ECINRW,  new_gpio_high());
 	flag_replace(FLAG_PWRSW, new_gpio_low());
+
+	power_set_ops(&psci_power_ops);
 
 	/*eMMC support */
 	u32 emmc_platfm_flags = SDHCI_PLATFORM_EMMC_1V8_POWER |
