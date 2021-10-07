@@ -63,6 +63,7 @@ void sysinfo_install_flags(new_gpio_from_coreboot_t ngfc)
 	 * will only hit a die_if() if that flag is actually flag_fetch()ed. */
 	flag_install(FLAG_LIDSW, sysinfo_lookup_gpio("lid", 1, ngfc));
 	flag_install(FLAG_PWRSW, sysinfo_lookup_gpio("power", 1, ngfc));
+	flag_install(FLAG_ECINRW, sysinfo_lookup_gpio("EC in RW", 1, ngfc));
 	phys_presence_gpio = sysinfo_lookup_gpio("presence", 1, ngfc);
 	if (!phys_presence_gpio)
 		phys_presence_gpio = new_gpio_low();

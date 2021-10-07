@@ -34,6 +34,7 @@ static int board_setup(void)
 {
 	/* stub out required GPIOs for vboot */
 	flag_replace(FLAG_LIDSW, new_gpio_high());
+	flag_replace(FLAG_ECINRW,  new_gpio_high());
 	flag_replace(FLAG_PWRSW, new_gpio_low());
 
 	/*eMMC support */
