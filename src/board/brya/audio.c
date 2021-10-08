@@ -15,6 +15,7 @@
 #include "drivers/soc/alderlake.h"
 #include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/i2s.h"
+#include "drivers/sound/max98373.h"
 #include "drivers/sound/max98373_sndw.h"
 #include "drivers/sound/max98390.h"
 #include "drivers/sound/route.h"
@@ -53,6 +54,19 @@ static void setup_max98390(const struct audio_codec *codec, SoundRoute *route)
 	}
 }
 
+static void setup_max98373(const struct audio_codec *codec, SoundRoute *route)
+{
+	if (!CONFIG(DRIVER_SOUND_MAX98373))
+		return;
+
+	DesignwareI2c *i2c = new_pci_designware_i2c(codec->i2c.ctrlr, I2C_FS_HZ,
+						    ALDERLAKE_DW_I2C_MHZ);
+
+	Max98373Codec *max = new_max98373_codec(&i2c->ops,
+						codec->i2c.i2c_addr[0]);
+	list_insert_after(&max->component.list_node, &route->components);
+}
+
 static void setup_gpio_amp(const struct audio_amp *amp, SoundRoute *route)
 {
 	if (!CONFIG(DRIVER_SOUND_GPIO_AMP))
@@ -64,12 +78,20 @@ static void setup_gpio_amp(const struct audio_amp *amp, SoundRoute *route)
 			  &route->components);
 }
 
+static GpioCfg *cfg_gpio(const struct audio_bus *bus)
+{
+	if (CONFIG(DRIVER_GPIO_ALDERLAKE))
+		return NULL;
+
+	GpioCfg *gpio_cfg = new_alderlake_gpio_output(bus->i2s.enable_gpio.pad,
+						  bus->i2s.enable_gpio.active_low);
+	return gpio_cfg;
+}
+
 static I2sSource *setup_i2s(const struct audio_bus *bus)
 {
-	GpioCfg *gpio = new_alderlake_gpio_output(bus->i2s.enable_gpio.pad, 
-						  bus->i2s.enable_gpio.active_low);
 	I2s *i2s = new_i2s_structure(bus->i2s.settings, AUD_BITDEPTH,
-				     &gpio->ops, bus->i2s.address);
+				     &cfg_gpio(bus)->ops, bus->i2s.address);
 	I2sSource *i2s_source = new_i2s_source(&i2s->ops, AUD_SAMPLE_RATE,
 					       AUD_NUM_CHANNELS, AUD_VOLUME);
 	return i2s_source;
@@ -133,8 +155,12 @@ static void configure_audio_codec(const struct audio_codec *codec,
 		break;
 
 	case AUDIO_MAX98373:
-		if (data->sndw)
+		if (data->route) {
+			setup_max98373(codec, data->route);
+			data->ops = &data->route->ops;
+		} else if (data->sndw) {
 			data->ops = setup_max98373_sndw(&data->sndw->ops, BEEP_DURATION);
+		}
 		break;
 
 	default:
