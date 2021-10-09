@@ -15,3 +15,20 @@ config DRIVER_EC_PS8751
 	default n
 	help
 	  Add support for PS8751 TCPC
+
+if DRIVER_EC_PS8751
+
+config DRIVER_EC_PS8751_FLASH_WINDOW
+	bool "PS8XXX flash window access over I2C"
+	default n
+	help
+	  Enables an alternate scheme for accessing the internal flash
+	  of PS8xxx series TCPCs to achieve 10x faster firmware
+	  updates. The TCPC presents a 256 byte window onto the internal
+	  flash that can be used to read/write its content. For most
+	  PS8xxx family members, the I2C bus must operate at 400 kHz (or
+	  below) for this to work reliably, so this feature depends on
+	  being able to adjust the I2C bus speed at runtime, so make
+	  sure this capability is supported by the EC.
+
+endif # DRIVER_EC_PS8751

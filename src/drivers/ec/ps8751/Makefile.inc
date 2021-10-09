@@ -12,4 +12,5 @@
 ##
 
 depthcharge-y += ps8751.c
+depthcharge-y += ps8751_flash_ops_fifo.c
 depthcharge-y += ps8751_flash_ops_window.c

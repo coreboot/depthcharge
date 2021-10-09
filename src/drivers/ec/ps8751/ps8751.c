@@ -23,6 +23,8 @@
 #include "base/init_funcs.h"
 #include "drivers/ec/ps8751/ps8751_priv.h"
 
+#define PS_FW_IO_BUF_SIZE	MAX(PS_FW_I2C_WINDOW_SIZE, PS_FW_RD_CHUNK)
+
 /*
  * period of issuing reads on the primary I2C page to keep the chip awake
  * 1 sec is OK
@@ -1126,7 +1128,7 @@ static int __must_check ps8751_verify(Ps8751 *me,
 				      const uint8_t * const data,
 				      const size_t data_size)
 {
-	uint8_t rd_block[PS_FW_I2C_WINDOW_SIZE];
+	uint8_t rd_block[PS_FW_IO_BUF_SIZE];
 	uint64_t t0_us;
 	uint32_t data_offset;
 	int chunk;
@@ -1723,7 +1725,10 @@ static Ps8751 *new_ps8815(CrosECTunnelI2c *bus, int ec_pd_id,
 	me->chip_type = CHIP_PS8815;
 	snprintf(me->chip_name, sizeof(me->chip_name), "ps8815.%d", ec_pd_id);
 
-	ps8751_init_flash_window_ops(me);
+	if (CONFIG(DRIVER_EC_PS8751_FLASH_WINDOW))
+		ps8751_init_flash_window_ops(me);
+	else
+		ps8751_init_flash_fifo_ops(me);
 
 	return me;
 }
