@@ -844,9 +844,6 @@ static int __must_check ps8751_get_hw_version(Ps8751 *me, uint8_t *version)
 	 * revision.  Use the the revision register to determine which chip
 	 * type is actually present.
 	 * Page 0, 0x62, bits [7:4]: 0xA0 = A3 chip, 0x00 = A2 chip
-	 *
-	 * The PS8755-A3 returns 0x0A02 for the hardware revision. A value of
-	 * 0x80 in Page 0, register 6, confirms the chip is revision A3.
 	 */
 	if (me->chip_type == CHIP_PS8805 && *version == 0xA2) {
 		uint8_t reg_rev;
@@ -859,15 +856,6 @@ static int __must_check ps8751_get_hw_version(Ps8751 *me, uint8_t *version)
 		reg_rev &= P0_REG_REV_MASK;
 		reg_rev >>= P0_REG_REV_SHIFT;
 		if (reg_rev == PS8805_P0_REG_REV_CHIP_REVISION_A3)
-			*version = 0xA3;
-	} else if (me->chip_type == CHIP_PS8755 && *version == 0xA2) {
-		uint8_t reg_sm;
-		status = read_reg(me, PAGE_0, P0_REG_SM, &reg_sm);
-		if (status < 0) {
-			printf("%s: read P0_REG_SM failed\n", me->chip_name);
-			return status;
-		}
-		if (reg_sm == PS8751_P0_REG_SM_CHIP_REVISION_A3)
 			*version = 0xA3;
 	}
 
