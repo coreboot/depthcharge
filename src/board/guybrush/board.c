@@ -32,7 +32,7 @@
 #include "vboot/util/flag.h"
 
 /* Clock frequencies */
-#define MCLK			4800000
+#define MCLK			48000000
 #define LRCLK			8000
 
 
