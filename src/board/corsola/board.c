@@ -22,7 +22,12 @@ static int board_setup(void)
 
 	/* TODO: Set up eMMC */
 
-	/* TODO: Set up USB */
+	/*
+	 * Set up USB.
+	 * Corsola uses USB2 port1 instead of USB2 port0.
+	 */
+	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11280000);
+	list_insert_after(&usb_host->list_node, &usb_host_controllers);
 
 	return 0;
 }
