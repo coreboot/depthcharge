@@ -5,9 +5,9 @@ running unit tests for Depthcharge.
 
 ## Setup
 Before running any tests, the environment has to be prepared. Unit tests
-require x86_32 version of CMocka-1.1.5 or compatible installed in the system.
+require CMocka-1.1.5 or compatible installed in the system.
 In the Chromium OS SDK it can be installed, e.g. by invoking
-`sudo USE=abi_x86_32 emerge dev-util/cmocka-1.1.5`.
+`sudo emerge dev-util/cmocka-1.1.5`.
 Furthermore, below is the assumed source tree for the Chromium OS SDK
 and required variables with their list of default values.
 
