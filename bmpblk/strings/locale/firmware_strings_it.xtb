@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Avvia da disco interno</translation>
 <translation id="6191358901427525316">Preparati a ripristinare il dispositivo. Hai bisogno di:</translation>
 <translation id="635783852215913562">Usa i tasti Freccia per spostarti verso l'alto o verso il basso.</translation>
+<translation id="6393574457614848045">Partizione ripristino Internet corrotta o mancante. Esegui il ripristino usando un'unità di archiviazione esterna.</translation>
 <translation id="6448938863276324156">Puoi eseguire il ripristino usando una memoria esterna, ad esempio un'unità USB.</translation>
 <translation id="6972383785688794804">Pagina su</translation>
 <translation id="7065553583078443466">Seleziona bootloader alternativo</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">Il sistema sta eseguendo un importante aggiornamento.</translation>
 <translation id="7236073510654217175">Torna a modalità protetta</translation>
 <translation id="7321387134821904291">Informazioni sullo stato dello spazio di archiviazione</translation>
+<translation id="7332672207700801967">Ripristino Internet (versione precedente)</translation>
 <translation id="7342794948394983731">Strumenti di diagnostica</translation>
 <translation id="7352651011704765696">Si è verificato un problema</translation>
 <translation id="7365121631770711723">2. Un cavo USB che connette il telefono a questo dispositivo</translation>
+<translation id="7407610796520500368">Ripristino usando la connessione a Internet</translation>
 <translation id="7420576176825630019">Attiva modalità sviluppatore</translation>
 <translation id="7567414219298075193">Per provare a risolvere il problema, avvia la procedura di ripristino. Rimuovi tutti i dispositivi collegati, quindi tieni premuto il tasto di ripristino, premi e rilascia il tasto di accensione ( ⏻ ), quindi rilascia il tasto di ripristino.</translation>
 <translation id="7638747526774710781">1. Visita la pagina google.com/chromeos/recovery sull'altro dispositivo e installa l'estensione di Chrome</translation>

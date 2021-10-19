@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Inicia des del disc intern</translation>
 <translation id="6191358901427525316">Prepara't per a la recuperació del dispositiu. Et caldrà el següent:</translation>
 <translation id="635783852215913562">Fes servir les tecles de fletxa per navegar cap amunt o cap avall.</translation>
+<translation id="6393574457614848045">Falta la partició de recuperació d'Internet o està malmesa. Fes la recuperació utilitzant un emmagatzematge extern.</translation>
 <translation id="6448938863276324156">Pots fer la recuperació utilitzant emmagatzematge extern, com ara una unitat USB.</translation>
 <translation id="6972383785688794804">Re Pàg</translation>
 <translation id="7065553583078443466">Selecciona un carregador d’arrencada alternatiu</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">El sistema està aplicant una actualització crítica.</translation>
 <translation id="7236073510654217175">Torna al mode segur</translation>
 <translation id="7321387134821904291">Informació sobre l'estat de l'emmagatzematge</translation>
+<translation id="7332672207700801967">Recuperació d'Internet (versió antiga)</translation>
 <translation id="7342794948394983731">Eines de diagnòstic</translation>
 <translation id="7352651011704765696">S'ha produït un error</translation>
 <translation id="7365121631770711723">2. Un cable USB que connecti el telèfon i aquest dispositiu</translation>
+<translation id="7407610796520500368">Recuperació utilitzant la connexió a Internet</translation>
 <translation id="7420576176825630019">Activa el mode de desenvolupador</translation>
 <translation id="7567414219298075193">Per provar de corregir aquest problema, inicia el procés de recuperació. Desconnecta tots els dispositius connectats i mantén premut el botó de recuperació, prem i deixa anar el botó d'engegada ( ⏻ ) i, tot seguit, deixa anar el botó de recuperació.</translation>
 <translation id="7638747526774710781">1. Ves a google.com/chromeos/recovery a l'altre dispositiu i instal·la l'extensió de Chrome</translation>

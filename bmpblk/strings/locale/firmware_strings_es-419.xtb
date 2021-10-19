@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Iniciar desde el disco interno</translation>
 <translation id="6191358901427525316">Prepárate para recuperar el dispositivo. Necesitarás lo siguiente:</translation>
 <translation id="635783852215913562">Usa las flechas para navegar hacia arriba y abajo.</translation>
+<translation id="6393574457614848045">Falta la partición de recuperación de Internet o está dañada. Realiza la recuperación con un almacenamiento externo.</translation>
 <translation id="6448938863276324156">Para la recuperación, puedes usar un almacenamiento externo, como una unidad USB.</translation>
 <translation id="6972383785688794804">Página anterior</translation>
 <translation id="7065553583078443466">Seleccionar el bootloader alternativo</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">Tu sistema está instalando una actualización importante.</translation>
 <translation id="7236073510654217175">Regresar al modo seguro</translation>
 <translation id="7321387134821904291">Información sobre el estado del almacenamiento</translation>
+<translation id="7332672207700801967">Recuperación de Internet (versión anterior)</translation>
 <translation id="7342794948394983731">Herramientas de diagnóstico</translation>
 <translation id="7352651011704765696">Se produjo un error</translation>
 <translation id="7365121631770711723">2. Un cable USB que conecte tu teléfono y este dispositivo</translation>
+<translation id="7407610796520500368">Realizar la recuperación con conexión a Internet</translation>
 <translation id="7420576176825630019">Habilitar el modo de desarrollador</translation>
 <translation id="7567414219298075193">Para hacer una prueba y solucionar el problema, inicia el proceso de recuperación. Quita todos los dispositivos conectados; a continuación, mantén presionado el botón de recuperación, presiona y suelta el botón de encendido ( ⏻ ) y, luego, suelta el botón de recuperación.</translation>
 <translation id="7638747526774710781">1. En el otro dispositivo, ve a google.com/chromeos/recovery y, luego, instala la extensión de Chrome</translation>

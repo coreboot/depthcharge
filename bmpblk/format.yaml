@@ -30,6 +30,7 @@ localized_files:
   btn_dev_mode: primary_button
   btn_debug_info: primary_button
   btn_firmware_log: primary_button
+  btn_rec_by_internet_old: primary_button
   # debug info and firmware log
   debug_info_title: title
   firmware_log_title: title
@@ -42,6 +43,7 @@ localized_files:
   rec_sel_desc1_no_phone_no_sd: desc
   btn_rec_by_phone: primary_button
   btn_rec_by_disk: primary_button
+  btn_rec_by_internet: primary_button
   # recovery - common
   rec_step1_title: title
   rec_step1_desc2: desc
@@ -121,6 +123,7 @@ localized_files:
   error_debug_info: error
   error_firmware_log: error
   error_diagnostics: error
+  error_internet_recovery: error
   # diagnostic tools - menu
   btn_launch_diag: secondary_button
   diag_menu_title: title

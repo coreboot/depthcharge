@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Boot from internal disk</translation>
 <translation id="6191358901427525316">Get ready to recover your device. You'll need:</translation>
 <translation id="635783852215913562">Use the arrow keys to navigate up or down.</translation>
+<translation id="6393574457614848045">Internet recovery partition corrupted or missing. Please recover using external storage instead.</translation>
 <translation id="6448938863276324156">You can recover using external storage such as a USB drive.</translation>
 <translation id="6972383785688794804">Page up</translation>
 <translation id="7065553583078443466">Select alternate bootloader</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">Your system is applying a critical update.</translation>
 <translation id="7236073510654217175">Return to secure mode</translation>
 <translation id="7321387134821904291">Storage health info</translation>
+<translation id="7332672207700801967">Internet recovery (older version)</translation>
 <translation id="7342794948394983731">Diagnostic tools</translation>
 <translation id="7352651011704765696">Something went wrong</translation>
 <translation id="7365121631770711723">2. A USB cable which connects your phone and this device</translation>
+<translation id="7407610796520500368">Recovery using Internet connection</translation>
 <translation id="7420576176825630019">Enable developer mode</translation>
 <translation id="7567414219298075193">To try and fix the issue, start the recovery process. Remove all connected devices, then hold down the recovery button, press and release the power button ( ⏻ ) and then release the recovery button.</translation>
 <translation id="7638747526774710781">1. Go to google.com/chromeos/recovery on the other device and install the Chrome extension</translation>

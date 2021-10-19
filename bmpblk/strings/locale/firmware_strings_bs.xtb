@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Pokreni s unutrašnjeg diska</translation>
 <translation id="6191358901427525316">Spremite se za oporavak uređaja. Trebat će vam sljedeće:</translation>
 <translation id="635783852215913562">Koristite tipke sa strelicama za navigiranje nagore i nadolje.</translation>
+<translation id="6393574457614848045">Particija za oporavak putem internetske veze je oštećena ili nedostaje. Umjesto toga izvršite oporavak pomoću vanjske pohrane.</translation>
 <translation id="6448938863276324156">Oporavak možete izvršiti koristeći vanjsku pohranu, kao što je USB disk.</translation>
 <translation id="6972383785688794804">Stranica prema gore</translation>
 <translation id="7065553583078443466">Odaberite alternativni program za učitavanje operativnog sistema</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">Sistem primjenjuje važno ažuriranje.</translation>
 <translation id="7236073510654217175">Povratak na sigurni način rada</translation>
 <translation id="7321387134821904291">Informacije o stanju pohrane</translation>
+<translation id="7332672207700801967">Oporavak putem internetske veze (starija verzija)</translation>
 <translation id="7342794948394983731">Dijagnostički alati</translation>
 <translation id="7352651011704765696">Nešto nije uredu</translation>
 <translation id="7365121631770711723">2. USB kabl koji povezuje vaš telefon i ovaj uređaj</translation>
+<translation id="7407610796520500368">Oporavak putem internetske veze</translation>
 <translation id="7420576176825630019">Omogući način rada za programere</translation>
 <translation id="7567414219298075193">Da pokušate riješiti problem, započnite proces oporavka. Uklonite sve povezane uređaje, zatim držite pritisnutim dugme za oporavak, pritisnite i pustite dugme za uključivanje ( ⏻ ) te pustite dugme za oporavak.</translation>
 <translation id="7638747526774710781">1. Idite na google.com/chromeos/recovery na drugom uređaju i instalirajte ekstenziju za Chrome</translation>

@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Daxili diskdən yükləyin</translation>
 <translation id="6191358901427525316">Cihazınızı bərpa etməyə hazır olun. Buna ehtiyacınız var:</translation>
 <translation id="635783852215913562">Yuxarı və ya aşağı keçmək üçün ox düymələrindən istifadə edin.</translation>
+<translation id="6393574457614848045">İnternet bərpa bölməsi zədələnib və ya yoxdur. Xarici yaddaş cihazı ilə bərpa edin.</translation>
 <translation id="6448938863276324156">USB diski kimi xarici yaddaş cihazı ilə bərpa edə bilərsiniz.</translation>
 <translation id="6972383785688794804">Bir səhifə yuxarı</translation>
 <translation id="7065553583078443466">Alternativ yükləyici seçin</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">Sisteminiz kritik güncəlləmə tətbiq edir.</translation>
 <translation id="7236073510654217175">Güvənli rejimə qayıdın</translation>
 <translation id="7321387134821904291">Yaddaş vəziyyəti məlumatı</translation>
+<translation id="7332672207700801967">İnternet bərpası (köhnə versiya)</translation>
 <translation id="7342794948394983731">Diaqnostik alətlər</translation>
 <translation id="7352651011704765696">Xəta oldu</translation>
 <translation id="7365121631770711723">2. Telefonunuz və bu cihazı birləşdirən USB kabel</translation>
+<translation id="7407610796520500368">İnternet bağlantısı istifadə edərək bərpa edin</translation>
 <translation id="7420576176825630019">Developer rejimini aktiv edin</translation>
 <translation id="7567414219298075193">Sınamaq və problemi həll etmək üçün bərpa prosesini başladın. Bütün qoşulmuş cihazları silin, sonra Bərpa düyməsini basıb saxlayın, Yandırıb-söndürmə düyməsini ( ⏻ ) basıb buraxın, Bərpa düyməsini buraxın.</translation>
 <translation id="7638747526774710781">1. Başqa cihazda google.com/chromeos/recovery ünvanına keçin və Chrome artırmasını quraşdırın</translation>

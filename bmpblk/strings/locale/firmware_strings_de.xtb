@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Von internem Laufwerk starten</translation>
 <translation id="6191358901427525316">Auf die Wiederherstellung des Geräts vorbereiten. Dafür wird Folgendes benötigt:</translation>
 <translation id="635783852215913562">Mit den Pfeiltasten können Sie nach oben oder unten gehen.</translation>
+<translation id="6393574457614848045">Die Partition zur Wiederherstellung über das Internet ist beschädigt oder nicht vorhanden. Bitte verwenden Sie einen externen Speicher zur Wiederherstellung.</translation>
 <translation id="6448938863276324156">Sie können die Wiederherstellung mithilfe eines externen Speichermediums – etwa eines USB-Sticks – vornehmen.</translation>
 <translation id="6972383785688794804">Seite nach oben</translation>
 <translation id="7065553583078443466">Alternativen Bootloader auswählen</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">Auf Ihrem System wird ein wichtiges Update installiert.</translation>
 <translation id="7236073510654217175">Zurück zum sicheren Modus</translation>
 <translation id="7321387134821904291">Informationen zum Zustand des Speichers</translation>
+<translation id="7332672207700801967">Wiederherstellung über das Internet (ältere Version)</translation>
 <translation id="7342794948394983731">Diagnose-Tools</translation>
 <translation id="7352651011704765696">Ein Problem ist aufgetreten</translation>
 <translation id="7365121631770711723">2. Ein USB-Kabel, mit dem Sie Ihr Mobiltelefon an dieses Gerät anschließen</translation>
+<translation id="7407610796520500368">Wiederherstellung über die Internetverbindung</translation>
 <translation id="7420576176825630019">Entwicklermodus aktivieren</translation>
 <translation id="7567414219298075193">Bitte starten Sie die Wiederherstellung, um das Problem zu beheben. Entfernen Sie alle verbundenen Geräte, halten Sie die Wiederherstellungstaste gedrückt, drücken Sie dann die Ein-/Aus-Taste ( ⏻ ) einmal und lassen Sie danach die Wiederherstellungstaste wieder los.</translation>
 <translation id="7638747526774710781">1. Rufen Sie google.com/chromeos/recovery auf dem anderen Gerät auf, um die Chrome-Erweiterung zu installieren</translation>

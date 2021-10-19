@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Paleisti iš vidinio disko</translation>
 <translation id="6191358901427525316">Pasiruošimas atkurti įrenginį. Bus reikalingi toliau nurodyti elementai.</translation>
 <translation id="635783852215913562">Naudodami rodyklių klavišus naršykite aukštyn arba žemyn.</translation>
+<translation id="6393574457614848045">Nėra interneto atkūrimo skaidinio arba jis sugadintas. Atkurkite naudodami išorinę saugyklą.</translation>
 <translation id="6448938863276324156">Atkurti galite naudodami išorinę saugyklą, pvz., atmintuką.</translation>
 <translation id="6972383785688794804">Puslapiu aukštyn</translation>
 <translation id="7065553583078443466">Pasirinkite alternatyvią paleidyklę</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">Sistemoje pritaikomas svarbus naujinys.</translation>
 <translation id="7236073510654217175">Grįžti į saugų režimą</translation>
 <translation id="7321387134821904291">Saugyklos būsenos informacija</translation>
+<translation id="7332672207700801967">Interneto atkūrimas (senesnė versija)</translation>
 <translation id="7342794948394983731">Diagnostikos įrankiai</translation>
 <translation id="7352651011704765696">Kažkas negerai</translation>
 <translation id="7365121631770711723">2. USB laidas, kuriuo telefonas prijungiamas prie šio įrenginio</translation>
+<translation id="7407610796520500368">Atkūrimas naudojant interneto ryšį</translation>
 <translation id="7420576176825630019">Įgalinti kūrėjo režimą</translation>
 <translation id="7567414219298075193">Jei norite išbandyti ir išspręsti problemą, pradėkite atkūrimo procesą. Atjunkite visus prijungtus įrenginius, tada palaikykite paspaudę atkūrimo mygtuką, paspauskite ir atleiskite maitinimo mygtuką ( ⏻ ), tada atleiskite atkūrimo mygtuką.</translation>
 <translation id="7638747526774710781">1. Eikite adresu google.com/chromeos/recovery naudodami kitą įrenginį ir įdiekite „Chrome“ plėtinį</translation>

@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Tizimni ichki diskdan ishga tushirish</translation>
 <translation id="6191358901427525316">Qurilmangizni tiklashga tayyorlaning. Buning uchun quyidagilar zarur:</translation>
 <translation id="635783852215913562">Bandlarni yuqoriga va pastga strelkalar orqali kezing.</translation>
+<translation id="6393574457614848045">Internet orqali tiklaydigan disk qismi nosoz yoki topilmadi. Oʻrniga tashqi xotiradan foydalanib tiklang.</translation>
 <translation id="6448938863276324156">USB disk kabi tashqi xotira qurilmasi orqali tiklash mumkin.</translation>
 <translation id="6972383785688794804">Bir sahifa yuqoriga</translation>
 <translation id="7065553583078443466">Muqobil tizimni yuklash vositasini tanlang</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">Tizimga jiddiy xavfsizlik yangilanishlari oʻrnatilmoqda.</translation>
 <translation id="7236073510654217175">Xavfsiz rejimga qaytish</translation>
 <translation id="7321387134821904291">Xotira salomatligi axboroti</translation>
+<translation id="7332672207700801967">Internet orqali tiklash (eski versiya)</translation>
 <translation id="7342794948394983731">Diagnostika vositalari</translation>
 <translation id="7352651011704765696">Xatolik yuz berdi.</translation>
 <translation id="7365121631770711723">2. Telefonni bu qurilmaga ulash uchun USB kabel</translation>
+<translation id="7407610796520500368">Internet aloqasi orqali tiklash</translation>
 <translation id="7420576176825630019">Dasturchi rejimini yoqish</translation>
 <translation id="7567414219298075193">Muammoni tuzatishga urinish uchun tiklash jarayonini boshlang. Barcha ulangan qurilmalarni uzing hamda Tiklash tugmasini bosib turib, Quvvat tugmasini ( ⏻ ) bosing va Tiklash tugmasini qoʻyib yuboring.</translation>
 <translation id="7638747526774710781">1. Boshqa qurilmada google.com/chromeos/recovery sahifasini oching va Chrome kengaytmasini oʻrnating</translation>

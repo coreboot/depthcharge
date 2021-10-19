@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">内部ディスクから起動</translation>
 <translation id="6191358901427525316">デバイスの修復を行うには、次のものが必要です。</translation>
 <translation id="635783852215913562">矢印キーを使用して、項目を移動できます。</translation>
+<translation id="6393574457614848045">インターネット リカバリ パーティションは破損しているか見つかりません。代わりに外部ストレージを使用して復元してください。</translation>
 <translation id="6448938863276324156">USB メモリなどの外部ストレージを使用して修復できます。</translation>
 <translation id="6972383785688794804">前のページ</translation>
 <translation id="7065553583078443466">別のブートローダーを選択</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">システムに重要なアップデートを適用しています。</translation>
 <translation id="7236073510654217175">通常モードに戻る</translation>
 <translation id="7321387134821904291">ストレージの健全性に関する情報</translation>
+<translation id="7332672207700801967">インターネット リカバリ（古いバージョン）</translation>
 <translation id="7342794948394983731">診断ツール</translation>
 <translation id="7352651011704765696">問題が発生しました</translation>
 <translation id="7365121631770711723">2. スマートフォンとこのデバイスを接続する USB ケーブル</translation>
+<translation id="7407610796520500368">インターネット接続を使用して復元</translation>
 <translation id="7420576176825630019">デベロッパー モードを有効にする</translation>
 <translation id="7567414219298075193">デバイスを修復するには、接続されているすべてのデバイスを取り外した後、リカバリボタンを押したまま電源ボタン（ ⏻ ）を押して放し、さらにリカバリボタンを放します。</translation>
 <translation id="7638747526774710781">1. 別のデバイスで google.com/chromeos/recovery にアクセスして、Chrome OS リカバリ アプリをインストールします</translation>

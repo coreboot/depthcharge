@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Käynnistä sisäiseltä levyltä</translation>
 <translation id="6191358901427525316">Valmistaudu laitteen palauttamiseen. Tarvitset</translation>
 <translation id="635783852215913562">Siirry ylös tai alas nuolinäppäimillä.</translation>
+<translation id="6393574457614848045">Internet-palautusosio vioittunut tai puuttuu. Tee palautus ulkoisen tallennustilan avulla.</translation>
 <translation id="6448938863276324156">Voit tehdä palautuksen ulkoisen tallennustilan, esim. USB-muistin avulla.</translation>
 <translation id="6972383785688794804">Sivu ylös</translation>
 <translation id="7065553583078443466">Valitse vaihtoehtoinen käynnistysohjelma</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">Järjestelmäsi asentaa tärkeää päivitystä.</translation>
 <translation id="7236073510654217175">Palaa suojattuun tilaan</translation>
 <translation id="7321387134821904291">Tietoja tallennustilan kunnosta</translation>
+<translation id="7332672207700801967">Internet-palautus (vanhempi versio)</translation>
 <translation id="7342794948394983731">Diagnostiikkatyökalut</translation>
 <translation id="7352651011704765696">Tapahtui jokin virhe</translation>
 <translation id="7365121631770711723">2. USB-johto, joka on yhdistetty puhelimeen ja tähän laitteeseen</translation>
+<translation id="7407610796520500368">Palautus internetyhteyden avulla</translation>
 <translation id="7420576176825630019">Ota kehittäjätila käyttöön</translation>
 <translation id="7567414219298075193">Aloita palautusprosessi ongelman korjaamiseksi. Irrota kaikki yhdistetyt laitteet ja paina palautuspainiketta pitkään. Paina sitten virtapainiketta ( ⏻ ) ja vapauta palautuspainike.</translation>
 <translation id="7638747526774710781">1. Siirry toisella laitteella osoitteeseen google.com/chromeos/recovery ja asenna Chrome-laajennus</translation>

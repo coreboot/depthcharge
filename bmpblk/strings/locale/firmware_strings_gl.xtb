@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Arrancar desde o disco interno</translation>
 <translation id="6191358901427525316">Prepárate para recuperar o teu dispositivo. Para facelo, necesitarás:</translation>
 <translation id="635783852215913562">Utiliza as teclas das frechas para desprazarte cara arriba ou cara abaixo.</translation>
+<translation id="6393574457614848045">Non se atopou a partición de recuperación de Internet ou está danada. Leva a cabo a recuperación cun dispositivo de almacenamento externo.</translation>
 <translation id="6448938863276324156">Para realizar a recuperación, podes utilizar un dispositivo de almacenamento externo, como unha unidade USB.</translation>
 <translation id="6972383785688794804">Retroceder páxina</translation>
 <translation id="7065553583078443466">Seleccionar cargador de arranque alternativo</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">O teu sistema está aplicando unha actualización esencial.</translation>
 <translation id="7236073510654217175">Volver ao modo seguro</translation>
 <translation id="7321387134821904291">Información sobre o estado do almacenamento</translation>
+<translation id="7332672207700801967">Recuperación de Internet (versión anterior)</translation>
 <translation id="7342794948394983731">Ferramentas de diagnóstico</translation>
 <translation id="7352651011704765696">Produciuse un erro</translation>
 <translation id="7365121631770711723">2. Un cable USB que conecta o teu teléfono e este dispositivo</translation>
+<translation id="7407610796520500368">Recuperación mediante a conexión a Internet</translation>
 <translation id="7420576176825630019">Activar modo de programador</translation>
 <translation id="7567414219298075193">Para tentar solucionar o problema, inicia o proceso de recuperación. Quita todos os dispositivos que teñas conectados e mantén premido o botón de recuperación, preme o botón de acendido ( ⏻ ) e sóltao e, por último, solta o botón de recuperación.</translation>
 <translation id="7638747526774710781">1. Vai a google.com/chromeos/recovery no outro dispositivo e instala a extensión de Chrome</translation>

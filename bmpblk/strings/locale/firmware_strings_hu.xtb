@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Indítás belső lemezről</translation>
 <translation id="6191358901427525316">Készüljön fel az eszköz helyreállítására. A következőkre lesz szüksége:</translation>
 <translation id="635783852215913562">A nyílbillentyűkkel navigálhat fel és le.</translation>
+<translation id="6393574457614848045">Az internetes helyreállítási partíció sérült, illetve hiányzik. Kérjük, végezze el a helyreállítást külső tárhely segítségével.</translation>
 <translation id="6448938863276324156">A helyreállítás külső tárhely (pl. USB-meghajtó) segítségével lehetséges.</translation>
 <translation id="6972383785688794804">Lapozás felfelé</translation>
 <translation id="7065553583078443466">Alternatív rendszerindító kiválasztása</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">A rendszer fontos frissítést végez.</translation>
 <translation id="7236073510654217175">Vissza a biztonságos módhoz</translation>
 <translation id="7321387134821904291">Tárhely állapotával kapcsolatos adatok</translation>
+<translation id="7332672207700801967">Internetes helyreállítás (régebbi verzió)</translation>
 <translation id="7342794948394983731">Diagnosztikai eszközök</translation>
 <translation id="7352651011704765696">Valami nem működik</translation>
 <translation id="7365121631770711723">2. USB-kábel, amellyel telefonját ehhez az eszközhöz csatlakoztathatja</translation>
+<translation id="7407610796520500368">Helyreállítás internetkapcsolat használatával</translation>
 <translation id="7420576176825630019">Fejlesztői mód engedélyezése</translation>
 <translation id="7567414219298075193">A probléma megoldásának megkísérléséhez indítsa el a helyreállítási folyamatot. Távolítsa el az összes csatlakoztatott eszközt, majd tartsa lenyomva a Helyreállítás gombot, nyomja meg a Bekapcsológombot ( ⏻ ), végül engedje fel a Helyreállítás gombot.</translation>
 <translation id="7638747526774710781">1. Lépjen a google.com/chromeos/recovery oldalra egy másik eszközön, és telepítse a Chrome-bővítményt</translation>

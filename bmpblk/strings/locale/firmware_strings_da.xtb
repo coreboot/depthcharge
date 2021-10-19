@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Genstart fra intern disk</translation>
 <translation id="6191358901427525316">Gør klar til at gendanne din enhed. Du skal bruge:</translation>
 <translation id="635783852215913562">Brug piletasterne til at navigere op eller ned.</translation>
+<translation id="6393574457614848045">Partition til internetgendannelse mangler eller er beskadiget. Gendan ved hjælp af en ekstern lagerplads i stedet.</translation>
 <translation id="6448938863276324156">Du kan gendanne ved hjælp af en ekstern lagerenhed som f.eks. et USB-drev.</translation>
 <translation id="6972383785688794804">Side op</translation>
 <translation id="7065553583078443466">Vælg alternativ bootloader</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">Dit system foretager en vigtig opdatering.</translation>
 <translation id="7236073510654217175">Vend tilbage til sikker tilstand</translation>
 <translation id="7321387134821904291">Oplysninger om lagertilstand</translation>
+<translation id="7332672207700801967">Internetgendannelse (ældre version)</translation>
 <translation id="7342794948394983731">Værktøjer til diagnosticering</translation>
 <translation id="7352651011704765696">Der opstod en fejl</translation>
 <translation id="7365121631770711723">2. Et USB-kabel, der opretter forbindelse mellem din telefon og denne enhed</translation>
+<translation id="7407610796520500368">Gendannelse via internetforbindelse</translation>
 <translation id="7420576176825630019">Aktivér udviklertilstand</translation>
 <translation id="7567414219298075193">Start gendannelsesprocessen for at prøve at løse problemet. Fjern alle tilsluttede enheder. Hold derefter gendannelsesknappen inde, mens du trykker på afbryderknappen ( ⏻ ) og slipper den igen. Slip derefter gendannelsesknappen.</translation>
 <translation id="7638747526774710781">1. Gå til google.com/chromeos/recovery på den anden enhed, og installer Chrome-udvidelsen</translation>

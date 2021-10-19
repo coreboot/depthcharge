@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Ndiz nga disku i brendshëm</translation>
 <translation id="6191358901427525316">Bëhu gati për rikuperimin e pajisjes sate. Do të të duhet:</translation>
 <translation id="635783852215913562">Përdor tastet e shigjetave për të naviguar lart ose poshtë.</translation>
+<translation id="6393574457614848045">Ndarja e rikuperimit të internetit është dëmtuar ose mungon. Në vend të kësaj, rikupero duke përdorur hapësirën ruajtëse të jashtme.</translation>
 <translation id="6448938863276324156">Mund të rikuperosh duke përdorur një hapësirë ruajtëse të jashtme, si p.sh. një njësi USB.</translation>
 <translation id="6972383785688794804">Faqja lart</translation>
 <translation id="7065553583078443466">Zgjidh një ngarkues alternativ të sistemit</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">Sistemi yt po zbaton një përditësim kritik.</translation>
 <translation id="7236073510654217175">Kthehu në modalitetin e sigurt</translation>
 <translation id="7321387134821904291">Informacionet për integritetin e hapësirës ruajtëse</translation>
+<translation id="7332672207700801967">Rikuperimi i internetit (versioni i vjetër)</translation>
 <translation id="7342794948394983731">Veglat e diagnostikimit</translation>
 <translation id="7352651011704765696">Diçka shkoi keq</translation>
 <translation id="7365121631770711723">2. Një kabllo USB që lidh telefonin tënd dhe këtë pajisje</translation>
+<translation id="7407610796520500368">Rikuperimi duke përdorur lidhjen e internetit</translation>
 <translation id="7420576176825630019">Aktivizo modalitetin si zhvillues</translation>
 <translation id="7567414219298075193">Për të provuar ta rregullosh problemin, fillo procesin e rikuperimit. Hiq të gjitha pajisjet e lidhura dhe më pas mbaj të shtypur butonin e "Rikuperimit", shtyp dhe lësho butonin e "Energjisë" ( ⏻ ) dhe lësho butonin e "Rikuperimit".</translation>
 <translation id="7638747526774710781">1. Shko te google.com/chromeos/recovery në një pajisje tjetër dhe instalo shtesën e Chrome</translation>

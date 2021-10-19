@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Pornește de pe un disc intern</translation>
 <translation id="6191358901427525316">Pregătește-te să recuperezi dispozitivul. Vei avea nevoie de:</translation>
 <translation id="635783852215913562">Folosește tastele săgeată pentru a naviga în sus sau în jos.</translation>
+<translation id="6393574457614848045">Partiția de recuperare de pe internet este deteriorată sau lipsește. Realizează recuperarea folosind stocarea externă.</translation>
 <translation id="6448938863276324156">Poți recupera folosind suporturi externe, precum o unitate USB.</translation>
 <translation id="6972383785688794804">O pagină mai sus</translation>
 <translation id="7065553583078443466">Selectează un bootloader alternativ</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">Sistemul aplică o actualizare esențială.</translation>
 <translation id="7236073510654217175">Revino la modul sigur</translation>
 <translation id="7321387134821904291">Informații despre starea dispozitivelor de stocare</translation>
+<translation id="7332672207700801967">Recuperare de pe internet (versiune mai veche)</translation>
 <translation id="7342794948394983731">Instrumente de diagnosticare</translation>
 <translation id="7352651011704765696">A apărut o eroare</translation>
 <translation id="7365121631770711723">2. Un cablu USB conectat la telefon și la acest dispozitiv</translation>
+<translation id="7407610796520500368">Recuperare printr-o conexiune la internet</translation>
 <translation id="7420576176825630019">Activează modul pentru dezvoltatori</translation>
 <translation id="7567414219298075193">Pentru a încerca să remediezi problema, inițiază procesul de recuperare. Elimină toate dispozitivele conectate, ține apăsat butonul de recuperare, apasă și eliberează butonul de pornire ( ⏻ ), apoi eliberează butonul de recuperare.</translation>
 <translation id="7638747526774710781">1. Accesează google.com/chromeos/recovery pe celălalt dispozitiv și instalează extensia Chrome.</translation>

@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Uruchom z dysku wewnętrznego</translation>
 <translation id="6191358901427525316">Przygotuj się na przywrócenie danych na urządzeniu. Potrzebne Ci będą:</translation>
 <translation id="635783852215913562">Użyj klawiszy strzałek, by przechodzić w górę lub w dół.</translation>
+<translation id="6393574457614848045">Uszkodzona lub brakująca partycja odzyskiwania za pomocą internetu. Spróbuj odzyskać dane z wykorzystaniem pamięci zewnętrznej.</translation>
 <translation id="6448938863276324156">Możesz przywrócić dane, korzystając z pamięci zewnętrznej, np. dysku USB.</translation>
 <translation id="6972383785688794804">Strona w górę</translation>
 <translation id="7065553583078443466">Wybierz inny program rozruchowy</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">System instaluje krytyczną aktualizację.</translation>
 <translation id="7236073510654217175">Wróć do trybu bezpiecznego</translation>
 <translation id="7321387134821904291">Informacje o stanie pamięci</translation>
+<translation id="7332672207700801967">Odzyskiwanie za pomocą internetu (starsza wersja)</translation>
 <translation id="7342794948394983731">Narzędzia diagnostyczne</translation>
 <translation id="7352651011704765696">Coś poszło nie tak</translation>
 <translation id="7365121631770711723">2. Kabel USB łączący telefon z tym urządzeniem</translation>
+<translation id="7407610796520500368">Odzyskiwanie za pomocą połączenia z internetem</translation>
 <translation id="7420576176825630019">Włącz tryb programisty</translation>
 <translation id="7567414219298075193">Aby spróbować rozwiązać ten problem, rozpocznij proces przywracania. Odłącz wszystkie podłączone urządzenia, przytrzymaj przycisk przywracania, a następnie naciśnij i zwolnij przycisk zasilania ( ⏻ ) i na końcu zwolnij przycisk przywracania.</translation>
 <translation id="7638747526774710781">1. Otwórz google.com/chromeos/recovery na innym urządzeniu i zainstaluj rozszerzenie do Chrome.</translation>

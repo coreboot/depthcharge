@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Abiarazi barneko diskotik</translation>
 <translation id="6191358901427525316">Prestatu gailua berreskuratzeko. Honako hauek beharko dituzu:</translation>
 <translation id="635783852215913562">Erabili gezi-teklak gora edo behera joateko.</translation>
+<translation id="6393574457614848045">Interneteko konexioaren bidez sistema berreskuratzeko partizioa hondatuta dago edo ez dago. Berreskura ezazu kanpoko memoria bat erabilita.</translation>
 <translation id="6448938863276324156">Kanpoko memoria bat erabil dezakezu edukia berreskuratzeko; adibidez, USB bidezko unitate bat.</translation>
 <translation id="6972383785688794804">Orrian gora</translation>
 <translation id="7065553583078443466">Hautatu sistema eragilearen ordezko abiarazle bat</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">Funtsezko eguneratze bat aplikatzen ari da sistema.</translation>
 <translation id="7236073510654217175">Itzuli modu segurura</translation>
 <translation id="7321387134821904291">Biltegiratzearen egoerari buruzko informazioa</translation>
+<translation id="7332672207700801967">Interneteko konexioaren bidez sistema berreskuratzea (bertsio zaharragoa)</translation>
 <translation id="7342794948394983731">Diagnostikoak egiteko tresnak</translation>
 <translation id="7352651011704765696">Arazoren bat izan da</translation>
 <translation id="7365121631770711723">2. Telefonoa gailu honekin konektatzeko USB kable bat.</translation>
+<translation id="7407610796520500368">Interneteko konexioaren bidez sistema berreskuratzea</translation>
 <translation id="7420576176825630019">Gaitu garatzaileen modua</translation>
 <translation id="7567414219298075193">Arazoa konpontzen saiatzeko, ekin berreskuratze-prozesuari. Kendu konektatutako gailu guztiak. Ondoren, eduki sakatuta Berreskuratu botoia, sakatu eta askatu etengailua ( ⏻ ) eta askatu Berreskuratu botoia.</translation>
 <translation id="7638747526774710781">1. Joan google.com/chromeos/recovery helbidera beste gailuaren bidez eta instalatu Chrome-rako luzapena.</translation>

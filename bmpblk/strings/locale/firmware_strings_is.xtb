@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Ræsa af innra drifi</translation>
 <translation id="6191358901427525316">Búðu þig undir að endurheimta tækið þitt. Þú þarft:</translation>
 <translation id="635783852215913562">Notaðu örvatakkana til að fletta upp eða niður.</translation>
+<translation id="6393574457614848045">Endurheimtarsneið nets er skemmd eða hana vantar. Notaðu ytri geymslu til að endurheimta í staðinn.</translation>
 <translation id="6448938863276324156">Hægt er að nota ytri geymslu við endurheimt, t.d. USB-drif.</translation>
 <translation id="6972383785688794804">Síða upp</translation>
 <translation id="7065553583078443466">Velja annað ræsiforrit</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">Kerfið er að setja upp mikilvæga uppfærslu.</translation>
 <translation id="7236073510654217175">Fara aftur í örugga stillingu</translation>
 <translation id="7321387134821904291">Upplýsingar um ástand minnisins</translation>
+<translation id="7332672207700801967">Endurheimt nets (eldri útgáfa)</translation>
 <translation id="7342794948394983731">Greiningarverkfæri</translation>
 <translation id="7352651011704765696">Eitthvað fór úrskeiðis</translation>
 <translation id="7365121631770711723">2. USB-snúra sem er tengd við símann þinn og þetta tæki</translation>
+<translation id="7407610796520500368">Endurheimt með nettengingu</translation>
 <translation id="7420576176825630019">Kveikja á forritarastillingu</translation>
 <translation id="7567414219298075193">Til að reyna að lagfæra vandamálið skaltu hefja endurheimtarferlið. Taktu öll tengd tæki úr sambandi og haltu svo inni hnappinum „Recovery“, ýttu á aflrofann og slepptu honum aftur ( ⏻ ) og slepptu svo hnappinum „Recovery“.</translation>
 <translation id="7638747526774710781">1. Farðu á google.com/chromeos/recovery í hinu tækinu og settu upp Chrome viðbótina</translation>

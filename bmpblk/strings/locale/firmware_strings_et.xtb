@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Käivitamine sisemiselt kettalt</translation>
 <translation id="6191358901427525316">Olge valmis oma seadet taastama. Vajate järgmist.</translation>
 <translation id="635783852215913562">Kasutage üles või alla liikumiseks nooleklahve.</translation>
+<translation id="6393574457614848045">Interneti taastesektsioon on rikutud või puudub. Taastage selle asemel välise salvestusseadme abil.</translation>
 <translation id="6448938863276324156">Taastamiseks saab kasutada välist salvestusseadet, nt USB-ketast.</translation>
 <translation id="6972383785688794804">Lehe võrra üles</translation>
 <translation id="7065553583078443466">Valige teine käivituslaadur</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">Süsteem rakendab kriitilist värskendust.</translation>
 <translation id="7236073510654217175">Naase turvalisse režiimi</translation>
 <translation id="7321387134821904291">Salvestusruumi seisukord</translation>
+<translation id="7332672207700801967">Internetiga taastamine (vanem versioon)</translation>
 <translation id="7342794948394983731">Diagnostikatööriistad</translation>
 <translation id="7352651011704765696">Midagi läks valesti</translation>
 <translation id="7365121631770711723">2. USB-kaabel, mis ühendab teie telefoni ja selle seadme</translation>
+<translation id="7407610796520500368">Taastamine internetiühendusega</translation>
 <translation id="7420576176825630019">Luba arendaja režiim</translation>
 <translation id="7567414219298075193">Probleemi lahendamiseks alustage taastamist. Eemaldage kõik ühendatud seadmed, seejärel hoidke all taastamisnuppu, vajutage toitenuppu ( ⏻ ) ja vabastage see ning vabastage taastamisnupp.</translation>
 <translation id="7638747526774710781">1. Minge teises seadmes saidile google.com/chromeos/recovery ja installige Chrome'i laiendus.</translation>

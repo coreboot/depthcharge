@@ -184,6 +184,12 @@ Recovery using phone
       <message name="btn_rec_by_disk" desc="Button to select recovery through external disk.">
 Recovery using external storage
       </message>
+      <message name="btn_rec_by_internet" desc="Button to select internet connection recovery.">
+Recovery using internet connection
+      </message>
+      <message name="btn_rec_by_internet_old" desc="Button to select internet connection recovery.">
+Internet recovery (older version)
+      </message>
       <message name="rec_step1_title" desc="Title for Step1 in the recovery process.">
 Get ready to recover your device. You'll need:
       </message>
@@ -413,6 +419,9 @@ Could not get firmware log.
       </message>
       <message name="error_diagnostics" desc="Error of showing diagnostic information">
 Could not get diagnostic information.
+      </message>
+      <message name="error_internet_recovery" desc="Error of using internet recovery">
+Internet recovery partition corrupted or missing. Please recover using external storage instead.
       </message>
     </messages>
   </release>

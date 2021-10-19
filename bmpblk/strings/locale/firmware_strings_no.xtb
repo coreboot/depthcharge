@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Start opp fra intern disk</translation>
 <translation id="6191358901427525316">Gjør deg klar til å gjenopprette enheten. Du trenger</translation>
 <translation id="635783852215913562">Bruk piltastene for å navigere opp eller ned.</translation>
+<translation id="6393574457614848045">Gjenopprettingspartisjon på internett er skadet eller mangler. Bruk ekstern lagring til å gjenopprette i stedet.</translation>
 <translation id="6448938863276324156">Du kan gjenopprette ved bruk av ekstern lagring, som en USB-stasjon.</translation>
 <translation id="6972383785688794804">Opp en side</translation>
 <translation id="7065553583078443466">Velg en annen oppstartsinnlaster</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">Systemet installerer en kritisk oppdatering.</translation>
 <translation id="7236073510654217175">Gå tilbake til sikker modus</translation>
 <translation id="7321387134821904291">Informasjon om lagringshelse</translation>
+<translation id="7332672207700801967">Internettgjenoppretting (eldre versjon)</translation>
 <translation id="7342794948394983731">Diagnostikkverktøy</translation>
 <translation id="7352651011704765696">Noe gikk galt</translation>
 <translation id="7365121631770711723">2. En USB-kabel som kobler telefonen din sammen med denne enheten</translation>
+<translation id="7407610796520500368">Gjenoppretting ved bruk av internettilkobling</translation>
 <translation id="7420576176825630019">Slå på utviklermodus</translation>
 <translation id="7567414219298075193">For å prøve å løse problemet, start gjenopprettingsprosessen. Koble fra alle tilkoblede enheter, hold inne gjenopprettingsknappen, trykk på og slipp av/på-knappen ( ⏻ ), og slipp gjenopprettingsknappen.</translation>
 <translation id="7638747526774710781">1. Gå til google.com/chromeos/recovery på den andre enheten, og installer Chrome-utvidelsen</translation>

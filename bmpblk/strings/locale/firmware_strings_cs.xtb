@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Spustit z interního disku</translation>
 <translation id="6191358901427525316">Připravte se na obnovení zařízení. Co budete potřebovat:</translation>
 <translation id="635783852215913562">Pomocí kláves se šipkami se pohybujte nahoru a dolů.</translation>
+<translation id="6393574457614848045">Internetový obnovovací oddíl je poškozen nebo chybí. Použijte místo něj k obnovení externí úložiště.</translation>
 <translation id="6448938863276324156">Obnovení můžete provést pomocí externího úložiště, jako je jednotka USB.</translation>
 <translation id="6972383785688794804">O stránku nahoru</translation>
 <translation id="7065553583078443466">Vybrat alternativní bootloader</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">Systém instaluje důležitou aktualizaci.</translation>
 <translation id="7236073510654217175">Vrátit se do bezpečného režimu</translation>
 <translation id="7321387134821904291">Informace o stavu úložiště</translation>
+<translation id="7332672207700801967">Internetové obnovení (starší verze)</translation>
 <translation id="7342794948394983731">Diagnostické nástroje</translation>
 <translation id="7352651011704765696">Něco se pokazilo</translation>
 <translation id="7365121631770711723">2. Kabel USB na propojení telefonu a tohoto zařízení</translation>
+<translation id="7407610796520500368">Obnovení pomocí připojení k internetu</translation>
 <translation id="7420576176825630019">Zapnout režim pro vývojáře</translation>
 <translation id="7567414219298075193">Pokud problém chcete zkusit odstranit, spusťte proces obnovení. Odstraňte všechna připojená zařízení a potom podržte tlačítko Obnovit, stiskněte vypínač ( ⏻ ) a uvolněte tlačítko Obnovit.</translation>
 <translation id="7638747526774710781">1. Na jiném zařízení přejděte na stránku google.com/chromeos/recovery a nainstalujte rozšíření pro Chrome</translation>

@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">从内部磁盘启动</translation>
 <translation id="6191358901427525316">为恢复您的设备做好准备。您需要具备：</translation>
 <translation id="635783852215913562">使用箭头键可向上/向下移动。</translation>
+<translation id="6393574457614848045">互联网恢复分区已损坏或缺失。请改为使用外部存储空间进行恢复。</translation>
 <translation id="6448938863276324156">您可以使用外部存储设备（例如 U 盘）进行恢复。</translation>
 <translation id="6972383785688794804">向上翻页</translation>
 <translation id="7065553583078443466">选择备用的引导加载程序</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">您的系统正在应用一项重要更新。</translation>
 <translation id="7236073510654217175">返回到安全模式</translation>
 <translation id="7321387134821904291">存储空间状况信息</translation>
+<translation id="7332672207700801967">互联网恢复（旧版）</translation>
 <translation id="7342794948394983731">诊断工具</translation>
 <translation id="7352651011704765696">出了点问题</translation>
 <translation id="7365121631770711723">2. 一条用于连接您的手机和该设备的 USB 线</translation>
+<translation id="7407610796520500368">使用互联网连接进行恢复</translation>
 <translation id="7420576176825630019">启用开发者模式</translation>
 <translation id="7567414219298075193">若要尝试解决此问题，请启动恢复流程。请移除所有已连接的设备，然后先按住“恢复”按钮，再按下“电源”按钮 ( ⏻ ) 并松开，最后松开“恢复”按钮。</translation>
 <translation id="7638747526774710781">1. 在另一部设备上，访问 google.com/chromeos/recovery，并安装所需的 Chrome 扩展程序</translation>

@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">從內置磁碟開機</translation>
 <translation id="6191358901427525316">請準備復原裝置。您需要：</translation>
 <translation id="635783852215913562">使用箭嘴鍵向上或向下導覽。</translation>
+<translation id="6393574457614848045">互聯網復原分割已損毀或遺失。請改為使用外部儲存空間進行復原。</translation>
 <translation id="6448938863276324156">您可使用 USB 磁碟等外置儲存裝置進行復原。</translation>
 <translation id="6972383785688794804">上一頁</translation>
 <translation id="7065553583078443466">選取替代的啟動程式</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">系統正在套用重要更新。</translation>
 <translation id="7236073510654217175">返回安全模式</translation>
 <translation id="7321387134821904291">儲存空間的健康資料</translation>
+<translation id="7332672207700801967">互聯網復原 (舊版本)</translation>
 <translation id="7342794948394983731">診斷工具</translation>
 <translation id="7352651011704765696">發生問題</translation>
 <translation id="7365121631770711723">2. 連接手機和此裝置的 USB 連接線</translation>
+<translation id="7407610796520500368">使用互聯網連線進行復原</translation>
 <translation id="7420576176825630019">啟用開發人員模式</translation>
 <translation id="7567414219298075193">如要嘗試並解決問題，請開始復原程序。請移除所有已連接的裝置，然後先按住 [還原] 按鈕，再同時按一下並放開開關按鈕 ( ⏻ )，最後才放開 [還原] 按鈕。</translation>
 <translation id="7638747526774710781">1. 在另一部裝置上前往 google.com/chromeos/recovery，並安裝 Chrome 擴充功能</translation>

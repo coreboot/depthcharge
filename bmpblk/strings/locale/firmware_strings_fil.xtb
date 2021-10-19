@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">I-boot mula sa internal na disk</translation>
 <translation id="6191358901427525316">Maghandang i-recover ang iyong device. Kakailanganin mo ng:</translation>
 <translation id="635783852215913562">Gamitin ang mga arrow key para mag-navigate pataas o pababa.</translation>
+<translation id="6393574457614848045">Na-corrupt o nawawala ang partition para sa pag-recover ng internet. Paki-recover na lang gamit ang external storage.</translation>
 <translation id="6448938863276324156">Makakapag-recover ka gamit ang external na storage gaya ng USB drive.</translation>
 <translation id="6972383785688794804">Pahina pataas</translation>
 <translation id="7065553583078443466">Pumili ng alternatibong bootloader</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">Naglalapat ng mahalagang update ang iyong system.</translation>
 <translation id="7236073510654217175">Bumalik sa secure mode</translation>
 <translation id="7321387134821904291">Impormasyon sa status ng storage</translation>
+<translation id="7332672207700801967">Pag-recover ng internet (mas lumang bersyon)</translation>
 <translation id="7342794948394983731">Mga diagnostic tool</translation>
 <translation id="7352651011704765696">Nagkaroon ng problema</translation>
 <translation id="7365121631770711723">2. USB cable na nagkokonekta sa iyong telepono at sa device na ito</translation>
+<translation id="7407610796520500368">Pag-recover gamit ang koneksyon sa internet</translation>
 <translation id="7420576176825630019">I-enable ang developer mode</translation>
 <translation id="7567414219298075193">Para subukang ayusin ang isyu, simulan ang proseso ng pag-recover. Alisin ang lahat ng nakakonektang device, pagkatapos ay pindutin nang matagal ang button na Recovery, pindutin nang isang beses ang Power button ( ⏻ ), bitawan ang button na Recovery.</translation>
 <translation id="7638747526774710781">1. Pumunta sa google.com/chromeos/recovery sa kabilang device at i-install ang extension ng Chrome</translation>

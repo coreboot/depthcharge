@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Opstarten via interne schijf</translation>
 <translation id="6191358901427525316">Bereid het herstellen van je apparaat voor. Je hebt het volgende nodig:</translation>
 <translation id="635783852215913562">Gebruik de pijltoetsen om omhoog of omlaag te navigeren.</translation>
+<translation id="6393574457614848045">Partitie voor herstel via internet is beschadigd of ontbreekt. Voer het herstel uit via externe opslag.</translation>
 <translation id="6448938863276324156">Je kunt herstellen met een extern opslagapparaat, zoals een USB-drive.</translation>
 <translation id="6972383785688794804">Pagina omhoog</translation>
 <translation id="7065553583078443466">Alternatieve bootloader selecteren</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">Het systeem voert een essentiële update uit.</translation>
 <translation id="7236073510654217175">Terug naar beveiligde modus</translation>
 <translation id="7321387134821904291">Statusinformatie over opslag</translation>
+<translation id="7332672207700801967">Herstel via internet (oudere versie)</translation>
 <translation id="7342794948394983731">Diagnostische tools</translation>
 <translation id="7352651011704765696">Er is iets misgegaan</translation>
 <translation id="7365121631770711723">2. Een USB-kabel waarmee je telefoon en dit apparaat op elkaar worden aangesloten</translation>
+<translation id="7407610796520500368">Herstel via internetverbinding</translation>
 <translation id="7420576176825630019">Ontwikkelaarsmodus inschakelen</translation>
 <translation id="7567414219298075193">Start het herstelproces om het probleem op te lossen. Verwijder alle gekoppelde apparaten en houd daarna de herstelknop ingedrukt, druk kort op de aan/uit-knop ( ⏻ ) en laat de herstelknop los.</translation>
 <translation id="7638747526774710781">1. Ga op het andere apparaat naar google.com/chromeos/recovery en installeer de Chrome-extensie</translation>

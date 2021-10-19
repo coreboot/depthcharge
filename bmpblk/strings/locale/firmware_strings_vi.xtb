@@ -58,6 +58,7 @@
 <translation id="6172915643608608639">Khởi động từ ổ đĩa trong</translation>
 <translation id="6191358901427525316">Chuẩn bị khôi phục thiết bị. Bạn cần có:</translation>
 <translation id="635783852215913562">Sử dụng các phím mũi tên để di chuyển lên trên hoặc xuống dưới.</translation>
+<translation id="6393574457614848045">Phân vùng khôi phục bằng kết nối Internet có lỗi hoặc thiếu. Vui lòng khôi phục bằng bộ nhớ ngoài thay thế.</translation>
 <translation id="6448938863276324156">Bạn có thể khôi phục bằng thiết bị lưu trữ bên ngoài, chẳng hạn như ổ đĩa USB.</translation>
 <translation id="6972383785688794804">Trang trên</translation>
 <translation id="7065553583078443466">Chọn trình tải khởi động thay thế</translation>
@@ -67,9 +68,11 @@
 <translation id="7187861267433191629">Hệ thống của bạn đang cài đặt một bản cập nhật quan trọng.</translation>
 <translation id="7236073510654217175">Quay lại chế độ bảo mật</translation>
 <translation id="7321387134821904291">Thông tin về tình trạng bộ nhớ</translation>
+<translation id="7332672207700801967">Khôi phục bằng kết nối Internet (phiên bản cũ hơn)</translation>
 <translation id="7342794948394983731">Công cụ chẩn đoán</translation>
 <translation id="7352651011704765696">Đã xảy ra lỗi</translation>
 <translation id="7365121631770711723">2. Cáp USB dùng để kết nối điện thoại và thiết bị này</translation>
+<translation id="7407610796520500368">Khôi phục bằng kết nối internet</translation>
 <translation id="7420576176825630019">Bật chế độ nhà phát triển</translation>
 <translation id="7567414219298075193">Để thử và khắc phục sự cố, hãy bắt đầu quy trình khôi phục. Tháo mọi thiết bị đã kết nối, sau đó nhấn và giữ nút Khôi phục, nhấn rồi nhả nút Nguồn ( ⏻ ), nhả nút Khôi phục.</translation>
 <translation id="7638747526774710781">1. Truy cập vào google.com/chromeos/recovery trên thiết bị khác và cài đặt tiện ích của Chrome</translation>
