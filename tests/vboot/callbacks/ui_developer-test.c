@@ -522,7 +522,7 @@ static void test_developer_ui_stop_timer_on_input_short_delay(void **state)
 	assert_true(mock_time_ms > start_time + DEV_DELAY_SHORT_MS + FUZZ_MS);
 }
 
-static void test_developer_screen_default_select_item_internal(void **state)
+static void test_developer_screen_default_boot_internal(void **state)
 {
 	struct ui_context *ui = *state;
 
@@ -538,7 +538,7 @@ static void test_developer_screen_default_select_item_internal(void **state)
 	ASSERT_VB2_SUCCESS(vb2ex_developer_ui(ui->ctx));
 }
 
-static void test_developer_screen_default_select_item_external(void **state)
+static void test_developer_screen_default_boot_external(void **state)
 {
 	struct ui_context *ui = *state;
 
@@ -553,6 +553,26 @@ static void test_developer_screen_default_select_item_external(void **state)
 	will_return_maybe(ui_keyboard_read, 0);
 
 	ASSERT_VB2_SUCCESS(vb2ex_developer_ui(ui->ctx));
+}
+
+static void test_developer_screen_default_boot_altfw(void **state)
+{
+	struct ui_context *ui = *state;
+
+	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED;
+	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_ALTFW_ALLOWED;
+	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
+	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 4);
+	will_return_maybe(vb2api_get_dev_default_boot_target,
+			  VB2_DEV_DEFAULT_BOOT_TARGET_ALTFW);
+	will_return_maybe(vb2api_gbb_get_flags, 0);
+	will_return_maybe(ui_keyboard_read, 0);
+	will_return_maybe(vb2ex_get_altfw_count, 2);
+	expect_value(vb2ex_run_altfw, altfw_id, 0);
+	will_return(vb2ex_run_altfw, VB2_SUCCESS);
+
+	expect_assert_failure(vb2ex_developer_ui(ui->ctx));
 }
 
 static void test_developer_screen_disabled_and_hidden_altfw(void **state)
@@ -861,8 +881,9 @@ int main(void)
 		UI_TEST(test_developer_ui_stop_timer_on_input_normal_delay),
 		UI_TEST(test_developer_ui_stop_timer_on_input_short_delay),
 		/* Developer screens */
-		UI_TEST(test_developer_screen_default_select_item_internal),
-		UI_TEST(test_developer_screen_default_select_item_external),
+		UI_TEST(test_developer_screen_default_boot_internal),
+		UI_TEST(test_developer_screen_default_boot_external),
+		UI_TEST(test_developer_screen_default_boot_altfw),
 		UI_TEST(test_developer_screen_disabled_and_hidden_altfw),
 		UI_TEST(test_developer_screen_disabled_and_hidden_force_dev),
 		UI_TEST(test_developer_screen_disabled_and_hidden_only_altfw),

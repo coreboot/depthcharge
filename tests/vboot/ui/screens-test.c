@@ -60,20 +60,6 @@ static void test_language_menu_locale_count_0(void **state)
 	assert_int_equal(menu->num_items, 1);
 }
 
-static void test_dev_altfw_action_allowed(void **state)
-{
-	struct ui_context *ui = *state;
-
-	ui->ctx->flags |= VB2_CONTEXT_DEVELOPER_MODE;
-	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_ALTFW_ALLOWED;
-	ui->state->selected_item = 2;
-	expect_value(vb2ex_run_altfw, altfw_id, 2);
-	will_return(vb2ex_run_altfw, VB2_SUCCESS);
-	will_return_maybe(vb2ex_get_altfw_count, 2);
-
-	expect_assert_failure(ui_developer_mode_boot_altfw_action(ui));
-}
-
 static void test_dev_altfw_action_default_bootloader(void **state)
 {
 
@@ -81,7 +67,6 @@ static void test_dev_altfw_action_default_bootloader(void **state)
 
 	ui->ctx->flags |= VB2_CONTEXT_DEVELOPER_MODE;
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_ALTFW_ALLOWED;
-	ui->key = UI_KEY_DEV_BOOT_ALTFW;
 	expect_value(vb2ex_run_altfw, altfw_id, 0);
 	will_return(vb2ex_run_altfw, VB2_SUCCESS);
 	will_return_maybe(vb2ex_get_altfw_count, 2);
@@ -98,8 +83,7 @@ int main(void)
 		/* Get language menu */
 		UI_TEST(test_language_menu_allocate_once),
 		UI_TEST(test_language_menu_locale_count_0),
-		/* developer_mode_boot_altfw_action */
-		UI_TEST(test_dev_altfw_action_allowed),
+		/* Boot from alternate bootloader */
 		UI_TEST(test_dev_altfw_action_default_bootloader),
 	};
 	return cmocka_run_group_tests(tests, NULL, NULL);

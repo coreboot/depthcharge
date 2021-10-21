@@ -1239,9 +1239,11 @@ vb2_error_t ui_developer_mode_boot_external_action(struct ui_context *ui)
 
 static vb2_error_t developer_mode_action(struct ui_context *ui)
 {
-	const int use_short = vb2api_gbb_get_flags(ui->ctx) &
-			      VB2_GBB_FLAG_DEV_SCREEN_SHORT_DELAY;
+	const int dev_delay_ms = (vb2api_gbb_get_flags(ui->ctx) &
+				  VB2_GBB_FLAG_DEV_SCREEN_SHORT_DELAY) ?
+		DEV_DELAY_SHORT_MS : DEV_DELAY_NORMAL_MS;
 	uint64_t elapsed_ms;
+	enum vb2_dev_default_boot_target default_boot;
 
 	/* Once any user interaction occurs, stop the timer. */
 	if (ui->key)
@@ -1251,25 +1253,27 @@ static vb2_error_t developer_mode_action(struct ui_context *ui)
 
 	elapsed_ms = vb2ex_mtime() - ui->start_time_ms;
 
-	/* If we're using short delay, wait 2 seconds and don't beep. */
-	if (use_short && elapsed_ms > DEV_DELAY_SHORT_MS) {
-		UI_INFO("Booting default target after 2s\n");
+	/* Boot from default target after timeout. */
+	if (elapsed_ms > dev_delay_ms) {
+		UI_INFO("Booting default target after %ds\n",
+			dev_delay_ms / MSECS_PER_SEC);
 		ui->disable_timer = 1;
-		return ui_menu_select(ui);
+		default_boot = vb2api_get_dev_default_boot_target(ui->ctx);
+		switch (default_boot) {
+		case VB2_DEV_DEFAULT_BOOT_TARGET_EXTERNAL:
+			return ui_developer_mode_boot_external_action(ui);
+		case VB2_DEV_DEFAULT_BOOT_TARGET_ALTFW:
+			return ui_developer_mode_boot_altfw_action(ui);
+		default:
+			return ui_developer_mode_boot_internal_action(ui);
+		}
 	}
 
-	/* Otherwise, beep at 20 and 20.5 seconds. */
+	/* Beep at 20 and 20.5 seconds. */
 	if ((ui->beep_count == 0 && elapsed_ms > DEV_DELAY_BEEP1_MS) ||
 	    (ui->beep_count == 1 && elapsed_ms > DEV_DELAY_BEEP2_MS)) {
 		vb2ex_beep(250, 400);
 		ui->beep_count++;
-	}
-
-	/* Stop after 30 seconds. */
-	if (elapsed_ms > DEV_DELAY_NORMAL_MS) {
-		UI_INFO("Booting default target after 30s\n");
-		ui->disable_timer = 1;
-		return ui_menu_select(ui);
 	}
 
 	return VB2_SUCCESS;
@@ -1545,12 +1549,9 @@ static vb2_error_t developer_select_bootloader_init(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
-vb2_error_t ui_developer_mode_boot_altfw_action(struct ui_context *ui)
+static vb2_error_t developer_boot_altfw_impl(struct ui_context *ui,
+					     uint32_t altfw_id)
 {
-	uint32_t altfw_id;
-	const size_t menu_before_len =
-		ARRAY_SIZE(developer_select_altfw_items_before);
-
 	if (!(ui->ctx->flags & VB2_CONTEXT_DEVELOPER_MODE) ||
 	    !(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALLOWED) ||
 	    !(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALTFW_ALLOWED)) {
@@ -1563,19 +1564,34 @@ vb2_error_t ui_developer_mode_boot_altfw_action(struct ui_context *ui)
 		return set_ui_error(ui, VB2_UI_ERROR_ALTFW_EMPTY);
 	}
 
-	if (ui->key == UI_KEY_DEV_BOOT_ALTFW) {
-		altfw_id = 0;
-		UI_INFO("Try booting from default bootloader\n");
-	} else {
-		altfw_id = ui->state->selected_item - menu_before_len + 1;
-		UI_INFO("Try booting from bootloader #%u\n", altfw_id);
-	}
+	UI_INFO("Try booting from bootloader #%u\n", altfw_id);
 
 	/* vb2ex_run_altfw will not return if successful. */
 	vb2ex_run_altfw(altfw_id);
 
 	UI_ERROR("ERROR: Alternate bootloader failed\n");
 	return set_ui_error(ui, VB2_UI_ERROR_ALTFW_FAILED);
+}
+
+static vb2_error_t developer_boot_altfw_id_action(struct ui_context *ui)
+{
+	/* Validity check, should never happen. */
+	if (ui->state->screen->id != VB2_SCREEN_DEVELOPER_SELECT_ALTFW) {
+		UI_ERROR("ERROR: Boot altfw id from wrong screen: %#x\n",
+			 ui->state->screen->id);
+		return VB2_SUCCESS;
+	}
+
+	const size_t menu_before_len =
+		ARRAY_SIZE(developer_select_altfw_items_before);
+	uint32_t altfw_id = ui->state->selected_item - menu_before_len + 1;
+	return developer_boot_altfw_impl(ui, altfw_id);
+}
+
+vb2_error_t ui_developer_mode_boot_altfw_action(struct ui_context *ui)
+{
+	/* Bootloader #0 is the default. */
+	return developer_boot_altfw_impl(ui, 0);
 }
 
 static const struct ui_menu *get_bootloader_menu(struct ui_context *ui)
@@ -1645,7 +1661,7 @@ static const struct ui_menu *get_bootloader_menu(struct ui_context *ui)
 		}
 		items[i] = (struct ui_menu_item){
 			.name = name,
-			.action = ui_developer_mode_boot_altfw_action,
+			.action = developer_boot_altfw_id_action,
 		};
 		i++;
 	}
