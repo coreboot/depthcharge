@@ -240,7 +240,7 @@ $(LIBPAYLOAD_KCONFIG_AUTOHEADER): $(LIBPAYLOAD_DOTCONFIG)
 
 $(LIBPAYLOAD_LIB): $(LIBPAYLOAD_KCONFIG_AUTOHEADER)
 	@printf "    MAKE       $(subst $(obj)/,,$(@))\n"
-	+unset CFLAGS && $(MAKE) -C $(libpayloadsrc) \
+	+unset CFLAGS CXXFLAGS LDFLAGS && $(MAKE) -C $(libpayloadsrc) \
 		HOSTCC=$(HOSTCC) CC=$(HOSTCC) CXX=$(HOSTCXX) AR=$(HOSTAR) AS=$(HOSTAS) \
 		obj=$(libpayloadobj) DOTCONFIG=$(LIBPAYLOAD_DOTCONFIG) V=$(V) \
 		EXTRA_CFLAGS="-Wno-address-of-packed-member"
@@ -252,7 +252,7 @@ $(LIBPAYLOAD_CONFIG): $(LIBPAYLOAD_KCONFIG_AUTOHEADER)
 # Build vboot
 $(VBOOT_LIB):
 	@printf "    MAKE       $(subst $(obj)/,,$(@))\n"
-	FIRMWARE_ARCH= \
+	+unset CFLAGS CXXFLAGS LDFLAGS && FIRMWARE_ARCH= \
 		CC="$(HOSTCC)" \
 		TEST_PRINT=$(TEST_PRINT) \
 		$(MAKE) -C $(VB_SOURCE) \
