@@ -118,10 +118,12 @@ static void configure_audio_bus(const struct audio_bus *bus,
 {
 	switch (bus->type) {
 	case AUDIO_I2S:
+		data->type = AUDIO_I2S;
 		data->route = setup_i2s_route(bus);
 		break;
 
 	case AUDIO_SNDW:
+		data->type = AUDIO_SNDW;
 		data->sndw = setup_sndw(bus->sndw.link);
 		break;
 
@@ -155,10 +157,10 @@ static void configure_audio_codec(const struct audio_codec *codec,
 		break;
 
 	case AUDIO_MAX98373:
-		if (data->route) {
+		if (data->type == AUDIO_I2S) {
 			setup_max98373(codec, data->route);
 			data->ops = &data->route->ops;
-		} else if (data->sndw) {
+		} else if (data->type == AUDIO_SNDW) {
 			data->ops = setup_max98373_sndw(&data->sndw->ops, BEEP_DURATION);
 		}
 		break;
