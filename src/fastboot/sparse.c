@@ -302,8 +302,6 @@ int write_sparse_image(fastboot_session_t *fb, struct fastboot_disk *disk,
 				return -1;
 			}
 
-			/* TODO(furquan): Verify CRC32 header? */
-
 			/* Data present in chunk sparse image = 4 bytes */
 			if (img_buff_advance(&buff, sizeof(uint32_t)) == NULL) {
 				fastboot_fail(fb,
