@@ -62,3 +62,7 @@ config DRIVER_VIDEO_LP5562
 config DRIVER_VIDEO_SC7180
 	bool "sc7180 video settings"
 	default n
+
+config DRIVER_VIDEO_SC7280
+	bool "sc7280 video settings"
+	default n

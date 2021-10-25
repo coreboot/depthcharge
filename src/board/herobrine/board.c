@@ -42,6 +42,9 @@
 #include "drivers/sound/sound.h"
 #include "drivers/sound/gpio_amp.h"
 #include "drivers/storage/nvme.h"
+#include "drivers/video/ec_pwm_backlight.h"
+#include "drivers/video/display.h"
+#include "drivers/video/sc7280.h"
 #include <pci.h>
 #include <pci/pci.h>
 
@@ -91,6 +94,23 @@ static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 static DeviceTreeFixup ipq_enet_fixup = {
 	.fixup = fix_device_tree
 };
+
+static int init_display_ops(void)
+{
+	if (lib_sysinfo.framebuffer.physical_address == 0) {
+		printf("%s: No framebuffer provided by coreboot\n", __func__);
+		return -1;
+	}
+
+	GpioOps *backlight = NULL;
+
+	if (CONFIG(DRIVER_VIDEO_EC_PWM_BACKLIGHT))
+		backlight = new_ec_pwm_backlight();
+
+	display_set_ops(new_sc7280_display(backlight));
+
+	return 0;
+}
 
 static int board_setup(void)
 {
@@ -187,6 +207,14 @@ static int board_setup(void)
 			&sound->components);
 
 	sound_set_ops(&sound->ops);
+
+	/* Display support */
+	if (CONFIG(DRIVER_VIDEO_SC7280))
+	{
+		printf("initialize display ops!\n");
+		if (init_display_ops() != 0)
+			printf("Failed to initialize display ops!\n");
+	}
 
 	return 0;
 }
