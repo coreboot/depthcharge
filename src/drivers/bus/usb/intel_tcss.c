@@ -5,6 +5,7 @@
  */
 
 #include <assert.h>
+#include <coreboot_tables.h>
 #include <libpayload.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -135,6 +136,32 @@ static int send_conn_disc_msg(const struct pmc_ipc_buffer *req,
 	return -1;
 }
 
+static bool get_type_c_port_info(unsigned int usb2, unsigned int usb3,
+		enum type_c_orientation *hsl, enum type_c_orientation *sbu)
+{
+	const struct type_c_port_info *tcss_port_info;
+	const struct type_c_info *type_c_info;
+	int x;
+
+	type_c_info = (struct type_c_info *)lib_sysinfo.type_c_info;
+	tcss_port_info = type_c_info->port_info;
+
+	/* find the port */
+	for (x = 0; x < type_c_info->port_count; x++) {
+		if ((usb2 == tcss_port_info[x].usb2_port_number) &&
+		   (usb3 == tcss_port_info[x].usb3_port_number))
+			break;
+	}
+
+	if (x == type_c_info->port_count)
+		return false;
+
+	*hsl = (enum type_c_orientation)tcss_port_info[x].data_orientation;
+	*sbu = (enum type_c_orientation)tcss_port_info[x].sbu_orientation;
+
+	return true;
+}
+
 /*
  * Query the EC for USB port connection status and update the TCSS
  * accordingly.
@@ -144,6 +171,8 @@ static int update_port_state(const struct tcss_port *port_info)
 	const unsigned int usb2 = port_info->usb2_port;
 	const unsigned int usb3 = port_info->usb3_port;
 	const unsigned int ec_port = port_info->ec_port;
+	enum type_c_orientation hsl;
+	enum type_c_orientation sbu;
 	struct pmc_ipc_buffer req = { 0 };
 	struct pmc_ipc_buffer res = { 0 };
 	uint8_t mux_state;
@@ -179,18 +208,22 @@ static int update_port_state(const struct tcss_port *port_info)
 	/*
 	 * PMC-IPC encoding of port numbers is 1-based but SoC TypeC
 	 * port numbers are 0-based.
-	 *
-	 * TODO(b/149830546): Treat SBU and HSL orientation independently.
 	 */
 	if (usb_enabled) {
-		cmd = tcss_make_cmd(
-			TCSS_CONN_REQ_RES,
-			usb3 + 1,
-			usb2,
-			!!ufp,
-			!!(mux_state & USB_PD_MUX_POLARITY_INVERTED),
-			!!(mux_state & USB_PD_MUX_POLARITY_INVERTED),
-			!!dbg_acc);
+		if (get_type_c_port_info(usb2, usb3 + 1, &hsl, &sbu)) {
+			cmd = tcss_make_cmd(
+				TCSS_CONN_REQ_RES,
+				usb3 + 1,
+				usb2,
+				!!ufp,
+				!!((hsl == TYPEC_ORIENTATION_REVERSE)),
+				!!((sbu == TYPEC_ORIENTATION_REVERSE)),
+				!!dbg_acc);
+		} else {
+			error("Cannot find port matching usb2=%u usb3=%u\n",
+					usb2, usb3);
+			return -1;
+		}
 	} else {
 		cmd = tcss_make_cmd(
 			TCSS_DISC_REQ_RES,
