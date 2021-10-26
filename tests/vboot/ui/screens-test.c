@@ -68,10 +68,10 @@ static void test_dev_altfw_action_allowed(void **state)
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_ALTFW_ALLOWED;
 	ui->state->selected_item = 2;
 	expect_value(vb2ex_run_altfw, altfw_id, 2);
+	will_return(vb2ex_run_altfw, VB2_SUCCESS);
 	will_return_maybe(vb2ex_get_altfw_count, 2);
 
-	assert_int_equal(ui_developer_mode_boot_altfw_action(ui),
-			 VB2_REQUEST_UI_CONTINUE);
+	expect_assert_failure(ui_developer_mode_boot_altfw_action(ui));
 }
 
 static void test_dev_altfw_action_default_bootloader(void **state)
@@ -83,10 +83,10 @@ static void test_dev_altfw_action_default_bootloader(void **state)
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_ALTFW_ALLOWED;
 	ui->key = UI_KEY_DEV_BOOT_ALTFW;
 	expect_value(vb2ex_run_altfw, altfw_id, 0);
+	will_return(vb2ex_run_altfw, VB2_SUCCESS);
 	will_return_maybe(vb2ex_get_altfw_count, 2);
 
-	assert_int_equal(ui_developer_mode_boot_altfw_action(ui),
-			 VB2_REQUEST_UI_CONTINUE);
+	expect_assert_failure(ui_developer_mode_boot_altfw_action(ui));
 }
 
 #define UI_TEST(test_function_name) \

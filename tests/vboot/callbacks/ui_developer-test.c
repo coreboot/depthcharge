@@ -356,16 +356,16 @@ static void test_developer_ui_select_altfw_keyboard(void **state)
 
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_ALTFW_ALLOWED;
 	EXPECT_DISPLAY_UI_ANY_ALWAYS();
-	EXPECT_BEEP(250, 400, mock_time_ms);
 	WILL_PRESS_KEY(UI_KEY_DEV_BOOT_ALTFW, 0);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2ex_get_altfw_count, 2);
-	expect_any(vb2ex_run_altfw, altfw_id);
+	expect_value(vb2ex_run_altfw, altfw_id, 0);
+	will_return(vb2ex_run_altfw, VB2_SUCCESS);
 
-	assert_int_equal(vb2ex_developer_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
+	expect_assert_failure(vb2ex_developer_ui(ui->ctx));
 }
 
 static void test_developer_ui_select_altfw_keyboard_disallowed(void **state)
