@@ -55,7 +55,11 @@ ui_manual-ppkeyboard-test-config += CONFIG_PHYSICAL_PRESENCE_KEYBOARD=1
 
 # ui_developer-test
 $(call copy-test,ui-test-common,ui_developer-test)
+ui_developer-test-srcs := $(filter-out tests/stubs/boot/payload.c, \
+	$(ui_developer-test-srcs))
+ui_developer-test-srcs += tests/mocks/boot/payload.c
 ui_developer-test-srcs += tests/vboot/callbacks/ui_developer-test.c
+ui_developer-test-srcs += src/base/list.c
 ui_developer-test-srcs += src/vboot/callbacks/ui.c
 
 $(call copy-test,ui_developer-test,ui_developer-detachable-test)
