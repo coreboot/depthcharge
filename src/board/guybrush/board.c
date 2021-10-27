@@ -35,8 +35,6 @@
 #define MCLK			4800000
 #define LRCLK			8000
 
-/* cr50 / Ti50 interrupt is attached to GPIO_3 */
-#define CR50_INT		3
 
 /* eDP backlight */
 #define GPIO_BACKLIGHT		129
@@ -55,6 +53,8 @@
 /* FW_CONFIG for beep banging */
 #define FW_CONFIG_BIT_BANGING (1 << 9)
 
+static unsigned int cr50_int_gpio = CR50_INT_85;
+
 __weak const struct storage_config *variant_get_storage_configs(size_t *count)
 {
 	static const struct storage_config storage_configs[] = {
@@ -66,12 +66,17 @@ __weak const struct storage_config *variant_get_storage_configs(size_t *count)
 	return storage_configs;
 }
 
+__weak unsigned int variant_get_cr50_irq_gpio(void)
+{
+	return CR50_INT_85;
+}
+
 static int cr50_irq_status(void)
 {
 	static KernGpio *tpm_gpio;
 
 	if (!tpm_gpio)
-		tpm_gpio = new_kern_fch_gpio_latched(CR50_INT);
+		tpm_gpio = new_kern_fch_gpio_latched(cr50_int_gpio);
 
 	return gpio_get(&tpm_gpio->ops);
 }
@@ -161,6 +166,7 @@ static void setup_bit_banging(void)
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
+	cr50_int_gpio = variant_get_cr50_irq_gpio();
 	CrosEcLpcBus *cros_ec_lpc_bus =
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);

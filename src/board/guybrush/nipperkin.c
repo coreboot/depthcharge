@@ -30,3 +30,8 @@ const struct storage_config *variant_get_storage_configs(size_t *count)
 	*count = ARRAY_SIZE(ssd_storage_configs);
 	return ssd_storage_configs;
 }
+
+unsigned int variant_get_cr50_irq_gpio(void)
+{
+	return (lib_sysinfo.board_id == 1) ? CR50_INT_3 : CR50_INT_85;
+}
