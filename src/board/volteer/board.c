@@ -55,25 +55,6 @@
 #define AUD_I2C_ADDR	0x32
 #define I2C_FS_HZ	400000
 
-
-/*
- * Each USB Type-C port consists of a TCP (USB3) and a USB2 port from
- * the SoC. This table captures the mapping.
- *
- * SoC USB2 ports are numbered 1..10
- * SoC USB3.1 ports are numbered 1..4 (not used here)
- * SoC TCP (USB3) ports are numbered 0..3
- */
-#define USBC_PORT_0_USB2_NUM	CONFIG_VOLTEER_USBC_PORT_0_USB2_NUM
-#define USBC_PORT_0_USB3_NUM	CONFIG_VOLTEER_USBC_PORT_0_USB3_NUM
-#define USBC_PORT_1_USB2_NUM	CONFIG_VOLTEER_USBC_PORT_1_USB2_NUM
-#define USBC_PORT_1_USB3_NUM	CONFIG_VOLTEER_USBC_PORT_1_USB3_NUM
-
-static const struct tcss_map typec_map[] = {
-	{ USBC_PORT_0_USB2_NUM, USBC_PORT_0_USB3_NUM, 0 },
-	{ USBC_PORT_1_USB2_NUM, USBC_PORT_1_USB3_NUM, 1 },
-};
-
 static int cr50_irq_status(void)
 {
 	return tigerlake_get_gpe(GPE0_DW0_21); /* GPP_C21 */
@@ -223,9 +204,6 @@ static int board_setup(void)
 			printf("Failed to find eMMC card reader\n");
 		}
 	}
-
-	/* TCSS ports */
-	register_tcss_ports(typec_map, ARRAY_SIZE(typec_map));
 
 	return 0;
 }

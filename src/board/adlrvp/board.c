@@ -27,12 +27,13 @@
 #include <libpayload.h>
 #include <sysinfo.h>
 
-static const struct tcss_map typec_map[] = {
-	{ .usb2_port = 1, .usb3_port = 0, .ec_port = 0 },
-	{ .usb2_port = 2, .usb3_port = 1, .ec_port = 1 },
-	{ .usb2_port = 3, .usb3_port = 2, .ec_port = 2 },
-	{ .usb2_port = 5, .usb3_port = 3, .ec_port = 3 },
-};
+#define AUD_VOLUME	4000
+#define AUD_BITDEPTH	16
+#define AUD_SAMPLE_RATE	48000
+#define AUD_NUM_CHANNELS 2
+#define AUD_I2C0	PCI_DEV(0, 0x15, 0)
+#define AUD_I2C_ADDR	0x32
+#define I2C_FS_HZ	400000
 
 static int cr50_irq_status(void)
 {
@@ -104,9 +105,9 @@ static int board_setup(void)
 	NvmeCtrlr *nvme_5 = new_nvme_ctrlr(PCI_DEV(secondary_bus, 0, 0));
 	list_insert_after(&nvme_5->ctrlr.list_node, &fixed_block_dev_controllers);
 
-	/* TCSS ports */
-	if (CONFIG(DRIVER_EC_CROS))
-		register_tcss_ports(typec_map, ARRAY_SIZE(typec_map));
+#if CONFIG_DRIVER_SOUND_MAX98373
+	adlrvp_setup_max98373_i2s();
+#endif
 
 	return 0;
 }

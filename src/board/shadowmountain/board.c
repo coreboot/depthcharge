@@ -33,8 +33,6 @@
 #include "drivers/tpm/spi.h"
 #include "drivers/tpm/tpm.h"
 
-#include "drivers/bus/usb/tigerlake_tcss.h"
-
 #define TPM_I2C1	PCI_DEV(0, 0x15, 1)
 #define TPM_I2C_ADDR	0x50
 
@@ -53,24 +51,6 @@
 #define AUD_I2C_ADDR	0x32
 #define I2C_FS_HZ	400000
 
-
-/*
- * Each USB Type-C port consists of a TCP (USB3) and a USB2 port from
- * the SoC. This table captures the mapping.
- *
- * SoC USB2 ports are numbered 1..10
- * SoC USB3.1 ports are numbered 1..4 (not used here)
- * SoC TCP (USB3) ports are numbered 0..3
- */
-#define USBC_PORT_0_USB2_NUM	CONFIG_SHADOWMOUNTAIN_USBC_PORT_0_USB2_NUM
-#define USBC_PORT_0_USB3_NUM	CONFIG_SHADOWMOUNTAIN_USBC_PORT_0_USB3_NUM
-#define USBC_PORT_1_USB2_NUM	CONFIG_SHADOWMOUNTAIN_USBC_PORT_1_USB2_NUM
-#define USBC_PORT_1_USB3_NUM	CONFIG_SHADOWMOUNTAIN_USBC_PORT_1_USB3_NUM
-
-static const struct tcss_map typec_map[] = {
-	{ USBC_PORT_0_USB2_NUM, USBC_PORT_0_USB3_NUM, 0 },
-	{ USBC_PORT_1_USB2_NUM, USBC_PORT_1_USB3_NUM, 1 },
-};
 
 static int cr50_irq_status(void)
 {
@@ -102,14 +82,6 @@ static uintptr_t get_ssp_base_address(void)
 	default:
 		return SSP_I2S2_START_ADDRESS;
 	}
-}
-
-/*
- * get ssp port index for this particular config
- */
-int board_get_ssp_port_index(void)
-{
-	return CONFIG_SHADOWMOUNTAIN_MAX98373_I2S_PORT;
 }
 
 static void shadowmountain_setup_max98373(void)
@@ -156,9 +128,6 @@ static int board_setup(void)
 	/* SATA AHCI */
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 0x17, 0));
 	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
-
-	/* TCSS ports */
-	register_tcss_ports(typec_map, ARRAY_SIZE(typec_map));
 
 	return 0;
 }
