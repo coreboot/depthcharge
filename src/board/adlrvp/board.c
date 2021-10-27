@@ -11,7 +11,6 @@
 #include "base/init_funcs.h"
 #include "base/list.h"
 #include "drivers/bus/spi/intel_gspi.h"
-#include "drivers/bus/usb/intel_tcss.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/soc/alderlake.h"
 #include "drivers/storage/ahci.h"
@@ -32,15 +31,6 @@
 
 #include <libpayload.h>
 #include <sysinfo.h>
-
-static const struct tcss_map typec_map[] = {
-	{ .usb2_port = 1, .usb3_port = 0, .ec_port = 0 },
-	{ .usb2_port = 2, .usb3_port = 1, .ec_port = 1 },
-#if CONFIG_BOARD_ADLRVP_P
-	{ .usb2_port = 3, .usb3_port = 2, .ec_port = 2 },
-	{ .usb2_port = 5, .usb3_port = 3, .ec_port = 3 },
-#endif
-};
 
 #define AUD_VOLUME	4000
 #define AUD_BITDEPTH	16
@@ -157,10 +147,6 @@ static int board_setup(void)
 	secondary_bus = pci_read_config8(PCH_DEV_PCIE8, REG_SECONDARY_BUS);
 	NvmeCtrlr *nvme_5 = new_nvme_ctrlr(PCI_DEV(secondary_bus, 0, 0));
 	list_insert_after(&nvme_5->ctrlr.list_node, &fixed_block_dev_controllers);
-
-	/* TCSS ports */
-	if (CONFIG(DRIVER_EC_CROS))
-		register_tcss_ports(typec_map, ARRAY_SIZE(typec_map));
 
 #if CONFIG_DRIVER_SOUND_MAX98373
 	adlrvp_setup_max98373_i2s();

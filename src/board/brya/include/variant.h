@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#include "drivers/bus/usb/intel_tcss.h"
 #include "drivers/bus/i2s/intel_common/i2s.h"
 
 #define I2C0	PCI_DEV(0, 0x15, 0)
@@ -85,7 +84,6 @@ struct storage_config {
 	struct emmc_config emmc;
 };
 
-const struct tcss_map *variant_get_tcss_map(size_t *count);
 const struct audio_config *variant_probe_audio_config(void);
 const struct storage_config *variant_get_storage_configs(size_t *count);
 

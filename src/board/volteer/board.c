@@ -18,7 +18,6 @@
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
-#include "drivers/bus/usb/intel_tcss.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/sysinfo.h"
@@ -68,11 +67,6 @@
 #define USBC_PORT_0_USB3_NUM	CONFIG_VOLTEER_USBC_PORT_0_USB3_NUM
 #define USBC_PORT_1_USB2_NUM	CONFIG_VOLTEER_USBC_PORT_1_USB2_NUM
 #define USBC_PORT_1_USB3_NUM	CONFIG_VOLTEER_USBC_PORT_1_USB3_NUM
-
-static const struct tcss_map typec_map[] = {
-	{ USBC_PORT_0_USB2_NUM, USBC_PORT_0_USB3_NUM, 0 },
-	{ USBC_PORT_1_USB2_NUM, USBC_PORT_1_USB3_NUM, 1 },
-};
 
 static int cr50_irq_status(void)
 {
@@ -215,9 +209,6 @@ static int board_setup(void)
 			printf("Failed to find eMMC card reader\n");
 		}
 	}
-
-	/* TCSS ports */
-	register_tcss_ports(typec_map, ARRAY_SIZE(typec_map));
 
 	return 0;
 }

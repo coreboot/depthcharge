@@ -68,13 +68,6 @@ static void audio_setup(void)
 	brya_configure_audio(variant_probe_audio_config());
 }
 
-static void tcss_setup(void)
-{
-	size_t ports;
-	const struct tcss_map *map = variant_get_tcss_map(&ports);
-	register_tcss_ports(map, ports);
-}
-
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
@@ -82,7 +75,6 @@ static int board_setup(void)
 	tpm_setup();
 	power_set_ops(&alderlake_power_ops);
 	audio_setup();
-	tcss_setup();
 
 	return 0;
 }

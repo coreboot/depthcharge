@@ -9,7 +9,6 @@
 #include "drivers/bus/i2s/cavs-regs.h"
 #include "drivers/bus/i2s/intel_common/max98357a.h"
 #include "drivers/bus/soundwire/cavs_2_5-sndwregs.h"
-#include "drivers/bus/usb/intel_tcss.h"
 #include "drivers/gpio/alderlake.h"
 #include "drivers/soc/alderlake.h"
 
@@ -50,22 +49,4 @@ const struct audio_config *variant_probe_audio_config(void)
 	}
 
 	return &config;
-}
-
-/*
- * This map contains the following information about the Type-C ports:
- * USB2 port (1-based)
- * USB3 Type-C port (0-based)
- * EC port (0-based)
- */
-static const struct tcss_map typec_map[] = {
-	{ .usb2_port = 1, .usb3_port = 0, .ec_port = 0 },
-	{ .usb2_port = 2, .usb3_port = 1, .ec_port = 1 },
-	{ .usb2_port = 3, .usb3_port = 2, .ec_port = 2 },
-};
-
-const struct tcss_map *variant_get_tcss_map(size_t *count)
-{
-	*count = ARRAY_SIZE(typec_map);
-	return typec_map;
 }

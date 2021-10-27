@@ -69,7 +69,6 @@
 /* !fatal means retry */
 #define TCSS_STATUS_IS_FATAL(s)		GET_TCSS_CD_FIELD(FATAL, s)
 
-static ListNode tcss_ports;
 static const TcssCtrlr *ctrlr;
 
 static uint32_t tcss_make_cmd(int u, int u3, int u2, int ufp, int hsl, int sbu,
@@ -136,133 +135,115 @@ static int send_conn_disc_msg(const struct pmc_ipc_buffer *req,
 	return -1;
 }
 
-static bool get_type_c_port_info(unsigned int usb2, unsigned int usb3,
-		enum type_c_orientation *hsl, enum type_c_orientation *sbu)
+/*
+ * Query the EC for USB port connection status for each of the type-c ports and
+ * update the TCSS for each accordingly.
+ */
+static int update_all_tcss_ports_states(void)
 {
 	const struct type_c_port_info *tcss_port_info;
 	const struct type_c_info *type_c_info;
-	int x;
-
-	type_c_info = (struct type_c_info *)lib_sysinfo.type_c_info;
-	tcss_port_info = type_c_info->port_info;
-
-	/* find the port */
-	for (x = 0; x < type_c_info->port_count; x++) {
-		if ((usb2 == tcss_port_info[x].usb2_port_number) &&
-		   (usb3 == tcss_port_info[x].usb3_port_number))
-			break;
-	}
-
-	if (x == type_c_info->port_count)
-		return false;
-
-	*hsl = (enum type_c_orientation)tcss_port_info[x].data_orientation;
-	*sbu = (enum type_c_orientation)tcss_port_info[x].sbu_orientation;
-
-	return true;
-}
-
-/*
- * Query the EC for USB port connection status and update the TCSS
- * accordingly.
- */
-static int update_port_state(const struct tcss_port *port_info)
-{
-	const unsigned int usb2 = port_info->usb2_port;
-	const unsigned int usb3 = port_info->usb3_port;
-	const unsigned int ec_port = port_info->ec_port;
-	enum type_c_orientation hsl;
-	enum type_c_orientation sbu;
 	struct pmc_ipc_buffer req = { 0 };
 	struct pmc_ipc_buffer res = { 0 };
+	enum type_c_orientation hsl;
+	enum type_c_orientation sbu;
+	unsigned int ec_port;
+	unsigned int usb2;
+	unsigned int usb3;
 	uint8_t mux_state;
 	bool usb_enabled;
 	int ufp, dbg_acc;
 	uint32_t cmd;
-	int r;
+	int r = 0;
 
-	r = cros_ec_get_usb_pd_mux_info(ec_port, &mux_state);
-	if (r < 0) {
-		error("port C%d: get_usb_pd_mux_info failed\n", ec_port);
-		return -1;
-	}
+	type_c_info = (struct type_c_info *)lib_sysinfo.type_c_info;
+	tcss_port_info = type_c_info->port_info;
 
-	usb_enabled = !!(mux_state & USB_PD_MUX_USB_ENABLED);
-	if (is_port_connected(usb3) == usb_enabled) {
+	for (ec_port = 0; ec_port < type_c_info->port_count; ec_port++) {
+		r = cros_ec_get_usb_pd_mux_info(ec_port, &mux_state);
+		if (r < 0) {
+			error("port C%d: get_usb_pd_mux_info failed\n",
+					ec_port);
+			continue;
+		}
+
+		usb_enabled = !!(mux_state & USB_PD_MUX_USB_ENABLED);
+		usb3 = tcss_port_info[ec_port].usb3_port_number;
+
 		/*
-		 * The TCSS USB port mux state matches the observed
-		 * state of the Type-C USB port.
+		 * PMC-IPC encoding of port numbers is 1-based but SoC TypeC
+		 * port numbers are 0-based.
 		 */
-		return 0;
-	}
+		if (is_port_connected(usb3 - 1) == usb_enabled) {
+			/*
+			 * The TCSS USB port mux state matches the observed
+			 * state of the Type-C USB port.
+			 */
+			continue;
+		}
 
-	debug("port C%d state: usb enable %d mux conn %d, usb2 %u, usb3 %u\n",
-	      ec_port, usb_enabled, is_port_connected(usb3), usb2, usb3);
+		usb2 = tcss_port_info[ec_port].usb2_port_number;
+		debug("port C%d state: usb enable %d mux conn %d, usb2 %u, "
+				"usb3 %u\n", ec_port, usb_enabled,
+				is_port_connected(usb3-1), usb2, usb3);
 
-	r = cros_ec_get_usb_pd_control(ec_port, &ufp, &dbg_acc);
-	if (r < 0) {
-		error("port C%d: pd_control failed\n", ec_port);
-		return -1;
-	}
+		r = cros_ec_get_usb_pd_control(ec_port, &ufp, &dbg_acc);
+		if (r < 0) {
+			error("port C%d: pd_control failed\n", ec_port);
+			return -1;
+		}
 
-	/*
-	 * PMC-IPC encoding of port numbers is 1-based but SoC TypeC
-	 * port numbers are 0-based.
-	 */
-	if (usb_enabled) {
-		if (get_type_c_port_info(usb2, usb3 + 1, &hsl, &sbu)) {
+		if (usb_enabled) {
+			hsl = tcss_port_info[ec_port].data_orientation;
+			sbu = tcss_port_info[ec_port].sbu_orientation;
 			cmd = tcss_make_cmd(
 				TCSS_CONN_REQ_RES,
-				usb3 + 1,
+				usb3,
 				usb2,
 				!!ufp,
 				!!((hsl == TYPEC_ORIENTATION_REVERSE)),
 				!!((sbu == TYPEC_ORIENTATION_REVERSE)),
 				!!dbg_acc);
 		} else {
-			error("Cannot find port matching usb2=%u usb3=%u\n",
-					usb2, usb3);
-			return -1;
+			cmd = tcss_make_cmd(
+				TCSS_DISC_REQ_RES,
+				usb3,
+				usb2,
+				0,
+				0,
+				0,
+				0);
 		}
-	} else {
-		cmd = tcss_make_cmd(
-			TCSS_DISC_REQ_RES,
-			usb3 + 1,
-			usb2,
-			0,
-			0,
-			0,
-			0);
+		req.buf[0] = cmd;
+
+		debug("port C%d req: usage %d usb3 %d usb2 %d "
+		      "ufp %d ori_hsl %d ori_sbu %d dbg_acc %d\n",
+		      ec_port,
+		      GET_TCSS_CD_FIELD(USAGE, cmd),
+		      GET_TCSS_CD_FIELD(USB3, cmd),
+		      GET_TCSS_CD_FIELD(USB2, cmd),
+		      GET_TCSS_CD_FIELD(UFP, cmd),
+		      GET_TCSS_CD_FIELD(HSL, cmd),
+		      GET_TCSS_CD_FIELD(SBU, cmd),
+		      GET_TCSS_CD_FIELD(ACC, cmd));
+
+		r = send_conn_disc_msg(&req, &res);
 	}
-	req.buf[0] = cmd;
 
-	debug("port C%d req: usage %d usb3 %d usb2 %d "
-	      "ufp %d ori_hsl %d ori_sbu %d dbg_acc %d\n",
-	      ec_port,
-	      GET_TCSS_CD_FIELD(USAGE, cmd),
-	      GET_TCSS_CD_FIELD(USB3, cmd),
-	      GET_TCSS_CD_FIELD(USB2, cmd),
-	      GET_TCSS_CD_FIELD(UFP, cmd),
-	      GET_TCSS_CD_FIELD(HSL, cmd),
-	      GET_TCSS_CD_FIELD(SBU, cmd),
-	      GET_TCSS_CD_FIELD(ACC, cmd));
-
-	return send_conn_disc_msg(&req, &res);
+	return r;
 }
 
 static void soc_usb_mux_poll(void)
 {
 	static uint64_t last_us = 0;
 	uint64_t now_us;
-	TcssPort *port;
 
 	now_us = timer_us(0);
 	if (now_us < last_us + MUX_POLL_PERIOD_US)
 		return;
 	last_us = now_us;
 
-	list_for_each(port, tcss_ports, list_node)
-		update_port_state(port);
+	update_all_tcss_ports_states();
 }
 
 /*
@@ -287,26 +268,4 @@ void usb_poll_prepare(void)
 void register_tcss_ctrlr(const TcssCtrlr *tcss_ctrlr)
 {
 	ctrlr = tcss_ctrlr;
-}
-
-TcssPort *new_tcss_port(unsigned int usb2_port_num, unsigned int usb3_port_num,
-			unsigned int ec_port)
-{
-	TcssPort *port = xzalloc(sizeof(*port));
-	port->usb2_port = usb2_port_num;
-	port->usb3_port = usb3_port_num;
-	port->ec_port = ec_port;
-
-	return port;
-}
-
-void register_tcss_ports(const struct tcss_map *map, size_t num_ports)
-{
-	for (size_t i = 0; i < num_ports; i++) {
-		TcssPort *port = new_tcss_port(map[i].usb2_port,
-					       map[i].usb3_port,
-					       map[i].ec_port);
-
-		list_insert_after(&port->list_node, &tcss_ports);
-	}
 }
