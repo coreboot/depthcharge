@@ -515,6 +515,28 @@ static const struct ui_screen_info broken_screen = {
 
 #define ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE 1
 #define ADVANCED_OPTIONS_ITEM_DEBUG_INFO 2
+#define ADVANCED_OPTIONS_ITEM_INTERNET_RECOVERY 4
+
+static vb2_error_t boot_minios_impl(struct ui_context *ui, int non_active_only)
+{
+	/* Validity check, should never happen. */
+	if (!vb2api_allow_recovery(ui->ctx)) {
+		UI_ERROR("ERROR: Recovery now allowed; ignoring\n");
+		return VB2_REQUEST_UI_CONTINUE;
+	}
+
+	vb2_error_t rv = VbTryLoadMiniOsKernel(ui->ctx, !!non_active_only);
+	if (rv) {
+		UI_ERROR("ERROR: Failed to boot from MiniOS: %#x\n", rv);
+		return set_ui_error(ui, VB2_UI_ERROR_MINIOS_BOOT_FAILED);
+	}
+	return VB2_REQUEST_UI_EXIT;
+}
+
+static vb2_error_t boot_old_minios_action(struct ui_context *ui)
+{
+	return boot_minios_impl(ui, 1);
+}
 
 vb2_error_t advanced_options_init(struct ui_context *ui)
 {
@@ -525,6 +547,10 @@ vb2_error_t advanced_options_init(struct ui_context *ui)
 			    ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE);
 		ui->state->selected_item = ADVANCED_OPTIONS_ITEM_DEBUG_INFO;
 	}
+
+	if (!vb2api_allow_recovery(ui->ctx))
+		VB2_SET_BIT(ui->state->hidden_item_mask,
+			    ADVANCED_OPTIONS_ITEM_INTERNET_RECOVERY);
 
 	return VB2_SUCCESS;
 }
@@ -545,6 +571,11 @@ static const struct ui_menu_item advanced_options_items[] = {
 		.name = "Firmware log",
 		.file = "btn_firmware_log.bmp",
 		.target = VB2_SCREEN_FIRMWARE_LOG,
+	},
+	[ADVANCED_OPTIONS_ITEM_INTERNET_RECOVERY] = {
+		.name = "Internet recovery (older version)",
+		.file = "btn_rec_by_internet_old.bmp",
+		.action = boot_old_minios_action,
 	},
 	BACK_ITEM,
 	POWER_OFF_ITEM,
@@ -815,7 +846,8 @@ static const struct ui_screen_info recovery_to_dev_screen = {
 
 #define RECOVERY_SELECT_ITEM_PHONE 1
 #define RECOVERY_SELECT_ITEM_EXTERNAL_DISK 2
-#define RECOVERY_SELECT_ITEM_DIAGNOSTICS 3
+#define RECOVERY_SELECT_ITEM_INTERNET 3
+#define RECOVERY_SELECT_ITEM_DIAGNOSTICS 4
 
 static vb2_error_t draw_recovery_select_desc(
 	const struct ui_state *state,
@@ -842,6 +874,11 @@ static vb2_error_t launch_diagnostics_action(struct ui_context *ui)
 {
 	vb2api_request_diagnostics(ui->ctx);
 	return VB2_REQUEST_REBOOT;
+}
+
+vb2_error_t ui_recovery_mode_boot_minios_action(struct ui_context *ui)
+{
+	return boot_minios_impl(ui, 0);
 }
 
 vb2_error_t recovery_select_init(struct ui_context *ui)
@@ -872,6 +909,11 @@ static const struct ui_menu_item recovery_select_items[] = {
 		.name = "Recovery using external disk",
 		.file = "btn_rec_by_disk.bmp",
 		.target = VB2_SCREEN_RECOVERY_DISK_STEP1,
+	},
+	[RECOVERY_SELECT_ITEM_INTERNET] = {
+		.name = "Recovery using internet connection",
+		.file = "btn_rec_by_internet.bmp",
+		.action = ui_recovery_mode_boot_minios_action,
 	},
 	[RECOVERY_SELECT_ITEM_DIAGNOSTICS] = {
 		.name = "Launch diagnostics",

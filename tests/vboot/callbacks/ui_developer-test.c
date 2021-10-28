@@ -695,6 +695,7 @@ static void test_developer_screen_altfw(void **state)
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_EXTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
+	will_return_maybe(vb2api_allow_recovery, 0);
 	will_return_maybe(vb2ex_get_locale_count, 10);
 
 	/* #4: Alternate boot */
@@ -718,6 +719,7 @@ static void test_developer_screen_advanced_options(void **state)
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
+	will_return_maybe(vb2api_allow_recovery, 0);
 
 	EXPECT_DISPLAY_UI_ANY();
 	/* #5: Advanced options */
@@ -727,7 +729,7 @@ static void test_developer_screen_advanced_options(void **state)
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 5);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, MOCK_IGNORE,
-			  0x0, 0x2);
+			  0x0, 0x12);
 	/* End of menu */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -748,6 +750,7 @@ static void test_developer_screen_advanced_options_screen(void **state)
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
+	will_return_maybe(vb2api_allow_recovery, 0);
 	will_return_maybe(vb2ex_get_locale_count, 10);
 	expect_any_always(vb2ex_prepare_log_screen, str);
 	will_return_maybe(vb2ex_prepare_log_screen, 1);
@@ -779,12 +782,13 @@ static void test_developer_screen_advanced_options_screen(void **state)
 	EXPECT_DISPLAY_UI_ANY();
 	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 3);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_FIRMWARE_LOG);
-	/* #4: Back */
+	/* #4: (Hidden) */
+	/* #5: Back */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_DISPLAY_UI_ANY();
-	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 4);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 5);
 	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_MODE);
 	/* End of menu */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);

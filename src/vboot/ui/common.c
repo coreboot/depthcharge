@@ -32,6 +32,11 @@ struct ui_error_message {
 };
 
 static const struct ui_error_message errors[] = {
+	[VB2_UI_ERROR_MINIOS_BOOT_FAILED] = {
+		.file = "error_internet_recovery.bmp",
+		.mesg = "Internet recovery partition corrupted or missing.\n"
+			"Please recover using external storage instead.",
+	},
 	[VB2_UI_ERROR_DEV_MODE_ALREADY_ENABLED] = {
 		.file = "error_dev_mode_enabled.bmp",
 		.mesg = "Developer mode is already turned on.",
