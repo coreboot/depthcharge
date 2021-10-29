@@ -15,6 +15,7 @@ ui-test-common-srcs += tests/mocks/vb2api.c
 ui-test-common-srcs += tests/mocks/vboot_api.c
 ui-test-common-srcs += tests/stubs/boot/payload.c
 ui-test-common-srcs += tests/stubs/diag.c
+ui-test-common-srcs += tests/stubs/drivers/storage/blockdev.c
 ui-test-common-srcs += tests/stubs/vboot/ui/archive.c
 ui-test-common-srcs += tests/stubs/vboot/ui/draw.c
 ui-test-common-srcs += tests/stubs/vboot/ui/layout.c

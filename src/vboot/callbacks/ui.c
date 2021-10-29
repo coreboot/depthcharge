@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0
 
-#include "vboot/ui.h"
-#include <vboot_api.h>
 #include <vb2_api.h>
+#include <vboot_api.h>
+
+#include "drivers/storage/blockdev.h"
+#include "vboot/ui.h"
 
 static vb2_error_t ui_broken_screen_action(struct ui_context *ui)
 {
@@ -64,6 +66,18 @@ vb2_error_t vb2ex_manual_recovery_ui(struct vb2_context *ctx)
 
 static vb2_error_t developer_action(struct ui_context *ui)
 {
+	/*
+	 * MMC controllers rely on update() calls to handle SD card insertion or
+	 * removal. The current implementation of update(), however, cannot tell
+	 * if the inserted SD card has been replaced with another one.
+	 * Therefore, keep track of the MMC state in this global action.
+	 *
+	 * We don't need this for recovery UI, where the VbTryLoadKernel() call
+	 * already updates the removable block devices.
+	 */
+	if (ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALLOWED)
+		get_all_bdevs(BLOCKDEV_REMOVABLE, NULL);
+
 	/* Developer mode keyboard shortcuts */
 	if (ui->key == '\t')
 		return ui_screen_change(ui, VB2_SCREEN_DEBUG_INFO);
