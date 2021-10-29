@@ -47,6 +47,7 @@
 #define AUD_VOLUME	4000
 #define AUD_BITDEPTH	16
 #define AUD_SAMPLE_RATE	48000
+#define EC_AP_MKBP_INT_L	GPP_C6
 #define AUD_NUM_CHANNELS 2
 #define SDMODE_PIN	GPP_A10
 
@@ -141,6 +142,12 @@ static void volteer_setup_rt1011(void)
 }
 #endif
 
+static GpioOps *mkbp_int_ops(void)
+{
+	GpioCfg *mkbp_int_gpio = new_tigerlake_gpio_input(EC_AP_MKBP_INT_L);
+	/* Active-low, has to be inverted */
+	return new_gpio_not(&mkbp_int_gpio->ops);
+}
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
@@ -151,7 +158,7 @@ static int board_setup(void)
 	/* Chrome EC (eSPI) */
 	CrosEcLpcBus *cros_ec_lpc_bus =
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
-	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, mkbp_int_ops());
 	register_vboot_ec(&cros_ec->vboot);
 
 	/* PCH Power */
