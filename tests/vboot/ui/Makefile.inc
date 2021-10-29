@@ -6,6 +6,7 @@ tests-y += navigation-test
 tests-y += loop-test
 tests-y += loop-detachable-test
 tests-y += screens-test
+tests-y += bitmap-test
 
 menu-test-srcs += tests/vboot/ui/menu-test.c
 menu-test-srcs += tests/vboot/ui/mock_screens.c
@@ -38,3 +39,6 @@ loop-detachable-test-config += CONFIG_DETACHABLE=1
 screens-test-srcs += tests/vboot/ui/screens-test.c
 screens-test-srcs += tests/mocks/ui_callbacks.c
 screens-test-srcs += src/vboot/ui/navigation.c
+
+bitmap-test-srcs += tests/vboot/ui/bitmap-test.c
+bitmap-test-srcs += src/vboot/ui/bitmap.c

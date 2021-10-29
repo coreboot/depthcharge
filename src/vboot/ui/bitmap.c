@@ -9,7 +9,6 @@
 vb2_error_t ui_get_bitmap(const char *image_name, const char *locale_code,
 			  int focused, struct ui_bitmap *bitmap)
 {
-	int used;
 	char file[UI_BITMAP_FILENAME_MAX_LEN + 1];
 	const char *file_ext;
 	const char *suffix = focused ? "_focus" : "";
@@ -22,13 +21,11 @@ vb2_error_t ui_get_bitmap(const char *image_name, const char *locale_code,
 
 	file_ext = strrchr(image_name, '.');
 	if (file_ext)
-		used = file_ext - image_name;
+		snprintf(file, sizeof(file), "%.*s%s%s",
+			 (int)(file_ext - image_name), image_name, suffix,
+			 file_ext);
 	else
-		used = image_name_len;
-	strncpy(file, image_name, used);
-
-	used += snprintf(file + used, sizeof(file) - used, suffix);
-	snprintf(file + used, sizeof(file) - used, file_ext);
+		snprintf(file, sizeof(file), "%s%s", image_name, suffix);
 
 	return ui_load_bitmap(
 		locale_code ? UI_ARCHIVE_LOCALIZED : UI_ARCHIVE_GENERIC,
