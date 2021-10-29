@@ -14,6 +14,7 @@
 enum audio_bus_type {
 	AUDIO_I2S,
 	AUDIO_SNDW,
+	AUDIO_PWM,
 };
 
 enum audio_codec_type {
@@ -42,6 +43,9 @@ struct audio_bus {
 		struct {
 			unsigned int link;
 		} sndw;
+		struct {
+			unsigned int pad;
+		} pwm;
 	};
 };
 

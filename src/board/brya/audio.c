@@ -14,6 +14,7 @@
 #include "drivers/gpio/gpio.h"
 #include "drivers/soc/alderlake.h"
 #include "drivers/sound/gpio_amp.h"
+#include "drivers/sound/gpio_edge_buzzer.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/max98373.h"
 #include "drivers/sound/max98373_sndw.h"
@@ -113,18 +114,31 @@ static Soundwire *setup_sndw(unsigned int link)
 	return new_soundwire(link);
 }
 
+static SoundOps *setup_gpio_pwm(unsigned int pad)
+{
+        if (!CONFIG(DRIVER_SOUND_GPIO_EDGE_BUZZER))
+                return NULL;
+
+	GpioOps *sound_gpio = &new_alderlake_gpio_output(pad, 0)->ops;
+	GpioEdgeBuzzer *buzzer = new_gpio_edge_buzzer(sound_gpio);
+	return &buzzer->ops;
+}
+
 static void configure_audio_bus(const struct audio_bus *bus,
 				struct audio_data *data)
 {
+	data->type = bus->type;
 	switch (bus->type) {
 	case AUDIO_I2S:
-		data->type = AUDIO_I2S;
 		data->route = setup_i2s_route(bus);
 		break;
 
 	case AUDIO_SNDW:
-		data->type = AUDIO_SNDW;
 		data->sndw = setup_sndw(bus->sndw.link);
+		break;
+
+	case AUDIO_PWM:
+		data->ops = setup_gpio_pwm(bus->pwm.pad);
 		break;
 
 	default:
