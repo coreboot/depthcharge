@@ -20,7 +20,9 @@
 #include "drivers/power/pch.h"
 #include "drivers/soc/alderlake.h"
 #include "drivers/tpm/cr50_i2c.h"
+#include "drivers/tpm/cr50_switches.h"
 #include "drivers/tpm/tpm.h"
+#include "vboot/util/flag.h"
 #include <libpayload.h>
 #include <sysinfo.h>
 
@@ -59,8 +61,12 @@ static void tpm_setup(void)
 	DesignwareI2c *i2c3 = new_pci_designware_i2c(
 		TPM_I2C3,
 		I2C_FS_HZ, ALDERLAKE_DW_I2C_MHZ);
-	tpm_set_ops(&new_cr50_i2c(&i2c3->ops, TPM_I2C_ADDR,
-				  &cr50_irq_status)->base.ops);
+	Cr50I2c *tpm = new_cr50_i2c(&i2c3->ops, TPM_I2C_ADDR,
+					  &cr50_irq_status);
+	tpm_set_ops(&tpm->base.ops);
+	if (CONFIG(DRIVER_TPM_CR50_SWITCHES))
+		flag_replace(FLAG_PHYS_PRESENCE,
+				&new_cr50_rec_switch(&tpm->base.ops)->ops);
 }
 
 static void audio_setup(void)
