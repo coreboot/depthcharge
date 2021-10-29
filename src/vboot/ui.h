@@ -503,6 +503,29 @@ vb2_error_t ui_get_locale_info(uint32_t locale_id,
  */
 uint32_t ui_get_locale_count(void);
 
+enum ui_archive_type {
+	UI_ARCHIVE_GENERIC,
+	UI_ARCHIVE_LOCALIZED,
+	UI_ARCHIVE_FONT,
+};
+
+/*
+ * Load bitmap from archive.
+ *
+ * @param type		Archive type. See enum ui_archive_type.
+ * @param file		Bitmap file name.
+ * @param locale_code	Language code of locale, only for UI_ARCHIVE_LOCALIZED.
+ * @param bitmap	Bitmap struct to be filled.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error.
+ */
+
+vb2_error_t ui_load_bitmap(enum ui_archive_type type, const char *file,
+			   const char *locale_code, struct ui_bitmap *bitmap);
+
+/******************************************************************************/
+/* bitmap.c */
+
 /*
  * Get bitmap.
  *

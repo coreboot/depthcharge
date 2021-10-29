@@ -12,6 +12,7 @@
 ##
 
 depthcharge-y += archive.c
+depthcharge-y += bitmap.c
 depthcharge-y += common.c
 depthcharge-y += draw.c
 depthcharge-y += keyboard.c

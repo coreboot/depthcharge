@@ -1,20 +1,4 @@
 // SPDX-License-Identifier: GPL-2.0
-/*
- * Copyright 2020 Google Inc.
- *
- * See file CREDITS for list of people who contributed to this
- * project.
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 2 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but without any warranty; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- */
 
 #include <cbfs.h>
 #include <libpayload.h>
@@ -322,75 +306,31 @@ static vb2_error_t find_bitmap_in_archive(const struct directory *dir,
 	return VB2_ERROR_UI_MISSING_IMAGE;
 }
 
-vb2_error_t ui_get_bitmap(const char *image_name, const char *locale_code,
-			  int focused, struct ui_bitmap *bitmap)
+vb2_error_t ui_load_bitmap(enum ui_archive_type type, const char *file,
+			   const char *locale_code, struct ui_bitmap *bitmap)
 {
-	int used;
-	char file[UI_BITMAP_FILENAME_MAX_LEN + 1];
-	const char *file_ext;
-	const char *suffix = focused ? "_focus" : "";
-	const size_t image_name_len = strlen(image_name);
 	struct directory *ro_dir;
 	struct directory *rw_dir;
 
-	if (image_name_len + strlen(suffix) >= sizeof(file)) {
-		UI_ERROR("Image name %s too long\n", image_name);
-		return VB2_ERROR_INVALID_PARAMETER;
-	}
-
-	file_ext = strrchr(image_name, '.');
-	if (file_ext)
-		used = file_ext - image_name;
-	else
-		used = image_name_len;
-	strncpy(file, image_name, used);
-
-	used += snprintf(file + used, sizeof(file) - used, suffix);
-	snprintf(file + used, sizeof(file) - used, file_ext);
-
-	if (locale_code) {
+	switch (type) {
+	case UI_ARCHIVE_GENERIC:
+		VB2_TRY(get_graphic_archive(&ro_dir));
+		return find_bitmap_in_archive(ro_dir, file, bitmap);
+	case UI_ARCHIVE_LOCALIZED:
 		VB2_TRY(get_localized_graphic_archive(locale_code,
 						      &ro_dir, &rw_dir));
-
 		if (rw_dir) {
 			UI_INFO("Searching RW override for %s\n", file);
 			if (find_bitmap_in_archive(rw_dir, file, bitmap) ==
 			    VB2_SUCCESS)
 				return VB2_SUCCESS;
 		}
-	} else {
-		VB2_TRY(get_graphic_archive(&ro_dir));
+		return find_bitmap_in_archive(ro_dir, file, bitmap);
+	case UI_ARCHIVE_FONT:
+		VB2_TRY(get_font_archive(&ro_dir));
+		return find_bitmap_in_archive(ro_dir, file, bitmap);
+	default:
+		UI_WARN("Unknown archive type %d\n", type);
+		return VB2_ERROR_UI_INVALID_ARCHIVE;
 	}
-	return find_bitmap_in_archive(ro_dir, file, bitmap);
-}
-
-vb2_error_t ui_get_language_name_bitmap(const char *locale_code,
-					struct ui_bitmap *bitmap)
-{
-	char filename[UI_BITMAP_FILENAME_MAX_LEN + 1];
-	const char pattern[] = "language_%s.bmp";
-	snprintf(filename, sizeof(filename), pattern, locale_code);
-	return ui_get_bitmap(filename, NULL, 0, bitmap);
-}
-
-vb2_error_t ui_get_char_bitmap(const char c, struct ui_bitmap *bitmap)
-{
-	char filename[UI_BITMAP_FILENAME_MAX_LEN + 1];
-	const char pattern[] = "idx%03d_%02x.bmp";
-	struct directory *dir;
-
-	VB2_TRY(get_font_archive(&dir));
-
-	/* Compose file name */
-	snprintf(filename, sizeof(filename), pattern, c, c);
-	return find_bitmap_in_archive(dir, filename, bitmap);
-}
-
-vb2_error_t ui_get_step_icon_bitmap(int step, int focused,
-				    struct ui_bitmap *bitmap)
-{
-	char filename[UI_BITMAP_FILENAME_MAX_LEN + 1];
-	const char *pattern = focused ? "ic_%d-done.bmp" : "ic_%d.bmp";
-	snprintf(filename, sizeof(filename), pattern, step);
-	return ui_get_bitmap(filename, NULL, 0, bitmap);
 }
