@@ -20,6 +20,7 @@ const struct audio_config *variant_probe_audio_config(void)
 {
 	static struct audio_config config = {
 		.bus = {
+			.type = AUDIO_I2S,
 			.i2s.address = SSP_I2S1_START_ADDRESS,
 			.i2s.enable_gpio = {
 				.pad = SDMODE_PIN,

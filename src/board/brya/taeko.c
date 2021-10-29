@@ -24,6 +24,7 @@ const struct audio_config *variant_probe_audio_config(void)
 	if (fw_config_probe(FW_CONFIG(AUDIO, AUDIO_MAX98357_ALC5682I_I2S))) {
 		config = (struct audio_config){
 			.bus = {
+				.type			= AUDIO_I2S,
 				.i2s.address		= SSP_I2S2_START_ADDRESS,
 				.i2s.enable_gpio = {
 							.pad = SDMODE_PIN,
