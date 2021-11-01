@@ -21,7 +21,7 @@
 #include "drivers/soc/cezanne.h"
 #include "drivers/sound/amd_i2s_support.h"
 #include "drivers/sound/rt1019.h"
-#include "drivers/sound/rt5682.h"
+#include "drivers/sound/rt5682s.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/tpm/cr50_i2c.h"
@@ -137,7 +137,7 @@ static void setup_bit_banging(void)
 				       AUDIO_I2C_SPEED, I2C_DESIGNWARE_CLK_MHZ);
 
 	GpioI2s *i2s = new_gpio_i2s(
-			&i2s_bclk->ops,		/* Use RT5682 to give clks */
+			&i2s_bclk->ops,		/* Use RT5682s to give clks */
 			&i2s_lrclk->ops,	/* I2S Frame Sync GPIO */
 			&i2s_data->ops,		/* I2S Data GPIO */
 			8000,			/* Sample rate */
@@ -147,9 +147,9 @@ static void setup_bit_banging(void)
 
 	SoundRoute *sound_route = new_sound_route(&i2s->ops);
 
-	rt5682Codec *rt5682 = new_rt5682_codec(&i2c->ops, 0x1a, MCLK, LRCLK);
+	rt5682sCodec *rt5682s = new_rt5682s_codec(&i2c->ops, 0x1a, MCLK, LRCLK);
 
-	list_insert_after(&rt5682->component.list_node,
+	list_insert_after(&rt5682s->component.list_node,
 			  &sound_route->components);
 
 	GpioAmpCodec *enable_spk = new_gpio_amp_codec(&spk_pa_en->ops);
