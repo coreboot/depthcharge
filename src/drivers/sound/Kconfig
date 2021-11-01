@@ -99,7 +99,11 @@ config DRIVER_SOUND_RT5677
 	default n
 
 config DRIVER_SOUND_RT5682
-	bool "RT5682 codec driver"
+	bool "RT5682-VD codec driver"
+	default n
+
+config DRIVER_SOUND_RT5682S
+	bool "RT5682-VS codec driver"
 	default n
 
 config DRIVER_SOUND_ROUTE
