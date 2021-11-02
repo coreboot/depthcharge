@@ -37,6 +37,12 @@ vb2_error_t ui_draw_bitmap(const struct ui_bitmap *bitmap,
 	return VB2_SUCCESS;
 }
 
+vb2_error_t ui_get_bitmap_width(const struct ui_bitmap *bitmap,
+				int32_t height, int32_t *width)
+{
+	return VB2_SUCCESS;
+}
+
 uint32_t ui_get_bitmap_num_lines(const struct ui_bitmap *bitmap)
 {
 	return 1;
