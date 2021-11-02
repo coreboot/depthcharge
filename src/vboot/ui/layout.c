@@ -287,29 +287,44 @@ static vb2_error_t draw_navigation_bar(const struct ui_state *state)
 	return VB2_SUCCESS;
 }
 
+static const char *get_item_file(const struct ui_menu_item *item,
+				 const struct ui_state *state)
+{
+	if (item->get_file)
+		return item->get_file(state);
+	else
+		return item->file;
+}
+
 vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 				const struct ui_state *state,
 				int32_t *button_width)
 {
 	int i;
+	const struct ui_menu_item *item;
+	const char *file;
 	struct ui_bitmap bitmap;
 	int32_t text_width;
 	int32_t max_text_width = 0;
 
 	for (i = 0; i < menu->num_items; i++) {
-		if (menu->items[i].type != UI_MENU_ITEM_TYPE_PRIMARY)
+		item = &menu->items[i];
+		if (item->type != UI_MENU_ITEM_TYPE_PRIMARY)
 			continue;
-		if (!(menu->items[i].flags & UI_MENU_ITEM_FLAG_TRANSIENT) &&
+		if (!(item->flags & UI_MENU_ITEM_FLAG_TRANSIENT) &&
 		    UI_GET_BIT(state->hidden_item_mask, i))
 			continue;
-		if (menu->items[i].file) {
-			VB2_TRY(ui_get_bitmap(menu->items[i].file,
-					      state->locale->code, 0, &bitmap));
+		file = get_item_file(item, state);
+		if (item->get_width) {
+			VB2_TRY(item->get_width(state, &text_width));
+		} else if (file) {
+			VB2_TRY(ui_get_bitmap(file, state->locale->code, 0,
+					      &bitmap));
 			VB2_TRY(ui_get_bitmap_width(&bitmap,
 						    UI_BUTTON_TEXT_HEIGHT,
 						    &text_width));
-		} else if (menu->items[i].name) {
-			VB2_TRY(ui_get_text_width(menu->items[i].name,
+		} else if (item->name) {
+			VB2_TRY(ui_get_text_width(item->name,
 						  UI_BUTTON_TEXT_HEIGHT,
 						  &text_width));
 		} else {
@@ -324,10 +339,10 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 }
 
 vb2_error_t ui_draw_button(const struct ui_menu_item *item,
-			   const char *locale_code,
+			   const struct ui_state *state,
 			   int32_t x, int32_t y,
 			   int32_t width, int32_t height,
-			   int reverse, int focused, int disabled,
+			   int focused, int disabled,
 			   int clear_help)
 {
 	struct ui_bitmap bitmap;
@@ -336,6 +351,9 @@ vb2_error_t ui_draw_button(const struct ui_menu_item *item,
 	const uint32_t flags = PIVOT_H_CENTER | PIVOT_V_CENTER;
 	const struct rgb_color *bg_color, *fg_color, *border_color;
 	int32_t border_thickness;
+	const char *file = get_item_file(item, state);
+	const char *locale_code = state->locale->code;
+	const int reverse = state->locale->rtl;
 
 	/* Set button styles */
 	if (focused) {
@@ -373,8 +391,8 @@ vb2_error_t ui_draw_button(const struct ui_menu_item *item,
 				    UI_BUTTON_BORDER_RADIUS, reverse));
 
 	/* Draw button text */
-	if (item->file) {
-		VB2_TRY(ui_get_bitmap(item->file, locale_code, 0, &bitmap));
+	if (file) {
+		VB2_TRY(ui_get_bitmap(file, locale_code, 0, &bitmap));
 		VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x_center, y_center,
 					      UI_SIZE_AUTO,
 					      UI_BUTTON_TEXT_HEIGHT,
@@ -430,20 +448,18 @@ vb2_error_t ui_draw_button(const struct ui_menu_item *item,
  * Draw a link button, where the style is different from a primary button.
  *
  * @param item		Menu item.
- * @param locale_code	Language code of current locale.
+ * @param state		UI state.
  * @param x		x-coordinate of the top-left corner.
  * @param y		y-coordinate of the top-left corner.
  * @param height	Height of the box.
- * @param reverse	Whether to reverse the x-coordinate relative to the
- *			canvas.
  * @param focused	1 for focused and 0 for non-focused.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
 static vb2_error_t ui_draw_link(const struct ui_menu_item *item,
-				const char *locale_code,
+				const struct ui_state *state,
 				int32_t x, int32_t y, int32_t height,
-				int reverse, int focused)
+				int focused)
 {
 	struct ui_bitmap bitmap;
 	int32_t text_width, width;
@@ -452,11 +468,14 @@ static vb2_error_t ui_draw_link(const struct ui_menu_item *item,
 	const uint32_t flags = PIVOT_H_LEFT | PIVOT_V_CENTER;
 	const char *arrow_file;
 	const struct rgb_color *bg_color;
+	const char *file = get_item_file(item, state);
+	const char *locale_code = state->locale->code;
+	const int reverse = state->locale->rtl;
 
 	bg_color = focused ? &ui_color_link_bg : &ui_color_bg;
 
 	/* Get button width */
-	VB2_TRY(ui_get_bitmap(item->file, locale_code, 0, &bitmap));
+	VB2_TRY(ui_get_bitmap(file, locale_code, 0, &bitmap));
 	VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
 				    &text_width));
 	width = UI_LINK_TEXT_PADDING_LEFT +
@@ -481,7 +500,7 @@ static vb2_error_t ui_draw_link(const struct ui_menu_item *item,
 	x += UI_LINK_ICON_SIZE + UI_LINK_ICON_MARGIN_R;
 
 	/* Draw button text */
-	VB2_TRY(ui_get_bitmap(item->file, locale_code, 0, &bitmap));
+	VB2_TRY(ui_get_bitmap(file, locale_code, 0, &bitmap));
 	VB2_TRY(ui_draw_mapped_bitmap(&bitmap, x, y_center,
 				      UI_SIZE_AUTO, UI_BUTTON_TEXT_HEIGHT,
 				      bg_color, &ui_color_button,
@@ -777,8 +796,6 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 			       int32_t y)
 {
 	int i;
-	const char *locale_code = state->locale->code;
-	const int reverse = state->locale->rtl;
 	int32_t x;
 	int32_t button_width;
 	int clear_help;
@@ -794,11 +811,9 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 		clear_help = prev_state &&
 			     prev_state->focused_item == i &&
 			     UI_GET_BIT(prev_state->disabled_item_mask, i);
-		VB2_TRY(ui_draw_button(&menu->items[i],
-				       locale_code,
-				       x, y,
+		VB2_TRY(ui_draw_button(&menu->items[i], state, x, y,
 				       button_width, UI_BUTTON_HEIGHT,
-				       reverse, state->focused_item == i,
+				       state->focused_item == i,
 				       UI_GET_BIT(state->disabled_item_mask, i),
 				       clear_help));
 		y += UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
@@ -813,8 +828,8 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 			continue;
 		if (menu->items[i].type != UI_MENU_ITEM_TYPE_SECONDARY)
 			continue;
-		VB2_TRY(ui_draw_link(&menu->items[i], locale_code,
-				     x, y, UI_BUTTON_HEIGHT, reverse,
+		VB2_TRY(ui_draw_link(&menu->items[i], state,
+				     x, y, UI_BUTTON_HEIGHT,
 				     state->focused_item == i));
 		y -= UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
 	}

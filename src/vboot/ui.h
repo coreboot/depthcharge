@@ -474,13 +474,28 @@ enum ui_menu_item_flag {
 struct ui_menu_item {
 	/*
 	 * Item name for printing to console, required for all menu items.
-	 * When 'file' is not specified, the string will be used to draw the
-	 * button text with monospace font.
+	 * When both 'file' and 'get_file' are not specified, the string will be
+	 * used to draw the button text with monospace font.
 	 */
 	const char *name;
 	/* Pre-generated bitmap containing button text. */
 	const char *file;
-	/* If UI_MENU_ITEM_TYPE_LANGUAGE, the 'file' field will be ignored. */
+	/*
+	 * Custom function for getting bitmap file. If non-null, field 'file'
+	 * will be ignored.
+	 */
+	const char *(*get_file)(const struct ui_state *state);
+	/*
+	 * Custom function for getting the item text width. When 'get_file' is
+	 * set, this should also be set to return the maximum text width among
+	 * all possible files returned by 'get_file'. If not set, the text width
+	 * of the active bitmap (either from 'get_file' or 'file') will be used.
+	 */
+	vb2_error_t (*get_width)(const struct ui_state *state, int32_t *width);
+	/*
+	 * If UI_MENU_ITEM_TYPE_LANGUAGE, the 'file', 'get_file' and 'get_width'
+	 * fields will not be used.
+	 */
 	enum ui_menu_item_type type;
 	/* Icon file for UI_MENU_ITEM_TYPE_SECONDARY only. */
 	const char *icon_file;
@@ -929,13 +944,11 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
  * Menu item should specify either .file or .text for button text.
  *
  * @param item		Menu item.
- * @param locale_code	Language code of current locale.
+ * @param state		UI state.
  * @param x		x-coordinate of the top-left corner.
  * @param y		y-coordinate of the top-left corner.
  * @param width		Width of the button.
  * @param height	Height of the button.
- * @param reverse	Whether to reverse the x-coordinate relative to the
- *			canvas.
  * @param focused	1 for focused and 0 for non-focused.
  * @param disabled	1 for disabled style and 0 for normal style.
  * @param clear_help	1 to request for clearing the disabled help text area.
@@ -943,10 +956,10 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
  * @return VB2_SUCCESS on success, non-zero on error.
  */
 vb2_error_t ui_draw_button(const struct ui_menu_item *item,
-			   const char *locale_code,
+			   const struct ui_state *state,
 			   int32_t x, int32_t y,
 			   int32_t width, int32_t height,
-			   int reverse, int focused, int disabled,
+			   int focused, int disabled,
 			   int clear_help);
 
 /*

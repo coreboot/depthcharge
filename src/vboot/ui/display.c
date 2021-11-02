@@ -121,7 +121,7 @@ static vb2_error_t init_screen(void)
 }
 
 static vb2_error_t show_error_box(const struct ui_error_message *error,
-				  const struct ui_locale *locale)
+				  const struct ui_state *state)
 {
 	vb2_error_t rv = VB2_SUCCESS;
 	int32_t x, y;
@@ -129,7 +129,8 @@ static vb2_error_t show_error_box(const struct ui_error_message *error,
 	int32_t h;
 	int32_t button_width;
 	const uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
-	const int reverse = locale->rtl;
+	const int reverse = state->locale->rtl;
+	const char *locale_code = state->locale->code;
 
 	/* Center the box on the screen */
 	x = (UI_SCALE - UI_ERROR_BOX_WIDTH) / 2;
@@ -157,7 +158,7 @@ static vb2_error_t show_error_box(const struct ui_error_message *error,
 
 	/* Insert in the body */
 	y += UI_ERROR_BOX_SECTION_SPACING + UI_ERROR_BOX_ICON_HEIGHT;
-	VB2_TRY(ui_get_bitmap(error->file, locale->code, 0, &bitmap));
+	VB2_TRY(ui_get_bitmap(error->file, locale_code, 0, &bitmap));
 	h = UI_ERROR_BOX_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, h, flags, reverse));
 	y += h;
@@ -173,7 +174,7 @@ static vb2_error_t show_error_box(const struct ui_error_message *error,
 	const struct ui_menu_item back_item = {
 		.file = "btn_back.bmp",
 	};
-	VB2_TRY(ui_get_bitmap(back_item.file, locale->code, 0, &bitmap));
+	VB2_TRY(ui_get_bitmap(back_item.file, locale_code, 0, &bitmap));
 	int32_t text_width;
 	VB2_TRY(ui_get_bitmap_width(&bitmap, UI_BUTTON_TEXT_HEIGHT,
 				    &text_width));
@@ -185,11 +186,11 @@ static vb2_error_t show_error_box(const struct ui_error_message *error,
 	y = (UI_SCALE + UI_ERROR_BOX_HEIGHT) / 2 -
 		UI_ERROR_BOX_PADDING - UI_BUTTON_HEIGHT;
 	VB2_TRY(ui_draw_button(&back_item,
-			       locale->code,
+			       state,
 			       x, y,
 			       button_width,
 			       UI_BUTTON_HEIGHT,
-			       reverse, 1, 0, 0));
+			       1, 0, 0));
 
 	return rv;
 }
@@ -305,7 +306,7 @@ vb2_error_t ui_display(struct ui_context *ui,
 	 * error message to the AP console.
 	 */
 	if (rv == VB2_SUCCESS && error) {
-		show_error_box(error, state->locale);
+		show_error_box(error, state);
 		if (error->mesg)
 			UI_WARN("%s\n", error->mesg);
 	}
