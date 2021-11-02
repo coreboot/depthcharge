@@ -61,6 +61,8 @@ int main(int argc, char *argv[])
 		.current_page = 0,
 		.error_code = 0,
 	};
+	if (strlen(__LOG__))
+		VB2_TRY(ui_log_init(__SCREEN__, locale.code, __LOG__, &log));
 	VB2_TRY(ui_display_screen(&state, NULL));
 	flush_graphics_buffer();
 	if (argc < 2) {
