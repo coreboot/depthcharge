@@ -5,10 +5,9 @@
 
 #include "io.h"
 
-size_t read_bmp(void *buffer, size_t size, const char *path)
+size_t get_bmp_size(const char *path)
 {
-	int ret;
-	size_t file_size;
+	size_t size;
 	FILE *fp = fopen(path, "rb");
 	if (!fp) {
 		printf("ERROR: Unable to open %s\n", path);
@@ -16,14 +15,16 @@ size_t read_bmp(void *buffer, size_t size, const char *path)
 	}
 
 	fseek(fp, 0, SEEK_END);
-	file_size = ftell(fp);
-	if (file_size > size) {
-		printf("ERROR: File size of %s larger than %zu\n", path, size);
-		return 0;
-	}
+	size = ftell(fp);
+	fclose(fp);
+	return size;
+}
 
-	rewind(fp);
-	ret = fread(buffer, 1, file_size, fp);
+size_t read_bmp(void *buffer, size_t size, const char *path)
+{
+	size_t ret;
+	FILE *fp = fopen(path, "rb");
+	ret = fread(buffer, 1, size, fp);
 	fclose(fp);
 	return ret;
 }

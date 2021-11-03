@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 
+#include <libpayload.h>
 #include <stdio.h>
 #include <assert.h>
 
@@ -7,7 +8,6 @@
 #include "vboot/ui.h"
 
 #define PATH_MAX_LEN 1000
-#define BMP_MAX_SIZE 100000  /* Should be large enough */
 
 vb2_error_t ui_get_locale_info(uint32_t locale_id,
 			       struct ui_locale const **locale)
@@ -27,12 +27,22 @@ uint32_t ui_get_locale_count(void)
 
 static vb2_error_t load_bitmap(const char *path, struct ui_bitmap *bitmap)
 {
-	static unsigned char buffer[BMP_MAX_SIZE];
+	size_t read_size;
+	unsigned char *buffer;
 
 	bitmap->data = NULL;
-	bitmap->size = read_bmp(buffer, sizeof(buffer), path);
+	bitmap->size = get_bmp_size(path);
 	if (bitmap->size == 0) {
-		UI_ERROR("Error reading file %s\n", path);
+		UI_ERROR("Error getting file size: %s\n", path);
+		return VB2_ERROR_UNKNOWN;
+	}
+
+	/* There will be memory leak, but we don't care */
+	buffer = xmalloc(bitmap->size);
+	read_size = read_bmp(buffer, bitmap->size, path);
+	if (read_size != bitmap->size) {
+		UI_ERROR("Read size %zu != file size %zu\n",
+			 read_size, bitmap->size);
 		return VB2_ERROR_UNKNOWN;
 	}
 
