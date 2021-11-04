@@ -268,10 +268,11 @@ static int mtk_mmc_cmd_done(MtkMmcHost *host, int events, MmcCommand *cmd)
 		return 0;
 
 	} else {
-		if (cmd->cmdidx == MMC_CMD_SEND_STATUS)
+		if (cmd->cmdidx == MMC_CMD_SEND_STATUS) {
 			return 0;
-		else {
-			mmc_error("cmd: %d crc error!\n", cmd->cmdidx);
+		} else {
+			if (cmd->cmdidx != MMC_SEND_TUNING_BLOCK_HS200)
+				mmc_error("cmd: %d crc error!\n", cmd->cmdidx);
 			return MMC_COMM_ERR;
 		}
 	}
@@ -374,10 +375,13 @@ static int mtk_mmc_send_cmd_bounced(MmcCtrlr *ctrlr, MmcCommand *cmd,
 		if (ints & MSDC_INT_XFER_COMPL) {
 			return cmd_err;
 		} else {
-			if (ints & MSDC_INT_DATTMO)
+			if (ints & MSDC_INT_DATTMO) {
 				mmc_error("Data timeout, ints: %x\n", ints);
-			else if (ints & MSDC_INT_DATCRCERR)
-				mmc_error("Data crc error, ints: %x\n", ints);
+			} else if (ints & MSDC_INT_DATCRCERR) {
+				if (cmd->cmdidx != MMC_SEND_TUNING_BLOCK_HS200)
+					mmc_error("Data crc error, ints: %x\n",
+						  ints);
+			}
 			return -1;
 		}
 	}
