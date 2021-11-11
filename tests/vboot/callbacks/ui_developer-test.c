@@ -4,6 +4,7 @@
 #include <tests/vboot/common.h>
 #include <tests/vboot/ui/common.h>
 #include <mocks/callbacks.h>
+#include <mocks/payload.h>
 #include <mocks/util/commonparams.h>
 #include <vboot/util/commonparams.h>
 
@@ -48,6 +49,8 @@ static int setup_context(void **state)
 	test_ui_ctx.ctx->flags |= VB2_CONTEXT_DEV_BOOT_ALLOWED;
 
 	*state = &test_ui_ctx;
+
+	payload_altfw_head_initialized = 0;
 
 	mock_time_ms = 31ULL * MSECS_PER_SEC;
 	/* Larger than DEV_DELAY_NORMAL_MS / UI_KEY_DELAY_MS */

@@ -1,11 +1,15 @@
 // SPDX-License-Identifier: GPL-2.0
 
 #include <libpayload.h>
+#include <mocks/payload.h>
 #include <tests/test.h>
 #include <vb2_api.h>
 
 #include "base/list.h"
 #include "boot/payload.h"
+
+struct ListNode payload_altfw_head;
+int payload_altfw_head_initialized;
 
 /*
  * NOTE: To avoid infinte recursion, this function must be linked with a mocking
@@ -25,17 +29,21 @@ struct ListNode *payload_get_altfw_list(void)
 		.name = "altfw_name",
 		.desc = "altfw_desc",
 	};
-	static struct ListNode head = {
-		.next = NULL,
-		.prev = NULL,
-	};
-	for (seqnum = 1; seqnum <= count; seqnum++) {
+
+	if (payload_altfw_head_initialized)
+		return &payload_altfw_head;
+
+	payload_altfw_head.next = NULL;
+	payload_altfw_head.prev = NULL;
+	for (seqnum = count; seqnum >= 1; seqnum--) {
 		info = malloc(sizeof(*info));
 		if (!info)
 			fail_msg("Cannot allocate memory");
 		*info = altfw_info;
 		info->seqnum = seqnum;
-		list_insert_after(&info->list_node, &head);
+		list_insert_after(&info->list_node, &payload_altfw_head);
 	}
-	return &head;
+
+	payload_altfw_head_initialized = 1;
+	return &payload_altfw_head;
 }
