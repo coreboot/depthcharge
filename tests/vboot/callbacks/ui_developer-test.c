@@ -396,16 +396,21 @@ static void test_developer_ui_select_altfw_menu(void **state)
 	struct ui_context *ui = *state;
 
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_ALTFW_ALLOWED;
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* altfw #1 */
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* altfw #2 */
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* altfw #3 */
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_ALTFW);
-	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2ex_get_altfw_count, 5);
+
+	EXPECT_DISPLAY_UI_ANY();
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_SELECT_ALTFW, MOCK_IGNORE, 1);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_SELECT_ALTFW, MOCK_IGNORE, 2);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	EXPECT_DISPLAY_UI(VB2_SCREEN_DEVELOPER_SELECT_ALTFW, MOCK_IGNORE, 3);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	will_return_maybe(ui_keyboard_read, 0);
+
 	expect_value(vb2ex_run_altfw, altfw_id, 3);
 	will_return(vb2ex_run_altfw, VB2_SUCCESS);
 
@@ -694,31 +699,6 @@ static void test_developer_screen_external_default(void **state)
 	ASSERT_VB2_SUCCESS(vb2ex_developer_ui(ui->ctx));
 }
 
-static void test_developer_screen_altfw(void **state)
-{
-	struct ui_context *ui = *state;
-
-	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_ALTFW_ALLOWED;
-	will_return_maybe(vb2ex_prepare_log_screen, 1);
-	will_return_maybe(vb2api_get_dev_default_boot_target,
-			  VB2_DEV_DEFAULT_BOOT_TARGET_EXTERNAL);
-	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_maybe(vb2api_allow_recovery, 0);
-	will_return_maybe(vb2ex_get_locale_count, 10);
-
-	/* #4: Alternate boot */
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_DISPLAY_UI_ANY_ALWAYS();
-	will_return_maybe(ui_keyboard_read, 0);
-
-	expect_any(vb2ex_prepare_log_screen, str);
-
-	assert_int_equal(vb2ex_developer_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
-}
-
 static void test_developer_screen_advanced_options(void **state)
 {
 	struct ui_context *ui = *state;
@@ -901,7 +881,6 @@ int main(void)
 		UI_TEST(test_developer_screen_disabled_and_hidden_only_altfw),
 		UI_TEST(test_developer_screen),
 		UI_TEST(test_developer_screen_external_default),
-		UI_TEST(test_developer_screen_altfw),
 		UI_TEST(test_developer_screen_advanced_options),
 		UI_TEST(test_developer_screen_advanced_options_screen),
 		UI_TEST(test_developer_screen_debug_info),
