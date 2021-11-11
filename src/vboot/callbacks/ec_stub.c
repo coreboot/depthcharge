@@ -26,12 +26,6 @@ static void no_ec_soft_sync(void)
 	halt();
 }
 
-int vb2ex_ec_trusted(void)
-{
-	printf("The EC which doesn't exist isn't untrusted.\n");
-	return 1;
-}
-
 vb2_error_t vb2ex_ec_battery_cutoff(void)
 {
 	printf("EC battery cut-off not supported, ignored.\n");

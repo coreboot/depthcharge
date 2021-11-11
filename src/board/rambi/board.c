@@ -50,11 +50,6 @@ static int board_setup(void)
 	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + DEVICE_NVS_OFFSET;
 	sysinfo_install_flags(NULL);
 
-	/* ECRW GPIO: SCGPIO59 */
-	PchGpio *ec_in_rw = new_baytrail_gpio_input(59 / 32,
-						    59 % 32);
-	flag_install(FLAG_ECINRW, &ec_in_rw->ops);
-
 	CrosEcLpcBus *cros_ec_lpc_bus =
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);

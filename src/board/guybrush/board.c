@@ -111,21 +111,6 @@ static DisplayOps guybrush_display_ops = {
 	.backlight_update = &guybrush_backlight_update,
 };
 
-static void setup_ec_in_rw_gpio(void)
-{
-	static const char * const mb = "Guybrush";
-	struct cb_mainboard *mainboard = phys_to_virt(lib_sysinfo.cb_mainboard);
-
-	/*
-	 * Board versions 1 & 2 support H1 DB, but the EC_IN_RW signal is not
-	 * routed. So add a dummy EC_IN_RW GPIO to emulate EC is trusted.
-	 */
-	if (!strcmp(cb_mb_part_string(mainboard), mb) &&
-	    (lib_sysinfo.board_id == UNDEFINED_STRAPPING_ID ||
-	     lib_sysinfo.board_id < 3))
-		flag_replace(FLAG_ECINRW, new_gpio_low());
-}
-
 static void setup_bit_banging(void)
 {
 	KernGpio *i2s_bclk = new_kern_fch_gpio_input(I2S_BCLK_GPIO);
@@ -174,7 +159,6 @@ static int board_setup(void)
 
 	flag_replace(FLAG_LIDSW, cros_ec_lid_switch_flag());
 	flag_replace(FLAG_PWRSW, cros_ec_power_btn_flag());
-	setup_ec_in_rw_gpio();
 
 	if (lib_sysinfo.fw_config & FW_CONFIG_BIT_BANGING)
 		setup_bit_banging();
