@@ -19,7 +19,7 @@ LOG ?=
 override LOG := \"$(LOG)\"
 BMP_PATH ?= $(screenshotsrc)/bmp
 override BMP_PATH := \"$(BMP_PATH)\"
-OUTPUT ?= output.bmp
+OUTPUT ?= $(obj)/output.bmp
 
 SCREENSHOT_OPTIONS += WIDTH HEIGHT SCREEN ITEM
 SCREENSHOT_OPTIONS += DISABLED_ITEM_MASK HIDDEN_ITEM_MASK LOG BMP_PATH
