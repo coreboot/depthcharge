@@ -30,6 +30,7 @@ static int setup_context(void **state)
 	memset(&test_ui_ctx, 0, sizeof(test_ui_ctx));
 	reset_mock_workbuf = 1;
 	test_ui_ctx.ctx = vboot_get_context();
+	set_boot_mode(test_ui_ctx.ctx, VB2_BOOT_MODE_MANUAL_RECOVERY);
 	*state = &test_ui_ctx;
 
 	mock_time_ms = 31ULL * MSECS_PER_SEC;
@@ -42,7 +43,6 @@ static void setup_will_return_common(void)
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(vb2api_phone_recovery_ui_enabled, 1);
 	will_return_maybe(vb2api_diagnostic_ui_enabled, 1);
-	will_return_maybe(vb2api_allow_recovery, 1);
 }
 
 static void test_manual_action_success(void **state)

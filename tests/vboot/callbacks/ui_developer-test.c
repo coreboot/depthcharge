@@ -47,6 +47,7 @@ static int setup_context(void **state)
 
 	test_ui_ctx.ctx->flags |= VB2_CONTEXT_DEVELOPER_MODE;
 	test_ui_ctx.ctx->flags |= VB2_CONTEXT_DEV_BOOT_ALLOWED;
+	set_boot_mode(test_ui_ctx.ctx, VB2_BOOT_MODE_DEVELOPER);
 
 	*state = &test_ui_ctx;
 
@@ -707,7 +708,6 @@ static void test_developer_screen_advanced_options(void **state)
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_maybe(vb2api_allow_recovery, 0);
 
 	EXPECT_UI_DISPLAY_ANY();
 	/* #5: Advanced options */
@@ -738,7 +738,6 @@ static void test_developer_screen_advanced_options_screen(void **state)
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_maybe(vb2api_allow_recovery, 0);
 	will_return_maybe(vb2ex_get_locale_count, 10);
 	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
 	WILL_CALL_UI_LOG_INIT_ALWAYS(1);

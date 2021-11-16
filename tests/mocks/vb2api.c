@@ -21,11 +21,6 @@ void vb2api_set_locale_id(struct vb2_context *ctx, uint32_t locale_id)
 	mock_locale_id = locale_id;
 }
 
-int vb2api_allow_recovery(struct vb2_context *ctx)
-{
-	return mock();
-}
-
 int vb2api_phone_recovery_ui_enabled(struct vb2_context *ctx)
 {
 	return mock();

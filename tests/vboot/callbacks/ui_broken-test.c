@@ -28,6 +28,7 @@ static int setup_context(void **state)
 	memset(&test_ui_ctx, 0, sizeof(test_ui_ctx));
 	reset_mock_workbuf = 1;
 	test_ui_ctx.ctx = vboot_get_context();
+	set_boot_mode(test_ui_ctx.ctx, VB2_BOOT_MODE_BROKEN_SCREEN);
 	*state = &test_ui_ctx;
 	return 0;
 }

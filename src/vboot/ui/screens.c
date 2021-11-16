@@ -570,8 +570,8 @@ static const struct ui_screen_info broken_screen = {
 static vb2_error_t boot_minios_impl(struct ui_context *ui, int non_active_only)
 {
 	/* Validity check, should never happen. */
-	if (!vb2api_allow_recovery(ui->ctx)) {
-		UI_ERROR("ERROR: Recovery now allowed; ignoring\n");
+	if (ui->ctx->boot_mode != VB2_BOOT_MODE_MANUAL_RECOVERY) {
+		UI_ERROR("ERROR: Not in manual recovery mode; ignoring\n");
 		return VB2_REQUEST_UI_CONTINUE;
 	}
 
@@ -592,13 +592,13 @@ vb2_error_t advanced_options_init(struct ui_context *ui)
 {
 	ui->state->selected_item = ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE;
 	if ((ui->ctx->flags & VB2_CONTEXT_DEVELOPER_MODE) ||
-	    !vb2api_allow_recovery(ui->ctx)) {
+	    ui->ctx->boot_mode != VB2_BOOT_MODE_MANUAL_RECOVERY) {
 		VB2_SET_BIT(ui->state->hidden_item_mask,
 			    ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE);
 		ui->state->selected_item = ADVANCED_OPTIONS_ITEM_DEBUG_INFO;
 	}
 
-	if (!vb2api_allow_recovery(ui->ctx))
+	if (ui->ctx->boot_mode != VB2_BOOT_MODE_MANUAL_RECOVERY)
 		VB2_SET_BIT(ui->state->hidden_item_mask,
 			    ADVANCED_OPTIONS_ITEM_INTERNET_RECOVERY);
 
@@ -798,7 +798,7 @@ static vb2_error_t recovery_to_dev_finalize(struct ui_context *ui)
 	/* Validity check, should never happen. */
 	if (ui->state->screen->id != UI_SCREEN_RECOVERY_TO_DEV ||
 	    (ui->ctx->flags & VB2_CONTEXT_DEVELOPER_MODE) ||
-	    !vb2api_allow_recovery(ui->ctx)) {
+	    ui->ctx->boot_mode != VB2_BOOT_MODE_MANUAL_RECOVERY) {
 		UI_ERROR("ERROR: Dev transition validity check failed\n");
 		return VB2_SUCCESS;
 	}

@@ -88,4 +88,13 @@ static inline vb2_error_t _try_load_external_disk(void)
 #define WILL_HAVE_NO_EXTERNAL() \
 	WILL_LOAD_EXTERNAL_ALWAYS(VB2_ERROR_LK_NO_DISK_FOUND)
 
+/* Force set the constant boot_mode in vboot context. */
+static inline void set_boot_mode(struct vb2_context *ctx,
+				 enum vb2_boot_mode boot_mode)
+{
+	enum vb2_boot_mode *local_boot_mode =
+		(enum vb2_boot_mode *)&(ctx->boot_mode);
+	*local_boot_mode = boot_mode;
+}
+
 #endif /* _TESTS_VBOOT_COMMON_H */

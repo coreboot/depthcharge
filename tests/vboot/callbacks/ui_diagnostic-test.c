@@ -27,6 +27,7 @@ static int setup_context(void **state)
 	reset_mock_workbuf = 1;
 
 	test_ui_ctx.ctx = vboot_get_context();
+	set_boot_mode(test_ui_ctx.ctx, VB2_BOOT_MODE_DIAGNOSTICS);
 
 	*state = &test_ui_ctx;
 
