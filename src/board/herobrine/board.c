@@ -31,6 +31,12 @@
 #define SDC2_TLMM_CFG_ADDR 0xF1B4000
 #define SDC2_HC_BASE 0x08804000
 
+static const VpdDeviceTreeMap vpd_dt_map[] = {
+	{ "bluetooth_mac0", "bluetooth0/local-bd-address" },
+	{ "wifi_mac0", "wifi0/local-mac-address" },
+	{}
+};
+
 static int board_setup(void)
 {
 	/* stub out required GPIOs for vboot */
@@ -39,6 +45,8 @@ static int board_setup(void)
 	flag_replace(FLAG_PWRSW, new_gpio_low());
 
 	power_set_ops(&psci_power_ops);
+
+	dt_register_vpd_mac_fixup(vpd_dt_map);
 
 	/*eMMC support */
 	u32 emmc_platfm_flags = SDHCI_PLATFORM_EMMC_1V8_POWER |
