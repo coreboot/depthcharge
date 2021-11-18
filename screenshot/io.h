@@ -2,6 +2,6 @@
 
 #include <stddef.h>
 
-size_t get_bmp_size(const char *path);
-size_t read_bmp(void *buffer, size_t size, const char *path);
-size_t write_raw(const void *buffer, size_t size, const char *outfile);
+size_t get_file_size(const char *path);
+size_t read_file(void *buffer, size_t size, const char *path);
+size_t write_file(const void *buffer, size_t size, const char *path);

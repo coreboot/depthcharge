@@ -31,7 +31,7 @@ static vb2_error_t load_bitmap(const char *path, struct ui_bitmap *bitmap)
 	unsigned char *buffer;
 
 	bitmap->data = NULL;
-	bitmap->size = get_bmp_size(path);
+	bitmap->size = get_file_size(path);
 	if (bitmap->size == 0) {
 		UI_ERROR("Error getting file size: %s\n", path);
 		return VB2_ERROR_UNKNOWN;
@@ -39,7 +39,7 @@ static vb2_error_t load_bitmap(const char *path, struct ui_bitmap *bitmap)
 
 	/* There will be memory leak, but we don't care */
 	buffer = xmalloc(bitmap->size);
-	read_size = read_bmp(buffer, bitmap->size, path);
+	read_size = read_file(buffer, bitmap->size, path);
 	if (read_size != bitmap->size) {
 		UI_ERROR("Read size %zu != file size %zu\n",
 			 read_size, bitmap->size);
