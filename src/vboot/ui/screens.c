@@ -2144,13 +2144,6 @@ static const struct ui_screen_info diagnostics_memory_full_screen = {
 };
 
 /******************************************************************************/
-/*
- * TODO(chromium:1035800): Refactor UI code across vboot and depthcharge.
- * Currently vboot and depthcharge maintain their own copies of menus/screens.
- * vboot detects keyboard input and controls the navigation among different menu
- * items and screens, while depthcharge performs the actual rendering of each
- * screen, based on the menu information passed from vboot.
- */
 static const struct ui_screen_info *const screens[] = {
 	&firmware_sync_screen,
 	&language_select_screen,
