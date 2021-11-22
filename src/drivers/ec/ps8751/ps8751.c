@@ -439,6 +439,21 @@ static int __must_check ps8751_enable_mpu(Ps8751 *me)
 	mdelay(PS_MPU_BOOT_DELAY_MS);
 	if (ps8751_wake_i2c(me) != 0)
 		return -1;
+
+	/*
+	 * Reset the MCU
+	 * TODO(b/207693232): PS8815: MCU reset required after firmware update
+	 */
+	printf("%s: reset MCU\n", me->chip_name);
+	if (write_reg(me, PAGE_2, 0xD6, 0xC0) != 0)
+		return -1;
+	if (write_reg(me, PAGE_2, 0xD6, 0x40) != 0)
+		return -1;
+	if (write_reg(me, PAGE_2, 0xD6, 0x00) != 0)
+		return -1;
+
+	mdelay(PS_MPU_BOOT_DELAY_MS);
+
 	return 0;
 }
 
