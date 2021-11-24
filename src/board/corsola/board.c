@@ -15,9 +15,20 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
 #include "drivers/storage/mtk_mmc.h"
+#include "drivers/tpm/spi.h"
 #include "vboot/util/flag.h"
 
 #define GPIO_XHCI_DONE	PAD_PERIPHERAL_EN1
+
+static int cr50_irq_status(void)
+{
+	static GpioOps *tpm_int;
+	if (!tpm_int)
+		tpm_int = sysinfo_lookup_gpio("TPM interrupt", 1,
+					      new_mtk_eint);
+	assert(tpm_int);
+	return gpio_get(tpm_int);
+}
 
 static int board_setup(void)
 {
@@ -36,6 +47,11 @@ static int board_setup(void)
 					      new_mtk_gpio_input);
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, ec_int);
 	register_vboot_ec(&cros_ec->vboot);
+
+	/* Set up TPM */
+	GpioOps *spi2_cs = new_gpio_not(new_mtk_gpio_output(PAD_SPI2_CSB));
+	MtkSpi *spi2 = new_mtk_spi(0x11012000, spi2_cs);
+	tpm_set_ops(&new_tpm_spi(&spi2->ops, cr50_irq_status)->ops);
 
 	/* Set up NOR flash ops */
 	MtkNorFlash *nor_flash = new_mtk_nor_flash(0x11000000);
