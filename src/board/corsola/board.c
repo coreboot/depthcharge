@@ -5,19 +5,37 @@
 
 #include "base/init_funcs.h"
 #include "base/late_init_funcs.h"
+#include "drivers/bus/spi/mtk.h"
 #include "drivers/bus/usb/usb.h"
+#include "drivers/ec/cros/ec.h"
+#include "drivers/ec/cros/spi.h"
+#include "drivers/flash/spi.h"
 #include "drivers/flash/mtk_snfc.h"
 #include "drivers/gpio/mtk_gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
 #include "drivers/storage/mtk_mmc.h"
+#include "vboot/util/flag.h"
 
 #define GPIO_XHCI_DONE	PAD_PERIPHERAL_EN1
 
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_mtk_gpio_input);
+	flag_replace(FLAG_LIDSW, cros_ec_lid_switch_flag());
+	if (!CONFIG(DETACHABLE))
+		flag_replace(FLAG_PWRSW, cros_ec_power_btn_flag());
+
 	power_set_ops(&psci_power_ops);
+
+	/* Set up EC */
+	GpioOps *spi1_cs = new_gpio_not(new_mtk_gpio_output(PAD_SPI1_CSB));
+	MtkSpi *spi1 = new_mtk_spi(0x11010000, spi1_cs);
+	CrosEcSpiBus *cros_ec_spi_bus = new_cros_ec_spi_bus(&spi1->ops);
+	GpioOps *ec_int = sysinfo_lookup_gpio("EC interrupt", 1,
+					      new_mtk_gpio_input);
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, ec_int);
+	register_vboot_ec(&cros_ec->vboot);
 
 	/* Set up NOR flash ops */
 	MtkNorFlash *nor_flash = new_mtk_nor_flash(0x11000000);
