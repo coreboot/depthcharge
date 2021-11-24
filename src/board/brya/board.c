@@ -43,6 +43,15 @@ __weak const struct storage_config *variant_get_storage_configs(size_t *count)
 	return storage_configs;
 }
 
+__weak const struct tpm_config *variant_get_tpm_config(void)
+{
+	static const struct tpm_config config = {
+		.pci_dev = PCI_DEV(0, 0x15, 3),
+	};
+
+	return &config;
+}
+
 static int cr50_irq_status(void)
 {
 	return alderlake_get_gpe(GPE0_DW0_13); /* GPP_A13 */
@@ -58,11 +67,12 @@ static void ec_setup(void)
 
 static void tpm_setup(void)
 {
-	DesignwareI2c *i2c3 = new_pci_designware_i2c(
-		TPM_I2C3,
-		I2C_FS_HZ, ALDERLAKE_DW_I2C_MHZ);
-	Cr50I2c *tpm = new_cr50_i2c(&i2c3->ops, TPM_I2C_ADDR,
-					  &cr50_irq_status);
+	const struct tpm_config *config = variant_get_tpm_config();
+	DesignwareI2c *i2c = new_pci_designware_i2c(config->pci_dev,
+						    I2C_FS_HZ,
+						    ALDERLAKE_DW_I2C_MHZ);
+	Cr50I2c *tpm = new_cr50_i2c(&i2c->ops, TPM_I2C_ADDR,
+				    &cr50_irq_status);
 	tpm_set_ops(&tpm->base.ops);
 	if (CONFIG(DRIVER_TPM_CR50_SWITCHES))
 		flag_replace(FLAG_PHYS_PRESENCE,
