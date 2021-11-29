@@ -44,6 +44,7 @@ static const struct storage_config storage_configs[] = {
 	{ .media = STORAGE_NVME, .pci_dev = PCH_DEV_PCIE8 },
 	{ .media = STORAGE_NVME, .pci_dev = PCH_DEV_PCIE2 },
 	{ .media = STORAGE_SDHCI, .pci_dev = PCH_DEV_PCIE7 },
+	{ .media = STORAGE_RTKMMC, .pci_dev = PCH_DEV_PCIE7 },
 };
 
 const struct storage_config *variant_get_storage_configs(size_t *count)
