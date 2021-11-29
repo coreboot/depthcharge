@@ -13,6 +13,7 @@
 #include "drivers/storage/nvme.h"
 #include "drivers/storage/sdhci.h"
 #include "drivers/storage/sdhci_gli.h"
+#include "drivers/storage/rtk_mmc.h"
 
 static void setup_emmc(pcidev_t dev, const struct emmc_config *config)
 {
@@ -46,6 +47,21 @@ static void setup_sdhci(pcidev_t dev)
 		sd->name = "sd";
 		list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
 				  &removable_block_dev_controllers);
+	}
+}
+
+static void setup_rtkmmc(pcidev_t dev)
+{
+	if (!CONFIG(DRIVER_STORAGE_SDHCI_PCI))
+		return;
+
+	if (CONFIG(DRIVER_STORAGE_MMC_RTK)) {
+		RtkMmcHost *rtkmmc = probe_pci_rtk_host(dev, RTKMMC_PLATFORM_REMOVABLE);
+		if (rtkmmc) {
+			rtkmmc->name = "rtksd";
+			list_insert_after(&rtkmmc->mmc_ctrlr.ctrlr.list_node,
+				  	&removable_block_dev_controllers);
+		}
 	}
 }
 
@@ -91,6 +107,9 @@ static int configure_storage(void)
 			break;
 		case STORAGE_SDHCI:
 			setup_sdhci(remapped);
+			break;
+		case STORAGE_RTKMMC:
+			setup_rtkmmc(remapped);
 			break;
 		case STORAGE_EMMC:
 			setup_emmc(remapped, &config[i].emmc);
