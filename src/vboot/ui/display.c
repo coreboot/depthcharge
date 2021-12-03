@@ -313,7 +313,8 @@ static vb2_error_t ui_display_screen(struct ui_state *state,
 vb2_error_t ui_display(enum ui_screen screen, uint32_t locale_id,
 		       uint32_t selected_item, uint32_t disabled_item_mask,
 		       uint32_t hidden_item_mask, int timer_disabled,
-		       uint32_t current_page, enum ui_error error_code)
+		       uint32_t current_page, enum ui_error error_code,
+		       struct ui_state *prev_state)
 {
 	vb2_error_t rv;
 	const struct ui_locale *locale = NULL;
@@ -331,13 +332,12 @@ vb2_error_t ui_display(enum ui_screen screen, uint32_t locale_id,
 		rv = ui_get_locale_info(0, &locale);
 	}
 	if (rv)
-		goto fail;
+		return rv;
 
 	screen_info = ui_get_screen_info(screen);
 	if (!screen_info) {
-		UI_WARN("Not a valid screen: %#x\n", screen);
-		rv = VB2_ERROR_UI_INVALID_SCREEN;
-		goto fail;
+		UI_ERROR("Not a valid screen: %#x\n", screen);
+		return VB2_ERROR_UI_INVALID_SCREEN;
 	}
 
 	struct ui_state state = {
@@ -352,24 +352,8 @@ vb2_error_t ui_display(enum ui_screen screen, uint32_t locale_id,
 		.error_code = error_code,
 	};
 
-	/*
-	 * TODO(b/172339016): Avoid using static variables here. Move prev_state
-	 * into ui_loop_impl and pass it into ui_display instead.
-	 */
-	static struct ui_state prev_state;
-	static int has_prev_state = 0;
-
-	rv = ui_display_screen(&state, has_prev_state ? &prev_state : NULL);
+	rv = ui_display_screen(&state, prev_state);
 	flush_graphics_buffer();
-	if (rv)
-		goto fail;
 
-	memcpy(&prev_state, &state, sizeof(struct ui_state));
-	has_prev_state = 1;
-
-	return VB2_SUCCESS;
-
- fail:
-	has_prev_state = 0;
 	return rv;
 }

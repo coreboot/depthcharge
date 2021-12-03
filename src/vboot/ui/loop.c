@@ -98,6 +98,7 @@ static vb2_error_t ui_loop_impl(
 {
 	struct ui_context ui;
 	struct ui_state prev_state;
+	int need_redraw;
 	int prev_disable_timer;
 	enum ui_error prev_error_code;
 	const struct ui_menu *menu;
@@ -118,6 +119,7 @@ static vb2_error_t ui_loop_impl(
 		return rv;
 
 	memset(&prev_state, 0, sizeof(prev_state));
+	need_redraw = 0;
 	prev_disable_timer = 0;
 	prev_error_code = UI_ERROR_NONE;
 
@@ -141,11 +143,16 @@ static vb2_error_t ui_loop_impl(
 					? menu->items[ui.state->selected_item]
 						  .name
 					: "null");
-			ui_display(ui.state->screen->id, ui.locale_id,
-				   ui.state->selected_item,
-				   ui.state->disabled_item_mask,
-				   ui.state->hidden_item_mask, ui.disable_timer,
-				   ui.state->current_page, ui.error_code);
+			rv = ui_display(ui.state->screen->id, ui.locale_id,
+					ui.state->selected_item,
+					ui.state->disabled_item_mask,
+					ui.state->hidden_item_mask,
+					ui.disable_timer,
+					ui.state->current_page, ui.error_code,
+					need_redraw ? &prev_state : NULL);
+
+			need_redraw = !rv;
+
 			if (ui.error_beep ||
 			    (ui.error_code &&
 			     prev_error_code != ui.error_code)) {
