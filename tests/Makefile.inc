@@ -152,10 +152,10 @@ $($(1)-objs): $(obj)/$(1)/%.o: $$$$*.c $$($(1)-config-file) $(LIBPAYLOAD_CONFIG)
 	$(OBJCOPY) $$@.orig $$(OBJCOPY_FLAGS) $$@.orig2
 	objcopy_wrap_flags=''; \
 	for sym in $$($(1)-mocks); do \
-		 sym_line="$$$$($(OBJDUMP) -t $$@.orig2 | grep -E "[0-9a-fA-F]+\\s+w\\s+F\\s+.*\\s$$$$sym$$$$")"; \
+		sym_line="$$$$($(OBJDUMP) -t $$@.orig2 | grep -E "[0-9a-fA-F]+\\s+w\\s+F\\s+.*\\s$$$$sym$$$$")"; \
 		if [ ! -z "$$$$sym_line" ] ; then \
-			addr="$$$$(echo \"$$$$sym_line\" | awk '{ print $$$$1 }')"; \
-			section="$$$$(echo \"$$$$sym_line\" | awk '{ print $$$$(NF - 2) }')"; \
+			addr="$$$$(echo "$$$$sym_line" | awk '{ print $$$$1 }')"; \
+			section="$$$$(echo "$$$$sym_line" | awk '{ print $$$$(NF - 2) }')"; \
 			objcopy_wrap_flags="$$$$objcopy_wrap_flags --add-symbol __real_$$$${sym}=$$$${section}:0x$$$${addr},function,global"; \
 		fi \
 	done ;\
