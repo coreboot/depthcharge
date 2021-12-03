@@ -40,6 +40,9 @@ static void pop_state(struct ui_context *ui)
 	struct ui_state *tmp = ui->state;
 	ui->state = ui->state->prev;
 	preserve_state(ui->state, tmp);
+	/* No need to free tmp->log.str here, as the memory is owned by the
+	   caller of ui_log_init(). */
+	free(tmp->log.page_start);
 	free(tmp);
 }
 

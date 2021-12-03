@@ -125,7 +125,7 @@ static vb2_error_t draw_log_desc(const struct ui_state *state,
 	size_t buf_len;
 	vb2_error_t rv = VB2_SUCCESS;
 
-	buf = ui_log_get_page_content(state->log, state->current_page);
+	buf = ui_log_get_page_content(&state->log, state->current_page);
 	if (!buf)
 		return VB2_ERROR_UI_LOG_INIT;
 	buf_len = strlen(buf);
@@ -182,30 +182,28 @@ static vb2_error_t set_ui_error_and_go_back(struct ui_context *ui,
  * to a correct menu item index.
  */
 
-/* TODO(b/167514343): Make log screen API more consistent */
 static vb2_error_t log_page_update(struct ui_context *ui,
 				   const char *new_log_string)
 {
 	const struct ui_screen_info *screen = ui->state->screen;
+	struct ui_log_info *log = &ui->state->log;
 
 	if (CONFIG(HEADLESS)) {
 		/* TODO(b/151200757): Support headless devices */
-		global_ui_log_info.page_count = 0;
+		log->page_count = 0;
 		return VB2_SUCCESS;
 	}
 
 	if (new_log_string) {
 		VB2_TRY(ui_log_init(screen->id, ui->state->locale->code,
-				    new_log_string, &global_ui_log_info));
-		if (global_ui_log_info.page_count == 0) {
+				    new_log_string, log));
+		if (log->page_count == 0) {
 			UI_ERROR("page_count is 0\n");
 			return VB2_ERROR_UI_LOG_INIT;
 		}
 
-		ui->state->page_count = global_ui_log_info.page_count;
-
-		if (ui->state->current_page >= ui->state->page_count)
-			ui->state->current_page = ui->state->page_count - 1;
+		if (ui->state->current_page >= log->page_count)
+			ui->state->current_page = log->page_count - 1;
 		ui->force_display = 1;
 	}
 	VB2_CLR_BIT(ui->state->disabled_item_mask, screen->page_up_item);
@@ -213,11 +211,10 @@ static vb2_error_t log_page_update(struct ui_context *ui,
 	if (ui->state->current_page == 0)
 		VB2_SET_BIT(ui->state->disabled_item_mask,
 			    screen->page_up_item);
-	if (ui->state->current_page == ui->state->page_count - 1)
+	if (ui->state->current_page == log->page_count - 1)
 		VB2_SET_BIT(ui->state->disabled_item_mask,
 			    screen->page_down_item);
 
-	ui->state->log = &global_ui_log_info;
 	return VB2_SUCCESS;
 }
 
@@ -226,7 +223,7 @@ static vb2_error_t log_page_reset_to_top(struct ui_context *ui)
 	const struct ui_screen_info *screen = ui->state->screen;
 
 	ui->state->current_page = 0;
-	ui->state->selected_item = ui->state->page_count > 1
+	ui->state->selected_item = ui->state->log.page_count > 1
 					   ? screen->page_down_item
 					   : screen->back_item;
 	return log_page_update(ui, NULL);
@@ -264,7 +261,7 @@ static vb2_error_t log_page_prev_action(struct ui_context *ui)
 static vb2_error_t log_page_next_action(struct ui_context *ui)
 {
 	/* Validity check. */
-	if (ui->state->current_page == ui->state->page_count - 1)
+	if (ui->state->current_page == ui->state->log.page_count - 1)
 		return VB2_SUCCESS;
 
 	ui->state->current_page++;
@@ -626,11 +623,6 @@ static vb2_error_t debug_info_init(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
-static vb2_error_t debug_info_reinit(struct ui_context *ui)
-{
-	return debug_info_set_content(ui);
-}
-
 static const struct ui_menu_item debug_info_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	[DEBUG_INFO_ITEM_PAGE_UP] = PAGE_UP_ITEM,
@@ -646,7 +638,6 @@ static const struct ui_screen_info debug_info_screen = {
 	.title = "debug_info_title.bmp",
 	.menu = UI_MENU(debug_info_items),
 	.init = debug_info_init,
-	.reinit = debug_info_reinit,
 	.draw_desc = draw_log_desc,
 	.mesg = "Debug info",
 	.page_up_item = DEBUG_INFO_ITEM_PAGE_UP,
@@ -680,11 +671,6 @@ static vb2_error_t firmware_log_init(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
-static vb2_error_t firmware_log_reinit(struct ui_context *ui)
-{
-	return firmware_log_set_content(ui, 0);
-}
-
 static const struct ui_menu_item firmware_log_items[] = {
 	LANGUAGE_SELECT_ITEM,
 	[FIRMWARE_LOG_ITEM_PAGE_UP] = PAGE_UP_ITEM,
@@ -700,7 +686,6 @@ static const struct ui_screen_info firmware_log_screen = {
 	.title = "firmware_log_title.bmp",
 	.menu = UI_MENU(firmware_log_items),
 	.init = firmware_log_init,
-	.reinit = firmware_log_reinit,
 	.draw_desc = draw_log_desc,
 	.mesg = "Firmware log",
 	.page_up_item = FIRMWARE_LOG_ITEM_PAGE_UP,

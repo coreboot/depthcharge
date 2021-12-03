@@ -966,22 +966,27 @@ static void test_firmware_log_back_not_reacquire_new_one(void **state)
 
 	firmware_log_snapshots_count = 0;
 	WILL_CLOSE_LID_IN(20);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	WILL_PRESS_KEY('\t', 0); /* enter debug info screen */
-	WILL_PRESS_KEY(UI_KEY_ESC, 0);
-	will_return_maybe(ui_keyboard_read, 0);
 	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
+
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0); /* Advanced options */
+
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0); /* Firmware log screen */
 	expect_string(ui_log_init, str, "1");
-	/* Skip the one entry, which is for preparing debug info */
+
+	/* Debug info screen */
+	WILL_PRESS_KEY('\t', 0);
 	expect_any(ui_log_init, str);
-	expect_string(ui_log_init, str, "1");
+
+	/* Back to firmware log screen */
+	WILL_PRESS_KEY(UI_KEY_ESC, 0);
+
+	will_return_maybe(ui_keyboard_read, 0);
 	expect_any_always(ui_log_init, screen);
 	expect_any_always(ui_log_init, locale_code);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();

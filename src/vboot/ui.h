@@ -341,8 +341,25 @@ struct ui_locale {
 
 /* Forward declarations. */
 struct ui_screen_info;
-struct ui_log_info;
 struct ui_context;
+
+/* Log string and its pages information. */
+struct ui_log_info {
+	/* Full log content. */
+	const char *str;
+	/* Maximum number of lines per page. */
+	uint32_t lines_per_page;
+	/* Maximum number of characters per line.*/
+	uint32_t chars_per_line;
+	/* Total number of pages. */
+	uint32_t page_count;
+	/*
+	 * Array of (page_count + 1) pointers. For i < page_count, page_start[i]
+	 * is the start position of the i-th page. page_start[page_count] is the
+	 * position of the '\0' character at the end of the log string.
+	 */
+	const char **page_start;
+};
 
 struct ui_state {
 	/***********************************************************************
@@ -384,10 +401,7 @@ struct ui_state {
 	/***********************************************************************
 	 * Fields for log screens. These will be ignored for non-log screens.
 	 */
-	const struct ui_log_info *log;
-
-	/* The number of pages. */
-	uint32_t page_count;
+	struct ui_log_info log;
 
 	/* Current page number. */
 	uint32_t current_page;
@@ -576,27 +590,6 @@ struct ui_screen_info {
 	uint32_t back_item;
 	uint32_t cancel_item;
 };
-
-/* Log string and its pages information. */
-struct ui_log_info {
-	/* Full log content. */
-	const char *str;
-	/* Maximum number of lines per page. */
-	uint32_t lines_per_page;
-	/* Maximum number of characters per line.*/
-	uint32_t chars_per_line;
-	/* Total number of pages. */
-	uint32_t page_count;
-	/*
-	 * Array of (page_count + 1) pointers. For i < page_count, page_start[i]
-	 * is the start position of the i-th page. page_start[page_count] is the
-	 * position of the '\0' character at the end of the log string.
-	 */
-	const char **page_start;
-};
-
-/* Log info for ui_display */
-extern struct ui_log_info global_ui_log_info;
 
 /******************************************************************************/
 /* archive.c */

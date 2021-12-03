@@ -53,10 +53,9 @@ int main(int argc, char *argv[])
 	 * ui_log_init() will be called once from ui_init_context(). Another
 	 * call below will replace the mock log string with the provided one.
 	 */
-	if (strlen(__LOG__))
-		VB2_TRY(ui_log_init(__SCREEN__, "en", __LOG__,
-				    &global_ui_log_info));
-	else if (strlen(__LOG_FILE__)) {
+	if (strlen(__LOG__)) {
+		VB2_TRY(ui_log_init(__SCREEN__, "en", __LOG__, &state->log));
+	} else if (strlen(__LOG_FILE__)) {
 		size_t read_count = read_file(
 			log_buffer, sizeof(log_buffer) - 1, __LOG_FILE__);
 		if (read_count == sizeof(log_buffer) - 1) {
@@ -65,8 +64,7 @@ int main(int argc, char *argv[])
 			       sizeof(log_buffer) - 1, read_count);
 		}
 		log_buffer[read_count] = '\0';
-		VB2_TRY(ui_log_init(__SCREEN__, "en", log_buffer,
-				    &global_ui_log_info));
+		VB2_TRY(ui_log_init(__SCREEN__, "en", log_buffer, &state->log));
 	}
 
 	VB2_TRY(ui_display(&ui, NULL));

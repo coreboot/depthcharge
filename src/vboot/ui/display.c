@@ -22,8 +22,6 @@
 #include "drivers/video/display.h"
 #include "vboot/ui.h"
 
-struct ui_log_info global_ui_log_info;
-
 struct ui_error_message {
 	/* File name of error strings. */
 	const char *file;
