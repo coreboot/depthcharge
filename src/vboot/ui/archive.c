@@ -127,6 +127,19 @@ vb2_error_t ui_get_locale_info(uint32_t locale_id,
 	return VB2_SUCCESS;
 }
 
+vb2_error_t ui_get_locale_info_fallback(uint32_t locale_id,
+					uint32_t fallback_locale_id,
+					struct ui_locale const **locale)
+{
+	vb2_error_t rv = ui_get_locale_info(locale_id, locale);
+	if (rv) {
+		UI_INFO("Locale %u not found, falling back to locale %u",
+			locale_id, fallback_locale_id);
+		return ui_get_locale_info(fallback_locale_id, locale);
+	}
+	return VB2_SUCCESS;
+}
+
 uint32_t ui_get_locale_count(void)
 {
 	const struct locale_data *locale_data = get_locale_data();

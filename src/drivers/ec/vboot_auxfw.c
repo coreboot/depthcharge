@@ -115,7 +115,7 @@ static vb2_error_t display_firmware_sync_screen(void)
 			printf("AUXFW is updating. "
 			       "Show firmware sync screen.\n");
 			ui_display(UI_SCREEN_FIRMWARE_SYNC, locale,
-				   0, 0, 0, 0, 0, UI_ERROR_NONE);
+				   0, 0, 0, 0, 0, UI_ERROR_NONE, NULL);
 
 			break;
 		}
