@@ -4,12 +4,15 @@
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
+#include "base/late_init_funcs.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/flash/mtk_snfc.h"
 #include "drivers/gpio/mtk_gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
 #include "drivers/storage/mtk_mmc.h"
+
+#define GPIO_XHCI_DONE	PAD_PERIPHERAL_EN1
 
 static int board_setup(void)
 {
@@ -43,3 +46,16 @@ static int board_setup(void)
 }
 
 INIT_FUNC(board_setup);
+
+static int enable_usb_vbus(struct LateInitFunc *init)
+{
+	/*
+	 * To avoid USB detection issue, assert GPIO AP_XHCI_INIT_DONE
+	 * to notify EC to enable USB VBUS when xHCI is initialized.
+	 */
+	GpioOps *pdn = new_mtk_gpio_output(GPIO_XHCI_DONE);
+	gpio_set(pdn, 1);
+	return 0;
+}
+
+LATE_INIT_FUNC(enable_usb_vbus);
