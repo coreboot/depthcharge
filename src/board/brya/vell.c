@@ -25,3 +25,11 @@ const struct storage_config *variant_get_storage_configs(size_t *count)
 	*count = ARRAY_SIZE(storage_configs);
 	return storage_configs;
 }
+
+const struct tpm_config *variant_get_tpm_config(void)
+{
+	static struct tpm_config config = {
+		.pci_dev = PCI_DEV(0, 0x15, 1),
+	};
+	return &config;
+}
