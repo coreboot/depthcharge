@@ -58,7 +58,7 @@ const struct tpm_config *variant_get_tpm_config(void)
 		.pci_dev = PCI_DEV(0, 0x15, 1),
 	};
 
-	if (lib_sysinfo.board_id < 2)
+	if (lib_sysinfo.board_id < 3)
 		config.pci_dev = PCI_DEV(0, 0x15, 3);
 
 	return &config;
