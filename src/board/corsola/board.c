@@ -16,9 +16,13 @@
 #include "drivers/power/psci.h"
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/tpm/spi.h"
+#include "drivers/video/display.h"
+#include "drivers/video/mtk_ddp.h"
 #include "vboot/util/flag.h"
 
 #define GPIO_XHCI_DONE	PAD_PERIPHERAL_EN1
+#define GPIO_PWM	PAD_DISP_PWM
+#define GPIO_BL_EN	PAD_PERIPHERAL_EN5
 
 static int cr50_irq_status(void)
 {
@@ -28,6 +32,24 @@ static int cr50_irq_status(void)
 					      new_mtk_eint);
 	assert(tpm_int);
 	return gpio_get(tpm_int);
+}
+
+static int board_backlight_update(DisplayOps *me, uint8_t enable)
+{
+	static GpioOps *disp_pwm0, *backlight_en;
+
+	if (!disp_pwm0)
+		disp_pwm0 = new_mtk_gpio_output(GPIO_PWM);
+
+	if (!backlight_en)
+		backlight_en = new_mtk_gpio_output(GPIO_BL_EN);
+
+	/* Enforce enable to be either 0 or 1. */
+	enable = !!enable;
+
+	gpio_set(disp_pwm0, enable);
+	gpio_set(backlight_en, enable);
+	return 0;
 }
 
 static int board_setup(void)
@@ -75,6 +97,13 @@ static int board_setup(void)
 	 */
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11280000);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+
+	/* Set display ops */
+	if (display_init_required())
+		display_set_ops(new_mtk_display(board_backlight_update,
+						0x14005000, 1));
+	else
+		printf("[%s] no display_init_required()!\n", __func__);
 
 	return 0;
 }
