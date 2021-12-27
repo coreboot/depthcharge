@@ -61,6 +61,11 @@ config DRIVER_STORAGE_MMC_TEGRA
 	bool "NVIDIA Tegra MMC driver"
 	default n
 
+config DRIVER_STORAGE_MMC_RTK
+	depends on DRIVER_STORAGE_MMC
+	bool "Realtek SD/eMMC driver"
+	default n
+
 config DRIVER_SDHCI
 	depends on DRIVER_STORAGE_MMC
 	bool "SDHCI specification compliant eMMC/SD driver"
