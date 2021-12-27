@@ -34,3 +34,4 @@ subdirs-y += mtd
 depthcharge-$(CONFIG_DRIVER_STORAGE_MMC_MTK) += mtk_mmc.c bouncebuf.c
 depthcharge-$(CONFIG_DRIVER_STORAGE_MMC_MVMAP2315) += mvmap2315_mmc.c bouncebuf.c
 depthcharge-$(CONFIG_DRIVER_STORAGE_SDHCI_MSM) += sdhci_msm.c
+depthcharge-$(CONFIG_DRIVER_STORAGE_MMC_RTK) += rtk_mmc.c
