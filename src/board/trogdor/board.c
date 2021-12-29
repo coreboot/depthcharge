@@ -106,16 +106,13 @@ static int init_display_ops(void)
 		return -1;
 	}
 
-	/* This just needs to be turned on >80ms after eDP intialization, so
-	   just do it here rather than passing through the DisplayOps stack. */
+
 	GpioOps *bl_en = sysinfo_lookup_gpio("backlight", 1,
 					new_sc7180_gpio_output_from_coreboot);
-	gpio_set(bl_en, 1);
-
-	GpioOps *backlight = NULL;
+	GpioOps *backlight = bl_en;
 
 	if (CONFIG(DRIVER_VIDEO_EC_PWM_BACKLIGHT))
-		backlight = new_ec_pwm_backlight();
+		backlight = new_gpio_splitter(new_ec_pwm_backlight(), bl_en);
 
 	display_set_ops(new_sc7180_display(backlight));
 
