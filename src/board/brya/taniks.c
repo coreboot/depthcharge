@@ -22,7 +22,7 @@ const struct audio_config *variant_probe_audio_config(void)
 {
 	static struct audio_config config;
 
-	if (fw_config_probe(FW_CONFIG(AUDIO, AUDIO_MAX98357_ALC5682I_I2S))) {
+	if (fw_config_probe(FW_CONFIG(AUDIO, AUDIO_MAX98357_ALC5682I_I2S_2WAY))) {
 		config = (struct audio_config){
 			.bus = {
 				.type			= AUDIO_I2S,
