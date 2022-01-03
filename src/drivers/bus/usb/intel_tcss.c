@@ -135,6 +135,28 @@ static int send_conn_disc_msg(const struct pmc_ipc_buffer *req,
 	return -1;
 }
 
+static int get_typec_hsl_sbu_orientation(bool mux_is_inverted, enum type_c_orientation o)
+{
+	switch (o) {
+	case TYPEC_ORIENTATION_REVERSE:
+		return 1;
+		break;
+
+	case TYPEC_ORIENTATION_NORMAL:
+		return 0;
+		break;
+
+	case TYPEC_ORIENTATION_NONE:
+		return mux_is_inverted ? 1 : 0;
+		break;
+
+	default:
+		break;
+	}
+
+	return 0;
+}
+
 /*
  * Query the EC for USB port connection status for each of the type-c ports and
  * update the TCSS for each accordingly.
@@ -194,6 +216,7 @@ static int update_all_tcss_ports_states(void)
 		}
 
 		if (usb_enabled) {
+			const bool mux_is_inverted = mux_state & USB_PD_MUX_POLARITY_INVERTED;
 			hsl = tcss_port_info[ec_port].data_orientation;
 			sbu = tcss_port_info[ec_port].sbu_orientation;
 			cmd = tcss_make_cmd(
@@ -201,8 +224,8 @@ static int update_all_tcss_ports_states(void)
 				usb3,
 				usb2,
 				!!ufp,
-				!!((hsl == TYPEC_ORIENTATION_REVERSE)),
-				!!((sbu == TYPEC_ORIENTATION_REVERSE)),
+				get_typec_hsl_sbu_orientation(mux_is_inverted, hsl),
+				get_typec_hsl_sbu_orientation(mux_is_inverted, sbu),
 				!!dbg_acc);
 		} else {
 			cmd = tcss_make_cmd(
