@@ -5,6 +5,7 @@
 
 #include "base/init_funcs.h"
 #include "base/late_init_funcs.h"
+#include "drivers/bus/i2s/mtk.h"
 #include "drivers/bus/spi/mtk.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/ec.h"
@@ -14,6 +15,8 @@
 #include "drivers/gpio/mtk_gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
+#include "drivers/sound/gpio_amp.h"
+#include "drivers/sound/i2s.h"
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/tpm/spi.h"
 #include "drivers/video/display.h"
@@ -23,6 +26,31 @@
 #define GPIO_XHCI_DONE	PAD_PERIPHERAL_EN1
 #define GPIO_PWM	PAD_DISP_PWM
 #define GPIO_BL_EN	PAD_PERIPHERAL_EN5
+
+static SoundRouteComponent *get_speaker_amp(void)
+{
+	GpioOps *spk_en = sysinfo_lookup_gpio("speaker enable", 1,
+					      new_mtk_gpio_output);
+
+	/* MAX98357A, or a GPIO AMP. */
+	GpioAmpCodec *codec = new_gpio_amp_codec(spk_en);
+
+	return &codec->component;
+}
+
+static void sound_setup(void)
+{
+	MtkI2s *i2s2 = new_mtk_i2s(0x11210000, 2, 48000, AFE_I2S2_I2S3);
+	I2sSource *i2s_source = new_i2s_source(&i2s2->ops, 48000, 2, 8000);
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+
+	SoundRouteComponent *speaker_amp = get_speaker_amp();
+	list_insert_after(&speaker_amp->list_node, &sound_route->components);
+	list_insert_after(&i2s2->component.list_node,
+			  &sound_route->components);
+
+	sound_set_ops(&sound_route->ops);
+}
 
 static int cr50_irq_status(void)
 {
@@ -104,6 +132,8 @@ static int board_setup(void)
 						0x14005000, 1));
 	else
 		printf("[%s] no display_init_required()!\n", __func__);
+
+	sound_setup();
 
 	return 0;
 }
