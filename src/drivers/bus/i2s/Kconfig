@@ -22,6 +22,10 @@ config DRIVER_BUS_I2S_MT8183
 	bool "MediaTek MT8183 I2S driver"
 	default n
 
+config DRIVER_BUS_I2S_MT8186
+	bool "MediaTek MT8186 I2S driver"
+	default n
+
 config DRIVER_BUS_I2S_MT8192
 	bool "MediaTek MT8192 I2S driver"
 	default n

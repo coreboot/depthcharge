@@ -22,6 +22,8 @@
 #include "drivers/bus/i2s/mt8173.h"
 #elif CONFIG(DRIVER_BUS_I2S_MT8183)
 #include "drivers/bus/i2s/mt8183.h"
+#elif CONFIG(DRIVER_BUS_I2S_MT8186)
+#include "drivers/bus/i2s/mt8186.h"
 #elif CONFIG(DRIVER_BUS_I2S_MT8192)
 #include "drivers/bus/i2s/mt8192.h"
 #else

@@ -16,6 +16,7 @@ subdirs-y += apollolake baytrail broadwell braswell intel_common
 depthcharge-$(CONFIG_DRIVER_BUS_I2S_EXYNOS5) += exynos5.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2S_MT8173) += mtk.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2S_MT8183) += mtk.c
+depthcharge-$(CONFIG_DRIVER_BUS_I2S_MT8186) += mtk.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2S_MT8192) += mtk.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2S_TEGRA) += tegra.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2S_ROCKCHIP) += rockchip.c
