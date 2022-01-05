@@ -14,12 +14,11 @@
 #include "drivers/ec/ps8751/ps8751.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/sound/gpio_amp.h"
-#include "drivers/sound/gpio_i2s.h"
 #include "drivers/gpio/kern.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/fch.h"
 #include "drivers/soc/cezanne.h"
-#include "drivers/sound/amd_i2s_support.h"
+#include "drivers/sound/amd_acp.h"
 #include "drivers/sound/rt1019.h"
 #include "drivers/sound/rt5682s.h"
 #include "drivers/storage/ahci.h"
@@ -35,7 +34,6 @@
 #define MCLK			48000000
 #define LRCLK			8000
 
-
 /* eDP backlight */
 #define GPIO_BACKLIGHT		129
 
@@ -45,9 +43,6 @@
 #define I2C_DESIGNWARE_CLK_MHZ	150
 
 /* I2S Beep GPIOs */
-#define I2S_BCLK_GPIO		88
-#define I2S_LRCLK_GPIO		75
-#define I2S_DATA_GPIO		87
 #define EN_SPKR			31
 
 /* FW_CONFIG for beep banging */
@@ -69,6 +64,20 @@ __weak const struct storage_config *variant_get_storage_configs(size_t *count)
 __weak unsigned int variant_get_cr50_irq_gpio(void)
 {
 	return CR50_INT_85;
+}
+
+__weak SoundRouteComponent *variant_get_audio_codec(I2cOps *i2c, uint8_t chip,
+						    uint32_t mclk,
+						    uint32_t lrclk)
+{
+	rt5682sCodec *rt5682s = new_rt5682s_codec(i2c, chip, mclk, lrclk);
+
+	return &rt5682s->component;
+}
+
+__weak enum audio_amp variant_get_audio_amp(void)
+{
+	return AUDIO_AMP_RT1019;
 }
 
 static int cr50_irq_status(void)
@@ -94,56 +103,62 @@ static int guybrush_backlight_update(DisplayOps *me, uint8_t enable)
 	return 0;
 }
 
-static void setup_rt1019_amp(void)
-{
-	DesignwareI2c *i2c = new_designware_i2c((uintptr_t)AUDIO_I2C_MMIO_ADDR,
-				       AUDIO_I2C_SPEED, I2C_DESIGNWARE_CLK_MHZ);
-	rt1019Codec *speaker_amp = new_rt1019_codec(&i2c->ops,
-						AUD_RT1019_DEVICE_ADDR_R);
-	SoundRoute *sound_route = new_sound_route(&speaker_amp->ops);
-
-	list_insert_after(&speaker_amp->component.list_node,
-						&sound_route->components);
-	sound_set_ops(&sound_route->ops);
-}
-
 static DisplayOps guybrush_display_ops = {
 	.backlight_update = &guybrush_backlight_update,
 };
 
-static void setup_bit_banging(void)
+static void setup_amd_acp_i2s(pcidev_t acp_pci_dev)
 {
-	KernGpio *i2s_bclk = new_kern_fch_gpio_input(I2S_BCLK_GPIO);
-	KernGpio *i2s_lrclk = new_kern_fch_gpio_input(I2S_LRCLK_GPIO);
-	KernGpio *i2s_data = new_kern_fch_gpio_output(I2S_DATA_GPIO, 0);
-	KernGpio *spk_pa_en = new_kern_fch_gpio_output(EN_SPKR, 1);
+	AmdAcp *acp = new_amd_acp(acp_pci_dev, LRCLK, 0x1FFF /* Volume */);
+
+	SoundRoute *sound_route = new_sound_route(&acp->sound_ops);
+
 
 	DesignwareI2c *i2c = new_designware_i2c((uintptr_t)AUDIO_I2C_MMIO_ADDR,
 				       AUDIO_I2C_SPEED, I2C_DESIGNWARE_CLK_MHZ);
 
-	GpioI2s *i2s = new_gpio_i2s(
-			&i2s_bclk->ops,		/* Use RT5682s to give clks */
-			&i2s_lrclk->ops,	/* I2S Frame Sync GPIO */
-			&i2s_data->ops,		/* I2S Data GPIO */
-			8000,			/* Sample rate */
-			2,			/* Channels */
-			0x1FFF,			/* Volume */
-			1);			/* BCLK sync */
+	SoundRouteComponent *codec =
+		variant_get_audio_codec(&i2c->ops, 0x1a, MCLK, LRCLK);
 
-	SoundRoute *sound_route = new_sound_route(&i2s->ops);
+	KernGpio *en_spkr_gpio = new_kern_fch_gpio_output(EN_SPKR, 1);
 
-	rt5682sCodec *rt5682s = new_rt5682s_codec(&i2c->ops, 0x1a, MCLK, LRCLK);
+	/* Note: component order matters here. The first thing inserted is the
+	 * last thing enabled. */
 
-	list_insert_after(&rt5682s->component.list_node,
-			  &sound_route->components);
+	/* If a warm reboot was performed, we need to clear out any settings the
+	 * OS has made to the RT1019. */
+	if (variant_get_audio_amp() == AUDIO_AMP_RT1019) {
+		rt1019Codec *speaker_amp =
+			new_rt1019_codec(&i2c->ops, AUD_RT1019_DEVICE_ADDR_R);
 
-	GpioAmpCodec *enable_spk = new_gpio_amp_codec(&spk_pa_en->ops);
-	list_insert_after(&enable_spk->component.list_node,
-			  &sound_route->components);
+		list_insert_after(&speaker_amp->component.list_node,
+				  &sound_route->components);
 
-	amdI2sSupport *amdI2s = new_amd_i2s_support();
-	list_insert_after(&amdI2s->component.list_node,
-			  &sound_route->components);
+		GpioAmpCodec *en_spkr = new_gpio_amp_codec(&en_spkr_gpio->ops);
+
+		/* We need to enable the speaker amp before we can send I2C
+		 * transactions. */
+		list_insert_after(&en_spkr->component.list_node,
+				  &sound_route->components);
+	} else {
+		/* Give the MAX98360A time to sample the BCLK */
+		GpioAmpCodec *en_spkr =
+			new_gpio_amp_codec_with_delay(&en_spkr_gpio->ops, 1000);
+
+		/* Enable the speaker amp last since we have to delay to sample
+		 * the clocks. */
+		list_insert_after(&en_spkr->component.list_node,
+				  &sound_route->components);
+	}
+
+	/* Enable the ACP so it can start sampling the clocks. */
+	list_insert_after(&acp->component.list_node, &sound_route->components);
+
+	/*
+	 * We want the codec to initialize first so it can start generating the
+	 * BCLK/LRCLK.
+	 */
+	list_insert_after(&codec->list_node, &sound_route->components);
 
 	sound_set_ops(&sound_route->ops);
 }
@@ -160,10 +175,9 @@ static int board_setup(void)
 	flag_replace(FLAG_LIDSW, cros_ec_lid_switch_flag());
 	flag_replace(FLAG_PWRSW, cros_ec_power_btn_flag());
 
-	if (lib_sysinfo.fw_config & FW_CONFIG_BIT_BANGING)
-		setup_bit_banging();
-	else
-		setup_rt1019_amp();
+	pcidev_t acp_pci_dev;
+	if (pci_find_device(AMD_PCI_VID, AMD_FAM17H_ACP_PCI_DID, &acp_pci_dev))
+		setup_amd_acp_i2s(acp_pci_dev);
 
 	/* Set up H1 / Dauntless on I2C3 */
 	DesignwareI2c *i2c_h1 = new_designware_i2c(

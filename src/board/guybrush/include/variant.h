@@ -7,6 +7,9 @@
 #include <stdint.h>
 #include <stddef.h>
 
+#include "drivers/bus/i2c/i2c.h"
+#include "drivers/sound/route.h"
+
 /* cr50 / Ti50 interrupt is attached to either GPIO_85 or GPIO_3 */
 #define CR50_INT_85		85
 #define CR50_INT_3		3
@@ -24,4 +27,15 @@ struct storage_config {
 const struct storage_config *variant_get_storage_configs(size_t *count);
 
 unsigned int variant_get_cr50_irq_gpio(void);
+
+SoundRouteComponent *variant_get_audio_codec(I2cOps *i2c, uint8_t chip,
+					     uint32_t mclk, uint32_t lrclk);
+
+enum audio_amp {
+	AUDIO_AMP_RT1019,
+	AUDIO_AMP_MAX98360,
+};
+
+enum audio_amp variant_get_audio_amp(void);
+
 #endif /* _VARIANT_H_ */
