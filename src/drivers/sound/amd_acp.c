@@ -54,6 +54,12 @@
 #define ACP_I2S_TX_FIFOSIZE		0x2034
 #define ACP_I2S_TX_DMA_SIZE		0x2038
 
+#define ACP_BT_TX_RINGBUFADDR		0x206C
+#define ACP_BT_TX_RINGBUFSIZE		0x2070
+#define ACP_BT_TX_FIFOADDR		0x2078
+#define ACP_BT_TX_FIFOSIZE		0x207C
+#define ACP_BT_TX_DMA_SIZE		0x2080
+
 #define ACP_I2STDM_IER			0x2400
 #define  ACP_I2STDM_IEN			BIT(0)
 #define ACP_I2STDM_ITER			0x240C
@@ -64,6 +70,9 @@
 #define  ACP_I2STDM_TX_SAMP_LEN_24	(4 << 3)
 #define  ACP_I2STDM_TX_SAMP_LEN_32	(5 << 3)
 #define  ACP_I2STDM_TX_STATUS		BIT(6)
+
+#define ACP_BTTDM_IER			0x2800
+#define ACP_BTTDM_ITER			0x280C
 
 #define ACP_SCRATCH_REG(n)		(0x10000 + (sizeof(uint32_t) * (n)))
 #define ACP_SCRATCH_REG_MAX		6143 /* 24,572 bytes */
@@ -84,6 +93,26 @@
 #define ACP_DMA_CH_STS			0x0E8
 #define ACP_DMA_CH_STS_CH(chan)	(BIT(chan))
 
+struct __packed acp_audio_buffer {
+	uint32_t ring_buf_addr;
+	uint32_t ring_buf_size;
+	uint32_t link_position_cntr;
+	uint32_t fifo_addr;
+	uint32_t fifo_size;
+	uint32_t dma_size;
+	uint32_t linear_position_cntr_high;
+	uint32_t linear_position_cntr_low;
+	uint32_t intr_watermark_size;
+};
+
+struct __packed acp_i2s_ctrl {
+	uint32_t ier; /* I2S Enable Register */
+	uint32_t irer; /* I2S Receiver Enable Register */
+	uint32_t rx_frmt;
+	uint32_t iter; /* I2S Transmitter Enable Register */
+	uint32_t tx_frmt;
+};
+
 /* Our ACP memory map */
 #define ACP_DRAM		0x01000000
 #define ACP_SCRATCH_FIFO	0x02050000 /* ACP_SCRATCH_REG(0) */
@@ -99,6 +128,10 @@ typedef struct AmdAcpPrivate {
 	pcidev_t pci_dev;
 	uint8_t *pci_bar;
 
+	struct acp_audio_buffer *audio_buffer;
+	struct acp_i2s_ctrl *audio_buffer_ctrl;
+
+	enum acp_output_port port;
 	uint32_t lrclk;
 	uint8_t channels;
 	int16_t volume;
@@ -274,16 +307,16 @@ static int amd_acp_start(SoundOps *me, uint32_t frequency)
 	acp_write32(acp, ACP_ERROR_STATUS, 0xFFFFFFFF);
 	acp_write32(acp, ACP_SW_I2S_ERROR_REASON, 0xFFFFFFFF);
 
-	acp_write32(acp, ACP_I2S_TX_RINGBUFADDR, ACP_DRAM);
-	acp_write32(acp, ACP_I2S_TX_RINGBUFSIZE, table_size);
+	write32(&acp->audio_buffer->ring_buf_addr, ACP_DRAM);
+	write32(&acp->audio_buffer->ring_buf_size, table_size);
 
-	acp_write32(acp, ACP_I2S_TX_FIFOADDR, ACP_SCRATCH_FIFO);
-	acp_write32(acp, ACP_I2S_TX_FIFOSIZE, 256);
-	acp_write32(acp, ACP_I2S_TX_DMA_SIZE, ACP_DMA_BLOCK_SIZE);
+	write32(&acp->audio_buffer->fifo_addr, ACP_SCRATCH_FIFO);
+	write32(&acp->audio_buffer->fifo_size, 256);
+	write32(&acp->audio_buffer->dma_size, ACP_DMA_BLOCK_SIZE);
 
-	acp_write32(acp, ACP_I2STDM_IER, ACP_I2STDM_IEN);
-	acp_write32(acp, ACP_I2STDM_ITER,
-		    ACP_I2STDM_TX_SAMP_LEN_16 | ACP_I2STDM_TXEN);
+	write32(&acp->audio_buffer_ctrl->ier, ACP_I2STDM_IEN);
+	write32(&acp->audio_buffer_ctrl->iter,
+		ACP_I2STDM_TX_SAMP_LEN_16 | ACP_I2STDM_TXEN);
 
 	return 0;
 }
@@ -294,12 +327,12 @@ static int amd_acp_stop(SoundOps *me)
 	uint32_t reg, err, reason;
 	struct stopwatch sw;
 
-	reg = acp_read32(acp, ACP_I2STDM_ITER);
+	reg = read32(&acp->audio_buffer_ctrl->iter);
 
-	acp_write32(acp, ACP_I2STDM_ITER, reg & ~ACP_I2STDM_TXEN);
+	write32(&acp->audio_buffer_ctrl->iter, reg & ~ACP_I2STDM_TXEN);
 
 	stopwatch_init_usecs_expire(&sw, 1000);
-	while (acp_read32(acp, ACP_I2STDM_ITER) & ACP_I2STDM_TX_STATUS) {
+	while (read32(&acp->audio_buffer_ctrl->iter) & ACP_I2STDM_TX_STATUS) {
 		if (stopwatch_expired(&sw)) {
 			printf("%s: ERROR: Timed out waiting channel to stop\n",
 			       __func__);
@@ -307,8 +340,8 @@ static int amd_acp_stop(SoundOps *me)
 		}
 	}
 
-	acp_write32(acp, ACP_I2STDM_ITER, 0);
-	acp_write32(acp, ACP_I2STDM_IER, 0);
+	write32(&acp->audio_buffer_ctrl->iter, 0);
+	write32(&acp->audio_buffer_ctrl->ier, 0);
 
 	err = acp_read32(acp, ACP_ERROR_STATUS);
 	if (err) {
@@ -424,6 +457,22 @@ static int amd_acp_enable(SoundRouteComponentOps *me)
 
 	acp->pci_bar = (uint8_t *)bar;
 
+	switch (acp->port) {
+	case ACP_OUTPUT_PLAYBACK:
+		acp->audio_buffer =
+			(void *)(acp->pci_bar + ACP_I2S_TX_RINGBUFADDR);
+		acp->audio_buffer_ctrl =
+			(void *)(acp->pci_bar + ACP_I2STDM_IER);
+		break;
+	case ACP_OUTPUT_BT:
+		acp->audio_buffer =
+			(void *)(acp->pci_bar + ACP_BT_TX_RINGBUFADDR);
+		acp->audio_buffer_ctrl = (void *)(acp->pci_bar + ACP_BTTDM_IER);
+		break;
+	default:
+		printf("%s: ERROR: Unknown port %u\n", __func__, acp->port);
+	}
+
 	if (amd_acp_power_on(acp))
 		return -1;
 
@@ -449,7 +498,8 @@ static int amd_acp_disable(SoundRouteComponentOps *me)
 	return 0;
 }
 
-AmdAcp *new_amd_acp(pcidev_t pci_dev, uint32_t lrclk, int16_t volume)
+AmdAcp *new_amd_acp(pcidev_t pci_dev, enum acp_output_port port, uint32_t lrclk,
+		    int16_t volume)
 {
 	AmdAcpPrivate *acp = xzalloc(sizeof(*acp));
 
@@ -460,6 +510,7 @@ AmdAcp *new_amd_acp(pcidev_t pci_dev, uint32_t lrclk, int16_t volume)
 	acp->ext.sound_ops.stop = &amd_acp_stop;
 	acp->ext.sound_ops.set_volume = &amd_acp_set_volume;
 
+	acp->port = port;
 	acp->pci_dev = pci_dev;
 	acp->lrclk = lrclk;
 	acp->channels = 2;

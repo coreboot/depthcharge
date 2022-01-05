@@ -18,6 +18,12 @@ typedef struct AmdAcp {
 	SoundOps sound_ops;
 } AmdAcp;
 
-AmdAcp *new_amd_acp(pcidev_t pci_dev, uint32_t lrclk, int16_t volume);
+enum acp_output_port {
+	ACP_OUTPUT_PLAYBACK,
+	ACP_OUTPUT_BT
+};
+
+AmdAcp *new_amd_acp(pcidev_t pci_dev, enum acp_output_port port, uint32_t lrclk,
+		    int16_t volume);
 
 #endif /* __DRIVERS_SOUND_AMD_ACP__H__ */

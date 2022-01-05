@@ -109,7 +109,8 @@ static DisplayOps guybrush_display_ops = {
 
 static void setup_amd_acp_i2s(pcidev_t acp_pci_dev)
 {
-	AmdAcp *acp = new_amd_acp(acp_pci_dev, LRCLK, 0x1FFF /* Volume */);
+	AmdAcp *acp = new_amd_acp(acp_pci_dev, ACP_OUTPUT_PLAYBACK, LRCLK,
+				  0x1FFF /* Volume */);
 
 	SoundRoute *sound_route = new_sound_route(&acp->sound_ops);
 
