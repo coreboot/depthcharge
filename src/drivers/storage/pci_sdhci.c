@@ -18,6 +18,7 @@
 #include <libpayload.h>
 #include <pci/pci.h>
 
+#include "drivers/bus/pci/pci.h"
 #include "drivers/storage/sdhci.h"
 
 #define SDHCI_NAME_LENGTH 20
@@ -39,29 +40,7 @@ static bool is_sdhci_ctrlr(pcidev_t dev)
 		prog_if == PCI_SDHCI_PROG_IF_DMA;
 }
 
-static int is_pci_bridge(pcidev_t dev)
-{
-	uint8_t header_type = pci_read_config8(dev, REG_HEADER_TYPE);
-	header_type &= 0x7f;
-	return header_type == HEADER_TYPE_BRIDGE;
-}
-
-/* Discover the register file address of the PCI SDHCI device. */
-static int get_pci_bar(pcidev_t dev, uintptr_t *bar)
-{
-	uint32_t addr;
-
-	addr = pci_read_config32(dev, PCI_BASE_ADDRESS_0);
-
-	if (addr == ((uint32_t)~0))
-		return -1;
-
-	*bar = (uintptr_t)(addr & ~0xf);
-
-	return 0;
-}
-
-/* Initialize an HDHCI port */
+/* Initialize an SDHCI port */
 SdhciHost *new_pci_sdhci_host(pcidev_t dev, unsigned int platform_info,
 			      int clock_min, int clock_max)
 {
