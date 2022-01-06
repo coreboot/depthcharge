@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
 	}
 
 	VB2_TRY(ui_display(__SCREEN__, 0, __ITEM__, __DISABLED_ITEM_MASK__,
-			   __HIDDEN_ITEM_MASK__, 0, __PAGE__, 0, NULL));
+			   __HIDDEN_ITEM_MASK__, 0, __PAGE__, 0));
 
 	if (argc < 2) {
 		printf("ERROR: No output path specified\n");

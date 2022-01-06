@@ -1050,18 +1050,13 @@ char *ui_log_get_page_content(const struct ui_log_info *log, uint32_t page);
  *				screen doesn't show logs, this value will be
  *				ignored.
  * @param error_code		Error code if an error occurred.
- * @param prev_state		Previous UI state maintained by ui_loop,
- *				used to reduce unnecessary screen redrawing.
- *				If NULL is passed, the entire screen will be
- *				redrawn.
  * @return VB2_SUCCESS, or error code on error.
  */
 
 vb2_error_t ui_display(enum ui_screen screen, uint32_t locale_id,
 		       uint32_t selected_item, uint32_t disabled_item_mask,
 		       uint32_t hidden_item_mask, int timer_disabled,
-		       uint32_t current_page, enum ui_error error_code,
-		       struct ui_state *prev_state);
+		       uint32_t current_page, enum ui_error error_code);
 
 /******************************************************************************/
 /* input.c */
