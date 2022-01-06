@@ -1702,6 +1702,14 @@ static const VbootAuxfwOps ps8815_a2_fw_ops = {
 	.update_image = ps8751_update_image,
 };
 
+static void ps8751_init_flash_ops(Ps8751 *me)
+{
+	if (CONFIG(DRIVER_EC_PS8751_FLASH_WINDOW))
+		ps8751_init_flash_window_ops(me);
+	else
+		ps8751_init_flash_fifo_ops(me);
+}
+
 Ps8751 *new_ps8751(CrosECTunnelI2c *bus, int ec_pd_id)
 {
 	Ps8751 *me = xzalloc(sizeof(*me));
@@ -1711,6 +1719,7 @@ Ps8751 *new_ps8751(CrosECTunnelI2c *bus, int ec_pd_id)
 	me->fw_ops = ps8751_fw_ops;
 	me->chip_type = CHIP_PS8751;
 	snprintf(me->chip_name, sizeof(me->chip_name), "ps8751.%d", ec_pd_id);
+	ps8751_init_flash_ops(me);
 
 	return me;
 }
@@ -1724,6 +1733,7 @@ Ps8751 *new_ps8751_canary(CrosECTunnelI2c *bus, int ec_pd_id)
 	me->fw_ops = ps8751_fw_canary_ops;
 	me->chip_type = CHIP_PS8751;
 	snprintf(me->chip_name, sizeof(me->chip_name), "ps8751.%d", ec_pd_id);
+	ps8751_init_flash_ops(me);
 
 	return me;
 }
@@ -1737,6 +1747,7 @@ Ps8751 *new_ps8755(CrosECTunnelI2c *bus, int ec_pd_id)
 	me->fw_ops = ps8755_fw_ops;
 	me->chip_type = CHIP_PS8755;
 	snprintf(me->chip_name, sizeof(me->chip_name), "ps8755.%d", ec_pd_id);
+	ps8751_init_flash_ops(me);
 
 	return me;
 }
@@ -1751,6 +1762,7 @@ Ps8751 *new_ps8705(CrosECTunnelI2c *bus, int ec_pd_id,
 	me->fw_ops = *fw_ops;
 	me->chip_type = CHIP_PS8705;
 	snprintf(me->chip_name, sizeof(me->chip_name), "ps8705.%d", ec_pd_id);
+	ps8751_init_flash_ops(me);
 
 	return me;
 }
@@ -1775,6 +1787,7 @@ static Ps8751 *new_ps8805(CrosECTunnelI2c *bus, int ec_pd_id,
 	me->fw_ops = *fw_ops;
 	me->chip_type = CHIP_PS8805;
 	snprintf(me->chip_name, sizeof(me->chip_name), "ps8805.%d", ec_pd_id);
+	ps8751_init_flash_ops(me);
 
 	return me;
 }
@@ -1799,11 +1812,7 @@ static Ps8751 *new_ps8815(CrosECTunnelI2c *bus, int ec_pd_id,
 	me->fw_ops = *fw_ops;
 	me->chip_type = CHIP_PS8815;
 	snprintf(me->chip_name, sizeof(me->chip_name), "ps8815.%d", ec_pd_id);
-
-	if (CONFIG(DRIVER_EC_PS8751_FLASH_WINDOW))
-		ps8751_init_flash_window_ops(me);
-	else
-		ps8751_init_flash_fifo_ops(me);
+	ps8751_init_flash_ops(me);
 
 	return me;
 }
