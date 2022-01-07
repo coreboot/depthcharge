@@ -19,11 +19,13 @@
 #include "drivers/gpio/gpio.h"
 #include "vboot/util/flag.h"
 #include "boot/fit.h"
+#include "drivers/bus/i2c/qcom_qupv3_i2c.h"
 #include "drivers/storage/sdhci_msm.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/qcom_gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
+#include "drivers/tpm/cr50_i2c.h"
 
 #define SDC1_HC_BASE          0x007C4000
 #define SDC1_TLMM_CFG_ADDR    0xF1B3000
@@ -36,6 +38,16 @@ static const VpdDeviceTreeMap vpd_dt_map[] = {
 	{ "wifi_mac0", "wifi0/local-mac-address" },
 	{}
 };
+
+static int herobrine_tpm_irq_status(void)
+{
+	static GpioOps *tpm_int = NULL;
+
+	if (!tpm_int)
+		tpm_int = sysinfo_lookup_gpio("TPM interrupt", 1,
+					new_gpio_latched_from_coreboot);
+	return gpio_get(tpm_int);
+}
 
 static int board_setup(void)
 {
@@ -69,6 +81,13 @@ static int board_setup(void)
 					50*MHz, SDC2_TLMM_CFG_ADDR, sd_cd);
 	list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
 				&removable_block_dev_controllers);
+
+	if (CONFIG(DRIVER_TPM_CR50_I2C)) {
+		I2cOps *tpm_i2c = &new_Qup_i2c(0xA98000)->ops;
+		Cr50I2c *tpm_bus = new_cr50_i2c(tpm_i2c, 0x50,
+						herobrine_tpm_irq_status);
+		tpm_set_ops(&tpm_bus->base.ops);
+	}
 
 	return 0;
 }
