@@ -25,8 +25,12 @@ typedef struct
 	SoundRouteComponent component;
 	GpioOps *enable_speaker;
 
+	/* Delay after enabling the amplifier */
+	unsigned int enable_delay_us;
 } GpioAmpCodec;
 
 GpioAmpCodec *new_gpio_amp_codec(GpioOps *ops);
+GpioAmpCodec *new_gpio_amp_codec_with_delay(GpioOps *ops,
+					    unsigned int enable_delay_us);
 
 #endif /* __DRIVERS_SOUND_GPIO_AMP_H__ */

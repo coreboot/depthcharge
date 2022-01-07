@@ -22,8 +22,16 @@
 static int gpio_amp_enable(SoundRouteComponentOps *me)
 {
 	GpioAmpCodec *codec = container_of(me, GpioAmpCodec, component.ops);
+	int ret;
 
-	return gpio_set(codec->enable_speaker, 1);
+	ret = gpio_set(codec->enable_speaker, 1);
+
+	if (ret)
+		return ret;
+
+	udelay(codec->enable_delay_us);
+
+	return 0;
 }
 
 static int gpio_amp_disable(SoundRouteComponentOps *me)
@@ -33,13 +41,20 @@ static int gpio_amp_disable(SoundRouteComponentOps *me)
 	return gpio_set(codec->enable_speaker, 0);
 }
 
-GpioAmpCodec *new_gpio_amp_codec(GpioOps *ops)
+GpioAmpCodec *new_gpio_amp_codec_with_delay(GpioOps *ops,
+					    unsigned int enable_delay_us)
 {
 	GpioAmpCodec *codec = xzalloc(sizeof(*codec));
 
 	codec->enable_speaker = ops;
+	codec->enable_delay_us = enable_delay_us;
 	codec->component.ops.enable = &gpio_amp_enable;
 	codec->component.ops.disable = &gpio_amp_disable;
 
 	return codec;
+}
+
+GpioAmpCodec *new_gpio_amp_codec(GpioOps *ops)
+{
+	return new_gpio_amp_codec_with_delay(ops, 0);
 }
