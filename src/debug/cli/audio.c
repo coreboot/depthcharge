@@ -108,6 +108,37 @@ static int do_audio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	return beep(freq, duration);
 }
 
+static int do_audiotones(cmd_tbl_t *cmdtp, int flag, int argc,
+			 char *const argv[])
+{
+	unsigned long start_freq = 20;
+	unsigned long end_freq = 4000;
+	unsigned long duration = 200;
+	unsigned long step = 50;
+	unsigned int volume;
+
+	if (argc >= 2) {
+		volume = strtoul(argv[1], 0, 10);
+		printf("Setting volume to %u\n", volume);
+		sound_set_volume(volume);
+	}
+
+	for (unsigned long freq = start_freq; freq <= end_freq; freq += step) {
+		if (beep(freq, duration)) {
+			printf("Playing %lu failed\n", freq);
+			return CMD_RET_FAILURE;
+		}
+	}
+
+	return CMD_RET_SUCCESS;
+}
+
+U_BOOT_CMD(
+	   audiotones,	2,	1,
+	   "plays various tones",
+	   "\n[<volume>]  - play a sampling of tones at volume <volume>"
+);
+
 U_BOOT_CMD(
 	   audio,	4,	1,
 	   "rudimentary audio capabilities test",
