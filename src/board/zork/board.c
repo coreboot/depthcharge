@@ -30,8 +30,7 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/fch.h"
 #include "drivers/soc/picasso.h"
-#include "drivers/sound/amd_i2s_support.h"
-#include "drivers/sound/gpio_i2s.h"
+#include "drivers/sound/amd_acp.h"
 #include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/rt1015.h"
 #include "drivers/sound/route.h"
@@ -147,6 +146,13 @@ static int gets_audio_amp_type_config(void)
 static void audio_setup(CrosEc *cros_ec)
 {
 	CrosECTunnelI2c *cros_ec_i2c_tunnel;
+	pcidev_t acp_pci_dev;
+
+	if (!pci_find_device(AMD_PCI_VID, AMD_FAM17H_ACP_PCI_DID,
+			     &acp_pci_dev)) {
+		printf("ERROR: ACP not found\n");
+		return;
+	}
 
 	/* I2C bus 5 for older version of Dalboz. Dalboz whose board version
 	 * is not defined are assumed to be older version.
@@ -159,24 +165,13 @@ static void audio_setup(CrosEc *cros_ec)
 		cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec,
 							    /* i2c bus */ 8);
 
-	KernGpio *i2s_bclk = new_kern_fch_gpio_input(I2S_BCLK_GPIO);
-	KernGpio *i2s_lrclk = new_kern_fch_gpio_input(I2S_LRCLK_GPIO);
-	KernGpio *i2s2_data = new_kern_fch_gpio_output(I2S_DATA_GPIO, 0);
-	GpioI2s *i2s = new_gpio_i2s(
-			&i2s_bclk->ops,		/* Use RT5682 to give clks */
-			&i2s_lrclk->ops,	/* I2S Frame Sync GPIO */
-			&i2s2_data->ops,	/* I2S Data GPIO */
-			8000,			/* Sample rate */
-			2,			/* Channels */
-			0x1FFF,			/* Volume */
-			1);			/* BCLK sync */
-	SoundRoute *sound_route = new_sound_route(&i2s->ops);
+	AmdAcp *acp = new_amd_acp(acp_pci_dev, ACP_OUTPUT_BT, LRCLK,
+				  0x1FFF /* Volume */);
+
+	SoundRoute *sound_route = new_sound_route(&acp->sound_ops);
 
 	rt5682Codec *rt5682 =
 		new_rt5682_codec(&cros_ec_i2c_tunnel->ops, 0x1a, MCLK, LRCLK);
-
-	list_insert_after(&rt5682->component.list_node,
-			  &sound_route->components);
 
 	if (is_vilboz() && !gets_audio_amp_type_config()) {
 		/* Codec for RT1015 work with Zork */
@@ -191,13 +186,17 @@ static void audio_setup(CrosEc *cros_ec)
 		/* Codec for Grunt, should work with Zork */
 		GpioAmpCodec *speaker_amp = new_gpio_amp_codec(
 						&spk_pa_en->ops);
+
+		/* Give the amplifier time to sample the BCLK */
+		speaker_amp->enable_delay_us = 1000;
+
 		list_insert_after(&speaker_amp->component.list_node,
 				  &sound_route->components);
 
 	}
 
-	amdI2sSupport *amdI2s = new_amd_i2s_support();
-	list_insert_after(&amdI2s->component.list_node,
+	list_insert_after(&acp->component.list_node, &sound_route->components);
+	list_insert_after(&rt5682->component.list_node,
 			  &sound_route->components);
 
 	sound_set_ops(&sound_route->ops);
