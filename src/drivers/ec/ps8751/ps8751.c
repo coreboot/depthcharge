@@ -1369,6 +1369,9 @@ static int ps8751_reflash(Ps8751 *me, const uint8_t *data, size_t data_size)
 {
 	int status;
 
+	printf("%s: updating %s FW\n", me->chip_name,
+	       me->fw_type == PARADE_FW_BASE? "base" : "application");
+
 	debug("data %8p len %zu fw_start 0x%06zx\n",
 	      data, data_size, me->fw_start);
 
