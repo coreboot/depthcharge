@@ -14,6 +14,17 @@ ifeq ($(wildcard $(EC_HEADERS)/ec_commands.h),)
 $(error Please set EC_HEADERS= to directory containing ec_commands.h!)
 endif
 
+# coreboot source directory - for commonlib/bsd includes
+CB_SOURCE ?= ../coreboot
+ifeq ($(wildcard $(LP_SOURCE)),)
+# If directory pointed by CB_SOURCE is empty then assume coreboot
+# is in the Chromium OS SDK directory
+CB_SOURCE := ../../third_party/coreboot
+endif
+ifeq ($(wildcard $(CB_SOURCE)),)
+$(error Please set CB_SOURCE= to directory containing coreboot sources!)
+endif
+
 # Libpayload source directory in the coreboot project
 LP_SOURCE ?= ../libpayload
 ifeq ($(wildcard $(LP_SOURCE)),)
@@ -25,6 +36,7 @@ ifeq ($(wildcard $(LP_SOURCE)),)
 $(error Please set LP_SOURCE= to directory containing libpayload sources!)
 endif
 
+corebootsrc := $(CB_SOURCE)
 libpayloadsrc := $(LP_SOURCE)
 libpayloadobj := $(objext)/libpayload
 vbootobj := $(objext)/vboot
@@ -62,6 +74,7 @@ TEST_CFLAGS += -I$(VB_SOURCE)/firmware/include -I$(EC_HEADERS)
 TEST_CFLAGS += -D__LIBPAYLOAD__=1
 TEST_CFLAGS += -I$(libpayloadobj)
 TEST_CFLAGS += -I$(libpayloadsrc)/include -I $(libpayloadsrc)/include/mock
+TEST_CFLAGS += -I$(corebootsrc)/src/commonlib/bsd/include
 TEST_CFLAGS += -include $(libpayloadsrc)/include/kconfig.h
 TEST_CFLAGS += -include $(libpayloadsrc)/include/compiler.h
 
