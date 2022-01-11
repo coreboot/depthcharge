@@ -83,7 +83,7 @@ static int board_setup(void)
 				&removable_block_dev_controllers);
 
 	if (CONFIG(DRIVER_TPM_CR50_I2C)) {
-		I2cOps *tpm_i2c = &new_Qup_i2c(0xA98000)->ops;
+		I2cOps *tpm_i2c = &new_qup_i2c(0xA98000)->ops;
 		Cr50I2c *tpm_bus = new_cr50_i2c(tpm_i2c, 0x50,
 						herobrine_tpm_irq_status);
 		tpm_set_ops(&tpm_bus->base.ops);

@@ -59,7 +59,7 @@ static int i2c_transfer(struct I2cOps *me, I2cSeg *segments, int seg_count)
 	return ret;
 }
 
-QupI2c *new_Qup_i2c(uintptr_t regs)
+QupI2c *new_qup_i2c(uintptr_t regs)
 {
 	QupI2c *bus = xzalloc(sizeof(*bus));
 

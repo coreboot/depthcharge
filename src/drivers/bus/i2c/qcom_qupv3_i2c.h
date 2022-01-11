@@ -24,6 +24,6 @@ typedef struct {
 	QupRegs *reg_addr;
 } QupI2c;
 
-QupI2c *new_Qup_i2c(uintptr_t regs);
+QupI2c *new_qup_i2c(uintptr_t regs);
 
 #endif /* __DRIVERS_BUS_I2C_QUP_H__ */
