@@ -16,7 +16,7 @@ endif
 
 # coreboot source directory - for commonlib/bsd includes
 CB_SOURCE ?= ../coreboot
-ifeq ($(wildcard $(LP_SOURCE)),)
+ifeq ($(wildcard $(CB_SOURCE)),)
 # If directory pointed by CB_SOURCE is empty then assume coreboot
 # is in the Chromium OS SDK directory
 CB_SOURCE := ../../third_party/coreboot
