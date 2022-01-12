@@ -53,8 +53,9 @@ HOSTARFLAGS :=
 HOSTASFLAGS :=
 
 UNIT_TEST:=
-ifneq ($(filter %-test %-tests,$(MAKECMDGOALS)),)
-ifneq ($(filter-out %-test %-tests %screenshot, $(MAKECMDGOALS)),)
+ifneq ($(filter %-test %-tests %coverage-report,$(MAKECMDGOALS)),)
+ifneq ($(filter-out %-test %-tests %screenshot %coverage-report, \
+	$(MAKECMDGOALS)),)
 $(error Cannot mix unit-tests targets with other targets)
 endif
 UNIT_TEST:=1
