@@ -39,4 +39,17 @@ GpioOps *new_gpio_not(GpioOps *a);
 GpioOps *new_gpio_and(GpioOps *a, GpioOps *b);
 GpioOps *new_gpio_or(GpioOps *a, GpioOps *b);
 
+/*
+ * Passes GPIO output values through to two underlying GPIOs. Rising edges will
+ * assert a, wait rising_delay_us, then assert b; falling edges will deassert b,
+ * wait falling_delay_us, then deassert a.
+ */
+GpioOps *new_gpio_delayed_splitter(GpioOps *a, GpioOps *b,
+		unsigned int rising_delay_us, unsigned int falling_delay_us);
+
+static inline GpioOps *new_gpio_splitter(GpioOps *a, GpioOps *b)
+{
+	return new_gpio_delayed_splitter(a, b, 0, 0);
+}
+
 #endif /* __DRIVERS_GPIO_GPIO_H__ */

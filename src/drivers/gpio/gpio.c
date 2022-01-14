@@ -100,3 +100,40 @@ GpioOps *new_gpio_or(GpioOps *a, GpioOps *b)
 {
 	return new_gpio_binary_op(a, b, &gpio_or_get);
 }
+
+typedef struct {
+	GpioBinaryOp binary;
+	unsigned int rising_delay_us;
+	unsigned int falling_delay_us;
+} GpioSplitterOp;
+
+static int gpio_splitter_set(struct GpioOps *me, unsigned int value)
+{
+	GpioSplitterOp *splitter = container_of(me, GpioSplitterOp, binary.ops);
+	int ret = 0;
+
+	if (value) {
+		ret |= gpio_set(splitter->binary.a, value);
+		udelay(splitter->rising_delay_us);
+		ret |= gpio_set(splitter->binary.b, value);
+	} else {
+		ret |= gpio_set(splitter->binary.b, value);
+		udelay(splitter->falling_delay_us);
+		ret |= gpio_set(splitter->binary.a, value);
+	}
+
+	return ret;
+}
+
+GpioOps *new_gpio_delayed_splitter(GpioOps *a, GpioOps *b,
+		unsigned int rising_delay_us, unsigned int falling_delay_us)
+{
+	GpioSplitterOp *splitter = xzalloc(sizeof(*splitter));
+	splitter->binary.ops.set = &gpio_splitter_set;
+	splitter->binary.a = a;
+	splitter->binary.b = b;
+	splitter->rising_delay_us = rising_delay_us;
+	splitter->falling_delay_us = falling_delay_us;
+	return &splitter->binary.ops;
+
+}
