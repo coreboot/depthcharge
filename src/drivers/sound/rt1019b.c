@@ -26,8 +26,8 @@ static int rt1019b_start(SoundOps *me, uint32_t frequency)
 
 	gpio_set(codec->sdb, 1);
 
-	/* delay 2ms for rt1019 internal circuit */
-	mdelay(2);
+	/* delay 5ms for rt1019 internal circuit */
+	mdelay(5);
 
 	gpio_set(codec->beep, 1);
 
