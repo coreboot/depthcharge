@@ -73,3 +73,15 @@ const struct storage_config *variant_get_storage_configs(size_t *count)
 	*count = 0;
 	return NULL;
 }
+
+const struct tpm_config *variant_get_tpm_config(void)
+{
+	static struct tpm_config config = {
+		.pci_dev = PCI_DEV(0, 0x15, 1),
+	};
+
+	if (lib_sysinfo.board_id < 1)
+		config.pci_dev = PCI_DEV(0, 0x15, 3);
+
+	return &config;
+}
