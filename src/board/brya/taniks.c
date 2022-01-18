@@ -47,6 +47,14 @@ const struct audio_config *variant_probe_audio_config(void)
 
 static const struct storage_config storage_configs[] = {
 	{ .media = STORAGE_NVME, .pci_dev = SA_DEV_CPU_RP0 },
+	{ .media = STORAGE_EMMC, .pci_dev = PCH_DEV_PCIE8, .emmc = {
+		.platform_flags = SDHCI_PLATFORM_SUPPORTS_HS400ES,
+		.clock_min = EMMC_CLOCK_MIN,
+		.clock_max = EMMC_CLOCK_MAX }},
+};
+
+static const struct storage_config storage_configs_for_id0[] = {
+	{ .media = STORAGE_NVME, .pci_dev = SA_DEV_CPU_RP0 },
 	{ .media = STORAGE_EMMC, .pci_dev = SA_DEV_CPU_RP0, .emmc = {
 		.platform_flags = SDHCI_PLATFORM_SUPPORTS_HS400ES,
 		.clock_min = EMMC_CLOCK_MIN,
@@ -60,7 +68,8 @@ const struct storage_config *variant_get_storage_configs(size_t *count)
 		return storage_configs;
 	} else {
 		const struct storage_config *storage_config_ptr;
-		storage_config_ptr = storage_configs;
+		storage_config_ptr = (lib_sysinfo.board_id==0) ?
+				storage_configs_for_id0: storage_configs;
 		if (fw_config_probe(FW_CONFIG(BOOT_NVME_MASK, BOOT_NVME_ENABLED))) {
 			*count = 1;
 			return storage_config_ptr;
