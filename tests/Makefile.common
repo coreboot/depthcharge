@@ -133,13 +133,20 @@ $$($(1)-config-file):
 		printf '#undef %s\n' "$$$$key" >> $$@; \
 		printf '#define %s %s\n\n' "$$$$key" "$$$$value" >> $$@; \
 	done
+	printf '#ifdef __clang__\n' >> $$@;
+	printf '#pragma clang system_header\n' >> $$@;
+	printf '#endif\n' >> $$@;
+	printf '#ifdef __TEST_SRCOBJ__\n' >> $$@;
+	for m in $$($(1)-mocks); do \
+		printf '#pragma weak %s\n' "$$$$m" >> $$@; \
+	done
+	printf '#endif\n' >> $$@;
 	printf '#endif\n' >> $$@;
 
 $(1)-mocks += $(default_mocks)
 
 # Weaken symbols listed as mocks to enable overriding in the code
-$($(1)-srcobjs): OBJCOPY_FLAGS += $$(foreach mock,$$($(1)-mocks), \
-	--globalize-symbol=$$(mock) --weaken-symbol=$$(mock))
+$($(1)-srcobjs): TEST_CFLAGS += -D__TEST_SRCOBJ__
 
 # Compile sources and apply mocking/wrapping of selected symbols.
 # For each listed mock add new symbol with prefix `__real_`,
@@ -223,7 +230,7 @@ $(LIBPAYLOAD_KCONFIG_AUTOHEADER): $(LIBPAYLOAD_DOTCONFIG)
 
 $(LIBPAYLOAD_LIB): $(LIBPAYLOAD_KCONFIG_AUTOHEADER)
 	@printf "    MAKE       $(subst $(testobj)/,,$(@))\n"
-	+unset CFLAGS CXXFLAGS LDFLAGS && $(MAKE) -C $(libpayloadsrc) \
+	+unset CFLAGS CXXFLAGS LDFLAGS COV && $(MAKE) -C $(libpayloadsrc) \
 		HOSTCC=$(HOSTCC) CC=$(HOSTCC) CXX=$(HOSTCXX) AR=$(HOSTAR) AS=$(HOSTAS) \
 		obj=$(libpayloadobj) DOTCONFIG=$(LIBPAYLOAD_DOTCONFIG) V=$(V) \
 		EXTRA_CFLAGS="-Wno-address-of-packed-member"
@@ -235,7 +242,7 @@ $(LIBPAYLOAD_CONFIG): $(LIBPAYLOAD_KCONFIG_AUTOHEADER)
 # Build vboot
 $(VBOOT_LIB):
 	@printf "    MAKE       $(subst $(testobj)/,,$(@))\n"
-	+unset CFLAGS CXXFLAGS LDFLAGS && FIRMWARE_ARCH= \
+	+unset CFLAGS CXXFLAGS LDFLAGS COV && FIRMWARE_ARCH= \
 		CC="$(HOSTCC)" \
 		TEST_PRINT=$(TEST_PRINT) \
 		$(MAKE) -C $(VB_SOURCE) \
