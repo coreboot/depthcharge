@@ -167,9 +167,9 @@ static vb2_error_t draw_log_desc(const struct ui_state *state,
 	buf_len = strlen(buf);
 	/* Redraw only if screen or text changed. */
 	if (!prev_state || state->screen->id != prev_state->screen->id ||
-	    state->locale != prev_state->locale ||
-	    state->error_code != prev_state->error_code || !prev_buf ||
-	    buf_len != prev_buf_len || strncmp(buf, prev_buf, buf_len) ||
+	    state->error_code != prev_state->error_code ||
+	    !prev_buf || buf_len != prev_buf_len ||
+	    strncmp(buf, prev_buf, buf_len) ||
 	    state->current_page != prev_state->current_page) {
 		rv = ui_draw_log_textbox(buf, state, y);
 

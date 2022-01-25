@@ -112,7 +112,7 @@ vb2_error_t vb2ex_ec_update_image(enum vb2_firmware_selection select)
 		locale = vb2api_get_locale_id(ctx);
 		printf("EC is updating. Show firmware sync screen.\n");
 		ui_display(UI_SCREEN_FIRMWARE_SYNC, locale,
-			   0, 0, 0, 0, 0, UI_ERROR_NONE, NULL);
+			   0, 0, 0, 0, 0, UI_ERROR_NONE);
 	}
 
 	VbootEcOps *ec = vboot_get_ec();

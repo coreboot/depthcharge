@@ -578,20 +578,6 @@ vb2_error_t ui_get_locale_info(uint32_t locale_id,
 			       struct ui_locale const **locale);
 
 /*
- * Similar to ui_get_locale_info, but will use fallback_locale_id if getting
- * any error when trying to call ui_get_locale_info with locale_id.
- *
- * @param locale_id		Locale id.
- * @param fallback_locale_id	Fallback locale id.
- * @param locale		Pointer to a ui_locale struct pointer to be set.
- *
- * @return VB2_SUCCESS on success, non-zero on error.
- */
-vb2_error_t ui_get_locale_info_fallback(uint32_t locale_id,
-					uint32_t fallback_locale_id,
-					struct ui_locale const **locale);
-
-/*
  * Get the number of supported locales.
  *
  * Returns the number of locales available in CBFS.
@@ -1064,18 +1050,13 @@ char *ui_log_get_page_content(const struct ui_log_info *log, uint32_t page);
  *				screen doesn't show logs, this value will be
  *				ignored.
  * @param error_code		Error code if an error occurred.
- * @param prev_state		Previous UI state maintained by ui_loop,
- *				used to reduce unnecessary screen redrawing.
- *				If NULL is passed, the entire screen will be
- *				redrawn.
  * @return VB2_SUCCESS, or error code on error.
  */
 
 vb2_error_t ui_display(enum ui_screen screen, uint32_t locale_id,
 		       uint32_t selected_item, uint32_t disabled_item_mask,
 		       uint32_t hidden_item_mask, int timer_disabled,
-		       uint32_t current_page, enum ui_error error_code,
-		       struct ui_state *prev_state);
+		       uint32_t current_page, enum ui_error error_code);
 
 /******************************************************************************/
 /* input.c */
