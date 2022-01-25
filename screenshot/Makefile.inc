@@ -1,12 +1,15 @@
 # SPDX-License-Identifier: GPL-2.0
 
+# Setup tests/Makefile.common
 TEST_PRINT := 1
+testobj := $(abspath $(obj)/screenshot)
+objutil := $(testobj)/util
+objext := $(testobj)/external
 
-include $(src)/tests/Makefile.inc
+include $(src)/tests/Makefile.common
 
 screenshotsrc := $(src)/screenshot
-screenshotobj = $(obj)/screenshot
-optobj = $(screenshotobj)/options
+screenshotobj = $(testobj)/screenshot
 
 # Screenshot options
 WIDTH ?= 1920
@@ -22,7 +25,7 @@ LOG_FILE ?=
 override LOG_FILE := \"$(LOG_FILE)\"
 BMP_PATH ?= $(screenshotsrc)/bmp
 override BMP_PATH := \"$(BMP_PATH)\"
-OUTPUT ?= $(obj)/output.bmp
+OUTPUT ?= $(screenshotobj)/output.bmp
 
 SCREENSHOT_OPTIONS += WIDTH HEIGHT SCREEN ITEM
 SCREENSHOT_OPTIONS += DISABLED_ITEM_MASK HIDDEN_ITEM_MASK
@@ -73,8 +76,8 @@ syslibc_srcs := screenshot/io.c
 syslibc_objs := $(addprefix $(screenshotobj)/, \
 	$(patsubst %.c,%.o,$(syslibc_srcs)))
 
-$(syslibc_objs): $(obj)/screenshot/%.o: %.c
-	@printf "    CC       $(subst $(obj)/,,$@)\n"
+$(syslibc_objs): $(screenshotobj)/%.o: %.c
+	@printf "    CC       $(subst $(screenshotobj)/,,$@)\n"
 	$(HOSTCC) $(HOSTCFLAGS) -MMD -MF $(basename $@).d -MT $@ -c $< -o $@
 
 screenshot-bin := $(screenshotobj)/run
@@ -95,4 +98,4 @@ screenshot: $(screenshot-bin)
 	@echo Screenshot saved to $(OUTPUT)
 
 clean-screenshot:
-	rm -rf $(screenshotobj)
+	rm -rf $(testobj)
