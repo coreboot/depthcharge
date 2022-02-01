@@ -80,6 +80,7 @@ endif
 ifeq ($(wildcard $(VB_SOURCE)),)
 $(error Please set VB_SOURCE= to the vboot source directory!)
 endif
+VB_SOURCE := $(abspath $(VB_SOURCE))
 
 # Run genconfig before including the config
 $(shell [ -d "$(obj)" ] || mkdir -p "$(obj)")
