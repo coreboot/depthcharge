@@ -628,11 +628,26 @@ vb2_error_t ui_draw_log_textbox(const char *str, const struct ui_state *state,
 				int32_t *y)
 {
 	uint32_t lines_per_page, chars_per_line;
+	const int32_t y_base = *y;
+	int32_t log_box_inside_height;
+	const int32_t log_box_width = UI_SCALE - UI_MARGIN_H * 2;
+	const int32_t scrollbar_x = UI_MARGIN_H + log_box_width
+		- UI_BOX_BORDER_THICKNESS - UI_SCROLLBAR_WIDTH;
+
 	VB2_TRY(ui_get_log_textbox_dimensions(state->screen->id,
 					      state->locale->code,
 					      &lines_per_page,
 					      &chars_per_line));
-	return ui_draw_textbox(str, y, lines_per_page);
+	VB2_TRY(ui_draw_textbox(str, y, lines_per_page));
+
+	/* No scrollbar if there is only one page. */
+	if (state->log->page_count <= 1)
+		return VB2_SUCCESS;
+
+	log_box_inside_height = *y - y_base - UI_BOX_BORDER_THICKNESS * 2;
+	return ui_draw_scrollbar(scrollbar_x, y_base + UI_BOX_BORDER_THICKNESS,
+				 log_box_inside_height, state->current_page,
+				 state->log->page_count, 1);
 }
 
 vb2_error_t ui_draw_scrollbar(int32_t begin_x, int32_t begin_y, int32_t total_h,

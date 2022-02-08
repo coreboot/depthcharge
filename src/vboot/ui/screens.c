@@ -114,41 +114,6 @@ static int is_battery_low(void)
 	return batt_pct < 10;
 }
 
-/*
- * Draw the scrollbar for log screen.
- *
- * @param state		UI state.
- * @param begin_y	Starting y-coordinate of the box of the log screen.
- */
-static vb2_error_t draw_log_scrollbar(const struct ui_state *state,
-				      int32_t begin_y)
-{
-	const uint32_t page_count = state->log->page_count;
-	const int32_t log_box_width = UI_SCALE - UI_MARGIN_H * 2;
-	const int32_t x = UI_MARGIN_H + log_box_width - UI_BOX_PADDING_H -
-		UI_SCROLLBAR_WIDTH;
-	int32_t log_box_inside_height;
-	uint32_t lines_per_page, chars_per_line;
-
-	/* No scrollbar if there is only one page. */
-	if (page_count <= 1)
-		return VB2_SUCCESS;
-
-	VB2_TRY(ui_get_log_textbox_dimensions(
-		state->screen->id, state->locale->code, &lines_per_page,
-		&chars_per_line));
-
-	log_box_inside_height =
-		UI_BOX_TEXT_HEIGHT * lines_per_page +
-		UI_BOX_TEXT_LINE_SPACING * (lines_per_page - 1);
-
-	VB2_TRY(ui_draw_scrollbar(x, begin_y + UI_BOX_PADDING_V,
-				  log_box_inside_height, state->current_page,
-				  page_count, 1));
-
-	return VB2_SUCCESS;
-}
-
 static vb2_error_t draw_log_desc(const struct ui_state *state,
 				 const struct ui_state *prev_state,
 				 int32_t *y)
@@ -159,7 +124,6 @@ static vb2_error_t draw_log_desc(const struct ui_state *state,
 	char *buf;
 	size_t buf_len;
 	vb2_error_t rv = VB2_SUCCESS;
-	int32_t begin_y = *y;
 
 	buf = ui_log_get_page_content(state->log, state->current_page);
 	if (!buf)
@@ -170,14 +134,10 @@ static vb2_error_t draw_log_desc(const struct ui_state *state,
 	    state->error_code != prev_state->error_code ||
 	    !prev_buf || buf_len != prev_buf_len ||
 	    strncmp(buf, prev_buf, buf_len) ||
-	    state->current_page != prev_state->current_page) {
+	    state->current_page != prev_state->current_page)
 		rv = ui_draw_log_textbox(buf, state, y);
-
-		if (rv == VB2_SUCCESS)
-			rv = draw_log_scrollbar(state, begin_y);
-	} else {
+	else
 		*y = prev_y;
-	}
 
 	if (prev_buf)
 		free(prev_buf);
