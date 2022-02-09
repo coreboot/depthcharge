@@ -100,3 +100,8 @@ config DRIVER_SOC_CEZANNE
 	bool "Cezanne SoC driver"
 	default n
 	select DRIVER_GPIO_KERN
+
+config DRIVER_SOC_SABRINA
+	bool "Sabrina SoC driver"
+	default n
+	select DRIVER_GPIO_KERN
