@@ -130,7 +130,7 @@ static int board_setup(void)
 	flag_replace(FLAG_LIDSW, wilco_ec_lid_switch_flag(wilco_ec));
 
 	/* Update TI TCPC if available in CBFS and if the board is not id_to_skip*/
-	if (cbfs_find_file(pd_cbfs_hash, CBFS_TYPE_RAW) &&
+	if (cbfs_file_exists(pd_cbfs_hash) &&
 	   (lib_sysinfo.board_id != id_to_skip)) {
 		WilcoPd *ti_tcpc = new_wilco_pd_ti(wilco_ec, pd_cbfs_firmware,
 						   pd_cbfs_hash);

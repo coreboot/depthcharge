@@ -25,7 +25,6 @@
 #include "base/timestamp.h"
 #include "drivers/ec/vboot_ec.h"
 #include "drivers/flash/flash.h"
-#include "drivers/flash/cbfs.h"
 #include "image/fmap.h"
 #include "vboot/ui.h"
 #include "vboot/util/commonparams.h"
@@ -37,8 +36,6 @@
 #define EC_IMAGE_FILENAME(select) _EC_FILENAME(select, "")
 #define EC_HASH_FILENAME(select) _EC_FILENAME(select, ".hash")
 
-static struct cbfs_media *ro_cbfs;
-
 static void *get_file_from_cbfs(
 	const char *filename, enum vb2_firmware_selection select, size_t *size)
 {
@@ -47,15 +44,11 @@ static void *get_file_from_cbfs(
 
 	if (select == VB_SELECT_FIRMWARE_READONLY) {
 		printf("Trying to locate '%s' in RO CBFS\n", filename);
-		if (ro_cbfs == NULL)
-			ro_cbfs = cbfs_ro_media();
-		return cbfs_get_file_content(ro_cbfs, filename,
-					     CBFS_TYPE_RAW, size);
+		return cbfs_ro_map(filename, size);
 	}
 
 	printf("Trying to locate '%s' in CBFS\n", filename);
-	return cbfs_get_file_content(CBFS_DEFAULT_MEDIA, filename,
-				     CBFS_TYPE_RAW, size);
+	return cbfs_map(filename, size);
 }
 
 vb2_error_t vb2ex_ec_running_rw(int *in_rw)
@@ -126,6 +119,8 @@ vb2_error_t vb2ex_ec_update_image(enum vb2_firmware_selection select)
 	assert(ec && ec->update_image);
 	vb2_error_t rv = ec->update_image(ec, select, image, size);
 	printf("%s: Finished in %u ms\n", __func__, vb2ex_mtime() - start_ts);
+	free(image);
+
 	return rv;
 }
 

@@ -9,18 +9,19 @@
 
 static int do_cbfs_dump(char * const name)
 {
-	struct cbfs_file *file;
+	void *file;
+	size_t size;
 
-	file = cbfs_find(name);
+	file = cbfs_map(name, &size);
 	if (file == NULL) {
 		printf("File '%s' not found\n", name);
 		return CMD_RET_FAILURE;
 	}
 
-	printf("Dumping '%s' at %p size=%u type=%u\n",
-	       name, (void *)file + ntohl(file->offset),
-	       ntohl(file->len), ntohl(file->type));
-	hexdump((void *)file + ntohl(file->offset), ntohl(file->len));
+	printf("Dumping '%s' size=%u type=%u\n", name, size,
+	       cbfs_get_type(name));
+	hexdump((void *)file, size);
+	free(file);
 
 	return CMD_RET_SUCCESS;
 }

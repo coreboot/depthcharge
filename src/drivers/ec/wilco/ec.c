@@ -8,8 +8,8 @@
  */
 
 #include <assert.h>
-#include <cbfs_core.h>
 #include <libpayload.h>
+#include <cbfs.h>
 #include <vboot_api.h>
 #include <vb2_api.h>
 #include <vb2_sha.h>
@@ -25,20 +25,16 @@ static const char *cbfs_file_ecrw_version = "ecrw.version";
 
 static uint32_t get_ec_version_from_cbfs(void)
 {
-	uint32_t *version;
-	size_t size;
+	uint32_t version = 0;
 
-	version = cbfs_get_file_content(CBFS_DEFAULT_MEDIA,
-					cbfs_file_ecrw_version,
-					CBFS_TYPE_RAW, &size);
-
-	if (!version || size > sizeof(*version)) {
+	if (cbfs_load(cbfs_file_ecrw_version, &version,
+		      sizeof(version)) != sizeof(version)) {
 		printf("%s: invalid EC version in %s\n", __func__,
 		       cbfs_file_ecrw_version);
 		return 0;
 	}
 
-	return *version;
+	return version;
 }
 
 static int vboot_find_flash_device(WilcoEc *ec,

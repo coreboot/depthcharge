@@ -37,8 +37,7 @@ static int do_draw_image(int argc, char * const argv[])
 	size_t size;
 	int rv;
 
-	bitmap = cbfs_get_file_content(CBFS_DEFAULT_MEDIA, argv[2],
-				       CBFS_TYPE_RAW, &size);
+	bitmap = cbfs_map(argv[2], &size);
 	if (!bitmap) {
 		printf("File '%s' not found\n", argv[2]);
 		return -1;
@@ -60,6 +59,8 @@ static int do_draw_image(int argc, char * const argv[])
 			   PIVOT_H_LEFT|PIVOT_V_TOP);
 	if (rv)
 		printf("draw_bitmap returned error: %d\n", rv);
+
+	free(bitmap);
 
 	return rv;
 }

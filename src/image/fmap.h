@@ -46,4 +46,7 @@ const char *fmap_find_string(const char *name, int *size);
 
 const Fmap *fmap_base(void);
 
+
+#define FMAP_AREA_RW_LEGACY "RW_LEGACY"
+
 #endif /* __IMAGE_FMAP_H__ */

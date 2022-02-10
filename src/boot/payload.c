@@ -23,7 +23,6 @@
 
 #include "arch/cache.h"
 #include "base/cleanup_funcs.h"
-#include "drivers/flash/cbfs.h"
 #include "drivers/flash/flash.h"
 #include "image/fmap.h"
 #include "boot/payload.h"
@@ -31,10 +30,6 @@
 
 /* List of alternate bootloaders */
 static ListNode *altfw_head;
-
-/* Media to use for reading payloads */
-static struct cbfs_media cbfs_media;
-static bool cbfs_media_valid;
 
 #define PAYLOAD_HASH_SUFFIX ".sha256"
 
@@ -52,7 +47,7 @@ static bool cbfs_media_valid;
 static uint8_t *get_payload_hash(const char *payload_name)
 {
 	void *data;
-	size_t data_size = 0;
+	size_t data_size;
 	char *full_name;
 	size_t full_name_len = strlen(payload_name) +
 			       sizeof(PAYLOAD_HASH_SUFFIX);
@@ -61,8 +56,7 @@ static uint8_t *get_payload_hash(const char *payload_name)
 		 PAYLOAD_HASH_SUFFIX);
 
 	/* Search in AP-RW CBFS (either FW_MAIN_A or FW_MAIN_B) */
-	data = cbfs_get_file_content(CBFS_DEFAULT_MEDIA, full_name,
-				     CBFS_TYPE_RAW, &data_size);
+	data = cbfs_map(full_name, &data_size);
 	free(full_name);
 	if (data == NULL) {
 		printf("Could not find hash for %s in default media cbfs.\n",
@@ -99,8 +93,9 @@ static int payload_load(struct cbfs_payload *payload, void **entryp)
 		u32 src_len = be32toh(seg->len);
 		u32 dst_len = be32toh(seg->mem_len);
 		int comp = be32toh(seg->compression);
+		u32 type = be32toh(seg->type);
 
-		switch (seg->type) {
+		switch (type) {
 		case PAYLOAD_SEGMENT_CODE:
 		case PAYLOAD_SEGMENT_DATA:
 			printf("CODE/DATA: dst=%p dst_len=%d src=%p src_len=%d compression=%d\n",
@@ -137,43 +132,22 @@ static int payload_load(struct cbfs_payload *payload, void **entryp)
 			return 0;
 		default:
 			printf("segment type %x not implemented. Exiting\n",
-			       seg->type);
+			       type);
 			return -1;
 		}
 		seg++;
 	}
 }
 
-struct cbfs_media *payload_get_media(void)
-{
-	if (!cbfs_media_valid) {
-		int ret;
-
-		ret = cbfs_media_from_fmap("RW_LEGACY", &cbfs_media);
-		if (ret) {
-			printf("%s: Cannot set up CBFS\n", __func__);
-			return NULL;
-		}
-		cbfs_media_valid = true;
-	}
-
-	return &cbfs_media;
-}
-
 int payload_run(const char *payload_name, int verify)
 {
-	struct cbfs_media *media;
 	struct cbfs_payload *payload;
 	size_t payload_size = 0;
 	void *entry;
 	int ret;
 
-	media = payload_get_media();
-	if (!media)
-		return 1;
-
-	payload = cbfs_get_file_content(media, payload_name, CBFS_TYPE_SELF,
-					&payload_size);
+	payload = cbfs_unverified_area_map(FMAP_AREA_RW_LEGACY, payload_name,
+					   &payload_size);
 	if (!payload) {
 		printf("Could not find '%s'.\n", payload_name);
 		return 1;
@@ -233,15 +207,19 @@ int payload_run(const char *payload_name, int verify)
 	return 1;
 }
 
-static struct ListNode *get_altfw_list(struct cbfs_media *media)
+struct ListNode *payload_get_altfw_list(void)
 {
 	char *loaders, *ptr;
 	ListNode *head, *tail;
 	size_t size;
 
+	if (altfw_head)
+		return altfw_head;
+
 	/* Load alternate bootloader list from cbfs */
-	loaders = cbfs_get_file_content(media, "altfw/list", CBFS_TYPE_RAW,
-					&size);
+	loaders = cbfs_unverified_area_map(FMAP_AREA_RW_LEGACY, "altfw/list",
+					   &size);
+
 	if (!loaders || !size) {
 		printf("%s: altfw list not found\n", __func__);
 		return NULL;
@@ -275,19 +253,6 @@ static struct ListNode *get_altfw_list(struct cbfs_media *media)
 		tail = &node->list_node;
 	} while (1);
 
-	return head;
-}
-
-struct ListNode *payload_get_altfw_list(void)
-{
-	struct cbfs_media *media;
-
-	media = payload_get_media();
-	if (!media)
-		return NULL;
-
-	if (!altfw_head)
-		altfw_head = get_altfw_list(media);
-
+	altfw_head = head;
 	return altfw_head;
 }

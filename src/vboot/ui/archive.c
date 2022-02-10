@@ -5,18 +5,8 @@
 #include <string.h>
 #include <vb2_api.h>
 
-#include "drivers/flash/cbfs.h"
 #include "vboot/ui.h"
 #include "vboot/util/commonparams.h"
-
-static struct cbfs_media *get_ro_cbfs(void)
-{
-	static struct cbfs_media *cached_ro_cbfs;
-	if (cached_ro_cbfs == NULL)
-		cached_ro_cbfs = cbfs_ro_media();
-
-	return cached_ro_cbfs;
-}
 
 struct locale_data {
 	/* Number of supported languages and codes: en, ja, ... */
@@ -28,34 +18,26 @@ static const struct locale_data *get_locale_data(void)
 {
 	static int cache_initialized = 0;
 	static struct locale_data cached_locales;
-	struct cbfs_media *ro_cbfs;
-	char *locales, *loc;
+	char *locales, *locales_raw, *loc;
 	size_t size;
 
 	if (cache_initialized)
 		return &cached_locales;
 
-	ro_cbfs = get_ro_cbfs();
-	if (!ro_cbfs) {
-		UI_ERROR("No RO CBFS found\n");
-		return NULL;
-	}
-
 	cached_locales.count = 0;
 
 	/* Load locale list from cbfs */
-	locales = cbfs_get_file_content(ro_cbfs, "locales",
-					CBFS_TYPE_RAW, &size);
-	if (!locales || !size) {
+	locales_raw = cbfs_ro_map("locales", &size);
+	if (!locales_raw || !size) {
 		UI_ERROR("locale list not found\n");
 		return NULL;
 	}
 
 	/* Copy the file and null-terminate it */
-	locales = realloc(locales, size + 1);
+	locales = realloc(locales_raw, size + 1);
 	if (!locales) {
 		UI_ERROR("Out of memory\n");
-		free(locales);
+		free(locales_raw);
 		return NULL;
 	}
 	locales[size] = '\0';
@@ -142,7 +124,6 @@ static vb2_error_t load_archive(const char *name,
 				struct directory **dest,
 				int from_ro)
 {
-	struct cbfs_media *media;
 	struct directory *dir;
 	struct dentry *entry;
 	size_t size;
@@ -151,16 +132,10 @@ static vb2_error_t load_archive(const char *name,
 	UI_INFO("Loading %s\n", name);
 	*dest = NULL;
 
-	if (from_ro) {
-		media = get_ro_cbfs();
-		if (!media) {
-			UI_ERROR("No RO CBFS found\n");
-			return VB2_ERROR_UI_INVALID_ARCHIVE;
-		}
-	} else {
-		media = CBFS_DEFAULT_MEDIA;
-	}
-	dir = cbfs_get_file_content(media, name, CBFS_TYPE_RAW, &size);
+	if (from_ro)
+		dir = cbfs_ro_map(name, &size);
+	else
+		dir = cbfs_map(name, &size);
 
 	if (!dir || !size) {
 		UI_ERROR("Failed to load %s (dir: %p, size: %zu)\n",

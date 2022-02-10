@@ -44,13 +44,6 @@ struct altfw_info {
 int payload_run(const char *payload_name, int verify);
 
 /**
- * payload_get_media() - Get the media info for the RW_LEGACY area
- *
- * @return pointer to media if OK, else NULL
- */
-struct cbfs_media *payload_get_media(void);
-
-/**
  * Read and parse the list of alternative-firmware bootloaders
  *
  * The file format is multiple lines each terminated by \n.

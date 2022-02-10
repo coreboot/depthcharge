@@ -53,19 +53,21 @@ void register_vboot_auxfw(const VbootAuxfwOps *auxfw)
 static vb2_error_t check_dev_fw_hash(const VbootAuxfwOps *auxfw,
 				     enum vb2_auxfw_update_severity *severity)
 {
-	const void *want_hash;
+	void *want_hash;
 	size_t want_size;
+	vb2_error_t result;
 
 	/* find bundled fw hash */
-	want_hash = cbfs_get_file_content(
-		CBFS_DEFAULT_MEDIA,
-		auxfw->fw_hash_name, CBFS_TYPE_RAW, &want_size);
+	want_hash = cbfs_map(auxfw->fw_hash_name, &want_size);
 	if (want_hash == NULL) {
 		printf("%s missing from CBFS\n", auxfw->fw_hash_name);
 		return VB2_ERROR_UNKNOWN;
 	}
 
-	return auxfw->check_hash(auxfw, want_hash, want_size, severity);
+	result = auxfw->check_hash(auxfw, want_hash, want_size, severity);
+	free(want_hash);
+
+	return result;
 }
 
 vb2_error_t check_vboot_auxfw(enum vb2_auxfw_update_severity *severity)
@@ -132,18 +134,21 @@ static vb2_error_t display_firmware_sync_screen(void)
  */
 static vb2_error_t apply_dev_fw(const VbootAuxfwOps *auxfw)
 {
-	const uint8_t *want_data;
+	uint8_t *want_data;
 	size_t want_size;
+	vb2_error_t result;
 
 	/* find bundled fw */
-	want_data = cbfs_get_file_content(
-		CBFS_DEFAULT_MEDIA,
-		auxfw->fw_image_name, CBFS_TYPE_RAW, &want_size);
+	want_data = cbfs_map(auxfw->fw_image_name, &want_size);
 	if (want_data == NULL) {
 		printf("%s missing from CBFS\n", auxfw->fw_image_name);
 		return VB2_ERROR_UNKNOWN;
 	}
-	return auxfw->update_image(auxfw, want_data, want_size);
+
+	result = auxfw->update_image(auxfw, want_data, want_size);
+	free(want_data);
+
+	return result;
 }
 
 vb2_error_t update_vboot_auxfw(void)

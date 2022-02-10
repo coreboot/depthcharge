@@ -7,7 +7,6 @@
  */
 
 #include <assert.h>
-#include <cbfs_core.h>
 #include <endian.h>
 #include <libpayload.h>
 #include <vboot_api.h>

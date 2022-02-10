@@ -97,9 +97,8 @@ static int board_setup(void)
 	register_vboot_ec(&wilco_ec->vboot);
 	flag_replace(FLAG_LIDSW, wilco_ec_lid_switch_flag(wilco_ec));
 
-	/* Update TI TCPC if available in CBFS.
-	 */
-	if (cbfs_find_file(pd_cbfs_hash, CBFS_TYPE_RAW)) {
+	/* Update TI TCPC if available in CBFS. */
+	if (cbfs_file_exists(pd_cbfs_hash)) {
 		/*
 		 * TODO(b/150165222): figure out if this is the same PD chip as
 		 * previous generations, and make relevant changes if not.
