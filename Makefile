@@ -71,17 +71,6 @@ endif
 
 LIBPAYLOAD_DIR ?= ../libpayload/install/libpayload
 
-# Path for depthcharge in coreboot/payloads
-VB_SOURCE = ../../3rdparty/vboot
-ifeq ($(wildcard $(VB_SOURCE)),)
-# Path for depthcharge in Chromium OS SDK src/platform
-VB_SOURCE = ../vboot_reference
-endif
-ifeq ($(wildcard $(VB_SOURCE)),)
-$(error Please set VB_SOURCE= to the vboot source directory!)
-endif
-VB_SOURCE := $(abspath $(VB_SOURCE))
-
 # Run genconfig before including the config
 $(shell [ -d "$(obj)" ] || mkdir -p "$(obj)")
 
@@ -135,7 +124,7 @@ STRIP ?= $(STRIP_$(toolchain))
 include $(src)/src/arch/$(ARCH_DIR)/build_vars
 
 INCLUDES = -I$(obj) -I$(src)/src/ -I$(src)/src/arch/$(ARCH_DIR)/includes/ \
-	-I$(VB_SOURCE)/firmware/include \
+	-I$(LIBPAYLOAD_DIR)/vboot/firmware/include \
 	-include $(LIBPAYLOAD_DIR)/include/kconfig.h \
 	-include $(KCONFIG_AUTOHEADER)
 
