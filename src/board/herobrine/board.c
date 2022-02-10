@@ -16,7 +16,10 @@
 #include <assert.h>
 #include <libpayload.h>
 #include "base/init_funcs.h"
+#include "drivers/bus/spi/qcom_qupv3_spi.h"
+#include "drivers/flash/spi.h"
 #include "drivers/gpio/gpio.h"
+#include "drivers/tpm/spi.h"
 #include "vboot/util/flag.h"
 #include "boot/fit.h"
 #include "drivers/bus/i2c/qcom_qupv3_i2c.h"
@@ -89,13 +92,6 @@ static int board_setup(void)
 	list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
 				&removable_block_dev_controllers);
 
-	if (CONFIG(DRIVER_TPM_CR50_I2C)) {
-		I2cOps *tpm_i2c = &new_qup_i2c(0xA98000)->ops;
-		Cr50I2c *tpm_bus = new_cr50_i2c(tpm_i2c, 0x50,
-						herobrine_tpm_irq_status);
-		tpm_set_ops(&tpm_bus->base.ops);
-	}
-
 	/* SPI-NOR Flash driver - GPIO_15 as Chip Select */
 	QcomQspi *spi_flash = new_qcom_qspi(0x088DC000, (GpioOps *)&new_gpio_output(GPIO(15))->ops);
 	SpiFlash *flash = new_spi_flash(&spi_flash->ops);
@@ -109,6 +105,13 @@ static int board_setup(void)
 		CrosEc *ec = new_cros_ec(ec_bus, ec_int);
 		register_vboot_ec(&ec->vboot);
 	}
+
+	if (CONFIG(DRIVER_TPM_CR50_I2C))
+                tpm_set_ops(&new_cr50_i2c(&new_qup_i2c(0xA98000)->ops, 0x50,
+			herobrine_tpm_irq_status)->base.ops);
+        else if (CONFIG(DRIVER_TPM_SPI))
+               tpm_set_ops(&new_tpm_spi(&new_qup_spi(0xA98000)->ops,
+			herobrine_tpm_irq_status)->ops);
 
 	return 0;
 }
