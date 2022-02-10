@@ -61,7 +61,7 @@ static int cr50_irq_status(void)
 static int board_setup(void)
 {
 	RkI2c *i2c0 = NULL;
-	if (CONFIG(TPM2_MODE)) {
+	if (CONFIG(LP_VBOOT_TPM2_MODE)) {
 		RkSpi *tpm_spi;
 
 		if (CONFIG(GRU_SCARLET))

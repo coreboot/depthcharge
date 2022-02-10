@@ -135,7 +135,7 @@ STRIP ?= $(STRIP_$(toolchain))
 include $(src)/src/arch/$(ARCH_DIR)/build_vars
 
 INCLUDES = -I$(obj) -I$(src)/src/ -I$(src)/src/arch/$(ARCH_DIR)/includes/ \
-	-I$(VB_SOURCE)/firmware/include \
+	-I$(LIBPAYLOAD_DIR)/vboot/firmware/include \
 	-include $(LIBPAYLOAD_DIR)/include/kconfig.h \
 	-include $(KCONFIG_AUTOHEADER)
 
