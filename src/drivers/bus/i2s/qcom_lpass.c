@@ -277,6 +277,8 @@ static int lpass_i2s_send(I2sOps *me, uint32_t *data, unsigned int length)
 		LPAIF_IRQ_ALL(bus->device_id));
 	clrbits_le32(&lpass_reg->bit_cbcr[bus->device_id].ibit_cbcr, ENABLE);
 
+	write32(&lpass_reg->dma_rd_reg[bus->device_id].rddma_ctl, DISABLE);
+
 	free(buffer);
 
 	return ret;
