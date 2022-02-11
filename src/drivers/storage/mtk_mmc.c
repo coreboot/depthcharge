@@ -21,6 +21,7 @@
 #include "drivers/storage/mtk_mmc.h"
 
 #define PAD_DELAY_MAX 32
+#define MAX_BUSY_TIMEOUT 8191
 
 struct msdc_delay_phase {
 	u8 maxlen;
@@ -680,6 +681,9 @@ static int mtk_mmc_init(BlockDevCtrlrOps *me)
 			setbits_le32(&top_reg->emmc_top_control, SDC_RX_ENH_EN);
 		else
 			setbits_le32(&reg->sdc_adv_cfg0, SDC_RX_ENHANCE_EN);
+
+		/* Set busy timeout */
+		clrsetbits_le32(&reg->sdc_cfg, SDC_CFG_WRDTOC, MAX_BUSY_TIMEOUT);
 
 		/* Tune data */
 		if (top_reg) {
