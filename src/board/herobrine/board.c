@@ -61,6 +61,22 @@ static int herobrine_tpm_irq_status(void)
 	return gpio_get(tpm_int);
 }
 
+static const DtPathMap xo_cal_map[] = {
+	{1, "/soc@0/wifi@a000000", "xo-cal-data" },
+	{}
+};
+
+static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
+{
+	int rv = 0;
+	rv |= dt_set_xo_cal_data(tree, xo_cal_map);
+	return rv;
+}
+
+static DeviceTreeFixup ipq_enet_fixup = {
+	.fixup = fix_device_tree
+};
+
 static int board_setup(void)
 {
 	GpioOps *amp_enable;
@@ -81,6 +97,7 @@ static int board_setup(void)
 	/* stub out required GPIOs for vboot */
 	flag_replace(FLAG_PWRSW, new_gpio_low());
 
+	list_insert_after(&ipq_enet_fixup.list_node, &device_tree_fixups);
 	power_set_ops(&psci_power_ops);
 
 	/* Support USB3.0 XHCI controller in firmware. */
