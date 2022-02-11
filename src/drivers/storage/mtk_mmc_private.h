@@ -106,6 +106,7 @@ enum {
 	/* SDC_CFG mask */
 	SDC_CFG_SDIOINTWKUP	= (0x1  << 0),	/* RW */
 	SDC_CFG_INSWKUP		= (0x1  << 1),	/* RW */
+	SDC_CFG_WRDTOC		= (0x1fff << 2),/* RW */
 	SDC_CFG_BUSWIDTH	= (0x3  << 16),	/* RW */
 	SDC_CFG_SDIO		= (0x1  << 19),	/* RW */
 	SDC_CFG_SDIOIDE		= (0x1  << 20),	/* RW */
