@@ -34,6 +34,12 @@
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/bus/spi/qcom_qspi.h"
+#include "drivers/gpio/sc7280.h"
+#include "drivers/bus/i2s/qcom_lpass.h"
+#include "drivers/sound/i2s.h"
+#include "drivers/sound/route.h"
+#include "drivers/sound/sound.h"
+#include "drivers/sound/gpio_amp.h"
 
 #define SDC1_HC_BASE          0x007C4000
 
@@ -57,6 +63,12 @@ static int herobrine_tpm_irq_status(void)
 
 static int board_setup(void)
 {
+	GpioOps *amp_enable;
+	GpioAmpCodec *speaker_amp;
+	LpassI2s *soundq;
+	I2sSource *i2s_source;
+	SoundRoute *sound;
+
 	/*
 	 * flag_fetch() will die if it encounters a flag that is not registered,
 	 * so we still need to register lid switch even if we don't have a lid.
@@ -120,6 +132,18 @@ static int board_setup(void)
         else if (CONFIG(DRIVER_TPM_SPI))
                tpm_set_ops(&new_tpm_spi(&new_qup_spi(0xA98000)->ops,
 			herobrine_tpm_irq_status)->ops);
+
+	/* Audio support */
+	amp_enable = sysinfo_lookup_gpio("speaker enable", 1,
+				new_gpio_output_from_coreboot);
+	speaker_amp = new_gpio_amp_codec(amp_enable);
+	soundq = new_lpass_i2s(48000, 2, 16, LPASS_SECONDARY, 0x2C00000);
+	i2s_source = new_i2s_source(&soundq->ops, 48000, 2, 0x500);
+	sound = new_sound_route(&i2s_source->ops);
+	list_insert_after(&speaker_amp->component.list_node,
+			&sound->components);
+
+	sound_set_ops(&sound->ops);
 
 	return 0;
 }
