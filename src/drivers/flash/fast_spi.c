@@ -89,10 +89,30 @@ static int wait_for_hwseq_xfer(FastSpiFlash *flash, uint32_t offset)
 	return -1;
 }
 
+static int wait_for_hwseq_spi_cycle_complete(FastSpiFlash *flash)
+{
+	uint64_t start = timer_us(0);
+	uint32_t hsfsts;
+
+	do {
+		hsfsts = fast_spi_flash_ctrlr_reg_read(flash, SPIBAR_HSFSTS_CTL);
+
+		if (!(hsfsts & SPIBAR_HSFSTS_SCIP))
+			return 0;
+	} while (timer_us(start) < SPIBAR_XFER_TIMEOUT_US);
+
+	return -1;
+}
+
 /* Execute FAST_SPI flash transfer. This is a blocking call. */
 static int exec_sync_hwseq_xfer(FastSpiFlash *flash, uint32_t hsfsts_cycle,
 				uint32_t offset, size_t size)
 {
+	if (wait_for_hwseq_spi_cycle_complete(flash) < 0) {
+		printf("SPI Transaction Timeout due to prior in-progress operation\n");
+		return -1;
+	}
+
 	start_hwseq_xfer(flash, hsfsts_cycle, offset, size);
 	return wait_for_hwseq_xfer(flash, offset);
 }
