@@ -334,6 +334,7 @@ struct ui_bitmap {
 };
 
 struct ui_locale {
+	uint32_t id;		/* Locale id */
 	const char *code;	/* Language code */
 	int rtl;		/* Whether locale is right-to-left */
 };
@@ -344,16 +345,18 @@ struct ui_log_info;
 struct ui_context;
 
 struct ui_state {
-	const struct ui_screen_info *screen;
+	/* Fields that should be preserved across states. */
 	const struct ui_locale *locale;
+	int timer_disabled;
+	enum ui_error error_code;
+
+	const struct ui_screen_info *screen;
 	uint32_t selected_item;
 	uint32_t disabled_item_mask;
 	uint32_t hidden_item_mask;
-	int timer_disabled;
 	const struct ui_log_info *log;
 	uint32_t page_count;
 	uint32_t current_page;
-	enum ui_error error_code;
 
 	/* For minidiag test screens. */
 	int test_finished;  /* Do not update screen if the content is done */
@@ -441,7 +444,6 @@ enum ui_power_button {
 struct ui_context {
 	struct vb2_context *ctx;
 	struct ui_state *state;
-	uint32_t locale_id;
 	uint32_t key;
 	int key_trusted;
 
@@ -449,7 +451,6 @@ struct ui_context {
 	enum ui_power_button power_button;
 
 	/* For developer mode. */
-	int disable_timer;
 	uint32_t start_time_ms;
 	int beep_count;
 
@@ -467,9 +468,6 @@ struct ui_context {
 
 	/* For error beep sound. */
 	int error_beep;
-
-	/* For displaying error messages. */
-	enum ui_error error_code;
 
 	/* Force calling ui_display for refreshing the screen. This flag
 	   will be reset after done. */

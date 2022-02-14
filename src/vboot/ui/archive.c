@@ -88,6 +88,7 @@ static const struct locale_data *get_locale_data(void)
 		}
 		printf(" %s", code);
 		info = &cached_locales.locales[cached_locales.count];
+		info->id = cached_locales.count;
 		info->code = code;
 		if (!strcmp(rtl, "1")) {
 			info->rtl = 1;

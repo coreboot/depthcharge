@@ -27,6 +27,7 @@ loop-test-srcs += tests/mocks/ui.c
 loop-test-srcs += tests/mocks/ui_callbacks.c
 loop-test-srcs += tests/mocks/ui_display.c
 loop-test-srcs += tests/mocks/vb2api.c
+loop-test-srcs += tests/stubs/vboot/ui/archive.c
 loop-test-srcs += src/vboot/ui/navigation.c
 loop-test-srcs += src/vboot/ui/menu.c
 loop-test-mocks += VbExIsShutdownRequest
@@ -39,6 +40,7 @@ loop-detachable-test-config += CONFIG_DETACHABLE=1
 
 screens-test-srcs += tests/vboot/ui/screens-test.c
 screens-test-srcs += tests/mocks/ui_callbacks.c
+screens-test-srcs += tests/stubs/vboot/ui/archive.c
 screens-test-srcs += src/vboot/ui/navigation.c
 
 bitmap-test-srcs += tests/vboot/ui/bitmap-test.c

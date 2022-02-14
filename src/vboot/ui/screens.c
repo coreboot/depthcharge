@@ -155,12 +155,12 @@ static vb2_error_t set_ui_error(struct ui_context *ui,
 				enum ui_error error_code)
 {
 	/* Keep the first occurring error. */
-	if (ui->error_code)
+	if (ui->state->error_code)
 		UI_INFO("When handling ui error %#x, another ui error "
 			"occurred: %#x",
-			ui->error_code, error_code);
+			ui->state->error_code, error_code);
 	else
-		ui->error_code = error_code;
+		ui->state->error_code = error_code;
 	/* Return to the ui loop to show the error code. */
 	return VB2_REQUEST_UI_CONTINUE;
 }
@@ -186,7 +186,6 @@ static vb2_error_t set_ui_error_and_go_back(struct ui_context *ui,
 static vb2_error_t log_page_update(struct ui_context *ui,
 				   const char *new_log_string)
 {
-	const struct ui_locale *locale;
 	const struct ui_screen_info *screen = ui->state->screen;
 
 	if (CONFIG(HEADLESS)) {
@@ -196,9 +195,8 @@ static vb2_error_t log_page_update(struct ui_context *ui,
 	}
 
 	if (new_log_string) {
-		VB2_TRY(ui_get_locale_info(ui->locale_id, &locale));
-		VB2_TRY(ui_log_init(screen->id, locale->code, new_log_string,
-				    &global_ui_log_info));
+		VB2_TRY(ui_log_init(screen->id, ui->state->locale->code,
+				    new_log_string, &global_ui_log_info));
 		if (global_ui_log_info.page_count == 0) {
 			UI_ERROR("page_count is 0\n");
 			return VB2_ERROR_UI_LOG_INIT;
@@ -300,8 +298,8 @@ static vb2_error_t language_select_init(struct ui_context *ui)
 			 "rejecting entering language selection screen\n");
 		return ui_screen_back(ui);
 	}
-	if (ui->locale_id < menu->num_items) {
-		ui->state->selected_item = ui->locale_id;
+	if (ui->state->locale->id < menu->num_items) {
+		ui->state->selected_item = ui->state->locale->id;
 	} else {
 		UI_WARN("WARNING: Current locale not found in menu items; "
 			"initializing selected_item to 0\n");
@@ -435,11 +433,12 @@ static vb2_error_t draw_language_select(const struct ui_state *state,
 static vb2_error_t language_select_action(struct ui_context *ui)
 {
 	vb2_error_t rv;
-	ui->locale_id = ui->state->selected_item;
-	UI_INFO("Locale changed to %u\n", ui->locale_id);
+	uint32_t locale_id = ui->state->selected_item;
+	VB2_TRY(ui_get_locale_info(locale_id, &ui->state->locale));
+	UI_INFO("Locale changed to %u\n", locale_id);
 
 	/* Write locale id back to nvdata. */
-	vb2api_set_locale_id(ui->ctx, ui->locale_id);
+	vb2api_set_locale_id(ui->ctx, locale_id);
 
 	/* Commit nvdata changes immediately, in case of three-finger salute
 	   reboot. Ignore commit errors in recovery mode. */
@@ -1299,8 +1298,8 @@ static vb2_error_t developer_mode_action(struct ui_context *ui)
 
 	/* Once any user interaction occurs, stop the timer. */
 	if (ui->key)
-		ui->disable_timer = 1;
-	if (ui->disable_timer)
+		ui->state->timer_disabled = 1;
+	if (ui->state->timer_disabled)
 		return VB2_SUCCESS;
 
 	elapsed_ms = vb2ex_mtime() - ui->start_time_ms;
@@ -1309,7 +1308,7 @@ static vb2_error_t developer_mode_action(struct ui_context *ui)
 	if (elapsed_ms > dev_delay_ms) {
 		UI_INFO("Booting default target after %ds\n",
 			dev_delay_ms / MSECS_PER_SEC);
-		ui->disable_timer = 1;
+		ui->state->timer_disabled = 1;
 		default_boot = vb2api_get_dev_default_boot_target(ui->ctx);
 		switch (default_boot) {
 		case VB2_DEV_DEFAULT_BOOT_TARGET_EXTERNAL:

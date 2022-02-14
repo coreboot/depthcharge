@@ -8,6 +8,7 @@ vb2_error_t ui_get_locale_info(uint32_t locale_id,
 {
 	static struct ui_locale stub_locale;
 
+	stub_locale.id = locale_id;
 	*locale = &stub_locale;
 	return VB2_SUCCESS;
 }

@@ -12,8 +12,8 @@ static vb2_error_t ui_error_exit_action(struct ui_context *ui)
 	 * key press clears that error.  Unset the key so that it is
 	 * not processed by other action functions.
 	 */
-	if (ui->key && ui->error_code) {
-		ui->error_code = UI_ERROR_NONE;
+	if (ui->key && ui->state->error_code) {
+		ui->state->error_code = UI_ERROR_NONE;
 		ui->key = 0;
 	}
 	return VB2_SUCCESS;
@@ -97,9 +97,8 @@ static vb2_error_t ui_loop_impl(
 	vb2_error_t (*global_action)(struct ui_context *ui))
 {
 	struct ui_context ui;
+	uint32_t locale_id;
 	struct ui_state prev_state;
-	int prev_disable_timer;
-	enum ui_error prev_error_code;
 	const struct ui_menu *menu;
 	const struct ui_screen_info *root_info;
 	uint32_t key_flags;
@@ -111,25 +110,31 @@ static vb2_error_t ui_loop_impl(
 	root_info = ui_get_screen_info(root_screen_id);
 	if (root_info == NULL)
 		die("Root screen not found.\n");
-	ui.locale_id = vb2api_get_locale_id(ctx);
 
 	rv = ui_screen_change(&ui, root_screen_id);
 	if (rv && rv != VB2_REQUEST_UI_CONTINUE)
 		return rv;
+	if (!ui.state)
+		die("Failed to initialize ui.state for root screen.\n");
+
+	/* Initialize locale. */
+	locale_id = vb2api_get_locale_id(ctx);
+	rv = ui_get_locale_info(locale_id, &ui.state->locale);
+	if (rv == VB2_ERROR_UI_INVALID_LOCALE) {
+		UI_WARN("Locale %u not found, falling back to locale 0",
+			locale_id);
+		rv = ui_get_locale_info(0, &ui.state->locale);
+	}
+	if (rv)
+		return rv;
 
 	memset(&prev_state, 0, sizeof(prev_state));
-	prev_disable_timer = 0;
-	prev_error_code = UI_ERROR_NONE;
 
 	while (1) {
 		start_time_ms = vb2ex_mtime();
 
 		/* Draw if there are state changes. */
 		if (memcmp(&prev_state, ui.state, sizeof(*ui.state)) ||
-		    /* Redraw when timer is disabled. */
-		    prev_disable_timer != ui.disable_timer ||
-		    /* Redraw/beep on a transition. */
-		    prev_error_code != ui.error_code ||
 		    /* Beep. */
 		    ui.error_beep != 0 ||
 		    /* Redraw on a screen request to refresh. */
@@ -141,14 +146,16 @@ static vb2_error_t ui_loop_impl(
 					? menu->items[ui.state->selected_item]
 						  .name
 					: "null");
-			ui_display(ui.state->screen->id, ui.locale_id,
+			ui_display(ui.state->screen->id, ui.state->locale->id,
 				   ui.state->selected_item,
 				   ui.state->disabled_item_mask,
-				   ui.state->hidden_item_mask, ui.disable_timer,
-				   ui.state->current_page, ui.error_code);
+				   ui.state->hidden_item_mask,
+				   ui.state->timer_disabled,
+				   ui.state->current_page,
+				   ui.state->error_code);
 			if (ui.error_beep ||
-			    (ui.error_code &&
-			     prev_error_code != ui.error_code)) {
+			    (ui.state->error_code &&
+			     prev_state.error_code != ui.state->error_code)) {
 				vb2ex_beep(250, 400);
 				ui.error_beep = 0;
 			}
@@ -158,8 +165,6 @@ static vb2_error_t ui_loop_impl(
 
 			/* Update prev variables. */
 			memcpy(&prev_state, ui.state, sizeof(*ui.state));
-			prev_disable_timer = ui.disable_timer;
-			prev_error_code = ui.error_code;
 		}
 
 		/* Grab new keyboard input. */
