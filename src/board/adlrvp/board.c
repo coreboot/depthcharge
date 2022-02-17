@@ -18,6 +18,8 @@
 #include "drivers/power/pch.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/nvme.h"
+#include "drivers/storage/ufs.h"
+#include "drivers/storage/ufs_intel.h"
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/spi.h"
 #include "drivers/tpm/tpm.h"
@@ -147,6 +149,12 @@ static int board_setup(void)
 	secondary_bus = pci_read_config8(PCH_DEV_PCIE8, REG_SECONDARY_BUS);
 	NvmeCtrlr *nvme_5 = new_nvme_ctrlr(PCI_DEV(secondary_bus, 0, 0));
 	list_insert_after(&nvme_5->ctrlr.list_node, &fixed_block_dev_controllers);
+
+	/* UFS */
+	if (CONFIG(DRIVER_STORAGE_INTEL_UFS)) {
+		IntelUfsCtlr *intel_ufs = new_intel_ufs_ctlr(PCH_DEV_UFS1);
+		list_insert_after(&intel_ufs->ufs.bctlr.list_node, &fixed_block_dev_controllers);
+	}
 
 #if CONFIG_DRIVER_SOUND_MAX98373
 	adlrvp_setup_max98373_i2s();
