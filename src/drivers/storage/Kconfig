@@ -117,4 +117,13 @@ config DRIVER_STORAGE_SET_DLL_USER_CTL
 	bool "Set MMC DLL user control and dll config3 registers for Qcom MSM platforms"
 	default n
 
+config DRIVER_STORAGE_UFS
+	bool "UFS driver"
+	default n
+
+config DRIVER_STORAGE_INTEL_UFS
+	select DRIVER_STORAGE_UFS
+	bool "Intel UFS driver"
+	default n
+
 source "src/drivers/storage/mtd/Kconfig"
