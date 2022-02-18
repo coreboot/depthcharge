@@ -221,7 +221,7 @@ enum {
 	/* MSDC_PATCH_BIT1 mask */
 	MSDC_PATCH_BIT1_WRDAT_CRCS	= (0x7 << 0),
 	MSDC_PATCH_BIT1_CMD_RSP		= (0x7 << 3),
-	MSDC_PATCH_BIT1_GET_CRC_MARGIN	= (0x01 << 7),	/* RW */
+	MSDC_PATCH_BUSY_CHECK_SEL	= (0x1 << 7),	/* RW */
 	MSDC_PATCH_BIT1_STOP_DLY	= (0xf << 8),	/* RW */
 };
 

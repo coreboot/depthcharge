@@ -664,6 +664,9 @@ static int mtk_mmc_init(BlockDevCtrlrOps *me)
 			write32(&reg->pad_tune0, 0);
 		}
 
+		/* Disable busy check */
+		clrbits_le32(&reg->patch_bit1, MSDC_PATCH_BUSY_CHECK_SEL);
+
 		/* Stop clk fix */
 		clrsetbits_le32(&reg->patch_bit1, MSDC_PATCH_BIT1_STOP_DLY,
 				3 << 8);
