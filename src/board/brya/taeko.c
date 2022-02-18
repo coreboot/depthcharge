@@ -83,12 +83,9 @@ const struct storage_config *variant_get_storage_configs(size_t *count)
 		case 1:
 			storage_config_ptr = storage_configs_for_id1;
 			break;
-		case 2:
+		default:
 			storage_config_ptr = storage_configs;
 			break;
-		default:
-			*count = 0;
-			return NULL;
 		}
 		if (fw_config_probe(FW_CONFIG(BOOT_NVME_MASK, BOOT_NVME_ENABLED))) {
 			*count = 1;
