@@ -345,22 +345,63 @@ struct ui_log_info;
 struct ui_context;
 
 struct ui_state {
-	/* Fields that should be preserved across states. */
+	/***********************************************************************
+	 * Fields that should be preserved across states.
+	 */
 	const struct ui_locale *locale;
+
+	/*
+	 * Whether timer is disabled or not. Some screen descriptions will
+	 * depend on this value.
+	 */
 	int timer_disabled;
+
+	/* Error code if an error occurred. */
 	enum ui_error error_code;
 
+	/***********************************************************************
+	 * Basic screen information.
+	 */
 	const struct ui_screen_info *screen;
+
+	/* Index of the selected menu item. */
 	uint32_t selected_item;
+
+	/*
+	 * Mask for disabled menu items. Bit (1 << idx) indicates whether item
+	 * 'idx' is disabled. A disabled menu item is visible and selectable,
+	 * but with a different button style.
+	 */
 	uint32_t disabled_item_mask;
+
+	/*
+	 * Mask for hidden menu items. Bit (1 << idx) indicates whether item
+	 * 'idx' is hidden. A hidden menu item is neither visible nor
+	 * selectable.
+	 */
 	uint32_t hidden_item_mask;
+
+	/***********************************************************************
+	 * Fields for log screens. These will be ignored for non-log screens.
+	 */
 	const struct ui_log_info *log;
+
+	/* The number of pages. */
 	uint32_t page_count;
+
+	/* Current page number. */
 	uint32_t current_page;
 
-	/* For minidiag test screens. */
-	int test_finished;  /* Do not update screen if the content is done */
+	/***********************************************************************
+	 * Fields for test screens in diagnostic UI.
+	 */
 
+	/* Do not update screen if the content is done. */
+	int test_finished;
+
+	/***********************************************************************
+	 * Pointer to the previous state in the history stack.
+	 */
 	struct ui_state *prev;
 };
 
@@ -1030,33 +1071,15 @@ char *ui_log_get_page_content(const struct ui_log_info *log, uint32_t page);
 /*
  * Display UI screen.
  *
- * @param screen		Screen to display.
- * @param locale_id		Id of current locale.
- * @param selected_item		Index of the selected menu item. If the screen
- *				doesn't have a menu, this value will be ignored.
- * @param disabled_item_mask	Mask for disabled menu items. Bit (1 << idx)
- *				indicates whether item 'idx' is disabled.
- *				A disabled menu item is visible and selectable,
- *				with a different button style.
- * @param hidden_item_mask	Mask for hidden menu items. Bit (1 << idx)
- *				indicates whether item 'idx' is hidden.
- *				A hidden menu item is neither visible nor
- *				selectable.
- * @param timer_disabled	Whether timer is disabled or not. Some screen
- *				descriptions will depend on this value.
- * @param current_page		Current page number for a log screen. If the
- *				screen doesn't show logs, this value will be
- *				ignored.
- * @param error_code		Error code if an error occurred.
- * @param prev_state		Previous UI state, or NULL if previous drawing
- *				failed or there's no previous state.
+ * @param ui		UI context. This must be first initialized by
+ *			ui_init_context().
+ * @param prev_state	Previous UI state, or NULL if previous drawing failed or
+ *			there's no previous state.
+ *
  * @return VB2_SUCCESS, or error code on error.
  */
 
-vb2_error_t ui_display(enum ui_screen screen, uint32_t locale_id,
-		       uint32_t selected_item, uint32_t disabled_item_mask,
-		       uint32_t hidden_item_mask, int timer_disabled,
-		       uint32_t current_page, enum ui_error error_code,
+vb2_error_t ui_display(const struct ui_context *ui,
 		       const struct ui_state *prev_state);
 
 /******************************************************************************/
@@ -1097,6 +1120,18 @@ int ui_is_power_pressed(void);
 /* loop.c */
 
 /*
+ * Initialize UI context.
+ *
+ * @param ui		UI context to be initialized.
+ * @param ctx		Vboot2 context.
+ * @param screen_id	Screen id to be set in UI context.
+ *
+ * @return VB2_SUCCESS, or error code on error.
+ */
+vb2_error_t ui_init_context(struct ui_context *ui, struct vb2_context *ctx,
+			    enum ui_screen screen_id);
+
+/*
  * The entry of main UI loop.
  *
  * @param ctx			Vboot2 context.
@@ -1119,6 +1154,16 @@ vb2_error_t ui_menu_select(struct ui_context *ui);
 
 /******************************************************************************/
 /* navigation.c */
+
+/*
+ * Initialize the current screen. The screen's init() will be run when exists;
+ * otherwise, the default initialization will be run.
+ *
+ * @param ui	UI context. This must be first initialized by ui_init_context().
+ *
+ * @return VB2_SUCCESS, or error code on error.
+ */
+vb2_error_t ui_screen_init(struct ui_context *ui);
 
 /*
  * NOTE: This function never returns VB2_SUCCUSS by design. Instead,

@@ -92,42 +92,59 @@ static vb2_error_t check_shutdown_request(struct ui_context *ui)
 	return shutdown_power ? VB2_REQUEST_SHUTDOWN : VB2_SUCCESS;
 }
 
+vb2_error_t ui_init_context(struct ui_context *ui, struct vb2_context *ctx,
+			    enum ui_screen screen_id)
+{
+	const struct ui_screen_info *screen_info;
+	const struct ui_locale *locale;
+	vb2_error_t rv;
+
+	screen_info = ui_get_screen_info(screen_id);
+	if (!screen_info) {
+		UI_ERROR("Screen entry %#x not found\n", screen_id);
+		return VB2_ERROR_UI_INVALID_SCREEN;
+	}
+
+	uint32_t locale_id = vb2api_get_locale_id(ctx);
+	rv = ui_get_locale_info(locale_id, &locale);
+	if (rv == VB2_ERROR_UI_INVALID_LOCALE) {
+		UI_WARN("Locale %u not found, falling back to locale 0",
+			locale_id);
+		rv = ui_get_locale_info(0, &locale);
+	}
+	if (rv) {
+		UI_ERROR("Locale %u not found\n", locale_id);
+		return rv;
+	}
+
+	/*
+	 * We cannot use ui_screen_change() to initialize ui->state, because
+	 * ui_screen_change() will call the screen's init(), which may need
+	 * ui->state->locale (for example the debug info screen).
+	 */
+	memset(ui, 0, sizeof(*ui));
+	ui->ctx = ctx;
+	ui->state = xzalloc(sizeof(*ui->state));
+	ui->state->screen = screen_info;
+	ui->state->locale = locale;
+	return ui_screen_init(ui);
+}
+
 static vb2_error_t ui_loop_impl(
 	struct vb2_context *ctx, enum ui_screen root_screen_id,
 	vb2_error_t (*global_action)(struct ui_context *ui))
 {
 	struct ui_context ui;
-	uint32_t locale_id;
 	struct ui_state prev_state;
 	int need_redraw;
 	const struct ui_menu *menu;
-	const struct ui_screen_info *root_info;
 	uint32_t key_flags;
 	uint32_t start_time_ms, elapsed_ms;
 	vb2_error_t rv;
 
-	memset(&ui, 0, sizeof(ui));
-	ui.ctx = ctx;
-	root_info = ui_get_screen_info(root_screen_id);
-	if (root_info == NULL)
-		die("Root screen not found.\n");
-
-	rv = ui_screen_change(&ui, root_screen_id);
-	if (rv && rv != VB2_REQUEST_UI_CONTINUE)
-		return rv;
-	if (!ui.state)
-		die("Failed to initialize ui.state for root screen.\n");
-
-	/* Initialize locale. */
-	locale_id = vb2api_get_locale_id(ctx);
-	rv = ui_get_locale_info(locale_id, &ui.state->locale);
-	if (rv == VB2_ERROR_UI_INVALID_LOCALE) {
-		UI_WARN("Locale %u not found, falling back to locale 0",
-			locale_id);
-		rv = ui_get_locale_info(0, &ui.state->locale);
-	}
-	if (rv)
-		return rv;
+	if (ui_init_context(&ui, ctx, root_screen_id))
+		die("Cannot init UI context for root screen %#x\n",
+		    root_screen_id);
 
 	memset(&prev_state, 0, sizeof(prev_state));
 	need_redraw = 0;
@@ -148,15 +165,7 @@ static vb2_error_t ui_loop_impl(
 					? menu->items[ui.state->selected_item]
 						  .name
 					: "null");
-			rv = ui_display(ui.state->screen->id,
-					ui.state->locale->id,
-					ui.state->selected_item,
-					ui.state->disabled_item_mask,
-					ui.state->hidden_item_mask,
-					ui.state->timer_disabled,
-					ui.state->current_page,
-					ui.state->error_code,
-					need_redraw ? NULL : &prev_state);
+			rv = ui_display(&ui, need_redraw ? &prev_state : NULL);
 			/* If the drawing failed, set the flag so that NULL will
 			   be passed to ui_display() in the next iteration. */
 			need_redraw = !!rv;

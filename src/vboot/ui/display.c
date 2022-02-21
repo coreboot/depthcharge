@@ -246,22 +246,18 @@ static void draw_fallback_stripes(enum ui_screen screen,
 	ui_draw_box(x, y, h, h, &colors[0x0], 0);
 }
 
-/*
- * Display the UI state on the screen.
- *
- * When part of the screen remains unchanged, screen redrawing should be kept as
- * minimal as possible.
- *
- * @param state		Current UI state.
- * @param prev_state	Previous UI state, or NULL if previous menu drawing was
- *			unsuccessful or there's no previous state.
- *
- * @return VB2_SUCCESS on success, non-zero on error.
- */
-static vb2_error_t ui_display_screen(struct ui_state *state,
-				     const struct ui_state *prev_state)
+vb2_error_t ui_display(const struct ui_context *ui,
+		       const struct ui_state *prev_state)
 {
 	vb2_error_t rv;
+	struct ui_state *state = ui->state;
+	UI_INFO("screen=%#x, locale=%u, selected_item=%u, "
+		"disabled_item_mask=%#x, hidden_item_mask=%#x, "
+		"timer_disabled=%d, current_page=%u, error=%#x\n",
+		state->screen->id, ui->state->locale->id, state->selected_item,
+		state->disabled_item_mask, state->hidden_item_mask,
+		state->timer_disabled, state->current_page, state->error_code);
+
 	int32_t y = UI_BOX_MARGIN_V;
 	const struct ui_screen_info *screen = state->screen;
 	const struct ui_error_message *error = NULL;
@@ -307,52 +303,6 @@ static vb2_error_t ui_display_screen(struct ui_state *state,
 			UI_WARN("%s\n", error->mesg);
 	}
 
-	return rv;
-}
-
-vb2_error_t ui_display(enum ui_screen screen, uint32_t locale_id,
-		       uint32_t selected_item, uint32_t disabled_item_mask,
-		       uint32_t hidden_item_mask, int timer_disabled,
-		       uint32_t current_page, enum ui_error error_code,
-		       const struct ui_state *prev_state)
-{
-	vb2_error_t rv;
-	const struct ui_locale *locale = NULL;
-	const struct ui_screen_info *screen_info;
-	UI_INFO("screen=%#x, locale=%u, selected_item=%u, "
-		"disabled_item_mask=%#x, hidden_item_mask=%#x, "
-		"timer_disabled=%d, current_page=%u, error=%#x\n",
-		screen, locale_id, selected_item, disabled_item_mask,
-		hidden_item_mask, timer_disabled, current_page, error_code);
-
-	rv = ui_get_locale_info(locale_id, &locale);
-	if (rv == VB2_ERROR_UI_INVALID_LOCALE) {
-		UI_WARN("Locale %u not found, falling back to locale 0",
-			locale_id);
-		rv = ui_get_locale_info(0, &locale);
-	}
-	if (rv)
-		return rv;
-
-	screen_info = ui_get_screen_info(screen);
-	if (!screen_info) {
-		UI_WARN("Not a valid screen: %#x\n", screen);
-		return VB2_ERROR_UI_INVALID_SCREEN;
-	}
-
-	struct ui_state state = {
-		.screen = screen_info,
-		.locale = locale,
-		.selected_item = selected_item,
-		.disabled_item_mask = disabled_item_mask,
-		.hidden_item_mask = hidden_item_mask,
-		.timer_disabled = timer_disabled,
-		.log = &global_ui_log_info,
-		.current_page = current_page,
-		.error_code = error_code,
-	};
-
-	rv = ui_display_screen(&state, prev_state);
 	flush_graphics_buffer();
 	return rv;
 }

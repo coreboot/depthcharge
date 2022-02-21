@@ -38,43 +38,48 @@
 	_ASSERT_SCREEN_STATE((_state), __VA_ARGS__, MOCK_IGNORE, MOCK_IGNORE, \
 			     MOCK_IGNORE)
 
+vb2_error_t _ui_display(enum ui_screen screen, uint32_t locale_id,
+			uint32_t selected_item, uint32_t disabled_item_mask,
+			uint32_t hidden_item_mask, int timer_disabled,
+			uint32_t current_page, enum ui_error error_code);
+
 #define _EXPECT_UI_DISPLAY(_screen, _locale_id, _selected_item, \
 			   _disabled_item_mask, _hidden_item_mask, \
 			   _current_page, ...) \
 	do { \
 		if ((_screen) == MOCK_IGNORE) \
-			expect_any(ui_display, screen); \
+			expect_any(_ui_display, screen); \
 		else \
-			expect_value(ui_display, screen, (_screen)); \
+			expect_value(_ui_display, screen, (_screen)); \
 		if ((_locale_id) == MOCK_IGNORE) \
-			expect_any(ui_display, locale_id); \
+			expect_any(_ui_display, locale_id); \
 		else \
-			expect_value(ui_display, locale_id, \
+			expect_value(_ui_display, locale_id, \
 				     (_locale_id)); \
 		if ((_selected_item) == MOCK_IGNORE) \
-			expect_any(ui_display, selected_item); \
+			expect_any(_ui_display, selected_item); \
 		else \
-			expect_value(ui_display, selected_item, \
+			expect_value(_ui_display, selected_item, \
 				     (_selected_item)); \
 		if ((_disabled_item_mask) == MOCK_IGNORE) \
-			expect_any(ui_display, disabled_item_mask); \
+			expect_any(_ui_display, disabled_item_mask); \
 		else \
-			expect_value(ui_display, disabled_item_mask, \
+			expect_value(_ui_display, disabled_item_mask, \
 				     (_disabled_item_mask)); \
 		if ((_hidden_item_mask) == MOCK_IGNORE) \
-			expect_any(ui_display, hidden_item_mask); \
+			expect_any(_ui_display, hidden_item_mask); \
 		else \
-			expect_value(ui_display, hidden_item_mask, \
+			expect_value(_ui_display, hidden_item_mask, \
 				     (_hidden_item_mask)); \
 		if ((_current_page) == MOCK_IGNORE) \
-			expect_any(ui_display, current_page); \
+			expect_any(_ui_display, current_page); \
 		else \
-			expect_value(ui_display, current_page, \
+			expect_value(_ui_display, current_page, \
 				     (_current_page)); \
 	} while (0)
 
 /*
- * Add events to check the parameters of ui_display(). Pass MOCK_IGNORE to
+ * Add events to check the parameters of _ui_display(). Pass MOCK_IGNORE to
  * ignore the value of the parameter. This macro supports variable length of
  * parameters, and will fill the rest of missing parameters with MOCK_IGNORE.
  */
@@ -83,23 +88,23 @@
 			   MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE)
 
 /*
- * Add events to check if ui_display() has been called by using expect_any
+ * Add events to check if _ui_display() has been called by using expect_any
  * to all checked parameters.
  */
 #define EXPECT_UI_DISPLAY_ANY() EXPECT_UI_DISPLAY(MOCK_IGNORE)
 
 /*
  * Add expect_any_count with count -1 (which means to expect any always in
- * CMocka) to every parameters of ui_display.
+ * CMocka) to every parameters of _ui_display.
  */
 #define EXPECT_UI_DISPLAY_ANY_ALWAYS() \
 	do { \
-		expect_any_always(ui_display, screen); \
-		expect_any_always(ui_display, locale_id); \
-		expect_any_always(ui_display, selected_item); \
-		expect_any_always(ui_display, disabled_item_mask); \
-		expect_any_always(ui_display, hidden_item_mask); \
-		expect_any_always(ui_display, current_page); \
+		expect_any_always(_ui_display, screen); \
+		expect_any_always(_ui_display, locale_id); \
+		expect_any_always(_ui_display, selected_item); \
+		expect_any_always(_ui_display, disabled_item_mask); \
+		expect_any_always(_ui_display, hidden_item_mask); \
+		expect_any_always(_ui_display, current_page); \
 	} while (0)
 
 /*

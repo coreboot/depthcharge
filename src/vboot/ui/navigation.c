@@ -2,13 +2,18 @@
 
 #include "vboot/ui.h"
 
-static vb2_error_t default_screen_init(struct ui_context *ui)
+vb2_error_t ui_screen_init(struct ui_context *ui)
 {
+	if (ui->state->screen->init)
+		return ui->state->screen->init(ui);
+
+	/* Default screen init. */
 	const struct ui_menu *menu = ui_get_menu(ui);
 	ui->state->selected_item = 0;
 	if (menu->num_items > 1 &&
 	    menu->items[0].type == UI_MENU_ITEM_TYPE_LANGUAGE)
 		ui->state->selected_item = 1;
+
 	return VB2_SUCCESS;
 }
 
@@ -83,10 +88,7 @@ vb2_error_t ui_screen_change(struct ui_context *ui, enum ui_screen id)
 		memset(cur_state, 0, sizeof(*ui->state));
 		cur_state->screen = new_screen_info;
 		push_state(ui, cur_state);
-		if (ui->state->screen->init)
-			VB2_TRY(ui->state->screen->init(ui));
-		else
-			VB2_TRY(default_screen_init(ui));
+		VB2_TRY(ui_screen_init(ui));
 	}
 
 	return VB2_REQUEST_UI_CONTINUE;

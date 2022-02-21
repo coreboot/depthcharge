@@ -217,6 +217,7 @@ static vb2_error_t log_page_update(struct ui_context *ui,
 		VB2_SET_BIT(ui->state->disabled_item_mask,
 			    screen->page_down_item);
 
+	ui->state->log = &global_ui_log_info;
 	return VB2_SUCCESS;
 }
 

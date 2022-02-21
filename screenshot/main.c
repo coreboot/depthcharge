@@ -36,6 +36,23 @@ struct sysinfo_t lib_sysinfo = {
 
 int main(int argc, char *argv[])
 {
+	struct vb2_context fake_ctx;
+	struct ui_context ui;
+	struct ui_state *state;
+
+	memset(&fake_ctx, 0, sizeof(fake_ctx));
+	vb2api_set_locale_id(&fake_ctx, 0);
+	VB2_TRY(ui_init_context(&ui, &fake_ctx, __SCREEN__));
+	state = ui.state;
+	state->selected_item = __ITEM__;
+	state->disabled_item_mask = __DISABLED_ITEM_MASK__;
+	state->hidden_item_mask = __HIDDEN_ITEM_MASK__;
+	state->current_page = __PAGE__;
+
+	/*
+	 * ui_log_init() will be called once from ui_init_context(). Another
+	 * call below will replace the mock log string with the provided one.
+	 */
 	if (strlen(__LOG__))
 		VB2_TRY(ui_log_init(__SCREEN__, "en", __LOG__,
 				    &global_ui_log_info));
@@ -52,8 +69,7 @@ int main(int argc, char *argv[])
 				    &global_ui_log_info));
 	}
 
-	VB2_TRY(ui_display(__SCREEN__, 0, __ITEM__, __DISABLED_ITEM_MASK__,
-			   __HIDDEN_ITEM_MASK__, 0, __PAGE__, 0, NULL));
+	VB2_TRY(ui_display(&ui, NULL));
 
 	if (argc < 2) {
 		printf("ERROR: No output path specified\n");

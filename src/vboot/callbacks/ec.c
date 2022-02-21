@@ -98,14 +98,16 @@ vb2_error_t vb2ex_ec_update_image(enum vb2_firmware_selection select)
 {
 	/* Display firmware sync screen if update is slow */
 	if (CONFIG(EC_SLOW_UPDATE)) {
+		struct ui_context ui;
 		struct vb2_context *ctx = vboot_get_context();
-		uint32_t locale;
 		if (vb2api_need_reboot_for_display(ctx))
 			return VB2_REQUEST_REBOOT;
-		locale = vb2api_get_locale_id(ctx);
 		printf("EC is updating. Show firmware sync screen.\n");
-		ui_display(UI_SCREEN_FIRMWARE_SYNC, locale,
-			   0, 0, 0, 0, 0, UI_ERROR_NONE, NULL);
+		if (ui_init_context(&ui, ctx, UI_SCREEN_FIRMWARE_SYNC) ==
+		    VB2_SUCCESS)
+			ui_display(&ui, NULL);
+		else
+			printf("Failed to initialize UI context.\n");
 	}
 
 	int32_t start_ts = vb2ex_mtime();
