@@ -99,6 +99,7 @@ static vb2_error_t ui_loop_impl(
 	struct ui_context ui;
 	uint32_t locale_id;
 	struct ui_state prev_state;
+	int need_redraw;
 	const struct ui_menu *menu;
 	const struct ui_screen_info *root_info;
 	uint32_t key_flags;
@@ -129,6 +130,7 @@ static vb2_error_t ui_loop_impl(
 		return rv;
 
 	memset(&prev_state, 0, sizeof(prev_state));
+	need_redraw = 0;
 
 	while (1) {
 		start_time_ms = vb2ex_mtime();
@@ -146,13 +148,19 @@ static vb2_error_t ui_loop_impl(
 					? menu->items[ui.state->selected_item]
 						  .name
 					: "null");
-			ui_display(ui.state->screen->id, ui.state->locale->id,
-				   ui.state->selected_item,
-				   ui.state->disabled_item_mask,
-				   ui.state->hidden_item_mask,
-				   ui.state->timer_disabled,
-				   ui.state->current_page,
-				   ui.state->error_code);
+			rv = ui_display(ui.state->screen->id,
+					ui.state->locale->id,
+					ui.state->selected_item,
+					ui.state->disabled_item_mask,
+					ui.state->hidden_item_mask,
+					ui.state->timer_disabled,
+					ui.state->current_page,
+					ui.state->error_code,
+					need_redraw ? NULL : &prev_state);
+			/* If the drawing failed, set the flag so that NULL will
+			   be passed to ui_display() in the next iteration. */
+			need_redraw = !!rv;
+
 			if (ui.error_beep ||
 			    (ui.state->error_code &&
 			     prev_state.error_code != ui.state->error_code)) {
