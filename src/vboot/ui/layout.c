@@ -266,7 +266,7 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 						  UI_BUTTON_TEXT_HEIGHT,
 						  &text_width));
 		} else {
-			UI_ERROR("Menu item #%d: no .file or .text\n", i);
+			UI_ERROR("Menu item #%d: no .file or .name\n", i);
 			return VB2_ERROR_UI_DRAW_FAILURE;
 		}
 		max_text_width = MAX(text_width, max_text_width);
