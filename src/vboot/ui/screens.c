@@ -1760,7 +1760,9 @@ static vb2_error_t draw_developer_select_bootloader(
 	 * TODO(b/172339016): make ui_context available in this function, so
 	 * that we can use ui_get_menu(ui) here.
 	 */
-	menu = state->screen->get_menu(NULL);
+	struct ui_context ui;
+	memset(&ui, 0, sizeof(ui));
+	menu = state->screen->get_menu(&ui);
 	if (!menu)
 		menu = &empty_menu;
 
