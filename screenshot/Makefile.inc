@@ -39,16 +39,17 @@ archivesrc := screenshot/archive.c
 
 screenshot-srcs += $(mainsrc)
 screenshot-srcs += $(archivesrc)
+screenshot-srcs += screenshot/mocks/boot/payload.c
 screenshot-srcs += screenshot/mocks/vb2api.c
 screenshot-srcs += screenshot/stubs/display.c
 screenshot-srcs += screenshot/stubs/ui.c
+screenshot-srcs += src/base/list.c
 screenshot-srcs += src/vboot/ui/bitmap.c
 screenshot-srcs += src/vboot/ui/display.c
 screenshot-srcs += src/vboot/ui/draw.c
 screenshot-srcs += src/vboot/ui/layout.c
 screenshot-srcs += src/vboot/ui/log.c
 screenshot-srcs += src/vboot/ui/screens.c
-screenshot-srcs += tests/stubs/boot/payload.c
 screenshot-srcs += tests/stubs/diag.c
 
 screenshot-srcobjs := $(addprefix $(screenshotobj)/, \
