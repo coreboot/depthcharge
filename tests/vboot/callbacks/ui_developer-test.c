@@ -325,6 +325,31 @@ static void test_developer_ui_select_external_keyboard(void **state)
 	ASSERT_VB2_SUCCESS(vb2ex_developer_ui(ui->ctx));
 }
 
+static void test_developer_ui_select_external_keyboard_fail(void **state)
+{
+	struct ui_context *ui = *state;
+
+	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED;
+	will_return_maybe(vb2api_get_dev_default_boot_target,
+			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
+	will_return_maybe(vb2api_gbb_get_flags, 0);
+	WILL_LOAD_EXTERNAL_ALWAYS(VB2_ERROR_LK_NO_DISK_FOUND);
+
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE);
+
+	WILL_PRESS_KEY(UI_KEY_DEV_BOOT_EXTERNAL, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_BOOT_EXTERNAL, MOCK_IGNORE, 1);
+	EXPECT_BEEP(250, 400);
+
+	/* Make sure UP/DOWN is still functional */
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_BOOT_EXTERNAL, MOCK_IGNORE, 2);
+
+	will_return_maybe(ui_keyboard_read, 0);
+
+	assert_int_equal(vb2ex_developer_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
+}
+
 static void test_developer_ui_select_external_menu(void **state)
 {
 	struct ui_context *ui = *state;
@@ -859,6 +884,7 @@ int main(void)
 		UI_TEST(test_developer_ui_external_timeout),
 		UI_TEST(test_developer_ui_external_fail_no_disk),
 		UI_TEST(test_developer_ui_select_external_keyboard),
+		UI_TEST(test_developer_ui_select_external_keyboard_fail),
 		UI_TEST(test_developer_ui_select_external_menu),
 		UI_TEST(test_developer_ui_select_external_button),
 		UI_TEST(test_developer_ui_select_altfw_keyboard),
