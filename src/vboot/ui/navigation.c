@@ -44,6 +44,13 @@ vb2_error_t ui_screen_change(struct ui_context *ui, enum ui_screen id)
 	struct ui_state *cur_state;
 	int state_exists = 0;
 
+	/*
+	 * Return immediately if we're already in the requested screen.
+	 * ui->state will be NULL when setting the root screen.
+	 */
+	if (ui->state && ui->state->screen->id == id)
+		return VB2_REQUEST_UI_CONTINUE;
+
 	new_screen_info = ui_get_screen_info(id);
 	if (new_screen_info == NULL) {
 		UI_WARN("ERROR: Screen entry %#x not found; ignoring\n", id);
