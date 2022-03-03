@@ -135,6 +135,8 @@ typedef struct AmdAcpPrivate {
 	uint32_t lrclk;
 	uint8_t channels;
 	int16_t volume;
+
+	uint32_t original_pin_config;
 } AmdAcpPrivate;
 
 /*
@@ -482,6 +484,9 @@ static int amd_acp_enable(SoundRouteComponentOps *me)
 	if (amd_acp_deassert_reset(acp))
 		return -1;
 
+	/* Save the PIN_CONFIG so we don't stomp on what coreboot defined */
+	acp->original_pin_config = acp_read32(acp, ACP_I2S_PIN_CONFIG);
+
 	acp_write32(acp, ACP_I2S_PIN_CONFIG, ACP_I2S_PIN_CONFIG_I2S_TDM);
 
 	return 0;
@@ -493,7 +498,7 @@ static int amd_acp_disable(SoundRouteComponentOps *me)
 
 	acp_debug("%s: start\n", __func__);
 
-	acp_write32(acp, ACP_I2S_PIN_CONFIG, ACP_I2S_PIN_CONFIG_DEFAULT);
+	acp_write32(acp, ACP_I2S_PIN_CONFIG, acp->original_pin_config);
 
 	return 0;
 }
