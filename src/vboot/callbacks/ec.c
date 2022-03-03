@@ -115,6 +115,7 @@ vb2_error_t vb2ex_ec_update_image(enum vb2_firmware_selection select)
 			   0, 0, 0, 0, 0, UI_ERROR_NONE);
 	}
 
+	int32_t start_ts = vb2ex_mtime();
 	VbootEcOps *ec = vboot_get_ec();
 	const char *filename = EC_IMAGE_FILENAME(select);
 	size_t size;
@@ -123,7 +124,9 @@ vb2_error_t vb2ex_ec_update_image(enum vb2_firmware_selection select)
 		return VB2_ERROR_UNKNOWN;
 
 	assert(ec && ec->update_image);
-	return ec->update_image(ec, select, image, size);
+	vb2_error_t rv = ec->update_image(ec, select, image, size);
+	printf("%s: Finished in %u ms\n", __func__, vb2ex_mtime() - start_ts);
+	return rv;
 }
 
 vb2_error_t vb2ex_ec_protect(enum vb2_firmware_selection select)
