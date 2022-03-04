@@ -200,22 +200,14 @@ static void queue_data(QcomQspi *qspi_bus, uint8_t *data, uint32_t data_bytes,
 					epilog_bytes, data_mode, write);
 }
 
-static void chip_assert(int value)
-{
-	/* we can remove this completely if spi_stat/stop looks fine below */
-	return;
-}
-
 int spi_start(SpiOps *me)
 {
-	chip_assert(CS_DEASSERT);
 	QcomQspi *qspi = container_of(me, QcomQspi, ops);
 	return qspi->gpio_ops->set(qspi->gpio_ops, CS_DEASSERT);
 }
 
 int spi_stop(SpiOps *me)
 {
-	chip_assert(CS_ASSERT);
 	QcomQspi *qspi = container_of(me, QcomQspi, ops);
 	return qspi->gpio_ops->set(qspi->gpio_ops, CS_ASSERT);
 }
