@@ -146,22 +146,20 @@ static int nor_write(MtkNorFlash *flash, uint32_t addr, const u8 *buf,
 	return 0;
 }
 
-static void *mtk_nor_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
+static int mtk_nor_flash_read(FlashOps *me, void *buffer, uint32_t offset,
+			      uint32_t size)
 {
 	MtkNorFlash *flash = container_of(me, MtkNorFlash, ops);
-	uint8_t *data;
 	int ret;
 
 	assert((offset + size) <= flash->rom_size);
-	data = flash->buffer + offset;
-
-	ret = nor_read(flash, offset, data, size);
+	ret = nor_read(flash, offset, buffer, size);
 	if (ret) {
 		printf("nor_read failed!\n");
-		return NULL;
+		return -1;
 	}
 
-	return data;
+	return size;
 }
 
 /* Return the number of successfully written bytes */
@@ -194,8 +192,5 @@ MtkNorFlash *new_mtk_nor_flash(uintptr_t reg_addr)
 	flash->rom_size = rom_size;
 	flash->reg = (mtk_snfc_regs *)reg_addr;
 
-	/* Provide sufficient alignment on the cache buffer so that the
-	   underlying SPI controllers can perform optimal DMA transfers. */
-	flash->buffer = xmemalign(1*KiB, rom_size);
 	return flash;
 }

@@ -22,12 +22,10 @@
 /* Function required by libpayload libcbfs implementation to access CBFS */
 ssize_t boot_device_read(void *buf, size_t offset, size_t size)
 {
-	uint8_t *cache;
-
 	/* buffer passed by the API should not be affected on error */
-	cache = flash_read(offset, size);
-	if (!cache)
+	int rv = flash_read(buf, offset, size);
+
+	if (rv < 0)
 		return CB_ERR;
-	memcpy(buf, cache, size);
-	return size;
+	return rv;
 }

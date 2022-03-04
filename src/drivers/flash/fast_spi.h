@@ -45,7 +45,6 @@ typedef struct FastSpiFlash {
 	uint32_t mmio_end;
 	uint32_t flash_bits;
 	uint32_t rom_size;
-	uint8_t *cache;
 	FlashRegion region[FLASH_REGION_MAX];
 	FlashOps ops;
 } FastSpiFlash;

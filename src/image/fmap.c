@@ -40,20 +40,30 @@ static void *get_fmap_cache(void) {
 }
 
 static void *read_fmap_from_flash(void) {
-	Fmap *fmap = flash_read(lib_sysinfo.fmap_offset, sizeof(Fmap));
-	uint32_t fmap_size;
+	Fmap fmap;
 
-	if (!fmap)
+	if (flash_read(&fmap, lib_sysinfo.fmap_offset, sizeof(Fmap)) !=
+	    sizeof(Fmap))
 		return NULL;
-	if (fmap && fmap_check_signature(fmap)) {
+	if (fmap_check_signature(&fmap)) {
 		printf("Bad signature on the FMAP.\n");
 		return NULL;
 	}
-	fmap_size = sizeof(Fmap) +
-		fmap->nareas * sizeof(FmapArea);
-	fmap = flash_read(lib_sysinfo.fmap_offset, fmap_size);
 
-	return fmap;
+	const uint32_t remaining = fmap.nareas * sizeof(FmapArea);
+	uint8_t *full_fmap = xzalloc(sizeof(fmap) + remaining);
+
+	memcpy(full_fmap, &fmap, sizeof(fmap));
+	if (flash_read(full_fmap + sizeof(fmap),
+		       lib_sysinfo.fmap_offset + sizeof(fmap),
+		       remaining) != remaining) {
+		free(full_fmap);
+		printf("Failed to read full FMAP @%#llx(@%#x).\n",
+		       lib_sysinfo.fmap_offset, remaining);
+		return NULL;
+	}
+
+	return full_fmap;
 }
 
 static void fmap_init(void)
@@ -102,10 +112,18 @@ const char *fmap_find_string(const char *name, int *size)
 	assert(size);
 
 	FmapArea area;
+
+	*size = 0;
 	if (fmap_find_area(name, &area)) {
-		*size = 0;
 		return NULL;
 	}
+
+	char *buffer = xzalloc(area.size);
+	if (flash_read(buffer, area.offset, area.size) != area.size) {
+		free(buffer);
+		return NULL;
+	}
+
 	*size = area.size;
-	return flash_read(area.offset, area.size);
+	return buffer;
 }

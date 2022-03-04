@@ -33,16 +33,16 @@ typedef enum {
 	ReadId = 0x9f
 } SpiFlashCommands;
 
-static void *spi_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
+static int spi_flash_read(FlashOps *me, void *buffer, uint32_t offset,
+			  uint32_t size)
 {
 	SpiFlash *flash = container_of(me, SpiFlash, ops);
-	uint8_t *data = flash->cache + offset;
 
 	assert(offset + size <= flash->rom_size);
 
 	if (flash->spi->start(flash->spi)) {
 		printf("%s: Failed to start flash transaction.\n", __func__);
-		return NULL;
+		return -1;
 	}
 
 	uint32_t command = htobe32((ReadCommand << 24) | offset);
@@ -50,21 +50,21 @@ static void *spi_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
 	if (flash->spi->transfer(flash->spi, NULL, &command, sizeof(command))) {
 		printf("%s: Failed to send read command.\n", __func__);
 		flash->spi->stop(flash->spi);
-		return NULL;
+		return -1;
 	}
 
-	if (flash->spi->transfer(flash->spi, data, NULL, size)) {
+	if (flash->spi->transfer(flash->spi, buffer, NULL, size)) {
 		printf("%s: Failed to receive %u bytes.\n", __func__, size);
 		flash->spi->stop(flash->spi);
-		return NULL;
+		return -1;
 	}
 
 	if (flash->spi->stop(flash->spi)) {
 		printf("%s: Failed to stop transaction.\n", __func__);
-		return NULL;
+		return -1;
 	}
 
-	return data;
+	return size;
 }
 
 /* Generate a 10 us 'CS inactive' pulse. */
@@ -244,8 +244,8 @@ static int spi_flash_modify(SpiFlash *flash, const void *buffer,
 #define SPI_FLASH_WRITE_PAGE_LIMIT (1 << 8)
 #define SPI_WRITE_PAGE_MASK (~(SPI_FLASH_WRITE_PAGE_LIMIT - 1))
 
-static int spi_flash_write(FlashOps *me, const void *buffer,
-				uint32_t offset, uint32_t size)
+static int spi_flash_write(FlashOps *me, const void *buffer, uint32_t offset,
+			   uint32_t size)
 {
 	SpiFlash *flash = container_of(me, SpiFlash, ops);
 	uint32_t written = 0;
@@ -427,8 +427,5 @@ SpiFlash *new_spi_flash(SpiOps *spi)
 	flash->spi = spi;
 	flash->rom_size = rom_size;
 	flash->erase_cmd = erase_cmd;
-	/* Provide sufficient alignment on the cache buffer so that the
-	 * underlying SPI controllers can perform optimal DMA transfers. */
-	flash->cache = xmemalign(1*KiB, rom_size);
 	return flash;
 }

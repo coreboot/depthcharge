@@ -31,7 +31,6 @@ vb2_error_t vb2ex_read_resource(struct vb2_context *ctx,
 			uint32_t size)
 {
 	FmapArea area;
-	void *data;
 
 	if (index != VB2_RES_GBB)
 		return VB2_ERROR_EX_READ_RESOURCE_INDEX;
@@ -46,13 +45,10 @@ vb2_error_t vb2ex_read_resource(struct vb2_context *ctx,
 		return VB2_ERROR_EX_READ_RESOURCE_SIZE;
 	}
 
-	data = flash_read(area.offset + offset, size);
-	if (!data) {
+	if (flash_read(buf, area.offset + offset, size) != size) {
 		printf("%s: failed to read from GBB region\n", __func__);
 		return VB2_ERROR_EX_READ_RESOURCE_INDEX;
 	}
-
-	memcpy(buf, data, size);
 
 	return VB2_SUCCESS;
 }

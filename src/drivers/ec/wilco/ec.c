@@ -77,7 +77,7 @@ static vb2_error_t vboot_hash_image(VbootEcOps *vbec,
 	WilcoEc *ec = container_of(vbec, WilcoEc, vboot);
 	struct vb2_digest_context ctx;
 	static u8 output_hash[VB2_SHA256_DIGEST_SIZE];
-	WilcoEcImageHeader *header;
+	WilcoEcImageHeader header;
 	uint8_t *image;
 	uint32_t ec_offset, image_offset;
 	size_t image_size;
@@ -94,39 +94,45 @@ static vb2_error_t vboot_hash_image(VbootEcOps *vbec,
 		ec_offset += ec->flash_size / 2;
 
 	/* Force update if header does not validate */
-	header = flash_read(ec_offset, sizeof(*header));
-	if (header->tag != EC_IMAGE_HEADER_TAG) {
-		printf("%s: header tag invalid (%08x != %08x)\n",
-		       __func__, header->tag, EC_IMAGE_HEADER_TAG);
+	if (flash_read(&header, ec_offset, sizeof(header)) != sizeof(header)) {
+		printf("Failed to read image header\n");
 		return VB2_SUCCESS;
 	}
-	if (header->version != EC_IMAGE_HEADER_VER) {
+	if (header.tag != EC_IMAGE_HEADER_TAG) {
+		printf("%s: header tag invalid (%08x != %08x)\n",
+		       __func__, header.tag, EC_IMAGE_HEADER_TAG);
+		return VB2_SUCCESS;
+	}
+	if (header.version != EC_IMAGE_HEADER_VER) {
 		printf("%s: header version invalid (%d != %d)\n",
-		       __func__, header->version, EC_IMAGE_HEADER_VER);
+		       __func__, header.version, EC_IMAGE_HEADER_VER);
 		return VB2_SUCCESS;
 	}
 
 	/* Offset into flash for start of image data */
-	image_offset = ec_offset + sizeof(*header);
+	image_offset = ec_offset + sizeof(header);
 
 	/* Calculate size of image data */
-	image_size = header->firmware_size * EC_IMAGE_BLOCK_SIZE;
+	image_size = header.firmware_size * EC_IMAGE_BLOCK_SIZE;
 
 	/* Include trailing data */
 	image_size += EC_IMAGE_TRAILER_SIZE;
 
 	/* Include extra trailing data if encryption is enabled */
-	if (header->flags & EC_IMAGE_ENC_FLAG)
+	if (header.flags & EC_IMAGE_ENC_FLAG)
 		image_size += EC_IMAGE_ENC_TRAILER_SIZE;
 
 	/* Read the image from flash */
-	image = flash_read(image_offset, image_size);
+	image = xzalloc(image_size);
+	if (flash_read(image, image_offset, image_size) == image_size) {
+		/* Generate SHA-256 digest of the header and image */
+		vb2_digest_init(&ctx, VB2_HASH_SHA256);
+		vb2_digest_extend(&ctx, (uint8_t *)&header, sizeof(header));
+		vb2_digest_extend(&ctx, image, image_size);
+		vb2_digest_finalize(&ctx, (uint8_t *)*hash, *hash_size);
+	}
 
-	/* Generate SHA-256 digest of the header and image */
-	vb2_digest_init(&ctx, VB2_HASH_SHA256);
-	vb2_digest_extend(&ctx, (uint8_t *)header, sizeof(*header));
-	vb2_digest_extend(&ctx, image, image_size);
-	vb2_digest_finalize(&ctx, (uint8_t *)*hash, *hash_size);
+	free(image);
 
 	return VB2_SUCCESS;
 }

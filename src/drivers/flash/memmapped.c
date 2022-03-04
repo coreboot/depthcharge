@@ -39,7 +39,8 @@ static const struct flash_mmap_window *find_mmap_window(uint32_t offset,
 	return NULL;
 }
 
-static void *mem_mapped_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
+static int mem_mapped_flash_read(FlashOps *me, void *buffer, uint32_t offset,
+				 uint32_t size)
 {
 	uint32_t rel_offset;
 	const struct flash_mmap_window *window = find_mmap_window(offset, size);
@@ -47,12 +48,14 @@ static void *mem_mapped_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
 	if (!window) {
 		printf("ERROR: Offset(0x%x)/size(0x%x) out of bounds!\n",
 		       offset, size);
-		return NULL;
+		return -1;
 	}
 
 	/* Convert offset within flash space into an offset within host space */
 	rel_offset = offset - window->flash_base;
-	return (void *)(uintptr_t)(window->host_base + rel_offset);
+	memcpy(buffer, (void *)(uintptr_t)(window->host_base + rel_offset),
+	       size);
+	return size;
 }
 
 static int flash_setup(void)

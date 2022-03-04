@@ -10,7 +10,7 @@
 static int do_spi_read(int argc, char * const argv[], int read_flag)
 {
 	unsigned offset, length;
-	const char *buffer;
+	char *buffer;
 	void *mem_addr = 0;
 
 	if (!read_flag && (argc != 2))
@@ -25,9 +25,9 @@ static int do_spi_read(int argc, char * const argv[], int read_flag)
 	offset = strtoul(argv[0], 0, 16);
 	length = strtoul(argv[1], 0, 16);
 
-	buffer = flash_read(offset, length);
-
-	if (!buffer) {
+	buffer = xzalloc(length);
+	if (flash_read(buffer, offset, length) != length) {
+		free(buffer);
 		printf("read failed!\n");
 		return -1;
 	}
@@ -38,6 +38,7 @@ static int do_spi_read(int argc, char * const argv[], int read_flag)
 		print_buffer((unsigned long) mem_addr,
 			     buffer, 1, length, 16);
 
+	free(buffer);
 	return 0;
 }
 
@@ -66,7 +67,7 @@ static int do_spi_write(int argc, char * const argv[], int read_flag)
 	offset = strtoul(argv[0], 0, 16);
 	length = strtoul(argv[1], 0, 16);
 
-	return length != flash_write(offset, length, mem_addr);
+	return length != flash_write(mem_addr, offset, length);
 }
 
 static int do_spi(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])

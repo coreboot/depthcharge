@@ -59,7 +59,6 @@ typedef struct {
 	FlashOps ops;
 	mtk_snfc_regs *reg;
 	uint32_t rom_size;
-	uint8_t *buffer;
 } MtkNorFlash;
 
 MtkNorFlash *new_mtk_nor_flash(uintptr_t reg_addr);

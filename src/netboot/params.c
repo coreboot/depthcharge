@@ -94,9 +94,13 @@ int netboot_params_read(uip_ipaddr_t **tftp_ip, char *cmd_line,
 		printf("Couldn't find the shared data area.\n");
 		return 1;
 	}
-	void *data = flash_read(shared_data.offset, shared_data.size);
-	if (netboot_params_init(data, shared_data.size))
+	void *data = xzalloc(shared_data.size);
+	if (flash_read(data, shared_data.offset, shared_data.size) !=
+		    shared_data.size ||
+	    netboot_params_init(data, shared_data.size)) {
+		free(data);
 		return 1;
+	}
 
 	// Get TFTP server IP and file names from params if specified
 	param = netboot_params_val(NetbootParamIdTftpServerIp);

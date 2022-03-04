@@ -166,11 +166,12 @@ static int fast_spi_flash_erase(FlashOps *me, uint32_t offset, uint32_t size)
 	return size;
 }
 
-static void *fast_spi_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
+static int fast_spi_flash_read(FlashOps *me, void *buffer, uint32_t offset,
+			       uint32_t size)
 {
 	FastSpiFlash *flash = container_of(me, FastSpiFlash, ops);
-	uint8_t *data = flash->cache + offset;
-	uint8_t *odata = data;
+	uint8_t *data = buffer;
+	const uint32_t osize = size;
 
 	assert(offset + size <= flash->rom_size);
 
@@ -184,9 +185,9 @@ static void *fast_spi_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
 		uintptr_t mmio_address =
 			(uintptr_t)(flash->mmio_address -
 				    flash->mmio_offset + offset);
-		memcpy(data, (void *)mmio_address, size);
+		memcpy(buffer, (void *)mmio_address, size);
 
-		return data;
+		return size;
 	}
 
 	while (size) {
@@ -194,7 +195,7 @@ static void *fast_spi_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
 
 		if (exec_sync_hwseq_xfer(flash, SPIBAR_HSFSTS_CYCLE_READ,
 					 offset, xfer_len) < 0)
-			return NULL;
+			return -1;
 
 		drain_xfer_fifo(flash, data, xfer_len);
 
@@ -203,7 +204,7 @@ static void *fast_spi_flash_read(FlashOps *me, uint32_t offset, uint32_t size)
 		size -= xfer_len;
 	}
 
-	return odata;
+	return osize;
 }
 
 static int fast_spi_flash_write(FlashOps *me, const void *buffer,
@@ -335,7 +336,6 @@ FastSpiFlash *new_fast_spi_flash(uintptr_t mmio_base)
 	flash->mmio_address = mmap_start;
 	flash->mmio_offset = bios_base;
 	flash->mmio_end = bios_end;
-	flash->cache = xmalloc(flash->rom_size);
 
 	flash->ops.sector_size = sector_size;
 	flash->ops.read = fast_spi_flash_read;

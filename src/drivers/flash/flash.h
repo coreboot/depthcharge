@@ -42,11 +42,12 @@ typedef struct FlashProtectionMapping {
 
 typedef struct FlashOps
 {
-	/* Return a pointer to the read data in the flash driver cache. */
-	void *(*read)(struct FlashOps *me, uint32_t offset, uint32_t size);
+	/* Return the number of successfully read bytes */
+	int (*read)(struct FlashOps *me, void *buffer, uint32_t offset,
+		    uint32_t size);
 	/* Return the number of successfully written bytes */
-	int (*write)(struct FlashOps *me, const void *buffer,
-		     uint32_t offset, uint32_t size);
+	int (*write)(struct FlashOps *me, const void *buffer, uint32_t offset,
+		     uint32_t size);
 	/* Return the number of successfully erased bytes.
 	 * Offset and size must be erase_size-aligned. */
 	int (*erase)(struct FlashOps *me, uint32_t offset, uint32_t size);
@@ -63,11 +64,13 @@ typedef struct FlashOps
 
 /* Functions operating on flash_ops */
 void flash_set_ops(FlashOps *ops);
-void *flash_read(uint32_t offset, uint32_t size);
-int flash_write(uint32_t offset, uint32_t size, const void *buffer);
-int flash_erase(uint32_t offset, uint32_t size);
+int __must_check flash_read(void *buffer, uint32_t offset, uint32_t size);
+int __must_check flash_write(const void *buffer, uint32_t offset,
+			     uint32_t size);
+int __must_check flash_erase(uint32_t offset, uint32_t size);
 uint32_t flash_sector_size(void);
-int flash_rewrite(uint32_t start, uint32_t length, const void *buffer);
+int __must_check flash_rewrite(const void *buffer, uint32_t start,
+			       uint32_t length);
 int flash_write_status(uint8_t status);
 int flash_read_status(void);
 int flash_is_wp_enabled(void);
@@ -75,12 +78,13 @@ int flash_set_wp_enabled(void);
 JedecFlashId flash_read_id(void);
 
 /* Functions operating on passed in ops */
-void *flash_read_ops(FlashOps *ops, uint32_t offset, uint32_t size);
-int flash_write_ops(FlashOps *ops, uint32_t offset, uint32_t size,
-		    const void *buffer);
-int flash_erase_ops(FlashOps *ops, uint32_t offset, uint32_t size);
-int flash_rewrite_ops(FlashOps *ops, uint32_t start, uint32_t length,
-		      const void *buffer);
+int __must_check flash_read_ops(FlashOps *ops, void *buffer, uint32_t offset,
+				uint32_t size);
+int __must_check flash_write_ops(FlashOps *ops, const void *buffer,
+				 uint32_t offset, uint32_t size);
+int __must_check flash_erase_ops(FlashOps *ops, uint32_t offset, uint32_t size);
+int __must_check flash_rewrite_ops(FlashOps *ops, const void *buffer,
+				   uint32_t start, uint32_t length);
 
 /* List of supported flashes terminated with a 0 filled element*/
 extern FlashProtectionMapping flash_protection_list[];

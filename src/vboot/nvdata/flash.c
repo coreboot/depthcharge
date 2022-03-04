@@ -54,7 +54,7 @@ static int flash_nvdata_init(void)
 	int used_below, empty_above;
 	static int nvdata_flash_is_initialized = 0;
 	uint8_t empty_nvdata_block[sizeof(nvdata_cache)];
-	uint8_t *block;
+	uint8_t block[sizeof(nvdata_cache)];
 
 	if (nvdata_flash_is_initialized)
 		return 0;
@@ -73,10 +73,10 @@ static int flash_nvdata_init(void)
 
 	while (used_below + 1 < empty_above) {
 		int guess = (used_below + empty_above) / 2;
-		block = flash_read(nvdata_area_descriptor.offset +
-				   guess * sizeof(nvdata_cache),
-				   sizeof(nvdata_cache));
-		if (!block) {
+		if (flash_read(block,
+			       nvdata_area_descriptor.offset +
+				       guess * sizeof(nvdata_cache),
+			       sizeof(nvdata_cache)) != sizeof(nvdata_cache)) {
 			printf("%s: failed to read nvdata area\n", __func__);
 			return -1;
 		}
@@ -93,9 +93,9 @@ static int flash_nvdata_init(void)
 	 */
 	nvdata_blob_offset = used_below * sizeof(nvdata_cache);
 
-	block = flash_read(nvdata_area_descriptor.offset + nvdata_blob_offset,
-			   sizeof(nvdata_cache));
-	if (!block) {
+	if (flash_read(block,
+		       nvdata_area_descriptor.offset + nvdata_blob_offset,
+		       sizeof(nvdata_cache)) != sizeof(nvdata_cache)) {
 		printf("%s: failed to read nvdata area\n", __func__);
 		return -1;
 	}
@@ -160,8 +160,8 @@ vb2_error_t nvdata_flash_write(const uint8_t *buf)
 		nvdata_blob_offset = new_blob_offset;
 	}
 
-	if (flash_write(nvdata_area_descriptor.offset + nvdata_blob_offset,
-			sizeof(nvdata_cache), buf) != sizeof(nvdata_cache))
+	if (flash_write(buf, nvdata_area_descriptor.offset + nvdata_blob_offset,
+			sizeof(nvdata_cache)) != sizeof(nvdata_cache))
 		return VB2_ERROR_NV_WRITE;
 
 	memcpy(nvdata_cache, buf, sizeof(nvdata_cache));

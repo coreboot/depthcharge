@@ -33,14 +33,10 @@ static lba_t block_flash_read(BlockDevOps *me, lba_t start, lba_t count,
 	size_t block_size = flash->dev.block_size;
 	size_t size_bytes = count * block_size;
 
-	void *data = flash_read_ops(ops, start * block_size, size_bytes);
-
-	if (data == NULL)
+	int rv = flash_read_ops(ops, buffer, start * block_size, size_bytes);
+	if (rv < 0)
 		return 0;
-
-	memcpy(buffer, data, size_bytes);
-
-	return count;
+	return rv;
 }
 
 static lba_t block_flash_write(BlockDevOps *me, lba_t start, lba_t count,
@@ -52,7 +48,7 @@ static lba_t block_flash_write(BlockDevOps *me, lba_t start, lba_t count,
 	size_t todo = count * block_size;
 	size_t curr_ptr = start * block_size;
 
-	if (flash_rewrite_ops(ops, curr_ptr, todo, buffer) != todo)
+	if (flash_rewrite_ops(ops, buffer, curr_ptr, todo) != todo)
 		return 0;
 
 	return count;
@@ -110,7 +106,7 @@ static lba_t block_flash_fill_write(BlockDevOps *me, lba_t start, lba_t count,
 	do {
 		size_t curr_bytes = MIN(buffer_bytes, todo);
 
-		if (flash_rewrite_ops(ops, curr_ptr, curr_bytes, buffer)
+		if (flash_rewrite_ops(ops, buffer, curr_ptr, curr_bytes)
 		    != curr_bytes)
 			goto cleanup;
 

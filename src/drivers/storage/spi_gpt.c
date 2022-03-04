@@ -53,11 +53,10 @@ static lba_t read_spi_gpt(struct BlockDevOps *me, lba_t start, lba_t count,
 		return -1;
 	}
 
-	void *flash_buffer = flash_read(start_byte + dev->area.offset,
-					count_byte);
-	if (!flash_buffer)
+	int rv = flash_read(buffer, start_byte + dev->area.offset, count_byte);
+
+	if (rv < 0)
 		return 0;
-	memcpy(buffer, flash_buffer, count_byte);
 	return count;
 }
 
