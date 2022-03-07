@@ -33,7 +33,7 @@ static int init_display(void)
 static int do_draw_image(int argc, char * const argv[])
 {
 	const struct scale *dim_rel = NULL;
-	const void *bitmap;
+	void *bitmap;
 	size_t size;
 	int rv;
 

@@ -18,7 +18,7 @@ static int do_cbfs_dump(char * const name)
 		return CMD_RET_FAILURE;
 	}
 
-	printf("Dumping '%s' size=%u type=%u\n", name, size,
+	printf("Dumping '%s' size=%lu type=%u\n", name, size,
 	       cbfs_get_type(name));
 	hexdump((void *)file, size);
 	free(file);
@@ -46,6 +46,6 @@ static int do_cbfs(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 U_BOOT_CMD(
 	   cbfs,	3,	1,
 	   "examine coreboot file system",
-	   "cbfs dump <name> - dump file content"
-	   "cbfs ls - list files in cbfs"
+	   "dump <name> - dump file content\n"
+	   "ls - list files in cbfs"
 );
