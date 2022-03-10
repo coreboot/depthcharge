@@ -79,6 +79,7 @@ syslibc_objs := $(addprefix $(screenshotobj)/, \
 
 $(syslibc_objs): $(screenshotobj)/%.o: %.c
 	@printf "    CC       $(subst $(screenshotobj)/,,$@)\n"
+	mkdir -p $(dir $@)
 	$(HOSTCC) $(HOSTCFLAGS) -MMD -MF $(basename $@).d -MT $@ -c $< -o $@
 
 screenshot-bin := $(screenshotobj)/run
