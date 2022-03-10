@@ -95,12 +95,17 @@ DEPENDENCIES += $(addsuffix .d,$(basename $(screenshot-objs) $(syslibc_objs)))
 
 OUTPUT_RAW := $(screenshotobj)/$(notdir $(basename $(OUTPUT))).raw
 
-.PHONY: screenshot clean-screenshot
+.PHONY: screenshot test-screenshot clean-screenshot
 
 screenshot: $(screenshot-bin)
 	$(screenshot-bin) $(OUTPUT_RAW)
 	$(screenshotsrc)/raw2bmp.py $(WIDTH) $(HEIGHT) $(OUTPUT_RAW) $(OUTPUT)
 	@echo Screenshot saved to $(OUTPUT)
+
+test-screenshot: screenshot
+	$(MAKE) screenshot
+	$(MAKE) screenshot SCREEN=UI_SCREEN_FIRMWARE_SYNC
+	$(MAKE) screenshot SCREEN=UI_SCREEN_DEBUG_INFO LOG='"This is the log"'
 
 clean-screenshot:
 	rm -rf $(testobj)
