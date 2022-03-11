@@ -30,7 +30,8 @@ static const struct gpio_community communities[] = {
 		.min = GPIO_COM0_START,
 		.max = GPIO_COM0_END,
 	},
-	{	/* GPP S, D, H */
+	{	/* GPP S, D, H for ADL-P/M
+		   GPP S, I, D, H for ADL-N */
 		.port_id = PCH_PCR_PID_GPIOCOM1,
 		.min = GPIO_COM1_START,
 		.max = GPIO_COM1_END,
