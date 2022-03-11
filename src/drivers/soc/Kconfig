@@ -100,6 +100,11 @@ config DRIVER_SOC_ALDERLAKE
 	select DRIVER_SOC_INTEL_PMC
 	select DRIVER_SOC_INTEL_PMC_DEBUG
 
+config DRIVER_SOC_ALDERLAKE_N
+	bool "Alderlake-N specific option"
+	default n
+	depends on DRIVER_SOC_ALDERLAKE
+
 config DRIVER_SOC_CEZANNE
 	bool "Cezanne SoC driver"
 	default n
