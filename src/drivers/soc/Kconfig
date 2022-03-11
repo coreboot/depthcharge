@@ -76,6 +76,10 @@ config DRIVER_SOC_INTEL_PMC_DEBUG
 	default n
 	depends on DRIVER_SOC_INTEL_PMC
 
+config DRIVER_SOC_INTEL_PCH_EMMC
+	bool "Enable Intel PCH EMMC device"
+	default n
+
 config DRIVER_SOC_TIGERLAKE
 	bool "Tigerlake SoC driver"
 	default n

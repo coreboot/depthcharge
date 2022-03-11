@@ -34,6 +34,13 @@ static void setup_emmc(pcidev_t dev, const struct emmc_config *config)
 		} else {
 			printf("Failed to find eMMC card reader\n");
 		}
+	} else if (CONFIG(DRIVER_SOC_INTEL_PCH_EMMC)) {
+		SdhciHost *emmc =
+		new_pci_sdhci_host(dev,
+				   config->platform_flags,
+				   config->clock_min, config->clock_max);
+		list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+				   &fixed_block_dev_controllers);
 	}
 }
 
