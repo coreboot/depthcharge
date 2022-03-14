@@ -18,7 +18,8 @@ const struct audio_config *variant_probe_audio_config(void)
 {
 	static struct audio_config config;
 
-	if (fw_config_probe(FW_CONFIG(AUDIO, MAX98360_ALC5682I_I2S))) {
+	if (fw_config_probe(FW_CONFIG(AUDIO, MAX98360_ALC5682I_I2S)) || 
+		fw_config_probe(FW_CONFIG(AUDIO, MAX98360_ALC5682I_VS_I2S))) {
 		config = (struct audio_config){
 			.bus = {
 				.type			= AUDIO_I2S,
