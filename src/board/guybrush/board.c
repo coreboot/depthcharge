@@ -121,7 +121,7 @@ static void setup_amd_acp_i2s(pcidev_t acp_pci_dev)
 	SoundRouteComponent *codec =
 		variant_get_audio_codec(&i2c->ops, 0x1a, MCLK, LRCLK);
 
-	KernGpio *en_spkr_gpio = new_kern_fch_gpio_output(EN_SPKR, 1);
+	KernGpio *en_spkr_gpio = new_kern_fch_gpio_output(EN_SPKR, 0);
 
 	/* Note: component order matters here. The first thing inserted is the
 	 * last thing enabled. */
