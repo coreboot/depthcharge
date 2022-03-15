@@ -25,27 +25,9 @@ config DRIVER_FLASH_MTK_SNFC
 	select DRIVER_FLASH
 	default n
 
-config DRIVER_FLASH_ICH7
-	bool "Intel I/O Controller Hub 7 flash"
-	depends on ARCH_X86
-	select DRIVER_FLASH
-	select DRIVER_FLASH_ICH_BASE
-	default n
-
-config DRIVER_FLASH_ICH9
-	bool "Intel I/O Controller Hub 9 flash"
-	depends on ARCH_X86
-	select DRIVER_FLASH
-	select DRIVER_FLASH_ICH_BASE
-	default n
-
 config DRIVER_FLASH_SPI
 	bool "SPI based flash"
 	select DRIVER_FLASH
-	default n
-
-config DRIVER_FLASH_ICH_BASE
-	bool
 	default n
 
 config DRIVER_FLASH
