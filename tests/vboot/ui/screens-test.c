@@ -43,7 +43,7 @@ static void test_language_menu_allocate_once(void **state)
 	const struct ui_menu *menu;
 	const struct ui_menu_item *items;
 
-	will_return(vb2ex_get_locale_count, 7);
+	will_return(ui_get_locale_count, 7);
 
 	menu = get_language_menu(ui);
 	assert_non_null(menu);
@@ -62,7 +62,7 @@ static void test_language_menu_locale_count_0(void **state)
 	struct ui_context *ui = *state;
 	const struct ui_menu *menu;
 
-	will_return(vb2ex_get_locale_count, 0);
+	will_return(ui_get_locale_count, 0);
 	menu = get_language_menu(ui);
 	assert_non_null(menu);
 	assert_int_equal(menu->num_items, 1);

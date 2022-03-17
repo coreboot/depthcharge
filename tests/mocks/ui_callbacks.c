@@ -22,11 +22,6 @@ void vb2ex_msleep(uint32_t msec)
 	mock_time_ms += msec;
 }
 
-uint32_t vb2ex_get_locale_count(void)
-{
-	return mock_type(uint32_t);
-}
-
 const char *vb2ex_get_debug_info(struct vb2_context *ctx)
 {
 	return "mock debug info";

@@ -161,7 +161,7 @@ static void test_developer_ui_dev_disallowed_to_norm_confirm(void **state)
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_maybe(vb2ex_get_locale_count, 10);
+	will_return_maybe(ui_get_locale_count, 10);
 	will_return_maybe(ui_keyboard_read, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_TO_NORM);
 	expect_function_call(vb2api_disable_developer_mode);
@@ -680,7 +680,7 @@ static void test_developer_screen(void **state)
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_maybe(vb2ex_get_locale_count, 10);
+	will_return_maybe(ui_get_locale_count, 10);
 
 	EXPECT_UI_DISPLAY_ANY();
 	/* #0: Language menu */
@@ -716,7 +716,7 @@ static void test_developer_screen_external_default(void **state)
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_EXTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_maybe(vb2ex_get_locale_count, 10);
+	will_return_maybe(ui_get_locale_count, 10);
 
 	/* #3: Boot external */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
@@ -763,7 +763,7 @@ static void test_developer_screen_advanced_options_screen(void **state)
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_maybe(vb2ex_get_locale_count, 10);
+	will_return_maybe(ui_get_locale_count, 10);
 	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
 	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
 

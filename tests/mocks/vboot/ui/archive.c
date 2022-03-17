@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 
+#include <tests/test.h>
 #include <vboot/ui.h>
 #include <vb2_api.h>
 
@@ -27,5 +28,5 @@ vb2_error_t ui_get_bitmap(const char *image_name, const char *locale_code,
 
 uint32_t ui_get_locale_count(void)
 {
-	return 1;
+	return mock_type(uint32_t);
 }

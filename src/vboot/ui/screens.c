@@ -456,7 +456,7 @@ const struct ui_menu *get_language_menu(struct ui_context *ui)
 	if (ui->language_menu.num_items > 0)
 		return &ui->language_menu;
 
-	num_locales = vb2ex_get_locale_count();
+	num_locales = ui_get_locale_count();
 	if (num_locales == 0) {
 		UI_WARN("WARNING: No locales available; assuming 1 locale\n");
 		num_locales = 1;

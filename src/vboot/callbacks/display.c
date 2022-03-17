@@ -27,11 +27,6 @@
 #include "vboot/firmware_id.h"
 #include "vboot/ui.h"
 
-uint32_t vb2ex_get_locale_count(void)
-{
-	return ui_get_locale_count();
-}
-
 #define DEBUG_INFO_EXTRA_LENGTH 256
 
 const char *vb2ex_get_debug_info(struct vb2_context *ctx)

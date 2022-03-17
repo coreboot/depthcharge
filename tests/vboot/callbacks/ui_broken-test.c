@@ -86,7 +86,7 @@ static void test_broken_ui_screen(void **state)
 
 	WILL_CLOSE_LID_IN(7);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_always(vb2ex_get_locale_count, 10);
+	will_return_always(ui_get_locale_count, 10);
 	will_return_maybe(vb2api_allow_recovery, 1);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_BROKEN, MOCK_IGNORE, 1);
 	/* #0: Language menu */

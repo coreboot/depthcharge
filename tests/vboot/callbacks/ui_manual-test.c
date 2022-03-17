@@ -601,7 +601,7 @@ static void test_recovery_select_screen(void **state)
 
 	setup_will_return_common();
 	WILL_CLOSE_LID_IN(20);
-	will_return_maybe(vb2ex_get_locale_count, 10);
+	will_return_maybe(ui_get_locale_count, 10);
 
 	EXPECT_UI_DISPLAY_ANY();
 	/* #0: Language menu */
@@ -655,7 +655,7 @@ static void test_advanced_options_screen_disabled_and_hidden_mask(void **state)
 
 	setup_will_return_common();
 	WILL_CLOSE_LID_IN(10);
-	will_return_maybe(vb2ex_get_locale_count, 10);
+	will_return_maybe(ui_get_locale_count, 10);
 
 	EXPECT_UI_DISPLAY_ANY();
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -683,7 +683,7 @@ static void test_advanced_options_screen(void **state)
 
 	setup_will_return_common();
 	WILL_CLOSE_LID_IN(30);
-	will_return_maybe(vb2ex_get_locale_count, 10);
+	will_return_maybe(ui_get_locale_count, 10);
 	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
 
 	EXPECT_UI_DISPLAY_ANY();
@@ -753,7 +753,7 @@ static void test_language_ui_change_language(void **state)
 
 	setup_will_return_common();
 	WILL_CLOSE_LID_IN(8);
-	will_return_maybe(vb2ex_get_locale_count, 100);
+	will_return_maybe(ui_get_locale_count, 100);
 	WILL_PRESS_KEY(UI_KEY_UP, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* select language */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -779,7 +779,7 @@ static void test_language_ui_locale_count_0(void **state)
 
 	setup_will_return_common();
 	WILL_CLOSE_LID_IN(8);
-	will_return_maybe(vb2ex_get_locale_count, 0);
+	will_return_maybe(ui_get_locale_count, 0);
 	WILL_PRESS_KEY(UI_KEY_UP, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* select language */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* select locale 0 */

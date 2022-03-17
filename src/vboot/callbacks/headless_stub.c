@@ -19,12 +19,6 @@
 #include <libpayload.h>
 #include <vb2_api.h>
 
-uint32_t vb2ex_get_locale_count(void)
-{
-	/* TODO(b/151200757): Support headless devices */
-	return 0;
-}
-
 const char *vb2ex_get_debug_info(struct vb2_context *ctx)
 {
 	/* TODO(b/151200757): Support headless devices */
