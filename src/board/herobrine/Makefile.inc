@@ -12,3 +12,4 @@
 ##
 
 depthcharge-y += board.c
+depthcharge-$(CONFIG_KERNEL_FIT) += cpunode.c
