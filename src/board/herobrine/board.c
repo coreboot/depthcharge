@@ -57,8 +57,16 @@ static int herobrine_tpm_irq_status(void)
 
 static int board_setup(void)
 {
+	/*
+	 * flag_fetch() will die if it encounters a flag that is not registered,
+	 * so we still need to register lid switch even if we don't have a lid.
+	 */
+	if (CONFIG(DRIVER_EC_CROS))
+		flag_replace(FLAG_LIDSW, cros_ec_lid_switch_flag());
+	else
+		flag_replace(FLAG_LIDSW, new_gpio_high());
+
 	/* stub out required GPIOs for vboot */
-	flag_replace(FLAG_LIDSW, new_gpio_high());
 	flag_replace(FLAG_PWRSW, new_gpio_low());
 
 	power_set_ops(&psci_power_ops);
