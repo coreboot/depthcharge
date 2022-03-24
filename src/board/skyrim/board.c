@@ -38,7 +38,7 @@ static int board_setup(void)
 	flag_replace(FLAG_PWRSW, &fake_gpio_0);
 
 	/* PCI Bridge for NVMe */
-	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x02, 0x01));
+	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x02, 0x3));
 	list_insert_after(&nvme->ctrlr.list_node,
 				&fixed_block_dev_controllers);
 
