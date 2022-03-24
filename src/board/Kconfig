@@ -90,4 +90,7 @@ endif
 if BOARD_DIR = "adlrvp"
 source "src/board/adlrvp/Kconfig"
 endif
+if BOARD_DIR = "mtlrvp"
+source "src/board/mtlrvp/Kconfig"
+endif
 endmenu
