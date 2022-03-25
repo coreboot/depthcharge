@@ -13,6 +13,7 @@
 source "src/drivers/bus/Kconfig"
 source "src/drivers/dma/Kconfig"
 source "src/drivers/ec/anx3429/Kconfig"
+source "src/drivers/ec/anx3447/Kconfig"
 source "src/drivers/ec/anx7688/Kconfig"
 source "src/drivers/ec/ccgxxf/Kconfig"
 source "src/drivers/ec/ps8751/Kconfig"

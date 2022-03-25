@@ -1,0 +1,7 @@
+## SPDX-License-Identifier: GPL-2.0
+
+config DRIVER_EC_ANX3447
+	bool "ANX3447 TCPC"
+	default n
+	help
+	  Add support for ANX3447 TCPC
