@@ -51,7 +51,8 @@ enum {
 };
 
 enum {
-	CR50_DID_VID = 0x00281ae0L
+	CR50_DID_VID = 0x00281ae0L,
+	TI50_DID_VID = 0x504a6666L,
 };
 
 /*
@@ -610,16 +611,20 @@ static int tpm_init(I2cTpmChipOps *me)
 		return -1;
 	}
 
-	if (vendor != CR50_DID_VID) {
+	switch (vendor) {
+	case CR50_DID_VID:
+		printf("cr50 TPM 2.0 (i2c 0x%02x id 0x%08x)\n",
+		       tpm->base.addr, vendor);
+		return 0;
+	case TI50_DID_VID:
+		printf("ti50 TPM 2.0 (i2c 0x%02x id 0x%08x)\n",
+		       tpm->base.addr, vendor);
+		return 0;
+	default:
 		printf("Vendor ID 0x%08x not recognized.\n", vendor);
 		release_locality(tpm, 1);
 		return -1;
 	}
-
-	printf("cr50 TPM 2.0 (i2c 0x%02x id 0x%x)\n",
-	       tpm->base.addr, vendor >> 16);
-
-	return 0;
 }
 
 static int tpm_cleanup(I2cTpmChipOps *me)
