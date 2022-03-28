@@ -390,6 +390,10 @@ static int tpm2_claim_locality(void)
 	uint8_t access;
 
 	access = tpm2_read_access_reg();
+	/* If the requested locality is already active and TPM access is valid,
+	   return success. */
+	if (access & (TpmAccessValid | TpmAccessActiveLocality))
+		return 0;
 	/*
 	 * If active locality is set (maybe reset line is not connected?),
 	 * release the locality and try again.
