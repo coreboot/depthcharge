@@ -18,6 +18,7 @@ depthcharge-$(CONFIG_DRIVER_BUS_I2S_MT8173) += mtk_v1.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2S_MT8183) += mtk_v1.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2S_MT8186) += mtk_v1.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2S_MT8192) += mtk_v1.c
+depthcharge-$(CONFIG_DRIVER_BUS_I2S_MT8195) += mtk_v2.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2S_TEGRA) += tegra.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2S_ROCKCHIP) += rockchip.c
 depthcharge-$(CONFIG_DRIVER_BUS_I2S_SC7180) += sc7180.c
