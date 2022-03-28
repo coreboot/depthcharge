@@ -130,7 +130,7 @@ static int tpm_irq_status(void)
  * TPM may trigger a irq after finish processing previous transfer.
  * Waiting for this irq to sync tpm status.
  *
- * Returns 1 on success, 0 on failure (timeout).
+ * Returns 0 on success, a negative value on failure (timeout).
  */
 static int tpm_sync(void)
 {
@@ -140,10 +140,10 @@ static int tpm_sync(void)
 	while (!tpm_irq_status()) {
 		if (stopwatch_expired(&sw)) {
 			printf("Timeout wait for tpm irq!\n");
-			return 0;
+			return -1;
 		}
 	}
-	return 1;
+	return 0;
 }
 
 enum {
@@ -155,7 +155,8 @@ enum {
  * Each TPM2 SPI transaction starts the same: CS is asserted, the 4 byte
  * header is sent to the TPM, the controller waits til TPM is ready to continue.
  *
- * Returns 1 on success, 0 on failure (TPM2 flow control timeout).
+ * Returns 0 on success, a negative value on failure (TPM2 flow control
+ * timeout).
  */
 static int start_transaction(int read_write, size_t bytes, unsigned addr)
 {
@@ -222,10 +223,10 @@ static int start_transaction(int read_write, size_t bytes, unsigned addr)
 		tpm_if.xfer(tpm_if.peripheral, NULL, 0, &byte, 1);
 		if (stopwatch_expired(&sw)) {
 			printf("TPM flow control failure\n");
-			return 0;
+			return -1;
 		}
 	} while (!(byte & 1));
-	return 1;
+	return 0;
 }
 
 /*
@@ -306,16 +307,15 @@ static int read_bytes(void *buffer, size_t bytes)
  * To write a register, start transaction, transfer data to the TPM, deassert
  * CS when done.
  *
- * Returns one to indicate success, zero (not yet implemented) to indicate
- * failure.
+ * Returns 0 to indicate success, -1 (not yet implemented) to indicate failure.
  */
 static int tpm2_write_reg(unsigned reg_number, const void *buffer, size_t bytes)
 {
-	int result = 1;
+	int result = 0;
 	trace_dump("W", reg_number, bytes, buffer, 0);
-	if (!start_transaction(SPI_WRITE, bytes, reg_number)) {
+	if (start_transaction(SPI_WRITE, bytes, reg_number)) {
 		printf("failed to write tpm reg %#x\n", reg_number);
-		result = 0;
+		result = -1;
 	} else {
 		write_bytes(buffer, bytes);
 	}
@@ -327,17 +327,16 @@ static int tpm2_write_reg(unsigned reg_number, const void *buffer, size_t bytes)
  * To read a register, start transaction, transfer data from the TPM, deassert
  * CS when done.
  *
- * Returns one to indicate success, zero (not yet implemented) to indicate
- * failure.
+ * Returns 0 to indicate success, -1 (not yet implemented) to indicate failure.
  */
 static int tpm2_read_reg(unsigned reg_number, void *buffer, size_t bytes)
 {
-	int result = 1;
-	if (!start_transaction(SPI_READ, bytes, reg_number) ||
+	int result = 0;
+	if (start_transaction(SPI_READ, bytes, reg_number) ||
 	    read_bytes(buffer, bytes)) {
 		printf("failed to read tpm reg %#x\n", reg_number);
 		memset(buffer, 0, bytes);
-		result = 0;
+		result = -1;
 	}
 	tpm_if.cs_deassert(tpm_if.peripheral);
 	trace_dump("R", reg_number, bytes, buffer, 0);
@@ -402,18 +401,17 @@ static int tpm2_claim_locality(void)
 
 	if (access != TpmAccessValid) {
 		printf("Invalid reset status: %#x\n", access);
-		return 0;
+		return -1;
 	}
 
 	tpm2_write_access_reg(TpmAccessRequestUse);
 	access = tpm2_read_access_reg();
 	if (access != (TpmAccessValid | TpmAccessActiveLocality)) {
 		printf("Failed to claim locality 0, status: %#x\n", access);
-		return 0;
+		return -1;
 	}
 
-	return 1;
-
+	return 0;
 }
 
 static int tpm2_init(SpiOps *spi_ops)
@@ -421,11 +419,11 @@ static int tpm2_init(SpiOps *spi_ops)
 	uint32_t did_vid, status;
 	uint8_t cmd;
 
-	if (!tpm2_read_reg(TPM_DID_VID_REG, &did_vid, sizeof(did_vid)))
+	if (tpm2_read_reg(TPM_DID_VID_REG, &did_vid, sizeof(did_vid)))
 		return -1;
 
 	/* Claim locality 0. */
-	if (!tpm2_claim_locality())
+	if (tpm2_claim_locality())
 		return -1;
 
 	read_tpm_sts(&status);
@@ -454,7 +452,7 @@ static int tpm2_init(SpiOps *spi_ops)
  * This is in seconds, certain TPM commands, like key generation, can take
  * long time to complete.
  *
- * Returns one to indicate success, zero (not yet implemented) to indicate
+ * Returns true to indicate success, false (not yet implemented) to indicate
  * failure.
  */
 #define MAX_STATUS_TIMEOUT 120
@@ -471,7 +469,7 @@ static bool wait_for_status(uint32_t status_mask, uint32_t status_expected)
 			       status_expected);
 			return false;
 		}
-		if (!read_tpm_sts(&status)) {
+		if (read_tpm_sts(&status)) {
 			printf("Failed to read expected status %#x\n",
 			       status_expected);
 			return false;
@@ -571,7 +569,7 @@ static size_t tpm2_process_command(const void *tpm2_command,
 	}
 
 	/* Let the TPM know that the command is coming. */
-	if (!write_tpm_sts(TpmStsCommandReady)) {
+	if (write_tpm_sts(TpmStsCommandReady)) {
 		printf("Failed to notify tpm of incoming command\n");
 		return 0;
 	}
@@ -591,7 +589,7 @@ static size_t tpm2_process_command(const void *tpm2_command,
 	fifo_transfer(command_size, fifo_buffer, fifo_transmit);
 
 	/* Now tell the TPM it can start processing the command. */
-	if (!write_tpm_sts(TpmStsGo)) {
+	if (write_tpm_sts(TpmStsGo)) {
 		printf("Failed to notify tpm to process command\n");
 		return 0;
 	}
