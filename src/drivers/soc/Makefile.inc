@@ -31,3 +31,5 @@ depthcharge-$(CONFIG_DRIVER_SOC_TIGERLAKE) += intel_common.c
 depthcharge-$(CONFIG_DRIVER_SOC_INTEL_PMC) += intel_pmc.c
 depthcharge-$(CONFIG_DRIVER_SOC_ALDERLAKE) += alderlake.c
 depthcharge-$(CONFIG_DRIVER_SOC_ALDERLAKE) += intel_common.c
+depthcharge-$(CONFIG_DRIVER_SOC_METEORLAKE) += meteorlake.c
+depthcharge-$(CONFIG_DRIVER_SOC_METEORLAKE) += intel_common.c

@@ -105,6 +105,10 @@ config DRIVER_SOC_ALDERLAKE_N
 	default n
 	depends on DRIVER_SOC_ALDERLAKE
 
+config DRIVER_SOC_METEORLAKE
+	bool "Meteorlake SoC driver"
+	default n
+
 config DRIVER_SOC_CEZANNE
 	bool "Cezanne SoC driver"
 	default n

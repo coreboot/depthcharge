@@ -31,5 +31,6 @@ extern PowerOps tigerlake_power_ops;
 extern PowerOps icelake_power_ops;
 extern PowerOps apollolake_power_ops;
 extern PowerOps jasperlake_power_ops;
+extern PowerOps meteorlake_power_ops;
 
 #endif /* __DRIVERS_POWER_PCH_H__ */
