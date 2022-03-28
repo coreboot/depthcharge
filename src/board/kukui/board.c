@@ -20,7 +20,7 @@
 
 #include "base/init_funcs.h"
 #include "drivers/bus/i2c/mtk_i2c.h"
-#include "drivers/bus/i2s/mtk.h"
+#include "drivers/bus/i2s/mtk_v1.h"
 #include "drivers/bus/spi/mtk.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/ec.h"

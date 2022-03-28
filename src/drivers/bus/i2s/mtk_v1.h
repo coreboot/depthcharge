@@ -12,8 +12,8 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __DRIVERS_BUS_I2S_MTK_H__
-#define __DRIVERS_BUS_I2S_MTK_H__
+#ifndef __DRIVERS_BUS_I2S_MTK_V1_H__
+#define __DRIVERS_BUS_I2S_MTK_V1_H__
 
 #include "drivers/bus/i2s/i2s.h"
 #include "drivers/sound/route.h"
@@ -88,4 +88,4 @@ typedef struct {
 MtkI2s *new_mtk_i2s(uintptr_t base, uint32_t channels, uint32_t rate,
 		    uint32_t i2s_num);
 
-#endif /* __DRIVERS_BUS_I2S_MTK_H__ */
+#endif /* __DRIVERS_BUS_I2S_MTK_V1_H__ */
