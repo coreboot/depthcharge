@@ -11,6 +11,7 @@
 #include "base/init_funcs.h"
 #include "base/late_init_funcs.h"
 #include "drivers/bus/i2c/mtk_i2c.h"
+#include "drivers/bus/i2s/mtk_v2.h"
 #include "drivers/bus/spi/mtk.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/ec.h"
@@ -20,6 +21,8 @@
 #include "drivers/gpio/mtk_gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
+#include "drivers/sound/i2s.h"
+#include "drivers/sound/max98390.h"
 #include "drivers/sound/rt1011.h"
 #include "drivers/sound/rt1019b.h"
 #include "drivers/storage/mtk_mmc.h"
@@ -34,6 +37,50 @@
 #define GPIO_AP_EDP_BKLTEN	PAD_DGI_D5
 #define GPIO_BL_PWM_1V8		PAD_DISP_PWM0
 #define GPIO_AP_SPI_EC_CS_L	PAD_SPIM0_CSB
+
+static void setup_rt1011(GpioOps *spk_en, GpioOps *spk_rst)
+{
+	MTKI2c *i2c2 = new_mtk_i2c(0x11E02000, 0x10220380, I2C_APDMA_ASYNC);
+	rt1011Codec *rt1011 = new_rt1011_codec(&i2c2->ops,
+					       AUD_RT1011_DEVICE_ADDR);
+
+	SoundRoute *sound_route = new_sound_route(&rt1011->ops);
+
+	gpio_set(spk_en, 1);
+	gpio_set(spk_rst, 1);
+
+	list_insert_after(&rt1011->component.list_node,
+			  &sound_route->components);
+	sound_set_ops(&sound_route->ops);
+}
+
+static void setup_max98390(GpioOps *spk_en)
+{
+	/*
+	 * Currently MAX98390 only supports 24-bit word length and
+	 * 16-bit bit length. Due to hardware limitation of MT8195 I2S,
+	 * 32KHz should be used.
+	 */
+	MtkI2s *i2s2 = new_mtk_i2s(0x10890000, 2, 32 * KHz,
+				   24, 16, AFE_I2S_I1O2);
+	I2sSource *i2s_source = new_i2s_source(&i2s2->ops, 32 * KHz, 2, 8000);
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+	MTKI2c *i2c2 = new_mtk_i2c(0x11E02000, 0x10220380, I2C_APDMA_ASYNC);
+	Max98390Codec *speaker_r = new_max98390_codec(&i2c2->ops, 0x38);
+	Max98390Codec *speaker_l = new_max98390_codec(&i2c2->ops, 0x39);
+
+	gpio_set(spk_en, 1);
+
+	/* Delay 1ms for I2C ready */
+	mdelay(1);
+
+	list_insert_after(&speaker_l->component.list_node,
+			  &sound_route->components);
+	list_insert_after(&speaker_r->component.list_node,
+			  &sound_route->components);
+
+	sound_set_ops(&sound_route->ops);
+}
 
 static void sound_setup(void)
 {
@@ -53,24 +100,11 @@ static void sound_setup(void)
 
 	if (beep_en) {
 		rt1019bCodec *rt1019 = new_rt1019b_codec(speaker_en, beep_en);
-
 		sound_set_ops(&rt1019->ops);
-	}
-
-	if (rt1011_rst) {
-		MTKI2c *i2c2 = new_mtk_i2c(0x11E02000, 0x10220380,
-					   I2C_APDMA_ASYNC);
-		rt1011Codec *rt1011 = new_rt1011_codec(&i2c2->ops,
-						       AUD_RT1011_DEVICE_ADDR);
-
-		SoundRoute *sound_route = new_sound_route(&rt1011->ops);
-
-		gpio_set(speaker_en, 1);
-		gpio_set(rt1011_rst, 1);
-
-		list_insert_after(&rt1011->component.list_node,
-				  &sound_route->components);
-		sound_set_ops(&sound_route->ops);
+	} else if (rt1011_rst) {
+		setup_rt1011(speaker_en, rt1011_rst);
+	} else {
+		setup_max98390(speaker_en);
 	}
 }
 
