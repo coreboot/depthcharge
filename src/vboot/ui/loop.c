@@ -147,7 +147,7 @@ static vb2_error_t ui_loop_impl(
 		    root_screen_id);
 
 	memset(&prev_state, 0, sizeof(prev_state));
-	need_redraw = 0;
+	need_redraw = 1;
 
 	while (1) {
 		start_time_ms = vb2ex_mtime();
@@ -165,7 +165,7 @@ static vb2_error_t ui_loop_impl(
 					? menu->items[ui.state->selected_item]
 						  .name
 					: "null");
-			rv = ui_display(&ui, need_redraw ? &prev_state : NULL);
+			rv = ui_display(&ui, need_redraw ? NULL : &prev_state);
 			/* If the drawing failed, set the flag so that NULL will
 			   be passed to ui_display() in the next iteration. */
 			need_redraw = !!rv;
