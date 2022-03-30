@@ -300,6 +300,10 @@ trogdor:
   screen:   [1920, 1080]
   dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
+herobrine:
+  # 1920x1080, boots recovery image on any SD card or USB ports.
+  screen:   [1920, 1080]
+
 senor:
   # 1920x1080, boots recovery image on any SD card or USB ports.
   screen:   [1920, 1080]
