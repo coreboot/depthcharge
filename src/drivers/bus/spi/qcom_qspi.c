@@ -36,8 +36,8 @@ typedef enum {
 } QspiMode;
 
 enum {
-	CS_DEASSERT,
-	CS_ASSERT
+	CS_ASSERT = 0,
+	CS_DEASSERT = 1
 };
 
 enum {
@@ -203,13 +203,13 @@ static void queue_data(QcomQspi *qspi_bus, uint8_t *data, uint32_t data_bytes,
 int spi_start(SpiOps *me)
 {
 	QcomQspi *qspi = container_of(me, QcomQspi, ops);
-	return qspi->gpio_ops->set(qspi->gpio_ops, CS_DEASSERT);
+	return qspi->gpio_ops->set(qspi->gpio_ops, CS_ASSERT);
 }
 
 int spi_stop(SpiOps *me)
 {
 	QcomQspi *qspi = container_of(me, QcomQspi, ops);
-	return qspi->gpio_ops->set(qspi->gpio_ops, CS_ASSERT);
+	return qspi->gpio_ops->set(qspi->gpio_ops, CS_DEASSERT);
 }
 
 int spi_xfer(SpiOps *me, void *in, const void *out, uint32_t size)
