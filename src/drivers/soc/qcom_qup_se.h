@@ -23,7 +23,9 @@
 #include <libpayload.h>
 #include <stdbool.h>
 
+#ifndef GENMASK
 #define GENMASK(h, l)	(BIT(h + 1) - BIT(l))
+#endif
 
 /* GENI_OUTPUT_CTRL fields */
 #define DEFAULT_IO_OUTPUT_CTRL_MSK	GENMASK(6, 0)
