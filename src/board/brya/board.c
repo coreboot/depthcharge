@@ -26,6 +26,7 @@
 #include <libpayload.h>
 #include <sysinfo.h>
 
+#define EC_PCH_INT_ODL	GPP_F17
 #define TPM_I2C3	PCI_DEV(0, 0x15, 3)
 #define TPM_I2C_ADDR	0x50
 #define I2C_FS_HZ	400000
@@ -57,11 +58,18 @@ static int cr50_irq_status(void)
 	return alderlake_get_gpe(GPE0_DW0_13); /* GPP_A13 */
 }
 
+static GpioOps *mkbp_int_ops(void)
+{
+	GpioCfg *mkbp_int_gpio = new_alderlake_gpio_input(EC_PCH_INT_ODL);
+	/* Active-low, has to be inverted */
+	return new_gpio_not(&mkbp_int_gpio->ops);
+}
+
 static void ec_setup(void)
 {
 	CrosEcLpcBus *cros_ec_lpc_bus =
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
-	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, mkbp_int_ops());
 	register_vboot_ec(&cros_ec->vboot);
 }
 
