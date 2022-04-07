@@ -7,6 +7,7 @@
  */
 #include <pci.h>
 #include <pci/pci.h>
+#include <stdio.h>
 
 #include "base/init_funcs.h"
 #include "base/list.h"
@@ -17,6 +18,7 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
 #include "drivers/storage/blockdev.h"
+#include "drivers/storage/sdhci.h"
 #include "drivers/storage/nvme.h"
 #include "drivers/storage/ufs.h"
 #include "drivers/storage/ufs_intel.h"
@@ -33,6 +35,9 @@
 
 #include <libpayload.h>
 #include <sysinfo.h>
+
+#define EMMC_CLOCK_MIN		400000
+#define EMMC_CLOCK_MAX		200000000
 
 #define AUD_VOLUME	4000
 #define AUD_BITDEPTH	16
@@ -120,7 +125,48 @@ static int board_setup(void)
 
 	/* PCH Power */
 	power_set_ops(&alderlake_power_ops);
+#if CONFIG_BOARD_ADLRVP_N
+	if (CONFIG(DRIVER_STORAGE_SDHCI_PCI)) {
+		/* eMMC */
+		SdhciHost *emmc =
+		new_pci_sdhci_host(PCH_DEV_EMMC,
+					SDHCI_PLATFORM_SUPPORTS_HS400ES,
+					EMMC_CLOCK_MIN, EMMC_CLOCK_MAX);
+		list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+					&fixed_block_dev_controllers);
 
+		/* SD Card */
+		const pcidev_t dev = PCH_DEV_PCIE6;
+		const SocPcieRpGroup *group;
+		size_t group_count;
+		pcidev_t remapped;
+
+		group = soc_get_rp_group(dev, &group_count);
+		if (group)
+			remapped = intel_remap_pcie_rp(dev, group, group_count);
+		else
+			remapped = dev;
+
+		if (remapped == (pcidev_t)-1) {
+			printf("%s: Failed to remap %2X:%X\n",
+			       __func__, PCI_SLOT(dev), PCI_FUNC(dev));
+		}
+		else {
+			SdhciHost *sd = probe_pci_sdhci_host(remapped, SDHCI_PLATFORM_REMOVABLE);
+			if (sd) {
+				sd->name = "sd";
+				list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
+						  &removable_block_dev_controllers);
+			}
+		}
+	}
+
+	/* UFS */
+	if (CONFIG(DRIVER_STORAGE_INTEL_UFS)) {
+		IntelUfsCtlr *intel_ufs = new_intel_ufs_ctlr(PCH_DEV_UFS1);
+		list_insert_after(&intel_ufs->ufs.bctlr.list_node, &fixed_block_dev_controllers);
+	}
+#else
 	/* SATA SSD */
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCH_DEV_SATA);
 	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
@@ -144,17 +190,11 @@ static int board_setup(void)
 	secondary_bus = pci_read_config8(PCH_DEV_PCIE5, REG_SECONDARY_BUS);
 	NvmeCtrlr *nvme_4 = new_nvme_ctrlr(PCI_DEV(secondary_bus, 0, 0));
 	list_insert_after(&nvme_4->ctrlr.list_node, &fixed_block_dev_controllers);
-
+#endif
 	/* PCH NVME SSD */
 	secondary_bus = pci_read_config8(PCH_DEV_PCIE8, REG_SECONDARY_BUS);
 	NvmeCtrlr *nvme_5 = new_nvme_ctrlr(PCI_DEV(secondary_bus, 0, 0));
 	list_insert_after(&nvme_5->ctrlr.list_node, &fixed_block_dev_controllers);
-
-	/* UFS */
-	if (CONFIG(DRIVER_STORAGE_INTEL_UFS)) {
-		IntelUfsCtlr *intel_ufs = new_intel_ufs_ctlr(PCH_DEV_UFS1);
-		list_insert_after(&intel_ufs->ufs.bctlr.list_node, &fixed_block_dev_controllers);
-	}
 
 #if CONFIG_DRIVER_SOUND_MAX98373
 	adlrvp_setup_max98373_i2s();
