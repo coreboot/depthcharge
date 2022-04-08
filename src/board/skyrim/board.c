@@ -7,6 +7,7 @@
 #include "base/list.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
+#include "drivers/ec/cros/lpc.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/kern.h"
 #include "drivers/gpio/sysinfo.h"
@@ -49,6 +50,11 @@ static struct GpioOps fake_gpio_1 = {
 
 static int board_setup(void)
 {
+	CrosEcLpcBus *cros_ec_lpc_bus =
+		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);
+	register_vboot_ec(&cros_ec->vboot);
+
 	sysinfo_install_flags(NULL);
 	flag_replace(FLAG_LIDSW, &fake_gpio_1);
 	flag_replace(FLAG_PWRSW, &fake_gpio_0);
