@@ -30,11 +30,6 @@ int ui_is_lid_open(void)
 	return mock_close_lid_countdown != 0;
 }
 
-int ui_is_power_pressed(void)
-{
-	return 0;
-}
-
 /* Tests */
 struct ui_context test_ui_ctx;
 

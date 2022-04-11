@@ -27,11 +27,6 @@ const char *vb2ex_get_debug_info(struct vb2_context *ctx)
 	return "mock debug info";
 }
 
-int vb2ex_physical_presence_pressed(void)
-{
-	return mock();
-}
-
 /*
  * This mock function uses firmware_log_snapshots_count to decide what will be
  * written into the buffer and returned. Each time the reset parameter is

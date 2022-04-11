@@ -8,15 +8,11 @@
 #include <mocks/vb2api.h>
 #include <vboot_api.h>
 #include <vb2_api.h>
-#include <vboot/util/commonparams.h>
 #include <vboot/callbacks/ui.c>
+#include <vboot/ui.h>
+#include <vboot/util/commonparams.h>
 
 /* Mock functions */
-int ui_is_power_pressed(void)
-{
-	return 0;
-}
-
 int ui_is_lid_open(void)
 {
 	return mock();
@@ -321,7 +317,7 @@ static void test_manual_ui_cancel_to_dev(void **state)
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 1);
-	will_return_maybe(vb2ex_physical_presence_pressed, 0);
+	will_return_maybe(ui_is_physical_presence_pressed, 0);
 	will_return_maybe(ui_keyboard_read, 0);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_HAVE_NO_EXTERNAL();
@@ -343,7 +339,7 @@ static void test_manual_ui_cancel_to_dev_ppkeyboard(void **state)
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 1);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 1);
-	will_return_maybe(vb2ex_physical_presence_pressed, 0);
+	will_return_maybe(ui_is_physical_presence_pressed, 0);
 	will_return_maybe(ui_keyboard_read, 0);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_HAVE_NO_EXTERNAL();
@@ -370,7 +366,7 @@ static void test_manual_ui_confirm_to_dev(void **state)
 	WILL_PRESS_PHYSICAL_PRESENCE(1);
 	WILL_PRESS_PHYSICAL_PRESENCE(0);
 	will_return_maybe(ui_keyboard_read, 0);
-	will_return_maybe(vb2ex_physical_presence_pressed, 0);
+	will_return_maybe(ui_is_physical_presence_pressed, 0);
 	expect_function_call(vb2api_enable_developer_mode);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_HAVE_NO_EXTERNAL();
@@ -394,7 +390,7 @@ static void test_manual_ui_confirm_to_dev_ppkeyboard(void **state)
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 1);
 	will_return_maybe(ui_keyboard_read, 0);
-	will_return_maybe(vb2ex_physical_presence_pressed, 0);
+	will_return_maybe(ui_is_physical_presence_pressed, 0);
 	expect_function_call(vb2api_enable_developer_mode);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_HAVE_NO_EXTERNAL();
@@ -416,7 +412,7 @@ static void test_manual_ui_confirm_by_untrusted_fails_ppkeyboard(void **state)
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	will_return_maybe(ui_keyboard_read, 0);
-	will_return_maybe(vb2ex_physical_presence_pressed, 0);
+	will_return_maybe(ui_is_physical_presence_pressed, 0);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	EXPECT_BEEP(250, 400, mock_time_ms + 3 * UI_KEY_DELAY_MS);
 	WILL_HAVE_NO_EXTERNAL();
@@ -484,7 +480,7 @@ static void test_manual_ui_pp_button_stuck(void **state)
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
 	WILL_PRESS_PHYSICAL_PRESENCE(1); /* Hold since boot */
 	will_return_maybe(ui_keyboard_read, 0);
-	will_return_maybe(vb2ex_physical_presence_pressed, 0);
+	will_return_maybe(ui_is_physical_presence_pressed, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT);
 	WILL_HAVE_NO_EXTERNAL();
 
@@ -510,7 +506,7 @@ static void test_manual_ui_pp_button_stuck_press(void **state)
 	WILL_PRESS_PHYSICAL_PRESENCE(1); /* Press again */
 	WILL_PRESS_PHYSICAL_PRESENCE(0);
 	will_return_maybe(ui_keyboard_read, 0);
-	will_return_maybe(vb2ex_physical_presence_pressed, 0);
+	will_return_maybe(ui_is_physical_presence_pressed, 0);
 	expect_function_call(vb2api_enable_developer_mode);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_TO_DEV);
@@ -547,7 +543,7 @@ static void test_manual_ui_pp_button_cancel_enter_again(void **state)
 	WILL_PRESS_PHYSICAL_PRESENCE(1);
 	WILL_PRESS_PHYSICAL_PRESENCE(0);
 	will_return_maybe(ui_keyboard_read, 0);
-	will_return_maybe(vb2ex_physical_presence_pressed, 0);
+	will_return_maybe(ui_is_physical_presence_pressed, 0);
 	expect_function_call(vb2api_enable_developer_mode);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_TO_DEV);
@@ -740,7 +736,7 @@ static void test_advanced_options_screen(void **state)
 
 	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
 	will_return_maybe(ui_keyboard_read, 0);
-	will_return_maybe(vb2ex_physical_presence_pressed, 0);
+	will_return_maybe(ui_is_physical_presence_pressed, 0);
 	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),

@@ -21,7 +21,6 @@ endif
 depthcharge-y += altfw.c
 depthcharge-y += memory.c
 depthcharge-y += misc.c
-depthcharge-y += switches.c
 depthcharge-y += time.c
 depthcharge-y += tpm.c
 depthcharge-y += ui.c

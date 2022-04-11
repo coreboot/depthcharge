@@ -10,6 +10,10 @@
 /* Fixed value for ignoring some checks. */
 #define MOCK_IGNORE 0xffffu
 
+/* Add return value to ui_is_physical_presence_pressed. */
+#define WILL_PRESS_PHYSICAL_PRESENCE(pressed) \
+	will_return(ui_is_physical_presence_pressed, (pressed))
+
 #define _ASSERT_SCREEN_STATE(_state, _screen, _selected_item, \
 			    _hidden_item_mask, ...) \
 	do { \

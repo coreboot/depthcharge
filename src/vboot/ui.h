@@ -1105,9 +1105,17 @@ vb2_error_t ui_display(const struct ui_context *ui,
  */
 uint32_t ui_keyboard_read(uint32_t *flags_ptr);
 
+/* Check whether the lid is open. 1 will be returned on error. */
 int ui_is_lid_open(void);
 
+/* Check whether the power button is pressed. 0 will be returned on error. */
 int ui_is_power_pressed(void);
+
+/*
+ * Check whether the physical presence button is pressed.
+ * 0 will be returned on error.
+ */
+int ui_is_physical_presence_pressed(void);
 
 /******************************************************************************/
 /* loop.c */

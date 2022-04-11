@@ -107,20 +107,29 @@ int ui_is_lid_open(void)
 {
 	int lidsw = flag_fetch(FLAG_LIDSW);
 	if (lidsw < 0) {
-		// TODO(edisonhello): handle the error.
-		UI_ERROR("failed to fetch lid switch flag.\n");
-		halt();
+		UI_WARN("Failed to fetch lid switch flag; assuming 1\n");
+		return 1;
 	}
-	return lidsw;
+	return !!lidsw;
 }
 
 int ui_is_power_pressed(void)
 {
 	int pwrsw = flag_fetch(FLAG_PWRSW);
 	if (pwrsw < 0) {
-		// TODO(edisonhello): handle the error.
-		UI_ERROR("failed to fetch power switch flag.\n");
-		halt();
+		UI_WARN("Failed to fetch power switch flag; assuming 0\n");
+		return 0;
 	}
-	return pwrsw;
+	return !!pwrsw;
+}
+
+int ui_is_physical_presence_pressed(void)
+{
+	int ppsw = flag_fetch(FLAG_PHYS_PRESENCE);
+	if (ppsw < 0) {
+		UI_WARN("Failed to fetch physical presence switch flag; "
+			"assuming 0\n");
+		return 0;
+	}
+	return !!ppsw;
 }

@@ -714,7 +714,7 @@ static vb2_error_t recovery_to_dev_init(struct ui_context *ui)
 	}
 
 	if (!CONFIG(PHYSICAL_PRESENCE_KEYBOARD) &&
-	    vb2ex_physical_presence_pressed()) {
+	    ui_is_physical_presence_pressed()) {
 		UI_INFO("Physical presence button stuck?\n");
 		return ui_screen_back(ui);
 	}
@@ -790,7 +790,7 @@ static vb2_error_t recovery_to_dev_action(struct ui_context *ui)
 	if (CONFIG(PHYSICAL_PRESENCE_KEYBOARD))
 		return VB2_SUCCESS;
 
-	pressed = vb2ex_physical_presence_pressed();
+	pressed = ui_is_physical_presence_pressed();
 	if (pressed) {
 		UI_INFO("Physical presence button pressed, "
 			"awaiting release\n");

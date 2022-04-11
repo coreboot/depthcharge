@@ -8,11 +8,6 @@
 #include <vboot/util/commonparams.h>
 
 /* Mock functions */
-int ui_is_power_pressed(void)
-{
-	return 0;
-}
-
 int ui_is_lid_open(void)
 {
 	return mock();

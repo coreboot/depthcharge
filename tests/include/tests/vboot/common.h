@@ -11,10 +11,6 @@
 
 #define ASSERT_VB2_SUCCESS(expr) assert_int_equal((expr), VB2_SUCCESS)
 
-/* Add return value to vb2ex_physical_presence_pressed. */
-#define WILL_PRESS_PHYSICAL_PRESENCE(pressed) \
-	will_return(vb2ex_physical_presence_pressed, (pressed))
-
 #define _EXPECT_BEEP(_msec, _frequency, _expected_time, ...) \
 	do { \
 		will_return(vb2ex_beep, (_expected_time)); \
