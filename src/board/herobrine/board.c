@@ -63,6 +63,21 @@
 
 #define SDC2_HC_BASE 0x08804000
 
+#define SLAVE_ID 0x02
+#define GPIO6_DIG_OUT_SOURCE_CTL ((SLAVE_ID << 16) | 0x8D44)
+#define GPIO6_MODE_CTL ((SLAVE_ID << 16) | 0x8D40)
+#define GPIO6_EN_CTL ((SLAVE_ID << 16) | 0x8D46)
+#define GPIO7_DIG_OUT_SOURCE_CTL ((SLAVE_ID << 16) | 0x8E44)
+#define GPIO7_MODE_CTL ((SLAVE_ID << 16) | 0x8E40)
+#define GPIO7_EN_CTL ((SLAVE_ID << 16) | 0x8E46)
+#define GPIO8_DIG_OUT_SOURCE_CTL ((SLAVE_ID << 16) | 0x8F44)
+#define GPIO8_MODE_CTL ((SLAVE_ID << 16) | 0x8F40)
+#define GPIO8_EN_CTL ((SLAVE_ID << 16) | 0x8F46)
+
+#define GPIO_PERPH_EN 0x80
+#define GPIO_OUTPUT_INVERT 0x80
+#define GPIO_MODE 0x1
+
 static const VpdDeviceTreeMap vpd_dt_map[] = {
 	{ "bluetooth_mac0", "bluetooth0/local-bd-address" },
 	{ "wifi_mac0", "wifi0/local-mac-address" },
@@ -94,6 +109,24 @@ static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 static DeviceTreeFixup ipq_enet_fixup = {
 	.fixup = fix_device_tree
 };
+
+static void enable_display_gpios(QcomSpmi *pmic_spmi)
+{
+	/* Enable backlight power GPIO6 */
+	pmic_spmi->write8(pmic_spmi, GPIO6_DIG_OUT_SOURCE_CTL, GPIO_OUTPUT_INVERT);
+	pmic_spmi->write8(pmic_spmi, GPIO6_MODE_CTL, GPIO_MODE);
+	pmic_spmi->write8(pmic_spmi, GPIO6_EN_CTL, GPIO_PERPH_EN);
+
+	/* Enable backlight GPIO7 */
+	pmic_spmi->write8(pmic_spmi, GPIO7_DIG_OUT_SOURCE_CTL, GPIO_OUTPUT_INVERT);
+	pmic_spmi->write8(pmic_spmi, GPIO7_MODE_CTL, GPIO_MODE);
+	pmic_spmi->write8(pmic_spmi, GPIO7_EN_CTL, GPIO_PERPH_EN);
+
+	/* Enable PWM control GPIO8  */
+	pmic_spmi->write8(pmic_spmi, GPIO8_DIG_OUT_SOURCE_CTL, GPIO_OUTPUT_INVERT);
+	pmic_spmi->write8(pmic_spmi, GPIO8_MODE_CTL, GPIO_MODE);
+	pmic_spmi->write8(pmic_spmi, GPIO8_EN_CTL, GPIO_PERPH_EN);
+}
 
 static int init_display_ops(void)
 {
@@ -212,6 +245,7 @@ static int board_setup(void)
 	if (CONFIG(DRIVER_VIDEO_SC7280))
 	{
 		printf("initialize display ops!\n");
+		enable_display_gpios(pmic_spmi);
 		if (init_display_ops() != 0)
 			printf("Failed to initialize display ops!\n");
 	}
