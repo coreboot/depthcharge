@@ -15,3 +15,8 @@ SoundRouteComponent *variant_get_audio_codec(I2cOps *i2c, uint8_t chip,
 
 	return &rt5682->component;
 }
+
+unsigned int variant_get_en_spkr_gpio(void)
+{
+	return EN_SPKR_GB;
+}

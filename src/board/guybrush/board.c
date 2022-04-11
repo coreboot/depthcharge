@@ -42,12 +42,6 @@
 #define AUDIO_I2C_SPEED		400000
 #define I2C_DESIGNWARE_CLK_MHZ	150
 
-/* I2S Beep GPIOs */
-#define EN_SPKR			31
-
-/* FW_CONFIG for beep banging */
-#define FW_CONFIG_BIT_BANGING (1 << 9)
-
 static unsigned int cr50_int_gpio = CR50_INT_85;
 
 __weak const struct storage_config *variant_get_storage_configs(size_t *count)
@@ -78,6 +72,11 @@ __weak SoundRouteComponent *variant_get_audio_codec(I2cOps *i2c, uint8_t chip,
 __weak enum audio_amp variant_get_audio_amp(void)
 {
 	return AUDIO_AMP_RT1019;
+}
+
+__weak unsigned int variant_get_en_spkr_gpio(void)
+{
+	return EN_SPKR;
 }
 
 static int cr50_irq_status(void)
@@ -121,7 +120,8 @@ static void setup_amd_acp_i2s(pcidev_t acp_pci_dev)
 	SoundRouteComponent *codec =
 		variant_get_audio_codec(&i2c->ops, 0x1a, MCLK, LRCLK);
 
-	KernGpio *en_spkr_gpio = new_kern_fch_gpio_output(EN_SPKR, 0);
+	KernGpio *en_spkr_gpio =
+		new_kern_fch_gpio_output(variant_get_en_spkr_gpio(), 0);
 
 	/* Note: component order matters here. The first thing inserted is the
 	 * last thing enabled. */

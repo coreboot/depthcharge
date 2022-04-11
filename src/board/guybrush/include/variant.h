@@ -14,6 +14,10 @@
 #define CR50_INT_85		85
 #define CR50_INT_3		3
 
+/* EN_SPKR GPIOs */
+#define EN_SPKR			70
+#define EN_SPKR_GB		31
+
 enum storage_media {
 	STORAGE_NVME,
 	STORAGE_SDHCI,
@@ -37,5 +41,7 @@ enum audio_amp {
 };
 
 enum audio_amp variant_get_audio_amp(void);
+
+unsigned int variant_get_en_spkr_gpio(void);
 
 #endif /* _VARIANT_H_ */
