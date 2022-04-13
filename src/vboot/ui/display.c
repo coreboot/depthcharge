@@ -244,11 +244,11 @@ static void draw_fallback_stripes(enum ui_screen screen,
 	ui_draw_box(x, y, h, h, &colors[0x0], 0);
 }
 
-vb2_error_t ui_display(const struct ui_context *ui,
+vb2_error_t ui_display(struct ui_context *ui,
 		       const struct ui_state *prev_state)
 {
 	vb2_error_t rv;
-	struct ui_state *state = ui->state;
+	const struct ui_state *state = ui->state;
 	UI_INFO("screen=%#x, locale=%u, selected_item=%u, "
 		"disabled_item_mask=%#x, hidden_item_mask=%#x, "
 		"timer_disabled=%d, current_page=%u, error=%#x\n",
@@ -274,9 +274,9 @@ vb2_error_t ui_display(const struct ui_context *ui,
 		set_blend(&ui_color_black, ALPHA(60));
 
 	if (screen->draw)
-		rv = screen->draw(state, prev_state);
+		rv = screen->draw(ui, prev_state);
 	else
-		rv = ui_draw_default(state, prev_state);
+		rv = ui_draw_default(ui, prev_state);
 
 	if (rv) {
 		UI_ERROR("Drawing screen %#x failed: %#x\n", screen->id, rv);

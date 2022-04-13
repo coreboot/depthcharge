@@ -568,10 +568,10 @@ struct ui_screen_info {
 	 * Custom drawing function. When it is NULL, the default drawing
 	 * function ui_draw_default() will be called instead.
 	 */
-	vb2_error_t (*draw)(const struct ui_state *state,
+	vb2_error_t (*draw)(struct ui_context *ui,
 			    const struct ui_state *prev_state);
 	/* Custom description drawing function */
-	vb2_error_t (*draw_desc)(const struct ui_state *state,
+	vb2_error_t (*draw_desc)(struct ui_context *ui,
 				 const struct ui_state *prev_state,
 				 int32_t *y);
 	/* Fallback message */
@@ -1001,12 +1001,12 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 /*
  * Default drawing function.
  *
- * @param state		UI state.
+ * @param ui		UI context.
  * @param prev_state	Previous UI state.
  *
  * @return VB2_SUCCESS on success, non-zero on error.
  */
-vb2_error_t ui_draw_default(const struct ui_state *state,
+vb2_error_t ui_draw_default(struct ui_context *ui,
 			    const struct ui_state *prev_state);
 
 /******************************************************************************/
@@ -1072,7 +1072,7 @@ char *ui_log_get_page_content(const struct ui_log_info *log, uint32_t page);
  * @return VB2_SUCCESS, or error code on error.
  */
 
-vb2_error_t ui_display(const struct ui_context *ui,
+vb2_error_t ui_display(struct ui_context *ui,
 		       const struct ui_state *prev_state);
 
 /******************************************************************************/

@@ -19,7 +19,7 @@ vb2_error_t _ui_display(enum ui_screen screen, uint32_t locale_id,
 	return VB2_SUCCESS;
 }
 
-vb2_error_t ui_display(const struct ui_context *ui,
+vb2_error_t ui_display(struct ui_context *ui,
 		       const struct ui_state *prev_state)
 {
 	const struct ui_state *state;

@@ -764,9 +764,10 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 	return VB2_SUCCESS;
 }
 
-vb2_error_t ui_draw_default(const struct ui_state *state,
+vb2_error_t ui_draw_default(struct ui_context *ui,
 			    const struct ui_state *prev_state)
 {
+	const struct ui_state *state = ui->state;
 	const struct ui_screen_info *screen = state->screen;
 	const struct ui_menu *menu = &screen->menu;
 	const char *locale_code = state->locale->code;
@@ -869,7 +870,7 @@ vb2_error_t ui_draw_default(const struct ui_state *state,
 
 	/* Description */
 	if (screen->draw_desc)
-		VB2_TRY(screen->draw_desc(state, prev_state, &y));
+		VB2_TRY(screen->draw_desc(ui, prev_state, &y));
 	else
 		VB2_TRY(ui_draw_desc(&screen->desc, state, &y));
 	y += UI_DESC_MARGIN_BOTTOM;

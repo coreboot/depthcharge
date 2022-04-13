@@ -114,13 +114,14 @@ static int is_battery_low(void)
 	return batt_pct < 10;
 }
 
-static vb2_error_t draw_log_desc(const struct ui_state *state,
+static vb2_error_t draw_log_desc(struct ui_context *ui,
 				 const struct ui_state *prev_state,
 				 int32_t *y)
 {
 	static char *prev_buf;
 	static size_t prev_buf_len;
 	static int32_t prev_y;
+	const struct ui_state *state = ui->state;
 	char *buf;
 	size_t buf_len;
 	vb2_error_t rv = VB2_SUCCESS;
@@ -306,10 +307,11 @@ static vb2_error_t language_select_init(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
-static vb2_error_t draw_language_select(const struct ui_state *state,
+static vb2_error_t draw_language_select(struct ui_context *ui,
 					const struct ui_state *prev_state)
 {
 	int id;
+	const struct ui_state *state = ui->state;
 	const int reverse = state->locale->rtl;
 	uint32_t num_lang;
 	uint32_t locale_id;
@@ -327,7 +329,7 @@ static vb2_error_t draw_language_select(const struct ui_state *state,
 	 * Call default drawing function to clear the screen if necessary, and
 	 * draw the footer.
 	 */
-	VB2_TRY(ui_draw_default(state, prev_state));
+	VB2_TRY(ui_draw_default(ui, prev_state));
 
 	num_lang = ui_get_locale_count();
 	if (num_lang == 0) {
@@ -845,7 +847,7 @@ static const struct ui_screen_info recovery_to_dev_screen = {
 #define RECOVERY_SELECT_ITEM_DIAGNOSTICS 4
 
 static vb2_error_t draw_recovery_select_desc(
-	const struct ui_state *state,
+	struct ui_context *ui,
 	const struct ui_state *prev_state,
 	int32_t *y)
 {
@@ -857,11 +859,10 @@ static vb2_error_t draw_recovery_select_desc(
 		"rec_sel_desc0.bmp",
 		"rec_sel_desc1_no_phone.bmp",
 	};
-	struct vb2_context *ctx = vboot_get_context();
-	const struct ui_desc desc = vb2api_phone_recovery_ui_enabled(ctx) ?
+	const struct ui_desc desc = vb2api_phone_recovery_ui_enabled(ui->ctx) ?
 		UI_DESC(desc_files) : UI_DESC(desc_no_phone_files);
 
-	return ui_draw_desc(&desc, state, y);
+	return ui_draw_desc(&desc, ui->state, y);
 }
 
 /* Set VB2_NV_DIAG_REQUEST and reboot. */
@@ -938,7 +939,7 @@ static const struct ui_screen_info recovery_select_screen = {
 /* UI_SCREEN_RECOVERY_PHONE_STEP1 */
 
 static vb2_error_t draw_recovery_phone_step1_desc(
-	const struct ui_state *state,
+	struct ui_context *ui,
 	const struct ui_state *prev_state,
 	int32_t *y)
 {
@@ -955,7 +956,7 @@ static vb2_error_t draw_recovery_phone_step1_desc(
 	const struct ui_desc desc = is_battery_low() ?
 		UI_DESC(desc_low_battery_files) : UI_DESC(desc_files);
 
-	return ui_draw_desc(&desc, state, y);
+	return ui_draw_desc(&desc, ui->state, y);
 }
 
 static const struct ui_menu_item recovery_phone_step1_items[] = {
@@ -985,7 +986,7 @@ static const struct ui_screen_info recovery_phone_step1_screen = {
 /* UI_SCREEN_RECOVERY_PHONE_STEP2 */
 
 static vb2_error_t draw_recovery_phone_step2_desc(
-	const struct ui_state *state,
+	struct ui_context *ui,
 	const struct ui_state *prev_state,
 	int32_t *y)
 {
@@ -997,10 +998,10 @@ static vb2_error_t draw_recovery_phone_step2_desc(
 	const int32_t y_begin = *y;
 	const int32_t size = UI_REC_QR_SIZE;
 	const uint32_t flags = PIVOT_H_RIGHT | PIVOT_V_TOP;
-	const int reverse = state->locale->rtl;
+	const int reverse = ui->state->locale->rtl;
 	struct ui_bitmap bitmap;
 
-	VB2_TRY(ui_draw_desc(&desc, state, y));
+	VB2_TRY(ui_draw_desc(&desc, ui->state, y));
 	VB2_TRY(ui_get_bitmap("qr_rec_phone.bmp", NULL, 0, &bitmap));
 	VB2_TRY(ui_draw_bitmap(&bitmap, x, y_begin, size, size,
 			       flags, reverse));
@@ -1032,7 +1033,7 @@ static const struct ui_screen_info recovery_phone_step2_screen = {
 /* UI_SCREEN_RECOVERY_DISK_STEP1 */
 
 static vb2_error_t draw_recovery_disk_step1_desc(
-	const struct ui_state *state,
+	struct ui_context *ui,
 	const struct ui_state *prev_state,
 	int32_t *y)
 {
@@ -1049,7 +1050,7 @@ static vb2_error_t draw_recovery_disk_step1_desc(
 	const struct ui_desc desc = is_battery_low() ?
 		UI_DESC(desc_low_battery_files) : UI_DESC(desc_files);
 
-	return ui_draw_desc(&desc, state, y);
+	return ui_draw_desc(&desc, ui->state, y);
 }
 
 static const struct ui_menu_item recovery_disk_step1_items[] = {
@@ -1138,21 +1139,20 @@ static const struct ui_screen_info recovery_disk_step3_screen = {
 /* UI_SCREEN_RECOVERY_INVALID */
 
 static vb2_error_t draw_recovery_invalid_desc(
-	const struct ui_state *state,
+	struct ui_context *ui,
 	const struct ui_state *prev_state,
 	int32_t *y)
 {
-	struct vb2_context *ctx = vboot_get_context();
 	static const char *const desc_files[] = {
 		"rec_invalid_desc.bmp",
 	};
 	static const char *const desc_no_phone_files[] = {
 		"rec_invalid_disk_desc.bmp",
 	};
-	const struct ui_desc desc = vb2api_phone_recovery_ui_enabled(ctx) ?
+	const struct ui_desc desc = vb2api_phone_recovery_ui_enabled(ui->ctx) ?
 		UI_DESC(desc_files) : UI_DESC(desc_no_phone_files);
 
-	return ui_draw_desc(&desc, state, y);
+	return ui_draw_desc(&desc, ui->state, y);
 }
 
 static const struct ui_menu_item recovery_invalid_items[] = {
@@ -1317,11 +1317,12 @@ static vb2_error_t developer_mode_action(struct ui_context *ui)
 }
 
 static vb2_error_t draw_developer_mode_desc(
-	const struct ui_state *state,
+	struct ui_context *ui,
 	const struct ui_state *prev_state,
 	int32_t *y)
 {
 	struct ui_bitmap bitmap;
+	const struct ui_state *state = ui->state;
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
 	int32_t x;
@@ -1720,14 +1721,9 @@ static const struct ui_menu *get_bootloader_menu(struct ui_context *ui)
 }
 
 static vb2_error_t draw_developer_select_bootloader(
-	const struct ui_state *state,
+	struct ui_context *ui,
 	const struct ui_state *prev_state)
 {
-	static const struct ui_menu empty_menu = {
-		.num_items = 0,
-		.items = NULL,
-	};
-	const struct ui_menu *menu;
 	int32_t y;
 
 	/*
@@ -1735,24 +1731,13 @@ static vb2_error_t draw_developer_select_bootloader(
 	 * draw the language dropdown header, draw the title and desc lines,
 	 * and draw the footer.
 	 */
-	VB2_TRY(ui_draw_default(state, prev_state));
+	VB2_TRY(ui_draw_default(ui, prev_state));
 
 	/* Draw bootloaders and secondary buttons. */
 	y = UI_MARGIN_TOP + UI_LANG_BOX_HEIGHT + UI_LANG_MARGIN_BOTTOM +
 	    UI_TITLE_TEXT_HEIGHT + UI_TITLE_MARGIN_BOTTOM +
 	    UI_DESC_MARGIN_BOTTOM;
-
-	/*
-	 * TODO(b/172339016): make ui_context available in this function, so
-	 * that we can use ui_get_menu(ui) here.
-	 */
-	struct ui_context ui;
-	memset(&ui, 0, sizeof(ui));
-	menu = state->screen->get_menu(&ui);
-	if (!menu)
-		menu = &empty_menu;
-
-	return ui_draw_menu_items(menu, state, prev_state, y);
+	return ui_draw_menu_items(ui_get_menu(ui), ui->state, prev_state, y);
 }
 
 static const struct ui_screen_info developer_select_bootloader_screen = {

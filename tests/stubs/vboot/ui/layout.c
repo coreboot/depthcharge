@@ -24,7 +24,7 @@ vb2_error_t ui_draw_desc(const struct ui_desc *desc,
 	return VB2_SUCCESS;
 }
 
-vb2_error_t ui_draw_default(const struct ui_state *state,
+vb2_error_t ui_draw_default(struct ui_context *ui,
 			    const struct ui_state *prev_state)
 {
 	return VB2_SUCCESS;

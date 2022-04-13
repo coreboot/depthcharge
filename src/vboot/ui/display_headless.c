@@ -4,7 +4,7 @@
 
 #include "vboot/ui.h"
 
-vb2_error_t ui_display(const struct ui_context *ui,
+vb2_error_t ui_display(struct ui_context *ui,
 		       const struct ui_state *prev_state)
 {
 	return VB2_SUCCESS;
