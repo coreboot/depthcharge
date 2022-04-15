@@ -1593,6 +1593,24 @@ static vb2_error_t developer_select_bootloader_init(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
+static size_t get_altfw_count(void)
+{
+	struct altfw_info *node;
+	size_t count = 0;
+	ListNode *head;
+
+	head = payload_get_altfw_list();
+	if (head) {
+		list_for_each(node, *head, list_node) {
+			/* Discount default seqnum=0, since it is duplicated. */
+			if (node->seqnum)
+				count += 1;
+		}
+	}
+
+	return count;
+}
+
 static vb2_error_t developer_boot_altfw_impl(struct ui_context *ui,
 					     uint32_t altfw_id)
 {
@@ -1603,15 +1621,15 @@ static vb2_error_t developer_boot_altfw_impl(struct ui_context *ui,
 		return set_ui_error(ui, UI_ERROR_ALTFW_DISABLED);
 	}
 
-	if (vb2ex_get_altfw_count() == 0) {
+	if (get_altfw_count() == 0) {
 		UI_ERROR("ERROR: No alternate bootloader was found\n");
 		return set_ui_error(ui, UI_ERROR_ALTFW_EMPTY);
 	}
 
 	UI_INFO("Try booting from bootloader #%u\n", altfw_id);
 
-	/* vb2ex_run_altfw will not return if successful. */
-	vb2ex_run_altfw(altfw_id);
+	/* payload_run_altfw will not return if successful. */
+	payload_run_altfw(altfw_id);
 
 	UI_ERROR("ERROR: Alternate bootloader failed\n");
 	return set_ui_error(ui, UI_ERROR_ALTFW_FAILED);

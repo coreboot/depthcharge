@@ -256,3 +256,33 @@ struct ListNode *payload_get_altfw_list(void)
 	altfw_head = head;
 	return altfw_head;
 }
+
+int payload_run_altfw(int altfw_id)
+{
+	ListNode *head;
+
+	/* If we don't have a particular one to boot, use 0. */
+	head = payload_get_altfw_list();
+	if (head) {
+		struct altfw_info *node;
+
+		list_for_each(node, *head, list_node) {
+			if (node->seqnum == altfw_id) {
+				printf("Running bootloader '%s: %s'\n",
+				       node->name, node->desc);
+				return payload_run(node->filename, 0);
+			}
+		}
+	}
+
+	/*
+	 * For now, try the default payload
+	 * TODO(sjg@chromium.org): Drop this once everything is migrated to
+	 * altfw.
+	 */
+	if (payload_run("payload", 0))
+		printf("%s: Could not find default altfw payload\n", __func__);
+	printf("%s: Could not find bootloader #%u\n", __func__, altfw_id);
+
+	return -1;
+}

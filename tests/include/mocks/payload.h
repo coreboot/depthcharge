@@ -8,4 +8,6 @@
 extern struct ListNode payload_altfw_head;
 extern int payload_altfw_head_initialized;
 
+size_t payload_get_altfw_count(void);
+
 #endif /* _MOCKS_PAYLOAD_H */

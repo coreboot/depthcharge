@@ -7,3 +7,8 @@ struct ListNode *payload_get_altfw_list(void)
 {
 	return NULL;
 }
+
+int payload_run_altfw(int altfw_id)
+{
+	return 0;
+}

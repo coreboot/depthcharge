@@ -37,14 +37,15 @@ struct altfw_info {
 /**
  * payload_run() - Load and run a named payload file from the given flash area
  *
- * @payload_name: Name of CBFS file to run
- * @verify: set to 1 to verify payload before running (otherwise 0)
+ * @param payload_name	Name of CBFS file to run
+ * @param verify	1 to verify payload before running; otherwise 0
+ *
  * @return non-zero on error (on success this does not return)
  */
 int payload_run(const char *payload_name, int verify);
 
 /**
- * Read and parse the list of alternative-firmware bootloaders
+ * Read and parse the list of alternate bootloaders.
  *
  * The file format is multiple lines each terminated by \n.
  *
@@ -52,9 +53,21 @@ int payload_run(const char *payload_name, int verify);
  *
  * seqnum;filename;name;desc
  *
- * @return	list of alternative-firmware bootloaders (which may be empty),
+ * @return	List of alternate bootloaders (which may be empty),
  *		or NULL on error
  */
 struct ListNode *payload_get_altfw_list(void);
+
+/**
+ * Load and run an alternate bootloader.
+ *
+ * @param altfw_id	ID of alternate bootloader to run, where
+ *			1 <= altfw_id <= altfw_num. 0 for the default
+ *			bootloader, which corresponds to a bootloader
+ *			in the range 1 <= altfw_id <= altfw_num.
+ *
+ * @return non-zero on error (on success this does not return)
+ */
+int payload_run_altfw(int altfw_id);
 
 #endif // __BOOT_PAYLOAD_H__

@@ -18,7 +18,6 @@ depthcharge-y += display.c
 else
 depthcharge-y += headless_stub.c
 endif
-depthcharge-y += altfw.c
 depthcharge-y += memory.c
 depthcharge-y += misc.c
 depthcharge-y += time.c

@@ -39,8 +39,10 @@ $(call copy-test,loop-test,loop-detachable-test)
 loop-detachable-test-config += CONFIG_DETACHABLE=1
 
 screens-test-srcs += tests/vboot/ui/screens-test.c
+screens-test-srcs += tests/mocks/boot/payload.c
 screens-test-srcs += tests/mocks/ui_callbacks.c
 screens-test-srcs += tests/mocks/vboot/ui/archive.c
+screens-test-srcs += src/base/list.c
 screens-test-srcs += src/vboot/ui/navigation.c
 
 bitmap-test-srcs += tests/vboot/ui/bitmap-test.c

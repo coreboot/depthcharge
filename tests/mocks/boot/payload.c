@@ -11,14 +11,15 @@
 struct ListNode payload_altfw_head;
 int payload_altfw_head_initialized;
 
-/*
- * NOTE: To avoid infinte recursion, this function must be linked with a mocking
- * version of vb2ex_get_altfw_count().
- */
+size_t payload_get_altfw_count(void)
+{
+	return mock_type(size_t);
+}
+
 struct ListNode *payload_get_altfw_list(void)
 {
 	int seqnum;
-	const uint32_t count = vb2ex_get_altfw_count();
+	const uint32_t count = payload_get_altfw_count();
 	struct altfw_info *info;
 	const struct altfw_info altfw_info = {
 		.list_node = {
@@ -46,4 +47,17 @@ struct ListNode *payload_get_altfw_list(void)
 
 	payload_altfw_head_initialized = 1;
 	return &payload_altfw_head;
+}
+
+int payload_run_altfw(int altfw_id)
+{
+	int ret;
+	check_expected(altfw_id);
+	ret = mock();
+	if (ret == 0) {
+		mock_assert(0, __func__, __FILE__, __LINE__);
+		return 0;
+	}
+
+	return ret;
 }

@@ -38,3 +38,8 @@ struct ListNode *payload_get_altfw_list(void)
 	payload_altfw_head_initialized = 1;
 	return &payload_altfw_head;
 }
+
+int payload_run_altfw(int altfw_id)
+{
+	return 0;
+}

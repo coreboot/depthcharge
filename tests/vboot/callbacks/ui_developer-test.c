@@ -390,9 +390,9 @@ static void test_developer_ui_select_altfw_keyboard(void **state)
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(ui_keyboard_read, 0);
-	will_return_maybe(vb2ex_get_altfw_count, 2);
-	expect_value(vb2ex_run_altfw, altfw_id, 0);
-	will_return(vb2ex_run_altfw, VB2_SUCCESS);
+	will_return_maybe(payload_get_altfw_count, 2);
+	expect_value(payload_run_altfw, altfw_id, 0);
+	will_return(payload_run_altfw, 0);
 
 	expect_assert_failure(vb2ex_developer_ui(ui->ctx));
 }
@@ -420,7 +420,7 @@ static void test_developer_ui_select_altfw_menu(void **state)
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_ALTFW);
-	will_return_maybe(vb2ex_get_altfw_count, 5);
+	will_return_maybe(payload_get_altfw_count, 5);
 
 	EXPECT_UI_DISPLAY_ANY();
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
@@ -432,8 +432,8 @@ static void test_developer_ui_select_altfw_menu(void **state)
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	will_return_maybe(ui_keyboard_read, 0);
 
-	expect_value(vb2ex_run_altfw, altfw_id, 3);
-	will_return(vb2ex_run_altfw, VB2_SUCCESS);
+	expect_value(payload_run_altfw, altfw_id, 3);
+	will_return(payload_run_altfw, 0);
 
 	expect_assert_failure(vb2ex_developer_ui(ui->ctx));
 }
@@ -602,9 +602,9 @@ static void test_developer_screen_default_boot_altfw(void **state)
 			  VB2_DEV_DEFAULT_BOOT_TARGET_ALTFW);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(ui_keyboard_read, 0);
-	will_return_maybe(vb2ex_get_altfw_count, 2);
-	expect_value(vb2ex_run_altfw, altfw_id, 0);
-	will_return(vb2ex_run_altfw, VB2_SUCCESS);
+	will_return_maybe(payload_get_altfw_count, 2);
+	expect_value(payload_run_altfw, altfw_id, 0);
+	will_return(payload_run_altfw, 0);
 
 	expect_assert_failure(vb2ex_developer_ui(ui->ctx));
 }

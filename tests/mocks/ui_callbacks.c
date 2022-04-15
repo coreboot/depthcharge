@@ -41,24 +41,6 @@ const char *vb2ex_get_firmware_log(int reset)
 	return firmware_log_buf;
 }
 
-vb2_error_t vb2ex_run_altfw(uint32_t altfw_id)
-{
-	vb2_error_t rv;
-	check_expected(altfw_id);
-	rv = mock_type(vb2_error_t);
-	if (rv == VB2_SUCCESS) {
-		mock_assert(0, __func__, __FILE__, __LINE__);
-		return VB2_SUCCESS;
-	} else {
-		return rv;
-	}
-}
-
-uint32_t vb2ex_get_altfw_count(void)
-{
-	return mock_type(uint32_t);
-}
-
 /*
  * This mock function requires a mock value as expected called time, and has two
  * check_expected calls for the two parameters. The expected_time checking is

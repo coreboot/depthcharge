@@ -2,6 +2,7 @@
 
 #include <tests/test.h>
 #include <tests/vboot/common.h>
+#include <mocks/payload.h>
 #include <mocks/util/commonparams.h>
 #include <vboot/ui.h>
 #include <vboot/ui/screens.c>
@@ -75,9 +76,9 @@ static void test_dev_altfw_action_default_bootloader(void **state)
 
 	ui->ctx->flags |= VB2_CONTEXT_DEVELOPER_MODE;
 	ui->ctx->flags |= VB2_CONTEXT_DEV_BOOT_ALTFW_ALLOWED;
-	expect_value(vb2ex_run_altfw, altfw_id, 0);
-	will_return(vb2ex_run_altfw, VB2_SUCCESS);
-	will_return_maybe(vb2ex_get_altfw_count, 2);
+	expect_value(payload_run_altfw, altfw_id, 0);
+	will_return(payload_run_altfw, 0);
+	will_return_maybe(payload_get_altfw_count, 2);
 
 	expect_assert_failure(ui_developer_mode_boot_altfw_action(ui));
 }
