@@ -107,6 +107,7 @@ test-screenshot: screenshot
 	$(MAKE) screenshot
 	$(MAKE) screenshot SCREEN=UI_SCREEN_FIRMWARE_SYNC
 	$(MAKE) screenshot SCREEN=UI_SCREEN_DEBUG_INFO LOG='"This is the log"'
+	$(MAKE) screenshot SCREEN=UI_SCREEN_DEVELOPER_SELECT_ALTFW ITEM=1
 
 clean-screenshot:
 	rm -rf $(testobj)
