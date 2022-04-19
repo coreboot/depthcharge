@@ -25,3 +25,7 @@ config MAX98373_I2S_BOOTBEEP
 	select DRIVER_SOUND_MAX98373
 	select DRIVER_SOUND_ROUTE
 	default n
+
+config BOARD_ADLRVP_N
+	bool "ADL-N RVP board"
+	default n
