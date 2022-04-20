@@ -1720,33 +1720,12 @@ static const struct ui_menu *get_bootloader_menu(struct ui_context *ui)
 	return &ui->bootloader_menu;
 }
 
-static vb2_error_t draw_developer_select_bootloader(
-	struct ui_context *ui,
-	const struct ui_state *prev_state)
-{
-	int32_t y;
-
-	/*
-	 * Call default drawing function to clear the screen if necessary,
-	 * draw the language dropdown header, draw the title and desc lines,
-	 * and draw the footer.
-	 */
-	VB2_TRY(ui_draw_default(ui, prev_state));
-
-	/* Draw bootloaders and secondary buttons. */
-	y = UI_MARGIN_TOP + UI_LANG_BOX_HEIGHT + UI_LANG_MARGIN_BOTTOM +
-	    UI_TITLE_TEXT_HEIGHT + UI_TITLE_MARGIN_BOTTOM +
-	    UI_DESC_MARGIN_BOTTOM;
-	return ui_draw_menu_items(ui_get_menu(ui), ui->state, prev_state, y);
-}
-
 static const struct ui_screen_info developer_select_bootloader_screen = {
 	.id = UI_SCREEN_DEVELOPER_SELECT_ALTFW,
 	.name = "Select alternate bootloader",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "dev_select_bootloader_title.bmp",
 	.init = developer_select_bootloader_init,
-	.draw = draw_developer_select_bootloader,
 	.mesg = "Select an alternate bootloader.",
 	.get_menu = get_bootloader_menu,
 };

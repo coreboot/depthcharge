@@ -769,7 +769,7 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 {
 	const struct ui_state *state = ui->state;
 	const struct ui_screen_info *screen = state->screen;
-	const struct ui_menu *menu = &screen->menu;
+	const struct ui_menu *menu = ui_get_menu(ui);
 	const char *locale_code = state->locale->code;
 	const int reverse = state->locale->rtl;
 	int focused;
