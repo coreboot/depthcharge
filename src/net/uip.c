@@ -76,6 +76,7 @@
 #include "net/uip_arp.h"
 #include "net/uip_arch.h"
 
+#include <libpayload.h>
 #include <string.h>
 
 /*---------------------------------------------------------------------------*/
@@ -1697,9 +1698,6 @@ void
 uip_send(const void *data, int len)
 {
   int copylen;
-#ifndef MIN
-#define MIN(a,b) ((a) < (b)? (a): (b))
-#endif
   copylen = MIN(len, CONFIG_UIP_BUFSIZE - CONFIG_UIP_LLH_LEN - UIP_TCPIP_HLEN -
 		(int)((char *)uip_sappdata -
                       (char *)&uip_buf[CONFIG_UIP_LLH_LEN + UIP_TCPIP_HLEN]));
