@@ -31,6 +31,8 @@
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/max98373.h"
 
+#include "drivers/storage/sdhci.h"
+
 #include <libpayload.h>
 #include <sysinfo.h>
 
@@ -110,7 +112,7 @@ static int board_setup(void)
 			cros_ec_lpc_bus =
 					new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
 		}
-	
+
 		CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);
 		register_vboot_ec(&cros_ec->vboot);
 	}
@@ -154,6 +156,16 @@ static int board_setup(void)
 	if (CONFIG(DRIVER_STORAGE_INTEL_UFS)) {
 		IntelUfsCtlr *intel_ufs = new_intel_ufs_ctlr(PCH_DEV_UFS1);
 		list_insert_after(&intel_ufs->ufs.bctlr.list_node, &fixed_block_dev_controllers);
+	}
+
+	/* SD PCIe AIC on PCH RP8 x4 slot */
+	if (CONFIG(DRIVER_STORAGE_SDHCI_PCI)) {
+		SdhciHost *sd = probe_pci_sdhci_host(PCH_DEV_PCIE7, SDHCI_PLATFORM_REMOVABLE);
+		if (sd) {
+			sd->name = "sd";
+			list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
+				&removable_block_dev_controllers);
+		}
 	}
 
 #if CONFIG_DRIVER_SOUND_MAX98373
