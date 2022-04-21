@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <sysinfo.h>
 #include <vb2_api.h>
+#include <vboot/util/commonparams.h>
 
 #include "io.h"
 #include "vboot/ui.h"
@@ -36,13 +37,12 @@ struct sysinfo_t lib_sysinfo = {
 
 int main(int argc, char *argv[])
 {
-	struct vb2_context fake_ctx;
+	struct vb2_context *fake_ctx = vboot_get_context();
 	struct ui_context ui;
 	struct ui_state *state;
 
-	memset(&fake_ctx, 0, sizeof(fake_ctx));
-	vb2api_set_locale_id(&fake_ctx, 0);
-	VB2_TRY(ui_init_context(&ui, &fake_ctx, __SCREEN__));
+	vb2api_set_locale_id(fake_ctx, 0);
+	VB2_TRY(ui_init_context(&ui, fake_ctx, __SCREEN__));
 	state = ui.state;
 	state->selected_item = __ITEM__;
 	state->disabled_item_mask = __DISABLED_ITEM_MASK__;
