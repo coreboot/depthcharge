@@ -38,6 +38,8 @@
 /* If fragmentation bit is set then CS will not toggle after each transfer */
 #define M_CMD_FRAGMENTATION	BIT(2)
 
+#define TRANSFER_TIMEOUT_US	(1 * USECS_PER_SEC)
+
 static void setup_fifo_params(QupRegs *regs)
 {
 	u32 word_len = 0;
@@ -101,7 +103,7 @@ static int qup_spi_xfer(SpiOps *me, void *in, const void *out, uint32_t size)
 
 	qup_setup_m_cmd(regs, m_cmd, m_param);
 
-	if (qup_handle_transfer(regs, out, in, size))
+	if (qup_handle_transfer(regs, out, in, size, TRANSFER_TIMEOUT_US))
 		return -1;
 	return 0;
 }
@@ -159,4 +161,3 @@ QupSpi *new_qup_spi(uintptr_t reg_addr)
 	bus->ops.transfer = &qup_spi_xfer;
 	return bus;
 }
-

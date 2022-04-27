@@ -444,7 +444,7 @@ static int i2c_wait_for_bus_idle(DesignwareI2cRegs *regs)
 		if (!(status & STATUS_MA) && (status & STATUS_TFE))
 			return 0;
 
-	} while (timer_us(start) <= TIMEOUT_US * 16);
+	} while (timer_us(start) <= CONFIG_DRIVER_BUS_I2C_TRANSFER_TIMEOUT_US);
 
 	printf("%s: timeout waiting for bus to become idle.\n", __func__);
 
@@ -494,7 +494,8 @@ static int process_fatal_interrupts(DesignwareI2cRegs *regs)
 }
 
 /*
- * Waits TIMEOUT_US for a stop condition on the bus.
+ * Waits CONFIG_DRIVER_BUS_I2C_TRANSFER_TIMEOUT_US for a stop condition on the
+ * bus.
  *
  * Returns -1 on failure and 0 on success.
  */
@@ -511,7 +512,7 @@ static int i2c_wait_for_stop_condition(DesignwareI2cRegs *regs)
 		if (read32(&regs->raw_intr_stat) & INTR_STOP_DET)
 			return 0;
 
-	} while (timer_us(start) <= TIMEOUT_US);
+	} while (timer_us(start) <= CONFIG_DRIVER_BUS_I2C_TRANSFER_TIMEOUT_US);
 
 	printf("%s: timed out\n", __func__);
 
@@ -521,7 +522,8 @@ static int i2c_wait_for_stop_condition(DesignwareI2cRegs *regs)
 }
 
 /*
- * Waits TIMEOUT_US for space in the the TX fifo.
+ * Waits CONFIG_DRIVER_BUS_I2C_TRANSFER_TIMEOUT_US for space in the the TX
+ * fifo.
  *
  * Returns -1 on failure and 0 on success.
  */
@@ -538,7 +540,7 @@ static int i2c_wait_for_tx_fifo_not_full(DesignwareI2cRegs *regs)
 		if (read32(&regs->status) & STATUS_TFNF)
 			return 0;
 
-	} while (timer_us(start) <= TIMEOUT_US);
+	} while (timer_us(start) <= CONFIG_DRIVER_BUS_I2C_TRANSFER_TIMEOUT_US);
 
 	printf("%s: timed out waiting for space in the transmit fifo\n",
 	       __func__);
@@ -549,7 +551,8 @@ static int i2c_wait_for_tx_fifo_not_full(DesignwareI2cRegs *regs)
 }
 
 /*
- * Waits TIMEOUT_US for a byte in the the RX fifo.
+ * Waits CONFIG_DRIVER_BUS_I2C_TRANSFER_TIMEOUT_US for a byte in the the RX
+ * fifo.
  *
  * Returns -1 on failure and 0 on success.
  */
@@ -566,7 +569,7 @@ static int i2c_wait_for_rx_fifo_not_empty(DesignwareI2cRegs *regs)
 		if (read32(&regs->status) & STATUS_RFNE)
 			return 0;
 
-	} while (timer_us(start) <= TIMEOUT_US);
+	} while (timer_us(start) <= CONFIG_DRIVER_BUS_I2C_TRANSFER_TIMEOUT_US);
 
 	printf("%s: timed out waiting for byte to arrive in the receive FIFO\n",
 	       __func__);

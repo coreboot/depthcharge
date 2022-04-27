@@ -236,7 +236,8 @@ static uint32_t mtk_i2c_transfer(MTKI2c *bus, I2cSeg *seg, enum i2c_modes read)
 			break;
 		}
 
-		if (timer_us(start) > I2C_TRANSFER_TIMEOUT_US) {
+		if (timer_us(start)
+		    > CONFIG_DRIVER_BUS_I2C_TRANSFER_TIMEOUT_US) {
 			ret_code = I2C_TRANSFER_FAIL_TIMEOUT;
 			I2CERR("[i2c:%p transfer] transaction timeout:%d\n",
 			       bus->base, time_out_val);

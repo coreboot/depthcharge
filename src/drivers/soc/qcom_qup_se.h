@@ -421,6 +421,6 @@ typedef struct {
 u32 qup_wait_for_irq(QupRegs *regs);
 void qup_handle_error(QupRegs *regs);
 int qup_handle_transfer(QupRegs *regs, const void *dout, void *din,
-	int size);
+	int size, unsigned long timeout_us);
 
 #endif /* __DRIVERS_SOC_QCOM_QUP_SE_H__ */

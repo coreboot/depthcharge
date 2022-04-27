@@ -40,7 +40,6 @@ typedef struct {
 	u32 i2c_timing_con2;
 } CygnusI2cReg;
 
-#define I2C_TIMEOUT_US	100000 /* 100ms */
 #define I2C_FIFO_MAX_SIZE 64
 
 #define ETIMEDOUT 1
@@ -80,7 +79,7 @@ static unsigned int i2c_bus_busy(CygnusI2cReg *reg_addr)
 
 static int i2c_wait_bus_busy(CygnusI2cReg *reg_addr)
 {
-	int timeout = I2C_TIMEOUT_US;
+	int timeout = CONFIG_DRIVER_BUS_I2C_TRANSFER_TIMEOUT_US;
 	while (timeout--) {
 		if (!i2c_bus_busy(reg_addr))
 			break;

@@ -84,7 +84,8 @@ static int i2c_init(I2cRegs *regs)
 
 static int i2c_wait_for_idle(I2cRegs *regs)
 {
-	int timeout = 1000 * 100; // 1s.
+	int timeout = DIV_ROUND_UP(
+	    CONFIG_DRIVER_BUS_I2C_TRANSFER_TIMEOUT_US, 10);
 	while (timeout--) {
 		if (!(read8(&regs->stat) & I2cStatBusy))
 			return 0;
@@ -96,7 +97,8 @@ static int i2c_wait_for_idle(I2cRegs *regs)
 
 static int i2c_wait_for_int(I2cRegs *regs)
 {
-	int timeout = 1000 * 100; // 1s.
+	int timeout = DIV_ROUND_UP(
+	    CONFIG_DRIVER_BUS_I2C_TRANSFER_TIMEOUT_US, 10);
 	while (timeout--) {
 		if (i2c_int_pending(regs))
 			return 0;

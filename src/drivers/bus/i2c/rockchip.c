@@ -114,7 +114,6 @@ static int i2c_read(RkI2cReg *reg_addr, I2cSeg segment)
 {
 	int res = 0;
 	uint8_t *data = segment.buf;
-	int timeout = I2C_TIMEOUT_US;
 	unsigned int bytes_remaining = segment.len;
 	unsigned int bytes_transfered = 0;
 	unsigned int words_transfered = 0;
@@ -126,6 +125,7 @@ static int i2c_read(RkI2cReg *reg_addr, I2cSeg segment)
 	write32(&reg_addr->i2c_mrxraddr, 0);
 	con = I2C_MODE_TRX | I2C_EN | I2C_ACT2NAK;
 	while (bytes_remaining) {
+		int timeout = CONFIG_DRIVER_BUS_I2C_TRANSFER_TIMEOUT_US;
 		bytes_transfered = MIN(bytes_remaining, 32);
 		bytes_remaining -= bytes_transfered;
 		if(!bytes_remaining)
@@ -136,7 +136,6 @@ static int i2c_read(RkI2cReg *reg_addr, I2cSeg segment)
 		write32(&reg_addr->i2c_con, con);
 		write32(&reg_addr->i2c_mrxcnt, bytes_transfered);
 
-		timeout = I2C_TIMEOUT_US;
 		while (timeout--) {
 			if (read32(&reg_addr->i2c_ipd) & I2C_NAKRCVI) {
 				write32(&reg_addr->i2c_mrxcnt, 0);
@@ -172,7 +171,6 @@ static int i2c_write(RkI2cReg *reg_addr, I2cSeg segment)
 {
 	int res = 0;
 	uint8_t *data = segment.buf;
-	int timeout = I2C_TIMEOUT_US;
 	int bytes_remaining = segment.len + 1;
 	int bytes_transfered = 0;
 	int words_transfered = 0;
@@ -182,6 +180,7 @@ static int i2c_write(RkI2cReg *reg_addr, I2cSeg segment)
 
 	txdata |= (segment.chip << 1);
 	while (bytes_remaining) {
+		int timeout = CONFIG_DRIVER_BUS_I2C_TRANSFER_TIMEOUT_US;
 		bytes_transfered = MIN(bytes_remaining, 32);
 		words_transfered = ALIGN_UP(bytes_transfered, 4) / 4;
 		for (i = 0; i < words_transfered; i++) {
@@ -201,7 +200,6 @@ static int i2c_write(RkI2cReg *reg_addr, I2cSeg segment)
 			I2C_EN | I2C_MODE_TX | I2C_ACT2NAK);
 		write32(&reg_addr->i2c_mtxcnt, bytes_transfered);
 
-		timeout = I2C_TIMEOUT_US;
 		while (timeout--) {
 			if (read32(&reg_addr->i2c_ipd) & I2C_NAKRCVI) {
 				write32(&reg_addr->i2c_mtxcnt, 0);

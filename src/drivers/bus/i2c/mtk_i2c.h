@@ -23,11 +23,6 @@
 #include <assert.h>
 #include <stddef.h>
 
-/* I2C Configuration */
-enum {
-	I2C_TRANSFER_TIMEOUT_US	= 100 * 1000,
-};
-
 enum i2c_modes {
 	I2C_WRITE_MODE		= 0,
 	I2C_READ_MODE		= 1,

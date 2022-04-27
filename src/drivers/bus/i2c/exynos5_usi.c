@@ -123,10 +123,6 @@ enum {
 
 #define HSI2C_SLV_ADDR_MAS(x)		((x & 0x3ff) << 10)
 
-enum {
-	HSI2C_TIMEOUT = 100
-};
-
 static int usi_i2c_get_clk_details(UsiI2cRegs *regs, int *div, int *cycle,
 				   unsigned op_clk)
 {
@@ -234,7 +230,7 @@ static int exynos5_usi_i2c_check_transfer(UsiI2cRegs *regs)
 static int exynos5_usi_i2c_wait_for_transfer(UsiI2cRegs *regs)
 {
 	uint64_t start = timer_us(0);
-	while (timer_us(start) < HSI2C_TIMEOUT * 1000) {
+	while (timer_us(start) < CONFIG_DRIVER_BUS_I2C_TRANSFER_TIMEOUT_US) {
 		int ret = exynos5_usi_i2c_check_transfer(regs);
 		if (ret)
 			return ret;

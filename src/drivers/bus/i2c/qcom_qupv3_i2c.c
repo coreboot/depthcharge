@@ -33,7 +33,8 @@ static int i2c_do_xfer(QupRegs *reg_addr, I2cSeg segment, unsigned int prams)
 	master_cmd_reg_val |= (prams & M_PARAMS_MSK);
 	write32(&reg_addr->geni_m_cmd0, master_cmd_reg_val);
 
-	return qup_handle_transfer(reg_addr, dout, din, segment.len);
+	return qup_handle_transfer(reg_addr, dout, din, segment.len,
+				   CONFIG_DRIVER_BUS_I2C_TRANSFER_TIMEOUT_US);
 }
 
 static int i2c_transfer(struct I2cOps *me, I2cSeg *segments, int seg_count)

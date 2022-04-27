@@ -95,14 +95,15 @@ void qup_handle_error(QupRegs *regs)
 	}
 }
 
-int qup_handle_transfer(QupRegs *regs, const void *dout, void *din, int size)
+int qup_handle_transfer(QupRegs *regs, const void *dout, void *din, int size,
+			unsigned long timeout_us)
 {
 	unsigned int m_irq;
 	struct stopwatch sw;
 	unsigned int rx_rem_bytes = din ? size : 0;
 	unsigned int tx_rem_bytes = dout ? size : 0;
 
-	stopwatch_init_msecs_expire(&sw, 1000);
+	stopwatch_init_usecs_expire(&sw, timeout_us);
 	do {
 		m_irq = qup_wait_for_irq(regs);
 		if ((m_irq & M_RX_FIFO_WATERMARK_EN) ||

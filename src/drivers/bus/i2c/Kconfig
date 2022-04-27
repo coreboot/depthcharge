@@ -73,3 +73,11 @@ config DRIVER_BUS_I2C_SC7180
 config DRIVER_BUS_I2C_SC7280
 	bool "Qualcomm SC7280 I2C driver"
 	default n
+
+config DRIVER_BUS_I2C_TRANSFER_TIMEOUT_US
+	int "I2C transfer timeout in microseconds"
+	default 500000
+	help
+	  Timeout for a read/write transfers on the I2C bus, that is, the
+	  maximum time a device could stretch clock bits before the transfer
+	  is aborted and an error returned.
