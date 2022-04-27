@@ -37,8 +37,8 @@
 
 #define DEFAULT_BUF_SIZE 0x100
 
-/* Timeout waiting for a flash erase command to complete */
-static const int CROS_EC_CMD_TIMEOUT_MS = 5000;
+/* Maximum wait time for EC flash erase completion */
+static const int CROS_EC_ERASE_TIMEOUT_MS = 30000;
 
 /* Timeout waiting for EC hash calculation completion */
 static const int CROS_EC_HASH_TIMEOUT_MS = 2000;
@@ -247,10 +247,16 @@ static int send_command_proto3(CrosEc *me, int cmd, int cmd_version,
 		struct ec_response_get_comms_status resp;
 		uint64_t start;
 
+		if (cmd != EC_CMD_FLASH_ERASE) {
+			printf("%s: command %#02x unexpectedly returned "
+			       "IN_PROGRESS",
+			       __func__, cmd);
+		}
 		/* Wait for command to complete */
 		start = timer_us(0);
-		do {
+		while (1) {
 			int ret;
+			uint64_t elapsed_us;
 
 			mdelay(50);	/* Insert some reasonable delay */
 			ret = send_command_proto3_work(me,
@@ -259,12 +265,18 @@ static int send_command_proto3(CrosEc *me, int cmd, int cmd_version,
 			if (ret < 0)
 				return ret;
 
-			if (timer_us(start) > CROS_EC_CMD_TIMEOUT_MS * 1000) {
-				printf("%s: Command %#02x timeout",
-				      __func__, cmd);
+			elapsed_us = timer_us(start);
+			if ((resp.flags & EC_COMMS_STATUS_PROCESSING) == 0) {
+				printf("%s: command %#02x completed in %lld us",
+				       __func__, cmd, elapsed_us);
+				break;
+			}
+			if (elapsed_us > (CROS_EC_ERASE_TIMEOUT_MS * 1000)) {
+				printf("%s: Command %#02x timeout", __func__,
+				       cmd);
 				return -EC_RES_TIMEOUT;
 			}
-		} while (resp.flags & EC_COMMS_STATUS_PROCESSING);
+		}
 
 		/* OK it completed, so read the status response */
 		rv = send_command_proto3_work(me, EC_CMD_RESEND_RESPONSE,
