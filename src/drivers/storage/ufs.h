@@ -400,12 +400,17 @@ typedef enum {
 #define UFS_DESC_IDN_BYTE		1
 
 // Attributes definitions
-#define UFS_IDN_bBootLunEn		0x00
-#define UFS_IDN_bCurrentPowerMode	0x01
-#define UFS_IDN_bActiveICCLevel		0x03
-#define UFS_IDN_bPurgeStatus		0x06
-#define UFS_IDN_bRefClkFreq		0x0A
-#define UFS_IDN_bConfigDescrLock	0x0B
+#define UFS_IDN_BBOOTLUNEN		0x00
+#define UFS_IDN_BCURRENTPOWERMODE	0X01
+#define UFS_IDN_BACTIVEICCLEVEL		0x03
+#define UFS_IDN_BPURGESTATUS		0x06
+#define UFS_IDN_BREFCLKFREQ		0x0A
+#define UFS_IDN_BCONFIGDESCRLOCK	0x0B
+
+#define UFS_REFCLKFREQ_19_2		0
+#define UFS_REFCLKFREQ_26		1
+#define UFS_REFCLKFREQ_38_4		2
+#define UFS_REFCLKFREQ_52		3
 
 // Memory size parameters
 
@@ -698,6 +703,8 @@ typedef struct UfsCtlr {
 	BlockDevCtrlr	bctlr;			// Block device controller
 	UFSHookFn	hook_fn;		// Hook callback function
 	void		*hci_base;		// MMIO address
+	bool		update_refclkfreq;	// Whether to update bRefClkFreq attribute
+	uint8_t		refclkfreq;		// bRefClkFreq attribute value
 	UfsTfrMode	tfr_mode;		// Transfer mode (gear, lanes etc)
 	uint8_t		*ufs_req_list;		// Request List
 	bool		ctlr_initialized;	// Controller is initialized
