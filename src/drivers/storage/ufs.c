@@ -277,6 +277,8 @@ static int ufs_dev_op(UfsCtlr *ufs, UfsQryReq *req, uint8_t op)
 		c->idx		= req->idx;
 		c->sel		= req->sel;
 		c->data_len	= htobe16(req->resp_data_len);
+		if (op == UPIU_QUERY_OP_WRITE_ATTRIBUTE)
+			c->attr_val = htobe32(req->val);
 	}
 
 	memset(r, 0, UFS_RESP_UPIU_LEN);
@@ -727,6 +729,54 @@ static int ufs_set_gear(UfsCtlr *ufs)
 	return 0;
 }
 
+// Read a UFS attribute (index = 0, selector = 0)
+static int ufs_read_attribute(UfsCtlr *ufs, uint8_t idn, uint32_t *val)
+{
+	UfsQryReq req = {
+		.idn = idn,
+	};
+	int rc;
+
+	rc = ufs_dev_query_op(ufs, &req, UPIU_QUERY_OP_READ_ATTRIBUTE);
+	if (rc)
+		return ufs_err("Failed to read attribute IDN %u", rc, idn);
+
+	*val = req.val;
+
+	return 0;
+}
+
+// Write a UFS attribute (index = 0, selector = 0)
+static int ufs_write_attribute(UfsCtlr *ufs, uint8_t idn, uint32_t val)
+{
+	UfsQryReq req = {
+		.idn = idn,
+		.val = val,
+	};
+	int rc;
+
+	rc = ufs_dev_query_op(ufs, &req, UPIU_QUERY_OP_WRITE_ATTRIBUTE);
+	if (rc)
+		return ufs_err("Failed to write attribute IDN %u", rc, idn);
+
+	return 0;
+}
+
+static int ufs_set_refclkfreq(UfsCtlr *ufs)
+{
+	uint32_t val;
+	int rc;
+
+	rc = ufs_read_attribute(ufs, UFS_IDN_BREFCLKFREQ, &val);
+	if (rc)
+		return rc;
+
+	if (val == ufs->refclkfreq)
+		return 0;
+
+	return ufs_write_attribute(ufs, UFS_IDN_BREFCLKFREQ, ufs->refclkfreq);
+}
+
 // Read a UFS descriptor
 static int ufs_read_descriptor(UfsCtlr *ufs, uint8_t idn, uint8_t idx,
 			       uint8_t *buf, uint8_t len, uint8_t *resp_len)
@@ -931,6 +981,12 @@ static int ufs_ctrlr_setup(UfsCtlr *ufs)
 	rc = ufs_populate_device_descriptor(ufs);
 	if (rc)
 		return rc;
+
+	if (ufs->update_refclkfreq) {
+		rc = ufs_set_refclkfreq(ufs);
+		if (rc)
+			return rc;
+	}
 
 	// Only change gear if there are logical units
 	if (ufs_dd(ufs)->bNumberLU) {

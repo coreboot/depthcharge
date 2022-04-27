@@ -32,7 +32,9 @@ static int intel_ufs_update(BlockDevCtrlrOps *bdev_ops)
 
 	if (!intel_ufs->ufs.hci_base) {
 		intel_ufs->ufs.hci_base = (void *)(pci_read_config32(dev, REG_BAR0) & ~0xf);
-		intel_ufs->ufs.hook_fn  = intel_ufs_hook_fn;
+		intel_ufs->ufs.hook_fn = intel_ufs_hook_fn;
+		intel_ufs->ufs.update_refclkfreq = true;
+		intel_ufs->ufs.refclkfreq = UFS_REFCLKFREQ_19_2;
 		pci_set_bus_master(dev);
 	}
 
