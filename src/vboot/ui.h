@@ -521,6 +521,9 @@ struct ui_context {
 	/* For bootloader selection screen. */
 	struct ui_menu bootloader_menu;
 
+	/* For log screens. */
+	char *debug_info_str;
+
 	/* For error beep sound. */
 	int error_beep;
 

@@ -23,6 +23,8 @@
 #include "boot/payload.h"
 #include "diag/storage_test.h"
 #include "drivers/ec/cros/ec.h"
+#include "drivers/tpm/tpm.h"
+#include "vboot/firmware_id.h"
 #include "vboot/ui.h"
 #include "vboot/util/commonparams.h"
 
@@ -607,9 +609,71 @@ static const struct ui_screen_info advanced_options_screen = {
 #define DEBUG_INFO_ITEM_PAGE_DOWN 2
 #define DEBUG_INFO_ITEM_BACK 3
 
+#define DEBUG_INFO_EXTRA_LENGTH 256
+static const char *debug_info_get_string(struct ui_context *ui)
+{
+	char *buf;
+	size_t buf_size;
+	char *vboot_buf;
+	char *tpm_str = NULL;
+	char batt_pct_str[16];
+
+	/* Check if cache exists. */
+	if (ui->debug_info_str)
+		return ui->debug_info_str;
+
+	/* Debug info from the vboot context. */
+	vboot_buf = vb2api_get_debug_info(ui->ctx);
+
+	buf_size = strlen(vboot_buf) + DEBUG_INFO_EXTRA_LENGTH + 1;
+	buf = malloc(buf_size);
+	if (!buf) {
+		UI_ERROR("ERROR: Failed to malloc string buffer\n");
+		free(vboot_buf);
+		return NULL;
+	}
+
+	/* States owned by firmware. */
+	if (CONFIG(MOCK_TPM))
+		tpm_str = "MOCK TPM";
+	else if (CONFIG(DRIVER_TPM))
+		tpm_str = tpm_report_state();
+
+	if (!tpm_str)
+		tpm_str = "(unsupported)";
+
+	if (!CONFIG(DRIVER_EC_CROS)) {
+		strncpy(batt_pct_str, "(unsupported)", sizeof(batt_pct_str));
+	} else {
+		uint32_t batt_pct;
+		if (cros_ec_read_batt_state_of_charge(&batt_pct))
+			strncpy(batt_pct_str, "(read failure)",
+				sizeof(batt_pct_str));
+		else
+			snprintf(batt_pct_str, sizeof(batt_pct_str),
+				 "%u%%", batt_pct);
+	}
+	snprintf(buf, buf_size,
+		 "%s\n"  /* vboot output does not include newline. */
+		 "read-only firmware id: %s\n"
+		 "active firmware id: %s\n"
+		 "battery level: %s\n"
+		 "TPM state: %s",
+		 vboot_buf,
+		 get_ro_fw_id(), get_active_fw_id(),
+		 batt_pct_str, tpm_str);
+
+	free(vboot_buf);
+
+	buf[buf_size - 1] = '\0';
+	UI_INFO("debug info: %s\n", buf);
+	ui->debug_info_str = buf;
+	return buf;
+}
+
 static vb2_error_t debug_info_set_content(struct ui_context *ui)
 {
-	const char *log_string = vb2ex_get_debug_info(ui->ctx);
+	const char *log_string = debug_info_get_string(ui);
 	if (!log_string)
 		return set_ui_error_and_go_back(ui, UI_ERROR_DEBUG_LOG);
 	if (vb2_is_error(log_page_update(ui, log_string)))

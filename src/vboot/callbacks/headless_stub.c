@@ -19,12 +19,6 @@
 #include <libpayload.h>
 #include <vb2_api.h>
 
-const char *vb2ex_get_debug_info(struct vb2_context *ctx)
-{
-	/* TODO(b/151200757): Support headless devices */
-	return "";
-}
-
 const char *vb2ex_get_firmware_log(int reset)
 {
 	/* TODO(b/151200757): Support headless devices */

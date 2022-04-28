@@ -22,11 +22,6 @@ void vb2ex_msleep(uint32_t msec)
 	mock_time_ms += msec;
 }
 
-const char *vb2ex_get_debug_info(struct vb2_context *ctx)
-{
-	return "mock debug info";
-}
-
 /*
  * This mock function uses firmware_log_snapshots_count to decide what will be
  * written into the buffer and returned. Each time the reset parameter is

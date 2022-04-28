@@ -20,6 +20,7 @@ ui-test-common-srcs += tests/mocks/vboot_api.c
 ui-test-common-srcs += tests/stubs/boot/payload.c
 ui-test-common-srcs += tests/stubs/diag.c
 ui-test-common-srcs += tests/stubs/drivers/storage/blockdev.c
+ui-test-common-srcs += tests/stubs/vboot/firmware_id.c
 ui-test-common-srcs += tests/stubs/vboot/ui/draw.c
 ui-test-common-srcs += tests/stubs/vboot/ui/layout.c
 ui-test-common-srcs += tests/stubs/vboot/ui/log.c

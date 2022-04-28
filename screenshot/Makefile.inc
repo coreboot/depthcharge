@@ -43,6 +43,7 @@ screenshot-srcs += screenshot/mocks/boot/payload.c
 screenshot-srcs += screenshot/mocks/ui_callbacks.c
 screenshot-srcs += screenshot/mocks/vb2api.c
 screenshot-srcs += screenshot/stubs/display.c
+screenshot-srcs += screenshot/stubs/firmware_id.c
 screenshot-srcs += screenshot/stubs/input.c
 screenshot-srcs += src/base/list.c
 screenshot-srcs += src/vboot/ui/bitmap.c
@@ -106,7 +107,7 @@ screenshot: $(screenshot-bin)
 test-screenshot: screenshot
 	$(MAKE) screenshot
 	$(MAKE) screenshot SCREEN=UI_SCREEN_FIRMWARE_SYNC
-	$(MAKE) screenshot SCREEN=UI_SCREEN_DEBUG_INFO LOG='"This is the log"'
+	$(MAKE) screenshot SCREEN=UI_SCREEN_DEBUG_INFO
 	$(MAKE) screenshot SCREEN=UI_SCREEN_DEVELOPER_MODE
 	$(MAKE) screenshot SCREEN=UI_SCREEN_DEVELOPER_SELECT_ALTFW ITEM=1
 
