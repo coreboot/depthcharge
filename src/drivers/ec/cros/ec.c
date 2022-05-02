@@ -602,8 +602,8 @@ static int ec_reboot(CrosEc *me, enum ec_reboot_cmd cmd, uint8_t flags)
 		 * will reboot the AP as well, in which case we won't actually
 		 * get to this point.
 		 */
-		mdelay(50);	// default delay we shall wait after EC reboot
 		uint64_t start = timer_us(0);
+		mdelay(CONFIG_DRIVER_EC_CROS_DELAY_AFTER_EC_REBOOT_MS);
 		while (ec_test(me)) {
 			if (timer_us(start) > 3 * 1000 * 1000) {
 				printf("EC did not return from reboot.\n");

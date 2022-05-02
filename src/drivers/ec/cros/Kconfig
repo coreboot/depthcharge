@@ -14,6 +14,11 @@ config DRIVER_EC_CROS
 	bool "Enable support for the ChromeOS EC"
 	default n
 
+config DRIVER_EC_CROS_DELAY_AFTER_EC_REBOOT_MS
+	int "Delay after EC reboot before polling starts"
+	default 50
+	depends on DRIVER_EC_CROS
+
 config DRIVER_EC_CROS_LPC
 	bool "ChromeOS EC LPC interface"
 	default n

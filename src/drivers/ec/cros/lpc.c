@@ -22,22 +22,16 @@
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/ec/cros/lpc_mec.h"
 
-/* Timeout waiting for a flash erase command to complete */
-static const int CROS_EC_CMD_TIMEOUT_MS = 5000;
-
-static int wait_for_sync(CrosEcBusOps *me)
+static int wait_for_sync(CrosEcBusOps *me, uint64_t timeout_us)
 {
 	uint64_t start = timer_us(0);
 	uint8_t data;
 
-	while (timer_us(start) < CROS_EC_CMD_TIMEOUT_MS * 1000) {
+	while (timer_us(start) < timeout_us) {
 		me->read(&data, EC_LPC_ADDR_HOST_CMD, 1);
 		if (!(data & EC_LPC_STATUS_BUSY_MASK))
 			return 0;
 	}
-
-	printf("%s: Timeout waiting for CrosEC sync\n",
-		__func__);
 	return -1;
 }
 
@@ -135,6 +129,13 @@ static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 		       void *din, uint32_t din_len)
 {
 	uint8_t data;
+	const struct ec_host_request *rq = dout;
+	/*
+	 * If a HELLO cmd, use a short timeout, otherwise use
+	 * a max timeout for a flash erase command to complete.
+	 */
+	uint64_t timeout =
+		(rq->command == EC_CMD_HELLO) ? 100 * 1000 : 5 * 1000 * 1000;
 
 	if (dout_len > EC_LPC_HOST_PACKET_SIZE) {
 		printf("%s: Cannot send %d bytes\n", __func__, dout_len);
@@ -146,8 +147,11 @@ static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 		return -EC_RES_BUS_ERROR;
 	}
 
-	if (wait_for_sync(me)) {
-		printf("%s: Timeout waiting ready\n", __func__);
+	if (wait_for_sync(me, timeout)) {
+		/* Don't spam if timed out waiting for HELLO */
+		if (rq->command != EC_CMD_HELLO)
+			printf("%s: Timeout waiting ready (%lld ms)\n",
+				__func__, timeout / 1000);
 		return -EC_RES_TIMEOUT;
 	}
 
@@ -158,8 +162,10 @@ static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 	data = EC_COMMAND_PROTOCOL_3;
 	me->write(&data, EC_LPC_ADDR_HOST_CMD, 1);
 
-	if (wait_for_sync(me)) {
-		printf("%s: Timeout waiting ready\n", __func__);
+	if (wait_for_sync(me, timeout)) {
+		if (rq->command != EC_CMD_HELLO)
+			printf("%s: Timeout waiting ready (%lld ms)\n",
+				__func__, timeout / 1000);
 		return -EC_RES_TIMEOUT;
 	}
 
