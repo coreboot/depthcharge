@@ -139,6 +139,7 @@ static bool is_rtk_ctrlr(pcidev_t dev, u16 *pid)
 		return false;
 
 	switch (deviceid) {
+	case RTK_MMC_PID_522A:
 	case RTK_MMC_PID_525A:
 		found = true;
 		break;
@@ -156,7 +157,10 @@ static int rtk_get_pci_bar(pcidev_t dev, uintptr_t *bar)
 {
 	uint32_t addr;
 
-	addr = pci_read_config32(dev, PCI_BASE_ADDRESS_1);
+	if (pci_read_config16(dev, REG_DEVICE_ID) == RTK_MMC_PID_525A)
+		addr = pci_read_config32(dev, PCI_BASE_ADDRESS_1);
+	else
+		addr = pci_read_config32(dev, PCI_BASE_ADDRESS_0);
 
 	if (addr == ((uint32_t)~0))
 		return -1;
@@ -206,6 +210,17 @@ static int rtkhost_pci_init(BlockDevCtrlrOps *me)
 	host->ioaddr = (void *)bar;
 	host->name = xzalloc(RTK_NAME_LENGTH);
 	host->dev = dev;
+
+	switch (host->pid) {
+	case RTK_MMC_PID_522A:
+		host->sd_800mA_ocp_thd = 0x06;
+		break;
+	case RTK_MMC_PID_525A:
+		host->sd_800mA_ocp_thd = 0x05;
+		break;
+	default:
+		break;
+	}
 
 	block_ctrlr->ops.update = pci_host->update;
 	pci_host->update = NULL;
@@ -1064,7 +1079,9 @@ static int sd_power_on_card3v3(RtkMmcHost *host)
 	int err, timeout;
 
 	timeout = 100;
-	RTSX_WRITE_REG(host, LDO_VCC_CFG1, LDO_VCC_TUNE_MASK, LDO_VCC_3V3);
+	if (CHK_PCI_PID(host, RTK_MMC_PID_525A))
+		RTSX_WRITE_REG(host, LDO_VCC_CFG1, LDO_VCC_TUNE_MASK,
+			LDO_VCC_3V3);
 
 	rtsx_add_cmd(host, WRITE_REG_CMD, CARD_PWR_CTL,
 		SD_POWER_MASK, SD_PARTIAL_POWER_ON);
@@ -1121,7 +1138,16 @@ static int sd_init_power(RtkMmcHost *host)
 		return STATUS_FAIL;
 
 	/* Switch SD bus to 3V3 signal */
-	RTSX_WRITE_REG(host, 0xFF71, 0x07, 0x07);
+	switch (host->pid) {
+	case RTK_MMC_PID_522A:
+		rtsx_write_phy_register(host, 0x08, 0x57E4);
+		break;
+	case RTK_MMC_PID_525A:
+		RTSX_WRITE_REG(host, 0xFF71, 0x07, 0x07);
+		break;
+	default:
+		break;
+	}
 
 	u8 sd30_clk_drive_sel = 0x96;
 	u8 sd30_cmd_drive_sel = 0x96;
@@ -1157,15 +1183,40 @@ static int sd_init_power(RtkMmcHost *host)
 	return STATUS_SUCCESS;
 }
 
-static int sd_extra_init_hw(RtkMmcHost *host)
+static int rts522a_sd_extra_init_hw(RtkMmcHost *host)
+{
+	/* Configure GPIO as output */
+	RTSX_WRITE_REG(host, GPIO_CTL, 0x02, 0x02);
+	/* Switch LDO3318 source from DV33 to card_3v3 */
+	RTSX_WRITE_REG(host, LDO_PWR_SEL, LDO_SRC_SEL_MASK, LDO_SRC_NONE);
+	RTSX_WRITE_REG(host, LDO_PWR_SEL, LDO_SRC_SEL_MASK, LDO_SRC_PMOS);
+	/* LED shine disabled, set initial shine cycle period */
+	RTSX_WRITE_REG(host, OLT_LED_CTL, 0x0F, 0x02);
+
+	RTSX_WRITE_REG(host, PETXCFG, 0x30, 0x00);
+
+	RTSX_WRITE_REG(host, PETXCFG, FORCE_CLKREQ_DELINK_MASK,
+		FORCE_CLKREQ_HIGH);
+
+	RTSX_WRITE_REG(host, PM_CTRL3, 0x10, 0x00);
+
+	RTSX_WRITE_REG(host, FUNC_FORCE_CTL, 0x02, 0x02);
+	RTSX_WRITE_REG(host, PCLK_CTL, 0x04, 0x04);
+	RTSX_WRITE_REG(host, PM_EVENT_DEBUG, PME_DEBUG_0, PME_DEBUG_0);
+	RTSX_WRITE_REG(host, PM_CLK_FORCE_CTL, 0xFF, 0x11);
+
+	return 0;
+}
+
+static int rts525a_sd_extra_init_hw(RtkMmcHost *host)
 {
 	/* Rest L1SUB Config */
 	RTSX_WRITE_REG(host, L1SUB_CONFIG3, 0xFF, 0x00);
 	/* Configure GPIO as output */
 	RTSX_WRITE_REG(host, GPIO_CTL, 0x02, 0x02);
 	/* Switch LDO3318 source from DV33 to card_3v3 */
-	RTSX_WRITE_REG(host, LDO_PWR_SEL, 0x03, 0x00);
-	RTSX_WRITE_REG(host, LDO_PWR_SEL, 0x03, 0x01);
+	RTSX_WRITE_REG(host, LDO_PWR_SEL, LDO_SRC_SEL_MASK, LDO_SRC_NONE);
+	RTSX_WRITE_REG(host, LDO_PWR_SEL, LDO_SRC_SEL_MASK, LDO_SRC_PMOS);
 	/* LED shine disabled, set initial shine cycle period */
 	RTSX_WRITE_REG(host, OLT_LED_CTL, 0x0F, 0x02);
 
@@ -1206,7 +1257,8 @@ static int rtk_init(BlockDevCtrlrOps *me)
 	mmc_debug("IC version 0x%x\n", host->ic_version);
 
 	/* ack every tlp */
-	pci_write_config8(dev, 0x70C, 1);
+	if (CHK_PCI_PID(host, RTK_MMC_PID_525A))
+		pci_write_config8(dev, 0x70C, 1);
 
 	/* Power on SSC */
 	RTSX_WRITE_REG(host, FPDCTL, SSC_POWER_DOWN, 0);
@@ -1246,12 +1298,13 @@ static int rtk_init(BlockDevCtrlrOps *me)
 	RTSX_WRITE_REG(host, NFTS_TX_CTRL, 0x02, 0x00);
 	RTSX_WRITE_REG(host, PM_CLK_FORCE_CTL, 0x01, 0x01);
 
-	RTSX_WRITE_REG(host, SSC_DIV_N_0, 0xff, 0x5d);
+	if (CHK_PCI_PID(host, RTK_MMC_PID_525A))
+		RTSX_WRITE_REG(host, SSC_DIV_N_0, 0xff, 0x5d);
 
 	/* ocp setting */
 	RTSX_WRITE_REG(host, FPDCTL, OC_POWER_DOWN, 0);
 	RTSX_WRITE_REG(host, OCPPARA1, SD_OCP_TIME_MASK, SD_OCP_TIME_800);
-	RTSX_WRITE_REG(host, OCPPARA2, SD_OCP_THD_MASK, SD_OCP_THD_950);
+	RTSX_WRITE_REG(host, OCPPARA2, SD_OCP_THD_MASK, host->sd_800mA_ocp_thd);
 	RTSX_WRITE_REG(host, OCPGLITCH, SD_OCP_GLITCH_MASK, SD_OCP_GLITCH_10M);
 	RTSX_WRITE_REG(host, OCPCTL, 0xFF, SD_OCP_INT_EN | SD_DETECT_EN);
 
@@ -1264,7 +1317,16 @@ static int rtk_init(BlockDevCtrlrOps *me)
 	if (ret)
 		return ret;
 
-	sd_extra_init_hw(host);
+	switch (host->pid) {
+	case RTK_MMC_PID_522A:
+		rts522a_sd_extra_init_hw(host);
+		break;
+	case RTK_MMC_PID_525A:
+		rts525a_sd_extra_init_hw(host);
+		break;
+	default:
+		break;
+	}
 
 	host->int_reg = rtsx_readl(host, RTSX_BIPR);
 
