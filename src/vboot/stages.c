@@ -54,7 +54,7 @@ int vboot_in_developer(void)
 
 int vboot_check_wipe_memory(void)
 {
-	if (vboot_in_recovery() || vboot_in_developer())
+	if (vboot_get_context()->boot_mode != VB2_BOOT_MODE_NORMAL)
 		return memory_wipe_unused();
 	return 0;
 }
