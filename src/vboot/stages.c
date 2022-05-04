@@ -61,9 +61,17 @@ int vboot_check_wipe_memory(void)
 
 int vboot_check_enable_usb(void)
 {
-	/* Initialize USB in developer or recovery mode, skip in normal mode. */
-	if (vboot_in_recovery() || vboot_in_developer())
-		dc_usb_initialize();
+	/* Initialize USB in developer, recovery mode or diagnostics mode,
+	   skip in normal mode. */
+	switch (vboot_get_context()->boot_mode) {
+		case VB2_BOOT_MODE_MANUAL_RECOVERY:
+		case VB2_BOOT_MODE_BROKEN_SCREEN:
+		case VB2_BOOT_MODE_DIAGNOSTICS:
+		case VB2_BOOT_MODE_DEVELOPER:
+			dc_usb_initialize();
+		default:
+			break;
+	}
 	return 0;
 }
 
