@@ -52,6 +52,11 @@ int vboot_in_developer(void)
 	return !!(vboot_get_context()->flags & VB2_CONTEXT_DEVELOPER_MODE);
 }
 
+int vboot_in_diagnostics(void)
+{
+	return vb2api_in_diagnostics_mode(vboot_get_context());
+}
+
 int vboot_check_wipe_memory(void)
 {
 	if (vboot_in_recovery() || vboot_in_developer())
@@ -61,8 +66,10 @@ int vboot_check_wipe_memory(void)
 
 int vboot_check_enable_usb(void)
 {
-	/* Initialize USB in developer or recovery mode, skip in normal mode. */
-	if (vboot_in_recovery() || vboot_in_developer())
+	/* Initialize USB in developer, recovery mode or diagnostics mode,
+	   skip in normal mode. */
+	if (vboot_in_recovery() || vboot_in_developer() ||
+	    vboot_in_diagnostics())
 		dc_usb_initialize();
 	return 0;
 }
