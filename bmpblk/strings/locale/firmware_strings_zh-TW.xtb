@@ -20,7 +20,6 @@
 <translation id="2188090550242711688">2. 依照 Chrome 擴充功能的指示操作，並將復原映像檔下載至外部儲存空間</translation>
 <translation id="2270126560545545577">目前處於開發人員模式</translation>
 <translation id="2360163367862409346">這麼做會清除裝置中的所有資料，並讓裝置處於不安全的狀態。</translation>
-<translation id="2398688843544960326">找不到替代的系統啟動載入程式。如要瞭解安裝方式，請參閱：</translation>
 <translation id="2445391421565214706">如要嘗試修正問題，請啟動還原程序。請移除所有外接裝置，然後按住調高音量鍵、調低音量鍵和電源按鈕 ( ⏻ ) 至少 10 秒。</translation>
 <translation id="2531345960369431549">這個選項會停用開發人員模式，並將裝置復原為原始狀態。</translation>
 <translation id="2603025384438397887">使用手機進行還原</translation>
@@ -30,19 +29,19 @@
 <translation id="328213018570216625">使用外部儲存空間進行還原</translation>
 <translation id="3289365543955953678">插入外部磁碟</translation>
 <translation id="3294574173405124634">GBB 旗標禁止改回安全模式。</translation>
-<translation id="3416523611207622897">外部啟動功能已停用。詳情請參閱：</translation>
 <translation id="3635226996169670741">如要嘗試修正問題，請啟動還原程序。請移除所有外接裝置，然後按住 Esc 鍵、重新整理鍵 ( ⟳ ) 和電源按鈕 ( ⏻ )。</translation>
 <translation id="3697087251845525042">儲存空間自我測試 (簡短)</translation>
+<translation id="3747500110898960596">已停用替代的系統啟動載入程式。詳情請前往：</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3964506597604121312">你的使用者資料將在這項程序中遭到清除。</translation>
 <translation id="4002335453596341558">下一頁</translation>
 <translation id="4152977630022273265">請確認你的外部磁碟包含有效的 Chrome 作業系統映像檔，並且在準備就緒時重新插入磁碟。</translation>
-<translation id="4403160275309808255">替代的系統啟動載入程式已停用。詳情請參閱：</translation>
 <translation id="4410491068110727276">請使用音量按鈕向上或向下瀏覽。</translation>
 <translation id="4497270882390086583">你可以使用 USB 隨身碟等外部儲存裝置或 Android 手機進行還原。</translation>
 <translation id="4773280894882892048">偵錯資訊</translation>
 <translation id="4815374450404670311">記憶體檢查 (完整)</translation>
 <translation id="4834079235849774599">2. 備妥可連上網際網路的其他裝置</translation>
+<translation id="4841043913984655587">已停用從外部磁碟啟動系統的功能。詳情請前往：</translation>
 <translation id="4989087579517177148">請選取還原方式。</translation>
 <translation id="5019112228955634706">3. 為這部裝置供電</translation>
 <translation id="5175612852476047443">請勿關閉裝置電源</translation>
@@ -90,6 +89,7 @@
 <translation id="8789686976863801203">你正在嘗試啟用開發人員模式</translation>
 <translation id="8848124168564939055">你無法透過外接鍵盤啟用開發人員模式。請使用導覽說明中提及的裝置按鈕。</translation>
 <translation id="8878311588372127478">儲存空間自我測試 (較長)</translation>
+<translation id="8975826224585429326">找不到替代的系統啟動載入程式。如要瞭解安裝方式，請前往：</translation>
 <translation id="9004305007436435169">無法取得診斷資訊。</translation>
 <translation id="9040266428058825675">如果外部儲存空間裝置包含所需的復原映像檔，將其插入這部裝置即可啟動還原程序。</translation>
 </translationbundle>

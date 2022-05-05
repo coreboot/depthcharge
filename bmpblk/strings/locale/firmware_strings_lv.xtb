@@ -20,7 +20,6 @@
 <translation id="2188090550242711688">2. Izpildiet Chrome paplašinājumā sniegtos norādījumus un lejupielādējiet atkopšanas attēlu ārējā atmiņā.</translation>
 <translation id="2270126560545545577">Jūs esat atvēris izstrādātāja režīmu</translation>
 <translation id="2360163367862409346">No jūsu ierīces tiks izdzēsti visi dati, turklāt jūsu ierīce kļūs nedroša.</translation>
-<translation id="2398688843544960326">Nevarēja atrast alternatīvu operētājsistēmu ielādes rīku. Lai uzzinātu, kā instalēt šādu rīku, skatiet šo vietni:</translation>
 <translation id="2445391421565214706">Lai novērstu šo problēmu, sāciet atkopšanas procesu. Noņemiet visas pievienotās ierīces un pēc tam nospiediet un vismaz 10 sekundes turiet skaļuma palielināšanas, skaļuma samazināšanas un barošanas pogu ( ⏻ ).</translation>
 <translation id="2531345960369431549">Izmantojot šo opciju, tiks atspējots izstrādātāja režīms un tiks atjaunots jūsu ierīces sākotnējais stāvoklis.</translation>
 <translation id="2603025384438397887">Atkopt, izmantojot tālruni</translation>
@@ -30,19 +29,19 @@
 <translation id="328213018570216625">Atkopt, izmantojot ārējo atmiņu</translation>
 <translation id="3289365543955953678">Pievienojiet ārējo disku</translation>
 <translation id="3294574173405124634">Atgriešanās drošajā režīmā nav atļauta saskaņā ar GBB karodziņiem.</translation>
-<translation id="3416523611207622897">Ārējā palaišana ir atspējota. Plašāku informāciju skatiet šajā vietnē:</translation>
 <translation id="3635226996169670741">Lai novērstu šo problēmu, sāciet atkopšanas procesu. Noņemiet visas pievienotās ierīces un pēc tam nospiediet un turiet atsoļa taustiņu, atsvaidzināšanas taustiņu ( ⟳ ) un barošanas pogu ( ⏻ ).</translation>
 <translation id="3697087251845525042">Krātuves pašpārbaude (neilga)</translation>
+<translation id="3747500110898960596">Alternatīvie operētājsistēmu ielādes rīki ir atspējoti. Lai iegūtu plašāku informāciju, apmeklējiet šo vietni:</translation>
 <translation id="385051799172605136">Atpakaļ</translation>
 <translation id="3964506597604121312">Procesa laikā tiks notīrīti jūsu lietotāja dati.</translation>
 <translation id="4002335453596341558">Pāriet vienu lapu uz leju</translation>
 <translation id="4152977630022273265">Raugieties, lai ārējā diskā būtu derīgs Chrome OS attēls, un pievienojiet disku atkārtoti, kad esat gatavs.</translation>
-<translation id="4403160275309808255">Alternatīvie operētājsistēmu ielādes rīki ir atspējoti. Plašāku informāciju skatiet šajā vietnē:</translation>
 <translation id="4410491068110727276">Izmantojiet skaļuma pogas, lai pārietu uz augšu vai uz leju.</translation>
 <translation id="4497270882390086583">Atkopšanai varat izmantot ārējo krātuvi, piemēram, USB disku, vai savu Android tālruni.</translation>
 <translation id="4773280894882892048">Atkļūdošanas informācija</translation>
 <translation id="4815374450404670311">Atmiņas pārbaude (pilnīga)</translation>
 <translation id="4834079235849774599">2. Cita ierīce ar interneta piekļuvi.</translation>
+<translation id="4841043913984655587">Palaišana no ārēja diska ir atspējota. Lai iegūtu plašāku informāciju, apmeklējiet šo vietni:</translation>
 <translation id="4989087579517177148">Atlasiet atkopšanas veidu.</translation>
 <translation id="5019112228955634706">3. Šīs ierīces barošanas avots.</translation>
 <translation id="5175612852476047443">Lūdzu, neizslēdziet savu ierīci</translation>
@@ -90,6 +89,7 @@
 <translation id="8789686976863801203">Jūs mēģināt iespējot izstrādātāja režīmu</translation>
 <translation id="8848124168564939055">Jūs nevarat izmantot ārēju tastatūru, lai ieslēgtu izstrādātāja režīmu. Lūdzu, izmantojiet ierīces pogas, kas minētas navigācijas norādījumos.</translation>
 <translation id="8878311588372127478">Krātuves pašpārbaude (detalizēta)</translation>
+<translation id="8975826224585429326">Nevarēja atrast alternatīvu operētājsistēmu ielādes rīku. Lai uzzinātu, kā instalēt šādu rīku, apmeklējiet šo vietni:</translation>
 <translation id="9004305007436435169">Nevarēja iegūt diagnostikas informāciju.</translation>
 <translation id="9040266428058825675">Ja ir sagatavota ārējās atmiņas ierīce ar atkopšanas attēlu, pievienojiet to ierīcei, lai sāktu atkopšanas procesu.</translation>
 </translationbundle>

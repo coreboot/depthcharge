@@ -20,7 +20,6 @@
 <translation id="2188090550242711688">2. Seuraa Chrome-laajennuksen ohjeita ja lataa palautusnäköistiedosto ulkoiseen tallennustilaan</translation>
 <translation id="2270126560545545577">Olet kehittäjätilassa</translation>
 <translation id="2360163367862409346">Tähän kuuluu kaiken datan pyyhkiminen laitteeltasi, ja laitteestasi tulee suojaamaton.</translation>
-<translation id="2398688843544960326">Vaihtoehtoista käynnistysohjelmaa ei löytynyt. Lue asennusohjeet täältä:</translation>
 <translation id="2445391421565214706">Aloita palautusprosessi ongelman korjaamiseksi. Irrota kaikki yhdistetyt laitteet ja paina äänenvoimakkuuden lisäys- ja vähennyspainiketta sekä virtapainiketta ( ⏻ ) ainakin 10 sekuntia.</translation>
 <translation id="2531345960369431549">Tämä vaihtoehto poistaa kehittäjätilan käytöstä ja palauttaa laitteen sen alkuperäiseen tilaan.</translation>
 <translation id="2603025384438397887">Palautus puhelimella</translation>
@@ -30,19 +29,19 @@
 <translation id="328213018570216625">Palautus ulkoisen tallennustilan avulla</translation>
 <translation id="3289365543955953678">Liitä ulkoinen levy</translation>
 <translation id="3294574173405124634">GBB-asetukset eivät salli suojattuun tilaan palaamista.</translation>
-<translation id="3416523611207622897">Ulkoinen käynnistys on poistettu käytöstä. Lue lisää täältä:</translation>
 <translation id="3635226996169670741">Aloita palautusprosessi ongelman korjaamiseksi. Irrota kaikki yhdistetyt laitteet ja paina pitkään Esc-, Päivitys- ( ⟳ ) ja virtapainikkeita ( ⏻ ).</translation>
 <translation id="3697087251845525042">Tallennustilan testaus (lyhyt)</translation>
+<translation id="3747500110898960596">Vaihtoehtoiset käynnistysohjelmat on poistettu käytöstä. Lisätietoa:</translation>
 <translation id="385051799172605136">Takaisin</translation>
 <translation id="3964506597604121312">Käyttäjädatasi pyyhitään prosessin aikana.</translation>
 <translation id="4002335453596341558">Sivu alas</translation>
 <translation id="4152977630022273265">Varmista, että ulkoinen levy sisältää Chrome-käyttöjärjestelmän näköistiedoston, ja liitä levy uudelleen, kun olet valmis.</translation>
-<translation id="4403160275309808255">Vaihtoehtoiset käynnistysohjelmat on poistettu käytöstä. Lue lisää täältä:</translation>
 <translation id="4410491068110727276">Siirry ylös tai alas äänenvoimakkuuspainikkeilla.</translation>
 <translation id="4497270882390086583">Voit tehdä palautuksen ulkoisen tallennustilan, esim. USB-muistin, tai Android-puhelimen avulla.</translation>
 <translation id="4773280894882892048">Virheenkorjaustiedot</translation>
 <translation id="4815374450404670311">Muistitarkistus (täysi)</translation>
 <translation id="4834079235849774599">2. Toinen laite, joka on yhteydessä internetiin</translation>
+<translation id="4841043913984655587">Ulkoiselta levyltä käynnistämistä ei sallita. Lisätietoa:</translation>
 <translation id="4989087579517177148">Valitse, miten haluat palauttaa.</translation>
 <translation id="5019112228955634706">3. Virtalähde tälle laitteelle</translation>
 <translation id="5175612852476047443">Älä sammuta laitteen virtaa</translation>
@@ -90,6 +89,7 @@
 <translation id="8789686976863801203">Yrität ottaa käyttöön kehittäjätilan</translation>
 <translation id="8848124168564939055">Et voi laittaa kehittäjätilaa päälle käyttämällä ulkoista näppäimistöä. Käytä siirtymisohjeissa kuvattuja laitteen painikkeita.</translation>
 <translation id="8878311588372127478">Tallennustilan testaus (laajennettu)</translation>
+<translation id="8975826224585429326">Vaihtoehtoista käynnistysohjelmaa ei löytynyt. Lue asennusohjeet täältä:</translation>
 <translation id="9004305007436435169">Diagnostiikkatietojen noutaminen ei onnistunut.</translation>
 <translation id="9040266428058825675">Jos palautusnäköistiedosto on valmiina ulkoisessa tallennuslaitteessa, liitä tallennustila laitteeseen palautusta varten.</translation>
 </translationbundle>

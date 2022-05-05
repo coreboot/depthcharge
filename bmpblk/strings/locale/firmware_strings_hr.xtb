@@ -20,7 +20,6 @@
 <translation id="2188090550242711688">2. Slijedite upute na Chromeovom proširenju i preuzmite sliku za oporavak na vanjsku pohranu</translation>
 <translation id="2270126560545545577">Nalazite se u načinu rada razvojnog programera</translation>
 <translation id="2360163367862409346">To uključuje brisanje svih podataka s vašeg uređaja i vaš uređaj više neće biti siguran.</translation>
-<translation id="2398688843544960326">Alternativni početni program za pokretanje nije pronađen. Da biste saznali kako ga instalirati, pogledajte:</translation>
 <translation id="2445391421565214706">Za rješavanje problema započnite postupak oporavka. Uklonite sve povezane uređaje, a zatim na deset sekundi pritisnite tipku za pojačavanje glasnoće, tipku za stišavanje glasnoće i tipku za uključivanje/isključivanje ( ⏻ ).</translation>
 <translation id="2531345960369431549">Ova opcija onemogućit će način rada razvojnog programera i vratiti vaš uređaj u izvorno stanje.</translation>
 <translation id="2603025384438397887">Oporavak pomoću telefona</translation>
@@ -30,19 +29,19 @@
 <translation id="328213018570216625">Oporavak pomoću vanjske pohrane</translation>
 <translation id="3289365543955953678">Priključite vanjski disk</translation>
 <translation id="3294574173405124634">Povratak u sigurni način zabranjen je pomoću GBB oznaka.</translation>
-<translation id="3416523611207622897">Vanjsko je pokretanje onemogućeno. Za više informacija pogledajte:</translation>
 <translation id="3635226996169670741">Za rješavanje problema započnite postupak oporavka. Uklonite sve povezane uređaje, a zatim pritisnite tipku Esc, tipku za osvježavanje ( ⟳ ) tipku za uključivanje/isključivanje ( ⏻ ).</translation>
 <translation id="3697087251845525042">Samotestiranje pohrane (kratko)</translation>
+<translation id="3747500110898960596">Alternativni početni programi za pokretanje su onemogućeni. Da biste saznali više, posjetite:</translation>
 <translation id="385051799172605136">Natrag</translation>
 <translation id="3964506597604121312">Tijekom postupka vaši će se korisnički podaci izbrisati.</translation>
 <translation id="4002335453596341558">Stranica prema dolje</translation>
 <translation id="4152977630022273265">Provjerite ima li vaš vanjski disk valjanu sliku Chrome OS-a i ponovno umetnite disk kad budete spremni.</translation>
-<translation id="4403160275309808255">Alternativni početni programi za pokretanje su onemogućeni. Za više informacija pogledajte:</translation>
 <translation id="4410491068110727276">Za kretanje prema gore ili dolje koristite se tipkama za glasnoću.</translation>
 <translation id="4497270882390086583">Možete oporaviti pomoću vanjske pohrane kao što je USB disk ili Android telefona.</translation>
 <translation id="4773280894882892048">Informacije o otklanjanju pogrešaka</translation>
 <translation id="4815374450404670311">Provjera memorije (potpuna)</translation>
 <translation id="4834079235849774599">2. Drugi uređaj s pristupom internetu</translation>
+<translation id="4841043913984655587">Pokretanje s vanjskog diska je onemogućeno. Da biste saznali više, posjetite:</translation>
 <translation id="4989087579517177148">Odaberite način oporavka.</translation>
 <translation id="5019112228955634706">3. Izvor napajanja ovog uređaja</translation>
 <translation id="5175612852476047443">Nemojte isključiti uređaj</translation>
@@ -90,6 +89,7 @@
 <translation id="8789686976863801203">Pokušavate omogućiti način rada razvojnog programera</translation>
 <translation id="8848124168564939055">Način rada razvojnog programera ne može se uključiti pomoću vanjske tipkovnice. Koristite tipke na uređaju navedene u uputama za kretanje.</translation>
 <translation id="8878311588372127478">Samotestiranje pohrane (prošireno)</translation>
+<translation id="8975826224585429326">Alternativni početni program za pokretanje nije pronađen. Da biste saznali kako ga instalirati, posjetite:</translation>
 <translation id="9004305007436435169">Dohvaćanje dijagnostičkih podataka nije uspjelo.</translation>
 <translation id="9040266428058825675">Ako je vaš uređaj za vanjsku pohranu spreman sa slikom za oporavak, priključite ga u uređaj da biste započeli oporavak.</translation>
 </translationbundle>

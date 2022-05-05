@@ -20,7 +20,6 @@
 <translation id="2188090550242711688">2. Følg vejledningen i Chrome-udvidelsen, og download systembilledet til gendannelse på den eksterne lagerenhed</translation>
 <translation id="2270126560545545577">Du er i udviklertilstand</translation>
 <translation id="2360163367862409346">Dette medfører bl.a., at alle data ryddes fra din enhed, og at din enhed bliver usikker.</translation>
-<translation id="2398688843544960326">Der blev ikke fundet en alternativ bootloader. Du kan se, hvordan du installerer en, her:</translation>
 <translation id="2445391421565214706">Start gendannelsesprocessen for at prøve at løse problemet. Fjern alle tilsluttede enheder. Hold derefter Lydstyrke op, Lydstyrke ned og afbryderknappen ( ⏻ ) inde i mindst 10 sekunder.</translation>
 <translation id="2531345960369431549">Denne valgmulighed deaktiverer udviklertilstand og gendanner din enhed til dens oprindelige tilstand.</translation>
 <translation id="2603025384438397887">Gendannelse via telefon</translation>
@@ -30,19 +29,19 @@
 <translation id="328213018570216625">Gendannelse via ekstern lagerenhed</translation>
 <translation id="3289365543955953678">Tilslut din eksterne disk</translation>
 <translation id="3294574173405124634">GBB-demofunktioner tillader ikke, at du vender tilbage til sikker tilstand.</translation>
-<translation id="3416523611207622897">Ekstern start er deaktiveret. Få flere oplysninger her:</translation>
 <translation id="3635226996169670741">Start gendannelsesprocessen for at prøve at løse problemet. Fjern alle tilsluttede enheder, og hold derefter Esc, Opdater ( ⟳ ) og afbryderknappen ( ⏻ ) inde.</translation>
 <translation id="3697087251845525042">Self Test (kort) af lagerplads</translation>
+<translation id="3747500110898960596">Alternative bootloadere er deaktiveret. Du kan få flere oplysninger ved at gå til:</translation>
 <translation id="385051799172605136">Tilbage</translation>
 <translation id="3964506597604121312">Dine brugerdata ryddes under processen.</translation>
 <translation id="4002335453596341558">Side ned</translation>
 <translation id="4152977630022273265">Sørg for, at din eksterne disk har en gyldig afbildning af Chrome OS, og indsæt disken igen, når du er klar.</translation>
-<translation id="4403160275309808255">Alternative bootloadere er deaktiveret. Få flere oplysninger her:</translation>
 <translation id="4410491068110727276">Brug lydstyrkeknapperne til at navigere op eller ned.</translation>
 <translation id="4497270882390086583">Du kan gendanne ved hjælp af en ekstern lagerenhed som f.eks. et USB-drev eller ved hjælp af din Android-telefon.</translation>
 <translation id="4773280894882892048">Fejlretningsoplysninger</translation>
 <translation id="4815374450404670311">Hukommelsestjek (komplet)</translation>
 <translation id="4834079235849774599">2. En anden enhed med internetadgang</translation>
+<translation id="4841043913984655587">Muligheden for at starte fra en ekstern disk er deaktiveret. Du kan få flere oplysninger ved at gå til:</translation>
 <translation id="4989087579517177148">Vælg, hvordan du vil gendanne.</translation>
 <translation id="5019112228955634706">3. En strømkilde til enheden</translation>
 <translation id="5175612852476047443">Undlad at slukke din enhed</translation>
@@ -90,6 +89,7 @@
 <translation id="8789686976863801203">Du forsøger at aktivere udviklertilstand</translation>
 <translation id="8848124168564939055">Du kan ikke bruge et eksternt tastatur til at aktivere udviklertilstand. Brug de knapper på enheden, der er nævnt i navigationsvejledningen.</translation>
 <translation id="8878311588372127478">Self Test (udvidet) af lagerplads</translation>
+<translation id="8975826224585429326">Der blev ikke fundet en alternativ bootloader. Du kan se, hvordan du installerer en, ved at gå til:</translation>
 <translation id="9004305007436435169">De diagnostiske oplysninger kunne ikke hentes.</translation>
 <translation id="9040266428058825675">Hvis din eksterne lagerenhed er klar med et systembillede til gendannelse, skal du slutte den til denne enhed for at starte gendannelsesprocessen.</translation>
 </translationbundle>

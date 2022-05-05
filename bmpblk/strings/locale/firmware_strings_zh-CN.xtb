@@ -20,7 +20,6 @@
 <translation id="2188090550242711688">2. 按照 Chrome 扩展程序中显示的说明操作，将恢复映像下载到外部存储设备上</translation>
 <translation id="2270126560545545577">您现在处于开发者模式</translation>
 <translation id="2360163367862409346">此操作会清空您设备中的所有数据，并会使此设备变得不安全。</translation>
-<translation id="2398688843544960326">找不到备用的引导加载程序。如需了解如何安装此程序，请参阅：</translation>
 <translation id="2445391421565214706">若要尝试解决此问题，请启动恢复流程。请移除所有已连接的设备，然后同时按住“音量调高”按钮、“音量调低”按钮和“电源”按钮 ( ⏻ ) 至少 10 秒钟。</translation>
 <translation id="2531345960369431549">此选项会停用开发者模式，并会将您的设备恢复到初始状态。</translation>
 <translation id="2603025384438397887">使用手机进行恢复</translation>
@@ -30,19 +29,19 @@
 <translation id="328213018570216625">使用外部存储设备进行恢复</translation>
 <translation id="3289365543955953678">插入您的外部磁盘</translation>
 <translation id="3294574173405124634">GBB 标记禁止返回到安全模式。</translation>
-<translation id="3416523611207622897">“外部启动”功能处于停用状态。如需了解详情，请参阅：</translation>
 <translation id="3635226996169670741">若要尝试解决此问题，请启动恢复流程。请移除所有已连接的设备，然后同时按住 Esc 键、“刷新”键 ( ⟳ ) 和“电源”按钮 ( ⏻ )。</translation>
 <translation id="3697087251845525042">存储空间自测（简短）</translation>
+<translation id="3747500110898960596">备用的引导加载程序处于停用状态。如需了解详情，请访问：</translation>
 <translation id="385051799172605136">返回</translation>
 <translation id="3964506597604121312">在此过程中，系统会擦除您的用户数据。</translation>
 <translation id="4002335453596341558">向下翻页</translation>
 <translation id="4152977630022273265">请确保您的外部磁盘包含有效的 Chrome 操作系统映像，并在准备就绪后重新插入该磁盘。</translation>
-<translation id="4403160275309808255">备用的引导加载程序处于停用状态。如需了解详情，请参阅：</translation>
 <translation id="4410491068110727276">使用音量按钮可向上/向下移动。</translation>
 <translation id="4497270882390086583">您可以使用外部存储设备（例如 U 盘）或 Android 手机进行恢复。</translation>
 <translation id="4773280894882892048">调试信息</translation>
 <translation id="4815374450404670311">内存检查（完整）</translation>
 <translation id="4834079235849774599">2. 另一部联网设备</translation>
+<translation id="4841043913984655587">无法从外部磁盘启动。如需了解详情，请访问：</translation>
 <translation id="4989087579517177148">选择您想使用的恢复方式。</translation>
 <translation id="5019112228955634706">3. 一个电源，用于为此设备供电</translation>
 <translation id="5175612852476047443">请勿关闭设备电源</translation>
@@ -90,6 +89,7 @@
 <translation id="8789686976863801203">您正在尝试启用开发者模式</translation>
 <translation id="8848124168564939055">您无法使用外接键盘开启开发者模式。请使用导航说明中提及的设备上按钮。</translation>
 <translation id="8878311588372127478">存储空间自测（扩展）</translation>
+<translation id="8975826224585429326">找不到备用的引导加载程序。如需了解如何安装此程序，请访问：</translation>
 <translation id="9004305007436435169">无法获取诊断信息。</translation>
 <translation id="9040266428058825675">如果您的外部存储设备已装有恢复映像，请将其插入本设备中以启动恢复流程。</translation>
 </translationbundle>

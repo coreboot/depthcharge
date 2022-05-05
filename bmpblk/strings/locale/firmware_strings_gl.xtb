@@ -20,7 +20,6 @@
 <translation id="2188090550242711688">2. Sigue as instrucións da extensión de Chrome e descarga a imaxe de recuperación nun dispositivo de almacenamento externo</translation>
 <translation id="2270126560545545577">Estás no modo de programador</translation>
 <translation id="2360163367862409346">Esta acción provocará que se borren todos os datos do teu dispositivo, o cal fará que este non estea protexido.</translation>
-<translation id="2398688843544960326">Non se atopou ningún cargador de arranque alternativo. Para obter información acerca de como instalar un, consulta:</translation>
 <translation id="2445391421565214706">Para tentar solucionar o problema, inicia o proceso de recuperación. Quita todos os dispositivos que teñas conectados e mantén premidos o botón de subir o volume, o de baixalo e o de acendido ( ⏻ ) durante polo menos 10 segundos.</translation>
 <translation id="2531345960369431549">Esta opción provocará que se desactive o modo de programador e se restaure o teu dispositivo ao seu estado orixinal.</translation>
 <translation id="2603025384438397887">Recuperación co teléfono</translation>
@@ -30,19 +29,19 @@
 <translation id="328213018570216625">Recuperación cun dispositivo de almacenamento externo</translation>
 <translation id="3289365543955953678">Conecta o teu disco externo</translation>
 <translation id="3294574173405124634">As funcións experimentais de GBB non permiten volver ao modo seguro.</translation>
-<translation id="3416523611207622897">O inicio externo está desactivado. Para obter máis información, consulta:</translation>
 <translation id="3635226996169670741">Para tentar solucionar o problema, inicia o proceso de recuperación. Para iniciar o modo de recuperación, quita todos os dispositivos que teñas conectados e mantén premidas as teclas de escape, actualizar ( ⟳ ) e acender ( ⏻ ).</translation>
 <translation id="3697087251845525042">Proba automática breve do almacenamento</translation>
+<translation id="3747500110898960596">Os cargadores de arranque alternativos están desactivados. Para obter información, consulta:</translation>
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3964506597604121312">Neste proceso, borraranse os teus datos de usuario.</translation>
 <translation id="4002335453596341558">Avanzar páxina</translation>
 <translation id="4152977630022273265">Comproba que o disco externo teña unha imaxe de Chrome OS válida e volve inserilo cando estea listo.</translation>
-<translation id="4403160275309808255">Os cargadores de arranque alternativos están desactivados. Para obter máis información, consulta:</translation>
 <translation id="4410491068110727276">Utiliza os botóns de volume para desprazarte cara arriba ou cara abaixo.</translation>
 <translation id="4497270882390086583">Para realizar a recuperación, podes utilizar un dispositivo de almacenamento externo, como unha unidade USB ou o teu teléfono Android.</translation>
 <translation id="4773280894882892048">Información de depuración</translation>
 <translation id="4815374450404670311">Comprobación completa da memoria</translation>
 <translation id="4834079235849774599">2. Outro dispositivo con acceso a Internet</translation>
+<translation id="4841043913984655587">A opción de iniciar o dispositivo desde un disco externo está desactivada. Para obter información, consulta:</translation>
 <translation id="4989087579517177148">Selecciona como queres realizar a recuperación.</translation>
 <translation id="5019112228955634706">3. Unha fonte de alimentación para este dispositivo</translation>
 <translation id="5175612852476047443">Non apagues o teu dispositivo</translation>
@@ -90,6 +89,7 @@
 <translation id="8789686976863801203">Estás tentando activar o modo de programador</translation>
 <translation id="8848124168564939055">Non podes utilizar un teclado externo para activar o modo de programador. Utiliza os botóns do dispositivo indicados nas instrucións de navegación.</translation>
 <translation id="8878311588372127478">Proba automática completa do almacenamento</translation>
+<translation id="8975826224585429326">Non se atopou ningún cargador de arranque alternativo. Para obter información acerca de como instalar un, consulta:</translation>
 <translation id="9004305007436435169">Non se puido obter información de diagnóstico.</translation>
 <translation id="9040266428058825675">Se o teu dispositivo de almacenamento externo está preparado cunha imaxe de recuperación, conéctao a este dispositivo para iniciar o proceso de recuperación.</translation>
 </translationbundle>

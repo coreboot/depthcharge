@@ -20,7 +20,6 @@
 <translation id="2188090550242711688">2. Slijedite uputstva na ekstenziji za Chrome i preuzmite sliku za oporavak na vanjsku pohranu</translation>
 <translation id="2270126560545545577">Nalazite se u načinu rada za programere</translation>
 <translation id="2360163367862409346">Ovo uključuje brisanje svih podataka s uređaja koji više neće biti zaštićen.</translation>
-<translation id="2398688843544960326">Nije moguće pronaći alternativni program za učitavanje operativnog sistema. Da saznate kako ga instalirati, pogledajte:</translation>
 <translation id="2445391421565214706">Da pokušate riješiti problem, započnite proces oporavka. Uklonite sve povezane uređaje, zatim najmanje 10 sekundi držite pritisnutim dugme za pojačavanje zvuka, dugme za stišavanje zvuka i dugme za uključivanje ( ⏻ ).</translation>
 <translation id="2531345960369431549">Ova opcija će onemogućiti način rada za programere i vratiti uređaj u prvobitno stanje.</translation>
 <translation id="2603025384438397887">Oporavak pomoću telefona</translation>
@@ -30,19 +29,19 @@
 <translation id="328213018570216625">Oporavak pomoću vanjske pohrane</translation>
 <translation id="3289365543955953678">Priključite vanjski disk</translation>
 <translation id="3294574173405124634">GBB oznake ne dozvoljavaju povratak na sigurni način rada.</translation>
-<translation id="3416523611207622897">Vanjsko pokretanje je onemogućeno. Za više informacija pogledajte:</translation>
 <translation id="3635226996169670741">Da pokušate riješiti problem, započnite proces oporavka. Uklonite sve povezane uređaje, zatim držite pritisnutim dugme Esc, dugme za osvježavanje ( ⟳ ) i dugme za uključivanje ( ⏻ ).</translation>
 <translation id="3697087251845525042">Samotestiranje pohrane (skraćeno)</translation>
+<translation id="3747500110898960596">Alternativni programi za učitavanje operativnog sistema su onemogućeni. Da saznate više informacija, posjetite:</translation>
 <translation id="385051799172605136">Nazad</translation>
 <translation id="3964506597604121312">Korisnički podaci će se uništiti tokom ovog postupka.</translation>
 <translation id="4002335453596341558">Stranica prema dolje</translation>
 <translation id="4152977630022273265">Provjerite nalazi li se na vašem vanjskom disku važeća slika Chrome OS-a i ponovo umetnite disk kada budete spremni.</translation>
-<translation id="4403160275309808255">Alternativni programi za učitavanje operativnog sistema su onemogućeni. Za više informacija pogledajte:</translation>
 <translation id="4410491068110727276">Koristite dugmad za jačinu zvuka za navigiranje nagore ili nadolje.</translation>
 <translation id="4497270882390086583">Oporavak možete izvršiti koristeći vanjsku pohranu, kao što je USB disk ili pomoću Android telefona.</translation>
 <translation id="4773280894882892048">Informacije o ispravci grešaka</translation>
 <translation id="4815374450404670311">Provjera memorije (potpuna)</translation>
 <translation id="4834079235849774599">2. Drugi uređaj s pristupom internetu</translation>
+<translation id="4841043913984655587">Pokretanje sistema s vanjskog diska je onemogućeno. Da saznate više informacija, posjetite:</translation>
 <translation id="4989087579517177148">Odaberite na koji način želite izvršiti oporavak.</translation>
 <translation id="5019112228955634706">3. Izvor napajanja za ovaj uređaj</translation>
 <translation id="5175612852476047443">Nemojte isključivati uređaj</translation>
@@ -90,6 +89,7 @@
 <translation id="8789686976863801203">Pokušavate omogućiti način rada za programere</translation>
 <translation id="8848124168564939055">Ne možete koristiti vanjsku tastaturu da uključite način rada za programere. Koristite dugmad na uređaju koja su navedena u uputama za navigaciju.</translation>
 <translation id="8878311588372127478">Samotestiranje pohrane (prošireno)</translation>
+<translation id="8975826224585429326">Nije moguće pronaći alternativni program za učitavanje operativnog sistema. Da saznate kako ga instalirati, posjetite:</translation>
 <translation id="9004305007436435169">Preuzimanje dijagnostičkih informacija nije uspjelo.</translation>
 <translation id="9040266428058825675">Ako je spreman vanjski uređaj za pohranu sa slikom za oporavak, priključite ga u ovaj uređaj da započnete proces oporavka.</translation>
 </translationbundle>

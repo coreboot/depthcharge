@@ -20,7 +20,6 @@
 <translation id="2188090550242711688">2. Vadovaukitės „Chrome“ plėtinio instrukcijomis ir atsisiųskite atkuriamąją turinio kopiją į išorinę saugyklą</translation>
 <translation id="2270126560545545577">Įjungtas kūrėjo režimas</translation>
 <translation id="2360163367862409346">Bus ištrinti visi duomenys iš įrenginio ir įrenginys bus nesaugus.</translation>
-<translation id="2398688843544960326">Nepavyko rasti alternatyvios paleidyklės. Jei norite sužinoti, kaip ją įdiegti, žr. toliau nurodytas skiltis.</translation>
 <translation id="2445391421565214706">Jei norite išbandyti ir išspręsti problemą, pradėkite atkūrimo procesą. Atjunkite visus prijungtus įrenginius, tada palaikykite paspaudę garsumo padidinimo, garsumo sumažinimo ir maitinimo ( ⏻ ) mygtukus bent 10 sekundžių.</translation>
 <translation id="2531345960369431549">Pasirinkus šią parinktį bus išjungtas kūrėjo režimas ir atkurta pradinė įrenginio būsena.</translation>
 <translation id="2603025384438397887">Atkūrimas telefonu</translation>
@@ -30,19 +29,19 @@
 <translation id="328213018570216625">Atkūrimas naudojant išorinę saugyklą</translation>
 <translation id="3289365543955953678">Prijunkite išorinį diską</translation>
 <translation id="3294574173405124634">Dėl GBB žymų neleidžiama grįžti į saugų režimą.</translation>
-<translation id="3416523611207622897">Išorinio paleidimo funkcija išjungta. Jei reikia daugiau informacijos, žr. toliau nurodytas skiltis.</translation>
 <translation id="3635226996169670741">Jei norite išbandyti ir išspręsti problemą, pradėkite atkūrimo procesą. Atjunkite visus prijungtus įrenginius, tada palaikykite paspaudę klavišą „Esc“, atnaujinimo ( ⟳ ) ir maitinimo ( ⏻ ) mygtukus.</translation>
 <translation id="3697087251845525042">Saugyklos savarankiškas testavimas (trumpas)</translation>
+<translation id="3747500110898960596">Alternatyvios paleidyklės išjungtos. Jei reikia daugiau informacijos, apsilankykite nurodytu adresu:</translation>
 <translation id="385051799172605136">Atgal</translation>
 <translation id="3964506597604121312">Vykdant procesą duomenys bus išvalyti.</translation>
 <translation id="4002335453596341558">Puslapiu žemyn</translation>
 <translation id="4152977630022273265">Įsitikinkite, kad ant išorinio disko yra „Chrome“ OS vaizdas ir, kai būsite pasiruošę, įdėkite diską iš naujo.</translation>
-<translation id="4403160275309808255">Alternatyvios paleidyklės išjungtos. Jei reikia daugiau informacijos, žr. toliau nurodytas skiltis.</translation>
 <translation id="4410491068110727276">Naudodami garsumo mygtukus naršykite aukštyn arba žemyn.</translation>
 <translation id="4497270882390086583">Atkurti galite naudodami išorinę saugyklą, pvz., atmintuką, arba „Android“ telefonu.</translation>
 <translation id="4773280894882892048">Derinimo informacija</translation>
 <translation id="4815374450404670311">Atminties patikra (išsami)</translation>
 <translation id="4834079235849774599">2. Kitas įrenginys su prieiga prie interneto</translation>
+<translation id="4841043913984655587">Paleidimas iš išorinio disko išjungtas. Jei reikia daugiau informacijos, apsilankykite nurodytu adresu:</translation>
 <translation id="4989087579517177148">Pasirinkite, kaip norite atkurti.</translation>
 <translation id="5019112228955634706">3. Šio įrenginio maitinimo šaltinis</translation>
 <translation id="5175612852476047443">Neišjunkite įrenginio</translation>
@@ -90,6 +89,7 @@
 <translation id="8789686976863801203">Bandote įgalinti kūrėjo režimą</translation>
 <translation id="8848124168564939055">Negalite įjungti kūrėjo režimo išorine klaviatūra. Naudokite įrenginio mygtukus, nurodytus naršymo instrukcijose.</translation>
 <translation id="8878311588372127478">Saugyklos savarankiškas testavimas (išplėstas)</translation>
+<translation id="8975826224585429326">Nepavyko rasti alternatyvios paleidyklės. Jei norite sužinoti, kaip tokią įdiegti, apsilankykite nurodytu adresu:</translation>
 <translation id="9004305007436435169">Nepavyko gauti diagnostikos informacijos.</translation>
 <translation id="9040266428058825675">Jei išorinės saugyklos įrenginyje yra atkuriamoji turinio kopija, įdėkite ją į šį įrenginį ir pradėkite atkūrimo procesą</translation>
 </translationbundle>

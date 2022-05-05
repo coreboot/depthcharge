@@ -20,7 +20,6 @@
 <translation id="2188090550242711688">2. Postępuj zgodnie z instrukcjami w rozszerzeniu do Chrome i pobierz obraz przywracania systemu do pamięci zewnętrznej</translation>
 <translation id="2270126560545545577">Korzystasz z trybu programisty</translation>
 <translation id="2360163367862409346">Spowoduje to usunięcie wszystkich danych z Twojego urządzenia i sprawi, że nie będzie ono zabezpieczone.</translation>
-<translation id="2398688843544960326">Nie udało się znaleźć innego programu rozruchowego. Aby dowiedzieć się, jak go zainstalować, zobacz:</translation>
 <translation id="2445391421565214706">Aby spróbować rozwiązać ten problem, rozpocznij proces przywracania. Odłącz wszystkie podłączone urządzenia, a następnie przytrzymaj przez co najmniej 10 sekund przyciski zwiększania głośności, zmniejszania głośności i zasilania ( ⏻ ).</translation>
 <translation id="2531345960369431549">Ta opcja spowoduje wyłączenie trybu programisty i przywrócenie urządzenia do pierwotnego stanu.</translation>
 <translation id="2603025384438397887">Przywróć za pomocą telefonu</translation>
@@ -30,19 +29,19 @@
 <translation id="328213018570216625">Przywróć z pamięci zewnętrznej</translation>
 <translation id="3289365543955953678">Podłącz dysk zewnętrzny</translation>
 <translation id="3294574173405124634">Na powrót do trybu bezpiecznego nie zezwalają flagi GBB.</translation>
-<translation id="3416523611207622897">Ładowanie zewnętrzne jest wyłączone. Aby dowiedzieć się więcej, zobacz:</translation>
 <translation id="3635226996169670741">Aby spróbować rozwiązać ten problem, rozpocznij proces przywracania. Odłącz wszystkie podłączone urządzenia, a następnie przytrzymaj Escape oraz przyciski odświeżania ( ⟳ ) i zasilania ( ⏻ ).</translation>
 <translation id="3697087251845525042">Autotest pamięci (krótki)</translation>
+<translation id="3747500110898960596">Inne programy rozruchowe są wyłączone. Więcej informacji znajdziesz na:</translation>
 <translation id="385051799172605136">Wstecz</translation>
 <translation id="3964506597604121312">Spowoduje to usunięcie wszystkich Twoich danych.</translation>
 <translation id="4002335453596341558">Strona w dół</translation>
 <translation id="4152977630022273265">Sprawdź, czy na dysku zewnętrznym jest prawidłowy obraz Chrome OS, i ponownie podłącz dysk.</translation>
-<translation id="4403160275309808255">Inne programy rozruchowe są wyłączone. Aby dowiedzieć się więcej, zobacz:</translation>
 <translation id="4410491068110727276">Aby przejść w górę lub w dół, użyj przycisków głośności.</translation>
 <translation id="4497270882390086583">Możesz przywrócić dane, korzystając z pamięci zewnętrznej, np. dysku USB lub z telefonu z Androidem.</translation>
 <translation id="4773280894882892048">Dane debugowania</translation>
 <translation id="4815374450404670311">Sprawdzenie pamięci (pełne)</translation>
 <translation id="4834079235849774599">2. Inne urządzenie z dostępem do internetu.</translation>
+<translation id="4841043913984655587">Uruchamianie z dysku zewnętrznego jest wyłączone. Więcej informacji znajdziesz na:</translation>
 <translation id="4989087579517177148">Wybierz sposób przywracania.</translation>
 <translation id="5019112228955634706">3. Źródło zasilania tego urządzenia</translation>
 <translation id="5175612852476047443">Nie wyłączaj urządzenia</translation>
@@ -90,6 +89,7 @@
 <translation id="8789686976863801203">Próbujesz włączyć tryb programisty</translation>
 <translation id="8848124168564939055">Trybu programisty nie można włączyć za pomocą klawiatury zewnętrznej. Użyj przycisków na urządzeniu wskazanych w instrukcjach nawigacji.</translation>
 <translation id="8878311588372127478">Autotest pamięci (rozszerzony)</translation>
+<translation id="8975826224585429326">Nie udało się znaleźć innego programu rozruchowego. Aby dowiedzieć się, jak go zainstalować, wejdź na:</translation>
 <translation id="9004305007436435169">Nie udało się pobrać informacji diagnostycznych.</translation>
 <translation id="9040266428058825675">Jeśli urządzenie pamięci zewnętrznej, które zawiera obraz przywracania systemu, jest gotowe, podłącz je do tego urządzenia, by rozpocząć przywracanie.</translation>
 </translationbundle>

@@ -20,7 +20,6 @@
 <translation id="2188090550242711688">2. Följ anvisningarna för Chrome-tillägget och ladda ned återställningsavbildningen på ett externt lagringsutrymme</translation>
 <translation id="2270126560545545577">Utvecklarläget är aktiverat</translation>
 <translation id="2360163367862409346">Detta innebär att all data rensas från enheten och enheten inte längre är säker.</translation>
-<translation id="2398688843544960326">Det gick inte att hitta en alternativ starthanterare. Ta reda på hur du installerar en här:</translation>
 <translation id="2445391421565214706">Starta återställningsprocessen för att försöka åtgärda problemet. Ta bort alla anslutna enheter och håll sedan båda volymknapparna och strömbrytaren ( ⏻ ) nedtryckta i minst 10 sekunder.</translation>
 <translation id="2531345960369431549">Med det här alternativet inaktiveras utvecklarläget och enheten återställs till sitt ursprungliga läge.</translation>
 <translation id="2603025384438397887">Återställning med telefonen</translation>
@@ -30,19 +29,19 @@
 <translation id="328213018570216625">Återställ med externt lagringsutrymme</translation>
 <translation id="3289365543955953678">Anslut den externa disken</translation>
 <translation id="3294574173405124634">Att återgå till säkert läge tillåts inte av GBB-flaggor.</translation>
-<translation id="3416523611207622897">Extern start har inaktiverats. Mer information finns här:</translation>
 <translation id="3635226996169670741">Starta återställningsprocessen för att försöka åtgärda problemet. Ta bort alla anslutna enheter och håll sedan Esc, uppdateringsknappen ( ⟳ ) och strömbrytaren nedtryckta ( ⏻ ).</translation>
 <translation id="3697087251845525042">Självtest av lagringsutrymme (kort)</translation>
+<translation id="3747500110898960596">Alternativa starthanterare har inaktiverats. Läs mer här:</translation>
 <translation id="385051799172605136">Föregående</translation>
 <translation id="3964506597604121312">Din användardata rensas från enheten under processen.</translation>
 <translation id="4002335453596341558">En sida ned</translation>
 <translation id="4152977630022273265">Kontrollera att det finns en giltig avbildning av Chrome OS på den externa disken och sätt i disken igen när du är redo.</translation>
-<translation id="4403160275309808255">Alternativa starthanterare har inaktiverats. Mer information finns här:</translation>
 <translation id="4410491068110727276">Navigera uppåt eller nedåt med volymknapparna.</translation>
 <translation id="4497270882390086583">Du kan göra en återställning med en Android-telefon eller en extern lagringsenhet, till exempel ett USB-minne.</translation>
 <translation id="4773280894882892048">Felsökningsinformation</translation>
 <translation id="4815374450404670311">Minneskontroll (fullständig)</translation>
 <translation id="4834079235849774599">2. Annan enhet med internetanslutning</translation>
+<translation id="4841043913984655587">Möjligheten att starta från extern disk har inaktiverats. Läs mer här:</translation>
 <translation id="4989087579517177148">Välj metod för återställningen.</translation>
 <translation id="5019112228955634706">3. En strömkälla för enheten</translation>
 <translation id="5175612852476047443">Stäng inte av enheten</translation>
@@ -90,6 +89,7 @@
 <translation id="8789686976863801203">Du försöker aktivera utvecklarläget</translation>
 <translation id="8848124168564939055">Du kan inte aktivera utvecklarläget med ett externt tangentbord. Använd knapparna på enheten som anges i navigeringsanvisningarna.</translation>
 <translation id="8878311588372127478">Självtest av lagringsutrymme (utökat)</translation>
+<translation id="8975826224585429326">Det gick inte att hitta en alternativ starthanterare. Ta reda på hur du installerar en här:</translation>
 <translation id="9004305007436435169">Det gick inte att hämta diagnostisk information.</translation>
 <translation id="9040266428058825675">Om du har förberett det externa lagringsutrymmet med återställningsavbildningen startar du återställningsprocessen genom att ansluta den till enheten.</translation>
 </translationbundle>

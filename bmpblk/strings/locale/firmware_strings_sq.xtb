@@ -20,7 +20,6 @@
 <translation id="2188090550242711688">2. Ndiq udhëzimet në shtesën e Chrome dhe shkarko imazhin e rikuperimit në një hapësirë ruajtëse të jashtme</translation>
 <translation id="2270126560545545577">Je në modalitetin si zhvillues</translation>
 <translation id="2360163367862409346">Kjo përfshin spastrimin e të gjitha të dhënave nga pajisja jote dhe do ta bëjë pajisjen tënde të pasigurt.</translation>
-<translation id="2398688843544960326">Nuk mund të gjendej një ngarkues alternativ i sistemit. Për të mësuar se si të instalosh një të tillë, shiko:</translation>
 <translation id="2445391421565214706">Për të provuar ta rregullosh problemin, fillo procesin e rikuperimit. Hiq të gjitha pajisjet e lidhura dhe më pas mbaj të shtypur "Volumi lart", "Volumi poshtë" dhe butonin e "Energjisë" ( ⏻ ) për të paktën 10 sekonda.</translation>
 <translation id="2531345960369431549">Ky opsion do të çaktivizojë modalitetin si zhvillues dhe do të restaurojë pajisjen tënde në gjendjen fillestare.</translation>
 <translation id="2603025384438397887">Rikuperimi duke përdorur telefonin</translation>
@@ -30,19 +29,19 @@
 <translation id="328213018570216625">Rikuperimi duke përdorur hapësirën ruajtëse të jashtme</translation>
 <translation id="3289365543955953678">Lidh diskun e jashtëm</translation>
 <translation id="3294574173405124634">Kthimi në modalitetin e sigurt nuk lejohet nga raportimet GBB.</translation>
-<translation id="3416523611207622897">Nisja e jashtme është çaktivizuar. Për më shumë informacion, shiko:</translation>
 <translation id="3635226996169670741">Për të provuar ta rregullosh problemin, fillo procesin e rikuperimit. Hiq të gjitha pajisjet e lidhura dhe më pas mbaj të shtypur "Esc", "Refresh" ( ⟳ ), dhe butonin e "Energjisë" ( ⏻ ).</translation>
 <translation id="3697087251845525042">Vetëtestimi i hapësirës ruajtëse (i shkurtër)</translation>
+<translation id="3747500110898960596">Ngarkuesit alternativë të sistemit janë çaktivizuar. Për më shumë informacione, vizito:</translation>
 <translation id="385051799172605136">Prapa</translation>
 <translation id="3964506597604121312">Të dhënat e tua të përdoruesit do të fshihen gjatë procesit.</translation>
 <translation id="4002335453596341558">Faqja poshtë</translation>
 <translation id="4152977630022273265">Sigurohu që disku yt i jashtëm të ketë një imazh të vlefshëm të Chrome OS dhe rifut diskun kur të jesh gati.</translation>
-<translation id="4403160275309808255">Ngarkuesit alternativë të sistemit janë çaktivizuar. Për më shumë informacion, shiko:</translation>
 <translation id="4410491068110727276">Përdor butonat e volumit për të naviguar lart ose poshtë.</translation>
 <translation id="4497270882390086583">Mund të rikuperosh duke përdorur një hapësirë ruajtëse të jashtme, si p.sh. një njësi USB ose duke përdorur telefonin tënd Android.</translation>
 <translation id="4773280894882892048">Informacionet e korrigjimit</translation>
 <translation id="4815374450404670311">Kontrolli i memories (i plotë)</translation>
 <translation id="4834079235849774599">2. Një pajisje tjetër me qasje në internet</translation>
+<translation id="4841043913984655587">Ndezja nga një disk i jashtëm është çaktivizuar. Për më shumë informacione, vizito:</translation>
 <translation id="4989087579517177148">Zgjidh se si dëshiron të rikuperosh.</translation>
 <translation id="5019112228955634706">3. Një burim energjie për këtë pajisje</translation>
 <translation id="5175612852476047443">Mos e fik pajisjen</translation>
@@ -90,6 +89,7 @@
 <translation id="8789686976863801203">Po përpiqesh të aktivizosh modalitetin si zhvillues</translation>
 <translation id="8848124168564939055">Nuk mund të përdorësh një tastierë të jashtme për të aktivizuar modalitetin "si zhvillues". Përdor butonat në pajisje siç përmendet në udhëzimet e navigimit.</translation>
 <translation id="8878311588372127478">Vetëtestimi i hapësirës ruajtëse (i zgjeruar)</translation>
+<translation id="8975826224585429326">Nuk mund të gjendej një ngarkues alternativ i sistemit. Për të mësuar se si të instalosh një të tillë, vizito:</translation>
 <translation id="9004305007436435169">Informacioni i diagnostikimit nuk mund të merrej.</translation>
 <translation id="9040266428058825675">Nëse pajisja ruajtëse e jashtme është gati me një imazh rikuperimi, lidhe me këtë pajisje për të nisur procesin e rikuperimit.</translation>
 </translationbundle>

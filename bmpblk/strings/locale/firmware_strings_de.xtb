@@ -20,7 +20,6 @@
 <translation id="2188090550242711688">2. Der Anleitung in der Chrome-Erweiterung folgen und das Wiederherstellungsimage auf ein externes Speichermedium herunterladen</translation>
 <translation id="2270126560545545577">Sie befinden sich im Entwicklermodus</translation>
 <translation id="2360163367862409346">Hierbei werden alle Daten von Ihrem Gerät gelöscht und Ihr Gerät wird unsicher.</translation>
-<translation id="2398688843544960326">Es wurde kein alternativer Bootloader gefunden. Weitere Informationen zum Installieren eines Bootloaders:</translation>
 <translation id="2445391421565214706">Bitte starten Sie die Wiederherstellung, um das Problem zu beheben. Entfernen Sie alle verbundenen Geräte und halten Sie dann die Lauter- und die Leisertaste sowie die Ein-/Aus-Taste ( ⏻ ) für mindestens 10 Sekunden gedrückt.</translation>
 <translation id="2531345960369431549">Mit dieser Option wird der Entwicklermodus deaktiviert und Ihr Gerät auf den ursprünglichen Zustand zurückgesetzt.</translation>
 <translation id="2603025384438397887">Wiederherstellung mit dem Mobiltelefon</translation>
@@ -30,19 +29,19 @@
 <translation id="328213018570216625">Wiederherstellung mithilfe eines externen Speichermediums</translation>
 <translation id="3289365543955953678">Externes Speichermedium anschließen</translation>
 <translation id="3294574173405124634">GBB-Meldungen verhindern Rückkehr in den sicheren Modus.</translation>
-<translation id="3416523611207622897">Externer Start ist deaktiviert. Weitere Informationen:</translation>
 <translation id="3635226996169670741">Bitte starten Sie die Wiederherstellung, um das Problem zu beheben. Entfernen Sie alle verbundenen Geräte und halten Sie dann die Esc-Taste, die Aktualisierungstaste ( ⟳ ) sowie die Ein-/Aus-Taste ( ⏻ ) gedrückt.</translation>
 <translation id="3697087251845525042">Speicherplatz prüfen (kurz)</translation>
+<translation id="3747500110898960596">Alternative Bootloader sind deaktiviert. Weitere Informationen:</translation>
 <translation id="385051799172605136">Zurück</translation>
 <translation id="3964506597604121312">Ihre Daten werden während des Vorgangs gelöscht.</translation>
 <translation id="4002335453596341558">Seite nach unten</translation>
 <translation id="4152977630022273265">Prüfen Sie, ob Ihr externes Speichermedium ein gültiges Chrome OS-Image enthält, und schließen Sie das Speichermedium wieder an, sobald es bereit ist.</translation>
-<translation id="4403160275309808255">Alternative Bootloader sind deaktiviert. Weitere Informationen:</translation>
 <translation id="4410491068110727276">Mit den Lautstärketasten können Sie nach oben oder unten gehen.</translation>
 <translation id="4497270882390086583">Sie können die Wiederherstellung mithilfe eines externen Speichermediums – etwa eines USB-Sticks – oder mit Ihrem Android-Mobiltelefon vornehmen.</translation>
 <translation id="4773280894882892048">Informationen zur Fehlerbehebung</translation>
 <translation id="4815374450404670311">Überprüfung des Arbeitsspeichers (vollständig)</translation>
 <translation id="4834079235849774599">2. Ein anderes Gerät mit Internetzugang</translation>
+<translation id="4841043913984655587">Das Starten von einem externen Laufwerk ist deaktiviert. Weitere Informationen:</translation>
 <translation id="4989087579517177148">Wählen Sie aus, wie Sie die Wiederherstellung vornehmen möchten.</translation>
 <translation id="5019112228955634706">3. Eine Stromquelle für dieses Gerät</translation>
 <translation id="5175612852476047443">Bitte schalten Sie Ihr Gerät nicht aus</translation>
@@ -90,6 +89,7 @@
 <translation id="8789686976863801203">Sie sind im Begriff, den Entwicklermodus zu aktivieren</translation>
 <translation id="8848124168564939055">Der Entwicklermodus kann nicht über eine externe Tastatur aktiviert werden. Bitte verwenden Sie die in den Hinweisen zur Bedienung angegebenen Gerätetasten.</translation>
 <translation id="8878311588372127478">Speicherplatz prüfen (erweitert)</translation>
+<translation id="8975826224585429326">Es wurde kein alternativer Bootloader gefunden. Weitere Informationen zum Installieren eines Bootloaders:</translation>
 <translation id="9004305007436435169">Diagnosedaten konnten nicht abgerufen werden.</translation>
 <translation id="9040266428058825675">Wenn das externe Speichermedium mit dem Wiederherstellungsimage bereit ist, schließen Sie dieses an das Gerät an, um die Wiederherstellung zu starten.</translation>
 </translationbundle>

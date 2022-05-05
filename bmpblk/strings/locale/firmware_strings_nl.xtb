@@ -20,7 +20,6 @@
 <translation id="2188090550242711688">2. Volg de instructies in de Chrome-extensie en download de herstelimage naar een externe opslag</translation>
 <translation id="2270126560545545577">Je gebruikt de ontwikkelaarsmodus</translation>
 <translation id="2360163367862409346">Alle gegevens op je apparaat worden gewist en je apparaat is niet meer beveiligd.</translation>
-<translation id="2398688843544960326">Kan geen alternatieve bootloader vinden. Voor meer informatie over hoe je er een installeert, ga je naar:</translation>
 <translation id="2445391421565214706">Start het herstelproces om het probleem op te lossen. Verwijder alle gekoppelde apparaten en houd daarna de knop voor volume omhoog, de knop voor volume omlaag en de aan/uit-knop ( ⏻ ) minimaal tien seconden ingedrukt.</translation>
 <translation id="2531345960369431549">Met deze optie wordt de ontwikkelaarsmodus uitgeschakeld en wordt je apparaat teruggezet naar de oorspronkelijke status.</translation>
 <translation id="2603025384438397887">Herstellen met telefoon</translation>
@@ -30,19 +29,19 @@
 <translation id="328213018570216625">Herstellen met externe opslag</translation>
 <translation id="3289365543955953678">Je externe schijf aansluiten</translation>
 <translation id="3294574173405124634">Teruggaan naar de beveiligde modus is niet toegestaan op basis van de GBB-flags.</translation>
-<translation id="3416523611207622897">Extern opstarten staat uit. Meer informatie:</translation>
 <translation id="3635226996169670741">Start het herstelproces om het probleem op te lossen. Verwijder alle gekoppelde apparaten en houd Esc, Vernieuwen ( ⟳ ) en de aan/uit-knop ( ⏻ ) ingedrukt.</translation>
 <translation id="3697087251845525042">Zelfcontrole voor opslag (kort)</translation>
+<translation id="3747500110898960596">Alternatieve bootloaders staan uit. Voor meer informatie ga je naar:</translation>
 <translation id="385051799172605136">Terug</translation>
 <translation id="3964506597604121312">Je gebruikersgegevens worden gewist tijdens dit proces.</translation>
 <translation id="4002335453596341558">Pagina omlaag</translation>
 <translation id="4152977630022273265">Zorg ervoor dat je externe schijf een geldige Chrome OS-image heeft en plaats de schijf opnieuw als hij klaar is.</translation>
-<translation id="4403160275309808255">Alternatieve bootloaders staan uit. Meer informatie:</translation>
 <translation id="4410491068110727276">Gebruik de volumeknoppen om omhoog of omlaag te navigeren.</translation>
 <translation id="4497270882390086583">Je kunt herstellen met een extern opslagapparaat, zoals een USB-drive, of met je Android-telefoon.</translation>
 <translation id="4773280894882892048">Foutopsporingsinfo</translation>
 <translation id="4815374450404670311">Geheugencheck (volledig)</translation>
 <translation id="4834079235849774599">2. Nog een apparaat met internettoegang</translation>
+<translation id="4841043913984655587">Opstarten vanaf een externe schijf staat uit. Voor meer informatie ga je naar:</translation>
 <translation id="4989087579517177148">Selecteer hoe je wilt herstellen.</translation>
 <translation id="5019112228955634706">3. Een voedingsbron voor dit apparaat</translation>
 <translation id="5175612852476047443">Schakel je apparaat niet uit</translation>
@@ -90,6 +89,7 @@
 <translation id="8789686976863801203">Je probeert de ontwikkelaarsmodus in te schakelen</translation>
 <translation id="8848124168564939055">Met een extern toetsenbord kun je de ontwikkelaarsmodus niet aanzetten. Gebruik de apparaatknoppen die worden vermeld in de navigatie-instructies.</translation>
 <translation id="8878311588372127478">Zelfcontrole voor opslag (uitgebreid)</translation>
+<translation id="8975826224585429326">Kan geen alternatieve bootloader vinden. Voor meer informatie over hoe je er een installeert, ga je naar:</translation>
 <translation id="9004305007436435169">Kan geen diagnostische informatie ophalen.</translation>
 <translation id="9040266428058825675">Als je externe opslagapparaat met de herstelimage klaar is voor gebruik, sluit je deze aan op dit apparaat om het herstelproces te starten.</translation>
 </translationbundle>

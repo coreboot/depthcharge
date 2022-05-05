@@ -20,7 +20,6 @@
 <translation id="2188090550242711688">2. Urmează instrucțiunile pentru extensia Chrome și descarcă imaginea de recuperare pe un dispozitiv de stocare externă.</translation>
 <translation id="2270126560545545577">Ești în modul pentru dezvoltatori</translation>
 <translation id="2360163367862409346">Astfel, vor fi șterse toate datele de pe dispozitiv, iar dispozitivul va deveni nesigur.</translation>
-<translation id="2398688843544960326">Nu s-a găsit un bootloader alternativ. Pentru a afla cum să instalezi unul, accesează:</translation>
 <translation id="2445391421565214706">Pentru a încerca să remediezi problema, inițiază procesul de recuperare. Elimină toate dispozitivele conectate, apoi apasă lung butonul de creștere a volumului, butonul de reducere a volumului și butonul de pornire ( ⏻ ) timp de minimum 10 secunde.</translation>
 <translation id="2531345960369431549">Opțiunea va dezactiva modul pentru dezvoltatori și va restabili dispozitivul la starea inițială.</translation>
 <translation id="2603025384438397887">Recuperare folosind telefonul</translation>
@@ -30,19 +29,19 @@
 <translation id="328213018570216625">Recuperare cu un dispozitiv de stocare externă</translation>
 <translation id="3289365543955953678">Conectează discul extern</translation>
 <translation id="3294574173405124634">Revenirea la modul sigur nu este permisă din cauza semnalelor GBB.</translation>
-<translation id="3416523611207622897">Pornirea externă este dezactivată. Pentru mai multe informații, accesează:</translation>
 <translation id="3635226996169670741">Pentru a încerca să remediezi problema, inițiază procesul de recuperare. Elimină toate dispozitivele conectate și apasă lung Esc, tasta de actualizare ( ⟳ ) și butonul de pornire ( ⏻ ).</translation>
 <translation id="3697087251845525042">Autotest pentru stocare (rapid)</translation>
+<translation id="3747500110898960596">Bootloaderele alternative sunt dezactivate. Pentru mai multe informații, accesează:</translation>
 <translation id="385051799172605136">Înapoi</translation>
 <translation id="3964506597604121312">Datele utilizatorului se vor șterge în acest proces.</translation>
 <translation id="4002335453596341558">O pagină mai jos</translation>
 <translation id="4152977630022273265">Verifică dacă discul extern are o imagine validă a sistemului de operare Chrome și reintrodu discul când ești gata.</translation>
-<translation id="4403160275309808255">Bootloaderele alternative sunt dezactivate. Pentru mai multe informații, accesează:</translation>
 <translation id="4410491068110727276">Folosește butoanele de volum pentru a naviga în sus sau în jos.</translation>
 <translation id="4497270882390086583">Poți recupera folosind suporturi externe, precum o unitate USB, sau folosind telefonul Android.</translation>
 <translation id="4773280894882892048">Informații de remediere a erorilor</translation>
 <translation id="4815374450404670311">Verificare (completă) a memoriei</translation>
 <translation id="4834079235849774599">2. Un alt dispozitiv cu acces la internet.</translation>
+<translation id="4841043913984655587">Pornirea de pe un disc extern este dezactivată. Pentru mai multe informații, accesează:</translation>
 <translation id="4989087579517177148">Selectează cum dorești să recuperezi.</translation>
 <translation id="5019112228955634706">3. O sursă de alimentare pentru acest dispozitiv</translation>
 <translation id="5175612852476047443">Nu închide dispozitivul</translation>
@@ -90,6 +89,7 @@
 <translation id="8789686976863801203">Încerci să activezi modul pentru dezvoltatori</translation>
 <translation id="8848124168564939055">Nu poți folosi o tastatură externă ca să activezi modul pentru dezvoltatori. Folosește butoanele dispozitivului indicate în instrucțiunile de navigare.</translation>
 <translation id="8878311588372127478">Autotest pentru stocare (extins)</translation>
+<translation id="8975826224585429326">Nu s-a găsit un bootloader alternativ. Pentru a afla cum să instalezi unul, accesează:</translation>
 <translation id="9004305007436435169">Nu s-au putut obține informații de diagnosticare.</translation>
 <translation id="9040266428058825675">Dacă dispozitivul de stocare extern este pregătit cu o imagine de recuperare, conectează-l la acest dispozitiv ca să începi procesul de recuperare.</translation>
 </translationbundle>

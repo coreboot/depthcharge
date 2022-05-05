@@ -20,7 +20,6 @@
 <translation id="2188090550242711688">2. Siga as instruções apresentadas na extensão do Chrome e transfira a imagem de recuperação para um dispositivo de armazenamento externo.</translation>
 <translation id="2270126560545545577">Está no modo de programador</translation>
 <translation id="2360163367862409346">Este processo consiste em apagar todos os dados do dispositivo e torna o dispositivo inseguro.</translation>
-<translation id="2398688843544960326">Não foi possível encontrar um carregador de arranque alternativo. Para aprender a instalar um, veja:</translation>
 <translation id="2445391421565214706">Para tentar corrigir o problema, inicie o processo de recuperação. Remova todos os dispositivos ligados e prima sem soltar os botões Aumentar volume, Diminuir volume e Ligar/desligar ( ⏻ ) durante, pelo menos, 10 segundos.</translation>
 <translation id="2531345960369431549">Esta opção desativa o modo de programador e restaura o estado original do dispositivo.</translation>
 <translation id="2603025384438397887">Recuperar com o telemóvel</translation>
@@ -30,19 +29,19 @@
 <translation id="328213018570216625">Recuperação através do armazenamento externo</translation>
 <translation id="3289365543955953678">Ligue o seu disco externo</translation>
 <translation id="3294574173405124634">O regresso ao modo seguro está proibido pelas sinalizações GBB.</translation>
-<translation id="3416523611207622897">O arranque externo está desativado. Para mais informações, consulte:</translation>
 <translation id="3635226996169670741">Para tentar corrigir o problema, inicie o processo de recuperação. Remova todos os dispositivos ligados e, em seguida, prima sem soltar os botões Esc, Atualizar ( ⟳ ) e Ligar/desligar ( ⏻ ).</translation>
 <translation id="3697087251845525042">Teste automático de armazenamento (curto)</translation>
+<translation id="3747500110898960596">Os carregadores de arranque alternativos estão desativados. Para mais informações, visite:</translation>
 <translation id="385051799172605136">Anterior</translation>
 <translation id="3964506597604121312">O processo vai limpar os seus dados de utilizador.</translation>
 <translation id="4002335453596341558">Página para baixo</translation>
 <translation id="4152977630022273265">Certifique-se de que o disco externo contém uma imagem do Chrome OS válida e volte a inseri-lo quando estiver pronto.</translation>
-<translation id="4403160275309808255">Os carregadores de arranque alternativos estão desativados. Para mais informações, consulte:</translation>
 <translation id="4410491068110727276">Utilize os botões de volume para navegar para cima ou para baixo.</translation>
 <translation id="4497270882390086583">Pode efetuar a recuperação com uma unidade de armazenamento externo, como uma unidade USB, ou através do seu telemóvel Android.</translation>
 <translation id="4773280894882892048">Informações de depuração</translation>
 <translation id="4815374450404670311">Verificação da memória (completa)</translation>
 <translation id="4834079235849774599">2. Outro dispositivo com acesso à Internet.</translation>
+<translation id="4841043913984655587">O arranque a partir de um disco externo está desativado. Para mais informações, visite:</translation>
 <translation id="4989087579517177148">Selecione como pretende efetuar a recuperação.</translation>
 <translation id="5019112228955634706">3. Uma fonte de alimentação para este dispositivo.</translation>
 <translation id="5175612852476047443">Não desligue o dispositivo</translation>
@@ -90,6 +89,7 @@
 <translation id="8789686976863801203">Está a tentar ativar o modo de programador</translation>
 <translation id="8848124168564939055">Não é possível utilizar um teclado externo para ativar o modo de programador. Utilize os botões no dispositivo indicados nas instruções de navegação.</translation>
 <translation id="8878311588372127478">Teste automático de armazenamento (alargado)</translation>
+<translation id="8975826224585429326">Não foi possível encontrar um carregador de arranque alternativo. Para aprender a instalar um, visite:</translation>
 <translation id="9004305007436435169">Não foi possível obter informações de diagnóstico.</translation>
 <translation id="9040266428058825675">Se o seu dispositivo de armazenamento externo estiver pronto com uma imagem de recuperação, ligue-o a este dispositivo para iniciar o processo de recuperação.</translation>
 </translationbundle>

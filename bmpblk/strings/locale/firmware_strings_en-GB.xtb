@@ -20,7 +20,6 @@
 <translation id="2188090550242711688">2. Follow instructions on the Chrome extension, and download the recovery image onto external storage</translation>
 <translation id="2270126560545545577">You are in developer mode</translation>
 <translation id="2360163367862409346">This involves erasing all data from your device, and will make your device insecure.</translation>
-<translation id="2398688843544960326">Could not find an alternative bootloader. To learn how to install one, see:</translation>
 <translation id="2445391421565214706">To try and fix the issue, start the recovery process. Remove all connected devices, then hold down the volume up, volume down and power button ( ⏻ ) for at least 10 seconds.</translation>
 <translation id="2531345960369431549">This option will disable developer mode and restore your device to its original state.</translation>
 <translation id="2603025384438397887">Recovery using phone</translation>
@@ -30,19 +29,19 @@
 <translation id="328213018570216625">Recovery using external storage</translation>
 <translation id="3289365543955953678">Plug in your external disk</translation>
 <translation id="3294574173405124634">Returning to secure mode disallowed by GBB flags.</translation>
-<translation id="3416523611207622897">External boot is disabled. For more information, see:</translation>
 <translation id="3635226996169670741">To try and fix the issue, start the recovery process. Remove all connected devices, then hold down Esc, refresh ( ⟳ ) and power ( ⏻ ).</translation>
 <translation id="3697087251845525042">Storage self-test (short)</translation>
+<translation id="3747500110898960596">Alternative bootloaders are disabled. For more info, visit:</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="3964506597604121312">Your user data will be wiped in the process.</translation>
 <translation id="4002335453596341558">Page down</translation>
 <translation id="4152977630022273265">Make sure that your external disk has a valid Chrome OS image, and re-insert the disk when ready.</translation>
-<translation id="4403160275309808255">Alternative bootloaders are disabled. For more information, see:</translation>
 <translation id="4410491068110727276">Use the volume buttons to navigate up or down.</translation>
 <translation id="4497270882390086583">You can recover using external storage such as a USB drive, or using your Android phone.</translation>
 <translation id="4773280894882892048">Debug info</translation>
 <translation id="4815374450404670311">Memory check (full)</translation>
 <translation id="4834079235849774599">2. Another device with Internet access</translation>
+<translation id="4841043913984655587">Booting from an external disk is disabled. For more info, visit:</translation>
 <translation id="4989087579517177148">Select how you’d like to recover.</translation>
 <translation id="5019112228955634706">3. A power source for this device</translation>
 <translation id="5175612852476047443">Please do not power off your device</translation>
@@ -90,6 +89,7 @@
 <translation id="8789686976863801203">You are attempting to enable developer mode</translation>
 <translation id="8848124168564939055">You cannot use an external keyboard to turn on developer mode. Please use the on-device buttons noted in the navigation instructions.</translation>
 <translation id="8878311588372127478">Storage self-test (extended)</translation>
+<translation id="8975826224585429326">Could not find an alternative bootloader. To learn how to install one, visit:</translation>
 <translation id="9004305007436435169">Could not get diagnostic information.</translation>
 <translation id="9040266428058825675">If your external storage device is ready with a recovery image, plug it into this device to start the recovery process.</translation>
 </translationbundle>

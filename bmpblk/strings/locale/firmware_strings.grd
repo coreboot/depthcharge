@@ -398,15 +398,15 @@ Something went wrong booting from the internal disk. View firmware log for detai
       </message>
       <message name="error_ext_boot_disabled"
                desc="Error when external boot is disabled. A URL will be shown below this line.">
-External boot is disabled. For more information, see:
+Booting from an external disk is disabled. For more info, visit:
       </message>
       <message name="error_alt_boot_disabled"
                desc="Error when alternate bootloaders are disabled. A URL will be shown below this line.">
-Alternate bootloaders are disabled. For more information, see:
+Alternate bootloaders are disabled. For more info, visit:
       </message>
       <message name="error_no_alt_bootloader"
                desc="Error when no alternate bootloader is found. A URL will be shown below this line.">
-Could not find an alternate bootloader. To learn how to install one, see:
+Could not find an alternate bootloader. To learn how to install one, visit:
       </message>
       <message name="error_alt_boot_failed" desc="Error when alternate boot failed">
 Something went wrong launching the alternate bootloader. View firmware log for details.

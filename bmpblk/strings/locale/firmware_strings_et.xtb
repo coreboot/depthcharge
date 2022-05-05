@@ -20,7 +20,6 @@
 <translation id="2188090550242711688">2. Järgige Chrome'i laienduse juhiseid ja laadige taastekujutis alla välisele salvestusseadmele</translation>
 <translation id="2270126560545545577">Olete arendaja režiimis</translation>
 <translation id="2360163367862409346">See hõlmab kõigi andmete kustutamist seadmest ja muudab teie seadme ebaturvaliseks.</translation>
-<translation id="2398688843544960326">Alternatiivset käivituslaadurit ei õnnestunud leida. Installimisjuhiseid vaadake siit:</translation>
 <translation id="2445391421565214706">Probleemi lahendamiseks alustage taastamist. Eemaldage kõik ühendatud seadmed, seejärel hoidke vähemalt 10 sekundit all helitugevuse suurendamise nuppu, helitugevuse vähendamise nuppu ja toitenuppu ( ⏻ ).</translation>
 <translation id="2531345960369431549">See valik keelab arendaja režiimi ja taastab seadme algse oleku.</translation>
 <translation id="2603025384438397887">Taastamine telefoni abil</translation>
@@ -30,19 +29,19 @@
 <translation id="328213018570216625">Taastamine välise salvestusseadme abil</translation>
 <translation id="3289365543955953678">Ühendage väline ketas</translation>
 <translation id="3294574173405124634">Turvarežiimi naasmine on GBB lippudega keelatud.</translation>
-<translation id="3416523611207622897">Väline käivitamine on keelatud. Lisateavet vaadake siit:</translation>
 <translation id="3635226996169670741">Probleemi lahendamiseks alustage taastamist. Eemaldage kõik ühendatud seadmed, seejärel hoidke all paoklahvi, värskendamisnuppu ( ⟳ ) ja toitenuppu ( ⏻ ).</translation>
 <translation id="3697087251845525042">Salvestusruumi enesetest (lühike)</translation>
+<translation id="3747500110898960596">Alternatiivsed käivituslaadurid on keelatud. Lisateavet vaadake siit:</translation>
 <translation id="385051799172605136">Tagasi</translation>
 <translation id="3964506597604121312">Teie kasutajaandmed kustutatakse selle protsessi käigus.</translation>
 <translation id="4002335453596341558">Lehe võrra alla</translation>
 <translation id="4152977630022273265">Veenduge, et teie välisel kettal oleks sobilik Chrome OS-i kujutis, seejärel sisestage ketas uuesti.</translation>
-<translation id="4403160275309808255">Alternatiivsed käivituslaadurid on keelatud. Lisateavet vaadake siit:</translation>
 <translation id="4410491068110727276">Kasutage üles või alla liikumiseks helitugevuse nuppe.</translation>
 <translation id="4497270882390086583">Taastamiseks saab kasutada välist salvestusseadet, nt USB-ketast või oma Android-telefoni.</translation>
 <translation id="4773280894882892048">Silumisteave</translation>
 <translation id="4815374450404670311">Mälukontroll (täielik)</translation>
 <translation id="4834079235849774599">2. Teine internetiühendusega seade</translation>
+<translation id="4841043913984655587">Väliselt kettalt käivitamine on keelatud. Lisateavet vaadake siit:</translation>
 <translation id="4989087579517177148">Valige, kuidas soovite taastada.</translation>
 <translation id="5019112228955634706">3. Selle seadme toiteallikas</translation>
 <translation id="5175612852476047443">Ärge lülitage seadet välja</translation>
@@ -90,6 +89,7 @@
 <translation id="8789686976863801203">Üritate lubada arendaja režiimi</translation>
 <translation id="8848124168564939055">Te ei saa arendaja režiimi sisselülitamiseks välist klaviatuuri kasutada. Kasutage navigeerimisjuhistes märgitud seadmel olevaid nuppe.</translation>
 <translation id="8878311588372127478">Salvestusruumi enesetest (laiendatud)</translation>
+<translation id="8975826224585429326">Alternatiivset käivituslaadurit ei õnnestunud leida. Installimisjuhiseid vaadake siit:</translation>
 <translation id="9004305007436435169">Diagnostikateavet ei õnnestunud hankida.</translation>
 <translation id="9040266428058825675">Kui taastekujutis on teie välisel salvestusseadmel valmis, ühendage see selle seadmega, et alustada taasteprotsessi.</translation>
 </translationbundle>

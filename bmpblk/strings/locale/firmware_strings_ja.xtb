@@ -20,7 +20,6 @@
 <translation id="2188090550242711688">2. Chrome OS リカバリ アプリの手順に沿って、外部ストレージにリカバリ イメージをダウンロードします</translation>
 <translation id="2270126560545545577">デベロッパー（開発者専用）モードです</translation>
 <translation id="2360163367862409346">この操作を行うと、デバイスのデータがすべて消去され、デバイスは保護されていない状態になります。</translation>
-<translation id="2398688843544960326">別のブートローダーが見つかりませんでした。インストール方法については、次をご覧ください。</translation>
 <translation id="2445391421565214706">デバイスを修復するには、接続されているすべてのデバイスを取り外した後、音量大キー、音量小キー、電源ボタン（ ⏻ ）を 10 秒以上長押しします。</translation>
 <translation id="2531345960369431549">このオプションを選択すると、デベロッパー モードが無効になり、デバイスが初期状態に修復されます。</translation>
 <translation id="2603025384438397887">スマートフォンを使用して修復</translation>
@@ -30,19 +29,19 @@
 <translation id="328213018570216625">外部ストレージを使用して修復</translation>
 <translation id="3289365543955953678">外部ディスクの接続</translation>
 <translation id="3294574173405124634">セキュアモードに戻ることは GBB フラグによって禁止されています。</translation>
-<translation id="3416523611207622897">外部ブートが無効になっています。詳しくは以下をご覧ください。</translation>
 <translation id="3635226996169670741">デバイスを修復するには、接続されているすべてのデバイスを取り外した後、Esc キー、更新キー（ ⟳ ）、電源ボタン（ ⏻ ）を長押しします。</translation>
 <translation id="3697087251845525042">ストレージのセルフテスト（簡易）</translation>
+<translation id="3747500110898960596">別のブートローダーは無効です。詳しくは次をご覧ください。</translation>
 <translation id="385051799172605136">戻る</translation>
 <translation id="3964506597604121312">このプロセスではユーザーデータがすべて消去されます。</translation>
 <translation id="4002335453596341558">次のページ</translation>
 <translation id="4152977630022273265">外部ディスクに有効な Chrome OS イメージがあることを確認し、準備ができたらディスクをもう一度接続してください。</translation>
-<translation id="4403160275309808255">別のブートローダーは無効です。詳しくは以下をご覧ください。</translation>
 <translation id="4410491068110727276">音量ボタンを使用して、上または下に移動します。</translation>
 <translation id="4497270882390086583">USB メモリなどの外部ストレージや Android スマートフォンを使用して修復できます。</translation>
 <translation id="4773280894882892048">デバッグ情報の表示</translation>
 <translation id="4815374450404670311">メモリのチェック（詳細）</translation>
 <translation id="4834079235849774599">2. インターネットに接続されているもう 1 台のデバイス</translation>
+<translation id="4841043913984655587">外部ディスクからの起動は無効になっています。詳しくは次をご覧ください。</translation>
 <translation id="4989087579517177148">デバイスの修復方法を選択してください。</translation>
 <translation id="5019112228955634706">3. このデバイスの修復作業中の電池切れを防ぐためにデバイスを電源に接続してください</translation>
 <translation id="5175612852476047443">デバイスの電源を切らないでください</translation>
@@ -90,6 +89,7 @@
 <translation id="8789686976863801203">デベロッパー モードを有効にしようとしています</translation>
 <translation id="8848124168564939055">外部キーボードを使用してデベロッパー モードをオンにすることはできません。操作手順に記載されているデバイス上のボタンを使用してください。</translation>
 <translation id="8878311588372127478">ストレージのセルフテスト（詳細）</translation>
+<translation id="8975826224585429326">別のブートローダーが見つかりませんでした。インストール方法については、次をご覧ください。</translation>
 <translation id="9004305007436435169">診断情報を取得できませんでした。</translation>
 <translation id="9040266428058825675">Chrome OS のリカバリ イメージが含まれる USB メモリまたは SD カードをデバイスに接続してください。システムが自動的に修復作業を開始します。</translation>
 </translationbundle>

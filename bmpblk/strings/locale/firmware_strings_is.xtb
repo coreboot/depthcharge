@@ -20,7 +20,6 @@
 <translation id="2188090550242711688">2. Fylgdu upplýsingunum í Chrome viðbótinni og sæktu endurheimtarmyndina í ytri geymslu</translation>
 <translation id="2270126560545545577">Kveikt er á forritarastillingu</translation>
 <translation id="2360163367862409346">Þetta felur í sér að eyða öllum gögnum úr tækinu og mun gera tækið óöruggt.</translation>
-<translation id="2398688843544960326">Annað ræsiforrit fannst ekki. Til að kynna þér hvernig hægt er að setja upp ræsiforrit skaltu skoða:</translation>
 <translation id="2445391421565214706">Til að reyna að lagfæra vandamálið skaltu hefja endurheimtarferlið. Taktu öll tengd tæki úr sambandi og haltu svo niðri hnöppunum til að hækka og lækka hljóðstyrk og aflrofanum ( ⏻ ) í a.m.k. 10 sekúndur.</translation>
 <translation id="2531345960369431549">Þessi valkostur mun slökkva á forritarastillingu og stilla tækið á upphaflegar stillingar.</translation>
 <translation id="2603025384438397887">Endurheimt með síma</translation>
@@ -30,19 +29,19 @@
 <translation id="328213018570216625">Endurheimt með ytri geymslu</translation>
 <translation id="3289365543955953678">Tengdu ytra drifið</translation>
 <translation id="3294574173405124634">GBB-flögg koma í veg fyrir að hægt sé að fara aftur í örugga stillingu.</translation>
-<translation id="3416523611207622897">Slökkt er á ytri ræsingu. Frekari upplýsingar má finna í:</translation>
 <translation id="3635226996169670741">Til að reyna að lagfæra vandamálið skaltu hefja endurheimtarferlið. Taktu öll tengd tæki úr sambandi og haltu svo inni „Esc“, „Refresh“ ( ⟳ ) og aflrofanum ( ⏻ ).</translation>
 <translation id="3697087251845525042">Sjálfsprófun minnis (snögg)</translation>
+<translation id="3747500110898960596">Slökkt er á öðrum ræsiforritum. Frekari upplýsingar er að finna hér:</translation>
 <translation id="385051799172605136">Til baka</translation>
 <translation id="3964506597604121312">Notendagögnum þínum verður eytt meðan á þessu stendur.</translation>
 <translation id="4002335453596341558">Síða niður</translation>
 <translation id="4152977630022273265">Gakktu úr skugga um að gild Chrome stýrikerfismynd sé á ytra drifinu og settu það aftur inn þegar þú ert til.</translation>
-<translation id="4403160275309808255">Slökkt er á öðrum ræsiforritum. Frekari upplýsingar má finna í:</translation>
 <translation id="4410491068110727276">Notaðu hljóðstyrkshnappana til að fletta upp eða niður.</translation>
 <translation id="4497270882390086583">Hægt er að nota ytri geymslu við endurheimt, t.d. USB-drif eða Android-síma.</translation>
 <translation id="4773280894882892048">Kembiupplýsingar</translation>
 <translation id="4815374450404670311">Athugun á minni (heildarathugun)</translation>
 <translation id="4834079235849774599">2. Annað tæki með internetaðgangi</translation>
+<translation id="4841043913984655587">Slökkt er á ræsingu með utanáliggjandi diski. Frekari upplýsingar er að finna hér:</translation>
 <translation id="4989087579517177148">Veldu hvernig þú vilt endurheimta.</translation>
 <translation id="5019112228955634706">3. Aflgjafa fyrir tækið</translation>
 <translation id="5175612852476047443">Ekki slökkva á tækinu</translation>
@@ -90,6 +89,7 @@
 <translation id="8789686976863801203">Þú ert að reyna að kveikja á forritarastillingu</translation>
 <translation id="8848124168564939055">Ekki er hægt að nota ytra lyklaborð til að kveikja á forritarastillingu. Notaðu hnappa tækisins sem er fjallað um í flettingarleiðbeiningunum.</translation>
 <translation id="8878311588372127478">Sjálfsprófun minnis (ítarleg)</translation>
+<translation id="8975826224585429326">Annað ræsiforrit fannst ekki. Opnaðu eftirfarandi vefsvæði til að fá upplýsingar um uppsetningu:</translation>
 <translation id="9004305007436435169">Ekki var hægt að sækja greiningargögn.</translation>
 <translation id="9040266428058825675">Ef ytra geymslutækið er með endurheimtarmynd skaltu stinga því í samband við þetta tæki til að hefja endurheimtarferlið</translation>
 </translationbundle>
