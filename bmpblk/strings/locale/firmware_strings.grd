@@ -392,6 +392,9 @@ You cannot use an external keyboard to turn on developer mode. Please use the on
       <message name="error_to_norm_not_allowed" desc="Error when to-norm transition is not allowed">
 Returning to secure mode disallowed by GBB flags.
       </message>
+      <message name="error_dev_boot_not_allowed" desc="Error when booting in developer mode is not allowed">
+Booting in developer mode is not allowed. For more info, visit:
+      </message>
       <message name="error_int_boot_failed"
                desc="Error when internal boot failed.">
 Something went wrong booting from the internal disk. View firmware log for details.

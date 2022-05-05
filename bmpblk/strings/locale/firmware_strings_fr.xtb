@@ -86,6 +86,7 @@
 <translation id="8377165353588213941">Vous avez atteint la dernière page</translation>
 <translation id="8569584079758810124">Impossible d'obtenir les informations de débogage.</translation>
 <translation id="8720490351198901261">Vous avez atteint la première page</translation>
+<translation id="8734661833241888861">Le démarrage en mode développeur n'est pas autorisé. Pour en savoir plus, rendez-vous sur :</translation>
 <translation id="8789686976863801203">Vous tentez d'activer le mode développeur</translation>
 <translation id="8848124168564939055">Vous ne pouvez pas utiliser de clavier externe pour activer le mode développeur. Veuillez utiliser les boutons de l'appareil indiqués dans les instructions de navigation.</translation>
 <translation id="8878311588372127478">Auto-test de l'espace de stockage (long)</translation>

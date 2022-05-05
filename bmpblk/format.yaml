@@ -115,6 +115,7 @@ localized_files:
   error_dev_mode_enabled: error
   error_untrusted_confirm: error
   error_to_norm_not_allowed: error
+  error_dev_boot_not_allowed: error
   error_int_boot_failed: error
   error_ext_boot_disabled: error
   error_alt_boot_disabled: error
