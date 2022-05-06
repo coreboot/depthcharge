@@ -9,6 +9,7 @@ tests-y += ui_developer-test
 tests-y += ui_developer-detachable-test
 tests-y += ui_diagnostic-test
 
+ui-test-common-srcs += tests/mocks/cbmem_console.c
 ui-test-common-srcs += tests/mocks/log.c
 ui-test-common-srcs += tests/mocks/ui.c
 ui-test-common-srcs += tests/mocks/ui_callbacks.c
@@ -30,6 +31,7 @@ ui-test-common-srcs += src/vboot/ui/menu.c
 ui-test-common-srcs += src/vboot/ui/navigation.c
 ui-test-common-srcs += src/vboot/ui/screens.c
 
+ui-test-common-mocks += cbmem_console_snapshot
 ui-test-common-mocks += ui_display
 ui-test-common-mocks += vb2api_gbb_get_flags
 ui-test-common-mocks += vb2api_get_locale_id

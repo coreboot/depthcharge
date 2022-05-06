@@ -19,12 +19,6 @@
 #include <libpayload.h>
 #include <vb2_api.h>
 
-const char *vb2ex_get_firmware_log(int reset)
-{
-	/* TODO(b/151200757): Support headless devices */
-	return "";
-}
-
 vb2_error_t vb2ex_diag_get_storage_health(const char **out)
 {
 	/* TODO(b/151200757): Support headless devices */

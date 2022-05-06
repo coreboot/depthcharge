@@ -40,7 +40,7 @@ archivesrc := screenshot/archive.c
 screenshot-srcs += $(mainsrc)
 screenshot-srcs += $(archivesrc)
 screenshot-srcs += screenshot/mocks/boot/payload.c
-screenshot-srcs += screenshot/mocks/ui_callbacks.c
+screenshot-srcs += screenshot/mocks/cbmem_console.c
 screenshot-srcs += screenshot/mocks/vb2api.c
 screenshot-srcs += screenshot/stubs/display.c
 screenshot-srcs += screenshot/stubs/firmware_id.c
@@ -72,6 +72,7 @@ force-objs := $(addprefix $(screenshotobj)/,$(patsubst %.c,%.o,$(force-srcs)))
 .FORCE:
 $(force-objs): .FORCE
 
+screenshot-mocks += cbmem_console_snapshot
 screenshot-mocks += vb2api_diagnostic_ui_enabled
 screenshot-mocks += vb2api_gbb_read_hwid
 screenshot-mocks += vb2api_phone_recovery_enabled

@@ -24,20 +24,6 @@
 #include "diag/storage_test.h"
 #include "vboot/ui.h"
 
-const char *vb2ex_get_firmware_log(int reset)
-{
-	static char *buf;
-	if (!buf || reset) {
-		free(buf);
-		buf = cbmem_console_snapshot();
-		if (buf)
-			printf("Read cbmem console: size=%zu\n", strlen(buf));
-		else
-			printf("Failed to read cbmem console\n");
-	}
-	return buf;
-}
-
 #define DEFAULT_DIAGNOSTIC_OUTPUT_SIZE (64 * KiB)
 
 vb2_error_t vb2ex_diag_get_storage_health(const char **out)

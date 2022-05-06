@@ -4,6 +4,7 @@
 #include <tests/vboot/common.h>
 #include <tests/vboot/ui/common.h>
 #include <mocks/callbacks.h>
+#include <mocks/cbmem_console.h>
 #include <mocks/util/commonparams.h>
 #include <mocks/vb2api.h>
 #include <vboot_api.h>
@@ -901,7 +902,7 @@ static void test_firmware_log(void **state)
 
 	setup_will_return_common();
 
-	firmware_log_snapshots_count = 0;
+	cbmem_console_snapshots_count = 0;
 	WILL_CLOSE_LID_IN(10);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -929,7 +930,7 @@ static void test_firmware_log_again_reacquire_new_one(void **state)
 
 	setup_will_return_common();
 
-	firmware_log_snapshots_count = 0;
+	cbmem_console_snapshots_count = 0;
 	WILL_CLOSE_LID_IN(20);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -960,7 +961,7 @@ static void test_firmware_log_back_not_reacquire_new_one(void **state)
 
 	setup_will_return_common();
 
-	firmware_log_snapshots_count = 0;
+	cbmem_console_snapshots_count = 0;
 	WILL_CLOSE_LID_IN(20);
 	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
 

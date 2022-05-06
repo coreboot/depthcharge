@@ -721,10 +721,22 @@ static const struct ui_screen_info debug_info_screen = {
 static vb2_error_t firmware_log_set_content(struct ui_context *ui,
 					    int reset)
 {
-	const char *log_string = vb2ex_get_firmware_log(reset);
-	if (!log_string)
-		return set_ui_error_and_go_back(ui, UI_ERROR_FIRMWARE_LOG);
-	if (vb2_is_error(log_page_update(ui, log_string)))
+	char *str = ui->firmware_log_str;
+
+	if (!str || reset) {
+		ui->firmware_log_str = NULL;
+		free(str);
+		str = cbmem_console_snapshot();
+		if (!str) {
+			UI_ERROR("ERROR: Failed to read cbmem console\n");
+			return set_ui_error_and_go_back(
+				ui, UI_ERROR_FIRMWARE_LOG);
+		}
+		UI_INFO("Read cbmem console: size=%zu\n", strlen(str));
+	}
+
+	ui->firmware_log_str = str;
+	if (vb2_is_error(log_page_update(ui, str)))
 		return set_ui_error_and_go_back(ui, UI_ERROR_FIRMWARE_LOG);
 	return VB2_SUCCESS;
 }
