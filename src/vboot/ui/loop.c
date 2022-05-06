@@ -173,7 +173,7 @@ static vb2_error_t ui_loop_impl(
 			if (ui.error_beep ||
 			    (ui.state->error_code &&
 			     prev_state.error_code != ui.state->error_code)) {
-				vb2ex_beep(250, 400);
+				ui_beep(250, 400);
 				ui.error_beep = 0;
 			}
 

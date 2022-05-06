@@ -28,6 +28,7 @@ loop-test-srcs += tests/mocks/ui_callbacks.c
 loop-test-srcs += tests/mocks/ui_display.c
 loop-test-srcs += tests/mocks/vb2api.c
 loop-test-srcs += tests/mocks/vboot/ui/archive.c
+loop-test-srcs += tests/mocks/vboot/ui/beep.c
 loop-test-srcs += src/vboot/ui/navigation.c
 loop-test-srcs += src/vboot/ui/menu.c
 loop-test-mocks += VbExIsShutdownRequest

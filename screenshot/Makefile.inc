@@ -42,6 +42,7 @@ screenshot-srcs += $(archivesrc)
 screenshot-srcs += screenshot/mocks/boot/payload.c
 screenshot-srcs += screenshot/mocks/cbmem_console.c
 screenshot-srcs += screenshot/mocks/vb2api.c
+screenshot-srcs += screenshot/stubs/beep.c
 screenshot-srcs += screenshot/stubs/display.c
 screenshot-srcs += screenshot/stubs/firmware_id.c
 screenshot-srcs += screenshot/stubs/input.c

@@ -13,6 +13,7 @@ ui-test-common-srcs += tests/mocks/cbmem_console.c
 ui-test-common-srcs += tests/mocks/log.c
 ui-test-common-srcs += tests/mocks/ui.c
 ui-test-common-srcs += tests/mocks/ui_callbacks.c
+ui-test-common-srcs += tests/mocks/vboot/ui/beep.c
 ui-test-common-srcs += tests/mocks/vboot/ui/input.c
 ui-test-common-srcs += tests/mocks/ui_display.c
 ui-test-common-srcs += tests/mocks/vb2api.c

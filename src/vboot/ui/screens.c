@@ -1375,7 +1375,7 @@ static vb2_error_t developer_mode_action(struct ui_context *ui)
 	/* Beep at 20 and 20.5 seconds. */
 	if ((ui->beep_count == 0 && elapsed_ms > DEV_DELAY_BEEP1_MS) ||
 	    (ui->beep_count == 1 && elapsed_ms > DEV_DELAY_BEEP2_MS)) {
-		vb2ex_beep(250, 400);
+		ui_beep(250, 400);
 		ui->beep_count++;
 	}
 

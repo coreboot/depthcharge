@@ -1122,6 +1122,22 @@ int ui_is_power_pressed(void);
 int ui_is_physical_presence_pressed(void);
 
 /******************************************************************************/
+/* beep.c */
+
+/*
+ * Play a beep sound of the specified frequency for the duration msec.
+ *
+ * This is effectively a sleep call that makes noise. The implementation may
+ * beep at a fixed frequency if frequency support is not available. Regardless
+ * of whether any errors occur, this function is expected to delay for the
+ * specified duration before returning.
+ *
+ * @param msec		Duration of beep in milliseconds.
+ * @param frequency	Sound frequency in Hz.
+ */
+void ui_beep(uint32_t msec, uint32_t frequency);
+
+/******************************************************************************/
 /* loop.c */
 
 /*

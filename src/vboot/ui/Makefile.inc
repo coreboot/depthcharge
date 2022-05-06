@@ -12,6 +12,7 @@
 ##
 
 depthcharge-y += archive.c
+depthcharge-y += beep.c
 depthcharge-y += bitmap.c
 
 ifneq ($(CONFIG_HEADLESS),y)
