@@ -190,12 +190,15 @@ def diff(args):
 def merge(args):
     in_locales = get_locales_from_dir(args.in_dir)
     out_locales = get_locales_from_dir(args.out_dir)
-    if in_locales != out_locales:
-        raise RuntimeError(
-            "The input xtb files and the output xtb files don't match.")
+    if not out_locales.issubset(in_locales):
+        raise RuntimeError('Missing locales in input xtb files: {}'
+                           .format(out_locales - in_locales))
+    if not in_locales.issubset(out_locales):
+        logging.warning('Ignoring extra locales in input xtb files: %s',
+                        in_locales - out_locales)
 
     prev_id_sets = None
-    for locale in sorted(in_locales):
+    for locale in sorted(out_locales):
         id_sets = merge_xtb_data(locale, args.in_dir, args.out_dir,
                                  args.message_ids)
         if prev_id_sets and id_sets != prev_id_sets:
