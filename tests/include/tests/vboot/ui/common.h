@@ -49,7 +49,7 @@ vb2_error_t _ui_display(enum ui_screen screen, uint32_t locale_id,
 
 #define _EXPECT_UI_DISPLAY(_screen, _locale_id, _selected_item, \
 			   _disabled_item_mask, _hidden_item_mask, \
-			   _current_page, ...) \
+			   _current_page, _error_code, ...) \
 	do { \
 		if ((_screen) == MOCK_IGNORE) \
 			expect_any(_ui_display, screen); \
@@ -80,6 +80,10 @@ vb2_error_t _ui_display(enum ui_screen screen, uint32_t locale_id,
 		else \
 			expect_value(_ui_display, current_page, \
 				     (_current_page)); \
+		if ((_error_code) == MOCK_IGNORE) \
+			expect_any(_ui_display, error_code); \
+		else \
+			expect_value(_ui_display, error_code, (_error_code)); \
 	} while (0)
 
 /*
@@ -109,6 +113,7 @@ vb2_error_t _ui_display(enum ui_screen screen, uint32_t locale_id,
 		expect_any_always(_ui_display, disabled_item_mask); \
 		expect_any_always(_ui_display, hidden_item_mask); \
 		expect_any_always(_ui_display, current_page); \
+		expect_any_always(_ui_display, error_code); \
 	} while (0)
 
 /*

@@ -1262,16 +1262,6 @@ static vb2_error_t developer_mode_init(struct ui_context *ui)
 	enum vb2_dev_default_boot_target default_boot =
 		vb2api_get_dev_default_boot_target(ui->ctx);
 
-	/* Hide "Return to secure mode" button if GBB forces dev mode. */
-	if (vb2api_gbb_get_flags(ui->ctx) & VB2_GBB_FLAG_FORCE_DEV_SWITCH_ON)
-		VB2_SET_BIT(ui->state->hidden_item_mask,
-			    DEVELOPER_MODE_ITEM_RETURN_TO_SECURE);
-
-	/* Hide "Boot from external disk" button if not allowed. */
-	if (!(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_EXTERNAL_ALLOWED))
-		VB2_SET_BIT(ui->state->hidden_item_mask,
-			    DEVELOPER_MODE_ITEM_BOOT_EXTERNAL);
-
 	/* Hide "Select alternate bootloader" button if not allowed. */
 	if (!(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALTFW_ALLOWED))
 		VB2_SET_BIT(ui->state->hidden_item_mask,
@@ -1409,11 +1399,11 @@ static vb2_error_t draw_developer_mode_desc(
 	x = UI_MARGIN_H;
 
 	/*
-	 * Description about returning to secure mode. When the "Return to
-	 * secure mode" button is hidden, hide this description line.
+	 * Description about returning to secure mode. When developer mode is
+	 * forced by GBB flags, hide this description line.
 	 */
-	if (!VB2_GET_BIT(state->hidden_item_mask,
-			 DEVELOPER_MODE_ITEM_RETURN_TO_SECURE)) {
+	if (!(vb2api_gbb_get_flags(ui->ctx) &
+	      VB2_GBB_FLAG_FORCE_DEV_SWITCH_ON)) {
 		VB2_TRY(ui_get_bitmap("dev_desc0.bmp", locale_code, 0,
 				      &bitmap));
 		h = UI_DESC_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
@@ -1492,7 +1482,7 @@ static vb2_error_t developer_to_norm_init(struct ui_context *ui)
 {
 	/* Don't allow to-norm if GBB forces dev mode */
 	if (vb2api_gbb_get_flags(ui->ctx) & VB2_GBB_FLAG_FORCE_DEV_SWITCH_ON) {
-		UI_ERROR("ERROR: to-norm not allowed\n");
+		UI_WARN("WARNING: to-norm not allowed by gbb flag\n");
 		return set_ui_error_and_go_back(
 			ui, UI_ERROR_TO_NORM_NOT_ALLOWED);
 	}

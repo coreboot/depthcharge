@@ -486,14 +486,50 @@ static void test_developer_ui_select_to_norm_keyboard(void **state)
 	assert_int_equal(vb2ex_developer_ui(ui->ctx), VB2_REQUEST_REBOOT);
 }
 
-static void test_developer_ui_to_norm_dev_forced_by_gbb(void **state)
+static void test_developer_ui_select_to_norm_disallowed(void **state)
 {
 	struct ui_context *ui = *state;
 
-	EXPECT_UI_DISPLAY_ANY_ALWAYS();
-	EXPECT_BEEP(250, 400, mock_time_ms);
-	WILL_PRESS_KEY(UI_KEY_DEV_TO_NORM, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 2);
+
+	WILL_PRESS_KEY(UI_KEY_UP, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 1);
+
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 1,
+			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE,
+			  UI_ERROR_TO_NORM_NOT_ALLOWED);
+	EXPECT_BEEP(250, 400, mock_time_ms);
+
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);  /* Cancel error box */
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 1,
+			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE,
+			  UI_ERROR_NONE);
+
+	will_return_maybe(ui_keyboard_read, 0);
+	will_return_maybe(vb2api_get_dev_default_boot_target,
+			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
+	will_return_maybe(vb2api_gbb_get_flags,
+			  VB2_GBB_FLAG_FORCE_DEV_SWITCH_ON);
+
+	assert_int_equal(vb2ex_developer_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
+}
+
+static void test_developer_ui_select_to_norm_keyboard_disallowed(void **state)
+{
+	struct ui_context *ui = *state;
+
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 2);
+
+	WILL_PRESS_KEY(UI_KEY_DEV_TO_NORM, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 2,
+			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE,
+			  UI_ERROR_TO_NORM_NOT_ALLOWED);
+	EXPECT_BEEP(250, 400, mock_time_ms);
+
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, 2);
+
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
@@ -638,7 +674,7 @@ static void test_developer_screen_disabled_and_hidden_force_dev(void **state)
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, MOCK_IGNORE,
-			  0x0, 0x2);
+			  0x0, 0x0);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags,
@@ -658,7 +694,7 @@ static void test_developer_screen_disabled_and_hidden_only_altfw(void **state)
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP1_MS);
 	EXPECT_BEEP(250, 400, mock_time_ms + DEV_DELAY_BEEP2_MS);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE, MOCK_IGNORE, MOCK_IGNORE,
-			  0x0, 0x8);
+			  0x0, 0x0);
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
@@ -888,7 +924,8 @@ int main(void)
 		UI_TEST(test_developer_ui_select_to_norm),
 		UI_TEST(test_developer_ui_select_to_norm_cancel),
 		UI_TEST(test_developer_ui_select_to_norm_keyboard),
-		UI_TEST(test_developer_ui_to_norm_dev_forced_by_gbb),
+		UI_TEST(test_developer_ui_select_to_norm_disallowed),
+		UI_TEST(test_developer_ui_select_to_norm_keyboard_disallowed),
 		UI_TEST(test_developer_ui_short_delay),
 		UI_TEST(test_developer_ui_stop_timer_on_input_normal_delay),
 		UI_TEST(test_developer_ui_stop_timer_on_input_short_delay),
