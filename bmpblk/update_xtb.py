@@ -11,6 +11,7 @@ import os
 import re
 from xml.etree import ElementTree
 
+
 DEFAULT_SRC_STRING_PATH = ('blaze-genfiles/googleclient/chrome/'
                            'transconsole_resources/strings/cros')
 DEFAULT_DEST_STRINGS_PATH = os.path.join(os.path.dirname(__file__), 'strings',

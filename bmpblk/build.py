@@ -5,19 +5,22 @@
 """Script to generate bitmaps for firmware screens."""
 
 import argparse
-from collections import defaultdict, namedtuple, Counter
+from collections import Counter
+from collections import defaultdict
+from collections import namedtuple
+from concurrent.futures import ProcessPoolExecutor
 import copy
 import glob
 import json
-from concurrent.futures import ProcessPoolExecutor
 import os
 import re
 import shutil
 import subprocess
 import sys
 
-import yaml
 from PIL import Image
+import yaml
+
 
 SCRIPT_BASE = os.path.dirname(os.path.abspath(__file__))
 
