@@ -20,6 +20,7 @@
 #include "vboot/util/flag.h"
 
 #define CR50_INT_18	18
+#define EC_SOC_INT_ODL	84
 
 static int cr50_irq_status(void)
 {
@@ -48,11 +49,18 @@ static struct GpioOps fake_gpio_1 = {
 	.get = get_gpio_1,
 };
 
+static GpioOps *mkbp_int_ops(void)
+{
+	KernGpio *mkbp_int_gpio = new_kern_fch_gpio_input(EC_SOC_INT_ODL);
+	/* Active-low, has to be inverted */
+	return new_gpio_not(&mkbp_int_gpio->ops);
+}
+
 static int board_setup(void)
 {
 	CrosEcLpcBus *cros_ec_lpc_bus =
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
-	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, mkbp_int_ops());
 	register_vboot_ec(&cros_ec->vboot);
 
 	sysinfo_install_flags(NULL);
