@@ -5,9 +5,11 @@
 
 #include "base/init_funcs.h"
 #include "base/late_init_funcs.h"
+#include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/bus/i2s/mtk_v1.h"
 #include "drivers/bus/spi/mtk.h"
 #include "drivers/bus/usb/usb.h"
+#include "drivers/ec/anx3447/anx3447.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/cros/spi.h"
 #include "drivers/flash/spi.h"
@@ -82,6 +84,8 @@ static int board_backlight_update(DisplayOps *me, uint8_t enable)
 
 static int board_setup(void)
 {
+	CrosECTunnelI2c *cros_ec_i2c_tunnel;
+
 	sysinfo_install_flags(new_mtk_gpio_input);
 	flag_replace(FLAG_LIDSW, cros_ec_lid_switch_flag());
 	if (!CONFIG(DETACHABLE))
@@ -97,6 +101,10 @@ static int board_setup(void)
 					      new_mtk_gpio_input);
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, ec_int);
 	register_vboot_ec(&cros_ec->vboot);
+
+	cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec, /* i2c bus */ 1);
+	Anx3447 *anx3447 = new_anx3447(cros_ec_i2c_tunnel, /* ec pd# */ 0);
+	register_vboot_auxfw(&anx3447->fw_ops);
 
 	/* Set up TPM */
 	GpioOps *spi2_cs = new_gpio_not(new_mtk_gpio_output(PAD_SPI2_CSB));
