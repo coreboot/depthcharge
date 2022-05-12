@@ -75,6 +75,7 @@ enum storage_media {
 	STORAGE_SDHCI,
 	STORAGE_EMMC,
 	STORAGE_RTKMMC,
+	STORAGE_UFS,
 };
 
 struct emmc_config {
