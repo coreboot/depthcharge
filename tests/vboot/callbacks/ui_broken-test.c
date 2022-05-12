@@ -112,7 +112,6 @@ static void test_broken_ui_power_button_shutdown(void **state)
 	struct ui_context *ui = *state;
 
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_maybe(ui_is_power_pressed, 0);
 	will_return_maybe(ui_is_lid_open, 1);
 	WILL_PRESS_KEY(UI_BUTTON_POWER_SHORT_PRESS, 0);
 	EXPECT_UI_DISPLAY_ANY();

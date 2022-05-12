@@ -85,7 +85,6 @@ static void test_manual_ui_no_disk_found_invalid_kernel(void **state)
 	setup_will_return_common();
 
 	will_return_maybe(ui_keyboard_read, 0);
-	will_return_maybe(ui_is_power_pressed, 0);
 	will_return_maybe(ui_is_lid_open, 1);
 	WILL_LOAD_EXTERNAL(VB2_ERROR_LK_NO_DISK_FOUND);
 	WILL_LOAD_EXTERNAL(VB2_ERROR_LK_INVALID_KERNEL_FOUND);
@@ -103,7 +102,6 @@ static void test_manual_ui_invalid_kernel_no_disk_found(void **state)
 	setup_will_return_common();
 
 	will_return_maybe(ui_keyboard_read, 0);
-	will_return_maybe(ui_is_power_pressed, 0);
 	will_return_maybe(ui_is_lid_open, 1);
 	WILL_LOAD_EXTERNAL(VB2_ERROR_LK_INVALID_KERNEL_FOUND);
 	WILL_LOAD_EXTERNAL(VB2_ERROR_LK_NO_DISK_FOUND);
@@ -121,7 +119,6 @@ static void test_manual_ui_internet_recovery_shortcut(void **state)
 
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_INTERNET_RECOVERY, 0);
-	will_return_maybe(ui_is_power_pressed, 0);
 	will_return_maybe(ui_is_lid_open, 1);
 	WILL_LOAD_EXTERNAL_MAYBE(VB2_ERROR_LK_NO_DISK_FOUND);
 	expect_value(VbTryLoadMiniOsKernel, minios_flags, 0);
@@ -172,7 +169,6 @@ static void test_manual_ui_internet_recovery_menu_old(void **state)
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #3: Firmware log*/
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #4: Internet recovery */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	will_return_maybe(ui_is_power_pressed, 0);
 	will_return_maybe(ui_is_lid_open, 1);
 	WILL_LOAD_EXTERNAL_MAYBE(VB2_ERROR_LK_NO_DISK_FOUND);
 	expect_value(VbTryLoadMiniOsKernel, minios_flags,
@@ -219,7 +215,6 @@ static void test_manual_ui_boot_with_valid_image(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	will_return_maybe(ui_is_power_pressed, 0);
 	will_return_maybe(ui_is_lid_open, 1);
 	will_return_maybe(ui_keyboard_read, 0);
 	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
@@ -234,7 +229,6 @@ static void test_manual_ui_boot_with_valid_image_later(void **state)
 
 	setup_will_return_common();
 	will_return_maybe(ui_keyboard_read, 0);
-	will_return_maybe(ui_is_power_pressed, 0);
 	will_return_maybe(ui_is_lid_open, 1);
 	WILL_LOAD_EXTERNAL_COUNT(VB2_ERROR_LK_NO_DISK_FOUND, 2);
 	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
@@ -248,7 +242,6 @@ static void test_manual_ui_boot_invalid_remove_valid(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	will_return_maybe(ui_is_power_pressed, 0);
 	will_return_maybe(ui_is_lid_open, 1);
 	will_return_maybe(ui_keyboard_read, 0);
 	WILL_LOAD_EXTERNAL(VB2_ERROR_MOCK);
@@ -358,7 +351,6 @@ static void test_manual_ui_confirm_to_dev(void **state)
 
 	setup_will_return_common();
 
-	will_return_maybe(ui_is_power_pressed, 0);
 	will_return_maybe(ui_is_lid_open, 1);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
@@ -385,7 +377,6 @@ static void test_manual_ui_confirm_to_dev_ppkeyboard(void **state)
 
 	setup_will_return_common();
 
-	will_return_maybe(ui_is_power_pressed, 0);
 	will_return_maybe(ui_is_lid_open, 1);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
@@ -497,7 +488,6 @@ static void test_manual_ui_pp_button_stuck_press(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	will_return_maybe(ui_is_power_pressed, 0);
 	will_return_maybe(ui_is_lid_open, 1);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
@@ -525,7 +515,6 @@ static void test_manual_ui_pp_button_cancel_enter_again(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	will_return_maybe(ui_is_power_pressed, 0);
 	will_return_maybe(ui_is_lid_open, 1);
 	WILL_PRESS_KEY(0, 0);
 	/* Enter to_dev */
@@ -564,7 +553,6 @@ static void test_manual_ui_enter_diagnostics(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-	will_return_maybe(ui_is_power_pressed, 0);
 	will_return_maybe(ui_is_lid_open, 1);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);

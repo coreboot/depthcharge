@@ -7,17 +7,6 @@
 #include <vboot/ui.h>
 #include <vboot/ui/screens.c>
 
-/* Mock functions */
-int ui_is_power_pressed(void)
-{
-	return 0;
-}
-
-int ui_is_lid_open(void)
-{
-	return mock();
-}
-
 /* Tests */
 struct ui_context test_ui_ctx;
 struct ui_state test_ui_state;
