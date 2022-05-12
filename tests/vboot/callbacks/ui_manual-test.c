@@ -14,6 +14,21 @@
 #include <vboot/util/commonparams.h>
 
 /* Mock functions */
+vb2_error_t ui_get_locale_info(uint32_t locale_id,
+			       struct ui_locale const **locale)
+{
+	static struct ui_locale stub_locale;
+
+	stub_locale.id = locale_id;
+	*locale = &stub_locale;
+	return mock_type(vb2_error_t);
+}
+
+uint32_t ui_get_locale_count(void)
+{
+	return mock_type(uint32_t);
+}
+
 int ui_is_lid_open(void)
 {
 	return mock();
@@ -40,6 +55,7 @@ static void setup_will_return_common(void)
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(vb2api_phone_recovery_ui_enabled, 1);
 	will_return_maybe(vb2api_diagnostic_ui_enabled, 1);
+	will_return_maybe(ui_get_locale_info, VB2_SUCCESS);
 }
 
 static void test_manual_action_success(void **state)
@@ -565,6 +581,24 @@ static void test_manual_ui_enter_diagnostics(void **state)
 	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx), VB2_REQUEST_REBOOT);
 }
 
+static void test_manual_ui_locale_not_found(void **state)
+{
+	struct ui_context *ui = *state;
+
+	will_return_maybe(vb2api_gbb_get_flags, 0);
+	will_return_maybe(vb2api_phone_recovery_ui_enabled, 1);
+	will_return_maybe(vb2api_diagnostic_ui_enabled, 1);
+	will_return_maybe(ui_get_locale_info, VB2_ERROR_MOCK);
+
+	will_return_maybe(ui_is_lid_open, 1);
+	will_return_maybe(ui_keyboard_read, 0);
+	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
+
+	EXPECT_UI_DISPLAY_ANY();
+
+	ASSERT_VB2_SUCCESS(vb2ex_manual_recovery_ui(ui->ctx));
+}
+
 static void test_recovery_select_screen_disabled_and_hidden_mask(void **state)
 {
 	struct ui_context *ui = *state;
@@ -1015,6 +1049,7 @@ int main(void)
 		UI_TEST(test_manual_ui_pp_button_stuck_press),
 		UI_TEST(test_manual_ui_pp_button_cancel_enter_again),
 		UI_TEST(test_manual_ui_enter_diagnostics),
+		UI_TEST(test_manual_ui_locale_not_found),
 		/* Recovery select screen */
 		UI_TEST(test_recovery_select_screen_disabled_and_hidden_mask),
 		UI_TEST(test_recovery_select_screen),

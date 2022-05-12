@@ -97,6 +97,11 @@ vb2_error_t ui_init_context(struct ui_context *ui, struct vb2_context *ctx,
 {
 	const struct ui_screen_info *screen_info;
 	const struct ui_locale *locale;
+	const static struct ui_locale en_locale = {
+		.id = 0,
+		.code = "en",
+		.rtl = 0,
+	};
 	vb2_error_t rv;
 
 	screen_info = ui_get_screen_info(screen_id);
@@ -107,14 +112,16 @@ vb2_error_t ui_init_context(struct ui_context *ui, struct vb2_context *ctx,
 
 	uint32_t locale_id = vb2api_get_locale_id(ctx);
 	rv = ui_get_locale_info(locale_id, &locale);
-	if (rv == VB2_ERROR_UI_INVALID_LOCALE) {
+	if (rv == VB2_ERROR_UI_INVALID_LOCALE && locale_id != 0) {
 		UI_WARN("Locale %u not found, falling back to locale 0",
 			locale_id);
-		rv = ui_get_locale_info(0, &locale);
+		locale_id = 0;
+		rv = ui_get_locale_info(locale_id, &locale);
 	}
 	if (rv) {
-		UI_ERROR("Locale %u not found\n", locale_id);
-		return rv;
+		UI_WARN("Fallback locale %u still not found, assuming \"en\"\n",
+			locale_id);
+		locale = &en_locale;
 	}
 
 	/*

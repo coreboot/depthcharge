@@ -57,6 +57,8 @@ ui_broken-detachable-test-config += CONFIG_DETACHABLE=1
 # ui_manual-test
 $(call copy-test,ui-test-common,ui_manual-test)
 ui_manual-test-srcs += tests/vboot/callbacks/ui_manual-test.c
+ui_manual-test-srcs := $(filter-out tests/mocks/vboot/ui/archive.c, \
+	$(ui_manual-test-srcs))
 
 $(call copy-test,ui_manual-test,ui_manual-detachable-test)
 ui_manual-detachable-test-config += CONFIG_DETACHABLE=1
