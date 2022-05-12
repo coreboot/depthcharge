@@ -14,19 +14,13 @@ vb2_error_t ui_get_locale_info(uint32_t locale_id,
 	return VB2_SUCCESS;
 }
 
-vb2_error_t ui_get_language_name_bitmap(const char *locale_code,
-					struct ui_bitmap *bitmap)
-{
-	return VB2_SUCCESS;
-}
-
-vb2_error_t ui_get_bitmap(const char *image_name, const char *locale_code,
-			  int focused, struct ui_bitmap *bitmap)
-{
-	return VB2_SUCCESS;
-}
-
 uint32_t ui_get_locale_count(void)
 {
 	return mock_type(uint32_t);
+}
+
+vb2_error_t ui_load_bitmap(enum ui_archive_type type, const char *file,
+			   const char *locale_code, struct ui_bitmap *bitmap)
+{
+	return mock_type(vb2_error_t);
 }
