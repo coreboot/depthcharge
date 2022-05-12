@@ -137,7 +137,7 @@ static int tpm_sync(void)
 {
 	struct stopwatch sw;
 
-	stopwatch_init_msecs_expire(&sw, 10);
+	stopwatch_init_msecs_expire(&sw, CONFIG_TPM_GOOGLE_IRQ_TIMEOUT_MS);
 	while (!tpm_irq_status()) {
 		if (stopwatch_expired(&sw)) {
 			printf("Timeout wait for tpm irq!\n");

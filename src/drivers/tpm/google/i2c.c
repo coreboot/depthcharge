@@ -43,7 +43,6 @@ enum {
 	Cr50TimeoutLong = 2 * 1000 * 1000,	// usecs
 	Cr50TimeoutShort = 2 * 1000,		// usecs
 	Cr50TimeoutNoIrq = 20 * 1000,		// usecs
-	Cr50TimeoutIrq = 100 * 1000,		// usecs
 	Cr50TimeoutWake = 50,			// usecs
 };
 
@@ -123,12 +122,12 @@ static int cr50_i2c_wait_tpm_ready(Cr50I2c *tpm)
 		return 0;
 	}
 
-	timeout = Cr50TimeoutIrq;
+	timeout = CONFIG_TPM_GOOGLE_IRQ_TIMEOUT_MS;
 	start = timer_us(0);
 
 	while (!tpm->irq_status())
-		if (timer_us(start) > timeout) {
-			printf("%s: Timeout after %lluus\n", __func__, timeout);
+		if (timer_us(start) > timeout * USECS_PER_MSEC) {
+			printf("%s: Timeout after %llums\n", __func__, timeout);
 			return -1;
 		}
 

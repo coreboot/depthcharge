@@ -3,3 +3,9 @@
 config TPM_GOOGLE_SWITCHES
 	bool "Reading button state through Google TPM"
 	default n
+
+config TPM_GOOGLE_IRQ_TIMEOUT_MS
+	int "Timeout in milliseconds for waiting for TPM IRQ"
+	default 100 if DRIVER_TPM_GOOGLE_CR50 && DRIVER_TPM_I2C
+	default 10 if DRIVER_TPM_GOOGLE_CR50
+	default 750
