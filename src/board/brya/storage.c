@@ -11,9 +11,11 @@
 #include "drivers/soc/intel_common.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/nvme.h"
+#include "drivers/storage/rtk_mmc.h"
 #include "drivers/storage/sdhci.h"
 #include "drivers/storage/sdhci_gli.h"
-#include "drivers/storage/rtk_mmc.h"
+#include "drivers/storage/ufs.h"
+#include "drivers/storage/ufs_intel.h"
 
 static void setup_emmc(pcidev_t dev, const struct emmc_config *config)
 {
@@ -76,6 +78,17 @@ static void setup_nvme(pcidev_t dev)
 				  &fixed_block_dev_controllers);
 }
 
+static void setup_ufs(pcidev_t dev)
+{
+	if (!CONFIG(DRIVER_STORAGE_INTEL_UFS))
+		return;
+
+	IntelUfsCtlr *ufs = new_intel_ufs_ctlr(dev);
+	if (ufs)
+		list_insert_after(&ufs->ufs.bctlr.list_node,
+				  &fixed_block_dev_controllers);
+}
+
 static int configure_storage(void)
 {
 	size_t count;
@@ -113,6 +126,9 @@ static int configure_storage(void)
 			break;
 		case STORAGE_EMMC:
 			setup_emmc(remapped, &config[i].emmc);
+			break;
+		case STORAGE_UFS:
+			setup_ufs(remapped);
 			break;
 		default:
 			break;
