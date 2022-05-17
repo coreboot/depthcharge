@@ -19,6 +19,7 @@
 #include "drivers/gpio/gpio.h"
 #include "drivers/power/pch.h"
 #include "drivers/soc/alderlake.h"
+#include "drivers/sound/cs35l53.h"
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/cr50_switches.h"
 #include "drivers/tpm/tpm.h"
