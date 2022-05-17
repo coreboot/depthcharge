@@ -14,6 +14,10 @@ config DRIVER_SOUND_AMD_ACP
 	bool "AMD ACP support"
 	default n
 
+config DRIVER_SOUND_CS35L53
+	bool "CS35L53 codec driver"
+	default n
+
 config DRIVER_SOUND_GPIO_AMP
 	bool "An amplifier controlled by GPIO value"
 	default n
