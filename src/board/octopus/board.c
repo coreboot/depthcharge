@@ -28,6 +28,7 @@
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/bus/usb/usb.h"
+#include "drivers/ec/anx3447/anx3447.h"
 #include "drivers/ec/cros/commands.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/ec/ps8751/ps8751.h"
@@ -44,6 +45,7 @@
 #include "drivers/gpio/apollolake.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/bus/i2s/apollolake/apollolake-max98357a.h"
+#include "drivers/ec/cros/ec.h"
 
 #define EMMC_SD_CLOCK_MIN       400000
 #define EMMC_CLOCK_MAX          200000000
@@ -55,6 +57,9 @@
 
 #define AUD_VOLUME              4000
 #define SDMODE_PIN              GPIO_91
+
+#define EC_USB_PD_PORT_ANX3447	0
+#define EC_I2C_PORT_ANX3447	1
 
 static int cr50_irq_status(void)
 {
@@ -106,6 +111,34 @@ static void board_flash_init(void)
 							bios_base)->ops);
 }
 
+static void anx3447_update(CrosEc *cros_ec)
+{
+	CrosECTunnelI2c *cros_ec_i2c_tunnel;
+	Anx3447 *anx3447;
+	uint32_t sku, oem;
+
+	/* Anx3447 PD firmware */
+	cros_ec_i2c_tunnel =
+		new_cros_ec_tunnel_i2c(cros_ec, EC_I2C_PORT_ANX3447);
+	anx3447 =
+		new_anx3447(cros_ec_i2c_tunnel, EC_USB_PD_PORT_ANX3447);
+
+	cros_ec_cbi_get_sku_id(&sku);
+	cros_ec_cbi_get_oem_id(&oem);
+	if (oem == 1){
+		switch (sku){
+		case 1:
+		case 2:
+		case 3:
+		case 4:
+			register_vboot_aux_fw(&anx3447->fw_ops);
+			break;
+		default:
+			break;
+		}
+	}
+}
+
 static int board_setup(void)
 {
 	CrosEcLpcBus *cros_ec_lpc_bus;
@@ -128,6 +161,9 @@ static int board_setup(void)
 	cros_ec_lpc_bus = new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
 	cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, 0, NULL);
 	register_vboot_ec(&cros_ec->vboot, 0);
+
+	/*anx3447 update*/
+	anx3447_update(cros_ec);
 
 	/* PCH Power */
 	power_set_ops(&apollolake_power_ops);
