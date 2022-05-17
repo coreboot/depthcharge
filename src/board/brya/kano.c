@@ -32,8 +32,8 @@ const struct audio_config *variant_probe_audio_config(void)
 		},
 		.codec = {
 			.type			= AUDIO_MAX98373,
-			.i2c.ctrlr		= I2C0,
-			.i2c.i2c_addr[0]	= AUD_I2C_ADDR,
+			.i2c[0].ctrlr		= I2C0,
+			.i2c[0].i2c_addr[0]	= AUD_I2C_ADDR,
 		},
 	};
 

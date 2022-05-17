@@ -8,8 +8,10 @@
 #include "drivers/bus/i2s/intel_common/i2s.h"
 
 #define I2C0	PCI_DEV(0, 0x15, 0)
+#define I2C7	PCI_DEV(0, 0x10, 1)
 
 #define MAX_CODEC	4
+#define MAX_CTRL	2
 
 enum audio_bus_type {
 	AUDIO_I2S,
@@ -22,6 +24,7 @@ enum audio_codec_type {
 	AUDIO_MAX98357,
 	AUDIO_MAX98373,
 	AUDIO_MAX98390,
+	AUDIO_CS35L53,
 };
 
 enum audio_amp_type {
@@ -56,12 +59,14 @@ struct audio_amp {
 	} gpio;
 };
 
+typedef struct {
+	pcidev_t ctrlr;
+	unsigned int i2c_addr[MAX_CODEC];
+} i2c_t;
+
 struct audio_codec {
 	enum audio_codec_type type;
-	struct {
-		pcidev_t ctrlr;
-		unsigned int i2c_addr[MAX_CODEC];
-	} i2c;
+	i2c_t i2c[MAX_CTRL];
 };
 
 struct audio_config {
