@@ -90,22 +90,25 @@ static int commit_and_lock_cleanup_func(struct CleanupFunc *c, CleanupType t)
 		return 0;
 	}
 
-	if (ctx->flags & VB2_CONTEXT_RECOVERY_MODE) {
-		printf("%s: not locking secdata_kernel in recovery mode\n",
-		       __func__);
-		return 0;
-	}
-
 	/* No need to lock secdata_kernel on reboot/poweroff. */
 	if (t == CleanupOnReboot || t == CleanupOnPowerOff)
 		return 0;
 
-	uint32_t tpm_rv = secdata_kernel_lock(ctx);
+	uint32_t tpm_rv = 0;
+
+	if (ctx->flags & VB2_CONTEXT_DISABLE_TPM)
+		/* This includes locking secdata_kernel space. */
+		tpm_rv = (uint32_t)vb2ex_tpm_set_mode(VB2_TPM_MODE_DISABLED);
+	else if (!(ctx->flags & VB2_CONTEXT_RECOVERY_MODE))
+		tpm_rv = secdata_kernel_lock(ctx);
+	else
+		printf("%s: not locking secdata_kernel in recovery mode\n",
+		       __func__);
+
 	if (tpm_rv) {
-		printf("%s: lock secdata_kernel returned %#x\n",
+		printf("%s: failed to disable/lock tpm: %#x\n",
 		       __func__, tpm_rv);
-		vb2api_fail(vboot_get_context(), VB2_RECOVERY_RW_TPM_L_ERROR,
-			    tpm_rv);
+		vb2api_fail(ctx, VB2_RECOVERY_RW_TPM_L_ERROR, tpm_rv);
 		vb2ex_commit_data(ctx);
 		cold_reboot();
 	}
