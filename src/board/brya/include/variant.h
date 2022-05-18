@@ -97,7 +97,7 @@ struct tpm_config {
 const struct audio_config *variant_probe_audio_config(void);
 const struct storage_config *variant_get_storage_configs(size_t *count);
 const struct tpm_config *variant_get_tpm_config(void);
-
+const int variant_get_ec_int(void);
 void brya_configure_audio(const struct audio_config *config);
 
 #endif /* _VARIANT_H_ */

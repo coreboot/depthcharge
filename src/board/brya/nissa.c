@@ -18,6 +18,8 @@
 #define SDMODE_PIN		GPP_A11
 #define SDMODE_ENABLE		0
 
+#define EC_PCH_INT_ODL		GPD2
+
 const struct audio_config *variant_probe_audio_config(void)
 {
 	static struct audio_config config;
@@ -63,4 +65,9 @@ const struct tpm_config *variant_get_tpm_config(void)
 	};
 
 	return &config;
+}
+
+const int variant_get_ec_int(void)
+{
+	return EC_PCH_INT_ODL;
 }

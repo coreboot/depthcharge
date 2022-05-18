@@ -53,6 +53,11 @@ __weak const struct tpm_config *variant_get_tpm_config(void)
 	return &config;
 }
 
+__weak const int variant_get_ec_int(void)
+{
+	return EC_PCH_INT_ODL;
+}
+
 static int cr50_irq_status(void)
 {
 	return alderlake_get_gpe(GPE0_DW0_13); /* GPP_A13 */
@@ -60,7 +65,7 @@ static int cr50_irq_status(void)
 
 static GpioOps *mkbp_int_ops(void)
 {
-	GpioCfg *mkbp_int_gpio = new_alderlake_gpio_input(EC_PCH_INT_ODL);
+	GpioCfg *mkbp_int_gpio = new_alderlake_gpio_input(variant_get_ec_int());
 	/* Active-low, has to be inverted */
 	return new_gpio_not(&mkbp_int_gpio->ops);
 }
