@@ -340,7 +340,8 @@ enum {
 };
 
 enum {
-	DEFAULT_DTOC		= 3
+	/* Data timeout counter (1 unit = 1,048,576 serial clock cycles) */
+	DEFAULT_DTOC		= 50
 };
 
 enum {
