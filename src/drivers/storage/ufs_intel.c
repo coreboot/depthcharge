@@ -30,6 +30,13 @@ static int intel_ufs_update(BlockDevCtrlrOps *bdev_ops)
 					       ufs.bctlr.ops);
 	pcidev_t dev = intel_ufs->dev;
 
+	uint16_t did = pci_read_config16(dev, REG_DEVICE_ID);
+	if (did == 0xffff) {
+		printf("UFS Controller not found @ %02x:%02x:%02x\n",
+			PCI_BUS(dev), PCI_SLOT(dev), PCI_FUNC(dev));
+		return -1;
+	}
+
 	if (!intel_ufs->ufs.hci_base) {
 		intel_ufs->ufs.hci_base = (void *)(pci_read_config32(dev, REG_BAR0) & ~0xf);
 		intel_ufs->ufs.hook_fn = intel_ufs_hook_fn;
