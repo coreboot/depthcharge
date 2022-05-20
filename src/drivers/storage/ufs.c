@@ -34,6 +34,7 @@
 #include <libpayload.h>
 #include "base/container_of.h"
 #include "drivers/storage/blockdev.h"
+#include "drivers/storage/bouncebuf.h"
 #include "drivers/storage/ufs.h"
 
 #define UFS_DEBUG 0
@@ -520,10 +521,22 @@ static int ufs_scsi_unit_rdy(UfsCtlr *ufs, uint32_t lun)
 static int ufs_scsi_tfr(UfsDevice *ufs_dev, uint8_t *buf, uint32_t lba,
 			uint32_t blocks, bool read)
 {
+	int rc;
+	struct bounce_buffer bbstate;
+
+	// Maximum size of transfer supported by SCSI READ (10) / WRITE (10).
+	// PRDT memory allocation size is also based on this limit.
+	// UFS block size is at least 4096 so this limit means a maximum
+	// transfer size of 262140 KiB (slightly under 256 MiB).
+	if (blocks > 65535)
+		return UFS_EINVAL;
+
+	bounce_buffer_start(&bbstate, buf, blocks * ufs_dev->dev.block_size,
+			    read ? GEN_BB_WRITE : GEN_BB_READ);
 	UfsCmdReq req = {
 		.lun = ufs_dev->lun,
 		.expected_len = blocks * ufs_dev->dev.block_size,
-		.data_buf_phy = virt_to_phys(buf),
+		.data_buf_phy = virt_to_phys(bbstate.bounce_buffer),
 		.cdb = {
 			[2] = lba >> 24,
 			[3] = lba >> 16,
@@ -533,13 +546,6 @@ static int ufs_scsi_tfr(UfsDevice *ufs_dev, uint8_t *buf, uint32_t lba,
 			[8] = blocks,
 		},
 	};
-
-	// Maximum size of transfer supported by SCSI READ (10) / WRITE (10).
-	// PRDT memory allocation size is also based on this limit.
-	// UFS block size is at least 4096 so this limit means a maximum
-	// transfer size of 262140 KiB (slightly under 256 MiB).
-	if (blocks > 65535)
-		return UFS_EINVAL;
 
 	// Note SCSI READ (10) / WRITE (10) support is specified as mandatory
 	// whereas SCSI READ(16) / WRITE (16) is optional.
@@ -554,7 +560,10 @@ static int ufs_scsi_tfr(UfsDevice *ufs_dev, uint8_t *buf, uint32_t lba,
 		req.flags  = UFS_XFER_FLAGS_WRITE;
 	}
 
-	return ufs_scsi_command(ufs_dev->ufs, &req);
+	rc = ufs_scsi_command(ufs_dev->ufs, &req);
+	bounce_buffer_stop(&bbstate);
+
+	return rc;
 }
 
 static lba_t block_ufs_read(BlockDevOps *me, lba_t start, lba_t count,
