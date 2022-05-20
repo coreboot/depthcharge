@@ -131,4 +131,9 @@ config DRIVER_STORAGE_INTEL_UFS
 	bool "Intel UFS driver"
 	default n
 
+config DRIVER_STORAGE_UFS_MTK
+	select DRIVER_STORAGE_UFS
+	bool "MediaTek UFS driver"
+	default n
+
 source "src/drivers/storage/mtd/Kconfig"
