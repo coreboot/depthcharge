@@ -26,6 +26,7 @@
 #include "drivers/sound/rt1011.h"
 #include "drivers/sound/rt1019b.h"
 #include "drivers/storage/mtk_mmc.h"
+#include "drivers/storage/mtk_ufs.h"
 #include "drivers/storage/nvme.h"
 #include "drivers/tpm/cr50_i2c.h"
 #include "drivers/tpm/tpm.h"
@@ -186,6 +187,10 @@ static int board_setup(void)
 
 	list_insert_after(&sd_card->mmc.ctrlr.list_node,
 			  &removable_block_dev_controllers);
+
+	MtkUfsCtlr *ufs_host = new_mtk_ufs_ctlr(0x11270000, 0x10003000);
+	list_insert_after(&ufs_host->ufs.bctlr.list_node,
+			  &fixed_block_dev_controllers);
 
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11200000);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
