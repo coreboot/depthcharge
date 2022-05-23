@@ -249,7 +249,7 @@ static int send_command_proto3(CrosEc *me, int cmd, int cmd_version,
 
 		if (cmd != EC_CMD_FLASH_ERASE) {
 			printf("%s: command %#02x unexpectedly returned "
-			       "IN_PROGRESS",
+			       "IN_PROGRESS\n",
 			       __func__, cmd);
 		}
 		/* Wait for command to complete */
@@ -267,12 +267,12 @@ static int send_command_proto3(CrosEc *me, int cmd, int cmd_version,
 
 			elapsed_us = timer_us(start);
 			if ((resp.flags & EC_COMMS_STATUS_PROCESSING) == 0) {
-				printf("%s: command %#02x completed in %lld us",
+				printf("%s: command %#02x completed in %lld us\n",
 				       __func__, cmd, elapsed_us);
 				break;
 			}
 			if (elapsed_us > (CROS_EC_ERASE_TIMEOUT_MS * 1000)) {
-				printf("%s: Command %#02x timeout", __func__,
+				printf("%s: command %#02x timeout\n", __func__,
 				       cmd);
 				return -EC_RES_TIMEOUT;
 			}
