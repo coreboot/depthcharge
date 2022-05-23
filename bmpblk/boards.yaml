@@ -303,6 +303,7 @@ trogdor:
 herobrine:
   # 1920x1080, boots recovery image on any SD card or USB ports.
   screen:   [1920, 1080]
+  dpi: 96  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 herobrine_villager:
   # 1920x1200, boots recovery image on any SD card or USB ports.
