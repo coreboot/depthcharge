@@ -93,10 +93,20 @@ static void test_developer_ui_dev_disallowed_no_boot_altfw(void **state)
 
 	ui->ctx->flags &= ~VB2_CONTEXT_DEV_BOOT_ALLOWED;
 	mock_close_lid_countdown = 5;
+	EXPECT_BEEP(250, 400);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_TO_NORM, MOCK_IGNORE, MOCK_IGNORE,
+			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE,
+			  UI_ERROR_DEV_BOOT_NOT_ALLOWED);
+
+	/* Cancel the error box */
+	WILL_PRESS_KEY(UI_KEY_ESC, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_TO_NORM);
+
+	/* Nothing happens */
 	WILL_PRESS_KEY(UI_KEY_DEV_BOOT_ALTFW, 0);
+
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(ui_keyboard_read, 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_TO_NORM);
 
 	assert_int_equal(vb2ex_developer_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
 }
@@ -107,10 +117,20 @@ static void test_developer_ui_dev_disallowed_no_boot_internal(void **state)
 
 	ui->ctx->flags &= ~VB2_CONTEXT_DEV_BOOT_ALLOWED;
 	mock_close_lid_countdown = 5;
+	EXPECT_BEEP(250, 400);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_TO_NORM, MOCK_IGNORE, MOCK_IGNORE,
+			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE,
+			  UI_ERROR_DEV_BOOT_NOT_ALLOWED);
+
+	/* Cancel the error box */
+	WILL_PRESS_KEY(UI_KEY_ESC, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_TO_NORM);
+
+	/* Nothing happens */
 	WILL_PRESS_KEY(UI_KEY_DEV_BOOT_INTERNAL, 0);
+
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(ui_keyboard_read, 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_TO_NORM);
 
 	assert_int_equal(vb2ex_developer_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
 }
@@ -129,6 +149,7 @@ static void test_developer_ui_dev_disallowed_default_internal(void **state)
 	 * from default boot target after timeout.
 	 */
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_TO_NORM);
+	EXPECT_BEEP(250, 400);
 
 	assert_int_equal(vb2ex_developer_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
 }
@@ -143,6 +164,7 @@ static void test_developer_ui_dev_disallowed_default_external(void **state)
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_EXTERNAL);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_TO_NORM);
+	EXPECT_BEEP(250, 400);
 
 	assert_int_equal(vb2ex_developer_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
 }
@@ -152,14 +174,24 @@ static void test_developer_ui_dev_disallowed_to_norm_confirm(void **state)
 	struct ui_context *ui = *state;
 
 	ui->ctx->flags &= ~VB2_CONTEXT_DEV_BOOT_ALLOWED;
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_TO_NORM, MOCK_IGNORE, MOCK_IGNORE,
+			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE,
+			  UI_ERROR_DEV_BOOT_NOT_ALLOWED);
+	EXPECT_BEEP(250, 400);
+
+	/* Cancel the error box */
+	WILL_PRESS_KEY(UI_KEY_ESC, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_TO_NORM);
+
+	/* Select "Confirm" */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	expect_function_call(vb2api_disable_developer_mode);
+
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(ui_get_locale_count, 10);
 	will_return_maybe(ui_keyboard_read, 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_TO_NORM);
-	expect_function_call(vb2api_disable_developer_mode);
 
 	assert_int_equal(vb2ex_developer_ui(ui->ctx), VB2_REQUEST_REBOOT);
 }

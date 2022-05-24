@@ -1487,10 +1487,12 @@ static vb2_error_t developer_to_norm_init(struct ui_context *ui)
 			ui, UI_ERROR_TO_NORM_NOT_ALLOWED);
 	}
 	ui->state->selected_item = DEVELOPER_TO_NORM_ITEM_CONFIRM;
-	/* Hide "Cancel" button if dev boot is not allowed */
-	if (!(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALLOWED))
+	/* If dev boot is not allowed, show an error box and hide "Cancel" */
+	if (!(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALLOWED)) {
+		set_ui_error(ui, UI_ERROR_DEV_BOOT_NOT_ALLOWED);
 		VB2_SET_BIT(ui->state->hidden_item_mask,
 			    DEVELOPER_TO_NORM_ITEM_CANCEL);
+	}
 	return VB2_SUCCESS;
 }
 

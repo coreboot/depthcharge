@@ -248,6 +248,8 @@ enum ui_error {
 	UI_ERROR_UNTRUSTED_CONFIRMATION,
 	/* To-norm not allowed */
 	UI_ERROR_TO_NORM_NOT_ALLOWED,
+	/* Dev boot not allowed */
+	UI_ERROR_DEV_BOOT_NOT_ALLOWED,
 	/* Internal boot failed */
 	UI_ERROR_INTERNAL_BOOT_FAILED,
 	/* External boot is disabled */

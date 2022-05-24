@@ -31,6 +31,8 @@ struct ui_error_message {
 	const char *mesg;
 };
 
+#define DEV_URL "google.com/chromeos/devmode"
+
 static const struct ui_error_message errors[] = {
 	[UI_ERROR_MINIOS_BOOT_FAILED] = {
 		.file = "error_internet_recovery.bmp",
@@ -51,6 +53,13 @@ static const struct ui_error_message errors[] = {
 		.file = "error_to_norm_not_allowed.bmp",
 		.mesg = "Returning to secure mode disallowed by GBB flags.",
 	},
+	/* TODO(b/210875258): Create google.com/chromeos/blocked_devmode */
+	[UI_ERROR_DEV_BOOT_NOT_ALLOWED] = {
+		.file = "error_dev_boot_not_allowed.bmp",
+		.show_dev_url = 1,
+		.mesg = "Booting in developer mode is not allowed. For more\n"
+			"info, visit: " DEV_URL,
+	},
 	[UI_ERROR_INTERNAL_BOOT_FAILED] = {
 		.file = "error_int_boot_failed.bmp",
 		.mesg = "Something went wrong booting from internal disk.\n"
@@ -59,20 +68,20 @@ static const struct ui_error_message errors[] = {
 	[UI_ERROR_EXTERNAL_BOOT_DISABLED] = {
 		.file = "error_ext_boot_disabled.bmp",
 		.show_dev_url = 1,
-		.mesg = "External boot is disabled. For more information,\n"
-			"see: google.com/chromeos/devmode",
+		.mesg = "Booting from an external disk is disabled. For more\n"
+			"info, visit: " DEV_URL,
 	},
 	[UI_ERROR_ALTFW_DISABLED] = {
 		.file = "error_alt_boot_disabled.bmp",
 		.show_dev_url = 1,
-		.mesg = "Alternate bootloaders are disabled. For more\n"
-			"information, see: google.com/chromeos/devmode",
+		.mesg = "Alternate bootloaders are disabled. For more info\n"
+			"visit: " DEV_URL,
 	},
 	[UI_ERROR_ALTFW_EMPTY] = {
 		.file = "error_no_alt_bootloader.bmp",
 		.show_dev_url = 1,
 		.mesg = "Could not find an alternate bootloader. To learn how\n"
-			"to install one, see: google.com/chromeos/devmode",
+			"to install one, visit: " DEV_URL,
 	},
 	[UI_ERROR_ALTFW_FAILED] = {
 		.file = "error_alt_boot_failed.bmp",
