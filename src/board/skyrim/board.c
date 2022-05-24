@@ -32,23 +32,6 @@ static int cr50_irq_status(void)
 	return gpio_get(&tpm_gpio->ops);
 }
 
-static int get_gpio_0(struct GpioOps *me) {
-	return 0;
-}
-
-static struct GpioOps fake_gpio_0 = {
-	.get = get_gpio_0,
-};
-
-
-static int get_gpio_1(struct GpioOps *me) {
-	return 1;
-}
-
-static struct GpioOps fake_gpio_1 = {
-	.get = get_gpio_1,
-};
-
 static GpioOps *mkbp_int_ops(void)
 {
 	KernGpio *mkbp_int_gpio = new_kern_fch_gpio_input(EC_SOC_INT_ODL);
@@ -64,8 +47,8 @@ static int board_setup(void)
 	register_vboot_ec(&cros_ec->vboot);
 
 	sysinfo_install_flags(NULL);
-	flag_replace(FLAG_LIDSW, &fake_gpio_1);
-	flag_replace(FLAG_PWRSW, &fake_gpio_0);
+	flag_replace(FLAG_LIDSW, cros_ec_lid_switch_flag());
+	flag_replace(FLAG_PWRSW, cros_ec_power_btn_flag());
 
 	/* Set up Dauntless on I2C3 */
 	DesignwareI2c *i2c_ti50 = new_designware_i2c(
