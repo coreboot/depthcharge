@@ -75,6 +75,19 @@ static int route_stop(SoundOps *me)
 	return res;
 }
 
+static int route_play_components(SoundRoute *route)
+{
+	int res = 0;
+
+	SoundRouteComponent *component;
+	list_for_each(component, route->components, list_node) {
+		if (component->ops.play(&component->ops))
+			res = -1;
+	}
+
+	return res;
+}
+
 static int route_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 {
 	SoundRoute *route = container_of(me, SoundRoute, ops);
@@ -86,6 +99,9 @@ static int route_play(SoundOps *me, uint32_t msec, uint32_t frequency)
 	res = route_enable_components(route, 1);
 	if (res)
 		goto out;
+
+	if(CONFIG(DRIVER_SOUND_CS35L53))
+		route_play_components(route);
 
 	res = route->source->play(route->source, msec, frequency);
 

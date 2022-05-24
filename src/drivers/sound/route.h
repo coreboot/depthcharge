@@ -19,6 +19,8 @@ typedef struct SoundRouteComponentOps
 	int (*enable)(struct SoundRouteComponentOps *me);
 	// The disable() callback is optional. Only use when necessary!
 	int (*disable)(struct SoundRouteComponentOps *me);
+	// Some components also need play() process
+	int (*play)(struct SoundRouteComponentOps *me);
 } SoundRouteComponentOps;
 
 typedef struct
