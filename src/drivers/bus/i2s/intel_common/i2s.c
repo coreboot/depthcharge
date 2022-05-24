@@ -205,6 +205,11 @@ static int enable_DSP_SSP(I2s *bus)
 	write32((bus->lpe_bar4 + I2SLCTL),
 	read32(bus->lpe_bar4 + I2SLCTL) | BIT(bus->ssp_port));
 #endif
+
+/* Tunning I2S signal BCLK 3.072Mhz for CS35L53 */
+#if CONFIG(DRIVER_SOUND_CS35L53)
+	write32((bus->lpe_bar4 + MNCSS_REG_BLOCK_START), 0x01 << 20);
+#endif
 	return 0;
 }
 /*

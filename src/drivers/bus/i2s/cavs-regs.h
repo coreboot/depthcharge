@@ -68,7 +68,11 @@
 #define AUDIO_DEV		0x1f
 #define AUDIO_FUNC		3
 /* BITS 8:19 (SCR) of  SSxCO reg is used to configure BCLK */
+#if !CONFIG(DRIVER_SOUND_CS35L53)
 #define SERIAL_CLOCK_RATE	0x18
+#else
+#define SERIAL_CLOCK_RATE	0x7
+#endif
 /* I2S0 register start address */
 #define SSP_I2S0_START_ADDRESS	0x10000
 /* I2S1 register start address */
