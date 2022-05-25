@@ -37,7 +37,8 @@ static int display_cleanup(struct CleanupFunc *cleanup, CleanupType type)
 
 static CleanupFunc display_cleanup_func = {
 	.cleanup = &display_cleanup,
-	.types = CleanupOnHandoff,
+	.types = CleanupOnReboot | CleanupOnPowerOff |
+		 CleanupOnHandoff | CleanupOnLegacy,
 };
 
 void display_set_ops(DisplayOps *ops)
@@ -77,4 +78,3 @@ int display_screen(enum VbScreenType_t screen)
 	printf("display: %s called but not implemented.\n", __func__);
 	return 0;
 }
-
