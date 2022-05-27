@@ -38,9 +38,9 @@
 #include "drivers/storage/nvme.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
-#include "drivers/tpm/cr50_i2c.h"
-#include "drivers/tpm/cr50_switches.h"
-#include "drivers/tpm/spi.h"
+#include "drivers/tpm/google/i2c.h"
+#include "drivers/tpm/google/switches.h"
+#include "drivers/tpm/google/spi.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
 

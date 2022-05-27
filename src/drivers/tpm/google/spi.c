@@ -19,7 +19,8 @@
 #include <libpayload.h>
 
 #include "drivers/timer/timer.h"
-#include "spi.h"
+#include "drivers/tpm/google/spi.h"
+#include "drivers/tpm/google/tpm.h"
 
 /************************************************************/
 /*  Plumbing to make porting of the coreboot driver easier. */

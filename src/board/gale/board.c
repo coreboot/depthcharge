@@ -42,7 +42,7 @@
 #include "drivers/storage/mtd/nand/ipq_nand.h"
 #include "drivers/storage/mtd/stream.h"
 #include "drivers/storage/spi_gpt.h"
-#include "drivers/tpm/slb9635_i2c.h"
+#include "drivers/tpm/slb96_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/video/ww_ring.h"
 #include "vboot/stages.h"
@@ -399,7 +399,7 @@ static int board_setup(void)
 
 #if (!CONFIG_MOCK_TPM)
 	Ipq40xxI2c *i2c = new_ipq40xx_i2c(BLSP_QUP_ID_2);
-	tpm_set_ops(&new_slb9635_i2c(&i2c->ops, 0x20)->base.ops);
+	tpm_set_ops(&new_slb96_i2c(&i2c->ops, 0x20)->base.ops);
 #endif
 
 	DisplayOps *ww_ring_ops = new_ww_ring_display

@@ -12,10 +12,12 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __DRIVERS_TPM_TPM_UTILS_H__
-#define __DRIVERS_TPM_TPM_UTILS_H__
+#ifndef __DRIVERS_TPM_GOOGLE_TPM_H__
+#define __DRIVERS_TPM_GOOGLE_TPM_H__
 
 #include <libpayload.h>
+
+#include "drivers/tpm/tpm.h"
 
 /*
  * This structure describes the header used for TPM Vendor commands and their
@@ -60,7 +62,32 @@ static inline void marshal_u32(void *buf, u32 val) { be32enc(buf, val); }
 static inline uint8_t unmarshal_u8(void *buf) { return *(uint8_t *)buf; }
 static inline uint32_t unmarshal_u32(void *buf) { return be32dec(buf); }
 
-void cr50_fill_vendor_cmd_header(struct tpm_vendor_header *h, u16 subcommand,
-				 size_t content_size);
+void tpm_google_fill_vendor_cmd_header(struct tpm_vendor_header *h,
+				       u16 subcommand, size_t content_size);
 
-#endif /* __DRIVERS_TPM_TPM_UTILS_H__*/
+/*
+ * tpm_google_get_tpm_state()
+ *
+ * When implemented, queries the TPM, retrieves its internal state and then
+ * returns a string containing the state informwation. The string space is
+ * allocated by the this function and is expected to be freed by the caller.
+ */
+char *tpm_google_get_tpm_state(struct TpmOps *me);
+
+/*
+ * tpm_google_set_tpm_mode()
+ *
+ * Sets the TPM mode value and validates that it was changed. If one of the
+ * following occurs, the function call fails:
+ *   - TPM does not understand the instruction (old version)
+ *   - TPM has already left the TpmModeEnabledTentative mode
+ *   - TPM responds with a mode other than the requested mode
+ *   - Some other communication error occurs
+ *  Otherwise, the function call succeeds.
+ *
+ * Returns 0 on success or non-zero on failure (the failure result is typically
+ * TPM_E_INTERNAL_ERROR if the command was not understood, otherwise -1).
+ */
+int tpm_google_set_tpm_mode(struct TpmOps *me, uint8_t mode_val);
+
+#endif /* __DRIVERS_TPM_GOOGLE_TPM_H__*/

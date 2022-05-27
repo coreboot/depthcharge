@@ -21,7 +21,7 @@
 #include "drivers/bus/i2c/rockchip.h"
 #include "drivers/flash/spi.h"
 #include "drivers/bus/spi/rockchip.h"
-#include "drivers/tpm/slb9635_i2c.h"
+#include "drivers/tpm/slb96_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/power/rk808.h"
 #include "drivers/power/sysinfo.h"
@@ -160,7 +160,7 @@ static int board_setup(void)
 	sysinfo_install_flags(new_rk_gpio_input_from_coreboot);
 
 	RkI2c *i2c1 = new_rockchip_i2c((void *)0xff140000);
-	tpm_set_ops(&new_slb9635_i2c(&i2c1->ops, 0x20)->base.ops);
+	tpm_set_ops(&new_slb96_i2c(&i2c1->ops, 0x20)->base.ops);
 
 	sound_set_ops(new_dummy_sound());
 

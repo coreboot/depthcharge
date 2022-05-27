@@ -10,46 +10,47 @@
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
 
-config DRIVER_TPM_LPC
-	bool "LPC TPM driver"
-	select DRIVER_TPM
+config DRIVER_TPM_GOOGLE_CR50
+	bool "Google Cr50 TPM"
+	depends on DRIVER_TPM
+	select DRIVER_TPM_GOOGLE
 	default n
 
-config DRIVER_TPM_CR50_I2C
-	bool "CR50 I2C TPM driver"
-	select DRIVER_TPM_I2C
-	select DRIVER_TPM
+config DRIVER_TPM_GOOGLE_TI50
+	bool "Google Ti50 TPM"
+	depends on DRIVER_TPM
+	select DRIVER_TPM_GOOGLE
 	default n
 
-config DRIVER_TPM_SLB9635_I2C
-	bool "SLB9635 I2C TPM driver"
-	select DRIVER_TPM_I2C
-	select DRIVER_TPM
+config DRIVER_TPM_SLB96
+	bool "SLB96xx TPM"
+	depends on DRIVER_TPM_I2C
 	default n
 
-config DRIVER_TPM_CR50_SWITCHES
-	bool "CR50 Driver for Button State"
-	select DRIVER_TPM
-	default n
-	help
-	  When enabled button state is read through CR50
-
-config DRIVER_TPM_SPI
-	bool "SPI TPM driver"
-	select DRIVER_TPM
+config DRIVER_TPM_GOOGLE
+	bool
 	default n
 
 config DRIVER_TPM_I2C
-	bool
+	bool "I2C TPM driver"
+	select DRIVER_TPM
+	default n
+
+config DRIVER_TPM_SPI
+	bool "SPI TPM driver"
+	# Currently only supported with DRIVER_TPM_GOOGLE
+	select DRIVER_TPM
+	default n
+
+config DRIVER_TPM_LPC
+	bool "LPC TPM driver"
+	select DRIVER_TPM
 	default n
 
 config DRIVER_TPM
 	bool
 	default n
 
-config TPM_DEBUG_EXTENSIONS
-	bool "TPM chip allows retrieving debug information"
-	default n
-	help
-	  Enabled when the TPM is capable of providing additional debug
-	  information which can be retrieved in case of boot failure.
+if DRIVER_TPM_GOOGLE
+source "src/drivers/tpm/google/Kconfig"
+endif

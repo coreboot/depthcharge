@@ -38,7 +38,7 @@
 #include "drivers/storage/mtd/nand/ipq_nand.h"
 #include "drivers/storage/mtd/stream.h"
 #include "drivers/storage/spi_gpt.h"
-#include "drivers/tpm/slb9635_i2c.h"
+#include "drivers/tpm/slb96_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/video/ww_ring.h"
 #include "vboot/stages.h"
@@ -338,7 +338,7 @@ static int board_setup(void)
 	}
 
 	Ipq806xI2c *i2c = new_ipq806x_i2c(GSBI_ID_1);
-	tpm_set_ops(&new_slb9635_i2c(&i2c->ops, 0x20)->base.ops);
+	tpm_set_ops(&new_slb96_i2c(&i2c->ops, 0x20)->base.ops);
 
 	if (lib_sysinfo.board_id >= BOARD_ID_WHIRLWIND_SP5) {
 

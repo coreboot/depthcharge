@@ -14,7 +14,7 @@
 #include "drivers/power/fch.h"
 #include "drivers/soc/sabrina.h"
 #include "drivers/storage/nvme.h"
-#include "drivers/tpm/cr50_i2c.h"
+#include "drivers/tpm/google/i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "pci.h"
 #include "vboot/util/flag.h"

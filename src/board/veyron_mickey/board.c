@@ -29,7 +29,7 @@
 #include "drivers/sound/route.h"
 #include "drivers/storage/dw_mmc.h"
 #include "drivers/storage/rk_dwmmc.h"
-#include "drivers/tpm/slb9635_i2c.h"
+#include "drivers/tpm/slb96_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/video/display.h"
 #include "drivers/video/rk3288.h"
@@ -43,7 +43,7 @@ static int board_setup(void)
 	sysinfo_install_flags(new_rk_gpio_input_from_coreboot);
 
 	RkI2c *i2c1 = new_rockchip_i2c((void *)0xff140000);
-	tpm_set_ops(&new_slb9635_i2c(&i2c1->ops, 0x20)->base.ops);
+	tpm_set_ops(&new_slb96_i2c(&i2c1->ops, 0x20)->base.ops);
 
 	RockchipI2s *i2s0 = new_rockchip_i2s(0xff890000, 16, 2, 256);
 	I2sSource *i2s_source = new_i2s_source(&i2s0->ops, 48000, 2, 16000);

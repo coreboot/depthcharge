@@ -34,7 +34,7 @@
 #include "drivers/sound/rt1015.h"
 #include "drivers/sound/rt1015p.h"
 #include "drivers/storage/mtk_mmc.h"
-#include "drivers/tpm/spi.h"
+#include "drivers/tpm/google/spi.h"
 #include "vboot/util/flag.h"
 
 #include "drivers/video/display.h"

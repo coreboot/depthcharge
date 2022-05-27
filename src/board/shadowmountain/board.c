@@ -30,7 +30,7 @@
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci_gli.h"
 #include "drivers/storage/nvme.h"
-#include "drivers/tpm/spi.h"
+#include "drivers/tpm/google/spi.h"
 #include "drivers/tpm/tpm.h"
 
 #define TPM_I2C1	PCI_DEV(0, 0x15, 1)

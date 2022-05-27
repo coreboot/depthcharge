@@ -3,8 +3,8 @@
  * Copyright 2019 Google LLC.
  */
 
-#ifndef __DRIVERS_TPM_CR50_SWITCHES_H__
-#define __DRIVERS_TPM_CR50_SWITCHES_H__
+#ifndef __DRIVERS_TPM_GOOGLE_SWITCHES_H__
+#define __DRIVERS_TPM_GOOGLE_SWITCHES_H__
 
 #include "drivers/gpio/gpio.h"
 #include "drivers/tpm/tpm.h"
@@ -36,4 +36,4 @@ Cr50Switch *new_cr50_rec_switch(TpmOps *tpm);
  */
 Cr50Switch *new_cr50_power_switch(TpmOps *tpm);
 
-#endif /* __DRIVERS_TPM_CR50_SWITCHES_H__ */
+#endif /* __DRIVERS_TPM_GOOGLE_SWITCHES_H__ */

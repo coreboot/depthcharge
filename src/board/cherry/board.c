@@ -27,7 +27,7 @@
 #include "drivers/sound/rt1019b.h"
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/storage/nvme.h"
-#include "drivers/tpm/cr50_i2c.h"
+#include "drivers/tpm/google/i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/video/display.h"
 #include "drivers/video/mtk_ddp.h"
