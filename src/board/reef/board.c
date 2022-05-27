@@ -31,7 +31,7 @@
 #include "drivers/ec/ps8751/ps8751.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/soc/apollolake.h"
-#include "drivers/tpm/cr50_i2c.h"
+#include "drivers/tpm/google/i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/power/pch.h"
 #include "drivers/storage/sdhci.h"

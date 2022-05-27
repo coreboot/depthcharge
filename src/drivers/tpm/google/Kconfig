@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0
+
+config TPM_GOOGLE_SWITCHES
+	bool "Reading button state through Google TPM"
+	default n

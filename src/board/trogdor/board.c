@@ -29,7 +29,7 @@
 #include "drivers/bus/usb/usb.h"
 #include "drivers/gpio/qcom_gpio.h"
 #include "drivers/gpio/sysinfo.h"
-#include "drivers/tpm/spi.h"
+#include "drivers/tpm/google/spi.h"
 #include "drivers/sound/gpio_amp.h"
 #include "drivers/soc/qcom_sd_tray.h"
 #include "drivers/bus/i2s/qcom_lpass.h"

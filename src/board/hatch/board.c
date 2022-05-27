@@ -30,7 +30,7 @@
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/nvme.h"
 #include "drivers/storage/sdhci.h"
-#include "drivers/tpm/spi.h"
+#include "drivers/tpm/google/spi.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/gpio_amp.h"

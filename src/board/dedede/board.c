@@ -32,7 +32,7 @@
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
 #include "drivers/tpm/lpc.h"
-#include "drivers/tpm/spi.h"
+#include "drivers/tpm/google/spi.h"
 
 /*
  * Clock frequencies for the eMMC and SD ports are defined below. The minimum

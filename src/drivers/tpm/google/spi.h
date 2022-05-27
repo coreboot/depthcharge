@@ -15,24 +15,31 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __DRIVERS_TPM_CR50_I2C_H__
-#define __DRIVERS_TPM_CR50_I2C_H__
+#ifndef __SRC_DRIVERS_TPM_GOOGLE_SPI_H
+#define __SRC_DRIVERS_TPM_GOOGLE_SPI_H
 
-#include "drivers/tpm/i2c.h"
+#include <base/cleanup_funcs.h>
+#include <drivers/bus/spi/spi.h>
+#include <drivers/gpio/gpio.h>
+#include <drivers/tpm/tpm.h>
 
-enum {
-	Cr50MaxBufSize = 63,
-};
+// Supported TPM device types.
+typedef enum {
+	CR50_TPM,
+	UNKNOWN_SPI_TPM,  // This would trigger default behavior.
+} SpiTpmType;
 
-typedef int (*cr50_irq_status_t)(void);
+typedef int (*tpm_irq_status_t)(void);
 
-typedef struct Cr50I2c
+typedef struct
 {
-	I2cTpm base;
-	cr50_irq_status_t irq_status;
-	uint8_t buf[sizeof(uint8_t) + Cr50MaxBufSize];
-} Cr50I2c;
+	TpmOps ops;
+	tpm_irq_status_t irq_status;
+	SpiOps *bus;
+	CleanupFunc cleanup;
+	SpiTpmType chip_type;
+} SpiTpm;
 
-Cr50I2c *new_cr50_i2c(I2cOps *bus, uint8_t addr, cr50_irq_status_t irq_status);
+SpiTpm *new_tpm_spi(SpiOps *bus, tpm_irq_status_t irq_status);
 
-#endif /* __DRIVERS_TPM_CR50_I2C_H__ */
+#endif // __SRC_DRIVERS_TPM_GOOGLE_SPI_H

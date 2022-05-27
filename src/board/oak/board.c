@@ -36,8 +36,8 @@
 #include "drivers/sound/rt5677.h"
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/flash/mtk_snfc.h"
-#include "drivers/tpm/cr50_i2c.h"
-#include "drivers/tpm/slb9635_i2c.h"
+#include "drivers/tpm/google/i2c.h"
+#include "drivers/tpm/slb96_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
 
@@ -140,7 +140,7 @@ static int board_setup(void)
 		tpm_set_ops(&new_cr50_i2c(&i2c2->ops, 0x50,
 					  &cr50_irq_status)->base.ops);
 	else
-		tpm_set_ops(&new_slb9635_i2c(&i2c2->ops, 0x20)->base.ops);
+		tpm_set_ops(&new_slb96_i2c(&i2c2->ops, 0x20)->base.ops);
 
 	GpioOps *spi_cs = new_gpio_not(new_mtk_gpio_output(PAD_MSDC2_CMD));
 	MtkSpi *spibus = new_mtk_spi(0x1100A000, spi_cs);

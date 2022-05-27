@@ -36,7 +36,7 @@
 
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/tpm/i2c.h"
-#include "drivers/tpm/slb9635_i2c.h"
+#include "drivers/tpm/slb96_i2c.h"
 
 enum {
 	TpmTimeout = 1 // msecs
@@ -69,7 +69,7 @@ static const char * const chip_name[] = {
  *
  * Return nonzero on error, 0 on success.
  */
-static int iic_tpm_read(Slb9635I2c *tpm, uint8_t addr, uint8_t *buffer,
+static int iic_tpm_read(Slb96I2c *tpm, uint8_t addr, uint8_t *buffer,
 			size_t len)
 {
 	int rc;
@@ -148,7 +148,7 @@ static int iic_tpm_read(Slb9635I2c *tpm, uint8_t addr, uint8_t *buffer,
  *
  * Return nonzero on error, 0 on success
  */
-static int iic_tpm_write(Slb9635I2c *tpm, uint8_t addr, const uint8_t *buffer,
+static int iic_tpm_write(Slb96I2c *tpm, uint8_t addr, const uint8_t *buffer,
 			 size_t len)
 {
 	int rc = 0;
@@ -204,7 +204,7 @@ static inline uint8_t tpm_did_vid(uint8_t locality)
 	return 0x6 | (locality << 4);
 }
 
-static int check_locality(Slb9635I2c *tpm, int loc)
+static int check_locality(Slb96I2c *tpm, int loc)
 {
 	uint8_t buf;
 	int rc;
@@ -222,7 +222,7 @@ static int check_locality(Slb9635I2c *tpm, int loc)
 	return -1;
 }
 
-static void release_locality(Slb9635I2c *tpm, int loc, int force)
+static void release_locality(Slb96I2c *tpm, int loc, int force)
 {
 	uint8_t buf;
 	if (iic_tpm_read(tpm, tpm_access(loc), &buf, 1) < 0)
@@ -235,7 +235,7 @@ static void release_locality(Slb9635I2c *tpm, int loc, int force)
 	}
 }
 
-static int request_locality(Slb9635I2c *tpm, int loc)
+static int request_locality(Slb96I2c *tpm, int loc)
 {
 	uint8_t buf = TpmAccessRequestUse;
 
@@ -257,7 +257,7 @@ static int request_locality(Slb9635I2c *tpm, int loc)
 
 static uint8_t tpm_status(I2cTpmChipOps *me)
 {
-	Slb9635I2c *tpm = container_of(me, Slb9635I2c, base.chip_ops);
+	Slb96I2c *tpm = container_of(me, Slb96I2c, base.chip_ops);
 	// NOTE: since i2c read may fail, return 0 in this case --> time-out
 	uint8_t buf;
 	if (iic_tpm_read(tpm, tpm_sts(tpm->base.locality), &buf, 1) < 0)
@@ -268,13 +268,13 @@ static uint8_t tpm_status(I2cTpmChipOps *me)
 
 static void tpm_ready(I2cTpmChipOps *me)
 {
-	Slb9635I2c *tpm = container_of(me, Slb9635I2c, base.chip_ops);
+	Slb96I2c *tpm = container_of(me, Slb96I2c, base.chip_ops);
 	// This causes the current command to be aborted.
 	uint8_t buf = TpmStsCommandReady;
 	iic_tpm_write(tpm, tpm_sts(tpm->base.locality), &buf, 1);
 }
 
-static ssize_t get_burstcount(Slb9635I2c *tpm)
+static ssize_t get_burstcount(Slb96I2c *tpm)
 {
 	ssize_t burstcnt;
 	uint8_t buf[3];
@@ -296,7 +296,7 @@ static ssize_t get_burstcount(Slb9635I2c *tpm)
 	return -1;
 }
 
-static int wait_for_stat(Slb9635I2c *tpm, uint8_t mask, int *status)
+static int wait_for_stat(Slb96I2c *tpm, uint8_t mask, int *status)
 {
 	uint64_t start = timer_us(0);
 	while (timer_us(start) < 2 * 1000 * 1000) { // Two second timeout.
@@ -310,7 +310,7 @@ static int wait_for_stat(Slb9635I2c *tpm, uint8_t mask, int *status)
 	return -1;
 }
 
-static int recv_data(Slb9635I2c *tpm, uint8_t *buf, size_t count)
+static int recv_data(Slb96I2c *tpm, uint8_t *buf, size_t count)
 {
 	size_t size = 0;
 	ssize_t burstcnt;
@@ -338,7 +338,7 @@ static int recv_data(Slb9635I2c *tpm, uint8_t *buf, size_t count)
 
 static int tpm_recv(I2cTpmChipOps *me, uint8_t *buf, size_t count)
 {
-	Slb9635I2c *tpm = container_of(me, Slb9635I2c, base.chip_ops);
+	Slb96I2c *tpm = container_of(me, Slb96I2c, base.chip_ops);
 
 	int size = 0;
 	uint32_t expected;
@@ -387,7 +387,7 @@ static int tpm_recv(I2cTpmChipOps *me, uint8_t *buf, size_t count)
 
 static int tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
 {
-	Slb9635I2c *tpm = container_of(me, Slb9635I2c, base.chip_ops);
+	Slb96I2c *tpm = container_of(me, Slb96I2c, base.chip_ops);
 	int rc, status;
 	ssize_t burstcnt;
 	size_t count = 0;
@@ -450,7 +450,7 @@ static int tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
 
 static int tpm_init(I2cTpmChipOps *me)
 {
-	Slb9635I2c *tpm = container_of(me, Slb9635I2c, base.chip_ops);
+	Slb96I2c *tpm = container_of(me, Slb96I2c, base.chip_ops);
 
 	/*
 	 * Probe TPM twice; the first probing might fail because TPM is asleep,
@@ -488,14 +488,14 @@ static int tpm_init(I2cTpmChipOps *me)
 
 static int tpm_cleanup(I2cTpmChipOps *me)
 {
-	Slb9635I2c *tpm = container_of(me, Slb9635I2c, base.chip_ops);
+	Slb96I2c *tpm = container_of(me, Slb96I2c, base.chip_ops);
 	release_locality(tpm, tpm->base.locality, 1);
 	return 0;
 }
 
-Slb9635I2c *new_slb9635_i2c(I2cOps *bus, uint8_t addr)
+Slb96I2c *new_slb96_i2c(I2cOps *bus, uint8_t addr)
 {
-	Slb9635I2c *tpm = xmalloc(sizeof(*tpm));
+	Slb96I2c *tpm = xmalloc(sizeof(*tpm));
 	i2ctpm_fill_in(&tpm->base, bus, addr, TpmStsDataAvail | TpmStsValid,
 		       TpmStsDataAvail | TpmStsValid, TpmStsCommandReady);
 

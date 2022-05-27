@@ -10,9 +10,9 @@
 #include <libpayload.h>
 
 #include "base/container_of.h"
-#include "drivers/tpm/cr50_switches.h"
+#include "drivers/tpm/google/switches.h"
+#include "drivers/tpm/google/tpm.h"
 #include "drivers/tpm/tpm.h"
-#include "drivers/tpm/tpm_utils.h"
 
 struct tpm_get_btn_msg {
 	struct tpm_vendor_header h;
@@ -43,7 +43,7 @@ static int cr50_switch_get(struct TpmOps *tpm, uint16_t cr50_subcommand,
 	/* Default switch/button state is zero if the command fails */
 	*button_state = 0;
 
-	cr50_fill_vendor_cmd_header(&req, cr50_subcommand, 0);
+	tpm_google_fill_vendor_cmd_header(&req, cr50_subcommand, 0);
 
 	xmit_res = tpm->xmit(tpm, (void *)&req,
 			     sizeof(struct tpm_vendor_header),
