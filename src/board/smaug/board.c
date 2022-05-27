@@ -31,7 +31,7 @@
 #include "drivers/flash/spi.h"
 #include "drivers/power/sysinfo.h"
 #include "drivers/power/max77620.h"
-#include "drivers/tpm/slb9635_i2c.h"
+#include "drivers/tpm/slb96_i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/storage/tegra_mmc.h"
 #include "drivers/video/display.h"
@@ -122,7 +122,7 @@ static int board_setup(void)
 					   (void *)CLK_RST_U_RST_CLR,
 					   CLK_U_I2C3);
 
-	tpm_set_ops(&new_slb9635_i2c(&gen3_i2c->ops, 0x20)->base.ops);
+	tpm_set_ops(&new_slb96_i2c(&gen3_i2c->ops, 0x20)->base.ops);
 
 	TegraI2c *ec_i2c = new_tegra_i2c((void *)0x7000c400, 2,
 					  (void *)CLK_RST_H_RST_SET,

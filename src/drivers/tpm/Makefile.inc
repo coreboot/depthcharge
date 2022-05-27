@@ -11,16 +11,13 @@
 ## GNU General Public License for more details.
 ##
 
+subdirs-$(CONFIG_DRIVER_TPM_GOOGLE) += google
+
 ifneq ($(CONFIG_MOCK_TPM),)
 depthcharge-$(CONFIG_MOCK_TPM) += mocked_tpm.c
 else
 depthcharge-$(CONFIG_DRIVER_TPM) += tpm.c
 endif
-depthcharge-$(CONFIG_DRIVER_TPM) += tpm_utils.c
-depthcharge-$(CONFIG_DRIVER_TPM_CR50_I2C) += cr50_i2c.c
-depthcharge-$(CONFIG_DRIVER_TPM_CR50_SWITCHES) += cr50_switches.c
 depthcharge-$(CONFIG_DRIVER_TPM_I2C) += i2c.c
 depthcharge-$(CONFIG_DRIVER_TPM_LPC) += lpc.c
-depthcharge-$(CONFIG_DRIVER_TPM_SLB9635_I2C) += slb9635_i2c.c
-depthcharge-$(CONFIG_DRIVER_TPM_SPI) += spi.c
-depthcharge-$(CONFIG_TPM_DEBUG_EXTENSIONS) += tpm_state.c
+depthcharge-$(CONFIG_DRIVER_TPM_SLB96) += slb96_i2c.c

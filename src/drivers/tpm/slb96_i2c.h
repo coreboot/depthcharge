@@ -15,8 +15,8 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __DRIVERS_TPM_SLB9635_I2C_H__
-#define __DRIVERS_TPM_SLB9635_I2C_H__
+#ifndef __DRIVERS_TPM_SLB96_I2C_H__
+#define __DRIVERS_TPM_SLB96_I2C_H__
 
 #include "drivers/tpm/i2c.h"
 
@@ -26,13 +26,13 @@ enum i2c_chip_type {
 	UNKNOWN,
 };
 
-typedef struct Slb9635I2c
+typedef struct Slb96I2c
 {
 	I2cTpm base;
 	uint8_t buf[sizeof(uint8_t) + TpmMaxBufSize]; // addr + buff size
 	enum i2c_chip_type chip_type;
-} Slb9635I2c;
+} Slb96I2c;
 
-Slb9635I2c *new_slb9635_i2c(I2cOps *bus, uint8_t addr);
+Slb96I2c *new_slb96_i2c(I2cOps *bus, uint8_t addr);
 
-#endif /* __DRIVERS_TPM_SLB9635_I2C_H__ */
+#endif /* __DRIVERS_TPM_SLB96_I2C_H__ */

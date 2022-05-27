@@ -18,7 +18,7 @@
 #include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/storage/mtk_mmc.h"
-#include "drivers/tpm/spi.h"
+#include "drivers/tpm/google/spi.h"
 #include "drivers/video/display.h"
 #include "drivers/video/mtk_ddp.h"
 #include "vboot/util/flag.h"

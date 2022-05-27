@@ -33,8 +33,9 @@
 #include <libpayload.h>
 
 #include "drivers/bus/i2c/i2c.h"
+#include "drivers/tpm/google/i2c.h"
+#include "drivers/tpm/google/tpm.h"
 #include "drivers/tpm/i2c.h"
-#include "drivers/tpm/cr50_i2c.h"
 
 #define CR50_I2C_DEBUG 0
 

@@ -10,8 +10,8 @@
 
 #include <libpayload.h>
 
+#include "drivers/tpm/google/tpm.h"
 #include "drivers/tpm/tpm.h"
-#include "drivers/tpm/tpm_utils.h"
 
 /*
  * The below structure represents the body of the response to the 'report tpm
@@ -98,7 +98,7 @@ static void stringify_state(struct tpm_vendor_state *s,
 /* Maximum size of the text describing internal TPM state. */
 #define STATE_TEXT_SIZE 120
 
-char *tpm_internal_state(struct TpmOps *me)
+char *tpm_google_get_tpm_state(struct TpmOps *me)
 {
 	struct tpm_vendor_header *h;
 	struct tpm_vendor_state *s;
@@ -114,7 +114,7 @@ char *tpm_internal_state(struct TpmOps *me)
 
 	state_str = xzalloc(STATE_TEXT_SIZE);
 
-	cr50_fill_vendor_cmd_header(h, VENDOR_CC_REPORT_TPM_STATE, 0);
+	tpm_google_fill_vendor_cmd_header(h, VENDOR_CC_REPORT_TPM_STATE, 0);
 
 	if (me->xmit(me, (void *)h, sizeof(*h), (void *)h, &buffer_size) ||
 	    (buffer_size < sizeof(struct tpm_vendor_header))) {

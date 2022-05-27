@@ -35,8 +35,8 @@
 #include "drivers/storage/dw_mmc.h"
 #include "drivers/storage/rk_dwmmc.h"
 #include "drivers/storage/rk_sdhci.h"
-#include "drivers/tpm/slb9635_i2c.h"
-#include "drivers/tpm/spi.h"
+#include "drivers/tpm/slb96_i2c.h"
+#include "drivers/tpm/google/spi.h"
 #include "drivers/video/display.h"
 #include "drivers/video/arctic_sand_backlight.h"
 #include "drivers/video/ec_pwm_backlight.h"
@@ -71,7 +71,7 @@ static int board_setup(void)
 		tpm_set_ops(&new_tpm_spi(&tpm_spi->ops, cr50_irq_status)->ops);
 	} else {
 		i2c0 = new_rockchip_i2c((void *)0xff3c0000);
-		tpm_set_ops(&new_slb9635_i2c(&i2c0->ops, 0x20)->base.ops);
+		tpm_set_ops(&new_slb96_i2c(&i2c0->ops, 0x20)->base.ops);
 	}
 
 	// Flash on Gru is connected to SPI bus #1.

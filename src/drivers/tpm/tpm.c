@@ -18,8 +18,8 @@
 #include <libpayload.h>
 #include <tss_constants.h>
 
+#include "drivers/tpm/google/tpm.h"
 #include "drivers/tpm/tpm.h"
-#include "drivers/tpm/tpm_utils.h"
 
 static TpmOps *tpm_ops;
 
@@ -27,9 +27,6 @@ void tpm_set_ops(TpmOps *ops)
 {
 	die_if(tpm_ops, "%s: TPM ops already set.\n", __func__);
 	tpm_ops = ops;
-
-	if (CONFIG_TPM_DEBUG_EXTENSIONS)
-		tpm_ops->report_state = tpm_internal_state;
 }
 
 int tpm_xmit(const uint8_t *sendbuf, size_t send_size,
@@ -41,55 +38,24 @@ int tpm_xmit(const uint8_t *sendbuf, size_t send_size,
 
 char *tpm_report_state(void)
 {
-	if (!tpm_ops || !tpm_ops->report_state)
-		return NULL;
+	die_if(!tpm_ops, "%s: No TPM ops set.\n", __func__);
 
-	return tpm_ops->report_state(tpm_ops);
+	if (!CONFIG(DRIVER_TPM_GOOGLE)) {
+		printf("%s: not supported\n", __func__);
+		return NULL;
+	}
+
+	return tpm_google_get_tpm_state(tpm_ops);
 }
 
 int tpm_set_tpm_mode(uint8_t mode_val)
 {
-	struct tpm_vendor_header *h;
-	uint8_t *m;
-	uint8_t buffer[sizeof(*h) + sizeof(*m)];
-	uint32_t header_code;
-	size_t recv_len = sizeof(buffer);
-
 	die_if(!tpm_ops, "%s: No TPM ops set.\n", __func__);
 
-	/* Command to send to the TPM and its response. */
-	h = (struct tpm_vendor_header *)buffer;
-
-	/* Mode sent to the TPM, and TPM's response (overwritten by xmit). */
-	m = (uint8_t *)(h + 1);
-
-	cr50_fill_vendor_cmd_header(h, VENDOR_CC_TPM_MODE, sizeof(*m));
-	marshal_u8(m, mode_val);
-
-	if (tpm_ops->xmit(tpm_ops, (const uint8_t *)h, sizeof(buffer),
-			  (uint8_t *)h, &recv_len)) {
-		printf("%s: IO error\n", __func__);
-		return TPM_E_COMMUNICATION_ERROR;
+	if (!CONFIG(DRIVER_TPM_GOOGLE)) {
+		printf("%s: not supported\n", __func__);
+		return -1;
 	}
 
-	header_code = unmarshal_u32(&h->code);
-	if (header_code == VENDOR_RC_NO_SUCH_COMMAND) {
-		printf("%s: Command not supported\n", __func__);
-		return TPM_E_NO_SUCH_COMMAND;
-	}
-	if (header_code) {
-		printf("%s: Invalid header code: %d\n", __func__,
-		       header_code);
-		return TPM_E_INVALID_RESPONSE;
-	}
-	if (recv_len != sizeof(buffer)) {
-		printf("%s: Invalid response\n", __func__);
-		return TPM_E_INVALID_RESPONSE;
-	}
-	if (unmarshal_u8(m) != mode_val) {
-		printf("%s: Invalid TPM mode response: %d (expect %d)\n",
-		       __func__, unmarshal_u8(m), mode_val);
-		return TPM_E_INVALID_RESPONSE;
-	}
-	return TPM_SUCCESS;
+	return tpm_google_set_tpm_mode(tpm_ops, mode_val);
 }

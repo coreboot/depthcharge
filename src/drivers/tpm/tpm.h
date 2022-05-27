@@ -56,7 +56,6 @@ typedef struct TpmOps
 {
 	int (*xmit)(struct TpmOps *me, const uint8_t *sendbuf, size_t send_size,
 		    uint8_t *recvbuf, size_t *recv_len);
-	char *(*report_state)(struct TpmOps *me);
 } TpmOps;
 
 void tpm_set_ops(TpmOps *ops);
@@ -78,15 +77,6 @@ int tpm_xmit(const uint8_t *sendbuf, size_t send_size,
 	     uint8_t *recvbuf, size_t *recv_len);
 
 /*
- * tpm_internal_state()
- *
- * When implemented, queries the TPM, retrieves its internal state and then
- * returns a string containing the state informwation. The string space is
- * allocated by the this function and is expected to be freed by the caller.
- */
-char *tpm_internal_state(struct TpmOps *me);
-
-/*
  * tpm_report_state()
  *
  * On platforms where this feature is supported this function returns a buffer
@@ -100,16 +90,9 @@ char *tpm_report_state(void);
 /*
  * tpm_set_tpm_mode()
  *
- * Sets the TPM mode value and validates that it was changed.  If one of the
- * following occurs, the function call fails:
- *   - TPM does not understand the instruction (old version)
- *   - TPM has already left the TpmModeEnabledTentative mode
- *   - TPM responds with a mode other than the requested mode
- *   - Some other communication error occurs
- *  Otherwise, the function call succeeds.
+ * On platforms where this feature is supported, sets the TPM mode to mode_val.
+ * Otherwise, return -1.
  *
- * Returns 0 on success or non-zero on failure (the failure result is typically
- * TPM_E_INTERNAL_ERROR if the command was not understood, otherwise -1).
  */
 int tpm_set_tpm_mode(uint8_t mode_val);
 

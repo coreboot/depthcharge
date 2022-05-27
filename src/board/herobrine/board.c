@@ -25,7 +25,10 @@
 #include "drivers/gpio/qcom_gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
-#include "drivers/tpm/cr50_i2c.h"
+#include "drivers/tpm/google/i2c.h"
+#include "drivers/soc/qcom_sd_tray.h"
+#include "drivers/tpm/google/i2c.h"
+#include "drivers/soc/qcom_sd_tray.h"
 #include "drivers/bus/usb/usb.h"
 
 #define SDC1_HC_BASE          0x007C4000
