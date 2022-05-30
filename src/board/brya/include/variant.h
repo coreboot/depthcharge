@@ -93,6 +93,7 @@ struct storage_config {
 	enum storage_media media;
 	pcidev_t pci_dev;
 	struct emmc_config emmc;
+	const struct fw_config *fw_config;
 };
 
 struct tpm_config {

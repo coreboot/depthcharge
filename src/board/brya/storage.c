@@ -4,6 +4,7 @@
 #include <pci/pci.h>
 #include <stdio.h>
 
+#include "base/fw_config.h"
 #include "base/init_funcs.h"
 #include "base/list.h"
 #include "board/brya/include/variant.h"
@@ -96,6 +97,24 @@ static void setup_ufs(pcidev_t dev)
 				  &fixed_block_dev_controllers);
 }
 
+static char *storage_to_string(const struct storage_config config)
+{
+	switch (config.media) {
+	case STORAGE_NVME:
+		return "NVME";
+	case STORAGE_SDHCI:
+		return "SDHCI";
+	case STORAGE_EMMC:
+		return "EMMC";
+	case STORAGE_RTKMMC:
+		return "RTKMMC";
+	case STORAGE_UFS:
+		return "UFS";
+	default:
+		return "Unknown storage";
+	}
+}
+
 static int configure_storage(void)
 {
 	size_t count;
@@ -108,6 +127,15 @@ static int configure_storage(void)
 		const SocPcieRpGroup *group;
 		size_t group_count;
 		pcidev_t remapped;
+
+		if (config[i].fw_config) {
+			if (fw_config_is_provisioned() &&
+					!fw_config_probe(config[i].fw_config)) {
+				printf("%s not support\n",
+					storage_to_string(config[i]));
+				continue;
+			}
+		}
 
 		group = soc_get_rp_group(dev, &group_count);
 		if (group)
