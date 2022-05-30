@@ -21,6 +21,9 @@
 
 #include "base/list.h"
 #include "boot/payload.h"
+#include "diag/common.h"
+#include "diag/health_info.h"
+#include "diag/memory.h"
 #include "diag/storage_test.h"
 #include "drivers/ec/cros/ec.h"
 #include "vboot/ui.h"
@@ -1824,15 +1827,18 @@ static const struct ui_screen_info developer_select_bootloader_screen = {
 /******************************************************************************/
 /* UI_SCREEN_DIAGNOSTICS */
 
+#define DIAGNOSTICS_BUFFER_SIZE (64 * KiB)
+
 #define DIAGNOSTICS_ITEM_STORAGE_HEALTH 1
 #define DIAGNOSTICS_ITEM_STORAGE_TEST_SHORT 2
 #define DIAGNOSTICS_ITEM_STORAGE_TEST_EXTENDED 3
 
 static vb2_error_t diagnostics_init(struct ui_context *ui)
 {
-	const char *unused_log_string;
-	vb2_error_t rv = vb2ex_diag_get_storage_test_log(&unused_log_string);
-	if (rv == VB2_ERROR_EX_UNIMPLEMENTED) {
+	char log[DIAGNOSTICS_BUFFER_SIZE];
+	DiagTestResult res = diag_dump_storage_test_log(
+		log, log + DIAGNOSTICS_BUFFER_SIZE);
+	if (res == DIAG_TEST_UNIMPLEMENTED) {
 		VB2_SET_BIT(ui->state->disabled_item_mask,
 			    DIAGNOSTICS_ITEM_STORAGE_TEST_SHORT);
 		VB2_SET_BIT(ui->state->disabled_item_mask,
@@ -1904,9 +1910,17 @@ static const struct ui_menu_item diagnostics_storage_health_items[] = {
 static vb2_error_t diagnostics_storage_health_init_impl(
 	struct ui_context *ui)
 {
-	const char *log_string;
-	VB2_TRY(vb2ex_diag_get_storage_health(&log_string));
-	VB2_TRY(log_page_update(ui, log_string));
+	char *log = ui->storage_health_str;
+
+	if (!log) {
+		log = malloc(DIAGNOSTICS_BUFFER_SIZE);
+		if (!log)
+			return VB2_ERROR_UI_MEMORY_ALLOC;
+	}
+
+	ui->storage_health_str = log;
+	dump_all_health_info(log, log + DIAGNOSTICS_BUFFER_SIZE);
+	VB2_TRY(log_page_update(ui, log));
 	return log_page_reset_to_top(ui);
 }
 
@@ -1943,27 +1957,37 @@ static const struct ui_screen_info diagnostics_storage_health_screen = {
 static vb2_error_t diagnostics_storage_test_update_impl(
 	struct ui_context *ui)
 {
-	const char *log_string;
+	DiagTestResult res;
+	char *log = ui->storage_test_log_str;
 	int is_test_running = 0;
 
 	/* Early return if the test is done. */
 	if (ui->state->test_finished)
 		return VB2_SUCCESS;
 
-	vb2_error_t rv = vb2ex_diag_get_storage_test_log(&log_string);
-	switch (rv) {
-	case VB2_ERROR_EX_DIAG_TEST_RUNNING:
-		is_test_running = 1;
-		break;
-	case VB2_SUCCESS:
+	if (!log) {
+		log = malloc(DIAGNOSTICS_BUFFER_SIZE);
+		if (!log)
+			return VB2_ERROR_UI_MEMORY_ALLOC;
+	}
+
+	ui->storage_test_log_str = log;
+	res = diag_dump_storage_test_log(log, log + DIAGNOSTICS_BUFFER_SIZE);
+	switch (res) {
+	case DIAG_TEST_SUCCESS:
 		ui->state->test_finished = 1;
 		break;
+	case DIAG_TEST_RUNNING:
+		return VB2_SUCCESS;
+	case DIAG_TEST_UPDATED:
+		is_test_running = 1;
+		break;
 	default:
-		UI_INFO("vb2ex_diag_get_storage_test_log returned %#x\n", rv);
-		return rv;
+		UI_ERROR("diag_dump_storage_test_log returned %d\n", res);
+		return VB2_ERROR_UI_LOG_INIT;
 	}
 	VB2_TRY(log_page_show_back_or_cancel(ui, is_test_running));
-	return log_page_update(ui, log_string);
+	return log_page_update(ui, log);
 }
 
 static vb2_error_t diagnostics_storage_test_update(struct ui_context *ui)
@@ -1976,7 +2000,7 @@ static vb2_error_t diagnostics_storage_test_update(struct ui_context *ui)
 static vb2_error_t diagnostics_storage_test_control(
 	struct ui_context *ui, enum BlockDevTestOpsType op)
 {
-	if (vb2_is_error(diag_storage_test_control(op)))
+	if (diag_storage_test_control(op))
 		return set_ui_error_and_go_back(ui, UI_ERROR_DIAGNOSTICS);
 	return VB2_SUCCESS;
 }
@@ -2075,50 +2099,52 @@ static const struct ui_screen_info diagnostics_storage_test_extended_screen = {
 #define DIAGNOSTICS_MEMORY_ITEM_BACK 2
 #define DIAGNOSTICS_MEMORY_ITEM_CANCEL 3
 
-typedef vb2_error_t (*memory_test_op_t)(int reset, const char **out);
 static vb2_error_t diagnostics_memory_update_screen_impl(
-	struct ui_context *ui, memory_test_op_t op, int reset)
+	struct ui_context *ui, MemoryTestMode mode, int reset)
 {
+	DiagTestResult res;
 	const char *log_string = NULL;
-	vb2_error_t rv;
 	int is_test_running = 0;
 
 	/* Early return if the memory test is done. */
 	if (ui->state->test_finished)
 		return VB2_SUCCESS;
 
-	rv = op(reset, &log_string);
-	switch (rv) {
-	/* The test is still running but the output buffer was unchanged. */
-	case VB2_ERROR_EX_DIAG_TEST_RUNNING:
-		return VB2_SUCCESS;
-	case VB2_ERROR_EX_DIAG_TEST_UPDATED:
-		is_test_running = 1;
-		break;
-	case VB2_SUCCESS:
+	if (reset && memory_test_init(mode))
+		return VB2_ERROR_UI_LOG_INIT;
+
+	res = memory_test_run(&log_string);
+	switch (res) {
+	case DIAG_TEST_SUCCESS:
 		ui->state->test_finished = 1;
 		break;
+	case DIAG_TEST_RUNNING:
+		return VB2_SUCCESS;
+	case DIAG_TEST_UPDATED:
+		is_test_running = 1;
+		break;
 	default:
-		UI_INFO("memory_test_op returned %#x\n", rv);
-		return rv;
+		UI_ERROR("memory_test_run returned %d\n", res);
+		return VB2_ERROR_UI_LOG_INIT;
 	}
 	VB2_TRY(log_page_show_back_or_cancel(ui, is_test_running));
 	return log_page_update(ui, log_string);
 }
 
 static vb2_error_t diagnostics_memory_update_screen(struct ui_context *ui,
-						    memory_test_op_t op,
+						    MemoryTestMode mode,
 						    int reset)
 {
-	if (vb2_is_error(diagnostics_memory_update_screen_impl(ui, op, reset)))
+	if (vb2_is_error(diagnostics_memory_update_screen_impl(ui, mode,
+							       reset)))
 		return set_ui_error_and_go_back(ui, UI_ERROR_DIAGNOSTICS);
 	return VB2_SUCCESS;
 }
 
 static vb2_error_t diagnostics_memory_init_quick(struct ui_context *ui)
 {
-	VB2_TRY(diagnostics_memory_update_screen(
-		ui, &vb2ex_diag_memory_quick_test, 1));
+	VB2_TRY(diagnostics_memory_update_screen(ui, MEMORY_TEST_MODE_QUICK,
+						 1));
 	if (vb2_is_error(log_page_reset_to_top(ui)))
 		return set_ui_error_and_go_back(ui, UI_ERROR_DIAGNOSTICS);
 	return VB2_SUCCESS;
@@ -2126,8 +2152,7 @@ static vb2_error_t diagnostics_memory_init_quick(struct ui_context *ui)
 
 static vb2_error_t diagnostics_memory_init_full(struct ui_context *ui)
 {
-	VB2_TRY(diagnostics_memory_update_screen(
-		ui, &vb2ex_diag_memory_full_test, 1));
+	VB2_TRY(diagnostics_memory_update_screen(ui, MEMORY_TEST_MODE_FULL, 1));
 	if (vb2_is_error(log_page_reset_to_top(ui)))
 		return set_ui_error_and_go_back(ui, UI_ERROR_DIAGNOSTICS);
 	return VB2_SUCCESS;
@@ -2135,14 +2160,12 @@ static vb2_error_t diagnostics_memory_init_full(struct ui_context *ui)
 
 static vb2_error_t diagnostics_memory_update_quick(struct ui_context *ui)
 {
-	return diagnostics_memory_update_screen(
-		ui, &vb2ex_diag_memory_quick_test, 0);
+	return diagnostics_memory_update_screen(ui, MEMORY_TEST_MODE_QUICK, 0);
 }
 
 static vb2_error_t diagnostics_memory_update_full(struct ui_context *ui)
 {
-	return diagnostics_memory_update_screen(
-		ui, &vb2ex_diag_memory_full_test, 0);
+	return diagnostics_memory_update_screen(ui, MEMORY_TEST_MODE_FULL, 0);
 }
 
 static const struct ui_menu_item diagnostics_memory_items[] = {

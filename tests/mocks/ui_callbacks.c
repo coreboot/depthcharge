@@ -85,9 +85,3 @@ void vb2ex_beep(uint32_t msec, uint32_t frequency)
 
 	mock_time_ms += msec;
 }
-
-vb2_error_t vb2ex_diag_get_storage_test_log(const char **log)
-{
-	*log = "mock";
-	return mock_type(vb2_error_t);
-}

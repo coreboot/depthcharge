@@ -11,6 +11,7 @@
 #include "base/physmem.h"
 #include "vboot/util/memory.h"
 
+#include "diag/common.h"
 #include "diag/memory.h"
 #include "diag/pattern.h"
 
@@ -228,7 +229,7 @@ static void update_progress(void)
 			(state.num_pattern * operations * state.num_bytes);
 }
 
-vb2_error_t memory_test_init(MemoryTestMode mode)
+DiagTestResult memory_test_init(MemoryTestMode mode)
 {
 	DEBUG("Initialize for memory test with mode: %d\n", mode);
 
@@ -237,7 +238,7 @@ vb2_error_t memory_test_init(MemoryTestMode mode)
 		state.buf = malloc(DEFAULT_DIAGNOSTIC_OUTPUT_SIZE);
 		if (!state.buf) {
 			DEBUG("Fail to allocate memory for output buffer.\n");
-			return VB2_ERROR_UI_MEMORY_ALLOC;
+			return DIAG_TEST_ERROR;
 		}
 		state.buf_end = state.buf + DEFAULT_DIAGNOSTIC_OUTPUT_SIZE;
 	}
@@ -252,11 +253,11 @@ vb2_error_t memory_test_init(MemoryTestMode mode)
 		break;
 	default:
 		DEBUG("Unknown test mode: %d\n", mode);
-		return VB2_ERROR_EX_DIAG_TEST_INIT_FAILED;
+		return DIAG_TEST_ERROR;
 	}
 	if (!state.patterns) {
 		DEBUG("Fail to get pattern list for memory test.\n");
-		return VB2_ERROR_EX_DIAG_TEST_INIT_FAILED;
+		return DIAG_TEST_ERROR;
 	}
 	const Pattern *pattern;
 	state.num_pattern = 0;
@@ -271,7 +272,7 @@ vb2_error_t memory_test_init(MemoryTestMode mode)
 			malloc(sizeof(*state.single_operation_data));
 		if (!state.single_operation_data) {
 			DEBUG("Fail to allocate memory for operation data.\n");
-			return VB2_ERROR_UI_MEMORY_ALLOC;
+			return DIAG_TEST_ERROR;
 		}
 	}
 	memset(state.single_operation_data, 0,
@@ -282,7 +283,7 @@ vb2_error_t memory_test_init(MemoryTestMode mode)
 	if (!state.ranges.head.next) {
 		if (memory_range_init_and_get_unused(&state.ranges)) {
 			DEBUG("Fail to get unused memory range.\n");
-			return VB2_ERROR_EX_DIAG_TEST_INIT_FAILED;
+			return DIAG_TEST_ERROR;
 		}
 	}
 
@@ -292,7 +293,7 @@ vb2_error_t memory_test_init(MemoryTestMode mode)
 	     cur = cur->next->next) {
 		if (!cur->next) {
 			DEBUG("Odd number of range edges!\n");
-			return VB2_ERROR_EX_DIAG_TEST_INIT_FAILED;
+			return DIAG_TEST_ERROR;
 		}
 		state.num_bytes += cur->next->pos - cur->pos;
 	}
@@ -314,7 +315,7 @@ vb2_error_t memory_test_init(MemoryTestMode mode)
 	}
 	OUTPUT("\n\n");
 
-	return VB2_SUCCESS;
+	return DIAG_TEST_SUCCESS;
 }
 
 /*
@@ -371,19 +372,19 @@ static void memory_test_run_step(void)
 		OUTPUT("\nAll memory tests passed.\n");
 }
 
-vb2_error_t memory_test_run(const char **out)
+DiagTestResult memory_test_run(const char **out)
 {
 	*out = state.buf;
 
 	memory_test_run_step();
 
 	if (!state.is_running)
-		return VB2_SUCCESS;
+		return DIAG_TEST_SUCCESS;
 
 	// No updates on the out string.
 	if (state.prev_percent == state.percent &&
 	    state.prev_pattern_name == state.pattern_cur->name)
-		return VB2_ERROR_EX_DIAG_TEST_RUNNING;
+		return DIAG_TEST_RUNNING;
 
 	// Append the progress bar. Do not change buf_cur, we expect this string
 	// will be overwritten in next round.
@@ -395,5 +396,5 @@ vb2_error_t memory_test_run(const char **out)
 	state.prev_percent = state.percent;
 	state.prev_pattern_name = state.pattern_cur->name;
 
-	return VB2_ERROR_EX_DIAG_TEST_UPDATED;
+	return DIAG_TEST_UPDATED;
 }
