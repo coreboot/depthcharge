@@ -92,35 +92,41 @@ static void nvme_dump_status(NVME_CQ volatile *cq) {
 }
 ) //DEBUG
 
+static NVME_STATUS nvme_wait_status(NvmeCtrlr *ctrlr, NVME_CSTS mask,
+				    NVME_CSTS status)
+{
+	/* Delay up to CAP.TO ms for status to indicate complete */
+	uint32_t timeout = NVME_CAP_TO(ctrlr->cap);
+
+	if (!timeout)
+		timeout = 1;
+
+	if (WAIT_WHILE(
+		((read32(ctrlr->ctrlr_regs + NVME_CSTS_OFFSET) & mask)
+		 != status), timeout))
+		return NVME_TIMEOUT;
+
+	return NVME_SUCCESS;
+}
+
 /* Disables and resets the NVMe controller */
-static NVME_STATUS nvme_disable_controller(NvmeCtrlr *ctrlr) {
+static NVME_STATUS nvme_disable_controller(NvmeCtrlr *ctrlr)
+{
 	NVME_CC cc;
-	uint32_t timeout;
 
 	/* Read controller configuration */
 	cc = read32(ctrlr->ctrlr_regs + NVME_CC_OFFSET);
 	CLR(cc, NVME_CC_EN);
 	/* Write controller configuration */
 	write32_with_flush(ctrlr->ctrlr_regs + NVME_CC_OFFSET, cc);
-	/* Delay up to CAP.TO ms for CSTS.RDY to clear*/
-	if (NVME_CAP_TO(ctrlr->cap) == 0)
-		timeout = 1;
-	else
-		timeout = NVME_CAP_TO(ctrlr->cap);
 
-	if (WAIT_WHILE(
-		((read32(ctrlr->ctrlr_regs + NVME_CSTS_OFFSET) & NVME_CSTS_RDY) == 1),
-		timeout)) {
-		return NVME_TIMEOUT;
-	}
-
-	return NVME_SUCCESS;
+	return nvme_wait_status(ctrlr, NVME_CSTS_RDY, 0);
 }
 
 /* Enables controller and verifies that it's ready */
-static NVME_STATUS nvme_enable_controller(NvmeCtrlr *ctrlr) {
+static NVME_STATUS nvme_enable_controller(NvmeCtrlr *ctrlr)
+{
 	NVME_CC cc = 0;
-	uint32_t timeout;
 
 	SET(cc, NVME_CC_EN);
 	cc |= NVME_CC_IOSQES(6); /* Spec. recommended values */
@@ -128,25 +134,14 @@ static NVME_STATUS nvme_enable_controller(NvmeCtrlr *ctrlr) {
 	/* Write controller configuration. */
 	write32_with_flush(ctrlr->ctrlr_regs + NVME_CC_OFFSET, cc);
 
-	/* Delay up to CAP.TO ms for CSTS.RDY to set*/
-	if (NVME_CAP_TO(ctrlr->cap) == 0)
-		timeout = 1;
-	else
-		timeout = NVME_CAP_TO(ctrlr->cap);
-
-	if (WAIT_WHILE(
-		((read32(ctrlr->ctrlr_regs + NVME_CSTS_OFFSET) & NVME_CSTS_RDY) == 0),
-		timeout)) {
-		return NVME_TIMEOUT;
-	}
-
-	return NVME_SUCCESS;
+	return nvme_wait_status(ctrlr, NVME_CSTS_RDY, NVME_CSTS_RDY);
 }
 
 /* Shutdown controller before power cycle */
-static NVME_STATUS nvme_shutdown_controller(NvmeCtrlr *ctrlr) {
+static NVME_STATUS nvme_shutdown_controller(NvmeCtrlr *ctrlr)
+{
 	NVME_CC cc;
-	uint32_t timeout;
+	NVME_STATUS status;
 
 	/* Read controller configuration */
 	cc = read32(ctrlr->ctrlr_regs + NVME_CC_OFFSET);
@@ -158,17 +153,9 @@ static NVME_STATUS nvme_shutdown_controller(NvmeCtrlr *ctrlr) {
 	/* Write controller configuration */
 	write32_with_flush(ctrlr->ctrlr_regs + NVME_CC_OFFSET, cc);
 
-	/* Delay up to CAP.TO ms for CSTS.SHST to indicate complete */
-	if (NVME_CAP_TO(ctrlr->cap) == 0)
-		timeout = 1;
-	else
-		timeout = NVME_CAP_TO(ctrlr->cap);
-
-	if (WAIT_WHILE(
-		((read32(ctrlr->ctrlr_regs + NVME_CSTS_OFFSET) &
-		  NVME_CSTS_SHST_MASK) != NVME_CSTS_SHST_COMPLETE),
-		timeout)) {
-
+	status = nvme_wait_status(ctrlr, NVME_CSTS_SHST_MASK,
+				  NVME_CSTS_SHST_COMPLETE);
+	if (NVME_ERROR(status)) {
 		/* Send abrupt shutdown notification */
 		cc = read32(ctrlr->ctrlr_regs + NVME_CC_OFFSET);
 		CLR(cc, NVME_CC_SHN_MASK);
@@ -176,7 +163,7 @@ static NVME_STATUS nvme_shutdown_controller(NvmeCtrlr *ctrlr) {
 		write32_with_flush(ctrlr->ctrlr_regs + NVME_CC_OFFSET, cc);
 
 		printf("NVMe: shutdown timeout, sent abrupt notification\n");
-		return NVME_TIMEOUT;
+		return status;
 	}
 
 	printf("NVMe: shutdown succeeded\n");
