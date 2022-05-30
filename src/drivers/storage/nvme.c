@@ -417,8 +417,9 @@ static NVME_STATUS nvme_fill_prp(PrpList *prp_list, uint64_t *prp, void *buffer,
 	return NVME_SUCCESS;
 }
 
-/* Sets up read operation for up to max_transfer blocks */
-static NVME_STATUS nvme_internal_read(NvmeDrive *drive, void *buffer, lba_t start, lba_t count)
+/* Prepare submission queue for each data transfer */
+static NVME_STATUS nvme_block_rw(NvmeDrive *drive, void *buffer, lba_t start,
+				 lba_t count, bool read)
 {
 	NvmeCtrlr *ctrlr = drive->ctrlr;
 	NVME_SQ *sq;
@@ -428,8 +429,10 @@ static NVME_STATUS nvme_internal_read(NvmeDrive *drive, void *buffer, lba_t star
 		return NVME_INVALID_PARAMETER;
 
 	/* If queue is full, need to complete inflight commands before submitting more */
-	if ((ctrlr->sq_t_dbl[NVME_IO_QUEUE_INDEX] + 1) % ctrlr->iosq_sz == ctrlr->sqhd[NVME_IO_QUEUE_INDEX]) {
-		DEBUG(printf("nvme_internal_read: Too many outstanding commands. Completing in-flights\n");)
+	if ((ctrlr->sq_t_dbl[NVME_IO_QUEUE_INDEX] + 1) % ctrlr->iosq_sz ==
+	     ctrlr->sqhd[NVME_IO_QUEUE_INDEX]) {
+		DEBUG(printf("%s: Too many outstanding commands. Completing in-flights\n",
+			     __func__);)
 		status = nvme_sync_cmd(ctrlr, NVME_IO_QUEUE_INDEX,
 				       NVME_CCQ_SIZE, NVME_GENERIC_TIMEOUT);
 		if (NVME_ERROR(status)) {
@@ -439,24 +442,19 @@ static NVME_STATUS nvme_internal_read(NvmeDrive *drive, void *buffer, lba_t star
 		}
 	}
 
-	sq  = ctrlr->sq_buffer[NVME_IO_QUEUE_INDEX] + ctrlr->sq_t_dbl[NVME_IO_QUEUE_INDEX];
+	sq = ctrlr->sq_buffer[NVME_IO_QUEUE_INDEX] +
+	     ctrlr->sq_t_dbl[NVME_IO_QUEUE_INDEX];
 
 	memset(sq, 0, sizeof(NVME_SQ));
 
-	sq->opc = NVME_IO_READ_OPC;
+	sq->opc = read ? NVME_IO_READ_OPC : NVME_IO_WRITE_OPC;
 	sq->cid = ctrlr->cid[NVME_IO_QUEUE_INDEX]++;
 	sq->nsid = drive->namespace_id;
 
-	/* we need to invalidate cache before posting the command to submission
-	 * queue to ensure once the nvme controller had finished DMA, the CPU
-	 * would read the new contents from memory.
-	 */
-	if (!dma_coherent(buffer))
-		dcache_invalidate_by_mva(buffer, count*drive->dev.block_size);
-
-	status = nvme_fill_prp(ctrlr->prp_list[sq->cid], sq->prp, buffer, count * drive->dev.block_size);
+	status = nvme_fill_prp(ctrlr->prp_list[sq->cid], sq->prp, buffer,
+			       count * drive->dev.block_size);
 	if (NVME_ERROR(status)) {
-		printf("nvme_internal_read: error %d generating PRP(s)\n",status);
+		printf("%s: error %d generating PRP(s)\n", __func__, status);
 		return status;
 	}
 
@@ -464,172 +462,82 @@ static NVME_STATUS nvme_internal_read(NvmeDrive *drive, void *buffer, lba_t star
 	sq->cdw11 = (start >> 32);
 	sq->cdw12 = (count - 1) & 0xFFFF;
 
-	status = nvme_submit_cmd(ctrlr, NVME_IO_QUEUE_INDEX, ctrlr->iosq_sz);
-
-	return status;
+	return nvme_submit_cmd(ctrlr, NVME_IO_QUEUE_INDEX, ctrlr->iosq_sz);
 }
 
-/* Read operation entrypoint
+/*
+ * Read/write operation entrypoint
  * Cut operation into max_transfer chunks and do it
  */
+static lba_t nvme_rw(BlockDevOps *me, lba_t start, lba_t count, void *buffer,
+		     bool read)
+{
+	NvmeDrive *drive = container_of(me, NvmeDrive, dev.ops);
+	NvmeCtrlr *ctrlr = drive->ctrlr;
+	uint64_t max_transfer_blocks = 0;
+	uint32_t block_size = drive->dev.block_size;
+	lba_t orig_count = count;
+	int status = NVME_SUCCESS;
+
+	DEBUG(printf("%s: %s namespace %d\n", __func__,
+		     read ? "Reading from" : "Writing to",
+		     drive->namespace_id);)
+
+	if (ctrlr->controller_data->mdts != 0)
+		max_transfer_blocks = ((1 << (ctrlr->controller_data->mdts)) * (1 << NVME_CAP_MPSMIN(ctrlr->cap))) / block_size;
+	/* Artificially limit max_transfer_blocks to 1 PRP List */
+	if ((max_transfer_blocks == 0) ||
+	    (max_transfer_blocks > NVME_MAX_XFER_BYTES / block_size))
+		max_transfer_blocks = NVME_MAX_XFER_BYTES / block_size;
+
+	const char *op = read ? "read" : "write";
+	while (count > 0) {
+		if (count > max_transfer_blocks) {
+			DEBUG(printf("%s: partial %s of %llu blocks\n",
+				     __func__, op, max_transfer_blocks);)
+			status = nvme_block_rw(drive, buffer, start,
+					       max_transfer_blocks, read);
+			count -= max_transfer_blocks;
+			buffer += max_transfer_blocks * block_size;
+			start += max_transfer_blocks;
+		} else {
+			DEBUG(printf("%s: final %s of %llu blocks\n",
+				     __func__, op, count);)
+			status = nvme_block_rw(drive, buffer, start, count,
+					       read);
+			count = 0;
+		}
+
+		if (NVME_ERROR(status)) {
+			printf("%s: Internal %s failed\n", __func__, op);
+			return -1;
+		}
+	}
+
+	status = nvme_sync_cmd(ctrlr, NVME_IO_QUEUE_INDEX, NVME_CCQ_SIZE,
+			       NVME_GENERIC_TIMEOUT);
+	if (NVME_ERROR(status)) {
+		printf("%s: error %d failed to sync command\n",
+		       __func__, status);
+		return -1;
+	}
+
+	DEBUG(printf("%s: lba = %#08x, Original = %#08x, Remaining = %#08x, BlockSize = %#x Status = %d\n",
+		     __func__, (uint32_t)start, (uint32_t)orig_count,
+		     (uint32_t)count, block_size, status);)
+
+	return orig_count - count;
+}
+
 static lba_t nvme_read(BlockDevOps *me, lba_t start, lba_t count, void *buffer)
 {
-	NvmeDrive *drive = container_of(me, NvmeDrive, dev.ops);
-	NvmeCtrlr *ctrlr = drive->ctrlr;
-	uint64_t max_transfer_blocks = 0;
-	uint32_t block_size = drive->dev.block_size;
-	lba_t orig_count = count;
-	int status = NVME_SUCCESS;
-
-	DEBUG(printf("nvme_read: Reading from namespace %d\n",drive->namespace_id);)
-
-	if (ctrlr->controller_data->mdts != 0)
-		max_transfer_blocks = ((1 << (ctrlr->controller_data->mdts)) * (1 << NVME_CAP_MPSMIN(ctrlr->cap))) / block_size;
-	/* Artificially limit max_transfer_blocks to 1 PRP List */
-	if ((max_transfer_blocks == 0) ||
-	    (max_transfer_blocks > NVME_MAX_XFER_BYTES / block_size))
-		max_transfer_blocks = NVME_MAX_XFER_BYTES / block_size;
-
-	while (count > 0) {
-		if (count > max_transfer_blocks) {
-			DEBUG(printf("nvme_read: partial read of %llu blocks\n",(unsigned long long)max_transfer_blocks);)
-			status = nvme_internal_read(drive, buffer, start, max_transfer_blocks);
-			count -= max_transfer_blocks;
-			buffer += max_transfer_blocks*block_size;
-			start += max_transfer_blocks;
-		} else {
-			DEBUG(printf("nvme_read: final read of %llu blocks\n",(unsigned long long)count);)
-			status = nvme_internal_read(drive, buffer, start, count);
-			count = 0;
-		}
-		if (NVME_ERROR(status))
-			break;
-	}
-
-	if (NVME_ERROR(status)) {
-		printf("nvme_read: error %d\n",status);
-		return -1;
-	}
-
-	status = nvme_sync_cmd(ctrlr, NVME_IO_QUEUE_INDEX, NVME_CCQ_SIZE,
-			       NVME_GENERIC_TIMEOUT);
-	if (NVME_ERROR(status)) {
-		printf("%s: error %d failed to sync command\n",
-		       __func__, status);
-		return -1;
-	}
-
-	DEBUG(printf("nvme_read: lba = 0x%08x, Original = 0x%08x, Remaining = 0x%08x, BlockSize = 0x%x Status = %d\n", (uint32_t)start, (uint32_t)orig_count, (uint32_t)count, block_size, status);)
-
-	return orig_count - count;
+	return nvme_rw(me, start, count, buffer, true);
 }
 
-/* Sets up write operation for up to max_transfer blocks */
-static NVME_STATUS nvme_internal_write(NvmeDrive *drive, void *buffer, lba_t start, lba_t count)
-{
-	NvmeCtrlr *ctrlr = drive->ctrlr;
-	NVME_SQ *sq;
-	int status = NVME_SUCCESS;
-
-	if (count == 0)
-		return NVME_INVALID_PARAMETER;
-
-	/* If queue is full, need to complete inflight commands before submitting more */
-	if ((ctrlr->sq_t_dbl[NVME_IO_QUEUE_INDEX] + 1) % ctrlr->iosq_sz == ctrlr->sqhd[NVME_IO_QUEUE_INDEX]) {
-		DEBUG(printf("nvme_internal_write: Too many outstanding commands. Completing in-flights\n");)
-		status = nvme_sync_cmd(ctrlr, NVME_IO_QUEUE_INDEX,
-				       NVME_CCQ_SIZE, NVME_GENERIC_TIMEOUT);
-		if (NVME_ERROR(status)) {
-			printf("%s: error %d completing outstanding commands\n",
-			       __func__, status);
-			return status;
-		}
-	}
-
-	sq  = ctrlr->sq_buffer[NVME_IO_QUEUE_INDEX] + ctrlr->sq_t_dbl[NVME_IO_QUEUE_INDEX];
-
-	memset(sq, 0, sizeof(NVME_SQ));
-
-	sq->opc = NVME_IO_WRITE_OPC;
-	sq->cid = ctrlr->cid[NVME_IO_QUEUE_INDEX]++;
-	sq->nsid = drive->namespace_id;
-
-	/* we need to clean cache before posting the command to submission
-	 * queue to ensure data from the cache would be updated in memory
-	 * and be visible to the DMA transfer.
-	 */
-	if (!dma_coherent(buffer))
-		dcache_clean_by_mva(buffer, count*drive->dev.block_size);
-
-	status = nvme_fill_prp(ctrlr->prp_list[sq->cid], sq->prp, buffer, count * drive->dev.block_size);
-	if (NVME_ERROR(status)) {
-		printf("nvme_internal_write: error %d generating PRP(s)\n",status);
-		return status;
-	}
-
-	sq->cdw10 = start;
-	sq->cdw11 = (start >> 32);
-	sq->cdw12 = (count - 1) & 0xFFFF;
-
-	status = nvme_submit_cmd(ctrlr, NVME_IO_QUEUE_INDEX, ctrlr->iosq_sz);
-
-	return status;
-}
-
-/* Write operation entrypoint
- * Cut operation into max_transfer chunks and do it
- */
 static lba_t nvme_write(BlockDevOps *me, lba_t start, lba_t count,
-						const void *buffer)
+			const void *buffer)
 {
-	NvmeDrive *drive = container_of(me, NvmeDrive, dev.ops);
-	NvmeCtrlr *ctrlr = drive->ctrlr;
-	uint64_t max_transfer_blocks = 0;
-	uint32_t block_size = drive->dev.block_size;
-	lba_t orig_count = count;
-	int status = NVME_SUCCESS;
-
-	DEBUG(printf("nvme_write: Writing to namespace %d\n",drive->namespace_id);)
-
-	if (ctrlr->controller_data->mdts != 0)
-		max_transfer_blocks = ((1 << (ctrlr->controller_data->mdts)) * (1 << NVME_CAP_MPSMIN(ctrlr->cap))) / block_size;
-	/* Artificially limit max_transfer_blocks to 1 PRP List */
-	if ((max_transfer_blocks == 0) ||
-	    (max_transfer_blocks > NVME_MAX_XFER_BYTES / block_size))
-		max_transfer_blocks = NVME_MAX_XFER_BYTES / block_size;
-
-	while (count > 0) {
-		if (count > max_transfer_blocks) {
-			DEBUG(printf("nvme_write: partial write of %llu blocks\n",(unsigned long long)max_transfer_blocks);)
-			status = nvme_internal_write(drive, (void *)buffer, start, max_transfer_blocks);
-			count -= max_transfer_blocks;
-			buffer += max_transfer_blocks*block_size;
-			start += max_transfer_blocks;
-		} else {
-			DEBUG(printf("nvme_write final write of %llu blocks\n",(unsigned long long)count);)
-			status = nvme_internal_write(drive, (void *)buffer, start, count);
-			count = 0;
-		}
-		if (NVME_ERROR(status))
-			break;
-	}
-
-	if (NVME_ERROR(status)) {
-		printf("nvme_write: error %d\n",status);
-		return -1;
-	}
-
-	status = nvme_sync_cmd(ctrlr, NVME_IO_QUEUE_INDEX, NVME_CCQ_SIZE,
-			       NVME_GENERIC_TIMEOUT);
-	if (NVME_ERROR(status)) {
-		printf("%s: error %d failed to sync command\n",
-		       __func__, status);
-		return -1;
-	}
-
-	DEBUG(printf("nvme_write: lba = 0x%08x, Original = 0x%08x, Remaining = 0x%08x, BlockSize = 0x%x Status = %d\n", (uint32_t)start, (uint32_t)orig_count, (uint32_t)count, block_size, status);)
-
-	return orig_count - count;
+	return nvme_rw(me, start, count, (void *)buffer, false);
 }
 
 static NVME_STATUS nvme_read_log_page(NvmeDrive *drive, int log_page_id,
