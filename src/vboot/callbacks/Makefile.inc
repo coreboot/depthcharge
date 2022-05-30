@@ -13,11 +13,6 @@
 
 depthcharge-y += debug.c
 depthcharge-y += disk.c
-ifneq ($(CONFIG_HEADLESS),y)
-depthcharge-y += display.c
-else
-depthcharge-y += headless_stub.c
-endif
 depthcharge-y += memory.c
 depthcharge-y += misc.c
 depthcharge-y += time.c

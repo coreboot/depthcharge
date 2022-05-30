@@ -527,6 +527,10 @@ struct ui_context {
 	char *debug_info_str;
 	char *firmware_log_str;
 
+	/* For diagnostic screens. */
+	char *storage_health_str;
+	char *storage_test_log_str;
+
 	/* For error beep sound. */
 	int error_beep;
 

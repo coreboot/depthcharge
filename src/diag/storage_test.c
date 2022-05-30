@@ -5,6 +5,7 @@
 
 #include <libpayload.h>
 
+#include "diag/common.h"
 #include "diag/storage_test.h"
 
 #define HALF_BYTE_LOW(x) ((x) & 0xf)
@@ -193,12 +194,12 @@ static int is_test_running(StorageTestLog *log)
 	return HALF_BYTE_LOW(data->current_operation);
 }
 
-vb2_error_t diag_dump_storage_test_log(char *buf, const char *end)
+DiagTestResult diag_dump_storage_test_log(char *buf, const char *end)
 {
 	BlockDev *dev = get_first_fixed_block_device();
 	if (!dev || !(dev->ops.get_test_log)) {
 		printf("%s: No supported.\n", __func__);
-		return VB2_ERROR_EX_UNIMPLEMENTED;
+		return DIAG_TEST_UNIMPLEMENTED;
 	}
 	StorageTestLog log = {0};
 
@@ -207,7 +208,7 @@ vb2_error_t diag_dump_storage_test_log(char *buf, const char *end)
 		buf += snprintf(buf, end - buf,
 				"%s: Get Test Result error: %d\n", dev->name,
 				res);
-		return VB2_ERROR_EX_DIAG_TEST_INIT_FAILED;
+		return DIAG_TEST_ERROR;
 	}
 
 	buf += snprintf(buf, end - buf, "Block device '%s':\n", dev->name);
@@ -215,19 +216,19 @@ vb2_error_t diag_dump_storage_test_log(char *buf, const char *end)
 	buf = stringify_test_status(buf, end, &log);
 
 	if (is_test_running(&log))
-		return VB2_ERROR_EX_DIAG_TEST_RUNNING;
-	return VB2_SUCCESS;
+		return DIAG_TEST_UPDATED;
+	return DIAG_TEST_SUCCESS;
 }
 
-vb2_error_t diag_storage_test_control(enum BlockDevTestOpsType ops)
+DiagTestResult diag_storage_test_control(enum BlockDevTestOpsType ops)
 {
 	BlockDev *dev = get_first_fixed_block_device();
 	if (!dev || !(dev->ops.test_control)) {
 		printf("%s: No supported.\n", __func__);
-		return VB2_ERROR_EX_UNIMPLEMENTED;
+		return DIAG_TEST_UNIMPLEMENTED;
 	}
 	if (dev->ops.test_control(&dev->ops, ops))
-		return VB2_ERROR_EX;
+		return DIAG_TEST_ERROR;
 	get_test_remain_time_seconds(0, 1);
-	return VB2_SUCCESS;
+	return DIAG_TEST_SUCCESS;
 }

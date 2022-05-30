@@ -10,6 +10,9 @@ tests-y += ui_developer-detachable-test
 tests-y += ui_diagnostic-test
 
 ui-test-common-srcs += tests/mocks/cbmem_console.c
+ui-test-common-srcs += tests/mocks/diag/health_info.c
+ui-test-common-srcs += tests/mocks/diag/memory.c
+ui-test-common-srcs += tests/mocks/diag/storage_test.c
 ui-test-common-srcs += tests/mocks/log.c
 ui-test-common-srcs += tests/mocks/ui.c
 ui-test-common-srcs += tests/mocks/ui_callbacks.c
@@ -21,7 +24,6 @@ ui-test-common-srcs += tests/mocks/vboot/ui/archive.c
 ui-test-common-srcs += tests/mocks/vboot/ui/bitmap.c
 ui-test-common-srcs += tests/mocks/vboot_api.c
 ui-test-common-srcs += tests/stubs/boot/payload.c
-ui-test-common-srcs += tests/stubs/diag.c
 ui-test-common-srcs += tests/stubs/drivers/storage/blockdev.c
 ui-test-common-srcs += tests/stubs/vboot/firmware_id.c
 ui-test-common-srcs += tests/stubs/vboot/ui/draw.c

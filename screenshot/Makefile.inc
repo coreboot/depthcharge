@@ -43,6 +43,7 @@ screenshot-srcs += screenshot/mocks/boot/payload.c
 screenshot-srcs += screenshot/mocks/cbmem_console.c
 screenshot-srcs += screenshot/mocks/vb2api.c
 screenshot-srcs += screenshot/stubs/beep.c
+screenshot-srcs += screenshot/stubs/diag.c
 screenshot-srcs += screenshot/stubs/display.c
 screenshot-srcs += screenshot/stubs/firmware_id.c
 screenshot-srcs += screenshot/stubs/input.c
@@ -56,7 +57,6 @@ screenshot-srcs += src/vboot/ui/loop.c
 screenshot-srcs += src/vboot/ui/menu.c
 screenshot-srcs += src/vboot/ui/navigation.c
 screenshot-srcs += src/vboot/ui/screens.c
-screenshot-srcs += tests/stubs/diag.c
 
 screenshot-srcobjs := $(addprefix $(screenshotobj)/, \
 	$(patsubst %.c,%.o,$(filter src/%,$(screenshot-srcs))))
