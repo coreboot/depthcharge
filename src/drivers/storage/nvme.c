@@ -176,12 +176,9 @@ static NVME_STATUS nvme_shutdown_controller(NvmeCtrlr *ctrlr)
  * qid: Queue Identifier for the SQ/CQ containing the new command
  * sqsize: Size of the submission queue
  */
-static NVME_STATUS nvme_submit_cmd(NvmeCtrlr *ctrlr, uint16_t qid, uint32_t sqsize) {
-	if (NULL == ctrlr)
-		return NVME_INVALID_PARAMETER;
-	if (qid > NVME_NUM_IO_QUEUES)
-		return NVME_INVALID_PARAMETER;
-
+static NVME_STATUS nvme_submit_cmd(NvmeCtrlr *ctrlr, uint16_t qid,
+				   uint32_t sqsize)
+{
 	/* Update the submission queue tail in host memory */
 	if (++(ctrlr->sq_t_dbl[qid]) > (sqsize-1))
 		ctrlr->sq_t_dbl[qid] = 0;
@@ -189,66 +186,51 @@ static NVME_STATUS nvme_submit_cmd(NvmeCtrlr *ctrlr, uint16_t qid, uint32_t sqsi
 	return NVME_SUCCESS;
 }
 
-/* Ring SQ doorbell register, submitting all outstanding command to HW
- *
- * ctrlr: NVMe controller handle
- * qid: Queue Identifier for the SQ/CQ containing the new command
- */
-static NVME_STATUS nvme_ring_sq_doorbell(NvmeCtrlr *ctrlr, uint16_t qid) {
-	if (NULL == ctrlr)
-		return NVME_INVALID_PARAMETER;
-	if (qid > NVME_NUM_IO_QUEUES)
-		return NVME_INVALID_PARAMETER;
-
-	/* Ring SQ doorbell by writing SQ tail index to controller */
-	write32_with_flush(ctrlr->ctrlr_regs + NVME_SQTDBL_OFFSET(qid, NVME_CAP_DSTRD(ctrlr->cap)),
-			   ctrlr->sq_t_dbl[qid]);
-
-	return NVME_SUCCESS;
-}
-
-/* Poll for completion of all commands from HW
- *
- * ctrlr: NVMe controller handle
- * qid: Queue Identifier for the SQ/CQ containing the new command
- * cqsize: Size of the completion queue
- * timeout_ms: How long in milliseconds to wait for command completion
- */
-static NVME_STATUS nvme_complete_cmds_polled(NvmeCtrlr *ctrlr,
-			uint16_t qid,
-			uint32_t cqsize,
-			uint32_t timeout_ms) {
+static NVME_STATUS nvme_sync_cmd(NvmeCtrlr *ctrlr, uint16_t qid,
+				 uint32_t cqsize, uint32_t timeout_ms)
+{
 	NVME_CQ *cq;
 	uint32_t ncmds;
+	uint32_t offset;
 
-	if (NULL == ctrlr)
+	if (ctrlr == NULL)
 		return NVME_INVALID_PARAMETER;
 	if (qid > NVME_NUM_IO_QUEUES)
 		return NVME_INVALID_PARAMETER;
-	if (timeout_ms == 0)
+	if (!timeout_ms)
 		timeout_ms = 1;
 
-	/* We will complete all outstanding commands */
+	/*
+	 * Ring SQ doorbell by writing SQ tail index to controller,
+	 * submitting all outstanding command to HW
+	 */
+	offset = NVME_SQTDBL_OFFSET(qid, NVME_CAP_DSTRD(ctrlr->cap));
+	write32_with_flush(ctrlr->ctrlr_regs + offset, ctrlr->sq_t_dbl[qid]);
+
+	/* Poll for completion of all commands from HW */
 	if (ctrlr->cq_h_dbl[qid] < ctrlr->sq_t_dbl[qid])
 		ncmds = ctrlr->sq_t_dbl[qid] - ctrlr->cq_h_dbl[qid];
 	else
 		ncmds = (cqsize - ctrlr->cq_h_dbl[qid]) + ctrlr->sq_t_dbl[qid];
-	DEBUG(printf("nvme_complete_cmds_polled: completing %u commands\n",(unsigned)ncmds);)
+	DEBUG(printf("%s: completing %d commands\n", __func__, ncmds);)
 
 	while (ncmds--) {
-		cq  = ctrlr->cq_buffer[qid] + ctrlr->cq_h_dbl[qid];
+		cq = ctrlr->cq_buffer[qid] + ctrlr->cq_h_dbl[qid];
 		/* Wait for phase to change (or timeout) */
 		if (WAIT_WHILE(
-			((read16(&(cq->flags)) & NVME_CQ_FLAGS_PHASE) == ctrlr->pt[qid]),
-			timeout_ms)) {
-				printf("nvme_complete_cmds_polled: ERROR - timeout\n");
-				return NVME_TIMEOUT;
+			((read16(&(cq->flags)) & NVME_CQ_FLAGS_PHASE)
+			 == ctrlr->pt[qid]), timeout_ms)) {
+			printf("%s: ERROR - timeout\n", __func__);
+			return NVME_TIMEOUT;
 		}
 
-		/* Dump completion entry status for debugging. */
+		/* Dump completion entry status for debugging */
 		DEBUG(nvme_dump_status(cq);)
 
-		/* Update the doorbell, queue phase, and queue command id if necessary */
+		/*
+		 * Update the doorbell, queue phase, and queue command id
+		 * if necessary
+		 */
 		if (++(ctrlr->cq_h_dbl[qid]) > (cqsize-1)) {
 			ctrlr->cq_h_dbl[qid] = 0;
 			ctrlr->pt[qid] ^= 1;
@@ -257,9 +239,9 @@ static NVME_STATUS nvme_complete_cmds_polled(NvmeCtrlr *ctrlr,
 		ctrlr->sqhd[qid] = cq->sqhd;
 	}
 
-	/* Ring the completion queue doorbell register*/
-	write32_with_flush(ctrlr->ctrlr_regs + NVME_CQHDBL_OFFSET(qid, NVME_CAP_DSTRD(ctrlr->cap)),
-			   ctrlr->cq_h_dbl[qid]);
+	/* Ring the completion queue doorbell register */
+	offset = NVME_CQHDBL_OFFSET(qid, NVME_CAP_DSTRD(ctrlr->cap));
+	write32_with_flush(ctrlr->ctrlr_regs + offset, ctrlr->cq_h_dbl[qid]);
 
 	/* If the SQ is empty, reset cid to zero */
 	if (ctrlr->sq_t_dbl[qid] == ctrlr->sqhd[qid])
@@ -277,44 +259,26 @@ static NVME_STATUS nvme_complete_cmds_polled(NvmeCtrlr *ctrlr,
  * cqsize: Number of commands (size) of the completion queue
  * timeout_ms: How long in milliseconds to wait for command completion
  */
-static NVME_STATUS nvme_do_one_cmd_synchronous(NvmeCtrlr *ctrlr,
-			uint16_t qid,
-			uint32_t sqsize,
-			uint32_t cqsize,
-			uint32_t timeout_ms) {
+static NVME_STATUS nvme_do_one_cmd_synchronous(NvmeCtrlr *ctrlr, uint16_t qid,
+					       uint32_t sqsize, uint32_t cqsize,
+					       uint32_t timeout_ms)
+{
 	NVME_STATUS status = NVME_SUCCESS;
-
-	if (NULL == ctrlr)
-		return NVME_INVALID_PARAMETER;
-	if (qid > NVME_NUM_IO_QUEUES)
-		return NVME_INVALID_PARAMETER;
-	if (timeout_ms == 0)
-		timeout_ms = 1;
 
 	/* This function should only be called when no commands are pending
 	 * because it will complete all outstanding commands. */
 	if (ctrlr->sq_t_dbl[qid] != ctrlr->sqhd[qid])
-		printf("nvme_do_one_cmd_synchronous: warning, SQ not empty. All commands will be completed.\n");
+		printf("%s: warning, SQ not empty. All commands will be completed.\n",
+		       __func__);
 
 	status = nvme_submit_cmd(ctrlr, qid, sqsize);
 	if (NVME_ERROR(status)) {
-		DEBUG(printf("nvme_do_one_cmd_synchronous: error %d submitting command\n",status);)
+		DEBUG(printf("%s: error %d submitting command\n",
+			     __func__, status);)
 		return status;
 	}
 
-	status = nvme_ring_sq_doorbell(ctrlr, qid);
-	if (NVME_ERROR(status)) {
-		DEBUG(printf("nvme_do_one_cmd_synchronous: error %d ringing doorbell\n",status);)
-		return status;
-	}
-
-	status = nvme_complete_cmds_polled(ctrlr, qid, cqsize, NVME_GENERIC_TIMEOUT);
-	if (NVME_ERROR(status)) {
-		DEBUG(printf("nvme_do_one_cmd_synchronous: error %d completing command\n",status);)
-		return status;
-	}
-
-	return NVME_SUCCESS;
+	return nvme_sync_cmd(ctrlr, qid, cqsize, timeout_ms);
 }
 
 /* Sends Set Feature 07h to allocate count number of IO queues */
@@ -466,15 +430,11 @@ static NVME_STATUS nvme_internal_read(NvmeDrive *drive, void *buffer, lba_t star
 	/* If queue is full, need to complete inflight commands before submitting more */
 	if ((ctrlr->sq_t_dbl[NVME_IO_QUEUE_INDEX] + 1) % ctrlr->iosq_sz == ctrlr->sqhd[NVME_IO_QUEUE_INDEX]) {
 		DEBUG(printf("nvme_internal_read: Too many outstanding commands. Completing in-flights\n");)
-		/* Submit commands to controller */
-		nvme_ring_sq_doorbell(ctrlr, NVME_IO_QUEUE_INDEX);
-		/* Complete submitted command(s) */
-		status = nvme_complete_cmds_polled(ctrlr,
-				NVME_IO_QUEUE_INDEX,
-				NVME_CCQ_SIZE,
-				NVME_GENERIC_TIMEOUT);
+		status = nvme_sync_cmd(ctrlr, NVME_IO_QUEUE_INDEX,
+				       NVME_CCQ_SIZE, NVME_GENERIC_TIMEOUT);
 		if (NVME_ERROR(status)) {
-			printf("nvme_internal_read: error %d completing outstanding commands\n",status);
+			printf("%s: error %d completing outstanding commands\n",
+			       __func__, status);
 			return status;
 		}
 	}
@@ -551,13 +511,13 @@ static lba_t nvme_read(BlockDevOps *me, lba_t start, lba_t count, void *buffer)
 		return -1;
 	}
 
-	/* Submit commands to controller */
-	nvme_ring_sq_doorbell(ctrlr, NVME_IO_QUEUE_INDEX);
-	/* Complete submitted command(s) */
-	nvme_complete_cmds_polled(ctrlr,
-			NVME_IO_QUEUE_INDEX,
-			NVME_CCQ_SIZE,
-			NVME_GENERIC_TIMEOUT);
+	status = nvme_sync_cmd(ctrlr, NVME_IO_QUEUE_INDEX, NVME_CCQ_SIZE,
+			       NVME_GENERIC_TIMEOUT);
+	if (NVME_ERROR(status)) {
+		printf("%s: error %d failed to sync command\n",
+		       __func__, status);
+		return -1;
+	}
 
 	DEBUG(printf("nvme_read: lba = 0x%08x, Original = 0x%08x, Remaining = 0x%08x, BlockSize = 0x%x Status = %d\n", (uint32_t)start, (uint32_t)orig_count, (uint32_t)count, block_size, status);)
 
@@ -577,15 +537,11 @@ static NVME_STATUS nvme_internal_write(NvmeDrive *drive, void *buffer, lba_t sta
 	/* If queue is full, need to complete inflight commands before submitting more */
 	if ((ctrlr->sq_t_dbl[NVME_IO_QUEUE_INDEX] + 1) % ctrlr->iosq_sz == ctrlr->sqhd[NVME_IO_QUEUE_INDEX]) {
 		DEBUG(printf("nvme_internal_write: Too many outstanding commands. Completing in-flights\n");)
-		/* Submit commands to controller */
-		nvme_ring_sq_doorbell(ctrlr, NVME_IO_QUEUE_INDEX);
-		/* Complete submitted command(s) */
-		status = nvme_complete_cmds_polled(ctrlr,
-				NVME_IO_QUEUE_INDEX,
-				NVME_CCQ_SIZE,
-				NVME_GENERIC_TIMEOUT);
+		status = nvme_sync_cmd(ctrlr, NVME_IO_QUEUE_INDEX,
+				       NVME_CCQ_SIZE, NVME_GENERIC_TIMEOUT);
 		if (NVME_ERROR(status)) {
-			printf("nvme_internal_read: error %d completing outstanding commands\n",status);
+			printf("%s: error %d completing outstanding commands\n",
+			       __func__, status);
 			return status;
 		}
 	}
@@ -663,13 +619,13 @@ static lba_t nvme_write(BlockDevOps *me, lba_t start, lba_t count,
 		return -1;
 	}
 
-	/* Submit commands to controller */
-	nvme_ring_sq_doorbell(ctrlr, NVME_IO_QUEUE_INDEX);
-	/* Complete submitted command(s) */
-	nvme_complete_cmds_polled(ctrlr,
-			NVME_IO_QUEUE_INDEX,
-			NVME_CCQ_SIZE,
-			NVME_GENERIC_TIMEOUT);
+	status = nvme_sync_cmd(ctrlr, NVME_IO_QUEUE_INDEX, NVME_CCQ_SIZE,
+			       NVME_GENERIC_TIMEOUT);
+	if (NVME_ERROR(status)) {
+		printf("%s: error %d failed to sync command\n",
+		       __func__, status);
+		return -1;
+	}
 
 	DEBUG(printf("nvme_write: lba = 0x%08x, Original = 0x%08x, Remaining = 0x%08x, BlockSize = 0x%x Status = %d\n", (uint32_t)start, (uint32_t)orig_count, (uint32_t)count, block_size, status);)
 
