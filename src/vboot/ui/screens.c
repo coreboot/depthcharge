@@ -212,14 +212,14 @@ static vb2_error_t log_page_update(struct ui_context *ui,
 			ui->state->current_page = log->page_count - 1;
 		ui->force_display = 1;
 	}
-	VB2_CLR_BIT(ui->state->disabled_item_mask, screen->page_up_item);
-	VB2_CLR_BIT(ui->state->disabled_item_mask, screen->page_down_item);
+	UI_CLR_BIT(ui->state->disabled_item_mask, screen->page_up_item);
+	UI_CLR_BIT(ui->state->disabled_item_mask, screen->page_down_item);
 	if (ui->state->current_page == 0)
-		VB2_SET_BIT(ui->state->disabled_item_mask,
-			    screen->page_up_item);
+		UI_SET_BIT(ui->state->disabled_item_mask,
+			   screen->page_up_item);
 	if (ui->state->current_page == log->page_count - 1)
-		VB2_SET_BIT(ui->state->disabled_item_mask,
-			    screen->page_down_item);
+		UI_SET_BIT(ui->state->disabled_item_mask,
+			   screen->page_down_item);
 
 	return VB2_SUCCESS;
 }
@@ -240,14 +240,14 @@ static vb2_error_t log_page_show_back_or_cancel(struct ui_context *ui,
 {
 	int back_item = ui->state->screen->back_item;
 	int cancel_item = ui->state->screen->cancel_item;
-	VB2_CLR_BIT(ui->state->hidden_item_mask, back_item);
-	VB2_CLR_BIT(ui->state->hidden_item_mask, cancel_item);
+	UI_CLR_BIT(ui->state->hidden_item_mask, back_item);
+	UI_CLR_BIT(ui->state->hidden_item_mask, cancel_item);
 	if (is_show_cancel) {
-		VB2_SET_BIT(ui->state->hidden_item_mask, back_item);
+		UI_SET_BIT(ui->state->hidden_item_mask, back_item);
 		if (ui->state->selected_item == back_item)
 			ui->state->selected_item = cancel_item;
 	} else {
-		VB2_SET_BIT(ui->state->hidden_item_mask, cancel_item);
+		UI_SET_BIT(ui->state->hidden_item_mask, cancel_item);
 		if (ui->state->selected_item == cancel_item)
 			ui->state->selected_item = back_item;
 	}
@@ -557,14 +557,14 @@ vb2_error_t advanced_options_init(struct ui_context *ui)
 	ui->state->selected_item = ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE;
 	if ((ui->ctx->flags & VB2_CONTEXT_DEVELOPER_MODE) ||
 	    ui->ctx->boot_mode != VB2_BOOT_MODE_MANUAL_RECOVERY) {
-		VB2_SET_BIT(ui->state->hidden_item_mask,
-			    ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE);
+		UI_SET_BIT(ui->state->hidden_item_mask,
+			   ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE);
 		ui->state->selected_item = ADVANCED_OPTIONS_ITEM_DEBUG_INFO;
 	}
 
 	if (ui->ctx->boot_mode != VB2_BOOT_MODE_MANUAL_RECOVERY)
-		VB2_SET_BIT(ui->state->hidden_item_mask,
-			    ADVANCED_OPTIONS_ITEM_INTERNET_RECOVERY);
+		UI_SET_BIT(ui->state->hidden_item_mask,
+			   ADVANCED_OPTIONS_ITEM_INTERNET_RECOVERY);
 
 	return VB2_SUCCESS;
 }
@@ -807,8 +807,8 @@ static vb2_error_t recovery_to_dev_init(struct ui_context *ui)
 		/*
 		 * Disable "Confirm" button for other physical presence types.
 		 */
-		VB2_SET_BIT(ui->state->hidden_item_mask,
-			    RECOVERY_TO_DEV_ITEM_CONFIRM);
+		UI_SET_BIT(ui->state->hidden_item_mask,
+			   RECOVERY_TO_DEV_ITEM_CONFIRM);
 		ui->state->selected_item = RECOVERY_TO_DEV_ITEM_CANCEL;
 	}
 
@@ -961,14 +961,14 @@ vb2_error_t recovery_select_init(struct ui_context *ui)
 	ui->state->selected_item = RECOVERY_SELECT_ITEM_PHONE;
 	if (!vb2api_phone_recovery_ui_enabled(ui->ctx)) {
 		UI_WARN("WARNING: Phone recovery not available\n");
-		VB2_SET_BIT(ui->state->hidden_item_mask,
-			    RECOVERY_SELECT_ITEM_PHONE);
+		UI_SET_BIT(ui->state->hidden_item_mask,
+			   RECOVERY_SELECT_ITEM_PHONE);
 		ui->state->selected_item = RECOVERY_SELECT_ITEM_EXTERNAL_DISK;
 	}
 
 	if (!vb2api_diagnostic_ui_enabled(ui->ctx))
-		VB2_SET_BIT(ui->state->hidden_item_mask,
-			    RECOVERY_SELECT_ITEM_DIAGNOSTICS);
+		UI_SET_BIT(ui->state->hidden_item_mask,
+			   RECOVERY_SELECT_ITEM_DIAGNOSTICS);
 
 	return VB2_SUCCESS;
 }
@@ -1267,8 +1267,8 @@ static vb2_error_t developer_mode_init(struct ui_context *ui)
 
 	/* Hide "Select alternate bootloader" button if not allowed. */
 	if (!(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALTFW_ALLOWED))
-		VB2_SET_BIT(ui->state->hidden_item_mask,
-			    DEVELOPER_MODE_ITEM_SELECT_ALTFW);
+		UI_SET_BIT(ui->state->hidden_item_mask,
+			   DEVELOPER_MODE_ITEM_SELECT_ALTFW);
 
 	/* Choose the default selection. */
 	switch (default_boot) {
@@ -1493,8 +1493,8 @@ static vb2_error_t developer_to_norm_init(struct ui_context *ui)
 	/* If dev boot is not allowed, show an error box and hide "Cancel" */
 	if (!(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALLOWED)) {
 		set_ui_error(ui, UI_ERROR_DEV_BOOT_NOT_ALLOWED);
-		VB2_SET_BIT(ui->state->hidden_item_mask,
-			    DEVELOPER_TO_NORM_ITEM_CANCEL);
+		UI_SET_BIT(ui->state->hidden_item_mask,
+			   DEVELOPER_TO_NORM_ITEM_CANCEL);
 	}
 	return VB2_SUCCESS;
 }
@@ -1834,10 +1834,10 @@ static vb2_error_t diagnostics_init(struct ui_context *ui)
 	DiagTestResult res = diag_dump_storage_test_log(
 		log, log + DIAGNOSTICS_BUFFER_SIZE);
 	if (res == DIAG_TEST_UNIMPLEMENTED) {
-		VB2_SET_BIT(ui->state->disabled_item_mask,
-			    DIAGNOSTICS_ITEM_STORAGE_TEST_SHORT);
-		VB2_SET_BIT(ui->state->disabled_item_mask,
-			    DIAGNOSTICS_ITEM_STORAGE_TEST_EXTENDED);
+		UI_SET_BIT(ui->state->disabled_item_mask,
+			   DIAGNOSTICS_ITEM_STORAGE_TEST_SHORT);
+		UI_SET_BIT(ui->state->disabled_item_mask,
+			   DIAGNOSTICS_ITEM_STORAGE_TEST_EXTENDED);
 	}
 	ui->state->selected_item = DIAGNOSTICS_ITEM_STORAGE_HEALTH;
 	return VB2_SUCCESS;

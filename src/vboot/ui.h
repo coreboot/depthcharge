@@ -39,6 +39,11 @@
 #define UI_WARN(...) _UI_PRINT(__VA_ARGS__)
 #define UI_ERROR(...) _UI_PRINT(__VA_ARGS__)
 
+/* Helpers for bitmask operations */
+#define UI_SET_BIT(mask, index) ((mask) |= BIT(index))
+#define UI_CLR_BIT(mask, index) ((mask) &= ~BIT(index))
+#define UI_GET_BIT(mask, index) ((mask) & BIT(index))
+
 /* Maximum lengths */
 #define UI_LOCALE_CODE_MAX_LEN 8
 #define UI_CBFS_FILENAME_MAX_LEN 256

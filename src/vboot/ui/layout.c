@@ -253,7 +253,7 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 		if (menu->items[i].type != UI_MENU_ITEM_TYPE_PRIMARY)
 			continue;
 		if (!(menu->items[i].flags & UI_MENU_ITEM_FLAG_TRANSIENT) &&
-		    VB2_GET_BIT(state->hidden_item_mask, i))
+		    UI_GET_BIT(state->hidden_item_mask, i))
 			continue;
 		if (menu->items[i].file) {
 			VB2_TRY(ui_get_bitmap(menu->items[i].file,
@@ -730,18 +730,17 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 	for (i = 0; i < menu->num_items; i++) {
 		if (menu->items[i].type != UI_MENU_ITEM_TYPE_PRIMARY)
 			continue;
-		if (VB2_GET_BIT(state->hidden_item_mask, i))
+		if (UI_GET_BIT(state->hidden_item_mask, i))
 			continue;
 		clear_help = prev_state &&
 			     prev_state->selected_item == i &&
-			     VB2_GET_BIT(prev_state->disabled_item_mask, i);
+			     UI_GET_BIT(prev_state->disabled_item_mask, i);
 		VB2_TRY(ui_draw_button(&menu->items[i],
 				       locale_code,
 				       x, y,
 				       button_width, UI_BUTTON_HEIGHT,
 				       reverse, state->selected_item == i,
-				       VB2_GET_BIT(state->disabled_item_mask,
-						   i),
+				       UI_GET_BIT(state->disabled_item_mask, i),
 				       clear_help));
 		y += UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
 	}
@@ -751,7 +750,7 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 	y = UI_SCALE - UI_MARGIN_BOTTOM - UI_FOOTER_HEIGHT -
 		UI_FOOTER_MARGIN_TOP - UI_BUTTON_HEIGHT;
 	for (i = menu->num_items - 1; i >= 0; i--) {
-		if (VB2_GET_BIT(state->hidden_item_mask, i))
+		if (UI_GET_BIT(state->hidden_item_mask, i))
 			continue;
 		if (menu->items[i].type != UI_MENU_ITEM_TYPE_SECONDARY)
 			continue;

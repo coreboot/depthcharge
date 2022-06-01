@@ -27,7 +27,7 @@ vb2_error_t ui_menu_prev(struct ui_context *ui)
 		return VB2_SUCCESS;
 
 	item = ui->state->selected_item - 1;
-	while (item >= 0 && VB2_GET_BIT(ui->state->hidden_item_mask, item))
+	while (item >= 0 && UI_GET_BIT(ui->state->hidden_item_mask, item))
 		item--;
 	/* Only update if item is valid */
 	if (item >= 0)
@@ -47,7 +47,7 @@ vb2_error_t ui_menu_next(struct ui_context *ui)
 	menu = ui_get_menu(ui);
 	item = ui->state->selected_item + 1;
 	while (item < menu->num_items &&
-	       VB2_GET_BIT(ui->state->hidden_item_mask, item))
+	       UI_GET_BIT(ui->state->hidden_item_mask, item))
 		item++;
 	/* Only update if item is valid */
 	if (item < menu->num_items)
@@ -71,8 +71,8 @@ vb2_error_t ui_menu_select(struct ui_context *ui)
 	menu_item = &menu->items[ui->state->selected_item];
 
 	/* Cannot select a disabled menu item */
-	if (VB2_GET_BIT(ui->state->disabled_item_mask,
-			ui->state->selected_item)) {
+	if (UI_GET_BIT(ui->state->disabled_item_mask,
+		       ui->state->selected_item)) {
 		UI_WARN("Menu item <%s> disabled; ignoring\n",
 			menu_item->name);
 		return VB2_SUCCESS;
