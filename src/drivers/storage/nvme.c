@@ -75,22 +75,24 @@ static void write32x2le(volatile void *_a, uint64_t _v)
 	write32(_a + sizeof(uint32_t), _v >> 32);
 }
 
-DEBUG(
-static void nvme_dump_status(NVME_CQ volatile *cq) {
-	printf("Dump NVMe Completion Entry Status from [%p]:\n", cq);
+static void nvme_dump_status(NVME_CQ volatile *cq)
+{
+	DEBUG("Dump NVMe Completion Entry Status from [%p]:\n", cq);
 
-	printf("  SQ ID : [0x%x], Phase Tag : [%d], Cmd ID : [0x%x] Flags : [0x%x]\n",
-			cq->sqid, cq->flags & NVME_CQ_FLAGS_PHASE, cq->cid, cq->flags);
+	DEBUG("  SQ ID : [%#x], Phase Tag : [%d], Cmd ID : [%#x] Flags : [%#x]\n",
+	      cq->sqid, cq->flags & NVME_CQ_FLAGS_PHASE, cq->cid, cq->flags);
 
 	if (NVME_CQ_FLAGS_SCT(cq->flags) == 0) {
 		if (NVME_CQ_FLAGS_SC(cq->flags) == 0)
-			printf("  NVMe Cmd Execution Result - Successful\n");
+			DEBUG("  NVMe Cmd Execution Result - Successful\n");
 		else
-			printf("  NVMe Cmd Execution Result - error sc=%u\n",NVME_CQ_FLAGS_SC(cq->flags));
-	} else
-		printf("   NVMe Cmd Execution Result - error sct=%u\n",NVME_CQ_FLAGS_SCT(cq->flags));
+			DEBUG("  NVMe Cmd Execution Result - error sc=%u\n",
+			      NVME_CQ_FLAGS_SC(cq->flags));
+	} else {
+		DEBUG("   NVMe Cmd Execution Result - error sct=%u\n",
+		      NVME_CQ_FLAGS_SCT(cq->flags));
+	}
 }
-) //DEBUG
 
 static NVME_STATUS nvme_wait_status(NvmeCtrlr *ctrlr, NVME_CSTS mask,
 				    NVME_CSTS status)
@@ -212,7 +214,7 @@ static NVME_STATUS nvme_sync_cmd(NvmeCtrlr *ctrlr, uint16_t qid,
 		ncmds = ctrlr->sq_t_dbl[qid] - ctrlr->cq_h_dbl[qid];
 	else
 		ncmds = (cqsize - ctrlr->cq_h_dbl[qid]) + ctrlr->sq_t_dbl[qid];
-	DEBUG(printf("%s: completing %d commands\n", __func__, ncmds);)
+	DEBUG("%s: completing %d commands\n", __func__, ncmds);
 
 	while (ncmds--) {
 		cq = ctrlr->cq_buffer[qid] + ctrlr->cq_h_dbl[qid];
@@ -225,7 +227,7 @@ static NVME_STATUS nvme_sync_cmd(NvmeCtrlr *ctrlr, uint16_t qid,
 		}
 
 		/* Dump completion entry status for debugging */
-		DEBUG(nvme_dump_status(cq);)
+		nvme_dump_status(cq);
 
 		/*
 		 * Update the doorbell, queue phase, and queue command id
@@ -273,8 +275,7 @@ static NVME_STATUS nvme_do_one_cmd_synchronous(NvmeCtrlr *ctrlr, uint16_t qid,
 
 	status = nvme_submit_cmd(ctrlr, qid, sqsize);
 	if (NVME_ERROR(status)) {
-		DEBUG(printf("%s: error %d submitting command\n",
-			     __func__, status);)
+		DEBUG("%s: error %d submitting command\n", __func__, status);
 		return status;
 	}
 
@@ -431,8 +432,8 @@ static NVME_STATUS nvme_block_rw(NvmeDrive *drive, void *buffer, lba_t start,
 	/* If queue is full, need to complete inflight commands before submitting more */
 	if ((ctrlr->sq_t_dbl[NVME_IO_QUEUE_INDEX] + 1) % ctrlr->iosq_sz ==
 	     ctrlr->sqhd[NVME_IO_QUEUE_INDEX]) {
-		DEBUG(printf("%s: Too many outstanding commands. Completing in-flights\n",
-			     __func__);)
+		DEBUG("%s: Too many outstanding commands. Completing in-flights\n",
+		      __func__);
 		status = nvme_sync_cmd(ctrlr, NVME_IO_QUEUE_INDEX,
 				       NVME_CCQ_SIZE, NVME_GENERIC_TIMEOUT);
 		if (NVME_ERROR(status)) {
@@ -482,9 +483,8 @@ static lba_t nvme_rw(BlockDevOps *me, lba_t start, lba_t count, void *buffer,
 	/* Read operation writes to bounce buffer (GEN_BB_WRITE) */
 	unsigned int bbflags = read ? GEN_BB_WRITE : GEN_BB_READ;
 
-	DEBUG(printf("%s: %s namespace %d\n", __func__,
-		     read ? "Reading from" : "Writing to",
-		     drive->namespace_id);)
+	DEBUG("%s: %s namespace %d\n", __func__,
+	      read ? "Reading from" : "Writing to", drive->namespace_id);
 
 	if (ctrlr->controller_data->mdts != 0)
 		max_transfer_blocks = ((1 << (ctrlr->controller_data->mdts)) * (1 << NVME_CAP_MPSMIN(ctrlr->cap))) / block_size;
@@ -501,16 +501,16 @@ static lba_t nvme_rw(BlockDevOps *me, lba_t start, lba_t count, void *buffer,
 	const char *op = read ? "read" : "write";
 	while (count > 0) {
 		if (count > max_transfer_blocks) {
-			DEBUG(printf("%s: partial %s of %llu blocks\n",
-				     __func__, op, max_transfer_blocks);)
+			DEBUG("%s: partial %s of %llu blocks\n",
+			      __func__, op, max_transfer_blocks);
 			status = nvme_block_rw(drive, bounce_buffer, start,
 					       max_transfer_blocks, read);
 			count -= max_transfer_blocks;
 			bounce_buffer += max_transfer_blocks * block_size;
 			start += max_transfer_blocks;
 		} else {
-			DEBUG(printf("%s: final %s of %llu blocks\n",
-				     __func__, op, count);)
+			DEBUG("%s: final %s of %llu blocks\n",
+			      __func__, op, count);
 			status = nvme_block_rw(drive, bounce_buffer, start,
 					       count, read);
 			count = 0;
@@ -530,9 +530,9 @@ static lba_t nvme_rw(BlockDevOps *me, lba_t start, lba_t count, void *buffer,
 
 out:
 	bounce_buffer_stop(&bbstate);
-	DEBUG(printf("%s: lba = %#08x, Original = %#08x, Remaining = %#08x, BlockSize = %#x Status = %d\n",
-		     __func__, (uint32_t)start, (uint32_t)orig_count,
-		     (uint32_t)count, block_size, status);)
+	DEBUG("%s: lba = %#08x, Original = %#08x, Remaining = %#08x, BlockSize = %#x Status = %d\n",
+	      __func__, (uint32_t)start, (uint32_t)orig_count, (uint32_t)count,
+	      block_size, status);
 
 	if (NVME_ERROR(status))
 		return -1;
@@ -646,16 +646,16 @@ static NVME_STATUS nvme_identify(NvmeCtrlr *ctrlr) {
 
 	ctrlr->controller_data->sn[19] = 0;
 	ctrlr->controller_data->mn[39] = 0;
-	DEBUG(printf(" == NVME IDENTIFY CONTROLLER DATA ==\n");)
-	DEBUG(printf("    PCI VID   : 0x%x\n", ctrlr->controller_data->vid);)
-	DEBUG(printf("    PCI SSVID : 0x%x\n", ctrlr->controller_data->ssvid);)
-	DEBUG(printf("    SN        : %s\n",   (char *)(ctrlr->controller_data->sn));)
-	DEBUG(printf("    MN        : %s\n",   (char *)(ctrlr->controller_data->mn));)
-	DEBUG(printf("    RAB       : 0x%x\n", ctrlr->controller_data->rab);)
-	DEBUG(printf("    AERL      : 0x%x\n", ctrlr->controller_data->aerl);)
-	DEBUG(printf("    SQES      : 0x%x\n", ctrlr->controller_data->sqes);)
-	DEBUG(printf("    CQES      : 0x%x\n", ctrlr->controller_data->cqes);)
-	DEBUG(printf("    NN        : 0x%x\n", ctrlr->controller_data->nn);)
+	DEBUG(" == NVME IDENTIFY CONTROLLER DATA ==\n");
+	DEBUG("    PCI VID   : %#x\n", ctrlr->controller_data->vid);
+	DEBUG("    PCI SSVID : %#x\n", ctrlr->controller_data->ssvid);
+	DEBUG("    SN        : %s\n",   (char *)(ctrlr->controller_data->sn));
+	DEBUG("    MN        : %s\n",   (char *)(ctrlr->controller_data->mn));
+	DEBUG("    RAB       : %#x\n", ctrlr->controller_data->rab);
+	DEBUG("    AERL      : %#x\n", ctrlr->controller_data->aerl);
+	DEBUG("    SQES      : %#x\n", ctrlr->controller_data->sqes);
+	DEBUG("    CQES      : %#x\n", ctrlr->controller_data->cqes);
+	DEBUG("    NN        : %#x\n", ctrlr->controller_data->nn);
 
 	printf("Identified NVMe model %s\n",
 	       (char *)ctrlr->controller_data->mn);
@@ -779,7 +779,7 @@ static NVME_STATUS nvme_create_drive(NvmeCtrlr *ctrlr, uint32_t namespace_id,
 	list_insert_after(&nvme_drive->dev.list_node, &fixed_block_devices);
 	list_insert_after(&nvme_drive->list_node, &ctrlr->drives);
 
-	printf("Added NVMe drive \"%s\" lbasize:%d, count:0x%llx\n",
+	printf("Added NVMe drive \"%s\" lbasize:%d, count:%#llx\n",
 	       nvme_drive->dev.name, nvme_drive->dev.block_size,
 	       (uint64_t)nvme_drive->dev.block_count);
 
@@ -787,31 +787,33 @@ static NVME_STATUS nvme_create_drive(NvmeCtrlr *ctrlr, uint32_t namespace_id,
 }
 
 /* Sends the Identify Namespace command, creates NvmeDrives for each namespace */
-static NVME_STATUS nvme_identify_namespaces(NvmeCtrlr *ctrlr) {
+static NVME_STATUS nvme_identify_namespaces(NvmeCtrlr *ctrlr)
+{
 	NVME_SQ *sq;
 	uint32_t *active_namespaces = NULL;
 	NVME_ADMIN_NAMESPACE_DATA *namespace_data = NULL;
 	int status = NVME_SUCCESS;
 
 	if (ctrlr->controller_data == NULL) {
-		printf("nvme_identify_namespaces: ERROR - must complete Identify command first\n");
+		printf("%s: ERROR - must complete Identify command first\n",
+		       __func__);
 		return NVME_INVALID_PARAMETER;
 	}
 
 	active_namespaces = dma_memalign(NVME_PAGE_SIZE, NVME_PAGE_SIZE);
 	if (active_namespaces == NULL) {
-		printf("nvme_identify_namespaces: ERROR - out of memory\n");
+		printf("%s: ERROR - out of memory\n", __func__);
 		return NVME_OUT_OF_RESOURCES;
 	}
 
 	namespace_data = dma_memalign(NVME_PAGE_SIZE, sizeof(NVME_ADMIN_NAMESPACE_DATA));
 	if (namespace_data == NULL) {
 		free(active_namespaces);
-		printf("nvme_identify_namespaces: ERROR - out of memory\n");
+		printf("%s: ERROR - out of memory\n", __func__);
 		return NVME_OUT_OF_RESOURCES;
 	}
 
-	DEBUG(printf("nvme_identify_namespaces: Querying active namespaces");)
+	DEBUG("%s: Querying active namespaces", __func__);
 	sq  = ctrlr->sq_buffer[NVME_ADMIN_QUEUE_INDEX] + ctrlr->sq_t_dbl[NVME_ADMIN_QUEUE_INDEX];
 	memset(sq, 0, sizeof(NVME_SQ));
 	sq->opc = NVME_ADMIN_IDENTIFY_OPC;
@@ -839,12 +841,12 @@ static NVME_STATUS nvme_identify_namespaces(NvmeCtrlr *ctrlr) {
 		if (!index)
 			continue;
 		if (index > ctrlr->controller_data->nn) {
-			printf("nvme_identify_namespaces: ERROR - index [%d] exceeds the maximum [%d]\n",
-				index, ctrlr->controller_data->nn);
+			printf("%s: ERROR - index [%d] exceeds the maximum [%d]\n",
+			       __func__, index, ctrlr->controller_data->nn);
 			status = NVME_DEVICE_ERROR;
 			goto exit;
 		}
-		DEBUG(printf("nvme_identify_namespaces: Working on namespace %d\n",index);)
+		DEBUG("%s: Working on namespace %d\n", __func__, index);
 
 		sq  = ctrlr->sq_buffer[NVME_ADMIN_QUEUE_INDEX] + ctrlr->sq_t_dbl[NVME_ADMIN_QUEUE_INDEX];
 
@@ -866,14 +868,16 @@ static NVME_STATUS nvme_identify_namespaces(NvmeCtrlr *ctrlr) {
 		if (NVME_ERROR(status))
 			goto exit;
 
-		DEBUG(printf(" == NVME IDENTIFY NAMESPACE [%d] DATA ==\n", index);)
-		DEBUG(printf("    NSZE        : 0x%llx\n", namespace_data->nsze);)
-		DEBUG(printf("    NCAP        : 0x%llx\n", namespace_data->ncap);)
-		DEBUG(printf("    NUSE        : 0x%llx\n", namespace_data->nuse);)
-		DEBUG(printf("    LBAF0.LBADS : 0x%x\n", (namespace_data->lba_format[0].lbads));)
+		DEBUG(" == NVME IDENTIFY NAMESPACE [%d] DATA ==\n", index);
+		DEBUG("    NSZE        : %#llx\n", namespace_data->nsze);
+		DEBUG("    NCAP        : %#llx\n", namespace_data->ncap);
+		DEBUG("    NUSE        : %#llx\n", namespace_data->nuse);
+		DEBUG("    LBAF0.LBADS : %#x\n",
+		      (namespace_data->lba_format[0].lbads));
 
 		if (namespace_data->nsze == 0) {
-			printf("nvme_identify_namespaces: ERROR - namespace %d has zero size\n", index);
+			printf("%s: ERROR - namespace %d has zero size\n",
+			       __func__, index);
 			status = NVME_DEVICE_ERROR;
 			goto exit;
 		} else {
@@ -1016,7 +1020,7 @@ static int nvme_ctrlr_init(BlockDevCtrlrOps *me)
 	/* Calculate max io sq/cq sizes based on MQES */
 	ctrlr->iosq_sz = (NVME_CSQ_SIZE > NVME_CAP_MQES(ctrlr->cap)) ? NVME_CAP_MQES(ctrlr->cap) : NVME_CSQ_SIZE;
 	ctrlr->iocq_sz = (NVME_CCQ_SIZE > NVME_CAP_MQES(ctrlr->cap)) ? NVME_CAP_MQES(ctrlr->cap) : NVME_CCQ_SIZE;
-	DEBUG(printf("iosq_sz = %u, iocq_sz = %u\n",ctrlr->iosq_sz,ctrlr->iocq_sz);)
+	DEBUG("iosq_sz = %u, iocq_sz = %u\n",ctrlr->iosq_sz,ctrlr->iocq_sz);
 
 	/* Allocate enough PRP List memory for max queue depth commands */
 	for (unsigned int list_index = 0; list_index < ctrlr->iosq_sz; list_index++) {
@@ -1077,12 +1081,16 @@ static int nvme_ctrlr_init(BlockDevCtrlrOps *me)
 	ctrlr->cq_buffer[NVME_IO_QUEUE_INDEX] =
 		(NVME_CQ *)(ctrlr->buffer + 3 * NVME_PAGE_SIZE);
 
-	DEBUG(printf("Private->Buffer = [%p]\n", (void *)virt_to_phys(ctrlr->buffer));)
-	DEBUG(printf("Admin Queue Attributes = [%X]\n", aqa);)
-	DEBUG(printf("Admin Submission Queue (sq_buffer[ADMIN]) = [%p]\n", (void *)virt_to_phys(ctrlr->sq_buffer[NVME_ADMIN_QUEUE_INDEX]));)
-	DEBUG(printf("Admin Completion Queue (cq_buffer[ADMIN]) = [%p]\n", (void *)virt_to_phys(ctrlr->cq_buffer[NVME_ADMIN_QUEUE_INDEX]));)
-	DEBUG(printf("I/O   Submission Queue (sq_buffer[NVME_IO_QUEUE]) = [%p]\n", (void *)virt_to_phys(ctrlr->sq_buffer[NVME_IO_QUEUE_INDEX]));)
-	DEBUG(printf("I/O   Completion Queue (cq_buffer[NVME_IO_QUEUE]) = [%p]\n", (void *)virt_to_phys(ctrlr->cq_buffer[NVME_IO_QUEUE_INDEX]));)
+	DEBUG("Private->Buffer = [%p]\n", (void *)virt_to_phys(ctrlr->buffer));
+	DEBUG("Admin Queue Attributes = [%X]\n", aqa);
+	DEBUG("Admin Submission Queue (sq_buffer[ADMIN]) = [%p]\n",
+	      (void *)virt_to_phys(ctrlr->sq_buffer[NVME_ADMIN_QUEUE_INDEX]));
+	DEBUG("Admin Completion Queue (cq_buffer[ADMIN]) = [%p]\n",
+	      (void *)virt_to_phys(ctrlr->cq_buffer[NVME_ADMIN_QUEUE_INDEX]));
+	DEBUG("I/O   Submission Queue (sq_buffer[NVME_IO_QUEUE]) = [%p]\n",
+	      (void *)virt_to_phys(ctrlr->sq_buffer[NVME_IO_QUEUE_INDEX]));
+	DEBUG("I/O   Completion Queue (cq_buffer[NVME_IO_QUEUE]) = [%p]\n",
+	      (void *)virt_to_phys(ctrlr->cq_buffer[NVME_IO_QUEUE_INDEX]));
 
 	/* Write AQA */
 	write32(ctrlr->ctrlr_regs + NVME_AQA_OFFSET, aqa);
@@ -1119,7 +1127,7 @@ static int nvme_ctrlr_init(BlockDevCtrlrOps *me)
 	NvmeModelData *model = nvme_match_static_model(ctrlr);
 	if (model) {
 		/* Create drive based on static namespace data */
-		DEBUG(printf("Skip Identify Namespace and use static data\n");)
+		DEBUG("Skip Identify Namespace and use static data\n");
 		status = nvme_create_drive(ctrlr, model->namespace_id,
 				   model->block_size, model->block_count);
 	} else {
