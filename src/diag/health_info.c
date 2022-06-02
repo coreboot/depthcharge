@@ -10,6 +10,7 @@
 #include <endian.h>
 #include <libpayload.h>
 
+#include "diag/diag_internal.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/info.h"
 
@@ -149,23 +150,18 @@ static char *stringify_nvme_smart(char *buf, const char *end,
 {
 	int show_all = 1;
 
-	buf += snprintf(buf, end - buf,
-			"SMART/Health Information (NVMe Log 0x02)\n");
-	buf += snprintf(buf, end - buf,
-			"Critical Warning:                   0x%02x\n",
-			smart_log->critical_warning);
-	buf += snprintf(buf, end - buf,
-			"Temperature:                        %d Celsius\n",
-			kelvin_to_celsius(smart_log->temperature));
-	buf += snprintf(buf, end - buf,
-			"Available Spare:                    %u%%\n",
-			smart_log->avail_spare);
-	buf += snprintf(buf, end - buf,
-			"Available Spare Threshold:          %u%%\n",
-			smart_log->spare_thresh);
-	buf += snprintf(buf, end - buf,
-			"Percentage Used:                    %u%%\n",
-			smart_log->percent_used);
+	buf = APPEND(buf, end, "SMART/Health Information (NVMe Log 0x02)\n");
+	buf = APPEND(buf, end, "Critical Warning:                   %#02x\n",
+		     smart_log->critical_warning);
+	buf = APPEND(buf, end,
+		     "Temperature:                        %d Celsius\n",
+		     kelvin_to_celsius(smart_log->temperature));
+	buf = APPEND(buf, end, "Available Spare:                    %u%%\n",
+		     smart_log->avail_spare);
+	buf = APPEND(buf, end, "Available Spare Threshold:          %u%%\n",
+		     smart_log->spare_thresh);
+	buf = APPEND(buf, end, "Percentage Used:                    %u%%\n",
+		     smart_log->percent_used);
 
 	{
 		// data_units_read/data_units_written is reported in thousands
@@ -175,102 +171,95 @@ static char *stringify_nvme_smart(char *buf, const char *end,
 		u128 val;
 
 		val = le128_to_u128(smart_log->data_units_read);
-		buf += snprintf(buf, end - buf,
-				"Data Units Read:                    %s [%s]\n",
-				u128_to_str(val),
-				u128_to_capacity_str(val, bytes_per_unit));
+		buf = APPEND(buf, end,
+			     "Data Units Read:                    %s [%s]\n",
+			     u128_to_str(val),
+			     u128_to_capacity_str(val, bytes_per_unit));
 
 		val = le128_to_u128(smart_log->data_units_written);
-		buf += snprintf(buf, end - buf,
-				"Data Units Written:                 %s [%s]\n",
-				u128_to_str(val),
-				u128_to_capacity_str(val, bytes_per_unit));
+		buf = APPEND(buf, end,
+			     "Data Units Written:                 %s [%s]\n",
+			     u128_to_str(val),
+			     u128_to_capacity_str(val, bytes_per_unit));
 	}
 
-	buf += snprintf(buf, end - buf,
-			"Host Read Commands:                 %s\n",
-			u128_to_str(le128_to_u128(smart_log->host_reads)));
-	buf += snprintf(buf, end - buf,
-			"Host Write Commands:                %s\n",
-			u128_to_str(le128_to_u128(smart_log->host_writes)));
-	buf += snprintf(buf, end - buf,
-			"Controller Busy Time:               %s\n",
-			u128_to_str(le128_to_u128(smart_log->ctrl_busy_time)));
-	buf += snprintf(buf, end - buf,
-			"Power Cycles:                       %s\n",
-			u128_to_str(le128_to_u128(smart_log->power_cycles)));
-	buf += snprintf(buf, end - buf,
-			"Power On Hours:                     %s\n",
-			u128_to_str(le128_to_u128(smart_log->power_on_hours)));
-	buf += snprintf(
-		buf, end - buf, "Unsafe Shutdowns:                   %s\n",
-		u128_to_str(le128_to_u128(smart_log->unsafe_shutdowns)));
-	buf += snprintf(buf, end - buf,
-			"Media and Data Integrity Errors:    %s\n",
-			u128_to_str(le128_to_u128(smart_log->media_errors)));
-	buf += snprintf(
-		buf, end - buf, "Error Information Log Entries:      %s\n",
+	buf = APPEND(buf, end, "Host Read Commands:                 %s\n",
+		     u128_to_str(le128_to_u128(smart_log->host_reads)));
+	buf = APPEND(buf, end, "Host Write Commands:                %s\n",
+		     u128_to_str(le128_to_u128(smart_log->host_writes)));
+	buf = APPEND(buf, end,  "Controller Busy Time:               %s\n",
+		     u128_to_str(le128_to_u128(smart_log->ctrl_busy_time)));
+	buf = APPEND(buf, end, "Power Cycles:                       %s\n",
+		     u128_to_str(le128_to_u128(smart_log->power_cycles)));
+	buf = APPEND(buf, end, "Power On Hours:                     %s\n",
+		     u128_to_str(le128_to_u128(smart_log->power_on_hours)));
+	buf = APPEND(buf, end, "Unsafe Shutdowns:                   %s\n",
+		     u128_to_str(le128_to_u128(smart_log->unsafe_shutdowns)));
+	buf = APPEND(buf, end, "Media and Data Integrity Errors:    %s\n",
+		     u128_to_str(le128_to_u128(smart_log->media_errors)));
+	buf = APPEND(
+		buf, end, "Error Information Log Entries:      %s\n",
 		u128_to_str(le128_to_u128(smart_log->num_err_log_entries)));
 
 	// Temperature thresholds are optional
 	if (smart_log->warning_temp_time) {
-		buf += snprintf(buf, end - buf,
-				"Warning  Comp. Temperature Time:    %d\n",
-				smart_log->warning_temp_time);
+		buf = APPEND(buf, end,
+			     "Warning  Comp. Temperature Time:    %d\n",
+			     smart_log->warning_temp_time);
 	}
 	if (smart_log->critical_comp_time) {
-		buf += snprintf(buf, end - buf,
-				"Critical Comp. Temperature Time:    %d\n",
-				smart_log->critical_comp_time);
+		buf = APPEND(buf, end,
+			     "Critical Comp. Temperature Time:    %d\n",
+			     smart_log->critical_comp_time);
 	}
 
 	// Temperature sensors are optional
 	for (int i = 0; i < 8; i++) {
 		int k = smart_log->temp_sensor[i];
 		if (k) {
-			buf += snprintf(buf, end - buf,
-					"Temperature Sensor %d:               "
-					"%d Celsius\n",
-					i + 1, kelvin_to_celsius(k));
+			buf = APPEND(buf, end,
+				     "Temperature Sensor %d:               "
+				     "%d Celsius\n",
+				     i + 1, kelvin_to_celsius(k));
 		}
 	}
 	if (show_all || smart_log->thm_temp1_trans_count)
-		buf += snprintf(buf, end - buf,
-				"Thermal Temp. 1 Transition Count:   %d\n",
-				smart_log->thm_temp1_trans_count);
+		buf = APPEND(buf, end,
+			     "Thermal Temp. 1 Transition Count:   %d\n",
+			     smart_log->thm_temp1_trans_count);
 	if (show_all || smart_log->thm_temp2_trans_count)
-		buf += snprintf(buf, end - buf,
-				"Thermal Temp. 2 Transition Count:   %d\n",
-				smart_log->thm_temp2_trans_count);
+		buf = APPEND(buf, end,
+			     "Thermal Temp. 2 Transition Count:   %d\n",
+			     smart_log->thm_temp2_trans_count);
 	if (show_all || smart_log->thm_temp1_total_time)
-		buf += snprintf(buf, end - buf,
-				"Thermal Temp. 1 Total Time:         %d\n",
-				smart_log->thm_temp1_total_time);
+		buf = APPEND(buf, end,
+			     "Thermal Temp. 1 Total Time:         %d\n",
+			     smart_log->thm_temp1_total_time);
 	if (show_all || smart_log->thm_temp2_total_time)
-		buf += snprintf(buf, end - buf,
-				"Thermal Temp. 2 Total Time:         %d\n",
-				smart_log->thm_temp2_total_time);
+		buf = APPEND(buf, end,
+			     "Thermal Temp. 2 Total Time:         %d\n",
+			     smart_log->thm_temp2_total_time);
 	return buf;
 }
 
 static inline char *stringify_mmc_device_lifetime(char *buf, size_t len,
 						  uint8_t life_used)
 {
+	const char *end = buf + len;
 	switch (life_used) {
 	case 0x0:
-		buf += snprintf(buf, len, "Not defined");
+		buf = APPEND(buf, end, "Not defined");
 		break;
 	case 0x1 ... 0xa:
-		buf += snprintf(buf, len, "%d%% - %d%% device life time used",
-				(life_used - 1) * 10, life_used * 10);
+		buf = APPEND(buf, end, "%d%% - %d%% device life time used",
+			     (life_used - 1) * 10, life_used * 10);
 		break;
 	case 0xb:
-		buf += snprintf(
-			buf, len,
-			"Exceeded its maximum estimated device life time");
+		buf = APPEND(buf, end,
+			     "Exceeded its maximum estimated device life time");
 		break;
 	default:
-		buf += snprintf(buf, len, "Unknown");
+		buf = APPEND(buf, end, "Unknown");
 		break;
 	}
 	return buf;
@@ -309,41 +298,40 @@ static char *stringify_mmc_health(char *buf, const char *end,
 
 	if (data->csd_rev >= ARRAY_SIZE(ver_str) ||
 	    data->csd_rev == EXT_CSD_REV_1_4) {
-		buf += snprintf(buf, end - buf,
-				"Unsupported Extended CSD rev 1.%d\n",
-				data->csd_rev);
+		buf = APPEND(buf, end, "Unsupported Extended CSD rev 1.%d\n",
+			     data->csd_rev);
 		return buf;
 	}
 
-	buf += snprintf(buf, end - buf, "Extended CSD rev 1.%d (MMC %s)\n",
-			data->csd_rev, ver_str[data->csd_rev]);
+	buf = APPEND(buf, end, "Extended CSD rev 1.%d (MMC %s)\n",
+		     data->csd_rev, ver_str[data->csd_rev]);
 
 	/* >= eMMC 5.0 */
 	if (data->csd_rev >= EXT_CSD_REV_1_7) {
-		buf += snprintf(buf, end - buf,
-				"eMMC Life Time Estimation A "
-				"[EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_A]: %#02x\n"
-				"  i.e. ",
-				data->device_life_time_est_type_a);
+		buf = APPEND(buf, end,
+			     "eMMC Life Time Estimation A "
+			     "[EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_A]: %#02x\n"
+			     "  i.e. ",
+			     data->device_life_time_est_type_a);
 		buf = stringify_mmc_device_lifetime(
 			buf, end - buf, data->device_life_time_est_type_a);
-		buf += snprintf(buf, end - buf, "\n");
+		buf = APPEND(buf, end, "\n");
 
-		buf += snprintf(buf, end - buf,
-				"eMMC Life Time Estimation B "
-				"[EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_B]: %#02x\n"
-				"  i.e. ",
-				data->device_life_time_est_type_b);
+		buf = APPEND(buf, end,
+			     "eMMC Life Time Estimation B "
+			     "[EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_B]: %#02x\n"
+			     "  i.e. ",
+			     data->device_life_time_est_type_b);
 		buf = stringify_mmc_device_lifetime(
 			buf, end - buf, data->device_life_time_est_type_b);
-		buf += snprintf(buf, end - buf, "\n");
+		buf = APPEND(buf, end, "\n");
 
-		buf += snprintf(buf, end - buf,
-				"eMMC Pre EOL information "
-				"[EXT_CSD_PRE_EOL_INFO]: %#02x\n"
-				"  i.e. %s\n",
-				data->pre_eol_info,
-				mmc_eol_info_to_str(data->pre_eol_info));
+		buf = APPEND(buf, end,
+			     "eMMC Pre EOL information "
+			     "[EXT_CSD_PRE_EOL_INFO]: %#02x\n"
+			     "  i.e. %s\n",
+			     data->pre_eol_info,
+			     mmc_eol_info_to_str(data->pre_eol_info));
 	}
 
 	return buf;
@@ -375,12 +363,12 @@ char *dump_all_health_info(char *buf, const char *end)
 	ListNode *devs;
 	int n = get_all_bdevs(BLOCKDEV_FIXED, &devs);
 	if (!n) {
-		buf += snprintf(buf, end - buf, "No storage device found\n\n");
+		buf = APPEND(buf, end, "No storage device found\n\n");
 		return buf;
 	}
 
-	buf += snprintf(buf, end - buf, "Total %d storage device%s\n\n", n,
-			n > 1 ? "s" : "");
+	buf = APPEND(buf, end, "Total %d storage device%s\n\n", n,
+		     n > 1 ? "s" : "");
 
 	// Fill them from the BlockDev structures.
 	BlockDev *bdev;
@@ -392,28 +380,26 @@ char *dump_all_health_info(char *buf, const char *end)
 
 			int res = bdev->ops.get_health_info(&bdev->ops, &info);
 			if (res) {
-				buf += snprintf(
-					buf, end - buf,
-					"%s: Get Health info error: %d\n",
-					bdev->name, res);
+				buf = APPEND(buf, end,
+					     "%s: Get Health info error: %d\n",
+					     bdev->name, res);
 				continue;
 			}
 
-			buf += snprintf(buf, end - buf,
-					"(%d/%d) Block device '%s':\n", idx, n,
-					bdev->name);
+			buf = APPEND(buf, end, "(%d/%d) Block device '%s':\n",
+				     idx, n, bdev->name);
 
 			buf = stringify_health_info(buf, end, &info);
 
 			if (idx < n)
-				buf += snprintf(buf, end - buf, "\n");
+				buf = APPEND(buf, end, "\n");
 
 			idx += 1;
 		} else {
-			buf += snprintf(buf, end - buf,
-					"(%d/%d) Block device '%s' does not "
-					"provide health info.\n",
-					idx, n, bdev->name);
+			buf = APPEND(buf, end,
+				     "(%d/%d) Block device '%s' does not "
+				     "provide health info.\n",
+				     idx, n, bdev->name);
 		}
 	}
 	return buf;

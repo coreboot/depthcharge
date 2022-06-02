@@ -6,6 +6,7 @@
 #include <libpayload.h>
 
 #include "diag/common.h"
+#include "diag/diag_internal.h"
 #include "diag/storage_test.h"
 
 #define HALF_BYTE_LOW(x) ((x) & 0xf)
@@ -77,13 +78,13 @@ static char *print_test_result_detail(char *buf, const char *end,
 				      const NvmeTestLogData *data)
 {
 	uint8_t result = HALF_BYTE_LOW(data->status);
-	buf += snprintf(buf, end - buf, "%s.\n", test_result_str(result));
+	buf = APPEND(buf, end, "%s.\n", test_result_str(result));
 	if (result == 0x7)
-		buf += snprintf(buf, end - buf,
-				"Segment Number where the first "
-				"self-test failure occurred: '%#x'.\n",
-				data->segment_number);
-	buf += snprintf(buf, end - buf, "\n");
+		buf = APPEND(buf, end,
+			     "Segment Number where the first self-test "
+			     "failure occurred: '%#x'.\n",
+			     data->segment_number);
+	buf = APPEND(buf, end, "\n");
 	return buf;
 }
 
@@ -96,25 +97,21 @@ static char *print_test_result(char *buf, const char *end,
 			       const NvmeTestLogData *data)
 {
 	uint8_t type = HALF_BYTE_HIGH(data->status);
-	buf += snprintf(buf, end - buf, "Test type: %s.\n\n", type_str(type));
+	buf = APPEND(buf, end, "Test type: %s.\n\n", type_str(type));
 	buf = print_test_result_detail(buf, end, data);
-	buf += snprintf(buf, end - buf, "Power on hours(POH): %llu\n",
-			data->poh);
+	buf = APPEND(buf, end, "Power on hours(POH): %llu\n", data->poh);
 	if (data->valid_diag_info & NSID_VALID)
-		buf += snprintf(buf, end - buf,
-				"Namespace Identifier (NSID) of "
-				"Failing LBA: '%#x'\n",
-				data->nsid);
+		buf = APPEND(buf, end, "Namespace Identifier (NSID) of "
+			     "Failing LBA: '%#x'\n", data->nsid);
 	if (data->valid_diag_info & FLBA_VALID)
-		buf += snprintf(buf, end - buf, "Failing LBA: '%#llx'\n",
-				data->failing_lba);
+		buf = APPEND(buf, end, "Failing LBA: '%#llx'\n",
+			     data->failing_lba);
 	if (data->valid_diag_info & SCT_VALID)
-		buf += snprintf(buf, end - buf,
-				"Status code type (SCT): '%#x'\n",
-				data->status_code_type);
+		buf = APPEND(buf, end, "Status code type (SCT): '%#x'\n",
+			     data->status_code_type);
 	if (data->valid_diag_info & SC_VALID)
-		buf += snprintf(buf, end - buf, "Status code (SC): '%#x'\n",
-				data->status_code);
+		buf = APPEND(buf, end, "Status code (SC): '%#x'\n",
+			     data->status_code);
 	return buf;
 }
 
@@ -146,20 +143,18 @@ static int32_t get_test_remain_time_seconds(uint8_t current_completion,
 static char *print_test_completion(char *buf, const char *end,
 				   uint8_t current_completion)
 {
-	buf += snprintf(buf, end - buf, "Completion: '%d%%'",
-			current_completion);
+	buf = APPEND(buf, end, "Completion: '%d%%'", current_completion);
 	int32_t remain_sec =
 		get_test_remain_time_seconds(current_completion, 0);
 	if (remain_sec > 0) {
-		if (remain_sec > 60) {
-			int32_t remain_min = remain_sec / 60;
-			buf += snprintf(buf, end - buf,
-					", %d minutes remaining", remain_min);
-		} else
-			buf += snprintf(buf, end - buf,
-					", %d seconds remaining", remain_sec);
+		if (remain_sec > 60)
+			buf = APPEND(buf, end, ", %d minutes remaining",
+				     remain_sec / 60);
+		else
+			buf = APPEND(buf, end, ", %d seconds remaining",
+				     remain_sec);
 	}
-	buf += snprintf(buf, end - buf, "...\n\n");
+	buf = APPEND(buf, end, "...\n\n");
 	return buf;
 }
 
@@ -174,15 +169,14 @@ static char *stringify_test_status(char *buf, const char *end,
 		break;
 	case 0x1:
 	case 0x2:
-		buf += snprintf(buf, end - buf, "Test type: %s.\n\n",
-				type_str(current_op));
+		buf = APPEND(buf, end, "Test type: %s.\n\n",
+			     type_str(current_op));
 		buf = print_test_completion(buf, end, data->current_completion);
 		break;
 	default:
-		buf += snprintf(buf, end - buf,
-				"Unknown status, Current Device Self-Test "
-				"Operation: '%#x'\n",
-				current_op);
+		buf = APPEND(buf, end,
+			     "Unknown status, Current Device Self-Test "
+			     "Operation: '%#x'\n", current_op);
 		break;
 	}
 	return buf;
@@ -205,13 +199,12 @@ DiagTestResult diag_dump_storage_test_log(char *buf, const char *end)
 
 	int res = dev->ops.get_test_log(&dev->ops, &log);
 	if (res) {
-		buf += snprintf(buf, end - buf,
-				"%s: Get Test Result error: %d\n", dev->name,
-				res);
+		buf = APPEND(buf, end, "%s: Get Test Result error: %d\n",
+			     dev->name, res);
 		return DIAG_TEST_ERROR;
 	}
 
-	buf += snprintf(buf, end - buf, "Block device '%s':\n", dev->name);
+	buf = APPEND(buf, end, "Block device '%s':\n", dev->name);
 
 	buf = stringify_test_status(buf, end, &log);
 

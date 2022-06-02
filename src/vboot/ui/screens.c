@@ -1836,9 +1836,10 @@ static const struct ui_screen_info developer_select_bootloader_screen = {
 
 static vb2_error_t diagnostics_init(struct ui_context *ui)
 {
-	char log[DIAGNOSTICS_BUFFER_SIZE];
-	DiagTestResult res = diag_dump_storage_test_log(
-		log, log + DIAGNOSTICS_BUFFER_SIZE);
+	/* We only need to know whether the test log is supported, so passing an
+	   array of size 1 is sufficient. */
+	char log[1];
+	DiagTestResult res = diag_dump_storage_test_log(log, log + 1);
 	if (res == DIAG_TEST_UNIMPLEMENTED) {
 		UI_SET_BIT(ui->state->disabled_item_mask,
 			   DIAGNOSTICS_ITEM_STORAGE_TEST_SHORT);

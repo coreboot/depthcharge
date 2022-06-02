@@ -12,17 +12,17 @@
 #include "vboot/util/memory.h"
 
 #include "diag/common.h"
+#include "diag/diag_internal.h"
 #include "diag/memory.h"
 #include "diag/pattern.h"
 
 #define DEBUG(format, args...)                                                 \
-	printf("%s:%d:%s: " format, __FILE__, __LINE__, __func__, ##args)
+	printf("%s:%d:%s: " format, __FILE__, __LINE__, __func__, ## args)
 #define OUTPUT(format, args...)                                                \
 	{                                                                      \
-		printf(format, ##args);                                        \
-		state.buf_cur +=                                               \
-			snprintf(state.buf_cur, state.buf_end - state.buf_cur, \
-				 format, ##args);                              \
+		printf(format, ## args);                                       \
+		state.buf_cur = APPEND(state.buf_cur, state.buf_end,           \
+				       format, ## args);                       \
 	}
 
 #define DEFAULT_DIAGNOSTIC_OUTPUT_SIZE (64 * KiB)
