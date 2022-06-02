@@ -23,9 +23,9 @@
 
 //#define DEBUG_PRINTS
 #ifdef DEBUG_PRINTS
-#define DEBUG(x) x
+#define DEBUG(...) printf(__VA_ARGS__)
 #else
-#define DEBUG(x)
+#define DEBUG(...)
 #endif
 
 /* BSD style bit manipulation */
