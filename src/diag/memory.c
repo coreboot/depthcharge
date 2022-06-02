@@ -6,7 +6,6 @@
 #include <assert.h>
 #include <libpayload.h>
 #include <vb2_api.h>
-#include <time.h>
 #include "base/list.h"
 #include "base/ranges.h"
 #include "base/physmem.h"
@@ -372,7 +371,7 @@ static void memory_test_run_step(void)
 		OUTPUT("\nAll memory tests passed.\n");
 }
 
-static inline vb2_error_t memory_test_run_impl(const char **out)
+vb2_error_t memory_test_run(const char **out)
 {
 	*out = state.buf;
 
@@ -397,20 +396,4 @@ static inline vb2_error_t memory_test_run_impl(const char **out)
 	state.prev_pattern_name = state.pattern_cur->name;
 
 	return VB2_ERROR_EX_DIAG_TEST_UPDATED;
-}
-
-vb2_error_t memory_test_run(const char **out)
-{
-	// Previous chunk timestemp.
-	static uint64_t prev_end = 0;
-	uint64_t start = timer_us(0);
-
-	vb2_error_t rv = memory_test_run_impl(out);
-
-	uint64_t end = timer_us(0);
-	DEBUG("UI Delay: %lld ms, Mem test cost: %lld ms\n",
-	      (start - prev_end) / 1000, (end - start) / 1000);
-
-	prev_end = end;
-	return rv;
 }
