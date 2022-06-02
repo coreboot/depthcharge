@@ -3,5 +3,6 @@
 # the triaging.
 jwerner@chromium.org
 
-# Do not depend commit access on OWNERS
-*
+# All firmware and SIE team members can approve.
+include chromiumos/owners:v1:/firmware/OWNERS.cros_ap
+include chromiumos/owners:v1:/firmware/OWNERS.chromeos_peng_sies
