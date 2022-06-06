@@ -368,6 +368,12 @@ struct ui_log_info {
 	const char **page_start;
 };
 
+enum ui_test_state {
+	UI_TEST_STATE_NONE = 0,
+	UI_TEST_STATE_RUNNING,
+	UI_TEST_STATE_FINISHED,
+};
+
 struct ui_state {
 	/***********************************************************************
 	 * Fields that should be preserved across states.
@@ -417,8 +423,8 @@ struct ui_state {
 	 * Fields for test screens in diagnostic UI.
 	 */
 
-	/* Do not update screen if the content is done. */
-	int test_finished;
+	/* Do not update screen if UI_TEST_STATE_FINISHED. */
+	enum ui_test_state test_state;
 
 	/***********************************************************************
 	 * Pointer to the previous state in the history stack.
