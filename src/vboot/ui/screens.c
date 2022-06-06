@@ -265,17 +265,6 @@ static vb2_error_t log_page_update(struct ui_context *ui,
 	return VB2_SUCCESS;
 }
 
-static vb2_error_t log_page_reset_to_top(struct ui_context *ui)
-{
-	const struct ui_screen_info *screen = ui->state->screen;
-
-	ui->state->current_page = 0;
-	ui->state->selected_item = ui->state->page_count > 1
-					   ? screen->page_down_item
-					   : screen->back_item;
-	return log_page_update(ui, NULL);
-}
-
 static vb2_error_t log_page_show_back_or_cancel(struct ui_context *ui,
 						int is_show_cancel)
 {
@@ -293,6 +282,23 @@ static vb2_error_t log_page_show_back_or_cancel(struct ui_context *ui,
 			ui->state->selected_item = back_item;
 	}
 	return VB2_SUCCESS;
+}
+
+static vb2_error_t log_page_reset_to_top(struct ui_context *ui)
+{
+	const struct ui_screen_info *screen = ui->state->screen;
+
+	ui->state->current_page = 0;
+	if (ui->state->test_state == UI_TEST_STATE_NONE) {
+		ui->state->selected_item = ui->state->page_count > 1
+						   ? screen->page_down_item
+						   : screen->back_item;
+	} else {
+		ui->state->selected_item = screen->back_item;
+		VB2_TRY(log_page_show_back_or_cancel(
+			ui, ui->state->test_state == UI_TEST_STATE_RUNNING));
+	}
+	return log_page_update(ui, NULL);
 }
 
 static vb2_error_t log_page_prev_action(struct ui_context *ui)
@@ -1865,7 +1871,7 @@ static const struct ui_menu_item diagnostics_items[] = {
 		.target = UI_SCREEN_DIAGNOSTICS_STORAGE_TEST_SHORT,
 	},
 	[DIAGNOSTICS_ITEM_STORAGE_TEST_EXTENDED] = {
-		.name = "Storage self-test (Extended)",
+		.name = "Storage self-test (extended)",
 		.file = "btn_diag_storage_ext_test.bmp",
 		.target = UI_SCREEN_DIAGNOSTICS_STORAGE_TEST_EXTENDED,
 	},
@@ -1962,7 +1968,7 @@ static vb2_error_t diagnostics_storage_test_update_impl(
 	int is_test_running = 0;
 
 	/* Early return if the test is done. */
-	if (ui->state->test_finished)
+	if (ui->state->test_state == UI_TEST_STATE_FINISHED)
 		return VB2_SUCCESS;
 
 	if (!log) {
@@ -1975,11 +1981,13 @@ static vb2_error_t diagnostics_storage_test_update_impl(
 	res = diag_dump_storage_test_log(log, log + DIAGNOSTICS_BUFFER_SIZE);
 	switch (res) {
 	case DIAG_TEST_SUCCESS:
-		ui->state->test_finished = 1;
+		ui->state->test_state = UI_TEST_STATE_FINISHED;
 		break;
 	case DIAG_TEST_RUNNING:
+		ui->state->test_state = UI_TEST_STATE_RUNNING;
 		return VB2_SUCCESS;
 	case DIAG_TEST_UPDATED:
+		ui->state->test_state = UI_TEST_STATE_RUNNING;
 		is_test_running = 1;
 		break;
 	default:
@@ -2107,7 +2115,7 @@ static vb2_error_t diagnostics_memory_update_screen_impl(
 	int is_test_running = 0;
 
 	/* Early return if the memory test is done. */
-	if (ui->state->test_finished)
+	if (ui->state->test_state == UI_TEST_STATE_FINISHED)
 		return VB2_SUCCESS;
 
 	if (reset && memory_test_init(mode))
@@ -2116,11 +2124,13 @@ static vb2_error_t diagnostics_memory_update_screen_impl(
 	res = memory_test_run(&log_string);
 	switch (res) {
 	case DIAG_TEST_SUCCESS:
-		ui->state->test_finished = 1;
+		ui->state->test_state = UI_TEST_STATE_FINISHED;
 		break;
 	case DIAG_TEST_RUNNING:
+		ui->state->test_state = UI_TEST_STATE_RUNNING;
 		return VB2_SUCCESS;
 	case DIAG_TEST_UPDATED:
+		ui->state->test_state = UI_TEST_STATE_RUNNING;
 		is_test_running = 1;
 		break;
 	default:
