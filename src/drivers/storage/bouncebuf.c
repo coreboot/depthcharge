@@ -63,6 +63,9 @@ int bounce_buffer_start(struct bounce_buffer *state, void *data,
 	state->len_aligned = ROUND(len, ARCH_DMA_MINALIGN);
 	state->flags = flags;
 
+	if (dma_coherent(data))
+		return 0;
+
 	if (!addr_aligned(state)) {
 		state->bounce_buffer = memalign(ARCH_DMA_MINALIGN,
 						state->len_aligned);
@@ -71,25 +74,30 @@ int bounce_buffer_start(struct bounce_buffer *state, void *data,
 
 		if (state->flags & GEN_BB_READ)
 			memcpy(state->bounce_buffer, state->user_buffer,
-				state->len);
+			       state->len);
 	}
 
-	/*
-	 * Flush data to RAM so DMA reads can pick it up,
-	 * and any CPU writebacks don't race with DMA writes
-	 */
-        dcache_clean_invalidate_by_mva(state->bounce_buffer,
-                                       state->len_aligned);
+	/* Clean cache (flush to RAM) so that DMA reads can pick it up */
+	if (state->flags & GEN_BB_READ)
+		dcache_clean_by_mva(state->bounce_buffer, state->len_aligned);
+
+	/* Invalidate cache so that CPU writebacks don't race with DMA writes */
+	if (state->flags & GEN_BB_WRITE)
+		dcache_invalidate_by_mva(state->bounce_buffer,
+					 state->len_aligned);
+
 	return 0;
 }
 
 int bounce_buffer_stop(struct bounce_buffer *state)
 {
-	if (state->flags & GEN_BB_WRITE) {
-		// Invalidate cache so that CPU can see any newly DMA'd data
+	if (dma_coherent(state->user_buffer))
+		return 0;
+
+	/* Invalidate cache so that CPU can see any newly DMA'd data */
+	if (state->flags & GEN_BB_WRITE)
 		dcache_invalidate_by_mva(state->bounce_buffer,
 					 state->len_aligned);
-	}
 
 	if (state->bounce_buffer == state->user_buffer)
 		return 0;
