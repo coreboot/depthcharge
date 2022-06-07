@@ -24,8 +24,8 @@ static int install_memchipinfo_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 	for (i=0; i<mem_chip_ptr->num_channels; i++)
 		temp_density += mem_chip_ptr->channel[i].density;
 
-	/* convert density from bytes to megabits */
-	temp_density /= 1024 * 1024 / 8;
+	/* convert density from Mega Bytes to Mega Bits */
+	temp_density *= 8;
 	dt_add_u32_prop(memchip_node, "density", temp_density);
 	dt_add_u32_prop(memchip_node, "io_width",
 			mem_chip_ptr->channel[0].io_width);
