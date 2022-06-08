@@ -102,7 +102,7 @@ static int board_setup(void)
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, ec_int);
 	register_vboot_ec(&cros_ec->vboot);
 
-	cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec, /* i2c bus */ 1);
+	cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec, /* i2c bus */ 7);
 	Anx3447 *anx3447 = new_anx3447(cros_ec_i2c_tunnel, /* ec pd# */ 0);
 	register_vboot_auxfw(&anx3447->fw_ops);
 
