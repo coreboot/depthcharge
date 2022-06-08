@@ -1314,6 +1314,12 @@ int mmc_setup_media(MmcCtrlr *ctrlr)
 		switch (lib_sysinfo.mmc_early_wake_status) {
 		case MMC_STATUS_CMD1_READY:
 			err = 0;
+			media->version = MMC_VERSION_UNKNOWN;
+			break;
+		case MMC_STATUS_CMD1_READY_HCS:
+			err = 0;
+			media->version = MMC_VERSION_UNKNOWN;
+			media->high_capacity = 1;
 			break;
 		case MMC_STATUS_CMD1_IN_PROGRESS:
 			err = MMC_IN_PROGRESS;
