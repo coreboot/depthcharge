@@ -80,7 +80,7 @@ static void setup_nvme(pcidev_t dev)
 
 static void setup_ufs(pcidev_t dev)
 {
-	if (!CONFIG(DRIVER_STORAGE_INTEL_UFS))
+	if (!CONFIG(DRIVER_STORAGE_UFS_INTEL))
 		return;
 
 	IntelUfsCtlr *ufs = new_intel_ufs_ctlr(dev);
