@@ -90,7 +90,7 @@ TEST_CFLAGS += -I$(libpayloadobj)
 TEST_CFLAGS += -I$(LIBPAYLOAD_ROOT)/include -I $(LIBPAYLOAD_ROOT)/include/mock
 TEST_CFLAGS += -I$(corebootsrc)/src/commonlib/bsd/include
 TEST_CFLAGS += -include $(LIBPAYLOAD_ROOT)/include/kconfig.h
-TEST_CFLAGS += -include $(LIBPAYLOAD_ROOT)/include/compiler.h
+TEST_CFLAGS += -include $(corebootsrc)/src/commonlib/bsd/include/commonlib/bsd/compiler.h
 
 # Note: This is intentionally just a subset of the warnings in the toplevel
 # Makefile.inc. We don't need to be as strict with test code, and things like
