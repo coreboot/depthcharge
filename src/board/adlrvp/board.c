@@ -166,6 +166,12 @@ static int board_setup(void)
 		IntelUfsCtlr *intel_ufs = new_intel_ufs_ctlr(PCH_DEV_UFS1);
 		list_insert_after(&intel_ufs->ufs.bctlr.list_node, &fixed_block_dev_controllers);
 	}
+
+	/* PCH NVME SSD */
+	secondary_bus = pci_read_config8(PCH_DEV_PCIE8, REG_SECONDARY_BUS);
+	NvmeCtrlr *nvme_1 = new_nvme_ctrlr(PCI_DEV(secondary_bus, 0, 0));
+	list_insert_after(&nvme_1->ctrlr.list_node, &fixed_block_dev_controllers);
+
 #else
 	/* SATA SSD */
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCH_DEV_SATA);
@@ -190,11 +196,12 @@ static int board_setup(void)
 	secondary_bus = pci_read_config8(PCH_DEV_PCIE5, REG_SECONDARY_BUS);
 	NvmeCtrlr *nvme_4 = new_nvme_ctrlr(PCI_DEV(secondary_bus, 0, 0));
 	list_insert_after(&nvme_4->ctrlr.list_node, &fixed_block_dev_controllers);
-#endif
+
 	/* PCH NVME SSD */
 	secondary_bus = pci_read_config8(PCH_DEV_PCIE8, REG_SECONDARY_BUS);
 	NvmeCtrlr *nvme_5 = new_nvme_ctrlr(PCI_DEV(secondary_bus, 0, 0));
 	list_insert_after(&nvme_5->ctrlr.list_node, &fixed_block_dev_controllers);
+#endif
 
 #if CONFIG_DRIVER_SOUND_MAX98373
 	adlrvp_setup_max98373_i2s();
