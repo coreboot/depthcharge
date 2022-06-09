@@ -16,19 +16,18 @@ ifeq ($(wildcard $(EC_HEADERS)/ec_commands.h),)
 $(error Please set EC_HEADERS= to directory containing ec_commands.h!)
 endif
 
-# coreboot source directory - for commonlib/bsd includes
-CB_SOURCE ?= ../coreboot
+# At first, test if we're in a Chromium OS SDK
+CB_SOURCE ?= ../../third_party/coreboot
 ifeq ($(wildcard $(CB_SOURCE)),)
-# If directory pointed by CB_SOURCE is empty then assume coreboot
-# is in the Chromium OS SDK directory
-CB_SOURCE := ../../third_party/coreboot
-endif
-ifeq ($(wildcard $(CB_SOURCE)),)
+# Otherwise, we may be in an upstream coreboot source tree
+CB_SOURCE := ../../../..
+ifeq ($(wildcard $(CB_SOURCE)/payloads/external/depthcharge/depthcharge),)
 $(error Please set CB_SOURCE= to directory containing coreboot sources!)
+endif
 endif
 
 # Libpayload source directory in the coreboot project
-LP_SOURCE ?= ../libpayload
+LP_SOURCE ?= ../../../libpayload
 ifeq ($(wildcard $(LP_SOURCE)),)
 # If directory pointed by LP_SOURCE is empty then assume libpayload
 # is in the Chromium OS SDK coreboot directory
@@ -39,7 +38,7 @@ $(error Please set LP_SOURCE= to directory containing libpayload sources!)
 endif
 
 # Path for depthcharge in coreboot/payloads
-VB_SOURCE = ../../3rdparty/vboot
+VB_SOURCE ?= ../../../../3rdparty/vboot
 ifeq ($(wildcard $(VB_SOURCE)),)
 # Path for depthcharge in Chromium OS SDK src/platform
 VB_SOURCE = ../vboot_reference
