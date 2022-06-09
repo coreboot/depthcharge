@@ -40,7 +40,6 @@ config DRIVER_STORAGE_IPQ_806X
 	bool "Qualcomm MMC driver"
 	default n
 
-
 config DRIVER_STORAGE_IPQ_40XX
 	depends on DRIVER_STORAGE_MMC
 	bool "QCA MMC driver for IPQ40xx"
@@ -128,7 +127,7 @@ config DRIVER_STORAGE_UFS
 	bool "UFS driver"
 	default n
 
-config DRIVER_STORAGE_INTEL_UFS
+config DRIVER_STORAGE_UFS_INTEL
 	select DRIVER_STORAGE_UFS
 	bool "Intel UFS driver"
 	default n
