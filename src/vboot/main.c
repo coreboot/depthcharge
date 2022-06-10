@@ -57,7 +57,7 @@ int main(void)
 	vboot_check_wipe_memory();
 	vboot_check_enable_usb();
 
-	if (CONFIG_CLI)
+	if (CONFIG(CLI))
 		console_loop();
 
 	// Run any late initialization functions before vboot takes control.

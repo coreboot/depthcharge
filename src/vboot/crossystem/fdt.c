@@ -45,10 +45,10 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 
 	dt_add_string_prop(node, "compatible", "chromeos-firmware");
 
-	if (CONFIG_NVDATA_CMOS) {
+	if (CONFIG(NVDATA_CMOS)) {
 		dt_add_string_prop(node, "nonvolatile-context-storage",
 				   "nvram");
-	} else if (CONFIG_NVDATA_FLASH) {
+	} else if (CONFIG(NVDATA_FLASH)) {
 		dt_add_string_prop(node, "nonvolatile-context-storage",
 				   "flash");
 		dt_add_u32_prop(node, "nonvolatile-context-offset",
@@ -104,7 +104,7 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 	if (!vb2api_gbb_read_hwid(vboot_get_context(), hwid, &hwid_size))
 		dt_add_bin_prop(node, "hardware-id", hwid, hwid_size);
 
-	if (CONFIG_EC_VBOOT_SUPPORT) {
+	if (CONFIG(EC_VBOOT_SUPPORT)) {
 		int in_rw = 0;
 
 		if (vb2ex_ec_running_rw(&in_rw)) {

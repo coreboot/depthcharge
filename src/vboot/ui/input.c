@@ -97,7 +97,7 @@ uint32_t ui_keyboard_read(uint32_t *flags_ptr)
 	// All other keyboards, including USB, are untrusted.
 	if (input_type == CONSOLE_INPUT_TYPE_UART ||
 	    input_type == CONSOLE_INPUT_TYPE_GPIO ||
-	    (CONFIG_DRIVER_EC_CROS &&
+	    (CONFIG(DRIVER_EC_CROS) &&
 	     input_type == CONSOLE_INPUT_TYPE_EC))
 		*flags_ptr |= UI_KEY_FLAG_TRUSTED_KEYBOARD;
 	return c;

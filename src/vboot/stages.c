@@ -247,8 +247,8 @@ void vboot_boot_kernel(VbSelectAndLoadKernelParams *kparams)
 	 * If the boot succeeded we'd never end up here. If configured, let's
 	 * try booting in alternative way.
 	 */
-	if (CONFIG_KERNEL_LEGACY)
+	if (CONFIG(KERNEL_LEGACY))
 		legacy_boot(bi.kernel, cmd_line_buf);
-	if (CONFIG_KERNEL_MULTIBOOT)
+	if (CONFIG(KERNEL_MULTIBOOT))
 		multiboot_boot(&bi);
 }
