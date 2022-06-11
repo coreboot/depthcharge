@@ -551,7 +551,7 @@ static int ufs_scsi_tfr(UfsDevice *ufs_dev, uint8_t *buf, uint32_t lba,
 	// whereas SCSI READ(16) / WRITE (16) is optional.
 	if (read) {
 		req.cdb[0] = SCSI_CMD_READ10;
-		req.cdb[1] = 0;
+		req.cdb[1] = SCSI_FLAG_FUA;
 		req.flags  = UFS_XFER_FLAGS_READ;
 	} else {
 		req.cdb[0] = SCSI_CMD_WRITE10;
