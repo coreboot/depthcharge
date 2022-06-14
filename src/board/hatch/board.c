@@ -48,6 +48,7 @@
 
 #define AUD_VOLUME              4000
 #define SDMODE_PIN              GPP_H3
+#define EC_PCH_INT_ODL          GPP_C13
 #define AUD_I2C4                PCI_DEV(0, 0x19, 0)
 
 /* Clock frequencies for eMMC are defined below */
@@ -112,6 +113,13 @@ static int is_board_nightfury(void)
 			nightfury_str, strlen(nightfury_str)) == 0;
 }
 
+static GpioOps *mkbp_int_ops(void)
+{
+	GpioCfg *mkbp_int_gpio = new_cannonlake_gpio_input(EC_PCH_INT_ODL);
+	/* Active-low, has to be inverted */
+	return new_gpio_not(&mkbp_int_gpio->ops);
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
@@ -122,7 +130,7 @@ static int board_setup(void)
 	/* Chrome EC (eSPI) */
 	CrosEcLpcBus *cros_ec_lpc_bus =
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
-	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, 0, NULL);
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, 0, mkbp_int_ops());
 	register_vboot_ec(&cros_ec->vboot, 0);
 
 	hatch_setup_flash();
