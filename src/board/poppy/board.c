@@ -74,7 +74,7 @@ static void poppy_setup_tpm(void)
 		};
 		tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0_params),
 					 cr50_irq_status)->ops);
-	} else if (CONFIG(DRIVER_TPM_CR50_I2C)) {
+	} else if (CONFIG(DRIVER_TPM_I2C)) {
 		DesignwareI2c *i2c1 = new_pci_designware_i2c(
 			PCI_DEV(0, 0x15, 1), 400000, SKYLAKE_DW_I2C_MHZ);
 		tpm_set_ops(&new_cr50_i2c(&i2c1->ops, 0x50,

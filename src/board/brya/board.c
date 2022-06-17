@@ -88,7 +88,7 @@ static void tpm_setup(void)
 	Cr50I2c *tpm = new_cr50_i2c(&i2c->ops, TPM_I2C_ADDR,
 				    &cr50_irq_status);
 	tpm_set_ops(&tpm->base.ops);
-	if (CONFIG(DRIVER_TPM_CR50_SWITCHES))
+	if (CONFIG(TPM_GOOGLE_SWITCHES))
 		flag_replace(FLAG_PHYS_PRESENCE,
 				&new_cr50_rec_switch(&tpm->base.ops)->ops);
 }

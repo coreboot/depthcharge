@@ -161,7 +161,7 @@ static int board_setup(void)
 		register_vboot_ec(&ec->vboot);
 	}
 
-	if (CONFIG(DRIVER_TPM_CR50_I2C))
+	if (CONFIG(DRIVER_TPM_I2C))
                 tpm_set_ops(&new_cr50_i2c(&new_qup_i2c(0xA98000)->ops, 0x50,
 			herobrine_tpm_irq_status)->base.ops);
         else if (CONFIG(DRIVER_TPM_SPI))
