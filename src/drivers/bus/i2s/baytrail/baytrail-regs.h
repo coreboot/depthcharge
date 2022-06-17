@@ -329,36 +329,36 @@ DEFINE_FIELD(LPE_SSP0_DIVC_L, DIV_N, 0xFFFFF, 0)
 	((x & (SSSR_##regb##_MASK<<SSSR_##regb##_SHIFT))>>SSSR_##regb##_SHIFT)
 
 typedef struct BytI2sRegs {
-    uint32_t sscr0;
-    uint32_t sscr1;
-    uint32_t sssr;
-    uint32_t ssitr;
-    uint32_t ssdr;
-    uint32_t ssto;
-    uint32_t sspsp;
-    uint32_t sstsa;
-    uint32_t ssrsa;
-    uint32_t sstss;
-    uint32_t ssacd;
-    uint32_t sscr2;
-    uint32_t ssfs;
-    uint32_t frame_cnt0;
-    uint32_t frame_cnt1;
-    uint32_t frame_cnt2;
-    uint32_t frame_cnt3;
-    uint32_t frame_cnt4;
-    uint32_t frame_cnt5;
-    uint32_t frame_cnt6;
-    uint32_t frame_cnt7;
-    uint32_t sfifol;
-    uint32_t sfifott;
-    uint32_t sscr3;
-    uint32_t sscr4;
-    uint32_t sscr5;
-    uint32_t asrc_frt;
-    uint32_t asrc_ftc;
-    uint32_t asrc_snpsht;
-    uint32_t asrc_frmcnt;
+	uint32_t sscr0;
+	uint32_t sscr1;
+	uint32_t sssr;
+	uint32_t ssitr;
+	uint32_t ssdr;
+	uint32_t ssto;
+	uint32_t sspsp;
+	uint32_t sstsa;
+	uint32_t ssrsa;
+	uint32_t sstss;
+	uint32_t ssacd;
+	uint32_t sscr2;
+	uint32_t ssfs;
+	uint32_t frame_cnt0;
+	uint32_t frame_cnt1;
+	uint32_t frame_cnt2;
+	uint32_t frame_cnt3;
+	uint32_t frame_cnt4;
+	uint32_t frame_cnt5;
+	uint32_t frame_cnt6;
+	uint32_t frame_cnt7;
+	uint32_t sfifol;
+	uint32_t sfifott;
+	uint32_t sscr3;
+	uint32_t sscr4;
+	uint32_t sscr5;
+	uint32_t asrc_frt;
+	uint32_t asrc_ftc;
+	uint32_t asrc_snpsht;
+	uint32_t asrc_frmcnt;
 } __attribute__ ((packed)) BytI2sRegs;
 
 

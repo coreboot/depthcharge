@@ -21,17 +21,18 @@
  */
 typedef struct SndwOps {
 	int (*sndw_enable)(struct SndwOps *me, sndw_codec_info *codecinfo);
-        int (*sndw_sendwack)(void *sndwlinkaddr, sndw_cmd txcmd, uint32_t deviceindex);
+	int (*sndw_sendwack)(void *sndwlinkaddr, sndw_cmd txcmd,
+			     uint32_t deviceindex);
 	int (*sndw_disable)(struct SndwOps *me);
 } SndwOps;
 
 typedef struct {
-        /* Soundwire ops structure.*/
-        SndwOps ops;
-        /* Intel HD Audio Lower Base Address.*/
-        void *hdabar;
-        /* Audio DSP Lower Base Address.*/
-        void *dspbar;
+	/* Soundwire ops structure.*/
+	SndwOps ops;
+	/* Intel HD Audio Lower Base Address.*/
+	void *hdabar;
+	/* Audio DSP Lower Base Address.*/
+	void *dspbar;
 	/* Sndw Link Number */
 	int sndwlinkindex;
 	/* Sndw Link address */

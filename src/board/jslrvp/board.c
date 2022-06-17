@@ -134,7 +134,7 @@ static int board_setup(void)
 	/* NVMe */
 	NvmeCtrlr *nvme = new_nvme_ctrlr(PCH_DEV_PCIE0);
 	list_insert_after(&nvme->ctrlr.list_node,
-                         &fixed_block_dev_controllers);
+			  &fixed_block_dev_controllers);
 
 	return 0;
 }

@@ -147,5 +147,5 @@ config DRIVER_GPIO_KERN
 	default n
 
 config DRIVER_GPIO_JASPERLAKE
-        bool "Intel Jasperlake GPIO driver"
+	bool "Intel Jasperlake GPIO driver"
 	default n

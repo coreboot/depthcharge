@@ -66,9 +66,9 @@ static inline size_t gpios_in_community(const struct gpio_community *comm)
 
 static inline size_t groups_in_community(const struct gpio_community *comm)
 {
-       size_t n;
-       switch (comm->port_id) {
-       case PCH_PCR_PID_GPIOCOM0:
+	size_t n;
+	switch (comm->port_id) {
+	case PCH_PCR_PID_GPIOCOM0:
 		n = 3;
 		break;
 	case PCH_PCR_PID_GPIOCOM1:
@@ -85,8 +85,8 @@ static inline size_t groups_in_community(const struct gpio_community *comm)
 		break;
 	default:
 		n = 0;
-       }
-       return n;
+	}
+	return n;
 }
 
 static inline int gpio_index_gpd(int gpio)

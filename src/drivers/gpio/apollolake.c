@@ -138,25 +138,25 @@ static void gpio_handle_pad_mode(const pad_config *cfg)
 static void gpio_configure_pad(const pad_config *cfg)
 {
  	uint32_t *dw_regs;
-        uint32_t reg;
-        uint32_t termination;
-        uint32_t dw0;
-        const uint32_t termination_mask = PAD_TERM_MASK << PAD_TERM_SHIFT;
+	uint32_t reg;
+	uint32_t termination;
+	uint32_t dw0;
+	const uint32_t termination_mask = PAD_TERM_MASK << PAD_TERM_SHIFT;
 
-        dw_regs = gpio_dw_regs(cfg->pad);
-        if (dw_regs == NULL)
-                return;
+	dw_regs = gpio_dw_regs(cfg->pad);
+	if (dw_regs == NULL)
+		return;
 
-        dw0 = cfg->dw0;
-        write32(&dw_regs[0], dw0);
-        reg = read32(&dw_regs[1]);
-        reg &= ~termination_mask;
-        termination = cfg->attrs;
-        termination &= termination_mask;
-        reg |= termination;
-        write32(&dw_regs[1], reg);
+	dw0 = cfg->dw0;
+	write32(&dw_regs[0], dw0);
+	reg = read32(&dw_regs[1]);
+	reg &= ~termination_mask;
+	termination = cfg->attrs;
+	termination &= termination_mask;
+	reg |= termination;
+	write32(&dw_regs[1], reg);
 
-        gpio_handle_pad_mode(cfg);
+	gpio_handle_pad_mode(cfg);
 }
 
 static int __apollolake_gpio_get(int gpio_num)

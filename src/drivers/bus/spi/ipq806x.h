@@ -189,17 +189,17 @@
 
 
 struct spi_slave {
-        unsigned int    bus;
-        unsigned int    cs;
-        unsigned int    rw;
+	unsigned int    bus;
+	unsigned int    cs;
+	unsigned int    rw;
 };
 
 typedef struct {
-        struct spi_slave slave;
-        const struct gsbi_spi *regs;
-        unsigned mode;
-        unsigned initialized;
-        unsigned long freq;
+	struct spi_slave slave;
+	const struct gsbi_spi *regs;
+	unsigned mode;
+	unsigned initialized;
+	unsigned long freq;
 } IpqSpiSlave;
 
 typedef struct {
@@ -210,4 +210,3 @@ typedef struct {
 extern SpiController *new_spi(unsigned bus_num, unsigned cs);
 
 #endif /* __SRC_DRIVERS_BUS_SPI_IPQ806X_H__ */
-

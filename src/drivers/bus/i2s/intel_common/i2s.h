@@ -24,16 +24,16 @@
 
 /* FIFO over/under-run interrupt config. */
 enum {
-        SSP_FIFO_INT_ENABLE = 0x0,
-        SSP_FIFO_INT_DISABLE,
+	SSP_FIFO_INT_ENABLE = 0x0,
+	SSP_FIFO_INT_DISABLE,
 };
 
 /* Frame format. */
 enum {
-        MOTOROLA_SPI_FORMAT = 0x0,
-        TI_SSP_FORMAT,
-        MICROWIRE_FORMAT,
-        PSP_FORMAT,
+	MOTOROLA_SPI_FORMAT = 0x0,
+	TI_SSP_FORMAT,
+	MICROWIRE_FORMAT,
+	PSP_FORMAT,
 };
 
 typedef enum {
