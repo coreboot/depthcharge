@@ -95,6 +95,25 @@ static int board_setup(void)
 		tpm_set_ops(&tpm_bus->base.ops);
 	}
 
+	if (CONFIG(DRIVER_TPM_I2C))
+                tpm_set_ops(&new_cr50_i2c(&new_qup_i2c(0xA98000)->ops, 0x50,
+			herobrine_tpm_irq_status)->base.ops);
+        else if (CONFIG(DRIVER_TPM_SPI))
+               tpm_set_ops(&new_tpm_spi(&new_qup_spi(0xA98000)->ops,
+			herobrine_tpm_irq_status)->ops);
+
+	/* Audio support */
+	amp_enable = sysinfo_lookup_gpio("speaker enable", 1,
+				new_gpio_output_from_coreboot);
+	speaker_amp = new_gpio_amp_codec(amp_enable);
+	soundq = new_lpass_i2s(48000, 2, 16, LPASS_SECONDARY, 0x2C00000);
+	i2s_source = new_i2s_source(&soundq->ops, 48000, 2, 0x500);
+	sound = new_sound_route(&i2s_source->ops);
+	list_insert_after(&speaker_amp->component.list_node,
+			&sound->components);
+
+	sound_set_ops(&sound->ops);
+
 	return 0;
 }
 
