@@ -1438,6 +1438,9 @@ RtkMmcHost *probe_pci_rtk_host(pcidev_t dev, unsigned int platform_info)
 
 	pci_host = xzalloc(sizeof(*pci_host));
 
+	printf("Looking for RTK Controller %p @ %02x:%02x:%02x\n",
+		pci_host, PCI_BUS(dev), PCI_SLOT(dev), PCI_FUNC(dev));
+
 	pci_host->dev = dev;
 	pci_host->host.platform_info = platform_info;
 
