@@ -3,5 +3,5 @@
 # Copyright 2020 Google LLC.
 
 config DRIVER_BUS_SOUNDWIRE
-        bool "Soundwire driver for Intel platforms"
-        default n
+	bool "Soundwire driver for Intel platforms"
+	default n

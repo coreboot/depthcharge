@@ -185,8 +185,8 @@ static void mtk_mmc_dma_stop(MtkMmcHost *host)
 		mmc_error("Failed while wait DMA to inactive!\n");
 }
 
-static inline u32 mtk_mmc_prepare_raw_cmd(MtkMmcHost *host,
-        MmcCommand *cmd, MmcData *data)
+static inline u32 mtk_mmc_prepare_raw_cmd(MtkMmcHost *host, MmcCommand *cmd,
+					  MmcData *data)
 {
 	MtkMmcReg *reg = host->reg;
 	union {
@@ -293,7 +293,7 @@ static inline int mtk_mmc_cmd_do_poll(MtkMmcHost *host, MmcCommand *cmd)
 }
 
 static void mtk_mmc_prepare_data(MtkMmcHost *host, MmcData *data,
-                                 struct bounce_buffer *bbstate)
+				 struct bounce_buffer *bbstate)
 {
 	MtkMmcReg *reg = host->reg;
 
@@ -328,8 +328,8 @@ static int sdc_wait_ready(MtkMmcHost *host, MmcCommand *cmd, MmcData *data)
 }
 
 static int mtk_mmc_send_cmd_bounced(MmcCtrlr *ctrlr, MmcCommand *cmd,
-                                    MmcData *data,
-                                    struct bounce_buffer *bbstate)
+				    MmcData *data,
+				    struct bounce_buffer *bbstate)
 {
 	MtkMmcHost *host = container_of(ctrlr, MtkMmcHost, mmc);
 	MtkMmcReg *reg = host->reg;

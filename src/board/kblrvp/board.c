@@ -67,7 +67,7 @@ static int board_setup(void)
 	AhciCtrlr *ahci1 = new_ahci_ctrlr(PCI_DEV(1, 0x00, 0));
 	list_insert_after(&ahci1->ctrlr.list_node, &fixed_block_dev_controllers);
 
-        /* PCIe NVME */
+	/* PCIe NVME */
 	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x1c, 4));
 	list_insert_after(&nvme->ctrlr.list_node, &fixed_block_dev_controllers);
 

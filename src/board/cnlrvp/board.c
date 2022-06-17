@@ -67,9 +67,9 @@ static int board_setup(void)
 	UsbHostController *usb_host1 = new_usb_hc(XHCI, UsbMmioBase);
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
 
-        /* SATA SSD */
-        AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 0x17, 0));
-        list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
+	/* SATA SSD */
+	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 0x17, 0));
+	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
 
 	/* eMMC */
 	SdhciHost *emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1a, 0), SDHCI_PLATFORM_SUPPORTS_HS400ES,

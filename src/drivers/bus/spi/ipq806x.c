@@ -46,24 +46,24 @@
 
 #define GSBI_IDX_TO_GSBI(idx)   (idx + 5)
 struct gsbi_spi {
-        void *spi_config;
-        void *io_control;
-        void *error_flags;
-        void *error_flags_en;
-        void *gsbi_ctrl;
-        void *qup_config;
-        void *qup_error_flags;
-        void *qup_error_flags_en;
-        void *qup_operational;
-        void *qup_io_modes;
-        void *qup_state;
-        void *qup_input_fifo;
-        void *qup_output_fifo;
-        void *qup_mx_input_count;
-        void *qup_mx_output_count;
-        void *qup_sw_reset;
-        void *qup_ns_reg;
-        void *qup_md_reg;
+	void *spi_config;
+	void *io_control;
+	void *error_flags;
+	void *error_flags_en;
+	void *gsbi_ctrl;
+	void *qup_config;
+	void *qup_error_flags;
+	void *qup_error_flags_en;
+	void *qup_operational;
+	void *qup_io_modes;
+	void *qup_state;
+	void *qup_input_fifo;
+	void *qup_output_fifo;
+	void *qup_mx_input_count;
+	void *qup_mx_output_count;
+	void *qup_sw_reset;
+	void *qup_ns_reg;
+	void *qup_md_reg;
 };
 
 static IpqSpiSlave *to_ipq_spi(SpiOps *spi_ops)

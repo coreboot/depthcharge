@@ -818,45 +818,45 @@ enum Mii_Phy_Status {
 };
 
 typedef enum {
-        PHY_INTERFACE_MODE_MII,
-        PHY_INTERFACE_MODE_GMII,
-        PHY_INTERFACE_MODE_SGMII,
-        PHY_INTERFACE_MODE_QSGMII,
-        PHY_INTERFACE_MODE_TBI,
-        PHY_INTERFACE_MODE_RMII,
-        PHY_INTERFACE_MODE_RGMII,
-        PHY_INTERFACE_MODE_RGMII_ID,
-        PHY_INTERFACE_MODE_RGMII_RXID,
-        PHY_INTERFACE_MODE_RGMII_TXID,
-        PHY_INTERFACE_MODE_RTBI,
-        PHY_INTERFACE_MODE_XGMII,
-        PHY_INTERFACE_MODE_NONE /* Must be last */
+	PHY_INTERFACE_MODE_MII,
+	PHY_INTERFACE_MODE_GMII,
+	PHY_INTERFACE_MODE_SGMII,
+	PHY_INTERFACE_MODE_QSGMII,
+	PHY_INTERFACE_MODE_TBI,
+	PHY_INTERFACE_MODE_RMII,
+	PHY_INTERFACE_MODE_RGMII,
+	PHY_INTERFACE_MODE_RGMII_ID,
+	PHY_INTERFACE_MODE_RGMII_RXID,
+	PHY_INTERFACE_MODE_RGMII_TXID,
+	PHY_INTERFACE_MODE_RTBI,
+	PHY_INTERFACE_MODE_XGMII,
+	PHY_INTERFACE_MODE_NONE /* Must be last */
 } phy_interface_t;
 
 typedef struct {
-        u8 *base;
-        int unit;
-        unsigned is_macsec;
-        unsigned mac_pwr0;
-        unsigned mac_pwr1;
-        unsigned mac_conn_to_phy;
-        phy_interface_t phy;
-        u8 mdio_addr;
+	u8 *base;
+	int unit;
+	unsigned is_macsec;
+	unsigned mac_pwr0;
+	unsigned mac_pwr1;
+	unsigned mac_conn_to_phy;
+	phy_interface_t phy;
+	u8 mdio_addr;
 	unsigned switch_reset_gpio;
 } ipq_gmac_board_cfg_t;
 
 typedef struct {
-        unsigned gpio;
-        unsigned func;
-        unsigned dir;
-        unsigned pull;
-        unsigned drvstr;
-        unsigned enable;
+	unsigned gpio;
+	unsigned func;
+	unsigned dir;
+	unsigned pull;
+	unsigned drvstr;
+	unsigned enable;
 } gpio_func_data_t;
 
 static inline int get_cache_line_size(void)
 {
-        return dcache_line_bytes();
+	return dcache_line_bytes();
 }
 
 #define ETHERNET_EXTRA		(NET_IP_ALIGN + 2 * get_cache_line_size())

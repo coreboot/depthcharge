@@ -903,8 +903,8 @@ struct pad_config {
 		.pad = pad_,						\
 		.attrs = PAD_FIELD(PAD_TERM,  term_) | attrs_,		\
 		.dw0 = dw0_,						\
-                .dw1 = dw1_,						\
-                .dw2 = dw2_,						\
+		.dw1 = dw1_,						\
+		.dw2 = dw2_,						\
 	}
 
 /* Default to ACPI owned. Ownership only matters for GPI pads. */

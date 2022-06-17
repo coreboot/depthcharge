@@ -47,80 +47,80 @@
 #define  HOSTSW_OWN_ACPI        0
 #define  HOSTSW_OWN_GPIO        1
 
-        /* PADRSTCFG - when to reset the pad config */
+	/* PADRSTCFG - when to reset the pad config */
 #define  PADRSTCFG_SHIFT        30
 #define  PADRSTCFG_MASK         0x3
 #define  PADRSTCFG_DSW_PWROK    0
 #define  PADRSTCFG_DEEP         1
 #define  PADRSTCFG_PLTRST       2
 #define  PADRSTCFG_RSMRST       3
-        /* RXPADSTSEL - raw signal or internal state */
+	/* RXPADSTSEL - raw signal or internal state */
 #define  RXPADSTSEL_SHIFT       29
 #define  RXPADSTSEL_MASK        0x1
 #define  RXPADSTSEL_RAW         0
 #define  RXPADSTSEL_INTERNAL    1
-        /* RXRAW1 - drive 1 instead instead of pad value */
+	/* RXRAW1 - drive 1 instead instead of pad value */
 #define  RXRAW1_SHIFT           28
 #define  RXRAW1_MASK            0x1
 #define  RXRAW1_NO              0
 #define  RXRAW1_YES             1
-        /* RXEVCFG - Interrupt and wake types */
+	/* RXEVCFG - Interrupt and wake types */
 #define  RXEVCFG_SHIFT          25
 #define  RXEVCFG_MASK           0x3
 #define  RXEVCFG_LEVEL          0
 #define  RXEVCFG_EDGE           1
 #define  RXEVCFG_DRIVE0         2
-        /* PREGFRXSEL - use filtering on Rx pad */
+	/* PREGFRXSEL - use filtering on Rx pad */
 #define  PREGFRXSEL_SHIFT       24
 #define  PREGFRXSEL_MASK        0x1
 #define  PREGFRXSEL_NO          0
 #define  PREGFRXSEL_YES         1
-        /* RXINV - invert signal to SMI, SCI, NMI, or IRQ routing. */
+	/* RXINV - invert signal to SMI, SCI, NMI, or IRQ routing. */
 #define  RXINV_SHIFT            23
 #define  RXINV_MASK             0x1
 #define  RXINV_NO               0
 #define  RXINV_YES              1
-        /* GPIROUTIOXAPIC - route to io-xapic or not */
+	/* GPIROUTIOXAPIC - route to io-xapic or not */
 #define  GPIROUTIOXAPIC_SHIFT   20
 #define  GPIROUTIOXAPIC_MASK    0x1
 #define  GPIROUTIOXAPIC_NO      0
 #define  GPIROUTIOXAPIC_YES     1
-        /* GPIROUTSCI - route to SCI */
+	/* GPIROUTSCI - route to SCI */
 #define  GPIROUTSCI_SHIFT       19
 #define  GPIROUTSCI_MASK        0x1
 #define  GPIROUTSCI_NO          0
 #define  GPIROUTSCI_YES         1
-       /* GPIROUTSMI - route to SMI */
+	/* GPIROUTSMI - route to SMI */
 #define  GPIROUTSMI_SHIFT       18
 #define  GPIROUTSMI_MASK        0x1
 #define  GPIROUTSMI_NO          0
 #define  GPIROUTSMI_YES         1
-        /* GPIROUTNMI - route to NMI */
+	/* GPIROUTNMI - route to NMI */
 #define  GPIROUTNMI_SHIFT       17
 #define  GPIROUTNMI_MASK        0x1
 #define  GPIROUTNMI_NO          0
 #define  GPIROUTNMI_YES         1
-        /* PMODE - mode of pad */
+	/* PMODE - mode of pad */
 #define  PMODE_SHIFT            10
 #define  PMODE_MASK             0x3
 #define  PMODE_GPIO             0
 #define  PMODE_NF1              1
 #define  PMODE_NF2              2
 #define  PMODE_NF3              3
-        /* GPIORXDIS - Disable Rx */
+	/* GPIORXDIS - Disable Rx */
 #define  GPIORXDIS_SHIFT        9
 #define  GPIORXDIS_MASK         0x1
 #define  GPIORXDIS_NO           0
 #define  GPIORXDIS_YES          1
-        /* GPIOTXDIS - Disable Tx */
+	/* GPIOTXDIS - Disable Tx */
 #define  GPIOTXDIS_SHIFT        8
 #define  GPIOTXDIS_MASK         0x1
 #define  GPIOTXDIS_NO           0
 #define  GPIOTXDIS_YES          1
-        /* GPIORXSTATE - Internal state after glitch filter */
+	/* GPIORXSTATE - Internal state after glitch filter */
 #define  GPIORXSTATE_SHIFT      1
 #define  GPIORXSTATE_MASK       0x1
-        /* GPIOTXSTATE - Drive value onto pad */
+	/* GPIOTXSTATE - Drive value onto pad */
 #define  GPIOTXSTATE_SHIFT      0
 #define  GPIOTXSTATE_MASK       0x1
  /* TERM - termination control */
@@ -136,10 +136,10 @@
 #define  PAD_TERM_NATIVE        15
 
 #define PAD_FIELD_VAL(field_, val_) \
-        (((val_) & field_ ## _MASK) << field_ ## _SHIFT)
+	(((val_) & field_ ## _MASK) << field_ ## _SHIFT)
 
 #define PAD_FIELD(field_, setting_) \
-        PAD_FIELD_VAL(field_, field_ ## _ ## setting_)
+	PAD_FIELD_VAL(field_, field_ ## _ ## setting_)
 
 /*
  * This encodes all the fields found within the dw0 register for each
@@ -159,65 +159,65 @@
  *   txdis - disable Tx buffer
  */
 #define _DW0_VALS(rst, rxst, rxraw1, rxev, rxgf, rxinv, gpiioapic, gpisci, \
-                        gpismi, gpinmi, mode, rxdis, txdis) \
-        (PAD_FIELD(PADRSTCFG, rst) | \
-         PAD_FIELD(RXPADSTSEL, rxst) | \
-         PAD_FIELD(RXRAW1, rxraw1) | \
-         PAD_FIELD(RXEVCFG, rxev) | \
-         PAD_FIELD(PREGFRXSEL, rxgf) | \
-         PAD_FIELD(RXINV, rxinv) | \
-         PAD_FIELD(GPIROUTIOXAPIC, gpiioapic) | \
-         PAD_FIELD(GPIROUTSCI, gpisci) | \
-         PAD_FIELD(GPIROUTSMI, gpismi) | \
-         PAD_FIELD(GPIROUTNMI, gpinmi) | \
-         PAD_FIELD(PMODE, mode) | \
-         PAD_FIELD(GPIORXDIS, rxdis) | \
-         PAD_FIELD(GPIOTXDIS, txdis))
+		  gpismi, gpinmi, mode, rxdis, txdis) \
+	(PAD_FIELD(PADRSTCFG, rst) | \
+	 PAD_FIELD(RXPADSTSEL, rxst) | \
+	 PAD_FIELD(RXRAW1, rxraw1) | \
+	 PAD_FIELD(RXEVCFG, rxev) | \
+	 PAD_FIELD(PREGFRXSEL, rxgf) | \
+	 PAD_FIELD(RXINV, rxinv) | \
+	 PAD_FIELD(GPIROUTIOXAPIC, gpiioapic) | \
+	 PAD_FIELD(GPIROUTSCI, gpisci) | \
+	 PAD_FIELD(GPIROUTSMI, gpismi) | \
+	 PAD_FIELD(GPIROUTNMI, gpinmi) | \
+	 PAD_FIELD(PMODE, mode) | \
+	 PAD_FIELD(GPIORXDIS, rxdis) | \
+	 PAD_FIELD(GPIOTXDIS, txdis))
 
 #define _PAD_CFG_ATTRS(pad_, term_, dw0_, attrs_)       		\
-       {                                                                \
-                .pad = pad_,                                            \
-                .attrs = PAD_FIELD(PAD_TERM,  term_) | attrs_,          \
-                .dw0 = dw0_,                                            \
-        }
+	{                                                                \
+		.pad = pad_,                                            \
+		.attrs = PAD_FIELD(PAD_TERM,  term_) | attrs_,          \
+		.dw0 = dw0_,                                            \
+	}
 
 /* Default to ACPI owned. Ownership only matters for GPI pads. */
 #define _PAD_CFG(pad_, term_, dw0_) \
-        _PAD_CFG_ATTRS(pad_, term_, dw0_, PAD_FIELD(HOSTSW, ACPI))
+	_PAD_CFG_ATTRS(pad_, term_, dw0_, PAD_FIELD(HOSTSW, ACPI))
 
 /* Native Function - No Rx buffer manipulation */
 #define PAD_CFG_NF(pad_, term_, rst_, func_) \
-        _PAD_CFG(pad_, term_, \
-        _DW0_VALS(rst_, RAW, NO, LEVEL, NO, NO, NO, NO, NO, NO, func_, NO, NO))
+	_PAD_CFG(pad_, term_, \
+	_DW0_VALS(rst_, RAW, NO, LEVEL, NO, NO, NO, NO, NO, NO, func_, NO, NO))
 
 /* General purpose output. By default no termination. */
 #define PAD_CFG_GPO(pad_, val_, rst_) \
-        _PAD_CFG(pad_, NONE, \
-        _DW0_VALS(rst_, RAW, NO, LEVEL, NO, NO, NO, NO, NO, NO, GPIO, YES, NO) \
-                | PAD_FIELD_VAL(GPIOTXSTATE, val_))
+	_PAD_CFG(pad_, NONE, \
+	_DW0_VALS(rst_, RAW, NO, LEVEL, NO, NO, NO, NO, NO, NO, GPIO, YES, NO) \
+		| PAD_FIELD_VAL(GPIOTXSTATE, val_))
 
 /* General purpose input with no special IRQ routing. */
 #define PAD_CFG_GPI(pad_, term_, rst_) \
-        _PAD_CFG(pad_, term_, \
-        _DW0_VALS(rst_, RAW, NO, LEVEL, NO, NO, NO, NO, NO, NO, GPIO, NO, YES))
+	_PAD_CFG(pad_, term_, \
+	_DW0_VALS(rst_, RAW, NO, LEVEL, NO, NO, NO, NO, NO, NO, GPIO, NO, YES))
 
 /* General purpose input passed through to IOxAPIC. Assume APIC logic can
  * handle polarity/edge/level constraints. */
 #define PAD_CFG_GPI_APIC(pad_, term_, rst_) \
-        _PAD_CFG(pad_, term_, \
-        _DW0_VALS(rst_, RAW, NO, LEVEL, NO, NO, YES, NO, NO, NO, GPIO, NO, YES))
+	_PAD_CFG(pad_, term_, \
+	_DW0_VALS(rst_, RAW, NO, LEVEL, NO, NO, YES, NO, NO, NO, GPIO, NO, YES))
 
 /* General purpose input routed to SCI. This assumes edge triggered events. */
 #define PAD_CFG_GPI_ACPI_SCI(pad_, term_, rst_, inv_) \
-        _PAD_CFG_ATTRS(pad_, term_, \
-        _DW0_VALS(rst_, RAW, NO, EDGE, NO, inv_, \
-                NO, YES, NO, NO, GPIO, NO, YES), PAD_FIELD(HOSTSW, ACPI))
+	_PAD_CFG_ATTRS(pad_, term_, \
+	_DW0_VALS(rst_, RAW, NO, EDGE, NO, inv_, \
+		NO, YES, NO, NO, GPIO, NO, YES), PAD_FIELD(HOSTSW, ACPI))
 
 /* General purpose input routed to SMI. This assumes edge triggered events. */
 #define PAD_CFG_GPI_ACPI_SMI(pad_, term_, rst_, inv_) \
-        _PAD_CFG_ATTRS(pad_, term_, \
-        _DW0_VALS(rst_, RAW, NO, EDGE, NO, inv_, \
-                NO, NO, YES, NO, GPIO, NO, YES), PAD_FIELD(HOSTSW, ACPI))
+	_PAD_CFG_ATTRS(pad_, term_, \
+	_DW0_VALS(rst_, RAW, NO, EDGE, NO, inv_, \
+		NO, NO, YES, NO, GPIO, NO, YES), PAD_FIELD(HOSTSW, ACPI))
 
 /*
  * The 'attrs' field carries the termination in bits 13:10 to match up with

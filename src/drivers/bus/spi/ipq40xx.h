@@ -228,9 +228,9 @@ static const struct blsp_spi spi_reg[] = {
 
 
 struct spi_slave {
-        unsigned int    bus;
-        unsigned int    cs;
-        unsigned int    rw;
+	unsigned int bus;
+	unsigned int cs;
+	unsigned int rw;
 };
 
 struct ipq_spi_slave {
@@ -260,4 +260,3 @@ static inline struct ipq_spi_slave *to_ipq_spi(SpiOps *spi_ops)
 SpiController *new_spi(unsigned bus_num, unsigned cs);
 
 #endif /* _IPQ40XX_SPI_H_ */
-

@@ -18,7 +18,7 @@ const struct storage_config *variant_get_storage_configs(size_t *count)
 	static const struct storage_config bridge_storage_configs[] = {
 		{ .media = STORAGE_NVME, .pci_dev = PCI_DEV(0, 0x02, 0x03)},
 		{ .media = STORAGE_SDHCI, .pci_dev = PCI_DEV(0, 0x02, 0x02)},
-        };
+	};
 
 	static const struct storage_config ssd_storage_configs[] = {
 		{ .media = STORAGE_NVME, .pci_dev = PCI_DEV(0, 0x02, 0x04)},

@@ -14,8 +14,8 @@ static int install_memchipinfo_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 	int i;
 
 	const char *memchip_path[] = { "lpddr3", NULL };
-        DeviceTreeNode *memchip_node = dt_find_node(tree->root,
-					memchip_path, NULL, NULL, 1);
+	DeviceTreeNode *memchip_node = dt_find_node(
+		tree->root, memchip_path, NULL, NULL, 1);
 
 	/* Add a compatible property. */
 	dt_add_string_prop(memchip_node, "compatible", "jedec,lpddr3");
@@ -40,7 +40,7 @@ static int install_memchipinfo_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 }
 
 static DeviceTreeFixup memchipinfo_data = {
-        .fixup = &install_memchipinfo_data
+	.fixup = &install_memchipinfo_data
 };
 
 static int memchipinfo_init(void)

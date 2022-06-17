@@ -12,8 +12,8 @@
 ##
 
 config GRU_USB2_BOOT_REQUIRED
-        bool "Enable USB2 boot for a Gru derivative"
-        default false
+	bool "Enable USB2 boot for a Gru derivative"
+	default false
 	help
 	  Set this to true if this board requires booting off USB2 interface(s).
 config GRU_SPEAKER_VOLUME

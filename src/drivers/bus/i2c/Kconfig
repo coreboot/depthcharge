@@ -46,25 +46,25 @@ config DRIVER_BUS_I2C_ROCKCHIP
 	bool "Rockchip I2C driver"
 
 config DRIVER_BUS_I2C_MT8173
-        bool "MediaTek MT8173 I2C driver"
-        default n
+	bool "MediaTek MT8173 I2C driver"
+	default n
 
 config DRIVER_BUS_I2C_MT8183
-        bool "MediaTek MT8183 I2C driver"
-        default n
+	bool "MediaTek MT8183 I2C driver"
+	default n
 
 config DRIVER_BUS_I2C_CYGNUS
 	bool "Cygnus I2C driver"
 	default n
 
 config DRIVER_BUS_I2C_ARMADA38X
-        bool "Marvell Armada38x I2C driver"
-        default n
+	bool "Marvell Armada38x I2C driver"
+	default n
 
 config DRIVER_BUS_I2C_CROS_EC_TUNNEL
-        bool "Chrome OS EC tunnel I2C driver"
-        depends on DRIVER_EC_CROS
-        default n
+	bool "Chrome OS EC tunnel I2C driver"
+	depends on DRIVER_EC_CROS
+	default n
 
 config DRIVER_BUS_I2C_SC7180
 	bool "Qualcomm SC7180 I2C driver"

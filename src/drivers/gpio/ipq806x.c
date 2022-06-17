@@ -69,10 +69,10 @@ void gpio_tlmm_config_set(gpio_t gpio, unsigned func,
 	if (gpio_not_valid(gpio))
 		return;
 
-        val |= (pull & GPIO_CFG_PULL_MASK) << GPIO_CFG_PULL_SHIFT;
-        val |= (func & GPIO_CFG_FUNC_MASK) << GPIO_CFG_FUNC_SHIFT;
-        val |= (drvstr & GPIO_CFG_DRV_MASK) << GPIO_CFG_DRV_SHIFT;
-        val |= (enable & GPIO_CFG_OE_MASK) << GPIO_CFG_OE_SHIFT;
+	val |= (pull & GPIO_CFG_PULL_MASK) << GPIO_CFG_PULL_SHIFT;
+	val |= (func & GPIO_CFG_FUNC_MASK) << GPIO_CFG_FUNC_SHIFT;
+	val |= (drvstr & GPIO_CFG_DRV_MASK) << GPIO_CFG_DRV_SHIFT;
+	val |= (enable & GPIO_CFG_OE_MASK) << GPIO_CFG_OE_SHIFT;
 
 	write32(GPIO_CONFIG_ADDR(gpio), val);
 }
@@ -152,4 +152,3 @@ void gpio_input(gpio_t gpio)
 	gpio_tlmm_config_set(gpio, GPIO_FUNC_DISABLE,
 			     GPIO_NO_PULL, GPIO_2MA, GPIO_DISABLE);
 }
-

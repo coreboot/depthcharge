@@ -165,8 +165,8 @@ static Soundwire *setup_sndw(unsigned int link)
 
 static SoundOps *setup_gpio_pwm(unsigned int pad)
 {
-        if (!CONFIG(DRIVER_SOUND_GPIO_EDGE_BUZZER))
-                return NULL;
+	if (!CONFIG(DRIVER_SOUND_GPIO_EDGE_BUZZER))
+		return NULL;
 
 	GpioOps *sound_gpio = &new_alderlake_gpio_output(pad, 0)->ops;
 	GpioEdgeBuzzer *buzzer = new_gpio_edge_buzzer(sound_gpio);

@@ -17,8 +17,8 @@ config DRIVER_AHCI
 config DRIVER_STORAGE_MMC
 	bool "Board-specific SD/MMC storage Driver"
 	default n
-        help
-          For platforms with SD/MMC card readers not on USB bus.
+	help
+	  For platforms with SD/MMC card readers not on USB bus.
 
 config DRIVER_STORAGE_MSHC_S5P
 	depends on  DRIVER_STORAGE_MMC
@@ -82,24 +82,24 @@ config DRIVER_STORAGE_SDHCI_RK3399
 	default n
 
 config DRIVER_STORAGE_DWMMC_RK3288
-        select DRIVER_STORAGE_MMC_DW
-        bool "R3288 DWMMC driver"
-        default n
+	select DRIVER_STORAGE_MMC_DW
+	bool "R3288 DWMMC driver"
+	default n
 
 config DRIVER_STORAGE_DWMMC_RK3399
-        select DRIVER_STORAGE_MMC_DW
-        bool "R3399 DWMMC driver"
-        default n
+	select DRIVER_STORAGE_MMC_DW
+	bool "R3399 DWMMC driver"
+	default n
 
 config DRIVER_STORAGE_BAYHUB
-        depends on DRIVER_STORAGE_SDHCI_PCI
-        bool "Bayhub SD/eMMC driver"
-        default n
+	depends on DRIVER_STORAGE_SDHCI_PCI
+	bool "Bayhub SD/eMMC driver"
+	default n
 
 config DRIVER_STORAGE_GENESYSLOGIC
-        depends on DRIVER_STORAGE_SDHCI_PCI
-        bool "Genesys Logic SD/eMMC driver"
-        default n
+	depends on DRIVER_STORAGE_SDHCI_PCI
+	bool "Genesys Logic SD/eMMC driver"
+	default n
 
 config DRIVER_STORAGE_SPI_GPT
 	bool "Look up a kernel partition from a GPT on SPI"

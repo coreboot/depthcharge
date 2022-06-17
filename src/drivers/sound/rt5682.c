@@ -486,8 +486,8 @@ static const struct rt5682_pll_code *rt5682_pll_calc(uint32_t freq_in,
 		if (freq_in == pll_preset_table[i].pll_in &&
 		    freq_out == pll_preset_table[i].pll_out) {
 			return &pll_preset_table[i];
-                }
-        }
+		}
+	}
 	return NULL;
 }
 
