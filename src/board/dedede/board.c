@@ -33,7 +33,9 @@
 #include "drivers/sound/rt1015.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
+#include "drivers/tpm/cr50_switches.h"
 #include "drivers/tpm/spi.h"
+#include "vboot/util/flag.h"
 
 /*
  * Clock frequencies for the eMMC and SD ports are defined below. The minimum
@@ -62,6 +64,16 @@ static int cr50_irq_status(void)
 	return jasperlake_get_gpe(GPE0_DW0_04); /* GPP_B4 */
 }
 
+static int is_board_shotzo(void)
+{
+	static const char * const board_str = "Shotzo";
+	struct cb_mainboard *mainboard =
+		phys_to_virt(lib_sysinfo.cb_mainboard);
+
+	return strncmp(cb_mb_part_string(mainboard),
+			board_str, strlen(board_str)) == 0;
+}
+
 static void dedede_setup_tpm(void)
 {
 	if (CONFIG(DRIVER_TPM_SPI)) {
@@ -74,8 +86,13 @@ static void dedede_setup_tpm(void)
 			.ref_clk_mhz = 120,
 			.gspi_clk_mhz = 1,
 		};
-		tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0_params),
-					 cr50_irq_status)->ops);
+		SpiTpm *tpm = new_tpm_spi(new_intel_gspi(&gspi0_params),
+					  cr50_irq_status);
+		tpm_set_ops(&tpm->ops);
+		if (is_board_shotzo()) {
+			flag_replace(FLAG_PHYS_PRESENCE,
+				     &new_cr50_rec_switch(&tpm->ops)->ops);
+		}
 	}
 }
 
