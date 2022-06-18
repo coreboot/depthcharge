@@ -346,3 +346,9 @@ nissa:
   screen: [1920, 1080]
   sdcard:   False
   dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+rex:
+  # 3840x2160, boots recovery image on USB ports.
+  screen:   [3840, 2160]
+  sdcard:   False
+  dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
