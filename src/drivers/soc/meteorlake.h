@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include "drivers/soc/common/intel_gpe.h"
+#include "drivers/soc/intel_common.h"
 
 #define PCI_DEV_SATA	PCI_DEV(0, 0x17, 0)
 #define PCI_DEV_PCIE0	PCI_DEV(0, 0x1c, 0)
@@ -17,6 +18,9 @@
 #define PCI_DEV_PCIE8	PCI_DEV(0, 0x06, 0)
 #define PCI_DEV_PCIE9	PCI_DEV(0, 0x06, 1)
 #define PCI_DEV_PCIE10	PCI_DEV(0, 0x06, 2)
+
+extern const SocPcieRpGroup *soc_get_rp_group(pcidev_t dev, size_t *count);
+
 
 /* GPE */
 #define GPE0_STS_OFF		0x60
