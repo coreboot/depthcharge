@@ -82,6 +82,13 @@ static int board_backlight_update(DisplayOps *me, uint8_t enable)
 	return 0;
 }
 
+static int usb_initialized;
+
+static void usb_init_callback(struct UsbHostController *usb_host)
+{
+	usb_initialized = 1;
+}
+
 static int board_setup(void)
 {
 	CrosECTunnelI2c *cros_ec_i2c_tunnel;
@@ -132,6 +139,7 @@ static int board_setup(void)
 	 * Corsola uses USB2 port1 instead of USB2 port0.
 	 */
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11280000);
+	set_usb_init_callback(usb_host, usb_init_callback);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
 
 	/* Set display ops */
@@ -156,6 +164,9 @@ static int enable_usb_vbus(struct LateInitFunc *init)
 	 */
 	GpioOps *pdn = new_mtk_gpio_output(GPIO_XHCI_DONE);
 	gpio_set(pdn, 1);
+	/* After USB VBUS is enabled, delay 500ms for USB detection. */
+	if (usb_initialized)
+		mdelay(500);
 	return 0;
 }
 
