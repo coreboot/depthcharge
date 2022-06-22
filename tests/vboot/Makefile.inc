@@ -14,3 +14,4 @@ secdata_tpm-test-mocks += TlclWrite TlclRead TlclForceClear \
 
 stages-test-srcs += tests/vboot/stages-test.c
 stages-test-mocks += vb2ex_commit_data vb2api_fail
+stages-test-config += CONFIG_DRIVER_TPM_GOOGLE=1
