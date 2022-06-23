@@ -67,20 +67,19 @@ static uint32_t keyboard_get_key(void)
 		default: return 0;
 		}
 
-	// These two cases only work on developer images (empty stubs otherwise)
+	// These 3 cases only work on developer images (empty stubs otherwise)
 	case UI_KEY_CTRL('N'):
 		dc_dev_netboot();	// CTRL+N: netboot
-		__attribute__((fallthrough));
+		break;
 	case UI_KEY_CTRL('G'):
 		dc_dev_gdb_enter();	// CTRL+G: remote GDB mode
-		__attribute__((fallthrough));
+		break;
 	case UI_KEY_CTRL('F'):
 		dc_dev_fastboot();	// CTRL+F: fastboot
-		__attribute__((fallthrough));
-	// fall through for non-developer images as if these didn't exist
-	default:
-		return ch;
+		break;
 	}
+
+	return ch;
 }
 
 uint32_t ui_keyboard_read(uint32_t *flags_ptr)
