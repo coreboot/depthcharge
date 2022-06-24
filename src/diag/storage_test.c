@@ -6,9 +6,28 @@
 #include <libpayload.h>
 
 #include "diag/storage_test.h"
+#include "drivers/storage/blockdev.h"
+#include "drivers/timer/timer.h"
 
 #define HALF_BYTE_LOW(x) ((x) & 0xf)
 #define HALF_BYTE_HIGH(x) ((x) >> 4)
+
+/* Global variables. */
+static struct stopwatch test_log_sw;
+BlockDevTestOpsType test_stat;
+
+/* Get current test log delay based on the running test type. */
+static inline uint32_t get_test_log_delay(void)
+{
+	switch (test_stat) {
+	case BLOCKDEV_TEST_OPS_TYPE_SHORT:
+		return DIAG_STORAGE_TEST_SHORT_DELAY_MS;
+	case BLOCKDEV_TEST_OPS_TYPE_EXTENDED:
+		return DIAG_STORAGE_TEST_EXTENDED_DELAY_MS;
+	default:
+		return DIAG_STORAGE_TEST_DEFAULT_DELAY_MS;
+	}
+}
 
 static BlockDev *get_first_fixed_block_device(void)
 {
@@ -200,6 +219,16 @@ vb2_error_t diag_dump_storage_test_log(char *buf, const char *end)
 		printf("%s: No supported.\n", __func__);
 		return VB2_ERROR_EX_UNIMPLEMENTED;
 	}
+
+	/* No test is running. */
+	if (test_stat == BLOCKDEV_TEST_OPS_TYPE_STOP)
+		return VB2_SUCCESS;
+
+	/* Skip this call if the stopwatch has not expired yet. */
+	if (!stopwatch_expired(&test_log_sw))
+		return VB2_ERROR_EX_DIAG_TEST_RUNNING;
+	stopwatch_init_msecs_expire(&test_log_sw, get_test_log_delay());
+
 	StorageTestLog log = {0};
 
 	int res = dev->ops.get_test_log(&dev->ops, &log);
@@ -229,5 +258,10 @@ vb2_error_t diag_storage_test_control(enum BlockDevTestOpsType ops)
 	if (dev->ops.test_control(&dev->ops, ops))
 		return VB2_ERROR_EX;
 	get_test_remain_time_seconds(0, 1);
+
+	/* Reset the stopwatch for the next diag_dump_storage_test_log call. */
+	stopwatch_init_msecs_expire(&test_log_sw, 0);
+	test_stat = ops;
+
 	return VB2_SUCCESS;
 }
