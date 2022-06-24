@@ -5,6 +5,7 @@
 # without it.
 ifeq ($(COV),1)
 testobj := $(obj)/coverage
+covinitobj := $(obj)/coverage_init/$(BOARD)
 else
 testobj := $(obj)/tests
 endif
@@ -73,9 +74,34 @@ $(alltests): $$($$(@)-bin)
 # with code coverage. Absence of COV=1 will be corrected, but only for report
 # generation and cleaning.
 ifeq ($(COV),1)
-coverage-report:
-	lcov -o $(testobj)/tests.info -c -d $(testobj) --exclude '$(testsrc)/*' -b $(src)
-	genhtml -q -o $(coverage-reports-dir) -t "depthcharge unit tests" -s $(testobj)/tests.info
+TEST_DOTCONFIG := $(testobj)/.config
+
+$(TEST_DOTCONFIG):
+	mkdir -p $(dir $@)
+	+unset COV && $(MAKE) \
+		obj=$(covinitobj) \
+		EC_HEADERS=$(EC_HEADERS) \
+		LIBPAYLOAD_DIR=$(LIBPAYLOAD_DIR) \
+		DOTCONFIG=$(TEST_DOTCONFIG) \
+		BOARD=$(BOARD) \
+		defconfig
+
+coverage-report: $(TEST_DOTCONFIG) $(LIBPAYLOAD_DIR)/lib/libpayload.a
+	+$(MAKE) \
+		obj=$(covinitobj) \
+		EC_HEADERS=$(EC_HEADERS) \
+		LIBPAYLOAD_DIR=$(LIBPAYLOAD_DIR) \
+		DOTCONFIG=$(TEST_DOTCONFIG) \
+		SOURCE_DEBUG=1 \
+		COV=1 \
+		coverage-init
+	lcov -o $(testobj)/tests.info -c -d $(testobj) \
+		--exclude '$(testsrc)/*' --exclude '$(libpayloadobj)/*' \
+		--include '$(src)/*' -b $(src)
+	lcov -a $(covinitobj)/init.info -a $(testobj)/tests.info \
+		-o $(testobj)/total.info
+	genhtml -q -o $(coverage-reports-dir) -t "depthcharge unit tests" \
+		-s $(testobj)/total.info
 
 clean-coverage-report:
 	rm -Rf $(coverage-reports-dir)

@@ -118,6 +118,7 @@ endif
 CC:=$(firstword $(CC_$(toolchain)))
 XCC := CC=$(CC) $(abspath $(LIBPAYLOAD_DIR))/bin/lpgcc
 AS = $(LIBPAYLOAD_DIR)/bin/lpas
+GCOV := $(GCOV_$(toolchain))
 OBJCOPY ?= $(OBJCOPY_$(toolchain))
 STRIP ?= $(STRIP_$(toolchain))
 
@@ -148,7 +149,18 @@ else
 CFLAGS += -Os
 endif
 
+ifeq ($(COV),1)
+CFLAGS += --coverage
+LINK_FLAGS += --coverage
+
+# Initial zero coverage data
+coverage-init: depthcharge
+	lcov -o $(obj)/init.info -c -d $(obj) \
+		--exclude '$(src)/tests/*' --include '$(src)/src/*' \
+		-b $(src) --gcov-tool $(GCOV) -i
 endif
+
+endif # ifeq ($(UNIT_TEST)$(SCREENSHOT),)
 
 all:
 	@echo  'You must specify one of the following targets to build:'
