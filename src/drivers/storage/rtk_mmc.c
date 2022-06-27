@@ -1045,10 +1045,12 @@ static int sd_pull_ctl_disable(RtkMmcHost *host)
 	int err, timeout;
 
 	timeout = 100;
-	rtsx_add_cmd(host, WRITE_REG_CMD, CARD_PULL_CTL1, 0xFF, 0x66);
+	if (CHK_PCI_PID(host, RTK_MMC_PID_525A)) {
+		rtsx_add_cmd(host, WRITE_REG_CMD, CARD_PULL_CTL1, 0xFF, 0x66);
+		rtsx_add_cmd(host, WRITE_REG_CMD, CARD_PULL_CTL4, 0xFF, 0x55);
+	}
 	rtsx_add_cmd(host, WRITE_REG_CMD, CARD_PULL_CTL2, 0xFF, 0x55);
 	rtsx_add_cmd(host, WRITE_REG_CMD, CARD_PULL_CTL3, 0xFF, 0xD5);
-	rtsx_add_cmd(host, WRITE_REG_CMD, CARD_PULL_CTL4, 0xFF, 0x55);
 
 	err = rtsx_send_cmd(host, timeout);
 	if (err != 0)
@@ -1062,10 +1064,12 @@ static int sd_pull_ctl_enable(RtkMmcHost *host)
 	int err, timeout;
 
 	timeout = 100;
-	rtsx_add_cmd(host, WRITE_REG_CMD, CARD_PULL_CTL1, 0xFF, 0x66);
+	if (CHK_PCI_PID(host, RTK_MMC_PID_525A)) {
+		rtsx_add_cmd(host, WRITE_REG_CMD, CARD_PULL_CTL1, 0xFF, 0x66);
+		rtsx_add_cmd(host, WRITE_REG_CMD, CARD_PULL_CTL4, 0xFF, 0xAA);
+	}
 	rtsx_add_cmd(host, WRITE_REG_CMD, CARD_PULL_CTL2, 0xFF, 0xAA);
 	rtsx_add_cmd(host, WRITE_REG_CMD, CARD_PULL_CTL3, 0xFF, 0xE9);
-	rtsx_add_cmd(host, WRITE_REG_CMD, CARD_PULL_CTL4, 0xFF, 0xAA);
 
 	err = rtsx_send_cmd(host, timeout);
 	if (err != 0)
