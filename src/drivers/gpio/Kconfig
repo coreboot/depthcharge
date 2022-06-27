@@ -71,6 +71,10 @@ config DRIVER_GPIO_LYNXPOINT_LP
 	default n
 	depends on ARCH_X86
 
+config DRIVER_GPIO_METEORLAKE
+        bool "Intel Meteorlake GPIO driver"
+        default n
+
 config DRIVER_GPIO_MT8173
 	bool "MediaTek MT8173 GPIO driver"
 	default n

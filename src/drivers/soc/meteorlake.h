@@ -19,6 +19,14 @@
 #define PCI_DEV_PCIE9	PCI_DEV(0, 0x06, 1)
 #define PCI_DEV_PCIE10	PCI_DEV(0, 0x06, 2)
 
+/* PCR Interface */
+#define PCH_PCR_BASE_ADDRESS	0xe0000000
+#define PCH_PCR_PID_GPIOCOM0	0xd1
+#define PCH_PCR_PID_GPIOCOM1	0xd2
+#define PCH_PCR_PID_GPIOCOM3	0xd3
+#define PCH_PCR_PID_GPIOCOM4	0xd4
+#define PCH_PCR_PID_GPIOCOM5	0xd5
+
 extern const SocPcieRpGroup *soc_get_rp_group(pcidev_t dev, size_t *count);
 
 

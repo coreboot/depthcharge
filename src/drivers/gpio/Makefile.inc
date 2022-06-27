@@ -24,6 +24,7 @@ depthcharge-$(CONFIG_DRIVER_GPIO_EXYNOS5420) += exynos5420.c
 depthcharge-$(CONFIG_DRIVER_GPIO_IPQ_806X) += ipq806x.c
 depthcharge-$(CONFIG_DRIVER_GPIO_IPQ40XX) += ipq40xx.c
 depthcharge-$(CONFIG_DRIVER_GPIO_LYNXPOINT_LP) += lynxpoint_lp.c
+depthcharge-$(CONFIG_DRIVER_GPIO_METEORLAKE) += meteorlake.c
 depthcharge-$(CONFIG_DRIVER_GPIO_MT8173) += mtk_gpio.c
 depthcharge-$(CONFIG_DRIVER_GPIO_MT8183) += mtk_gpio.c
 depthcharge-$(CONFIG_DRIVER_GPIO_MT8186) += mtk_gpio.c
