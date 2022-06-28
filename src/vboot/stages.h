@@ -21,11 +21,13 @@
 #include <stdint.h>
 #include <vboot_api.h>
 
-int vboot_select_and_load_kernel(void);
 int vboot_check_wipe_memory(void);
 int vboot_check_enable_usb(void);
 int vboot_in_recovery(void);
 int vboot_in_developer(void);
+int vboot_select_and_boot_kernel(void);
+vb2_error_t vboot_select_and_load_kernel(struct vb2_context *ctx,
+					 VbSelectAndLoadKernelParams *kparams);
 void vboot_boot_kernel(VbSelectAndLoadKernelParams *kparams);
 
 #endif /* __VBOOT_STAGES_H__ */

@@ -67,7 +67,7 @@ int main(void)
 	timestamp_add_now(TS_VB_SELECT_AND_LOAD_KERNEL);
 
 	// Select a kernel and boot it.
-	if (vboot_select_and_load_kernel())
+	if (vboot_select_and_boot_kernel())
 		halt();
 
 	// We should never get here.

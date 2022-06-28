@@ -546,7 +546,8 @@ static vb2_error_t boot_minios_impl(struct ui_context *ui, int non_active_only)
 		return VB2_REQUEST_UI_CONTINUE;
 	}
 
-	vb2_error_t rv = VbTryLoadMiniOsKernel(ui->ctx, !!non_active_only);
+	vb2_error_t rv = VbTryLoadMiniOsKernel(ui->ctx, !!non_active_only,
+					       ui->kparams);
 	if (rv) {
 		UI_ERROR("ERROR: Failed to boot from MiniOS: %#x\n", rv);
 		return set_ui_error(ui, UI_ERROR_MINIOS_BOOT_FAILED);
@@ -1307,7 +1308,7 @@ vb2_error_t ui_developer_mode_boot_internal_action(struct ui_context *ui)
 		return VB2_SUCCESS;
 	}
 
-	rv = VbTryLoadKernel(ui->ctx, VB_DISK_FLAG_FIXED);
+	rv = VbTryLoadKernel(ui->ctx, VB_DISK_FLAG_FIXED, ui->kparams);
 	if (rv == VB2_SUCCESS)
 		return VB2_REQUEST_UI_EXIT;
 
@@ -1328,7 +1329,7 @@ vb2_error_t ui_developer_mode_boot_external_action(struct ui_context *ui)
 		return set_ui_error(ui, UI_ERROR_EXTERNAL_BOOT_DISABLED);
 	}
 
-	rv = VbTryLoadKernel(ui->ctx, VB_DISK_FLAG_REMOVABLE);
+	rv = VbTryLoadKernel(ui->ctx, VB_DISK_FLAG_REMOVABLE, ui->kparams);
 	if (rv == VB2_SUCCESS) {
 		return VB2_REQUEST_UI_EXIT;
 	} else if (rv == VB2_ERROR_LK_NO_DISK_FOUND) {
@@ -1582,7 +1583,7 @@ static vb2_error_t developer_boot_external_init(struct ui_context *ui)
 
 	ui->state->selected_item = DEVELOPER_BOOT_EXTERNAL_ITEM_BACK;
 	VB2_TRY(developer_boot_external_check(ui));
-	rv = VbTryLoadKernel(ui->ctx, VB_DISK_FLAG_REMOVABLE);
+	rv = VbTryLoadKernel(ui->ctx, VB_DISK_FLAG_REMOVABLE, ui->kparams);
 	/* If the status of the external disk doesn't match, skip the screen. */
 	if (rv != VB2_ERROR_LK_NO_DISK_FOUND)
 		return ui_screen_back(ui);
@@ -1626,7 +1627,7 @@ static vb2_error_t developer_invalid_disk_init(struct ui_context *ui)
 
 	ui->state->selected_item = DEVELOPER_INVALID_DISK_ITEM_BACK;
 	VB2_TRY(developer_boot_external_check(ui));
-	rv = VbTryLoadKernel(ui->ctx, VB_DISK_FLAG_REMOVABLE);
+	rv = VbTryLoadKernel(ui->ctx, VB_DISK_FLAG_REMOVABLE, ui->kparams);
 	/* If the status of the external disk doesn't match, skip the screen. */
 	if (rv == VB2_SUCCESS || rv == VB2_ERROR_LK_NO_DISK_FOUND)
 		return ui_screen_back(ui);

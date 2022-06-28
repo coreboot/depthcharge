@@ -17,6 +17,7 @@ depthcharge-y += stages.c
 depthcharge-y += boot_policy.c
 depthcharge-y += firmware_id.c
 depthcharge-y += nvdata.c
+depthcharge-y += ui.c
 
 ifeq ($(CONFIG_MOCK_TPM),y)
 depthcharge-y += mocked_secdata_tpm.c

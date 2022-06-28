@@ -33,6 +33,7 @@
 
 #include <libpayload.h>
 #include <vb2_api.h>
+#include <vboot_api.h>
 
 #define _UI_PRINT(fmt, args...) printf("%s: " fmt, __func__, ##args)
 #define UI_INFO(...) _UI_PRINT(__VA_ARGS__)
@@ -548,6 +549,9 @@ struct ui_context {
 	/* Force calling ui_display for refreshing the screen. This flag
 	   will be reset after done. */
 	int force_display;
+
+	/* For selecting and loading the kernel. */
+	VbSelectAndLoadKernelParams *kparams;
 };
 
 struct ui_screen_info {
@@ -1175,9 +1179,13 @@ vb2_error_t ui_init_context(struct ui_context *ui, struct vb2_context *ctx,
  * @param ctx			Vboot2 context.
  * @param root_screen_id	Root screen id.
  * @param global_action		The entry of action function.
+ * @param kparams		Params specific to loading the kernel.
+ *
+ * @return VB2_SUCCESS, or error code on error.
  */
 vb2_error_t ui_loop(struct vb2_context *ctx, enum ui_screen root_screen_id,
-		    vb2_error_t (*global_action)(struct ui_context *ui));
+		    vb2_error_t (*global_action)(struct ui_context *ui),
+		    VbSelectAndLoadKernelParams *kparams);
 
 /******************************************************************************/
 /* menu.c */

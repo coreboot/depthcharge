@@ -6,6 +6,7 @@
 #include <tests/vboot/ui/common.h>
 #include <mocks/callbacks.h>
 #include <mocks/util/commonparams.h>
+#include <vboot/stages.h>
 #include <vboot/util/commonparams.h>
 
 /* Mock functions */
@@ -16,6 +17,7 @@ int ui_is_lid_open(void)
 
 /* Tests */
 struct ui_context test_ui_ctx;
+VbSelectAndLoadKernelParams test_kparams;
 
 static int setup_context(void **state)
 {
@@ -25,6 +27,8 @@ static int setup_context(void **state)
 	test_ui_ctx.ctx = vboot_get_context();
 	set_boot_mode(test_ui_ctx.ctx, VB2_BOOT_MODE_DIAGNOSTICS);
 
+	memset(&test_kparams, 0, sizeof(test_kparams));
+	test_ui_ctx.kparams = &test_kparams;
 	*state = &test_ui_ctx;
 
 	return 0;
@@ -42,7 +46,8 @@ static void test_diagnostics_screen_disabled_and_hidden(void **state)
 	will_return_always(diag_storage_test_supported, 1);
 	will_return_maybe(memory_test_init, DIAG_TEST_SUCCESS);
 
-	assert_int_equal(vb2ex_diagnostic_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
+			 VB2_REQUEST_SHUTDOWN);
 }
 
 static void test_diagnostics_screen(void **state)
@@ -109,7 +114,8 @@ static void test_diagnostics_screen(void **state)
 	will_return_always(memory_test_init, DIAG_TEST_SUCCESS);
 	will_return_always(memory_test_run, DIAG_TEST_SUCCESS);
 
-	assert_int_equal(vb2ex_diagnostic_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
+			 VB2_REQUEST_SHUTDOWN);
 }
 
 static void test_diagnostics_screen_no_storage_self_test(void **state)
@@ -123,7 +129,8 @@ static void test_diagnostics_screen_no_storage_self_test(void **state)
 	EXPECT_UI_DISPLAY(UI_SCREEN_DIAGNOSTICS, MOCK_IGNORE, MOCK_IGNORE,
 			  0xc, 0x0); /* 0xc = 0b1100 */
 
-	assert_int_equal(vb2ex_diagnostic_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
+			 VB2_REQUEST_SHUTDOWN);
 }
 
 #define UI_TEST(test_function_name) \

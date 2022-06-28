@@ -1,9 +1,17 @@
 # SPDX-License-Identifier: GPL-2.0
 
-subdirs-y := ui callbacks
+subdirs-y := ui
 
 tests-y += secdata_tpm-test
 tests-y += stages-test
+tests-y += ui_broken-test
+tests-y += ui_broken-detachable-test
+tests-y += ui_manual-test
+tests-y += ui_manual-detachable-test
+tests-y += ui_manual-ppkeyboard-test
+tests-y += ui_developer-test
+tests-y += ui_developer-detachable-test
+tests-y += ui_diagnostic-test
 
 secdata_tpm-test-srcs += tests/vboot/secdata_tpm-test.c
 secdata_tpm-test-srcs += tests/mocks/tlcl_rw.c
@@ -15,3 +23,79 @@ secdata_tpm-test-mocks += TlclWrite TlclRead TlclForceClear \
 stages-test-srcs += tests/vboot/stages-test.c
 stages-test-mocks += vb2ex_commit_data vb2api_fail
 stages-test-config += CONFIG_DRIVER_TPM_GOOGLE=1
+
+ui-test-common-srcs += tests/mocks/cbmem_console.c
+ui-test-common-srcs += tests/mocks/diag/health_info.c
+ui-test-common-srcs += tests/mocks/diag/memory.c
+ui-test-common-srcs += tests/mocks/diag/storage_test.c
+ui-test-common-srcs += tests/mocks/log.c
+ui-test-common-srcs += tests/mocks/ui.c
+ui-test-common-srcs += tests/mocks/ui_callbacks.c
+ui-test-common-srcs += tests/mocks/vboot/ui/beep.c
+ui-test-common-srcs += tests/mocks/vboot/ui/input.c
+ui-test-common-srcs += tests/mocks/ui_display.c
+ui-test-common-srcs += tests/mocks/vb2api.c
+ui-test-common-srcs += tests/mocks/vboot/ui/archive.c
+ui-test-common-srcs += tests/mocks/vboot/ui/bitmap.c
+ui-test-common-srcs += tests/mocks/vboot_api.c
+ui-test-common-srcs += tests/stubs/boot/payload.c
+ui-test-common-srcs += tests/stubs/drivers/storage/blockdev.c
+ui-test-common-srcs += tests/stubs/vboot/firmware_id.c
+ui-test-common-srcs += tests/stubs/vboot/ui/draw.c
+ui-test-common-srcs += tests/stubs/vboot/ui/layout.c
+ui-test-common-srcs += tests/stubs/vboot/ui/log.c
+ui-test-common-srcs += src/vboot/ui/display.c
+ui-test-common-srcs += src/vboot/ui/loop.c
+ui-test-common-srcs += src/vboot/ui/menu.c
+ui-test-common-srcs += src/vboot/ui/navigation.c
+ui-test-common-srcs += src/vboot/ui/screens.c
+
+ui-test-common-mocks += cbmem_console_snapshot
+ui-test-common-mocks += ui_display
+ui-test-common-mocks += vb2api_gbb_get_flags
+ui-test-common-mocks += vb2api_get_locale_id
+ui-test-common-mocks += vb2api_set_locale_id
+ui-test-common-mocks += vb2api_request_diagnostics
+ui-test-common-mocks += vb2api_diagnostic_ui_enabled
+ui-test-common-mocks += vb2api_enable_developer_mode
+ui-test-common-mocks += vb2api_disable_developer_mode
+ui-test-common-mocks += vb2api_phone_recovery_ui_enabled
+ui-test-common-mocks += vb2api_use_short_dev_screen_delay
+ui-test-common-mocks += vb2api_get_dev_default_boot_target
+
+# ui_broken-test
+$(call copy-test,ui-test-common,ui_broken-test)
+ui_broken-test-srcs += tests/vboot/ui_broken-test.c
+ui_broken-test-srcs += src/vboot/ui.c
+
+$(call copy-test,ui_broken-test,ui_broken-detachable-test)
+ui_broken-detachable-test-config += CONFIG_DETACHABLE=1
+
+# ui_manual-test
+$(call copy-test,ui-test-common,ui_manual-test)
+ui_manual-test-srcs += tests/vboot/ui_manual-test.c
+ui_manual-test-srcs := $(filter-out tests/mocks/vboot/ui/archive.c, \
+	$(ui_manual-test-srcs))
+
+$(call copy-test,ui_manual-test,ui_manual-detachable-test)
+ui_manual-detachable-test-config += CONFIG_DETACHABLE=1
+
+$(call copy-test,ui_manual-test,ui_manual-ppkeyboard-test)
+ui_manual-ppkeyboard-test-config += CONFIG_PHYSICAL_PRESENCE_KEYBOARD=1
+
+# ui_developer-test
+$(call copy-test,ui-test-common,ui_developer-test)
+ui_developer-test-srcs := $(filter-out tests/stubs/boot/payload.c, \
+	$(ui_developer-test-srcs))
+ui_developer-test-srcs += tests/mocks/boot/payload.c
+ui_developer-test-srcs += tests/vboot/ui_developer-test.c
+ui_developer-test-srcs += src/base/list.c
+ui_developer-test-srcs += src/vboot/ui.c
+
+$(call copy-test,ui_developer-test,ui_developer-detachable-test)
+ui_developer-detachable-test-config += CONFIG_DETACHABLE=1
+
+# ui_diagnostic-test
+$(call copy-test,ui-test-common,ui_diagnostic-test)
+ui_diagnostic-test-srcs += tests/vboot/ui_diagnostic-test.c
+ui_diagnostic-test-srcs += src/vboot/ui.c

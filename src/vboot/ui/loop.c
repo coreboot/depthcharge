@@ -139,7 +139,8 @@ vb2_error_t ui_init_context(struct ui_context *ui, struct vb2_context *ctx,
 
 static vb2_error_t ui_loop_impl(
 	struct vb2_context *ctx, enum ui_screen root_screen_id,
-	vb2_error_t (*global_action)(struct ui_context *ui))
+	vb2_error_t (*global_action)(struct ui_context *ui),
+	VbSelectAndLoadKernelParams *kparams)
 {
 	struct ui_context ui;
 	struct ui_state prev_state;
@@ -152,6 +153,7 @@ static vb2_error_t ui_loop_impl(
 	if (ui_init_context(&ui, ctx, root_screen_id))
 		die("Cannot init UI context for root screen %#x\n",
 		    root_screen_id);
+	ui.kparams = kparams;
 
 	memset(&prev_state, 0, sizeof(prev_state));
 	need_redraw = 1;
@@ -241,9 +243,11 @@ static vb2_error_t ui_loop_impl(
 }
 
 vb2_error_t ui_loop(struct vb2_context *ctx, enum ui_screen root_screen_id,
-		    vb2_error_t (*global_action)(struct ui_context *ui))
+		    vb2_error_t (*global_action)(struct ui_context *ui),
+		    VbSelectAndLoadKernelParams *kparams)
 {
-	vb2_error_t rv = ui_loop_impl(ctx, root_screen_id, global_action);
+	vb2_error_t rv = ui_loop_impl(ctx, root_screen_id, global_action,
+				      kparams);
 	if (rv == VB2_REQUEST_UI_EXIT)
 		return VB2_SUCCESS;
 	return rv;

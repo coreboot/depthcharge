@@ -131,7 +131,7 @@ static CleanupFunc commit_and_lock_cleanup = {
 	NULL,
 };
 
-int vboot_select_and_load_kernel(void)
+int vboot_select_and_boot_kernel(void)
 {
 	struct vb2_context *ctx = vboot_get_context();
 
@@ -164,7 +164,7 @@ int vboot_select_and_load_kernel(void)
 	/*
 	 * Read secdata_fwmp spaces. No need to read secdata firmware or kernel
 	 * since it was already read during firmware verification. We don't
-	 * check the return value here because VbSelectAndLoadKernel will catch
+	 * check the return value here because vb2api_kernel_phase1 will catch
 	 * invalid secdata and tell us what to do (=reboot).
 	 */
 	secdata_fwmp_read(ctx);
@@ -174,9 +174,21 @@ int vboot_select_and_load_kernel(void)
 	list_insert_after(&commit_and_lock_cleanup.list_node,
 			  &cleanup_funcs);
 
-	printf("Calling VbSelectAndLoadKernel().\n");
-	vb2_error_t res = VbSelectAndLoadKernel(ctx, &kparams);
+	vb2_error_t res = vb2api_kernel_phase1(ctx);
+	if (res != VB2_SUCCESS)
+		goto fail;
 
+	res = vb2api_kernel_phase2(ctx);
+	if (res != VB2_SUCCESS)
+		goto fail;
+
+	res = vboot_select_and_load_kernel(ctx, &kparams);
+	if (res != VB2_SUCCESS)
+		goto fail;
+
+	res = vb2api_kernel_finalize(ctx);
+
+fail:
 	if (res == VB2_REQUEST_REBOOT_EC_TO_RO) {
 		printf("EC Reboot requested. Doing cold reboot.\n");
 		if (ec && ec->reboot_to_ro)
@@ -195,8 +207,8 @@ int vboot_select_and_load_kernel(void)
 		cold_reboot();
 	}
 	if (res != VB2_SUCCESS) {
-		printf("VbSelectAndLoadKernel returned %#x, "
-		       "Doing a cold reboot.\n", res);
+		printf("%s: Unknown error %#x; doing cold reboot", __func__,
+		       res);
 		cold_reboot();
 	}
 

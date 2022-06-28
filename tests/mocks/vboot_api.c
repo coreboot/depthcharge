@@ -4,12 +4,14 @@
 #include <tests/vboot/common.h>
 #include <vboot_api.h>
 
-vb2_error_t VbTryLoadKernel(struct vb2_context *ctx, uint32_t disk_flags)
+vb2_error_t VbTryLoadKernel(struct vb2_context *ctx, uint32_t disk_flags,
+			    VbSelectAndLoadKernelParams *kparams)
 {
 	/*
 	 * Give removable disks priority. This shouldn't matter for now because
 	 * only one disk flag is passed for each call.
 	 */
+	assert_non_null(kparams);
 	if (disk_flags & VB_DISK_FLAG_REMOVABLE)
 		return _try_load_external_disk();
 	else if (disk_flags & VB_DISK_FLAG_FIXED)
@@ -21,8 +23,10 @@ vb2_error_t VbTryLoadKernel(struct vb2_context *ctx, uint32_t disk_flags)
 }
 
 vb2_error_t VbTryLoadMiniOsKernel(struct vb2_context *ctx,
-				  uint32_t minios_flags)
+				  uint32_t minios_flags,
+				  VbSelectAndLoadKernelParams *kparams)
 {
+	assert_non_null(kparams);
 	check_expected(minios_flags);
 	return mock_type(vb2_error_t);
 }

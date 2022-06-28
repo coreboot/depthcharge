@@ -9,7 +9,8 @@
 #include <mocks/vb2api.h>
 #include <vboot_api.h>
 #include <vb2_api.h>
-#include <vboot/callbacks/ui.c>
+#include <vboot/stages.h>
+#include <vboot/ui.c>
 #include <vboot/ui.h>
 #include <vboot/util/commonparams.h>
 
@@ -36,6 +37,7 @@ int ui_is_lid_open(void)
 
 /* Tests */
 struct ui_context test_ui_ctx;
+VbSelectAndLoadKernelParams test_kparams;
 
 static int setup_context(void **state)
 {
@@ -43,6 +45,8 @@ static int setup_context(void **state)
 	reset_mock_workbuf = 1;
 	test_ui_ctx.ctx = vboot_get_context();
 	set_boot_mode(test_ui_ctx.ctx, VB2_BOOT_MODE_MANUAL_RECOVERY);
+	memset(&test_kparams, 0, sizeof(test_kparams));
+	test_ui_ctx.kparams = &test_kparams;
 	*state = &test_ui_ctx;
 
 	mock_time_ms = 31ULL * MSECS_PER_SEC;
@@ -107,7 +111,7 @@ static void test_manual_ui_no_disk_found_invalid_kernel(void **state)
 	WILL_LOAD_EXTERNAL(VB2_SUCCESS);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 
-	ASSERT_VB2_SUCCESS(vb2ex_manual_recovery_ui(ui->ctx));
+	ASSERT_VB2_SUCCESS(vboot_select_and_load_kernel(ui->ctx, ui->kparams));
 }
 
 
@@ -124,7 +128,7 @@ static void test_manual_ui_invalid_kernel_no_disk_found(void **state)
 	WILL_LOAD_EXTERNAL(VB2_SUCCESS);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 
-	ASSERT_VB2_SUCCESS(vb2ex_manual_recovery_ui(ui->ctx));
+	ASSERT_VB2_SUCCESS(vboot_select_and_load_kernel(ui->ctx, ui->kparams));
 }
 
 static void test_manual_ui_internet_recovery_shortcut(void **state)
@@ -141,7 +145,7 @@ static void test_manual_ui_internet_recovery_shortcut(void **state)
 	will_return(VbTryLoadMiniOsKernel, VB2_SUCCESS);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 
-	ASSERT_VB2_SUCCESS(vb2ex_manual_recovery_ui(ui->ctx));
+	ASSERT_VB2_SUCCESS(vboot_select_and_load_kernel(ui->ctx, ui->kparams));
 }
 
 static void test_manual_ui_internet_recovery_menu(void **state)
@@ -164,7 +168,7 @@ static void test_manual_ui_internet_recovery_menu(void **state)
 	EXPECT_BEEP(250, 400);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 
@@ -192,7 +196,7 @@ static void test_manual_ui_internet_recovery_menu_old(void **state)
 	will_return(VbTryLoadMiniOsKernel, VB2_SUCCESS);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 
-	ASSERT_VB2_SUCCESS(vb2ex_manual_recovery_ui(ui->ctx));
+	ASSERT_VB2_SUCCESS(vboot_select_and_load_kernel(ui->ctx, ui->kparams));
 }
 
 static void test_manual_ui_timeout(void **state)
@@ -205,7 +209,7 @@ static void test_manual_ui_timeout(void **state)
 	EXPECT_UI_DISPLAY_ANY();
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 
@@ -222,7 +226,7 @@ static void test_manual_ui_power_button_shutdown(void **state)
 	EXPECT_UI_DISPLAY_ANY();
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 
@@ -236,7 +240,7 @@ static void test_manual_ui_boot_with_valid_image(void **state)
 	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_UI_DISPLAY_ANY();
 
-	ASSERT_VB2_SUCCESS(vb2ex_manual_recovery_ui(ui->ctx));
+	ASSERT_VB2_SUCCESS(vboot_select_and_load_kernel(ui->ctx, ui->kparams));
 }
 
 static void test_manual_ui_boot_with_valid_image_later(void **state)
@@ -250,7 +254,7 @@ static void test_manual_ui_boot_with_valid_image_later(void **state)
 	WILL_LOAD_EXTERNAL_ALWAYS(VB2_SUCCESS);
 	EXPECT_UI_DISPLAY_ANY();
 
-	ASSERT_VB2_SUCCESS(vb2ex_manual_recovery_ui(ui->ctx));
+	ASSERT_VB2_SUCCESS(vboot_select_and_load_kernel(ui->ctx, ui->kparams));
 }
 
 static void test_manual_ui_boot_invalid_remove_valid(void **state)
@@ -267,7 +271,7 @@ static void test_manual_ui_boot_invalid_remove_valid(void **state)
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_INVALID);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT);
 
-	ASSERT_VB2_SUCCESS(vb2ex_manual_recovery_ui(ui->ctx));
+	ASSERT_VB2_SUCCESS(vboot_select_and_load_kernel(ui->ctx, ui->kparams));
 }
 
 static void test_manual_ui_keyboard_to_dev_and_cancel(void **state)
@@ -289,7 +293,7 @@ static void test_manual_ui_keyboard_to_dev_and_cancel(void **state)
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT);
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 
@@ -311,7 +315,7 @@ static void test_manual_ui_keyboard_to_dev_and_cancel_ppkeyboard(void **state)
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT);
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 
@@ -332,7 +336,7 @@ static void test_manual_ui_cancel_to_dev(void **state)
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 
@@ -354,7 +358,7 @@ static void test_manual_ui_cancel_to_dev_ppkeyboard(void **state)
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 
@@ -380,7 +384,7 @@ static void test_manual_ui_confirm_to_dev(void **state)
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_REBOOT_EC_TO_RO);
 }
 
@@ -403,7 +407,7 @@ static void test_manual_ui_confirm_to_dev_ppkeyboard(void **state)
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_REBOOT_EC_TO_RO);
 }
 
@@ -425,7 +429,7 @@ static void test_manual_ui_confirm_by_untrusted_fails_ppkeyboard(void **state)
 	EXPECT_BEEP(250, 400, mock_time_ms + 3 * UI_KEY_DELAY_MS);
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 
@@ -447,7 +451,7 @@ static void test_manual_ui_cannot_enable_dev_enabled(void **state)
 	EXPECT_BEEP(250, 400, mock_time_ms + 2 * UI_KEY_DELAY_MS);
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 
@@ -471,7 +475,7 @@ static void test_manual_ui_cannot_enable_dev_enabled_ppkeyboard(void **state)
 	EXPECT_BEEP(250, 400, mock_time_ms + 2 * UI_KEY_DELAY_MS);
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 
@@ -492,7 +496,7 @@ static void test_manual_ui_pp_button_stuck(void **state)
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT);
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 
@@ -519,7 +523,7 @@ static void test_manual_ui_pp_button_stuck_press(void **state)
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_TO_DEV);
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_REBOOT_EC_TO_RO);
 }
 
@@ -557,7 +561,7 @@ static void test_manual_ui_pp_button_cancel_enter_again(void **state)
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_TO_DEV);
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_REBOOT_EC_TO_RO);
 }
 
@@ -578,7 +582,8 @@ static void test_manual_ui_enter_diagnostics(void **state)
 	expect_function_call(vb2api_request_diagnostics);
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx), VB2_REQUEST_REBOOT);
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
+			 VB2_REQUEST_REBOOT);
 }
 
 static void test_manual_ui_locale_not_found(void **state)
@@ -596,7 +601,7 @@ static void test_manual_ui_locale_not_found(void **state)
 
 	EXPECT_UI_DISPLAY_ANY();
 
-	ASSERT_VB2_SUCCESS(vb2ex_manual_recovery_ui(ui->ctx));
+	ASSERT_VB2_SUCCESS(vboot_select_and_load_kernel(ui->ctx, ui->kparams));
 }
 
 static void test_recovery_select_screen_disabled_and_hidden_mask(void **state)
@@ -610,7 +615,7 @@ static void test_recovery_select_screen_disabled_and_hidden_mask(void **state)
 			  0x0, 0x0);
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 
@@ -664,7 +669,7 @@ static void test_recovery_select_screen(void **state)
 	will_return_maybe(ui_keyboard_read, 0);
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 
@@ -692,7 +697,7 @@ static void test_advanced_options_screen_disabled_and_hidden_mask(void **state)
 	will_return_maybe(ui_keyboard_read, 0);
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 
@@ -762,7 +767,7 @@ static void test_advanced_options_screen(void **state)
 	will_return_maybe(ui_is_physical_presence_pressed, 0);
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 
@@ -786,7 +791,7 @@ static void test_language_ui_change_language(void **state)
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, 24);
 	mock_locale_id = 23;
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 
 	assert_int_equal(mock_locale_id, 24);
@@ -810,7 +815,7 @@ static void test_language_ui_locale_count_0(void **state)
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, 0);
 	mock_locale_id = 23;
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 
 	assert_int_equal(mock_locale_id, 0);
@@ -832,7 +837,7 @@ static void test_debug_info(void **state)
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO);
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 
@@ -853,7 +858,7 @@ static void test_debug_info_enter_failed(void **state)
 	EXPECT_BEEP(250, 400, mock_time_ms + 2 * UI_KEY_DELAY_MS);
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 
@@ -876,7 +881,7 @@ static void test_debug_info_one_page(void **state)
 	WILL_HAVE_NO_EXTERNAL();
 	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 
@@ -914,7 +919,7 @@ static void test_debug_info_three_pages(void **state)
 	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 
@@ -942,7 +947,7 @@ static void test_firmware_log(void **state)
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 
@@ -973,7 +978,7 @@ static void test_firmware_log_again_reacquire_new_one(void **state)
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 
@@ -1011,7 +1016,7 @@ static void test_firmware_log_back_not_reacquire_new_one(void **state)
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_HAVE_NO_EXTERNAL();
 
-	assert_int_equal(vb2ex_manual_recovery_ui(ui->ctx),
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 

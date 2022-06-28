@@ -15,16 +15,11 @@ static vb2_error_t ui_broken_screen_action(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
-vb2_error_t vb2ex_broken_screen_ui(struct vb2_context *ctx)
-{
-	return ui_loop(ctx, UI_SCREEN_RECOVERY_BROKEN,
-		       ui_broken_screen_action);
-}
-
 static vb2_error_t ui_manual_recovery_action(struct ui_context *ui)
 {
 	/* See if we have a recovery kernel available yet. */
-	vb2_error_t rv = VbTryLoadKernel(ui->ctx, VB_DISK_FLAG_REMOVABLE);
+	vb2_error_t rv = VbTryLoadKernel(ui->ctx, VB_DISK_FLAG_REMOVABLE,
+					 ui->kparams);
 	if (rv == VB2_SUCCESS)
 		return VB2_REQUEST_UI_EXIT;
 
@@ -53,12 +48,6 @@ static vb2_error_t ui_manual_recovery_action(struct ui_context *ui)
 		return ui_screen_change(ui, UI_SCREEN_DEBUG_INFO);
 
 	return VB2_SUCCESS;
-}
-
-vb2_error_t vb2ex_manual_recovery_ui(struct vb2_context *ctx)
-{
-	return ui_loop(ctx, UI_SCREEN_RECOVERY_SELECT,
-		       ui_manual_recovery_action);
 }
 
 static vb2_error_t developer_action(struct ui_context *ui)
@@ -97,17 +86,51 @@ static vb2_error_t developer_action(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
-vb2_error_t vb2ex_developer_ui(struct vb2_context *ctx)
+vb2_error_t vboot_select_and_load_kernel(struct vb2_context *ctx,
+					 VbSelectAndLoadKernelParams *kparams)
 {
-	enum ui_screen root_screen_id = UI_SCREEN_DEVELOPER_MODE;
-	if (!(ctx->flags & VB2_CONTEXT_DEV_BOOT_ALLOWED)) {
-		UI_WARN("WARNING: Dev boot not allowed; forcing to-norm\n");
-		root_screen_id = UI_SCREEN_DEVELOPER_TO_NORM;
-	}
-	return ui_loop(ctx, root_screen_id, developer_action);
-}
+	enum ui_screen root_screen_id = UI_SCREEN_RECOVERY_BROKEN;
+	switch (ctx->boot_mode) {
+	case VB2_BOOT_MODE_MANUAL_RECOVERY:
+		VB2_TRY(ui_loop(ctx, UI_SCREEN_RECOVERY_SELECT,
+				ui_manual_recovery_action, kparams));
+		break;
+	case VB2_BOOT_MODE_BROKEN_SCREEN:
+		/*
+		 * In EFS2, recovery mode can be entered even when battery is
+		 * drained or damaged. EC-RO sets NO_BOOT flag in such case and
+		 * uses PD power to boot AP.
+		 *
+		 * TODO: Inform user why recovery failed to start.
+		 */
+		if (ctx->flags & VB2_CONTEXT_NO_BOOT)
+			UI_WARN("NO_BOOT in broken screen mode\n");
 
-vb2_error_t vb2ex_diagnostic_ui(struct vb2_context *ctx)
-{
-	return ui_loop(ctx, UI_SCREEN_DIAGNOSTICS, NULL);
+		VB2_TRY(ui_loop(ctx, UI_SCREEN_RECOVERY_BROKEN,
+				ui_broken_screen_action, kparams));
+		break;
+	case VB2_BOOT_MODE_DIAGNOSTICS:
+		VB2_TRY(ui_loop(ctx, UI_SCREEN_DIAGNOSTICS, NULL, kparams));
+		/*
+		 * The diagnostic menu should either boot a rom, or
+		 * return either of reboot or shutdown.
+		 */
+		return VB2_REQUEST_REBOOT;
+	case VB2_BOOT_MODE_DEVELOPER:
+		root_screen_id = UI_SCREEN_DEVELOPER_MODE;
+		if (!(ctx->flags & VB2_CONTEXT_DEV_BOOT_ALLOWED)) {
+			UI_WARN("WARNING: "
+				"Dev boot not allowed; forcing to-norm\n");
+			root_screen_id = UI_SCREEN_DEVELOPER_TO_NORM;
+		}
+		VB2_TRY(ui_loop(ctx, root_screen_id, developer_action,
+				kparams));
+		break;
+	case VB2_BOOT_MODE_NORMAL:
+		VB2_TRY(vb2api_normal_boot(ctx, kparams));
+		break;
+	default:
+		return VB2_ERROR_ESCAPE_NO_BOOT;
+	}
+	return VB2_SUCCESS;
 }

@@ -7,6 +7,7 @@
 #include <mocks/util/commonparams.h>
 #include <vboot_api.h>
 #include <vb2_api.h>
+#include <vboot/stages.h>
 #include <vboot/util/commonparams.h>
 
 /* Mock functions */
@@ -17,6 +18,7 @@ int ui_is_lid_open(void)
 
 /* Tests */
 struct ui_context test_ui_ctx;
+VbSelectAndLoadKernelParams test_kparams;
 
 static int setup_context(void **state)
 {
@@ -24,6 +26,8 @@ static int setup_context(void **state)
 	reset_mock_workbuf = 1;
 	test_ui_ctx.ctx = vboot_get_context();
 	set_boot_mode(test_ui_ctx.ctx, VB2_BOOT_MODE_BROKEN_SCREEN);
+	memset(&test_kparams, 0, sizeof(test_kparams));
+	test_ui_ctx.kparams = &test_kparams;
 	*state = &test_ui_ctx;
 	return 0;
 }
@@ -43,7 +47,8 @@ static void test_broken_ui_shortcuts_ignored(void **state)
 	will_return_always(ui_keyboard_read, 0);
 	EXPECT_UI_DISPLAY_ANY();
 
-	assert_int_equal(vb2ex_broken_screen_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
+			 VB2_REQUEST_SHUTDOWN);
 }
 
 static void test_broken_ui_debug_info(void **state)
@@ -59,7 +64,8 @@ static void test_broken_ui_debug_info(void **state)
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO);
 	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
 
-	assert_int_equal(vb2ex_broken_screen_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
+			 VB2_REQUEST_SHUTDOWN);
 }
 
 static void test_broken_ui_disabled_and_hidden_item_mask(void **state)
@@ -72,7 +78,8 @@ static void test_broken_ui_disabled_and_hidden_item_mask(void **state)
 			  0x0, 0x0);
 	will_return_always(ui_keyboard_read, 0);
 
-	assert_int_equal(vb2ex_broken_screen_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
+			 VB2_REQUEST_SHUTDOWN);
 }
 
 static void test_broken_ui_screen(void **state)
@@ -101,7 +108,8 @@ static void test_broken_ui_screen(void **state)
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_BROKEN, MOCK_IGNORE, 1);
 	WILL_PRESS_KEY(0, 0);
 
-	assert_int_equal(vb2ex_broken_screen_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
+			 VB2_REQUEST_SHUTDOWN);
 }
 
 static void test_broken_ui_power_button_shutdown(void **state)
@@ -116,7 +124,8 @@ static void test_broken_ui_power_button_shutdown(void **state)
 	WILL_PRESS_KEY(UI_BUTTON_POWER_SHORT_PRESS, 0);
 	EXPECT_UI_DISPLAY_ANY();
 
-	assert_int_equal(vb2ex_broken_screen_ui(ui->ctx), VB2_REQUEST_SHUTDOWN);
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
+			 VB2_REQUEST_SHUTDOWN);
 }
 
 #define UI_TEST(test_function_name) \

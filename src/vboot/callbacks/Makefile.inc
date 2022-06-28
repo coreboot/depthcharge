@@ -17,7 +17,6 @@ depthcharge-y += memory.c
 depthcharge-y += misc.c
 depthcharge-y += time.c
 depthcharge-y += tpm.c
-depthcharge-y += ui.c
 
 ifeq ($(CONFIG_EC_VBOOT_SUPPORT),y)
 depthcharge-y += ec.c
