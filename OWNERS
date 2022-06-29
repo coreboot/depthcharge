@@ -5,4 +5,4 @@ jwerner@chromium.org
 
 # All firmware and SIE team members can approve.
 include chromiumos/owners:v1:/firmware/OWNERS.cros_ap
-include chromiumos/owners:v1:/firmware/OWNERS.chromeos_peng_sies
+include chromiumos/owners:v1:/sie/OWNERS.chromeos_sie
