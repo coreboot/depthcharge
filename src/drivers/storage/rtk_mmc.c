@@ -75,7 +75,7 @@ int rtsx_write_cfg_dw(RtkMmcHost *host, u8 func_no, u16 addr, u32 mask, u32 val)
 	for (int i = 0; i < 4; i++) {
 		if (mask & 0xFF) {
 			RTSX_WRITE_REG(host, (u16)(CFGDATA0 + i), 0xFF,
-					(u8)(val & mask & 0xFF));
+				       (u8)(val & mask & 0xFF));
 			mode |= (1 << i);
 		}
 		mask >>= 8;
@@ -85,8 +85,8 @@ int rtsx_write_cfg_dw(RtkMmcHost *host, u8 func_no, u16 addr, u32 mask, u32 val)
 	if (mode) {
 		RTSX_WRITE_REG(host, CFGADDR0, 0xFF, (u8)addr);
 		RTSX_WRITE_REG(host, CFGADDR1, 0xFF, (u8)(addr >> 8));
-		RTSX_WRITE_REG(host, CFGRWCTL, 0xFF, 0x80 | mode |
-				((func_no & 0x03) << 4));
+		RTSX_WRITE_REG(host, CFGRWCTL, 0xFF,
+			       0x80 | mode | ((func_no & 0x03) << 4));
 
 		/* Wait transfer end */
 		for (int i = 0; i < MAX_RW_REG_CNT; i++) {
@@ -123,6 +123,36 @@ int rtsx_write_phy_register(RtkMmcHost *host, u8 addr, u16 val)
 	return STATUS_SUCCESS;
 }
 
+int rtsx_read_phy_register(RtkMmcHost *host, u8 addr, u16 *val)
+{
+	int finished = 0;
+	u16 data;
+	u8 tmp, val1, val2;
+
+	RTSX_WRITE_REG(host, PHYADDR, 0xFF, addr);
+	RTSX_WRITE_REG(host, PHYRWCTL, 0xFF, 0x80);
+
+	for (int i = 0; i < MAX_RW_PHY_CNT; i++) {
+		RTSX_READ_REG(host, PHYRWCTL, &tmp);
+		if (!(tmp & PHY_CFG_RW_OK)) {
+			finished = 1;
+			break;
+		}
+	}
+
+	if (!finished)
+		return STATUS_FAIL;
+
+	RTSX_READ_REG(host, PHYDATA0, &val1);
+	RTSX_READ_REG(host, PHYDATA1, &val2);
+	data = val1 | (val2 << 8);
+
+	if (val)
+		*val = data;
+
+	return STATUS_SUCCESS;
+}
+
 typedef struct rtk_pci_host {
 	RtkMmcHost host;
 	pcidev_t dev;
@@ -139,8 +169,10 @@ static bool is_rtk_ctrlr(pcidev_t dev, u16 *pid)
 		return false;
 
 	switch (deviceid) {
+	case RTK_MMC_PID_5228:
 	case RTK_MMC_PID_522A:
 	case RTK_MMC_PID_525A:
+	case RTK_MMC_PID_5261:
 		found = true;
 		break;
 	default:
@@ -189,14 +221,14 @@ static int rtkhost_pci_init(BlockDevCtrlrOps *me)
 
 	if (!is_rtk_ctrlr(dev, &pid)) {
 		mmc_error("No known Realtek reader found at %d:%d.%d",
-			PCI_BUS(dev), PCI_SLOT(dev), PCI_FUNC(dev));
+			  PCI_BUS(dev), PCI_SLOT(dev), PCI_FUNC(dev));
 		block_ctrlr->ops.update = NULL;
 		block_ctrlr->need_update = 0;
 		return -1;
 	}
 
 	mmc_debug("Found Realtek reader at %d:%d:%d\n", PCI_BUS(dev),
-		PCI_SLOT(dev), PCI_FUNC(dev));
+		  PCI_SLOT(dev), PCI_FUNC(dev));
 
 	if (rtk_get_pci_bar(dev, &bar)) {
 		mmc_error("Failed to get BAR for PCI Realtek device\n");
@@ -212,11 +244,19 @@ static int rtkhost_pci_init(BlockDevCtrlrOps *me)
 	host->dev = dev;
 
 	switch (host->pid) {
+	case RTK_MMC_PID_5228:
+		host->sd_800mA_ocp_thd = (0x03 << 5);
+		host->sd_ocp_lmt_thd = (0x02 << 2);
+		break;
 	case RTK_MMC_PID_522A:
 		host->sd_800mA_ocp_thd = 0x06;
 		break;
 	case RTK_MMC_PID_525A:
 		host->sd_800mA_ocp_thd = 0x05;
+		break;
+	case RTK_MMC_PID_5261:
+		host->sd_800mA_ocp_thd = (0x05 << 5);
+		host->sd_ocp_lmt_thd = (0x03 << 2);
 		break;
 	default:
 		break;
@@ -333,28 +373,28 @@ static int sd_send_cmd_get_rsp(RtkMmcHost *host, MmcCommand *cmd)
 	/* Wait max 1 sec */
 	timeout = 1000;
 
-	rtsx_add_cmd(host, WRITE_REG_CMD, SD_CMD0, 0xFF,
-		0x40 | cmd->cmdidx);
+	rtsx_add_cmd(host, WRITE_REG_CMD, SD_CMD0, 0xFF, 0x40 | cmd->cmdidx);
 	rtsx_add_cmd(host, WRITE_REG_CMD, SD_CMD1, 0xFF,
-		(u8)(cmd->cmdarg >> 24));
+		     (u8)(cmd->cmdarg >> 24));
 	rtsx_add_cmd(host, WRITE_REG_CMD, SD_CMD2, 0xFF,
-		(u8)(cmd->cmdarg >> 16));
+		     (u8)(cmd->cmdarg >> 16));
 	rtsx_add_cmd(host, WRITE_REG_CMD, SD_CMD3, 0xFF,
-		(u8)(cmd->cmdarg >> 8));
-	rtsx_add_cmd(host, WRITE_REG_CMD, SD_CMD4, 0xFF,
-		(u8)cmd->cmdarg);
+		     (u8)(cmd->cmdarg >> 8));
+	rtsx_add_cmd(host, WRITE_REG_CMD, SD_CMD4, 0xFF, (u8)cmd->cmdarg);
 
 	rtsx_add_cmd(host, WRITE_REG_CMD, SD_CFG2, 0xFF, rsp_type);
-	rtsx_add_cmd(host, WRITE_REG_CMD, CARD_DATA_SOURCE,
-		0x01, PINGPONG_BUFFER);
-	rtsx_add_cmd(host, WRITE_REG_CMD, SD_TRANSFER,
-		0xFF, SD_TM_CMD_RSP | SD_TRANSFER_START);
+	rtsx_add_cmd(host, WRITE_REG_CMD, CARD_DATA_SOURCE, 0x01,
+		     PINGPONG_BUFFER);
+	rtsx_add_cmd(host, WRITE_REG_CMD, SD_TRANSFER, 0xFF,
+		     SD_TM_CMD_RSP | SD_TRANSFER_START);
 	rtsx_add_cmd(host, CHECK_REG_CMD, SD_TRANSFER,
-		SD_TRANSFER_END | SD_STAT_IDLE, SD_TRANSFER_END | SD_STAT_IDLE);
+		     SD_TRANSFER_END | SD_STAT_IDLE,
+		     SD_TRANSFER_END | SD_STAT_IDLE);
 
 	if (rsp_type == SD_RSP_TYPE_R2) {
 		/* Read data from ping-pong buffer */
-		for (reg_addr = PPBUF_BASE2; reg_addr < PPBUF_BASE2 + 16; reg_addr++)
+		for (reg_addr = PPBUF_BASE2; reg_addr < PPBUF_BASE2 + 16;
+		     reg_addr++)
 			rtsx_add_cmd(host, READ_REG_CMD, reg_addr, 0, 0);
 		stat_idx = 16;
 	} else if (rsp_type != SD_RSP_TYPE_R0) {
@@ -369,7 +409,7 @@ static int sd_send_cmd_get_rsp(RtkMmcHost *host, MmcCommand *cmd)
 	if (err != 0) {
 		mmc_error("%s, rtsx_send_cmd failed\n", __func__);
 		rtsx_write_register(host, CARD_STOP, SD_STOP | SD_CLR_ERR,
-			SD_STOP | SD_CLR_ERR);
+				    SD_STOP | SD_CLR_ERR);
 		return STATUS_FAIL;
 	}
 
@@ -400,16 +440,16 @@ static int sd_send_cmd_get_rsp(RtkMmcHost *host, MmcCommand *cmd)
 		ptr[16] = 1;
 
 		cmd->response[0] = (ptr[1] << 24) | (ptr[2] << 16) |
-			(ptr[3] << 8) | ptr[4];
+				   (ptr[3] << 8) | ptr[4];
 		cmd->response[1] = (ptr[5] << 24) | (ptr[6] << 16) |
-			(ptr[7] << 8) | ptr[8];
+				   (ptr[7] << 8) | ptr[8];
 		cmd->response[2] = (ptr[9] << 24) | (ptr[10] << 16) |
-			 (ptr[11] << 8) | ptr[12];
+				   (ptr[11] << 8) | ptr[12];
 		cmd->response[3] = (ptr[13] << 24) | (ptr[14] << 16) |
-			(ptr[15] << 8) | ptr[16];
+				   (ptr[15] << 8) | ptr[16];
 	} else {
 		cmd->response[0] = (ptr[1] << 24) | (ptr[2] << 16) |
-			(ptr[3] << 8) | ptr[4];
+				   (ptr[3] << 8) | ptr[4];
 	}
 
 	return STATUS_SUCCESS;
@@ -466,8 +506,8 @@ int rtsx_write_ppbuf(RtkMmcHost *host, void *buf, int buf_len)
 
 	for (i = 0; i < buf_len / 256; i++) {
 		for (j = 0; j < 256; j++) {
-			rtsx_add_cmd(host, WRITE_REG_CMD, reg_addr++,
-				0xFF, *ptr);
+			rtsx_add_cmd(host, WRITE_REG_CMD, reg_addr++, 0xFF,
+				     *ptr);
 			ptr++;
 		}
 
@@ -479,8 +519,8 @@ int rtsx_write_ppbuf(RtkMmcHost *host, void *buf, int buf_len)
 
 	if (buf_len % 256) {
 		for (i = 0; i < buf_len % 256; i++) {
-			rtsx_add_cmd(host, WRITE_REG_CMD, reg_addr++,
-				0xFF, *ptr);
+			rtsx_add_cmd(host, WRITE_REG_CMD, reg_addr++, 0xFF,
+				     *ptr);
 			ptr++;
 		}
 
@@ -498,35 +538,33 @@ static int sd_read_data(RtkMmcHost *host, MmcCommand *cmd, MmcData *data)
 	int retval, timeout;
 
 	timeout = 200;
-	rtsx_add_cmd(host, WRITE_REG_CMD, SD_CMD0, 0xFF,
-		0x40 | cmd->cmdidx);
+	rtsx_add_cmd(host, WRITE_REG_CMD, SD_CMD0, 0xFF, 0x40 | cmd->cmdidx);
 	rtsx_add_cmd(host, WRITE_REG_CMD, SD_CMD1, 0xFF,
-		(u8)(cmd->cmdarg >> 24));
+		     (u8)(cmd->cmdarg >> 24));
 	rtsx_add_cmd(host, WRITE_REG_CMD, SD_CMD2, 0xFF,
-		(u8)(cmd->cmdarg >> 16));
+		     (u8)(cmd->cmdarg >> 16));
 	rtsx_add_cmd(host, WRITE_REG_CMD, SD_CMD3, 0xFF,
-		(u8)(cmd->cmdarg >> 8));
-	rtsx_add_cmd(host, WRITE_REG_CMD, SD_CMD4, 0xFF,
-		(u8)cmd->cmdarg);
+		     (u8)(cmd->cmdarg >> 8));
+	rtsx_add_cmd(host, WRITE_REG_CMD, SD_CMD4, 0xFF, (u8)cmd->cmdarg);
 
 	rtsx_add_cmd(host, WRITE_REG_CMD, SD_BYTE_CNT_L, 0xFF,
-		(u8)data->blocksize);
+		     (u8)data->blocksize);
 	rtsx_add_cmd(host, WRITE_REG_CMD, SD_BYTE_CNT_H, 0xFF,
-		(u8)(data->blocksize >> 8));
+		     (u8)(data->blocksize >> 8));
 	rtsx_add_cmd(host, WRITE_REG_CMD, SD_BLOCK_CNT_L, 0xFF,
-		(u8)data->blocks);
+		     (u8)data->blocks);
 	rtsx_add_cmd(host, WRITE_REG_CMD, SD_BLOCK_CNT_H, 0xFF,
-		(u8)(data->blocks >> 8));
+		     (u8)(data->blocks >> 8));
 
 	rtsx_add_cmd(host, WRITE_REG_CMD, SD_CFG2, 0xFF,
-		SD_CALCULATE_CRC7 | SD_CHECK_CRC16 | SD_NO_WAIT_BUSY_END |
-		SD_CHECK_CRC7 | SD_RSP_LEN_6);
-	rtsx_add_cmd(host, WRITE_REG_CMD, CARD_DATA_SOURCE,
-		0x01, PINGPONG_BUFFER);
+		     SD_CALCULATE_CRC7 | SD_CHECK_CRC16 | SD_NO_WAIT_BUSY_END |
+			     SD_CHECK_CRC7 | SD_RSP_LEN_6);
+	rtsx_add_cmd(host, WRITE_REG_CMD, CARD_DATA_SOURCE, 0x01,
+		     PINGPONG_BUFFER);
 	rtsx_add_cmd(host, WRITE_REG_CMD, SD_TRANSFER, 0xFF,
-	SD_TM_NORMAL_READ | SD_TRANSFER_START);
-	rtsx_add_cmd(host, CHECK_REG_CMD, SD_TRANSFER,
-		SD_TRANSFER_END, SD_TRANSFER_END);
+		     SD_TM_NORMAL_READ | SD_TRANSFER_START);
+	rtsx_add_cmd(host, CHECK_REG_CMD, SD_TRANSFER, SD_TRANSFER_END,
+		     SD_TRANSFER_END);
 
 	retval = rtsx_send_cmd(host, timeout);
 	if (retval < 0) {
@@ -542,7 +580,7 @@ static int sd_read_data(RtkMmcHost *host, MmcCommand *cmd, MmcData *data)
 	}
 
 	retval = rtsx_read_ppbuf(host, (void *)data->dest,
-		data->blocksize * data->blocks);
+				 data->blocksize * data->blocks);
 	if (retval != STATUS_SUCCESS) {
 		mmc_error("rtsx_read_ppbuf failed\n");
 		return STATUS_FAIL;
@@ -563,28 +601,28 @@ static int sd_write_data(RtkMmcHost *host, MmcCommand *cmd, MmcData *data)
 	}
 
 	retval = rtsx_write_ppbuf(host, (void *)data->src,
-		data->blocksize * data->blocks);
+				  data->blocksize * data->blocks);
 	if (retval != STATUS_SUCCESS) {
 		mmc_error("rtsx_write_ppbuf failed\n");
 		return STATUS_FAIL;
 	}
 
 	rtsx_add_cmd(host, WRITE_REG_CMD, SD_BYTE_CNT_L, 0xFF,
-		(u8)data->blocksize);
+		     (u8)data->blocksize);
 	rtsx_add_cmd(host, WRITE_REG_CMD, SD_BYTE_CNT_H, 0xFF,
-		(u8)(data->blocksize >> 8));
+		     (u8)(data->blocksize >> 8));
 	rtsx_add_cmd(host, WRITE_REG_CMD, SD_BLOCK_CNT_L, 0xFF,
-		(u8)data->blocks);
+		     (u8)data->blocks);
 	rtsx_add_cmd(host, WRITE_REG_CMD, SD_BLOCK_CNT_H, 0xFF,
-		(u8)(data->blocks >> 8));
+		     (u8)(data->blocks >> 8));
 
 	rtsx_add_cmd(host, WRITE_REG_CMD, SD_CFG2, 0xFF,
-		SD_CALCULATE_CRC7 | SD_CHECK_CRC16 | SD_NO_WAIT_BUSY_END |
-		SD_CHECK_CRC7 | SD_RSP_LEN_0);
+		     SD_CALCULATE_CRC7 | SD_CHECK_CRC16 | SD_NO_WAIT_BUSY_END |
+			     SD_CHECK_CRC7 | SD_RSP_LEN_0);
 	rtsx_add_cmd(host, WRITE_REG_CMD, SD_TRANSFER, 0xFF,
-		SD_TM_AUTO_WRITE_3 | SD_TRANSFER_START);
-	rtsx_add_cmd(host, CHECK_REG_CMD, SD_TRANSFER,
-		SD_TRANSFER_END, SD_TRANSFER_END);
+		     SD_TM_AUTO_WRITE_3 | SD_TRANSFER_START);
+	rtsx_add_cmd(host, CHECK_REG_CMD, SD_TRANSFER, SD_TRANSFER_END,
+		     SD_TRANSFER_END);
 
 	retval = rtsx_send_cmd(host, timeout);
 	if (retval < 0) {
@@ -617,47 +655,46 @@ static int sd_rw(RtkMmcHost *host, MmcCommand *cmd, MmcData *data)
 
 	if (data->flags & MMC_DATA_READ) {
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_CMD0, 0xFF,
-			0x40 | cmd->cmdidx);
+			     0x40 | cmd->cmdidx);
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_CMD1, 0xFF,
-			(u8)(cmd->cmdarg >> 24));
+			     (u8)(cmd->cmdarg >> 24));
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_CMD2, 0xFF,
-			(u8)(cmd->cmdarg >> 16));
+			     (u8)(cmd->cmdarg >> 16));
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_CMD3, 0xFF,
-			(u8)(cmd->cmdarg >> 8));
+			     (u8)(cmd->cmdarg >> 8));
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_CMD4, 0xFF,
-			(u8)cmd->cmdarg);
+			     (u8)cmd->cmdarg);
 
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_BYTE_CNT_L, 0xFF,
-			(u8)data->blocksize);
+			     (u8)data->blocksize);
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_BYTE_CNT_H, 0xFF,
-			(u8)(data->blocksize >> 8));
+			     (u8)(data->blocksize >> 8));
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_BLOCK_CNT_L, 0xFF,
-			(u8)data->blocks);
+			     (u8)data->blocks);
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_BLOCK_CNT_H, 0xFF,
-			(u8)(data->blocks >> 8));
+			     (u8)(data->blocks >> 8));
 
 		rtsx_add_cmd(host, WRITE_REG_CMD, IRQSTAT0, DMA_DONE_INT,
-			DMA_DONE_INT);
+			     DMA_DONE_INT);
 		rtsx_add_cmd(host, WRITE_REG_CMD, DMATC3, 0xFF,
-			(u8)(datasize >> 24));
+			     (u8)(datasize >> 24));
 		rtsx_add_cmd(host, WRITE_REG_CMD, DMATC2, 0xFF,
-			(u8)(datasize >> 16));
+			     (u8)(datasize >> 16));
 		rtsx_add_cmd(host, WRITE_REG_CMD, DMATC1, 0xFF,
-			(u8)(datasize >> 8));
-		rtsx_add_cmd(host, WRITE_REG_CMD, DMATC0, 0xFF,
-			(u8)datasize);
+			     (u8)(datasize >> 8));
+		rtsx_add_cmd(host, WRITE_REG_CMD, DMATC0, 0xFF, (u8)datasize);
 		rtsx_add_cmd(host, WRITE_REG_CMD, DMACTL,
-			0x03 | DMA_PACK_SIZE_MASK,
-			DMA_DIR_FROM_CARD | DMA_EN | DMA_512);
-		rtsx_add_cmd(host, WRITE_REG_CMD, CARD_DATA_SOURCE,
-			0x01, RING_BUFFER);
+			     0x03 | DMA_PACK_SIZE_MASK,
+			     DMA_DIR_FROM_CARD | DMA_EN | DMA_512);
+		rtsx_add_cmd(host, WRITE_REG_CMD, CARD_DATA_SOURCE, 0x01,
+			     RING_BUFFER);
 		cfg2 = SD_CALCULATE_CRC7 | SD_CHECK_CRC16 |
-			SD_NO_WAIT_BUSY_END | SD_CHECK_CRC7 | SD_RSP_LEN_6;
+		       SD_NO_WAIT_BUSY_END | SD_CHECK_CRC7 | SD_RSP_LEN_6;
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_CFG2, 0xFF, cfg2);
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_TRANSFER, 0xFF,
-			SD_TM_AUTO_READ_2 | SD_TRANSFER_START);
-		rtsx_add_cmd(host, CHECK_REG_CMD, SD_TRANSFER,
-			SD_TRANSFER_END, SD_TRANSFER_END);
+			     SD_TM_AUTO_READ_2 | SD_TRANSFER_START);
+		rtsx_add_cmd(host, CHECK_REG_CMD, SD_TRANSFER, SD_TRANSFER_END,
+			     SD_TRANSFER_END);
 		rtsx_send_cmd_no_wait(host);
 	} else {
 		retval = sd_send_cmd_get_rsp(host, cmd);
@@ -665,37 +702,36 @@ static int sd_rw(RtkMmcHost *host, MmcCommand *cmd, MmcData *data)
 			return STATUS_FAIL;
 
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_BYTE_CNT_L, 0xFF,
-			(u8)data->blocksize);
+			     (u8)data->blocksize);
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_BYTE_CNT_H, 0xFF,
-			(u8)(data->blocksize >> 8));
+			     (u8)(data->blocksize >> 8));
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_BLOCK_CNT_L, 0xFF,
-			(u8)data->blocks);
+			     (u8)data->blocks);
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_BLOCK_CNT_H, 0xFF,
-			(u8)(data->blocks >> 8));
+			     (u8)(data->blocks >> 8));
 
 		rtsx_add_cmd(host, WRITE_REG_CMD, IRQSTAT0, DMA_DONE_INT,
-			DMA_DONE_INT);
+			     DMA_DONE_INT);
 		rtsx_add_cmd(host, WRITE_REG_CMD, DMATC3, 0xFF,
-			(u8)(datasize >> 24));
+			     (u8)(datasize >> 24));
 		rtsx_add_cmd(host, WRITE_REG_CMD, DMATC2, 0xFF,
-			(u8)(datasize >> 16));
+			     (u8)(datasize >> 16));
 		rtsx_add_cmd(host, WRITE_REG_CMD, DMATC1, 0xFF,
-			(u8)(datasize >> 8));
-		rtsx_add_cmd(host, WRITE_REG_CMD, DMATC0, 0xFF,
-			(u8)datasize);
+			     (u8)(datasize >> 8));
+		rtsx_add_cmd(host, WRITE_REG_CMD, DMATC0, 0xFF, (u8)datasize);
 		rtsx_add_cmd(host, WRITE_REG_CMD, DMACTL,
-			0x03 | DMA_PACK_SIZE_MASK,
-			DMA_DIR_TO_CARD | DMA_EN | DMA_512);
-		rtsx_add_cmd(host, WRITE_REG_CMD, CARD_DATA_SOURCE,
-			0x01, RING_BUFFER);
+			     0x03 | DMA_PACK_SIZE_MASK,
+			     DMA_DIR_TO_CARD | DMA_EN | DMA_512);
+		rtsx_add_cmd(host, WRITE_REG_CMD, CARD_DATA_SOURCE, 0x01,
+			     RING_BUFFER);
 
 		cfg2 = SD_NO_CALCULATE_CRC7 | SD_CHECK_CRC16 |
-			SD_NO_WAIT_BUSY_END | SD_NO_CHECK_CRC7 | SD_RSP_LEN_0;
+		       SD_NO_WAIT_BUSY_END | SD_NO_CHECK_CRC7 | SD_RSP_LEN_0;
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_CFG2, 0xFF, cfg2);
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_TRANSFER, 0xFF,
-			SD_TM_AUTO_WRITE_3 | SD_TRANSFER_START);
-		rtsx_add_cmd(host, CHECK_REG_CMD, SD_TRANSFER,
-			SD_TRANSFER_END, SD_TRANSFER_END);
+			     SD_TM_AUTO_WRITE_3 | SD_TRANSFER_START);
+		rtsx_add_cmd(host, CHECK_REG_CMD, SD_TRANSFER, SD_TRANSFER_END,
+			     SD_TRANSFER_END);
 		rtsx_send_cmd_no_wait(host);
 	}
 
@@ -729,15 +765,15 @@ static int sd_rw(RtkMmcHost *host, MmcCommand *cmd, MmcData *data)
 		mmc_error("data transfer failed\n");
 		rtsx_stop_cmd(host);
 		rtsx_write_register(host, CARD_STOP, SD_STOP | SD_CLR_ERR,
-			SD_STOP | SD_CLR_ERR);
+				    SD_STOP | SD_CLR_ERR);
 	}
 
 	return retval;
 }
 
 static int rtk_send_command_bounced(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
-				      MmcData *data,
-				      struct bounce_buffer *bbstate)
+				    MmcData *data,
+				    struct bounce_buffer *bbstate)
 {
 	RtkMmcHost *host = container_of(mmc_ctrl, RtkMmcHost, mmc_ctrlr);
 	size_t datasize = 0;
@@ -747,7 +783,7 @@ static int rtk_send_command_bounced(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
 	mmc_debug("CMD %d, arg = 0x%x\n", cmd->cmdidx, cmd->cmdarg);
 
 	if (data)
-		datasize = data->blocksize*data->blocks;
+		datasize = data->blocksize * data->blocks;
 
 	if (!datasize) {
 		err = sd_send_cmd_get_rsp(host, cmd);
@@ -755,7 +791,7 @@ static int rtk_send_command_bounced(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
 			host->sd_addr = cmd->response[0] & 0xFFFF0000;
 	} else {
 		if ((cmd->cmdidx == MMC_CMD_READ_MULTIPLE_BLOCK) ||
-			(cmd->cmdidx == MMC_CMD_WRITE_MULTIPLE_BLOCK)) {
+		    (cmd->cmdidx == MMC_CMD_WRITE_MULTIPLE_BLOCK)) {
 			err = sd_rw(host, cmd, data);
 		} else {
 			if (data->flags & MMC_DATA_READ)
@@ -768,8 +804,7 @@ static int rtk_send_command_bounced(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
 	return err;
 }
 
-static int rtk_send_command(MmcCtrlr *mmc_ctrl, MmcCommand *cmd,
-					MmcData *data)
+static int rtk_send_command(MmcCtrlr *mmc_ctrl, MmcCommand *cmd, MmcData *data)
 {
 	void *buf;
 	unsigned int bbflags;
@@ -822,12 +857,12 @@ static int sd_set_timing(RtkMmcHost *host)
 	case MMC_TIMING_UHS_SDR50:
 		mmc_debug("SDR104/SDR50 mode\n");
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_CFG1,
-				0x0C | SD_ASYNC_FIFO_NOT_RST,
-				SD_30_MODE | SD_ASYNC_FIFO_NOT_RST);
-		rtsx_add_cmd(host, WRITE_REG_CMD, CLK_CTL,
-				CLK_LOW_FREQ, CLK_LOW_FREQ);
+			     0x0C | SD_ASYNC_FIFO_NOT_RST,
+			     SD_30_MODE | SD_ASYNC_FIFO_NOT_RST);
+		rtsx_add_cmd(host, WRITE_REG_CMD, CLK_CTL, CLK_LOW_FREQ,
+			     CLK_LOW_FREQ);
 		rtsx_add_cmd(host, WRITE_REG_CMD, CARD_CLK_SOURCE, 0xFF,
-				CRC_VAR_CLK0 | SD30_FIX_CLK | SAMPLE_VAR_CLK1);
+			     CRC_VAR_CLK0 | SD30_FIX_CLK | SAMPLE_VAR_CLK1);
 		rtsx_add_cmd(host, WRITE_REG_CMD, CLK_CTL, CLK_LOW_FREQ, 0);
 		break;
 
@@ -835,49 +870,46 @@ static int sd_set_timing(RtkMmcHost *host)
 	case MMC_TIMING_UHS_DDR50:
 		mmc_debug("DDR52/DDR50 mode\n");
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_CFG1,
-				0x0C | SD_ASYNC_FIFO_NOT_RST,
-				SD_DDR_MODE | SD_ASYNC_FIFO_NOT_RST);
-		rtsx_add_cmd(host, WRITE_REG_CMD, CLK_CTL,
-				CLK_LOW_FREQ, CLK_LOW_FREQ);
+			     0x0C | SD_ASYNC_FIFO_NOT_RST,
+			     SD_DDR_MODE | SD_ASYNC_FIFO_NOT_RST);
+		rtsx_add_cmd(host, WRITE_REG_CMD, CLK_CTL, CLK_LOW_FREQ,
+			     CLK_LOW_FREQ);
 		rtsx_add_cmd(host, WRITE_REG_CMD, CARD_CLK_SOURCE, 0xFF,
-				CRC_VAR_CLK0 | SD30_FIX_CLK | SAMPLE_VAR_CLK1);
+			     CRC_VAR_CLK0 | SD30_FIX_CLK | SAMPLE_VAR_CLK1);
 		rtsx_add_cmd(host, WRITE_REG_CMD, CLK_CTL, CLK_LOW_FREQ, 0);
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_PUSH_POINT_CTL,
-				DDR_VAR_TX_CMD_DAT, DDR_VAR_TX_CMD_DAT);
+			     DDR_VAR_TX_CMD_DAT, DDR_VAR_TX_CMD_DAT);
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_SAMPLE_POINT_CTL,
-				DDR_VAR_RX_DAT | DDR_VAR_RX_CMD,
-				DDR_VAR_RX_DAT | DDR_VAR_RX_CMD);
+			     DDR_VAR_RX_DAT | DDR_VAR_RX_CMD,
+			     DDR_VAR_RX_DAT | DDR_VAR_RX_CMD);
 		break;
 
 	case MMC_TIMING_MMC_HS:
 	case MMC_TIMING_SD_HS:
 		mmc_debug("HS mode\n");
-		rtsx_add_cmd(host, WRITE_REG_CMD, SD_CFG1,
-				0x0C, SD_20_MODE);
-		rtsx_add_cmd(host, WRITE_REG_CMD, CLK_CTL,
-				CLK_LOW_FREQ, CLK_LOW_FREQ);
+		rtsx_add_cmd(host, WRITE_REG_CMD, SD_CFG1, 0x0C, SD_20_MODE);
+		rtsx_add_cmd(host, WRITE_REG_CMD, CLK_CTL, CLK_LOW_FREQ,
+			     CLK_LOW_FREQ);
 		rtsx_add_cmd(host, WRITE_REG_CMD, CARD_CLK_SOURCE, 0xFF,
-				CRC_FIX_CLK | SD30_VAR_CLK0 | SAMPLE_VAR_CLK1);
+			     CRC_FIX_CLK | SD30_VAR_CLK0 | SAMPLE_VAR_CLK1);
 		rtsx_add_cmd(host, WRITE_REG_CMD, CLK_CTL, CLK_LOW_FREQ, 0);
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_PUSH_POINT_CTL,
-				SD20_TX_SEL_MASK, SD20_TX_14_AHEAD);
+			     SD20_TX_SEL_MASK, SD20_TX_14_AHEAD);
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_SAMPLE_POINT_CTL,
-				SD20_RX_SEL_MASK, SD20_RX_14_DELAY);
+			     SD20_RX_SEL_MASK, SD20_RX_14_DELAY);
 		break;
 
 	default:
 		mmc_debug("default mode\n");
-		rtsx_add_cmd(host, WRITE_REG_CMD,
-				SD_CFG1, 0x0C, SD_20_MODE);
-		rtsx_add_cmd(host, WRITE_REG_CMD, CLK_CTL,
-				CLK_LOW_FREQ, CLK_LOW_FREQ);
+		rtsx_add_cmd(host, WRITE_REG_CMD, SD_CFG1, 0x0C, SD_20_MODE);
+		rtsx_add_cmd(host, WRITE_REG_CMD, CLK_CTL, CLK_LOW_FREQ,
+			     CLK_LOW_FREQ);
 		rtsx_add_cmd(host, WRITE_REG_CMD, CARD_CLK_SOURCE, 0xFF,
-				CRC_FIX_CLK | SD30_VAR_CLK0 | SAMPLE_VAR_CLK1);
+			     CRC_FIX_CLK | SD30_VAR_CLK0 | SAMPLE_VAR_CLK1);
 		rtsx_add_cmd(host, WRITE_REG_CMD, CLK_CTL, CLK_LOW_FREQ, 0);
-		rtsx_add_cmd(host, WRITE_REG_CMD,
-				SD_PUSH_POINT_CTL, 0xFF, 0);
+		rtsx_add_cmd(host, WRITE_REG_CMD, SD_PUSH_POINT_CTL, 0xFF, 0);
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_SAMPLE_POINT_CTL,
-				SD20_RX_SEL_MASK, SD20_RX_POS_EDGE);
+			     SD20_RX_SEL_MASK, SD20_RX_POS_EDGE);
 		break;
 	}
 
@@ -903,22 +935,36 @@ static u8 revise_ssc_depth(u8 ssc_depth, u8 div)
 	return ssc_depth;
 }
 
-static int rtsx_switch_clock(RtkMmcHost *host, unsigned int card_clock,
-		u8 ssc_depth, bool initial_mode, bool double_clk, bool vpclk)
+static int rts5228_rts5261_switch_clock(RtkMmcHost *host,
+					unsigned int card_clock, u8 ssc_depth,
+					bool initial_mode, bool double_clk,
+					bool vpclk)
 {
 	int err, clk, timeout;
-	u8 n, clk_divider, mcu_cnt, div;
+	u16 n;
+	u8 clk_divider, mcu_cnt, div;
+	static const u8 depth[] = {
+		[SSC_DEPTH_4M] = RTS5228_RTS5261_SSC_DEPTH_4M,
+		[SSC_DEPTH_2M] = RTS5228_RTS5261_SSC_DEPTH_2M,
+		[SSC_DEPTH_1M] = RTS5228_RTS5261_SSC_DEPTH_1M,
+		[SSC_DEPTH_512K] = RTS5228_RTS5261_SSC_DEPTH_512K,
+	};
 
 	timeout = 2000;
 	if (initial_mode) {
 		/* We use 250k(around) here, in initial stage */
-		clk_divider = SD_CLK_DIVIDE_128;
-		card_clock = 30000000;
+		if (CHK_PCI_PID(host, RTK_MMC_PID_5261)) {
+			clk_divider = SD_CLK_DIVIDE_256;
+			card_clock = 60000000;
+		} else {
+			clk_divider = SD_CLK_DIVIDE_128;
+			card_clock = 30000000;
+		}
 	} else {
 		clk_divider = SD_CLK_DIVIDE_0;
 	}
-	err = rtsx_write_register(host, SD_CFG1,
-			SD_CLK_DIVIDE_MASK, clk_divider);
+	err = rtsx_write_register(host, SD_CFG1, SD_CLK_DIVIDE_MASK,
+				  clk_divider);
 	if (err < 0)
 		return err;
 
@@ -928,8 +974,117 @@ static int rtsx_switch_clock(RtkMmcHost *host, unsigned int card_clock,
 	clk = card_clock;
 	if (!initial_mode && double_clk)
 		clk = card_clock * 2;
-	mmc_debug("Internal SSC clock: %dMHz (cur_clock = %d)\n",
-		clk, host->cur_clock);
+	mmc_debug("Internal SSC clock: %dMHz (cur_clock = %d)\n", clk,
+		  host->cur_clock);
+
+	if (clk == host->cur_clock)
+		return 0;
+
+	n = (u8)(clk - 4);
+
+	mcu_cnt = (u8)(125 / clk + 3);
+	if (mcu_cnt > 15)
+		mcu_cnt = 15;
+
+	/* Make sure that the SSC clock div_n is not less than MIN_DIV_N_PCR */
+	div = CLK_DIV_1;
+	while ((n < 76) && (div < CLK_DIV_8)) {
+		n = (n + 4) * 2 - 4;
+		div++;
+	}
+	n = (n / 2) - 1;
+	mmc_debug("n = %d, div = %d\n", n, div);
+
+	ssc_depth = depth[ssc_depth];
+	if (double_clk)
+		ssc_depth = double_ssc_depth(ssc_depth);
+
+	if (ssc_depth) {
+		if (div == CLK_DIV_2) {
+			if (ssc_depth > 1)
+				ssc_depth -= 1;
+			else
+				ssc_depth = RTS5228_RTS5261_SSC_DEPTH_8M;
+		} else if (div == CLK_DIV_4) {
+			if (ssc_depth > 2)
+				ssc_depth -= 2;
+			else
+				ssc_depth = RTS5228_RTS5261_SSC_DEPTH_8M;
+		} else if (div == CLK_DIV_8) {
+			if (ssc_depth > 3)
+				ssc_depth -= 3;
+			else
+				ssc_depth = RTS5228_RTS5261_SSC_DEPTH_8M;
+		}
+	} else {
+		ssc_depth = 0;
+	}
+	mmc_debug("ssc_depth = %d\n", ssc_depth);
+
+	rtsx_add_cmd(host, WRITE_REG_CMD, CLK_CTL, CLK_LOW_FREQ, CLK_LOW_FREQ);
+	rtsx_add_cmd(host, WRITE_REG_CMD, CLK_DIV, 0xFF, (div << 4) | mcu_cnt);
+	rtsx_add_cmd(host, WRITE_REG_CMD, SSC_CTL1, SSC_RSTB, 0);
+	rtsx_add_cmd(host, WRITE_REG_CMD, SSC_CTL2, SSC_DEPTH_MASK, ssc_depth);
+	rtsx_add_cmd(host, WRITE_REG_CMD, SSC_DIV_N_0, 0xFF, n);
+	rtsx_add_cmd(host, WRITE_REG_CMD, SSC_CTL1, SSC_RSTB, SSC_RSTB);
+	if (vpclk) {
+		rtsx_add_cmd(host, WRITE_REG_CMD, SD_VPCLK0_CTL,
+			     PHASE_NOT_RESET, 0);
+		rtsx_add_cmd(host, WRITE_REG_CMD, SD_VPCLK0_CTL,
+			     PHASE_NOT_RESET, PHASE_NOT_RESET);
+	}
+
+	err = rtsx_send_cmd(host, timeout);
+	if (err < 0) {
+		mmc_error("%s, rtsx_send_cmd failed\n", __func__);
+		return err;
+	}
+
+	/* Wait SSC clock stable */
+	udelay(150);
+	err = rtsx_write_register(host, CLK_CTL, CLK_LOW_FREQ, 0);
+	if (err < 0)
+		return err;
+
+	host->cur_clock = clk;
+
+	return 0;
+}
+
+static int rtsx_switch_clock(RtkMmcHost *host, unsigned int card_clock,
+			     u8 ssc_depth, bool initial_mode, bool double_clk,
+			     bool vpclk)
+{
+	int err, clk, timeout;
+	u8 n, clk_divider, mcu_cnt, div;
+
+	timeout = 2000;
+	if (CHK_PCI_PID(host, RTK_MMC_PID_5228) ||
+	    CHK_PCI_PID(host, RTK_MMC_PID_5261))
+		return rts5228_rts5261_switch_clock(
+			host, host->clock, host->ssc_depth, host->initial_mode,
+			host->double_clk, host->vpclk);
+
+	if (initial_mode) {
+		/* We use 250k(around) here, in initial stage */
+		clk_divider = SD_CLK_DIVIDE_128;
+		card_clock = 30000000;
+	} else {
+		clk_divider = SD_CLK_DIVIDE_0;
+	}
+	err = rtsx_write_register(host, SD_CFG1, SD_CLK_DIVIDE_MASK,
+				  clk_divider);
+	if (err < 0)
+		return err;
+
+	card_clock /= 1000000;
+	mmc_debug("Switch card clock to %dMHz\n", card_clock);
+
+	clk = card_clock;
+	if (!initial_mode && double_clk)
+		clk = card_clock * 2;
+	mmc_debug("Internal SSC clock: %dMHz (cur_clock = %d)\n", clk,
+		  host->cur_clock);
 
 	if (clk == host->cur_clock)
 		return 0;
@@ -954,20 +1109,17 @@ static int rtsx_switch_clock(RtkMmcHost *host, unsigned int card_clock,
 	ssc_depth = revise_ssc_depth(ssc_depth, div);
 	mmc_debug("ssc_depth = %d\n", ssc_depth);
 
-	rtsx_add_cmd(host, WRITE_REG_CMD, CLK_CTL,
-			CLK_LOW_FREQ, CLK_LOW_FREQ);
-	rtsx_add_cmd(host, WRITE_REG_CMD, CLK_DIV,
-			0xFF, (div << 4) | mcu_cnt);
+	rtsx_add_cmd(host, WRITE_REG_CMD, CLK_CTL, CLK_LOW_FREQ, CLK_LOW_FREQ);
+	rtsx_add_cmd(host, WRITE_REG_CMD, CLK_DIV, 0xFF, (div << 4) | mcu_cnt);
 	rtsx_add_cmd(host, WRITE_REG_CMD, SSC_CTL1, SSC_RSTB, 0);
-	rtsx_add_cmd(host, WRITE_REG_CMD, SSC_CTL2,
-			SSC_DEPTH_MASK, ssc_depth);
+	rtsx_add_cmd(host, WRITE_REG_CMD, SSC_CTL2, SSC_DEPTH_MASK, ssc_depth);
 	rtsx_add_cmd(host, WRITE_REG_CMD, SSC_DIV_N_0, 0xFF, n);
 	rtsx_add_cmd(host, WRITE_REG_CMD, SSC_CTL1, SSC_RSTB, SSC_RSTB);
 	if (vpclk) {
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_VPCLK0_CTL,
-				PHASE_NOT_RESET, 0);
+			     PHASE_NOT_RESET, 0);
 		rtsx_add_cmd(host, WRITE_REG_CMD, SD_VPCLK0_CTL,
-				PHASE_NOT_RESET, PHASE_NOT_RESET);
+			     PHASE_NOT_RESET, PHASE_NOT_RESET);
 	}
 
 	err = rtsx_send_cmd(host, timeout);
@@ -989,12 +1141,11 @@ static int rtsx_switch_clock(RtkMmcHost *host, unsigned int card_clock,
 
 static void rtk_set_ios(MmcCtrlr *mmc_ctrlr)
 {
-	RtkMmcHost *host = container_of(mmc_ctrlr,
-						RtkMmcHost, mmc_ctrlr);
+	RtkMmcHost *host = container_of(mmc_ctrlr, RtkMmcHost, mmc_ctrlr);
 
 	mmc_debug("%s called\n", __func__);
 	mmc_debug("Buswidth = %d, clock: %d\n", mmc_ctrlr->bus_width,
-		mmc_ctrlr->bus_hz);
+		  mmc_ctrlr->bus_hz);
 
 	switch (mmc_ctrlr->bus_width) {
 	case 8:
@@ -1037,7 +1188,7 @@ static void rtk_set_ios(MmcCtrlr *mmc_ctrlr)
 	host->initial_mode = (mmc_ctrlr->bus_hz <= 1000000) ? true : false;
 	host->clock = mmc_ctrlr->bus_hz;
 	rtsx_switch_clock(host, host->clock, host->ssc_depth,
-			host->initial_mode, host->double_clk, host->vpclk);
+			  host->initial_mode, host->double_clk, host->vpclk);
 }
 
 static int sd_pull_ctl_disable(RtkMmcHost *host)
@@ -1078,6 +1229,51 @@ static int sd_pull_ctl_enable(RtkMmcHost *host)
 	return STATUS_SUCCESS;
 }
 
+static int rts5228_sd_power_on_card3v3(RtkMmcHost *host)
+{
+	int err, timeout;
+
+	timeout = 100;
+	rtsx_add_cmd(host, WRITE_REG_CMD, REG_CRC_DUMMY_0, 0x01, 0x01);
+	rtsx_add_cmd(host, WRITE_REG_CMD, LDO_VCC_CFG1,
+		     RTS5228_RTS5261_LDO_VCC_TUNE_MASK,
+		     RTS5228_RTS5261_LDO_VCC_3V3);
+	rtsx_add_cmd(host, WRITE_REG_CMD, LDO1233318_POW_CTL, LDO1_POWERON_MASK,
+		     LDO1_SOFTSTART);
+	err = rtsx_send_cmd(host, timeout);
+	if (err != 0)
+		return STATUS_FAIL;
+
+	mdelay(RTK_WAIT_SD_POWER_ON_STABLE_MS);
+
+	rtsx_add_cmd(host, WRITE_REG_CMD, LDO1233318_POW_CTL, LDO1_POWERON_MASK,
+		     LDO1_FULLON);
+	rtsx_add_cmd(host, WRITE_REG_CMD, LDO1233318_POW_CTL, 0x08, 0x08);
+	err = rtsx_send_cmd(host, timeout);
+	if (err != 0)
+		return STATUS_FAIL;
+
+	return STATUS_SUCCESS;
+}
+
+static int rts5261_sd_power_on_card3v3(RtkMmcHost *host)
+{
+	int err, timeout;
+
+	timeout = 100;
+	rtsx_add_cmd(host, WRITE_REG_CMD, REG_CRC_DUMMY_0, 0x01, 0x01);
+	rtsx_add_cmd(host, WRITE_REG_CMD, LDO_VCC_CFG1,
+		     RTS5228_RTS5261_LDO_VCC_TUNE_MASK,
+		     RTS5228_RTS5261_LDO_VCC_3V3);
+	rtsx_add_cmd(host, WRITE_REG_CMD, LDO1233318_POW_CTL, 0x01, 0x01);
+	rtsx_add_cmd(host, WRITE_REG_CMD, LDO1233318_POW_CTL, 0x08, 0x08);
+	err = rtsx_send_cmd(host, timeout);
+	if (err != 0)
+		return STATUS_FAIL;
+
+	return STATUS_SUCCESS;
+}
+
 static int sd_power_on_card3v3(RtkMmcHost *host)
 {
 	int err, timeout;
@@ -1085,22 +1281,22 @@ static int sd_power_on_card3v3(RtkMmcHost *host)
 	timeout = 100;
 	if (CHK_PCI_PID(host, RTK_MMC_PID_525A))
 		RTSX_WRITE_REG(host, LDO_VCC_CFG1, LDO_VCC_TUNE_MASK,
-			LDO_VCC_3V3);
+			       LDO_VCC_3V3);
 
-	rtsx_add_cmd(host, WRITE_REG_CMD, CARD_PWR_CTL,
-		SD_POWER_MASK, SD_PARTIAL_POWER_ON);
-	rtsx_add_cmd(host, WRITE_REG_CMD, PWR_GATE_CTRL,
-		LDO3318_PWR_MASK, LDO_SUSPEND);
+	rtsx_add_cmd(host, WRITE_REG_CMD, CARD_PWR_CTL, SD_POWER_MASK,
+		     SD_PARTIAL_POWER_ON);
+	rtsx_add_cmd(host, WRITE_REG_CMD, PWR_GATE_CTRL, LDO3318_PWR_MASK,
+		     LDO_SUSPEND);
 	err = rtsx_send_cmd(host, timeout);
 	if (err != 0)
 		return STATUS_FAIL;
 
 	mdelay(RTK_WAIT_SD_POWER_ON_STABLE_MS);
 
-	rtsx_add_cmd(host, WRITE_REG_CMD, CARD_PWR_CTL,
-		SD_POWER_MASK, SD_POWER_ON);
-	rtsx_add_cmd(host, WRITE_REG_CMD, PWR_GATE_CTRL,
-		LDO3318_PWR_MASK, LDO_ON);
+	rtsx_add_cmd(host, WRITE_REG_CMD, CARD_PWR_CTL, SD_POWER_MASK,
+		     SD_POWER_ON);
+	rtsx_add_cmd(host, WRITE_REG_CMD, PWR_GATE_CTRL, LDO3318_PWR_MASK,
+		     LDO_ON);
 	err = rtsx_send_cmd(host, timeout);
 	if (err != 0)
 		return STATUS_FAIL;
@@ -1118,9 +1314,16 @@ static int sd_power_off_card3v3(RtkMmcHost *host)
 
 	RTSX_WRITE_REG(host, CARD_OE, SD_OUTPUT_EN, 0);
 
-	RTSX_WRITE_REG(host, CARD_PWR_CTL, SD_POWER_MASK | PMOS_STRG_MASK,
-					SD_POWER_OFF | PMOS_STRG_400mA);
-	RTSX_WRITE_REG(host, PWR_GATE_CTRL, LDO3318_PWR_MASK, LDO_OFF);
+	if (CHK_PCI_PID(host, RTK_MMC_PID_5228) ||
+	    CHK_PCI_PID(host, RTK_MMC_PID_5261)) {
+		RTSX_WRITE_REG(host, LDO1233318_POW_CTL, LDO_POWERON_MASK, 0);
+		RTSX_WRITE_REG(host, REG_CRC_DUMMY_0, 0x01, 0x00);
+	} else {
+		RTSX_WRITE_REG(host, CARD_PWR_CTL,
+			       SD_POWER_MASK | PMOS_STRG_MASK,
+			       SD_POWER_OFF | PMOS_STRG_400mA);
+		RTSX_WRITE_REG(host, PWR_GATE_CTRL, LDO3318_PWR_MASK, LDO_OFF);
+	}
 
 	mdelay(RTK_WAIT_SD_POWER_DOWN_STABLE_MS);
 
@@ -1134,6 +1337,7 @@ static int sd_power_off_card3v3(RtkMmcHost *host)
 static int sd_init_power(RtkMmcHost *host)
 {
 	int err;
+	u16 val = 0;
 
 	mmc_debug("%s called\n", __func__);
 
@@ -1143,6 +1347,16 @@ static int sd_init_power(RtkMmcHost *host)
 
 	/* Switch SD bus to 3V3 signal */
 	switch (host->pid) {
+	case RTK_MMC_PID_5228:
+	case RTK_MMC_PID_5261:
+		RTSX_WRITE_REG(host, CARD_PWR_CTL, 0x20, 0x20);
+		rtsx_read_phy_register(host, PHY_TUNE, &val);
+		val |= PHY_TUNE_SDBUS_33;
+		rtsx_write_phy_register(host, PHY_TUNE, val);
+
+		RTSX_WRITE_REG(host, 0xFF71, 0x70, 0x70);
+		RTSX_WRITE_REG(host, SD_PAD_CTL, SD_IO_USING_1V8, 0);
+		break;
 	case RTK_MMC_PID_522A:
 		rtsx_write_phy_register(host, 0x08, 0x57E4);
 		break;
@@ -1171,7 +1385,21 @@ static int sd_init_power(RtkMmcHost *host)
 	if (err != 0)
 		return STATUS_FAIL;
 
-	err = sd_power_on_card3v3(host);
+	switch (host->pid) {
+	case RTK_MMC_PID_5228:
+		err = rts5228_sd_power_on_card3v3(host);
+		break;
+	case RTK_MMC_PID_5261:
+		err = rts5261_sd_power_on_card3v3(host);
+		break;
+	case RTK_MMC_PID_522A:
+	case RTK_MMC_PID_525A:
+		err = sd_power_on_card3v3(host);
+		break;
+	default:
+		break;
+	}
+
 	if (err != 0)
 		return STATUS_FAIL;
 
@@ -1187,6 +1415,37 @@ static int sd_init_power(RtkMmcHost *host)
 	return STATUS_SUCCESS;
 }
 
+static int rts5228_sd_extra_init_hw(RtkMmcHost *host)
+{
+	RTSX_WRITE_REG(host, AUTOLOAD_CFG1, CD_RESUME_EN_MASK,
+		       CD_RESUME_EN_MASK);
+
+	RTSX_WRITE_REG(host, L1SUB_CONFIG1, AUX_CLK_ACTIVE_SEL_MASK,
+		       MAC_CKSW_DONE);
+	RTSX_WRITE_REG(host, L1SUB_CONFIG3, 0xFF, 0x00);
+
+	RTSX_WRITE_REG(host, FUNC_FORCE_CTL, 0x02, 0x02);
+
+	RTSX_WRITE_REG(host, PCLK_CTL, PCLK_MODE_SEL, PCLK_MODE_SEL);
+
+	RTSX_WRITE_REG(host, PM_EVENT_DEBUG, PME_DEBUG_0, PME_DEBUG_0);
+	RTSX_WRITE_REG(host, PM_CLK_FORCE_CTL, 0x01, 0x01);
+
+	/* LED shine disabled, set initial shine cycle period */
+	RTSX_WRITE_REG(host, OLT_LED_CTL, 0x0F, 0x02);
+
+	RTSX_WRITE_REG(host, PETXCFG, 0x30, 0x00);
+
+	RTSX_WRITE_REG(host, PETXCFG, FORCE_CLKREQ_DELINK_MASK,
+		       FORCE_CLKREQ_HIGH);
+
+	RTSX_WRITE_REG(host, PWD_SUSPEND_EN, 0xFF, 0xFB);
+	RTSX_WRITE_REG(host, PM_CTRL3, 0x10, 0x00);
+	RTSX_WRITE_REG(host, 0xFF78, 0x30, 0x20);
+
+	return 0;
+}
+
 static int rts522a_sd_extra_init_hw(RtkMmcHost *host)
 {
 	/* Configure GPIO as output */
@@ -1200,7 +1459,7 @@ static int rts522a_sd_extra_init_hw(RtkMmcHost *host)
 	RTSX_WRITE_REG(host, PETXCFG, 0x30, 0x00);
 
 	RTSX_WRITE_REG(host, PETXCFG, FORCE_CLKREQ_DELINK_MASK,
-		FORCE_CLKREQ_HIGH);
+		       FORCE_CLKREQ_HIGH);
 
 	RTSX_WRITE_REG(host, PM_CTRL3, 0x10, 0x00);
 
@@ -1228,18 +1487,60 @@ static int rts525a_sd_extra_init_hw(RtkMmcHost *host)
 
 	RTSX_WRITE_REG(host, REG_VREF, PWD_SUSPND_EN, PWD_SUSPND_EN);
 
-
 	RTSX_WRITE_REG(host, PM_CTRL3, 0x01, 0x00);
 	RTSX_WRITE_REG(host, 0xFF78, 0x30, 0x20);
 
 	RTSX_WRITE_REG(host, PETXCFG, FORCE_CLKREQ_DELINK_MASK,
-		FORCE_CLKREQ_HIGH);
+		       FORCE_CLKREQ_HIGH);
 
 	RTSX_WRITE_REG(host, PM_CTRL3, 0x10, 0x00);
 
 	RTSX_WRITE_REG(host, RTS5250_CLK_CFG3, RTS525A_CFG_MEM_PD,
-		RTS525A_CFG_MEM_PD);
+		       RTS525A_CFG_MEM_PD);
 	RTSX_WRITE_REG(host, PCLK_CTL, PCLK_MODE_SEL, PCLK_MODE_SEL);
+
+	return 0;
+}
+
+static int rts5261_sd_extra_init_hw(RtkMmcHost *host)
+{
+	u32 val;
+
+	RTSX_WRITE_REG(host, AUTOLOAD_CFG1, CD_RESUME_EN_MASK,
+		       CD_RESUME_EN_MASK);
+
+	RTSX_WRITE_REG(host, L1SUB_CONFIG1, AUX_CLK_ACTIVE_SEL_MASK,
+		       MAC_CKSW_DONE);
+	RTSX_WRITE_REG(host, L1SUB_CONFIG3, 0xFF, 0x00);
+
+	val = rtsx_readl(host, RTSX_DUM_REG);
+	rtsx_writel(host, RTSX_DUM_REG, val | 0x01);
+
+	RTSX_WRITE_REG(host, AUTOLOAD_CFG4, RTS5261_AUX_CLK_16M_EN, 0);
+
+	/* Release PRSNT# */
+	RTSX_WRITE_REG(host, AUTOLOAD_CFG4, RTS5261_FORCE_PRSNT_LOW, 0);
+	RTSX_WRITE_REG(host, FUNC_FORCE_CTL, 0x02, 0x02);
+
+	RTSX_WRITE_REG(host, PCLK_CTL, PCLK_MODE_SEL, PCLK_MODE_SEL);
+
+	RTSX_WRITE_REG(host, PM_EVENT_DEBUG, PME_DEBUG_0, PME_DEBUG_0);
+	RTSX_WRITE_REG(host, PM_CLK_FORCE_CTL, 0x01, 0x01);
+
+	/* LED shine disabled, set initial shine cycle period */
+	RTSX_WRITE_REG(host, OLT_LED_CTL, 0x0F, 0x02);
+
+	RTSX_WRITE_REG(host, PETXCFG, 0x30, 0x00);
+
+	RTSX_WRITE_REG(host, PETXCFG, FORCE_CLKREQ_DELINK_MASK,
+		       FORCE_CLKREQ_HIGH);
+
+	RTSX_WRITE_REG(host, PWD_SUSPEND_EN, 0xFF, 0xFB);
+	RTSX_WRITE_REG(host, PM_CTRL3, 0x10, 0x00);
+	RTSX_WRITE_REG(host, 0xFF78, 0x30, 0x20);
+
+	/* Clear Enter RTD3_cold Information*/
+	RTSX_WRITE_REG(host, RTS5261_FW_CTL, RTS5261_INFORM_RTD3_COLD, 0);
 
 	return 0;
 }
@@ -1265,7 +1566,14 @@ static int rtk_init(BlockDevCtrlrOps *me)
 		pci_write_config8(dev, 0x70C, 1);
 
 	/* Power on SSC */
-	RTSX_WRITE_REG(host, FPDCTL, SSC_POWER_DOWN, 0);
+	if (CHK_PCI_PID(host, RTK_MMC_PID_5261)) {
+		RTSX_WRITE_REG(host, RTS5261_FW_CFG1, RTS5261_MCU_CLOCK_GATING,
+			       0);
+		RTSX_WRITE_REG(host, RTS5261_FPDCTL, SSC_POWER_DOWN, 0);
+	} else {
+		RTSX_WRITE_REG(host, FPDCTL, SSC_POWER_DOWN, 0);
+	}
+
 	udelay(200);
 
 	/* disable ASPM */
@@ -1280,7 +1588,12 @@ static int rtk_init(BlockDevCtrlrOps *me)
 	RTSX_WRITE_REG(host, CARD_DRIVE_SEL, 0xFF, RTSX_CARD_DRIVE_DEFAULT);
 	/* Enable SSC Clock */
 	RTSX_WRITE_REG(host, SSC_CTL1, 0xFF, SSC_8X_EN | SSC_SEL_4M);
-	RTSX_WRITE_REG(host, SSC_CTL2, 0xFF, 0x12);
+	if (CHK_PCI_PID(host, RTK_MMC_PID_5228) ||
+	    CHK_PCI_PID(host, RTK_MMC_PID_5261))
+		RTSX_WRITE_REG(host, SSC_CTL2, 0xFF,
+			       RTS5228_RTS5261_SSC_DEPTH_2M);
+	else
+		RTSX_WRITE_REG(host, SSC_CTL2, 0xFF, 0x12);
 	/* Disable cd_pwr_save */
 	RTSX_WRITE_REG(host, CHANGE_LINK_STATE, 0x16, 0x10);
 	/* Clear Link Ready Interrupt */
@@ -1306,12 +1619,29 @@ static int rtk_init(BlockDevCtrlrOps *me)
 		RTSX_WRITE_REG(host, SSC_DIV_N_0, 0xff, 0x5d);
 
 	/* ocp setting */
-	RTSX_WRITE_REG(host, FPDCTL, OC_POWER_DOWN, 0);
-	RTSX_WRITE_REG(host, OCPPARA1, SD_OCP_TIME_MASK, SD_OCP_TIME_800);
-	RTSX_WRITE_REG(host, OCPPARA2, SD_OCP_THD_MASK, host->sd_800mA_ocp_thd);
-	RTSX_WRITE_REG(host, OCPGLITCH, SD_OCP_GLITCH_MASK, SD_OCP_GLITCH_10M);
-	RTSX_WRITE_REG(host, OCPCTL, 0xFF, SD_OCP_INT_EN | SD_DETECT_EN);
-
+	if (CHK_PCI_PID(host, RTK_MMC_PID_5228) ||
+	    CHK_PCI_PID(host, RTK_MMC_PID_5261)) {
+		RTSX_WRITE_REG(host, LDO1_CFG0, LDO1_OCP_EN | LDO1_OCP_LMT_EN,
+			       LDO1_OCP_EN | LDO1_OCP_LMT_EN);
+		RTSX_WRITE_REG(host, LDO1_CFG0, LDO1_OCP_THD_MASK,
+			       host->sd_800mA_ocp_thd);
+		RTSX_WRITE_REG(host, LDO1_CFG0, LDO1_OCP_LMT_THD_MASK,
+			       host->sd_ocp_lmt_thd);
+		RTSX_WRITE_REG(host, OCPGLITCH, SD_OCP_GLITCH_MASK,
+			       SD_OCP_GLITCH_800U);
+		RTSX_WRITE_REG(host, OCPCTL, 0xFF,
+			       SD_OCP_INT_EN | SD_DETECT_EN);
+	} else {
+		RTSX_WRITE_REG(host, FPDCTL, OC_POWER_DOWN, 0);
+		RTSX_WRITE_REG(host, OCPPARA1, SD_OCP_TIME_MASK,
+			       SD_OCP_TIME_800);
+		RTSX_WRITE_REG(host, OCPPARA2, SD_OCP_THD_MASK,
+			       host->sd_800mA_ocp_thd);
+		RTSX_WRITE_REG(host, OCPGLITCH, SD_OCP_GLITCH_MASK,
+			       SD_OCP_GLITCH_10M);
+		RTSX_WRITE_REG(host, OCPCTL, 0xFF,
+			       SD_OCP_INT_EN | SD_DETECT_EN);
+	}
 
 	/* Enable clk_request_n to enable clock power management */
 	pci_write_config8(dev, 0x81, 1);
@@ -1322,11 +1652,17 @@ static int rtk_init(BlockDevCtrlrOps *me)
 		return ret;
 
 	switch (host->pid) {
+	case RTK_MMC_PID_5228:
+		rts5228_sd_extra_init_hw(host);
+		break;
 	case RTK_MMC_PID_522A:
 		rts522a_sd_extra_init_hw(host);
 		break;
 	case RTK_MMC_PID_525A:
 		rts525a_sd_extra_init_hw(host);
+		break;
+	case RTK_MMC_PID_5261:
+		rts5261_sd_extra_init_hw(host);
 		break;
 	default:
 		break;
@@ -1348,8 +1684,7 @@ static int rtk_init(BlockDevCtrlrOps *me)
 
 static int rtk_update(BlockDevCtrlrOps *me)
 {
-	RtkMmcHost *host = container_of
-		(me, RtkMmcHost, mmc_ctrlr.ctrlr.ops);
+	RtkMmcHost *host = container_of(me, RtkMmcHost, mmc_ctrlr.ctrlr.ops);
 	bool present;
 
 	mmc_debug("%s called\n", __func__);
@@ -1366,7 +1701,8 @@ static int rtk_update(BlockDevCtrlrOps *me)
 				 * A card was present but isn't any more. Get
 				 * rid of it.
 				 */
-				list_remove(&host->mmc_ctrlr.media->dev.list_node);
+				list_remove(
+					&host->mmc_ctrlr.media->dev.list_node);
 				free(host->mmc_ctrlr.media);
 				host->mmc_ctrlr.media = NULL;
 			}
@@ -1380,7 +1716,7 @@ static int rtk_update(BlockDevCtrlrOps *me)
 
 			host->mmc_ctrlr.media->dev.name = "removable rtk_mmc";
 			list_insert_after(&host->mmc_ctrlr.media->dev.list_node,
-				&removable_block_devices);
+					  &removable_block_devices);
 		}
 	} else {
 
@@ -1389,7 +1725,7 @@ static int rtk_update(BlockDevCtrlrOps *me)
 
 		host->mmc_ctrlr.media->dev.name = "rtk_mmc";
 		list_insert_after(&host->mmc_ctrlr.media->dev.list_node,
-				&fixed_block_devices);
+				  &fixed_block_devices);
 		host->mmc_ctrlr.ctrlr.need_update = 0;
 	}
 
@@ -1420,13 +1756,13 @@ void add_rtkhost(RtkMmcHost *host)
 	host->mmc_ctrlr.f_max = 208000000;
 
 	host->mmc_ctrlr.voltages = (MMC_VDD_32_33 | MMC_VDD_33_34);
-	host->mmc_ctrlr.caps = MMC_CAPS_HS | MMC_CAPS_HS_52MHz |
-			MMC_CAPS_4BIT | MMC_CAPS_HC;
+	host->mmc_ctrlr.caps =
+		MMC_CAPS_HS | MMC_CAPS_HS_52MHz | MMC_CAPS_4BIT | MMC_CAPS_HC;
 
-	host->mmc_ctrlr.b_max = 65535;/* Some controllers use 16-bit regs. */
+	host->mmc_ctrlr.b_max = 65535; /* Some controllers use 16-bit regs. */
 
 	assert(host->mmc_ctrlr.slot_type == MMC_SLOT_TYPE_EMBEDDED ||
-		!(host->platform_info & RTK_PLATFORM_EMMC_HARDWIRED_VCC));
+	       !(host->platform_info & RTK_PLATFORM_EMMC_HARDWIRED_VCC));
 }
 
 RtkMmcHost *probe_pci_rtk_host(pcidev_t dev, unsigned int platform_info)
@@ -1438,8 +1774,8 @@ RtkMmcHost *probe_pci_rtk_host(pcidev_t dev, unsigned int platform_info)
 
 	pci_host = xzalloc(sizeof(*pci_host));
 
-	printf("Looking for RTK Controller %p @ %02x:%02x:%02x\n",
-		pci_host, PCI_BUS(dev), PCI_SLOT(dev), PCI_FUNC(dev));
+	printf("Looking for RTK Controller %p @ %02x:%02x:%02x\n", pci_host,
+	       PCI_BUS(dev), PCI_SLOT(dev), PCI_FUNC(dev));
 
 	pci_host->dev = dev;
 	pci_host->host.platform_info = platform_info;
