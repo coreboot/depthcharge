@@ -9,6 +9,7 @@
 #include "drivers/bus/i2s/cavs-regs.h"
 #include "drivers/bus/i2s/intel_common/max98357a.h"
 #include "drivers/gpio/alderlake.h"
+#include "drivers/soc/alderlake.h"
 
 #define SDMODE_PIN	GPP_A11
 #define SDMODE_ENABLE	0
@@ -35,4 +36,14 @@ const struct audio_config *variant_probe_audio_config(void)
 	};
 
 	return &config;
+}
+static const struct storage_config storage_configs[] = {
+	{ .media = STORAGE_NVME, .pci_dev = PCH_DEV_PCIE8 },
+	{ .media = STORAGE_SDHCI, .pci_dev = PCH_DEV_PCIE7 },
+};
+
+const struct storage_config *variant_get_storage_configs(size_t *count)
+{
+	*count = ARRAY_SIZE(storage_configs);
+	return storage_configs;
 }
