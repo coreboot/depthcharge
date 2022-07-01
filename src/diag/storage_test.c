@@ -212,10 +212,16 @@ static int is_test_running(StorageTestLog *log)
 	return HALF_BYTE_LOW(data->current_operation);
 }
 
+int diag_storage_test_supported(void)
+{
+	BlockDev *dev = get_first_fixed_block_device();
+	return dev && dev->ops.test_control;
+}
+
 DiagTestResult diag_dump_storage_test_log(char *buf, const char *end)
 {
 	BlockDev *dev = get_first_fixed_block_device();
-	if (!dev || !(dev->ops.get_test_log)) {
+	if (!diag_storage_test_supported()) {
 		printf("%s: No supported.\n", __func__);
 		return DIAG_TEST_UNIMPLEMENTED;
 	}
@@ -250,7 +256,7 @@ DiagTestResult diag_dump_storage_test_log(char *buf, const char *end)
 DiagTestResult diag_storage_test_control(enum BlockDevTestOpsType ops)
 {
 	BlockDev *dev = get_first_fixed_block_device();
-	if (!dev || !(dev->ops.test_control)) {
+	if (!diag_storage_test_supported()) {
 		printf("%s: No supported.\n", __func__);
 		return DIAG_TEST_UNIMPLEMENTED;
 	}

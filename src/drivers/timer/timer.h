@@ -15,6 +15,8 @@
 #ifndef __DRIVERS_TIMER_H__
 #define __DRIVERS_TIMER_H__
 
+#include <libpayload.h>
+
 struct stopwatch {
 	uint64_t start;
 	uint64_t expires;

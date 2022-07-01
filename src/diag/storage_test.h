@@ -16,6 +16,13 @@
 #define DIAG_STORAGE_TEST_DEFAULT_DELAY_MS 1000
 
 /*
+ * Check if storage self-test is supported on the first fixed block device.
+ *
+ * @return 1 if supported; otherwise, 0.
+ */
+int diag_storage_test_supported(void);
+
+/*
  * Dump storage self-test log into the buffer and truncate the text which
  * exceeds "end".
  *
