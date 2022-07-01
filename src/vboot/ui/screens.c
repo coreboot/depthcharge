@@ -26,6 +26,7 @@
 #include "diag/memory.h"
 #include "diag/storage_test.h"
 #include "drivers/ec/cros/ec.h"
+#include "drivers/storage/blockdev.h"
 #include "drivers/tpm/tpm.h"
 #include "vboot/firmware_id.h"
 #include "vboot/ui.h"
@@ -1836,11 +1837,7 @@ static const struct ui_screen_info developer_select_bootloader_screen = {
 
 static vb2_error_t diagnostics_init(struct ui_context *ui)
 {
-	/* We only need to know whether the test log is supported, so passing an
-	   array of size 1 is sufficient. */
-	char log[1];
-	DiagTestResult res = diag_dump_storage_test_log(log, log + 1);
-	if (res == DIAG_TEST_UNIMPLEMENTED) {
+	if (!diag_storage_test_supported()) {
 		UI_SET_BIT(ui->state->disabled_item_mask,
 			   DIAGNOSTICS_ITEM_STORAGE_TEST_SHORT);
 		UI_SET_BIT(ui->state->disabled_item_mask,
