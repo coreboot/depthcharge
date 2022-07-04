@@ -1056,6 +1056,8 @@ int ufs_update(BlockDevCtrlrOps *bdev_ops)
 	int lun, cnt;
 	int rc;
 
+	ufs->bctlr.need_update = 0;
+
 	rc = ufs_ctrlr_setup_retry(ufs);
 	if (rc)
 		return rc;
@@ -1066,12 +1068,11 @@ int ufs_update(BlockDevCtrlrOps *bdev_ops)
 			if (rc == UFS_ENOLUN)
 				continue;
 			if (rc)
-				 return ufs_err("Failed to set up LUN %d", rc, lun);
+				return ufs_err("Failed to set up LUN %d",
+					       rc, lun);
 		}
 		cnt += 1;
 	}
-
-	ufs->bctlr.need_update = 0;
 
 	return 0;
 }
