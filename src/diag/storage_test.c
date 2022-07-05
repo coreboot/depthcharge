@@ -33,6 +33,12 @@ static inline uint32_t get_test_log_delay(void)
 
 static BlockDev *get_first_fixed_block_device(void)
 {
+	static BlockDev *bdev;
+
+	/* Cache bdev to prevent too frequent get_all_bdevs calls. */
+	if (bdev)
+		return bdev;
+
 	ListNode *devs;
 	int n = get_all_bdevs(BLOCKDEV_FIXED, &devs);
 	if (!n) {
@@ -43,7 +49,6 @@ static BlockDev *get_first_fixed_block_device(void)
 		printf("%s: More than one device found.\n", __func__);
 		return NULL;
 	}
-	BlockDev *bdev;
 	list_for_each(bdev, *devs, list_node) { return bdev; }
 	return NULL;
 }
