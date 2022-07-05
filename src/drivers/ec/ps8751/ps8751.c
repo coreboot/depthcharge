@@ -494,17 +494,20 @@ static int __must_check ps8751_spi_wait_prog_cmd(Ps8751 *me)
 	uint64_t t0_us;
 
 	t0_us = timer_us(0);
-	do {
+	while (1) {
 		if (ps8751_read_reg(me, PAGE_2, P2_SPI_STATUS, &busy) != 0)
 			return -1;
 		if ((busy & 0x3f) == 0x00) {
 			/* {chip,sector} erase, program cmd finished */
 			return 0;
 		}
-	} while (timer_us(t0_us) < PS_WIP_TIMEOUT_US);
-	printf("%s: flash prog/erase timeout after %ums\n",
-	       me->chip_name, USEC_TO_MSEC(PS_SPI_TIMEOUT_US));
-	return -1;
+		if (timer_us(t0_us) >= PS_WIP_TIMEOUT_US) {
+			printf("%s: flash prog/erase timeout after %ums\n",
+			       me->chip_name, USEC_TO_MSEC(PS_SPI_TIMEOUT_US));
+			return -1;
+		}
+		mdelay(20);
+	}
 }
 
 /**
@@ -545,16 +548,19 @@ static int __must_check ps8751_spi_wait_wip(Ps8751 *me)
 	uint64_t t0_us;
 
 	t0_us = timer_us(0);
-	do {
+	while (1) {
 		if (ps8751_spi_cmd_read_status(me, &status) != 0)
 			return -1;
+		if ((status & SPI_STATUS_WIP) == 0)
+			return 0;
+
 		if (timer_us(t0_us) >= PS_WIP_TIMEOUT_US) {
 			printf("%s: WIP timeout after %ums\n",
 			       me->chip_name, USEC_TO_MSEC(PS_WIP_TIMEOUT_US));
 			return -1;
 		}
-	} while (status & SPI_STATUS_WIP);
-	return 0;
+		mdelay(20);
+	}
 }
 
 /**
