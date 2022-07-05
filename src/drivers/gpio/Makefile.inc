@@ -28,6 +28,7 @@ depthcharge-$(CONFIG_DRIVER_GPIO_METEORLAKE) += meteorlake.c
 depthcharge-$(CONFIG_DRIVER_GPIO_MT8173) += mtk_gpio.c
 depthcharge-$(CONFIG_DRIVER_GPIO_MT8183) += mtk_gpio.c
 depthcharge-$(CONFIG_DRIVER_GPIO_MT8186) += mtk_gpio.c
+depthcharge-$(CONFIG_DRIVER_GPIO_MT8188) += mtk_gpio.c
 depthcharge-$(CONFIG_DRIVER_GPIO_MT8192) += mtk_gpio.c
 depthcharge-$(CONFIG_DRIVER_GPIO_MT8195) += mtk_gpio.c
 depthcharge-$(CONFIG_DRIVER_GPIO_MVMAP2315) += mvmap2315.c

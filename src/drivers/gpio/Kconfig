@@ -90,6 +90,11 @@ config DRIVER_GPIO_MT8186
 	default n
 	depends on ARCH_ARM
 
+config DRIVER_GPIO_MT8188
+	bool "MediaTek MT8188 GPIO driver"
+	default n
+	depends on ARCH_ARM
+
 config DRIVER_GPIO_MT8192
 	bool "MediaTek MT8192 GPIO driver"
 	default n
