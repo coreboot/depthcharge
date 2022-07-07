@@ -32,9 +32,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <libpayload.h>
+
 #include "base/container_of.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/bouncebuf.h"
+#include "drivers/storage/info.h"
 #include "drivers/storage/ufs.h"
 
 #define UFS_DEBUG 0
@@ -1021,6 +1023,28 @@ static int ufs_ctrlr_setup_retry(UfsCtlr *ufs)
 	return rc;
 }
 
+// Interface for blockdev to get device health info
+static int block_ufs_get_health_info(BlockDevOps *me, HealthInfo *health)
+{
+	UfsDevice *ufs_dev = container_of(me, UfsDevice, dev.ops);
+	UfsDesc health_desc = {};
+	int lun = ufs_dev->lun;
+	int rc;
+
+	rc = ufs_get_descriptor(ufs_dev->ufs, &health_desc, UFS_DESC_IDN_HEALTH,
+				lun);
+	if (rc)
+		return ufs_err("Failed get health descriptor for LUN %u",
+			       rc, lun);
+
+	memcpy(&health->data.ufs_data, health_desc.raw,
+	       MIN(health_desc.len, sizeof(health->data.ufs_data)));
+
+	health->type = STORAGE_INFO_TYPE_UFS;
+
+	return 0;
+}
+
 static int ufs_add_device(UfsCtlr *ufs, uint32_t lun)
 {
 	UfsDevice *ufs_dev;
@@ -1033,14 +1057,15 @@ static int ufs_add_device(UfsCtlr *ufs, uint32_t lun)
 
 	snprintf(name, sizeof(name), "UFS LUN %u", lun);
 
-	ufs_dev->dev.name		= strdup(name);
-	ufs_dev->dev.removable		= 0;
-	ufs_dev->dev.block_size		= 1 << ufs_ud(ufs_dev)->bLogicalBlockSize;
-	ufs_dev->dev.block_count	= be64toh(ufs_ud(ufs_dev)->qLogicalBlockCount);
-	ufs_dev->dev.stream_block_count	= ufs_dev->dev.block_count;
-	ufs_dev->dev.ops.read		= &block_ufs_read;
-	ufs_dev->dev.ops.write		= &block_ufs_write;
-	ufs_dev->dev.ops.new_stream	= &new_simple_stream;
+	ufs_dev->dev.name = strdup(name);
+	ufs_dev->dev.removable = 0;
+	ufs_dev->dev.block_size = 1 << ufs_ud(ufs_dev)->bLogicalBlockSize;
+	ufs_dev->dev.block_count = be64toh(ufs_ud(ufs_dev)->qLogicalBlockCount);
+	ufs_dev->dev.stream_block_count = ufs_dev->dev.block_count;
+	ufs_dev->dev.ops.read = &block_ufs_read;
+	ufs_dev->dev.ops.write = &block_ufs_write;
+	ufs_dev->dev.ops.new_stream = &new_simple_stream;
+	ufs_dev->dev.ops.get_health_info = &block_ufs_get_health_info;
 	printf("Adding UFS block device LUN %02x block size %u block count %llu\n",
 		lun, ufs_dev->dev.block_size, (unsigned long long)ufs_dev->dev.block_count);
 	list_insert_after(&ufs_dev->dev.list_node, &fixed_block_devices);
