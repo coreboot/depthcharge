@@ -12,6 +12,7 @@
 #include <endian.h>
 #include <stdint.h>
 #include <libpayload.h>
+
 #include "drivers/storage/blockdev.h"
 
 /**************** Start HCI definitions *********************/
@@ -396,6 +397,7 @@ typedef enum {
 #define UFS_DESC_IDN_STRING		0x05
 #define UFS_DESC_IDN_GEOMETRY		0x07
 #define UFS_DESC_IDN_POWER		0x08
+#define UFS_DESC_IDN_HEALTH		0x09
 
 #define UFS_DESC_IDN_BYTE		1
 
@@ -521,6 +523,16 @@ typedef struct __packed {
 	uint16_t	wContextCapabilities;
 	uint8_t		bLargeUnitGranularity_M1;
 } UfsDescUnit;
+
+// JESD220B Table 14.23 - Device Health Descriptor (big-endian)
+typedef struct __packed {
+	uint8_t		bLength;
+	uint8_t		bDescriptorIDN;
+	uint8_t		bPreEOLInfo;
+	uint8_t		bDeviceLifeTimeEstA;
+	uint8_t		bDeviceLifeTimeEstB;
+	uint8_t		rsrvd[32];
+} UfsDescHealth;
 
 // JESD223D Section 6.1.1 UTP Transfer Request Descriptor (little-endian)
 typedef struct __packed {

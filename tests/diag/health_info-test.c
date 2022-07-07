@@ -176,6 +176,43 @@ static void test_health_info_nvme(void **state)
 		"Thermal Temp. 2 Total Time:         12\n");
 }
 
+static void health_info_ufs(void **state)
+{
+	HealthInfo info = {
+		.type = STORAGE_INFO_TYPE_UFS,
+		.data.ufs_data = {
+			.bLength = 0x25,
+			.bDescriptorIDN = 0x9,
+			.bPreEOLInfo = 0x1,
+			.bDeviceLifeTimeEstA = 0x2,
+			.bDeviceLifeTimeEstB = 0x3,
+			.rsrvd = {
+				0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+				0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+				0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+				0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+			},
+		},
+	};
+	char *buf = info_buf;
+	assert_ptr_not_equal(
+		stringify_health_info(buf, buf + DIAG_BUFFER_SIZE, &info),
+		info_buf);
+	assert_string_equal(
+		info_buf,
+		"UFS Life Time Estimation A [bDeviceLifeTimeEstA]: 0x2\n"
+		"  i.e. 10% - 20% device life time used\n"
+		"UFS Life Time Estimation B [bDeviceLifeTimeEstB]: 0x3\n"
+		"  i.e. 20% - 30% device life time used\n"
+		"UFS Pre EOL information [bPreEOLInfo]: 0x1\n"
+		"  i.e. Normal\n"
+		"Vendor proprietary health report [VendorPropInfo]:\n"
+		"  0x00  0x01  0x02  0x03  0x04  0x05  0x06  0x07\n"
+		"  0x08  0x09  0x0a  0x0b  0x0c  0x0d  0x0e  0x0f\n"
+		"  0x10  0x11  0x12  0x13  0x14  0x15  0x16  0x17\n"
+		"  0x00  0x00  0x00  0x00  0x00  0x00  0x00  0x00\n");
+}
+
 #define HEALTH_INFO_TEST(test_function_name) \
 	cmocka_unit_test_setup(test_function_name, setup)
 
@@ -186,6 +223,7 @@ int main(void)
 		HEALTH_INFO_TEST(test_health_info_emmc_old_version),
 		HEALTH_INFO_TEST(test_health_info_emmc),
 		HEALTH_INFO_TEST(test_health_info_nvme),
+		HEALTH_INFO_TEST(health_info_ufs),
 	};
 
 	return cmocka_run_group_tests(tests, NULL, NULL);

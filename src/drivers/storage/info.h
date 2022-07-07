@@ -21,11 +21,13 @@
 
 #include "drivers/storage/mmc.h"
 #include "drivers/storage/nvme.h"
+#include "drivers/storage/ufs.h"
 
 typedef enum {
 	STORAGE_INFO_TYPE_UNKNOWN = 0,
 	STORAGE_INFO_TYPE_NVME,
 	STORAGE_INFO_TYPE_MMC,
+	STORAGE_INFO_TYPE_UFS,
 } StorageInfoType;
 
 typedef struct HealthInfo {
@@ -34,6 +36,7 @@ typedef struct HealthInfo {
 	union {
 		NvmeSmartLogData nvme_data;
 		MmcHealthData mmc_data;
+		UfsDescHealth ufs_data;
 	} data;
 } HealthInfo;
 

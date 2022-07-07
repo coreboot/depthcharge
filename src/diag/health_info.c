@@ -374,6 +374,33 @@ static char *stringify_mmc_health(char *buf, const char *end,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// UFS stringify entry point
+static char *stringify_ufs_health(char *buf, const char *end,
+				  const UfsDescHealth *data)
+{
+	DeviceHealthReport ufs_report = {
+		.storage_type_name = "UFS",
+		.life_time_est_a = data->bDeviceLifeTimeEstA,
+		.life_time_est_b = data->bDeviceLifeTimeEstB,
+		.eol_info = data->bPreEOLInfo,
+		.life_time_est_prefix_name = "bDeviceLifeTimeEst",
+		.eol_info_name = "bPreEOLInfo",
+	};
+	buf = stringify_device_health_report(buf, end, &ufs_report);
+
+	buf = APPEND(buf, end,
+		     "Vendor proprietary health report "
+		     "[VendorPropInfo]:\n");
+	for (int i = 0; i < 32; i++) {
+		buf = APPEND(buf, end, "  %#.02x", data->rsrvd[i]);
+		if (i % 8 == 7)
+			buf = APPEND(buf, end, "\n");
+	}
+
+	return buf;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // APIs
 
 // Append the stringified health_info to string str and return the pointer of
@@ -389,6 +416,10 @@ char *stringify_health_info(char *buf, const char *end, const HealthInfo *info)
 		if (!CONFIG(DRIVER_STORAGE_MMC))
 			break;
 		return stringify_mmc_health(buf, end, &info->data.mmc_data);
+	case STORAGE_INFO_TYPE_UFS:
+		if (!CONFIG(DRIVER_STORAGE_UFS))
+			break;
+		return stringify_ufs_health(buf, end, &info->data.ufs_data);
 	case STORAGE_INFO_TYPE_UNKNOWN:
 		break;
 	}
