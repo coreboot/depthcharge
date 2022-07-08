@@ -73,6 +73,8 @@
 #define PARADE_PS8815_A0_DEVICE_ID	0x0001
 #define PARADE_PS8815_A1_DEVICE_ID	0x0002
 #define PARADE_PS8815_A2_DEVICE_ID	0x0003
+#define PARADE_PS8745_PRODUCT_ID	0x8745
+#define PARADE_PS8745_A2_DEVICE_ID	0x0006
 
 enum ps8751_device_state {
 	PS8751_DEVICE_MISSING = -2,
@@ -296,6 +298,7 @@ static int __must_check ps8751_wake_i2c(Ps8751 *me)
 		debug_reg = PS8751_P3_I2C_DEBUG;
 		debug_ena = PS8751_P3_I2C_DEBUG_ENABLE;
 		break;
+	case CHIP_PS8745:
 	case CHIP_PS8815:
 		debug_reg = PS8815_P3_I2C_DEBUG;
 		debug_ena = PS8815_P3_I2C_DEBUG_ENABLE;
@@ -345,6 +348,7 @@ static int __must_check ps8751_hide_i2c(Ps8751 *me)
 		debug_reg = PS8751_P3_I2C_DEBUG;
 		debug_dis = PS8751_P3_I2C_DEBUG_DEFAULT;
 		break;
+	case CHIP_PS8745:
 	case CHIP_PS8815:
 		debug_reg = PS8815_P3_I2C_DEBUG;
 		debug_dis = PS8815_P3_I2C_DEBUG_DEFAULT;
@@ -623,6 +627,7 @@ static int __must_check ps8751_spi_flash_lock(Ps8751 *me)
 		wp_reg = PS8805_P2_SPI_WP;
 		wp_en = PS8805_P2_SPI_WP_EN;
 		break;
+	case CHIP_PS8745:
 	case CHIP_PS8815:
 		page = PAGE_2;
 		wp_reg = PS8815_P2_SPI_WP;
@@ -671,6 +676,7 @@ static int __must_check ps8751_spi_flash_unlock(Ps8751 *me)
 		wp_reg = PS8805_P2_SPI_WP;
 		wp_dis = PS8805_P2_SPI_WP_DIS;
 		break;
+	case CHIP_PS8745:
 	case CHIP_PS8815:
 		page = PAGE_2;
 		wp_reg = PS8815_P2_SPI_WP;
@@ -877,6 +883,8 @@ static int is_parade_chip(const struct ec_response_pd_chip_info *const info,
 		return info->product_id == PARADE_PS8805_PRODUCT_ID;
 	case CHIP_PS8815:
 		return info->product_id == PARADE_PS8815_PRODUCT_ID;
+	case CHIP_PS8745:
+		return info->product_id == PARADE_PS8745_PRODUCT_ID;
 	default:
 		printf("Unknown Parade product_id: 0x%x\n", info->product_id);
 		return 0;
@@ -972,6 +980,7 @@ static int __must_check ps8751_is_fw_compatible(Ps8751 *me, const uint8_t *fw)
 	case CHIP_PS8805:
 		fw_chip_version = me->blob_hw_version;
 		break;
+	case CHIP_PS8745:
 	case CHIP_PS8815:
 		fw_chip_version = me->blob_hw_version;
 		break;
@@ -1711,6 +1720,13 @@ static const VbootAuxfwOps ps8815_a2_fw_ops = {
 	.update_image = ps8751_update_image,
 };
 
+static const VbootAuxfwOps ps8745_a2_fw_ops = {
+	.fw_image_name = "ps8745_a2.bin",
+	.fw_hash_name = "ps8745_a2.hash",
+	.check_hash = ps8751_check_hash,
+	.update_image = ps8751_update_image,
+};
+
 static void ps8751_init_flash_ops(Ps8751 *me)
 {
 	if (CONFIG(DRIVER_EC_PS8751_FLASH_WINDOW))
@@ -1841,6 +1857,26 @@ Ps8751 *new_ps8815_a2(CrosECTunnelI2c *bus, int ec_pd_id)
 	return new_ps8815(bus, ec_pd_id, &ps8815_a2_fw_ops);
 }
 
+static Ps8751 *new_ps8745(CrosECTunnelI2c *bus, int ec_pd_id,
+			  const VbootAuxfwOps *fw_ops)
+{
+	Ps8751 *me = xzalloc(sizeof(*me));
+
+	me->bus = bus;
+	me->ec_pd_id = ec_pd_id;
+	me->fw_ops = *fw_ops;
+	me->chip_type = CHIP_PS8745;
+	snprintf(me->chip_name, sizeof(me->chip_name), "ps8745.%d", ec_pd_id);
+	ps8751_init_flash_ops(me);
+
+	return me;
+}
+
+Ps8751 *new_ps8745_a2(CrosECTunnelI2c *bus, int ec_pd_id)
+{
+	return new_ps8745(bus, ec_pd_id, &ps8745_a2_fw_ops);
+}
+
 static const VbootAuxfwOps *new_ps8xxx_from_chip_info(
 	struct ec_response_pd_chip_info *r, uint8_t ec_pd_id)
 {
@@ -1893,6 +1929,15 @@ static const VbootAuxfwOps *new_ps8xxx_from_chip_info(
 			return NULL;
 		}
 		break;
+	case PARADE_PS8745_PRODUCT_ID:
+		switch (r->device_id) {
+		case PARADE_PS8745_A2_DEVICE_ID:
+			ps8751 = new_ps8745_a2(NULL, ec_pd_id);
+			break;
+		default:
+			return NULL;
+		}
+		break;
 	default:
 		return NULL;
 	}
@@ -1936,6 +1981,12 @@ static CrosEcAuxfwChipInfo aux_fw_ps8815_info = {
 	.new_chip_aux_fw_ops = new_ps8xxx_from_chip_info,
 };
 
+static CrosEcAuxfwChipInfo aux_fw_ps8745_info = {
+	.vid = PARADE_VENDOR_ID,
+	.pid = PARADE_PS8745_PRODUCT_ID,
+	.new_chip_aux_fw_ops = new_ps8xxx_from_chip_info,
+};
+
 static int ps8751_register(void)
 {
 	list_insert_after(&aux_fw_ps8751_info.list_node,
@@ -1947,6 +1998,8 @@ static int ps8751_register(void)
 	list_insert_after(&aux_fw_ps8805_info.list_node,
 			  &ec_aux_fw_chip_list);
 	list_insert_after(&aux_fw_ps8815_info.list_node,
+			  &ec_aux_fw_chip_list);
+	list_insert_after(&aux_fw_ps8745_info.list_node,
 			  &ec_aux_fw_chip_list);
 	return 0;
 }

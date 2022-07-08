@@ -28,6 +28,7 @@ typedef enum ParadeChipType {
 	CHIP_PS8805,
 	CHIP_PS8815,
 	CHIP_PS8705,
+	CHIP_PS8745,
 } ParadeChipType;
 
 /*
