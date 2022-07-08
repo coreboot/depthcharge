@@ -19,7 +19,11 @@ static int board_setup(void)
 	flash_set_ops(&nor_flash->ops);
 	/* TODO: Set up eMMC */
 	/* TODO: Set up SD card */
-	/* TODO: Set up USB */
+
+	/* Set up USB */
+	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11200000);
+	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+
 	return 0;
 }
 
