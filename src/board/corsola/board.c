@@ -82,11 +82,17 @@ static int board_backlight_update(DisplayOps *me, uint8_t enable)
 	return 0;
 }
 
-static int usb_initialized;
-
-static void usb_init_callback(struct UsbHostController *usb_host)
+static void enable_usb_vbus(struct UsbHostController *usb_host)
 {
-	usb_initialized = 1;
+	/*
+	 * To avoid USB detection issue, assert GPIO AP_XHCI_INIT_DONE
+	 * to notify EC to enable USB VBUS when xHCI is initialized.
+	 */
+	GpioOps *pdn = new_mtk_gpio_output(GPIO_XHCI_DONE);
+	gpio_set(pdn, 1);
+
+	/* After USB VBUS is enabled, delay 500ms for USB detection. */
+	mdelay(500);
 }
 
 static int board_setup(void)
@@ -139,7 +145,7 @@ static int board_setup(void)
 	 * Corsola uses USB2 port1 instead of USB2 port0.
 	 */
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11280000);
-	set_usb_init_callback(usb_host, usb_init_callback);
+	set_usb_init_callback(usb_host, enable_usb_vbus);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
 
 	/* Set display ops */
@@ -155,19 +161,3 @@ static int board_setup(void)
 }
 
 INIT_FUNC(board_setup);
-
-static int enable_usb_vbus(struct LateInitFunc *init)
-{
-	/*
-	 * To avoid USB detection issue, assert GPIO AP_XHCI_INIT_DONE
-	 * to notify EC to enable USB VBUS when xHCI is initialized.
-	 */
-	GpioOps *pdn = new_mtk_gpio_output(GPIO_XHCI_DONE);
-	gpio_set(pdn, 1);
-	/* After USB VBUS is enabled, delay 500ms for USB detection. */
-	if (usb_initialized)
-		mdelay(500);
-	return 0;
-}
-
-LATE_INIT_FUNC(enable_usb_vbus);
