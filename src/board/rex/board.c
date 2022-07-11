@@ -26,6 +26,7 @@ __weak const struct storage_config *variant_get_storage_configs(size_t *count)
 {
 	static const struct storage_config storage_configs[] = {
 		{ .media = STORAGE_NVME, .pci_dev = PCI_DEV_PCIE9 },
+		{ .media = STORAGE_SDHCI, .pci_dev = PCI_DEV_PCIE11 },
 	};
 
 	*count = ARRAY_SIZE(storage_configs);

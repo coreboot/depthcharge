@@ -7,6 +7,7 @@
 
 enum storage_media {
 	STORAGE_NVME,
+	STORAGE_SDHCI,
 };
 
 struct storage_config {
