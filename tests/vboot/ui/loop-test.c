@@ -5,8 +5,8 @@
 #include <tests/vboot/ui/common.h>
 #include <tests/vboot/ui/mock_screens.h>
 #include <mocks/callbacks.h>
+#include <vb2_api.h>
 #include <vboot/ui.h>
-#include <vboot_api.h>
 #include <vboot/ui/loop.c>
 
 /* Mock functions */
@@ -22,7 +22,7 @@ int ui_is_lid_open(void)
 
 /* Tests */
 struct ui_context test_ui_ctx;
-VbSelectAndLoadKernelParams test_kparams;
+struct vb2_kernel_params test_kparams;
 
 static vb2_error_t mock_action_msleep(struct ui_context *ui)
 {

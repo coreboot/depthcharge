@@ -19,15 +19,39 @@
 #define __VBOOT_STAGES_H__
 
 #include <stdint.h>
-#include <vboot_api.h>
+#include <vb2_api.h>
 
 int vboot_check_wipe_memory(void);
 int vboot_check_enable_usb(void);
 int vboot_in_recovery(void);
 int vboot_in_developer(void);
+
+/*
+ * Select, load, and boot the kernel.
+ *
+ * If selecting and loading the kernel succeed, boot the kernel, and never
+ * return (or return 1 if booting fails). Otherwise, reboot the device and this
+ * function will never return.
+ */
 int vboot_select_and_boot_kernel(void);
+
+/*
+ * Select and load the kernel.
+ *
+ * @param ctx		Vboot2 context.
+ * @param kparams	Params specific to loading the kernel.
+ *
+ * @return VB2_SUCCESS on success, non-zero on error. on error, caller
+ * should reboot.
+ */
 vb2_error_t vboot_select_and_load_kernel(struct vb2_context *ctx,
-					 VbSelectAndLoadKernelParams *kparams);
-void vboot_boot_kernel(VbSelectAndLoadKernelParams *kparams);
+					 struct vb2_kernel_params *kparams);
+
+/*
+ * Boot the kernel.
+ *
+ * @param kparams               Params containing the disk information.
+ */
+void vboot_boot_kernel(struct vb2_kernel_params *kparams);
 
 #endif /* __VBOOT_STAGES_H__ */

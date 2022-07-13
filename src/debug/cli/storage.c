@@ -136,7 +136,7 @@ static int storage_dev(int argc, char *const argv[])
 
 static int storage_part(int argc, char *const argv[])
 {
-	VbDiskInfo *info;
+	struct vb2_disk_info *info;
 	uint32_t i, count, flag;
 	BlockDev *bdev;
 	GptData gpt;
@@ -304,4 +304,3 @@ U_BOOT_CMD(
 	" read <base blk> <num blks> <dest addr> - read from default device\n"
 	" write <base blk> <num blks> <src addr> - write to default device\n"
 );
-

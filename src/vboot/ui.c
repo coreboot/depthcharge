@@ -4,6 +4,8 @@
 #include <vboot_api.h>
 
 #include "drivers/storage/blockdev.h"
+#include "vboot/load_kernel.h"
+#include "vboot/stages.h"
 #include "vboot/ui.h"
 
 static vb2_error_t ui_broken_screen_action(struct ui_context *ui)
@@ -18,14 +20,14 @@ static vb2_error_t ui_broken_screen_action(struct ui_context *ui)
 static vb2_error_t ui_manual_recovery_action(struct ui_context *ui)
 {
 	/* See if we have a recovery kernel available yet. */
-	vb2_error_t rv = VbTryLoadKernel(ui->ctx, VB_DISK_FLAG_REMOVABLE,
-					 ui->kparams);
+	vb2_error_t rv = vboot_load_kernel(ui->ctx, VB2_DISK_FLAG_REMOVABLE,
+					   ui->kparams);
 	if (rv == VB2_SUCCESS)
 		return VB2_REQUEST_UI_EXIT;
 
 	/* If disk validity state changed, switch to appropriate screen. */
 	if (ui->recovery_rv != rv) {
-		UI_INFO("Recovery VbTryLoadKernel %#x --> %#x\n",
+		UI_INFO("Recovery vboot_load_kernel %#x --> %#x\n",
 			ui->recovery_rv, rv);
 		ui->recovery_rv = rv;
 		return ui_screen_change(ui,
@@ -58,8 +60,8 @@ static vb2_error_t developer_action(struct ui_context *ui)
 	 * if the inserted SD card has been replaced with another one.
 	 * Therefore, keep track of the MMC state in this global action.
 	 *
-	 * We don't need this for recovery UI, where the VbTryLoadKernel() call
-	 * already updates the removable block devices.
+	 * We don't need this for recovery UI, where the vboot_load_kernel()
+	 * call already updates the removable block devices.
 	 */
 	if (ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALLOWED)
 		get_all_bdevs(BLOCKDEV_REMOVABLE, NULL);
@@ -87,7 +89,7 @@ static vb2_error_t developer_action(struct ui_context *ui)
 }
 
 vb2_error_t vboot_select_and_load_kernel(struct vb2_context *ctx,
-					 VbSelectAndLoadKernelParams *kparams)
+					 struct vb2_kernel_params *kparams)
 {
 	enum ui_screen root_screen_id = UI_SCREEN_RECOVERY_BROKEN;
 	switch (ctx->boot_mode) {
@@ -127,7 +129,7 @@ vb2_error_t vboot_select_and_load_kernel(struct vb2_context *ctx,
 				kparams));
 		break;
 	case VB2_BOOT_MODE_NORMAL:
-		VB2_TRY(vb2api_normal_boot(ctx, kparams));
+		VB2_TRY(vboot_load_kernel(ctx, VB2_DISK_FLAG_FIXED, kparams));
 		break;
 	default:
 		return VB2_ERROR_ESCAPE_NO_BOOT;

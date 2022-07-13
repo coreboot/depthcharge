@@ -2,6 +2,7 @@
 
 subdirs-y := ui
 
+tests-y += load_kernel-test
 tests-y += secdata_tpm-test
 tests-y += stages-test
 tests-y += ui-broken-test
@@ -12,6 +13,12 @@ tests-y += ui-manual-ppkeyboard-test
 tests-y += ui-developer-test
 tests-y += ui-developer-detachable-test
 tests-y += ui-diagnostic-test
+
+load_kernel-test-srcs += tests/vboot/load_kernel-test.c
+load_kernel-test-srcs += src/vboot/load_kernel.c
+load_kernel-test-mocks += VbExDiskGetInfo VbExDiskFreeInfo
+load_kernel-test-mocks += vb2api_load_kernel vb2api_load_minios_kernel
+load_kernel-test-mocks += vb2api_fail
 
 secdata_tpm-test-srcs += tests/vboot/secdata_tpm-test.c
 secdata_tpm-test-srcs += tests/mocks/tlcl_rw.c
@@ -31,13 +38,13 @@ ui-test-common-srcs += tests/mocks/diag/storage_test.c
 ui-test-common-srcs += tests/mocks/log.c
 ui-test-common-srcs += tests/mocks/ui.c
 ui-test-common-srcs += tests/mocks/ui_callbacks.c
-ui-test-common-srcs += tests/mocks/vboot/ui/beep.c
-ui-test-common-srcs += tests/mocks/vboot/ui/input.c
 ui-test-common-srcs += tests/mocks/ui_display.c
 ui-test-common-srcs += tests/mocks/vb2api.c
+ui-test-common-srcs += tests/mocks/vboot/load_kernel.c
 ui-test-common-srcs += tests/mocks/vboot/ui/archive.c
+ui-test-common-srcs += tests/mocks/vboot/ui/beep.c
 ui-test-common-srcs += tests/mocks/vboot/ui/bitmap.c
-ui-test-common-srcs += tests/mocks/vboot_api.c
+ui-test-common-srcs += tests/mocks/vboot/ui/input.c
 ui-test-common-srcs += tests/stubs/boot/payload.c
 ui-test-common-srcs += tests/stubs/drivers/storage/blockdev.c
 ui-test-common-srcs += tests/stubs/vboot/firmware_id.c

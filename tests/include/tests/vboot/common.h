@@ -5,35 +5,34 @@
 
 #include <tests/test.h>
 #include <mocks/callbacks.h>
-#include <vboot_api.h>
 #include <vb2_api.h>
 #include <vboot/ui.h>
 
 #define ASSERT_VB2_SUCCESS(expr) assert_int_equal((expr), VB2_SUCCESS)
 
 /* Do not reference these 2 functions directly in tests. Use the macro below. */
-static inline vb2_error_t _try_load_internal_disk(void)
+static inline vb2_error_t _load_internal_disk(void)
 {
 	return mock_type(vb2_error_t);
 }
 
-static inline vb2_error_t _try_load_external_disk(void)
+static inline vb2_error_t _load_external_disk(void)
 {
 	return mock_type(vb2_error_t);
 }
 
-/* Macros for mocking VbTryLoadKernel(). */
+/* Macros for mocking vboot_load_kernel(). */
 #define WILL_LOAD_INTERNAL_ALWAYS(value) \
-	will_return_always(_try_load_internal_disk, value)
+	will_return_always(_load_internal_disk, value)
 
 #define WILL_LOAD_EXTERNAL(value) \
-	will_return(_try_load_external_disk, value)
+	will_return(_load_external_disk, value)
 #define WILL_LOAD_EXTERNAL_COUNT(value, count) \
-	will_return_count(_try_load_external_disk, value, count)
+	will_return_count(_load_external_disk, value, count)
 #define WILL_LOAD_EXTERNAL_MAYBE(value) \
-	will_return_maybe(_try_load_external_disk, value)
+	will_return_maybe(_load_external_disk, value)
 #define WILL_LOAD_EXTERNAL_ALWAYS(value) \
-	will_return_always(_try_load_external_disk, value)
+	will_return_always(_load_external_disk, value)
 #define WILL_HAVE_NO_EXTERNAL() \
 	WILL_LOAD_EXTERNAL_ALWAYS(VB2_ERROR_LK_NO_DISK_FOUND)
 

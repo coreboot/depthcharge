@@ -135,7 +135,7 @@ int vboot_select_and_boot_kernel(void)
 {
 	struct vb2_context *ctx = vboot_get_context();
 
-	VbSelectAndLoadKernelParams kparams = {
+	struct vb2_kernel_params kparams = {
 		.kernel_buffer = _kernel_start,
 		.kernel_buffer_size = _kernel_end - _kernel_start,
 	};
@@ -217,7 +217,7 @@ fail:
 	return 1;
 }
 
-void vboot_boot_kernel(VbSelectAndLoadKernelParams *kparams)
+void vboot_boot_kernel(struct vb2_kernel_params *kparams)
 {
 	static char cmd_line_buf[2 * CmdLineSize];
 	struct boot_info bi;

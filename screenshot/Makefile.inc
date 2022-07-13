@@ -47,6 +47,7 @@ screenshot-srcs += screenshot/stubs/diag.c
 screenshot-srcs += screenshot/stubs/display.c
 screenshot-srcs += screenshot/stubs/firmware_id.c
 screenshot-srcs += screenshot/stubs/input.c
+screenshot-srcs += screenshot/stubs/load_kernel.c
 screenshot-srcs += src/base/list.c
 screenshot-srcs += src/vboot/ui/bitmap.c
 screenshot-srcs += src/vboot/ui/display.c

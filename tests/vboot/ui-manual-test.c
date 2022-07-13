@@ -7,7 +7,6 @@
 #include <mocks/cbmem_console.h>
 #include <mocks/util/commonparams.h>
 #include <mocks/vb2api.h>
-#include <vboot_api.h>
 #include <vb2_api.h>
 #include <vboot/stages.h>
 #include <vboot/ui.c>
@@ -37,7 +36,7 @@ int ui_is_lid_open(void)
 
 /* Tests */
 struct ui_context test_ui_ctx;
-VbSelectAndLoadKernelParams test_kparams;
+struct vb2_kernel_params test_kparams;
 
 static int setup_context(void **state)
 {
@@ -141,8 +140,8 @@ static void test_manual_ui_internet_recovery_shortcut(void **state)
 	WILL_PRESS_KEY(UI_KEY_INTERNET_RECOVERY, 0);
 	will_return_maybe(ui_is_lid_open, 1);
 	WILL_LOAD_EXTERNAL_MAYBE(VB2_ERROR_LK_NO_DISK_FOUND);
-	expect_value(VbTryLoadMiniOsKernel, minios_flags, 0);
-	will_return(VbTryLoadMiniOsKernel, VB2_SUCCESS);
+	expect_value(vboot_load_minios_kernel, minios_flags, 0);
+	will_return(vboot_load_minios_kernel, VB2_SUCCESS);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 
 	ASSERT_VB2_SUCCESS(vboot_select_and_load_kernel(ui->ctx, ui->kparams));
@@ -163,8 +162,8 @@ static void test_manual_ui_internet_recovery_menu(void **state)
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(VbExIsShutdownRequested, 0);
 	WILL_LOAD_EXTERNAL_MAYBE(VB2_ERROR_LK_NO_DISK_FOUND);
-	expect_value(VbTryLoadMiniOsKernel, minios_flags, 0);
-	will_return(VbTryLoadMiniOsKernel, VB2_ERROR_MOCK);
+	expect_value(vboot_load_minios_kernel, minios_flags, 0);
+	will_return(vboot_load_minios_kernel, VB2_ERROR_MOCK);
 	EXPECT_BEEP(250, 400);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 
@@ -191,9 +190,9 @@ static void test_manual_ui_internet_recovery_menu_old(void **state)
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	will_return_maybe(ui_is_lid_open, 1);
 	WILL_LOAD_EXTERNAL_MAYBE(VB2_ERROR_LK_NO_DISK_FOUND);
-	expect_value(VbTryLoadMiniOsKernel, minios_flags,
-		     VB_MINIOS_FLAG_NON_ACTIVE);
-	will_return(VbTryLoadMiniOsKernel, VB2_SUCCESS);
+	expect_value(vboot_load_minios_kernel, minios_flags,
+		     VB2_MINIOS_FLAG_NON_ACTIVE);
+	will_return(vboot_load_minios_kernel, VB2_SUCCESS);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 
 	ASSERT_VB2_SUCCESS(vboot_select_and_load_kernel(ui->ctx, ui->kparams));

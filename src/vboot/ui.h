@@ -550,8 +550,8 @@ struct ui_context {
 	   will be reset after done. */
 	int force_display;
 
-	/* For selecting and loading the kernel. */
-	VbSelectAndLoadKernelParams *kparams;
+	/* For loading the kernel. */
+	struct vb2_kernel_params *kparams;
 };
 
 struct ui_screen_info {
@@ -1185,7 +1185,7 @@ vb2_error_t ui_init_context(struct ui_context *ui, struct vb2_context *ctx,
  */
 vb2_error_t ui_loop(struct vb2_context *ctx, enum ui_screen root_screen_id,
 		    vb2_error_t (*global_action)(struct ui_context *ui),
-		    VbSelectAndLoadKernelParams *kparams);
+		    struct vb2_kernel_params *kparams);
 
 /******************************************************************************/
 /* menu.c */

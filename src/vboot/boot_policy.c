@@ -51,13 +51,13 @@ static struct {
 };
 
 typedef int (*fill_bootinfo_fnptr)(struct boot_info *bi,
-				   VbSelectAndLoadKernelParams *kparams,
+				   struct vb2_kernel_params *kparams,
 				   const struct boot_policy *policy);
 
 /************************* CrOS Image Parsing ****************************/
 
 static int fill_info_cros(struct boot_info *bi,
-			  VbSelectAndLoadKernelParams *kparams,
+			  struct vb2_kernel_params *kparams,
 			  const struct boot_policy *policy)
 {
 	bi->kernel = kparams->kernel_buffer;
@@ -76,7 +76,7 @@ static int fill_info_cros(struct boot_info *bi,
 /*********************** Multiboot Image Parsing *************************/
 #if CONFIG(KERNEL_MULTIBOOT)
 static int fill_info_multiboot(struct boot_info *bi,
-			       VbSelectAndLoadKernelParams *kparams,
+			       struct vb2_kernel_params *kparams,
 			       const struct boot_policy *policy)
 {
 	bi->kparams = kparams;
@@ -142,7 +142,7 @@ void *bootimg_get_kernel_ptr(void *img, size_t image_size)
 }
 
 static int fill_info_bootimg(struct boot_info *bi,
-			     VbSelectAndLoadKernelParams *kparams,
+			     struct vb2_kernel_params *kparams,
 			     const struct boot_policy *policy)
 {
 	struct bootimg_hdr *hdr = kparams->kernel_buffer;
@@ -261,7 +261,7 @@ int set_boot_policy(const struct boot_policy *policy, size_t count)
  * types that it wants to boot. In the default case, we let only CrOS images
  * with cmd line filled by signer boot.
  */
-int fill_boot_info(struct boot_info *bi, VbSelectAndLoadKernelParams *kparams)
+int fill_boot_info(struct boot_info *bi, struct vb2_kernel_params *kparams)
 {
 	int i;
 	const struct boot_policy *policy;

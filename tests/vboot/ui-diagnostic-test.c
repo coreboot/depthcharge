@@ -6,6 +6,7 @@
 #include <tests/vboot/ui/common.h>
 #include <mocks/callbacks.h>
 #include <mocks/util/commonparams.h>
+#include <vb2_api.h>
 #include <vboot/stages.h>
 #include <vboot/util/commonparams.h>
 
@@ -17,7 +18,7 @@ int ui_is_lid_open(void)
 
 /* Tests */
 struct ui_context test_ui_ctx;
-VbSelectAndLoadKernelParams test_kparams;
+struct vb2_kernel_params test_kparams;
 
 static int setup_context(void **state)
 {

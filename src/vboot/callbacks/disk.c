@@ -24,20 +24,20 @@
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/stream.h"
 
-static void setup_vb_disk_info(VbDiskInfo *disk, BlockDev *bdev)
+static void setup_vb_disk_info(struct vb2_disk_info *disk, BlockDev *bdev)
 {
 	disk->name = bdev->name;
-	disk->handle = (VbExDiskHandle_t)bdev;
+	disk->handle = (vb2ex_disk_handle_t)bdev;
 	disk->bytes_per_lba = bdev->block_size;
 	disk->lba_count = bdev->block_count;
 	disk->streaming_lba_count = bdev->stream_block_count;
-	disk->flags = bdev->removable ? VB_DISK_FLAG_REMOVABLE :
-					VB_DISK_FLAG_FIXED;
+	disk->flags = bdev->removable ? VB2_DISK_FLAG_REMOVABLE :
+					VB2_DISK_FLAG_FIXED;
 	if (bdev->external_gpt)
-		disk->flags |= VB_DISK_FLAG_EXTERNAL_GPT;
+		disk->flags |= VB2_DISK_FLAG_EXTERNAL_GPT;
 }
 
-vb2_error_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
+vb2_error_t VbExDiskGetInfo(struct vb2_disk_info **info_ptr, uint32_t *count,
 			    uint32_t disk_flags)
 {
 	*count = 0;
@@ -45,7 +45,7 @@ vb2_error_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
 	blockdev_type_t bd_type;
 	ListNode *devs;
 
-	if (disk_flags & VB_DISK_FLAG_FIXED)
+	if (disk_flags & VB2_DISK_FLAG_FIXED)
 		bd_type = BLOCKDEV_FIXED;
 	else
 		bd_type = BLOCKDEV_REMOVABLE;
@@ -53,13 +53,13 @@ vb2_error_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
 	*count = get_all_bdevs(bd_type, &devs);
 
 	// Only log for fixed disks to avoid spamming timestamps in recovery.
-	if (disk_flags & VB_DISK_FLAG_FIXED)
+	if (disk_flags & VB2_DISK_FLAG_FIXED)
 		timestamp_add_now(TS_VB_STORAGE_INIT_DONE);
 
-	// Allocate enough VbDiskInfo structures.
-	VbDiskInfo *disk = NULL;
+	// Allocate enough vb2_disk_info structures.
+	struct vb2_disk_info *disk = NULL;
 	if (*count)
-		disk = xzalloc(sizeof(VbDiskInfo) * *count);
+		disk = xzalloc(sizeof(struct vb2_disk_info) * *count);
 
 	*info_ptr = disk;
 
@@ -71,14 +71,14 @@ vb2_error_t VbExDiskGetInfo(VbDiskInfo **info_ptr, uint32_t *count,
 	return VB2_SUCCESS;
 }
 
-vb2_error_t VbExDiskFreeInfo(VbDiskInfo *infos,
-			   VbExDiskHandle_t preserve_handle)
+vb2_error_t VbExDiskFreeInfo(struct vb2_disk_info *infos,
+			     vb2ex_disk_handle_t preserve_handle)
 {
 	free(infos);
 	return VB2_SUCCESS;
 }
 
-vb2_error_t VbExDiskRead(VbExDiskHandle_t handle, uint64_t lba_start,
+vb2_error_t VbExDiskRead(vb2ex_disk_handle_t handle, uint64_t lba_start,
 			 uint64_t lba_count, void *buffer)
 {
 	BlockDevOps *ops = &((BlockDev *)handle)->ops;
@@ -89,7 +89,7 @@ vb2_error_t VbExDiskRead(VbExDiskHandle_t handle, uint64_t lba_start,
 	return VB2_SUCCESS;
 }
 
-vb2_error_t VbExDiskWrite(VbExDiskHandle_t handle, uint64_t lba_start,
+vb2_error_t VbExDiskWrite(vb2ex_disk_handle_t handle, uint64_t lba_start,
 			  uint64_t lba_count, const void *buffer)
 {
 	BlockDevOps *ops = &((BlockDev *)handle)->ops;
@@ -100,7 +100,7 @@ vb2_error_t VbExDiskWrite(VbExDiskHandle_t handle, uint64_t lba_start,
 	return VB2_SUCCESS;
 }
 
-vb2_error_t VbExStreamOpen(VbExDiskHandle_t handle, uint64_t lba_start,
+vb2_error_t VbExStreamOpen(vb2ex_disk_handle_t handle, uint64_t lba_start,
 			   uint64_t lba_count, VbExStream_t *stream_ptr)
 {
 	BlockDevOps *ops = &((BlockDev *)handle)->ops;

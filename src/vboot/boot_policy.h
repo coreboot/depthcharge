@@ -18,7 +18,7 @@
 #ifndef __VBOOT_BOOT_POLICY_H__
 #define __VBOOT_BOOT_POLICY_H__
 
-#include <vboot_api.h>
+#include <vb2_api.h>
 
 #include "vboot/boot.h"
 
@@ -80,7 +80,7 @@ int set_boot_policy(const struct boot_policy *policy, size_t count);
  * types that it wants to boot. In the default case, we let only CrOS images
  * with cmd line filled by signer boot.
  */
-int fill_boot_info(struct boot_info *bi, VbSelectAndLoadKernelParams *kparams);
+int fill_boot_info(struct boot_info *bi, struct vb2_kernel_params *kparams);
 
 /*
  * Given a bootimg, this routine returns pointer to the start of the kernel
