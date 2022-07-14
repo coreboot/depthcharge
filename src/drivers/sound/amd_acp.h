@@ -13,6 +13,9 @@
 #define AMD_PCI_VID		0x1022
 #define AMD_FAM17H_ACP_PCI_DID	0x15E2
 
+/* Tone table location in ACP DRAM */
+#define ACP_DRAM		0x01000000
+
 typedef struct AmdAcp {
 	SoundRouteComponent component;
 	SoundOps sound_ops;

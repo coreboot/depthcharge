@@ -11,7 +11,17 @@
 ## GNU General Public License for more details.
 
 config DRIVER_SOUND_AMD_ACP
-	bool "AMD ACP support"
+	bool
+	default n
+
+config DRIVER_SOUND_AMD_ACP_V1
+	bool "AMD ACP version 1 support"
+	select DRIVER_SOUND_AMD_ACP
+	default n
+
+config DRIVER_SOUND_AMD_ACP_V2
+	bool "AMD ACP version 2 support"
+	select DRIVER_SOUND_AMD_ACP
 	default n
 
 config DRIVER_SOUND_CS35L53

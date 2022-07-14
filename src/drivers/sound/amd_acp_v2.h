@@ -1,0 +1,112 @@
+/* SPDX-License-Identifier: GPL-2.0 */
+/* Copyright (C) 2022 Google Inc. */
+
+#ifndef __DRIVERS_SOUND_AMD_ACP_V2__H__
+#define __DRIVERS_SOUND_AMD_ACP_V2__H__
+
+/* Audio Co-Process (ACP) Registers*/
+/* ACP pin control registers */
+#define ACP_SOFT_RESET			0x1000
+#define  ACP_SOFT_RESET_AUD		BIT(0)
+#define  ACP_SOFT_RESET_DMA		BIT(1)
+#define  ACP_SOFT_RESET_DSP		BIT(2)
+#define  ACP_SOFT_RESET_AUD_DONE	BIT(16)
+#define  ACP_SOFT_RESET_DMA_DONE	BIT(17)
+#define  ACP_SOFT_RESET_DSP_DONE	BIT(18)
+#define ACP_CONTROL			0x1004
+#define   ACP_CONTROL_CLK_EN		BIT(0)
+#define ACP_STATUS			0x1008
+#define   ACP_CONTROL_CLK_ON		BIT(0)
+
+#define ACP_PGFSM_CONTROL		0x1024
+#define   ACP_PGFSM_CTRL		BIT(0)
+#define ACP_PGFSM_STATUS		0x1028
+#define   ACP_PGFSM_POWER_ON		0x0
+#define   ACP_PGFSM_POWER_ON_PENDING	0x1
+#define   ACP_PGFSM_POWER_OFF		0x2
+#define   ACP_PGFSM_POWER_OFF_PENDING	0x3
+#define   ACP_PGFSM_POWER_MASK		0x3
+
+#define ACP_PIN_CONFIG			0x1440
+/* 10 - mainstream notebook;HDA(3SDI) + PDM(6CH) +I2S  */
+#define   ACP_PIN_CONFIG_I2S		10
+#define ACP_PAD_PULLUP_CTRL		0x1444
+#define ACP_PAD_PULLDOWN_CTRL		0x1448
+
+#define ACP_SW_I2S_ERROR_REASON		0x18B4
+
+#define ACP_SRBM_CLIENT_BASE_ADDR	0x19EC
+#define ACP_SRBM_Client_Config		0x19F8
+
+#define ACP_ERROR_STATUS		0x1A4C
+#define ACP_P1_SW_I2S_ERROR_REASON	0x1A50
+
+#define ACP_SRBM_Targ_Idx_Addr		0x1ABC
+#define   SRBM_Targ_Idx_addr_auto_increment_enable BIT(31)
+#define ACP_SRBM_Targ_Idx_Data		0x1AD0
+
+#define ACP_I2S_TX_RINGBUFADDR		0x2024
+#define ACP_I2S_TX_RINGBUFSIZE		0x2028
+#define ACP_I2S_TX_FIFOADDR		0x2030
+#define ACP_I2S_TX_FIFOSIZE		0x2034
+#define ACP_I2S_TX_DMA_SIZE		0x2038
+
+#define ACP_BT_TX_RINGBUFADDR		0x206C
+#define ACP_BT_TX_RINGBUFSIZE		0x2070
+#define ACP_BT_TX_FIFOADDR		0x2078
+#define ACP_BT_TX_FIFOSIZE		0x207C
+#define ACP_BT_TX_DMA_SIZE		0x2080
+
+#define ACP_I2STDM_IER			0x2400
+#define   ACP_I2STDM_IEN		BIT(0)
+#define   ACP_I2STDM_ITER		0x240C
+#define   ACP_I2STDM_TXEN		BIT(0)
+#define   ACP_I2STDM_TX_SAMP_LEN_8	(0 << 3)
+#define   ACP_I2STDM_TX_SAMP_LEN_12	(1 << 3)
+#define   ACP_I2STDM_TX_SAMP_LEN_16	(2 << 3)
+#define   ACP_I2STDM_TX_SAMP_LEN_24	(4 << 3)
+#define   ACP_I2STDM_TX_SAMP_LEN_32	(5 << 3)
+#define   ACP_I2STDM_TX_STATUS		BIT(6)
+
+#define ACP_I2STDM2_MSTRCLKGEN		0x241C
+#define   I2STDM2_MASTER_MODE		BIT(0)
+#define   I2STDM2_FORMAT_MODE_NORMAL	(0x0 << 1)
+#define   I2STDM2_FORMAT_MODE_I2S_TDM	(0x1 << 1)
+
+#define ACP_BTTDM_IER			0x2800
+#define ACP_BTTDM_ITER			0x280C
+
+#define ACP_HSTDM_IER			0x2814
+#define ACP_HSTDM_ITER			0x2820
+#define   ACP_HSTDM_ITER_HSTDM_TXEN	BIT(0)
+#define   ACP_HSTDM_ITER_HSTDM_TX_SAMP_LEN_16b_20b (0x2 << 3)
+#define ACP_HSTDM_TXFRMT		0x2824
+#define   ACP_HSTDM_TXFRMT_HSTDM_SLOT_LEN_16b (16 << 18)
+
+#define ACP_P1_HS_TX_RINGBUFADDR	0x3AB4
+#define ACP_P1_HS_TX_RINGBUFSIZE	0x3AB8
+#define ACP_P1_HS_TX_FIFOADDR		0x3AC0
+#define ACP_P1_HS_TX_FIFOSIZE		0x3AC4
+#define ACP_P1_HS_TX_DMA_SIZE		0x3AC8
+
+#define ACP_SCRATCH_REG(n) (0x10000 + (sizeof(uint32_t) * (n)))
+#define ACP_SCRATCH_REG_MAX		6143 /* 24,572 bytes */
+
+#define ACP_DMA_CNTL_0			0x0000
+#define   ACP_DMA_CH_RST		BIT(0)
+#define   ACP_DMA_CH_RUN		BIT(1)
+#define ACP_DMA_DSCR_STRT_IDX_0		0x0020
+#define ACP_DMA_DSCR_CNT_0		0x0040
+#define ACP_DMA_CUR_TRANS_CNT_0		0x00A0
+#define ACP_DMA_ERR_STS_0		0x00C0
+#define   ACP_DMA_CH_ERR		BIT(0)
+#define   ACP_DMA_CH_CNT_ERR		BIT(1)
+#define   ACP_DMA_CH_DEST_ERR		BIT(2)
+#define   ACP_DMA_CH_SRC_ERR		BIT(3)
+#define   ACP_DMA_CH_DESC_ERR		BIT(4)
+#define ACP_DMA_DESC_BASE_ADDR		0x00E0
+#define ACP_DMA_DESC_MAX_NUM_DSCR	0x00E4
+#define ACP_DMA_CH_STS			0x00E8
+#define   ACP_DMA_CH_STS_CH(chan)	(BIT(chan))
+
+#endif /* __DRIVERS_SOUND_AMD_ACP_V2__H__ */
