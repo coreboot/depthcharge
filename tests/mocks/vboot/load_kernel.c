@@ -6,7 +6,7 @@
 #include "tests/vboot/common.h"
 #include "vboot/load_kernel.h"
 
-vb2_error_t vboot_load_kernel(struct vb2_context *ctx, uint32_t disk_flags,
+vb2_error_t vboot_load_kernel(struct vb2_context *ctx, blockdev_type_t type,
 			      struct vb2_kernel_params *kparams)
 {
 	/*
@@ -14,12 +14,11 @@ vb2_error_t vboot_load_kernel(struct vb2_context *ctx, uint32_t disk_flags,
 	 * only one disk flag is passed for each call.
 	 */
 	assert_non_null(kparams);
-	if (disk_flags & VB2_DISK_FLAG_REMOVABLE)
+	if (type == BLOCKDEV_REMOVABLE)
 		return _load_external_disk();
-	else if (disk_flags & VB2_DISK_FLAG_FIXED)
+	else if (type == BLOCKDEV_FIXED)
 		return _load_internal_disk();
-	fail_msg("%s called with unsupported disk_flags %#x",
-		 __func__, disk_flags);
+	fail_msg("%s called with unsupported type %d", __func__, type);
 	/* Never reach here */
 	return VB2_SUCCESS;
 }

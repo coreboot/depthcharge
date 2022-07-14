@@ -20,7 +20,7 @@ static vb2_error_t ui_broken_screen_action(struct ui_context *ui)
 static vb2_error_t ui_manual_recovery_action(struct ui_context *ui)
 {
 	/* See if we have a recovery kernel available yet. */
-	vb2_error_t rv = vboot_load_kernel(ui->ctx, VB2_DISK_FLAG_REMOVABLE,
+	vb2_error_t rv = vboot_load_kernel(ui->ctx, BLOCKDEV_REMOVABLE,
 					   ui->kparams);
 	if (rv == VB2_SUCCESS)
 		return VB2_REQUEST_UI_EXIT;
@@ -129,7 +129,7 @@ vb2_error_t vboot_select_and_load_kernel(struct vb2_context *ctx,
 				kparams));
 		break;
 	case VB2_BOOT_MODE_NORMAL:
-		VB2_TRY(vboot_load_kernel(ctx, VB2_DISK_FLAG_FIXED, kparams));
+		VB2_TRY(vboot_load_kernel(ctx, BLOCKDEV_FIXED, kparams));
 		break;
 	default:
 		return VB2_ERROR_ESCAPE_NO_BOOT;

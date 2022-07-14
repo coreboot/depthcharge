@@ -136,12 +136,11 @@ static int storage_dev(int argc, char *const argv[])
 
 static int storage_part(int argc, char *const argv[])
 {
-	struct vb2_disk_info *info;
-	uint32_t i, count, flag;
-	BlockDev *bdev;
+	BlockDev *bdev, *current_bdev;
 	GptData gpt;
 	GptHeader *header;
 	GptEntry *entry;
+	ListNode *devs;
 
 	const Guid guid_unused = GPT_ENT_TYPE_UNUSED;
 
@@ -150,37 +149,36 @@ static int storage_part(int argc, char *const argv[])
 		return CMD_RET_FAILURE;
 	}
 
-	bdev = current_devices.known_devices[current_devices.curr_device];
+	current_bdev =
+		current_devices.known_devices[current_devices.curr_device];
 
-	flag = bdev->removable ? VB2_DISK_FLAG_REMOVABLE : VB2_DISK_FLAG_FIXED;
+	get_all_bdevs(current_bdev->removable ? BLOCKDEV_REMOVABLE
+					      : BLOCKDEV_FIXED,
+		      &devs);
 
-	if (VbExDiskGetInfo(&info, &count, flag) != VB2_SUCCESS) {
-		printf("failed to get disk info\n");
-		return CMD_RET_FAILURE;
-	}
-
-	for (i = 0; i < count; i++)
-		if (info[i].handle == bdev)
+	/* Ensure current_bdev is still alive */
+	list_for_each(bdev, *devs, list_node)
+		if (bdev == current_bdev)
 			break;
 
-	if (i == count) {
-		printf("failed to get disk info for current device\n");
+	if (bdev != current_bdev) {
+		printf("Failed to get block device for current device\n");
 		return CMD_RET_FAILURE;
 	}
 
-	gpt.sector_bytes = info[i].bytes_per_lba;
-	gpt.streaming_drive_sectors = info[i].streaming_lba_count ?
-					info[i].streaming_lba_count :
-					info[i].lba_count;
-	gpt.gpt_drive_sectors = info[i].lba_count;
+	gpt.sector_bytes = bdev->block_size;
+	gpt.streaming_drive_sectors = bdev->stream_block_count
+				      ? bdev->stream_block_count
+				      : bdev->block_count;
+	gpt.gpt_drive_sectors = bdev->block_count;
 	gpt.flags = bdev->external_gpt ? GPT_FLAG_EXTERNAL : 0;
 
-	if (0 != AllocAndReadGptData(bdev, &gpt)) {
+	if (AllocAndReadGptData(bdev, &gpt)) {
 		printf("Unable to read GPT data\n");
 		return CMD_RET_FAILURE;
 	}
 
-	if (GPT_SUCCESS != GptInit(&gpt)) {
+	if (GptInit(&gpt) != GPT_SUCCESS) {
 		printf("Unable to parse GPT\n");
 		return CMD_RET_FAILURE;
 	}
@@ -188,11 +186,11 @@ static int storage_part(int argc, char *const argv[])
 	header = (GptHeader *)gpt.primary_header;
 	entry = (GptEntry *)gpt.primary_entries;
 
-	printf("------------ GPT for %s ------------\n\n", info[i].name);
-	printf("Bytes per LBA = %llu\n\n", info[i].bytes_per_lba);
+	printf("------------ GPT for %s ------------\n\n", bdev->name);
+	printf("Bytes per LBA = %u\n\n", bdev->block_size);
 
 	printf("SNo: %18s %18s Name\n", "Start", "Count");
-	for (i = 0; i < header->number_of_entries; i++, entry++) {
+	for (int i = 0; i < header->number_of_entries; i++, entry++) {
 		int j;
 		uint16_t *name;
 
@@ -211,8 +209,6 @@ static int storage_part(int argc, char *const argv[])
 			printf("%c", name[j] & 0xff);
 		printf("\n");
 	}
-
-	VbExDiskFreeInfo(info, bdev);
 
 	return CMD_RET_SUCCESS;
 }

@@ -24,60 +24,6 @@
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/stream.h"
 
-static void setup_vb_disk_info(struct vb2_disk_info *disk, BlockDev *bdev)
-{
-	disk->name = bdev->name;
-	disk->handle = (vb2ex_disk_handle_t)bdev;
-	disk->bytes_per_lba = bdev->block_size;
-	disk->lba_count = bdev->block_count;
-	disk->streaming_lba_count = bdev->stream_block_count;
-	disk->flags = bdev->removable ? VB2_DISK_FLAG_REMOVABLE :
-					VB2_DISK_FLAG_FIXED;
-	if (bdev->external_gpt)
-		disk->flags |= VB2_DISK_FLAG_EXTERNAL_GPT;
-}
-
-vb2_error_t VbExDiskGetInfo(struct vb2_disk_info **info_ptr, uint32_t *count,
-			    uint32_t disk_flags)
-{
-	*count = 0;
-
-	blockdev_type_t bd_type;
-	ListNode *devs;
-
-	if (disk_flags & VB2_DISK_FLAG_FIXED)
-		bd_type = BLOCKDEV_FIXED;
-	else
-		bd_type = BLOCKDEV_REMOVABLE;
-
-	*count = get_all_bdevs(bd_type, &devs);
-
-	// Only log for fixed disks to avoid spamming timestamps in recovery.
-	if (disk_flags & VB2_DISK_FLAG_FIXED)
-		timestamp_add_now(TS_VB_STORAGE_INIT_DONE);
-
-	// Allocate enough vb2_disk_info structures.
-	struct vb2_disk_info *disk = NULL;
-	if (*count)
-		disk = xzalloc(sizeof(struct vb2_disk_info) * *count);
-
-	*info_ptr = disk;
-
-	// Fill them from the BlockDev structures.
-	BlockDev *bdev;
-	list_for_each(bdev, *devs, list_node)
-		setup_vb_disk_info(disk++, bdev);
-
-	return VB2_SUCCESS;
-}
-
-vb2_error_t VbExDiskFreeInfo(struct vb2_disk_info *infos,
-			     vb2ex_disk_handle_t preserve_handle)
-{
-	free(infos);
-	return VB2_SUCCESS;
-}
-
 vb2_error_t VbExDiskRead(vb2ex_disk_handle_t handle, uint64_t lba_start,
 			 uint64_t lba_count, void *buffer)
 {

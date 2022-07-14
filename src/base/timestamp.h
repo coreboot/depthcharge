@@ -14,6 +14,7 @@
 #ifndef __BASE_TIMESTAMP_H__
 #define __BASE_TIMESTAMP_H__
 
+#include <stddef.h>
 #include <stdint.h>
 
 enum timestamp_id {

@@ -5,6 +5,8 @@
 
 #include <vb2_api.h>
 
+#include "drivers/storage/blockdev.h"
+
 /*
  * Load a kernel from the specified type(s) of disks.
  *
@@ -14,7 +16,7 @@
  *
  * @return VB2_SUCCESS or the most specific VB2_ERROR_LK error.
  */
-vb2_error_t vboot_load_kernel(struct vb2_context *ctx, uint32_t disk_flags,
+vb2_error_t vboot_load_kernel(struct vb2_context *ctx, blockdev_type_t type,
 			      struct vb2_kernel_params *kparams);
 
 /*

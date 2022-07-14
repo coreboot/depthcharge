@@ -3,6 +3,8 @@
 #include <vb2_api.h>
 #include <vboot_api.h>
 
+#include "base/list.h"
+#include "drivers/storage/blockdev.h"
 #include "mocks/callbacks.h"
 #include "mocks/payload.h"
 #include "mocks/util/commonparams.h"
@@ -12,8 +14,6 @@
 #include "vboot/load_kernel.h"
 #include "vboot/util/commonparams.h"
 
-#define MAX_MOCK_DISKS 10
-
 typedef struct {
 	uint64_t bytes_per_lba;
 	uint64_t lba_count;
@@ -21,16 +21,10 @@ typedef struct {
 	const char *name;
 } disk_desc_t;
 
-static const char correct_handle[] = "correct choice";
-static const char wrong_handle[] = "wrong choice";
-static const char invalid_kernel_handle[] = "invalid kernel";
-static const char no_kernel_handle[] = "no kernel";
-static const char no_kernel2_handle[] = "no kernel 2";
-
 /* Mock data */
-static struct vb2_disk_info mock_disks[MAX_MOCK_DISKS];
 static struct ui_context test_ui_ctx;
 static struct vb2_kernel_params test_kparams;
+static BlockDev bdev_head;
 
 /* Reset mock data (for use before each test) */
 static int setup(void **state)
@@ -44,64 +38,34 @@ static int setup(void **state)
 	test_ui_ctx.kparams = &test_kparams;
 	*state = &test_ui_ctx;
 
-	memset(&mock_disks, 0, sizeof(mock_disks));
+	memset(&bdev_head, 0, sizeof(bdev_head));
 
 	return 0;
 }
 
 /* Mocked functions */
 
-/* Do not reference these 3 functions directly in tests. Use the macro below. */
-static disk_desc_t *_get_disks(void)
+/* Do not reference these 2 functions directly in tests. Use the macro below. */
+static void link_disk(BlockDev *dev, uint32_t count)
 {
-	return mock_type(disk_desc_t *);
+	for (int i = count - 1; i >= 0; i--)
+		list_insert_after(&dev[i].list_node, &bdev_head.list_node);
 }
 
-static uint32_t _get_num_disks(void)
+int get_all_bdevs(blockdev_type_t type, ListNode **bdevs)
 {
-	return mock_type(uint32_t);
+	BlockDev *bdev;
+	check_expected(type);
+	*bdevs = &bdev_head.list_node;
+	list_for_each(bdev, bdev_head.list_node, list_node)
+		bdev->removable = type == BLOCKDEV_REMOVABLE;
+	return mock_type(int);
 }
 
-vb2_error_t VbExDiskGetInfo(struct vb2_disk_info **infos_ptr, uint32_t *count,
-			    uint32_t disk_flags)
-{
-	int i;
-
-	*infos_ptr = mock_disks;
-	*count = _get_num_disks();
-	disk_desc_t *disks = _get_disks();
-	assert_in_range(*count, 0, MAX_MOCK_DISKS);
-
-	for (i = 0; i < *count; i++) {
-		mock_disks[i].bytes_per_lba = disks[i].bytes_per_lba;
-		mock_disks[i].lba_count = disks[i].lba_count;
-		mock_disks[i].streaming_lba_count = disks[i].lba_count;
-		mock_disks[i].flags = disks[i].flags;
-		mock_disks[i].handle = (vb2ex_disk_handle_t)disks[i].name;
-	}
-
-	return mock_type(vb2_error_t);
-}
-
-/* Macros for mocking VbExDiskGetInfo(). */
-#define WILL_GET_DISKS(disks, rv) do { \
-	will_return_always(_get_disks, disks); \
-	will_return_always(_get_num_disks, ARRAY_SIZE(disks)); \
-	will_return_always(VbExDiskGetInfo, rv); \
-} while (0)
-
-/* Do not reference this function directly in tests. Use the macro below. */
-vb2_error_t VbExDiskFreeInfo(struct vb2_disk_info *infos,
-			     vb2ex_disk_handle_t preserve_handle)
-{
-	check_expected(preserve_handle);
-	return mock_type(vb2_error_t);
-}
-
-/* Macros for mocking VbExDiskGetInfo(). */
-#define WILL_FREE_DISKS(rv, ptr) do { \
-	will_return(VbExDiskFreeInfo, rv); \
-	expect_value(VbExDiskFreeInfo, preserve_handle, ptr); \
+#define WILL_GET_DISKS(disks, _type) do { \
+	link_disk(disks, ARRAY_SIZE(disks)); \
+	will_return_always(get_all_bdevs, ARRAY_SIZE(disks)); \
+	expect_value(get_all_bdevs, type, _type); \
 } while (0)
 
 /* Do not reference these 4 functions directly in tests. Use the macro below. */
@@ -119,9 +83,12 @@ vb2_error_t vb2api_load_kernel(struct vb2_context *c,
 			       struct vb2_kernel_params *params,
 			       struct vb2_disk_info *disk_info)
 {
+	vb2_error_t rv = mock_type(vb2_error_t);
 	check_disk_handle(disk_info->handle);
 	check_external_flag(!!(disk_info->flags & VB2_DISK_FLAG_EXTERNAL_GPT));
-	return mock_type(vb2_error_t);
+	if (rv == VB2_SUCCESS)
+		params->disk_handle = disk_info->handle;
+	return rv;
 }
 
 vb2_error_t vb2api_load_minios_kernel(struct vb2_context *c,
@@ -129,9 +96,12 @@ vb2_error_t vb2api_load_minios_kernel(struct vb2_context *c,
 				      struct vb2_disk_info *disk_info,
 				      uint32_t minios_flags)
 {
+	vb2_error_t rv = mock_type(vb2_error_t);
 	check_disk_handle(disk_info->handle);
 	check_external_flag(!!(disk_info->flags & VB2_DISK_FLAG_EXTERNAL_GPT));
-	return mock_type(vb2_error_t);
+	if (rv == VB2_SUCCESS)
+		params->disk_handle = disk_info->handle;
+	return rv;
 }
 
 /* Macros for mocking vb2api_load_kernel(). */
@@ -161,303 +131,279 @@ void vb2api_fail(struct vb2_context *ctx, uint8_t reason, uint8_t subcode)
 
 /* Test functions */
 
+#define _BDEV(_block_size, _block_count, _external_gpt, ...) { \
+	.block_size = _block_size, \
+	.block_count = _block_count, \
+	.stream_block_count = _block_count, \
+	.external_gpt = _external_gpt, \
+}
+# define BDEV(block_size, block_count, ...) \
+	_BDEV(block_size, block_count, ##__VA_ARGS__, 0)
+
 static void test_lk_first_disk_removable(void **state)
 {
 	struct ui_context *ui = *state;
-	uint32_t flags = VB2_DISK_FLAG_REMOVABLE | VB2_DISK_FLAG_FIXED;
-	disk_desc_t disks[] = {
-		{4096, 100, VB2_DISK_FLAG_REMOVABLE, correct_handle},
-		{4096, 100, VB2_DISK_FLAG_FIXED, wrong_handle},
+	blockdev_type_t type = BLOCKDEV_REMOVABLE;
+	BlockDev disks[] = {
+		BDEV(4096, 100),
+		BDEV(4096, 100),
 	};
-	WILL_GET_DISKS(disks, VB2_SUCCESS);
-	WILL_FREE_DISKS(VB2_SUCCESS, correct_handle);
-	WILL_LOAD_KERNEL(VB2_SUCCESS, 0, correct_handle);
+	WILL_GET_DISKS(disks, type);
+	WILL_LOAD_KERNEL(VB2_SUCCESS, 0, &disks[0]);
 
-	ASSERT_VB2_SUCCESS(vboot_load_kernel(ui->ctx, flags, ui->kparams));
+	ASSERT_VB2_SUCCESS(vboot_load_kernel(ui->ctx, type, ui->kparams));
 }
 
 static void test_lk_first_disk_fixed(void **state)
 {
 	struct ui_context *ui = *state;
-	uint32_t flags = VB2_DISK_FLAG_REMOVABLE | VB2_DISK_FLAG_FIXED;
-	disk_desc_t disks[] = {
-		{4096, 100, VB2_DISK_FLAG_FIXED, correct_handle},
-		{4096, 100, VB2_DISK_FLAG_REMOVABLE, wrong_handle},
+	blockdev_type_t type = BLOCKDEV_FIXED;
+	BlockDev disks[] = {
+		BDEV(4096, 100),
+		BDEV(4096, 100),
 	};
-	WILL_GET_DISKS(disks, VB2_SUCCESS);
-	WILL_FREE_DISKS(VB2_SUCCESS, correct_handle);
-	WILL_LOAD_KERNEL(VB2_SUCCESS, 0, correct_handle);
+	WILL_GET_DISKS(disks, type);
+	WILL_LOAD_KERNEL(VB2_SUCCESS, 0, &disks[0]);
 
-	ASSERT_VB2_SUCCESS(vboot_load_kernel(ui->ctx, flags, ui->kparams));
+	ASSERT_VB2_SUCCESS(vboot_load_kernel(ui->ctx, type, ui->kparams));
 }
 
 static void test_lk_skip_invalid_removable_disks(void **state)
 {
 	struct ui_context *ui = *state;
-	uint32_t flags = VB2_DISK_FLAG_REMOVABLE;
-	disk_desc_t disks[] = {
+	blockdev_type_t type = BLOCKDEV_REMOVABLE;
+	BlockDev disks[] = {
 		/* too small */
-		{512, 10, VB2_DISK_FLAG_REMOVABLE, 0},
-		/* wrong LBA */
-		{511, 100, VB2_DISK_FLAG_REMOVABLE, 0},
+		BDEV(512, 10),
+		/* wrong block_size */
+		BDEV(511, 100),
 		/* not a power of 2 */
-		{2047, 100, VB2_DISK_FLAG_REMOVABLE, 0},
-		/* wrong type */
-		{512, 100, VB2_DISK_FLAG_FIXED, 0},
-		/* wrong flags */
-		{512, 100, 0, 0},
-		/* still wrong flags */
-		{512, 100, -1, 0},
-		{4096, 100, VB2_DISK_FLAG_REMOVABLE, correct_handle},
+		BDEV(2047, 100),
+		BDEV(4096, 100),
 		/* already got one */
-		{512, 100, VB2_DISK_FLAG_REMOVABLE, wrong_handle},
+		BDEV(4096, 100),
 	};
-	WILL_GET_DISKS(disks, VB2_SUCCESS);
-	WILL_FREE_DISKS(VB2_SUCCESS, correct_handle);
-	WILL_LOAD_KERNEL(VB2_SUCCESS, 0, correct_handle);
+	WILL_GET_DISKS(disks, type);
+	WILL_LOAD_KERNEL(VB2_SUCCESS, 0, &disks[3]);
 
-	ASSERT_VB2_SUCCESS(vboot_load_kernel(ui->ctx, flags, ui->kparams));
+	ASSERT_VB2_SUCCESS(vboot_load_kernel(ui->ctx, type, ui->kparams));
 }
 
 static void test_lk_skip_invalid_fixed_disks(void **state)
 {
 	struct ui_context *ui = *state;
-	uint32_t flags = VB2_DISK_FLAG_FIXED;
-	disk_desc_t disks[] = {
+	blockdev_type_t type = BLOCKDEV_REMOVABLE;
+	BlockDev disks[] = {
 		/* too small */
-		{512, 10, VB2_DISK_FLAG_FIXED, 0},
-		/* wrong LBA */
-		{511, 100, VB2_DISK_FLAG_FIXED, 0},
+		BDEV(512, 10),
+		/* wrong block_size */
+		BDEV(511, 100),
 		/* not a power of 2 */
-		{2047, 100, VB2_DISK_FLAG_FIXED, 0},
-		/* wrong type */
-		{512, 100, VB2_DISK_FLAG_REMOVABLE, 0},
-		/* wrong flags */
-		{512, 100, 0, 0},
-		/* still wrong flags */
-		{512, 100, -1, 0},
-		/* flags */
-		{512, 100, VB2_DISK_FLAG_REMOVABLE | VB2_DISK_FLAG_FIXED, 0},
-		{512, 100, VB2_DISK_FLAG_FIXED, correct_handle},
+		BDEV(2047, 100),
+		BDEV(4096, 100),
 		/* already got one */
-		{512, 100, VB2_DISK_FLAG_FIXED, wrong_handle},
+		BDEV(4096, 100),
 	};
-	WILL_GET_DISKS(disks, VB2_SUCCESS);
-	WILL_FREE_DISKS(VB2_SUCCESS, correct_handle);
-	WILL_LOAD_KERNEL(VB2_SUCCESS, 0, correct_handle);
+	WILL_GET_DISKS(disks, type);
+	WILL_LOAD_KERNEL(VB2_SUCCESS, 0, &disks[3]);
 
-	ASSERT_VB2_SUCCESS(vboot_load_kernel(ui->ctx, flags, ui->kparams));
+	ASSERT_VB2_SUCCESS(vboot_load_kernel(ui->ctx, type, ui->kparams));
 }
 
 static void test_lk_allow_externel_gpt(void **state)
 {
 	struct ui_context *ui = *state;
-	uint32_t flags = VB2_DISK_FLAG_REMOVABLE;
-	disk_desc_t disks[] = {
-		{512, 100, VB2_DISK_FLAG_REMOVABLE | VB2_DISK_FLAG_EXTERNAL_GPT,
-		 correct_handle},
-		/* already got one */
-		{512, 100, VB2_DISK_FLAG_REMOVABLE, wrong_handle},
+	blockdev_type_t type = BLOCKDEV_REMOVABLE;
+	BlockDev disks[] = {
+		BDEV(512, 100, 1),
+		BDEV(512, 100),
 	};
-	WILL_GET_DISKS(disks, VB2_SUCCESS);
-	WILL_FREE_DISKS(VB2_SUCCESS, correct_handle);
-	WILL_LOAD_KERNEL(VB2_SUCCESS, 1, correct_handle);
+	WILL_GET_DISKS(disks, type);
+	WILL_LOAD_KERNEL(VB2_SUCCESS, 1, &disks[0]);
 
-	ASSERT_VB2_SUCCESS(vboot_load_kernel(ui->ctx, flags, ui->kparams));
+	ASSERT_VB2_SUCCESS(vboot_load_kernel(ui->ctx, type, ui->kparams));
 }
 
 static void test_lk_skip_invalid_kernel(void **state)
 {
 	struct ui_context *ui = *state;
-	uint32_t flags = VB2_DISK_FLAG_REMOVABLE;
-	disk_desc_t disks[] = {
-		/* wrong flags */
-		{512, 100, 0, 0},
-		{512, 100, VB2_DISK_FLAG_REMOVABLE, wrong_handle},
-		{512, 100, VB2_DISK_FLAG_REMOVABLE, correct_handle},
+	blockdev_type_t type = BLOCKDEV_FIXED;
+	BlockDev disks[] = {
+		BDEV(512, 100),
+		BDEV(512, 100),
 	};
-	WILL_GET_DISKS(disks, VB2_SUCCESS);
-	WILL_FREE_DISKS(VB2_SUCCESS, correct_handle);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 0, wrong_handle);
-	WILL_LOAD_KERNEL(VB2_SUCCESS, 0, correct_handle);
+	WILL_GET_DISKS(disks, type);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 0, &disks[0]);
+	WILL_LOAD_KERNEL(VB2_SUCCESS, 0, &disks[1]);
 
-	ASSERT_VB2_SUCCESS(vboot_load_kernel(ui->ctx, flags, ui->kparams));
+	ASSERT_VB2_SUCCESS(vboot_load_kernel(ui->ctx, type, ui->kparams));
 }
 
 static void test_lk_no_disks_at_all(void **state)
 {
 	struct ui_context *ui = *state;
-	uint32_t flags = VB2_DISK_FLAG_FIXED;
-	disk_desc_t disks[] = {};
-	WILL_GET_DISKS(disks, VB2_SUCCESS);
-	WILL_FREE_DISKS(VB2_SUCCESS, NULL);
+	blockdev_type_t type = BLOCKDEV_FIXED;
+	BlockDev disks[] = {};
+	WILL_GET_DISKS(disks, type);
 	expect_value(vb2api_fail, reason, VB2_RECOVERY_RW_NO_DISK);
 
-	assert_int_equal(vboot_load_kernel(ui->ctx, flags, ui->kparams),
+	assert_int_equal(vboot_load_kernel(ui->ctx, type, ui->kparams),
 			 VB2_ERROR_LK_NO_DISK_FOUND);
+	assert_null(ui->kparams->disk_handle);
 }
 
 static void test_lk_invalid_kernel_before_no_kernel(void **state)
 {
 	struct ui_context *ui = *state;
-	uint32_t flags = VB2_DISK_FLAG_FIXED;
-	disk_desc_t disks[] = {
-		/* doesn't load */
-		{512, 100, VB2_DISK_FLAG_FIXED, invalid_kernel_handle},
-		/* doesn't load */
-		{512, 100, VB2_DISK_FLAG_FIXED, no_kernel_handle},
+	blockdev_type_t type = BLOCKDEV_FIXED;
+	BlockDev disks[] = {
+		BDEV(512, 100),
+		BDEV(512, 100),
 	};
-	WILL_GET_DISKS(disks, VB2_SUCCESS);
-	WILL_FREE_DISKS(VB2_SUCCESS, NULL);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 0,
-			 invalid_kernel_handle);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, no_kernel_handle);
+	WILL_GET_DISKS(disks, type);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 0, &disks[0]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, &disks[1]);
 	expect_value(vb2api_fail, reason, VB2_RECOVERY_RW_INVALID_OS);
 
-	assert_int_equal(vboot_load_kernel(ui->ctx, flags, ui->kparams),
+	assert_int_equal(vboot_load_kernel(ui->ctx, type, ui->kparams),
 			 VB2_ERROR_LK_INVALID_KERNEL_FOUND);
+	assert_null(ui->kparams->disk_handle);
 }
 
 static void test_lk_invalid_kernel_after_no_kernel(void **state)
 {
 	struct ui_context *ui = *state;
-	uint32_t flags = VB2_DISK_FLAG_FIXED;
-	disk_desc_t disks[] = {
-		{512, 1000, VB2_DISK_FLAG_FIXED, no_kernel_handle},
-		{512, 1000, VB2_DISK_FLAG_FIXED, invalid_kernel_handle},
+	blockdev_type_t type = BLOCKDEV_FIXED;
+	BlockDev disks[] = {
+		BDEV(512, 100),
+		BDEV(512, 100),
 	};
-	WILL_GET_DISKS(disks, VB2_SUCCESS);
-	WILL_FREE_DISKS(VB2_SUCCESS, NULL);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, no_kernel_handle);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 0,
-			 invalid_kernel_handle);
+	WILL_GET_DISKS(disks, type);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, &disks[0]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 0, &disks[1]);
 	expect_value(vb2api_fail, reason, VB2_RECOVERY_RW_INVALID_OS);
 
 	/* INVALID_KERNEL_FOUND overwrites NO_KERNEL_FOUND */
-	assert_int_equal(vboot_load_kernel(ui->ctx, flags, ui->kparams),
+	assert_int_equal(vboot_load_kernel(ui->ctx, type, ui->kparams),
 			 VB2_ERROR_LK_INVALID_KERNEL_FOUND);
+	assert_null(ui->kparams->disk_handle);
 }
 
 static void test_lk_invalid_kernel_removable(void **state)
 {
 	struct ui_context *ui = *state;
-	uint32_t flags = VB2_DISK_FLAG_REMOVABLE;
-	disk_desc_t disks[] = {
-		{512, 100, VB2_DISK_FLAG_REMOVABLE, invalid_kernel_handle},
-		{512, 100, VB2_DISK_FLAG_REMOVABLE, no_kernel_handle},
+	blockdev_type_t type = BLOCKDEV_FIXED;
+	BlockDev disks[] = {
+		BDEV(512, 100),
+		BDEV(512, 100),
 	};
-	WILL_GET_DISKS(disks, VB2_SUCCESS);
-	WILL_FREE_DISKS(VB2_SUCCESS, NULL);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 0,
-			 invalid_kernel_handle);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, no_kernel_handle);
+	WILL_GET_DISKS(disks, type);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 0, &disks[0]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, &disks[1]);
 	expect_value(vb2api_fail, reason, VB2_RECOVERY_RW_INVALID_OS);
 
-	assert_int_equal(vboot_load_kernel(ui->ctx, flags, ui->kparams),
+	assert_int_equal(vboot_load_kernel(ui->ctx, type, ui->kparams),
 			 VB2_ERROR_LK_INVALID_KERNEL_FOUND);
+	assert_null(ui->kparams->disk_handle);
 }
 
 static void test_lk_invalid_kernel_removable_rec_mode(void **state)
 {
 	struct ui_context *ui = *state;
 	set_boot_mode(ui->ctx, VB2_BOOT_MODE_MANUAL_RECOVERY);
-	uint32_t flags = VB2_DISK_FLAG_REMOVABLE;
-	disk_desc_t disks[] = {
-		{512, 100, VB2_DISK_FLAG_REMOVABLE, invalid_kernel_handle},
-		{512, 100, VB2_DISK_FLAG_REMOVABLE, no_kernel_handle},
+	blockdev_type_t type = BLOCKDEV_REMOVABLE;
+	BlockDev disks[] = {
+		BDEV(512, 100),
+		BDEV(512, 100),
 	};
-	WILL_GET_DISKS(disks, VB2_SUCCESS);
-	WILL_FREE_DISKS(VB2_SUCCESS, NULL);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 0,
-			 invalid_kernel_handle);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, no_kernel_handle);
+	WILL_GET_DISKS(disks, type);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 0, &disks[0]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, &disks[1]);
 
-	assert_int_equal(vboot_load_kernel(ui->ctx, flags, ui->kparams),
+	assert_int_equal(vboot_load_kernel(ui->ctx, type, ui->kparams),
 			 VB2_ERROR_LK_INVALID_KERNEL_FOUND);
+	assert_null(ui->kparams->disk_handle);
 }
 
 static void test_lk_invalid_kernel_removable_dev_mode(void **state)
 {
 	struct ui_context *ui = *state;
 	set_boot_mode(ui->ctx, VB2_BOOT_MODE_DEVELOPER);
-	uint32_t flags = VB2_DISK_FLAG_REMOVABLE;
-	disk_desc_t disks[] = {
-		{512, 100, VB2_DISK_FLAG_REMOVABLE, invalid_kernel_handle},
-		{512, 100, VB2_DISK_FLAG_REMOVABLE, no_kernel_handle},
+	blockdev_type_t type = BLOCKDEV_REMOVABLE;
+	BlockDev disks[] = {
+		BDEV(512, 100),
+		BDEV(512, 100),
 	};
-	WILL_GET_DISKS(disks, VB2_SUCCESS);
-	WILL_FREE_DISKS(VB2_SUCCESS, NULL);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 0,
-			 invalid_kernel_handle);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, no_kernel_handle);
+	WILL_GET_DISKS(disks, type);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 0, &disks[0]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, &disks[1]);
 
-	assert_int_equal(vboot_load_kernel(ui->ctx, flags, ui->kparams),
+	assert_int_equal(vboot_load_kernel(ui->ctx, type, ui->kparams),
 			 VB2_ERROR_LK_INVALID_KERNEL_FOUND);
+	assert_null(ui->kparams->disk_handle);
 }
 
 static void test_lk_no_kernel_fixed(void **state)
 {
 	struct ui_context *ui = *state;
-	uint32_t flags = VB2_DISK_FLAG_FIXED;
-	disk_desc_t disks[] = {
-		{512, 100, VB2_DISK_FLAG_FIXED, no_kernel_handle},
-		{512, 1000, VB2_DISK_FLAG_FIXED, no_kernel2_handle},
+	blockdev_type_t type = BLOCKDEV_FIXED;
+	BlockDev disks[] = {
+		BDEV(512, 100),
+		BDEV(512, 100),
 	};
-	WILL_GET_DISKS(disks, VB2_SUCCESS);
-	WILL_FREE_DISKS(VB2_SUCCESS, NULL);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, no_kernel_handle);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, no_kernel2_handle);
+	WILL_GET_DISKS(disks, type);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, &disks[0]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, &disks[1]);
 	expect_value(vb2api_fail, reason, VB2_RECOVERY_RW_NO_KERNEL);
 
-	assert_int_equal(vboot_load_kernel(ui->ctx, flags, ui->kparams),
+	assert_int_equal(vboot_load_kernel(ui->ctx, type, ui->kparams),
 			 VB2_ERROR_LK_NO_KERNEL_FOUND);
+	assert_null(ui->kparams->disk_handle);
 }
 
 static void test_lk_no_kernel_removable(void **state)
 {
 	struct ui_context *ui = *state;
-	uint32_t flags = VB2_DISK_FLAG_REMOVABLE;
-	disk_desc_t disks[] = {
-		{512, 100, VB2_DISK_FLAG_REMOVABLE, no_kernel_handle},
-		{512, 1000, VB2_DISK_FLAG_REMOVABLE, no_kernel2_handle},
+	blockdev_type_t type = BLOCKDEV_REMOVABLE;
+	BlockDev disks[] = {
+		BDEV(512, 100),
+		BDEV(512, 100),
 	};
-	WILL_GET_DISKS(disks, VB2_SUCCESS);
-	WILL_FREE_DISKS(VB2_SUCCESS, NULL);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, no_kernel_handle);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, no_kernel2_handle);
+	WILL_GET_DISKS(disks, type);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, &disks[0]);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, &disks[1]);
 	expect_value(vb2api_fail, reason, VB2_RECOVERY_RW_NO_KERNEL);
 
-	assert_int_equal(vboot_load_kernel(ui->ctx, flags, ui->kparams),
+	assert_int_equal(vboot_load_kernel(ui->ctx, type, ui->kparams),
 			 VB2_ERROR_LK_NO_KERNEL_FOUND);
+	assert_null(ui->kparams->disk_handle);
 }
 
 static void test_lk_no_kernel_removable_rec_mode(void **state)
 {
 	struct ui_context *ui = *state;
 	set_boot_mode(ui->ctx, VB2_BOOT_MODE_MANUAL_RECOVERY);
-	uint32_t flags = VB2_DISK_FLAG_REMOVABLE;
-	disk_desc_t disks[] = {
-		{512, 100, VB2_DISK_FLAG_REMOVABLE, no_kernel_handle},
+	blockdev_type_t type = BLOCKDEV_REMOVABLE;
+	BlockDev disks[] = {
+		BDEV(512, 100),
 	};
-	WILL_GET_DISKS(disks, VB2_SUCCESS);
-	WILL_FREE_DISKS(VB2_SUCCESS, NULL);
-	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, no_kernel_handle);
+	WILL_GET_DISKS(disks, type);
+	WILL_LOAD_KERNEL(VB2_ERROR_LK_NO_KERNEL_FOUND, 0, &disks[0]);
 
-	assert_int_equal(vboot_load_kernel(ui->ctx, flags, ui->kparams),
+	assert_int_equal(vboot_load_kernel(ui->ctx, type, ui->kparams),
 			 VB2_ERROR_LK_NO_KERNEL_FOUND);
+	assert_null(ui->kparams->disk_handle);
 }
 
 static void test_lmk_pick_first_fixed_disk(void **state)
 {
 	struct ui_context *ui = *state;
-	disk_desc_t disks[] = {
-		{4096, 100, VB2_DISK_FLAG_REMOVABLE, 0},
-		{4096, 100, VB2_DISK_FLAG_FIXED, correct_handle},
-		{4096, 100, VB2_DISK_FLAG_FIXED, wrong_handle},
+	BlockDev disks[] = {
+		BDEV(512, 100),
+		BDEV(512, 100),
 	};
-	WILL_GET_DISKS(disks, VB2_SUCCESS);
-	WILL_FREE_DISKS(VB2_SUCCESS, correct_handle);
-	WILL_LOAD_MINIOS_KERNEL(VB2_SUCCESS, 0, correct_handle);
+	WILL_GET_DISKS(disks, BLOCKDEV_FIXED);
+	WILL_LOAD_MINIOS_KERNEL(VB2_SUCCESS, 0, &disks[0]);
 
 	ASSERT_VB2_SUCCESS(vboot_load_minios_kernel(ui->ctx, 0, ui->kparams));
 }
@@ -465,15 +411,14 @@ static void test_lmk_pick_first_fixed_disk(void **state)
 static void test_lmk_skip_failed_fixed_disk(void **state)
 {
 	struct ui_context *ui = *state;
-	disk_desc_t disks[] = {
-		{4096, 100, VB2_DISK_FLAG_FIXED, wrong_handle},
-		{4096, 100, VB2_DISK_FLAG_FIXED, correct_handle},
+	BlockDev disks[] = {
+		BDEV(512, 100),
+		BDEV(512, 100),
 	};
-	WILL_GET_DISKS(disks, VB2_SUCCESS);
-	WILL_FREE_DISKS(VB2_SUCCESS, correct_handle);
+	WILL_GET_DISKS(disks, BLOCKDEV_FIXED);
 	WILL_LOAD_MINIOS_KERNEL(VB2_ERROR_LK_INVALID_KERNEL_FOUND, 0,
-				wrong_handle);
-	WILL_LOAD_MINIOS_KERNEL(VB2_SUCCESS, 0, correct_handle);
+				&disks[0]);
+	WILL_LOAD_MINIOS_KERNEL(VB2_SUCCESS, 0, &disks[1]);
 
 	ASSERT_VB2_SUCCESS(vboot_load_minios_kernel(ui->ctx, 0, ui->kparams));
 }

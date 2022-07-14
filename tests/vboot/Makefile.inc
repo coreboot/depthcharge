@@ -14,11 +14,12 @@ tests-y += ui-developer-test
 tests-y += ui-developer-detachable-test
 tests-y += ui-diagnostic-test
 
+load_kernel-test-srcs += tests/stubs/base/timestamp.c
 load_kernel-test-srcs += tests/vboot/load_kernel-test.c
+load_kernel-test-srcs += src/base/list.c
 load_kernel-test-srcs += src/vboot/load_kernel.c
-load_kernel-test-mocks += VbExDiskGetInfo VbExDiskFreeInfo
-load_kernel-test-mocks += vb2api_load_kernel vb2api_load_minios_kernel
 load_kernel-test-mocks += vb2api_fail
+load_kernel-test-mocks += vb2api_load_kernel vb2api_load_minios_kernel
 
 secdata_tpm-test-srcs += tests/vboot/secdata_tpm-test.c
 secdata_tpm-test-srcs += tests/mocks/tlcl_rw.c

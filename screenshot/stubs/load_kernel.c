@@ -5,7 +5,7 @@
 
 #include "vboot/load_kernel.h"
 
-vb2_error_t vboot_load_kernel(struct vb2_context *ctx, uint32_t disk_flags,
+vb2_error_t vboot_load_kernel(struct vb2_context *ctx, blockdev_type_t type,
 			      struct vb2_kernel_params *kparams)
 {
 	return VB2_SUCCESS;
