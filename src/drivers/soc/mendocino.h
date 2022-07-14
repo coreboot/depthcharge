@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 
-#ifndef __DRIVERS_SOC_SABRINA_H__
-#define __DRIVERS_SOC_SABRINA_H__
+#ifndef __DRIVERS_SOC_MENDOCINO_H__
+#define __DRIVERS_SOC_MENDOCINO_H__
 
 /* I2C definitions */
 /* Designware Controller runs at 133MHz */
@@ -11,4 +11,4 @@
 #define AP_I2C2_ADDR  0xFEDC4000
 #define AP_I2C3_ADDR  0xFEDC5000
 
-#endif /* __DRIVERS_SOC_SABRINA_H__ */
+#endif /* __DRIVERS_SOC_MENDOCINO_H__ */

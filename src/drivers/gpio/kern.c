@@ -105,7 +105,7 @@ static const uint8_t fch_gpio_use_table[FCH_NUM_GPIOS] = {
 	/* 130 */  1,  3,  2,  0,  0,  0,  0,  0,  0,  0,
 	/* 140 */  0,  0,  0,  0,  0,  1,  1,  1
 };
-#elif CONFIG(DRIVER_SOC_SABRINA)
+#elif CONFIG(DRIVER_SOC_MENDOCINO)
 
 #define FCH_NUM_GPIOS 158
 

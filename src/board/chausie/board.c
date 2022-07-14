@@ -6,7 +6,7 @@
 #include "base/init_funcs.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/fch.h"
-#include "drivers/soc/sabrina.h"
+#include "drivers/soc/mendocino.h"
 #include "drivers/storage/nvme.h"
 #include "pci.h"
 #include "vboot/util/flag.h"

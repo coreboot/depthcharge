@@ -13,7 +13,7 @@
 #include "drivers/gpio/kern.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/fch.h"
-#include "drivers/soc/sabrina.h"
+#include "drivers/soc/mendocino.h"
 #include "drivers/storage/nvme.h"
 #include "drivers/tpm/google/i2c.h"
 #include "drivers/tpm/tpm.h"

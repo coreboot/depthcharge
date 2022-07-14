@@ -122,7 +122,7 @@ config DRIVER_SOC_CEZANNE
 	default n
 	select DRIVER_GPIO_KERN
 
-config DRIVER_SOC_SABRINA
-	bool "Sabrina SoC driver"
+config DRIVER_SOC_MENDOCINO
+	bool "Mendocino SoC driver"
 	default n
 	select DRIVER_GPIO_KERN
