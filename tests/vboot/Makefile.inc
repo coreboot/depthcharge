@@ -4,14 +4,14 @@ subdirs-y := ui
 
 tests-y += secdata_tpm-test
 tests-y += stages-test
-tests-y += ui_broken-test
-tests-y += ui_broken-detachable-test
-tests-y += ui_manual-test
-tests-y += ui_manual-detachable-test
-tests-y += ui_manual-ppkeyboard-test
-tests-y += ui_developer-test
-tests-y += ui_developer-detachable-test
-tests-y += ui_diagnostic-test
+tests-y += ui-broken-test
+tests-y += ui-broken-detachable-test
+tests-y += ui-manual-test
+tests-y += ui-manual-detachable-test
+tests-y += ui-manual-ppkeyboard-test
+tests-y += ui-developer-test
+tests-y += ui-developer-detachable-test
+tests-y += ui-diagnostic-test
 
 secdata_tpm-test-srcs += tests/vboot/secdata_tpm-test.c
 secdata_tpm-test-srcs += tests/mocks/tlcl_rw.c
@@ -63,39 +63,39 @@ ui-test-common-mocks += vb2api_phone_recovery_ui_enabled
 ui-test-common-mocks += vb2api_use_short_dev_screen_delay
 ui-test-common-mocks += vb2api_get_dev_default_boot_target
 
-# ui_broken-test
-$(call copy-test,ui-test-common,ui_broken-test)
-ui_broken-test-srcs += tests/vboot/ui_broken-test.c
-ui_broken-test-srcs += src/vboot/ui.c
+# ui-broken-test
+$(call copy-test,ui-test-common,ui-broken-test)
+ui-broken-test-srcs += tests/vboot/ui-broken-test.c
+ui-broken-test-srcs += src/vboot/ui.c
 
-$(call copy-test,ui_broken-test,ui_broken-detachable-test)
-ui_broken-detachable-test-config += CONFIG_DETACHABLE=1
+$(call copy-test,ui-broken-test,ui-broken-detachable-test)
+ui-broken-detachable-test-config += CONFIG_DETACHABLE=1
 
-# ui_manual-test
-$(call copy-test,ui-test-common,ui_manual-test)
-ui_manual-test-srcs += tests/vboot/ui_manual-test.c
-ui_manual-test-srcs := $(filter-out tests/mocks/vboot/ui/archive.c, \
-	$(ui_manual-test-srcs))
+# ui-manual-test
+$(call copy-test,ui-test-common,ui-manual-test)
+ui-manual-test-srcs += tests/vboot/ui-manual-test.c
+ui-manual-test-srcs := $(filter-out tests/mocks/vboot/ui/archive.c, \
+	$(ui-manual-test-srcs))
 
-$(call copy-test,ui_manual-test,ui_manual-detachable-test)
-ui_manual-detachable-test-config += CONFIG_DETACHABLE=1
+$(call copy-test,ui-manual-test,ui-manual-detachable-test)
+ui-manual-detachable-test-config += CONFIG_DETACHABLE=1
 
-$(call copy-test,ui_manual-test,ui_manual-ppkeyboard-test)
-ui_manual-ppkeyboard-test-config += CONFIG_PHYSICAL_PRESENCE_KEYBOARD=1
+$(call copy-test,ui-manual-test,ui-manual-ppkeyboard-test)
+ui-manual-ppkeyboard-test-config += CONFIG_PHYSICAL_PRESENCE_KEYBOARD=1
 
-# ui_developer-test
-$(call copy-test,ui-test-common,ui_developer-test)
-ui_developer-test-srcs := $(filter-out tests/stubs/boot/payload.c, \
-	$(ui_developer-test-srcs))
-ui_developer-test-srcs += tests/mocks/boot/payload.c
-ui_developer-test-srcs += tests/vboot/ui_developer-test.c
-ui_developer-test-srcs += src/base/list.c
-ui_developer-test-srcs += src/vboot/ui.c
+# ui-developer-test
+$(call copy-test,ui-test-common,ui-developer-test)
+ui-developer-test-srcs := $(filter-out tests/stubs/boot/payload.c, \
+	$(ui-developer-test-srcs))
+ui-developer-test-srcs += tests/mocks/boot/payload.c
+ui-developer-test-srcs += tests/vboot/ui-developer-test.c
+ui-developer-test-srcs += src/base/list.c
+ui-developer-test-srcs += src/vboot/ui.c
 
-$(call copy-test,ui_developer-test,ui_developer-detachable-test)
-ui_developer-detachable-test-config += CONFIG_DETACHABLE=1
+$(call copy-test,ui-developer-test,ui-developer-detachable-test)
+ui-developer-detachable-test-config += CONFIG_DETACHABLE=1
 
-# ui_diagnostic-test
-$(call copy-test,ui-test-common,ui_diagnostic-test)
-ui_diagnostic-test-srcs += tests/vboot/ui_diagnostic-test.c
-ui_diagnostic-test-srcs += src/vboot/ui.c
+# ui-diagnostic-test
+$(call copy-test,ui-test-common,ui-diagnostic-test)
+ui-diagnostic-test-srcs += tests/vboot/ui-diagnostic-test.c
+ui-diagnostic-test-srcs += src/vboot/ui.c
