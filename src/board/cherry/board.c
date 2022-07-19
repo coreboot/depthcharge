@@ -164,41 +164,45 @@ static int board_setup(void)
 	MtkNorFlash *nor_flash = new_mtk_nor_flash(0x1132C000);
 	flash_set_ops(&nor_flash->ops);
 
-	MtkMmcTuneReg emmc_tune_reg = {
-		.msdc_iocon = 0x1 << 8,
-		.pad_tune = 0x10 << 16
-	};
-	MtkMmcHost *emmc = new_mtk_mmc_host(
-		0x11230000, 0x11f50000, 400 * MHz, 200 * MHz, emmc_tune_reg, 8, 0, NULL,
-		MTK_MMC_V2);
+	if (CONFIG(DRIVER_STORAGE_MMC_MTK)) {
+		MtkMmcTuneReg emmc_tune_reg = {
+			.msdc_iocon = 0x1 << 8,
+			.pad_tune = 0x10 << 16
+		};
+		MtkMmcHost *emmc = new_mtk_mmc_host(
+			0x11230000, 0x11f50000, 400 * MHz, 200 * MHz,
+			emmc_tune_reg, 8, 0, NULL, MTK_MMC_V2);
+		list_insert_after(&emmc->mmc.ctrlr.list_node,
+				  &fixed_block_dev_controllers);
 
-	list_insert_after(&emmc->mmc.ctrlr.list_node,
-			  &fixed_block_dev_controllers);
+		MtkMmcTuneReg sd_card_tune_reg = {
+			.msdc_iocon = 0x0,
+			.pad_tune = 0x0
+		};
+		GpioOps *card_detect_ops = new_gpio_not(
+			new_mtk_gpio_input(GPIO_SD_CD_ODL));
+		MtkMmcHost *sd_card = new_mtk_mmc_host(
+			0x11240000, 0x11c70000, 200 * MHz, 25 * MHz,
+			sd_card_tune_reg, 4, 1,	card_detect_ops, MTK_MMC_V2);
 
-	MtkMmcTuneReg sd_card_tune_reg = {
-		.msdc_iocon = 0x0,
-		.pad_tune = 0x0
-	};
-	GpioOps *card_detect_ops = new_gpio_not(
-		new_mtk_gpio_input(GPIO_SD_CD_ODL));
-	MtkMmcHost *sd_card = new_mtk_mmc_host(
-		0x11240000, 0x11c70000, 200 * MHz, 25 * MHz, sd_card_tune_reg, 4, 1,
-		card_detect_ops, MTK_MMC_V2);
+		list_insert_after(&sd_card->mmc.ctrlr.list_node,
+				  &removable_block_dev_controllers);
+	}
 
-	list_insert_after(&sd_card->mmc.ctrlr.list_node,
-			  &removable_block_dev_controllers);
+	if (CONFIG(DRIVER_STORAGE_UFS_MTK)) {
+		MtkUfsCtlr *ufs_host = new_mtk_ufs_ctlr(0x11270000, 0x10003000);
+		list_insert_after(&ufs_host->ufs.bctlr.list_node,
+				  &fixed_block_dev_controllers);
+	}
 
-	MtkUfsCtlr *ufs_host = new_mtk_ufs_ctlr(0x11270000, 0x10003000);
-	list_insert_after(&ufs_host->ufs.bctlr.list_node,
-			  &fixed_block_dev_controllers);
+	if (CONFIG(DRIVER_STORAGE_NVME)) {
+		NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(1, 0x00, 0));
+		list_insert_after(&nvme->ctrlr.list_node,
+				  &fixed_block_dev_controllers);
+	}
 
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11200000);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
-
-	/* NVMe SSD */
-	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(1, 0x00, 0));
-	list_insert_after(&nvme->ctrlr.list_node,
-			  &fixed_block_dev_controllers);
 
 	sound_setup();
 
