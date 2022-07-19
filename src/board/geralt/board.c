@@ -55,7 +55,27 @@ static int board_setup(void)
 	list_insert_after(&emmc->mmc.ctrlr.list_node,
 			  &fixed_block_dev_controllers);
 
-	/* TODO: Set up SD card */
+	/* Set up SD card */
+	MtkMmcTuneReg sd_card_tune_reg = {
+		.msdc_iocon = 0x0,
+		.pad_tune = 0x0
+	};
+	GpioOps *card_detect_ops = sysinfo_lookup_gpio("SD card detect", 1,
+						       new_mtk_gpio_input);
+	if (!card_detect_ops) {
+		printf("%s: SD card detect GPIO not found\n", __func__);
+	} else {
+		MtkMmcHost *sd_card = new_mtk_mmc_host(0x11240000,
+						       0x11eb0000,
+						       200 * MHz,
+						       25 * MHz,
+						       sd_card_tune_reg,
+						       4, 1, card_detect_ops,
+						       MTK_MMC_V2);
+
+		list_insert_after(&sd_card->mmc.ctrlr.list_node,
+				  &removable_block_dev_controllers);
+	}
 
 	/* Set up USB */
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11200000);
