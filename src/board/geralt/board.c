@@ -17,7 +17,19 @@ static int board_setup(void)
 	/* Set up NOR flash ops */
 	MtkNorFlash *nor_flash = new_mtk_nor_flash(0x1132C000);
 	flash_set_ops(&nor_flash->ops);
-	/* TODO: Set up eMMC */
+
+	/* Set up eMMC */
+	MtkMmcTuneReg emmc_tune_reg = {
+		.msdc_iocon = 0x1 << 8,
+		.pad_tune = 0x10 << 16
+	};
+	MtkMmcHost *emmc = new_mtk_mmc_host(
+		0x11230000, 0x11f50000, 400 * MHz, 200 * MHz, emmc_tune_reg,
+		8, 0, NULL, MTK_MMC_V2);
+
+	list_insert_after(&emmc->mmc.ctrlr.list_node,
+			  &fixed_block_dev_controllers);
+
 	/* TODO: Set up SD card */
 
 	/* Set up USB */
