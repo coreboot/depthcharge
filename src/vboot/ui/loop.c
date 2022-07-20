@@ -169,7 +169,9 @@ static vb2_error_t ui_loop_impl(
 		    ui.force_display) {
 
 			menu = ui_get_menu(&ui);
-			UI_INFO("<%s> menu item <%s>\n", ui.state->screen->name,
+			UI_INFO("<%s> menu item <%s>\n",
+				ui.state->screen->name ? ui.state->screen->name
+					: "null",
 				menu->num_items
 					? menu->items[ui.state->selected_item]
 						  .name

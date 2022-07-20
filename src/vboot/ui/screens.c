@@ -290,6 +290,7 @@ static const char *const firmware_sync_desc[] = {
 
 static const struct ui_screen_info firmware_sync_screen = {
 	.id = UI_SCREEN_FIRMWARE_SYNC,
+	.name = "Firmware sync",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "firmware_sync_title.bmp",
 	.desc = UI_DESC(firmware_sync_desc),
@@ -1249,6 +1250,7 @@ static const struct ui_menu_item recovery_invalid_items[] = {
 
 static const struct ui_screen_info recovery_invalid_screen = {
 	.id = UI_SCREEN_RECOVERY_INVALID,
+	.name = "Recovery invalid disk",
 	.icon = UI_ICON_TYPE_STEP,
 	.step = -3,
 	.num_steps = 3,
