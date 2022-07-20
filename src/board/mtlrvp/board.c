@@ -31,22 +31,22 @@ static int board_setup(void)
 	power_set_ops(&meteorlake_power_ops);
 
 	/* RP1*/
-	secondary_bus = pci_read_config8(PCI_DEV_PCIE0, REG_SECONDARY_BUS);
+	secondary_bus = pci_read_config8(PCI_DEV_PCIE1, REG_SECONDARY_BUS);
 	NvmeCtrlr *nvme_1 = new_nvme_ctrlr(PCI_DEV(secondary_bus, 0, 0));
 	list_insert_after(&nvme_1->ctrlr.list_node, &fixed_block_dev_controllers);
 
 	/* RP9*/
-	secondary_bus = pci_read_config8(PCI_DEV_PCIE8, REG_SECONDARY_BUS);
+	secondary_bus = pci_read_config8(PCI_DEV_PCIE9, REG_SECONDARY_BUS);
 	NvmeCtrlr *nvme_2 = new_nvme_ctrlr(PCI_DEV(secondary_bus, 0, 0));
 	list_insert_after(&nvme_2->ctrlr.list_node, &fixed_block_dev_controllers);
 
 	/* RP10 */
-	secondary_bus = pci_read_config8(PCI_DEV_PCIE9, REG_SECONDARY_BUS);
+	secondary_bus = pci_read_config8(PCI_DEV_PCIE10, REG_SECONDARY_BUS);
 	NvmeCtrlr *nvme_3 = new_nvme_ctrlr(PCI_DEV(secondary_bus, 0, 0));
 	list_insert_after(&nvme_3->ctrlr.list_node, &fixed_block_dev_controllers);
 
 	/* RP11 */
-	secondary_bus = pci_read_config8(PCI_DEV_PCIE10, REG_SECONDARY_BUS);
+	secondary_bus = pci_read_config8(PCI_DEV_PCIE11, REG_SECONDARY_BUS);
 	NvmeCtrlr *nvme_4 = new_nvme_ctrlr(PCI_DEV(secondary_bus, 0, 0));
 	list_insert_after(&nvme_4->ctrlr.list_node, &fixed_block_dev_controllers);
 
