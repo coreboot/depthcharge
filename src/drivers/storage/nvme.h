@@ -365,7 +365,7 @@ typedef struct {
 	uint8_t  endu_grp_crit_warn_sumry;
 	uint8_t  rsvd7[25];
 	//
-	// 128bit integers
+	// Little Endian 128bit integers
 	//
 	uint8_t  data_units_read[16];
 	uint8_t  data_units_written[16];
