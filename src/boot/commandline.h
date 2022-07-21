@@ -19,6 +19,7 @@
 #define __BOOT_COMMANDLINE_H__
 
 #include <stdint.h>
+#include <stddef.h>
 
 struct commandline_info {
 	int devnum;
