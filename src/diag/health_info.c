@@ -14,6 +14,9 @@
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/info.h"
 
+////////////////////////////////////////////////////////////////////////////////
+// NVMe health status
+
 typedef struct {
 	uint64_t lo;
 	uint64_t hi;
@@ -145,6 +148,7 @@ static inline int kelvin_to_celsius(int k) {
 	return k - 273;
 }
 
+// NVMe stringify entry point
 static char *stringify_nvme_smart(char *buf, const char *end,
 				  const NvmeSmartLogData *smart_log)
 {
@@ -242,8 +246,23 @@ static char *stringify_nvme_smart(char *buf, const char *end,
 	return buf;
 }
 
-static inline char *stringify_mmc_device_lifetime(char *buf, size_t len,
-						  uint8_t life_used)
+////////////////////////////////////////////////////////////////////////////////
+// Device health report (eMMC >= 5.0 and UFS)
+
+typedef struct {
+	// Storage type name
+	const char *storage_type_name;
+	// Fields
+	uint8_t life_time_est_a;
+	uint8_t life_time_est_b;
+	uint8_t eol_info;
+	// Field names
+	const char *life_time_est_prefix_name;
+	const char *eol_info_name;
+} DeviceHealthReport;
+
+static inline char *stringify_device_lifetime(char *buf, size_t len,
+					      uint8_t life_used)
 {
 	const char *end = buf + len;
 	switch (life_used) {
@@ -265,7 +284,7 @@ static inline char *stringify_mmc_device_lifetime(char *buf, size_t len,
 	return buf;
 }
 
-static inline const char *mmc_eol_info_to_str(uint8_t eol_info)
+static inline const char *eol_info_to_str(uint8_t eol_info)
 {
 	switch (eol_info) {
 	case 0x0:
@@ -281,6 +300,37 @@ static inline const char *mmc_eol_info_to_str(uint8_t eol_info)
 	}
 }
 
+static char *stringify_device_health_report(char *buf, const char *end,
+					    const DeviceHealthReport *report)
+{
+	buf = APPEND(buf, end,
+		     "%s Life Time Estimation A [%sA]: %#02x\n  i.e. ",
+		     report->storage_type_name,
+		     report->life_time_est_prefix_name,
+		     report->life_time_est_a);
+	buf = stringify_device_lifetime(buf, end - buf,
+					report->life_time_est_a);
+	buf = APPEND(buf, end, "\n");
+
+	buf = APPEND(buf, end,
+		     "%s Life Time Estimation B [%sB]: %#02x\n  i.e. ",
+		     report->storage_type_name,
+		     report->life_time_est_prefix_name,
+		     report->life_time_est_b);
+	buf = stringify_device_lifetime(buf, end - buf,
+					report->life_time_est_b);
+	buf = APPEND(buf, end, "\n");
+
+	buf = APPEND(buf, end,
+		     "%s Pre EOL information [%s]: %#02x\n  i.e. %s\n",
+		     report->storage_type_name,
+		     report->eol_info_name,
+		     report->eol_info,
+		     eol_info_to_str(report->eol_info));
+	return buf;
+}
+
+// eMMC stringify entry point
 static char *stringify_mmc_health(char *buf, const char *end,
 				  const MmcHealthData *data)
 {
@@ -308,34 +358,23 @@ static char *stringify_mmc_health(char *buf, const char *end,
 
 	/* >= eMMC 5.0 */
 	if (data->csd_rev >= EXT_CSD_REV_1_7) {
-		buf = APPEND(buf, end,
-			     "eMMC Life Time Estimation A "
-			     "[EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_A]: %#02x\n"
-			     "  i.e. ",
-			     data->device_life_time_est_type_a);
-		buf = stringify_mmc_device_lifetime(
-			buf, end - buf, data->device_life_time_est_type_a);
-		buf = APPEND(buf, end, "\n");
-
-		buf = APPEND(buf, end,
-			     "eMMC Life Time Estimation B "
-			     "[EXT_CSD_DEVICE_LIFE_TIME_EST_TYP_B]: %#02x\n"
-			     "  i.e. ",
-			     data->device_life_time_est_type_b);
-		buf = stringify_mmc_device_lifetime(
-			buf, end - buf, data->device_life_time_est_type_b);
-		buf = APPEND(buf, end, "\n");
-
-		buf = APPEND(buf, end,
-			     "eMMC Pre EOL information "
-			     "[EXT_CSD_PRE_EOL_INFO]: %#02x\n"
-			     "  i.e. %s\n",
-			     data->pre_eol_info,
-			     mmc_eol_info_to_str(data->pre_eol_info));
+		DeviceHealthReport emmc_report = {
+			.storage_type_name = "eMMC",
+			.life_time_est_a = data->device_life_time_est_type_a,
+			.life_time_est_b = data->device_life_time_est_type_b,
+			.eol_info = data->pre_eol_info,
+			.life_time_est_prefix_name =
+				"EXT_CSD_DEVICE_LIFE_TIME_EST_TYPE_",
+			.eol_info_name = "EXT_CSD_PRE_EOL_INFO",
+		};
+		buf = stringify_device_health_report(buf, end, &emmc_report);
 	}
 
 	return buf;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// APIs
 
 // Append the stringified health_info to string str and return the pointer of
 // next available address.
