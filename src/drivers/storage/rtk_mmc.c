@@ -220,7 +220,7 @@ static int rtkhost_pci_init(BlockDevCtrlrOps *me)
 	}
 
 	if (!is_rtk_ctrlr(dev, &pid)) {
-		mmc_error("No known Realtek reader found at %d:%d.%d",
+		mmc_debug("No known Realtek reader found at %d:%d.%d\n",
 			  PCI_BUS(dev), PCI_SLOT(dev), PCI_FUNC(dev));
 		block_ctrlr->ops.update = NULL;
 		block_ctrlr->need_update = 0;
