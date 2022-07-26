@@ -32,12 +32,8 @@ typedef struct HealthInfo {
 	StorageInfoType type;
 
 	union {
-#ifdef CONFIG_DRIVER_STORAGE_NVME
 		NvmeSmartLogData nvme_data;
-#endif
-#ifdef CONFIG_DRIVER_STORAGE_MMC
 		MmcHealthData mmc_data;
-#endif
 	} data;
 } HealthInfo;
 
@@ -45,9 +41,7 @@ typedef struct StorageTestLog {
 	StorageInfoType type;
 
 	union {
-#ifdef CONFIG_DRIVER_STORAGE_NVME
 		NvmeTestLogData nvme_data;
-#endif
 	} data;
 } StorageTestLog;
 
