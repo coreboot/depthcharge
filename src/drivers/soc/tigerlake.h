@@ -34,4 +34,7 @@ int tigerlake_get_gpe(int gpe);
 
 #define GPE0_STS_OFF		0x60
 
+#define REGBAR_PID_SHIFT		16
+#define IOM_PORT_STATUS_CONNECTED	BIT(31)
+
 #endif /* __DRIVERS_SOC_TIGERLAKE_H__ */
