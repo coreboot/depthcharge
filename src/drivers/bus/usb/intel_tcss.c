@@ -28,9 +28,6 @@
 
 #define PMC_IPC_CONN_DISC_REQ_SIZE	2
 
-#define IOM_PORT_STATUS_CONNECTED	BIT(31)
-#define REGBAR_PID_SHIFT		16
-
 #define TCSS_CONN_REQ_RES		0
 #define TCSS_DISC_REQ_RES		1
 
@@ -69,8 +66,6 @@
 /* !fatal means retry */
 #define TCSS_STATUS_IS_FATAL(s)		GET_TCSS_CD_FIELD(FATAL, s)
 
-static const TcssCtrlr *ctrlr;
-
 static uint32_t tcss_make_cmd(int u, int u3, int u2, int ufp, int hsl, int sbu,
 			      int acc)
 {
@@ -81,24 +76,6 @@ static uint32_t tcss_make_cmd(int u, int u3, int u2, int ufp, int hsl, int sbu,
 		TCSS_CD_FIELD(HSL, hsl) |
 		TCSS_CD_FIELD(SBU, sbu) |
 		TCSS_CD_FIELD(ACC, acc);
-}
-
-static const void *port_status_reg(int port)
-{
-	assert(ctrlr);
-
-	const uintptr_t status_reg = ctrlr->regbar +
-		(ctrlr->iom_pid << REGBAR_PID_SHIFT) +
-		(ctrlr->iom_status_offset + port * sizeof(uint32_t));
-	return (const void *)status_reg;
-}
-
-static bool is_port_connected(int port)
-{
-	uint32_t sts;
-
-	sts = read32(port_status_reg(port));
-	return !!(sts & IOM_PORT_STATUS_CONNECTED);
 }
 
 static int send_conn_disc_msg(const struct pmc_ipc_buffer *req,
@@ -277,9 +254,4 @@ void soc_usb_mux_init(void)
 {
 	soc_usb_mux_poll();
 	mdelay(100);		/* TODO(b/157721366): why is this needed */
-}
-
-void register_tcss_ctrlr(const TcssCtrlr *tcss_ctrlr)
-{
-	ctrlr = tcss_ctrlr;
 }
