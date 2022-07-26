@@ -34,3 +34,13 @@ config DRIVER_USB_INTEL_TCSS_DEBUG
 	bool "Enable Intel TCSS driver debugging"
 	default n
 	depends on DRIVER_USB_INTEL_TCSS
+
+config DRIVER_USB_AP_MUX_CONTROL_CROS
+	bool "Enable AP control of type-C muxes through CrOS EC"
+	default n
+	depends on DRIVER_EC_CROS
+
+config DRIVER_USB_AP_MUX_CONTROL_CROS_DEBUG
+	bool "Enable debugging for AP control of type-C muxes through CrOS EC"
+	default n
+	depends on DRIVER_USB_AP_MUX_CONTROL_CROS

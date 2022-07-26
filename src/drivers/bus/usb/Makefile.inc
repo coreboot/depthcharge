@@ -17,3 +17,5 @@ depthcharge-$(CONFIG_DRIVER_USB_INTEL_TCSS) += intel_tcss.c
 
 # Not worth a Kconfig, let's just rely on --gc-sections
 depthcharge-y += exynos.c
+
+depthcharge-$(CONFIG_DRIVER_USB_AP_MUX_CONTROL_CROS) += cros_ec_mux.c
