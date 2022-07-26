@@ -14,3 +14,4 @@ vboot_reference
 # Development friendly files
 tags
 TAGS
+.vscode
