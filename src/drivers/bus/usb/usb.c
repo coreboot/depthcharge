@@ -93,8 +93,7 @@ void dc_usb_initialize(void)
 		NULL
 	};
 
-	if (soc_usb_mux_init)
-		soc_usb_mux_init();
+	soc_usb_mux_init();
 
 	usb_initialize();
 	list_insert_after(&cleanup.list_node, &cleanup_funcs);
@@ -118,4 +117,19 @@ void dc_usb_initialize(void)
 	usb_poll();
 	mdelay(300);
 	usb_poll();
+}
+
+void soc_usb_mux_init(void)
+{
+	soc_usb_mux_poll();
+}
+
+void soc_usb_mux_poll(void)
+{
+
+}
+
+void usb_poll_prepare(void)
+{
+	soc_usb_mux_poll();
 }

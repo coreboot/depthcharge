@@ -256,7 +256,7 @@ static int update_all_tcss_ports_states(void)
 	return r;
 }
 
-static void soc_usb_mux_poll(void)
+void soc_usb_mux_poll(void)
 {
 	static uint64_t last_us = 0;
 	uint64_t now_us;
@@ -277,15 +277,6 @@ void soc_usb_mux_init(void)
 {
 	soc_usb_mux_poll();
 	mdelay(100);		/* TODO(b/157721366): why is this needed */
-}
-
-/*
- * This overrides a weak function in libpayload. It is called at the
- * very beginning of usb_poll().
- */
-void usb_poll_prepare(void)
-{
-	soc_usb_mux_poll();
 }
 
 void register_tcss_ctrlr(const TcssCtrlr *tcss_ctrlr)

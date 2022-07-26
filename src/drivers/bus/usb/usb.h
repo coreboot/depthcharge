@@ -56,5 +56,8 @@ void set_usb_init_callback(UsbHostController *hc, UsbHcCallback *callback);
 void dc_usb_initialize(void);
 
 void soc_usb_mux_init(void) __attribute__((weak));
+void soc_usb_mux_poll(void) __attribute__((weak));
+
+void usb_poll_prepare(void);
 
 #endif /* __DRIVERS_BUS_USB_USB_H__ */
