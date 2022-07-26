@@ -25,7 +25,7 @@ LOG_FILE ?=
 override LOG_FILE := \"$(LOG_FILE)\"
 BMP_PATH ?= $(screenshotsrc)/bmp
 override BMP_PATH := \"$(BMP_PATH)\"
-OUTPUT ?= $(screenshotobj)/output.bmp
+OUTPUT ?= $(screenshotobj)/$(SCREEN).bmp
 
 SCREENSHOT_OPTIONS += WIDTH HEIGHT SCREEN ITEM
 SCREENSHOT_OPTIONS += DISABLED_ITEM_MASK HIDDEN_ITEM_MASK
