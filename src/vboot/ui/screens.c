@@ -322,8 +322,8 @@ static vb2_error_t language_select_init(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
-static vb2_error_t draw_language_select(struct ui_context *ui,
-					const struct ui_state *prev_state)
+static vb2_error_t draw_language_select_menu(struct ui_context *ui,
+					     const struct ui_state *prev_state)
 {
 	int id;
 	const struct ui_state *state = ui->state;
@@ -339,12 +339,6 @@ static vb2_error_t draw_language_select(struct ui_context *ui,
 	const struct ui_locale *locale;
 	const struct rgb_color *bg_color, *fg_color;
 	struct ui_bitmap bitmap;
-
-	/*
-	 * Call default drawing function to clear the screen if necessary, and
-	 * draw the footer.
-	 */
-	VB2_TRY(ui_draw_default(ui, prev_state));
 
 	num_lang = ui_get_locale_count();
 	if (num_lang == 0) {
@@ -468,6 +462,7 @@ const struct ui_menu *get_language_menu(struct ui_context *ui)
 {
 	int i;
 	uint32_t num_locales;
+	size_t size;
 	struct ui_menu_item *items;
 
 	if (ui->language_menu.num_items > 0)
@@ -479,11 +474,14 @@ const struct ui_menu *get_language_menu(struct ui_context *ui)
 		num_locales = 1;
 	}
 
-	items = malloc(num_locales * sizeof(struct ui_menu_item));
+	size = num_locales * sizeof(struct ui_menu_item);
+	items = malloc(size);
 	if (!items) {
 		UI_ERROR("ERROR: malloc failed for language items\n");
 		return NULL;
 	}
+
+	memset(items, 0, size);
 
 	for (i = 0; i < num_locales; i++) {
 		items[i].name = "Some language";
@@ -499,7 +497,7 @@ static const struct ui_screen_info language_select_screen = {
 	.id = UI_SCREEN_LANGUAGE_SELECT,
 	.name = "Language selection screen",
 	.init = language_select_init,
-	.draw = draw_language_select,
+	.draw_menu_items = draw_language_select_menu,
 	.mesg = "Language selection",
 	.get_menu = get_language_menu,
 };

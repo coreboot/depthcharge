@@ -875,7 +875,10 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 	y += UI_DESC_MARGIN_BOTTOM;
 
 	/* Primary and secondary buttons */
-	VB2_TRY(ui_draw_menu_items(menu, state, prev_state, y));
+	if (screen->draw_menu_items)
+		VB2_TRY(screen->draw_menu_items(ui, prev_state));
+	else
+		VB2_TRY(ui_draw_menu_items(menu, state, prev_state, y));
 
 	return VB2_SUCCESS;
 }

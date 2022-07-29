@@ -22,7 +22,8 @@ vb2_error_t ui_get_locale_info(uint32_t locale_id,
 
 uint32_t ui_get_locale_count(void)
 {
-	return 1;
+	/* For language selection screen */
+	return 50;
 }
 
 static vb2_error_t load_bitmap(const char *path, struct ui_bitmap *bitmap)
