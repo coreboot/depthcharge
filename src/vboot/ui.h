@@ -585,11 +585,14 @@ struct ui_screen_info {
 	 */
 	vb2_error_t (*draw)(struct ui_context *ui,
 			    const struct ui_state *prev_state);
-	/* Custom description drawing function */
+	/* Custom description drawing function. */
 	vb2_error_t (*draw_desc)(struct ui_context *ui,
 				 const struct ui_state *prev_state,
 				 int32_t *y);
-	/* Fallback message */
+	/* Custom menu items drawing function. */
+	vb2_error_t (*draw_menu_items)(struct ui_context *ui,
+				       const struct ui_state *prev_state);
+	/* Fallback message. */
 	const char *mesg;
 	/*
 	 * Custom function for getting menu items. If non-null, field 'menu'
