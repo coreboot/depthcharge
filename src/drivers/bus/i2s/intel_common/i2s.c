@@ -92,7 +92,9 @@ static uint32_t calculate_sscr0(const I2sSettings *settings, int bps)
 
 	/* ECS bit set is needed for cAVS 2.0 or cAVS 2.5 */
 	if (CONFIG(INTEL_COMMON_I2S_CAVS_2_0) ||
-			CONFIG(INTEL_COMMON_I2S_CAVS_2_5))
+		CONFIG(INTEL_COMMON_I2S_CAVS_2_5) ||
+		/* ACE must select divider clock for SCLK */
+		CONFIG(INTEL_COMMON_I2S_ACE_1_x))
 		sscr0 |= SSCR0_reg(ECS, DIV_ENABLE);
 	return sscr0;
 }
@@ -140,6 +142,72 @@ static uint32_t calculate_sscr2(void)
 	return sscr2;
 }
 
+/**
+ * ace_dsp_core_power_up - power up the DSP primary_core
+ * @bus: I2s bus pointer
+ *
+ * The boot sequence follows kernel driver implementation at
+ * sound/soc/sof/intel/mtl.c/mtl_dsp_pre_fw_run().
+ *
+ * Returns 0 for boot success, -1 for failure.
+ */
+static int ace_dsp_core_power_up(I2s *bus)
+{
+	u32 val;
+
+	/* Set the DSP subsystem to power up */
+	write32(bus->lpe_bar4 + HFDSSCS,
+		(read32(bus->lpe_bar4 + HFDSSCS) | HFDSSCS_SPA_MASK));
+
+	/* Poll: first wait for unstable CPA (1 then 0 then 1) after SPA set */
+	for (int i = 0; i < RETRY_COUNT; i++) {
+		mdelay(1);
+		if ((read32(bus->lpe_bar4 + HFDSSCS) &
+				HFDSSCS_CPA_MASK) == HFDSSCS_CPA_MASK)
+			break;
+	}
+	if ((read32(bus->lpe_bar4 + HFDSSCS) &
+			HFDSSCS_CPA_MASK) != HFDSSCS_CPA_MASK) {
+		printf("%s : failed to enable DSP subsystem\n", __func__);
+		return -1;
+	}
+
+	/* Wake/Prevent gated-DSP0 from power gating */
+	write32(bus->lpe_bar4 + HFPWRCTL,
+		(read32(bus->lpe_bar4 + HFPWRCTL) | HFPWRCTL_WPDSPHPxPG(0)));
+
+	for (int i = 0; i < RETRY_COUNT; i++) {
+		if ((read32(bus->lpe_bar4 + HFPWRSTS) &
+				HFPWRCTL_WPDSPHPxPG(0)) == HFPWRCTL_WPDSPHPxPG(0))
+			break;
+		mdelay(1);
+	}
+	if ((read32(bus->lpe_bar4 + HFPWRSTS) &
+			HFPWRCTL_WPDSPHPxPG(0)) != HFPWRCTL_WPDSPHPxPG(0)) {
+		printf("%s : failed to power up gated DSP domain\n", __func__);
+		return -1;
+	}
+
+	/* Program Host CPU the owner of the IP & shim */
+	val = read32(bus->lpe_bar4 + DSP2C0_CTL);
+	write32(bus->lpe_bar4 + DSP2C0_CTL, (DSP2C0_OSEL_HOST(val) | DSP2C0_CTL_SPA_MASK));
+
+	/* Poll: wait for unstable CPA (1 then 0 then 1) read first */
+	for (int i = 0; i < RETRY_COUNT; i++) {
+		mdelay(1);
+		if ((read32(bus->lpe_bar4 + DSP2C0_CTL) &
+				DSP2C0_CTL_CPA_MASK) == DSP2C0_CTL_CPA_MASK)
+			break;
+	}
+	if ((read32(bus->lpe_bar4 + DSP2C0_CTL) &
+			DSP2C0_CTL_CPA_MASK) != DSP2C0_CTL_CPA_MASK) {
+		printf("%s : failed to power up primary core\n", __func__);
+		return -1;
+	}
+
+	return 0;
+}
+
 /*
 * Power on DSP and Enable SSP for data transmission
 */
@@ -166,17 +234,21 @@ static int enable_DSP_SSP(I2s *bus)
 	if (read32(bus->lpe_bar0 + BAR_OFFSET) != ENABLE_ADSP_BAR)
 		return -1;
 
-	/* power on dsp core to access ssp registeres*/
-	write32(bus->lpe_bar4 + DSP_POWER_OFFSET, DSP_POWER_ON);
-	/* wait till the DSP powers on */
-	for (int i = 0; i < RETRY_COUNT; i++) {
-		if (read32(bus->lpe_bar4 + DSP_POWER_OFFSET) == DSP_POWERED_UP)
-			break;
-		mdelay(1);
+	if (CONFIG(INTEL_COMMON_I2S_ACE_1_x)) {
+		if (ace_dsp_core_power_up(bus))
+			return -1;
+	} else {
+		/* power on dsp core to access ssp registeres*/
+		write32(bus->lpe_bar4 + DSP_POWER_OFFSET, DSP_POWER_ON);
+		/* wait till the DSP powers on */
+		for (int i = 0; i < RETRY_COUNT; i++) {
+			if (read32(bus->lpe_bar4 + DSP_POWER_OFFSET) == DSP_POWERED_UP)
+				break;
+			mdelay(1);
+		}
+		if (read32(bus->lpe_bar4 + DSP_POWER_OFFSET) != DSP_POWERED_UP)
+			return -1;
 	}
-	if (read32(bus->lpe_bar4 + DSP_POWER_OFFSET) != DSP_POWERED_UP)
-		return -1;
-
 /*
  * cAVS 1.5 version exposes the i2s registers used to configure
  * the clock and hence include the clock config.
@@ -200,7 +272,7 @@ static int enable_DSP_SSP(I2s *bus)
 	write32((bus->lpe_bar4 + (MNCSS_REG_BLOCK_START + MDIV_N_VAL(bus->ssp_port))), 1);
 #endif
 
-#if CONFIG(INTEL_COMMON_I2S_CAVS_2_5)
+#if CONFIG(INTEL_COMMON_I2S_CAVS_2_5) || CONFIG(INTEL_COMMON_I2S_ACE_1_x)
 	/* SPA register should be set for each I2S port */
 	write32((bus->lpe_bar4 + I2SLCTL),
 	read32(bus->lpe_bar4 + I2SLCTL) | BIT(bus->ssp_port));
@@ -359,7 +431,8 @@ I2s *new_i2s_structure(const I2sSettings *settings, int bps, GpioOps *sdmode,
 	bus->settings = settings;
 	bus->bits_per_sample = bps;
 	bus->sdmode_gpio = sdmode;
-#if CONFIG(INTEL_COMMON_I2S_CAVS_2_0) || CONFIG(INTEL_COMMON_I2S_CAVS_2_5)
+#if CONFIG(INTEL_COMMON_I2S_CAVS_2_0) || CONFIG(INTEL_COMMON_I2S_CAVS_2_5) ||\
+	CONFIG(INTEL_COMMON_I2S_ACE_1_x)
 	bus->ssp_port = (ssp_i2s_start_address - SSP_I2S0_START_ADDRESS) / 0x1000;
 #endif
 
