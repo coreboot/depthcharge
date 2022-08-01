@@ -152,7 +152,7 @@ static int storage_part(int argc, char *const argv[])
 
 	bdev = current_devices.known_devices[current_devices.curr_device];
 
-	flag = bdev->removable ? VB_DISK_FLAG_REMOVABLE : VB_DISK_FLAG_FIXED;
+	flag = bdev->removable ? VB2_DISK_FLAG_REMOVABLE : VB2_DISK_FLAG_FIXED;
 
 	if (VbExDiskGetInfo(&info, &count, flag) != VB2_SUCCESS) {
 		printf("failed to get disk info\n");
