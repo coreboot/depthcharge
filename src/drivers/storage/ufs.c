@@ -1045,6 +1045,108 @@ static int block_ufs_get_health_info(BlockDevOps *me, HealthInfo *health)
 	return 0;
 }
 
+// Parse the SEND DIAGNOSTIC response to StorageTestLog
+static int block_ufs_process_diagnostic(int scsi_ret, const UfsCRespUPIU *r,
+					StorageTestLog *result)
+{
+	// For sense data
+	uint16_t data_len;
+	uint16_t sense_data_len;
+	UfsSenseData *sense_data;
+	UfsSense *sense;
+
+	// The return code should be 0 (self-test success) or the response UPIU
+	// status should be CHK_COND (self-test failed). All other return codes
+	// are unexpected errors.
+	if (scsi_ret && r->status != SCSI_STATUS_CHK_COND)
+		return ufs_err("SEND DIAGNOSTIC error status %#x", scsi_ret,
+			       r->status);
+
+	// Get the results
+	result->type = STORAGE_INFO_TYPE_UFS;
+	result->data.ufs_data.return_code = r->status;
+	result->data.ufs_data.sense_key = SENSE_KEY_NO_SENSE;
+
+	// If status is CHK_COND, try to get the sense data for more details
+	data_len = be16toh(r->data_segment_len);
+	if (r->status == SCSI_STATUS_CHK_COND && data_len != 0) {
+		sense_data = (UfsSenseData *)r->data;
+		sense_data_len = be16toh(sense_data->len);
+		sense = &sense_data->sense;
+
+		if (data_len >= UFS_SENSE_DATA_SIZE &&
+		    sense_data_len == UFS_SENSE_SIZE &&
+		    sense->response_code == SCSI_SENSE_FIXED_FORMAT)
+			result->data.ufs_data.sense_key = sense->sense_key;
+	}
+
+	return 0;
+}
+
+// Interface for blockdev to send diagnostics
+static int block_ufs_send_diagnostics(BlockDevOps *me, BlockDevTestOpsType ops,
+				      StorageTestLog *result)
+{
+	UfsDevice *ufs_dev = container_of(me, UfsDevice, dev.ops);
+	int lun = ufs_dev->lun;
+	// For SCSI response
+	int tag = UFS_DFLT_TAG;
+	UfsUTRD *utrd = ufs_utrd(ufs_dev->ufs, tag);
+	UfsCUPIU *c = ufs_ucd(ufs_dev->ufs, tag);
+	UfsCRespUPIU *r = (void *)c + UFS_RESP_UPIU_OFFS;
+	int scsi_ret;
+
+	// Convert ops to SPC4 self-test parameters
+	uint8_t parms = 0;
+	switch(ops) {
+	case BLOCKDEV_TEST_OPS_TYPE_SHORT:
+		// Try default self-test feature
+		parms = SCSI_FLAG_SELFTEST;
+		break;
+	case BLOCKDEV_TEST_OPS_TYPE_EXTENDED:
+		// Not supported
+		return ufs_err("SEND DIAGNOSTIC does not support extended test",
+			       UFS_ENODEV);
+	case BLOCKDEV_TEST_OPS_TYPE_STOP:
+		// NOOP
+		break;
+	default:
+		return ufs_err("SEND DIAGNOSTIC unsupported: %#x", UFS_ENODEV,
+			       (uint8_t)ops);
+	}
+
+	UfsCmdReq req = {
+		.lun = lun,
+		.cdb = {
+			[0] = SCSI_CMD_SEND_DIAGNOSTIC,
+			[1] = parms,
+		},
+	};
+
+	scsi_ret = ufs_scsi_command(ufs_dev->ufs, &req);
+
+	// Overall command status error
+	if (utrd->ocs)
+		return ufs_err("SEND DIAGNOSTIC OCS error %#x", UFS_EIO,
+			       utrd->ocs);
+
+	// Parse the sense key
+	return block_ufs_process_diagnostic(scsi_ret, r, result);
+}
+
+static int block_ufs_test_control(BlockDevOps *me, BlockDevTestOpsType ops)
+{
+	// NOOP since the self-test result is recorded immediately after calling
+	// the SEND DIAGNOSTIC command
+	return 0;
+}
+
+static uint32_t block_ufs_self_test_support(void)
+{
+	// UFS is only guaranteed to support a type of self-test (default)
+	return BLOCKDEV_TEST_OPS_TYPE_SHORT;
+}
+
 static int ufs_add_device(UfsCtlr *ufs, uint32_t lun)
 {
 	UfsDevice *ufs_dev;
@@ -1066,6 +1168,10 @@ static int ufs_add_device(UfsCtlr *ufs, uint32_t lun)
 	ufs_dev->dev.ops.write = &block_ufs_write;
 	ufs_dev->dev.ops.new_stream = &new_simple_stream;
 	ufs_dev->dev.ops.get_health_info = &block_ufs_get_health_info;
+	ufs_dev->dev.ops.get_test_log = &block_ufs_send_diagnostics;
+	ufs_dev->dev.ops.test_control = &block_ufs_test_control;
+	ufs_dev->dev.ops.test_support = &block_ufs_self_test_support;
+	/* No need to set get_test_log for UFS */
 	printf("Adding UFS block device LUN %02x block size %u block count %llu\n",
 		lun, ufs_dev->dev.block_size, (unsigned long long)ufs_dev->dev.block_count);
 	list_insert_after(&ufs_dev->dev.list_node, &fixed_block_devices);

@@ -319,6 +319,7 @@ typedef enum {
 #define SCSI_CMD_FORMAT			0x04
 #define SCSI_CMD_INQUIRY		0x12
 #define SCSI_CMD_START_STOP_UNIT	0x1B
+#define SCSI_CMD_SEND_DIAGNOSTIC	0x1D
 #define SCSI_CMD_READ_CAPACITY10	0x25
 #define SCSI_CMD_READ10			0x28
 #define SCSI_CMD_WRITE10		0x2A
@@ -334,6 +335,11 @@ typedef enum {
 #define SCSI_STATUS_BUSY		0x08
 #define SCSI_STATUS_TASK_SET_FULL	0x28
 
+// SCSI parameter flags
+
+// SELFTEST bit, for SEND DIAGNOSTIC
+#define SCSI_FLAG_SELFTEST		0x04
+// Force unit access, for READ and WRITE
 #define SCSI_FLAG_FUA			0x08
 
 // SCSI Sense Keys
@@ -656,6 +662,12 @@ typedef struct __packed {
 	uint16_t	len;
 	UfsSense	sense;
 } UfsSenseData;
+
+// JESD220E Section 11.3.23.3 Send diagnostics command status response
+typedef struct {
+	int		return_code;
+	uint8_t		sense_key;
+} UfsTestLogData;
 
 // Generic descriptor container
 typedef struct UfsDesc {
