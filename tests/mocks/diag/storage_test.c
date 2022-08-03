@@ -5,9 +5,9 @@
 #include <libpayload.h>
 #include <tests/test.h>
 
-int diag_storage_test_supported(void)
+uint32_t diag_storage_test_supported(void)
 {
-	return mock();
+	return mock_type(uint32_t);
 }
 
 DiagTestResult diag_dump_storage_test_log(char *buf, const char *end)

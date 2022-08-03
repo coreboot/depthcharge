@@ -1841,12 +1841,14 @@ static const struct ui_screen_info developer_select_bootloader_screen = {
 
 static vb2_error_t diagnostics_init(struct ui_context *ui)
 {
-	if (!diag_storage_test_supported()) {
+	uint32_t storage_test_support = diag_storage_test_supported();
+	if (!(storage_test_support & BLOCKDEV_TEST_OPS_TYPE_SHORT))
 		UI_SET_BIT(ui->state->disabled_item_mask,
 			   DIAGNOSTICS_ITEM_STORAGE_TEST_SHORT);
+	if (!(storage_test_support & BLOCKDEV_TEST_OPS_TYPE_EXTENDED))
 		UI_SET_BIT(ui->state->disabled_item_mask,
 			   DIAGNOSTICS_ITEM_STORAGE_TEST_EXTENDED);
-	}
+
 	ui->state->selected_item = DIAGNOSTICS_ITEM_STORAGE_HEALTH;
 	return VB2_SUCCESS;
 }

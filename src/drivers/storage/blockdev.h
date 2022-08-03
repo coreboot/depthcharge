@@ -27,8 +27,8 @@ typedef uint64_t lba_t;
 
 typedef enum BlockDevTestOpsType {
 	BLOCKDEV_TEST_OPS_TYPE_STOP = 0,
-	BLOCKDEV_TEST_OPS_TYPE_SHORT,
-	BLOCKDEV_TEST_OPS_TYPE_EXTENDED,
+	BLOCKDEV_TEST_OPS_TYPE_SHORT = (1 << 0),
+	BLOCKDEV_TEST_OPS_TYPE_EXTENDED = (1 << 1),
 } BlockDevTestOpsType;
 
 struct HealthInfo;
@@ -51,6 +51,8 @@ typedef struct BlockDevOps {
 	// Return 0 = success, 1 = error.
 	int (*test_control)(struct BlockDevOps *me,
 			    enum BlockDevTestOpsType ops);
+	// Return the bitmask of BlockDevTestOpsType.
+	uint32_t (*test_support)(void);
 } BlockDevOps;
 
 typedef struct BlockDev {

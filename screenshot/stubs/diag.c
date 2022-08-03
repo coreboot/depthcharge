@@ -13,9 +13,9 @@ char *dump_all_health_info(char *buf, const char *end)
 	return buf;
 }
 
-int diag_storage_test_supported(void)
+uint32_t diag_storage_test_supported(void)
 {
-	return 1;
+	return 1u;
 }
 
 DiagTestResult diag_dump_storage_test_log(char *buf, const char *end)

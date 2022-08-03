@@ -423,8 +423,7 @@ char *stringify_health_info(char *buf, const char *end, const HealthInfo *info)
 	case STORAGE_INFO_TYPE_UNKNOWN:
 		break;
 	}
-	printf("%s: unsupported data type: %d\n", __func__, info->type);
-	assert(0);
+	die("unsupported data type: %d\n", info->type);
 	return NULL;
 }
 
