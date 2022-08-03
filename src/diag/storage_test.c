@@ -65,81 +65,6 @@ static inline const char *type_str(uint8_t type)
 	return "Unknown test type";
 }
 
-static inline const char *test_result_str(uint8_t result)
-{
-	/* From Nvme 1.4 spec. */
-	switch (result) {
-	case 0x0:
-		return "Test completed without error";
-	case 0x1:
-		return "Operation was aborted by a Device Self-test command";
-	case 0x2:
-		return "Operation was aborted by a Controller Level Reset";
-	case 0x3:
-		return "Operation was aborted due to a removal of a namespace "
-		       "from the namespace inventory";
-	case 0x4:
-		return "Operation was aborted due to the processing of a "
-		       "Format NVM command";
-	case 0x5:
-		return "A fatal error or unknown test error occurred "
-		       "while the controller was executing the device "
-		       "self-test operation and the operation did not "
-		       "complete";
-	case 0x6:
-		return "Operation completed with a segment that failed and the "
-		       "segment that failed is not known";
-	case 0x7:
-		return "Operation completed with one or more failed segments";
-	case 0x8:
-		return "Operation was aborted for unknown reason";
-	case 0x9:
-		return "Operation was aborted due to a sanitize operation";
-	}
-	return "Test result is unknown";
-}
-
-static char *print_test_result_detail(char *buf, const char *end,
-				      const NvmeTestLogData *data)
-{
-	uint8_t result = HALF_BYTE_LOW(data->status);
-	buf = APPEND(buf, end, "%s.\n", test_result_str(result));
-	if (result == 0x7)
-		buf = APPEND(buf, end,
-			     "Segment Number where the first self-test "
-			     "failure occurred: '%#x'.\n",
-			     data->segment_number);
-	buf = APPEND(buf, end, "\n");
-	return buf;
-}
-
-#define SC_VALID 8
-#define SCT_VALID 4
-#define FLBA_VALID 2
-#define NSID_VALID 1
-
-static char *print_test_result(char *buf, const char *end,
-			       const NvmeTestLogData *data)
-{
-	uint8_t type = HALF_BYTE_HIGH(data->status);
-	buf = APPEND(buf, end, "Test type: %s.\n\n", type_str(type));
-	buf = print_test_result_detail(buf, end, data);
-	buf = APPEND(buf, end, "Power on hours(POH): %llu\n", data->poh);
-	if (data->valid_diag_info & NSID_VALID)
-		buf = APPEND(buf, end, "Namespace Identifier (NSID) of "
-			     "Failing LBA: '%#x'\n", data->nsid);
-	if (data->valid_diag_info & FLBA_VALID)
-		buf = APPEND(buf, end, "Failing LBA: '%#llx'\n",
-			     data->failing_lba);
-	if (data->valid_diag_info & SCT_VALID)
-		buf = APPEND(buf, end, "Status code type (SCT): '%#x'\n",
-			     data->status_code_type);
-	if (data->valid_diag_info & SC_VALID)
-		buf = APPEND(buf, end, "Status code (SC): '%#x'\n",
-			     data->status_code);
-	return buf;
-}
-
 static int32_t get_test_remain_time_seconds(uint8_t current_completion,
 					    int reset)
 {
@@ -183,14 +108,91 @@ static char *print_test_completion(char *buf, const char *end,
 	return buf;
 }
 
-static char *stringify_test_status(char *buf, const char *end,
-				   StorageTestLog *log)
+/******************************************************************************/
+/* NVMe device self-test */
+
+static inline const char *nvme_test_result_str(uint8_t result)
 {
-	const NvmeTestLogData *data = &log->data.nvme_data;
+	/* From NVMe 1.4 spec. */
+	switch (result) {
+	case 0x0:
+		return "Test completed without error";
+	case 0x1:
+		return "Operation was aborted by a Device Self-test command";
+	case 0x2:
+		return "Operation was aborted by a Controller Level Reset";
+	case 0x3:
+		return "Operation was aborted due to a removal of a namespace "
+		       "from the namespace inventory";
+	case 0x4:
+		return "Operation was aborted due to the processing of a "
+		       "Format NVM command";
+	case 0x5:
+		return "A fatal error or unknown test error occurred "
+		       "while the controller was executing the device "
+		       "self-test operation and the operation did not "
+		       "complete";
+	case 0x6:
+		return "Operation completed with a segment that failed and the "
+		       "segment that failed is not known";
+	case 0x7:
+		return "Operation completed with one or more failed segments";
+	case 0x8:
+		return "Operation was aborted for unknown reason";
+	case 0x9:
+		return "Operation was aborted due to a sanitize operation";
+	}
+	return "Test result is unknown";
+}
+
+static char *nvme_print_test_result_detail(char *buf, const char *end,
+					   const NvmeTestLogData *data)
+{
+	uint8_t result = HALF_BYTE_LOW(data->status);
+	buf = APPEND(buf, end, "%s.\n", nvme_test_result_str(result));
+	if (result == 0x7)
+		buf = APPEND(buf, end,
+			     "Segment Number where the first self-test "
+			     "failure occurred: '%#x'.\n",
+			     data->segment_number);
+	buf = APPEND(buf, end, "\n");
+	return buf;
+}
+
+#define SC_VALID	BIT(3)
+#define SCT_VALID	BIT(2)
+#define FLBA_VALID	BIT(1)
+#define NSID_VALID	BIT(0)
+
+static char *nvme_print_test_result(char *buf, const char *end,
+				    const NvmeTestLogData *data)
+{
+	uint8_t type = HALF_BYTE_HIGH(data->status);
+	buf = APPEND(buf, end, "Test type: %s.\n\n", type_str(type));
+	buf = nvme_print_test_result_detail(buf, end, data);
+	buf = APPEND(buf, end, "Power on hours(POH): %llu\n", data->poh);
+	if (data->valid_diag_info & NSID_VALID)
+		buf = APPEND(buf, end, "Namespace Identifier (NSID) of "
+			     "Failing LBA: '%#x'\n", data->nsid);
+	if (data->valid_diag_info & FLBA_VALID)
+		buf = APPEND(buf, end, "Failing LBA: '%#llx'\n",
+			     data->failing_lba);
+	if (data->valid_diag_info & SCT_VALID)
+		buf = APPEND(buf, end, "Status code type (SCT): '%#x'\n",
+			     data->status_code_type);
+	if (data->valid_diag_info & SC_VALID)
+		buf = APPEND(buf, end, "Status code (SC): '%#x'\n",
+			     data->status_code);
+	return buf;
+}
+
+static char *stringify_nvme_test_status(char *buf, const char *end,
+					const NvmeTestLogData *data)
+{
 	uint8_t current_op = HALF_BYTE_LOW(data->current_operation);
 	switch (current_op) {
 	case 0x0:
-		buf = print_test_result(buf, end, data);
+		buf = nvme_print_test_result(buf, end, data);
 		break;
 	case 0x1:
 	case 0x2:
@@ -207,16 +209,54 @@ static char *stringify_test_status(char *buf, const char *end,
 	return buf;
 }
 
-static int is_test_running(StorageTestLog *log)
+/******************************************************************************/
+/* Helpers */
+
+static char *stringify_test_status(char *buf, const char *end,
+				   const StorageTestLog *log)
 {
-	NvmeTestLogData *data = &log->data.nvme_data;
-	return HALF_BYTE_LOW(data->current_operation);
+	switch (log->type) {
+	case STORAGE_INFO_TYPE_NVME:
+		if (!CONFIG(DRIVER_STORAGE_NVME))
+			break;
+		return stringify_nvme_test_status(buf, end,
+						  &log->data.nvme_data);
+	case STORAGE_INFO_TYPE_MMC:
+		/* MMC does not support self-test. */
+		return APPEND(buf, end, "UNSUPPORTED\n");
+	case STORAGE_INFO_TYPE_UFS:
+		if (!CONFIG(DRIVER_STORAGE_UFS))
+			break;
+		/* TODO */
+		return APPEND(buf, end, "TODO\n");
+	case STORAGE_INFO_TYPE_UNKNOWN:
+		break;
+	}
+	die("unsupported data type: %d\n", log->type);
+	return NULL;
 }
 
-int diag_storage_test_supported(void)
+static int is_test_running(StorageTestLog *log)
+{
+	if (log->type == STORAGE_INFO_TYPE_NVME) {
+		const NvmeTestLogData *data = &log->data.nvme_data;
+		return HALF_BYTE_LOW(data->current_operation);
+	}
+	/* UFS self-test is a blocking call and always returns 'not running';
+	   eMMC does not support self-test so always returns 'not running'. */
+	return 0;
+}
+
+/******************************************************************************/
+/* APIs */
+
+uint32_t diag_storage_test_supported(void)
 {
 	BlockDev *dev = get_first_fixed_block_device();
-	return dev && dev->ops.test_control;
+	if (dev && dev->ops.get_test_log && dev->ops.test_control &&
+	    dev->ops.test_support)
+		return dev->ops.test_support();
+	return 0;
 }
 
 DiagTestResult diag_dump_storage_test_log(char *buf, const char *end)

@@ -18,9 +18,9 @@
 /*
  * Check if storage self-test is supported on the first fixed block device.
  *
- * @return 1 if supported; otherwise, 0.
+ * @return the bitmask of BlockDevTestOpsType.
  */
-int diag_storage_test_supported(void);
+uint32_t diag_storage_test_supported(void);
 
 /*
  * Dump storage self-test log into the buffer and truncate the text which
