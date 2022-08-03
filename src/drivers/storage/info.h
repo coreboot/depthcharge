@@ -45,6 +45,7 @@ typedef struct StorageTestLog {
 
 	union {
 		NvmeTestLogData nvme_data;
+		UfsTestLogData ufs_data;
 	} data;
 } StorageTestLog;
 

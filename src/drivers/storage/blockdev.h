@@ -47,6 +47,7 @@ typedef struct BlockDevOps {
 	int (*get_health_info)(struct BlockDevOps *me, struct HealthInfo *info);
 	// Return 0 = success, 1 = error.
 	int (*get_test_log)(struct BlockDevOps *me,
+			    enum BlockDevTestOpsType ops,
 			    struct StorageTestLog *result);
 	// Return 0 = success, 1 = error.
 	int (*test_control)(struct BlockDevOps *me,

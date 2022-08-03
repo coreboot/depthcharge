@@ -711,7 +711,8 @@ static int nvme_read_smart_log(BlockDevOps *me, HealthInfo *smart)
 	return NVME_SUCCESS;
 }
 
-static int nvme_read_test_log(BlockDevOps *me, StorageTestLog *result)
+static int nvme_read_test_log(BlockDevOps *me, BlockDevTestOpsType ops,
+			      StorageTestLog *result)
 {
 	NvmeDrive *drive = container_of(me, NvmeDrive, dev.ops);
 

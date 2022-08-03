@@ -9,6 +9,7 @@
 #include "diag/diag_internal.h"
 #include "diag/storage_test.h"
 #include "drivers/storage/blockdev.h"
+#include "drivers/storage/ufs.h"
 #include "drivers/timer/timer.h"
 
 #define HALF_BYTE_LOW(x) ((x) & 0xf)
@@ -210,6 +211,42 @@ static char *stringify_nvme_test_status(char *buf, const char *end,
 }
 
 /******************************************************************************/
+/* UFS SCSI send diagnostic */
+
+static inline const char *ufs_sense_key_str(uint8_t sense_key)
+{
+	switch(sense_key) {
+	case SENSE_KEY_ILLEGAL_REQUEST:
+		return "ILLEGAL REQUEST (range or CDB errors)";
+	case SENSE_KEY_MEDIUM_ERROR:
+		return "MEDIUM ERROR (medium failure, ECC, etc.)";
+	case SENSE_KEY_HARDWARE_ERROR:
+		return "HARDWARE ERROR (hardware failure)";
+	case SENSE_KEY_UNIT_ATTENTION:
+		return "UNIT ATTENTION (reset, power-on, etc.)";
+	}
+	return "UNKNOWN SENSE ERROR";
+}
+
+static char *stringify_ufs_test_status(char *buf, const char *end,
+				       const UfsTestLogData *data)
+{
+	buf = APPEND(buf, end, "Self-test returned ");
+	switch(data->return_code) {
+	case SCSI_STATUS_GOOD:
+		buf = APPEND(buf, end, "GOOD status\n");
+		break;
+	case SCSI_STATUS_CHK_COND:
+		buf = APPEND(buf, end, "FAILED\nSense key: %s\n",
+			     ufs_sense_key_str(data->sense_key));
+		break;
+	default:
+		buf = APPEND(buf, end, "UNKNOWN status\n");
+	}
+	return buf;
+}
+
+/******************************************************************************/
 /* Helpers */
 
 static char *stringify_test_status(char *buf, const char *end,
@@ -227,8 +264,7 @@ static char *stringify_test_status(char *buf, const char *end,
 	case STORAGE_INFO_TYPE_UFS:
 		if (!CONFIG(DRIVER_STORAGE_UFS))
 			break;
-		/* TODO */
-		return APPEND(buf, end, "TODO\n");
+		return stringify_ufs_test_status(buf, end, &log->data.ufs_data);
 	case STORAGE_INFO_TYPE_UNKNOWN:
 		break;
 	}
@@ -280,7 +316,7 @@ DiagTestResult diag_dump_storage_test_log(char *buf, const char *end)
 
 	StorageTestLog log = {0};
 
-	int res = dev->ops.get_test_log(&dev->ops, &log);
+	int res = dev->ops.get_test_log(&dev->ops, test_stat, &log);
 	if (res) {
 		buf = APPEND(buf, end, "%s: Get Test Result error: %d\n",
 			     dev->name, res);
