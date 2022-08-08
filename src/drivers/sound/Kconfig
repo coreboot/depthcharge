@@ -125,3 +125,6 @@ config DRIVER_SOUND_TEGRA_AUDIO_HUB
 config DRIVER_SOUND_MAX98373_SNDW
 	bool "MAX98373 SNDW codec driver"
 	default n
+
+config DRIVER_SOUND_MAX98396
+	bool "MAX98396 codec driver"
