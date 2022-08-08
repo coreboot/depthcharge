@@ -3,14 +3,38 @@
 #include <libpayload.h>
 
 #include "board/brya/include/variant.h"
+#include "drivers/bus/i2s/cavs-regs.h"
+#include "drivers/gpio/alderlake.h"
 #include "drivers/soc/alderlake.h"
+#include "drivers/sound/max98396.h"
+
+#define SDMODE_PIN		GPP_A11
 
 const struct audio_config *variant_probe_audio_config(void)
 {
-	/* TODO(b/231582187): Implement driver for MAX98396 */
-	static const struct audio_config audio_config;
+	static struct audio_config config = {
+		.bus = {
+			.type = AUDIO_I2S,
+			.i2s.address = SSP_I2S1_START_ADDRESS,
+			.i2s.settings = &max98396_settings,
+			.i2s.enable_gpio = {
+				.pad = SDMODE_PIN,
+				.active_low = false,
+			},
+		},
+		.amp = {
+			.type = AUDIO_AMP_NONE,
+			.gpio.enable_gpio = SDMODE_PIN,
+		},
+		.codec = {
+			.type = AUDIO_MAX98396,
+			.i2c[0].ctrlr = I2C0,
+			.i2c[0].i2c_addr[0] = 0x3c,
+			.i2c[0].i2c_addr[1] = 0x3d,
+		},
+	};
 
-	return &audio_config;
+	return &config;
 }
 
 const struct storage_config *variant_get_storage_configs(size_t *count)
