@@ -20,6 +20,7 @@
 #include "drivers/sound/max98373.h"
 #include "drivers/sound/max98373_sndw.h"
 #include "drivers/sound/max98390.h"
+#include "drivers/sound/max98396.h"
 #include "drivers/sound/route.h"
 
 #define AUD_VOLUME		4000
@@ -51,6 +52,24 @@ static void setup_max98390(const struct audio_codec *codec, SoundRoute *route)
 	for (int i = 0; i < MAX_CODEC; i++) {
 		if (codec->i2c[0].i2c_addr[i]) {
 			Max98390Codec *max = new_max98390_codec(
+				&i2c->ops, codec->i2c[0].i2c_addr[i]);
+			list_insert_after(&max->component.list_node,
+					  &route->components);
+		}
+	}
+}
+
+static void setup_max98396(const struct audio_codec *codec, SoundRoute *route)
+{
+	if (!CONFIG(DRIVER_SOUND_MAX98396))
+		return;
+
+	DesignwareI2c *i2c = new_pci_designware_i2c(codec->i2c[0].ctrlr, I2C_FS_HZ,
+						    ALDERLAKE_DW_I2C_MHZ);
+
+	for (int i = 0; i < MAX_CODEC; i++) {
+		if (codec->i2c[0].i2c_addr[i]) {
+			Max98396Codec *max = new_max98396_codec(
 				&i2c->ops, codec->i2c[0].i2c_addr[i]);
 			list_insert_after(&max->component.list_node,
 					  &route->components);
@@ -201,6 +220,13 @@ static void configure_audio_codec(const struct audio_codec *codec,
 	case AUDIO_MAX98390:
 		if (data->route) {
 			setup_max98390(codec, data->route);
+			data->ops = &data->route->ops;
+		}
+		break;
+
+	case AUDIO_MAX98396:
+		if (data->route) {
+			setup_max98396(codec, data->route);
 			data->ops = &data->route->ops;
 		}
 		break;
