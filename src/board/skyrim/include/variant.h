@@ -12,6 +12,4 @@ enum audio_amp {
 	AUDIO_AMP_INVALID
 };
 
-const struct storage_config *variant_get_storage_configs(size_t *count);
-
 #endif /* _VARIANT_H_ */

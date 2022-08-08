@@ -72,7 +72,6 @@ struct tpm_config {
 };
 
 const struct audio_config *variant_probe_audio_config(void);
-const struct storage_config *variant_get_storage_configs(size_t *count);
 void rex_configure_audio(const struct audio_config *config);
 
 #endif /* _VARIANT_H_ */

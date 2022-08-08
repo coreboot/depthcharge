@@ -23,6 +23,7 @@ depthcharge-$(CONFIG_DRIVER_STORAGE_DWMMC_RK3288) += rk3288_dwmmc.c
 depthcharge-$(CONFIG_DRIVER_STORAGE_DWMMC_RK3399) += rk3399_dwmmc.c
 depthcharge-$(CONFIG_DRIVER_STORAGE_SDHCI_RK3399) += rk3399_sdhci.c
 depthcharge-$(CONFIG_DRIVER_STORAGE_MSHC_S5P) += s5p_mshc.c
+depthcharge-$(CONFIG_DRIVER_STORAGE_COMMON) += storage_common.c
 depthcharge-y += usb.c
 depthcharge-$(CONFIG_DRIVER_SDHCI) += sdhci.c mem_sdhci.c bouncebuf.c
 depthcharge-$(CONFIG_DRIVER_STORAGE_BAYHUB) += bayhub.c

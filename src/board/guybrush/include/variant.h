@@ -32,6 +32,4 @@ enum audio_amp variant_get_audio_amp(void);
 
 unsigned int variant_get_en_spkr_gpio(void);
 
-const struct storage_config *variant_get_storage_configs(size_t *count);
-
 #endif /* _VARIANT_H_ */

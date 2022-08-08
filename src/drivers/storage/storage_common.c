@@ -7,10 +7,7 @@
 #include "base/fw_config.h"
 #include "base/init_funcs.h"
 #include "base/list.h"
-#include "board/brya/include/variant.h"
 #include "drivers/bus/pci/pci.h"
-#include "drivers/soc/alderlake.h"
-#include "drivers/soc/intel_common.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/nvme.h"
 #include "drivers/storage/rtk_mmc.h"
@@ -68,11 +65,12 @@ static void setup_rtkmmc(pcidev_t dev)
 		return;
 
 	if (CONFIG(DRIVER_STORAGE_MMC_RTK)) {
-		RtkMmcHost *rtkmmc = probe_pci_rtk_host(dev, RTKMMC_PLATFORM_REMOVABLE);
+		RtkMmcHost *rtkmmc =
+			probe_pci_rtk_host(dev, RTKMMC_PLATFORM_REMOVABLE);
 		if (rtkmmc) {
 			rtkmmc->name = "rtksd";
 			list_insert_after(&rtkmmc->mmc_ctrlr.ctrlr.list_node,
-				  	&removable_block_dev_controllers);
+				&removable_block_dev_controllers);
 		}
 	}
 }
@@ -99,9 +97,9 @@ static void setup_ufs(pcidev_t dev)
 				  &fixed_block_dev_controllers);
 }
 
-static char *storage_to_string(const struct storage_config config)
+static char *storage_to_string(const struct storage_config *config)
 {
-	switch (config.media) {
+	switch (config->media) {
 	case STORAGE_NVME:
 		return "NVME";
 	case STORAGE_SDHCI:
@@ -120,7 +118,8 @@ static char *storage_to_string(const struct storage_config config)
 static int configure_storage(void)
 {
 	size_t count;
-	const struct storage_config *config = variant_get_storage_configs(&count);
+	const struct storage_config *config =
+		variant_get_storage_configs(&count);
 	if (!config || !count)
 		return 0;
 
@@ -130,9 +129,9 @@ static int configure_storage(void)
 
 		if (config[i].fw_config) {
 			if (fw_config_is_provisioned() &&
-					!fw_config_probe(config[i].fw_config)) {
+				!fw_config_probe(config[i].fw_config)) {
 				printf("%s not support\n",
-					storage_to_string(config[i]));
+					storage_to_string(&config[i]));
 				continue;
 			}
 		}

@@ -27,4 +27,14 @@ struct storage_config {
 	const struct fw_config *fw_config;
 };
 
+/* Returns the storage_config used by each variant.
+ *
+ * Declare the prototype here so Depthcharge can build.
+ * However, it's not implemented in storage_common.c to force each
+ * board/variant that includes this file to do it instead. This allows
+ * for generating the error at build-time, rather than failing at
+ * run-time if no storage configs are provided.
+ */
+const struct storage_config *variant_get_storage_configs(size_t *count);
+
 #endif /* __DRIVERS_STORAGE_SETUP_STORAGE_H__ */
