@@ -5,6 +5,11 @@
 
 #include "vboot/ui.h"
 
+vb2_gbb_flags_t vb2api_gbb_get_flags(struct vb2_context *ctx)
+{
+	return 0;
+}
+
 vb2_error_t vb2api_gbb_read_hwid(struct vb2_context *ctx, char *hwid,
 				 uint32_t *size)
 {
