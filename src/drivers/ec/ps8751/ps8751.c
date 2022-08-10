@@ -510,7 +510,7 @@ static int __must_check ps8751_spi_wait_prog_cmd(Ps8751 *me)
 			       me->chip_name, USEC_TO_MSEC(PS_SPI_TIMEOUT_US));
 			return -1;
 		}
-		mdelay(20);
+		mdelay(50);
 	}
 }
 
