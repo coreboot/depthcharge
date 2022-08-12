@@ -5,3 +5,8 @@
 config DRIVER_BUS_SOUNDWIRE
 	bool "Soundwire driver for Intel platforms"
 	default n
+
+config INTEL_COMMON_SOUNDWIRE_ACE_1_x
+	bool "Intel ACE 1.x specification"
+	default n
+

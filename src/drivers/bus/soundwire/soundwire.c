@@ -421,6 +421,63 @@ static int sndwlink_init(Soundwire *bus)
 }
 
 /*
+ * ace_dsp_core_power_up - power up DSP subsystem and SDW IO domain
+ * bus - Pointer to the Soudnwire structure.
+ */
+static int ace_dsp_core_power_up(Soundwire *bus)
+{
+	u32 val;
+
+	/* Set the DSP subsystem power on */
+	write32(bus->dspbar + MTL_HFDSSCS,
+		(read32(bus->dspbar + MTL_HFDSSCS) | MTL_HFDSSCS_SPA_MASK));
+
+	/* Poll: first wait for unstable CPA (1 then 0 then 1) after SPA set */
+	for (int i = 0; i < RETRY_COUNT; i++) {
+		mdelay(1);
+		if ((read32(bus->dspbar + MTL_HFDSSCS) &
+				MTL_HFDSSCS_CPA_MASK) == MTL_HFDSSCS_CPA_MASK)
+			break;
+	}
+	if ((read32(bus->dspbar + MTL_HFDSSCS) &
+			MTL_HFDSSCS_CPA_MASK) != MTL_HFDSSCS_CPA_MASK)
+		return -1;
+
+	/* Wake/Prevent gated-DSP0 & gated-IO1(SDW) from power gating */
+	write32(bus->dspbar + MTL_HFPWRCTL,
+		(read32(bus->dspbar + MTL_HFPWRCTL) | MTL_HFPWRCTL_WPHP0IO0_PG));
+
+	for (int i = 0; i < RETRY_COUNT; i++) {
+		if ((read32(bus->dspbar + MTL_HFPWRSTS) &
+				MTL_HFPWRCTL_WPHP0IO0_PG) == MTL_HFPWRCTL_WPHP0IO0_PG)
+			break;
+		mdelay(1);
+	}
+	if ((read32(bus->dspbar + MTL_HFPWRSTS) &
+			MTL_HFPWRCTL_WPHP0IO0_PG) != MTL_HFPWRCTL_WPHP0IO0_PG)
+		return -1;
+
+	/* Program Host CPU the owner of the IP & shim */
+	val = read32(bus->dspbar + MTL_DSP2C0_CTL);
+	write32(bus->dspbar + MTL_DSP2C0_CTL,
+		(MTL_DSP2C0_OSEL_HOST(val) | MTL_DSP2C0_CTL_SPA_MASK));
+
+	/* Poll: wait for unstable CPA (1 then 0 then 1) read first */
+	for (int i = 0; i < RETRY_COUNT; i++) {
+		mdelay(1);
+		if ((read32(bus->dspbar + MTL_DSP2C0_CTL) &
+			    MTL_DSP2C0_CTL_CPA_MASK) == MTL_DSP2C0_CTL_CPA_MASK)
+			break;
+	}
+
+	if ((read32(bus->dspbar + MTL_DSP2C0_CTL) &
+			MTL_DSP2C0_CTL_CPA_MASK) != MTL_DSP2C0_CTL_CPA_MASK)
+		return -1;
+
+	return 0;
+}
+
+/*
  * enable_hda_dsp - Function to reset the HDA and DSP
  * bus - Pointer to the Soudnwire structure
  */
@@ -452,20 +509,28 @@ static int enable_hda_dsp(Soundwire *bus)
 		return -1;
 	}
 
-	/* Set power active to get DSP subsystem out of reset. */
-	write32(bus->dspbar + DSP_MEM_ADSPCS,
-		(read32(bus->dspbar + DSP_MEM_ADSPCS) | DSP_MEM_ADSPCS_SPA));
-	/* Wait till current power active bit is set */
-	for (int i = 0; i < RETRY_COUNT; i++) {
-		if ((read32(bus->dspbar + DSP_MEM_ADSPCS) &
-						DSP_MEM_ADSPCS_CPA) == DSP_MEM_ADSPCS_CPA)
-			break;
-		mdelay(1);
-	}
+	if (CONFIG(INTEL_COMMON_SOUNDWIRE_ACE_1_x)) {
+		if (ace_dsp_core_power_up(bus)) {
+			printf("Failed to power up ACE dsp core\n");
+			return -1;
+		}
+	} else {
+		/* Set power active to get DSP subsystem out of reset. */
+		write32(bus->dspbar + DSP_MEM_ADSPCS,
+			(read32(bus->dspbar + DSP_MEM_ADSPCS) | DSP_MEM_ADSPCS_SPA));
+		/* Wait till current power active bit is set */
+		for (int i = 0; i < RETRY_COUNT; i++) {
+			if ((read32(bus->dspbar + DSP_MEM_ADSPCS) &
+					DSP_MEM_ADSPCS_CPA) == DSP_MEM_ADSPCS_CPA)
+				break;
+			mdelay(1);
+		}
 
-	if ((read32(bus->dspbar + DSP_MEM_ADSPCS) & DSP_MEM_ADSPCS_CPA) != DSP_MEM_ADSPCS_CPA) {
-		printf("Failed to get the ADSP out of reset \n");
-		return -1;
+		if ((read32(bus->dspbar + DSP_MEM_ADSPCS) &
+				DSP_MEM_ADSPCS_CPA) != DSP_MEM_ADSPCS_CPA) {
+			printf("Failed to get the ADSP out of reset \n");
+			return -1;
+		}
 	}
 
 	/* Enable the Host interrupt generation for SNDW interface */
@@ -531,25 +596,69 @@ static int sndw_sendwack(void *sndwlinkaddr, sndw_cmd txcmd, uint32_t deviceinde
 }
 
 /*
+ * ace_dsp_core_power_down - Function to power down DSP subsystem
+ * bus - Pointer to the Soudnwire structure
+ */
+static int ace_dsp_core_power_down(Soundwire *bus)
+{
+	/* disable SPA bit */
+	write32(bus->dspbar + MTL_DSP2C0_CTL,
+		(read32(bus->dspbar + MTL_DSP2C0_CTL) & ~MTL_DSP2C0_CTL_SPA_MASK));
+
+	for (int i = 0; i < RETRY_COUNT; i++) {
+		/* Wait for unstable CPA read (0 then 1 then 0) */
+		mdelay(1);
+		if (!(read32(bus->dspbar + MTL_DSP2C0_CTL) & MTL_DSP2C0_CTL_CPA_MASK))
+			break;
+	}
+	if ((read32(bus->dspbar + MTL_DSP2C0_CTL) & MTL_DSP2C0_CTL_SPA_MASK)) {
+		printf("%s : failed to power down primary core.\n", __func__);
+		return -1;
+	}
+
+	/* Set the DSP subsystem to power down */
+	write32(bus->dspbar + MTL_HFDSSCS,
+		(read32(bus->dspbar + MTL_HFDSSCS) & ~MTL_HFDSSCS_SPA_MASK));
+
+	for (int i = 0; i < RETRY_COUNT; i++) {
+		mdelay(1);
+		if (!(read32(bus->dspbar + MTL_HFDSSCS) & MTL_HFDSSCS_CPA_MASK))
+			break;
+	}
+	if ((read32(bus->dspbar + MTL_HFDSSCS) & MTL_HFDSSCS_CPA_MASK)) {
+		printf("%s : failed to disable DSP subsystem\n", __func__);
+		return -1;
+	}
+
+	return 0;
+}
+
+/*
  * sndw_disable - Disable the soundwire interface by resetting the DSP.
  * bus - Pointer to the Soundwire structure.
  */
 static int sndw_disable(SndwOps *me)
 {
 	Soundwire *bus = container_of(me, Soundwire, ops);
-	/* Set SPA=0 to reset ADSP subsystem. */
-	write32(bus->dspbar + DSP_MEM_ADSPCS,
-		(read32(bus->dspbar + DSP_MEM_ADSPCS) & ~DSP_MEM_ADSPCS_SPA));
-	/* Wait till current power active bit is set */
-	for (int i = 0; i < RETRY_COUNT; i++) {
-		if ((read32(bus->dspbar + DSP_MEM_ADSPCS) &
-						DSP_MEM_ADSPCS_CPA) == 0)
-			break;
-		mdelay(1);
-	}
-	if ((read32(bus->dspbar + DSP_MEM_ADSPCS) & DSP_MEM_ADSPCS_CPA) != 0) {
-		printf("Failed to reset the ADSP.\n");
-		return -1;
+
+	if (CONFIG(INTEL_COMMON_SOUNDWIRE_ACE_1_x)) {
+		if (ace_dsp_core_power_down(bus))
+			return -1;
+	} else {
+		/* Set SPA=0 to reset ADSP subsystem. */
+		write32(bus->dspbar + DSP_MEM_ADSPCS,
+			(read32(bus->dspbar + DSP_MEM_ADSPCS) & ~DSP_MEM_ADSPCS_SPA));
+		/* Wait till current power active bit is set */
+		for (int i = 0; i < RETRY_COUNT; i++) {
+			if ((read32(bus->dspbar + DSP_MEM_ADSPCS) &
+					DSP_MEM_ADSPCS_CPA) == 0)
+				break;
+			mdelay(1);
+		}
+		if ((read32(bus->dspbar + DSP_MEM_ADSPCS) & DSP_MEM_ADSPCS_CPA) != 0) {
+			printf("Failed to reset the ADSP.\n");
+			return -1;
+		}
 	}
 
 	return 0;
