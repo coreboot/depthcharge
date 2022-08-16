@@ -22,7 +22,6 @@
 #include <lz4.h>
 #include <stdint.h>
 #include <tlcl.h>
-#include <vb2_sha.h>
 #include <ctype.h>
 
 #include "base/ranges.h"
@@ -334,11 +333,10 @@ static void update_chosen(DeviceTree *tree, char *cmd_line)
 	union {
 		struct {
 			u8 tpm_buf[64];
-			u8 sha_buf[VB2_SHA256_DIGEST_SIZE];
 		};
 		struct {
 			uint64_t kaslr;
-			uint8_t rng[64];
+			uint8_t rng[56];
 		};
 	} *seed = xzalloc(sizeof(*seed));
 	uint32_t size;
@@ -362,14 +360,9 @@ static void update_chosen(DeviceTree *tree, char *cmd_line)
 		   tripping up the kernel. We don't expect untrusted code to run
 		   there anyway, so kernel exploits are less of a concern. */
 	}
-
 	timestamp_mix_in_randomness(seed->tpm_buf, sizeof(seed->tpm_buf));
+
 	dt_add_u64_prop(node, "kaslr-seed", seed->kaslr);
-
-	assert(!vb2_digest_buffer(seed->tpm_buf, sizeof(seed->tpm_buf),
-				  VB2_HASH_SHA256, seed->sha_buf,
-				  sizeof(seed->sha_buf)));
-
 	dt_add_bin_prop(node, "rng-seed", seed->rng, sizeof(seed->rng));
 }
 
