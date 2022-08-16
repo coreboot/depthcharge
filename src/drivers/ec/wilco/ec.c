@@ -10,6 +10,7 @@
 #include <assert.h>
 #include <libpayload.h>
 #include <cbfs.h>
+#include <cbfs_glue.h>
 #include <vboot_api.h>
 #include <vb2_api.h>
 #include <vb2_sha.h>
@@ -126,7 +127,8 @@ static vb2_error_t vboot_hash_image(VbootEcOps *vbec,
 	image = xzalloc(image_size);
 	if (flash_read(image, image_offset, image_size) == image_size) {
 		/* Generate SHA-256 digest of the header and image */
-		vb2_digest_init(&ctx, VB2_HASH_SHA256);
+		vb2_digest_init(&ctx, cbfs_hwcrypto_allowed(), VB2_HASH_SHA256,
+				sizeof(header) + image_size);
 		vb2_digest_extend(&ctx, (uint8_t *)&header, sizeof(header));
 		vb2_digest_extend(&ctx, image, image_size);
 		vb2_digest_finalize(&ctx, (uint8_t *)*hash, *hash_size);

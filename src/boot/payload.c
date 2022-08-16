@@ -20,6 +20,7 @@
 #include <lzma.h>
 #include <vb2_sha.h>
 #include <cbfs.h>
+#include <cbfs_glue.h>
 
 #include "arch/cache.h"
 #include "base/cleanup_funcs.h"
@@ -154,14 +155,14 @@ int payload_run(const char *payload_name, int verify)
 	}
 
 	if (verify) {
-		uint8_t real_hash[VB2_SHA256_DIGEST_SIZE];
+		struct vb2_hash real_hash;
 		uint8_t *expected_hash;
 		vb2_error_t rv;
 
 		/* Calculate hash of payload. */
-		rv = vb2_digest_buffer((const uint8_t *)payload,
-				       payload_size, VB2_HASH_SHA256,
-				       real_hash, sizeof(real_hash));
+		rv = vb2_hash_calculate(cbfs_hwcrypto_allowed(), payload,
+					payload_size, VB2_HASH_SHA256,
+					&real_hash);
 		if (rv) {
 			printf("SHA-256 calculation failed for "
 			       "%s payload.\n", payload_name);
@@ -178,7 +179,8 @@ int payload_run(const char *payload_name, int verify)
 			return 1;
 		}
 
-		ret = memcmp(real_hash, expected_hash, sizeof(real_hash));
+		ret = memcmp(real_hash.sha256, expected_hash,
+			     sizeof(real_hash.sha256));
 		free(expected_hash);
 		if (ret != 0) {
 			printf("%s payload hash check failed!\n", payload_name);

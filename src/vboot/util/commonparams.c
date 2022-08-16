@@ -43,3 +43,9 @@ struct vb2_context *vboot_get_context(void)
 
 	return ctx;
 }
+
+/* Overriding weak hook from libpayload. */
+bool cbfs_hwcrypto_allowed(void)
+{
+	return vb2api_hwcrypto_allowed(vboot_get_context());
+}
