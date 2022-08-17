@@ -16,6 +16,7 @@
 #define __DRIVERS_STORAGE_RTK_MMC_H_
 
 #include <arch/io.h>
+#include <libpayload.h>
 
 #include "drivers/gpio/gpio.h"
 #include "drivers/storage/blockdev.h"
