@@ -94,10 +94,13 @@ static void dwmci_prepare_data(DwmciHost *host, MmcData *data)
 	} while(1);
 
 	data_len = (void *)cur_idmac - data_start;
-	dcache_clean_invalidate_by_mva(data_start, data_len + DMA_MINALIGN);
+	if (!dma_coherent(data_start))
+		dcache_clean_invalidate_by_mva(data_start,
+					       data_len + DMA_MINALIGN);
 
-	dcache_clean_invalidate_by_mva(start_addr,
-				       (data->blocks * data->blocksize));
+	if (!dma_coherent((void *)start_addr))
+		dcache_clean_invalidate_by_mva(start_addr,
+					       data->blocks * data->blocksize);
 
 	ctrl = dwmci_readl(host, DWMCI_CTRL);
 	ctrl |= DWMCI_IDMAC_EN | DWMCI_DMA_EN;
@@ -217,7 +220,7 @@ static int dwmci_send_cmd(MmcCtrlr *ctrlr, MmcCommand *cmd, MmcData *data)
 		ctrl = dwmci_readl(host, DWMCI_CTRL);
 		ctrl &= ~(DWMCI_DMA_EN);
 		dwmci_writel(host, DWMCI_CTRL, ctrl);
-		if (data->flags & MMC_DATA_READ) {
+		if (data->flags & MMC_DATA_READ && !dma_coherent(data->dest)) {
 			unsigned long data_len = data->blocks * data->blocksize;
 			/*
 			 * TODO(hungte) The buffer is supposed to have padding

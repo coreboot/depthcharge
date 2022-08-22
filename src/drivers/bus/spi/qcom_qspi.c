@@ -105,6 +105,8 @@ static void queue_direct_data(QcomQspi *qspi_bus, uint8_t *data,
 	desc->data_address = (uint32_t)(uintptr_t)data;
 	desc->length = data_bytes;
 
+	if (dma_coherent(data))
+		return;
 	if (write)
 		dcache_clean_by_mva(data, data_bytes);
 	else

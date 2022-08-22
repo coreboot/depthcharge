@@ -124,11 +124,13 @@ static int mshci_prepare_data(MshciHost *host, MmcData *data)
 	void *data_start = idmac_desc;
 	size_t data_len = (uint8_t *)pdesc_dmac - (uint8_t *)idmac_desc +
 			  DMA_MINALIGN;
-	dcache_clean_invalidate_by_mva(data_start, data_len);
+	if (!dma_coherent(data_start))
+		dcache_clean_invalidate_by_mva(data_start, data_len);
 
 	data_start = data->dest;
 	data_len = data->blocks * data->blocksize;
-	dcache_clean_invalidate_by_mva(data_start, data_len);
+	if (!dma_coherent(data_start))
+		dcache_clean_invalidate_by_mva(data_start, data_len);
 
 	write32(&host->regs->dbaddr, (uintptr_t)virt_to_phys(idmac_desc));
 

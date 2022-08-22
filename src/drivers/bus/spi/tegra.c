@@ -480,13 +480,13 @@ static int tegra_spi_transfer(SpiOps *me, void *in, const void *out,
 		if (in) {
 			sin = (void *)start;
 			sout = NULL;
-			if (!pio)
+			if (!pio && !dma_coherent(start))
 				dcache_invalidate_by_mva((void *)start,
 							xfer_size);
 		} else {
 			sout = (void *)start;
 			sin = NULL;
-			if (!pio)
+			if (!pio && !dma_coherent(start))
 				dcache_clean_by_mva((void *)start, xfer_size);
 		}
 
