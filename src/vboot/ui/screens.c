@@ -16,6 +16,7 @@
  * GNU General Public License for more details.
  */
 
+#include <arch/cache.h>
 #include <libpayload.h>
 #include <vb2_api.h>
 
@@ -1850,6 +1851,17 @@ static vb2_error_t diagnostics_init(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
+static vb2_error_t diagnostics_reinit(struct ui_context *ui)
+{
+	/*
+	 * Since we reset AP in FAFT, write back data including CBMEM log from
+	 * cache to memory once we leave test items to make sure we can verify
+	 * it.
+	 */
+	dcache_clean_all();
+	return VB2_SUCCESS;
+}
+
 static const char *const diagnostics_desc[] = {
 	"diag_menu_desc0.bmp",
 };
@@ -1892,6 +1904,7 @@ static const struct ui_screen_info diagnostics_screen = {
 	.desc = UI_DESC(diagnostics_desc),
 	.menu = UI_MENU(diagnostics_items),
 	.init = diagnostics_init,
+	.reinit = diagnostics_reinit,
 	.mesg = "Select the component you'd like to check",
 };
 
