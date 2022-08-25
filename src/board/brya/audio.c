@@ -112,14 +112,6 @@ static void setup_gpio_amp(const struct audio_amp *amp, SoundRoute *route)
 			  &route->components);
 }
 
-static void setup_cs35l53_sequence(const struct audio_bus *bus)
-{
-	new_alderlake_gpio_output(bus->i2s.enable_gpio.pad, 0);
-	mdelay(2);
-	new_alderlake_gpio_output(bus->i2s.enable_gpio.pad, 1);
-	mdelay(5);
-}
-
 static GpioCfg *cfg_gpio(const struct audio_bus *bus)
 {
 	if (CONFIG(DRIVER_GPIO_ALDERLAKE))
@@ -134,7 +126,6 @@ static I2sSource *setup_i2s(const struct audio_bus *bus)
 {
 	I2s *i2s;
 	if (CONFIG(DRIVER_SOUND_CS35L53)) {
-		setup_cs35l53_sequence(bus);
 		i2s = new_i2s_structure(bus->i2s.settings, AUD_CS35L53_BITDEPTH,
 					&cfg_gpio(bus)->ops, bus->i2s.address);
 	} else {
