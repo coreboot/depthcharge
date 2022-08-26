@@ -16,6 +16,7 @@
 #include "drivers/flash/flash.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/gpio/gpio.h"
+#include "drivers/gpio/meteorlake.h"
 #include "drivers/power/pch.h"
 #include "drivers/soc/meteorlake.h"
 #include "drivers/tpm/google/i2c.h"
@@ -25,6 +26,7 @@
 #include <libpayload.h>
 #include <sysinfo.h>
 
+#define EC_PCH_INT_ODL	GPP_A17
 #define TPM_I2C_ADDR	0x50
 #define I2C_FS_HZ	400000 /* 400KHz */
 
@@ -39,11 +41,23 @@ __weak const struct storage_config *variant_get_storage_configs(size_t *count)
 	return storage_configs;
 }
 
+__weak const int variant_get_ec_int(void)
+{
+	return EC_PCH_INT_ODL;
+}
+
+static GpioOps *mkbp_int_ops(void)
+{
+	GpioCfg *mkbp_int_gpio = new_meteorlake_gpio_input(variant_get_ec_int());
+	/* Active-low, has to be inverted */
+	return new_gpio_not(&mkbp_int_gpio->ops);
+}
+
 static void ec_setup(void)
 {
 	CrosEcLpcBus *cros_ec_lpc_bus =
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
-	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);
+	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, mkbp_int_ops());
 	register_vboot_ec(&cros_ec->vboot);
 }
 
