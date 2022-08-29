@@ -98,7 +98,7 @@ static void dwmci_prepare_data(DwmciHost *host, MmcData *data)
 		dcache_clean_invalidate_by_mva(data_start,
 					       data_len + DMA_MINALIGN);
 
-	if (!dma_coherent((void *)start_addr))
+	if (!dma_coherent(start_addr))
 		dcache_clean_invalidate_by_mva(start_addr,
 					       data->blocks * data->blocksize);
 
