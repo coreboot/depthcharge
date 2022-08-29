@@ -9,7 +9,7 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
-#include "board/brya/include/variant.h"
+#include "board/rex/include/variant.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/lpc.h"

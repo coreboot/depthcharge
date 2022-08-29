@@ -15,6 +15,10 @@ struct storage_config {
 	pcidev_t pci_dev;
 };
 
+struct tpm_config {
+	pcidev_t pci_dev;
+};
+
 const struct storage_config *variant_get_storage_configs(size_t *count);
 
 #endif /* _VARIANT_H_ */
