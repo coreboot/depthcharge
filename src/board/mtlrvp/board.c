@@ -10,6 +10,7 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "drivers/ec/cros/lpc.h"
 #include "drivers/power/pch.h"
 #include "drivers/soc/meteorlake.h"
 #include "drivers/storage/ahci.h"
@@ -26,6 +27,22 @@ static int board_setup(void)
 	uint8_t secondary_bus;
 
 	sysinfo_install_flags(NULL);
+
+	/* Chrome EC (eSPI) */
+	if (CONFIG(DRIVER_EC_CROS_LPC)) {
+		CrosEcLpcBus *cros_ec_lpc_bus;
+		if (CONFIG(CROS_EC_ENABLE_MEC)) {
+			cros_ec_lpc_bus =
+				new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_MEC);
+		}
+		else {
+			cros_ec_lpc_bus =
+				new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
+		}
+
+		CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);
+		register_vboot_ec(&cros_ec->vboot);
+	}
 
 	/* Power */
 	power_set_ops(&meteorlake_power_ops);
