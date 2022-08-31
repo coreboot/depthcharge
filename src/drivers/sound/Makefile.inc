@@ -12,6 +12,7 @@
 ##
 
 depthcharge-$(CONFIG_DRIVER_SOUND_AMD_ACP) += amd_acp.c
+depthcharge-$(CONFIG_DRIVER_INTEL_GENERIC_AUDIO) += intel_audio_setup.c
 depthcharge-$(CONFIG_DRIVER_SOUND_CS35L53) += cs35l53.c
 depthcharge-$(CONFIG_DRIVER_SOUND_GPIO_AMP) += gpio_amp.c
 depthcharge-$(CONFIG_DRIVER_SOUND_GPIO_BUZZER) += gpio_buzzer.c

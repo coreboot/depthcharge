@@ -128,3 +128,6 @@ config DRIVER_SOUND_MAX98373_SNDW
 
 config DRIVER_SOUND_MAX98396
 	bool "MAX98396 codec driver"
+
+config DRIVER_INTEL_GENERIC_AUDIO
+	bool "Audio setup for Intel platform"

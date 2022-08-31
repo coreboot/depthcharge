@@ -19,7 +19,6 @@
 #include "drivers/gpio/gpio.h"
 #include "drivers/power/pch.h"
 #include "drivers/soc/alderlake.h"
-#include "drivers/sound/cs35l53.h"
 #include "drivers/storage/storage_common.h"
 #include "drivers/tpm/google/i2c.h"
 #include "drivers/tpm/google/switches.h"
@@ -32,8 +31,6 @@
 #define TPM_I2C3	PCI_DEV(0, 0x15, 3)
 #define TPM_I2C_ADDR	0x50
 #define I2C_FS_HZ	400000
-
-#define SSP_PORT_SPKR	2
 
 __weak const struct storage_config *variant_get_storage_configs(size_t *count)
 {
@@ -89,18 +86,13 @@ static void tpm_setup(void)
 				&new_cr50_rec_switch(&tpm->base.ops)->ops);
 }
 
-static void audio_setup(void)
-{
-	brya_configure_audio(variant_probe_audio_config());
-}
-
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
 	ec_setup();
 	tpm_setup();
 	power_set_ops(&alderlake_power_ops);
-	audio_setup();
+	common_audio_setup(variant_probe_audio_config());
 
 	return 0;
 }

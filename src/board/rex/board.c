@@ -90,9 +90,12 @@ static void tpm_setup(void)
 				&new_cr50_rec_switch(&tpm->base.ops)->ops);
 }
 
-static void audio_setup(void)
+__weak const struct audio_config *variant_probe_audio_config(void)
 {
-	/* Placeholder for Audio setup */
+	static struct audio_config config;
+
+	printf("%s Empty stub. Please add varaint audio config\n", __func__);
+	return &config;
 }
 
 static int board_setup(void)
@@ -101,7 +104,7 @@ static int board_setup(void)
 	ec_setup();
 	tpm_setup();
 	power_set_ops(&meteorlake_power_ops);
-	audio_setup();
+	common_audio_setup(variant_probe_audio_config());
 
 	return 0;
 }
