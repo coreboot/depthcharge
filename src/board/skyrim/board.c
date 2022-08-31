@@ -21,6 +21,7 @@
 #include "drivers/sound/rt1019.h"
 #include "drivers/sound/rt5682s.h"
 #include "drivers/storage/nvme.h"
+#include "drivers/storage/storage_common.h"
 #include "drivers/tpm/google/i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "pci.h"

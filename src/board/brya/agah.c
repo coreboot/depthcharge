@@ -10,6 +10,7 @@
 #include "drivers/bus/i2s/intel_common/max98357a.h"
 #include "drivers/gpio/alderlake.h"
 #include "drivers/soc/alderlake.h"
+#include "drivers/storage/storage_common.h"
 
 #define SDMODE_PIN	GPP_A11
 #define SDMODE_ENABLE	0

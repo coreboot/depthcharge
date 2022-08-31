@@ -6,6 +6,7 @@
 
 #include "base/fw_config.h"
 #include "board/skyrim/include/variant.h"
+#include "drivers/storage/storage_common.h"
 
 const struct storage_config *variant_get_storage_configs(size_t *count)
 {

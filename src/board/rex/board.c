@@ -19,6 +19,7 @@
 #include "drivers/gpio/meteorlake.h"
 #include "drivers/power/pch.h"
 #include "drivers/soc/meteorlake.h"
+#include "drivers/storage/storage_common.h"
 #include "drivers/tpm/google/i2c.h"
 #include "drivers/tpm/google/switches.h"
 #include "drivers/tpm/tpm.h"

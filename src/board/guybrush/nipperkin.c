@@ -7,6 +7,7 @@
 #include "base/fw_config.h"
 #include "board/guybrush/include/variant.h"
 
+#include "drivers/storage/storage_common.h"
 #include "drivers/sound/rt5682.h"
 #include "drivers/sound/rt5682s.h"
 

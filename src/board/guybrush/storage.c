@@ -11,6 +11,7 @@
 #include "drivers/storage/nvme.h"
 #include "drivers/storage/sdhci.h"
 #include "drivers/storage/bayhub.h"
+#include "drivers/storage/storage_common.h"
 
 static void setup_sdhci(pcidev_t pci_dev)
 {

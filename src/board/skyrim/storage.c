@@ -10,6 +10,7 @@
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/nvme.h"
 #include "drivers/storage/sdhci.h"
+#include "drivers/storage/storage_common.h"
 #include "drivers/storage/rtk_mmc.h"
 
 static void setup_rtkmmc(pcidev_t dev)

@@ -2,8 +2,6 @@
 #define _VARIANT_H_
 
 #include <libpayload.h>
-#include <stdint.h>
-#include <stddef.h>
 
 #include "drivers/bus/i2s/intel_common/i2s.h"
 
@@ -67,16 +65,6 @@ struct audio_config {
 	struct audio_bus bus;
 	struct audio_amp amp;
 	struct audio_codec codec;
-};
-
-enum storage_media {
-	STORAGE_NVME,
-	STORAGE_SDHCI,
-};
-
-struct storage_config {
-	enum storage_media media;
-	pcidev_t pci_dev;
 };
 
 struct tpm_config {

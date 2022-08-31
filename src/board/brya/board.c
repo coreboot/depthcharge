@@ -20,6 +20,7 @@
 #include "drivers/power/pch.h"
 #include "drivers/soc/alderlake.h"
 #include "drivers/sound/cs35l53.h"
+#include "drivers/storage/storage_common.h"
 #include "drivers/tpm/google/i2c.h"
 #include "drivers/tpm/google/switches.h"
 #include "drivers/tpm/tpm.h"

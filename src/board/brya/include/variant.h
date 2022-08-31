@@ -76,27 +76,6 @@ struct audio_config {
 	struct audio_codec codec;
 };
 
-enum storage_media {
-	STORAGE_NVME,
-	STORAGE_SDHCI,
-	STORAGE_EMMC,
-	STORAGE_RTKMMC,
-	STORAGE_UFS,
-};
-
-struct emmc_config {
-	unsigned int platform_flags;
-	unsigned int clock_min;
-	unsigned int clock_max;
-};
-
-struct storage_config {
-	enum storage_media media;
-	pcidev_t pci_dev;
-	struct emmc_config emmc;
-	const struct fw_config *fw_config;
-};
-
 struct tpm_config {
 	pcidev_t pci_dev;
 };

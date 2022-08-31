@@ -10,6 +10,7 @@
 #include "drivers/gpio/alderlake.h"
 #include "drivers/soc/alderlake.h"
 #include "drivers/sound/max98373.h"
+#include "drivers/storage/storage_common.h"
 
 #define AUD_I2C_ADDR		0x32
 #define SDMODE_PIN		GPP_A11

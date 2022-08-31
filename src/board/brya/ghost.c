@@ -7,6 +7,7 @@
 #include "drivers/gpio/alderlake.h"
 #include "drivers/soc/alderlake.h"
 #include "drivers/sound/max98396.h"
+#include "drivers/storage/storage_common.h"
 
 #define SDMODE_PIN		GPP_A11
 

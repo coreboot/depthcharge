@@ -10,6 +10,7 @@
 #include "drivers/gpio/alderlake.h"
 #include "drivers/soc/alderlake.h"
 #include "drivers/sound/cs35l53.h"
+#include "drivers/storage/storage_common.h"
 
 #define AUD_I2C_ADDR1		0x43
 #define AUD_I2C_ADDR2		0x42

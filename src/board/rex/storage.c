@@ -12,6 +12,7 @@
 #include "drivers/soc/intel_common.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/nvme.h"
+#include "drivers/storage/storage_common.h"
 
 static void setup_nvme(pcidev_t dev)
 {
