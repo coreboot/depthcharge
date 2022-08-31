@@ -3,34 +3,33 @@
 #include <pci.h>
 #include <pci/pci.h>
 
-#include "board/brya/include/variant.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/bus/i2s/intel_common/max98357a.h"
 #include "drivers/bus/i2s/intel_common/max98390.h"
 #include "drivers/bus/i2s/cavs-regs.h"
 #include "drivers/bus/soundwire/soundwire.h"
-#include "drivers/gpio/alderlake.h"
-#include "drivers/gpio/gpio.h"
-#include "drivers/soc/alderlake.h"
+#include "drivers/soc/intel_common.h"
 #include "drivers/sound/cs35l53.h"
 #include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/gpio_edge_buzzer.h"
 #include "drivers/sound/i2s.h"
+#include "drivers/sound/intel_audio_setup.h"
 #include "drivers/sound/max98373.h"
 #include "drivers/sound/max98373_sndw.h"
 #include "drivers/sound/max98390.h"
 #include "drivers/sound/max98396.h"
 #include "drivers/sound/route.h"
 
+/* Default I2S setting 4000 volume, 16bit, 2ch, 48k */
 #define AUD_VOLUME		4000
 #define AUD_BITDEPTH		16
-#define AUD_CS35L53_BITDEPTH	32
 #define AUD_SAMPLE_RATE		48000
 #define AUD_NUM_CHANNELS	2
 #define BEEP_DURATION		120
 #define I2C_FS_HZ		400000
-#define I2C_CS35L53_FS_HZ      	1000000
+
+#define SOC_DW_I2C_MHZ	133
 
 struct audio_data {
 	enum audio_bus_type type;
@@ -41,13 +40,19 @@ struct audio_data {
 	};
 };
 
+/* return default value if value is 0 */
+static int default_if_zero(int value, int def)
+{
+	return value ? : def;
+}
+
 static void setup_max98390(const struct audio_codec *codec, SoundRoute *route)
 {
 	if (!CONFIG(DRIVER_SOUND_MAX98390))
 		return;
 
-	DesignwareI2c *i2c = new_pci_designware_i2c(codec->i2c[0].ctrlr, I2C_FS_HZ,
-						    ALDERLAKE_DW_I2C_MHZ);
+	DesignwareI2c *i2c = new_pci_designware_i2c(codec->i2c[0].ctrlr,
+		default_if_zero(codec->speed, I2C_FS_HZ), SOC_DW_I2C_MHZ);
 
 	for (int i = 0; i < MAX_CODEC; i++) {
 		if (codec->i2c[0].i2c_addr[i]) {
@@ -64,8 +69,8 @@ static void setup_max98396(const struct audio_codec *codec, SoundRoute *route)
 	if (!CONFIG(DRIVER_SOUND_MAX98396))
 		return;
 
-	DesignwareI2c *i2c = new_pci_designware_i2c(codec->i2c[0].ctrlr, I2C_FS_HZ,
-						    ALDERLAKE_DW_I2C_MHZ);
+	DesignwareI2c *i2c = new_pci_designware_i2c(codec->i2c[0].ctrlr,
+		default_if_zero(codec->speed, I2C_FS_HZ), SOC_DW_I2C_MHZ);
 
 	for (int i = 0; i < MAX_CODEC; i++) {
 		if (codec->i2c[0].i2c_addr[i]) {
@@ -82,8 +87,8 @@ static void setup_max98373(const struct audio_codec *codec, SoundRoute *route)
 	if (!CONFIG(DRIVER_SOUND_MAX98373))
 		return;
 
-	DesignwareI2c *i2c = new_pci_designware_i2c(codec->i2c[0].ctrlr, I2C_FS_HZ,
-						    ALDERLAKE_DW_I2C_MHZ);
+	DesignwareI2c *i2c = new_pci_designware_i2c(codec->i2c[0].ctrlr,
+		default_if_zero(codec->speed, I2C_FS_HZ), SOC_DW_I2C_MHZ);
 
 	Max98373Codec *max = new_max98373_codec(&i2c->ops,
 						codec->i2c[0].i2c_addr[0]);
@@ -96,10 +101,10 @@ static void setup_cs35l53(const struct audio_codec *codec, SoundRoute *route)
 		return;
 
 	DesignwareI2c *i2c1 = new_pci_designware_i2c(codec->i2c[0].ctrlr,
-						I2C_CS35L53_FS_HZ, ALDERLAKE_DW_I2C_MHZ);
+		default_if_zero(codec->speed, I2C_FS_HZ), SOC_DW_I2C_MHZ);
 
 	DesignwareI2c *i2c2 = new_pci_designware_i2c(codec->i2c[1].ctrlr,
-						I2C_CS35L53_FS_HZ, ALDERLAKE_DW_I2C_MHZ);
+		default_if_zero(codec->speed, I2C_FS_HZ), SOC_DW_I2C_MHZ);
 
 	for (int i = 0; i < MAX_CODEC; i++) {
 		if (codec->i2c[0].i2c_addr[i]) {
@@ -144,16 +149,14 @@ static GpioCfg *cfg_gpio(const struct audio_bus *bus)
 static I2sSource *setup_i2s(const struct audio_bus *bus)
 {
 	I2s *i2s;
-	if (CONFIG(DRIVER_SOUND_CS35L53)) {
-		i2s = new_i2s_structure(bus->i2s.settings, AUD_CS35L53_BITDEPTH,
-					&cfg_gpio(bus)->ops, bus->i2s.address);
-	} else {
-		i2s = new_i2s_structure(bus->i2s.settings, AUD_BITDEPTH,
-					&cfg_gpio(bus)->ops, bus->i2s.address);
-	}
+	i2s = new_i2s_structure(bus->i2s.settings,
+		default_if_zero(bus->i2s.depth, AUD_BITDEPTH),
+		&cfg_gpio(bus)->ops, bus->i2s.address);
 
-	I2sSource *i2s_source = new_i2s_source(&i2s->ops, AUD_SAMPLE_RATE,
-					       AUD_NUM_CHANNELS, AUD_VOLUME);
+	I2sSource *i2s_source = new_i2s_source(&i2s->ops,
+		default_if_zero(bus->i2s.rate, AUD_SAMPLE_RATE),
+		default_if_zero(bus->i2s.ch, AUD_NUM_CHANNELS),
+		default_if_zero(bus->i2s.volume, AUD_VOLUME));
 	return i2s_source;
 }
 
@@ -268,7 +271,7 @@ static void configure_audio_amp(const struct audio_amp *amp,
 	}
 }
 
-void brya_configure_audio(const struct audio_config *config)
+void common_audio_setup(const struct audio_config *config)
 {
 	struct audio_data data = {};
 

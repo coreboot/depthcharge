@@ -12,6 +12,9 @@
 #include "drivers/sound/cs35l53.h"
 #include "drivers/storage/storage_common.h"
 
+#define I2C0 PCI_DEV(0, 0x15, 0)
+#define I2C7 PCI_DEV(0, 0x10, 1)
+
 #define AUD_I2C_ADDR1		0x43
 #define AUD_I2C_ADDR2		0x42
 #define AUD_I2C_ADDR3		0x41
@@ -29,6 +32,7 @@ const struct audio_config *variant_probe_audio_config(void)
 			.i2s.enable_gpio	= { .pad =  SDMODE_PIN,
 						    .active_low = false },
 			.i2s.settings		= &cs35l53_settings,
+			.i2s.depth		= 32,
 		},
 		.amp = {
 			.type			= AUDIO_AMP_NONE,
@@ -41,6 +45,7 @@ const struct audio_config *variant_probe_audio_config(void)
 			.i2c[1].ctrlr		= I2C7,
 			.i2c[1].i2c_addr[0] 	= AUD_I2C_ADDR3,
 			.i2c[1].i2c_addr[1] 	= AUD_I2C_ADDR4,
+			.speed			= 1000000,
 		},
 	};
 

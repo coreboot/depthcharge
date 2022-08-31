@@ -98,18 +98,13 @@ __weak const struct audio_config *variant_probe_audio_config(void)
 	return &config;
 }
 
-static void audio_setup(void)
-{
-	rex_configure_audio(variant_probe_audio_config());
-}
-
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
 	ec_setup();
 	tpm_setup();
 	power_set_ops(&meteorlake_power_ops);
-	audio_setup();
+	common_audio_setup(variant_probe_audio_config());
 
 	return 0;
 }
