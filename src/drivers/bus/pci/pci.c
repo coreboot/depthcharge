@@ -27,3 +27,8 @@ int get_pci_bar(pcidev_t dev, uintptr_t *bar)
 
 	return 0;
 }
+
+__weak pcidev_t remap_pci_dev(pcidev_t dev)
+{
+	return dev;
+}

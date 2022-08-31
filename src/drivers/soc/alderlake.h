@@ -51,8 +51,6 @@ extern const unsigned int adl_cpu_rp_groups_count;
 extern const SocPcieRpGroup adl_pch_rp_groups[];
 extern const unsigned int adl_pch_rp_groups_count;
 
-extern const SocPcieRpGroup *soc_get_rp_group(pcidev_t dev, size_t *count);
-
 /* GPE definitions */
 
 int alderlake_get_gpe(int gpe);

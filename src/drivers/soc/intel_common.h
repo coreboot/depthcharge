@@ -50,4 +50,6 @@ static inline unsigned int rp_end_fn(const SocPcieRpGroup *group)
 pcidev_t intel_remap_pcie_rp(pcidev_t rp, const SocPcieRpGroup *groups,
 			     size_t num_groups);
 
+const SocPcieRpGroup *soc_get_rp_group(pcidev_t dev, size_t *count);
+
 #endif /* __DRIVERS_SOC_INTEL_COMMON_H__ */

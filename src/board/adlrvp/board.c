@@ -11,6 +11,7 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "drivers/bus/pci/pci.h"
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/soc/alderlake.h"
@@ -148,6 +149,26 @@ static int board_setup(void)
 			remapped = intel_remap_pcie_rp(dev, group, group_count);
 		else
 			remapped = dev;
+
+		if (remapped == (pcidev_t)-1) {
+			printf("%s: Failed to remap %2X:%X\n",
+			       __func__, PCI_SLOT(dev), PCI_FUNC(dev));
+		}
+		else {
+			SdhciHost *sd = probe_pci_sdhci_host(remapped, SDHCI_PLATFORM_REMOVABLE);
+			if (sd) {
+				sd->name = "sd";
+				list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
+						  &removable_block_dev_controllers);
+			}
+		}
+	}
+
+		/* SD Card */
+		const pcidev_t dev = PCH_DEV_PCIE6;
+		pcidev_t remapped;
+
+		remapped = remap_pci_dev(dev);
 
 		if (remapped == (pcidev_t)-1) {
 			printf("%s: Failed to remap %2X:%X\n",
