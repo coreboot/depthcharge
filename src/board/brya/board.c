@@ -52,6 +52,11 @@ __weak const struct tpm_config *variant_get_tpm_config(void)
 	return &config;
 }
 
+__weak const int variant_get_ec_int(void)
+{
+	return EC_PCH_INT_ODL;
+}
+
 static int cr50_irq_status(void)
 {
 	return alderlake_get_gpe(GPE0_DW0_13); /* GPP_A13 */

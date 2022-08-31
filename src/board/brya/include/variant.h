@@ -15,5 +15,7 @@ struct tpm_config {
 };
 
 const struct tpm_config *variant_get_tpm_config(void);
+const int variant_get_ec_int(void);
+void brya_configure_audio(const struct audio_config *config);
 
 #endif /* _VARIANT_H_ */
