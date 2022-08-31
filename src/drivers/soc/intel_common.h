@@ -13,6 +13,9 @@
 #include <pci.h>
 #include <pci/pci.h>
 
+#include "base/cleanup_funcs.h"
+#include "drivers/gpio/gpio.h"
+
 /* Platform specific GPE configuration */
 typedef struct SocGpeConfig {
 	int gpe_max;
@@ -52,4 +55,34 @@ pcidev_t intel_remap_pcie_rp(pcidev_t rp, const SocPcieRpGroup *groups,
 
 const SocPcieRpGroup *soc_get_rp_group(pcidev_t dev, size_t *count);
 
+/*
+ * Depthcharge GPIO interface.
+ */
+struct pad_config {
+	uint16_t pad;
+	uint16_t attrs;
+	uint32_t dw0;
+	uint32_t dw1;
+	uint32_t dw2;
+};
+
+typedef struct GpioCfg {
+	GpioOps ops;
+
+	int gpio_num;		/* GPIO number */
+	uint32_t *dw_regs;	/* Pointer to DW regs */
+	uint32_t current_dw0;	/* Current DW0 register value */
+
+	/* Use to save and restore GPIO configuration */
+	uint32_t save_dw0;
+	uint32_t save_dw1;
+	uint32_t save_dw2;
+	CleanupFunc cleanup;
+
+	int (*configure)(struct GpioCfg *gpio, const struct pad_config *pad,
+		size_t num_pads);
+} GpioCfg;
+
+GpioCfg *new_platform_gpio_input(int gpio_num);
+GpioCfg *new_platform_gpio_output(int gpio_num, unsigned int value);
 #endif /* __DRIVERS_SOC_INTEL_COMMON_H__ */

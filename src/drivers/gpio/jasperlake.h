@@ -19,6 +19,7 @@
 #include <stdint.h>
 #include "base/cleanup_funcs.h"
 #include "drivers/gpio/gpio.h"
+#include "drivers/soc/intel_common.h"
 
 /*
  * Most of the fixed numbers and macros are based on the GPP groups.
@@ -594,38 +595,9 @@
 #define HOSTSW_ACPI		HOSTSW_OWN_ACPI
 #define HOSTSW_GPIO		HOSTSW_OWN_GPIO
 
-struct pad_config {
-	uint16_t pad;
-	uint16_t attrs;
-	uint32_t dw0;
-	uint32_t dw2;
-};
-
-/*
- * Depthcharge GPIO interface.
- */
-
-typedef struct GpioCfg {
-	GpioOps ops;
-
-	int gpio_num;		/* GPIO number */
-	uint32_t *dw_regs;	/* Pointer to DW regs */
-	uint32_t current_dw0;	/* Current DW0 register value */
-
-	/* Use to save and restore GPIO configuration */
-	uint32_t save_dw0;
-	uint32_t save_dw1;
-	uint32_t save_dw2;
-	CleanupFunc cleanup;
-
-	int (*configure)(struct GpioCfg *, const struct pad_config *,
-			size_t num_pads);
-} GpioCfg;
-
 GpioCfg *new_jasperlake_gpio(int gpio_num);
 GpioCfg *new_jasperlake_gpio_input(int gpio_num);
 GpioCfg *new_jasperlake_gpio_output(int gpio_num, unsigned value);
 GpioOps *new_jasperlake_gpio_input_from_coreboot(uint32_t port);
-
 
 #endif

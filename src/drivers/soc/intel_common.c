@@ -132,3 +132,15 @@ pcidev_t remap_pci_dev(pcidev_t dev)
 	else
 		return dev;
 }
+
+__weak GpioCfg *new_platform_gpio_input(int gpio_num)
+{
+	printf("Please implement the %s\n", __func__);
+	return NULL;
+}
+
+__weak GpioCfg *new_platform_gpio_output(int gpio_num, unsigned int value)
+{
+	printf("Please implement the %s\n", __func__);
+	return NULL;
+}

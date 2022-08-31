@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include "base/cleanup_funcs.h"
 #include "drivers/gpio/gpio.h"
+#include "drivers/soc/intel_common.h"
 
 #define INC(x) ((x) + 1)
 
@@ -706,14 +707,6 @@
 #define	HOSTSW_ACPI		HOSTSW_OWN_ACPI
 #define	HOSTSW_GPIO		HOSTSW_OWN_GPIO
 
-struct pad_config {
-	uint16_t pad;
-	uint16_t attrs;
-	uint32_t dw0;
-	uint32_t dw1;
-	uint32_t dw2;
-};
-
 #define PAD_FIELD_VAL(field_, val_) \
 	(((val_) & field_ ## _MASK) << field_ ## _SHIFT)
 
@@ -926,30 +919,7 @@ struct pad_config {
 	_DW1_VALS(term_), \
 	_DW2_VALS(NONE, DISABLE))
 
-/*
- * Depthcharge GPIO interface.
- */
-
-typedef struct GpioCfg {
-	GpioOps ops;
-
-	int gpio_num;		/* GPIO number */
-	uint32_t *dw_regs;	/* Pointer to DW regs */
-	uint32_t current_dw0;	/* Current DW0 register value */
-
-	/* Use to save and restore GPIO configuration */
-	uint32_t save_dw0;
-	uint32_t save_dw1;
-	uint32_t save_dw2;
-	CleanupFunc cleanup;
-
-	int (*configure)(struct GpioCfg *gpio, const struct pad_config *pad,
-		size_t num_pads);
-} GpioCfg;
-
 GpioCfg *new_alderlake_gpio(int gpio_num);
-GpioCfg *new_alderlake_gpio_input(int gpio_num);
-GpioCfg *new_alderlake_gpio_output(int gpio_num, unsigned int value);
 GpioOps *new_alderlake_gpio_input_from_coreboot(uint32_t port);
 
 #endif /* __DRIVERS_GPIO_ALDERLAKE_H__ */

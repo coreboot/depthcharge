@@ -125,7 +125,7 @@ static void setup_gpio_amp(const struct audio_amp *amp, SoundRoute *route)
 	if (!CONFIG(DRIVER_SOUND_GPIO_AMP))
 		return;
 
-	GpioCfg *gpio = new_alderlake_gpio_output(amp->gpio.enable_gpio, 0);
+	GpioCfg *gpio = new_platform_gpio_output(amp->gpio.enable_gpio, 0);
 	GpioAmpCodec *speaker_amp = new_gpio_amp_codec(&gpio->ops);
 	list_insert_after(&speaker_amp->component.list_node,
 			  &route->components);
@@ -136,7 +136,7 @@ static GpioCfg *cfg_gpio(const struct audio_bus *bus)
 	if (CONFIG(DRIVER_GPIO_ALDERLAKE))
 		return NULL;
 
-	GpioCfg *gpio_cfg = new_alderlake_gpio_output(bus->i2s.enable_gpio.pad,
+	GpioCfg *gpio_cfg = new_platform_gpio_output(bus->i2s.enable_gpio.pad,
 						  bus->i2s.enable_gpio.active_low);
 	return gpio_cfg;
 }
@@ -178,7 +178,7 @@ static SoundOps *setup_gpio_pwm(unsigned int pad)
 	if (!CONFIG(DRIVER_SOUND_GPIO_EDGE_BUZZER))
 		return NULL;
 
-	GpioOps *sound_gpio = &new_alderlake_gpio_output(pad, 0)->ops;
+	GpioOps *sound_gpio = &new_platform_gpio_output(pad, 0)->ops;
 	GpioEdgeBuzzer *buzzer = new_gpio_edge_buzzer(sound_gpio);
 	return &buzzer->ops;
 }
