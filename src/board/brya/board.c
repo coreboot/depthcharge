@@ -66,7 +66,7 @@ static int cr50_irq_status(void)
 
 static GpioOps *mkbp_int_ops(void)
 {
-	GpioCfg *mkbp_int_gpio = new_alderlake_gpio_input(variant_get_ec_int());
+	GpioCfg *mkbp_int_gpio = new_platform_gpio_input(variant_get_ec_int());
 	/* Active-low, has to be inverted */
 	return new_gpio_not(&mkbp_int_gpio->ops);
 }

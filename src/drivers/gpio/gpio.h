@@ -51,5 +51,4 @@ static inline GpioOps *new_gpio_splitter(GpioOps *a, GpioOps *b)
 {
 	return new_gpio_delayed_splitter(a, b, 0, 0);
 }
-
 #endif /* __DRIVERS_GPIO_GPIO_H__ */

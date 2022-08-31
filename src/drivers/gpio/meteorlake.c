@@ -271,7 +271,7 @@ static void register_meteorlake_gpio_cleanup(GpioCfg *gpio)
 	list_insert_after(&gpio->cleanup.list_node, &cleanup_funcs);
 }
 
-GpioCfg *new_meteorlake_gpio_input(int gpio_num)
+GpioCfg *new_platform_gpio_input(int gpio_num)
 {
 	GpioCfg *gpio = new_meteorlake_gpio(gpio_num);
 
@@ -285,7 +285,7 @@ GpioCfg *new_meteorlake_gpio_input(int gpio_num)
 	return gpio;
 }
 
-GpioCfg *new_meteorlake_gpio_output(int gpio_num, unsigned int value)
+GpioCfg *new_platform_gpio_output(int gpio_num, unsigned int value)
 {
 	GpioCfg *gpio = new_meteorlake_gpio(gpio_num);
 

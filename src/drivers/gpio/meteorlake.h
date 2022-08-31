@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include "base/cleanup_funcs.h"
 #include "drivers/gpio/gpio.h"
+#include "drivers/soc/intel_common.h"
 
 #define INC(x) ((x) + 1)
 
@@ -521,13 +522,6 @@
 #define	HOSTSW_ACPI		HOSTSW_OWN_ACPI
 #define	HOSTSW_GPIO		HOSTSW_OWN_GPIO
 
-struct pad_config {
-	uint16_t pad;
-	uint16_t attrs;
-	uint32_t dw0;
-	uint32_t dw1;
-};
-
 #define PAD_FIELD_VAL(field_, val_) \
 	(((val_) & field_ ## _MASK) << field_ ## _SHIFT)
 
@@ -701,29 +695,7 @@ struct pad_config {
 	_DW0_VALS(rst_, RAW, NO, LEVEL, NO, NO, NO, NO, NO, NO, GPIO, NO, YES),\
 	_DW1_VALS(term_))
 
-/*
- * Depthcharge GPIO interface.
- */
-
-typedef struct GpioCfg {
-	GpioOps ops;
-
-	int gpio_num;		/* GPIO number */
-	uint32_t *dw_regs;	/* Pointer to DW regs */
-	uint32_t current_dw0;	/* Current DW0 register value */
-
-	/* Use to save and restore GPIO configuration */
-	uint32_t save_dw0;
-	uint32_t save_dw1;
-	CleanupFunc cleanup;
-
-	int (*configure)(struct GpioCfg *gpio, const struct pad_config *pad,
-		size_t num_pads);
-} GpioCfg;
-
 GpioCfg *new_meteorlake_gpio(int gpio_num);
-GpioCfg *new_meteorlake_gpio_input(int gpio_num);
-GpioCfg *new_meteorlake_gpio_output(int gpio_num, unsigned int value);
 GpioOps *new_meteorlake_gpio_input_from_coreboot(uint32_t port);
 
 #endif /* __DRIVERS_GPIO_METEORLAKE_H__ */
