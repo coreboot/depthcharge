@@ -8,6 +8,7 @@
 #include <arch/io.h>
 #include <libpayload.h>
 #include <stdint.h>
+#include "drivers/bus/pci/pci.h"
 #include "drivers/soc/common/iomap.h"
 #include "drivers/soc/intel_common.h"
 
@@ -113,4 +114,21 @@ pcidev_t intel_remap_pcie_rp(pcidev_t rp, const SocPcieRpGroup *groups,
 	}
 
 	return (pcidev_t)-1;
+}
+
+__weak const SocPcieRpGroup *soc_get_rp_group(pcidev_t dev, size_t *count)
+{
+	*count = 0;
+	return NULL;
+}
+
+pcidev_t remap_pci_dev(pcidev_t dev)
+{
+	const SocPcieRpGroup *group;
+	size_t group_count;
+	group = soc_get_rp_group(dev, &group_count);
+	if (group)
+		return intel_remap_pcie_rp(dev, group, group_count);
+	else
+		return dev;
 }

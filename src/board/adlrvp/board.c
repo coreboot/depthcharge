@@ -11,6 +11,7 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "drivers/bus/pci/pci.h"
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/soc/alderlake.h"
@@ -139,15 +140,9 @@ static int board_setup(void)
 
 		/* SD Card */
 		const pcidev_t dev = PCH_DEV_PCIE6;
-		const SocPcieRpGroup *group;
-		size_t group_count;
 		pcidev_t remapped;
 
-		group = soc_get_rp_group(dev, &group_count);
-		if (group)
-			remapped = intel_remap_pcie_rp(dev, group, group_count);
-		else
-			remapped = dev;
+		remapped = remap_pci_dev(dev);
 
 		if (remapped == (pcidev_t)-1) {
 			printf("%s: Failed to remap %2X:%X\n",

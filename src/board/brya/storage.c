@@ -8,6 +8,7 @@
 #include "base/init_funcs.h"
 #include "base/list.h"
 #include "board/brya/include/variant.h"
+#include "drivers/bus/pci/pci.h"
 #include "drivers/soc/alderlake.h"
 #include "drivers/soc/intel_common.h"
 #include "drivers/storage/blockdev.h"
@@ -124,8 +125,6 @@ static int configure_storage(void)
 
 	for (size_t i = 0; i < count; i++) {
 		const pcidev_t dev = config[i].pci_dev;
-		const SocPcieRpGroup *group;
-		size_t group_count;
 		pcidev_t remapped;
 
 		if (config[i].fw_config) {
@@ -137,11 +136,7 @@ static int configure_storage(void)
 			}
 		}
 
-		group = soc_get_rp_group(dev, &group_count);
-		if (group)
-			remapped = intel_remap_pcie_rp(dev, group, group_count);
-		else
-			remapped = dev;
+		remapped = remap_pci_dev(dev);
 
 		if (remapped == (pcidev_t)-1) {
 			printf("%s: Failed to remap %2X:%X\n",
