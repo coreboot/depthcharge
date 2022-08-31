@@ -14,17 +14,9 @@
 #define CR50_INT_85		85
 #define CR50_INT_3		3
 
-enum storage_media {
-	STORAGE_NVME,
-	STORAGE_SDHCI,
-};
-
-struct storage_config {
-	enum storage_media media;
-	pcidev_t pci_dev;
-};
-
-const struct storage_config *variant_get_storage_configs(size_t *count);
+/* EN_SPKR GPIOs */
+#define EN_SPKR			70
+#define EN_SPKR_GB		31
 
 unsigned int variant_get_cr50_irq_gpio(void);
 
@@ -37,5 +29,9 @@ enum audio_amp {
 };
 
 enum audio_amp variant_get_audio_amp(void);
+
+unsigned int variant_get_en_spkr_gpio(void);
+
+const struct storage_config *variant_get_storage_configs(size_t *count);
 
 #endif /* _VARIANT_H_ */

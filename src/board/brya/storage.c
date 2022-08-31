@@ -15,6 +15,7 @@
 #include "drivers/storage/rtk_mmc.h"
 #include "drivers/storage/sdhci.h"
 #include "drivers/storage/sdhci_gli.h"
+#include "drivers/storage/storage_common.h"
 #include "drivers/storage/ufs.h"
 #include "drivers/storage/ufs_intel.h"
 

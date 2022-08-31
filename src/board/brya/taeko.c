@@ -12,6 +12,7 @@
 #include "drivers/gpio/alderlake.h"
 #include "drivers/soc/alderlake.h"
 #include "drivers/storage/sdhci_gli.h"
+#include "drivers/storage/storage_common.h"
 
 #define SDMODE_PIN		GPP_A11
 #define SDMODE_ENABLE		0

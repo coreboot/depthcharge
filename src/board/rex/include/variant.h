@@ -2,13 +2,8 @@
 #define _VARIANT_H_
 
 #include <libpayload.h>
-#include <stdint.h>
-#include <stddef.h>
 
 #include "drivers/bus/i2s/intel_common/i2s.h"
-
-#define I2C0	PCI_DEV(0, 0x15, 0)
-#define I2C7	PCI_DEV(0, 0x10, 1)
 
 #define MAX_CODEC	4
 #define MAX_CTRL	2
@@ -22,9 +17,6 @@ enum audio_bus_type {
 enum audio_codec_type {
 	AUDIO_CODEC_NONE,
 	AUDIO_MAX98357,
-	AUDIO_MAX98373,
-	AUDIO_MAX98390,
-	AUDIO_CS35L53,
 };
 
 enum audio_amp_type {
@@ -81,8 +73,6 @@ struct tpm_config {
 
 const struct audio_config *variant_probe_audio_config(void);
 const struct storage_config *variant_get_storage_configs(size_t *count);
-const struct tpm_config *variant_get_tpm_config(void);
-
-void brya_configure_audio(const struct audio_config *config);
+void rex_configure_audio(const struct audio_config *config);
 
 #endif /* _VARIANT_H_ */

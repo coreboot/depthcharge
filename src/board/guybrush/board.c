@@ -23,6 +23,7 @@
 #include "drivers/sound/rt5682s.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
+#include "drivers/storage/storage_common.h"
 #include "drivers/tpm/google/i2c.h"
 #include "drivers/tpm/tpm.h"
 #include "drivers/video/display.h"

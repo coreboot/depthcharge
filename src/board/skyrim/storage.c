@@ -6,28 +6,24 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
-#include "board/guybrush/include/variant.h"
+#include "board/skyrim/include/variant.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/nvme.h"
 #include "drivers/storage/sdhci.h"
-#include "drivers/storage/bayhub.h"
 #include "drivers/storage/storage_common.h"
+#include "drivers/storage/rtk_mmc.h"
 
-static void setup_sdhci(pcidev_t pci_dev)
+static void setup_rtkmmc(pcidev_t dev)
 {
-	if (!CONFIG(DRIVER_STORAGE_SDHCI_PCI))
+	if (!CONFIG(DRIVER_STORAGE_MMC_RTK))
 		return;
 
-	SdhciHost *sd = probe_pci_sdhci_host(pci_dev, SDHCI_PLATFORM_REMOVABLE);
-
-	if (sd) {
-		sd->name = "SD";
-		list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
+	RtkMmcHost *rtkmmc = probe_pci_rtk_host(dev, RTKMMC_PLATFORM_REMOVABLE);
+	if (rtkmmc) {
+		rtkmmc->name = "rtksd";
+		list_insert_after(&rtkmmc->mmc_ctrlr.ctrlr.list_node,
 				&removable_block_dev_controllers);
-	} else {
-		printf("Failed to find SD card reader\n");
 	}
-
 }
 
 static void setup_nvme(pcidev_t dev)
@@ -46,7 +42,8 @@ static void setup_nvme(pcidev_t dev)
 static int configure_storage(void)
 {
 	size_t count;
-	const struct storage_config *config = variant_get_storage_configs(&count);
+	const struct storage_config *config =
+		variant_get_storage_configs(&count);
 	if (!config || !count)
 		return 0;
 
@@ -57,8 +54,8 @@ static int configure_storage(void)
 		case STORAGE_NVME:
 			setup_nvme(dev);
 			break;
-		case STORAGE_SDHCI:
-			setup_sdhci(dev);
+		case STORAGE_RTKMMC:
+			setup_rtkmmc(dev);
 			break;
 		default:
 			break;

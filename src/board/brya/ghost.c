@@ -1,19 +1,15 @@
 // SPDX-License-Identifier: GPL-2.0
 
 #include <libpayload.h>
-#include <pci.h>
-#include <pci/pci.h>
 
-#include "base/fw_config.h"
 #include "board/brya/include/variant.h"
 #include "drivers/bus/i2s/cavs-regs.h"
-#include "drivers/bus/i2s/intel_common/max98357a.h"
 #include "drivers/gpio/alderlake.h"
 #include "drivers/soc/alderlake.h"
+#include "drivers/sound/max98396.h"
 #include "drivers/storage/storage_common.h"
 
-#define SDMODE_PIN	GPP_A11
-#define SDMODE_ENABLE	0
+#define SDMODE_PIN		GPP_A11
 
 const struct audio_config *variant_probe_audio_config(void)
 {
@@ -21,30 +17,43 @@ const struct audio_config *variant_probe_audio_config(void)
 		.bus = {
 			.type = AUDIO_I2S,
 			.i2s.address = SSP_I2S1_START_ADDRESS,
+			.i2s.settings = &max98396_settings,
 			.i2s.enable_gpio = {
 				.pad = SDMODE_PIN,
-				.active_low = SDMODE_ENABLE
+				.active_low = false,
 			},
-			.i2s.settings = &max98357a_settings,
 		},
 		.amp = {
-			.type = AUDIO_GPIO_AMP,
+			.type = AUDIO_AMP_NONE,
 			.gpio.enable_gpio = SDMODE_PIN,
 		},
 		.codec = {
-			.type = AUDIO_MAX98357,
+			.type = AUDIO_MAX98396,
+			.i2c[0].ctrlr = I2C0,
+			.i2c[0].i2c_addr[0] = 0x3c,
+			.i2c[0].i2c_addr[1] = 0x3d,
 		},
 	};
 
 	return &config;
 }
-static const struct storage_config storage_configs[] = {
-	{ .media = STORAGE_NVME, .pci_dev = PCH_DEV_PCIE8 },
-	{ .media = STORAGE_SDHCI, .pci_dev = PCH_DEV_PCIE7 },
-};
 
 const struct storage_config *variant_get_storage_configs(size_t *count)
 {
+	static const struct storage_config storage_configs[] = {
+		{ .media = STORAGE_NVME, .pci_dev = PCH_DEV_PCIE8 },
+	};
+
 	*count = ARRAY_SIZE(storage_configs);
 	return storage_configs;
+}
+
+const struct tpm_config *variant_get_tpm_config(void)
+{
+	/* TPM is on I2C port 1 */
+	static struct tpm_config config = {
+		.pci_dev = PCI_DEV(0, 0x15, 1),
+	};
+
+	return &config;
 }
