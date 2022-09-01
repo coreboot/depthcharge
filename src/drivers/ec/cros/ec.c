@@ -1506,3 +1506,76 @@ void cros_ec_probe_aux_fw_chips(void)
 		}
 	}
 }
+
+int cros_ec_get_features(uint32_t *flags0, uint32_t *flags1)
+{
+	struct ec_response_get_features response;
+	int ret;
+
+	ret = ec_command(cros_ec_get(),
+			 EC_CMD_GET_FEATURES, 0,
+			 NULL, 0, &response, sizeof(response));
+
+	if (ret < 0) {
+		printf("ERROR: Cannot read EC feature flags!\n");
+		return -1;
+	}
+
+	*flags0 = response.flags[0];
+	*flags1 = response.flags[1];
+
+	return ret;
+}
+
+int cros_ec_get_usb_pd_ports(int *num_ports)
+{
+	struct ec_response_usb_pd_ports response;
+	int ret;
+
+	ret = ec_command(cros_ec_get(), EC_CMD_USB_PD_PORTS, 0,
+					 NULL, 0,
+					 &response, sizeof(response));
+	if (ret < 0) {
+		printf("Failed to get PD count, ret:%d\n", ret);
+		return ret;
+	}
+
+	*num_ports = response.num_ports;
+	return ret;
+}
+
+int cros_ec_set_typec_mux(int port, int index, uint8_t mux_state)
+{
+	struct ec_params_typec_control params;
+	int ret;
+
+	params.port = port;
+	params.command = TYPEC_CONTROL_COMMAND_USB_MUX_SET;
+	params.mux_params.mux_index = index;
+	params.mux_params.mux_flags = mux_state;
+
+	ret = ec_command(cros_ec_get(), EC_CMD_TYPEC_CONTROL, 0,
+					&params, sizeof(params),
+					NULL, 0);
+	if (ret < 0)
+		printf("%s: Cannot configure mux (%d, %d, %#x, %d)\n",
+			__func__, port, index, mux_state, ret);
+
+	return ret;
+}
+
+int cros_ec_get_typec_status(int port, struct ec_response_typec_status *status)
+{
+	struct ec_params_typec_status params;
+	int ret;
+
+	params.port = port;
+
+	ret = ec_command(cros_ec_get(), EC_CMD_TYPEC_STATUS, 0,
+					&params, sizeof(params),
+					status, sizeof(*status));
+	if (ret < 0)
+		printf("Cannot get type-C port status (%d, %d)\n", port, ret);
+
+	return ret;
+}
