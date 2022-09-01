@@ -29,9 +29,11 @@ static int display_cleanup(struct CleanupFunc *cleanup, CleanupType type)
 	int err = 0;
 	disable_graphics_buffer();
 	err |= clear_screen(&ui_color_black);
-	err |= backlight_update(0);
-	if (display_ops && display_ops->stop)
-		err |= display_ops->stop(display_ops);
+	if (type != CleanupOnLegacy) {
+		err |= backlight_update(0);
+		if (display_ops && display_ops->stop)
+			err |= display_ops->stop(display_ops);
+	}
 	return err ? -1 : 0;
 }
 
