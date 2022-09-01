@@ -448,4 +448,40 @@ int cros_ec_get_usb_pd_mux_info(int port, uint8_t *mux_state);
  */
 int cros_ec_get_usb_pd_control(int port, int *ufp, int *dbg_acc);
 
+/**
+ * Return the EC's feature flags.
+ *
+ * @param flags0	Feature flags bitset 0
+ * @param flags1	Feature flags bitset 1
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_get_features(uint32_t *flags0, uint32_t *flags1);
+
+/**
+ * Return the number of ports
+ *
+ * @param num_ports		pointer to the number of ports
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_get_usb_pd_ports(int *num_ports);
+
+/**
+ * Configure a type-C mux
+ *
+ * @param port		the desired port number
+ * @param index		the index of the desired mux
+ * @param mux_state	the state to set the mux to
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_set_typec_mux(int port, int index, uint8_t mux_state);
+
+/**
+ * Return the status of the given port
+ *
+ * @param port		port to query
+ * @param status	port status
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_get_typec_status(int port, struct ec_response_typec_status *status);
+
 #endif /* __DRIVERS_EC_CROS_EC_H__ */
