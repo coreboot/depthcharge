@@ -49,3 +49,22 @@ int __must_check flash_read(void *buffer, uint32_t offset, uint32_t size)
 		return 0;
 	return size;
 }
+
+int __must_check flash_write(const void *buffer, uint32_t offset, uint32_t size)
+{
+	CHECK_FMAP_AREA_SET();
+	assert_non_null(buffer);
+	CHECK_REGION(offset, size);
+
+	/* It should only write to erased area (0xFF) */
+	uint8_t *dest = (uint8_t *)mock_flash_buf + offset - mock_area->offset;
+	for (uint32_t i = 0; i < size; i++)
+		assert_int_equal_msg(*(dest + i), 0xff,
+				     "flash write area not erased yet");
+
+	memcpy(dest, buffer, size);
+
+	if (mock() == MOCK_FLASH_FAIL)
+		return 0;
+	return size;
+}

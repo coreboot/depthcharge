@@ -18,5 +18,7 @@ typedef enum {
 } elog_error_t;
 
 elog_error_t elog_init(void);
+elog_error_t elog_add_event_raw(uint8_t event_type, void *data,
+				uint8_t data_size);
 
 #endif /* __BASE_ELOG_H__ */

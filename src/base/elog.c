@@ -17,9 +17,13 @@ enum elog_init_state {
 };
 
 struct elog_state {
-	/* The pointer to nv_last_write will be introduced after we have elog
-	   event add functions. */
+	/*
+	 * The non-volatile storage chases the mirrored copy.
+	 * When nv_last_write is less than the mirrored last write the
+	 * non-volatile storage needs to be updated.
+	 */
 	size_t last_write;
+	size_t nv_last_write;
 
 	FmapArea nv_area;
 	/* Mirror the eventlog in memory. */
@@ -28,6 +32,10 @@ struct elog_state {
 	/* Minimum of nv_area.size and ELOG_SIZE. All the elog related
 	   operations should check if they exceed this elog end. */
 	size_t size;
+
+	/* Depthcharge does not support RTC now, use the RTC of the last event
+	   while adding new events. */
+	const struct event_header *last_rtc_event;
 
 	enum elog_init_state elog_initialized;
 };
@@ -91,6 +99,7 @@ static int elog_update_event_buffer_state(size_t start_offset)
 {
 	size_t offset = start_offset;
 	elog_state.last_write = start_offset;
+	elog_state.last_rtc_event = NULL;
 
 	const struct event_header *event;
 	/* Point to the current event. */
@@ -101,6 +110,11 @@ static int elog_update_event_buffer_state(size_t start_offset)
 		if (!elog_is_event_valid(event, elog_state.size - offset))
 			return ELOG_ERR("Bad event at offset %#x",
 					ELOG_ERR_CONTENT, (unsigned int)offset);
+
+		/* Point to the latest header with a valid timestamp. */
+		if (event->day != 0)
+			elog_state.last_rtc_event = event;
+
 		event = elog_get_next_event(event);
 		offset = (void *)event - elog_state.data;
 		elog_state.last_write = offset;
@@ -148,8 +162,77 @@ elog_error_t elog_init(void)
 
 	if (elog_update_event_buffer_state(elog_events_start()))
 		return ELOG_ERR("Invalid ELOG buffer", ELOG_ERR_CONTENT);
+	elog_state.nv_last_write = elog_state.last_write;
 
 	elog_state.elog_initialized = ELOG_INIT_INITIALIZED;
 
 	return ELOG_ERR("ELOG context successfully initialized", ELOG_SUCCESS);
+}
+
+static elog_error_t elog_sync_to_flash(void)
+{
+	int rv;
+	/* Nothing to write */
+	if (elog_state.nv_last_write >= elog_state.last_write)
+		return ELOG_SUCCESS;
+
+	size_t write_size = elog_state.last_write - elog_state.nv_last_write;
+	rv = flash_write(elog_state.data + elog_state.nv_last_write,
+			 elog_state.nv_area.offset + elog_state.nv_last_write,
+			 write_size);
+	if (rv != write_size)
+		return ELOG_ERR("Failed to write to ELOG region", ELOG_ERR_EX);
+	elog_state.nv_last_write = elog_state.last_write;
+	return ELOG_SUCCESS;
+}
+
+elog_error_t elog_add_event_raw(uint8_t event_type, void *data,
+				uint8_t data_size)
+{
+	struct event_header *event;
+	uint8_t event_size;
+
+	/* Make sure ELOG structures are initialized */
+	int rv = elog_init();
+	if (rv)
+		return ELOG_ERR("ELOG broken", rv);
+
+	/* Header + Data + Checksum */
+	event_size = sizeof(struct event_header) + data_size + 1;
+	if (event_size > ELOG_MAX_EVENT_SIZE)
+		return ELOG_ERR("ELOG: Event(%X) data size too big (%u)",
+				ELOG_ERR_CONTENT, event_type, event_size);
+
+	/* Make sure event data can fit */
+	if (elog_state.last_write + event_size > elog_state.size)
+		return ELOG_ERR("ELOG: Event(%X) does not fit",
+				ELOG_ERR_CONTENT, event_type);
+	event = elog_state.data + elog_state.last_write;
+
+	/* Copy the timestamp from the last valid event header */
+	if (elog_state.last_rtc_event)
+		memcpy(event, elog_state.last_rtc_event,
+		       sizeof(struct event_header));
+
+	/* Fill out event data */
+	event->type = event_type;
+	event->length = event_size;
+
+	if (data_size)
+		memcpy(&event[1], data, data_size);
+
+	printf("ELOG: Event(%X) added with size %u\n", event_type, event_size);
+
+	/* Zero the checksum byte and then compute checksum */
+	elog_update_checksum(event, 0);
+	elog_update_checksum(event, -(elog_checksum_event(event)));
+
+	elog_state.last_write += event_size;
+
+	/* Shrink the log if we are getting too full */
+	/* No need to shrink in depthcharge now since we have already checked it
+	   in coreboot and we only want to add one event now. */
+
+	/* Ensure the updates hit the non-volatile storage. */
+	return elog_sync_to_flash();
 }
