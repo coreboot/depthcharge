@@ -42,7 +42,7 @@ config KERNEL_MULTIBOOT_ZBI
 config MACHID
 	hex "Machine ID to pass to the kernel"
 	depends on KERNEL_LEGACY
-	default 0
+	default 0x0
 	help
 	  On some platforms this value could be discovered at run time.
 
@@ -50,7 +50,7 @@ config ATAG_BASE
 	hex "Address in DRAM where to place ATAGs"
 	depends on KERNEL_LEGACY
 	depends on ARCH_ARM
-	default 0
+	default 0x0
 
 config KERNEL_FIT_FDT_ADDR
 	hex "FIT device tree load address."

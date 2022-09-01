@@ -13,7 +13,7 @@
 
 config GRU_USB2_BOOT_REQUIRED
 	bool "Enable USB2 boot for a Gru derivative"
-	default false
+	default n
 	help
 	  Set this to true if this board requires booting off USB2 interface(s).
 config GRU_SPEAKER_VOLUME
@@ -22,7 +22,7 @@ config GRU_SPEAKER_VOLUME
 
 config GRU_SCARLET
 	bool "Scarlet-based variant"
-	default false
+	default n
 	help
 	  Scarlet is an RK3399-based board but contains many board-specific
 	  departures in terms of components and pinout. This option is for
@@ -30,6 +30,6 @@ config GRU_SCARLET
 
 config GRU_MIPI_DISPLAY
 	bool "Set up MIPI display for the board."
-	default false
+	default n
 	help
 	  Set this to true if the board uses a MIPI display.

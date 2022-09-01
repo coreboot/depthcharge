@@ -12,6 +12,8 @@
 
 mainmenu "Depthcharge configuration"
 
+menu "General"
+
 choice
 	prompt "Architecture"
 	help
@@ -41,9 +43,11 @@ config ARCH_ARM_V8
 endchoice
 
 source "src/base/Kconfig"
-source "src/board/Kconfig"
 source "src/boot/Kconfig"
 source "src/debug/Kconfig"
+endmenu
+
+source "src/board/Kconfig"
 
 menu "UIP network stack"
 source "src/net/Kconfig"

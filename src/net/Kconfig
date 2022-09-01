@@ -90,27 +90,27 @@ config UIP_PINGADDRCONF
 
 config UIP_ETHADDR0
 	hex "Default MAC address octet 0"
-	default 0
+	default 0x0
 
 config UIP_ETHADDR1
 	hex "Default MAC address octet 1"
-	default 0
+	default 0x0
 
 config UIP_ETHADDR2
 	hex "Default MAC address octet 2"
-	default 0
+	default 0x0
 
 config UIP_ETHADDR3
 	hex "Default MAC address octet 3"
-	default 0
+	default 0x0
 
 config UIP_ETHADDR4
 	hex "Default MAC address octet 4"
-	default 0
+	default 0x0
 
 config UIP_ETHADDR5
 	hex "Default MAC address octet 5"
-	default 0
+	default 0x0
 
 endmenu
 
