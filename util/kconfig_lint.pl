@@ -31,10 +31,11 @@ my $root_dir       = "src";           # Directory of the top level Kconfig file
 my $errors_found   = 0;               # count of errors
 my $warnings_found = 0;
 my $exclude_dirs_and_files =
-  '^build/\|^coreboot-builds/\|^configs/\|^util/\|^\.git/\|^payloads\|^Documentation\|^3rdparty'
+  '^build/\|^util/\|^\.git/'
+  . '\|^src/net\|^src/drivers/net'    # net driver contains lots of CONFIG_* macros
+  . '\|^src/Makefile\.inc'            # src/Makefile.inc contains "CONFIG(option)"
   . '\|' .                            # directories to exclude when searching for used symbols
   '\.config\|\.txt$\|\.tex$\|\.tags\|/kconfig.h'; #files to exclude when looking for symbols
-my $payload_files_to_check='payloads/Makefile.inc payloads/external/Makefile.inc';
 my $config_file = "";                 # name of config file to load symbol values from.
 my @wholeconfig;                      # document the entire kconfig structure
 my %loaded_files;                     # list of each Kconfig file loaded
@@ -281,8 +282,9 @@ sub check_config_macro {
                         show_error( "CONFIG($symbol) used at $file:$lineno."
                               . "  CONFIG() is only valid for type 'bool', not '$symbols{$symbol}{type}'." );
                     }
-                }
-                else {
+                } elsif ( $symbol =~ /^LP_/ ) {
+                    # Ignore unknown libpayload configs
+		} else {
                     show_error("CONFIG() used on unknown value ($symbol) at $file:$lineno.");
                 }
             }
@@ -454,10 +456,10 @@ sub collect_used_symbols {
     # find all references to CONFIG_ statements in the tree
 
     if ($dont_use_git_grep) {
-        @collected_symbols = `grep -Irn -- "CONFIG\\(_\\|(\\)" | grep -v '$exclude_dirs_and_files'; grep -In -- "CONFIG\\(_\\|(\\)" $payload_files_to_check`;
+        @collected_symbols = `grep -Irn -- "CONFIG\\(_\\|(\\)" | grep -v '$exclude_dirs_and_files'`;
     }
     else {
-        @collected_symbols = `git grep -In -- "CONFIG\\(_\\|(\\)" | grep -v '$exclude_dirs_and_files'; git grep -In -- "CONFIG\\(_\\|(\\)" $payload_files_to_check`;
+        @collected_symbols = `git grep -In -- "CONFIG\\(_\\|(\\)" | grep -v '$exclude_dirs_and_files'`;
     }
 
     my @used_symbols = @collected_symbols;
