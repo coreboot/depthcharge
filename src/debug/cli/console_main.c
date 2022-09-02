@@ -579,7 +579,7 @@ static int parse_line (char *line, char *argv[])
 	int nargs = 0;
 
 	debug_parser("parse_line: \"%s\"\n", line);
-	while (nargs < CONFIG_SYS_MAXARGS) {
+	while (nargs < SYS_MAXARGS) {
 
 		/* skip any white space */
 		while (isblank(*line))
@@ -606,7 +606,7 @@ static int parse_line (char *line, char *argv[])
 		*line++ = '\0';		/* terminate current arg	 */
 	}
 
-	printf("** Too many args (max. %d) **\n", CONFIG_SYS_MAXARGS);
+	printf("** Too many args (max. %d) **\n", SYS_MAXARGS);
 
 	debug_parser("parse_line: nargs=%d\n", nargs);
 	return (nargs);
@@ -741,7 +741,7 @@ static int builtin_run_command(const char *cmd, int flag)
 	char *sep;			/* end of token (separator) in cmdbuf */
 	char finaltoken[MAX_CONSOLE_LINE];
 	char *str = cmdbuf;
-	char *argv[CONFIG_SYS_MAXARGS + 1];	/* NULL terminated	*/
+	char *argv[SYS_MAXARGS + 1];	/* NULL terminated	*/
 	int argc, inquotes;
 	int repeatable = 1;
 	int rc = 0;

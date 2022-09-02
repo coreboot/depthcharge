@@ -294,7 +294,7 @@ static int do_storage(cmd_tbl_t *cmdtp, int flag,
 }
 
 U_BOOT_CMD(
-	storage, CONFIG_SYS_MAXARGS,	1,
+	storage, SYS_MAXARGS,	1,
 	"command for controlling onboard storage devices",
 	"\n"
 	" dev [dev#] - display or set default storage device\n"

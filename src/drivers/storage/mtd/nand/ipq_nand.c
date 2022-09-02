@@ -1580,8 +1580,6 @@ int ipq_nand_post_scan_init(MtdDev *mtd)
 	return ret;
 }
 
-#define CONFIG_IPQ_NAND_NAND_INFO_IDX 0
-
 /*
  * Initialize controller and register as an MTD device.
  */

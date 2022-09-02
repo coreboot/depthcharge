@@ -99,7 +99,7 @@ static int board_setup(void)
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);
 	register_vboot_ec(&cros_ec->vboot);
 
-#if CONFIG_DRIVER_SOUND_MAX98373
+#if CONFIG(DRIVER_SOUND_MAX98373)
 	/* For JSL, use GPPC_H15 and GPP_R6 to provide a BCLKLRCLK on SSP1 */
 	GpioCfg *boot_beep_bclk = new_jasperlake_gpio_output(GPP_H15, 0);
 	GpioCfg *boot_beep_lrclk = new_jasperlake_gpio_output(GPP_R6, 0);

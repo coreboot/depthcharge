@@ -71,10 +71,10 @@ static void alderlake_setup_tpm(void)
 		cr50_irq_status)->ops);
 }
 
-#if CONFIG_DRIVER_SOUND_MAX98373
+#if CONFIG(DRIVER_SOUND_MAX98373)
 static uintptr_t get_ssp_base_address(void)
 {
-	switch (CONFIG(ADLRVP_MAX98373_I2S_PORT)) {
+	switch (CONFIG_ADLRVP_MAX98373_I2S_PORT) {
 	case 1:
 		return SSP_I2S1_START_ADDRESS;
 	case 2:
@@ -128,7 +128,7 @@ static int board_setup(void)
 
 	/* PCH Power */
 	power_set_ops(&alderlake_power_ops);
-#if CONFIG_BOARD_ADLRVP_N
+#if CONFIG(BOARD_ADLRVP_N)
 	if (CONFIG(DRIVER_STORAGE_SDHCI_PCI)) {
 		/* eMMC */
 		SdhciHost *emmc =
@@ -249,7 +249,7 @@ static int board_setup(void)
 		}
 	}
 
-#if CONFIG_DRIVER_SOUND_MAX98373
+#if CONFIG(DRIVER_SOUND_MAX98373)
 	adlrvp_setup_max98373_i2s();
 #endif
 

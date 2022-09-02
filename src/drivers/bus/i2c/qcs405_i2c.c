@@ -204,7 +204,7 @@ Qcs405I2c *new_qcs405_i2c(unsigned int id)
 		bus->initialized = 1;
 		bus->ops.transfer = &i2c_transfer;
 		bus->ops.scan_mode_on_off = scan_mode_on_off;
-		if (CONFIG_CLI)
+		if (CONFIG(CLI))
 			add_i2c_controller_to_list(&bus->ops, "gsbi%d", id);
 
 	}

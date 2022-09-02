@@ -243,7 +243,7 @@ int netboot_entry(void)
 	// Make sure graphics are available if they aren't already.
 	enable_graphics();
 
-	if (CONFIG_CLI)
+	if (CONFIG(CLI))
 		console_loop();
 
 	// Run any late initialization functions before netboot takes control.

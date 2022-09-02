@@ -97,10 +97,10 @@ static void volteer_setup_tpm(void)
 	}
 }
 
-#if CONFIG_DRIVER_SOUND_MAX98373
+#if CONFIG(DRIVER_SOUND_MAX98373)
 static uintptr_t get_ssp_base_address(void)
 {
-	switch (CONFIG(VOLTEER_MAX98373_I2S_PORT)) {
+	switch (CONFIG_VOLTEER_MAX98373_I2S_PORT) {
 	case 1:
 		return SSP_I2S1_START_ADDRESS;
 	case 2:
@@ -127,7 +127,7 @@ static void volteer_setup_max98373(void)
 }
 #endif
 
-#if CONFIG_DRIVER_SOUND_RT1011
+#if CONFIG(DRIVER_SOUND_RT1011)
 static void volteer_setup_rt1011(void)
 {
 	DesignwareI2c *i2c = new_pci_designware_i2c(AUD_I2C0,
@@ -165,7 +165,7 @@ static int board_setup(void)
 	power_set_ops(&tigerlake_power_ops);
 
 	/* Audio Setup (for boot beep) */
-#if CONFIG_DRIVER_SOUND_GPIO_AMP
+#if CONFIG(DRIVER_SOUND_GPIO_AMP)
 	GpioOps *sdmode = &new_tigerlake_gpio_output(SDMODE_PIN, 0)->ops;
 	I2s *i2s = new_i2s_structure(&max98357a_settings, AUD_BITDEPTH,
 			sdmode, SSP_I2S1_START_ADDRESS);
@@ -179,11 +179,11 @@ static int board_setup(void)
 	sound_set_ops(&sound_route->ops);
 #endif
 
-#if CONFIG_DRIVER_SOUND_RT1011
+#if CONFIG(DRIVER_SOUND_RT1011)
 	volteer_setup_rt1011();
 #endif
 
-#if CONFIG_DRIVER_SOUND_MAX98373
+#if CONFIG(DRIVER_SOUND_MAX98373)
 	volteer_setup_max98373();
 #endif
 

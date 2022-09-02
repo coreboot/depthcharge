@@ -34,7 +34,7 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
 #include "drivers/soc/skylake.h"
-#if CONFIG_DRIVER_SOUND_MAX98373
+#if CONFIG(DRIVER_SOUND_MAX98373)
 #include "drivers/sound/max98373.h"
 #endif
 #include "drivers/storage/blockdev.h"
@@ -91,7 +91,7 @@ static int board_setup(void)
 	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
 			&fixed_block_dev_controllers);
 
-#if CONFIG_DRIVER_SOUND_MAX98373
+#if CONFIG(DRIVER_SOUND_MAX98373)
 	/* Activate buffer to disconnect I2S from PCH and allow GPIO */
 	GpioCfg *boot_beep_buffer_enable = new_skylake_gpio_output(GPP_F1, 1);
 	gpio_set(&boot_beep_buffer_enable->ops, 0);
