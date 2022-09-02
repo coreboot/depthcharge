@@ -11,12 +11,12 @@
 #include "drivers/timer/timer.h"
 #include "pci.h"
 
-#if CONFIG_DRIVER_SOUND_AMD_ACP_V1
+#if CONFIG(DRIVER_SOUND_AMD_ACP_V1)
 	#include "drivers/sound/amd_acp_v1.h"
-#endif /* CONFIG_DRIVER_SOUND_AMD_ACP_V1 */
-#if CONFIG_DRIVER_SOUND_AMD_ACP_V2
+#endif /* CONFIG(DRIVER_SOUND_AMD_ACP_V1) */
+#if CONFIG(DRIVER_SOUND_AMD_ACP_V2)
 	#include "drivers/sound/amd_acp_v2.h"
-#endif /* CONFIG_DRIVER_SOUND_AMD_ACP_V2 */
+#endif /* CONFIG(DRIVER_SOUND_AMD_ACP_V2) */
 
 #define ACP_DEBUG 0
 

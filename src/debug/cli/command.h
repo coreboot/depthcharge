@@ -23,8 +23,8 @@
 #define __DEBUG_CLI_COMMAND_H__
 
 /* Default to a width of 8 characters for help message command width */
-#ifndef CONFIG_SYS_HELP_CMD_WIDTH
-#define CONFIG_SYS_HELP_CMD_WIDTH	8
+#ifndef SYS_HELP_CMD_WIDTH
+#define SYS_HELP_CMD_WIDTH	8
 #endif
 
 enum {

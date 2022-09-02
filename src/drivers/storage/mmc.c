@@ -28,11 +28,6 @@
 #include "drivers/storage/info.h"
 #include "drivers/storage/mmc.h"
 
-/* Set block count limit because of 16 bit register limit on some hardware*/
-#ifndef CONFIG_SYS_MMC_MAX_BLK_COUNT
-#define CONFIG_SYS_MMC_MAX_BLK_COUNT 65535
-#endif
-
 /* Set to 1 to turn on debug messages. */
 int __mmc_debug = 0;
 int __mmc_trace = 0;

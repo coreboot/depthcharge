@@ -397,7 +397,7 @@ static int board_setup(void)
 
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
 
-#if (!CONFIG_MOCK_TPM)
+#if !CONFIG(MOCK_TPM)
 	Ipq40xxI2c *i2c = new_ipq40xx_i2c(BLSP_QUP_ID_2);
 	tpm_set_ops(&new_slb96_i2c(&i2c->ops, 0x20)->base.ops);
 #endif

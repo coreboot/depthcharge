@@ -31,7 +31,7 @@ static int do_boot(cmd_tbl_t *cmdtp, int flag,
 }
 
 U_BOOT_CMD(
-	boot, CONFIG_SYS_MAXARGS, 1,
+	boot, SYS_MAXARGS, 1,
 	"command for booting kernel, all shapes and kinds",
 	" addr - address of the kernel blob in memory\n"
 );

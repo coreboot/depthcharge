@@ -74,7 +74,7 @@ typedef struct DisplayOps {
 	/**
 	 * Screen display function for headless devices.
 	 *
-	 * Only on headless devices (CONFIG_HEADLESS=y), this function will be
+	 * Only on headless devices (CONFIG(HEADLESS)=y), this function will be
 	 * called instead of the default screen display function.  The board
 	 * may implement to indicate to the user via LEDs or sound as to which
 	 * screen is being display.

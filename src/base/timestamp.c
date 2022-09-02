@@ -52,7 +52,7 @@ void timestamp_add(enum timestamp_id id, uint64_t ts_time)
 
 void timestamp_add_now(enum timestamp_id id)
 {
-	if (CONFIG_TIMESTAMP_RAW)
+	if (CONFIG(TIMESTAMP_RAW))
 		timestamp_add(id, timer_raw_value());
 	else
 		timestamp_add(id, timer_us(0));

@@ -75,7 +75,7 @@ static void shadowmountain_setup_tpm(void)
 
 static uintptr_t get_ssp_base_address(void)
 {
-	switch (CONFIG(SHADOWMOUNTAIN_MAX98373_I2S_PORT)) {
+	switch (CONFIG_SHADOWMOUNTAIN_MAX98373_I2S_PORT) {
 	case 1:
 		return SSP_I2S1_START_ADDRESS;
 	case 2:
@@ -118,7 +118,7 @@ static int board_setup(void)
 	power_set_ops(&alderlake_power_ops);
 
 	/* Audio Setup (for boot beep) */
-	if(CONFIG_DRIVER_SOUND_MAX98373)
+	if (CONFIG(DRIVER_SOUND_MAX98373))
 		shadowmountain_setup_max98373();
 
 	/* NVME SSD */

@@ -208,7 +208,7 @@ static int board_setup(void)
 	install_phys_presence_flag();
 	console_add_input_driver(&qcs_input_driver);
 
-#ifdef CONFIG_DRIVER_BUS_SPI_QCS405
+#if CONFIG(DRIVER_BUS_SPI_QCS405)
 	SpiController *spi_flash = new_spi(BLSP5_SPI, 0);
 	SpiFlash *flash = new_spi_flash(&spi_flash->ops);
 	flash_set_ops(&flash->ops);

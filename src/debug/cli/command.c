@@ -77,7 +77,7 @@ int _do_help (cmd_tbl_t *cmd_start, int cmd_items, cmd_tbl_t * cmdtp, int
 			*/
 			if (usage == NULL)
 				continue;
-			printf("%-*s- %s\n", CONFIG_SYS_HELP_CMD_WIDTH,
+			printf("%-*s- %s\n", SYS_HELP_CMD_WIDTH,
 			       cmd_array[i]->name, usage);
 		}
 		return 0;
@@ -312,7 +312,7 @@ static char tmp_buf[MAX_CONSOLE_LINE];	/* copy of console I/O buffer	*/
 int cmd_auto_complete(const char *const prompt, char *buf, int *np)
 {
 	int n = *np;
-	char *argv[CONFIG_SYS_MAXARGS + 1];		/* NULL terminated	*/
+	char *argv[SYS_MAXARGS + 1];		/* NULL terminated	*/
 	char *cmdv[20];
 	char *s, *t;
 	const char *sep;
@@ -477,7 +477,7 @@ static int do_help(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 }
 
 U_BOOT_CMD(
-	help,	CONFIG_SYS_MAXARGS,	1,
+	help,	SYS_MAXARGS,	1,
 	"print command description/usage",
 	"\n"
 	"	- print brief description of all commands\n"
@@ -487,7 +487,7 @@ U_BOOT_CMD(
 
 /* This does not use the U_BOOT_CMD macro as ? can't be used in symbol names */
 ll_entry_declare(cmd_tbl_t, question_mark, cmd) = {
-	"?",	CONFIG_SYS_MAXARGS,	1,	do_help,
+	"?",	SYS_MAXARGS,	1,	do_help,
 	"alias for 'help'",
 	""
 };

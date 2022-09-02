@@ -49,8 +49,8 @@ static int board_setup(void)
 {
 	device_nvs_t *nvs = lib_sysinfo.acpi_gnvs + DEVICE_NVS_OFFSET;
 	sysinfo_install_flags(NULL);
-#if CONFIG_DRIVER_EC_CROS
-  #if CONFIG_DRIVER_EC_CROS_LPC
+#if CONFIG(DRIVER_EC_CROS)
+  #if CONFIG(DRIVER_EC_CROS_LPC)
 	CrosEcLpcBus *cros_ec_lpc_bus =
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_MEC);
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);
