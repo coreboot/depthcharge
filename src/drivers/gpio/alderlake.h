@@ -720,17 +720,10 @@
 /* PADRSTCFG - when to reset the pad config */
 #define PADRSTCFG_SHIFT         30
 #define PADRSTCFG_MASK          0x3
-#if CONFIG(DW0_GPD)
-#define	PADRSTCFG_DSW_PWROK	0
-#define	PADRSTCFG_DEEP		1
-#define	PADRSTCFG_PLTRST	2
-#define	PADRSTCFG_RSMRST	3
-#else
 #define	PADRSTCFG_RSMRST	0
 #define	PADRSTCFG_DEEP		1
 #define	PADRSTCFG_PLTRST	2
 #define	PADRSTCFG_RSVD		3
-#endif
 
 /* RXPADSTSEL - raw signal or internal state */
 #define	RXPADSTSEL_SHIFT	29
