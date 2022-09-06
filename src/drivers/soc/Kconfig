@@ -116,6 +116,7 @@ config DRIVER_SOC_ALDERLAKE_N
 config DRIVER_SOC_METEORLAKE
 	bool "Meteorlake SoC driver"
 	default n
+	select INTEL_COMMON_I2S_ACE_1_x
 
 config DRIVER_SOC_CEZANNE
 	bool "Cezanne SoC driver"
