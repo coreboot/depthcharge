@@ -35,6 +35,7 @@
 #include "drivers/sound/rt1015.h"
 #include "drivers/sound/route.h"
 #include "drivers/sound/rt5682.h"
+#include "drivers/sound/rt5682s.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
@@ -112,6 +113,44 @@ static int is_dalboz(void)
 			   dalboz_str, strlen(dalboz_str)) == 0;
 }
 
+static int is_dirinboz_5682vs(uint32_t skuid)
+{
+	switch(skuid) {
+	case 0x5A820032:
+	case 0x5A820033:
+	case 0x5A820034:
+	case 0x5A820035:
+	case 0x5A820036:
+	case 0x5A820037:
+	case 0x5A820038:
+	case 0x5A820039:
+	case 0x5A82003A:
+	case 0x5A82003B:
+	case 0x5A82003C:
+	case 0x5A82003D:
+		return 1;
+	default:
+		return 0;
+	}
+}
+
+static int is_gumboz_5682vs(uint32_t skuid)
+{
+	switch(skuid) {
+	case 0x5A870010:
+	case 0x5A870011:
+	case 0x5A870012:
+	case 0x5A870013:
+	case 0x5A870014:
+	case 0x5A870015:
+	case 0x5A870016:
+	case 0x5A870017:
+		return 1;
+	default:
+		return 0;
+	}
+}
+
 static int is_vilboz(void)
 {
 	const char * const vilboz_str = "Vilboz";
@@ -170,8 +209,20 @@ static void audio_setup(CrosEc *cros_ec)
 
 	SoundRoute *sound_route = new_sound_route(&acp->sound_ops);
 
-	rt5682Codec *rt5682 =
-		new_rt5682_codec(&cros_ec_i2c_tunnel->ops, 0x1a, MCLK, LRCLK);
+	if (is_dirinboz_5682vs(lib_sysinfo.sku_id) ||
+	    is_gumboz_5682vs(lib_sysinfo.sku_id)) {
+		rt5682sCodec *rt5682s =
+			new_rt5682s_codec(&cros_ec_i2c_tunnel->ops, 0x1a, MCLK, LRCLK);
+
+		list_insert_after(&rt5682s->component.list_node,
+				  &sound_route->components);
+	} else {
+		rt5682Codec *rt5682 =
+			new_rt5682_codec(&cros_ec_i2c_tunnel->ops, 0x1a, MCLK, LRCLK);
+
+		list_insert_after(&rt5682->component.list_node,
+				  &sound_route->components);
+	}
 
 	if (is_vilboz() && !gets_audio_amp_type_config()) {
 		/* Codec for RT1015 work with Zork */
@@ -196,8 +247,6 @@ static void audio_setup(CrosEc *cros_ec)
 	}
 
 	list_insert_after(&acp->component.list_node, &sound_route->components);
-	list_insert_after(&rt5682->component.list_node,
-			  &sound_route->components);
 
 	sound_set_ops(&sound_route->ops);
 }
