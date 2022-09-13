@@ -4,7 +4,7 @@
  * Jaehoon Chung <jh80.chung@samsung.com>
  * Portions Copyright 2011-2013 NVIDIA Corporation
  *
- * Copyright 2013 Google Inc.  All rights reserved.
+ * Copyright 2013 Google LLC
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

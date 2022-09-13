@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Google Inc.
+ * Copyright 2016 Google LLC
  *
  * Based on Linux Kernel TPM driver by
  * Peter Huewe <peter.huewe@infineon.com>

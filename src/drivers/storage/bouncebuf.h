@@ -2,7 +2,7 @@
  * Generic bounce buffer implementation
  *
  * Copyright (C) 2012 Marek Vasut <marex@denx.de>
- * Copyright 2013 Google Inc.  All rights reserved.
+ * Copyright 2013 Google LLC
  *
  * See file CREDITS for list of people who contributed to this
  * project.

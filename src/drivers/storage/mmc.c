@@ -2,7 +2,7 @@
  * Copyright 2008, Freescale Semiconductor, Inc
  * Andy Fleming
  *
- * Copyright 2013 Google Inc.  All rights reserved.
+ * Copyright 2013 Google LLC
  *
  * Based vaguely on the Linux code
  *

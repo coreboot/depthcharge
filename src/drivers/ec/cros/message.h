@@ -1,7 +1,7 @@
 /*
  * Chromium OS Matrix Keyboard Message Protocol definitions
  *
- * Copyright 2012 Google Inc.
+ * Copyright 2012 Google LLC
  * See file CREDITS for list of people who contributed to this
  * project.
  *

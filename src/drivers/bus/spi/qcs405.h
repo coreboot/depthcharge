@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2012, 2016, 2019 The Linux Foundation. All rights reserved.
- * Copyright 2014 Google Inc.
+ * Copyright 2014 Google LLC
  *
  * See file CREDITS for list of people who contributed to this
  * project.

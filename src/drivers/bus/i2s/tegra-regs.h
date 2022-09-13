@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Google Inc.  All rights reserved.
+ * Copyright 2013 Google LLC
  *
  * tegra-regs.h - Definitions for Tegra124 I2S driver.
  * Note, some structures (ex, CIF) are different in Tegra114.

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017 Google Inc.
+ * Copyright 2017 Google LLC
  * Copyright (C) 2017, 2018 Collabora Limited
  *
  * Author: Tomeu Vizoso <tomeu.vizoso@collabora.com>

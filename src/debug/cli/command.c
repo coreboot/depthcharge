@@ -2,7 +2,7 @@
  * (C) Copyright 2000-2009
  * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
  *
- * (C) Copyright 2014 Chromium OS Authors.
+ * Copyright 2014 The ChromiumOS Authors
  *
  * See file CREDITS for list of people who contributed to this
  * project.

@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Google Inc.
+ * Copyright 2014 Google LLC
  *
  * (C) Copyright 2008 Semihalf
  *

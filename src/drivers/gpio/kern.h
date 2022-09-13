@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Google Inc.
+ * Copyright 2013 Google LLC
  * Copyright (C) 2016 Advanced Micro Devices, Inc.
  *
  * See file CREDITS for list of people who contributed to this

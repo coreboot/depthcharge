@@ -2,7 +2,7 @@
  * Tegra Audio Hub. The audio integrated component on Tegra to support multiple
  * interfaces to audio devices on system.
  *
- * Copyright 2013 Google Inc. All rights reserved.
+ * Copyright 2013 Google LLC
  * Copyright (c) 2013, NVIDIA CORPORATION.  All rights reserved.
  *
  * Use of this source code is governed by a BSD-style license that can be

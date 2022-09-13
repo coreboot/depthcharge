@@ -1,6 +1,6 @@
 /*
   * Copyright (c) 2010, Intel Corporation.
-  * Copyright (c) 2014, Google Inc.
+  * Copyright 2014 Google LLC
   *
   * See file CREDITS for list of people who contributed to this
   * project.

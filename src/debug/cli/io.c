@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Google Inc.
+ * Copyright 2015 Google LLC
  *
  * Commands for testing x86 LPC I/O.
  */

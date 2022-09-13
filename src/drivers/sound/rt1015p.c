@@ -2,7 +2,7 @@
 /*
  * rt1015p.c - driver for RT1015Q audio amplifier in auto mode
  *
- * Copyright 2020 Google Inc.
+ * Copyright 2020 Google LLC
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

@@ -1,7 +1,7 @@
 /*
  * Command for accessing SPI inerface.
  *
- * Copyright (C) 2014 Chromium OS Authors
+ * Copyright 2014 The ChromiumOS Authors
  */
 
 #include "common.h"

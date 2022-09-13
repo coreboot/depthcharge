@@ -1,7 +1,7 @@
 /*
  * (C) Copyright 2002
  * David Mueller, ELSOFT AG, d.mueller@elsoft.ch
- * Copyright 2013 Google Inc.
+ * Copyright 2013 Google LLC
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

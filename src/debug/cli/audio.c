@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Chromium OS Authors
+ * Copyright 2015 The ChromiumOS Authors
  * Command for testing audio driver.
  */
 

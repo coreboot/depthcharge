@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Google Inc.
+ * Copyright 2014 Google LLC
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -45,4 +45,3 @@ typedef struct StreamCtrlr {
 } StreamCtrlr;
 
 #endif /* __DRIVERS_STORAGE_STREAM_H__ */
-

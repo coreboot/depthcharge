@@ -1,7 +1,7 @@
 /*
  * (C) Copyright 2010,2011
  * NVIDIA Corporation <www.nvidia.com>
- * Copyright 2013 Google Inc.
+ * Copyright 2013 Google LLC
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms and conditions of the GNU General Public License,

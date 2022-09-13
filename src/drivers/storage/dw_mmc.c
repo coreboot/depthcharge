@@ -2,7 +2,7 @@
  * (C) Copyright 2012 SAMSUNG Electronics
  * Jaehoon Chung <jh80.chung@samsung.com>
  * Rajeshawari Shinde <rajeshwari.s@samsung.com>
- * Copyright 2013 Google Inc.  All rights reserved.
+ * Copyright 2013 Google LLC
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as

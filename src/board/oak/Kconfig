@@ -1,5 +1,5 @@
 ##
-## Copyright 2013 Google Inc.  All rights reserved.
+## Copyright 2013 Google LLC
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -14,4 +14,3 @@
 config BOARD_ID_ADJUSTMENT
 	int "Amount to add to the board ID to get an equivalent Oak ID."
 	default 7
-

@@ -1,5 +1,5 @@
 ##
-## Copyright 2021 Google Inc.  All rights reserved.
+## Copyright 2021 Google LLC
 ##
 ## This program is free software; you can redistribute it and/or modify
 ## it under the terms of the GNU General Public License as published by
@@ -16,4 +16,3 @@ config DEFAULT_AMP_SOURCE
 	help
 	  This configuration is used to specify the id of the default amplifier
 	  used in the board. By default, MAX98360A amplifier is used.
-

@@ -1,7 +1,7 @@
 /*
  * max98095.c -- MAX98095 ALSA SoC Audio driver
  *
- * Copyright 2013 Google Inc.  All rights reserved.
+ * Copyright 2013 Google LLC
  * Copyright 2011 Maxim Integrated Products
  *
  * Modified for uboot by R. Chandrasekar (rcsekar@samsung.com)

@@ -1,7 +1,7 @@
 /*
  * gpio_amp.h -- Audio driver for GPIO based amplifier
  *
- * Copyright (C) 2015 Google Inc.
+ * Copyright 2015 Google LLC
  * Copyright (C) 2015 Intel Corporation.
  *
  * This program is free software; you can redistribute it and/or modify

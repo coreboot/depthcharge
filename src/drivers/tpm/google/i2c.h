@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Google Inc.
+ * Copyright 2016 Google LLC
  *
  * See file CREDITS for list of people who contributed to this
  * project.

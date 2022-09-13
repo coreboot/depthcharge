@@ -1,6 +1,6 @@
 /*
  * (C) Copyright 2012 Samsung Electronics Co. Ltd
- * Copyright 2013 Google Inc.  All rights reserved.
+ * Copyright 2013 Google LLC
  *
  * See file CREDITS for list of people who contributed to this
  * project.

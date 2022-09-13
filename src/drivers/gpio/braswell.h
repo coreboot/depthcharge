@@ -1,7 +1,7 @@
 /*
  * This file is part of the coreboot project.
  *
- * Copyright (C) 2013 Google Inc.
+ * Copyright 2013 Google LLC
  * Copyright (C) 2015 Intel Corp.
  *
  * This program is free software; you can redistribute it and/or modify

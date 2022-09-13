@@ -1,7 +1,7 @@
 /*
  * Commands for testing graphics drawing
  *
- * Copyright (C) 2015 Chromium OS Authors
+ * Copyright 2015 The ChromiumOS Authors
  */
 
 #include <libpayload.h>
