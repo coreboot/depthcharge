@@ -1,7 +1,7 @@
 /*
  * max98396.c -- Maxim Integrated 98396
  *
- * Copyright 2022 Google Inc.
+ * Copyright 2022 Google LLC
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as

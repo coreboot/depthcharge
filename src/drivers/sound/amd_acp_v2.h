@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0 */
-/* Copyright (C) 2022 Google Inc. */
+/* Copyright 2022 Google LLC */
 
 #ifndef __DRIVERS_SOUND_AMD_ACP_V2__H__
 #define __DRIVERS_SOUND_AMD_ACP_V2__H__

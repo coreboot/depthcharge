@@ -2,7 +2,7 @@
  * max98090.c -- MAX98090 ALSA SoC Audio driver
  *
  * Copyright 2011 Maxim Integrated Products
- * Copyright 2013 Google Inc.  All rights reserved.
+ * Copyright 2013 Google LLC
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as

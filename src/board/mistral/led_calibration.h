@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Google Inc.
+ * Copyright 2019 Google LLC
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -26,4 +26,3 @@
 extern int calibrate_led(void);
 
 #endif
-

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Google Inc.
+ * Copyright 2015 Google LLC
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -37,4 +37,3 @@ int tegra132_display_stop(DisplayOps *me)
 	write32(win_t_win_options, read32(win_t_win_options) & ~WIN_ENABLE);
 	return 0;
 }
-

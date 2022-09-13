@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Google Inc.
+ * Copyright 2013 Google LLC
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -24,4 +24,3 @@ int crossystem_setup(int firmware_type)
 	printf("%s not implemented.\n", __func__);
 	return 0;
 }
-

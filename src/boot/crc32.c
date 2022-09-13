@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Google Inc.
+ * Copyright 2014 Google LLC
  *
  * This file is derived from crc32.c from the zlib-1.1.3 distribution
  * by Jean-loup Gailly and Mark Adler.

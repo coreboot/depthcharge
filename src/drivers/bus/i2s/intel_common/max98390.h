@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google Inc.
+ * Copyright 2020 Google LLC
  * Copyright (c) 2020, Intel Corporation.
  *
  * See file CREDITS for list of people who contributed to this

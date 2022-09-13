@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Chromium OS Authors
+ * Copyright 2016 The ChromiumOS Authors
  * Command for testing TPM.
  */
 

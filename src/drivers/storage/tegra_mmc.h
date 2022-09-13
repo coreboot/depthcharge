@@ -3,7 +3,7 @@
  * Minkyu Kang <mk7.kang@samsung.com>
  * Portions Copyright (C) 2011-2012 NVIDIA Corporation
  *
- * Copyright 2013 Google Inc.  All rights reserved.
+ * Copyright 2013 Google LLC
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

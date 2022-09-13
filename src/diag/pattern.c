@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright 2020 Google Inc.
+ * Copyright 2020 Google LLC
  */
 
 #include <stdint.h>

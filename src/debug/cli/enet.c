@@ -1,7 +1,7 @@
 /*
  * Command for controlling Ethernet interface.
  *
- * Copyright 2015 Chromium OS Authors
+ * Copyright 2015 The ChromiumOS Authors
  */
 
 #include "common.h"

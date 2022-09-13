@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Google Inc.
+ * Copyright 2014 Google LLC
  *
  * Copyright (C) 1997-1999 Russell King
  *

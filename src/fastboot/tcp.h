@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 Google Inc.
+ * Copyright 2021 Google LLC
  *
  * See file CREDITS for list of people who contributed to this
  * project.

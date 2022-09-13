@@ -2,7 +2,7 @@
  * (C) Copyright 2000
  * Wolfgang Denk, DENX Software Engineering, wd@denx.de.
  *
- * Copyright 2014 Google Inc.
+ * Copyright 2014 Google LLC
  */
 
 #include "common.h"

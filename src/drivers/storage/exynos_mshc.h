@@ -2,7 +2,7 @@
  * (C) Copyright 2012 SAMSUNG Electronics
  * Abhilash Kesavan <a.kesavan@samsung.com>
  *
- * Copyright 2013 Google Inc.  All rights reserved.
+ * Copyright 2013 Google LLC
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -176,4 +176,3 @@ MshciHost *new_mshci_host(uintptr_t ioaddr, uint32_t src_hz, int bus_width,
 			  int removable, uint32_t clksel_val);
 
 #endif /* __DRIVERS_STORAGE_EXYNOS_MSHC_H__ */
-

@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Google Inc.  All rights reserved.
+ * Copyright 2013 Google LLC
  * Copyright (C) 2012 Samsung Electronics
  * R. Chandrasekar <rcsekar@samsung.com>
  *

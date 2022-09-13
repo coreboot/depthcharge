@@ -1,5 +1,5 @@
 ##
-## Copyright 2013 Google Inc.
+## Copyright 2013 Google LLC
 ## Copyright (C) 2017 Intel Corporation.
 ##
 ## This program is free software; you can redistribute it and/or modify

@@ -1,7 +1,7 @@
 /*
  * rt5677.c -- RealTek ALC5677 ALSA SoC Audio driver
  *
- * Copyright 2014 Google Inc.  All rights reserved.
+ * Copyright 2014 Google LLC
  * Copyright 2014 Nvidia Corp.  All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify

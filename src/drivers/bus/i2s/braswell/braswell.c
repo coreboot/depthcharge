@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2015 Intel Corporation
- * Copyright 2015 Google Inc.  All rights reserved.
+ * Copyright 2015 Google LLC
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as

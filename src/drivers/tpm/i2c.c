@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2011 Infineon Technologies
- * Copyright 2013 Google Inc.
+ * Copyright 2013 Google LLC
  *
  * Authors:
  * Peter Huewe <huewe.external@infineon.com>

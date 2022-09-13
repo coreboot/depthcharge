@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * Copyright 2021 Google Inc.
+ * Copyright 2021 Google LLC
  */
 
 #ifndef __DIAG_STORAGE_TEST_H__

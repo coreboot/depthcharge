@@ -1,7 +1,7 @@
 /*
  * Chromium OS EC driver - LPC MEC interface
  *
- * Copyright 2015 Google Inc.
+ * Copyright 2015 Google LLC
  * See file CREDITS for list of people who contributed to this
  * project.
  *

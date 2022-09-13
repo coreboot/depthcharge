@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Google Inc.
+ * Copyright 2015 Google LLC
  * Copyright (C) 2016 Intel Corporation
  *
  * See file CREDITS for list of people who contributed to this

@@ -1,7 +1,7 @@
 /*
  * max98927.c -- MAX98927 ALSA SoC Audio driver
  *
- * Copyright 2016 Google Inc.
+ * Copyright 2016 Google LLC
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as

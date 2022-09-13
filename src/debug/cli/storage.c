@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2014, Linux Foundation. All rights reserved
- * Copyright 2014 Chromium OS Authors
+ * Copyright 2014 The ChromiumOS Authors
  */
 
 #include <gpt.h>

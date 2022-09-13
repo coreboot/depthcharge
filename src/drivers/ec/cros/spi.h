@@ -1,7 +1,7 @@
 /*
  * Chromium OS EC driver - SPI interface
  *
- * Copyright 2013 Google Inc.
+ * Copyright 2013 Google LLC
  * See file CREDITS for list of people who contributed to this
  * project.
  *

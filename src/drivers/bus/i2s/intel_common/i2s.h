@@ -1,6 +1,6 @@
 /*
   * Copyright (c) 2019, Intel Corporation.
-  * Copyright 2019 Google Inc.
+  * Copyright 2019 Google LLC
   *
   * This program is free software; you can redistribute it and/or modify it
   * under the terms and conditions of the GNU General Public License,
