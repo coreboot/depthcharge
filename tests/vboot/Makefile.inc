@@ -47,6 +47,7 @@ ui-test-common-srcs += tests/mocks/vboot/ui/beep.c
 ui-test-common-srcs += tests/mocks/vboot/ui/bitmap.c
 ui-test-common-srcs += tests/mocks/vboot/ui/input.c
 ui-test-common-srcs += tests/stubs/boot/payload.c
+ui-test-common-srcs += tests/stubs/diag/report.c
 ui-test-common-srcs += tests/stubs/drivers/storage/blockdev.c
 ui-test-common-srcs += tests/stubs/vboot/firmware_id.c
 ui-test-common-srcs += tests/stubs/vboot/ui/draw.c

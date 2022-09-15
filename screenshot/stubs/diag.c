@@ -40,3 +40,18 @@ DiagTestResult memory_test_run(const char **buf)
 	*buf = log;
 	return DIAG_TEST_PASSED;
 }
+
+int diag_report_start_test(uint8_t type)
+{
+	return 0;
+}
+
+int diag_report_end_test(uint8_t result)
+{
+	return 0;
+}
+
+size_t diag_report_dump(void *buf, size_t size)
+{
+	return 1;
+}
