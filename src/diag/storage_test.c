@@ -413,8 +413,10 @@ DiagTestResult diag_storage_test_control(enum BlockDevTestOpsType ops)
 		printf("%s: No supported.\n", __func__);
 		return DIAG_TEST_UNIMPLEMENTED;
 	}
-	if (dev->ops.test_control(&dev->ops, ops))
+	if (dev->ops.test_control(&dev->ops, ops)) {
+		diag_report_end_test(ELOG_CROS_DIAG_RESULT_ERROR);
 		return DIAG_TEST_ERROR;
+	}
 	get_test_remain_time_seconds(0, 1);
 
 	/* Set the global variables for the following diag_dump_storage_test_log
