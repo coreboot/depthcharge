@@ -12,5 +12,7 @@
 ##
 
 depthcharge-y += health_info.c
-depthcharge-y += pattern.c memory.c
+depthcharge-y += memory.c
+depthcharge-y += pattern.c
+depthcharge-y += report.c
 depthcharge-y += storage_test.c
