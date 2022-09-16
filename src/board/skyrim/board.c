@@ -37,6 +37,8 @@ __weak const struct storage_config *variant_get_storage_configs(size_t *count)
 		{ .media = STORAGE_NVME, .pci_dev = PCI_DEV(0, 0x02, 0x3)},
 		/* Coreboot devicetree.cb: gpp_bridge_1 = 02.2 */
 		{ .media = STORAGE_RTKMMC, .pci_dev = PCI_DEV(0, 0x02, 0x02)},
+		/* Coreboot devicetree.cb: gpp_bridge_1 = 02.2 */
+		{ .media = STORAGE_SDHCI, .pci_dev = PCI_DEV(0, 0x02, 0x02)},
 	};
 
 	*count = ARRAY_SIZE(storage_configs);
