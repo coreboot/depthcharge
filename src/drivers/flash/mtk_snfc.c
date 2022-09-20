@@ -37,6 +37,7 @@ enum {
 	SFLASH_AUTOINC		  = 1 << 7,
 	/* NOR flash commands */
 	SFLASH_OP_WREN		  = 0x6,
+	SECTOR_ERASE_CMD	  = 0x20,
 	/* Dual read commands */
 	SFLASH_READ_DUAL_EN	  = 0x1,
 	SFLASH_1_1_2_READ	  = 0x3b,
@@ -104,6 +105,30 @@ static int wait_for_write_done(MtkNorFlash *flash)
 	return -1;
 }
 
+static int sector_erase(MtkNorFlash *flash, uint32_t offset)
+{
+	mtk_snfc_regs *mtk_snfc = flash->reg;
+
+	if (wait_for_write_done(flash))
+		return -1;
+
+	write8(&mtk_snfc->prgdata[5], SFLASH_OP_WREN);
+	write8(&mtk_snfc->cnt, 8);
+	mtk_snfc_execute_cmd(flash, SFLASH_PRG_CMD);
+
+	write8(&mtk_snfc->prgdata[5], SECTOR_ERASE_CMD);
+	write8(&mtk_snfc->prgdata[4], get_nth_byte(offset, 2));
+	write8(&mtk_snfc->prgdata[3], get_nth_byte(offset, 1));
+	write8(&mtk_snfc->prgdata[2], get_nth_byte(offset, 0));
+	write8(&mtk_snfc->cnt, 32);
+	mtk_snfc_execute_cmd(flash, SFLASH_PRG_CMD);
+
+	if (wait_for_write_done(flash))
+		return -1;
+
+	return 0;
+}
+
 static int nor_read(MtkNorFlash *flash, uint32_t addr, uint8_t *buf,
 		    uint32_t length)
 {
@@ -146,6 +171,25 @@ static int nor_write(MtkNorFlash *flash, uint32_t addr, const u8 *buf,
 	return 0;
 }
 
+static int nor_erase(MtkNorFlash *flash, uint32_t addr, uint32_t len)
+{
+	uint32_t sector_start = addr;
+	uint32_t sector_size = flash->ops.sector_size;
+	uint32_t sector_num = len / sector_size;
+
+	/* Erase offsets/length must be a multiple of the sector size */
+	if (sector_start % sector_size || len % sector_size)
+		return -1;
+
+	while (sector_num) {
+		if (sector_erase(flash, sector_start))
+			return -1;
+		sector_start += flash->ops.sector_size;
+		sector_num--;
+	}
+	return 0;
+}
+
 static int mtk_nor_flash_read(FlashOps *me, void *buffer, uint32_t offset,
 			      uint32_t size)
 {
@@ -179,6 +223,21 @@ static int mtk_nor_flash_write(FlashOps *me, const void *buffer,
 	return size;
 }
 
+static int mtk_nor_flash_erase(FlashOps *me, uint32_t offset, uint32_t size)
+{
+	MtkNorFlash *flash = container_of(me, MtkNorFlash, ops);
+	int ret;
+
+	assert((offset + size) <= flash->rom_size);
+	ret = nor_erase(flash, offset, size);
+	if (ret) {
+		printf("nor_erase failed!\n");
+		return -1;
+	}
+
+	return size;
+}
+
 MtkNorFlash *new_mtk_nor_flash(uintptr_t reg_addr)
 {
 	MtkNorFlash *flash = xmalloc(sizeof(*flash));
@@ -188,6 +247,7 @@ MtkNorFlash *new_mtk_nor_flash(uintptr_t reg_addr)
 	memset(flash, 0, sizeof(*flash));
 	flash->ops.read = mtk_nor_flash_read;
 	flash->ops.write = mtk_nor_flash_write;
+	flash->ops.erase = mtk_nor_flash_erase;
 	flash->ops.sector_size = sector_size;
 	flash->rom_size = rom_size;
 	flash->reg = (mtk_snfc_regs *)reg_addr;
