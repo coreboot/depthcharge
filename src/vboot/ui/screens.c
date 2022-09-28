@@ -1833,8 +1833,6 @@ static const struct ui_screen_info developer_select_bootloader_screen = {
 /******************************************************************************/
 /* UI_SCREEN_DIAGNOSTICS */
 
-#define DIAGNOSTICS_BUFFER_SIZE (64 * KiB)
-
 #define DIAGNOSTICS_ITEM_STORAGE_HEALTH 1
 #define DIAGNOSTICS_ITEM_STORAGE_TEST_SHORT 2
 #define DIAGNOSTICS_ITEM_STORAGE_TEST_EXTENDED 3
@@ -1850,17 +1848,6 @@ static vb2_error_t diagnostics_init(struct ui_context *ui)
 			   DIAGNOSTICS_ITEM_STORAGE_TEST_EXTENDED);
 
 	ui->state->selected_item = DIAGNOSTICS_ITEM_STORAGE_HEALTH;
-	return VB2_SUCCESS;
-}
-
-static vb2_error_t diagnostics_reinit(struct ui_context *ui)
-{
-	/*
-	 * Since we reset AP in FAFT, write back data including CBMEM log from
-	 * cache to memory once we leave test items to make sure we can verify
-	 * it.
-	 */
-	dcache_clean_all();
 	return VB2_SUCCESS;
 }
 
@@ -1906,9 +1893,24 @@ static const struct ui_screen_info diagnostics_screen = {
 	.desc = UI_DESC(diagnostics_desc),
 	.menu = UI_MENU(diagnostics_items),
 	.init = diagnostics_init,
-	.reinit = diagnostics_reinit,
 	.mesg = "Select the component you'd like to check",
 };
+
+/******************************************************************************/
+/* Functions and items for DIAGNOSTICS */
+
+#define DIAGNOSTICS_BUFFER_SIZE (64 * KiB)
+
+static vb2_error_t diagnostics_exit(struct ui_context *ui)
+{
+	/*
+	 * Since we reset AP in FAFT, write back data including CBMEM log from
+	 * cache to memory once we leave test items to make sure we can verify
+	 * it.
+	 */
+	dcache_clean_all();
+	return VB2_SUCCESS;
+}
 
 /******************************************************************************/
 /* UI_SCREEN_DIAGNOSTICS_STORAGE_HEALTH */
@@ -1955,6 +1957,7 @@ static const struct ui_screen_info diagnostics_storage_health_screen = {
 	.title = "diag_storage_health_title.bmp",
 	.menu = UI_MENU(diagnostics_storage_health_items),
 	.init = diagnostics_storage_health_init,
+	.exit = diagnostics_exit,
 	.draw_desc = draw_log_desc,
 	.mesg = "Storage health info",
 	.page_up_item = DIAGNOSTICS_STORAGE_HEALTH_ITEM_PAGE_UP,
@@ -2084,6 +2087,7 @@ static const struct ui_screen_info diagnostics_storage_test_short_screen = {
 	.title = "diag_storage_srt_test_title.bmp",
 	.menu = UI_MENU(diagnostics_storage_test_items),
 	.init = diagnostics_storage_test_short_init,
+	.exit = diagnostics_exit,
 	.action = diagnostics_storage_test_update,
 	.draw_desc = draw_log_desc,
 	.mesg = "Storage self test (short)",
@@ -2100,6 +2104,7 @@ static const struct ui_screen_info diagnostics_storage_test_extended_screen = {
 	.title = "diag_storage_ext_test_title.bmp",
 	.menu = UI_MENU(diagnostics_storage_test_items),
 	.init = diagnostics_storage_test_extended_init,
+	.exit = diagnostics_exit,
 	.action = diagnostics_storage_test_update,
 	.draw_desc = draw_log_desc,
 	.mesg = "Storage self test (extended)",
@@ -2214,6 +2219,7 @@ static const struct ui_screen_info diagnostics_memory_quick_screen = {
 	.title = "diag_memory_quick_title.bmp",
 	.menu = UI_MENU(diagnostics_memory_items),
 	.init = diagnostics_memory_init_quick,
+	.exit = diagnostics_exit,
 	.action = diagnostics_memory_update_quick,
 	.draw_desc = draw_log_desc,
 	.mesg = "Memory check (quick)",
@@ -2230,6 +2236,7 @@ static const struct ui_screen_info diagnostics_memory_full_screen = {
 	.title = "diag_memory_full_title.bmp",
 	.menu = UI_MENU(diagnostics_memory_items),
 	.init = diagnostics_memory_init_full,
+	.exit = diagnostics_exit,
 	.action = diagnostics_memory_update_full,
 	.draw_desc = draw_log_desc,
 	.mesg = "Memory check (full)",

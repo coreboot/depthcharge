@@ -100,6 +100,8 @@ vb2_error_t ui_screen_change(struct ui_context *ui, enum ui_screen id)
 vb2_error_t ui_screen_back(struct ui_context *ui)
 {
 	if (ui->state && ui->state->prev) {
+		if (ui->state->screen->exit)
+			VB2_TRY(ui->state->screen->exit(ui));
 		pop_state(ui);
 		if (ui->state->screen->reinit)
 			VB2_TRY(ui->state->screen->reinit(ui));
@@ -107,4 +109,18 @@ vb2_error_t ui_screen_back(struct ui_context *ui)
 		UI_WARN("ERROR: No previous screen; ignoring\n");
 	}
 	return VB2_REQUEST_UI_CONTINUE;
+}
+
+vb2_error_t ui_screen_cleanup(struct ui_context *ui)
+{
+	while (ui->state && ui->state->prev) {
+		if (ui->state->screen->exit)
+			VB2_TRY(ui->state->screen->exit(ui));
+		pop_state(ui);
+		/* Skip reinit while cleaning up. */
+	}
+	/* Exit the root screen. */
+	if (ui->state && ui->state->screen->exit)
+		VB2_TRY(ui->state->screen->exit(ui));
+	return VB2_SUCCESS;
 }

@@ -482,6 +482,44 @@ static void test_loop_delay_overflow_no_sleep_if_time_too_long(void **state)
 	assert_int_equal(mock_time_ms - mock_time_start_ms, 1234);
 }
 
+static void test_loop_call_hook_order(void **state)
+{
+	struct ui_context *ui = *state;
+
+	will_return_maybe(vb2api_gbb_get_flags, 0);
+	WILL_CLOSE_LID_IN(5);
+	will_return_maybe(ui_is_power_pressed, 0);
+	will_return_always(mock_action_init, VB2_SUCCESS);
+	will_return_always(mock_action_reinit, VB2_SUCCESS);
+	will_return_always(mock_action_exit, VB2_SUCCESS);
+
+	/* Initialize the root screen */
+	EXPECT_HOOK_INIT(MOCK_SCREEN_HOOK0);
+	/* hook0 ==> hook1 */
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	EXPECT_HOOK_INIT(MOCK_SCREEN_HOOK1);
+	/* hook1 ==> hook2 */
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	EXPECT_HOOK_INIT(MOCK_SCREEN_HOOK2);
+	/* Go back from hook2 to hook1 */
+	WILL_PRESS_KEY(UI_KEY_ESC, 0);
+	EXPECT_HOOK_EXIT(MOCK_SCREEN_HOOK2);
+	EXPECT_HOOK_REINIT(MOCK_SCREEN_HOOK1);
+	/* hook1 ==> hook2 */
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	EXPECT_HOOK_INIT(MOCK_SCREEN_HOOK2);
+	/* Cleanup */
+	EXPECT_HOOK_EXIT(MOCK_SCREEN_HOOK2);
+	EXPECT_HOOK_EXIT(MOCK_SCREEN_HOOK1);
+	EXPECT_HOOK_EXIT(MOCK_SCREEN_HOOK0);
+
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
+	will_return_always(ui_keyboard_read, 0);
+
+	assert_int_equal(ui_loop(ui->ctx, MOCK_SCREEN_HOOK0, NULL, ui->kparams),
+			 VB2_REQUEST_SHUTDOWN);
+}
+
 #define UI_TEST(test_function_name) \
 	cmocka_unit_test_setup(test_function_name, setup_common)
 
@@ -515,6 +553,8 @@ int main(void)
 		UI_TEST(test_loop_delay_overflow_sleep_20_ms),
 		UI_TEST(test_loop_delay_overflow_complement_to_20_ms),
 		UI_TEST(test_loop_delay_overflow_no_sleep_if_time_too_long),
+
+		UI_TEST(test_loop_call_hook_order),
 	};
 
 	return cmocka_run_group_tests(tests, NULL, NULL);

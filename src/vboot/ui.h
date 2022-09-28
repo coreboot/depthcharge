@@ -587,6 +587,11 @@ struct ui_screen_info {
 	 * screen. Exactly one of init() and reinit() will be called.
 	 */
 	vb2_error_t (*reinit)(struct ui_context *ui);
+	/*
+	 * Exit function runs once when the screen is popped out from the
+	 * history stack.
+	 */
+	vb2_error_t (*exit)(struct ui_context *ui);
 	/* Action function runs repeatedly while on the screen. */
 	vb2_error_t (*action)(struct ui_context *ui);
 	/*
@@ -1240,5 +1245,17 @@ vb2_error_t ui_screen_change(struct ui_context *ui, enum ui_screen id);
  * comments before ui_screen_change().
  */
 vb2_error_t ui_screen_back(struct ui_context *ui);
+
+/*
+ * Pop all the screens from the history stack except for the root screen. The
+ * exit() hook for each screen from top to bottom (including the root screen)
+ * will be called, while the reinit() hook will not.
+ * No other screen related should be called after this cleanup.
+ *
+ * @param ui	UI context. This must be first initialized by ui_init_context().
+ *
+ * @return VB2_SUCCESS, or error code on error.
+ */
+vb2_error_t ui_screen_cleanup(struct ui_context *ui);
 
 #endif /* __VBOOT_UI_H__ */

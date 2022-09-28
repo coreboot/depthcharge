@@ -18,6 +18,10 @@ enum mock_screen {
 	MOCK_SCREEN_TARGET2 = 0xef22,
 	MOCK_SCREEN_ACTION = 0xef30,
 	MOCK_SCREEN_ALL_ACTION = 0xef32,
+	/* Mock screens for testing the hooks of init/reinit/exit... */
+	MOCK_SCREEN_HOOK0 = 0xef40,
+	MOCK_SCREEN_HOOK1 = 0xef41,
+	MOCK_SCREEN_HOOK2 = 0xef42,
 	MOCK_SCREEN_ROOT = 0xefff,
 };
 
@@ -29,6 +33,9 @@ extern const struct ui_screen_info mock_screen_target1;
 extern const struct ui_screen_info mock_screen_target2;
 extern const struct ui_screen_info mock_screen_action;
 extern const struct ui_screen_info mock_screen_all_action;
+extern const struct ui_screen_info mock_screen_hook0;
+extern const struct ui_screen_info mock_screen_hook1;
+extern const struct ui_screen_info mock_screen_hook2;
 extern const struct ui_screen_info mock_screen_root;
 
 extern const struct ui_menu_item mock_screen_menu_items[];
@@ -39,6 +46,28 @@ vb2_error_t mock_action_base(struct ui_context *ui);
 vb2_error_t mock_action_flag0(struct ui_context *ui);
 vb2_error_t mock_action_flag1(struct ui_context *ui);
 vb2_error_t mock_action_flag2(struct ui_context *ui);
+
+/* For testing the hooks */
+#define _MOCK_HOOK_INIT "init"
+#define _MOCK_HOOK_REINIT "reinit"
+#define _MOCK_HOOK_EXIT "exit"
+
+#define _EXPECT_HOOK(_screen_id, _hook_name) do {			       \
+	expect_value(check_mock_hook, screen_id, (_screen_id));		       \
+	expect_string(check_mock_hook, hook_name, (_hook_name));	       \
+} while (0)
+
+#define EXPECT_HOOK_INIT(_screen_id)					       \
+	_EXPECT_HOOK((_screen_id), _MOCK_HOOK_INIT)
+#define EXPECT_HOOK_REINIT(_screen_id)					       \
+	_EXPECT_HOOK((_screen_id), _MOCK_HOOK_REINIT)
+#define EXPECT_HOOK_EXIT(_screen_id)					       \
+	_EXPECT_HOOK((_screen_id), _MOCK_HOOK_EXIT)
+
+void check_mock_hook(enum mock_screen screen_id, const char *hook_name);
+vb2_error_t mock_action_init(struct ui_context *ui);
+vb2_error_t mock_action_reinit(struct ui_context *ui);
+vb2_error_t mock_action_exit(struct ui_context *ui);
 
 /*
  * Add will_return to mock_action_countdown. mock_action_countdown will

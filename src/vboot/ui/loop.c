@@ -138,22 +138,15 @@ vb2_error_t ui_init_context(struct ui_context *ui, struct vb2_context *ctx,
 }
 
 static vb2_error_t ui_loop_impl(
-	struct vb2_context *ctx, enum ui_screen root_screen_id,
-	vb2_error_t (*global_action)(struct ui_context *ui),
-	struct vb2_kernel_params *kparams)
+	struct ui_context *ui, struct vb2_context *ctx,
+	vb2_error_t (*global_action)(struct ui_context *ui))
 {
-	struct ui_context ui;
 	struct ui_state prev_state;
 	int need_redraw;
 	const struct ui_menu *menu;
 	uint32_t key_flags;
 	uint32_t start_time_ms, elapsed_ms;
 	vb2_error_t rv;
-
-	if (ui_init_context(&ui, ctx, root_screen_id))
-		die("Cannot init UI context for root screen %#x\n",
-		    root_screen_id);
-	ui.kparams = kparams;
 
 	memset(&prev_state, 0, sizeof(prev_state));
 	need_redraw = 1;
@@ -162,52 +155,53 @@ static vb2_error_t ui_loop_impl(
 		start_time_ms = vb2ex_mtime();
 
 		/* Draw if there are state changes. */
-		if (memcmp(&prev_state, ui.state, sizeof(*ui.state)) ||
+		if (memcmp(&prev_state, ui->state, sizeof(*ui->state)) ||
 		    /* Beep. */
-		    ui.error_beep != 0 ||
+		    ui->error_beep != 0 ||
 		    /* Redraw on a screen request to refresh. */
-		    ui.force_display) {
+		    ui->force_display) {
 
-			menu = ui_get_menu(&ui);
+			menu = ui_get_menu(ui);
 			UI_INFO("<%s> menu item <%s>\n",
-				ui.state->screen->name ? ui.state->screen->name
+				ui->state->screen->name
+					? ui->state->screen->name
 					: "null",
 				menu->num_items
-					? menu->items[ui.state->selected_item]
+					? menu->items[ui->state->selected_item]
 						  .name
 					: "null");
-			rv = ui_display(&ui, need_redraw ? NULL : &prev_state);
+			rv = ui_display(ui, need_redraw ? NULL : &prev_state);
 			/* If the drawing failed, set the flag so that NULL will
 			   be passed to ui_display() in the next iteration. */
 			need_redraw = !!rv;
 
-			if (ui.error_beep ||
-			    (ui.state->error_code &&
-			     prev_state.error_code != ui.state->error_code)) {
+			if (ui->error_beep ||
+			    (ui->state->error_code &&
+			     prev_state.error_code != ui->state->error_code)) {
 				ui_beep(250, 400);
-				ui.error_beep = 0;
+				ui->error_beep = 0;
 			}
 
 			/* Reset refresh flag. */
-			ui.force_display = 0;
+			ui->force_display = 0;
 
 			/* Update prev variables. */
-			memcpy(&prev_state, ui.state, sizeof(*ui.state));
+			memcpy(&prev_state, ui->state, sizeof(*ui->state));
 		}
 
 		/* Grab new keyboard input. */
-		ui.key = ui_keyboard_read(&key_flags);
-		ui.key_trusted = !!(key_flags & UI_KEY_FLAG_TRUSTED_KEYBOARD);
+		ui->key = ui_keyboard_read(&key_flags);
+		ui->key_trusted = !!(key_flags & UI_KEY_FLAG_TRUSTED_KEYBOARD);
 
 		/* Check for shutdown request. */
-		rv = check_shutdown_request(&ui);
+		rv = check_shutdown_request(ui);
 		if (rv && rv != VB2_REQUEST_UI_CONTINUE) {
 			UI_INFO("Shutdown requested!\n");
 			return rv;
 		}
 
 		/* Check if we need to exit an error box. */
-		rv = ui_error_exit_action(&ui);
+		rv = ui_error_exit_action(ui);
 		if (rv && rv != VB2_REQUEST_UI_CONTINUE)
 			return rv;
 
@@ -217,20 +211,20 @@ static vb2_error_t ui_loop_impl(
 		 * and global actions). Otherwise menu navigation action would
 		 * run on the new screen instead of the one shown to the user.
 		 */
-		rv = ui_menu_navigation_action(&ui);
+		rv = ui_menu_navigation_action(ui);
 		if (rv && rv != VB2_REQUEST_UI_CONTINUE)
 			return rv;
 
 		/* Run screen action. */
-		if (ui.state->screen->action) {
-			rv = ui.state->screen->action(&ui);
+		if (ui->state->screen->action) {
+			rv = ui->state->screen->action(ui);
 			if (rv && rv != VB2_REQUEST_UI_CONTINUE)
 				return rv;
 		}
 
 		/* Run global action function if available. */
 		if (global_action) {
-			rv = global_action(&ui);
+			rv = global_action(ui);
 			if (rv && rv != VB2_REQUEST_UI_CONTINUE)
 				return rv;
 		}
@@ -248,8 +242,16 @@ vb2_error_t ui_loop(struct vb2_context *ctx, enum ui_screen root_screen_id,
 		    vb2_error_t (*global_action)(struct ui_context *ui),
 		    struct vb2_kernel_params *kparams)
 {
-	vb2_error_t rv = ui_loop_impl(ctx, root_screen_id, global_action,
-				      kparams);
+	struct ui_context ui;
+
+	if (ui_init_context(&ui, ctx, root_screen_id))
+		die("Cannot init UI context for root screen %#x\n",
+		    root_screen_id);
+	ui.kparams = kparams;
+
+	vb2_error_t rv = ui_loop_impl(&ui, ctx, global_action);
+	/* We don't want to overwrite the return value of ui_loop_impl(). */
+	ui_screen_cleanup(&ui);
 	if (rv == VB2_REQUEST_UI_EXIT)
 		return VB2_SUCCESS;
 	return rv;
