@@ -16,14 +16,39 @@
 #define HALF_BYTE_HIGH(x) ((x) >> 4)
 
 /* Global variables. */
-static struct stopwatch test_log_sw;
-BlockDevTestOpsType test_stat;
-bool is_first_dump = true;
+struct storage_test_state {
+	/* Stopwatch to prevent too frequent dump requests. */
+	struct stopwatch sw;
+	/* Current running test type. */
+	BlockDevTestOpsType type;
+	/* Ensure that the first dump will not be skipped */
+	bool is_first_dump;
+	/*
+	 * The storage test result (for diagnostic reports).
+	 * If state.type is not BLOCKDEV_TEST_OPS_TYPE_STOP, it means that the
+	 * test is still running and the test_result should be
+	 * DIAG_TEST_UPDATED; otherwise, the test is finished and the
+	 * test_result should be either DIAG_TEST_PASSED or DIAG_TEST_FAILED.
+	 */
+	DiagTestResult test_result;
+};
+
+struct storage_test_ops {
+	char *(*stringify)(char *buf, const char *end,
+			   const StorageTestLog *log);
+	DiagTestResult (*get_result)(const StorageTestLog *log);
+};
+
+static struct storage_test_state state = {
+	.is_first_dump = true,
+	.type = BLOCKDEV_TEST_OPS_TYPE_STOP,
+	.test_result = DIAG_TEST_UPDATED,
+};
 
 /* Get current test log delay based on the running test type. */
 static inline uint32_t get_test_log_delay(void)
 {
-	switch (test_stat) {
+	switch (state.type) {
 	case BLOCKDEV_TEST_OPS_TYPE_SHORT:
 		return DIAG_STORAGE_TEST_SHORT_DELAY_MS;
 	case BLOCKDEV_TEST_OPS_TYPE_EXTENDED:
@@ -110,6 +135,25 @@ static char *print_test_completion(char *buf, const char *end,
 }
 
 /******************************************************************************/
+/* stubs */
+
+static char *stringify_stub_test_status(char *buf, const char *end,
+					const StorageTestLog *log)
+{
+	return APPEND(buf, end, "UNSUPPORTED\n");
+}
+
+static DiagTestResult get_stub_test_result(const StorageTestLog *log)
+{
+	return DIAG_TEST_ERROR;
+}
+
+static const struct storage_test_ops stub_test_ops = {
+	.stringify = stringify_stub_test_status,
+	.get_result = get_stub_test_result,
+};
+
+/******************************************************************************/
 /* NVMe device self-test */
 
 static inline const char *nvme_test_result_str(uint8_t result)
@@ -188,8 +232,9 @@ static char *nvme_print_test_result(char *buf, const char *end,
 }
 
 static char *stringify_nvme_test_status(char *buf, const char *end,
-					const NvmeTestLogData *data)
+					const StorageTestLog *log)
 {
+	const NvmeTestLogData *data = &log->data.nvme_data;
 	uint8_t current_op = HALF_BYTE_LOW(data->current_operation);
 	switch (current_op) {
 	case 0x0:
@@ -210,6 +255,26 @@ static char *stringify_nvme_test_status(char *buf, const char *end,
 	return buf;
 }
 
+static DiagTestResult get_nvme_test_result(const StorageTestLog *log)
+{
+	const NvmeTestLogData *data = &log->data.nvme_data;
+
+	/* Test is still running. */
+	if (HALF_BYTE_LOW(data->current_operation))
+		return DIAG_TEST_UPDATED;
+
+	/* Check if test result is 0x0. */
+	if (HALF_BYTE_LOW(data->status) == 0)
+		return DIAG_TEST_PASSED;
+
+	return DIAG_TEST_FAILED;
+}
+
+static const struct storage_test_ops nvme_test_ops = {
+	.stringify = stringify_nvme_test_status,
+	.get_result = get_nvme_test_result,
+};
+
 /******************************************************************************/
 /* UFS SCSI send diagnostic */
 
@@ -229,8 +294,9 @@ static inline const char *ufs_sense_key_str(uint8_t sense_key)
 }
 
 static char *stringify_ufs_test_status(char *buf, const char *end,
-				       const UfsTestLogData *data)
+				       const StorageTestLog *log)
 {
+	const UfsTestLogData *data = &log->data.ufs_data;
 	buf = APPEND(buf, end, "Self-test returned ");
 	switch(data->return_code) {
 	case SCSI_STATUS_GOOD:
@@ -246,41 +312,45 @@ static char *stringify_ufs_test_status(char *buf, const char *end,
 	return buf;
 }
 
+static DiagTestResult get_ufs_test_result(const StorageTestLog *log)
+{
+	const UfsTestLogData *data = &log->data.ufs_data;
+
+	/* UFS self-test is a blocking call so it should not be running at this
+	   point. Therefore we could directly check its return_code. */
+	if (data->return_code == SCSI_STATUS_GOOD)
+		return DIAG_TEST_PASSED;
+
+	return DIAG_TEST_FAILED;
+}
+
+static const struct storage_test_ops ufs_test_ops = {
+	.stringify = stringify_ufs_test_status,
+	.get_result = get_ufs_test_result,
+};
+
 /******************************************************************************/
 /* Helpers */
 
-static char *stringify_test_status(char *buf, const char *end,
-				   const StorageTestLog *log)
+static const struct storage_test_ops *get_test_ops(const StorageTestLog *log)
 {
 	switch (log->type) {
 	case STORAGE_INFO_TYPE_NVME:
 		if (!CONFIG(DRIVER_STORAGE_NVME))
 			break;
-		return stringify_nvme_test_status(buf, end,
-						  &log->data.nvme_data);
+		return &nvme_test_ops;
 	case STORAGE_INFO_TYPE_MMC:
 		/* MMC does not support self-test. */
-		return APPEND(buf, end, "UNSUPPORTED\n");
+		return &stub_test_ops;
 	case STORAGE_INFO_TYPE_UFS:
 		if (!CONFIG(DRIVER_STORAGE_UFS))
 			break;
-		return stringify_ufs_test_status(buf, end, &log->data.ufs_data);
+		return &ufs_test_ops;
 	case STORAGE_INFO_TYPE_UNKNOWN:
 		break;
 	}
 	die("unsupported data type: %d\n", log->type);
 	return NULL;
-}
-
-static int is_test_running(StorageTestLog *log)
-{
-	if (log->type == STORAGE_INFO_TYPE_NVME) {
-		const NvmeTestLogData *data = &log->data.nvme_data;
-		return HALF_BYTE_LOW(data->current_operation);
-	}
-	/* UFS self-test is a blocking call and always returns 'not running';
-	   eMMC does not support self-test so always returns 'not running'. */
-	return 0;
 }
 
 /******************************************************************************/
@@ -304,32 +374,36 @@ DiagTestResult diag_dump_storage_test_log(char *buf, const char *end)
 	}
 
 	/* No test is running. */
-	if (test_stat == BLOCKDEV_TEST_OPS_TYPE_STOP)
-		return DIAG_TEST_SUCCESS;
+	if (state.type == BLOCKDEV_TEST_OPS_TYPE_STOP)
+		return state.test_result;
 
 	/* Skip this call if this is not the very first dump call after a
 	   command and the stopwatch has not expired yet. */
-	if (!is_first_dump && !stopwatch_expired(&test_log_sw))
+	if (!state.is_first_dump && !stopwatch_expired(&state.sw))
 		return DIAG_TEST_RUNNING;
-	stopwatch_init_msecs_expire(&test_log_sw, get_test_log_delay());
-	is_first_dump = false;
+	stopwatch_init_msecs_expire(&state.sw, get_test_log_delay());
+	state.is_first_dump = false;
 
 	StorageTestLog log = {0};
+	const struct storage_test_ops *ops;
 
-	int res = dev->ops.get_test_log(&dev->ops, test_stat, &log);
+	int res = dev->ops.get_test_log(&dev->ops, state.type, &log);
 	if (res) {
 		buf = APPEND(buf, end, "%s: Get Test Result error: %d\n",
 			     dev->name, res);
 		return DIAG_TEST_ERROR;
 	}
+	ops = get_test_ops(&log);
 
 	buf = APPEND(buf, end, "Block device '%s':\n", dev->name);
+	buf = ops->stringify(buf, end, &log);
 
-	buf = stringify_test_status(buf, end, &log);
+	state.test_result = ops->get_result(&log);
+	/* The test is stopped. */
+	if (state.test_result != DIAG_TEST_UPDATED)
+		state.type = BLOCKDEV_TEST_OPS_TYPE_STOP;
 
-	if (is_test_running(&log))
-		return DIAG_TEST_UPDATED;
-	return DIAG_TEST_SUCCESS;
+	return state.test_result;
 }
 
 DiagTestResult diag_storage_test_control(enum BlockDevTestOpsType ops)
@@ -345,8 +419,9 @@ DiagTestResult diag_storage_test_control(enum BlockDevTestOpsType ops)
 
 	/* Set the global variables for the following diag_dump_storage_test_log
 	   calls. */
-	test_stat = ops;
-	is_first_dump = true;
+	state.type = ops;
+	state.is_first_dump = true;
+	state.test_result = DIAG_TEST_UPDATED;
 
-	return DIAG_TEST_SUCCESS;
+	return DIAG_TEST_PASSED;
 }

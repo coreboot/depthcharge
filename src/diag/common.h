@@ -4,8 +4,13 @@
 #define __DIAG_COMMON_H__
 
 typedef enum {
-	DIAG_TEST_SUCCESS = 0,
+	/* The test finished without error; the test result is passed. */
+	DIAG_TEST_PASSED = 0,
+	/* The test finished without error; the test result is failed. */
+	DIAG_TEST_FAILED,
+	/* The test encountered some internal error and stopped. */
 	DIAG_TEST_ERROR,
+	/* The test is not implemented. */
 	DIAG_TEST_UNIMPLEMENTED,
 	/* The test is running but the output buffer was unchanged. */
 	DIAG_TEST_RUNNING,

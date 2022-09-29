@@ -1994,7 +1994,10 @@ static vb2_error_t diagnostics_storage_test_update_impl(
 	ui->storage_test_log_str = log;
 	res = diag_dump_storage_test_log(log, log + DIAGNOSTICS_BUFFER_SIZE);
 	switch (res) {
-	case DIAG_TEST_SUCCESS:
+	case DIAG_TEST_FAILED:
+		UI_INFO("Storage test failed\n");
+		__attribute__((fallthrough));
+	case DIAG_TEST_PASSED:
 		ui->state->test_state = UI_TEST_STATE_FINISHED;
 		break;
 	case DIAG_TEST_RUNNING:
@@ -2139,7 +2142,10 @@ static vb2_error_t diagnostics_memory_update_screen_impl(
 
 	res = memory_test_run(&log_string);
 	switch (res) {
-	case DIAG_TEST_SUCCESS:
+	case DIAG_TEST_FAILED:
+		UI_INFO("Memory test failed\n");
+		__attribute__((fallthrough));
+	case DIAG_TEST_PASSED:
 		ui->state->test_state = UI_TEST_STATE_FINISHED;
 		break;
 	case DIAG_TEST_RUNNING:

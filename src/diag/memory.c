@@ -315,7 +315,7 @@ DiagTestResult memory_test_init(MemoryTestMode mode)
 	}
 	OUTPUT("\n\n");
 
-	return DIAG_TEST_SUCCESS;
+	return DIAG_TEST_PASSED;
 }
 
 /*
@@ -378,8 +378,12 @@ DiagTestResult memory_test_run(const char **out)
 
 	memory_test_run_step();
 
-	if (!state.is_running)
-		return DIAG_TEST_SUCCESS;
+	if (!state.is_running) {
+		if (state.single_operation_data->result == TEST_SUCCESS)
+			return DIAG_TEST_PASSED;
+		else
+			return DIAG_TEST_FAILED;
+	}
 
 	// No updates on the out string.
 	if (state.prev_percent == state.percent &&

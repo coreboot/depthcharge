@@ -16,8 +16,8 @@ typedef enum {
 /*
  * Initialize the memory test state with specific test mode.
  *
- * @return DIAG_TEST_SUCCESS on success, or other DiagTestResult values on
- * failure.
+ * @return DIAG_TEST_PASSED if the test finished and the test result is passed,
+ * or other DiagTestResult values.
  */
 DiagTestResult memory_test_init(MemoryTestMode mode);
 
@@ -28,7 +28,8 @@ DiagTestResult memory_test_init(MemoryTestMode mode);
  * Callee will handle the ownership of the buffer. The buffer will be available
  * until next call.
  *
- * @return DIAG_TEST_SUCCESS on success, or other DiagTestResult values.
+ * @return DIAG_TEST_PASSED if the test finished and the test result is passed,
+ * or other DiagTestResult values.
  */
 DiagTestResult memory_test_run(const char **buf);
 

@@ -48,7 +48,7 @@ static void test_diagnostics_screen_disabled_and_hidden(void **state)
 	will_return_always(diag_storage_test_supported,
 			   BLOCKDEV_TEST_OPS_TYPE_SHORT |
 			   BLOCKDEV_TEST_OPS_TYPE_EXTENDED);
-	will_return_maybe(memory_test_init, DIAG_TEST_SUCCESS);
+	will_return_maybe(memory_test_init, DIAG_TEST_PASSED);
 
 	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
@@ -113,10 +113,10 @@ static void test_diagnostics_screen(void **state)
 	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
 	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
 	will_return_always(diag_storage_test_supported, 3);
-	will_return_always(diag_dump_storage_test_log, DIAG_TEST_SUCCESS);
-	will_return_always(diag_storage_test_control, DIAG_TEST_SUCCESS);
-	will_return_always(memory_test_init, DIAG_TEST_SUCCESS);
-	will_return_always(memory_test_run, DIAG_TEST_SUCCESS);
+	will_return_always(diag_dump_storage_test_log, DIAG_TEST_PASSED);
+	will_return_always(diag_storage_test_control, DIAG_TEST_PASSED);
+	will_return_always(memory_test_init, DIAG_TEST_PASSED);
+	will_return_always(memory_test_run, DIAG_TEST_PASSED);
 
 	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
