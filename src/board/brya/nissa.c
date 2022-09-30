@@ -12,6 +12,7 @@
 #include "drivers/soc/alderlake.h"
 #include "drivers/storage/sdhci.h"
 #include "drivers/storage/storage_common.h"
+#include "vboot/util/commonparams.h"
 
 #define EMMC_CLOCK_MIN		400000
 #define EMMC_CLOCK_MAX		200000000
@@ -24,6 +25,7 @@
 const struct audio_config *variant_probe_audio_config(void)
 {
 	static struct audio_config config;
+	struct vb2_context *ctx = vboot_get_context();
 	config = (struct audio_config){
 		.bus = {
 			.type			= AUDIO_I2S,
@@ -40,7 +42,11 @@ const struct audio_config *variant_probe_audio_config(void)
 			.type			= AUDIO_MAX98357,
 		},
 	};
-	return &config;
+
+	if (vb2api_gbb_get_flags(ctx) & VB2_GBB_FLAG_RUNNING_FAFT)
+		return NULL;
+	else
+		return &config;
 }
 
 static const struct storage_config storage_configs[] = {
