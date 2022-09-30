@@ -9,6 +9,25 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
 #include "drivers/storage/mtk_mmc.h"
+#include "drivers/video/display.h"
+#include "drivers/video/mtk_ddp.h"
+
+static int board_backlight_update(DisplayOps *me, uint8_t enable)
+{
+	static GpioOps *disp_pwm, *backlight_en;
+
+	if (!backlight_en) {
+		disp_pwm = new_mtk_gpio_output(PAD_DISP_PWM1);
+		backlight_en = new_mtk_gpio_output(PAD_GPIO01);
+	}
+
+	/* Enforce enable to be either 0 or 1. */
+	enable = !!enable;
+
+	gpio_set(disp_pwm, enable);
+	gpio_set(backlight_en, enable);
+	return 0;
+}
 
 static int board_setup(void)
 {
@@ -35,6 +54,13 @@ static int board_setup(void)
 	/* Set up USB */
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11200000);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+
+	/* Set display ops */
+	if (display_init_required())
+		display_set_ops(new_mtk_display(board_backlight_update,
+						0x1C000000, 2));
+	else
+		printf("[%s] no display_init_required()!\n", __func__);
 
 	return 0;
 }
