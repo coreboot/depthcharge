@@ -12,6 +12,14 @@
 const struct audio_config *variant_probe_audio_config(void)
 {
 	static struct audio_config config;
+
+	config = (struct audio_config){
+		.bus = {
+			.type = AUDIO_PWM,
+			.pwm.pad = GPP_B14,
+		},
+	};
+
 	return &config;
 }
 
