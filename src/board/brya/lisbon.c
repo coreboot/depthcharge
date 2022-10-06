@@ -8,6 +8,10 @@
 #include "board/brya/include/variant.h"
 #include "drivers/gpio/alderlake.h"
 #include "drivers/soc/alderlake.h"
+#include "drivers/storage/sdhci_gli.h"
+
+#define EMMC_CLOCK_MIN		400000
+#define EMMC_CLOCK_MAX		200000000
 
 const struct audio_config *variant_probe_audio_config(void)
 {
@@ -23,9 +27,16 @@ const struct audio_config *variant_probe_audio_config(void)
 	return &config;
 }
 
+static const struct emmc_config gl9763e_cfg = {
+	.platform_flags = SDHCI_PLATFORM_SUPPORTS_HS400ES,
+	.clock_min = EMMC_CLOCK_MIN,
+	.clock_max = EMMC_CLOCK_MAX,
+};
+
 static const struct storage_config storage_configs[] = {
 	{ .media = STORAGE_NVME, .pci_dev = SA_DEV_CPU_RP0 },
 	{ .media = STORAGE_SDHCI, .pci_dev = PCH_DEV_PCIE7 },
+	{ .media = STORAGE_EMMC, .pci_dev = PCH_DEV_PCIE11, .emmc = gl9763e_cfg},
 };
 
 const struct storage_config *variant_get_storage_configs(size_t *count)
