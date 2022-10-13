@@ -356,3 +356,7 @@ rex:
 corsola:
   # 1366x768, boots recovery image on any SD card or USB ports.
   screen:   [1366, 768]
+
+skyrim:
+  # 1920x1080, boots recovery image on any SD card or USB ports.
+  screen: [1920, 1080]
