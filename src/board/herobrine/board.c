@@ -95,7 +95,7 @@ static int herobrine_tpm_irq_status(void)
 }
 
 static const DtPathMap xo_cal_map[] = {
-	{1, "/soc@0/wifi@a000000", "xo-cal-data" },
+	{1, "wifi0", "xo-cal-data" },
 	{}
 };
 
