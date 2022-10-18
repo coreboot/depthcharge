@@ -46,6 +46,7 @@ ui-test-common-srcs += tests/mocks/vboot/ui/archive.c
 ui-test-common-srcs += tests/mocks/vboot/ui/beep.c
 ui-test-common-srcs += tests/mocks/vboot/ui/bitmap.c
 ui-test-common-srcs += tests/mocks/vboot/ui/input.c
+ui-test-common-srcs += tests/stubs/base/elog.c
 ui-test-common-srcs += tests/stubs/boot/payload.c
 ui-test-common-srcs += tests/stubs/diag/report.c
 ui-test-common-srcs += tests/stubs/drivers/storage/blockdev.c
@@ -106,5 +107,9 @@ ui-developer-detachable-test-config += CONFIG_DETACHABLE=1
 
 # ui-diagnostic-test
 $(call copy-test,ui-test-common,ui-diagnostic-test)
+ui-diagnostic-test-srcs += tests/mocks/base/elog.c
+ui-diagnostic-test-srcs += tests/mocks/diag/report.c
 ui-diagnostic-test-srcs += tests/vboot/ui-diagnostic-test.c
 ui-diagnostic-test-srcs += src/vboot/ui.c
+ui-diagnostic-test-srcs := $(filter-out tests/stubs/base/elog.c \
+	tests/stubs/diag/report.c, $(ui-diagnostic-test-srcs))
