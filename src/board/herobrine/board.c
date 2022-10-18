@@ -204,9 +204,11 @@ static int board_setup(void)
 				&removable_block_dev_controllers);
 
 	/* NVMe */
-	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0x1, 0, 0));
-	list_insert_after(&nvme->ctrlr.list_node,
-			&fixed_block_dev_controllers);
+	if (CONFIG(DRIVER_STORAGE_NVME)) {
+		NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0x1, 0, 0));
+		list_insert_after(&nvme->ctrlr.list_node,
+				  &fixed_block_dev_controllers);
+	}
 
 	/* SPI-NOR Flash driver - GPIO_15 as Chip Select */
 	QcomQspi *spi_flash = new_qcom_qspi(0x088DC000, (GpioOps *)&new_gpio_output(GPIO(15))->ops);
