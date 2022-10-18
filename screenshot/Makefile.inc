@@ -45,6 +45,7 @@ screenshot-srcs += screenshot/mocks/vb2api.c
 screenshot-srcs += screenshot/stubs/beep.c
 screenshot-srcs += screenshot/stubs/diag.c
 screenshot-srcs += screenshot/stubs/display.c
+screenshot-srcs += screenshot/stubs/elog.c
 screenshot-srcs += screenshot/stubs/firmware_id.c
 screenshot-srcs += screenshot/stubs/input.c
 screenshot-srcs += screenshot/stubs/load_kernel.c

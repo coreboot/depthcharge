@@ -20,6 +20,7 @@
 #include <libpayload.h>
 #include <vb2_api.h>
 
+#include "base/elog.h"
 #include "base/list.h"
 #include "boot/payload.h"
 #include "diag/common.h"
@@ -1851,6 +1852,23 @@ static vb2_error_t diagnostics_init(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
+static vb2_error_t diagnostics_exit(struct ui_context *ui)
+{
+	uint8_t event_data[ELOG_MAX_EVENT_DATA_SIZE] = {0};
+	size_t data_size;
+
+	/* Get diagnostics logs. */
+	event_data[0] = ELOG_CROS_DIAGNOSTICS_LOGS;
+	/* The "+1" is to preserve a space for the above subtype bype. */
+	data_size = diag_report_dump(event_data + 1,
+				     sizeof(event_data) - 1) + 1;
+
+	/* Report diagnostics logs. */
+	elog_add_event_raw(ELOG_TYPE_CROS_DIAGNOSTICS, event_data, data_size);
+
+	return VB2_SUCCESS;
+}
+
 static const char *const diagnostics_desc[] = {
 	"diag_menu_desc0.bmp",
 };
@@ -1893,6 +1911,7 @@ static const struct ui_screen_info diagnostics_screen = {
 	.desc = UI_DESC(diagnostics_desc),
 	.menu = UI_MENU(diagnostics_items),
 	.init = diagnostics_init,
+	.exit = diagnostics_exit,
 	.mesg = "Select the component you'd like to check",
 };
 
@@ -1901,8 +1920,11 @@ static const struct ui_screen_info diagnostics_screen = {
 
 #define DIAGNOSTICS_BUFFER_SIZE (64 * KiB)
 
-static vb2_error_t diagnostics_exit(struct ui_context *ui)
+static vb2_error_t diagnostics_test_exit(struct ui_context *ui)
 {
+	/* Mark the current test item as aborted while exiting.
+	   This does nothing if the item finished earlier. */
+	diag_report_end_test(ELOG_CROS_DIAG_RESULT_ABORTED);
 	/*
 	 * Since we reset AP in FAFT, write back data including CBMEM log from
 	 * cache to memory once we leave test items to make sure we can verify
@@ -1945,8 +1967,12 @@ static vb2_error_t diagnostics_storage_health_init_impl(
 
 static vb2_error_t diagnostics_storage_health_init(struct ui_context *ui)
 {
-	if (vb2_is_error(diagnostics_storage_health_init_impl(ui)))
+	diag_report_start_test(ELOG_CROS_DIAG_TYPE_STORAGE_HEALTH);
+	if (vb2_is_error(diagnostics_storage_health_init_impl(ui))) {
+		diag_report_end_test(ELOG_CROS_DIAG_RESULT_ERROR);
 		return set_ui_error_and_go_back(ui, UI_ERROR_DIAGNOSTICS);
+	}
+	diag_report_end_test(ELOG_CROS_DIAG_RESULT_PASSED);
 	return VB2_SUCCESS;
 }
 
@@ -1957,7 +1983,7 @@ static const struct ui_screen_info diagnostics_storage_health_screen = {
 	.title = "diag_storage_health_title.bmp",
 	.menu = UI_MENU(diagnostics_storage_health_items),
 	.init = diagnostics_storage_health_init,
-	.exit = diagnostics_exit,
+	.exit = diagnostics_test_exit,
 	.draw_desc = draw_log_desc,
 	.mesg = "Storage health info",
 	.page_up_item = DIAGNOSTICS_STORAGE_HEALTH_ITEM_PAGE_UP,
@@ -1996,9 +2022,12 @@ static vb2_error_t diagnostics_storage_test_update_impl(
 	switch (res) {
 	case DIAG_TEST_FAILED:
 		UI_INFO("Storage test failed\n");
-		__attribute__((fallthrough));
+		ui->state->test_state = UI_TEST_STATE_FINISHED;
+		diag_report_end_test(ELOG_CROS_DIAG_RESULT_FAILED);
+		break;
 	case DIAG_TEST_PASSED:
 		ui->state->test_state = UI_TEST_STATE_FINISHED;
+		diag_report_end_test(ELOG_CROS_DIAG_RESULT_PASSED);
 		break;
 	case DIAG_TEST_RUNNING:
 		ui->state->test_state = UI_TEST_STATE_RUNNING;
@@ -2009,6 +2038,7 @@ static vb2_error_t diagnostics_storage_test_update_impl(
 		break;
 	default:
 		UI_ERROR("diag_dump_storage_test_log returned %d\n", res);
+		diag_report_end_test(ELOG_CROS_DIAG_RESULT_ERROR);
 		return VB2_ERROR_UI_LOG_INIT;
 	}
 	VB2_TRY(log_page_show_back_or_cancel(ui, is_test_running));
@@ -2041,6 +2071,7 @@ static vb2_error_t diagnostics_storage_test_init(struct ui_context *ui)
 static vb2_error_t diagnostics_storage_test_short_init(
 	struct ui_context *ui)
 {
+	diag_report_start_test(ELOG_CROS_DIAG_TYPE_STORAGE_TEST_SHORT);
 	VB2_TRY(diagnostics_storage_test_control(ui,
 						 BLOCKDEV_TEST_OPS_TYPE_STOP));
 	VB2_TRY(diagnostics_storage_test_control(ui,
@@ -2051,6 +2082,7 @@ static vb2_error_t diagnostics_storage_test_short_init(
 static vb2_error_t diagnostics_storage_test_extended_init(
 	struct ui_context *ui)
 {
+	diag_report_start_test(ELOG_CROS_DIAG_TYPE_STORAGE_TEST_EXTENDED);
 	VB2_TRY(diagnostics_storage_test_control(ui,
 						 BLOCKDEV_TEST_OPS_TYPE_STOP));
 	VB2_TRY(diagnostics_storage_test_control(
@@ -2090,7 +2122,7 @@ static const struct ui_screen_info diagnostics_storage_test_short_screen = {
 	.title = "diag_storage_srt_test_title.bmp",
 	.menu = UI_MENU(diagnostics_storage_test_items),
 	.init = diagnostics_storage_test_short_init,
-	.exit = diagnostics_exit,
+	.exit = diagnostics_test_exit,
 	.action = diagnostics_storage_test_update,
 	.draw_desc = draw_log_desc,
 	.mesg = "Storage self test (short)",
@@ -2107,7 +2139,7 @@ static const struct ui_screen_info diagnostics_storage_test_extended_screen = {
 	.title = "diag_storage_ext_test_title.bmp",
 	.menu = UI_MENU(diagnostics_storage_test_items),
 	.init = diagnostics_storage_test_extended_init,
-	.exit = diagnostics_exit,
+	.exit = diagnostics_test_exit,
 	.action = diagnostics_storage_test_update,
 	.draw_desc = draw_log_desc,
 	.mesg = "Storage self test (extended)",
@@ -2144,9 +2176,12 @@ static vb2_error_t diagnostics_memory_update_screen_impl(
 	switch (res) {
 	case DIAG_TEST_FAILED:
 		UI_INFO("Memory test failed\n");
-		__attribute__((fallthrough));
+		ui->state->test_state = UI_TEST_STATE_FINISHED;
+		diag_report_end_test(ELOG_CROS_DIAG_RESULT_FAILED);
+		break;
 	case DIAG_TEST_PASSED:
 		ui->state->test_state = UI_TEST_STATE_FINISHED;
+		diag_report_end_test(ELOG_CROS_DIAG_RESULT_PASSED);
 		break;
 	case DIAG_TEST_RUNNING:
 		ui->state->test_state = UI_TEST_STATE_RUNNING;
@@ -2157,6 +2192,7 @@ static vb2_error_t diagnostics_memory_update_screen_impl(
 		break;
 	default:
 		UI_ERROR("memory_test_run returned %d\n", res);
+		diag_report_end_test(ELOG_CROS_DIAG_RESULT_ERROR);
 		return VB2_ERROR_UI_LOG_INIT;
 	}
 	VB2_TRY(log_page_show_back_or_cancel(ui, is_test_running));
@@ -2175,6 +2211,7 @@ static vb2_error_t diagnostics_memory_update_screen(struct ui_context *ui,
 
 static vb2_error_t diagnostics_memory_init_quick(struct ui_context *ui)
 {
+	diag_report_start_test(ELOG_CROS_DIAG_TYPE_MEMORY_QUICK);
 	VB2_TRY(diagnostics_memory_update_screen(ui, MEMORY_TEST_MODE_QUICK,
 						 1));
 	if (vb2_is_error(log_page_reset_to_top(ui)))
@@ -2184,6 +2221,7 @@ static vb2_error_t diagnostics_memory_init_quick(struct ui_context *ui)
 
 static vb2_error_t diagnostics_memory_init_full(struct ui_context *ui)
 {
+	diag_report_start_test(ELOG_CROS_DIAG_TYPE_MEMORY_FULL);
 	VB2_TRY(diagnostics_memory_update_screen(ui, MEMORY_TEST_MODE_FULL, 1));
 	if (vb2_is_error(log_page_reset_to_top(ui)))
 		return set_ui_error_and_go_back(ui, UI_ERROR_DIAGNOSTICS);
@@ -2225,7 +2263,7 @@ static const struct ui_screen_info diagnostics_memory_quick_screen = {
 	.title = "diag_memory_quick_title.bmp",
 	.menu = UI_MENU(diagnostics_memory_items),
 	.init = diagnostics_memory_init_quick,
-	.exit = diagnostics_exit,
+	.exit = diagnostics_test_exit,
 	.action = diagnostics_memory_update_quick,
 	.draw_desc = draw_log_desc,
 	.mesg = "Memory check (quick)",
@@ -2242,7 +2280,7 @@ static const struct ui_screen_info diagnostics_memory_full_screen = {
 	.title = "diag_memory_full_title.bmp",
 	.menu = UI_MENU(diagnostics_memory_items),
 	.init = diagnostics_memory_init_full,
-	.exit = diagnostics_exit,
+	.exit = diagnostics_test_exit,
 	.action = diagnostics_memory_update_full,
 	.draw_desc = draw_log_desc,
 	.mesg = "Memory check (full)",

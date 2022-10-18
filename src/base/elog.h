@@ -3,7 +3,13 @@
 #ifndef __BASE_ELOG_H__
 #define __BASE_ELOG_H__
 
+#include <libpayload.h>
+
 #include "image/fmap.h"
+
+/* Only refers to the data max size. The "-1" is the checksum byte */
+#define ELOG_MAX_EVENT_DATA_SIZE					       \
+	(ELOG_MAX_EVENT_SIZE - sizeof(struct event_header) - 1)
 
 typedef enum {
 	ELOG_SUCCESS = 0,
