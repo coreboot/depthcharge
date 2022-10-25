@@ -20,9 +20,13 @@
 
 #include "base/cleanup_funcs.h"
 #include "drivers/bus/usb/usb.h"
+#include "usb.h"
 
 ListNode generic_usb_drivers;
 ListNode usb_host_controllers;
+
+static ListNode init_callbacks;
+static ListNode poll_callbacks;
 
 void usb_generic_create(usbdev_t *dev)
 {
@@ -96,6 +100,13 @@ void dc_usb_initialize(void)
 	if (soc_usb_mux_init)
 		soc_usb_mux_init();
 
+	// Invoke any callbacks
+	UsbCallbackData *callback;
+	list_for_each(callback, init_callbacks, list_node) {
+		if (callback->callback)
+			callback->callback(callback->data);
+	}
+
 	usb_initialize();
 	list_insert_after(&cleanup.list_node, &cleanup_funcs);
 
@@ -124,4 +135,21 @@ void usb_poll_prepare(void)
 {
 	if (soc_usb_mux_poll)
 		soc_usb_mux_poll();
+
+	// Invoke any callbacks
+	UsbCallbackData *callback;
+	list_for_each(callback, poll_callbacks, list_node) {
+		if (callback->callback)
+			callback->callback(callback->data);
+	}
+}
+
+void usb_register_init_callback(UsbCallbackData *toRegister)
+{
+	list_insert_after(&toRegister->list_node, &init_callbacks);
+}
+
+void usb_register_poll_callback(UsbCallbackData *toRegister)
+{
+	list_insert_after(&toRegister->list_node, &poll_callbacks);
 }
