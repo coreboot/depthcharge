@@ -953,6 +953,11 @@ static int ufs_utp_init(UfsCtlr *ufs)
 	if (!ufs->ufs_req_list)
 		ufs->ufs_req_list = dma_memalign(UFS_DMA_ALIGN, UFS_MEM_SZ);
 
+	if (ufs->ufs_req_list == NULL) {
+		printf("UFS UTP INIT: ERROR - out of memory\n");
+		return UFS_ENOMEM;
+	}
+
 	memset(ufs->ufs_req_list, 0, UFS_MEM_SZ);
 
 	// Program the physical address into the register
