@@ -8,7 +8,6 @@
 #define __DRIVERS_BUS_INTEL_TCSS_H__
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <stddef.h>
 
 #include "base/list.h"
@@ -19,7 +18,7 @@ typedef struct TcssCtrlr {
 	size_t iom_status_offset;
 } TcssCtrlr;
 
-/* Platforms implement this abstract function */
-bool is_port_connected(int port);
+/* SoC-specific code should call this one time */
+void register_tcss_ctrlr(const TcssCtrlr *tcss_ctrlr);
 
 #endif /* __DRIVERS_BUS_INTEL_TCSS_H__ */
