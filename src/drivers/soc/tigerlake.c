@@ -12,8 +12,6 @@
  * GNU General Public License for more details.
  */
 
-#include <libpayload.h>
-
 #include "base/init_funcs.h"
 #include "drivers/soc/common/iomap.h"
 #include "drivers/soc/intel_common.h"
@@ -37,18 +35,12 @@ static const TcssCtrlr tgl_tcss_ctrlr = {
 	.iom_status_offset = 0x560
 };
 
-const void *port_status_reg(int port)
+static int register_tcss(void)
 {
-	const uintptr_t status_reg = tgl_tcss_ctrlr.regbar +
-		(tgl_tcss_ctrlr.iom_pid << REGBAR_PID_SHIFT) +
-		(tgl_tcss_ctrlr.iom_status_offset + port * sizeof(uint32_t));
-	return (const void *)status_reg;
+	if (CONFIG(DRIVER_USB_INTEL_TCSS))
+		register_tcss_ctrlr(&tgl_tcss_ctrlr);
+
+	return 0;
 }
 
-bool is_port_connected(int port)
-{
-	uint32_t sts;
-
-	sts = read32(port_status_reg(port));
-	return !!(sts & IOM_PORT_STATUS_CONNECTED);
-}
+INIT_FUNC(register_tcss);

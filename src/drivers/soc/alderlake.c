@@ -68,18 +68,12 @@ const SocPcieRpGroup *soc_get_rp_group(pcidev_t dev, size_t *count)
 	}
 }
 
-const void *port_status_reg(int port)
+static int register_tcss(void)
 {
-	const uintptr_t status_reg = adl_tcss_ctrlr.regbar +
-		(adl_tcss_ctrlr.iom_pid << REGBAR_PID_SHIFT) +
-		(adl_tcss_ctrlr.iom_status_offset + port * sizeof(uint32_t));
-	return (const void *)status_reg;
+	if (CONFIG(DRIVER_USB_INTEL_TCSS))
+		register_tcss_ctrlr(&adl_tcss_ctrlr);
+
+	return 0;
 }
 
-bool is_port_connected(int port)
-{
-	uint32_t sts;
-
-	sts = read32(port_status_reg(port));
-	return !!(sts & IOM_PORT_STATUS_CONNECTED);
-}
+INIT_FUNC(register_tcss);
