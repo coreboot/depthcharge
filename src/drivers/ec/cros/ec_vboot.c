@@ -8,6 +8,7 @@
 #include "base/container_of.h"
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/ec/cros/commands.h"
+#include "drivers/ec/cros/commands_api.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/power/power.h"
 
@@ -22,7 +23,7 @@ static vb2_error_t vboot_running_rw(VbootEcOps *vbec, int *in_rw)
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
 	struct ec_response_get_version r;
 
-	if (ec_command(me, EC_CMD_GET_VERSION, 0, NULL, 0, &r, sizeof(r)) < 0)
+	if (ec_cmd_get_version(me, &r) < 0)
 		return VB2_ERROR_UNKNOWN;
 
 	switch (r.current_image) {
@@ -83,8 +84,7 @@ static vb2_error_t vboot_hash_image(VbootEcOps *vbec,
 		/* Get hash if available. */
 		p.cmd = EC_VBOOT_HASH_GET;
 		p.offset = hash_offset;
-		if (ec_command(me, EC_CMD_VBOOT_HASH, 0, &p, sizeof(p),
-			       &resp, sizeof(resp)) < 0)
+		if (ec_cmd_vboot_hash(me, &p, &resp) < 0)
 			return VB2_ERROR_UNKNOWN;
 
 		switch (resp.status) {
@@ -101,8 +101,7 @@ static vb2_error_t vboot_hash_image(VbootEcOps *vbec,
 			p.hash_type = EC_VBOOT_HASH_TYPE_SHA256;
 			p.nonce_size = 0;
 
-			if (ec_command(me, EC_CMD_VBOOT_HASH, 0, &p,
-				       sizeof(p), &resp, sizeof(resp)) < 0)
+			if (ec_cmd_vboot_hash(me, &p, &resp) < 0)
 				return VB2_ERROR_UNKNOWN;
 
 			recalc_requested = 1;
@@ -196,9 +195,7 @@ static int ec_flash_protect(CrosEc *me, uint32_t set_mask, uint32_t set_flags,
 	params.mask = set_mask;
 	params.flags = set_flags;
 
-	if (ec_command(me, EC_CMD_FLASH_PROTECT, EC_VER_FLASH_PROTECT,
-		       &params, sizeof(params),
-		       resp, sizeof(*resp)) != sizeof(*resp))
+	if (ec_cmd_flash_protect_v1(me, &params, resp) != sizeof(*resp))
 		return -1;
 
 	return 0;
@@ -220,9 +217,7 @@ static int ec_flash_offset(CrosEc *me, enum ec_flash_region region,
 	int ret;
 
 	p.region = region;
-	ret = ec_command(me,
-			 EC_CMD_FLASH_REGION_INFO, EC_VER_FLASH_REGION_INFO,
-			 &p, sizeof(p), &r, sizeof(r));
+	ret = ec_cmd_flash_region_info_v1(me, &p, &r);
 	if (ret != sizeof(r))
 		return -1;
 
@@ -240,8 +235,7 @@ static int ec_flash_erase(CrosEc *me, uint32_t offset, uint32_t size)
 
 	p.offset = offset;
 	p.size = size;
-	return ec_command(me, EC_CMD_FLASH_ERASE,
-			  0, &p, sizeof(p), NULL, 0);
+	return ec_cmd_flash_erase(me, &p);
 }
 
 /**
@@ -311,8 +305,7 @@ static int ec_flash_write_burst_size(CrosEc *me)
 	 * Determine step size.  This must be a multiple of the write block
 	 * size, and must also fit into the host parameter buffer.
 	 */
-	if (ec_command(me, EC_CMD_FLASH_INFO, 0,
-		       NULL, 0, &info, sizeof(info)) != sizeof(info))
+	if (ec_cmd_flash_info(me, &info) != sizeof(info))
 		return 0;
 
 	return (pdata_max_size / info.write_block_size) *
@@ -372,7 +365,7 @@ static int ec_efs_verify(CrosEc *me, enum ec_flash_region region)
 	int rv;
 	p.region = region;
 
-	rv = ec_command(me, EC_CMD_EFS_VERIFY, 0, &p, sizeof(p), NULL, 0);
+	rv = ec_cmd_efs_verify(me, &p);
 	if (rv >= 0) {
 		printf("EFS: Verification success\n");
 		return 0;
