@@ -368,12 +368,22 @@ GpioOps *cros_ec_power_btn_flag(void);
 int cros_ec_config_powerbtn(uint32_t enable);
 
 /**
- * Reboots main EC
+ * Reboots the EC
  *
- * @param flags
+ * @param flags		Reboot flags
  * @return 0 if ok, -1 on error
  */
 int cros_ec_reboot(uint8_t flags);
+
+/**
+ * Reboot the EC with specified parameters
+ *
+ * @param ec		EC device
+ * @param cmd		Reboot command
+ * @param flags		Reboot flags
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_reboot_param(CrosEc *me, enum ec_reboot_cmd cmd, uint8_t flags);
 
 /**
  * Read the value of lid shutdown mask on x86 systems

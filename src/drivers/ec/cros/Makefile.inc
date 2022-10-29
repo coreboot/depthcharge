@@ -12,6 +12,7 @@
 ##
 
 depthcharge-y += ec.c
+depthcharge-y += ec_vboot.c
 depthcharge-$(CONFIG_DRIVER_EC_CROS_I2C) += i2c.c
 depthcharge-$(CONFIG_DRIVER_EC_CROS_LPC) += lpc.c
 depthcharge-$(CONFIG_DRIVER_EC_CROS_SPI) += spi.c
