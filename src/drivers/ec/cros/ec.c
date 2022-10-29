@@ -31,6 +31,7 @@
 #include "base/container_of.h"
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/ec/cros/commands.h"
+#include "drivers/ec/cros/commands_api.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/power/power.h"
 
@@ -314,8 +315,7 @@ static int get_cmd_versions(int cmd, uint32_t *pmask)
 
 	p.cmd = cmd;
 
-	if (ec_command(cros_ec_get(), EC_CMD_GET_CMD_VERSIONS,
-		       1, &p, sizeof(p), &r, sizeof(r)) != sizeof(r))
+	if (ec_cmd_get_cmd_versions_v1(cros_ec_get(), &p, &r) != sizeof(r))
 		return -1;
 
 	*pmask = r.version_mask;
@@ -359,8 +359,7 @@ int cros_ec_pd_control(uint8_t pd_port, enum ec_pd_control_cmd cmd)
 {
 	struct ec_params_pd_control p = {p.chip = pd_port, p.subcmd = cmd};
 
-	int rv = ec_command(cros_ec_get(), EC_CMD_PD_CONTROL, 0, &p,
-			    sizeof(p), NULL, 0);
+	int rv = ec_cmd_pd_control(cros_ec_get(), &p);
 	return rv < 0 ? rv : 0;
 }
 
@@ -373,8 +372,7 @@ int cros_ec_i2c_get_speed(uint8_t i2c_port, uint16_t *speed_khz)
 	struct ec_response_i2c_control r;
 	int rv;
 
-	rv = ec_command(cros_ec_get(), EC_CMD_I2C_CONTROL, 0,
-			&p, sizeof(p), &r, sizeof(r));
+	rv = ec_cmd_i2c_control(cros_ec_get(), &p, &r);
 	if (rv < 0)
 		return rv;
 	if (rv != sizeof(r))
@@ -396,8 +394,7 @@ int cros_ec_i2c_set_speed(uint8_t i2c_port,
 	struct ec_response_i2c_control r;
 	int rv;
 
-	rv = ec_command(cros_ec_get(), EC_CMD_I2C_CONTROL, 0,
-			&p, sizeof(p), &r, sizeof(r));
+	rv = ec_cmd_i2c_control(cros_ec_get(), &p, &r);
 	if (rv < 0)
 		return rv;
 	if (rv != sizeof(r))
@@ -419,8 +416,7 @@ int cros_ec_scan_keyboard(struct cros_ec_keyscan *scan)
 
 int cros_ec_get_next_event(struct ec_response_get_next_event *e)
 {
-	int rv = ec_command(cros_ec_get(), EC_CMD_GET_NEXT_EVENT, 0, NULL,
-			    0, e, sizeof(*e));
+	int rv = ec_cmd_get_next_event(cros_ec_get(), e);
 
 	return rv < 0 ? rv : 0;
 }
@@ -436,8 +432,7 @@ static int ec_test(CrosEc *me)
 	struct ec_response_hello resp;
 
 	req.in_data = 0x12345678;
-	if (ec_command(me, EC_CMD_HELLO, 0, &req, sizeof(req),
-		       &resp, sizeof(resp)) != sizeof(resp))
+	if (ec_cmd_hello(cros_ec_get(), &req, &resp) != sizeof(resp))
 		return -1;
 	if (resp.out_data != req.in_data + 0x01020304)
 		return -1;
@@ -455,8 +450,7 @@ int cros_ec_reboot_param(CrosEc *me, enum ec_reboot_cmd cmd, uint8_t flags)
 	if (cmd == EC_REBOOT_COLD && !(flags & EC_REBOOT_FLAG_ON_AP_SHUTDOWN))
 		run_cleanup_funcs(CleanupOnReboot);
 
-	if (ec_command(me, EC_CMD_REBOOT_EC, 0,
-		       &p, sizeof(p), NULL, 0) < 0)
+	if (ec_cmd_reboot_ec(cros_ec_get(), &p) < 0)
 		return -1;
 
 	/* Do we expect our command to immediately reboot the EC? */
@@ -534,8 +528,7 @@ int cros_ec_get_host_events(uint32_t *events_ptr)
 	 * Use the B copy of the event flags, because the main copy is already
 	 * used by ACPI/SMI.
 	 */
-	if (ec_command(cros_ec_get(), EC_CMD_HOST_EVENT_GET_B, 0, NULL, 0,
-		       &resp, sizeof(resp)) != sizeof(resp))
+	if (ec_cmd_host_event_get_b(cros_ec_get(), &resp) != sizeof(resp))
 		return -1;
 
 	if (resp.mask & EC_HOST_EVENT_MASK(EC_HOST_EVENT_INVALID))
@@ -555,8 +548,7 @@ int cros_ec_clear_host_events(uint32_t events)
 	 * Use the B copy of the event flags, so it affects the data returned
 	 * by cros_ec_get_host_events().
 	 */
-	if (ec_command(cros_ec_get(), EC_CMD_HOST_EVENT_CLEAR_B, 0,
-		       &params, sizeof(params), NULL, 0) < 0)
+	if (ec_cmd_host_event_clear_b(cros_ec_get(), &params) < 0)
 		return -1;
 
 	return 0;
@@ -569,8 +561,7 @@ int cros_ec_battery_cutoff(uint8_t flags)
 
 	p.flags = flags;
 
-	len = ec_command(cros_ec_get(), EC_CMD_BATTERY_CUT_OFF, 1,
-			 &p, sizeof(p), NULL, 0);
+	len = ec_cmd_battery_cut_off_v1(cros_ec_get(), &p);
 
 	if (len < 0)
 		return -1;
@@ -586,8 +577,7 @@ int cros_ec_set_motion_sense_activity(uint32_t activity, uint32_t value)
 	params.set_activity.activity = activity;
 	params.set_activity.enable = value;
 
-	if (ec_command(cros_ec_get(), EC_CMD_MOTION_SENSE_CMD, 2,
-		       &params, sizeof(params), &resp, sizeof(resp)) < 0)
+	if (ec_cmd_motion_sense_cmd_v2(cros_ec_get(), &params, &resp) < 0)
 		return -1;
 
 	return 0;
@@ -709,8 +699,7 @@ int cros_ec_config_powerbtn(uint32_t flags)
 	struct ec_params_config_power_button params;
 
 	params.flags = flags;
-	if (ec_command(cros_ec_get(), EC_CMD_CONFIG_POWER_BUTTON, 0,
-		       &params, sizeof(params), NULL, 0) < 0)
+	if (ec_cmd_config_power_button(cros_ec_get(), &params) < 0)
 		return -1;
 
 	return 0;
@@ -724,8 +713,7 @@ int cros_ec_read_limit_power_request(int *limit_power)
 
 	p.cmd = CHARGE_STATE_CMD_GET_PARAM;
 	p.get_param.param = CS_PARAM_LIMIT_POWER;
-	res = ec_command(cros_ec_get(), EC_CMD_CHARGE_STATE, 0,
-			 &p, sizeof(p), &r, sizeof(r));
+	res = ec_cmd_charge_state(cros_ec_get(), &p, &r);
 
 	/*
 	 * If our EC doesn't support the LIMIT_POWER parameter, assume that
@@ -751,8 +739,7 @@ int cros_ec_read_batt_state_of_charge(uint32_t *state)
 
 	params.cmd = CHARGE_STATE_CMD_GET_STATE;
 
-	if (ec_command(cros_ec_get(), EC_CMD_CHARGE_STATE, 0,
-		       &params, sizeof(params), &resp, sizeof(resp)) < 0)
+	if (ec_cmd_charge_state(cros_ec_get(), &params, &resp) < 0)
 		return -1;
 
 	*state = resp.get_state.batt_state_of_charge;
@@ -776,8 +763,7 @@ int cros_ec_set_bl_pwm_duty(uint32_t percent)
 	params.pwm_type = EC_PWM_TYPE_DISPLAY_LIGHT;
 	params.index = 0;
 
-	if (ec_command(cros_ec_get(), EC_CMD_PWM_SET_DUTY, 0,
-		       &params, sizeof(params), NULL, 0) < 0)
+	if (ec_cmd_pwm_set_duty(cros_ec_get(), &params) < 0)
 		return -1;
 	return 0;
 }
@@ -789,8 +775,7 @@ int cros_ec_locate_tcpc_chip(uint8_t port, struct ec_response_locate_chip *r)
 
 	p.type = EC_CHIP_TYPE_TCPC;
 	p.index = port;
-	ret = ec_command(cros_ec_get(), EC_CMD_LOCATE_CHIP, 0,
-				&p, sizeof(p), r, sizeof(*r));
+	ret = ec_cmd_locate_chip(cros_ec_get(), &p, r);
 	if (ret < 0) {
 		printf("Failed to locate TCPC chip for port%d ret:%d\n",
 								port, ret);
@@ -808,8 +793,7 @@ int cros_ec_pd_chip_info(int port, int renew,
 		.live = renew,
 	};
 
-	return ec_command(cros_ec_get(), EC_CMD_PD_CHIP_INFO, 0,
-			   &p, sizeof(p), r, sizeof(*r));
+	return ec_cmd_pd_chip_info(cros_ec_get(), &p, r);
 }
 
 int cros_ec_get_usb_pd_mux_info(int port, uint8_t *mux_state)
@@ -820,10 +804,7 @@ int cros_ec_get_usb_pd_mux_info(int port, uint8_t *mux_state)
 
 	req.port = port;
 
-	ret = ec_command(cros_ec_get(),
-			 EC_CMD_USB_PD_MUX_INFO, 0,
-			 &req, sizeof(req),
-			 &resp, sizeof(resp));
+	ret = ec_cmd_usb_pd_mux_info(cros_ec_get(), &req, &resp);
 	if (ret < 0) {
 		printf("Failed to get PD_MUX_INFO port%d ret:%d\n",
 		       port, ret);
@@ -846,10 +827,7 @@ int cros_ec_get_usb_pd_control(int port, int *ufp, int *dbg_acc)
 	pd_control.mux = USB_PD_CTRL_MUX_NO_CHANGE;
 	pd_control.swap = USB_PD_CTRL_SWAP_NONE;
 
-	ret = ec_command(cros_ec_get(),
-			 EC_CMD_USB_PD_CONTROL, 2,
-			 &pd_control, sizeof(pd_control),
-			 &resp, sizeof(resp));
+	ret = ec_cmd_usb_pd_control_v2(cros_ec_get(), &pd_control, &resp);
 	if (ret < 0) {
 		printf("Failed to get PD_CONTROLv2 port%d ret:%d\n",
 		       port, ret);
@@ -906,8 +884,7 @@ static int ec_init(CrosEc *me)
 		return -1;
 
 	struct ec_response_get_protocol_info info;
-	if (ec_command(me, EC_CMD_GET_PROTOCOL_INFO, 0,
-		       NULL, 0, &info, sizeof(info)) != sizeof(info)) {
+	if (ec_cmd_get_protocol_info(me, &info) != sizeof(info)) {
 		printf("ERROR: Cannot read EC protocol info!\n");
 		return -1;
 	}
@@ -939,8 +916,7 @@ void cros_ec_probe_aux_fw_chips(void)
 	if (!ec_aux_fw_chip_list.next)
 		return;
 
-	ret = ec_command(cros_ec, EC_CMD_USB_PD_PORTS, 0, NULL, 0,
-				&usb_pd_ports_r, sizeof(usb_pd_ports_r));
+	ret = ec_cmd_usb_pd_ports(cros_ec, &usb_pd_ports_r);
 	if (ret < 0) {
 		printf("%s: Cannot resolve # of USB PD ports\n", __func__);
 		return;
@@ -954,9 +930,7 @@ void cros_ec_probe_aux_fw_chips(void)
 		/* Get the USB PD Chip info */
 		pd_chip_p.port = i;
 		pd_chip_p.live = 0;
-		ret = ec_command(cros_ec, EC_CMD_PD_CHIP_INFO, 0,
-					&pd_chip_p, sizeof(pd_chip_p),
-					&pd_chip_r, sizeof(pd_chip_r));
+		ret = ec_cmd_pd_chip_info(cros_ec, &pd_chip_p, &pd_chip_r);
 		if (ret < 0) {
 			printf("%s: Cannot get PD port%d info - %d\n",
 					__func__, i, ret);
@@ -981,10 +955,7 @@ int cros_ec_get_features(uint32_t *flags0, uint32_t *flags1)
 	struct ec_response_get_features response;
 	int ret;
 
-	ret = ec_command(cros_ec_get(),
-			 EC_CMD_GET_FEATURES, 0,
-			 NULL, 0, &response, sizeof(response));
-
+	ret = ec_cmd_get_features(cros_ec_get(), &response);
 	if (ret < 0) {
 		printf("ERROR: Cannot read EC feature flags!\n");
 		return -1;
@@ -1001,9 +972,7 @@ int cros_ec_get_usb_pd_ports(int *num_ports)
 	struct ec_response_usb_pd_ports response;
 	int ret;
 
-	ret = ec_command(cros_ec_get(), EC_CMD_USB_PD_PORTS, 0,
-					 NULL, 0,
-					 &response, sizeof(response));
+	ret = ec_cmd_usb_pd_ports(cros_ec_get(), &response);
 	if (ret < 0) {
 		printf("Failed to get PD count, ret:%d\n", ret);
 		return ret;
@@ -1023,9 +992,7 @@ int cros_ec_set_typec_mux(int port, int index, uint8_t mux_state)
 	params.mux_params.mux_index = index;
 	params.mux_params.mux_flags = mux_state;
 
-	ret = ec_command(cros_ec_get(), EC_CMD_TYPEC_CONTROL, 0,
-					&params, sizeof(params),
-					NULL, 0);
+	ret = ec_cmd_typec_control(cros_ec_get(), &params);
 	if (ret < 0)
 		printf("%s: Cannot configure mux (%d, %d, %#x, %d)\n",
 			__func__, port, index, mux_state, ret);
@@ -1040,9 +1007,7 @@ int cros_ec_get_typec_status(int port, struct ec_response_typec_status *status)
 
 	params.port = port;
 
-	ret = ec_command(cros_ec_get(), EC_CMD_TYPEC_STATUS, 0,
-					&params, sizeof(params),
-					status, sizeof(*status));
+	ret = ec_cmd_typec_status(cros_ec_get(), &params, status);
 	if (ret < 0)
 		printf("Cannot get type-C port status (%d, %d)\n", port, ret);
 
@@ -1074,9 +1039,7 @@ int cros_ec_i2c_passthru_protect_status(int i2c_port, int *status)
 	struct ec_response_i2c_passthru_protect response;
 	int result;
 
-	result = ec_command(cros_ec_get(), EC_CMD_I2C_PASSTHRU_PROTECT, 0,
-			    &params, sizeof(params),
-			    &response, sizeof(response));
+	result = ec_cmd_i2c_passthru_protect(cros_ec_get(), &params, &response);
 	if (result < 0)
 		return result;
 	if (result < sizeof(response))
