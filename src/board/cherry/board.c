@@ -121,7 +121,7 @@ static int cr50_irq_status(void)
 	return cr50_irq->get(cr50_irq);
 }
 
-int board_backlight_update(DisplayOps *me, uint8_t enable)
+static int board_backlight_update(DisplayOps *me, uint8_t enable)
 {
 	static GpioOps *disp_pwm0, *backlight_en;
 
