@@ -40,7 +40,7 @@ $(LDSCRIPT_OBJ): $(LDSCRIPT_SRC) $(KCONFIG_AUTOHEADER)
 # $3 additional compiler/linker flags to pass
 define declare_payload
 
-$1.elf: $2 $$$$(VBOOT_LIB) $$$$(TLCL_LIB) $(LDSCRIPT_OBJ)
+$1.elf: $2 $(LDSCRIPT_OBJ)
 	@printf "    LD         $$(subst $$(obj)/,,$$@.tmp)\n"
 	$(Q)$$(XCC) $$(LINK_FLAGS) $3 -o $$@.tmp \
 		$$(filter-out $(LDSCRIPT_OBJ),$$^)
@@ -53,12 +53,11 @@ $(notdir $1): $1.elf
 PHONY += $(notdir $1)
 endef
 
-$(eval $(call declare_payload,$(DEPTHCHARGE),$$$$(depthcharge-objs) \
-	$$$$(vboot-objs),))
+$(eval $(call declare_payload,$(DEPTHCHARGE),$$$$(depthcharge-objs),))
 
 $(eval $(call declare_payload,$(NETBOOT),$$$$(depthcharge-objs) \
 	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs),))
 
 $(eval $(call declare_payload,$(DEV),$$$$(depthcharge-objs) \
-	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs) $$$$(dev-objs) $$$$(fastboot-objs) \
-	$$$$(vboot-objs),$(DONT_GC_NETBOOT)))
+	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs) $$$$(dev-objs) \
+	$$$$(fastboot-objs),$(DONT_GC_NETBOOT)))
