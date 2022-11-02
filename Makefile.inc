@@ -13,6 +13,6 @@
 ## GNU General Public License for more details.
 ##
 
-classes-y := depthcharge vboot uip net netboot dev fastboot
+classes-y := depthcharge uip net netboot dev fastboot
 
 subdirs-y := src/

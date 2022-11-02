@@ -16,6 +16,7 @@ subdirs-y := callbacks crossystem nvdata stages ui util
 depthcharge-y += boot_policy.c
 depthcharge-y += firmware_id.c
 depthcharge-y += load_kernel.c
+depthcharge-y += main.c
 depthcharge-y += nvdata.c
 depthcharge-y += stages.c
 depthcharge-y += ui.c
@@ -25,6 +26,3 @@ depthcharge-y += mocked_secdata_tpm.c
 else
 depthcharge-y += secdata_tpm.c
 endif
-
-# Where "main" lives.
-vboot-y += main.c
