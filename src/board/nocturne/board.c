@@ -45,10 +45,6 @@
 #include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 
-#ifdef PD_SYNC
-#error "PD_SYNC configuration is incompatible with ec_tunnel!"
-#endif /* PD_SYNC */
-
 /*
  * Clock frequencies for the eMMC and SD ports are defined below. The minimum
  * frequency is the same for both interfaces, the firmware does not run any
