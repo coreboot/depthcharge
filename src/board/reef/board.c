@@ -50,10 +50,6 @@
 #define AUD_VOLUME		4000
 #define SDMODE_PIN		GPIO_76
 
-#ifdef PD_SYNC
-#error "PD_SYNC configuration incompatible with ec_tunnel"
-#endif
-
 static int cr50_irq_status(void)
 {
 	return apollolake_get_gpe(GPE0_DW1_28);
