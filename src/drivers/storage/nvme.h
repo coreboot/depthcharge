@@ -177,16 +177,16 @@ typedef uint32_t NVME_CQHDBL;
 
 /* NVMe Admin Cmd Opcodes */
 #define NVME_ADMIN_CRIOSQ_OPC	1
-#define NVME_ADMIN_CRIOSQ_QID(x)	(x)
-#define NVME_ADMIN_CRIOSQ_QSIZE(x)	(((x)-1) << 16)
-#define NVME_ADMIN_CRIOSQ_CQID(x)	((x) << 16)
+#define NVME_ADMIN_CRIOSQ_QID(x)	((uint32_t)x)
+#define NVME_ADMIN_CRIOSQ_QSIZE(x)	(((uint32_t)(x)-1) << 16)
+#define NVME_ADMIN_CRIOSQ_CQID(x)	(((uint32_t)x) << 16)
 
 #define NVME_ADMIN_SETFEATURES_OPC	9
 #define NVME_ADMIN_SETFEATURES_NUMQUEUES	7
 
 #define NVME_ADMIN_CRIOCQ_OPC	5
-#define NVME_ADMIN_CRIOCQ_QID(x)	(x)
-#define NVME_ADMIN_CRIOCQ_QSIZE(x)	(((x)-1) << 16)
+#define NVME_ADMIN_CRIOCQ_QID(x)	((uint32_t)x)
+#define NVME_ADMIN_CRIOCQ_QSIZE(x)	(((uint32_t)(x)-1) << 16)
 
 #define NVME_ADMIN_GET_LOG_PAGE	0x02
 #define NVME_ADMIN_IDENTIFY_OPC	0x06
