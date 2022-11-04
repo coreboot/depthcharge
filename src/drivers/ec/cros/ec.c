@@ -311,7 +311,7 @@ CrosEc *cros_ec_get(void)
  *			error.
  * @return 0 if success, <0 if error
  */
-static int get_cmd_versions(CrosEc *me, int cmd, uint32_t *pmask)
+static int get_cmd_versions(int cmd, uint32_t *pmask)
 {
 	struct ec_params_get_cmd_versions_v1 p;
 	struct ec_response_get_cmd_versions r;
@@ -320,7 +320,7 @@ static int get_cmd_versions(CrosEc *me, int cmd, uint32_t *pmask)
 
 	p.cmd = cmd;
 
-	if (ec_command(me, EC_CMD_GET_CMD_VERSIONS,
+	if (ec_command(cros_ec_get(), EC_CMD_GET_CMD_VERSIONS,
 		       1, &p, sizeof(p), &r, sizeof(r)) != sizeof(r))
 		return -1;
 
@@ -328,18 +328,11 @@ static int get_cmd_versions(CrosEc *me, int cmd, uint32_t *pmask)
 	return 0;
 }
 
-/**
- * Return non-zero if the EC supports the command and version
- *
- * @param cmd		Command to check
- * @param ver		Version to check
- * @return non-zero if command version supported; 0 if not.
- */
-static int cmd_version_supported(CrosEc *me, int cmd, int ver)
+int cros_ec_cmd_version_supported(int cmd, int ver)
 {
 	uint32_t mask = 0;
 
-	if (get_cmd_versions(me, cmd, &mask))
+	if (get_cmd_versions(cmd, &mask))
 		return 0;
 
 	return (mask & EC_VER_MASK(ver)) ? 1 : 0;
@@ -859,7 +852,8 @@ static int ec_flash_write_burst_size(CrosEc *me)
 	 * Determine whether we can use version 1 of the command with more
 	 * data, or only version 0.
 	 */
-	if (!cmd_version_supported(me, EC_CMD_FLASH_WRITE, EC_VER_FLASH_WRITE))
+	if (!cros_ec_cmd_version_supported(EC_CMD_FLASH_WRITE,
+					   EC_VER_FLASH_WRITE))
 		return EC_FLASH_WRITE_VER0_SIZE;
 
 	/*
