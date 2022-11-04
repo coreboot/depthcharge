@@ -1318,6 +1318,18 @@ int cros_ec_locate_tcpc_chip(uint8_t port, struct ec_response_locate_chip *r)
 	return 0;
 }
 
+int cros_ec_pd_chip_info(int port, int renew,
+			 struct ec_response_pd_chip_info *r)
+{
+	const struct ec_params_pd_chip_info p = {
+		.port = port,
+		.live = renew,
+	};
+
+	return ec_command(cros_ec_get(), EC_CMD_PD_CHIP_INFO, 0,
+			   &p, sizeof(p), r, sizeof(*r));
+}
+
 int cros_ec_get_usb_pd_mux_info(int port, uint8_t *mux_state)
 {
 	struct ec_params_usb_pd_mux_info req;
