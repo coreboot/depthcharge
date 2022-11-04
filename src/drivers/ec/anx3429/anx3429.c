@@ -644,16 +644,12 @@ static int __must_check anx3429_enable_mcu(Anx3429 *me)
 
 static int __must_check anx3429_capture_device_id(Anx3429 *me)
 {
-	struct ec_params_pd_chip_info p;
 	struct ec_response_pd_chip_info r;
 
 	if (me->chip.vendor != 0)
 		return 0;
 
-	p.port = me->ec_pd_id;
-	p.live = 0;
-	int status = ec_command(me->bus->ec, EC_CMD_PD_CHIP_INFO, 0,
-				&p, sizeof(p), &r, sizeof(r));
+	int status = cros_ec_pd_chip_info(me->ec_pd_id, 0, &r);
 	if (status < 0) {
 		printf("anx3429.%d: could not get chip info!\n", me->ec_pd_id);
 		return -1;

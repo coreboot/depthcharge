@@ -901,16 +901,12 @@ static int is_parade_chip(const struct ec_response_pd_chip_info *const info,
 static enum ps8751_device_state __must_check ps8751_capture_device_id(
 							Ps8751 *me, int renew)
 {
-	struct ec_params_pd_chip_info p;
 	struct ec_response_pd_chip_info r;
 
 	if (me->chip.vendor != 0 && !renew)
 		return PS8751_DEVICE_PRESENT;
 
-	p.port = me->ec_pd_id;
-	p.live = renew;
-	int status = ec_command(me->bus->ec, EC_CMD_PD_CHIP_INFO, 0,
-				&p, sizeof(p), &r, sizeof(r));
+	int status = cros_ec_pd_chip_info(me->ec_pd_id, renew, &r);
 	if (status < 0) {
 		printf("%s: could not get chip info!\n", me->chip_name);
 		return PS8751_DEVICE_MISSING;
