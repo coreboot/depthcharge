@@ -398,6 +398,18 @@ CrosEc *new_cros_ec(CrosEcBusOps *bus, GpioOps *interrupt_gpio);
 void cros_ec_probe_aux_fw_chips(void);
 
 /**
+ * Return a port's PD chip information.
+ *
+ * @param port		The desired port number
+ * @param renew		Refresh cached value
+ * @param r		Result buffer for chip info
+ *
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_pd_chip_info(int port, int renew,
+			 struct ec_response_pd_chip_info *r);
+
+/**
  * Return a port's mux state.
  *
  * @param port		the desired port number
