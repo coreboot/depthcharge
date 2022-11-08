@@ -36,8 +36,16 @@
 #define PCH_PCR_PID_GPIOCOM4	0xd4
 #define PCH_PCR_PID_GPIOCOM5	0xd5
 
+extern const SocPcieRpGroup *soc_get_rp_group(pcidev_t dev, size_t *count);
+
 /* GPE */
 #define GPE0_STS_OFF		0x60
 extern int meteorlake_get_gpe(int gpe);
+
+#define PCI_DEV_SLOT_TCSS_XHCI		0x0d
+#define PCI_DEV_SLOT_PCH_XHCI		0x14
+#define USB2_PORTSC_OFFSET		0x480
+#define USB3_PORTSC_OFFSET		0x490
+#define USB_PORT_STATUS_CONNECTED	BIT(0)
 
 #endif /* __DRIVERS_SOC_METEORLAKE_H__ */

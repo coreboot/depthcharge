@@ -28,9 +28,6 @@
 
 #define PMC_IPC_CONN_DISC_REQ_SIZE	2
 
-#define IOM_PORT_STATUS_CONNECTED	BIT(31)
-#define REGBAR_PID_SHIFT		16
-
 #define TCSS_CONN_REQ_RES		0
 #define TCSS_DISC_REQ_RES		1
 
@@ -69,8 +66,6 @@
 /* !fatal means retry */
 #define TCSS_STATUS_IS_FATAL(s)		GET_TCSS_CD_FIELD(FATAL, s)
 
-static const TcssCtrlr *ctrlr;
-
 static uint32_t tcss_make_cmd(int u, int u3, int u2, int ufp, int hsl, int sbu,
 			      int acc)
 {
@@ -81,24 +76,6 @@ static uint32_t tcss_make_cmd(int u, int u3, int u2, int ufp, int hsl, int sbu,
 		TCSS_CD_FIELD(HSL, hsl) |
 		TCSS_CD_FIELD(SBU, sbu) |
 		TCSS_CD_FIELD(ACC, acc);
-}
-
-static const void *port_status_reg(int port)
-{
-	assert(ctrlr);
-
-	const uintptr_t status_reg = ctrlr->regbar +
-		(ctrlr->iom_pid << REGBAR_PID_SHIFT) +
-		(ctrlr->iom_status_offset + port * sizeof(uint32_t));
-	return (const void *)status_reg;
-}
-
-static bool is_port_connected(int port)
-{
-	uint32_t sts;
-
-	sts = read32(port_status_reg(port));
-	return !!(sts & IOM_PORT_STATUS_CONNECTED);
 }
 
 static int send_conn_disc_msg(const struct pmc_ipc_buffer *req,
@@ -190,13 +167,14 @@ static int update_all_tcss_ports_states(void)
 		}
 
 		usb_enabled = !!(mux_state & USB_PD_MUX_USB_ENABLED);
+		usb2 = tcss_port_info[ec_port].usb2_port_number;
 		usb3 = tcss_port_info[ec_port].usb3_port_number;
 
 		/*
 		 * PMC-IPC encoding of port numbers is 1-based but SoC TypeC
 		 * port numbers are 0-based.
 		 */
-		if (is_port_connected(usb3 - 1) == usb_enabled) {
+		if (is_port_connected((usb3-1), (usb2-1)) == usb_enabled) {
 			/*
 			 * The TCSS USB port mux state matches the observed
 			 * state of the Type-C USB port.
@@ -204,10 +182,9 @@ static int update_all_tcss_ports_states(void)
 			continue;
 		}
 
-		usb2 = tcss_port_info[ec_port].usb2_port_number;
 		debug("port C%d state: usb enable %d mux conn %d, usb2 %u, "
 				"usb3 %u\n", ec_port, usb_enabled,
-				is_port_connected(usb3-1), usb2, usb3);
+				is_port_connected((usb3-1), (usb2-1)), usb2, usb3);
 
 		r = cros_ec_get_usb_pd_control(ec_port, &ufp, &dbg_acc);
 		if (r < 0) {
@@ -277,9 +254,4 @@ void soc_usb_mux_init(void)
 {
 	soc_usb_mux_poll();
 	mdelay(100);		/* TODO(b/157721366): why is this needed */
-}
-
-void register_tcss_ctrlr(const TcssCtrlr *tcss_ctrlr)
-{
-	ctrlr = tcss_ctrlr;
 }
