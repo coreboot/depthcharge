@@ -15,7 +15,6 @@
 /* Global variables. */
 static struct stopwatch test_log_sw;
 BlockDevTestOpsType test_stat;
-bool is_first_dump = true;
 
 /* Get current test log delay based on the running test type. */
 static inline uint32_t get_test_log_delay(void)
@@ -225,12 +224,10 @@ vb2_error_t diag_dump_storage_test_log(char *buf, const char *end)
 	if (test_stat == BLOCKDEV_TEST_OPS_TYPE_STOP)
 		return VB2_SUCCESS;
 
-	/* Skip this call if this is not the very first dump call after a
-	   command and the stopwatch has not expired yet. */
-	if (!is_first_dump && !stopwatch_expired(&test_log_sw))
+	/* Skip this call if the stopwatch has not expired yet. */
+	if (!stopwatch_expired(&test_log_sw))
 		return VB2_ERROR_EX_DIAG_TEST_RUNNING;
 	stopwatch_init_msecs_expire(&test_log_sw, get_test_log_delay());
-	is_first_dump = false;
 
 	StorageTestLog log = {0};
 
@@ -262,10 +259,9 @@ vb2_error_t diag_storage_test_control(enum BlockDevTestOpsType ops)
 		return VB2_ERROR_EX;
 	get_test_remain_time_seconds(0, 1);
 
-	/* Set the global variables for the following diag_dump_storage_test_log
-	   calls. */
+	/* Reset the stopwatch for the next diag_dump_storage_test_log call. */
+	stopwatch_init_msecs_expire(&test_log_sw, 0);
 	test_stat = ops;
-	is_first_dump = true;
 
 	return VB2_SUCCESS;
 }
