@@ -207,7 +207,7 @@ fail:
 		cold_reboot();
 	}
 	if (res != VB2_SUCCESS) {
-		printf("%s: Unknown error %#x; doing cold reboot", __func__,
+		printf("%s: Unknown error %#x. Doing cold reboot.\n", __func__,
 		       res);
 		cold_reboot();
 	}
