@@ -22,8 +22,3 @@ uint32_t vb2ex_mtime(void)
 {
 	return timer_us(0) / USECS_PER_MSEC;
 }
-
-void vb2ex_msleep(uint32_t msec)
-{
-	mdelay(msec);
-}

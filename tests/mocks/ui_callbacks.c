@@ -12,7 +12,7 @@ uint32_t vb2ex_mtime(void)
 	return mock_time_ms;
 }
 
-void vb2ex_msleep(uint32_t msec)
+void arch_ndelay(uint64_t ns)
 {
-	mock_time_ms += msec;
+	mock_time_ms += (ns / NSECS_PER_MSEC);
 }

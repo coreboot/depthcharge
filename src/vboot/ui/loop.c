@@ -232,7 +232,7 @@ static vb2_error_t ui_loop_impl(
 		/* Delay. */
 		elapsed_ms = vb2ex_mtime() - start_time_ms;
 		if (elapsed_ms < UI_KEY_DELAY_MS)
-			vb2ex_msleep(UI_KEY_DELAY_MS - elapsed_ms);
+			mdelay(UI_KEY_DELAY_MS - elapsed_ms);
 	}
 
 	return VB2_SUCCESS;

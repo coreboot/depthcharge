@@ -60,6 +60,7 @@ ui-test-common-srcs += src/vboot/ui/menu.c
 ui-test-common-srcs += src/vboot/ui/navigation.c
 ui-test-common-srcs += src/vboot/ui/screens.c
 
+ui-test-common-mocks += arch_ndelay
 ui-test-common-mocks += cbmem_console_snapshot
 ui-test-common-mocks += ui_display
 ui-test-common-mocks += vb2api_gbb_get_flags

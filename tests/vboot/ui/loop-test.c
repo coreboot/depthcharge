@@ -26,7 +26,7 @@ struct vb2_kernel_params test_kparams;
 
 static vb2_error_t mock_action_msleep(struct ui_context *ui)
 {
-	vb2ex_msleep(mock());
+	mdelay(mock());
 	return VB2_SUCCESS;
 }
 
