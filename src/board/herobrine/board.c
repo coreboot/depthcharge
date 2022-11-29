@@ -145,6 +145,22 @@ static int init_display_ops(void)
 	return 0;
 }
 
+static int needs_nvme_init(uint32_t sku_id) {
+	/*
+	 * The lowest 5 bits represent the SKU id value and are represented by
+	 * tristate GPIO pins.  We need to mask out anything else. If
+	 * SKU pin 0 == 2 (high Z), then NVMe should be initialized on this
+	 * device for booting.  Otherwise, we should be booting from eMMC.
+	 */
+	uint32_t sku_mask = 0x1F;
+	uint32_t sku_bits = sku_id & sku_mask;
+
+	if ((sku_bits % 3) == 2)
+		return true;
+
+	return false;
+}
+
 static int board_setup(void)
 {
 	GpioOps *amp_enable;
@@ -204,9 +220,11 @@ static int board_setup(void)
 				&removable_block_dev_controllers);
 
 	/* NVMe */
-	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0x1, 0, 0));
-	list_insert_after(&nvme->ctrlr.list_node,
-			&fixed_block_dev_controllers);
+	if (needs_nvme_init(lib_sysinfo.sku_id)) {
+		NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0x1, 0, 0));
+		list_insert_after(&nvme->ctrlr.list_node,
+				  &fixed_block_dev_controllers);
+	}
 
 	/* SPI-NOR Flash driver - GPIO_15 as Chip Select */
 	QcomQspi *spi_flash = new_qcom_qspi(0x088DC000, (GpioOps *)&new_gpio_output(GPIO(15))->ops);
