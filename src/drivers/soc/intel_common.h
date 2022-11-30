@@ -83,6 +83,4 @@ typedef struct GpioCfg {
 		size_t num_pads);
 } GpioCfg;
 
-GpioCfg *new_platform_gpio_input(int gpio_num);
-GpioCfg *new_platform_gpio_output(int gpio_num, unsigned int value);
 #endif /* __DRIVERS_SOC_INTEL_COMMON_H__ */

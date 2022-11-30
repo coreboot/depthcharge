@@ -10,6 +10,7 @@
 #include "drivers/bus/i2s/cavs-regs.h"
 #include "drivers/bus/soundwire/soundwire.h"
 #include "drivers/soc/intel_common.h"
+#include "drivers/soc/intel_gpio.h"
 #include "drivers/sound/cs35l53.h"
 #include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/gpio_edge_buzzer.h"

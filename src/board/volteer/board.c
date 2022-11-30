@@ -144,7 +144,7 @@ static void volteer_setup_rt1011(void)
 
 static GpioOps *mkbp_int_ops(void)
 {
-	GpioCfg *mkbp_int_gpio = new_tigerlake_gpio_input(EC_AP_MKBP_INT_L);
+	GpioCfg *mkbp_int_gpio = new_platform_gpio_input(EC_AP_MKBP_INT_L);
 	/* Active-low, has to be inverted */
 	return new_gpio_not(&mkbp_int_gpio->ops);
 }
@@ -166,7 +166,7 @@ static int board_setup(void)
 
 	/* Audio Setup (for boot beep) */
 #if CONFIG(DRIVER_SOUND_GPIO_AMP)
-	GpioOps *sdmode = &new_tigerlake_gpio_output(SDMODE_PIN, 0)->ops;
+	GpioOps *sdmode = &new_platform_gpio_output(SDMODE_PIN, 0)->ops;
 	I2s *i2s = new_i2s_structure(&max98357a_settings, AUD_BITDEPTH,
 			sdmode, SSP_I2S1_START_ADDRESS);
 	I2sSource *i2s_source = new_i2s_source(&i2s->ops, AUD_SAMPLE_RATE,
