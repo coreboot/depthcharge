@@ -147,18 +147,10 @@ static int init_display_ops(void)
 
 static int needs_nvme_init(uint32_t sku_id) {
 	/*
-	 * The lowest 5 bits represent the SKU id value and are represented by
-	 * tristate GPIO pins.  We need to mask out anything else. If
-	 * SKU pin 0 == 2 (high Z), then NVMe should be initialized on this
-	 * device for booting.  Otherwise, we should be booting from eMMC.
+	 * If second bit of logical sku_id is 1, when NVMe should be
+	 * initialized.  Otherwise, we should be booting from eMMC.
 	 */
-	uint32_t sku_mask = 0x1F;
-	uint32_t sku_bits = sku_id & sku_mask;
-
-	if ((sku_bits % 3) == 2)
-		return true;
-
-	return false;
+	return !!(sku_id & 0x2);
 }
 
 static int board_setup(void)
