@@ -14,18 +14,24 @@
 
 static int board_backlight_update(DisplayOps *me, uint8_t enable)
 {
-	static GpioOps *disp_pwm, *backlight_en;
-
-	if (!backlight_en) {
-		disp_pwm = new_mtk_gpio_output(PAD_DISP_PWM1);
-		backlight_en = new_mtk_gpio_output(PAD_GPIO01);
-	}
+	GpioOps *pwm_control = sysinfo_lookup_gpio("PWM control", 1,
+						   new_mtk_gpio_output);
+	GpioOps *backlight_en = sysinfo_lookup_gpio("backlight enable", 1,
+						    new_mtk_gpio_output);
 
 	/* Enforce enable to be either 0 or 1. */
 	enable = !!enable;
 
-	gpio_set(disp_pwm, enable);
-	gpio_set(backlight_en, enable);
+	/* TODO: Add eDP AUX for backlight control */
+	if (pwm_control)
+		gpio_set(pwm_control, enable);
+	else
+		printf("%s: Use eDP AUX to control panel backlight\n",
+		       __func__);
+
+	if (backlight_en)
+		gpio_set(backlight_en, enable);
+
 	return 0;
 }
 
