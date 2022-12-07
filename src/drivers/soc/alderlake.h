@@ -28,6 +28,7 @@
 #define PCH_DEV_PCIE6	PCI_DEV(0, 0x1c, 6)
 #define PCH_DEV_PCIE7	PCI_DEV(0, 0x1c, 7)
 #define PCH_DEV_PCIE8	PCI_DEV(0, 0x1d, 0)
+#define PCH_DEV_PCIE10  PCI_DEV(0, 0x1d, 2)
 #define PCH_DEV_PCIE11  PCI_DEV(0, 0x1d, 3)
 #define PCH_DEV_GSPI0	PCI_DEV(0, 0x1e, 2)
 #define PCH_DEV_GSPI1	PCI_DEV(0, 0x1e, 3)
