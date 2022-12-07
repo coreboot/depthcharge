@@ -72,10 +72,9 @@ static BlockDev *get_first_fixed_block_device(void)
 		printf("%s: No storage device found.\n", __func__);
 		return NULL;
 	}
-	if (n > 1) {
-		printf("%s: More than one device found.\n", __func__);
-		return NULL;
-	}
+	if (n > 1)
+		printf("%s: More than one device found; use the first one\n",
+		       __func__);
 	list_for_each(bdev, *devs, list_node) { return bdev; }
 	return NULL;
 }
