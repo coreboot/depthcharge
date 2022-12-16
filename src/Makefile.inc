@@ -53,11 +53,12 @@ $(notdir $1): $1.elf
 PHONY += $(notdir $1)
 endef
 
-$(eval $(call declare_payload,$(DEPTHCHARGE),$$$$(depthcharge-objs),))
+$(eval $(call declare_payload,$(DEPTHCHARGE),$$$$(depthcharge-objs) \
+	$$$$(vboot-objs),))
 
 $(eval $(call declare_payload,$(NETBOOT),$$$$(depthcharge-objs) \
 	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs),))
 
 $(eval $(call declare_payload,$(DEV),$$$$(depthcharge-objs) \
 	$$$$(netboot-objs) $$$$(net-objs) $$$$(uip-objs) $$$$(dev-objs) \
-	$$$$(fastboot-objs),$(DONT_GC_NETBOOT)))
+	$$$$(fastboot-objs) $$$$(vboot-objs),$(DONT_GC_NETBOOT)))
