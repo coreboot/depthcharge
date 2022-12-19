@@ -138,9 +138,6 @@ static void setup_gpio_amp(const struct audio_amp *amp, SoundRoute *route)
 
 static GpioCfg *cfg_gpio(const struct audio_bus *bus)
 {
-	if (CONFIG(DRIVER_GPIO_ALDERLAKE))
-		return NULL;
-
 	GpioCfg *gpio_cfg = new_platform_gpio_output(bus->i2s.enable_gpio.pad,
 						  bus->i2s.enable_gpio.active_low);
 	return gpio_cfg;
@@ -148,10 +145,11 @@ static GpioCfg *cfg_gpio(const struct audio_bus *bus)
 
 static I2sSource *setup_i2s(const struct audio_bus *bus)
 {
-	I2s *i2s;
-	i2s = new_i2s_structure(bus->i2s.settings,
+	GpioCfg *gpio_cfg = cfg_gpio(bus);
+
+	I2s *i2s = new_i2s_structure(bus->i2s.settings,
 		default_if_zero(bus->i2s.depth, AUD_BITDEPTH),
-		&cfg_gpio(bus)->ops, bus->i2s.address);
+		gpio_cfg ? &gpio_cfg->ops : NULL, bus->i2s.address);
 
 	I2sSource *i2s_source = new_i2s_source(&i2s->ops,
 		default_if_zero(bus->i2s.rate, AUD_SAMPLE_RATE),
