@@ -1008,6 +1008,13 @@ static int nvme_ctrlr_init(BlockDevCtrlrOps *me)
 
 	/* Read the Controller Capabilities register */
 	ctrlr->ctrlr_regs = (void *)(uintptr_t)(pci_read_resource(dev,0) & ~0x7);
+
+	if (ctrlr->ctrlr_regs == 0) {
+		printf("NVMe is not detected.\n");
+		status = NVME_NOT_FOUND;
+		goto exit;
+	}
+
 	ctrlr->cap = read32x2le(ctrlr->ctrlr_regs + NVME_CAP_OFFSET);
 
 	/* Verify that the NVM command set is supported */
