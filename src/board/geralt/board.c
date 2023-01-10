@@ -4,6 +4,7 @@
 #include <libpayload.h>
 #include "base/init_funcs.h"
 #include "drivers/bus/usb/usb.h"
+#include "drivers/ec/cros/ec.h"
 #include "drivers/flash/mtk_snfc.h"
 #include "drivers/gpio/mtk_gpio.h"
 #include "drivers/gpio/sysinfo.h"
@@ -11,6 +12,7 @@
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/video/display.h"
 #include "drivers/video/mtk_ddp.h"
+#include "vboot/util/flag.h"
 
 static int board_backlight_update(DisplayOps *me, uint8_t enable)
 {
@@ -38,6 +40,21 @@ static int board_backlight_update(DisplayOps *me, uint8_t enable)
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_mtk_gpio_input);
+
+	/*
+	 * flag_fetch() will die if it encounters a flag that is not registered,
+	 * so we still register mock-up lid and power switches even if the
+	 * device does not have them.
+	 */
+	if (CONFIG(DRIVER_EC_CROS)) {
+		flag_replace(FLAG_LIDSW, cros_ec_lid_switch_flag());
+		if (CONFIG(DETACHABLE))
+			flag_replace(FLAG_PWRSW, cros_ec_power_btn_flag());
+	} else {
+		flag_replace(FLAG_LIDSW, new_gpio_high());
+		flag_replace(FLAG_PWRSW, new_gpio_low());
+	}
+
 	power_set_ops(&psci_power_ops);
 	/* Set up NOR flash ops */
 	MtkNorFlash *nor_flash = new_mtk_nor_flash(0x1132C000);
