@@ -184,58 +184,17 @@ static int i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
 
 int cros_ec_tunnel_i2c_protect(CrosECTunnelI2c *bus)
 {
-	struct ec_params_i2c_passthru_protect params = {
-		.subcmd = EC_CMD_I2C_PASSTHRU_PROTECT_ENABLE,
-		.port = bus->remote_bus
-	};
-	int result;
-
-	result = ec_command(bus->ec, EC_CMD_I2C_PASSTHRU_PROTECT, 0,
-			    &params, sizeof(params),
-			    NULL, 0);
-
-	if (result < 0)
-		return result;
-
-	return 0;
+	return cros_ec_i2c_passthru_protect(bus->remote_bus);
 }
 
 int cros_ec_tunnel_i2c_protect_status(CrosECTunnelI2c *bus, int *status)
 {
-	struct ec_params_i2c_passthru_protect params = {
-		.subcmd = EC_CMD_I2C_PASSTHRU_PROTECT_STATUS,
-		.port = bus->remote_bus
-	};
-	struct ec_response_i2c_passthru_protect response;
-	int result;
-
-	result = ec_command(bus->ec, EC_CMD_I2C_PASSTHRU_PROTECT, 0,
-			    &params, sizeof(params),
-			    &response, sizeof(response));
-
-	if (result < 0)
-		return result;
-
-	if (result < sizeof(response))
-		return -1;
-
-	*status = response.status;
-
-	return 0;
+	return cros_ec_i2c_passthru_protect_status(bus->remote_bus, status);
 }
 
 int cros_ec_tunnel_i2c_protect_tcpc_ports(CrosEc *ec)
 {
-	struct ec_params_i2c_passthru_protect protect_p = {
-		.subcmd = EC_CMD_I2C_PASSTHRU_PROTECT_ENABLE_TCPCS,
-	};
-	int ret;
-
-	ret = ec_command(ec, EC_CMD_I2C_PASSTHRU_PROTECT, 0,
-			 &protect_p, sizeof(protect_p), NULL, 0);
-	if (ret < 0)
-		return ret;
-	return 0;
+	return cros_ec_i2c_passthru_protect_tcpc_ports();
 }
 
 CrosECTunnelI2c *new_cros_ec_tunnel_i2c(CrosEc *ec,

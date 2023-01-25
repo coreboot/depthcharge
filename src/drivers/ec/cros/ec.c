@@ -1579,3 +1579,56 @@ int cros_ec_get_typec_status(int port, struct ec_response_typec_status *status)
 
 	return ret;
 }
+
+int cros_ec_i2c_passthru_protect(int i2c_port)
+{
+	struct ec_params_i2c_passthru_protect params = {
+		.subcmd = EC_CMD_I2C_PASSTHRU_PROTECT_ENABLE,
+		.port = i2c_port,
+	};
+	int result;
+
+	result = ec_command(cros_ec_get(), EC_CMD_I2C_PASSTHRU_PROTECT, 0,
+			    &params, sizeof(params), NULL, 0);
+	if (result < 0)
+		return result;
+
+	return 0;
+}
+
+int cros_ec_i2c_passthru_protect_status(int i2c_port, int *status)
+{
+	struct ec_params_i2c_passthru_protect params = {
+		.subcmd = EC_CMD_I2C_PASSTHRU_PROTECT_STATUS,
+		.port = i2c_port,
+	};
+	struct ec_response_i2c_passthru_protect response;
+	int result;
+
+	result = ec_command(cros_ec_get(), EC_CMD_I2C_PASSTHRU_PROTECT, 0,
+			    &params, sizeof(params),
+			    &response, sizeof(response));
+	if (result < 0)
+		return result;
+	if (result < sizeof(response))
+		return -1;
+
+	*status = response.status;
+
+	return 0;
+}
+
+int cros_ec_i2c_passthru_protect_tcpc_ports(void)
+{
+	struct ec_params_i2c_passthru_protect protect_p = {
+		.subcmd = EC_CMD_I2C_PASSTHRU_PROTECT_ENABLE_TCPCS,
+	};
+	int ret;
+
+	ret = ec_command(cros_ec_get(), EC_CMD_I2C_PASSTHRU_PROTECT, 0,
+			 &protect_p, sizeof(protect_p), NULL, 0);
+	if (ret < 0)
+		return ret;
+
+	return 0;
+}

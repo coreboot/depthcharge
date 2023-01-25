@@ -465,4 +465,29 @@ int cros_ec_set_typec_mux(int port, int index, uint8_t mux_state);
  */
 int cros_ec_get_typec_status(int port, struct ec_response_typec_status *status);
 
+/**
+ * Disable I2C command pass-through on all I2C ports used for TCPCs.
+ *
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_i2c_passthru_protect_tcpc_ports(void);
+
+/**
+ * Disable I2C command pass-through on the specified I2C port on the EC.
+ *
+ * @param i2c_port	I2C port to query
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_i2c_passthru_protect(int i2c_port);
+
+/**
+ * Query the I2C command pass-through status on the specified I2C port
+ * on the EC.
+ *
+ * @param i2c_port	I2C port to query
+ * @param status	pointer to the status result (0: unlocked, 1: locked)
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_i2c_passthru_protect_status(int i2c_port, int *status);
+
 #endif /* __DRIVERS_EC_CROS_EC_H__ */
