@@ -276,5 +276,4 @@ void soc_usb_mux_poll(void)
 void soc_usb_mux_init(void)
 {
 	soc_usb_mux_poll();
-	mdelay(100);		/* TODO(b/157721366): why is this needed */
 }

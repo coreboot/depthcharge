@@ -109,6 +109,7 @@ void dc_usb_initialize(void)
 
 	usb_initialize();
 	list_insert_after(&cleanup.list_node, &cleanup_funcs);
+	mdelay(100);
 
 	UsbHostController *hc;
 	list_for_each(hc, usb_host_controllers, list_node) {
