@@ -192,7 +192,7 @@ int cros_ec_tunnel_i2c_protect_status(CrosECTunnelI2c *bus, int *status)
 	return cros_ec_i2c_passthru_protect_status(bus->remote_bus, status);
 }
 
-int cros_ec_tunnel_i2c_protect_tcpc_ports(CrosEc *ec)
+int cros_ec_tunnel_i2c_protect_tcpc_ports(void)
 {
 	return cros_ec_i2c_passthru_protect_tcpc_ports();
 }

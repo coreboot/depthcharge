@@ -499,12 +499,10 @@ static vb2_error_t vboot_enable_power_button(VbootEcOps *vbec, int enable)
 
 static vb2_error_t vboot_protect_tcpc_ports(VbootEcOps *vbec)
 {
-	CrosEc *cros_ec = container_of(vbec, CrosEc, vboot);
-
 	if (!CONFIG(DRIVER_BUS_I2C_CROS_EC_TUNNEL))
 		return VB2_SUCCESS;
 
-	int ret = cros_ec_tunnel_i2c_protect_tcpc_ports(cros_ec);
+	int ret = cros_ec_tunnel_i2c_protect_tcpc_ports();
 	if (ret == -EC_RES_INVALID_COMMAND) {
 		printf("EC does not support TCPC sync in RW... ignoring.\n");
 	} else if (ret < 0) {

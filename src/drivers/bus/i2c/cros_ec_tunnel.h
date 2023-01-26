@@ -37,10 +37,9 @@ CrosECTunnelI2c *new_cros_ec_tunnel_i2c(CrosEc *ec,
 
 /*------------------------------------------------------------------------
  * Protect all the TCPC I2C tunnels in EC
- *   ec: EC instance which helps protect the TCPC I2C tunnels
  *   Returns: < 0 on error, 0 on success
  */
-int cros_ec_tunnel_i2c_protect_tcpc_ports(CrosEc *ec);
+int cros_ec_tunnel_i2c_protect_tcpc_ports(void);
 
 /* -----------------------------------------------------------------------
  * Protect the I2C bus, or query the protection status (exact nature of the
