@@ -20,7 +20,6 @@
 
 typedef struct CrosECTunnelI2c {
 	I2cOps ops;
-	CrosEc *ec;
 	uint16_t remote_bus;
 
 	uint8_t request_buf[256];

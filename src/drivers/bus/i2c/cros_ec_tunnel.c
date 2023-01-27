@@ -166,7 +166,7 @@ static int i2c_transfer(I2cOps *me, I2cSeg *segments, int seg_count)
 	ec_i2c_construct_message(bus->request_buf, segments,
 				 seg_count, bus->remote_bus);
 
-	result = ec_command(bus->ec, EC_CMD_I2C_PASSTHRU, 0,
+	result = ec_command(cros_ec_get(), EC_CMD_I2C_PASSTHRU, 0,
 			    bus->request_buf, request_len,
 			    bus->response_buf, response_len);
 	if (result < response_len) {
@@ -204,7 +204,6 @@ CrosECTunnelI2c *new_cros_ec_tunnel_i2c(CrosEc *ec,
 	assert(ec);
 
 	bus->ops.transfer = &i2c_transfer;
-	bus->ec = ec;
 	bus->remote_bus = remote_bus;
 
 	return bus;
