@@ -249,8 +249,7 @@ static int board_setup(void)
 	flag_replace(FLAG_PWRSW, cros_ec_power_btn_flag());
 
 	/* programmables downstream from the EC */
-	cros_ec_i2c_tunnel =
-		new_cros_ec_tunnel_i2c(cros_ec, EC_I2C_PORT_PS8751);
+	cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(EC_I2C_PORT_PS8751);
 	Ps8751 *ps8751 = new_ps8751(cros_ec_i2c_tunnel, EC_USB_PD_PORT_PS8751);
 	register_vboot_auxfw(&ps8751->fw_ops);
 
@@ -261,7 +260,7 @@ static int board_setup(void)
 	 */
 	if (!is_treeya(lib_sysinfo.sku_id) && !is_nuwani(lib_sysinfo.sku_id)) {
 		cros_ec_i2c_tunnel =
-			new_cros_ec_tunnel_i2c(cros_ec, EC_I2C_PORT_ANX3429);
+			new_cros_ec_tunnel_i2c(EC_I2C_PORT_ANX3429);
 		Anx3429 *anx3429 =
 			new_anx3429(cros_ec_i2c_tunnel, EC_USB_PD_PORT_ANX3429);
 		register_vboot_auxfw(&anx3429->fw_ops);

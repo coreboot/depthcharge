@@ -31,8 +31,7 @@ typedef struct CrosECTunnelI2c {
  *   remote_bus: tunnel bus number
  *   Returns: bus
  */
-CrosECTunnelI2c *new_cros_ec_tunnel_i2c(CrosEc *ec,
-					uint16_t remote_bus);
+CrosECTunnelI2c *new_cros_ec_tunnel_i2c(uint16_t remote_bus);
 
 /*------------------------------------------------------------------------
  * Protect all the TCPC I2C tunnels in EC

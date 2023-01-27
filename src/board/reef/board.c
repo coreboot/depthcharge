@@ -68,11 +68,11 @@ static int board_setup(void)
 	register_vboot_ec(&cros_ec->vboot);
 
 	/* programmables downstream from the EC */
-	cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec, /* i2c bus */ 0);
+	cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(/* i2c bus */ 0);
 	Anx3429 *anx3429 = new_anx3429(cros_ec_i2c_tunnel, /* ec pd# */ 0);
 	register_vboot_auxfw(&anx3429->fw_ops);
 
-	cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec, /* i2c bus */ 1);
+	cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(/* i2c bus */ 1);
 	Ps8751 *ps8751 = new_ps8751(cros_ec_i2c_tunnel, /* ec pd# */ 1);
 	register_vboot_auxfw(&ps8751->fw_ops);
 

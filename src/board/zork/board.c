@@ -198,11 +198,9 @@ static void audio_setup(CrosEc *cros_ec)
 	*/
 	if (is_dalboz() && (lib_sysinfo.board_id == UNDEFINED_STRAPPING_ID ||
 				lib_sysinfo.board_id < 2))
-		cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec,
-							    /* i2c bus */ 5);
+		cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(/* i2c bus */ 5);
 	else
-		cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(cros_ec,
-							    /* i2c bus */ 8);
+		cros_ec_i2c_tunnel = new_cros_ec_tunnel_i2c(/* i2c bus */ 8);
 
 	AmdAcp *acp = new_amd_acp(acp_pci_dev, ACP_OUTPUT_BT, LRCLK,
 				  0x1FFF /* Volume */);

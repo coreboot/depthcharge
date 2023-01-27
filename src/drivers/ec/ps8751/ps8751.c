@@ -1214,7 +1214,7 @@ static int ps8751_construct_i2c_tunnel(Ps8751 *me)
 		return -1;
 	}
 
-	me->bus = new_cros_ec_tunnel_i2c(cros_ec_get(), r.i2c_info.port);
+	me->bus = new_cros_ec_tunnel_i2c(r.i2c_info.port);
 	return ret;
 }
 

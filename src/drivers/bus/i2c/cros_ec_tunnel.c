@@ -197,11 +197,9 @@ int cros_ec_tunnel_i2c_protect_tcpc_ports(void)
 	return cros_ec_i2c_passthru_protect_tcpc_ports();
 }
 
-CrosECTunnelI2c *new_cros_ec_tunnel_i2c(CrosEc *ec,
-					uint16_t remote_bus) {
+CrosECTunnelI2c *new_cros_ec_tunnel_i2c(uint16_t remote_bus)
+{
 	CrosECTunnelI2c *bus = xzalloc(sizeof(*bus));
-
-	assert(ec);
 
 	bus->ops.transfer = &i2c_transfer;
 	bus->remote_bus = remote_bus;
