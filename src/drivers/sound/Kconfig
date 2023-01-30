@@ -80,6 +80,10 @@ config DRIVER_SOUND_MAX98927
 	bool "MAX98927 codec driver"
 	default n
 
+config DRIVER_SOUND_NAU8318_BEEP
+	bool "NAU8318 speaker beep driver"
+	default n
+
 config DRIVER_SOUND_PCAT_BEEP
 	bool "Legacy PC AT beep driver"
 	default n
