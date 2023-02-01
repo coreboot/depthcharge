@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <libpayload.h>
 #include "base/init_funcs.h"
+#include "drivers/bus/i2c/mtk_i2c.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/flash/mtk_snfc.h"
@@ -10,9 +11,21 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
 #include "drivers/storage/mtk_mmc.h"
+#include "drivers/tpm/google/i2c.h"
+#include "drivers/tpm/tpm.h"
 #include "drivers/video/display.h"
 #include "drivers/video/mtk_ddp.h"
 #include "vboot/util/flag.h"
+
+static int tpm_irq_status(void)
+{
+	static GpioOps *tpm_int;
+	if (!tpm_int)
+		tpm_int = sysinfo_lookup_gpio("TPM interrupt", 1,
+					      new_mtk_eint);
+	assert(tpm_int);
+	return gpio_get(tpm_int);
+}
 
 static int board_backlight_update(DisplayOps *me, uint8_t enable)
 {
@@ -54,6 +67,10 @@ static int board_setup(void)
 		flag_replace(FLAG_LIDSW, new_gpio_high());
 		flag_replace(FLAG_PWRSW, new_gpio_low());
 	}
+
+	MTKI2c *i2c1 = new_mtk_i2c(0x11E00000, 0x10220100, I2C_APDMA_ASYNC);
+	tpm_set_ops(&new_cr50_i2c(&i2c1->ops, 0x50,
+				  &tpm_irq_status)->base.ops);
 
 	power_set_ops(&psci_power_ops);
 	/* Set up NOR flash ops */
