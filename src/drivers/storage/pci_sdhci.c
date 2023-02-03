@@ -48,8 +48,8 @@ SdhciHost *new_pci_sdhci_host(pcidev_t dev, unsigned int platform_info,
 	uintptr_t bar;
 
 	if (get_pci_bar(dev, &bar)) {
-		printf("Failed to get BAR for PCI SDHCI %d.%d.%d", PCI_BUS(dev),
-		       PCI_SLOT(dev), PCI_FUNC(dev));
+		printf("Failed to get BAR for PCI SDHCI %02x:%02x.%02x\n",
+		PCI_BUS(dev), PCI_SLOT(dev), PCI_FUNC(dev));
 		return NULL;
 	}
 
@@ -57,7 +57,7 @@ SdhciHost *new_pci_sdhci_host(pcidev_t dev, unsigned int platform_info,
 
 	host->name = xzalloc(SDHCI_NAME_LENGTH);
 
-	snprintf(host->name, SDHCI_NAME_LENGTH, "PCI SDHCI %d.%d.%d",
+	snprintf(host->name, SDHCI_NAME_LENGTH, "PCI SDHCI %02x:%02x.%02x",
 		 PCI_BUS(dev), PCI_SLOT(dev), PCI_FUNC(dev));
 
 	return host;
@@ -86,19 +86,19 @@ static int sdhci_pci_init(BlockDevCtrlrOps *me) {
 	}
 
 	if (!is_sdhci_ctrlr(dev)) {
-		printf("No known SDHCI device found at %d:%d.%d", PCI_BUS(dev),
-		       PCI_SLOT(dev), PCI_FUNC(dev));
+		printf("No known SDHCI device found at %02x:%02x.%02x\n",
+		PCI_BUS(dev), PCI_SLOT(dev), PCI_FUNC(dev));
 		block_ctrlr->ops.update = NULL;
 		block_ctrlr->need_update = 0;
 		return -1;
 	}
 
-	printf("Found SDHCI at %d:%d.%d\n", PCI_BUS(dev), PCI_SLOT(dev),
+	printf("Found SDHCI at %02x:%02x.%02x\n", PCI_BUS(dev), PCI_SLOT(dev),
 	       PCI_FUNC(dev));
 
 	if (get_pci_bar(dev, &bar)) {
-		printf("Failed to get BAR for PCI SDHCI %d:%d.%d", PCI_BUS(dev),
-		       PCI_SLOT(dev), PCI_FUNC(dev));
+		printf("Failed to get BAR for PCI SDHCI %02x:%02x.%02x\n",
+		PCI_BUS(dev), PCI_SLOT(dev), PCI_FUNC(dev));
 		block_ctrlr->ops.update = NULL;
 		block_ctrlr->need_update = 0;
 		return -1;
@@ -107,7 +107,7 @@ static int sdhci_pci_init(BlockDevCtrlrOps *me) {
 	host->ioaddr = (void *)bar;
 	host->name = xzalloc(SDHCI_NAME_LENGTH);
 
-	snprintf(host->name, SDHCI_NAME_LENGTH, "PCI SDHCI %d:%d.%d",
+	snprintf(host->name, SDHCI_NAME_LENGTH, "PCI SDHCI %02x:%02x.%02x",
 		 PCI_BUS(dev), PCI_SLOT(dev), PCI_FUNC(dev));
 
 	/*
