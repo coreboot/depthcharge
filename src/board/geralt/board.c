@@ -61,7 +61,7 @@ static int board_setup(void)
 	 */
 	if (CONFIG(DRIVER_EC_CROS)) {
 		flag_replace(FLAG_LIDSW, cros_ec_lid_switch_flag());
-		if (CONFIG(DETACHABLE))
+		if (!CONFIG(DETACHABLE))
 			flag_replace(FLAG_PWRSW, cros_ec_power_btn_flag());
 	} else {
 		flag_replace(FLAG_LIDSW, new_gpio_high());
