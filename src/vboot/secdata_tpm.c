@@ -13,6 +13,7 @@
 
 #include "vboot/secdata_tpm.h"
 #include "vboot/util/misc.h"
+#include "vboot/widevine.h"
 
 #define RETURN_ON_FAILURE(tpm_command) do { \
 		uint32_t result_; \
@@ -139,4 +140,9 @@ uint32_t secdata_fwmp_read(struct vb2_context *ctx)
 					   size));
 
 	return TPM_SUCCESS;
+}
+
+uint32_t secdata_widevine_prepare(struct vb2_context *ctx)
+{
+	return prepare_widevine_root_of_trust(ctx);
 }

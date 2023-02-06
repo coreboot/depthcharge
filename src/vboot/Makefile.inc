@@ -13,10 +13,12 @@
 
 subdirs-y := callbacks crossystem nvdata stages ui util
 
-depthcharge-y += stages.c
+subdirs-$(CONFIG_WIDEVINE_PROVISION) += widevine
+
 depthcharge-y += boot_policy.c
 depthcharge-y += firmware_id.c
 depthcharge-y += nvdata.c
+depthcharge-y += stages.c
 
 ifeq ($(CONFIG_MOCK_TPM),y)
 depthcharge-y += mocked_secdata_tpm.c

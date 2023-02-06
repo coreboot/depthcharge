@@ -28,5 +28,6 @@ uint32_t secdata_firmware_write(struct vb2_context *ctx);
 uint32_t secdata_kernel_write(struct vb2_context *ctx);
 uint32_t secdata_kernel_lock(struct vb2_context *ctx);
 uint32_t secdata_fwmp_read(struct vb2_context *ctx);
+uint32_t secdata_widevine_prepare(struct vb2_context *ctx);
 
 #endif  /* VBOOT_REFERENCE_SECDATA_TPM_H_ */
