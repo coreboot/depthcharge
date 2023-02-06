@@ -144,5 +144,9 @@ uint32_t secdata_fwmp_read(struct vb2_context *ctx)
 
 uint32_t secdata_widevine_prepare(struct vb2_context *ctx)
 {
-	return prepare_widevine_root_of_trust(ctx);
+	RETURN_ON_FAILURE(prepare_widevine_root_of_trust(ctx));
+
+	RETURN_ON_FAILURE(prepare_widevine_tpm_pubkey());
+
+	return TPM_SUCCESS;
 }

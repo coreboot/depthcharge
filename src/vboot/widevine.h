@@ -12,4 +12,6 @@ int widevine_write_smc_data(uint64_t function_id, uint8_t *data,
 
 uint32_t prepare_widevine_root_of_trust(struct vb2_context *ctx);
 
+uint32_t prepare_widevine_tpm_pubkey(void);
+
 #endif /* __VBOOT_REFERENCE_WIDEVINE_H__ */
