@@ -31,6 +31,14 @@
 #define TCSS_CONN_REQ_RES		0
 #define TCSS_DISC_REQ_RES		1
 
+enum typec_port_index {
+	TYPE_C_PORT_0,
+	TYPE_C_PORT_1,
+	TYPE_C_PORT_2,
+	TYPE_C_PORT_3,
+	MAX_TYPE_C_PORTS,
+};
+
 /*
  * Polling the MUX significantly slows down depthcharge when something
  * is connected, so dampen the polls.
@@ -140,6 +148,7 @@ static int get_typec_hsl_sbu_orientation(bool mux_is_inverted, enum type_c_orien
  */
 static int update_all_tcss_ports_states(void)
 {
+	static bool tcss_conn_req_res[MAX_TYPE_C_PORTS] = { 0 };
 	const struct type_c_port_info *tcss_port_info;
 	const struct type_c_info *type_c_info;
 	struct pmc_ipc_buffer req = { 0 };
@@ -179,6 +188,16 @@ static int update_all_tcss_ports_states(void)
 			 * The TCSS USB port mux state matches the observed
 			 * state of the Type-C USB port.
 			 */
+			continue;
+		}
+
+		/*
+		 * b/263770936: As per Intel PMC team recommendation
+		 * "Connection (CONN) PMC IPC to an already connected port would be treated
+		 * as an error scenario". Hence, we would need to avoid the back to
+		 * back 0xa7 IPC with CONN request.
+		 */
+		if (tcss_conn_req_res[ec_port] == true && usb_enabled) {
 			continue;
 		}
 
@@ -228,6 +247,10 @@ static int update_all_tcss_ports_states(void)
 		      GET_TCSS_CD_FIELD(ACC, cmd));
 
 		r = send_conn_disc_msg(&req, &res);
+		if (!r) {
+			if (GET_TCSS_CD_FIELD(USAGE, cmd) == TCSS_CONN_REQ_RES)
+				tcss_conn_req_res[ec_port] = true;
+		}
 	}
 
 	return r;
