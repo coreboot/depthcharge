@@ -193,6 +193,16 @@ int vboot_select_and_boot_kernel(void)
 	if (res != VB2_SUCCESS)
 		goto fail;
 
+	if (CONFIG(WIDEVINE_PROVISION) && !vboot_in_recovery()) {
+		uint32_t tpm_rv = secdata_widevine_prepare(ctx);
+		if (tpm_rv) {
+			printf("failed to prepare widevine data: %#x\n",
+			       tpm_rv);
+			vb2api_fail(ctx, VB2_RECOVERY_WIDEVINE_PREPARE, tpm_rv);
+			reboot();
+		}
+	}
+
 	post_code(POST_CODE_KERNEL_FINALIZE);
 
 	res = vb2api_kernel_finalize(ctx);
