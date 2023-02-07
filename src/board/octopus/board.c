@@ -24,11 +24,10 @@
 #include <sysinfo.h>
 
 #include "base/init_funcs.h"
-#include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/bus/usb/usb.h"
-#include "drivers/ec/cros/commands.h"
+#include "drivers/ec/cros/ec.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/ec/ps8751/ps8751.h"
 #include "drivers/gpio/sysinfo.h"
