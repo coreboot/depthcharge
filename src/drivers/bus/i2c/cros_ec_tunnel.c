@@ -11,7 +11,7 @@
 
 #include "base/container_of.h"
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
-#include "drivers/ec/cros/commands.h"
+#include "drivers/ec/cros/ec.h"
 
 /**
  * ec_i2c_count_message - Count bytes needed for ec_i2c_construct_message

@@ -13,7 +13,6 @@
 #define __CROS_EC_TUNNEL_I2C_H__
 
 #include "drivers/bus/i2c/i2c.h"
-#include "drivers/ec/cros/ec.h"
 #include <libpayload.h>
 #include <assert.h>
 #include <stddef.h>
