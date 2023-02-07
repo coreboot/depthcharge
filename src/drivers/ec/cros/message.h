@@ -19,8 +19,6 @@
 #ifndef __DRIVERS_EC_CROS_MESSAGE_H__
 #define __DRIVERS_EC_CROS_MESSAGE_H__
 
-#include <stdint.h>
-
 #include "drivers/ec/cros/commands.h"
 
 /*
