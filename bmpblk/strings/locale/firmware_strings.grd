@@ -426,6 +426,10 @@ Could not get diagnostic information.
       <message name="error_internet_recovery" desc="Error of using internet recovery">
 Internet recovery partition corrupted or missing. Please recover using external storage instead.
       </message>
+      <message name="memory_training_desc" desc="The instructions displayed in the center of the screen with a black background when chromebook boots and does memory retraining.">
+Your device is finishing an update. This may take 1-2 minutes.
+Please do not turn off your device.
+      </message>
     </messages>
   </release>
 </grit>
