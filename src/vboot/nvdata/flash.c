@@ -117,12 +117,12 @@ vb2_error_t nvdata_flash_read(uint8_t *buf)
 static int erase_nvdata(void)
 {
 	if (flash_nvdata_init())
-		return 1;
+		return -1;
 
 	if (flash_erase(nvdata_area_descriptor.offset,
 			nvdata_area_descriptor.size) !=
 					nvdata_area_descriptor.size)
-		return 1;
+		return -1;
 
 	return 0;
 }
@@ -153,7 +153,7 @@ vb2_error_t nvdata_flash_write(const uint8_t *buf)
 		if (new_blob_offset >= nvdata_area_descriptor.size) {
 			printf("nvdata block is used up. "
 			       "deleting it to start over\n");
-			if (erase_nvdata() != VB2_SUCCESS)
+			if (erase_nvdata())
 				return VB2_ERROR_NV_WRITE;
 			new_blob_offset = 0;
 		}
