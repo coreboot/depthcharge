@@ -53,6 +53,22 @@ static int board_backlight_update(DisplayOps *me, uint8_t enable)
 	return 0;
 }
 
+static void enable_usb_vbus(struct UsbHostController *usb_host)
+{
+	/*
+	 * To avoid USB detection issue, assert GPIO AP_XHCI_INIT_DONE
+	 * to notify EC to enable USB VBUS when xHCI is initialized.
+	 */
+	GpioOps *pdn = sysinfo_lookup_gpio("XHCI init done", 1,
+					   new_mtk_gpio_output);
+	if (pdn) {
+		gpio_set(pdn, 1);
+
+		/* After USB VBUS is enabled, delay 500ms for USB detection. */
+		mdelay(500);
+	}
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_mtk_gpio_input);
@@ -126,6 +142,7 @@ static int board_setup(void)
 
 	/* Set up USB */
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11200000);
+	set_usb_init_callback(usb_host, enable_usb_vbus);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
 
 	/* Set display ops */
