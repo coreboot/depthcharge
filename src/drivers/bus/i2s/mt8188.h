@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * Copyright 2022 Mediatek Inc.
+ * Copyright 2023 Mediatek Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -13,10 +13,10 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __DRIVERS_BUS_I2S_MT8195_H__
-#define __DRIVERS_BUS_I2S_MT8195_H__
+#ifndef __DRIVERS_BUS_I2S_MT8188_H__
+#define __DRIVERS_BUS_I2S_MT8188_H__
 
-#define SRAM_BASE 0x10880000
+#define SRAM_BASE 0x10b20000
 #define SRAM_SIZE 0x10000
 
 /* AFE */
@@ -53,10 +53,10 @@ typedef struct afe_reg {
 		uint32_t con[6];
 		uint32_t reserved[2];
 	} etdm_out[2];			/* 0x2380: ETDM_OUT1_CON0 */
-	uint32_t _rsv8[1026];
-	uint32_t conn48_2;		/* 0x33c8: AFE_CONN48_2 */
+	uint32_t _rsv8[1146];
+	uint32_t conn72_2;		/* 0x35a8: AFE_CONN72_2 */
 	uint32_t _rsv9[4];
-	uint32_t conn49_2;		/* 0x33dc: AFE_CONN49_2 */
+	uint32_t conn73_2;		/* 0x35bc: AFE_CONN73_2 */
 } __attribute__((packed)) MtkI2sRegs;
 
 check_member(afe_reg, asys_top_con, 0x0600);
@@ -65,18 +65,18 @@ check_member(afe_reg, dl2_base, 0x1250);
 check_member(afe_reg, in_afifo_con[0], 0x2294);
 check_member(afe_reg, etdm_cowork_con0, 0x22f0);
 check_member(afe_reg, etdm_out[0].con[0], 0x2380);
-check_member(afe_reg, conn48_2, 0x33c8);
-check_member(afe_reg, conn49_2, 0x33dc);
+check_member(afe_reg, conn72_2, 0x35a8);
+check_member(afe_reg, conn73_2, 0x35bc);
 
 #define MTK_MEMIF_CHANNEL(r)	r->dl2_con0
 #define MTK_MEMIF_RATE(r)	r->memif_agent_fs_con0
 #define MTK_MEMIF_BITWIDTH(r)	r->dl2_con0
 
-/* DL2 I70/I71 -> ETDM_OUT2 O48/O49 connection */
-#define MTK_I2SO1_LCH(r)	r->conn48_2 /* O2 duplicate */
-#define MTK_I2SO1_RCH(r)	r->conn49_2 /* O2 duplicate */
-#define MTK_I2SO2_LCH(r)	r->conn48_2
-#define MTK_I2SO2_RCH(r)	r->conn49_2
+/* DL2 I70/I71 -> ETDM_OUT1 O72/O73 connection */
+#define MTK_I2SO1_LCH(r)	r->conn72_2
+#define MTK_I2SO1_RCH(r)	r->conn73_2
+#define MTK_I2SO2_LCH(r)	r->conn72_2 /* O1 duplicate */
+#define MTK_I2SO2_RCH(r)	r->conn73_2 /* O1 duplicate */
 
 #define MTK_LCH_DATA	BIT(6)
 #define MTK_RCH_DATA	BIT(7)
@@ -99,6 +99,28 @@ enum {
 #define ETDM_OUT1_SLAVE_SEL(x)		((x) << 20)
 #define ETDM_OUT1_SLAVE_SEL_MASK	(0xf << 20)
 #define ETDM_OUT1_SLAVE_SEL_SHIFT	20
+
+/* ETDM_COWORK_CON2 */
+#define ETDM_IN2_SLAVE_SEL(x)		((x) << 24)
+#define ETDM_IN2_SLAVE_SEL_MASK		(0xf << 24)
+#define ETDM_IN2_SLAVE_SEL_SHIFT	24
+#define ETDM_OUT3_SLAVE_SEL(x)		((x) << 20)
+#define ETDM_OUT3_SLAVE_SEL_MASK	(0xf << 20)
+#define ETDM_OUT3_SLAVE_SEL_SHIFT	20
+#define ETDM_OUT2_SLAVE_SEL(x)		((x) << 8)
+#define ETDM_OUT2_SLAVE_SEL_MASK	(0xf << 8)
+#define ETDM_OUT2_SLAVE_SEL_SHIFT	8
+
+/* ETDM_COWORK_CON2 */
+#define ETDM_IN2_SLAVE_SEL(x)		((x) << 24)
+#define ETDM_IN2_SLAVE_SEL_MASK		(0xf << 24)
+#define ETDM_IN2_SLAVE_SEL_SHIFT	24
+#define ETDM_OUT3_SLAVE_SEL(x)		((x) << 20)
+#define ETDM_OUT3_SLAVE_SEL_MASK	(0xf << 20)
+#define ETDM_OUT3_SLAVE_SEL_SHIFT	20
+#define ETDM_OUT2_SLAVE_SEL(x)		((x) << 8)
+#define ETDM_OUT2_SLAVE_SEL_MASK	(0xf << 8)
+#define ETDM_OUT2_SLAVE_SEL_SHIFT	8
 
 /* ETDM_COWORK_CON2 */
 #define ETDM_IN2_SLAVE_SEL(x)		((x) << 24)
@@ -143,4 +165,4 @@ enum {
 #define ETDM_OUT_CON4_FS(x)			((x) << 0)
 #define ETDM_OUT_CON4_FS_MASK			0x1f
 
-#endif /* __DRIVERS_BUS_I2S_MT8195_H__ */
+#endif /* __DRIVERS_BUS_I2S_MT8188_H__ */

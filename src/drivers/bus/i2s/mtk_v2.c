@@ -100,6 +100,7 @@ static int mtk_i2s_init(MtkI2s *bus)
 	uint32_t val;
 	uint32_t etdm_fs = get_etdm_fs_timing(bus->rate);
 	uint32_t afe_fs = get_afe_fs_timing(bus->rate);
+	int in_id, out_id;
 
 	if (bus->initialized)
 		return 0;
@@ -145,72 +146,88 @@ static int mtk_i2s_init(MtkI2s *bus)
 			0 << MTK_MEMIF_BIT_SFT);
 
 	switch (bus->i2s_num) {
+	case AFE_I2S_I1O1:
+		in_id = 0;
+		out_id = 0;
+		break;
 	case AFE_I2S_I1O2:
-		/* I70/I71 -> O48/O49 connection */
-		setbits_le32(&regs->conn48_2, BIT(6));
-		setbits_le32(&regs->conn49_2, BIT(7));
-
-		clrsetbits_le32(&regs->etdm_in1_con2, ETDM_IN_CON2_CLOCK_MASK,
-				ETDM_IN_CON2_CLOCK(1));
-
-		/* config I2SI1 */
-		mask = ETDM_CON0_BIT_LEN_MASK | ETDM_CON0_WORD_LEN_MASK |
-		       ETDM_CON0_FORMAT_MASK | ETDM_CON0_CH_NUM_MASK |
-		       ETDM_CON0_SLAVE_MODE;
-		val = ETDM_CON0_BIT_LEN(bus->bit_len) |
-		      ETDM_CON0_WORD_LEN(bus->word_len) |
-		      ETDM_CON0_FORMAT(0) |
-		      ETDM_CON0_CH_NUM(bus->channels);
-		clrsetbits_le32(&regs->etdm_in1_con0, mask, val);
-
-
-		mask = ETDM_IN_AFIFO_MODE_MASK | ETDM_IN_USE_AFIFO;
-		val = ETDM_IN_AFIFO_MODE(afe_fs) | ETDM_IN_USE_AFIFO;
-		clrsetbits_le32(&regs->in1_afifo_con, mask, val);
-
-		mask = ETDM_IN_CON3_FS_MASK;
-		val = ETDM_IN_CON3_FS(etdm_fs);
-		clrsetbits_le32(&regs->etdm_in1_con3, mask, val);
-
-		/* config I2SO2 */
-		mask = ETDM_CON0_BIT_LEN_MASK | ETDM_CON0_WORD_LEN_MASK |
-		       ETDM_CON0_FORMAT_MASK | ETDM_CON0_CH_NUM_MASK |
-		       ETDM_CON0_SLAVE_MODE | ETDM_OUT_CON0_RELATCH_DOMAIN_MASK;
-
-		val = ETDM_CON0_BIT_LEN(bus->bit_len) |
-		      ETDM_CON0_WORD_LEN(bus->word_len) |
-		      ETDM_CON0_FORMAT(0x0) |
-		      ETDM_CON0_CH_NUM(bus->channels) |
-		      ETDM_CON0_SLAVE_MODE |
-		      ETDM_OUT_CON0_RELATCH_DOMAIN(0x0);
-		clrsetbits_le32(&regs->etdm_out2_con0, mask, val);
-
-		mask = ETDM_OUT_CON2_LRCK_DELAY_BCK_INV |
-		       ETDM_OUT_CON2_LRCK_DELAY_0P5T_EN;
-		val = ETDM_OUT_CON2_LRCK_DELAY_BCK_INV |
-		      ETDM_OUT_CON2_LRCK_DELAY_0P5T_EN;
-		clrsetbits_le32(&regs->etdm_out2_con2, mask, val);
-
-		mask = ETDM_OUT_CON4_RELATCH_EN_MASK;
-		val = ETDM_OUT_CON4_RELATCH_EN(0xa);
-		clrsetbits_le32(&regs->etdm_out2_con4, mask, val);
-
-		mask = ETDM_OUT2_SLAVE_SEL_MASK;
-		val = ETDM_OUT2_SLAVE_SEL(0x2);
-		clrsetbits_le32(&regs->etdm_cowork_con2, mask, val);
-
-		/* enable I2SI1 */
-		setbits_le32(&regs->etdm_in1_con0, ETDM_CON0_EN);
-
-		/* enable I2SO2 */
-		setbits_le32(&regs->etdm_out2_con0, ETDM_CON0_EN);
-
+		in_id = 0;
+		out_id = 1;
 		break;
 	default:
-		printf("%s: Unrecognignized i2s type %d\n",
+		printf("%s: Unrecognized i2s type %d\n",
 			__func__, bus->i2s_num);
 		return -1;
 	}
+
+	if (out_id == 0) {
+		setbits_le32(&MTK_I2SO1_LCH(regs), MTK_LCH_DATA);
+		setbits_le32(&MTK_I2SO1_RCH(regs), MTK_RCH_DATA);
+	} else {
+		setbits_le32(&MTK_I2SO2_LCH(regs), MTK_LCH_DATA);
+		setbits_le32(&MTK_I2SO2_RCH(regs), MTK_RCH_DATA);
+	}
+
+	mask = ETDM_CON0_BIT_LEN_MASK | ETDM_CON0_WORD_LEN_MASK |
+	       ETDM_CON0_FORMAT_MASK | ETDM_CON0_CH_NUM_MASK |
+	       ETDM_CON0_SLAVE_MODE | ETDM_OUT_CON0_RELATCH_DOMAIN_MASK;
+
+	val = ETDM_CON0_BIT_LEN(bus->bit_len) |
+	      ETDM_CON0_WORD_LEN(bus->word_len) |
+	      ETDM_CON0_FORMAT(0x0) |
+	      ETDM_CON0_CH_NUM(bus->channels) |
+	      ETDM_CON0_SLAVE_MODE |
+	      ETDM_OUT_CON0_RELATCH_DOMAIN(0x0);
+	clrsetbits_le32(&regs->etdm_out[out_id].con[0], mask, val);
+
+	mask = ETDM_OUT_CON4_RELATCH_EN_MASK;
+	val = ETDM_OUT_CON4_RELATCH_EN(out_id ? 0xa : 0x9);
+	clrsetbits_le32(&regs->etdm_out[out_id].con[4], mask, val);
+
+	/* reg_clock_source_sel to a1sys_a2sys */
+	clrsetbits_le32(&regs->etdm_in[in_id].con[2],
+			ETDM_IN_CON2_CLOCK_MASK,
+			ETDM_IN_CON2_CLOCK(1));
+
+	/* config I2SI1 */
+	mask = ETDM_CON0_BIT_LEN_MASK | ETDM_CON0_WORD_LEN_MASK |
+	       ETDM_CON0_FORMAT_MASK | ETDM_CON0_CH_NUM_MASK |
+	       ETDM_CON0_SLAVE_MODE;
+	val = ETDM_CON0_BIT_LEN(bus->bit_len) |
+	      ETDM_CON0_WORD_LEN(bus->word_len) |
+	      ETDM_CON0_FORMAT(0) |
+	      ETDM_CON0_CH_NUM(bus->channels);
+	clrsetbits_le32(&regs->etdm_in[in_id].con[0], mask, val);
+
+	mask = ETDM_IN_AFIFO_MODE_MASK | ETDM_IN_USE_AFIFO;
+	val = ETDM_IN_AFIFO_MODE(afe_fs) | ETDM_IN_USE_AFIFO;
+	clrsetbits_le32(&regs->in_afifo_con[in_id], mask, val);
+
+	mask = ETDM_IN_CON3_FS_MASK;
+	val = ETDM_IN_CON3_FS(etdm_fs);
+	clrsetbits_le32(&regs->etdm_in[in_id].con[3], mask, val);
+
+	mask = ETDM_OUT_CON2_LRCK_DELAY_BCK_INV |
+	       ETDM_OUT_CON2_LRCK_DELAY_0P5T_EN;
+	val = ETDM_OUT_CON2_LRCK_DELAY_BCK_INV |
+	      ETDM_OUT_CON2_LRCK_DELAY_0P5T_EN;
+	clrsetbits_le32(&regs->etdm_out[out_id].con[2], mask, val);
+
+	if (out_id == 0) {
+		mask = ETDM_OUT1_SLAVE_SEL_MASK;
+		val = ETDM_OUT1_SLAVE_SEL(0x2);
+		clrsetbits_le32(&regs->etdm_cowork_con0, mask, val);
+	} else {
+		mask = ETDM_OUT2_SLAVE_SEL_MASK;
+		val = ETDM_OUT2_SLAVE_SEL(0x2);
+		clrsetbits_le32(&regs->etdm_cowork_con2, mask, val);
+	}
+
+	/* enable I2S_IN */
+	setbits_le32(&regs->etdm_in[in_id].con[0], ETDM_CON0_EN);
+
+	/* enable I2S_OUT */
+	setbits_le32(&regs->etdm_out[out_id].con[0], ETDM_CON0_EN);
 
 	return 0;
 }

@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * Copyright 2022 Mediatek Inc.
+ * Copyright 2022-2023 Mediatek Inc.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
@@ -21,6 +21,8 @@
 
 #if CONFIG(DRIVER_BUS_I2S_MT8195)
 #include "drivers/bus/i2s/mt8195.h"
+#elif CONFIG(DRIVER_BUS_I2S_MT8188)
+#include "drivers/bus/i2s/mt8188.h"
 #else
 #error "Unsupported BUS I2S config for MediaTek"
 #endif
