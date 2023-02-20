@@ -3,6 +3,8 @@
  * GPIO driver for Intel Meteor Lake SOC.
  */
 
+#include <libpayload.h>
+
 #include "drivers/gpio/meteorlake.h"
 #include "drivers/soc/meteorlake.h"
 

@@ -18,6 +18,7 @@
 #include "fastboot/fastboot.h"
 #include "fastboot/disk.h"
 #include "fastboot/sparse.h"
+#include <libpayload.h>
 #include <stdint.h>
 
 /********************** Sparse Image Handling ****************************/

@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 
+#include <libpayload.h>
 #include <stddef.h>
 #include <tests/test.h>
 

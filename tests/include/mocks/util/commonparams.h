@@ -1,5 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 
+#include <libpayload.h>
 #include <vb2_api.h>
 
 #define WORKBUF_SIZE (16 * MiB)

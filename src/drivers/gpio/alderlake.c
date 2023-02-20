@@ -5,6 +5,8 @@
  * GPIO driver for Intel Alder Lake SOC.
  */
 
+#include <libpayload.h>
+
 #include "drivers/gpio/alderlake.h"
 #include "drivers/soc/alderlake.h"
 

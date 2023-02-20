@@ -6,6 +6,8 @@
  * GPIO driver for Intel Tigerlake SOC.
  */
 
+#include <libpayload.h>
+
 #include "drivers/gpio/tigerlake.h"
 #include "drivers/soc/tigerlake.h"
 
