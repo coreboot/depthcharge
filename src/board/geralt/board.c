@@ -4,6 +4,7 @@
 #include <libpayload.h>
 #include "base/init_funcs.h"
 #include "drivers/bus/i2c/mtk_i2c.h"
+#include "drivers/bus/i2s/mtk_v2.h"
 #include "drivers/bus/spi/mtk.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/ec.h"
@@ -13,6 +14,8 @@
 #include "drivers/gpio/mtk_gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
+#include "drivers/sound/i2s.h"
+#include "drivers/sound/max98390.h"
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/tpm/google/i2c.h"
 #include "drivers/tpm/tpm.h"
@@ -67,6 +70,42 @@ static void enable_usb_vbus(struct UsbHostController *usb_host)
 		/* After USB VBUS is enabled, delay 500ms for USB detection. */
 		mdelay(500);
 	}
+}
+
+static void setup_max98390(GpioOps *spk_rst_l)
+{
+	/*
+	 * Currently MAX98390 only supports 24-bit word length and
+	 * 16-bit bit length.
+	 */
+	MtkI2s *i2so1 = new_mtk_i2s(0x10b10000, 2, 32 * KHz,
+				    24, 16, AFE_I2S_I1O1);
+	I2sSource *i2s_source = new_i2s_source(&i2so1->ops, 32 * KHz, 2, 8000);
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+	MTKI2c *i2c0 = new_mtk_i2c(0x11280000, 0x10220080, I2C_APDMA_ASYNC);
+	Max98390Codec *speaker_r = new_max98390_codec(&i2c0->ops, 0x38);
+	Max98390Codec *speaker_l = new_max98390_codec(&i2c0->ops, 0x39);
+
+	gpio_set(spk_rst_l, 0);
+
+	/* Delay 1ms for I2C ready */
+	mdelay(1);
+
+	list_insert_after(&speaker_l->component.list_node,
+			  &sound_route->components);
+	list_insert_after(&speaker_r->component.list_node,
+			  &sound_route->components);
+
+	sound_set_ops(&sound_route->ops);
+}
+
+static void sound_setup(void)
+{
+	GpioOps *spk_reset = sysinfo_lookup_gpio("speaker reset", 1,
+						 new_mtk_gpio_output);
+
+	if (spk_reset)
+		setup_max98390(spk_reset);
 }
 
 static int board_setup(void)
@@ -144,6 +183,8 @@ static int board_setup(void)
 	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11200000);
 	set_usb_init_callback(usb_host, enable_usb_vbus);
 	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+
+	sound_setup();
 
 	/* Set display ops */
 	if (display_init_required())
