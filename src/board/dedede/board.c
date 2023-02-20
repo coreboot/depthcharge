@@ -29,6 +29,7 @@
 #include "drivers/soc/jasperlake.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/gpio_amp.h"
+#include "drivers/sound/gpio_edge_buzzer.h"
 #include "drivers/sound/route.h"
 #include "drivers/sound/rt1015.h"
 #include "drivers/storage/blockdev.h"
@@ -52,6 +53,7 @@
 #define AUD_SAMPLE_RATE		48000
 #define EC_AP_MKBP_INT_L	GPP_C15
 #define EN_SPK_PIN		GPP_D17
+#define BUZZER_GPIO		GPP_D2
 #define AUD_NUM_CHANNELS	2
 #define AUD_I2C4		PCI_DEV(0, 0x19, 0)
 #define SPEED_HZ		400000
@@ -170,17 +172,26 @@ static uint8_t get_amp_source(void)
 
 static void setup_audio_amp(void)
 {
-	uint8_t amp_source = get_amp_source();
+	if (CONFIG(DRIVER_SOUND_GPIO_EDGE_BUZZER))
+	{
+		GpioOps *sound_gpio =
+			&new_jasperlake_gpio_output(BUZZER_GPIO, 0)->ops;
+		GpioEdgeBuzzer *buzzer = new_gpio_edge_buzzer(sound_gpio);
+		sound_set_ops(&buzzer->ops);
+	} else {
+		uint8_t amp_source = get_amp_source();
 
-	switch (amp_source) {
-	case MAX98360A_AMP_SRC:
-		setup_gpio_amp();
-		break;
-	case ALC1015_AMP_SRC:
-		setup_rt1015_amp();
-		break;
-	default:
-		printf("%s: Unsupported amp id %d\n", __func__, amp_source);
+		switch (amp_source) {
+		case MAX98360A_AMP_SRC:
+			setup_gpio_amp();
+			break;
+		case ALC1015_AMP_SRC:
+			setup_rt1015_amp();
+			break;
+		default:
+			printf("%s: Unsupported amp id %d\n",
+				__func__, amp_source);
+		}
 	}
 }
 
