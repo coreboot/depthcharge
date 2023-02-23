@@ -16,6 +16,7 @@
 #include "drivers/power/psci.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/max98390.h"
+#include "drivers/sound/nau8318.h"
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/tpm/google/i2c.h"
 #include "drivers/tpm/tpm.h"
@@ -99,13 +100,25 @@ static void setup_max98390(GpioOps *spk_rst_l)
 	sound_set_ops(&sound_route->ops);
 }
 
+static void setup_nau8318(GpioOps *spk_en, GpioOps *beep_en)
+{
+	nau8318Codec *nau8318 = new_nau8318_codec(spk_en, beep_en);
+	sound_set_ops(&nau8318->ops);
+}
+
 static void sound_setup(void)
 {
 	GpioOps *spk_reset = sysinfo_lookup_gpio("speaker reset", 1,
 						 new_mtk_gpio_output);
+	GpioOps *spk_en = sysinfo_lookup_gpio("speaker enable", 1,
+					      new_mtk_gpio_output);
+	GpioOps *beep_en = sysinfo_lookup_gpio("beep enable", 1,
+					       new_mtk_gpio_output);
 
 	if (spk_reset)
 		setup_max98390(spk_reset);
+	else if (spk_en && beep_en)
+		setup_nau8318(spk_en, beep_en);
 }
 
 static int board_setup(void)
