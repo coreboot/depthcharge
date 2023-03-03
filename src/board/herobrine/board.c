@@ -182,18 +182,27 @@ static int board_setup(void)
 
 	dt_register_vpd_mac_fixup(vpd_dt_map);
 
-	/*eMMC support */
-	u32 emmc_platfm_flags = SDHCI_PLATFORM_EMMC_1V8_POWER |
-				SDHCI_PLATFORM_EMMC_HARDWIRED_VCC |
-				SDHCI_PLATFORM_NO_EMMC_HS200 |
-				SDHCI_PLATFORM_SUPPORTS_HS400ES;
-	SdhciHost *emmc;
-	emmc = new_sdhci_msm_host(SDC1_HC_BASE,
-			emmc_platfm_flags,
-			384*MHz,
-			NULL);
-	list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
-		&fixed_block_dev_controllers);
+	/* We decide to boot from eMMC or NVMe based on sku_id.  We won't give
+	 * variants the option of booting from both. */
+	if (needs_nvme_init(lib_sysinfo.sku_id)) {
+		/* NVMe */
+		NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0x1, 0, 0));
+		list_insert_after(&nvme->ctrlr.list_node,
+				  &fixed_block_dev_controllers);
+	} else {
+		/*eMMC support */
+		u32 emmc_platfm_flags = SDHCI_PLATFORM_EMMC_1V8_POWER |
+					SDHCI_PLATFORM_EMMC_HARDWIRED_VCC |
+					SDHCI_PLATFORM_NO_EMMC_HS200 |
+					SDHCI_PLATFORM_SUPPORTS_HS400ES;
+		SdhciHost *emmc;
+		emmc = new_sdhci_msm_host(SDC1_HC_BASE,
+				emmc_platfm_flags,
+				384*MHz,
+				NULL);
+		list_insert_after(&emmc->mmc_ctrlr.ctrlr.list_node,
+			&fixed_block_dev_controllers);
+	}
 
 	/* SD card support */
 	QcomSpmi *pmic_spmi = new_qcom_spmi(PMIC_CORE_REGISTERS_ADDR,
@@ -210,13 +219,6 @@ static int board_setup(void)
 					   50*MHz, cd_wrapper);
 	list_insert_after(&sd->mmc_ctrlr.ctrlr.list_node,
 				&removable_block_dev_controllers);
-
-	/* NVMe */
-	if (needs_nvme_init(lib_sysinfo.sku_id)) {
-		NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0x1, 0, 0));
-		list_insert_after(&nvme->ctrlr.list_node,
-				  &fixed_block_dev_controllers);
-	}
 
 	/* SPI-NOR Flash driver - GPIO_15 as Chip Select */
 	QcomQspi *spi_flash = new_qcom_qspi(0x088DC000, (GpioOps *)&new_gpio_output(GPIO(15))->ops);
