@@ -17,7 +17,7 @@ const struct audio_config *variant_probe_audio_config(void)
 }
 
 static const struct storage_config storage_configs[] = {
-	{ .media = STORAGE_NVME, .pci_dev = PCH_DEV_PCIE10 },
+	{ .media = STORAGE_NVME, .pci_dev = PCH_DEV_PCIE8 },
 	{ .media = STORAGE_UFS, .pci_dev = PCH_DEV_UFS1 },
 };
 
