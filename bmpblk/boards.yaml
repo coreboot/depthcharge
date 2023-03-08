@@ -360,3 +360,6 @@ corsola:
 skyrim:
   # 1920x1080, boots recovery image on any SD card or USB ports.
   screen: [1920, 1080]
+
+geralt:
+  # TODO: Default setting for geralt and shall update after resolution confirmed.
