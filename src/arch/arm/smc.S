@@ -18,6 +18,6 @@
 	.global smc
 	.type smc, function
 smc:
-	/* X0-X3 passed through as call parameters. X0 is always Function ID. */
+	/* X0-X6 passed through as call parameters. X0 is always Function ID. */
 	smc	#0
 	ret			/* X0 passed through as return value */

@@ -27,6 +27,7 @@ enum psci_function_id {
 };
 
 // Conforms to ARM SMC Calling Convention (ARM DEN 0028A).
-uint64_t smc(uint64_t function_id, uint64_t arg1, uint64_t arg2, uint64_t arg3);
+uint64_t smc(uint64_t function_id, uint64_t arg1, uint64_t arg2, uint64_t arg3,
+	     uint64_t arg4, uint64_t arg5, uint64_t arg6);
 
 #endif /* __ARCH_ARM_SMC_H__ */

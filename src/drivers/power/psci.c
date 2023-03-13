@@ -22,13 +22,13 @@
 
 static int psci_reset(PowerOps *me)
 {
-	smc(PSCI_SYSTEM_RESET, 0, 0, 0);
+	smc(PSCI_SYSTEM_RESET, 0, 0, 0, 0, 0, 0);
 	halt();
 }
 
 static int psci_off(PowerOps *me)
 {
-	smc(PSCI_SYSTEM_OFF, 0, 0, 0);
+	smc(PSCI_SYSTEM_OFF, 0, 0, 0, 0, 0, 0);
 	halt();
 }
 
