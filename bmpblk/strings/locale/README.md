@@ -29,7 +29,11 @@ $ g4 diff               # Display the differences between files
 $ g4 change             # Create a changelist (from default changelist)
 ```
 
-3. Wait until the actual translation process finishes (may take a week).
+3. After the google3 CL is submitted, the translation process will start
+automatically.
+Currently there is no simple way to know when the process completes.
+Therefore the suggestion is to wait for 4-7 days and then try step 4 below.
+If any translation is missing, please wait for a few days and try again.
 
 4. Build `all_xtbs` target in the Google's internal code repository, and copy
 the resulting `firmware_strings_${LOCALE}.xtb` files which contain the
