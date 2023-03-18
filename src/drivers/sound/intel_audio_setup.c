@@ -18,6 +18,7 @@
 #include "drivers/sound/intel_audio_setup.h"
 #include "drivers/sound/max98373.h"
 #include "drivers/sound/max98373_sndw.h"
+#include "drivers/sound/max98363_sndw.h"
 #include "drivers/sound/max98390.h"
 #include "drivers/sound/max98396.h"
 #include "drivers/sound/route.h"
@@ -215,6 +216,14 @@ static SoundOps *setup_max98373_sndw(SndwOps *ops, unsigned int beep_ms)
 	return &new_max98373_sndw(ops, beep_ms)->ops;
 }
 
+static SoundOps *setup_max98363_sndw(SndwOps *ops, unsigned int beep_ms)
+{
+	if (!CONFIG(DRIVER_SOUND_MAX98363_SNDW))
+		return NULL;
+
+	return &new_max98363_sndw(ops, beep_ms)->ops;
+}
+
 static void configure_audio_codec(const struct audio_codec *codec,
 				  struct audio_data *data)
 {
@@ -245,6 +254,11 @@ static void configure_audio_codec(const struct audio_codec *codec,
 		} else if (data->type == AUDIO_SNDW) {
 			data->ops = setup_max98373_sndw(&data->sndw->ops, BEEP_DURATION);
 		}
+		break;
+
+	case AUDIO_MAX98363:
+		if (data->type == AUDIO_SNDW)
+			data->ops = setup_max98363_sndw(&data->sndw->ops, BEEP_DURATION);
 		break;
 
 	case AUDIO_CS35L53:
