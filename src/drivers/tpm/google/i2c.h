@@ -20,19 +20,21 @@
 
 #include "drivers/tpm/i2c.h"
 
+#define GSC_I2C_ADDR	0x50
+
 enum {
-	Cr50MaxBufSize = 63,
+	GscMaxBufSize = 63,
 };
 
-typedef int (*cr50_irq_status_t)(void);
+typedef int (*gsc_irq_status_t)(void);
 
-typedef struct Cr50I2c
+typedef struct GscI2c
 {
 	I2cTpm base;
-	cr50_irq_status_t irq_status;
-	uint8_t buf[sizeof(uint8_t) + Cr50MaxBufSize];
-} Cr50I2c;
+	gsc_irq_status_t irq_status;
+	uint8_t buf[sizeof(uint8_t) + GscMaxBufSize];
+} GscI2c;
 
-Cr50I2c *new_cr50_i2c(I2cOps *bus, uint8_t addr, cr50_irq_status_t irq_status);
+GscI2c *new_gsc_i2c(I2cOps *bus, uint8_t addr, gsc_irq_status_t irq_status);
 
 #endif /* __DRIVERS_TPM_GOOGLE_I2C_H__ */

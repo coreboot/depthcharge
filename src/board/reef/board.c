@@ -50,7 +50,7 @@
 #define AUD_VOLUME		4000
 #define SDMODE_PIN		GPIO_76
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
 	return apollolake_get_gpe(GPE0_DW1_28);
 }
@@ -79,8 +79,8 @@ static int board_setup(void)
 	/* H1 TPM on I2C bus 2 */
 	DesignwareI2c *i2c2 =
 		new_pci_designware_i2c(PCI_DEV(0, 0x16, 2), 400000, 133);
-	tpm_set_ops(&new_cr50_i2c(&i2c2->ops, 0x50,
-				  &cr50_irq_status)->base.ops);
+	tpm_set_ops(&new_gsc_i2c(&i2c2->ops, GSC_I2C_ADDR,
+				  &gsc_irq_status)->base.ops);
 
 	SdhciHost *emmc;
 	emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1c, 0),

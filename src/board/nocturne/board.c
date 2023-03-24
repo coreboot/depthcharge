@@ -54,7 +54,7 @@
 #define EMMC_CLOCK_MIN	400000
 #define EMMC_CLOCK_MAX	200000000
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
 	return skylake_get_gpe(GPE0_DW2_00);
 }
@@ -74,7 +74,7 @@ static int board_setup(void)
 		.ref_clk_mhz = 120,
 		.gspi_clk_mhz = 1,
 	};
-	tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0), cr50_irq_status)->ops);
+	tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0), gsc_irq_status)->ops);
 
 	/* Chrome EC (eSPI) */
 	CrosEcLpcBus *espi_ec = new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);

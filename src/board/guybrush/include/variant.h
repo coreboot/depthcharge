@@ -10,15 +10,15 @@
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/sound/route.h"
 
-/* cr50 / Ti50 interrupt is attached to either GPIO_85 or GPIO_3 */
-#define CR50_INT_85		85
-#define CR50_INT_3		3
+/* GSC interrupt is attached to either GPIO_85 or GPIO_3 */
+#define GSC_INT_85		85
+#define GSC_INT_3		3
 
 /* EN_SPKR GPIOs */
 #define EN_SPKR			70
 #define EN_SPKR_GB		31
 
-unsigned int variant_get_cr50_irq_gpio(void);
+unsigned int variant_get_gsc_irq_gpio(void);
 
 SoundRouteComponent *variant_get_audio_codec(I2cOps *i2c, uint8_t chip,
 					     uint32_t mclk, uint32_t lrclk);

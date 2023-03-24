@@ -235,7 +235,7 @@ static int board_setup(void)
 	}
 
 	if (CONFIG(DRIVER_TPM_I2C))
-		tpm_set_ops(&new_cr50_i2c(&new_qup_i2c(0xA98000)->ops, 0x50,
+		tpm_set_ops(&new_gsc_i2c(&new_qup_i2c(0xA98000)->ops, GSC_I2C_ADDR,
 					  herobrine_tpm_irq_status)->base.ops);
 	else if (CONFIG(DRIVER_TPM_SPI))
 		tpm_set_ops(&new_tpm_spi(&new_qup_spi(0xA98000)->ops,

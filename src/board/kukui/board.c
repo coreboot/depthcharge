@@ -99,7 +99,7 @@ static void sound_setup(void)
 		rt1015p_early_init(&speaker_amp->ops, sound_route);
 }
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
 	static GpioOps *tpm_int;
 
@@ -138,7 +138,7 @@ static int board_setup(void)
 
 	GpioOps *spi0_cs = new_gpio_not(new_mtk_gpio_output(GPIO_SPI0_CSB));
 	MtkSpi *spi0 = new_mtk_spi(0x1100A000, spi0_cs);
-	tpm_set_ops(&new_tpm_spi(&spi0->ops, cr50_irq_status)->ops);
+	tpm_set_ops(&new_tpm_spi(&spi0->ops, gsc_irq_status)->ops);
 
 	GpioOps *spi2_cs = new_gpio_not(new_mtk_gpio_output(GPIO_SPI2_CSB));
 	MtkSpi *spi2 = new_mtk_spi(0x11012000, spi2_cs);

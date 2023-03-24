@@ -50,7 +50,7 @@
 #define AUD_I2C_ADDR	0x32
 #define I2C_FS_HZ	400000
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
 	/* FIX ME: Confirm H1_PCH_INT_L PIN GPE */
 	return alderlake_get_gpe(GPE0_DW2_03); /* GPP_E3 */
@@ -68,7 +68,7 @@ static void alderlake_setup_tpm(void)
 		.gspi_clk_mhz = 1,
 	};
 	tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi1_params),
-		cr50_irq_status)->ops);
+		gsc_irq_status)->ops);
 }
 
 #if CONFIG(DRIVER_SOUND_MAX98373)

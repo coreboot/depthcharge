@@ -27,7 +27,7 @@
 #include "pci.h"
 #include "vboot/util/flag.h"
 
-#define CR50_INT_18	18
+#define GSC_SOC_INT_ODL	18
 #define EC_SOC_INT_ODL	84
 
 __weak const struct storage_config *variant_get_storage_configs(size_t *count)
@@ -53,12 +53,12 @@ __weak const struct storage_config *variant_get_storage_configs(size_t *count)
 #define AUDIO_I2C_SPEED		400000
 #define I2C_DESIGNWARE_CLK_MHZ	150
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
 	static KernGpio *tpm_gpio;
 
 	if (!tpm_gpio)
-		tpm_gpio = new_kern_fch_gpio_latched(CR50_INT_18);
+		tpm_gpio = new_kern_fch_gpio_latched(GSC_SOC_INT_ODL);
 
 	return gpio_get(&tpm_gpio->ops);
 }
@@ -154,10 +154,10 @@ static int board_setup(void)
 		setup_amd_acp_i2s(acp_pci_dev);
 
 	/* Set up Dauntless on I2C3 */
-	DesignwareI2c *i2c_ti50 = new_designware_i2c(
+	DesignwareI2c *i2c_gsc = new_designware_i2c(
 		AP_I2C3_ADDR, 400000, AP_I2C_CLK_MHZ);
-	tpm_set_ops(&new_cr50_i2c(&i2c_ti50->ops, 0x50,
-				  &cr50_irq_status)->base.ops);
+	tpm_set_ops(&new_gsc_i2c(&i2c_gsc->ops, GSC_I2C_ADDR,
+				  &gsc_irq_status)->base.ops);
 
 	power_set_ops(&kern_power_ops);
 

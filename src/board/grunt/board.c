@@ -56,8 +56,8 @@
 #define DA7219_DAI_CLK_MODE	0x2b
 #define   DAI_CLK_EN		0x80
 
-/* cr50's interrupt in attached to GPIO_9 */
-#define CR50_INT		9
+/* gsc's interrupt in attached to GPIO_9 */
+#define GSC_INT		9
 
 #define BH720_PCI_VID		0x1217
 #define BH720_PCI_DID		0x8620
@@ -76,12 +76,12 @@
 int is_barla_alc5682(uint32_t id);
 int is_treeya_alc5682(uint32_t id);
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
 	static KernGpio *tpm_gpio;
 
 	if (!tpm_gpio)
-		tpm_gpio = new_kern_fch_gpio_latched(CR50_INT);
+		tpm_gpio = new_kern_fch_gpio_latched(GSC_INT);
 
 	return gpio_get(&tpm_gpio->ops);
 }
@@ -309,8 +309,8 @@ static int board_setup(void)
 	/* Setup h1 on I2C1 */
 	DesignwareI2c *i2c_h1 = new_designware_i2c(
 		AP_I2C1_ADDR, 400000, AP_I2C_CLK_MHZ);
-	tpm_set_ops(&new_cr50_i2c(&i2c_h1->ops, 0x50,
-				  &cr50_irq_status)->base.ops);
+	tpm_set_ops(&new_gsc_i2c(&i2c_h1->ops, GSC_I2C_ADDR,
+				  &gsc_irq_status)->base.ops);
 
 	power_set_ops(&kern_power_ops);
 	display_set_ops(&grunt_display_ops);

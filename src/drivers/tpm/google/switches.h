@@ -9,31 +9,31 @@
 #include "drivers/gpio/gpio.h"
 #include "drivers/tpm/tpm.h"
 
-typedef struct Cr50Switch {
+typedef struct GscSwitch {
 	TpmOps *tpm;
 	GpioOps ops;
-} Cr50Switch;
+} GscSwitch;
 
 /**
- * Returns method that reports the state of the recovery button from the Cr50.
+ * Returns method that reports the state of the recovery button from the GSC.
  *
  * @param tpm   TPM operations initialized for the board.
  *
  * @return pointer to method that reports if a recovery button press is
- *         currently detected by the Cr50, 0 if not detected (-1 if
+ *         currently detected by the GSC, 0 if not detected (-1 if
  *         detection failed).
  */
-Cr50Switch *new_cr50_rec_switch(TpmOps *tpm);
+GscSwitch *new_gsc_rec_switch(TpmOps *tpm);
 
 /**
- * Returns method that reports the state of the power button from the Cr50.
+ * Returns method that reports the state of the power button from the GSC.
  * This status is also used as a trusted report of physical presence.
  *
  * @param tpm   TPM operations initialized for the board.
  *
  * @return pointer to method that reports if a recent power press
- *         was detected by the Cr50, 0 if not detected (-1 if detection failed).
+ *         was detected by the GSC, 0 if not detected (-1 if detection failed).
  */
-Cr50Switch *new_cr50_power_switch(TpmOps *tpm);
+GscSwitch *new_gsc_power_switch(TpmOps *tpm);
 
 #endif /* __DRIVERS_TPM_GOOGLE_SWITCHES_H__ */

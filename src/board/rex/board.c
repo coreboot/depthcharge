@@ -28,7 +28,6 @@
 #include <sysinfo.h>
 
 #define EC_PCH_INT_ODL	GPP_A17
-#define TPM_I2C_ADDR	0x50
 #define I2C_FS_HZ	400000 /* 400KHz */
 
 __weak const struct storage_config *variant_get_storage_configs(size_t *count)
@@ -71,7 +70,7 @@ __weak const struct tpm_config *variant_get_tpm_config(void)
 	return &config;
 }
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
 	return meteorlake_get_gpe(GPE0_DW1_03); /* GPP_E03 */
 }
@@ -82,12 +81,12 @@ static void tpm_setup(void)
 	DesignwareI2c *i2c = new_pci_designware_i2c(config->pci_dev,
 						    I2C_FS_HZ,
 						    METEORLAKE_DW_I2C_MHZ);
-	Cr50I2c *tpm = new_cr50_i2c(&i2c->ops, TPM_I2C_ADDR,
-				    &cr50_irq_status);
+	GscI2c *tpm = new_gsc_i2c(&i2c->ops, GSC_I2C_ADDR,
+				    &gsc_irq_status);
 	tpm_set_ops(&tpm->base.ops);
 	if (CONFIG(TPM_GOOGLE_SWITCHES))
 		flag_replace(FLAG_PHYS_PRESENCE,
-				&new_cr50_rec_switch(&tpm->base.ops)->ops);
+				&new_gsc_rec_switch(&tpm->base.ops)->ops);
 }
 
 __weak const struct audio_config *variant_probe_audio_config(void)

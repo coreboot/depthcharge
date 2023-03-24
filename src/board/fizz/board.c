@@ -53,7 +53,7 @@
 #define EMMC_SD_CLOCK_MIN	400000
 #define SD_CLOCK_MAX		52000000
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
 	return skylake_get_gpe(GPE0_DW2_00);
 }
@@ -71,14 +71,14 @@ static TpmOps *fizz_setup_tpm(void)
 			.gspi_clk_mhz = 1,
 		};
 		SpiTpm *tpm = new_tpm_spi(new_intel_gspi(&gspi0_params),
-					  cr50_irq_status);
+					  gsc_irq_status);
 		tpm_set_ops(&tpm->ops);
 		return &tpm->ops;
 	} else if (CONFIG(DRIVER_TPM_I2C)) {
 		DesignwareI2c *i2c1 = new_pci_designware_i2c(
 			PCI_DEV(0, 0x15, 1), 400000, SKYLAKE_DW_I2C_MHZ);
-		Cr50I2c *tpm = new_cr50_i2c(&i2c1->ops, 0x50,
-					    &cr50_irq_status);
+		GscI2c *tpm = new_gsc_i2c(&i2c1->ops, GSC_I2C_ADDR,
+					    &gsc_irq_status);
 		tpm_set_ops(&tpm->base.ops);
 		return &tpm->base.ops;
 	}
@@ -103,7 +103,7 @@ static int board_setup(void)
 
 	/* TPM */
 	TpmOps *tpm_ops	= fizz_setup_tpm();
-	flag_replace(FLAG_PHYS_PRESENCE, &new_cr50_rec_switch(tpm_ops)->ops);
+	flag_replace(FLAG_PHYS_PRESENCE, &new_gsc_rec_switch(tpm_ops)->ops);
 
 	/* Chrome EC (eSPI) */
 	CrosEcLpcBus *cros_ec_lpc_bus =

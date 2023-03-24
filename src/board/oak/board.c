@@ -116,15 +116,15 @@ static int sound_setup(void)
 	return 0;
 }
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
-	static GpioOps *cr50_irq;
+	static GpioOps *gsc_irq;
 
-	if (!cr50_irq)
-		cr50_irq = sysinfo_lookup_gpio("TPM interrupt", 1,
+	if (!gsc_irq)
+		gsc_irq = sysinfo_lookup_gpio("TPM interrupt", 1,
 					       new_mtk_eint);
 
-	return cr50_irq->get(cr50_irq);
+	return gsc_irq->get(gsc_irq);
 }
 
 static int board_setup(void)
@@ -137,8 +137,8 @@ static int board_setup(void)
 	MTKI2c *i2c2 = new_mtk_i2c(0x11009000, 0x11000200, I2C_APDMA_NOASYNC);
 
 	if (CONFIG_DRIVER_TPM_CR50_I2C)
-		tpm_set_ops(&new_cr50_i2c(&i2c2->ops, 0x50,
-					  &cr50_irq_status)->base.ops);
+		tpm_set_ops(&new_gsc_i2c(&i2c2->ops, GSC_I2C_ADDR,
+					  &gsc_irq_status)->base.ops);
 	else
 		tpm_set_ops(&new_slb96_i2c(&i2c2->ops, 0x20)->base.ops);
 

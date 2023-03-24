@@ -35,9 +35,9 @@ const struct storage_config *variant_get_storage_configs(size_t *count)
 	return ssd_storage_configs;
 }
 
-unsigned int variant_get_cr50_irq_gpio(void)
+unsigned int variant_get_gsc_irq_gpio(void)
 {
-	return (lib_sysinfo.board_id == 1) ? CR50_INT_3 : CR50_INT_85;
+	return (lib_sysinfo.board_id == 1) ? GSC_INT_3 : GSC_INT_85;
 }
 
 SoundRouteComponent *variant_get_audio_codec(I2cOps *i2c, uint8_t chip,

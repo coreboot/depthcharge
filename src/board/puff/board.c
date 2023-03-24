@@ -61,7 +61,7 @@
 #define SD_CLOCK_MIN	400000
 #define SD_CLOCK_MAX	52000000
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
 	return cannonlake_get_gpe(GPE0_DW1_21);
 }
@@ -79,10 +79,10 @@ static void puff_setup_tpm(void)
 			.gspi_clk_mhz = 1,
 		};
 		SpiTpm *tpm = new_tpm_spi(new_intel_gspi(&gspi0_params),
-					  cr50_irq_status);
+					  gsc_irq_status);
 		tpm_set_ops(&tpm->ops);
 		flag_replace(FLAG_PHYS_PRESENCE,
-			     &new_cr50_rec_switch(&tpm->ops)->ops);
+			     &new_gsc_rec_switch(&tpm->ops)->ops);
 	}
 }
 

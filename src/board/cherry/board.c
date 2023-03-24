@@ -110,15 +110,15 @@ static void sound_setup(void)
 	}
 }
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
-	static GpioOps *cr50_irq;
+	static GpioOps *gsc_irq;
 
-	if (!cr50_irq)
-		cr50_irq = sysinfo_lookup_gpio("TPM interrupt", 1,
+	if (!gsc_irq)
+		gsc_irq = sysinfo_lookup_gpio("TPM interrupt", 1,
 						new_mtk_eint);
 
-	return cr50_irq->get(cr50_irq);
+	return gsc_irq->get(gsc_irq);
 }
 
 static int board_backlight_update(DisplayOps *me, uint8_t enable)
@@ -148,8 +148,8 @@ static int board_setup(void)
 	power_set_ops(&psci_power_ops);
 
 	MTKI2c *i2c3 = new_mtk_i2c(0x11E03000, 0x10220480, I2C_APDMA_ASYNC);
-	tpm_set_ops(&new_cr50_i2c(&i2c3->ops, 0x50,
-				  &cr50_irq_status)->base.ops);
+	tpm_set_ops(&new_gsc_i2c(&i2c3->ops, GSC_I2C_ADDR,
+				  &gsc_irq_status)->base.ops);
 
 	GpioOps *spi0_cs = new_gpio_not(
 		new_mtk_gpio_output(GPIO_AP_SPI_EC_CS_L));

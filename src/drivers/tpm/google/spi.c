@@ -169,7 +169,7 @@ static int start_transaction(int read_write, size_t bytes, unsigned addr)
 	/* Wait for tpm to finish previous transaction */
 	tpm_sync();
 
-	/* Try to wake cr50 if it is asleep. */
+	/* Try to wake gsc if it is asleep. */
 	tpm_if.cs_assert(tpm_if.peripheral);
 	udelay(1);
 	tpm_if.cs_deassert(tpm_if.peripheral);
@@ -209,7 +209,7 @@ static int start_transaction(int read_write, size_t bytes, unsigned addr)
 	 * mind...) we transmit the 4 byte header without checking the byte
 	 * transmitted by the TPM during the transaction's last byte.
 	 *
-	 * We know that cr50 is guaranteed to set the flow control bit to 0
+	 * We know that gsc is guaranteed to set the flow control bit to 0
 	 * during the header transfer, but real TPM2 might be fast enough not
 	 * to require to stall the controller, this would present an issue.
 	 * crosbug.com/p/52132 has been opened to track this.
@@ -586,7 +586,7 @@ static size_t tpm2_process_command(const void *tpm2_command,
 	 *
 	 * The specification description of the state machine is a bit vague,
 	 * but from experience it looks like there is no need to wait for the
-	 * sts.expect bit to be set, at least with the 9670 and cr50 devices.
+	 * sts.expect bit to be set, at least with the 9670 and gsc devices.
 	 * Just write the command into FIFO, making sure not to exceed the
 	 * burst count or the maximum PDU size, whatever is smaller.
 	 */
@@ -720,7 +720,7 @@ SpiTpm *new_tpm_spi(SpiOps *bus, tpm_irq_status_t irq_status)
 		CleanupOnHandoff | CleanupOnLegacy;
 
 	if (!irq_status)
-		printf("WARNING: tpm irq not defined, will waste 10ms to wait on Cr50!!\n");
+		printf("WARNING: tpm irq not defined, will waste 10ms to wait on GSC!!\n");
 
 	return &spi_tpm;
 }

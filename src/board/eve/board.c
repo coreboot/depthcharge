@@ -58,7 +58,7 @@
 
 /*
  * Read device ID register from rt5514 codec to check audio health and hard
- * reset the system via cr50 if there are any issues found.  A byte of CMOS
+ * reset the system via gsc if there are any issues found.  A byte of CMOS
  * is used to ensure the workaround is only attempted once and the system
  * does not get stuck in a reset loop.
  */
@@ -92,10 +92,10 @@ static int board_check_audio(LateInitFunc *init)
 	uint8_t reset_reg = nvram_read(CMOS_RESET_REG);
 	uint32_t device_id_valid = htobe32(RT5514_DEVID_VALID);
 	uint32_t device_id = 0;
-	const uint8_t cr50_reset[] = {
+	const uint8_t gsc_reset[] = {
 		0x80, 0x01,		/* TPM_ST_NO_SESSIONS */
 		0x00, 0x00, 0x00, 0x0c,	/* commandSize */
-		0x20, 0x00, 0x00, 0x00,	/* cr50 vendor command */
+		0x20, 0x00, 0x00, 0x00,	/* gsc vendor command */
 		0x00, 0x13		/* immediate reset command */
 	};
 	int ret;
@@ -114,9 +114,9 @@ static int board_check_audio(LateInitFunc *init)
 		printf("Audio is broken\n");
 		/* Only reset if CMOS has not been set to magic value */
 		if (reset_reg != CMOS_RESET_MAGIC) {
-			printf("Reset system via cr50\n");
+			printf("Reset system via gsc\n");
 			nvram_write(CMOS_RESET_MAGIC, CMOS_RESET_REG);
-			tpm_xmit(cr50_reset, ARRAY_SIZE(cr50_reset), NULL, 0);
+			tpm_xmit(gsc_reset, ARRAY_SIZE(gsc_reset), NULL, 0);
 			halt();
 		} else {
 			printf("Audio recovery failed\n");
@@ -137,7 +137,7 @@ static LateInitFunc audio_init_func = {
 	.init = &board_check_audio
 };
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
 	return skylake_get_gpe(GPE0_DW2_00);
 }
@@ -155,8 +155,8 @@ static int board_setup(void)
 	/* H1 TPM on I2C bus 1 @ 400KHz, controller core is 120MHz */
 	DesignwareI2c *i2c1 = new_pci_designware_i2c(
 		PCI_DEV(0, 0x15, 1), 400000, SKYLAKE_DW_I2C_MHZ);
-	tpm_set_ops(&new_cr50_i2c(&i2c1->ops, 0x50,
-				  &cr50_irq_status)->base.ops);
+	tpm_set_ops(&new_gsc_i2c(&i2c1->ops, GSC_I2C_ADDR,
+				  &gsc_irq_status)->base.ops);
 
 	/* PCH Power */
 	power_set_ops(&skylake_power_ops);
