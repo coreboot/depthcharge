@@ -64,7 +64,7 @@
 #define I2C_FULL_SPEED_HZ	400000
 
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
 	return jasperlake_get_gpe(GPE0_DW0_23); /* GPP_B23 */
 }
@@ -82,7 +82,7 @@ static void jasperlake_setup_tpm(void)
 			.gspi_clk_mhz = 1,
 		};
 		tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0_params),
-					 cr50_irq_status)->ops);
+					 gsc_irq_status)->ops);
 	}
 }
 

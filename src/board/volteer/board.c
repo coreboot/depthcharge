@@ -37,7 +37,6 @@
 #include "drivers/tpm/tpm.h"
 
 #define TPM_I2C1	PCI_DEV(0, 0x15, 1)
-#define TPM_I2C_ADDR	0x50
 
 #define EMMC_CLOCK_MIN  400000
 #define EMMC_CLOCK_MAX  200000000
@@ -69,7 +68,7 @@
 #define USBC_PORT_1_USB2_NUM	CONFIG_VOLTEER_USBC_PORT_1_USB2_NUM
 #define USBC_PORT_1_USB3_NUM	CONFIG_VOLTEER_USBC_PORT_1_USB3_NUM
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
 	return tigerlake_get_gpe(GPE0_DW0_21); /* GPP_C21 */
 }
@@ -86,13 +85,13 @@ static void volteer_setup_tpm(void)
 			.gspi_clk_mhz = 1,
 		};
 		tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0_params),
-			cr50_irq_status)->ops);
+			gsc_irq_status)->ops);
 	} else if (CONFIG(DRIVER_TPM_I2C)) {
 		DesignwareI2c *i2c1 = new_pci_designware_i2c(
 			TPM_I2C1,
 			I2C_FS_HZ, TIGERLAKE_DW_I2C_MHZ);
-		tpm_set_ops(&new_cr50_i2c(&i2c1->ops, TPM_I2C_ADDR,
-			&cr50_irq_status)->base.ops);
+		tpm_set_ops(&new_gsc_i2c(&i2c1->ops, GSC_I2C_ADDR,
+			&gsc_irq_status)->base.ops);
 		printf("Using experimental I2C TPM\n");
 	}
 }

@@ -57,7 +57,7 @@
 #define EMMC_CLOCK_MAX		200000000
 #define SD_CLOCK_MAX		52000000
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
 	return icelake_get_gpe(GPE0_DW1_16 ); /* GPP_D16 */
 }
@@ -75,7 +75,7 @@ static void dragonegg_setup_tpm(void)
 			.gspi_clk_mhz = 1,
 		};
 		tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0_params),
-					 cr50_irq_status)->ops);
+					 gsc_irq_status)->ops);
 	}
 }
 

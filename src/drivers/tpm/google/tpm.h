@@ -35,13 +35,13 @@ struct tpm_vendor_header {
 /*
  * TPMv2 Spec mandates that vendor-specific command codes have bit 29 set,
  * while bits 15-0 indicate the command. All other bits should be zero. We
- * define one of those 16-bit command values for Cr50 purposes, and use the
+ * define one of those 16-bit command values for GSC purposes, and use the
  * subcommand_code in struct TpmCmdHeader to further distinguish the desired
  * operation.
  */
 #define TPM_CC_VENDOR_BIT   0x20000000
 
-/* Cr50 vendor-specific subcommand codes. 16 bits available. */
+/* GSC vendor-specific subcommand codes. 16 bits available. */
 enum vendor_cmd_cc {
 	VENDOR_CC_REPORT_TPM_STATE = 23,
 	VENDOR_CC_GET_REC_BTN = 29,

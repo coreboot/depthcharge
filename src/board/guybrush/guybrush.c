@@ -3,9 +3,9 @@
 #include "board/guybrush/include/variant.h"
 #include "drivers/sound/rt5682.h"
 
-unsigned int variant_get_cr50_irq_gpio(void)
+unsigned int variant_get_gsc_irq_gpio(void)
 {
-	return CR50_INT_3;
+	return GSC_INT_3;
 }
 
 SoundRouteComponent *variant_get_audio_codec(I2cOps *i2c, uint8_t chip,

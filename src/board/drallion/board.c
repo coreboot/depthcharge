@@ -103,14 +103,14 @@ static int keyboard_media_key_mapping(char ch)
 	}
 }
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
 	return cannonlake_get_gpe(GPE0_DW2_18);
 }
 
 static int board_setup(void)
 {
-	Cr50I2c *tpm;
+	GscI2c *tpm;
 	GpioOps *power_switch;
 
 	sysinfo_install_flags(new_cannonlake_gpio_input_from_coreboot);
@@ -141,10 +141,10 @@ static int board_setup(void)
 	DesignwareI2c *i2c4 = new_pci_designware_i2c(
 		PCI_DEV(0, 0x19, 0), 400000, CANNONLAKE_DW_I2C_MHZ);
 
-	tpm = new_cr50_i2c(&i2c4->ops, 0x50, &cr50_irq_status);
+	tpm = new_gsc_i2c(&i2c4->ops, GSC_I2C_ADDR, &gsc_irq_status);
 	tpm_set_ops(&tpm->base.ops);
 
-	power_switch = &new_cr50_power_switch(&tpm->base.ops)->ops;
+	power_switch = &new_gsc_power_switch(&tpm->base.ops)->ops;
 	flag_replace(FLAG_PWRSW, power_switch);
 	flag_replace(FLAG_PHYS_PRESENCE, power_switch);
 

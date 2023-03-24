@@ -66,8 +66,8 @@
 #define MCLK			48000000
 #define LRCLK			8000
 
-/* cr50's interrupt is attached to GPIO_3 */
-#define CR50_INT		3
+/* gsc's interrupt is attached to GPIO_3 */
+#define GSC_INT		3
 
 /* eDP backlight */
 #define GPIO_BACKLIGHT		85
@@ -76,12 +76,12 @@
 #define FW_CONFIG_MASK_AMP	0x1
 #define FW_CONFIG_SHIFT_AMP	35
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
 	static KernGpio *tpm_gpio;
 
 	if (!tpm_gpio)
-		tpm_gpio = new_kern_fch_gpio_latched(CR50_INT);
+		tpm_gpio = new_kern_fch_gpio_latched(GSC_INT);
 
 	return gpio_get(&tpm_gpio->ops);
 }
@@ -308,8 +308,8 @@ static int board_setup(void)
 	/* Set up h1 on I2C3 */
 	DesignwareI2c *i2c_h1 = new_designware_i2c(
 		AP_I2C3_ADDR, 400000, AP_I2C_CLK_MHZ);
-	tpm_set_ops(&new_cr50_i2c(&i2c_h1->ops, 0x50,
-				  &cr50_irq_status)->base.ops);
+	tpm_set_ops(&new_gsc_i2c(&i2c_h1->ops, GSC_I2C_ADDR,
+				  &gsc_irq_status)->base.ops);
 
 	power_set_ops(&kern_power_ops);
 	display_set_ops(&zork_display_ops);

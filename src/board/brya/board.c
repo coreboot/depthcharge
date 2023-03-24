@@ -29,7 +29,6 @@
 
 #define EC_PCH_INT_ODL	GPP_F17
 #define TPM_I2C3	PCI_DEV(0, 0x15, 3)
-#define TPM_I2C_ADDR	0x50
 #define I2C_FS_HZ	400000
 
 __weak const struct storage_config *variant_get_storage_configs(size_t *count)
@@ -57,7 +56,7 @@ __weak const int variant_get_ec_int(void)
 	return EC_PCH_INT_ODL;
 }
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
 	return alderlake_get_gpe(GPE0_DW0_13); /* GPP_A13 */
 }
@@ -83,12 +82,12 @@ static void tpm_setup(void)
 	DesignwareI2c *i2c = new_pci_designware_i2c(config->pci_dev,
 						    I2C_FS_HZ,
 						    ALDERLAKE_DW_I2C_MHZ);
-	Cr50I2c *tpm = new_cr50_i2c(&i2c->ops, TPM_I2C_ADDR,
-				    &cr50_irq_status);
+	GscI2c *tpm = new_gsc_i2c(&i2c->ops, GSC_I2C_ADDR,
+				    &gsc_irq_status);
 	tpm_set_ops(&tpm->base.ops);
 	if (CONFIG(TPM_GOOGLE_SWITCHES))
 		flag_replace(FLAG_PHYS_PRESENCE,
-				&new_cr50_rec_switch(&tpm->base.ops)->ops);
+				&new_gsc_rec_switch(&tpm->base.ops)->ops);
 }
 
 static int board_setup(void)

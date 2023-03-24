@@ -60,7 +60,7 @@
 #define MAX98360A_AMP_SRC	1
 #define ALC1015_AMP_SRC		2
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
 	return jasperlake_get_gpe(GPE0_DW0_04); /* GPP_B4 */
 }
@@ -78,11 +78,11 @@ static void dedede_setup_tpm(void)
 			.gspi_clk_mhz = 1,
 		};
 		SpiTpm *tpm = new_tpm_spi(new_intel_gspi(&gspi0_params),
-					  cr50_irq_status);
+					  gsc_irq_status);
 		tpm_set_ops(&tpm->ops);
 		if (!CONFIG(PHYSICAL_PRESENCE_KEYBOARD)) {
 			flag_replace(FLAG_PHYS_PRESENCE,
-				     &new_cr50_rec_switch(&tpm->ops)->ops);
+				     &new_gsc_rec_switch(&tpm->ops)->ops);
 		}
 	}
 

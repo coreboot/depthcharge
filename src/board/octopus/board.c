@@ -50,7 +50,7 @@
 #define AUD_VOLUME              4000
 #define SDMODE_PIN              GPIO_91
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
 	return apollolake_get_gpe(GPE0_DW1_31); /* GPIO_63 */
 }
@@ -67,7 +67,7 @@ static void octopus_setup_tpm(void)
 		.gspi_clk_mhz = 1,
 	};
 	tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0_params),
-				cr50_irq_status)->ops);
+				gsc_irq_status)->ops);
 }
 
 static int board_setup(void)

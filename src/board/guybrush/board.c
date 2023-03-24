@@ -43,7 +43,7 @@
 #define AUDIO_I2C_SPEED		400000
 #define I2C_DESIGNWARE_CLK_MHZ	150
 
-static unsigned int cr50_int_gpio = CR50_INT_85;
+static unsigned int gsc_int_gpio = GSC_INT_85;
 
 __weak const struct storage_config *variant_get_storage_configs(size_t *count)
 {
@@ -56,9 +56,9 @@ __weak const struct storage_config *variant_get_storage_configs(size_t *count)
 	return storage_configs;
 }
 
-__weak unsigned int variant_get_cr50_irq_gpio(void)
+__weak unsigned int variant_get_gsc_irq_gpio(void)
 {
-	return CR50_INT_85;
+	return GSC_INT_85;
 }
 
 __weak SoundRouteComponent *variant_get_audio_codec(I2cOps *i2c, uint8_t chip,
@@ -80,12 +80,12 @@ __weak unsigned int variant_get_en_spkr_gpio(void)
 	return EN_SPKR;
 }
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
 	static KernGpio *tpm_gpio;
 
 	if (!tpm_gpio)
-		tpm_gpio = new_kern_fch_gpio_latched(cr50_int_gpio);
+		tpm_gpio = new_kern_fch_gpio_latched(gsc_int_gpio);
 
 	return gpio_get(&tpm_gpio->ops);
 }
@@ -168,7 +168,7 @@ static void setup_amd_acp_i2s(pcidev_t acp_pci_dev)
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
-	cr50_int_gpio = variant_get_cr50_irq_gpio();
+	gsc_int_gpio = variant_get_gsc_irq_gpio();
 	CrosEcLpcBus *cros_ec_lpc_bus =
 		new_cros_ec_lpc_bus(CROS_EC_LPC_BUS_GENERIC);
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_lpc_bus->ops, NULL);
@@ -184,8 +184,8 @@ static int board_setup(void)
 	/* Set up H1 / Dauntless on I2C3 */
 	DesignwareI2c *i2c_h1 = new_designware_i2c(
 		AP_I2C3_ADDR, 400000, AP_I2C_CLK_MHZ);
-	tpm_set_ops(&new_cr50_i2c(&i2c_h1->ops, 0x50,
-				  &cr50_irq_status)->base.ops);
+	tpm_set_ops(&new_gsc_i2c(&i2c_h1->ops, GSC_I2C_ADDR,
+				  &gsc_irq_status)->base.ops);
 
 	power_set_ops(&kern_power_ops);
 	display_set_ops(&guybrush_display_ops);

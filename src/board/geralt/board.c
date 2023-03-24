@@ -140,7 +140,7 @@ static int board_setup(void)
 	}
 
 	MTKI2c *i2c1 = new_mtk_i2c(0x11E00000, 0x10220100, I2C_APDMA_ASYNC);
-	tpm_set_ops(&new_cr50_i2c(&i2c1->ops, 0x50,
+	tpm_set_ops(&new_gsc_i2c(&i2c1->ops, GSC_I2C_ADDR,
 				  &tpm_irq_status)->base.ops);
 
 	power_set_ops(&psci_power_ops);

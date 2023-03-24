@@ -17,8 +17,8 @@
  */
 
 /*
- * cr50 is a TPM 2.0 capable device that requires special
- * handling for the I2C interface.
+ * Cr50 and Ti50 (Collectively GSC) are TPM 2.0 capable devices
+ * that requires special handling for the I2C interface.
  *
  * - Use an interrupt for transaction status instead of hardcoded delays
  * - Must use write+wait+read read protocol
@@ -37,17 +37,17 @@
 #include "drivers/tpm/google/tpm.h"
 #include "drivers/tpm/i2c.h"
 
-#define CR50_I2C_DEBUG 0
+#define GSC_I2C_DEBUG 0
 
 enum {
-	Cr50TimeoutLong = 2 * 1000 * 1000,	// usecs
-	Cr50TimeoutShort = 2 * 1000,		// usecs
-	Cr50TimeoutNoIrq = 20 * 1000,		// usecs
-	Cr50TimeoutWake = 50,			// usecs
+	GscTimeoutLong = 2 * 1000 * 1000,	// usecs
+	GscTimeoutShort = 2 * 1000,		// usecs
+	GscTimeoutNoIrq = 20 * 1000,		// usecs
+	GscTimeoutWake = 50,			// usecs
 };
 
 enum {
-	Cr50WakeRetries = 3
+	GscWakeRetries = 3
 };
 
 enum {
@@ -106,19 +106,19 @@ static const char *to_tpm_name(uint8_t reg) {
 }
 
 /*
- * cr50_i2c_wait_tpm_ready() - wait until TPM is ready for more data
+ * gsc_i2c_wait_tpm_ready() - wait until TPM is ready for more data
  *
  * Wait for interrupt (or GPIO) to indicate TPM is ready
  *
  * Return -1 on timeout error, 0 on success.
  */
-static int cr50_i2c_wait_tpm_ready(Cr50I2c *tpm)
+static int gsc_i2c_wait_tpm_ready(GscI2c *tpm)
 {
 	uint64_t start, timeout;
 
 	if (!tpm->irq_status) {
 		// Fixed delay if interrupt not supported
-		udelay(Cr50TimeoutNoIrq);
+		udelay(GscTimeoutNoIrq);
 		return 0;
 	}
 
@@ -135,33 +135,33 @@ static int cr50_i2c_wait_tpm_ready(Cr50I2c *tpm)
 }
 
 /* Clear pending interrupts */
-static void cr50_i2c_clear_tpm_irq(Cr50I2c *tpm)
+static void gsc_i2c_clear_tpm_irq(GscI2c *tpm)
 {
 	if (tpm->irq_status && tpm->irq_status())
 		printf("%s: Clearing stale interrupt\n", __func__);
 }
 
 /*
- * cr50_i2c_write_raw() - raw write to TPM with retry
+ * gsc_i2c_write_raw() - raw write to TPM with retry
  *
  * Return -1 on error, 0 on success.
  */
-static int cr50_i2c_write_raw(Cr50I2c *tpm, uint8_t *data, int len)
+static int gsc_i2c_write_raw(GscI2c *tpm, uint8_t *data, int len)
 {
 	int try, ret = -1;
 
-	for (try = 0; try < Cr50WakeRetries; try++) {
+	for (try = 0; try < GscWakeRetries; try++) {
 		ret = i2c_write_raw(tpm->base.bus, tpm->base.addr, data, len);
 		if (!ret)
 			break;
-		udelay(Cr50TimeoutWake);
+		udelay(GscTimeoutWake);
 	}
 
 	return ret;
 }
 
 /*
- * cr50_i2c_read() - read from TPM register
+ * gsc_i2c_read() - read from TPM register
  *
  * @tpm: TPM chip information
  * @addr: register address to read from
@@ -174,29 +174,29 @@ static int cr50_i2c_write_raw(Cr50I2c *tpm, uint8_t *data, int len)
  *
  * Return -1 on error, 0 on success.
  */
-static int cr50_i2c_read(Cr50I2c *tpm, uint8_t addr, uint8_t *buffer,
+static int gsc_i2c_read(GscI2c *tpm, uint8_t addr, uint8_t *buffer,
 			 size_t len)
 {
 	if (!tpm->base.bus)
 		return -1;
 
 	// Clear interrupt before starting transaction
-	cr50_i2c_clear_tpm_irq(tpm);
+	gsc_i2c_clear_tpm_irq(tpm);
 
-	if (CR50_I2C_DEBUG) {
+	if (GSC_I2C_DEBUG) {
 		printf("%s: %#02x <= %02x [%#04x: %s][%zu bytes]\n", __func__,
 		       tpm->base.addr, addr, to_tpm_reg(addr),
 		       to_tpm_name(addr), len);
 	}
 
 	// Send the register address byte to the TPM
-	if (cr50_i2c_write_raw(tpm, &addr, 1)) {
+	if (gsc_i2c_write_raw(tpm, &addr, 1)) {
 		printf("%s: Address write failed\n", __func__);
 		return -1;
 	}
 
 	// Wait for TPM to be ready with response data
-	if (cr50_i2c_wait_tpm_ready(tpm)) {
+	if (gsc_i2c_wait_tpm_ready(tpm)) {
 		printf("%s: Waiting for ready interrupt failed\n", __func__ );
 		return -1;
 	}
@@ -207,7 +207,7 @@ static int cr50_i2c_read(Cr50I2c *tpm, uint8_t addr, uint8_t *buffer,
 		return -1;
 	}
 
-	if (CR50_I2C_DEBUG) {
+	if (GSC_I2C_DEBUG) {
 		printf("%s: %#02x =>", __func__, tpm->base.addr);
 		for (size_t i = 0; i < len; ++i)
 			printf(" %02x", buffer[i]);
@@ -218,7 +218,7 @@ static int cr50_i2c_read(Cr50I2c *tpm, uint8_t addr, uint8_t *buffer,
 }
 
 /*
- * cr50_i2c_write() - write to TPM register
+ * gsc_i2c_write() - write to TPM register
  *
  * @tpm: TPM chip information
  * @addr: register address to write to
@@ -231,18 +231,18 @@ static int cr50_i2c_read(Cr50I2c *tpm, uint8_t addr, uint8_t *buffer,
  *
  * Returns -1 on error, 0 on success.
  */
-static int cr50_i2c_write(Cr50I2c *tpm, uint8_t addr, const uint8_t *buffer,
+static int gsc_i2c_write(GscI2c *tpm, uint8_t addr, const uint8_t *buffer,
 			  size_t len)
 {
 	if (!tpm->base.bus)
 		return -1;
 
-	if (len > Cr50MaxBufSize) {
+	if (len > GscMaxBufSize) {
 		printf("%s: Length %zd is too large\n", __func__, len);
 		return -1;
 	}
 
-	if (CR50_I2C_DEBUG) {
+	if (GSC_I2C_DEBUG) {
 		printf("%s: %#02x <= %02x [%#04x: %s] +", __func__,
 		       tpm->base.addr, addr, to_tpm_reg(addr),
 		       to_tpm_name(addr));
@@ -256,16 +256,16 @@ static int cr50_i2c_write(Cr50I2c *tpm, uint8_t addr, const uint8_t *buffer,
 	memcpy(tpm->buf + 1, buffer, len);
 
 	// Clear interrupt before starting transaction
-	cr50_i2c_clear_tpm_irq(tpm);
+	gsc_i2c_clear_tpm_irq(tpm);
 
 	// Send write request buffer with address
-	if (cr50_i2c_write_raw(tpm, tpm->buf, len + 1)) {
+	if (gsc_i2c_write_raw(tpm, tpm->buf, len + 1)) {
 		printf("%s: Error writing to TPM\n", __func__);
 		return -1;
 	}
 
 	// Wait for TPM to be ready
-	return cr50_i2c_wait_tpm_ready(tpm);
+	return gsc_i2c_wait_tpm_ready(tpm);
 }
 
 #define TPM_HEADER_SIZE 10
@@ -290,12 +290,12 @@ static inline uint8_t tpm_did_vid(uint8_t locality)
 	return 0x6 | (locality << 4);
 }
 
-static int check_locality(Cr50I2c *tpm, int loc)
+static int check_locality(GscI2c *tpm, int loc)
 {
 	uint8_t mask = TpmAccessValid | TpmAccessActiveLocality;
 	uint8_t buf;
 
-	if (cr50_i2c_read(tpm, tpm_access(loc), &buf, 1))
+	if (gsc_i2c_read(tpm, tpm_access(loc), &buf, 1))
 		return -1;
 
 	if ((buf & mask) == mask)
@@ -305,40 +305,40 @@ static int check_locality(Cr50I2c *tpm, int loc)
 	return -1;
 }
 
-static void release_locality(Cr50I2c *tpm, int force)
+static void release_locality(GscI2c *tpm, int force)
 {
 	uint8_t mask = TpmAccessValid | TpmAccessRequestPending;
 	uint8_t addr = tpm_access(tpm->base.locality);
 	uint8_t buf;
 
-	if (cr50_i2c_read(tpm, addr, &buf, 1))
+	if (gsc_i2c_read(tpm, addr, &buf, 1))
 		return;
 
 	if (force || (buf & mask) == mask) {
 		buf = TpmAccessActiveLocality;
-		cr50_i2c_write(tpm, addr, &buf, 1);
+		gsc_i2c_write(tpm, addr, &buf, 1);
 	}
 
 	tpm->base.locality = 0;
 }
 
-static int request_locality(Cr50I2c *tpm, int loc)
+static int request_locality(GscI2c *tpm, int loc)
 {
 	uint8_t buf = TpmAccessRequestUse;
 
 	if (check_locality(tpm, loc) == loc)
 		return loc;
 
-	if (cr50_i2c_write(tpm, tpm_access(loc), &buf, 1))
+	if (gsc_i2c_write(tpm, tpm_access(loc), &buf, 1))
 		return -1;
 
 	uint64_t start = timer_us(0);
-	while (timer_us(start) < Cr50TimeoutLong) {
+	while (timer_us(start) < GscTimeoutLong) {
 		if (check_locality(tpm, loc) == loc) {
 			tpm->base.locality = loc;
 			return loc;
 		}
-		udelay(Cr50TimeoutShort);
+		udelay(GscTimeoutShort);
 	}
 
 	return -1;
@@ -346,21 +346,21 @@ static int request_locality(Cr50I2c *tpm, int loc)
 
 
 /*
- * cr50_i2c_tpm_status() - get TPM status
+ * gsc_i2c_tpm_status() - get TPM status
  *
  * Note: This would probably be better returning an int so we can indicate an
  * error code. For now it returns 0 in the case of an error.
  *
- * cr50 requires all 4 bytes of status register to be read
+ * GSC requires all 4 bytes of status register to be read
  *
  * Returns current TPM status, or 0 on error
  */
-static uint8_t cr50_i2c_tpm_status(I2cTpmChipOps *me)
+static uint8_t gsc_i2c_tpm_status(I2cTpmChipOps *me)
 {
-	Cr50I2c *tpm = container_of(me, Cr50I2c, base.chip_ops);
+	GscI2c *tpm = container_of(me, GscI2c, base.chip_ops);
 	uint8_t buf[4];
 
-	if (cr50_i2c_read(tpm, tpm_sts(tpm->base.locality), buf, sizeof(buf))) {
+	if (gsc_i2c_read(tpm, tpm_sts(tpm->base.locality), buf, sizeof(buf))) {
 		printf("%s: Read failure, so returning 0 as tpm_status\n",
 		       __func__);
 		return 0; /* yes, 0 */
@@ -370,31 +370,31 @@ static uint8_t cr50_i2c_tpm_status(I2cTpmChipOps *me)
 }
 
 /*
- * cr50_i2c_tpm_ready() - Write TpmStsCommandReady to cr50
+ * gsc_i2c_tpm_ready() - Write TpmStsCommandReady to GSC
  *
- * cr50 requires all 4 bytes of status register to be written
+ * GSC requires all 4 bytes of status register to be written
  *
  * An error cannot be reported by this function, but it is logged. The caller
  * can check the status itself.
  *
- * @me: base.chip_ops member of Cr50I2c tpm
+ * @me: base.chip_ops member of GscI2c tpm
  */
-static void cr50_i2c_tpm_ready(I2cTpmChipOps *me)
+static void gsc_i2c_tpm_ready(I2cTpmChipOps *me)
 {
-	Cr50I2c *tpm = container_of(me, Cr50I2c, base.chip_ops);
+	GscI2c *tpm = container_of(me, GscI2c, base.chip_ops);
 	uint8_t buf[4] = { TpmStsCommandReady };
 
 	// Ignore any write error, but it is logged.
-	if (cr50_i2c_write(tpm, tpm_sts(tpm->base.locality), buf, sizeof(buf)))
+	if (gsc_i2c_write(tpm, tpm_sts(tpm->base.locality), buf, sizeof(buf)))
 		printf("%s: Failed to write TpmStsCommandReady\n", __func__);
 
-	/* Why do we need this delay? cr50_i2c_write already waits for a write
+	/* Why do we need this delay? gsc_i2c_write already waits for a write
 	 * ack interrupt. */
-	udelay(Cr50TimeoutShort);
+	udelay(GscTimeoutShort);
 }
 
 /*
- * cr50_i2c_wait_burststs() - Wait for updated burst status
+ * gsc_i2c_wait_burst_sts() - Wait for updated burst status
  *
  * @tpm: TPM chip information
  * @mask: Mask for status byte
@@ -402,17 +402,17 @@ static void cr50_i2c_tpm_ready(I2cTpmChipOps *me)
  * @status: Returns new status byte
  * Returns -1 on error, 0 on success.
  */
-static int cr50_i2c_wait_burststs(Cr50I2c *tpm, uint8_t mask,
+static int gsc_i2c_wait_burst_sts(GscI2c *tpm, uint8_t mask,
 				  size_t *burst, int *status)
 {
 	uint32_t buf;
 	uint64_t start = timer_us(0);
 
-	while (timer_us(start) < Cr50TimeoutLong) {
+	while (timer_us(start) < GscTimeoutLong) {
 
-		if (cr50_i2c_read(tpm, tpm_sts(tpm->base.locality),
+		if (gsc_i2c_read(tpm, tpm_sts(tpm->base.locality),
 				  (uint8_t *)&buf, sizeof(buf))) {
-			udelay(Cr50TimeoutShort);
+			udelay(GscTimeoutShort);
 			continue;
 		}
 
@@ -420,19 +420,19 @@ static int cr50_i2c_wait_burststs(Cr50I2c *tpm, uint8_t mask,
 		*burst = le16toh((buf >> 8) & 0xffff);
 
 		if ((*status & mask) == mask &&
-		    *burst > 0 && *burst <= Cr50MaxBufSize)
+		    *burst > 0 && *burst <= GscMaxBufSize)
 			return 0;
 
-		udelay(Cr50TimeoutShort);
+		udelay(GscTimeoutShort);
 	}
 
 	printf("%s: Timeout reading burst status\n", __func__);
 	return -1;
 }
 
-static int cr50_i2c_tpm_recv(I2cTpmChipOps *me, uint8_t *buf, size_t buf_len)
+static int gsc_i2c_tpm_recv(I2cTpmChipOps *me, uint8_t *buf, size_t buf_len)
 {
-	Cr50I2c *tpm = container_of(me, Cr50I2c, base.chip_ops);
+	GscI2c *tpm = container_of(me, GscI2c, base.chip_ops);
 
 	int status;
 	uint32_t expected_buf;
@@ -446,13 +446,13 @@ static int cr50_i2c_tpm_recv(I2cTpmChipOps *me, uint8_t *buf, size_t buf_len)
 		return -1;
 	}
 
-	if (cr50_i2c_wait_burststs(tpm, mask, &burstcnt, &status)) {
+	if (gsc_i2c_wait_burst_sts(tpm, mask, &burstcnt, &status)) {
 		printf("%s: First chunk not available\n", __func__);
 		goto out_err;
 	}
 
 	// Read first chunk of burstcnt bytes
-	if (cr50_i2c_read(tpm, addr, buf, burstcnt)) {
+	if (gsc_i2c_read(tpm, addr, buf, burstcnt)) {
 		printf("%s: Read failed\n", __func__);
 		goto out_err;
 	}
@@ -470,13 +470,13 @@ static int cr50_i2c_tpm_recv(I2cTpmChipOps *me, uint8_t *buf, size_t buf_len)
 	current = burstcnt;
 	while (current < expected) {
 		// Read updated burst count and check status
-		if (cr50_i2c_wait_burststs(tpm, mask, &burstcnt, &status)) {
+		if (gsc_i2c_wait_burst_sts(tpm, mask, &burstcnt, &status)) {
 			printf("%s: Reading burst status failed\n", __func__ );
 			goto out_err;
 		}
 
 		len = MIN(burstcnt, expected - current);
-		if (cr50_i2c_read(tpm, addr, buf + current, len)) {
+		if (gsc_i2c_read(tpm, addr, buf + current, len)) {
 			printf("%s: Read failed\n", __func__);
 			goto out_err;
 		}
@@ -485,7 +485,7 @@ static int cr50_i2c_tpm_recv(I2cTpmChipOps *me, uint8_t *buf, size_t buf_len)
 	}
 
 
-	if (cr50_i2c_wait_burststs(tpm, TpmStsValid, &burstcnt, &status)) {
+	if (gsc_i2c_wait_burst_sts(tpm, TpmStsValid, &burstcnt, &status)) {
 		printf("%s: Reading final burst status failed\n", __func__ );
 		goto out_err;
 	}
@@ -500,19 +500,19 @@ static int cr50_i2c_tpm_recv(I2cTpmChipOps *me, uint8_t *buf, size_t buf_len)
  out_err:
 	/*
 	 * Abort current transaction if still pending. This will NOT abort
-	 * it if cr50_i2c_tpm_status() fails, since it returns 0 in that case.
+	 * it if gsc_i2c_tpm_status() fails, since it returns 0 in that case.
 	 * We cannot detect that separately from a valid '0' result, so this
 	 * is an escape, of some sort.
 	 */
-	if (cr50_i2c_tpm_status(&tpm->base.chip_ops) & TpmStsCommandReady)
-		cr50_i2c_tpm_ready(&tpm->base.chip_ops); // May fail, will log
+	if (gsc_i2c_tpm_status(&tpm->base.chip_ops) & TpmStsCommandReady)
+		gsc_i2c_tpm_ready(&tpm->base.chip_ops); // May fail, will log
 
 	return -1;
 }
 
-static int cr50_i2c_tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
+static int gsc_i2c_tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
 {
-	Cr50I2c *tpm = container_of(me, Cr50I2c, base.chip_ops);
+	GscI2c *tpm = container_of(me, GscI2c, base.chip_ops);
 
 	int status;
 	size_t burstcnt, limit, sent = 0;
@@ -521,23 +521,23 @@ static int cr50_i2c_tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
 	uint64_t start = timer_us(0);
 
 	/*
-	 * Since cr50_i2c_tpm_status() returns 0 on error, this will loop in
+	 * Since gsc_i2c_tpm_status() returns 0 on error, this will loop in
 	 * that case.
 	 */
-	while (!(cr50_i2c_tpm_status(&tpm->base.chip_ops) &
+	while (!(gsc_i2c_tpm_status(&tpm->base.chip_ops) &
 		 TpmStsCommandReady)) {
 
-		if (timer_us(start) > Cr50TimeoutLong) {
+		if (timer_us(start) > GscTimeoutLong) {
 			printf("%s: Timed out waiting for ready\n", __func__);
 			goto out_err;
 		}
 
 		/*
 		 * This may fail, but we will presumably detect failure in the
-		 * while loop condition abive, and cr50_i2c_tpm_ready() will log
+		 * while loop condition abive, and gsc_i2c_tpm_ready() will log
 		 * the error. So ignore the error here.
 		 */
-		cr50_i2c_tpm_ready(&tpm->base.chip_ops);
+		gsc_i2c_tpm_ready(&tpm->base.chip_ops);
 	}
 
 	while (len > 0) {
@@ -547,15 +547,15 @@ static int cr50_i2c_tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
 		if (sent > 0)
 			mask |= TpmStsDataExpect;
 
-		if (cr50_i2c_wait_burststs(tpm, mask, &burstcnt, &status)) {
+		if (gsc_i2c_wait_burst_sts(tpm, mask, &burstcnt, &status)) {
 			printf("%s: Error reading burst status.\n", __func__ );
 			goto out_err;
 		}
 
 		// Use burstcnt - 1 to account for the address byte
-		// that is inserted by cr50_i2c_write()
+		// that is inserted by gsc_i2c_write()
 		limit = MIN(burstcnt - 1, len);
-		if (cr50_i2c_write(tpm, tpm_data_fifo(tpm->base.locality),
+		if (gsc_i2c_write(tpm, tpm_data_fifo(tpm->base.locality),
 				   &buf[sent], limit)) {
 			printf("%s: Write failed\n", __func__);
 			goto out_err;
@@ -566,7 +566,7 @@ static int cr50_i2c_tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
 	}
 
 	// Ensure TPM is not expecting more data
-	if (cr50_i2c_wait_burststs(tpm, TpmStsValid, &burstcnt, &status)) {
+	if (gsc_i2c_wait_burst_sts(tpm, TpmStsValid, &burstcnt, &status)) {
 		printf("%s: Reading final burst status failed\n", __func__ );
 		goto out_err;
 	}
@@ -577,7 +577,7 @@ static int cr50_i2c_tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
 	}
 
 	// Start the TPM command
-	if (cr50_i2c_write(tpm, tpm_sts(tpm->base.locality), tpm_go,
+	if (gsc_i2c_write(tpm, tpm_sts(tpm->base.locality), tpm_go,
 			   sizeof(tpm_go))) {
 		printf("%s: Start command failed\n", __func__);
 		goto out_err;
@@ -587,26 +587,26 @@ static int cr50_i2c_tpm_send(I2cTpmChipOps *me, const uint8_t *buf, size_t len)
  out_err:
 	/*
 	 * Abort current transaction if still pending. This will NOT abort
-	 * it if cr50_i2c_tpm_status() fails, since it returns 0 in that case.
+	 * it if gsc_i2c_tpm_status() fails, since it returns 0 in that case.
 	 * We cannot detect that separately from a valid '0' result, so this
 	 * is an escape, of some sort.
 	 */
-	if (cr50_i2c_tpm_status(&tpm->base.chip_ops) & TpmStsCommandReady)
-		cr50_i2c_tpm_ready(&tpm->base.chip_ops); // May fail, will log
+	if (gsc_i2c_tpm_status(&tpm->base.chip_ops) & TpmStsCommandReady)
+		gsc_i2c_tpm_ready(&tpm->base.chip_ops); // May fail, will log
 
 	return -1;
 }
 
 static int tpm_init(I2cTpmChipOps *me)
 {
-	Cr50I2c *tpm = container_of(me, Cr50I2c, base.chip_ops);
+	GscI2c *tpm = container_of(me, GscI2c, base.chip_ops);
 
 	if (request_locality(tpm, 0) != 0)
 		return -1;
 
 	// Read four bytes from DID_VID register.
 	uint32_t vendor;
-	if (cr50_i2c_read(tpm, tpm_did_vid(0), (uint8_t *)&vendor, 4)) {
+	if (gsc_i2c_read(tpm, tpm_did_vid(0), (uint8_t *)&vendor, 4)) {
 		release_locality(tpm, 1);
 		return -1;
 	}
@@ -629,14 +629,14 @@ static int tpm_init(I2cTpmChipOps *me)
 
 static int tpm_cleanup(I2cTpmChipOps *me)
 {
-	Cr50I2c *tpm = container_of(me, Cr50I2c, base.chip_ops);
+	GscI2c *tpm = container_of(me, GscI2c, base.chip_ops);
 	release_locality(tpm, 1);
 	return 0;
 }
 
-Cr50I2c *new_cr50_i2c(I2cOps *bus, uint8_t addr, cr50_irq_status_t irq_status)
+GscI2c *new_gsc_i2c(I2cOps *bus, uint8_t addr, gsc_irq_status_t irq_status)
 {
-	Cr50I2c *tpm = xmalloc(sizeof(*tpm));
+	GscI2c *tpm = xmalloc(sizeof(*tpm));
 	i2ctpm_fill_in(&tpm->base, bus, addr,
 		       TpmStsDataAvail | TpmStsValid,
 		       TpmStsDataAvail | TpmStsValid, TpmStsCommandReady);
@@ -646,10 +646,10 @@ Cr50I2c *new_cr50_i2c(I2cOps *bus, uint8_t addr, cr50_irq_status_t irq_status)
 	tpm->base.chip_ops.init = &tpm_init;
 	tpm->base.chip_ops.cleanup = &tpm_cleanup;
 
-	tpm->base.chip_ops.recv = &cr50_i2c_tpm_recv;
-	tpm->base.chip_ops.send = &cr50_i2c_tpm_send;
-	tpm->base.chip_ops.cancel = &cr50_i2c_tpm_ready;
-	tpm->base.chip_ops.status = &cr50_i2c_tpm_status;
+	tpm->base.chip_ops.recv = &gsc_i2c_tpm_recv;
+	tpm->base.chip_ops.send = &gsc_i2c_tpm_send;
+	tpm->base.chip_ops.cancel = &gsc_i2c_tpm_ready;
+	tpm->base.chip_ops.status = &gsc_i2c_tpm_status;
 
 	return tpm;
 }

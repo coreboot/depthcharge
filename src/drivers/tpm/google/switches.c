@@ -2,8 +2,8 @@
 /*
  * Copyright 2019 Google LLC.
  *
- * This is a module which allows reading of Cr50 button states using vendor
- * specific TPM command. It needs to be tightly synchronized with the cr50 TPM
+ * This is a module which allows reading of GSC button states using vendor
+ * specific TPM command. It needs to be tightly synchronized with the GSC TPM
  * codebase in src/third_party/tpm2
  */
 
@@ -20,18 +20,18 @@ struct tpm_get_btn_msg {
 } __attribute__((packed));
 
 /**
- * Read a button/switch state from the Cr50.
+ * Read a button/switch state from the GSC.
  *
  * @param tpm              Pointer to the TPM operations structure.
- * @param cr50_subcommand  Cr50 vendor specific sub-command for the
+ * @param gsc_subcommand   GSC vendor specific sub-command for the
  *                         button/switch. Supported sub-commands are
  *                         VENDOR_CC_GET_REC_BTN and VENDOR_CC_GET_PWR_BTN.
  * @param button_state     On success, set to the button state read from the
- *                         Cr50.
+ *                         GSC.
  *
  * @return 0 on success, non-zero if an error is detected.
  */
-static int cr50_switch_get(struct TpmOps *tpm, uint16_t cr50_subcommand,
+static int gsc_switch_get(struct TpmOps *tpm, uint16_t gsc_subcommand,
 			   int *button_state)
 {
 	struct tpm_vendor_header req;
@@ -43,37 +43,37 @@ static int cr50_switch_get(struct TpmOps *tpm, uint16_t cr50_subcommand,
 	/* Default switch/button state is zero if the command fails */
 	*button_state = 0;
 
-	tpm_google_fill_vendor_cmd_header(&req, cr50_subcommand, 0);
+	tpm_google_fill_vendor_cmd_header(&req, gsc_subcommand, 0);
 
 	xmit_res = tpm->xmit(tpm, (void *)&req,
 			     sizeof(struct tpm_vendor_header),
 			     (void *)&res, &buffer_size);
 
 	/*
-	 * The response size varies depending on whether the Cr50 supports
+	 * The response size varies depending on whether the GSC supports
 	 * the vendor command, but should always have a valid header.
 	 */
 	if (xmit_res || buffer_size < sizeof(struct tpm_vendor_header)) {
 		printf("communications error on cmd %u: %d %ld\n",
-		       cr50_subcommand, xmit_res, buffer_size);
+		       gsc_subcommand, xmit_res, buffer_size);
 		return -1;
 	}
 
 	header_code = unmarshal_u32(&res.h.code);
 	if (header_code == VENDOR_RC_NO_SUCH_COMMAND) {
 		/*
-		 * During factory setup, the Cr50 runs very old firmware so
+		 * During factory setup, the GSC runs very old firmware so
 		 * don't treat an unsupported command as an error.
 		 */
 		printf("Command %u not supported, switch state is off\n",
-			cr50_subcommand);
+			gsc_subcommand);
 		return 0;
 	}
 
 	/* Verify the response contains the payload byte */
 	if (buffer_size < sizeof(struct tpm_get_btn_msg)) {
 		printf("communications error on cmd %u: response size %ld\n",
-		       cr50_subcommand, buffer_size);
+		       gsc_subcommand, buffer_size);
 		return -1;
 	}
 
@@ -95,24 +95,24 @@ static int cr50_switch_get(struct TpmOps *tpm, uint16_t cr50_subcommand,
  * 0       = not pressed
  * -1      = error / unknown
  */
-static int cr50_rec_switch_get(GpioOps *me)
+static int gsc_rec_switch_get(GpioOps *me)
 {
-	TpmOps *tpm = container_of(me, Cr50Switch, ops)->tpm;
+	TpmOps *tpm = container_of(me, GscSwitch, ops)->tpm;
 	int recovery_button = 0;
 
-	/* Errors are logged by cr50_switch_get() */
-	if (cr50_switch_get(tpm, VENDOR_CC_GET_REC_BTN, &recovery_button))
+	/* Errors are logged by gsc_switch_get() */
+	if (gsc_switch_get(tpm, VENDOR_CC_GET_REC_BTN, &recovery_button))
 		return -1;
 
 	return recovery_button;
 }
 
-Cr50Switch *new_cr50_rec_switch(TpmOps *tpm)
+GscSwitch *new_gsc_rec_switch(TpmOps *tpm)
 {
-	Cr50Switch *rec_switch = xzalloc(sizeof(*rec_switch));
+	GscSwitch *rec_switch = xzalloc(sizeof(*rec_switch));
 
 	rec_switch->tpm = tpm;
-	rec_switch->ops.get = cr50_rec_switch_get;
+	rec_switch->ops.get = gsc_rec_switch_get;
 
 	return rec_switch;
 }
@@ -124,26 +124,26 @@ Cr50Switch *new_cr50_rec_switch(TpmOps *tpm)
  * 0       = not pressed
  * -1      = error / unknown
  */
-static int cr50_power_switch_get(GpioOps *me)
+static int gsc_power_switch_get(GpioOps *me)
 {
 	struct TpmOps *tpm;
 	int power_button = 0;
 
-	tpm = container_of(me, Cr50Switch, ops)->tpm;
+	tpm = container_of(me, GscSwitch, ops)->tpm;
 
-	/* Errors are logged by cr50_switch_get() */
-	if (cr50_switch_get(tpm, VENDOR_CC_GET_PWR_BTN, &power_button))
+	/* Errors are logged by gsc_switch_get() */
+	if (gsc_switch_get(tpm, VENDOR_CC_GET_PWR_BTN, &power_button))
 		return -1;
 
 	return power_button;
 }
 
-Cr50Switch *new_cr50_power_switch(TpmOps *tpm)
+GscSwitch *new_gsc_power_switch(TpmOps *tpm)
 {
-	Cr50Switch *power_switch = xzalloc(sizeof(*power_switch));
+	GscSwitch *power_switch = xzalloc(sizeof(*power_switch));
 
 	power_switch->tpm = tpm;
-	power_switch->ops.get = cr50_power_switch_get;
+	power_switch->ops.get = gsc_power_switch_get;
 
 	return power_switch;
 }

@@ -34,7 +34,6 @@
 #include "drivers/tpm/tpm.h"
 
 #define TPM_I2C1	PCI_DEV(0, 0x15, 1)
-#define TPM_I2C_ADDR	0x50
 
 #define EMMC_CLOCK_MIN  400000
 #define EMMC_CLOCK_MAX  200000000
@@ -52,7 +51,7 @@
 #define I2C_FS_HZ	400000
 
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
 	return alderlake_get_gpe(GPE0_DW0_03); /* GPP_C3 */
 }
@@ -69,7 +68,7 @@ static void shadowmountain_setup_tpm(void)
 			.gspi_clk_mhz = 1,
 		};
 		tpm_set_ops(&new_tpm_spi(new_intel_gspi(&gspi0_params),
-			cr50_irq_status)->ops);
+			gsc_irq_status)->ops);
 	}
 }
 

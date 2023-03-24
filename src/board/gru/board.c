@@ -47,7 +47,7 @@ static const int emmc_sd_clock_min = 400 * 1000;
 static const int emmc_clock_max = 150 * 1000 * 1000;
 
 
-static int cr50_irq_status(void)
+static int gsc_irq_status(void)
 {
 	static GpioOps *tpm_int;
 
@@ -68,7 +68,7 @@ static int board_setup(void)
 			tpm_spi = new_rockchip_spi(0xff1e0000);
 		else
 			tpm_spi = new_rockchip_spi(0xff1c0000);
-		tpm_set_ops(&new_tpm_spi(&tpm_spi->ops, cr50_irq_status)->ops);
+		tpm_set_ops(&new_tpm_spi(&tpm_spi->ops, gsc_irq_status)->ops);
 	} else {
 		i2c0 = new_rockchip_i2c((void *)0xff3c0000);
 		tpm_set_ops(&new_slb96_i2c(&i2c0->ops, 0x20)->base.ops);
