@@ -35,14 +35,16 @@ static ssize_t __must_check ps8751_flash_fifo_read(Ps8751 *me,
 		  ((chunk - 1) << 4) | (4 - 1) },
 		{ P2_SPI_CTRL, P2_SPI_CTRL_TRIGGER },
 	};
-	if (ps8751_write_regs(me, PAGE_2, rd, ARRAY_SIZE(rd)) != 0)
+	if (ps8751_write_regs(me, me->addr_page_2,
+			      rd, ARRAY_SIZE(rd)) != 0)
 		return -1;
 
 	if (ps8751_spi_fifo_wait_busy(me) != 0)
 		return -1;
 
 	for (int i = 0; i < chunk; ++i) {
-		if (ps8751_read_reg(me, PAGE_2, P2_RD_FIFO, &data[i]) != 0)
+		if (ps8751_read_reg(me, me->addr_page_2,
+				    P2_RD_FIFO, &data[i]) != 0)
 			return -1;
 	}
 
@@ -74,7 +76,8 @@ static ssize_t __must_check ps8751_flash_fifo_write(Ps8751 *me,
 		return -1;
 
 	for (int i = 0; i < chunk; ++i) {
-		if (ps8751_write_reg(me, PAGE_2, P2_WR_FIFO, data[i]) != 0)
+		if (ps8751_write_reg(me, me->addr_page_2,
+				     P2_WR_FIFO, data[i]) != 0)
 			return -1;
 	}
 
@@ -83,7 +86,8 @@ static ssize_t __must_check ps8751_flash_fifo_write(Ps8751 *me,
 		{ P2_SPI_CTRL,
 		  P2_SPI_CTRL_NOREAD|P2_SPI_CTRL_TRIGGER },
 	};
-	if (ps8751_write_regs(me, PAGE_2, wr, ARRAY_SIZE(wr)) != 0)
+	if (ps8751_write_regs(me, me->addr_page_2,
+			      wr, ARRAY_SIZE(wr)) != 0)
 		return -1;
 	if (ps8751_spi_fifo_wait_busy(me) != 0)
 		return -1;

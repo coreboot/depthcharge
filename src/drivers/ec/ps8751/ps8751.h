@@ -125,6 +125,13 @@ typedef struct Ps8751 {
 
 	/* Used for DRIVER_EC_PS8751_I2C_SPEED_CONTROL. */
 	uint16_t saved_i2c_speed_khz;
+
+	/* Page addresses for TCPC chip on this port */
+	uint16_t addr_page_0;
+	uint16_t addr_page_1;
+	uint16_t addr_page_2;
+	uint16_t addr_page_3;
+	uint16_t addr_page_7;
 } Ps8751;
 
 Ps8751 *new_ps8751(CrosECTunnelI2c *bus, int ec_pd_id);

@@ -84,18 +84,20 @@ static ssize_t __must_check ps8751_flash_window_read(Ps8751 *me,
 
 	if (a16_a23 != me->last_a16_a23) {
 		if (ps8751_write_reg(me,
-				     PAGE_2, P2_FLASH_A16_A23, a16_a23) != 0)
+				     me->addr_page_2,
+				     P2_FLASH_A16_A23, a16_a23) != 0)
 			return -1;
 		me->last_a16_a23 = a16_a23;
 	}
 
 	if (a8_a15 != me->last_a8_a15) {
-		if (ps8751_write_reg(me, PAGE_2, P2_FLASH_A8_A15, a8_a15) != 0)
+		if (ps8751_write_reg(me, me->addr_page_2,
+				     P2_FLASH_A8_A15, a8_a15) != 0)
 			return -1;
 		me->last_a8_a15 = a8_a15;
 	}
 
-	if (read_block(me, PAGE_7, a0_a7, data, chunk) != 0)
+	if (read_block(me, me->addr_page_7, a0_a7, data, chunk) != 0)
 		return -1;
 
 	return chunk;
@@ -126,18 +128,20 @@ static ssize_t __must_check ps8751_flash_window_write(Ps8751 *me,
 
 	if (a16_a23 != me->last_a16_a23) {
 		if (ps8751_write_reg(me,
-				     PAGE_2, P2_FLASH_A16_A23, a16_a23) != 0)
+				     me->addr_page_2,
+				     P2_FLASH_A16_A23, a16_a23) != 0)
 			return -1;
 		me->last_a16_a23 = a16_a23;
 	}
 
 	if (a8_a15 != me->last_a8_a15) {
-		if (ps8751_write_reg(me, PAGE_2, P2_FLASH_A8_A15, a8_a15) != 0)
+		if (ps8751_write_reg(me, me->addr_page_2,
+				     P2_FLASH_A8_A15, a8_a15) != 0)
 			return -1;
 		me->last_a8_a15 = a8_a15;
 	}
 
-	if (write_block(me, PAGE_7, a0_a7, data, chunk) != 0)
+	if (write_block(me, me->addr_page_7, a0_a7, data, chunk) != 0)
 		return -1;
 
 	return chunk;
@@ -170,10 +174,11 @@ static int ps8751_flash_window_write_enable(Ps8751 *me)
 			return -1;
 		}
 
-		if (ps8751_write_regs(me, PAGE_2, wr, ARRAY_SIZE(wr)) != 0)
+		if (ps8751_write_regs(me, me->addr_page_2,
+				      wr, ARRAY_SIZE(wr)) != 0)
 			return -1;
 
-		if (ps8751_read_reg(me, PAGE_2,
+		if (ps8751_read_reg(me, me->addr_page_2,
 				    P2_PROG_WIN_UNLOCK, &wr_status) != 0)
 			return -1;
 
@@ -189,7 +194,7 @@ static int ps8751_flash_window_write_enable(Ps8751 *me)
 
 static int ps8751_flash_window_write_disable(Ps8751 *me)
 {
-	if (ps8751_write_reg(me, PAGE_2,
+	if (ps8751_write_reg(me, me->addr_page_2,
 		      P2_PROG_WIN_UNLOCK, P2_PROG_WIN_UNLOCK_LOCK) != 0)
 		return -1;
 
