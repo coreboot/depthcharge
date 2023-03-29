@@ -128,18 +128,43 @@ static const uint8_t fch_gpio_use_table[FCH_NUM_GPIOS] = {
 	/* 140 */  0,  0,  0,  0,  0,  2,  2,  2,  2,  0,
 	/* 150 */  0,  0,  0,  0,  0,  0,  0,  0,
 };
+#elif CONFIG(DRIVER_SOC_PHOENIX)
 
+#define FCH_NUM_GPIOS 158
+
+static const uint8_t fch_gpio_use_table[FCH_NUM_GPIOS] = {
+	/*         0   1   2   3   4   5   6   7   8   9 */
+	/*   0 */  1,  1,  1,  0,  0,  0,  0,  0,  0,  0,
+	/*  10 */  0,  0,  1,  0,  0,  0,  1,  1,  1,  3,
+	/*  20 */  3,  2,  1,  1,  1,  1,  1,  0,  0,  1,
+	/*  30 */  2,  1,  0,  0,  0,  0,  0,  0,  1,  1,
+	/*  40 */  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+	/*  50 */  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+	/*  60 */  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,
+	/*  70 */  1,  0,  0,  0,  1,  1,  1,  1,  1,  1,
+	/*  80 */  1,  1,  0,  0,  1,  1,  0,  0,  0,  2,
+	/*  90 */  2,  1,  1,  0,  0,  0,  0,  0,  0,  0,
+	/* 100 */  0,  0,  0,  0,  1,  1,  1,  1,  0,  0,
+	/* 110 */  0,  0,  0,  3,  3,  1,  1,  0,  0,  0,
+	/* 120 */  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+	/* 130 */  0,  1,  2,  0,  0,  0,  0,  0,  0,  0,
+	/* 140 */  0,  0,  0,  0,  0,  2,  2,  2,  2,  0,
+	/* 150 */  0,  0,  0,  0,  0,  0,  0,  0,
+};
 
 #else
 	/* Force a build error if unknown SOC */
-	#error Unknown SOC - Only Stoney, Picasso & Cezanne supported
+	#error Unknown SOC - Only Stoney, Picasso, \
+			Cezanne, Mendocino, and Phoenix supported
 #endif
 
 /*
  * Careful! MUX setting for GPIOn is not consistent for all pins.  See:
  *   Stoney Ridge BKDG: #55072
- *   Picasso PPR: #55570
- *   Cezanne PPR: #56569
+ *   Picasso PPR:   #55570
+ *   Cezanne PPR:   #56569
+ *   Mendocino PPR: #57243
+ *   Phoenix PPR:   #57019
  */
 static void fch_iomux_set(KernGpio *gpio, int val)
 {
