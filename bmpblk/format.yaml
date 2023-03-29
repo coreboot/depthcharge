@@ -30,6 +30,7 @@ localized_files:
   btn_dev_mode: primary_button
   btn_debug_info: primary_button
   btn_firmware_log: primary_button
+  btn_firmware_shell: primary_button
   btn_rec_by_internet_old: primary_button
   # debug info and firmware log
   debug_info_title: title
