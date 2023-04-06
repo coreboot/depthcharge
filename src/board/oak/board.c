@@ -136,7 +136,7 @@ static int board_setup(void)
 
 	MTKI2c *i2c2 = new_mtk_i2c(0x11009000, 0x11000200, I2C_APDMA_NOASYNC);
 
-	if (CONFIG_DRIVER_TPM_CR50_I2C)
+	if (CONFIG(DRIVER_TPM_GOOGLE))
 		tpm_set_ops(&new_gsc_i2c(&i2c2->ops, GSC_I2C_ADDR,
 					  &gsc_irq_status)->base.ops);
 	else
