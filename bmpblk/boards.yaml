@@ -363,3 +363,8 @@ skyrim:
 
 geralt:
   # TODO: Default setting for geralt and shall update after resolution confirmed.
+
+staryu:
+  screen: [1920, 1200]
+  sdcard: False
+  dpi: 110 # DO NOT COPY-PASTE -- follow instructions at top of file.
