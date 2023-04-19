@@ -31,9 +31,10 @@ $ g4 change             # Create a changelist (from default changelist)
 
 3. After the google3 CL is submitted, the translation process will start
 automatically.
-Currently there is no simple way to know when the process completes.
-Therefore the suggestion is to wait for 4-7 days and then try step 4 below.
-If any translation is missing, please wait for a few days and try again.
+To check the translation progress, go to go/localizer and search for the English
+text in Continuous localization > Messages.
+The translation process is typically completed within 4-7 days.
+If any translation is not finished, please wait for a few days and check again.
 
 4. Build `all_xtbs` target in the Google's internal code repository, and copy
 the resulting `firmware_strings_${LOCALE}.xtb` files which contain the
@@ -43,7 +44,7 @@ translated strings into your Chromium OS local branch.
 $ prodaccess
 $ g4d localization      # cd to google3 directory
 $ g4 sync               # Sync to the latest changelist
-$ blaze build //googleclient/chrome/transconsole_resources:all_xtbs
+$ blaze build //googleclient/chrome/transconsole_resources:cros_fw_xtbs
 # Get the diff of message ID of en-GB. This can help you find the message ID
 # related to the change.
 $ python3 $CROS/src/platform/bmpblk/update_xtb.py diff en-GB
