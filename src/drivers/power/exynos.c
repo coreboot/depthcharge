@@ -21,7 +21,7 @@
 #include "drivers/power/exynos.h"
 #include "drivers/power/power.h"
 
-static int exynos_cold_reboot(PowerOps *me)
+static int exynos_reboot(PowerOps *me)
 {
 	uint32_t *inform1 = (uint32_t *)(uintptr_t)0x10040804;
 	uint32_t *swreset = (uint32_t *)(uintptr_t)0x10040400;
@@ -40,6 +40,6 @@ static int exynos_power_off(PowerOps *me)
 }
 
 PowerOps exynos_power_ops = {
-	.cold_reboot = &exynos_cold_reboot,
+	.reboot = &exynos_reboot,
 	.power_off = &exynos_power_off
 };

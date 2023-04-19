@@ -39,7 +39,7 @@ static int rk808_power_off(PowerOps *me)
 Rk808Pmic *new_rk808_pmic(I2cOps *bus, uint8_t chip)
 {
 	Rk808Pmic *pmic = xzalloc(sizeof(*pmic));
-	pmic->ops.cold_reboot = NULL;
+	pmic->ops.reboot = NULL;
 	pmic->ops.power_off = &rk808_power_off;
 	pmic->bus = bus;
 	pmic->chip = chip;

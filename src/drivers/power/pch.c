@@ -46,7 +46,7 @@
  *
  * This function never returns.
  */
-static int pch_cold_reboot(PowerOps *me)
+static int pch_reboot(PowerOps *me)
 {
 	outb(FULL_RST | SYS_RST, RST_CNT); /* Req a hard reset, */
 	udelay(50); /* settle then, */
@@ -302,32 +302,32 @@ static int icelake_power_off(PowerOps *me)
 }
 
 PowerOps pch_power_ops = {
-	.cold_reboot = &pch_cold_reboot,
+	.reboot = &pch_reboot,
 	.power_off = &pch_power_off
 };
 
 PowerOps baytrail_power_ops = {
-	.cold_reboot = &pch_cold_reboot,
+	.reboot = &pch_reboot,
 	.power_off = &baytrail_power_off
 };
 
 PowerOps braswell_power_ops = {
-	.cold_reboot = &pch_cold_reboot,
+	.reboot = &pch_reboot,
 	.power_off = &braswell_power_off
 };
 
 PowerOps skylake_power_ops = {
-	.cold_reboot = &pch_cold_reboot,
+	.reboot = &pch_reboot,
 	.power_off = &skylake_power_off
 };
 
 PowerOps apollolake_power_ops = {
-	.cold_reboot = &pch_cold_reboot,
+	.reboot = &pch_reboot,
 	.power_off = &apollolake_power_off
 };
 
 PowerOps cannonlake_power_ops = {
-	.cold_reboot = &pch_cold_reboot,
+	.reboot = &pch_reboot,
 	.power_off = &cannonlake_power_off
 };
 
@@ -336,21 +336,26 @@ PowerOps cannonlake_power_ops = {
  * the acpi register and PCI dev is same.
 */
 PowerOps tigerlake_power_ops = {
-	.cold_reboot = &pch_cold_reboot,
+	.reboot = &pch_reboot,
 	.power_off = &cannonlake_power_off
 };
 
 PowerOps alderlake_power_ops = {
-	.cold_reboot = &pch_cold_reboot,
+	.reboot = &pch_reboot,
+	.power_off = &cannonlake_power_off
+};
+
+PowerOps meteorlake_power_ops = {
+	.reboot = &pch_reboot,
 	.power_off = &cannonlake_power_off
 };
 
 PowerOps icelake_power_ops = {
-	.cold_reboot = &pch_cold_reboot,
+	.reboot = &pch_reboot,
 	.power_off = &icelake_power_off
 };
 
 PowerOps jasperlake_power_ops = {
-	.cold_reboot = &pch_cold_reboot,
+	.reboot = &pch_reboot,
 	.power_off = &icelake_power_off
 };

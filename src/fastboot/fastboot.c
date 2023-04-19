@@ -216,5 +216,5 @@ void fastboot(void)
 		fb_session.transport->release(&fb_session);
 
 	if (fb_session.state == REBOOT)
-		cold_reboot();
+		reboot();
 }

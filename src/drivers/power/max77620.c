@@ -44,7 +44,7 @@ static int max77620_set_reg(Max77620Pmic *pmic, uint8_t reg, uint8_t value)
 	return i2c_writeb(pmic->bus, pmic->chip, reg, value);
 }
 
-static int max77620_cold_reboot(PowerOps *me)
+static int max77620_reboot(PowerOps *me)
 {
 	Max77620Pmic *pmic = container_of(me, Max77620Pmic, ops);
 	max77620_set_bit(pmic, MAX77620_ONOFF_CFG, MAX77620_ONOFF_CFG_SFT_RST);
@@ -61,7 +61,7 @@ static int max77620_power_off(PowerOps *me)
 Max77620Pmic *new_max77620_pmic(I2cOps *bus, uint8_t chip)
 {
 	Max77620Pmic *pmic = xzalloc(sizeof(*pmic));
-	pmic->ops.cold_reboot = &max77620_cold_reboot;
+	pmic->ops.reboot = &max77620_reboot;
 	pmic->ops.power_off = &max77620_power_off;
 	pmic->set_reg = max77620_set_reg;
 	pmic->bus = bus;

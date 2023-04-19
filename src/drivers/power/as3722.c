@@ -38,7 +38,7 @@ static int as3722_set_bit(I2cOps *bus, uint8_t chip, uint8_t reg, uint8_t bit)
 	return 0;
 }
 
-static int as3722_cold_reboot(PowerOps *me)
+static int as3722_reboot(PowerOps *me)
 {
 	As3722Pmic *pmic = container_of(me, As3722Pmic, ops);
 	as3722_set_bit(pmic->bus, pmic->chip, AS3722_RESET_CONTROL,
@@ -62,7 +62,7 @@ static int as3722_set_reg(As3722Pmic *pmic, uint8_t reg, uint8_t value)
 As3722Pmic *new_as3722_pmic(I2cOps *bus, uint8_t chip)
 {
 	As3722Pmic *pmic = xzalloc(sizeof(*pmic));
-	pmic->ops.cold_reboot = &as3722_cold_reboot;
+	pmic->ops.reboot = &as3722_reboot;
 	pmic->ops.power_off = &as3722_power_off;
 	pmic->set_reg = as3722_set_reg;
 	pmic->bus = bus;

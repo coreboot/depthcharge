@@ -50,7 +50,7 @@ static void enable_graphics(void)
 	printf("Enabling graphics.\n");
 	nvdata_write(ctx);
 
-	cold_reboot();
+	reboot();
 }
 
 static void * const payload = (void *)(uintptr_t)CONFIG_KERNEL_START;

@@ -27,7 +27,7 @@
 #define RESET_WDT_BITE_TIME 0x31F3
 #define RESET_WDT_BARK_TIME (5 * RESET_WDT_BITE_TIME)
 
-static int ipq8086_cold_reboot(struct PowerOps *me)
+static int ipq8086_reboot(struct PowerOps *me)
 {
 	write32(APCS_WDT0_EN, 0);
 	write32(APCS_WDT0_RST, 1);
@@ -43,15 +43,15 @@ static int ipq8086_cold_reboot(struct PowerOps *me)
 
 static int ipq8086_power_off(struct PowerOps *me)
 {
-	printf("Power off not yet implemented, invoking cold_reboot().\n");
-	return ipq8086_cold_reboot(me);
+	printf("Power off not yet implemented, invoking reboot().\n");
+	return ipq8086_reboot(me);
 }
 
 PowerOps *new_ipq806x_power_ops(void)
 {
 	PowerOps *pops = xzalloc(sizeof(*pops));
 
-	pops->cold_reboot = ipq8086_cold_reboot;
+	pops->reboot = ipq8086_reboot;
 	pops->power_off = ipq8086_power_off;
 
 	return pops;
