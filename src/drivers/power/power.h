@@ -20,14 +20,14 @@
 
 typedef struct PowerOps
 {
-	int (*cold_reboot)(struct PowerOps *me);
+	int (*reboot)(struct PowerOps *me);
 	int (*power_off)(struct PowerOps *me);
 } PowerOps;
 
 void power_set_ops(PowerOps *ops);
 
-/* Cold reboot the machine */
-__attribute__((noreturn)) void cold_reboot(void);
+/* Warm reboot the machine */
+__attribute__((noreturn)) void reboot(void);
 
 /* Power off the machine */
 __attribute__((noreturn)) void power_off(void);

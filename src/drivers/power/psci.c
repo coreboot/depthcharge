@@ -33,6 +33,6 @@ static int psci_off(PowerOps *me)
 }
 
 PowerOps psci_power_ops = {
-	.cold_reboot = &psci_reset,
+	.reboot = &psci_reset,
 	.power_off = &psci_off,
 };

@@ -354,7 +354,7 @@ static void update_chosen(DeviceTree *tree, char *cmd_line)
 			struct vb2_context *ctx = vboot_get_context();
 			vb2api_fail(ctx, VB2_RECOVERY_RW_TPM_R_ERROR, ret);
 			vb2ex_commit_data(ctx);
-			cold_reboot();
+			reboot();
 		}
 		/* In recovery we'd rather continue with a weak seed than risk
 		   tripping up the kernel. We don't expect untrusted code to run

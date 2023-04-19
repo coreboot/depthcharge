@@ -20,17 +20,17 @@ vb2_error_t vb2ex_commit_data(struct vb2_context *ctx)
 	return mock_type(vb2_error_t);
 }
 
-#define expect_cold_reboot(expression, return_value) do { \
+#define expect_reboot(expression, return_value) do { \
 	will_return(vb2ex_commit_data, return_value); \
 	expect_assert_failure(expression); \
 } while (0)
 
-#define expect_fail_and_cold_reboot(expression) do { \
+#define expect_fail_and_reboot(expression) do { \
 	expect_function_call(vb2api_fail); \
-	expect_cold_reboot(run_cleanup(CleanupOnHandoff), VB2_SUCCESS); \
+	expect_reboot(run_cleanup(CleanupOnHandoff), VB2_SUCCESS); \
 } while (0)
 
-void cold_reboot(void)
+void reboot(void)
 {
 	mock_assert(0, __func__, __FILE__, __LINE__);
 	/* Infinte loop is necessary due to __attribute__((noreturn)) */
@@ -73,7 +73,7 @@ static void test_cleanup_func_on_poweroff(void **state)
 
 static void test_cleanup_func_on_poweroff_commit_fail(void **state)
 {
-	expect_cold_reboot(run_cleanup(CleanupOnPowerOff), VB2_ERROR_MOCK);
+	expect_reboot(run_cleanup(CleanupOnPowerOff), VB2_ERROR_MOCK);
 }
 
 static void test_cleanup_func_on_handoff_in_recovery(void **state)
@@ -99,7 +99,7 @@ static void test_cleanup_func_on_handoff_disable_tpm_fail(void **state)
 	ctx->flags |= VB2_CONTEXT_DISABLE_TPM;
 	will_return(vb2ex_commit_data, VB2_SUCCESS);
 	will_return(vb2ex_tpm_set_mode, VB2_ERROR_MOCK);
-	expect_fail_and_cold_reboot(run_cleanup(CleanupOnHandoff));
+	expect_fail_and_reboot(run_cleanup(CleanupOnHandoff));
 }
 
 static void test_cleanup_func_on_handoff_lock_tpm(void **state)
@@ -113,7 +113,7 @@ static void test_cleanup_func_on_handoff_lock_tpm_fail(void **state)
 {
 	will_return(secdata_kernel_lock, 1);
 	will_return(vb2ex_commit_data, VB2_SUCCESS);
-	expect_fail_and_cold_reboot(run_cleanup(CleanupOnHandoff));
+	expect_fail_and_reboot(run_cleanup(CleanupOnHandoff));
 }
 
 #define STAGES_TEST(test_function_name) \

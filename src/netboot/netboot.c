@@ -50,7 +50,7 @@ static void enable_graphics(void)
 	printf("Enabling graphics.\n");
 	nvdata_write(ctx);
 
-	cold_reboot();
+	reboot();
 }
 
 static void print_ip_addr(const uip_ipaddr_t *ip)

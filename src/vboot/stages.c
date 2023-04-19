@@ -94,7 +94,7 @@ static int commit_and_lock_cleanup_func(struct CleanupFunc *c, CleanupType t)
 
 	if (vb2ex_commit_data(ctx)) {
 		if (t != CleanupOnReboot)
-			cold_reboot();
+			reboot();
 		return 0;
 	}
 
@@ -118,7 +118,7 @@ static int commit_and_lock_cleanup_func(struct CleanupFunc *c, CleanupType t)
 		       __func__, tpm_rv);
 		vb2api_fail(ctx, VB2_RECOVERY_RW_TPM_L_ERROR, tpm_rv);
 		vb2ex_commit_data(ctx);
-		cold_reboot();
+		reboot();
 	}
 
 	return 0;
@@ -204,12 +204,12 @@ fail:
 		power_off();
 	} else if (res == VB2_REQUEST_REBOOT) {
 		printf("Reboot requested. Doing warm reboot.\n");
-		cold_reboot();
+		reboot();
 	}
 	if (res != VB2_SUCCESS) {
-		printf("%s: Unknown error %#x. Doing cold reboot.\n", __func__,
+		printf("%s: Unknown error %#x. Doing warm reboot.\n", __func__,
 		       res);
-		cold_reboot();
+		reboot();
 	}
 
 	vboot_boot_kernel(&kparams);

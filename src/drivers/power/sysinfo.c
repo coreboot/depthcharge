@@ -37,7 +37,7 @@ SysinfoResetPowerOps *new_sysinfo_reset_power_ops(PowerOps *power_off_ops,
 {
 	SysinfoResetPowerOps *p = xzalloc(sizeof(*p));
 	p->ops.power_off = &pass_through_power_off;
-	p->ops.cold_reboot = &gpio_reboot;
+	p->ops.reboot = &gpio_reboot;
 	p->power_off_ops = power_off_ops;
 	p->reset_gpio = sysinfo_lookup_gpio("reset", 1, new_gpio_from_coreboot);
 	die_if(!p->reset_gpio,

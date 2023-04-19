@@ -27,7 +27,7 @@
  *
  * This function never returns.
  */
-static int fch_cold_reboot(PowerOps *me)
+static int fch_reboot(PowerOps *me)
 {
 	write16(POWER_RESET_CONFIG, read16(POWER_RESET_CONFIG) |
 		TOGGLE_ALL_PWR_GOOD_ON_CF9);
@@ -163,6 +163,6 @@ static int kern_power_off(PowerOps *me)
 }
 
 PowerOps kern_power_ops = {
-	.cold_reboot = &fch_cold_reboot,
+	.reboot = &fch_reboot,
 	.power_off = &kern_power_off
 };

@@ -338,5 +338,5 @@ void fastboot_over_tcp(void)
 	net_set_callback(NULL);
 	printf("fastboot done.\n");
 	if (tcp_session.fb_session.state == REBOOT)
-		cold_reboot();
+		reboot();
 }

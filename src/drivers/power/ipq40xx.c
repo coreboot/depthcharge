@@ -28,7 +28,7 @@
 #define GCNT_PSHOLD		((void *)0x004AB000u)
 
 
-static int ipq40xx_cold_reboot(struct PowerOps *me)
+static int ipq40xx_reboot(struct PowerOps *me)
 {
 	write32(TCSR_BOOT_MISC_DETECT, 0);
 	write32(TCSR_RESET_DEBUG_SW_ENTRY, 0);
@@ -41,15 +41,15 @@ static int ipq40xx_cold_reboot(struct PowerOps *me)
 
 static int ipq40xx_power_off(struct PowerOps *me)
 {
-	printf("Power off not yet implemented, invoking cold_reboot().\n");
-	return ipq40xx_cold_reboot(me);
+	printf("Power off not yet implemented, invoking reboot().\n");
+	return ipq40xx_reboot(me);
 }
 
 PowerOps *new_ipq40xx_power_ops(void)
 {
 	PowerOps *pops = xzalloc(sizeof(*pops));
 
-	pops->cold_reboot = ipq40xx_cold_reboot;
+	pops->reboot = ipq40xx_reboot;
 	pops->power_off = ipq40xx_power_off;
 
 	return pops;

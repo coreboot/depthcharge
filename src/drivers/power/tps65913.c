@@ -44,7 +44,7 @@ static int tps65913_set_reg(Tps65913Pmic *pmic, uint8_t reg, uint8_t value)
 	return i2c_writeb(pmic->bus, pmic->chip, reg, value);
 }
 
-static int tps65913_cold_reboot(PowerOps *me)
+static int tps65913_reboot(PowerOps *me)
 {
 	Tps65913Pmic *pmic = container_of(me, Tps65913Pmic, ops);
 	tps65913_set_bit(pmic, TPS65913_DEV_CTRL, TPS65913_DEV_CTRL_SW_RST);
@@ -61,7 +61,7 @@ static int tps65913_power_off(PowerOps *me)
 Tps65913Pmic *new_tps65913_pmic(I2cOps *bus, uint8_t chip)
 {
 	Tps65913Pmic *pmic = xzalloc(sizeof(*pmic));
-	pmic->ops.cold_reboot = &tps65913_cold_reboot;
+	pmic->ops.reboot = &tps65913_reboot;
 	pmic->ops.power_off = &tps65913_power_off;
 	pmic->set_reg = tps65913_set_reg;
 	pmic->bus = bus;
