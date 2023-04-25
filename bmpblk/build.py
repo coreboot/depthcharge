@@ -843,22 +843,21 @@ class Converter:
 
         names = self.formats[KEY_LOCALIZED_FILES]
 
-        executor = ProcessPoolExecutor()
-        futures = []
-        for locale_info in self.locales:
-            locale = locale_info.code
-            print(locale, end=' ', flush=True)
-            futures.append(executor.submit(self.build_locale, locale, names))
+        with ProcessPoolExecutor() as executor:
+            futures = []
+            for locale_info in self.locales:
+                locale = locale_info.code
+                print(locale, end=' ', flush=True)
+                futures.append(
+                    executor.submit(self.build_locale, locale, names))
 
-        print()
+            print()
 
-        try:
-            results = [future.result() for future in futures]
-        except KeyboardInterrupt:
-            executor.shutdown(wait=False)
-            sys.exit('Aborted by user')
-        else:
-            executor.shutdown()
+            try:
+                results = [future.result() for future in futures]
+            except KeyboardInterrupt:
+                executor.shutdown(wait=False)
+                sys.exit('Aborted by user')
 
         effective_dpi = [dpi for r in results for dpi in r if dpi]
         if effective_dpi:
@@ -893,28 +892,27 @@ class Converter:
         style = get_config_with_defaults(styles, KEY_GLYPH)
         height = style[KEY_HEIGHT]
         font = self.formats[KEY_FONTS][KEY_GLYPH]
-        executor = ProcessPoolExecutor()
-        futures = []
-        for c in range(ord(' '), ord('~') + 1):
-            name = f'idx{c:03d}_{c:02x}'
-            txt_file = os.path.join(self.stage_glyph_dir, name + '.txt')
-            with open(txt_file, 'w', encoding='ascii') as f:
-                f.write(chr(c))
-                f.write('\n')
-            output_file = os.path.join(output_dir, name + '.bmp')
-            futures.append(
-                executor.submit(self.convert_text_to_image,
-                                None,
-                                txt_file,
-                                output_file,
-                                font,
-                                self.stage_glyph_dir,
-                                self.GLYPH_MAX_COLORS,
-                                height=height,
-                                use_svg=True))
-        for future in futures:
-            future.result()
-        executor.shutdown()
+        with ProcessPoolExecutor() as executor:
+            futures = []
+            for c in range(ord(' '), ord('~') + 1):
+                name = f'idx{c:03d}_{c:02x}'
+                txt_file = os.path.join(self.stage_glyph_dir, name + '.txt')
+                with open(txt_file, 'w', encoding='ascii') as f:
+                    f.write(chr(c))
+                    f.write('\n')
+                output_file = os.path.join(output_dir, name + '.bmp')
+                futures.append(
+                    executor.submit(self.convert_text_to_image,
+                                    None,
+                                    txt_file,
+                                    output_file,
+                                    font,
+                                    self.stage_glyph_dir,
+                                    self.GLYPH_MAX_COLORS,
+                                    height=height,
+                                    use_svg=True))
+            for future in futures:
+                future.result()
 
     def copy_images_to_rw(self):
         """Copies localized images specified in boards.yaml for RW override."""
