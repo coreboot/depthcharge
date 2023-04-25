@@ -95,7 +95,7 @@ def load_board_config(filename, board):
         A dictionary mapping each board name to its config.
     """
     with open(filename, 'rb') as file:
-        raw = yaml.load(file)
+        raw =yaml.safe_load(file)
 
     config = copy.deepcopy(raw[KEY_DEFAULT])
     for boards, params in raw.items():
@@ -981,7 +981,7 @@ def main():
     board = args.board
 
     with open(FORMAT_FILE, encoding='utf-8') as f:
-        formats = yaml.load(f)
+        formats = yaml.safe_load(f)
     board_config = load_board_config(BOARDS_CONFIG_FILE, board)
 
     print('Building for ' + board)
