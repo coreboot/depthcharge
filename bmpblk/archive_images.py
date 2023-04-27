@@ -2,6 +2,7 @@
 # Copyright 2015 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 """
 Usage:
   ./archive_images.py -a path_to_archiver -d input_output_dir
@@ -19,6 +20,7 @@ import glob
 import os
 import subprocess
 import sys
+
 
 LOCALE_DIR = 'locale'
 LOCALE_RO_DIR = os.path.join(LOCALE_DIR, 'ro')

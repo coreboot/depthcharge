@@ -2,6 +2,7 @@
 # Copyright 2013 The ChromiumOS Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
 """Script to generate bitmaps for firmware screens."""
 
 import argparse
@@ -95,7 +96,7 @@ def load_board_config(filename, board):
         A dictionary mapping each board name to its config.
     """
     with open(filename, 'rb') as file:
-        raw =yaml.safe_load(file)
+        raw = yaml.safe_load(file)
 
     config = copy.deepcopy(raw[KEY_DEFAULT])
     for boards, params in raw.items():
@@ -115,22 +116,24 @@ def load_board_config(filename, board):
 def check_fonts(fonts):
     """Checks if all fonts are available."""
     for locale, font in fonts.items():
-        if subprocess.run(['fc-list', '-q', font],
-                          check=False).returncode != 0:
-            raise BuildImageError('Font %r not found for locale %r' %
-                                  (font, locale))
+        if subprocess.run(['fc-list', '-q', font], check=False).returncode != 0:
+            raise BuildImageError(
+                'Font %r not found for locale %r' % (font, locale)
+            )
 
 
-def run_pango_view(input_file,
-                   output_file,
-                   locale,
-                   font,
-                   height,
-                   width_pt,
-                   dpi,
-                   bgcolor,
-                   fgcolor,
-                   hinting='full'):
+def run_pango_view(
+    input_file,
+    output_file,
+    locale,
+    font,
+    height,
+    width_pt,
+    dpi,
+    bgcolor,
+    fgcolor,
+    hinting='full',
+):
     """Runs pango-view."""
     command = ['pango-view', '-q']
     if locale:
@@ -195,6 +198,7 @@ class Converter:
             sprites to bitmaps.
         GLYPH_MAX_COLORS (int): Maximum colors to use for glyph bitmaps.
     """
+
     SCALE_BASE = 1000
 
     # Max colors
@@ -254,21 +258,25 @@ class Converter:
 
         # Navigation instructions
         if is_detachable:
-            rename_map.update({
-                'nav-button_power': 'nav-key_enter',
-                'nav-button_volume_up': 'nav-key_up',
-                'nav-button_volume_down': 'nav-key_down',
-                'navigate0_tablet': 'navigate0',
-                'navigate1_tablet': 'navigate1',
-            })
+            rename_map.update(
+                {
+                    'nav-button_power': 'nav-key_enter',
+                    'nav-button_volume_up': 'nav-key_up',
+                    'nav-button_volume_down': 'nav-key_down',
+                    'navigate0_tablet': 'navigate0',
+                    'navigate1_tablet': 'navigate1',
+                }
+            )
         else:
-            rename_map.update({
-                'nav-button_power': None,
-                'nav-button_volume_up': None,
-                'nav-button_volume_down': None,
-                'navigate0_tablet': None,
-                'navigate1_tablet': None,
-            })
+            rename_map.update(
+                {
+                    'nav-button_power': None,
+                    'nav-button_volume_up': None,
+                    'nav-button_volume_down': None,
+                    'navigate0_tablet': None,
+                    'navigate1_tablet': None,
+                }
+            )
 
         # Physical presence confirmation
         if physical_presence == 'recovery':
@@ -283,7 +291,8 @@ class Converter:
             if physical_presence != 'keyboard':
                 raise BuildImageError(
                     'Invalid physical presence setting %s for board '
-                    '%s' % (physical_presence, self.board))
+                    '%s' % (physical_presence, self.board)
+                )
 
         # Broken screen
         if physical_presence == 'recovery':
@@ -298,24 +307,26 @@ class Converter:
 
         # SD card
         if not self.config[KEY_SDCARD]:
-            rename_map.update({
-                'rec_sel_desc1_no_sd':
-                'rec_sel_desc1',
-                'rec_sel_desc1_no_phone_no_sd':
-                'rec_sel_desc1_no_phone',
-                'rec_disk_step1_desc0_no_sd':
-                'rec_disk_step1_desc0',
-            })
+            rename_map.update(
+                {
+                    'rec_sel_desc1_no_sd': 'rec_sel_desc1',
+                    'rec_sel_desc1_no_phone_no_sd': 'rec_sel_desc1_no_phone',
+                    'rec_disk_step1_desc0_no_sd': 'rec_disk_step1_desc0',
+                }
+            )
         else:
-            rename_map.update({
-                'rec_sel_desc1_no_sd': None,
-                'rec_sel_desc1_no_phone_no_sd': None,
-                'rec_disk_step1_desc0_no_sd': None,
-            })
+            rename_map.update(
+                {
+                    'rec_sel_desc1_no_sd': None,
+                    'rec_sel_desc1_no_phone_no_sd': None,
+                    'rec_disk_step1_desc0_no_sd': None,
+                }
+            )
 
         # Check for duplicate new names
-        new_names = list(new_name for new_name in rename_map.values()
-                         if new_name)
+        new_names = list(
+            new_name for new_name in rename_map.values() if new_name
+        )
         if len(set(new_names)) != len(new_names):
             raise BuildImageError('Duplicate values found in rename_map')
 
@@ -343,8 +354,10 @@ class Converter:
             # Check rtl_locales are contained in locales.
             unknown_rtl_locales = rtl_locales - set(locales)
             if unknown_rtl_locales:
-                raise BuildImageError('Unknown locales %s in %s' %
-                                      (list(unknown_rtl_locales), KEY_RTL))
+                raise BuildImageError(
+                    'Unknown locales %s in %s'
+                    % (list(unknown_rtl_locales), KEY_RTL)
+                )
         self.locales = [
             LocaleInfo(code, code in rtl_locales) for code in locales
         ]
@@ -396,12 +409,9 @@ class Converter:
         line_height = self._get_png_height(one_line_file)
         return int(round(height / line_height))
 
-    def convert_svg_to_png(self,
-                           svg_file,
-                           png_file,
-                           height,
-                           bgcolor,
-                           num_lines=1):
+    def convert_svg_to_png(
+        self, svg_file, png_file, height, bgcolor, num_lines=1
+    ):
         """Converts SVG to PNG file."""
         # If the width/height of the SVG file is specified in points, the
         # rsvg-convert command with default 90DPI will potentially cause the
@@ -410,13 +420,22 @@ class Converter:
         # seems like an rsvg-convert issue regarding image scaling.  Therefore,
         # use 72DPI here to avoid the scaling.
         command = [
-            'rsvg-convert', '--background-color',
-            "'%s'" % bgcolor, '--dpi-x', '72', '--dpi-y', '72', '-o', png_file
+            'rsvg-convert',
+            '--background-color',
+            "'%s'" % bgcolor,
+            '--dpi-x',
+            '72',
+            '--dpi-y',
+            '72',
+            '-o',
+            png_file,
         ]
         height_px = self._to_px(height, num_lines)
         if height_px <= 0:
-            raise BuildImageError('Height of %r <= 0 (%dpx)' %
-                                  (os.path.basename(svg_file), height_px))
+            raise BuildImageError(
+                'Height of %r <= 0 (%dpx)'
+                % (os.path.basename(svg_file), height_px)
+            )
         command.extend(['--height', '%d' % height_px])
         command.append(svg_file)
         subprocess.check_call(' '.join(command), shell=True)
@@ -434,10 +453,9 @@ class Converter:
             image = image.convert('RGB')
 
         # Export and downsample color space.
-        image.convert('P',
-                      dither=None,
-                      colors=max_colors,
-                      palette=Image.ADAPTIVE).save(bmp_file)
+        image.convert(
+            'P', dither=None, colors=max_colors, palette=Image.ADAPTIVE
+        ).save(bmp_file)
 
         with open(bmp_file, 'rb+') as f:
             f.seek(BMP_HEADER_OFFSET_NUM_LINES)
@@ -532,21 +550,23 @@ class Converter:
         get_width_px(max_width_pt)
         return max_width_pt
 
-    def convert_text_to_image(self,
-                              locale,
-                              input_file,
-                              output_file,
-                              font,
-                              stage_dir,
-                              max_colors,
-                              height=None,
-                              max_width=None,
-                              initial_width_pt=None,
-                              dpi=None,
-                              initial_dpi=None,
-                              bgcolor='#000000',
-                              fgcolor='#ffffff',
-                              use_svg=False):
+    def convert_text_to_image(
+        self,
+        locale,
+        input_file,
+        output_file,
+        font,
+        stage_dir,
+        max_colors,
+        height=None,
+        max_width=None,
+        initial_width_pt=None,
+        dpi=None,
+        initial_dpi=None,
+        bgcolor='#000000',
+        fgcolor='#ffffff',
+        use_svg=False,
+    ):
         """Converts text file `input_file` into image file.
 
         Because pango-view does not support assigning output format options for
@@ -586,21 +606,32 @@ class Converter:
 
         def get_one_line_png_height(dpi):
             """Generates a one-line PNG with `dpi` and returns its height."""
-            run_pango_view(input_file, png_file_one_line, locale, font, height,
-                           0, dpi, bgcolor, fgcolor)
+            run_pango_view(
+                input_file,
+                png_file_one_line,
+                locale,
+                font,
+                height,
+                0,
+                dpi,
+                bgcolor,
+                fgcolor,
+            )
             return self._get_png_height(png_file_one_line)
 
         if use_svg:
-            run_pango_view(input_file,
-                           svg_file,
-                           locale,
-                           font,
-                           height,
-                           0,
-                           dpi,
-                           bgcolor,
-                           fgcolor,
-                           hinting='none')
+            run_pango_view(
+                input_file,
+                svg_file,
+                locale,
+                font,
+                height,
+                0,
+                dpi,
+                bgcolor,
+                fgcolor,
+                hinting='none',
+            )
             self.convert_svg_to_png(svg_file, png_file, height, bgcolor)
             self.convert_png_to_bmp(png_file, output_file, max_colors)
             return None, None
@@ -611,12 +642,22 @@ class Converter:
         max_height_px = self._to_px(height)
         height_px = get_one_line_png_height(dpi)
         if height_px > max_height_px:
-            eff_dpi = self._bisect_dpi(dpi, initial_dpi, max_height_px,
-                                       get_one_line_png_height)
+            eff_dpi = self._bisect_dpi(
+                dpi, initial_dpi, max_height_px, get_one_line_png_height
+            )
 
         def get_width_px(width_pt):
-            run_pango_view(input_file, png_file, locale, font, height,
-                           width_pt, eff_dpi, bgcolor, fgcolor)
+            run_pango_view(
+                input_file,
+                png_file,
+                locale,
+                font,
+                height,
+                width_pt,
+                eff_dpi,
+                bgcolor,
+                fgcolor,
+            )
             num_lines = self.get_num_lines(png_file, one_line_dir)
             return self._get_runtime_width_px(height, num_lines, png_file)
 
@@ -632,17 +673,17 @@ class Converter:
                 # max_width is not in points, but this should be good enough
                 # as an initial value.
                 initial_width_pt = max_width
-            width_pt = self._bisect_width(initial_width_pt, max_width_px,
-                                          get_width_px)
+            width_pt = self._bisect_width(
+                initial_width_pt, max_width_px, get_width_px
+            )
             num_lines = self.get_num_lines(png_file, one_line_dir)
         else:
             width_pt = None
             png_file = png_file_one_line
             num_lines = 1
-        self.convert_png_to_bmp(png_file,
-                                output_file,
-                                max_colors,
-                                num_lines=num_lines)
+        self.convert_png_to_bmp(
+            png_file, output_file, max_colors, num_lines=num_lines
+        )
         return eff_dpi, width_pt
 
     def convert_sprite_images(self):
@@ -653,8 +694,10 @@ class Converter:
         for filename in glob.glob(os.path.join(self.sprite_dir, SVG_FILES)):
             name, _ = os.path.splitext(os.path.basename(filename))
             if name not in names:
-                raise BuildImageError('Sprite image %r not specified in %s' %
-                                      (filename, FORMAT_FILE))
+                raise BuildImageError(
+                    'Sprite image %r not specified in %s'
+                    % (filename, FORMAT_FILE)
+                )
         # Convert images
         os.makedirs(self.stage_sprite_dir, exist_ok=True)
         for name, category in names.items():
@@ -691,20 +734,24 @@ class Converter:
                 # Setting max_width causes left/right alignment of the text.
                 # However, generic strings are locale independent, and hence
                 # shouldn't have text alignment within the bitmap.
-                raise BuildImageError(f'{name}: {KEY_MAX_WIDTH!r} should be '
-                                      'null for generic strings')
-            self.convert_text_to_image(None,
-                                       txt_file,
-                                       bmp_file,
-                                       default_font,
-                                       self.stage_dir,
-                                       self.text_max_colors,
-                                       height=style[KEY_HEIGHT],
-                                       max_width=None,
-                                       initial_width_pt=None,
-                                       dpi=dpi,
-                                       bgcolor=style[KEY_BGCOLOR],
-                                       fgcolor=style[KEY_FGCOLOR])
+                raise BuildImageError(
+                    f'{name}: {KEY_MAX_WIDTH!r} should be '
+                    'null for generic strings'
+                )
+            self.convert_text_to_image(
+                None,
+                txt_file,
+                bmp_file,
+                default_font,
+                self.stage_dir,
+                self.text_max_colors,
+                height=style[KEY_HEIGHT],
+                max_width=None,
+                initial_width_pt=None,
+                dpi=dpi,
+                bgcolor=style[KEY_BGCOLOR],
+                fgcolor=style[KEY_FGCOLOR],
+            )
 
     def build_locale(self, locale, names):
         """Builds images of strings for `locale`."""
@@ -716,7 +763,8 @@ class Converter:
 
         # Walk locale dir to add pre-generated texts such as language names.
         for txt_file in glob.glob(
-                os.path.join(self.locale_dir, locale, '*.txt')):
+            os.path.join(self.locale_dir, locale, '*.txt')
+        ):
             name, _ = os.path.splitext(os.path.basename(txt_file))
             with open(txt_file, 'r', encoding='utf-8-sig') as f:
                 inputs[name] = f.read().strip()
@@ -733,8 +781,9 @@ class Converter:
         results = []
         for name, category in sorted(names.items()):
             if name not in inputs:
-                raise BuildImageError(f'Locale {locale!r}: '
-                                      f'missing translation: {name!r}')
+                raise BuildImageError(
+                    f'Locale {locale!r}: ' f'missing translation: {name!r}'
+                )
 
             new_name = self.rename_map.get(name, name)
             if not new_name:
@@ -755,17 +804,20 @@ class Converter:
                 # Find the effective DPI that appears most times for `height`.
                 # This avoid doing the same binary search again and again. In
                 # case of a tie, pick the largest DPI.
-                best_eff_dpi = max(eff_dpi_counter,
-                                   key=lambda dpi: (eff_dpi_counter[dpi], dpi))
+                best_eff_dpi = max(
+                    eff_dpi_counter, key=lambda dpi: (eff_dpi_counter[dpi], dpi)
+                )
             else:
                 best_eff_dpi = None
-            width_pt_counter = (width_pt_counters[(height, max_width)]
-                                if max_width else None)
+            width_pt_counter = (
+                width_pt_counters[(height, max_width)] if max_width else None
+            )
             if width_pt_counter:
                 # Similarly, find the most frequently used `width_pt`. In case
                 # of a tie, pick the largest width.
-                best_width_pt = max(width_pt_counter,
-                                    key=lambda w: (width_pt_counter[w], w))
+                best_width_pt = max(
+                    width_pt_counter, key=lambda w: (width_pt_counter[w], w)
+                )
             else:
                 best_width_pt = None
             eff_dpi, width_pt = self.convert_text_to_image(
@@ -781,7 +833,8 @@ class Converter:
                 dpi=dpi,
                 initial_dpi=best_eff_dpi,
                 bgcolor=style[KEY_BGCOLOR],
-                fgcolor=style[KEY_FGCOLOR])
+                fgcolor=style[KEY_FGCOLOR],
+            )
             eff_dpi_counter[eff_dpi] += 1
             if width_pt:
                 width_pt_counter[width_pt] += 1
@@ -809,12 +862,14 @@ class Converter:
                 with open(filename, 'rb') as f:
                     f.seek(BMP_HEADER_OFFSET_NUM_LINES)
                     num_lines = f.read(1)[0]
-                width_px = self._get_runtime_width_px(height, num_lines,
-                                                      filename)
+                width_px = self._get_runtime_width_px(
+                    height, num_lines, filename
+                )
                 if width_px > max_width_px:
                     raise BuildImageError(
                         '%s: Image width %dpx greater than max width '
-                        '%dpx' % (filename, width_px, max_width_px))
+                        '%dpx' % (filename, width_px, max_width_px)
+                    )
 
     def build_localized_strings(self):
         """Builds images of localized strings."""
@@ -832,14 +887,16 @@ class Converter:
         # `self.stage_grit_dir` as specified in firmware_strings.grd, i.e. one
         # JSON file per locale.
         os.makedirs(self.stage_grit_dir, exist_ok=True)
-        subprocess.check_call([
-            'grit',
-            '-i',
-            os.path.join(self.locale_dir, STRINGS_GRD_FILE),
-            'build',
-            '-o',
-            self.stage_grit_dir,
-        ])
+        subprocess.check_call(
+            [
+                'grit',
+                '-i',
+                os.path.join(self.locale_dir, STRINGS_GRD_FILE),
+                'build',
+                '-o',
+                self.stage_grit_dir,
+            ]
+        )
 
         names = self.formats[KEY_LOCALIZED_FILES]
 
@@ -849,7 +906,8 @@ class Converter:
                 locale = locale_info.code
                 print(locale, end=' ', flush=True)
                 futures.append(
-                    executor.submit(self.build_locale, locale, names))
+                    executor.submit(self.build_locale, locale, names)
+                )
 
             print()
 
@@ -862,8 +920,9 @@ class Converter:
         effective_dpi = [dpi for r in results for dpi in r if dpi]
         if effective_dpi:
             print(
-                'Reducing effective DPI to %d, limited by screen resolution' %
-                max(effective_dpi))
+                'Reducing effective DPI to %d, limited by screen resolution'
+                % max(effective_dpi)
+            )
 
         self._check_text_width(names)
 
@@ -877,8 +936,7 @@ class Converter:
             locale = locale_info.code
             ro_locale_dir = os.path.join(self.output_ro_dir, locale)
             old_file = os.path.join(ro_locale_dir, 'language.bmp')
-            new_file = os.path.join(self.output_dir,
-                                    'language_%s.bmp' % locale)
+            new_file = os.path.join(self.output_dir, 'language_%s.bmp' % locale)
             if os.path.exists(new_file):
                 raise BuildImageError('File already exists: %s' % new_file)
             shutil.move(old_file, new_file)
@@ -902,15 +960,18 @@ class Converter:
                     f.write('\n')
                 output_file = os.path.join(output_dir, name + '.bmp')
                 futures.append(
-                    executor.submit(self.convert_text_to_image,
-                                    None,
-                                    txt_file,
-                                    output_file,
-                                    font,
-                                    self.stage_glyph_dir,
-                                    self.GLYPH_MAX_COLORS,
-                                    height=height,
-                                    use_svg=True))
+                    executor.submit(
+                        self.convert_text_to_image,
+                        None,
+                        txt_file,
+                        output_file,
+                        font,
+                        self.stage_glyph_dir,
+                        self.GLYPH_MAX_COLORS,
+                        height=height,
+                        use_svg=True,
+                    )
+                )
             for future in futures:
                 future.result()
 
