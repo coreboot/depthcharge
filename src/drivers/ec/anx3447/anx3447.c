@@ -82,6 +82,8 @@
 #define ANX3447_FW_CRC_SECTION_A	0xdffc
 #define ANX3447_FW_CRC_SECTION_B	0x1fbfc
 
+#define ANX_WAIT_TIMEOUT_US		100000
+
 
 static int __must_check read_reg(Anx3447 *me, uint8_t reg, uint8_t *data)
 {
@@ -91,6 +93,18 @@ static int __must_check read_reg(Anx3447 *me, uint8_t reg, uint8_t *data)
 static int __must_check write_reg(Anx3447 *me, uint8_t reg, uint8_t data)
 {
 	return i2c_writeb(&me->bus->ops, ANX_FW_I2C_ADDR, reg, data);
+}
+
+static int __must_check write_reg_or(Anx3447 *me, uint8_t reg, uint8_t data)
+{
+	uint8_t val;
+
+	if (read_reg(me, reg, &val) != 0) {
+		debug("read reg:0x%x failed\n", reg);
+		return -1;
+	}
+
+	return write_reg(me, reg, data | val);
 }
 
 static int __must_check update_reg(Anx3447 *me, uint8_t reg, uint8_t mask,
@@ -105,6 +119,28 @@ static int __must_check update_reg(Anx3447 *me, uint8_t reg, uint8_t mask,
 
 	if (write_reg(me, reg, val))
 		return -1;
+
+	return 0;
+}
+
+static int __must_check wait_flash_op_done(Anx3447 *me)
+{
+	uint64_t t0 = timer_us(0);
+	uint8_t val;
+
+	while (1) {
+		if (read_reg(me, R_RAM_CTRL, &val) != 0)
+			return -1;
+
+		if (val & FLASH_DONE)
+			break;
+
+		mdelay(1);
+		if (timer_us(t0) >= ANX_WAIT_TIMEOUT_US) {
+			printf("anx3447.%d: wait timeout\n", me->ec_pd_id);
+			return -1;
+		}
+	}
 
 	return 0;
 }
@@ -140,10 +176,10 @@ static int __must_check anx3447_flash_operation_init(Anx3447 *me)
 
 	mdelay(4);
 
-	do {
-		if (read_reg(me, R_RAM_CTRL, &val))
-			return -1;
-	} while (!(val & FLASH_DONE));
+	if (wait_flash_op_done(me)) {
+		debug("Read flash failed: timeout\n");
+		return -1;
+	}
 
 	mdelay(5);
 
@@ -152,8 +188,6 @@ static int __must_check anx3447_flash_operation_init(Anx3447 *me)
 
 static int __must_check anx3447_flash_unprotect(Anx3447 *me)
 {
-	uint8_t val;
-
 	/* disable hardware protected mode */
 	if (update_reg(me, ADDR_GPIO_CTRL_0, SPI_WP, SPI_WP))
 		return -1;
@@ -166,10 +200,10 @@ static int __must_check anx3447_flash_unprotect(Anx3447 *me)
 		return -1;
 
 	/* wait for Write Enable (WREN) Sequence done */
-	do {
-		if (read_reg(me, R_RAM_CTRL, &val))
-			return -1;
-	} while (!(val & FLASH_DONE));
+	if (wait_flash_op_done(me)) {
+		debug("Enable write flash failed: timeout\n");
+		return -1;
+	}
 
 	/* disable protect */
 	if (update_reg(me, R_FLASH_STATUS_0, 0xBC, 0))
@@ -178,10 +212,10 @@ static int __must_check anx3447_flash_unprotect(Anx3447 *me)
 	if (update_reg(me, R_FLASH_RW_CTRL, WRITE_STATUS_EN, WRITE_STATUS_EN))
 		return -1;
 
-	do {
-		if (read_reg(me, R_RAM_CTRL, &val))
-			return -1;
-	} while (!(val & FLASH_DONE));
+	if (wait_flash_op_done(me)) {
+		debug("Write flash status failed: timeout\n");
+		return -1;
+	}
 
 	mdelay(10);
 
@@ -192,12 +226,12 @@ static int __must_check anx3447_flash_write_block(Anx3447 *me, uint32_t addr,
 						  const uint8_t *buf)
 {
 	uint8_t i, val;
+	uint8_t blank_data[DATA_BLOCK_SIZE];
 
-	if (anx3447_flash_operation_init(me))
-		return -1;
-
-	if (anx3447_flash_unprotect(me))
-		return -1;
+	/* skip the empty block */
+	memset(blank_data, 0xff, DATA_BLOCK_SIZE);
+	if (!memcmp(buf, blank_data, DATA_BLOCK_SIZE))
+		return 0;
 
 	/* move data to registers */
 	for (i = 0; i < DATA_BLOCK_SIZE; i++) {
@@ -214,10 +248,10 @@ static int __must_check anx3447_flash_write_block(Anx3447 *me, uint32_t addr,
 		return -1;
 
 	/* wait for Write Enable (WREN) Sequence done */
-	do {
-		if (read_reg(me, R_RAM_CTRL, &val))
-			return -1;
-	} while (!(val & FLASH_DONE));
+	if (wait_flash_op_done(me)) {
+		debug("Enable write flash failed: timeout\n");
+		return -1;
+	}
 
 	/* write flash address */
 	if (update_reg(me, R_RAM_LEN_H, FLASH_ADDR_EXTEND, 0))
@@ -241,24 +275,54 @@ static int __must_check anx3447_flash_write_block(Anx3447 *me, uint32_t addr,
 		return -1;
 
 	/* wait flash write sequence done */
-	do {
-		if (read_reg(me, R_RAM_CTRL, &val))
-			return -1;
-	} while (!(val & FLASH_DONE));
+	if (wait_flash_op_done(me)) {
+		debug("write flash data failed: timeout\n");
+		return -1;
+	}
 
 	do {
 		if (update_reg(me, R_I2C_0, READ_STATUS_EN, READ_STATUS_EN))
 			return -1;
 		/* wait for Read Status Register (RDSR) Sequence done */
-		do {
-			if (read_reg(me, R_RAM_CTRL, &val))
-				return -1;
-		} while (!(val & FLASH_DONE));
+		if (wait_flash_op_done(me))
+			debug("Read flash op failed: timeout\n");
 
 		if (read_reg(me, R_FLASH_STATUS_REGISTER_READ_0, &val))
 			return -1;
 	} while (val & WIP);
 
+	return 0;
+}
+
+static int __must_check anx3447_flash_chip_erase(Anx3447 *me)
+{
+	int ret;
+
+	ret = write_reg(me, FLASH_INSTRUCTION_TYPE, WRITE_EN);
+	ret |= write_reg_or(me, R_FLASH_RW_CTRL, GENERAL_INSTRUCTION_EN);
+	if (ret) {
+		debug("I2C access FLASH fail: GENERAL_CMD\n");
+		return -1;
+	}
+
+	if (wait_flash_op_done(me)) {
+		debug("Enable write flash failed: timeout\n");
+		return -1;
+	}
+
+	ret = write_reg(me, FLASH_ERASE_TYPE, CHIP_ERASE);
+	ret |= write_reg_or(me, R_FLASH_RW_CTRL, FLASH_ERASE_EN);
+	if (ret) {
+		debug("I2C access FLASH fail: FLASH_ERASE\n");
+		return -1;
+	}
+
+	if (wait_flash_op_done(me)) {
+		debug("Flash erase failed: timeout\n");
+		return -1;
+	}
+
+	debug("Flash erase done\n");
 	return 0;
 }
 
@@ -408,6 +472,21 @@ static vb2_error_t anx3447_flash(Anx3447 *me, const uint8_t *image,
 		break;
 	default:
 		return VB2_ERROR_INVALID_PARAMETER;
+	}
+
+	if (anx3447_flash_operation_init(me)) {
+		debug("Flash operation initial failed\n");
+		return VB2_ERROR_UNKNOWN;
+	}
+
+	if (anx3447_flash_unprotect(me)) {
+		debug("Disable flash protection failed\n");
+		return VB2_ERROR_UNKNOWN;
+	}
+
+	if (anx3447_flash_chip_erase(me) != 0) {
+		debug("Anx3447.%d erase flash failed\n", me->ec_pd_id);
+		return VB2_ERROR_UNKNOWN;
 	}
 
 	for (i = 0; i + DATA_BLOCK_SIZE < image_size; i += DATA_BLOCK_SIZE) {
