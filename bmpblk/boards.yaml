@@ -368,3 +368,8 @@ staryu:
   screen: [1920, 1200]
   sdcard: False
   dpi: 110 # DO NOT COPY-PASTE -- follow instructions at top of file.
+
+myst:
+  # 1920x1080, boots recovery image on any SD card or USB ports.
+  screen: [1920, 1080]
+  dpi: 72
