@@ -56,6 +56,7 @@ KEY_SDCARD = 'sdcard'
 KEY_DPI = 'dpi'
 KEY_RTL = 'rtl'
 KEY_RW_OVERRIDE = 'rw_override'
+KEY_RW_ONLY = 'rw_only'
 
 BMP_HEADER_OFFSET_NUM_LINES = 6
 
@@ -977,7 +978,7 @@ class Converter:
 
     def copy_images_to_rw(self):
         """Copies localized images specified in boards.yaml for RW override."""
-        if not self.config[KEY_RW_OVERRIDE]:
+        if not self.config[KEY_RW_OVERRIDE] and not self.config[KEY_RW_ONLY]:
             print('  No localized images are specified for RW, skipping')
             return
 
@@ -986,6 +987,14 @@ class Converter:
             ro_locale_dir = os.path.join(self.output_ro_dir, locale)
             rw_locale_dir = os.path.join(self.output_rw_dir, locale)
             os.makedirs(rw_locale_dir)
+
+            # Overlapping assets in RW_OVERRIDE & RW_ONLY is not expected.
+            # Hence move any RW_ONLY asset before copying RW_OVERRIDE assets.
+            # This will help to catch any overlapping scenario during build.
+            for name in self.config[KEY_RW_ONLY]:
+                ro_src = os.path.join(ro_locale_dir, name + '.bmp')
+                rw_dst = os.path.join(rw_locale_dir, name + '.bmp')
+                shutil.move(ro_src, rw_dst)
 
             for name in self.config[KEY_RW_OVERRIDE]:
                 ro_src = os.path.join(ro_locale_dir, name + '.bmp')

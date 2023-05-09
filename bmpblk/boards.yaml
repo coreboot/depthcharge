@@ -22,6 +22,10 @@
 #   and RO sections. This field is designed to allow late RW updates to change
 #   or add bitmaps of firmware screens in RW. Currently, there is no support
 #   for updating locale-independent bitmaps in vbgfx.bin and font.bin.
+# rw_only: List of names of localized bitmaps to be stored in RW sections only.
+#   This field is intended to keep the subset of firmware screens that are not
+#   required during recovery mode in RW section only. This should be used only
+#   to prevent crossing the RO section size threshold.
 #
 # Note the locale should be supported (and named) by Chrome browser:
 # https://chromium.googlesource.com/chromium/chromium/+/trunk/ui/base/l10n/l10n_util.cc
@@ -44,6 +48,7 @@ _DEFAULT_:
                 th, zh-CN, zh-TW, ja, ko]
   rtl:         [he, ar, fa]
   rw_override:  []
+  rw_only:      []
 
 x86-generic,amd64-generic,arm-generic,arm64-generic,mips-generic:
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
