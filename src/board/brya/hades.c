@@ -48,3 +48,8 @@ const struct storage_config *variant_get_storage_configs(size_t *count)
 	*count = ARRAY_SIZE(storage_configs);
 	return storage_configs;
 }
+
+int gsc_irq_status(void)
+{
+	return alderlake_get_gpe(GPE0_DW0_20); /* GPP_A20 */
+}

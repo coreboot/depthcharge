@@ -16,5 +16,6 @@ struct tpm_config {
 
 const struct tpm_config *variant_get_tpm_config(void);
 const int variant_get_ec_int(void);
+int gsc_irq_status(void);
 
 #endif /* _VARIANT_H_ */
