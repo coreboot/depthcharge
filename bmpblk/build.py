@@ -82,7 +82,9 @@ def get_config_with_defaults(configs, key):
     will be used.
     """
     config = configs[KEY_DEFAULT].copy()
-    config.update(configs.get(key, {}))
+    params = configs.get(key, {})
+    if params:
+        config.update(params)
     return config
 
 
