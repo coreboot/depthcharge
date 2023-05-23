@@ -5,6 +5,7 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "boot/commandline.h"
 #include "board/guybrush/include/variant.h"
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/bus/i2c/designware.h"
@@ -165,6 +166,16 @@ static void setup_amd_acp_i2s(pcidev_t acp_pci_dev)
 	sound_set_ops(&sound_route->ops);
 }
 
+static int is_nipperkin(void)
+{
+	const char * const nipperkin_str = "Nipperkin";
+	struct cb_mainboard *mainboard =
+		phys_to_virt(lib_sysinfo.cb_mainboard);
+
+	return strncasecmp(cb_mb_part_string(mainboard),
+			nipperkin_str, strlen(nipperkin_str)) == 0;
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(NULL);
@@ -189,6 +200,10 @@ static int board_setup(void)
 
 	power_set_ops(&kern_power_ops);
 	display_set_ops(&guybrush_display_ops);
+
+	/* nipperkin doesn't support PSR, and need change in fw */
+	if (is_nipperkin())
+		commandline_append("amdgpu.dcfeaturemask=0x0");
 
 	return 0;
 }
