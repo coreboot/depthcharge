@@ -267,6 +267,10 @@ static void configure_audio_codec(const struct audio_codec *codec,
 			data->ops = &data->route->ops;
 		}
 		break;
+	case AUDIO_RT1019:
+		if (data->route)
+			data->ops = &data->route->ops;
+		break;
 	default:
 		break;
 	}
