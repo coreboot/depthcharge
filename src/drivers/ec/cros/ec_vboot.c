@@ -376,14 +376,11 @@ static int ec_efs_verify(CrosEc *me, enum ec_flash_region region)
 }
 
 static vb2_error_t vboot_set_region_protection(
-	CrosEc *me, enum vb2_firmware_selection select, int enable)
+	CrosEc *me, int enable)
 {
 	struct ec_response_flash_protect resp;
 	uint32_t protected_region = EC_FLASH_PROTECT_ALL_NOW;
 	uint32_t mask = EC_FLASH_PROTECT_ALL_NOW | EC_FLASH_PROTECT_ALL_AT_BOOT;
-
-	if (select == VB_SELECT_FIRMWARE_READONLY)
-		protected_region = EC_FLASH_PROTECT_RO_NOW;
 
 	/* Update protection */
 	if (ec_flash_protect(me, mask, enable ? mask : 0, &resp) < 0) {
@@ -426,7 +423,7 @@ static vb2_error_t vboot_update_image(VbootEcOps *vbec,
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
 	uint32_t region_offset, region_size;
 	enum ec_flash_region region = vboot_to_ec_region(select);
-	vb2_error_t rv = vboot_set_region_protection(me, select, 0);
+	vb2_error_t rv = vboot_set_region_protection(me, 0);
 	if (rv == VB2_REQUEST_REBOOT_EC_TO_RO || rv != VB2_SUCCESS)
 		return rv;
 
@@ -457,11 +454,10 @@ static vb2_error_t vboot_update_image(VbootEcOps *vbec,
 	return VB2_SUCCESS;
 }
 
-static vb2_error_t vboot_protect(VbootEcOps *vbec,
-				 enum vb2_firmware_selection select)
+static vb2_error_t vboot_protect(VbootEcOps *vbec)
 {
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
-	return vboot_set_region_protection(me, select, 1);
+	return vboot_set_region_protection(me, 1);
 }
 
 static vb2_error_t vboot_battery_cutoff(VbootEcOps *vbec)

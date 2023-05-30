@@ -197,8 +197,7 @@ static vb2_error_t vboot_disable_jump(VbootEcOps *vbec)
 	return VB2_SUCCESS;
 }
 
-static vb2_error_t vboot_protect(VbootEcOps *vbec,
-				 enum vb2_firmware_selection select)
+static vb2_error_t vboot_protect(VbootEcOps *vbec)
 {
 	return VB2_SUCCESS;
 }

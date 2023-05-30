@@ -29,8 +29,7 @@ typedef struct VbootEcOps {
 	vb2_error_t (*update_image)(struct VbootEcOps *me,
 				  enum vb2_firmware_selection select,
 				  const uint8_t *image, int image_size);
-	vb2_error_t (*protect)(struct VbootEcOps *me,
-			     enum vb2_firmware_selection select);
+	vb2_error_t (*protect)(struct VbootEcOps *me);
 
 	/* Tells the EC to reboot to RO on next AP shutdown. */
 	vb2_error_t (*reboot_to_ro)(struct VbootEcOps *me);

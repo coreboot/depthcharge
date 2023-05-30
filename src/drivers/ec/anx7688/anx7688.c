@@ -425,8 +425,7 @@ static vb2_error_t vboot_update_image(VbootEcOps *vbec,
 	return anx7688_update(me, image, image_size);
 }
 
-static vb2_error_t vboot_protect(VbootEcOps *vbec,
-				 enum vb2_firmware_selection select)
+static vb2_error_t vboot_protect(VbootEcOps *vbec)
 {
 	/* Noop success */
 

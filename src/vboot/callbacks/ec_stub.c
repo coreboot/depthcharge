@@ -65,7 +65,7 @@ vb2_error_t vb2ex_ec_update_image(enum vb2_firmware_selection select)
 	no_ec_soft_sync();
 }
 
-vb2_error_t vb2ex_ec_protect(enum vb2_firmware_selection select)
+vb2_error_t vb2ex_ec_protect(void)
 {
 	no_ec_soft_sync();
 }

@@ -126,11 +126,11 @@ vb2_error_t vb2ex_ec_update_image(enum vb2_firmware_selection select)
 	return rv;
 }
 
-vb2_error_t vb2ex_ec_protect(enum vb2_firmware_selection select)
+vb2_error_t vb2ex_ec_protect(void)
 {
 	VbootEcOps *ec = vboot_get_ec();
 	assert(ec && ec->protect);
-	return ec->protect(ec, select);
+	return ec->protect(ec);
 }
 
 /* Wait 3 seconds after software sync for EC to clear the limit power flag. */
