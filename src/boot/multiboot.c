@@ -150,7 +150,8 @@ int multiboot_fill_boot_info(struct boot_info *bi)
 	bi->kernel = header;
 
 	// Use bootloader as ramdisk
-	bi->ramdisk_addr = (void *)(uintptr_t)bi->kparams->bootloader_address;
+	bi->ramdisk_addr = (void *)(uintptr_t)(bi->kparams->kernel_buffer +
+					       bi->kparams->bootloader_offset);
 	bi->ramdisk_size = bi->kparams->bootloader_size;
 
 	// Boot parameters come before ramdisk

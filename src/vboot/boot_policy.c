@@ -61,8 +61,7 @@ static int fill_info_cros(struct boot_info *bi,
 			  const struct boot_policy *policy)
 {
 	bi->kernel = kparams->kernel_buffer;
-	bi->loader = (uint8_t *)bi->kernel +
-		(kparams->bootloader_address - 0x100000);
+	bi->loader = (uint8_t *)bi->kernel + kparams->bootloader_offset;
 	bi->params = (uint8_t *)bi->loader - CrosParamSize;
 
 	if (policy->cmd_line_loc == CMD_LINE_SIGNER)
