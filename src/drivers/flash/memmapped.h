@@ -9,8 +9,20 @@
 
 typedef struct {
 	FlashOps ops;
+	FlashOps *base_ops;
 } MmapFlash;
 
-MmapFlash *new_mmap_flash(void);
+/*
+ * Create a mmap-backed flash with a base FlashOps `base_ops`.
+ *
+ * It will perform mmap read whenever possible. Otherwise, for write/erase
+ * operations or out-of-bound read operations, `base_ops` will be used.
+ */
+MmapFlash *new_mmap_backed_flash(FlashOps *base_ops);
+
+static inline MmapFlash *new_mmap_flash(void)
+{
+	return new_mmap_backed_flash(NULL);
+}
 
 #endif /* __DRIVERS_FLASH_MEMMAPPED_H__ */

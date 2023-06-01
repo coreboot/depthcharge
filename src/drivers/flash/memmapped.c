@@ -39,31 +39,58 @@ static const struct flash_mmap_window *find_mmap_window(uint32_t offset,
 	return NULL;
 }
 
-static int mem_mapped_flash_read(FlashOps *me, void *buffer, uint32_t offset,
-				 uint32_t size)
+static int mmap_flash_read(void *buffer, uint32_t offset, uint32_t size,
+			   const struct flash_mmap_window *window)
 {
-	uint32_t rel_offset;
-	const struct flash_mmap_window *window = find_mmap_window(offset, size);
-
-	if (!window) {
-		printf("ERROR: Offset(0x%x)/size(0x%x) out of bounds!\n",
-		       offset, size);
-		return -1;
-	}
-
 	/* Convert offset within flash space into an offset within host space */
-	rel_offset = offset - window->flash_base;
+	uint32_t rel_offset = offset - window->flash_base;
 	memcpy(buffer, (void *)(uintptr_t)(window->host_base + rel_offset),
 	       size);
 	return size;
 }
 
-MmapFlash *new_mmap_flash(void)
+static int mmap_backed_flash_read(FlashOps *me, void *buffer, uint32_t offset,
+				  uint32_t size)
+{
+	MmapFlash *flash = container_of(me, MmapFlash, ops);
+	const struct flash_mmap_window *window = find_mmap_window(offset, size);
+
+	if (window)
+		return mmap_flash_read(buffer, offset, size, window);
+
+	if (!flash->base_ops) {
+		printf("ERROR: Offset(%#x)/size(%#x) out of bounds!\n",
+		       offset, size);
+		return -1;
+	}
+
+	return flash_read_ops(flash->base_ops, buffer, offset, size);
+}
+
+static int mmap_backed_flash_write(FlashOps *me, const void *buffer,
+				   uint32_t offset, uint32_t size)
+{
+	MmapFlash *flash = container_of(me, MmapFlash, ops);
+	return flash_write_ops(flash->base_ops, buffer, offset, size);
+}
+
+static int mmap_backed_flash_erase(FlashOps *me, uint32_t offset, uint32_t size)
+{
+	MmapFlash *flash = container_of(me, MmapFlash, ops);
+	return flash_erase_ops(flash->base_ops, offset, size);
+}
+
+MmapFlash *new_mmap_backed_flash(FlashOps *base_ops)
 {
 	die_if(!lib_sysinfo.spi_flash.mmap_window_count,
 	       "No MMAP windows for SPI flash!\n");
 
 	MmapFlash *flash = xzalloc(sizeof(*flash));
-	flash->ops.read = mem_mapped_flash_read;
+	flash->ops.read = mmap_backed_flash_read;
+	if (base_ops) {
+		flash->ops.write = mmap_backed_flash_write;
+		flash->ops.erase = mmap_backed_flash_erase;
+		flash->base_ops = base_ops;
+	}
 	return flash;
 }
