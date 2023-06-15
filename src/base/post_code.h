@@ -15,17 +15,23 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __ARCH_X86_INCLUDES_ARCH_SIGN_OF_LIFE_H__
-#define __ARCH_X86_INCLUDES_ARCH_SIGN_OF_LIFE_H__
+#ifndef __BASE_POST_CODE_H__
+#define __BASE_POST_CODE_H__
 
-#include <arch/io.h>
+#include <stdint.h>
 
-#include "base/sign_of_life.h"
+/* Legacy POST codes */
+#define POST_CODE_START_DEPTHCHARGE	0xaa
+#define POST_CODE_START_KERNEL		0xab
 
-static inline void sign_of_life(uint8_t val)
-{
-	// Send a post code.
-	outb(val, 0x80);
-}
+/* POST codes 0xd000-0xd0ff are reserved for depthcharge */
+#define POST_CODE_KERNEL_PHASE_1	0xd010
+#define POST_CODE_KERNEL_PHASE_2	0xd020
+#define POST_CODE_KERNEL_LOAD		0xd030
+#define POST_CODE_KERNEL_FINALIZE	0xd040
+#define POST_CODE_CROSSYSTEM_SETUP	0xd050
 
-#endif /* __ARCH_X86_INCLUDES_ARCH_SIGN_OF_LIFE_H__ */
+
+static inline void post_code(uint16_t val);
+
+#endif /* __BASE_POST_CODE_H__ */
