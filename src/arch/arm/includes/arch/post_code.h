@@ -15,16 +15,16 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __ARCH_ARM_INCLUDES_ARCH_SIGN_OF_LIFE_H__
-#define __ARCH_ARM_INCLUDES_ARCH_SIGN_OF_LIFE_H__
+#ifndef __ARCH_ARM_INCLUDES_ARCH_POST_CODE_H__
+#define __ARCH_ARM_INCLUDES_ARCH_POST_CODE_H__
 
 #include <stdint.h>
 
-#include "base/sign_of_life.h"
+#include "base/post_code.h"
 
-static inline void sign_of_life(uint8_t val)
+static inline void post_code(uint16_t val)
 {
 	/* It would be nice to do something here... */
 }
 
-#endif /* __ARCH_ARM_INCLUDES_ARCH_SIGN_OF_LIFE_H__ */
+#endif /* __ARCH_ARM_INCLUDES_ARCH_POST_CODE_H__ */

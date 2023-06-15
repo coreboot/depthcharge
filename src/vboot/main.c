@@ -19,7 +19,7 @@
 #include <libpayload.h>
 #include <vb2_api.h>
 
-#include "arch/sign_of_life.h"
+#include "arch/post_code.h"
 #include "base/init_funcs.h"
 #include "base/late_init_funcs.h"
 #include "base/timestamp.h"
@@ -31,7 +31,7 @@
 int main(void)
 {
 	// Let the world know we're alive.
-	sign_of_life(0xaa);
+	post_code(POST_CODE_START_DEPTHCHARGE);
 
 	// Initialize some consoles.
 	serial_console_init();
