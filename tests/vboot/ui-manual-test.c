@@ -160,7 +160,6 @@ static void test_manual_ui_internet_recovery_menu(void **state)
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #3: Internet recovery */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	will_return_maybe(ui_keyboard_read, 0);
-	will_return_maybe(VbExIsShutdownRequested, 0);
 	WILL_LOAD_EXTERNAL_MAYBE(VB2_ERROR_LK_NO_DISK_FOUND);
 	expect_value(vboot_load_minios_kernel, minios_flags, 0);
 	will_return(vboot_load_minios_kernel, VB2_ERROR_MOCK);

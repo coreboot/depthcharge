@@ -11,7 +11,7 @@
  * Load a kernel from the specified type(s) of disks.
  *
  * @param ctx		Vboot2 context.
- * @param disk_flags	Flags to pass to VbExDiskGetInfo().
+ * @param type		Block device type.
  * @param kparams	Params specific to loading the kernel.
  *
  * @return VB2_SUCCESS or the most specific VB2_ERROR_LK error.

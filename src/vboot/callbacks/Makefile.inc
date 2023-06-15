@@ -13,7 +13,6 @@
 
 depthcharge-y += debug.c
 depthcharge-y += disk.c
-depthcharge-y += memory.c
 depthcharge-y += misc.c
 depthcharge-y += time.c
 depthcharge-y += tpm.c
