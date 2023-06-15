@@ -10,18 +10,6 @@
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
 
-config CUSTOM_MUSIC
-	bool "Allow the board file to override the default firmware sound tones"
-	default n
-	help
-	  By default depthcharge waits for 30 seconds and beeps twice
-	  during the developer mode screen. If CUSTOM_MUSIC is defined, the
-	  note array can be overridden and custom tones and delays could be
-	  played. A useful example of this is for lengthening the developer
-	  mode screen. VbExGetMusicPtr() and VbExMaxMusicSize() must be
-	  implemented (in order to provide the particular music data) in the
-	  board file when CUSTOM_MUSIC is enabled.
-
 config DETACHABLE
 	bool "Whether the device is a detachable"
 	default n
