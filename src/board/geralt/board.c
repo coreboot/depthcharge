@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <libpayload.h>
+#include "base/device_tree.h"
 #include "base/init_funcs.h"
 #include "drivers/bus/i2c/mtk_i2c.h"
 #include "drivers/bus/i2s/mtk_v2.h"
@@ -23,6 +24,20 @@
 #include "drivers/video/display.h"
 #include "drivers/video/mtk_ddp.h"
 #include "vboot/util/flag.h"
+
+static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
+{
+	DeviceTreeNode *node = dt_find_compat(tree->root, "arm,gic-v3");
+
+	if (node)
+		dt_remove_prop(node, "mediatek,broken-save-restore-fw");
+
+	return 0;
+}
+
+static DeviceTreeFixup mtk_gic_fixup = {
+	.fixup = fix_device_tree
+};
 
 static int tpm_irq_status(void)
 {
@@ -205,6 +220,8 @@ static int board_setup(void)
 						0x1C000000, 2));
 	else
 		printf("[%s] no display_init_required()!\n", __func__);
+
+	list_insert_after(&mtk_gic_fixup.list_node, &device_tree_fixups);
 
 	return 0;
 }
