@@ -165,6 +165,7 @@ void dt_write_int(u8 *dest, u64 src, size_t length);
 void dt_add_bin_prop(DeviceTreeNode *node, const char *name, void *data,
 		     size_t size);
 void dt_add_string_prop(DeviceTreeNode *node, const char *name, char *str);
+void dt_remove_prop(DeviceTreeNode *node, const char *name);
 void dt_add_u32_prop(DeviceTreeNode *node, const char *name, u32 val);
 void dt_add_u64_prop(DeviceTreeNode *node, const char *name, u64 val);
 void dt_add_reg_prop(DeviceTreeNode *node, u64 *addrs, u64 *sizes,

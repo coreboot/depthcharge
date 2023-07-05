@@ -949,6 +949,24 @@ void dt_add_string_prop(DeviceTreeNode *node, const char *name, char *str)
 }
 
 /*
+ * Remove a property from a node.
+ *
+ * @param node		The device tree node to remove from.
+ * @param name		The name of the property.
+ */
+void dt_remove_prop(DeviceTreeNode *node, const char *name)
+{
+	DeviceTreeProperty *prop;
+
+	list_for_each(prop, node->properties, list_node) {
+		if (!strcmp(prop->prop.name, name)) {
+			list_remove(&prop->list_node);
+			return;
+		}
+	}
+}
+
+/*
  * Add a 32-bit integer property to a node, or update it if it already exists.
  *
  * @param node		The device tree node to add to.
