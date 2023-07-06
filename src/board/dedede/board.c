@@ -30,6 +30,7 @@
 #include "drivers/sound/gpio_edge_buzzer.h"
 #include "drivers/sound/route.h"
 #include "drivers/sound/rt1015.h"
+#include "drivers/sound/rt5645.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/sdhci.h"
 #include "drivers/tpm/lpc.h"
@@ -59,6 +60,7 @@
 
 #define MAX98360A_AMP_SRC	1
 #define ALC1015_AMP_SRC		2
+#define ALC5645_AMP_SRC		3
 
 static int gsc_irq_status(void)
 {
@@ -114,6 +116,25 @@ static void setup_rt1015_amp(void)
 	sound_set_ops(&sound_route->ops);
 }
 
+#if CONFIG(DRIVER_SOUND_RT5645)
+static void setup_rt5645_amp(void)
+{
+	I2s *i2s = new_i2s_structure(&max98357a_settings, AUD_BITDEPTH, 0,
+				     SSP_I2S1_START_ADDRESS);
+	I2sSource *i2s_source = new_i2s_source(&i2s->ops, AUD_SAMPLE_RATE,
+					       AUD_NUM_CHANNELS, AUD_VOLUME);
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+	/* Setup i2c */
+	DesignwareI2c *i2c = new_pci_designware_i2c(AUD_I2C4, SPEED_HZ,
+						    JASPERLAKE_DW_I2C_MHZ);
+	rt5645Codec *speaker_amp = new_rt5645_codec(&i2c->ops, 0x1a);
+
+	list_insert_after(&speaker_amp->component.list_node,
+			  &sound_route->components);
+	sound_set_ops(&sound_route->ops);
+}
+#endif
+
 static void setup_gpio_amp(void)
 {
 	GpioOps *spk_en = &new_jasperlake_gpio_output(EN_SPK_PIN, 0)->ops;
@@ -146,6 +167,11 @@ static uint8_t get_amp_source(void)
 	if (fw_config_probe(FW_CONFIG(AUDIO_AMP, RT1015_I2C)))
 		return ALC1015_AMP_SRC;
 
+#if CONFIG(DRIVER_SOUND_RT5645)
+	if (fw_config_probe(FW_CONFIG(AUDIO_AMP, ALC5650)))
+		return ALC5645_AMP_SRC;
+#endif
+
 	return CONFIG_DEFAULT_AMP_SOURCE;
 }
 
@@ -167,6 +193,11 @@ static void setup_audio_amp(void)
 		case ALC1015_AMP_SRC:
 			setup_rt1015_amp();
 			break;
+#if CONFIG(DRIVER_SOUND_RT5645)
+		case ALC5645_AMP_SRC:
+			setup_rt5645_amp();
+			break;
+#endif
 		default:
 			printf("%s: Unsupported amp id %d\n",
 				__func__, amp_source);
