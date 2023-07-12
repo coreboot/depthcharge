@@ -175,6 +175,10 @@ static int update_all_tcss_ports_states(void)
 			continue;
 		}
 
+		/* Skip checking USB port connection status as the device in DP alt mode */
+		if (mux_state & (USB_PD_MUX_DP_ENABLED | USB_PD_MUX_HPD_LVL))
+			continue;
+
 		usb_enabled = !!(mux_state & USB_PD_MUX_USB_ENABLED);
 		usb2 = tcss_port_info[ec_port].usb2_port_number;
 		usb3 = tcss_port_info[ec_port].usb3_port_number;
