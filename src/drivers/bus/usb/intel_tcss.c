@@ -183,11 +183,12 @@ static int update_all_tcss_ports_states(void)
 		usb2 = tcss_port_info[ec_port].usb2_port_number;
 		usb3 = tcss_port_info[ec_port].usb3_port_number;
 
+		bool is_usb_connected = is_port_connected((usb3-1), (usb2-1));
 		/*
 		 * PMC-IPC encoding of port numbers is 1-based but SoC TypeC
 		 * port numbers are 0-based.
 		 */
-		if (is_port_connected((usb3-1), (usb2-1)) == usb_enabled) {
+		if (is_usb_connected == usb_enabled) {
 			/*
 			 * The TCSS USB port mux state matches the observed
 			 * state of the Type-C USB port.
@@ -206,8 +207,7 @@ static int update_all_tcss_ports_states(void)
 		}
 
 		debug("port C%d state: usb enable %d mux conn %d, usb2 %u, "
-				"usb3 %u\n", ec_port, usb_enabled,
-				is_port_connected((usb3-1), (usb2-1)), usb2, usb3);
+				"usb3 %u\n", ec_port, usb_enabled, is_usb_connected, usb2, usb3);
 
 		r = cros_ec_get_usb_pd_control(ec_port, &ufp, &dbg_acc);
 		if (r < 0) {
