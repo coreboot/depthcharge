@@ -20,10 +20,8 @@ const I2sSettings cs35l53_settings = {
 	.mode = SSP_IN_NETWORK_MODE,
 	/* To set FRDC bit in SSC0 - timeslot per frame in network mode */
 	.frame_rate_divider_ctrl = FRAME_RATE_CONTROL_STEREO,
-	/* To set EDMYSTOP bit in SSPSP - number of SCLK cycles after data */
-	.ssp_psp_T4 = 0,
-	/* To set SFRMWDTH bit in SSPSP - frame width */
-	.ssp_psp_T6 = 0x20,
+	.fsync_rate = 48000,
+	.bclk_rate = 3072000,
 	/* To set TTSA bit n SSTSA - data transmit timeslot */
 	.ssp_active_tx_slots_map = 3,
 	/* To set RTSA bit n SSRSA - data receive timeslot */

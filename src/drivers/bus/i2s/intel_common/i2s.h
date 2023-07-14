@@ -106,10 +106,10 @@ typedef struct I2sSettings {
 	SspMode mode;
 	/* Frame Rate Divider Control for SSPC0.*/
 	uint8_t frame_rate_divider_ctrl;
-	/* To set EDMYSTOP bit in SSPSP.*/
-	uint8_t ssp_psp_T4;
-	/* To set SFRMWDTH bit in SSPSP.*/
-	uint8_t ssp_psp_T6;
+	/* fsync frequency in Hz */
+	uint32_t fsync_rate;
+	/* bclk frequency in Hz */
+	uint32_t bclk_rate;
 	/* To set TTSA bit n SSTSA - data transmit timeslot. */
 	uint8_t ssp_active_tx_slots_map;
 	/* To set RTSA bit n SSRSA - data receive timeslot. */
