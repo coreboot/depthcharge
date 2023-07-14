@@ -20,6 +20,8 @@
 #include <libpayload.h>
 
 #define LPE_SSP_FIFO_SIZE	16
+#define DMYSTOP_BITS		2
+#define SLOT_PADDING_MAX	31
 
 /*
  * i2s_ensable -  enable SSP device
@@ -51,13 +53,69 @@ static void i2s_disable(I2sRegs *regs)
  *
  * Calculate sspsp register.
  */
-static uint32_t calculate_sspsp(const I2sSettings *settings)
+static uint32_t calculate_sspsp(const I2sSettings *settings, int bps)
 {
 	uint32_t sspsp = 0;
+	uint32_t frame_len;
+	uint32_t frame_sample_bits;
+	uint32_t frame_end_padding;
+	uint32_t slot_end_padding;
+
+	if (!settings->bclk_rate || !settings->fsync_rate) {
+		printf("%s : invalid BCLK %d or FSYNC %d\n", __func__,
+		       settings->bclk_rate, settings->fsync_rate);
+		goto out;
+	}
+
+	if (settings->bclk_rate % settings->fsync_rate) {
+		printf("%s : BCLK %d is not divisable by FSYNC %d\n", __func__,
+		       settings->bclk_rate, settings->fsync_rate);
+		goto out;
+	}
+
+	frame_len = settings->bclk_rate / settings->fsync_rate;
+	frame_sample_bits = settings->frame_rate_divider_ctrl * bps;
+
+	if (frame_len < frame_sample_bits) {
+		printf("%s : frame_len %d < frame_sample_bits %d\n", __func__,
+		       frame_len, frame_sample_bits);
+		goto out;
+	}
+
+	frame_end_padding = frame_len - frame_sample_bits;
+
+	/* I2S format */
+	if (frame_len % 2) {
+		printf("%s : frame_len %d is not divisible by 2\n", __func__,
+		       frame_len);
+		goto out;
+	}
+
+	frame_len /= 2;
+
+	if (frame_end_padding % 2) {
+		printf("%s : frame_end_padding %d is not divisible by 2\n",
+		       __func__, frame_end_padding);
+		goto out;
+	}
+
+	slot_end_padding = frame_end_padding / 2;
+
+	if (slot_end_padding > SLOT_PADDING_MAX) {
+		/* too big padding */
+		printf("%s : slot_end_padding %d > %d\n", __func__,
+		       slot_end_padding, SLOT_PADDING_MAX);
+		goto out;
+	}
 
 	sspsp = SSPSP_reg(FSRT, NEXT_FRMS_ASS_WITH_LSB_PREVIOUS_FRM) |
-		SSPSP_reg(SFRMWDTH, settings->ssp_psp_T6) |
-		SSPSP_reg(EDMYSTOP, settings->ssp_psp_T4);
+		SSPSP_reg(SFRMWDTH, frame_len) |
+		SSPSP_reg(DMYSTOP, slot_end_padding);
+
+	slot_end_padding >>= DMYSTOP_BITS;
+	sspsp |= SSPSP_reg(EDMYSTOP, slot_end_padding);
+
+out:
 	return sspsp;
 }
 
@@ -233,7 +291,7 @@ static void set_ssp_i2s_hw(I2sRegs *regs, const I2sSettings *settings, int bps)
 	sscr1 = calculate_sscr1(settings);
 	sscr2 = calculate_sscr2();
 	sscr3 = 0;
-	sspsp = calculate_sspsp(settings);
+	sspsp = calculate_sspsp(settings, bps);
 	sstsa = SSTSA_reg(TTSA, settings->ssp_active_tx_slots_map);
 	ssrsa = SSRSA_reg(RTSA, settings->ssp_active_rx_slots_map);
 	ssioc = calculate_ssioc();
@@ -253,6 +311,12 @@ static void set_ssp_i2s_hw(I2sRegs *regs, const I2sSettings *settings, int bps)
 
 	/* set the time out for the reception */
 	write_SSTO(SSP_TIMEOUT, regs);
+
+	printf("%s : sscr0 = 0x%08x, sscr1 = 0x%08x, sspsp = 0x%08x\n", __func__,
+	       sscr0, sscr1, sspsp);
+	printf("%s : sscr2 = 0x%08x, sspsp2 = 0x%08x, sscr3 = 0x%08x, ssioc = 0x%08x\n",
+	       __func__, sscr2, sspsp2, sscr3, ssioc);
+	printf("%s : ssrsa = 0x%08x, sstsa = 0x%08x\n", __func__, ssrsa, sstsa);
 }
 
 /*

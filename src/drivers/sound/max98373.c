@@ -96,6 +96,24 @@ enum {
 	SOFT_RESET_TRIGGER = 0x01,
 };
 
+/* I2S controller settings for Max98373 codec*/
+const I2sSettings max98373_settings = {
+	/* To set MOD bit in SSC0 - defining as network/normal mode */
+	.mode = SSP_IN_NETWORK_MODE,
+	/* To set FRDC bit in SSC0 - timeslot per frame in network mode */
+	.frame_rate_divider_ctrl = FRAME_RATE_CONTROL_STEREO,
+	.fsync_rate = 48000,
+#if CONFIG(INTEL_COMMON_I2S_CAVS_1_5) || CONFIG(INTEL_COMMON_I2S_CAVS_1_8)
+	.bclk_rate = 2400000,
+#else
+	.bclk_rate = 1536000,
+#endif
+	/* To set TTSA bit n SSTSA - data transmit timeslot */
+	.ssp_active_tx_slots_map = 3,
+	/* To set RTSA bit n SSRSA - data receive timeslot */
+	.ssp_active_rx_slots_map = 3,
+};
+
 static int max98373_write(Max98373Codec *codec, uint16_t reg, uint8_t data)
 {
 	I2cSeg seg;
