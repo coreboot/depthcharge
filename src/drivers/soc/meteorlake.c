@@ -68,9 +68,13 @@ static void *port_status_reg(int port, int xhci)
 	return (void *)status_reg;
 }
 
+static bool usb_check_port_sc(uintptr_t *reg)
+{
+	return (read32(reg) & USB_PORT_STATUS_CONNECTED);
+}
+
 bool is_port_connected(int port, int usb2)
 {
-	uint32_t usb2_sts = 0, usb3_sts = 0;
 	uintptr_t *usb2_reg = port_status_reg(usb2, PCI_DEV_SLOT_PCH_XHCI);
 	uintptr_t *usb3_reg = port_status_reg(port, PCI_DEV_SLOT_TCSS_XHCI);
 
@@ -86,11 +90,6 @@ bool is_port_connected(int port, int usb2)
 	 * referred to TCSS USB3 and usb2 towards PCH USB2 ports number. We check usb2 and usb3
 	 * status registers to determine the port connection.
 	*/
-	if (usb2_reg)
-		usb2_sts = read32(usb2_reg) & USB_PORT_STATUS_CONNECTED;
 
-	if (usb3_reg)
-		usb3_sts = read32(usb3_reg) & USB_PORT_STATUS_CONNECTED;
-
-	return (usb2_sts || usb3_sts);
+	return (usb_check_port_sc(usb2_reg) || usb_check_port_sc(usb3_reg));
 }
