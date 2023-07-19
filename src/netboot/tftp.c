@@ -26,6 +26,9 @@
 #include "net/uip_udp_packet.h"
 #include "netboot/tftp.h"
 
+// Wait for a response for 200 ms before resending a request.
+static const uint64_t TfTpRespTimeoutUs = 200 * MSECS_PER_SEC;
+
 typedef enum TftpStatus
 {
 	TftpPending = 0,
@@ -227,10 +230,14 @@ int tftp_read(void *dest, uip_ipaddr_t *server_ip, const char *bootfile,
 	// Poll the network driver until the transaction is done.
 
 	net_set_callback(&tftp_callback);
+	uint64_t resend_timer = timer_us(0);
 	while (tftp_status == TftpPending) {
 		tftp_got_response = 0;
 		net_poll();
 		if (tftp_got_response)
+			continue;
+
+		if (timer_us(resend_timer) < TfTpRespTimeoutUs)
 			continue;
 
 		// No response. Resend our last packet and try again.
@@ -247,6 +254,7 @@ int tftp_read(void *dest, uip_ipaddr_t *server_ip, const char *bootfile,
 			};
 			uip_udp_packet_send(conn, &ack, sizeof(ack));
 		}
+		resend_timer = timer_us(0);
 	}
 	uip_udp_remove(conn);
 	free(read_req);
