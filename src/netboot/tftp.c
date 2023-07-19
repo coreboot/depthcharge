@@ -162,12 +162,6 @@ static void tftp_callback(void)
 	}
 	tftp_total_size += new_data_len;
 
-	// If this block was less than the maximum size, the transfer is done.
-	if (new_data_len < TftpMaxBlockSize) {
-		tftp_status = TftpSuccess;
-		return;
-	}
-
 	// Prepare an ack.
 	TftpAckPacket ack = {
 		htonw(TftpAck),
@@ -176,6 +170,14 @@ static void tftp_callback(void)
 	memcpy(uip_appdata, &ack, sizeof(ack));
 	uip_udp_send(sizeof(ack));
 
+	tftp_got_response = 1;
+
+	// If this block was less than the maximum size, the transfer is done.
+	if (new_data_len < TftpMaxBlockSize) {
+		tftp_status = TftpSuccess;
+		return;
+	}
+
 	// Move on to the next block.
 	tftp_blocknum++;
 
@@ -183,7 +185,6 @@ static void tftp_callback(void)
 		// Give some feedback that something is happening.
 		printf("#");
 	}
-	tftp_got_response = 1;
 }
 
 int tftp_read(void *dest, uip_ipaddr_t *server_ip, const char *bootfile,
