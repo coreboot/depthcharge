@@ -311,12 +311,10 @@ enum ui_key_flag {
 enum ui_key_code {
 	UI_KEY_ENTER = '\r',
 	UI_KEY_ESC = 0x1b,
-	UI_KEY_BACKSPACE = 0x8,
 	UI_KEY_UP = 0x100,
 	UI_KEY_DOWN = 0x101,
 	UI_KEY_LEFT = 0x102,
 	UI_KEY_RIGHT = 0x103,
-	UI_KEY_CTRL_ENTER = 0x104,
 };
 
 /*
