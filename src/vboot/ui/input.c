@@ -15,6 +15,7 @@
  * GNU General Public License for more details.
  */
 
+#include <keycodes.h>
 #include <libpayload.h>
 #include <vboot/ui.h>
 #include <vboot/util/flag.h>
@@ -23,11 +24,6 @@
 
 #define CSI_0 0x1B
 #define CSI_1 0x5B
-
-#define KEY_DOWN 0402
-#define KEY_UP 0403
-#define KEY_LEFT 0404
-#define KEY_RIGHT 0405
 
 #define TIMEOUT_US (10 * 1000)	// 10ms
 
@@ -41,11 +37,12 @@ static uint32_t keyboard_get_key(void)
 
 	uint32_t ch = getchar();
 	switch (ch) {
-	case '\n': return '\r';
+	case '\n': return UI_KEY_ENTER;
 	case KEY_UP: return UI_KEY_UP;
 	case KEY_DOWN: return UI_KEY_DOWN;
 	case KEY_RIGHT: return UI_KEY_RIGHT;
 	case KEY_LEFT: return UI_KEY_LEFT;
+	case KEY_ENTER: return UI_KEY_ENTER;
 
 	case CSI_0:
 		timer_start = timer_us(0);
