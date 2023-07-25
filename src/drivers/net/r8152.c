@@ -845,6 +845,11 @@ static int rtl8152_recv(NetDevice *net_dev, void *buf, uint16_t *len,
 	static int32_t buf_size = 0;
 	static uint8_t msg[ETHERNET_MAX_FRAME_SIZE + sizeof(rx_desc)];
 	static int32_t offset, partial;
+	static uint64_t last_poll = 0;
+
+	/* Wait at least 20 us between polling for receive. */
+	while (timer_us(last_poll) < 20);
+	last_poll = timer_us(0);
 
 	if (partial || offset >= buf_size) {
 		offset = 0;
