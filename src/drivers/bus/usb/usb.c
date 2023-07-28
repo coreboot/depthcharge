@@ -97,9 +97,6 @@ void dc_usb_initialize(void)
 		NULL
 	};
 
-	if (soc_usb_mux_init)
-		soc_usb_mux_init();
-
 	// Invoke any callbacks
 	UsbCallbackData *callback;
 	list_for_each(callback, init_callbacks, list_node) {
@@ -134,9 +131,6 @@ void dc_usb_initialize(void)
 
 void usb_poll_prepare(void)
 {
-	if (soc_usb_mux_poll)
-		soc_usb_mux_poll();
-
 	// Invoke any callbacks
 	UsbCallbackData *callback;
 	list_for_each(callback, poll_callbacks, list_node) {

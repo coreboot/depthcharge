@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "base/init_funcs.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/bus/usb/intel_tcss.h"
 #include "drivers/bus/usb/usb.h"
@@ -260,7 +261,7 @@ static int update_all_tcss_ports_states(void)
 	return r;
 }
 
-void soc_usb_mux_poll(void)
+static void usb_mux_poll(void *data)
 {
 	static uint64_t last_us = 0;
 	uint64_t now_us;
@@ -273,11 +274,26 @@ void soc_usb_mux_poll(void)
 	update_all_tcss_ports_states();
 }
 
-/*
- * This overrides a weak function in the USB subsystem. It is called
- * prior to usb_initialize().
- */
-void soc_usb_mux_init(void)
+static void usb_mux_init(void *data)
 {
-	soc_usb_mux_poll();
+	usb_mux_poll(NULL);
 }
+
+static UsbCallbackData tcss_init_callback_data = {
+	.callback = usb_mux_init,
+	.data = NULL
+};
+
+static UsbCallbackData tcss_poll_callback_data = {
+	.callback = usb_mux_poll,
+	.data = NULL
+};
+
+static int tcss_init(void)
+{
+	usb_register_init_callback(&tcss_init_callback_data);
+	usb_register_poll_callback(&tcss_poll_callback_data);
+	return 0;
+}
+
+INIT_FUNC(tcss_init);

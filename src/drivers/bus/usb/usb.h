@@ -62,9 +62,6 @@ UsbHostController *new_usb_hc(hc_type type, uintptr_t bar);
 void set_usb_init_callback(UsbHostController *hc, UsbHcCallback *callback);
 void dc_usb_initialize(void);
 
-void soc_usb_mux_init(void) __attribute__((weak));
-void soc_usb_mux_poll(void) __attribute__((weak));
-
 void usb_poll_prepare(void);
 
 void usb_register_init_callback(UsbCallbackData *toRegister);
