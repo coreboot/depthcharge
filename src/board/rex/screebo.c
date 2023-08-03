@@ -43,13 +43,15 @@ const struct audio_config *variant_probe_audio_config(void)
 	return &config;
 }
 
+static const struct storage_config storage_configs[] = {
+	{ .media = STORAGE_NVME, .pci_dev = PCI_DEV_PCIE9 },
+	{ .media = STORAGE_RTKMMC, .pci_dev = PCI_DEV_PCIE10,
+	.fw_config = FW_CONFIG(DB_SD,SD_RTS5227S)},
+	{ .media = STORAGE_SDHCI, .pci_dev = PCI_DEV_PCIE10,
+	.fw_config = FW_CONFIG(DB_SD, SD_GL9750)},
+};
 const struct storage_config *variant_get_storage_configs(size_t *count)
 {
-	static const struct storage_config storage_configs[] = {
-		{ .media = STORAGE_NVME, .pci_dev = PCI_DEV_PCIE9 },
-		{ .media = STORAGE_RTKMMC, .pci_dev = PCI_DEV_PCIE10 },
-	};
-
 	*count = ARRAY_SIZE(storage_configs);
 	return storage_configs;
 }
