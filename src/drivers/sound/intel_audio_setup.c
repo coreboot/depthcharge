@@ -21,6 +21,7 @@
 #include "drivers/sound/max98363_sndw.h"
 #include "drivers/sound/max98390.h"
 #include "drivers/sound/max98396.h"
+#include "drivers/sound/nau8318.h"
 #include "drivers/sound/route.h"
 #include "drivers/sound/rt5645.h"
 
@@ -139,6 +140,18 @@ static void setup_rt5650(const struct audio_codec *codec, SoundRoute *route)
 	rt5645Codec *amp = new_rt5645_codec(&i2c->ops,
 						codec->i2c[0].i2c_addr[0]);
 	list_insert_after(&amp->component.list_node, &route->components);
+}
+
+static SoundOps *setup_nau8318(const struct audio_amp *amp, SoundRoute *route)
+{
+	if (!CONFIG(DRIVER_SOUND_NAU8318_BEEP))
+		return NULL;
+
+	GpioCfg *gpio_en = new_platform_gpio_output(amp->gpio.enable_gpio, 0);
+	GpioCfg *gpio_beep_en = new_platform_gpio_output(amp->gpio.beep_gpio, 0);
+
+	nau8318Codec *nau8318 = new_nau8318_codec(&gpio_en->ops, &gpio_beep_en->ops);
+	return &nau8318->ops;
 }
 
 static void setup_gpio_amp(const struct audio_amp *amp, SoundRoute *route)
@@ -304,7 +317,10 @@ static void configure_audio_amp(const struct audio_amp *amp,
 {
 	switch (amp->type) {
 	case AUDIO_GPIO_AMP:
-		setup_gpio_amp(amp, data->route);
+		if (amp->gpio.beep_gpio)
+			data->ops = setup_nau8318(amp, data->route);
+		else
+			setup_gpio_amp(amp, data->route);
 		break;
 	default:
 		break;

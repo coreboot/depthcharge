@@ -11,8 +11,10 @@
 #include "drivers/bus/soundwire/cavs_2_5-sndwregs.h"
 #include "drivers/gpio/alderlake.h"
 #include "drivers/soc/alderlake.h"
+#include "drivers/sound/nau8318.h"
 
 #define SDMODE_PIN		GPP_A11
+#define BEEP_EN_PIN		GPP_R7
 
 const struct audio_config *variant_probe_audio_config(void)
 {
@@ -45,6 +47,14 @@ const struct audio_config *variant_probe_audio_config(void)
 			},
 			.codec = {
 				.type			= AUDIO_MAX98373,
+			},
+		};
+	} else if (fw_config_probe(FW_CONFIG(AUDIO, NAU8318_NAU88L25B_I2S))) {
+		config = (struct audio_config){
+			.amp = {
+				.type			= AUDIO_GPIO_AMP,
+				.gpio.enable_gpio	= SDMODE_PIN,
+				.gpio.beep_gpio		= BEEP_EN_PIN,
 			},
 		};
 	}

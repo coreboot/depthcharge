@@ -61,6 +61,7 @@ struct audio_amp {
 	enum audio_amp_type type;
 	struct {
 		unsigned int enable_gpio;
+		unsigned int beep_gpio;
 	} gpio;
 };
 
