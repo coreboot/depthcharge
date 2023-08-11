@@ -37,6 +37,9 @@ typedef struct VbootEcOps {
 	/* Tells the EC to reboot to switch RW slot. */
 	vb2_error_t (*reboot_switch_rw)(struct VbootEcOps *me);
 
+	/* Tells the EC to reboot and keep the AP off after the reboot. */
+	vb2_error_t (*reboot_ap_off)(struct VbootEcOps *me);
+
 	/*
 	 * Tells the EC to cut off battery.  This is expected to take
 	 * effect when the system shuts down, not immediately.

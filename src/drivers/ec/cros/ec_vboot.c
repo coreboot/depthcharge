@@ -151,6 +151,19 @@ static vb2_error_t vboot_reboot_to_ro(VbootEcOps *vbec)
 	power_off();
 }
 
+static vb2_error_t vboot_reboot_ap_off(VbootEcOps *vbec)
+{
+	CrosEc *me = container_of(vbec, CrosEc, vboot);
+
+	if (cros_ec_reboot_param(me, EC_REBOOT_COLD_AP_OFF,
+				 EC_REBOOT_FLAG_ON_AP_SHUTDOWN) < 0) {
+		printf("Failed to schedule EC reboot to AP_OFF.\n");
+		return VB2_ERROR_UNKNOWN;
+	}
+
+	power_off();
+}
+
 static vb2_error_t vboot_jump_to_rw(VbootEcOps *vbec)
 {
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
@@ -518,6 +531,7 @@ CrosEc *new_cros_ec(CrosEcBusOps *bus, GpioOps *interrupt_gpio)
 	me->vboot.protect = vboot_protect;
 	me->vboot.reboot_to_ro = vboot_reboot_to_ro;
 	me->vboot.reboot_switch_rw = vboot_reboot_switch_rw;
+	me->vboot.reboot_ap_off = vboot_reboot_ap_off;
 	me->vboot.battery_cutoff = vboot_battery_cutoff;
 	me->vboot.check_limit_power = vboot_check_limit_power;
 	me->vboot.enable_power_button = vboot_enable_power_button;
