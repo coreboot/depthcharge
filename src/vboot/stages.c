@@ -186,6 +186,14 @@ int vboot_select_and_load_kernel(void)
 		power_off();
 	} else if (res == VB2_REQUEST_SHUTDOWN) {
 		printf("Powering off.\n");
+		if (ec && ec->reboot_ap_off && vboot_in_recovery()) {
+			/*
+			 * In recovery mode, EC will reset itself on shutdown.
+			 * So, we need to tell it not to start AP.
+			 */
+			printf("Powering off (with AP_OFF).\n");
+			ec->reboot_ap_off(ec);
+		}
 		power_off();
 	} else if (res == VB2_REQUEST_REBOOT) {
 		printf("Reboot requested. Doing warm reboot.\n");
