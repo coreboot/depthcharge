@@ -18,6 +18,10 @@
 #include <stdint.h>
 
 enum timestamp_id {
+	/* 940-950 reserved for vendorcode extensions (940-950: Intel ME) */
+	TS_ME_END_OF_POST_START = 942,
+	TS_ME_END_OF_POST_END = 943,
+
 	// Depthcharge entry IDs start at 1000.
 	TS_START = 1000,
 

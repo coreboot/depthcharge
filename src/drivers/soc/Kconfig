@@ -137,3 +137,5 @@ config DRIVER_SOC_PHOENIX
 	bool "Phoenix SoC driver"
 	default n
 	select DRIVER_GPIO_KERN
+
+source "src/drivers/soc/cse/Kconfig"

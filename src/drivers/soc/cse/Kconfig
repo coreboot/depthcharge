@@ -1,0 +1,90 @@
+config DRIVER_SOC_INTEL_CSE
+	bool "Intel CSE driver"
+	default n
+	help
+	  Driver for communication with Converged Security Engine (CSE)
+	  over Host Embedded Controller Interface (HECI).
+
+if DRIVER_SOC_INTEL_CSE
+config SOC_INTEL_CSE_DISABLE_HECI1_AT_PRE_BOOT
+	bool "Disable HECI1 at the end of boot"
+	help
+	  This config decides the state of HECI1(CSE) device at the end of boot.
+	  Mainboard users to select this config to make HECI1 `function disable`
+	  prior to handing off to payload.
+
+config SOC_INTEL_CSE_HECI1_DISABLE_USING_PMC_IPC
+	bool "Disable HECI1 using PMC IPC"
+	select DRIVER_SOC_INTEL_PMC
+	help
+	  Use this config to allow common CSE block to make HECI1 function disable
+	  using PMC IPC command `0xA9`. From TGL PCH onwards, disabling heci1
+	  device using PMC IPC doesn't required to run the operation in SMM.
+
+config SOC_INTEL_CSE_SEND_EOP_BY_PAYLOAD
+	bool "Send End-Of-Post (EOP)"
+	help
+	  Use this config to send End Of Post (EOP) using payload.
+
+config SOC_INTEL_CSE_LITE_SKU
+	bool "CSE Lite SKU"
+	help
+	 Enables CSE Lite SKU
+
+config SOC_INTEL_COMMON_BLOCK_ME_SPEC_12
+	bool "Intel ME spec 12"
+	help
+	  This config will enable 'ME specification version 12'. It will ensure ME specific
+	  declaration and uses of required data structures for Host firmware status registers.
+
+config SOC_INTEL_COMMON_BLOCK_ME_SPEC_13
+	bool "Intel ME spec 13"
+	help
+	  This config will enable 'ME specification version 13'. It will ensure ME specific
+	  declaration and uses of required data structures for Host firmware status registers.
+
+config SOC_INTEL_COMMON_BLOCK_ME_SPEC_15
+	bool "Intel ME spec 15"
+	help
+	  This config will enable 'ME specification version 15'. It will ensure ME specific
+	  declaration and uses of required data structures for Host firmware status registers.
+
+config SOC_INTEL_COMMON_BLOCK_ME_SPEC_16
+	bool "Intel ME spec 16"
+	help
+	  This config will enable 'ME specification version 16'. It will ensure ME specific
+	  declaration and uses of required data structures for Host firmware status registers.
+
+config SOC_INTEL_COMMON_BLOCK_ME_SPEC_18
+	bool "Intel ME spec 18"
+	help
+	  This config will enable 'ME specification version 18'. It will ensure ME specific
+	  declaration and uses of required data structures for Host firmware status registers.
+
+config ME_SPEC
+	int
+	default 12 if SOC_INTEL_COMMON_BLOCK_ME_SPEC_12
+	default 13 if SOC_INTEL_COMMON_BLOCK_ME_SPEC_13
+	default 15 if SOC_INTEL_COMMON_BLOCK_ME_SPEC_15
+	default 16 if SOC_INTEL_COMMON_BLOCK_ME_SPEC_16
+	default 18 if SOC_INTEL_COMMON_BLOCK_ME_SPEC_18
+	help
+	  This config holds the ME spec version if defined.
+
+config MAX_HECI_DEVICES
+	int "Maximum number of HECI devices"
+	default 3
+
+config CSE_PCI_BUS
+	int "CSE PCI bus number"
+	default 0
+
+config CSE_PCI_DEV
+	int "CSE PCI device number"
+	default 22
+
+config CSE_PCI_FUN
+	int "CSE PCI function number"
+	default 0
+
+endif
