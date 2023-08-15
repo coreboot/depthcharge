@@ -227,6 +227,23 @@ static void test_secdata_fwmp_read(void **state)
 	assert_memory_equal(ctx->secdata_fwmp, buf, VB2_SECDATA_FWMP_MAX_SIZE);
 }
 
+static void test_secdata_extend_kernel_pcr(void **state)
+{
+	struct vb2_context *ctx;
+
+	vb2api_init(workbuf_kernel, sizeof(workbuf_kernel), &ctx);
+
+	/* Extend kernel PCR */
+	expect_function_call(TlclExtend);
+	expect_value(TlclExtend, pcr_num, 10);
+	expect_not_value(TlclExtend, in_digest, (uintptr_t)NULL);
+	expect_not_value(TlclExtend, out_digest, (uintptr_t)NULL);
+	will_return(TlclExtend, TPM_SUCCESS);
+
+	/* Extend kernel PCR should not fail */
+	assert_int_equal(secdata_extend_kernel_pcr(ctx), TPM_SUCCESS);
+}
+
 static int setup_firmware_test(void **state)
 {
 	memset(workbuf_firmware, 0, sizeof(workbuf_firmware));
@@ -250,6 +267,8 @@ int main(void)
 							   setup_kernel_test),
 		cmocka_unit_test_setup(test_secdata_fwmp_read,
 							   setup_firmware_test),
+		cmocka_unit_test_setup(test_secdata_extend_kernel_pcr,
+							   setup_kernel_test),
 	};
 
 	return cmocka_run_group_tests(tests, NULL, NULL);

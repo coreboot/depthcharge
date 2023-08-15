@@ -36,3 +36,13 @@ uint32_t secdata_fwmp_read(struct vb2_context *ctx)
 	ctx->flags |= VB2_CONTEXT_NO_SECDATA_FWMP;
 	return TPM_SUCCESS;
 }
+
+uint32_t secdata_widevine_prepare(struct vb2_context *ctx)
+{
+	return TPM_SUCCESS;
+}
+
+uint32_t secdata_extend_kernel_pcr(struct vb2_context *ctx)
+{
+	return TPM_SUCCESS;
+}

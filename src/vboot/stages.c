@@ -193,6 +193,15 @@ int vboot_select_and_boot_kernel(void)
 	if (res != VB2_SUCCESS)
 		goto fail;
 
+	if (!vboot_in_recovery()) {
+		uint32_t tpm_rv = secdata_extend_kernel_pcr(ctx);
+		if (tpm_rv) {
+			printf("failed to extend kernel PCR: %#x\n", tpm_rv);
+			vb2api_fail(ctx, VB2_RECOVERY_RW_TPM_W_ERROR, tpm_rv);
+			reboot();
+		}
+	}
+
 	if (CONFIG(WIDEVINE_PROVISION) && !vboot_in_recovery()) {
 		uint32_t tpm_rv = secdata_widevine_prepare(ctx);
 		if (tpm_rv) {
