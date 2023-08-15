@@ -15,6 +15,8 @@
 #include "vboot/util/misc.h"
 #include "vboot/widevine.h"
 
+#define PCR_KERNEL_VER 10
+
 #define RETURN_ON_FAILURE(tpm_command) do { \
 		uint32_t result_; \
 		if ((result_ = (tpm_command)) != TPM_SUCCESS) { \
@@ -147,6 +149,21 @@ uint32_t secdata_widevine_prepare(struct vb2_context *ctx)
 	RETURN_ON_FAILURE(prepare_widevine_root_of_trust(ctx));
 
 	RETURN_ON_FAILURE(prepare_widevine_tpm_pubkey());
+
+	return TPM_SUCCESS;
+}
+
+uint32_t secdata_extend_kernel_pcr(struct vb2_context *ctx)
+{
+	uint8_t buffer[VB2_PCR_DIGEST_RECOMMENDED_SIZE] = {};
+	uint32_t size = sizeof(buffer);
+	vb2_error_t rv;
+
+	rv = vb2api_get_pcr_digest(ctx, KERNEL_VERSION_PCR, buffer, &size);
+	if (rv != VB2_SUCCESS)
+		return TPM_E_INTERNAL_INCONSISTENCY;
+
+	RETURN_ON_FAILURE(TlclExtend(PCR_KERNEL_VER, buffer, buffer));
 
 	return TPM_SUCCESS;
 }

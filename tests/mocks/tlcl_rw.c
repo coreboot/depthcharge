@@ -62,3 +62,13 @@ uint32_t TlclLockPhysicalPresence(void)
 	function_called();
 	return mock_type(uint32_t);
 }
+
+uint32_t TlclExtend(int pcr_num, const uint8_t *in_digest, uint8_t *out_digest)
+{
+	function_called();
+	check_expected(pcr_num);
+	check_expected_ptr(in_digest);
+	check_expected_ptr(out_digest);
+
+	return mock_type(uint32_t);
+}
