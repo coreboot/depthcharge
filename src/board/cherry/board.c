@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <libpayload.h>
 
+#include "base/device_tree.h"
 #include "base/init_funcs.h"
 #include "base/late_init_funcs.h"
 #include "drivers/bus/i2c/mtk_i2c.h"
@@ -39,6 +40,20 @@
 #define GPIO_AP_EDP_BKLTEN	PAD_DGI_D5
 #define GPIO_BL_PWM_1V8		PAD_DISP_PWM0
 #define GPIO_AP_SPI_EC_CS_L	PAD_SPIM0_CSB
+
+static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
+{
+	DeviceTreeNode *node = dt_find_compat(tree->root, "arm,gic-v3");
+
+	if (node)
+		dt_remove_prop(node, "mediatek,broken-save-restore-fw");
+
+	return 0;
+}
+
+static DeviceTreeFixup mtk_gic_fixup = {
+	.fixup = fix_device_tree
+};
 
 static void setup_rt1011(GpioOps *spk_en, GpioOps *spk_rst)
 {
@@ -212,6 +227,8 @@ static int board_setup(void)
 						0x1C000000, 2));
 	else
 		printf("[%s] no display_init_required()!\n", __func__);
+
+	list_insert_after(&mtk_gic_fixup.list_node, &device_tree_fixups);
 
 	return 0;
 }
