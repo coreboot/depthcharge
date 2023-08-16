@@ -126,7 +126,7 @@ static vb2_error_t load_archive(const char *name,
 {
 	struct directory *dir;
 	struct dentry *entry;
-	size_t size;
+	size_t size = 0;
 	int i;
 
 	UI_INFO("Loading %s\n", name);
