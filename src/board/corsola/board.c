@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <libpayload.h>
 
+#include "base/device_tree.h"
 #include "base/init_funcs.h"
 #include "base/late_init_funcs.h"
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
@@ -28,6 +29,20 @@
 #define GPIO_XHCI_DONE	PAD_PERIPHERAL_EN1
 #define GPIO_PWM	PAD_DISP_PWM
 #define GPIO_BL_EN	PAD_PERIPHERAL_EN5
+
+static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
+{
+	DeviceTreeNode *node = dt_find_compat(tree->root, "arm,gic-v3");
+
+	if (node)
+		dt_remove_prop(node, "mediatek,broken-save-restore-fw");
+
+	return 0;
+}
+
+static DeviceTreeFixup mtk_gic_fixup = {
+	.fixup = fix_device_tree
+};
 
 static SoundRouteComponent *get_speaker_amp(void)
 {
@@ -156,6 +171,8 @@ static int board_setup(void)
 		printf("[%s] no display_init_required()!\n", __func__);
 
 	sound_setup();
+
+	list_insert_after(&mtk_gic_fixup.list_node, &device_tree_fixups);
 
 	return 0;
 }
