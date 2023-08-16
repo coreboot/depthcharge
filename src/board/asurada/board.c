@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <libpayload.h>
 
+#include "base/device_tree.h"
 #include "base/init_funcs.h"
 #include "base/late_init_funcs.h"
 #include "drivers/bus/i2s/mtk_v1.h"
@@ -33,6 +34,20 @@
 #define GPIO_AP_EDP_BKLTEN PAD_KPROW1
 #define GPIO_SD_CD_ODL PAD_EINT17
 #define GPIO_XHCI_DONE PAD_CAM_PDN5
+
+static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
+{
+	DeviceTreeNode *node = dt_find_compat(tree->root, "arm,gic-v3");
+
+	if (node)
+		dt_remove_prop(node, "mediatek,broken-save-restore-fw");
+
+	return 0;
+}
+
+static DeviceTreeFixup mtk_gic_fixup = {
+	.fixup = fix_device_tree
+};
 
 static void sound_setup(void)
 {
@@ -145,6 +160,8 @@ static int board_setup(void)
 	if (display_init_required())
 		display_set_ops(new_mtk_display(board_backlight_update,
 						0x14005000, 2));
+
+	list_insert_after(&mtk_gic_fixup.list_node, &device_tree_fixups);
 
 	return 0;
 }
