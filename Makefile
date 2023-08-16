@@ -269,7 +269,7 @@ $(foreach class,$(classes), \
 	$(foreach type,$(call filetypes-of-class,$(class)), \
 		$(eval $(call create_cc_template,$(class),$(type),$($(class)-$(type)-ccopts),$($(class)-$(type)-deps)))))
 
-foreach-src=$(foreach file,$($(1)-srcs),$(eval $(call $(1)-objs_$(subst .,,$(suffix $(file)))_template,$(subst src/,,$(basename $(file))))))
+foreach-src=$(foreach file,$($(1)-srcs),$(eval $(call $(1)-objs_$(subst .,,$(suffix $(file)))_template,$(patsubst src/%,%,$(basename $(file))))))
 $(eval $(foreach class,$(classes),$(call foreach-src,$(class))))
 
 DEPENDENCIES = $(allobjs:.o=.d)
