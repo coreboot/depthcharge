@@ -22,6 +22,7 @@
 #include "drivers/sound/max98390.h"
 #include "drivers/sound/max98396.h"
 #include "drivers/sound/route.h"
+#include "drivers/sound/rt5645.h"
 
 /* Default I2S setting 4000 volume, 16bit, 2ch, 48k */
 #define AUD_VOLUME		4000
@@ -125,6 +126,19 @@ static void setup_cs35l53(const struct audio_codec *codec, SoundRoute *route)
 						&route->components);
 		}
 	}
+}
+
+static void setup_rt5650(const struct audio_codec *codec, SoundRoute *route)
+{
+	if (!CONFIG(DRIVER_SOUND_RT5645))
+		return;
+
+	DesignwareI2c *i2c = new_pci_designware_i2c(codec->i2c[0].ctrlr,
+		default_if_zero(codec->speed, I2C_FS_HZ), SOC_DW_I2C_MHZ);
+
+	rt5645Codec *amp = new_rt5645_codec(&i2c->ops,
+						codec->i2c[0].i2c_addr[0]);
+	list_insert_after(&amp->component.list_node, &route->components);
 }
 
 static void setup_gpio_amp(const struct audio_amp *amp, SoundRoute *route)
@@ -273,6 +287,12 @@ static void configure_audio_codec(const struct audio_codec *codec,
 	case AUDIO_RT1019:
 		if (data->route)
 			data->ops = &data->route->ops;
+		break;
+	case AUDIO_RT5650:
+		if (data->route) {
+			setup_rt5650(codec, data->route);
+			data->ops = &data->route->ops;
+		}
 		break;
 	default:
 		break;

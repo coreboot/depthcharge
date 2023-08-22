@@ -25,6 +25,7 @@ enum audio_codec_type {
 	AUDIO_CS35L53,
 	AUDIO_MAX98396,
 	AUDIO_RT1019,
+	AUDIO_RT5650,
 };
 
 enum audio_amp_type {
