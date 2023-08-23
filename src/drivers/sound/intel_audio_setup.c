@@ -140,6 +140,9 @@ static void setup_gpio_amp(const struct audio_amp *amp, SoundRoute *route)
 
 static GpioCfg *cfg_gpio(const struct audio_bus *bus)
 {
+	if (!CONFIG(DRIVER_SOUND_GPIO_I2S))
+		return NULL;
+
 	GpioCfg *gpio_cfg = new_platform_gpio_output(bus->i2s.enable_gpio.pad,
 						  bus->i2s.enable_gpio.active_low);
 	return gpio_cfg;
