@@ -52,6 +52,8 @@ const struct audio_config *variant_probe_audio_config(void)
 static const struct storage_config storage_configs[] = {
 	{ .media = STORAGE_SDHCI, .pci_dev = PCH_DEV_PCIE6,
 	  .fw_config = FW_CONFIG(SD_BOOT, SD_BOOT_ENABLE) },
+	{ .media = STORAGE_RTKMMC, .pci_dev = PCH_DEV_PCIE6,
+	  .fw_config = FW_CONFIG(SD_BOOT, SD_BOOT_ENABLE) },
 	{ .media = STORAGE_EMMC, .pci_dev = PCH_DEV_EMMC, .emmc = {
 		.platform_flags = SDHCI_PLATFORM_SUPPORTS_HS400ES,
 		.clock_min = EMMC_CLOCK_MIN,
