@@ -121,7 +121,7 @@ def check_fonts(fonts):
     for locale, font in fonts.items():
         if subprocess.run(['fc-list', '-q', font], check=False).returncode != 0:
             raise BuildImageError(
-                'Font %r not found for locale %r' % (font, locale)
+                f'Font {font:!r} not found for locale {locale!r}'
             )
 
 
@@ -146,13 +146,13 @@ def run_pango_view(
     # divisor so that setting dpi to 96 (pango-view's default) in boards.yaml
     # will be roughly equivalent to setting the screen resolution to 1366x768.
     font_size = height / 2
-    font_spec = '%s %r' % (font, font_size)
+    font_spec = f'{font} {font_size!r}'
     command += ['--font', font_spec]
 
     if width_pt:
-        command.append('--width=%d' % width_pt)
+        command.append(f'--width={width_pt:d}')
     if dpi:
-        command.append('--dpi=%d' % dpi)
+        command.append(f'--dpi={dpi:d}')
     command.append('--margin=0')
     command += ['--background', bgcolor]
     command += ['--foreground', fgcolor]
@@ -293,8 +293,8 @@ class Converter:
             rename_map['rec_to_dev_desc1_power'] = None
             if physical_presence != 'keyboard':
                 raise BuildImageError(
-                    'Invalid physical presence setting %s for board '
-                    '%s' % (physical_presence, self.board)
+                    f'Invalid physical presence setting {physical_presence} '
+                    f'for board {self.board}'
                 )
 
         # Broken screen
@@ -341,7 +341,7 @@ class Converter:
         # Print mapping
         print('Rename map:')
         for name, new_name in sorted(rename_map.items()):
-            print('  %s => %s' % (name, new_name))
+            print(f'  {name} => {new_name}')
 
         self.rename_map = rename_map
 
@@ -358,8 +358,7 @@ class Converter:
             unknown_rtl_locales = rtl_locales - set(locales)
             if unknown_rtl_locales:
                 raise BuildImageError(
-                    'Unknown locales %s in %s'
-                    % (list(unknown_rtl_locales), KEY_RTL)
+                    f'Unknown locales {list(unknown_rtl_locales)} in {KEY_RTL}'
                 )
         self.locales = [
             LocaleInfo(code, code in rtl_locales) for code in locales
@@ -425,7 +424,7 @@ class Converter:
         command = [
             'rsvg-convert',
             '--background-color',
-            "'%s'" % bgcolor,
+            f"'{bgcolor}'",
             '--dpi-x',
             '72',
             '--dpi-y',
@@ -436,10 +435,10 @@ class Converter:
         height_px = self._to_px(height, num_lines)
         if height_px <= 0:
             raise BuildImageError(
-                'Height of %r <= 0 (%dpx)'
-                % (os.path.basename(svg_file), height_px)
+                f'Height of {os.path.basename(svg_file)!r} '
+                f'<= 0 ({height_px:d}px)'
             )
-        command.extend(['--height', '%d' % height_px])
+        command.extend(['--height', f'{height_px:d}'])
         command.append(svg_file)
         subprocess.check_call(' '.join(command), shell=True)
 
@@ -698,8 +697,7 @@ class Converter:
             name, _ = os.path.splitext(os.path.basename(filename))
             if name not in names:
                 raise BuildImageError(
-                    'Sprite image %r not specified in %s'
-                    % (filename, FORMAT_FILE)
+                    f'Sprite image {filename!r} not specified in {FORMAT_FILE}'
                 )
         # Convert images
         os.makedirs(self.stage_sprite_dir, exist_ok=True)
@@ -870,8 +868,8 @@ class Converter:
                 )
                 if width_px > max_width_px:
                     raise BuildImageError(
-                        '%s: Image width %dpx greater than max width '
-                        '%dpx' % (filename, width_px, max_width_px)
+                        f'{filename}: Image width {width_px:d}px greater'
+                        f'than max width {max_width_px:d}px'
                     )
 
     def build_localized_strings(self):
@@ -923,8 +921,8 @@ class Converter:
         effective_dpi = [dpi for r in results for dpi in r if dpi]
         if effective_dpi:
             print(
-                'Reducing effective DPI to %d, limited by screen resolution'
-                % max(effective_dpi)
+                f'Reducing effective DPI to {max(effective_dpi)}, '
+                'limited by screen resolution'
             )
 
         self._check_text_width(names)
@@ -939,9 +937,9 @@ class Converter:
             locale = locale_info.code
             ro_locale_dir = os.path.join(self.output_ro_dir, locale)
             old_file = os.path.join(ro_locale_dir, 'language.bmp')
-            new_file = os.path.join(self.output_dir, 'language_%s.bmp' % locale)
+            new_file = os.path.join(self.output_dir, f'language_{locale}.bmp')
             if os.path.exists(new_file):
-                raise BuildImageError('File already exists: %s' % new_file)
+                raise BuildImageError(f'File already exists: {new_file}')
             shutil.move(old_file, new_file)
 
     def build_glyphs(self):
@@ -1010,7 +1008,9 @@ class Converter:
         - "code": language code of the locale
         - "rtl": "1" for right-to-left language, "0" otherwise
         """
-        with open(os.path.join(self.output_dir, 'locales'), 'w') as f:
+        with open(
+            os.path.join(self.output_dir, 'locales'), 'w', encoding='utf-8'
+        ) as f:
             for locale_info in self.locales:
                 f.write(f'{locale_info.code},{locale_info.rtl:d}\n')
 

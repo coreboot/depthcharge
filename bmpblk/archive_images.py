@@ -38,7 +38,7 @@ def archive_images(archiver, output, name, files):
     """
     archive = os.path.join(output, name)
     args = ' '.join(files)
-    command = '%s %s create %s' % (archiver, archive, args)
+    command = f'{archiver} {archive} create {args}'
     subprocess.check_call(command, shell=True)
 
 

@@ -174,27 +174,27 @@ def diff(args):
         '---------------------------------------------------------------------'
     )
     print('New:')
-    for key in in_data:
+    for key, value in in_data.items():
         if key not in out_data:
-            print_diff_item(key, in_data[key], args.id_only)
+            print_diff_item(key, value, args.id_only)
     print(
         '---------------------------------------------------------------------'
     )
     print('Updated:')
-    for key in in_data:
-        if key in out_data and in_data[key] != out_data[key]:
+    for key, value in in_data.items():
+        if key in out_data and value != out_data[key]:
             print_diff_item(
                 key,
-                f'\n{out_data[key]!r}\n=>\n{in_data[key]!r}\n',
+                f'\n{out_data[key]!r}\n=>\n{value!r}\n',
                 args.id_only,
             )
     print(
         '---------------------------------------------------------------------'
     )
     print('Deleted:')
-    for key in out_data:
+    for key, value in out_data.items():
         if key not in in_data:
-            print_diff_item(key, out_data[key], args.id_only)
+            print_diff_item(key, value, args.id_only)
     print(
         '---------------------------------------------------------------------'
     )
@@ -205,9 +205,7 @@ def merge(args):
     out_locales = get_locales_from_dir(args.out_dir)
     if not out_locales.issubset(in_locales):
         raise RuntimeError(
-            'Missing locales in input xtb files: {}'.format(
-                out_locales - in_locales
-            )
+            f'Missing locales in input xtb files: {out_locales - in_locales}'
         )
     if not in_locales.issubset(out_locales):
         logging.warning(
