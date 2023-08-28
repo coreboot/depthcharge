@@ -851,15 +851,17 @@ class Converter:
         for locale_info in self.locales:
             locale = locale_info.code
             ro_locale_dir = os.path.join(self.output_ro_dir, locale)
-            for filename in glob.glob(os.path.join(ro_locale_dir, '*.bmp')):
-                name, _ = os.path.splitext(os.path.basename(filename))
-                category = names[name]
+            for name, category in names.items():
+                new_name = self.rename_map.get(name, name)
+                if not new_name:
+                    continue
                 style = get_config_with_defaults(styles, category)
                 height = style[KEY_HEIGHT]
                 max_width = style[KEY_MAX_WIDTH]
                 if not max_width:
                     continue
                 max_width_px = self._to_px(max_width)
+                filename = os.path.join(ro_locale_dir, f'{new_name}.bmp')
                 with open(filename, 'rb') as f:
                     f.seek(BMP_HEADER_OFFSET_NUM_LINES)
                     num_lines = f.read(1)[0]
