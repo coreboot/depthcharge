@@ -14,7 +14,6 @@
 <translation id="1932315467893966859">De ontwikkelaarsmodus staat al aan.</translation>
 <translation id="1995660704900986789">Uitschakelen</translation>
 <translation id="2022309272630265316">Geen geldige afbeelding gedetecteerd</translation>
-<translation id="2076174287070071207">Je kunt herstellen met een extern opslagapparaat, zoals een USB-drive of SD-kaart, of met je Android-telefoon.</translation>
 <translation id="2164852388827548816">Firmwarelogboek</translation>
 <translation id="2176647394998805208">Opstarten via externe schijf</translation>
 <translation id="2188090550242711688">2. Volg de instructies in de Chrome-extensie en download de herstelimage naar een externe opslag</translation>
@@ -22,7 +21,6 @@
 <translation id="2360163367862409346">Alle gegevens op je apparaat worden gewist en je apparaat is niet meer beveiligd.</translation>
 <translation id="2445391421565214706">Start het herstelproces om het probleem op te lossen. Verwijder alle gekoppelde apparaten en houd daarna de knop voor volume omhoog, de knop voor volume omlaag en de aan/uit-knop ( ⏻ ) minimaal tien seconden ingedrukt.</translation>
 <translation id="2531345960369431549">Met deze optie wordt de ontwikkelaarsmodus uitgeschakeld en wordt je apparaat teruggezet naar de oorspronkelijke status.</translation>
-<translation id="2603025384438397887">Herstellen met telefoon</translation>
 <translation id="2904079386864173492">Model:</translation>
 <translation id="3174560100798162637">Het wordt aanbevolen om je apparaat aan te sluiten op een voedingsbron.</translation>
 <translation id="3235458304027619499">1. Een extern opslagapparaat, zoals een USB-drive of een SD-kaart</translation>
@@ -37,7 +35,6 @@
 <translation id="4002335453596341558">Pagina omlaag</translation>
 <translation id="4152977630022273265">Zorg ervoor dat je externe schijf een geldige Chrome OS-image heeft en plaats de schijf opnieuw als hij klaar is.</translation>
 <translation id="4410491068110727276">Gebruik de volumeknoppen om omhoog of omlaag te navigeren.</translation>
-<translation id="4497270882390086583">Je kunt herstellen met een extern opslagapparaat, zoals een USB-drive, of met je Android-telefoon.</translation>
 <translation id="4773280894882892048">Foutopsporingsinfo</translation>
 <translation id="4815374450404670311">Geheugencheck (volledig)</translation>
 <translation id="4834079235849774599">2. Nog een apparaat met internettoegang</translation>
@@ -48,14 +45,11 @@ Zet je apparaat niet uit.</translation>
 <translation id="5019112228955634706">3. Een voedingsbron voor dit apparaat</translation>
 <translation id="5175612852476047443">Schakel je apparaat niet uit</translation>
 <translation id="5232488980254489397">Diagnostische gegevens openen</translation>
-<translation id="5341719174140776704">1. Een Android-telefoon met internettoegang</translation>
 <translation id="5477875595374685515">Kan firmwarelogboek niet ophalen.</translation>
 <translation id="5592705604979238266">Helpcentrum:</translation>
-<translation id="5649741817431380014">Zorg dat de Chrome OS-herstel-app op je telefoon is geïnstalleerd of dat je externe schijf een geldige herstelimage bevat. Plaats de kabel of schijf opnieuw als je klaar bent.</translation>
 <translation id="5809240698077875994">Druk op de aan/uit-knop om de ontwikkelaarsmodus in te schakelen of selecteer Annuleren om beschermd te blijven.</translation>
 <translation id="586317305889719987">Selecteer hieronder 'Terug naar beveiligde modus' om terug te keren naar de beveiligde modus.</translation>
 <translation id="5874367961304694171">Sluit je externe opslagapparaat aan</translation>
-<translation id="5947425217126227027">Download de Chrome OS-herstel-app op je Android-telefoon door je telefoon aan te sluiten of de QR-code aan de rechterkant te scannen. Zodra je de app start, verbind je je telefoon met je apparaat en wordt het herstellen automatisch gestart.</translation>
 <translation id="6172915643608608639">Opstarten via interne schijf</translation>
 <translation id="6191358901427525316">Bereid het herstellen van je apparaat voor. Je hebt het volgende nodig:</translation>
 <translation id="635783852215913562">Gebruik de pijltoetsen om omhoog of omlaag te navigeren.</translation>
@@ -73,7 +67,6 @@ Zet je apparaat niet uit.</translation>
 <translation id="7332672207700801967">Herstel via internet (oudere versie)</translation>
 <translation id="7342794948394983731">Diagnostische tools</translation>
 <translation id="7352651011704765696">Er is iets misgegaan</translation>
-<translation id="7365121631770711723">2. Een USB-kabel waarmee je telefoon en dit apparaat op elkaar worden aangesloten</translation>
 <translation id="7407610796520500368">Herstel via internetverbinding</translation>
 <translation id="7420576176825630019">Ontwikkelaarsmodus inschakelen</translation>
 <translation id="7567414219298075193">Start het herstelproces om het probleem op te lossen. Verwijder alle gekoppelde apparaten en houd daarna de herstelknop ingedrukt, druk kort op de aan/uit-knop ( ⏻ ) en laat de herstelknop los.</translation>

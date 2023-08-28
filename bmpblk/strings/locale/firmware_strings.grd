@@ -170,19 +170,10 @@ Let’s step you through the recovery process
 Select how you’d like to recover.
       </message>
       <message name="rec_sel_desc1" desc="Description string1 for the recovery screen (after user presses three finger salue, ie: ctrl + refresh + power).">
-You can recover using external storage such as a USB drive, an SD card, or using your Android phone.
-      </message>
-      <message name="rec_sel_desc1_no_sd" desc="Description string1 for the recovery screen (after user presses three finger salue, ie: ctrl + refresh + power) when no SD card is present in the device.">
-You can recover using external storage such as a USB drive, or using your Android phone.
-      </message>
-      <message name="rec_sel_desc1_no_phone" desc="Description string1 for the recovery screen (after user presses three finger salue, ie: ctrl + refresh + power) when no phone recovery is available on the device.">
 You can recover using external storage such as a USB drive or an SD card.
       </message>
-      <message name="rec_sel_desc1_no_phone_no_sd" desc="Description string1 for the recovery screen (after user presses three finger salue, ie: ctrl + refresh + power) when no phone recovery or SD card are available on the device.">
+      <message name="rec_sel_desc1_no_sd" desc="Description string1 for the recovery screen (after user presses three finger salue, ie: ctrl + refresh + power) when no SD card available on the device.">
 You can recover using external storage such as a USB drive.
-      </message>
-      <message name="btn_rec_by_phone" desc="Button to select phone recovery.">
-Recovery using phone
       </message>
       <message name="btn_rec_by_disk" desc="Button to select recovery through external disk.">
 Recovery using external storage
@@ -201,18 +192,6 @@ Connecting your device to a power source is recommended.
       </message>
       <message name="rec_step1_desc2_low_bat" desc="String2 for Step1 in the recovery process.  This is shown when the device has low battery">
 3. A power source for this device
-      </message>
-      <message name="rec_phone_step1_desc0" desc="String1 for Step1 in the recovery process.  This is shown when the phone is selected as the recovery method.">
-1. An Android phone with internet access
-      </message>
-      <message name="rec_phone_step1_desc1" desc="String2 for Step1 in the recovery process.">
-2. A USB cable which connects your phone and this device
-      </message>
-      <message name="rec_phone_step2_title" desc="Title for using the phone as a recovery method.">
-Recovery using phone
-      </message>
-      <message name="rec_phone_step2_desc" desc="Instructions using the phone as a recovery method.">
-Download the Chrome OS recovery app on your Android phone by plugging in your phone or by scanning the QR code on the right. Once you launch the app, connect your phone to your device and recovery will start automatically.
       </message>
       <message name="rec_disk_step1_desc0" desc="Description string0 for step1 in the recovery process.">
 1. An external storage device such as a USB drive or an SD card
@@ -244,10 +223,7 @@ If your external storage device is ready with a recovery image, plug it into thi
       <message name="rec_invalid_title" desc="Title for invalid disk plugged inserted.">
 No valid image detected
       </message>
-      <message name="rec_invalid_desc" desc="Description for invalid disk or phone plugged inserted.">
-Make sure your phone is running the Chrome OS recovery app, or that your external disk has a valid recovery image on it. Re-insert the cable or disk when ready.
-      </message>
-      <message name="rec_invalid_disk_desc" desc="Description for invalid disk plugged inserted.">
+      <message name="rec_invalid_desc" desc="Description for invalid disk plugged inserted.">
 Make sure your external disk has a valid recovery image, and re-insert the disk when ready.
       </message>
       <message name="rec_to_dev_title" desc="Title for transition to dev mode.">

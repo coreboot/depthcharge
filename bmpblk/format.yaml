@@ -40,20 +40,12 @@ localized_files:
   rec_sel_desc0: desc
   rec_sel_desc1: desc
   rec_sel_desc1_no_sd: desc
-  rec_sel_desc1_no_phone: desc
-  rec_sel_desc1_no_phone_no_sd: desc
-  btn_rec_by_phone: primary_button
   btn_rec_by_disk: primary_button
   btn_rec_by_internet: primary_button
   # recovery - common
   rec_step1_title: title
   rec_step1_desc2: desc
   rec_step1_desc2_low_bat: desc
-  # recovery - phone
-  rec_phone_step1_desc0: desc
-  rec_phone_step1_desc1: desc
-  rec_phone_step2_title: title
-  rec_phone_step2_desc: rec_phone_step2_desc
   # recovery - disk
   rec_disk_step1_desc0: desc
   rec_disk_step1_desc0_no_sd: desc
@@ -67,7 +59,6 @@ localized_files:
   # recovery - error
   rec_invalid_title: title
   rec_invalid_desc: desc
-  rec_invalid_disk_desc: desc
   # to-dev screen
   rec_to_dev_title: title
   rec_to_dev_desc0: desc
@@ -172,7 +163,6 @@ sprite_files:
   ic_dropright_focus: button_arrow_focus
   # QR code
   qr_rec: qr_rec
-  qr_rec_phone: qr_rec_phone
   # navigation instructions
   nav-key_up: nav_icon
   nav-key_down: nav_icon
@@ -221,13 +211,6 @@ styles:
     fgcolor: *grey_200
     # UI_SCALE - UI_MARGIN_H * 2
     max_width: 900
-  rec_phone_step2_desc:
-    bgcolor: *grey_900
-    fgcolor: *grey_200
-    # UI_REC_QR_SIZE = 228
-    # UI_REC_QR_MARGIN_H = 24
-    # UI_SCALE - UI_MARGIN_H * 2 - UI_REC_QR_SIZE - UI_REC_QR_MARGIN_H * 2
-    max_width: 624
   primary_button:
     height: 20
   secondary_button:
@@ -285,9 +268,6 @@ styles:
   qr_rec:
     bgcolor: *grey_900
     height: 128
-  qr_rec_phone:
-    bgcolor: *grey_900
-    height: 228
   nav_icon:
     bgcolor: *grey_900
     height: 30

@@ -14,7 +14,6 @@
 <translation id="1932315467893966859">Udviklertilstanden er allerede aktiveret.</translation>
 <translation id="1995660704900986789">Sluk</translation>
 <translation id="2022309272630265316">Der blev ikke registreret noget gyldigt billede</translation>
-<translation id="2076174287070071207">Du kan gendanne ved hjælp af en ekstern lagerenhed som f.eks. et USB-drev eller et SD-kort eller ved hjælp af din Android-telefon.</translation>
 <translation id="2164852388827548816">Firmware-log</translation>
 <translation id="2176647394998805208">Genstart fra ekstern disk</translation>
 <translation id="2188090550242711688">2. Følg vejledningen i Chrome-udvidelsen, og download systembilledet til gendannelse på den eksterne lagerenhed</translation>
@@ -22,7 +21,6 @@
 <translation id="2360163367862409346">Dette medfører bl.a., at alle data ryddes fra din enhed, og at din enhed bliver usikker.</translation>
 <translation id="2445391421565214706">Start gendannelsesprocessen for at prøve at løse problemet. Fjern alle tilsluttede enheder. Hold derefter Lydstyrke op, Lydstyrke ned og afbryderknappen ( ⏻ ) inde i mindst 10 sekunder.</translation>
 <translation id="2531345960369431549">Denne valgmulighed deaktiverer udviklertilstand og gendanner din enhed til dens oprindelige tilstand.</translation>
-<translation id="2603025384438397887">Gendannelse via telefon</translation>
 <translation id="2904079386864173492">Model:</translation>
 <translation id="3174560100798162637">Det anbefales, at du slutter din enhed til en strømkilde.</translation>
 <translation id="3235458304027619499">1. En ekstern lagerenhed som f.eks. et USB-drev eller et SD-kort</translation>
@@ -37,7 +35,6 @@
 <translation id="4002335453596341558">Side ned</translation>
 <translation id="4152977630022273265">Sørg for, at din eksterne disk har en gyldig afbildning af Chrome OS, og indsæt disken igen, når du er klar.</translation>
 <translation id="4410491068110727276">Brug lydstyrkeknapperne til at navigere op eller ned.</translation>
-<translation id="4497270882390086583">Du kan gendanne ved hjælp af en ekstern lagerenhed som f.eks. et USB-drev eller ved hjælp af din Android-telefon.</translation>
 <translation id="4773280894882892048">Fejlretningsoplysninger</translation>
 <translation id="4815374450404670311">Hukommelsestjek (komplet)</translation>
 <translation id="4834079235849774599">2. En anden enhed med internetadgang</translation>
@@ -48,14 +45,11 @@ Undlad at slukke din enhed.</translation>
 <translation id="5019112228955634706">3. En strømkilde til enheden</translation>
 <translation id="5175612852476047443">Undlad at slukke din enhed</translation>
 <translation id="5232488980254489397">Åbn diagnostik</translation>
-<translation id="5341719174140776704">1. En Android-telefon med internetadgang</translation>
 <translation id="5477875595374685515">Firmwareloggen kunne ikke hentes.</translation>
 <translation id="5592705604979238266">Hjælp:</translation>
-<translation id="5649741817431380014">Sørg for, at din telefon har Chrome OS-gendannelsesappen, eller at din eksterne disk har et gyldigt systembillede til gendannelse. Slut kablet eller disken til igen, når du er klar.</translation>
 <translation id="5809240698077875994">Tryk på afbryderknappen for at aktivere udviklertilstand, eller vælg "Annuller" for at forblive beskyttet.</translation>
 <translation id="586317305889719987">Hvis du vil vende tilbage til den anbefalede sikre tilstand, skal du vælge "Vend tilbage til sikker tilstand" nedenfor.</translation>
 <translation id="5874367961304694171">Tilslut din eksterne lagerenhed</translation>
-<translation id="5947425217126227027">Download Chrome OS-gendannelsesappen på din Android-telefon ved at tilslutte din telefon eller scanne QR-koden til højre. Når du har åbnet appen, skal du forbinde din telefon med din enhed, hvorefter gendannelsen starter automatisk.</translation>
 <translation id="6172915643608608639">Genstart fra intern disk</translation>
 <translation id="6191358901427525316">Gør klar til at gendanne din enhed. Du skal bruge:</translation>
 <translation id="635783852215913562">Brug piletasterne til at navigere op eller ned.</translation>
@@ -73,7 +67,6 @@ Undlad at slukke din enhed.</translation>
 <translation id="7332672207700801967">Internetgendannelse (ældre version)</translation>
 <translation id="7342794948394983731">Værktøjer til diagnosticering</translation>
 <translation id="7352651011704765696">Der opstod en fejl</translation>
-<translation id="7365121631770711723">2. Et USB-kabel, der opretter forbindelse mellem din telefon og denne enhed</translation>
 <translation id="7407610796520500368">Gendannelse via internetforbindelse</translation>
 <translation id="7420576176825630019">Aktivér udviklertilstand</translation>
 <translation id="7567414219298075193">Start gendannelsesprocessen for at prøve at løse problemet. Fjern alle tilsluttede enheder. Hold derefter gendannelsesknappen inde, mens du trykker på afbryderknappen ( ⏻ ) og slipper den igen. Slip derefter gendannelsesknappen.</translation>

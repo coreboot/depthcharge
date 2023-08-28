@@ -14,7 +14,6 @@
 <translation id="1932315467893966859">Chế độ nhà phát triển đã bật.</translation>
 <translation id="1995660704900986789">Tắt nguồn</translation>
 <translation id="2022309272630265316">Không phát hiện thấy hình ảnh hợp lệ</translation>
-<translation id="2076174287070071207">Bạn có thể khôi phục bằng thiết bị lưu trữ bên ngoài, chẳng hạn như ổ đĩa USB, thẻ SD hoặc bằng cách dùng điện thoại Android.</translation>
 <translation id="2164852388827548816">Nhật ký của chương trình cơ sở</translation>
 <translation id="2176647394998805208">Khởi động từ ổ đĩa ngoài</translation>
 <translation id="2188090550242711688">2. Làm theo hướng dẫn trên tiện ích của Chrome rồi tải hình ảnh khôi phục xuống bộ nhớ ngoài</translation>
@@ -22,7 +21,6 @@
 <translation id="2360163367862409346">Thao tác này sẽ xóa tất cả dữ liệu khỏi thiết bị của bạn, đồng thời làm thiết bị của bạn không an toàn.</translation>
 <translation id="2445391421565214706">Để thử và khắc phục sự cố, hãy bắt đầu quy trình khôi phục. Tháo mọi thiết bị đã kết nối, sau đó nhấn và giữ nút Tăng âm lượng, Giảm âm lượng và nút Nguồn ( ⏻ ) trong ít nhất 10 giây.</translation>
 <translation id="2531345960369431549">Tùy chọn này sẽ tắt chế độ nhà phát triển và khôi phục thiết bị của bạn về trạng thái ban đầu.</translation>
-<translation id="2603025384438397887">Khôi phục bằng điện thoại</translation>
 <translation id="2904079386864173492">Mẫu:</translation>
 <translation id="3174560100798162637">Bạn nên cắm thiết bị vào nguồn điện.</translation>
 <translation id="3235458304027619499">1. Thiết bị lưu trữ ngoài, chẳng hạn như ổ đĩa USB hoặc thẻ SD</translation>
@@ -37,7 +35,6 @@
 <translation id="4002335453596341558">Trang dưới</translation>
 <translation id="4152977630022273265">Đảm bảo ổ đĩa ngoài của bạn có hình ảnh Chrome OS hợp lệ rồi cắm lại ổ đĩa này khi đã sẵn sàng.</translation>
 <translation id="4410491068110727276">Dùng các nút âm lượng để di chuyển lên trên hoặc xuống dưới.</translation>
-<translation id="4497270882390086583">Bạn có thể khôi phục bằng thiết bị lưu trữ bên ngoài, chẳng hạn như ổ đĩa USB hoặc sử dụng điện thoại Android.</translation>
 <translation id="4773280894882892048">Thông tin gỡ lỗi</translation>
 <translation id="4815374450404670311">Kiểm tra bộ nhớ (toàn diện)</translation>
 <translation id="4834079235849774599">2. Một thiết bị khác có kết nối Internet</translation>
@@ -48,14 +45,11 @@ Vui long khong tat may.</translation>
 <translation id="5019112228955634706">3. Nút nguồn của thiết bị này</translation>
 <translation id="5175612852476047443">Vui lòng không tắt nguồn thiết bị</translation>
 <translation id="5232488980254489397">Chạy tính năng chẩn đoán</translation>
-<translation id="5341719174140776704">1. Điện thoại Android có quyền truy cập Internet</translation>
 <translation id="5477875595374685515">Không nhận được nhật ký của chương trình cơ sở.</translation>
 <translation id="5592705604979238266">Trung tâm trợ giúp:</translation>
-<translation id="5649741817431380014">Đảm bảo điện thoại của bạn đang chạy ứng dụng khôi phục Chrome OS, hoặc ổ đĩa ngoài của bạn có hình ảnh khôi phục hợp lệ. Hãy cắm lại cáp hoặc ổ đĩa khi đã sẵn sàng.</translation>
 <translation id="5809240698077875994">Nhấn nút Nguồn để bật chế độ nhà phát triển hoặc chọn Hủy để tiếp tục được bảo vệ.</translation>
 <translation id="586317305889719987">Để quay lại chế độ bảo mật đề xuất, hãy chọn “Quay lại chế độ bảo mật” ở bên dưới.</translation>
 <translation id="5874367961304694171">Cắm thiết bị lưu trữ ngoài</translation>
-<translation id="5947425217126227027">Tải ứng dụng khôi phục Chrome OS xuống điện thoại Android bằng cách cắm điện thoại hoặc quét mã QR ở bên phải. Sau khi bạn chạy ứng dụng này, hãy kết nối điện thoại với thiết bị và quá trình khôi phục sẽ tự động bắt đầu.</translation>
 <translation id="6172915643608608639">Khởi động từ ổ đĩa trong</translation>
 <translation id="6191358901427525316">Chuẩn bị khôi phục thiết bị. Bạn cần có:</translation>
 <translation id="635783852215913562">Sử dụng các phím mũi tên để di chuyển lên trên hoặc xuống dưới.</translation>
@@ -73,7 +67,6 @@ Vui long khong tat may.</translation>
 <translation id="7332672207700801967">Khôi phục bằng kết nối Internet (phiên bản cũ hơn)</translation>
 <translation id="7342794948394983731">Công cụ chẩn đoán</translation>
 <translation id="7352651011704765696">Đã xảy ra lỗi</translation>
-<translation id="7365121631770711723">2. Cáp USB dùng để kết nối điện thoại và thiết bị này</translation>
 <translation id="7407610796520500368">Khôi phục bằng kết nối internet</translation>
 <translation id="7420576176825630019">Bật chế độ nhà phát triển</translation>
 <translation id="7567414219298075193">Để thử và khắc phục sự cố, hãy bắt đầu quy trình khôi phục. Tháo mọi thiết bị đã kết nối, sau đó nhấn và giữ nút Khôi phục, nhấn rồi nhả nút Nguồn ( ⏻ ), nhả nút Khôi phục.</translation>

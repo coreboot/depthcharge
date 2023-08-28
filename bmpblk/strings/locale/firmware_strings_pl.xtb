@@ -14,7 +14,6 @@
 <translation id="1932315467893966859">Tryb programisty jest już włączony.</translation>
 <translation id="1995660704900986789">Wyłącz</translation>
 <translation id="2022309272630265316">Nie wykryto prawidłowego obrazu</translation>
-<translation id="2076174287070071207">Możesz przywrócić dane, korzystając z pamięci zewnętrznej, np. dysku USB albo karty SD lub z telefonu z Androidem.</translation>
 <translation id="2164852388827548816">Dziennik oprogramowania układowego</translation>
 <translation id="2176647394998805208">Uruchom z dysku zewnętrznego</translation>
 <translation id="2188090550242711688">2. Postępuj zgodnie z instrukcjami w rozszerzeniu do Chrome i pobierz obraz przywracania systemu do pamięci zewnętrznej</translation>
@@ -22,7 +21,6 @@
 <translation id="2360163367862409346">Spowoduje to usunięcie wszystkich danych z Twojego urządzenia i sprawi, że nie będzie ono zabezpieczone.</translation>
 <translation id="2445391421565214706">Aby spróbować rozwiązać ten problem, rozpocznij proces przywracania. Odłącz wszystkie podłączone urządzenia, a następnie przytrzymaj przez co najmniej 10 sekund przyciski zwiększania głośności, zmniejszania głośności i zasilania ( ⏻ ).</translation>
 <translation id="2531345960369431549">Ta opcja spowoduje wyłączenie trybu programisty i przywrócenie urządzenia do pierwotnego stanu.</translation>
-<translation id="2603025384438397887">Przywróć za pomocą telefonu</translation>
 <translation id="2904079386864173492">Model:</translation>
 <translation id="3174560100798162637">Zalecamy podłączenie urządzenia do źródła zasilania.</translation>
 <translation id="3235458304027619499">1. Urządzenie pamięci zewnętrznej takie jak dysk USB lub karta SD.</translation>
@@ -37,7 +35,6 @@
 <translation id="4002335453596341558">Strona w dół</translation>
 <translation id="4152977630022273265">Sprawdź, czy na dysku zewnętrznym jest prawidłowy obraz Chrome OS, i ponownie podłącz dysk.</translation>
 <translation id="4410491068110727276">Aby przejść w górę lub w dół, użyj przycisków głośności.</translation>
-<translation id="4497270882390086583">Możesz przywrócić dane, korzystając z pamięci zewnętrznej, np. dysku USB lub z telefonu z Androidem.</translation>
 <translation id="4773280894882892048">Dane debugowania</translation>
 <translation id="4815374450404670311">Sprawdzenie pamięci (pełne)</translation>
 <translation id="4834079235849774599">2. Inne urządzenie z dostępem do internetu.</translation>
@@ -48,14 +45,11 @@ Pozostaw komputer uruchomiony.</translation>
 <translation id="5019112228955634706">3. Źródło zasilania tego urządzenia</translation>
 <translation id="5175612852476047443">Nie wyłączaj urządzenia</translation>
 <translation id="5232488980254489397">Uruchom diagnostykę</translation>
-<translation id="5341719174140776704">1. Telefon z Androidem z dostępem do internetu</translation>
 <translation id="5477875595374685515">Nie udało się pobrać dziennika oprogramowania układowego.</translation>
 <translation id="5592705604979238266">Centrum pomocy:</translation>
-<translation id="5649741817431380014">Sprawdź, czy na Twoim telefonie uruchomiona jest aplikacja do przywracania Chrome OS lub czy na dysku zewnętrznym jest prawidłowy obraz przywracania systemu. Gdy wszystko będzie gotowe, podłącz ponownie kabel lub dysk.</translation>
 <translation id="5809240698077875994">Naciśnij przycisk zasilania, by włączyć tryb programisty, lub wybierz Anuluj, by zachować ochronę.</translation>
 <translation id="586317305889719987">Aby wrócić do zalecanego trybu bezpiecznego, wybierz poniżej „Wróć do trybu bezpiecznego”.</translation>
 <translation id="5874367961304694171">Podłącz urządzenie pamięci zewnętrznej</translation>
-<translation id="5947425217126227027">Pobierz aplikację do przywracania systemu operacyjnego Chrome na telefon z Androidem. Aby to zrobić, podłącz telefon lub zeskanuj kod QR po prawej stronie. Po uruchomieniu aplikacji połącz telefon z urządzeniem. Przywracanie rozpocznie się automatycznie.</translation>
 <translation id="6172915643608608639">Uruchom z dysku wewnętrznego</translation>
 <translation id="6191358901427525316">Przygotuj się na przywrócenie danych na urządzeniu. Potrzebne Ci będą:</translation>
 <translation id="635783852215913562">Użyj klawiszy strzałek, by przechodzić w górę lub w dół.</translation>
@@ -73,7 +67,6 @@ Pozostaw komputer uruchomiony.</translation>
 <translation id="7332672207700801967">Odzyskiwanie za pomocą internetu (starsza wersja)</translation>
 <translation id="7342794948394983731">Narzędzia diagnostyczne</translation>
 <translation id="7352651011704765696">Coś poszło nie tak</translation>
-<translation id="7365121631770711723">2. Kabel USB łączący telefon z tym urządzeniem</translation>
 <translation id="7407610796520500368">Odzyskiwanie za pomocą połączenia z internetem</translation>
 <translation id="7420576176825630019">Włącz tryb programisty</translation>
 <translation id="7567414219298075193">Aby spróbować rozwiązać ten problem, rozpocznij proces przywracania. Odłącz wszystkie podłączone urządzenia, przytrzymaj przycisk przywracania, a następnie naciśnij i zwolnij przycisk zasilania ( ⏻ ) i na końcu zwolnij przycisk przywracania.</translation>

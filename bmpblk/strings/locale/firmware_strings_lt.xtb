@@ -14,7 +14,6 @@
 <translation id="1932315467893966859">Kūrėjo režimas jau įjungtas.</translation>
 <translation id="1995660704900986789">Išjungti maitinimą</translation>
 <translation id="2022309272630265316">Neaptiktas joks galiojantis vaizdas</translation>
-<translation id="2076174287070071207">Atkurti galite naudodami išorinę saugyklą, pvz., atmintuką, SD kortelę, arba „Android“ telefonu.</translation>
 <translation id="2164852388827548816">Programinės aparatinės įrangos žurnalas</translation>
 <translation id="2176647394998805208">Paleisti iš išorinio disko</translation>
 <translation id="2188090550242711688">2. Vadovaukitės „Chrome“ plėtinio instrukcijomis ir atsisiųskite atkuriamąją turinio kopiją į išorinę saugyklą</translation>
@@ -22,7 +21,6 @@
 <translation id="2360163367862409346">Bus ištrinti visi duomenys iš įrenginio ir įrenginys bus nesaugus.</translation>
 <translation id="2445391421565214706">Jei norite išbandyti ir išspręsti problemą, pradėkite atkūrimo procesą. Atjunkite visus prijungtus įrenginius, tada palaikykite paspaudę garsumo padidinimo, garsumo sumažinimo ir maitinimo ( ⏻ ) mygtukus bent 10 sekundžių.</translation>
 <translation id="2531345960369431549">Pasirinkus šią parinktį bus išjungtas kūrėjo režimas ir atkurta pradinė įrenginio būsena.</translation>
-<translation id="2603025384438397887">Atkūrimas telefonu</translation>
 <translation id="2904079386864173492">Modelis:</translation>
 <translation id="3174560100798162637">Rekomenduojama prijungti įrenginį prie maitinimo šaltinio.</translation>
 <translation id="3235458304027619499">1. Išorinės saugyklos įrenginys, pvz., atmintukas arba SD kortelė</translation>
@@ -37,7 +35,6 @@
 <translation id="4002335453596341558">Puslapiu žemyn</translation>
 <translation id="4152977630022273265">Įsitikinkite, kad ant išorinio disko yra „Chrome“ OS vaizdas ir, kai būsite pasiruošę, įdėkite diską iš naujo.</translation>
 <translation id="4410491068110727276">Naudodami garsumo mygtukus naršykite aukštyn arba žemyn.</translation>
-<translation id="4497270882390086583">Atkurti galite naudodami išorinę saugyklą, pvz., atmintuką, arba „Android“ telefonu.</translation>
 <translation id="4773280894882892048">Derinimo informacija</translation>
 <translation id="4815374450404670311">Atminties patikra (išsami)</translation>
 <translation id="4834079235849774599">2. Kitas įrenginys su prieiga prie interneto</translation>
@@ -47,14 +44,11 @@
 <translation id="5019112228955634706">3. Šio įrenginio maitinimo šaltinis</translation>
 <translation id="5175612852476047443">Neišjunkite įrenginio</translation>
 <translation id="5232488980254489397">Pristatyti diagnostiką</translation>
-<translation id="5341719174140776704">1. „Android“ telefonas su interneto prieiga</translation>
 <translation id="5477875595374685515">Nepavyko gauti programinės aparatinės įrangos žurnalo.</translation>
 <translation id="5592705604979238266">Pagalbos centras:</translation>
-<translation id="5649741817431380014">Įsitikinkite, kad telefone veikia „Chrome“ OS atkūrimo programa arba kad išoriniame diske yra tinkama atkuriamoji turinio kopija. Vėl prijunkite laidą arba įdėkite diską, kai būsite pasiruošę.</translation>
 <translation id="5809240698077875994">Paspauskite maitinimo mygtuką, kad įgalintumėte kūrėjo režimą, arba pasirinkite „Atšaukti“, kad toliau būtų taikoma apsauga.</translation>
 <translation id="586317305889719987">Jei norite grįžti į rekomenduojamą saugų režimą, toliau pasirinkite „Grįžti į saugų režimą“.</translation>
 <translation id="5874367961304694171">Prijunkite išorinės saugyklos įrenginį</translation>
-<translation id="5947425217126227027">Atsisiųskite „Chrome“ OS atkūrimo programą į „Android“ telefoną prijungę telefoną arba nuskaitę dešinėje pateiktą QR kodą. Paleidę programą, prijunkite telefoną prie įrenginio ir atkūrimas bus pradėtas automatiškai.</translation>
 <translation id="6172915643608608639">Paleisti iš vidinio disko</translation>
 <translation id="6191358901427525316">Pasiruošimas atkurti įrenginį. Bus reikalingi toliau nurodyti elementai.</translation>
 <translation id="635783852215913562">Naudodami rodyklių klavišus naršykite aukštyn arba žemyn.</translation>
@@ -72,7 +66,6 @@
 <translation id="7332672207700801967">Interneto atkūrimas (senesnė versija)</translation>
 <translation id="7342794948394983731">Diagnostikos įrankiai</translation>
 <translation id="7352651011704765696">Kažkas negerai</translation>
-<translation id="7365121631770711723">2. USB laidas, kuriuo telefonas prijungiamas prie šio įrenginio</translation>
 <translation id="7407610796520500368">Atkūrimas naudojant interneto ryšį</translation>
 <translation id="7420576176825630019">Įgalinti kūrėjo režimą</translation>
 <translation id="7567414219298075193">Jei norite išbandyti ir išspręsti problemą, pradėkite atkūrimo procesą. Atjunkite visus prijungtus įrenginius, tada palaikykite paspaudę atkūrimo mygtuką, paspauskite ir atleiskite maitinimo mygtuką ( ⏻ ), tada atleiskite atkūrimo mygtuką.</translation>

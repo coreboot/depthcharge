@@ -312,8 +312,8 @@ class Converter:
         if not self.config[KEY_SDCARD]:
             rename_map.update(
                 {
+                    'rec_sel_desc1': None,
                     'rec_sel_desc1_no_sd': 'rec_sel_desc1',
-                    'rec_sel_desc1_no_phone_no_sd': 'rec_sel_desc1_no_phone',
                     'rec_disk_step1_desc0_no_sd': 'rec_disk_step1_desc0',
                 }
             )
@@ -321,7 +321,6 @@ class Converter:
             rename_map.update(
                 {
                     'rec_sel_desc1_no_sd': None,
-                    'rec_sel_desc1_no_phone_no_sd': None,
                     'rec_disk_step1_desc0_no_sd': None,
                 }
             )

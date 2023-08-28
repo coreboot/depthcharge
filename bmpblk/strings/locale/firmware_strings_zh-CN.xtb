@@ -14,7 +14,6 @@
 <translation id="1932315467893966859">开发者模式已开启。</translation>
 <translation id="1995660704900986789">关机</translation>
 <translation id="2022309272630265316">未检测到任何有效映像</translation>
-<translation id="2076174287070071207">您可以使用外部存储设备（例如 U 盘或 SD 卡）或 Android 手机进行恢复。</translation>
 <translation id="2164852388827548816">固件日志</translation>
 <translation id="2176647394998805208">从外部磁盘启动</translation>
 <translation id="2188090550242711688">2. 按照 Chrome 扩展程序中显示的说明操作，将恢复映像下载到外部存储设备上</translation>
@@ -22,7 +21,6 @@
 <translation id="2360163367862409346">此操作会清空您设备中的所有数据，并会使此设备变得不安全。</translation>
 <translation id="2445391421565214706">若要尝试解决此问题，请启动恢复流程。请移除所有已连接的设备，然后同时按住“音量调高”按钮、“音量调低”按钮和“电源”按钮 ( ⏻ ) 至少 10 秒钟。</translation>
 <translation id="2531345960369431549">此选项会停用开发者模式，并会将您的设备恢复到初始状态。</translation>
-<translation id="2603025384438397887">使用手机进行恢复</translation>
 <translation id="2904079386864173492">型号：</translation>
 <translation id="3174560100798162637">建议您将本设备连接到电源。</translation>
 <translation id="3235458304027619499">1. 一个外部存储设备（例如 U 盘或 SD 卡）</translation>
@@ -37,7 +35,6 @@
 <translation id="4002335453596341558">向下翻页</translation>
 <translation id="4152977630022273265">请确保您的外部磁盘包含有效的 Chrome 操作系统映像，并在准备就绪后重新插入该磁盘。</translation>
 <translation id="4410491068110727276">使用音量按钮可向上/向下移动。</translation>
-<translation id="4497270882390086583">您可以使用外部存储设备（例如 U 盘）或 Android 手机进行恢复。</translation>
 <translation id="4773280894882892048">调试信息</translation>
 <translation id="4815374450404670311">内存检查（完整）</translation>
 <translation id="4834079235849774599">2. 另一部联网设备</translation>
@@ -47,14 +44,11 @@
 <translation id="5019112228955634706">3. 一个电源，用于为此设备供电</translation>
 <translation id="5175612852476047443">请勿关闭设备电源</translation>
 <translation id="5232488980254489397">启动诊断</translation>
-<translation id="5341719174140776704">1. 一部联网的 Android 手机</translation>
 <translation id="5477875595374685515">无法获取固件日志。</translation>
 <translation id="5592705604979238266">帮助中心：</translation>
-<translation id="5649741817431380014">请确保您的手机正在运行 Chrome 操作系统恢复应用，或者您的外部磁盘包含有效的恢复映像。待准备就绪后，重新插入数据线或磁盘。</translation>
 <translation id="5809240698077875994">按下“电源”按钮可启用开发者模式，选择“取消”可保持受保护状态。</translation>
 <translation id="586317305889719987">如需返回到推荐的安全模式，请选择下方的“返回到安全模式”。</translation>
 <translation id="5874367961304694171">连接您的外部存储设备</translation>
-<translation id="5947425217126227027">在您的 Android 手机上下载 Chrome 操作系统恢复应用，具体方法是：连接手机，或者扫描右侧的二维码。启动此应用后，将您的手机连接到该设备，然后恢复流程便会自动开始。</translation>
 <translation id="6172915643608608639">从内部磁盘启动</translation>
 <translation id="6191358901427525316">为恢复您的设备做好准备。您需要具备：</translation>
 <translation id="635783852215913562">使用箭头键可向上/向下移动。</translation>
@@ -72,7 +66,6 @@
 <translation id="7332672207700801967">互联网恢复（旧版）</translation>
 <translation id="7342794948394983731">诊断工具</translation>
 <translation id="7352651011704765696">出了点问题</translation>
-<translation id="7365121631770711723">2. 一条用于连接您的手机和该设备的 USB 线</translation>
 <translation id="7407610796520500368">使用互联网连接进行恢复</translation>
 <translation id="7420576176825630019">启用开发者模式</translation>
 <translation id="7567414219298075193">若要尝试解决此问题，请启动恢复流程。请移除所有已连接的设备，然后先按住“恢复”按钮，再按下“电源”按钮 ( ⏻ ) 并松开，最后松开“恢复”按钮。</translation>

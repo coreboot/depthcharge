@@ -14,7 +14,6 @@
 <translation id="1932315467893966859">La modalità sviluppatore è già attiva.</translation>
 <translation id="1995660704900986789">Spegni</translation>
 <translation id="2022309272630265316">Nessuna immagine valida rilevata</translation>
-<translation id="2076174287070071207">Puoi eseguire il ripristino usando una memoria esterna, ad esempio un'unità USB o una scheda SD, oppure usando il tuo telefono Android.</translation>
 <translation id="2164852388827548816">Log del firmware</translation>
 <translation id="2176647394998805208">Avvia da disco esterno</translation>
 <translation id="2188090550242711688">2. Segui le istruzioni nell'estensione di Chrome e scarica l'immagine di ripristino su un'unità di archiviazione esterna</translation>
@@ -22,7 +21,6 @@
 <translation id="2360163367862409346">Verranno cancellati tutti i dati dal tuo dispositivo, che non sarà più protetto.</translation>
 <translation id="2445391421565214706">Per provare a risolvere il problema, avvia la procedura di ripristino. Rimuovi tutti i dispositivi collegati, quindi tieni premuti il tasto Alza il volume, il tasto Abbassa il volume e il tasto di accensione ( ⏻ ) per almeno 10 secondi.</translation>
 <translation id="2531345960369431549">Questa opzione disattiverà la modalità sviluppatore e ripristinerà lo stato originario del dispositivo.</translation>
-<translation id="2603025384438397887">Ripristino usando il telefono</translation>
 <translation id="2904079386864173492">Modello:</translation>
 <translation id="3174560100798162637">È consigliato collegare il dispositivo a una fonte di alimentazione.</translation>
 <translation id="3235458304027619499">1. Un dispositivo di archiviazione esterno, ad esempio un'unità USB o una scheda SD</translation>
@@ -37,7 +35,6 @@
 <translation id="4002335453596341558">Pagina giù</translation>
 <translation id="4152977630022273265">Assicurati che sul disco esterno sia presente un'immagine di Chrome OS valida, dopodiché inserisci di nuovo il disco.</translation>
 <translation id="4410491068110727276">Utilizza i pulsanti del volume per spostarti verso l'alto o verso il basso.</translation>
-<translation id="4497270882390086583">Puoi eseguire il ripristino usando una memoria esterna, ad esempio un'unità USB, oppure usando il tuo telefono Android.</translation>
 <translation id="4773280894882892048">Informazioni di debug</translation>
 <translation id="4815374450404670311">Controllo (completo) della memoria</translation>
 <translation id="4834079235849774599">2. Un altro dispositivo con accesso a Internet</translation>
@@ -48,14 +45,11 @@ Non spegnere il dispositivo.</translation>
 <translation id="5019112228955634706">3. Una fonte di alimentazione per questo dispositivo</translation>
 <translation id="5175612852476047443">Non spegnere il dispositivo</translation>
 <translation id="5232488980254489397">Avvia Diagnostica</translation>
-<translation id="5341719174140776704">1. Un telefono android con accesso a Internet</translation>
 <translation id="5477875595374685515">Impossibile recuperare il log del firmware.</translation>
 <translation id="5592705604979238266">Centro assistenza:</translation>
-<translation id="5649741817431380014">Assicurati che sul telefono sia installata l'app per il ripristino di Chrome OS o che sul disco esterno sia presente un'immagine di ripristino valida. Dopodiché inserisci di nuovo il cavo o il disco.</translation>
 <translation id="5809240698077875994">Premi il tasto di accensione per attivare la modalità sviluppatore oppure seleziona "Annulla" per mantenere attiva la protezione.</translation>
 <translation id="586317305889719987">Per tornare alla modalità protetta consigliata, seleziona "Torna a modalità protetta" sotto.</translation>
 <translation id="5874367961304694171">Collega il dispositivo di archiviazione esterno</translation>
-<translation id="5947425217126227027">Scarica l'app per il ripristino di Chrome OS sul tuo telefono Android collegando il telefono o tramite la scansione del codice QR a destra. Dopo aver lanciato l'app, collega il telefono al dispositivo e il ripristino verrà avviato automaticamente.</translation>
 <translation id="6172915643608608639">Avvia da disco interno</translation>
 <translation id="6191358901427525316">Preparati a ripristinare il dispositivo. Hai bisogno di:</translation>
 <translation id="635783852215913562">Usa i tasti Freccia per spostarti verso l'alto o verso il basso.</translation>
@@ -73,7 +67,6 @@ Non spegnere il dispositivo.</translation>
 <translation id="7332672207700801967">Ripristino Internet (versione precedente)</translation>
 <translation id="7342794948394983731">Strumenti di diagnostica</translation>
 <translation id="7352651011704765696">Si è verificato un problema</translation>
-<translation id="7365121631770711723">2. Un cavo USB che connette il telefono a questo dispositivo</translation>
 <translation id="7407610796520500368">Ripristino usando la connessione a Internet</translation>
 <translation id="7420576176825630019">Attiva modalità sviluppatore</translation>
 <translation id="7567414219298075193">Per provare a risolvere il problema, avvia la procedura di ripristino. Rimuovi tutti i dispositivi collegati, quindi tieni premuto il tasto di ripristino, premi e rilascia il tasto di accensione ( ⏻ ), quindi rilascia il tasto di ripristino.</translation>

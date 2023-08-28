@@ -14,7 +14,6 @@
 <translation id="1932315467893966859">Modul pentru dezvoltatori este deja activat.</translation>
 <translation id="1995660704900986789">Oprește alimentarea</translation>
 <translation id="2022309272630265316">Nu s-a detectat nicio imagine validă</translation>
-<translation id="2076174287070071207">Poți recupera folosind suporturi externe, precum o unitate USB ori un card SD, sau folosind telefonul Android.</translation>
 <translation id="2164852388827548816">Jurnalul de firmware</translation>
 <translation id="2176647394998805208">Pornește de pe un disc extern</translation>
 <translation id="2188090550242711688">2. Urmează instrucțiunile pentru extensia Chrome și descarcă imaginea de recuperare pe un dispozitiv de stocare externă.</translation>
@@ -22,7 +21,6 @@
 <translation id="2360163367862409346">Astfel, vor fi șterse toate datele de pe dispozitiv, iar dispozitivul va deveni nesigur.</translation>
 <translation id="2445391421565214706">Pentru a încerca să remediezi problema, inițiază procesul de recuperare. Elimină toate dispozitivele conectate, apoi apasă lung butonul de creștere a volumului, butonul de reducere a volumului și butonul de pornire ( ⏻ ) timp de minimum 10 secunde.</translation>
 <translation id="2531345960369431549">Opțiunea va dezactiva modul pentru dezvoltatori și va restabili dispozitivul la starea inițială.</translation>
-<translation id="2603025384438397887">Recuperare folosind telefonul</translation>
 <translation id="2904079386864173492">Model:</translation>
 <translation id="3174560100798162637">Este recomandat să conectezi dispozitivul la o sursă de alimentare.</translation>
 <translation id="3235458304027619499">1. Un dispozitiv de stocare extern, precum o unitate USB sau un card SD.</translation>
@@ -37,7 +35,6 @@
 <translation id="4002335453596341558">O pagină mai jos</translation>
 <translation id="4152977630022273265">Verifică dacă discul extern are o imagine validă a sistemului de operare Chrome și reintrodu discul când ești gata.</translation>
 <translation id="4410491068110727276">Folosește butoanele de volum pentru a naviga în sus sau în jos.</translation>
-<translation id="4497270882390086583">Poți recupera folosind suporturi externe, precum o unitate USB, sau folosind telefonul Android.</translation>
 <translation id="4773280894882892048">Informații de remediere a erorilor</translation>
 <translation id="4815374450404670311">Verificare (completă) a memoriei</translation>
 <translation id="4834079235849774599">2. Un alt dispozitiv cu acces la internet.</translation>
@@ -48,14 +45,11 @@ Nu inchideti dispozitivul.</translation>
 <translation id="5019112228955634706">3. O sursă de alimentare pentru acest dispozitiv</translation>
 <translation id="5175612852476047443">Nu închide dispozitivul</translation>
 <translation id="5232488980254489397">Lansează diagnosticarea</translation>
-<translation id="5341719174140776704">1. Un telefon Android cu acces la internet</translation>
 <translation id="5477875595374685515">Nu s-a putut obține jurnalul de firmware.</translation>
 <translation id="5592705604979238266">Centrul de ajutor:</translation>
-<translation id="5649741817431380014">Verifică dacă telefonul rulează aplicația de recuperare a sistemului de operare Chrome sau dacă discul extern are o imagine de recuperare validă pe el. Reintrodu cablul sau discul când ești gata.</translation>
 <translation id="5809240698077875994">Apasă butonul de pornire ca să activezi modul pentru dezvoltatori sau selectează „Anulează” ca să rămâi protejat(ă).</translation>
 <translation id="586317305889719987">Ca să revii la modul sigur recomandat, selectează „Revino la modul sigur” mai jos.</translation>
 <translation id="5874367961304694171">Conectează dispozitivul de stocare extern</translation>
-<translation id="5947425217126227027">Descarcă aplicația de recuperare a sistemului de operare Chrome pe telefonul Android conectând telefonul la o sursă de alimentare sau scanând codul QR din partea dreaptă. După ce lansezi aplicația, conectează telefonul la dispozitiv și recuperarea va începe automat.</translation>
 <translation id="6172915643608608639">Pornește de pe un disc intern</translation>
 <translation id="6191358901427525316">Pregătește-te să recuperezi dispozitivul. Vei avea nevoie de:</translation>
 <translation id="635783852215913562">Folosește tastele săgeată pentru a naviga în sus sau în jos.</translation>
@@ -73,7 +67,6 @@ Nu inchideti dispozitivul.</translation>
 <translation id="7332672207700801967">Recuperare de pe internet (versiune mai veche)</translation>
 <translation id="7342794948394983731">Instrumente de diagnosticare</translation>
 <translation id="7352651011704765696">A apărut o eroare</translation>
-<translation id="7365121631770711723">2. Un cablu USB conectat la telefon și la acest dispozitiv</translation>
 <translation id="7407610796520500368">Recuperare printr-o conexiune la internet</translation>
 <translation id="7420576176825630019">Activează modul pentru dezvoltatori</translation>
 <translation id="7567414219298075193">Pentru a încerca să remediezi problema, inițiază procesul de recuperare. Elimină toate dispozitivele conectate, ține apăsat butonul de recuperare, apasă și eliberează butonul de pornire ( ⏻ ), apoi eliberează butonul de recuperare.</translation>

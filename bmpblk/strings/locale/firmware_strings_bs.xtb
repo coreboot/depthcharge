@@ -14,7 +14,6 @@
 <translation id="1932315467893966859">Način rada za programere je već uključen.</translation>
 <translation id="1995660704900986789">Isključi</translation>
 <translation id="2022309272630265316">Nije pronađena važeća slika</translation>
-<translation id="2076174287070071207">Oporavak možete izvršiti koristeći vanjsku pohranu, kao što su USB disk i SD kartica, ili pomoću Android telefona.</translation>
 <translation id="2164852388827548816">Zapisnik firmvera</translation>
 <translation id="2176647394998805208">Pokreni s vanjskog diska</translation>
 <translation id="2188090550242711688">2. Slijedite uputstva na ekstenziji za Chrome i preuzmite sliku za oporavak na vanjsku pohranu</translation>
@@ -22,7 +21,6 @@
 <translation id="2360163367862409346">Ovo uključuje brisanje svih podataka s uređaja koji više neće biti zaštićen.</translation>
 <translation id="2445391421565214706">Da pokušate riješiti problem, započnite proces oporavka. Uklonite sve povezane uređaje, zatim najmanje 10 sekundi držite pritisnutim dugme za pojačavanje zvuka, dugme za stišavanje zvuka i dugme za uključivanje ( ⏻ ).</translation>
 <translation id="2531345960369431549">Ova opcija će onemogućiti način rada za programere i vratiti uređaj u prvobitno stanje.</translation>
-<translation id="2603025384438397887">Oporavak pomoću telefona</translation>
 <translation id="2904079386864173492">Model:</translation>
 <translation id="3174560100798162637">Preporučuje se da priključite uređaj na izvor napajanja.</translation>
 <translation id="3235458304027619499">1. Vanjski uređaj za pohranu, kao što je USB disk ili SD kartica</translation>
@@ -37,7 +35,6 @@
 <translation id="4002335453596341558">Stranica prema dolje</translation>
 <translation id="4152977630022273265">Provjerite nalazi li se na vašem vanjskom disku važeća slika Chrome OS-a i ponovo umetnite disk kada budete spremni.</translation>
 <translation id="4410491068110727276">Koristite dugmad za jačinu zvuka za navigiranje nagore ili nadolje.</translation>
-<translation id="4497270882390086583">Oporavak možete izvršiti koristeći vanjsku pohranu, kao što je USB disk ili pomoću Android telefona.</translation>
 <translation id="4773280894882892048">Informacije o ispravci grešaka</translation>
 <translation id="4815374450404670311">Provjera memorije (potpuna)</translation>
 <translation id="4834079235849774599">2. Drugi uređaj s pristupom internetu</translation>
@@ -48,14 +45,11 @@ Nemojte isključiti uređaj.</translation>
 <translation id="5019112228955634706">3. Izvor napajanja za ovaj uređaj</translation>
 <translation id="5175612852476047443">Nemojte isključivati uređaj</translation>
 <translation id="5232488980254489397">Pokreni dijagnostiku</translation>
-<translation id="5341719174140776704">1. Android telefon s pristupom internetu</translation>
 <translation id="5477875595374685515">Preuzimanje zapisnika firmvera nije uspjelo.</translation>
 <translation id="5592705604979238266">Centar za pomoć:</translation>
-<translation id="5649741817431380014">Provjerite je li na vašem telefonu pokrenuta aplikacija za oporavak Chrome OS-a ili nalazi li se na vanjskom disku važeća slika za oporavak. Ponovo umetnite kabl ili disk kada budete spremni.</translation>
 <translation id="5809240698077875994">Pritisnite dugme za uključivanje da omogućite način rada za programere ili odaberite Otkaži da ostanete zaštićeni.</translation>
 <translation id="586317305889719987">Da se vratite na preporučeni sigurni način rada, odaberite “Povratak na sigurni način rada” ispod.</translation>
 <translation id="5874367961304694171">Povežite vanjski uređaj za pohranu</translation>
-<translation id="5947425217126227027">Preuzmite aplikaciju za oporavak Chrome OS-a na svoj Android telefon priključivanjem telefona ili skeniranjem QR koda na desnoj strani. Nakon pokretanja aplikacije povežite telefon s uređajem i oporavak će automatski početi.</translation>
 <translation id="6172915643608608639">Pokreni s unutrašnjeg diska</translation>
 <translation id="6191358901427525316">Spremite se za oporavak uređaja. Trebat će vam sljedeće:</translation>
 <translation id="635783852215913562">Koristite tipke sa strelicama za navigiranje nagore i nadolje.</translation>
@@ -73,7 +67,6 @@ Nemojte isključiti uređaj.</translation>
 <translation id="7332672207700801967">Oporavak putem internetske veze (starija verzija)</translation>
 <translation id="7342794948394983731">Dijagnostički alati</translation>
 <translation id="7352651011704765696">Nešto nije uredu</translation>
-<translation id="7365121631770711723">2. USB kabl koji povezuje vaš telefon i ovaj uređaj</translation>
 <translation id="7407610796520500368">Oporavak putem internetske veze</translation>
 <translation id="7420576176825630019">Omogući način rada za programere</translation>
 <translation id="7567414219298075193">Da pokušate riješiti problem, započnite proces oporavka. Uklonite sve povezane uređaje, zatim držite pritisnutim dugme za oporavak, pritisnite i pustite dugme za uključivanje ( ⏻ ) te pustite dugme za oporavak.</translation>

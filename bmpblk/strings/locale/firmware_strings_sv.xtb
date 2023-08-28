@@ -14,7 +14,6 @@
 <translation id="1932315467893966859">Utvecklarläget är redan aktiverat.</translation>
 <translation id="1995660704900986789">Stäng av</translation>
 <translation id="2022309272630265316">Ingen giltig avbildning identifierades</translation>
-<translation id="2076174287070071207">Du kan göra en återställning med en Android-telefon eller en extern lagringsenhet, till exempel ett USB-minne eller SD-kort.</translation>
 <translation id="2164852388827548816">Loggfil för firmware</translation>
 <translation id="2176647394998805208">Starta från extern disk</translation>
 <translation id="2188090550242711688">2. Följ anvisningarna för Chrome-tillägget och ladda ned återställningsavbildningen på ett externt lagringsutrymme</translation>
@@ -22,7 +21,6 @@
 <translation id="2360163367862409346">Detta innebär att all data rensas från enheten och enheten inte längre är säker.</translation>
 <translation id="2445391421565214706">Starta återställningsprocessen för att försöka åtgärda problemet. Ta bort alla anslutna enheter och håll sedan båda volymknapparna och strömbrytaren ( ⏻ ) nedtryckta i minst 10 sekunder.</translation>
 <translation id="2531345960369431549">Med det här alternativet inaktiveras utvecklarläget och enheten återställs till sitt ursprungliga läge.</translation>
-<translation id="2603025384438397887">Återställning med telefonen</translation>
 <translation id="2904079386864173492">Modell:</translation>
 <translation id="3174560100798162637">Vi rekommenderar att du ansluter enheten till en strömkälla.</translation>
 <translation id="3235458304027619499">1. En extern lagringsenhet, till exempel ett USB-minne eller ett SD-kort</translation>
@@ -37,7 +35,6 @@
 <translation id="4002335453596341558">En sida ned</translation>
 <translation id="4152977630022273265">Kontrollera att det finns en giltig avbildning av Chrome OS på den externa disken och sätt i disken igen när du är redo.</translation>
 <translation id="4410491068110727276">Navigera uppåt eller nedåt med volymknapparna.</translation>
-<translation id="4497270882390086583">Du kan göra en återställning med en Android-telefon eller en extern lagringsenhet, till exempel ett USB-minne.</translation>
 <translation id="4773280894882892048">Felsökningsinformation</translation>
 <translation id="4815374450404670311">Minneskontroll (fullständig)</translation>
 <translation id="4834079235849774599">2. Annan enhet med internetanslutning</translation>
@@ -48,14 +45,11 @@ Stäng inte av enheten.</translation>
 <translation id="5019112228955634706">3. En strömkälla för enheten</translation>
 <translation id="5175612852476047443">Stäng inte av enheten</translation>
 <translation id="5232488980254489397">Starta diagnostik</translation>
-<translation id="5341719174140776704">1. En Android-telefon med internetåtkomst</translation>
 <translation id="5477875595374685515">Det gick inte att hämta firmware-loggen.</translation>
 <translation id="5592705604979238266">Hjälpcenter:</translation>
-<translation id="5649741817431380014">Kontrollera att återställningsappen för Chrome OS körs på telefonen och att den externa disken har en giltig återställningsavbildning. Sätt i kabeln eller disken igen när du är redo.</translation>
 <translation id="5809240698077875994">Aktivera utvecklarläget genom att trycka på strömbrytaren eller välj Avbryt om du vill behålla skyddet.</translation>
 <translation id="586317305889719987">Om du vill återgå till det rekommenderade säkra läget väljer du Återgå till säkert läge nedan.</translation>
 <translation id="5874367961304694171">Anslut externt lagringsutrymme</translation>
-<translation id="5947425217126227027">Ladda ned återställningsappen för Chrome OS på Android-telefonen genom att ansluta telefonen eller genom att skanna QR-koden till höger. När du har startat appen ansluter du telefonen till enheten. Då startas återställningen automatiskt.</translation>
 <translation id="6172915643608608639">Starta från intern disk</translation>
 <translation id="6191358901427525316">Förbered återställningen av enheten. Du behöver följande:</translation>
 <translation id="635783852215913562">Navigera uppåt eller nedåt med piltangenterna.</translation>
@@ -73,7 +67,6 @@ Stäng inte av enheten.</translation>
 <translation id="7332672207700801967">Internetåterställning (äldre version)</translation>
 <translation id="7342794948394983731">Verktyg för diagnostik</translation>
 <translation id="7352651011704765696">Något gick fel</translation>
-<translation id="7365121631770711723">2. En USB-kabel som ansluter telefonen till den här enheten</translation>
 <translation id="7407610796520500368">Återställning med internetanslutning</translation>
 <translation id="7420576176825630019">Aktivera utvecklarläget</translation>
 <translation id="7567414219298075193">Starta återställningsprocessen för att försöka åtgärda problemet. Ta bort alla anslutna enheter. Sedan håller du återställningsknappen nedtryckt, trycker på och släpper strömbrytaren ( ⏻ ) och släpper återställningsknappen.</translation>

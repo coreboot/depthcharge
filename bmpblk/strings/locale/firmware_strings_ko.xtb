@@ -14,7 +14,6 @@
 <translation id="1932315467893966859">개발자 모드가 이미 사용 설정되어 있습니다.</translation>
 <translation id="1995660704900986789">끄기</translation>
 <translation id="2022309272630265316">감지된 유효한 이미지 없음</translation>
-<translation id="2076174287070071207">USB 드라이브 또는 SD 카드와 같은 외부 저장소를 사용하거나 Android 휴대전화를 사용하여 복구할 수 있습니다.</translation>
 <translation id="2164852388827548816">펌웨어 로그</translation>
 <translation id="2176647394998805208">외부 디스크로 부팅</translation>
 <translation id="2188090550242711688">2. Chrome 확장 프로그램에서 안내에 따르고 복구 이미지를 외부 저장소로 다운로드합니다.</translation>
@@ -22,7 +21,6 @@
 <translation id="2360163367862409346">기기에서 모든 데이터가 삭제되며 기기가 위험에 노출될 수 있습니다.</translation>
 <translation id="2445391421565214706">문제 해결을 시도하시려면 복구 프로세스를 시작하세요. 연결된 기기를 모두 제거하고 볼륨 업, 볼륨 다운, 전원 버튼( ⏻ )을 10초 이상 길게 누릅니다.</translation>
 <translation id="2531345960369431549">이 옵션은 개발자 모드를 중단하고 기기를 초기 상태로 되돌립니다.</translation>
-<translation id="2603025384438397887">휴대전화를 사용하여 복구</translation>
 <translation id="2904079386864173492">모델:</translation>
 <translation id="3174560100798162637">기기를 전원에 연결하는 것이 좋습니다.</translation>
 <translation id="3235458304027619499">1. USB 드라이브 또는 SD 카드와 같은 외부 저장소 기기</translation>
@@ -37,7 +35,6 @@
 <translation id="4002335453596341558">페이지 아래로</translation>
 <translation id="4152977630022273265">외부 디스크에 유효한 Chrome OS 이미지가 있는지 확인한 후 준비되면 디스크를 다시 삽입하세요.</translation>
 <translation id="4410491068110727276">볼륨 버튼을 사용하여 위아래로 이동하세요.</translation>
-<translation id="4497270882390086583">USB 드라이브와 같은 외부 저장소를 사용하거나 Android 휴대전화를 사용하여 복구할 수 있습니다.</translation>
 <translation id="4773280894882892048">디버그 정보</translation>
 <translation id="4815374450404670311">메모리 확인(전체 버전)</translation>
 <translation id="4834079235849774599">2. 인터넷이 연결된 다른 기기</translation>
@@ -47,14 +44,11 @@
 <translation id="5019112228955634706">3. 기기에서 사용할 전원</translation>
 <translation id="5175612852476047443">기기 전원을 끄지 마세요</translation>
 <translation id="5232488980254489397">진단 실행</translation>
-<translation id="5341719174140776704">1. 인터넷에 연결할 수 있는 Android 휴대전화</translation>
 <translation id="5477875595374685515">펌웨어 로그를 가져올 수 없습니다.</translation>
 <translation id="5592705604979238266">고객센터:</translation>
-<translation id="5649741817431380014">휴대전화에서 Chrome OS 복구 앱을 실행 중인지 또는 휴대전화 외부 디스크에 유효한 복구 이미지가 있는지 확인한 후 준비되면 케이블이나 디스크를 다시 삽입하세요.</translation>
 <translation id="5809240698077875994">전원 버튼을 눌러 개발자 모드를 사용 설정합니다. 보안 상태를 유지하려면 취소를 선택하세요.</translation>
 <translation id="586317305889719987">권장되는 보안 모드로 돌아가려면 아래에서 ‘보안 모드로 돌아가기’를 선택합니다.</translation>
 <translation id="5874367961304694171">외부 저장소 기기 연결하기</translation>
-<translation id="5947425217126227027">휴대전화를 연결하거나 오른쪽에 있는 QR 코드를 스캔하여 Android 휴대전화에 Chrome OS 복구 앱을 다운로드합니다. 앱을 실행한 다음 휴대전화를 기기에 연결하면 복구가 자동으로 시작됩니다.</translation>
 <translation id="6172915643608608639">내부 디스크로 부팅</translation>
 <translation id="6191358901427525316">기기 복구 준비하기 이때 필요한 사항은 다음과 같습니다.</translation>
 <translation id="635783852215913562">화살표 키를 사용하여 위아래로 이동하세요.</translation>
@@ -72,7 +66,6 @@
 <translation id="7332672207700801967">인터넷 복구(이전 버전)</translation>
 <translation id="7342794948394983731">진단 도구</translation>
 <translation id="7352651011704765696">문제가 발생한 경우</translation>
-<translation id="7365121631770711723">2. 내 휴대전화와 이 기기를 연결하는 USB 케이블</translation>
 <translation id="7407610796520500368">인터넷 연결을 사용하여 복구</translation>
 <translation id="7420576176825630019">개발자 모드 사용</translation>
 <translation id="7567414219298075193">문제 해결을 시도해 보려면 복구 프로세스를 시작하세요. 연결된 기기를 모두 제거한 다음, 복구 버튼을 누른 상태에서 전원 버튼( ⏻ )을 눌렀다가 놓습니다. 그러고 나서 복구 버튼에서 손을 떼세요.</translation>

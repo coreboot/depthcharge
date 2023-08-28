@@ -14,7 +14,6 @@
 <translation id="1932315467893966859">Razvijalski način je že vklopljen.</translation>
 <translation id="1995660704900986789">Izklop</translation>
 <translation id="2022309272630265316">Nobena veljavna slika ni zaznana</translation>
-<translation id="2076174287070071207">Napravo lahko obnovite prek zunanje naprave za shranjevanje, kot je pogon USB ali kartica SD, oziroma s telefonom Android.</translation>
 <translation id="2164852388827548816">Dnevnik vdelane programske opreme</translation>
 <translation id="2176647394998805208">Zagon z zunanjega diska</translation>
 <translation id="2188090550242711688">2. Upoštevajte navodila za razširitev za Chrome in prenesite sliko za obnovitev v zunanjo shrambo.</translation>
@@ -22,7 +21,6 @@
 <translation id="2360163367862409346">S tem boste iz naprave izbrisali vse podatke, naprava pa tako ne bo varna.</translation>
 <translation id="2445391421565214706">Če želite poskusiti odpraviti težavo, začnite postopek obnovitve. Odstranite vse povezane naprave, nato vsaj 10 sekund pridržite gumbe za povečanje glasnosti, zmanjšanje glasnosti in vklop ( ⏻ ).</translation>
 <translation id="2531345960369431549">Ta možnost bo onemogočila način za razvijalce in obnovila vašo napravo v prvotno stanje.</translation>
-<translation id="2603025384438397887">Obnovitev s telefonom</translation>
 <translation id="2904079386864173492">Model:</translation>
 <translation id="3174560100798162637">Priporočamo, da napravo priklopite na napajanje.</translation>
 <translation id="3235458304027619499">1. Zunanja naprava za shranjevanje, kot je pogon USB ali kartica SD.</translation>
@@ -37,7 +35,6 @@
 <translation id="4002335453596341558">Stran navzdol</translation>
 <translation id="4152977630022273265">Poskrbite, da je na vašem zunanjem disku veljaven posnetek operacijskega sistema Chrome OS, in disk znova vstavite, ko boste pripravljeni.</translation>
 <translation id="4410491068110727276">Uporabite gumba za glasnost za pomikanje gor ali dol.</translation>
-<translation id="4497270882390086583">Napravo lahko obnovite prek zunanje naprave za shranjevanje, kot je pogon USB, ali s telefonom Android.</translation>
 <translation id="4773280894882892048">Informacije o iskanju napak</translation>
 <translation id="4815374450404670311">Preverjanje pomnilnika (polno)</translation>
 <translation id="4834079235849774599">2. Druga naprava z dostopom do interneta.</translation>
@@ -48,14 +45,11 @@ Ne izklopite naprave.</translation>
 <translation id="5019112228955634706">3. Vir napajanja za to napravo</translation>
 <translation id="5175612852476047443">Ne izklopite naprave</translation>
 <translation id="5232488980254489397">Zaženi diagnostiko</translation>
-<translation id="5341719174140776704">1. Telefon Android z dostopom do interneta.</translation>
 <translation id="5477875595374685515">Ni bilo mogoče dobiti dnevnika vdelane programske opreme.</translation>
 <translation id="5592705604979238266">Center za pomoč:</translation>
-<translation id="5649741817431380014">Prepričajte se, da je v telefonu nameščena aplikacija za obnovitev sistema Chrome OS ali da je na vašem zunanjem disku veljaven posnetek za obnovitev. Ko boste pripravljeni, znova vstavite kabel ali disk.</translation>
 <translation id="5809240698077875994">Pritisnite gumb za vklop, če želite omogočiti način za razvijalce, ali izberite »Prekliči«, če želite ohraniti zaščito.</translation>
 <translation id="586317305889719987">Če se želite vrniti na priporočeni varni način, spodaj izberite »Vrnitev na varni način«.</translation>
 <translation id="5874367961304694171">Povezava zunanje naprave za shranjevanje</translation>
-<translation id="5947425217126227027">Prenesite aplikacijo za obnovitev sistema Chrome OS v telefonu Android tako, da priključite telefon ali optično preberete kodo QR na desni. Ko zaženete aplikacijo, povežite telefon z napravo in obnovitev se bo začela samodejno.</translation>
 <translation id="6172915643608608639">Zagon z notranjega diska</translation>
 <translation id="6191358901427525316">Pripravite se na obnovitev naprave. Potrebujete:</translation>
 <translation id="635783852215913562">Uporabite puščične tipke za pomikanje gor ali dol.</translation>
@@ -73,7 +67,6 @@ Ne izklopite naprave.</translation>
 <translation id="7332672207700801967">Obnovitev iz interneta (starejša različica)</translation>
 <translation id="7342794948394983731">Orodja za diagnostiko</translation>
 <translation id="7352651011704765696">Prišlo je do neznane težave</translation>
-<translation id="7365121631770711723">2. Kabel USB, ki povezuje telefon in to napravo.</translation>
 <translation id="7407610796520500368">Obnovitev prek internetne povezave</translation>
 <translation id="7420576176825630019">Omogoči način za razvijalce</translation>
 <translation id="7567414219298075193">Če želite poskusiti odpraviti težavo, začnite postopek obnovitve. Odstranite vse povezane naprave, nato pridržite gumb za obnovitev, pritisnite in izpustite gumb za vklop ( ⏻ ), izpustite gumb za obnovitev.</translation>

@@ -14,7 +14,6 @@
 <translation id="1932315467893966859">Režim vývojára je už zapnutý.</translation>
 <translation id="1995660704900986789">Vypnúť</translation>
 <translation id="2022309272630265316">Nebol rozpoznaný žiadny platný obraz</translation>
-<translation id="2076174287070071207">Pri obnovení môžete použiť externé úložisko, napríklad kľúč USB alebo kartu SD, prípadne telefón s Androidom.</translation>
 <translation id="2164852388827548816">Denník firmvéru</translation>
 <translation id="2176647394998805208">Spustiť z externého disku</translation>
 <translation id="2188090550242711688">2. Stiahnite si obraz na obnovu do externého úložiska podľa pokynov v rozšírení pre Chrome</translation>
@@ -22,7 +21,6 @@
 <translation id="2360163367862409346">Znamená to vymazanie všetkých dát zo zariadenia a odstránenie jeho ochrany.</translation>
 <translation id="2445391421565214706">Ak chcete skúsiť problém odstrániť, začnite proces obnovenia. Odstráňte všetky pripojené zariadenia. Potom aspoň desať sekúnd pridržte tlačidlá zvýšenia a zníženia hlasitosti spolu s vypínačom ( ⏻ ).</translation>
 <translation id="2531345960369431549">Táto možnosť vypne režim vývojára a v zariadení sa obnoví pôvodný stav.</translation>
-<translation id="2603025384438397887">Obnoviť pomocou telefónu</translation>
 <translation id="2904079386864173492">Model:</translation>
 <translation id="3174560100798162637">Odporúčame vám pripojiť zariadenie k zdroju napájania.</translation>
 <translation id="3235458304027619499">1. Externé úložisko, napríklad kľúč USB alebo SD karta</translation>
@@ -37,7 +35,6 @@
 <translation id="4002335453596341558">Posunúť o stranu nižšie</translation>
 <translation id="4152977630022273265">Skontrolujte, či máte na externom disku platný obraz operačného systému Chrome OS, a keď budete chcieť začať, znova disk vložte.</translation>
 <translation id="4410491068110727276">Tlačidlami hlasitosti prechádzajte nahor alebo nadol.</translation>
-<translation id="4497270882390086583">Pri obnovení môžete použiť externé úložisko, napríklad kľúč USB alebo telefón s Androidom.</translation>
 <translation id="4773280894882892048">Informácie o ladení</translation>
 <translation id="4815374450404670311">Kontrola pamäte (úplná)</translation>
 <translation id="4834079235849774599">2. Ďalšie zariadenie s prístupom k internetu</translation>
@@ -47,14 +44,11 @@
 <translation id="5019112228955634706">3. Zdroj napájania tohto zariadenia</translation>
 <translation id="5175612852476047443">Nevypínajte zariadenie</translation>
 <translation id="5232488980254489397">Spustiť diagnostiku</translation>
-<translation id="5341719174140776704">1. Telefón s Androidom a prístupom k internetu</translation>
 <translation id="5477875595374685515">Denník firmvéru sa nepodarilo získať.</translation>
 <translation id="5592705604979238266">Centrum pomoci:</translation>
-<translation id="5649741817431380014">Skontrolujte, či máte v telefóne aplikáciu na obnovu systému Chrome OS a na externom disku je platný obraz na obnovu. Keď bude všetko pripravené, znova pripojte kábel alebo disk.</translation>
 <translation id="5809240698077875994">Stlačením vypínača zapnite režim vývojára alebo vyberte Zrušiť, čím zachováte ochranu.</translation>
 <translation id="586317305889719987">Ak sa chcete vrátiť do odporúčaného zabezpečeného režimu, nižšie vyberte Vrátiť sa do zabezpečeného režimu.</translation>
 <translation id="5874367961304694171">Pripojte svoje externé úložisko</translation>
-<translation id="5947425217126227027">Stiahnite si aplikáciu na obnovu systému Chrome OS v telefóne s Androidom pripojením svojho telefónu alebo naskenovaním QR kódu vpravo. Po spustení aplikácie pripojte telefón k zariadeniu a obnova sa spustí automaticky.</translation>
 <translation id="6172915643608608639">Spustiť z interného disku</translation>
 <translation id="6191358901427525316">Pripravte sa na obnovu zariadenia. Budete potrebovať:</translation>
 <translation id="635783852215913562">Klávesmi so šípkami prechádzajte nahor a nadol.</translation>
@@ -72,7 +66,6 @@
 <translation id="7332672207700801967">Internetové obnovenie (staršia verzia)</translation>
 <translation id="7342794948394983731">Diagnostické nástroje</translation>
 <translation id="7352651011704765696">Vyskytla sa chyba</translation>
-<translation id="7365121631770711723">2. Kábel USB na prepojenie vášho telefónu s týmto zariadením</translation>
 <translation id="7407610796520500368">Obnovenie pomocou internetového pripojenia</translation>
 <translation id="7420576176825630019">Zapnúť režim vývojára</translation>
 <translation id="7567414219298075193">Ak chcete skúsiť problém odstrániť, začnite proces obnovenia. Odstráňte všetky pripojené zariadenia. Potom pridržte tlačidlo obnovy, stlačte a uvoľnite vypínač ( ⏻ ) a nakoniec uvoľnite tlačidlo obnovy.</translation>
