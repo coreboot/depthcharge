@@ -20,16 +20,6 @@ vb2_error_t vb2api_gbb_read_hwid(struct vb2_context *ctx, char *hwid,
 	return VB2_SUCCESS;
 }
 
-int vb2api_phone_recovery_enabled(struct vb2_context *ctx)
-{
-	return 0;
-}
-
-int vb2api_phone_recovery_ui_enabled(struct vb2_context *ctx)
-{
-	return 0;
-}
-
 int vb2api_diagnostic_ui_enabled(struct vb2_context *ctx)
 {
 	return 0;

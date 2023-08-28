@@ -70,7 +70,6 @@ ui-test-common-mocks += vb2api_request_diagnostics
 ui-test-common-mocks += vb2api_diagnostic_ui_enabled
 ui-test-common-mocks += vb2api_enable_developer_mode
 ui-test-common-mocks += vb2api_disable_developer_mode
-ui-test-common-mocks += vb2api_phone_recovery_ui_enabled
 ui-test-common-mocks += vb2api_use_short_dev_screen_delay
 ui-test-common-mocks += vb2api_get_dev_default_boot_target
 

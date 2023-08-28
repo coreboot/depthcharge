@@ -56,7 +56,6 @@ static int setup_context(void **state)
 static void setup_will_return_common(void)
 {
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_maybe(vb2api_phone_recovery_ui_enabled, 1);
 	will_return_maybe(vb2api_diagnostic_ui_enabled, 1);
 	will_return_maybe(ui_get_locale_info, VB2_SUCCESS);
 }
@@ -155,9 +154,8 @@ static void test_manual_ui_internet_recovery_menu(void **state)
 	WILL_CLOSE_LID_IN(10);
 
 	/* Fail to boot from MiniOS */
-	WILL_PRESS_KEY(0, 0);			/* #1: Phone recovery */
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #2: External disk recovery */
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #3: Internet recovery */
+	WILL_PRESS_KEY(0, 0);			/* #1: External disk recovery */
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #2: Internet recovery */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	will_return_maybe(ui_keyboard_read, 0);
 	WILL_LOAD_EXTERNAL_MAYBE(VB2_ERROR_LK_NO_DISK_FOUND);
@@ -177,11 +175,10 @@ static void test_manual_ui_internet_recovery_menu_old(void **state)
 	setup_will_return_common();
 
 	/* Try older version from advanced options screen */
-	WILL_PRESS_KEY(0, 0);			/* #1: Phone recovery */
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #2: External disk recovery */
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #3: Internet recovery */
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #4: Diagnostics */
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #5: Advanced options */
+	WILL_PRESS_KEY(0, 0);			/* #1: External disk recovery */
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #2: Internet recovery */
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #3: Diagnostics */
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #4: Advanced options */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);	/* #1: Enable developer mode */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #2: Debug info */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* #3: Firmware log*/
@@ -574,7 +571,6 @@ static void test_manual_ui_enter_diagnostics(void **state)
 	will_return_maybe(ui_is_lid_open, 1);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	expect_function_call(vb2api_request_diagnostics);
@@ -589,7 +585,6 @@ static void test_manual_ui_locale_not_found(void **state)
 	struct ui_context *ui = *state;
 
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_maybe(vb2api_phone_recovery_ui_enabled, 1);
 	will_return_maybe(vb2api_diagnostic_ui_enabled, 1);
 	will_return_maybe(ui_get_locale_info, VB2_ERROR_MOCK);
 
@@ -631,38 +626,31 @@ static void test_recovery_select_screen(void **state)
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_LANGUAGE_SELECT);
-	/* #1: Phone recovery */
+	/* #1: External disk recovery */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 1);
-	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_PHONE_STEP1);
-	/* #2: External disk recovery */
-	WILL_PRESS_KEY(UI_KEY_ESC, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 2);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_DISK_STEP1);
-	/* #4: Launch diagnostics */
+	/* #3: Launch diagnostics */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);  /* #3: Internet recovery */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	EXPECT_UI_DISPLAY_ANY();
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 2);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 3);
-	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 4);
-	/* #5: Advanced options */
+	/* #4: Advanced options */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 5);
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 4);
 	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS);
 	/* End of menu */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);  /* Blocked */
 	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 6);
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT, MOCK_IGNORE, 5);
 
 	will_return_maybe(ui_keyboard_read, 0);
 	WILL_HAVE_NO_EXTERNAL();
@@ -683,9 +671,7 @@ static void test_advanced_options_screen_disabled_and_hidden_mask(void **state)
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY_ANY();
@@ -712,9 +698,7 @@ static void test_advanced_options_screen(void **state)
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY_ANY();
@@ -932,7 +916,6 @@ static void test_firmware_log(void **state)
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -957,7 +940,6 @@ static void test_firmware_log_again_reacquire_new_one(void **state)
 
 	cbmem_console_snapshots_count = 0;
 	WILL_CLOSE_LID_IN(20);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -990,7 +972,6 @@ static void test_firmware_log_back_not_reacquire_new_one(void **state)
 	WILL_CLOSE_LID_IN(20);
 	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
 
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);

@@ -79,8 +79,6 @@ screenshot-mocks += cbmem_console_snapshot
 screenshot-mocks += vb2api_diagnostic_ui_enabled
 screenshot-mocks += vb2api_gbb_get_flags
 screenshot-mocks += vb2api_gbb_read_hwid
-screenshot-mocks += vb2api_phone_recovery_enabled
-screenshot-mocks += vb2api_phone_recovery_ui_enabled
 
 # Files that should not include libpayload headers (such as stdio.h)
 syslibc_srcs := screenshot/io.c

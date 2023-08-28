@@ -931,29 +931,9 @@ static const struct ui_screen_info recovery_to_dev_screen = {
 /******************************************************************************/
 /* UI_SCREEN_RECOVERY_SELECT */
 
-#define RECOVERY_SELECT_ITEM_PHONE 1
-#define RECOVERY_SELECT_ITEM_EXTERNAL_DISK 2
-#define RECOVERY_SELECT_ITEM_INTERNET 3
-#define RECOVERY_SELECT_ITEM_DIAGNOSTICS 4
-
-static vb2_error_t draw_recovery_select_desc(
-	struct ui_context *ui,
-	const struct ui_state *prev_state,
-	int32_t *y)
-{
-	static const char *const desc_files[] = {
-		"rec_sel_desc0.bmp",
-		"rec_sel_desc1.bmp",
-	};
-	static const char *const desc_no_phone_files[] = {
-		"rec_sel_desc0.bmp",
-		"rec_sel_desc1_no_phone.bmp",
-	};
-	const struct ui_desc desc = vb2api_phone_recovery_ui_enabled(ui->ctx) ?
-		UI_DESC(desc_files) : UI_DESC(desc_no_phone_files);
-
-	return ui_draw_desc(&desc, ui->state, y);
-}
+#define RECOVERY_SELECT_ITEM_EXTERNAL_DISK 1
+#define RECOVERY_SELECT_ITEM_INTERNET 2
+#define RECOVERY_SELECT_ITEM_DIAGNOSTICS 3
 
 /* Set VB2_NV_DIAG_REQUEST and reboot. */
 static vb2_error_t launch_diagnostics_action(struct ui_context *ui)
@@ -969,13 +949,7 @@ vb2_error_t ui_recovery_mode_boot_minios_action(struct ui_context *ui)
 
 vb2_error_t recovery_select_init(struct ui_context *ui)
 {
-	ui->state->selected_item = RECOVERY_SELECT_ITEM_PHONE;
-	if (!vb2api_phone_recovery_ui_enabled(ui->ctx)) {
-		UI_WARN("WARNING: Phone recovery not available\n");
-		UI_SET_BIT(ui->state->hidden_item_mask,
-			   RECOVERY_SELECT_ITEM_PHONE);
-		ui->state->selected_item = RECOVERY_SELECT_ITEM_EXTERNAL_DISK;
-	}
+	ui->state->selected_item = RECOVERY_SELECT_ITEM_EXTERNAL_DISK;
 
 	if (!vb2api_diagnostic_ui_enabled(ui->ctx))
 		UI_SET_BIT(ui->state->hidden_item_mask,
@@ -984,13 +958,13 @@ vb2_error_t recovery_select_init(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
+static const char *const recovery_select_desc[] = {
+	"rec_sel_desc0.bmp",
+	"rec_sel_desc1.bmp",
+};
+
 static const struct ui_menu_item recovery_select_items[] = {
 	LANGUAGE_SELECT_ITEM,
-	[RECOVERY_SELECT_ITEM_PHONE] = {
-		.name = "Recovery using phone",
-		.file = "btn_rec_by_phone.bmp",
-		.target = UI_SCREEN_RECOVERY_PHONE_STEP1,
-	},
 	[RECOVERY_SELECT_ITEM_EXTERNAL_DISK] = {
 		.name = "Recovery using external disk",
 		.file = "btn_rec_by_disk.bmp",
@@ -1018,105 +992,11 @@ static const struct ui_screen_info recovery_select_screen = {
 	.name = "Recovery method selection",
 	.icon = UI_ICON_TYPE_INFO,
 	.title = "rec_sel_title.bmp",
-	.draw_desc = draw_recovery_select_desc,
+	.desc = UI_DESC(recovery_select_desc),
 	.menu = UI_MENU(recovery_select_items),
 	.init = recovery_select_init,
 	.mesg = "Select how you'd like to recover.\n"
 		"You can recover using a USB drive or an SD card.",
-};
-
-/******************************************************************************/
-/* UI_SCREEN_RECOVERY_PHONE_STEP1 */
-
-static vb2_error_t draw_recovery_phone_step1_desc(
-	struct ui_context *ui,
-	const struct ui_state *prev_state,
-	int32_t *y)
-{
-	static const char *const desc_files[] = {
-		"rec_phone_step1_desc0.bmp",
-		"rec_phone_step1_desc1.bmp",
-		"rec_step1_desc2.bmp",
-	};
-	static const char *const desc_low_battery_files[] = {
-		"rec_phone_step1_desc0.bmp",
-		"rec_phone_step1_desc1.bmp",
-		"rec_step1_desc2_low_bat.bmp",
-	};
-	const struct ui_desc desc = is_battery_low() ?
-		UI_DESC(desc_low_battery_files) : UI_DESC(desc_files);
-
-	return ui_draw_desc(&desc, ui->state, y);
-}
-
-static const struct ui_menu_item recovery_phone_step1_items[] = {
-	LANGUAGE_SELECT_ITEM,
-	NEXT_ITEM(UI_SCREEN_RECOVERY_PHONE_STEP2),
-	BACK_ITEM,
-	POWER_OFF_ITEM,
-};
-
-static const struct ui_screen_info recovery_phone_step1_screen = {
-	.id = UI_SCREEN_RECOVERY_PHONE_STEP1,
-	.name = "Phone recovery step 1",
-	.icon = UI_ICON_TYPE_STEP,
-	.step = 1,
-	.num_steps = 3,
-	.title = "rec_step1_title.bmp",
-	.menu = UI_MENU(recovery_phone_step1_items),
-	.draw_desc = draw_recovery_phone_step1_desc,
-	.mesg = "To proceed with the recovery process, you’ll need\n"
-		"1. An Android phone with internet access\n"
-		"2. A USB cable which connects your phone and this device\n"
-		"We also recommend that you connect to a power source during\n"
-		"the recovery process.",
-};
-
-/******************************************************************************/
-/* UI_SCREEN_RECOVERY_PHONE_STEP2 */
-
-static vb2_error_t draw_recovery_phone_step2_desc(
-	struct ui_context *ui,
-	const struct ui_state *prev_state,
-	int32_t *y)
-{
-	static const char *const desc_files[] = {
-		"rec_phone_step2_desc.bmp",
-	};
-	static const struct ui_desc desc = UI_DESC(desc_files);
-	const int32_t x = UI_SCALE - UI_MARGIN_H - UI_REC_QR_MARGIN_H;
-	const int32_t y_begin = *y;
-	const int32_t size = UI_REC_QR_SIZE;
-	const uint32_t flags = PIVOT_H_RIGHT | PIVOT_V_TOP;
-	const int reverse = ui->state->locale->rtl;
-	struct ui_bitmap bitmap;
-
-	VB2_TRY(ui_draw_desc(&desc, ui->state, y));
-	VB2_TRY(ui_get_bitmap("qr_rec_phone.bmp", NULL, 0, &bitmap));
-	VB2_TRY(ui_draw_bitmap(&bitmap, x, y_begin, size, size,
-			       flags, reverse));
-	return VB2_SUCCESS;
-}
-
-static const struct ui_menu_item recovery_phone_step2_items[] = {
-	LANGUAGE_SELECT_ITEM,
-	BACK_ITEM,
-	POWER_OFF_ITEM,
-};
-
-static const struct ui_screen_info recovery_phone_step2_screen = {
-	.id = UI_SCREEN_RECOVERY_PHONE_STEP2,
-	.name = "Phone recovery step 2",
-	.icon = UI_ICON_TYPE_STEP,
-	.step = 2,
-	.num_steps = 3,
-	.title = "rec_phone_step2_title.bmp",
-	.menu = UI_MENU(recovery_phone_step2_items),
-	.draw_desc = draw_recovery_phone_step2_desc,
-	.mesg = "Download the Chrome OS recovery app on your Android phone\n"
-		"by plugging in your phone or by scanning the QR code on the\n"
-		"right. Once you launch the app, connect your phone to your\n"
-		"device and recovery will start automatically.",
 };
 
 /******************************************************************************/
@@ -1228,22 +1108,9 @@ static const struct ui_screen_info recovery_disk_step3_screen = {
 /******************************************************************************/
 /* UI_SCREEN_RECOVERY_INVALID */
 
-static vb2_error_t draw_recovery_invalid_desc(
-	struct ui_context *ui,
-	const struct ui_state *prev_state,
-	int32_t *y)
-{
-	static const char *const desc_files[] = {
-		"rec_invalid_desc.bmp",
-	};
-	static const char *const desc_no_phone_files[] = {
-		"rec_invalid_disk_desc.bmp",
-	};
-	const struct ui_desc desc = vb2api_phone_recovery_ui_enabled(ui->ctx) ?
-		UI_DESC(desc_files) : UI_DESC(desc_no_phone_files);
-
-	return ui_draw_desc(&desc, ui->state, y);
-}
+static const char *const recovery_invalid_desc[] = {
+	"rec_invalid_desc.bmp",
+};
 
 static const struct ui_menu_item recovery_invalid_items[] = {
 	LANGUAGE_SELECT_ITEM,
@@ -1257,8 +1124,8 @@ static const struct ui_screen_info recovery_invalid_screen = {
 	.step = -3,
 	.num_steps = 3,
 	.title = "rec_invalid_title.bmp",
+	.desc = UI_DESC(recovery_invalid_desc),
 	.menu = UI_MENU(recovery_invalid_items),
-	.draw_desc = draw_recovery_invalid_desc,
 	.mesg = "No valid image detected.\n"
 		"Make sure your external disk has a valid recovery image,\n"
 		"and re-insert the disk when ready.",
@@ -2300,8 +2167,6 @@ static const struct ui_screen_info *const screens[] = {
 	&firmware_log_screen,
 	&recovery_to_dev_screen,
 	&recovery_select_screen,
-	&recovery_phone_step1_screen,
-	&recovery_phone_step2_screen,
 	&recovery_disk_step1_screen,
 	&recovery_disk_step2_screen,
 	&recovery_disk_step3_screen,

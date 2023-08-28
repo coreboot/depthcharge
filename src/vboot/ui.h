@@ -209,15 +209,15 @@ enum ui_screen {
 	UI_SCREEN_DEBUG_INFO				= 0x140,
 	/* Firmware log */
 	UI_SCREEN_FIRMWARE_LOG				= 0x150,
-	/* First recovery screen to select recovering from disk or phone */
+	/* First recovery screen to select the recovery method */
 	UI_SCREEN_RECOVERY_SELECT			= 0x200,
 	/* Invalid recovery media inserted */
 	UI_SCREEN_RECOVERY_INVALID			= 0x201,
 	/* Confirm transition to developer mode */
 	UI_SCREEN_RECOVERY_TO_DEV			= 0x202,
-	/* Recovery using phone */
-	UI_SCREEN_RECOVERY_PHONE_STEP1			= 0x210,
-	UI_SCREEN_RECOVERY_PHONE_STEP2			= 0x211,
+	/* Recovery using phone; deprecated in b/297805271 */
+	UI_SCREEN_DEPRECATED_RECOVERY_PHONE_STEP1	= 0x210,
+	UI_SCREEN_DEPRECATED_RECOVERY_PHONE_STEP2	= 0x211,
 	/* Recovery using disk */
 	UI_SCREEN_RECOVERY_DISK_STEP1			= 0x220,
 	UI_SCREEN_RECOVERY_DISK_STEP2			= 0x221,
