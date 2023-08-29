@@ -121,7 +121,7 @@ def check_fonts(fonts):
     for locale, font in fonts.items():
         if subprocess.run(['fc-list', '-q', font], check=False).returncode != 0:
             raise BuildImageError(
-                f'Font {font:!r} not found for locale {locale!r}'
+                f'Font {font!r} not found for locale {locale!r}'
             )
 
 
