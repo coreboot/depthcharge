@@ -580,8 +580,9 @@ vb2_error_t ui_draw_textbox(const char *str, int32_t *y, int32_t min_lines)
 			*ptr = ' ';
 
 	num_lines = MAX(count_lines(buf), min_lines);
-	max_content_height = UI_SCALE - UI_BOX_MARGIN_V * 2 -
-		UI_BOX_PADDING_V * 2;
+
+	 /* Simply ensure that the textbox won't exceed the screen. */
+	max_content_height = UI_SCALE - *y - 2 * UI_BOX_PADDING_V;
 	line_spacing = UI_BOX_TEXT_LINE_SPACING * (num_lines - 1);
 
 	if (max_height * num_lines + line_spacing > max_content_height)

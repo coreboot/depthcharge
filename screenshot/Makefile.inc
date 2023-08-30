@@ -115,6 +115,7 @@ test-screenshot: screenshot
 	$(MAKE) screenshot SCREEN=UI_SCREEN_DEBUG_INFO
 	$(MAKE) screenshot SCREEN=UI_SCREEN_DEVELOPER_MODE
 	$(MAKE) screenshot SCREEN=UI_SCREEN_DEVELOPER_SELECT_ALTFW ITEM=1
+	$(MAKE) screenshot SCREEN=UI_SCREEN_DIAGNOSTICS_MEMORY_QUICK
 
 clean-screenshot:
 	rm -rf $(testobj)

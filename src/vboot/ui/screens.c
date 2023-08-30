@@ -284,6 +284,67 @@ static vb2_error_t log_page_next_action(struct ui_context *ui)
 	return log_page_update(ui, NULL);
 }
 
+static vb2_error_t log_page_first_action(struct ui_context *ui)
+{
+	/* Validity check. */
+	if (ui->state->current_page == 0)
+		return VB2_SUCCESS;
+
+	ui->state->current_page = 0;
+	return log_page_update(ui, NULL);
+}
+
+static vb2_error_t log_page_last_action(struct ui_context *ui)
+{
+	/* Validity check. */
+	if (ui->state->current_page == ui->state->log.page_count - 1)
+		return VB2_SUCCESS;
+
+	ui->state->current_page = (ui->state->log.page_count) ?
+			(ui->state->log.page_count - 1) : 0;
+	return log_page_update(ui, NULL);
+}
+
+static vb2_error_t fullview_log_screen_action(struct ui_context *ui)
+{
+	uint32_t key = ui->key;
+	vb2_error_t (*action)(struct ui_context *ui) = NULL;
+
+	if (CONFIG(DETACHABLE)) {
+		if (key == UI_BUTTON_VOL_UP_SHORT_PRESS)
+			key = UI_KEY_UP;
+		else if (key == UI_BUTTON_VOL_DOWN_SHORT_PRESS)
+			key = UI_KEY_DOWN;
+		else if (key == UI_BUTTON_POWER_SHORT_PRESS)
+			key = UI_KEY_ENTER;
+	}
+
+	switch (key) {
+	case UI_KEY_UP:
+		action = log_page_prev_action;
+		break;
+	case UI_KEY_DOWN:
+		action = log_page_next_action;
+		break;
+	case UI_KEY_LEFT:
+		action = log_page_first_action;
+		break;
+	case UI_KEY_RIGHT:
+		action = log_page_last_action;
+		break;
+	case UI_KEY_ENTER:
+		action = ui_screen_back;
+		break;
+	}
+
+	if (action) {
+		ui->key = 0;
+		return action(ui);
+	}
+
+	return VB2_SUCCESS;
+}
+
 /******************************************************************************/
 /* UI_SCREEN_FIRMWARE_SYNC */
 
@@ -720,26 +781,17 @@ static vb2_error_t debug_info_init(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
-static const struct ui_menu_item debug_info_items[] = {
-	LANGUAGE_SELECT_ITEM,
-	[DEBUG_INFO_ITEM_PAGE_UP] = PAGE_UP_ITEM,
-	[DEBUG_INFO_ITEM_PAGE_DOWN] = PAGE_DOWN_ITEM,
-	[DEBUG_INFO_ITEM_BACK] = BACK_ITEM,
-	POWER_OFF_ITEM,
-};
-
 static const struct ui_screen_info debug_info_screen = {
 	.id = UI_SCREEN_DEBUG_INFO,
 	.name = "Debug info",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "debug_info_title.bmp",
-	.menu = UI_MENU(debug_info_items),
 	.init = debug_info_init,
+	.action = fullview_log_screen_action,
 	.draw_desc = draw_log_desc,
 	.mesg = "Debug info",
-	.page_up_item = DEBUG_INFO_ITEM_PAGE_UP,
-	.page_down_item = DEBUG_INFO_ITEM_PAGE_DOWN,
-	.back_item = DEBUG_INFO_ITEM_BACK,
+	.no_footer = 1,
+	.is_fullview = 1,
 };
 
 /******************************************************************************/
@@ -784,26 +836,17 @@ static vb2_error_t firmware_log_init(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
-static const struct ui_menu_item firmware_log_items[] = {
-	LANGUAGE_SELECT_ITEM,
-	[FIRMWARE_LOG_ITEM_PAGE_UP] = PAGE_UP_ITEM,
-	[FIRMWARE_LOG_ITEM_PAGE_DOWN] = PAGE_DOWN_ITEM,
-	[FIRMWARE_LOG_ITEM_BACK] = BACK_ITEM,
-	POWER_OFF_ITEM,
-};
-
 static const struct ui_screen_info firmware_log_screen = {
 	.id = UI_SCREEN_FIRMWARE_LOG,
 	.name = "Firmware log",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "firmware_log_title.bmp",
-	.menu = UI_MENU(firmware_log_items),
 	.init = firmware_log_init,
+	.action = fullview_log_screen_action,
 	.draw_desc = draw_log_desc,
 	.mesg = "Firmware log",
-	.page_up_item = FIRMWARE_LOG_ITEM_PAGE_UP,
-	.page_down_item = FIRMWARE_LOG_ITEM_PAGE_DOWN,
-	.back_item = FIRMWARE_LOG_ITEM_BACK,
+	.no_footer = 1,
+	.is_fullview = 1,
 };
 
 /******************************************************************************/
@@ -1834,17 +1877,6 @@ static vb2_error_t diagnostics_test_exit(struct ui_context *ui)
 /******************************************************************************/
 /* UI_SCREEN_DIAGNOSTICS_STORAGE_HEALTH */
 
-#define DIAGNOSTICS_STORAGE_HEALTH_ITEM_PAGE_UP 0
-#define DIAGNOSTICS_STORAGE_HEALTH_ITEM_PAGE_DOWN 1
-#define DIAGNOSTICS_STORAGE_HEALTH_ITEM_BACK 2
-
-static const struct ui_menu_item diagnostics_storage_health_items[] = {
-	[DIAGNOSTICS_STORAGE_HEALTH_ITEM_PAGE_UP] = PAGE_UP_ITEM,
-	[DIAGNOSTICS_STORAGE_HEALTH_ITEM_PAGE_DOWN] = PAGE_DOWN_ITEM,
-	[DIAGNOSTICS_STORAGE_HEALTH_ITEM_BACK] = BACK_ITEM,
-	POWER_OFF_ITEM,
-};
-
 static vb2_error_t diagnostics_storage_health_init_impl(
 	struct ui_context *ui)
 {
@@ -1878,14 +1910,13 @@ static const struct ui_screen_info diagnostics_storage_health_screen = {
 	.name = "Storage health info",
 	.icon = UI_ICON_TYPE_NONE,
 	.title = "diag_storage_health_title.bmp",
-	.menu = UI_MENU(diagnostics_storage_health_items),
 	.init = diagnostics_storage_health_init,
 	.exit = diagnostics_test_exit,
+	.action = fullview_log_screen_action,
 	.draw_desc = draw_log_desc,
 	.mesg = "Storage health info",
-	.page_up_item = DIAGNOSTICS_STORAGE_HEALTH_ITEM_PAGE_UP,
-	.page_down_item = DIAGNOSTICS_STORAGE_HEALTH_ITEM_PAGE_DOWN,
-	.back_item = DIAGNOSTICS_STORAGE_HEALTH_ITEM_BACK,
+	.no_footer = 1,
+	.is_fullview = 1,
 };
 
 /******************************************************************************/
