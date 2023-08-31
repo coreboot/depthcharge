@@ -36,8 +36,8 @@ config DRIVER_SOUND_I2S_USE_GPIO
 	bool "A I2S codec controlled by GPIO value"
 	default y
 
-config DRIVER_SOUND_GPIO_BB_I2S
-	bool "I2S driver based on bit-bang (bb) GPIO"
+config DRIVER_SOUND_GPIO_I2S
+	bool "I2S driver based on bit-bang GPIO"
 	default n
 
 config DRIVER_SOUND_GPIO_PDM
