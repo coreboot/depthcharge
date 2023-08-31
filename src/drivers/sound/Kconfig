@@ -32,7 +32,7 @@ config DRIVER_SOUND_GPIO_AMP
 	bool "An amplifier controlled by GPIO value"
 	default n
 
-config DRIVER_SOUND_GPIO_I2S
+config DRIVER_SOUND_I2S_USE_GPIO
 	bool "A I2S codec controlled by GPIO value"
 	default y
 
