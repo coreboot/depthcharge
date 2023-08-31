@@ -152,7 +152,7 @@ static void setup_gpio_amp(const struct audio_amp *amp, SoundRoute *route)
 			  &route->components);
 }
 
-static GpioCfg *cfg_gpio(const struct audio_bus *bus)
+static GpioCfg *cfg_i2s_gpio(const struct audio_bus *bus)
 {
 	if (!CONFIG(DRIVER_SOUND_I2S_USE_GPIO))
 		return NULL;
@@ -164,7 +164,7 @@ static GpioCfg *cfg_gpio(const struct audio_bus *bus)
 
 static I2sSource *setup_i2s(const struct audio_bus *bus)
 {
-	GpioCfg *gpio_cfg = cfg_gpio(bus);
+	GpioCfg *gpio_cfg = cfg_i2s_gpio(bus);
 
 	I2s *i2s = new_i2s_structure(bus->i2s.settings,
 		default_if_zero(bus->i2s.depth, AUD_BITDEPTH),
