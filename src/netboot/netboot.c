@@ -21,7 +21,6 @@
 #include "base/init_funcs.h"
 #include "base/late_init_funcs.h"
 #include "base/timestamp.h"
-#include "debug/cli/common.h"
 #include "drivers/input/input.h"
 #include "drivers/net/net.h"
 #include "drivers/power/power.h"
@@ -242,9 +241,6 @@ int netboot_entry(void)
 
 	// Make sure graphics are available if they aren't already.
 	enable_graphics();
-
-	if (CONFIG(CLI))
-		console_loop();
 
 	// Run any late initialization functions before netboot takes control.
 	if (run_late_init_funcs())
