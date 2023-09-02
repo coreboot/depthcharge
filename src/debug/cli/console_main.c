@@ -544,7 +544,7 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 	}
 }
 
-void console_loop(void)
+void dc_dev_console_loop(void)
 {
 	int len, flag, rc = 0;
 	char lastcommand[128] = {0};

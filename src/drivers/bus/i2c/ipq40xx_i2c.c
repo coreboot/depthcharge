@@ -204,7 +204,7 @@ Ipq40xxI2c *new_ipq40xx_i2c(unsigned id)
 		bus->ops.transfer = &i2c_transfer;
 		bus->ops.scan_mode_on_off = scan_mode_on_off;
 		if (CONFIG(CLI))
-			add_i2c_controller_to_list(&bus->ops, "gsbi%d", id);
+			dc_dev_add_i2c_controller_to_list(&bus->ops, "gsbi%d", id);
 
 	}
 	return bus;

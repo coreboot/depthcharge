@@ -758,7 +758,7 @@ DesignwareI2c *new_designware_i2c(uintptr_t reg_addr, int speed, int clk_mhz)
 	bus->clk_mhz = clk_mhz;
 
 	if (CONFIG(CLI))
-		add_i2c_controller_to_list(&bus->ops, "Designware-%08x",
+		dc_dev_add_i2c_controller_to_list(&bus->ops, "Designware-%08x",
 					   (uint32_t)reg_addr);
 
 	return bus;

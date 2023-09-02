@@ -11,24 +11,24 @@
 ## GNU General Public License for more details.
 ##
 
-depthcharge-$(CONFIG_ARCH_X86) += io.c
-depthcharge-$(CONFIG_ARCH_X86) += pci.c
-depthcharge-$(CONFIG_KERNEL_LEGACY) += boot.c
-depthcharge-y += audio.c
-depthcharge-y += cbfs.c
-depthcharge-y += command.c
-depthcharge-y += console_main.c
+dev-$(CONFIG_ARCH_X86) += io.c
+dev-$(CONFIG_ARCH_X86) += pci.c
+dev-$(CONFIG_KERNEL_LEGACY) += boot.c
+dev-y += audio.c
+dev-y += cbfs.c
+dev-y += command.c
+dev-y += console_main.c
 ifneq ($(CONFIG_HEADLESS),y)
-depthcharge-y += draw.c
+dev-y += draw.c
 endif
-depthcharge-y += i2c.c
-depthcharge-y += memory.c
-depthcharge-y += memtest.c
-depthcharge-y += printbuf.c
-depthcharge-y += spi.c
-depthcharge-y += storage.c
-depthcharge-y += timer.c
-depthcharge-$(CONFIG_DRIVER_TPM) += tpm.c
+dev-y += i2c.c
+dev-y += memory.c
+dev-y += memtest.c
+dev-y += printbuf.c
+dev-y += spi.c
+dev-y += storage.c
+dev-y += timer.c
+dev-$(CONFIG_DRIVER_TPM) += tpm.c
 
 netboot-y += net.c
 netboot-y += enet.c

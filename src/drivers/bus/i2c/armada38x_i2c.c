@@ -1423,7 +1423,7 @@ Armada38xI2c *new_armada38x_i2c(u32 base, u32 tclk, u8 bus_num)
 		bus->bus_num = bus_num;
 		bus->ops.transfer = &i2c_transfer;
 		if (CONFIG(CLI))
-			add_i2c_controller_to_list(&bus->ops, "busnum%d",
+			dc_dev_add_i2c_controller_to_list(&bus->ops, "busnum%d",
 						   bus_num);
 	}
 	return bus;

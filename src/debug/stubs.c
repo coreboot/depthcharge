@@ -12,6 +12,8 @@
  * GNU General Public License for more details.
  */
 
+#include "drivers/ec/cros/i2c.h"
+
 /*
  * These stubs are linked for debug-related functions in non-developer builds
  * to ensure that those features do not work. Developer builds will override
@@ -29,3 +31,9 @@ void dc_dev_netboot(void) { /* do nothing */ }
 
 void dc_dev_fastboot(void) __attribute__((weak));
 void dc_dev_fastboot(void) { /* do nothing */ }
+
+void dc_dev_add_i2c_controller_to_list(I2cOps *ops, const char *fmt, ...) __attribute__((weak));
+void dc_dev_add_i2c_controller_to_list(I2cOps *ops, const char *fmt, ...) { /* do nothing */ }
+
+void dc_dev_console_loop(void) __attribute__((weak));
+void dc_dev_console_loop(void) { /* do nothing */ }

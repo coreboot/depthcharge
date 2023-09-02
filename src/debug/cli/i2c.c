@@ -18,7 +18,7 @@ typedef struct {
 
 static I2cBusController *picked_i2c_bus_controller;
 
-void add_i2c_controller_to_list(I2cOps *ops, const char *fmt, ...)
+void dc_dev_add_i2c_controller_to_list(I2cOps *ops, const char *fmt, ...)
 {
 	I2cBusController *list_el = xzalloc(sizeof(*list_el));
 	va_list args;

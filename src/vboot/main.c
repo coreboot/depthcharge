@@ -58,7 +58,7 @@ int main(void)
 	vboot_check_enable_usb();
 
 	if (CONFIG(CLI))
-		console_loop();
+		dc_dev_console_loop();
 
 	// Run any late initialization functions before vboot takes control.
 	if (run_late_init_funcs())

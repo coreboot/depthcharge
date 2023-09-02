@@ -55,7 +55,7 @@
  */
 
 /* common/console_main.c */
-void console_loop(void);
+void dc_dev_console_loop(void);
 int run_command(const char *cmd, int flag);
 int ctrlc(void);
 
