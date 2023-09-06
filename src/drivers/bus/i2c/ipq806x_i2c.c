@@ -182,8 +182,7 @@ Ipq806xI2c *new_ipq806x_i2c(unsigned gsbi_id)
 		bus->initialized = 1;
 		bus->ops.transfer = &i2c_transfer;
 		bus->ops.scan_mode_on_off = scan_mode_on_off;
-		if (CONFIG(CLI))
-			dc_dev_add_i2c_controller_to_list(&bus->ops,
+		dc_dev_add_i2c_controller_to_list(&bus->ops,
 						   "gsbi%d", gsbi_id);
 
 	}

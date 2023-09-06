@@ -10,14 +10,13 @@
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
 
-config CLI
-	bool "Command line interface"
+config FIRMWARE_SHELL_ENTER_IMMEDIATELY
+	bool "Directly enter into Firmware Shell"
 	default n
 	help
 	  Enable this to have depthcharge stop at the command line prompt
-	  instead of directly booting the OS.
+	  (known as firmware shell) instead of directly booting the OS.
 
 config SYS_PROMPT
 	string "Console prompt"
-	default "dpch: "
-	depends on CLI
+	default "firmware-shell: "

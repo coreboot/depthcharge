@@ -11,7 +11,7 @@
 ## GNU General Public License for more details.
 ##
 
-subdirs-$(CONFIG_CLI) += cli
+subdirs-y += cli
 
 depthcharge-y += stubs.c
 
