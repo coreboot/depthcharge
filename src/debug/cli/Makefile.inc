@@ -30,5 +30,5 @@ dev-y += storage.c
 dev-y += timer.c
 dev-$(CONFIG_DRIVER_TPM) += tpm.c
 
-netboot-y += net.c
-netboot-y += enet.c
+dev-y += net.c
+dev-y += enet.c
