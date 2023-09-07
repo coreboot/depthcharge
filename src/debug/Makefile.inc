@@ -11,7 +11,7 @@
 ## GNU General Public License for more details.
 ##
 
-subdirs-y += cli
+subdirs-y += firmware_shell
 
 depthcharge-y += stubs.c
 

@@ -9,7 +9,7 @@
 #include <vboot_api.h>
 
 #include "base/list.h"
-#include "debug/cli/common.h"
+#include "debug/firmware_shell/common.h"
 #include "drivers/storage/blockdev.h"
 
 typedef struct {

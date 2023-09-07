@@ -16,7 +16,7 @@
  * GNU General Public License for more details.
  */
 
-#include "debug/cli/common.h"
+#include "debug/firmware_shell/common.h"
 
 typedef unsigned long ulong;
 

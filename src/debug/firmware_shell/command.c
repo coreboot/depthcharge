@@ -22,7 +22,7 @@
  *  Command Processor Table
  */
 
-#include "debug/cli/common.h"
+#include "debug/firmware_shell/common.h"
 
 static void cmd_usage(const cmd_tbl_t *cmdtp);
 static cmd_tbl_t *find_cmd_tbl (const char *cmd,

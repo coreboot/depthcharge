@@ -32,8 +32,8 @@
 #define MAX_CONSOLE_LINE 512
 #define SYS_MAXARGS 40
 
-#include "debug/cli/linker_lists.h"
-#include "debug/cli/command.h"
+#include "debug/firmware_shell/linker_lists.h"
+#include "debug/firmware_shell/command.h"
 
 /*
  * Output a debug text when condition "cond" is met. The "cond" should be
@@ -55,7 +55,7 @@
  */
 
 /* common/console_main.c */
-void dc_dev_console_loop(void);
+void dc_dev_enter_firmware_shell(void);
 int run_command(const char *cmd, int flag);
 int ctrlc(void);
 

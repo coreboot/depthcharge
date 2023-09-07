@@ -14,7 +14,7 @@
  * more details.
  */
 
-#include "debug/cli/common.h"
+#include "debug/firmware_shell/common.h"
 #include "vboot/boot.h"
 
 static int do_boot(cmd_tbl_t *cmdtp, int flag,

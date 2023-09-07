@@ -16,8 +16,8 @@
  * GNU General Public License for more details.
  */
 
-#include "debug/cli/common.h"
-#include "debug/cli/command.h"
+#include "debug/firmware_shell/common.h"
+#include "debug/firmware_shell/command.h"
 
 #define DEBUG_PARSER	0
 
@@ -544,7 +544,7 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 	}
 }
 
-void dc_dev_console_loop(void)
+void dc_dev_enter_firmware_shell(void)
 {
 	int len, flag, rc = 0;
 	char lastcommand[128] = {0};

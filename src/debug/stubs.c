@@ -35,5 +35,5 @@ void dc_dev_fastboot(void) { /* do nothing */ }
 void dc_dev_add_i2c_controller_to_list(I2cOps *ops, const char *fmt, ...) __attribute__((weak));
 void dc_dev_add_i2c_controller_to_list(I2cOps *ops, const char *fmt, ...) { /* do nothing */ }
 
-void dc_dev_console_loop(void) __attribute__((weak));
-void dc_dev_console_loop(void) { /* do nothing */ }
+void dc_dev_enter_firmware_shell(void) __attribute__((weak));
+void dc_dev_enter_firmware_shell(void) { /* do nothing */ }

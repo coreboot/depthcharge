@@ -23,7 +23,7 @@
 #include "base/init_funcs.h"
 #include "base/late_init_funcs.h"
 #include "base/timestamp.h"
-#include "debug/cli/common.h"
+#include "debug/firmware_shell/common.h"
 #include "drivers/input/input.h"
 #include "vboot/stages.h"
 #include "vboot/util/commonparams.h"
@@ -58,7 +58,7 @@ int main(void)
 	vboot_check_enable_usb();
 
 	if (CONFIG(FIRMWARE_SHELL_ENTER_IMMEDIATELY))
-		dc_dev_console_loop();
+		dc_dev_enter_firmware_shell();
 
 	// Run any late initialization functions before vboot takes control.
 	if (run_late_init_funcs())
