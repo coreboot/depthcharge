@@ -16,8 +16,8 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __DEBUG_CLI_COMMON_H__
-#define __DEBUG_CLI_COMMON_H__
+#ifndef __DEBUG_FIRMWARE_SHELL_COMMON_H__
+#define __DEBUG_FIRMWARE_SHELL_COMMON_H__
 
 #include <libpayload.h>
 #include <ctype.h>
@@ -91,4 +91,4 @@ char *getenv(const char *);
 int print_buffer(unsigned long addr, const void *data, unsigned width,
 		 unsigned count, unsigned linelen);
 
-#endif	/* __DEBUG_CLI_COMMON_H__ */
+#endif	/* __DEBUG_FIRMWARE_SHELL_COMMON_H__ */
