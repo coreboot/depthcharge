@@ -544,6 +544,11 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 	}
 }
 
+bool dc_dev_firmware_shell_enabled(void)
+{
+	return true;
+}
+
 void dc_dev_enter_firmware_shell(void)
 {
 	int len, flag, rc = 0;
@@ -572,6 +577,8 @@ void dc_dev_enter_firmware_shell(void)
 			lastcommand[0] = 0;
 		}
 	}
+
+	console_done = 0;
 }
 
 static int parse_line (char *line, char *argv[])

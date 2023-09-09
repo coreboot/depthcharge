@@ -12,6 +12,7 @@
  * GNU General Public License for more details.
  */
 
+#include "debug/firmware_shell/common.h"
 #include "drivers/ec/cros/i2c.h"
 
 /*
@@ -37,3 +38,6 @@ void dc_dev_add_i2c_controller_to_list(I2cOps *ops, const char *fmt, ...) { /* d
 
 void dc_dev_enter_firmware_shell(void) __attribute__((weak));
 void dc_dev_enter_firmware_shell(void) { /* do nothing */ }
+
+bool dc_dev_firmware_shell_enabled(void) __attribute__((weak));
+bool dc_dev_firmware_shell_enabled(void) { return false; }

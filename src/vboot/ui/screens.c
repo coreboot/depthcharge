@@ -23,6 +23,7 @@
 #include "base/elog.h"
 #include "base/list.h"
 #include "boot/payload.h"
+#include "debug/firmware_shell/common.h"
 #include "diag/common.h"
 #include "diag/health_info.h"
 #include "diag/memory.h"
@@ -540,6 +541,7 @@ static const struct ui_screen_info broken_screen = {
 #define ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE 1
 #define ADVANCED_OPTIONS_ITEM_DEBUG_INFO 2
 #define ADVANCED_OPTIONS_ITEM_INTERNET_RECOVERY 4
+#define ADVANCED_OPTIONS_ITEM_FIRMWARE_SHELL 5
 
 static vb2_error_t boot_minios_impl(struct ui_context *ui, int non_active_only)
 {
@@ -577,6 +579,18 @@ vb2_error_t advanced_options_init(struct ui_context *ui)
 		UI_SET_BIT(ui->state->hidden_item_mask,
 			   ADVANCED_OPTIONS_ITEM_INTERNET_RECOVERY);
 
+	if (!dc_dev_firmware_shell_enabled())
+		UI_SET_BIT(ui->state->hidden_item_mask, ADVANCED_OPTIONS_ITEM_FIRMWARE_SHELL);
+
+	return VB2_SUCCESS;
+}
+
+static vb2_error_t enter_firmware_shell_action(struct ui_context *ui)
+{
+	if (!dc_dev_firmware_shell_enabled())
+		return VB2_SUCCESS;
+
+	dc_dev_enter_firmware_shell();
 	return VB2_SUCCESS;
 }
 
@@ -601,6 +615,11 @@ static const struct ui_menu_item advanced_options_items[] = {
 		.name = "Internet recovery (older version)",
 		.file = "btn_rec_by_internet_old.bmp",
 		.action = boot_old_minios_action,
+	},
+	[ADVANCED_OPTIONS_ITEM_FIRMWARE_SHELL] = {
+		.name = "Firmware shell",
+		.file = "btn_firmware_shell.bmp",
+		.action = enter_firmware_shell_action,
 	},
 	BACK_ITEM,
 	POWER_OFF_ITEM,

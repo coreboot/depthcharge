@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 
+#include <stdbool.h>
 #include <mocks/callbacks.h>
 #include <mocks/payload.h>
 #include <tests/test.h>
@@ -9,6 +10,8 @@
 #include <vb2_api.h>
 #include <vboot/context.h>
 #include <vboot/stages.h>
+
+#include "debug/firmware_shell/common.h"
 
 /* Mock functions */
 
@@ -30,6 +33,16 @@ int ui_is_lid_open(void)
 		--mock_close_lid_countdown;
 
 	return mock_close_lid_countdown != 0;
+}
+
+bool dc_dev_firmware_shell_enabled(void)
+{
+	return true;
+}
+
+void dc_dev_enter_firmware_shell(void)
+{
+	function_called();
 }
 
 /* Tests */
@@ -650,6 +663,31 @@ static void test_developer_ui_stop_timer_on_input_short_delay(void **state)
 	assert_true(mock_time_ms > start_time + DEV_DELAY_SHORT_MS + FUZZ_MS);
 }
 
+static void test_developer_ui_select_firmware_shell(void **state)
+{
+	struct ui_context *ui = *state;
+
+	will_return_maybe(vb2api_get_dev_default_boot_target,
+			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
+	will_return_maybe(vb2api_gbb_get_flags, 0);
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
+
+	/* Developer mode: Boot internal */
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+
+	/* Advanced options: Debug info */
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0); /* Firmware Shell */
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	expect_function_call(dc_dev_enter_firmware_shell);
+	will_return_maybe(ui_keyboard_read, 0);
+
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
+			 VB2_REQUEST_SHUTDOWN);
+}
+
 static void test_developer_screen_default_boot_internal(void **state)
 {
 	struct ui_context *ui = *state;
@@ -886,12 +924,14 @@ static void test_developer_screen_advanced_options_screen(void **state)
 	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 3);
 	EXPECT_UI_DISPLAY(UI_SCREEN_FIRMWARE_LOG);
 	/* #4: (Hidden) */
-	/* #5: Back */
+	/* #6: Back */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);  /* #5: Firmware Shell */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 5);
+	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 6);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEVELOPER_MODE);
 	/* End of menu */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
@@ -992,6 +1032,7 @@ int main(void)
 		UI_TEST(test_developer_ui_short_delay),
 		UI_TEST(test_developer_ui_stop_timer_on_input_normal_delay),
 		UI_TEST(test_developer_ui_stop_timer_on_input_short_delay),
+		UI_TEST(test_developer_ui_select_firmware_shell),
 		/* Developer screens */
 		UI_TEST(test_developer_screen_default_boot_internal),
 		UI_TEST(test_developer_screen_default_boot_external),

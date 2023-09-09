@@ -56,6 +56,7 @@
 
 /* common/console_main.c */
 void dc_dev_enter_firmware_shell(void);
+bool dc_dev_firmware_shell_enabled(void);
 int run_command(const char *cmd, int flag);
 int ctrlc(void);
 

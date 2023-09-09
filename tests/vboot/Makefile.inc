@@ -54,6 +54,7 @@ ui-test-common-srcs += tests/stubs/vboot/firmware_id.c
 ui-test-common-srcs += tests/stubs/vboot/ui/draw.c
 ui-test-common-srcs += tests/stubs/vboot/ui/layout.c
 ui-test-common-srcs += tests/stubs/vboot/ui/log.c
+ui-test-common-srcs += src/debug/stubs.c
 ui-test-common-srcs += src/vboot/ui/display.c
 ui-test-common-srcs += src/vboot/ui/loop.c
 ui-test-common-srcs += src/vboot/ui/menu.c
@@ -62,6 +63,8 @@ ui-test-common-srcs += src/vboot/ui/screens.c
 
 ui-test-common-mocks += arch_ndelay
 ui-test-common-mocks += cbmem_console_snapshot
+ui-test-common-mocks += dc_dev_enter_firmware_shell
+ui-test-common-mocks += dc_dev_firmware_shell_enabled
 ui-test-common-mocks += ui_display
 ui-test-common-mocks += vb2api_gbb_get_flags
 ui-test-common-mocks += vb2api_get_locale_id
