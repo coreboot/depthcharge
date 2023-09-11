@@ -9,10 +9,10 @@ vb2_error_t ui_screen_init(struct ui_context *ui)
 
 	/* Default screen init. */
 	const struct ui_menu *menu = ui_get_menu(ui);
-	ui->state->selected_item = 0;
+	ui->state->focused_item = 0;
 	if (menu->num_items > 1 &&
 	    menu->items[0].type == UI_MENU_ITEM_TYPE_LANGUAGE)
-		ui->state->selected_item = 1;
+		ui->state->focused_item = 1;
 
 	return VB2_SUCCESS;
 }

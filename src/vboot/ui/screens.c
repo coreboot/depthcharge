@@ -239,12 +239,12 @@ static vb2_error_t log_page_show_back_or_cancel(struct ui_context *ui,
 	UI_CLR_BIT(ui->state->hidden_item_mask, cancel_item);
 	if (is_show_cancel) {
 		UI_SET_BIT(ui->state->hidden_item_mask, back_item);
-		if (ui->state->selected_item == back_item)
-			ui->state->selected_item = cancel_item;
+		if (ui->state->focused_item == back_item)
+			ui->state->focused_item = cancel_item;
 	} else {
 		UI_SET_BIT(ui->state->hidden_item_mask, cancel_item);
-		if (ui->state->selected_item == cancel_item)
-			ui->state->selected_item = back_item;
+		if (ui->state->focused_item == cancel_item)
+			ui->state->focused_item = back_item;
 	}
 	return VB2_SUCCESS;
 }
@@ -255,11 +255,11 @@ static vb2_error_t log_page_reset_to_top(struct ui_context *ui)
 
 	ui->state->current_page = 0;
 	if (ui->state->test_state == UI_TEST_STATE_NONE) {
-		ui->state->selected_item = ui->state->log.page_count > 1
+		ui->state->focused_item = ui->state->log.page_count > 1
 						   ? screen->page_down_item
 						   : screen->back_item;
 	} else {
-		ui->state->selected_item = screen->back_item;
+		ui->state->focused_item = screen->back_item;
 		VB2_TRY(log_page_show_back_or_cancel(
 			ui, ui->state->test_state == UI_TEST_STATE_RUNNING));
 	}
@@ -316,11 +316,11 @@ static vb2_error_t language_select_init(struct ui_context *ui)
 		return ui_screen_back(ui);
 	}
 	if (ui->state->locale->id < menu->num_items) {
-		ui->state->selected_item = ui->state->locale->id;
+		ui->state->focused_item = ui->state->locale->id;
 	} else {
 		UI_WARN("WARNING: Current locale not found in menu items; "
-			"initializing selected_item to 0\n");
-		ui->state->selected_item = 0;
+			"initializing focused_item to 0\n");
+		ui->state->focused_item = 0;
 	}
 	return VB2_SUCCESS;
 }
@@ -362,9 +362,9 @@ static vb2_error_t draw_language_select_menu(struct ui_context *ui,
 	y_end = y_begin + menu_height;  /* Correct for integer division error */
 
 	/* Get current locale_id */
-	locale_id = state->selected_item;
+	locale_id = state->focused_item;
 	if (locale_id >= num_lang) {
-		UI_WARN("selected_item (%u) exceeds number of locales (%u); "
+		UI_WARN("focused_item (%u) exceeds number of locales (%u); "
 			"falling back to locale 0\n",
 			locale_id, num_lang);
 		locale_id = 0;
@@ -445,7 +445,7 @@ static vb2_error_t draw_language_select_menu(struct ui_context *ui,
 static vb2_error_t language_select_action(struct ui_context *ui)
 {
 	vb2_error_t rv;
-	uint32_t locale_id = ui->state->selected_item;
+	uint32_t locale_id = ui->state->focused_item;
 	VB2_TRY(ui_get_locale_info(locale_id, &ui->state->locale));
 	UI_INFO("Locale changed to %u\n", locale_id);
 
@@ -567,12 +567,12 @@ static vb2_error_t boot_old_minios_action(struct ui_context *ui)
 
 vb2_error_t advanced_options_init(struct ui_context *ui)
 {
-	ui->state->selected_item = ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE;
+	ui->state->focused_item = ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE;
 	if ((ui->ctx->flags & VB2_CONTEXT_DEVELOPER_MODE) ||
 	    ui->ctx->boot_mode != VB2_BOOT_MODE_MANUAL_RECOVERY) {
 		UI_SET_BIT(ui->state->hidden_item_mask,
 			   ADVANCED_OPTIONS_ITEM_DEVELOPER_MODE);
-		ui->state->selected_item = ADVANCED_OPTIONS_ITEM_DEBUG_INFO;
+		ui->state->focused_item = ADVANCED_OPTIONS_ITEM_DEBUG_INFO;
 	}
 
 	if (ui->ctx->boot_mode != VB2_BOOT_MODE_MANUAL_RECOVERY)
@@ -832,14 +832,14 @@ static vb2_error_t recovery_to_dev_init(struct ui_context *ui)
 
 
 	if (CONFIG(PHYSICAL_PRESENCE_KEYBOARD)) {
-		ui->state->selected_item = RECOVERY_TO_DEV_ITEM_CONFIRM;
+		ui->state->focused_item = RECOVERY_TO_DEV_ITEM_CONFIRM;
 	} else {
 		/*
 		 * Disable "Confirm" button for other physical presence types.
 		 */
 		UI_SET_BIT(ui->state->hidden_item_mask,
 			   RECOVERY_TO_DEV_ITEM_CONFIRM);
-		ui->state->selected_item = RECOVERY_TO_DEV_ITEM_CANCEL;
+		ui->state->focused_item = RECOVERY_TO_DEV_ITEM_CANCEL;
 	}
 
 	ui->physical_presence_button_pressed = 0;
@@ -968,7 +968,7 @@ vb2_error_t ui_recovery_mode_boot_minios_action(struct ui_context *ui)
 
 vb2_error_t recovery_select_init(struct ui_context *ui)
 {
-	ui->state->selected_item = RECOVERY_SELECT_ITEM_EXTERNAL_DISK;
+	ui->state->focused_item = RECOVERY_SELECT_ITEM_EXTERNAL_DISK;
 
 	if (!vb2api_diagnostic_ui_enabled(ui->ctx))
 		UI_SET_BIT(ui->state->hidden_item_mask,
@@ -1171,14 +1171,14 @@ static vb2_error_t developer_mode_init(struct ui_context *ui)
 	/* Choose the default selection. */
 	switch (default_boot) {
 	case VB2_DEV_DEFAULT_BOOT_TARGET_EXTERNAL:
-		ui->state->selected_item = DEVELOPER_MODE_ITEM_BOOT_EXTERNAL;
+		ui->state->focused_item = DEVELOPER_MODE_ITEM_BOOT_EXTERNAL;
 		break;
 	case VB2_DEV_DEFAULT_BOOT_TARGET_ALTFW:
-		ui->state->selected_item =
+		ui->state->focused_item =
 			DEVELOPER_MODE_ITEM_SELECT_ALTFW;
 		break;
 	default:
-		ui->state->selected_item = DEVELOPER_MODE_ITEM_BOOT_INTERNAL;
+		ui->state->focused_item = DEVELOPER_MODE_ITEM_BOOT_INTERNAL;
 		break;
 	}
 
@@ -1387,7 +1387,7 @@ static vb2_error_t developer_to_norm_init(struct ui_context *ui)
 		return set_ui_error_and_go_back(
 			ui, UI_ERROR_TO_NORM_NOT_ALLOWED);
 	}
-	ui->state->selected_item = DEVELOPER_TO_NORM_ITEM_CONFIRM;
+	ui->state->focused_item = DEVELOPER_TO_NORM_ITEM_CONFIRM;
 	/* If dev boot is not allowed, show an error box and hide "Cancel" */
 	if (!(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALLOWED)) {
 		set_ui_error(ui, UI_ERROR_DEV_BOOT_NOT_ALLOWED);
@@ -1471,7 +1471,7 @@ static vb2_error_t developer_boot_external_init(struct ui_context *ui)
 {
 	vb2_error_t rv;
 
-	ui->state->selected_item = DEVELOPER_BOOT_EXTERNAL_ITEM_BACK;
+	ui->state->focused_item = DEVELOPER_BOOT_EXTERNAL_ITEM_BACK;
 	VB2_TRY(developer_boot_external_check(ui));
 	rv = vboot_load_kernel(ui->ctx, BLOCKDEV_REMOVABLE, ui->kparams);
 	/* If the status of the external disk doesn't match, skip the screen. */
@@ -1515,7 +1515,7 @@ static vb2_error_t developer_invalid_disk_init(struct ui_context *ui)
 {
 	vb2_error_t rv;
 
-	ui->state->selected_item = DEVELOPER_INVALID_DISK_ITEM_BACK;
+	ui->state->focused_item = DEVELOPER_INVALID_DISK_ITEM_BACK;
 	VB2_TRY(developer_boot_external_check(ui));
 	rv = vboot_load_kernel(ui->ctx, BLOCKDEV_REMOVABLE, ui->kparams);
 	/* If the status of the external disk doesn't match, skip the screen. */
@@ -1557,7 +1557,7 @@ static vb2_error_t developer_select_bootloader_init(struct ui_context *ui)
 	if (ui_get_menu(ui)->num_items == 0)
 		return set_ui_error_and_go_back(ui, UI_ERROR_ALTFW_EMPTY);
 	/* Select the first bootloader. */
-	ui->state->selected_item =
+	ui->state->focused_item =
 		ARRAY_SIZE(developer_select_altfw_items_before);
 	return VB2_SUCCESS;
 }
@@ -1615,7 +1615,7 @@ static vb2_error_t developer_boot_altfw_id_action(struct ui_context *ui)
 
 	const size_t menu_before_len =
 		ARRAY_SIZE(developer_select_altfw_items_before);
-	uint32_t altfw_id = ui->state->selected_item - menu_before_len + 1;
+	uint32_t altfw_id = ui->state->focused_item - menu_before_len + 1;
 	return developer_boot_altfw_impl(ui, altfw_id);
 }
 
@@ -1734,7 +1734,7 @@ static vb2_error_t diagnostics_init(struct ui_context *ui)
 		UI_SET_BIT(ui->state->disabled_item_mask,
 			   DIAGNOSTICS_ITEM_STORAGE_TEST_EXTENDED);
 
-	ui->state->selected_item = DIAGNOSTICS_ITEM_STORAGE_HEALTH;
+	ui->state->focused_item = DIAGNOSTICS_ITEM_STORAGE_HEALTH;
 	return VB2_SUCCESS;
 }
 

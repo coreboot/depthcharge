@@ -220,7 +220,7 @@ static const struct rgb_color colors[] = {
  * successfully.
  */
 static void draw_fallback_stripes(enum ui_screen screen,
-				  uint32_t selected_item)
+				  uint32_t focused_item)
 {
 	int i, shift;
 	int32_t x, y;
@@ -244,12 +244,12 @@ static void draw_fallback_stripes(enum ui_screen screen,
 		x += h;
 	}
 
-	/* stripe 3: selected_item by position */
+	/* stripe 3: focused_item by position */
 	y += h;
 	ui_draw_box(0, y, h * ARRAY_SIZE(colors), h, &colors[0xd], 0);
-	if (selected_item >= ARRAY_SIZE(colors))
+	if (focused_item >= ARRAY_SIZE(colors))
 		return;
-	x = h * selected_item;
+	x = h * focused_item;
 	ui_draw_box(x, y, h, h, &colors[0x0], 0);
 }
 
@@ -258,10 +258,10 @@ vb2_error_t ui_display(struct ui_context *ui,
 {
 	vb2_error_t rv;
 	const struct ui_state *state = ui->state;
-	UI_INFO("screen=%#x, locale=%u, selected_item=%u, "
+	UI_INFO("screen=%#x, locale=%u, focused_item=%u, "
 		"disabled_item_mask=%#x, hidden_item_mask=%#x, "
 		"timer_disabled=%d, current_page=%u, error=%#x\n",
-		state->screen->id, ui->state->locale->id, state->selected_item,
+		state->screen->id, ui->state->locale->id, state->focused_item,
 		state->disabled_item_mask, state->hidden_item_mask,
 		state->timer_disabled, state->current_page, state->error_code);
 
@@ -293,7 +293,7 @@ vb2_error_t ui_display(struct ui_context *ui,
 		if (screen->mesg)
 			ui_draw_textbox(screen->mesg, &y, 1);
 		/* Also draw colored stripes */
-		draw_fallback_stripes(screen->id, state->selected_item);
+		draw_fallback_stripes(screen->id, state->focused_item);
 	}
 	/* Disable screen dimming. */
 	if (error)

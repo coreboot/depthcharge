@@ -167,7 +167,7 @@ static vb2_error_t ui_loop_impl(
 					? ui->state->screen->name
 					: "null",
 				menu->num_items
-					? menu->items[ui->state->selected_item]
+					? menu->items[ui->state->focused_item]
 						  .name
 					: "null");
 			rv = ui_display(ui, need_redraw ? NULL : &prev_state);

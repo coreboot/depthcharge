@@ -733,13 +733,13 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 		if (UI_GET_BIT(state->hidden_item_mask, i))
 			continue;
 		clear_help = prev_state &&
-			     prev_state->selected_item == i &&
+			     prev_state->focused_item == i &&
 			     UI_GET_BIT(prev_state->disabled_item_mask, i);
 		VB2_TRY(ui_draw_button(&menu->items[i],
 				       locale_code,
 				       x, y,
 				       button_width, UI_BUTTON_HEIGHT,
-				       reverse, state->selected_item == i,
+				       reverse, state->focused_item == i,
 				       UI_GET_BIT(state->disabled_item_mask, i),
 				       clear_help));
 		y += UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
@@ -756,7 +756,7 @@ vb2_error_t ui_draw_menu_items(const struct ui_menu *menu,
 			continue;
 		VB2_TRY(ui_draw_link(&menu->items[i], locale_code,
 				     x, y, UI_BUTTON_HEIGHT, reverse,
-				     state->selected_item == i));
+				     state->focused_item == i));
 		y -= UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V;
 	}
 
@@ -802,12 +802,12 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 	/* Language dropdown header */
 	if (menu->num_items > 0 &&
 	    menu->items[0].type == UI_MENU_ITEM_TYPE_LANGUAGE) {
-		focused = state->selected_item == 0;
+		focused = state->focused_item == 0;
 		if (!prev_state ||
 		    prev_state->screen != state->screen ||
 		    prev_state->locale != state->locale ||
 		    prev_state->error_code != state->error_code ||
-		    (prev_state->selected_item == 0) != focused) {
+		    (prev_state->focused_item == 0) != focused) {
 			VB2_TRY(ui_draw_language_header(state->locale, state,
 							focused));
 		}

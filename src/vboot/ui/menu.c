@@ -26,12 +26,12 @@ vb2_error_t ui_menu_prev(struct ui_context *ui)
 	if (!CONFIG(DETACHABLE) && ui->key == UI_BUTTON_VOL_UP_SHORT_PRESS)
 		return VB2_SUCCESS;
 
-	item = ui->state->selected_item - 1;
+	item = ui->state->focused_item - 1;
 	while (item >= 0 && UI_GET_BIT(ui->state->hidden_item_mask, item))
 		item--;
 	/* Only update if item is valid */
 	if (item >= 0)
-		ui->state->selected_item = item;
+		ui->state->focused_item = item;
 
 	return VB2_SUCCESS;
 }
@@ -45,13 +45,13 @@ vb2_error_t ui_menu_next(struct ui_context *ui)
 		return VB2_SUCCESS;
 
 	menu = ui_get_menu(ui);
-	item = ui->state->selected_item + 1;
+	item = ui->state->focused_item + 1;
 	while (item < menu->num_items &&
 	       UI_GET_BIT(ui->state->hidden_item_mask, item))
 		item++;
 	/* Only update if item is valid */
 	if (item < menu->num_items)
-		ui->state->selected_item = item;
+		ui->state->focused_item = item;
 
 	return VB2_SUCCESS;
 }
@@ -68,11 +68,11 @@ vb2_error_t ui_menu_select(struct ui_context *ui)
 	if (menu->num_items == 0)
 		return VB2_SUCCESS;
 
-	menu_item = &menu->items[ui->state->selected_item];
+	menu_item = &menu->items[ui->state->focused_item];
 
 	/* Cannot select a disabled menu item */
 	if (UI_GET_BIT(ui->state->disabled_item_mask,
-		       ui->state->selected_item)) {
+		       ui->state->focused_item)) {
 		UI_WARN("Menu item <%s> disabled; ignoring\n",
 			menu_item->name);
 		return VB2_SUCCESS;

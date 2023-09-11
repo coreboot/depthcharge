@@ -14,7 +14,7 @@
 #define WILL_PRESS_PHYSICAL_PRESENCE(pressed) \
 	will_return(ui_is_physical_presence_pressed, (pressed))
 
-#define _ASSERT_SCREEN_STATE(_state, _screen, _selected_item, \
+#define _ASSERT_SCREEN_STATE(_state, _screen, _focused_item, \
 			    _hidden_item_mask, ...) \
 	do { \
 		if ((_screen) != MOCK_IGNORE) { \
@@ -22,10 +22,10 @@
 			assert_int_equal_msg((_state)->screen->id, (_screen), \
 					     "screen"); \
 		} \
-		if ((_selected_item) != MOCK_IGNORE) \
-			assert_int_equal_msg((_state)->selected_item, \
-					     (_selected_item), \
-					     "selected_item"); \
+		if ((_focused_item) != MOCK_IGNORE) \
+			assert_int_equal_msg((_state)->focused_item, \
+					     (_focused_item), \
+					     "focused_item"); \
 		if ((_hidden_item_mask) != MOCK_IGNORE) \
 			assert_int_equal_msg((_state)->hidden_item_mask, \
 					     (_hidden_item_mask), \
@@ -33,7 +33,7 @@
 	} while (0)
 
 /*
- * Check the values of screen, selected_item and hidden_item_mask of _state by
+ * Check the values of screen, focused_item and hidden_item_mask of _state by
  * assert_int_equal. Pass MOCK_IGNORE to ignore the value checking to
  * corresponding field. This macro supports variable length of parameters, and
  * will fill the rest of missing parameters with MOCK_IGNORE.
@@ -43,11 +43,11 @@
 			     MOCK_IGNORE)
 
 vb2_error_t _ui_display(enum ui_screen screen, uint32_t locale_id,
-			uint32_t selected_item, uint32_t disabled_item_mask,
+			uint32_t focused_item, uint32_t disabled_item_mask,
 			uint32_t hidden_item_mask, int timer_disabled,
 			uint32_t current_page, enum ui_error error_code);
 
-#define _EXPECT_UI_DISPLAY(_screen, _locale_id, _selected_item, \
+#define _EXPECT_UI_DISPLAY(_screen, _locale_id, _focused_item, \
 			   _disabled_item_mask, _hidden_item_mask, \
 			   _current_page, _error_code, ...) \
 	do { \
@@ -60,11 +60,11 @@ vb2_error_t _ui_display(enum ui_screen screen, uint32_t locale_id,
 		else \
 			expect_value(_ui_display, locale_id, \
 				     (_locale_id)); \
-		if ((_selected_item) == MOCK_IGNORE) \
-			expect_any(_ui_display, selected_item); \
+		if ((_focused_item) == MOCK_IGNORE) \
+			expect_any(_ui_display, focused_item); \
 		else \
-			expect_value(_ui_display, selected_item, \
-				     (_selected_item)); \
+			expect_value(_ui_display, focused_item, \
+				     (_focused_item)); \
 		if ((_disabled_item_mask) == MOCK_IGNORE) \
 			expect_any(_ui_display, disabled_item_mask); \
 		else \
@@ -109,7 +109,7 @@ vb2_error_t _ui_display(enum ui_screen screen, uint32_t locale_id,
 	do { \
 		expect_any_always(_ui_display, screen); \
 		expect_any_always(_ui_display, locale_id); \
-		expect_any_always(_ui_display, selected_item); \
+		expect_any_always(_ui_display, focused_item); \
 		expect_any_always(_ui_display, disabled_item_mask); \
 		expect_any_always(_ui_display, hidden_item_mask); \
 		expect_any_always(_ui_display, current_page); \
