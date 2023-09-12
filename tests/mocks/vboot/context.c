@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0
 
-#include <vb2_api.h>
+#include <tests/vboot/context.h>
 #include <tests/test.h>
 #include <tests/vboot/common.h>
-#include <mocks/util/commonparams.h>
+#include <vb2_api.h>
+#include <vboot/context.h>
 
 int reset_mock_workbuf;
 char mock_vboot_workbuf[WORKBUF_SIZE];

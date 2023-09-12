@@ -3,9 +3,9 @@
 #include <stdio.h>
 #include <sysinfo.h>
 #include <vb2_api.h>
-#include <vboot/util/commonparams.h>
 
 #include "io.h"
+#include "vboot/context.h"
 #include "vboot/ui.h"
 
 #ifndef STRINGIFY

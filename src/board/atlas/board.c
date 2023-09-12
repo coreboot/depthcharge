@@ -41,7 +41,7 @@
 #include "drivers/storage/sdhci.h"
 #include "drivers/tpm/google/spi.h"
 #include "drivers/tpm/tpm.h"
-#include "vboot/util/commonparams.h"
+#include "vboot/context.h"
 #include "vboot/util/flag.h"
 
 /*

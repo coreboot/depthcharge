@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: GPL-2.0
 
-#include <tests/test.h>
-#include <tests/vboot/common.h>
-#include <tests/vboot/ui/common.h>
 #include <mocks/callbacks.h>
 #include <mocks/cbmem_console.h>
-#include <mocks/util/commonparams.h>
+#include <tests/test.h>
+#include <tests/vboot/common.h>
+#include <tests/vboot/context.h>
+#include <tests/vboot/ui/common.h>
 #include <mocks/vb2api.h>
 #include <vb2_api.h>
+#include <vboot/context.h>
 #include <vboot/stages.h>
 #include <vboot/ui.c>
 #include <vboot/ui.h>
-#include <vboot/util/commonparams.h>
 
 /* Mock functions */
 vb2_error_t ui_get_locale_info(uint32_t locale_id,

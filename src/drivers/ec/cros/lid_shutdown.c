@@ -21,7 +21,7 @@
 #include "base/init_funcs.h"
 #include "base/late_init_funcs.h"
 #include "drivers/ec/cros/ec.h"
-#include "vboot/util/commonparams.h"
+#include "vboot/context.h"
 
 int cros_ec_get_lid_shutdown_mask(void)
 {

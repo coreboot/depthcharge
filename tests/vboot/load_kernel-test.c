@@ -7,12 +7,12 @@
 #include "drivers/storage/blockdev.h"
 #include "mocks/callbacks.h"
 #include "mocks/payload.h"
-#include "mocks/util/commonparams.h"
 #include "tests/test.h"
 #include "tests/vboot/common.h"
+#include "tests/vboot/context.h"
 #include "tests/vboot/ui/common.h"
+#include "vboot/context.h"
 #include "vboot/load_kernel.h"
-#include "vboot/util/commonparams.h"
 
 typedef struct {
 	uint64_t bytes_per_lba;

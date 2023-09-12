@@ -5,8 +5,8 @@
 #include <string.h>
 #include <vb2_api.h>
 
+#include "vboot/context.h"
 #include "vboot/ui.h"
-#include "vboot/util/commonparams.h"
 
 struct locale_data {
 	/* Number of supported languages and codes: en, ja, ... */

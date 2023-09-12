@@ -26,8 +26,8 @@
 #include "drivers/ec/vboot_ec.h"
 #include "drivers/flash/flash.h"
 #include "image/fmap.h"
+#include "vboot/context.h"
 #include "vboot/ui.h"
-#include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 
 #define _EC_FILENAME(select, suffix) \

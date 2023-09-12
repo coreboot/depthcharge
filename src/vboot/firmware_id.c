@@ -19,8 +19,8 @@
 #include <vb2_api.h>
 
 #include "image/fmap.h"
+#include "vboot/context.h"
 #include "vboot/firmware_id.h"
-#include "vboot/util/commonparams.h"
 
 static struct fwid {
 	int vbsd_id;

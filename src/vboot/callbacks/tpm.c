@@ -20,8 +20,8 @@
 #include <vb2_api.h>
 
 #include "drivers/tpm/tpm.h"
+#include "vboot/context.h"
 #include "vboot/secdata_tpm.h"
-#include "vboot/util/commonparams.h"
 
 vb2_error_t vb2ex_tpm_init(void)
 {

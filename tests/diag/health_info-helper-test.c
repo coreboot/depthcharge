@@ -3,7 +3,7 @@
 #include <libpayload.h>
 
 #include "diag/health_info.h"
-#include "mocks/util/commonparams.h"
+#include "tests/vboot/context.h"
 #include "tests/test.h"
 
 #include "diag/health_info.c"

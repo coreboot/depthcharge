@@ -24,10 +24,10 @@
 
 #include "base/device_tree.h"
 #include "image/fmap.h"
+#include "vboot/context.h"
 #include "vboot/crossystem/crossystem.h"
 #include "vboot/firmware_id.h"
 #include "vboot/nvdata/flash.h"
-#include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 
 static int last_firmware_type = FIRMWARE_TYPE_AUTO_DETECT;

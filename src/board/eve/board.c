@@ -43,7 +43,7 @@
 #include "drivers/tpm/tpm.h"
 #include "vboot/boot_policy.h"
 #include "vboot/stages.h"
-#include "vboot/util/commonparams.h"
+#include "vboot/context.h"
 #include "vboot/util/flag.h"
 
 /*

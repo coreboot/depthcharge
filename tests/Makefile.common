@@ -120,7 +120,7 @@ default_mocks-srcs := src/vboot/callbacks/debug.c \
 	tests/lp_mocks/timer.c \
 	tests/mocks/console.c \
 	tests/mocks/halt.c \
-	tests/mocks/util/commonparams.c
+	tests/mocks/vboot/context.c
 default_mocks := console_write halt vb2ex_abort vb2ex_printf vboot_get_context
 
 # Create actual targets for unit test binaries

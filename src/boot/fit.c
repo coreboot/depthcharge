@@ -29,8 +29,8 @@
 #include "boot/fit.h"
 #include "drivers/power/power.h"
 #include "image/symbols.h"
+#include "vboot/context.h"
 #include "vboot/stages.h"
-#include "vboot/util/commonparams.h"
 
 
 

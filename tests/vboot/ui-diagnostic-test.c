@@ -3,14 +3,14 @@
 #include <base/elog.h>
 #include <diag/common.h>
 #include <drivers/storage/blockdev.h>
+#include <mocks/callbacks.h>
 #include <tests/test.h>
 #include <tests/vboot/common.h>
+#include <tests/vboot/context.h>
 #include <tests/vboot/ui/common.h>
-#include <mocks/callbacks.h>
-#include <mocks/util/commonparams.h>
 #include <vb2_api.h>
+#include <vboot/context.h>
 #include <vboot/stages.h>
-#include <vboot/util/commonparams.h>
 
 /* Mock functions */
 int ui_is_lid_open(void)

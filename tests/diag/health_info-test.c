@@ -5,7 +5,7 @@
 #include "diag/health_info.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/info.h"
-#include "mocks/util/commonparams.h"
+#include "tests/vboot/context.h"
 #include "tests/test.h"
 
 #define DIAG_BUFFER_SIZE (64 * KiB)

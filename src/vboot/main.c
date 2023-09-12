@@ -25,8 +25,8 @@
 #include "base/timestamp.h"
 #include "debug/firmware_shell/common.h"
 #include "drivers/input/input.h"
+#include "vboot/context.h"
 #include "vboot/stages.h"
-#include "vboot/util/commonparams.h"
 
 int main(void)
 {

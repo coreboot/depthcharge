@@ -35,11 +35,11 @@
 #include "image/symbols.h"
 #include "vboot/boot.h"
 #include "vboot/boot_policy.h"
+#include "vboot/context.h"
 #include "vboot/crossystem/crossystem.h"
 #include "vboot/nvdata.h"
 #include "vboot/secdata_tpm.h"
 #include "vboot/stages.h"
-#include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 #include "vboot/util/memory.h"
 

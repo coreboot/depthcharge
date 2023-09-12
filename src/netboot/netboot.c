@@ -33,8 +33,8 @@
 #include "netboot/params.h"
 #include "netboot/tftp.h"
 #include "vboot/boot.h"
+#include "vboot/context.h"
 #include "vboot/crossystem/crossystem.h"
-#include "vboot/util/commonparams.h"
 #include "vboot/nvdata.h"
 
 static void enable_graphics(void)

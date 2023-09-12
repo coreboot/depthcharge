@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-2.0
 
 #include <drivers/power/power.h>
-#include <mocks/util/commonparams.h>
 #include <tests/test.h>
+#include <tests/vboot/context.h>
 #include <vboot/secdata_tpm.h>
 
 #include "vboot/stages.c"

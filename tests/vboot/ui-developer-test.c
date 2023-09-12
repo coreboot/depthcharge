@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: GPL-2.0
 
-#include <tests/test.h>
-#include <tests/vboot/common.h>
-#include <tests/vboot/ui/common.h>
 #include <mocks/callbacks.h>
 #include <mocks/payload.h>
-#include <mocks/util/commonparams.h>
+#include <tests/test.h>
+#include <tests/vboot/common.h>
+#include <tests/vboot/context.h>
+#include <tests/vboot/ui/common.h>
 #include <vb2_api.h>
+#include <vboot/context.h>
 #include <vboot/stages.h>
-#include <vboot/util/commonparams.h>
 
 /* Mock functions */
 

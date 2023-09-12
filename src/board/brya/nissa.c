@@ -12,7 +12,7 @@
 #include "drivers/soc/alderlake.h"
 #include "drivers/storage/sdhci.h"
 #include "drivers/storage/storage_common.h"
-#include "vboot/util/commonparams.h"
+#include "vboot/context.h"
 
 #define EMMC_CLOCK_MIN		400000
 #define EMMC_CLOCK_MAX		200000000

@@ -26,6 +26,7 @@
 #include "base/list.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
+#include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/gpio/skylake.h"
 #include "drivers/gpio/sysinfo.h"
@@ -39,9 +40,8 @@
 #include "drivers/storage/sdhci.h"
 #include "drivers/tpm/lpc.h"
 #include "drivers/tpm/tpm.h"
+#include "vboot/context.h"
 #include "vboot/util/flag.h"
-#include "vboot/util/commonparams.h"
-#include "drivers/bus/usb/usb.h"
 
 /*
  * Clock frequencies for the eMMC and SD ports are defined below. The minimum

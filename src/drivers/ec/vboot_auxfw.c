@@ -19,8 +19,8 @@
 
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/vboot_auxfw.h"
+#include "vboot/context.h"
 #include "vboot/ui.h"
-#include "vboot/util/commonparams.h"
 
 static struct {
 	const VbootAuxfwOps *fw_ops;

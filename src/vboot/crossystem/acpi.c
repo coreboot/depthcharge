@@ -20,10 +20,10 @@
 #include <vb2_api.h>
 
 #include "image/fmap.h"
+#include "vboot/context.h"
 #include "vboot/crossystem/crossystem.h"
 #include "vboot/firmware_id.h"
 #include "vboot/util/acpi.h"
-#include "vboot/util/commonparams.h"
 #include "vboot/util/flag.h"
 
 _Static_assert(VB2_VBSD_SIZE <= ARRAY_SIZE(((chromeos_acpi_t *)0)->vdat),

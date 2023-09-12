@@ -4,7 +4,7 @@
 
 #include "diag/common.h"
 #include "diag/diag_internal.h"
-#include "mocks/util/commonparams.h"
+#include "tests/vboot/context.h"
 #include "tests/test.h"
 
 #define EVENT_SIZE (sizeof(union elog_event_cros_diag_log))

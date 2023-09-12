@@ -36,8 +36,8 @@
 #include "drivers/tpm/tpm.h"
 #include <libpayload.h>
 #include <sysinfo.h>
+#include "vboot/context.h"
 #include "vboot/util/flag.h"
-#include "vboot/util/commonparams.h"
 
 /*
  * Clock frequencies for the eMMC and SD ports are defined below. The minimum

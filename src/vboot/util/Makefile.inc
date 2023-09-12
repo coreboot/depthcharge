@@ -11,6 +11,5 @@
 ## GNU General Public License for more details.
 ##
 
-depthcharge-y += commonparams.c
 depthcharge-y += flag.c
 depthcharge-y += memory.c

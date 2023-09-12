@@ -18,8 +18,8 @@
 
 #include <libpayload.h>
 
+#include "vboot/context.h"
 #include "vboot/ui.h"
-#include "vboot/util/commonparams.h"
 
 vb2_error_t ui_draw_language_header(const struct ui_locale *locale,
 				    const struct ui_state *state, int focused)

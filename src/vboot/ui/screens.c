@@ -30,11 +30,11 @@
 #include "drivers/ec/cros/ec.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/tpm/tpm.h"
+#include "vboot/context.h"
 #include "vboot/firmware_id.h"
 #include "vboot/load_kernel.h"
 #include "vboot/stages.h"
 #include "vboot/ui.h"
-#include "vboot/util/commonparams.h"
 
 #define UI_DESC(a) ((struct ui_desc){	\
 	.count = ARRAY_SIZE(a),		\

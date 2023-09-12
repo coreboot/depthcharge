@@ -19,8 +19,8 @@
 #include <vb2_api.h>
 
 #include "drivers/ec/cros/ec.h"
+#include "vboot/context.h"
 #include "vboot/nvdata.h"
-#include "vboot/util/commonparams.h"
 #include "vboot/util/misc.h"
 
 vb2_error_t nvdata_read(struct vb2_context *ctx)
