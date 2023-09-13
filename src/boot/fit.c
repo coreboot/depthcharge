@@ -18,6 +18,7 @@
 #include <assert.h>
 #include <endian.h>
 #include <libpayload.h>
+#include <lp_vboot.h>
 #include <lzma.h>
 #include <lz4.h>
 #include <stdint.h>
@@ -29,7 +30,6 @@
 #include "boot/fit.h"
 #include "drivers/power/power.h"
 #include "image/symbols.h"
-#include "vboot/context.h"
 #include "vboot/stages.h"
 
 

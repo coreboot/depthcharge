@@ -14,12 +14,12 @@
 
 #include <cbfs.h>
 #include <libpayload.h>
+#include <lp_vboot.h>
 #include <vb2_api.h>
 #include <vboot_api.h>
 
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/vboot_auxfw.h"
-#include "vboot/context.h"
 #include "vboot/ui.h"
 
 static struct {

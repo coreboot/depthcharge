@@ -17,10 +17,8 @@
 
 #include <cbfs.h>
 #include <libpayload.h>
-#include <vb2_api.h>
 
 #include "drivers/flash/flash.h"
-#include "vboot/context.h"
 
 /* Function required by libpayload libcbfs implementation to access CBFS */
 ssize_t boot_device_read(void *buf, size_t offset, size_t size)
@@ -31,10 +29,4 @@ ssize_t boot_device_read(void *buf, size_t offset, size_t size)
 	if (rv < 0)
 		return CB_ERR;
 	return rv;
-}
-
-/* Overriding weak hook from libpayload. */
-bool cbfs_hwcrypto_allowed(void)
-{
-	return vb2api_hwcrypto_allowed(vboot_get_context());
 }

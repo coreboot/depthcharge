@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-2.0
 
 #include <libpayload.h>
+#include <lp_vboot.h>
 #include <pci.h>
 #include <pci/pci.h>
 
@@ -12,7 +13,6 @@
 #include "drivers/soc/alderlake.h"
 #include "drivers/storage/sdhci.h"
 #include "drivers/storage/storage_common.h"
-#include "vboot/context.h"
 
 #define EMMC_CLOCK_MIN		400000
 #define EMMC_CLOCK_MAX		200000000

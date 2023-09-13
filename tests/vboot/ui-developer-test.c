@@ -8,7 +8,6 @@
 #include <tests/vboot/context.h>
 #include <tests/vboot/ui/common.h>
 #include <vb2_api.h>
-#include <vboot/context.h>
 #include <vboot/stages.h>
 
 #include "debug/firmware_shell/common.h"

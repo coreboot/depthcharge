@@ -18,6 +18,7 @@
 
 #include <arch/cache.h>
 #include <libpayload.h>
+#include <lp_vboot.h>
 #include <vb2_api.h>
 
 #include "base/elog.h"
@@ -31,7 +32,6 @@
 #include "drivers/ec/cros/ec.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/tpm/tpm.h"
-#include "vboot/context.h"
 #include "vboot/firmware_id.h"
 #include "vboot/load_kernel.h"
 #include "vboot/stages.h"

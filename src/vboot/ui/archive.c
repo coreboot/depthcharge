@@ -2,10 +2,10 @@
 
 #include <cbfs.h>
 #include <libpayload.h>
+#include <lp_vboot.h>
 #include <string.h>
 #include <vb2_api.h>
 
-#include "vboot/context.h"
 #include "vboot/ui.h"
 
 struct locale_data {

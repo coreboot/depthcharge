@@ -18,13 +18,13 @@
 #include <assert.h>
 #include <endian.h>
 #include <libpayload.h>
+#include <lp_vboot.h>
 #include <stdlib.h>
 #include <string.h>
 #include <vb2_api.h>
 
 #include "base/device_tree.h"
 #include "image/fmap.h"
-#include "vboot/context.h"
 #include "vboot/crossystem/crossystem.h"
 #include "vboot/firmware_id.h"
 #include "vboot/nvdata/flash.h"

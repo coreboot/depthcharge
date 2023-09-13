@@ -25,7 +25,6 @@
 #include "base/timestamp.h"
 #include "debug/firmware_shell/common.h"
 #include "drivers/input/input.h"
-#include "vboot/context.h"
 #include "vboot/stages.h"
 
 int main(void)

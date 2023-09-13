@@ -17,6 +17,7 @@
 
 #include <assert.h>
 #include <libpayload.h>
+#include <lp_vboot.h>
 #include <stdint.h>
 #include <vb2_api.h>
 
@@ -35,7 +36,6 @@
 #include "image/symbols.h"
 #include "vboot/boot.h"
 #include "vboot/boot_policy.h"
-#include "vboot/context.h"
 #include "vboot/crossystem/crossystem.h"
 #include "vboot/nvdata.h"
 #include "vboot/secdata_tpm.h"

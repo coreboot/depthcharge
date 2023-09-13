@@ -19,6 +19,7 @@
 #include <pci.h>
 #include <pci/pci.h>
 #include <libpayload.h>
+#include <lp_vboot.h>
 #include <sysinfo.h>
 #include <vb2_api.h>
 
@@ -40,7 +41,6 @@
 #include "drivers/storage/sdhci.h"
 #include "drivers/tpm/lpc.h"
 #include "drivers/tpm/tpm.h"
-#include "vboot/context.h"
 #include "vboot/util/flag.h"
 
 /*

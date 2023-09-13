@@ -19,7 +19,6 @@
 #include <vb2_api.h>
 
 #include "drivers/ec/cros/ec.h"
-#include "vboot/context.h"
 #include "vboot/nvdata.h"
 #include "vboot/util/misc.h"
 

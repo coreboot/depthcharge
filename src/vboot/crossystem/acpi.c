@@ -17,10 +17,10 @@
 
 #include <assert.h>
 #include <libpayload.h>
+#include <lp_vboot.h>
 #include <vb2_api.h>
 
 #include "image/fmap.h"
-#include "vboot/context.h"
 #include "vboot/crossystem/crossystem.h"
 #include "vboot/firmware_id.h"
 #include "vboot/util/acpi.h"

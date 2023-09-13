@@ -4,9 +4,8 @@
 #define __MOCKS_VBOOT_CONTEXT_H__
 
 #include <libpayload.h>
+#include <lp_vboot.h>
 #include <vb2_api.h>
-
-#include "vboot/context.h"
 
 #define WORKBUF_SIZE (16 * MiB)
 

@@ -17,6 +17,7 @@
 
 #include <arch/io.h>
 #include <libpayload.h>
+#include <lp_vboot.h>
 #include <pci.h>
 #include <pci/pci.h>
 #include <sysinfo.h>
@@ -42,7 +43,6 @@
 #include "drivers/storage/sdhci.h"
 #include "drivers/tpm/google/spi.h"
 #include "drivers/tpm/tpm.h"
-#include "vboot/context.h"
 #include "vboot/util/flag.h"
 
 /*

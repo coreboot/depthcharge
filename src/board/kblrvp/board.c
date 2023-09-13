@@ -35,8 +35,8 @@
 #include "drivers/tpm/lpc.h"
 #include "drivers/tpm/tpm.h"
 #include <libpayload.h>
+#include <lp_vboot.h>
 #include <sysinfo.h>
-#include "vboot/context.h"
 #include "vboot/util/flag.h"
 
 /*

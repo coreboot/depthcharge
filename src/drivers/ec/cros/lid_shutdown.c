@@ -16,12 +16,12 @@
  */
 
 #include <libpayload.h>
+#include <lp_vboot.h>
 #include <vb2_api.h>
 
 #include "base/init_funcs.h"
 #include "base/late_init_funcs.h"
 #include "drivers/ec/cros/ec.h"
-#include "vboot/context.h"
 
 int cros_ec_get_lid_shutdown_mask(void)
 {

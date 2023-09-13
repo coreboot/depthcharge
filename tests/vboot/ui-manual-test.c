@@ -8,7 +8,6 @@
 #include <tests/vboot/ui/common.h>
 #include <mocks/vb2api.h>
 #include <vb2_api.h>
-#include <vboot/context.h>
 #include <vboot/stages.h>
 #include <vboot/ui.c>
 #include <vboot/ui.h>

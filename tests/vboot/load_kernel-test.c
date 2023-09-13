@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 
+#include <lp_vboot.h>
 #include <vb2_api.h>
 #include <vboot_api.h>
 
@@ -11,7 +12,6 @@
 #include "tests/vboot/common.h"
 #include "tests/vboot/context.h"
 #include "tests/vboot/ui/common.h"
-#include "vboot/context.h"
 #include "vboot/load_kernel.h"
 
 typedef struct {

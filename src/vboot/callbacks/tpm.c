@@ -16,11 +16,11 @@
  */
 
 #include <libpayload.h>
+#include <lp_vboot.h>
 #include <tss_constants.h>
 #include <vb2_api.h>
 
 #include "drivers/tpm/tpm.h"
-#include "vboot/context.h"
 #include "vboot/secdata_tpm.h"
 
 vb2_error_t vb2ex_tpm_init(void)

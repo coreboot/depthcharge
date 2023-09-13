@@ -4,7 +4,6 @@
 #include <tests/test.h>
 #include <tests/vboot/common.h>
 #include <vb2_api.h>
-#include <vboot/context.h>
 
 int reset_mock_workbuf;
 char mock_vboot_workbuf[WORKBUF_SIZE];

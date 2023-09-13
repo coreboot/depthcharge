@@ -18,6 +18,7 @@
 #include <arch/io.h>
 #include <endian.h>
 #include <libpayload.h>
+#include <lp_vboot.h>
 #include <pci.h>
 #include <pci/pci.h>
 #include <sysinfo.h>
@@ -43,7 +44,6 @@
 #include "drivers/tpm/tpm.h"
 #include "vboot/boot_policy.h"
 #include "vboot/stages.h"
-#include "vboot/context.h"
 #include "vboot/util/flag.h"
 
 /*

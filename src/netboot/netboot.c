@@ -16,6 +16,7 @@
  */
 
 #include <libpayload.h>
+#include <lp_vboot.h>
 #include <vb2_api.h>
 
 #include "base/init_funcs.h"
@@ -33,7 +34,6 @@
 #include "netboot/params.h"
 #include "netboot/tftp.h"
 #include "vboot/boot.h"
-#include "vboot/context.h"
 #include "vboot/crossystem/crossystem.h"
 #include "vboot/nvdata.h"
 

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0
 
+#include <lp_vboot.h>
 #include <stdio.h>
 #include <sysinfo.h>
 #include <vb2_api.h>
 
 #include "io.h"
-#include "vboot/context.h"
 #include "vboot/ui.h"
 
 #ifndef STRINGIFY

@@ -18,6 +18,7 @@
 #include <assert.h>
 #include <cbfs.h>
 #include <libpayload.h>
+#include <lp_vboot.h>
 #include <stddef.h>
 #include <vb2_api.h>
 #include <vboot_api.h>
@@ -26,7 +27,6 @@
 #include "drivers/ec/vboot_ec.h"
 #include "drivers/flash/flash.h"
 #include "image/fmap.h"
-#include "vboot/context.h"
 #include "vboot/ui.h"
 #include "vboot/util/flag.h"
 
