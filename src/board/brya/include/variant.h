@@ -8,6 +8,7 @@
 #include "drivers/sound/intel_audio_setup.h"
 
 #define I2C0	PCI_DEV(0, 0x15, 0)
+#define I2C3	PCI_DEV(0, 0x15, 3)
 #define I2C7	PCI_DEV(0, 0x10, 1)
 
 struct tpm_config {
