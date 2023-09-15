@@ -18,6 +18,7 @@
 
 #include "debug/firmware_shell/common.h"
 #include "debug/firmware_shell/command.h"
+#include "vboot/ui.h"
 
 #define DEBUG_PARSER	0
 
@@ -48,16 +49,20 @@ static void move_cursor_left(int positions)
 {
 	const char cursor_left[] = { ESC, '[', 'D', '\0' };
 
-	while (positions-- > 0)
-		printf("%s", cursor_left);
+	while (positions-- > 0) {
+		printf("%s", cursor_left); /* serial */
+		video_console_move_cursor(-1, 0); /* on device screen */
+	}
 }
 
 static void move_cursor_right(int positions)
 {
 	const char cursor_left[] = { ESC, '[', 'C', '\0' };
 
-	while (positions-- > 0)
-		printf("%s", cursor_left);
+	while (positions-- > 0) {
+		printf("%s", cursor_left); /* serial */
+		video_console_move_cursor(1, 0); /* on device screen */
+	}
 }
 
 /***************************************************************************/
@@ -137,12 +142,12 @@ static void history_case(u8 c, char *p_buf, int *np, int *cursor_p)
 
 	/* Copy new string into the console buffer and print it on the screen */
 	strcpy(p_buf, history[history_spot].console_string);
-	new_n = printf("%s", p_buf);
+	new_n = console_printf("%s", p_buf);
 
 	/* erase the rest of the line if needed */
 	tmp = n - new_n;
 	while (tmp-- > 0)
-		printf(" ");
+		console_printf(" ");
 
 	/* come back to the end of the line */
 	move_cursor_left(n - new_n);
@@ -158,12 +163,12 @@ static int do_dh(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 {
 	int i;
 
-	printf("bottom at %d, spot at %d\n", history_bottom, history_spot);
+	console_printf("bottom at %d, spot at %d\n", history_bottom, history_spot);
 	for (i = HISTORY_PREV(history_bottom);
 	     i != history_bottom;
 	     i = HISTORY_PREV(i))
 		if (history[i].console_string[0])
-			printf("%2.2d %s\n", i, history[i].console_string);
+			console_printf("%2.2d %s\n", i, history[i].console_string);
 
 	return 0;
 }
@@ -203,7 +208,7 @@ static void backspace(char *buffer, int *np, int *cp)
 	cursor = *cp;
 
 	if (n == cursor) {
-		printf(erase_seq);
+		console_printf(erase_seq);
 		*np = --n;
 		*cp = --cursor;
 		buffer[n] = '\0';
@@ -213,12 +218,12 @@ static void backspace(char *buffer, int *np, int *cp)
 	if (!cursor)
 		return;
 
-	printf(erase_seq);
+	console_printf(erase_seq);
 	shift = n - cursor;
 	memcpy(buffer + cursor - 1, buffer + cursor, shift);
 	buffer[n - 1] = ' ';
 	buffer[n] = '\0';
-	printf("%s", buffer + cursor - 1);
+	console_printf("%s", buffer + cursor - 1);
 	move_cursor_left(shift + 1);
 	n -= 1;
 	buffer[n] = '\0';
@@ -384,7 +389,7 @@ static void erase_word(char *p_buf, int *np, int *cursor_p)
 
 	memcpy(p_buf + word_start, p_buf + word_end, n - word_end);
 	memset(p_buf + n - word_end + word_start, ' ', word_end - word_start);
-	printf("%s", p_buf + cursor);
+	console_printf("%s", p_buf + cursor);
 
 	move_cursor_left(n - cursor);
 
@@ -411,7 +416,7 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 	p_buf[0] = '\0';
 
 	/* print prompt */
-	printf("\r%s", prompt);
+	console_printf("\r%s", prompt);
 	cursor = 0;
 
 	for (;;) {
@@ -426,7 +431,7 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 		case '\r':			/* Enter		*/
 		case '\n':
 			p_buf[n] = '\0';
-			printf("\r\n");
+			console_printf("\r\n");
 
 			/* Reset history browsing. */
 			history_spot = history_bottom;
@@ -467,7 +472,7 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 			if (cursor != n)
 				move_cursor_right(n - cursor);
 			while (n) {
-				printf(erase_seq);
+				console_printf(erase_seq);
 				n--;
 			}
 			cursor = 0;
@@ -480,7 +485,7 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 		case 0xb:			/* ^K  - delete to EOL */
 			shift = n - cursor;
 			while (n > cursor) {
-				printf(" ");
+				console_printf(" ");
 				n--;
 			}
 			move_cursor_left(shift);
@@ -519,10 +524,9 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 			 * Must be a normal character then
 			 */
 			if (n >= (MAX_CONSOLE_LINE - 2)) {
-				serial_putchar('\a');
+				console_printf("%c",'\a');
 				break;
 			}
-
 			if (cursor != n) {
 				shift = n - cursor;
 
@@ -530,7 +534,7 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 				p_buf[cursor++] = c;
 				n++;
 				p_buf[n] = '\0';
-				printf("%c%s", c, p_buf + cursor);
+				console_printf("%c%s", c, p_buf + cursor);
 				move_cursor_left(shift);
 				break;
 			}
@@ -544,11 +548,11 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 			p_buf[n++] = c;
 			cursor++;
 			/*
-			 * Echo input using printf() to force an
+			 * Echo input using console_printf() to force an
 			 * LCD flush if we are using an LCD
 			 */
 			p_buf[n] = '\0';
-			printf("%s", p_buf + n - 1);
+			console_printf("%s", p_buf + n - 1);
 			break;
 		}
 	}
@@ -562,11 +566,14 @@ bool dc_dev_firmware_shell_enabled(void)
 void dc_dev_enter_firmware_shell(void)
 {
 	int len, flag, rc = 0;
-	char lastcommand[128] = {0};
+	char lastcommand[MAX_CONSOLE_LINE] = {0};
 
 	/*
 	 * Main Loop for Monitor Command Processing
 	 */
+	console_print("\nFirmware shell\n");
+	console_print("\nType 'exit' to quit the firmware shell\n\n");
+
 	while (!console_done) {
 		len = ubreadline_into_buffer(CONFIG_SYS_PROMPT, console_buffer);
 
@@ -578,7 +585,7 @@ void dc_dev_enter_firmware_shell(void)
 			flag |= CMD_FLAG_REPEAT;
 
 		if (len == -1)
-			printf("<INTERRUPT>\n");
+			console_printf("<INTERRUPT>\n");
 		else
 			rc = run_command(lastcommand, flag);
 
@@ -623,7 +630,7 @@ static int parse_line (char *line, char *argv[])
 		*line++ = '\0';		/* terminate current arg	 */
 	}
 
-	printf("** Too many args (max. %d) **\n", SYS_MAXARGS);
+	console_printf("** Too many args (max. %d) **\n", SYS_MAXARGS);
 
 	debug_parser("parse_line: nargs=%d\n", nargs);
 	return (nargs);
@@ -765,15 +772,15 @@ static int builtin_run_command(const char *cmd, int flag)
 
 	debug_parser("[RUN_COMMAND] cmd[%p]=\"", cmd);
 	if (DEBUG_PARSER)
-		/* use printf - string may be loooong */
-		printf("%s\"\n", cmd ? cmd : "NULL");
+		/* use console_printf - string may be loooong */
+		console_printf("%s\"\n", cmd ? cmd : "NULL");
 
 	if (!cmd || !*cmd) {
 		return -1;	/* empty command */
 	}
 
 	if (strlen(cmd) >= MAX_CONSOLE_LINE) {
-		printf ("## Command too long!\n");
+		console_printf ("## Command too long!\n");
 		return -1;
 	}
 
@@ -924,8 +931,8 @@ int run_command_list(const char *cmd, int len, int flag)
 
 int ctrlc(void)
 {
-	while (serial_havechar())
-		if (serial_getchar() == CHAR_CTL)
+	while (havechar())
+		if (getchar() == CHAR_CTL)
 			return 1;
 
 	return 0;
@@ -949,26 +956,26 @@ int timed_wait(int sec, int print)
 	uint64_t start, now = 0;
 
 	if (print)
-		printf("%4d", sec);
+		console_printf("%4d", sec);
 
 	start = timer_us(0);
 
-	while (!serial_havechar() && (sec > 0)) {
+	while (!havechar() && (sec > 0)) {
 		now = timer_us(start);
 		if (now >= USEC_PER_SEC) {
 			sec--;
 			start = timer_us(0) - (now - USEC_PER_SEC);
 			if (print)
-				printf("\b\b\b\b%4d", sec);
+				console_printf("\b\b\b\b%4d", sec);
 		}
 	}
 
 	if (print)
-		printf("\b\b\b\b");	/* Clear it out */
+		console_printf("\b\b\b\b");	/* Clear it out */
 
 	if (sec) {
 		/* Got a key press, consume it */
-		serial_getchar();
+		getchar();
 		return 1;
 	}
 

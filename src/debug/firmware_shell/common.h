@@ -49,16 +49,20 @@
 #define debug(fmt, args...)			\
 	debug_cond(_DEBUG, fmt, ##args)
 
-
 /*
  * Function Prototypes
  */
 
-/* common/console_main.c */
+/* console_main.c */
 void dc_dev_enter_firmware_shell(void);
 bool dc_dev_firmware_shell_enabled(void);
 int run_command(const char *cmd, int flag);
 int ctrlc(void);
+
+/* video.c*/
+int init_video(void);
+void console_print(const char *str);
+int console_printf(const char *fmt, ...);
 
 /**
  * Run a list of commands separated by ; or even \0

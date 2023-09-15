@@ -15,7 +15,7 @@ static int do_tpm_raw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	int arg;
 
 	if (argc > MAX_BUF_LEN) {
-		printf("Argument list too long\n");
+		console_printf("Argument list too long\n");
 		return CMD_RET_USAGE;
 	}
 
@@ -25,7 +25,7 @@ static int do_tpm_raw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	size_t recv_size = MAX_BUF_LEN;
 	int ret = tpm_xmit(send, argc, recv, &recv_size);
 
-	printf("TPM returned %d (%zd bytes)\n", ret, recv_size);
+	console_printf("TPM returned %d (%zd bytes)\n", ret, recv_size);
 	if (!ret)
 		hexdump(recv, recv_size);
 

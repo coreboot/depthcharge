@@ -39,13 +39,15 @@ static int compare_regions(ulv *bufa, ulv *bufb, size_t count)
 	size_t i;
 	ulv *p1 = bufa;
 	ulv *p2 = bufb;
-
+	char str[MAX_CONSOLE_LINE];
 	for (i = 0; i < count; i++, p1++, p2++) {
 		if (*p1 == *p2)
 			continue;
-		fprintf(stderr,
+		sprintf(str,
 			"FAILURE: 0x%08lx != 0x%08lx at address 0x%08lx.\n",
 			(ul)*p1, (ul)*p2, (ul)(i * sizeof(ul)));
+		fprintf(stderr,"%s", str);
+		console_print(str);
 		r = -1;
 	}
 	return r;
@@ -58,32 +60,35 @@ static int test_stuck_address(ulv *bufa, size_t count)
 	ulv *p1 = bufa;
 	unsigned int j;
 	size_t i;
+	char str[MAX_CONSOLE_LINE];
 
-	printf("           ");
+	console_printf("           ");
 
 	for (j = 0; j < 16; j++) {
-		printf("\b\b\b\b\b\b\b\b\b\b\b");
+		console_printf("\b\b\b\b\b\b\b\b\b\b\b");
 		p1 = (ulv *)bufa;
-		printf("setting %3u", j);
+		console_printf("setting %3u", j);
 
 		for (i = 0; i < count; i++) {
 			*p1 = ((j + i) % 2) == 0 ? (ul)p1 : ~((ul)p1);
 			*p1++;
 		}
-		printf("\b\b\b\b\b\b\b\b\b\b\b");
-		printf("testing %3u", j);
+		console_printf("\b\b\b\b\b\b\b\b\b\b\b");
+		console_printf("testing %3u", j);
 
 		p1 = (ulv *)bufa;
 		for (i = 0; i < count; i++, p1++) {
 			if (*p1 != (((j + i) % 2) == 0 ? (ul)p1 : ~((ul)p1))) {
-				fprintf(stderr,	"FAILURE: possible bad address"
+				sprintf(str, "FAILURE: possible bad address"
 					" line at address 0x%08lx.\n",
 					(ul) (i * sizeof(ul)));
+				fprintf(stderr,	"%s", str);
+				console_print(str);
 				return -1;
 			}
 		}
 	}
-	printf("\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
+	console_printf("\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
 
 	return 0;
 }
@@ -95,17 +100,17 @@ static int test_random_value(ulv *bufa, ulv *bufb, size_t count)
 	ul j = 0;
 	size_t i;
 
-	putchar(' ');
+	console_printf(" ");
 
 	for (i = 0; i < count; i++) {
 		*p1++ = *p2++ = rand_ul();
 		if (!(i % PROGRESSOFTEN)) {
-			putchar('\b');
-			putchar(progress[++j % PROGRESSLEN]);
+			console_printf("\b");
+			console_printf("%c", progress[++j % PROGRESSLEN]);
 
 		}
 	}
-	printf("\b \b");
+	console_printf("\b \b");
 
 	return compare_regions(bufa, bufb, count);
 }
@@ -218,26 +223,26 @@ static int test_solidbits_comparison(ulv *bufa, ulv *bufb, size_t count)
 	ul q;
 	size_t i;
 
-	printf("           ");
+	console_printf("           ");
 
 	for (j = 0; j < 64; j++) {
-		printf("\b\b\b\b\b\b\b\b\b\b\b");
+		console_printf("\b\b\b\b\b\b\b\b\b\b\b");
 		q = (j % 2) == 0 ? UL_ONEBITS : 0;
-		printf("setting %3u", j);
+		console_printf("setting %3u", j);
 
 		p1 = (ulv *) bufa;
 		p2 = (ulv *) bufb;
 		for (i = 0; i < count; i++) {
 			*p1++ = *p2++ = (i % 2) == 0 ? q : ~q;
 		}
-		printf("\b\b\b\b\b\b\b\b\b\b\b");
-		printf("testing %3u", j);
+		console_printf("\b\b\b\b\b\b\b\b\b\b\b");
+		console_printf("testing %3u", j);
 
 		if (compare_regions(bufa, bufb, count)) {
 			return -1;
 		}
 	}
-	printf("\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
+	console_printf("\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
 
 	return 0;
 }
@@ -250,26 +255,26 @@ static int test_checkerboard_comparison(ulv *bufa, ulv *bufb, size_t count)
 	ul q;
 	size_t i;
 
-	printf("           ");
+	console_printf("           ");
 
 	for (j = 0; j < 64; j++) {
-		printf("\b\b\b\b\b\b\b\b\b\b\b");
+		console_printf("\b\b\b\b\b\b\b\b\b\b\b");
 		q = (j % 2) == 0 ? CHECKERBOARD1 : CHECKERBOARD2;
-		printf("setting %3u", j);
+		console_printf("setting %3u", j);
 
 		p1 = (ulv *) bufa;
 		p2 = (ulv *) bufb;
 		for (i = 0; i < count; i++) {
 			*p1++ = *p2++ = (i % 2) == 0 ? q : ~q;
 		}
-		printf("\b\b\b\b\b\b\b\b\b\b\b");
-		printf("testing %3u", j);
+		console_printf("\b\b\b\b\b\b\b\b\b\b\b");
+		console_printf("testing %3u", j);
 
 		if (compare_regions(bufa, bufb, count)) {
 			return -1;
 		}
 	}
-	printf("\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
+	console_printf("\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
 
 	return 0;
 }
@@ -281,25 +286,25 @@ static int test_blockseq_comparison(ulv *bufa, ulv *bufb, size_t count)
 	unsigned int j;
 	size_t i;
 
-	printf("           ");
+	console_printf("           ");
 
 	for (j = 0; j < 256; j++) {
-		printf("\b\b\b\b\b\b\b\b\b\b\b");
+		console_printf("\b\b\b\b\b\b\b\b\b\b\b");
 		p1 = (ulv *) bufa;
 		p2 = (ulv *) bufb;
-		printf("setting %3u", j);
+		console_printf("setting %3u", j);
 
 		for (i = 0; i < count; i++) {
 			*p1++ = *p2++ = (ul) UL_BYTE(j);
 		}
-		printf("\b\b\b\b\b\b\b\b\b\b\b");
-		printf("testing %3u", j);
+		console_printf("\b\b\b\b\b\b\b\b\b\b\b");
+		console_printf("testing %3u", j);
 
 		if (compare_regions(bufa, bufb, count)) {
 			return -1;
 		}
 	}
-	printf("\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
+	console_printf("\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
 
 	return 0;
 }
@@ -311,13 +316,13 @@ static int test_walkbits0_comparison(ulv *bufa, ulv *bufb, size_t count)
 	unsigned int j;
 	size_t i;
 
-	printf("           ");
+	console_printf("           ");
 
 	for (j = 0; j < UL_LEN * 2; j++) {
-		printf("\b\b\b\b\b\b\b\b\b\b\b");
+		console_printf("\b\b\b\b\b\b\b\b\b\b\b");
 		p1 = (ulv *) bufa;
 		p2 = (ulv *) bufb;
-		printf("setting %3u", j);
+		console_printf("setting %3u", j);
 
 		for (i = 0; i < count; i++) {
 			if (j < UL_LEN) { /* Walk it up. */
@@ -326,14 +331,14 @@ static int test_walkbits0_comparison(ulv *bufa, ulv *bufb, size_t count)
 				*p1++ = *p2++ = ONE << (UL_LEN * 2 - j - 1);
 			}
 		}
-		printf("\b\b\b\b\b\b\b\b\b\b\b");
-		printf("testing %3u", j);
+		console_printf("\b\b\b\b\b\b\b\b\b\b\b");
+		console_printf("testing %3u", j);
 
 		if (compare_regions(bufa, bufb, count)) {
 			return -1;
 		}
 	}
-	printf("\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
+	console_printf("\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
 
 	return 0;
 }
@@ -345,13 +350,13 @@ static int test_walkbits1_comparison(ulv *bufa, ulv *bufb, size_t count)
 	unsigned int j;
 	size_t i;
 
-	printf("           ");
+	console_printf("           ");
 
 	for (j = 0; j < UL_LEN * 2; j++) {
-		printf("\b\b\b\b\b\b\b\b\b\b\b");
+		console_printf("\b\b\b\b\b\b\b\b\b\b\b");
 		p1 = (ulv *) bufa;
 		p2 = (ulv *) bufb;
-		printf("setting %3u", j);
+		console_printf("setting %3u", j);
 
 		for (i = 0; i < count; i++) {
 			if (j < UL_LEN) { /* Walk it up. */
@@ -361,14 +366,14 @@ static int test_walkbits1_comparison(ulv *bufa, ulv *bufb, size_t count)
 					(ONE << (UL_LEN * 2 - j - 1));
 			}
 		}
-		printf("\b\b\b\b\b\b\b\b\b\b\b");
-		printf("testing %3u", j);
+		console_printf("\b\b\b\b\b\b\b\b\b\b\b");
+		console_printf("testing %3u", j);
 
 		if (compare_regions(bufa, bufb, count)) {
 			return -1;
 		}
 	}
-	printf("\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
+	console_printf("\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
 
 	return 0;
 }
@@ -380,13 +385,13 @@ static int test_bitspread_comparison(ulv *bufa, ulv *bufb, size_t count)
 	unsigned int j;
 	size_t i;
 
-	printf("           ");
+	console_printf("           ");
 
 	for (j = 0; j < UL_LEN * 2; j++) {
-		printf("\b\b\b\b\b\b\b\b\b\b\b");
+		console_printf("\b\b\b\b\b\b\b\b\b\b\b");
 		p1 = (ulv *) bufa;
 		p2 = (ulv *) bufb;
-		printf("setting %3u", j);
+		console_printf("setting %3u", j);
 
 		for (i = 0; i < count; i++) {
 			if (j < UL_LEN) { /* Walk it up. */
@@ -403,14 +408,14 @@ static int test_bitspread_comparison(ulv *bufa, ulv *bufb, size_t count)
 					 | (ONE << (UL_LEN * 2 + 1 - j)));
 			}
 		}
-		printf("\b\b\b\b\b\b\b\b\b\b\b");
-		printf("testing %3u", j);
+		console_printf("\b\b\b\b\b\b\b\b\b\b\b");
+		console_printf("testing %3u", j);
 
 		if (compare_regions(bufa, bufb, count)) {
 			return -1;
 		}
 	}
-	printf("\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
+	console_printf("\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
 
 	return 0;
 }
@@ -423,29 +428,29 @@ static int test_bitflip_comparison(ulv *bufa, ulv *bufb, size_t count)
 	ul q;
 	size_t i;
 
-	printf("           ");
+	console_printf("           ");
 
 	for (k = 0; k < UL_LEN; k++) {
 		q = ONE << k;
 		for (j = 0; j < 8; j++) {
-			printf("\b\b\b\b\b\b\b\b\b\b\b");
+			console_printf("\b\b\b\b\b\b\b\b\b\b\b");
 			q = ~q;
-			printf("setting %3u", k * 8 + j);
+			console_printf("setting %3u", k * 8 + j);
 
 			p1 = (ulv *) bufa;
 			p2 = (ulv *) bufb;
 			for (i = 0; i < count; i++) {
 				*p1++ = *p2++ = (i % 2) == 0 ? q : ~q;
 			}
-			printf("\b\b\b\b\b\b\b\b\b\b\b");
-			printf("testing %3u", k * 8 + j);
+			console_printf("\b\b\b\b\b\b\b\b\b\b\b");
+			console_printf("testing %3u", k * 8 + j);
 
 			if (compare_regions(bufa, bufb, count)) {
 				return -1;
 			}
 		}
 	}
-	printf("\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
+	console_printf("\b\b\b\b\b\b\b\b\b\b\b           \b\b\b\b\b\b\b\b\b\b\b");
 
 	return 0;
 }
@@ -479,7 +484,7 @@ static int do_memtest(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 	int loop, loops = 1;
 
 	if (argc < 3) {
-		printf("Required command line parameters missing\n");
+		console_printf("Required command line parameters missing\n");
 		return CMD_RET_USAGE;
 	}
 
@@ -490,7 +495,7 @@ static int do_memtest(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 		loops = strtoul(argv[3], 0, 16);
 
 	if (start == 0 || length == 0) {
-		printf("Invalid start address\n");
+		console_printf("Invalid start address\n");
 		return CMD_RET_USAGE;
 	}
 
@@ -503,25 +508,25 @@ static int do_memtest(cmd_tbl_t *cmdtp, int flag, int argc, char *const argv[])
 	rc = CMD_RET_SUCCESS;
 	for (loop = 1; loop <= loops; loop++) {
 
-		printf("Loop %lu/%lu:\n", (ul)loop, (ul)loops);
-		printf("  %-25s: ", "Stuck Address");
+		console_printf("Loop %lu/%lu:\n", (ul)loop, (ul)loops);
+		console_printf("  %-25s: ", "Stuck Address");
 
 		if (!test_stuck_address(bufa, length / sizeof(ul)))
-			printf("ok\n");
+			console_printf("ok\n");
 		else
 			rc = CMD_RET_FAILURE;
 
 		for (t = tests; t && t->name; t++) {
-			printf("  %-25s: ", t->name);
+			console_printf("  %-25s: ", t->name);
 			if (!t->fp(bufa, bufb, count))
-				printf("ok\n");
+				console_printf("ok\n");
 			else {
 				rc = CMD_RET_FAILURE;
-				printf("fail\n");
+				console_printf("fail\n");
 			}
 		}
 	}
-	printf("\nDone.\n");
+	console_printf("\nDone.\n");
 
 	return rc;
 }

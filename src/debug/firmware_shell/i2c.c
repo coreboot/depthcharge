@@ -38,22 +38,22 @@ static int pick_bus(int argc, const char *bus_name)
 	if (argc < 3) {
 		/* Show currently used controller */
 		if (picked_i2c_bus_controller)
-			printf("Using bus %s\n",
+			console_printf("Using bus %s\n",
 			       picked_i2c_bus_controller->i2c_name);
 		else
-			printf("No i2c bus picked yet\n");
+			console_printf("No i2c bus picked yet\n");
 		return CMD_RET_SUCCESS;
 	}
 
 	list_for_each(controller, i2c_bus_controllers, list_node)
 		if (!strcmp(bus_name, controller->i2c_name)) {
 			picked_i2c_bus_controller = controller;
-			printf("Will use bus %s\n",
+			console_printf("Will use bus %s\n",
 			       picked_i2c_bus_controller->i2c_name);
 			return CMD_RET_SUCCESS;
 		}
 
-	printf("Bus %s not found\n", bus_name);
+	console_printf("Bus %s not found\n", bus_name);
 	return CMD_RET_FAILURE;
 }
 
@@ -77,13 +77,13 @@ static int read_bus(uint8_t dev, uint8_t reg, int print_enabled)
 		(picked_i2c_bus_controller->ops, seg, ARRAY_SIZE(seg));
 	if (ret) {
 		if (print_enabled)
-			printf ("i2c read of dev %#2.2x reg %#x failed (%d)\n",
+			console_printf ("i2c read of dev %#2.2x reg %#x failed (%d)\n",
 				dev, reg, ret);
 		return CMD_RET_FAILURE;
 	}
 
 	if (print_enabled)
-		printf ("i2c read %#2.2x from dev %#2.2x reg %#x\n",
+		console_printf ("i2c read %#2.2x from dev %#2.2x reg %#x\n",
 			data, dev, reg);
 
 	return CMD_RET_SUCCESS;
@@ -93,7 +93,7 @@ static int scan_bus(void)
 {
 	int address;
 
-	printf("Will scan bus %s\n", picked_i2c_bus_controller->i2c_name);
+	console_printf("Will scan bus %s\n", picked_i2c_bus_controller->i2c_name);
 
 	if (picked_i2c_bus_controller->ops->scan_mode_on_off)
 		picked_i2c_bus_controller->ops->scan_mode_on_off
@@ -102,13 +102,13 @@ static int scan_bus(void)
 	/* Valid addresses on the i2c bus are in the 8..119 range. */
 	for (address = 8; address < 120; address++)
 		if (read_bus(address, 0, 0) == CMD_RET_SUCCESS)
-			printf ("%#2.2x ", address);
+			console_printf ("%#2.2x ", address);
 
 	if (picked_i2c_bus_controller->ops->scan_mode_on_off)
 		picked_i2c_bus_controller->ops->scan_mode_on_off
 			(picked_i2c_bus_controller->ops, 0);
 
-	printf("\n");
+	console_printf("\n");
 	return CMD_RET_SUCCESS;
 }
 
@@ -133,17 +133,17 @@ static int write_bus(uint8_t dev, uint8_t reg,
 	ret = picked_i2c_bus_controller->ops->transfer
 		(picked_i2c_bus_controller->ops, &seg, 1);
 	if (ret) {
-		printf ("i2c write of dev %#2.2x reg %#x failed (%d)\n",
+		console_printf ("i2c write of dev %#2.2x reg %#x failed (%d)\n",
 			dev, reg, ret);
 		return CMD_RET_FAILURE;
 	}
 
-	printf ("i2c wrote");
+	console_printf ("i2c wrote");
 
 	for (i = 0; i < count; i++)
-		printf(" %2.2x", buffer[i + 1]);
+		console_printf(" %2.2x", buffer[i + 1]);
 
-	printf(" to dev %#2.2x reg %#x\n", dev, reg);
+	console_printf(" to dev %#2.2x reg %#x\n", dev, reg);
 
 	return CMD_RET_SUCCESS;
 }
@@ -156,10 +156,10 @@ static int do_i2c(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if (!strcmp(argv[1], "list")) {
 		I2cBusController *controller;
 
-		printf("Available i2c interfaces:\n");
+		console_printf("Available i2c interfaces:\n");
 
 		list_for_each(controller, i2c_bus_controllers, list_node)
-			printf("  %s\n", controller->i2c_name);
+			console_printf("  %s\n", controller->i2c_name);
 
 		return CMD_RET_SUCCESS;
 	}
@@ -172,7 +172,7 @@ static int do_i2c(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 			(i2c_bus_controllers.next,
 			 I2cBusController, list_node);
 
-		printf("will use bus %s\n",
+		console_printf("will use bus %s\n",
 		       picked_i2c_bus_controller->i2c_name);
 	}
 

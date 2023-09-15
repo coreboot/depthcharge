@@ -30,13 +30,13 @@ static int beep(unsigned long freq, unsigned long duration)
 
 		res = sound_stop();
 		if (res) {
-			printf("attempt to stop failed with %d\n", res);
+			console_printf("attempt to stop failed with %d\n", res);
 			return CMD_RET_FAILURE;
 		}
 	} else {
 		res = sound_play(duration, freq);
 		if (res) {
-			printf("error: attempt to play failed with %d\n", res);
+			console_printf("error: attempt to play failed with %d\n", res);
 			return CMD_RET_FAILURE;
 		}
 	}
@@ -77,7 +77,7 @@ static int do_audio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	unsigned long duration;
 
 	if (argc < 3) {
-		printf("Required command line parameters missing\n");
+		console_printf("Required command line parameters missing\n");
 		return CMD_RET_USAGE;
 	}
 
@@ -85,7 +85,7 @@ static int do_audio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	duration = strtoul(argv[2], 0, 10);
 
 	if ((freq < 20) || (freq > 20000)) {
-		printf("Invalid frequency %ld Hertz\n", freq);
+		console_printf("Invalid frequency %ld Hertz\n", freq);
 		return CMD_RET_FAILURE;
 	}
 
@@ -93,7 +93,7 @@ static int do_audio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		return CMD_RET_SUCCESS;
 
 	if (duration > MAX_DURATION_MS) {
-		printf("Capping duration from %ld to %d milliseconds\n",
+		console_printf("Capping duration from %ld to %d milliseconds\n",
 		       duration, MAX_DURATION_MS);
 		duration = MAX_DURATION_MS;
 	}
@@ -101,7 +101,7 @@ static int do_audio(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if (argc > 3) {
 		uint32_t volume = (uint32_t) strtoul(argv[3], 0, 10);
 
-		printf("Setting volume to %d\n", volume);
+		console_printf("Setting volume to %d\n", volume);
 		sound_set_volume(volume);
 	}
 
@@ -119,13 +119,13 @@ static int do_audiotones(cmd_tbl_t *cmdtp, int flag, int argc,
 
 	if (argc >= 2) {
 		volume = strtoul(argv[1], 0, 10);
-		printf("Setting volume to %u\n", volume);
+		console_printf("Setting volume to %u\n", volume);
 		sound_set_volume(volume);
 	}
 
 	for (unsigned long freq = start_freq; freq <= end_freq; freq += step) {
 		if (beep(freq, duration)) {
-			printf("Playing %lu failed\n", freq);
+			console_printf("Playing %lu failed\n", freq);
 			return CMD_RET_FAILURE;
 		}
 	}

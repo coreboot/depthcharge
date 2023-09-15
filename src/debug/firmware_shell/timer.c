@@ -18,13 +18,13 @@ static int do_time(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		while(timer_us(now) < next)
 			;
 
-		printf(" %d", counter);
+		console_printf(" %d", counter);
 		if (havekey()) {
 			getchar();
 			break;
 		}
 	}
-	printf("\n");
+	console_printf("\n");
 
 	return 0;
 }

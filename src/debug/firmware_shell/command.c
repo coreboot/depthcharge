@@ -77,7 +77,7 @@ int _do_help (cmd_tbl_t *cmd_start, int cmd_items, cmd_tbl_t * cmdtp, int
 			*/
 			if (usage == NULL)
 				continue;
-			printf("%-*s- %s\n", SYS_HELP_CMD_WIDTH,
+			console_printf("%-*s- %s\n", SYS_HELP_CMD_WIDTH,
 			       cmd_array[i]->name, usage);
 		}
 		return 0;
@@ -89,7 +89,7 @@ int _do_help (cmd_tbl_t *cmd_start, int cmd_items, cmd_tbl_t * cmdtp, int
 		if ((cmdtp = find_cmd_tbl (argv[i], cmd_start, cmd_items )) != NULL) {
 			cmd_usage(cmdtp);
 		} else {
-			printf ("Unknown command '%s' - try 'help'"
+			console_printf ("Unknown command '%s' - try 'help'"
 				" without arguments for list of all"
 				" known commands\n\n", argv[i]
 					);
@@ -145,13 +145,13 @@ cmd_tbl_t *find_cmd (const char *cmd)
 
 static void cmd_usage(const cmd_tbl_t *cmdtp)
 {
-	printf("%s - %s\n\n", cmdtp->name, cmdtp->usage);
-	printf("Usage:\n%s ", cmdtp->name);
+	console_printf("%s - %s\n\n", cmdtp->name, cmdtp->usage);
+	console_printf("Usage:\n%s ", cmdtp->name);
 
 	if (!cmdtp->help)
-		printf ("- No additional help available.\n");
+		console_printf ("- No additional help available.\n");
 	else
-		printf ("%s\n", cmdtp->help);
+		console_printf ("%s\n", cmdtp->help);
 }
 
 static int complete_cmdv(int argc, char * const argv[],
@@ -266,23 +266,23 @@ static void print_argv(const char *banner, const char *leader,
 	int len, i;
 
 	if (banner) {
-		printf("\n%s", banner);
+		console_printf("\n%s", banner);
 	}
 
 	i = linemax;	/* force leader and newline */
 	while (*argv != NULL) {
 		len = strlen(*argv) + sl;
 		if (i + len >= linemax) {
-			printf("\n");
+			console_printf("\n");
 			if (leader)
-				printf("%s", leader);
+				console_printf("%s", leader);
 			i = ll - sl;
 		} else if (sep)
-			printf("%s", sep);
-		printf("%s", *argv++);
+			console_printf("%s", sep);
+		console_printf("%s", *argv++);
 		i += len;
 	}
-	printf("\n");
+	console_printf("\n");
 }
 
 static int find_common_prefix(char * const argv[])
@@ -381,14 +381,14 @@ int cmd_auto_complete(const char *const prompt, char *buf, int *np)
 				*t++ = sep[i];
 		*t = '\0';
 		n += k;
-		printf("%s", t - k);
+		console_printf("%s", t - k);
 		if (sep == NULL)
 			serial_putchar('\a');
 		*np = n;
 	} else {
 		print_argv(NULL, "  ", " ", 78, cmdv);
 
-		printf("%s%s", prompt, buf);
+		console_printf("%s%s", prompt, buf);
 	}
 	return 1;
 }
@@ -445,7 +445,7 @@ int cmd_process(int flag, int argc, char * const argv[],
 	/* Look up command in command table */
 	cmdtp = find_cmd(argv[0]);
 	if (cmdtp == NULL) {
-		printf("Unknown command '%s' - try 'help'\n", argv[0]);
+		console_printf("Unknown command '%s' - try 'help'\n", argv[0]);
 		return 1;
 	}
 

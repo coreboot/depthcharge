@@ -29,6 +29,7 @@ dev-y += spi.c
 dev-y += storage.c
 dev-y += timer.c
 dev-$(CONFIG_DRIVER_TPM) += tpm.c
+dev-y += video.c
 
 dev-y += net.c
 dev-y += enet.c

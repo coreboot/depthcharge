@@ -42,7 +42,7 @@ int print_buffer(unsigned long addr, const void *data, unsigned width,
 		unsigned thislinelen;
 		int pad_size;
 
-		printf("%08lx:", addr);
+		console_printf("%08lx:", addr);
 
 		/* Limit number of elements in the last line of the dump. */
 		thislinelen = count < linelen ? count : linelen;
@@ -56,13 +56,13 @@ int print_buffer(unsigned long addr, const void *data, unsigned width,
 				x = lb.us[i] = *(volatile u16 *)data;
 			else
 				x = lb.uc[i] = *(volatile u8 *)data;
-			printf(" %0*x", width * 2, x);
+			console_printf(" %0*x", width * 2, x);
 			data += width;
 		}
 
 		pad_size = spaces * (linelen - thislinelen);
 		while (pad_size--)
-			printf(" ");
+			console_printf(" ");
 
 		/* Print data in ASCII characters */
 		for (i = 0; i < thislinelen * width; i++) {
@@ -70,7 +70,7 @@ int print_buffer(unsigned long addr, const void *data, unsigned width,
 				lb.uc[i] = '.';
 		}
 		lb.uc[i] = '\0';
-		printf("    %s\n", lb.uc); /* 4 space separator. */
+		console_printf("    %s\n", lb.uc); /* 4 space separator. */
 
 		/* update references */
 		addr += thislinelen * width;

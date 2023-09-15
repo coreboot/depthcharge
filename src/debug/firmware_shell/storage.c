@@ -31,11 +31,11 @@ static int storage_show(int argc, char *const argv[])
 	for (i = 0, bd = current_devices.known_devices;
 	     i < current_devices.total;
 	     i++, bd++)
-		printf("%c %2d: %s\n",
+		console_printf("%c %2d: %s\n",
 		       current_devices.curr_device == i ? '*' : ' ',
 		       i, (*bd)->name ? (*bd)->name : "UNNAMED");
 
-	printf("%d devices total\n", i);
+	console_printf("%d devices total\n", i);
 	return 0;
 }
 
@@ -52,7 +52,7 @@ static int storage_read(int argc, char *const argv[])
 
 	if ((current_devices.curr_device < 0) ||
 	    (current_devices.curr_device >= current_devices.total)) {
-		printf("Is storage subsystem initialized?");
+		console_printf("Is storage subsystem initialized?");
 		return -1;
 	}
 
@@ -74,7 +74,7 @@ static int storage_write(int argc, char *const argv[])
 
 	if ((current_devices.curr_device < 0) ||
 	    (current_devices.curr_device >= current_devices.total)) {
-		printf("Is storage subsystem initialized?");
+		console_printf("Is storage subsystem initialized?");
 		return -1;
 	}
 
@@ -94,13 +94,13 @@ static int storage_erase(int argc, char *const argv[])
 
 	if ((current_devices.curr_device < 0) ||
 	    (current_devices.curr_device >= current_devices.total)) {
-		printf("Is storage subsystem initialized?");
+		console_printf("Is storage subsystem initialized?");
 		return -1;
 	}
 
 	bd = current_devices.known_devices[current_devices.curr_device];
 	if (!bd->ops.erase) {
-		printf("Erase not applicable to %s\n", bd->name);
+		console_printf("Erase not applicable to %s\n", bd->name);
 		return CMD_RET_SUCCESS;
 	}
 
@@ -113,7 +113,7 @@ static int storage_dev(int argc, char *const argv[])
 	int rv = 0;
 
 	if (!current_devices.total) {
-		printf("No initialized devices present\n");
+		console_printf("No initialized devices present\n");
 	} else {
 		unsigned long cur_device;
 
@@ -121,13 +121,13 @@ static int storage_dev(int argc, char *const argv[])
 			strtoul(argv[0], NULL, 0) :
 			current_devices.curr_device;
 		if (cur_device >= current_devices.total) {
-			printf("%d: bad device index. Current devices:",
+			console_printf("%d: bad device index. Current devices:",
 			       (int)cur_device);
 			storage_show(0, NULL);
 			rv = -1;
 		} else {
 			current_devices.curr_device = cur_device;
-			printf("%s\n",
+			console_printf("%s\n",
 			       current_devices.known_devices[cur_device]->name);
 		}
 	}
@@ -145,7 +145,7 @@ static int storage_part(int argc, char *const argv[])
 	const Guid guid_unused = GPT_ENT_TYPE_UNUSED;
 
 	if (!current_devices.total) {
-		printf("No initialized devices present\n");
+		console_printf("No initialized devices present\n");
 		return CMD_RET_FAILURE;
 	}
 
@@ -162,7 +162,7 @@ static int storage_part(int argc, char *const argv[])
 			break;
 
 	if (bdev != current_bdev) {
-		printf("Failed to get block device for current device\n");
+		console_printf("Failed to get block device for current device\n");
 		return CMD_RET_FAILURE;
 	}
 
@@ -174,22 +174,22 @@ static int storage_part(int argc, char *const argv[])
 	gpt.flags = bdev->external_gpt ? GPT_FLAG_EXTERNAL : 0;
 
 	if (AllocAndReadGptData(bdev, &gpt)) {
-		printf("Unable to read GPT data\n");
+		console_printf("Unable to read GPT data\n");
 		return CMD_RET_FAILURE;
 	}
 
 	if (GptInit(&gpt) != GPT_SUCCESS) {
-		printf("Unable to parse GPT\n");
+		console_printf("Unable to parse GPT\n");
 		return CMD_RET_FAILURE;
 	}
 
 	header = (GptHeader *)gpt.primary_header;
 	entry = (GptEntry *)gpt.primary_entries;
 
-	printf("------------ GPT for %s ------------\n\n", bdev->name);
-	printf("Bytes per LBA = %u\n\n", bdev->block_size);
+	console_printf("------------ GPT for %s ------------\n\n", bdev->name);
+	console_printf("Bytes per LBA = %u\n\n", bdev->block_size);
 
-	printf("SNo: %18s %18s Name\n", "Start", "Count");
+	console_printf("SNo: %18s %18s Name\n", "Start", "Count");
 	for (int i = 0; i < header->number_of_entries; i++, entry++) {
 		int j;
 		uint16_t *name;
@@ -197,7 +197,7 @@ static int storage_part(int argc, char *const argv[])
 		if (memcmp(&entry->type, &guid_unused, sizeof(Guid)) == 0)
 			continue;
 
-		printf("%3d: %#18llx %#18llx ", i + 1,
+		console_printf("%3d: %#18llx %#18llx ", i + 1,
 			entry->starting_lba,
 			entry->ending_lba - entry->starting_lba + 1);
 
@@ -206,8 +206,8 @@ static int storage_part(int argc, char *const argv[])
 		for (j = 0; name[j] &&
 			(j < sizeof(entry->name) / sizeof(entry->name[0]));
 			j++)
-			printf("%c", name[j] & 0xff);
-		printf("\n");
+			console_printf("%c", name[j] & 0xff);
+		console_printf("\n");
 	}
 
 	return CMD_RET_SUCCESS;
