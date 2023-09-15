@@ -28,7 +28,7 @@ static int do_spi_read(int argc, char * const argv[], int read_flag)
 	buffer = xzalloc(length);
 	if (flash_read(buffer, offset, length) != length) {
 		free(buffer);
-		printf("read failed!\n");
+		console_printf("read failed!\n");
 		return -1;
 	}
 

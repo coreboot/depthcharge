@@ -32,6 +32,7 @@
 #include "drivers/ec/cros/ec.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/tpm/tpm.h"
+#include "drivers/video/display.h"
 #include "vboot/firmware_id.h"
 #include "vboot/load_kernel.h"
 #include "vboot/stages.h"
@@ -670,7 +671,9 @@ vb2_error_t ui_developer_mode_enter_fwshell_action(struct ui_context *ui)
 	if (!dc_dev_firmware_shell_enabled())
 		return VB2_SUCCESS;
 
+	video_console_clear();
 	dc_dev_enter_firmware_shell();
+	ui->force_display = 1;
 	return VB2_SUCCESS;
 }
 

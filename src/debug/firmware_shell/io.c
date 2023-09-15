@@ -24,13 +24,13 @@ static int do_ior(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	switch (size) {
 	case 4:
-		printf("0x%08x\n", inl(port));
+		console_printf("0x%08x\n", inl(port));
 		break;
 	case 2:
-		printf("0x%04x\n", inw(port));
+		console_printf("0x%04x\n", inw(port));
 		break;
 	case 1:
-		printf("0x%02x\n", inb(port));
+		console_printf("0x%02x\n", inb(port));
 		break;
 	default:
 		return CMD_RET_USAGE;

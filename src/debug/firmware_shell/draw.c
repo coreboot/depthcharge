@@ -39,7 +39,7 @@ static int do_draw_image(int argc, char * const argv[])
 
 	bitmap = cbfs_map(argv[2], &size);
 	if (!bitmap) {
-		printf("File '%s' not found\n", argv[2]);
+		console_printf("File '%s' not found\n", argv[2]);
 		return -1;
 	}
 	const struct scale pos_rel = {
@@ -58,7 +58,7 @@ static int do_draw_image(int argc, char * const argv[])
 	rv = draw_bitmap(bitmap, size, &pos_rel, dim_rel,
 			   PIVOT_H_LEFT|PIVOT_V_TOP);
 	if (rv)
-		printf("draw_bitmap returned error: %d\n", rv);
+		console_printf("draw_bitmap returned error: %d\n", rv);
 
 	free(bitmap);
 
@@ -69,24 +69,24 @@ static int do_print_info(void)
 {
 	struct cb_framebuffer *fbinfo = &lib_sysinfo.framebuffer;
 	if (!fbinfo) {
-		printf("Invalid address for framebuffer info\n");
+		console_printf("Invalid address for framebuffer info\n");
 		return -1;
 	}
 
 	unsigned char *fbaddr =
 		(unsigned char *)(uintptr_t)(fbinfo->physical_address);
 
-	printf("physical_address=0x%p\n", fbaddr);
-	printf("x_resolution=%d\n", fbinfo->x_resolution);
-	printf("y_resolution=%d\n", fbinfo->y_resolution);
-	printf("bytes_per_line=%d\n", fbinfo->bytes_per_line);
-	printf("bits_per_pixel=%d\n", fbinfo->bits_per_pixel);
-	printf("red_mask_pos=%d\n", fbinfo->red_mask_pos);
-	printf("red_mask_size=%d\n", fbinfo->red_mask_size);
-	printf("green_mask_pos=%d\n", fbinfo->green_mask_pos);
-	printf("green_mask_size=%d\n", fbinfo->green_mask_size);
-	printf("blue_mask_pos=%d\n", fbinfo->blue_mask_pos);
-	printf("blue_mask_size=%d\n", fbinfo->blue_mask_size);
+	console_printf("physical_address=0x%p\n", fbaddr);
+	console_printf("x_resolution=%d\n", fbinfo->x_resolution);
+	console_printf("y_resolution=%d\n", fbinfo->y_resolution);
+	console_printf("bytes_per_line=%d\n", fbinfo->bytes_per_line);
+	console_printf("bits_per_pixel=%d\n", fbinfo->bits_per_pixel);
+	console_printf("red_mask_pos=%d\n", fbinfo->red_mask_pos);
+	console_printf("red_mask_size=%d\n", fbinfo->red_mask_size);
+	console_printf("green_mask_pos=%d\n", fbinfo->green_mask_pos);
+	console_printf("green_mask_size=%d\n", fbinfo->green_mask_size);
+	console_printf("blue_mask_pos=%d\n", fbinfo->blue_mask_pos);
+	console_printf("blue_mask_size=%d\n", fbinfo->blue_mask_size);
 
 	return 0;
 }
@@ -116,7 +116,7 @@ static int do_draw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	int rv = CMD_RET_SUCCESS;
 
 	if (init_display()) {
-		printf("Failed to initialize display\n");
+		console_printf("Failed to initialize display\n");
 		return CMD_RET_FAILURE;
 	}
 
@@ -130,7 +130,7 @@ static int do_draw(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		if (do_draw_box(argv))
 			rv = CMD_RET_FAILURE;
 	} else {
-		printf("Syntax error\n");
+		console_printf("Syntax error\n");
 		rv = CMD_RET_USAGE;
 	}
 

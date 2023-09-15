@@ -48,7 +48,7 @@ int do_tftpboot(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	if (!strcmp(address, DHCP)) {
 		tftp_ip_arg = NULL;
 	} else if (!uiplib_ipaddrconv(address, &tftp_ip)) {
-		printf("Invalid IPv4 address: %s\n", address);
+		console_printf("Invalid IPv4 address: %s\n", address);
 		return CMD_RET_USAGE;
 	} else {
 		tftp_ip_arg = &tftp_ip;

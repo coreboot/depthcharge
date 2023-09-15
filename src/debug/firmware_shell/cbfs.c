@@ -14,11 +14,11 @@ static int do_cbfs_dump(char * const name)
 
 	file = cbfs_map(name, &size);
 	if (file == NULL) {
-		printf("File '%s' not found\n", name);
+		console_printf("File '%s' not found\n", name);
 		return CMD_RET_FAILURE;
 	}
 
-	printf("Dumping '%s' size=%lu type=%u\n", name, size,
+	console_printf("Dumping '%s' size=%lu type=%u\n", name, size,
 	       cbfs_get_type(name));
 	hexdump((void *)file, size);
 	free(file);
@@ -28,7 +28,7 @@ static int do_cbfs_dump(char * const name)
 
 static int do_cbfs_ls(void)
 {
-	printf("Command not implemented\n");
+	console_printf("Command not implemented\n");
 	return CMD_RET_SUCCESS;
 }
 
@@ -39,7 +39,7 @@ static int do_cbfs(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	else if (!strcmp(argv[1], "ls"))
 		return do_cbfs_ls();
 
-	printf("Syntax error\n");
+	console_printf("Syntax error\n");
 	return CMD_RET_USAGE;
 }
 

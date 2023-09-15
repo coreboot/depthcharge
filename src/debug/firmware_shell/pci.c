@@ -30,13 +30,13 @@ static int do_pcir(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 
 	switch (size) {
 	case 4:
-		printf("0x%08x\n", pci_read_config32(device, reg));
+		console_printf("0x%08x\n", pci_read_config32(device, reg));
 		break;
 	case 2:
-		printf("0x%04x\n", pci_read_config16(device, reg));
+		console_printf("0x%04x\n", pci_read_config16(device, reg));
 		break;
 	case 1:
-		printf("0x%02x\n", pci_read_config8(device, reg));
+		console_printf("0x%02x\n", pci_read_config8(device, reg));
 		break;
 	default:
 		return CMD_RET_USAGE;
@@ -99,7 +99,7 @@ static int do_lspci(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 				    viddid == 0xffff0000 ||
 				    viddid == 0x0000ffff)
 					continue;
-				printf("%02x %02x %1x %04x %04x\n",
+				console_printf("%02x %02x %1x %04x %04x\n",
 				       bus, dev, func, viddid & 0xffff,
 				       viddid >> 16);
 			}

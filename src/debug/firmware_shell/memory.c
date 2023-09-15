@@ -201,7 +201,7 @@ static int do_cmp(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		if (word1 != word2) {
 			ulong offset = buf1 - base;
 
-			printf("%s at 0x%08lx (%#0*lx) != %s at 0x%08lx (%#0*lx)\n",
+			console_printf("%s at 0x%08lx (%#0*lx) != %s at 0x%08lx (%#0*lx)\n",
 				type, (ulong)(addr1 + offset), size, word1,
 				type, (ulong)(addr2 + offset), size, word2);
 			rcode = 1;
@@ -214,7 +214,7 @@ static int do_cmp(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	unmap_sysmem(buf1);
 	unmap_sysmem(buf2);
 
-	printf("Total of %ld %s(s) were the same\n", ngood, type);
+	console_printf("Total of %ld %s(s) were the same\n", ngood, type);
 	return rcode;
 }
 
@@ -396,4 +396,3 @@ U_BOOT_CMD(
 	"memory compare",
 	"[.b, .w, .l] addr1 addr2 count"
 );
-
