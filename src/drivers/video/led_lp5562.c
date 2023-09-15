@@ -357,44 +357,45 @@ static int ledc_init_validate(TiLp5562 *ledc)
 	return 0;
 }
 
+static void run_programs(
+	const TiLp5562Program *programs[LED_LP5562_NUM_LED_CONTROLLERS])
+{
+	int i;
+	/*
+	 * First stop all running programs to avoid
+	 * inerference between the controllers.
+	 */
+	for (i = 0; i < LED_LP5562_NUM_LED_CONTROLLERS; i++) {
+		if (!lp5562s[i].dev_addr)
+			continue;
+		ledc_write_opmode(lp5562s + i, LP5562_OPMODE_ALL_DISABLE);
+	}
+
+	for (i = 0; i < LED_LP5562_NUM_LED_CONTROLLERS; i++) {
+		if (!lp5562s[i].dev_addr)
+			continue;
+		ledc_run_program(lp5562s + i, programs[i]);
+	}
+}
+
 /*
  * Find a program matching screen type, and run it on both controllers, if
  * found.
  */
-int led_lp5562_display_screen(DisplayOps *me,
-			      enum VbScreenType_t screen_type)
+static int led_lp5562_display_screen(DisplayOps *me, enum ui_screen screen)
 {
 	const Led5562StateProg *state_program;
 
 	for (state_program = led_lp5562_state_programs;
 	     state_program->programs[0];
 	     state_program++)
-		if (state_program->vb_screen == screen_type) {
-			int j;
-
-			/*
-			 * First stop all running programs to avoid
-			 * inerference between the controllers.
-			 */
-			for (j = 0; j < LED_LP5562_NUM_LED_CONTROLLERS; j++) {
-				if (!lp5562s[j].dev_addr)
-					continue;
-				ledc_write_opmode
-					(lp5562s + j,
-					 LP5562_OPMODE_ALL_DISABLE);
-			}
-
-			for (j = 0; j < LED_LP5562_NUM_LED_CONTROLLERS; j++) {
-				if (!lp5562s[j].dev_addr)
-					continue;
-				ledc_run_program(lp5562s + j,
-						 state_program->programs[j]);
-			}
+		if (state_program->screen == screen) {
+			run_programs(state_program->programs);
 			return 0;
 		}
 
-	printf("%s: did not find program for screen %d\n",
-	       __func__, screen_type);
+	printf("%s: did not find program for screen %#x\n",
+	       __func__, screen);
 
 	return -1;
 }
@@ -435,6 +436,10 @@ static int led_lp5562_init(DisplayOps *me)
 	return 0;
 }
 
+static int led_lp5562_stop(DisplayOps *me)
+{
+	run_programs(led_lp5562_blank_programs);
+}
 
 #define LP5562_I2C_BASE_ADDR 0x30
 
@@ -447,6 +452,7 @@ DisplayOps *new_led_lp5562_display(I2cOps *i2cOps, uint8_t base_addr)
 		led_lp5562_display_screen;
 
 	lp5562_display_ops->lp5562_display_ops.init = led_lp5562_init;
+	lp5562_display_ops->lp5562_display_ops.stop = led_lp5562_stop;
 	lp5562_display_ops->lp5562_i2c_ops = i2cOps;
 	lp5562_display_ops->lp5562_base_addr = LP5562_I2C_BASE_ADDR;
 

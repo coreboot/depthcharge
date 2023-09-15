@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include "drivers/video/display.h"
+#include "vboot/ui.h"
 
 void display_set_ops(DisplayOps *ops)
 {
@@ -23,7 +24,7 @@ int backlight_update(uint8_t enable)
 	return 0;
 }
 
-int display_screen(enum VbScreenType_t screen)
+int display_screen(enum ui_screen screen)
 {
 	return 0;
 }

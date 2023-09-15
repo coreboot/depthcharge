@@ -27,8 +27,10 @@ static DisplayOps *display_ops;
 static int display_cleanup(struct CleanupFunc *cleanup, CleanupType type)
 {
 	int err = 0;
-	disable_graphics_buffer();
-	err |= clear_screen(&ui_color_black);
+	if (!CONFIG(HEADLESS)) {
+		disable_graphics_buffer();
+		err |= clear_screen(&ui_color_black);
+	}
 	if (type != CleanupOnLegacy) {
 		err |= backlight_update(0);
 		if (display_ops && display_ops->stop)
@@ -77,7 +79,7 @@ int backlight_update(uint8_t enable)
 	return 0;
 }
 
-int display_screen(enum VbScreenType_t screen)
+int display_screen(enum ui_screen screen)
 {
 	if (display_ops && display_ops->display_screen)
 		return display_ops->display_screen(display_ops, screen);

@@ -200,12 +200,6 @@ static vb2_error_t log_page_update(struct ui_context *ui,
 	const struct ui_screen_info *screen = ui->state->screen;
 	struct ui_log_info *log = &ui->state->log;
 
-	if (CONFIG(HEADLESS)) {
-		/* TODO(b/151200757): Support headless devices */
-		log->page_count = 0;
-		return VB2_SUCCESS;
-	}
-
 	if (new_log_string) {
 		VB2_TRY(ui_log_init(screen->id, ui->state->locale->code,
 				    new_log_string, log));

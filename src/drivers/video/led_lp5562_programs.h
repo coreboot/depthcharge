@@ -29,7 +29,9 @@
 #define __THIRD_PARTY_COREBOOT_SRC_DRIVERS_I2C_LED_LP5562_LED_LP5562_PROGRAMS_H__
 
 #include <stdint.h>
+
 #include "drivers/video/led_lp5562.h"
+#include "vboot/ui.h"
 
 /* There are threee independent engines/cores in the controller. */
 #define LED_LP5562_NUM_OF_ENGINES 3
@@ -57,10 +59,12 @@ typedef struct {
 
 /* A structure to bind controller programs to a vboot state. */
 typedef struct {
-	enum VbScreenType_t    vb_screen;
+	enum ui_screen screen;
 	TiLp5562Program *programs[LED_LP5562_NUM_LED_CONTROLLERS];
 } Led5562StateProg;
 
 extern const Led5562StateProg led_lp5562_state_programs[];
+extern const TiLp5562Program
+*led_lp5562_blank_state_program[LED_LP5562_NUM_LED_CONTROLLERS];
 
 #endif

@@ -113,7 +113,7 @@ static TiLp5562Program solid_000000_program = {
  23 27 0000             gotostart
 */
 
-/* VB_SCREEN_DEVELOPER_WARNING, Developer mode indication */
+/* UI_SCREEN_DEVELOPER_MODE, Developer mode indication */
 /* Flashing Purple, (98,0,248) for 0.3sec, (0,0,0) for 1.1sec */
 static uint8_t blink_dev1_b_text[] = {
 	0xE2,  0x00,  0x40,   234,  0xE2,  0x00,  0x40,     0,
@@ -153,7 +153,7 @@ static TiLp5562Program blink_dev1_program = {
 	}
 };
 
-/* VB_SCREEN_OS_BROKEN, Manual Recovery Required */
+/* UI_SCREEN_RECOVERY_BROKEN, Manual Recovery Required */
 /* Flashing Pink, (50,50,255) for 0.3sec, (0,0,0) for 1.1sec */
 static uint8_t blink_rcv_broken1_b_text[] = {
 	0xE2,  0x00,  0x40,    50,  0xE2,  0x00,  0x40,     0,
@@ -193,7 +193,7 @@ static TiLp5562Program blink_rcv_broken1_program = {
 	}
 };
 
-/* VB_SCREEN_RECOVERY_INSERT, Waiting for USB stick */
+/* UI_SCREEN_RECOVERY_SELECT, Waiting for USB stick */
 /* Flashing Red, (0,0,255) for 0.3sec, (0,0,0) for 1.1sec */
 static uint8_t blink_rcv_insert1_b_text[] = {
 	0xE2,  0x00,  0x40,     0,  0xE2,  0x00,  0x40,     0,
@@ -233,7 +233,7 @@ static TiLp5562Program blink_rcv_insert1_program = {
 	}
 };
 
-/* VB_SCREEN_RECOVERY_TO_DEV, Switching from REC to DEV mode */
+/* UI_SCREEN_RECOVERY_TO_DEV, Switching from REC to DEV mode */
 /* Flashing Purple, (98,0,248) for 0.3sec, (0,0,0) for 1.1sec */
 static uint8_t blink_rcv2dev1_b_text[] = {
 	0xE2,  0x00,  0x40,   234,  0xE2,  0x00,  0x40,     0,
@@ -273,40 +273,40 @@ static TiLp5562Program blink_rcv2dev1_program = {
 	}
 };
 
-/* VB_SCREEN_RECOVERY_NO_GOOD, Bad USB stick */
+/* UI_SCREEN_RECOVERY_INVALID, Invalid USB stick */
 /* Flashing Red/Yellow, (255,0,0) for 0.6sec, (255,204,0) for 0.6sec */
-static uint8_t blink_no_good1_b_text[] = {
+static uint8_t blink_invalid1_b_text[] = {
 	0xE2,  0x00,  0x40,     0,  0xE2,  0x00,  0x40,     0,
 	0x00,  0x00,
 };
 
-static uint8_t blink_no_good1_g_text[] = {
+static uint8_t blink_invalid1_g_text[] = {
 	0xE2,  0x00,  0x40,     0,  0xE2,  0x00,  0x40,   204,
 	0x00,  0x00,
 };
 
-static uint8_t blink_no_good1_r_text[] = {
+static uint8_t blink_invalid1_r_text[] = {
 	0xE0,  0x06,  0x40,   255,  0x66,  0x00,  0xE0,  0x06,
 	0x40,   255,  0x66,  0x00,  0x00,  0x00,
 };
 
-static TiLp5562Program blink_no_good1_program = {
+static TiLp5562Program blink_invalid1_program = {
 	{
 		{
-			blink_no_good1_b_text,
-			sizeof(blink_no_good1_b_text),
+			blink_invalid1_b_text,
+			sizeof(blink_invalid1_b_text),
 			0,
 			LED_LP5562_DEFAULT_CURRENT
 		},
 		{
-			blink_no_good1_g_text,
-			sizeof(blink_no_good1_g_text),
+			blink_invalid1_g_text,
+			sizeof(blink_invalid1_g_text),
 			0,
 			LED_LP5562_DEFAULT_CURRENT
 		},
 		{
-			blink_no_good1_r_text,
-			sizeof(blink_no_good1_r_text),
+			blink_invalid1_r_text,
+			sizeof(blink_invalid1_r_text),
 			0,
 			LED_LP5562_DEFAULT_CURRENT
 		},
@@ -314,17 +314,21 @@ static TiLp5562Program blink_no_good1_program = {
 };
 
 const Led5562StateProg led_lp5562_state_programs[] = {
-	/*
-	 * for test purposes the blank screen program is set to blinking, will
-	 * be changed soon.
-	 */
-	{VB_SCREEN_BLANK, {&solid_000000_program} },
-	{VB_SCREEN_DEVELOPER_WARNING, {&blink_dev1_program} },
-	{VB_SCREEN_OS_BROKEN, {&blink_rcv_broken1_program} },
-	{VB_SCREEN_RECOVERY_INSERT, {&blink_rcv_insert1_program} },
-	{VB_SCREEN_RECOVERY_TO_DEV, {&blink_rcv2dev1_program} },
-	{VB_SCREEN_RECOVERY_NO_GOOD, {&blink_no_good1_program} },
+	{UI_SCREEN_DEVELOPER_MODE, {&blink_dev1_program} },
+	{UI_SCREEN_RECOVERY_BROKEN, {&blink_rcv_broken1_program} },
+	{UI_SCREEN_RECOVERY_SELECT, {&blink_rcv_insert1_program} },
+	{UI_SCREEN_RECOVERY_TO_DEV, {&blink_rcv2dev1_program} },
+	{UI_SCREEN_RECOVERY_INVALID, {&blink_invalid1_program} },
 	{}, /* Empty record to mark the end of the table. */
+};
+
+/*
+ * For test purposes the blank screen program is set to blinking, will
+ * be changed soon.
+ */
+const TiLp5562Program
+*led_lp5562_blank_programs[LED_LP5562_NUM_LED_CONTROLLERS] = {
+	&solid_000000_program
 };
 
 /*
