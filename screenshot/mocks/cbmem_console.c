@@ -4,5 +4,5 @@
 
 char *cbmem_console_snapshot(void)
 {
-	return "mock";
+	return "\n\nline 0\nline 1";
 }

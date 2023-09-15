@@ -769,6 +769,10 @@ static vb2_error_t firmware_log_set_content(struct ui_context *ui,
 	}
 
 	ui->firmware_log_str = str;
+	/* Remove leading newlines. The first message from each coreboot stage
+	   always starts with two newline characters. */
+	while (*str == '\n')
+		str++;
 	if (vb2_is_error(log_page_update(ui, str)))
 		return set_ui_error_and_go_back(ui, UI_ERROR_FIRMWARE_LOG);
 	return VB2_SUCCESS;
