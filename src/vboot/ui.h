@@ -100,10 +100,6 @@
 #define UI_DESC_TEXT_LINE_SPACING		12
 #define UI_DESC_MARGIN_BOTTOM			44
 
-/* For custom screens */
-#define UI_REC_QR_SIZE				228
-#define UI_REC_QR_MARGIN_H			24
-
 /* For primary buttons */
 #define UI_BUTTON_HEIGHT			40
 #define UI_BUTTON_TEXT_HEIGHT			20
