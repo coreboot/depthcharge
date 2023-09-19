@@ -230,7 +230,9 @@ void vboot_boot_kernel(VbSelectAndLoadKernelParams *kparams)
 		goto fail;
 	}
 
-	bi.kparams = kparams;
+	/* Do not set kparams for Android GKI */
+	if (!(kparams->flags & KERNEL_IMAGE_ANDROID_GKI))
+		bi.kparams = kparams;
 
 	BlockDev *bdev = (BlockDev *)kparams->disk_handle;
 
