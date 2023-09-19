@@ -19,6 +19,7 @@
 #include <libpayload.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <vb2_android_bootimg.h>
 
 #include "boot/multiboot.h"
 #include "vboot/boot.h"
@@ -39,6 +40,10 @@ static const struct boot_policy boot_policy[] = {
 	{
 		.img_type = KERNEL_IMAGE_CROS,
 		.cmd_line_loc = CMD_LINE_SIGNER,
+	},
+	{
+		.img_type = KERNEL_IMAGE_BOOTIMG,
+		.cmd_line_loc = CMD_LINE_BOOTIMG_HDR,
 	},
 };
 
@@ -90,100 +95,84 @@ static int fill_info_multiboot(struct boot_info *bi,
 }
 #endif
 
-/************************* Bootimg Parsing *******************************/
-#define BOOTIMG_MAGIC			"ANDROID!"
-#define BOOTIMG_MAGIC_SIZE		8
-#define BOOTIMG_NAME_SIZE		16
-#define BOOTIMG_ARGS_SIZE		512
-#define BOOTIMG_EXTRA_ARGS_SIZE	1024
-#define BOOTIMG_ID_SIZE		8
+/************************* Android GKI *******************************/
+#define ANDROID_GKI_BOOT_HDR_SIZE 4096
 
-struct bootimg_hdr {
-	uint8_t magic[BOOTIMG_MAGIC_SIZE];
-	uint32_t kernel_size;
-	uint32_t kernel_addr;
-	uint32_t ramdisk_size;
-	uint32_t ramdisk_addr;
-	uint32_t second_size;
-	uint32_t second_addr;
-	uint32_t tags_addr;
-	uint32_t page_size;
-	uint32_t unused[2];
-	uint8_t name[BOOTIMG_NAME_SIZE];
-	uint8_t cmdline[BOOTIMG_ARGS_SIZE];
-	uint32_t id[BOOTIMG_ID_SIZE];
-	uint8_t extra_cmdline[BOOTIMG_EXTRA_ARGS_SIZE];
-};
-
-void *bootimg_get_kernel_ptr(void *img, size_t image_size)
-{
-	struct bootimg_hdr *hdr = img;
-	void *kernel;
-
-	if (image_size < sizeof(struct bootimg_hdr)) {
-		printf("Bootimg: Header size error!\n");
-		return NULL;
-	}
-
-	if (memcmp(hdr->magic, BOOTIMG_MAGIC, BOOTIMG_MAGIC_SIZE)) {
-		printf("Bootimg: BOOTIMG_MAGIC mismatch!\n");
-		return NULL;
-	}
-
-	if (image_size <= hdr->page_size) {
-		printf("Bootimg: Header page size error!\n");
-		return NULL;
-	}
-
-	kernel = (void *)((uintptr_t)hdr + hdr->page_size);
-
-	return kernel;
-}
-
-static int fill_info_bootimg(struct boot_info *bi,
+static int gki_setup_ramdisk(struct boot_info *bi,
 			     struct vb2_kernel_params *kparams,
-			     const struct boot_policy *policy)
+			     int fill_cmdline)
 {
-	struct bootimg_hdr *hdr = kparams->kernel_buffer;
-	uintptr_t kernel;
-	uintptr_t ramdisk_addr;
-	uint32_t kernel_size;
+	struct vendor_boot_img_hdr_v4 *vendor_hdr;
+	struct boot_img_hdr_v4 *init_hdr;
+	uint8_t *init_boot_ramdisk_src;
+	uint8_t *init_boot_ramdisk_dst;
+	uint32_t vendor_ramdisk_section_offset;
 
-	bi->kernel = bootimg_get_kernel_ptr(hdr, kparams->kernel_buffer_size);
-
-	if (bi->kernel == NULL)
-		return -1;
-
-	kernel = (uintptr_t)bi->kernel;
-
-	if (policy->cmd_line_loc == CMD_LINE_BOOTIMG_HDR)
-		bi->cmd_line = (char *)hdr->cmdline;
-	else
-		bi->cmd_line = NULL;
+	vendor_hdr = (struct vendor_boot_img_hdr_v4 *)((uintptr_t)kparams->kernel_buffer +
+						       kparams->vendor_boot_offset);
+	init_hdr = (struct boot_img_hdr_v4 *)((uintptr_t)kparams->kernel_buffer +
+					      kparams->init_boot_offset);
 
 	/*
-	 * kernel_size should be aligned up to page_size since ramdisk always
-	 * starts in a new page. The align up operation is performed on
-	 * kernel_size rather than (kernel + hdr->kernel_size) because hdr might
-	 * not be on an aligned boundary itself and thus aligning (kernel +
-	 * hdr->kernel_size) can erroneously make ramdisk_addr point to an
-	 * address beyond the ramdisk start.
-	 * Aligning kernel_size to hdr->page_size gives us the size of kernel in
-	 * multiple of pages.
+	 * TODO: For now assuming single ramdisk in vendor_hdr, do not load more
+	 * than one ramdisk. This is a WIP solution, need to improve based on
+	 * mode.
 	 */
-	kernel_size = ALIGN_UP(hdr->kernel_size, hdr->page_size);
-
-	if (kernel_size < kparams->kernel_buffer_size) {
-		ramdisk_addr = kernel + kernel_size;
-
-		bi->ramdisk_size = hdr->ramdisk_size;
-		bi->ramdisk_addr = (void *)ramdisk_addr;
-		printf("Bootimg: Ramdisk is present\n");
-	} else {
-		bi->ramdisk_size = 0;
-		bi->ramdisk_addr = NULL;
-		printf("Bootimg: No ramdisk present\n");
+	if (vendor_hdr->vendor_ramdisk_table_entry_num > 1) {
+		printf("GKI: Loading more than single ramdisk is not supported\n");
+		return -1;
 	}
+
+	/* init_boot partition should contain only ramdisk, kernel_size should be 0 */
+	if (init_hdr->kernel_size != 0) {
+		printf("GKI: Kernel size on init_boot partition has to be zero\n");
+		return -1;
+	}
+
+	/* Calculate address offset of vendor_ramdisk section on vendor_boot partition */
+	vendor_ramdisk_section_offset = ALIGN_UP(sizeof(struct vendor_boot_img_hdr_v4),
+						 vendor_hdr->page_size);
+
+	init_boot_ramdisk_dst = ((uint8_t *)vendor_hdr +
+				vendor_ramdisk_section_offset +
+				vendor_hdr->vendor_ramdisk_size);
+
+	/* On init_boot there's no kernel, so ramdisk follows the header */
+	init_boot_ramdisk_src = (uint8_t *)init_hdr + ANDROID_GKI_BOOT_HDR_SIZE;
+
+	/* Move init_boot ramdisk to directly follow the vendor_boot ramdisk.
+	 * This is a requirement from Android system. The cpio/gzip/lz4
+	 * compression formats support this type of concatenation. After
+	 * the kernel decompresses, it extracts contatenated file into
+	 * an initramfs, which results in a file structure that's a generic
+	 * ramdisk (from init_boot) overlaid on the vendor ramdisk (from
+	 * vendor_boot) file structure. */
+	memmove(init_boot_ramdisk_dst, init_boot_ramdisk_src, init_hdr->ramdisk_size);
+
+	/* Update ramdisk addr and size */
+	bi->ramdisk_addr = (uint8_t *)vendor_hdr + vendor_ramdisk_section_offset;
+	bi->ramdisk_size = vendor_hdr->vendor_ramdisk_size + init_hdr->ramdisk_size;
+
+	if (fill_cmdline)
+		bi->cmd_line = (char *)vendor_hdr->cmdline;
+
+	return 0;
+}
+
+static int fill_info_gki(struct boot_info *bi,
+			 struct vb2_kernel_params *kparams,
+			 const struct boot_policy *policy)
+{
+	if (kparams->kernel_buffer == NULL) {
+		printf("Pointer to kernel buffer is not initialized\n");
+		return -1;
+	}
+
+	/* Kernel starts at the beginning of kernel buffer */
+	bi->kernel = kparams->kernel_buffer + ANDROID_GKI_BOOT_HDR_SIZE;
+
+	if (gki_setup_ramdisk(bi, kparams, 1))
+		return -1;
 
 	return 0;
 }
@@ -197,8 +186,8 @@ static const struct {
 	fill_bootinfo_fnptr fn;
 } img_type_info[] = {
 	[KERNEL_IMAGE_CROS] = {CMD_LINE_SIGNER | CMD_LINE_DTB, fill_info_cros},
-	[KERNEL_IMAGE_BOOTIMG] = {CMD_LINE_SIGNER | CMD_LINE_BOOTIMG_HDR |
-				  CMD_LINE_DTB, fill_info_bootimg},
+	[KERNEL_IMAGE_BOOTIMG] = {CMD_LINE_BOOTIMG_HDR,
+				  fill_info_gki},
 #if CONFIG(KERNEL_MULTIBOOT)
 	[KERNEL_IMAGE_MULTIBOOT] = {CMD_LINE_SIGNER, fill_info_multiboot},
 #endif

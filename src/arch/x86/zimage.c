@@ -27,14 +27,17 @@
 
 int boot(struct boot_info *bi)
 {
+	int kernel_type = -1;
+
+	if (bi->kparams)
+		kernel_type = GET_KERNEL_IMG_TYPE(bi->kparams->flags);
+
 	/*
-	 * If boot_info has vboot kernel params and flags in the kernel params
-	 * indicate that the image is not Chrome OS kernel image, bail out
-	 * early.
-	 */
-	if (bi->kparams &&
-	    (GET_KERNEL_IMG_TYPE(bi->kparams->flags) != KERNEL_IMAGE_CROS)) {
-		printf("zimage: Not a Chrome OS kernel image\n");
+	* If flags in the kernel params indicate that the image is not
+	* Chrome OS nor Android GKI kernel image, bail out early.
+	*/
+	if (kernel_type != KERNEL_IMAGE_CROS &&
+	    kernel_type != KERNEL_IMAGE_BOOTIMG) {
 		return -1;
 	}
 
