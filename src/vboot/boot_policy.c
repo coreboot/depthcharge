@@ -21,6 +21,7 @@
 #include <stdlib.h>
 
 #include "boot/multiboot.h"
+#include "vboot/android_image_hdr.h"
 #include "vboot/boot.h"
 #include "vboot/boot_policy.h"
 
@@ -39,6 +40,10 @@ static const struct boot_policy boot_policy[] = {
 	{
 		.img_type = KERNEL_IMAGE_CROS,
 		.cmd_line_loc = CMD_LINE_SIGNER,
+	},
+	{
+		.img_type = KERNEL_IMAGE_ANDROID_GKI,
+		.cmd_line_loc = CMD_LINE_BOOTIMG_HDR,
 	},
 };
 
@@ -188,6 +193,87 @@ static int fill_info_bootimg(struct boot_info *bi,
 	return 0;
 }
 
+/************************* Android GKI *******************************/
+#define ANDROID_GKI_BOOT_HDR_SIZE 4096
+
+static int gki_setup_ramdisk(struct boot_info *bi,
+			     struct vb2_kernel_params *kparams,
+			     int fill_cmdline)
+{
+	struct vendor_boot_img_hdr_v4 *vendor_hdr;
+	struct boot_img_hdr_v4 *init_hdr;
+	uint8_t *init_boot_ramdisk_src;
+	uint8_t *init_boot_ramdisk_dst;
+	uint32_t vendor_ramdisk_section_offset;
+
+	vendor_hdr = (struct vendor_boot_img_hdr_v4 *)((uintptr_t)kparams->kernel_buffer +
+						       kparams->vendor_boot_offset);
+	init_hdr = (struct boot_img_hdr_v4 *)((uintptr_t)kparams->kernel_buffer +
+					      kparams->init_boot_offset);
+
+	/*
+	 * TODO: For now assuming single ramdisk in vendor_hdr, do not load more
+	 * than one ramdisk. This is a WIP solution, need to improve based on
+	 * mode.
+	 */
+	if (vendor_hdr->vendor_ramdisk_table_entry_num > 1) {
+		printf("GKI: Loading more than single ramdisk is not supported\n");
+		return -1;
+	}
+
+	if (init_hdr->kernel_size != 0) {
+		printf("GKI: Kernel size on init_boot partition has to be zero\n");
+		return -1;
+	}
+
+	/* Calculate address offset of vendor_ramdisk section on vendor_boot partition */
+	vendor_ramdisk_section_offset = ALIGN_UP(sizeof(struct vendor_boot_img_hdr_v4),
+						 vendor_hdr->page_size);
+
+	init_boot_ramdisk_dst = ((uint8_t *)vendor_hdr +
+				vendor_ramdisk_section_offset +
+				vendor_hdr->vendor_ramdisk_size);
+
+	/* On init_boot there's no kernel, so ramdisk follows the header */
+	init_boot_ramdisk_src = (uint8_t *)init_hdr + ANDROID_GKI_BOOT_HDR_SIZE;
+
+	/* Move init_boot ramdisk to directly follow the vendor_boot ramdisk.
+	 * This is a requirement from Android system. The cpio/gzip/lz4
+	 * compression formats support this type of concatenation. After
+	 * the kernel decompresses, it extracts contatenated file into
+	 * an initramfs, which results in a file structure that's a generic
+	 * ramdisk (from init_boot) overlaid on the vendor ramdisk (from
+	 * vendor_boot) file structure. */
+	memmove(init_boot_ramdisk_dst, init_boot_ramdisk_src, init_hdr->ramdisk_size);
+
+	/* Update ramdisk addr and size */
+	bi->ramdisk_addr = (uint8_t *)vendor_hdr + vendor_ramdisk_section_offset;
+	bi->ramdisk_size = vendor_hdr->vendor_ramdisk_size + init_hdr->ramdisk_size;
+
+	if (fill_cmdline)
+		bi->cmd_line = (char *)vendor_hdr->cmdline;
+
+	return 0;
+}
+
+static int fill_info_gki(struct boot_info *bi,
+			 struct vb2_kernel_params *kparams,
+			 const struct boot_policy *policy)
+{
+	if (kparams->kernel_buffer == NULL) {
+		printf("Pointer to kernel buffer is not initialized\n");
+		return -1;
+	}
+
+	/* Kernel starts at the beginning of kernel buffer */
+	bi->kernel = kparams->kernel_buffer;
+
+	if (gki_setup_ramdisk(bi, kparams, 1))
+		return -1;
+
+	return 0;
+}
+
 /*
  * Table describing allowed command line locations and parsing functions for a
  * given image type.
@@ -199,6 +285,8 @@ static const struct {
 	[KERNEL_IMAGE_CROS] = {CMD_LINE_SIGNER | CMD_LINE_DTB, fill_info_cros},
 	[KERNEL_IMAGE_BOOTIMG] = {CMD_LINE_SIGNER | CMD_LINE_BOOTIMG_HDR |
 				  CMD_LINE_DTB, fill_info_bootimg},
+	[KERNEL_IMAGE_ANDROID_GKI] = {CMD_LINE_BOOTIMG_HDR,
+				      fill_info_gki},
 #if CONFIG(KERNEL_MULTIBOOT)
 	[KERNEL_IMAGE_MULTIBOOT] = {CMD_LINE_SIGNER, fill_info_multiboot},
 #endif
