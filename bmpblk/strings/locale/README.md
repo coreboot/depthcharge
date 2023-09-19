@@ -44,9 +44,11 @@ translated strings into your Chromium OS local branch.
 $ prodaccess
 $ g4d localization      # cd to google3 directory
 $ g4 sync               # Sync to the latest changelist
+# Build all .xtb files.
 $ blaze build //googleclient/chrome/transconsole_resources:cros_fw_xtbs
-# Get the diff of message ID of en-GB. This can help you find the message ID
-# related to the change.
+# Get the message ID for each string.
+$ blaze run googleclient/chrome/transconsole_resources/id_mapper -- $CROS/src/platform/bmpblk/strings/locale/firmware_strings.grd --textual
+# Alternatively, get the diff of en-GB to see what message IDs are changed.
 $ python3 $CROS/src/platform/bmpblk/update_xtb.py diff en-GB
 # Merge the strings with those message ID.
 $ python3 $CROS/src/platform/bmpblk/update_xtb.py merge <ID1> <ID2> ...
