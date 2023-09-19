@@ -180,7 +180,7 @@ static void setup_audio_amp(void)
 	if (CONFIG(DRIVER_SOUND_GPIO_EDGE_BUZZER))
 	{
 		GpioOps *sound_gpio =
-			&new_jasperlake_gpio_output(BUZZER_GPIO, 0)->ops;
+			&new_jasperlake_gpio_output(BUZZER_GPIO, 1)->ops;
 		GpioEdgeBuzzer *buzzer = new_gpio_edge_buzzer(sound_gpio);
 		sound_set_ops(&buzzer->ops);
 	} else {
