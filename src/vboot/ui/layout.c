@@ -612,7 +612,8 @@ vb2_error_t ui_get_log_textbox_dimensions(enum ui_screen screen,
 		UI_FOOTER_MARGIN_TOP - UI_FOOTER_HEIGHT -
 		UI_MARGIN_BOTTOM;
 
-	*lines_per_page = (textbox_height - UI_BOX_PADDING_V * 2) /
+	*lines_per_page = (textbox_height - UI_BOX_PADDING_V * 2 +
+			   UI_BOX_TEXT_LINE_SPACING) /
 			  (UI_BOX_TEXT_HEIGHT + UI_BOX_TEXT_LINE_SPACING);
 
 	VB2_TRY(ui_get_text_width("?", UI_BOX_TEXT_HEIGHT, &char_width));
