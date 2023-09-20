@@ -585,7 +585,7 @@ vb2_error_t advanced_options_init(struct ui_context *ui)
 	return VB2_SUCCESS;
 }
 
-static vb2_error_t enter_firmware_shell_action(struct ui_context *ui)
+vb2_error_t ui_developer_mode_enter_fwshell_action(struct ui_context *ui)
 {
 	if (!dc_dev_firmware_shell_enabled())
 		return VB2_SUCCESS;
@@ -619,7 +619,7 @@ static const struct ui_menu_item advanced_options_items[] = {
 	[ADVANCED_OPTIONS_ITEM_FIRMWARE_SHELL] = {
 		.name = "Firmware shell",
 		.file = "btn_firmware_shell.bmp",
-		.action = enter_firmware_shell_action,
+		.action = ui_developer_mode_enter_fwshell_action,
 	},
 	BACK_ITEM,
 	POWER_OFF_ITEM,

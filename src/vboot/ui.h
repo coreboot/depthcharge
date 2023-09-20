@@ -190,6 +190,8 @@
 #define UI_KEY_DEV_BOOT_EXTERNAL	UI_KEY_CTRL('U')
 /* L for aLtfw (formerly Legacy) */
 #define UI_KEY_DEV_BOOT_ALTFW		UI_KEY_CTRL('L')
+/* C for firmware shell Console*/
+#define UI_KEY_DEV_ENTER_FWSHELL	UI_KEY_CTRL('C')
 
 /* Screens. */
 enum ui_screen {
@@ -1054,6 +1056,7 @@ vb2_error_t ui_recovery_mode_boot_minios_action(struct ui_context *ui);
 vb2_error_t ui_developer_mode_boot_internal_action(struct ui_context *ui);
 vb2_error_t ui_developer_mode_boot_external_action(struct ui_context *ui);
 vb2_error_t ui_developer_mode_boot_altfw_action(struct ui_context *ui);
+vb2_error_t ui_developer_mode_enter_fwshell_action(struct ui_context *ui);
 
 /******************************************************************************/
 /* log.c */

@@ -84,6 +84,8 @@ static vb2_error_t developer_action(struct ui_context *ui)
 		return ui_developer_mode_boot_internal_action(ui);
 	if (ui->key == UI_KEY_DEV_BOOT_ALTFW)
 		return ui_developer_mode_boot_altfw_action(ui);
+	if (ui->key == UI_KEY_DEV_ENTER_FWSHELL)
+		return ui_developer_mode_enter_fwshell_action(ui);
 
 	return VB2_SUCCESS;
 }
