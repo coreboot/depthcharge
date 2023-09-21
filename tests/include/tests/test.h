@@ -24,6 +24,16 @@
 /* Ensure that die()/halt() is called. */
 #define expect_die(expression) expect_assert_failure(expression)
 
+/* Assert a is less than b. */
+#define assert_int_less_than(a, b) \
+	do { \
+		intmax_t _assert_local_a = (a), _assert_local_b = (b); \
+		if (_assert_local_a >= _assert_local_b) \
+			fail_msg("%#llx is not less than %#llx", \
+				 _assert_local_a, \
+				 _assert_local_b); \
+	} while (0)
+
 /*
  * CMocka doesn't support printing custom message on assertion failure. When a
  * helper macro has multiple assertion calls (such as ASSERT_SCREEN_STATE), it's
