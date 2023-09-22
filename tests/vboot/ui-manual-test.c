@@ -33,6 +33,11 @@ int ui_is_lid_open(void)
 	return mock();
 }
 
+int has_external_display(void)
+{
+	return 0;
+}
+
 /* Tests */
 struct ui_context test_ui_ctx;
 struct vb2_kernel_params test_kparams;

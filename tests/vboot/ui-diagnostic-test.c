@@ -17,6 +17,11 @@ int ui_is_lid_open(void)
 	return mock();
 }
 
+int has_external_display(void)
+{
+	return 0;
+}
+
 /* Helper functions */
 
 char expected_event_data[ELOG_MAX_EVENT_DATA_SIZE];

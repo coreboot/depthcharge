@@ -3,6 +3,7 @@
 #include <vb2_api.h>
 #include <vboot_api.h>
 
+#include "drivers/video/display.h"
 #include "vboot/ui.h"
 
 static vb2_error_t ui_error_exit_action(struct ui_context *ui)
@@ -62,7 +63,8 @@ static vb2_error_t check_shutdown_request(struct ui_context *ui)
 	/* If desired, ignore shutdown request due to lid closure. */
 	if (!(vb2api_gbb_get_flags(ui->ctx) &
 	      VB2_GBB_FLAG_DISABLE_LID_SHUTDOWN) &&
-	    !ui_is_lid_open())
+	    !ui_is_lid_open() &&
+	    !has_external_display())
 		return VB2_REQUEST_SHUTDOWN;
 
 	/*

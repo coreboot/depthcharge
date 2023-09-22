@@ -34,6 +34,11 @@ int ui_is_lid_open(void)
 	return mock_close_lid_countdown != 0;
 }
 
+int has_external_display(void)
+{
+	return 0;
+}
+
 bool dc_dev_firmware_shell_enabled(void)
 {
 	return true;

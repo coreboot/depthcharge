@@ -70,6 +70,11 @@ int display_init_required(void)
 	return lib_sysinfo.framebuffer.physical_address != 0;
 }
 
+int has_external_display(void)
+{
+	return lib_sysinfo.framebuffer.flags.has_external_display;
+}
+
 int backlight_update(uint8_t enable)
 {
 	if (display_ops && display_ops->backlight_update)
