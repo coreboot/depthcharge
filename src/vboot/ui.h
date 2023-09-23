@@ -141,6 +141,13 @@
 #define UI_ERROR_BOX_TEXT_HEIGHT		24
 #define UI_ERROR_BOX_TEXT_LINE_SPACING		12
 
+/* For full view layout */
+#define UI_FULLVIEW_TITLE_TEXT_HEIGHT		30
+#define UI_FULLVIEW_TITLE_MARGIN		12
+#define UI_NAVIGATION_BAR_ICON_SPACING		5
+#define UI_NAVIGATION_BAR_HEIGHT		30
+#define UI_NAVIGATION_BAR_MARGIN		8
+
 /*
  * UI_BOX_* constants define a large textbox taking up the width of the screen.
  * They are used for
@@ -571,6 +578,12 @@ struct ui_screen_info {
 	struct ui_menu menu;
 	/* Absence of footer */
 	int no_footer;
+	/*
+	 * Display the screen content in full view. If is_fullview is set,
+	 * - no_footer must be set.
+	 * - no menu items.
+	 */
+	int is_fullview;
 	/*
 	 * Init function runs once when changing to the screen which is not in
 	 * the history stack.

@@ -240,6 +240,53 @@ static vb2_error_t draw_footer(const struct ui_state *state)
 	return VB2_SUCCESS;
 }
 
+static vb2_error_t draw_navigation_bar(const struct ui_state *state)
+{
+	const int reverse = state->locale->rtl;
+	int32_t x, y;
+	uint32_t flags = PIVOT_H_LEFT | PIVOT_V_TOP;
+	const int32_t w = UI_SIZE_AUTO;
+	struct ui_bitmap bitmap;
+	const char *locale_code = state->locale->code;
+
+	x = UI_MARGIN_H;
+	y = UI_SCALE - UI_NAVIGATION_BAR_HEIGHT - UI_NAVIGATION_BAR_MARGIN;
+
+	int32_t icon_width;
+	const int32_t icon_height = UI_NAVIGATION_BAR_HEIGHT;
+	const int32_t text_height = UI_BUTTON_TEXT_HEIGHT;
+
+	struct navigation_tip {
+		const char *icon;
+		const char *desc;
+	};
+
+	const struct navigation_tip tips[] = {
+		{ "nav-key_up.bmp", "btn_page_up.bmp" },
+		{ "nav-key_down.bmp", "btn_page_down.bmp" },
+		{ "nav-key_enter.bmp", "btn_back.bmp" },
+	};
+
+	for (int i = 0; i < ARRAY_SIZE(tips); i++) {
+		/* Draw icon */
+		int32_t nav_x = x + i * (UI_SCALE - 2 * x) / ARRAY_SIZE(tips);
+		VB2_TRY(ui_get_bitmap(tips[i].icon, NULL, 0, &bitmap));
+		VB2_TRY(ui_draw_bitmap(&bitmap, nav_x, y, w, icon_height, flags,
+				       reverse));
+		VB2_TRY(ui_get_bitmap_width(&bitmap, icon_height, &icon_width));
+		/* Draw description */
+		nav_x += icon_width + UI_NAVIGATION_BAR_ICON_SPACING;
+		VB2_TRY(ui_get_bitmap(tips[i].desc, locale_code, 0, &bitmap));
+		VB2_TRY(ui_draw_mapped_bitmap(&bitmap, nav_x,
+					      y + (icon_height - text_height) / 2,
+					      UI_SIZE_AUTO, text_height,
+					      &ui_color_bg, &ui_color_fg, flags,
+					      reverse));
+	}
+
+	return VB2_SUCCESS;
+}
+
 vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 				const struct ui_state *state,
 				int32_t *button_width)
@@ -598,19 +645,29 @@ vb2_error_t ui_get_log_textbox_dimensions(enum ui_screen screen,
 
 	screen_info = ui_get_screen_info(screen);
 	VB2_TRY(ui_get_bitmap(screen_info->title, locale_code, 0, &bitmap));
-	title_height = UI_TITLE_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
 
 	/* Calculate textbox height by subtracting the height of other items
 	   from UI_SCALE. */
-	textbox_height = UI_SCALE -
-		UI_MARGIN_TOP -
-		UI_LANG_BOX_HEIGHT - UI_LANG_MARGIN_BOTTOM -
-		title_height - UI_TITLE_MARGIN_BOTTOM -
-		/* Page up, page down, back, and power off button */
-		(UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V) * 4 -
-		UI_DESC_MARGIN_BOTTOM -
-		UI_FOOTER_MARGIN_TOP - UI_FOOTER_HEIGHT -
-		UI_MARGIN_BOTTOM;
+	if (screen_info->is_fullview) {
+		title_height = UI_FULLVIEW_TITLE_TEXT_HEIGHT *
+				ui_get_bitmap_num_lines(&bitmap);
+		textbox_height = UI_SCALE -
+				UI_FULLVIEW_TITLE_MARGIN * 2 -
+				title_height - UI_NAVIGATION_BAR_MARGIN * 2 -
+				UI_NAVIGATION_BAR_HEIGHT;
+	} else {
+		title_height = UI_TITLE_TEXT_HEIGHT *
+				ui_get_bitmap_num_lines(&bitmap);
+		textbox_height = UI_SCALE -
+			UI_MARGIN_TOP -
+			UI_LANG_BOX_HEIGHT - UI_LANG_MARGIN_BOTTOM -
+			title_height - UI_TITLE_MARGIN_BOTTOM -
+			/* Page up, page down, back, and power off button */
+			(UI_BUTTON_HEIGHT + UI_BUTTON_MARGIN_V) * 4 -
+			UI_DESC_MARGIN_BOTTOM -
+			UI_FOOTER_MARGIN_TOP - UI_FOOTER_HEIGHT -
+			UI_MARGIN_BOTTOM;
+	}
 
 	*lines_per_page = (textbox_height - UI_BOX_PADDING_V * 2 +
 			   UI_BOX_TEXT_LINE_SPACING) /
@@ -789,15 +846,24 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 		 */
 		clear_screen(&ui_color_bg);
 	} else if (prev_state->screen != state->screen) {
-		/* Clear everything above the footer for new screen. */
-		const int32_t box_height = UI_SCALE - UI_MARGIN_BOTTOM -
-			UI_FOOTER_HEIGHT;
-		VB2_TRY(ui_draw_box(0, 0, UI_SCALE, box_height,
-				    &ui_color_bg, 0));
+		if (prev_state->screen->is_fullview) {
+			/*
+			 * Clear the whole screen if previous has is_fullview.
+			 * The screen with is_fullview property uses different
+			 * layout.
+			 */
+			clear_screen(&ui_color_bg);
+		} else {
+			/* Clear everything above the footer for new screen. */
+			const int32_t box_height = UI_SCALE - UI_MARGIN_BOTTOM -
+				UI_FOOTER_HEIGHT;
+			VB2_TRY(ui_draw_box(0, 0, UI_SCALE, box_height,
+					    &ui_color_bg, 0));
+		}
 	}
 
 	/* Warning if we are in recovery and using dev signed keys. */
-	if (screen->id != UI_SCREEN_LANGUAGE_SELECT)
+	if (screen->id != UI_SCREEN_LANGUAGE_SELECT && !screen->is_fullview)
 		VB2_TRY(ui_draw_dev_signed_warning());
 
 	/* Language dropdown header */
@@ -824,9 +890,14 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 	     prev_state->locale != state->locale ||
 	     prev_state->error_code != state->error_code))
 		VB2_TRY(draw_footer(state));
+	else if (screen->is_fullview)
+		VB2_TRY(draw_navigation_bar(state));
 
 	x = UI_MARGIN_H;
-	y = UI_MARGIN_TOP + UI_LANG_BOX_HEIGHT + UI_LANG_MARGIN_BOTTOM;
+	if (screen->is_fullview)
+		y = UI_FULLVIEW_TITLE_MARGIN;
+	else
+		y = UI_MARGIN_TOP + UI_LANG_BOX_HEIGHT + UI_LANG_MARGIN_BOTTOM;
 
 	/* Icon */
 	if (screen->icon != UI_ICON_TYPE_NONE) {
@@ -859,14 +930,24 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 	}
 
 	/* Title */
+	int32_t title_text_height, title_margin_bottom;
+
+	if (screen->is_fullview) {
+		title_text_height = UI_FULLVIEW_TITLE_TEXT_HEIGHT;
+		title_margin_bottom = UI_FULLVIEW_TITLE_MARGIN;
+	} else {
+		title_text_height = UI_TITLE_TEXT_HEIGHT;
+		title_margin_bottom = UI_TITLE_MARGIN_BOTTOM;
+	}
+
 	if (screen->title) {
 		VB2_TRY(ui_get_bitmap(screen->title, locale_code, 0, &bitmap));
-		h = UI_TITLE_TEXT_HEIGHT * ui_get_bitmap_num_lines(&bitmap);
+		h = title_text_height * ui_get_bitmap_num_lines(&bitmap);
 		VB2_TRY(ui_draw_bitmap(&bitmap, x, y, w, h, flags, reverse));
 	} else {
-		h = UI_TITLE_TEXT_HEIGHT;
+		h = title_text_height;
 	}
-	y += h + UI_TITLE_MARGIN_BOTTOM;
+	y += h + title_margin_bottom;
 
 	/* Description */
 	if (screen->draw_desc)

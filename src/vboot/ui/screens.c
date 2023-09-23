@@ -218,6 +218,10 @@ static vb2_error_t log_page_update(struct ui_context *ui,
 			ui->state->current_page = log->page_count - 1;
 		ui->force_display = 1;
 	}
+
+	if (ui_get_menu(ui)->num_items == 0)
+		return VB2_SUCCESS;
+
 	UI_CLR_BIT(ui->state->disabled_item_mask, screen->page_up_item);
 	UI_CLR_BIT(ui->state->disabled_item_mask, screen->page_down_item);
 	if (ui->state->current_page == 0)
