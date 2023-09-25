@@ -865,4 +865,6 @@ static inline int get_cache_line_size(void)
 #define GMACSEC_CORE_RESET(n)	((void *)(0x903E28 + ((n - 1) * 4)))
 #define GMAC_AHB_RESET		((u8 *)0x903E24)
 
+int board_wan_port_number(void);
+
 #endif	/* _IPQ_GMAC_H */

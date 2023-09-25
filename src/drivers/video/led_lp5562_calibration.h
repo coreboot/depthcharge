@@ -68,6 +68,6 @@ int led_lp5562_calibrate(const struct lp5562_calibration_data *cal_data,
 			 struct lp5562_calibrated_color *calibrated_colors);
 
 
-extern const struct lp5562_calibration_data mistral_calibration_database[];
+extern const struct lp5562_calibration_data lp5562_calibration_database[];
 
 #endif  // LED_LP5562_CALIBRATION_H_

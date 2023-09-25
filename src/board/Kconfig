@@ -69,9 +69,6 @@ endif
 if BOARD_DIR = "smaug"
 source "src/board/smaug/Kconfig"
 endif
-if BOARD_DIR = "storm"
-source "src/board/storm/Kconfig"
-endif
 if BOARD_DIR = "strago"
 source "src/board/strago/Kconfig"
 endif

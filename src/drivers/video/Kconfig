@@ -38,10 +38,6 @@ config DRIVER_VIDEO_RK3399
 	bool "rk3399 video settings"
 	default n
 
-config DRIVER_VIDEO_WW_RING
-	bool "Whirlwind LED ring driver"
-	default n
-
 config DRIVER_VIDEO_MTK
 	bool "MediaTek video settings"
 	default n

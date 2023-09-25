@@ -25,9 +25,6 @@
 
 #include "ipq806x.h"
 #include "athrs17_phy.h"
-#include "board/storm/board.h"
-
-
 
 #define phy_reg_read(base, addr, reg)	\
 	ipq_mdio_read(addr, reg, NULL)

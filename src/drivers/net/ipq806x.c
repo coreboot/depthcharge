@@ -13,7 +13,6 @@
 #include "drivers/gpio/ipq806x.h"
 #include "drivers/net/nss/msm_ipq806x_gmac.h"
 #include "drivers/net/athrs17_phy.h"
-#include "board/storm/board.h"
 
 #define PCS_QSGMII_MAC_STAT	0x74
 #define MAX_FRAME_SIZE		1536

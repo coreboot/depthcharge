@@ -331,7 +331,7 @@ const Led5562StateProg led_lp5562_state_programs[] = {
  * Calibration code map for "blink" pattern.
  * Set PWM values, wait, set PWMs to 0, wait, loop.
  */
-const struct lp5562_calibration_code_map mistral_code_map_blink[] = {
+static const struct lp5562_calibration_code_map lp5562_code_map_blink[] = {
 	{
 		blue,
 		set_pwm,
@@ -362,12 +362,12 @@ const struct lp5562_calibration_code_map mistral_code_map_blink[] = {
 	}
 };
 
-const struct lp5562_calibration_data mistral_calibration_database[] = {
+const struct lp5562_calibration_data lp5562_calibration_database[] = {
 	{
 		&blink_rcv_insert1_program,
 		2, /* Red */
 		100, /* 100% brightness */
-		mistral_code_map_blink,
+		lp5562_code_map_blink,
 	},
 	{
 		NULL,
