@@ -75,9 +75,6 @@ endif
 if BOARD_DIR = "veyron"
 source "src/board/veyron/Kconfig"
 endif
-if BOARD_DIR = "veyron_rialto"
-source "src/board/veyron_rialto/Kconfig"
-endif
 if BOARD_DIR = "volteer"
 source "src/board/volteer/Kconfig"
 endif
