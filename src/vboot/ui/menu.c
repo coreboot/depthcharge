@@ -23,9 +23,6 @@ vb2_error_t ui_menu_prev(struct ui_context *ui)
 {
 	int item;
 
-	if (!CONFIG(DETACHABLE) && ui->key == UI_BUTTON_VOL_UP_SHORT_PRESS)
-		return VB2_SUCCESS;
-
 	item = ui->state->focused_item - 1;
 	while (item >= 0 && UI_GET_BIT(ui->state->hidden_item_mask, item))
 		item--;
@@ -40,9 +37,6 @@ vb2_error_t ui_menu_next(struct ui_context *ui)
 {
 	int item;
 	const struct ui_menu *menu;
-
-	if (!CONFIG(DETACHABLE) && ui->key == UI_BUTTON_VOL_DOWN_SHORT_PRESS)
-		return VB2_SUCCESS;
 
 	menu = ui_get_menu(ui);
 	item = ui->state->focused_item + 1;
@@ -60,9 +54,6 @@ vb2_error_t ui_menu_select(struct ui_context *ui)
 {
 	const struct ui_menu *menu;
 	const struct ui_menu_item *menu_item;
-
-	if (!CONFIG(DETACHABLE) && ui->key == UI_BUTTON_POWER_SHORT_PRESS)
-		return VB2_SUCCESS;
 
 	menu = ui_get_menu(ui);
 	if (menu->num_items == 0)

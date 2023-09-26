@@ -89,21 +89,6 @@ void test_prev_invalid_action_blocked_by_mask(void **state)
 	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 2, MOCK_IGNORE);
 }
 
-void test_prev_ignore_up_for_non_detachable(void **state)
-{
-	if (CONFIG(DETACHABLE))
-		skip();
-
-	struct ui_context *ui = *state;
-
-	ui->state->screen = &mock_screen_menu;
-	ui->state->focused_item = 2;
-	ui->key = UI_BUTTON_VOL_UP_SHORT_PRESS;
-
-	ASSERT_VB2_SUCCESS(ui_menu_prev(ui));
-	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 2, MOCK_IGNORE);
-}
-
 void test_next_valid_action(void **state)
 {
 	struct ui_context *ui = *state;
@@ -162,21 +147,6 @@ void test_next_invalid_action_blocked_by_mask(void **state)
 	ui->state->focused_item = 2;
 	ui->state->hidden_item_mask = 0x1a; /* 0b11010 */
 	ui->key = UI_KEY_DOWN;
-
-	ASSERT_VB2_SUCCESS(ui_menu_next(ui));
-	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 2, MOCK_IGNORE);
-}
-
-void test_next_ignore_up_for_non_detachable(void **state)
-{
-	if (CONFIG(DETACHABLE))
-		skip();
-
-	struct ui_context *ui = *state;
-
-	ui->state->screen = &mock_screen_menu;
-	ui->state->focused_item = 2;
-	ui->key = UI_BUTTON_VOL_DOWN_SHORT_PRESS;
 
 	ASSERT_VB2_SUCCESS(ui_menu_next(ui));
 	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 2, MOCK_IGNORE);
@@ -241,21 +211,6 @@ void test_select_item_disabled(void **state)
 	ASSERT_VB2_SUCCESS(ui_menu_select(ui));
 }
 
-void test_select_ignore_power_button_for_non_detachable(void **state)
-{
-	if (CONFIG(DETACHABLE))
-		skip();
-
-	struct ui_context *ui = *state;
-
-	ui->state->screen = &mock_screen_menu;
-	ui->state->focused_item = 1;
-	ui->key = UI_BUTTON_POWER_SHORT_PRESS;
-
-	ASSERT_VB2_SUCCESS(ui_menu_select(ui));
-	ASSERT_SCREEN_STATE(ui->state, MOCK_SCREEN_MENU, 1, MOCK_IGNORE);
-}
-
 #define UI_TEST(test_function_name) \
 	cmocka_unit_test_setup(test_function_name, setup_ui_context)
 
@@ -267,21 +222,18 @@ int main(void)
 		UI_TEST(test_prev_disable_mask_does_not_affect),
 		UI_TEST(test_prev_invalid_action_blocked),
 		UI_TEST(test_prev_invalid_action_blocked_by_mask),
-		UI_TEST(test_prev_ignore_up_for_non_detachable),
 
 		UI_TEST(test_next_valid_action),
 		UI_TEST(test_next_valid_action_with_hidden_mask),
 		UI_TEST(test_next_disable_mask_does_not_affect),
 		UI_TEST(test_next_invalid_action_blocked),
 		UI_TEST(test_next_invalid_action_blocked_by_mask),
-		UI_TEST(test_next_ignore_up_for_non_detachable),
 
 		UI_TEST(test_select_action_with_no_item_screen),
 		UI_TEST(test_select_item_with_target),
 		UI_TEST(test_select_item_with_action),
 		UI_TEST(test_select_item_with_no_target_and_action),
 		UI_TEST(test_select_item_disabled),
-		UI_TEST(test_select_ignore_power_button_for_non_detachable),
 	};
 	return cmocka_run_group_tests(tests, NULL, NULL);
 }

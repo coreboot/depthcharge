@@ -873,16 +873,20 @@ static vb2_error_t recovery_to_dev_finalize(struct ui_context *ui)
 
 static vb2_error_t recovery_to_dev_confirm_action(struct ui_context *ui)
 {
+	uint32_t key = ui->key;
+
+	ui->key = 0;
+
 	if (!ui->key_trusted) {
 		UI_INFO("Reject untrusted %s confirmation\n",
-			ui->key == UI_KEY_ENTER ? "ENTER" : "POWER");
+			key == UI_KEY_ENTER ? "ENTER" : "POWER");
 		/*
 		 * If physical presence is confirmed using the keyboard,
 		 * beep and notify the user when the ENTER key comes
 		 * from an untrusted keyboard.
 		 */
 		if (CONFIG(PHYSICAL_PRESENCE_KEYBOARD) &&
-		    ui->key == UI_KEY_ENTER)
+		    key == UI_KEY_ENTER)
 			return set_ui_error(
 				ui, UI_ERROR_UNTRUSTED_CONFIRMATION);
 		return VB2_SUCCESS;
@@ -896,8 +900,14 @@ static vb2_error_t recovery_to_dev_action(struct ui_context *ui)
 
 	if (ui->key == ' ') {
 		UI_INFO("SPACE means cancel dev mode transition\n");
+		ui->key = 0;
 		return ui_screen_back(ui);
 	}
+
+	if (ui->state->focused_item == RECOVERY_TO_DEV_ITEM_CONFIRM &&
+	    (ui->key == UI_KEY_ENTER ||
+	     (CONFIG(DETACHABLE) && ui->key == UI_BUTTON_POWER_SHORT_PRESS)))
+		return recovery_to_dev_confirm_action(ui);
 
 	/* Keyboard physical presence case covered by "Confirm" action. */
 	if (CONFIG(PHYSICAL_PRESENCE_KEYBOARD))
@@ -922,7 +932,6 @@ static const struct ui_menu_item recovery_to_dev_items[] = {
 	[RECOVERY_TO_DEV_ITEM_CONFIRM] = {
 		.name = "Confirm",
 		.file = "btn_confirm.bmp",
-		.action = recovery_to_dev_confirm_action,
 	},
 	[RECOVERY_TO_DEV_ITEM_CANCEL] = {
 		.name = "Cancel",

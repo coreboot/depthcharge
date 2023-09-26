@@ -11,8 +11,10 @@
 static vb2_error_t ui_broken_screen_action(struct ui_context *ui)
 {
 	/* Broken screen keyboard shortcuts */
-	if (ui->key == '\t')
+	if (ui->key == '\t') {
+		ui->key = 0;
 		return ui_screen_change(ui, UI_SCREEN_DEBUG_INFO);
+	}
 
 	return VB2_SUCCESS;
 }
@@ -40,14 +42,19 @@ static vb2_error_t ui_manual_recovery_action(struct ui_context *ui)
 	if (ui->key == UI_KEY_REC_TO_DEV ||
 	    (CONFIG(DETACHABLE) &&
 	     ui->key == UI_BUTTON_VOL_UP_DOWN_COMBO_PRESS)) {
+		ui->key = 0;
 		return ui_screen_change(ui, UI_SCREEN_RECOVERY_TO_DEV);
 	}
 
-	if (ui->key == UI_KEY_INTERNET_RECOVERY)
+	if (ui->key == UI_KEY_INTERNET_RECOVERY) {
+		ui->key = 0;
 		return ui_recovery_mode_boot_minios_action(ui);
+	}
 
-	if (ui->key == '\t')
+	if (ui->key == '\t') {
+		ui->key = 0;
 		return ui_screen_change(ui, UI_SCREEN_DEBUG_INFO);
+	}
 
 	return VB2_SUCCESS;
 }
@@ -67,25 +74,38 @@ static vb2_error_t developer_action(struct ui_context *ui)
 		get_all_bdevs(BLOCKDEV_REMOVABLE, NULL);
 
 	/* Developer mode keyboard shortcuts */
-	if (ui->key == '\t')
+	if (ui->key == '\t') {
+		ui->key = 0;
 		return ui_screen_change(ui, UI_SCREEN_DEBUG_INFO);
+	}
 
 	/* Ignore other shortcuts */
 	if (!(ui->ctx->flags & VB2_CONTEXT_DEV_BOOT_ALLOWED))
 		return VB2_REQUEST_UI_CONTINUE;
 
-	if (ui->key == UI_KEY_DEV_TO_NORM)
+	if (ui->key == UI_KEY_DEV_TO_NORM) {
+		ui->key = 0;
 		return ui_screen_change(ui, UI_SCREEN_DEVELOPER_TO_NORM);
+	}
+
+	vb2_error_t (*handler)(struct ui_context *ui) = NULL;
+
 	if (ui->key == UI_KEY_DEV_BOOT_EXTERNAL ||
 	    (CONFIG(DETACHABLE) && ui->key == UI_BUTTON_VOL_UP_LONG_PRESS))
-		return ui_developer_mode_boot_external_action(ui);
-	if (ui->key == UI_KEY_DEV_BOOT_INTERNAL ||
-	    (CONFIG(DETACHABLE) && ui->key == UI_BUTTON_VOL_DOWN_LONG_PRESS))
-		return ui_developer_mode_boot_internal_action(ui);
-	if (ui->key == UI_KEY_DEV_BOOT_ALTFW)
-		return ui_developer_mode_boot_altfw_action(ui);
-	if (ui->key == UI_KEY_DEV_ENTER_FWSHELL)
-		return ui_developer_mode_enter_fwshell_action(ui);
+		handler = ui_developer_mode_boot_external_action;
+	else if (ui->key == UI_KEY_DEV_BOOT_INTERNAL ||
+		 (CONFIG(DETACHABLE) &&
+		  ui->key == UI_BUTTON_VOL_DOWN_LONG_PRESS))
+		handler = ui_developer_mode_boot_internal_action;
+	else if (ui->key == UI_KEY_DEV_BOOT_ALTFW)
+		handler = ui_developer_mode_boot_altfw_action;
+	else if (ui->key == UI_KEY_DEV_ENTER_FWSHELL)
+		handler = ui_developer_mode_enter_fwshell_action;
+
+	if (handler) {
+		ui->key = 0;
+		return handler(ui);
+	}
 
 	return VB2_SUCCESS;
 }

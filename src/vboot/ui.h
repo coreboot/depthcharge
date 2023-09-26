@@ -600,7 +600,14 @@ struct ui_screen_info {
 	 * history stack.
 	 */
 	vb2_error_t (*exit)(struct ui_context *ui);
-	/* Action function runs repeatedly while on the screen. */
+	/*
+	 * Action function runs repeatedly while on the screen.
+	 * - If it triggers screen change due to a key press, the action
+	 *   function must clear ui->key.
+	 * - If it handles a key press but doesn't change the screen, it can
+	 *   either clear ui->key or not, depending on whether we want
+	 *   subsequent actions to handle the same key press.
+	 */
 	vb2_error_t (*action)(struct ui_context *ui);
 	/*
 	 * Custom drawing function. When it is NULL, the default drawing

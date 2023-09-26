@@ -339,6 +339,32 @@ static void test_loop_navigation(void **state)
 			 VB2_REQUEST_SHUTDOWN);
 }
 
+static void test_loop_ignore_volumn_key_navigation(void **state)
+{
+	if (CONFIG(DETACHABLE))
+		skip();
+
+	struct ui_context *ui = *state;
+
+	will_return_maybe(vb2api_gbb_get_flags, 0);
+	WILL_CLOSE_LID_IN(11);
+	will_return_maybe(ui_is_power_pressed, 0);
+	WILL_PRESS_KEY(UI_BUTTON_VOL_UP_SHORT_PRESS, 0);
+	WILL_PRESS_KEY(UI_BUTTON_VOL_UP_SHORT_PRESS, 0);
+	WILL_PRESS_KEY(UI_BUTTON_VOL_DOWN_SHORT_PRESS, 0);
+	WILL_PRESS_KEY(UI_BUTTON_VOL_DOWN_SHORT_PRESS, 0);
+	WILL_PRESS_KEY(UI_BUTTON_VOL_DOWN_SHORT_PRESS, 0);
+	WILL_PRESS_KEY(UI_BUTTON_VOL_DOWN_SHORT_PRESS, 0);
+	WILL_PRESS_KEY(UI_BUTTON_VOL_DOWN_SHORT_PRESS, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	will_return_always(ui_keyboard_read, 0);
+	EXPECT_UI_DISPLAY(MOCK_SCREEN_MENU, MOCK_IGNORE, 1);
+	EXPECT_UI_DISPLAY(MOCK_SCREEN_TARGET1);
+
+	assert_int_equal(ui_loop(ui->ctx, MOCK_SCREEN_MENU, NULL, ui->kparams),
+			 VB2_REQUEST_SHUTDOWN);
+}
+
 static void test_loop_detachable_navigation(void **state)
 {
 	if (!CONFIG(DETACHABLE))
@@ -545,6 +571,7 @@ int main(void)
 		UI_TEST(test_loop_item_target_action_success),
 		UI_TEST(test_loop_global_action_success),
 		UI_TEST(test_loop_navigation),
+		UI_TEST(test_loop_ignore_volumn_key_navigation),
 		UI_TEST(test_loop_detachable_navigation),
 
 		UI_TEST(test_loop_delay_sleep_20_ms),
