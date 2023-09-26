@@ -846,10 +846,9 @@ vb2_error_t ui_draw_default(struct ui_context *ui,
 		 */
 		clear_screen(&ui_color_bg);
 	} else if (prev_state->screen != state->screen) {
-		if (prev_state->screen->is_fullview) {
+		if (prev_state->screen->is_fullview || screen->is_fullview) {
 			/*
-			 * Clear the whole screen if previous has is_fullview.
-			 * The screen with is_fullview property uses different
+			 * The screens with is_fullview property use different
 			 * layout.
 			 */
 			clear_screen(&ui_color_bg);
