@@ -172,7 +172,8 @@ static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 	/* Check result */
 	me->read(&data, EC_LPC_ADDR_HOST_DATA, 1);
 	if (data) {
-		printf("%s: CrosEC result code %d\n", __func__, data);
+		if (data != EC_RES_UNAVAILABLE)
+			printf("%s: CrosEC result code %d\n", __func__, data);
 		return -data;
 	}
 
