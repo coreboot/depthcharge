@@ -5,6 +5,8 @@
 
 #include "base/init_funcs.h"
 #include "boot/commandline.h"
+#include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/fch.h"
 #include "drivers/soc/phoenix.h"
@@ -50,6 +52,7 @@ static int board_setup(void)
 	flag_replace(FLAG_PWRSW, &fake_gpio_0);
 
 	power_set_ops(&kern_power_ops);
+	flash_set_ops(&new_mmap_flash()->ops);
 
 	return 0;
 }

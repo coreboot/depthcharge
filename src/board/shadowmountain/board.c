@@ -18,6 +18,8 @@
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/gpio/alderlake.h"
@@ -115,6 +117,9 @@ static int board_setup(void)
 
 	/* PCH Power */
 	power_set_ops(&alderlake_power_ops);
+
+	/* Flash */
+	flash_set_ops(&new_mmap_flash()->ops);
 
 	/* Audio Setup (for boot beep) */
 	if (CONFIG(DRIVER_SOUND_MAX98373))

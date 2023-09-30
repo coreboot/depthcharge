@@ -29,6 +29,8 @@
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/ec/anx3429/anx3429.h"
 #include "drivers/ec/ps8751/ps8751.h"
+#include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/soc/apollolake.h"
 #include "drivers/tpm/google/i2c.h"
@@ -101,6 +103,9 @@ static int board_setup(void)
 
 	/* PCH Power */
 	power_set_ops(&apollolake_power_ops);
+
+	/* Flash */
+	flash_set_ops(&new_mmap_flash()->ops);
 
 	/* Audio Setup (for boot beep) */
 	GpioOps *sdmode = &new_apollolake_gpio_output(SDMODE_PIN, 0)->ops;

@@ -14,6 +14,8 @@
 #include "drivers/power/pch.h"
 #include "drivers/soc/meteorlake.h"
 #include "drivers/storage/ahci.h"
+#include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/nvme.h"
@@ -46,6 +48,9 @@ static int board_setup(void)
 
 	/* Power */
 	power_set_ops(&meteorlake_power_ops);
+
+	/* Flash */
+	flash_set_ops(&new_mmap_flash()->ops);
 
 	/* RP1*/
 	secondary_bus = pci_read_config8(PCI_DEV_PCIE1, REG_SECONDARY_BUS);

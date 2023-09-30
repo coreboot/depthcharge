@@ -18,8 +18,8 @@
 #include <libpayload.h>
 
 #include "base/container_of.h"
-#include "base/init_funcs.h"
 #include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 
 static const struct flash_mmap_window *find_mmap_window(uint32_t offset,
 							uint32_t size)
@@ -58,19 +58,12 @@ static int mem_mapped_flash_read(FlashOps *me, void *buffer, uint32_t offset,
 	return size;
 }
 
-static int flash_setup(void)
+MmapFlash *new_mmap_flash(void)
 {
-	FlashOps *flash_ops;
-
 	die_if(!lib_sysinfo.spi_flash.mmap_window_count,
 	       "No MMAP windows for SPI flash!\n");
 
-	flash_ops = xzalloc(sizeof(*flash_ops));
-
-	flash_ops->read = &mem_mapped_flash_read;
-	flash_set_ops(flash_ops);
-
-	return 0;
+	MmapFlash *flash = xzalloc(sizeof(*flash));
+	flash->ops.read = mem_mapped_flash_read;
+	return flash;
 }
-
-INIT_FUNC(flash_setup);

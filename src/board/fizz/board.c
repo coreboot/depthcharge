@@ -26,6 +26,8 @@
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/skylake.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -113,6 +115,9 @@ static int board_setup(void)
 
 	/* PCH Power */
 	power_set_ops(&skylake_power_ops);
+
+	/* Flash */
+	flash_set_ops(&new_mmap_flash()->ops);
 
 	/* PCIe NVME */
 	NvmeCtrlr *nvme = new_nvme_ctrlr(PCI_DEV(0, 0x1c, 4));

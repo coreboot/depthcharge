@@ -22,6 +22,8 @@
 #include "base/list.h"
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -113,6 +115,9 @@ static int board_setup(void)
 
 	/* Cannonlake PCH */
 	power_set_ops(&cannonlake_power_ops);
+
+	/* Flash */
+	flash_set_ops(&new_mmap_flash()->ops);
 
 	/* eMMC */
 	/* Attempt to read from the controller. If we get an invalid

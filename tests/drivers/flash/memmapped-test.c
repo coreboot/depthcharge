@@ -4,9 +4,8 @@
 #include <string.h>
 
 #include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "tests/test.h"
-
-#include "drivers/flash/memmapped.c"
 
 struct sysinfo_t lib_sysinfo;
 FlashOps *test_flash_ops;
@@ -18,25 +17,13 @@ static int setup(void **state)
 	return 0;
 }
 
-/* Mock functions */
-
-void flash_set_ops(FlashOps *ops)
-{
-	test_flash_ops = ops;
-}
-
 /* Tests */
-
-static int test_flash_read(void *buffer, uint32_t offset, uint32_t size)
-{
-	return flash_read_ops(test_flash_ops, buffer, offset, size);
-}
 
 static void test_mmap_flash_without_mmap_table(void **state)
 {
 	lib_sysinfo.spi_flash.mmap_window_count = 0;
 
-	expect_die(flash_setup());
+	expect_die(new_mmap_flash());
 }
 
 static void test_mmap_flash_read_fail(void **state)
@@ -48,10 +35,12 @@ static void test_mmap_flash_read_fail(void **state)
 	};
 	lib_sysinfo.spi_flash.mmap_window_count = 1;
 
-	assert_int_equal(flash_setup(), 0);
+	MmapFlash *flash = new_mmap_flash();
+	assert_non_null(flash);
 
 	uint8_t buffer[0x100] = {0};
-	assert_int_less_than(test_flash_read(buffer, 0x3000, 0x100), 0);
+	assert_int_less_than(flash_read_ops(&flash->ops, buffer, 0x3000, 0x100),
+			     0);
 }
 
 static void test_mmap_flash_read_ok(void **state)
@@ -71,10 +60,12 @@ static void test_mmap_flash_read_ok(void **state)
 	};
 	lib_sysinfo.spi_flash.mmap_window_count = 1;
 
-	assert_int_equal(flash_setup(), 0);
+	MmapFlash *flash = new_mmap_flash();
+	assert_non_null(flash);
 
 	uint8_t buffer[sizeof(expected_buffer)] = {0};
-	assert_int_equal(test_flash_read(buffer, 0x1000 + 0x80, sizeof(buffer)),
+	assert_int_equal(flash_read_ops(&flash->ops, buffer, 0x1000 + 0x80,
+					sizeof(buffer)),
 			 sizeof(buffer));
 	assert_int_equal(memcmp(buffer, expected_buffer, sizeof(buffer)), 0);
 }

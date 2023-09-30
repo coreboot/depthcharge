@@ -13,6 +13,8 @@
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/ec/anx3429/anx3429.h"
 #include "drivers/ec/ps8751/ps8751.h"
+#include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/sound/gpio_amp.h"
 #include "drivers/gpio/kern.h"
@@ -200,6 +202,7 @@ static int board_setup(void)
 
 	power_set_ops(&kern_power_ops);
 	display_set_ops(&guybrush_display_ops);
+	flash_set_ops(&new_mmap_flash()->ops);
 
 	/* nipperkin doesn't support PSR, and need change in fw */
 	if (is_nipperkin())

@@ -29,6 +29,8 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/icelake.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -78,6 +80,9 @@ static int board_setup(void)
 	NvmeCtrlr *nvme = new_nvme_ctrlr(PCH_DEV_PCIE9);
 	list_insert_after(&nvme->ctrlr.list_node,
 			  &fixed_block_dev_controllers);
+
+	/* Flash */
+	flash_set_ops(&new_mmap_flash()->ops);
 
 	return 0;
 }

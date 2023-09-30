@@ -28,6 +28,8 @@
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/skylake.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -121,6 +123,9 @@ static int board_setup(void)
 
 	/* PCH Power */
 	power_set_ops(&skylake_power_ops);
+
+	/* Flash */
+	flash_set_ops(&new_mmap_flash()->ops);
 
 	/* eMMC */
 	SdhciHost *emmc = new_pci_sdhci_host(PCI_DEV(0, 0x1e, 4),

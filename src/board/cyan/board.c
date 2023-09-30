@@ -22,6 +22,8 @@
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2s/braswell/braswell-max98090.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
 #include "drivers/sound/i2s.h"
@@ -86,6 +88,8 @@ static int board_setup(void)
 	sound_set_ops(&sound_route->ops);
 
 	tpm_set_ops(&new_lpc_tpm((void *)0xfed40000)->ops);
+
+	flash_set_ops(&new_mmap_flash()->ops);
 
 	SdhciHost *emmc, *sd;
 

@@ -26,6 +26,8 @@
 
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
 #include "drivers/storage/ahci.h"
@@ -58,6 +60,9 @@ static int board_setup(void)
 
 	/* PCH Power */
 	power_set_ops(&skylake_power_ops);
+
+	/* Flash */
+	flash_set_ops(&new_mmap_flash()->ops);
 
 	/* SATA SSD */
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 0x17, 0));

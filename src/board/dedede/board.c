@@ -21,6 +21,8 @@
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/jasperlake.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -243,6 +245,9 @@ static int board_setup(void)
 
 	/* Audio Beep Support */
 	setup_audio_amp();
+
+	/* Flash */
+	flash_set_ops(&new_mmap_flash()->ops);
 
 	return 0;
 }

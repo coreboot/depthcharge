@@ -29,6 +29,8 @@
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/bus/usb/usb.h"
+#include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -66,6 +68,9 @@ static int board_setup(void)
 	UsbMmioBase &= 0xFFFF0000; /* 32 bits only */
 	UsbHostController *usb_host1 = new_usb_hc(XHCI, UsbMmioBase);
 	list_insert_after(&usb_host1->list_node, &usb_host_controllers);
+
+	/* Flash */
+	flash_set_ops(&new_mmap_flash()->ops);
 
 	/* SATA SSD */
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV(0, 0x17, 0));

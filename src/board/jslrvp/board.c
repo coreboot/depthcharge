@@ -34,6 +34,8 @@
 #include "drivers/sound/max98373.h"
 #include "drivers/sound/route.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/jasperlake.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -117,6 +119,9 @@ static int board_setup(void)
 
 	/* PCH Power */
 	power_set_ops(&jasperlake_power_ops);
+
+	/* Flash */
+	flash_set_ops(&new_mmap_flash()->ops);
 
 	/* SD Card */
 	SdhciHost *sd = new_pci_sdhci_host(PCH_DEV_SDCARD, 1,

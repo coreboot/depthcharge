@@ -10,6 +10,8 @@
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/kern.h"
 #include "drivers/gpio/sysinfo.h"
@@ -160,6 +162,7 @@ static int board_setup(void)
 				  &gsc_irq_status)->base.ops);
 
 	power_set_ops(&kern_power_ops);
+	flash_set_ops(&new_mmap_flash()->ops);
 
 	return 0;
 }

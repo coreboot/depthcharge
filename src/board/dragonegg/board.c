@@ -35,6 +35,8 @@
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/bus/usb/usb.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/icelake.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -130,6 +132,9 @@ static int board_setup(void)
 
 	/* PCH Power */
 	power_set_ops(&icelake_power_ops);
+
+	/* Flash */
+	flash_set_ops(&new_mmap_flash()->ops);
 
 	/* eMMC */
 	SdhciHost *emmc = new_pci_sdhci_host(PCH_DEV_EMMC),

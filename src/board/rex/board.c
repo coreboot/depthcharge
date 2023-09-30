@@ -14,6 +14,7 @@
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/meteorlake.h"
@@ -103,6 +104,7 @@ static int board_setup(void)
 	ec_setup();
 	tpm_setup();
 	power_set_ops(&meteorlake_power_ops);
+	flash_set_ops(&new_mmap_flash()->ops);
 	common_audio_setup(variant_probe_audio_config());
 
 	return 0;

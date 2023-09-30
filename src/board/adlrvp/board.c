@@ -14,6 +14,8 @@
 #include "drivers/bus/pci/pci.h"
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "drivers/soc/alderlake.h"
 #include "drivers/storage/ahci.h"
 #include "drivers/gpio/sysinfo.h"
@@ -125,6 +127,9 @@ static int board_setup(void)
 
 	if (CONFIG(DRIVER_TPM_SPI))
 		alderlake_setup_tpm();
+
+	if (CONFIG(DRIVER_FLASH_MEMMAPPED))
+		flash_set_ops(&new_mmap_flash()->ops);
 
 	/* PCH Power */
 	power_set_ops(&alderlake_power_ops);

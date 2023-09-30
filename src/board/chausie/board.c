@@ -4,6 +4,8 @@
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
+#include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/fch.h"
 #include "drivers/soc/mendocino.h"
@@ -41,6 +43,7 @@ static int board_setup(void)
 				&fixed_block_dev_controllers);
 
 	power_set_ops(&kern_power_ops);
+	flash_set_ops(&new_mmap_flash()->ops);
 
 	return 0;
 }

@@ -22,6 +22,8 @@
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2s/baytrail/baytrail-max98090.h"
 #include "drivers/ec/cros/lpc.h"
+#include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/baytrail.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -78,6 +80,8 @@ static int board_setup(void)
 	power_set_ops(&baytrail_power_ops);
 
 	tpm_set_ops(&new_lpc_tpm((void *)0xfed40000)->ops);
+
+	flash_set_ops(&new_mmap_flash()->ops);
 
 	/* Initialize eMMC and SD ports in ACPI or PCI mode */
 	SdhciHost *emmc;
