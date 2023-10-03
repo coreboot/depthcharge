@@ -566,7 +566,8 @@ static vb2_error_t vboot_reboot_to_ro(VbootEcOps *vbec)
 {
 	CrosEc *me = container_of(vbec, CrosEc, vboot);
 
-	if (ec_reboot(me, EC_REBOOT_COLD, EC_REBOOT_FLAG_ON_AP_SHUTDOWN) < 0) {
+	if (ec_reboot(me, EC_REBOOT_COLD, EC_REBOOT_FLAG_ON_AP_SHUTDOWN |
+		      EC_REBOOT_FLAG_CLEAR_AP_IDLE) < 0) {
 		printf("Failed to schedule EC reboot to RO.\n");
 		return VB2_ERROR_UNKNOWN;
 	}
