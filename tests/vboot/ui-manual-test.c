@@ -373,7 +373,10 @@ static void test_manual_ui_confirm_to_dev(void **state)
 	will_return_maybe(ui_is_lid_open, 1);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
-	WILL_PRESS_KEY(UI_KEY_ENTER, 1);
+	if (CONFIG(DETACHABLE))
+		WILL_PRESS_KEY(UI_BUTTON_POWER_SHORT_PRESS, 1);
+	else
+		WILL_PRESS_KEY(UI_KEY_ENTER, 1);
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(ui_is_physical_presence_pressed, 0);
 	expect_function_call(vb2api_enable_developer_mode);
