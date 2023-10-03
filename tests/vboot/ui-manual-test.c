@@ -275,6 +275,28 @@ static void test_manual_ui_boot_invalid_remove_valid(void **state)
 
 static void test_manual_ui_keyboard_to_dev_and_cancel(void **state)
 {
+	if (!CONFIG(PHYSICAL_PRESENCE_KEYBOARD))
+		skip();
+
+	struct ui_context *ui = *state;
+
+	setup_will_return_common();
+	WILL_CLOSE_LID_IN(5);
+	WILL_PRESS_KEY(0, 0);
+	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
+	WILL_PRESS_KEY(' ', 0);
+	will_return_maybe(ui_keyboard_read, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT);
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_TO_DEV);
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT);
+	WILL_HAVE_NO_EXTERNAL();
+
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
+			 VB2_REQUEST_SHUTDOWN);
+}
+
+static void test_manual_ui_keyboard_to_dev_and_cancel_chromebox(void **state)
+{
 	if (CONFIG(PHYSICAL_PRESENCE_KEYBOARD))
 		skip();
 
@@ -296,50 +318,7 @@ static void test_manual_ui_keyboard_to_dev_and_cancel(void **state)
 			 VB2_REQUEST_SHUTDOWN);
 }
 
-static void test_manual_ui_keyboard_to_dev_and_cancel_ppkeyboard(void **state)
-{
-	if (!CONFIG(PHYSICAL_PRESENCE_KEYBOARD))
-		skip();
-
-	struct ui_context *ui = *state;
-
-	setup_will_return_common();
-	WILL_CLOSE_LID_IN(5);
-	WILL_PRESS_KEY(0, 0);
-	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
-	WILL_PRESS_KEY(' ', 0);
-	will_return_maybe(ui_keyboard_read, 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT);
-	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_TO_DEV);
-	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT);
-	WILL_HAVE_NO_EXTERNAL();
-
-	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
-			 VB2_REQUEST_SHUTDOWN);
-}
-
 static void test_manual_ui_cancel_to_dev(void **state)
-{
-	if (CONFIG(PHYSICAL_PRESENCE_KEYBOARD))
-		skip();
-
-	struct ui_context *ui = *state;
-
-	setup_will_return_common();
-	WILL_CLOSE_LID_IN(5);
-	WILL_PRESS_KEY(0, 0);
-	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
-	WILL_PRESS_KEY(UI_KEY_ENTER, 1);
-	will_return_maybe(ui_is_physical_presence_pressed, 0);
-	will_return_maybe(ui_keyboard_read, 0);
-	EXPECT_UI_DISPLAY_ANY_ALWAYS();
-	WILL_HAVE_NO_EXTERNAL();
-
-	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
-			 VB2_REQUEST_SHUTDOWN);
-}
-
-static void test_manual_ui_cancel_to_dev_ppkeyboard(void **state)
 {
 	if (!CONFIG(PHYSICAL_PRESENCE_KEYBOARD))
 		skip();
@@ -361,7 +340,7 @@ static void test_manual_ui_cancel_to_dev_ppkeyboard(void **state)
 			 VB2_REQUEST_SHUTDOWN);
 }
 
-static void test_manual_ui_confirm_to_dev(void **state)
+static void test_manual_ui_cancel_to_dev_chromebox(void **state)
 {
 	if (CONFIG(PHYSICAL_PRESENCE_KEYBOARD))
 		skip();
@@ -369,25 +348,20 @@ static void test_manual_ui_confirm_to_dev(void **state)
 	struct ui_context *ui = *state;
 
 	setup_will_return_common();
-
-	will_return_maybe(ui_is_lid_open, 1);
+	WILL_CLOSE_LID_IN(5);
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
-	WILL_PRESS_PHYSICAL_PRESENCE(0);
-	WILL_PRESS_PHYSICAL_PRESENCE(1);
-	WILL_PRESS_PHYSICAL_PRESENCE(1);
-	WILL_PRESS_PHYSICAL_PRESENCE(0);
-	will_return_maybe(ui_keyboard_read, 0);
+	WILL_PRESS_KEY(UI_KEY_ENTER, 1);
 	will_return_maybe(ui_is_physical_presence_pressed, 0);
-	expect_function_call(vb2api_enable_developer_mode);
+	will_return_maybe(ui_keyboard_read, 0);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_HAVE_NO_EXTERNAL();
 
 	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
-			 VB2_REQUEST_REBOOT_EC_TO_RO);
+			 VB2_REQUEST_SHUTDOWN);
 }
 
-static void test_manual_ui_confirm_to_dev_ppkeyboard(void **state)
+static void test_manual_ui_confirm_to_dev(void **state)
 {
 	if (!CONFIG(PHYSICAL_PRESENCE_KEYBOARD))
 		skip();
@@ -410,7 +384,33 @@ static void test_manual_ui_confirm_to_dev_ppkeyboard(void **state)
 			 VB2_REQUEST_REBOOT_EC_TO_RO);
 }
 
-static void test_manual_ui_confirm_by_untrusted_fails_ppkeyboard(void **state)
+static void test_manual_ui_confirm_to_dev_chromebox(void **state)
+{
+	if (CONFIG(PHYSICAL_PRESENCE_KEYBOARD))
+		skip();
+
+	struct ui_context *ui = *state;
+
+	setup_will_return_common();
+
+	will_return_maybe(ui_is_lid_open, 1);
+	WILL_PRESS_KEY(0, 0);
+	WILL_PRESS_KEY(UI_KEY_REC_TO_DEV, 1);
+	WILL_PRESS_PHYSICAL_PRESENCE(0);
+	WILL_PRESS_PHYSICAL_PRESENCE(1);
+	WILL_PRESS_PHYSICAL_PRESENCE(1);
+	WILL_PRESS_PHYSICAL_PRESENCE(0);
+	will_return_maybe(ui_keyboard_read, 0);
+	will_return_maybe(ui_is_physical_presence_pressed, 0);
+	expect_function_call(vb2api_enable_developer_mode);
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
+	WILL_HAVE_NO_EXTERNAL();
+
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
+			 VB2_REQUEST_REBOOT_EC_TO_RO);
+}
+
+static void test_manual_ui_confirm_by_untrusted_fails(void **state)
 {
 	if (!CONFIG(PHYSICAL_PRESENCE_KEYBOARD))
 		skip();
@@ -432,7 +432,7 @@ static void test_manual_ui_confirm_by_untrusted_fails_ppkeyboard(void **state)
 			 VB2_REQUEST_SHUTDOWN);
 }
 
-static void test_manual_ui_cannot_enable_dev_enabled(void **state)
+static void test_manual_ui_cannot_enable_dev_enabled_chromebox(void **state)
 {
 	if (CONFIG(PHYSICAL_PRESENCE_KEYBOARD))
 		skip();
@@ -454,7 +454,7 @@ static void test_manual_ui_cannot_enable_dev_enabled(void **state)
 			 VB2_REQUEST_SHUTDOWN);
 }
 
-static void test_manual_ui_cannot_enable_dev_enabled_ppkeyboard(void **state)
+static void test_manual_ui_cannot_enable_dev_enabled(void **state)
 {
 	if (!CONFIG(PHYSICAL_PRESENCE_KEYBOARD))
 		skip();
@@ -1054,14 +1054,14 @@ int main(void)
 		UI_TEST(test_manual_ui_boot_with_valid_image_later),
 		UI_TEST(test_manual_ui_boot_invalid_remove_valid),
 		UI_TEST(test_manual_ui_keyboard_to_dev_and_cancel),
-		UI_TEST(test_manual_ui_keyboard_to_dev_and_cancel_ppkeyboard),
+		UI_TEST(test_manual_ui_keyboard_to_dev_and_cancel_chromebox),
 		UI_TEST(test_manual_ui_cancel_to_dev),
-		UI_TEST(test_manual_ui_cancel_to_dev_ppkeyboard),
+		UI_TEST(test_manual_ui_cancel_to_dev_chromebox),
 		UI_TEST(test_manual_ui_confirm_to_dev),
-		UI_TEST(test_manual_ui_confirm_to_dev_ppkeyboard),
-		UI_TEST(test_manual_ui_confirm_by_untrusted_fails_ppkeyboard),
+		UI_TEST(test_manual_ui_confirm_to_dev_chromebox),
+		UI_TEST(test_manual_ui_confirm_by_untrusted_fails),
 		UI_TEST(test_manual_ui_cannot_enable_dev_enabled),
-		UI_TEST(test_manual_ui_cannot_enable_dev_enabled_ppkeyboard),
+		UI_TEST(test_manual_ui_cannot_enable_dev_enabled_chromebox),
 		UI_TEST(test_manual_ui_pp_button_stuck),
 		UI_TEST(test_manual_ui_pp_button_stuck_press),
 		UI_TEST(test_manual_ui_pp_button_cancel_enter_again),

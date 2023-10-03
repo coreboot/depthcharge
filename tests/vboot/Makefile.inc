@@ -9,7 +9,7 @@ tests-y += ui-broken-test
 tests-y += ui-broken-detachable-test
 tests-y += ui-manual-test
 tests-y += ui-manual-detachable-test
-tests-y += ui-manual-ppkeyboard-test
+tests-y += ui-manual-chromebox-test
 tests-y += ui-developer-test
 tests-y += ui-developer-detachable-test
 tests-y += ui-diagnostic-test
@@ -89,12 +89,14 @@ $(call copy-test,ui-test-common,ui-manual-test)
 ui-manual-test-srcs += tests/vboot/ui-manual-test.c
 ui-manual-test-srcs := $(filter-out tests/mocks/vboot/ui/archive.c, \
 	$(ui-manual-test-srcs))
+ui-manual-test-config += CONFIG_PHYSICAL_PRESENCE_KEYBOARD=1
 
 $(call copy-test,ui-manual-test,ui-manual-detachable-test)
+ui-manual-detachable-test-config += CONFIG_PHYSICAL_PRESENCE_KEYBOARD=1
 ui-manual-detachable-test-config += CONFIG_DETACHABLE=1
 
-$(call copy-test,ui-manual-test,ui-manual-ppkeyboard-test)
-ui-manual-ppkeyboard-test-config += CONFIG_PHYSICAL_PRESENCE_KEYBOARD=1
+$(call copy-test,ui-manual-test,ui-manual-chromebox-test)
+ui-manual-chromebox-test-config += CONFIG_PHYSICAL_PRESENCE_KEYBOARD=0
 
 # ui-developer-test
 $(call copy-test,ui-test-common,ui-developer-test)
