@@ -29,9 +29,6 @@ CONFIG_DRIVER_SOC_PHOENIX=y
 # Phoenix uses 32 MiB + ~2 MiB for coreboot so place the kernel at 64 MiB
 CONFIG_KERNEL_START=0x4000000
 
-# Timestamp
-CONFIG_TIMESTAMP_RAW=n
-
 # Storage
 CONFIG_DRIVER_STORAGE_NVME=y
 CONFIG_DRIVER_STORAGE_COMMON=y

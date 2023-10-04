@@ -32,9 +32,6 @@ CONFIG_DRIVER_TPM_I2C=y
 # Phoenix uses 32 MiB + ~2 MiB for coreboot so place the kernel at 64 MiB
 CONFIG_KERNEL_START=0x4000000
 
-# Timestamp
-CONFIG_TIMESTAMP_RAW=n
-
 # Audio beep
 CONFIG_DRIVER_SOUND_AMD_ACP_V2=y
 CONFIG_DRIVER_SOUND_GPIO_AMP=y
