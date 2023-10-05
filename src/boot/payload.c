@@ -99,8 +99,9 @@ static int payload_load(struct cbfs_payload *payload, void **entryp)
 		u32 src_len = be32toh(seg->len);
 		u32 dst_len = be32toh(seg->mem_len);
 		int comp = be32toh(seg->compression);
+		u32 type = be32toh(seg->type);
 
-		switch (seg->type) {
+		switch (type) {
 		case PAYLOAD_SEGMENT_CODE:
 		case PAYLOAD_SEGMENT_DATA:
 			printf("CODE/DATA: dst=%p dst_len=%d src=%p src_len=%d compression=%d\n",
@@ -137,7 +138,7 @@ static int payload_load(struct cbfs_payload *payload, void **entryp)
 			return 0;
 		default:
 			printf("segment type %x not implemented. Exiting\n",
-			       seg->type);
+			       type);
 			return -1;
 		}
 		seg++;
