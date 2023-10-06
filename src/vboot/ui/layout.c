@@ -311,9 +311,6 @@ vb2_error_t ui_get_button_width(const struct ui_menu *menu,
 		item = &menu->items[i];
 		if (item->type != UI_MENU_ITEM_TYPE_PRIMARY)
 			continue;
-		if (!(item->flags & UI_MENU_ITEM_FLAG_TRANSIENT) &&
-		    UI_GET_BIT(state->hidden_item_mask, i))
-			continue;
 		file = get_item_file(item, state);
 		if (item->get_width) {
 			VB2_TRY(item->get_width(state, &text_width));
