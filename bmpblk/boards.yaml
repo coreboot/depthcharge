@@ -397,3 +397,7 @@ myst:
             btn_diag_memory_full, diag_storage_health_title,
             diag_storage_srt_test_title, diag_storage_ext_test_title,
             diag_memory_quick_title, diag_memory_full_title]
+
+brox:
+  # 1920x1200
+  screen:   [1920, 1200]
