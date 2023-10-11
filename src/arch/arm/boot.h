@@ -24,4 +24,6 @@ int boot_arm_linux(void *fdt, FitImageNode *kernel);
 
 void boot_arm_linux_jump(void *fdt, void *entry) __attribute__((noreturn));
 
+void boot_arm64_linux_jump(void *fdt, void *entry) __attribute__((noreturn));
+
 #endif /* __ARCH_ARM_BOOT_H__ */

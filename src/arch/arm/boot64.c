@@ -129,10 +129,14 @@ int boot_arm_linux(void *fdt, FitImageNode *kernel)
 	/* Flush dcache and icache to make loaded code visible. */
 	arch_program_segment_loaded(reloc_addr, true_size);
 
-	tlb_invalidate_all();
-	mmu_disable();
+	if (CONFIG(WIDEVINE_PROVISION)) {
+		void *dma_start;
+		size_t dma_size;
+		dma_allocator_range(&dma_start, &dma_size);
+		memset(dma_start, 0, dma_size);
+	}
 
-	void (*handoff)(void *, uintptr_t, uintptr_t, uintptr_t) = reloc_addr;
-	handoff(fdt, 0, 0, 0);
+	boot_arm64_linux_jump(fdt, reloc_addr);
+
 	die("Kernel returned!");
 }
