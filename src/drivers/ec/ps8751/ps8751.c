@@ -838,6 +838,11 @@ static int __must_check ps8751_get_hw_version(Ps8751 *me, uint8_t *version)
 	 * revision.  Use the the revision register to determine which chip
 	 * type is actually present.
 	 * Page 0, 0x62, bits [7:4]: 0xA0 = A3 chip, 0x00 = A2 chip
+	 *
+	 * NOTE: If FW is in a broken state, bits [7:4] will be 0x40 for both
+	 * A2 and A3 chips. It appears to be safe enough to flash the A3 FW
+	 * on and then on the next boot we'll properly detect that we we have
+	 * an A2 and things will be fixed.
 	 */
 	if (me->chip_type == CHIP_PS8805 && *version == 0xA2) {
 		uint8_t reg_rev;
@@ -850,7 +855,8 @@ static int __must_check ps8751_get_hw_version(Ps8751 *me, uint8_t *version)
 
 		reg_rev &= P0_REG_REV_MASK;
 		reg_rev >>= P0_REG_REV_SHIFT;
-		if (reg_rev == PS8805_P0_REG_REV_CHIP_REVISION_A3)
+		if (reg_rev == PS8805_P0_REG_REV_CHIP_REVISION_A3 ||
+		    reg_rev == PS8805_P0_REG_REV_CHIP_REVISION_BROKEN)
 			*version = 0xA3;
 	}
 
