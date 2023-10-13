@@ -197,8 +197,12 @@
 #define UI_KEY_DEV_BOOT_EXTERNAL	UI_KEY_CTRL('U')
 /* L for aLtfw (formerly Legacy) */
 #define UI_KEY_DEV_BOOT_ALTFW		UI_KEY_CTRL('L')
-/* C for firmware shell Console*/
+/* C for firmware shell Console */
 #define UI_KEY_DEV_ENTER_FWSHELL	UI_KEY_CTRL('C')
+/* Jump to the previous anchor in the log screen */
+#define UI_KEY_PREV_ANCHOR		UI_KEY_CTRL('Z')
+/* Jump to the next anchor in the log screen */
+#define UI_KEY_NEXT_ANCHOR		UI_KEY_CTRL('X')
 
 /* Screens. */
 enum ui_screen {
@@ -354,6 +358,15 @@ struct ui_locale {
 struct ui_screen_info;
 struct ui_context;
 
+/* This struct records the keywords (so-called anchor) occurrences in the log
+   pages. */
+struct ui_anchor_info {
+	/* Total number of anchor occurrences in the log string. */
+	uint32_t total_count;
+	/* An array that records anchor counts of each page. */
+	uint32_t *per_page_count;
+};
+
 /* Log string and its pages information. */
 struct ui_log_info {
 	/* Full log content. */
@@ -370,6 +383,8 @@ struct ui_log_info {
 	 * position of the '\0' character at the end of the log string.
 	 */
 	const char **page_start;
+	/* Fields for counting anchor occurrences. */
+	struct ui_anchor_info anchor_info;
 };
 
 enum ui_test_state {
@@ -1102,6 +1117,16 @@ vb2_error_t ui_developer_mode_enter_fwshell_action(struct ui_context *ui);
  */
 vb2_error_t ui_log_init(enum ui_screen screen, const char *locale_code,
 			const char *str, struct ui_log_info *log);
+
+/*
+ * Initialize anchor info struct with anchors.
+ *
+ * @param log		Log info struct to be initialized.
+ * @param anchors	List of anchor names to be matched.
+ * @param num		Total number of the anchors.
+ */
+vb2_error_t ui_log_set_anchors(struct ui_log_info *log,
+			       const char *const anchors[], size_t num);
 
 /*
  * Retrieve the content of specified page.

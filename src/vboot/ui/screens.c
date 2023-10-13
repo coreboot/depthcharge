@@ -284,6 +284,42 @@ static vb2_error_t log_page_last_action(struct ui_context *ui)
 	return log_page_update(ui, NULL);
 }
 
+static vb2_error_t log_page_anchor(struct ui_context *ui, int dir)
+{
+	struct ui_log_info *log = &ui->state->log;
+	const struct ui_anchor_info *anchor_info = &log->anchor_info;
+	const struct ui_state *state = ui->state;
+	uint32_t target_page = state->current_page;
+	int i;
+
+	if (!anchor_info->total_count)
+		return VB2_SUCCESS;
+
+	for (i = state->current_page + dir;
+	     i < log->page_count && i >= 0; i += dir) {
+		if (anchor_info->per_page_count[i] > 0) {
+			target_page = i;
+			break;
+		}
+	}
+
+	if (target_page == ui->state->current_page)
+		return VB2_SUCCESS;
+
+	ui->state->current_page = target_page;
+	return log_page_update(ui, NULL);
+}
+
+static vb2_error_t log_page_next_anchor(struct ui_context *ui)
+{
+	return log_page_anchor(ui, 1);
+}
+
+static vb2_error_t log_page_prev_anchor(struct ui_context *ui)
+{
+	return log_page_anchor(ui, -1);
+}
+
 static vb2_error_t fullview_log_screen_action(struct ui_context *ui)
 {
 	uint32_t key = ui->key;
@@ -313,6 +349,12 @@ static vb2_error_t fullview_log_screen_action(struct ui_context *ui)
 		break;
 	case UI_KEY_ENTER:
 		action = ui_screen_back;
+		break;
+	case UI_KEY_PREV_ANCHOR:
+		action = log_page_prev_anchor;
+		break;
+	case UI_KEY_NEXT_ANCHOR:
+		action = log_page_next_anchor;
 		break;
 	}
 
@@ -780,6 +822,11 @@ static const struct ui_screen_info debug_info_screen = {
 #define FIRMWARE_LOG_ITEM_PAGE_DOWN 2
 #define FIRMWARE_LOG_ITEM_BACK 3
 
+static const char *const firmware_log_anchors[] = {
+	"coreboot-",
+	"Starting depthcharge on",
+};
+
 static vb2_error_t firmware_log_set_content(struct ui_context *ui,
 					    int reset)
 {
@@ -803,6 +850,10 @@ static vb2_error_t firmware_log_set_content(struct ui_context *ui,
 	while (*str == '\n')
 		str++;
 	if (vb2_is_error(log_page_update(ui, str)))
+		return set_ui_error_and_go_back(ui, UI_ERROR_FIRMWARE_LOG);
+	if (vb2_is_error(ui_log_set_anchors(&ui->state->log,
+					    firmware_log_anchors,
+					    ARRAY_SIZE(firmware_log_anchors))))
 		return set_ui_error_and_go_back(ui, UI_ERROR_FIRMWARE_LOG);
 	return VB2_SUCCESS;
 }

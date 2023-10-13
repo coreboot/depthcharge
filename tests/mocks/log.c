@@ -4,6 +4,12 @@
 
 #include <vboot/ui.h>
 
+vb2_error_t ui_log_set_anchors(struct ui_log_info *log,
+			       const char *const anchors[], size_t num)
+{
+	return VB2_SUCCESS;
+}
+
 static uint32_t ui_log_init_log_page_count(void)
 {
 	return mock_type(uint32_t);

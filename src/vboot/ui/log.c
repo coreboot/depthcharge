@@ -20,6 +20,56 @@
 
 #include "vboot/ui.h"
 
+vb2_error_t ui_log_set_anchors(struct ui_log_info *log,
+			       const char *const anchors[], size_t num)
+{
+	struct ui_anchor_info *anchor_info = &log->anchor_info;
+	const char *pos;
+	int i, j;
+	size_t size;
+
+	if (num == 0)
+		return VB2_SUCCESS;
+
+	/* Initialize anchor_info */
+	anchor_info->total_count = 0;
+	free(anchor_info->per_page_count);
+	size = sizeof(*(anchor_info->per_page_count)) * log->page_count;
+	anchor_info->per_page_count = malloc(size);
+
+	if (!anchor_info->per_page_count)
+		return VB2_ERROR_UI_MEMORY_ALLOC;
+
+	memset(anchor_info->per_page_count, 0, size);
+
+	for (i = 0; i < num; i++) {
+		j = 0;
+		pos = strstr(log->page_start[j], anchors[i]);
+
+		/* Search the page number that contains current anchor */
+		while (pos && j < log->page_count) {
+			if (pos >= log->page_start[j]) {
+				j++;
+			} else {
+				anchor_info->total_count++;
+				/* If the anchor can't be found in current page,
+				   then it must exist in previous page. */
+				anchor_info->per_page_count[j - 1]++;
+				/* Search next anchor from current page */
+				pos = strstr(log->page_start[j], anchors[i]);
+			}
+		}
+
+		/* For the anchor in the last page */
+		if (pos) {
+			anchor_info->total_count++;
+			anchor_info->per_page_count[j - 1]++;
+		}
+	}
+
+	return VB2_SUCCESS;
+}
+
 vb2_error_t ui_log_init(enum ui_screen screen, const char *locale_code,
 			const char *str, struct ui_log_info *log)
 {
