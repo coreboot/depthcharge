@@ -22,6 +22,7 @@
 #include "base/init_funcs.h"
 #include "base/late_init_funcs.h"
 #include "drivers/ec/cros/ec.h"
+#include "drivers/video/display.h"
 
 int cros_ec_get_lid_shutdown_mask(void)
 {
@@ -56,7 +57,8 @@ int cros_ec_set_lid_shutdown_mask(int enable)
 static int cros_ec_disable_lid_shutdown_at_startup(LateInitFunc *init)
 {
 	if (!(vb2api_gbb_get_flags(vboot_get_context())
-	    & VB2_GBB_FLAG_DISABLE_LID_SHUTDOWN))
+	      & VB2_GBB_FLAG_DISABLE_LID_SHUTDOWN) &&
+	    !has_external_display())
 		return 0;
 
 	printf("EC: Disabling lid close event due to GBB override\n");
