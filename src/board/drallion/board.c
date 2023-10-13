@@ -27,6 +27,7 @@
 #include "drivers/ec/wilco/pd_ti.h"
 #include "drivers/flash/fast_spi.h"
 #include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/cannonlake.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/sysinfo.h"
@@ -120,7 +121,8 @@ static int board_setup(void)
 						PCI_BASE_ADDRESS_0);
 	mmio_base &= PCI_BASE_ADDRESS_MEM_MASK;
 	FastSpiFlash *spi = new_fast_spi_flash(mmio_base);
-	flash_set_ops(&spi->ops);
+	MmapFlash *flash = new_mmap_backed_flash(&spi->ops);
+	flash_set_ops(&flash->ops);
 
 	/* Wilco EC */
 	WilcoEc *wilco_ec = new_wilco_ec(EC_HOST_BASE, EC_PACKET_BASE,

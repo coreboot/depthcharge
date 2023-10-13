@@ -24,6 +24,7 @@
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/fast_spi.h"
 #include "drivers/flash/flash.h"
+#include "drivers/flash/memmapped.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/pch.h"
@@ -88,13 +89,15 @@ static void puff_setup_tpm(void)
 
 static void puff_setup_flash(void)
 {
-	FastSpiFlash *flash;
+	FastSpiFlash *spi;
+	MmapFlash *flash;
 
 	uintptr_t mmio_base = pci_read_config32(PCI_DEV(0, 0x1f, 5),
 						PCI_BASE_ADDRESS_0);
 	mmio_base &= PCI_BASE_ADDRESS_MEM_MASK;
 
-	flash = new_fast_spi_flash(mmio_base);
+	spi = new_fast_spi_flash(mmio_base);
+	flash = new_mmap_backed_flash(&spi->ops);
 	flash_set_ops(&flash->ops);
 }
 
