@@ -6,6 +6,7 @@
 #include "base/fw_config.h"
 #include "base/init_funcs.h"
 #include "base/list.h"
+#include "boot/commandline.h"
 #include "board/skyrim/include/variant.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
@@ -138,6 +139,16 @@ static void setup_amd_acp_i2s(pcidev_t acp_pci_dev)
 	sound_set_ops(&sound_route->ops);
 }
 
+static int is_markarth(void)
+{
+	const char * const markarth_str = "Markarth";
+	struct cb_mainboard *mainboard =
+		phys_to_virt(lib_sysinfo.cb_mainboard);
+
+	return strncasecmp(cb_mb_part_string(mainboard),
+			markarth_str, strlen(markarth_str)) == 0;
+}
+
 static int board_setup(void)
 {
 	CrosEcLpcBus *cros_ec_lpc_bus =
@@ -160,6 +171,10 @@ static int board_setup(void)
 				  &gsc_irq_status)->base.ops);
 
 	power_set_ops(&kern_power_ops);
+
+	/* Based on b/303130413, change ABM_Level from 0x4 to 0x2 for Markarth*/
+	if (is_markarth())
+		commandline_append("amdgpu.abmlevel=0x2");
 
 	return 0;
 }
