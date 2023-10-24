@@ -4,6 +4,7 @@
 # found in the LICENSE file.
 
 """
+
 Usage:
   ./archive_images.py -a path_to_archiver -d input_output_dir
 
