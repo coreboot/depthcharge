@@ -20,6 +20,7 @@
 #include <sysinfo.h>
 
 #include "base/device_tree.h"
+#include "base/fw_config.h"
 #include "base/init_funcs.h"
 
 static int install_coreboot_data(DeviceTreeFixup *fixup, DeviceTree *tree)
@@ -64,8 +65,8 @@ static int install_coreboot_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 	dt_add_reg_prop(coreboot_node, reg_addrs, reg_sizes, 2,
 			addr_cells, size_cells);
 
-	// Expose board ID, SKU ID, and RAM code exported from coreboot to
-	// userspace.
+	// Expose board ID, SKU ID, RAM code, and FW config exported from
+	// coreboot to userspace.
 	if (lib_sysinfo.board_id != UNDEFINED_STRAPPING_ID) {
 		dt_add_u32_prop(coreboot_node,
 				"board-id", lib_sysinfo.board_id);
@@ -77,6 +78,11 @@ static int install_coreboot_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 	if (lib_sysinfo.ram_code != UNDEFINED_STRAPPING_ID) {
 		dt_add_u32_prop(coreboot_node,
 				"ram-code", lib_sysinfo.ram_code);
+	}
+
+	if (fw_config_is_provisioned()) {
+		dt_add_u64_prop(coreboot_node,
+				"fw-config", lib_sysinfo.fw_config);
 	}
 
 	return 0;
