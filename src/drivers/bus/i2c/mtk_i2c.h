@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Mediatek Inc.
+ * Copyright 2023 Mediatek Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
@@ -65,6 +65,8 @@ check_member(mtk_i2c_dma_regs, dma_tx_len, 0x24);
 #include "drivers/bus/i2c/mt8173.h"
 #elif CONFIG(DRIVER_BUS_I2C_MT8183)
 #include "drivers/bus/i2c/mt8183.h"
+#elif CONFIG(DRIVER_BUS_I2C_MT8186)
+#include "drivers/bus/i2c/mt8186.h"
 #elif CONFIG(DRIVER_BUS_I2C_MT8188)
 #include "drivers/bus/i2c/mt8188.h"
 #else
