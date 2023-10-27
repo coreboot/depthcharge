@@ -55,7 +55,7 @@ $(foreach test, $(alltests), \
 DEPENDENCIES += $(addsuffix .d,$(basename $(all-test-objs)))
 -include $(DEPENDENCIES)
 .PHONY: $(alltests) $(addprefix clean-,$(alltests))
-.PHONY: coverage-report clean-coverage-report
+.PHONY: coverage-report coverage-report-board clean-coverage-report
 .PHONY: unit-tests build-unit-tests run-unit-tests clean-unit-tests
 .PHONY: list-unit-tests help-unit-tests
 
@@ -86,7 +86,13 @@ $(TEST_DOTCONFIG):
 		BOARD=$(BOARD) \
 		defconfig
 
-coverage-report: $(TEST_DOTCONFIG) $(LIBPAYLOAD_DIR)/lib/libpayload.a
+coverage-report:
+	lcov -o $(testobj)/tests.info -c -d $(testobj) --exclude '$(testsrc)/*' \
+		-b $(src)
+	genhtml -q -o $(coverage-reports-dir) -t "depthcharge unit tests" \
+		-s $(testobj)/tests.info
+
+coverage-report-board: $(TEST_DOTCONFIG) $(LIBPAYLOAD_DIR)/lib/libpayload.a
 	+$(MAKE) \
 		obj=$(covinitobj) \
 		EC_HEADERS=$(EC_HEADERS) \
@@ -95,12 +101,13 @@ coverage-report: $(TEST_DOTCONFIG) $(LIBPAYLOAD_DIR)/lib/libpayload.a
 		SOURCE_DEBUG=1 \
 		COV=1 \
 		coverage-init
-	lcov -o $(testobj)/tests.info -c -d $(testobj) \
+	lcov -o $(testobj)/board_tests.info -c -d $(testobj) \
 		--exclude '$(testsrc)/*' --exclude '$(libpayloadobj)/*' \
 		--include '$(src)/*' -b $(src)
-	lcov -a $(covinitobj)/init.info -a $(testobj)/tests.info \
+	lcov -a $(covinitobj)/init.info -a $(testobj)/board_tests.info \
 		-o $(testobj)/total.info
-	genhtml -q -o $(coverage-reports-dir) -t "depthcharge unit tests" \
+	genhtml -q -o $(coverage-reports-dir) \
+		-t "depthcharge unit tests for $(BOARD)" \
 		-s $(testobj)/total.info
 
 clean-coverage-report:
@@ -108,6 +115,9 @@ clean-coverage-report:
 else
 coverage-report:
 	COV=1 V=$(V) $(MAKE) coverage-report
+
+coverage-report-board:
+	COV=1 V=$(V) $(MAKE) coverage-report-board
 
 clean-coverage-report:
 	COV=1 V=$(V) $(MAKE) clean-coverage-report
