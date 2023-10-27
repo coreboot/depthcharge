@@ -26,22 +26,41 @@ const struct audio_config *variant_probe_audio_config(void)
 {
 	static struct audio_config config;
 	struct vb2_context *ctx = vboot_get_context();
-	config = (struct audio_config){
-		.bus = {
-			.type			= AUDIO_I2S,
-			.i2s.address		= SSP_I2S1_START_ADDRESS,
-			.i2s.enable_gpio	= { .pad = SDMODE_PIN,
-						    .active_low = SDMODE_ENABLE },
-			.i2s.settings		= &max98357a_settings,
-		},
-		.amp = {
-			.type			= AUDIO_GPIO_AMP,
-			.gpio.enable_gpio	= SDMODE_PIN,
-		},
-		.codec = {
-			.type			= AUDIO_MAX98357,
-		},
-	};
+
+	if (fw_config_probe(FW_CONFIG(AUDIO_CONFIG, AMP_RT5650))) {
+		config = (struct audio_config){
+			.bus = {
+				.type			= AUDIO_I2S,
+				.i2s.address		= SSP_I2S1_START_ADDRESS,
+				.i2s.settings		= &max98357a_settings,
+				},
+			.amp = {
+				.type			= AUDIO_AMP_NONE,
+			},
+			.codec = {
+				.type			= AUDIO_RT5650,
+				.i2c[0].ctrlr		= I2C3,
+				.i2c[0].i2c_addr[0]	= 0x1a,
+			},
+		};
+	} else {
+		config = (struct audio_config){
+			.bus = {
+				.type                   = AUDIO_I2S,
+				.i2s.address            = SSP_I2S1_START_ADDRESS,
+				.i2s.enable_gpio        = { .pad = SDMODE_PIN,
+							    .active_low = SDMODE_ENABLE },
+				.i2s.settings           = &max98357a_settings,
+			},
+			.amp = {
+				.type                   = AUDIO_GPIO_AMP,
+				.gpio.enable_gpio       = SDMODE_PIN,
+			},
+			.codec = {
+				.type                   = AUDIO_MAX98357,
+			},
+		};
+	}
 
 	if (vb2api_gbb_get_flags(ctx) & VB2_GBB_FLAG_RUNNING_FAFT)
 		return NULL;
