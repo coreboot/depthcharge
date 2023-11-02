@@ -4,9 +4,11 @@
 #include <libpayload.h>
 
 #include "base/device_tree.h"
+#include "base/fw_config.h"
 #include "base/init_funcs.h"
 #include "base/late_init_funcs.h"
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
+#include "drivers/bus/i2c/mtk_i2c.h"
 #include "drivers/bus/i2s/mtk_v1.h"
 #include "drivers/bus/spi/mtk.h"
 #include "drivers/bus/usb/usb.h"
@@ -20,6 +22,7 @@
 #include "drivers/power/psci.h"
 #include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/i2s.h"
+#include "drivers/sound/rt5645.h"
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/tpm/google/spi.h"
 #include "drivers/video/display.h"
@@ -55,7 +58,7 @@ static SoundRouteComponent *get_speaker_amp(void)
 	return &codec->component;
 }
 
-static void sound_setup(void)
+static void sound_setup_alc1019(void)
 {
 	MtkI2s *i2s2 = new_mtk_i2s(0x11210000, 2, 48000, AFE_I2S2_I2S3);
 	I2sSource *i2s_source = new_i2s_source(&i2s2->ops, 48000, 2, 8000);
@@ -64,6 +67,23 @@ static void sound_setup(void)
 	SoundRouteComponent *speaker_amp = get_speaker_amp();
 	list_insert_after(&speaker_amp->list_node, &sound_route->components);
 	list_insert_after(&i2s2->component.list_node,
+			  &sound_route->components);
+
+	sound_set_ops(&sound_route->ops);
+}
+
+static void sound_setup_alc5645(void)
+{
+	MtkI2s *i2s0 = new_mtk_i2s(0x11210000, 2, 48000, AFE_I2S0_I2S1);
+	I2sSource *i2s_source = new_i2s_source(&i2s0->ops, 48000, 2, 8000);
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+
+	MTKI2c *i2c5 = new_mtk_i2c(0x11016000, 0x10200700, I2C_APDMA_NOASYNC);
+	rt5645Codec *rt5645 = new_rt5645_codec(&i2c5->ops, 0x1a);
+
+	list_insert_after(&rt5645->component.list_node,
+			  &sound_route->components);
+	list_insert_after(&i2s0->component.list_node,
 			  &sound_route->components);
 
 	sound_set_ops(&sound_route->ops);
@@ -170,7 +190,14 @@ static int board_setup(void)
 	else
 		printf("[%s] no display_init_required()!\n", __func__);
 
-	sound_setup();
+	if (!fw_config_is_provisioned() ||
+	    fw_config_probe(FW_CONFIG(AUDIO_AMP, AMP_ALC1019))) {
+		printf("[%s] Setup ALC1019\n", __func__);
+		sound_setup_alc1019();
+	} else if (fw_config_probe(FW_CONFIG(AUDIO_AMP, AMP_ALC5645))) {
+		printf("[%s] Setup ALC5645\n", __func__);
+		sound_setup_alc5645();
+	}
 
 	list_insert_after(&mtk_gic_fixup.list_node, &device_tree_fixups);
 
