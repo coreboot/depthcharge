@@ -70,6 +70,11 @@ static void *port_status_reg(int port, int xhci)
 
 static bool usb_check_port_sc(uintptr_t *reg)
 {
+	if (reg == NULL) {
+		printf("FIXME: MMIO assignment for USB is not appropriate, "
+			"USB may not be functional!\n");
+		return false;
+	}
 	return (read32(reg) & USB_PORT_STATUS_CONNECTED);
 }
 
