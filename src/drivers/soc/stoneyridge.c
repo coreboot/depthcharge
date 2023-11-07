@@ -21,7 +21,7 @@
 #define CU_PTSC_MSR	0xc0010280
 #define PTSC_FREQ_MHZ	100
 
-uint64_t timer_hz(void)
+uint32_t timer_hz(void)
 {
 	return 1 * MHz;
 }

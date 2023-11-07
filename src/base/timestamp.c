@@ -70,7 +70,7 @@ uint64_t get_us_since_boot(void)
 	if(!ts_table)
 		return timer_us(0);
 
-	uint64_t tick_freq_mhz = ts_table->tick_freq_mhz;
+	uint32_t tick_freq_mhz = ts_table->tick_freq_mhz;
 	if (!tick_freq_mhz)
 		tick_freq_mhz = timer_hz() / 1000000;
 
