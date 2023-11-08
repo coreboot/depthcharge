@@ -69,4 +69,6 @@
 	TEST_SYMBOL(_e##region, _##region + size); \
 	TEST_SYMBOL(_##region##_size, size)
 
+#define EMPTY_WRAP(...) __VA_ARGS__
+
 #endif /* _TESTS_TEST_H */

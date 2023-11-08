@@ -3,6 +3,7 @@
 tests-y += menu-test
 tests-y += menu-detachable-test
 tests-y += navigation-test
+tests-y += log-test
 tests-y += loop-test
 tests-y += loop-detachable-test
 tests-y += screens-test
@@ -47,3 +48,6 @@ screens-test-srcs += src/vboot/ui/navigation.c
 
 bitmap-test-srcs += tests/vboot/ui/bitmap-test.c
 bitmap-test-srcs += src/vboot/ui/bitmap.c
+
+log-test-srcs += tests/vboot/ui/log-test.c
+log-test-srcs += src/vboot/ui/log.c
