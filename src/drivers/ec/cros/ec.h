@@ -509,4 +509,13 @@ int cros_ec_i2c_passthru_protect(int i2c_port);
  */
 int cros_ec_i2c_passthru_protect_status(int i2c_port, int *status);
 
+/**
+ * Set AP firmware state for reading by FAFT (Fully Automated Firmware Tests).
+ * We use this to indicate the currently displayed firmware screen.
+ *
+ * @param state		State value
+ * @return 0 if ok, -1 on error
+ */
+int cros_ec_set_ap_fw_state(uint32_t state);
+
 #endif /* __DRIVERS_EC_CROS_EC_H__ */

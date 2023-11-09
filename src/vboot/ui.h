@@ -204,7 +204,11 @@
 /* Jump to the next anchor in the log screen */
 #define UI_KEY_NEXT_ANCHOR		UI_KEY_CTRL('X')
 
-/* Screens. */
+/*
+ * Screens
+ *
+ * Tast uses the IDs to identify the displayed screens. Do NOT modify the IDs.
+ */
 enum ui_screen {
 	/* Wait screen for EC sync and AUXFW sync */
 	UI_SCREEN_FIRMWARE_SYNC				= 0x100,

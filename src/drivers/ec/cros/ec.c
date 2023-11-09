@@ -1064,3 +1064,14 @@ int cros_ec_i2c_passthru_protect_tcpc_ports(void)
 
 	return 0;
 }
+
+int cros_ec_set_ap_fw_state(uint32_t state)
+{
+	struct ec_params_ap_fw_state params;
+
+	params.state = state;
+
+	if (ec_cmd_ap_fw_state(cros_ec_get(), &params) < 0)
+		return -1;
+	return 0;
+}
