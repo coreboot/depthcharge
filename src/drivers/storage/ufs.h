@@ -415,10 +415,13 @@ typedef enum {
 #define UFS_IDN_BREFCLKFREQ		0x0A
 #define UFS_IDN_BCONFIGDESCRLOCK	0x0B
 
-#define UFS_REFCLKFREQ_19_2		0
-#define UFS_REFCLKFREQ_26		1
-#define UFS_REFCLKFREQ_38_4		2
-#define UFS_REFCLKFREQ_52		3
+// UFS reference clock freq
+typedef enum {
+	UFS_REFCLKFREQ_19_2,
+	UFS_REFCLKFREQ_26,
+	UFS_REFCLKFREQ_38_4,
+	UFS_REFCLKFREQ_52
+} UfsRefClkFreq;
 
 // Memory size parameters
 
@@ -728,7 +731,7 @@ typedef struct UfsCtlr {
 	UFSHookFn	hook_fn;		// Hook callback function
 	void		*hci_base;		// MMIO address
 	bool		update_refclkfreq;	// Whether to update bRefClkFreq attribute
-	uint8_t		refclkfreq;		// bRefClkFreq attribute value
+	UfsRefClkFreq	refclkfreq;		// bRefClkFreq attribute value
 	UfsTfrMode	tfr_mode;		// Transfer mode (gear, lanes etc)
 	uint8_t		*ufs_req_list;		// Request List
 	bool		ctlr_initialized;	// Controller is initialized

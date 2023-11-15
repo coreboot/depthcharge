@@ -165,7 +165,8 @@ static int board_setup(void)
 
 	/* UFS */
 	if (CONFIG(DRIVER_STORAGE_UFS_INTEL)) {
-		IntelUfsCtlr *intel_ufs = new_intel_ufs_ctlr(PCH_DEV_UFS1);
+		IntelUfsCtlr *intel_ufs = new_intel_ufs_ctlr(PCH_DEV_UFS1,
+				UFS_REFCLKFREQ_19_2);
 		list_insert_after(&intel_ufs->ufs.bctlr.list_node, &fixed_block_dev_controllers);
 	}
 
@@ -186,7 +187,8 @@ static int board_setup(void)
 
 	/* UFS */
 	if (CONFIG(DRIVER_STORAGE_UFS_INTEL)) {
-		IntelUfsCtlr *intel_ufs = new_intel_ufs_ctlr(PCH_DEV_UFS1);
+		IntelUfsCtlr *intel_ufs = new_intel_ufs_ctlr(PCH_DEV_UFS1,
+				UFS_REFCLKFREQ_19_2);
 		list_insert_after(&intel_ufs->ufs.bctlr.list_node,
 			&fixed_block_dev_controllers);
 	}

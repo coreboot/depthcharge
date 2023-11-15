@@ -41,14 +41,13 @@ static int intel_ufs_update(BlockDevCtrlrOps *bdev_ops)
 		intel_ufs->ufs.hci_base = (void *)(pci_read_config32(dev, REG_BAR0) & ~0xf);
 		intel_ufs->ufs.hook_fn = intel_ufs_hook_fn;
 		intel_ufs->ufs.update_refclkfreq = true;
-		intel_ufs->ufs.refclkfreq = UFS_REFCLKFREQ_19_2;
 		pci_set_bus_master(dev);
 	}
 
 	return ufs_update(bdev_ops);
 }
 
-IntelUfsCtlr *new_intel_ufs_ctlr(pcidev_t dev)
+IntelUfsCtlr *new_intel_ufs_ctlr(pcidev_t dev, UfsRefClkFreq ref_clk_freq)
 {
 	IntelUfsCtlr *intel_ufs = xzalloc(sizeof(IntelUfsCtlr));
 
@@ -57,6 +56,7 @@ IntelUfsCtlr *new_intel_ufs_ctlr(pcidev_t dev)
 
 	intel_ufs->ufs.bctlr.ops.update = intel_ufs_update;
 	intel_ufs->ufs.bctlr.need_update = 1;
+	intel_ufs->ufs.refclkfreq = ref_clk_freq;
 	intel_ufs->dev = dev;
 
 	return intel_ufs;

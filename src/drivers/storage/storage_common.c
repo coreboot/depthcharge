@@ -86,12 +86,12 @@ static void setup_nvme(pcidev_t dev)
 				  &fixed_block_dev_controllers);
 }
 
-static void setup_ufs(pcidev_t dev)
+static void setup_ufs(pcidev_t dev, const struct ufs_config *config)
 {
 	if (!CONFIG(DRIVER_STORAGE_UFS_INTEL))
 		return;
 
-	IntelUfsCtlr *ufs = new_intel_ufs_ctlr(dev);
+	IntelUfsCtlr *ufs = new_intel_ufs_ctlr(dev, config->ref_clk_freq);
 	if (ufs)
 		list_insert_after(&ufs->ufs.bctlr.list_node,
 				  &fixed_block_dev_controllers);
@@ -158,7 +158,7 @@ static int configure_storage(void)
 			setup_emmc(remapped, &config[i].emmc);
 			break;
 		case STORAGE_UFS:
-			setup_ufs(remapped);
+			setup_ufs(remapped, &config[i].ufs);
 			break;
 		default:
 			break;

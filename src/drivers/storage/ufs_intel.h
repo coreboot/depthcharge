@@ -17,6 +17,7 @@ typedef struct IntelUfsCtlr {
 	pcidev_t dev;
 } IntelUfsCtlr;
 
-IntelUfsCtlr *new_intel_ufs_ctlr(pcidev_t dev);
+IntelUfsCtlr *new_intel_ufs_ctlr(pcidev_t dev,
+				 UfsRefClkFreq ref_clk_freq);
 
 #endif // __DRIVERS_STORAGE_UFS_INTEL_H__
