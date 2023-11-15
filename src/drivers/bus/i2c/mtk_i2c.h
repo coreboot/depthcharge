@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 Mediatek Inc.
+ * Copyright 2015 Mediatek Inc.
  *
  * See file CREDITS for list of people who contributed to this
  * project.
