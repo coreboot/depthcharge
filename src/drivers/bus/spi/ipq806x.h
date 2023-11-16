@@ -28,7 +28,6 @@
 #define GSBI6_BASE      ((unsigned char *)0x16500000)
 #define GSBI7_BASE      ((unsigned char *)0x16600000)
 
-#define BIOS_ERR        3   /* error conditions                     */
 #define CLK_ALWAYS_ON                           (0 << 9)
 #define CLK_ROOT_DIS                            (0 << 11)
 #define CLK_ROOT_ENA                            (1 << 11)

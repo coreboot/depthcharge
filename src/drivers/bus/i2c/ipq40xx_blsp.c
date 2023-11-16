@@ -74,66 +74,6 @@ int blsp_init_board(blsp_qup_id_t id)
 	return 0;
 }
 
-int blsp_i2c_clock_config(blsp_qup_id_t id)
-{
-#if 0
-Not sure if this is needed. coreboot has done this
-
-	int i;
-	const int max_tries = 200;
-	struct { void *cbcr, *cmd, *cfg; } clk[] = {
-		{
-			GCC_BLSP1_QUP1_I2C_APPS_CBCR,
-			GCC_BLSP1_QUP1_I2C_APPS_CMD_RCGR,
-			GCC_BLSP1_QUP1_I2C_APPS_CFG_RCGR,
-		},
-		{
-			GCC_BLSP1_QUP1_I2C_APPS_CBCR,
-			GCC_BLSP1_QUP1_I2C_APPS_CMD_RCGR,
-			GCC_BLSP1_QUP1_I2C_APPS_CFG_RCGR,
-		},
-		{
-			GCC_BLSP1_QUP1_I2C_APPS_CBCR,
-			GCC_BLSP1_QUP1_I2C_APPS_CMD_RCGR,
-			GCC_BLSP1_QUP1_I2C_APPS_CFG_RCGR,
-		},
-		{
-			GCC_BLSP1_QUP1_I2C_APPS_CBCR,
-			GCC_BLSP1_QUP1_I2C_APPS_CMD_RCGR,
-			GCC_BLSP1_QUP1_I2C_APPS_CFG_RCGR,
-		},
-	};
-
-	/* uart_clock_config() does this, duplication should be ok... */
-	setbits_le32(GCC_CLK_BRANCH_ENA, BLSP1_AHB | BLSP1_SLEEP);
-
-	if (clk[id].cbcr == NULL)
-		return -EINVAL;
-
-	/* Src Sel 1 (fepll 200), Src Div 10.5 */
-	write32(clk[id].cfg, (1u << 8) | (20u << 0));
-
-	write32(clk[id].cmd, BIT(0)); /* Update En */
-
-	for (i = 0; i < max_tries; i++) {
-		if (read32(clk[id].cmd) & BIT(0)) {
-			udelay(5);
-			continue;
-		}
-		break;
-	}
-
-	if (i == max_tries) {
-		printk(BIOS_ERR, "== %s failed ==\n", __func__);
-		return -ETIMEDOUT;
-	}
-
-	write32(clk[id].cbcr, BIT(0));	/* Enable */
-#endif
-
-	return 0;
-}
-
 blsp_return_t blsp_init(blsp_qup_id_t id, blsp_protocol_t protocol)
 {
 	void *base = blsp_qup_base(id);
