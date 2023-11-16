@@ -590,6 +590,14 @@ static inline bool ufs_fast(uint32_t pwr_mode)
 	return pwr_mode == UFS_FAST_MODE || pwr_mode == UFS_FASTAUTO_MODE;
 }
 
+static inline bool ufs_is_hs_mode_enable(struct UfsTfrMode *tfr_mode)
+{
+	return (tfr_mode->rx.pwr_mode == UFS_FAST_MODE ||
+		tfr_mode->rx.pwr_mode == UFS_FASTAUTO_MODE) &&
+		(tfr_mode->tx.pwr_mode == UFS_FAST_MODE ||
+		tfr_mode->tx.pwr_mode == UFS_FASTAUTO_MODE);
+}
+
 // Refer UFSHCI spec. JESD223D section 7.4 UIC Power Mode Change
 static int ufs_utp_gear_sw(UfsCtlr *ufs)
 {
@@ -660,20 +668,32 @@ static int ufs_utp_gear_sw(UfsCtlr *ufs)
 	    (rc = ufs_dme_set(ufs, DME_LOCALAFC0REQTIMEOUTVAL      , DL_AFC0REQTIMEOUTVAL)))
 		return rc;
 
-	// Set the HOST Power Mode
-	pwr_mode = tfr_mode->rx.pwr_mode << 4 | tfr_mode->tx.pwr_mode;
-	rc = ufs_dme_set(ufs, PA_PWRMODE, pwr_mode);
-	if (rc)
-		return rc;
 
-	rc = ufs_poll_completion(ufs, BMSK_UPMS, 0, UFS_HCI_UPMS_POLL_TIMEOUT_US);
-	if (rc)
-		return rc;
+	// FIXME: b/315440135 Skip HS gear4 switching
+	// Check the power mode request, user config and update accordingly
+	if(!(CONFIG(DRIVER_STOTRAGE_UFS_BROKEN_HS_MODE)
+				&& ufs_is_hs_mode_enable(tfr_mode))) {
+		// Set the HOST Power Mode
+		pwr_mode = tfr_mode->rx.pwr_mode << 4 | tfr_mode->tx.pwr_mode;
+		rc = ufs_dme_set(ufs, PA_PWRMODE, pwr_mode);
+		if (rc)
+			return rc;
 
-	// Check the result of the power mode change request
-	upmcrs = (ufs_read32(ufs, UFSHCI_HCS) & BMSK_UPMCRS) >> UPMCRS_SHIFT;
-	if (upmcrs != UPMCRS_PWR_LOCAL)
-		return ufs_err("Power Mode Change failed, UPMCRS %d", UFS_EIO, upmcrs);
+		rc = ufs_poll_completion(ufs, BMSK_UPMS, 0,
+				UFS_HCI_UPMS_POLL_TIMEOUT_US);
+		if (rc)
+			return rc;
+
+		// Check the result of the power mode change request
+		upmcrs = (ufs_read32(ufs, UFSHCI_HCS) & BMSK_UPMCRS)
+			>> UPMCRS_SHIFT;
+		if (upmcrs != UPMCRS_PWR_LOCAL)
+			return ufs_err("Power Mode Change failed, UPMCRS %d",
+					UFS_EIO, upmcrs);
+
+	} else {
+		printf("HS power mode update requested, skip update.\n");
+	}
 
 	rc = ufs_hook(ufs, UFS_OP_POST_GEAR_SWITCH, NULL);
 	if (rc)
