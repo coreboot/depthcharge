@@ -10,3 +10,6 @@
 ## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 ## GNU General Public License for more details.
 
+config DRIVER_STOTRAGE_UFS_BROKEN_HS_MODE
+	bool
+	default n

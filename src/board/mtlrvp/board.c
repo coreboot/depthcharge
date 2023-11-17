@@ -19,6 +19,8 @@
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/nvme.h"
+#include "drivers/storage/ufs.h"
+#include "drivers/storage/ufs_intel.h"
 #include <libpayload.h>
 #include <sysinfo.h>
 #include <libpayload.h>
@@ -75,6 +77,14 @@ static int board_setup(void)
 	/* SATA */
 	AhciCtrlr *ahci = new_ahci_ctrlr(PCI_DEV_SATA);
 	list_insert_after(&ahci->ctrlr.list_node, &fixed_block_dev_controllers);
+
+	/* UFS */
+	if (CONFIG(DRIVER_STORAGE_UFS_INTEL)) {
+		IntelUfsCtlr *intel_ufs = new_intel_ufs_ctlr(PCI_DEV_UFS,
+				UFS_REFCLKFREQ_38_4);
+		list_insert_after(&intel_ufs->ufs.bctlr.list_node,
+				&fixed_block_dev_controllers);
+	}
 
 	return 0;
 }
