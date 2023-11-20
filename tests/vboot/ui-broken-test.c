@@ -175,17 +175,26 @@ static void test_firmware_log(void **state)
 {
 	struct ui_context *ui = *state;
 	const char *firmware_log =
+		/* Page 0 */
 		"Line 0\n"
 		"Line 1\n"
+		/* Page 1 */
 		"Line 2\n"
 		"Line 3\n"
-		"Line 4";
+		/* Page 2: containing anchor "coreboot-" */
+		"coreboot-coreboot-unknown.9999.d565815 Fri Nov 03 "  // len=50
+		"06:50:23 UTC 2023 aarch64 ramstage starting...\n"
+		/* Page 3: containing anchor "Starting depthcharge on" */
+		"Line 6\n"
+		"Starting depthcharge on Geralt...\n"
+		/* Page 4 */
+		"Line 8";
 
-	WILL_CLOSE_LID_IN(20);
+	WILL_CLOSE_LID_IN(30);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return(cbmem_console_snapshot, firmware_log);
-	/* Expect 3 pages */
-	SET_LOG_DIMENSIONS(2, 20);
+	/* Expect 5 pages */
+	SET_LOG_DIMENSIONS(2, 50);
 
 	WILL_PRESS_KEY(0, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_BROKEN);
@@ -200,27 +209,46 @@ static void test_firmware_log(void **state)
 	EXPECT_UI_DISPLAY(UI_SCREEN_FIRMWARE_LOG);
 
 	/* Firmware log screen */
-	WILL_PRESS_KEY(UI_KEY_UP, 0);		/* page 0 */
-	WILL_PRESS_KEY(UI_KEY_UP, 0);		/* page 0 */
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* page 1 */
+	WILL_PRESS_KEY(UI_KEY_UP, 0);		/* still page 0 */
+	WILL_PRESS_KEY(UI_KEY_UP, 0);		/* still page 0 */
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	EXPECT_FIRMWARE_LOG_PAGE(1);
 
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* page 2 */
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	EXPECT_FIRMWARE_LOG_PAGE(2);
 
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* page 2 */
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* page 2 */
-	WILL_PRESS_KEY(UI_KEY_UP, 0);		/* page 1 */
-	EXPECT_FIRMWARE_LOG_PAGE(1);
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	EXPECT_FIRMWARE_LOG_PAGE(3);
 
-	WILL_PRESS_KEY(UI_KEY_LEFT, 0);		/* page 0 */
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	EXPECT_FIRMWARE_LOG_PAGE(4);
+
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* still page 4 */
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* still page 4 */
+	WILL_PRESS_KEY(UI_KEY_UP, 0);
+	EXPECT_FIRMWARE_LOG_PAGE(3);
+
+	WILL_PRESS_KEY(UI_KEY_LEFT, 0);		/* first page */
 	EXPECT_FIRMWARE_LOG_PAGE(0);
 
-	WILL_PRESS_KEY(UI_KEY_RIGHT, 0);	/* page 2 */
+	WILL_PRESS_KEY(UI_KEY_RIGHT, 0);	/* last page */
+	EXPECT_FIRMWARE_LOG_PAGE(4);
+
+	WILL_PRESS_KEY(UI_KEY_NEXT_ANCHOR, 0);	/* still page 4 */
+
+	WILL_PRESS_KEY(UI_KEY_PREV_ANCHOR, 0);
+	EXPECT_FIRMWARE_LOG_PAGE(3);
+
+	WILL_PRESS_KEY(UI_KEY_PREV_ANCHOR, 0);
 	EXPECT_FIRMWARE_LOG_PAGE(2);
 
-	WILL_PRESS_KEY(UI_KEY_UP, 0);		/* page 1 */
-	EXPECT_FIRMWARE_LOG_PAGE(1);
+	WILL_PRESS_KEY(UI_KEY_PREV_ANCHOR, 0);	/* still page 2 */
+
+	WILL_PRESS_KEY(UI_KEY_NEXT_ANCHOR, 0);
+	EXPECT_FIRMWARE_LOG_PAGE(3);
+
+	WILL_PRESS_KEY(UI_KEY_UP, 0);
+	EXPECT_FIRMWARE_LOG_PAGE(2);
 
 	/* page 1, back */
 	if (CONFIG(DETACHABLE))
