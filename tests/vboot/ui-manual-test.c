@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 
 #include <mocks/callbacks.h>
-#include <mocks/cbmem_console.h>
 #include <tests/test.h>
 #include <tests/vboot/common.h>
 #include <tests/vboot/context.h>
@@ -699,7 +698,7 @@ static void test_advanced_options_screen(void **state)
 	setup_will_return_common();
 	WILL_CLOSE_LID_IN(30);
 	will_return_maybe(ui_get_locale_count, 10);
-	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
+	SET_LOG_DIMENSIONS(40, 20);
 
 	EXPECT_UI_DISPLAY_ANY();
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -752,7 +751,6 @@ static void test_advanced_options_screen(void **state)
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS, MOCK_IGNORE, 2);
 
-	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(ui_is_physical_presence_pressed, 0);
 	WILL_HAVE_NO_EXTERNAL();
@@ -821,8 +819,7 @@ static void test_debug_info(void **state)
 	WILL_PRESS_KEY(0, 0);
 	WILL_PRESS_KEY('\t', 0);
 	will_return_maybe(ui_keyboard_read, 0);
-	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
-	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
+	SET_LOG_DIMENSIONS(40, 20);
 	EXPECT_UI_DISPLAY_ANY();
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO);
 	WILL_HAVE_NO_EXTERNAL();
@@ -837,7 +834,6 @@ static void test_firmware_log(void **state)
 
 	setup_will_return_common();
 
-	cbmem_console_snapshots_count = 0;
 	WILL_CLOSE_LID_IN(10);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -847,10 +843,7 @@ static void test_firmware_log(void **state)
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	will_return_maybe(ui_keyboard_read, 0);
-	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
-	expect_string(ui_log_init, str, "1");
-	expect_any_always(ui_log_init, screen);
-	expect_any_always(ui_log_init, locale_code);
+	SET_LOG_DIMENSIONS(40, 20);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 	WILL_HAVE_NO_EXTERNAL();
 
@@ -904,7 +897,7 @@ int main(void)
 		UI_TEST(test_language_ui_locale_count_0),
 		/* Debug info screen */
 		UI_TEST(test_debug_info),
-		/* Firmware log */
+		/* Firmware log screen */
 		UI_TEST(test_firmware_log),
 	};
 	return cmocka_run_group_tests(tests, NULL, NULL);

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 
 #include <mocks/callbacks.h>
-#include <mocks/cbmem_console.h>
 #include <tests/test.h>
 #include <tests/vboot/common.h>
 #include <tests/vboot/context.h>
@@ -18,6 +17,11 @@ int ui_is_lid_open(void)
 int has_external_display(void)
 {
 	return 0;
+}
+
+char *cbmem_console_snapshot(void)
+{
+	return mock_type(char *);
 }
 
 /* Tests */
@@ -121,14 +125,20 @@ static void test_debug_info(void **state)
 
 	WILL_CLOSE_LID_IN(5);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
-	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
+	SET_LOG_DIMENSIONS(40, 20);
 
 	WILL_PRESS_KEY(0, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_BROKEN);
 
 	WILL_PRESS_KEY('\t', 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO);
+
+	/* Leave debug info */
+	if (CONFIG(DETACHABLE))
+		WILL_PRESS_KEY(UI_BUTTON_POWER_SHORT_PRESS, 0);
+	else
+		WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_BROKEN);
 
 	will_return_always(ui_keyboard_read, 0);
 
@@ -142,8 +152,7 @@ static void test_debug_info_enter_failed(void **state)
 
 	WILL_CLOSE_LID_IN(5);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	WILL_CALL_UI_LOG_INIT_ALWAYS(0);
-	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
+	SET_LOG_DIMENSIONS(0, 0);
 
 	WILL_PRESS_KEY(0, 0);
 	EXPECT_UI_DISPLAY_ANY();
@@ -158,108 +167,69 @@ static void test_debug_info_enter_failed(void **state)
 			 VB2_REQUEST_SHUTDOWN);
 }
 
-static void test_debug_info_one_page(void **state)
+#define EXPECT_FIRMWARE_LOG_PAGE(page) \
+	EXPECT_UI_DISPLAY(UI_SCREEN_FIRMWARE_LOG, MOCK_IGNORE, MOCK_IGNORE, \
+			  MOCK_IGNORE, MOCK_IGNORE, page)
+
+static void test_firmware_log(void **state)
 {
 	struct ui_context *ui = *state;
+	const char *firmware_log =
+		"Line 0\n"
+		"Line 1\n"
+		"Line 2\n"
+		"Line 3\n"
+		"Line 4";
 
-	WILL_CLOSE_LID_IN(8);
+	WILL_CLOSE_LID_IN(20);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
+	will_return(cbmem_console_snapshot, firmware_log);
+	/* Expect 3 pages */
+	SET_LOG_DIMENSIONS(2, 20);
 
 	WILL_PRESS_KEY(0, 0);
-	EXPECT_UI_DISPLAY_ANY();
-
-	WILL_PRESS_KEY('\t', 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO);
-
-	/* Leave debug info */
-	if (CONFIG(DETACHABLE))
-		WILL_PRESS_KEY(UI_BUTTON_POWER_SHORT_PRESS, 0);
-	else
-		WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_BROKEN);
 
-	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
-	will_return_maybe(ui_keyboard_read, 0);
-	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS);
 
-	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
-			 VB2_REQUEST_SHUTDOWN);
-}
+	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS);
 
-static void test_debug_info_three_pages(void **state)
-{
-	struct ui_context *ui = *state;
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+	EXPECT_UI_DISPLAY(UI_SCREEN_FIRMWARE_LOG);
 
-	WILL_CLOSE_LID_IN(15);
-	will_return_maybe(vb2api_gbb_get_flags, 0);
-
-	WILL_PRESS_KEY(0, 0);
-	EXPECT_UI_DISPLAY_ANY();
-
-	WILL_PRESS_KEY('\t', 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO, MOCK_IGNORE,
-			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE, 0);
-
+	/* Firmware log screen */
 	WILL_PRESS_KEY(UI_KEY_UP, 0);		/* page 0 */
 	WILL_PRESS_KEY(UI_KEY_UP, 0);		/* page 0 */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* page 1 */
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO, MOCK_IGNORE,
-			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE, 1);
+	EXPECT_FIRMWARE_LOG_PAGE(1);
 
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* page 2 */
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO, MOCK_IGNORE,
-			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE, 2);
+	EXPECT_FIRMWARE_LOG_PAGE(2);
 
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* page 2 */
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* page 2 */
 	WILL_PRESS_KEY(UI_KEY_UP, 0);		/* page 1 */
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO, MOCK_IGNORE,
-			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE, 1);
+	EXPECT_FIRMWARE_LOG_PAGE(1);
 
 	WILL_PRESS_KEY(UI_KEY_LEFT, 0);		/* page 0 */
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO, MOCK_IGNORE,
-			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE, 0);
+	EXPECT_FIRMWARE_LOG_PAGE(0);
 
 	WILL_PRESS_KEY(UI_KEY_RIGHT, 0);	/* page 2 */
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO, MOCK_IGNORE,
-			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE, 2);
+	EXPECT_FIRMWARE_LOG_PAGE(2);
 
 	WILL_PRESS_KEY(UI_KEY_UP, 0);		/* page 1 */
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO, MOCK_IGNORE,
-			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE, 1);
+	EXPECT_FIRMWARE_LOG_PAGE(1);
 
 	/* page 1, back */
 	if (CONFIG(DETACHABLE))
 		WILL_PRESS_KEY(UI_BUTTON_POWER_SHORT_PRESS, 0);
 	else
 		WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_BROKEN);
+	EXPECT_UI_DISPLAY(UI_SCREEN_ADVANCED_OPTIONS);
 
-	WILL_CALL_UI_LOG_INIT_ALWAYS(3);
 	will_return_maybe(ui_keyboard_read, 0);
-	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
-
-	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
-			 VB2_REQUEST_SHUTDOWN);
-}
-
-static void test_firmware_log(void **state)
-{
-	struct ui_context *ui = *state;
-
-	cbmem_console_snapshots_count = 0;
-
-	WILL_CLOSE_LID_IN(10);
-	will_return_maybe(vb2api_gbb_get_flags, 0);
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	will_return_maybe(ui_keyboard_read, 0);
-	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
-	expect_string(ui_log_init, str, "1");
-	expect_any_always(ui_log_init, screen);
-	expect_any_always(ui_log_init, locale_code);
-	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 
 	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
@@ -269,53 +239,49 @@ static void test_firmware_log_again_reacquire_new_one(void **state)
 {
 	struct ui_context *ui = *state;
 
-	will_return_maybe(vb2api_gbb_get_flags, 0);
-
-	cbmem_console_snapshots_count = 0;
 	WILL_CLOSE_LID_IN(20);
+	will_return_maybe(vb2api_gbb_get_flags, 0);
+	will_return_count(cbmem_console_snapshot, "mock log", 2);
+	SET_LOG_DIMENSIONS(40, 20);
+
+	/* Firmware log */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
+
+	/* Back */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
+
+	/* Firmware log again */
 	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
 	will_return_maybe(ui_keyboard_read, 0);
-	expect_string(ui_log_init, str, "1");
-	expect_string(ui_log_init, str, "2");
-	expect_any_always(ui_log_init, screen);
-	expect_any_always(ui_log_init, locale_code);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 
 	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
 			 VB2_REQUEST_SHUTDOWN);
 }
 
-static void test_firmware_log_back_not_reacquire_new_one(void **state)
+static void test_firmware_log_again_not_reacquire_new_one(void **state)
 {
 	struct ui_context *ui = *state;
 
-	will_return_maybe(vb2api_gbb_get_flags, 0);
-
-	cbmem_console_snapshots_count = 0;
 	WILL_CLOSE_LID_IN(20);
-	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
+	will_return_maybe(vb2api_gbb_get_flags, 0);
+	will_return(cbmem_console_snapshot, "mock log");
+	SET_LOG_DIMENSIONS(40, 20);
 
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0); /* Advanced options */
-
+	/* Firmware log */
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0); /* Firmware log */
-	expect_string(ui_log_init, str, "1");
+	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
 
 	/* Debug info */
 	WILL_PRESS_KEY('\t', 0);
-	expect_any(ui_log_init, str);
 
-	/* Back to firmware log screen */
+	/* Back to firmware log */
 	WILL_PRESS_KEY(UI_KEY_ESC, 0);
 
 	will_return_maybe(ui_keyboard_read, 0);
-	expect_any_always(ui_log_init, screen);
-	expect_any_always(ui_log_init, locale_code);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
 
 	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
@@ -336,12 +302,10 @@ int main(void)
 		/* Debug info screen */
 		UI_TEST(test_debug_info),
 		UI_TEST(test_debug_info_enter_failed),
-		UI_TEST(test_debug_info_one_page),
-		UI_TEST(test_debug_info_three_pages),
 		/* Firmware log screen */
 		UI_TEST(test_firmware_log),
 		UI_TEST(test_firmware_log_again_reacquire_new_one),
-		UI_TEST(test_firmware_log_back_not_reacquire_new_one),
+		UI_TEST(test_firmware_log_again_not_reacquire_new_one),
 	};
 	return cmocka_run_group_tests(tests, NULL, NULL);
 }

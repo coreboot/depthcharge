@@ -36,7 +36,6 @@ ui-test-common-srcs += tests/mocks/cbmem_console.c
 ui-test-common-srcs += tests/mocks/diag/health_info.c
 ui-test-common-srcs += tests/mocks/diag/memory.c
 ui-test-common-srcs += tests/mocks/diag/storage_test.c
-ui-test-common-srcs += tests/mocks/log.c
 ui-test-common-srcs += tests/mocks/ui.c
 ui-test-common-srcs += tests/mocks/ui_callbacks.c
 ui-test-common-srcs += tests/mocks/ui_display.c
@@ -46,16 +45,16 @@ ui-test-common-srcs += tests/mocks/vboot/ui/archive.c
 ui-test-common-srcs += tests/mocks/vboot/ui/beep.c
 ui-test-common-srcs += tests/mocks/vboot/ui/bitmap.c
 ui-test-common-srcs += tests/mocks/vboot/ui/input.c
+ui-test-common-srcs += tests/mocks/vboot/ui/layout.c
 ui-test-common-srcs += tests/stubs/base/elog.c
 ui-test-common-srcs += tests/stubs/boot/payload.c
 ui-test-common-srcs += tests/stubs/diag/report.c
 ui-test-common-srcs += tests/stubs/drivers/storage/blockdev.c
 ui-test-common-srcs += tests/stubs/vboot/firmware_id.c
 ui-test-common-srcs += tests/stubs/vboot/ui/draw.c
-ui-test-common-srcs += tests/stubs/vboot/ui/layout.c
-ui-test-common-srcs += tests/stubs/vboot/ui/log.c
 ui-test-common-srcs += src/debug/stubs.c
 ui-test-common-srcs += src/vboot/ui/display.c
+ui-test-common-srcs += src/vboot/ui/log.c
 ui-test-common-srcs += src/vboot/ui/loop.c
 ui-test-common-srcs += src/vboot/ui/menu.c
 ui-test-common-srcs += src/vboot/ui/navigation.c
@@ -80,6 +79,8 @@ ui-test-common-mocks += vb2api_get_dev_default_boot_target
 $(call copy-test,ui-test-common,ui-broken-test)
 ui-broken-test-srcs += tests/vboot/ui-broken-test.c
 ui-broken-test-srcs += src/vboot/ui.c
+ui-broken-test-srcs := $(filter-out tests/mocks/cbmem_console.c, \
+	$(ui-broken-test-srcs))
 
 $(call copy-test,ui-broken-test,ui-broken-detachable-test)
 ui-broken-detachable-test-config += CONFIG_DETACHABLE=1

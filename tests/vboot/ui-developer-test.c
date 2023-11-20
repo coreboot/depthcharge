@@ -897,8 +897,7 @@ static void test_developer_screen_advanced_options_screen(void **state)
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(ui_get_locale_count, 10);
-	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
-	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
+	SET_LOG_DIMENSIONS(40, 20);
 
 	EXPECT_UI_DISPLAY_ANY();
 	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
@@ -957,8 +956,7 @@ static void test_developer_screen_debug_info(void **state)
 	will_return_maybe(vb2api_get_dev_default_boot_target,
 			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
-	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
+	SET_LOG_DIMENSIONS(40, 20);
 	will_return_maybe(ui_keyboard_read, 0);
 
 	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),

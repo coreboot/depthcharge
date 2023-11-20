@@ -165,8 +165,7 @@ static void test_diagnostics_screen(void **state)
 	will_return_maybe(ui_keyboard_read, 0);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(ui_get_locale_count, 10);
-	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
-	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
+	SET_LOG_DIMENSIONS(40, 20);
 	will_return_always(diag_storage_test_supported, 3);
 	will_return_always(diag_dump_storage_test_log, DIAG_TEST_PASSED);
 	will_return_always(diag_storage_test_control, DIAG_TEST_PASSED);
