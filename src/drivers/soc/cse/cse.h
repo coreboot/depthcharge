@@ -329,10 +329,7 @@ void heci_set_to_d0i3(void);
 /* Function performs the global reset lock */
 void cse_control_global_reset_lock(void);
 
-/*
- * This function to perform essential post EOP cse related operations
- * upon SoC selecting `SOC_INTEL_CSE_SEND_EOP_LATE` config
- */
+/* This function to perform essential post EOP cse related operations.*/
 void cse_late_finalize(void);
 
 #endif // __DRIVERS_SOC_CSE_CSE_H__

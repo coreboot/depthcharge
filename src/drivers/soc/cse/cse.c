@@ -960,17 +960,11 @@ static void cse_final_end_of_firmware(void)
 	heci_set_to_d0i3();
 }
 
-/*
- * This function to perform essential post EOP cse related operations
- * upon SoC selecting `SOC_INTEL_CSE_SEND_EOP_LATE` config
- */
+/* This function to perform essential post EOP cse related operations.*/
 void cse_late_finalize(void)
 {
-	if (!CONFIG(USE_FSP_NOTIFY_PHASE_READY_TO_BOOT))
-		cse_final_ready_to_boot();
-
-	if (!CONFIG(USE_FSP_NOTIFY_PHASE_END_OF_FIRMWARE))
-		cse_final_end_of_firmware();
+	cse_final_ready_to_boot();
+	cse_final_end_of_firmware();
 }
 
 void pmc_global_reset_disable_and_lock(void)
@@ -1009,4 +1003,3 @@ void do_global_reset(void)
 	pmc_global_reset_enable(1);
 	do_full_reset();
 }
-
