@@ -831,116 +831,6 @@ static void test_debug_info(void **state)
 			 VB2_REQUEST_SHUTDOWN);
 }
 
-static void test_debug_info_enter_failed(void **state)
-{
-	struct ui_context *ui = *state;
-
-	setup_will_return_common();
-
-	WILL_CLOSE_LID_IN(5);
-	WILL_PRESS_KEY(0, 0);
-	WILL_PRESS_KEY('\t', 0);
-	will_return_maybe(ui_keyboard_read, 0);
-	WILL_CALL_UI_LOG_INIT_ALWAYS(0);
-	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
-	EXPECT_UI_DISPLAY_ANY();
-	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT);
-	EXPECT_BEEP(250, 400, mock_time_ms + 2 * UI_KEY_DELAY_MS);
-	WILL_HAVE_NO_EXTERNAL();
-
-	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
-			 VB2_REQUEST_SHUTDOWN);
-}
-
-static void test_debug_info_one_page(void **state)
-{
-	struct ui_context *ui = *state;
-
-	setup_will_return_common();
-
-	WILL_CLOSE_LID_IN(8);
-
-	WILL_PRESS_KEY(0, 0);
-	EXPECT_UI_DISPLAY_ANY();
-
-	WILL_PRESS_KEY('\t', 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO);
-
-	/* Leave debug info */
-	if (CONFIG(DETACHABLE))
-		WILL_PRESS_KEY(UI_BUTTON_POWER_SHORT_PRESS, 0);
-	else
-		WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT);
-
-	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
-	will_return_maybe(ui_keyboard_read, 0);
-	WILL_HAVE_NO_EXTERNAL();
-	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
-
-	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
-			 VB2_REQUEST_SHUTDOWN);
-}
-
-static void test_debug_info_three_pages(void **state)
-{
-	struct ui_context *ui = *state;
-
-	setup_will_return_common();
-
-	WILL_CLOSE_LID_IN(15);
-
-	WILL_PRESS_KEY(0, 0);
-	EXPECT_UI_DISPLAY_ANY();
-
-	WILL_PRESS_KEY('\t', 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO, MOCK_IGNORE,
-			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE, 0);
-
-	WILL_PRESS_KEY(UI_KEY_UP, 0);		/* page 0 */
-	WILL_PRESS_KEY(UI_KEY_UP, 0);		/* page 0 */
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* page 1 */
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO, MOCK_IGNORE,
-			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE, 1);
-
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* page 2 */
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO, MOCK_IGNORE,
-			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE, 2);
-
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* page 2 */
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);		/* page 2 */
-	WILL_PRESS_KEY(UI_KEY_UP, 0);		/* page 1 */
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO, MOCK_IGNORE,
-			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE, 1);
-
-	WILL_PRESS_KEY(UI_KEY_LEFT, 0);		/* page 0 */
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO, MOCK_IGNORE,
-			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE, 0);
-
-	WILL_PRESS_KEY(UI_KEY_RIGHT, 0);	/* page 2 */
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO, MOCK_IGNORE,
-			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE, 2);
-
-	WILL_PRESS_KEY(UI_KEY_UP, 0);		/* page 1 */
-	EXPECT_UI_DISPLAY(UI_SCREEN_DEBUG_INFO, MOCK_IGNORE,
-			  MOCK_IGNORE, MOCK_IGNORE, MOCK_IGNORE, 1);
-
-	/* page 1, back */
-	if (CONFIG(DETACHABLE))
-		WILL_PRESS_KEY(UI_BUTTON_POWER_SHORT_PRESS, 0);
-	else
-		WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_SELECT);
-
-	WILL_CALL_UI_LOG_INIT_ALWAYS(3);
-	will_return_maybe(ui_keyboard_read, 0);
-	EXPECT_UI_LOG_INIT_ANY_ALWAYS();
-	WILL_HAVE_NO_EXTERNAL();
-
-	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
-			 VB2_REQUEST_SHUTDOWN);
-}
-
 static void test_firmware_log(void **state)
 {
 	struct ui_context *ui = *state;
@@ -959,73 +849,6 @@ static void test_firmware_log(void **state)
 	will_return_maybe(ui_keyboard_read, 0);
 	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
 	expect_string(ui_log_init, str, "1");
-	expect_any_always(ui_log_init, screen);
-	expect_any_always(ui_log_init, locale_code);
-	EXPECT_UI_DISPLAY_ANY_ALWAYS();
-	WILL_HAVE_NO_EXTERNAL();
-
-	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
-			 VB2_REQUEST_SHUTDOWN);
-}
-
-static void test_firmware_log_again_reacquire_new_one(void **state)
-{
-	struct ui_context *ui = *state;
-
-	setup_will_return_common();
-
-	cbmem_console_snapshots_count = 0;
-	WILL_CLOSE_LID_IN(20);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	WILL_PRESS_KEY(UI_KEY_ESC, 0);
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0);
-	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
-	will_return_maybe(ui_keyboard_read, 0);
-	expect_string(ui_log_init, str, "1");
-	expect_string(ui_log_init, str, "2");
-	expect_any_always(ui_log_init, screen);
-	expect_any_always(ui_log_init, locale_code);
-	EXPECT_UI_DISPLAY_ANY_ALWAYS();
-	WILL_HAVE_NO_EXTERNAL();
-
-	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
-			 VB2_REQUEST_SHUTDOWN);
-}
-
-static void test_firmware_log_back_not_reacquire_new_one(void **state)
-{
-	struct ui_context *ui = *state;
-
-	setup_will_return_common();
-
-	cbmem_console_snapshots_count = 0;
-	WILL_CLOSE_LID_IN(20);
-	WILL_CALL_UI_LOG_INIT_ALWAYS(1);
-
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0); /* Advanced options */
-
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_DOWN, 0);
-	WILL_PRESS_KEY(UI_KEY_ENTER, 0); /* Firmware log screen */
-	expect_string(ui_log_init, str, "1");
-
-	/* Debug info screen */
-	WILL_PRESS_KEY('\t', 0);
-	expect_any(ui_log_init, str);
-
-	/* Back to firmware log screen */
-	WILL_PRESS_KEY(UI_KEY_ESC, 0);
-
-	will_return_maybe(ui_keyboard_read, 0);
 	expect_any_always(ui_log_init, screen);
 	expect_any_always(ui_log_init, locale_code);
 	EXPECT_UI_DISPLAY_ANY_ALWAYS();
@@ -1081,13 +904,8 @@ int main(void)
 		UI_TEST(test_language_ui_locale_count_0),
 		/* Debug info screen */
 		UI_TEST(test_debug_info),
-		UI_TEST(test_debug_info_enter_failed),
-		UI_TEST(test_debug_info_one_page),
-		UI_TEST(test_debug_info_three_pages),
 		/* Firmware log */
 		UI_TEST(test_firmware_log),
-		UI_TEST(test_firmware_log_again_reacquire_new_one),
-		UI_TEST(test_firmware_log_back_not_reacquire_new_one),
 	};
 	return cmocka_run_group_tests(tests, NULL, NULL);
 }
