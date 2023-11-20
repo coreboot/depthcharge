@@ -29,6 +29,13 @@ vb2_error_t ui_display(struct ui_context *ui,
 	assert_non_null(state);
 	assert_non_null(state->screen);
 	assert_non_null(state->locale);
+	printf("%s: screen=%#x, locale=%u, focused_item=%u, "
+	       "disabled_item_mask=%#x, hidden_item_mask=%#x, "
+	       "timer_disabled=%d, current_page=%u, error=%#x\n",
+	       __func__, state->screen->id, ui->state->locale->id,
+	       state->focused_item, state->disabled_item_mask,
+	       state->hidden_item_mask, state->timer_disabled,
+	       state->current_page, state->error_code);
 	return _ui_display(state->screen->id, state->locale->id,
 			   state->focused_item, state->disabled_item_mask,
 			   state->hidden_item_mask, state->timer_disabled,
