@@ -31,6 +31,7 @@ static void test_log_init_empty_string(void **state)
 	expect_string(ui_get_log_textbox_dimensions, locale_code, "en");
 
 	ASSERT_VB2_SUCCESS(ui_log_init(UI_SCREEN_FIRMWARE_LOG, "en", "", &log));
+	assert_int_equal(log.page_count, 0);
 }
 
 static void test_log_init_one_page(void **state)
