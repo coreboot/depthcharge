@@ -48,19 +48,25 @@ SECTIONS
 	_start = .;
 
 	.text : {
+		_text = .;
 		*(.text._entry)
 		*(.text)
 		*(.text.*)
+		_etext = .;
 	}
 
 	.rodata : {
+		_rodata = .;
 		*(.rodata)
 		*(.rodata.*)
+		_erodata = .;
 	}
 
 	.data : {
+		_data = .;
 		*(.data)
 		*(.data.*)
+		_edata = .;
 
 		_init_funcs_start = .;
 		KEEP(*(.init_funcs))
@@ -69,19 +75,24 @@ SECTIONS
 	}
 
 	.got : {
+		_got = .;
 		*(.got)
 		*(.got.*)
+		_egot = .;
 	}
 
-	_edata = .;
 
 	.bss : {
+		*(.ttb_buffer)
+
+		_bss = .;
 		*(.sbss)
 		*(.sbss.*)
 		*(.bss)
 		*(.bss.*)
 		*(COMMON)
 		*(.scommon)
+		_ebss = .;
 
 		/* Stack and heap */
 		. = ALIGN(16);
@@ -90,10 +101,10 @@ SECTIONS
 		. = ALIGN(16);
 		_eheap = .;
 
-		_estack = .;
+		_stack = .;
 		. += CONFIG_STACK_SIZE;
 		. = ALIGN(16);
-		_stack = .;
+		_estack = .;
 	}
 
 	_end = .;

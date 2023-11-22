@@ -23,13 +23,20 @@
 // C level variable definitions for symbols defined in the linker script.
 
 extern char _start[];
+extern char _text[];
+extern char _etext[];
+extern char _rodata[];
+extern char _erodata[];
+extern char _data[];
 extern char _edata[];
+extern char _got[];
+extern char _egot[];
+extern char _bss[];
+extern char _ebss[];
 extern char _heap[];
 extern char _eheap[];
-extern char _estack[];
 extern char _stack[];
-extern char _exc_estack[];
-extern char _exc_stack[];
+extern char _estack[];
 extern char _end[];
 extern char _kernel_start[];
 extern char _kernel_end[];
