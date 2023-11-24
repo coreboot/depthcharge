@@ -1759,7 +1759,7 @@ void add_rtkhost(RtkMmcHost *host)
 	host->mmc_ctrlr.caps =
 		MMC_CAPS_HS | MMC_CAPS_HS_52MHz | MMC_CAPS_4BIT | MMC_CAPS_HC;
 
-	host->mmc_ctrlr.b_max = 65535; /* Some controllers use 16-bit regs. */
+	host->mmc_ctrlr.b_max = 32767; /* use 15-bit regs. */
 
 	assert(host->mmc_ctrlr.slot_type == MMC_SLOT_TYPE_EMBEDDED ||
 	       !(host->platform_info & RTK_PLATFORM_EMMC_HARDWIRED_VCC));
