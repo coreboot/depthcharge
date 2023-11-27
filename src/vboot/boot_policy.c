@@ -21,6 +21,8 @@
 #include <stdlib.h>
 #include <vb2_android_bootimg.h>
 
+#include "base/string_utils.h"
+#include "boot/bootconfig.h"
 #include "boot/multiboot.h"
 #include "vboot/boot.h"
 #include "vboot/boot_policy.h"
@@ -107,6 +109,8 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 	uint8_t *init_boot_ramdisk_src;
 	uint8_t *init_boot_ramdisk_dst;
 	uint32_t vendor_ramdisk_section_offset;
+	struct bootconfig bc;
+	int ret;
 
 	vendor_hdr = (struct vendor_boot_img_hdr_v4 *)((uintptr_t)kparams->kernel_buffer +
 						       kparams->vendor_boot_offset);
@@ -133,6 +137,53 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 	vendor_ramdisk_section_offset = ALIGN_UP(sizeof(struct vendor_boot_img_hdr_v4),
 						 vendor_hdr->page_size);
 
+	if (CONFIG(BOOTCONFIG)) {
+		uint32_t bootconfig_section_offset;
+		uint8_t *bootconfig_section_address;
+		uintptr_t ramdisk_end, kernel_buffer_end;
+
+		/* Calculate offset of bootconfig section */
+		bootconfig_section_offset = vendor_ramdisk_section_offset +
+			ALIGN_UP(vendor_hdr->vendor_ramdisk_size,
+				 vendor_hdr->page_size) +
+			ALIGN_UP(vendor_hdr->dtb_size,
+				 vendor_hdr->page_size) +
+			ALIGN_UP(vendor_hdr->vendor_ramdisk_table_size,
+				 vendor_hdr->page_size);
+
+		bootconfig_section_address = (uint8_t *)vendor_hdr + bootconfig_section_offset;
+
+		ramdisk_end = (uintptr_t)vendor_hdr +
+				     vendor_ramdisk_section_offset +
+				     vendor_hdr->vendor_ramdisk_size +
+				     init_hdr->ramdisk_size;
+		kernel_buffer_end = (uintptr_t)kparams->kernel_buffer +
+			kparams->kernel_buffer_size;
+
+		/* Let's see if there is a place for bootconfig after ramdisks */
+		if ((ramdisk_end + vendor_hdr->bootconfig_size) >= kernel_buffer_end) {
+			printf("GKI: Not enough space for bootconfig\n");
+			return -1;
+		}
+
+		/* Enough place, bootconfig is placed right after ramdisks */
+		bc.bootc_start = (void *)ramdisk_end;
+		bc.bootc_limit = kernel_buffer_end - ramdisk_end;
+		bc.bootc_size = 0;
+
+		/*
+		 * Generate valid (that is including trailer) bootconfig section
+		 * at the end of a ramdisk. Keep track of its size which is
+		 * necessary in case of updating it later on.
+		 */
+		ret = bootconfig_init(&bc, bootconfig_section_address,
+				      vendor_hdr->bootconfig_size);
+		if (ret < 0) {
+			printf("GKI: Cannot parse build time bootconfig\n");
+			return -1;
+		}
+	}
+
 	init_boot_ramdisk_dst = ((uint8_t *)vendor_hdr +
 				vendor_ramdisk_section_offset +
 				vendor_hdr->vendor_ramdisk_size);
@@ -151,7 +202,8 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 
 	/* Update ramdisk addr and size */
 	bi->ramdisk_addr = (uint8_t *)vendor_hdr + vendor_ramdisk_section_offset;
-	bi->ramdisk_size = vendor_hdr->vendor_ramdisk_size + init_hdr->ramdisk_size;
+	bi->ramdisk_size = vendor_hdr->vendor_ramdisk_size + init_hdr->ramdisk_size +
+			   bc.bootc_size;
 
 	if (fill_cmdline)
 		bi->cmd_line = (char *)vendor_hdr->cmdline;
