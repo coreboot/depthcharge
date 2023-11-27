@@ -72,3 +72,10 @@ config ANDROID_DT_FIXUP
 	  Enabling this option will create a /firmware/android node in the
 	  device tree and populate it with the hardware name and other
 	  values from the VPD such as the serial number.
+
+config BOOTCONFIG
+	bool "Support for bootconfig"
+	default n
+	help
+	  Enable support for bootconfig feature which is another way to provide
+	  key=value parameters to the kernel besides commandline.
