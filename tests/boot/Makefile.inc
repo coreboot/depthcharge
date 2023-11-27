@@ -1,6 +1,9 @@
 # SPDX-License-Identifier: GPL-2.0
 
-tests-y += memchipinfo-test payload-test
+tests-y += bootconfig-test memchipinfo-test payload-test
+
+bootconfig-test-srcs += tests/boot/bootconfig-test.c
+bootconfig-test-srcs += src/boot/bootconfig.c
 
 memchipinfo-test-srcs += tests/boot/memchipinfo.c
 memchipinfo-test-srcs += tests/helpers/device_tree.c
