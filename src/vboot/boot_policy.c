@@ -20,6 +20,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "base/string_utils.h"
+#include "boot/bootconfig.h"
 #include "boot/multiboot.h"
 #include "vboot/android_image_hdr.h"
 #include "vboot/boot.h"
@@ -205,6 +207,8 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 	uint8_t *init_boot_ramdisk_src;
 	uint8_t *init_boot_ramdisk_dst;
 	uint32_t vendor_ramdisk_section_offset;
+	uint32_t bootconfig_section_offset;
+	uintptr_t bootc_ramdisk_addr;
 
 	vendor_hdr = (struct vendor_boot_img_hdr_v4 *)((uintptr_t)kparams->kernel_buffer +
 						       kparams->vendor_boot_offset);
@@ -230,6 +234,40 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 	vendor_ramdisk_section_offset = ALIGN_UP(sizeof(struct vendor_boot_img_hdr_v4),
 						 vendor_hdr->page_size);
 
+	if (CONFIG(BOOTCONFIG) && vendor_hdr->bootconfig_size != 0) {
+		/* Calculate offset of bootconfig section */
+		bootconfig_section_offset = vendor_ramdisk_section_offset +
+			ALIGN_UP(vendor_hdr->vendor_ramdisk_size,
+				 vendor_hdr->page_size) +
+			ALIGN_UP(vendor_hdr->dtb_size,
+				 vendor_hdr->page_size) +
+			ALIGN_UP(vendor_hdr->vendor_ramdisk_table_size,
+				 vendor_hdr->page_size);
+
+		bootc_ramdisk_addr = (uintptr_t)vendor_hdr +
+				     vendor_ramdisk_section_offset +
+				     vendor_hdr->vendor_ramdisk_size +
+				     init_hdr->ramdisk_size;
+
+		if ((bootc_ramdisk_addr + vendor_hdr->bootconfig_size) >=
+		    ((uintptr_t)kparams->kernel_buffer + kparams->vboot_cmdline_offset)) {
+			printf("GKI: Not enough space for bootconfig\n");
+			return -1;
+		}
+		/* Generate valid (that is including trailer) bootconfig section
+		 * at the end of a ramdisk. Keep track of its size which is
+		 * necessary in case of updating it later on.
+		 */
+		vendor_hdr->bootconfig_size =
+			parse_build_time_bootconfig((void *)bootc_ramdisk_addr,
+				(uint8_t *)vendor_hdr + bootconfig_section_offset,
+				vendor_hdr->bootconfig_size);
+		if (vendor_hdr->bootconfig_size < 0) {
+			printf("GKI: Cannot parse build time bootconfig\n");
+			return -1;
+		}
+	}
+
 	init_boot_ramdisk_dst = ((uint8_t *)vendor_hdr +
 				vendor_ramdisk_section_offset +
 				vendor_hdr->vendor_ramdisk_size);
@@ -248,7 +286,8 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 
 	/* Update ramdisk addr and size */
 	bi->ramdisk_addr = (uint8_t *)vendor_hdr + vendor_ramdisk_section_offset;
-	bi->ramdisk_size = vendor_hdr->vendor_ramdisk_size + init_hdr->ramdisk_size;
+	bi->ramdisk_size = vendor_hdr->vendor_ramdisk_size + init_hdr->ramdisk_size +
+			   vendor_hdr->bootconfig_size;
 
 	if (fill_cmdline)
 		bi->cmd_line = (char *)vendor_hdr->cmdline;
