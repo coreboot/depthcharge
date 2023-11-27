@@ -10,7 +10,7 @@ char *set_key_value_in_separated_list(const char *src, const char *key,
 	char *dst;
 	int str_idx;
 
-	if (key == NULL || value == NULL || separator == NULL)
+	if (src == NULL || key == NULL || value == NULL || separator == NULL)
 		return NULL;
 	/*
 	 * Get enough space for the worst case, where we need to insert key,

@@ -11,17 +11,14 @@ static void test_set_key_value_in_separated_list(void **state)
 	char *expected;
 
 	/* Test parameter validation */
+	ret1 = set_key_value_in_separated_list(NULL, "key1", "value1", "\n");
+	assert_null(ret1);
 	ret1 = set_key_value_in_separated_list("", NULL, "value1", "\n");
 	assert_null(ret1);
 	ret1 = set_key_value_in_separated_list("", "key1", NULL, "\n");
 	assert_null(ret1);
 	ret1 = set_key_value_in_separated_list("", "key1", "value1", NULL);
 	assert_null(ret1);
-
-	/* Add to null string */
-	ret1 = set_key_value_in_separated_list(NULL, "key1", "value1", "\n");
-	expected = "key1=value1";
-	assert_int_equal(memcmp(ret1, expected, sizeof(expected)), 0);
 
 	/* Add to empty string */
 	ret1 = set_key_value_in_separated_list("", "key1", "value1", "\n");
