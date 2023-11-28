@@ -708,6 +708,34 @@ static int __must_check ps8751_spi_flash_unlock(Ps8751 *me)
 }
 
 /**
+ * re-initialize undocumented SPI controller registers (see b/304772621)
+ *
+ * The registers 0x80-0x84 contain undocumented settings that can affect SPI
+ * programming. They are usually initialized to correct defaults, but if the
+ * TCPC firmware is broken (e.g. after an interrupted update), the MPU may have
+ * overwritten them with garbage data. We need to make sure we reinitialize them
+ * to safe default values so that we can flash correctly in all circumstances.
+ *
+ * @param me	device context
+ * @return 0 if ok, -1 on error
+ */
+
+static int __must_check ps8751_reinit_spi(Ps8751 *me)
+{
+	/* According to Parade these values are correct for all PS8xxx variants. */
+	static const uint8_t safe_defaults[] = { 0x50, 0x04, 0x0, 0x0, 0x0 };
+	_Static_assert(P2_SPI_UNDOC_START + ARRAY_SIZE(safe_defaults) - 1 == 0x84);
+
+	for (int i = 0; i < ARRAY_SIZE(safe_defaults); i++) {
+		int ret = ps8751_write_reg(me, me->addr_page_2, P2_SPI_UNDOC_START + i,
+					   safe_defaults[i]);
+		if (ret)
+			return ret;
+	}
+	return 0;
+}
+
+/**
  * Enable the I2C PAGE_7 window to internal flash. This is a quirk of
  * the ps8751.
  *
@@ -1572,6 +1600,9 @@ static int ps8751_halt_and_flash(Ps8751 *me,
 
 	if (ps8751_disable_mpu(me) != 0)
 		return -1;
+
+	if (ps8751_reinit_spi(me) != 0)
+		goto enable_mpu;
 
 	if (ps8751_set_i2c_speed(me) != 0)
 		goto enable_mpu;
