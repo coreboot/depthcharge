@@ -65,6 +65,7 @@
 
 #define P2_ALERT_LOW		0x10
 #define P2_ALERT_HIGH		0x11
+#define P2_SPI_UNDOC_START	0x80	/* 0x80 - 0x84 undocumented ctrl regs */
 #define P2_FLASH_A8_A15		0x8e	/* SPI flash addr[8:15] */
 #define P2_FLASH_A16_A23	0x8f	/* SPI flash addr[16:23] */
 #define P2_WR_FIFO		0x90
