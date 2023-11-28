@@ -70,6 +70,7 @@
 
 #define P2_ALERT_LOW		0x10
 #define P2_ALERT_HIGH		0x11
+#define P2_SPI_UNDOC_START	0x80	/* 0x80 - 0x84 undocumented ctrl regs */
 #define P2_WR_FIFO		0x90
 #define P2_RD_FIFO		0x91
 #define P2_SPI_LEN		0x92
@@ -685,6 +686,34 @@ static int __must_check ps8751_spi_flash_unlock(Ps8751 *me)
 		printf("%s: could not clear flash status "
 		       "SRP|BP (0x%02x)\n", me->chip_name, status);
 		return -1;
+	}
+	return 0;
+}
+
+/**
+ * re-initialize undocumented SPI controller registers (see b/304772621)
+ *
+ * The registers 0x80-0x84 contain undocumented settings that can affect SPI
+ * programming. They are usually initialized to correct defaults, but if the
+ * TCPC firmware is broken (e.g. after an interrupted update), the MPU may have
+ * overwritten them with garbage data. We need to make sure we reinitialize them
+ * to safe default values so that we can flash correctly in all circumstances.
+ *
+ * @param me	device context
+ * @return 0 if ok, -1 on error
+ */
+
+static int __must_check ps8751_reinit_spi(Ps8751 *me)
+{
+	/* According to Parade these values are correct for all PS8xxx variants. */
+	static const uint8_t safe_defaults[] = { 0x50, 0x04, 0x0, 0x0, 0x0 };
+	_Static_assert(P2_SPI_UNDOC_START + ARRAY_SIZE(safe_defaults) - 1 == 0x84,
+		       "unexpected size for undocumented SPI register defaults");
+
+	for (int i = 0; i < ARRAY_SIZE(safe_defaults); i++) {
+		int ret = write_reg(me, PAGE_2, P2_SPI_UNDOC_START + i, safe_defaults[i]);
+		if (ret)
+			return ret;
 	}
 	return 0;
 }
@@ -1470,6 +1499,10 @@ static int ps8751_halt_and_flash(Ps8751 *me,
 
 	if (ps8751_disable_mpu(me) != 0)
 		return -1;
+
+	if (ps8751_reinit_spi(me) != 0)
+		goto enable_mpu;
+
 	if (ps8751_spi_flash_unlock(me) != 0)
 		goto enable_mpu;
 	debug("unlock_spi_bus returned\n");
