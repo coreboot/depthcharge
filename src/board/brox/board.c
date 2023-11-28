@@ -29,7 +29,6 @@
 #include "vboot/util/flag.h"
 
 #define EC_PCH_INT_ODL	GPP_F17
-#define TPM_I2C3	PCI_DEV(0, 0x15, 3)
 #define I2C_FS_HZ	400000
 
 __weak const struct storage_config *variant_get_storage_configs(size_t *count)
@@ -46,7 +45,7 @@ __weak const struct storage_config *variant_get_storage_configs(size_t *count)
 __weak const struct tpm_config *variant_get_tpm_config(void)
 {
 	static const struct tpm_config config = {
-		.pci_dev = PCI_DEV(0, 0x15, 3),
+		.pci_dev = PCI_DEV(0, 0x19, 0),
 	};
 
 	return &config;
@@ -59,7 +58,7 @@ __weak const int variant_get_ec_int(void)
 
 __weak int gsc_irq_status(void)
 {
-	return alderlake_get_gpe(GPE0_DW0_13); /* GPP_A13 */
+	return alderlake_get_gpe(GPE0_DW2_02); /* GPP_E2 */
 }
 
 static GpioOps *mkbp_int_ops(void)
