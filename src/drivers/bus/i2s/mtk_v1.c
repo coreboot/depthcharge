@@ -109,9 +109,9 @@ static int mtk_i2s_init(MtkI2s *bus)
 		/* set O03/O04 16bits */
 		clrbits_le32(&regs->conn_24bit, (1 << 3) | (1 << 4));
 
-		/* I05/I06 -> O00/O01 connection */
-		setbits_le32(&regs->conn1, 1 << 21);
-		setbits_le32(&regs->conn2, 1 << 6);
+		/* config I05/I06 connection */
+		setbits_le32(&MTK_AFE_I2S_I05_REG(regs), 1 << MTK_AFE_I2S_I05_SHIFT);
+		setbits_le32(&MTK_AFE_I2S_I06_REG(regs), 1 << MTK_AFE_I2S_I06_SHIFT);
 
 		/* config I2S0 input */
 		val = ((rate & AFE_I2S_RATE_MASK) << AFE_I2S_RATE_SHIFT) |

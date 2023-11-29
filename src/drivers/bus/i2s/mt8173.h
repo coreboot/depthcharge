@@ -45,6 +45,11 @@ typedef struct {
 #define MTK_MEMIF_CHANNEL(r)	r->dac_con1
 #define MTK_MEMIF_RATE(r)	r->dac_con1
 
+#define MTK_AFE_I2S_I05_REG(r) ((r)->conn1)
+#define MTK_AFE_I2S_I06_REG(r) ((r)->conn2)
+#define MTK_AFE_I2S_I05_SHIFT 21
+#define MTK_AFE_I2S_I06_SHIFT 6
+
 enum {
 	MTK_MEMIF_CHANNEL_SFT = 21,
 	MTK_MEMIF_RATE_SFT = 0,

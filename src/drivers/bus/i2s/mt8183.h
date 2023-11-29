@@ -40,10 +40,18 @@ typedef struct {
 	uint32_t _rsv5[0xe0];
 	uint32_t apll1_cfg;	/* 0x03f0: AFE_APLL1_TUNER_CFG */
 	uint32_t apll2_cfg;	/* 0x03f4: AFE_APLL2_TUNER_CFG */
+	uint32_t _rsv6[0x31];
+	uint32_t conn28;	/* 0x04bc: AFE_CONN28 */
+	uint32_t conn29;	/* 0x04c0: AFE_CONN29 */
 } __attribute__((packed)) MtkI2sRegs;
 
 #define MTK_MEMIF_CHANNEL(r)	r->dac_con1
 #define MTK_MEMIF_RATE(r)	r->dac_con1
+
+#define MTK_AFE_I2S_I05_REG(r) ((r)->conn28)
+#define MTK_AFE_I2S_I06_REG(r) ((r)->conn29)
+#define MTK_AFE_I2S_I05_SHIFT 5
+#define MTK_AFE_I2S_I06_SHIFT 6
 
 enum {
 	MTK_MEMIF_CHANNEL_SFT = 21,
