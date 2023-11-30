@@ -208,7 +208,7 @@ int cros_ec_scan_keyboard(struct cros_ec_keyscan *scan);
  * @param event		Place to put the event.
  * @return number of bytes received if ok, else EC error response code.
  */
-int cros_ec_get_next_event(struct ec_response_get_next_event *event);
+int cros_ec_get_next_event(struct ec_response_get_next_event_v1 *event);
 
 /**
  * Check if the ChromeOS EC device has an interrupt pending.
