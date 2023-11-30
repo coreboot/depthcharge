@@ -68,7 +68,7 @@ typedef struct Key
 	uint16_t code;
 } Key;
 
-static int mkbp_old_cmd_read_event(struct ec_response_get_next_event *event)
+static int mkbp_old_cmd_read_event(struct ec_response_get_next_event_v1 *event)
 {
 	struct cros_ec_keyscan scan;
 
@@ -82,7 +82,7 @@ static int mkbp_old_cmd_read_event(struct ec_response_get_next_event *event)
 	return 0;
 }
 
-static int mkbp_new_cmd_read_event(struct ec_response_get_next_event *event)
+static int mkbp_new_cmd_read_event(struct ec_response_get_next_event_v1 *event)
 {
 	int rv;
 
@@ -108,7 +108,7 @@ static int mkbp_new_cmd_read_event(struct ec_response_get_next_event *event)
  * 0 = success (more data available in event response)
  * -1 = error (no more data queued on EC side)
  */
-static int mkbp_read_event(struct ec_response_get_next_event *event)
+static int mkbp_read_event(struct ec_response_get_next_event_v1 *event)
 {
 	if (CONFIG(DRIVER_INPUT_MKBP_OLD_COMMAND))
 		return mkbp_old_cmd_read_event(event);
@@ -134,7 +134,7 @@ static int update_keys(Key *keys, int *total, int max,
 
 static int mkbp_process_keymatrix(Modifier *modifiers, uint16_t *codes,
 				  int max_codes,
-				  struct ec_response_get_next_event *event)
+				  struct ec_response_get_next_event_v1 *event)
 {
 	static struct cros_ec_keyscan last_scan;
 	int total = 0;
@@ -344,7 +344,7 @@ static int mkbp_add_button(uint16_t *codes, int max_codes, uint32_t curr_bitmap)
 }
 
 static int mkbp_process_buttons(uint16_t *codes, int max_codes,
-				struct ec_response_get_next_event *event)
+				struct ec_response_get_next_event_v1 *event)
 {
 	return mkbp_add_button(codes, max_codes, event->data.buttons);
 }
@@ -360,7 +360,7 @@ static int mkbp_process_button_long_press(uint16_t *codes, int max_codes)
 static int mkbp_process_events(Modifier *modifiers, uint16_t *codes,
 				int max_codes)
 {
-	struct ec_response_get_next_event event;
+	struct ec_response_get_next_event_v1 event;
 
 	if (!more_input_states())
 		return -1;
