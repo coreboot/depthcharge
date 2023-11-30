@@ -373,7 +373,9 @@ skyrim:
   screen: [1920, 1080]
 
 geralt:
-  # TODO: Default setting for geralt and shall update after resolution confirmed.
+  # 1920x1200
+  screen: [1920, 1200]
+  dpi: 112 # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 staryu:
   screen: [1920, 1200]
