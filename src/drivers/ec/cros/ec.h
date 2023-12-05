@@ -338,7 +338,7 @@ int cros_ec_set_bl_pwm_duty(uint32_t percent);
  * @param lid		Buffer to read lid open flag (returns 0 or 1)
  * @return 0 if ok, -1 on error
  */
-int cros_ec_read_lid_switch(uint32_t *lid);
+int cros_ec_read_lid_switch(int *lid);
 
 /**
  * Return GpioOps that will read the 'lid open' switch.
@@ -351,7 +351,7 @@ GpioOps *cros_ec_lid_switch_flag(void);
  * @param pwr_btn	Buffer to read lid open flag (returns 0 or 1)
  * @return 0 if ok, -1 on error
  */
-int cros_ec_read_power_btn(uint32_t *pwr_btn);
+int cros_ec_read_power_btn(int *pwr_btn);
 
 /**
  * Return GpioOps that will read the power button.

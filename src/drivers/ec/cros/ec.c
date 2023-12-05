@@ -606,7 +606,7 @@ int cros_ec_read_batt_volt(uint32_t *volt)
 	return read_memmap(EC_MEMMAP_BATT_VOLT, sizeof(*volt), volt);
 }
 
-int cros_ec_read_lid_switch(uint32_t *lid)
+int cros_ec_read_lid_switch(int *lid)
 {
 	uint8_t flags, version;
 
@@ -632,7 +632,7 @@ int cros_ec_read_lid_switch(uint32_t *lid)
  */
 static int get_lid_switch_from_ec(GpioOps *me)
 {
-	uint32_t lid_open;
+	int lid_open;
 
 	if (!cros_ec_read_lid_switch(&lid_open))
 		return lid_open;
@@ -650,7 +650,7 @@ GpioOps *cros_ec_lid_switch_flag(void)
 	return ops;
 }
 
-int cros_ec_read_power_btn(uint32_t *pwr_btn)
+int cros_ec_read_power_btn(int *pwr_btn)
 {
 	uint8_t flags, version;
 
@@ -676,7 +676,7 @@ int cros_ec_read_power_btn(uint32_t *pwr_btn)
  */
 static int get_power_btn_from_ec(GpioOps *me)
 {
-	uint32_t pwr_btn;
+	int pwr_btn;
 
 	if (!cros_ec_read_power_btn(&pwr_btn))
 		return pwr_btn;
