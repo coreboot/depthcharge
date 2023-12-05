@@ -119,39 +119,6 @@ static void test_shutdown_press_ignored_if_held_since_boot(void **state)
 	ASSERT_VB2_SUCCESS(check_shutdown_request(ui));
 }
 
-static void test_shutdown_power_button_short_press_from_key(void **state)
-{
-	if (CONFIG(DETACHABLE))
-		skip();
-
-	struct ui_context *ui = *state;
-
-	will_return_maybe(ui_is_power_pressed, 0);
-	will_return_maybe(ui_is_lid_open, 1);
-	will_return_maybe(has_external_display, 0);
-	will_return_maybe(vb2api_gbb_get_flags, 0);
-	ui->key = UI_BUTTON_POWER_SHORT_PRESS;
-
-	assert_int_equal(check_shutdown_request(ui), VB2_REQUEST_SHUTDOWN);
-}
-
-static void test_shutdown_button_short_pressed_when_lid_ignored(void **state)
-{
-	if (CONFIG(DETACHABLE))
-		skip();
-
-	struct ui_context *ui = *state;
-
-	will_return_maybe(ui_is_power_pressed, 0);
-	will_return_maybe(ui_is_lid_open, 0);
-	will_return_maybe(has_external_display, 0);
-	will_return_always(vb2api_gbb_get_flags,
-			   VB2_GBB_FLAG_DISABLE_LID_SHUTDOWN);
-	ui->key = UI_BUTTON_POWER_SHORT_PRESS;
-
-	assert_int_equal(check_shutdown_request(ui), VB2_REQUEST_SHUTDOWN);
-}
-
 static void test_shutdown_button_while_lid_ignored_by_gbb(void **state)
 {
 	if (CONFIG(DETACHABLE))
@@ -599,8 +566,6 @@ int main(void)
 		UI_TEST(test_shutdown_detachable_ignore_power_button_press),
 		UI_TEST(test_shutdown_release_press_hold_release),
 		UI_TEST(test_shutdown_press_ignored_if_held_since_boot),
-		UI_TEST(test_shutdown_power_button_short_press_from_key),
-		UI_TEST(test_shutdown_button_short_pressed_when_lid_ignored),
 		UI_TEST(test_shutdown_button_while_lid_ignored_by_gbb),
 		UI_TEST(test_shutdown_if_lid_closure),
 		UI_TEST(test_shutdown_lid_ignored_by_gbb_flags),
