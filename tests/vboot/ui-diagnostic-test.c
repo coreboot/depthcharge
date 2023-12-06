@@ -17,6 +17,16 @@ int ui_is_lid_open(void)
 	return mock();
 }
 
+int ui_is_power_pressed(void)
+{
+	return 0;
+}
+
+int ui_is_physical_presence_pressed(void)
+{
+	return 0;
+}
+
 int has_external_display(void)
 {
 	return 0;
