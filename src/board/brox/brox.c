@@ -23,14 +23,3 @@ const struct audio_config *variant_probe_audio_config(void)
 
 	return &config;
 }
-
-static const struct storage_config storage_configs[] = {
-	{ .media = STORAGE_NVME, .pci_dev = SA_DEV_CPU_RP0 },
-	{ .media = STORAGE_SDHCI, .pci_dev = PCH_DEV_PCIE7 },
-};
-
-const struct storage_config *variant_get_storage_configs(size_t *count)
-{
-	*count = ARRAY_SIZE(storage_configs);
-	return storage_configs;
-}
