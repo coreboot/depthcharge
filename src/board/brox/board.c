@@ -28,7 +28,7 @@
 #include "drivers/tpm/tpm.h"
 #include "vboot/util/flag.h"
 
-#define EC_PCH_INT_ODL	GPP_F17
+#define EC_PCH_INT_ODL	GPP_D0
 #define I2C_FS_HZ	400000
 
 __weak const struct storage_config *variant_get_storage_configs(size_t *count)
