@@ -193,6 +193,14 @@ int rt5645_device_init(rt5645Codec *codec)
 	rt5645_i2c_writew(codec, RT5645_PWR_VOL, 0xC000);
 	rt5645_i2c_writew(codec, RT5645_PWR_DIG1, 0x9B01);
 
+#if CONFIG(DRIVER_SOC_JASPERLAKE) || CONFIG(DRIVER_SOC_METEORLAKE) || CONFIG(DRIVER_SOC_ALDERLAKE_N) || CONFIG(DRIVER_SOC_ALDERLAKE)
+	/* PLL input from BCLK2=1.536 MHz */
+	rt5645_i2c_writew(codec, RT5645_PLL_CTRL1, 0x1F02);
+	rt5645_i2c_writew(codec, RT5645_GLB_CLK, 0x5000);
+	rt5645_i2c_writew(codec, RT5645_AD_DA_MIXER, 0x8580);
+	rt5645_i2c_writew(codec, RT5645_PWR_DIG1, 0x5b01);
+#endif
+
 	printf("%s completed, codec = %s\n", __func__,
 	       (reg == RT5650_DEVICE_ID) ? "5650" : "5645");
 	return 0;

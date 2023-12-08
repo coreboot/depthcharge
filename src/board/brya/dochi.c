@@ -25,6 +25,8 @@ static void initialize_i2s_config(struct audio_config *config)
 		},
 		.codec = {
 			.type			= AUDIO_RT5650,
+			.i2c[0].ctrlr		= I2C0,
+			.i2c[0].i2c_addr[0]	= 0x1a,
 		},
 	};
 }
