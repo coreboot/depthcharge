@@ -192,7 +192,7 @@ static int handle_proto3_response(struct ec_host_response *rs,
 
 	/* If the caller wants the response data, copy it out */
 	if (dinp)
-		memcpy(dinp, rs + 1, din_len);
+		memcpy(dinp, rs + 1, rs->data_len);
 
 	return rs->data_len;
 }
