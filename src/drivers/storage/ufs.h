@@ -178,6 +178,7 @@ typedef enum {
 #define PA_SLEEPNOCONFIGTIME		0x15A2
 #define PA_STALLNOCONFIGTIME		0x15A3
 #define PA_SAVECONFIGTIME		0x15A4
+#define PA_TXHSADAPTTYPE		0x15D4
 
 #define PA_VS_CONFIG_REG1		0x9000
 
@@ -219,6 +220,10 @@ typedef enum {
 #define DL_FC1PROTECTIONTIMEOUTVAL	8191
 #define DL_TC1REPLAYTIMEOUTVAL		65535
 #define DL_AFC1REQTIMEOUTVAL		32767
+
+// Vendor specific attributes
+#define CBRATESEL			0x8114
+#define VS_MPHYCFGUPDT			0xD085
 
 /**************** End HCI definitions *********************/
 

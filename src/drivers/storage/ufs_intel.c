@@ -18,6 +18,12 @@ static int intel_ufs_hook_fn(UfsCtlr *ufs, UfsHookOp op, void *data)
 	switch (op) {
 	case UFS_OP_PRE_LINK_STARTUP:
 		return ufs_dme_set(ufs, PA_LOCAL_TX_LCC_ENABLE, 0);
+	case UFS_OP_PRE_GEAR_SWITCH:
+		if (ufs->unipro_version >= UFS_UNIPRO_VERSION_1_8) {
+			ufs_dme_set(ufs, CBRATESEL, 1);
+			ufs_dme_set(ufs, VS_MPHYCFGUPDT, 1);
+		}
+		break;
 	default:
 		break;
 	};
