@@ -41,6 +41,20 @@
 
 #define UFS_DEBUG 0
 
+static uint32_t ufs_read_hc_version(UfsCtlr *ufs)
+{
+	return ufs_read32(ufs, UFSHCI_VER);
+}
+
+static uint32_t ufs_read_unipro_version(UfsCtlr *ufs)
+{
+	uint32_t ver;
+
+	ufs_dme_get(ufs, PA_LOCALVERINFO, &ver);
+
+	return ver;
+}
+
 static inline int ufs_hook(UfsCtlr *ufs, UfsHookOp op, void *data)
 {
 	if (ufs->hook_fn)
@@ -1023,6 +1037,14 @@ static int ufs_ctrlr_setup(UfsCtlr *ufs)
 		if (rc)
 			return rc;
 	}
+
+	// Read UFS host controller version
+	ufs->hc_version = ufs_read_hc_version(ufs);
+	printf("UFS Host controller version: 0x%x\n", ufs->hc_version);
+
+	// Read UFS UniPro version
+	ufs->unipro_version = ufs_read_unipro_version(ufs);
+	printf("UFS Unipro version: %d\n", ufs->unipro_version);
 
 	// Only change gear if there are logical units
 	if (ufs_dd(ufs)->bNumberLU) {

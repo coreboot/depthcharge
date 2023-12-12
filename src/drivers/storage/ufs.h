@@ -415,6 +415,26 @@ typedef enum {
 #define UFS_IDN_BREFCLKFREQ		0x0A
 #define UFS_IDN_BCONFIGDESCRLOCK	0x0B
 
+// UFS Host controller version
+typedef enum {
+	UFSHCI_VERSION_1_0 = 0x00010000,
+	UFSHCI_VERSION_1_1 = 0x00010100,
+	UFSHCI_VERSION_2_0 = 0x00000200,
+	UFSHCI_VERSION_2_1 = 0x00000210,
+	UFSHCI_VERSION_3_0 = 0x00000300,
+} UfsHCVer;
+
+// UFS Unipro version
+typedef enum {
+	UFS_UNIPRO_VERSION_RESERVED = 0,
+	UFS_UNIPRO_VERSION_1_40 = 1,	/* v1.40 */
+	UFS_UNIPRO_VERSION_1_41 = 2,	/* v1.41 */
+	UFS_UNIPRO_VERSION_1_6 = 3,	/* v1.6 */
+	UFS_UNIPRO_VERSION_1_61 = 4,	/* v1.61 */
+	UFS_UNIPRO_VERSION_1_8 = 5,	/* v1.8 */
+	UFS_UNIPRO_VERSION_MAX = 6,	/* unsupported */
+} UfsUniproVer;
+
 // UFS reference clock freq
 typedef enum {
 	UFS_REFCLKFREQ_19_2,
@@ -738,6 +758,8 @@ typedef struct UfsCtlr {
 	UfsDesc		dev_desc;		// Device Descriptor
 	UfsDevice	*ufs_dev[MAX_LUN];	// Block devices
 	UfsDevice	*ufs_wlun_dev;		// Device Well Known LUN
+	uint32_t	hc_version;		// Host controller version
+	uint32_t	unipro_version;		// Interconnect unipro version
 } UfsCtlr;
 
 // Use with Command UPIU request
