@@ -360,7 +360,7 @@ static int mkbp_process_button_long_press(uint16_t *codes, int max_codes)
 static int mkbp_process_events(Modifier *modifiers, uint16_t *codes,
 				int max_codes)
 {
-	struct ec_response_get_next_event_v1 event;
+	struct ec_response_get_next_event_v1 event = {0};
 
 	if (!more_input_states())
 		return -1;
