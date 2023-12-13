@@ -68,6 +68,11 @@ typedef struct Key
 	uint16_t code;
 } Key;
 
+#define EC_KEY_MATRIX_OFFSET \
+	offsetof(struct ec_response_get_next_event_v1, data.key_matrix)
+#define EC_KEY_MATRIX_SIZE \
+	ARRAY_SIZE(((struct ec_response_get_next_event_v1 *)0)->data.key_matrix)
+
 static int mkbp_old_cmd_read_event(struct ec_response_get_next_event_v1 *event)
 {
 	struct cros_ec_keyscan scan;
@@ -78,8 +83,11 @@ static int mkbp_old_cmd_read_event(struct ec_response_get_next_event_v1 *event)
 	}
 
 	event->event_type = EC_MKBP_EVENT_KEY_MATRIX;
+	_Static_assert(sizeof(scan.data) <= EC_KEY_MATRIX_SIZE,
+		       "Keyscan data size too large");
 	memcpy(&event->data.key_matrix, &scan.data, sizeof(scan.data));
-	return 0;
+
+	return EC_KEY_MATRIX_OFFSET + sizeof(scan.data);
 }
 
 static int mkbp_new_cmd_read_event(struct ec_response_get_next_event_v1 *event)
@@ -98,15 +106,15 @@ static int mkbp_new_cmd_read_event(struct ec_response_get_next_event_v1 *event)
 
 		if ((event->event_type == EC_MKBP_EVENT_KEY_MATRIX) ||
 		    (event->event_type == EC_MKBP_EVENT_BUTTON))
-			return 0;
+			return rv;
 	}
 }
 
 /*
  * Read event data from EC using the right MKBP command.
- * Return value:
- * 0 = success (more data available in event response)
- * -1 = error (no more data queued on EC side)
+ *
+ * @return the response size for `event` on success, or -1 on error (no more
+ *	   data queued on EC side)
  */
 static int mkbp_read_event(struct ec_response_get_next_event_v1 *event)
 {
@@ -133,10 +141,10 @@ static int update_keys(Key *keys, int *total, int max,
 }
 
 static int mkbp_process_keymatrix(Modifier *modifiers, uint16_t *codes,
-				  int max_codes,
-				  struct ec_response_get_next_event_v1 *event)
+				  int max_codes, uint8_t *key_matrix,
+				  size_t key_matrix_size)
 {
-	static struct cros_ec_keyscan last_scan;
+	static uint8_t last_key_matrix[EC_KEY_MATRIX_SIZE];
 	int total = 0;
 	int changed = 0;
 	int cols = mkbp_keymatrix.cols;
@@ -147,9 +155,12 @@ static int mkbp_process_keymatrix(Modifier *modifiers, uint16_t *codes,
 	for (int pos = 0; pos < num_keys; pos += 8) {
 		int byte = pos / 8;
 
-		uint8_t last_data = last_scan.data[byte];
-		uint8_t data = event->data.key_matrix[byte];
-		last_scan.data[byte] = data;
+		if (byte >= key_matrix_size)
+			break;
+
+		uint8_t last_data = last_key_matrix[byte];
+		uint8_t data = key_matrix[byte];
+		last_key_matrix[byte] = data;
 
 		if (last_data != data)
 			changed = 1;
@@ -344,9 +355,9 @@ static int mkbp_add_button(uint16_t *codes, int max_codes, uint32_t curr_bitmap)
 }
 
 static int mkbp_process_buttons(uint16_t *codes, int max_codes,
-				struct ec_response_get_next_event_v1 *event)
+				uint32_t buttons)
 {
-	return mkbp_add_button(codes, max_codes, event->data.buttons);
+	return mkbp_add_button(codes, max_codes, buttons);
 }
 
 static int mkbp_process_button_long_press(uint16_t *codes, int max_codes)
@@ -361,18 +372,28 @@ static int mkbp_process_events(Modifier *modifiers, uint16_t *codes,
 				int max_codes)
 {
 	struct ec_response_get_next_event_v1 event = {0};
+	int rv;
 
 	if (!more_input_states())
 		return -1;
 
-	if (mkbp_read_event(&event))
+	/* On success, rv is the response size. */
+	rv = mkbp_read_event(&event);
+	if (rv < 0)
 		return -1;
 
-	if (event.event_type == EC_MKBP_EVENT_KEY_MATRIX)
+	if (event.event_type == EC_MKBP_EVENT_KEY_MATRIX) {
+		if (rv < EC_KEY_MATRIX_OFFSET)
+			return -1;
+		size_t key_matrix_size = MIN(rv - EC_KEY_MATRIX_OFFSET,
+					     EC_KEY_MATRIX_SIZE);
 		return mkbp_process_keymatrix(modifiers, codes, max_codes,
-						&event);
-	else if (event.event_type == EC_MKBP_EVENT_BUTTON)
-		return mkbp_process_buttons(codes, max_codes, &event);
+					      event.data.key_matrix,
+					      key_matrix_size);
+	} else if (event.event_type == EC_MKBP_EVENT_BUTTON) {
+		return mkbp_process_buttons(codes, max_codes,
+					    event.data.buttons);
+	}
 
 	return 0;
 }
