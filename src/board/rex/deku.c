@@ -8,11 +8,15 @@
 #include "board/rex/include/variant.h"
 #include "drivers/gpio/meteorlake.h"
 #include "drivers/soc/meteorlake.h"
+#include "drivers/sound/gpio_edge_buzzer.h"
 #include "drivers/storage/storage_common.h"
 
 const struct audio_config *variant_probe_audio_config(void)
 {
 	static struct audio_config config;
+	GpioCfg *sound_gpio = new_platform_gpio_output(GPP_B8, 0);
+	GpioEdgeBuzzer *buzzer = new_gpio_edge_buzzer(&sound_gpio->ops);
+	sound_set_ops(&buzzer->ops);
 	return &config;
 }
 
