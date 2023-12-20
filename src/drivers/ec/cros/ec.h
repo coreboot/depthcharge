@@ -408,6 +408,14 @@ int cros_ec_set_lid_shutdown_mask(int enable);
  */
 int cros_ec_locate_tcpc_chip(uint8_t port, struct ec_response_locate_chip *r);
 
+/* -----------------------------------------------------------------------
+ * Locate PDC chip on EC and retrieve its remote bus information
+ *   port: PDC port index whose information is being retrieved
+ *   r: Response structure where the information is stored
+ *   Returns: 0 on success, < 0 on error.
+ */
+int cros_ec_locate_pdc_chip(uint8_t port, struct ec_response_locate_chip *r);
+
 CrosEc *new_cros_ec(CrosEcBusOps *bus, GpioOps *interrupt_gpio);
 
 /**
