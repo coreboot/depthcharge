@@ -1300,12 +1300,13 @@ int cros_ec_set_bl_pwm_duty(uint32_t percent)
 	return 0;
 }
 
-int cros_ec_locate_tcpc_chip(uint8_t port, struct ec_response_locate_chip *r)
+static int cros_ec_locate_chip(enum ec_chip_type type, uint8_t port,
+			       struct ec_response_locate_chip *r)
 {
 	struct ec_params_locate_chip p;
 	int ret;
 
-	p.type = EC_CHIP_TYPE_TCPC;
+	p.type = type;
 	p.index = port;
 	ret = ec_command(cros_ec_get(), EC_CMD_LOCATE_CHIP, 0,
 				&p, sizeof(p), r, sizeof(*r));
@@ -1316,6 +1317,16 @@ int cros_ec_locate_tcpc_chip(uint8_t port, struct ec_response_locate_chip *r)
 	}
 
 	return 0;
+}
+
+int cros_ec_locate_tcpc_chip(uint8_t port, struct ec_response_locate_chip *r)
+{
+	return cros_ec_locate_chip(EC_CHIP_TYPE_TCPC, port, r);
+}
+
+int cros_ec_locate_pdc_chip(uint8_t port, struct ec_response_locate_chip *r)
+{
+	return cros_ec_locate_chip(EC_CHIP_TYPE_PDC, port, r);
 }
 
 int cros_ec_pd_chip_info(int port, int renew,
