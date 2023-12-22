@@ -92,6 +92,9 @@ static vb2_error_t check_shutdown_request(struct ui_context *ui)
 		ui->power_button = UI_POWER_BUTTON_RELEASED;
 	}
 
+	if (ui->key == UI_BUTTON_POWER_SHORT_PRESS)
+		shutdown_power = 1;
+
 	return shutdown_power ? VB2_REQUEST_SHUTDOWN : VB2_SUCCESS;
 }
 
