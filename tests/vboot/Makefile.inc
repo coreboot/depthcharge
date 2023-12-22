@@ -44,6 +44,7 @@ ui-test-common-srcs += tests/mocks/vboot/load_kernel.c
 ui-test-common-srcs += tests/mocks/vboot/ui/archive.c
 ui-test-common-srcs += tests/mocks/vboot/ui/beep.c
 ui-test-common-srcs += tests/mocks/vboot/ui/bitmap.c
+ui-test-common-srcs += tests/mocks/vboot/ui/input.c
 ui-test-common-srcs += tests/mocks/vboot/ui/layout.c
 ui-test-common-srcs += tests/stubs/base/elog.c
 ui-test-common-srcs += tests/stubs/boot/payload.c
