@@ -16,7 +16,7 @@ int ui_is_lid_open(void)
 
 int ui_is_power_pressed(void)
 {
-	return mock();
+	return 0;
 }
 
 int ui_is_physical_presence_pressed(void)
@@ -55,7 +55,6 @@ static void test_broken_ui_shortcuts_ignored(void **state)
 	struct ui_context *ui = *state;
 
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_maybe(ui_is_power_pressed, 0);
 	WILL_CLOSE_LID_IN(10);
 	WILL_PRESS_KEY(UI_KEY_CTRL('D'), 1);
 	WILL_PRESS_KEY(UI_KEY_CTRL('U'), 1);
@@ -75,7 +74,6 @@ static void test_broken_ui_disabled_and_hidden_item_mask(void **state)
 	struct ui_context *ui = *state;
 
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_maybe(ui_is_power_pressed, 0);
 	WILL_CLOSE_LID_IN(5);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_BROKEN, MOCK_IGNORE, MOCK_IGNORE,
 			  0x0, 0x0);
@@ -91,7 +89,6 @@ static void test_broken_ui_screen(void **state)
 
 	WILL_CLOSE_LID_IN(7);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_maybe(ui_is_power_pressed, 0);
 	will_return_always(ui_get_locale_count, 10);
 	will_return_maybe(vb2api_allow_recovery, 1);
 	EXPECT_UI_DISPLAY(UI_SCREEN_RECOVERY_BROKEN, MOCK_IGNORE, 1);
@@ -123,44 +120,9 @@ static void test_broken_ui_power_button_shutdown(void **state)
 
 	struct ui_context *ui = *state;
 
-	/* Start with the power button released for a few iterations,
-	   then hold the button for a few iterations, and finally release it. */
-	will_return_count(ui_is_power_pressed, 0, 5);
-	will_return_count(ui_is_power_pressed, 1, 5);
-	will_return_always(ui_is_power_pressed, 0);
-
 	will_return_maybe(vb2api_gbb_get_flags, 0);
 	will_return_maybe(ui_is_lid_open, 1);
-	will_return_maybe(ui_keyboard_read, 0);
-	EXPECT_UI_DISPLAY_ANY();
-
-	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
-			 VB2_REQUEST_SHUTDOWN);
-}
-
-static void test_broken_ui_power_button_held_since_boot(void **state)
-{
-	if (CONFIG(DETACHABLE))
-		skip();
-
-	struct ui_context *ui = *state;
-
-	/* Hold the power button for a few iterations.
-	   Releasing it shouldn't trigger shutdown. */
-	will_return_count(ui_is_power_pressed, 1, 2);
-	will_return_count(ui_is_power_pressed, 0, 2);
-	/*
-	 * We still need WILL_CLOSE_LID_IN to shut down the device to avoid
-	 * an infinite UI loop.  To verify the button release doesn't trigger
-	 * shutdown, will_return_always() is used here.  If the device
-	 * incorrectly shuts down, then ui_is_power_pressed() won't be called
-	 * again, and hence the test will fail.
-	 */
-	will_return_always(ui_is_power_pressed, 1);
-
-	WILL_CLOSE_LID_IN(10);
-	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_maybe(ui_keyboard_read, 0);
+	WILL_PRESS_KEY(UI_BUTTON_POWER_SHORT_PRESS, 0);
 	EXPECT_UI_DISPLAY_ANY();
 
 	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
@@ -173,7 +135,6 @@ static void test_debug_info(void **state)
 
 	WILL_CLOSE_LID_IN(5);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_maybe(ui_is_power_pressed, 0);
 	SET_LOG_DIMENSIONS(40, 20);
 
 	WILL_PRESS_KEY(0, 0);
@@ -201,7 +162,6 @@ static void test_debug_info_enter_failed(void **state)
 
 	WILL_CLOSE_LID_IN(5);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_maybe(ui_is_power_pressed, 0);
 	SET_LOG_DIMENSIONS(0, 0);
 
 	WILL_PRESS_KEY(0, 0);
@@ -242,7 +202,6 @@ static void test_firmware_log(void **state)
 
 	WILL_CLOSE_LID_IN(30);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_maybe(ui_is_power_pressed, 0);
 	will_return(cbmem_console_snapshot, firmware_log);
 	/* Expect 5 pages */
 	SET_LOG_DIMENSIONS(2, 50);
@@ -320,7 +279,6 @@ static void test_firmware_log_again_reacquire_new_one(void **state)
 
 	WILL_CLOSE_LID_IN(20);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_maybe(ui_is_power_pressed, 0);
 	will_return_count(cbmem_console_snapshot, "mock log", 2);
 	SET_LOG_DIMENSIONS(40, 20);
 
@@ -347,7 +305,6 @@ static void test_firmware_log_again_not_reacquire_new_one(void **state)
 
 	WILL_CLOSE_LID_IN(20);
 	will_return_maybe(vb2api_gbb_get_flags, 0);
-	will_return_maybe(ui_is_power_pressed, 0);
 	will_return(cbmem_console_snapshot, "mock log");
 	SET_LOG_DIMENSIONS(40, 20);
 
@@ -380,7 +337,6 @@ int main(void)
 		UI_TEST(test_broken_ui_disabled_and_hidden_item_mask),
 		UI_TEST(test_broken_ui_screen),
 		UI_TEST(test_broken_ui_power_button_shutdown),
-		UI_TEST(test_broken_ui_power_button_held_since_boot),
 		/* Debug info screen */
 		UI_TEST(test_debug_info),
 		UI_TEST(test_debug_info_enter_failed),
