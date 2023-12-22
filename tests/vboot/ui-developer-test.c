@@ -77,6 +77,23 @@ static int setup_context(void **state)
 	return 0;
 }
 
+static void test_developer_ui_shutdown_timeout(void **state)
+{
+	if (CONFIG(DETACHABLE))
+		skip();
+
+	struct ui_context *ui = *state;
+
+	WILL_PRESS_KEY(UI_BUTTON_POWER_SHORT_PRESS, 0);
+	will_return_maybe(vb2api_get_dev_default_boot_target,
+			  VB2_DEV_DEFAULT_BOOT_TARGET_INTERNAL);
+	will_return_maybe(vb2api_gbb_get_flags, 0);
+	EXPECT_UI_DISPLAY_ANY_ALWAYS();
+
+	assert_int_equal(vboot_select_and_load_kernel(ui->ctx, ui->kparams),
+			 VB2_REQUEST_SHUTDOWN);
+}
+
 static void test_developer_ui_shutdown_menu(void **state)
 {
 	struct ui_context *ui = *state;
@@ -987,6 +1004,7 @@ int main(void)
 {
 	const struct CMUnitTest tests[] = {
 		/* Developer actions */
+		UI_TEST(test_developer_ui_shutdown_timeout),
 		UI_TEST(test_developer_ui_shutdown_menu),
 		UI_TEST(test_developer_ui_dev_disallowed_no_boot_altfw),
 		UI_TEST(test_developer_ui_dev_disallowed_no_boot_internal),
