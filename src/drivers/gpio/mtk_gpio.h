@@ -37,6 +37,8 @@ typedef struct {
 #include "drivers/gpio/mt8192.h"
 #elif CONFIG(DRIVER_GPIO_MT8195)
 #include "drivers/gpio/mt8195.h"
+#elif CONFIG(DRIVER_GPIO_MT8196)
+#include "drivers/gpio/mt8196.h"
 #else
 #error "Unsupported GPIO config for MediaTek"
 #endif
