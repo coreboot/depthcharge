@@ -16,13 +16,16 @@
  */
 
 #include <assert.h>
+#include <gpt.h>
 #include <libpayload.h>
 #include <stdint.h>
 #include <stdlib.h>
 
 #include "base/string_utils.h"
 #include "boot/bootconfig.h"
+#include "boot/commandline.h"
 #include "boot/multiboot.h"
+#include "drivers/storage/blockdev.h"
 #include "vboot/android_image_hdr.h"
 #include "vboot/boot.h"
 #include "vboot/boot_policy.h"
@@ -198,6 +201,87 @@ static int fill_info_bootimg(struct boot_info *bi,
 
 /************************* Android GKI *******************************/
 #define ANDROID_GKI_BOOT_HDR_SIZE 4096
+#define ANDROID_BDEV_KEY_STR "androidboot.boot_devices"
+#define ANDROID_BOOT_A_PART_NUM 13
+#define ANDROID_BOOT_B_PART_NUM 14
+#define ANDROID_SLOT_SUFFIX_KEY_STR "androidboot.slot_suffix"
+
+/*
+ * Update cmdline with proper slot_suffix parameter
+ */
+static int modify_android_slot_suffix(struct vb2_kernel_params *kparams,
+				      uintptr_t bootc_ramdisk_addr,
+				      size_t bootc_buffer_size)
+{
+	char *str_to_insert;
+	struct vendor_boot_img_hdr_v4 *vendor_hdr;
+	uint32_t partition_number = kparams->partition_number;
+
+	vendor_hdr = (struct vendor_boot_img_hdr_v4 *)((uintptr_t)kparams->kernel_buffer +
+						       kparams->vendor_boot_offset);
+
+	/* Validate partition number according to supported layout at
+	 * al-internal/platform/vendor/google_devices/houdini/+/tm-al:layout/disk_layout.json */
+	if (partition_number == ANDROID_BOOT_A_PART_NUM) {
+		str_to_insert = GPT_ENT_NAME_ANDROID_A_SUFFIX;
+	} else if (partition_number == ANDROID_BOOT_B_PART_NUM) {
+		str_to_insert = GPT_ENT_NAME_ANDROID_B_SUFFIX;
+	} else {
+		 /* Exit early if the partition_number is invalid */
+		printf("Unsupported partition number to boot GKI: %d\n",
+		       partition_number);
+		return -1;
+	}
+
+	vendor_hdr->bootconfig_size =
+			append_bootconfig_params(ANDROID_SLOT_SUFFIX_KEY_STR,
+						 str_to_insert,
+						 (void *)bootc_ramdisk_addr,
+						 vendor_hdr->bootconfig_size,
+						 bootc_buffer_size);
+	if (vendor_hdr->bootconfig_size < 0) {
+		printf("Cannot update bootconfig for android GKI!\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+/*
+ * Update bootconfig with proper boot_devices parameter
+ */
+static int modify_android_boot_devices(struct vb2_kernel_params *kparams,
+				       uintptr_t bootc_ramdisk_addr,
+				       size_t bootc_buffer_size)
+{
+	char *str_to_insert;
+	struct vendor_boot_img_hdr_v4 *vendor_hdr;
+	BlockDev *bdev = (BlockDev *)kparams->disk_handle;
+
+	vendor_hdr = (struct vendor_boot_img_hdr_v4 *)((uintptr_t)kparams->kernel_buffer +
+						       kparams->vendor_boot_offset);
+
+	str_to_insert = bdev->removable ?
+			CONFIG_ANDROID_BOOT_DEVICES_REMOVABLE :
+			CONFIG_ANDROID_BOOT_DEVICES_DISK;
+
+	/* Exit early if platform does not set boot_devices, nothing to do */
+	if (!strlen(str_to_insert))
+		return 0;
+
+	vendor_hdr->bootconfig_size =
+			append_bootconfig_params(ANDROID_BDEV_KEY_STR,
+						 str_to_insert,
+						 (void *)bootc_ramdisk_addr,
+						 vendor_hdr->bootconfig_size,
+						 bootc_buffer_size);
+	if (vendor_hdr->bootconfig_size < 0) {
+		printf("Cannot update bootconfig for android GKI!\n");
+		return -1;
+	}
+
+	return 0;
+}
 
 static int gki_setup_ramdisk(struct boot_info *bi,
 			     struct vb2_kernel_params *kparams,
@@ -277,6 +361,22 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 			printf("GKI: Cannot copy avb cmdline to bootconfig\n");
 			return -1;
 		}
+		/* Update boot device */
+		if (modify_android_boot_devices(kparams,
+						(uintptr_t)bootc_ramdisk_addr,
+						(size_t)(kparams->kernel_buffer +
+						kparams->kernel_buffer_size -
+						bootc_ramdisk_addr)))
+			return -1;
+
+
+		/* Update slot suffix */
+		if (modify_android_slot_suffix(kparams,
+					       bootc_ramdisk_addr,
+					       (size_t)(kparams->kernel_buffer +
+					       kparams->kernel_buffer_size -
+					       bootc_ramdisk_addr)) < 0)
+			return -1;
 	}
 
 	init_boot_ramdisk_dst = ((uint8_t *)vendor_hdr +
