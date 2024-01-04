@@ -16,6 +16,7 @@
  */
 
 #include <assert.h>
+#include <gpt.h>
 #include <libpayload.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -23,6 +24,7 @@
 
 #include "base/string_utils.h"
 #include "boot/bootconfig.h"
+#include "boot/commandline.h"
 #include "boot/multiboot.h"
 #include "vboot/boot.h"
 #include "vboot/boot_policy.h"
@@ -99,6 +101,37 @@ static int fill_info_multiboot(struct boot_info *bi,
 
 /************************* Android GKI *******************************/
 #define ANDROID_GKI_BOOT_HDR_SIZE 4096
+#define ANDROID_BOOT_A_PART_NUM 13
+#define ANDROID_BOOT_B_PART_NUM 14
+#define ANDROID_SLOT_SUFFIX_KEY_STR "androidboot.slot_suffix"
+
+/*
+ * Update cmdline with proper slot_suffix parameter
+ */
+static int modify_android_slot_suffix(struct bootconfig *bc, uint32_t partition_number)
+{
+	char *str_to_insert;
+	int ret;
+
+	if (partition_number == ANDROID_BOOT_A_PART_NUM) {
+		str_to_insert = GPT_ENT_NAME_ANDROID_A_SUFFIX;
+	} else if (partition_number == ANDROID_BOOT_B_PART_NUM) {
+		str_to_insert = GPT_ENT_NAME_ANDROID_B_SUFFIX;
+	} else {
+		 /* Exit early if the partition_number is invalid */
+		printf("Unsupported partition number to boot GKI: %d\n",
+		       partition_number);
+		return -1;
+	}
+
+	ret = bootconfig_append_params(bc, ANDROID_SLOT_SUFFIX_KEY_STR, str_to_insert);
+	if (ret < 0) {
+		printf("Cannot update boot slot for android GKI!\n");
+		return -1;
+	}
+
+	return 0;
+}
 
 static int gki_setup_ramdisk(struct boot_info *bi,
 			     struct vb2_kernel_params *kparams,
@@ -188,6 +221,11 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 			printf("GKI: Cannot copy avb cmdline to bootconfig\n");
 			return -1;
 		}
+
+		/* Update slot suffix */
+		ret = modify_android_slot_suffix(&bc, kparams->partition_number);
+		if (ret < 0)
+			return ret;
 	}
 
 	init_boot_ramdisk_dst = ((uint8_t *)vendor_hdr +
