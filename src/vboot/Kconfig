@@ -129,3 +129,17 @@ config BOOT_EXTERNAL_ON_DEV
 	help
 	  When switching to dev from normal, set the nvdata flag which allows
 	  booting from external disk.  (Suitable for headless devices.)
+
+config ANDROID_BOOT_DEVICES_DISK
+	string "androidboot.boot_devices parameter for disk (NVMe, eMMC)"
+	default ""
+	help
+	  Value of androidboot.boot_devices init parameter to be passed
+	  to Android for booting from internal disk.
+
+config ANDROID_BOOT_DEVICES_REMOVABLE
+	string "androidboot.boot_devices parameter for removable device (USB)"
+	default ""
+	help
+	  Value of androidboot.boot_devices init parameter to be passed
+	  to Android for booting from external, removable device (USB).
