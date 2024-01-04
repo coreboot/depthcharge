@@ -123,3 +123,17 @@ config WIDEVINE_PROVISION
 	bool "Enable the widevine provision for ARM optee"
 	depends on ARCH_ARM_V8
 	default n
+
+config ANDROID_BOOT_DEVICES_DISK
+	string "androidboot.boot_devices parameter for disk (NVMe, eMMC)"
+	default ""
+	help
+	  Value of androidboot.boot_devices init parameter to be passed
+	  to Android for booting from internal disk.
+
+config ANDROID_BOOT_DEVICES_REMOVABLE
+	string "androidboot.boot_devices parameter for removable device (USB)"
+	default ""
+	help
+	  Value of androidboot.boot_devices init parameter to be passed
+	  to Android for booting from external, removable device (USB).
