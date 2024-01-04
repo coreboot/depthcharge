@@ -30,13 +30,17 @@ char console_buffer[MAX_CONSOLE_LINE + 1]; /* console I/O buffer */
 
 /* Cursor movement commands characters. */
 #define CHAR_HOME	   1 /* ^A */
-#define CHAR_CTL	   3 /* ^C */
-#define CHAR_EOL	   5 /* ^E */
+#define CHAR_OBKB_DOWN	   2 /* On-board keyboard down */
+#define CHAR_CTL	   3 /* ^C same as on-board up*/
+#define CHAR_OBKB_UP	   3 /* On-board keyboard up */
+#define CHAR_OBKB_LEFT	   4 /* On-board Keyboard left */
+#define CHAR_OBKB_RIGHT	   5 /* On-board Keyboard right */
 #define CHAR_RIGHT	  12 /* ^L */
 #define CHAR_DEL	0x7f
 #define CHAR_LEFT	0x81 /* here and below: ficticious */
 #define CHAR_UP		0x82
 #define CHAR_DOWN	0x83
+#define CHAR_EOL	0x84
 
 static const char erase_seq[] = "\b \b";
 
@@ -222,7 +226,6 @@ static void backspace(char *buffer, int *np, int *cp)
 	*cp = cursor - 1;
 }
 
-
 /*
  * We want to support function keys for command line editing. Many of those
  * keys on a standard xterm generate escape sequences. The code below
@@ -236,7 +239,6 @@ typedef struct {
 	const char *chars;  /* symbols of the sequence (escape not included */
 	char map_to;	    /* keystroke the sequence maps to (if any) */
 } escaped_key;
-
 
 static const escaped_key  escaped_keys [] = {
 	{ "OF", CHAR_EOL},
@@ -413,7 +415,7 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 	cursor = 0;
 
 	for (;;) {
-		c = serial_getchar();
+		c = getchar();
 
 		if (escape_handled(&c))
 			continue;
@@ -438,9 +440,15 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 			cursor = 0;
 			break;
 
-		case 0x03:			/* ^C - break		*/
-			p_buf[0] = '\0';	/* discard input */
-			return -1;
+		case CHAR_OBKB_DOWN:
+			c = CHAR_DOWN;
+			history_case(c, p_buf, &n, &cursor);
+			break;
+
+		case CHAR_OBKB_UP:
+			c = CHAR_UP;
+			history_case(c, p_buf, &n, &cursor);
+			break;
 
 		case CHAR_EOL:
 			move_cursor_right(n - cursor);
@@ -448,6 +456,7 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 			break;
 
 		case CHAR_RIGHT:
+		case CHAR_OBKB_RIGHT:
 			if (cursor < n) {
 				cursor++;
 				move_cursor_right(1);
@@ -490,6 +499,7 @@ static int ubreadline_into_buffer(const char *prompt, char *p_buf)
 			break;
 
 		case CHAR_LEFT:
+		case CHAR_OBKB_LEFT:
 			if (cursor > 0) {
 				cursor--;
 				move_cursor_left(1);
