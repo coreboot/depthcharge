@@ -81,9 +81,8 @@ SECTIONS
 		_egot = .;
 	}
 
-
 	.bss : {
-		*(.ttb_buffer)
+		*(.bss.ttb_buffer)
 
 		_bss = .;
 		*(.sbss)
