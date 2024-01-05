@@ -205,8 +205,10 @@ static int mkbp_process_keymatrix(Modifier *modifiers, uint16_t *codes,
 			break;
 	}
 
-	// The EC only resends the same state if its FIFO was empty.
-	if (!changed)
+	// For EC with DRIVER_INPUT_MKBP_OLD_COMMAND, cros_ec_scan_keyboard()
+	// only returns the same state if EC's FIFO was empty. For newer EC,
+	// cros_ec_get_next_event() should never return the same state twice.
+	if (CONFIG(DRIVER_INPUT_MKBP_OLD_COMMAND) && !changed)
 		return -1;
 
 	// If there could be ghosting, throw everything away. Also, transfer
