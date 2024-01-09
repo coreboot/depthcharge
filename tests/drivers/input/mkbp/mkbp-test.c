@@ -76,17 +76,14 @@ int cros_ec_get_next_event(struct ec_response_get_next_event_v1 *e)
 
 #define ASSERT_NO_MORE_CHAR() assert_false(mkbp_keyboard.havekey())
 
-static void test_power_press_without_release(void **state)
-{
-	WILL_PRESS_BUTTON(0, EC_MKBP_POWER_BUTTON);
-	WILL_HAVE_NO_EVENT();
-	ASSERT_NO_MORE_CHAR();
-}
-
 static void test_power_short_press(void **state)
 {
 	uint32_t b = 0;
 	b = WILL_PRESS_BUTTON(b, EC_MKBP_POWER_BUTTON);
+	WILL_HAVE_NO_EVENT();
+	ASSERT_NO_MORE_CHAR();
+
+	/* Single button is reported on release. */
 	b = WILL_RELEASE_BUTTON(b, EC_MKBP_POWER_BUTTON);
 	WILL_HAVE_NO_EVENT();
 	ASSERT_GETCHAR(UI_BUTTON_POWER_SHORT_PRESS);
@@ -122,6 +119,26 @@ static void test_vol_up_down_combo(void **state)
 	WILL_HAVE_NO_EVENT();
 	ASSERT_GETCHAR(UI_BUTTON_VOL_UP_DOWN_COMBO_PRESS);
 	ASSERT_NO_MORE_CHAR();
+
+	/* Combo isn't reported again on release. */
+	b = WILL_RELEASE_BUTTON(b, EC_MKBP_VOL_DOWN);
+	b = WILL_RELEASE_BUTTON(b, EC_MKBP_VOL_UP);
+	WILL_HAVE_NO_EVENT();
+	ASSERT_NO_MORE_CHAR();
+}
+
+static void test_undefined_combo(void **state)
+{
+	uint32_t b = 0;
+	b = WILL_PRESS_BUTTON(b, EC_MKBP_VOL_UP);
+
+	/* Power button shouldn't be reported when holding another button. */
+	b = WILL_PRESS_BUTTON(b, EC_MKBP_POWER_BUTTON);
+	b = WILL_RELEASE_BUTTON(b, EC_MKBP_POWER_BUTTON);
+
+	b = WILL_RELEASE_BUTTON(b, EC_MKBP_VOL_UP);
+	WILL_HAVE_NO_EVENT();
+	ASSERT_NO_MORE_CHAR();
 }
 
 #define MKBP_TEST(func) cmocka_unit_test_setup(func, setup)
@@ -129,11 +146,11 @@ static void test_vol_up_down_combo(void **state)
 int main(void)
 {
 	const struct CMUnitTest tests[] = {
-		MKBP_TEST(test_power_press_without_release),
 		MKBP_TEST(test_power_short_press),
 		MKBP_TEST(test_vol_up_short_press),
 		MKBP_TEST(test_vol_down_short_press),
 		MKBP_TEST(test_vol_up_down_combo),
+		MKBP_TEST(test_undefined_combo),
 	};
 
 	return cmocka_run_group_tests(tests, NULL, NULL);
