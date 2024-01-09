@@ -211,6 +211,8 @@ static int mkbp_process_keymatrix(Modifier *modifiers, uint16_t *codes,
 	if (CONFIG(DRIVER_INPUT_MKBP_OLD_COMMAND) && !changed)
 		return -1;
 
+	int code_count = 0;
+
 	// If there could be ghosting, throw everything away. Also, transfer
 	// valid keycodes into the buffer.
 	for (int i = 0; i < total; i++) {
@@ -233,10 +235,10 @@ static int mkbp_process_keymatrix(Modifier *modifiers, uint16_t *codes,
 		}
 
 		if (keys[i].code != 0xffff)
-			*codes++ = keys[i].code;
+			codes[code_count++] = keys[i].code;
 	}
 
-	return total;
+	return code_count;
 }
 
 /*
