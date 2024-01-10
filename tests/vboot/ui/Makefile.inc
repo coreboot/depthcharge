@@ -32,9 +32,15 @@ loop-test-srcs += tests/mocks/vboot/ui/archive.c
 loop-test-srcs += tests/mocks/vboot/ui/beep.c
 loop-test-srcs += src/vboot/ui/navigation.c
 loop-test-srcs += src/vboot/ui/menu.c
-loop-test-mocks += vb2api_gbb_get_flags
-loop-test-mocks += vb2api_get_locale_id
 loop-test-mocks += ui_keyboard_read
+loop-test-mocks += vb2api_diagnostic_ui_enabled
+loop-test-mocks += vb2api_disable_developer_mode
+loop-test-mocks += vb2api_enable_developer_mode
+loop-test-mocks += vb2api_gbb_get_flags
+loop-test-mocks += vb2api_get_dev_default_boot_target
+loop-test-mocks += vb2api_get_locale_id
+loop-test-mocks += vb2api_request_diagnostics
+loop-test-mocks += vb2api_set_locale_id
 
 $(call copy-test,loop-test,loop-detachable-test)
 loop-detachable-test-config += CONFIG_DETACHABLE=1
