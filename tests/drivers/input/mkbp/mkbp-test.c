@@ -1,11 +1,20 @@
 // SPDX-License-Identifier: GPL-2.0
 
+#include <libpayload.h>
+
 #include "drivers/ec/cros/ec.h"
 #include "tests/test.h"
 
 #include "drivers/input/mkbp/mkbp.c"
 
 /* Mock functions. */
+
+static uint64_t mock_timer_ms;
+
+uint64_t timer_us(uint64_t base)
+{
+	return mock_timer_ms * USECS_PER_MSEC - base;
+}
 
 int cros_ec_interrupt_pending(void)
 {
@@ -32,6 +41,7 @@ static uint32_t mock_buttons;
 
 int cros_ec_get_next_event(struct ec_response_get_next_event_v1 *e)
 {
+	mock_timer_ms += 20;
 	if (mock_ec_event_fifo_start == mock_ec_event_fifo_end)
 		return -EC_RES_UNAVAILABLE;
 
@@ -48,9 +58,13 @@ int cros_ec_get_next_event(struct ec_response_get_next_event_v1 *e)
 
 static int setup(void **state)
 {
-	/* A hack to reset the static variable 'combo_detected' in
-	   mkbp_add_button(), by simulating button release. */
+	/*
+	 * A hack to reset the static variables 'combo_detected' and
+	 * 'prev_timestamp_us' in mkbp_add_button(), by simulating button
+	 * release.
+	 */
 	prev_bitmap = 0x1;
+	mock_timer_ms = 0;
 	mkbp_add_button(NULL, 0, 0x0);
 	/* Reset global variables. */
 	prev_bitmap = 0;
@@ -151,6 +165,49 @@ static void test_undefined_combo(void **state)
 	ASSERT_NO_MORE_CHAR();
 }
 
+static void test_power_long_press(void **state)
+{
+	mock_timer_ms = 1111;
+	press_button(EC_MKBP_POWER_BUTTON);
+	ASSERT_NO_MORE_CHAR();
+
+	/* Press longer than 3 seconds is considered a long press.
+	   However power button long press is not supported. */
+	mock_timer_ms += 3000;
+	ASSERT_NO_MORE_CHAR();
+
+	release_button(EC_MKBP_POWER_BUTTON);
+	ASSERT_NO_MORE_CHAR();
+}
+
+static void test_vol_up_long_press(void **state)
+{
+	mock_timer_ms = 2222;
+	press_button(EC_MKBP_VOL_UP);
+	ASSERT_NO_MORE_CHAR();
+
+	mock_timer_ms += 4000;
+	ASSERT_GETCHAR(UI_BUTTON_VOL_UP_LONG_PRESS);
+	ASSERT_NO_MORE_CHAR();
+
+	release_button(EC_MKBP_VOL_UP);
+	ASSERT_NO_MORE_CHAR();
+}
+
+static void test_vol_down_long_press(void **state)
+{
+	mock_timer_ms = 3333;
+	press_button(EC_MKBP_VOL_DOWN);
+	ASSERT_NO_MORE_CHAR();
+
+	mock_timer_ms += 5000;
+	ASSERT_GETCHAR(UI_BUTTON_VOL_DOWN_LONG_PRESS);
+	ASSERT_NO_MORE_CHAR();
+
+	release_button(EC_MKBP_VOL_DOWN);
+	ASSERT_NO_MORE_CHAR();
+}
+
 #define MKBP_TEST(func) cmocka_unit_test_setup(func, setup)
 
 int main(void)
@@ -161,6 +218,9 @@ int main(void)
 		MKBP_TEST(test_vol_down_short_press),
 		MKBP_TEST(test_vol_up_down_combo),
 		MKBP_TEST(test_undefined_combo),
+		MKBP_TEST(test_power_long_press),
+		MKBP_TEST(test_vol_up_long_press),
+		MKBP_TEST(test_vol_down_long_press),
 	};
 
 	return cmocka_run_group_tests(tests, NULL, NULL);
