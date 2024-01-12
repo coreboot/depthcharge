@@ -1,8 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0
 
+#include <keycodes.h>
 #include <libpayload.h>
 
 #include "drivers/ec/cros/ec.h"
+#include "drivers/input/mkbp/keymatrix.h"
 #include "tests/test.h"
 
 #include "drivers/input/mkbp/mkbp.c"
@@ -37,6 +39,9 @@ static struct ec_response_get_next_event_v1
 	mock_ec_event_fifo[MOCK_EC_FIFO_SIZE];
 static size_t mock_ec_event_fifo_start, mock_ec_event_fifo_end;
 
+#define MOCK_EC_KEY_MATRIX_SIZE \
+	(sizeof(((struct ec_response_get_next_event_v1 *)0)->data.key_matrix))
+static uint8_t mock_keys[MOCK_EC_KEY_MATRIX_SIZE];
 static uint32_t mock_buttons;
 
 int cros_ec_get_next_event(struct ec_response_get_next_event_v1 *e)
@@ -49,9 +54,14 @@ int cros_ec_get_next_event(struct ec_response_get_next_event_v1 *e)
 	       sizeof(struct ec_response_get_next_event_v1));
 	mock_ec_event_fifo_start++;
 
-	if (e->event_type != EC_MKBP_EVENT_BUTTON)
+	size_t data_size;
+	if (e->event_type == EC_MKBP_EVENT_KEY_MATRIX)
+		data_size = sizeof(e->data.key_matrix);
+	else if (e->event_type == EC_MKBP_EVENT_BUTTON)
+		data_size = sizeof(e->data.buttons);
+	else
 		return -EC_RES_UNAVAILABLE;
-	return sizeof(e->event_type) + sizeof(e->data.buttons);
+	return sizeof(e->event_type) + data_size;
 }
 
 /* Setup function. */
@@ -75,22 +85,72 @@ static int setup(void **state)
 	memset(mock_ec_event_fifo, 0, sizeof(mock_ec_event_fifo));
 	mock_ec_event_fifo_start = 0;
 	mock_ec_event_fifo_end = 0;
+	memset(mock_keys, 0, sizeof(mock_keys));
 	mock_buttons = 0;
 	return 0;
 }
 
-/* Test functions. */
+/* Test utilities. */
 
-static void add_button_event_to_fifo(uint32_t buttons)
+struct ec_response_get_next_event_v1 *get_fifo_end(void)
 {
 	if (mock_ec_event_fifo_end >= MOCK_EC_FIFO_SIZE)
 		fail_msg("Mock EC event fifo is full");
 
-	struct ec_response_get_next_event_v1 *event =
-		&mock_ec_event_fifo[mock_ec_event_fifo_end];
+	return &mock_ec_event_fifo[mock_ec_event_fifo_end];
+}
+
+static void add_key_matrix_event_to_fifo(const uint8_t *key_matrix)
+{
+	struct ec_response_get_next_event_v1 *event = get_fifo_end();
+	event->event_type = EC_MKBP_EVENT_KEY_MATRIX;
+	memcpy(event->data.key_matrix, key_matrix, MOCK_EC_KEY_MATRIX_SIZE);
+	mock_ec_event_fifo_end++;
+}
+
+static void add_button_event_to_fifo(uint32_t buttons)
+{
+	struct ec_response_get_next_event_v1 *event = get_fifo_end();
 	event->event_type = EC_MKBP_EVENT_BUTTON;
 	event->data.buttons = buttons;
 	mock_ec_event_fifo_end++;
+}
+
+static size_t get_key_matrix_index(unsigned int col, unsigned int row,
+				   unsigned int *bit)
+{
+	if (col >= mkbp_keymatrix.cols)
+		fail_msg("col %d should be less than %d",
+			 col, mkbp_keymatrix.cols);
+	if (row >= mkbp_keymatrix.rows)
+		fail_msg("row %d should be less than %d",
+			 row, mkbp_keymatrix.rows);
+
+	size_t count = col * mkbp_keymatrix.rows + row;
+	size_t index = count / 8;
+	if (index >= MOCK_EC_KEY_MATRIX_SIZE)
+		fail_msg("key matrix index %d should be less than %d\n",
+			 index, MOCK_EC_KEY_MATRIX_SIZE);
+	*bit = count % 8;
+	return index;
+}
+
+static void press_key(unsigned int col, unsigned int row)
+{
+	size_t index;
+	unsigned int bit;
+	index = get_key_matrix_index(col, row, &bit);
+	mock_keys[index] |= 1U << bit;
+	add_key_matrix_event_to_fifo(mock_keys);
+}
+
+static void release_key(unsigned int col, unsigned int row)
+{
+	size_t index;
+	unsigned int bit;
+	index = get_key_matrix_index(col, row, &bit);
+	mock_keys[index] &= ~(1U << bit);
+	add_key_matrix_event_to_fifo(mock_keys);
 }
 
 static void press_button(unsigned int button_bit)
@@ -105,12 +165,75 @@ static void release_button(unsigned int button_bit)
 	add_button_event_to_fifo(mock_buttons);
 }
 
+/* Test functions. */
+
 #define ASSERT_GETCHAR(c) do { \
 	assert_true(mkbp_keyboard.havekey()); \
 	assert_int_equal(mkbp_keyboard.getchar(), c); \
 } while (0)
 
 #define ASSERT_NO_MORE_CHAR() assert_false(mkbp_keyboard.havekey())
+
+struct mkbp_key_test_state {
+	unsigned int col, row;
+	int expected_char;
+};
+
+static void test_key(void **state)
+{
+	const struct mkbp_key_test_state *key_state = *state;
+	unsigned int col = key_state->col;
+	unsigned int row = key_state->row;
+
+	/* Key is reported on press. */
+	press_key(col, row);
+	ASSERT_GETCHAR(key_state->expected_char);
+	release_key(col, row);
+	ASSERT_NO_MORE_CHAR();
+}
+
+static void test_multiple_keys(void **state)
+{
+	press_key(1, 4);
+	ASSERT_GETCHAR('a');
+
+	press_key(2, 4);
+	ASSERT_GETCHAR('d');
+
+	press_key(3, 4);
+	ASSERT_GETCHAR('f');
+
+	release_key(3, 4);
+	release_key(1, 4);
+	release_key(2, 4);
+	ASSERT_NO_MORE_CHAR();
+}
+
+static void test_ctrl_d(void **state)
+{
+	press_key(14, 1);
+	ASSERT_NO_MORE_CHAR();
+
+	press_key(2, 4);
+	ASSERT_GETCHAR('D' & 0x1f);
+
+	release_key(2, 4);
+	release_key(14, 1);
+	ASSERT_NO_MORE_CHAR();
+}
+
+static void test_shift_d(void **state)
+{
+	press_key(7, 5);
+	ASSERT_NO_MORE_CHAR();
+
+	press_key(2, 4);
+	ASSERT_GETCHAR('D');
+
+	release_key(2, 4);
+	release_key(7, 5);
+	ASSERT_NO_MORE_CHAR();
+}
 
 static void test_power_short_press(void **state)
 {
@@ -208,11 +331,36 @@ static void test_vol_down_long_press(void **state)
 	ASSERT_NO_MORE_CHAR();
 }
 
+#define MKBP_KEY_TEST(_col, _row, _expected_char) { \
+	.name = ("test_key-" #_expected_char), \
+	.test_func = test_key, \
+	.setup_func = setup, \
+	.teardown_func = NULL, \
+	.initial_state = (&(struct mkbp_key_test_state) { \
+		.col = _col, \
+		.row = _row, \
+		.expected_char = _expected_char, \
+	}), \
+}
+
 #define MKBP_TEST(func) cmocka_unit_test_setup(func, setup)
 
 int main(void)
 {
 	const struct CMUnitTest tests[] = {
+		/* Key matrix tests. */
+		MKBP_KEY_TEST(1, 1, 0x1b),	// ESC
+		MKBP_KEY_TEST(1, 5, 'z'),
+		MKBP_KEY_TEST(11, 4, '\n'),
+		MKBP_KEY_TEST(11, 5, ' '),
+		MKBP_KEY_TEST(11, 7, KEY_UP),
+		MKBP_KEY_TEST(11, 6, KEY_DOWN),
+		MKBP_KEY_TEST(12, 7, KEY_LEFT),
+		MKBP_KEY_TEST(12, 6, KEY_RIGHT),
+		MKBP_TEST(test_multiple_keys),
+		MKBP_TEST(test_ctrl_d),
+		MKBP_TEST(test_shift_d),
+		/* Button tests. */
 		MKBP_TEST(test_power_short_press),
 		MKBP_TEST(test_vol_up_short_press),
 		MKBP_TEST(test_vol_down_short_press),
