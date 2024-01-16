@@ -21,19 +21,19 @@
 #include <stddef.h>
 #include <stdint.h>
 
-typedef enum ButtonMakeCodes {
-	POWER_SHORT_PRESS = 0xe037,
-	VOL_UP_SHORT_PRESS = 0xe032,
-	VOL_DOWN_SHORT_PRESS = 0xe021,
-	/*
-	 * Following values are just dummy ones used since MKBP keyboard is
-	 * supposed to use values lesser than MkbpLayoutSize which is 0x57.
-	 */
-	VOL_UP_LONG_PRESS = 0xe010,
-	VOL_DOWN_LONG_PRESS = 0xe03a,
-	VOL_UP_DOWN_COMBO_PRESS = 0xe038,
-	BUTTON_CODE_INVALID = 0xffff,
-} ButtonMakeCodes;
+/*
+ * These values are just random ones used since MKBP keyboard is supposed to use
+ * values lesser than MkbpLayoutSize.
+ */
+enum {
+	MKBP_BUTTON_VOL_DOWN_SHORT_PRESS = 0xe100,
+	MKBP_BUTTON_VOL_UP_SHORT_PRESS = 0xe101,
+	MKBP_BUTTON_POWER_SHORT_PRESS = 0xe102,
+	MKBP_BUTTON_VOL_DOWN_LONG_PRESS = 0xe200,
+	MKBP_BUTTON_VOL_UP_LONG_PRESS = 0xe201,
+	MKBP_BUTTON_VOL_UP_DOWN_COMBO_PRESS = 0xe300,
+	MKBP_BUTTON_INVALID = 0xffff,
+};
 
 typedef struct MkbpKeymatrix {
 	int rows;
