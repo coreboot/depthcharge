@@ -336,11 +336,11 @@ enum ui_key_code {
  * the same as key action.
  */
 enum ui_button_code {
-	/* Volume up/down short press match the values in 8042 driver. */
+	/* Codes matching the values in 8042 driver. */
 	UI_BUTTON_VOL_UP_SHORT_PRESS = 0x62,
 	UI_BUTTON_VOL_DOWN_SHORT_PRESS = 0x63,
-	/* Random values used below. */
 	UI_BUTTON_POWER_SHORT_PRESS = 0x90,
+	/* Random values used below. */
 	UI_BUTTON_VOL_UP_LONG_PRESS = 0x91,
 	UI_BUTTON_VOL_DOWN_LONG_PRESS = 0x92,
 	UI_BUTTON_VOL_UP_DOWN_COMBO_PRESS = 0x93,

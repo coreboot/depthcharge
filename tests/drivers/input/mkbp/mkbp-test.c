@@ -274,7 +274,7 @@ static void test_power_short_press(void **state)
 
 	/* Single button is reported on release. */
 	release_button(EC_MKBP_POWER_BUTTON);
-	ASSERT_GETCHAR(UI_BUTTON_POWER_SHORT_PRESS);
+	ASSERT_GETCHAR(MKBP_BUTTON_POWER_SHORT_PRESS);
 	ASSERT_NO_MORE_CHAR();
 }
 
@@ -282,7 +282,7 @@ static void test_vol_up_short_press(void **state)
 {
 	press_button(EC_MKBP_VOL_UP);
 	release_button(EC_MKBP_VOL_UP);
-	ASSERT_GETCHAR(UI_BUTTON_VOL_UP_SHORT_PRESS);
+	ASSERT_GETCHAR(MKBP_BUTTON_VOL_UP_SHORT_PRESS);
 	ASSERT_NO_MORE_CHAR();
 }
 
@@ -290,7 +290,7 @@ static void test_vol_down_short_press(void **state)
 {
 	press_button(EC_MKBP_VOL_DOWN);
 	release_button(EC_MKBP_VOL_DOWN);
-	ASSERT_GETCHAR(UI_BUTTON_VOL_DOWN_SHORT_PRESS);
+	ASSERT_GETCHAR(MKBP_BUTTON_VOL_DOWN_SHORT_PRESS);
 	ASSERT_NO_MORE_CHAR();
 }
 
@@ -299,7 +299,7 @@ static void test_vol_up_down_combo(void **state)
 	/* Combo is reported on button press instead of release. */
 	press_button(EC_MKBP_VOL_UP);
 	press_button(EC_MKBP_VOL_DOWN);
-	ASSERT_GETCHAR(UI_BUTTON_VOL_UP_DOWN_COMBO_PRESS);
+	ASSERT_GETCHAR(MKBP_BUTTON_VOL_UP_DOWN_COMBO_PRESS);
 	ASSERT_NO_MORE_CHAR();
 
 	/* Combo isn't reported again on release. */
@@ -342,7 +342,7 @@ static void test_vol_up_long_press(void **state)
 	ASSERT_NO_MORE_CHAR();
 
 	mock_timer_ms += 4000;
-	ASSERT_GETCHAR(UI_BUTTON_VOL_UP_LONG_PRESS);
+	ASSERT_GETCHAR(MKBP_BUTTON_VOL_UP_LONG_PRESS);
 	ASSERT_NO_MORE_CHAR();
 
 	release_button(EC_MKBP_VOL_UP);
@@ -356,7 +356,7 @@ static void test_vol_down_long_press(void **state)
 	ASSERT_NO_MORE_CHAR();
 
 	mock_timer_ms += 5000;
-	ASSERT_GETCHAR(UI_BUTTON_VOL_DOWN_LONG_PRESS);
+	ASSERT_GETCHAR(MKBP_BUTTON_VOL_DOWN_LONG_PRESS);
 	ASSERT_NO_MORE_CHAR();
 
 	release_button(EC_MKBP_VOL_DOWN);
@@ -407,7 +407,7 @@ static void test_key_hold_on_startup(void **state)
 	release_button(EC_MKBP_POWER_BUTTON);
 
 	/* fifo should be empty after getchar(). */
-	ASSERT_GETCHAR(UI_BUTTON_POWER_SHORT_PRESS);
+	ASSERT_GETCHAR(MKBP_BUTTON_POWER_SHORT_PRESS);
 	assert_int_equal(mock_ec_event_fifo_start, mock_ec_event_fifo_end);
 
 	ASSERT_NO_MORE_CHAR();

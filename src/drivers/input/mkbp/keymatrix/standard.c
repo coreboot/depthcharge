@@ -75,24 +75,24 @@ MkbpKeymatrix mkbp_keymatrix = { Rows, Cols, scancode_rows };
 MkbpButtonInfo mkbp_buttoninfo[] = {
 	{
 		.button_combo = MKBP_BUTTON(EC_MKBP_POWER_BUTTON),
-		.short_press_code = POWER_SHORT_PRESS,
-		.long_press_code = BUTTON_CODE_INVALID,
+		.short_press_code = MKBP_BUTTON_POWER_SHORT_PRESS,
+		.long_press_code = MKBP_BUTTON_INVALID,
 	},
 	{
 		.button_combo = MKBP_BUTTON(EC_MKBP_VOL_UP),
-		.short_press_code = VOL_UP_SHORT_PRESS,
-		.long_press_code = VOL_UP_LONG_PRESS,
+		.short_press_code = MKBP_BUTTON_VOL_UP_SHORT_PRESS,
+		.long_press_code = MKBP_BUTTON_VOL_UP_LONG_PRESS,
 	},
 	{
 		.button_combo = MKBP_BUTTON(EC_MKBP_VOL_DOWN),
-		.short_press_code = VOL_DOWN_SHORT_PRESS,
-		.long_press_code = VOL_DOWN_LONG_PRESS,
+		.short_press_code = MKBP_BUTTON_VOL_DOWN_SHORT_PRESS,
+		.long_press_code = MKBP_BUTTON_VOL_DOWN_LONG_PRESS,
 	},
 	{
 		.button_combo = MKBP_BUTTON(EC_MKBP_VOL_UP) |
 				MKBP_BUTTON(EC_MKBP_VOL_DOWN),
-		.short_press_code = VOL_UP_DOWN_COMBO_PRESS,
-		.long_press_code = BUTTON_CODE_INVALID,
+		.short_press_code = MKBP_BUTTON_VOL_UP_DOWN_COMBO_PRESS,
+		.long_press_code = MKBP_BUTTON_INVALID,
 	},
 };
 
