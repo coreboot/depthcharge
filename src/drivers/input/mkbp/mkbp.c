@@ -27,7 +27,6 @@
 #include "drivers/input/input.h"
 #include "drivers/input/mkbp/keymatrix.h"
 #include "drivers/input/mkbp/layout.h"
-#include "vboot/ui.h"
 
 typedef enum Modifier {
 	ModifierNone = 0x0,
@@ -482,32 +481,37 @@ static void more_keys(void)
 		// Look at all the keys and fill the FIFO.
 		for (int pos = 0; pos < count; pos++) {
 			uint16_t code = scancodes[pos];
+			bool key_added = true;
 
-			// Handle arrow keys.
-			if (code == 0x6c)
-				add_key(KEY_DOWN);
-			else if (code == 0x6a)
+			switch (code) {
+			case 0x6a:
 				add_key(KEY_RIGHT);
-			else if (code == 0x67)
+				break;
+			case 0x6c:
+				add_key(KEY_DOWN);
+				break;
+			case 0x67:
 				add_key(KEY_UP);
-			else if (code == 0x69)
+				break;
+			case 0x69:
 				add_key(KEY_LEFT);
-			else if (code == VOL_DOWN_SHORT_PRESS)
-				add_key(UI_BUTTON_VOL_DOWN_SHORT_PRESS);
-			else if (code == VOL_UP_SHORT_PRESS)
-				add_key(UI_BUTTON_VOL_UP_SHORT_PRESS);
-			else if (code == POWER_SHORT_PRESS)
-				add_key(UI_BUTTON_POWER_SHORT_PRESS);
-			else if (code == VOL_DOWN_LONG_PRESS)
-				add_key(UI_BUTTON_VOL_DOWN_LONG_PRESS);
-			else if (code == VOL_UP_LONG_PRESS)
-				add_key(UI_BUTTON_VOL_UP_LONG_PRESS);
-			else if (code == VOL_UP_DOWN_COMBO_PRESS)
-				add_key(UI_BUTTON_VOL_UP_DOWN_COMBO_PRESS);
+				break;
+			case MKBP_BUTTON_VOL_DOWN_SHORT_PRESS:
+			case MKBP_BUTTON_VOL_UP_SHORT_PRESS:
+			case MKBP_BUTTON_POWER_SHORT_PRESS:
+			case MKBP_BUTTON_VOL_DOWN_LONG_PRESS:
+			case MKBP_BUTTON_VOL_UP_LONG_PRESS:
+			case MKBP_BUTTON_VOL_UP_DOWN_COMBO_PRESS:
+				add_key(code);
+				break;
+			default:
+				key_added = false;
+				break;
+			}
 
 			// Make sure the next check will prevent us from
 			// recognizing this key twice.
-			assert(MkbpLayoutSize < 0x6c);
+			assert(code >= MkbpLayoutSize || !key_added);
 
 			// Ignore the scancode if it's a modifier or too big.
 			if (code == 0x1d || code == 0x61 ||

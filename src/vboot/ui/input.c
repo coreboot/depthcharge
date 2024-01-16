@@ -20,6 +20,7 @@
 #include <vboot/util/flag.h>
 
 #include "debug/dev.h"
+#include "drivers/input/mkbp/keymatrix.h"
 
 #define CSI_0 0x1B
 #define CSI_1 0x5B
@@ -41,11 +42,28 @@ static uint32_t keyboard_get_key(void)
 
 	uint32_t ch = getchar();
 	switch (ch) {
-	case '\n': return '\r';
-	case KEY_UP: return UI_KEY_UP;
-	case KEY_DOWN: return UI_KEY_DOWN;
-	case KEY_RIGHT: return UI_KEY_RIGHT;
-	case KEY_LEFT: return UI_KEY_LEFT;
+	case '\n':
+		return UI_KEY_ENTER;
+	case KEY_UP:
+		return UI_KEY_UP;
+	case KEY_DOWN:
+		return UI_KEY_DOWN;
+	case KEY_RIGHT:
+		return UI_KEY_RIGHT;
+	case KEY_LEFT:
+		return UI_KEY_LEFT;
+	case MKBP_BUTTON_VOL_DOWN_SHORT_PRESS:
+		return UI_BUTTON_VOL_DOWN_SHORT_PRESS;
+	case MKBP_BUTTON_VOL_UP_SHORT_PRESS:
+		return UI_BUTTON_VOL_UP_SHORT_PRESS;
+	case MKBP_BUTTON_POWER_SHORT_PRESS:
+		return UI_BUTTON_POWER_SHORT_PRESS;
+	case MKBP_BUTTON_VOL_DOWN_LONG_PRESS:
+		return UI_BUTTON_VOL_DOWN_LONG_PRESS;
+	case MKBP_BUTTON_VOL_UP_LONG_PRESS:
+		return UI_BUTTON_VOL_UP_LONG_PRESS;
+	case MKBP_BUTTON_VOL_UP_DOWN_COMBO_PRESS:
+		return UI_BUTTON_VOL_UP_DOWN_COMBO_PRESS;
 
 	case CSI_0:
 		timer_start = timer_us(0);
