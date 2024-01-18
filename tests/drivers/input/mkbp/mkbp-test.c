@@ -384,6 +384,35 @@ static void test_no_more_events(void **state)
 	assert_false(get_next_event_called_with_empty_fifo);
 }
 
+/*
+ * Simulate an edge case where the first event AP sees on startup is an empty
+ * key_matrix. That happens for example when powering off AP via selecting
+ * "Power off" by ENTER in firmware screens, and then powering on AP via EC
+ * console command "powerbtn 200" (see b/313812004). In that case, when AP boots
+ * up, there will be 3 events in the FIFO: "ENTER release", "POWER press" and
+ * "POWER release". When calling console_add_input_driver(), the FIFO should be
+ * flushed with a single call to getchar().
+ */
+static void test_key_hold_on_startup(void **state)
+{
+	size_t index;
+	unsigned int bit;
+	/* Set up mock_keys with ENTER, but do not add to fifo. */
+	index = get_key_matrix_index(11, 4, &bit);
+	mock_keys[index] |= 1U << bit;
+
+	/* Add 3 events to fifo. */
+	release_key(11, 4);
+	press_button(EC_MKBP_POWER_BUTTON);
+	release_button(EC_MKBP_POWER_BUTTON);
+
+	/* fifo should be empty after getchar(). */
+	ASSERT_GETCHAR(UI_BUTTON_POWER_SHORT_PRESS);
+	assert_int_equal(mock_ec_event_fifo_start, mock_ec_event_fifo_end);
+
+	ASSERT_NO_MORE_CHAR();
+}
+
 #define MKBP_KEY_TEST(_col, _row, _expected_char) { \
 	.name = ("test_key-" #_expected_char), \
 	.test_func = test_key, \
@@ -425,6 +454,7 @@ int main(void)
 		/* Misc tests. */
 		MKBP_TEST(test_no_events),
 		MKBP_TEST(test_no_more_events),
+		MKBP_TEST(test_key_hold_on_startup),
 	};
 
 	return cmocka_run_group_tests(tests, NULL, NULL);
