@@ -96,9 +96,14 @@ static int mkbp_new_cmd_read_event(struct ec_response_get_next_event_v1 *event)
 			return -1;
 		}
 
-		if ((event->event_type == EC_MKBP_EVENT_KEY_MATRIX) ||
-		    (event->event_type == EC_MKBP_EVENT_BUTTON))
-			return 0;
+		uint8_t type = event->event_type & EC_MKBP_EVENT_TYPE_MASK;
+		if (type == EC_MKBP_EVENT_KEY_MATRIX ||
+		    type == EC_MKBP_EVENT_BUTTON)
+			return rv;
+
+		/* No more events in FIFO. */
+		if (!(event->event_type & EC_MKBP_HAS_MORE_EVENTS))
+			return -1;
 	}
 }
 
@@ -370,10 +375,11 @@ static int mkbp_process_events(Modifier *modifiers, uint16_t *codes,
 	if (mkbp_read_event(&event))
 		return -1;
 
-	if (event.event_type == EC_MKBP_EVENT_KEY_MATRIX)
+	uint8_t type = event.event_type & EC_MKBP_EVENT_TYPE_MASK;
+	if (type == EC_MKBP_EVENT_KEY_MATRIX)
 		return mkbp_process_keymatrix(modifiers, codes, max_codes,
 						&event);
-	else if (event.event_type == EC_MKBP_EVENT_BUTTON)
+	else if (type == EC_MKBP_EVENT_BUTTON)
 		return mkbp_process_buttons(codes, max_codes, &event);
 
 	return 0;
