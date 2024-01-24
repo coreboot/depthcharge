@@ -122,3 +122,8 @@ config WIDEVINE_PROVISION
 	bool "Enable the widevine provision for ARM optee"
 	depends on ARCH_ARM_V8
 	default n
+
+config WIDEVINE_SMC
+	bool "Enable the widevine SMC call for ARM optee"
+	depends on WIDEVINE_PROVISION
+	default n
