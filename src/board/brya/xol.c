@@ -11,7 +11,6 @@
 #include "drivers/bus/soundwire/cavs_2_5-sndwregs.h"
 #include "drivers/gpio/alderlake.h"
 #include "drivers/soc/alderlake.h"
-#include "drivers/sound/nau8318.h"
 
 const struct audio_config *variant_probe_audio_config(void)
 {
