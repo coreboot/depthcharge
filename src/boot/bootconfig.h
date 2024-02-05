@@ -44,4 +44,18 @@ int append_bootconfig_params(char *key, char *value, void *bootc_start,
 int parse_build_time_bootconfig(void *bootc_start, void *bootc_params,
 				size_t params_size);
 
+/*
+ * Replace spaces in original string with new line characters. Update bootconfig
+ * structure with the newly created string.
+ *
+ * @param cmdline_string - pointer to the cmdline string which should be added
+ *                         to bootconfig
+ * @param bootc_start - pointer to the bootconfig section
+ * @param bootc_size - current size of bootconfig structure
+ *
+ * Return: New size of bootconfig params section after update
+ *         -1 in case of errors
+ */
+int bootconfig_append_cmdline(char *cmdline_string, void *bootc_start, size_t bootc_size);
+
 #endif /* __BOOT_BOOTCONFIG_H__ */
