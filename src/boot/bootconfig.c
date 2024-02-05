@@ -49,6 +49,42 @@ static void append_bootconfig_trailer(void *bootc_start, size_t params_size)
 	       BOOTCONFIG_MAGIC, BOOTCONFIG_MAGIC_BYTES);
 }
 
+int bootconfig_append_cmdline(char *cmdline_string, void *bootc_start, size_t bootc_size)
+{
+	char *p, *p_prev, *tmp;
+	size_t len, bootparams_size;
+
+	/* Make a copy for modifications */
+	tmp = strdup(cmdline_string);
+	if (tmp == NULL)
+		return -1;
+
+	p = p_prev = tmp;
+	while(p) {
+		p = strstr(tmp, " ");
+		if (p == NULL)
+			break;
+		*p = '\n';
+		/* Check for the case with multiple consecutive spaces */
+		if (p - p_prev == 1) {
+			memmove(p, p + 1, strlen(p + 1));
+			*(p + strlen(p) - 1) = '\0';
+			continue;
+		}
+		p_prev = p;
+	}
+
+	len = strlen(tmp);
+	bootparams_size = bootc_size - BOOTCONFIG_TRAILER_BYTES;
+
+	/* Append string at the end of the current bootconfig params string */
+	memcpy((char *)bootc_start + bootparams_size, tmp, len);
+	append_bootconfig_trailer(bootc_start, bootparams_size + len);
+
+	free(tmp);
+	return bootc_size + len;
+}
+
 /**
  * Add new string to bootconfig parameters, update trailer structure.
  *
@@ -113,7 +149,7 @@ int append_bootconfig_params(char *key, char *value, void *bootc_start,
  * provided target address.
  *
  * @param bootc_start - Start address of bootconfig section in memory (usually right
- *               after ramdisks)
+ *                      after ramdisks)
  * @param bootc_params - pointer to the buffer with bootconfig parameters
  * @param params_size - size in bytes of bootc_params
  *
