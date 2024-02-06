@@ -266,6 +266,16 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 			printf("GKI: Cannot parse build time bootconfig\n");
 			return -1;
 		}
+
+		vendor_hdr->bootconfig_size = bootconfig_append_cmdline(
+		    (char *)kparams->kernel_buffer +
+			kparams->vboot_cmdline_offset,
+		    (void *)bootc_ramdisk_addr,
+		    vendor_hdr->bootconfig_size);
+		if (vendor_hdr->bootconfig_size < 0) {
+			printf("GKI: Cannot copy avb cmdline to bootconfig\n");
+			return -1;
+		}
 	}
 
 	init_boot_ramdisk_dst = ((uint8_t *)vendor_hdr +
