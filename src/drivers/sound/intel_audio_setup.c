@@ -14,6 +14,7 @@
 #include "drivers/sound/cs35l53.h"
 #include "drivers/sound/gpio_amp.h"
 #include "drivers/sound/gpio_edge_buzzer.h"
+#include "drivers/sound/hda_codec.h"
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/intel_audio_setup.h"
 #include "drivers/sound/max98373.h"
@@ -41,6 +42,7 @@ struct audio_data {
 	union {
 		SoundRoute *route; /* I2S */
 		Soundwire *sndw;   /* Soundwire */
+		HdaCodec *codec;   /* HDA */
 	};
 };
 
@@ -305,6 +307,15 @@ static void configure_audio_codec(const struct audio_codec *codec,
 		if (data->route) {
 			setup_rt5650(codec, data->route);
 			data->ops = &data->route->ops;
+		}
+		break;
+	case AUDIO_ALC256:
+		if (CONFIG(DRIVER_SOUND_HDA)) {
+			if (data->type == AUDIO_HDA) {
+				data->codec = new_hda_codec();
+				sound_set_ops(&data->codec->ops);
+				set_hda_beep_nid_override(data->codec, 1);
+			}
 		}
 		break;
 	default:
