@@ -188,10 +188,11 @@ static int rts545x_get_ic_status(Rts545x *me, struct rts5453_ic_status *ic_sts)
 		return ret;
 	}
 
-	printf("%s: VID:PID 0x%x%x:0x%x%x, FW_Ver %x.%x.%x, %s Bank:%d\n", __func__,
-	       ic_sts->vid_pid[0], ic_sts->vid_pid[1], ic_sts->vid_pid[2], ic_sts->vid_pid[3],
-	       ic_sts->major_version, ic_sts->minor_version, ic_sts->patch_version,
-	       ic_sts->code_location ? "Flash" : "ROM", ic_sts->flash_bank ? 1 : 0);
+	printf("%s: VID:PID %x%x:%x%x, FW_Ver %x.%x.%x, %s Bank:%d\n", __func__,
+	       ic_sts->vid_pid[1], ic_sts->vid_pid[0], ic_sts->vid_pid[3],
+	       ic_sts->vid_pid[2], ic_sts->major_version, ic_sts->minor_version,
+	       ic_sts->patch_version, ic_sts->code_location ? "Flash" : "ROM",
+	       ic_sts->flash_bank ? 1 : 0);
 	return 0;
 }
 
@@ -221,6 +222,7 @@ static int rts545x_flash_write(Rts545x *me, const uint8_t *image, size_t image_s
 	uint32_t seg_boundary = FLASH_SEGMENT_SIZE;
 	uint8_t cmd, ping_status, segment, size = 0;
 	uint32_t offset = 0;
+	uint32_t progress_counter = 0;
 	int ret = 0;
 
 	/* If running ROM code or flash_bank 1, program flash_bank 0 */
@@ -247,7 +249,15 @@ static int rts545x_flash_write(Rts545x *me, const uint8_t *image, size_t image_s
 			break;
 		}
 		offset += size;
+		progress_counter += size;
+
+		if (progress_counter >= 4000) {
+			/* Prints an update every 4000 bytes transferred */
+			printf("%s: Progress: %u / %zu\n", __func__, offset, image_size);
+			progress_counter = 0;
+		}
 	}
+
 	return ret;
 }
 
@@ -432,16 +442,18 @@ static vb2_error_t rts5453_check_hash(const VbootAuxfwOps *vbaux, const uint8_t 
 	dev_is_present = is_rts545x_device_present(me, false);
 	if (!dev_is_present) {
 		*severity = VB2_AUXFW_NO_DEVICE;
-		printf("Skipping upgrade for %s\n", me->chip_name);
+		printf("Skipping upgrade for %s. Device not present.\n", me->chip_name);
 		return VB2_SUCCESS;
 	}
 
 	if (hash[0] == me->fw_info.major_ver && hash[1] == me->fw_info.minor_ver &&
 	    hash[2] == me->fw_info.patch_ver) {
+		printf("No upgrade necessary for %s. Already at %u.%u.%u.\n", me->chip_name,
+		       hash[0], hash[1], hash[2]);
 		*severity = VB2_AUXFW_NO_UPDATE;
 		return VB2_SUCCESS;
 	}
-	printf("%s: Update FW from %#02x.%#02x.%#02x to %#02x.%#02x.%#02x\n", me->chip_name,
+	printf("%s: Update FW from %u.%u.%u to %u.%u.%u\n", me->chip_name,
 	       me->fw_info.major_ver, me->fw_info.minor_ver, me->fw_info.patch_ver, hash[0],
 	       hash[1], hash[2]);
 	*severity = VB2_AUXFW_SLOW_UPDATE;
@@ -457,39 +469,73 @@ static int rts545x_update_flash(Rts545x *me, const uint8_t *image, size_t image_
 	 * MC is not currently supported.
 	 */
 
+	printf("%s: Vendor command enable... ", __func__);
 	ret = rts545x_vendor_cmd_enable(me);
-	if (ret)
+	if (ret) {
+		printf("fail (%d)\n", ret);
 		return ret;
+	}
+	printf("success\n");
 
 	ret = rts545x_get_ic_status(me, &ic_status);
-	if (ret)
+	if (ret) {
+		printf("%s: IC status failed (%d)\n", __func__, ret);
 		return ret;
+	}
+	printf("%s: Got IC status\n", __func__);
 
+	printf("%s: Flash access enable... ", __func__);
 	ret = rts545x_flash_access_enable(me);
-	if (ret)
+	if (ret) {
+		printf("fail (%d)\n", ret);
 		return ret;
+	}
+	printf("success\n");
 
 	/* TODO(b/323608798): Add flash unlock step support */
 
+	printf("%s: Starting flash write\n", __func__);
 	ret = rts545x_flash_write(me, image, image_size);
 	if (ret) {
+		printf("%s: Failed during flash write", __func__);
 		rts545x_flash_access_disable(me);
 		return ret;
 	}
+	printf("%s: Completed flash write\n", __func__);
 
+	printf("%s: Flash access disable... ", __func__);
 	ret = rts545x_flash_access_disable(me);
-	if (ret)
+	if (ret) {
+		printf("fail (%d)\n", ret);
 		return ret;
+	}
+	printf("success\n");
 
+	printf("%s: Validate FW... ", __func__);
 	ret = rts545x_validate_firmware(me, image, image_size);
-	if (ret)
+	if (ret) {
+		printf("fail (%d)\n", ret);
 		return ret;
+	}
+	printf("success\n");
 
+	printf("%s: Reset to flash... ", __func__);
 	ret = rts545x_reset_to_flash(me);
-	if (ret)
+	if (ret) {
+		printf("fail (%d)\n", ret);
 		return ret;
+	}
+	printf("success\n");
 
-	return rts545x_confirm_flash_update(me);
+	printf("%s: Confirm update... ", __func__);
+	ret = rts545x_confirm_flash_update(me);
+	if (ret) {
+		printf("fail (%d)\n", ret);
+		return ret;
+	}
+	printf("success\n");
+
+	return 0;
 }
 
 static vb2_error_t rts5453_update_image(const VbootAuxfwOps *vbaux, const uint8_t *image,
@@ -574,7 +620,7 @@ static const VbootAuxfwOps *new_rts545x_from_chip_info(struct ec_response_pd_chi
 	rts545x->fw_info.major_ver = (r->fw_version_number >> FW_MAJOR_VERSION_SHIFT) & 0xff;
 	rts545x->fw_info.minor_ver = (r->fw_version_number >> FW_MINOR_VERSION_SHIFT) & 0xff;
 	rts545x->fw_info.patch_ver = (r->fw_version_number >> FW_PATCH_VERSION_SHIFT) & 0xff;
-	printf("vendor 0x%04x product 0x%04x\n", rts545x->chip_info.vid,
+	printf("RTS5453 VID/PID %04x:%04x\n", rts545x->chip_info.vid,
 	       rts545x->chip_info.pid);
 	return &rts545x->fw_ops;
 }
