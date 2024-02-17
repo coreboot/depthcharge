@@ -608,6 +608,15 @@ static const VbootAuxfwOps *new_rts545x_from_chip_info(struct ec_response_pd_chi
 {
 	Rts545x *rts545x;
 
+	/* Ignore the 2nd port so we don't perform the update twice.
+	 * TODO: b/324892496 Remove this when a better mechanism is
+	 * identified.
+	 */
+	if (ec_pd_id > 0) {
+		printf("Ignoring ports > 0 to avoid double-upgrade\n");
+		return NULL;
+	}
+
 	switch (r->product_id) {
 	case GOOGLE_BROX_PRODUCT_ID:
 		rts545x = new_rts5453(NULL, ec_pd_id);
