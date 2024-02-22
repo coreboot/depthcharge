@@ -13,6 +13,7 @@
 
 dev-$(CONFIG_ARCH_X86) += io.c
 dev-$(CONFIG_ARCH_X86) += pci.c
+dev-$(CONFIG_ARCH_X86) += msr.c
 dev-$(CONFIG_KERNEL_LEGACY) += boot.c
 dev-y += audio.c
 dev-y += cbfs.c
