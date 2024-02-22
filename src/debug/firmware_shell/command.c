@@ -395,7 +395,7 @@ int cmd_auto_complete(const char *const prompt, char *buf, int *np)
 
 int cmd_get_data_size(char* arg, int default_size)
 {
-	/* Check for a size specification .b, .w or .l.
+	/* Check for a size specification .b, .w or .l .q.
 	 */
 	int len = strlen(arg);
 	if (len > 2 && arg[len-2] == '.') {
@@ -406,6 +406,8 @@ int cmd_get_data_size(char* arg, int default_size)
 			return 2;
 		case 'l':
 			return 4;
+		case 'q':
+			return 8;
 		case 's':
 			return -2;
 		default:
