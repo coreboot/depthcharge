@@ -50,6 +50,7 @@ static const uint16_t VersionMask = 0x7cf0;
 enum {
 	PlaIdr = 0xc000,
 	PlaRcr = 0xc010,
+	PlaRms = 0xc016,
 	PlaDmyReg0 = 0xc0b0,
 	PlaFmc = 0xc0b4,
 	PlaMar = 0xcd00,
@@ -66,8 +67,10 @@ enum {
 	PlaCrwecr = 0xe81c,
 	PlaConfig34 = 0xe820,
 	PlaPhyPwr = 0xe84c,
+	PlaOobCtl = 0xe84f,
 	PlaMisc1 = 0xe85a,
-	PlaOcpGphyBase = 0xe86c
+	PlaOcpGphyBase = 0xe86c,
+	PlaSffSts7 = 0xe8de,
 };
 
 /* PlaRcr */
@@ -100,6 +103,7 @@ static const uint16_t TallyReset = 0x0001;
 
 /* PlaCr */
 enum {
+	CrRst = 0x10,
 	CrRe = 0x08,
 	CrTe = 0x04
 };
@@ -120,8 +124,19 @@ enum {
 	PfmPwmSwitch = 0x0040
 };
 
+/* PlaOobCtl */
+enum {
+	NowIsOob = 0x80,
+};
+
 /* PlaMisc1 */
 static const uint16_t RxdyGatedEn = 0x0008;
+
+/* PlaSffSts7 */
+enum {
+	ReInitLl = 0x8000,
+	McuBornEn = 0x4000,
+};
 
 enum {
 	UsbCsrDummy1 = 0xb464,
@@ -131,6 +146,11 @@ enum {
 	UsbBurstSize = 0xcfc0,
 	UsbUsbCtrl = 0xd406,
 	UsbLpmCtrl = 0xd41a,
+	UsbRxAggTimeout = 0xd42c,
+	UsbRxAggSize = 0xd42e,
+	UsbExtraRxAgg = 0xd432,
+	UsbUptRxDmaOwn = 0xd437,
+	UsbBmuReset = 0xd4b0,
 	UsbPowerCut = 0xd80a,
 	UsbMisc0 = 0xd81a,
 	UsbAfeCtrl2 = 0xd824,
@@ -154,6 +174,18 @@ enum {
 static const uint8_t FifoEmpty1fb = 0x30;
 static const uint8_t LpmTimer500us = 0x0c;
 static const uint8_t RokExitLpm = 0x02;
+
+/* UsbUptRxDmaOwn */
+enum {
+	OwnUpdate = 0x01,
+	OwnClear = 0x02,
+};
+
+/* UsbBmuReset */
+enum {
+	BmuResetEpIn = 0x01,
+	BmuResetEpOut = 0x02,
+};
 
 /* UsbPowerCut */
 enum {
@@ -239,9 +271,7 @@ enum {
 	SramImpedance = 0x8084
 };
 
-enum {
-	RxUrbSize = 2048
-};
+#define RX_PKT_SIZE		1518
 
 typedef struct R8152Dev {
 	UsbEthDevice usb_eth_dev;
