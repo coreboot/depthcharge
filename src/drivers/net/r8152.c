@@ -500,6 +500,103 @@ static int r8152b_reset_packet_filter(usbdev_t *dev)
 	return 0;
 }
 
+static int r8153b_rx_agg_chg_indicate(usbdev_t *dev)
+{
+	if (ocp_write_byte(dev, McuTypeUsb, UsbUptRxDmaOwn,
+			   OwnUpdate | OwnClear))
+		return 1;
+
+	return 0;
+}
+
+static int rtl8152_nic_reset(usbdev_t *dev)
+{
+	int i;
+
+	if (ocp_write_byte(dev, McuTypePla, PlaCr, CrRst))
+		return 1;
+
+	for (i = 0; i < 10; i++) {
+		uint8_t data;
+
+		if (ocp_read_byte(dev, McuTypePla, PlaCr, &data))
+			return 1;
+		if (!(data & CrRst))
+			break;
+		mdelay(10);
+	}
+
+	return 0;
+}
+
+static int rtl_reset_bmu(usbdev_t *dev)
+{
+	if (ocp_byte_clearbits(dev, McuTypeUsb, UsbBmuReset,
+			       BmuResetEpIn | BmuResetEpOut))
+		return 1;
+	if (ocp_byte_setbits(dev, McuTypeUsb, UsbBmuReset,
+			     BmuResetEpIn | BmuResetEpOut))
+		return 1;
+
+	return 0;
+}
+
+static int r8153_set_rx_early_timeout(usbdev_t *dev)
+{
+	switch (r8152_dev.version) {
+	case RtlVersion01:
+	case RtlVersion02:
+		return 0;
+	case RtlVersion03 ... RtlVersion06:
+		/* 85 us */
+		if (ocp_write_word(dev, McuTypeUsb, UsbRxAggTimeout, 85000 / 8))
+			return 1;
+		break;
+	case RtlVersion08:
+	case RtlVersion09:
+		/* early timer = 1264ns */
+		if (ocp_write_word(dev, McuTypeUsb, UsbRxAggTimeout, 1264 / 8))
+			return 1;
+		/* extra timer = 15us */
+		if (ocp_write_word(dev, McuTypeUsb, UsbExtraRxAgg, 15000 / 8))
+			return 1;
+		break;
+	default:
+		printf("R8152: None early timeout is set\n");
+		break;
+	}
+
+	return 0;
+}
+
+static int r8153_set_rx_early_size(usbdev_t *dev)
+{
+	uint32_t data;
+
+	/* Buffer size - packet size - rx desc size - align */
+	data = ETHERNET_MAX_FRAME_SIZE - RX_PKT_SIZE - 32;
+
+	switch (r8152_dev.version) {
+	case RtlVersion01:
+	case RtlVersion02:
+		return 0;
+	case RtlVersion03 ... RtlVersion06:
+		if (ocp_write_word(dev, McuTypeUsb, UsbRxAggSize, data / 4))
+			return 1;
+		break;
+	case RtlVersion08:
+	case RtlVersion09:
+		if (ocp_write_word(dev, McuTypeUsb, UsbRxAggSize, data / 8))
+			return 1;
+		break;
+	default:
+		printf("R8152: None early size is set\n");
+		break;
+	}
+
+	return 0;
+}
+
 static int rxdy_gated_disable(usbdev_t *dev)
 {
 	return ocp_word_clearbits(dev, McuTypePla, PlaMisc1, RxdyGatedEn);
@@ -512,6 +609,15 @@ static int rtl_enable(usbdev_t *dev)
 
 	if (ocp_byte_setbits(dev, McuTypePla, PlaCr, CrRe | CrTe))
 		return 1;
+
+	switch (r8152_dev.version) {
+	case RtlVersion01 ... RtlVersion07:
+		break;
+	default:
+		if (r8153b_rx_agg_chg_indicate(dev))
+			return 1;
+		break;
+	}
 
 	if (rxdy_gated_disable(dev))
 		return 1;
@@ -603,6 +709,25 @@ static int r8153_init(usbdev_t *dev)
 	if (r8153_mac_clk_speed_disable(dev))
 		return 1;
 
+	if (ocp_word_setbits(dev, McuTypePla, PlaMisc1, RxdyGatedEn))
+		return 1;
+
+	if (ocp_dword_clearbits(dev, McuTypePla, PlaRcr,
+				RcrAb | RcrApm | RcrAm))
+		return 1;
+
+	if (rtl8152_nic_reset(dev))
+		return 1;
+
+	if (rtl_reset_bmu(dev))
+		return 1;
+
+	if (ocp_word_clearbits(dev, McuTypePla, PlaOobCtl, NowIsOob))
+		return 1;
+
+	if (ocp_word_clearbits(dev, McuTypePla, PlaSffSts7, McuBornEn))
+		return 1;
+
 	if (ocp_word_clearbits(dev, McuTypeUsb, UsbUsbCtrl,
 			       RxAggDisable | RxZeroEn))
 		return 1;
@@ -610,10 +735,19 @@ static int r8153_init(usbdev_t *dev)
 	if (rtl_tally_reset(dev))
 		return 1;
 
-	if (rtl_enable(dev))
+	if (ocp_write_word(dev, McuTypePla, PlaRms, RX_PKT_SIZE))
+		return 1;
+
+	if (r8153_set_rx_early_timeout(dev))
+		return 1;
+
+	if (r8153_set_rx_early_size(dev))
 		return 1;
 
 	if (r8153_hw_phy_cfg(dev))
+		return 1;
+
+	if (rtl_enable(dev))
 		return 1;
 
 	return 0;
@@ -732,6 +866,25 @@ static int r8153b_init(usbdev_t *dev)
 	if (rtl_runtime_suspend_disable(dev))
 		return 1;
 
+	if (ocp_word_setbits(dev, McuTypePla, PlaMisc1, RxdyGatedEn))
+		return 1;
+
+	if (ocp_dword_clearbits(dev, McuTypePla, PlaRcr,
+				RcrAb | RcrApm | RcrAm))
+		return 1;
+
+	if (rtl8152_nic_reset(dev))
+		return 1;
+
+	if (rtl_reset_bmu(dev))
+		return 1;
+
+	if (ocp_word_clearbits(dev, McuTypePla, PlaOobCtl, NowIsOob))
+		return 1;
+
+	if (ocp_word_clearbits(dev, McuTypePla, PlaSffSts7, McuBornEn))
+		return 1;
+
 	if (ocp_word_clearbits(dev, McuTypeUsb, UsbUsbCtrl,
 			       RxAggDisable | RxZeroEn))
 		return 1;
@@ -739,10 +892,23 @@ static int r8153b_init(usbdev_t *dev)
 	if (rtl_tally_reset(dev))
 		return 1;
 
-	if (rtl_enable(dev))
+	if (ocp_write_word(dev, McuTypePla, PlaRms, RX_PKT_SIZE))
+		return 1;
+
+	if (r8153_set_rx_early_timeout(dev))
+		return 1;
+
+	if (r8153_set_rx_early_size(dev))
+		return 1;
+
+	if (ocp_reg_clearbits(dev, OcpBaseMii + MiiAnar * 2,
+			      AdvertisePauseCap | AdvertisePauseAsym))
 		return 1;
 
 	if (r8153b_hw_phy_cfg(dev))
+		return 1;
+
+	if (rtl_enable(dev))
 		return 1;
 
 	return 0;
