@@ -15,7 +15,6 @@
 #include "base/container_of.h"
 #include "base/init_funcs.h"
 #include "drivers/ec/ccgxxf/ccgxxf.h"
-#include "drivers/flash/cbfs.h"
 
 static inline int ccgxxf_i2c_readw(I2cOps *ops, uint8_t reg, uint16_t *data)
 {
