@@ -61,6 +61,10 @@ config DRIVER_BUS_I2C_MT8188
 	bool "MediaTek MT8188 I2C driver"
 	default n
 
+config DRIVER_BUS_I2C_MT8196
+	bool "MediaTek MT8196 I2C driver"
+	default n
+
 config DRIVER_BUS_I2C_CYGNUS
 	bool "Cygnus I2C driver"
 	default n
