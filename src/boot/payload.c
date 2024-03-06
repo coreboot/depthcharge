@@ -199,14 +199,6 @@ int payload_run_altfw(int altfw_id)
 			}
 		}
 	}
-
-	/*
-	 * For now, try the default payload
-	 * TODO(sjg@chromium.org): Drop this once everything is migrated to
-	 * altfw.
-	 */
-	if (payload_run("payload"))
-		printf("%s: Could not find default altfw payload\n", __func__);
 	printf("%s: Could not find bootloader #%u\n", __func__, altfw_id);
 
 	return -1;
