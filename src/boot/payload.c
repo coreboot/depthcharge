@@ -110,7 +110,8 @@ static int payload_load(struct cbfs_payload *payload, void **entryp)
 				memcpy(dst, src, src_len);
 				break;
 			case CBFS_COMPRESS_LZMA:
-				if (!ulzman(src, src_len, dst, dst_len)) {
+				src_len = ulzman(src, src_len, dst, dst_len);
+				if (!src_len) {
 					printf("LZMA: Decompression failed.\n");
 					return -1;
 				}
@@ -120,6 +121,8 @@ static int payload_load(struct cbfs_payload *payload, void **entryp)
 				       comp);
 				return -1;
 			}
+			if (dst_len > src_len)
+				memset(dst + src_len, 0, dst_len - src_len);
 			break;
 		case PAYLOAD_SEGMENT_BSS:
 			printf("BSS: dst=%p len=%d\n", dst, dst_len);
