@@ -124,10 +124,11 @@ copy-test = $(foreach attr,$(attributes), \
 		$(eval $(strip $(2))-$(attr) := $($(strip $(1))-$(attr))))
 
 default_mocks-srcs := src/vboot/callbacks/debug.c \
-	tests/lp_mocks/timer.c \
-	tests/mocks/console.c \
-	tests/mocks/halt.c \
-	tests/mocks/vboot/context.c
+	tests/mocks/libpayload/console.c \
+	tests/mocks/libpayload/halt.c \
+	tests/mocks/vboot/context.c \
+	tests/stubs/libpayload/heap.c \
+	tests/stubs/libpayload/timer.c
 default_mocks := console_write halt vb2ex_abort vb2ex_printf vboot_get_context
 
 # Create actual targets for unit test binaries

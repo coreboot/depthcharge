@@ -67,7 +67,7 @@ screenshot-srcobjs := $(addprefix $(screenshotobj)/, \
 screenshot-objs := $(addprefix $(screenshotobj)/, \
 	$(patsubst %.c,%.o,$(screenshot-srcs)))
 screenshot-objs += $(addprefix $(screenshotobj)/, \
-	$(patsubst %.c,%.o,tests/stubs/heap.c $(default_mocks-srcs)))
+	$(patsubst %.c,%.o,$(default_mocks-srcs)))
 $(screenshot-objs): TEST_CFLAGS += $(UI_FLAGS)
 
 # Always rebuild force-srcs as screenshot options (such as SCREEN) might change.

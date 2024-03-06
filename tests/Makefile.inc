@@ -42,7 +42,7 @@ $(foreach test, $(alltests), \
 	$(eval $(test)-objs := $(addprefix $(testobj)/$(test)/, \
 		$(patsubst %.c,%.o,$($(test)-srcs))))\
 	$(eval $(test)-objs += $(addprefix $(testobj)/$(test)/, \
-		$(patsubst %.c,%.o,tests/stubs/heap.c $(default_mocks-srcs)))))
+		$(patsubst %.c,%.o,$(default_mocks-srcs)))))
 $(foreach test, $(alltests), \
 	$(eval $(test)-bin := $(testobj)/$(test)/run))
 $(foreach test, $(alltests), \

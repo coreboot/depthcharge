@@ -32,10 +32,10 @@ stages-test-srcs += tests/vboot/stages-test.c
 stages-test-mocks += vb2ex_commit_data vb2api_fail
 stages-test-config += CONFIG_DRIVER_TPM_GOOGLE=1
 
-ui-test-common-srcs += tests/mocks/cbmem_console.c
 ui-test-common-srcs += tests/mocks/diag/health_info.c
 ui-test-common-srcs += tests/mocks/diag/memory.c
 ui-test-common-srcs += tests/mocks/diag/storage_test.c
+ui-test-common-srcs += tests/mocks/libpayload/cbmem_console.c
 ui-test-common-srcs += tests/mocks/ui.c
 ui-test-common-srcs += tests/mocks/ui_callbacks.c
 ui-test-common-srcs += tests/mocks/ui_display.c
@@ -78,7 +78,7 @@ ui-test-common-mocks += vb2api_get_dev_default_boot_target
 $(call copy-test,ui-test-common,ui-broken-test)
 ui-broken-test-srcs += tests/vboot/ui-broken-test.c
 ui-broken-test-srcs += src/vboot/ui.c
-ui-broken-test-srcs := $(filter-out tests/mocks/cbmem_console.c, \
+ui-broken-test-srcs := $(filter-out tests/mocks/libpayload/cbmem_console.c, \
 	$(ui-broken-test-srcs))
 
 $(call copy-test,ui-broken-test,ui-broken-detachable-test)

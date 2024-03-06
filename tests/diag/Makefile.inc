@@ -14,4 +14,4 @@ health_info-helper-test-srcs += tests/diag/health_info-helper-test.c
 
 report-test-srcs += src/diag/report.c
 report-test-srcs += tests/diag/report-test.c
-report-test-srcs += tests/mocks/timer.c
+report-test-srcs += tests/mocks/libpayload/timer.c

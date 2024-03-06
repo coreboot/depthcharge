@@ -5,6 +5,6 @@
 #include <tests/test.h>
 
 /* Heap for libpayload libc. It should suffice for internals.
-   Buffers for testing purposes should be allocades using test_malloc()
+   Buffers for testing purposes should be allocated using test_malloc()
    or test_calloc() and freed using test_free(). */
 TEST_REGION(heap, 16 * MiB);
