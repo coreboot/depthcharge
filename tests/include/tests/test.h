@@ -9,6 +9,7 @@
  * so generic we would want them available everywhere could also be added here.
  */
 
+#include <ctype.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <setjmp.h>
@@ -49,6 +50,22 @@
 				 _assert_local_b, (msg)); \
 		} \
 	} while (0)
+
+/*
+ * When testing functions that copy buffers around, an easy way to get test data
+ * is to memset() the source buffer to a certain byte value, and then check if
+ * all bytes of the destination buffer contain that value after execution of the
+ * code under test. This helper can perform that check.
+ */
+#define assert_filled_with(buffer, c, size) do { \
+	const char *_buffer = (const char *)(buffer); \
+	const char _c = (c); \
+	size_t _size = (size); \
+	for (size_t _i = 0; _i < _size; _i++) if (_buffer[_i] != _c) \
+		fail_msg("(" #buffer ")[%#zx] == 0x%.2x ('%c') != 0x%.2x ('%c')", \
+			 _i, _buffer[_i], isprint(_buffer[_i]) ? _buffer[_i] : '?', \
+			 _c, isprint(_c) ? _c : '?'); \
+} while (0)
 
 /*
  * Set symbol value and make it global.
