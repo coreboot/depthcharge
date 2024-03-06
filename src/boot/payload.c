@@ -84,9 +84,6 @@ static int payload_load(struct cbfs_payload *payload, void **entryp)
 			printf("BSS: dst=%p len=%d\n", dst, dst_len);
 			memset(dst, 0, dst_len);
 			break;
-		case PAYLOAD_SEGMENT_PARAMS:
-			printf("PARAMS: skipped\n");
-			break;
 		case PAYLOAD_SEGMENT_ENTRY:
 			*entryp = dst;
 			return 0;
