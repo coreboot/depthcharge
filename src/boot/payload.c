@@ -18,7 +18,6 @@
 #include <stdbool.h>
 #include <libpayload.h>
 #include <lzma.h>
-#include <vb2_sha.h>
 #include <cbfs.h>
 #include <cbfs_glue.h>
 
@@ -31,49 +30,6 @@
 
 /* List of alternate bootloaders */
 static ListNode *altfw_head;
-
-#define PAYLOAD_HASH_SUFFIX ".sha256"
-
-/*
- * get_payload_hash() - Obtain the hash for a given payload.
- *    Given the name of a payload (e.g., "altfw/XXX") appends
- *    ".sha256" to the name (e.g., "altfw/XXX.sha256") and
- *    provides a buffer of length VB2_SHA256_DIGEST_SIZE that
- *    contains the file's contents.
- * @payload_name: Name of payload
- * @return pointer to buffer on success, otherwise NULL.
- *     Caller is responsible for freeing the buffer.
- */
-
-static uint8_t *get_payload_hash(const char *payload_name)
-{
-	void *data;
-	size_t data_size;
-	char *full_name;
-	size_t full_name_len = strlen(payload_name) +
-			       sizeof(PAYLOAD_HASH_SUFFIX);
-	full_name = xzalloc(full_name_len);
-	snprintf(full_name, full_name_len, "%s%s", payload_name,
-		 PAYLOAD_HASH_SUFFIX);
-
-	/* Search in AP-RW CBFS (either FW_MAIN_A or FW_MAIN_B) */
-	data = cbfs_map(full_name, &data_size);
-	free(full_name);
-	if (data == NULL) {
-		printf("Could not find hash for %s in default media cbfs.\n",
-		       payload_name);
-		return NULL;
-	}
-	if (data_size != VB2_SHA256_DIGEST_SIZE) {
-		printf("Size of hash for %s is not %u: %u\n",
-		       payload_name, VB2_SHA256_DIGEST_SIZE,
-		       (uint32_t)data_size);
-		free(data);
-		data = NULL;
-	}
-
-	return (uint8_t *)data;
-}
 
 /*
  * payload_load() - Load an image from the given payload
@@ -143,7 +99,7 @@ static int payload_load(struct cbfs_payload *payload, void **entryp)
 	}
 }
 
-int payload_run(const char *payload_name, int verify)
+int payload_run(const char *payload_name)
 {
 	struct cbfs_payload *payload;
 	size_t payload_size = 0;
@@ -155,42 +111,6 @@ int payload_run(const char *payload_name, int verify)
 	if (!payload) {
 		printf("Could not find '%s'.\n", payload_name);
 		return 1;
-	}
-
-	if (verify) {
-		struct vb2_hash real_hash;
-		uint8_t *expected_hash;
-		vb2_error_t rv;
-
-		/* Calculate hash of payload. */
-		rv = vb2_hash_calculate(cbfs_hwcrypto_allowed(), payload,
-					payload_size, VB2_HASH_SHA256,
-					&real_hash);
-		if (rv) {
-			printf("SHA-256 calculation failed for "
-			       "%s payload.\n", payload_name);
-			free(payload);
-			return 1;
-		}
-
-		/* Retrieve the expected hash of payload stored in AP-RW. */
-		expected_hash = get_payload_hash(payload_name);
-		if (expected_hash == NULL) {
-			printf("Could not retrieve expected hash of "
-			       "%s payload.\n", payload_name);
-			free(payload);
-			return 1;
-		}
-
-		ret = memcmp(real_hash.sha256, expected_hash,
-			     sizeof(real_hash.sha256));
-		free(expected_hash);
-		if (ret != 0) {
-			printf("%s payload hash check failed!\n", payload_name);
-			free(payload);
-			return 1;
-		}
-		printf("%s payload hash check succeeded.\n", payload_name);
 	}
 
 	printf("Loading %s into RAM\n", payload_name);
@@ -275,7 +195,7 @@ int payload_run_altfw(int altfw_id)
 			if (node->seqnum == altfw_id) {
 				printf("Running bootloader '%s: %s'\n",
 				       node->name, node->desc);
-				return payload_run(node->filename, 0);
+				return payload_run(node->filename);
 			}
 		}
 	}
@@ -285,7 +205,7 @@ int payload_run_altfw(int altfw_id)
 	 * TODO(sjg@chromium.org): Drop this once everything is migrated to
 	 * altfw.
 	 */
-	if (payload_run("payload", 0))
+	if (payload_run("payload"))
 		printf("%s: Could not find default altfw payload\n", __func__);
 	printf("%s: Could not find bootloader #%u\n", __func__, altfw_id);
 
