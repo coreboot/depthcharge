@@ -86,6 +86,13 @@ auron_paine,auron_yuna,cid,lulu,reks,lars:
   # With card reader. All USB ports can boot in recovery mode.
   screen:   [1366, 768]
 
+elm,hana:
+  # Elm and hana do not have enough space to support all the locales. Only build
+  # English language to ensure that ToT can build the bootimage for these boards.
+  screen: [1366, 768]
+  locales: [en]
+  rtl: []
+
 chell,glados:
   # 1920x1080, boots recovery image on any SD card or USB ports.
   screen:   [1920, 1080]
