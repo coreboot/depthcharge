@@ -99,8 +99,14 @@ TEST_CFLAGS += -include $(corebootsrc)/src/commonlib/bsd/include/commonlib/bsd/c
 # unintentional.
 TEST_CFLAGS += -Wall -Werror -Wundef -Wstrict-prototypes
 
-TEST_CFLAGS += -std=gnu11 -Os
+TEST_CFLAGS += -std=gnu11
 TEST_CFLAGS += -ffunction-sections -fdata-sections -fno-builtin
+
+ifneq ($(filter-out 0,$(DEBUG)),)
+TEST_CFLAGS += -Og -ggdb3
+else
+TEST_CFLAGS += -Os
+endif
 
 ifneq ($(filter-out 0,$(TEST_PRINT)),)
 TEST_CFLAGS += -D__TEST_PRINT__=1
