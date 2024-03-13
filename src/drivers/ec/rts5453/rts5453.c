@@ -188,7 +188,7 @@ static int rts545x_get_ic_status(Rts545x *me, struct rts5453_ic_status *ic_sts)
 		return ret;
 	}
 
-	printf("%s: VID:PID %x%x:%x%x, FW_Ver %x.%x.%x, %s Bank:%d\n", __func__,
+	printf("%s: VID:PID %x%x:%x%x, FW_Ver %u.%u.%u, %s Bank:%d\n", __func__,
 	       ic_sts->vid_pid[1], ic_sts->vid_pid[0], ic_sts->vid_pid[3],
 	       ic_sts->vid_pid[2], ic_sts->major_version, ic_sts->minor_version,
 	       ic_sts->patch_version, ic_sts->code_location ? "Flash" : "ROM",
@@ -231,6 +231,8 @@ static int rts545x_flash_write(Rts545x *me, const uint8_t *image, size_t image_s
 	else
 		flash_write_cmds = bank1_write_cmds;
 
+	uint64_t start = timer_us(0);
+
 	while (offset < image_size) {
 		segment = offset < FLASH_SEGMENT_SIZE ? 0 : 1;
 		seg_boundary = (segment + 1) * FLASH_SEGMENT_SIZE;
@@ -253,7 +255,8 @@ static int rts545x_flash_write(Rts545x *me, const uint8_t *image, size_t image_s
 
 		if (progress_counter >= 4000) {
 			/* Prints an update every 4000 bytes transferred */
-			printf("%s: Progress: %u / %zu\n", __func__, offset, image_size);
+			printf("%s: Progress: %u / %zu (%llu ms)\n", __func__, offset,
+			       image_size, timer_us(start) / 1000);
 			progress_counter = 0;
 		}
 	}
@@ -412,8 +415,9 @@ static bool is_rts545x_device_present(Rts545x *me, int live)
 	}
 
 	if (me->chip_info.vid != r.vendor_id || me->chip_info.pid != r.product_id) {
-		printf("%s: VID/PID mismatch Expected(%x:%x) != Live(%x:%x)\n", me->chip_name,
-		       me->chip_info.vid, me->chip_info.pid, r.vendor_id, r.product_id);
+		printf("%s: VID/PID mismatch Expected(%04x:%04x) != Live(%04x:%04x)\n",
+		       me->chip_name, me->chip_info.vid, me->chip_info.pid, r.vendor_id,
+		       r.product_id);
 		return false;
 	}
 
