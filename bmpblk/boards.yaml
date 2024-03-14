@@ -357,7 +357,7 @@ nissa:
   # 1920x1080, boots recovery image on any USB ports.
   screen: [1920, 1080]
   sdcard:   False
-  dpi: 80  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 rex:
   # 3840x2160, boots recovery image on USB ports.
