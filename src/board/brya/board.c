@@ -4,11 +4,11 @@
  * These needs to be included first.
  * Some of the driver headers would be dependent on these.
  */
+#include <commonlib/list.h>
 #include <pci.h>
 #include <pci/pci.h>
 
 #include "base/init_funcs.h"
-#include "base/list.h"
 #include "board/brya/include/variant.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"

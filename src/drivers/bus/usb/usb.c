@@ -22,11 +22,11 @@
 #include "drivers/bus/usb/usb.h"
 #include "usb.h"
 
-ListNode generic_usb_drivers;
-ListNode usb_host_controllers;
+struct list_node generic_usb_drivers;
+struct list_node usb_host_controllers;
 
-static ListNode init_callbacks;
-static ListNode poll_callbacks;
+static struct list_node init_callbacks;
+static struct list_node poll_callbacks;
 
 void usb_generic_create(usbdev_t *dev)
 {

@@ -9,7 +9,6 @@
  * published by the Free Software Foundation.
  */
 #include <libpayload.h>
-#include "base/list.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/sound/cs35l53.h"
 

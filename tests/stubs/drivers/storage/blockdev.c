@@ -2,7 +2,7 @@
 
 #include "drivers/storage/blockdev.h"
 
-int get_all_bdevs(blockdev_type_t type, ListNode **bdevs)
+int get_all_bdevs(blockdev_type_t type, struct list_node **bdevs)
 {
 	return 0;
 }

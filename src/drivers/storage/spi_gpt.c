@@ -139,7 +139,7 @@ static int spi_gpt_fixup(DeviceTreeFixup *fixup, DeviceTree *tree)
 		return 0;
 	}
 
-	ListNode *prev_child = &nand->children;
+	struct list_node *prev_child = &nand->children;
 
 	u64 total_size = dev->block_dev.stream_block_count << BLOCK_SHIFT;
 	/* TODO(chromium:436265): If we use 4GB+ NAND, update to support

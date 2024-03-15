@@ -18,9 +18,8 @@
 #ifndef __DRIVERS_BUS_USB_USB_H__
 #define __DRIVERS_BUS_USB_USB_H__
 
+#include <commonlib/list.h>
 #include <usb/usb.h>
-
-#include "base/list.h"
 
 struct GenericUsbDevice;
 struct UsbHostController;
@@ -31,10 +30,10 @@ typedef struct GenericUsbDriver {
 	int (*probe)(GenericUsbDevice *dev);
 	void (*remove)(GenericUsbDevice *dev);
 
-	ListNode list_node;
+	struct list_node list_node;
 } GenericUsbDriver;
 
-extern ListNode generic_usb_drivers;
+extern struct list_node generic_usb_drivers;
 
 typedef struct GenericUsbDevice {
 	GenericUsbDriver *driver;
@@ -45,15 +44,15 @@ typedef struct GenericUsbDevice {
 typedef struct UsbHostController {
 	hc_type type;
 	void *bar;
-	ListNode list_node;
+	struct list_node list_node;
 	UsbHcCallback *init_callback;
 } UsbHostController;
 
-extern ListNode usb_host_controllers;
+extern struct list_node usb_host_controllers;
 
 typedef void (*UsbCallback)(void *);
 typedef struct UsbCallbackData {
-	ListNode list_node;
+	struct list_node list_node;
 	UsbCallback callback;
 	void *data;
 } UsbCallbackData;

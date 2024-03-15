@@ -16,6 +16,7 @@
  */
 
 #include <arch/io.h>
+#include <commonlib/list.h>
 #include <libpayload.h>
 #include <lp_vboot.h>
 #include <pci.h>
@@ -23,7 +24,6 @@
 #include <sysinfo.h>
 
 #include "base/init_funcs.h"
-#include "base/list.h"
 #include "boot/commandline.h"
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/bus/i2c/designware.h"

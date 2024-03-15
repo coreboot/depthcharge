@@ -19,10 +19,10 @@
 #ifndef __DRIVERS_EC_CROS_EC_H__
 #define __DRIVERS_EC_CROS_EC_H__
 
+#include <commonlib/list.h>
 #include <stdint.h>
 #include <libpayload.h>
 
-#include "base/list.h"
 #include "drivers/ec/vboot_auxfw.h"
 #include "drivers/ec/vboot_ec.h"
 #include "drivers/ec/cros/commands.h"
@@ -77,7 +77,7 @@ typedef struct CrosEc
 typedef struct CrosEcAuxfwChipInfo
 {
 	/* List Node in the chip list */
-	ListNode list_node;
+	struct list_node list_node;
 	/* Chip identifier as defined by the vendor_id:product_id */
 	uint16_t vid;
 	uint16_t pid;
@@ -94,7 +94,7 @@ typedef struct CrosEcAuxfwChipInfo
  * Global list of chips that require FW update. The drivers of the concerned
  * chips should add themselves to the list via INIT_FUNC.
  */
-extern ListNode ec_aux_fw_chip_list;
+extern struct list_node ec_aux_fw_chip_list;
 
 /**
  * Send an arbitrary EC command.

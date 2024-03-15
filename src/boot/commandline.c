@@ -15,18 +15,18 @@
  * GNU General Public License for more details.
  */
 
+#include <commonlib/list.h>
 #include <libpayload.h>
 #include <stdint.h>
 
-#include "base/list.h"
 #include "boot/commandline.h"
 
 typedef struct {
 	const char *param;
-	ListNode list_node;
+	struct list_node list_node;
 } ParamNode;
 
-static ListNode param_list;
+static struct list_node param_list;
 
 static char *itoa(char *dest, int val)
 {

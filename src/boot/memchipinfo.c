@@ -1,9 +1,10 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 
+#include <commonlib/list.h>
 #include <libpayload.h>
+
 #include "base/init_funcs.h"
 #include "base/device_tree.h"
-#include "base/list.h"
 
 static int lpddr_type_num(enum mem_chip_type type)
 {

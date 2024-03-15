@@ -23,8 +23,8 @@
 #include "net/uip.h"
 #include "net/uip_arp.h"
 
-ListNode net_pollers;
-static ListNode net_devices;
+struct list_node net_pollers;
+static struct list_node net_devices;
 static NetDevice *net_device;
 
 void net_add_device(NetDevice *dev)

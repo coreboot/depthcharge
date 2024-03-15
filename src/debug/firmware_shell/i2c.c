@@ -3,15 +3,16 @@
  *
  * Copyright 2015 The ChromiumOS Authors
  */
+#include <commonlib/list.h>
+
 #include "common.h"
-#include "base/list.h"
 #include "drivers/bus/i2c/i2c.h"
 
-static ListNode i2c_bus_controllers;
+static struct list_node i2c_bus_controllers;
 
 /* Use this structure to link i2c controllers' descriptiors together. */
 typedef struct {
-	ListNode list_node;
+	struct list_node list_node;
 	char i2c_name[20]; /* Optional, interface symbolic name. */
 	I2cOps *ops;
 } I2cBusController;

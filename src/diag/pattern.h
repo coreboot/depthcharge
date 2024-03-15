@@ -6,7 +6,7 @@
 #ifndef __DIAG_PATTERN_H__
 #define __DIAG_PATTERN_H__
 
-#include "base/list.h"
+#include <commonlib/list.h>
 
 typedef struct Pattern {
 	const char *name;
@@ -14,10 +14,10 @@ typedef struct Pattern {
 	const uint32_t *data;
 	size_t len;
 
-	ListNode list_node;
+	struct list_node list_node;
 } Pattern;
 
-const ListNode *DiagGetSimpleTestPatterns(void);
-const ListNode *DiagGetTestPatterns(void);
+const struct list_node *DiagGetSimpleTestPatterns(void);
+const struct list_node *DiagGetTestPatterns(void);
 
 #endif

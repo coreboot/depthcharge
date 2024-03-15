@@ -61,7 +61,7 @@ static void sound_setup(void)
 	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
 
 	rt1015pCodec *codec = new_rt1015p_codec(speaker_en);
-	ListNode *speaker_amp = &codec->component.list_node;
+	struct list_node *speaker_amp = &codec->component.list_node;
 
 	list_insert_after(speaker_amp, &sound_route->components);
 	list_insert_after(&i2s2->component.list_node,

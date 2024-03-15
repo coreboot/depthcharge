@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0
 
-#include "boot/payload.h"
-#include "base/list.h"
+#include <commonlib/list.h>
 
-struct ListNode *payload_get_altfw_list(void)
+#include "boot/payload.h"
+
+struct list_node *payload_get_altfw_list(void)
 {
 	return NULL;
 }

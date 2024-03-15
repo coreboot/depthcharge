@@ -1,9 +1,9 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 
+#include <commonlib/list.h>
 #include <libpayload.h>
 #include "base/init_funcs.h"
 #include "base/device_tree.h"
-#include "base/list.h"
 
 #define START_BIT 7
 #define END_BIT 14

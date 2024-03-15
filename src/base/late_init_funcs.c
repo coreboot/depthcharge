@@ -16,11 +16,11 @@
  */
 
 #include <assert.h>
+#include <commonlib/list.h>
 
 #include "late_init_funcs.h"
-#include "list.h"
 
-ListNode late_init_funcs;
+struct list_node late_init_funcs;
 
 int run_late_init_funcs(void)
 {

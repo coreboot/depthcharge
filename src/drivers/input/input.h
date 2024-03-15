@@ -18,16 +18,16 @@
 #ifndef __DRIVERS_INPUT_INPUT_H__
 #define __DRIVERS_INPUT_INPUT_H__
 
-#include "base/list.h"
+#include <commonlib/list.h>
 
 typedef struct OnDemandInput {
 	void (*init)(void);
 	int need_init;
 
-	ListNode list_node;
+	struct list_node list_node;
 } OnDemandInput;
 
-extern ListNode on_demand_input_devices;
+extern struct list_node on_demand_input_devices;
 
 void input_init(void);
 

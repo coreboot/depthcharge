@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-2.0
 
+#include <commonlib/list.h>
 #include <inttypes.h>
 #include <libpayload.h>
 #include <stdint.h>
 #include <vb2_api.h>
 
-#include "base/list.h"
 #include "base/timestamp.h"
 #include "drivers/storage/blockdev.h"
 #include "vboot/load_kernel.h"
@@ -24,7 +24,7 @@ static vb2_error_t vboot_load_kernel_impl(struct vb2_context *ctx,
 {
 	vb2_error_t rv = VB2_ERROR_LK_NO_DISK_FOUND;
 	vb2_error_t new_rv;
-	ListNode *devs;
+	struct list_node *devs;
 	BlockDev *bdev;
 
 	die_if(!kparams, "kparams is NULL");

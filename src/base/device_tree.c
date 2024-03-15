@@ -208,7 +208,7 @@ static int dt_prop_is_phandle(DeviceTreeProperty *prop)
 static int fdt_unflatten_node(void *blob, uint32_t start_offset,
 			      DeviceTree *tree, DeviceTreeNode **new_node)
 {
-	ListNode *last;
+	struct list_node *last;
 	int offset = start_offset;
 	const char *name;
 	int size;
@@ -307,7 +307,7 @@ DeviceTree *fdt_unflatten(void *blob)
 	DeviceTreeReserveMapEntry *entry;
 	uint32_t offset = reserve_offset;
 	int size;
-	ListNode *last = &tree->reserve_map;
+	struct list_node *last = &tree->reserve_map;
 	while ((size = fdt_unflatten_map_entry(blob, offset, &entry))) {
 		list_insert_after(&entry->list_node, last);
 		last = &entry->list_node;
@@ -1026,7 +1026,7 @@ void dt_add_reg_prop(DeviceTreeNode *node, u64 *addrs, u64 *sizes,
  * Fixups to apply to a kernel's device tree before booting it.
  */
 
-ListNode device_tree_fixups;
+struct list_node device_tree_fixups;
 
 int dt_apply_fixups(DeviceTree *tree)
 {

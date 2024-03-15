@@ -24,11 +24,11 @@
  * These needs to be included first.
  * Some of the driver headers would be dependent on these.
  */
+#include <commonlib/list.h>
 #include <pci.h>
 #include <pci/pci.h>
 
 #include "base/init_funcs.h"
-#include "base/list.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/icelake.h"

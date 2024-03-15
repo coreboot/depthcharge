@@ -11,7 +11,8 @@
 #ifndef __DRIVERS_SOUND_ROUTE_H__
 #define __DRIVERS_SOUND_ROUTE_H__
 
-#include "base/list.h"
+#include <commonlib/list.h>
+
 #include "drivers/sound/sound.h"
 
 typedef struct SoundRouteComponentOps
@@ -28,7 +29,7 @@ typedef struct
 	SoundRouteComponentOps ops;
 
 	int enabled;
-	ListNode list_node;
+	struct list_node list_node;
 } SoundRouteComponent;
 
 typedef struct SoundRoute
@@ -36,7 +37,7 @@ typedef struct SoundRoute
 	SoundOps ops;
 	SoundOps *source;
 
-	ListNode components;
+	struct list_node components;
 } SoundRoute;
 
 SoundRoute *new_sound_route(SoundOps *source);

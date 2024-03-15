@@ -28,10 +28,10 @@ typedef struct UsbEthDevice {
 	const UsbEthId *supported_ids;
 	int num_supported_ids;
 
-	ListNode list_node;
+	struct list_node list_node;
 } UsbEthDevice;
 
-extern ListNode usb_eth_drivers;
+extern struct list_node usb_eth_drivers;
 
 int usb_eth_read_reg(usbdev_t *dev, uint8_t request, uint16_t value,
 			    uint16_t index, uint16_t length, void *data);

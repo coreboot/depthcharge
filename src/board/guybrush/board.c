@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0
 /* Copyright 2021 Google LLC.  */
 
+#include <commonlib/list.h>
 #include <libpayload.h>
 
 #include "base/init_funcs.h"
-#include "base/list.h"
 #include "boot/commandline.h"
 #include "board/guybrush/include/variant.h"
 #include "drivers/bus/i2c/cros_ec_tunnel.h"

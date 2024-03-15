@@ -15,10 +15,11 @@
  * GNU General Public License for more details.
  */
 
+#include <commonlib/list.h>
 #include <stdbool.h>
 #include <stdio.h>
+
 #include "base/gpt.h"
-#include "base/list.h"
 #include "ctype.h"
 #include "drivers/storage/blockdev.h"
 #include "fastboot/disk.h"
@@ -32,7 +33,7 @@
 bool fastboot_disk_init(struct fastboot_disk *disk)
 {
 	memset(disk, 0, sizeof(*disk));
-	ListNode *devs;
+	struct list_node *devs;
 	uint32_t count = get_all_bdevs(BLOCKDEV_FIXED, &devs);
 
 	if (count != 1) {

@@ -29,7 +29,7 @@
 #include "vboot/crossystem/crossystem.h"
 
 /* List of alternate bootloaders */
-static ListNode *altfw_head;
+static struct list_node *altfw_head;
 
 /*
  * payload_load() - Load an image from the given payload
@@ -129,10 +129,10 @@ int payload_run(const char *payload_name)
 	return 1;
 }
 
-struct ListNode *payload_get_altfw_list(void)
+struct list_node *payload_get_altfw_list(void)
 {
 	char *loaders, *ptr;
-	ListNode *head, *tail;
+	struct list_node *head, *tail;
 	size_t size;
 
 	if (altfw_head)
@@ -181,7 +181,7 @@ struct ListNode *payload_get_altfw_list(void)
 
 int payload_run_altfw(int altfw_id)
 {
-	ListNode *head;
+	struct list_node *head;
 
 	/* If we don't have a particular one to boot, use 0. */
 	head = payload_get_altfw_list();

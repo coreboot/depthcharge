@@ -20,7 +20,6 @@ depthcharge-y += fw_config.c
 depthcharge-y += gpt.c
 depthcharge-y += init_funcs.c
 depthcharge-y += late_init_funcs.c
-depthcharge-y += list.c
 depthcharge-y += ranges.c
 depthcharge-y += state_machine.c
 depthcharge-y += timestamp.c

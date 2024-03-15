@@ -30,7 +30,7 @@
 struct sm_state {
 	int id;
 	int is_final;
-	ListNode transitions;
+	struct list_node transitions;
 };
 
 /*
@@ -42,7 +42,7 @@ struct sm_state {
 struct sm_transition {
 	int input;
 	struct sm_state *next;
-	ListNode list_node;
+	struct list_node list_node;
 };
 
 /*

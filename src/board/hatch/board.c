@@ -13,13 +13,13 @@
 
 #include <arch/io.h>
 #include <assert.h>
+#include <commonlib/list.h>
 #include <libpayload.h>
 #include <pci.h>
 #include <pci/pci.h>
 #include <sysinfo.h>
 
 #include "base/init_funcs.h"
-#include "base/list.h"
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/flash/flash.h"

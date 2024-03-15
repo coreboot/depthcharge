@@ -18,17 +18,18 @@
 #ifndef __LATE_INIT_FUNCS_H__
 #define __LATE_INIT_FUNCS_H__
 
+#include <commonlib/list.h>
+
 #include "base/init_funcs.h"
-#include "base/list.h"
 
 typedef struct LateInitFunc
 {
 	int (*init)(struct LateInitFunc *init);
 	void *data;
-	ListNode list_node;
+	struct list_node list_node;
 } LateInitFunc;
 
-extern ListNode late_init_funcs;
+extern struct list_node late_init_funcs;
 
 int run_late_init_funcs(void);
 

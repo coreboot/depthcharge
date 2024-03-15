@@ -8,9 +8,9 @@
  * Software Foundation.
  */
 
+#include <commonlib/list.h>
 #include <libpayload.h>
 
-#include "base/list.h"
 #include "drivers/sound/route.h"
 
 static int route_enable_components(SoundRoute *route, int enable)

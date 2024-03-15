@@ -13,13 +13,13 @@
 
 #include <arch/io.h>
 #include <cbfs.h>
+#include <commonlib/list.h>
 #include <libpayload.h>
 #include <pci.h>
 #include <pci/pci.h>
 #include <sysinfo.h>
 
 #include "base/init_funcs.h"
-#include "base/list.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/wilco/ec.h"

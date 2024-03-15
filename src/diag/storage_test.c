@@ -66,7 +66,7 @@ static BlockDev *get_first_fixed_block_device(void)
 	if (bdev)
 		return bdev;
 
-	ListNode *devs;
+	struct list_node *devs;
 	int n = get_all_bdevs(BLOCKDEV_FIXED, &devs);
 	if (!n) {
 		printf("%s: No storage device found.\n", __func__);

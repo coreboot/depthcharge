@@ -21,11 +21,11 @@
 #include <libpayload.h>
 #include <stdio.h>
 
-ListNode fixed_block_devices;
-ListNode removable_block_devices;
+struct list_node fixed_block_devices;
+struct list_node removable_block_devices;
 
-ListNode fixed_block_dev_controllers;
-ListNode removable_block_dev_controllers;
+struct list_node fixed_block_dev_controllers;
+struct list_node removable_block_dev_controllers;
 
 typedef struct {
 	StreamOps stream;
@@ -84,9 +84,9 @@ StreamOps *new_simple_stream(BlockDevOps *me, lba_t start, lba_t count)
 	return &stream->stream;
 }
 
-int get_all_bdevs(blockdev_type_t type, ListNode **bdevs)
+int get_all_bdevs(blockdev_type_t type, struct list_node **bdevs)
 {
-	ListNode *ctrlrs, *devs;
+	struct list_node *ctrlrs, *devs;
 	int count = 0;
 
 	if (type == BLOCKDEV_FIXED) {
@@ -106,7 +106,7 @@ int get_all_bdevs(blockdev_type_t type, ListNode **bdevs)
 	}
 
 	/* Count the devices. */
-	for (ListNode *node = devs->next; node; node = node->next, count++)
+	for (struct list_node *node = devs->next; node; node = node->next, count++)
 		;
 
 	if (bdevs)

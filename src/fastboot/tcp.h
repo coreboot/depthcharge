@@ -18,8 +18,9 @@
 #ifndef __FASTBOOT_TCP_H__
 #define __FASTBOOT_TCP_H__
 
+#include <commonlib/list.h>
 #include <stdbool.h>
-#include "base/list.h"
+
 #include "fastboot/fastboot.h"
 #include "net/uip.h"
 
@@ -52,8 +53,8 @@ struct fastboot_tcp_session {
 
 	// The queue of packets that are waiting to be sent.
 	// This is necessary because uIP only sends a packet once per callback.
-	ListNode *txq_top;
-	ListNode *txq_bottom;
+	struct list_node *txq_top;
+	struct list_node *txq_bottom;
 
 	// Amount of data left to receive when in the PACKET_INCOMPLETE state.
 	uint64_t data_left_to_receive;
@@ -63,7 +64,7 @@ struct fastboot_tcp_session {
 struct fastboot_tcp_packet {
 	const void *data;
 	int len;
-	ListNode node;
+	struct list_node node;
 };
 
 void fastboot_send(void *data, uint64_t len);

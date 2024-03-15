@@ -41,7 +41,7 @@
 static const int CROS_EC_ERASE_TIMEOUT_MS = 30000;
 
 /* List of registered chip drivers to perform auxfw update */
-ListNode ec_aux_fw_chip_list;
+struct list_node ec_aux_fw_chip_list;
 
 static int ec_init(CrosEc *me);
 

@@ -15,10 +15,10 @@
  * GNU General Public License for more details.
  */
 
+#include <commonlib/list.h>
 #include <pci.h>
 
 #include "base/init_funcs.h"
-#include "base/list.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
 #include "drivers/gpio/lynxpoint_lp.h"

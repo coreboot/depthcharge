@@ -5,12 +5,12 @@
  * These needs to be included first.
  * Some of the driver headers would be dependent on these.
  */
+#include <commonlib/list.h>
 #include <pci.h>
 #include <pci/pci.h>
 #include <stdio.h>
 
 #include "base/init_funcs.h"
-#include "base/list.h"
 #include "drivers/bus/pci/pci.h"
 #include "drivers/bus/spi/intel_gspi.h"
 #include "drivers/ec/cros/lpc.h"

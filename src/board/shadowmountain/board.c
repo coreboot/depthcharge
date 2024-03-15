@@ -5,13 +5,13 @@
  * These needs to be included first.
  * Some of the driver headers would be dependent on these.
  */
+#include <commonlib/list.h>
 #include <libpayload.h>
 #include <pci.h>
 #include <pci/pci.h>
 #include <sysinfo.h>
 
 #include "base/init_funcs.h"
-#include "base/list.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2s/cavs-regs.h"
 #include "drivers/bus/spi/intel_gspi.h"

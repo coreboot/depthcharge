@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0
 
+#include <commonlib/list.h>
 #include <lp_vboot.h>
 #include <vb2_api.h>
 #include <vboot_api.h>
 
-#include "base/list.h"
 #include "drivers/storage/blockdev.h"
 #include "mocks/callbacks.h"
 #include "mocks/payload.h"
@@ -52,7 +52,7 @@ static void link_disk(BlockDev *dev, uint32_t count)
 		list_insert_after(&dev[i].list_node, &bdev_head.list_node);
 }
 
-int get_all_bdevs(blockdev_type_t type, ListNode **bdevs)
+int get_all_bdevs(blockdev_type_t type, struct list_node **bdevs)
 {
 	BlockDev *bdev;
 	check_expected(type);

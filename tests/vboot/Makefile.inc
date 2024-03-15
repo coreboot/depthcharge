@@ -16,7 +16,6 @@ tests-y += ui-diagnostic-test
 
 load_kernel-test-srcs += tests/stubs/base/timestamp.c
 load_kernel-test-srcs += tests/vboot/load_kernel-test.c
-load_kernel-test-srcs += src/base/list.c
 load_kernel-test-srcs += src/vboot/load_kernel.c
 load_kernel-test-mocks += vb2api_fail
 load_kernel-test-mocks += vb2api_load_kernel vb2api_load_minios_kernel
@@ -104,7 +103,6 @@ ui-developer-test-srcs := $(filter-out tests/stubs/boot/payload.c, \
 	$(ui-developer-test-srcs))
 ui-developer-test-srcs += tests/mocks/boot/payload.c
 ui-developer-test-srcs += tests/vboot/ui-developer-test.c
-ui-developer-test-srcs += src/base/list.c
 ui-developer-test-srcs += src/vboot/ui.c
 
 $(call copy-test,ui-developer-test,ui-developer-detachable-test)

@@ -16,6 +16,7 @@
  * GNU General Public License for more details.
  */
 
+#include <commonlib/list.h>
 #include <pci.h>
 #include <pci/pci.h>
 #include <libpayload.h>
@@ -24,7 +25,6 @@
 #include <vb2_api.h>
 
 #include "base/init_funcs.h"
-#include "base/list.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/lpc.h"

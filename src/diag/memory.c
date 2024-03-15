@@ -4,9 +4,9 @@
  */
 
 #include <assert.h>
+#include <commonlib/list.h>
 #include <libpayload.h>
 #include <vb2_api.h>
-#include "base/list.h"
 #include "base/ranges.h"
 #include "base/physmem.h"
 #include "vboot/util/memory.h"
@@ -54,7 +54,7 @@ typedef struct {
 	const char *buf_end; // The end of output buffer.
 
 	// Test patterns
-	const ListNode *patterns; // The pattern list
+	const struct list_node *patterns; // The pattern list
 	int num_pattern;
 	const Pattern *pattern_cur;
 	// Operations
@@ -183,7 +183,7 @@ static inline void reset_memory_test(void)
 
 static inline void go_next_pattern(void)
 {
-	ListNode *next = state.pattern_cur->list_node.next;
+	struct list_node *next = state.pattern_cur->list_node.next;
 
 	// If no next pattern, then we are done.
 	if (!next) {

@@ -429,7 +429,7 @@ char *stringify_health_info(char *buf, const char *end, const HealthInfo *info)
 
 char *dump_all_health_info(char *buf, const char *end)
 {
-	ListNode *devs;
+	struct list_node *devs;
 	int n = get_all_bdevs(BLOCKDEV_FIXED, &devs);
 	if (!n) {
 		buf = APPEND(buf, end, "No storage device found\n\n");

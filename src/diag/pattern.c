@@ -60,7 +60,7 @@ static uint32_t checker8b10b_data[] = {0xb5b5b5b5, 0x4a4a4a4a};
 static uint32_t five7_data[] = {0x55555557, 0x55575555};
 static uint32_t zero2_fd_data[] = {0x00020002, 0xfffdfffd};
 
-static inline void add_pattern(ListNode *head, const char *name,
+static inline void add_pattern(struct list_node *head, const char *name,
 			       const uint32_t *buf, const size_t len)
 {
 	Pattern *pattern = xzalloc(sizeof(*pattern));
@@ -84,9 +84,9 @@ static inline void add_pattern(ListNode *head, const char *name,
 #define ADD_PATTERN_BY_ARRAY(head, name)                                       \
 	add_pattern(&(head), #name, name##_data, ARRAY_SIZE(name##_data))
 
-const ListNode *DiagGetSimpleTestPatterns(void)
+const struct list_node *DiagGetSimpleTestPatterns(void)
 {
-	static ListNode pattern_list;
+	static struct list_node pattern_list;
 
 	if (!pattern_list.next)
 		ADD_PATTERN_BY_ARRAY(pattern_list, five_a_8);
@@ -94,9 +94,9 @@ const ListNode *DiagGetSimpleTestPatterns(void)
 	return &pattern_list;
 }
 
-const ListNode *DiagGetTestPatterns(void)
+const struct list_node *DiagGetTestPatterns(void)
 {
-	static ListNode pattern_list;
+	static struct list_node pattern_list;
 
 	if (!pattern_list.next) {
 		ADD_PATTERN_BY_FUNC(pattern_list, walking_ones);

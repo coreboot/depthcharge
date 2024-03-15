@@ -19,7 +19,7 @@
 #ifndef __BASE_STATE_MACHINE_H__
 #define __BASE_STATE_MACHINE_H__
 
-#include "base/list.h"
+#include <commonlib/list.h>
 
 /* Values to indicate if state is final, not final, invalid */
 #define STATE_FINAL			(1)

@@ -18,9 +18,8 @@
 #ifndef __BASE_DEVICE_TREE_H__
 #define __BASE_DEVICE_TREE_H__
 
+#include <commonlib/list.h>
 #include <stdint.h>
-
-#include "base/list.h"
 
 /*
  * Flattened device tree structures/constants.
@@ -69,7 +68,7 @@ typedef struct DeviceTreeProperty
 {
 	FdtProperty prop;
 
-	ListNode list_node;
+	struct list_node list_node;
 } DeviceTreeProperty;
 
 typedef struct DeviceTreeNode
@@ -78,11 +77,11 @@ typedef struct DeviceTreeNode
 	uint32_t phandle;
 
 	// List of DeviceTreeProperty-s.
-	ListNode properties;
+	struct list_node properties;
 	// List of DeviceTreeNodes.
-	ListNode children;
+	struct list_node children;
 
-	ListNode list_node;
+	struct list_node list_node;
 } DeviceTreeNode;
 
 typedef struct DeviceTreeReserveMapEntry
@@ -90,7 +89,7 @@ typedef struct DeviceTreeReserveMapEntry
 	uint64_t start;
 	uint64_t size;
 
-	ListNode list_node;
+	struct list_node list_node;
 } DeviceTreeReserveMapEntry;
 
 typedef struct DeviceTree
@@ -99,7 +98,7 @@ typedef struct DeviceTree
 	uint32_t header_size;
 	uint32_t max_phandle;
 
-	ListNode reserve_map;
+	struct list_node reserve_map;
 
 	DeviceTreeNode *root;
 } DeviceTree;
@@ -190,10 +189,10 @@ typedef struct DeviceTreeFixup
 	// The function which does the fixing.
 	int (*fixup)(struct DeviceTreeFixup *fixup, DeviceTree *tree);
 
-	ListNode list_node;
+	struct list_node list_node;
 } DeviceTreeFixup;
 
-extern ListNode device_tree_fixups;
+extern struct list_node device_tree_fixups;
 
 int dt_apply_fixups(DeviceTree *tree);
 

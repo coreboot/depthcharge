@@ -74,7 +74,7 @@ int usb_eth_init_endpoints(usbdev_t *dev, endpoint_t **in, int in_idx,
 	return 0;
 }
 
-ListNode usb_eth_drivers;
+struct list_node usb_eth_drivers;
 
 static NetDevice *usb_eth_net_device;
 

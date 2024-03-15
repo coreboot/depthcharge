@@ -21,7 +21,7 @@
 
 #include "drivers/input/input.h"
 
-ListNode on_demand_input_devices;
+struct list_node on_demand_input_devices;
 
 static void do_input_init(void)
 {

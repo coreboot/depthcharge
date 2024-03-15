@@ -17,9 +17,8 @@
 #ifndef __BOOT_PAYLOAD_H__
 #define __BOOT_PAYLOAD_H__
 
+#include <commonlib/list.h>
 #include <libpayload.h>
-
-#include "base/list.h"
 
 /**
  * Holds information about each supported bootloader
@@ -27,7 +26,7 @@
  * This information is read from a file.
  */
 struct altfw_info {
-	ListNode list_node;
+	struct list_node list_node;
 	const char *filename;	/* Filename of bootloader */
 	const char *name;	/* User-friendly name of bootloader */
 	const char *desc;	/* Description text */
@@ -55,7 +54,7 @@ int payload_run(const char *payload_name);
  * @return	List of alternate bootloaders (which may be empty),
  *		or NULL on error
  */
-struct ListNode *payload_get_altfw_list(void);
+struct list_node *payload_get_altfw_list(void);
 
 /**
  * Load and run an alternate bootloader.

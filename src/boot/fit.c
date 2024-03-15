@@ -34,8 +34,8 @@
 
 
 
-static ListNode image_nodes;
-static ListNode config_nodes;
+static struct list_node image_nodes;
+static struct list_node config_nodes;
 
 static const char *fit_kernel_compat[10] = { NULL };
 static int num_fit_kernel_compat = 0;
@@ -113,7 +113,7 @@ static FitImageNode *find_image(const char *name)
 }
 
 static FitImageNode *find_image_with_overlays(const char *name, int bytes,
-					      ListNode *prev)
+					      struct list_node *prev)
 {
 	FitImageNode *base = find_image(name);
 	if (!base)

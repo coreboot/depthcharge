@@ -16,13 +16,13 @@
  */
 
 #include <endian.h>
+#include <commonlib/list.h>
 #include <libpayload.h>
 #include <stdint.h>
 #include <string.h>
 
 #include "base/device_tree.h"
 #include "base/init_funcs.h"
-#include "base/list.h"
 #include "vboot/util/memory.h"
 
 typedef struct

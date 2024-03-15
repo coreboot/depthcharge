@@ -18,11 +18,11 @@
 #ifndef __BOOT_FIT_H__
 #define __BOOT_FIT_H__
 
+#include <commonlib/list.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include "base/device_tree.h"
-#include "base/list.h"
 
 typedef enum CompressionType
 {
@@ -39,7 +39,7 @@ typedef struct FitImageNode
 	uint32_t size;
 	CompressionType compression;
 
-	ListNode list_node;
+	struct list_node list_node;
 } FitImageNode;
 
 typedef struct FitConfigNode
@@ -47,13 +47,13 @@ typedef struct FitConfigNode
 	const char *name;
 	FitImageNode *kernel;
 	FitImageNode *fdt;
-	ListNode overlays;
+	struct list_node overlays;
 	FitImageNode *ramdisk;
 	FdtProperty compat;
 	int compat_rank;
 	int compat_pos;
 
-	ListNode list_node;
+	struct list_node list_node;
 } FitConfigNode;
 
 /*
@@ -65,7 +65,7 @@ typedef struct FitConfigNode
 typedef struct FitOverlayChain
 {
 	FitImageNode *overlay;
-	ListNode list_node;
+	struct list_node list_node;
 } FitOverlayChain;
 
 /*

@@ -15,11 +15,12 @@
 #ifndef __DRIVERS_STORAGE_NVME_H__
 #define __DRIVERS_STORAGE_NVME_H__
 
+#include <arch/barrier.h>
+#include <commonlib/list.h>
 #include <pci.h>
 #include <stdint.h>
-#include <arch/barrier.h>
+
 #include "drivers/storage/blockdev.h"
-#include "base/list.h"
 
 //#define DEBUG_PRINTS
 #ifdef DEBUG_PRINTS
@@ -351,7 +352,7 @@ typedef struct NvmeModelData {
 	unsigned int block_size;
 	lba_t block_count;
 
-	ListNode list_node;
+	struct list_node list_node;
 } NvmeModelData;
 
 /* NVMe S.M.A.R.T Log Data */
@@ -412,14 +413,14 @@ typedef struct {
  */
 typedef struct NvmeCtrlr {
 	BlockDevCtrlr ctrlr;
-	ListNode drives;
+	struct list_node drives;
 
 	int enabled;
 	pcidev_t dev;
 	void *ctrlr_regs;
 
 	/* static namespace data */
-	ListNode static_model_data;
+	struct list_node static_model_data;
 
 	/* local copy of controller CAP register */
 	NVME_CAP cap;
@@ -458,7 +459,7 @@ typedef struct NvmeDrive {
 	NvmeCtrlr *ctrlr;
 	uint32_t namespace_id;
 
-	ListNode list_node;
+	struct list_node list_node;
 } NvmeDrive;
 
 /* Provide NVMe device or the root port it is connected to */

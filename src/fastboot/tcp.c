@@ -47,7 +47,7 @@ fastboot_tcp_txq_pop(struct fastboot_tcp_session *tcp)
 {
 	struct fastboot_tcp_packet *top =
 		container_of(tcp->txq_top, struct fastboot_tcp_packet, node);
-	ListNode *n = tcp->txq_top->next;
+	struct list_node *n = tcp->txq_top->next;
 	list_remove(tcp->txq_top);
 	if (n == NULL)
 		tcp->txq_bottom = NULL;

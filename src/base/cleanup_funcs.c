@@ -22,7 +22,7 @@
 #include "base/timestamp.h"
 #include "debug/dev.h"
 
-ListNode cleanup_funcs;
+struct list_node cleanup_funcs;
 
 void run_cleanup_funcs(CleanupType type)
 {

@@ -18,7 +18,7 @@
 #ifndef __BASE_CLEANUP_FUNCS_H__
 #define __BASE_CLEANUP_FUNCS_H__
 
-#include "base/list.h"
+#include <commonlib/list.h>
 
 typedef enum CleanupType
 {
@@ -36,10 +36,10 @@ typedef struct CleanupFunc
 	CleanupType types;
 	void *data;
 
-	ListNode list_node;
+	struct list_node list_node;
 } CleanupFunc;
 
-extern ListNode cleanup_funcs;
+extern struct list_node cleanup_funcs;
 
 // Call all cleanup functions and print any errors.
 void run_cleanup_funcs(CleanupType type);

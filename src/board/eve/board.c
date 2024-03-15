@@ -16,6 +16,7 @@
  */
 
 #include <arch/io.h>
+#include <commonlib/list.h>
 #include <endian.h>
 #include <libpayload.h>
 #include <lp_vboot.h>
@@ -26,7 +27,6 @@
 
 #include "base/init_funcs.h"
 #include "base/late_init_funcs.h"
-#include "base/list.h"
 #include "drivers/bus/i2c/designware.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/lpc.h"
