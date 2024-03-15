@@ -9,7 +9,8 @@
  * Expose an I2C passthrough to the ChromeOS EC.
  */
 
-#include "base/container_of.h"
+#include <libpayload.h>
+
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/ec/cros/ec.h"
 

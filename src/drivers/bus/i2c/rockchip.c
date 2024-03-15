@@ -14,7 +14,6 @@
 
 #include <assert.h>
 #include <libpayload.h>
-#include "base/container_of.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/bus/i2c/rockchip.h"
 

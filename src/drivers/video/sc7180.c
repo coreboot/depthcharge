@@ -15,7 +15,6 @@
 
 #include <arch/io.h>
 #include <libpayload.h>
-#include "base/container_of.h"
 #include "drivers/video/sc7180.h"
 #include "drivers/gpio/gpio.h"
 

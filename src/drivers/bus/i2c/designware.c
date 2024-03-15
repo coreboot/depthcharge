@@ -20,7 +20,6 @@
 #include <assert.h>
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/bus/i2c/designware.h"
 
 #define DESIGNWARE_I2C_DEBUG 0

@@ -22,7 +22,6 @@
 
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/bus/i2s/i2s.h"
 #include "drivers/bus/i2s/tegra.h"
 #include "drivers/bus/i2s/tegra-regs.h"

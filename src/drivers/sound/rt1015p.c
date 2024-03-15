@@ -16,7 +16,6 @@
 
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "rt1015p.h"
 
 static int rt1015p_enable(SoundRouteComponentOps *me)

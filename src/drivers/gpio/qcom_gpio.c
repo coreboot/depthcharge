@@ -17,7 +17,6 @@
 #include <assert.h>
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "gpio.h"
 #include "qcom_gpio.h"
 

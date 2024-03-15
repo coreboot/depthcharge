@@ -29,7 +29,6 @@
 #include <pci.h>
 #include <stdint.h>
 
-#include "base/container_of.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/pch.h"
 

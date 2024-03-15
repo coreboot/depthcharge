@@ -32,7 +32,6 @@
 #include <stdint.h>
 
 #include "base/cleanup_funcs.h"
-#include "base/container_of.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/sound/ipq806x.h"
 #include "drivers/sound/ipq806x-reg.h"

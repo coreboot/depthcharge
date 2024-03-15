@@ -18,10 +18,7 @@
 #ifndef __BASE_LIST_H__
 #define __BASE_LIST_H__
 
-#include <stddef.h>
-#include <stdint.h>
-
-#include "base/container_of.h"
+#include <libpayload.h>
 
 typedef struct ListNode {
 	struct ListNode *next;

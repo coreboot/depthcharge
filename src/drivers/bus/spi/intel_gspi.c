@@ -16,7 +16,6 @@
 #include <pci/pci.h>
 #include <stdbool.h>
 
-#include "base/container_of.h"
 #include "drivers/bus/spi/intel_gspi.h"
 
 /* GSPI Memory Mapped Registers */

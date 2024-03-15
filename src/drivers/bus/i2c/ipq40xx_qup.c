@@ -31,7 +31,6 @@
 
 #include <arch/io.h>
 #include <libpayload.h>
-#include <base/container_of.h>
 #include "drivers/bus/spi/ipq40xx.h"
 #include "ipq40xx_qup.h"
 #include "ipq40xx_blsp.h"

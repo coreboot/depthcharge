@@ -19,7 +19,6 @@
 #include <libpayload.h>
 #include <stdint.h>
 
-#include "base/container_of.h"
 #include "drivers/gpio/exynos5250.h"
 #include "drivers/gpio/gpio.h"
 

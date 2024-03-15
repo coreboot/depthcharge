@@ -15,9 +15,10 @@
  * GNU General Public License for more details.
  */
 
+#include <libpayload.h>
+
 #include "drivers/storage/stream.h"
 #include "drivers/storage/mtd/stream.h"
-#include "base/container_of.h"
 
 typedef struct {
 	StreamOps ops;

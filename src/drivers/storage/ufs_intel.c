@@ -5,10 +5,9 @@
  * Copyright (C) 2022, Intel Corporation.
  */
 
+#include <libpayload.h>
 #include <pci.h>
-#include <stdlib.h>
 
-#include "base/container_of.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/ufs.h"
 #include "drivers/storage/ufs_intel.h"

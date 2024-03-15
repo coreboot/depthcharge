@@ -31,7 +31,6 @@
 
 #include <libpayload.h>
 #include <arch/io.h>
-#include "base/container_of.h"
 #include "base/init_funcs.h"
 #include "drivers/gpio/qcs405.h"
 #include "drivers/bus/spi/qcs405.h"

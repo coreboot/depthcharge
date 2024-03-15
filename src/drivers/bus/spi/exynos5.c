@@ -19,7 +19,6 @@
 #include <libpayload.h>
 #include <stdint.h>
 
-#include "base/container_of.h"
 #include "drivers/bus/spi/exynos5.h"
 
 

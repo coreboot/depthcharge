@@ -18,7 +18,6 @@
 
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/gpio/ipq806x.h"
 #include "ipq806x.h"
 

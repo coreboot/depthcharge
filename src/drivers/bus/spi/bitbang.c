@@ -14,7 +14,6 @@
 
 #include <assert.h>
 #include <libpayload.h>
-#include "base/container_of.h"
 #include "drivers/bus/spi/bitbang.h"
 
 /* Set to 1 to dump all SPI transfers to the UART. */

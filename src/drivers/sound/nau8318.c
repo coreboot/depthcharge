@@ -18,7 +18,6 @@
 
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "nau8318.h"
 
 static int nau8318_start(SoundOps *me, uint32_t frequency)

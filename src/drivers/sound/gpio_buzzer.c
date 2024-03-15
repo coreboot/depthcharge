@@ -14,7 +14,6 @@
 
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/sound/gpio_buzzer.h"
 
 static int buzzer_start(SoundOps *me, uint32_t frequency)

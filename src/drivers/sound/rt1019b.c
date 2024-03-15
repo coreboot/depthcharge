@@ -17,7 +17,6 @@
 
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "rt1019b.h"
 
 static int rt1019b_start(SoundOps *me, uint32_t frequency)

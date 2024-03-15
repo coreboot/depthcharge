@@ -10,7 +10,6 @@
 
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/sound/max98373.h"

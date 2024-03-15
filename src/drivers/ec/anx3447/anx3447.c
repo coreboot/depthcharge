@@ -11,7 +11,6 @@
 #include <stddef.h>
 #include <vb2_api.h>
 
-#include "base/container_of.h"
 #include "drivers/ec/anx3447/anx3447.h"
 
 /*

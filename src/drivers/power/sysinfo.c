@@ -15,7 +15,8 @@
  * GNU General Public License for more details.
  */
 
-#include "base/container_of.h"
+#include <libpayload.h>
+
 #include "drivers/power/sysinfo.h"
 
 static int gpio_reboot(PowerOps *me)

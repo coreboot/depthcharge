@@ -16,7 +16,6 @@
 #include <stdint.h>
 #include <inttypes.h>
 #include <malloc.h>
-#include "base/container_of.h"
 #include "drivers/bus/i2s/qcom_lpass.h"
 
 #define DISABLE				0x0

@@ -17,7 +17,6 @@
 #include <stdint.h>
 #include <sysinfo.h>
 
-#include "base/container_of.h"
 #include "drivers/sound/gpio_i2s.h"
 
 /* Generate square wave sound data for 1 second. */

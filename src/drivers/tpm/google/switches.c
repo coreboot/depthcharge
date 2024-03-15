@@ -9,7 +9,6 @@
 
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/tpm/google/switches.h"
 #include "drivers/tpm/google/tpm.h"
 #include "drivers/tpm/tpm.h"

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0
 /* Copyright 2023 Google LLC.  */
 
+#include <libpayload.h>
 #include <inttypes.h>
 #include <vb2_api.h>
 
-#include "base/container_of.h"
 #include "base/init_funcs.h"
 #include "drivers/bus/i2c/cros_ec_tunnel.h"
 #include "drivers/ec/cros/ec.h"

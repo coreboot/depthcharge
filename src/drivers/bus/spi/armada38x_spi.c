@@ -21,7 +21,6 @@
 #include <stdlib.h>
 #include <libpayload.h>
 #include <assert.h>
-#include "base/container_of.h"
 #include "armada38x_spi.h"
 
 #define MV_SPI_IF_CONFIG_REG(bus) ((bus * 0x80) + 0x04)

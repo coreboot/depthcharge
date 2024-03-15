@@ -4,7 +4,6 @@
 #include <assert.h>
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/bus/pci/pci.h"
 #include "drivers/sound/amd_acp.h"
 #include "drivers/sound/amd_acp_private.h"

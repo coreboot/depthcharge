@@ -17,7 +17,6 @@
  * GNU General Public License for more details.
  */
 #include <libpayload.h>
-#include "base/container_of.h"
 #include "qcs405.h"
 #include "drivers/storage/mtd/mtd.h"
 #include "drivers/timer/timer.h"

@@ -21,7 +21,6 @@
  */
 
 #include <libpayload.h>
-#include "base/container_of.h"
 #include "drivers/power/power.h"
 
 #define TCSR_BOOT_MISC_DETECT		((void *)0x0193D100)

@@ -16,7 +16,6 @@
  */
 
 #include <libpayload.h>
-#include "base/container_of.h"
 #include "drivers/power/ipq806x.h"
 
 /*

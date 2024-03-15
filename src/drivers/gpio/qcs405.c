@@ -15,7 +15,6 @@
 
 #include <assert.h>
 #include <libpayload.h>
-#include "base/container_of.h"
 #include "drivers/gpio/gpio.h"
 #include "qcs405.h"
 

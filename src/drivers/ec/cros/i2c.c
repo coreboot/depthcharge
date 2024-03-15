@@ -26,7 +26,6 @@
 #include <assert.h>
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/cros/i2c.h"

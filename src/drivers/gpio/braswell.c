@@ -16,7 +16,6 @@
 #include <libpayload.h>
 #include <stdint.h>
 
-#include "base/container_of.h"
 #include "drivers/gpio/braswell.h"
 
 static int braswell_get_gpio(struct GpioOps *me)

@@ -19,7 +19,6 @@
 #include "drivers/gpio/qcom_gpio.h"
 #include "qcom_sd_tray.h"
 #include "qcom_spmi.h"
-#include "base/container_of.h"
 
 typedef struct {
 	GpioOps ops;

@@ -12,7 +12,6 @@
  */
 
 #include <libpayload.h>
-#include "base/container_of.h"
 #include "drivers/bus/spi/spi.h"
 #include "drivers/bus/spi/bcm_qspi.h"
 

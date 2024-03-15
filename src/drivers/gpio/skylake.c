@@ -17,7 +17,6 @@
 #include <stdint.h>
 
 #include "base/cleanup_funcs.h"
-#include "base/container_of.h"
 #include "drivers/gpio/gpio.h"
 #include "drivers/gpio/skylake.h"
 #include "drivers/soc/common/pcr.h"

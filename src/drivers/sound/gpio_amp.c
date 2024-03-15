@@ -16,7 +16,6 @@
 
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "gpio_amp.h"
 
 static int gpio_amp_enable(SoundRouteComponentOps *me)

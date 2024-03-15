@@ -16,7 +16,6 @@
 #include <vb2_sha.h>
 
 #include "base/cleanup_funcs.h"
-#include "base/container_of.h"
 #include "drivers/ec/wilco/ec.h"
 #include "drivers/ec/wilco/flash.h"
 #include "drivers/ec/wilco/image.h"

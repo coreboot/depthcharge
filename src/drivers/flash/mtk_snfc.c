@@ -20,7 +20,6 @@
 #include <assert.h>
 #include <libpayload.h>
 #include <stdint.h>
-#include "base/container_of.h"
 #include "drivers/flash/flash.h"
 #include "mtk_snfc.h"
 

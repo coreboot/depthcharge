@@ -17,7 +17,6 @@
 
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/power/as3722.h"
 
 enum {

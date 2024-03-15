@@ -7,7 +7,6 @@
 #include "nand.h"
 #include "ipq_nand.h"
 #include "ipq_nand_private.h"
-#include "base/container_of.h"
 
 /*
  * MTD, NAND and the IPQ806x NAND controller uses various terms to

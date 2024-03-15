@@ -15,7 +15,6 @@
  * GNU General Public License for more details.
  */
 #include <libpayload.h>
-#include <base/container_of.h>
 #include "mtk_ddp.h"
 
 typedef struct {

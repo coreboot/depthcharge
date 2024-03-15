@@ -15,7 +15,6 @@
 #include <assert.h>
 #include <libpayload.h>
 #include <stdint.h>
-#include "base/container_of.h"
 #include "drivers/gpio/rockchip.h"
 #include "drivers/gpio/gpio.h"
 

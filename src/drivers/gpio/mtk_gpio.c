@@ -15,7 +15,6 @@
 #include <assert.h>
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/gpio/mtk_gpio.h"
 
 static GpioRegs *gpio_reg = (GpioRegs *)(GPIO_BASE);

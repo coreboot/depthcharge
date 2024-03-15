@@ -17,7 +17,6 @@
 #define __DRIVERS_SOC_QCOM_QUP_SE_H__
 
 #include <assert.h>
-#include "base/container_of.h"
 #include "drivers/storage/sdhci_msm.h"
 #include "drivers/timer/timer.h"
 #include <libpayload.h>

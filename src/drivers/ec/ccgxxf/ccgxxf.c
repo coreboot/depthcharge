@@ -12,7 +12,6 @@
 #include <libpayload.h>
 #include <vb2_api.h>
 
-#include "base/container_of.h"
 #include "base/init_funcs.h"
 #include "drivers/ec/ccgxxf/ccgxxf.h"
 

@@ -21,7 +21,6 @@
 #include <libpayload.h>
 #include <stdint.h>
 
-#include "base/container_of.h"
 #include "drivers/bus/i2s/i2s.h"
 #include "drivers/sound/i2s.h"
 

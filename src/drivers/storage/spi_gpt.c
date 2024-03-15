@@ -24,7 +24,6 @@
 #include <gpt.h>
 #include <gpt_misc.h>
 
-#include "base/container_of.h"
 #include "base/device_tree.h"
 #include "drivers/flash/flash.h"
 #include "drivers/storage/spi_gpt.h"

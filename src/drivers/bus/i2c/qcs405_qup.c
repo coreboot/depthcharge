@@ -31,7 +31,6 @@
 
 #include <arch/io.h>
 #include <libpayload.h>
-#include <base/container_of.h>
 #include "drivers/bus/spi/qcs405.h"
 #include "qcs405_qup.h"
 #include "qcs405_blsp.h"

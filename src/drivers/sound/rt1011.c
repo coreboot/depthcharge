@@ -10,7 +10,6 @@
 
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "base/list.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/sound/rt1011.h"

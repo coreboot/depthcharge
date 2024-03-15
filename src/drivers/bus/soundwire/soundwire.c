@@ -7,7 +7,6 @@
 #include <arch/io.h>
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/bus/soundwire/soundwire.h"
 #include "drivers/timer/timer.h"
 

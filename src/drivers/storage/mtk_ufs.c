@@ -13,9 +13,8 @@
  * GNU General Public License for more details.
  */
 
-#include <stdlib.h>
+#include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/storage/blockdev.h"
 #include "drivers/storage/ufs.h"
 #include "drivers/storage/mtk_ufs.h"

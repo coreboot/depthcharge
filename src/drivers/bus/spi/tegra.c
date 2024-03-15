@@ -18,7 +18,6 @@
 #include <assert.h>
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/bus/spi/spi.h"
 #include "drivers/bus/spi/tegra.h"
 #include "drivers/dma/tegra_apb.h"

@@ -17,7 +17,6 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "base/container_of.h"
 #include "drivers/flash/fast_spi.h"
 #include "drivers/flash/fast_spi_def.h"
 #include "drivers/flash/flash.h"

@@ -7,7 +7,6 @@
 
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/sound/rt1015.h"
 
 struct reg_config {

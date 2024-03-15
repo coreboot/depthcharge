@@ -27,7 +27,6 @@
 
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/video/led_lp5562_programs.h"
 
 /* Key lp5562 registers. */

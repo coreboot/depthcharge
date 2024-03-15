@@ -16,7 +16,6 @@
  */
 
 #include <libpayload.h>
-#include "base/container_of.h"
 #include "drivers/power/armada38x.h"
 
 #define MV_MISC_REGS_BASE			(0xF1018200)

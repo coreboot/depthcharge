@@ -15,7 +15,8 @@
  * GNU General Public License for more details.
  */
 
-#include "base/container_of.h"
+#include <libpayload.h>
+
 #include "drivers/bus/i2c/mtk_i2c.h"
 
 #define MAX_TRANSFER_LEN 255

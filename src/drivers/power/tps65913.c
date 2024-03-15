@@ -18,7 +18,6 @@
 
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/power/tps65913.h"
 
 enum {

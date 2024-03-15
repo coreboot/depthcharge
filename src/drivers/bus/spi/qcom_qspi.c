@@ -16,7 +16,6 @@
 #include <arch/barrier.h>
 #include <arch/cache.h>
 #include <libpayload.h>
-#include "base/container_of.h"
 #include "drivers/bus/spi/qcom_qspi.h"
 #include "drivers/gpio/qcom_gpio.h"
 #include <assert.h>

@@ -16,7 +16,6 @@
 #include <assert.h>
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/bus/i2s/mtk_v2.h"
 
 #ifdef MTK_I2S_DEBUG

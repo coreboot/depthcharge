@@ -13,7 +13,6 @@
 
 #include <assert.h>
 #include <libpayload.h>
-#include "base/container_of.h"
 #include "i2c.h"
 #include "cygnus.h"
 

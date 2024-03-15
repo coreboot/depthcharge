@@ -13,7 +13,6 @@
  */
 
 #include <arch/io.h>
-#include "base/container_of.h"
 #include "drivers/bus/i2s/cavs-regs.h"
 #include "drivers/bus/i2s/i2s.h"
 #include "drivers/bus/i2s/intel_common/i2s.h"

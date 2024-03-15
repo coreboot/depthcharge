@@ -6,7 +6,6 @@
 
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/sound/max98373_sndw.h"
 
 /* MAX98373 codec ID */

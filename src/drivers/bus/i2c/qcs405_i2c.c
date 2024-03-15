@@ -33,7 +33,6 @@
 #include <libpayload.h>
 
 #include "config.h"
-#include "base/container_of.h"
 #include "drivers/bus/spi/qcs405.h"
 #include "drivers/bus/i2c/i2c.h"
 #include "drivers/bus/i2c/qcs405_qup.h"

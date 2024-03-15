@@ -13,7 +13,6 @@
  */
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/video/arctic_sand_backlight.h"
 
 #define ARCXCNN_ILED_CONFIG	(0x05)  /* ILED Configuration */

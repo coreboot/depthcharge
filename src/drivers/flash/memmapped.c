@@ -17,7 +17,6 @@
 
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/flash/flash.h"
 #include "drivers/flash/memmapped.h"
 

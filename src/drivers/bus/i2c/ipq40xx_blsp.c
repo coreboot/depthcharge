@@ -31,7 +31,6 @@
 
 #include <libpayload.h>
 #include <arch/io.h>
-#include "base/container_of.h"
 #include "base/init_funcs.h"
 #include "drivers/gpio/ipq40xx.h"
 #include "drivers/bus/spi/ipq40xx.h"

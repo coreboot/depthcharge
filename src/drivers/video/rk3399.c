@@ -15,7 +15,6 @@
 #include <arch/io.h>
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/video/rk3399.h"
 

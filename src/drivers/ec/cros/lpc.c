@@ -18,7 +18,6 @@
 
 #include <libpayload.h>
 
-#include "base/container_of.h"
 #include "drivers/ec/cros/lpc.h"
 #include "drivers/ec/cros/lpc_mec.h"
 

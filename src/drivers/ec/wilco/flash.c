@@ -9,7 +9,6 @@
 #include <libpayload.h>
 #include <vboot_api.h>
 
-#include "base/container_of.h"
 #include "drivers/ec/wilco/ec.h"
 #include "drivers/ec/wilco/flash.h"
 

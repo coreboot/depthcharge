@@ -7,9 +7,10 @@
  *
  */
 
+#include <libpayload.h>
+
 #include "nand.h"
 #include "spi_nand.h"
-#include "base/container_of.h"
 
 /* SPI NAND commands */
 #define	SPI_NAND_WRITE_ENABLE		0x06
