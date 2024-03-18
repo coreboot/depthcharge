@@ -22,10 +22,12 @@
 #   and RO sections. This field is designed to allow late RW updates to change
 #   or add bitmaps of firmware screens in RW. Currently, there is no support
 #   for updating locale-independent bitmaps in vbgfx.bin and font.bin.
-# rw_only: List of names of localized bitmaps to be stored in RW sections only.
-#   This field is intended to keep the subset of firmware screens that are not
-#   required during recovery mode in RW section only. This should be used only
-#   to prevent crossing the RO section size threshold.
+# split_ratio: This setting allows you to specify the ratio of bitmaps that can
+#   be stored in a separate read-write (RW) CBFS partition. By default
+#   (value 0), all bitmaps are placed in the read-only (RO) CBFS.
+#   There's currently only one supported override value: 100. This means all
+#   bitmaps listed in the rw_only list will be stored in the RW CBFS,
+#   minimizing the footprint on the write-protected (WP_RO) SPI flash.
 #
 # Note the locale should be supported (and named) by Chrome browser:
 # https://chromium.googlesource.com/chromium/chromium/+/trunk/ui/base/l10n/l10n_util.cc
@@ -48,7 +50,7 @@ _DEFAULT_:
                 th, zh-CN, zh-TW, ja, ko]
   rtl:         [he, ar, fa]
   rw_override:  []
-  rw_only:      []
+  split_ratio: 0
 
 x86-generic,amd64-generic,arm-generic,arm64-generic,mips-generic:
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
@@ -364,38 +366,14 @@ rex:
   screen:   [3840, 2160]
   sdcard:   False
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  rw_only: [dev_title, dev_desc0, dev_desc1, btn_secure_mode, btn_int_disk,
-            btn_ext_disk, btn_alt_bootloader, dev_to_norm_title,
-            dev_to_norm_desc0, dev_to_norm_desc1, dev_boot_ext_title,
-            dev_boot_ext_desc0, dev_invalid_disk_title, dev_invalid_disk_desc0,
-            dev_select_bootloader_title, error_to_norm_not_allowed,
-            error_int_boot_failed, error_ext_boot_disabled,
-            error_alt_boot_disabled, error_no_alt_bootloader,
-            error_alt_boot_failed, diag_menu_title, diag_menu_desc0,
-            btn_diag_storage_health, btn_diag_storage_short_test,
-            btn_diag_storage_ext_test, btn_diag_memory_quick,
-            btn_diag_memory_full, diag_storage_health_title,
-            diag_storage_srt_test_title, diag_storage_ext_test_title,
-            diag_memory_quick_title, diag_memory_full_title]
+  split_ratio: 100 # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 ovis:
   # External monitor, boots recovery image on USB ports.
   screen:   [3840, 2400]  # No built-in panel, specify 4K resolution.
   sdcard:   False
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
-  rw_only: [dev_title, dev_desc0, dev_desc1, btn_secure_mode, btn_int_disk,
-            btn_ext_disk, btn_alt_bootloader, dev_to_norm_title,
-            dev_to_norm_desc0, dev_to_norm_desc1, dev_boot_ext_title,
-            dev_boot_ext_desc0, dev_invalid_disk_title, dev_invalid_disk_desc0,
-            dev_select_bootloader_title, error_to_norm_not_allowed,
-            error_int_boot_failed, error_ext_boot_disabled,
-            error_alt_boot_disabled, error_no_alt_bootloader,
-            error_alt_boot_failed, diag_menu_title, diag_menu_desc0,
-            btn_diag_storage_health, btn_diag_storage_short_test,
-            btn_diag_storage_ext_test, btn_diag_memory_quick,
-            btn_diag_memory_full, diag_storage_health_title,
-            diag_storage_srt_test_title, diag_storage_ext_test_title,
-            diag_memory_quick_title, diag_memory_full_title]
+  split_ratio: 100 # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 corsola:
   # 1366x768, boots recovery image on any SD card or USB ports.
@@ -419,19 +397,7 @@ myst:
   # 1920x1080, boots recovery image on any SD card or USB ports.
   screen: [1920, 1080]
   dpi: 72
-  rw_only: [dev_title, dev_desc0, dev_desc1, btn_secure_mode, btn_int_disk,
-            btn_ext_disk, btn_alt_bootloader, dev_to_norm_title,
-            dev_to_norm_desc0, dev_to_norm_desc1, dev_boot_ext_title,
-            dev_boot_ext_desc0, dev_invalid_disk_title, dev_invalid_disk_desc0,
-            dev_select_bootloader_title, error_to_norm_not_allowed,
-            error_int_boot_failed, error_ext_boot_disabled,
-            error_alt_boot_disabled, error_no_alt_bootloader,
-            error_alt_boot_failed, diag_menu_title, diag_menu_desc0,
-            btn_diag_storage_health, btn_diag_storage_short_test,
-            btn_diag_storage_ext_test, btn_diag_memory_quick,
-            btn_diag_memory_full, diag_storage_health_title,
-            diag_storage_srt_test_title, diag_storage_ext_test_title,
-            diag_memory_quick_title, diag_memory_full_title]
+  split_ratio: 100 # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 brox:
   # 1920x1200

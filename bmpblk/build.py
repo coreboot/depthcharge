@@ -49,6 +49,7 @@ KEY_FGCOLOR = 'fgcolor'
 KEY_HEIGHT = 'height'
 KEY_MAX_WIDTH = 'max_width'
 KEY_FONTS = 'fonts'
+KEY_RW_ONLY = 'rw_only'
 
 # Board config YAML key names.
 KEY_SCREEN = 'screen'
@@ -56,7 +57,7 @@ KEY_SDCARD = 'sdcard'
 KEY_DPI = 'dpi'
 KEY_RTL = 'rtl'
 KEY_RW_OVERRIDE = 'rw_override'
-KEY_RW_ONLY = 'rw_only'
+KEY_SPLIT_RATIO = 'split_ratio'
 
 BMP_HEADER_OFFSET_NUM_LINES = 6
 
@@ -979,9 +980,17 @@ class Converter:
 
     def copy_images_to_rw(self):
         """Copies localized images specified in boards.yaml for RW override."""
-        if not self.config[KEY_RW_OVERRIDE] and not self.config[KEY_RW_ONLY]:
+        split_ratio = self.config[KEY_SPLIT_RATIO]
+        if not self.config[KEY_RW_OVERRIDE] and split_ratio == 0:
             print('  No localized images are specified for RW, skipping')
             return
+
+        # Check if the split ratio between RO and RW is supported.
+        if split_ratio not in (0, 100):
+            raise BuildImageError(
+                f'Unsupported split_ratio value {split_ratio}!'
+                ' Choose either 0 (no split) or 100 (move RW_ONLY assets)'
+            )
 
         for locale_info in self.locales:
             locale = locale_info.code
@@ -992,7 +1001,8 @@ class Converter:
             # Overlapping assets in RW_OVERRIDE & RW_ONLY is not expected.
             # Hence move any RW_ONLY asset before copying RW_OVERRIDE assets.
             # This will help to catch any overlapping scenario during build.
-            for name in self.config[KEY_RW_ONLY]:
+            rw_only_names = self.formats[KEY_RW_ONLY] if split_ratio > 0 else []
+            for name in rw_only_names:
                 ro_src = os.path.join(ro_locale_dir, name + '.bmp')
                 rw_dst = os.path.join(rw_locale_dir, name + '.bmp')
                 shutil.move(ro_src, rw_dst)

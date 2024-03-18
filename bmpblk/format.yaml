@@ -295,3 +295,40 @@ fonts:
   th:     'Noto Sans Thai UI'
   zh-CN:  'Noto Sans CJK SC'
   zh-TW:  'Noto Sans CJK TC'
+
+# List of names of localized bitmaps to be stored in RW sections only.
+rw_only:
+  - dev_title
+  - dev_desc0
+  - dev_desc1
+  - btn_secure_mode
+  - btn_int_disk
+  - btn_ext_disk
+  - btn_alt_bootloader
+  - dev_to_norm_title
+  - dev_to_norm_desc0
+  - dev_to_norm_desc1
+  - dev_boot_ext_title
+  - dev_boot_ext_desc0
+  - dev_invalid_disk_title
+  - dev_invalid_disk_desc0
+  - dev_select_bootloader_title
+  - error_to_norm_not_allowed
+  - error_dev_boot_not_allowed
+  - error_int_boot_failed
+  - error_ext_boot_disabled
+  - error_alt_boot_disabled
+  - error_no_alt_bootloader
+  - error_alt_boot_failed
+  - diag_menu_title
+  - diag_menu_desc0
+  - btn_diag_storage_health
+  - btn_diag_storage_short_test
+  - btn_diag_storage_ext_test
+  - btn_diag_memory_quick
+  - btn_diag_memory_full
+  - diag_storage_health_title
+  - diag_storage_srt_test_title
+  - diag_storage_ext_test_title
+  - diag_memory_quick_title
+  - diag_memory_full_title
