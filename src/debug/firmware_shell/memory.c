@@ -26,7 +26,6 @@ typedef unsigned long ulong;
  * Copied from FADS ROM, Dan Malek (dmalek@jlc.net)
  */
 
-
 static int mod_mem(cmd_tbl_t *, int, int, int, char * const []);
 
 /* Display values from last command.
@@ -85,7 +84,6 @@ static int do_md(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 		if (argc > 2)
 			length = strtoul(argv[2], NULL, 16);
 	}
-
 
 	{
 		ulong bytes = size * length;
@@ -262,6 +260,49 @@ static int do_cp(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	return 0;
 }
 
+static inline u32 crc32_le(u32 crc, unsigned char const *p, size_t len)
+{
+	int i;
+	u32 polynomial = 0xedb88320;
+	while (len--) {
+		crc ^= *p++;
+		for (i = 0; i < 8; i++)
+			crc = (crc >> 1) ^ ((crc & 1) ? polynomial : 0);
+	}
+	return crc;
+}
+
+static int do_crc(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	ulong addr, length, seed;
+	int rc = 0;
+	u32 crc = 0;
+
+	if (argc < 4)
+		return CMD_RET_USAGE;
+
+	addr = strtoul(argv[1], NULL, 16);
+	addr += base_address;
+	length = strtoul(argv[2], NULL, 16);
+	if (!length) {
+		console_printf("length should be greater than 0.\n", addr, length);
+		return CMD_RET_USAGE;
+	}
+
+	seed = strtoul(argv[3], NULL, 16);
+
+	/* read the data */
+	console_printf("Reading addr 0x%x, length 0x%x\n", addr, length);
+	const void *buf = map_sysmem(addr, length);
+
+	/* calc CRC */
+	crc = crc32_le(seed, (unsigned char const *)buf, length);
+	console_printf("CRC = 0x%x\n",crc);
+
+	unmap_sysmem(buf);
+	return (rc);
+}
+
 /* Modify memory.
  *
  * Syntax:
@@ -365,13 +406,11 @@ U_BOOT_CMD(
 	"[.b, .w, .l] address [# of objects]"
 );
 
-
 U_BOOT_CMD(
 	mm,	2,	1,
 	"memory modify (auto-incrementing address)",
 	"[.b, .w, .l] address"
 );
-
 
 U_BOOT_CMD(
 	nm,	2,	1,
@@ -395,4 +434,10 @@ U_BOOT_CMD(
 	cmp,	4,	1,
 	"memory compare",
 	"[.b, .w, .l] addr1 addr2 count"
+);
+
+U_BOOT_CMD(
+	crc,	4,	1,
+	"memory CRC calculation",
+	"address count seed"
 );
