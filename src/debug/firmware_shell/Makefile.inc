@@ -25,6 +25,7 @@ endif
 dev-y += i2c.c
 dev-y += memory.c
 dev-y += memtest.c
+dev-y += power.c
 dev-y += printbuf.c
 dev-y += spi.c
 dev-y += storage.c
