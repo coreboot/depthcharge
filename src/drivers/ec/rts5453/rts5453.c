@@ -27,7 +27,7 @@
 #define PING_STATUS_MASK 0x3
 #define PING_STATUS_COMPLETE 0x1
 #define PING_STATUS_INVALID_FMT 0x3
-#define RTS_RESTART_DELAY_US 60000
+#define RTS_RESTART_DELAY_US 5000000 /* 5s */
 
 #define MAX_COMMAND_SIZE 32
 #define FW_CHUNK_SIZE 29
@@ -439,6 +439,7 @@ static vb2_error_t rts5453_check_hash(const VbootAuxfwOps *vbaux, const uint8_t 
 {
 	Rts545x *me = container_of(vbaux, Rts545x, fw_ops);
 	bool dev_is_present;
+	int ret;
 
 	if (hash_size != FW_HASH_SIZE) {
 		debug("hash_size %zu unexpected\n", hash_size);
@@ -459,6 +460,28 @@ static vb2_error_t rts5453_check_hash(const VbootAuxfwOps *vbaux, const uint8_t 
 		*severity = VB2_AUXFW_NO_UPDATE;
 		return VB2_SUCCESS;
 	}
+
+	/* Prepare to perform a PDC update: shut off the EC's PD stack so it
+	 * does not communicate with the PDC during updates and interfere.
+	 */
+
+	ret = cros_ec_pd_control(0, PD_SUSPEND);
+	switch (ret) {
+	case EC_RES_SUCCESS:
+		/* PD stack is suspended. Safe to proceed. */
+		break;
+	case -EC_RES_BUSY:
+		/* EC power state or battery not ready for update */
+		printf("Skipping update: Battery SoC or power state inadequate: %d\n", ret);
+		*severity = VB2_AUXFW_NO_UPDATE;
+		return VB2_SUCCESS;
+	default:
+		/* Unknown error */
+		printf("Skipping update: Error suspending PD stack: %d\n", ret);
+		*severity = VB2_AUXFW_NO_DEVICE;
+		return VB2_SUCCESS;
+	}
+
 	printf("%s: Update FW from %u.%u.%u to %u.%u.%u\n", me->chip_name,
 	       me->fw_info.major_ver, me->fw_info.minor_ver, me->fw_info.patch_ver, hash[0],
 	       hash[1], hash[2]);
@@ -551,6 +574,7 @@ static vb2_error_t rts5453_update_image(const VbootAuxfwOps *vbaux, const uint8_
 	vb2_error_t status = VB2_ERROR_UNKNOWN;
 	int protected;
 	uint64_t start;
+	int ret;
 
 	debug("Updating RTS5453 image...\n");
 
@@ -578,13 +602,21 @@ static vb2_error_t rts5453_update_image(const VbootAuxfwOps *vbaux, const uint8_
 		status = VB2_SUCCESS;
 
 	rts545x_restore_i2c_speed(me);
+
 pd_restart:
-	/* Wait at most ~60ms for reset to occur. */
+	/* Re-enable the EC PD stack */
+	ret = cros_ec_pd_control(0, PD_RESUME);
+	if(ret) {
+		printf("Cannot resume PD: %d. Rebooting.\n", ret);
+		return VB2_REQUEST_REBOOT;
+	}
+
+	/* Give a generous timeout for the EC PD stack to resume */
 	start = timer_us(0);
 	do {
+		mdelay(100);
 		if (is_rts545x_device_present(me, true))
 			return status;
-		mdelay(10);
 	} while (timer_us(start) < RTS_RESTART_DELAY_US);
 
 	return VB2_ERROR_UNKNOWN;
