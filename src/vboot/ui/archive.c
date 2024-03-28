@@ -173,6 +173,7 @@ static vb2_error_t load_archive(const char *name,
 	}
 
 	*dest = dir;
+	UI_INFO("Loaded %s from %s\n", name, from_ro ? "RO" : "RW");
 
 	return VB2_SUCCESS;
 }
@@ -192,7 +193,7 @@ static vb2_error_t get_graphic_archive(struct directory **dest)
  * Load locale-dependent graphics.
  *
  * On success, *ro_dest is guaranteed to be non-null. *rw_dest will be null
- * when no RW override is found.
+ * if the archive isn't found in the active RW section.
  */
 static vb2_error_t get_localized_graphic_archive(const char *locale_code,
 						 struct directory **ro_dest,
@@ -250,7 +251,8 @@ static vb2_error_t get_font_archive(struct directory **dest)
 
 static vb2_error_t find_bitmap_in_archive(const struct directory *dir,
 					  const char *name,
-					  struct ui_bitmap *bitmap)
+					  struct ui_bitmap *bitmap,
+					  int show_error)
 {
 	struct dentry *entry;
 	uintptr_t start;
@@ -278,7 +280,8 @@ static vb2_error_t find_bitmap_in_archive(const struct directory *dir,
 		return VB2_SUCCESS;
 	}
 
-	UI_ERROR("File '%s' not found\n",  name);
+	if (show_error)
+		UI_ERROR("File '%s' not found\n", name);
 	return VB2_ERROR_UI_MISSING_IMAGE;
 }
 
@@ -291,20 +294,19 @@ vb2_error_t ui_load_bitmap(enum ui_archive_type type, const char *file,
 	switch (type) {
 	case UI_ARCHIVE_GENERIC:
 		VB2_TRY(get_graphic_archive(&ro_dir));
-		return find_bitmap_in_archive(ro_dir, file, bitmap);
+		return find_bitmap_in_archive(ro_dir, file, bitmap, 1);
 	case UI_ARCHIVE_LOCALIZED:
 		VB2_TRY(get_localized_graphic_archive(locale_code,
 						      &ro_dir, &rw_dir));
-		if (rw_dir) {
-			UI_INFO("Searching RW override for %s\n", file);
-			if (find_bitmap_in_archive(rw_dir, file, bitmap) ==
-			    VB2_SUCCESS)
-				return VB2_SUCCESS;
-		}
-		return find_bitmap_in_archive(ro_dir, file, bitmap);
+		/* Bitmap may exist in RO, RW, or both.
+		   Suppress error messages when searching in RW. */
+		if (rw_dir &&
+		    find_bitmap_in_archive(rw_dir, file, bitmap, 0) == VB2_SUCCESS)
+			return VB2_SUCCESS;
+		return find_bitmap_in_archive(ro_dir, file, bitmap, 1);
 	case UI_ARCHIVE_FONT:
 		VB2_TRY(get_font_archive(&ro_dir));
-		return find_bitmap_in_archive(ro_dir, file, bitmap);
+		return find_bitmap_in_archive(ro_dir, file, bitmap, 1);
 	default:
 		UI_WARN("Unknown archive type %d\n", type);
 		return VB2_ERROR_UI_INVALID_ARCHIVE;
