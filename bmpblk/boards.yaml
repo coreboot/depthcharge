@@ -39,6 +39,9 @@ _DEFAULT_:
   screen:      [1366, 768]
   sdcard:      True
   dpi: 192
+  # The complete locales we have to support can be found by
+  #  ../../platform2/regions/regions.py --format=json | \
+  #    jq -rS '[.[].locales[]]|unique[]'
   # The order of locales determines the order in the language menu. Aside from
   # 'en', which is placed at the beginning of the list, the remaining order is
   # consistent with the Chromebook Help Center
