@@ -42,7 +42,13 @@ enum {
 	RtlVersion06,
 	RtlVersion07,
 	RtlVersion08,
-	RtlVersion09
+	RtlVersion09,
+	RtlVersion10,
+	RtlVersion11,
+	RtlVersion12,
+	RtlVersion13,
+	RtlVersion14,
+	RtlVersion15,
 };
 
 static const uint16_t VersionMask = 0x7cf0;
@@ -144,6 +150,7 @@ enum {
 	UsbConnectTimer = 0xcbf8,
 	UsbMscTimer = 0xcbfc,
 	UsbBurstSize = 0xcfc0,
+	UsbMisc2 = 0xcfff,
 	UsbUsbCtrl = 0xd406,
 	UsbLpmCtrl = 0xd41a,
 	UsbRxAggTimeout = 0xd42c,
@@ -163,6 +170,12 @@ static const uint8_t DynamicBurst = 0x01;
 
 /* UsbCsrDummy2 */
 static const uint8_t Ep4FullFc = 0x01;
+
+/* UsbMisc2 */
+enum {
+	NoUps = 0x80,
+	ForcePwrDown = 0x01
+};
 
 /* UsbUsbCtrl */
 enum {
