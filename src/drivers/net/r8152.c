@@ -345,6 +345,9 @@ static int get_version(usbdev_t *dev, uint8_t *version)
 	case 0x6010:
 		*version = RtlVersion09;
 		break;
+	case 0x6400:
+		*version = RtlVersion14;
+		break;
 	default:
 		*version = RtlVersionUnknown;
 		printf("Unknown version %04x\n", ocp_data);
@@ -554,6 +557,7 @@ static int r8153_set_rx_early_timeout(usbdev_t *dev)
 		break;
 	case RtlVersion08:
 	case RtlVersion09:
+	case RtlVersion14:
 		/* early timer = 1264ns */
 		if (ocp_write_word(dev, McuTypeUsb, UsbRxAggTimeout, 1264 / 8))
 			return 1;
@@ -586,6 +590,7 @@ static int r8153_set_rx_early_size(usbdev_t *dev)
 		break;
 	case RtlVersion08:
 	case RtlVersion09:
+	case RtlVersion14:
 		if (ocp_write_word(dev, McuTypeUsb, UsbRxAggSize, data / 8))
 			return 1;
 		break;
@@ -770,7 +775,7 @@ static int r8153b_ups_disable(usbdev_t *dev)
 			       UpsEn | UpsPrewake))
 		return 1;
 
-	if (ocp_byte_clearbits(dev, McuTypeUsb, 0xcfff, 1 << 0))
+	if (ocp_byte_clearbits(dev, McuTypeUsb, UsbMisc2, NoUps | ForcePwrDown))
 		return 1;
 
 	if (ocp_byte_clearbits(dev, McuTypeUsb, UsbMisc0, PcutStatus))
@@ -951,6 +956,7 @@ static int rtl8152_init(GenericUsbDevice *gen_dev)
 		break;
 	case RtlVersion08:
 	case RtlVersion09:
+	case RtlVersion14:
 		if (r8153b_init(usb_dev))
 			return 1;
 		break;
