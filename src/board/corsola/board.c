@@ -33,6 +33,9 @@
 #define GPIO_PWM	PAD_DISP_PWM
 #define GPIO_BL_EN	PAD_PERIPHERAL_EN5
 
+#define USB2_PORT0_BASE_ADDRESS 0x11200000
+#define USB2_PORT1_BASE_ADDRESS 0x11280000
+
 static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 {
 	DeviceTreeNode *node = dt_find_compat(tree->root, "arm,gic-v3");
@@ -130,6 +133,14 @@ static void enable_usb_vbus(struct UsbHostController *usb_host)
 	mdelay(500);
 }
 
+static void setup_usb_host(uintptr_t base_address)
+{
+	UsbHostController *usb_host = new_usb_hc(XHCI, base_address);
+
+	set_usb_init_callback(usb_host, enable_usb_vbus);
+	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+}
+
 static int board_setup(void)
 {
 	CrosECTunnelI2c *cros_ec_i2c_tunnel;
@@ -177,11 +188,11 @@ static int board_setup(void)
 
 	/*
 	 * Set up USB.
-	 * Corsola uses USB2 port1 instead of USB2 port0.
+	 * By default, corsola uses USB2 port1 instead of USB2 port0.
 	 */
-	UsbHostController *usb_host = new_usb_hc(XHCI, 0x11280000);
-	set_usb_init_callback(usb_host, enable_usb_vbus);
-	list_insert_after(&usb_host->list_node, &usb_host_controllers);
+	setup_usb_host(USB2_PORT1_BASE_ADDRESS);
+	if (fw_config_probe(FW_CONFIG(SECONDARY_USB, ENABLED)))
+		setup_usb_host(USB2_PORT0_BASE_ADDRESS);
 
 	/* Set display ops */
 	if (display_init_required())
