@@ -58,7 +58,9 @@ struct setup_header {
 	uint32_t initrd_addr_max;
 	uint32_t kernel_alignment;
 	uint8_t relocatable_kernel;
-	uint8_t _pad2[3];
+	uint8_t min_alignment;
+	uint16_t xloadflags;
+#define XLF_KERNEL_64	(1<<0)
 	uint32_t cmdline_size;
 	uint32_t hardware_subarch;
 	uint64_t hardware_subarch_data;
