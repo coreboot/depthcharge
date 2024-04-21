@@ -56,7 +56,7 @@ static void multiboot_start(struct multiboot_header *header,
 			    struct multiboot_info *info)
 {
 	printf("Starting multiboot kernel @ %p (info @ %p)\n\n",
-	       (void *)header->entry_addr, info);
+	       (void *)(uintptr_t)header->entry_addr, info);
 
 	timestamp_add_now(TS_START_KERNEL);
 
@@ -64,7 +64,7 @@ static void multiboot_start(struct multiboot_header *header,
 		"cli\n"
 		"jmp *%[entry]\n"
 		:
-		:[entry] "c"(header->entry_addr),
+		:[entry] "c"((uintptr_t)header->entry_addr),
 		 "a"(MULTIBOOT_BOOTLOADER_MAGIC),
 		 "b"((uintptr_t)info));
 }
@@ -142,7 +142,7 @@ int multiboot_fill_boot_info(struct boot_info *bi)
 	if ((uintptr_t)bi->kparams->kernel_buffer !=
 	    (uintptr_t)header->load_addr) {
 		printf("%s: multiboot kernel not loaded to address %p\n",
-		       __func__, (void *)header->load_addr);
+		       __func__, (void *)(uintptr_t)header->load_addr);
 		return -1;
 	}
 
@@ -209,7 +209,7 @@ static int multiboot_load(struct boot_info *bi)
 
 	// Clear kernel BSS region
 	if (header->bss_end_addr)
-		memset((void *)header->load_end_addr, 0,
+		memset((void *)(uintptr_t)header->load_end_addr, 0,
 		       header->bss_end_addr - header->load_end_addr);
 
 	dump_boot_info(bi);
@@ -277,7 +277,7 @@ static struct multiboot_info *multiboot_info(struct boot_info *bi)
 
 	// Report command line
 	if (bi->cmd_line) {
-		info->cmdline = (uint32_t)bi->cmd_line;
+		info->cmdline = (uintptr_t)bi->cmd_line;
 		info->flags |= MULTIBOOT_INFO_CMDLINE;
 	}
 
@@ -287,10 +287,10 @@ static struct multiboot_info *multiboot_info(struct boot_info *bi)
 		if (!list)
 			return NULL;
 
-		list->mod_start = (uint32_t)bi->ramdisk_addr;
-		list->mod_end = (uint32_t)(bi->ramdisk_addr + bi->ramdisk_size);
+		list->mod_start = (uint32_t)(uintptr_t)bi->ramdisk_addr;
+		list->mod_end = (uint32_t)(uintptr_t)(bi->ramdisk_addr + bi->ramdisk_size);
 
-		info->mods_addr = (uint32_t)list;
+		info->mods_addr = (uint32_t)(uintptr_t)list;
 		info->mods_count = 1;
 		info->flags |= MULTIBOOT_INFO_MODS;
 	}
@@ -298,7 +298,7 @@ static struct multiboot_info *multiboot_info(struct boot_info *bi)
 	// Generate multiboot memory map
 	mmap = multiboot_mmap_create(&mmap_count);
 	if (mmap && mmap_count > 0) {
-		info->mmap_addr = (uint32_t)mmap;
+		info->mmap_addr = (uint32_t)(uintptr_t)mmap;
 		info->mmap_length = mmap_count * sizeof(*mmap);
 		info->flags |= MULTIBOOT_INFO_MEM_MAP;
 	}
