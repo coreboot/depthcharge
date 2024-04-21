@@ -98,6 +98,12 @@
 #ifndef __DEBUG_FIRMWARE_SHELL_LINKER_LISTS_H__
 #define __DEBUG_FIRMWARE_SHELL_LINKER_LISTS_H__
 
+#if CONFIG(ARCH_X86_64) || CONFIG(ARCH_ARM_V8)
+#define _LIST_ALIGN 8
+#else
+#define _LIST_ALIGN 4
+#endif
+
 /**
  * ll_entry_declare() - Declare linker-generated array entry
  * @_type:	Data type of the entry
@@ -133,10 +139,11 @@
  *         .y = 4,
  * };
  */
+
 #define ll_entry_declare(_type, _name, _list)				\
-	_type _dp_list_2_##_list##_2_##_name /*__aligned(4)*/	\
+	_type _dp_list_2_##_list##_2_##_name	\
 			__attribute__((unused,				\
-			section(".dp_list_2_"#_list"_2_"#_name)))
+			section(".dp_list_2_"#_list"_2_"#_name), aligned(_LIST_ALIGN)))
 
 /**
  * We need a 0-byte-size type for iterator symbols, and the compiler
@@ -164,8 +171,8 @@
  */
 #define ll_entry_start(_type, _list)					\
 ({									\
-	static char __start[0] __attribute__((/*__aligned(4) ,*/ unused,\
-		section(".dp_list_2_"#_list"_1")));			\
+	static char __start[0] __attribute__((unused,\
+		section(".dp_list_2_"#_list"_1"), aligned(_LIST_ALIGN)));	\
 	(_type *)&__start;						\
 })
 
@@ -187,10 +194,11 @@
  */
 #define ll_entry_end(_type, _list)					\
 ({									\
-	static char __end[0] __attribute__((/*__aligned(4) ,*/ unused,	\
-		section(".dp_list_2_"#_list"_3")));			\
+	static char __end[0] __attribute__((unused,	\
+		section(".dp_list_2_"#_list"_3"), aligned(_LIST_ALIGN)));	\
 	(_type *)&__end;						\
 })
+
 /**
  * ll_entry_count() - Return the number of elements in linker-generated array
  * @_type:	Data type of the entry
@@ -256,8 +264,8 @@
  */
 #define ll_start(_type)							\
 ({									\
-	static char __lstart[0] /*__aligned(4)*/ __attribute__((unused,	\
-		section(".dp_list_1")));				\
+	static char __lstart[0] __attribute__((unused,	\
+		section(".dp_list_1"), aligned(_LIST_ALIGN)));	\
 	(_type *)&__lstart;						\
 })
 
@@ -276,8 +284,8 @@
  */
 #define ll_end(_type)							\
 ({									\
-	static char __lend[0] /*__aligned(4)*/ __attribute__((unused,	\
-		section(".dp_list_3")));				\
+	static char __lend[0] __attribute__((unused,	\
+		section(".dp_list_3"), aligned(_LIST_ALIGN)));	\
 	(_type *)&__lend;						\
 })
 

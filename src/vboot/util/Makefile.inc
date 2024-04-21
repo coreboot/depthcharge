@@ -13,3 +13,5 @@
 
 depthcharge-y += flag.c
 depthcharge-y += memory.c
+depthcharge-$(CONFIG_ARCH_ARM_V8) += physmem_64.c
+depthcharge-$(CONFIG_ARCH_X86_64) += physmem_64.c

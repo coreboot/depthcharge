@@ -18,9 +18,7 @@
 #include <assert.h>
 #include <libpayload.h>
 #include <stddef.h>
-#include <string.h>
 
-#include <arch/cache.h>
 #include "base/physmem.h"
 
 void arch_phys_map(uint64_t start, uint64_t size, PhysMapFunc func, void *data)

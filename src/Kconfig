@@ -42,6 +42,21 @@ config ARCH_ARM_V8
 
 endchoice
 
+choice
+	prompt "X86 Version"
+	depends on ARCH_X86
+	default ARCH_X86_32
+	help
+	  Version for X86 Arch
+
+config ARCH_X86_32
+	bool "x86_32"
+
+config ARCH_X86_64
+	bool "x86_64"
+
+endchoice
+
 source "src/base/Kconfig"
 source "src/boot/Kconfig"
 source "src/debug/Kconfig"

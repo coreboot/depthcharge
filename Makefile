@@ -99,6 +99,9 @@ endif
 ifeq ($(CONFIG_ARCH_ARM_V8),y)
 ARCH = arm64
 ARCH_DIR = arm
+else ifeq ($(CONFIG_ARCH_X86_64),y)
+ARCH = x86_64
+ARCH_DIR = x86
 else
 ARCH_DIR = $(ARCH)
 endif

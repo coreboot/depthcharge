@@ -106,6 +106,13 @@ int boot_x86_linux(struct boot_params *boot_params, char *cmd_line, void *entry)
 	timestamp_add_now(TS_START_KERNEL);
 	post_code(POST_CODE_START_KERNEL);
 
+	if (CONFIG(ARCH_X86_64)) {
+		if (!(hdr->xloadflags & XLF_KERNEL_64)) {
+			printf("Kernel is not 64-bit bootable.\n");
+			return 1;
+		}
+		entry += 0x200;
+	}
 	/*
 	 * Set %ebx, %ebp, and %edi to 0, %esi to point to the boot_params
 	 * structure, and then jump to the kernel. We assume that %cs is
@@ -120,6 +127,7 @@ int boot_x86_linux(struct boot_params *boot_params, char *cmd_line, void *entry)
 	   [boot_params] "S"(boot_params),
 	   "b"(0), "D"(0)
 	);
+
 	return 0;
 }
 
