@@ -30,13 +30,13 @@
 static inline unsigned long read_cr0(void)
 {
 	unsigned long cr0;
-	asm volatile ("movl %%cr0, %0" : "=r" (cr0) : : "memory");
+	asm volatile ("mov %%cr0, %0" : "=r" (cr0) : : "memory");
 	return cr0;
 }
 
 static inline void write_cr0(unsigned long cr0)
 {
-	asm volatile ("movl %0, %%cr0" : : "r" (cr0) : "memory");
+	asm volatile ("mov %0, %%cr0" : : "r" (cr0) : "memory");
 }
 
 static inline void wbinvd(void)
