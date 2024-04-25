@@ -15,10 +15,10 @@ depthcharge-y += archive.c
 depthcharge-y += beep.c
 depthcharge-y += bitmap.c
 
-ifneq ($(CONFIG_HEADLESS),y)
+ifeq ($(CONFIG_HEADLESS)$(CONFIG_SKIP_UI_DISPLAY),)
 depthcharge-y += display.c
 else
-depthcharge-y += display_headless.c
+depthcharge-y += display_stub.c
 endif
 
 depthcharge-y += draw.c

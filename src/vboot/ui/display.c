@@ -344,3 +344,9 @@ vb2_error_t ui_display(struct ui_context *ui,
 
 	return rv;
 }
+
+int ui_display_clear(void)
+{
+	disable_graphics_buffer();
+	return clear_screen(&ui_color_black);
+}

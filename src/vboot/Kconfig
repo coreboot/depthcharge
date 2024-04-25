@@ -16,6 +16,14 @@ config DETACHABLE
 	help
 	  Enable detachable navigation (power button + vol up/down) in menu UI.
 
+config SKIP_UI_DISPLAY
+	bool "Skip display in firmware UI (TURN OFF BEFORE RELEASE)"
+	default n
+	help
+	  Skip all display calls in firmware UI. This option can be used during
+	  development, or when the display is known to be broken somehow.
+	  THIS SHOULD NOT BE LEFT ON FOR PRODUCTION DEVICES.
+
 config EC_VBOOT_SUPPORT
 	bool "Enable EC vboot support"
 	default n

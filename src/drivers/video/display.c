@@ -26,11 +26,7 @@ static DisplayOps *display_ops;
 
 static int display_cleanup(struct CleanupFunc *cleanup, CleanupType type)
 {
-	int err = 0;
-	if (!CONFIG(HEADLESS)) {
-		disable_graphics_buffer();
-		err |= clear_screen(&ui_color_black);
-	}
+	int err = ui_display_clear();
 	if (type != CleanupOnLegacy) {
 		err |= backlight_update(0);
 		if (display_ops && display_ops->stop)

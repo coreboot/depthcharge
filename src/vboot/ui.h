@@ -1162,6 +1162,15 @@ char *ui_log_get_page_content(const struct ui_log_info *log, uint32_t page);
 vb2_error_t ui_display(struct ui_context *ui,
 		       const struct ui_state *prev_state);
 
+/*
+ * Clear UI display.
+ *
+ * ui_display() should no longer be called after this is called.
+ *
+ * @return 0 on success, or non-zero on error.
+ * */
+int ui_display_clear(void);
+
 /******************************************************************************/
 /* input.c */
 
