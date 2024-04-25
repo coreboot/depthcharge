@@ -111,13 +111,6 @@ config CROSSYSTEM_FDT
 
 endchoice
 
-config BOOT_EXTERNAL_ON_DEV
-	bool "Enable boot from external disk when switching to dev mode"
-	default n
-	help
-	  When switching to dev from normal, set the nvdata flag which allows
-	  booting from external disk.  (Suitable for headless devices.)
-
 config WIDEVINE_PROVISION
 	bool "Enable the widevine provision for ARM optee"
 	depends on ARCH_ARM_V8
