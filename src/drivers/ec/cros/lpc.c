@@ -134,7 +134,7 @@ static int send_packet(CrosEcBusOps *me, const void *dout, uint32_t dout_len,
 	 * a max timeout for a flash erase command to complete.
 	 */
 	uint64_t timeout =
-		(rq->command == EC_CMD_HELLO) ? 100 * 1000 : 5 * 1000 * 1000;
+		((rq->command == EC_CMD_HELLO) ? 100 : CROS_EC_ERASE_TIMEOUT_MS) * 1000;
 
 	if (dout_len > EC_LPC_HOST_PACKET_SIZE) {
 		printf("%s: Cannot send %d bytes\n", __func__, dout_len);

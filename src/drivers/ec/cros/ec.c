@@ -37,9 +37,6 @@
 
 #define DEFAULT_BUF_SIZE 0x100
 
-/* Maximum wait time for EC flash erase completion */
-static const int CROS_EC_ERASE_TIMEOUT_MS = 30000;
-
 /* List of registered chip drivers to perform auxfw update */
 struct list_node ec_aux_fw_chip_list;
 

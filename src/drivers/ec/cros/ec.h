@@ -74,6 +74,9 @@ typedef struct CrosEc
 	int proto3_response_size;
 } CrosEc;
 
+/* Maximum wait time for EC flash erase completion */
+#define CROS_EC_ERASE_TIMEOUT_MS 30000
+
 typedef struct CrosEcAuxfwChipInfo
 {
 	/* List Node in the chip list */
