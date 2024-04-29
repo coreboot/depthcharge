@@ -37,9 +37,6 @@
 
 #define DEFAULT_BUF_SIZE 0x100
 
-/* Maximum wait time for EC flash erase completion */
-static const int CROS_EC_ERASE_TIMEOUT_MS = 30000;
-
 /* Timeout waiting for EC hash calculation completion */
 static const int CROS_EC_HASH_TIMEOUT_MS = 2000;
 
