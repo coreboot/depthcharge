@@ -114,6 +114,8 @@ static int commit_and_lock_cleanup_func(struct CleanupFunc *c, CleanupType t)
 {
 	struct vb2_context *ctx = vboot_get_context();
 
+	vboot_check_secdata_corruption(14);
+
 	if (vb2ex_commit_data(ctx)) {
 		if (t != CleanupOnReboot)
 			cold_reboot();
@@ -197,7 +199,9 @@ int vboot_select_and_load_kernel(void)
 			  &cleanup_funcs);
 
 	printf("Calling VbSelectAndLoadKernel().\n");
+	vboot_check_secdata_corruption(12);
 	vb2_error_t res = VbSelectAndLoadKernel(ctx, &kparams);
+	vboot_check_secdata_corruption(13);
 
 	if (res == VB2_REQUEST_REBOOT_EC_TO_RO) {
 		printf("EC Reboot requested. Doing cold reboot.\n");
@@ -281,4 +285,13 @@ void vboot_boot_kernel(VbSelectAndLoadKernelParams *kparams)
 		legacy_boot(bi.kernel, cmd_line_buf);
 	if (CONFIG_KERNEL_MULTIBOOT)
 		multiboot_boot(&bi);
+}
+
+void vboot_check_secdata_corruption(int index)
+{
+	vb2hack_is_secdata_compromised(vboot_get_context(), index);
+
+	/* No elog in depthcharge on dedede branch, and I don't think it's worth
+	   trying to backport the whole thing. Hopefully, the recovery reason in
+	   nvdata will be good enough for this case. */
 }

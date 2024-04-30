@@ -27,5 +27,6 @@ int vboot_check_enable_usb(void);
 int vboot_in_recovery(void);
 int vboot_in_developer(void);
 void vboot_boot_kernel(VbSelectAndLoadKernelParams *kparams);
+void vboot_check_secdata_corruption(int index);
 
 #endif /* __VBOOT_STAGES_H__ */
