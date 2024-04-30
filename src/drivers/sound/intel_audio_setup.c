@@ -310,6 +310,7 @@ static void configure_audio_codec(const struct audio_codec *codec,
 		}
 		break;
 	case AUDIO_ALC256:
+	case AUDIO_ALC257:
 		if (CONFIG(DRIVER_SOUND_HDA)) {
 			if (data->type == AUDIO_HDA) {
 				data->codec = new_hda_codec();
