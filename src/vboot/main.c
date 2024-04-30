@@ -32,6 +32,7 @@ int main(void)
 {
 	// Let the world know we're alive.
 	sign_of_life(0xaa);
+	vboot_check_secdata_corruption(9);
 
 	// Initialize some consoles.
 	serial_console_init();
@@ -51,6 +52,7 @@ int main(void)
 		halt();
 
 	timestamp_add_now(TS_RO_VB_INIT);
+	vboot_check_secdata_corruption(10);
 
 	// Wipe memory and enable USB if necessary (dev/rec mode). This *must*
 	// happen before vboot init funcs to satisfy assumptions in AOA driver.
@@ -65,6 +67,8 @@ int main(void)
 		halt();
 
 	timestamp_add_now(TS_VB_SELECT_AND_LOAD_KERNEL);
+
+	vboot_check_secdata_corruption(11);
 
 	// Select a kernel and boot it.
 	if (vboot_select_and_boot_kernel())
