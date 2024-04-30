@@ -138,6 +138,7 @@ vb2_error_t vb2ex_ec_protect(enum vb2_firmware_selection select)
 /* Check the limit power flag every 50 ms while waiting. */
 #define LIMIT_POWER_POLL_SLEEP 50
 
+#include "vboot/stages.h"
 vb2_error_t vb2ex_ec_vboot_done(struct vb2_context *ctx)
 {
 	VbootEcOps *ec = vboot_get_ec();
@@ -145,6 +146,8 @@ vb2_error_t vb2ex_ec_vboot_done(struct vb2_context *ctx)
 	int limit_power_wait_time = 0;
 	int message_printed = 0;
 	int in_recovery = !!(ctx->flags & VB2_CONTEXT_RECOVERY_MODE);
+
+	vboot_check_secdata_corruption(15);
 
 	/* Ensure we have enough power to continue booting */
 	while(1) {

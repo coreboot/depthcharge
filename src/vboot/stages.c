@@ -98,6 +98,8 @@ static int commit_and_lock_cleanup_func(struct CleanupFunc *c, CleanupType t)
 {
 	struct vb2_context *ctx = vboot_get_context();
 
+	vboot_check_secdata_corruption(14);
+
 	if (vb2ex_commit_data(ctx)) {
 		if (t != CleanupOnReboot)
 			cold_reboot();
@@ -188,7 +190,9 @@ int vboot_select_and_boot_kernel(void)
 	if (res != VB2_SUCCESS)
 		goto fail;
 
+	vboot_check_secdata_corruption(12);
 	res = vboot_select_and_load_kernel(ctx, &kparams);
+	vboot_check_secdata_corruption(13);
 	if (res != VB2_SUCCESS)
 		goto fail;
 
@@ -279,4 +283,13 @@ void vboot_boot_kernel(struct vb2_kernel_params *kparams)
 		legacy_boot(bi.kernel, cmd_line_buf);
 	if (CONFIG(KERNEL_MULTIBOOT))
 		multiboot_boot(&bi);
+}
+
+#include "base/elog.h"
+void vboot_check_secdata_corruption(int index)
+{
+	uint16_t info = vb2hack_is_secdata_compromised(vboot_get_context(), index);
+
+	if (info)
+		elog_add_event_raw(ELOG_TYPE_HACK_SECDATA_CORRUPT, &info, sizeof(info));
 }
