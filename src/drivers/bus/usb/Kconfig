@@ -44,3 +44,11 @@ config DRIVER_USB_AP_MUX_CONTROL_CROS_DEBUG
 	bool "Enable debugging for AP control of type-C muxes through CrOS EC"
 	default n
 	depends on DRIVER_USB_AP_MUX_CONTROL_CROS
+
+config INTEL_TCSS_USE_PDC_PMC_MUX_CONFIG
+	bool "Enable TCSS PDC PMC Mux configuration"
+	default n
+	help
+	  Select this to indicate PDC<->PMC direct connection. PDC communicates directly to PMC
+	  to configure the mux and there is no need to query the EC to get port mapping and send
+	  commands to PMC to configure the mux.
