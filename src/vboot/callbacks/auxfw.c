@@ -8,6 +8,7 @@
 #include <libpayload.h>
 #include <vb2_api.h>
 
+#include "base/timestamp.h"
 #include "drivers/ec/vboot_ec.h"
 #include "drivers/ec/vboot_auxfw.h"
 
@@ -54,5 +55,8 @@ vb2_error_t vb2ex_auxfw_update(void)
  */
 vb2_error_t vb2ex_auxfw_finalize(struct vb2_context *ctx)
 {
-	return protect_fw_tunnels();
+	vb2_error_t ret = protect_fw_tunnels();
+
+	timestamp_add_now(TS_VB_AUXFW_SYNC_DONE);
+	return ret;
 }
