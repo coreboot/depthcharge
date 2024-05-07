@@ -49,8 +49,8 @@ static const struct __packed {
 	.type = htobe16(0x0023),
 	/* TPM_ALG_SHA256 */
 	.name_alg = htobe16(0x000b),
-	/* kFixedTPM | kFixedParent |  kDecrypt | kSensitiveDataOrigin |
-	   kUserWithAuth | kNoDA */
+	/* kFixedTPM | kFixedParent | kDecrypt | kSensitiveDataOrigin |
+	   kAdminWithPolicy | kNoDA */
 	.object_attributes = htobe32(0x000204b2),
 	.auth_policy = {
 		/* Size of SHA256 */
