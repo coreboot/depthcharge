@@ -27,7 +27,7 @@
 #define PING_STATUS_MASK 0x3
 #define PING_STATUS_COMPLETE 0x1
 #define PING_STATUS_INVALID_FMT 0x3
-#define RTS_RESTART_DELAY_US 5000000 /* 5s */
+#define RTS_RESTART_DELAY_US 7000000 /* 7s */
 
 #define MAX_COMMAND_SIZE 32
 #define FW_CHUNK_SIZE 29
@@ -608,18 +608,20 @@ pd_restart:
 	ret = cros_ec_pd_control(0, PD_RESUME);
 	if(ret) {
 		printf("Cannot resume PD: %d. Rebooting.\n", ret);
-		return VB2_REQUEST_REBOOT;
+		/* Resuming the EC PD stack failed. Reboot the EC to recover */
+		return VB2_REQUEST_REBOOT_EC_TO_RO;
 	}
 
 	/* Give a generous timeout for the EC PD stack to resume */
 	start = timer_us(0);
 	do {
-		mdelay(100);
+		mdelay(200);
 		if (is_rts545x_device_present(me, true))
 			return status;
 	} while (timer_us(start) < RTS_RESTART_DELAY_US);
 
-	return VB2_ERROR_UNKNOWN;
+	/* Cannot contact PDC after timeout. Reboot the EC to recover. */
+	return VB2_REQUEST_REBOOT_EC_TO_RO;
 }
 
 /* By default, output NULL to perform no update. Board code shall
