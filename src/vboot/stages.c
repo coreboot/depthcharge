@@ -47,6 +47,11 @@ int vboot_in_recovery(void)
 	return !!(vboot_get_context()->flags & VB2_CONTEXT_RECOVERY_MODE);
 }
 
+int vboot_in_manual_recovery(void)
+{
+	return vb2api_in_manual_recovery_mode(vboot_get_context());
+}
+
 int vboot_in_developer(void)
 {
 	return !!(vboot_get_context()->flags & VB2_CONTEXT_DEVELOPER_MODE);
@@ -215,7 +220,7 @@ int vboot_select_and_load_kernel(void)
 		power_off();
 	} else if (res == VB2_REQUEST_SHUTDOWN) {
 		printf("Powering off.\n");
-		if (ec && ec->reboot_ap_off && vboot_in_recovery()) {
+		if (ec && ec->reboot_ap_off && vboot_in_manual_recovery()) {
 			/*
 			 * In recovery mode, EC will reset itself on shutdown.
 			 * So, we need to tell it not to start AP.
