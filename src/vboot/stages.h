@@ -24,6 +24,7 @@
 int vboot_check_wipe_memory(void);
 int vboot_check_enable_usb(void);
 int vboot_in_recovery(void);
+int vboot_in_manual_recovery(void);
 int vboot_in_developer(void);
 
 /*
