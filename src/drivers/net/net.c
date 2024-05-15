@@ -65,6 +65,25 @@ NetDevice *net_get_device(void)
 	return net_device;
 }
 
+static int net_init_device(NetDevice *new_device)
+{
+	int err;
+
+	if (!new_device->init)
+		return 0;
+
+	if (new_device->init_status == NetDeviceNotInitted) {
+		err = new_device->init(new_device);
+		new_device->init_status = err ?
+			NetDeviceFailed : NetDeviceInitted;
+	}
+
+	if (new_device->init_status == NetDeviceInitted)
+		return 0;
+
+	return -1;
+}
+
 void net_wait_for_link(void)
 {
 	printf("Waiting for link\n");
@@ -72,12 +91,17 @@ void net_wait_for_link(void)
 	while (1) {
 		NetPoller *net_poller;
 		NetDevice *new_device;
+		int err;
 
 		list_for_each(net_poller, net_pollers, list_node)
 			net_poller->poll(net_poller);
 
 		list_for_each(new_device, net_devices, list_node) {
 			int ready;
+
+			err = net_init_device(new_device);
+			if (err)
+				continue;
 
 			/* the first link up wins */
 			new_device->ready(new_device, &ready);
