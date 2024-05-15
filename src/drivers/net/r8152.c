@@ -923,8 +923,9 @@ static int r8153b_init(usbdev_t *dev)
  * The higher-level commands
  */
 
-static int rtl8152_init(GenericUsbDevice *gen_dev)
+static int rtl8152_init(NetDevice *net_dev)
 {
+	GenericUsbDevice *gen_dev = (GenericUsbDevice *)net_dev->dev_data;
 	usbdev_t *usb_dev = gen_dev->dev;
 
 	printf("R8152: Initializing\n");
@@ -1116,8 +1117,8 @@ static const UsbEthId r8152_supported_ids[] = {
 
 static R8152Dev r8152_dev = {
 	.usb_eth_dev = {
-		.init = &rtl8152_init,
 		.net_dev = {
+			.init = &rtl8152_init,
 			.ready = &mii_ready,
 			.recv = &rtl8152_recv,
 			.send = &rtl8152_send,
