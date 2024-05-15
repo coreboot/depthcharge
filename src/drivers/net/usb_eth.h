@@ -23,7 +23,6 @@ typedef struct UsbEthId {
 } UsbEthId;
 
 typedef struct UsbEthDevice {
-	int (*init)(GenericUsbDevice *dev);
 	NetDevice net_dev;
 	const UsbEthId *supported_ids;
 	int num_supported_ids;
