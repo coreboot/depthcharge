@@ -249,8 +249,9 @@ static int smsc95xx_start(usbdev_t *usb_dev)
  * The higher-level commands
  */
 
-static int smsc95xx_init(GenericUsbDevice *gen_dev)
+static int smsc95xx_init(NetDevice *net_dev)
 {
+	GenericUsbDevice *gen_dev = (GenericUsbDevice *)net_dev->dev_data;
 	usbdev_t *usb_dev = gen_dev->dev;
 
 	printf("SMSC95xx: Initializing\n");
@@ -399,8 +400,8 @@ static const UsbEthId smsc95xx_supported_ids[] = {
 
 static Smsc95xxDev smsc_dev = {
 	.usb_eth_dev = {
-		.init = &smsc95xx_init,
 		.net_dev = {
+			.init = &smsc95xx_init,
 			.ready = &mii_ready,
 			.recv = &smsc95xx_recv,
 			.send = &smsc95xx_send,
