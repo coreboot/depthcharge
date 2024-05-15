@@ -90,12 +90,8 @@ static int usb_eth_probe(GenericUsbDevice *dev)
 			   dd->idProduct == eth_dev->supported_ids[i].product) {
 				usb_eth_net_device = &eth_dev->net_dev;
 				usb_eth_net_device->dev_data = dev;
-				if (eth_dev->init && eth_dev->init(dev)) {
-					break;
-				} else {
-					net_add_device(usb_eth_net_device);
-					return 1;
-				}
+				net_add_device(usb_eth_net_device);
+				return 1;
 			}
 		}
 	}
