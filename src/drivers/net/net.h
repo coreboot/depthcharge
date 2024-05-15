@@ -23,6 +23,12 @@
 #include "base/list.h"
 #include "net/uip.h"
 
+typedef enum NetDeviceInitStatus {
+	NetDeviceNotInitted = 0,
+	NetDeviceInitted,
+	NetDeviceFailed,
+} NetDeviceInitStatus;
+
 typedef struct NetDevice {
 	ListNode list_node;
 	int (*ready)(struct NetDevice *dev, int *ready);
@@ -32,7 +38,9 @@ typedef struct NetDevice {
 	int (*mdio_read)(struct NetDevice *dev, uint8_t loc, uint16_t *val);
 	int (*mdio_write)(struct NetDevice *dev, uint8_t loc, uint16_t val);
 	const uip_eth_addr *(*get_mac)(struct NetDevice *dev);
+	int (*init)(struct NetDevice *dev);
 	void *dev_data;
+	NetDeviceInitStatus init_status;
 } NetDevice;
 
 typedef struct NetPoller {
