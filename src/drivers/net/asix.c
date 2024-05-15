@@ -154,8 +154,9 @@ static int asix_write_medium_mode(usbdev_t *dev, uint16_t mode)
  * The main attraction.
  */
 
-static int asix_init(GenericUsbDevice *gen_dev)
+static int asix_init(NetDevice *net_dev)
 {
+	GenericUsbDevice *gen_dev = (GenericUsbDevice *)net_dev->dev_data;
 	usbdev_t *usb_dev = gen_dev->dev;
 
 	if (usb_eth_init_endpoints(usb_dev, &asix_dev.bulk_in, 2,
@@ -317,8 +318,8 @@ static const UsbEthId asix_supported_ids[] = {
 
 static AsixDev asix_dev = {
 	.usb_eth_dev = {
-		.init = &asix_init,
 		.net_dev = {
+			.init = &asix_init,
 			.ready = &mii_ready,
 			.recv = &asix_recv,
 			.send = &asix_send,
