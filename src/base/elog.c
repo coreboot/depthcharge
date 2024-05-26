@@ -236,3 +236,23 @@ elog_error_t elog_add_event_raw(uint8_t event_type, void *data,
 	/* Ensure the updates hit the non-volatile storage. */
 	return elog_sync_to_flash();
 }
+
+elog_error_t elog_add_event(uint8_t event_type)
+{
+	return elog_add_event_raw(event_type, NULL, 0);
+}
+
+elog_error_t elog_add_event_byte(uint8_t event_type, uint8_t data)
+{
+	return elog_add_event_raw(event_type, &data, sizeof(data));
+}
+
+elog_error_t elog_add_event_word(uint8_t event_type, uint16_t data)
+{
+	return elog_add_event_raw(event_type, &data, sizeof(data));
+}
+
+elog_error_t elog_add_event_dword(uint8_t event_type, uint32_t data)
+{
+	return elog_add_event_raw(event_type, &data, sizeof(data));
+}
