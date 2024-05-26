@@ -19,8 +19,16 @@
 
 enum timestamp_id {
 	/* 940-950 reserved for vendorcode extensions (940-950: Intel ME) */
+	TS_ME_INFORM_DRAM_START = 940,
+	TS_ME_INFORM_DRAM_END = 941,
 	TS_ME_END_OF_POST_START = 942,
 	TS_ME_END_OF_POST_END = 943,
+	TS_ME_BOOT_STALL_END = 944,
+	TS_ME_ICC_CONFIG_START = 945,
+	TS_ME_HOST_BOOT_PREP_END = 946,
+	TS_ME_RECEIVED_CRDA_FROM_PMC = 947,
+	TS_CSE_FW_SYNC_START = 948,
+	TS_CSE_FW_SYNC_END = 949,
 
 	// Depthcharge entry IDs start at 1000.
 	TS_START = 1000,
