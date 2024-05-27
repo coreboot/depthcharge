@@ -75,16 +75,4 @@ config MAX_HECI_DEVICES
 	int "Maximum number of HECI devices"
 	default 3
 
-config CSE_PCI_BUS
-	int "CSE PCI bus number"
-	default 0
-
-config CSE_PCI_DEV
-	int "CSE PCI device number"
-	default 22
-
-config CSE_PCI_FUN
-	int "CSE PCI function number"
-	default 0
-
 endif

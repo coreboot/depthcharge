@@ -16,6 +16,9 @@
 #include "base/cleanup_funcs.h"
 #include "drivers/gpio/gpio.h"
 
+#define PCI_DEV_SPI	PCI_DEV(0, 0x1f, 5)
+#define PCH_DEV_CSE	PCI_DEV(0,0x16, 0)
+
 /* Platform specific GPE configuration */
 typedef struct SocGpeConfig {
 	int gpe_max;

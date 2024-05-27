@@ -14,15 +14,15 @@
 
 #include "base/timestamp.h"
 #include "drivers/power/power.h"
+#include "drivers/soc/intel_common.h"
 #include "drivers/timer/timer.h"
 #include "vboot/stages.h"
 
 #define printk(LEVEL, STR...) printf(STR)
 #define post_code(pc)
 
-#define PCH_DEV_CSE PCI_DEV(CONFIG_CSE_PCI_BUS, CONFIG_CSE_PCI_DEV, CONFIG_CSE_PCI_FUN)
 #define PCH_DEVFN_CSE PCH_DEV_CSE
-#define PCH_DEV_SLOT_CSE CONFIG_CSE_PCI_DEV
+#define PCH_DEV_SLOT_CSE PCI_SLOT(PCH_DEV_CSE)
 
 #define PCI_BASE_ADDRESS_MEM_ATTR_MASK	0x0f
 
