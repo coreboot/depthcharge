@@ -13,6 +13,7 @@
 #include "drivers/gpio/mtk_gpio.h"
 #include "drivers/gpio/sysinfo.h"
 #include "drivers/power/psci.h"
+#include "drivers/sound/nau8318.h"
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/tpm/google/i2c.h"
 #include "drivers/tpm/tpm.h"
@@ -45,6 +46,19 @@ static void enable_usb_vbus(struct UsbHostController *usb_host)
 	}
 }
 
+static void sound_setup(void)
+{
+	GpioOps *spk_en = sysinfo_lookup_gpio("speaker enable", 1,
+					      new_mtk_gpio_output);
+	GpioOps *beep_en = sysinfo_lookup_gpio("beep enable", 1,
+					       new_mtk_gpio_output);
+	if (!spk_en || !beep_en)
+		return;
+
+	nau8318Codec *nau8318 = new_nau8318_codec(spk_en, beep_en);
+        sound_set_ops(&nau8318->ops);
+}
+
 static int board_setup(void)
 {
 	sysinfo_install_flags(new_mtk_gpio_input);
@@ -67,6 +81,8 @@ static int board_setup(void)
 					      new_mtk_gpio_input);
 	CrosEc *cros_ec = new_cros_ec(&cros_ec_spi_bus->ops, ec_int);
 	register_vboot_ec(&cros_ec->vboot);
+
+	sound_setup();
 
 	/* Set up NOR flash ops */
 	MtkNorFlash *nor_flash = new_mtk_nor_flash(0x16340000);
