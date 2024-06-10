@@ -6,6 +6,7 @@
 #include "drivers/video/display.h"
 
 int video_initialized = 0;
+int video_console_enabled = 1;
 
 int init_video(void)
 {
@@ -37,6 +38,9 @@ void console_print(const char *str)
 
 	printf("%s", str);
 
+	if (!video_console_enabled)
+		return;
+
 	if (init_video()) {
 		printf("Failed to initialize display\n");
 		return;
@@ -60,8 +64,36 @@ static int do_cls(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
 	return CMD_RET_SUCCESS;
 }
 
+static int do_vcstop(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	if (argc > 1)
+		return CMD_RET_USAGE;
+	video_console_enabled = 0;
+	return CMD_RET_SUCCESS;
+}
+
+static int do_vcstart(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	if (argc > 1)
+		return CMD_RET_USAGE;
+	video_console_enabled = 1;
+	return CMD_RET_SUCCESS;
+}
+
 U_BOOT_CMD(
 	cls,	1,	1,
 	"Clear Screen",
+	""
+);
+
+U_BOOT_CMD(
+	vcstop,	1,	1,
+	"Stop Video Console",
+	""
+);
+
+U_BOOT_CMD(
+	vcstart,	1,	1,
+	"Start Video Console",
 	""
 );
