@@ -52,7 +52,8 @@ enum {
 
 enum {
 	CR50_DID_VID = 0x00281ae0L,
-	TI50_DID_VID = 0x504a6666L,
+	TI50_DT_DID_VID = 0x504a6666L,
+	TI50_OT_DID_VID = 0x50666666L,
 };
 
 /*
@@ -616,8 +617,12 @@ static int tpm_init(I2cTpmChipOps *me)
 		printf("cr50 TPM 2.0 (i2c 0x%02x id 0x%08x)\n",
 		       tpm->base.addr, vendor);
 		return 0;
-	case TI50_DID_VID:
-		printf("ti50 TPM 2.0 (i2c 0x%02x id 0x%08x)\n",
+	case TI50_DT_DID_VID:
+		printf("ti50 DT TPM 2.0 (i2c 0x%02x id 0x%08x)\n",
+		       tpm->base.addr, vendor);
+		return 0;
+	case TI50_OT_DID_VID:
+		printf("ti50 OT TPM 2.0 (i2c 0x%02x id 0x%08x)\n",
 		       tpm->base.addr, vendor);
 		return 0;
 	default:
