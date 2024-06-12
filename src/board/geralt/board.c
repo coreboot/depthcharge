@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <libpayload.h>
 #include "base/device_tree.h"
+#include "base/fw_config.h"
 #include "base/init_funcs.h"
 #include "drivers/bus/i2c/mtk_i2c.h"
 #include "drivers/bus/i2s/mtk_v2.h"
@@ -18,6 +19,7 @@
 #include "drivers/sound/i2s.h"
 #include "drivers/sound/max98390.h"
 #include "drivers/sound/nau8318.h"
+#include "drivers/sound/tas2563.h"
 #include "drivers/storage/mtk_mmc.h"
 #include "drivers/tpm/google/i2c.h"
 #include "drivers/tpm/tpm.h"
@@ -115,6 +117,28 @@ static void setup_max98390(GpioOps *spk_rst_l)
 	sound_set_ops(&sound_route->ops);
 }
 
+static void setup_tas2563(GpioOps *spk_rst_l)
+{
+	MtkI2s *i2so1 = new_mtk_i2s(0x10b10000, 2, 32 * KHz,
+				    16, 16, AFE_I2S_I1O1);
+	I2sSource *i2s_source = new_i2s_source(&i2so1->ops, 32 * KHz, 2, 8000);
+	SoundRoute *sound_route = new_sound_route(&i2s_source->ops);
+	MTKI2c *i2c0 = new_mtk_i2c(0x11280000, 0x10220080, I2C_APDMA_ASYNC);
+	Tas2563Codec *speaker_r = new_tas2563_codec(&i2c0->ops, 0x4c, 1, 0);
+	Tas2563Codec *speaker_l = new_tas2563_codec(&i2c0->ops, 0x4f, 0, 0);
+
+	gpio_set(spk_rst_l, 0);
+
+	/* Delay 1ms for I2C ready */
+	mdelay(1);
+
+	list_insert_after(&speaker_l->component.list_node,
+			  &sound_route->components);
+	list_insert_after(&speaker_r->component.list_node,
+			  &sound_route->components);
+	sound_set_ops(&sound_route->ops);
+}
+
 static void setup_nau8318(GpioOps *spk_en, GpioOps *beep_en)
 {
 	nau8318Codec *nau8318 = new_nau8318_codec(spk_en, beep_en);
@@ -130,10 +154,14 @@ static void sound_setup(void)
 	GpioOps *beep_en = sysinfo_lookup_gpio("beep enable", 1,
 					       new_mtk_gpio_output);
 
-	if (spk_reset)
-		setup_max98390(spk_reset);
-	else if (spk_en && beep_en)
+	if (spk_en && beep_en) {
 		setup_nau8318(spk_en, beep_en);
+	} else if (spk_reset) {
+		if (fw_config_probe(FW_CONFIG(AUDIO_AMP, AMP_MAX98390)))
+			setup_max98390(spk_reset);
+		else if (fw_config_probe(FW_CONFIG(AUDIO_AMP, AMP_TAS2563)))
+			setup_tas2563(spk_reset);
+	}
 }
 
 static int board_setup(void)
