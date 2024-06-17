@@ -8,6 +8,7 @@
 #ifndef __DRIVERS_SOC_INTEL_COMMON_H__
 #define __DRIVERS_SOC_INTEL_COMMON_H__
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <pci.h>
@@ -17,7 +18,10 @@
 #include "drivers/gpio/gpio.h"
 
 #define PCI_DEV_SPI	PCI_DEV(0, 0x1f, 5)
-#define PCH_DEV_CSE	PCI_DEV(0,0x16, 0)
+#define PCH_DEV_CSE	PCI_DEV(0, 0x16, 0)
+#define PCI_DEV_ISH	PCI_DEV(0, 0x12, 0)
+
+bool soc_is_ish_partition_enabled(void);
 
 /* Platform specific GPE configuration */
 typedef struct SocGpeConfig {

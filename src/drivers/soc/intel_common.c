@@ -132,3 +132,13 @@ pcidev_t remap_pci_dev(pcidev_t dev)
 	else
 		return dev;
 }
+
+bool soc_is_ish_partition_enabled(void)
+{
+	uint16_t ish_pci_id = pci_read_config16(PCI_DEV_ISH, REG_DEVICE_ID);
+
+	if (ish_pci_id == 0xFFFF)
+		return false;
+
+	return true;
+}
