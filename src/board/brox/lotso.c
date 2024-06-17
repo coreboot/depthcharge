@@ -13,6 +13,7 @@
 static const struct storage_config storage_configs[] = {
 	{ .media = STORAGE_NVME, .pci_dev = SA_DEV_CPU_RP0 },
 	{ .media = STORAGE_UFS, .pci_dev = PCH_DEV_UFS1 },
+	{ .media = STORAGE_RTKMMC, .pci_dev = PCH_DEV_PCIE5 },
 };
 
 const struct storage_config *variant_get_storage_configs(size_t *count)
