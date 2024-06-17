@@ -139,3 +139,11 @@ config DRIVER_SOC_PHOENIX
 	select DRIVER_GPIO_KERN
 
 source "src/drivers/soc/cse/Kconfig"
+
+config DRIVER_CMOS_BASE_PORT_BANK_0
+	hex
+	default 0x70
+
+config DRIVER_CMOS_BASE_PORT_BANK_1
+	hex
+	default 0x72
