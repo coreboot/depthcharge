@@ -6,6 +6,7 @@
 
 #include "base/fw_config.h"
 #include "board/brox/include/variant.h"
+#include "drivers/ec/rts5453/rts5453.h"
 #include "drivers/gpio/alderlake.h"
 #include "drivers/soc/alderlake.h"
 #include "drivers/storage/storage_common.h"
@@ -34,4 +35,12 @@ const struct audio_config *variant_probe_audio_config(void)
 	};
 
 	return &config;
+}
+
+/* Override of func in src/drivers/ec/rts5453/rts5453.c */
+void board_rts5453_get_image_paths(const char **image_path,
+				   const char **hash_path)
+{
+	*image_path = "rts5453_retimer_bypass.bin";
+	*hash_path = "rts5453_retimer_bypass.hash";
 }
