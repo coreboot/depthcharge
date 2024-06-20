@@ -14,6 +14,7 @@ enum audio_bus_type {
 	AUDIO_I2S,
 	AUDIO_SNDW,
 	AUDIO_PWM,
+	AUDIO_HDA,
 };
 
 enum audio_codec_type {
@@ -24,6 +25,7 @@ enum audio_codec_type {
 	AUDIO_CS35L53,
 	AUDIO_MAX98396,
 	AUDIO_RT5650,
+	AUDIO_ALC256,
 };
 
 enum audio_amp_type {
