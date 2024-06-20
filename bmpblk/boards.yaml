@@ -411,6 +411,7 @@ trulo:
   screen: [1920, 1080]
   sdcard:   False
   dpi: 72  # DO NOT COPY-PASTE -- follow instructions at top of file.
+  split_ratio: 100 # DO NOT COPY-PASTE -- follow instructions at top of file.
 
 fatcat:
   # 3840x2160, boots recovery image on USB ports.
