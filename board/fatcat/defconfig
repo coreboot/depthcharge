@@ -1,5 +1,6 @@
 # Arch
 CONFIG_ARCH_X86=y
+CONFIG_ARCH_X86_64=y
 
 # Board
 CONFIG_BOARD_DIR="fatcat"
