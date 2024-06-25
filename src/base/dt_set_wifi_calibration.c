@@ -75,7 +75,7 @@ static int blob_is_valid(struct calibration_entry *cal_entry,
 	return 1;
 }
 
-int dt_set_wifi_calibration(DeviceTree *tree, const DtPathMap *maps)
+int dt_set_wifi_calibration(struct device_tree *tree, const DtPathMap *maps)
 {
 	int rv = 0;
 	struct calibration_entry *cal_entry;
@@ -118,10 +118,10 @@ int dt_set_wifi_calibration(DeviceTree *tree, const DtPathMap *maps)
 	return rv;
 }
 
-int dt_set_wifi_country_code(DeviceTree *tree, const DtPathMap *maps)
+int dt_set_wifi_country_code(struct device_tree *tree, const DtPathMap *maps)
 {
 	int rv = 0;
-	DeviceTreeNode *dt_node;
+	struct device_tree_node *dt_node;
 	const DtPathMap *map = maps;
 	const char regioncode_key[] = "region";
 	char country_code[8], *cc;
@@ -150,10 +150,10 @@ int dt_set_wifi_country_code(DeviceTree *tree, const DtPathMap *maps)
 	return rv;
 }
 
-int dt_set_xo_cal_data(DeviceTree *tree, const DtPathMap *maps)
+int dt_set_xo_cal_data(struct device_tree *tree, const DtPathMap *maps)
 {
 	int key_val, rv = 0;
-	DeviceTreeNode *dt_node;
+	struct device_tree_node *dt_node;
 	const DtPathMap *map = maps;
 	const char key[] = "xo_cal_data";
 	char key_value[12];
@@ -179,11 +179,11 @@ int dt_set_xo_cal_data(DeviceTree *tree, const DtPathMap *maps)
 	return rv;
 }
 
-int dt_set_bt_fw_name(DeviceTree *tree, const DtPathMap *maps,
+int dt_set_bt_fw_name(struct device_tree *tree, const DtPathMap *maps,
 		const CcFwMap *cc_fw_maps)
 {
 	int rv = 0;
-	DeviceTreeNode *dt_node;
+	struct device_tree_node *dt_node;
 	const DtPathMap *map = maps;
 	const CcFwMap *cc_fw_map = cc_fw_maps;
 	const char regioncode_key[] = "region";

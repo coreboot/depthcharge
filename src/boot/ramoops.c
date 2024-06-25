@@ -30,7 +30,7 @@ typedef struct
 	uint64_t start;
 	uint64_t size;
 
-	DeviceTreeFixup fixup;
+	struct device_tree_fixup fixup;
 } Ramoops;
 
 #define RECORD_SIZE		0x40000
@@ -38,16 +38,17 @@ typedef struct
 #define FTRACE_SIZE		0x20000
 #define PMSG_SIZE		0x20000
 
-static int ramoops_fixup(DeviceTreeFixup *fixup, DeviceTree *tree)
+static int ramoops_fixup(struct device_tree_fixup *fixup,
+			 struct device_tree *tree)
 {
 	Ramoops *ramoops = container_of(fixup, Ramoops, fixup);
 
-	DeviceTreeNode *reserved = dt_init_reserved_memory_node(tree);
+	struct device_tree_node *reserved = dt_init_reserved_memory_node(tree);
 	if (!reserved)
 		return 1;
 
 	// Eliminate any existing ramoops node.
-	DeviceTreeNode *node = dt_find_compat(tree->root, "ramoops");
+	struct device_tree_node *node = dt_find_compat(tree->root, "ramoops");
 	if (node)
 		list_remove(&node->list_node);
 

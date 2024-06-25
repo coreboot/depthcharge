@@ -20,12 +20,13 @@
 #include "base/init_funcs.h"
 #include "base/device_tree.h"
 
-static int emc_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
+static int emc_device_tree(struct device_tree_fixup *fixup,
+			   struct device_tree *tree)
 {
 	const char *emc_dt_name[] = { "memory-controller@7001b000", NULL };
 	const char *emc_table_dt_name[] = { "emc-table", NULL };
-	DeviceTreeNode *emc_node;
-	DeviceTreeNode *emc_table_node;
+	struct device_tree_node *emc_node;
+	struct device_tree_node *emc_table_node;
 
 	emc_node = dt_find_node(tree->root, emc_dt_name, NULL, NULL,
 				     1);
@@ -50,7 +51,8 @@ static int emc_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 			(u64 *)&lib_sysinfo.mtc_size, 1, addr_cells,
 			size_cells);
 
-	DeviceTreeReserveMapEntry *reserve = xzalloc(sizeof(*reserve));
+	struct device_tree_reserve_map_entry *reserve =
+		xzalloc(sizeof(*reserve));
 	reserve->start = lib_sysinfo.mtc_start;
 	reserve->size = lib_sysinfo.mtc_size;
 	list_insert_after(&reserve->list_node, &tree->reserve_map);
@@ -61,7 +63,7 @@ static int emc_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 	return 0;
 }
 
-static DeviceTreeFixup emc_dt_fixup = {
+static struct device_tree_fixup emc_dt_fixup = {
 	.fixup = emc_device_tree,
 };
 

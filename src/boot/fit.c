@@ -137,14 +137,14 @@ static FitImageNode *find_image_with_overlays(const char *name, int bytes,
 	return base;
 }
 
-static void image_node(DeviceTreeNode *node)
+static void image_node(struct device_tree_node *node)
 {
 	FitImageNode *image = xzalloc(sizeof(*image));
 	image->compression = CompressionNone;
 
 	image->name = node->name;
 
-	DeviceTreeProperty *prop;
+	struct device_tree_property *prop;
 	list_for_each(prop, node->properties, list_node) {
 		if (!strcmp("data", prop->prop.name)) {
 			image->data = prop->prop.data;
@@ -164,12 +164,12 @@ static void image_node(DeviceTreeNode *node)
 	list_insert_after(&image->list_node, &image_nodes);
 }
 
-static void config_node(DeviceTreeNode *node)
+static void config_node(struct device_tree_node *node)
 {
 	FitConfigNode *config = xzalloc(sizeof(*config));
 	config->name = node->name;
 
-	DeviceTreeProperty *prop;
+	struct device_tree_property *prop;
 	list_for_each(prop, node->properties, list_node) {
 		if (!strcmp("kernel", prop->prop.name))
 			config->kernel = find_image(prop->prop.data);
@@ -185,17 +185,17 @@ static void config_node(DeviceTreeNode *node)
 	list_insert_after(&config->list_node, &config_nodes);
 }
 
-static void fit_unpack(DeviceTree *tree, const char **default_config)
+static void fit_unpack(struct device_tree *tree, const char **default_config)
 {
-	DeviceTreeNode *child;
-	DeviceTreeNode *images = dt_find_node_by_path(tree, "/images",
-						      NULL, NULL, 0);
+	struct device_tree_node *child;
+	struct device_tree_node *images = dt_find_node_by_path(tree, "/images",
+							       NULL, NULL, 0);
 	if (images)
 		list_for_each(child, images->children, list_node)
 			image_node(child);
 
-	DeviceTreeNode *configs = dt_find_node_by_path(tree, "/configurations",
-						       NULL, NULL, 0);
+	struct device_tree_node *configs = dt_find_node_by_path(tree,
+		"/configurations", NULL, NULL, 0);
 	if (configs) {
 		*default_config = dt_find_string_prop(configs, "default");
 		list_for_each(child, configs->children, list_node)
@@ -203,12 +203,13 @@ static void fit_unpack(DeviceTree *tree, const char **default_config)
 	}
 }
 
-static int fdt_find_compat(void *blob, uint32_t start_offset, FdtProperty *prop)
+static int fdt_find_compat(void *blob, uint32_t start_offset,
+			   struct fdt_property *prop)
 {
 	int offset = start_offset;
 	int size;
 
-	size = fdt_node_name(blob, offset, NULL);
+	size = fdt_next_node_name(blob, offset, NULL);
 	if (!size)
 		return -1;
 	offset += size;
@@ -224,7 +225,8 @@ static int fdt_find_compat(void *blob, uint32_t start_offset, FdtProperty *prop)
 	return -1;
 }
 
-static int fit_check_compat(FdtProperty *compat_prop, const char *compat_name)
+static int fit_check_compat(struct fdt_property *compat_prop,
+			    const char *compat_name)
 {
 	int bytes = compat_prop->size;
 	const char *compat_str = compat_prop->data;
@@ -245,7 +247,7 @@ static int fit_rank_compat(FitConfigNode *config)
 	// legacy FIT image. Must extract compat prop from FDT itself.
 	if (!config->compat.name) {
 		void *fdt_blob = config->fdt->data;
-		FdtHeader *fdt_header = (FdtHeader *)fdt_blob;
+		struct fdt_header *fdt_header = fdt_blob;
 		uint32_t fdt_offset =
 			betohl(fdt_header->structure_offset);
 
@@ -327,7 +329,7 @@ static void *get_fdt_data(FitImageNode *fdt)
 	return ret;
 }
 
-static void update_chosen(DeviceTree *tree, char *cmd_line)
+static void update_chosen(struct device_tree *tree, char *cmd_line)
 {
 	int ret;
 	union {
@@ -341,7 +343,8 @@ static void update_chosen(DeviceTree *tree, char *cmd_line)
 	} *seed = xzalloc(sizeof(*seed));
 	uint32_t size;
 	const char *path[] = { "chosen", NULL };
-	DeviceTreeNode *node = dt_find_node(tree->root, path, NULL, NULL, 1);
+	struct device_tree_node *node = dt_find_node(tree->root, path,
+						     NULL, NULL, 1);
 
 	/* Update only if non-NULL cmd line */
 	if (cmd_line)
@@ -366,10 +369,12 @@ static void update_chosen(DeviceTree *tree, char *cmd_line)
 	dt_add_bin_prop(node, "rng-seed", seed->rng, sizeof(seed->rng));
 }
 
-void fit_add_ramdisk(DeviceTree *tree, void *ramdisk_addr, size_t ramdisk_size)
+void fit_add_ramdisk(struct device_tree *tree, void *ramdisk_addr,
+		     size_t ramdisk_size)
 {
 	const char *path[] = { "chosen", NULL };
-	DeviceTreeNode *node = dt_find_node(tree->root, path, NULL, NULL, 1);
+	struct device_tree_node *node = dt_find_node(tree->root, path,
+						     NULL, NULL, 1);
 
 	/* Warning: this assumes the ramdisk is currently located below 4GiB. */
 	u32 start = (uintptr_t)ramdisk_addr;
@@ -381,9 +386,9 @@ void fit_add_ramdisk(DeviceTree *tree, void *ramdisk_addr, size_t ramdisk_size)
 
 static void update_reserve_map(uint64_t start, uint64_t end, void *data)
 {
-	DeviceTree *tree = (DeviceTree *)data;
+	struct device_tree *tree = (struct device_tree *)data;
 
-	DeviceTreeReserveMapEntry *entry = xzalloc(sizeof(*entry));
+	struct device_tree_reserve_map_entry *entry = xzalloc(sizeof(*entry));
 	entry->start = start;
 	entry->size = end - start;
 
@@ -434,11 +439,11 @@ static void update_mem_property(u64 start, u64 end, void *pdata)
 	params->data = data;
 }
 
-static void update_memory(DeviceTree *tree)
+static void update_memory(struct device_tree *tree)
 {
 	Ranges mem;
 	Ranges reserved;
-	DeviceTreeNode *node;
+	struct device_tree_node *node;
 	u32 addr_cells = 1, size_cells = 1;
 	dt_read_cell_props(tree->root, &addr_cells, &size_cells);
 
@@ -504,7 +509,7 @@ static void update_memory(DeviceTree *tree)
 	dt_add_bin_prop(node, "reg", data, length);
 }
 
-FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt)
+FitImageNode *fit_load(void *fit, char *cmd_line, struct device_tree **dt)
 {
 	FitImageNode *image;
 	FitConfigNode *config;
@@ -512,7 +517,7 @@ FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt)
 
 	printf("Loading FIT.\n");
 
-	DeviceTree *tree = fdt_unflatten(fit);
+	struct device_tree *tree = fdt_unflatten(fit);
 	if (!tree) {
 		printf("Failed to unflatten FIT image!\n");
 		return NULL;
@@ -616,7 +621,13 @@ FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt)
 			       overlay_chain->overlay->name);
 			return NULL;
 		}
-		if (dt_apply_overlay(*dt, fdt_data) != 0) {
+		struct device_tree *overlay = fdt_unflatten(fdt_data);
+		if (!overlay) {
+			printf("ERROR: Can't unflatten overlay %s!\n",
+			       overlay_chain->overlay->name);
+			return NULL;
+		}
+		if (dt_apply_overlay(*dt, overlay) != 0) {
 			printf("ERROR: Failed to apply overlay %s!\n",
 			       overlay_chain->overlay->name);
 			return NULL;

@@ -49,7 +49,7 @@ typedef struct FitConfigNode
 	FitImageNode *fdt;
 	struct list_node overlays;
 	FitImageNode *ramdisk;
-	FdtProperty compat;
+	struct fdt_property compat;
 	int compat_rank;
 	int compat_pos;
 
@@ -73,7 +73,7 @@ typedef struct FitOverlayChain
  * compatible string set by fit_add_compat() and unflattening the corresponding
  * kernel device tree.
  */
-FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt);
+FitImageNode *fit_load(void *fit, char *cmd_line, struct device_tree **dt);
 
 /*
  * Add a compatible string for the preferred kernel DT to the list for this
@@ -83,7 +83,8 @@ FitImageNode *fit_load(void *fit, char *cmd_line, DeviceTree **dt);
  */
 void fit_add_compat(const char *compat);
 
-void fit_add_ramdisk(DeviceTree *tree, void *ramdisk_addr, size_t ramdisk_size);
+void fit_add_ramdisk(struct device_tree *tree, void *ramdisk_addr,
+		     size_t ramdisk_size);
 
 size_t fit_decompress(FitImageNode *node, void *buffer, size_t bufsize);
 

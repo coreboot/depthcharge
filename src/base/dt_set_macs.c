@@ -7,7 +7,7 @@ typedef struct  {
 	uint8_t b[6];
 } mac_addr_t;
 
-int dt_set_mac_addresses(DeviceTree *tree, const DtPathMap *maps)
+int dt_set_mac_addresses(struct device_tree *tree, const DtPathMap *maps)
 {
 	int i, rv = 0;
 	const DtPathMap *map = maps;
@@ -49,8 +49,8 @@ static int decode_mac(const char *mac_addr_str, mac_addr_t *mac_addr)
 	return 0;
 }
 
-static int dt_set_mac_addresses_from_vpd(DeviceTreeFixup *dt_fixup,
-					 DeviceTree *tree)
+static int dt_set_mac_addresses_from_vpd(struct device_tree_fixup *dt_fixup,
+					 struct device_tree *tree)
 {
 	VpdDeviceTreeFixup *vpd_fixup = container_of(dt_fixup,
 						     VpdDeviceTreeFixup, fixup);

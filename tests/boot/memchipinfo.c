@@ -7,9 +7,9 @@
 
 #include "boot/memchipinfo.c"
 
-static DeviceTree tree;
-static DeviceTreeNode root;
-static DeviceTreeFixup fixup;
+static struct device_tree tree;
+static struct device_tree_node root;
+static struct device_tree_fixup fixup;
 
 static int setup(void **state)
 {
@@ -70,7 +70,7 @@ static void test_memchipinfo(void **state)
 	assert_int_equal(install_memchipinfo_data(&fixup, &tree), 0);
 
 	adc = szc = 0xff;
-	DeviceTreeNode *c0 = dt_find_node_by_path(
+	struct device_tree_node *c0 = dt_find_node_by_path(
 		&tree, "/lpddr-channel0", &adc, &szc, 0);
 	assert_non_null(c0);
 	assert_int_equal(adc, 1);
@@ -79,7 +79,7 @@ static void test_memchipinfo(void **state)
 	assert_dt_u32_prop(c0, "io-width", 32);
 
 	adc = szc = 0xff;
-	DeviceTreeNode *r0 = dt_find_node_by_path(
+	struct device_tree_node *r0 = dt_find_node_by_path(
 		&tree, "/lpddr-channel0/rank@0", &adc, &szc, 0);
 	assert_non_null(r0);
 	assert_int_equal(adc, 1);
@@ -90,7 +90,7 @@ static void test_memchipinfo(void **state)
 	assert_dt_u32_prop(r0, "density", 2048);
 
 	adc = szc = 0xff;
-	DeviceTreeNode *r1 = dt_find_node_by_path(
+	struct device_tree_node *r1 = dt_find_node_by_path(
 		&tree, "/lpddr-channel0/rank@1", &adc, &szc, 0);
 	assert_non_null(r1);
 	assert_int_equal(adc, 1);
@@ -101,7 +101,7 @@ static void test_memchipinfo(void **state)
 	assert_dt_u32_prop(r1, "density", 1024);
 
 	adc = szc = 0xff;
-	DeviceTreeNode *c1 = dt_find_node_by_path(
+	struct device_tree_node *c1 = dt_find_node_by_path(
 		&tree, "/lpddr-channel1", &adc, &szc, 0);
 	assert_non_null(c1);
 	assert_int_equal(adc, 1);

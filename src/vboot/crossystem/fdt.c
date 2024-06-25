@@ -32,11 +32,13 @@
 
 static int last_firmware_type = FIRMWARE_TYPE_AUTO_DETECT;
 
-static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
+static int install_crossystem_data(struct device_tree_fixup *fixup,
+				   struct device_tree *tree)
 {
 	struct vb2_context *ctx = vboot_get_context();
 	const char *path[] = { "firmware", "chromeos", NULL };
-	DeviceTreeNode *node = dt_find_node(tree->root, path, NULL, NULL, 1);
+	struct device_tree_node *node = dt_find_node(tree->root, path,
+						     NULL, NULL, 1);
 
 	/* Never free vbsd, so it sticks around until dt_flatten() is called. */
 	uint8_t *vbsd = malloc(VB2_VBSD_SIZE);
@@ -118,7 +120,7 @@ static int install_crossystem_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 	return 0;
 }
 
-static DeviceTreeFixup crossystem_fixup = {
+static struct device_tree_fixup crossystem_fixup = {
 	.fixup = &install_crossystem_data
 };
 

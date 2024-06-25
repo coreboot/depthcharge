@@ -28,10 +28,11 @@
 
 #define CMD_LINE_SIZE	4096
 
-static void update_cmdline(struct boot_info *bi, DeviceTree *tree)
+static void update_cmdline(struct boot_info *bi, struct device_tree *tree)
 {
 	const char *path[] = {"chosen", NULL};
-	DeviceTreeNode *node = dt_find_node(tree->root, path, NULL, NULL, 0);
+	struct device_tree_node *node =
+		dt_find_node(tree->root, path, NULL, NULL, 0);
 
 	if (node == NULL)
 		goto fail;
@@ -64,7 +65,7 @@ static void update_cmdline(struct boot_info *bi, DeviceTree *tree)
 
 int boot(struct boot_info *bi)
 {
-	DeviceTree *tree;
+	struct device_tree *tree;
 	FitImageNode *kernel = fit_load(bi->kernel, bi->cmd_line, &tree);
 
 	if (!kernel || !tree)
@@ -107,7 +108,7 @@ int boot(struct boot_info *bi)
 	}
 
 	// Reserve the spot the device tree will go.
-	DeviceTreeReserveMapEntry *entry = xzalloc(sizeof(*entry));
+	struct device_tree_reserve_map_entry *entry = xzalloc(sizeof(*entry));
 	entry->start = (uintptr_t)fdt;
 	entry->size = size;
 	list_insert_after(&entry->list_node, &tree->reserve_map);

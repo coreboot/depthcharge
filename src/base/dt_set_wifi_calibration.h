@@ -27,7 +27,7 @@ typedef struct {
  * Retrieve Country Code data from VPD and use it to add bluetooth
  * firmware name to the device tree.
  */
-int dt_set_bt_fw_name(DeviceTree *tree, const DtPathMap *maps,
+int dt_set_bt_fw_name(struct device_tree *tree, const DtPathMap *maps,
 		                const CcFwMap *cc_fw_maps);
 
 #endif

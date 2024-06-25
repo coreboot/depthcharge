@@ -111,7 +111,8 @@ static GptData *read_gpt(SpiGptDev *dev)
 	return data;
 }
 
-static int spi_gpt_fixup(DeviceTreeFixup *fixup, DeviceTree *tree)
+static int spi_gpt_fixup(struct device_tree_fixup *fixup,
+			 struct device_tree *tree)
 {
 	SpiGptCtrlr *ctrlr = container_of(fixup, SpiGptCtrlr, fixup);
 	ctrlr->block_ctrlr.ops.update(&ctrlr->block_ctrlr.ops);
@@ -124,9 +125,9 @@ static int spi_gpt_fixup(DeviceTreeFixup *fixup, DeviceTree *tree)
 		return 0;
 
 	uint32_t addrc, sizec;
-	DeviceTreeNode *nand = dt_find_node_by_path(tree,
-						    ctrlr->dt_path,
-						    &addrc, &sizec, 0);
+	struct device_tree_node *nand = dt_find_node_by_path(tree,
+							     ctrlr->dt_path,
+							     &addrc, &sizec, 0);
 	if (!nand) {
 		printf("device node not found at path %s!\n",
 		       ctrlr->dt_path);
@@ -169,7 +170,8 @@ static int spi_gpt_fixup(DeviceTreeFixup *fixup, DeviceTree *tree)
 		}
 	}
 	for (i = 0, e = entries; i <= max_idx; i++, e++) {
-		DeviceTreeNode *partition = xzalloc(sizeof(*partition));
+		struct device_tree_node *partition =
+			xzalloc(sizeof(*partition));
 		u64 start, size;
 		if (IsUnusedEntry(e)) {
 			/* To make an empty partition, start has to be at

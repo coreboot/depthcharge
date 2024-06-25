@@ -30,12 +30,13 @@ static const char *get_verifiedbootstate(void)
 		return "green";
 }
 
-static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
+static int fix_device_tree(struct device_tree_fixup *fixup,
+			   struct device_tree *tree)
 {
 	const char *firmware_dt_name[] = { "firmware", NULL };
 	const char *android_dt_name[] = { "android", NULL };
-	DeviceTreeNode *firmware_node;
-	DeviceTreeNode *android_node;
+	struct device_tree_node *firmware_node;
+	struct device_tree_node *android_node;
 	int i;
 	const struct android_dt_prop {
 		const char *name;
@@ -75,7 +76,7 @@ static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
 	return 0;
 }
 
-static DeviceTreeFixup android_dt_fixup = {
+static struct device_tree_fixup android_dt_fixup = {
 	.fixup = fix_device_tree
 };
 

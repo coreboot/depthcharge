@@ -99,14 +99,15 @@ static const DtPathMap xo_cal_map[] = {
 	{}
 };
 
-static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
+static int fix_device_tree(struct device_tree_fixup *fixup,
+			   struct device_tree *tree)
 {
 	int rv = 0;
 	rv |= dt_set_xo_cal_data(tree, xo_cal_map);
 	return rv;
 }
 
-static DeviceTreeFixup ipq_enet_fixup = {
+static struct device_tree_fixup ipq_enet_fixup = {
 	.fixup = fix_device_tree
 };
 

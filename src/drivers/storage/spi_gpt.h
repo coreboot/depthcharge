@@ -37,7 +37,7 @@ typedef struct SpiGptCtrlr {
 	SpiGptDev *dev;
 	StreamCtrlr *stream_ctrlr;
 	const char *dt_path;
-	DeviceTreeFixup fixup;
+	struct device_tree_fixup fixup;
 } SpiGptCtrlr;
 
 /*

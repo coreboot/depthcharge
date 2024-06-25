@@ -8,7 +8,8 @@
 #define START_BIT 7
 #define END_BIT 14
 
-static int install_cpunode_data(DeviceTreeFixup *fixup, DeviceTree *tree)
+static int install_cpunode_data(struct device_tree_fixup *fixup,
+				struct device_tree *tree)
 {
 	unsigned int *fuse_addr = (unsigned int *)0x78418C;
 	unsigned int fuse_value = read32(fuse_addr);
@@ -19,8 +20,8 @@ static int install_cpunode_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 		if ((fuse_value >> i) & 0x1) {
 			snprintf(cpu_name, sizeof(cpu_name), "cpu@%u",
 				 (i - START_BIT) * 100);
-			DeviceTreeNode *cpu_node = dt_find_node(tree->root,
-				cpu_path, NULL, NULL, 0);
+			struct device_tree_node *cpu_node = dt_find_node(
+				tree->root, cpu_path, NULL, NULL, 0);
 			if (!cpu_node) {
 				printf("ERROR: Failed to find node %s\n",
 				       cpu_name);
@@ -35,7 +36,7 @@ static int install_cpunode_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 	return 0;
 }
 
-static DeviceTreeFixup cpu_data = {
+static struct device_tree_fixup cpu_data = {
 	.fixup = &install_cpunode_data
 };
 

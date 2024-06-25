@@ -23,18 +23,19 @@
 #include "base/fw_config.h"
 #include "base/init_funcs.h"
 
-static int install_coreboot_data(DeviceTreeFixup *fixup, DeviceTree *tree)
+static int install_coreboot_data(struct device_tree_fixup *fixup,
+				 struct device_tree *tree)
 {
 	u32 addr_cells = 1, size_cells = 1;
 	const char *firmware_path[] = { "firmware", NULL };
-	DeviceTreeNode *firmware_node = dt_find_node(tree->root,
+	struct device_tree_node *firmware_node = dt_find_node(tree->root,
 		firmware_path, &addr_cells, &size_cells, 1);
 
 	// Need to add 'ranges' to the intermediate node to make 'reg' work.
 	dt_add_bin_prop(firmware_node, "ranges", NULL, 0);
 
 	const char *coreboot_path[] = { "coreboot", NULL };
-	DeviceTreeNode *coreboot_node = dt_find_node(firmware_node,
+	struct device_tree_node *coreboot_node = dt_find_node(firmware_node,
 		coreboot_path, &addr_cells, &size_cells, 1);
 
 	dt_add_string_prop(coreboot_node, "compatible", "coreboot");
@@ -88,7 +89,7 @@ static int install_coreboot_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 	return 0;
 }
 
-static DeviceTreeFixup coreboot_fixup = {
+static struct device_tree_fixup coreboot_fixup = {
 	.fixup = &install_coreboot_data
 };
 

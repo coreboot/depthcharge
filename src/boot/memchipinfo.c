@@ -19,14 +19,15 @@ static int lpddr_type_num(enum mem_chip_type type)
 	}
 }
 
-static DeviceTreeNode *new_channel(DeviceTree *tree,
-				   struct mem_chip_entry *entry)
+static struct device_tree_node *new_channel(struct device_tree *tree,
+					    struct mem_chip_entry *entry)
 {
 	char name[16];
 	snprintf(name, sizeof(name), "lpddr-channel%d", entry->channel);
 
 	const char *path[] = { name, NULL };
-	DeviceTreeNode *channel = dt_find_node(tree->root, path, NULL, NULL, 1);
+	struct device_tree_node *channel = dt_find_node(tree->root, path,
+							NULL, NULL, 1);
 
 	char *compat = xzalloc(24);
 	snprintf(compat, 24, "jedec,lpddr%d-channel",
@@ -39,13 +40,15 @@ static DeviceTreeNode *new_channel(DeviceTree *tree,
 	return channel;
 }
 
-static void new_rank(DeviceTreeNode *channel, struct mem_chip_entry *entry)
+static void new_rank(struct device_tree_node *channel,
+		     struct mem_chip_entry *entry)
 {
 	char name[8];
 	snprintf(name, sizeof(name), "rank@%d", entry->rank);
 
 	const char *path[] = { name, NULL };
-	DeviceTreeNode *rank = dt_find_node(channel, path, NULL, NULL, 1);
+	struct device_tree_node *rank = dt_find_node(channel, path,
+						     NULL, NULL, 1);
 
 	int lpddrnum = lpddr_type_num(entry->type);
 	printf("LPDDR%d chan%d(x%d) rank%d: density %umbits x%d, MF %02x rev %02x%02x\n",
@@ -74,10 +77,11 @@ static void new_rank(DeviceTreeNode *channel, struct mem_chip_entry *entry)
 	dt_add_bin_prop(rank, "revision-id", revision, 8);
 }
 
-static int install_memchipinfo_data(DeviceTreeFixup *fixup, DeviceTree *tree)
+static int install_memchipinfo_data(struct device_tree_fixup *fixup,
+				    struct device_tree *tree)
 {
 	struct mem_chip_info *info = (void *)lib_sysinfo.mem_chip_base;
-	DeviceTreeNode *channel[8] = {0};
+	struct device_tree_node *channel[8] = {0};
 
 	if (info->struct_version != MEM_CHIP_STRUCT_VERSION)
 		return 1;
@@ -105,7 +109,7 @@ static int install_memchipinfo_data(DeviceTreeFixup *fixup, DeviceTree *tree)
 	return 0;
 }
 
-static DeviceTreeFixup memchipinfo_data = {
+static struct device_tree_fixup memchipinfo_data = {
 	.fixup = &install_memchipinfo_data
 };
 

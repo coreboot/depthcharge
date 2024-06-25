@@ -25,17 +25,19 @@
 #include "drivers/video/mtk_ddp.h"
 #include "vboot/util/flag.h"
 
-static int fix_device_tree(DeviceTreeFixup *fixup, DeviceTree *tree)
+static int fix_device_tree(struct device_tree_fixup *fixup,
+			   struct device_tree *tree)
 {
-	DeviceTreeNode *node = dt_find_compat(tree->root, "arm,gic-v3");
+	struct device_tree_node *node = dt_find_compat(tree->root,
+						       "arm,gic-v3");
 
 	if (node)
-		dt_remove_prop(node, "mediatek,broken-save-restore-fw");
+		dt_delete_prop(node, "mediatek,broken-save-restore-fw");
 
 	return 0;
 }
 
-static DeviceTreeFixup mtk_gic_fixup = {
+static struct device_tree_fixup mtk_gic_fixup = {
 	.fixup = fix_device_tree
 };
 
