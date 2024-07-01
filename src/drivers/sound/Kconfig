@@ -136,6 +136,10 @@ config DRIVER_SOUND_SSM4567
 	bool "Analog Devices SSM4567 codec driver"
 	default n
 
+config DRIVER_SOUND_TAS2563
+	bool "TAS2563 codec driver"
+	default n
+
 config DRIVER_SOUND_TEGRA_AUDIO_HUB
 	bool "Tegra Audio Hub driver"
 	default n
