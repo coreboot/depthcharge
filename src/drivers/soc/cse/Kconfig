@@ -31,6 +31,29 @@ config SOC_INTEL_CSE_LITE_SKU
 	help
 	 Enables CSE Lite SKU
 
+config SOC_INTEL_CSE_RW_UPDATE
+	bool "Enable the CSE RW Update Feature"
+	default n
+	depends on SOC_INTEL_CSE_LITE_SKU
+	help
+	 This config will enable CSE RW firmware update feature and also will be used ensure
+	 all the required configs are provided by mainboard.
+
+config SOC_INTEL_CSE_LITE_SYNC_BY_PAYLOAD
+	bool "Sync CSE RW Partition"
+	depends on SOC_INTEL_CSE_LITE_SKU
+	select SOC_INTEL_CSE_RW_UPDATE
+	help
+	 Use this option if CSE RW update needs to be triggered during payload.
+
+config SOC_INTEL_CSE_SUB_PART_UPDATE
+	bool "Enable the CSE sub-partition update Feature"
+	default n
+	depends on SOC_INTEL_CSE_LITE_SKU
+	help
+	 This config will enable CSE sub-partition firmware update feature and also will be used to
+	 ensure all the required configs are provided by mainboard.
+
 config SOC_INTEL_COMMON_BLOCK_ME_SPEC_12
 	bool "Intel ME spec 12"
 	help
