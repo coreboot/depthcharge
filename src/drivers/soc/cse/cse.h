@@ -1,4 +1,15 @@
-/* SPDX-License-Identifier: GPL-2.0-or-later */
+/*
+ * Copyright 2024 Google LLC
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; version 2 of the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
 
 #ifndef __DRIVERS_SOC_CSE_CSE_H__
 #define __DRIVERS_SOC_CSE_CSE_H__
@@ -9,7 +20,9 @@
 /* MKHI Command groups */
 enum mkhi_group_id {
 	MKHI_GROUP_ID_CBM	 = 0x0,
+	MKHI_GROUP_ID_FWCAPS	 = 0x3,
 	MKHI_GROUP_ID_HMRFPO	 = 0x5,
+	MKHI_GROUP_ID_BUP_COMMON = 0xf0,
 	MKHI_GROUP_ID_GEN	 = 0xff,
 };
 
@@ -23,11 +36,32 @@ enum mkhi_group_id {
 #define MKHI_HMRFPO_ENABLE	0x1
 #define MKHI_HMRFPO_GET_STATUS	0x3
 
+/* Get Firmware Version Command Id */
+#define MKHI_GEN_GET_FW_VERSION	0x2
+
+/* Firmware Feature Shipment Time State Override Command Id */
+#define MKHI_GEN_FW_FEATURE_SHIPMENT_OVER	0x14
+#define  ME_FW_FEATURE_PTT			BIT(29)
+
+/* Get Firmware Feature State Command Id */
+#define MKHI_FWCAPS_GET_FW_FEATURE_STATE	0x02
+#define ME_FEATURE_STATE_RULE_ID		0x20
+#define  ME_FW_FEATURE_PSR			BIT(5)
+
 /* MEI bus disable command. Must be sent to MEI client endpoint, not MKHI */
 #define MEI_BUS_DISABLE_COMMAND	0xc
 
 /* Set End-of-POST in CSE */
 #define MKHI_END_OF_POST	0xc
+
+/* Boot partition info and set boot partition info command ids */
+#define MKHI_BUP_COMMON_GET_BOOT_PARTITION_INFO	0x1c
+#define MKHI_BUP_COMMON_SET_BOOT_PARTITION_INFO	0x1d
+#define MKHI_BUP_COMMON_DATA_CLEAR		0x20
+#define GEN_GET_IMAGE_FW_VERSION	0x1c
+
+/* Get boot performance command id */
+#define MKHI_BUP_COMMON_GET_BOOT_PERF_DATA	0x8
 
 /* ME Current Working States */
 #define ME_HFS1_CWS_NORMAL	0x5
@@ -37,12 +71,25 @@ enum mkhi_group_id {
 #define ME_HFS1_COM_SOFT_TEMP_DISABLE	0x3
 #define ME_HFS1_COM_SECOVER_MEI_MSG	0x5
 
+/* ME Disable Rule */
+#define ME_DISABLE_ATTEMPTS	3
+#define ME_DISABLE_COMMAND	0
+#define ME_DISABLE_RULE_ID	6
+#define ME_DISABLE_RULE_LENGTH	4
+
+
 /* ME Firmware SKU Types */
 enum me_fw_sku {
 	ME_HFS3_FW_SKU_CONSUMER	 = 0x2,
 	ME_HFS3_FW_SKU_CORPORATE = 0x3,
 	ME_HFS3_FW_SKU_LITE	 = 0x5,
 };
+
+/* Number of cse boot performance data */
+#define NUM_CSE_BOOT_PERF_DATA	64
+
+/* PSR_HECI_FW_DOWNGRADE_BACKUP Command */
+#define PSR_HECI_FW_DOWNGRADE_BACKUP	0x3
 
 /* HFSTS register offsets in PCI config space */
 enum {
@@ -54,6 +101,12 @@ enum {
 	PCI_ME_HFSTS6 = 0x6C,
 };
 
+/* CSE partition list */
+enum fpt_partition_id {
+	FPT_PARTITION_NAME_UNDEFINED = 0x0,
+	FPT_PARTITION_NAME_ISHC = 0x43485349,
+};
+
 /* MKHI Message Header */
 struct mkhi_hdr {
 	uint8_t group_id;
@@ -62,6 +115,98 @@ struct mkhi_hdr {
 	uint8_t rsvd;
 	uint8_t result;
 } __packed;
+
+/* PSR HECI message status */
+enum psr_status {
+	PSR_STATUS_SUCCESS,
+	PSR_STATUS_FEATURE_NOT_SUPPORTED,
+	PSR_STATUS_UPID_DISABLED,
+	PSR_STATUS_ACTION_NOT_ALLOWED,
+	PSR_STATUS_INVALID_INPUT_PARAMETER,
+	PSR_STATUS_INTERNAL_ERROR,
+	PSR_STATUS_NOT_ALLOWED_AFTER_EOP,
+};
+
+/* PSR HECI message header */
+struct psr_heci_header {
+	uint8_t command;
+	uint8_t reserved;
+	uint16_t length;
+} __packed;
+
+/* CSE FW Version */
+struct fw_version {
+	uint16_t major;
+	uint16_t minor;
+	uint16_t hotfix;
+	uint16_t build;
+} __packed;
+
+/* ME FW Version */
+struct me_version {
+	uint16_t minor;
+	uint16_t major;
+	uint16_t build;
+	uint16_t hotfix;
+} __packed;
+
+/* ME FW Version response */
+struct me_fw_ver_resp {
+	struct mkhi_hdr hdr;
+	struct me_version code;
+	struct me_version rec;
+	struct me_version fitc;
+} __packed;
+
+/* Module data from manifest */
+struct flash_partition_data {
+	enum fpt_partition_id partition_id;
+	uint8_t reserved1[8];
+	struct fw_version version;
+	uint32_t vendor_id;
+	uint32_t tcb_svn;
+	uint32_t arb_svn;
+	uint32_t vcn;
+	uint32_t reserved2[13];
+};
+
+/* Response header for partition information request */
+struct fw_version_resp {
+	struct mkhi_hdr hdr;
+	uint32_t module_count;
+	struct flash_partition_data manifest_data;
+};
+
+/* ISHC version */
+struct cse_fw_ish_version_info {
+	struct fw_version prev_cse_fw_version;
+	struct fw_version cur_ish_fw_version;
+};
+
+/* CSE and ISHC version */
+struct cse_fw_partition_info {
+	struct fw_version cur_cse_fw_version;
+	struct cse_fw_ish_version_info ish_partition_info;
+};
+
+/* CSE Specific Information */
+struct cse_specific_info {
+	struct cse_fw_partition_info cse_fwp_version;
+	bool cse_downgrade_requested;
+	uint32_t crc;
+};
+
+/* PSR backup status */
+enum psr_backup_state {
+	PSR_BACKUP_DONE	= 0,
+	PSR_BACKUP_PENDING = 1,
+};
+
+struct psr_backup_status {
+	uint32_t signature;
+	int8_t value;
+	uint16_t checksum;
+};
 
 /* CSE RX and TX error status */
 enum cse_tx_rx_status {
@@ -258,6 +403,9 @@ int cse_hmrfpo_get_status(void);
 /* Fixed Address MEI Header's ME Address field value */
 #define HECI_MKHI_ADDR	0x07
 
+/* Fixed Address MEI Header's ME Address field value for PSR messages */
+#define HECI_PSR_ADDR	0x04
+
 /* Fixed Address MEI Header's ME Address for MEI bus messages */
 #define HECI_MEI_ADDR	0x00
 
@@ -317,6 +465,12 @@ enum cse_device_state get_cse_device_state(pcidev_t dev);
 /* Function that put the CSE into desired state based on `requested_state` */
 bool set_cse_device_state(pcidev_t dev, enum cse_device_state requested_state);
 
+/*
+ * Check if cse sub-parition update is required or not.
+ * Returns true if cse sub-parition update is required otherwise false.
+ */
+bool skip_cse_sub_part_update(void);
+
 /* Function to make cse disable using PMC IPC */
 bool cse_disable_mei_devices(void);
 
@@ -331,5 +485,41 @@ void cse_control_global_reset_lock(void);
 
 /* This function to perform essential post EOP cse related operations.*/
 void cse_late_finalize(void);
+
+/*
+ * Injects CSE timestamps into cbmem timestamp table. SoC code needs to
+ * implement it since timestamp definitions differ from SoC to SoC.
+ */
+void cse_soc_cbmem_inject_telemetry_data(s64 *ts, s64 current_time);
+
+/*
+ * Get all the timestamps CSE collected using cse_get_boot_performance_data() and
+ * insert them into the CBMEM timestamp table.
+ */
+void cse_get_telemetry_data(void);
+
+/* Function to log the cse WP information like range, if WP etc. */
+void cse_log_ro_write_protection_info(bool mfg_mode);
+
+/*
+ * Changes Intel PTT feature state at runtime. Global reset is required after
+ * successful HECI command completion.
+ */
+void cse_enable_ptt(bool state);
+
+/*
+ * Queries CSE for runtime status of firmware features.
+ * Returns 0 on success and < 0 on failure.
+ */
+enum cb_err cse_get_fw_feature_state(uint32_t *feature_state);
+
+/* Fills the CSE Boot Partition Info response */
+void cse_fill_bp_info(void);
+
+/*
+ * Check if a CSE Firmware update is required
+ * Returns true if an update is required, false otherwise
+ */
+bool is_cse_fw_update_required(void);
 
 #endif // __DRIVERS_SOC_CSE_CSE_H__

@@ -18,7 +18,6 @@
 #include "drivers/timer/timer.h"
 #include "vboot/stages.h"
 
-#define printk(LEVEL, STR...) printf(STR)
 #define post_code(pc)
 
 #define PCH_DEVFN_CSE PCH_DEV_CSE
