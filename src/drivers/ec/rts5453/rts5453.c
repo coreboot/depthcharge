@@ -10,6 +10,8 @@
 #include "drivers/ec/cros/ec.h"
 #include "drivers/ec/vboot_auxfw.h"
 
+#include "rts5453.h"
+
 #define GOOGLE_BROX_VENDOR_ID 0x18d1
 #define GOOGLE_BROX_PRODUCT_ID 0x5065
 
@@ -620,20 +622,40 @@ pd_restart:
 	return VB2_ERROR_UNKNOWN;
 }
 
-static const VbootAuxfwOps rts5453_fw_ops = {
-	.fw_image_name = "rts5453.bin",
-	.fw_hash_name = "rts5453.hash",
-	.check_hash = rts5453_check_hash,
-	.update_image = rts5453_update_image,
-};
+/* By default, output NULL to perform no update. Board code shall
+ * override this function if supported.
+ */
+__weak void board_rts5453_get_image_paths(const char **image_path,
+					  const char **hash_path)
+{
+	*image_path = NULL;
+	*hash_path = NULL;
+}
 
 Rts545x *new_rts5453(CrosECTunnelI2c *bus, int ec_pd_id)
 {
+	VbootAuxfwOps fw_ops = {
+		.check_hash = rts5453_check_hash,
+		.update_image = rts5453_update_image,
+	};
+
+	board_rts5453_get_image_paths(&fw_ops.fw_image_name,
+				      &fw_ops.fw_hash_name);
+
+	if (fw_ops.fw_image_name == NULL || fw_ops.fw_hash_name == NULL) {
+		/* No files, so don't perform an update */
+		printf("Unknown PDC configuration. Skipping update.\n");
+		return NULL;
+	}
+
+	printf("Using PDC image '%s' with hash file '%s'\n",
+	       fw_ops.fw_image_name, fw_ops.fw_hash_name);
+
 	Rts545x *me = xzalloc(sizeof(*me));
 
 	me->bus = bus;
 	me->ec_pd_id = ec_pd_id;
-	me->fw_ops = rts5453_fw_ops;
+	me->fw_ops = fw_ops;
 	snprintf(me->chip_name, sizeof(me->chip_name), "rts5453.%d", ec_pd_id);
 
 	return me;
@@ -656,6 +678,10 @@ static const VbootAuxfwOps *new_rts545x_from_chip_info(struct ec_response_pd_chi
 	switch (r->product_id) {
 	case GOOGLE_BROX_PRODUCT_ID:
 		rts545x = new_rts5453(NULL, ec_pd_id);
+		if (rts545x == NULL) {
+			printf("Error instantiating RTS5453 driver. Skipping FW update.\n");
+			return NULL;
+		}
 		break;
 	default:
 		return NULL;
