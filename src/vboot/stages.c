@@ -159,6 +159,8 @@ int vboot_select_and_boot_kernel(void)
 
 	if (CONFIG(EC_VBOOT_SUPPORT))
 		ctx->flags |= VB2_CONTEXT_EC_SYNC_SUPPORTED;
+	if (CONFIG(EC_SLOW_UPDATE))
+		ctx->flags |= VB2_CONTEXT_EC_SYNC_SLOW;
 
 	/*
 	 * If the lid is closed, kernel selection should not count down the
