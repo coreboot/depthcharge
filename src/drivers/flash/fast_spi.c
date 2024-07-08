@@ -39,13 +39,14 @@ static void fast_spi_flash_ctrlr_reg_write(FastSpiFlash *flash,
 /* Fill FDATAn FIFO in preparation for a write transaction. */
 static void fill_xfer_fifo(FastSpiFlash *flash, const void *data, size_t size)
 {
-	memcpy((void *)(flash->mmio_base + SPIBAR_FDATA(0)), data, size);
+	buffer_to_fifo32((void *)data, size, (void *)(flash->mmio_base + SPIBAR_FDATA(0)), 4, 4);
+
 }
 
 /* Drain FDATAn FIFO after a read transaction populates data. */
 static void drain_xfer_fifo(FastSpiFlash *flash, void *dest, size_t size)
 {
-	memcpy(dest, (void *)(flash->mmio_base + SPIBAR_FDATA(0)), size);
+	buffer_from_fifo32(dest, size, (void *)(flash->mmio_base + SPIBAR_FDATA(0)), 4, 4);
 }
 
 /* Fire up a transfer using the hardware sequencer. */
