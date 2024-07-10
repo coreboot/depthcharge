@@ -108,21 +108,21 @@ static vb2_error_t display_firmware_sync_screen(void)
 	struct vb2_context *ctx = vboot_get_context();
 
 	for (int i = 0; i < vboot_auxfw_count; ++i) {
-		/* Display firmware sync screen if update is slow */
-		if (vboot_auxfw[i].severity == VB2_AUXFW_SLOW_UPDATE) {
-			if (vb2api_need_reboot_for_display(ctx))
-				return VB2_REQUEST_REBOOT;
+		/* Display firmware sync screen only if update is slow */
+		if (vboot_auxfw[i].severity != VB2_AUXFW_SLOW_UPDATE)
+			continue;
 
-			printf("AUXFW is updating. "
-			       "Show firmware sync screen.\n");
-			if (ui_init_context(&ui, ctx, UI_SCREEN_FIRMWARE_SYNC)
-			    == VB2_SUCCESS)
-				ui_display(&ui, NULL);
-			else
-				printf("Failed to initialize UI context.\n");
+		if (vb2api_need_reboot_for_display(ctx))
+			return VB2_REQUEST_REBOOT;
 
-			break;
-		}
+		printf("AUXFW is updating. Show firmware sync screen.\n");
+		if (ui_init_context(&ui, ctx, UI_SCREEN_FIRMWARE_SYNC)
+		    == VB2_SUCCESS)
+			ui_display(&ui, NULL);
+		else
+			printf("Failed to initialize UI context.\n");
+
+		break;
 	}
 
 	return VB2_SUCCESS;
@@ -165,37 +165,36 @@ vb2_error_t update_vboot_auxfw(void)
 		const VbootAuxfwOps *auxfw;
 
 		auxfw = vboot_auxfw[i].fw_ops;
-		if (vboot_auxfw[i].severity == VB2_AUXFW_NO_DEVICE)
+		if (vboot_auxfw[i].severity == VB2_AUXFW_NO_DEVICE ||
+		    vboot_auxfw[i].severity == VB2_AUXFW_NO_UPDATE)
 			continue;
 
-		if (vboot_auxfw[i].severity != VB2_AUXFW_NO_UPDATE) {
-			/* Disable lid shutdown on x86 if enabled */
-			if (!lid_shutdown_disabled &&
-			    CONFIG(ARCH_X86) &&
-			    CONFIG(DRIVER_EC_CROS) &&
-			    cros_ec_get_lid_shutdown_mask() > 0) {
-				if (!cros_ec_set_lid_shutdown_mask(0))
-					lid_shutdown_disabled = 1;
-			}
+		/* Disable lid shutdown on x86 if enabled */
+		if (!lid_shutdown_disabled &&
+		    CONFIG(ARCH_X86) &&
+		    CONFIG(DRIVER_EC_CROS) &&
+		    cros_ec_get_lid_shutdown_mask() > 0) {
+			if (!cros_ec_set_lid_shutdown_mask(0))
+				lid_shutdown_disabled = 1;
+		}
 
-			/* Apply update */
-			printf("Update auxfw %d\n", i);
-			status = apply_dev_fw(auxfw);
-			if (status == VB2_ERROR_EX_AUXFW_PERIPHERAL_BUSY) {
-				status = VB2_SUCCESS;
-				continue;
-			} else if (status != VB2_SUCCESS) {
-				break;
-			}
+		/* Apply update */
+		printf("Update auxfw %d\n", i);
+		status = apply_dev_fw(auxfw);
+		if (status == VB2_ERROR_EX_AUXFW_PERIPHERAL_BUSY) {
+			status = VB2_SUCCESS;
+			continue;
+		} else if (status != VB2_SUCCESS) {
+			break;
+		}
 
-			/* Re-check hash after update */
-			status = check_dev_fw_hash(auxfw, &severity);
-			if (status != VB2_SUCCESS)
-				break;
-			if (severity != VB2_AUXFW_NO_UPDATE) {
-				status = VB2_ERROR_UNKNOWN;
-				break;
-			}
+		/* Re-check hash after update */
+		status = check_dev_fw_hash(auxfw, &severity);
+		if (status != VB2_SUCCESS)
+			break;
+		if (severity != VB2_AUXFW_NO_UPDATE) {
+			status = VB2_ERROR_UNKNOWN;
+			break;
 		}
 	}
 
