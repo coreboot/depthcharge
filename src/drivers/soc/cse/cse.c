@@ -663,7 +663,7 @@ static int cse_request_reset(enum rst_req_type rst_type)
 		status = heci_send(&msg, sizeof(msg), BIOS_HOST_ADDR, HECI_MKHI_ADDR);
 	else
 		status = heci_send_receive(&msg, sizeof(msg), &reply, &reply_size,
-									HECI_MKHI_ADDR);
+					HECI_MKHI_ADDR);
 
 	printk(BIOS_DEBUG, "HECI: Global Reset %s!\n", !status ? "success" : "failure");
 	return status;
@@ -788,7 +788,7 @@ int cse_hmrfpo_get_status(void)
 	}
 
 	if (heci_send_receive(&msg, sizeof(struct hmrfpo_get_status_msg),
-				&resp, &resp_size, HECI_MKHI_ADDR)) {
+		&resp, &resp_size, HECI_MKHI_ADDR)) {
 		printk(BIOS_ERR, "HECI: HMRFPO send/receive fail\n");
 		return -1;
 	}
@@ -802,11 +802,71 @@ int cse_hmrfpo_get_status(void)
 	return resp.status;
 }
 
+static enum cb_err get_me_fw_version(struct me_fw_ver_resp *resp)
+{
+	const struct mkhi_hdr fw_ver_msg = {
+		.group_id = MKHI_GROUP_ID_GEN,
+		.command = MKHI_GEN_GET_FW_VERSION,
+	};
+
+	if (resp == NULL) {
+		printk(BIOS_ERR, "%s failed, null pointer parameter\n", __func__);
+		return CB_ERR;
+	}
+	size_t resp_size = sizeof(*resp);
+
+	/* Ignore if CSE is disabled */
+	if (!is_cse_enabled())
+		return CB_ERR;
+
+	/*
+	 * Prerequisites:
+	 * 1) HFSTS1 Current Working State is Normal
+	 * 2) HFSTS1 Current Operation Mode is Normal
+	 * 3) It's after DRAM INIT DONE message (taken care of by calling it
+	 *    during ramstage
+	 */
+	if (!cse_is_hfs1_cws_normal() || !cse_is_hfs1_com_normal())
+		return CB_ERR;
+
+	heci_reset();
+
+	if (heci_send_receive(&fw_ver_msg, sizeof(fw_ver_msg), resp, &resp_size,
+			HECI_MKHI_ADDR))
+		return CB_ERR;
+
+	if (resp->hdr.result)
+		return CB_ERR;
+
+
+	return CB_SUCCESS;
+}
+
+void print_me_fw_version(void *unused)
+{
+	/*
+	 * Ignore if ME Firmware SKU type is Lite since
+	 * print_boot_partition_info() logs RO(BP1) and RW(BP2) versions.
+	 */
+	if (cse_is_hfs3_fw_sku_lite())
+		return;
+
+	struct me_fw_ver_resp resp = {0};
+
+	if (get_me_fw_version(&resp) == CB_SUCCESS) {
+		printk(BIOS_DEBUG, "ME: Version: %d.%d.%d.%d\n", resp.code.major,
+			resp.code.minor, resp.code.hotfix, resp.code.build);
+		return;
+	}
+	printk(BIOS_DEBUG, "ME: Version: Unavailable\n");
+}
+
+
 void cse_trigger_vboot_recovery(enum csme_failure_reason reason)
 {
 	printk(BIOS_DEBUG, "cse: CSE status registers: HFSTS1: 0x%x, HFSTS2: 0x%x "
-	       "HFSTS3: 0x%x\n", me_read_config32(PCI_ME_HFSTS1),
-	       me_read_config32(PCI_ME_HFSTS2), me_read_config32(PCI_ME_HFSTS3));
+			"HFSTS3: 0x%x\n", me_read_config32(PCI_ME_HFSTS1),
+			me_read_config32(PCI_ME_HFSTS2), me_read_config32(PCI_ME_HFSTS3));
 
 	{
 		struct vb2_context *ctx = vboot_get_context();
