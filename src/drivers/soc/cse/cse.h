@@ -409,6 +409,24 @@ int cse_hmrfpo_get_status(void);
 /* Fixed Address MEI Header's ME Address for MEI bus messages */
 #define HECI_MEI_ADDR	0x00
 
+/* HMRFPO Status types */
+/* Host can't access ME region */
+#define MKHI_HMRFPO_DISABLED	0
+
+/*
+ * ME Firmware locked down HMRFPO Feature.
+ * Host can't access ME region.
+ */
+#define MKHI_HMRFPO_LOCKED	1
+
+/* Host can access ME region */
+#define MKHI_HMRFPO_ENABLED	2
+
+/*
+ * Queries and logs ME firmware version
+ */
+void print_me_fw_version(void *unused);
+
 /*
  * Checks current working operation state is normal or not.
  * Returns true if CSE's current working state is normal, otherwise false.
