@@ -78,10 +78,19 @@ static const struct storage_config storage_configs[] = {
 		.clock_min = EMMC_CLOCK_MIN,
 		.clock_max = EMMC_CLOCK_MAX },
 	  .fw_config = FW_CONFIG(STORAGE, STORAGE_EMMC)},
+	{ .media = STORAGE_EMMC, .pci_dev = PCH_DEV_EMMC, .emmc = {
+		.platform_flags = SDHCI_PLATFORM_SUPPORTS_HS400ES,
+		.clock_min = EMMC_CLOCK_MIN,
+		.clock_max = EMMC_CLOCK_MAX },
+	  .fw_config = FW_CONFIG(STORAGE, STORAGE_UNKNOWN)},
 	{ .media = STORAGE_NVME, .pci_dev = PCH_DEV_PCIE8,
 	  .fw_config = FW_CONFIG(STORAGE, STORAGE_NVME) },
+	{ .media = STORAGE_NVME, .pci_dev = PCH_DEV_PCIE8,
+	  .fw_config = FW_CONFIG(STORAGE, STORAGE_UNKNOWN) },
 	{ .media = STORAGE_UFS, .pci_dev = PCH_DEV_UFS1,
 	  .fw_config = FW_CONFIG(STORAGE, STORAGE_UFS) },
+	{ .media = STORAGE_UFS, .pci_dev = PCH_DEV_UFS1,
+	  .fw_config = FW_CONFIG(STORAGE, STORAGE_UNKNOWN) },
 };
 
 const struct storage_config *variant_get_storage_configs(size_t *count)
