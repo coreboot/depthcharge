@@ -18,16 +18,42 @@
 
 #include "base/elog.h"
 #include "base/init_funcs.h"
+#include "base/late_init_funcs.h"
 #include "cse_internal.h"
 #include "cse.h"
 #include "cse_layout.h"
 #include "cse_lite.h"
+#include "cse_lite_cmos.h"
 #include "drivers/flash/flash.h"
 #include "vboot/ui.h"
+
+#define CRC(buf, size, crc_func) ({ \
+	const uint8_t *_crc_local_buf = (const uint8_t *)buf; \
+	size_t _crc_local_size = size; \
+	__typeof__(crc_func(0, 0)) _crc_local_result = 0; \
+	while (_crc_local_size--) { \
+		_crc_local_result = crc_func(_crc_local_result, *_crc_local_buf++); \
+	} \
+	_crc_local_result; \
+})
 
 static const char * const cse_regions[] = {"RO", "RW"};
 
 static struct get_bp_info_rsp cse_bp_info_rsp;
+
+static uint32_t crc32_byte(uint32_t prev_crc, uint8_t data)
+{
+	prev_crc ^= (uint32_t)data << 24;
+
+	for (int i = 0; i < 8; i++) {
+		if ((prev_crc & 0x80000000UL) != 0)
+			prev_crc = ((prev_crc << 1) ^ 0x04C11DB7UL);
+		else
+			prev_crc <<= 1;
+	}
+
+	return prev_crc;
+}
 
 static int cse_is_subregion(const struct region *parent, size_t child_offset,
 	size_t child_size)
@@ -135,6 +161,105 @@ static const struct cse_bp_entry *cse_get_bp_entry(enum boot_partition_id bp)
 	return &cse_bp_info->bp_entries[bp];
 }
 
+static bool cse_is_fpt_info_valid(const struct cse_specific_info *info)
+{
+	uint32_t crc = ~CRC(info, offsetof(struct cse_specific_info, crc), crc32_byte);
+
+	/*
+	 * Authenticate the CBMEM persistent data.
+	 *
+	 * The underlying assumption is that an event (i.e., CSE upgrade/downgrade) which
+	 * could change the values stored in this region has to also trigger the global
+	 * reset. Hence, CBMEM persistent data won't be available any time after such
+	 * event (global reset or cold reset) being initiated.
+	 *
+	 * During warm boot scenarios CBMEM contents remain persistent hence, we don't
+	 * want to override the existing data in CBMEM to avoid any additional boot latency.
+	 */
+	if (info->crc != crc)
+		return false;
+
+	return true;
+}
+
+static void cse_store_info_crc(struct cse_specific_info *info)
+{
+	info->crc = ~CRC(info, offsetof(struct cse_specific_info, crc), crc32_byte);
+}
+
+static enum cse_fw_state cse_get_state(const struct fw_version *cur_cse_fw_ver,
+	struct fw_version *cmos_cse_fw_ver, const struct fw_version *cbmem_cse_fw_ver)
+{
+	enum cse_fw_state state = CSE_FW_WARM_BOOT;
+	size_t size = sizeof(struct fw_version);
+	/*
+	 * Compare if stored CSE version (from the previous boot) is same as current
+	 * running CSE version.
+	 */
+	if (memcmp(cmos_cse_fw_ver, cur_cse_fw_ver, size)) {
+		/*
+		 * CMOS CSE version is invalid, possibly two scenarios
+		 * 1.  CSE FW update
+		 * 2.  First boot
+		 */
+		state = CSE_FW_INVALID;
+	} else {
+		/*
+		 * Check if current running CSE version is same as previous stored CSE
+		 * version aka CBMEM region is still valid.
+		 */
+		if (memcmp(cbmem_cse_fw_ver, cur_cse_fw_ver, size))
+			state = CSE_FW_COLD_BOOT;
+	}
+	return state;
+}
+
+/*
+ * Helper function that stores current CSE firmware version to CBMEM memory,
+ * except during recovery mode.
+ */
+static void cse_store_rw_fw_version(void)
+{
+	const struct cse_bp_entry *cse_bp;
+	cse_bp = cse_get_bp_entry(RW);
+
+	if (vboot_recovery_mode_enabled())
+		return;
+
+	struct cse_specific_info *cse_info_in_cbmem = (struct cse_specific_info *)
+		lib_sysinfo.cse_info;
+	if (!cse_info_in_cbmem)
+		return;
+
+	/* Avoid CBMEM update if CBMEM already has persistent data */
+	if (cse_is_fpt_info_valid(cse_info_in_cbmem))
+		return;
+
+	struct cse_specific_info cse_info_in_cmos;
+	cmos_read_fw_partition_info(&cse_info_in_cmos);
+
+	/* Get current cse firmware state */
+	enum cse_fw_state fw_state = cse_get_state(&(cse_bp->fw_ver),
+		 &(cse_info_in_cmos.cse_fwp_version.cur_cse_fw_version),
+		 &(cse_info_in_cbmem->cse_fwp_version.cur_cse_fw_version));
+
+	/* Reset CBMEM data and update current CSE version */
+	memset(cse_info_in_cbmem, 0, sizeof(*cse_info_in_cbmem));
+	memcpy(&(cse_info_in_cbmem->cse_fwp_version.cur_cse_fw_version),
+		 &(cse_bp->fw_ver), sizeof(struct fw_version));
+
+	/* Update the CRC */
+	cse_store_info_crc(cse_info_in_cbmem);
+
+	if (fw_state == CSE_FW_INVALID) {
+		/*
+		 * Current CMOS data is outdated, which could be due to CSE update or
+		 * rollback, hence, need to update CMOS with current CSE FPT versions.
+		 */
+		cmos_write_fw_partition_info(cse_info_in_cbmem);
+	}
+}
+
 static void cse_print_boot_partition_info(void)
 {
 	const struct cse_bp_entry *cse_bp;
@@ -215,13 +340,23 @@ static enum cb_err cse_get_bp_info(void)
 		.reserved = {0},
 	};
 
-	/*
-	 * Check if the global cse bp info response stored in global cse_bp_info_rsp is
-	 * valid. In case, it is not valid, continue to send the GET_BOOT_PARTITION_INFO
-	 * command, else return.
-	 */
-	if (is_cse_bp_info_valid(&cse_bp_info_rsp))
-		return CB_SUCCESS;
+	struct get_bp_info_rsp *cse_bp_info_in_cbmem = (struct get_bp_info_rsp *)
+		lib_sysinfo.cse_bp_info;
+	if (cse_bp_info_in_cbmem) {
+		if (is_cse_bp_info_valid(cse_bp_info_in_cbmem)) {
+			const struct cse_bp_entry *cse_bp = &cse_bp_info_in_cbmem->bp_info.bp_entries[RO];
+			printk(BIOS_DEBUG, "cse_lite: CBMEM %s version = %d.%d.%d.%d \n",
+					GET_BP_STR(RO), cse_bp->fw_ver.major, cse_bp->fw_ver.minor,
+					cse_bp->fw_ver.hotfix, cse_bp->fw_ver.build);
+			cse_bp = &cse_bp_info_in_cbmem->bp_info.bp_entries[RW];
+			printk(BIOS_DEBUG, "cse_lite: CBMEM %s version = %d.%d.%d.%d \n",
+					GET_BP_STR(RW), cse_bp->fw_ver.major, cse_bp->fw_ver.minor,
+					cse_bp->fw_ver.hotfix, cse_bp->fw_ver.build);
+			memcpy(&cse_bp_info_rsp, cse_bp_info_in_cbmem,
+				sizeof(struct get_bp_info_rsp));
+			return CB_SUCCESS;
+		}
+	}
 
 	if (!cse_is_bp_cmd_info_possible()) {
 		printk(BIOS_ERR, "cse_lite: CSE does not meet prerequisites\n");
@@ -666,6 +801,10 @@ static enum cb_err cse_prep_for_rw_update(enum cse_update_status status)
 		return CB_ERR;
 
 	if ((status == CSE_UPDATE_DOWNGRADE) || (status == CSE_UPDATE_CORRUPTED)) {
+		/* Reset the PSR backup command status in CMOS */
+		if (CONFIG(SOC_INTEL_CSE_LITE_PSR))
+			update_psr_backup_status(PSR_BACKUP_PENDING);
+
 		if (cse_data_clear_request() != CB_SUCCESS) {
 			printk(BIOS_ERR, "cse_lite: CSE data clear failed!\n");
 			return CB_ERR;
@@ -700,6 +839,120 @@ static enum csme_failure_reason cse_trigger_fw_update(enum cse_update_status sta
 error_exit:
 	cbfs_unmap(cse_cbfs_rw);
 	return rv;
+}
+
+static bool cse_is_psr_data_backed_up(void)
+{
+	/* Track PSR backup status in CMOS */
+	return (get_psr_backup_status() == PSR_BACKUP_DONE);
+}
+
+static bool cse_is_psr_supported(void)
+{
+	uint32_t feature_status;
+
+	/*
+	 * Check if SoC has support for PSR feature typically PSR feature
+	 * is only supported by vpro SKU
+	 *
+	 */
+	if (cse_get_fw_feature_state(&feature_status) != CB_SUCCESS) {
+		printk(BIOS_ERR, "cse_get_fw_feature_state command failed !\n");
+		return false;
+	}
+
+	if (!(feature_status & ME_FW_FEATURE_PSR)) {
+		printk(BIOS_DEBUG, "PSR is not supported in this SKU !\n");
+		return false;
+	}
+
+	return true;
+}
+
+/*
+ * PSR data needs to be backed up prior to downgrade. So switch the CSE boot mode to RW, send
+ * PSR back-up command to CSE and update the PSR back-up state in CMOS.
+ */
+static void cse_backup_psr_data(void)
+{
+	printk(BIOS_DEBUG, "cse_lite: Initiate PSR data backup flow\n");
+	/* Switch CSE to RW to send PSR_HECI_FW_DOWNGRADE_BACKUP command */
+	if (cse_boot_to_rw() != CB_SUCCESS) {
+		elog_add_event(ELOG_TYPE_PSR_DATA_LOST);
+		goto update_and_exit;
+	}
+	/*
+	 * The function to check for PSR feature support can only be called after
+	 * switching to RW partition. The command MKHI_FWCAPS_GET_FW_FEATURE_STATE
+	 * that gives feature state is supported by a process that is loaded only
+	 * when CSE boots from RW.
+	 *
+	 */
+	if (!cse_is_psr_supported())
+		goto update_and_exit;
+
+	/*
+	 * Prerequisites:
+	 * 1) HFSTS1 Current Working State is Normal
+	 * 2) HFSTS1 Current Operation Mode is Normal
+	 */
+	if (!cse_is_hfs1_cws_normal() || !cse_is_hfs1_com_normal()) {
+		printk(BIOS_DEBUG, "cse_lite: PSR_HECI_FW_DOWNGRADE_BACKUP command "
+		       "prerequisites not met!\n");
+		elog_add_event(ELOG_TYPE_PSR_DATA_LOST);
+		goto update_and_exit;
+	}
+
+	/* Send PSR_HECI_FW_DOWNGRADE_BACKUP command */
+	struct psr_heci_fw_downgrade_backup_req {
+		struct psr_heci_header header;
+	} __packed;
+
+	struct psr_heci_fw_downgrade_backup_req req = {
+		.header.command = PSR_HECI_FW_DOWNGRADE_BACKUP,
+	};
+
+	struct psr_heci_fw_downgrade_backup_res {
+		struct psr_heci_header header;
+		uint32_t status;
+	} __packed;
+
+	struct psr_heci_fw_downgrade_backup_res backup_psr_resp;
+	size_t resp_size = sizeof(backup_psr_resp);
+
+	printk(BIOS_DEBUG, "cse_lite: Send PSR_HECI_FW_DOWNGRADE_BACKUP command\n");
+	if (heci_send_receive(&req, sizeof(req),
+		&backup_psr_resp, &resp_size, HECI_PSR_ADDR)) {
+		printk(BIOS_ERR, "cse_lite: could not backup PSR data\n");
+		elog_add_event_byte(ELOG_TYPE_PSR_DATA_BACKUP, ELOG_PSR_DATA_BACKUP_FAILED);
+	} else {
+		if (backup_psr_resp.status != PSR_STATUS_SUCCESS) {
+			printk(BIOS_ERR, "cse_lite: PSR_HECI_FW_DOWNGRADE_BACKUP command "
+			       "returned %u\n", backup_psr_resp.status);
+			elog_add_event_byte(ELOG_TYPE_PSR_DATA_BACKUP,
+						ELOG_PSR_DATA_BACKUP_FAILED);
+		} else {
+			elog_add_event_byte(ELOG_TYPE_PSR_DATA_BACKUP,
+						ELOG_PSR_DATA_BACKUP_SUCCESS);
+		}
+	}
+
+update_and_exit:
+	/*
+	 * An attempt to send PSR back-up command has been made. Update this info in CMOS and
+	 * send success once cse_backup_psr_data() has been called. We do not want to put the
+	 * system into recovery for PSR data backup command pre-requisites not being met.
+	 * We cannot do much if CSE fails to backup the PSR data, except create an event log.
+	 */
+	update_psr_backup_status(PSR_BACKUP_DONE);
+}
+
+static void cse_initiate_psr_data_backup(void)
+{
+	if (cse_is_psr_data_backed_up())
+		return;
+
+	cse_backup_psr_data();
 }
 
 /*
@@ -741,6 +994,8 @@ static uint8_t cse_fw_update(void)
 		return CSE_NO_ERROR;
 	if (status == CSE_UPDATE_METADATA_ERROR)
 		return CSE_LITE_SKU_RW_METADATA_NOT_FOUND;
+	if (CONFIG(SOC_INTEL_CSE_LITE_PSR) && status == CSE_UPDATE_DOWNGRADE)
+		cse_initiate_psr_data_backup();
 
 	printk(BIOS_DEBUG, "cse_lite: CSE RW update is initiated\n");
 	return cse_trigger_fw_update(status, &target_region);
@@ -1031,6 +1286,9 @@ static void do_cse_fw_sync(void)
 		}
 	}
 
+	/* Store the CSE RW Firmware Version into CBMEM */
+	cse_store_rw_fw_version();
+
 	/*
 	 * If system is in recovery mode, CSE Lite update has to be skipped but CSE
 	 * sub-partitions like NPHY and IOM have to be updated. If CSE sub-partition update
@@ -1080,12 +1338,151 @@ void cse_fw_sync(void)
 	timestamp_add_now(TS_CSE_FW_SYNC_END);
 }
 
+static enum cb_err cse_send_get_fpt_partition_info_cmd(enum fpt_partition_id id,
+	struct fw_version_resp *resp)
+{
+	enum cse_tx_rx_status ret;
+	struct fw_version_msg {
+		struct mkhi_hdr hdr;
+		enum fpt_partition_id partition_id;
+	} __packed msg = {
+		.hdr = {
+			.group_id = MKHI_GROUP_ID_GEN,
+			.command = GEN_GET_IMAGE_FW_VERSION,
+		},
+		.partition_id = id,
+	};
+
+	/*
+	 * Prerequisites:
+	 * 1) HFSTS1 CWS is Normal
+	 * 2) HFSTS1 COM is Normal
+	 * 3) Only sent after DID (accomplished by compiling this into ramstage)
+	 */
+
+	if (cse_is_hfs1_com_soft_temp_disable() || !cse_is_hfs1_cws_normal() ||
+		!cse_is_hfs1_com_normal()) {
+		printk(BIOS_ERR,
+			"HECI: Prerequisites not met for Get Image Firmware Version command\n");
+		return CB_ERR;
+	}
+
+	size_t resp_size = sizeof(struct fw_version_resp);
+	ret = heci_send_receive(&msg, sizeof(msg), resp, &resp_size, HECI_MKHI_ADDR);
+
+	if (ret || resp->hdr.result) {
+		printk(BIOS_ERR, "CSE: Failed to get partition information for %d: 0x%x\n",
+			id, resp->hdr.result);
+		return CB_ERR;
+	}
+
+	return CB_SUCCESS;
+}
+
+static enum cb_err cse_get_fpt_partition_info(enum fpt_partition_id id,
+		 struct fw_version_resp *resp)
+{
+	if (vboot_recovery_mode_enabled()) {
+		printk(BIOS_WARNING,
+			"CSE: Skip sending Get Image Info command during recovery mode!\n");
+		return CB_ERR;
+	}
+
+	if (id == FPT_PARTITION_NAME_ISHC && !CONFIG(SOC_INTEL_STORE_ISH_FW_VERSION)) {
+		printk(BIOS_WARNING, "CSE: Info request denied, no ISH partition\n");
+		return CB_ERR;
+	}
+
+	return cse_send_get_fpt_partition_info_cmd(id, resp);
+}
+
+static bool cse_is_ish_version_valid(struct cse_fw_ish_version_info *version)
+{
+	const struct fw_version invalid_fw = {0, 0, 0, 0};
+	if (!memcmp(&version->cur_ish_fw_version, &invalid_fw, sizeof(struct fw_version)))
+		return false;
+	return true;
+}
+
+/*
+ * Helper function to read ISH version from CSE FPT using HECI command.
+ *
+ * The HECI command only be executed after memory has been initialized.
+ * This is because the command relies on resources that are not available
+ * until DRAM initialization command has been sent.
+ */
+static void cse_store_ish_version(void)
+{
+	if (vboot_recovery_mode_enabled())
+		return;
+
+	struct cse_specific_info *cse_info_in_cbmem = (struct cse_specific_info *)
+		lib_sysinfo.cse_info;
+	if (cse_info_in_cbmem == NULL)
+		return;
+
+	struct cse_specific_info cse_info_in_cmos;
+	cmos_read_fw_partition_info(&cse_info_in_cmos);
+
+	struct cse_fw_partition_info *cbmem_version = &(cse_info_in_cbmem->cse_fwp_version);
+	struct cse_fw_partition_info *cmos_version = &(cse_info_in_cmos.cse_fwp_version);
+
+	/* Get current cse firmware state */
+	enum cse_fw_state fw_state = cse_get_state(
+		 &(cbmem_version->cur_cse_fw_version),
+		 &(cmos_version->ish_partition_info.prev_cse_fw_version),
+		 &(cbmem_version->ish_partition_info.prev_cse_fw_version));
+
+	if (fw_state == CSE_FW_WARM_BOOT) {
+		return;
+	} else {
+		if (fw_state == CSE_FW_COLD_BOOT &&
+			 cse_is_ish_version_valid(&(cmos_version->ish_partition_info))) {
+			/* CMOS data is persistent across cold boots */
+			memcpy(&(cse_info_in_cbmem->cse_fwp_version.ish_partition_info),
+				&(cse_info_in_cmos.cse_fwp_version.ish_partition_info),
+				sizeof(struct cse_fw_ish_version_info));
+			cse_store_info_crc(cse_info_in_cbmem);
+		} else {
+			/*
+			 * Current running CSE version is different than previous stored CSE version
+			 * which could be due to CSE update or rollback, hence, need to send ISHC
+			 * partition info cmd to know the currently running ISH version.
+			 */
+			struct fw_version_resp resp;
+			if (cse_get_fpt_partition_info(FPT_PARTITION_NAME_ISHC,
+				 &resp) == CB_SUCCESS) {
+				/* Update stored CSE version with current cse version */
+				memcpy(&(cbmem_version->ish_partition_info.prev_cse_fw_version),
+				 &(cbmem_version->cur_cse_fw_version),  sizeof(struct fw_version));
+
+				/* Retrieve and update current ish version */
+				memcpy(&(cbmem_version->ish_partition_info.cur_ish_fw_version),
+				 &(resp.manifest_data.version), sizeof(struct fw_version));
+
+				/* Update the CRC */
+				cse_store_info_crc(cse_info_in_cbmem);
+
+				/* Update CMOS with current CSE FPT versions.*/
+				cmos_write_fw_partition_info(cse_info_in_cbmem);
+			}
+		}
+	}
+}
+
 static void payload_cse_misc_ops(void *unused)
 {
 	if (acpi_get_sleep_type_s3())
 		return;
 
 	cse_fw_sync();
+
+	/*
+	 * Store the ISH RW Firmware Version into CBMEM if ISH partition
+	 * is available
+	 */
+	if (soc_is_ish_partition_enabled())
+		cse_store_ish_version();
 }
 
 static int do_run_payload_cse_misc_ops(void)
@@ -1095,3 +1492,41 @@ static int do_run_payload_cse_misc_ops(void)
 }
 
 INIT_FUNC(do_run_payload_cse_misc_ops);
+
+static void cse_dump_rw_version(void)
+{
+	struct cse_specific_info *info = (struct cse_specific_info *)lib_sysinfo.cse_info;
+	if (info == NULL)
+		return;
+
+	printk(BIOS_DEBUG, "CSE RW Firmware Version: %d.%d.%d.%d\n",
+		info->cse_fwp_version.cur_cse_fw_version.major,
+		info->cse_fwp_version.cur_cse_fw_version.minor,
+		info->cse_fwp_version.cur_cse_fw_version.hotfix,
+		info->cse_fwp_version.cur_cse_fw_version.build);
+}
+
+static void cse_ish_dump_version(void)
+{
+	struct cse_specific_info *info = (struct cse_specific_info *)lib_sysinfo.cse_info;
+	if (info == NULL)
+		return;
+
+	printk(BIOS_DEBUG, "ISH version: %d.%d.%d.%d\n",
+		info->cse_fwp_version.ish_partition_info.cur_ish_fw_version.major,
+		info->cse_fwp_version.ish_partition_info.cur_ish_fw_version.minor,
+		info->cse_fwp_version.ish_partition_info.cur_ish_fw_version.hotfix,
+		info->cse_fwp_version.ish_partition_info.cur_ish_fw_version.build);
+}
+
+static int cse_get_fpt_rw_version(struct LateInitFunc *init)
+{
+	cse_dump_rw_version();
+
+	if (CONFIG(SOC_INTEL_STORE_ISH_FW_VERSION))
+		cse_ish_dump_version();
+
+	return 0;
+}
+
+LATE_INIT_FUNC(cse_get_fpt_rw_version);
