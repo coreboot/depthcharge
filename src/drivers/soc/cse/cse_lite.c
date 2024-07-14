@@ -349,7 +349,7 @@ static void cse_fw_update_misc_oper(void)
 	struct vb2_context *ctx = vboot_get_context();
 	if (ui_init_context(&ui, ctx, UI_SCREEN_FIRMWARE_SYNC) == VB2_SUCCESS) {
 		ui_display(&ui, NULL);
-		elog_add_event_byte(ELOG_TYPE_FW_EARLY_SOL, ELOG_FW_EARLY_SOL_CSE_SYNC);
+		elog_add_event_byte(ELOG_TYPE_FW_LATE_SOL, ELOG_FW_LATE_SOL_CSE_SYNC);
 	}
 }
 
