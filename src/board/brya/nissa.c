@@ -25,8 +25,6 @@
 const struct audio_config *variant_probe_audio_config(void)
 {
 	static struct audio_config config;
-	struct vb2_context *ctx = vboot_get_context();
-
 	if (fw_config_probe(FW_CONFIG(AUDIO_CONFIG, AMP_RT5650))) {
 		config = (struct audio_config){
 			.bus = {
@@ -62,10 +60,7 @@ const struct audio_config *variant_probe_audio_config(void)
 		};
 	}
 
-	if (vb2api_gbb_get_flags(ctx) & VB2_GBB_FLAG_RUNNING_FAFT)
-		return NULL;
-	else
-		return &config;
+	return &config;
 }
 
 static const struct storage_config storage_configs[] = {

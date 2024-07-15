@@ -342,9 +342,6 @@ void common_audio_setup(const struct audio_config *config)
 {
 	struct audio_data data = {};
 
-	if(!config)
-		return;
-
 	configure_audio_bus(&config->bus, &data);
 	configure_audio_codec(&config->codec, &data);
 	configure_audio_amp(&config->amp, &data);
