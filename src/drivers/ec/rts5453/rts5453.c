@@ -11,6 +11,7 @@
 #include "drivers/ec/vboot_auxfw.h"
 
 #include "rts5453.h"
+#include "rts5453_internal.h"
 
 #define GOOGLE_BROX_VENDOR_ID 0x18d1
 #define GOOGLE_BROX_PRODUCT_ID 0x5065
@@ -428,6 +429,89 @@ static bool is_rts545x_device_present(Rts545x *me, int live)
 	return true;
 }
 
+/**
+ * @brief Check if the new PDC FW version is compatible with the currently running PDC FW
+ *
+ * @param current FW version currently installed on the PDC
+ * @param new FW version to be flashed onto the PDC
+ * @return true The update may proceed
+ * @return false If the update is incompatible and should NOT proceed
+ */
+bool rts545x_check_update_compatibility(pdc_fw_ver_t current, pdc_fw_ver_t new)
+{
+	switch (PDC_FWVER_MAJOR(new)) {
+	case PDC_FWVER_TYPE_BASE:
+		/* We do not flash base FWs through Depthcharge */
+		printf("Upgrading to base FW (0x%06x) not supported\n", new);
+		return false;
+	case PDC_FWVER_TYPE_TEST:
+		if (new <= PDC_FWVER_TO_INT(1, 22, 1)) {
+			/* Versions up to and including 1.22 use the legacy
+			 * proj naming scheme and can always be flashed.
+			 */
+			return true;
+		}
+		/* new > PDC_FWVER_TO_INT(1, 22, 1) */
+
+		/* Versions after 1.22 have the new config format
+		 * and will only work if current image uses prefix-based
+		 * proj name verification or no proj name verification.
+		 *
+		 * Break this check down by the current firmware type.
+		 */
+		switch (PDC_FWVER_MAJOR(current)) {
+		case PDC_FWVER_TYPE_BASE:
+			return current == PDC_FWVER_TO_INT(2, 0, 1) ||
+			       current == PDC_FWVER_TO_INT(2, 2, 1);
+		case PDC_FWVER_TYPE_TEST:
+			return current > PDC_FWVER_TO_INT(1, 22, 1);
+		case PDC_FWVER_TYPE_RELEASE:
+			return current >= PDC_FWVER_TO_INT(0, 20, 1);
+		}
+
+		/* All other cases are invalid */
+		printf("Cannot parse current FW version 0x%06x (new FW is test)\n", current);
+		break;
+
+	case PDC_FWVER_TYPE_RELEASE:
+		if (new <= PDC_FWVER_TO_INT(0, 20, 1)) {
+			/* Versions up to and including 0.20 use the legacy
+			 * proj naming scheme and can always be flashed.
+			 */
+			return true;
+		}
+		/* new > PDC_FWVER_TO_INT(0, 20, 1) */
+
+		/* Versions after 0.20 have the new config format
+		 * and will only work if current image uses prefix-based
+		 * proj name verification or no proj name verification.
+		 *
+		 * Break this check down by the current firmware type.
+		 */
+		switch (PDC_FWVER_MAJOR(current)) {
+		case PDC_FWVER_TYPE_BASE:
+			return current == PDC_FWVER_TO_INT(2, 0, 1) ||
+			       current == PDC_FWVER_TO_INT(2, 2, 1);
+		case PDC_FWVER_TYPE_TEST:
+			return current > PDC_FWVER_TO_INT(1, 22, 1);
+		case PDC_FWVER_TYPE_RELEASE:
+			return current >= PDC_FWVER_TO_INT(0, 20, 1);
+		}
+
+		/* All other cases are invalid */
+		printf("Cannot parse current FW version 0x%06x (new FW is release)\n", current);
+		break;
+
+	default:
+		printf("Cannot parse new FW version 0x%06x\n", new);
+		return false;
+	}
+
+	/* Other upgrade paths are not supported. */
+	printf("Cannot match an upgrade path from 0x%06x to 0x%06x\n", current, new);
+	return false;
+}
+
 /*
  * Reading the firmware takes long time (~15-20 s), so we'll just use the
  * firmware rev as a trivial hash.
@@ -437,6 +521,9 @@ static vb2_error_t rts5453_check_hash(const VbootAuxfwOps *vbaux, const uint8_t 
 				      enum vb2_auxfw_update_severity *severity)
 {
 	Rts545x *me = container_of(vbaux, Rts545x, fw_ops);
+	pdc_fw_ver_t ver_current = PDC_FWVER_TO_INT(
+		me->fw_info.major_ver, me->fw_info.minor_ver, me->fw_info.patch_ver);
+	pdc_fw_ver_t ver_new = PDC_FWVER_TO_INT(hash[0], hash[1], hash[2]);
 	bool dev_is_present;
 	int ret;
 
@@ -452,10 +539,20 @@ static vb2_error_t rts5453_check_hash(const VbootAuxfwOps *vbaux, const uint8_t 
 		return VB2_SUCCESS;
 	}
 
-	if (hash[0] == me->fw_info.major_ver && hash[1] == me->fw_info.minor_ver &&
-	    hash[2] == me->fw_info.patch_ver) {
+	if (ver_current == ver_new) {
 		printf("No upgrade necessary for %s. Already at %u.%u.%u.\n", me->chip_name,
-		       hash[0], hash[1], hash[2]);
+		       PDC_FWVER_MAJOR(ver_current), PDC_FWVER_MINOR(ver_current),
+		       PDC_FWVER_PATCH(ver_current));
+		*severity = VB2_AUXFW_NO_UPDATE;
+		return VB2_SUCCESS;
+	}
+
+	if (!rts545x_check_update_compatibility(ver_current, ver_new)) {
+		printf("%s: Update FW from %u.%u.%u to %u.%u.%u not supported! Skipping.\n",
+		       me->chip_name, PDC_FWVER_MAJOR(ver_current),
+		       PDC_FWVER_MINOR(ver_current), PDC_FWVER_PATCH(ver_current),
+		       PDC_FWVER_MAJOR(ver_new), PDC_FWVER_MINOR(ver_new),
+		       PDC_FWVER_PATCH(ver_new));
 		*severity = VB2_AUXFW_NO_UPDATE;
 		return VB2_SUCCESS;
 	}
@@ -482,8 +579,9 @@ static vb2_error_t rts5453_check_hash(const VbootAuxfwOps *vbaux, const uint8_t 
 	}
 
 	printf("%s: Update FW from %u.%u.%u to %u.%u.%u\n", me->chip_name,
-	       me->fw_info.major_ver, me->fw_info.minor_ver, me->fw_info.patch_ver, hash[0],
-	       hash[1], hash[2]);
+	       PDC_FWVER_MAJOR(ver_current), PDC_FWVER_MINOR(ver_current),
+	       PDC_FWVER_PATCH(ver_current), PDC_FWVER_MAJOR(ver_new), PDC_FWVER_MINOR(ver_new),
+	       PDC_FWVER_PATCH(ver_new));
 	*severity = VB2_AUXFW_SLOW_UPDATE;
 	debug("update severity %d\n", *severity);
 	return VB2_SUCCESS;
