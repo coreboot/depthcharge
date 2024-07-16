@@ -2,4 +2,5 @@
 
 subdirs-y += input
 subdirs-y += flash
+subdirs-y += rts5453
 subdirs-y += storage
