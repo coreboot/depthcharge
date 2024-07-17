@@ -191,10 +191,9 @@ static int rts545x_get_ic_status(Rts545x *me, struct rts5453_ic_status *ic_sts)
 	}
 
 	printf("%s: VID:PID %x%x:%x%x, FW_Ver %u.%u.%u, %s Bank:%d\n", __func__,
-	       ic_sts->vid_pid[1], ic_sts->vid_pid[0], ic_sts->vid_pid[3],
-	       ic_sts->vid_pid[2], ic_sts->major_version, ic_sts->minor_version,
-	       ic_sts->patch_version, ic_sts->code_location ? "Flash" : "ROM",
-	       ic_sts->flash_bank ? 1 : 0);
+	       ic_sts->vid_pid[1], ic_sts->vid_pid[0], ic_sts->vid_pid[3], ic_sts->vid_pid[2],
+	       ic_sts->major_version, ic_sts->minor_version, ic_sts->patch_version,
+	       ic_sts->code_location ? "Flash" : "ROM", ic_sts->flash_bank ? 1 : 0);
 	return 0;
 }
 
@@ -606,7 +605,7 @@ static vb2_error_t rts5453_update_image(const VbootAuxfwOps *vbaux, const uint8_
 pd_restart:
 	/* Re-enable the EC PD stack */
 	ret = cros_ec_pd_control(0, PD_RESUME);
-	if(ret) {
+	if (ret) {
 		printf("Cannot resume PD: %d. Rebooting.\n", ret);
 		return VB2_REQUEST_REBOOT;
 	}
@@ -625,8 +624,7 @@ pd_restart:
 /* By default, output NULL to perform no update. Board code shall
  * override this function if supported.
  */
-__weak void board_rts5453_get_image_paths(const char **image_path,
-					  const char **hash_path)
+__weak void board_rts5453_get_image_paths(const char **image_path, const char **hash_path)
 {
 	*image_path = NULL;
 	*hash_path = NULL;
@@ -639,8 +637,7 @@ Rts545x *new_rts5453(CrosECTunnelI2c *bus, int ec_pd_id)
 		.update_image = rts5453_update_image,
 	};
 
-	board_rts5453_get_image_paths(&fw_ops.fw_image_name,
-				      &fw_ops.fw_hash_name);
+	board_rts5453_get_image_paths(&fw_ops.fw_image_name, &fw_ops.fw_hash_name);
 
 	if (fw_ops.fw_image_name == NULL || fw_ops.fw_hash_name == NULL) {
 		/* No files, so don't perform an update */
@@ -648,8 +645,8 @@ Rts545x *new_rts5453(CrosECTunnelI2c *bus, int ec_pd_id)
 		return NULL;
 	}
 
-	printf("Using PDC image '%s' with hash file '%s'\n",
-	       fw_ops.fw_image_name, fw_ops.fw_hash_name);
+	printf("Using PDC image '%s' with hash file '%s'\n", fw_ops.fw_image_name,
+	       fw_ops.fw_hash_name);
 
 	Rts545x *me = xzalloc(sizeof(*me));
 
@@ -691,8 +688,7 @@ static const VbootAuxfwOps *new_rts545x_from_chip_info(struct ec_response_pd_chi
 	rts545x->fw_info.major_ver = (r->fw_version_number >> FW_MAJOR_VERSION_SHIFT) & 0xff;
 	rts545x->fw_info.minor_ver = (r->fw_version_number >> FW_MINOR_VERSION_SHIFT) & 0xff;
 	rts545x->fw_info.patch_ver = (r->fw_version_number >> FW_PATCH_VERSION_SHIFT) & 0xff;
-	printf("RTS5453 VID/PID %04x:%04x\n", rts545x->chip_info.vid,
-	       rts545x->chip_info.pid);
+	printf("RTS5453 VID/PID %04x:%04x\n", rts545x->chip_info.vid, rts545x->chip_info.pid);
 	return &rts545x->fw_ops;
 }
 
