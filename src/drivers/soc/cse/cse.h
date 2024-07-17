@@ -301,6 +301,20 @@ enum csme_failure_reason {
 	CSE_LITE_SKU_PART_UPDATE_SUCCESS = 18,
 };
 
+/* CSE boot performance data */
+struct cse_boot_perf_rsp {
+	struct mkhi_hdr hdr;
+
+	/* Data version */
+	uint32_t version;
+
+	/* Data length in DWORDs, represents number of valid elements in timestamp array */
+	uint32_t num_valid_timestamps;
+
+	/* Boot performance data */
+	uint32_t timestamp[NUM_CSE_BOOT_PERF_DATA];
+} __packed;
+
 /*
  * Send message msg of size len to host from host_addr to cse_addr.
  * Returns CSE_TX_RX_SUCCESS on success and other enum values on failure scenarios.
@@ -489,6 +503,12 @@ bool set_cse_device_state(pcidev_t dev, enum cse_device_state requested_state);
  */
 bool skip_cse_sub_part_update(void);
 
+/*
+ * This function retrieves a set of boot performance timestamps CSME collected during
+ * the last platform boot flow.
+ */
+enum cb_err cse_get_boot_performance_data(struct cse_boot_perf_rsp *boot_perf);
+
 /* Function to make cse disable using PMC IPC */
 bool cse_disable_mei_devices(void);
 
@@ -503,18 +523,6 @@ void cse_control_global_reset_lock(void);
 
 /* This function to perform essential post EOP cse related operations.*/
 void cse_late_finalize(void);
-
-/*
- * Injects CSE timestamps into cbmem timestamp table. SoC code needs to
- * implement it since timestamp definitions differ from SoC to SoC.
- */
-void cse_soc_cbmem_inject_telemetry_data(s64 *ts, s64 current_time);
-
-/*
- * Get all the timestamps CSE collected using cse_get_boot_performance_data() and
- * insert them into the CBMEM timestamp table.
- */
-void cse_get_telemetry_data(void);
 
 /* Function to log the cse WP information like range, if WP etc. */
 void cse_log_ro_write_protection_info(bool mfg_mode);
