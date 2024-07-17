@@ -97,6 +97,30 @@ config SOC_INTEL_CSE_SUB_PART_UPDATE
 	 This config will enable CSE sub-partition firmware update feature and also will be used to
 	 ensure all the required configs are provided by mainboard.
 
+config SOC_INTEL_CSE_PRE_CPU_RESET_TELEMETRY
+	bool "Intel CSE telemetry"
+	default n
+	depends on SOC_INTEL_CSE_LITE_SKU
+	help
+	  Mainboard user to select this Kconfig in order to capture pre-cpu
+	  reset boot performance telemetry data.
+
+config SOC_INTEL_CSE_PRE_CPU_RESET_TELEMETRY_V1
+	bool "Intel CSE telemetry version 1"
+	select SOC_INTEL_CSE_PRE_CPU_RESET_TELEMETRY
+	depends on SOC_INTEL_CSE_LITE_SKU
+	help
+	  This config will make mainboard use version 1 of the CSE timestamp
+	  definitions, it can be used for Alder Lake and Raptor Lake (all SKUs).
+
+config SOC_INTEL_CSE_PRE_CPU_RESET_TELEMETRY_V2
+	bool "Intel CSE telemetry version 2"
+	select SOC_INTEL_CSE_PRE_CPU_RESET_TELEMETRY
+	depends on SOC_INTEL_CSE_LITE_SKU
+	help
+	  This config will make mainboard use version 2 of the CSE timestamp
+	  definitions, it can be used for Meteor Lake M/P onwards.
+
 config SOC_INTEL_COMMON_BLOCK_ME_SPEC_12
 	bool "Intel ME spec 12"
 	help
