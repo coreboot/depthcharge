@@ -8,3 +8,4 @@ IndentCaseLabels:                          false
 SortIncludes:                              false
 ContinuationIndentWidth:                   8
 ColumnLimit:                               96
+AllowShortFunctionsOnASingleLine:          false
