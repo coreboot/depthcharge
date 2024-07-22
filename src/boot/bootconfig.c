@@ -4,6 +4,7 @@
 
 #include "base/string_utils.h"
 #include "boot/bootconfig.h"
+#include "boot/commandline.h"
 
 static char *bootconfig_set_key_value(const char *src, char *key, char *value)
 {
@@ -128,7 +129,7 @@ int append_bootconfig_params(char *key, char *value, void *bootc_start,
 	updated_str = bootconfig_set_key_value(bootc_str, key, value);
 
 	/* Check if caller has enough space allocated */
-	if (buffer_size < strlen(updated_str + BOOTCONFIG_TRAILER_BYTES)) {
+	if (buffer_size < strlen(updated_str) + BOOTCONFIG_TRAILER_BYTES) {
 		free(updated_str);
 		return -1;
 	}
@@ -162,10 +163,17 @@ int parse_build_time_bootconfig(void *bootc_start, void *bootc_params,
 	if (bootc_start == NULL || bootc_params == NULL)
 		return -1;
 
-	if (params_size == 0)
-		return 0;
-
-	memcpy(bootc_start, bootc_params, params_size);
+	if (params_size != 0) {
+		memcpy(bootc_start, bootc_params, params_size);
+	} else {
+		/*
+		 * "bootconfig" is appended to command line only
+		 * if there are parameters added by Android. Since
+		 * bootconfig is created from scratch command line
+		 * must be modified here.
+		 */
+		commandline_append("bootconfig");
+	}
 	append_bootconfig_trailer(bootc_start, params_size);
 
 	return params_size + BOOTCONFIG_TRAILER_BYTES;

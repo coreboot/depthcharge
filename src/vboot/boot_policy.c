@@ -216,6 +216,7 @@ static int modify_android_slot_suffix(VbSelectAndLoadKernelParams *kparams,
 	char *str_to_insert;
 	struct vendor_boot_img_hdr_v4 *vendor_hdr;
 	uint32_t partition_number = kparams->partition_number;
+	int bootconfig_size;
 
 	vendor_hdr = (struct vendor_boot_img_hdr_v4 *)((uintptr_t)kparams->kernel_buffer +
 						       kparams->vendor_boot_offset);
@@ -233,16 +234,16 @@ static int modify_android_slot_suffix(VbSelectAndLoadKernelParams *kparams,
 		return -1;
 	}
 
-	vendor_hdr->bootconfig_size =
-			append_bootconfig_params(ANDROID_SLOT_SUFFIX_KEY_STR,
-						 str_to_insert,
-						 (void *)bootc_ramdisk_addr,
-						 vendor_hdr->bootconfig_size,
-						 bootc_buffer_size);
-	if (vendor_hdr->bootconfig_size < 0) {
-		printf("Cannot update bootconfig for android GKI!\n");
+	bootconfig_size = append_bootconfig_params(ANDROID_SLOT_SUFFIX_KEY_STR,
+						  str_to_insert,
+						  (void *)bootc_ramdisk_addr,
+						  vendor_hdr->bootconfig_size,
+						  bootc_buffer_size);
+	if (bootconfig_size < 0) {
+		printf("Cannot update boot slot for android GKI!\n");
 		return -1;
-	}
+	} else
+		vendor_hdr->bootconfig_size = bootconfig_size;
 
 	return 0;
 }
@@ -257,6 +258,7 @@ static int modify_android_boot_devices(VbSelectAndLoadKernelParams *kparams,
 	char *str_to_insert;
 	struct vendor_boot_img_hdr_v4 *vendor_hdr;
 	BlockDev *bdev = (BlockDev *)kparams->disk_handle;
+	int bootconfig_size;
 
 	vendor_hdr = (struct vendor_boot_img_hdr_v4 *)((uintptr_t)kparams->kernel_buffer +
 						       kparams->vendor_boot_offset);
@@ -269,16 +271,16 @@ static int modify_android_boot_devices(VbSelectAndLoadKernelParams *kparams,
 	if (!strlen(str_to_insert))
 		return 0;
 
-	vendor_hdr->bootconfig_size =
-			append_bootconfig_params(ANDROID_BDEV_KEY_STR,
-						 str_to_insert,
-						 (void *)bootc_ramdisk_addr,
-						 vendor_hdr->bootconfig_size,
-						 bootc_buffer_size);
-	if (vendor_hdr->bootconfig_size < 0) {
-		printf("Cannot update bootconfig for android GKI!\n");
+	bootconfig_size = append_bootconfig_params(ANDROID_BDEV_KEY_STR,
+						  str_to_insert,
+						  (void *)bootc_ramdisk_addr,
+						  vendor_hdr->bootconfig_size,
+						  bootc_buffer_size);
+	if (bootconfig_size < 0) {
+		printf("Cannot modify boot device for android GKI!\n");
 		return -1;
-	}
+	} else
+		vendor_hdr->bootconfig_size = bootconfig_size;
 
 	return 0;
 }
@@ -319,7 +321,7 @@ static int gki_setup_ramdisk(struct boot_info *bi,
 	vendor_ramdisk_section_offset = ALIGN_UP(sizeof(struct vendor_boot_img_hdr_v4),
 						 vendor_hdr->page_size);
 
-	if (CONFIG(BOOTCONFIG) && vendor_hdr->bootconfig_size != 0) {
+	if (CONFIG(BOOTCONFIG)) {
 		/* Calculate offset of bootconfig section */
 		bootconfig_section_offset = vendor_ramdisk_section_offset +
 			ALIGN_UP(vendor_hdr->vendor_ramdisk_size,
