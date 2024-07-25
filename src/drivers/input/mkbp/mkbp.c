@@ -25,6 +25,7 @@
 #include "base/init_funcs.h"
 #include "drivers/ec/cros/ec.h"
 #include "drivers/input/input.h"
+#include "drivers/input/mkbp/buttons.h"
 #include "drivers/input/mkbp/keymatrix.h"
 #include "drivers/input/mkbp/layout.h"
 
