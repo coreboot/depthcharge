@@ -13,4 +13,5 @@
 
 subdirs-y += keymatrix layout
 
+depthcharge-$(CONFIG_DRIVER_INPUT_MKBP) += buttons.c
 depthcharge-$(CONFIG_DRIVER_INPUT_MKBP) += mkbp.c
