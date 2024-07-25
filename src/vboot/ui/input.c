@@ -20,6 +20,7 @@
 #include <vboot/util/flag.h>
 
 #include "debug/dev.h"
+#include "drivers/input/mkbp/buttons.h"
 #include "drivers/input/mkbp/keymatrix.h"
 
 #define CSI_0 0x1B
