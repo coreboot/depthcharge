@@ -19,4 +19,10 @@ choice
 config DRIVER_INPUT_MKBP_KEYMATRIX_STANDARD_V10
 	bool "Standard ChromeOS Scan Matrix Version 1.0"
 
+config DRIVER_INPUT_MKBP_KEYMATRIX_STANDARD_V30
+	bool "Standard ChromeOS Scan Matrix Version 3.0"
+
+config DRIVER_INPUT_MKBP_KEYMATRIX_STANDARD_V30_TKL
+	bool "Standard Tenkeyless (TKL) ChromeOS Scan Matrix Version 3.0"
+
 endchoice
